@@ -101,7 +101,7 @@ private:
 	
 	int AddTrack(const AliHLTMUONMansoTrackStruct* track);
 	
-	void ApplyTriggerAlgorithm(
+	int ApplyTriggerAlgorithm(
 			AliHLTMUONSinglesDecisionBlockStruct& singlesHeader,
 			AliHLTMUONTrackDecisionStruct* singlesDecision,
 			AliHLTMUONPairsDecisionBlockStruct& pairsHeader,
@@ -121,6 +121,8 @@ private:
 	bool fHighPtCutSet; ///< Indicates if the high pT cut parameter was set on the command line.
 	bool fLowMassCutSet; ///< Indicates if the low invariant mass cut parameter was set on the command line.
 	bool fHighMassCutSet; ///< Indicates if the high invariant mass cut parameter was set on the command line.
+	bool fFillSinglesDetail; ///< If true then detailed trigger decision information for single tracks is generated.
+	bool fFillPairsDetail; ///< If true then detailed trigger decision information for track pairs is generated.
 	
 	ClassDef(AliHLTMUONDecisionComponent, 0);  // Trigger decision component for the dimuon HLT.
 };

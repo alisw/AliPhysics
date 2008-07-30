@@ -62,7 +62,9 @@ AliHLTMUONDecisionComponent::AliHLTMUONDecisionComponent() :
 	fLowPtCutSet(false),
 	fHighPtCutSet(false),
 	fLowMassCutSet(false),
-	fHighMassCutSet(false)
+	fHighMassCutSet(false),
+	fFillSinglesDetail(false),
+	fFillPairsDetail(false)
 {
 	///
 	/// Default constructor.
@@ -163,6 +165,8 @@ int AliHLTMUONDecisionComponent::DoInit(int argc, const char** argv)
 	fHighPtCutSet = false;
 	fLowMassCutSet = false;
 	fHighMassCutSet = false;
+	fFillSinglesDetail = true;
+	fFillPairsDetail = true;
 	
 	const char* cdbPath = NULL;
 	Int_t run = -1;
@@ -342,6 +346,18 @@ int AliHLTMUONDecisionComponent::DoInit(int argc, const char** argv)
 		if (strcmp(argv[i], "-warn_on_unexpected_block") == 0)
 		{
 			fWarnForUnexpecedBlock = true;
+			continue;
+		}
+		
+		if (strcmp( argv[i], "-no_singles_detail" ) == 0)
+		{
+			fFillSinglesDetail = false;
+			continue;
+		}
+		
+		if (strcmp( argv[i], "-no_pairs_detail" ) == 0)
+		{
+			fFillPairsDetail = false;
 			continue;
 		}
 
@@ -530,11 +546,13 @@ int AliHLTMUONDecisionComponent::DoEvent(
 		size = 0; // Important to tell framework that nothing was generated.
 		return -ENOBUFS;
 	}
-	
-	if (not singlesBlock.SetNumberOfEntries(fTrackCount))
+
+	AliHLTUInt32_t numOfTracks = fTrackCount;
+	if (not fFillSinglesDetail) numOfTracks = 0;
+	if (not singlesBlock.SetNumberOfEntries(numOfTracks))
 	{
 		AliHLTUInt32_t bytesneeded = sizeof(AliHLTMUONSinglesDecisionBlockWriter::HeaderType)
-			+ fTrackCount * sizeof(AliHLTMUONSinglesDecisionBlockWriter::ElementType);
+			+ numOfTracks * sizeof(AliHLTMUONSinglesDecisionBlockWriter::ElementType);
 		HLTError("The buffer is only %d bytes in size. We need a minimum of"
 			" %d bytes for the singles output data block.",
 			size, bytesneeded
@@ -561,8 +579,9 @@ int AliHLTMUONDecisionComponent::DoEvent(
 		size = 0; // Important to tell framework that nothing was generated.
 		return -ENOBUFS;
 	}
-	
+
 	AliHLTUInt32_t numOfPairs = fTrackCount * (fTrackCount-1) / 2;
+	if (not fFillPairsDetail) numOfPairs = 0;
 	if (not pairsBlock.SetNumberOfEntries(numOfPairs))
 	{
 		AliHLTUInt32_t bytesneeded = sizeof(AliHLTMUONPairsDecisionBlockWriter::HeaderType)
@@ -704,7 +723,7 @@ int AliHLTMUONDecisionComponent::AddTrack(const AliHLTMUONMansoTrackStruct* trac
 }
 
 
-void AliHLTMUONDecisionComponent::ApplyTriggerAlgorithm(
+int AliHLTMUONDecisionComponent::ApplyTriggerAlgorithm(
 		AliHLTMUONSinglesDecisionBlockStruct& singlesHeader,
 		AliHLTMUONTrackDecisionStruct* singlesDecision,
 		AliHLTMUONPairsDecisionBlockStruct& pairsHeader,
@@ -713,6 +732,7 @@ void AliHLTMUONDecisionComponent::ApplyTriggerAlgorithm(
 {
 	/// This method applies the dHLT trigger decision algorithm to all the
 	/// tracks found in the input data.
+	/// @return zero on success and -ENOMEM if out of memory.
 
 	// Zero the trigger counters for single tracks.
 	singlesHeader.fNlowPt = 0;
@@ -728,6 +748,22 @@ void AliHLTMUONDecisionComponent::ApplyTriggerAlgorithm(
 	pairsHeader.fNmassAny = 0;
 	pairsHeader.fNmassLow = 0;
 	pairsHeader.fNmassHigh = 0;
+
+	// Allocate a temporary memory buffer for the calculated pT values if
+	// we are not storing them to shared memory as part of the new block.
+	AliHLTFloat32_t* ptValues = NULL;
+	if (not fFillSinglesDetail)
+	{
+		try
+		{
+			ptValues = new AliHLTFloat32_t[fTrackCount];
+		}
+		catch(const std::bad_alloc&)
+		{
+			HLTError("Could not allocate memory buffer for pT values.");
+			return -ENOMEM;
+		}
+	}
 	
 	// For the single tracks we check if a track has pT larger than either
 	// the low or high pT cut. If it does then we increment the appropriate
@@ -735,7 +771,6 @@ void AliHLTMUONDecisionComponent::ApplyTriggerAlgorithm(
 	for (AliHLTUInt32_t n = 0; n < fTrackCount; n++)
 	{
 		const AliHLTMUONMansoTrackStruct* track = fTracks[n];
-		AliHLTMUONTrackDecisionStruct& decision = singlesDecision[n];
 		
 		bool passedHighPtCut = false;
 		bool passedLowPtCut = false;
@@ -753,11 +788,19 @@ void AliHLTMUONDecisionComponent::ApplyTriggerAlgorithm(
 			singlesHeader.fNlowPt++;
 		}
 		
-		decision.fTrackId = track->fId;
-		decision.fTriggerBits = AliHLTMUONUtils::PackTrackDecisionBits(
-				passedHighPtCut, passedLowPtCut
-			);
-		decision.fPt = pt;
+		if (fFillSinglesDetail)
+		{
+			AliHLTMUONTrackDecisionStruct& decision = singlesDecision[n];
+			decision.fTrackId = track->fId;
+			decision.fTriggerBits = AliHLTMUONUtils::PackTrackDecisionBits(
+					passedHighPtCut, passedLowPtCut
+				);
+			decision.fPt = pt;
+		}
+		else
+		{
+			ptValues[n] = pt;
+		}
 	}
 	
 	// Now we generate all the possible pairs of tracks and fill in the
@@ -770,9 +813,6 @@ void AliHLTMUONDecisionComponent::ApplyTriggerAlgorithm(
 	{
 		const AliHLTMUONMansoTrackStruct* tracki = fTracks[i];
 		const AliHLTMUONMansoTrackStruct* trackj = fTracks[j];
-		const AliHLTMUONTrackDecisionStruct& trackidecision = singlesDecision[i];
-		const AliHLTMUONTrackDecisionStruct& trackjdecision = singlesDecision[j];
-		AliHLTMUONPairDecisionStruct& decision = pairsDecision[currentPair];
 		
 		AliHLTFloat32_t muMass = 0.1056583568; // muon mass in GeV/c^2
 		
@@ -787,11 +827,23 @@ void AliHLTMUONDecisionComponent::ApplyTriggerAlgorithm(
 		AliHLTMUONUtils::UnpackMansoTrackFlags(trackj->fFlags, signj, hitset);
 		
 		AliHLTUInt8_t highPtCount = 0;
-		if (trackidecision.fPt > fHighPtCut) highPtCount++;
-		if (trackjdecision.fPt > fHighPtCut) highPtCount++;
 		AliHLTUInt8_t lowPtCount = 0;
-		if (trackidecision.fPt > fLowPtCut) lowPtCount++;
-		if (trackjdecision.fPt > fLowPtCut) lowPtCount++;
+		if (fFillSinglesDetail)
+		{
+			const AliHLTMUONTrackDecisionStruct& trackidecision = singlesDecision[i];
+			const AliHLTMUONTrackDecisionStruct& trackjdecision = singlesDecision[j];
+			if (trackidecision.fPt > fHighPtCut) highPtCount++;
+			if (trackjdecision.fPt > fHighPtCut) highPtCount++;
+			if (trackidecision.fPt > fLowPtCut) lowPtCount++;
+			if (trackjdecision.fPt > fLowPtCut) lowPtCount++;
+		}
+		else
+		{
+			if (ptValues[i] > fHighPtCut) highPtCount++;
+			if (ptValues[j] > fHighPtCut) highPtCount++;
+			if (ptValues[i] > fLowPtCut) lowPtCount++;
+			if (ptValues[j] > fLowPtCut) lowPtCount++;
+		}
 		
 		bool unlikeSign = (signi == kSignMinus and signj == kSignPlus) or
 		                  (signi == kSignPlus  and signj == kSignMinus);
@@ -823,17 +875,30 @@ void AliHLTMUONDecisionComponent::ApplyTriggerAlgorithm(
 			if (highPtCount == 2) pairsHeader.fNlikeHighPt++;
 		}
 		
-		decision.fTrackAId = tracki->fId;
-		decision.fTrackBId = trackj->fId;
-		decision.fTriggerBits = AliHLTMUONUtils::PackPairDecisionBits(
-				passedHighMassCut, passedLowMassCut, unlikeSign,
-				highPtCount, lowPtCount
-			);
-		decision.fInvMass = mass;
+		if (fFillPairsDetail)
+		{
+			AliHLTMUONPairDecisionStruct& decision = pairsDecision[currentPair];
+
+			decision.fTrackAId = tracki->fId;
+			decision.fTrackBId = trackj->fId;
+			decision.fTriggerBits = AliHLTMUONUtils::PackPairDecisionBits(
+					passedHighMassCut, passedLowMassCut, unlikeSign,
+					highPtCount, lowPtCount
+				);
+			decision.fInvMass = mass;
 		
-		currentPair++;
+			currentPair++;
+		}
 	}
 	
-	assert( currentPair == fTrackCount * (fTrackCount-1) / 2 );
+	assert( fFillPairsDetail == false or (fFillPairsDetail == true and currentPair == fTrackCount * (fTrackCount-1) / 2) );
+
+	if (not fFillSinglesDetail)
+	{
+		assert(ptValues != NULL);
+		delete [] ptValues;
+	}
+
+	return 0;
 }
 
