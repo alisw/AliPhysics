@@ -111,9 +111,6 @@ public:
   Float_t GetV0CsPmin() const {return fV0CsPmin;}
   Float_t GetDmax() const {return fDmax;}
   Float_t GetZmax() const {return fZmax;}
-
-  void           SetCheckPointLevel(Int_t checkPointLevel)
-    {fCheckPointLevel = checkPointLevel;}
   
   // CDB storage activation
   void SetDefaultStorage(const char* uri);
@@ -232,7 +229,6 @@ private:
   Int_t          fFirstEvent;         // index of first event to be reconstr.
   Int_t          fLastEvent;          // index of last event to be reconstr.
   UInt_t         fNumberOfEventsPerFile; // number of events per file in case of raw-data reconstruction
-  Int_t          fCheckPointLevel;    // level of ESD check points
   TObjArray      fOptions;            // options for reconstructor objects
   Bool_t         fLoadAlignFromCDB;   // Load alignment data from CDB and apply it to geometry or not
   TString        fLoadAlignData;      // Load alignment data from CDB for these detectors
@@ -288,7 +284,7 @@ private:
   Bool_t               fIsNewRunLoader; // galice.root created from scratch (real raw data case)
   Bool_t               fRunAliEVE;  // Run AliEVE or not
 
-  ClassDef(AliReconstruction, 25)      // class for running the reconstruction
+  ClassDef(AliReconstruction, 26)      // class for running the reconstruction
 };
 
 #endif

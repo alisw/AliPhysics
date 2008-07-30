@@ -105,16 +105,6 @@
 // data by calling (usual detector string)                                   //
 // SetUseHLTData("...");                                                     //
 //                                                                           //
-// For debug purposes the method SetCheckPointLevel can be used. If the      //
-// argument is greater than 0, files with ESD events will be written after   //
-// selected steps of the reconstruction for each event:                      //
-//   level 1: after tracking and after filling of ESD (final)                //
-//   level 2: in addition after each tracking step                           //
-//   level 3: in addition after the filling of ESD for each detector         //
-// If a final check point file exists for an event, this event will be       //
-// skipped in the reconstruction. The tracking and the filling of ESD for    //
-// a detector will be skipped as well, if the corresponding check point      //
-// file exists. The ESD event will then be loaded from the file instead.     //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -238,7 +228,6 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename,
   fFirstEvent(0),
   fLastEvent(-1),
   fNumberOfEventsPerFile(1),
-  fCheckPointLevel(0),
   fOptions(),
   fLoadAlignFromCDB(kTRUE),
   fLoadAlignData("ALL"),
@@ -334,7 +323,6 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fFirstEvent(rec.fFirstEvent),
   fLastEvent(rec.fLastEvent),
   fNumberOfEventsPerFile(rec.fNumberOfEventsPerFile),
-  fCheckPointLevel(0),
   fOptions(),
   fLoadAlignFromCDB(rec.fLoadAlignFromCDB),
   fLoadAlignData(rec.fLoadAlignData),
@@ -1167,7 +1155,6 @@ Bool_t AliReconstruction::RunEvent(Int_t iEvent)
 	if (!RunVertexFinder(fesd)) {
 	  if (fStopOnError) {CleanUp(ffile); return kFALSE;}
 	}
-	if (fCheckPointLevel > 0) WriteESD(fesd, "vertex");
       }
     }
 
@@ -1186,7 +1173,6 @@ Bool_t AliReconstruction::RunEvent(Int_t iEvent)
 	if (!RunTracking(fesd)) {
 	  if (fStopOnError) {CleanUp(ffile); return kFALSE;}
 	}
-	if (fCheckPointLevel > 0) WriteESD(fesd, "tracking");
       }
     }
 
@@ -1219,14 +1205,12 @@ Bool_t AliReconstruction::RunEvent(Int_t iEvent)
 
     // combined PID
     AliESDpid::MakePID(fesd);
-    if (fCheckPointLevel > 1) WriteESD(fesd, "PID");
 
     if (fFillTriggerESD) {
       if (!ReadESD(fesd, "trigger")) {
 	if (!FillTriggerESD(fesd)) {
 	  if (fStopOnError) {CleanUp(ffile); return kFALSE;}
 	}
-	if (fCheckPointLevel > 1) WriteESD(fesd, "trigger");
       }
     }
 
@@ -1363,7 +1347,6 @@ Bool_t AliReconstruction::RunEvent(Int_t iEvent)
     // call AliEVE
     if (fRunAliEVE) RunAliEVE();
 
-    if (fCheckPointLevel > 0)  WriteESD(fesd, "final"); 
     fesd->Reset();
     fhltesd->Reset();
     if (fWriteESDfriend) {
@@ -1852,9 +1835,6 @@ Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd)
       AliError(Form("%s Clusters2Tracks failed", fgkDetectorName[iDet]));
       return kFALSE;
     }
-    if (fCheckPointLevel > 1) {
-      WriteESD(esd, Form("%s.tracking", fgkDetectorName[iDet]));
-    }
     // preliminary PID in TPC needed by the ITS tracker
     if (iDet == 1) {
       GetReconstructor(1)->FillESD((TTree*)NULL, (TTree*)NULL, esd);
@@ -1891,9 +1871,6 @@ Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd)
       AliError(Form("%s backward propagation failed", fgkDetectorName[iDet]));
       //      return kFALSE;
     }
-    if (fCheckPointLevel > 1) {
-      WriteESD(esd, Form("%s.back", fgkDetectorName[iDet]));
-    }
 
     // unload clusters
     if (iDet > 3) {     // all except ITS, TPC, TRD and TOF
@@ -1928,9 +1905,6 @@ Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd)
     if (fTracker[iDet]->PostProcess(esd) != 0) {
       AliError(Form("%s postprocessing failed", fgkDetectorName[iDet]));
       //      return kFALSE;
-    }
-    if (fCheckPointLevel > 1) {
-      WriteESD(esd, Form("%s.refit", fgkDetectorName[iDet]));
     }
     AliSysInfo::AddStamp(Form("Tracking2%s_%d",fgkDetectorName[iDet],eventNr), iDet,3, eventNr);
   }
@@ -2022,7 +1996,6 @@ Bool_t AliReconstruction::FillESD(AliESDEvent*& esd, const TString& detectors)
 	fLoader[iDet]->UnloadRecPoints();
       }
 
-      if (fCheckPointLevel > 2) WriteESD(esd, fgkDetectorName[iDet]);
     }
   }
 
