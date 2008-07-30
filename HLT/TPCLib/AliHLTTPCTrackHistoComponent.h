@@ -63,7 +63,8 @@ class TH1F;
  *      Plots the Q Max for all clusters in the event (default kFALSE)
  * \li -plot-QMaxUsed <br>
  *      Plots the Q Max for clusters used on tracks (default kFALSE)
- *
+ * \li -reset-plots <br>
+ *      Will reset the plots for every event (default kFALSE)
  *
  * <h2>Configuration:</h2>
  * 
@@ -161,6 +162,7 @@ private:
   Bool_t fPlotNTracks;                                             //! transient
   Bool_t fPlotQMaxClusters;                                        //! transient
   Bool_t fPlotQMaxUsedClusters;                                    //! transient
+  Bool_t fResetPlots;                                              //! transient
 
   vector<AliHLTTPCSpacePointData> fClusters;                       //! transient
   vector<AliHLTTPCTrackSegmentData> fTracks;                       //! transient

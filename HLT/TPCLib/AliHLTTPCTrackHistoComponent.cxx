@@ -74,6 +74,7 @@ fHistoNClustersOnTracks(NULL),
   fPlotNTracks(kFALSE),
   fPlotQMaxClusters(kFALSE),
   fPlotQMaxUsedClusters(kFALSE),
+  fResetPlots(kFALSE),
   fClusters(),
   fTracks()
 {
@@ -156,6 +157,7 @@ int AliHLTTPCTrackHistoComponent::DoInit( int argc, const char** argv )
   fPlotNTracks=kFALSE;        
   fPlotQMaxClusters=kFALSE;
   fPlotQMaxUsedClusters=kFALSE;
+  fResetPlots=kFALSE;
 
   int iResult=0;
   TString configuration="";
@@ -355,7 +357,11 @@ int AliHLTTPCTrackHistoComponent::DoEvent(const AliHLTComponentEventData& /*evtD
 	 fPlotQMaxUsedClusters=kTRUE;  
 	 continue;
        }
-
+       else if (argument.CompareTo("-reset-plots")==0) {
+	 HLTInfo("Reseting plots");
+	 fResetPlots=kTRUE;  
+	 continue;
+       }
        else {
 	 HLTError("unknown argument %s", argument.Data());
 	 iResult=-EINVAL;
@@ -450,15 +456,17 @@ void AliHLTTPCTrackHistoComponent::PushHisto(){
     PushBack( (TObject*) fHistoQMaxUsedClusters,kAliHLTDataTypeHistogram, fSpecification);
   }
   
-  fHistoNClustersOnTracks->Reset();                                 
-  fHistoChargeAllClusters->Reset();                                                                         
-  fHistoChargeUsedClusters->Reset();                                                                        
-  fHistoPT->Reset();                                                                                
-  fHistoResidual->Reset();                                                                            
-  fHistoTgl->Reset();        
-  fHistoNClusters->Reset();     
-  fHistoNUsedClusters->Reset();
-  fHistoNTracks->Reset();
-  fHistoQMaxAllClusters->Reset();
-  fHistoQMaxUsedClusters->Reset();
+  if(fResetPlots){
+    fHistoNClustersOnTracks->Reset();                                 
+    fHistoChargeAllClusters->Reset();                                                                         
+    fHistoChargeUsedClusters->Reset();                                                                        
+    fHistoPT->Reset();                                                                                
+    fHistoResidual->Reset();                                                                            
+    fHistoTgl->Reset();        
+    fHistoNClusters->Reset();     
+    fHistoNUsedClusters->Reset();
+    fHistoNTracks->Reset();
+    fHistoQMaxAllClusters->Reset();
+    fHistoQMaxUsedClusters->Reset();
+  }
 }
