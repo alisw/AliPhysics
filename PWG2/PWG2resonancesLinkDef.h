@@ -29,7 +29,6 @@
 
 #pragma link C++ class AliRsnSimpleAnalysis+;
 #pragma link C++ class AliRsnSimpleAnalyzer+;
-#pragma link C++ class AliRsnSimpleAnalysisTask+;
 #pragma link C++ class AliRsnSimpleAnalysisTaskSE+;
 
 #endif
