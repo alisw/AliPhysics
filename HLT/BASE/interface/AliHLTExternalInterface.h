@@ -1,153 +1,148 @@
-// @(#) $Id$
+// $Id$
 
 #ifndef ALIHLT_EXTERNALINTERFACE_H
 #define ALIHLT_EXTERNALINTERFACE_H
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
 
 /** @file   AliHLTExternalInterface.h
     @author Matthias Richter, Timm Steinbeck
     @date   
-    @brief  Pure and dynamic C interface to the AliRoot HLT component handler
+    @brief  Pure and dynamic C interface to the AliRoot HLT analysis
     @note   Utilized by the HLT Online (PubSub) framework
 */
 
+/** 
+ * @defgroup alihlt_wrapper_interface The HLT wrapper interface
+ * The wrapper interface is a pure C interface which allows to use the 
+ * analysis components in external applications. The interface is utilized
+ * to bind the analysis code to the PubSub framework. 
+ *
+ * \image html PubSub_WrapperComponent.png "Wrapper interface"
+ *
+ * @section alihlt_wrapper_interface_general Interface functions
+ * The interface is based on function signatures. The function
+ * AliHLTAnalysisGetInterfaceCall(const char* signature) of type
+ * AliHLTAnalysisFctGetInterfaceCall looks for a matching interface
+ * function and returns the pointer if it is found.
+ * @ref ALIHLTANALYSIS_FCT_GETINTERFACECALL defines the function name. 
+ *
+ * @section alihlt_wrapper_interface_usage Usage
+ * @subsection alihlt_wrapper_interface_usage_systemcalls Getting the interface functions
+ * <pre>
+ * string libraryPath=ALIHLTANALYSIS_INTERFACE_LIBRARY;
+ *
+ * string libraryPath=gBasePath;
+ * libraryPath+="/";
+ * libraryPath+=ALIHLTANALYSIS_INTERFACE_LIBRARY;
+ *
+ * void* libHandle=dlopen(libraryPath.c_str(), RTLD_NOW);
+ * if (!libHandle) {
+ *   cerr << "error: can not load library " << libraryPath.c_str() << endl;
+ *   return -1;
+ * }
+ *
+ * AliHLTAnalysisFctGetInterfaceCall fctGetSystemCall=(AliHLTAnalysisFctGetInterfaceCall)dlsym(libHandle, ALIHLTANALYSIS_FCT_GETINTERFACECALL);
+ * if (!fctGetSystemCall) {
+ *   cerr << "error: can not find function '" << ALIHLTANALYSIS_FCT_GETINTERFACECALL << "' in " << libraryPath.c_str() << endl;
+ *   return -1;
+ * }
+ *
+ * </pre>
+ *
+ * @subsection alihlt_wrapper_interface_usage_init System initialization
+ * <pre>
+ * AliHLTAnalysisEnvironment environment;
+ * memset(&environment, 0, sizeof(environment));
+ *
+ * // setting function pointers
+ * environment.fStructSize=sizeof(environment);
+ * environment.fAllocMemoryFunc=AllocMemory;
+ * environment.fLoggingFunc=Logging;
+ *
+ * AliHLTExtFctInitSystem fctInitSystem=(AliHLTExtFctInitSystem)fctGetSystemCall("int AliHLTAnalysisInitSystem(unsigned long,AliHLTAnalysisEnvironment*,unsigned long,const char*)");
+ * if (!fctInitSystem) {
+ *   cerr << "error: missing AliHLTAnalysisInitSystem call" << endl;
+ *   return -1;
+ * }
+ *
+ * if ((iResult=fctInitSystem( ALIHLT_DATA_TYPES_VERSION, &environment, 0xbeef, "dummy-run" ))<0) {
+ *   cerr << "InitSystem failed with " << iResult << endl;
+ *   return iResult;
+ * }
+ *
+ * </pre>
+ *
+ * @subsection alihlt_wrapper_interface_usage_create Load library and create component
+ * <pre>
+ * AliHLTExtFctLoadLibrary fctLoadLibrary=(AliHLTExtFctLoadLibrary)fctGetSystemCall("int AliHLTAnalysisLoadLibrary(const char*)");
+ * if (!fctLoadLibrary) {
+ *   cerr << "error: missing LoadLibrary call" << endl;
+ *   return -1;
+ * }
+ *
+ * if ((iResult=fctLoadLibrary(moduleLibrary))<0) {
+ *   cerr << "error: AliHLTAnalysisLoadLibrary failed with " << iResult << endl;
+ *   return iResult;
+ * }
+ *
+ * AliHLTExtFctCreateComponent fctCreateComponent=(AliHLTExtFctCreateComponent)fctGetSystemCall("int AliHLTAnalysisCreateComponent(const char*,void*,int,const char**,AliHLTComponentHandle*,const char*)");
+ * if (!fctCreateComponent) {
+ *   cerr << "error: missing CreateComponent call" << endl;
+ *   return -1;
+ * }
+ *
+ * AliHLTComponentHandle handle;
+ * if ((iResult=fctCreateComponent("TestProcessor", &gDummy, 0, NULL, &handle, "-chainid=test" ))<0) {
+ *   cerr << "error: AliHLTAnalysisCreateComponent failed with " << iResult << endl;
+ *   return iResult;
+ * }
+ *
+ * </pre>
+ * 
+ * @section alihlt_wrapper_interface_cdb CDB handling
+ * The interface initializes the CDB from the path found
+ * in the environment variable ALIHLT_HCDBDIR. If this is empty, path is
+ * set from <tt>$ALICE_ROOT</tt>.
+ */
+
 #include <AliHLTDataTypes.h>
-class AliHLTSystem;
-class AliHLTOUT;
-class AliESDEvent;
+
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// AliHLT external interface functions
+//
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/**
- * 
- * @ingroup alihlt_wrapper_interface
- */
-typedef void* AliHLTComponentHandle;
+  /**
+   * Get a system call of the interface.
+   * @param function signature
+   * @return pointer to system call
+   * @ingroup alihlt_wrapper_interface
+   */
+  void* AliHLTAnalysisGetInterfaceCall(const char*);
 
-/**
- * 
- * @ingroup alihlt_wrapper_interface
- */
-const AliHLTComponentHandle kEmptyHLTComponentHandle = 0;
+#ifdef __cplusplus
+}
+#endif
 
-/* Matthias Dec 2006
- * The names have been changed for Aliroot's coding conventions sake
- * The old names are defined for backward compatibility with the 
- * PublisherSubscriber framework
- */
-typedef AliHLTComponentLogSeverity AliHLTComponent_LogSeverity;
-typedef AliHLTComponentEventData AliHLTComponent_EventData;
-typedef AliHLTComponentShmData AliHLTComponent_ShmData;
-typedef AliHLTComponentDataType AliHLTComponent_DataType;
-typedef AliHLTComponentBlockData AliHLTComponent_BlockData;
-typedef AliHLTComponentTriggerData AliHLTComponent_TriggerData;
-typedef AliHLTComponentEventDoneData AliHLTComponent_EventDoneData;
-const AliHLTUInt32_t gkAliHLTComponent_InvalidShmType = gkAliHLTComponentInvalidShmType;
-const AliHLTUInt64_t gkAliHLTComponent_InvalidShmID = gkAliHLTComponentInvalidShmID;
 
-typedef int (*AliHLTExtFctInitSystem)( AliHLTComponentEnvironment* );
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// AliHLTSystem interface functions
+//
 
-typedef int (*AliHLTExtFctDeinitSystem)();
+class AliHLTSystem;
+class AliHLTOUT;
+class AliESDEvent;
 
-typedef int (*AliHLTExtFctLoadLibrary)( const char* );
-
-typedef int (*AliHLTExtFctUnloadLibrary)( const char* );
-
-typedef int (*AliHLTExtFctCreateComponent)( const char*, void*, int, const char**, AliHLTComponentHandle* );
-
-typedef void (*AliHLTExtFctDestroyComponent)( AliHLTComponentHandle );
-
-typedef int (*AliHLTExtFctProcessEvent)( AliHLTComponentHandle, const AliHLTComponentEventData*, const AliHLTComponentBlockData*, 
-					 AliHLTComponentTriggerData*, AliHLTUInt8_t*,
-					 AliHLTUInt32_t*, AliHLTUInt32_t*, 
-					 AliHLTComponentBlockData**,
-					 AliHLTComponentEventDoneData** );
-
-typedef int (*AliHLTExtFctGetOutputDataType)( AliHLTComponentHandle, AliHLTComponentDataType* );
-
-typedef int (*AliHLTExtFctGetOutputSize)( AliHLTComponentHandle, unsigned long*, double* );
-
-struct AliHLTExternalFuctions_t {
-  AliHLTExtFctInitSystem        fctInitSystem;
-  AliHLTExtFctDeinitSystem      fctDeinitSystem;
-  AliHLTExtFctLoadLibrary       fctLoadLibrary;
-  AliHLTExtFctUnloadLibrary     fctUnloadLibrary;
-  AliHLTExtFctCreateComponent   fctCreateComponent;
-  AliHLTExtFctDestroyComponent  fctDestroyComponent;
-  AliHLTExtFctProcessEvent      fctProcessEvent;
-  AliHLTExtFctGetOutputDataType fctGetOutputDataType;
-  AliHLTExtFctGetOutputSize     fctGetOutputSize;
-};
-
-#define ALIHLT_FCT_ENTRY_INITSYSTEM        "AliHLT_C_Component_InitSystem"
-#define ALIHLT_FCT_ENTRY_DEINITSYSTEM      "AliHLT_C_Component_DeinitSystem"
-#define ALIHLT_FCT_ENTRY_LOADLIBRARY       "AliHLT_C_Component_LoadLibrary"
-#define ALIHLT_FCT_ENTRY_UNLOADLIBRARY     "AliHLT_C_Component_UnloadLibrary"
-#define ALIHLT_FCT_ENTRY_CREATECOMPONENT   "AliHLT_C_Component_CreateComponent"
-#define ALIHLT_FCT_ENTRY_DESTROYCOMPONENT  "AliHLT_C_Component_DestroyComponent"
-#define ALIHLT_FCT_ENTRY_PROCESSEVENT      "AliHLT_C_Component_ProcessEvent"
-#define ALIHLT_FCT_ENTRY_GETOUTPUTDATATYPE "AliHLT_C_Component_GetOutputDataType"
-#define ALIHLT_FCT_ENTRY_GETOUTPUTSIZE     "AliHLT_C_Component_GetOutputSize"
-
-/**
- * 
- * @ingroup alihlt_wrapper_interface
- */
-int AliHLT_C_Component_InitSystem( AliHLTComponentEnvironment* environ );
-
-/**
- * 
- * @ingroup alihlt_wrapper_interface
- */
-int AliHLT_C_Component_DeinitSystem();
-
-/**
- * 
- * @ingroup alihlt_wrapper_interface
- */
-int AliHLT_C_Component_LoadLibrary( const char* libraryPath );
-
-/**
- * 
- * @ingroup alihlt_wrapper_interface
- */
-int AliHLT_C_Component_UnloadLibrary( const char* libraryPath );
-
-/**
- * 
- * @ingroup alihlt_wrapper_interface
- */
-int AliHLT_C_CreateComponent( const char* componentType, void* environ_param, int argc, const char** argv, AliHLTComponentHandle* handle );
-
-/**
- * 
- * @ingroup alihlt_wrapper_interface
- */
-void AliHLT_C_DestroyComponent( AliHLTComponentHandle );
-
-/**
- * 
- * @ingroup alihlt_wrapper_interface
- */
-int AliHLT_C_ProcessEvent( AliHLTComponentHandle handle, const AliHLTComponent_EventData* evtData, const AliHLTComponent_BlockData* blocks, 
-                           AliHLTComponent_TriggerData* trigData, AliHLTUInt8_t* outputPtr,
-                           AliHLTUInt32_t* size, AliHLTUInt32_t* outputBlockCnt, 
-                           AliHLTComponent_BlockData** outputBlocks,
-                           AliHLTComponent_EventDoneData** edd );
-
-/**
- * 
- * @ingroup alihlt_wrapper_interface
- */
-int AliHLT_C_GetOutputDataType( AliHLTComponentHandle, AliHLTComponent_DataType* dataType );
-
-/**
- * 
- * @ingroup alihlt_wrapper_interface
- */
-int AliHLT_C_GetOutputSize( AliHLTComponentHandle, unsigned long* constBase, double* inputMultiplier );
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /**
  * Set options for an AliHLTSystem instance.

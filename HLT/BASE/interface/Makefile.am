@@ -8,7 +8,7 @@
 #    e.g. for libHLTinterface, MODULE=HLTinterface
 MODULE				= HLTinterface
 
-SUBDIRS 			= 
+SUBDIRS 			= . test
 
 EXTRA_DIST			= HLTinterface-LinkDef.h
 

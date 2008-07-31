@@ -82,7 +82,7 @@ AliHLTComponent::AliHLTComponent()
   // refer to README to build package
   // or
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
-  memset(&fEnvironment, 0, sizeof(AliHLTComponentEnvironment));
+  memset(&fEnvironment, 0, sizeof(AliHLTAnalysisEnvironment));
   if (fgpComponentHandler)
     fgpComponentHandler->ScheduleRegister(this);
   //SetLocalLoggingLevel(kHLTLogDefault);
@@ -135,13 +135,15 @@ int AliHLTComponent::UnsetGlobalComponentHandler()
   return SetGlobalComponentHandler(NULL,1);
 }
 
-int AliHLTComponent::Init(const AliHLTComponentEnvironment* comenv, void* environParam, int argc, const char** argv )
+int AliHLTComponent::Init(const AliHLTAnalysisEnvironment* comenv, void* environParam, int argc, const char** argv )
 {
   // see header file for function documentation
   HLTLogKeyword(GetComponentID());
   int iResult=0;
   if (comenv) {
-    memcpy(&fEnvironment, comenv, sizeof(AliHLTComponentEnvironment));
+    memset(&fEnvironment, 0, sizeof(AliHLTAnalysisEnvironment));
+    memcpy(&fEnvironment, comenv, comenv->fStructSize<sizeof(AliHLTAnalysisEnvironment)?comenv->fStructSize:sizeof(AliHLTAnalysisEnvironment));
+    fEnvironment.fStructSize=sizeof(AliHLTAnalysisEnvironment);
     fEnvironment.fParam=environParam;
   }
   const char** pArguments=NULL;
@@ -315,16 +317,16 @@ int AliHLTComponent::SetComponentDescription(const char* desc)
       TString argument=((TObjString*)pTokens->At(i++))->GetString();
       if (!argument || argument.IsNull()) continue;
 
-      // -chainid
-      if (argument.BeginsWith("-chainid")) {
-	argument.ReplaceAll("-chainid", "");
+      // chainid
+      if (argument.BeginsWith("chainid")) {
+	argument.ReplaceAll("chainid", "");
 	if (argument.BeginsWith("=")) {
 	  fChainId=argument.Replace(0,1,"");
 	} else {
 	  fChainId="";
 	}
       } else {
-	HLTWarning("unknown argument %s", argument.Data());
+	HLTWarning("unknown component discription %s", argument.Data());
       }
     }
   }

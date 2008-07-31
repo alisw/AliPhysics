@@ -64,11 +64,12 @@ AliHLTComponentHandler::AliHLTComponentHandler()
   // refer to README to build package
   // or
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
-  memset(&fEnvironment, 0, sizeof(AliHLTComponentEnvironment));
+  memset(&fEnvironment, 0, sizeof(AliHLTAnalysisEnvironment));
+  fEnvironment.fStructSize=sizeof(AliHLTAnalysisEnvironment);
   AddStandardComponents();
 }
 
-AliHLTComponentHandler::AliHLTComponentHandler(AliHLTComponentEnvironment* pEnv)
+AliHLTComponentHandler::AliHLTComponentHandler(AliHLTAnalysisEnvironment* pEnv)
   :
   AliHLTLogging(),
   fComponentList(),
@@ -82,7 +83,7 @@ AliHLTComponentHandler::AliHLTComponentHandler(AliHLTComponentEnvironment* pEnv)
 {
   // see header file for class documentation
   if (pEnv) {
-    memcpy(&fEnvironment, pEnv, sizeof(AliHLTComponentEnvironment));
+    memcpy(&fEnvironment, pEnv, sizeof(AliHLTAnalysisEnvironment));
     if (pEnv->fLoggingFunc) {
       // the AliHLTLogging::Init method also sets the stream output
       // and notification handler to AliLog. This should only be done
@@ -91,7 +92,8 @@ AliHLTComponentHandler::AliHLTComponentHandler(AliHLTComponentEnvironment* pEnv)
       AliHLTLogging::Init(pEnv->fLoggingFunc);
     }
   }  else {
-    memset(&fEnvironment, 0, sizeof(AliHLTComponentEnvironment));
+    memset(&fEnvironment, 0, sizeof(AliHLTAnalysisEnvironment));
+    fEnvironment.fStructSize=sizeof(AliHLTAnalysisEnvironment);
   }
   //#ifndef __DEBUG
   //SetLocalLoggingLevel(kHLTLogError);
@@ -316,11 +318,13 @@ int AliHLTComponentHandler::HasOutputData( const char* componentID)
   return iResult;
 }
 
-void AliHLTComponentHandler::SetEnvironment(AliHLTComponentEnvironment* pEnv) 
+void AliHLTComponentHandler::SetEnvironment(AliHLTAnalysisEnvironment* pEnv) 
 {
   // see header file for class documentation
   if (pEnv) {
-    memcpy(&fEnvironment, pEnv, sizeof(AliHLTComponentEnvironment));
+    memset(&fEnvironment, 0, sizeof(AliHLTAnalysisEnvironment));
+    memcpy(&fEnvironment, pEnv, pEnv->fStructSize<sizeof(AliHLTAnalysisEnvironment)?pEnv->fStructSize:sizeof(AliHLTAnalysisEnvironment));
+    fEnvironment.fStructSize=sizeof(AliHLTAnalysisEnvironment);
     if (fEnvironment.fLoggingFunc) {
       // the AliHLTLogging::Init method also sets the stream output
       // and notification handler to AliLog. This should only be done

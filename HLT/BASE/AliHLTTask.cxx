@@ -376,7 +376,7 @@ int AliHLTTask::StartRun()
       // component init
       // the initialization of the component is done by the ComponentHandler after creation
       // of the component.
-      //iResult=Init( AliHLTComponentEnvironment* environ, void* environ_param, int argc, const char** argv );
+      //iResult=Init( AliHLTAnalysisEnvironment* environ, void* environ_param, int argc, const char** argv );
 
       // allocate the data buffer, which controls the output buffer and subscriptions
       if (iResult>=0) {

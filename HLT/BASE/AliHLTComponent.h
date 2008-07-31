@@ -305,7 +305,7 @@ class AliHLTComponent : public AliHLTLogging {
    * @param argc           size of the argument array
    * @param argv           agument array for component initialization
    */
-  virtual int Init( const AliHLTComponentEnvironment* environ, void* environParam, int argc, const char** argv );
+  virtual int Init( const AliHLTAnalysisEnvironment* environ, void* environParam, int argc, const char** argv );
 
   /**
    * Clean-up function to terminate data processing.
@@ -743,7 +743,7 @@ class AliHLTComponent : public AliHLTLogging {
    * be provided by the framework (online or offline).
    * The method is redirected to a function provided by the current
    * framework. Function pointers are transferred via the @ref
-   * AliHLTComponentEnvironment structure.
+   * AliHLTAnalysisEnvironment structure.
    */
   void* AllocMemory( unsigned long size );
 
@@ -754,7 +754,7 @@ class AliHLTComponent : public AliHLTLogging {
    * interface pure C style, monilithic blocks must be exchanged. 
    * The method is redirected to a function provided by the current
    * framework. Function pointers are transferred via the @ref
-   * AliHLTComponentEnvironment structure.
+   * AliHLTAnalysisEnvironment structure.
    */
   int MakeOutputDataBlockList( const AliHLTComponentBlockDataList& blocks, AliHLTUInt32_t* blockCount,
 			       AliHLTComponentBlockData** outputBlocks );
@@ -763,7 +763,7 @@ class AliHLTComponent : public AliHLTLogging {
    * Fill the EventDoneData structure.
    * The method is redirected to a function provided by the current
    * framework. Function pointers are transferred via the @ref
-   * AliHLTComponentEnvironment structure.
+   * AliHLTAnalysisEnvironment structure.
    */
   int GetEventDoneData( unsigned long size, AliHLTComponentEventDoneData** edd );
 
@@ -1290,7 +1290,7 @@ class AliHLTComponent : public AliHLTLogging {
   static AliHLTComponentHandler* fgpComponentHandler;              //! transient
 
   /** The environment where the component is running in */
-  AliHLTComponentEnvironment fEnvironment;                         // see above
+  AliHLTAnalysisEnvironment fEnvironment;                         // see above
 
   /** Set by ProcessEvent before the processing starts */
   AliHLTEventID_t fCurrentEvent;                                   // see above

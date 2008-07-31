@@ -63,6 +63,7 @@ EXTRA_DIST		= libHLTbase.pkg \
 			  libHLTsim.pkg \
 			  libHLTrec.pkg \
 			  libHLTshuttle.pkg \
+			  libHLTpendolino.pkg \
 			  libAliHLTHOMER.pkg \
 			  libAliHLTUtil.pkg \
 			  libAliHLTSample.pkg \

@@ -93,8 +93,9 @@ AliHLTSystem::AliHLTSystem(AliHLTComponentLogSeverity loglevel)
   SetGlobalLoggingLevel(loglevel);
   SetFrameworkLog(loglevel);
   if (fpComponentHandler) {
-    AliHLTComponentEnvironment env;
-    memset(&env, 0, sizeof(AliHLTComponentEnvironment));
+    AliHLTAnalysisEnvironment env;
+    memset(&env, 0, sizeof(AliHLTAnalysisEnvironment));
+    env.fStructSize=sizeof(AliHLTAnalysisEnvironment);
     env.fAllocMemoryFunc=AliHLTSystem::AllocMemory;
     env.fLoggingFunc=NULL;
     fpComponentHandler->SetEnvironment(&env);

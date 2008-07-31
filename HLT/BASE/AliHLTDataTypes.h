@@ -37,8 +37,13 @@
  *   7       kAliHLTDataTypeComponentStatistics, kAliHLTDataTypeComponentTable,
  *           and AliHLTComponentStatistics have been added for optional
  *           component block statistics
+ *   8       new wrapper interface has been introduced, old wrapper interface
+ *           deprecated but kept for backward compatibility, the PubSub
+ *           interface is going to be compiled independently of AliHLT, new
+ *           interface provided by the libHLTinterface.so
+ *           AliHLTComponentEnvironment -> AliHLTAnalysisEnvironment
  */
-#define ALIHLT_DATA_TYPES_VERSION 7
+#define ALIHLT_DATA_TYPES_VERSION 8
 
 //////////////////////////////////////////////////////////////////////////
 //
@@ -370,7 +375,7 @@ extern "C" {
     kHLTLogAll       = 0x7f,
     /** the default logging filter */
     kHLTLogDefault   = 0x79
-};
+  };
 
   //////////////////////////////////////////////////////////////////////////
   //
@@ -476,10 +481,14 @@ extern "C" {
    * The struct is sent with the SOR and EOR events.
    *
    * @note
-   * Originally, run type was supposed to be a number and part
-   * of the run descriptor. But it was defined as string later.
-   * The string is passed as argument of the AliHLT_C_SetRunDescription
-   * interface function.
+   * The name of the member fRunType is a bit misleading. This is not
+   * the ALICE Run Type given by the ECS to the sub-system. The member
+   * is an internal HLT run type and a combination of the HLT running
+   * mode and the beam type.
+   * <pre>
+   * Bit 0-2:   beam type identifier
+   * Bit 3-31:  HLT mode
+   * </pre>
    */
   struct AliHLTRunDesc
   {
@@ -544,7 +553,7 @@ extern "C" {
   const int gkAliHLTBlockDAttributeCount = 8;
 
   /** field size of fCommonHeader */
-   const int gkAliHLTCommonHeaderCount = 8;
+  const int gkAliHLTCommonHeaderCount = 8;
 
   /** size of the DDL list */
   const int gkAliHLTDDLListSize = 30;
@@ -743,8 +752,8 @@ extern "C" {
 
   /** ESD Tree data specification, origin is 'any' 
    
-   * @ingroup alihlt_component_datatypes
-   */
+  * @ingroup alihlt_component_datatypes
+  */
   extern const AliHLTComponentDataType kAliHLTDataTypeESDTree;
 
   /** AliRoot TreeD data specification, origin is 'any' 
@@ -859,24 +868,122 @@ extern "C" {
 				   const char* message);
 
   /**
-   * @struct AliHLTComponentEnvironment
+   * @struct AliHLTAnalysisEnvironment
    * Running environment for analysis components.
-   * The struct describes function callbacks for 
+   * The struct describes function callbacks for actions to be
+   * carried out by the calling framework, like memory allocation,
+   * property callbecks, logging, etc.
+   *
+   * @ingroup alihlt_wrapper_interface
+   */
+  struct AliHLTAnalysisEnvironment
+  {
+    /** size of the structure */
+    AliHLTUInt32_t fStructSize;
+
+    /** the component parameter given by the framework on creation
+     */
+    void* fParam;
+
+    /** allocated memory
+     */
+    void* (*fAllocMemoryFunc)( void* param, unsigned long size );
+
+    /** allocate an EventDoneData structure.
+     */
+    int (*fGetEventDoneDataFunc)( void* param, AliHLTEventID_t eventID, unsigned long size, AliHLTComponentEventDoneData** edd );
+
+    /** logging callback
+     */
+    AliHLTfctLogging fLoggingFunc;
+  };
+#if 0
+  // I just keep this as a note pad. Has to be added to the end of the structure
+  // future addition already foreseen/envisioned
+  // IMPORTANT: don not just remove the defines as this breaks the binary
+  // compatibility
+  int (*fAllocShmMemoryFunc)( void* param, unsigned long size, AliHLTComponentBlockData* blockLocation );
+#endif
+
+  /**
+   * @struct AliHLTComponentEnvironment
+   * This was the original definition of the running environment.
+   * Due to a bug in the AliRootWrapperSubscriber/SimpleComponentWrapper,
+   * this structure can not be used any longer but is kept for backward
+   * compatibility. 
+   * @note The external interface provided by the libHLTbase is now kept
+   * frozen but should not be used any more. Use the interface provided
+   * by the libHLTinterface library.
+   *
+   * @ingroup alihlt_wrapper_interface_deprecated
    */
   struct AliHLTComponentEnvironment
   {
     AliHLTUInt32_t fStructSize;
     void* fParam;
     void* (*fAllocMemoryFunc)( void* param, unsigned long size );
-#if 0
-    // future addition already foreseen/envisioned
-    // IMPORTANT: don not just remove the defines as this breaks the binary
-    // compatibility
-    int (*fAllocShmMemoryFunc)( void* param, unsigned long size, AliHLTComponentBlockData* blockLocation );
-#endif
     int (*fGetEventDoneDataFunc)( void* param, AliHLTEventID_t eventID, unsigned long size, AliHLTComponentEventDoneData** edd );
     AliHLTfctLogging fLoggingFunc;
   };
+
+  //////////////////////////////////////////////////////////////////////////
+  //
+  // The external interface definition
+  //
+  //////////////////////////////////////////////////////////////////////////
+
+  /**
+   * The component handle.
+   * Used as indification in the outside world.
+   * @ingroup alihlt_wrapper_interface
+   */
+  typedef void* AliHLTComponentHandle;
+
+  /** @ingroup alihlt_wrapper_interface */
+  const AliHLTComponentHandle kEmptyHLTComponentHandle = 0;
+
+  /**
+   * Get a system call of the interface.
+   * @param function signature
+   * @return pointer to system call
+   * @ingroup alihlt_wrapper_interface
+   */
+  typedef void* (*AliHLTAnalysisFctGetInterfaceCall)(const char*);
+
+# define ALIHLTANALYSIS_INTERFACE_LIBRARY  "libHLTinterface.so"
+# define ALIHLTANALYSIS_FCT_GETINTERFACECALL  "AliHLTAnalysisGetInterfaceCall"
+
+  /** @ingroup alihlt_wrapper_interface */
+  typedef int (*AliHLTExtFctInitSystem)( unsigned long version, AliHLTAnalysisEnvironment* externalEnv, unsigned long runNo, const char* runType );
+
+  /** @ingroup alihlt_wrapper_interface */
+  typedef int (*AliHLTExtFctDeinitSystem)();
+
+  /** @ingroup alihlt_wrapper_interface */
+  typedef int (*AliHLTExtFctLoadLibrary)( const char* );
+
+  /** @ingroup alihlt_wrapper_interface */
+  typedef int (*AliHLTExtFctUnloadLibrary)( const char* );
+
+  /** @ingroup alihlt_wrapper_interface */
+  typedef int (*AliHLTExtFctCreateComponent)( const char*, void*, int, const char**, AliHLTComponentHandle*, const char* description );
+
+  /** @ingroup alihlt_wrapper_interface */
+  typedef int (*AliHLTExtFctDestroyComponent)( AliHLTComponentHandle );
+
+  /** @ingroup alihlt_wrapper_interface */
+  typedef int (*AliHLTExtFctProcessEvent)( AliHLTComponentHandle, const AliHLTComponentEventData*, const AliHLTComponentBlockData*, 
+					   AliHLTComponentTriggerData*, AliHLTUInt8_t*,
+					   AliHLTUInt32_t*, AliHLTUInt32_t*, 
+					   AliHLTComponentBlockData**,
+					   AliHLTComponentEventDoneData** );
+
+  /** @ingroup alihlt_wrapper_interface */
+  typedef int (*AliHLTExtFctGetOutputDataType)( AliHLTComponentHandle, AliHLTComponentDataType* );
+
+  /** @ingroup alihlt_wrapper_interface */
+  typedef int (*AliHLTExtFctGetOutputSize)( AliHLTComponentHandle, unsigned long*, double* );
+
 }
 
 //////////////////////////////////////////////////////////////////////////

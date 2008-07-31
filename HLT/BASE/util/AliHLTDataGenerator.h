@@ -14,7 +14,7 @@
     @note   The class is used in Offline (AliRoot) context
 */
 
-#include "AliHLTDataSource.h"
+#include "AliHLTProcessor.h"
 
 /**
  * @class AliHLTDataGenerator
@@ -49,7 +49,7 @@
  *
  * @ingroup alihlt_util_components
  */
-class AliHLTDataGenerator : public AliHLTDataSource  {
+class AliHLTDataGenerator : public AliHLTProcessor  {
  public:
   /** standard constructor */
   AliHLTDataGenerator();
@@ -57,39 +57,23 @@ class AliHLTDataGenerator : public AliHLTDataSource  {
   virtual ~AliHLTDataGenerator();
 
   const char* GetComponentID();
+  void GetInputDataTypes( AliHLTComponentDataTypeList& list);
   AliHLTComponentDataType GetOutputDataType();
   int GetOutputDataTypes(vector<AliHLTComponentDataType>& tgtList);
   void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier );
   AliHLTComponent* Spawn();
 
  protected:
-  /**
-   * Init method.
-   */
   int DoInit( int argc, const char** argv );
-
-  /**
-   * Deinit method.
-   */
   int DoDeinit();
+  int DoEvent( const AliHLTComponentEventData& evtData,
+	       const AliHLTComponentBlockData* blocks, 
+	       AliHLTComponentTriggerData& trigData,
+	       AliHLTUInt8_t* outputPtr, 
+	       AliHLTUInt32_t& size,
+	       AliHLTComponentBlockDataList& outputBlocks );
 
-  /**
-   * Data processing method for the component.
-   * @param evtData       event data structure
-   * @param trigData	  trigger data structure
-   * @param outputPtr	  pointer to target buffer
-   * @param size	  <i>input</i>: size of target buffer
-   *            	  <i>output</i>:size of produced data
-   * @param outputBlocks  list to receive output block descriptors
-   * @return
-   */
-  int GetEvent( const AliHLTComponentEventData& evtData,
-		        AliHLTComponentTriggerData& trigData,
-		        AliHLTUInt8_t* outputPtr, 
-		        AliHLTUInt32_t& size,
-		        vector<AliHLTComponentBlockData>& outputBlocks );
-
-  using AliHLTDataSource::GetEvent;
+  using AliHLTProcessor::DoEvent;
 
   /**
    * Scan one argument and adjacent parameters.
@@ -114,6 +98,13 @@ class AliHLTDataGenerator : public AliHLTDataSource  {
    */
   int ScanSizeArgument(AliHLTUInt32_t &size, const char* arg);
 
+  /**
+   * Scan a float argument.
+   * @param value     target to store the size
+   * @param arg       the argument to scan
+   */
+  int ScanFloatArgument(float &value, const char* arg);
+
  private:
   /** prohibit copy constructor */
   AliHLTDataGenerator(const AliHLTDataGenerator&);
@@ -126,23 +117,28 @@ class AliHLTDataGenerator : public AliHLTDataSource  {
   /** specification */
   AliHLTUInt32_t fSpecification;                                    //! transient
 
+  // mode 1: just fake data independent of the input data
+
   /** the original size size */
   AliHLTUInt32_t fSize;                                             //! transient
-
   /** the manipulated size */
   AliHLTUInt32_t fCurrSize;                                         //! transient
-
-  /** range */
-  AliHLTUInt32_t fRange;                                            //! transient
-
-  /** divisor */
+  /** divisor: each modulo event ignoring the input data size) */
   AliHLTUInt32_t fDivisor;                                          //! transient
-
-  /** subtractor */
-  AliHLTUInt32_t fSubtractor;                                       //! transient
-
+  /** decrement: each modulo event ignoring the input data size */
+  AliHLTUInt32_t fDecrement;                                        //! transient
   /** modulo for size manipulation */
   AliHLTUInt32_t fModulo;                                           //! transient
+
+  // mode 2: generate data depending on input data size
+
+  /** offset (generation of data from input data size) */
+  AliHLTUInt32_t fOffset;                                           //! transient
+  /** multiplier (generation of data from input data size) */
+  float fMultiplier;                                                //! transient
+
+  /** range: +/- *size */
+  float fRange;                                                     //! transient
 
   ClassDef(AliHLTDataGenerator, 0)
 };

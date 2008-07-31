@@ -46,22 +46,6 @@ AliHLTProcessor::~AliHLTProcessor()
   // see header file for class documentation
 }
 
-int AliHLTProcessor::Init( AliHLTComponentEnvironment* comenv, void* environParam, int argc, const char** argv )
-{
-  // see header file for class documentation
-  int iResult=0;
-  iResult=AliHLTComponent::Init(comenv, environParam, argc, argv);
-  return iResult;
-}
-
-int AliHLTProcessor::Deinit()
-{
-  // see header file for class documentation
-  int iResult=0;
-  iResult=AliHLTComponent::Deinit();
-  return iResult;
-}
-
 int AliHLTProcessor::DoProcessing( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
 			    AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
 			    AliHLTUInt32_t& size,

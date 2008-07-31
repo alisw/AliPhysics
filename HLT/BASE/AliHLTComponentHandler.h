@@ -27,7 +27,7 @@
 
 class AliHLTComponent;
 class AliHLTModuleAgent;
-struct AliHLTComponentEnvironment;
+struct AliHLTAnalysisEnvironment;
 struct AliHLTComponentDataType;
 
 /**
@@ -41,7 +41,7 @@ class AliHLTComponentHandler : public AliHLTLogging {
   /** standard constructor */
   AliHLTComponentHandler();
   /** constructor */
-  AliHLTComponentHandler(AliHLTComponentEnvironment* pEnv);
+  AliHLTComponentHandler(AliHLTAnalysisEnvironment* pEnv);
   /** destructor */
   virtual ~AliHLTComponentHandler();
 
@@ -70,15 +70,15 @@ class AliHLTComponentHandler : public AliHLTLogging {
    * The environment mainly consists of function pointers for the integration
    * of the HLT framework into a system like the PubSub online system or
    * AliRoot offline system.
-   * @param pEnv    pointer to @ref AliHLTComponentEnvironment structure
+   * @param pEnv    pointer to @ref AliHLTAnalysisEnvironment structure
    * @return none
    */
-  void SetEnvironment(AliHLTComponentEnvironment* pEnv);
+  void SetEnvironment(AliHLTAnalysisEnvironment* pEnv);
 
   /**
    * Get the current environment.
    */
-  const AliHLTComponentEnvironment* GetEnvironment() const {return &fEnvironment;}
+  const AliHLTAnalysisEnvironment* GetEnvironment() const {return &fEnvironment;}
 
   /**
    * Set library mode.
@@ -336,7 +336,7 @@ class AliHLTComponentHandler : public AliHLTLogging {
   /** list of libraries */
   vector<AliHLTLibHandle> fLibraryList;                            // see above 
   /** running environment for the component */
-  AliHLTComponentEnvironment fEnvironment;                         // see above 
+  AliHLTAnalysisEnvironment fEnvironment;                         // see above 
   /** list of owned components, deleted at termination of the handler */
   vector<AliHLTComponent*> fOwnedComponents;                       // see above 
   /** library mode effects all loaded libraries until a new mode is set */

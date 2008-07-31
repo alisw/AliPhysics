@@ -2,8 +2,9 @@
 
 #ifndef ALIHLT_C_COMPONENT_WARAPPERINTERFACE_H
 #define ALIHLT_C_COMPONENT_WARAPPERINTERFACE_H
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
 
 /** @file   AliHLT_C_Component_WrapperInterface.h
     @author Matthias Richter, Timm Steinbeck
@@ -13,16 +14,12 @@
 */
 
 /** 
- * @defgroup alihlt_wrapper_interface The HLT wrapper interface
- * The wrapper interface is a pure C interface which allows to use the 
- * analysis components in external applications. The interface is utilized
- * to bind the analysis code to the PubSub framework. 
- *
- * \image html PubSub_WrapperComponent.png "Wrapper interface"
- *
- * CDB handling: The interface initializes the CDB from the path found
- * in the environment variable ALIHLT_HCDBDIR. Default path is
- * <tt>$ALICE_ROOT</tt>.
+ * @defgroup alihlt_wrapper_interface_deprecated First version of the HLT wrapper
+ * interface.
+ * This is the first version of the wrapper interface and became deprecated in
+ * July 2008. See @ref alihlt_wrapper_interface for current interface
+ * description. The interface is fixed and can not be extended.
+ * @ingroup alihlt_wrapper_interface
  */
 
 #include <AliHLTDataTypes.h>
@@ -47,61 +44,49 @@ extern "C" {
 
 /**
  * 
- * @ingroup alihlt_wrapper_interface
- */
-typedef void* AliHLTComponentHandle;
-
-/**
- * 
- * @ingroup alihlt_wrapper_interface
- */
-const AliHLTComponentHandle kEmptyHLTComponentHandle = 0;
-
-/**
- * 
- * @ingroup alihlt_wrapper_interface
+ * @ingroup alihlt_wrapper_interface_deprecated
  */
 int AliHLT_C_Component_InitSystem( AliHLTComponentEnvironment* environ );
 
 /**
  * 
- * @ingroup alihlt_wrapper_interface
+ * @ingroup alihlt_wrapper_interface_deprecated
  */
 int AliHLT_C_Component_DeinitSystem();
 
 /**
  * 
- * @ingroup alihlt_wrapper_interface
+ * @ingroup alihlt_wrapper_interface_deprecated
  */
 int AliHLT_C_Component_LoadLibrary( const char* libraryPath );
 
 /**
  * 
- * @ingroup alihlt_wrapper_interface
+ * @ingroup alihlt_wrapper_interface_deprecated
  */
 int AliHLT_C_Component_UnloadLibrary( const char* libraryPath );
 
 /**
  * 
- * @ingroup alihlt_wrapper_interface
+ * @ingroup alihlt_wrapper_interface_deprecated
  */
 int AliHLT_C_CreateComponent( const char* componentType, void* environ_param, int argc, const char** argv, AliHLTComponentHandle* handle );
 
 /**
  * 
- * @ingroup alihlt_wrapper_interface
+ * @ingroup alihlt_wrapper_interface_deprecated
  */
 void AliHLT_C_DestroyComponent( AliHLTComponentHandle );
 
 /**
  * 
- * @ingroup alihlt_wrapper_interface
+ * @ingroup alihlt_wrapper_interface_deprecated
  */
 int AliHLT_C_SetRunDescription(const AliHLTRunDesc* desc, const char* runType);
 
 /**
  * 
- * @ingroup alihlt_wrapper_interface
+ * @ingroup alihlt_wrapper_interface_deprecated
  */
 int AliHLT_C_ProcessEvent( AliHLTComponentHandle handle, const AliHLTComponent_EventData* evtData, const AliHLTComponent_BlockData* blocks, 
                            AliHLTComponent_TriggerData* trigData, AliHLTUInt8_t* outputPtr,
@@ -111,13 +96,13 @@ int AliHLT_C_ProcessEvent( AliHLTComponentHandle handle, const AliHLTComponent_E
 
 /**
  * 
- * @ingroup alihlt_wrapper_interface
+ * @ingroup alihlt_wrapper_interface_deprecated
  */
 int AliHLT_C_GetOutputDataType( AliHLTComponentHandle, AliHLTComponent_DataType* dataType );
 
 /**
  * 
- * @ingroup alihlt_wrapper_interface
+ * @ingroup alihlt_wrapper_interface_deprecated
  */
 int AliHLT_C_GetOutputSize( AliHLTComponentHandle, unsigned long* constBase, double* inputMultiplier );
 

@@ -1,21 +1,21 @@
 // $Id$
 
-/**************************************************************************
- * This file is property of and copyright by the ALICE HLT Project        * 
- * ALICE Experiment at CERN, All rights reserved.                         *
- *                                                                        *
- * Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
- *                  Timm Steinbeck <timm@kip.uni-heidelberg.de>           *
- *                  for The ALICE HLT Project.                            *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+//**************************************************************************
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//*                                                                        *
+//* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
+//*                  Timm Steinbeck <timm@kip.uni-heidelberg.de>           *
+//*                  for The ALICE HLT Project.                            *
+//*                                                                        *
+//* Permission to use, copy, modify and distribute this software and its   *
+//* documentation strictly for non-commercial purposes is hereby granted   *
+//* without fee, provided that the above copyright notice appears in all   *
+//* copies and that both the copyright notice and this permission notice   *
+//* appear in the supporting documentation. The authors make no claims     *
+//* about the suitability of this software for any purpose. It is          *
+//* provided "as is" without express or implied warranty.                  *
+//**************************************************************************
 
 /** @file   AliHLT_C_Component_WrapperInterface.cxx
     @author Matthias Richter, Timm Steinbeck
@@ -42,19 +42,25 @@ int AliHLT_C_Component_InitSystem( AliHLTComponentEnvironment* comenv )
     {
       return EINPROGRESS;
     }
-  
-  AliHLTComponentEnvironment internalEnv;
-  memset(&internalEnv, 0, sizeof(internalEnv));
-  if (comenv) {
-    memcpy(&internalEnv, comenv, sizeof(internalEnv)<comenv->fStructSize?sizeof(internalEnv):comenv->fStructSize);
-  }
-  internalEnv.fStructSize=sizeof(internalEnv);
 
+  // July 2008  
   // Due to a bug in the SimpleComponentWrapper and AliRootWrapperSubscriber
   // the fStructSize member was never initialized and we can not use this
-  // method of synchronizing different versions
-  //gComponentHandler_C = new AliHLTComponentHandler(&internalEnv);
-  gComponentHandler_C = new AliHLTComponentHandler(comenv);
+  // method of synchronizing different versions.
+  // This interface is now deprecated, only kept for backward compatibility.
+  // All function pointers are explicitely mapped to the new structure.
+
+  AliHLTAnalysisEnvironment mappedEnv;
+  memset(&mappedEnv, 0, sizeof(mappedEnv));
+  mappedEnv.fStructSize=sizeof(mappedEnv);
+  if (comenv) {
+    mappedEnv.fParam               = comenv->fParam;
+    mappedEnv.fAllocMemoryFunc     = comenv->fAllocMemoryFunc;
+    mappedEnv.fGetEventDoneDataFunc= comenv->fGetEventDoneDataFunc;
+    mappedEnv.fLoggingFunc         = comenv->fLoggingFunc;
+  }
+
+  gComponentHandler_C = new AliHLTComponentHandler(&mappedEnv);
   if ( !gComponentHandler_C )
     return EFAULT;
   gComponentHandler_C->InitAliLogTrap(gComponentHandler_C);
@@ -108,7 +114,7 @@ int AliHLT_C_CreateComponent( const char* componentType, void* environParam, int
   if (ret>=0 && comp) {
     comp->InitCDB(cdbPath, gComponentHandler_C);
     comp->SetRunDescription(&gRunDesc, gRunType);
-    const AliHLTComponentEnvironment* comenv=gComponentHandler_C->GetEnvironment();
+    const AliHLTAnalysisEnvironment* comenv=gComponentHandler_C->GetEnvironment();
     ret=comp->Init(comenv, environParam, argc, argv);
   }
   *handle = reinterpret_cast<AliHLTComponentHandle>( comp );

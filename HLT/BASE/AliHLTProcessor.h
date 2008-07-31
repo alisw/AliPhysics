@@ -43,11 +43,6 @@ class AliHLTProcessor : public AliHLTComponent {
   /** standard destructor */
   virtual ~AliHLTProcessor();
 
-  /* depricated */
-  int Init( AliHLTComponentEnvironment* environ, void* environParam, int argc, const char** argv );
-  /* depricated */
-  int Deinit();
-
   /**
    * Event processing function.
    * The method is called by the framework to process one event. After 

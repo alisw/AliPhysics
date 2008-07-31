@@ -1,20 +1,20 @@
 // $Id$
 
-/**************************************************************************
- * This file is property of and copyright by the ALICE HLT Project        * 
- * ALICE Experiment at CERN, All rights reserved.                         *
- *                                                                        *
- * Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
- *                  for The ALICE HLT Project.                            *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+//**************************************************************************
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//*                                                                        *
+//* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
+//*                  for The ALICE HLT Project.                            *
+//*                                                                        *
+//* Permission to use, copy, modify and distribute this software and its   *
+//* documentation strictly for non-commercial purposes is hereby granted   *
+//* without fee, provided that the above copyright notice appears in all   *
+//* copies and that both the copyright notice and this permission notice   *
+//* appear in the supporting documentation. The authors make no claims     *
+//* about the suitability of this software for any purpose. It is          *
+//* provided "as is" without express or implied warranty.                  *
+//**************************************************************************
 
 /** @file   AliHLTDataGenerator.cxx
     @author Matthias Richter
@@ -39,15 +39,17 @@ ClassImp(AliHLTDataGenerator)
 
 AliHLTDataGenerator::AliHLTDataGenerator()
   :
-  AliHLTDataSource(),
+  AliHLTProcessor(),
   fDataType(kAliHLTVoidDataType),
   fSpecification(~(AliHLTUInt32_t)0),
   fSize(0),
   fCurrSize(0),
-  fRange(0),
   fDivisor(0),
-  fSubtractor(0),
-  fModulo(0)
+  fDecrement(0),
+  fModulo(0),
+  fOffset(0),
+  fMultiplier(0.0),
+  fRange(0.0)
 {
   // see header file for class documentation
   // or
@@ -71,6 +73,13 @@ const char* AliHLTDataGenerator::GetComponentID()
   return "DataGenerator";
 }
 
+void AliHLTDataGenerator::GetInputDataTypes(AliHLTComponentDataTypeList& list)
+{
+  // see header file for class documentation
+  list.clear();
+  list.push_back(kAliHLTAnyDataType);
+}
+
 AliHLTComponentDataType AliHLTDataGenerator::GetOutputDataType()
 {
   // see header file for class documentation
@@ -89,8 +98,11 @@ int AliHLTDataGenerator::GetOutputDataTypes(vector<AliHLTComponentDataType>& tgt
 void AliHLTDataGenerator::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
 {
   // see header file for class documentation
-  constBase=fCurrSize+fRange;
-  inputMultiplier=1.0;
+  if (fSize>0)
+    constBase=(unsigned long)(fCurrSize*(1+fRange));
+  else
+    constBase=(unsigned long)(fOffset*(1+fRange));
+  inputMultiplier=fMultiplier;
 }
 
 AliHLTComponent* AliHLTDataGenerator::Spawn()
@@ -142,7 +154,7 @@ int AliHLTDataGenerator::DoInit( int argc, const char** argv )
       // -range
     } else if (argument.CompareTo("-range")==0) {
       if ((bMissingParam=(++i>=argc))) break;
-      if ((iResult=ScanSizeArgument(fRange, argv[i]))==-ERANGE) {
+      if ((iResult=ScanFloatArgument(fRange, argv[i]))==-ERANGE) {
 	HLTError("wrong parameter for argument %s, number expected", argument.Data());
 	iResult=-EINVAL;
       }
@@ -153,10 +165,10 @@ int AliHLTDataGenerator::DoInit( int argc, const char** argv )
 	HLTError("wrong parameter for argument %s, number expected", argument.Data());
 	iResult=-EINVAL;
       }
-      // -offset
-    } else if (argument.CompareTo("-offset")==0) {
+      // -decrement
+    } else if (argument.CompareTo("-decrement")==0) {
       if ((bMissingParam=(++i>=argc))) break;
-      if ((iResult=ScanSizeArgument(fSubtractor, argv[i]))==-ERANGE) {
+      if ((iResult=ScanSizeArgument(fDecrement, argv[i]))==-ERANGE) {
 	HLTError("wrong parameter for argument %s, number expected", argument.Data());
 	iResult=-EINVAL;
       }
@@ -164,6 +176,20 @@ int AliHLTDataGenerator::DoInit( int argc, const char** argv )
     } else if (argument.CompareTo("-modulo")==0) {
       if ((bMissingParam=(++i>=argc))) break;
       if ((iResult=ScanSizeArgument(fModulo, argv[i]))==-ERANGE) {
+	HLTError("wrong parameter for argument %s, number expected", argument.Data());
+	iResult=-EINVAL;
+      }
+      // -offset
+    } else if (argument.CompareTo("-offset")==0) {
+      if ((bMissingParam=(++i>=argc))) break;
+      if ((iResult=ScanSizeArgument(fOffset, argv[i]))==-ERANGE) {
+	HLTError("wrong parameter for argument %s, number expected", argument.Data());
+	iResult=-EINVAL;
+      }
+      // -multiplier
+    } else if (argument.CompareTo("-multiplier")==0) {
+      if ((bMissingParam=(++i>=argc))) break;
+      if ((iResult=ScanFloatArgument(fMultiplier, argv[i]))==-ERANGE) {
 	HLTError("wrong parameter for argument %s, number expected", argument.Data());
 	iResult=-EINVAL;
       }
@@ -217,6 +243,24 @@ int AliHLTDataGenerator::ScanSizeArgument(AliHLTUInt32_t &size, const char* arg)
   return iResult;
 }
 
+int AliHLTDataGenerator::ScanFloatArgument(float &value, const char* arg)
+{
+  // see header file for class documentation
+  int iResult=0;
+  if (arg) {
+    TString parameter(arg);
+    parameter.Remove(TString::kLeading, ' '); // remove all blanks
+    if (parameter.IsFloat()) {
+      value=(AliHLTUInt32_t)parameter.Atof();
+    } else {
+      iResult=-ERANGE;
+    }
+  } else {
+    iResult=-EINVAL;
+  }
+  return iResult;
+}
+
 int AliHLTDataGenerator::ScanArgument(int argc, const char** argv)
 {
   // see header file for class documentation
@@ -235,16 +279,47 @@ int AliHLTDataGenerator::DoDeinit()
   return iResult;
 }
 
-int AliHLTDataGenerator::GetEvent( const AliHLTComponentEventData& /*evtData*/,
-				   AliHLTComponentTriggerData& /*trigData*/,
-				   AliHLTUInt8_t* outputPtr, 
-				   AliHLTUInt32_t& size,
-				   vector<AliHLTComponentBlockData>& outputBlocks )
+int AliHLTDataGenerator::DoEvent( const AliHLTComponentEventData& evtData,
+				  const AliHLTComponentBlockData* blocks, 
+				  AliHLTComponentTriggerData& /*trigData*/,
+				  AliHLTUInt8_t* outputPtr, 
+				  AliHLTUInt32_t& size,
+				  AliHLTComponentBlockDataList& outputBlocks )
 {
   // see header file for class documentation
   int iResult=0;
-  AliHLTUInt32_t generated=fCurrSize;
-  if (generated<=size ) {
+
+  AliHLTUInt32_t space=size;
+  size=0;
+  AliHLTUInt32_t generated=0;
+  if (fSize>0) {
+    // mode 1: fake independent of input data size
+    generated=fCurrSize;
+    if (fModulo>0 && ((GetEventCount()+1)%fModulo)==0) {
+      // manipulate the size
+      if (fDivisor>0) {
+	fCurrSize/=fDivisor;
+	if (fCurrSize==0) fCurrSize=fSize; //reset
+      }
+      if (fDecrement>0) {
+	if (fCurrSize<fDecrement) {
+	  fCurrSize=fSize; // reset
+	} else {
+	  fCurrSize-=fDecrement;
+	}
+      }
+      HLTDebug("manipulated output size: %d", fCurrSize);
+    }
+
+  } else {
+    for (unsigned int i=0; i<evtData.fBlockCnt; i++) {
+      generated+=blocks[i].fSize;
+    }
+    generated=(AliHLTUInt32_t)(generated*fMultiplier);
+    generated+=fOffset;
+  }
+
+  if (generated<=space ) {
     AliHLTComponentBlockData bd;
     FillBlockData(bd);
     bd.fPtr=outputPtr;
@@ -254,23 +329,6 @@ int AliHLTDataGenerator::GetEvent( const AliHLTComponentEventData& /*evtData*/,
     bd.fSpecification=fSpecification;
     outputBlocks.push_back(bd);
     size=generated;
-
-    if (fModulo>0 && ((GetEventCount()+1)%fModulo)==0) {
-      // manipulate the size
-      if (fDivisor>0) {
-	fCurrSize/=fDivisor;
-	if (fCurrSize==0) fCurrSize=fSize; //reset
-      }
-      if (fSubtractor>0) {
-	if (fCurrSize<fSubtractor) {
-	  fCurrSize=fSize; // reset
-	} else {
-	  fCurrSize-=fSubtractor;
-	}
-      }
-      HLTDebug("manipulated output size: %d", fCurrSize);
-    }
-
   } else {
     iResult=-ENOSPC;
   }
