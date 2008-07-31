@@ -54,6 +54,8 @@ AliUA1JetFinderV1::~AliUA1JetFinderV1()
 
 {
   // destructor
+  delete fLego;
+  fLego = 0;
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -825,12 +827,12 @@ void AliUA1JetFinderV1::Init()
 {
   // initializes some variables
   AliUA1JetHeaderV1* header = (AliUA1JetHeaderV1*) fHeader;
-   // book lego
   fLego = new
     TH2F("legoH","eta-phi",
 	 header->GetLegoNbinEta(), header->GetLegoEtaMin(),
 	 header->GetLegoEtaMax(),  header->GetLegoNbinPhi(),
 	 header->GetLegoPhiMin(),  header->GetLegoPhiMax());
-
+  // Do not store in current dir
+  fLego->SetDirectory(0);
 
 }

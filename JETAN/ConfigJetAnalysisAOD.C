@@ -4,15 +4,13 @@ AliJetFinder*  ConfigJetAnalysis()
     // Configuration goes here
     // 
     printf("ConfigJetAnalysis() \n");
-    Printf("For MC events");
-    AliJetKineReaderHeader *jrh = new AliJetKineReaderHeader();
-    jrh->SetComment("MC full Kinematics");
-    jrh->SetFastSimTPC(kFALSE);
-    jrh->SetFastSimEMCAL(kFALSE);
+    printf("Reading AODs");
+    AliJetAODReaderHeader *jrh = new AliJetAODReaderHeader();
+    jrh->SetComment("AOD Reader");
     jrh->SetPtCut(0.);
-
+    jrh->SetTestFilterMask(1<<0);
     // Define reader and set its header
-    AliJetKineReader *er = new AliJetKineReader();
+    AliJetAODReader *er = new AliJetAODReader();
     er->SetReaderHeader(jrh);
    
  
@@ -32,5 +30,6 @@ AliJetFinder*  ConfigJetAnalysis()
     jetFinder = new AliUA1JetFinderV1();
     jetFinder->SetJetHeader(jh);
     jetFinder->SetJetReader(er);
+    //
     return jetFinder;
 }

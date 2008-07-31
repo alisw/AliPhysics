@@ -31,8 +31,10 @@ AliJetFinder*  ConfigJetAnalysis()
     jetFinder = new AliUA1JetFinderV1();
     jetFinder->SetJetHeader(jh);
     jetFinder->SetJetReader(er);
+    /*
     jetFinder->SetPlotMode(kTRUE);
     jetFinder->SetOutputFile("jets.root");
+    */
     //
     return jetFinder;
 }
