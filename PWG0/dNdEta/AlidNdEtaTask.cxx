@@ -135,6 +135,15 @@ void AlidNdEtaTask::CreateOutputObjects()
 
   Printf("AlidNdEtaTask::CreateOutputObjects");
 
+  if (fOnlyPrimaries)
+    Printf("WARNING: Processing only primaries (MC information used). This is for systematical checks only.");
+
+  if (fUseMCKine)
+    Printf("WARNING: Using MC kine information. This is for systematical checks only.");
+
+  if (fUseMCVertex)
+    Printf("WARNING: Replacing vertex by MC vertex. This is for systematical checks only.");
+
   fOutput = new TList;
   fOutput->SetOwner();
 
@@ -271,10 +280,7 @@ void AlidNdEtaTask::Exec(Option_t*)
       genHeader->PrimaryVertex(vtxMC);
 
       if (fUseMCVertex)
-      {
-        Printf("WARNING: Replacing vertex by MC vertex. This is for systematical checks only.");
         vtx[2] = vtxMC[2];
-      }
 
       stack = mcEvent->Stack();
       if (!stack)
@@ -302,9 +308,6 @@ void AlidNdEtaTask::Exec(Option_t*)
       labelArr = new Int_t[mult->GetNumberOfTracklets()];
       etaArr = new Float_t[mult->GetNumberOfTracklets()];
       ptArr = new Float_t[mult->GetNumberOfTracklets()];
-
-      if (fOnlyPrimaries)
-        Printf("Processing only primaries (MC information used). This is for systematical checks only.");
 
       // get multiplicity from ITS tracklets
       for (Int_t i=0; i<mult->GetNumberOfTracklets(); ++i)
@@ -358,12 +361,6 @@ void AlidNdEtaTask::Exec(Option_t*)
       labelArr = new Int_t[nGoodTracks];
       etaArr = new Float_t[nGoodTracks];
       ptArr = new Float_t[nGoodTracks];
-
-      if (fOnlyPrimaries)
-        Printf("WARNING: Processing only primaries (MC information used). This is for systematical checks only.");
-
-      if (fUseMCKine)
-        Printf("WARNING: Using MC kine information. This is for systematical checks only.");
 
       // loop over esd tracks
       for (Int_t i=0; i<nGoodTracks; i++)

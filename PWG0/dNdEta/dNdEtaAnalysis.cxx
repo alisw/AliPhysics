@@ -209,8 +209,8 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
 
   if (correction && correctionType != AlidNdEtaCorrection::kNone)
   {
-    TH3F* trackCorr = fData->GetTrackCorrection()->GetCorrectionHistogram();
-    TH2F* eventCorr = fData->GetEventCorrection()->GetCorrectionHistogram();
+    TH3* trackCorr = fData->GetTrackCorrection()->GetCorrectionHistogram();
+    TH2* eventCorr = fData->GetEventCorrection()->GetCorrectionHistogram();
 
     if (correctionType >= AlidNdEtaCorrection::kTrack2Particle)
       trackCorr->Multiply(correction->GetTrack2ParticleCorrection()->GetTrackCorrection()->GetCorrectionHistogram());
@@ -307,10 +307,10 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
 
   fData->PrintInfo(ptCut);
 
-  TH3F* dataHist = fData->GetTrackCorrection()->GetGeneratedHistogram();
+  TH3* dataHist = fData->GetTrackCorrection()->GetGeneratedHistogram();
 
   // integrate multiplicity axis out (include under/overflow bins!!!)
-  TH2F* tmp = fData->GetEventCorrection()->GetGeneratedHistogram();
+  TH2* tmp = fData->GetEventCorrection()->GetGeneratedHistogram();
 
   TH1D* vertexHist = (TH1D*) tmp->ProjectionX("_px", 0, tmp->GetNbinsY() + 1, "e");
 

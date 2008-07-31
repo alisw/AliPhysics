@@ -100,7 +100,7 @@ AliCorrectionMatrix3D::AliCorrectionMatrix3D(const Char_t* name, const Char_t* t
   delete[] binLimitsY;
 }
 
-AliCorrectionMatrix3D::AliCorrectionMatrix3D(const Char_t* name, const Char_t* title, TH3F* hBinning)
+AliCorrectionMatrix3D::AliCorrectionMatrix3D(const Char_t* name, const Char_t* title, TH3* hBinning)
   : AliCorrectionMatrix(name, title)
 {
   // constructor with variable bin sizes (uses binning of hBinning)
@@ -162,21 +162,21 @@ AliCorrectionMatrix3D::~AliCorrectionMatrix3D()
 }
 
 //____________________________________________________________________
-TH3F* AliCorrectionMatrix3D::GetGeneratedHistogram()
+TH3* AliCorrectionMatrix3D::GetGeneratedHistogram()
 {
   // return generated histogram casted to correct type
   return dynamic_cast<TH3F*> (fhGene);
 }
 
 //____________________________________________________________________
-TH3F* AliCorrectionMatrix3D::GetMeasuredHistogram()
+TH3* AliCorrectionMatrix3D::GetMeasuredHistogram()
 {
   // return measured histogram casted to correct type
   return dynamic_cast<TH3F*> (fhMeas);
 }
 
 //____________________________________________________________________
-TH3F* AliCorrectionMatrix3D::GetCorrectionHistogram()
+TH3* AliCorrectionMatrix3D::GetCorrectionHistogram()
 {
   // return correction histogram casted to correct type
   return dynamic_cast<TH3F*> (fhCorr);
@@ -190,13 +190,13 @@ AliCorrectionMatrix2D* AliCorrectionMatrix3D::Get2DCorrection(Char_t* opt, Float
   TString option = opt;
 
   // unzoom
-  fhMeas->GetXaxis()->UnZoom();
-  fhMeas->GetYaxis()->UnZoom();
-  fhMeas->GetZaxis()->UnZoom();
+  fhMeas->GetXaxis()->SetRange(0, 0);
+  fhMeas->GetYaxis()->SetRange(0, 0);
+  fhMeas->GetZaxis()->SetRange(0, 0);
 
-  fhGene->GetXaxis()->UnZoom();
-  fhGene->GetYaxis()->UnZoom();
-  fhGene->GetZaxis()->UnZoom();
+  fhGene->GetXaxis()->SetRange(0, 0);
+  fhGene->GetYaxis()->SetRange(0, 0);
+  fhGene->GetZaxis()->SetRange(0, 0);
 
   if (aMin<aMax) {
     if (option.Contains("xy") || option.Contains("yx")) {
@@ -238,19 +238,19 @@ AliCorrectionMatrix2D* AliCorrectionMatrix3D::Get2DCorrection(Char_t* opt, Float
   corr2D->Divide();
 
   // unzoom
-  fhMeas->GetXaxis()->UnZoom();
-  fhMeas->GetYaxis()->UnZoom();
-  fhMeas->GetZaxis()->UnZoom();
+  fhMeas->GetXaxis()->SetRange(0, 0);
+  fhMeas->GetYaxis()->SetRange(0, 0);
+  fhMeas->GetZaxis()->SetRange(0, 0);
 
-  fhGene->GetXaxis()->UnZoom();
-  fhGene->GetYaxis()->UnZoom();
-  fhGene->GetZaxis()->UnZoom();
+  fhGene->GetXaxis()->SetRange(0, 0);
+  fhGene->GetYaxis()->SetRange(0, 0);
+  fhGene->GetZaxis()->SetRange(0, 0);
 
   return corr2D;
 }
 
 //____________________________________________________________________
-TH1F* AliCorrectionMatrix3D::Get1DCorrectionHistogram(Char_t* opt, Float_t aMin1, Float_t aMax1, Float_t aMin2, Float_t aMax2)
+TH1* AliCorrectionMatrix3D::Get1DCorrectionHistogram(Char_t* opt, Float_t aMin1, Float_t aMax1, Float_t aMin2, Float_t aMax2)
 {
   // returns a 1D projection of this correction
   AliDebug(AliLog::kWarning, Form("WARNING: test"));
@@ -268,7 +268,7 @@ TH1F* AliCorrectionMatrix3D::Get1DCorrectionHistogram(Char_t* opt, Float_t aMin1
     corr2D = Get2DCorrection("yz",aMin1,aMax1);
     return corr2D->Get1DCorrectionHistogram("x",aMin2,aMax2);
   }  
-  AliDebug(AliLog::kWarning, Form("WARNING: unknown projection option %s (should be x,y or z)", opt));  
+  AliDebug(AliLog::kWarning, Form("WARNING: unknown projection option %s (should be x,y or z)", opt));
   
   return 0;
 }
@@ -327,7 +327,7 @@ Int_t AliCorrectionMatrix3D::CheckEmptyBins(Float_t xmin, Float_t xmax, Float_t 
   // counts the number of empty Bins in a given region
   //
 
-  TH3F* hist = GetGeneratedHistogram();
+  TH3* hist = GetGeneratedHistogram();
   if (!hist)
     return -1;
 
@@ -346,16 +346,16 @@ Int_t AliCorrectionMatrix3D::CheckEmptyBins(Float_t xmin, Float_t xmax, Float_t 
 }
 
 //____________________________________________________________________
-TH1F* AliCorrectionMatrix3D::PlotBinErrors(Float_t xmin, Float_t xmax, Float_t ymin, Float_t ymax, Float_t zmin, Float_t zmax)
+TH1* AliCorrectionMatrix3D::PlotBinErrors(Float_t xmin, Float_t xmax, Float_t ymin, Float_t ymax, Float_t zmin, Float_t zmax)
 {
   //
   // makes a 1d plots of the relative bin errors
   //
 
-  TH3F* hist = GetCorrectionHistogram();
+  TH3* hist = GetCorrectionHistogram();
   if (!hist)
     return 0;
-    
+
   TH1F* target = new TH1F("relerrors", "relerrors", 100, 0, 10);
 
   for (Int_t x=hist->GetXaxis()->FindBin(xmin); x<=hist->GetXaxis()->FindBin(xmax); ++x)

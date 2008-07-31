@@ -87,7 +87,7 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
     gROOT->Macro(compileTaskName);
 
   AliPWG0Helper::AnalysisMode analysisMode = AliPWG0Helper::kSPD;
-  AliPWG0Helper::Trigger      trigger = AliPWG0Helper::kMB1;
+  AliPWG0Helper::Trigger      trigger      = AliPWG0Helper::kMB1;
 
   AliPWG0Helper::PrintConf(analysisMode, trigger);
 

@@ -674,51 +674,6 @@ void ptSpectrum()
   canvas->SaveAs("ptSpectrum.eps");
 }
 
-void ptCutoff()
-{
-  gSystem->Load("libPWG0base");
-
-  TFile::Open("correction_map.root");
-  AlidNdEtaCorrection* dNdEtaCorrection = new AlidNdEtaCorrection("dndeta_correction", "dndeta_correction");
-  dNdEtaCorrection->LoadHistograms();
-
-  dNdEtaCorrection->GetMeasuredFraction(AlidNdEtaCorrection::kINEL, 0.3, -100, kTRUE);
-
-  TH1* hist = dynamic_cast<TH1*> (gROOT->FindObject("generated_pt")->Clone("ptcutoff"));
-
-  hist->GetXaxis()->SetRangeUser(0, 0.9999);
-  hist->SetMinimum(0);
-
-  hist->SetTitle("Generated Particles");
-  Prepare1DPlot(hist);
-
-  TCanvas* canvas = new TCanvas("ptCutoff", "ptCutoff", 700, 500);
-  hist->DrawCopy();
-
-  TLine* line = new TLine(0.3, 0 - hist->GetMaximum() * 0, 0.3, hist->GetMaximum() * 1.1);
-  line->SetLineWidth(3);
-  line->SetLineColor(kRed);
-  line->Draw();
-
-  canvas->SaveAs("ptCutoff.gif");
-  canvas->SaveAs("ptCutoff.eps");
-
-  TH1F* factor = new TH1F("factor", ";#eta;correction factor", 20, -1, 1.000001);
-  factor->SetLineWidth(2);
-  for (Float_t eta = -0.95; eta<1; eta += 0.1)
-    factor->Fill(eta, 1.0 / dNdEtaCorrection->GetMeasuredFraction(AlidNdEtaCorrection::kINEL, 0.3, eta, kFALSE));
-
-  TCanvas* canvas = new TCanvas("ptCutoff_factor", "ptCutoff_factor", 700, 500);
-  InitPad();
-
-  Prepare1DPlot(factor);
-  factor->GetYaxis()->SetRangeUser(1, 2);
-  factor->GetYaxis()->SetTitleOffset(1);
-  factor->Draw();
-
-  canvas->SaveAs("ptCutoff_factor.eps");
-}
-
 void TriggerBiasVtxRecon(const char* fileName = "correction_map.root", const char* folder = "dndeta_correction")
 {
   gSystem->Load("libPWG0base");
@@ -999,22 +954,22 @@ void Correction1DCreatePlots(const char* fileName = "correction_map.root", const
   meas->GetZaxis()->SetRangeUser(0.3, upperPtLimit);
   gene->GetYaxis()->SetRangeUser(-0.8, 0.8);
   meas->GetYaxis()->SetRangeUser(-0.8, 0.8);
-  AliPWG0Helper::CreateDividedProjections(gene, meas, "x", kTRUE);
+  AliPWG0Helper::CreateDividedProjections(gene, meas, "x", kFALSE);
   gene->GetYaxis()->SetRange(0, 0);
   meas->GetYaxis()->SetRange(0, 0);
 
-  gene->GetXaxis()->SetRangeUser(-10, 10);
-  meas->GetXaxis()->SetRangeUser(-10, 10);
-  AliPWG0Helper::CreateDividedProjections(gene, meas, "y", kTRUE);
+  gene->GetXaxis()->SetRangeUser(-9.9, 9.9);
+  meas->GetXaxis()->SetRangeUser(-9.9, 9.9);
+  AliPWG0Helper::CreateDividedProjections(gene, meas, "y", kFALSE);
   gene->GetZaxis()->SetRange(0, 0);
   meas->GetZaxis()->SetRange(0, 0);
 
   gene->GetYaxis()->SetRangeUser(-0.8, 0.8);
   meas->GetYaxis()->SetRangeUser(-0.8, 0.8);
-  AliPWG0Helper::CreateDividedProjections(gene, meas, "z", kTRUE);
+  AliPWG0Helper::CreateDividedProjections(gene, meas, "z", kFALSE);
 }
 
-void Correction1D(Int_t correctionType = 0, const char* fileName = "correction_map.root", const char* folder = "dndeta_correction", Float_t upperPtLimit = 9.9)
+TCanvas* Correction1D(Int_t correctionType = 0, const char* fileName = "correction_map.root", const char* folder = "dndeta_correction", Float_t upperPtLimit = 9.9)
 {
   gSystem->Load("libPWG0base");
 
@@ -1035,28 +990,44 @@ void Correction1D(Int_t correctionType = 0, const char* fileName = "correction_m
   corrX->GetYaxis()->SetTitle("correction factor");
   corrY->GetYaxis()->SetTitle("correction factor");
   corrZ->GetYaxis()->SetTitle("correction factor");
+  corrX->GetYaxis()->SetTitleOffset(1.7);
+  corrY->GetYaxis()->SetTitleOffset(1.7);
+  corrZ->GetYaxis()->SetTitleOffset(1.7);
+  corrX->GetYaxis()->SetRangeUser(0.8, 1.5);
+  corrY->GetYaxis()->SetRangeUser(0.8, 1.5);
+  corrZ->GetYaxis()->SetRangeUser(0.8, 1.5);
 
-  corrZ->GetXaxis()->SetRangeUser(0, upperPtLimit);
+  corrZ->GetXaxis()->SetRangeUser(0.11, upperPtLimit);
 
   TString canvasName;
-  canvasName.Form("Correction1D_%s", folder);
+  canvasName.Form(Form("Correction1D_%d_%s_%f", correctionType, fileName, upperPtLimit));
   TCanvas* canvas = new TCanvas(canvasName, canvasName, 1200, 400);
   canvas->Divide(3, 1);
+
+  TLatex* Tl = new TLatex;
+  Tl->SetTextSize(0.04);
+  Tl->SetBit(TLatex::kTextNDC);
 
   canvas->cd(1);
   InitPad();
   corrX->DrawCopy();
+  Tl->DrawLatex(0.6, 0.8, "0.3 < p_{T} < 10");
+  Tl->DrawLatex(0.6, 0.75, "|#eta| < 0.8");
 
   canvas->cd(2);
   InitPad();
   corrY->Draw();
+  Tl->DrawLatex(0.6, 0.8, "0.3 < p_{T} < 10");
+  Tl->DrawLatex(0.6, 0.75, "|vtx-z| < 10");
 
   canvas->cd(3);
   InitPad();
+  gPad->SetLogx();
   corrZ->Draw();
+  Tl->DrawLatex(0.6, 0.8, "|vtx-z| < 10");
+  Tl->DrawLatex(0.6, 0.75, "|#eta| < 0.8");
 
-  canvas->SaveAs(Form("Correction1D_%d_%s_%f.gif", correctionType, fileName, upperPtLimit));
-  canvas->SaveAs(Form("Correction1D_%d_%s_%f.eps", correctionType, fileName, upperPtLimit));
+  return canvas;
 }
 
 void Track2Particle1D(const char* fileName = "correction_map.root", const char* folder = "dndeta_correction", Float_t upperPtLimit = 9.9)
@@ -1858,28 +1829,35 @@ void GetAverageCorrectionFactor(Float_t etaRange = 1.5, Float_t vertexRange = 9.
   mcH->Fit("pol0", "", "", -etaRange, etaRange);
 }
 
-void TrackCuts_Comparison(char* histName, Bool_t after = kFALSE, const char* fileName = "correction_map.root")
+void TrackCuts_Comparison(char* histName, Int_t plotWhich = 0, const char* fileName = "correction_map.root")
 {
   // for the nsigmaplot it is needed to run with all cuts except the nsigmatovertex
   //    --> manually disable it in the run.C
+  //
+  // plotWhich: 0 = only before
+  //            1 = both
+  //            2 = only after
 
   file = TFile::Open(fileName);
 
   Int_t count = 0;
   Int_t colors[] = { 1, 2, 3, 4, 5, 6 };
 
-  TLegend* legend = new TLegend(0.4, 0.6, 1, 1);
+  TLegend* legend = new TLegend(0.5, 0.7, 1, 1);
   TLegend* legend2 = new TLegend(0.4, 0.6, 1, 1);
-  TLegend* legend3 = new TLegend(0.7, 0.5, 1, 0.7);
+  TLegend* legend3 = new TLegend(0.6, 0.5, 1, 0.7);
 
-  TCanvas* c1 = new TCanvas("c1", "c1", 800, 600);
+  TCanvas* c1 = new TCanvas("c1", "c1", 800, 1200);
+  c1->Divide(1, 2);
   //TCanvas* c2 = new TCanvas("c2", "c2", 800, 600);
-  TCanvas* c3 = new TCanvas("c3", "c3", 800, 600);
+  //TCanvas* c3 = new TCanvas("c3", "c3", 800, 600);
 
   const char* folders2[] = { "before_cuts", "after_cuts" };
-  for (Int_t j = 0; j < ((after) ? 2 : 1); j++)
+  Bool_t first = kTRUE;
+  for (Int_t j = ((plotWhich < 2) ? 0 : 1); j < ((plotWhich > 0) ? 2 : 1); j++)
   {
     const char* folders1[] = { "esd_track_cuts", "esd_track_cuts_primaries", "esd_track_cuts_secondaries" };
+    const char* names[] =    { "all", "primaries", "secondaries" };
     TH1* base = 0;
     TH1* prim = 0;
     TH1* sec = 0;
@@ -1888,9 +1866,9 @@ void TrackCuts_Comparison(char* histName, Bool_t after = kFALSE, const char* fil
       TString folder;
       folder.Form("%s/%s/%s", folders1[i], folders2[j], histName);
       TH1* hist = (TH1*) file->Get(folder);
-      legend->AddEntry(hist, folder);
+      legend->AddEntry(hist, Form("%s %s", names[i], folders2[j]));
 
-      c1->cd();
+      c1->cd(1);
       hist->SetLineColor(colors[count]);
       hist->DrawCopy((count == 0) ? "" : "SAME");
 
@@ -1910,7 +1888,8 @@ void TrackCuts_Comparison(char* histName, Bool_t after = kFALSE, const char* fil
     for (Int_t bin = 1; bin <= prim->GetNbinsX(); bin++)
     {
       eff->SetBinContent(bin, prim->Integral(1, bin) / prim->Integral(1, prim->GetNbinsX() + 1));
-      purity->SetBinContent(bin, sec->Integral(1, bin) / (prim->Integral(1, bin) + sec->Integral(1, bin)));
+      if (prim->Integral(1, bin) + sec->Integral(1, bin) > 0)
+        purity->SetBinContent(bin, sec->Integral(1, bin) / (prim->Integral(1, bin) + sec->Integral(1, bin)));
     }
 
     eff->GetYaxis()->SetRangeUser(0, 1);
@@ -1921,15 +1900,15 @@ void TrackCuts_Comparison(char* histName, Bool_t after = kFALSE, const char* fil
     legend3->AddEntry(eff, Form("%s: efficiency", folders2[j]));
     legend3->AddEntry(purity, Form("%s: contamination", folders2[j]));
 
-    c3->cd();
-    eff->DrawCopy((j == 0) ? "" : "SAME");
+    c1->cd(2);
+    eff->DrawCopy((first) ? "" : "SAME");
+    first = kFALSE;
     purity->DrawCopy("SAME");
   }
 
-  c1->cd();
-  c1->SetLogy();
-  c1->SetGridx();
-  c1->SetGridy();
+  c1->cd(1)->SetLogy();
+  c1->cd(1)->SetGridx();
+  c1->cd(1)->SetGridy();
   legend->Draw();
 
   //c2->cd();
@@ -1937,10 +1916,11 @@ void TrackCuts_Comparison(char* histName, Bool_t after = kFALSE, const char* fil
  // c2->SetGridy();
   //legend2->Draw();
 
-  c3->cd();
-  c3->SetGridx();
-  c3->SetGridy();
+  c1->cd(2)->SetGridx();
+  c1->cd(2)->SetGridy();
   legend3->Draw();
+
+  c1->SaveAs(Form("%s.png", histName));
 }
 
 void TrackCuts_DCA()

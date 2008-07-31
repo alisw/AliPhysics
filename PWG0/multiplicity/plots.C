@@ -41,6 +41,12 @@ const char* correctionFileTPC = "multiplicityMC_TPC_1.4M.root";
 const char* measuredFileTPC   = "multiplicityMC_TPC_0.6M.root";
 Int_t etaRangeTPC = 1;
 
+void loadlibs()
+{
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libPWG0base");
+}
+
 void SetTPC()
 {
   correctionFile = correctionFileTPC;
@@ -1212,20 +1218,21 @@ void SystematicMisalignmentTPC()
 
 void EfficiencySpecies()
 {
-  gSystem->Load("libPWG0base");
+  loadlibs();
 
   Int_t marker[] = {24, 25, 26};
   Int_t color[] = {1, 2, 4};
 
   // SPD TPC
-  const char* fileName[] = { "multiplicityMC_400k_syst.root", "multiplicityMC_TPC_4kfiles_syst.root" };
+  //const char* fileName[] = { "multiplicityMC_400k_syst.root", "multiplicityMC_TPC_4kfiles_syst.root" };
+  const char* fileName[] = { "spd/multiplicity.root", "tpc/multiplicity.root" };
   Float_t etaRange[] = {0.49, 0.9};
   const char* titles[] = { "SPD Tracklets", "TPC Tracks" };
 
   TCanvas* canvas = new TCanvas("EfficiencySpecies", "EfficiencySpecies", 1000, 500);
   canvas->Divide(2, 1);
 
-  for (Int_t loop=0; loop<1; ++loop)
+  for (Int_t loop=0; loop<2; ++loop)
   {
     Printf("%s", fileName[loop]);
 
@@ -1319,6 +1326,7 @@ void EfficiencySpecies()
       effPt->GetXaxis()->SetRangeUser(0.06, 1);
       effPt->GetYaxis()->SetRangeUser(0, 1);
 
+      effPt->GetXaxis()->SetTitleOffset(1.1);
       effPt->GetYaxis()->SetTitleOffset(1.2);
 
       effPt->SetStats(kFALSE);

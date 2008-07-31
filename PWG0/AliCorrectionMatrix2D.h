@@ -31,13 +31,13 @@ public:
 
   AliCorrectionMatrix2D& operator= (const AliCorrectionMatrix2D& c);
 
-  TH2F* GetGeneratedHistogram() const;
-  TH2F* GetMeasuredHistogram() const;
+  TH2* GetGeneratedHistogram() const;
+  TH2* GetMeasuredHistogram() const;
 
-  TH2F* GetCorrectionHistogram() {return (TH2F*)fhCorr;}
+  TH2* GetCorrectionHistogram() {return (TH2*)fhCorr;}
 
-  TH1F* Get1DCorrection(Char_t* opt="x", Float_t min=0, Float_t max=0) {return Get1DCorrectionHistogram(opt,min,max);}
-  TH1F* Get1DCorrectionHistogram(Char_t* opt="x", Float_t min=0, Float_t max=0);
+  TH1* Get1DCorrection(Char_t* opt="x", Float_t min=0, Float_t max=0) {return Get1DCorrectionHistogram(opt,min,max);}
+  TH1* Get1DCorrectionHistogram(Char_t* opt="x", Float_t min=0, Float_t max=0);
 
   void Rebin(Int_t x = 1, Int_t y = 1);
 
