@@ -980,6 +980,7 @@ AC_CONFIG_FILES([Makefile
 		 BASE/util/Makefile
 		 BASE/interface/Makefile
 		 BASE/test/Makefile
+		 BASE/interface/test/Makefile
 		 doc/Makefile
 		 doc/doxygen.conf
 		 doc/doxymodule.conf])
