@@ -39,7 +39,7 @@ void AliHMPIDCluster::SetClusterParams(Double_t xL,Double_t yL,Int_t iCh  )
   //get L->T cs matrix for a given chamber
   const TGeoHMatrix *t2l= AliGeomManager::GetTracking2LocalMatrix(volId);
 
-  if(fParam->GetInstType())               //if there is no geometry we cannot retrieve the volId (only for monitoring)
+  if(!fParam->GetInstType())               //if there is no geometry we cannot retrieve the volId (only for monitoring)
   {
     new(this) AliCluster3D(); return;
   }
