@@ -540,8 +540,6 @@ class AliTRDrawStreamTB : public AliTRDrawStreamBase
   static void    SetSubtractBaseline(Int_t baseline) {fgCommonAdditive = baseline;}
   Int_t          GetCommonAdditive() const {return fgCommonAdditive;}           // return the common additive
 
-  void    ReSetStreamEventCounter(Int_t ival = 0) {fgStreamEventCounter = ival;} // reset the event counter for the debug streamer
-
   //--------------------------------------------------------
   // Decoding functions
   //--------------------------------------------------------
@@ -564,8 +562,6 @@ class AliTRDrawStreamTB : public AliTRDrawStreamBase
 
 
  protected:
-
- private:
 
   Bool_t InitBuffer(void *buffer, UInt_t length); // init the buffer - called by DecodeSM(void*, UInt_t)
   Bool_t DumpWords(UInt_t *px, UInt_t iw, UInt_t marker = 0); // dump some words onto the screen
@@ -613,7 +609,6 @@ class AliTRDrawStreamTB : public AliTRDrawStreamBase
   UInt_t *fpEnd;   // end of the buffer
 
   UInt_t  fWordLength;  // length of the buffer in 32bit words
-  UInt_t  fEquipmentID; // equipment ID
 
   Int_t   fStackNumber;     // current stack number
   Int_t   fStackLinkNumber; // current link in the stack
@@ -623,7 +618,7 @@ class AliTRDrawStreamTB : public AliTRDrawStreamBase
 
   Int_t   fLinkTrackletCounter; // count the tracklets in the current HC
   Int_t   fEndOfTrackletCount;  // count link by link (hc by hc) used for debug
-  Int_t   fNWordsCounter;  // count words recorded for link monitor errored half chamber
+  Int_t   fNWordsCounter;       // counts words of given hc having link monitor error
 
   UInt_t  fMaskADCword; // temp mask when decoding adcs
   UInt_t  fTbinADC;     // temp adc 
@@ -653,8 +648,6 @@ class AliTRDrawStreamTB : public AliTRDrawStreamBase
   static Bool_t fgStackNumberChecker; // decide if we check stack number insanity - set false to cleanroom data
   static Bool_t fgStackLinkNumberChecker; // decide if we check stack link number insanity - debuging purpose
   static Bool_t fgSkipData; // decide if we skip corrupted data of given HC
-  static UInt_t fgStreamEventCounter; // event counter for debug streamer
-  static UInt_t fgFirstEquipmentID; // first equipmentID for debug streamer
   static UInt_t fgDumpHead; // number of words to dump (from the start of the buffer) on each Init
   static Int_t  fgEmptySignals[30]; // empty signals in case of ADC pointer = NULL
   static Short_t  fgMCMordering[16]; // mcm number odering for mcm header corruption check

@@ -123,8 +123,6 @@ Bool_t AliTRDrawStreamTB::fgEnableMemoryReset = kTRUE;
 Bool_t AliTRDrawStreamTB::fgStackNumberChecker = kTRUE;
 Bool_t AliTRDrawStreamTB::fgStackLinkNumberChecker = kTRUE;
 Bool_t AliTRDrawStreamTB::fgSkipData = kTRUE;
-UInt_t AliTRDrawStreamTB::fgStreamEventCounter = 0;
-UInt_t AliTRDrawStreamTB::fgFirstEquipmentID = 0;
 UInt_t AliTRDrawStreamTB::fgDumpHead = 0;
 Int_t  AliTRDrawStreamTB::fgCommonAdditive = 0;
 Int_t AliTRDrawStreamTB::fgEmptySignals[] = 
@@ -162,14 +160,13 @@ AliTRDrawStreamTB::AliTRDrawStreamTB()
   , fpBegin(0)
   , fpEnd(0)
   , fWordLength(0)
-  , fEquipmentID(0)
   , fStackNumber(-1)
   , fStackLinkNumber(-1)
   , fhcMCMcounter(0)
   , fmcmADCcounter(0)
   , fLinkTrackletCounter(-1)
   , fEndOfTrackletCount(-1)
-  , fNWordsCounter(0)
+  , fNWordsCounter(-1)
   , fMaskADCword(0)
   , fTbinADC(0)
   , fDecodedADCs(-1)
@@ -204,14 +201,13 @@ AliTRDrawStreamTB::AliTRDrawStreamTB(AliRawReader *rawReader)
   , fpBegin(0)
   , fpEnd(0)
   , fWordLength(0)
-  , fEquipmentID(0)
   , fStackNumber(-1)
   , fStackLinkNumber(-1)
   , fhcMCMcounter(0)
   , fmcmADCcounter(0)
   , fLinkTrackletCounter(-1)
   , fEndOfTrackletCount(-1)
-  , fNWordsCounter(0)
+  , fNWordsCounter(-1)
   , fMaskADCword(0)
   , fTbinADC(0)
   , fDecodedADCs(-1)
@@ -253,14 +249,13 @@ AliTRDrawStreamTB::AliTRDrawStreamTB(const AliTRDrawStreamTB& /*st*/)
   , fpBegin(0)
   , fpEnd(0)
   , fWordLength(0)
-  , fEquipmentID(0)
   , fStackNumber(-1)
   , fStackLinkNumber(-1)
   , fhcMCMcounter(0)
   , fmcmADCcounter(0)
   , fLinkTrackletCounter(-1)
   , fEndOfTrackletCount(-1)
-  , fNWordsCounter(0)
+  , fNWordsCounter(-1)
   , fMaskADCword(0)
   , fTbinADC(0)
   , fDecodedADCs(-1)
@@ -470,7 +465,6 @@ AliTRDrawStreamTB::ResetCounters()
   //
   fBufferRead = kFALSE; // important to read buffer
 
-  fEquipmentID = 0;
   fStackNumber = 0;
   fStackLinkNumber = 0;
   fDecodedADCs = 0;
@@ -530,7 +524,7 @@ AliTRDrawStreamTB::ResetPerStack()
   for (Int_t i=0; i<12; i++){
      fStack->fLinksActive[i] = kFALSE;
      fStack->fLinksDataType[i] = 0;
-     fStack->fLinksMonitor[i] = 1;
+     fStack->fLinksMonitor[i] = 0;
      fStack->fLinkMonitorError[i] = 0;
   }
 }
@@ -577,7 +571,6 @@ AliTRDrawStreamTB::ResetPerMCM()
   //
   // reset every MCM 
   //
-
   fMCM->fROB = 0;
   fMCM->fMCM = 0;
   fMCM->fROW = 0;
@@ -622,7 +615,10 @@ AliTRDrawStreamTB::ResetPerADC()
 void
 AliTRDrawStreamTB::ResetMemory()
 {                 
-                
+  //              
+  // initialize all the data members to prevent read data
+  // from previous buffer
+  //              
   ResetPerSM();
   for (Int_t istack=0; istack<5; istack++){
      fStack = &fSM.fStacks[istack];
@@ -737,8 +733,7 @@ AliTRDrawStreamTB::Next()
 
 //------------------------------------------------------------
 Int_t 
-//AliTRDrawStreamTB::NextChamber(AliTRDdigitsManager *digitsManager)
-AliTRDrawStreamTB::NextChamber(AliTRDdigitsManager *digitsManager, UInt_t **trackletContainer) //[mj]
+AliTRDrawStreamTB::NextChamber(AliTRDdigitsManager *digitsManager, UInt_t **trackletContainer) 
 {
   //
   // Fills single chamber digit array 
@@ -769,24 +764,21 @@ AliTRDrawStreamTB::NextChamber(AliTRDdigitsManager *digitsManager, UInt_t **trac
   // Loop through the digits
   Int_t lastdet = -1;
   Int_t det     = -1;
-  // Int_t returnDet = -1;
-  Int_t lastside = -1; //[mj]
-  Int_t side     = -1; //[mj]
+  Int_t lastside = -1; 
+  Int_t side     = -1;
   Int_t it = 0;
   Int_t ntracklets = 0;
 
   if (trackletContainer){ 
-    for (Int_t i = 0; i < 2; i++) //[mj]
-       for (Int_t j = 0; j < MAX_TRACKLETS_PERHC; j++) //[mj]
-          trackletContainer[i][j] = 0; //[mj]
+    for (Int_t i = 0; i < 2; i++) 
+       for (Int_t j = 0; j < MAX_TRACKLETS_PERHC; j++) 
+          trackletContainer[i][j] = 0; 
   }
 
   while (Next()) 
     {      
       det    = GetDet();
-      //[mj tracklet writing] 
       side   = GetSide();
-      //printf("det= %d lastdet= %d side= %d lastside= %d\n",det,lastdet,side,lastside); 
 
       if (trackletContainer)
         {
@@ -799,15 +791,8 @@ AliTRDrawStreamTB::NextChamber(AliTRDdigitsManager *digitsManager, UInt_t **trac
                  return lastdet;
                 }
              }
-
-           //if(GetTrackletWords()) trackletContainer[side] = GetTrackletWords();
-           //printf("test= %u \n",*(trackletContainer[side])); 
-           
-            
            ntracklets = GetNTracklets();
-           if(ntracklets > 0) memcpy(trackletContainer[side], GetTrackletWords(), sizeof(UInt_t) * ntracklets); //copy tracklet words to trackletContainer array [mj]
-           //memcpy(trackletContainer[side], GetTrackletWords(), sizeof(UInt_t) * MAX_TRACKLETS_PERHC); //copy tracklet words to trackletContainer array [mj]
-           //if(ntracklets > 0) memcpy(trackletContainer[side], GetTrackletWords(), sizeof(UInt_t) * MAX_TRACKLETS_PERHC); //copy tracklet words to trackletContainer array [mj]
+           if(ntracklets > 0) memcpy(trackletContainer[side], GetTrackletWords(), sizeof(UInt_t) * ntracklets); //copy tracklet words to trackletContainer array
            lastside = side; 
           } 
         } 
@@ -942,20 +927,6 @@ AliTRDrawStreamTB::Init()
 
   ResetCounters(); // fBufferRead is set to kFALSE - important
 
-/*
-  // in case rawreader manages the mem buffers
-  // lets go for the next buffer
-  if (fRawReader)
-    {
-      Int_t nextBuff = NextBuffer();
-      while (nextBuff != -1)
-        {
-          if (nextBuff > 0)
-            return kTRUE;
-          nextBuff = NextBuffer();
-        }
-    }
-*/
   saveDir->cd();
 
   return kTRUE;
@@ -973,10 +944,6 @@ AliTRDrawStreamTB::InitBuffer(void *buffer, UInt_t length)
   if (fRawReader->GetEquipmentId()<1024 || fRawReader->GetEquipmentId()>1041) //tmp protection
     return kFALSE; 
 
-  if(fgStreamEventCounter == 0) fgFirstEquipmentID = fRawReader->GetEquipmentId();
-  fEquipmentID = fRawReader->GetEquipmentId(); 
-  if(fEquipmentID == fgFirstEquipmentID) fgStreamEventCounter++; // [mj] risky if the order of sm in data changed
-                                       // since it is still for debug event counter, doesn't give an effect on decoded data
   ResetCounters();
 
   fpBegin = (UInt_t *)buffer;
@@ -1125,7 +1092,7 @@ AliTRDrawStreamTB::DecodeSM(void *buffer, UInt_t length)
             {
               fStack->fLinkMonitorError[ilink] = 1;
               SeekEndOfData(); // skip this HC data if GTU link monitor report error
-              fStack->fLinkMonitorError[ilink] += fNWordsCounter; // counts words to debug hc having link monitor error
+              fStack->fLinkMonitorError[ilink] += fNWordsCounter; // counts words of given hc having link monitor error
               continue; 
             }
 
@@ -1151,7 +1118,6 @@ AliTRDrawStreamTB::DecodeSM(void *buffer, UInt_t length)
 		  if (fgWarnError) 
 		    {
 		      AliError(Form("Tracklet decoding failed stack %d link %d", fStackNumber, fStackLinkNumber));
-		      AliError(Form("Debug Event Counter : %d", fgStreamEventCounter)); 
 		    }
 		  continue;
 		}
@@ -1178,7 +1144,6 @@ AliTRDrawStreamTB::DecodeSM(void *buffer, UInt_t length)
 		{
 		  AliError(Form("Failed HC : %s", DumpHCinfoH0(fHC)));
 		  AliError(Form("Failed HC : %s", DumpHCinfoH1(fHC)));
-		  AliError(Form("Debug Event Counter : %d\n\n\n", fgStreamEventCounter)); 
 		}
 	      	      
 	      continue;
@@ -1269,7 +1234,6 @@ AliTRDrawStreamTB::SeekEndOfData()
       fpPos++;
       fNWordsCounter++;
     }
-  
   while (*fpPos == ENDOFRAWDATAMARKER && fpPos < fpEnd )
     {
       fEndOfDataCount++;
@@ -1352,8 +1316,8 @@ AliTRDrawStreamTB::DecodeTracklets()
   fEndOfTrackletCount = 0;
   fHC->fNTracklets = 0;
 
-  for (Int_t i = 0; i < MAX_TRACKLETS_PERHC; i++) //[mj]
-  fHC->fTrackletWords[i] = 0; //[mj]
+  for (Int_t i = 0; i < MAX_TRACKLETS_PERHC; i++) 
+  fHC->fTrackletWords[i] = 0; 
 
   if (fgDebugFlag)  AliDebug(10, Form("Decode tracklets at 0x%08x : 0x%08x", fpPos, *fpPos));
 
@@ -1372,7 +1336,7 @@ AliTRDrawStreamTB::DecodeTracklets()
 	  return kFALSE;
 	}
 
-      fHC->fTrackletWords[fLinkTrackletCounter-1] = UInt_t(*fpPos); //store tracklet words into array  //[mj]
+      fHC->fTrackletWords[fLinkTrackletCounter-1] = UInt_t(*fpPos); //store tracklet words into array  
       fHC->fNTracklets = fLinkTrackletCounter;
       fpPos++;
     }
@@ -1524,8 +1488,8 @@ AliTRDrawStreamTB::DecodeMCMheader()
               if (fHC->fSM == fDumpingSM && fHC->fStack == fDumpingStack)
                 { 
                   if (fgDebugFlag) {
-                    AliDebug(4,DumpHCinfoH0(fHC));
-                    AliDebug(4,DumpMCMinfo(fMCM));
+                    AliDebug(5,DumpHCinfoH0(fHC));
+                    AliDebug(5,DumpMCMinfo(fMCM));
                   }
                   DumpWords(fpPos, 212);
                 }  
@@ -1815,8 +1779,8 @@ AliTRDrawStreamTB::DecodeHC()
 	          if (DecodeADC() == kFALSE)
 		    {
                       if (fMCM->fCorrupted < 4) fMCM->fCorrupted += 4; // benchmark mcm data corruption as 4
-                      if (fHC->fCorrupted < 4) fHC->fCorrupted += 4; // benchmark hc data corruption as 4
-		      if (fADC->fIsShared && fADC->fCorrupted == 16) // check if we are out of the det when the pad is shared
+                      if (fHC->fCorrupted < 4) fHC->fCorrupted += 4;   // benchmark hc data corruption as 4
+		      if (fADC->fIsShared && fADC->fCorrupted == 16)   // check if we are out of the det when the pad is shared
 		        {
 		          fADC->fCOL = -1;
 		          fpPos = fADC->fPos + fMCM->fSingleADCwords;
@@ -1847,7 +1811,6 @@ AliTRDrawStreamTB::DecodeHC()
       return kFALSE;
     }
 
-  //DumpWords(fpPos-1000, 2000);
   return kTRUE;
 }
 //------------------------------------------------------------
