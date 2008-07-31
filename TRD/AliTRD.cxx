@@ -84,6 +84,7 @@ AliTRD::AliTRD(const char *name, const char *title)
   ,fGeometry(0)
   ,fGasDensity(0)
   ,fFoilDensity(0)
+  ,fGasNobleFraction(0)
   ,fDrawTR(0)
   ,fDisplayType(0)
 {
