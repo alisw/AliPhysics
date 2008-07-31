@@ -853,14 +853,16 @@ Bool_t AliReconstruction::InitGRP() {
   //*** Get the diamond profile from OCDB
   entry = AliCDBManager::Instance()->Get("GRP/Calib/MeanVertex");
   if (entry) {
-     fDiamondProfile = dynamic_cast<AliESDVertex*> (entry->GetObject());  
+    if (fMeanVertexConstraint)
+      fDiamondProfile = dynamic_cast<AliESDVertex*> (entry->GetObject());  
   } else {
      AliError("No diamond profile found in OCDB!");
   }
 
   entry = AliCDBManager::Instance()->Get("GRP/Calib/MeanVertexTPC");
   if (entry) {
-     fDiamondProfileTPC = dynamic_cast<AliESDVertex*> (entry->GetObject());  
+    if (fMeanVertexConstraint)
+      fDiamondProfileTPC = dynamic_cast<AliESDVertex*> (entry->GetObject());  
   } else {
      AliError("No diamond profile found in OCDB!");
   }
