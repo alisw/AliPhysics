@@ -54,13 +54,12 @@
   //
   gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");
   gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+")
-  AliXRDPROOFtoolkit tool; 
+  AliXRDPROOFtoolkit tool;
   TChain * chain = tool.MakeChain("laserScan.txt","Mean",0,10200);
   chain->Lookup();
   AliTPCcalibLaser::DumpScanInfo(chain)
   TFile fscan("laserScan.root")
   TTree * treeT = (TTree*)fscan.Get("Mean")
- 
 
 */
 
@@ -497,13 +496,19 @@ void AliTPCcalibLaser::RefitLaserJW(Int_t id){
 
   //two tracklets
   Int_t kMaxTracklets=2;
-
-  //linear fit model in y and z per sector
-  static TLinearFitter fy1(2,"hyp1");
-  static TLinearFitter fz1(2,"hyp1");
-  //quadratic fit model in y and z per sector
-  static TLinearFitter fy2(3,"hyp2");
-  static TLinearFitter fz2(3,"hyp2");
+  //=============================================//
+  // Linear Fitters for the Different Approaches //
+  //=============================================//
+  //linear fit model in y and z; inner - outer sector
+  static TLinearFitter fy1I(2,"hyp1");
+  static TLinearFitter fy1O(2,"hyp1");
+  static TLinearFitter fz1I(2,"hyp1");
+  static TLinearFitter fz1O(2,"hyp1");
+  //quadratic fit model in y and z; inner - sector
+  static TLinearFitter fy2I(3,"hyp2");
+  static TLinearFitter fy2O(3,"hyp2");
+  static TLinearFitter fz2I(3,"hyp2");
+  static TLinearFitter fz2O(3,"hyp2");
   //common quadratic fit for IROC and OROC in y and z
   static TLinearFitter fy4(5,"hyp4");
   static TLinearFitter fz4(5,"hyp4");
@@ -516,20 +521,24 @@ void AliTPCcalibLaser::RefitLaserJW(Int_t id){
       fEdgeYcuts[0]=3;
       fNClCuts[0]=20;
   }
-
-  // loop over all cuts
+  //=============================//
+  // Loop over all Tracklet Cuts //
+  //=============================//
   for (Int_t icut=0; icut<fNcuts; icut++){
       AliDebug(4,Form("Processing cut %d for track with ID %d",icut,id));
       //cut parameters
       Double_t edgeCutX = fEdgeXcuts[icut];
       Double_t edgeCutY = fEdgeYcuts[icut];
       Int_t    nclCut   = fNClCuts[icut];
-      //fit parameter inner and outer tracklet
-      TVectorD vecy1resInner(2),vecz1resInner(2);
-      TVectorD vecy2resInner(3),vecz2resInner(3);
+      //=========================//
+      // Parameters to calculate //
+      //=========================//
+      //fit parameter inner, outer tracklet and combined fit
+      TVectorD vecy1resInner(2),vecz1resInner(2); //pol1 fit parameters inner
+      TVectorD vecy2resInner(3),vecz2resInner(3); //pol2 fit parameters inner
       //
-      TVectorD vecy1resOuter(2),vecz1resOuter(2);
-      TVectorD vecy2resOuter(3),vecz2resOuter(3);
+      TVectorD vecy1resOuter(2),vecz1resOuter(2); //pol1 fit parameters outer
+      TVectorD vecy2resOuter(3),vecz2resOuter(3); //pol2 fit parameters outer
       TVectorD vecy4res(5),vecz4res(5);
       // cluster and track positions for each row - used for residuals
       TVectorD vecX(159);        // x is the same for all (row center)
@@ -544,8 +553,7 @@ void AliTPCcalibLaser::RefitLaserJW(Int_t id){
       TVectorD vecClY(159);      // y cluster position
       TVectorD vecClZ(159);      // z cluster position
       TVectorD vecSec(159);      // sector for each row
-      Int_t innerSector = -1;    // number of inner sector
-      Int_t outerSector = -1;    // number of outer sector
+      //chi2 of fits
       Double_t chi2I1z=-1;       // chi2 of pol1 fit in z (inner)
       Double_t chi2I1y=-1;       // chi2 of pol1 fit in y (inner)
       Double_t chi2O1z=-1;       // chi2 of pol1 fit in z (outer)
@@ -556,24 +564,28 @@ void AliTPCcalibLaser::RefitLaserJW(Int_t id){
       Double_t chi2O2y=-1;       // chi2 of pol2 fit in y (outer)
       Double_t chi2IOz=-1;       // chi2 of hyp4 fit in z (inner+outer)
       Double_t chi2IOy=-1;       // chi2 of hyp4 fit in y (inner+outer)
+      //more
+      Int_t innerSector = -1;    // number of inner sector
+      Int_t outerSector = -1;    // number of outer sector
       Int_t nclI=0;              // number of clusters (inner)
       Int_t nclO=0;              // number of clusters (outer)
-
-      // Kalman fit
+      //=================================================//
+      // Perform the Kalman Fit using the Tracklet Class //
+      //=================================================//
       AliTPCTracklet::SetEdgeCut(edgeCutX,edgeCutY);
       TObjArray tracklets=
 	  AliTPCTracklet::CreateTracklets(track,AliTPCTracklet::kKalman,
 					  kFALSE,nclCut,kMaxTracklets);
-
       // tracklet pointers
-      AliTPCTracklet *tr=0x0;
-      AliTPCTracklet dummy;
-
       AliTPCTracklet *trInner = (AliTPCTracklet*)tracklets.At(0);
       AliTPCTracklet *trOuter = (AliTPCTracklet*)tracklets.At(1);
-
+      AliTPCTracklet *tr=0x0;
+      AliTPCTracklet dummy;
+      //continue if we didn't find a tracklet
       if ( !trInner && !trOuter ) continue;
-      // swap inner and outer if necessary
+      //================================================================================//
+      // Swap Inner and Outer if necessary (inner sector is definde by smaller local x) //
+      //================================================================================//
       if ( trInner && trOuter ){
 	  if ( !trInner->GetInner() || !trOuter->GetInner() ) continue;
 	  if ( trInner->GetInner()->GetX() > trOuter->GetInner()->GetX() ){
@@ -604,110 +616,133 @@ void AliTPCcalibLaser::RefitLaserJW(Int_t id){
       outerSector = trOuter->GetSector();
       if ( outerSector>=0 ) AliDebug(5,Form("Found outer Sector %02d at X %.2f", outerSector, trOuter->GetInner()->GetX()));
 
-
-
       // array of clusters
       TClonesArray arrCl("AliTPCclusterMI",159);
       arrCl.ExpandCreateFast(159);
-
-      // Fit model parameters
-
-      //
-      Int_t lastRoc=-1;
-
-      // make tracklet fits
-      AliDebug(3,"Fit Tracklets");
+      //=======================================//
+      // fill fitters with cluster information //
+      //=======================================//
+      AliDebug(3,"Filing Cluster Information");
       for (Int_t irow=158;irow>-1;--irow) {
 	  AliTPCclusterMI *c=track->GetClusterPointer(irow);
-	  AliTPCclusterMI & cl = (AliTPCclusterMI&) (*arrCl[irow]);
-          cl=dummyCl;
+	  AliTPCclusterMI &cl = (AliTPCclusterMI&) (*arrCl[irow]);
+	  cl=dummyCl;
+          //
           vecSec[irow]=-1;
 	  if (!c) continue;
+          //
+	  Int_t roc = static_cast<Int_t>(c->GetDetector());
+	  if ( roc!=innerSector && roc!=outerSector ) continue;
+          vecSec[irow]=roc;
 	  //store clusters in clones array
 	  cl=*c;
 	  //cluster position
 	  vecX[irow]   = c->GetX();
 	  vecClY[irow] = c->GetY();
 	  vecClZ[irow] = c->GetZ();
-	  Int_t roc = static_cast<Int_t>(c->GetDetector());
-          vecSec[irow]=roc;
-          if ( roc!=innerSector && roc!=outerSector ) continue;
-	  if ( lastRoc!=-1 && roc!=lastRoc ){
-	      AliDebug(5,Form("Evaluating pol1 and pol2 fits for ROC 02%d (last: 02%d - row: %03d)",roc,lastRoc,irow));
-	      if (fy1.GetNpoints()>0) fy1.Eval();
-	      if (fz1.GetNpoints()>0) fz1.Eval();
-	      if (fy2.GetNpoints()>0) fy2.Eval();
-	      if (fz2.GetNpoints()>0) fz2.Eval();
-	      if ( roc == innerSector ){
-		  fy1.GetParameters(vecy1resInner);
-		  fz1.GetParameters(vecz1resInner);
-		  fy2.GetParameters(vecy2resInner);
-		  fz2.GetParameters(vecz2resInner);
-                  chi2I1y=fy1.GetChisquare()/(fy1.GetNpoints()-2);
-                  chi2I1z=fz1.GetChisquare()/(fz1.GetNpoints()-2);
-                  chi2I2y=fy2.GetChisquare()/(fy2.GetNpoints()-3);
-                  chi2I2z=fz2.GetChisquare()/(fz2.GetNpoints()-3);
-	      } else {
-		  fy1.GetParameters(vecy1resOuter);
-		  fz1.GetParameters(vecz1resOuter);
-		  fy2.GetParameters(vecy2resOuter);
-		  fz2.GetParameters(vecz2resOuter);
-                  chi2O1y=fy1.GetChisquare()/(fy1.GetNpoints()-2);
-                  chi2O1z=fz1.GetChisquare()/(fz1.GetNpoints()-2);
-                  chi2O2y=fy2.GetChisquare()/(fy2.GetNpoints()-3);
-                  chi2O2z=fz2.GetChisquare()/(fz2.GetNpoints()-3);
-	      }
-	      fy1.ClearPoints(); fz1.ClearPoints();
-	      fy2.ClearPoints(); fz2.ClearPoints();
-	  }
-	  lastRoc=roc;
-          Double_t x=vecX[irow]-133.4; //reference is between IROC and OROC
-          Double_t y=vecClY[irow];
-	  Double_t z=vecClZ[irow];
           //
-	  Double_t x2[2]={x,x*x};
-	  Double_t x4[4]={0,0,0,0};
+          Double_t x = vecX[irow]-133.4; //reference is between IROC and OROC
+          Double_t y = vecClY[irow];
+	  Double_t z = vecClZ[irow];
+          //
+	  Double_t x2[2]={x,x*x};   //linear and parabolic parameters
+	  Double_t x4[4]={0,0,0,0}; //hyp4 parameters
 	  if ( roc == innerSector ) {
-	      x4[0]=1;
-	      x4[1]=x;
+	      x4[0]=1; //offset inner - outer sector
+	      x4[1]=x; //slope parameter inner sector
 	  } else {
-	      x4[2]=x;
+	      x4[2]=x; //slope parameter outer sector
 	  }
-	  x4[3]=x*x;
+	  x4[3]=x*x;   //common parabolic shape
           //
-          fy1.AddPoint(x2,y);
-          fz1.AddPoint(x2,z);
-          fy2.AddPoint(x2,y);
-	  fz2.AddPoint(x2,z);
+	  if ( roc==innerSector ){
+	      fy1I.AddPoint(x2,y);
+	      fz1I.AddPoint(x2,z);
+	      fy2I.AddPoint(x2,y);
+	      fz2I.AddPoint(x2,z);
+              ++nclI;
+	  }
+	  if ( roc==outerSector ){
+	      fy1O.AddPoint(x2,y);
+	      fz1O.AddPoint(x2,z);
+	      fy2O.AddPoint(x2,y);
+	      fz2O.AddPoint(x2,z);
+              ++nclO;
+	  }
 	  fy4.AddPoint(x4,y);
 	  fz4.AddPoint(x4,z);
       }
-      AliDebug(5,Form("Evaluating hyp4 fit with inner (outer) Sec: %02d (%02d)",innerSector,outerSector));
-      if ( innerSector>0 && outerSector>0 ){
-	  if (fy4.GetNpoints()>0) fy4.Eval();
-	  if (fz4.GetNpoints()>0) fz4.Eval();
-	  fy4.GetParameters(vecy4res);
-	  fz4.GetParameters(vecz4res);
-	  chi2IOy=fy4.GetChisquare()/(fy4.GetNpoints()-5);
-	  chi2IOz=fz4.GetChisquare()/(fz4.GetNpoints()-5);
+      //======================================//
+      // Evaluate and retrieve fit parameters //
+      //======================================//
+      AliDebug(5,Form("Evaluating fits with inner (outer) Sec: %02d (%02d)",innerSector,outerSector));
+      //inner sector
+      if (  (innerSector>-1) && (fy1I.GetNpoints()>0) ){
+	  fy1I.Eval();
+	  fz1I.Eval();
+	  fy2I.Eval();
+	  fz2I.Eval();
+	  fy1I.GetParameters(vecy1resInner);
+	  fz1I.GetParameters(vecz1resInner);
+	  fy2I.GetParameters(vecy2resInner);
+	  fz2I.GetParameters(vecz2resInner);
+	  chi2I1y=fy1I.GetChisquare()/(fy1I.GetNpoints()-2);
+	  chi2I1z=fz1I.GetChisquare()/(fz1I.GetNpoints()-2);
+	  chi2I2y=fy2I.GetChisquare()/(fy2I.GetNpoints()-3);
+	  chi2I2z=fz2I.GetChisquare()/(fz2I.GetNpoints()-3);
       }
-      fy4.ClearPoints();
-      fz4.ClearPoints();
-
-      //calculate tracklet positions
+      //outer sector
+      if (  (outerSector>-1) && (fy1O.GetNpoints()>0) ){
+	  fy1O.Eval();
+	  fz1O.Eval();
+	  fy2O.Eval();
+	  fz2O.Eval();
+	  fy1O.GetParameters(vecy1resOuter);
+	  fz1O.GetParameters(vecz1resOuter);
+	  fy2O.GetParameters(vecy2resOuter);
+	  fz2O.GetParameters(vecz2resOuter);
+	  chi2O1y=fy1O.GetChisquare()/(fy1O.GetNpoints()-2);
+	  chi2O1z=fz1O.GetChisquare()/(fz1O.GetNpoints()-2);
+	  chi2O2y=fy2O.GetChisquare()/(fy2O.GetNpoints()-3);
+	  chi2O2z=fz2O.GetChisquare()/(fz2O.GetNpoints()-3);
+      }
+      //combined hyp4 fit
+      if ( innerSector>0 && outerSector>0 ){
+	  if (fy4.GetNpoints()>0) {
+	      fy4.Eval();
+	      fy4.GetParameters(vecy4res);
+	      chi2IOy=fy4.GetChisquare()/(fy4.GetNpoints()-5);
+	  }
+	  if (fz4.GetNpoints()>0) {
+	      fz4.Eval();
+	      fz4.GetParameters(vecz4res);
+	      chi2IOz=fz4.GetChisquare()/(fz4.GetNpoints()-5);
+	  }
+      }
+      //clear points
+      fy4.ClearPoints();  fz4.ClearPoints();
+      fy1I.ClearPoints(); fy1O.ClearPoints();
+      fz1I.ClearPoints(); fz1O.ClearPoints();
+      fy2I.ClearPoints(); fy2O.ClearPoints();
+      fz2I.ClearPoints(); fz2O.ClearPoints();
+      //==============================//
+      // calculate tracklet positions //
+      //==============================//
       AliDebug(4,"Calculate tracklet positions");
       for (Int_t irow=158;irow>-1;--irow) {
-	  if ( vecSec[irow]==-1 ) continue;
+	  if ( vecSec[irow]==-1 ) continue;  //no cluster info
           if ( vecSec[irow]!=innerSector && vecSec[irow]!=outerSector ) continue;
 	  tr=&dummy;
 	  Double_t x=vecX[irow];
-          Double_t xref=x-133.4;
+	  Double_t xref=x-133.4;
+          //
           Double_t yoffInner=0;
           Double_t zoffInner=0;
           Double_t yslopeInner=0;
           Double_t yslopeOuter=0;
           Double_t zslopeInner=0;
-          Double_t zslopeOuter=0;
+	  Double_t zslopeOuter=0;
+          //positions of hyperplane fits
 	  if ( vecSec[irow] == outerSector ) {
 	      tr=trOuter;
               vecY1[irow]=vecy1resOuter[0]+vecy1resOuter[1]*xref;
@@ -716,7 +751,6 @@ void AliTPCcalibLaser::RefitLaserJW(Int_t id){
 	      vecZ2[irow]=vecz2resOuter[0]+vecz2resOuter[1]*xref+vecz2resOuter[2]*xref*xref;
               yslopeOuter=vecy4res[3];
 	      zslopeOuter=vecz4res[3];
-              ++nclO;
 	  } else {
 	      tr=trInner;
               vecY1[irow]=vecy1resInner[0]+vecy1resInner[1]*xref;
@@ -727,15 +761,13 @@ void AliTPCcalibLaser::RefitLaserJW(Int_t id){
 	      zoffInner=vecz4res[1];
               yslopeInner=vecy4res[2];
 	      zslopeInner=vecz4res[2];
-              ++nclI;
 	  }
 	  vecY4[irow]=vecy4res[0]+yoffInner+yslopeInner*xref+yslopeOuter*xref+vecy4res[4]*xref*xref;
 	  vecZ4[irow]=vecz4res[0]+zoffInner+zslopeInner*xref+zslopeOuter*xref+vecz4res[4]*xref*xref;
-
-	  //calculate tracklet positions
+          //positions of kalman fits
 	  Double_t gxyz[3],xyz[3];
 	  AliExternalTrackParam *param = 0x0;
-
+          //
 	  param=tr->GetInner();
 	  if (param){
 	      param->GetXYZ(gxyz);
@@ -745,10 +777,10 @@ void AliTPCcalibLaser::RefitLaserJW(Int_t id){
 	      vecYkalman[irow]=xyz[1];
 	      vecZkalman[irow]=xyz[2];
 	  }
-
       }
-
-      // write results from the different tracklet fits
+      //=====================================================================//
+      // write results from the different tracklet fits with debug streamers //
+      //=====================================================================//
       if (fStreamLevel>4){
 	  TTreeSRedirector *cstream = GetDebugStreamer();
 	  if (cstream){
@@ -814,6 +846,7 @@ void AliTPCcalibLaser::RefitLaserJW(Int_t id){
 		  "TrZInOut.="  << &vecZ4 <<
 		  "ClY.="       << &vecClY <<
 		  "ClZ.="       << &vecClZ <<
+                  "sec.="       << &vecSec <<
 		  "nclI="       << nclI <<
                   "nclO="       << nclO <<
 		  "yInOut.="    << &vecy4res <<
