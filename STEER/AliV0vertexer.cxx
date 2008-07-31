@@ -67,8 +67,8 @@ Int_t AliV0vertexer::Tracks2V0vertices(AliESDEvent *event) {
 
    if (nentr<2) return 0; 
 
-   TArrayI neg(nentr/2);
-   TArrayI pos(nentr/2);
+   TArrayI neg(nentr);
+   TArrayI pos(nentr);
 
    Int_t nneg=0, npos=0, nvtx=0;
 
