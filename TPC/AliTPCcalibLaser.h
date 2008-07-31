@@ -36,8 +36,11 @@ public:
   //
   virtual void DumpLaser(Int_t id);
   virtual void RefitLaser(Int_t id);
+  virtual void RefitLaserJW(Int_t id);
   void         FitDriftV();
   void         MakeDistHisto();
+  void         AddCut(Double_t xcut, Double_t ycut, Double_t ncl){fEdgeXcuts[fNcuts]=xcut; fEdgeYcuts[fNcuts]=ycut; fNClCuts[fNcuts]=ncl; fNcuts++;}
+
   Int_t  FindMirror(AliESDtrack *track, AliTPCseed *seed);
   Bool_t AcceptLaser(Int_t id);
   
@@ -57,7 +60,13 @@ public:
   TVectorD*      fFitAside;        //! drift fit - A side
   TVectorD*      fFitCside;        //! drift fit - C- side
   //
+  TVectorD       fEdgeXcuts;       //! cuts in local x direction; used in the refit of the laser tracks
+  TVectorD       fEdgeYcuts;       //! cuts in local y direction; used in the refit of the laser tracks
+  TVectorD       fNClCuts;         //! cuts on the number of clusters per tracklet; used in the refit of the laser tracks
+  Int_t          fNcuts;           //! number of cuts
+  //
   Int_t          fRun;             // current run number
+  Int_t          fEvent;           // cuttent event - internal counter
 private:
   ClassDef(AliTPCcalibLaser,1)
 };
