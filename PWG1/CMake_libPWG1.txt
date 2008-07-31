@@ -1,0 +1,29 @@
+# -*- mode: cmake -*-
+
+set(SRCS
+ 	AliTreeDraw.cxx 
+	AliMCInfo.cxx	
+	AliGenV0Info.cxx	
+	AliGenKinkInfo.cxx	
+	AliGenInfoMaker.cxx	
+	AliESDRecInfo.cxx 
+	AliESDRecV0Info.cxx 
+	AliESDRecKinkInfo.cxx 
+	AliRecInfoMaker.cxx 
+	AliComparisonDraw.cxx 
+	AliRecInfoCuts.cxx 
+	AliMCInfoCuts.cxx 
+	AliComparisonTask.cxx 
+	AliComparisonRes.cxx 
+	AliComparisonEff.cxx 
+	AliComparisonDEdx.cxx 
+	AliComparisonDCA.cxx 
+	AliComparisonObject.cxx
+)
+
+# fill list of header files from list of source files
+# by exchanging the file extension
+String(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+
+AddLibrary(PWG1 "${SRCS}" "${HDRS}")
+

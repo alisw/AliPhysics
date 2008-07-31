@@ -1,0 +1,35 @@
+# -*- mode: cmake -*-
+
+set(SRCS
+AliCFFrame.cxx
+AliCFVGrid.cxx
+AliCFGrid.cxx
+AliCFGridSparse.cxx
+AliCFEffGrid.cxx
+AliCFDataGrid.cxx
+AliCFContainer.cxx
+AliCFManager.cxx
+AliCFCutBase.cxx
+AliCFEventClassCuts.cxx
+AliCFEventGenCuts.cxx
+AliCFEventRecCuts.cxx
+AliCFParticleGenCuts.cxx
+AliCFAcceptanceCuts.cxx
+AliCFTrackKineCuts.cxx
+AliCFTrackQualityCuts.cxx
+AliCFTrackIsPrimaryCuts.cxx
+AliCFTrackCutPid.cxx
+AliCFPair.cxx
+AliCFPairAcceptanceCuts.cxx
+AliCFPairQualityCuts.cxx
+AliCFPairIsPrimaryCuts.cxx
+AliCFPairPidCut.cxx
+AliCFV0TopoCuts.cxx
+)
+
+# fill list of header files from list of source files
+# by exchanging the file extension
+String(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+
+AddLibrary(CORRFW "${SRCS}" "${HDRS}")
+

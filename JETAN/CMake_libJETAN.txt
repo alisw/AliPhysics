@@ -1,0 +1,46 @@
+# -*- mode: cmake -*-
+
+set(SRCS
+ 	AliJet.cxx AliJetHeader.cxx 
+	AliJetFinder.cxx AliJetReaderHeader.cxx 
+	AliJetESDReaderHeader.cxx AliJetReader.cxx AliJetESDReader.cxx 
+	AliJetControlPlots.cxx AliUA1JetHeader.cxx 
+	AliLeading.cxx 
+	AliJetProductionData.cxx AliJetProductionDataPDC2004.cxx 
+	AliJetAnalysis.cxx AliJetDistributions.cxx 
+	AliUA1JetFinderV1.cxx AliUA1JetFinderV2.cxx AliUA1JetHeaderV1.cxx 
+	AliJetGrid.cxx AliJetUnitArray.cxx AliJetHadronCorrection.cxx 
+	AliJetHadronCorrectionv0.cxx AliJetHadronCorrectionv1.cxx 
+	AliJetFillUnitArrayTracks.cxx AliJetFillUnitArrayEMCalDigits.cxx
+	AliJetDummyGeo.cxx AliJetDummyShishKebabTrd1Module.cxx
+	AliJetFinderTypes.cxx 
+	AliAnalysisTaskJets.cxx 
+	AliDAJetFinder.cxx 
+	AliDAJetHeader.cxx 
+	AliJetAODReader.cxx 
+	AliJetAODReaderHeader.cxx 
+	AliJetKineReader.cxx 
+	AliJetKineReaderHeader.cxx 
+	AliJetMCReader.cxx 
+	AliJetMCReaderHeader.cxx 
+	AliJetHistos.cxx 
+	AliAnalysisTaskDiJets.cxx 
+	AliAnalysisTaskJetsCDF.cxx AliCdfJetFinder.cxx AliCdfJetHeader.cxx
+)
+
+Set(FASTJET $ENV{FASTJET})
+
+If(FASTJET)
+  set(SRCS ${SRCS}
+  AliFastJetFinder.cxx AliFastJetHeader.cxx 
+)
+  include_directories( ${INCLUDE_DIRECTORIES} ${FASTJET}/include )
+  set_source_files_properties(${SRCS} PROPERTIES COMPILE_FLAGS -DWITHFASTJET)
+endIf(FASTJET)
+
+
+# fill list of header files from list of source files
+# by exchanging the file extension
+String(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+
+AddLibrary(JETAN "${SRCS}" "${HDRS}")

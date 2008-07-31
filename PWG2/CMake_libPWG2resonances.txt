@@ -1,0 +1,30 @@
+# -*- mode: cmake -*-
+
+set(SRCS
+      RESONANCES/AliRsnMCInfo.cxx 
+      RESONANCES/AliRsnDaughter.cxx 
+      RESONANCES/AliRsnPairParticle.cxx 
+      RESONANCES/AliRsnCut.cxx 
+      RESONANCES/AliRsnExpression.cxx 
+      RESONANCES/AliRsnCutSet.cxx 
+      RESONANCES/AliRsnCutMgr.cxx 
+      RESONANCES/AliRsnPID.cxx 
+      RESONANCES/AliRsnPIDWeightsMgr.cxx 
+      RESONANCES/AliRsnPIDIndex.cxx 
+      RESONANCES/AliRsnEvent.cxx 
+      RESONANCES/AliRsnReader.cxx 
+      RESONANCES/AliRsnReaderTaskSE.cxx 
+      RESONANCES/AliRsnPairDef.cxx 
+      RESONANCES/AliRsnPairSimple.cxx 
+      RESONANCES/AliRsnEventBuffer.cxx 
+      RESONANCES/AliRsnAnalysisSimple.cxx 
+      RESONANCES/AliRsnAnalyzerSimple.cxx 
+      RESONANCES/AliRsnAnalysisSimpleTask.cxx 
+)
+
+# fill list of header files from list of source files
+# by exchanging the file extension
+String(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+
+AddLibrary(PWG2resonances "${SRCS}" "${HDRS}")
+

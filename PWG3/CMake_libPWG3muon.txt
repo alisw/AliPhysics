@@ -1,0 +1,18 @@
+# -*- mode: cmake -*-
+
+set(SRCS
+                 muon/AliAnalysisTaskESDMuonFilter.cxx 
+                 muon/AliAnalysisTaskMuonAODfromGeneral.cxx 
+                 muon/AliAnalysisTaskSingleMu.cxx 
+                 muon/AliAnalysisTaskLUT.cxx  
+                 muon/AliAnalysisTaskTrigChEff.cxx 
+                 muon/AliAODDimuon.cxx 
+                 muon/AliAODEventInfo.cxx 
+                 muon/AliESDMuonTrackCuts.cxx 
+)
+
+# fill list of header files from list of source files
+# by exchanging the file extension
+String(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+
+AddLibrary(PWG3muon "${SRCS}" "${HDRS}" "${HDRS}")
