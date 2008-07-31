@@ -3412,6 +3412,7 @@ Bool_t AliShuttle::TouchFile()
 	}
 	delete resultTouch;
 	resultTouch = 0x0; 
+	Log("SHUTTLE", "Sucessfully touched the file");
 	return kTRUE;
 }
 
