@@ -591,6 +591,8 @@ Float_t  AliTPCcalibTracksGain::GetGain(AliTPCclusterMI* cl){
   // Return local gain at cluster position
   //
   Float_t factor = 1;
+  if(!fGainMap) return factor;
+
   AliTPCCalROC * roc = fGainMap->GetCalROC(cl->GetDetector());
   Int_t irow = cl->GetRow();
   if (roc){
