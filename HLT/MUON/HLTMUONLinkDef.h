@@ -58,5 +58,6 @@
 #pragma link C++ class AliHLTMUONRootifierComponent+;
 #pragma link C++ class AliHLTMUONEmptyEventFilterComponent+;
 #pragma link C++ class AliHLTMUONDataCheckerComponent+;
+#pragma link C++ class AliHLTMUONClusterFinderComponent+;
 
 #endif // __CINT__

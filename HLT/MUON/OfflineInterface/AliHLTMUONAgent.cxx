@@ -35,6 +35,7 @@
 #include "AliHLTMUONESDMaker.h"
 #include "AliHLTMUONEmptyEventFilterComponent.h"
 #include "AliHLTMUONDataCheckerComponent.h"
+#include "AliHLTMUONClusterFinderComponent.h"
 #include "AliHLTOUTHandlerChain.h"
 #include "AliRawReader.h"
 #include "AliRunLoader.h"
@@ -383,6 +384,7 @@ int AliHLTMUONAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
 	pHandler->AddComponent(new AliHLTMUONESDMaker);
 	pHandler->AddComponent(new AliHLTMUONEmptyEventFilterComponent);
 	pHandler->AddComponent(new AliHLTMUONDataCheckerComponent);
+	pHandler->AddComponent(new AliHLTMUONClusterFinderComponent);
 	return 0;
 }
 

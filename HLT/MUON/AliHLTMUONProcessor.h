@@ -18,6 +18,7 @@
 #include "AliHLTMUONUtils.h"
 
 class TMap;
+class AliMUONRecoParam;
 
 /**
  * @class AliHLTMUONProcessor
@@ -261,6 +262,16 @@ protected:
 			const char* pathToEntry = NULL, const char* prettyName = NULL
 		) const;
 	
+	/**
+	 * Fetches the reconstruction parameters object from the CDB for MUON.
+	 * [out] \param params  This will be filled with the reconstruction
+	 *      parameters object found if a successful status code is returned.
+	 *      Otherwise it will be unchanged.
+	 * \return Zero if the object could be found. Otherwise an error code,
+	 *      which is compatible with the HLT framework, is returned.
+	 */
+	int LoadRecoParamsFromCDB(AliMUONRecoParam*& params) const;
+
 private:
 
 	// Do not allow copying of this class.

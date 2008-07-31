@@ -160,6 +160,11 @@ public:
 	{
 		return fgkESDDataType;
 	}
+
+	static const AliHLTComponentDataType& ClusterStoreDataType()
+	{
+		return fgkClusterStoreDataType;
+	}
 	
 	static const char* RecHitsSourceId()
 	{
@@ -221,6 +226,11 @@ public:
 		return fgkDataCheckerComponentId;
 	}
 	
+	static const char* ClusterFinderId()
+	{
+		return fgkClusterFinderId;
+	}
+	
 	static const char* TriggerReconstructorCDBPath()
 	{
 		return fgkTriggerReconstructorCDBPath;
@@ -273,6 +283,7 @@ private:
 	static const AliHLTComponentDataType fgkSinglesDecisionBlockDataType; // Trigger decision block type for single track decisions.
 	static const AliHLTComponentDataType fgkPairsDecisionBlockDataType; // Trigger decision block type for pairs of particles.
 	static const AliHLTComponentDataType fgkESDDataType; // The ESD data type with origin equal to MUON.
+	static const AliHLTComponentDataType fgkClusterStoreDataType; // Offline algorithm cluster store object.
 	
 	// Component ID names:
 	static const char* fgkRecHitsSourceId; // Name of source component for reconstructed hits for debugging.
@@ -287,6 +298,7 @@ private:
 	static const char* fgkRootifierComponentId; // The name of the event filter debugging component.
 	static const char* fgkEmptyEventFilterComponentId; // The name of the event filter debugging component.
 	static const char* fgkDataCheckerComponentId; // Name of data checking component for debugging.
+	static const char* fgkClusterFinderId; // Name of cluster finder implementing offline algorithms.
 	
 	// CDB path entries to configuration information.
 	static const char* fgkTriggerReconstructorCDBPath; // Path to CDB entry for the trigger reconstruction component.

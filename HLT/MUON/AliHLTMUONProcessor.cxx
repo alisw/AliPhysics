@@ -27,6 +27,7 @@
 ///
 
 #include "AliHLTMUONProcessor.h"
+#include "AliMUONRecoParam.h"
 #include "AliCDBManager.h"
 #include "AliCDBStorage.h"
 #include "AliCDBEntry.h"
@@ -401,3 +402,50 @@ int AliHLTMUONProcessor::GetPositiveFloatFromTMap(
 	
 	return 0;
 }
+
+
+int AliHLTMUONProcessor::LoadRecoParamsFromCDB(AliMUONRecoParam*& params) const
+{
+	/// Fetches the reconstruction parameters object from the CDB for MUON.
+	/// [out] \param params  This will be filled with the reconstruction
+	///      parameters object found if a successful status code is returned.
+	///      Otherwise it will be unchanged.
+	/// \return Zero if the object could be found. Otherwise an error code,
+	///      which is compatible with the HLT framework, is returned.
+	
+	assert(AliCDBManager::Instance() != NULL);
+	
+	const char* pathToEntry = "MUON/Calib/RecoParam";
+	AliCDBEntry* entry = AliCDBManager::Instance()->Get(pathToEntry);
+	if (entry == NULL)
+	{
+		HLTError("Could not get the CDB entry for \"%s\".", pathToEntry);
+		return -EIO;
+	}
+	
+	TObject* obj = entry->GetObject();
+	if (obj == NULL)
+	{
+		HLTError("Reconstruction parameters object for \"%s\" is missing.", pathToEntry);
+		return -ENOENT;
+	}
+	
+	TObjArray* objarr = dynamic_cast<TObjArray*>(obj);
+	if (objarr != NULL)
+	{
+		obj = objarr->Last();
+	}
+	
+	AliMUONRecoParam* par = dynamic_cast<AliMUONRecoParam*>(obj);
+	if (par == NULL)
+	{
+		HLTError("No AliMUONRecoParam class found for entry \"%s\". Found a %s class instead.",
+			pathToEntry, obj->ClassName()
+		);
+		return -EPROTO;
+	}
+	
+	params = par;
+	return 0;
+}
+
