@@ -492,13 +492,14 @@ Float_t AliESDtrackCuts::GetSigmaToVertex(AliESDtrack* esdTrack)
 
   Float_t d = TMath::Sqrt(TMath::Power(b[0]/bRes[0],2) + TMath::Power(b[1]/bRes[1],2));
 
-  // stupid rounding problem screws up everything:
+  // work around precision problem
   // if d is too big, TMath::Exp(...) gets 0, and TMath::ErfInverse(1) that should be infinite, gets 0 :(
-  if (TMath::Exp(-d * d / 2) < 1e-10)
+  // 1e-15 corresponds to nsigma ~ 7.7
+  if (TMath::Exp(-d * d / 2) < 1e-15)
     return 1000;
 
-  d = TMath::ErfInverse(1 - TMath::Exp(-d * d / 2)) * TMath::Sqrt(2);
-  return d;
+  Float_t nSigma = TMath::ErfInverse(1 - TMath::Exp(-d * d / 2)) * TMath::Sqrt(2);
+  return nSigma;
 }
 
 void AliESDtrackCuts::EnableNeededBranches(TTree* tree)
@@ -644,7 +645,7 @@ AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack) {
     cuts[17] = kTRUE;
   if((p[2] < fPzMin) || (p[2] > fPzMax))
     cuts[18] = kTRUE;
-  if((eta < fEtaMin) || (eta > fEtaMax)) 
+  if((eta < fEtaMin) || (eta > fEtaMax))
     cuts[19] = kTRUE;
   if((y < fRapMin) || (y > fRapMax)) 
     cuts[20] = kTRUE;
@@ -854,7 +855,7 @@ Int_t AliESDtrackCuts::CountAcceptedTracks(AliESDEvent* esd)
      fhCutStatistics->GetXaxis()->SetBinLabel(i+4,fgkCutNames[i]);
      fhCutCorrelation->GetXaxis()->SetBinLabel(i+1,fgkCutNames[i]);
      fhCutCorrelation->GetYaxis()->SetBinLabel(i+1,fgkCutNames[i]);
-   } 
+   }
 
   fhCutStatistics  ->SetLineColor(color);
   fhCutCorrelation ->SetLineColor(color);
@@ -869,8 +870,8 @@ Int_t AliESDtrackCuts::CountAcceptedTracks(AliESDEvent* esd)
 
     fhC11[i]                 = new TH1F("covMatrixDiagonal11","",2000,0,20);
     fhC22[i]                 = new TH1F("covMatrixDiagonal22","",2000,0,20);
-    fhC33[i]                 = new TH1F("covMatrixDiagonal33","",1000,0,1);
-    fhC44[i]                 = new TH1F("covMatrixDiagonal44","",1000,0,5);
+    fhC33[i]                 = new TH1F("covMatrixDiagonal33","",1000,0,0.1);
+    fhC44[i]                 = new TH1F("covMatrixDiagonal44","",1000,0,0.1);
     fhC55[i]                 = new TH1F("covMatrixDiagonal55","",1000,0,5);
 
     fhDXY[i]                 = new TH1F("dXY"    ,"",500,-10,10);
