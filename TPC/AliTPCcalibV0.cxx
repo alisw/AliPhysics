@@ -23,7 +23,7 @@
 
 #include "AliMagF.h"
 #include "AliTracker.h"
-#include "AliESD.h"
+#include "AliESDEvent.h"
 #include "AliESDtrack.h"
 #include "AliESDfriend.h"
 #include "AliESDfriendTrack.h" 
@@ -46,10 +46,8 @@ ClassImp(AliTPCcalibV0)
 
 
 AliTPCcalibV0::AliTPCcalibV0() : 
-   TNamed(),
-   fDebugStream(0),
+   AliTPCcalibBase(),
    fStack(0),
-   fOutput(0),
    fESD(0),
    fPdg(0),
    fParticles(0),
@@ -61,11 +59,7 @@ AliTPCcalibV0::AliTPCcalibV0() :
    fTPCdEdxEl(0),
    fTPCdEdxP(0)
 {
-  G__SetCatchException(0);     
-  fDebugStream = new TTreeSRedirector("V0debug.root");
-  fPdg = new TDatabasePDG;     
-
-  
+  fPdg = new TDatabasePDG;       
   // create output histograms
   fTPCdEdx   = new TH2F("TPCdEdX",  "dE/dX; BetaGamma; TPC signal (a.u.)", 1000, 0.1, 10000, 300, 0, 300);
   BinLogX(fTPCdEdx); 
@@ -80,18 +74,13 @@ AliTPCcalibV0::~AliTPCcalibV0(){
   //
   //
   //
-  delete fDebugStream;
 }
 
 
 
-void AliTPCcalibV0::ProofSlaveBegin(TList * output)
-{
-  // Called on PROOF - fill output list
-}
 
 
-void  AliTPCcalibV0::ProcessESD(AliESD *esd, AliStack *stack){
+void  AliTPCcalibV0::ProcessESD(AliESDEvent *esd, AliStack *stack){
   //
   //
   //
@@ -223,43 +212,48 @@ void AliTPCcalibV0::MakeMC(){
       Float_t chi2C = v0kf->GetChi2();
       //
       //
-      (*fDebugStream)<<"MCRC"<<
-	"P.="<<part<<
-	"type="<<type<<
-	"chi2="<<chi2<<
-	"chi2C="<<chi2C<<
-	"minpt="<<minpt<<
-	"id0="<<id0<<
-	"id1="<<id1<<
-	"Pn.="<<pn<<
-	"Pp.="<<pp<<
-	"tn.="<<trackN<<
-	"tp.="<<trackP<<
-	"nold.="<<nold<<
-	"nnew.="<<nnew<<
-   	"v0.="<<v0<<
-	"v0kf.="<<v0kf<<
-	"v0kfc.="<<v0kfc<<
-	"\n";     
-      delete v0kf;
-      delete v0kfc; 
-      //
+      TTreeSRedirector *cstream = GetDebugStreamer();
+      if (cstream){
+	(*cstream)<<"MCRC"<<
+	  "P.="<<part<<
+	  "type="<<type<<
+	  "chi2="<<chi2<<
+	  "chi2C="<<chi2C<<
+	  "minpt="<<minpt<<
+	  "id0="<<id0<<
+	  "id1="<<id1<<
+	  "Pn.="<<pn<<
+	  "Pp.="<<pp<<
+	  "tn.="<<trackN<<
+	  "tp.="<<trackP<<
+	  "nold.="<<nold<<
+	  "nnew.="<<nnew<<
+	  "v0.="<<v0<<
+	  "v0kf.="<<v0kf<<
+	  "v0kfc.="<<v0kfc<<
+	  "\n";     
+	delete v0kf;
+	delete v0kfc; 
+	//
+      }
+      
+      if (cstream){
+	(*cstream)<<"MC"<<
+	  "P.="<<part<<
+	  "charge="<<charge<<
+	  "type="<<type<<
+	  "minpt="<<minpt<<
+	  "id0="<<id0<<
+	  "id1="<<id1<<
+	  "P0.="<<p0<<
+	  "P1.="<<p1<<
+	  "nold="<<nold<<
+	  "nnew="<<nnew<<
+	  "\n";
+      }
     }
-    (*fDebugStream)<<"MC"<<
-      "P.="<<part<<
-      "charge="<<charge<<
-      "type="<<type<<
-      "minpt="<<minpt<<
-      "id0="<<id0<<
-      "id1="<<id1<<
-      "P0.="<<p0<<
-      "P1.="<<p1<<
-      "nold="<<nold<<
-      "nnew="<<nnew<<
-      "\n";
+    fParticles->Delete(); 
   }
-  fParticles->Delete(); 
-
 }
 
 
@@ -628,46 +622,49 @@ void AliTPCcalibV0::ProcessV0(Int_t ftype){
     //
     // write output tree
     if (minChi2>50) continue;
-    (*fDebugStream)<<"V0"<<
-      "ftype="<<ftype<<
-      "v0.="<<v0<<
-      "trackN.="<<trackN<<
-      "trackP.="<<trackP<<
-      //
-      "betaGamma0="<<betaGamma0<<
-      "betaGamma1="<<betaGamma1<<
-      //
-      "type="<<type<<
-      "chi2C="<<minChi2C<<
-      "v0K0.="<<v0K0<<
-      "v0Gamma.="<<v0Gamma<<
-      "v0Lambda42.="<<v0Lambda42<<
-      "v0Lambda24.="<<v0Lambda24<<
-      //
-      "chi20K0.="<<chi2K0<<
-      "chi2Gamma.="<<chi2Gamma<<
-      "chi2Lambda42.="<<chi2Lambda42<<
-      "chi2Lambda24.="<<chi2Lambda24<<
-      //
-      "chi20K0c.="<<chi2K0C<<
-      "chi2Gammac.="<<chi2GammaC<<
-      "chi2Lambda42c.="<<chi2Lambda42C<<
-      "chi2Lambda24c.="<<chi2Lambda24C<<
-      //
-      "v0K0C.="<<v0K0C<<
-      "v0GammaC.="<<v0GammaC<<
-      "v0Lambda42C.="<<v0Lambda42C<<
-      "v0Lambda24C.="<<v0Lambda24C<<
-      //
-      "massK0="<<massK0<<
-      "massGamma="<<massGamma<<
-      "massLambda42="<<massLambda42<<
-      "massLambda24="<<massLambda24<<
-      //
-      "timeK0="<<timeK0<<
-      "timeLambda42="<<timeLambda42<<
-      "timeLambda24="<<timeLambda24<<
-      "\n";
+    TTreeSRedirector *cstream = GetDebugStreamer();
+    if (cstream){
+      (*cstream)<<"V0"<<
+	"ftype="<<ftype<<
+	"v0.="<<v0<<
+	"trackN.="<<trackN<<
+	"trackP.="<<trackP<<
+	//
+	"betaGamma0="<<betaGamma0<<
+	"betaGamma1="<<betaGamma1<<
+	//
+	"type="<<type<<
+	"chi2C="<<minChi2C<<
+	"v0K0.="<<v0K0<<
+	"v0Gamma.="<<v0Gamma<<
+	"v0Lambda42.="<<v0Lambda42<<
+	"v0Lambda24.="<<v0Lambda24<<
+	//
+	"chi20K0.="<<chi2K0<<
+	"chi2Gamma.="<<chi2Gamma<<
+	"chi2Lambda42.="<<chi2Lambda42<<
+	"chi2Lambda24.="<<chi2Lambda24<<
+	//
+	"chi20K0c.="<<chi2K0C<<
+	"chi2Gammac.="<<chi2GammaC<<
+	"chi2Lambda42c.="<<chi2Lambda42C<<
+	"chi2Lambda24c.="<<chi2Lambda24C<<
+	//
+	"v0K0C.="<<v0K0C<<
+	"v0GammaC.="<<v0GammaC<<
+	"v0Lambda42C.="<<v0Lambda42C<<
+	"v0Lambda24C.="<<v0Lambda24C<<
+	//
+	"massK0="<<massK0<<
+	"massGamma="<<massGamma<<
+	"massLambda42="<<massLambda42<<
+	"massLambda24="<<massLambda24<<
+	//
+	"timeK0="<<timeK0<<
+	"timeLambda42="<<timeLambda42<<
+	"timeLambda24="<<timeLambda24<<
+	"\n";
+    }
     if (type==1) fGammas->AddLast(v0); 
     //
     //
@@ -715,14 +712,17 @@ void AliTPCcalibV0::ProcessPI0(){
 	Double_t n1 = TMath::Sqrt (m0[0]*m0[0] + m0[1]*m0[1] + m0[2]*m0[2]);
         Double_t n2 = TMath::Sqrt (m1[0]*m1[0] + m1[1]*m1[1] + m1[2]*m1[2]);
         Double_t mass = TMath::Sqrt(2.*(n1*n2 - (m0[0]*m1[0] + m0[1]*m1[1] + m0[2]*m1[2])));
-        (*fDebugStream)<<"PI0"<<
-          "v00.="<<v00<<
-          "v01.="<<v01<<
-          "mass="<<mass<<
-	  "p00.="<<p00<<
-	  "p01.="<<p01<<
-	  "pi0.="<<&pi0<<
-          "\n";	
+	TTreeSRedirector *cstream = GetDebugStreamer();
+	if (cstream){
+	  (*cstream)<<"PI0"<<
+	    "v00.="<<v00<<
+	    "v01.="<<v01<<
+	    "mass="<<mass<<
+	    "p00.="<<p00<<
+	    "p01.="<<p01<<
+	    "pi0.="<<&pi0<<
+	    "\n";	
+	}
       }
       delete p01;
     }

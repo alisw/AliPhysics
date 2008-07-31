@@ -2,14 +2,14 @@
 #define AliTPCCALIBV0_H
 
 
-#include <TNamed.h>
+#include <AliTPCcalibBase.h>
 
 
 class TTreeSRedirector;
 class AliTPCROC;
 class AliTPCseed;
 class AliESDtrack;
-class AliESD;
+class AliESDEvent;
 class TH3F;
 class TH1F;
 class TH2F;
@@ -22,15 +22,19 @@ class TArrayI;
 class TTree;
 class AliStack;
 
-class AliTPCcalibV0 : public TNamed {
+class AliTPCcalibV0 : public AliTPCcalibBase {
 public :
 
    // List of branches
 
-   AliTPCcalibV0();
+  AliTPCcalibV0();
   virtual ~AliTPCcalibV0();
-   virtual void    ProofSlaveBegin(TList * output);
-  void ProcessESD(AliESD *esd, AliStack *stack=0);
+  virtual void     Process(AliESDEvent *event) {return ProcessESD(event,0);}
+
+  //
+  //
+  //
+  void ProcessESD(AliESDEvent *esd, AliStack *stack=0);
   void MakeMC();
   void MakeV0s();
   void ProcessV0(Int_t ftype);
@@ -45,10 +49,8 @@ public :
   
 protected:
 private:
-   TTreeSRedirector   *fDebugStream;  //debug stream for 
-   AliStack           *fStack;        // pointer to kinematic tree        
-   TList          *fOutput;           //output list 	
-   AliESD         *fESD;              //! current ED to proccess - NOT OWNER
+   AliStack       *fStack;        // pointer to kinematic tree        
+   AliESDEvent    *fESD;              //! current ED to proccess - NOT OWNER
    TDatabasePDG   *fPdg;              // particle database
    TObjArray      *fParticles;         // array of selected MC particles
    TObjArray      *fV0s;               // array of V0s
