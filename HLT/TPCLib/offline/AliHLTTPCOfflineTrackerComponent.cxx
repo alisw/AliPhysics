@@ -140,9 +140,8 @@ int AliHLTTPCOfflineTrackerComponent::DoInit( int argc, const char** argv )
   //
   // initialisation
   //
-   
+ 
   // Load geometry
-  HLTInfo("Geometry file %s",fGeometryFileName.c_str());
   AliGeomManager::LoadGeometry(fGeometryFileName.c_str());
   if((AliGeomManager::GetGeometry()) == 0) {
     HLTError("Cannot load geometry from file %s",fGeometryFileName.c_str());
@@ -150,9 +149,10 @@ int AliHLTTPCOfflineTrackerComponent::DoInit( int argc, const char** argv )
   }
 
   // TPC reconstruction parameters
-  //AliTPCRecoParam * tpcRecoParam = AliTPCRecoParam::GetLowFluxParam();
   AliTPCRecoParam * tpcRecoParam = AliTPCRecoParam::GetHLTParam();
   if(tpcRecoParam) {
+    tpcRecoParam->SetClusterSharing(kTRUE);
+
     AliTPCReconstructor tpcReconstructor;
     tpcReconstructor.SetRecoParam(tpcRecoParam);
   }

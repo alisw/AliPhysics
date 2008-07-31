@@ -157,7 +157,6 @@ int AliHLTTPCOfflineClustererComponent::DoInit( int argc, const char** argv )
   fRawReader = new AliRawReaderMemory;
 
   // TPC reconstruction parameters
-  //fTPCRecoParam = AliTPCRecoParam::GetLowFluxParam();
   fTPCRecoParam = AliTPCRecoParam::GetHLTParam();
   if (fTPCRecoParam) {
     fTPCRecoParam->SetClusterSharing(kTRUE);
