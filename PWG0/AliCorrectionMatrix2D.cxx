@@ -101,20 +101,20 @@ AliCorrectionMatrix2D::~AliCorrectionMatrix2D()
   // histograms already deleted in base class
 }
 
-TH2F* AliCorrectionMatrix2D::GetGeneratedHistogram() const
+TH2* AliCorrectionMatrix2D::GetGeneratedHistogram() const
 {
   // return generated histogram casted to correct type
-  return dynamic_cast<TH2F*> (fhGene);
+  return dynamic_cast<TH2*> (fhGene);
 }
 
-TH2F* AliCorrectionMatrix2D::GetMeasuredHistogram() const
+TH2* AliCorrectionMatrix2D::GetMeasuredHistogram() const
 {
   // return measured histogram casted to correct type
-  return dynamic_cast<TH2F*> (fhMeas);
+  return dynamic_cast<TH2*> (fhMeas);
 }
 
 //____________________________________________________________________
-TH1F* AliCorrectionMatrix2D::Get1DCorrectionHistogram(Char_t* opt, Float_t min, Float_t max)
+TH1* AliCorrectionMatrix2D::Get1DCorrectionHistogram(Char_t* opt, Float_t min, Float_t max)
 {
   //
   // integrate the correction over one variable 
@@ -134,11 +134,11 @@ TH1F* AliCorrectionMatrix2D::Get1DCorrectionHistogram(Char_t* opt, Float_t min, 
     else {
       Printf("Getting 1D map. Including y-bins %d to %d", binMin, binMax);
 
-      meas1D = ((TH2F*)fhMeas)->ProjectionX(Form("%s_pm", GetName()),binMin,binMax);
-      gene1D = ((TH2F*)fhGene)->ProjectionX(Form("%s_pg", GetName()),binMin,binMax);
+      meas1D = ((TH2F*)fhMeas)->ProjectionX(Form("%s_x_pm", GetName()),binMin,binMax);
+      gene1D = ((TH2F*)fhGene)->ProjectionX(Form("%s_x_pg", GetName()),binMin,binMax);
     }
   }
-  if (strcmp(opt,"y")==0) {
+  else if (strcmp(opt,"y")==0) {
     Int_t binMin = fhMeas->GetXaxis()->FindBin(min);
     Int_t binMax = fhMeas->GetXaxis()->FindBin(max);
 
@@ -147,12 +147,17 @@ TH1F* AliCorrectionMatrix2D::Get1DCorrectionHistogram(Char_t* opt, Float_t min, 
       gene1D = ((TH2F*)fhGene)->ProjectionY();
     }
     else {
-      AliDebug(AliLog::kDebug+1, Form("Getting 1D map. Including x-bins %d to %d \n", binMin, binMax));
+      Printf("Getting 1D map. Including x-bins %d to %d \n", binMin, binMax);
 
-      meas1D = ((TH2F*)fhMeas)->ProjectionY(Form("%s_pm", GetName()), binMin, binMax);
-      gene1D = ((TH2F*)fhGene)->ProjectionY(Form("%s_pg", GetName()), binMin, binMax);
+      meas1D = ((TH2F*)fhMeas)->ProjectionY(Form("%s_y_pm", GetName()), binMin, binMax);
+      gene1D = ((TH2F*)fhGene)->ProjectionY(Form("%s_y_pg", GetName()), binMin, binMax);
     }
   }
+  else {
+    Printf("ERROR: Invalid option");
+    return 0;
+  }
+
   gene1D->Sumw2();
 
   gene1D->SetName(Form("corr_1D_%s",fName.Data()));

@@ -269,60 +269,6 @@ TH1** DrawRatios(const char* fileName = "systematics.root")
   return ptDists;
 }
 
-void DrawpiKpAndCombinedZOnly(Float_t upperPtLimit=0.99)
-{
-  gROOT->ProcessLine(".L drawPlots.C");
-  gSystem->Load("libPWG0base");
-
-  const char* fileNames[] = { "systematics.root", "systematics.root", "systematics.root", "correction_map.root" };
-  const char* folderNames[] = { "correction_0", "correction_1", "correction_2", "dndeta_correction" };
-  const char* legendNames[] = { "#pi", "K", "p", "standard" };
-  Int_t folderCount = 3;
-
-  /*const char* fileNames[] = { "systematics.root", "systematics.root", "systematics.root", "systematics.root", "correction_map.root" };
-  const char* folderNames[] = { "correction_0", "correction_1", "correction_2", "correction_3", "dndeta_correction" };
-  const char* legendNames[] = { "#pi", "K", "p", "others", "standard" };
-  Int_t folderCount = 5;*/
-
-  TString canvasName;
-  canvasName.Form("Track2Particle1DComposition");
-  TCanvas* canvas = new TCanvas(canvasName, canvasName, 700, 500);
-  canvas->SetGridx();
-  canvas->SetGridy();
-  canvas->SetBottomMargin(0.12);
-  //InitPad();
-
-  TLegend* legend = new TLegend(0.8, 0.7, 0.95, 0.95);
-  legend->SetFillColor(0);
-
-  Int_t mycolors[] = {1, 2, 4};
-
-  for (Int_t i=0; i<folderCount; ++i)
-  {
-    Track2Particle1DCreatePlots(fileNames[i], folderNames[i], upperPtLimit);
-
-    TH1* corrZ = dynamic_cast<TH1*> (gROOT->FindObject(Form("gene_%s_nTrackToNPart_z_div_meas_%s_nTrackToNPart_z", folderNames[i], folderNames[i])));
-
-    Prepare1DPlot(corrZ);
-
-    corrZ->SetTitle("");
-    corrZ->GetXaxis()->SetRangeUser(0, upperPtLimit);
-    corrZ->GetYaxis()->SetRangeUser(0.51, 6);
-    corrZ->SetMarkerColor(mycolors[i]);
-    corrZ->SetLineColor(mycolors[i]);
-    corrZ->SetMarkerStyle(markers[i+1]);
-    corrZ->GetYaxis()->SetTitle("correction factor");
-
-    corrZ->DrawCopy(((i>0) ? "SAMEP" : "P"));
-
-    legend->AddEntry(corrZ, legendNames[i]);
-  }
-
-  legend->Draw();
-
-  canvas->SaveAs("ptcutoff_species.eps");
-}
-
 void DrawCompareToReal()
 {
   gROOT->ProcessLine(".L drawPlots.C");

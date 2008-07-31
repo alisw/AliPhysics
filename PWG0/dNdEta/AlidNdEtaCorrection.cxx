@@ -339,7 +339,7 @@ Float_t AlidNdEtaCorrection::GetMeasuredFraction(CorrectionType correctionType, 
   if (!GetCorrection(correctionType))
     return -1;
 
-  const TH3F* generated = GetCorrection(correctionType)->GetTrackCorrection()->GetGeneratedHistogram();
+  const TH3* generated = GetCorrection(correctionType)->GetTrackCorrection()->GetGeneratedHistogram();
 
   // find eta borders, if eta is negative assume -0.8 ... 0.8
   Int_t etaBegin = 0;
@@ -401,7 +401,7 @@ TH1* AlidNdEtaCorrection::GetMeasuredEventFraction(CorrectionType correctionType
   if (!GetCorrection(correctionType))
     return 0;
 
-  const TH2F* generated = GetCorrection(correctionType)->GetEventCorrection()->GetGeneratedHistogram();
+  const TH2* generated = GetCorrection(correctionType)->GetEventCorrection()->GetGeneratedHistogram();
 
   TH1* allEvents = generated->ProjectionX(Form("%s_all", generated->GetName()), 1, generated->GetNbinsY());
   TH1* aboveEvents = generated->ProjectionX(Form("%s_above", generated->GetName()), generated->GetYaxis()->FindBin(multCut), generated->GetNbinsY());

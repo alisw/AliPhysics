@@ -12,9 +12,9 @@
 #include <AliCorrectionMatrix.h>
 #include <AliCorrectionMatrix2D.h>
 
-class TH3F;
-class TH2F;
-class TH1F;
+class TH3;
+class TH2;
+class TH1;
 
 
 class AliCorrectionMatrix3D : public AliCorrectionMatrix
@@ -32,7 +32,7 @@ public:
          Int_t nBinY, Float_t Ymin, Float_t Ymax,
          Int_t nBinZ, const Float_t* zbins);
 
-  AliCorrectionMatrix3D(const Char_t* name, const Char_t* title, TH3F* hBinning);
+  AliCorrectionMatrix3D(const Char_t* name, const Char_t* title, TH3* hBinning);
  
   virtual ~AliCorrectionMatrix3D();
 
@@ -42,13 +42,13 @@ public:
 		   Int_t nBinY, const Float_t* binLimitsY,
 		   Int_t nBinZ, const Float_t* binLimitsZ);
 
-  TH3F* GetGeneratedHistogram();
-  TH3F* GetMeasuredHistogram();
-  TH3F* GetCorrectionHistogram();
+  TH3* GetGeneratedHistogram();
+  TH3* GetMeasuredHistogram();
+  TH3* GetCorrectionHistogram();
 
   AliCorrectionMatrix2D* Get2DCorrection(Char_t* opt, Float_t aMin, Float_t aMax);
-  TH2F* Get2DCorrectionHistogram(Char_t* opt, Float_t aMin, Float_t aMax) {return Get2DCorrection(opt,aMin,aMax)->GetCorrectionHistogram();}
-  TH1F* Get1DCorrectionHistogram(Char_t* opt, Float_t aMins1=0, Float_t aMax1=0, Float_t aMins2=0, Float_t aMax2=0);
+  TH2* Get2DCorrectionHistogram(Char_t* opt, Float_t aMin, Float_t aMax) {return Get2DCorrection(opt,aMin,aMax)->GetCorrectionHistogram();}
+  TH1* Get1DCorrectionHistogram(Char_t* opt, Float_t aMins1=0, Float_t aMax1=0, Float_t aMins2=0, Float_t aMax2=0);
 
   void FillMeas(Float_t ax, Float_t ay, Float_t az);
   void FillGene(Float_t ax, Float_t ay, Float_t az);
@@ -60,7 +60,7 @@ public:
   virtual void SaveHistograms();
 
   Int_t CheckEmptyBins(Float_t xmin, Float_t xmax, Float_t ymin, Float_t ymax, Float_t zmin, Float_t zmax, Bool_t quiet = kFALSE);
-  TH1F* PlotBinErrors(Float_t xmin, Float_t xmax, Float_t ymin, Float_t ymax, Float_t zmin, Float_t zmax);
+  TH1* PlotBinErrors(Float_t xmin, Float_t xmax, Float_t ymin, Float_t ymax, Float_t zmin, Float_t zmax);
 
 
 protected:

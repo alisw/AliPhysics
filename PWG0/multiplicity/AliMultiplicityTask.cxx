@@ -264,7 +264,7 @@ void AliMultiplicityTask::Exec(Option_t*)
     }
 
     // get multiplicity from ESD tracks
-    TObjArray* list = fEsdTrackCuts->GetAcceptedTracks(fESD);
+    TObjArray* list = fEsdTrackCuts->GetAcceptedTracks(fESD, (fAnalysisMode == AliPWG0Helper::kTPC));
     Int_t nGoodTracks = list->GetEntries();
 
     labelArr = new Int_t[nGoodTracks];

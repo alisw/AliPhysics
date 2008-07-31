@@ -350,7 +350,7 @@ void AliCorrection::Multiply()
   {
     fEventCorr->Multiply();
     // now we manually copy the overflow bin of the y axis (multiplicity) over. This is important to get the event count correct
-    TH2F* hist = fEventCorr->GetMeasuredHistogram();
+    TH2* hist = fEventCorr->GetMeasuredHistogram();
     for (Int_t x = 1; x <= hist->GetNbinsX(); ++x)
       fEventCorr->GetGeneratedHistogram()->SetBinContent(x, hist->GetNbinsY() + 1, hist->GetBinContent(x, hist->GetNbinsY() + 1));
   }
