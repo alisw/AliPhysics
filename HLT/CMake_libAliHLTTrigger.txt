@@ -1,0 +1,15 @@
+# -*- mode: cmake -*-
+
+set(SRCS
+trigger/AliHLTEventSummary.cxx
+trigger/AliHLTEventSummaryProducerComponent.cxx
+trigger/AliHLTRunSummary.cxx
+trigger/AliHLTRunSummaryProducerComponent.cxx
+trigger/AliHLTTriggerSelectiveReadoutComponent.cxx
+)
+
+# fill list of header files from list of source files
+# by exchanging the file extension
+String(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+
+AddLibrary(AliHLTTrigger "${SRCS}" "${HDRS}")

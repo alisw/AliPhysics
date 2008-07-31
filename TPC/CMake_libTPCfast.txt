@@ -1,0 +1,16 @@
+# -*- mode: cmake -*-
+
+set(SRCS
+AliTPCFast.cxx
+AliTPCtrackerParam.cxx
+AliTPCkineGrid.cxx
+)
+
+# fill list of header files from list of source files
+# by exchanging the file extension
+String(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+
+AddLibrary(TPCfast "${SRCS}" "${HDRS}")
+
+
+

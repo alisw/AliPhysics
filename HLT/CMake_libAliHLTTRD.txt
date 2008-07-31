@@ -1,0 +1,17 @@
+# -*- mode: cmake -*-
+
+set(SRCS
+TRD/AliHLTTRDClusterizerComponent.cxx
+TRD/AliHLTTRDDefinitions.cxx
+TRD/AliHLTTRDTrackerComponent.cxx
+TRD/AliHLTTRDTrackerV1Component.cxx
+TRD/AliTRDclusterizerHLT.cxx
+TRD/AliHLTTRDEsdWriterComponent.cxx
+TRD/AliHLTTRDCalibrationComponent.cxx
+)
+
+# fill list of header files from list of source files
+# by exchanging the file extension
+String(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+
+AddLibrary(AliHLTTRD "${SRCS}" "${HDRS}")

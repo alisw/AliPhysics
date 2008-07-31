@@ -1,0 +1,29 @@
+# -*- mode: cmake -*-
+
+set(SRCS
+AliTPCcalibTracksCuts.cxx
+AliTPCcalibTracks.cxx
+AliTPCcalibTracksGain.cxx
+AliTPCSelectorESD.cxx
+AliTPCSelectorTracks.cxx
+AliTPCCalPadRegion.cxx
+AliTPCFitPad.cxx
+AliAnaTPCTrackBase.cxx
+AliAnaTPCTrackCalib.cxx
+AliTPCcalibAlign.cxx
+AliTPCcalibAlignment.cxx
+AliTPCcalibV0.cxx
+AliTPCCalibKr.cxx
+AliTPCcalibBase.cxx 
+AliTPCAnalysisTaskcalib.cxx  
+AliTPCCalibKrTask.cxx 
+AliTPCcalibLaser.cxx 
+AliTPCcalibCosmic.cxx 
+AliTPCLaserTrack.cxx
+)
+
+# fill list of header files from list of source files
+# by exchanging the file extension
+String(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+
+AddLibrary(TPCcalib "${SRCS}" "${HDRS}")

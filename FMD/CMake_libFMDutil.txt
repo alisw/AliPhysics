@@ -1,0 +1,21 @@
+# -*- mode: cmake -*-
+
+set(SRCS
+AliFMDInput.cxx
+AliFMDDisplay.cxx
+AliFMDPattern.cxx
+AliFMDFancy.cxx
+AliFMDCalibFaker.cxx
+AliFMDAlignFaker.cxx
+AliFMDAnaRing.cxx
+AliFMDAnaESD.cxx
+AliFMDBaseDA.cxx
+AliFMDPedestalDA.cxx
+AliFMDGainDA.cxx
+)
+
+# fill list of header files from list of source files
+# by exchanging the file extension
+String(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+
+AddLibrary(FMDutil "${SRCS}" "${HDRS}")

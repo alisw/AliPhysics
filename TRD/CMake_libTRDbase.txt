@@ -1,0 +1,76 @@
+# -*- mode: cmake -*-
+
+set(SRCS
+      AliTRDarrayI.cxx
+      AliTRDarrayS.cxx
+      AliTRDarrayF.cxx
+      AliTRDsegmentID.cxx
+      AliTRDdataArray.cxx
+      AliTRDdataArrayI.cxx
+      AliTRDdataArrayS.cxx
+      AliTRDdataArrayF.cxx
+      AliTRDdataArrayDigits.cxx
+      AliTRDsegmentArray.cxx
+      AliTRDSignalIndex.cxx
+      AliTRDgeometry.cxx
+      AliTRDdigit.cxx
+      AliTRDdigitsManager.cxx
+      AliTRDrawData.cxx
+      AliTRDpadPlane.cxx
+      AliTRDRawStream.cxx
+      AliTRDRawStreamV2.cxx
+      AliTRDrawStreamTB.cxx
+      AliTRDrawStreamBase.cxx
+      AliTRDtestBeam.cxx
+      AliTRDCommonParam.cxx
+      AliTRDfeeParam.cxx
+      AliTRDcalibDB.cxx
+      Cal/AliTRDCalROC.cxx
+      Cal/AliTRDCalPad.cxx
+      Cal/AliTRDCalDet.cxx
+      Cal/AliTRDCalFEE.cxx
+      Cal/AliTRDCalDCS.cxx
+      Cal/AliTRDCalDCSFEE.cxx
+      Cal/AliTRDCalDCSPTR.cxx
+      Cal/AliTRDCalDCSGTU.cxx
+      Cal/AliTRDCalPID.cxx
+      Cal/AliTRDCalPIDLQ.cxx
+      Cal/AliTRDCalPIDNN.cxx
+      Cal/AliTRDCalPIDRefMaker.cxx
+      Cal/AliTRDCalMonitoring.cxx
+      Cal/AliTRDCalChamberStatus.cxx
+      Cal/AliTRDCalPadStatus.cxx
+      Cal/AliTRDCalSingleChamberStatus.cxx
+      AliTRDCalibraFit.cxx
+      AliTRDCalibraMode.cxx
+      AliTRDCalibraVector.cxx
+      AliTRDCalibraVdriftLinearFit.cxx
+      AliTRDCalibPadStatus.cxx
+      AliTRDQAChecker.cxx
+      AliTRDPreprocessor.cxx
+      AliTRDSaxHandler.cxx
+      AliTRDDataDCS.cxx
+      AliTRDSensor.cxx
+      AliTRDSensorArray.cxx
+      AliTRDalignment.cxx
+      AliTRDTriggerL1.cxx
+      AliTRDmcmTracklet.cxx
+      AliTRDmcm.cxx
+      AliTRDmcmSim.cxx
+      AliTRDtrigParam.cxx
+      AliTRDtrigger.cxx
+      AliTRDtrackletBase.cxx
+      AliTRDltuTracklet.cxx
+      AliTRDgtuTrack.cxx
+      AliTRDtrapAlu.cxx
+      AliTRDmodule.cxx
+      AliTRDhit.cxx
+      AliTRDrecoParam.cxx
+      AliTRDSimParam.cxx
+)
+
+# fill list of header files from list of source files
+# by exchanging the file extension
+String(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+
+AddLibrary(TRDbase "${SRCS}" "${HDRS}")

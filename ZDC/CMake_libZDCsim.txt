@@ -1,0 +1,20 @@
+# -*- mode: cmake -*-
+
+set(SRCS
+AliZDC.cxx
+AliZDCv3.cxx
+AliZDCHit.cxx
+AliZDCSDigit.cxx
+AliZDCFragment.cxx
+AliZDCDigitizer.cxx
+AliGenZDC.cxx
+AliZDCTrigger.cxx
+AliZDCQADataMakerSim.cxx
+)
+
+# fill list of header files from list of source files
+# by exchanging the file extension
+String(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+
+AddLibrary(ZDCsim "${SRCS}" "${HDRS}")
+

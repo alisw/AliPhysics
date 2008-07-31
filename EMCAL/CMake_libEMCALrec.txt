@@ -1,0 +1,16 @@
+# -*- mode: cmake -*-
+
+set(SRCS
+AliEMCALReconstructor.cxx
+AliEMCALClusterizerv1.cxx
+AliEMCALTrack.cxx
+AliEMCALTracker.cxx
+AliEMCALPID.cxx
+AliEMCALQADataMakerRec.cxx
+)
+
+# fill list of header files from list of source files
+# by exchanging the file extension
+String(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+
+AddLibrary(EMCALrec "${SRCS}" "${HDRS}")

@@ -1,0 +1,20 @@
+# -*- mode: cmake -*-
+
+set(SRCS
+AliTOFcluster.cxx
+AliTOFClusterFinder.cxx
+AliTOFtrack.cxx
+AliTOFtracker.cxx
+AliTOFtrackerMI.cxx
+AliTOFtrackerV1.cxx
+AliTOFpidESD.cxx
+AliTOFReconstructor.cxx
+AliTOFRecoParam.cxx
+AliTOFQADataMakerRec.cxx
+)
+
+# fill list of header files from list of source files
+# by exchanging the file extension
+String(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+
+AddLibrary(TOFrec "${SRCS}" "${HDRS}" "${HDRS}")

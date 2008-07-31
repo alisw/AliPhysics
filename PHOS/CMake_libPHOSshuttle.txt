@@ -1,0 +1,18 @@
+# -*- mode: cmake -*-
+
+set(SRCS
+                 AliPHOSCalibHistoProducer.cxx 
+                 AliPHOSPreprocessor.cxx 
+		 AliPHOSRcuDA1.cxx 
+		 AliPHOSDA1.cxx 
+		 AliPHOSDA2.cxx 
+		 AliPHOSCpvDA1.cxx 
+		 AliPHOSCpvPreprocessor.cxx
+)
+
+# fill list of header files from list of source files
+# by exchanging the file extension
+String(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+
+AddLibrary(PHOSshuttle "${SRCS}" "${HDRS}")
+

@@ -1,0 +1,12 @@
+# -*- mode: cmake -*-
+
+set(SRCS
+monitorCheck.cxx
+)
+
+Set(LIBS STEERBase ESD AOD CDB STEER RAWDatabase RAWDatarec RAWDatasim TPCbase
+         TPCsim TPCrec ITSbase ITSsim ITSrec HLTbase MUONsim MUONrec MUONbase
+         MUONgeometry MUONraw MUONcalib MUONmapping MUONtrigger MUONevaluation
+         MUONcore)
+
+AddExecutable(monitorCheck "${SRCS}" "${LIBS}")

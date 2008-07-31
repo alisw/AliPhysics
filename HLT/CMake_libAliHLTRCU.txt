@@ -1,0 +1,14 @@
+# -*- mode: cmake -*-
+
+set(SRCS
+RCU/AliHLTAltroChannelSelectorComponent.cxx
+RCU/AliHLTAltroEncoder.cxx
+RCU/AliHLTAltroGenerator.cxx
+RCU/AliHLTRCUAgent.cxx
+)
+
+# fill list of header files from list of source files
+# by exchanging the file extension
+String(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+
+AddLibrary(AliHLTRCU "${SRCS}" "${HDRS}")

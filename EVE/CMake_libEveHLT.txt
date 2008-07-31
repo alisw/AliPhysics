@@ -1,0 +1,15 @@
+# -*- mode: cmake -*-
+
+set(SRCS
+EveHLT/AliEveHOMERManager.cxx        
+EveHLT/AliEveHOMERSourceList.cxx
+EveHLT/AliEveHOMERManagerEditor.cxx  
+EveHLT/AliEveHOMERSourceMap.cxx
+EveHLT/AliEveHOMERSource.cxx
+)
+
+# fill list of header files from list of source files
+# by exchanging the file extension
+String(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+
+AddLibrary(EveHLT "${SRCS}" "${HDRS}")

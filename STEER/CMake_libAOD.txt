@@ -1,0 +1,18 @@
+# -*- mode: cmake -*-
+
+set(SRCS 
+        AliAODEvent.cxx AliAODHeader.cxx 
+	AliAODTrack.cxx AliAODPid.cxx AliAODVertex.cxx 
+	AliAODCluster.cxx AliAODCaloCluster.cxx AliAODPmdCluster.cxx AliAODFmdCluster.cxx 
+	AliAODJet.cxx AliAODPhoton.cxx AliAODRedCov.cxx AliAODRecoDecay.cxx 
+	AliAODHandler.cxx AliAODTracklets.cxx AliAODTagCreator.cxx 
+	AliAODv0.cxx AliAODCaloCells.cxx AliAODInputHandler.cxx AliMultiAODInputHandler.cxx AliAODDiJet.cxx
+        AliAODcascade.cxx
+)
+
+# fill list of header files from list of source files
+# by exchanging the file extension
+String(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+
+AddLibrary(AOD "${SRCS}" "${HDRS}" "${HDRS}")
+

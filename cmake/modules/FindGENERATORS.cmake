@@ -1,0 +1,58 @@
+# - Try to find PLUTO instalation
+# Once done this will define
+#
+#  GENERATORS_FOUND - system has PYTHIA5 and PYTHIA6 and VENUS
+#  GENERATORS_LIBRARY_DIR - The libraries directory for PYTHIA and VENUS
+#
+
+if (GENERATORS_LIBRARY_DIR)
+  SET (GENERATORS_LIBRARY_DIR GENERATORS_LIBRARY_DIR-NOTFOUND)
+endif (GENERATORS_LIBRARY_DIR)
+
+MESSAGE(STATUS "Looking for Pythia6...")
+
+FIND_PATH(PYTHIA6_LIBRARY_DIR NAMES libPythia6.so PATHS
+  ${SIMPATH}/generators/lib
+  NO_DEFAULT_PATH
+)
+
+#FIND_PATH(TMP2_DIR NAMES libPythia.so PATHS
+#  /misc/cbmsoft/Debian3.1/new/generators/lib
+#  ${SIMPATH}/new/generators/lib
+#  NO_DEFAULT_PATH
+#)
+
+#FIND_PATH(TMP3_DIR NAMES libVenus.so PATHS
+#  /misc/cbmsoft/Debian3.1/new/generators/lib
+#  ${SIMPATH}/new/generators/lib
+#  NO_DEFAULT_PATH
+#)
+
+if (PYTHIA6_LIBRARY_DIR)
+  set(GENERATORS_FOUND TRUE)
+  set(GENERATORS_LIBRARY_DIR ${PYTHIA6_LIBRARY_DIR})
+endif(PYTHIA6_LIBRARY_DIR)
+
+
+#if (TMP1_DIR AND TMP2_DIR AND TMP3_DIR)
+#   set(GENERATORS_FOUND TRUE)
+#   if (${TMP1_DIR} MATCHES ${TMP2_DIR} AND ${TMP1_DIR} MATCHES ${TMP3_DIR})
+#     set(GENERATORS_LIBRARY_DIR ${TMP1_DIR})
+#   else (${TMP1_DIR} MATCHES ${TMP2_DIR} AND ${TMP1_DIR} MATCHES ${TMP3_DIR})
+#     set(GENERATORS_LIBRARY_DIR ${TMP1_DIR} ${TMP2_DIR} ${TMP3_DIR})
+#   endif (${TMP1_DIR} MATCHES ${TMP2_DIR} AND ${TMP1_DIR} MATCHES ${TMP3_DIR})
+#endif (TMP1_DIR AND TMP2_DIR AND TMP3_DIR)
+
+if (GENERATORS_FOUND)
+  if (NOT GENERATORS_FIND_QUIETLY)     
+    MESSAGE(STATUS "Looking for Pythia6... - found ${GENERATORS_LIBRARY_DIR}")
+#    message(STATUS "Found Generators: ${GENERATORS_LIBRARY_DIR}")
+    SET(LD_LIBRARY_PATH ${LD_LIBRARY_PATH} ${GENERATORS_LIBRARY_DIR})
+  endif (NOT GENERATORS_FIND_QUIETLY)
+else (GENERATORS_FOUND)
+  if (GENERATORS_FIND_REQUIRED)
+    message(FATAL_ERROR "Looking for Pythia6... - Not found")
+#    message(FATAL_ERROR "Could NOT find Pythia6")
+  endif (GENERATORS_FIND_REQUIRED)
+endif (GENERATORS_FOUND)
+

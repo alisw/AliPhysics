@@ -1,0 +1,37 @@
+# -*- mode: cmake -*-
+
+Set(SRCS)
+
+set(CSRCS
+geteni.c
+fchput.c
+fchtak.c
+dummies.c
+)
+
+set(FSRCS
+cltou.F
+gamma.F
+gamma64.F
+sortzv.F
+ufill.F
+fint.F
+abend.F
+cfill.F
+mtlprt.F
+mtlset.F
+kerset.F
+gauss.F
+getenvf.F
+gauss64.F
+)
+
+
+# fill list of header files from list of source files
+# by exchanging the file extension
+String(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+
+Set(SRCS ${SRCS} ${FSRCS} ${CSRCS})
+
+AddLibrary(microcern "${SRCS}" "${HDRS}")
+

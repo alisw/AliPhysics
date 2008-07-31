@@ -1,0 +1,75 @@
+# -*- mode: cmake -*-
+
+set(SRCS
+ 	AliITSgeom.cxx 
+		AliITSgeomMatrix.cxx 
+		AliITSgeomSPD.cxx 
+		AliITSgeomSDD.cxx 
+		AliITSgeomSSD.cxx 
+		AliITSInitGeometry.cxx 
+		AliITSLoader.cxx 
+		AliITSRecPoint.cxx 
+		AliITSclusterV2.cxx 
+		AliITSdigit.cxx 
+		AliITSdigitSPD.cxx 
+		AliITSdigitSDD.cxx 
+		AliITSTransientDigit.cxx 
+		AliITSdigitSSD.cxx 
+		AliITSMap.cxx 
+		AliITSMapA1.cxx 
+		AliITSMapA2.cxx 
+		AliITSMisalignMaker.cxx 
+		AliITSpList.cxx 
+		AliITSpListItem.cxx 
+		AliITSsegmentation.cxx 
+		AliITSsegmentationSPD.cxx 
+		AliITSsegmentationSDD.cxx 
+		AliITSsegmentationSSD.cxx 
+		AliITSresponse.cxx 
+		AliITSCalibration.cxx 
+		AliITSresponseSPD.cxx 
+		AliITSresponseSDD.cxx 
+		AliITSresponseSSD.cxx 
+		AliITSCalibrationSPD.cxx 
+		AliITSCalibrationSDD.cxx 
+		AliITSCalibrationSSD.cxx 
+                AliITSChannelStatus.cxx 
+		AliITSMapSDD.cxx 
+		AliITSDriftSpeedSDD.cxx 
+		AliITSDDLModuleMapSDD.cxx 
+		AliITSDriftSpeedArraySDD.cxx 
+		AliITSBadChannelsSSD.cxx 
+		AliITSGainSSD.cxx 
+		AliITSNoiseSSD.cxx 
+		AliITSChannelDaSSD.cxx 
+                AliITSModuleDaSSD.cxx 
+                AliITSHandleDaSSD.cxx 
+		AliITSDDLRawData.cxx 
+		AliITSRawStream.cxx 
+		AliITSRawStreamSDDv2.cxx 
+		AliITSRawStreamSDDv3.cxx 
+		AliITSRawStreamSSD.cxx 
+		AliITSRawStreamSDD.cxx 
+		AliITSRawStreamSPD.cxx 
+		AliITSEventHeader.cxx 
+		AliITSRawStreamSSDv1.cxx 
+		AliITSRawData.cxx 
+		AliITSgeomTGeo.cxx 
+		AliITSPlaneEff.cxx 
+		AliITSPlaneEffSPD.cxx 
+		AliITSPlaneEffSDD.cxx 
+		AliITSPlaneEffSSD.cxx 
+		AliITSRawStreamSPDErrorLog.cxx 
+		AliITSDCSAnalyzerSDD.cxx 
+		AliITSDCSDataSDD.cxx 
+                AliITSIntMap.cxx 
+		AliITSIntMapNode.cxx 
+		AliITSPedestalSSD.cxx 
+		AliITSSurveyToAlignSSD.cxx
+)
+
+# fill list of header files from list of source files
+# by exchanging the file extension
+String(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+
+AddLibrary(ITSbase "${SRCS}" "${HDRS}")

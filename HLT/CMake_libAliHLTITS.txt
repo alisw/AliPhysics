@@ -1,0 +1,14 @@
+# -*- mode: cmake -*-
+
+set(SRCS
+ITS/AliHLTITStrack.cxx
+ITS/AliHLTITStracker.cxx
+ITS/AliHLTITSVertexerZ.cxx
+ITS/AliHLTITSclusterer.cxx
+)
+
+# fill list of header files from list of source files
+# by exchanging the file extension
+String(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+
+AddLibrary(AliHLTITS "${SRCS}" "${HDRS}")

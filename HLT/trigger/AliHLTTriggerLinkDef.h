@@ -6,9 +6,11 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-#pragma link C++ class AliD0toKpi;
-#pragma link C++ class AliD0Trigger;
-
+#pragma link C++ class AliHLTEventSummary+;
+#pragma link C++ class AliHLTEventSummaryProducerComponent+;
+#pragma link C++ class AliHLTRunSummary+;
+#pragma link C++ class AliHLTRunSummaryProducerComponent+;
+#pragma link C++ class AliHLTTriggerSelectiveReadoutComponent+;
 	
 #endif
 

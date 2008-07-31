@@ -1,0 +1,32 @@
+# -*- mode: cmake -*-
+
+set(SRCS
+AliEMCALGeometry.cxx
+AliEMCALHit.cxx
+AliEMCALLoader.cxx
+AliEMCALShishKebabModule.cxx
+AliEMCALShishKebabTrd1Module.cxx
+AliEMCALWsuCosmicRaySetUp.cxx
+AliEMCALRecPoint.cxx
+AliEMCALClusterizer.cxx
+AliEMCALHistoUtilities.cxx
+AliEMCALSDigitizer.cxx
+AliEMCALDigit.cxx
+AliEMCALCalibData.cxx
+AliEMCALCalibHistoProducer.cxx
+AliEMCALPreprocessor.cxx
+AliEMCALSensorTemp.cxx
+AliEMCALSensorTempArray.cxx
+AliCaloCalibPedestal.cxx
+AliCaloCalibSignal.cxx
+AliEMCALSurvey.cxx
+AliEMCALRecParam.cxx
+AliEMCALQAChecker.cxx
+AliEMCALCalibTimeDep.cxx
+)
+
+# fill list of header files from list of source files
+# by exchanging the file extension
+String(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+
+AddLibrary(EMCALbase "${SRCS}" "${HDRS}")
