@@ -37,7 +37,8 @@ AliESDRun::AliESDRun() :
   fTriggerClasses(kNTriggerClasses)
 {
   for (Int_t i=0; i<2; i++) fDiamondXY[i]=0.;
-  for (Int_t i=0; i<3; i++) fDiamondCovXY[i]=0.;
+  fDiamondCovXY[0]=fDiamondCovXY[2]=3.*3.;
+  fDiamondCovXY[1]=0.;
   fTriggerClasses.SetOwner(kTRUE);
 }
 
@@ -133,7 +134,8 @@ void AliESDRun::Reset()
   fRecoVersion = 0;
   fMagneticField = 0;
   for (Int_t i=0; i<2; i++) fDiamondXY[i]=0.;
-  for (Int_t i=0; i<3; i++) fDiamondCovXY[i]=0.;
+  fDiamondCovXY[0]=fDiamondCovXY[2]=3.*3.;
+  fDiamondCovXY[1]=0.;
   fTriggerClasses.Clear();
 }
 
