@@ -37,7 +37,7 @@ ClassImp(AliCFEffGrid)
 
 //____________________________________________________________________
 AliCFEffGrid::AliCFEffGrid() : 
-  AliCFGrid(),
+  AliCFGridSparse(),
   fContainer(0x0),
   fSelNum(-1),
   fSelDen(-1)
@@ -49,7 +49,7 @@ AliCFEffGrid::AliCFEffGrid() :
 
 //____________________________________________________________________
 AliCFEffGrid::AliCFEffGrid(const Char_t* name, const Char_t* title, const Int_t nVarIn, const Int_t * nBinIn, const Double_t *binLimitsIn) :  
-  AliCFGrid(name,title,nVarIn,nBinIn,binLimitsIn),
+  AliCFGridSparse(name,title,nVarIn,nBinIn,binLimitsIn),
   fContainer(0x0),
   fSelNum(-1),
   fSelDen(-1)
@@ -61,7 +61,7 @@ AliCFEffGrid::AliCFEffGrid(const Char_t* name, const Char_t* title, const Int_t 
 }
 //____________________________________________________________________
 AliCFEffGrid::AliCFEffGrid(const Char_t* name, const Char_t* title, const AliCFContainer &c) :  
-  AliCFGrid(name,title,c.GetNVar(),c.GetNBins(),c.GetBinLimits()),
+  AliCFGridSparse(name,title,c.GetNVar(),c.GetNBins(),c.GetBinLimits()),
   fContainer(0x0),
   fSelNum(-1),
   fSelDen(-1)
@@ -74,7 +74,7 @@ AliCFEffGrid::AliCFEffGrid(const Char_t* name, const Char_t* title, const AliCFC
   fContainer=&c;
 }
 //____________________________________________________________________
-AliCFEffGrid::AliCFEffGrid(const AliCFEffGrid& eff) :   AliCFGrid(),
+AliCFEffGrid::AliCFEffGrid(const AliCFEffGrid& eff) : AliCFGridSparse(),
   fContainer(0x0),
   fSelNum(-1),
   fSelDen(-1)

@@ -34,7 +34,7 @@ ClassImp(AliCFDataGrid)
 
 //____________________________________________________________________
 AliCFDataGrid::AliCFDataGrid() : 
-  AliCFGrid(),
+  AliCFGridSparse(),
   fSelData(-1),
   fContainer(0x0)
 {
@@ -46,7 +46,7 @@ AliCFDataGrid::AliCFDataGrid() :
 
 //____________________________________________________________________
 AliCFDataGrid::AliCFDataGrid(const Char_t* name,const Char_t* title) : 
-  AliCFGrid(name,title),
+  AliCFGridSparse(name,title),
   fSelData(-1),
   fContainer(0x0)
 {
@@ -58,7 +58,7 @@ AliCFDataGrid::AliCFDataGrid(const Char_t* name,const Char_t* title) :
 
 //____________________________________________________________________
 AliCFDataGrid::AliCFDataGrid(const Char_t* name, const Char_t* title, const Int_t nVarIn, const Int_t * nBinIn, const Double_t *binLimitsIn) :  
-  AliCFGrid(name,title,nVarIn,nBinIn,binLimitsIn),
+  AliCFGridSparse(name,title,nVarIn,nBinIn,binLimitsIn),
   fSelData(-1),
   fContainer(0x0)
 {
@@ -69,7 +69,7 @@ AliCFDataGrid::AliCFDataGrid(const Char_t* name, const Char_t* title, const Int_
 }
 //____________________________________________________________________
 AliCFDataGrid::AliCFDataGrid(const Char_t* name, const Char_t* title, const AliCFContainer &c) :  
-  AliCFGrid(name,title,c.GetNVar(),c.GetNBins(),c.GetBinLimits()),
+  AliCFGridSparse(name,title,c.GetNVar(),c.GetNBins(),c.GetBinLimits()),
   fSelData(-1),
   fContainer(0x0)
 {
@@ -82,7 +82,7 @@ AliCFDataGrid::AliCFDataGrid(const Char_t* name, const Char_t* title, const AliC
 
 }
 //____________________________________________________________________
-AliCFDataGrid::AliCFDataGrid(const AliCFDataGrid& data) :   AliCFGrid(),
+AliCFDataGrid::AliCFDataGrid(const AliCFDataGrid& data) :   AliCFGridSparse(),
   fSelData(-1),
   fContainer(0x0)
 {
@@ -126,7 +126,11 @@ void AliCFDataGrid::SetMeasured(Int_t istep)
     SetElementError(i,dmeas);
     if(meas <=0)nEmptyBins++;
   }
-  fNentriesTot=fNDim;
+
+  //fNentriesTot=fNDim;
+  GetGrid()->SetEntries(GetData()->GetEntries());
+  //
+
   AliInfo(Form("retrieving measured data from Container %s at selection step %i: %i empty bins were found.",fContainer->GetName(),fSelData,nEmptyBins));
 } 
 //____________________________________________________________________
@@ -155,6 +159,7 @@ void AliCFDataGrid::ApplyEffCorrection(const AliCFEffGrid &c)
     deff =c.GetElementError(i);    
     unc =GetElement(i);    
     dunc =GetElementError(i);    
+    
     if(eff>0 && unc>0){      
       ncorr++;
       corr=unc/eff;

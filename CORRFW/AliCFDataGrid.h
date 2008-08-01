@@ -10,11 +10,11 @@
 //                                                                    //
 //--------------------------------------------------------------------//
 
-#include "AliCFGrid.h"
+#include "AliCFGridSparse.h"
 #include "AliCFEffGrid.h"
 #include "AliCFContainer.h"
 
-class AliCFDataGrid : public AliCFGrid
+class AliCFDataGrid : public AliCFGridSparse
 {
  public:
   AliCFDataGrid();
