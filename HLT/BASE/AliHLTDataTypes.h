@@ -224,7 +224,7 @@ const int kAliHLTComponentDataTypefIDsize=8;
  * - the rec points tree of an AliRoot module
  * @ingroup alihlt_component_datatypes
  */
-#define kAliHLTTreeRDataTypeID         {'A','L','I','T','R','E','E','D'}
+#define kAliHLTTreeRDataTypeID         {'A','L','I','T','R','E','E','R'}
 
 /** HW Address selection data block
  * - a selection list for 16 bit HW addresses
