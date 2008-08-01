@@ -119,6 +119,9 @@ Double_t AliHMPIDQAChecker::CheckEntries(TObjArray * list) const
 
 Double_t AliHMPIDQAChecker::CheckRecPoints(TObjArray *listrec, TObjArray *listref) const
 {
+  //
+  //  check on the HMPID RecPoints by using expo fit and Kolmogorov Test: 
+  // 
 
    Float_t checkresponse = 0;
 
@@ -126,7 +129,7 @@ Double_t AliHMPIDQAChecker::CheckRecPoints(TObjArray *listrec, TObjArray *listre
    TIter next(listrec) ;
    TH1* histo;
    while ( (histo = dynamic_cast<TH1 *>(next())) ) {
-   if( histo->GetEntries() == 0 ) counter++;
+   if( histo->GetEntries() < 3 ) counter++;
    else {
     TString h = histo->GetTitle();
     if(h.Contains("Zoom")){
