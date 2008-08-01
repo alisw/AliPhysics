@@ -957,7 +957,8 @@ void AliTPCv1::CreateGeometry()
     z=127.06;
     //
     if(i==15){
-      v9->AddNode(hvrv,1,new TGeoTranslation(x,y,z));//A-side only
+      //v9->AddNode(hvrv,1,new TGeoTranslation(x,y,z));//A-side only
+     v9->AddNode(hvrv,1,new TGeoTranslation(x,y,127.14));//A-side only
       gGeoManager->Node("TPC_Rod",i+55,"TPC_Drift",x,y,-z,0,kTRUE,upar,3);
     }
     else if(i==11){
