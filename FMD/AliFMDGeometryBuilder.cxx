@@ -1020,7 +1020,8 @@ AliFMDGeometryBuilder::FMD3Geometry(AliFMD3* fmd3,
   holeBaseTrans->SetName("FMD3_cone_hole_base_matrix");
   TGeoCombiTrans* plateBaseTrans = new TGeoCombiTrans(plateX, 0,plateZ,holeRot);
   (void*)holeShape;
-  TGeoVolume* plateVolume = new TGeoVolume("F3CO", plateShape, fAl);
+  TGeoVolume* plateVolume = new TGeoVolume("FMD3_cooling_plate", 
+					   plateShape, fAl);
   plateShape->SetTitle("FMD3 cooling plate");
   plateVolume->SetTitle("FMD3 cooling plate");
   for (Int_t i = 0; i < 4; i++) { 
@@ -1068,7 +1069,7 @@ AliFMDGeometryBuilder::FMD3Geometry(AliFMD3* fmd3,
 		  "+FMD3_bolt_hole:FMD3_bolt_matrix2"
 		  "+FMD3_bolt_hole:FMD3_bolt_matrix3"
 		  "+FMD3_bolt_hole:FMD3_bolt_matrix4)");
-  TGeoVolume*     boltVolume = new TGeoVolume("F3SB", boltShape, fSteel);
+  TGeoVolume*     boltVolume = new TGeoVolume("FMD3_bolt", boltShape, fSteel);
   support->AddNode(boltVolume, 1, boltTrans1);
   support->AddNode(boltVolume, 2, boltTrans2);
   boltShape->SetTitle("FMD3 steering bolt");
@@ -1079,13 +1080,13 @@ AliFMDGeometryBuilder::FMD3Geometry(AliFMD3* fmd3,
   TGeoCompositeShape* coneShape = new TGeoCompositeShape(coneComb.Data());
   coneShape->SetName("FMD3_cone");
   coneShape->SetTitle("FMD3 cone");
-  TGeoVolume*  coneVolume = new TGeoVolume("F3SC", coneShape, fC);
+  TGeoVolume*  coneVolume = new TGeoVolume("FMD3_Cone", coneShape, fC);
   coneVolume->SetLineColor(kRed);
   support->AddNode(coneVolume, 0, new TGeoTranslation(0, 0, 0));
 
   //__________________________________________________________________
   // Tension boxes. 
-  new TGeoBBox("FMD3_tension_outer", .5, 3, 5);
+  TGeoBBox* tensionOuter = new TGeoBBox("FMD3_tension_outer", .5, 3, 5);
   new TGeoBBox("FMD3_tension_inner", .51, 2.7, 4.3);
   TString tensionExpr("FMD3_tension_outer-FMD3_tension_inner");
   TGeoCompositeShape* tensionShape = new TGeoCompositeShape(tensionExpr.Data());
@@ -1098,16 +1099,17 @@ AliFMDGeometryBuilder::FMD3Geometry(AliFMD3* fmd3,
   TGeoVolume*      springVolume = new TGeoVolume("FMD3_tension_spring", 
 						 springShape, fSteel);
   TGeoVolume*      tensionBox   = new TGeoVolume("FMD3_tension_box", 
-						 tensionShape, fAir);
+						 tensionOuter, fAir);
   tensionBox->AddNode(tensionFrame, 0);
-  tensionBox->AddNode(springVolume, 0, new TGeoTranslation(0,0,4.3/2));
+  tensionBox->AddNode(springVolume, 0, new TGeoTranslation(0,0,4.2/2));
   
   Double_t         tensionD     = 5*TMath::Cos(fmd3->GetConeOuterAngle());
-  Double_t         tensionZ     = r4->Z()-2*tensionD;
+  Double_t         tensionZ     = (r4->Z() - 2 * tensionD - 
+				   2*.5*TMath::Cos(fmd3->GetConeOuterAngle()));
   Double_t         tensionX     = (fmd3->ConeR(fmd3->GetInnerZ()
 					       +fmd3->GetNoseZ() 
 					       -tensionZ) + 
-				   .5 * TMath::Sin(fmd3->GetConeOuterAngle())); 
+				   2*.5*TMath::Cos(fmd3->GetConeOuterAngle())); 
   TGeoRotation*    tensionRot   = new TGeoRotation();
   tensionRot->RotateY(180/TMath::Pi()*fmd3->GetConeOuterAngle());
   TGeoCombiTrans*  tensionBase  = new TGeoCombiTrans(tensionX, 0, tensionZ, 
@@ -1126,8 +1128,9 @@ AliFMDGeometryBuilder::FMD3Geometry(AliFMD3* fmd3,
   TGeoVolume*      wireVolume   = new TGeoVolume("FMD3_wire", wireShape,fSteel);
   TGeoRotation*    wireRot      = new TGeoRotation();
   wireRot->RotateY(180/TMath::Pi()*wireAngle);
-  TGeoCombiTrans*  wireBase     = new TGeoCombiTrans((wireR2-wireR1)/2+wireR1,
-						     0, (tensionZ-tensionD)/2,
+  TGeoCombiTrans*  wireBase     = new TGeoCombiTrans((wireR2-wireR1)/2+wireR1
+						     +.1*TMath::Cos(wireAngle),
+						     0,(tensionZ-tensionD)/2,
 						     wireRot);
   for (Int_t i = 0; i < 2; i++) { 
     Double_t        thisAngle = (i+.5) * 90;

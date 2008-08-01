@@ -1123,6 +1123,7 @@ AliFMD::AddAlignableVolumes() const
   // This code was made by Raffaele Grosso <rgrosso@mail.cern.ch>.  I
   // (cholm) will probably want to change it.   For one, I think it
   // should be the job of the geometry manager to deal with this. 
+  AliInfo("Add FMD alignable volumes");
   AliFMDGeometry::Instance()->SetAlignableVolumes();
 #if 0  
   for(size_t f = 1; f <= 3; f++){ // Detector 1,2,3
