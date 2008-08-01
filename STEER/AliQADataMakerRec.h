@@ -38,6 +38,7 @@ public:
 	virtual Int_t Add2SDigitsList(TH1 * /*hist*/, const Int_t /*index*/)   { return -1 ; } 
 	virtual void        Exec(AliQA::TASKINDEX_t task, TObject * data) ;
 	virtual void        EndOfCycle(AliQA::TASKINDEX_t task) ;
+	virtual void        EndOfDetectorCycle(AliQA::TASKINDEX_t, TObjArray * ) {AliInfo("To be implemented by detectors");} 
 	virtual TH1 *       GetDigitsData(const Int_t /*index*/)    { return NULL ; } 
 	virtual TH1 *       GetESDsData(const Int_t index)      { return dynamic_cast<TH1 *>(GetData(fESDsQAList, index)) ; }
 	virtual TH1 *       GetHitsData(const Int_t /*index*/)      { return NULL ; }
@@ -52,7 +53,6 @@ public:
 
 protected: 
 
-	virtual void   EndOfDetectorCycle(AliQA::TASKINDEX_t, TObjArray * ) {AliInfo("To be implemented by detectors");} 
 	virtual void   InitDigits()                        {AliFatal("Call not valid") ; }
 	virtual void   InitESDs()                          {AliInfo("To be implemented by detectors");}
 	virtual void   InitHits()                          {AliFatal("Call not valid") ; }
