@@ -185,73 +185,81 @@ void AliITSOnlineSDDInjectors::FitDriftSpeedVsAnode(){
       mat[k1][k2]=0;
     }
   }
+  Int_t npts = 0;
   for(Int_t k1=0;k1<kNn;k1++){
     for(Int_t jpad=fFirstPadForFit; jpad<=fLastPadForFit; jpad++){
       Float_t x=(Float_t)GetAnodeNumber(jpad);
       if(fDriftSpeed[jpad]>0 && GetInjPadStatus(jpad)>fPadStatusCutForFit){
 	  vect[k1]+=fDriftSpeed[jpad]*TMath::Power(x,k1)/TMath::Power(fDriftSpeedErr[jpad],2);	
+	  if(k1==0) npts++;
 	  for(Int_t k2=0;k2<kNn;k2++){
-
 	    mat[k1][k2]+=TMath::Power(x,k1+k2)/TMath::Power(fDriftSpeedErr[jpad],2);
 	  }
       }
     }
   }
-  Int_t *iPivot = new Int_t[kNn];
-  Int_t *indxR = new Int_t[kNn];
-  Int_t *indxC = new Int_t[kNn];
-  for(Int_t i=0;i<kNn;i++) iPivot[i]=0;
-  Int_t iCol=-1,iRow=-1;
-  for(Int_t i=0;i<kNn;i++){
-    Float_t big=0.;
-    for(Int_t j=0;j<kNn;j++){
-      if(iPivot[j]!=1){
-	for(Int_t k=0;k<kNn;k++){
-	   if(iPivot[k]==0){
-	     if(TMath::Abs(mat[j][k])>=big){
-	       big=TMath::Abs(mat[j][k]);
-	       iRow=j;
-	       iCol=k;
-	     }
+  if(npts<fPolOrder+1){ 
+    if(fParam) delete [] fParam;
+    fParam=new Float_t[kNn];
+    for(Int_t i=0; i<kNn;i++)fParam[i]=0;
+  }else{
+    Int_t *iPivot = new Int_t[kNn];
+    Int_t *indxR = new Int_t[kNn];
+    Int_t *indxC = new Int_t[kNn];
+    for(Int_t i=0;i<kNn;i++) iPivot[i]=0;
+    Int_t iCol=-1,iRow=-1;
+    for(Int_t i=0;i<kNn;i++){
+      Float_t big=0.;
+      for(Int_t j=0;j<kNn;j++){
+	if(iPivot[j]!=1){
+	  for(Int_t k=0;k<kNn;k++){
+	    if(iPivot[k]==0){
+	      if(TMath::Abs(mat[j][k])>=big){
+		big=TMath::Abs(mat[j][k]);
+		iRow=j;
+		iCol=k;
+	      }
+	    }
 	  }
 	}
       }
-    }
-    iPivot[iCol]++;
-    Float_t aux;
-    if(iRow!=iCol){
-      for(Int_t l=0;l<kNn;l++){
-	aux=mat[iRow][l];
-	mat[iRow][l]=mat[iCol][l];
-	mat[iCol][l]=aux;
+      iPivot[iCol]++;
+      Float_t aux;
+      if(iRow!=iCol){
+	for(Int_t l=0;l<kNn;l++){
+	  aux=mat[iRow][l];
+	  mat[iRow][l]=mat[iCol][l];
+	  mat[iCol][l]=aux;
+	}
+	aux=vect[iRow];
+	vect[iRow]=vect[iCol];
+	vect[iCol]=aux;
       }
-      aux=vect[iRow];
-      vect[iRow]=vect[iCol];
-      vect[iCol]=aux;
+      indxR[i]=iRow;
+      indxC[i]=iCol;
+      if(mat[iCol][iCol]==0) break;
+      Float_t pivinv=1./mat[iCol][iCol];
+      mat[iCol][iCol]=1;
+      for(Int_t l=0;l<kNn;l++) mat[iCol][l]*=pivinv;
+      vect[iCol]*=pivinv;
+      for(Int_t m=0;m<kNn;m++){
+	if(m!=iCol){
+	  aux=mat[m][iCol];
+	  mat[m][iCol]=0;
+	  for(Int_t n=0;n<kNn;n++) mat[m][n]-=mat[iCol][n]*aux;
+	  vect[m]-=vect[iCol]*aux;
+	}
+      }    
     }
-    indxR[i]=iRow;
-    indxC[i]=iCol;
-    if(mat[iCol][iCol]==0) break;
-    Float_t pivinv=1./mat[iCol][iCol];
-    mat[iCol][iCol]=1;
-    for(Int_t l=0;l<kNn;l++) mat[iCol][l]*=pivinv;
-    vect[iCol]*=pivinv;
-    for(Int_t m=0;m<kNn;m++){
-      if(m!=iCol){
-	aux=mat[m][iCol];
-	mat[m][iCol]=0;
-	for(Int_t n=0;n<kNn;n++) mat[m][n]-=mat[iCol][n]*aux;
-	vect[m]-=vect[iCol]*aux;
-      }
-    }    
+    delete [] iPivot;
+    delete [] indxR;
+    delete [] indxC;
+    
+  
+    if(fParam) delete [] fParam;
+    fParam=new Float_t[kNn];
+    for(Int_t i=0; i<kNn;i++)fParam[i]=vect[i];
   }
-  delete [] iPivot;
-  delete [] indxR;
-  delete [] indxC;
-
-  if(fParam) delete [] fParam;
-  fParam=new Float_t[kNn];
-  for(Int_t i=0; i<kNn;i++)fParam[i]=vect[i];
 
   for(Int_t i=0; i < kNn; i++) delete [] mat[i];
   delete [] mat;
