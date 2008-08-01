@@ -673,7 +673,7 @@ void HmpConfig::WriteBatch()
     else if(fRawBG->GetButton(kRoo)->GetState())    fprintf(fp,"  pSim->SetWriteRawData(\"%s\",\"raw.root\");     //raw data as ROOT\n",det.Data());
 
                                                     fprintf(fp,"  pSim->SetRunHLT(\"\");                           //no HLT stuff\n");   
-                                                    fprintf(fp,"  pSim->SetQA(kFALSE);                             //no QA\n");
+                                                    fprintf(fp,"  pSim->SetRunQA(\":\");                           //no QA\n");
                                                     fprintf(fp,"  pSim->Run(iNevt);                                //run iNevt events\n  delete pSim;\n\n");
   }//sim section
                                                     fprintf(fp,"  cout<<\"!!!!!!!!!!!!Info in <sim.C>: Start time: \";time.Print();\n");
@@ -691,6 +691,18 @@ void HmpConfig::WriteBatch()
                                                     fprintf(fp,"  gSystem->Exec(\"rm -rf *RRR \");  //remove garbage\n"); 
 
   if(fRecB->GetState()){
+  
+       if(fMagBG->GetButton(kFld0)->GetState())     fprintf(fp,"  AliMagFMaps *field=new AliMagFMaps(\"Maps\",\"Maps\",2,0,10.,2);//no field\n");
+  else if(fMagBG->GetButton(kFld2)->GetState())     fprintf(fp,"  AliMagFMaps *field=new AliMagFMaps(\"Maps\",\"Maps\",2,1,10,0);//0.2 Tesla field\n");
+  else if(fMagBG->GetButton(kFld4)->GetState())     fprintf(fp,"  AliMagFMaps *field=new AliMagFMaps(\"Maps\",\"Maps\",2,1,10,1);//0.4 Tesla field\n");
+  else if(fMagBG->GetButton(kFld5)->GetState())     fprintf(fp,"  AliMagFMaps *field=new AliMagFMaps(\"Maps\",\"Maps\",2,1,10,2);//0.5 Tesla field\n");
+  else if(fMagBG->GetButton(kFld_2)->GetState())    fprintf(fp,"  AliMagFMaps *field=new AliMagFMaps(\"Maps\",\"Maps\",2,-1,10,0);//-0.2 Tesla field\n");
+  else if(fMagBG->GetButton(kFld_4)->GetState())    fprintf(fp,"  AliMagFMaps *field=new AliMagFMaps(\"Maps\",\"Maps\",2,-1,10,1);//-0.4 Tesla field\n");
+  else if(fMagBG->GetButton(kFld_5)->GetState())    fprintf(fp,"  AliMagFMaps *field=new AliMagFMaps(\"Maps\",\"Maps\",2,-1,10,2);//-0.5 Tesla field\n");
+  
+                                                    fprintf(fp,"  Bool_t uniform=kTRUE;\n");
+                                                    fprintf(fp,"  AliTracker::SetFieldMap(field,uniform);\n\n");
+
                                                     fprintf(fp,"  AliReconstruction *pRec=new AliReconstruction;\n");
                                                     fprintf(fp,"  gBenchmark->Start(\"ALICE\"); TDatime time;      //start benchmarking\n\n");
                                                     
