@@ -15,7 +15,11 @@ SRCS  =  AliMUONGeometryConstituent.cxx \
          AliMUONGeometryMisAligner.cxx \
 	 AliMUONGeometry.cxx \
 	 AliMUONVGeometryBuilder.cxx \
-	 AliMUONGeometryBuilder.cxx
+	 AliMUONGeometryBuilder.cxx \
+         AliMUONSurveyObj.cxx \
+         AliMUONSurveyUtil.cxx \
+         AliMUONSurveyDetElem.cxx \
+         AliMUONSurveyChamber.cxx
 
 HDRS =  $(SRCS:.cxx=.h) 
 

@@ -19,6 +19,10 @@
 #pragma link C++ class  AliMUONGeometry+;
 #pragma link C++ class  AliMUONVGeometryBuilder+;
 #pragma link C++ class  AliMUONGeometryBuilder+;
+#pragma link C++ class  AliMUONSurveyObj+;
+#pragma link C++ class  AliMUONSurveyUtil+;
+#pragma link C++ class  AliMUONSurveyDetElem+;
+#pragma link C++ class  AliMUONSurveyChamber+;
 
 //#pragma link C++ enum   AliMUONGeometryDirection;
 
