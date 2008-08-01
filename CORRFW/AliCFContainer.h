@@ -16,13 +16,14 @@ class TH1D;
 class TH2D;
 class TH3D;
 class AliCFVGrid;
+class TCollection;
 
 class AliCFContainer : public AliCFFrame
 {
  public:
   AliCFContainer();
   AliCFContainer(const Char_t* name,const Char_t* title);
-  AliCFContainer(const Char_t* name, const Char_t* title,const Int_t nSelStep, const Int_t nVarIn, const Int_t* nBinIn, const Double_t  *binLimitsIn=0, const Bool_t useSparse = kFALSE);
+  AliCFContainer(const Char_t* name, const Char_t* title,const Int_t nSelStep, const Int_t nVarIn, const Int_t* nBinIn, const Double_t  *binLimitsIn=0, const Bool_t useSparse = kTRUE);
   AliCFContainer(const AliCFContainer& c);
   
   virtual ~AliCFContainer();
