@@ -1,5 +1,5 @@
 #-*- Mode: Makefile -*-
-SRCS:=  AliHMPIDReconstructor.cxx AliHMPIDTracker.cxx \
+SRCS:=  AliHMPIDReconstructor.cxx AliHMPIDtrack.cxx AliHMPIDTracker.cxx \
         AliHMPIDRecon.cxx AliHMPIDRecoParam.cxx       \
         AliHMPIDReconHTA.cxx AliHMPIDPid.cxx \
 		AliHMPIDQADataMakerRec.cxx
