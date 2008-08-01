@@ -54,7 +54,6 @@ AliITSPreprocessorSDD::AliITSPreprocessorSDD( AliShuttleInterface* shuttle):
 //______________________________________________________________________
 UInt_t AliITSPreprocessorSDD::Process(TMap* dcsAliasMap){
 
-  gSystem->Sleep(30000);
 
   // Get DDL map from OCDB
   AliCDBEntry* entry = GetFromOCDB("Calib", "DDLMapSDD");
