@@ -19,6 +19,7 @@ class AliMUONGeometryTransformer;
 
 class TRandom;
 class TGeoCombiTrans;
+class TClonesArray;
 
 class AliMUONGeometryMisAligner:public TObject
 {
@@ -75,6 +76,9 @@ class AliMUONGeometryMisAligner:public TObject
   /// Set module (half chambers) cartesian displacement parameters
   void SetModuleAngMisAlig(Double_t xmean, Double_t xwidth, Double_t ymean, Double_t ywidth, Double_t zmean, Double_t zwidth) 
     {fModuleMisAlig[3][0] = xmean; fModuleMisAlig[3][1] = xwidth; fModuleMisAlig[4][0] = ymean; fModuleMisAlig[4][1] = ywidth; fModuleMisAlig[5][0] = zmean; fModuleMisAlig[5][1] = zwidth;}
+
+  /// Set alignment resolution to misalign objects to be stored in CDB
+  void SetAlignmentResolution(const TClonesArray* misAlignArray, Int_t chId=-1, Double_t chResX=-1., Double_t chResY=-1., Double_t deResX=-1., Double_t deResY=-1.);
   
  protected:
   /// Not implemented

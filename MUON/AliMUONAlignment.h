@@ -66,6 +66,8 @@ public:
   AliMUONGeometryTransformer* 
     ReAlign(const AliMUONGeometryTransformer * transformer, double *misAlignments, Bool_t verbose);
 
+  void SetAlignmentResolution(const TClonesArray* misAlignArray, Int_t chId, Double_t chResX, Double_t chResY, Double_t deResX, Double_t deResY);
+
  private:
   /// Not implemented
   AliMUONAlignment(const AliMUONAlignment& right);

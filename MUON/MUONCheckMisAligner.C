@@ -108,7 +108,10 @@ void MUONCheckMisAligner(Double_t xcartmisaligm = 0.0, Double_t xcartmisaligw = 
 
   // Generate misaligned data in local cdb
   const TClonesArray* array = newTransform->GetMisAlignmentData();
-   
+  
+  // 100 mum residual resolution for chamber misalignments?
+  misAligner.SetAlignmentResolution(array,-1,0.01,0.01,xcartmisaligw,ycartmisaligw);
+  
   TString sLocCDB("local://");
   sLocCDB += nameCDB;
   // CDB manager

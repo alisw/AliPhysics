@@ -49,13 +49,15 @@
 #include "AliMUONGeometryModuleTransformer.h"
 #include "AliMUONGeometryDetElement.h"
 #include "AliMUONGeometryBuilder.h"
-
 #include "AliMpExMap.h"
 #include "AliMpExMapIterator.h"
 
+#include "AliAlignObjMatrix.h"
 #include "AliLog.h"
 
+#include <TClonesArray.h>
 #include <TGeoMatrix.h>
+#include <TMatrixDSym.h>
 #include <TMath.h>
 #include <TRandom.h>
 #include <Riostream.h>
@@ -427,6 +429,60 @@ AliMUONGeometryMisAligner::MisAlign(const AliMUONGeometryTransformer *
   return newGeometryTransformer;
 }
 
+
+void AliMUONGeometryMisAligner::SetAlignmentResolution(const TClonesArray* misAlignArray, Int_t rChId, Double_t rChResX, Double_t rChResY, Double_t rDeResX, Double_t rDeResY){
+
+  Int_t chIdMin = (rChId<0)? 0 : rChId;
+  Int_t chIdMax = (rChId<0)? 9 : rChId;
+  Double_t chResX = (rChResX<0)? fModuleMisAlig[0][1] : rChResX;
+  Double_t chResY = (rChResY<0)? fModuleMisAlig[1][1] : rChResY;
+  Double_t deResX = (rDeResX<0)? fDetElemMisAlig[0][1] : rDeResX;
+  Double_t deResY = (rDeResY<0)? fDetElemMisAlig[1][1] : rDeResY;
+
+  TMatrixDSym mChCorrMatrix(6);
+  mChCorrMatrix[0][0]=chResX*chResX;
+  mChCorrMatrix[1][1]=chResY*chResY;
+  //  mChCorrMatrix.Print();
+
+  TMatrixDSym mDECorrMatrix(6);
+  mDECorrMatrix[0][0]=deResX*deResX;
+  mDECorrMatrix[1][1]=deResY*deResY;
+  //  mDECorrMatrix.Print();
+
+  AliAlignObjMatrix *alignMat = 0x0;
+
+  for(Int_t chId=chIdMin; chId<=chIdMax; chId++) {
+    TString chName1;
+    TString chName2;
+    if (chId<4){
+      chName1 = Form("GM%d",chId);
+      chName2 = Form("GM%d",chId);
+    } else {
+      chName1 = Form("GM%d",4+(chId-4)*2);
+      chName2 = Form("GM%d",4+(chId-4)*2+1);
+    }
+    
+    for (int i=0; i<misAlignArray->GetEntries(); i++) {
+      alignMat = (AliAlignObjMatrix*)misAlignArray->At(i);
+      TString volName(alignMat->GetSymName());
+      if((volName.Contains(chName1)&&
+	  ((volName.Last('/')==volName.Index(chName1)+chName1.Length())||
+	   (volName.Length()==volName.Index(chName1)+chName1.Length())))||
+	 (volName.Contains(chName2)&&
+	  ((volName.Last('/')==volName.Index(chName2)+chName2.Length())||
+	   (volName.Length()==volName.Index(chName2)+chName2.Length())))){
+	volName.Remove(0,volName.Last('/')+1);
+	if (volName.Contains("GM")) {
+	  //	alignMat->Print("NULL");
+	  alignMat->SetCorrMatrix(mChCorrMatrix);
+	} else if (volName.Contains("DE")) {
+	  //	alignMat->Print("NULL");
+	  alignMat->SetCorrMatrix(mDECorrMatrix);
+	}
+      }
+    }
+  }
+}
 
 
 

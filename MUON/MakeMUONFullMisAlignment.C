@@ -83,6 +83,10 @@ void MakeMUONFullMisAlignment()
     = misAligner.MisAlign(&transformer, true);
   const TClonesArray* array = newTransform->GetMisAlignmentData();
   
+  // 1 mm resolution for chamber full misalignments?
+  misAligner.SetAlignmentResolution(array,-1,0.1,0.1);
+
+
   if ( TString(gSystem->Getenv("TOCDB")) != TString("kTRUE") ) {
     // Save in file
     const char* filename = "MUONfullMisalignment.root";

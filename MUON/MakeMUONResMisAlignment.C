@@ -82,6 +82,9 @@ void MakeMUONResMisAlignment()
     = misAligner.MisAlign(&transformer, true);
   const TClonesArray* array = newTransform->GetMisAlignmentData();
 
+  // 100 mum residual resolution for chamber misalignments?
+  misAligner.SetAlignmentResolution(array,-1,0.01,0.01);
+
   if ( TString(gSystem->Getenv("TOCDB")) != TString("kTRUE") ) {
     // Save in file
     const char* filename = "MUONresidualMisalignment.root";

@@ -41,9 +41,11 @@
 #include "AliMpExMap.h"
 #include "AliMpExMapIterator.h"
 
+#include "AliAlignObjMatrix.h"
 #include "AliLog.h"
 
 #include "TMath.h"
+#include "TMatrixDSym.h"
 #include "TSystem.h"
 
 /// \cond CLASSIMP
@@ -1054,3 +1056,57 @@ AliMUONAlignment::ReAlign(const AliMUONGeometryTransformer * transformer,
   return newGeometryTransformer;
 }
 
+//______________________________________________________________________
+void AliMUONAlignment::SetAlignmentResolution(const TClonesArray* misAlignArray, Int_t rChId, Double_t rChResX, Double_t rChResY, Double_t rDeResX, Double_t rDeResY){
+  //// Set alignment resolution to misalign objects to be stored in CDB
+  Int_t chIdMin = (rChId<0)? 0 : rChId;
+  Int_t chIdMax = (rChId<0)? 9 : rChId;
+  Double_t chResX = rChResX;
+  Double_t chResY = rChResY;
+  Double_t deResX = rDeResX;
+  Double_t deResY = rDeResY;
+
+  TMatrixDSym mChCorrMatrix(6);
+  mChCorrMatrix[0][0]=chResX*chResX;
+  mChCorrMatrix[1][1]=chResY*chResY;
+  //  mChCorrMatrix.Print();
+
+  TMatrixDSym mDECorrMatrix(6);
+  mDECorrMatrix[0][0]=deResX*deResX;
+  mDECorrMatrix[1][1]=deResY*deResY;
+  //  mDECorrMatrix.Print();
+
+  AliAlignObjMatrix *alignMat = 0x0;
+
+  for(Int_t chId=chIdMin; chId<=chIdMax; chId++) {
+    TString chName1;
+    TString chName2;
+    if (chId<4){
+      chName1 = Form("GM%d",chId);
+      chName2 = Form("GM%d",chId);
+    } else {
+      chName1 = Form("GM%d",4+(chId-4)*2);
+      chName2 = Form("GM%d",4+(chId-4)*2+1);
+    }
+    
+    for (int i=0; i<misAlignArray->GetEntries(); i++) {
+      alignMat = (AliAlignObjMatrix*)misAlignArray->At(i);
+      TString volName(alignMat->GetSymName());
+      if((volName.Contains(chName1)&&
+	  ((volName.Last('/')==volName.Index(chName1)+chName1.Length())||
+	   (volName.Length()==volName.Index(chName1)+chName1.Length())))||
+	 (volName.Contains(chName2)&&
+	  ((volName.Last('/')==volName.Index(chName2)+chName2.Length())||
+	   (volName.Length()==volName.Index(chName2)+chName2.Length())))){
+	volName.Remove(0,volName.Last('/')+1);
+	if (volName.Contains("GM")) {
+	  //	alignMat->Print("NULL");
+	  alignMat->SetCorrMatrix(mChCorrMatrix);
+	} else if (volName.Contains("DE")) {
+	  //	alignMat->Print("NULL");
+	  alignMat->SetCorrMatrix(mDECorrMatrix);
+	}
+      }
+    }
+  }
+}

@@ -44,6 +44,7 @@
 #include "AliMUONTrackParam.h"
 #include "AliMUONGeometryTransformer.h"
 #include "AliMUONESDInterface.h"
+#include "AliMUONRecoParam.h"
 
 #include "AliESDEvent.h"
 #include "AliESDMuonTrack.h"
@@ -207,7 +208,7 @@ void MUONAlignment(Int_t nEvents = 100000, char* geoFilename = "geometry.root", 
 	fBenMom->Fill(1./invBenMom);
 	if (TMath::Abs(invBenMom)<=1.04) {
 	  AliMUONTrack track;
-	  AliMUONESDInterface::ESDToMUON(*esdTrack, track);
+	  AliMUONESDInterface::ESDToMUON(AliMUONRecoParam::GetLowFluxParam(),*esdTrack, track);
 	  alig->ProcessTrack(&track);
 	  alig->LocalFit(iTrackOk++,trackParams,0);
 	}
@@ -288,6 +289,9 @@ void MUONAlignment(Int_t nEvents = 100000, char* geoFilename = "geometry.root", 
   
   // Generate realigned data in local cdb
   const TClonesArray* array = newTransform->GetMisAlignmentData();
+
+  // 100 mum residual resolution for chamber misalignments?
+  alig->SetAlignmentResolution(array,-1,0.01,0.01,0.004,0.003);
    
   // CDB manager
   AliCDBManager* cdbManager = AliCDBManager::Instance();
