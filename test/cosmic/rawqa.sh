@@ -93,4 +93,5 @@ EOF
 rm -f tempo.txt
 
 $PROGRAM -b -q $ALICE_ROOT/test/cosmic/qasummary.C 
+$PROGRAM -b  $ALICE_ROOT/test/QA/menuQA.C
 cd ..

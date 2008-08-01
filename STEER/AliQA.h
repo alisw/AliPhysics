@@ -74,6 +74,8 @@ public:
 	static const TASKINDEX_t GetTaskIndex(const char * name) ; 
 	static const TString   GetTaskName(UInt_t tsk) { return fgTaskNames[tsk] ; }
 	const Bool_t           IsSet(DETECTORINDEX_t det, ALITASK_t tsk, QABIT_t bit) const ;
+	const Bool_t           IsSetAny(DETECTORINDEX_t det, ALITASK_t tsk) const ;
+	const Bool_t           IsSetAny(DETECTORINDEX_t det) const ;
 	void                   Set(QABIT_t bit) ;
 	static void			       SetQAResultDirName(const char * name) ; 
 	static void            SetQARefStorage(const char * name) ; 

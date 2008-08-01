@@ -405,16 +405,58 @@ const AliQA::TASKINDEX_t AliQA::GetTaskIndex(const char * name)
 const Bool_t AliQA::IsSet(DETECTORINDEX_t det, ALITASK_t tsk, QABIT_t bit) const
 {
   // Checks is the requested bit is set
-
+	
   CheckRange(det) ; 
   CheckRange(tsk) ;
   CheckRange(bit) ;
-
+	
   ULong_t offset = Offset(tsk) ;
   ULong_t status = GetStatus(det) ;
   offset+= bit ;
   status = (status & 1 << offset) != 0 ;
   return status ;
+}
+
+//_______________________________________________________________
+const Bool_t AliQA::IsSetAny(DETECTORINDEX_t det, ALITASK_t tsk) const
+{
+  // Checks is the requested bit is set
+	
+  CheckRange(det) ; 
+  CheckRange(tsk) ;
+	
+  ULong_t offset = Offset(tsk) ;
+  ULong_t status = GetStatus(det) ;
+	UShort_t st = 0 ; 
+	for ( Int_t bit = 0 ; bit < kNBIT ; bit++) {
+		offset+= bit ;
+		st += (status & 1 << offset) != 0 ;		
+	}
+	if ( st == 0 ) 
+		return kFALSE ; 
+	else 
+		return kTRUE ;
+}
+//_______________________________________________________________
+const Bool_t AliQA::IsSetAny(DETECTORINDEX_t det) const
+{
+  // Checks is the requested bit is set
+	
+  CheckRange(det) ; 
+	
+	ULong_t status = GetStatus(det) ;
+	UShort_t st = 0 ; 
+	for ( Int_t tsk = 0 ; tsk < kNTASK ; tsk++) {
+		ULong_t offset = Offset(ALITASK_t(tsk)) ;
+		for ( Int_t bit = 0 ; bit < kNBIT ; bit++) {
+			offset+= bit ;
+			st += (status & 1 << offset) != 0 ;		
+		}
+	}
+	if ( st == 0 ) 
+		return kFALSE ; 
+	else 
+		return kTRUE ;
 }
 
 //_______________________________________________________________
