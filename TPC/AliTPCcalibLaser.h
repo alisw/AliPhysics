@@ -57,6 +57,12 @@ public:
   TObjArray      fDeltaPhi;        //-> array of histograms of delta z for each track
   TObjArray      fDeltaPhiP;       //-> array of histograms of delta z for each track
   TObjArray      fSignals;         //->Array of dedx signals
+  //
+  // Residual histograms
+  //
+  TObjArray      fDeltaYres;       //-> array of histograms of delta y residuals for each track
+  TObjArray      fDeltaZres;       //-> array of histograms of delta z residuals for each track
+  //
   TVectorD*      fFitAside;        //! drift fit - A side
   TVectorD*      fFitCside;        //! drift fit - C- side
   //

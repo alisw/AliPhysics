@@ -60,6 +60,16 @@
   AliTPCcalibLaser::DumpScanInfo(chain)
   TFile fscan("laserScan.root")
   TTree * treeT = (TTree*)fscan.Get("Mean")
+  //
+  // Analyze laser 
+  //
+  gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");
+  gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+")
+  AliXRDPROOFtoolkit tool;
+  TChain * chain = tool.MakeChain("laser.txt","Residuals",0,10200);
+  chain->Lookup();
+
+
 
 */
 
@@ -73,6 +83,7 @@
 #include "AliESDtrack.h"
 #include "AliTPCTracklet.h"
 #include "TH1D.h"
+#include "TProfile.h"
 #include "TVectorD.h"
 #include "TTreeStream.h"
 #include "TFile.h"
@@ -106,7 +117,9 @@ AliTPCcalibLaser::AliTPCcalibLaser():
   fDeltaZ(336),
   fDeltaPhi(336),
   fDeltaPhiP(336),
-  fSignals(336),  
+  fSignals(336),
+  fDeltaYres(336),
+  fDeltaZres(336),  
   fFitAside(new TVectorD(3)),      
   fFitCside(new TVectorD(3)),      
   fEdgeXcuts(5),    
@@ -134,6 +147,8 @@ AliTPCcalibLaser::AliTPCcalibLaser(const Text_t *name, const Text_t *title):
   fDeltaPhi(336),          // array of histograms of delta z for each track
   fDeltaPhiP(336),          // array of histograms of delta z for each track
   fSignals(336),           // array of dedx signals
+  fDeltaYres(336),
+  fDeltaZres(336),  
   fFitAside(new TVectorD(3)),        // drift fit - A side
   fFitCside(new TVectorD(3)),        // drift fit - C- side
   fEdgeXcuts(5),       // cuts in local x direction; used in the refit of the laser tracks
@@ -865,6 +880,30 @@ void AliTPCcalibLaser::RefitLaserJW(Int_t id){
 
 	  }
       }
+      //==========================//
+      // Fill Residual Histograms //
+      //==========================//
+      TProfile *profy = (TProfile*)fDeltaYres.UncheckedAt(id);
+      TProfile *profz = (TProfile*)fDeltaZres.UncheckedAt(id);
+      if (!profy){
+	profy=new TProfile(Form("pry%03d",id),Form("Y Residuals for Laser Beam %03d",id),115,80,250);
+	fDeltaYres.AddAt(profy,id);
+      }
+      if (!profz){
+	profz=new TProfile(Form("prz%03d",id),Form("Z Residuals for Laser Beam %03d",id),115,80,250);
+	fDeltaZres.AddAt(profz,id);
+      }
+      for (Int_t irow=158;irow>-1;--irow) {
+	if (vecSec[irow]==-1)continue; //no cluster info
+	Double_t x    = vecX[irow];
+	Double_t ycl  = vecClY[irow];
+	Double_t yfit = vecY1[irow];
+	Double_t zcl  = vecClZ[irow];
+	Double_t zfit = vecZ1[irow];
+	profy->Fill(x,yfit-ycl);
+	profz->Fill(x,zfit-zcl);
+      }
+
   }
  /*
 
@@ -1272,6 +1311,8 @@ Long64_t AliTPCcalibLaser::Merge(TCollection *li) {
 
     TH1F *h=0x0;
     TH1F *hm=0x0;
+    TProfile *hp=0x0;
+    TProfile *hpm=0x0;
 
     for (Int_t id=0; id<336; id++){
       // merge fDeltaZ histograms
@@ -1306,6 +1347,28 @@ Long64_t AliTPCcalibLaser::Merge(TCollection *li) {
 	fSignals.AddAt(h,id);
       }
       if (hm) h->Add(hm);
+      //
+      //
+      // merge ProfileY histograms
+      hpm = (TProfile*)cal->fDeltaYres.At(id);
+      hp  = (TProfile*)fDeltaYres.At(id);
+      if (!hp) {
+	hp=new TProfile(Form("pry%03d",id),Form("Y Residuals for Laser Beam %03d",id),115,80,250);;
+	fDeltaYres.AddAt(hp,id);
+      }
+      if (hpm) hp->Add(hpm);
+      //
+      hpm = (TProfile*)cal->fDeltaZres.At(id);
+      hp  = (TProfile*)fDeltaZres.At(id);
+      if (!hp) {
+	hp=new TProfile(Form("prz%03d",id),Form("Z Residuals for Laser Beam %03d",id),115,80,250);;
+	fDeltaZres.AddAt(hp,id);
+      }
+      if (hpm) hp->Add(hpm);
+      //
+      //
+
+
     }
   }
   return 0;
@@ -1378,9 +1441,30 @@ treeT->Draw("fit:LTr.fP[1]",Form("abs(bz+0.4)<0.05&fRod==%d",i)+cutA,"same");
 
   TEventList listLFit0("listLFit0","listLFit0");
   TEventList listLFit1("listLFit1","listLFit1");
-  
   tree->Draw(">>listLFit0","seed.fdEdx<200&&seed.fdEdx>40");
   tree->SetEventList(&listLFit0);
   
+
+
+
+  gSystem->Load("libSTAT.so")
+  TStatToolkit toolkit;
+  Double_t chi2;
+  TVectorD fitParam;
+  TMatrixD covMatrix;
+  Int_t npoints;
+
+  chain->SetAlias("dp","((Cl.fPad-int(Cl.fPad))*pi)");
+  chain->SetAlias("dt","((Cl.fTimeBin-int(Cl.fTimeBin))*pi)");
+
+
+  TString fstring="";  
+  fstring+="cos(dp)++";
+  fstring+="sin(dp)++";
+  fstring+="cos(dt)++";
+  fstring+="sin(dt)++";
+  
+  TString *str = toolkit.FitPlane(chain,"Cl.fZ-TrZInOut.fElements",fstring->Data(), "Cl.fDetector>35", chi2,npoints,fitParam,covMatrix,-1,0,200);
+
 
 */
