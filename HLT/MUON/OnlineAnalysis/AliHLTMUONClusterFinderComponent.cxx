@@ -402,8 +402,8 @@ int AliHLTMUONClusterFinderComponent::DoEvent(
 	const AliHLTComponentDataType& rawType = AliHLTMUONConstants::DDLRawDataType();
 	for (block = GetFirstInputBlock(rawType); block != NULL; block = GetNextInputBlock())
 	{
-		HLTDebug("Handling block: %u, with fDataType = '%s', fPtr = %p and fSize = %u bytes.",
-			FindInputBlock(block), DataType2Text(block->fDataType).c_str(),
+		HLTDebug("Handling block with fDataType = '%s', fSpecification = 0x%8.8X, fPtr = %p and fSize = %u bytes.",
+			DataType2Text(block->fDataType).c_str(), block->fSpecification,
 			block->fPtr, block->fSize
 		);
 
