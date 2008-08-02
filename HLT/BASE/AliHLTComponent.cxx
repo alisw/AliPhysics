@@ -915,7 +915,7 @@ const AliHLTComponentBlockData* AliHLTComponent::GetFirstInputBlock(const char* 
   return GetFirstInputBlock(dt);
 }
 
-const AliHLTComponentBlockData* AliHLTComponent::GetInputBlock(int index)
+const AliHLTComponentBlockData* AliHLTComponent::GetInputBlock(int index) const
 {
   // see header file for function documentation
   ALIHLTCOMPONENT_BASE_STOPWATCH();

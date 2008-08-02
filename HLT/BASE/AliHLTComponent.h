@@ -901,7 +901,7 @@ class AliHLTComponent : public AliHLTLogging {
    * \em Note: THE BLOCK DESCRIPTOR MUST NOT BE DELETED by the caller.
    * @return pointer to AliHLTComponentBlockData, NULL if index out of range
    */
-  const AliHLTComponentBlockData* GetInputBlock(int index);
+  const AliHLTComponentBlockData* GetInputBlock(int index) const;
 
   /**
    * Get the next block of a specific data type from the input data.
