@@ -56,6 +56,7 @@ AliHLTTPCAgent gAliHLTTPCAgent;
 #include "AliHLTTPCEsdWriterComponent.h"
 #include "AliHLTTPCOfflineClustererComponent.h"
 #include "AliHLTTPCOfflineTrackerComponent.h"
+#include "AliHLTTPCOfflineTrackerCalibComponent.h"
 #include "AliHLTTPCOfflineCalibrationComponent.h"
 #include "AliHLTTPCClusterHistoComponent.h"
 #include "AliHLTTPCNoiseMapComponent.h"
@@ -217,6 +218,7 @@ int AliHLTTPCAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
   pHandler->AddComponent(new AliHLTTPCEsdWriterComponent::AliConverter);
   pHandler->AddComponent(new AliHLTTPCOfflineClustererComponent);
   pHandler->AddComponent(new AliHLTTPCOfflineTrackerComponent);
+  pHandler->AddComponent(new AliHLTTPCOfflineTrackerCalibComponent);
   pHandler->AddComponent(new AliHLTTPCOfflineCalibrationComponent);
   pHandler->AddComponent(new AliHLTTPCClusterHistoComponent);
   pHandler->AddComponent(new AliHLTTPCNoiseMapComponent);

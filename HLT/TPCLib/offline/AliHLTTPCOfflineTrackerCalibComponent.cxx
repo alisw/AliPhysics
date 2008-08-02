@@ -4,7 +4,7 @@
 //* This file is property of and copyright by the ALICE HLT Project        * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //*                                                                        *
-//* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
+//* Primary Authors: Jacek Otwinowski <J.Otwinowski@gsi.de>                *
 //*                                                                        *
 //* Permission to use, copy, modify and distribute this software and its   *
 //* documentation strictly for non-commercial purposes is hereby granted   *
@@ -15,13 +15,13 @@
 //* provided "as is" without express or implied warranty.                  *
 //**************************************************************************
 
-/** @file   AliHLTTPCOfflineTrackerComponent.cxx
+/** @file   AliHLTTPCOfflineTrackerCalibComponent.cxx
     @author Jacek Otwinowski & Matthias Richter
     @date   
-    @brief  Wrapper component to the TPC offline tracker
+    @brief  Wrapper component to the TPC offline tracker (ONLY CALIBRATION)
 */
 
-#include "AliHLTTPCOfflineTrackerComponent.h"
+#include "AliHLTTPCOfflineTrackerCalibComponent.h"
 #include "TString.h"
 #include "TClonesArray.h"
 #include "TObjArray.h"
@@ -42,9 +42,9 @@
 #include "AliHLTTPCDefinitions.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
-ClassImp(AliHLTTPCOfflineTrackerComponent)
+ClassImp(AliHLTTPCOfflineTrackerCalibComponent)
 
-AliHLTTPCOfflineTrackerComponent::AliHLTTPCOfflineTrackerComponent() : AliHLTProcessor(),
+AliHLTTPCOfflineTrackerCalibComponent::AliHLTTPCOfflineTrackerCalibComponent() : AliHLTProcessor(),
 fGeometryFileName(""),
 fTPCGeomParam(0),
 fTracker(0),
@@ -55,43 +55,44 @@ fESD(0)
   fGeometryFileName += "/HLT/TPCLib/offline/geometry.root";
 }
 
-AliHLTTPCOfflineTrackerComponent::~AliHLTTPCOfflineTrackerComponent()
+AliHLTTPCOfflineTrackerCalibComponent::~AliHLTTPCOfflineTrackerCalibComponent()
 {
   // see header file for class documentation
 }
 
-const char* AliHLTTPCOfflineTrackerComponent::GetComponentID()
+const char* AliHLTTPCOfflineTrackerCalibComponent::GetComponentID()
 {
   // see header file for class documentation
-  return "TPCOfflineTracker";
+  return "TPCOfflineTrackerCalib";
 }
 
-void AliHLTTPCOfflineTrackerComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
+void AliHLTTPCOfflineTrackerCalibComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
 {
   // get input data type
   list.push_back(kAliHLTDataTypeTObjArray|kAliHLTDataOriginTPC/*AliHLTTPCDefinitions::fgkOfflineClustersDataType*/);
 }
 
-AliHLTComponentDataType AliHLTTPCOfflineTrackerComponent::GetOutputDataType()
+AliHLTComponentDataType AliHLTTPCOfflineTrackerCalibComponent::GetOutputDataType()
 {
   // create output data type
-  return kAliHLTDataTypeESDObject|kAliHLTDataOriginTPC/*AliHLTTPCDefinitions::fgkOfflineTrackSegmentsDataType*/;
+  //return kAliHLTDataTypeESDObject|kAliHLTDataOriginTPC/*AliHLTTPCDefinitions::fgkOfflineTrackSegmentsDataType*/;
+  return kAliHLTDataTypeTObjArray|kAliHLTDataOriginTPC;
 }
 
-void AliHLTTPCOfflineTrackerComponent::GetOutputDataSize(unsigned long& constBase, double& inputMultiplier)
+void AliHLTTPCOfflineTrackerCalibComponent::GetOutputDataSize(unsigned long& constBase, double& inputMultiplier)
 {
   // get output data size
   constBase = 2000000;
   inputMultiplier = 1;
 }
 
-AliHLTComponent* AliHLTTPCOfflineTrackerComponent::Spawn()
+AliHLTComponent* AliHLTTPCOfflineTrackerCalibComponent::Spawn()
 {
   // create instance of the component
-  return new AliHLTTPCOfflineTrackerComponent;
+  return new AliHLTTPCOfflineTrackerCalibComponent;
 }
 
-int AliHLTTPCOfflineTrackerComponent::DoInit( int argc, const char** argv )
+int AliHLTTPCOfflineTrackerCalibComponent::DoInit( int argc, const char** argv )
 {
   // init configuration 
   //
@@ -184,7 +185,7 @@ int AliHLTTPCOfflineTrackerComponent::DoInit( int argc, const char** argv )
   return iResult;
 }
 
-int AliHLTTPCOfflineTrackerComponent::DoDeinit()
+int AliHLTTPCOfflineTrackerCalibComponent::DoDeinit()
 {
   // deinit configuration
 
@@ -195,13 +196,14 @@ int AliHLTTPCOfflineTrackerComponent::DoDeinit()
   return 0;
 }
 
-int AliHLTTPCOfflineTrackerComponent::DoEvent( const AliHLTComponentEventData& /*evtData*/, AliHLTComponentTriggerData& /*trigData*/)
+int AliHLTTPCOfflineTrackerCalibComponent::DoEvent( const AliHLTComponentEventData& /*evtData*/, AliHLTComponentTriggerData& /*trigData*/)
 {
   // tracker function
   HLTInfo("DoEvent processing data");
 
   int iResult=0;
   TClonesArray *clusterArray=0;
+  TObjArray *seedArray=0;
   int slice, patch;
 
   const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeTObjArray|kAliHLTDataOriginTPC); 
@@ -251,8 +253,8 @@ int AliHLTTPCOfflineTrackerComponent::DoEvent( const AliHLTComponentEventData& /
     // run tracker
     fTracker->Clusters2Tracks(fESD);
 
-    // unload clusters
-    fTracker->UnloadClusters();
+    // get TPC seeds
+    seedArray = fTracker->GetSeeds();
 
     Int_t nTracks = fESD->GetNumberOfTracks();
     HLTInfo("Number TPC tracks %d", nTracks);
@@ -262,7 +264,13 @@ int AliHLTTPCOfflineTrackerComponent::DoEvent( const AliHLTComponentEventData& /
     HLTInfo("minSlice %d, maxSlice %d, minPatch %d, maxPatch %d", minSlice, maxSlice, minPatch, maxPatch);
 
     // send data
-    PushBack(fESD, kAliHLTDataTypeESDObject|kAliHLTDataOriginTPC, iSpecification);
+    if(seedArray) PushBack(seedArray, kAliHLTDataTypeTObjArray|kAliHLTDataOriginTPC, iSpecification);
+
+    // delete seeds
+    if(seedArray) seedArray->Delete();
+
+    // unload clusters
+    fTracker->UnloadClusters();
 
     // reset ESDs and ESDs friends
     fESD->Reset();
@@ -275,7 +283,7 @@ int AliHLTTPCOfflineTrackerComponent::DoEvent( const AliHLTComponentEventData& /
   return iResult;
 }
 
-int AliHLTTPCOfflineTrackerComponent::Configure(const char* arguments)
+int AliHLTTPCOfflineTrackerCalibComponent::Configure(const char* arguments)
 {
   // see header file for class documentation
   int iResult=0;
@@ -335,7 +343,7 @@ int AliHLTTPCOfflineTrackerComponent::Configure(const char* arguments)
   return iResult;
 }
 
-int AliHLTTPCOfflineTrackerComponent::Reconfigure(const char* cdbEntry, const char* chainId)
+int AliHLTTPCOfflineTrackerCalibComponent::Reconfigure(const char* cdbEntry, const char* chainId)
 {
   // see header file for class documentation
   int iResult=0;

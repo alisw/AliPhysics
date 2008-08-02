@@ -25,6 +25,7 @@ CLASS_HDRS:=  	AliHLTTPCTransform.h \
 		offline/AliHLTTPCDigitPublisherComponent.h \
 		offline/AliHLTTPCOfflineClustererComponent.h \
 		offline/AliHLTTPCOfflineTrackerComponent.h \
+		offline/AliHLTTPCOfflineTrackerCalibComponent.h \
 		offline/AliHLTTPCOfflineCalibrationComponent.h \
 		offline/AliHLTTPCOfflineCluster.h \
 		AliHLTTPCClusters.h \

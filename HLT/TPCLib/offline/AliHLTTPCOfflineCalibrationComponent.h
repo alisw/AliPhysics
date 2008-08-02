@@ -20,14 +20,14 @@
  * TPC calibration component
  *
  * The component interfaces of the TPC offline calibration components
- * to the online HLT. The component expects a full AliESD event containing the
- * TPCseed track information. The outputs are calibration components.
+ * to the online HLT. The component expects a TPCseed object.
+ * The outputs are calibration components.
  *
  * <h2>General properties:</h2>
  *
  * Component ID: \b TPCOfflineCalibration <br>
  * Library: \b libAliHLTTPC.so     <br>
- * Input Data Types: @ref kAliHLTDataTypeESDTree|kAliHLTDataOriginTPC <br>
+ * Input Data Types: @ref kAliHLTDataTypeTObjArray|kAliHLTDataOriginTPC <br>
  * Output Data Types: @ref AliHLTTPCDefinitions::fgkOfflineCalibAlignDataType|kAliHLTDataOriginTPC <br>
  * Output Data Types: @ref AliHLTTPCDefinitions::fgkOfflineCalibTracksDataType|kAliHLTDataOriginTPC <br>
  * Output Data Types: @ref AliHLTTPCDefinitions::fgkOfflineCalibTracksGainDataType|kAliHLTDataOriginTPC <br>

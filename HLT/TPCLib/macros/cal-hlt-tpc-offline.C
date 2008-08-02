@@ -109,7 +109,7 @@ void cal_hlt_tpc_offline(const char* input="./")
   // one global tracker component
   TString tracker;
   tracker.Form("Global_TR");
-  AliHLTConfiguration trackerconf(tracker.Data(), "TPCOfflineTracker", trackerInput.Data(), "");
+  AliHLTConfiguration trackerconf(tracker.Data(), "TPCOfflineTrackerCalib", trackerInput.Data(), "");
   if (writerInput.Length()>0) writerInput+=" ";
   calibratorInput+=tracker;
 
