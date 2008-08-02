@@ -62,7 +62,6 @@ AliHLTMUONTriggerReconstructorComponent::AliHLTMUONTriggerReconstructorComponent
 	fWarnForUnexpecedBlock(false),
 	fStopOnOverflow(false),
 	fUseCrateId(true),
-	fDelaySetup(false),
 	fZmiddleSpecified(false),
 	fBLSpecified(false),
 	fLutInitialised(false)
@@ -93,7 +92,7 @@ const char* AliHLTMUONTriggerReconstructorComponent::GetComponentID()
 }
 
 
-void AliHLTMUONTriggerReconstructorComponent::GetInputDataTypes( std::vector<AliHLTComponentDataType>& list)
+void AliHLTMUONTriggerReconstructorComponent::GetInputDataTypes(AliHLTComponentDataTypeList& list)
 {
 	///
 	/// Inherited from AliHLTProcessor. Returns the list of expected input data types.
@@ -144,9 +143,11 @@ int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
 	/// Parses the command line parameters and initialises the component.
 	///
 	
-	// perform initialization.
-	
 	HLTInfo("Initialising dHLT trigger reconstructor component.");
+	
+	// Inherit the parents functionality.
+	int result = AliHLTMUONProcessor::DoInit(argc, argv);
+	if (result != 0) return result;
 	
 	// Make sure to cleanup fTrigRec if it is still there for some reason.
 	if (fTrigRec != NULL)
@@ -155,28 +156,15 @@ int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
 		fTrigRec = NULL;
 	}
 	
-	try
-	{
-		fTrigRec = new AliHLTMUONTriggerReconstructor();
-	}
-	catch (const std::bad_alloc&)
-	{
-		HLTError("Could not allocate more memory for the trigger reconstructor component.");
-		return -ENOMEM;
-	}
-	
 	fDDL = -1;
 	fWarnForUnexpecedBlock = false;
 	fStopOnOverflow = false;
 	fUseCrateId = true;
-	fDelaySetup = false;
 	fZmiddleSpecified = false;
 	fBLSpecified = false;
 	fLutInitialised = false;
 	
 	const char* lutFileName = NULL;
-	const char* cdbPath = NULL;
-	Int_t run = -1;
 	bool useCDB = false;
 	bool suppressPartialTrigs = true;
 	bool tryRecover = false;
@@ -186,6 +174,15 @@ int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
 	
 	for (int i = 0; i < argc; i++)
 	{
+		// To keep the legacy behaviour we need to have the following check
+		// for -cdbpath here, before ArgumentAlreadyHandled.
+		if (strcmp(argv[i], "-cdbpath") == 0)
+		{
+			useCDB = true;
+		}
+
+		if (ArgumentAlreadyHandled(i, argv[i])) continue;
+
 		if (strcmp( argv[i], "-lut" ) == 0)
 		{
 			if (lutFileName != NULL)
@@ -198,9 +195,6 @@ int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
 			if ( argc <= i+1 )
 			{
 				HLTError("The lookup table filename was not specified." );
-				// Make sure to delete fTrigRec to avoid partial initialisation.
-				delete fTrigRec;
-				fTrigRec = NULL;
 				return -EINVAL;
 			}
 			
@@ -221,10 +215,7 @@ int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
 			
 			if ( argc <= i+1 )
 			{
-				HLTError("DDL number not specified. It must be in the range [21..22]" );
-				// Make sure to delete fTrigRec to avoid partial initialisation.
-				delete fTrigRec;
-				fTrigRec = NULL;
+				HLTError("DDL number not specified. It must be in the range [21..22]");
 				return -EINVAL;
 			}
 		
@@ -233,17 +224,11 @@ int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
 			if (cpErr == NULL or *cpErr != '\0')
 			{
 				HLTError("Cannot convert '%s' to a DDL Number.", argv[i+1]);
-				// Make sure to delete fTrigRec to avoid partial initialisation.
-				delete fTrigRec;
-				fTrigRec = NULL;
 				return -EINVAL;
 			}
 			if (num < 21 or 22 < num)
 			{
 				HLTError("The DDL number must be in the range [21..22].");
-				// Make sure to delete fTrigRec to avoid partial initialisation.
-				delete fTrigRec;
-				fTrigRec = NULL;
 				return -EINVAL;
 			}
 			fDDL = num - 1; // Convert to DDL number in the range 0..21
@@ -263,10 +248,7 @@ int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
 			
 			if ( argc <= i+1 )
 			{
-				HLTError("DDL equipment ID number not specified. It must be in the range [2816..2817]" );
-				// Make sure to delete fTrigRec to avoid partial initialisation.
-				delete fTrigRec;
-				fTrigRec = NULL;
+				HLTError("DDL equipment ID number not specified. It must be in the range [2816..2817]");
 				return -EINVAL;
 			}
 		
@@ -275,18 +257,12 @@ int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
 			if (cpErr == NULL or *cpErr != '\0')
 			{
 				HLTError("Cannot convert '%s' to a DDL equipment ID Number.", argv[i+1]);
-				// Make sure to delete fTrigRec to avoid partial initialisation.
-				delete fTrigRec;
-				fTrigRec = NULL;
 				return -EINVAL;
 			}
 			fDDL = AliHLTMUONUtils::EquipIdToDDLNumber(num); // Convert to DDL number in the range 0..21
 			if (fDDL < 20 or 21 < fDDL)
 			{
 				HLTError("The DDL equipment ID number must be in the range [2816..2817].");
-				// Make sure to delete fTrigRec to avoid partial initialisation.
-				delete fTrigRec;
-				fTrigRec = NULL;
 				return -EINVAL;
 			}
 			
@@ -297,64 +273,6 @@ int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
 		if (strcmp( argv[i], "-cdb" ) == 0)
 		{
 			useCDB = true;
-			continue;
-		}
-		
-		if (strcmp( argv[i], "-cdbpath" ) == 0)
-		{
-			if (cdbPath != NULL)
-			{
-				HLTWarning("CDB path was already specified."
-					" Will replace previous value given by -cdbpath."
-				);
-			}
-			
-			if ( argc <= i+1 )
-			{
-				HLTError("The CDB path was not specified." );
-				// Make sure to delete fTrigRec to avoid partial initialisation.
-				delete fTrigRec;
-				fTrigRec = NULL;
-				return -EINVAL;
-			}
-			cdbPath = argv[i+1];
-			useCDB = true;
-			i++;
-			continue;
-		}
-	
-		if (strcmp( argv[i], "-run" ) == 0)
-		{
-			if (run != -1)
-			{
-				HLTWarning("Run number was already specified."
-					" Will replace previous value given by -run."
-				);
-			}
-			
-			if ( argc <= i+1 )
-			{
-				HLTError("The run number was not specified." );
-				// Make sure to delete fTrigRec to avoid partial initialisation.
-				delete fTrigRec;
-				fTrigRec = NULL;
-				return -EINVAL;
-			}
-			
-			char* cpErr = NULL;
-			run = Int_t( strtoul(argv[i+1], &cpErr, 0) );
-			if (cpErr == NULL or *cpErr != '\0')
-			{
-				HLTError("Cannot convert '%s' to a valid run number."
-					" Expected a positive integer value.", argv[i+1]
-				);
-				// Make sure to delete fTrigRec to avoid partial initialisation.
-				delete fTrigRec;
-				fTrigRec = NULL;
-				return -EINVAL;
-			}
-			
-			i++;
 			continue;
 		}
 	
@@ -369,10 +287,7 @@ int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
 			
 			if ( argc <= i+1 )
 			{
-				HLTError("The Z coordinate for the middle of the dipole was not specified." );
-				// Make sure to delete fTrigRec to avoid partial initialisation.
-				delete fTrigRec;
-				fTrigRec = NULL;
+				HLTError("The Z coordinate for the middle of the dipole was not specified.");
 				return -EINVAL;
 			}
 			
@@ -383,9 +298,6 @@ int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
 				HLTError("Cannot convert '%s' to a valid floating point number.",
 					argv[i+1]
 				);
-				// Make sure to delete fTrigRec to avoid partial initialisation.
-				delete fTrigRec;
-				fTrigRec = NULL;
 				return -EINVAL;
 			}
 			
@@ -406,9 +318,6 @@ int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
 			if ( argc <= i+1 )
 			{
 				HLTError("The magnetic field integral was not specified." );
-				// Make sure to delete fTrigRec to avoid partial initialisation.
-				delete fTrigRec;
-				fTrigRec = NULL;
 				return -EINVAL;
 			}
 			
@@ -419,20 +328,11 @@ int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
 				HLTError("Cannot convert '%s' to a valid floating point number.",
 					argv[i+1]
 				);
-				// Make sure to delete fTrigRec to avoid partial initialisation.
-				delete fTrigRec;
-				fTrigRec = NULL;
 				return -EINVAL;
 			}
 			
 			fBLSpecified = true;
 			i++;
-			continue;
-		}
-		
-		if (strcmp( argv[i], "-delaysetup" ) == 0)
-		{
-			fDelaySetup = true;
 			continue;
 		}
 		
@@ -478,13 +378,20 @@ int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
 			continue;
 		}
 		
-		HLTError("Unknown option '%s'.", argv[i] );
-		// Make sure to delete fTrigRec to avoid partial initialisation.
-		delete fTrigRec;
-		fTrigRec = NULL;
+		HLTError("Unknown option '%s'.", argv[i]);
 		return -EINVAL;
 		
 	} // for loop
+	
+	try
+	{
+		fTrigRec = new AliHLTMUONTriggerReconstructor();
+	}
+	catch (const std::bad_alloc&)
+	{
+		HLTError("Could not allocate more memory for the trigger reconstructor component.");
+		return -ENOMEM;
+	}
 	
 	if (fZmiddleSpecified and useCDB)
 	{
@@ -513,26 +420,14 @@ int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
 	
 	if (lutFileName == NULL) useCDB = true;
 	
-	if (fDDL == -1 and not fDelaySetup)
+	if (fDDL == -1 and not DelaySetup())
 	{
 		HLTWarning("DDL number not specified. Cannot check if incomming data is valid.");
 	}
 	
-	if (cdbPath != NULL or run != -1)
-	{
-		int result = SetCDBPathAndRunNo(cdbPath, run);
-		if (result != 0)
-		{
-			// Error messages already generated in SetCDBPathAndRunNo.
-			delete fTrigRec; // Make sure to delete fTrigRec to avoid partial initialisation.
-			fTrigRec = NULL;
-			return result;
-		}
-	}
-	
 	if (useCDB)
 	{
-		if (not fDelaySetup)
+		if (not DelaySetup())
 		{
 			HLTInfo("Loading lookup table information from CDB for DDL %d (ID = %d).",
 				fDDL+1, AliHLTMUONUtils::DDLNumberToEquipId(fDDL)
@@ -565,7 +460,7 @@ int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
 	if (fZmiddleSpecified) AliHLTMUONCalculations::Zf(zmiddle);
 	if (fBLSpecified) AliHLTMUONCalculations::QBL(bfieldintegral);
 	
-	if (not fDelaySetup)
+	if (not DelaySetup())
 	{
 		if (not fZmiddleSpecified or not fBLSpecified)
 		{
@@ -621,10 +516,10 @@ int AliHLTMUONTriggerReconstructorComponent::DoDeinit()
 int AliHLTMUONTriggerReconstructorComponent::DoEvent(
 		const AliHLTComponentEventData& evtData,
 		const AliHLTComponentBlockData* blocks,
-		AliHLTComponentTriggerData& /*trigData*/,
+		AliHLTComponentTriggerData& trigData,
 		AliHLTUInt8_t* outputPtr,
 		AliHLTUInt32_t& size,
-		std::vector<AliHLTComponentBlockData>& outputBlocks
+		AliHLTComponentBlockDataList& outputBlocks
 	)
 {
 	///
@@ -633,7 +528,7 @@ int AliHLTMUONTriggerReconstructorComponent::DoEvent(
 	
 	// Initialise the LUT and configuration parameters from CDB if we were
 	// requested to initialise only when the first event was received.
-	if (fDelaySetup)
+	if (DelaySetup())
 	{
 		// Use the specification given by the first data block if we
 		// have not been given a DDL number on the command line.
@@ -690,7 +585,7 @@ int AliHLTMUONTriggerReconstructorComponent::DoEvent(
 			if (result != 0) return result;
 		}
 		
-		fDelaySetup = false;
+		DoneDelayedSetup();
 	}
 	
 	// Process an event
@@ -780,6 +675,7 @@ int AliHLTMUONTriggerReconstructorComponent::DoEvent(
 		if (not runOk)
 		{
 			HLTError("Error while processing the trigger DDL reconstruction algorithm.");
+			if (DumpDataOnError()) DumpEvent(evtData, blocks, trigData, outputPtr, size, outputBlocks);
 			if (not fTrigRec->OverflowedOutputBuffer()
 			    or (fTrigRec->OverflowedOutputBuffer() and fStopOnOverflow)
 			   )

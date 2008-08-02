@@ -76,8 +76,7 @@ AliHLTMUONHitReconstructorComponent::AliHLTMUONHitReconstructorComponent() :
 	fLutSize(0),
 	fLut(NULL),
 	fIdToEntry(),
-	fWarnForUnexpecedBlock(false),
-	fDelaySetup(false)
+	fWarnForUnexpecedBlock(false)
 {
 	///
 	/// Default constructor.
@@ -111,7 +110,7 @@ const char* AliHLTMUONHitReconstructorComponent::GetComponentID()
 }
 
 
-void AliHLTMUONHitReconstructorComponent::GetInputDataTypes( std::vector<AliHLTComponentDataType>& list)
+void AliHLTMUONHitReconstructorComponent::GetInputDataTypes(AliHLTComponentDataTypeList& list)
 {
 	///
 	/// Inherited from AliHLTProcessor. Returns the list of expected input data types.
@@ -132,7 +131,7 @@ AliHLTComponentDataType AliHLTMUONHitReconstructorComponent::GetOutputDataType()
 }
 
 
-void AliHLTMUONHitReconstructorComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
+void AliHLTMUONHitReconstructorComponent::GetOutputDataSize(unsigned long& constBase, double& inputMultiplier)
 {
 	///
 	/// Inherited from AliHLTComponent. Returns an estimate of the expected output data size.
@@ -161,37 +160,34 @@ int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
 	///
 
 	HLTInfo("Initialising dHLT hit reconstruction component.");
+
+	// Inherit the parents functionality.
+	int result = AliHLTMUONProcessor::DoInit(argc, argv);
+	if (result != 0) return result;
 	
 	// Must make sure that fHitRec and fLut is deleted if it is still
 	// allocated for whatever reason.
 	FreeMemory();
 	
-	try
-	{
-		fHitRec = new AliHLTMUONHitReconstructor();
-	}
-	catch (const std::bad_alloc&)
-	{
-		HLTError("Could not allocate more memory for the hit reconstructor component.");
-		return -ENOMEM;
-	}
-	
 	// Initialise fields with default values then parse the command line.
 	fDDL = -1;
 	fIdToEntry.clear();
 	fWarnForUnexpecedBlock = false;
-	fDelaySetup = false;
-	
 	const char* lutFileName = NULL;
-	const char* cdbPath = NULL;
-	Int_t run = -1;
 	bool useCDB = false;
 	bool tryRecover = false;
 	AliHLTInt32_t dccut = -1;
 	
 	for (int i = 0; i < argc; i++)
 	{
-		HLTDebug("argv[%d] == %s", i, argv[i]);
+		// To keep the legacy behaviour we need to have the following check
+		// for -cdbpath here, before ArgumentAlreadyHandled.
+		if (strcmp(argv[i], "-cdbpath") == 0)
+		{
+			useCDB = true;
+		}
+
+		if (ArgumentAlreadyHandled(i, argv[i])) continue;
 		
 		if (strcmp( argv[i], "-ddl" ) == 0)
 		{
@@ -205,7 +201,6 @@ int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
 			if (argc <= i+1)
 			{
 				HLTError("The DDL number was not specified. Must be in the range [13..20].");
-				FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
 				return -EINVAL;
 			}
 			
@@ -214,13 +209,11 @@ int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
 			if (cpErr == NULL or *cpErr != '\0')
 			{
 				HLTError("Cannot convert '%s' to DDL a number.", argv[i+1] );
-				FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
 				return -EINVAL;
 			}
 			if (num < 13 or 20 < num)
 			{
 				HLTError("The DDL number must be in the range [13..20].");
-				FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
 				return -EINVAL;
 			}
 			fDDL = num - 1;  // convert to range [12..19]
@@ -241,7 +234,6 @@ int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
 			if ( argc <= i+1 )
 			{
 				HLTError("DDL equipment ID number not specified. It must be in the range [2572..2579]" );
-				FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
 				return -EINVAL;
 			}
 		
@@ -250,14 +242,12 @@ int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
 			if (cpErr == NULL or *cpErr != '\0')
 			{
 				HLTError("Cannot convert '%s' to a DDL equipment ID Number.", argv[i+1]);
-				FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
 				return -EINVAL;
 			}
 			fDDL = AliHLTMUONUtils::EquipIdToDDLNumber(num); // Convert to DDL number in the range 0..21
 			if (fDDL < 12 or 19 < fDDL)
 			{
 				HLTError("The DDL equipment ID number must be in the range [2572..2579].");
-				FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
 				return -EINVAL;
 			}
 			
@@ -277,7 +267,6 @@ int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
 			if (argc <= i+1)
 			{
 				HLTError("The lookup table filename was not specified.");
-				FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
 				return -EINVAL;
 			}
 			lutFileName = argv[i+1];
@@ -291,58 +280,6 @@ int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
 			continue;
 		} // -cdb argument
 		
-		if (strcmp( argv[i], "-cdbpath" ) == 0)
-		{
-			if (cdbPath != NULL)
-			{
-				HLTWarning("CDB path was already specified."
-					" Will replace previous value given by -cdbpath."
-				);
-			}
-			
-			if ( argc <= i+1 )
-			{
-				HLTError("The CDB path was not specified." );
-				FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
-				return -EINVAL;
-			}
-			cdbPath = argv[i+1];
-			useCDB = true;
-			i++;
-			continue;
-		} // -cdb argument
-	
-		if (strcmp( argv[i], "-run" ) == 0)
-		{
-			if (run != -1)
-			{
-				HLTWarning("Run number was already specified."
-					" Will replace previous value given by -run."
-				);
-			}
-			
-			if ( argc <= i+1 )
-			{
-				HLTError("The run number was not specified." );
-				FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
-				return -EINVAL;
-			}
-			
-			char* cpErr = NULL;
-			run = Int_t( strtol(argv[i+1], &cpErr, 0) );
-			if (cpErr == NULL or *cpErr != '\0' or run < 0)
-			{
-				HLTError("Cannot convert '%s' to a valid run number."
-					" Expected a positive integer value.", argv[i+1]
-				);
-				FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
-				return -EINVAL;
-			}
-			
-			i++;
-			continue;
-		} // -run argument
-	
 		if (strcmp( argv[i], "-dccut" ) == 0)
 		{
 			if (dccut != -1)
@@ -355,7 +292,6 @@ int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
 			if ( argc <= i+1 )
 			{
 				HLTError("No DC cut value was specified. It should be a positive integer value." );
-				FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
 				return -EINVAL;
 			}
 			
@@ -366,17 +302,10 @@ int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
 				HLTError("Cannot convert '%s' to a valid DC cut value."
 					" Expected a positive integer value.", argv[i+1]
 				);
-				FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
 				return -EINVAL;
 			}
 			
 			i++;
-			continue;
-		}
-		
-		if (strcmp( argv[i], "-delaysetup" ) == 0)
-		{
-			fDelaySetup = true;
 			continue;
 		}
 		
@@ -393,10 +322,19 @@ int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
 		}
 	
 		HLTError("Unknown option '%s'", argv[i]);
-		FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
 		return -EINVAL;
 	
 	} // for loop
+	
+	try
+	{
+		fHitRec = new AliHLTMUONHitReconstructor();
+	}
+	catch (const std::bad_alloc&)
+	{
+		HLTError("Could not allocate more memory for the hit reconstructor component.");
+		return -ENOMEM;
+	}
 	
 	if (dccut != -1 and useCDB)
 	{
@@ -417,25 +355,14 @@ int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
 	
 	if (lutFileName == NULL) useCDB = true;
 	
-	if (fDDL == -1 and not fDelaySetup)
+	if (fDDL == -1 and not DelaySetup())
 	{
 		HLTWarning("DDL number not specified. Cannot check if incomming data is valid.");
 	}
 	
-	if (cdbPath != NULL or run != -1)
-	{
-		int result = SetCDBPathAndRunNo(cdbPath, run);
-		if (result != 0)
-		{
-			// Error messages already generated in SetCDBPathAndRunNo.
-			FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
-			return result;
-		}
-	}
-	
 	if (useCDB)
 	{
-		if (not fDelaySetup)
+		if (not DelaySetup())
 		{
 			HLTInfo("Loading lookup table information from CDB for DDL %d (ID = %d).",
 				fDDL+1, AliHLTMUONUtils::DDLNumberToEquipId(fDDL)
@@ -465,7 +392,7 @@ int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
 	
 	if (dccut == -1)
 	{
-		if (not fDelaySetup)
+		if (not DelaySetup())
 		{
 			HLTInfo("Loading DC cut parameters from CDB for DDL %d (ID = %d).",
 				fDDL+1, AliHLTMUONUtils::DDLNumberToEquipId(fDDL)
@@ -582,19 +509,19 @@ int AliHLTMUONHitReconstructorComponent::ReadPreprocessorValues(const char* modu
 int AliHLTMUONHitReconstructorComponent::DoEvent(
 		const AliHLTComponentEventData& evtData,
 		const AliHLTComponentBlockData* blocks,
-		AliHLTComponentTriggerData& /*trigData*/,
+		AliHLTComponentTriggerData& trigData,
 		AliHLTUInt8_t* outputPtr,
 		AliHLTUInt32_t& size,
-		std::vector<AliHLTComponentBlockData>& outputBlocks
+		AliHLTComponentBlockDataList& outputBlocks
 	)
 {
 	///
 	/// Inherited from AliHLTProcessor. Processes the new event data.
 	///
-	
+
 	// Initialise the LUT and DC cut parameter from CDB if we were requested
 	// to initialise only when the first event was received.
-	if (fDelaySetup)
+	if (DelaySetup())
 	{
 		// Use the specification given by the first data block if we
 		// have not been given a DDL number on the command line.
@@ -651,7 +578,7 @@ int AliHLTMUONHitReconstructorComponent::DoEvent(
 			if (result != 0) return result;
 		}
 		
-		fDelaySetup = false;
+		DoneDelayedSetup();
 	}
 	
 	if (fLut == NULL)
@@ -733,6 +660,7 @@ int AliHLTMUONHitReconstructorComponent::DoEvent(
 		if (not fHitRec->Run(buffer, ddlRawDataSize, block.GetArray(), nofHit))
 		{
 			HLTError("Error while processing the hit reconstruction algorithm.");
+			if (DumpDataOnError()) DumpEvent(evtData, blocks, trigData, outputPtr, size, outputBlocks);
 			size = totalSize; // Must tell the framework how much buffer space was used.
 			return -EIO;
 		}

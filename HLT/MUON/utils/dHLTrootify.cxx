@@ -50,6 +50,12 @@ using std::endl;
 #define FATAL_ERROR 4
 #define HLTSYSTEM_ERROR 5
 
+namespace
+{
+	// CDB path and run number to use.
+	const char* gCDBPath = "local://$ALICE_ROOT";
+	Int_t gRunNumber = 0;
+}
 
 /**
  * Uses AliHLTSystem and the AliHLTMUONRootifierComponent to convert the files
@@ -84,15 +90,8 @@ int RootifyFiles(
 		sys.SetGlobalLoggingLevel(kHLTLogAll);
 	}
 	
-	// Check if required libraries are there and load them if not.
-	if (gClassTable->GetID("AliHLTAgentUtil") < 0)
-	{
-		sys.LoadComponentLibraries("libAliHLTUtil.so");
-	}
-	if (gClassTable->GetID("AliHLTMUONAgent") < 0)
-	{
-		sys.LoadComponentLibraries("libAliHLTMUON.so");
-	}
+	sys.LoadComponentLibraries("libAliHLTUtil.so");
+	sys.LoadComponentLibraries("libAliHLTMUON.so");
 	
 	TString sources = "";
 	typedef AliHLTConfiguration* PAliHLTConfiguration;
@@ -146,9 +145,13 @@ int RootifyFiles(
 	// Setup the component for data integrity checking.
 	if (checkData)
 	{
+		TString dcparams = "-warn_on_unexpected_block -ignorespec -cdbpath ";
+		dcparams += gCDBPath;
+		dcparams += " -run ";
+		dcparams += gRunNumber;
 		AliHLTConfiguration checker(
 				"checker", AliHLTMUONConstants::DataCheckerComponentId(),
-				sources, "-warn_on_unexpected_block -ignorespec"
+				sources, dcparams
 			);
 		sources = "checker";
 	}
@@ -238,7 +241,8 @@ void PrintUsage(bool asError = true)
 {
 	std::ostream& os = asError ? cerr : cout;
 	os << "Usage: dHLTrootify [-help|-h] [-outfile|-o <output_file>] [-type|-t <typename>]" << endl;
-	os << "         [-debug|-d] [-check|-c] <filename> [<filename> ...]" << endl;
+	os << "         [-debug|-d] [-check|-c] [-cdbpath|-p <url>] [-run|-r <number>]" << endl;
+	os << "         <filename> [<filename> ...]" << endl;
 	os << "Where <filename> is the name of a file containing a raw data block." << endl;
 	os << "Options:" << endl;
 	os << " -help | -h" << endl;
@@ -267,6 +271,10 @@ void PrintUsage(bool asError = true)
 	os << "       If specified then data integrity checks are performed on the raw data." << endl;
 	os << "       Warnings and errors are printed as problems are found with the data, but" << endl;
 	os << "       the data will still be converted into ROOT objects as best as possible." << endl;
+	os << " -cdbpath | -p <url>" << endl;
+	os << "       The path to the CDB to use when running with the -check | -k option." << endl;
+	os << " -run | -r <number>" << endl;
+	os << "       The run number to use when running with the -check | -k option." << endl;
 }
 
 /**
@@ -299,6 +307,8 @@ int ParseCommandLine(
 	outputFile = NULL;
 	maxLogging = false;
 	checkData = false;
+	bool pathSet = false;
+	bool runSet = false;
 	AliHLTMUONDataBlockType currentType = kUnknownDataBlock;
 
 	// Parse the command line.
@@ -311,6 +321,12 @@ int ParseCommandLine(
 		}
 		else if (strcmp(argv[i], "-outfile") == 0 or strcmp(argv[i], "-o") == 0)
 		{
+			if (outputFile != NULL)
+			{
+				cerr << "WARNING: Already used -outfile|-o with " << outputFile
+					<< " before. Will override it with the last value specified with -outfile|-o."
+					<< endl;
+			}
 			if (++i >= argc)
 			{
 				cerr << "ERROR: Missing an output filename." << endl << endl;
@@ -352,6 +368,50 @@ int ParseCommandLine(
 		else if (strcmp(argv[i], "-check") == 0 or strcmp(argv[i], "-c") == 0)
 		{
 			checkData = true;
+		}
+		else if (strcmp(argv[i], "-cdbpath") == 0 or strcmp(argv[i], "-p") == 0)
+		{
+			if (pathSet)
+			{
+				cerr << "WARNING: Already used -cdbpath|-p with '" << gCDBPath
+					<< "' before. Will override it with the last value specified with -cdbpath|-p."
+					<< endl;
+			}
+			if (++i >= argc)
+			{
+				cerr << "ERROR: Missing the URL for the CDB path." << endl << endl;
+				PrintUsage();
+				return CMDLINE_ERROR;
+			}
+			gCDBPath = argv[i];
+			pathSet = true;
+		}
+		else if (strcmp(argv[i], "-run") == 0 or strcmp(argv[i], "-r") == 0)
+		{
+			if (runSet)
+			{
+				cerr << "WARNING: Already used -run|-r with " << gRunNumber
+					<< " before. Will override it with the last value specified with -run|-r."
+					<< endl;
+			}
+			if (++i >= argc)
+			{
+				cerr << "ERROR: Missing the run number." << endl << endl;
+				PrintUsage();
+				return CMDLINE_ERROR;
+			}
+			
+			char* cpErr = NULL;
+			Int_t run = Int_t( strtol(argv[i], &cpErr, 0) );
+			if (cpErr == NULL or *cpErr != '\0' or run < 0)
+			{
+				cerr << "ERROR: Cannot convert '" << argv[i] << "' to a valid run number."
+					" Expected a positive integer value." << endl;
+				return CMDLINE_ERROR;
+			}
+
+			gRunNumber = run;
+			runSet = true;
 		}
 		else
 		{

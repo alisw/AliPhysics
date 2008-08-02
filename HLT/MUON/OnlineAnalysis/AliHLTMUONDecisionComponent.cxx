@@ -58,7 +58,6 @@ AliHLTMUONDecisionComponent::AliHLTMUONDecisionComponent() :
 	fLowMassCut(2.5),  // 2.7 GeV/c^2 cut
 	fHighMassCut(7.),  // 8 GeV/c^2 cut
 	fWarnForUnexpecedBlock(false),
-	fDelaySetup(false),
 	fLowPtCutSet(false),
 	fHighPtCutSet(false),
 	fLowMassCutSet(false),
@@ -93,9 +92,7 @@ const char* AliHLTMUONDecisionComponent::GetComponentID()
 }
 
 
-void AliHLTMUONDecisionComponent::GetInputDataTypes(
-		vector<AliHLTComponentDataType>& list
-	)
+void AliHLTMUONDecisionComponent::GetInputDataTypes(AliHLTComponentDataTypeList& list)
 {
 	///
 	/// Inherited from AliHLTProcessor. Returns the list of expected input data types.
@@ -159,8 +156,11 @@ int AliHLTMUONDecisionComponent::DoInit(int argc, const char** argv)
 	
 	HLTInfo("Initialising dHLT trigger decision component.");
 	
+	// Inherit the parents functionality.
+	int result = AliHLTMUONProcessor::DoInit(argc, argv);
+	if (result != 0) return result;
+
 	fWarnForUnexpecedBlock = false;
-	fDelaySetup = false;
 	fLowPtCutSet = false;
 	fHighPtCutSet = false;
 	fLowMassCutSet = false;
@@ -168,65 +168,10 @@ int AliHLTMUONDecisionComponent::DoInit(int argc, const char** argv)
 	fFillSinglesDetail = true;
 	fFillPairsDetail = true;
 	
-	const char* cdbPath = NULL;
-	Int_t run = -1;
-	
 	for (int i = 0; i < argc; i++)
 	{
-		if (strcmp( argv[i], "-cdbpath" ) == 0)
-		{
-			if (cdbPath != NULL)
-			{
-				HLTWarning("CDB path was already specified."
-					" Will replace previous value given by -cdbpath."
-				);
-			}
-			
-			if ( argc <= i+1 )
-			{
-				HLTError("The CDB path was not specified." );
-				return -EINVAL;
-			}
-			cdbPath = argv[i+1];
-			i++;
-			continue;
-		}
-	
-		if (strcmp( argv[i], "-run" ) == 0)
-		{
-			if (run != -1)
-			{
-				HLTWarning("Run number was already specified."
-					" Will replace previous value given by -run."
-				);
-			}
-			
-			if ( argc <= i+1 )
-			{
-				HLTError("The run number was not specified." );
-				return -EINVAL;
-			}
-			
-			char* cpErr = NULL;
-			run = Int_t( strtoul(argv[i+1], &cpErr, 0) );
-			if (cpErr == NULL or *cpErr != '\0')
-			{
-				HLTError("Cannot convert '%s' to a valid run number."
-					" Expected a positive integer value.", argv[i+1]
-				);
-				return -EINVAL;
-			}
-			
-			i++;
-			continue;
-		}
-		
-		if (strcmp( argv[i], "-delaysetup" ) == 0)
-		{
-			fDelaySetup = true;
-			continue;
-		}
-		
+		if (ArgumentAlreadyHandled(i, argv[i])) continue;
+
 		if (strcmp( argv[i], "-lowptcut" ) == 0)
 		{
 			if (fLowPtCutSet)
@@ -365,13 +310,7 @@ int AliHLTMUONDecisionComponent::DoInit(int argc, const char** argv)
 		return -EINVAL;
 	}
 	
-	if (cdbPath != NULL or run != -1)
-	{
-		int result = SetCDBPathAndRunNo(cdbPath, run);
-		if (result != 0) return result;
-	}
-	
-	if (not fDelaySetup)
+	if (not DelaySetup())
 	{
 		// Read cut parameters from CDB if they were not specified on the command line.
 		if (not fLowPtCutSet or not fHighPtCutSet or not fLowMassCutSet or not fHighMassCutSet)
@@ -455,10 +394,10 @@ int AliHLTMUONDecisionComponent::ReadPreprocessorValues(const char* modules)
 int AliHLTMUONDecisionComponent::DoEvent(
 		const AliHLTComponentEventData& evtData,
 		const AliHLTComponentBlockData* blocks,
-		AliHLTComponentTriggerData& /*trigData*/,
+		AliHLTComponentTriggerData& trigData,
 		AliHLTUInt8_t* outputPtr,
 		AliHLTUInt32_t& size,
-		std::vector<AliHLTComponentBlockData>& outputBlocks
+		AliHLTComponentBlockDataList& outputBlocks
 	)
 {
 	///
@@ -467,7 +406,7 @@ int AliHLTMUONDecisionComponent::DoEvent(
 	
 	// Initialise the cut parameters from CDB if we were requested to
 	// initialise only when the first event was received.
-	if (fDelaySetup)
+	if (DelaySetup())
 	{
 		// Load the cut paramters from CDB if they have not been given
 		// on the command line.
@@ -481,7 +420,7 @@ int AliHLTMUONDecisionComponent::DoEvent(
 			if (result != 0) return result;
 		}
 		
-		fDelaySetup = false;
+		DoneDelayedSetup();
 	}
 	
 	AliHLTUInt32_t specification = 0;  // Contains the output data block spec bits.
@@ -503,13 +442,18 @@ int AliHLTMUONDecisionComponent::DoEvent(
 			specification |= blocks[n].fSpecification;
 			
 			AliHLTMUONMansoTracksBlockReader inblock(blocks[n].fPtr, blocks[n].fSize);
-			if (not BlockStructureOk(inblock)) continue;
+			if (not BlockStructureOk(inblock))
+			{
+				if (DumpDataOnError()) DumpEvent(evtData, blocks, trigData, outputPtr, size, outputBlocks);
+				continue;
+			}
 			
 			for (AliHLTUInt32_t i = 0; i < inblock.Nentries(); i++)
 			{
 				int result = AddTrack(&inblock[i]);
 				if (result != 0)
 				{
+					if (DumpDataOnError()) DumpEvent(evtData, blocks, trigData, outputPtr, size, outputBlocks);
 					size = 0; // Important to tell framework that nothing was generated.
 					return result;
 				}
@@ -543,6 +487,7 @@ int AliHLTMUONDecisionComponent::DoEvent(
 			" %d bytes for the singles output data block.",
 			size, sizeof(AliHLTMUONSinglesDecisionBlockWriter::HeaderType)
 		);
+		if (DumpDataOnError()) DumpEvent(evtData, blocks, trigData, outputPtr, size, outputBlocks);
 		size = 0; // Important to tell framework that nothing was generated.
 		return -ENOBUFS;
 	}
@@ -557,6 +502,7 @@ int AliHLTMUONDecisionComponent::DoEvent(
 			" %d bytes for the singles output data block.",
 			size, bytesneeded
 		);
+		if (DumpDataOnError()) DumpEvent(evtData, blocks, trigData, outputPtr, size, outputBlocks);
 		size = 0; // Important to tell framework that nothing was generated.
 		return -ENOBUFS;
 	}
@@ -576,6 +522,7 @@ int AliHLTMUONDecisionComponent::DoEvent(
 			size,
 			sizeof(AliHLTMUONPairsDecisionBlockWriter::HeaderType) + singlesBlock.BytesUsed()
 		);
+		if (DumpDataOnError()) DumpEvent(evtData, blocks, trigData, outputPtr, size, outputBlocks);
 		size = 0; // Important to tell framework that nothing was generated.
 		return -ENOBUFS;
 	}
@@ -591,6 +538,7 @@ int AliHLTMUONDecisionComponent::DoEvent(
 			" %d bytes for the pairs output data block.",
 			size, bytesneeded
 		);
+		if (DumpDataOnError()) DumpEvent(evtData, blocks, trigData, outputPtr, size, outputBlocks);
 		size = 0; // Important to tell framework that nothing was generated.
 		return -ENOBUFS;
 	}

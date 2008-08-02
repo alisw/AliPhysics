@@ -32,12 +32,79 @@ class AliHLTMUONProcessor : public AliHLTProcessor
 {
 public:
 	/// Default constructor.
-	AliHLTMUONProcessor() : AliHLTProcessor() {}
+	AliHLTMUONProcessor();
 	
 	/// Default destructor.
 	virtual ~AliHLTMUONProcessor() {}
 
 protected:
+
+	/**
+	 * This method parses the common arguments for dHLT processing components
+	 * and initialises the common internal state.
+	 * Deriving classes can use the ArgumentAlreadyHandled method to check if
+	 * the parent class has processed a particular argument. The following is
+	 * an example of this:
+	 *
+	 * \code
+	 * int DerivedClass::DoInit(int argc, const char** argv)
+	 * {
+	 *   int result = AliHLTMUONProcessor::DoInit(argc, argv);
+	 *   if (result != 0) return result;
+	 *   for (int i = 0; i < argc; i++)
+	 *   {
+	 *     if (ArgumentAlreadyHandled(i, argv[i])) continue;
+	 *     // ... handle custom arguments here ...
+	 *   }
+	 * }
+	 * \endcode
+	 */
+	virtual int DoInit(int argc, const char** argv);
+
+	/**
+	 * This method can be used by the derivind child class to check if a particular
+	 * argument in argv was already processed.
+	 * \note This assumes that the deriving class called the DoInit method of the
+	 * parent class in its own DoInit method.
+	 */
+	virtual bool ArgumentAlreadyHandled(int& i, const char* argi) const;
+	
+	/**
+	 * This method returns the command line arguments that should not be parsed
+	 * by this class. This method can be used by child classes that derive from
+	 * AliHLTMUONProcessor, to indicate which arguments should not be handled by
+	 * the AliHLTMUONProcessor::DoInit method. Default return value is false.
+	 */
+	virtual bool IgnoreArgument(const char* /*arg*/) const { return false; }
+	
+	/**
+	 * Returns true if the component was told to delay initialisation from
+	 * CDB until the first start of run event. This gets set by the -delaysetup
+	 * flag which is processed in AliHLTMUONProcessor::DoInit.
+	 */
+	bool DelaySetup() const { return fDelaySetup; }
+
+	/**
+	 * This method should be called when a derived component has handled a
+	 * delayed setup requested on the command line with -delaysetup and indicated
+	 * by the flag returned by the DelaySetup method.
+	 */
+	void DoneDelayedSetup() { fDelaySetup = false; }
+	
+	/**
+	 * Returns true if the component has the flag set indicating to dump raw
+	 * data when an error occurs. The DumpEvent method should be used by the
+	 * deriving components to actually dump data at the appropriate point.
+	 * \note This facility is intended for debugging.
+	 */
+	bool DumpDataOnError() const { return fDumpDataOnError; }
+
+	/**
+	 * Returns the path where the dump files will be written to by the Dump*
+	 * methods. Defaults to the current working directory.
+	 * \note This facility is intended for debugging.
+	 */
+	const char* DumpPath() const { return fDumpPath; }
 
 	/**
 	 * Method to check the block structure and log appropriate error messages.
@@ -272,6 +339,44 @@ protected:
 	 */
 	int LoadRecoParamsFromCDB(AliMUONRecoParam*& params) const;
 
+	/**
+	 * Dumps the data contained in a buffer to file as is.
+	 */
+	void DumpBuffer(
+			const void* buffer, AliHLTUInt32_t size,
+			const char* filename
+		) const;
+
+	/**
+	 * Dumps the data block to file.
+	 */
+	void DumpBlock(
+			const AliHLTComponentBlockData* block,
+			const char* fileNamePrefix
+		) const;
+	
+	/**
+	 * Dumps the event information to files in the dump path given by the
+	 * method DumpPath, which can be set by the command line argument -dumppath.
+	 */
+	void DumpEvent(
+			const AliHLTComponentEventData& evtData,
+			const AliHLTComponentBlockData* blocks,
+			AliHLTComponentTriggerData& trigData,
+			AliHLTUInt8_t* outputPtr,
+			AliHLTUInt32_t& size,
+			AliHLTComponentBlockDataList& outputBlocks
+		) const;
+	
+	/**
+	 * Dumps the event information to files in the dump path given by the
+	 * method DumpPath, which can be set by the command line argument -dumppath.
+	 */
+	void DumpEvent(
+			const AliHLTComponentEventData& evtData,
+			AliHLTComponentTriggerData& trigData
+		) const;
+
 private:
 
 	// Do not allow copying of this class.
@@ -279,6 +384,11 @@ private:
 	AliHLTMUONProcessor(const AliHLTMUONProcessor& /*obj*/);
 	/// Not implemented.
 	AliHLTMUONProcessor& operator = (const AliHLTMUONProcessor& /*obj*/);
+
+	bool fWarnForUnexpecedBlock;  ///< Flag indicating if we should log a warning if we got a block of an unexpected type.
+	bool fDelaySetup;  ///< Indicates if the component should delay loading and initialising from the CDB to the start of run event.
+	bool fDumpDataOnError; ///< Flag indicating if we should dump data when an error occurs in the reconstruction class.
+	const char* fDumpPath; ///< This is the path prefix to use to dump event data too when an error occurs.
 	
 	ClassDef(AliHLTMUONProcessor, 0)  // Abstract base class for dHLT specific components.
 };

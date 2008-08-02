@@ -36,7 +36,7 @@ public:
 	// These functions are required for the registration process
 
 	virtual const char* GetComponentID();
-	virtual void GetInputDataTypes( std::vector<AliHLTComponentDataType>& list);
+	virtual void GetInputDataTypes(AliHLTComponentDataTypeList& list);
 	virtual AliHLTComponentDataType GetOutputDataType();
 	virtual void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
 	virtual AliHLTComponent* Spawn();
@@ -75,7 +75,7 @@ protected:
 			AliHLTComponentTriggerData& trigData,
 			AliHLTUInt8_t* outputPtr,
 			AliHLTUInt32_t& size,
-			std::vector<AliHLTComponentBlockData>& outputBlocks
+			AliHLTComponentBlockDataList& outputBlocks
 		);
 	
 	using AliHLTProcessor::DoEvent;
@@ -109,7 +109,6 @@ private:
 	bool fWarnForUnexpecedBlock;  ///< Flag indicating if we should log a warning if we got a block of an unexpected type.
 	bool fStopOnOverflow;  ///< Flag indicating if we should fail in the DoEvent method if the output buffer was overflowed.
 	bool fUseCrateId;  ///< Flag to indicate if the crate ID as found in the regional header structures should be used or not.
-	bool fDelaySetup;  ///< Indicates if the component should delay loading and initialising from the CDB to the start of run event.
 	bool fZmiddleSpecified;  ///< Indicates if the zmiddle parameter was specified on the command line.
 	bool fBLSpecified;  ///< Indicates if the bfieldintegral parameter was specified on the command line.
 	bool fLutInitialised;  ///< Flag to indicate if the LUT was loaded yet or not.

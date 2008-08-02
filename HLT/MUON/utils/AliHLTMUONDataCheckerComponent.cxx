@@ -115,7 +115,7 @@ const char* AliHLTMUONDataCheckerComponent::GetComponentID()
 }
 
 
-void AliHLTMUONDataCheckerComponent::GetInputDataTypes( std::vector<AliHLTComponentDataType>& list)
+void AliHLTMUONDataCheckerComponent::GetInputDataTypes(AliHLTComponentDataTypeList& list)
 {
 	/// Inherited from AliHLTProcessor. Returns the list of expected input data types.
 	/// At the moment this list is "any data type" since it is not known before
@@ -163,6 +163,10 @@ int AliHLTMUONDataCheckerComponent::DoInit(int argc, const char** argv)
 	/// Parses the command line parameters and initialises the component.
 	
 	HLTInfo("Initialising dHLT data checker component.");
+	
+	// Inherit the parents functionality.
+	int result = AliHLTMUONProcessor::DoInit(argc, argv);
+	if (result != 0) return result;
 
 	// Initialise flags with default values.
 	fIgnoreType = false;
@@ -175,6 +179,8 @@ int AliHLTMUONDataCheckerComponent::DoInit(int argc, const char** argv)
 
 	for (int i = 0; i < argc; i++)
 	{
+		if (ArgumentAlreadyHandled(i, argv[i])) continue;
+
 		if (strcmp(argv[i], "-ignoretype") == 0)
 		{
 			fIgnoreType = true;
@@ -238,10 +244,10 @@ int AliHLTMUONDataCheckerComponent::DoDeinit()
 int AliHLTMUONDataCheckerComponent::DoEvent(
 		const AliHLTComponentEventData& evtData,
 		const AliHLTComponentBlockData* blocks,
-		AliHLTComponentTriggerData& /*trigData*/,
+		AliHLTComponentTriggerData& trigData,
 		AliHLTUInt8_t* /*outputPtr*/,
 		AliHLTUInt32_t& size,
-		std::vector<AliHLTComponentBlockData>& outputBlocks
+		AliHLTComponentBlockDataList& outputBlocks
 	)
 {
 	/// Inherited from AliHLTProcessor. Processes the new event data.
@@ -495,6 +501,8 @@ int AliHLTMUONDataCheckerComponent::DoEvent(
 	// Finally we set the total size of output memory we consumed, which is
 	// zero since we just copied the input descriptors to output if anything.
 	size = 0;
+
+	if (dataProblems and DumpDataOnError()) DumpEvent(evtData, trigData);
 	
 	if (fReturnError)
 	{

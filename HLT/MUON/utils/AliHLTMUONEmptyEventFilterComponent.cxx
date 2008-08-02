@@ -65,7 +65,7 @@ const char* AliHLTMUONEmptyEventFilterComponent::GetComponentID()
 }
 
 
-void AliHLTMUONEmptyEventFilterComponent::GetInputDataTypes( std::vector<AliHLTComponentDataType>& list)
+void AliHLTMUONEmptyEventFilterComponent::GetInputDataTypes(AliHLTComponentDataTypeList& list)
 {
 	///
 	/// Inherited from AliHLTProcessor. Returns the list of expected input data types.
@@ -112,6 +112,23 @@ AliHLTComponent* AliHLTMUONEmptyEventFilterComponent::Spawn()
 }
 
 
+bool AliHLTMUONEmptyEventFilterComponent::IgnoreArgument(const char* arg) const
+{
+	/// Return true if the argument is one of -cdbpath -run or -delaysetup
+	/// to prevent the parent class from parsing these arguments in DoInit.
+	
+	if (strcmp(arg, "-cdbpath") == 0 or strcmp(arg, "-run") != 0 or
+	    strcmp(arg, "-delaysetup") != 0)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+
 int AliHLTMUONEmptyEventFilterComponent::DoInit(int argc, const char** argv)
 {
 	///
@@ -119,10 +136,18 @@ int AliHLTMUONEmptyEventFilterComponent::DoInit(int argc, const char** argv)
 	/// Parses the command line parameters and initialises the component.
 	///
 
+	HLTInfo("Initialising dHLT event filter component.");
+	
+	// Inherit the parents functionality.
+	int result = AliHLTMUONProcessor::DoInit(argc, argv);
+	if (result != 0) return result;
+
 	fSendOnEmpty = false;  // Set to the default value.
 
 	for (int i = 0; i < argc; i++)
 	{
+		if (ArgumentAlreadyHandled(i, argv[i])) continue;
+		
 		if (strcmp(argv[i], "-sendempty") == 0)
 		{
 			fSendOnEmpty = true;
@@ -143,6 +168,8 @@ int AliHLTMUONEmptyEventFilterComponent::DoDeinit()
 	///
 	/// Inherited from AliHLTComponent. Performs a cleanup of the component.
 	///
+	
+	HLTInfo("Deinitialising dHLT event filter component.");
   
 	return 0;
 }
@@ -151,10 +178,10 @@ int AliHLTMUONEmptyEventFilterComponent::DoDeinit()
 int AliHLTMUONEmptyEventFilterComponent::DoEvent(
 		const AliHLTComponentEventData& evtData,
 		const AliHLTComponentBlockData* blocks,
-		AliHLTComponentTriggerData& /*trigData*/,
-		AliHLTUInt8_t* /*outputPtr*/,
+		AliHLTComponentTriggerData& trigData,
+		AliHLTUInt8_t* outputPtr,
 		AliHLTUInt32_t& size,
-		std::vector<AliHLTComponentBlockData>& outputBlocks
+		AliHLTComponentBlockDataList& outputBlocks
 	)
 {
 	/// Inherited from AliHLTProcessor. Processes the new event data.
@@ -182,31 +209,51 @@ int AliHLTMUONEmptyEventFilterComponent::DoEvent(
 		if (blocks[n].fDataType == AliHLTMUONConstants::TriggerRecordsBlockDataType())
 		{
 			AliHLTMUONTriggerRecordsBlockReader inblock(blocks[n].fPtr, blocks[n].fSize);
-			if (not BlockStructureOk(inblock)) continue;
+			if (not BlockStructureOk(inblock))
+			{
+				if (DumpDataOnError()) DumpEvent(evtData, blocks, trigData, outputPtr, size, outputBlocks);
+				continue;
+			}
 			if (inblock.Nentries() != 0) emptyEvent = false;
 		}
 		else if (blocks[n].fDataType == AliHLTMUONConstants::RecHitsBlockDataType())
 		{
 			AliHLTMUONRecHitsBlockReader inblock(blocks[n].fPtr, blocks[n].fSize);
-			if (not BlockStructureOk(inblock)) continue;
+			if (not BlockStructureOk(inblock))
+			{
+				if (DumpDataOnError()) DumpEvent(evtData, blocks, trigData, outputPtr, size, outputBlocks);
+				continue;
+			}
 			if (inblock.Nentries() != 0) emptyEvent = false;
 		}
 		else if (blocks[n].fDataType == AliHLTMUONConstants::MansoTracksBlockDataType())
 		{
 			AliHLTMUONMansoTracksBlockReader inblock(blocks[n].fPtr, blocks[n].fSize);
-			if (not BlockStructureOk(inblock)) continue;
+			if (not BlockStructureOk(inblock))
+			{
+				if (DumpDataOnError()) DumpEvent(evtData, blocks, trigData, outputPtr, size, outputBlocks);
+				continue;
+			}
 			if (inblock.Nentries() != 0) emptyEvent = false;
 		}
 		else if (blocks[n].fDataType == AliHLTMUONConstants::SinglesDecisionBlockDataType())
 		{
 			AliHLTMUONSinglesDecisionBlockReader inblock(blocks[n].fPtr, blocks[n].fSize);
-			if (not BlockStructureOk(inblock)) continue;
+			if (not BlockStructureOk(inblock))
+			{
+				if (DumpDataOnError()) DumpEvent(evtData, blocks, trigData, outputPtr, size, outputBlocks);
+				continue;
+			}
 			if (inblock.Nentries() != 0) emptyEvent = false;
 		}
 		else if (blocks[n].fDataType == AliHLTMUONConstants::PairsDecisionBlockDataType())
 		{
 			AliHLTMUONPairsDecisionBlockReader inblock(blocks[n].fPtr, blocks[n].fSize);
-			if (not BlockStructureOk(inblock)) continue;
+			if (not BlockStructureOk(inblock))
+			{
+				if (DumpDataOnError()) DumpEvent(evtData, blocks, trigData, outputPtr, size, outputBlocks);
+				continue;
+			}
 			if (inblock.Nentries() != 0) emptyEvent = false;
 		}
 	}

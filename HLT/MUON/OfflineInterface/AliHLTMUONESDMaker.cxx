@@ -63,18 +63,41 @@ AliHLTMUONESDMaker::~AliHLTMUONESDMaker()
 }
 
 
+bool AliHLTMUONESDMaker::IgnoreArgument(const char* arg) const
+{
+	/// Return true if the argument is one of -cdbpath -run or -delaysetup
+	/// to prevent the parent class from parsing these arguments in DoInit.
+	
+	if (strcmp(arg, "-cdbpath") == 0 or strcmp(arg, "-run") != 0 or
+	    strcmp(arg, "-delaysetup") != 0)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+
 int AliHLTMUONESDMaker::DoInit(int argc, const char** argv)
 {
 	/// Inherited from AliHLTComponent.
 	/// Parses the command line parameters and initialises the component.
 	
 	HLTInfo("Initialising dHLT ESD maker component.");
+
+	// Inherit the parents functionality.
+	int result = AliHLTMUONProcessor::DoInit(argc, argv);
+	if (result != 0) return result;
 	
 	fWarnForUnexpecedBlock = false;
 	fMakeMinimalESD = false;
 	
 	for (int i = 0; i < argc; i++)
 	{
+		if (ArgumentAlreadyHandled(i, argv[i])) continue;
+
 		if (strcmp(argv[i], "-make_minimal_esd") == 0)
 		{
 			fMakeMinimalESD = true;
@@ -121,9 +144,7 @@ AliHLTComponentDataType AliHLTMUONESDMaker::GetOutputDataType()
 }
 
 
-void AliHLTMUONESDMaker::GetInputDataTypes(
-		vector<AliHLTComponentDataType>& list
-	)
+void AliHLTMUONESDMaker::GetInputDataTypes(AliHLTComponentDataTypeList& list)
 {
 	/// Inherited from AliHLTProcessor.
 	/// Returns the list of expected input data types.
@@ -154,8 +175,8 @@ AliHLTComponent* AliHLTMUONESDMaker::Spawn()
 
 
 int AliHLTMUONESDMaker::DoEvent(
-		const AliHLTComponentEventData& /*evtData*/,
-		AliHLTComponentTriggerData& /*trigData*/
+		const AliHLTComponentEventData& evtData,
+		AliHLTComponentTriggerData& trigData
 	)
 {
 	/// Inherited from AliHLTProcessor. Processes the new event data.
@@ -197,7 +218,11 @@ int AliHLTMUONESDMaker::DoEvent(
 		{
 			specification |= block->fSpecification;
 			AliHLTMUONTriggerRecordsBlockReader inblock(block->fPtr, block->fSize);
-			if (not BlockStructureOk(inblock)) continue;
+			if (not BlockStructureOk(inblock))
+			{
+				if (DumpDataOnError()) DumpEvent(evtData, trigData);
+				continue;
+			}
 			
 			for (AliHLTUInt32_t n = 0; n < inblock.Nentries(); n++)
 			{
@@ -231,7 +256,11 @@ int AliHLTMUONESDMaker::DoEvent(
 	{
 		specification |= block->fSpecification;
 		AliHLTMUONMansoTracksBlockReader inblock(block->fPtr, block->fSize);
-		if (not BlockStructureOk(inblock)) continue;
+		if (not BlockStructureOk(inblock))
+		{
+			if (DumpDataOnError()) DumpEvent(evtData, trigData);
+			continue;
+		}
 		
 		for (AliHLTUInt32_t n = 0; n < inblock.Nentries(); n++)
 		{

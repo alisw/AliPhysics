@@ -15,7 +15,6 @@
 
 #include "AliHLTMUONProcessor.h"
 #include "AliHLTMUONDataTypes.h"
-#include <vector>
 
 #if __GNUC__ && __GNUC__ < 3
 #define std
@@ -75,7 +74,7 @@ protected:
 			AliHLTComponentTriggerData& trigData,
 			AliHLTUInt8_t* outputPtr,
 			AliHLTUInt32_t& size,
-			std::vector<AliHLTComponentBlockData>& outputBlocks
+			AliHLTComponentBlockDataList& outputBlocks
 		);
 	
 	using AliHLTProcessor::DoEvent;
@@ -116,7 +115,6 @@ private:
 	AliHLTFloat32_t fLowMassCut;  /// The low invariant mass cut value to apply to tracks. [GeV/c^2]
 	AliHLTFloat32_t fHighMassCut;  /// The high invariant mass cut value to apply to tracks. [GeV/c^2]
 	bool fWarnForUnexpecedBlock;  /// Flag indicating if we should log a warning if we got a block of an unexpected type.
-	bool fDelaySetup;  ///< Indicates if the component should delay loading and initialising from the CDB to the start of run event.
 	bool fLowPtCutSet; ///< Indicates if the low pT cut parameter was set on the command line.
 	bool fHighPtCutSet; ///< Indicates if the high pT cut parameter was set on the command line.
 	bool fLowMassCutSet; ///< Indicates if the low invariant mass cut parameter was set on the command line.

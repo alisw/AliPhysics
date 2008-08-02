@@ -37,8 +37,172 @@
 #include "TMap.h"
 #include "TObjString.h"
 #include "TString.h"
+#include <string>
+#include <cstdlib>
+#include <fstream>
+
 
 ClassImp(AliHLTMUONProcessor)
+
+
+AliHLTMUONProcessor::AliHLTMUONProcessor() :
+	AliHLTProcessor(),
+	fWarnForUnexpecedBlock(false),
+	fDelaySetup(false),
+	fDumpDataOnError(false),
+	fDumpPath("./")
+{
+	/// Default constructor.
+}
+
+
+int AliHLTMUONProcessor::DoInit(int argc, const char** argv)
+{
+	/// Parses common dHLT component arguments.
+
+	// Set the default values for various arguments comming from the command line.
+	fDelaySetup = false;
+	fDumpDataOnError = false;
+	fDumpPath = "./";
+	const char* cdbPath = NULL;
+	Int_t run = -1;
+
+	for (int i = 0; i < argc; i++)
+	{
+		// Ignore the argument if the child class indicates to do so.
+		if (IgnoreArgument(argv[i])) continue;
+	
+		if (strcmp(argv[i], "-cdbpath") == 0)
+		{
+			if (cdbPath != NULL)
+			{
+				HLTWarning("CDB path was already specified. Will"
+					" replace previous value given by -cdbpath."
+				);
+			}
+			if (argc <= i+1)
+			{
+				HLTError("The CDB path was not specified." );
+				return -EINVAL;
+			}
+			cdbPath = argv[i+1];
+			i++;
+			continue;
+		}
+	
+		if (strcmp(argv[i], "-run") == 0)
+		{
+			if (run != -1)
+			{
+				HLTWarning("Run number was already specified. Will"
+					" replace previous value given by -run."
+				);
+			}
+			if (argc <= i+1)
+			{
+				HLTError("The run number was not specified.");
+				return -EINVAL;
+			}
+			
+			char* cpErr = NULL;
+			run = Int_t( strtol(argv[i+1], &cpErr, 0) );
+			if (cpErr == NULL or *cpErr != '\0' or run < 0)
+			{
+				HLTError("Cannot convert '%s' to a valid run number."
+					" Expected a positive integer value.", argv[i+1]
+				);
+				return -EINVAL;
+			}
+			
+			i++;
+			continue;
+		}
+		
+		if (strcmp(argv[i], "-delaysetup") == 0)
+		{
+			fDelaySetup = true;
+			continue;
+		}
+		
+		if (strcmp(argv[i], "-dumponerror") == 0)
+		{
+			fDumpDataOnError = true;
+			continue;
+		}
+		
+		if (strcmp(argv[i], "-dumppath") == 0)
+		{
+			if (fDumpPath != NULL)
+			{
+				HLTWarning("The dump path was already specified. Will"
+					" replace previous value given by -dumppath."
+				);
+			}
+			if (argc <= i+1)
+			{
+				HLTError("The dump path was not specified.");
+				return -EINVAL;
+			}
+			fDumpPath = argv[i+1];
+			i++;
+			continue;
+		}
+	}
+	
+	if (cdbPath != NULL or run != -1)
+	{
+		int result = SetCDBPathAndRunNo(cdbPath, run);
+		if (result != 0)
+		{
+			// Error messages already generated in SetCDBPathAndRunNo.
+			return result;
+		}
+	}
+
+	return 0;
+}
+
+
+bool AliHLTMUONProcessor::ArgumentAlreadyHandled(int& i, const char* argi) const
+{
+	/// This method can be used by the derivind child class to check if a particular
+	/// argument in argv was already processed.
+
+	if (strcmp(argi, "-cdbpath") == 0)
+	{
+		if (IgnoreArgument(argi)) return false;
+		i++;
+		return true;
+	}
+
+	if (strcmp(argi, "-run") == 0)
+	{
+		if (IgnoreArgument(argi)) return false;
+		i++;
+		return true;
+	}
+	
+	if (strcmp(argi, "-delaysetup") == 0)
+	{
+		if (IgnoreArgument(argi)) return false;
+		return true;
+	}
+	
+	if (strcmp(argi, "-dumponerror") == 0)
+	{
+		if (IgnoreArgument(argi)) return false;
+		return true;
+	}
+	
+	if (strcmp(argi, "-dumppath") == 0)
+	{
+		if (IgnoreArgument(argi)) return false;
+		i++;
+		return true;
+	}
+
+	return false;
+}
 
 
 int AliHLTMUONProcessor::SetCDBPathAndRunNo(
@@ -465,5 +629,164 @@ int AliHLTMUONProcessor::LoadRecoParamsFromCDB(AliMUONRecoParam*& params) const
 	
 	params = par;
 	return 0;
+}
+
+
+void AliHLTMUONProcessor::DumpBuffer(
+		const void* buffer, AliHLTUInt32_t size, const char* filename
+	) const
+{
+	/// Dumps the data contained in a buffer to file as is.
+
+	using std::fstream;
+
+	fstream file(filename, fstream::out | fstream::trunc | fstream::binary);
+	if (file.good())
+	{
+		file.write(reinterpret_cast<const char*>(buffer), size);
+		if (file.fail())
+		{
+			HLTError("Could not write data block to file %s during"
+				" dumping operation!",
+				filename
+			);
+		}
+	}
+	else
+	{
+		HLTError("Could not open file %s for dumping data block!", filename);
+	}
+}
+
+
+void AliHLTMUONProcessor::DumpBlock(
+		const AliHLTComponentBlockData* block, const char* fileNamePrefix
+	) const
+{
+	/// Dumps the data block and meta information to file.
+
+	std::string filename = fDumpPath;
+	filename += fileNamePrefix;
+	filename += "-blockmeta.bin";
+	DumpBuffer(block, sizeof(AliHLTComponentBlockData), filename.c_str());
+	filename = fDumpPath;
+	filename += fileNamePrefix;
+	filename += "-data.bin";
+	DumpBuffer(block->fPtr, block->fSize, filename.c_str());
+}
+
+
+void AliHLTMUONProcessor::DumpEvent(
+		const AliHLTComponentEventData& evtData,
+		const AliHLTComponentBlockData* blocks,
+		AliHLTComponentTriggerData& trigData,
+		AliHLTUInt8_t* outputPtr,
+		AliHLTUInt32_t& size,
+		AliHLTComponentBlockDataList& outputBlocks
+	) const
+{
+	/// Dumps the event information to files in the dump path given by the
+	/// method DumpPath, which can be set by the command line argument -dumppath.
+
+	using std::fstream;
+	char strbuf[1024];
+
+	std::string filename = fDumpPath;
+	sprintf(strbuf, "dump_event-0x%16.16llX.log", evtData.fEventID);
+	filename += strbuf;
+	fstream logfile(filename.c_str(), fstream::out | fstream::trunc);
+	if (logfile.fail())
+	{
+		HLTError("Could not open log file '%s' for dump information.", filename.c_str());
+		return;
+	}
+
+	filename = fDumpPath;
+	sprintf(strbuf, "dump_event-0x%16.16llX-eventdata.bin", evtData.fEventID);
+	filename += strbuf;
+	logfile << "Dumping event data structure to file: " << filename << std::endl;
+	DumpBuffer(&evtData, sizeof(AliHLTComponentEventData), filename.c_str());
+
+	filename = fDumpPath;
+	sprintf(strbuf, "dump_event-0x%16.16llX-triggerdata.bin", evtData.fEventID);
+	filename += strbuf;
+	logfile << "Dumping trigger data structure to file: " << filename << std::endl;
+	DumpBuffer(&trigData, sizeof(AliHLTComponentTriggerData), filename.c_str());
+
+	for (unsigned int n = 0; n < evtData.fBlockCnt; n++)
+	{
+		sprintf(strbuf, "dump_event-0x%16.16llX-block-0x%8.8X", evtData.fEventID, n);
+		filename = strbuf;
+		sprintf(strbuf, "0x%8.8X", blocks[n].fSpecification);
+		logfile << "Found block with data type = " << DataType2Text(blocks[n].fDataType)
+			<< ", specification = " << strbuf << ". Dumping to file: "
+			<< filename << "-data.bin" << std::endl;
+		DumpBlock(&blocks[n], filename.c_str());
+	}
+
+	filename = fDumpPath;
+	sprintf(strbuf, "dump_event-0x%16.16llX-output-buffer.bin", evtData.fEventID);
+	filename += strbuf;
+	logfile << "Dumping output buffer to file: " << filename << std::endl;
+	DumpBuffer(outputPtr, size, filename.c_str());
+
+	for (size_t i = 0; i < outputBlocks.size(); i++)
+	{
+		sprintf(strbuf, "dump_event-0x%16.16llX-output-block-0x%8.8X", evtData.fEventID, int(i));
+		filename = strbuf;
+		sprintf(strbuf, "0x%8.8X", outputBlocks[i].fSpecification);
+		logfile << "Generated output data block with type = "
+			<< DataType2Text(outputBlocks[i].fDataType)
+			<< ", specification = " << strbuf << ". Dumping to file: "
+			<< filename << "-data.bin" << std::endl;
+		DumpBlock(&outputBlocks[i], filename.c_str());
+	}
+}
+
+
+void AliHLTMUONProcessor::DumpEvent(
+		const AliHLTComponentEventData& evtData,
+		AliHLTComponentTriggerData& trigData
+	) const
+{
+	/// Dumps the event information to files in the dump path given by the
+	/// method DumpPath, which can be set by the command line argument -dumppath.
+
+	using std::fstream;
+	char strbuf[1024];
+
+	std::string filename = fDumpPath;
+	sprintf(strbuf, "dump_event-0x%16.16llX.log", evtData.fEventID);
+	filename += strbuf;
+	fstream logfile(filename.c_str(), fstream::out | fstream::trunc);
+	if (logfile.fail())
+	{
+		HLTError("Could not open log file '%s' for dump information.", filename.c_str());
+		return;
+	}
+
+	filename = fDumpPath;
+	sprintf(strbuf, "dump_event-0x%16.16llX-eventdata.bin", evtData.fEventID);
+	filename += strbuf;
+	logfile << "Dumping event data structure to file: " << filename << std::endl;
+	DumpBuffer(&evtData, sizeof(AliHLTComponentEventData), filename.c_str());
+
+	filename = fDumpPath;
+	sprintf(strbuf, "dump_event-0x%16.16llX-triggerdata.bin", evtData.fEventID);
+	filename += strbuf;
+	logfile << "Dumping trigger data structure to file: " << filename << std::endl;
+	DumpBuffer(&trigData, sizeof(AliHLTComponentTriggerData), filename.c_str());
+
+	for (int i = 0; i < GetNumberOfInputBlocks(); i++)
+	{
+		const AliHLTComponentBlockData* block = GetInputBlock(i);
+		sprintf(strbuf, "dump_event-0x%16.16llX-block-0x%8.8X", evtData.fEventID, i);
+		filename = strbuf;
+		sprintf(strbuf, "0x%8.8X", block->fSpecification);
+		logfile << "Found block with data type = " << DataType2Text(block->fDataType)
+			<< ", specification = " << strbuf << ". Dumping to file: "
+			<< filename << "-data.bin" << std::endl;
+		DumpBlock(block, filename.c_str());
+	}
 }
 

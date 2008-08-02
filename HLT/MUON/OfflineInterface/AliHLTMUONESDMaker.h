@@ -47,7 +47,7 @@ public:
 	
 	virtual const char* GetComponentID();
 
-	virtual void GetInputDataTypes(vector<AliHLTComponentDataType>& list);
+	virtual void GetInputDataTypes(AliHLTComponentDataTypeList& list);
 	virtual AliHLTComponentDataType GetOutputDataType();
 	virtual void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
 
@@ -58,6 +58,7 @@ protected:
 	virtual int DoInit(int argc, const char** argv);
 	virtual int DoDeinit();
 	virtual int DoEvent(const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData);
+	virtual bool IgnoreArgument(const char* arg) const;
 	using AliHLTProcessor::DoEvent;
 	
 private:

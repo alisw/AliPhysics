@@ -2376,6 +2376,13 @@ const char* TryDecodeDataSpec(const char* filename)
 	return NULL;
 }
 
+namespace
+{
+	// CDB path and run number to use.
+	const char* gCDBPath = "local://$ALICE_ROOT";
+	Int_t gRunNumber = 0;
+}
+
 /**
  * Performs basic data integrity checks of the data block using the
  * AliHLTMUONDataCheckerComponent.
@@ -2404,18 +2411,14 @@ int CheckDataIntegrity(
 		sys.SetGlobalLoggingLevel(AliHLTComponentLogSeverity(level));
 	}
 	
-	// Check if required libraries are there and load them if not.
-	if (gClassTable->GetID("AliHLTAgentUtil") < 0)
-	{
-		sys.LoadComponentLibraries("libAliHLTUtil.so");
-	}
-	if (gClassTable->GetID("AliHLTMUONAgent") < 0)
-	{
-		sys.LoadComponentLibraries("libAliHLTMUON.so");
-	}
+	sys.LoadComponentLibraries("libAliHLTUtil.so");
+	sys.LoadComponentLibraries("libAliHLTMUON.so");
 	
 	// Setup the component parameter lists and then the components.
-	TString dcparams = "-return_error -warn_on_unexpected_block -no_global_check";
+	TString dcparams = "-return_error -warn_on_unexpected_block -no_global_check -cdbpath ";
+	dcparams += gCDBPath;
+	dcparams += " -run ";
+	dcparams += gRunNumber;
 	TString fpparams = "-datatype '";
 	fpparams += TypeToString(type);
 	fpparams += "' 'MUON'";
@@ -2549,7 +2552,8 @@ void PrintUsage(bool asError = true)
 {
 	std::ostream& os = asError ? cerr : cout;
 	os << "Usage: dHLTdumpraw [-help|-h] [-continue|-c] [-type|-t <typename>] [-check|-k]" << endl;
-	os << "         [-debug|-d] [-dataspec|-s <number>] <filename> [<filename> ...]" << endl;
+	os << "         [-debug|-d] [-dataspec|-s <number>] [-cdbpath|-p <url>] [-run|-r <number>]" << endl;
+	os << "         <filename> [<filename> ...]" << endl;
 	os << "Where <filename> is the name of a file containing a raw data block." << endl;
 	os << "Options:" << endl;
 	os << " -help | -h" << endl;
@@ -2584,6 +2588,10 @@ void PrintUsage(bool asError = true)
 	os << " -dataspec | -s <number>" << endl;
 	os << "       When specified, then <number> is used as the data specification for the" << endl;
 	os << "       data file that follows. This option is only useful with the -check|-k option." << endl;
+	os << " -cdbpath | -p <url>" << endl;
+	os << "       The path to the CDB to use when running with the -check | -k option." << endl;
+	os << " -run | -r <number>" << endl;
+	os << "       The run number to use when running with the -check | -k option." << endl;
 }
 
 /**
@@ -2621,6 +2629,8 @@ int ParseCommandLine(
 	checkData = false;
 	int currentType = kUnknownDataBlock;
 	const char* currentDataSpec = NULL;
+	bool pathSet = false;
+	bool runSet = false;
 
 	// Parse the command line.
 	for (int i = 1; i < argc; i++)
@@ -2700,6 +2710,50 @@ int ParseCommandLine(
 				return CMDLINE_ERROR;
 			}
 			currentDataSpec = argv[i];
+		}
+		else if (strcmp(argv[i], "-cdbpath") == 0 or strcmp(argv[i], "-p") == 0)
+		{
+			if (pathSet)
+			{
+				cerr << "WARNING: Already used -cdbpath|-p with '" << gCDBPath
+					<< "' before. Will override it with the last value specified with -cdbpath|-p."
+					<< endl;
+			}
+			if (++i >= argc)
+			{
+				cerr << "ERROR: Missing the URL for the CDB path." << endl << endl;
+				PrintUsage();
+				return CMDLINE_ERROR;
+			}
+			gCDBPath = argv[i];
+			pathSet = true;
+		}
+		else if (strcmp(argv[i], "-run") == 0 or strcmp(argv[i], "-r") == 0)
+		{
+			if (runSet)
+			{
+				cerr << "WARNING: Already used -run|-r with " << gRunNumber
+					<< " before. Will override it with the last value specified with -run|-r."
+					<< endl;
+			}
+			if (++i >= argc)
+			{
+				cerr << "ERROR: Missing the run number." << endl << endl;
+				PrintUsage();
+				return CMDLINE_ERROR;
+			}
+			
+			char* cpErr = NULL;
+			Int_t run = Int_t( strtol(argv[i], &cpErr, 0) );
+			if (cpErr == NULL or *cpErr != '\0' or run < 0)
+			{
+				cerr << "ERROR: Cannot convert '" << argv[i] << "' to a valid run number."
+					" Expected a positive integer value." << endl;
+				return CMDLINE_ERROR;
+			}
+
+			gRunNumber = run;
+			runSet = true;
 		}
 		else
 		{

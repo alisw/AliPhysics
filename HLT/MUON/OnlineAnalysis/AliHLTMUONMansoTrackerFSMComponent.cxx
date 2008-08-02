@@ -48,7 +48,6 @@ AliHLTMUONMansoTrackerFSMComponent::AliHLTMUONMansoTrackerFSMComponent() :
 	fBlock(NULL),
 	fRecHitBlockArraySize(0),
 	fWarnForUnexpecedBlock(false),
-	fDelaySetup(false),
 	fCanLoadZmiddle(true),
 	fCanLoadBL(true)
 {
@@ -93,7 +92,7 @@ const char* AliHLTMUONMansoTrackerFSMComponent::GetComponentID()
 
 
 void AliHLTMUONMansoTrackerFSMComponent::GetInputDataTypes(
-		vector<AliHLTComponentDataType>& list
+		AliHLTComponentDataTypeList& list
 	)
 {
 	///
@@ -148,27 +147,16 @@ int AliHLTMUONMansoTrackerFSMComponent::DoInit(int argc, const char** argv)
 	
 	HLTInfo("Initialising dHLT manso tracker FSM component.");
 	
+	// Inherit the parents functionality.
+	int result = AliHLTMUONProcessor::DoInit(argc, argv);
+	if (result != 0) return result;
+
 	// Just in case for whatever reason we still have some of the internal
 	// object allocated previously still hanging around delete them now.
 	FreeMemory();
 	
-	try
-	{
-		fTracker = new AliHLTMUONMansoTrackerFSM();
-	}
-	catch (const std::bad_alloc&)
-	{
-		HLTError("Could not allocate more memory for the tracker component.");
-		return -ENOMEM;
-	}
-	fTracker->SetCallback(this);
-	
 	fWarnForUnexpecedBlock = false;
-	fDelaySetup = false;
 	ResetCanLoadFlags();
-	
-	const char* cdbPath = NULL;
-	Int_t run = -1;
 	double zmiddle = 0;
 	double bfieldintegral = 0;
 	double roiA[4] = {0, 0, 0, 0};
@@ -177,57 +165,8 @@ int AliHLTMUONMansoTrackerFSMComponent::DoInit(int argc, const char** argv)
 	
 	for (int i = 0; i < argc; i++)
 	{
-		if (strcmp( argv[i], "-cdbpath" ) == 0)
-		{
-			if (cdbPath != NULL)
-			{
-				HLTWarning("CDB path was already specified."
-					" Will replace previous value given by -cdbpath."
-				);
-			}
-			
-			if ( argc <= i+1 )
-			{
-				HLTError("The CDB path was not specified." );
-				FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
-				return -EINVAL;
-			}
-			cdbPath = argv[i+1];
-			i++;
-			continue;
-		}
-	
-		if (strcmp( argv[i], "-run" ) == 0)
-		{
-			if (run != -1)
-			{
-				HLTWarning("Run number was already specified."
-					" Will replace previous value given by -run."
-				);
-			}
-			
-			if ( argc <= i+1 )
-			{
-				HLTError("The run number was not specified." );
-				FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
-				return -EINVAL;
-			}
-			
-			char* cpErr = NULL;
-			run = Int_t( strtoul(argv[i+1], &cpErr, 0) );
-			if (cpErr == NULL or *cpErr != '\0')
-			{
-				HLTError("Cannot convert '%s' to a valid run number."
-					" Expected a positive integer value.", argv[i+1]
-				);
-				FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
-				return -EINVAL;
-			}
-			
-			i++;
-			continue;
-		}
-	
+		if (ArgumentAlreadyHandled(i, argv[i])) continue;
+
 		if (strcmp( argv[i], "-zmiddle" ) == 0)
 		{
 			if (not fCanLoadZmiddle)
@@ -240,7 +179,6 @@ int AliHLTMUONMansoTrackerFSMComponent::DoInit(int argc, const char** argv)
 			if ( argc <= i+1 )
 			{
 				HLTError("The Z coordinate for the middle of the dipole was not specified." );
-				FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
 				return -EINVAL;
 			}
 			
@@ -251,7 +189,6 @@ int AliHLTMUONMansoTrackerFSMComponent::DoInit(int argc, const char** argv)
 				HLTError("Cannot convert '%s' to a valid floating point number.",
 					argv[i+1]
 				);
-				FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
 				return -EINVAL;
 			}
 			
@@ -272,7 +209,6 @@ int AliHLTMUONMansoTrackerFSMComponent::DoInit(int argc, const char** argv)
 			if ( argc <= i+1 )
 			{
 				HLTError("The magnetic field integral was not specified." );
-				FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
 				return -EINVAL;
 			}
 			
@@ -283,7 +219,6 @@ int AliHLTMUONMansoTrackerFSMComponent::DoInit(int argc, const char** argv)
 				HLTError("Cannot convert '%s' to a valid floating point number.",
 					argv[i+1]
 				);
-				FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
 				return -EINVAL;
 			}
 			
@@ -316,7 +251,6 @@ int AliHLTMUONMansoTrackerFSMComponent::DoInit(int argc, const char** argv)
 			if ( argc <= i+1 )
 			{
 				HLTError("The region of interest parameter was not specified." );
-				FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
 				return -EINVAL;
 			}
 			
@@ -327,7 +261,6 @@ int AliHLTMUONMansoTrackerFSMComponent::DoInit(int argc, const char** argv)
 				HLTError("Cannot convert '%s' to a valid floating point number.",
 					argv[i+1]
 				);
-				FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
 				return -EINVAL;
 			}
 			
@@ -360,7 +293,6 @@ int AliHLTMUONMansoTrackerFSMComponent::DoInit(int argc, const char** argv)
 			if ( argc <= i+1 )
 			{
 				HLTError("The region of interest parameter was not specified." );
-				FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
 				return -EINVAL;
 			}
 			
@@ -371,7 +303,6 @@ int AliHLTMUONMansoTrackerFSMComponent::DoInit(int argc, const char** argv)
 				HLTError("Cannot convert '%s' to a valid floating point number.",
 					argv[i+1]
 				);
-				FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
 				return -EINVAL;
 			}
 			
@@ -412,7 +343,6 @@ int AliHLTMUONMansoTrackerFSMComponent::DoInit(int argc, const char** argv)
 			if ( argc <= i+1 )
 			{
 				HLTError("The region of interest parameter was not specified." );
-				FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
 				return -EINVAL;
 			}
 			
@@ -423,18 +353,11 @@ int AliHLTMUONMansoTrackerFSMComponent::DoInit(int argc, const char** argv)
 				HLTError("Cannot convert '%s' to a valid floating point number.",
 					argv[i+1]
 				);
-				FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
 				return -EINVAL;
 			}
 			
 			fCanLoadZ[chamberIndex] = false;  // Prevent loading from CDB.
 			i++;
-			continue;
-		}
-		
-		if (strcmp( argv[i], "-delaysetup" ) == 0)
-		{
-			fDelaySetup = true;
 			continue;
 		}
 		
@@ -445,20 +368,19 @@ int AliHLTMUONMansoTrackerFSMComponent::DoInit(int argc, const char** argv)
 		}
 
 		HLTError("Unknown option '%s'.", argv[i]);
-		FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
 		return -EINVAL;
 	}
 	
-	if (cdbPath != NULL or run != -1)
+	try
 	{
-		int result = SetCDBPathAndRunNo(cdbPath, run);
-		if (result != 0)
-		{
-			// Error messages already generated in SetCDBPathAndRunNo.
-			FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
-			return result;
-		}
+		fTracker = new AliHLTMUONMansoTrackerFSM();
 	}
+	catch (const std::bad_alloc&)
+	{
+		HLTError("Could not allocate more memory for the tracker component.");
+		return -ENOMEM;
+	}
+	fTracker->SetCallback(this);
 	
 	// Set all the parameters that were found on the command line.
 	if (not fCanLoadZmiddle) AliHLTMUONCalculations::Zf(zmiddle);
@@ -478,7 +400,7 @@ int AliHLTMUONMansoTrackerFSMComponent::DoInit(int argc, const char** argv)
 	if (not fCanLoadZ[4]) fTracker->SetZ11(chamberZ[4]);
 	if (not fCanLoadZ[5]) fTracker->SetZ13(chamberZ[5]);
 	
-	if (not fDelaySetup)
+	if (not DelaySetup())
 	{
 		if (AtLeastOneCanLoadFlagsIsSet())
 		{
@@ -748,10 +670,10 @@ int AliHLTMUONMansoTrackerFSMComponent::DoDeinit()
 int AliHLTMUONMansoTrackerFSMComponent::DoEvent(
 		const AliHLTComponentEventData& evtData,
 		const AliHLTComponentBlockData* blocks,
-		AliHLTComponentTriggerData& /*trigData*/,
+		AliHLTComponentTriggerData& trigData,
 		AliHLTUInt8_t* outputPtr,
 		AliHLTUInt32_t& size,
-		std::vector<AliHLTComponentBlockData>& outputBlocks
+		AliHLTComponentBlockDataList& outputBlocks
 	)
 {
 	///
@@ -760,7 +682,7 @@ int AliHLTMUONMansoTrackerFSMComponent::DoEvent(
 	
 	// Initialise the configuration parameters from CDB if we were
 	// requested to initialise only when the first event was received.
-	if (fDelaySetup)
+	if (DelaySetup())
 	{
 		// Load the configuration paramters from CDB if they have not
 		// been given on the command line.
@@ -771,7 +693,7 @@ int AliHLTMUONMansoTrackerFSMComponent::DoEvent(
 			if (result != 0) return result;
 		}
 		
-		fDelaySetup = false;
+		DoneDelayedSetup();
 		ResetCanLoadFlags();  // From this point read all parameters from CDB.
 	}
 	
@@ -809,6 +731,7 @@ int AliHLTMUONMansoTrackerFSMComponent::DoEvent(
 			{
 				fRecHitBlock[i] = NULL;
 			}
+			if (DumpDataOnError()) DumpEvent(evtData, blocks, trigData, outputPtr, size, outputBlocks);
 			return -ENOMEM;
 		}
 		// Only set the arrays' size once we have successfully allocated the memory for the arrays.
@@ -831,6 +754,7 @@ int AliHLTMUONMansoTrackerFSMComponent::DoEvent(
 			"The buffer is only %d bytes in size. We need a minimum of %d bytes.",
 			size, sizeof(AliHLTMUONMansoTracksBlockWriter::HeaderType)
 		);
+		if (DumpDataOnError()) DumpEvent(evtData, blocks, trigData, outputPtr, size, outputBlocks);
 		size = 0; // Important to tell framework that nothing was generated.
 		return -ENOBUFS;
 	}
@@ -849,7 +773,11 @@ int AliHLTMUONMansoTrackerFSMComponent::DoEvent(
 			specification |= blocks[n].fSpecification;
 			
 			AliHLTMUONRecHitsBlockReader inblock(blocks[n].fPtr, blocks[n].fSize);
-			if (not BlockStructureOk(inblock)) continue;
+			if (not BlockStructureOk(inblock))
+			{
+				if (DumpDataOnError()) DumpEvent(evtData, blocks, trigData, outputPtr, size, outputBlocks);
+				continue;
+			}
 			
 			if (inblock.Nentries() != 0)
 				AddRecHits(blocks[n].fSpecification, inblock.GetArray(), inblock.Nentries());
@@ -885,7 +813,11 @@ int AliHLTMUONMansoTrackerFSMComponent::DoEvent(
 			continue;
 		
 		AliHLTMUONTriggerRecordsBlockReader inblock(blocks[n].fPtr, blocks[n].fSize);
-		if (not BlockStructureOk(inblock)) continue;
+		if (not BlockStructureOk(inblock))
+		{
+			if (DumpDataOnError()) DumpEvent(evtData, blocks, trigData, outputPtr, size, outputBlocks);
+			continue;
+		}
 		
 		DebugTrace("Processing a trigger block with "
 			<< inblock.Nentries() << " entries."

@@ -52,9 +52,9 @@ public:
 	// These functions are required for the registration process.
 
 	virtual const char* GetComponentID();
-	virtual void GetInputDataTypes(std::vector<AliHLTComponentDataType>& list);
+	virtual void GetInputDataTypes(AliHLTComponentDataTypeList& list);
 	virtual AliHLTComponentDataType GetOutputDataType();
-	virtual void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier );
+	virtual void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
 	virtual AliHLTComponent* Spawn();
 	
 protected:
@@ -71,8 +71,9 @@ protected:
 			AliHLTComponentTriggerData& trigData,
 			AliHLTUInt8_t* outputPtr, 
 			AliHLTUInt32_t& size,
-			std::vector<AliHLTComponentBlockData>& outputBlocks
+			AliHLTComponentBlockDataList& outputBlocks
 		);
+	virtual bool IgnoreArgument(const char* arg) const;
 	
 	using AliHLTProcessor::DoEvent;
 	

@@ -55,6 +55,23 @@ AliHLTMUONRootifierComponent::~AliHLTMUONRootifierComponent()
 }
 
 
+bool AliHLTMUONRootifierComponent::IgnoreArgument(const char* arg) const
+{
+	/// Return true if the argument is one of -cdbpath -run or -delaysetup
+	/// to prevent the parent class from parsing these arguments in DoInit.
+	
+	if (strcmp(arg, "-cdbpath") == 0 or strcmp(arg, "-run") != 0 or
+	    strcmp(arg, "-delaysetup") != 0)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+
 int AliHLTMUONRootifierComponent::DoInit(int argc, const char** argv)
 {
 	///
@@ -63,11 +80,17 @@ int AliHLTMUONRootifierComponent::DoInit(int argc, const char** argv)
 	///
 	
 	HLTInfo("Initialising dHLT rootifier component.");
+
+	// Inherit the parents functionality.
+	int result = AliHLTMUONProcessor::DoInit(argc, argv);
+	if (result != 0) return result;
 	
 	fWarnForUnexpecedBlock = false;
 	
 	for (int i = 0; i < argc; i++)
 	{
+		if (ArgumentAlreadyHandled(i, argv[i])) continue;
+
 		if (strcmp(argv[i], "-warn_on_unexpected_block") == 0)
 		{
 			fWarnForUnexpecedBlock = true;
@@ -121,9 +144,7 @@ int AliHLTMUONRootifierComponent::GetOutputDataTypes(AliHLTComponentDataTypeList
 }
 
 
-void AliHLTMUONRootifierComponent::GetInputDataTypes(
-		vector<AliHLTComponentDataType>& list
-	)
+void AliHLTMUONRootifierComponent::GetInputDataTypes(AliHLTComponentDataTypeList& list)
 {
 	///
 	/// Inherited from AliHLTProcessor. Returns the list of expected input data types.
@@ -158,7 +179,7 @@ AliHLTComponent* AliHLTMUONRootifierComponent::Spawn()
 
 int AliHLTMUONRootifierComponent::DoEvent(
 		const AliHLTComponentEventData& evtData,
-		AliHLTComponentTriggerData& /*trigData*/
+		AliHLTComponentTriggerData& trigData
 	)
 {
 	///
@@ -183,7 +204,11 @@ int AliHLTMUONRootifierComponent::DoEvent(
 		{
 			specification |= block->fSpecification;
 			AliHLTMUONRecHitsBlockReader inblock(block->fPtr, block->fSize);
-			if (not BlockStructureOk(inblock)) continue;
+			if (not BlockStructureOk(inblock))
+			{
+				if (DumpDataOnError()) DumpEvent(evtData, trigData);
+				continue;
+			}
 			
 			// Decode the source DDL from the specification bits.
 			Int_t sourceDDL = -1;
@@ -223,7 +248,11 @@ int AliHLTMUONRootifierComponent::DoEvent(
 		{
 			specification |= block->fSpecification;
 			AliHLTMUONTriggerRecordsBlockReader inblock(block->fPtr, block->fSize);
-			if (not BlockStructureOk(inblock)) continue;
+			if (not BlockStructureOk(inblock))
+			{
+				if (DumpDataOnError()) DumpEvent(evtData, trigData);
+				continue;
+			}
 			
 			// Decode the source DDL from the specification bits.
 			Int_t sourceDDL = -1;
@@ -301,7 +330,11 @@ int AliHLTMUONRootifierComponent::DoEvent(
 	{
 		specification |= block->fSpecification;
 		AliHLTMUONMansoTracksBlockReader inblock(block->fPtr, block->fSize);
-		if (not BlockStructureOk(inblock)) continue;
+		if (not BlockStructureOk(inblock))
+		{
+			if (DumpDataOnError()) DumpEvent(evtData, trigData);
+			continue;
+		}
 		
 		for (AliHLTUInt32_t n = 0; n < inblock.Nentries(); n++)
 		{
@@ -411,7 +444,11 @@ int AliHLTMUONRootifierComponent::DoEvent(
 		decisionBlockFound = true;
 		specification |= block->fSpecification;
 		AliHLTMUONSinglesDecisionBlockReader inblock(block->fPtr, block->fSize);
-		if (not BlockStructureOk(inblock)) continue;
+		if (not BlockStructureOk(inblock))
+		{
+			if (DumpDataOnError()) DumpEvent(evtData, trigData);
+			continue;
+		}
 		
 		numLowPt += inblock.BlockHeader().fNlowPt;
 		numHighPt += inblock.BlockHeader().fNhighPt;
@@ -472,7 +509,11 @@ int AliHLTMUONRootifierComponent::DoEvent(
 		decisionBlockFound = true;
 		specification |= block->fSpecification;
 		AliHLTMUONPairsDecisionBlockReader inblock(block->fPtr, block->fSize);
-		if (not BlockStructureOk(inblock)) continue;
+		if (not BlockStructureOk(inblock))
+		{
+			if (DumpDataOnError()) DumpEvent(evtData, trigData);
+			continue;
+		}
 		
 		numUnlikeAnyPt += inblock.BlockHeader().fNunlikeAnyPt;
 		numUnlikeLowPt += inblock.BlockHeader().fNunlikeLowPt;

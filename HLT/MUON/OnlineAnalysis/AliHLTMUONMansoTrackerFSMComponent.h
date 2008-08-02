@@ -31,7 +31,6 @@
 #include "AliHLTMUONProcessor.h"
 #include "AliHLTMUONDataTypes.h"
 #include "AliHLTMUONMansoTrackerFSMCallback.h"
-#include <vector>
 
 #if __GNUC__ && __GNUC__ < 3
 #define std
@@ -59,7 +58,7 @@ public:
 	// Public functions to implement the AliHLTProcessor interface.
 	// These functions are required for the registration process.
 	virtual const char* GetComponentID();
-	virtual void GetInputDataTypes(std::vector<AliHLTComponentDataType>& list);
+	virtual void GetInputDataTypes(AliHLTComponentDataTypeList& list);
 	virtual AliHLTComponentDataType GetOutputDataType();
 	virtual void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
 	virtual AliHLTComponent* Spawn();
@@ -90,7 +89,7 @@ protected:
 			AliHLTComponentTriggerData& trigData,
 			AliHLTUInt8_t* outputPtr,
 			AliHLTUInt32_t& size,
-			std::vector<AliHLTComponentBlockData>& outputBlocks
+			AliHLTComponentBlockDataList& outputBlocks
 		);
 	
 	using AliHLTProcessor::DoEvent;
@@ -169,9 +168,7 @@ private:
 	// The allocated memory is: 4 * fRecHitBlockArraySize * sizeof(AliRecHitBlockInfo).
 	AliRecHitBlockInfo* fRecHitBlock[4];  //! Arrays of rec hit block data.
 
-	bool fWarnForUnexpecedBlock;  ///< Flag indicating if we should log a warning if we got a block of an unexpected type.
-	bool fDelaySetup;  ///< Indicates if the component should delay loading and initialising from the CDB to the start of run event.
-	
+	bool fWarnForUnexpecedBlock;  ///< Flag indicating if we should log a warning if we got a block of an unexpected type.	
 	bool fCanLoadZmiddle;  ///< Indicates if the zmiddle parameter can be loaded from CDB.
 	bool fCanLoadBL;  ///< Indicates if the bfieldintegral parameter can be loaded from CDB.
 	bool fCanLoadA[4];  ///< Indicates if the roi_paramA_chamber[7..10] parameter can be loaded from CDB.

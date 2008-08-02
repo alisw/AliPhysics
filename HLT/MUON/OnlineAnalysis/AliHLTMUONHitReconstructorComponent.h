@@ -124,9 +124,9 @@ public:
 	// These functions are required for the registration process
 
 	virtual const char* GetComponentID();
-	virtual void GetInputDataTypes(std::vector<AliHLTComponentDataType>& list);
+	virtual void GetInputDataTypes(AliHLTComponentDataTypeList& list);
 	virtual AliHLTComponentDataType GetOutputDataType();
-	virtual void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier );
+	virtual void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
 	virtual AliHLTComponent* Spawn();
 	
 	/**
@@ -160,7 +160,7 @@ protected:
 			AliHLTComponentTriggerData& trigData,
 			AliHLTUInt8_t* outputPtr,
 			AliHLTUInt32_t& size,
-			std::vector<AliHLTComponentBlockData>& outputBlocks
+			AliHLTComponentBlockDataList& outputBlocks
 		);
 	
 	using AliHLTProcessor::DoEvent;
@@ -184,7 +184,6 @@ private:
 	AliHLTMUONHitRecoLutRow* fLut;  ///< The lookup table used by the hit reconstruction algorithm (Owned by this component however).
 	IdManuChannelToEntry fIdToEntry; ///< id to line mapping.
 	bool fWarnForUnexpecedBlock;  ///< Flag indicating if we should log a warning if we got a block of an unexpected type.
-	bool fDelaySetup;  ///< Indicates if the component should delay loading and initialising from the CDB to the start of run event.
 	
 	ClassDef(AliHLTMUONHitReconstructorComponent, 0) // Hit reconstructor component for dHLT tracker DDL raw data.
 };
