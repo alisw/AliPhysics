@@ -55,6 +55,16 @@ AliProtonAnalysis::AliProtonAnalysis() :
   fMaxCov11Flag(kFALSE), fMaxCov22Flag(kFALSE), fMaxCov33Flag(kFALSE), fMaxCov44Flag(kFALSE), fMaxCov55Flag(kFALSE),
   fMaxSigmaToVertexFlag(kFALSE),
   fITSRefitFlag(kFALSE), fTPCRefitFlag(kFALSE),
+  fQAHistograms(kFALSE),
+  fGlobalQAList(0), fQA2DList(0),
+  fQAPrimaryProtonsAcceptedList(0),
+  fQAPrimaryProtonsRejectedList(0),
+  fQASecondaryProtonsAcceptedList(0),
+  fQASecondaryProtonsRejectedList(0),
+  fQAPrimaryAntiProtonsAcceptedList(0),
+  fQAPrimaryAntiProtonsRejectedList(0),
+  fQASecondaryAntiProtonsAcceptedList(0),
+  fQASecondaryAntiProtonsRejectedList(0),
   fFunctionProbabilityFlag(kFALSE), 
   fElectronFunction(0), fMuonFunction(0),
   fPionFunction(0), fKaonFunction(0), fProtonFunction(0),
@@ -81,6 +91,16 @@ AliProtonAnalysis::AliProtonAnalysis(Int_t nbinsY, Float_t fLowY, Float_t fHighY
   fMaxCov11Flag(kFALSE), fMaxCov22Flag(kFALSE), fMaxCov33Flag(kFALSE), fMaxCov44Flag(kFALSE), fMaxCov55Flag(kFALSE),
   fMaxSigmaToVertexFlag(kFALSE),
   fITSRefitFlag(kFALSE), fTPCRefitFlag(kFALSE),
+  fQAHistograms(kFALSE), 
+  fGlobalQAList(0), fQA2DList(0),
+  fQAPrimaryProtonsAcceptedList(0),
+  fQAPrimaryProtonsRejectedList(0),
+  fQASecondaryProtonsAcceptedList(0),
+  fQASecondaryProtonsRejectedList(0),
+  fQAPrimaryAntiProtonsAcceptedList(0),
+  fQAPrimaryAntiProtonsRejectedList(0),
+  fQASecondaryAntiProtonsAcceptedList(0),
+  fQASecondaryAntiProtonsRejectedList(0),
   fFunctionProbabilityFlag(kFALSE), 
   fElectronFunction(0), fMuonFunction(0),
   fPionFunction(0), fKaonFunction(0), fProtonFunction(0),
@@ -112,10 +132,21 @@ AliProtonAnalysis::~AliProtonAnalysis() {
   if(fCorrectionList2D) delete fCorrectionList2D;
   if(fEfficiencyList1D) delete fEfficiencyList1D;
   if(fCorrectionList1D) delete fCorrectionList1D;
+  if(fGlobalQAList) delete fGlobalQAList;
+  if(fQA2DList) delete fQA2DList;
+  if(fQAPrimaryProtonsAcceptedList) delete fQAPrimaryProtonsAcceptedList;
+  if(fQAPrimaryProtonsRejectedList) delete fQAPrimaryProtonsRejectedList;
+  if(fQASecondaryProtonsAcceptedList) delete fQASecondaryProtonsAcceptedList;
+  if(fQASecondaryProtonsRejectedList) delete fQASecondaryProtonsRejectedList;
+  if(fQAPrimaryAntiProtonsAcceptedList) delete fQAPrimaryAntiProtonsAcceptedList;
+  if(fQAPrimaryAntiProtonsRejectedList) delete fQAPrimaryAntiProtonsRejectedList;
+  if(fQASecondaryAntiProtonsAcceptedList) delete fQASecondaryAntiProtonsAcceptedList;
+  if(fQASecondaryAntiProtonsRejectedList) delete fQASecondaryAntiProtonsRejectedList; 
 }
 
 //____________________________________________________________________//
-void AliProtonAnalysis::InitHistograms(Int_t nbinsY, Float_t fLowY, Float_t fHighY, Int_t nbinsPt, Float_t fLowPt, Float_t fHighPt) {
+void AliProtonAnalysis::InitAnalysisHistograms(Int_t nbinsY, Float_t fLowY, Float_t fHighY, 
+					       Int_t nbinsPt, Float_t fLowPt, Float_t fHighPt) {
   fNBinsY = nbinsY;
   fMinY = fLowY;
   fMaxY = fHighY;
@@ -466,6 +497,80 @@ Bool_t AliProtonAnalysis::IsAccepted(AliESDtrack* track) {
   Int_t nClustersTPC = track->GetTPCclusters(fIdxInt);
 
   Float_t chi2PerClusterITS = -1;
+  if (nClustersITS!=0)
+    chi2PerClusterITS = track->GetITSchi2()/Float_t(nClustersITS);
+  Float_t chi2PerClusterTPC = -1;
+  if (nClustersTPC!=0)
+    chi2PerClusterTPC = track->GetTPCchi2()/Float_t(nClustersTPC);
+
+  Double_t extCov[15];
+  track->GetExternalCovariance(extCov);
+
+  if(fMinITSClustersFlag)
+    if(nClustersITS < fMinITSClusters) return kFALSE;
+  if(fMinTPCClustersFlag)
+    if(nClustersTPC < fMinTPCClusters) return kFALSE;
+  if(fMaxChi2PerTPCClusterFlag)
+    if(chi2PerClusterTPC > fMaxChi2PerTPCCluster) return kFALSE; 
+  if(fMaxChi2PerITSClusterFlag)
+    if(chi2PerClusterITS > fMaxChi2PerITSCluster) return kFALSE; 
+  if(fMaxCov11Flag)
+    if(extCov[0] > fMaxCov11) return kFALSE;
+  if(fMaxCov22Flag)
+    if(extCov[2] > fMaxCov22) return kFALSE;
+  if(fMaxCov33Flag)
+    if(extCov[5] > fMaxCov33) return kFALSE;
+  if(fMaxCov44Flag)
+    if(extCov[9] > fMaxCov44) return kFALSE;
+  if(fMaxCov55Flag)
+    if(extCov[14] > fMaxCov55) return kFALSE;
+  if(fMaxSigmaToVertexFlag)
+    if(GetSigmaToVertex(track) > fMaxSigmaToVertex) return kFALSE;
+  if(fITSRefitFlag)
+    if ((track->GetStatus() & AliESDtrack::kITSrefit) == 0) return kFALSE;
+  if(fTPCRefitFlag)
+    if ((track->GetStatus() & AliESDtrack::kTPCrefit) == 0) return kFALSE;
+
+  if((Pt < fMinPt) || (Pt > fMaxPt)) return kFALSE;
+  if((Rapidity(Px,Py,Pz) < fMinY) || (Rapidity(Px,Py,Pz) > fMaxY)) return kFALSE;
+
+  return kTRUE;
+}
+
+//____________________________________________________________________//
+Bool_t AliProtonAnalysis::IsAccepted(AliESDtrack* track, AliStack *stack) {
+  // Checks if the track is excluded from the cuts
+  Bool_t status = kTRUE;
+  Int_t nPrimaries = stack->GetNprimary();
+  Int_t label = TMath::Abs(track->GetLabel());
+
+  Double_t Pt = 0.0, Px = 0.0, Py = 0.0, Pz = 0.0;
+  if(fUseTPCOnly) {
+    AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
+    if(!tpcTrack) {
+      Pt = 0.0; Px = 0.0; Py = 0.0; Pz = 0.0;
+    }
+    else {
+      Pt = tpcTrack->Pt();
+      Px = tpcTrack->Px();
+      Py = tpcTrack->Py();
+      Pz = tpcTrack->Pz();
+    }
+  }
+  else{
+    Pt = track->Pt();
+    Px = track->Px();
+    Py = track->Py();
+    Pz = track->Pz();
+  }
+     
+  Int_t  fIdxInt[200];
+  Int_t nClustersITS = track->GetITSclusters(fIdxInt);
+  Int_t nClustersTPC = track->GetTPCclusters(fIdxInt);
+
+  Float_t chi2PerClusterITS = -1;
+  if (nClustersITS!=0)
+    chi2PerClusterITS = track->GetITSchi2()/Float_t(nClustersITS);
   Float_t chi2PerClusterTPC = -1;
   if (nClustersTPC!=0)
     chi2PerClusterTPC = track->GetTPCchi2()/Float_t(nClustersTPC);
@@ -685,8 +790,642 @@ Bool_t AliProtonAnalysis::ReadCorrectionContainer(const char* filename) {
       fCorrectionList1D->Add(gCorrection[iParameter][iStep-1]);  
     }
   }
+
+  return status;
 }
 
+//____________________________________________________________________//
+void AliProtonAnalysis::InitQA() {
+  //Initializes the QA histograms and builds the directory structure
+  //2D histograms
+  TDirectory *dir2D = gDirectory->mkdir("2D");
+  fGlobalQAList->Add(dir2D); dir2D->cd();
+  TH2F *gHistYPtPrimaryProtonsPass = new TH2F("gHistYPtPrimaryProtonsPass",
+					      ";y;P_{T} [GeV/c]",
+					      fNBinsY,fMinY,fMaxY,
+					      fNBinsPt,fMinPt,fMaxPt);
+  gHistYPtPrimaryProtonsPass->SetStats(kTRUE);
+  gHistYPtPrimaryProtonsPass->GetXaxis()->SetTitleColor(1);
+  fQA2DList->Add(gHistYPtPrimaryProtonsPass);
+  TH2F *gHistYPtPrimaryAntiProtonsPass = new TH2F("gHistYPtAntiPrimaryProtonsPass",
+						  ";y;P_{T} [GeV/c]",
+						  fNBinsY,fMinY,fMaxY,
+						  fNBinsPt,fMinPt,fMaxPt);
+  gHistYPtPrimaryAntiProtonsPass->SetStats(kTRUE);
+  gHistYPtPrimaryAntiProtonsPass->GetXaxis()->SetTitleColor(1);
+  fQA2DList->Add(gHistYPtPrimaryAntiProtonsPass);
+  TH2F *gHistYPtSecondaryProtonsPass = new TH2F("gHistYPtSecondaryAntiProtonsPass",
+						";y;P_{T} [GeV/c]",
+						fNBinsY,fMinY,fMaxY,
+						fNBinsPt,fMinPt,fMaxPt);
+  gHistYPtSecondaryProtonsPass->SetStats(kTRUE);
+  gHistYPtSecondaryProtonsPass->GetXaxis()->SetTitleColor(1);
+  fQA2DList->Add(gHistYPtSecondaryProtonsPass);
+  TH2F *gHistYPtSecondaryAntiAntiProtonsPass = new TH2F("gHistYPtAntiSecondaryAntiProtonsPass",
+							";y;P_{T} [GeV/c]",
+							fNBinsY,fMinY,fMaxY,
+							fNBinsPt,fMinPt,fMaxPt);
+  gHistYPtSecondaryAntiAntiProtonsPass->SetStats(kTRUE);
+  gHistYPtSecondaryAntiAntiProtonsPass->GetXaxis()->SetTitleColor(1);
+  fQA2DList->Add(gHistYPtSecondaryAntiAntiProtonsPass);
+  
+  gDirectory->cd("../");
+  //protons
+  TDirectory *dirProtons = gDirectory->mkdir("Protons");
+  fGlobalQAList->Add(dirProtons); dirProtons->cd();
+  
+  //________________________________________________________________//
+  TDirectory *dirProtonsPrimary = gDirectory->mkdir("Primaries");
+  dirProtonsPrimary->cd();
+  TDirectory *dirProtonsPrimaryAccepted = gDirectory->mkdir("Accepted");
+  dirProtonsPrimaryAccepted->cd();
+
+  //Accepted primary protons
+  TH1F *fPrimaryProtonsITSClustersPass = new TH1F("fPrimaryProtonsITSClustersPass",
+					    ";N_{clusters} (ITS);Entries",
+					    7,0,7);
+  fQAPrimaryProtonsAcceptedList->Add(fPrimaryProtonsITSClustersPass);
+  TH1F *fPrimaryProtonsChi2PerClusterITSPass = new TH1F("fPrimaryProtonsChi2PerClusterITSPass",
+						  ";x^{2}/N_{clusters} (ITS);Entries",
+						  100,0,4);
+  fQAPrimaryProtonsAcceptedList->Add(fPrimaryProtonsChi2PerClusterITSPass);
+  TH1F *fPrimaryProtonsTPCClustersPass = new TH1F("fPrimaryProtonsTPCClustersPass",
+					    ";N_{clusters} (TPC);Entries",
+					    100,0,200);
+  fQAPrimaryProtonsAcceptedList->Add(fPrimaryProtonsTPCClustersPass);
+  TH1F *fPrimaryProtonsChi2PerClusterTPCPass = new TH1F("fPrimaryProtonsChi2PerClusterTPCPass",
+						  ";x^{2}/N_{clusters} (TPC);Entries",
+						  100,0,4);
+  fQAPrimaryProtonsAcceptedList->Add(fPrimaryProtonsChi2PerClusterTPCPass);
+  TH1F *fPrimaryProtonsExtCov11Pass = new TH1F("fPrimaryProtonsExtCov11Pass",
+					 ";#sigma_{y} [cm];Entries",
+					 100,0,4);
+  fQAPrimaryProtonsAcceptedList->Add(fPrimaryProtonsExtCov11Pass);
+  TH1F *fPrimaryProtonsExtCov22Pass = new TH1F("fPrimaryProtonsExtCov22Pass",
+					 ";#sigma_{z} [cm];Entries",
+					 100,0,4);
+  fQAPrimaryProtonsAcceptedList->Add(fPrimaryProtonsExtCov22Pass);
+  TH1F *fPrimaryProtonsExtCov33Pass = new TH1F("fPrimaryProtonsExtCov33Pass",
+					 ";#sigma_{sin(#phi)};Entries",
+					 100,0,4);
+  fQAPrimaryProtonsAcceptedList->Add(fPrimaryProtonsExtCov33Pass);
+  TH1F *fPrimaryProtonsExtCov44Pass = new TH1F("fPrimaryProtonsExtCov44Pass",
+					 ";#sigma_{tan(#lambda)};Entries",
+					 100,0,4);
+  fQAPrimaryProtonsAcceptedList->Add(fPrimaryProtonsExtCov44Pass);
+  TH1F *fPrimaryProtonsExtCov55Pass = new TH1F("fPrimaryProtonsExtCov55Pass",
+					 ";#sigma_{1/P_{T}} [GeV/c]^{-1};Entries",
+					 100,0,4);
+  fQAPrimaryProtonsAcceptedList->Add(fPrimaryProtonsExtCov55Pass);
+  TH1F *fPrimaryProtonsSigmaToVertexPass = new TH1F("fPrimaryProtonsSigmaToVertexPass",
+					     ";#sigma_{Vertex};Entries",
+					     100,0,10);
+  fQAPrimaryProtonsAcceptedList->Add(fPrimaryProtonsSigmaToVertexPass);
+  TH1F *fPrimaryProtonsSigmaToVertexTPCPass = new TH1F("fPrimaryProtonsSigmaToVertexTPCPass",
+					     ";#sigma_{Vertex};Entries",
+					     100,0,10);
+  fQAPrimaryProtonsAcceptedList->Add(fPrimaryProtonsSigmaToVertexTPCPass);
+  TH1F *fPrimaryProtonsITSRefitPass = new TH1F("fPrimaryProtonsITSRefitPass",
+					 "",10,-1,1);
+  fQAPrimaryProtonsAcceptedList->Add(fPrimaryProtonsITSRefitPass);
+  TH1F *fPrimaryProtonsTPCRefitPass = new TH1F("fPrimaryProtonsTPCRefitPass",
+					 "",10,-1,1);
+  fQAPrimaryProtonsAcceptedList->Add(fPrimaryProtonsTPCRefitPass);
+  TH1F *fPrimaryProtonsESDpidPass = new TH1F("fPrimaryProtonsESDpidPass",
+				       "",10,-1,1);
+  fQAPrimaryProtonsAcceptedList->Add(fPrimaryProtonsESDpidPass);
+  TH1F *fPrimaryProtonsTPCpidPass = new TH1F("fPrimaryProtonsTPCpidPass",
+				       "",10,-1,1);
+  fQAPrimaryProtonsAcceptedList->Add(fPrimaryProtonsTPCpidPass);
+
+  //Rejected primary protons
+  gDirectory->cd("../");
+  TDirectory *dirProtonsPrimaryRejected = gDirectory->mkdir("Rejected");
+  dirProtonsPrimaryRejected->cd();
+
+  TH1F *fPrimaryProtonsITSClustersReject = new TH1F("fPrimaryProtonsITSClustersReject",
+						    ";N_{clusters} (ITS);Entries",
+						    7,0,7);
+  fQAPrimaryProtonsAcceptedList->Add(fPrimaryProtonsITSClustersReject);
+  TH1F *fPrimaryProtonsChi2PerClusterITSReject = new TH1F("fPrimaryProtonsChi2PerClusterITSReject",
+							  ";x^{2}/N_{clusters} (ITS);Entries",
+							  100,0,4);
+  fQAPrimaryProtonsAcceptedList->Add(fPrimaryProtonsChi2PerClusterITSReject);
+  TH1F *fPrimaryProtonsTPCClustersReject = new TH1F("fPrimaryProtonsTPCClustersReject",
+					    ";N_{clusters} (TPC);Entries",
+					    100,0,200);
+  fQAPrimaryProtonsRejectedList->Add(fPrimaryProtonsTPCClustersReject);
+  TH1F *fPrimaryProtonsChi2PerClusterTPCReject = new TH1F("fPrimaryProtonsChi2PerClusterTPCReject",
+						  ";x^{2}/N_{clusters} (TPC);Entries",
+						  100,0,4);
+  fQAPrimaryProtonsRejectedList->Add(fPrimaryProtonsChi2PerClusterTPCReject);
+  TH1F *fPrimaryProtonsExtCov11Reject = new TH1F("fPrimaryProtonsExtCov11Reject",
+					 ";#sigma_{y} [cm];Entries",
+					 100,0,4);
+  fQAPrimaryProtonsRejectedList->Add(fPrimaryProtonsExtCov11Reject);
+  TH1F *fPrimaryProtonsExtCov22Reject = new TH1F("fPrimaryProtonsExtCov22Reject",
+					 ";#sigma_{z} [cm];Entries",
+					 100,0,4);
+  fQAPrimaryProtonsRejectedList->Add(fPrimaryProtonsExtCov22Reject);
+  TH1F *fPrimaryProtonsExtCov33Reject = new TH1F("fPrimaryProtonsExtCov33Reject",
+					 ";#sigma_{sin(#phi)};Entries",
+					 100,0,4);
+  fQAPrimaryProtonsRejectedList->Add(fPrimaryProtonsExtCov33Reject);
+  TH1F *fPrimaryProtonsExtCov44Reject = new TH1F("fPrimaryProtonsExtCov44Reject",
+					 ";#sigma_{tan(#lambda)};Entries",
+					 100,0,4);
+  fQAPrimaryProtonsRejectedList->Add(fPrimaryProtonsExtCov44Reject);
+  TH1F *fPrimaryProtonsExtCov55Reject = new TH1F("fPrimaryProtonsExtCov55Reject",
+					 ";#sigma_{1/P_{T}} [GeV/c]^{-1};Entries",
+					 100,0,4);
+  fQAPrimaryProtonsRejectedList->Add(fPrimaryProtonsExtCov55Reject);
+  TH1F *fPrimaryProtonsSigmaToVertexReject = new TH1F("fPrimaryProtonsSigmaToVertexReject",
+					     ";#sigma_{Vertex};Entries",
+					     100,0,10);
+  fQAPrimaryProtonsRejectedList->Add(fPrimaryProtonsSigmaToVertexReject);
+  TH1F *fPrimaryProtonsSigmaToVertexTPCReject = new TH1F("fPrimaryProtonsSigmaToVertexTPCReject",
+					     ";#sigma_{Vertex};Entries",
+					     100,0,10);
+  fQAPrimaryProtonsRejectedList->Add(fPrimaryProtonsSigmaToVertexTPCReject);
+  TH1F *fPrimaryProtonsITSRefitReject = new TH1F("fPrimaryProtonsITSRefitReject",
+					 "",10,-1,1);
+  fQAPrimaryProtonsRejectedList->Add(fPrimaryProtonsITSRefitReject);
+  TH1F *fPrimaryProtonsTPCRefitReject = new TH1F("fPrimaryProtonsTPCRefitReject",
+					 "",10,-1,1);
+  fQAPrimaryProtonsRejectedList->Add(fPrimaryProtonsTPCRefitReject);
+  TH1F *fPrimaryProtonsESDpidReject = new TH1F("fPrimaryProtonsESDpidReject",
+				       "",10,-1,1);
+  fQAPrimaryProtonsRejectedList->Add(fPrimaryProtonsESDpidReject);
+  TH1F *fPrimaryProtonsTPCpidReject = new TH1F("fPrimaryProtonsTPCpidReject",
+				       "",10,-1,1);
+  fQAPrimaryProtonsRejectedList->Add(fPrimaryProtonsTPCpidReject);
+
+  //________________________________________________________________//
+  gDirectory->cd("../../");
+
+  TDirectory *dirProtonsSecondary = gDirectory->mkdir("Secondaries");
+  dirProtonsSecondary->cd();
+  TDirectory *dirProtonsSecondaryAccepted = gDirectory->mkdir("Accepted");
+  dirProtonsSecondaryAccepted->cd();
+
+  //Accepted secondary protons
+  TH1F *fSecondaryProtonsITSClustersPass = new TH1F("fSecondaryProtonsITSClustersPass",
+						    ";N_{clusters} (ITS);Entries",
+						    7,0,7);
+  fQASecondaryProtonsAcceptedList->Add(fSecondaryProtonsITSClustersPass);
+  TH1F *fSecondaryProtonsChi2PerClusterITSPass = new TH1F("fSecondaryProtonsChi2PerClusterITSPass",
+							  ";x^{2}/N_{clusters} (ITS);Entries",
+							  100,0,4);
+  fQASecondaryProtonsAcceptedList->Add(fSecondaryProtonsChi2PerClusterITSPass);
+  TH1F *fSecondaryProtonsTPCClustersPass = new TH1F("fSecondaryProtonsTPCClustersPass",
+					    ";N_{clusters} (TPC);Entries",
+					    100,0,200);
+  fQASecondaryProtonsAcceptedList->Add(fSecondaryProtonsTPCClustersPass);
+  TH1F *fSecondaryProtonsChi2PerClusterTPCPass = new TH1F("fSecondaryProtonsChi2PerClusterTPCPass",
+						  ";x^{2}/N_{clusters} (TPC);Entries",
+						  100,0,4);
+  fQASecondaryProtonsAcceptedList->Add(fSecondaryProtonsChi2PerClusterTPCPass);
+  TH1F *fSecondaryProtonsExtCov11Pass = new TH1F("fSecondaryProtonsExtCov11Pass",
+					 ";#sigma_{y} [cm];Entries",
+					 100,0,4);
+  fQASecondaryProtonsAcceptedList->Add(fSecondaryProtonsExtCov11Pass);
+  TH1F *fSecondaryProtonsExtCov22Pass = new TH1F("fSecondaryProtonsExtCov22Pass",
+					 ";#sigma_{z} [cm];Entries",
+					 100,0,4);
+  fQASecondaryProtonsAcceptedList->Add(fSecondaryProtonsExtCov22Pass);
+  TH1F *fSecondaryProtonsExtCov33Pass = new TH1F("fSecondaryProtonsExtCov33Pass",
+					 ";#sigma_{sin(#phi)};Entries",
+					 100,0,4);
+  fQASecondaryProtonsAcceptedList->Add(fSecondaryProtonsExtCov33Pass);
+  TH1F *fSecondaryProtonsExtCov44Pass = new TH1F("fSecondaryProtonsExtCov44Pass",
+					 ";#sigma_{tan(#lambda)};Entries",
+					 100,0,4);
+  fQASecondaryProtonsAcceptedList->Add(fSecondaryProtonsExtCov44Pass);
+  TH1F *fSecondaryProtonsExtCov55Pass = new TH1F("fSecondaryProtonsExtCov55Pass",
+					 ";#sigma_{1/P_{T}} [GeV/c]^{-1};Entries",
+					 100,0,4);
+  fQASecondaryProtonsAcceptedList->Add(fSecondaryProtonsExtCov55Pass);
+  TH1F *fSecondaryProtonsSigmaToVertexPass = new TH1F("fSecondaryProtonsSigmaToVertexPass",
+					     ";#sigma_{Vertex};Entries",
+					     100,0,10);
+  fQASecondaryProtonsAcceptedList->Add(fSecondaryProtonsSigmaToVertexPass);
+  TH1F *fSecondaryProtonsSigmaToVertexTPCPass = new TH1F("fSecondaryProtonsSigmaToVertexTPCPass",
+					     ";#sigma_{Vertex};Entries",
+					     100,0,10);
+  fQASecondaryProtonsAcceptedList->Add(fSecondaryProtonsSigmaToVertexTPCPass);
+  TH1F *fSecondaryProtonsITSRefitPass = new TH1F("fSecondaryProtonsITSRefitPass",
+					 "",10,-1,1);
+  fQASecondaryProtonsAcceptedList->Add(fSecondaryProtonsITSRefitPass);
+  TH1F *fSecondaryProtonsTPCRefitPass = new TH1F("fSecondaryProtonsTPCRefitPass",
+					 "",10,-1,1);
+  fQASecondaryProtonsAcceptedList->Add(fSecondaryProtonsTPCRefitPass);
+  TH1F *fSecondaryProtonsESDpidPass = new TH1F("fSecondaryProtonsESDpidPass",
+				       "",10,-1,1);
+  fQASecondaryProtonsAcceptedList->Add(fSecondaryProtonsESDpidPass);
+  TH1F *fSecondaryProtonsTPCpidPass = new TH1F("fSecondaryProtonsTPCpidPass",
+				       "",10,-1,1);
+  fQASecondaryProtonsAcceptedList->Add(fSecondaryProtonsTPCpidPass);
+
+  //Rejected secondary protons
+  gDirectory->cd("../");
+  TDirectory *dirProtonsSecondaryRejected = gDirectory->mkdir("Rejected");
+  dirProtonsSecondaryRejected->cd();
+
+  TH1F *fSecondaryProtonsITSClustersReject = new TH1F("fSecondaryProtonsITSClustersReject",
+						      ";N_{clusters} (ITS);Entries",
+						      7,0,7);
+  fQASecondaryProtonsAcceptedList->Add(fSecondaryProtonsITSClustersReject);
+  TH1F *fSecondaryProtonsChi2PerClusterITSReject = new TH1F("fSecondaryProtonsChi2PerClusterITSReject",
+							    ";x^{2}/N_{clusters} (ITS);Entries",
+							    100,0,4);
+  fQASecondaryProtonsAcceptedList->Add(fSecondaryProtonsChi2PerClusterITSReject);
+  TH1F *fSecondaryProtonsTPCClustersReject = new TH1F("fSecondaryProtonsTPCClustersReject",
+					    ";N_{clusters} (TPC);Entries",
+					    100,0,200);
+  fQASecondaryProtonsRejectedList->Add(fSecondaryProtonsTPCClustersReject);
+  TH1F *fSecondaryProtonsChi2PerClusterTPCReject = new TH1F("fSecondaryProtonsChi2PerClusterTPCReject",
+						  ";x^{2}/N_{clusters} (TPC);Entries",
+						  100,0,4);
+  fQASecondaryProtonsRejectedList->Add(fSecondaryProtonsChi2PerClusterTPCReject);
+  TH1F *fSecondaryProtonsExtCov11Reject = new TH1F("fSecondaryProtonsExtCov11Reject",
+					 ";#sigma_{y} [cm];Entries",
+					 100,0,4);
+  fQASecondaryProtonsRejectedList->Add(fSecondaryProtonsExtCov11Reject);
+  TH1F *fSecondaryProtonsExtCov22Reject = new TH1F("fSecondaryProtonsExtCov22Reject",
+					 ";#sigma_{z} [cm];Entries",
+					 100,0,4);
+  fQASecondaryProtonsRejectedList->Add(fSecondaryProtonsExtCov22Reject);
+  TH1F *fSecondaryProtonsExtCov33Reject = new TH1F("fSecondaryProtonsExtCov33Reject",
+					 ";#sigma_{sin(#phi)};Entries",
+					 100,0,4);
+  fQASecondaryProtonsRejectedList->Add(fSecondaryProtonsExtCov33Reject);
+  TH1F *fSecondaryProtonsExtCov44Reject = new TH1F("fSecondaryProtonsExtCov44Reject",
+					 ";#sigma_{tan(#lambda)};Entries",
+					 100,0,4);
+  fQASecondaryProtonsRejectedList->Add(fSecondaryProtonsExtCov44Reject);
+  TH1F *fSecondaryProtonsExtCov55Reject = new TH1F("fSecondaryProtonsExtCov55Reject",
+					 ";#sigma_{1/P_{T}} [GeV/c]^{-1};Entries",
+					 100,0,4);
+  fQASecondaryProtonsRejectedList->Add(fSecondaryProtonsExtCov55Reject);
+  TH1F *fSecondaryProtonsSigmaToVertexReject = new TH1F("fSecondaryProtonsSigmaToVertexReject",
+					     ";#sigma_{Vertex};Entries",
+					     100,0,10);
+  fQASecondaryProtonsRejectedList->Add(fSecondaryProtonsSigmaToVertexReject);
+  TH1F *fSecondaryProtonsSigmaToVertexTPCReject = new TH1F("fSecondaryProtonsSigmaToVertexTPCReject",
+					     ";#sigma_{Vertex};Entries",
+					     100,0,10);
+  fQASecondaryProtonsRejectedList->Add(fSecondaryProtonsSigmaToVertexTPCReject);
+  TH1F *fSecondaryProtonsITSRefitReject = new TH1F("fSecondaryProtonsITSRefitReject",
+					 "",10,-1,1);
+  fQASecondaryProtonsRejectedList->Add(fSecondaryProtonsITSRefitReject);
+  TH1F *fSecondaryProtonsTPCRefitReject = new TH1F("fSecondaryProtonsTPCRefitReject",
+					 "",10,-1,1);
+  fQASecondaryProtonsRejectedList->Add(fSecondaryProtonsTPCRefitReject);
+  TH1F *fSecondaryProtonsESDpidReject = new TH1F("fSecondaryProtonsESDpidReject",
+				       "",10,-1,1);
+  fQASecondaryProtonsRejectedList->Add(fSecondaryProtonsESDpidReject);
+  TH1F *fSecondaryProtonsTPCpidReject = new TH1F("fSecondaryProtonsTPCpidReject",
+				       "",10,-1,1);
+  fQASecondaryProtonsRejectedList->Add(fSecondaryProtonsTPCpidReject);
+
+
+  gDirectory->cd("../../../");
+
+  //antiprotons
+  TDirectory *dirAntiProtons = gDirectory->mkdir("AntiProtons");
+  fGlobalQAList->Add(dirAntiProtons); dirAntiProtons->cd();
+  
+  //________________________________________________________________//
+  TDirectory *dirAntiProtonsPrimary = gDirectory->mkdir("Primaries");
+  dirAntiProtonsPrimary->cd();
+  TDirectory *dirAntiProtonsPrimaryAccepted = gDirectory->mkdir("Accepted");
+  dirAntiProtonsPrimaryAccepted->cd();
+  
+  //Accepted primary antiprotons
+  TH1F *fPrimaryAntiProtonsITSClustersPass = new TH1F("fPrimaryAntiProtonsITSClustersPass",
+						      ";N_{clusters} (ITS);Entries",
+						      7,0,7);
+  fQAPrimaryAntiProtonsAcceptedList->Add(fPrimaryAntiProtonsITSClustersPass);
+  TH1F *fPrimaryAntiProtonsChi2PerClusterITSPass = new TH1F("fPrimaryAntiProtonsChi2PerClusterITSPass",
+							    ";x^{2}/N_{clusters} (ITS);Entries",
+							    100,0,4);
+  fQAPrimaryAntiProtonsAcceptedList->Add(fPrimaryAntiProtonsChi2PerClusterITSPass);
+  TH1F *fPrimaryAntiProtonsTPCClustersPass = new TH1F("fPrimaryAntiProtonsTPCClustersPass",
+						      ";N_{clusters} (TPC);Entries",
+						      100,0,200);
+  fQAPrimaryAntiProtonsAcceptedList->Add(fPrimaryAntiProtonsTPCClustersPass);
+  TH1F *fPrimaryAntiProtonsChi2PerClusterTPCPass = new TH1F("fPrimaryAntiProtonsChi2PerClusterTPCPass",
+							    ";x^{2}/N_{clusters} (TPC);Entries",
+							    100,0,4);
+  fQAPrimaryAntiProtonsAcceptedList->Add(fPrimaryAntiProtonsChi2PerClusterTPCPass);
+  TH1F *fPrimaryAntiProtonsExtCov11Pass = new TH1F("fPrimaryAntiProtonsExtCov11Pass",
+						   ";#sigma_{y} [cm];Entries",
+						   100,0,4);
+  fQAPrimaryAntiProtonsAcceptedList->Add(fPrimaryAntiProtonsExtCov11Pass);
+  TH1F *fPrimaryAntiProtonsExtCov22Pass = new TH1F("fPrimaryAntiProtonsExtCov22Pass",
+						   ";#sigma_{z} [cm];Entries",
+						   100,0,4);
+  fQAPrimaryAntiProtonsAcceptedList->Add(fPrimaryAntiProtonsExtCov22Pass);
+  TH1F *fPrimaryAntiProtonsExtCov33Pass = new TH1F("fPrimaryAntiProtonsExtCov33Pass",
+						   ";#sigma_{sin(#phi)};Entries",
+						   100,0,4);
+  fQAPrimaryAntiProtonsAcceptedList->Add(fPrimaryAntiProtonsExtCov33Pass);
+  TH1F *fPrimaryAntiProtonsExtCov44Pass = new TH1F("fPrimaryAntiProtonsExtCov44Pass",
+						   ";#sigma_{tan(#lambda)};Entries",
+						   100,0,4);
+  fQAPrimaryAntiProtonsAcceptedList->Add(fPrimaryAntiProtonsExtCov44Pass);
+  TH1F *fPrimaryAntiProtonsExtCov55Pass = new TH1F("fPrimaryAntiProtonsExtCov55Pass",
+						   ";#sigma_{1/P_{T}} [GeV/c]^{-1};Entries",
+						   100,0,4);
+  fQAPrimaryAntiProtonsAcceptedList->Add(fPrimaryAntiProtonsExtCov55Pass);
+  TH1F *fPrimaryAntiProtonsSigmaToVertexPass = new TH1F("fPrimaryAntiProtonsSigmaToVertexPass",
+							";#sigma_{Vertex};Entries",
+							100,0,10);
+  fQAPrimaryAntiProtonsAcceptedList->Add(fPrimaryAntiProtonsSigmaToVertexPass);
+  TH1F *fPrimaryAntiProtonsSigmaToVertexTPCPass = new TH1F("fPrimaryAntiProtonsSigmaToVertexTPCPass",
+							   ";#sigma_{Vertex};Entries",
+							   100,0,10);
+  fQAPrimaryAntiProtonsAcceptedList->Add(fPrimaryAntiProtonsSigmaToVertexTPCPass);
+  TH1F *fPrimaryAntiProtonsITSRefitPass = new TH1F("fPrimaryAntiProtonsITSRefitPass",
+						   "",10,-1,1);
+  fQAPrimaryAntiProtonsAcceptedList->Add(fPrimaryAntiProtonsITSRefitPass);
+  TH1F *fPrimaryAntiProtonsTPCRefitPass = new TH1F("fPrimaryAntiProtonsTPCRefitPass",
+						   "",10,-1,1);
+  fQAPrimaryAntiProtonsAcceptedList->Add(fPrimaryAntiProtonsTPCRefitPass);
+  TH1F *fPrimaryAntiProtonsESDpidPass = new TH1F("fPrimaryAntiProtonsESDpidPass",
+						 "",10,-1,1);
+  fQAPrimaryAntiProtonsAcceptedList->Add(fPrimaryAntiProtonsESDpidPass);
+  TH1F *fPrimaryAntiProtonsTPCpidPass = new TH1F("fPrimaryAntiProtonsTPCpidPass",
+						 "",10,-1,1);
+  fQAPrimaryAntiProtonsAcceptedList->Add(fPrimaryAntiProtonsTPCpidPass);
+  
+  //Rejected primary antiprotons
+  gDirectory->cd("../");
+  TDirectory *dirAntiProtonsPrimaryRejected = gDirectory->mkdir("Rejected");
+  dirAntiProtonsPrimaryRejected->cd();
+  
+  TH1F *fPrimaryAntiProtonsITSClustersReject = new TH1F("fPrimaryAntiProtonsITSClustersReject",
+							";N_{clusters} (ITS);Entries",
+							7,0,7);
+  fQAPrimaryAntiProtonsAcceptedList->Add(fPrimaryAntiProtonsITSClustersReject);
+  TH1F *fPrimaryAntiProtonsChi2PerClusterITSReject = new TH1F("fPrimaryAntiProtonsChi2PerClusterITSReject",
+							      ";x^{2}/N_{clusters} (ITS);Entries",
+							      100,0,4);
+  fQAPrimaryAntiProtonsAcceptedList->Add(fPrimaryAntiProtonsChi2PerClusterITSReject);
+  TH1F *fPrimaryAntiProtonsTPCClustersReject = new TH1F("fPrimaryAntiProtonsTPCClustersReject",
+							";N_{clusters} (TPC);Entries",
+							100,0,200);
+  fQAPrimaryAntiProtonsRejectedList->Add(fPrimaryAntiProtonsTPCClustersReject);
+  TH1F *fPrimaryAntiProtonsChi2PerClusterTPCReject = new TH1F("fPrimaryAntiProtonsChi2PerClusterTPCReject",
+							      ";x^{2}/N_{clusters} (TPC);Entries",
+							      100,0,4);
+  fQAPrimaryAntiProtonsRejectedList->Add(fPrimaryAntiProtonsChi2PerClusterTPCReject);
+  TH1F *fPrimaryAntiProtonsExtCov11Reject = new TH1F("fPrimaryAntiProtonsExtCov11Reject",
+						     ";#sigma_{y} [cm];Entries",
+						     100,0,4);
+  fQAPrimaryAntiProtonsRejectedList->Add(fPrimaryAntiProtonsExtCov11Reject);
+  TH1F *fPrimaryAntiProtonsExtCov22Reject = new TH1F("fPrimaryAntiProtonsExtCov22Reject",
+						     ";#sigma_{z} [cm];Entries",
+						     100,0,4);
+  fQAPrimaryAntiProtonsRejectedList->Add(fPrimaryAntiProtonsExtCov22Reject);
+  TH1F *fPrimaryAntiProtonsExtCov33Reject = new TH1F("fPrimaryAntiProtonsExtCov33Reject",
+						     ";#sigma_{sin(#phi)};Entries",
+						     100,0,4);
+  fQAPrimaryAntiProtonsRejectedList->Add(fPrimaryAntiProtonsExtCov33Reject);
+  TH1F *fPrimaryAntiProtonsExtCov44Reject = new TH1F("fPrimaryAntiProtonsExtCov44Reject",
+						     ";#sigma_{tan(#lambda)};Entries",
+						     100,0,4);
+  fQAPrimaryAntiProtonsRejectedList->Add(fPrimaryAntiProtonsExtCov44Reject);
+  TH1F *fPrimaryAntiProtonsExtCov55Reject = new TH1F("fPrimaryAntiProtonsExtCov55Reject",
+						     ";#sigma_{1/P_{T}} [GeV/c]^{-1};Entries",
+						     100,0,4);
+  fQAPrimaryAntiProtonsRejectedList->Add(fPrimaryAntiProtonsExtCov55Reject);
+  TH1F *fPrimaryAntiProtonsSigmaToVertexReject = new TH1F("fPrimaryAntiProtonsSigmaToVertexReject",
+							  ";#sigma_{Vertex};Entries",
+							  100,0,10);
+  fQAPrimaryAntiProtonsRejectedList->Add(fPrimaryAntiProtonsSigmaToVertexReject);
+  TH1F *fPrimaryAntiProtonsSigmaToVertexTPCReject = new TH1F("fPrimaryAntiProtonsSigmaToVertexTPCReject",
+							     ";#sigma_{Vertex};Entries",
+							     100,0,10);
+  fQAPrimaryAntiProtonsRejectedList->Add(fPrimaryAntiProtonsSigmaToVertexTPCReject);
+  TH1F *fPrimaryAntiProtonsITSRefitReject = new TH1F("fPrimaryAntiProtonsITSRefitReject",
+						     "",10,-1,1);
+  fQAPrimaryAntiProtonsRejectedList->Add(fPrimaryAntiProtonsITSRefitReject);
+  TH1F *fPrimaryAntiProtonsTPCRefitReject = new TH1F("fPrimaryAntiProtonsTPCRefitReject",
+						     "",10,-1,1);
+  fQAPrimaryAntiProtonsRejectedList->Add(fPrimaryAntiProtonsTPCRefitReject);
+  TH1F *fPrimaryAntiProtonsESDpidReject = new TH1F("fPrimaryAntiProtonsESDpidReject",
+						   "",10,-1,1);
+  fQAPrimaryAntiProtonsRejectedList->Add(fPrimaryAntiProtonsESDpidReject);
+  TH1F *fPrimaryAntiProtonsTPCpidReject = new TH1F("fPrimaryAntiProtonsTPCpidReject",
+						   "",10,-1,1);
+  fQAPrimaryAntiProtonsRejectedList->Add(fPrimaryAntiProtonsTPCpidReject);
+  
+  //________________________________________________________________//
+  gDirectory->cd("../../");
+
+  TDirectory *dirAntiProtonsSecondary = gDirectory->mkdir("Secondaries");
+  dirAntiProtonsSecondary->cd();
+  TDirectory *dirAntiProtonsSecondaryAccepted = gDirectory->mkdir("Accepted");
+  dirAntiProtonsSecondaryAccepted->cd();
+
+  //Accepted secondary antiprotons
+  TH1F *fSecondaryAntiProtonsITSClustersPass = new TH1F("fSecondaryAntiProtonsITSClustersPass",
+							";N_{clusters} (ITS);Entries",
+							7,0,7);
+  fQASecondaryAntiProtonsAcceptedList->Add(fSecondaryAntiProtonsITSClustersPass);
+  TH1F *fSecondaryAntiProtonsChi2PerClusterITSPass = new TH1F("fSecondaryAntiProtonsChi2PerClusterITSPass",
+							      ";x^{2}/N_{clusters} (ITS);Entries",
+							      100,0,4);
+  fQASecondaryAntiProtonsAcceptedList->Add(fSecondaryAntiProtonsChi2PerClusterITSPass);
+  TH1F *fSecondaryAntiProtonsTPCClustersPass = new TH1F("fSecondaryAntiProtonsTPCClustersPass",
+							";N_{clusters} (TPC);Entries",
+							100,0,200);
+  fQASecondaryAntiProtonsAcceptedList->Add(fSecondaryAntiProtonsTPCClustersPass);
+  TH1F *fSecondaryAntiProtonsChi2PerClusterTPCPass = new TH1F("fSecondaryAntiProtonsChi2PerClusterTPCPass",
+							      ";x^{2}/N_{clusters} (TPC);Entries",
+							      100,0,4);
+  fQASecondaryAntiProtonsAcceptedList->Add(fSecondaryAntiProtonsChi2PerClusterTPCPass);
+  TH1F *fSecondaryAntiProtonsExtCov11Pass = new TH1F("fSecondaryAntiProtonsExtCov11Pass",
+						     ";#sigma_{y} [cm];Entries",
+						     100,0,4);
+  fQASecondaryAntiProtonsAcceptedList->Add(fSecondaryAntiProtonsExtCov11Pass);
+  TH1F *fSecondaryAntiProtonsExtCov22Pass = new TH1F("fSecondaryAntiProtonsExtCov22Pass",
+						     ";#sigma_{z} [cm];Entries",
+						     100,0,4);
+  fQASecondaryAntiProtonsAcceptedList->Add(fSecondaryAntiProtonsExtCov22Pass);
+  TH1F *fSecondaryAntiProtonsExtCov33Pass = new TH1F("fSecondaryAntiProtonsExtCov33Pass",
+						     ";#sigma_{sin(#phi)};Entries",
+						     100,0,4);
+  fQASecondaryAntiProtonsAcceptedList->Add(fSecondaryAntiProtonsExtCov33Pass);
+  TH1F *fSecondaryAntiProtonsExtCov44Pass = new TH1F("fSecondaryAntiProtonsExtCov44Pass",
+						     ";#sigma_{tan(#lambda)};Entries",
+						     100,0,4);
+  fQASecondaryAntiProtonsAcceptedList->Add(fSecondaryAntiProtonsExtCov44Pass);
+  TH1F *fSecondaryAntiProtonsExtCov55Pass = new TH1F("fSecondaryAntiProtonsExtCov55Pass",
+						     ";#sigma_{1/P_{T}} [GeV/c]^{-1};Entries",
+						     100,0,4);
+  fQASecondaryAntiProtonsAcceptedList->Add(fSecondaryAntiProtonsExtCov55Pass);
+  TH1F *fSecondaryAntiProtonsSigmaToVertexPass = new TH1F("fSecondaryAntiProtonsSigmaToVertexPass",
+							  ";#sigma_{Vertex};Entries",
+							  100,0,10);
+  fQASecondaryAntiProtonsAcceptedList->Add(fSecondaryAntiProtonsSigmaToVertexPass);
+  TH1F *fSecondaryAntiProtonsSigmaToVertexTPCPass = new TH1F("fSecondaryAntiProtonsSigmaToVertexTPCPass",
+							     ";#sigma_{Vertex};Entries",
+							     100,0,10);
+  fQASecondaryAntiProtonsAcceptedList->Add(fSecondaryAntiProtonsSigmaToVertexTPCPass);
+  TH1F *fSecondaryAntiProtonsITSRefitPass = new TH1F("fSecondaryAntiProtonsITSRefitPass",
+						     "",10,-1,1);
+  fQASecondaryAntiProtonsAcceptedList->Add(fSecondaryAntiProtonsITSRefitPass);
+  TH1F *fSecondaryAntiProtonsTPCRefitPass = new TH1F("fSecondaryAntiProtonsTPCRefitPass",
+						     "",10,-1,1);
+  fQASecondaryAntiProtonsAcceptedList->Add(fSecondaryAntiProtonsTPCRefitPass);
+  TH1F *fSecondaryAntiProtonsESDpidPass = new TH1F("fSecondaryAntiProtonsESDpidPass",
+						   "",10,-1,1);
+  fQASecondaryAntiProtonsAcceptedList->Add(fSecondaryAntiProtonsESDpidPass);
+  TH1F *fSecondaryAntiProtonsTPCpidPass = new TH1F("fSecondaryAntiProtonsTPCpidPass",
+						   "",10,-1,1);
+  fQASecondaryAntiProtonsAcceptedList->Add(fSecondaryAntiProtonsTPCpidPass);
+  
+  //Rejected secondary antiprotons
+  gDirectory->cd("../");
+  TDirectory *dirAntiProtonsSecondaryRejected = gDirectory->mkdir("Rejected");
+  dirAntiProtonsSecondaryRejected->cd();
+
+  TH1F *fSecondaryAntiProtonsITSClustersReject = new TH1F("fSecondaryAntiProtonsITSClustersReject",
+							  ";N_{clusters} (ITS);Entries",
+							  7,0,7);
+  fQASecondaryAntiProtonsAcceptedList->Add(fSecondaryAntiProtonsITSClustersReject);
+  TH1F *fSecondaryAntiProtonsChi2PerClusterITSReject = new TH1F("fSecondaryAntiProtonsChi2PerClusterITSReject",
+								";x^{2}/N_{clusters} (ITS);Entries",
+								100,0,4);
+  fQASecondaryAntiProtonsAcceptedList->Add(fSecondaryAntiProtonsChi2PerClusterITSReject);
+  TH1F *fSecondaryAntiProtonsTPCClustersReject = new TH1F("fSecondaryAntiProtonsTPCClustersReject",
+							  ";N_{clusters} (TPC);Entries",
+							  100,0,200);
+  fQASecondaryAntiProtonsRejectedList->Add(fSecondaryAntiProtonsTPCClustersReject);
+  TH1F *fSecondaryAntiProtonsChi2PerClusterTPCReject = new TH1F("fSecondaryAntiProtonsChi2PerClusterTPCReject",
+								";x^{2}/N_{clusters} (TPC);Entries",
+								100,0,4);
+  fQASecondaryAntiProtonsRejectedList->Add(fSecondaryAntiProtonsChi2PerClusterTPCReject);
+  TH1F *fSecondaryAntiProtonsExtCov11Reject = new TH1F("fSecondaryAntiProtonsExtCov11Reject",
+						       ";#sigma_{y} [cm];Entries",
+						       100,0,4);
+  fQASecondaryAntiProtonsRejectedList->Add(fSecondaryAntiProtonsExtCov11Reject);
+  TH1F *fSecondaryAntiProtonsExtCov22Reject = new TH1F("fSecondaryAntiProtonsExtCov22Reject",
+						       ";#sigma_{z} [cm];Entries",
+						       100,0,4);
+  fQASecondaryAntiProtonsRejectedList->Add(fSecondaryAntiProtonsExtCov22Reject);
+  TH1F *fSecondaryAntiProtonsExtCov33Reject = new TH1F("fSecondaryAntiProtonsExtCov33Reject",
+						       ";#sigma_{sin(#phi)};Entries",
+						       100,0,4);
+  fQASecondaryAntiProtonsRejectedList->Add(fSecondaryAntiProtonsExtCov33Reject);
+  TH1F *fSecondaryAntiProtonsExtCov44Reject = new TH1F("fSecondaryAntiProtonsExtCov44Reject",
+						       ";#sigma_{tan(#lambda)};Entries",
+						       100,0,4);
+  fQASecondaryAntiProtonsRejectedList->Add(fSecondaryAntiProtonsExtCov44Reject);
+  TH1F *fSecondaryAntiProtonsExtCov55Reject = new TH1F("fSecondaryAntiProtonsExtCov55Reject",
+						       ";#sigma_{1/P_{T}} [GeV/c]^{-1};Entries",
+						       100,0,4);
+  fQASecondaryAntiProtonsRejectedList->Add(fSecondaryAntiProtonsExtCov55Reject);
+  TH1F *fSecondaryAntiProtonsSigmaToVertexReject = new TH1F("fSecondaryAntiProtonsSigmaToVertexReject",
+							    ";#sigma_{Vertex};Entries",
+							    100,0,10);
+  fQASecondaryAntiProtonsRejectedList->Add(fSecondaryAntiProtonsSigmaToVertexReject);
+  TH1F *fSecondaryAntiProtonsSigmaToVertexTPCReject = new TH1F("fSecondaryAntiProtonsSigmaToVertexTPCReject",
+							       ";#sigma_{Vertex};Entries",
+							       100,0,10);
+  fQASecondaryAntiProtonsRejectedList->Add(fSecondaryAntiProtonsSigmaToVertexTPCReject);
+  TH1F *fSecondaryAntiProtonsITSRefitReject = new TH1F("fSecondaryAntiProtonsITSRefitReject",
+						       "",10,-1,1);
+  fQASecondaryAntiProtonsRejectedList->Add(fSecondaryAntiProtonsITSRefitReject);
+  TH1F *fSecondaryAntiProtonsTPCRefitReject = new TH1F("fSecondaryAntiProtonsTPCRefitReject",
+						       "",10,-1,1);
+  fQASecondaryAntiProtonsRejectedList->Add(fSecondaryAntiProtonsTPCRefitReject);
+  TH1F *fSecondaryAntiProtonsESDpidReject = new TH1F("fSecondaryAntiProtonsESDpidReject",
+						     "",10,-1,1);
+  fQASecondaryAntiProtonsRejectedList->Add(fSecondaryAntiProtonsESDpidReject);
+  TH1F *fSecondaryAntiProtonsTPCpidReject = new TH1F("fSecondaryAntiProtonsTPCpidReject",
+						     "",10,-1,1);
+  fQASecondaryAntiProtonsRejectedList->Add(fSecondaryAntiProtonsTPCpidReject);
+  
+}
+
+//____________________________________________________________________//
+void AliProtonAnalysis::RunQA(AliStack *stack, AliESDEvent *fESD) {
+  //Runs the QA code
+  Int_t nGoodTracks = fESD->GetNumberOfTracks();
+  for(Int_t iTracks = 0; iTracks < nGoodTracks; iTracks++) {
+    AliESDtrack* track = fESD->GetTrack(iTracks);
+    Int_t label = TMath::Abs(track->GetLabel()); 
+    Double_t Pt = 0.0, P = 0.0;
+    Double_t probability[5];
+
+    if(IsAccepted(track, stack)) {
+      if(fUseTPCOnly) {
+        AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
+        if(!tpcTrack) continue;
+        Pt = tpcTrack->Pt();
+        P = tpcTrack->P();
+	
+        //pid
+        track->GetTPCpid(probability);
+        Double_t rcc = 0.0;
+        for(Int_t i = 0; i < AliPID::kSPECIES; i++)
+          rcc += probability[i]*GetParticleFraction(i,P);
+        if(rcc == 0.0) continue;
+        Double_t w[5];
+        for(Int_t i = 0; i < AliPID::kSPECIES; i++)
+          w[i] = probability[i]*GetParticleFraction(i,P)/rcc;
+        Long64_t fParticleType = TMath::LocMax(AliPID::kSPECIES,w);
+	if(fParticleType == 4) {
+          if(label <= stack->GetNprimary()) {
+            if(track->Charge() > 0)
+              ((TH2F *)(fQA2DList->At(0)))->Fill(Rapidity(track->Px(),track->Py(),track->Pz()),Pt);
+            else if(track->Charge() < 0)
+              ((TH2F *)(fQA2DList->At(1)))->Fill(Rapidity(track->Px(),track->Py(),track->Pz()),Pt);
+          }//primary particles
+          else if(label > stack->GetNprimary()) {
+            if(track->Charge() > 0)
+              ((TH2F *)(fQA2DList->At(2)))->Fill(Rapidity(track->Px(),track->Py(),track->Pz()),Pt);
+            else if(track->Charge() < 0)
+              ((TH2F *)(fQA2DList->At(3)))->Fill(Rapidity(track->Px(),track->Py(),track->Pz()),Pt);
+          }//secondary particles
+        }//proton check
+      }//TPC only tracks
+      else if(!fUseTPCOnly) {
+	Pt = track->Pt();
+	P = track->P();
+	
+	//pid
+	track->GetESDpid(probability);
+	Double_t rcc = 0.0;
+	for(Int_t i = 0; i < AliPID::kSPECIES; i++)
+	  rcc += probability[i]*GetParticleFraction(i,P);
+	if(rcc == 0.0) continue;
+	Double_t w[5];
+	for(Int_t i = 0; i < AliPID::kSPECIES; i++)
+	  w[i] = probability[i]*GetParticleFraction(i,P)/rcc;
+	Long64_t fParticleType = TMath::LocMax(AliPID::kSPECIES,w);
+	if(fParticleType == 4) {
+	  if(label <= stack->GetNprimary()) {
+	    if(track->Charge() > 0)
+	      ((TH2F *)(fQA2DList->At(0)))->Fill(Rapidity(track->Px(),track->Py(),track->Pz()),Pt);
+	    else if(track->Charge() < 0)
+	      ((TH2F *)(fQA2DList->At(1)))->Fill(Rapidity(track->Px(),track->Py(),track->Pz()),Pt);
+	  }//primary particles
+	  else if(label > stack->GetNprimary()) {
+	    if(track->Charge() > 0)
+	      ((TH2F *)(fQA2DList->At(2)))->Fill(Rapidity(track->Px(),track->Py(),track->Pz()),Pt);
+	    else if(track->Charge() < 0)
+	      ((TH2F *)(fQA2DList->At(3)))->Fill(Rapidity(track->Px(),track->Py(),track->Pz()),Pt);
+	  }//secondary particles
+	}//proton check
+      }//combined tracking
+    }//cuts
+  }//track loop
+    
+}
 
 
 
