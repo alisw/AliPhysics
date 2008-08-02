@@ -36,9 +36,8 @@ void menuQA()
 	}
 	if (fQA)
 		delete fQA ; 
-	TCanvas * cc = new TCanvas("test", "", 400, 800) ; 
-	fQA = new TControlBar("vertical", Form("Active detectors in Run %d", fRun), 100, 20);
-	fQA->SetButtonWidth(24) ;
+	fQA = new TControlBar("vertical", Form("Active detectors in Run %d", fRun), 40, 20);
+	fQA->SetButtonWidth(400) ;
 	fQA->AddButton("Clean Screen", "Cls()", "Clean the screen");	
 	// search active detectors
 	TList * listOfDetectors = qaDataFile->GetListOfKeys() ; 
@@ -61,8 +60,8 @@ void MakeDetMenu(char * detName)
 		delete fHist ; 
 	if (fCa) 
 		delete fCa ; 
-	fDet = new TControlBar("vertical", detName, 6000, 8000);
-	fDet->SetButtonWidth(100) ; 
+	fDet = new TControlBar("vertical", detName, 9000, 8000);
+	fDet->SetButtonWidth(300) ; 
 	// serach all the QA tasks
 	TDirectory * save = gDirectory ; 
 	gDirectory->cd(detName) ; 
@@ -85,8 +84,8 @@ void MakeTaskMenu(char * detName, char * taskName )
 		delete fHist ; 
 	if (fCa)
 		delete fCa ; 
-	fHist = new TControlBar("vertical", Form("Found QA histo for %s/%s", detName, taskName));
-	fHist->SetButtonWidth(100) ; 
+	fHist = new TControlBar("vertical", Form("QA histos for %s/%s", detName, taskName), 900, 300);
+	fHist->SetButtonWidth(300) ; 
 	fHist->AddButton("ALL", Form("DisplayAll(\"%s\", \"%s\")", detName, taskName), Form("Display the QA histograms for %s", detName));
 	TDirectory * save = gDirectory ; 
 	gDirectory->cd(Form("%s/%s", detName, taskName)) ; 
