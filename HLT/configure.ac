@@ -464,6 +464,13 @@ fi
 AC_MSG_RESULT([$enable_component_stat])
 
 dnl ------------------------------------------------------------------
+dnl ----  module checks
+dnl ------------------------------------------------------------------
+save_CPPFLAGS=$CPPFLAGS
+save_LDFLAGS=$LDFLAGS
+save_LIBS=$LIBS
+
+dnl ------------------------------------------------------------------
 AC_MSG_CHECKING([whether to compile sample library])
 AH_TEMPLATE([HLT_SAMPLE],[hlt sample library])
 AC_ARG_ENABLE(sample,
@@ -546,6 +553,7 @@ if test "x$enable_tpc" = "xyes" ; then
   				       cl.GetOutputClonesArray();])],
                                     [have_tpc_hltoffline_rec=yes], 
   				      [AC_DEFINE(HAVE_NOT_TPCOFFLINE_REC)])
+    LIBS=$save_LIBS
   AC_MSG_RESULT([$have_tpc_hltoffline_rec])
 
   AC_CHECK_HEADER([AliTPCCalibPulser.h], [], [AC_DEFINE(HAVE_NOT_ALITPCCALIBPULSER)])
@@ -594,9 +602,6 @@ elif test "x$enable_module" = "xforce"; then
   enable_rcu="yes"
 else
   AC_LANG_PUSH(C++)
-  save_CPPFLAGS=$CPPFLAGS
-  save_LDFLAGS=$LDFLAGS
-  save_LIBS=$LIBS
   CPPFLAGS="$save_CPPFLAGS $ALIROOT_CPPFLAGS"
   LDFLAGS="$save_LDFLAGS -L${ROOTLIBDIR} $ALIROOT_LDFLAGS"
   LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS"
@@ -794,8 +799,8 @@ AH_TEMPLATE([HLT_ITS],[hlt its library])
 ALIITS_LIBS=
 CHECK_HLTMODULE([its],
 		[], [$ALIROOT_CPPFLAGS],
-		[], [-L$ROOTLIBDIR], [$ROOTLIBS $ADD_ROOTLIBS],
-		[], [-L$ROOTLIBDIR $ALIROOT_LDFLAGS], 
+		[Gui RAWDatasim], [-L$ROOTLIBDIR], [$ROOTLIBS $ADD_ROOTLIBS],
+		[ITSbase ITSrec], [-L$ROOTLIBDIR $ALIROOT_LDFLAGS], 
 		[$ROOTLIBS $ADD_ROOTLIBS $ALIROOT_LIBS])
 
 if test "x$enable_module" = "xmissheader"; then

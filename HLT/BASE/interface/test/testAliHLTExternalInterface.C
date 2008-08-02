@@ -201,6 +201,87 @@ int main(int /*argc*/, const char** /*argv*/)
     return iResult;
   }
 
+  const char* module=NULL;
+  module="MUON";
+  libraryPath="../../../";
+  libraryPath+=module;
+  libraryPath+="/.libs/libAliHLT";
+  libraryPath+=module;
+  libraryPath+=".so";
+  if ((iResult=fctLoadLibrary(libraryPath.c_str()))<0) {
+    return iResult;
+  }
+
+  module="PHOS";
+  libraryPath="../../../";
+  libraryPath+=module;
+  libraryPath+="/.libs/libAliHLT";
+  libraryPath+=module;
+  libraryPath+=".so";
+  if ((iResult=fctLoadLibrary(libraryPath.c_str()))<0) {
+    return iResult;
+  }
+
+  module="TRD";
+  libraryPath="../../../";
+  libraryPath+=module;
+  libraryPath+="/.libs/libAliHLT";
+  libraryPath+=module;
+  libraryPath+=".so";
+  if ((iResult=fctLoadLibrary(libraryPath.c_str()))<0) {
+    return iResult;
+  }
+
+  module="TPC";
+  libraryPath="../../../";
+  libraryPath+=module;
+  libraryPath+="Lib/.libs/libAliHLT";
+  libraryPath+=module;
+  libraryPath+=".so";
+  if ((iResult=fctLoadLibrary(libraryPath.c_str()))<0) {
+    return iResult;
+  }
+
+  module="ITS";
+  libraryPath="../../../";
+  libraryPath+=module;
+  libraryPath+="/.libs/libAliHLT";
+  libraryPath+=module;
+  libraryPath+=".so";
+  if ((iResult=fctLoadLibrary(libraryPath.c_str()))<0) {
+    return iResult;
+  }
+
+  module="Trigger";
+  libraryPath="../../../";
+  libraryPath+="trigger";
+  libraryPath+="/.libs/libAliHLT";
+  libraryPath+=module;
+  libraryPath+=".so";
+  if ((iResult=fctLoadLibrary(libraryPath.c_str()))<0) {
+    return iResult;
+  }
+
+  module="Comp";
+  libraryPath="../../../";
+  libraryPath+="comp";
+  libraryPath+="/.libs/libAliHLT";
+  libraryPath+=module;
+  libraryPath+=".so";
+  if ((iResult=fctLoadLibrary(libraryPath.c_str()))<0) {
+    return iResult;
+  }
+
+  module="RCU";
+  libraryPath="../../../";
+  libraryPath+=module;
+  libraryPath+="/.libs/libAliHLT";
+  libraryPath+=module;
+  libraryPath+=".so";
+  if ((iResult=fctLoadLibrary(libraryPath.c_str()))<0) {
+    return iResult;
+  }
+
   AliHLTExtFctCreateComponent fctCreateComponent=(AliHLTExtFctCreateComponent)fctGetSystemCall("int AliHLTAnalysisCreateComponent(const char*,void*,int,const char**,AliHLTComponentHandle*,const char*)");
   if (!fctCreateComponent) {
     cerr << "error: missing CreateComponent call" << endl;
