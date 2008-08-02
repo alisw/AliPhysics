@@ -151,7 +151,16 @@ int AliHLTMUONProcessor::FetchTMapFromCDB(const char* pathToEntry, TMap*& map) c
 	
 	assert(AliCDBManager::Instance() != NULL);
 	
-	AliCDBEntry* entry = AliCDBManager::Instance()->Get(pathToEntry);
+	AliCDBStorage* store = AliCDBManager::Instance()->GetDefaultStorage();
+	if (store == NULL)
+	{
+		HLTError("Could not get the the default storage for the CDB.");
+		return -EIO;
+	}
+
+	Int_t version = store->GetLatestVersion(pathToEntry, GetRunNo());
+	Int_t subVersion = store->GetLatestSubVersion(pathToEntry, GetRunNo(), version);
+	AliCDBEntry* entry = AliCDBManager::Instance()->Get(pathToEntry, GetRunNo(), version, subVersion);
 	if (entry == NULL)
 	{
 		HLTError("Could not get the CDB entry for \"%s\".", pathToEntry);
@@ -414,9 +423,18 @@ int AliHLTMUONProcessor::LoadRecoParamsFromCDB(AliMUONRecoParam*& params) const
 	///      which is compatible with the HLT framework, is returned.
 	
 	assert(AliCDBManager::Instance() != NULL);
-	
+
+	AliCDBStorage* store = AliCDBManager::Instance()->GetDefaultStorage();
+	if (store == NULL)
+	{
+		HLTError("Could not get the the default storage for the CDB.");
+		return -EIO;
+	}
+
 	const char* pathToEntry = "MUON/Calib/RecoParam";
-	AliCDBEntry* entry = AliCDBManager::Instance()->Get(pathToEntry);
+	Int_t version = store->GetLatestVersion(pathToEntry, GetRunNo());
+	Int_t subVersion = store->GetLatestSubVersion(pathToEntry, GetRunNo(), version);
+	AliCDBEntry* entry = AliCDBManager::Instance()->Get(pathToEntry, GetRunNo(), version, subVersion);
 	if (entry == NULL)
 	{
 		HLTError("Could not get the CDB entry for \"%s\".", pathToEntry);
