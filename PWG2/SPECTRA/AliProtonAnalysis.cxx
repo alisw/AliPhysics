@@ -49,12 +49,13 @@ AliProtonAnalysis::AliProtonAnalysis() :
   fMinTPCClusters(0), fMinITSClusters(0),
   fMaxChi2PerTPCCluster(0), fMaxChi2PerITSCluster(0),
   fMaxCov11(0), fMaxCov22(0), fMaxCov33(0), fMaxCov44(0), fMaxCov55(0),
-  fMaxSigmaToVertex(0),
+  fMaxSigmaToVertex(0), fMaxSigmaToVertexTPC(0),
   fMinTPCClustersFlag(kFALSE), fMinITSClustersFlag(kFALSE),
   fMaxChi2PerTPCClusterFlag(kFALSE), fMaxChi2PerITSClusterFlag(kFALSE),
   fMaxCov11Flag(kFALSE), fMaxCov22Flag(kFALSE), fMaxCov33Flag(kFALSE), fMaxCov44Flag(kFALSE), fMaxCov55Flag(kFALSE),
-  fMaxSigmaToVertexFlag(kFALSE),
+  fMaxSigmaToVertexFlag(kFALSE), fMaxSigmaToVertexTPCFlag(kFALSE),
   fITSRefitFlag(kFALSE), fTPCRefitFlag(kFALSE),
+  fESDpidFlag(kFALSE), fTPCpidFlag(kFALSE),
   fQAHistograms(kFALSE),
   fGlobalQAList(0), fQA2DList(0),
   fQAPrimaryProtonsAcceptedList(0),
@@ -85,12 +86,13 @@ AliProtonAnalysis::AliProtonAnalysis(Int_t nbinsY, Float_t fLowY, Float_t fHighY
   fMinTPCClusters(0), fMinITSClusters(0),
   fMaxChi2PerTPCCluster(0), fMaxChi2PerITSCluster(0),
   fMaxCov11(0), fMaxCov22(0), fMaxCov33(0), fMaxCov44(0), fMaxCov55(0),
-  fMaxSigmaToVertex(0),
+  fMaxSigmaToVertex(0), fMaxSigmaToVertexTPC(0),
   fMinTPCClustersFlag(kFALSE), fMinITSClustersFlag(kFALSE),
   fMaxChi2PerTPCClusterFlag(kFALSE), fMaxChi2PerITSClusterFlag(kFALSE),
   fMaxCov11Flag(kFALSE), fMaxCov22Flag(kFALSE), fMaxCov33Flag(kFALSE), fMaxCov44Flag(kFALSE), fMaxCov55Flag(kFALSE),
-  fMaxSigmaToVertexFlag(kFALSE),
+  fMaxSigmaToVertexFlag(kFALSE), fMaxSigmaToVertexTPCFlag(kFALSE),
   fITSRefitFlag(kFALSE), fTPCRefitFlag(kFALSE),
+  fESDpidFlag(kFALSE), fTPCpidFlag(kFALSE),
   fQAHistograms(kFALSE), 
   fGlobalQAList(0), fQA2DList(0),
   fQAPrimaryProtonsAcceptedList(0),
@@ -508,12 +510,12 @@ Bool_t AliProtonAnalysis::IsAccepted(AliESDtrack* track) {
 
   if(fMinITSClustersFlag)
     if(nClustersITS < fMinITSClusters) return kFALSE;
+  if(fMaxChi2PerITSClusterFlag)
+    if(chi2PerClusterITS > fMaxChi2PerITSCluster) return kFALSE; 
   if(fMinTPCClustersFlag)
     if(nClustersTPC < fMinTPCClusters) return kFALSE;
   if(fMaxChi2PerTPCClusterFlag)
     if(chi2PerClusterTPC > fMaxChi2PerTPCCluster) return kFALSE; 
-  if(fMaxChi2PerITSClusterFlag)
-    if(chi2PerClusterITS > fMaxChi2PerITSCluster) return kFALSE; 
   if(fMaxCov11Flag)
     if(extCov[0] > fMaxCov11) return kFALSE;
   if(fMaxCov22Flag)
@@ -526,10 +528,16 @@ Bool_t AliProtonAnalysis::IsAccepted(AliESDtrack* track) {
     if(extCov[14] > fMaxCov55) return kFALSE;
   if(fMaxSigmaToVertexFlag)
     if(GetSigmaToVertex(track) > fMaxSigmaToVertex) return kFALSE;
+  if(fMaxSigmaToVertexTPCFlag)
+    if(GetSigmaToVertex(track) > fMaxSigmaToVertexTPC) return kFALSE;
   if(fITSRefitFlag)
     if ((track->GetStatus() & AliESDtrack::kITSrefit) == 0) return kFALSE;
   if(fTPCRefitFlag)
     if ((track->GetStatus() & AliESDtrack::kTPCrefit) == 0) return kFALSE;
+  if(fESDpidFlag)
+    if ((track->GetStatus() & AliESDtrack::kESDpid) == 0) return kFALSE;
+  if(fTPCpidFlag)
+    if ((track->GetStatus() & AliESDtrack::kTPCpid) == 0) return kFALSE;
 
   if((Pt < fMinPt) || (Pt > fMaxPt)) return kFALSE;
   if((Rapidity(Px,Py,Pz) < fMinY) || (Rapidity(Px,Py,Pz) > fMaxY)) return kFALSE;
@@ -577,36 +585,513 @@ Bool_t AliProtonAnalysis::IsAccepted(AliESDtrack* track, AliStack *stack) {
 
   Double_t extCov[15];
   track->GetExternalCovariance(extCov);
+  
+  //protons
+  if(track->Charge() > 0) {
+    //Primaries
+    if(label <= nPrimaries) {
+      if(fMinITSClustersFlag) {
+	if(nClustersITS < fMinITSClusters) {
+	  ((TH1F *)(fQAPrimaryProtonsRejectedList->At(0)))->Fill(nClustersITS);
+	  status = kFALSE;
+	}
+	else if(nClustersITS >= fMinITSClusters) 
+	  ((TH1F *)(fQAPrimaryProtonsAcceptedList->At(0)))->Fill(nClustersITS);
+      }//ITS clusters
+      if(fMaxChi2PerITSClusterFlag) {
+	if(chi2PerClusterITS > fMaxChi2PerITSCluster) {
+	  ((TH1F *)(fQAPrimaryProtonsRejectedList->At(1)))->Fill(chi2PerClusterITS);
+	  status = kFALSE;
+	}
+	else if(chi2PerClusterITS <= fMaxChi2PerITSCluster)
+	  ((TH1F *)(fQAPrimaryProtonsAcceptedList->At(1)))->Fill(chi2PerClusterITS);
+      }//chi2 per ITS cluster
+      if(fMinTPCClustersFlag) {
+	if(nClustersTPC < fMinTPCClusters) {
+	  ((TH1F *)(fQAPrimaryProtonsRejectedList->At(2)))->Fill(nClustersTPC);
+	  status = kFALSE;
+	}
+	else if(nClustersTPC >= fMinTPCClusters)
+	  ((TH1F *)(fQAPrimaryProtonsAcceptedList->At(2)))->Fill(nClustersTPC);
+      }//TPC clusters
+      if(fMaxChi2PerTPCClusterFlag) {
+	if(chi2PerClusterTPC > fMaxChi2PerTPCCluster) {
+	  ((TH1F *)(fQAPrimaryProtonsRejectedList->At(3)))->Fill(chi2PerClusterTPC);
+	  status = kFALSE;
+	}
+	else if(chi2PerClusterTPC <= fMaxChi2PerTPCCluster)
+	  ((TH1F *)(fQAPrimaryProtonsAcceptedList->At(3)))->Fill(chi2PerClusterTPC);
+      }//chi2 per TPC cluster
+      if(fMaxCov11Flag) {
+	if(extCov[0] > fMaxCov11) {
+	  ((TH1F *)(fQAPrimaryProtonsRejectedList->At(4)))->Fill(extCov[0]);
+	  status = kFALSE;
+	}
+	else if(extCov[0] <= fMaxCov11)
+	  ((TH1F *)(fQAPrimaryProtonsAcceptedList->At(4)))->Fill(extCov[0]);
+      }//cov11
+      if(fMaxCov22Flag) {
+	if(extCov[2] > fMaxCov22) {
+	  ((TH1F *)(fQAPrimaryProtonsRejectedList->At(5)))->Fill(extCov[2]);
+	  status = kFALSE;
+	}
+	else if(extCov[2] <= fMaxCov22)
+	  ((TH1F *)(fQAPrimaryProtonsAcceptedList->At(5)))->Fill(extCov[2]);
+      }//cov11
+      if(fMaxCov33Flag) {
+	if(extCov[5] > fMaxCov33) {
+	  ((TH1F *)(fQAPrimaryProtonsRejectedList->At(6)))->Fill(extCov[5]);
+	  status = kFALSE;
+	}
+	else if(extCov[5] <= fMaxCov33)
+	  ((TH1F *)(fQAPrimaryProtonsAcceptedList->At(6)))->Fill(extCov[5]);
+      }//cov11
+      if(fMaxCov44Flag) {
+	if(extCov[9] > fMaxCov44) {
+	  ((TH1F *)(fQAPrimaryProtonsRejectedList->At(7)))->Fill(extCov[9]);
+	  status = kFALSE;
+	}
+	else if(extCov[9] <= fMaxCov44)
+	  ((TH1F *)(fQAPrimaryProtonsAcceptedList->At(7)))->Fill(extCov[9]);
+      }//cov11
+      if(fMaxCov55Flag) {
+	if(extCov[14] > fMaxCov55) {
+	  ((TH1F *)(fQAPrimaryProtonsRejectedList->At(8)))->Fill(extCov[14]);
+	  status = kFALSE;
+	}
+	else if(extCov[14] <= fMaxCov55)
+	  ((TH1F *)(fQAPrimaryProtonsAcceptedList->At(8)))->Fill(extCov[14]);
+      }//cov55
+      if(fMaxSigmaToVertexFlag) {
+	if(GetSigmaToVertex(track) > fMaxSigmaToVertex) {
+	  ((TH1F *)(fQAPrimaryProtonsRejectedList->At(9)))->Fill(GetSigmaToVertex(track));
+	  status = kFALSE;
+	}
+	else if(GetSigmaToVertex(track) <= fMaxSigmaToVertex)
+	  ((TH1F *)(fQAPrimaryProtonsAcceptedList->At(9)))->Fill(GetSigmaToVertex(track));
+      }//sigma to vertex
+      if(fMaxSigmaToVertexTPCFlag) {
+	if(GetSigmaToVertex(track) > fMaxSigmaToVertexTPC) {
+	  ((TH1F *)(fQAPrimaryProtonsRejectedList->At(10)))->Fill(GetSigmaToVertex(track));
+	  status = kFALSE;
+	}
+	else if(GetSigmaToVertex(track) <= fMaxSigmaToVertexTPC)
+	  ((TH1F *)(fQAPrimaryProtonsAcceptedList->At(10)))->Fill(GetSigmaToVertex(track));
+      }//sigma to vertex TPC
+      if(fITSRefitFlag) {
+	if ((track->GetStatus() & AliESDtrack::kITSrefit) == 0) {
+	  ((TH1F *)(fQAPrimaryProtonsRejectedList->At(11)))->Fill(0);
+	status = kFALSE;
+	}
+	else if((track->GetStatus() & AliESDtrack::kITSrefit) != 0)
+	  ((TH1F *)(fQAPrimaryProtonsAcceptedList->At(11)))->Fill(0);
+      }//ITS refit
+      if(fTPCRefitFlag) {
+	if ((track->GetStatus() & AliESDtrack::kTPCrefit) == 0) {
+	  ((TH1F *)(fQAPrimaryProtonsRejectedList->At(12)))->Fill(0);
+	  status = kFALSE;
+	}
+	else if((track->GetStatus() & AliESDtrack::kTPCrefit) != 0)
+	  ((TH1F *)(fQAPrimaryProtonsAcceptedList->At(12)))->Fill(0);
+      }//TPC refit
+      if(fESDpidFlag) {
+	if ((track->GetStatus() & AliESDtrack::kESDpid) == 0) {
+	  ((TH1F *)(fQAPrimaryProtonsRejectedList->At(13)))->Fill(0);
+	  status = kFALSE;
+	}
+	else if((track->GetStatus() & AliESDtrack::kESDpid) != 0)
+	  ((TH1F *)(fQAPrimaryProtonsAcceptedList->At(13)))->Fill(0);
+      }//ESD pid
+      if(fTPCpidFlag) {
+	if ((track->GetStatus() & AliESDtrack::kTPCpid) == 0) {
+	  ((TH1F *)(fQAPrimaryProtonsRejectedList->At(13)))->Fill(0);
+	  status = kFALSE;
+	}
+	else if((track->GetStatus() & AliESDtrack::kTPCpid) != 0)
+	  ((TH1F *)(fQAPrimaryProtonsAcceptedList->At(13)))->Fill(0);
+      }//TPC pid
+    }//primary particle cut
 
-  if(fMinITSClustersFlag)
-    if(nClustersITS < fMinITSClusters) return kFALSE;
-  if(fMinTPCClustersFlag)
-    if(nClustersTPC < fMinTPCClusters) return kFALSE;
-  if(fMaxChi2PerTPCClusterFlag)
-    if(chi2PerClusterTPC > fMaxChi2PerTPCCluster) return kFALSE; 
-  if(fMaxChi2PerITSClusterFlag)
-    if(chi2PerClusterITS > fMaxChi2PerITSCluster) return kFALSE; 
-  if(fMaxCov11Flag)
-    if(extCov[0] > fMaxCov11) return kFALSE;
-  if(fMaxCov22Flag)
-    if(extCov[2] > fMaxCov22) return kFALSE;
-  if(fMaxCov33Flag)
-    if(extCov[5] > fMaxCov33) return kFALSE;
-  if(fMaxCov44Flag)
-    if(extCov[9] > fMaxCov44) return kFALSE;
-  if(fMaxCov55Flag)
-    if(extCov[14] > fMaxCov55) return kFALSE;
-  if(fMaxSigmaToVertexFlag)
-    if(GetSigmaToVertex(track) > fMaxSigmaToVertex) return kFALSE;
-  if(fITSRefitFlag)
-    if ((track->GetStatus() & AliESDtrack::kITSrefit) == 0) return kFALSE;
-  if(fTPCRefitFlag)
-    if ((track->GetStatus() & AliESDtrack::kTPCrefit) == 0) return kFALSE;
+    //Secondaries
+    if(label > nPrimaries) {
+      if(fMinITSClustersFlag) {
+	if(nClustersITS < fMinITSClusters) {
+	  ((TH1F *)(fQASecondaryProtonsRejectedList->At(0)))->Fill(nClustersITS);
+	  status = kFALSE;
+	}
+	else if(nClustersITS >= fMinITSClusters) 
+	  ((TH1F *)(fQASecondaryProtonsAcceptedList->At(0)))->Fill(nClustersITS);
+      }//ITS clusters
+      if(fMaxChi2PerITSClusterFlag) {
+	if(chi2PerClusterITS > fMaxChi2PerITSCluster) {
+	  ((TH1F *)(fQASecondaryProtonsRejectedList->At(1)))->Fill(chi2PerClusterITS);
+	  status = kFALSE;
+	}
+	else if(chi2PerClusterITS <= fMaxChi2PerITSCluster)
+	  ((TH1F *)(fQASecondaryProtonsAcceptedList->At(1)))->Fill(chi2PerClusterITS);
+      }//chi2 per ITS cluster
+      if(fMinTPCClustersFlag) {
+	if(nClustersTPC < fMinTPCClusters) {
+	  ((TH1F *)(fQASecondaryProtonsRejectedList->At(2)))->Fill(nClustersTPC);
+	  status = kFALSE;
+	}
+	else if(nClustersTPC >= fMinTPCClusters)
+	  ((TH1F *)(fQASecondaryProtonsAcceptedList->At(2)))->Fill(nClustersTPC);
+      }//TPC clusters
+      if(fMaxChi2PerTPCClusterFlag) {
+	if(chi2PerClusterTPC > fMaxChi2PerTPCCluster) {
+	  ((TH1F *)(fQASecondaryProtonsRejectedList->At(3)))->Fill(chi2PerClusterTPC);
+	  status = kFALSE;
+	}
+	else if(chi2PerClusterTPC <= fMaxChi2PerTPCCluster)
+	  ((TH1F *)(fQASecondaryProtonsAcceptedList->At(3)))->Fill(chi2PerClusterTPC);
+      }//chi2 per TPC cluster
+      if(fMaxCov11Flag) {
+	if(extCov[0] > fMaxCov11) {
+	  ((TH1F *)(fQASecondaryProtonsRejectedList->At(4)))->Fill(extCov[0]);
+	  status = kFALSE;
+	}
+	else if(extCov[0] <= fMaxCov11)
+	  ((TH1F *)(fQASecondaryProtonsAcceptedList->At(4)))->Fill(extCov[0]);
+      }//cov11
+      if(fMaxCov22Flag) {
+	if(extCov[2] > fMaxCov22) {
+	  ((TH1F *)(fQASecondaryProtonsRejectedList->At(5)))->Fill(extCov[2]);
+	  status = kFALSE;
+	}
+	else if(extCov[2] <= fMaxCov22)
+	  ((TH1F *)(fQASecondaryProtonsAcceptedList->At(5)))->Fill(extCov[2]);
+      }//cov11
+      if(fMaxCov33Flag) {
+	if(extCov[5] > fMaxCov33) {
+	  ((TH1F *)(fQASecondaryProtonsRejectedList->At(6)))->Fill(extCov[5]);
+	  status = kFALSE;
+	}
+	else if(extCov[5] <= fMaxCov33)
+	  ((TH1F *)(fQASecondaryProtonsAcceptedList->At(6)))->Fill(extCov[5]);
+      }//cov11
+      if(fMaxCov44Flag) {
+	if(extCov[9] > fMaxCov44) {
+	  ((TH1F *)(fQASecondaryProtonsRejectedList->At(7)))->Fill(extCov[9]);
+	  status = kFALSE;
+	}
+	else if(extCov[9] <= fMaxCov44)
+	  ((TH1F *)(fQASecondaryProtonsAcceptedList->At(7)))->Fill(extCov[9]);
+      }//cov11
+      if(fMaxCov55Flag) {
+	if(extCov[14] > fMaxCov55) {
+	  ((TH1F *)(fQASecondaryProtonsRejectedList->At(8)))->Fill(extCov[14]);
+	  status = kFALSE;
+	}
+	else if(extCov[14] <= fMaxCov55)
+	  ((TH1F *)(fQASecondaryProtonsAcceptedList->At(8)))->Fill(extCov[14]);
+      }//cov55
+      if(fMaxSigmaToVertexFlag) {
+	if(GetSigmaToVertex(track) > fMaxSigmaToVertex) {
+	  ((TH1F *)(fQASecondaryProtonsRejectedList->At(9)))->Fill(GetSigmaToVertex(track));
+	  status = kFALSE;
+	}
+	else if(GetSigmaToVertex(track) <= fMaxSigmaToVertex)
+	  ((TH1F *)(fQASecondaryProtonsAcceptedList->At(9)))->Fill(GetSigmaToVertex(track));
+      }//sigma to vertex
+      if(fMaxSigmaToVertexTPCFlag) {
+	if(GetSigmaToVertex(track) > fMaxSigmaToVertexTPC) {
+	  ((TH1F *)(fQASecondaryProtonsRejectedList->At(10)))->Fill(GetSigmaToVertex(track));
+	  status = kFALSE;
+	}
+	else if(GetSigmaToVertex(track) <= fMaxSigmaToVertexTPC)
+	  ((TH1F *)(fQASecondaryProtonsAcceptedList->At(10)))->Fill(GetSigmaToVertex(track));
+      }//sigma to vertex TPC
+      if(fITSRefitFlag) {
+	if ((track->GetStatus() & AliESDtrack::kITSrefit) == 0) {
+	  ((TH1F *)(fQASecondaryProtonsRejectedList->At(11)))->Fill(0);
+	status = kFALSE;
+	}
+	else if((track->GetStatus() & AliESDtrack::kITSrefit) != 0)
+	  ((TH1F *)(fQASecondaryProtonsAcceptedList->At(11)))->Fill(0);
+      }//ITS refit
+      if(fTPCRefitFlag) {
+	if ((track->GetStatus() & AliESDtrack::kTPCrefit) == 0) {
+	  ((TH1F *)(fQASecondaryProtonsRejectedList->At(12)))->Fill(0);
+	  status = kFALSE;
+	}
+	else if((track->GetStatus() & AliESDtrack::kTPCrefit) != 0)
+	  ((TH1F *)(fQASecondaryProtonsAcceptedList->At(12)))->Fill(0);
+      }//TPC refit
+      if(fESDpidFlag) {
+	if ((track->GetStatus() & AliESDtrack::kESDpid) == 0) {
+	  ((TH1F *)(fQASecondaryProtonsRejectedList->At(13)))->Fill(0);
+	  status = kFALSE;
+	}
+	else if((track->GetStatus() & AliESDtrack::kESDpid) != 0)
+	  ((TH1F *)(fQASecondaryProtonsAcceptedList->At(13)))->Fill(0);
+      }//ESD pid
+      if(fTPCpidFlag) {
+	if ((track->GetStatus() & AliESDtrack::kTPCpid) == 0) {
+	  ((TH1F *)(fQASecondaryProtonsRejectedList->At(13)))->Fill(0);
+	  status = kFALSE;
+	}
+	else if((track->GetStatus() & AliESDtrack::kTPCpid) != 0)
+	  ((TH1F *)(fQASecondaryProtonsAcceptedList->At(13)))->Fill(0);
+      }//TPC pid
+    }//secondary particle cut
+  }//protons
 
-  if((Pt < fMinPt) || (Pt > fMaxPt)) return kFALSE;
-  if((Rapidity(Px,Py,Pz) < fMinY) || (Rapidity(Px,Py,Pz) > fMaxY)) return kFALSE;
+  //antiprotons
+  if(track->Charge() < 0) {
+    //Primaries
+    if(label <= nPrimaries) {
+      if(fMinITSClustersFlag) {
+	if(nClustersITS < fMinITSClusters) {
+	  ((TH1F *)(fQAPrimaryAntiProtonsRejectedList->At(0)))->Fill(nClustersITS);
+	  status = kFALSE;
+	}
+	else if(nClustersITS >= fMinITSClusters) 
+	  ((TH1F *)(fQAPrimaryAntiProtonsAcceptedList->At(0)))->Fill(nClustersITS);
+      }//ITS clusters
+      if(fMaxChi2PerITSClusterFlag) {
+	if(chi2PerClusterITS > fMaxChi2PerITSCluster) {
+	  ((TH1F *)(fQAPrimaryAntiProtonsRejectedList->At(1)))->Fill(chi2PerClusterITS);
+	  status = kFALSE;
+	}
+	else if(chi2PerClusterITS <= fMaxChi2PerITSCluster)
+	  ((TH1F *)(fQAPrimaryAntiProtonsAcceptedList->At(1)))->Fill(chi2PerClusterITS);
+      }//chi2 per ITS cluster
+      if(fMinTPCClustersFlag) {
+	if(nClustersTPC < fMinTPCClusters) {
+	  ((TH1F *)(fQAPrimaryAntiProtonsRejectedList->At(2)))->Fill(nClustersTPC);
+	  status = kFALSE;
+	}
+	else if(nClustersTPC >= fMinTPCClusters)
+	  ((TH1F *)(fQAPrimaryAntiProtonsAcceptedList->At(2)))->Fill(nClustersTPC);
+      }//TPC clusters
+      if(fMaxChi2PerTPCClusterFlag) {
+	if(chi2PerClusterTPC > fMaxChi2PerTPCCluster) {
+	  ((TH1F *)(fQAPrimaryAntiProtonsRejectedList->At(3)))->Fill(chi2PerClusterTPC);
+	  status = kFALSE;
+	}
+	else if(chi2PerClusterTPC <= fMaxChi2PerTPCCluster)
+	  ((TH1F *)(fQAPrimaryAntiProtonsAcceptedList->At(3)))->Fill(chi2PerClusterTPC);
+      }//chi2 per TPC cluster
+      if(fMaxCov11Flag) {
+	if(extCov[0] > fMaxCov11) {
+	  ((TH1F *)(fQAPrimaryAntiProtonsRejectedList->At(4)))->Fill(extCov[0]);
+	  status = kFALSE;
+	}
+	else if(extCov[0] <= fMaxCov11)
+	  ((TH1F *)(fQAPrimaryAntiProtonsAcceptedList->At(4)))->Fill(extCov[0]);
+      }//cov11
+      if(fMaxCov22Flag) {
+	if(extCov[2] > fMaxCov22) {
+	  ((TH1F *)(fQAPrimaryAntiProtonsRejectedList->At(5)))->Fill(extCov[2]);
+	  status = kFALSE;
+	}
+	else if(extCov[2] <= fMaxCov22)
+	  ((TH1F *)(fQAPrimaryAntiProtonsAcceptedList->At(5)))->Fill(extCov[2]);
+      }//cov11
+      if(fMaxCov33Flag) {
+	if(extCov[5] > fMaxCov33) {
+	  ((TH1F *)(fQAPrimaryAntiProtonsRejectedList->At(6)))->Fill(extCov[5]);
+	  status = kFALSE;
+	}
+	else if(extCov[5] <= fMaxCov33)
+	  ((TH1F *)(fQAPrimaryAntiProtonsAcceptedList->At(6)))->Fill(extCov[5]);
+      }//cov11
+      if(fMaxCov44Flag) {
+	if(extCov[9] > fMaxCov44) {
+	  ((TH1F *)(fQAPrimaryAntiProtonsRejectedList->At(7)))->Fill(extCov[9]);
+	  status = kFALSE;
+	}
+	else if(extCov[9] <= fMaxCov44)
+	  ((TH1F *)(fQAPrimaryAntiProtonsAcceptedList->At(7)))->Fill(extCov[9]);
+      }//cov11
+      if(fMaxCov55Flag) {
+	if(extCov[14] > fMaxCov55) {
+	  ((TH1F *)(fQAPrimaryAntiProtonsRejectedList->At(8)))->Fill(extCov[14]);
+	  status = kFALSE;
+	}
+	else if(extCov[14] <= fMaxCov55)
+	  ((TH1F *)(fQAPrimaryAntiProtonsAcceptedList->At(8)))->Fill(extCov[14]);
+      }//cov55
+      if(fMaxSigmaToVertexFlag) {
+	if(GetSigmaToVertex(track) > fMaxSigmaToVertex) {
+	  ((TH1F *)(fQAPrimaryAntiProtonsRejectedList->At(9)))->Fill(GetSigmaToVertex(track));
+	  status = kFALSE;
+	}
+	else if(GetSigmaToVertex(track) <= fMaxSigmaToVertex)
+	  ((TH1F *)(fQAPrimaryAntiProtonsAcceptedList->At(9)))->Fill(GetSigmaToVertex(track));
+      }//sigma to vertex
+      if(fMaxSigmaToVertexTPCFlag) {
+	if(GetSigmaToVertex(track) > fMaxSigmaToVertexTPC) {
+	  ((TH1F *)(fQAPrimaryAntiProtonsRejectedList->At(10)))->Fill(GetSigmaToVertex(track));
+	  status = kFALSE;
+	}
+	else if(GetSigmaToVertex(track) <= fMaxSigmaToVertexTPC)
+	  ((TH1F *)(fQAPrimaryAntiProtonsAcceptedList->At(10)))->Fill(GetSigmaToVertex(track));
+      }//sigma to vertex TPC
+      if(fITSRefitFlag) {
+	if ((track->GetStatus() & AliESDtrack::kITSrefit) == 0) {
+	  ((TH1F *)(fQAPrimaryAntiProtonsRejectedList->At(11)))->Fill(0);
+	status = kFALSE;
+	}
+	else if((track->GetStatus() & AliESDtrack::kITSrefit) != 0)
+	  ((TH1F *)(fQAPrimaryAntiProtonsAcceptedList->At(11)))->Fill(0);
+      }//ITS refit
+      if(fTPCRefitFlag) {
+	if ((track->GetStatus() & AliESDtrack::kTPCrefit) == 0) {
+	  ((TH1F *)(fQAPrimaryAntiProtonsRejectedList->At(12)))->Fill(0);
+	  status = kFALSE;
+	}
+	else if((track->GetStatus() & AliESDtrack::kTPCrefit) != 0)
+	  ((TH1F *)(fQAPrimaryAntiProtonsAcceptedList->At(12)))->Fill(0);
+      }//TPC refit
+      if(fESDpidFlag) {
+	if ((track->GetStatus() & AliESDtrack::kESDpid) == 0) {
+	  ((TH1F *)(fQAPrimaryAntiProtonsRejectedList->At(13)))->Fill(0);
+	  status = kFALSE;
+	}
+	else if((track->GetStatus() & AliESDtrack::kESDpid) != 0)
+	  ((TH1F *)(fQAPrimaryAntiProtonsAcceptedList->At(13)))->Fill(0);
+      }//ESD pid
+      if(fTPCpidFlag) {
+	if ((track->GetStatus() & AliESDtrack::kTPCpid) == 0) {
+	  ((TH1F *)(fQAPrimaryAntiProtonsRejectedList->At(13)))->Fill(0);
+	  status = kFALSE;
+	}
+	else if((track->GetStatus() & AliESDtrack::kTPCpid) != 0)
+	  ((TH1F *)(fQAPrimaryAntiProtonsAcceptedList->At(13)))->Fill(0);
+      }//TPC pid
+    }//primary particle cut
 
-  return kTRUE;
+    //Secondaries
+    if(label > nPrimaries) {
+      if(fMinITSClustersFlag) {
+	if(nClustersITS < fMinITSClusters) {
+	  ((TH1F *)(fQASecondaryAntiProtonsRejectedList->At(0)))->Fill(nClustersITS);
+	  status = kFALSE;
+	}
+	else if(nClustersITS >= fMinITSClusters) 
+	  ((TH1F *)(fQASecondaryAntiProtonsAcceptedList->At(0)))->Fill(nClustersITS);
+      }//ITS clusters
+      if(fMaxChi2PerITSClusterFlag) {
+	if(chi2PerClusterITS > fMaxChi2PerITSCluster) {
+	  ((TH1F *)(fQASecondaryAntiProtonsRejectedList->At(1)))->Fill(chi2PerClusterITS);
+	  status = kFALSE;
+	}
+	else if(chi2PerClusterITS <= fMaxChi2PerITSCluster)
+	  ((TH1F *)(fQASecondaryAntiProtonsAcceptedList->At(1)))->Fill(chi2PerClusterITS);
+      }//chi2 per ITS cluster
+      if(fMinTPCClustersFlag) {
+	if(nClustersTPC < fMinTPCClusters) {
+	  ((TH1F *)(fQASecondaryAntiProtonsRejectedList->At(2)))->Fill(nClustersTPC);
+	  status = kFALSE;
+	}
+	else if(nClustersTPC >= fMinTPCClusters)
+	  ((TH1F *)(fQASecondaryAntiProtonsAcceptedList->At(2)))->Fill(nClustersTPC);
+      }//TPC clusters
+      if(fMaxChi2PerTPCClusterFlag) {
+	if(chi2PerClusterTPC > fMaxChi2PerTPCCluster) {
+	  ((TH1F *)(fQASecondaryAntiProtonsRejectedList->At(3)))->Fill(chi2PerClusterTPC);
+	  status = kFALSE;
+	}
+	else if(chi2PerClusterTPC <= fMaxChi2PerTPCCluster)
+	  ((TH1F *)(fQASecondaryAntiProtonsAcceptedList->At(3)))->Fill(chi2PerClusterTPC);
+      }//chi2 per TPC cluster
+      if(fMaxCov11Flag) {
+	if(extCov[0] > fMaxCov11) {
+	  ((TH1F *)(fQASecondaryAntiProtonsRejectedList->At(4)))->Fill(extCov[0]);
+	  status = kFALSE;
+	}
+	else if(extCov[0] <= fMaxCov11)
+	  ((TH1F *)(fQASecondaryAntiProtonsAcceptedList->At(4)))->Fill(extCov[0]);
+      }//cov11
+      if(fMaxCov22Flag) {
+	if(extCov[2] > fMaxCov22) {
+	  ((TH1F *)(fQASecondaryAntiProtonsRejectedList->At(5)))->Fill(extCov[2]);
+	  status = kFALSE;
+	}
+	else if(extCov[2] <= fMaxCov22)
+	  ((TH1F *)(fQASecondaryAntiProtonsAcceptedList->At(5)))->Fill(extCov[2]);
+      }//cov11
+      if(fMaxCov33Flag) {
+	if(extCov[5] > fMaxCov33) {
+	  ((TH1F *)(fQASecondaryAntiProtonsRejectedList->At(6)))->Fill(extCov[5]);
+	  status = kFALSE;
+	}
+	else if(extCov[5] <= fMaxCov33)
+	  ((TH1F *)(fQASecondaryAntiProtonsAcceptedList->At(6)))->Fill(extCov[5]);
+      }//cov11
+      if(fMaxCov44Flag) {
+	if(extCov[9] > fMaxCov44) {
+	  ((TH1F *)(fQASecondaryAntiProtonsRejectedList->At(7)))->Fill(extCov[9]);
+	  status = kFALSE;
+	}
+	else if(extCov[9] <= fMaxCov44)
+	  ((TH1F *)(fQASecondaryAntiProtonsAcceptedList->At(7)))->Fill(extCov[9]);
+      }//cov11
+      if(fMaxCov55Flag) {
+	if(extCov[14] > fMaxCov55) {
+	  ((TH1F *)(fQASecondaryAntiProtonsRejectedList->At(8)))->Fill(extCov[14]);
+	  status = kFALSE;
+	}
+	else if(extCov[14] <= fMaxCov55)
+	  ((TH1F *)(fQASecondaryAntiProtonsAcceptedList->At(8)))->Fill(extCov[14]);
+      }//cov55
+      if(fMaxSigmaToVertexFlag) {
+	if(GetSigmaToVertex(track) > fMaxSigmaToVertex) {
+	  ((TH1F *)(fQASecondaryAntiProtonsRejectedList->At(9)))->Fill(GetSigmaToVertex(track));
+	  status = kFALSE;
+	}
+	else if(GetSigmaToVertex(track) <= fMaxSigmaToVertex)
+	  ((TH1F *)(fQASecondaryAntiProtonsAcceptedList->At(9)))->Fill(GetSigmaToVertex(track));
+      }//sigma to vertex
+      if(fMaxSigmaToVertexTPCFlag) {
+	if(GetSigmaToVertex(track) > fMaxSigmaToVertexTPC) {
+	  ((TH1F *)(fQASecondaryAntiProtonsRejectedList->At(10)))->Fill(GetSigmaToVertex(track));
+	  status = kFALSE;
+	}
+	else if(GetSigmaToVertex(track) <= fMaxSigmaToVertexTPC)
+	  ((TH1F *)(fQASecondaryAntiProtonsAcceptedList->At(10)))->Fill(GetSigmaToVertex(track));
+      }//sigma to vertex TPC
+      if(fITSRefitFlag) {
+	if ((track->GetStatus() & AliESDtrack::kITSrefit) == 0) {
+	  ((TH1F *)(fQASecondaryAntiProtonsRejectedList->At(11)))->Fill(0);
+	status = kFALSE;
+	}
+	else if((track->GetStatus() & AliESDtrack::kITSrefit) != 0)
+	  ((TH1F *)(fQASecondaryAntiProtonsAcceptedList->At(11)))->Fill(0);
+      }//ITS refit
+      if(fTPCRefitFlag) {
+	if ((track->GetStatus() & AliESDtrack::kTPCrefit) == 0) {
+	  ((TH1F *)(fQASecondaryAntiProtonsRejectedList->At(12)))->Fill(0);
+	  status = kFALSE;
+	}
+	else if((track->GetStatus() & AliESDtrack::kTPCrefit) != 0)
+	  ((TH1F *)(fQASecondaryAntiProtonsAcceptedList->At(12)))->Fill(0);
+      }//TPC refit
+      if(fESDpidFlag) {
+	if ((track->GetStatus() & AliESDtrack::kESDpid) == 0) {
+	  ((TH1F *)(fQASecondaryAntiProtonsRejectedList->At(13)))->Fill(0);
+	  status = kFALSE;
+	}
+	else if((track->GetStatus() & AliESDtrack::kESDpid) != 0)
+	  ((TH1F *)(fQASecondaryAntiProtonsAcceptedList->At(13)))->Fill(0);
+      }//ESD pid
+      if(fTPCpidFlag) {
+	if ((track->GetStatus() & AliESDtrack::kTPCpid) == 0) {
+	  ((TH1F *)(fQASecondaryAntiProtonsRejectedList->At(13)))->Fill(0);
+	  status = kFALSE;
+	}
+	else if((track->GetStatus() & AliESDtrack::kTPCpid) != 0)
+	  ((TH1F *)(fQASecondaryAntiProtonsAcceptedList->At(13)))->Fill(0);
+      }//TPC pid
+    }//secondary particle cut
+  }//antiprotons
+
+  if((Pt < fMinPt) || (Pt > fMaxPt)) status = kFALSE;
+  if((Rapidity(Px,Py,Pz) < fMinY) || (Rapidity(Px,Py,Pz) > fMaxY)) status = kFALSE;
+
+  return status;
 }
 
 //____________________________________________________________________//
@@ -1361,25 +1846,25 @@ void AliProtonAnalysis::RunQA(AliStack *stack, AliESDEvent *fESD) {
     Double_t Pt = 0.0, P = 0.0;
     Double_t probability[5];
 
-    if(IsAccepted(track, stack)) {
-      if(fUseTPCOnly) {
-        AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
-        if(!tpcTrack) continue;
-        Pt = tpcTrack->Pt();
-        P = tpcTrack->P();
-	
-        //pid
-        track->GetTPCpid(probability);
-        Double_t rcc = 0.0;
-        for(Int_t i = 0; i < AliPID::kSPECIES; i++)
-          rcc += probability[i]*GetParticleFraction(i,P);
-        if(rcc == 0.0) continue;
-        Double_t w[5];
-        for(Int_t i = 0; i < AliPID::kSPECIES; i++)
-          w[i] = probability[i]*GetParticleFraction(i,P)/rcc;
-        Long64_t fParticleType = TMath::LocMax(AliPID::kSPECIES,w);
-	if(fParticleType == 4) {
-          if(label <= stack->GetNprimary()) {
+    if(fUseTPCOnly) {
+      AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
+      if(!tpcTrack) continue;
+      Pt = tpcTrack->Pt();
+      P = tpcTrack->P();
+      
+      //pid
+      track->GetTPCpid(probability);
+      Double_t rcc = 0.0;
+      for(Int_t i = 0; i < AliPID::kSPECIES; i++)
+	rcc += probability[i]*GetParticleFraction(i,P);
+      if(rcc == 0.0) continue;
+      Double_t w[5];
+      for(Int_t i = 0; i < AliPID::kSPECIES; i++)
+	w[i] = probability[i]*GetParticleFraction(i,P)/rcc;
+      Long64_t fParticleType = TMath::LocMax(AliPID::kSPECIES,w);
+      if(fParticleType == 4) {
+	if(IsAccepted(track, stack)) {
+	  if(label <= stack->GetNprimary()) {
             if(track->Charge() > 0)
               ((TH2F *)(fQA2DList->At(0)))->Fill(Rapidity(track->Px(),track->Py(),track->Pz()),Pt);
             else if(track->Charge() < 0)
@@ -1391,23 +1876,25 @@ void AliProtonAnalysis::RunQA(AliStack *stack, AliESDEvent *fESD) {
             else if(track->Charge() < 0)
               ((TH2F *)(fQA2DList->At(3)))->Fill(Rapidity(track->Px(),track->Py(),track->Pz()),Pt);
           }//secondary particles
-        }//proton check
-      }//TPC only tracks
-      else if(!fUseTPCOnly) {
-	Pt = track->Pt();
-	P = track->P();
-	
-	//pid
-	track->GetESDpid(probability);
-	Double_t rcc = 0.0;
-	for(Int_t i = 0; i < AliPID::kSPECIES; i++)
-	  rcc += probability[i]*GetParticleFraction(i,P);
-	if(rcc == 0.0) continue;
-	Double_t w[5];
-	for(Int_t i = 0; i < AliPID::kSPECIES; i++)
-	  w[i] = probability[i]*GetParticleFraction(i,P)/rcc;
-	Long64_t fParticleType = TMath::LocMax(AliPID::kSPECIES,w);
-	if(fParticleType == 4) {
+	}//cuts
+      }//proton check
+    }//TPC only tracks
+    else if(!fUseTPCOnly) {
+      Pt = track->Pt();
+      P = track->P();
+      
+      //pid
+      track->GetESDpid(probability);
+      Double_t rcc = 0.0;
+      for(Int_t i = 0; i < AliPID::kSPECIES; i++)
+	rcc += probability[i]*GetParticleFraction(i,P);
+      if(rcc == 0.0) continue;
+      Double_t w[5];
+      for(Int_t i = 0; i < AliPID::kSPECIES; i++)
+	w[i] = probability[i]*GetParticleFraction(i,P)/rcc;
+      Long64_t fParticleType = TMath::LocMax(AliPID::kSPECIES,w);
+      if(fParticleType == 4) {
+	if(IsAccepted(track, stack)) {
 	  if(label <= stack->GetNprimary()) {
 	    if(track->Charge() > 0)
 	      ((TH2F *)(fQA2DList->At(0)))->Fill(Rapidity(track->Px(),track->Py(),track->Pz()),Pt);
@@ -1420,9 +1907,9 @@ void AliProtonAnalysis::RunQA(AliStack *stack, AliESDEvent *fESD) {
 	    else if(track->Charge() < 0)
 	      ((TH2F *)(fQA2DList->At(3)))->Fill(Rapidity(track->Px(),track->Py(),track->Pz()),Pt);
 	  }//secondary particles
-	}//proton check
-      }//combined tracking
-    }//cuts
+	}//cuts
+      }//proton check
+    }//combined tracking
   }//track loop
     
 }

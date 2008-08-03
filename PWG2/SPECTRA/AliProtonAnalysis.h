@@ -64,21 +64,21 @@ class AliProtonAnalysis : public TObject {
   Bool_t  PrintYields(TH1 *hist, Double_t edge); 
 
   //Cut functions
-  void    SetMinTPCClusters(Int_t minTPCClusters) {
-    fMinTPCClusters = minTPCClusters;
-    fMinTPCClustersFlag = kTRUE;
-  }
   void    SetMinITSClusters(Int_t minITSClusters) {
     fMinITSClusters = minITSClusters;
     fMinITSClustersFlag = kTRUE;
   }
-  void    SetMaxChi2PerTPCCluster(Double_t maxChi2PerTPCCluster) {
-    fMaxChi2PerTPCCluster = maxChi2PerTPCCluster;
-    fMaxChi2PerTPCClusterFlag = kTRUE;
-  }
   void    SetMaxChi2PerITSCluster(Double_t maxChi2PerITSCluster) {
     fMaxChi2PerITSCluster = maxChi2PerITSCluster;
     fMaxChi2PerITSClusterFlag = kTRUE;
+  }
+  void    SetMinTPCClusters(Int_t minTPCClusters) {
+    fMinTPCClusters = minTPCClusters;
+    fMinTPCClustersFlag = kTRUE;
+  }
+  void    SetMaxChi2PerTPCCluster(Double_t maxChi2PerTPCCluster) {
+    fMaxChi2PerTPCCluster = maxChi2PerTPCCluster;
+    fMaxChi2PerTPCClusterFlag = kTRUE;
   }
   void    SetMaxCov11(Double_t maxCov11) {fMaxCov11 = maxCov11; fMaxCov11Flag = kTRUE;}
   void    SetMaxCov22(Double_t maxCov22) {fMaxCov22 = maxCov22; fMaxCov22Flag = kTRUE;}
@@ -89,8 +89,14 @@ class AliProtonAnalysis : public TObject {
     fMaxSigmaToVertex = maxSigmaToVertex;
     fMaxSigmaToVertexFlag = kTRUE;
   }
+  void    SetMaxSigmaToVertexTPC(Double_t maxSigmaToVertex) {
+    fMaxSigmaToVertexTPC = maxSigmaToVertex;
+    fMaxSigmaToVertexTPCFlag = kTRUE;
+  }
   void    SetITSRefit() {fITSRefitFlag = kTRUE;}
   void    SetTPCRefit() {fTPCRefitFlag = kTRUE;}
+  void    SetESDpid() {fESDpidFlag = kTRUE;}
+  void    SetTPCpid() {fTPCpidFlag = kTRUE;}
 
   //QA histograms
   void SetQAOn() {
@@ -117,8 +123,8 @@ class AliProtonAnalysis : public TObject {
   void RunQA(AliStack *stack, AliESDEvent *esd);
 
   //Prior probabilities
-  void    SetPriorProbabilities(Double_t *partFrac) {for(Int_t i = 0; i < AliPID::kSPECIESN; i++) fPartFrac[i] = partFrac[i];} 
-  void    SetPriorProbabilityFunctions(TF1 *felectron, TF1 *fmuon, TF1 *fpion, TF1 *fkaon, TF1 *fproton) {
+  void SetPriorProbabilities(Double_t *partFrac) {for(Int_t i = 0; i < AliPID::kSPECIESN; i++) fPartFrac[i] = partFrac[i];} 
+  void SetPriorProbabilityFunctions(TF1 *felectron, TF1 *fmuon, TF1 *fpion, TF1 *fkaon, TF1 *fproton) {
     fFunctionProbabilityFlag = kTRUE;
     fElectronFunction = felectron; 
     fMuonFunction = fmuon; 
@@ -153,11 +159,14 @@ class AliProtonAnalysis : public TObject {
   Double_t fMaxChi2PerTPCCluster, fMaxChi2PerITSCluster; //max chi2 per TPC & ITS cluster
   Double_t fMaxCov11, fMaxCov22, fMaxCov33, fMaxCov44, fMaxCov55; //max values of cov. matrix
   Double_t fMaxSigmaToVertex; //max sigma to vertex cut
+  Double_t fMaxSigmaToVertexTPC; //max sigma to vertex cut
   Bool_t fMinTPCClustersFlag, fMinITSClustersFlag; //shows if this cut is used or not
   Bool_t fMaxChi2PerTPCClusterFlag, fMaxChi2PerITSClusterFlag; //shows if this cut is used or not
   Bool_t fMaxCov11Flag, fMaxCov22Flag, fMaxCov33Flag, fMaxCov44Flag, fMaxCov55Flag; //shows if this cut is used or not
   Bool_t fMaxSigmaToVertexFlag; //shows if this cut is used or not
+  Bool_t fMaxSigmaToVertexTPCFlag; //shows if this cut is used or not
   Bool_t fITSRefitFlag, fTPCRefitFlag; //shows if this cut is used or not
+  Bool_t fESDpidFlag, fTPCpidFlag; //shows if this cut is used or not
   
   //QA histograms
   Bool_t fQAHistograms; //Boolean to activate the QA histograms
