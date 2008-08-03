@@ -1282,6 +1282,8 @@ Bool_t AliProtonAnalysis::ReadCorrectionContainer(const char* filename) {
 //____________________________________________________________________//
 void AliProtonAnalysis::InitQA() {
   //Initializes the QA histograms and builds the directory structure
+  if(!fQAHistograms) SetQAOn();
+
   //2D histograms
   TDirectory *dir2D = gDirectory->mkdir("2D");
   fGlobalQAList->Add(dir2D); dir2D->cd();
