@@ -28,7 +28,9 @@
 class AliRawReader;
 class TTree;
 class TClonesArray;
-
+class TArrayS;
+class AliFMDCalibSampleRate;
+class AliFMDCalibStripRange;
 
 //____________________________________________________________________
 /** @brief Class to read ALTRO formated raw data from an AliRawReader
@@ -57,17 +59,32 @@ public:
       @param array Array to read into 
       @return @c true on success */
   virtual Bool_t ReadAdcs(TClonesArray* array);
+  /** Read SOD event into a container. 
+      @param array Array to read into 
+      @return @c true on success */
+  virtual Bool_t ReadSODevent(AliFMDCalibSampleRate* samplerate, 
+			      AliFMDCalibStripRange* striprange, 
+			      TArrayS &pulseSize, 
+			      TArrayS &pulseLength);
 protected:
   AliFMDRawReader(const AliFMDRawReader& o) 
     : TTask(o), 
       fTree(0), 
       fReader(0), 
-      fSampleRate(0)
+      fSampleRate(0),
+      fData(0),
+      fNbytes(0)
   {}
   AliFMDRawReader& operator=(const AliFMDRawReader&) { return *this; }
+  ULong_t GetNwords() const {return fNbytes / 4;}
+  UInt_t Get32bitWord(Int_t idx);
+  Int_t GetHalfringIndex(UShort_t det, Char_t ring, UShort_t board);
   TTree*        fTree;       //! Pointer to tree to read into 
   AliRawReader* fReader;     //! Pointer to raw reader 
   UShort_t      fSampleRate; // The sample rate (if 0, inferred from data)
+  UChar_t* fData; 
+  ULong_t  fNbytes; 
+  
   ClassDef(AliFMDRawReader, 0) // Read FMD raw data into a cache 
 };
 

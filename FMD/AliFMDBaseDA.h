@@ -32,7 +32,7 @@
 #include "AliFMDParameters.h"
 #include "TArrayS.h"
 class TDirectory;
-
+class AliFMDRawReader;
 
 class AliFMDBaseDA: public TNamed {
   
@@ -90,12 +90,11 @@ protected:
 
 private:
  
-  void WriteConditionsData();
+  void WriteConditionsData(AliFMDRawReader* fmdReader);
   void SetCurrentEvent(Int_t currentEvent) {fCurrentEvent = currentEvent; }
   void InitContainer(TDirectory* dir);
   Int_t fRequiredEvents;
   Int_t fCurrentEvent;   
-
   
   
   

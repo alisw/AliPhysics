@@ -33,6 +33,8 @@
 #include "AliFMDCalibSampleRate.h"
 #include "AliFMDCalibStripRange.h"
 #include "AliLog.h"
+#include "AliRawEventHeaderBase.h"
+
 //_____________________________________________________________________
 ClassImp(AliFMDBaseDA)
 #if 0 
@@ -92,7 +94,7 @@ AliFMDBaseDA::AliFMDBaseDA() :
   fDetectorArray(),
   fPulseSize(16),
   fPulseLength(16),
-  fRequiredEvents(0),
+  fRequiredEvents(5),
   fCurrentEvent(0)
  {
   fDetectorArray.SetOwner();
@@ -130,7 +132,7 @@ void AliFMDBaseDA::Run(AliRawReader* reader)
     diagFile = TFile::Open(fDiagnosticsFilename.Data(),"RECREATE");
 
   
-  WriteConditionsData();
+  
   
   InitContainer(diagFile);
   Init();
@@ -141,20 +143,35 @@ void AliFMDBaseDA::Run(AliRawReader* reader)
   AliFMDRawReader* fmdReader  = new AliFMDRawReader(reader,0);
   TClonesArray*    digitArray = new TClonesArray("AliFMDDigit",0);
     
-  reader->NextEvent(); // Read Start-of-Run event
-  reader->NextEvent(); // Read Start-of-Files event
+  //reader->NextEvent(); // Read Start-of-Run event
+  // reader->NextEvent(); // Read Start-of-Files event
+  
+  // reader->NextEvent(); // Start-of-Data
+  
+  
   int lastProgress = 0;
   
   for(Int_t n =1;n <= GetRequiredEvents(); n++) {
     if(!reader->NextEvent()) continue;
     
-    SetCurrentEvent(*(reader->GetEventId()));
+    UInt_t eventType = reader->GetType();
+    if(eventType == AliRawEventHeaderBase::kStartOfData || 
+       eventType == AliRawEventHeaderBase::kFormatError) { 
+      
+      WriteConditionsData(fmdReader);
+      
+    }
+    if(eventType != AliRawEventHeaderBase::kPhysicsEvent)  {
+      n--; 
+      continue; 
+    }
     
+    SetCurrentEvent(n);
     digitArray->Clear();
     fmdReader->ReadAdcs(digitArray);
-    
-    AliDebug(5, Form("In event # %d with %d entries", 
-		     *(reader->GetEventId()), digitArray->GetEntriesFast()));
+    //std::cout<<"in event "<<*(reader->GetEventId())<<"   "<<n<<std::endl;
+    //AliDebug(5, Form("In event # %d with %d entries", 
+    //		     *(reader->GetEventId()), digitArray->GetEntriesFast()));
     
     for(Int_t i = 0; i<digitArray->GetEntriesFast();i++) {
       AliFMDDigit* digit = static_cast<AliFMDDigit*>(digitArray->At(i));
@@ -270,18 +287,21 @@ void AliFMDBaseDA::InitContainer(TDirectory* diagFile)
 }
 
 //_____________________________________________________________________ 
-void AliFMDBaseDA::WriteConditionsData() 
+void AliFMDBaseDA::WriteConditionsData(AliFMDRawReader* fmdReader) 
 {
   AliFMDParameters* pars       = AliFMDParameters::Instance();
   fConditionsFile.write(Form("# %s \n",pars->GetConditionsShuttleID()),14);
   
-  // fConditionsFile.write("# Sample Rate, timebins \n",25);
+  AliFMDCalibSampleRate* sampleRate = new AliFMDCalibSampleRate();
+  AliFMDCalibStripRange* stripRange = new AliFMDCalibStripRange();
+  
+  fmdReader->ReadSODevent(sampleRate,stripRange,fPulseSize,fPulseLength);
   
   // Sample Rate
-  
-  UShort_t defSampleRate = 4;
-  UShort_t sampleRateFromSOD;
-  //UInt_t timebins   = 544;
+  /*
+    UShort_t defSampleRate = 4;
+    UShort_t sampleRateFromSOD;
+    
   AliFMDCalibSampleRate* sampleRate = new AliFMDCalibSampleRate();
 
   UShort_t firstStrip = 0;
@@ -305,11 +325,11 @@ void AliFMDBaseDA::WriteConditionsData()
       }
     }
   }
-  
+  */
   sampleRate->WriteToFile(fConditionsFile);
   stripRange->WriteToFile(fConditionsFile);
-  pars->SetSampleRate(sampleRate);
-  pars->SetStripRange(stripRange);
+  //pars->SetSampleRate(sampleRate);
+  //pars->SetStripRange(stripRange);
 
  
   // Zero Suppresion
@@ -321,7 +341,7 @@ void AliFMDBaseDA::WriteConditionsData()
   
   
   // Gain Relevant stuff
-  
+  /*
   UShort_t defPulseSize = 32 ; 
   UShort_t defPulseLength = 100 ; 
   UShort_t pulseSizeFromSOD;
@@ -343,7 +363,7 @@ void AliFMDBaseDA::WriteConditionsData()
   
   //  fConditionsFile     << defSampleRate   << ',' 
   //		      << timebins     <<"\n";
-  
+  */
   if(fConditionsFile.is_open()) {
     
     fConditionsFile.write("# EOF\n",6);
