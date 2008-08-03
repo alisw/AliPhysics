@@ -121,6 +121,7 @@ class AliProtonAnalysis : public TObject {
     }
   void InitQA();
   void RunQA(AliStack *stack, AliESDEvent *esd);
+  TList *GetGlobalQAList() {return fGlobalQAList;}
 
   //Prior probabilities
   void SetPriorProbabilities(Double_t *partFrac) {for(Int_t i = 0; i < AliPID::kSPECIESN; i++) fPartFrac[i] = partFrac[i];} 
