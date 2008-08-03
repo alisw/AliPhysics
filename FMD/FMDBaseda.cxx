@@ -39,10 +39,10 @@ int main(int argc, char **argv)
 #endif
   
   
-  Char_t* tableSOD[]  = {"ALL", "no", "SOD", "all", NULL, NULL};
+  const Char_t* tableSOD[]  = {"ALL", "no", "SOD", "all", NULL, NULL};
 
 
-  monitorDeclareTable(tableSOD);
+  monitorDeclareTable(const_cast<char**>(tableSOD));
 
   
   Char_t* fileName = argv[1];
