@@ -82,11 +82,12 @@ AliFMDCalibSampleRate::Rate(UShort_t det, Char_t ring,
 			    UShort_t sec, UShort_t) const
 {
   // Get the sample rate 
-  UInt_t nSec  = (ring == 'I' ? 10 : 20);
-  UInt_t board = sec / nSec;
-  AliFMDDebug(10, ("Getting sample rate for FMD%d%c[%2d,0] (board %d)", 
-		    det, ring, sec, board));
-  return fRates(det, ring, board, 0);
+  UInt_t   nSec  = (ring == 'I' ? 10 : 20);
+  UInt_t   board = sec / nSec;
+  UShort_t ret   = fRates(det, ring, board, 0);
+  AliFMDDebug(10, ("Getting sample rate for FMD%d%c[%2d,0] (board %d): %d", 
+		   det, ring, sec, board, ret));
+  return ret;
 }
 //____________________________________________________________________
 void 
