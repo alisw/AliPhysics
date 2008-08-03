@@ -595,6 +595,11 @@ int AliHLTMUONClusterFinderComponent::ReadConfigFromCDB(
 	if (loadGeom)
 	{
 		HLTInfo("Loading geometry data from CDB.");
+		// Only load geometry if not already loaded.
+		if (AliGeomManager::GetGeometry() == NULL)
+		{
+			AliGeomManager::LoadGeometry();
+		}
 		assert(fTransformer != NULL);
 		if (not fTransformer->LoadGeometryData())
 		{
