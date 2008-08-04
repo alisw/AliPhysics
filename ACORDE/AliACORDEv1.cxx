@@ -19,9 +19,10 @@
 //                                                                           //
 // ALICE Cosmic Ray Trigger                                                  //
 //                                                                           //
-//  This class contains the functions for version 0 of the ALICE Cosmic Ray  //
-//  Trigger. This version will be used to simulation comic rays in alice with//
-//  all the detectors. It include geometry and hits (position and momentum)  //
+//  This class contains the functions for final version of the ALICE Cosmic  //
+//  Ray Trigger. This version will be used to simulation comic rays in alice //
+//  with all the detectors. 						     //
+//  It include geometry and hits (position and momentum)                     //
 //                                                                           //
 //                  Send comments to:                                        //
 //									     //
@@ -31,18 +32,15 @@
 //									     //
 //			Puebla, Pue. Mexico December 2007                    //
 //									     //
-//	Last Update: June 28th 2008				             //
+//	Last Update: Aug. 4th 2008				             //
 ///////////////////////////////////////////////////////////////////////////////
 
 
-//
 #include <Riostream.h>
 #include <TGeoMatrix.h>
 #include <TGeometry.h>
 #include <TMath.h>
-//#include <TNode.h>
 #include <TTUBE.h>
-//#include <TVirtualMC.h>
 #include <TString.h>
 #include <TSystem.h>
 
@@ -52,19 +50,16 @@
 #include "TGeoManager.h"
 #include "TGeoVolume.h"
 #include "TGeoPcon.h"
-//#include "TGeoTube.h"
 #include "TGeoPgon.h"
 #include "TGeoTrd1.h"
 #include "TGeoCompositeShape.h"
 #include "TGeoPara.h"
-//
 
 #include "AliACORDEv1.h"
 #include <TClonesArray.h>
 #include <TLorentzVector.h>
 #include <TVirtualMC.h>
 #include <TPDGCode.h>
-//#include <TGeometry.h>
 #include <TBRIK.h>
 #include <TNode.h>
  
