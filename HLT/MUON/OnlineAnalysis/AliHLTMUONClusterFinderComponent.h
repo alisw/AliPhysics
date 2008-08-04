@@ -112,7 +112,7 @@ protected:
 			AliHLTComponentTriggerData& trigData,
 			AliHLTUInt8_t* outputPtr,
 			AliHLTUInt32_t& size,
-			std::vector<AliHLTComponentBlockData>& outputBlocks
+			AliHLTComponentBlockDataList& outputBlocks
 		);
 	
 	using AliHLTProcessor::DoEvent;
@@ -143,7 +143,6 @@ private:
 	AliMUONSimpleClusterServer* fClusterServer;  ///< Object for driving the cluster finder.
 	AliMUONRecoParam* fRecoParam;  ///< Reconstruction parameters for offline code.
 	
-	bool fDelaySetup;  ///< Indicates if the component should delay initialising from the CDB to the start of run event.
 	bool fMakeClusterStore;  ///< Indicates if the cluster store object will be generated.
 	bool fMakeRecHits;  ///< Indicates if the output will be in dHLT internal reconstructed hit format.
 	

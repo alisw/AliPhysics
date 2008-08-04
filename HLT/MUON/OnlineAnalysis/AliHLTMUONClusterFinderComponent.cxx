@@ -48,6 +48,7 @@
 #include "AliMUONRecoParam.h"
 #include "AliMUONReconstructor.h"
 #include "AliMUONVCluster.h"
+#include "AliMUONRawStreamTrackerHP.h"
 #include "AliMpConstants.h"
 #include "AliMpCDB.h"
 #include "AliMpArea.h"
@@ -74,7 +75,6 @@ AliHLTMUONClusterFinderComponent::AliHLTMUONClusterFinderComponent() :
 	fClusterFinder(NULL),
 	fClusterServer(NULL),
 	fRecoParam(NULL),
-	fDelaySetup(false),
 	fMakeClusterStore(true),
 	fMakeRecHits(false)
 {
@@ -149,94 +149,26 @@ int AliHLTMUONClusterFinderComponent::DoInit(int argc, const char** argv)
 	/// Parses the command line parameters and initialises the component.
 
 	HLTInfo("Initialising dHLT cluster finder component.");
+
+	// Inherit the parents functionality.
+	int result = AliHLTMUONProcessor::DoInit(argc, argv);
+	if (result != 0) return result;
 	
 	// Must make sure that all the offline reconstruction objects are released in case
 	// they are still allocated for whatever reason.
 	FreeObjects();
 	
-	try
-	{
-		fRawReader = new AliRawReaderMemory();
-		fDigitMaker = new AliMUONDigitMaker(true, true);
-		fTransformer = new AliMUONGeometryTransformer();
-	}
-	catch (const std::bad_alloc&)
-	{
-		HLTError("Could not allocate more memory for the MUON offline reconstruction objects.");
-		FreeObjects();
-		return -ENOMEM;
-	}
-	
 	// Initialise fields with default values then parse the command line.
-	fDelaySetup = false;
 	fMakeClusterStore = true;
 	fMakeRecHits = false;
-	const char* cdbPath = NULL;
-	Int_t run = -1;
 	bool tryRecover = false;
 	
 	for (int i = 0; i < argc; i++)
 	{
-		if (strcmp( argv[i], "-cdbpath" ) == 0)
-		{
-			if (cdbPath != NULL)
-			{
-				HLTWarning("CDB path was already specified."
-					" Will replace previous value given by -cdbpath."
-				);
-			}
-			
-			if ( argc <= i+1 )
-			{
-				HLTError("The CDB path was not specified." );
-				FreeObjects(); // Make sure we cleanup to avoid partial initialisation.
-				return -EINVAL;
-			}
-			cdbPath = argv[i+1];
-			i++;
-			continue;
-		}
-	
-		if (strcmp( argv[i], "-run" ) == 0)
-		{
-			if (run != -1)
-			{
-				HLTWarning("Run number was already specified."
-					" Will replace previous value given by -run."
-				);
-			}
-			
-			if ( argc <= i+1 )
-			{
-				HLTError("The run number was not specified." );
-				FreeObjects(); // Make sure we cleanup to avoid partial initialisation.
-				return -EINVAL;
-			}
-			
-			char* cpErr = NULL;
-			run = Int_t( strtol(argv[i+1], &cpErr, 0) );
-			if (cpErr == NULL or *cpErr != '\0' or run < 0)
-			{
-				HLTError("Cannot convert '%s' to a valid run number."
-					" Expected a positive integer value.", argv[i+1]
-				);
-				FreeObjects(); // Make sure we cleanup to avoid partial initialisation.
-				return -EINVAL;
-			}
-			
-			i++;
-			continue;
-		} // -run argument
-	
-		if (strcmp( argv[i], "-delaysetup" ) == 0)
-		{
-			fDelaySetup = true;
-			continue;
-		}
+		if (ArgumentAlreadyHandled(i, argv[i])) continue;
 		
 		if (strcmp( argv[i], "-tryrecover" ) == 0)
 		{
-			HLTError("The -tryrecover option has not been implemented.");
 			tryRecover = true;
 			continue;
 		}
@@ -254,23 +186,24 @@ int AliHLTMUONClusterFinderComponent::DoInit(int argc, const char** argv)
 		}
 		
 		HLTError("Unknown option '%s'", argv[i]);
-		FreeObjects(); // Make sure we cleanup to avoid partial initialisation.
 		return -EINVAL;
 	
 	} // for loop
-	
-	if (cdbPath != NULL or run != -1)
+
+	try
 	{
-		int result = SetCDBPathAndRunNo(cdbPath, run);
-		if (result != 0)
-		{
-			// Error messages already generated in SetCDBPathAndRunNo.
-			FreeObjects(); // Make sure we cleanup to avoid partial initialisation.
-			return result;
-		}
+		fRawReader = new AliRawReaderMemory();
+		fDigitMaker = new AliMUONDigitMaker(true, true, true);
+		fTransformer = new AliMUONGeometryTransformer();
+	}
+	catch (const std::bad_alloc&)
+	{
+		HLTError("Could not allocate more memory for the MUON offline reconstruction objects.");
+		FreeObjects();
+		return -ENOMEM;
 	}
 	
-	if (not fDelaySetup)
+	if (not DelaySetup())
 	{
 		int result = ReadConfigFromCDB();
 		if (result != 0)
@@ -281,8 +214,10 @@ int AliHLTMUONClusterFinderComponent::DoInit(int argc, const char** argv)
 		}
 	}
 	
-	// TODO: enable the -tryrecover option.
-	//AliMUONRawStreamTracker::TryRecover(tryRecover);
+	AliMUONRawStreamTrackerHP* stream = static_cast<AliMUONRawStreamTrackerHP*>(
+			fDigitMaker->GetRawStreamTracker()
+		);
+	stream->TryRecover(tryRecover);
 	
 	return 0;
 }
@@ -343,17 +278,12 @@ int AliHLTMUONClusterFinderComponent::ReadPreprocessorValues(const char* modules
 
 
 int AliHLTMUONClusterFinderComponent::DoEvent(
-#ifdef __DEBUG
 		const AliHLTComponentEventData& evtData,
 		const AliHLTComponentBlockData* blocks,
-#else
-		const AliHLTComponentEventData& /*evtData*/,
-		const AliHLTComponentBlockData* /*blocks*/,
-#endif
-		AliHLTComponentTriggerData& /*trigData*/,
+		AliHLTComponentTriggerData& trigData,
 		AliHLTUInt8_t* outputPtr,
 		AliHLTUInt32_t& size,
-		std::vector<AliHLTComponentBlockData>& /*outputBlocks*/
+		AliHLTComponentBlockDataList& outputBlocks
 	)
 {
 	/// Inherited from AliHLTProcessor. Processes the new event data by
@@ -361,11 +291,11 @@ int AliHLTMUONClusterFinderComponent::DoEvent(
 	
 	// Initialise the mapping and calibration from CDB if we were requested
 	// to initialise only when the first event was received.
-	if (fDelaySetup)
+	if (DelaySetup())
 	{
 		int result = ReadConfigFromCDB();
 		if (result != 0) return result;
-		fDelaySetup = false;
+		DoneDelayedSetup();
 	}
 	
 	assert(fRawReader != NULL);
@@ -424,6 +354,10 @@ int AliHLTMUONClusterFinderComponent::DoEvent(
 		fRawReader->Reset();
 		fRawReader->NextEvent();
 		fDigitMaker->Raw2Digits(fRawReader, digitStore, NULL);
+		if (fDigitMaker->GetRawStreamTracker()->IsErrorMessage() and DumpDataOnError())
+		{
+			DumpEvent(evtData, blocks, trigData, outputPtr, size, outputBlocks);
+		}
 	}
 
 	fDigitCalibrator->Calibrate(*digitStore);
