@@ -11,7 +11,7 @@ gROOT->Reset("a") ;
 TControlBar * fQA   = NULL ; 
 TControlBar * fDet  = NULL ; 
 TControlBar * fHist = NULL ; 
-const Int_t fRun = 48868 ; 
+const Int_t fRun = atoi(gSystem->Getenv("RUNNUM")) ; 
 AliQA * fQAResult = NULL ; 
 TCanvas * fCa = NULL ; 
 
@@ -67,12 +67,22 @@ void MakeDetMenu(char * detName)
 	gDirectory->cd(detName) ; 
 	TList * listOfTasks = gDirectory->GetListOfKeys() ; 
 	for (Int_t task = 0 ; task < listOfTasks->GetEntries() ; task++) {
-		char * taskName = listOfTasks->At(task)->GetName() ; 
-		if (fQAResult->IsSetAny(AliQA::GetDetIndex(detName), AliQA::GetTaskIndex(taskName)))
-			char * buttonName = Form("QA SIGNALLED !! : %s", taskName) ; 
+		TString taskName = listOfTasks->At(task)->GetName() ; 
+		AliQA::ALITASK_t tt = AliQA::kNULLTASK ; 
+		if (taskName.Contains(AliQA::GetTaskName(AliQA::kRAWS)) )
+			tt = AliQA::kRAW ; 
+		else if (taskName.Contains(AliQA::GetTaskName(AliQA::kRECPOINTS)) ||
+				taskName.Contains(AliQA::GetTaskName(AliQA::kESDs)) )
+			tt = AliQA::kREC ; 
+		else if (taskName.Contains(AliQA::GetTaskName(AliQA::kHITS)) ||
+						 taskName.Contains(AliQA::GetTaskName(AliQA::kSDIGITS)) ||
+						 taskName.Contains(AliQA::GetTaskName(AliQA::kDIGITS)) )
+			tt = AliQA::kSIM ;
+		if (fQAResult->IsSetAny(AliQA::GetDetIndex(detName), tt))
+			char * buttonName = Form("QA SIGNALLED !! : %s", taskName.Data()) ; 
 		else 
-			char * buttonName = Form("QA OK : %s", taskName) ; 
-			fDet->AddButton(buttonName, Form("MakeTaskMenu(\"%s\", \"%s\")", detName, taskName), Form("Display the QA histograms for %s", taskName));	
+			char * buttonName = Form("QA OK : %s", taskName.Data()) ; 
+			fDet->AddButton(buttonName, Form("MakeTaskMenu(\"%s\", \"%s\")", detName, taskName.Data()), Form("Display the QA histograms for %s", taskName.Data()));	
 	}
 	fDet->Show() ; 
 	gDirectory = save ; 
