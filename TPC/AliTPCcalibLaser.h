@@ -62,6 +62,15 @@ public:
   //
   TObjArray      fDeltaYres;       //-> array of histograms of delta y residuals for each track
   TObjArray      fDeltaZres;       //-> array of histograms of delta z residuals for each track
+  // Fit Parameter histograms
+  TObjArray      fPol2Par2InY;      //-> array of histograms. 2nd derivative of pol2 fits per track (Inner chamber)
+  TObjArray      fDiffPar1InY;      //-> array of histograms. difference of 1st derivative of pol1 and pol2 fits per track (Inner chamber)
+  TObjArray      fPol2Par2OutY;     //-> array of histograms. 2nd derivative of pol2 fits per track (Outer chamber)
+  TObjArray      fDiffPar1OutY;     //-> array of histograms. difference of 1st derivative of pol1 and pol2 fits per track (Outer chamber)
+  TObjArray      fPol2Par2InZ;      //-> array of histograms. 2nd derivative of pol2 fits per track (Inner chamber)
+  TObjArray      fDiffPar1InZ;      //-> array of histograms. difference of 1st derivative of pol1 and pol2 fits per track (Inner chamber)
+  TObjArray      fPol2Par2OutZ;     //-> array of histograms. 2nd derivative of pol2 fits per track (Outer chamber)
+  TObjArray      fDiffPar1OutZ;     //-> array of histograms. difference of 1st derivative of pol1 and pol2 fits per track (Outer chamber)
   //
   TVectorD*      fFitAside;        //! drift fit - A side
   TVectorD*      fFitCside;        //! drift fit - C- side

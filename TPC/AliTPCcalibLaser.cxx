@@ -69,8 +69,6 @@
   TChain * chain = tool.MakeChain("laser.txt","Residuals",0,10200);
   chain->Lookup();
 
-
-
 */
 
 
@@ -83,6 +81,7 @@
 #include "AliESDtrack.h"
 #include "AliTPCTracklet.h"
 #include "TH1D.h"
+#include "TH1F.h"
 #include "TProfile.h"
 #include "TVectorD.h"
 #include "TTreeStream.h"
@@ -120,7 +119,15 @@ AliTPCcalibLaser::AliTPCcalibLaser():
   fSignals(336),
   fDeltaYres(336),
   fDeltaZres(336),  
-  fFitAside(new TVectorD(3)),      
+  fPol2Par2InY(336),
+  fDiffPar1InY(336),
+  fPol2Par2OutY(336),
+  fDiffPar1OutY(336),
+  fPol2Par2InZ(336),
+  fDiffPar1InZ(336),
+  fPol2Par2OutZ(336),
+  fDiffPar1OutZ(336),
+  fFitAside(new TVectorD(3)),
   fFitCside(new TVectorD(3)),      
   fEdgeXcuts(5),    
   fEdgeYcuts(5),    
@@ -149,6 +156,14 @@ AliTPCcalibLaser::AliTPCcalibLaser(const Text_t *name, const Text_t *title):
   fSignals(336),           // array of dedx signals
   fDeltaYres(336),
   fDeltaZres(336),  
+  fPol2Par2InY(336),
+  fDiffPar1InY(336),
+  fPol2Par2OutY(336),
+  fDiffPar1OutY(336),
+  fPol2Par2InZ(336),
+  fDiffPar1InZ(336),
+  fPol2Par2OutZ(336),
+  fDiffPar1OutZ(336),
   fFitAside(new TVectorD(3)),        // drift fit - A side
   fFitCside(new TVectorD(3)),        // drift fit - C- side
   fEdgeXcuts(5),       // cuts in local x direction; used in the refit of the laser tracks
@@ -903,32 +918,66 @@ void AliTPCcalibLaser::RefitLaserJW(Int_t id){
 	profy->Fill(x,yfit-ycl);
 	profz->Fill(x,zfit-zcl);
       }
+      //===============================//
+      // Fill Fit Parameter Histograms //
+      //===============================//
+      TH1F *pol2InnerY =(TH1F*)fPol2Par2InY.UncheckedAt(id);
+      TH1F *diff1InnerY=(TH1F*)fDiffPar1InY.UncheckedAt(id);
+      TH1F *pol2OuterY =(TH1F*)fPol2Par2OutY.UncheckedAt(id);
+      TH1F *diff1OuterY=(TH1F*)fDiffPar1OutY.UncheckedAt(id);
+      TH1F *pol2InnerZ =(TH1F*)fPol2Par2InZ.UncheckedAt(id);
+      TH1F *diff1InnerZ=(TH1F*)fDiffPar1InZ.UncheckedAt(id);
+      TH1F *pol2OuterZ =(TH1F*)fPol2Par2OutZ.UncheckedAt(id);
+      TH1F *diff1OuterZ=(TH1F*)fDiffPar1OutZ.UncheckedAt(id);
+      //create histograms if the do not already exist
+      if (!pol2InnerY){
+	  pol2InnerY =new TH1F(Form("pol2par2inY%03d",id),
+			       Form("2nd derivative from pol2 fit in Y for Laser beam %03d (inner sector)",id),
+			       100,-.005,.005);
+	  pol2OuterY =new TH1F(Form("pol2par2outY%03d",id),
+			       Form("2nd derivative from pol2 fit in Y for Laser beam %03d (outer sector)",id),
+			       100,0.01,.01);
+	  diff1InnerY=new TH1F(Form("diff1inY%03d",id),
+			       Form("diff of 1st derivative from pol1 and pol2 in Y fit for Laser beam %03d (inner sector)",id),
+			       100,-.5,.5);
+	  diff1OuterY=new TH1F(Form("diff1outY%03d",id),
+			       Form("diff of 1st derivative from pol1 and pol2 in Yfit for Laser beam %03d (outer sector)",id),
+			       100,-1,1);
+	  pol2InnerZ =new TH1F(Form("pol2par2inZ%03d",id),
+			       Form("2nd derivative from pol2 fit in Z for Laser beam %03d (inner sector)",id),
+			       100,-.002,.002);
+	  pol2OuterZ =new TH1F(Form("pol2par2outZ%03d",id),
+			       Form("2nd derivative from pol2 fit in Z for Laser beam %03d (outer sector)",id),
+			       100,-.005,.005);
+	  diff1InnerZ=new TH1F(Form("diff1inZ%03d",id),
+			       Form("diff of 1st derivative from pol1 and pol2 in Z fit for Laser beam %03d (inner sector)",id),
+			       100,-.02,.02);
+	  diff1OuterZ=new TH1F(Form("diff1outZ%03d",id),
+			       Form("diff of 1st derivative from pol1 and pol2 in Zfit for Laser beam %03d (outer sector)",id),
+			       100,-.03,.03);
+          //add
+	  fPol2Par2InY.AddAt(pol2InnerY,id);
+	  fDiffPar1InY.AddAt(diff1InnerY,id);
+	  fPol2Par2OutY.AddAt(pol2OuterY,id);
+	  fDiffPar1OutY.AddAt(diff1OuterY,id);
+	  fPol2Par2InZ.AddAt(pol2InnerZ,id);
+	  fDiffPar1InZ.AddAt(diff1InnerZ,id);
+	  fPol2Par2OutZ.AddAt(pol2OuterZ,id);
+	  fDiffPar1OutZ.AddAt(diff1OuterZ,id);
+      }
+      //fill histograms
+      pol2InnerY ->Fill(vecy2resInner[2]);
+      pol2OuterY ->Fill(vecy2resOuter[2]);
+      diff1InnerY->Fill(vecy2resInner[1]-vecy1resInner[1]);
+      diff1OuterY->Fill(vecy2resOuter[1]-vecy1resOuter[1]);
+      pol2InnerZ ->Fill(vecz2resInner[2]);
+      pol2OuterZ ->Fill(vecz2resOuter[2]);
+      diff1InnerZ->Fill(vecz2resInner[1]-vecz1resInner[1]);
+      diff1OuterZ->Fill(vecz2resOuter[1]-vecz1resOuter[1]);
+
+
 
   }
- /*
-
-  Int_t indexMaxCut[kMaxTracklets];
-
-  Float_t xMinCut[kMaxTracklets];
-  Float_t xMedCut[kMaxTracklets];
-  Float_t xMaxCut[kMaxTracklets];
-
-  for (Int_t i=0; i<kMaxTracklets; i++){
-      trMinCut = (AliTPCTracklet*)trackletsMinCuts->At(i);
-      trMedCut = (AliTPCTracklet*)trackletsMedCuts->At(i);
-      trMaxCut = (AliTPCTracklet*)trackletsMaxCuts->At(i);
-      if (!trMinCut ) trMinCut=&dummy;
-      if (!trMedCut ) trMedCut=&dummy;
-      if (!trMaxCut ) trMaxCut=&dummy;
-      xMinCut[i]=trMinCut->GetInner()->GetX();
-      xMedCut[i]=trMedCut->GetInner()->GetX();
-      xMaxCut[i]=trMaxCut->GetInner()->GetX();
-  }
-  TMath::Sort(kMaxTracklets, xMinCut, indexMinCut);
-  TMath::Sort(kMaxTracklets, xMedCut, indexMedCut);
-  TMath::Sort(kMaxTracklets, xMaxCut, indexMaxCut);
-   */
-
 }
 
 
@@ -1367,8 +1416,60 @@ Long64_t AliTPCcalibLaser::Merge(TCollection *li) {
       if (hpm) hp->Add(hpm);
       //
       //
-
-
+      //merge fit param histograms
+      //local hists
+      TH1F *pol2InnerY =(TH1F*)fPol2Par2InY.UncheckedAt(id);
+      TH1F *diff1InnerY=(TH1F*)fDiffPar1InY.UncheckedAt(id);
+      TH1F *pol2OuterY =(TH1F*)fPol2Par2OutY.UncheckedAt(id);
+      TH1F *diff1OuterY=(TH1F*)fDiffPar1OutY.UncheckedAt(id);
+      TH1F *pol2InnerZ =(TH1F*)fPol2Par2InZ.UncheckedAt(id);
+      TH1F *diff1InnerZ=(TH1F*)fDiffPar1InZ.UncheckedAt(id);
+      TH1F *pol2OuterZ =(TH1F*)fPol2Par2OutZ.UncheckedAt(id);
+      TH1F *diff1OuterZ=(TH1F*)fDiffPar1OutZ.UncheckedAt(id);
+      //hists to merge
+      TH1F *pol2InnerYm =(TH1F*)cal->fPol2Par2InY.UncheckedAt(id);
+      TH1F *diff1InnerYm=(TH1F*)cal->fDiffPar1InY.UncheckedAt(id);
+      TH1F *pol2OuterYm =(TH1F*)cal->fPol2Par2OutY.UncheckedAt(id);
+      TH1F *diff1OuterYm=(TH1F*)cal->fDiffPar1OutY.UncheckedAt(id);
+      TH1F *pol2InnerZm =(TH1F*)cal->fPol2Par2InZ.UncheckedAt(id);
+      TH1F *diff1InnerZm=(TH1F*)cal->fDiffPar1InZ.UncheckedAt(id);
+      TH1F *pol2OuterZm =(TH1F*)cal->fPol2Par2OutZ.UncheckedAt(id);
+      TH1F *diff1OuterZm=(TH1F*)cal->fDiffPar1OutZ.UncheckedAt(id);
+      //create histos if they do not exist
+      if (!pol2InnerY){
+          pol2InnerY =new TH1F(Form("pol2par2inY%03d",id),
+			       Form("2nd derivative from pol2 fit in Y for Laser beam %03d (inner sector)",id),
+			       100,-.005,.005);
+	  pol2OuterY =new TH1F(Form("pol2par2outY%03d",id),
+			       Form("2nd derivative from pol2 fit in Y for Laser beam %03d (outer sector)",id),
+			       100,0.01,.01);
+	  diff1InnerY=new TH1F(Form("diff1inY%03d",id),
+			       Form("diff of 1st derivative from pol1 and pol2 in Y fit for Laser beam %03d (inner sector)",id),
+			       100,-.5,.5);
+	  diff1OuterY=new TH1F(Form("diff1outY%03d",id),
+			       Form("diff of 1st derivative from pol1 and pol2 in Yfit for Laser beam %03d (outer sector)",id),
+			       100,-1,1);
+	  pol2InnerZ =new TH1F(Form("pol2par2inZ%03d",id),
+			       Form("2nd derivative from pol2 fit in Z for Laser beam %03d (inner sector)",id),
+			       100,-.002,.002);
+	  pol2OuterZ =new TH1F(Form("pol2par2outZ%03d",id),
+			       Form("2nd derivative from pol2 fit in Z for Laser beam %03d (outer sector)",id),
+			       100,-.005,.005);
+	  diff1InnerZ=new TH1F(Form("diff1inZ%03d",id),
+			       Form("diff of 1st derivative from pol1 and pol2 in Z fit for Laser beam %03d (inner sector)",id),
+			       100,-.02,.02);
+	  diff1OuterZ=new TH1F(Form("diff1outZ%03d",id),
+			       Form("diff of 1st derivative from pol1 and pol2 in Zfit for Laser beam %03d (outer sector)",id),
+			       100,-.03,.03);
+      }
+      pol2InnerYm =(TH1F*)cal->fPol2Par2InY.UncheckedAt(id);
+      diff1InnerYm=(TH1F*)cal->fDiffPar1InY.UncheckedAt(id);
+      pol2OuterYm =(TH1F*)cal->fPol2Par2OutY.UncheckedAt(id);
+      diff1OuterYm=(TH1F*)cal->fDiffPar1OutY.UncheckedAt(id);
+      pol2InnerZm =(TH1F*)cal->fPol2Par2InZ.UncheckedAt(id);
+      diff1InnerZm=(TH1F*)cal->fDiffPar1InZ.UncheckedAt(id);
+      pol2OuterZm =(TH1F*)cal->fPol2Par2OutZ.UncheckedAt(id);
+      diff1OuterZm=(TH1F*)cal->fDiffPar1OutZ.UncheckedAt(id);
     }
   }
   return 0;
