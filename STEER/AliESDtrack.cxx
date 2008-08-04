@@ -1147,6 +1147,16 @@ AliESDtrack::GetInnerExternalCovariance(Double_t cov[15]) const {
   return kTRUE;
 }
 
+void 
+AliESDtrack::SetOuterParam(const AliExternalTrackParam *p, ULong_t flags) {
+  //
+  // This is a direct setter for the outer track parameters
+  //
+  SetStatus(flags);
+  if (fOp) delete fOp;
+  fOp=new AliExternalTrackParam(*p);
+}
+
 Bool_t 
 AliESDtrack::GetOuterExternalParameters
                  (Double_t &alpha, Double_t &x, Double_t p[5]) const {
