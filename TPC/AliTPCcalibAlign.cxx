@@ -66,6 +66,14 @@
 //                    sector and  missalignment 
    
 //
+//
+/*
+  gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");
+  gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+")
+  AliXRDPROOFtoolkit tool;
+  TChain * chain = tool.MakeChain("align.txt","Track",0,10200);
+  chain->Lookup();
+*/
 
 ////
 //// 
