@@ -84,32 +84,10 @@ void AliACORDEQADataMakerSim::StartOfDetectorCycle()
 void AliACORDEQADataMakerSim::InitHits()
 {
   // create Hits histograms in Hits subdir
-        TH1F *fAHitsACORDE[8];
-
-        fAHitsACORDE[0] = new TH1F("hACORDEloss" ,"Energy Loss ",1000,0.,1500.);
-        fAHitsACORDE[1] = new TH1F("hACORDEPolar" ," Polar Angle ",90,0.,90.);
-        fAHitsACORDE[2] = new TH1F("hACORDEAzimuth" ,"Azimuth Angle  ",360,-180.,180.);
-        fAHitsACORDE[3] = new TH1F("hACORDEPx" ,"Px Distribution ",60,-30.,30.);
-        fAHitsACORDE[4] = new TH1F("hACORDEPy" ,"Py Distribution ",60,-30.,30.);
-        fAHitsACORDE[5] = new TH1F("hACORDEPz" ,"Pz Distribution ",60,-30.,30.);
-        fAHitsACORDE[6] = new TH1F("hACORDEPt" ,"Pt Distribution ",60,0.,50.);
-        fAHitsACORDE[7] = new TH1F("hACORDEpxpz" ,"Pt Distribution ",100,-50.,50.);
-
-        TH2F *hACORDExy = new TH2F("hACORDExy" ,"Dist. xy",2800,-2400.,1400.,200,-4805.,4825.);
-        TH2F *hACORDExz = new TH2F("hACORDExz" ,"Dist.xz ",900,-1500.,2850.,1200,-1000.,4000.);
-        TH2F *hACORDEyz = new TH2F("hACORDEyz" ,"Dist.yz ",5,817.,819.,1200,-600.,600.);
-        TH2F *hACORDEAzimPol =  new TH2F("hACORDEAzimPol" ,"Azimuth vs Polar ",360,-180.,180.,180,0.,180.);
-
-        for(Int_t i=0; i<8; i++)
-	   Add2HitsList(fAHitsACORDE[i],i);
- 
-         Add2HitsList(hACORDExy,8);
-	 Add2HitsList(hACORDExz,9);
-	 Add2HitsList(hACORDEyz,10);
-	 Add2HitsList(hACORDEAzimPol,11);
-
-
-
+	
+	TH1F *   fHitsACORDE;
+	fHitsACORDE = new TH1F("hACORDEBitPattern","Distribution of fired modules",60,0,60);
+	Add2HitsList(fHitsACORDE,0);
 }
 //____________________________________________________________________________ 
 void AliACORDEQADataMakerSim::InitDigits()
@@ -129,53 +107,39 @@ void AliACORDEQADataMakerSim::MakeHits(TTree *hitTree)
 {
   // Here we fill the QA histos for Hits declared above
 
-        printf("Estamos en make Hits");
-        TClonesArray * hits = new TClonesArray("AliACORDEhit",1000);
-        TBranch * branch = hitTree->GetBranch("ACORDE");
-        if (!branch)
-        {
-                AliWarning("ACORDE branch in Hit Tree not found");
-        }else
-        {
-                if (branch)
-                {
-                        branch->SetAddress(&hits);
-                }else
-                {
-                        AliError("Branch ACORDE hit not found");
-                        exit(111);
-                }
-                Int_t ntracks = (Int_t)hitTree->GetEntries();
-                if (ntracks<=0) return;
-                for(Int_t track=0;track<ntracks;track++)
-                {
-                        branch->GetEntry(track);
-                        Int_t nhits = hits->GetEntriesFast();
-                        for(Int_t ihit=0;ihit<nhits;ihit++)
-                        {
-                                AliACORDEhit *AcoHit = (AliACORDEhit*) hits->UncheckedAt(ihit);
-                                if (!AcoHit)
-                                {
-                                        AliError("The unchecked hit doesn't exist");
-                                        break;
-                                }
-                                GetHitsData(0)->Fill(AcoHit->Eloss());
-                                GetHitsData(1)->Fill(AcoHit->PolarAngle());
-                                GetHitsData(2)->Fill(AcoHit->AzimuthAngle());
-                                GetHitsData(3)->Fill(AcoHit->Px());
-                                GetHitsData(4)->Fill(AcoHit->Py());
-                                GetHitsData(5)->Fill(AcoHit->Pz());
-                                GetHitsData(6)->Fill(TMath::Sqrt( (AcoHit->Px())*(AcoHit->Px())+
-                                             (AcoHit->Py())*(AcoHit->Py())));
-			        if((AcoHit->Py()) != 0.0 ) GetHitsData(7)->Fill(TMath::ATan(AcoHit->Px()/AcoHit->Py()));
-				GetHitsData(8)->Fill( (Float_t)(AcoHit->X()),(Float_t)(AcoHit->Y()) );
-				GetHitsData(9)->Fill( (Float_t)(AcoHit->X()),(Float_t)(AcoHit->Z()) );
-				GetHitsData(10)->Fill( (Float_t)(AcoHit->Y()),(Float_t)(AcoHit->Z()) );
-				GetHitsData(11)->Fill( (Float_t)(AcoHit->AzimuthAngle()),
-                                (Float_t)(AcoHit->PolarAngle()));
-                        }
-                }
-        }
+	TClonesArray * hits = new TClonesArray("AliACORDEhit",1000);
+	TBranch * branch = hitTree->GetBranch("ACORDE");
+	if (!branch)
+	{
+		AliWarning("ACORDE branch in Hit Tree not found");
+	}else
+	{
+		if (branch)
+		{
+			branch->SetAddress(&hits);
+		}else
+		{
+			AliError("Branch ACORDE hit not found");
+			exit(111);
+		}
+		Int_t ntracks = (Int_t)hitTree->GetEntries();
+		if (ntracks<=0) return;
+		for(Int_t track=0;track<ntracks;track++)
+		{
+			branch->GetEntry(track);
+			Int_t nhits = hits->GetEntriesFast();
+			for(Int_t ihit=1;ihit<=nhits;ihit++)
+			{
+				AliACORDEhit *AcoHit = (AliACORDEhit*) hits->UncheckedAt(ihit);
+				if(!AcoHit)
+				{
+					AliError("The unchecked hit doesn't exist");
+					break;
+				}
+				GetHitsData(0)->Fill(AcoHit->GetModule()-1);
+			}
+		}
+	}
 
 }
 //____________________________________________________________________________
