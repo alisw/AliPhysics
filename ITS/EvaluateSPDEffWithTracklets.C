@@ -160,7 +160,7 @@ void EvaluateSPDEffWithTracklets(Char_t* dir=".", Bool_t mc=kTRUE, Bool_t bckg=k
    runLoader->UnloadAll();
    delete runLoader;
 
-if(trackleterSPDEff->GetMC()) trackleterSPDEff->SavePredictionMC();
+if(trackleterSPDEff->GetMC()) trackleterSPDEff->SavePredictionMC("TrackletsMCpred.root");
 if(!trackleterSPDEff->WriteHistosToFile()) printf("cannot write histos to file \n");
 //trackleterSPDEff->GetPlaneEff()->WriteIntoCDB();
 const char* name="AliITSPlaneEffSPDtracklet.root";

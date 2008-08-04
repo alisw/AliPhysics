@@ -1029,6 +1029,52 @@ for(Int_t i=0; i<1200; i++) {
 }
 return;
 }
+//_________________________________________________________________
+void AliITSTrackleterSPDEff::DeletePredictionMC() {
+//
+// this method deallocate memory for the MC related informations
+// all the counters are set to 0
+//
+//
+if(fMC) {AliInfo("This method works only if fMC=kTRUE"); return;}
+if(fPredictionPrimary) {
+  delete fPredictionPrimary; fPredictionPrimary=0;
+}
+if(fPredictionSecondary) {
+  delete fPredictionSecondary; fPredictionSecondary=0;
+}
+if(fClusterPrimary) {
+  delete fClusterPrimary; fClusterPrimary=0;
+}
+if(fClusterSecondary) {
+  delete fClusterSecondary; fClusterSecondary=0;
+}
+if(fSuccessPP) {
+  delete fSuccessPP; fSuccessPP=0;
+}
+if(fSuccessTT) {
+  delete fSuccessTT; fSuccessTT=0;
+}
+if(fSuccessS) {
+  delete fSuccessS; fSuccessS=0;
+}
+if(fSuccessP) {
+  delete fSuccessP; fSuccessP=0;
+}
+if(fFailureS) {
+  delete fFailureS; fFailureS=0;
+}
+if(fFailureP) {
+  delete fFailureP; fFailureP=0;
+}
+if(fRecons) {
+  delete fRecons; fRecons=0;
+}
+if(fNonRecons) {
+  delete fNonRecons; fNonRecons=0;
+}
+return;
+}
 //______________________________________________________________________
 Int_t AliITSTrackleterSPDEff::GetPredictionPrimary(const UInt_t key) const {
 //
@@ -1234,27 +1280,32 @@ void AliITSTrackleterSPDEff::ReadAscii(istream *is){
     // Return:
     //   none.
 
+    Bool_t tmp= fMC;
     *is >> fPhiWindowL1 >> fZetaWindowL1 >> fPhiWindow >> fZetaWindow 
         >> fOnlyOneTrackletPerC1 >> fOnlyOneTrackletPerC2  
         >> fUpdateOncePerEventPlaneEff >> fReflectClusterAroundZAxisForLayer0
         >> fReflectClusterAroundZAxisForLayer1;
+    //if(!fMC) {AliInfo("Reading only cuts, no MC info available");return;}
     *is >> fMC;
-    if(!fMC) {AliInfo("Reading only cuts, no MC info available");return;}
-    *is >> fUseOnlyPrimaryForPred >> fUseOnlySecondaryForPred
-        >> fUseOnlySameParticle   >> fUseOnlyDifferentParticle
-        >> fUseOnlyStableParticle;
-    for(Int_t i=0;i<1200;i++) *is >> fPredictionPrimary[i] ;
-    for(Int_t i=0;i<1200;i++) *is >> fPredictionSecondary[i] ;
-    for(Int_t i=0;i<1200;i++) *is >> fClusterPrimary[i] ;
-    for(Int_t i=0;i<1200;i++) *is >> fClusterSecondary[i] ;
-    for(Int_t i=0;i<1200;i++) *is >> fSuccessPP[i] ;
-    for(Int_t i=0;i<1200;i++) *is >> fSuccessTT[i] ;
-    for(Int_t i=0;i<1200;i++) *is >> fSuccessS[i] ;
-    for(Int_t i=0;i<1200;i++) *is >> fSuccessP[i] ;
-    for(Int_t i=0;i<1200;i++) *is >> fFailureS[i] ;
-    for(Int_t i=0;i<1200;i++) *is >> fFailureP[i] ;
-    for(Int_t i=0;i<1200;i++) *is >> fRecons[i] ;
-    for(Int_t i=0;i<1200;i++) *is >> fNonRecons[i] ;
+    if(!fMC) {AliInfo("Reading only cuts, no MC info"); if(tmp) SetMC(kFALSE); }
+    else {
+      if(!tmp) {AliInfo("Calling SetMC() to read this file wtih MC info"); SetMC();}
+      *is >> fUseOnlyPrimaryForPred >> fUseOnlySecondaryForPred
+          >> fUseOnlySameParticle   >> fUseOnlyDifferentParticle
+          >> fUseOnlyStableParticle;
+      for(Int_t i=0;i<1200;i++) *is >> fPredictionPrimary[i] ;
+      for(Int_t i=0;i<1200;i++) *is >> fPredictionSecondary[i] ;
+      for(Int_t i=0;i<1200;i++) *is >> fClusterPrimary[i] ;
+      for(Int_t i=0;i<1200;i++) *is >> fClusterSecondary[i] ;
+      for(Int_t i=0;i<1200;i++) *is >> fSuccessPP[i] ;
+      for(Int_t i=0;i<1200;i++) *is >> fSuccessTT[i] ;
+      for(Int_t i=0;i<1200;i++) *is >> fSuccessS[i] ;
+      for(Int_t i=0;i<1200;i++) *is >> fSuccessP[i] ;
+      for(Int_t i=0;i<1200;i++) *is >> fFailureS[i] ;
+      for(Int_t i=0;i<1200;i++) *is >> fFailureP[i] ;
+      for(Int_t i=0;i<1200;i++) *is >> fRecons[i] ;
+      for(Int_t i=0;i<1200;i++) *is >> fNonRecons[i] ;
+    } 
     return;
 }
 //______________________________________________________________________
@@ -1297,10 +1348,79 @@ void AliITSTrackleterSPDEff::SavePredictionMC(TString filename) const {
 // Output: none
 //
 //
- if(!fMC) {CallWarningMC(); return;}
- ofstream out(filename.Data(),ios::out | ios::binary);
- out << *this;
- out.close();
+ //if(!fMC) {CallWarningMC(); return;}
+ if (!filename.Contains(".root")) {
+   ofstream out(filename.Data(),ios::out | ios::binary);
+   out << *this;
+   out.close();
+   return;
+ }
+ else {
+    TFile* mcfile = TFile::Open(filename, "RECREATE");
+    TH1F* cuts = new TH1F("cuts", "list of cuts", 10, 0, 10); // TH1I containing cuts 
+    cuts->SetBinContent(1,fPhiWindowL1);
+    cuts->SetBinContent(2,fZetaWindowL1);
+    cuts->SetBinContent(3,fPhiWindow);
+    cuts->SetBinContent(4,fZetaWindow);
+    cuts->SetBinContent(5,fOnlyOneTrackletPerC1);
+    cuts->SetBinContent(6,fOnlyOneTrackletPerC2);
+    cuts->SetBinContent(7,fUpdateOncePerEventPlaneEff);
+    cuts->SetBinContent(8,fReflectClusterAroundZAxisForLayer0);
+    cuts->SetBinContent(9,fReflectClusterAroundZAxisForLayer1);
+    cuts->SetBinContent(10,fMC);
+    cuts->Write();
+    delete cuts;
+    if(!fMC) {AliInfo("Writing only cuts, no MC info");}
+    else {
+      TH1C* mc0 = new TH1C("mc0", "mc cuts", 5, 0, 5);
+      mc0->SetBinContent(1,fUseOnlyPrimaryForPred);
+      mc0->SetBinContent(2,fUseOnlySecondaryForPred);
+      mc0->SetBinContent(3,fUseOnlySameParticle);
+      mc0->SetBinContent(4,fUseOnlyDifferentParticle);
+      mc0->SetBinContent(5,fUseOnlyStableParticle);
+      mc0->Write();
+      delete mc0;
+      TH1I *mc1;
+      mc1 = new TH1I("mc1", "mc info PredictionPrimary", 1200, 0, 1200); 
+      for(Int_t i=0;i<1200;i++)  mc1->SetBinContent(i+1,GetPredictionPrimary(i)) ;
+      mc1->Write();
+      mc1 = new TH1I("mc2", "mc info PredictionSecondary", 1200, 0, 1200); 
+      for(Int_t i=0;i<1200;i++)  mc1->SetBinContent(i+1,GetPredictionSecondary(i)) ;
+      mc1->Write();
+      mc1 = new TH1I("mc3", "mc info ClusterPrimary", 1200, 0, 1200); 
+      for(Int_t i=0;i<1200;i++)  mc1->SetBinContent(i+1,GetClusterPrimary(i)) ;
+      mc1->Write();
+      mc1 = new TH1I("mc4", "mc info ClusterSecondary", 1200, 0, 1200);
+      for(Int_t i=0;i<1200;i++)  mc1->SetBinContent(i+1,GetClusterSecondary(i)) ;
+      mc1->Write();
+      mc1 = new TH1I("mc5", "mc info SuccessPP", 1200, 0, 1200);
+      for(Int_t i=0;i<1200;i++)  mc1->SetBinContent(i+1,GetSuccessPP(i)) ;
+      mc1->Write();
+      mc1 = new TH1I("mc6", "mc info SuccessTT", 1200, 0, 1200);
+      for(Int_t i=0;i<1200;i++)  mc1->SetBinContent(i+1,GetSuccessTT(i)) ;
+      mc1->Write();
+      mc1 = new TH1I("mc7", "mc info SuccessS", 1200, 0, 1200);
+      for(Int_t i=0;i<1200;i++)  mc1->SetBinContent(i+1,GetSuccessS(i)) ;
+      mc1->Write();
+      mc1 = new TH1I("mc8", "mc info SuccessP", 1200, 0, 1200);
+      for(Int_t i=0;i<1200;i++)  mc1->SetBinContent(i+1,GetSuccessP(i)) ;
+      mc1->Write();
+      mc1 = new TH1I("mc9", "mc info FailureS", 1200, 0, 1200);
+      for(Int_t i=0;i<1200;i++)  mc1->SetBinContent(i+1,GetFailureS(i)) ;
+      mc1->Write();
+      mc1 = new TH1I("mc10", "mc info FailureP", 1200, 0, 1200);
+      for(Int_t i=0;i<1200;i++)  mc1->SetBinContent(i+1,GetFailureP(i)) ;
+      mc1->Write();
+      mc1 = new TH1I("mc11", "mc info Recons", 1200, 0, 1200);
+      for(Int_t i=0;i<1200;i++)  mc1->SetBinContent(i+1,GetRecons(i)) ;
+      mc1->Write();
+      mc1 = new TH1I("mc12", "mc info NonRecons", 1200, 0, 1200);
+      for(Int_t i=0;i<1200;i++)  mc1->SetBinContent(i+1,GetNonRecons(i)) ;
+      mc1->Write();
+      delete mc1;
+   }
+   mcfile->Close();
+ }
 return;
 }
 //____________________________________________________________________
@@ -1313,15 +1433,69 @@ void AliITSTrackleterSPDEff::ReadPredictionMC(TString filename) {
 // Output: none
 //
 //
- if(!fMC) {CallWarningMC(); return;}
+ //if(!fMC) {CallWarningMC(); return;}
  if( gSystem->AccessPathName( filename.Data() ) ) {
       AliError( Form( "file (%s) not found", filename.Data() ) );
       return;
    }
 
- ifstream in(filename.Data(),ios::in | ios::binary);
- in >> *this;
- in.close();
+ if (!filename.Contains(".root")) {
+   ifstream in(filename.Data(),ios::in | ios::binary);
+   in >> *this;
+   in.close();
+   return;
+ }
+ else {
+    Bool_t tmp= fMC;
+    TFile *mcfile = TFile::Open(filename);
+    TH1F *cuts = (TH1F*)mcfile->Get("cuts"); 
+    fPhiWindowL1=(Float_t)cuts->GetBinContent(1);
+    fZetaWindowL1=(Float_t)cuts->GetBinContent(2);
+    fPhiWindow=(Float_t)cuts->GetBinContent(3);
+    fZetaWindow=(Float_t)cuts->GetBinContent(4);
+    fOnlyOneTrackletPerC1=(Bool_t)cuts->GetBinContent(5);
+    fOnlyOneTrackletPerC2=(Bool_t)cuts->GetBinContent(6);
+    fUpdateOncePerEventPlaneEff=(Bool_t)cuts->GetBinContent(7);
+    fReflectClusterAroundZAxisForLayer0=(Bool_t)cuts->GetBinContent(8);
+    fReflectClusterAroundZAxisForLayer1=(Bool_t)cuts->GetBinContent(9);
+    fMC=(Bool_t)cuts->GetBinContent(10);
+    if(!fMC) {AliInfo("Reading only cuts, no MC info"); if(tmp) SetMC(kFALSE); }
+    else { // only if file with MC predictions 
+      if(!tmp) {AliInfo("Calling SetMC() to read this file wtih MC info"); SetMC();}
+      TH1C *mc0 = (TH1C*)mcfile->Get("mc0");
+      fUseOnlyPrimaryForPred=(Bool_t)mc0->GetBinContent(1);
+      fUseOnlySecondaryForPred=(Bool_t)mc0->GetBinContent(2);
+      fUseOnlySameParticle=(Bool_t)mc0->GetBinContent(3);
+      fUseOnlyDifferentParticle=(Bool_t)mc0->GetBinContent(4);
+      fUseOnlyStableParticle=(Bool_t)mc0->GetBinContent(5);
+      TH1I *mc1;
+      mc1 =(TH1I*)mcfile->Get("mc1");
+      for(Int_t i=0;i<1200;i++)  fPredictionPrimary[i]=(Int_t)mc1->GetBinContent(i+1) ;
+      mc1 =(TH1I*)mcfile->Get("mc2");
+      for(Int_t i=0;i<1200;i++)  fPredictionSecondary[i]=(Int_t)mc1->GetBinContent(i+1) ;
+      mc1 =(TH1I*)mcfile->Get("mc3");
+      for(Int_t i=0;i<1200;i++)  fClusterPrimary[i]=(Int_t)mc1->GetBinContent(i+1) ;
+      mc1 =(TH1I*)mcfile->Get("mc4");
+      for(Int_t i=0;i<1200;i++)  fClusterSecondary[i]=(Int_t)mc1->GetBinContent(i+1) ;
+      mc1 =(TH1I*)mcfile->Get("mc5");
+      for(Int_t i=0;i<1200;i++)  fSuccessPP[i]=(Int_t)mc1->GetBinContent(i+1) ;
+      mc1 =(TH1I*)mcfile->Get("mc6");
+      for(Int_t i=0;i<1200;i++)  fSuccessTT[i]=(Int_t)mc1->GetBinContent(i+1) ;
+      mc1 =(TH1I*)mcfile->Get("mc7");
+      for(Int_t i=0;i<1200;i++)  fSuccessS[i]=(Int_t)mc1->GetBinContent(i+1) ;
+      mc1 =(TH1I*)mcfile->Get("mc8");
+      for(Int_t i=0;i<1200;i++)  fSuccessP[i]=(Int_t)mc1->GetBinContent(i+1) ;
+      mc1 =(TH1I*)mcfile->Get("mc9");
+      for(Int_t i=0;i<1200;i++)  fFailureS[i]=(Int_t)mc1->GetBinContent(i+1) ;
+      mc1 =(TH1I*)mcfile->Get("mc10");
+      for(Int_t i=0;i<1200;i++)  fFailureP[i]=(Int_t)mc1->GetBinContent(i+1) ;
+      mc1 =(TH1I*)mcfile->Get("mc11");
+      for(Int_t i=0;i<1200;i++)  fRecons[i]=(Int_t)mc1->GetBinContent(i+1) ;
+      mc1 =(TH1I*)mcfile->Get("mc12");
+      for(Int_t i=0;i<1200;i++)  fNonRecons[i]=(Int_t)mc1->GetBinContent(i+1) ;
+    }
+   mcfile->Close();
+ }
  return;
 }
 //____________________________________________________________________

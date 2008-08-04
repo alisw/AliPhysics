@@ -48,7 +48,7 @@ public:
   
   AliITSPlaneEffSPD* GetPlaneEff() const {return fPlaneEffSPD;}  // return a pointer to the AliITSPlaneEffSPD
   
-  void SetMC(Bool_t mc=kTRUE) {fMC=mc; InitPredictionMC(); return;}  // switch on access to MC true 
+  void SetMC(Bool_t mc=kTRUE) {fMC=mc; fMC? InitPredictionMC() : DeletePredictionMC(); return;}  // switch on access to MC true 
   Bool_t GetMC() const {return fMC;}  // check the access to MC true
   // Only for MC: use only "primary" particles (according to PrimaryTrackChecker) for the tracklet prediction
   void SetUseOnlyPrimaryForPred(Bool_t flag=kTRUE) {CallWarningMC(); fUseOnlyPrimaryForPred = flag; } 
@@ -103,7 +103,8 @@ public:
        {return GetRecons(fPlaneEffSPD->GetKey(mod,chip));};
   Int_t GetNonRecons(const UInt_t mod, const UInt_t chip) const
        {return GetNonRecons(fPlaneEffSPD->GetKey(mod,chip));};
-  // methods to write/reas cuts and MC statistics into/from file
+  // methods to write/reas cuts and MC statistics into/from file 
+  // if filename contains  ".root", then data are stored into histograms (->root file). 
   void SavePredictionMC(TString filename="TrackletsMCpred.txt") const;
   void ReadPredictionMC(TString filename="TrackletsMCpred.txt");
   // Print some class info in ascii form to stream (cut values and MC statistics)
@@ -179,7 +180,8 @@ protected:
   Int_t DecayingTrackChecker(Int_t ipart,AliStack* stack=0x0);  // For a primary particle, check if it is stable (see cxx)
 // check if a MC particle is reconstructable
   Bool_t IsReconstructableAt(Int_t layer,Int_t iC,Int_t ipart,Float_t* vtx,AliStack* stack=0x0,TTree* ref=0x0);
-  void InitPredictionMC();
+  void InitPredictionMC(); // allocate memory for cuts and MC data memebers
+  void DeletePredictionMC(); // deallocate memory
   // method to locate a chip using current vtx and polar coordinate od tracklet w.r.t. to vtx (zVtx may not be given)
   Bool_t FindChip(UInt_t &key, Int_t layer,  Float_t* vtx, Float_t thetaVtx, Float_t phiVtx, Float_t zVtx=999.); 
   // method to transform from Global Cilindrical coordinate to local (module) Cartesian coordinate
