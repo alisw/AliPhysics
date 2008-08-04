@@ -97,6 +97,7 @@ void rawqa(const char * filename)
 	}
        	if ( !detectors.IsNull() ) {
 	  //qas->SetMaxEvents(1) ; 
+		qas.SetTasks(Form("%d", AliQA::kRAWS)); 			
 	  detectorsW = qas.Run(detectors, rawReader) ;
 	  qas.Reset() ;
        	} else {
