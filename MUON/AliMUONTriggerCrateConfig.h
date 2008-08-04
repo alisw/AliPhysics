@@ -42,6 +42,11 @@ class AliMUONTriggerCrateConfig : public  TObject {
     Bool_t HasLocalBoard(Int_t localBoardId) const;
     Bool_t AddLocalBoard(Int_t localBoardId);
     
+    // Only for checking data memebres for backward compatibility
+    // These methods should not be called from other code !!!
+    Int_t  GetNofLocalBoardsOld() const;
+    Int_t  GetLocalBoardIdOld(Int_t index) const;
+
   private:
     /// Not implemented
     AliMUONTriggerCrateConfig();
@@ -55,7 +60,11 @@ class AliMUONTriggerCrateConfig : public  TObject {
     UShort_t           fMask;    ///< regional mask
     UShort_t           fMode;    ///< mode operating for crate
     UShort_t           fCoinc;   ///< coincidence mode for crate
-
+    
+    // not used data members kept for backward compatibility
+    UShort_t     fId;            ///< crate number 
+    AliMpArrayI  fLocalBoard;    ///< local board connected to this crate
+ 
   ClassDef(AliMUONTriggerCrateConfig,2)  // The class collectiong electronics properties of DDL
 };
 

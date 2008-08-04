@@ -39,9 +39,18 @@ AliMUONTriggerCrateConfig::AliMUONTriggerCrateConfig(AliMpTriggerCrate* mpTrigge
     fMpCrate(mpTriggerCrate),
     fMask(0),
     fMode(0),
-    fCoinc(0)
+    fCoinc(0),
+    fId(0),
+    fLocalBoard()
 {
 /// Standard constructor for Shuttle + DA
+
+  if ( mpTriggerCrate ) {
+    fId = mpTriggerCrate->GetId(); 
+    for ( Int_t i=0; i<mpTriggerCrate->GetNofLocalBoards(); ++i ) {
+      fLocalBoard.Add(mpTriggerCrate->GetLocalBoardId(i));
+    }  
+  }
 }
 
 
@@ -51,7 +60,9 @@ AliMUONTriggerCrateConfig::AliMUONTriggerCrateConfig(TRootIOCtor* ioCtor)
     fMpCrate(0x0),
     fMask(0),
     fMode(0),
-    fCoinc(0)
+    fCoinc(0),
+    fId(0),
+    fLocalBoard()
 {
 /// Standard constructor for Shuttle + DA
 }
@@ -73,6 +84,7 @@ Bool_t AliMUONTriggerCrateConfig::AddLocalBoard(Int_t localBoardId)
 /// Add local boards with given detElemId.
 /// Return true if the local board was added
 
+  fLocalBoard.Add(localBoardId);
   return fMpCrate->AddLocalBoard(localBoardId);
 }   
 
@@ -101,3 +113,20 @@ Bool_t  AliMUONTriggerCrateConfig::HasLocalBoard(Int_t localBoardId) const
   return fMpCrate->HasLocalBoard(localBoardId); 
 }
 
+
+//______________________________________________________________________________
+Int_t  AliMUONTriggerCrateConfig::GetNofLocalBoardsOld() const 
+{ 
+/// Return the number of local board in this crate from the old
+/// data member. Only for OCDB backward compatibility checking.
+
+  return fLocalBoard.GetSize(); 
+}
+//______________________________________________________________________________
+Int_t  AliMUONTriggerCrateConfig::GetLocalBoardIdOld(Int_t index) const 
+{ 
+/// Return the local board by index (in loop)from the old
+/// data member. Only for OCDB backward compatibility checking.
+
+  return fLocalBoard.GetValue(index); 
+}
