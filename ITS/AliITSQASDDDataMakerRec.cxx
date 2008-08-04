@@ -57,13 +57,14 @@ fkOnline(kMode),
 fLDC(ldc),
 fSDDhTask(0),
 fGenOffset(0),
-fDDLModuleMap(0),
-fTimeBinSize(1)
+fTimeBinSize(1),
+fDDLModuleMap(0)
 {
   //ctor used to discriminate OnLine-Offline analysis
   if(fLDC < 0 || fLDC > 4) {
 	AliError("Error: LDC number out of range; return\n");
   }
+  //fDDLModuleMap=NULL;
 }
 
 //____________________________________________________________________________ 
@@ -74,12 +75,13 @@ fkOnline(qadm.fkOnline),
 fLDC(qadm.fLDC),
 fSDDhTask(qadm.fSDDhTask),
 fGenOffset(qadm.fGenOffset),
-fDDLModuleMap(0),
-fTimeBinSize(1)
+fTimeBinSize(1),
+fDDLModuleMap(0)
 {
   //copy ctor 
   fAliITSQADataMakerRec->SetName((const char*)qadm.fAliITSQADataMakerRec->GetName()) ; 
   fAliITSQADataMakerRec->SetTitle((const char*)qadm.fAliITSQADataMakerRec->GetTitle());
+  fDDLModuleMap=NULL;
 }
 
 //____________________________________________________________________________ 
