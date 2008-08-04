@@ -34,7 +34,20 @@ private:
   virtual const Double_t Check() {return 0.;} ;
   */
 
-  ClassDef(AliACORDEQAChecker,1)  // description 
+//  ClassDef(AliACORDEQAChecker,1)  // description 
+
+ protected:
+
+  virtual const Double_t Check(AliQA::ALITASK_t /*index*/, TObjArray * list) ;
+  virtual const Double_t Check(AliQA::ALITASK_t /*index*/) {return 0.;} ;
+  virtual const Double_t Check() {return 0.;} ;
+  virtual const Double_t Check(TObjArray*) {return 0.;} ;
+
+  
+  ClassDef(AliACORDEQAChecker,2)  // description 
+
+
+
 
 };
 

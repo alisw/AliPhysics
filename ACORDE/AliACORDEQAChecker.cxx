@@ -40,3 +40,51 @@
 ClassImp(AliACORDEQAChecker)
 
 //__________________________________________________________________
+
+const Double_t AliACORDEQAChecker::Check(AliQA::ALITASK_t /*index*/, TObjArray * list)
+{
+
+
+// Super-basic check on the QA histograms on the input list: 
+  // look whether they are empty!
+  Double_t test = 0.0  ;
+  Int_t count = 0 ; 
+  
+  if (list->GetEntries() == 0){  
+    test = 1. ; // nothing to check
+  }
+  else {
+    TIter next(list) ; 
+    TH1 * hdata ;
+    count = 0 ; 
+    while ( (hdata = dynamic_cast<TH1 *>(next())) ) {
+      if (hdata) { 
+	Double_t rv = 0.;
+	if(hdata->GetEntries()>0)rv=1; 
+	AliInfo(Form("%s -> %f", hdata->GetName(), rv)) ; 
+	count++ ; 
+	test += rv ; 
+      }
+      else{
+	AliError("Data type cannot be processed") ;
+      }
+      
+    }
+    if (count != 0) { 
+      if (test==0) {
+	AliWarning("Histograms are there, but they are all empty: setting flag to kWARNING");
+	test = 0.5;  //upper limit value to set kWARNING flag for a task
+      }
+      else {
+	test /= count ;
+      }
+    }
+  }
+
+  AliInfo(Form("Test Result = %f", test)) ; 
+  return test ; 
+
+
+
+}
+
