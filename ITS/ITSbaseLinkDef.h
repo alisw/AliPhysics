@@ -59,8 +59,11 @@
 #pragma link C++ class  AliITSDriftSpeedArraySDD+;
 #pragma link C++ class  AliITSDDLModuleMapSDD+;
 #pragma link C++ class  AliITSBadChannelsSSD+;
+#pragma link C++ class  AliITSBadChannelsSSDv2+;
 #pragma link C++ class  AliITSGainSSD+;
+#pragma link C++ class  AliITSGainSSDv2+;
 #pragma link C++ class  AliITSNoiseSSD+;
+#pragma link C++ class  AliITSNoiseSSDv2+;
 #pragma link C++ class  AliITSHandleDaSSD+;
 #pragma link C++ class  AliITSModuleDaSSD+;
 #pragma link C++ class  AliITSChannelDaSSD+;
@@ -96,6 +99,7 @@
 #pragma link C++ class AliITSIntMap+;
 #pragma link C++ class AliITSIntMapNode+;
 #pragma link C++ class AliITSPedestalSSD+;
+#pragma link C++ class AliITSPedestalSSDv2+;
 #pragma link C++ class AliITSSurveyToAlignSSD+;
 
 #endif

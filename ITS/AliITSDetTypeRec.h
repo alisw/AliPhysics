@@ -31,7 +31,9 @@ class AliITSClusterFinder;
 class AliITSRawCluster;
 class AliITSRecPoint;
 class AliRawReader;
-
+class AliITSGainSSDv2;
+class AliITSBadChannelsSSDv2;
+class AliITSNoiseSSDv2;
 
 class AliITSDetTypeRec : public TObject {
   public:
@@ -101,6 +103,14 @@ class AliITSDetTypeRec : public TObject {
     AliITSDetTypeRec(const AliITSDetTypeRec& rec);
     AliITSDetTypeRec& operator=(const AliITSDetTypeRec &source);
  
+    //conversion of the old SSD calibration objects tothe new ones
+    void ReadOldSSDNoise(TObjArray *array, 
+			 AliITSNoiseSSDv2 *noiseSSD);
+    void ReadOldSSDBadChannels(TObjArray *array, 
+			       AliITSBadChannelsSSDv2 *badChannelsSSD);
+    void ReadOldSSDGain(TObjArray *array, 
+			AliITSGainSSDv2 *gainSSD);
+
     //    virtual void SetLoader(AliITSLoader* loader) {fLoader=loader;}
     static const Int_t fgkNdettypes;          // number of det. types
     static const Int_t fgkDefaultNModulesSPD; // Total numbers of SPD modules by default

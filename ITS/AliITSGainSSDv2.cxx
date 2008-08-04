@@ -1,5 +1,5 @@
 /**************************************************************************
- * Copyright(c) 2007-9, ALICE Experiment at CERN, All rights reserved. *
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                         *
  * Author: The ALICE Off-line Project.                                    *
  * Contributors are mentioned in the code where appropriate.              *
@@ -13,46 +13,52 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
 
-#include "AliITSPedestalSSD.h"
+#include "AliITSGainSSDv2.h"
+#include <cstring>
 
 //////////////////////////////////////////////////////
 // Author: Enrico Fragiacomo
-// Date: 12/12/2007
+// Date: 23/08/2007
+// Modified: 08/07/2008
 //                                                  //
 //////////////////////////////////////////////////////
 
-ClassImp(AliITSPedestalSSD)
+//const Int_t AliITSGainSSD::fgkDefaultNModulesSSD = 1698;
+//const Int_t AliITSGainSSD::fgkDefaultNStripsSSD = 768;
 
+ClassImp(AliITSGainSSDv2)
+  
 //______________________________________________________________________
-AliITSPedestalSSD::AliITSPedestalSSD():
-fMod(0),
-fPedP(0),
-fPedN(0) {
-    // Default Constructor
+  AliITSGainSSDv2::AliITSGainSSDv2() 
+{
+    // Default Constructor  
+    for(Int_t i=0; i<2*fgkDefaultNModulesSSD*fgkDefaultNStripsSSD; i++) 
+      fGain[i]=0;    
 }
 
 //______________________________________________________________________
-AliITSPedestalSSD::AliITSPedestalSSD(const AliITSPedestalSSD &source): TObject(source),
-fMod(source.fMod),
-fPedP(source.fPedP),
-fPedN(source.fPedN) {
+AliITSGainSSDv2::AliITSGainSSDv2(const AliITSGainSSDv2 &source): 
+  TObject(source)
+{
     // copy Constructor
+  memcpy(fGain,source.fGain,
+	 2*fgkDefaultNModulesSSD*fgkDefaultNStripsSSD*sizeof(UShort_t));
 }
+
 //______________________________________________________________________
-AliITSPedestalSSD::~AliITSPedestalSSD(){
+AliITSGainSSDv2::~AliITSGainSSDv2(){
     // destructor
 
 }
 
 //______________________________________________________________________
-AliITSPedestalSSD& AliITSPedestalSSD::operator=(const AliITSPedestalSSD &source) {
+AliITSGainSSDv2& AliITSGainSSDv2::operator=(const AliITSGainSSDv2 &source) {
  // ass. op.
-    if (this == &source)
-      return *this;
-    fMod = source.fMod;
-    fPedP =  source.fMod;
-    fPedN =  source.fMod;
+    if (this == &source)return *this;
+
+    memcpy(fGain,source.fGain,
+	 2*fgkDefaultNModulesSSD*fgkDefaultNStripsSSD*sizeof(UShort_t));
+    
     return *this;
 }

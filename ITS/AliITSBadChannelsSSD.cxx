@@ -1,6 +1,6 @@
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
+ *                                                                         *
  * Author: The ALICE Off-line Project.                                    *
  * Contributors are mentioned in the code where appropriate.              *
  *                                                                        *
@@ -15,48 +15,21 @@
 
 
 #include "AliITSBadChannelsSSD.h"
-#include <cstring>
-
-//////////////////////////////////////////////////////
-// Author: Enrico Fragiacomo
-// Date: 23/08/2007
-// Modified: 08/07/2008
-//                                                  //
-//////////////////////////////////////////////////////
-
-//const Int_t AliITSBadChannelsSSD::fgkDefaultNModulesSSD = 1698;
-//const Int_t AliITSBadChannelsSSD::fgkDefaultNStripsSSD = 768;
 
 ClassImp(AliITSBadChannelsSSD)
-  
-//______________________________________________________________________
-  AliITSBadChannelsSSD::AliITSBadChannelsSSD()
-    // Default Constructor 
-{ 
-    for(Int_t i=0; i<2*fgkDefaultNModulesSSD*fgkDefaultNStripsSSD; i++) 
-      fBadChannels[i]=0;    
-  }
 
 //______________________________________________________________________
-AliITSBadChannelsSSD::AliITSBadChannelsSSD(const AliITSBadChannelsSSD &source): 
-  TObject(source)  
-{
-    // copy Constructor
-  memcpy(fBadChannels,source.fBadChannels,
-	 2*fgkDefaultNModulesSSD*fgkDefaultNStripsSSD*sizeof(Char_t));
+AliITSBadChannelsSSD::AliITSBadChannelsSSD():
+fMod(0),
+fBadNChannelsList(0),
+fBadPChannelsList(0){
+    // Default Constructor
+
 }
 
 //______________________________________________________________________
 AliITSBadChannelsSSD::~AliITSBadChannelsSSD(){
     // destructor
+
 }
 
-//______________________________________________________________________
-AliITSBadChannelsSSD& AliITSBadChannelsSSD::operator=(const AliITSBadChannelsSSD &source) {
- // ass. op.
-    if (this == &source)return *this;
-    memcpy(fBadChannels,source.fBadChannels,
-	 2*fgkDefaultNModulesSSD*fgkDefaultNStripsSSD*sizeof(Char_t));
-    
-    return *this;
-}

@@ -30,6 +30,9 @@ class AliITSsimulation;
 class AliITSsegmentation;
 class AliITSresponse;
 class AliITSCalibrationSSD;
+class AliITSGainSSDv2;
+class AliITSBadChannelsSSDv2;
+class AliITSNoiseSSDv2;
 
 class AliITSDetTypeSim : public TObject {
  public:
@@ -106,6 +109,15 @@ class AliITSDetTypeSim : public TObject {
     
  private:
     void SetDefaultSegmentation(Int_t idet);  // creates def segm.
+
+    //conversion of the old SSD calibration objects tothe new ones
+    void ReadOldSSDNoise(TObjArray *array, 
+			 AliITSNoiseSSDv2 *noiseSSD);
+    void ReadOldSSDBadChannels(TObjArray *array, 
+			       AliITSBadChannelsSSDv2 *badChannelsSSD);
+    void ReadOldSSDGain(TObjArray *array, 
+			AliITSGainSSDv2 *gainSSD);
+
     static const Int_t fgkNdettypes;          // number of different det. types
     static const Int_t fgkDefaultNModulesSPD; // Total numbers of SPD modules by default
     static const Int_t fgkDefaultNModulesSDD; // Total numbers of SDD modules by default

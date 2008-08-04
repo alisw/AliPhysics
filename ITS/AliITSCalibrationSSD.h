@@ -3,10 +3,10 @@
 /* Copyright(c) 2007-2009, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */ 
 #include "AliITSCalibration.h"
-#include "AliITSNoiseSSD.h"
-#include "AliITSPedestalSSD.h"
-#include "AliITSGainSSD.h"
-#include "AliITSBadChannelsSSD.h"
+#include "AliITSNoiseSSDv2.h"
+#include "AliITSPedestalSSDv2.h"
+#include "AliITSGainSSDv2.h"
+#include "AliITSBadChannelsSSDv2.h"
 #include "AliITSresponseSSD.h"
 #include "TArrayF.h"
 #include "TArrayI.h"
@@ -31,17 +31,17 @@ class AliITSCalibrationSSD : public AliITSCalibration {
 
     Float_t GetNoiseP(Int_t n) {return fNoise->GetNoiseP(fModule,n); }
     Float_t GetNoiseN(Int_t n) {return fNoise->GetNoiseN(fModule,n); }
-    void SetNoise( AliITSNoiseSSD* noise) {fNoise=noise;}
+    void SetNoise( AliITSNoiseSSDv2* noise) {fNoise=noise;}
 
     Float_t GetPedestalP(Int_t n) {return fPedestal->GetPedestalP(fModule,n); }
     Float_t GetPedestalN(Int_t n) {return fPedestal->GetPedestalN(fModule,n); }
-    void SetPedestal( AliITSPedestalSSD* pedestal) {fPedestal=pedestal;}
+    void SetPedestal( AliITSPedestalSSDv2* pedestal) {fPedestal=pedestal;}
 
     Float_t GetGainP(Int_t n) {return fGain->GetGainP(fModule,n); }
     Float_t GetGainN(Int_t n) {return fGain->GetGainN(fModule,n); }
     void SetGainP(Int_t n, Float_t value) {fGain->AddGainP(fModule,n,value);}
     void SetGainN(Int_t n, Float_t value) {fGain->AddGainN(fModule,n,value);}
-    void SetGain( AliITSGainSSD* gain) {fGain=gain;}
+    void SetGain( AliITSGainSSDv2* gain) {fGain=gain;}
 
     void   SetBad() {
       fIsBad = kTRUE;
@@ -58,7 +58,7 @@ class AliITSCalibrationSSD : public AliITSCalibration {
     Int_t ChipsPerModule() const{return fgkChipsPerModule;} // # chips/module
     Int_t ChannelsPerChip() const{ return fgkChannelsPerChip;}// #channels/chip
 
-    void SetBadChannels( AliITSBadChannelsSSD* badchannels) {
+    void SetBadChannels( AliITSBadChannelsSSDv2* badchannels) {
       fBadChannels=badchannels;}
     Char_t GetBadPChannel(Int_t n) {
       return fBadChannels->GetBadChannelP(fModule,n); }
@@ -127,10 +127,10 @@ protected:
     Int_t   fNPar;            // Number of detector param 
     Double_t *fDetPar;         //[fNPar] Array of parameters
 
-    AliITSNoiseSSD *fNoise;
-    AliITSPedestalSSD *fPedestal;
-    AliITSGainSSD *fGain;
-    AliITSBadChannelsSSD *fBadChannels;
+    AliITSNoiseSSDv2 *fNoise;
+    AliITSPedestalSSDv2 *fPedestal;
+    AliITSGainSSDv2 *fGain;
+    AliITSBadChannelsSSDv2 *fBadChannels;
 
     Bool_t   fIsBad;                         // module is dead or alive ?
     Bool_t   fIsChipBad[fgkChipsPerModule];  // chip is dead or alive ?
@@ -139,6 +139,6 @@ protected:
     AliITSCalibrationSSD(const AliITSCalibrationSSD &source); // copy constructor
     AliITSCalibrationSSD& operator=(const AliITSCalibrationSSD &source); // ass. op.
 
-    ClassDef(AliITSCalibrationSSD,3) //Response class for SSD
+    ClassDef(AliITSCalibrationSSD,4) //Response class for SSD
       };
 #endif

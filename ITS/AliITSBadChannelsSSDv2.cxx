@@ -1,6 +1,6 @@
 /**************************************************************************
- * Copyright(c) 2007-9, ALICE Experiment at CERN, All rights reserved. *
- *                                                                         *
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
  * Contributors are mentioned in the code where appropriate.              *
  *                                                                        *
@@ -13,46 +13,50 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
 
-#include "AliITSPedestalSSD.h"
+#include "AliITSBadChannelsSSDv2.h"
+#include <cstring>
 
 //////////////////////////////////////////////////////
 // Author: Enrico Fragiacomo
-// Date: 12/12/2007
+// Date: 23/08/2007
+// Modified: 08/07/2008
 //                                                  //
 //////////////////////////////////////////////////////
 
-ClassImp(AliITSPedestalSSD)
+//const Int_t AliITSBadChannelsSSD::fgkDefaultNModulesSSD = 1698;
+//const Int_t AliITSBadChannelsSSD::fgkDefaultNStripsSSD = 768;
+
+ClassImp(AliITSBadChannelsSSDv2)
+  
+//______________________________________________________________________
+  AliITSBadChannelsSSDv2::AliITSBadChannelsSSDv2()
+    // Default Constructor 
+{ 
+    for(Int_t i=0; i<2*fgkDefaultNModulesSSD*fgkDefaultNStripsSSD; i++) 
+      fBadChannels[i]=0;    
+  }
 
 //______________________________________________________________________
-AliITSPedestalSSD::AliITSPedestalSSD():
-fMod(0),
-fPedP(0),
-fPedN(0) {
-    // Default Constructor
-}
-
-//______________________________________________________________________
-AliITSPedestalSSD::AliITSPedestalSSD(const AliITSPedestalSSD &source): TObject(source),
-fMod(source.fMod),
-fPedP(source.fPedP),
-fPedN(source.fPedN) {
+AliITSBadChannelsSSDv2::AliITSBadChannelsSSDv2(const AliITSBadChannelsSSDv2 &source): 
+  TObject(source)  
+{
     // copy Constructor
+  memcpy(fBadChannels,source.fBadChannels,
+	 2*fgkDefaultNModulesSSD*fgkDefaultNStripsSSD*sizeof(Char_t));
 }
+
 //______________________________________________________________________
-AliITSPedestalSSD::~AliITSPedestalSSD(){
+AliITSBadChannelsSSDv2::~AliITSBadChannelsSSDv2(){
     // destructor
-
 }
 
 //______________________________________________________________________
-AliITSPedestalSSD& AliITSPedestalSSD::operator=(const AliITSPedestalSSD &source) {
+AliITSBadChannelsSSDv2& AliITSBadChannelsSSDv2::operator=(const AliITSBadChannelsSSDv2 &source) {
  // ass. op.
-    if (this == &source)
-      return *this;
-    fMod = source.fMod;
-    fPedP =  source.fMod;
-    fPedN =  source.fMod;
+    if (this == &source)return *this;
+    memcpy(fBadChannels,source.fBadChannels,
+	 2*fgkDefaultNModulesSSD*fgkDefaultNStripsSSD*sizeof(Char_t));
+    
     return *this;
 }

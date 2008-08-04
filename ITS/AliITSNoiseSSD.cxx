@@ -15,36 +15,30 @@
 
 
 #include "AliITSNoiseSSD.h"
-#include <cstring>
 
 //////////////////////////////////////////////////////
 // Author: Enrico Fragiacomo
 // Date: 23/08/2007
-// Modified: 08/07/2008
 //                                                  //
 //////////////////////////////////////////////////////
 
-//const Int_t AliITSNoiseSSD::fgkDefaultNModulesSSD = 1698;
-//const Int_t AliITSNoiseSSD::fgkDefaultNStripsSSD = 768;
-
 ClassImp(AliITSNoiseSSD)
-  
+
 //______________________________________________________________________
-  AliITSNoiseSSD::AliITSNoiseSSD() {
-  // Default Constructor
-  for(Int_t i=0; i<2*fgkDefaultNModulesSSD*fgkDefaultNStripsSSD; i++) 
-    fNois[i]=0;    
+AliITSNoiseSSD::AliITSNoiseSSD():
+fMod(0),
+fNoisP(0),
+fNoisN(0) {
+    // Default Constructor
 }
 
 //______________________________________________________________________
-AliITSNoiseSSD::AliITSNoiseSSD(const AliITSNoiseSSD &source): 
-  TObject(source)  
-{
+AliITSNoiseSSD::AliITSNoiseSSD(const AliITSNoiseSSD &source): TObject(source),
+fMod(source.fMod),
+fNoisP(source.fNoisP),
+fNoisN(source.fNoisN) {
     // copy Constructor
-  memcpy(fNois,source.fNois,
-	 2*fgkDefaultNModulesSSD*fgkDefaultNStripsSSD*sizeof(Float_t));
 }
-
 //______________________________________________________________________
 AliITSNoiseSSD::~AliITSNoiseSSD(){
     // destructor
@@ -56,9 +50,8 @@ AliITSNoiseSSD& AliITSNoiseSSD::operator=(const AliITSNoiseSSD &source) {
  // ass. op.
     if (this == &source)
       return *this;
-
-    memcpy(fNois,source.fNois,
-	 2*fgkDefaultNModulesSSD*fgkDefaultNStripsSSD*sizeof(Float_t));
-    
+    fMod = source.fMod;
+    fNoisP =  source.fMod;
+    fNoisN =  source.fMod;
     return *this;
 }

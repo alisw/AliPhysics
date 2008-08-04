@@ -10,6 +10,8 @@
 #include "TObject.h"
 #include "TArrayS.h"
 #include "AliITSModuleDaSSD.h"
+#include "AliITSBadChannelsSSDv2.h"
+#include "AliITSNoiseSSDv2.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 ///
@@ -64,10 +66,10 @@ class AliITSHandleDaSSD : public TObject {
                                {if ((fModules) && (index < fNumberOfModules)) return fModules[index]; else return NULL;}
     Int_t GetModuleIndex (const UChar_t ddlID, const UChar_t ad, const UChar_t adc) const;
     AliITSChannelDaSSD*    GetStrip (const UChar_t ddlID, const UChar_t ad, const UChar_t adc, const UShort_t stripID) const;
-    AliITSNoiseSSD*        GetCalibrationOCDBNoise()  const;
-    AliITSBadChannelsSSD*  GetCalibrationBadChannels() const;
+    AliITSNoiseSSDv2*        GetCalibrationOCDBNoise()  const;
+    AliITSBadChannelsSSDv2*  GetCalibrationBadChannels() const;
     Bool_t      SaveCalibrationSSDLDC(Char_t*& dafname);
-    Int_t       MergeBadChannels(AliITSBadChannelsSSD*& bcl) const;    
+    Int_t       MergeBadChannels(AliITSBadChannelsSSDv2*& bcl) const;    
     
     void    SetModIndProcessed(Int_t mi) {fModIndProcessed = mi;}
     void    SetModIndRead (Int_t mr)  {fModIndRead = mr;}
@@ -137,7 +139,7 @@ class AliITSHandleDaSSD : public TObject {
     TArrayS               fEqIndex;               //! index array of equipmnts (DDLs).
     Long_t                fNumberOfEvents;        // Number of physics or calibration events in raw data file fRawDataFileName
 
-    AliITSBadChannelsSSD *fBadChannelsList;       //! List of bad channels: static or created on base of calculated noise and pedestal
+    AliITSBadChannelsSSDv2 *fBadChannelsList;       //! List of bad channels: static or created on base of calculated noise and pedestal
     Int_t                *fDDLModuleMap;          //! DDL map  
     TArrayS               fALaddersOff;           //! Lisst of ladders of side A that are off and should be suppressed
     TArrayS               fCLaddersOff;           //! Lisst of ladders of side C that are off and should be suppressed
@@ -158,7 +160,7 @@ class AliITSHandleDaSSD : public TObject {
                                                                      (signal <= AliITSChannelDaSSD::GetUnderflowConst())); }
     string   ConvBase(const unsigned long value, const long base) const;
 
-    ClassDef(AliITSHandleDaSSD, 6)
+    ClassDef(AliITSHandleDaSSD, 7)
 
 };
 

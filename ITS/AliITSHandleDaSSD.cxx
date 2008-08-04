@@ -34,9 +34,9 @@
 #include "TFile.h"
 #include "TString.h"
 #include "AliLog.h"
-#include "AliITSNoiseSSD.h"
-#include "AliITSPedestalSSD.h"
-#include "AliITSBadChannelsSSD.h"
+#include "AliITSNoiseSSDv2.h"
+#include "AliITSPedestalSSDv2.h"
+#include "AliITSBadChannelsSSDv2.h"
 #include "AliITSRawStreamSSD.h"
 #include "AliRawReaderDate.h"
 #include "AliITSRawStreamSSD.h"
@@ -461,7 +461,7 @@ Bool_t AliITSHandleDaSSD::ReadStaticBadChannelsMap(const Char_t *filename)
     AliWarning(Form("Error reading file %s with Static Bad Channels Map!", filename));
     return kFALSE;
   }
-  bcfile->GetObject("AliITSBadChannelsSSD;1", fBadChannelsList);
+  bcfile->GetObject("AliITSBadChannelsSSDv2;1", fBadChannelsList);
   if (!fBadChannelsList) {
     AliWarning("Error fBadChannelsList == NULL!");
     bcfile->Close();
@@ -902,16 +902,16 @@ Short_t AliITSHandleDaSSD::RetrieveModuleId(const UChar_t ddlID, const UChar_t a
 
 
 //______________________________________________________________________________
-AliITSNoiseSSD* AliITSHandleDaSSD::GetCalibrationOCDBNoise() const
+AliITSNoiseSSDv2* AliITSHandleDaSSD::GetCalibrationOCDBNoise() const
 {
 // Fill in the array for OCDB 
-  AliITSNoiseSSD         *ldcn = NULL;
+  AliITSNoiseSSDv2         *ldcn = NULL;
   AliITSModuleDaSSD      *module = NULL;
   AliITSChannelDaSSD     *strip = NULL; 
   if (!fModules) return NULL;
-  ldcn = new AliITSNoiseSSD;
+  ldcn = new AliITSNoiseSSDv2;
   if (!ldcn) {
-    AliError("Error allocation mamory for AliITSBadChannelsSSD object, return NULL!");
+    AliError("Error allocation mamory for AliITSBadChannelsSSDv2 object, return NULL!");
     return NULL;
   }
   for (Int_t i = 0; i < fNumberOfModules; i++) {
@@ -931,16 +931,16 @@ AliITSNoiseSSD* AliITSHandleDaSSD::GetCalibrationOCDBNoise() const
 
 
 //______________________________________________________________________________
-AliITSBadChannelsSSD* AliITSHandleDaSSD::GetCalibrationBadChannels() const
+AliITSBadChannelsSSDv2* AliITSHandleDaSSD::GetCalibrationBadChannels() const
 {
 // Fill in the TObjArray with the list of bad channels 
-  AliITSBadChannelsSSD   *ldcbc = NULL;
+  AliITSBadChannelsSSDv2   *ldcbc = NULL;
   AliITSModuleDaSSD      *module = NULL;
   AliITSChannelDaSSD     *strip = NULL; 
   if (!fModules) return NULL;
-  ldcbc = new AliITSBadChannelsSSD;
+  ldcbc = new AliITSBadChannelsSSDv2;
   if (!ldcbc) {
-    AliError("Error allocation mamory for AliITSBadChannelsSSD object, return NULL!");
+    AliError("Error allocation mamory for AliITSBadChannelsSSDv2 object, return NULL!");
     return NULL;
   }
   for (Int_t i = 0; i < fNumberOfModules; i++) {
@@ -965,17 +965,17 @@ AliITSBadChannelsSSD* AliITSHandleDaSSD::GetCalibrationBadChannels() const
 Bool_t AliITSHandleDaSSD::SaveCalibrationSSDLDC(Char_t*& dafname)
 {
 // Save Calibration data locally
-  AliITSBadChannelsSSD   *ldcbc = NULL;
-  AliITSPedestalSSD      *ldcp = NULL;
-  AliITSNoiseSSD         *ldcn = NULL;
+  AliITSBadChannelsSSDv2   *ldcbc = NULL;
+  AliITSPedestalSSDv2      *ldcp = NULL;
+  AliITSNoiseSSDv2         *ldcn = NULL;
   AliITSModuleDaSSD      *module = NULL;
   AliITSChannelDaSSD     *strip = NULL; 
   Char_t         *tmpfname;
   TString         dadatafilename("");
   if (!fModules) return kFALSE;
-  ldcn = new AliITSNoiseSSD;
-  ldcp = new AliITSPedestalSSD;
-  ldcbc = new AliITSBadChannelsSSD;
+  ldcn = new AliITSNoiseSSDv2;
+  ldcp = new AliITSPedestalSSDv2;
+  ldcbc = new AliITSBadChannelsSSDv2;
   if ((!ldcn) || (!ldcp) || (!ldcp)) {
     AliError("Error allocation mamory for calibration objects, return kFALSE!");
     return kFALSE;
@@ -1030,7 +1030,7 @@ Bool_t AliITSHandleDaSSD::SaveCalibrationSSDLDC(Char_t*& dafname)
 
 
 //______________________________________________________________________________
-Int_t AliITSHandleDaSSD::MergeBadChannels(AliITSBadChannelsSSD*&  bcl) const
+Int_t AliITSHandleDaSSD::MergeBadChannels(AliITSBadChannelsSSDv2*&  bcl) const
 {
 // Merges the statick bad channels list with bad channels got upon calibration
   AliITSModuleDaSSD     *module = 0;

@@ -15,35 +15,21 @@
 
 
 #include "AliITSGainSSD.h"
-#include <cstring>
 
 //////////////////////////////////////////////////////
 // Author: Enrico Fragiacomo
 // Date: 23/08/2007
-// Modified: 08/07/2008
 //                                                  //
 //////////////////////////////////////////////////////
 
-//const Int_t AliITSGainSSD::fgkDefaultNModulesSSD = 1698;
-//const Int_t AliITSGainSSD::fgkDefaultNStripsSSD = 768;
-
 ClassImp(AliITSGainSSD)
-  
-//______________________________________________________________________
-  AliITSGainSSD::AliITSGainSSD() 
-{
-    // Default Constructor  
-    for(Int_t i=0; i<2*fgkDefaultNModulesSSD*fgkDefaultNStripsSSD; i++) 
-      fGain[i]=0;    
-}
 
 //______________________________________________________________________
-AliITSGainSSD::AliITSGainSSD(const AliITSGainSSD &source): 
-  TObject(source)
-{
-    // copy Constructor
-  memcpy(fGain,source.fGain,
-	 2*fgkDefaultNModulesSSD*fgkDefaultNStripsSSD*sizeof(UShort_t));
+AliITSGainSSD::AliITSGainSSD():
+fMod(0),
+fGainP(0),
+fGainN(0) {
+    // Default Constructor
 }
 
 //______________________________________________________________________
@@ -52,13 +38,3 @@ AliITSGainSSD::~AliITSGainSSD(){
 
 }
 
-//______________________________________________________________________
-AliITSGainSSD& AliITSGainSSD::operator=(const AliITSGainSSD &source) {
- // ass. op.
-    if (this == &source)return *this;
-
-    memcpy(fGain,source.fGain,
-	 2*fgkDefaultNModulesSSD*fgkDefaultNStripsSSD*sizeof(UShort_t));
-    
-    return *this;
-}

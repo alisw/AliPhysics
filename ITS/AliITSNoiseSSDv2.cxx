@@ -1,5 +1,5 @@
 /**************************************************************************
- * Copyright(c) 2007-9, ALICE Experiment at CERN, All rights reserved. *
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                         *
  * Author: The ALICE Off-line Project.                                    *
  * Contributors are mentioned in the code where appropriate.              *
@@ -13,46 +13,52 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
 
-#include "AliITSPedestalSSD.h"
+#include "AliITSNoiseSSDv2.h"
+#include <cstring>
 
 //////////////////////////////////////////////////////
 // Author: Enrico Fragiacomo
-// Date: 12/12/2007
+// Date: 23/08/2007
+// Modified: 08/07/2008
 //                                                  //
 //////////////////////////////////////////////////////
 
-ClassImp(AliITSPedestalSSD)
+//const Int_t AliITSNoiseSSD::fgkDefaultNModulesSSD = 1698;
+//const Int_t AliITSNoiseSSD::fgkDefaultNStripsSSD = 768;
 
+ClassImp(AliITSNoiseSSDv2)
+  
 //______________________________________________________________________
-AliITSPedestalSSD::AliITSPedestalSSD():
-fMod(0),
-fPedP(0),
-fPedN(0) {
-    // Default Constructor
+  AliITSNoiseSSDv2::AliITSNoiseSSDv2() {
+  // Default Constructor
+  for(Int_t i=0; i<2*fgkDefaultNModulesSSD*fgkDefaultNStripsSSD; i++) 
+    fNois[i]=0;    
 }
 
 //______________________________________________________________________
-AliITSPedestalSSD::AliITSPedestalSSD(const AliITSPedestalSSD &source): TObject(source),
-fMod(source.fMod),
-fPedP(source.fPedP),
-fPedN(source.fPedN) {
+AliITSNoiseSSDv2::AliITSNoiseSSDv2(const AliITSNoiseSSDv2 &source): 
+  TObject(source)  
+{
     // copy Constructor
+  memcpy(fNois,source.fNois,
+	 2*fgkDefaultNModulesSSD*fgkDefaultNStripsSSD*sizeof(Float_t));
 }
+
 //______________________________________________________________________
-AliITSPedestalSSD::~AliITSPedestalSSD(){
+AliITSNoiseSSDv2::~AliITSNoiseSSDv2(){
     // destructor
 
 }
 
 //______________________________________________________________________
-AliITSPedestalSSD& AliITSPedestalSSD::operator=(const AliITSPedestalSSD &source) {
+AliITSNoiseSSDv2& AliITSNoiseSSDv2::operator=(const AliITSNoiseSSDv2 &source) {
  // ass. op.
     if (this == &source)
       return *this;
-    fMod = source.fMod;
-    fPedP =  source.fMod;
-    fPedN =  source.fMod;
+
+    memcpy(fNois,source.fNois,
+	 2*fgkDefaultNModulesSSD*fgkDefaultNStripsSSD*sizeof(Float_t));
+    
     return *this;
 }

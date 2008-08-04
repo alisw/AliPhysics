@@ -47,6 +47,9 @@
 #include "AliITSDriftSpeedArraySDD.h"
 #include "AliITSDriftSpeedSDD.h"
 #include "AliITSCalibrationSSD.h"
+#include "AliITSNoiseSSDv2.h"
+#include "AliITSGainSSDv2.h"
+#include "AliITSBadChannelsSSDv2.h"
 #include "AliITSNoiseSSD.h"
 #include "AliITSGainSSD.h"
 #include "AliITSBadChannelsSSD.h"
@@ -487,18 +490,55 @@ Bool_t AliITSDetTypeSim::GetCalibration() {
   entrySSD->SetOwner(kTRUE);
   */
 
-  AliITSNoiseSSD *noiseSSD = (AliITSNoiseSSD *)entryNoiseSSD->GetObject();
+  TObject *emptyssd = 0; TString ssdobjectname = 0;
+  AliITSNoiseSSDv2 *noiseSSD = new AliITSNoiseSSDv2();  
+  emptyssd = (TObject *)entryNoiseSSD->GetObject();
+  ssdobjectname = emptyssd->GetName();
+  if(ssdobjectname=="TObjArray") {
+    TObjArray *noiseSSDOld = (TObjArray *)entryNoiseSSD->GetObject();
+    ReadOldSSDNoise(noiseSSDOld, noiseSSD);
+  }
+  else if(ssdobjectname=="AliITSNoiseSSDv2")
+    noiseSSD = (AliITSNoiseSSDv2 *)entryNoiseSSD->GetObject();
   if(!isCacheActive)entryNoiseSSD->SetObject(NULL);
   entryNoiseSSD->SetOwner(kTRUE);
 
-  AliITSGainSSD *gainSSD = (AliITSGainSSD *)entryGainSSD->GetObject();
+  AliITSGainSSDv2 *gainSSD = new AliITSGainSSDv2();
+  emptyssd = (TObject *)entryGainSSD->GetObject();
+  ssdobjectname = emptyssd->GetName();
+  if(ssdobjectname=="Gain") {
+    TObjArray *gainSSDOld = (TObjArray *)entryGainSSD->GetObject();
+    ReadOldSSDGain(gainSSDOld, gainSSD);
+  }
+  else if(ssdobjectname=="AliITSGainSSDv2")
+    gainSSD = (AliITSGainSSDv2 *)entryGainSSD->GetObject();
   if(!isCacheActive)entryGainSSD->SetObject(NULL);
   entryGainSSD->SetOwner(kTRUE);
 
-  AliITSBadChannelsSSD *badchannelsSSD = 
-    (AliITSBadChannelsSSD *)entryBadChannelsSSD->GetObject();
+  AliITSBadChannelsSSDv2 *badChannelsSSD = new AliITSBadChannelsSSDv2();
+  emptyssd = (TObject *)entryBadChannelsSSD->GetObject();
+  ssdobjectname = emptyssd->GetName();
+  if(ssdobjectname=="TObjArray") {
+    TObjArray *badChannelsSSDOld = (TObjArray *)entryBadChannelsSSD->GetObject();
+    ReadOldSSDBadChannels(badChannelsSSDOld, badChannelsSSD);
+  }
+  else if(ssdobjectname=="AliITSBadChannelsSSDv2")
+    badChannelsSSD = (AliITSBadChannelsSSDv2*)entryBadChannelsSSD->GetObject();
   if(!isCacheActive)entryBadChannelsSSD->SetObject(NULL);
   entryBadChannelsSSD->SetOwner(kTRUE);
+
+  /*AliITSNoiseSSDv2 *noiseSSD = (AliITSNoiseSSDv2 *)entryNoiseSSD->GetObject();
+  if(!isCacheActive)entryNoiseSSD->SetObject(NULL);
+  entryNoiseSSD->SetOwner(kTRUE);
+
+  AliITSGainSSDv2 *gainSSD = (AliITSGainSSDv2 *)entryGainSSD->GetObject();
+  if(!isCacheActive)entryGainSSD->SetObject(NULL);
+  entryGainSSD->SetOwner(kTRUE);
+
+  AliITSBadChannelsSSDv2 *badchannelsSSD = 
+    (AliITSBadChannelsSSDv2 *)entryBadChannelsSSD->GetObject();
+  if(!isCacheActive)entryBadChannelsSSD->SetObject(NULL);
+  entryBadChannelsSSD->SetOwner(kTRUE);*/
 
   AliITSresponseSSD *pSSD = (AliITSresponseSSD*)entry2SSD->GetObject();
   if(!isCacheActive)entry2SSD->SetObject(NULL);
@@ -522,7 +562,7 @@ Bool_t AliITSDetTypeSim::GetCalibration() {
   AliCDBManager::Instance()->SetCacheFlag(origCacheStatus);
 
   if ((!pSPD)||(!pSSD) || (!calSPD) || (!calSDD) || (!drSp) || (!ddlsdd)
-      || (!mapAn) || (!mapT) || (!noiseSSD)|| (!gainSSD)|| (!badchannelsSSD)) {
+      || (!mapAn) || (!mapT) || (!noiseSSD)|| (!gainSSD)|| (!badChannelsSSD)) {
     AliWarning("Can not get calibration from calibration database !");
     return kFALSE;
   }
@@ -578,7 +618,7 @@ Bool_t AliITSDetTypeSim::GetCalibration() {
   fSSDCalibration->SetResponse((AliITSresponse*)pSSD);
   fSSDCalibration->SetNoise(noiseSSD);
   fSSDCalibration->SetGain(gainSSD);
-  fSSDCalibration->SetBadChannels(badchannelsSSD);
+  fSSDCalibration->SetBadChannels(badChannelsSSD);
   //fSSDCalibration->FillBadChipMap();
 
 
@@ -873,4 +913,75 @@ void AliITSDetTypeSim::StoreCalibration(Int_t firstRun, Int_t lastRun,
   AliCDBManager::Instance()->Put(&respSSD, idRespSSD, &md);
 }
 
+//______________________________________________________________________
+void AliITSDetTypeSim::ReadOldSSDNoise(TObjArray *array, 
+				       AliITSNoiseSSDv2 *noiseSSD) {
+  //Reads the old SSD calibration object and converts it to the new format
+  const Int_t fgkSSDSTRIPSPERMODULE = 1536;
+  const Int_t fgkSSDPSIDESTRIPSPERMODULE = 768;
+
+  Int_t fNMod = array->GetEntries();
+  cout<<"Converting old calibration object for noise..."<<endl;
+
+  //NOISE
+  Double_t noise = 0.0;
+  for (Int_t iModule = 0; iModule < fNMod; iModule++) {
+    AliITSNoiseSSD *noiseModule = (AliITSNoiseSSD*) (array->At(iModule));
+    for(Int_t iStrip = 0; iStrip < fgkSSDSTRIPSPERMODULE; iStrip++) {
+      noise = (iStrip < fgkSSDPSIDESTRIPSPERMODULE) ? noiseModule->GetNoiseP(iStrip) : noiseModule->GetNoiseN(1535 - iStrip);
+      if(iStrip < fgkSSDPSIDESTRIPSPERMODULE)
+	noiseSSD->AddNoiseP(iModule,iStrip,noise);
+      if(iStrip >= fgkSSDPSIDESTRIPSPERMODULE)
+	noiseSSD->AddNoiseN(iModule,1535 - iStrip,noise);
+    }//loop over strips
+  }//loop over modules      
+}
+
+//______________________________________________________________________
+void AliITSDetTypeSim::ReadOldSSDBadChannels(TObjArray *array, 
+					     AliITSBadChannelsSSDv2 *badChannelsSSD) {
+  //Reads the old SSD calibration object and converts it to the new format
+  Int_t fNMod = array->GetEntries();
+  cout<<"Converting old calibration object for bad channels..."<<endl;
+  for (Int_t iModule = 0; iModule < fNMod; iModule++) {
+    //for (Int_t iModule = 0; iModule < 1; iModule++) {
+    AliITSBadChannelsSSD *bad = (AliITSBadChannelsSSD*) (array->At(iModule));
+    TArrayI arrayPSide = bad->GetBadPChannelsList();
+    for(Int_t iPCounter = 0; iPCounter < arrayPSide.GetSize(); iPCounter++) 
+      badChannelsSSD->AddBadChannelP(iModule,
+				     iPCounter,
+				     (Char_t)arrayPSide.At(iPCounter));
+        
+    TArrayI arrayNSide = bad->GetBadNChannelsList();
+    for(Int_t iNCounter = 0; iNCounter < arrayNSide.GetSize(); iNCounter++) 
+      badChannelsSSD->AddBadChannelN(iModule,
+				     iNCounter,
+				     (Char_t)arrayNSide.At(iNCounter));
+    
+  }//loop over modules      
+}
+
+//______________________________________________________________________
+void AliITSDetTypeSim::ReadOldSSDGain(TObjArray *array, 
+				      AliITSGainSSDv2 *gainSSD) {
+  //Reads the old SSD calibration object and converts it to the new format
+
+  Int_t fNMod = array->GetEntries();
+  cout<<"Converting old calibration object for gain..."<<endl;
+
+  //GAIN
+  for (Int_t iModule = 0; iModule < fNMod; iModule++) {
+    AliITSGainSSD *gainModule = (AliITSGainSSD*) (array->At(iModule));
+    TArrayF arrayPSide = gainModule->GetGainP();
+    for(Int_t iPCounter = 0; iPCounter < arrayPSide.GetSize(); iPCounter++)
+      gainSSD->AddGainP(iModule,
+			iPCounter,
+			arrayPSide.At(iPCounter));
+    TArrayF arrayNSide = gainModule->GetGainN();
+    for(Int_t iNCounter = 0; iNCounter < arrayNSide.GetSize(); iNCounter++)
+      gainSSD->AddGainN(iModule,
+			iNCounter,
+			arrayNSide.At(iNCounter));
+  }//loop over modules 
+}
 

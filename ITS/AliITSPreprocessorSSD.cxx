@@ -8,9 +8,9 @@
 #include <TObjString.h>
 
 #include "AliITSRawStreamSSD.h"
-#include "AliITSNoiseSSD.h"
-#include "AliITSPedestalSSD.h"
-#include "AliITSBadChannelsSSD.h"
+#include "AliITSNoiseSSDv2.h"
+#include "AliITSPedestalSSDv2.h"
+#include "AliITSBadChannelsSSDv2.h"
 #include <Riostream.h>
 
 
@@ -65,9 +65,9 @@ UInt_t AliITSPreprocessorSSD::Process(TMap* /*dcsAliasMap*/)
   
   //---------------------------------------
   // initialize the calibration objects
-  AliITSNoiseSSD *calib = new AliITSNoiseSSD();
-  AliITSBadChannelsSSD *badch = new AliITSBadChannelsSSD();
-  AliITSPedestalSSD *pedel = new AliITSPedestalSSD();
+  AliITSNoiseSSDv2 *calib = new AliITSNoiseSSDv2();
+  AliITSBadChannelsSSDv2 *badch = new AliITSBadChannelsSSDv2();
+  AliITSPedestalSSDv2 *pedel = new AliITSPedestalSSDv2();
   
   TString runType = GetRunType();
   if(runType == "ELECTRONICS_CALIBRATION_RUN") {
@@ -102,22 +102,22 @@ UInt_t AliITSPreprocessorSSD::Process(TMap* /*dcsAliasMap*/)
 		return 2;
 	    }
 	    
-	    AliITSNoiseSSD *cal; 
-	    f->GetObject("AliITSNoiseSSD;1", cal); 
+	    AliITSNoiseSSDv2 *cal; 
+	    f->GetObject("AliITSNoiseSSDv2;1", cal); 
 	    if(!cal) {
 	    	Log("File does not contain expected data for the noise!");
 		delete list;
 		return 3;
 	    }	    
-	    AliITSPedestalSSD *ped;
-	    f->GetObject("AliITSPedestalSSD;1", ped); 
+	    AliITSPedestalSSDv2 *ped;
+	    f->GetObject("AliITSPedestalSSDv2;1", ped); 
 	    if(!ped) {
 	    	Log("File does not contain expected data for the pedestals!");
 		delete list;
 		return 5;
 	    }	    
-	    AliITSBadChannelsSSD *bad;
-	    f->GetObject("AliITSBadChannelsSSD;1", bad); 
+	    AliITSBadChannelsSSDv2 *bad;
+	    f->GetObject("AliITSBadChannelsSSDv2;1", bad); 
 	    if(!bad) {
 	    	Log("File does not contain expected data for bad channels  !");
 		delete list;

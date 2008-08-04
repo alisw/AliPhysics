@@ -38,8 +38,11 @@ SRCS = 	AliITSgeom.cxx \
 		AliITSDDLModuleMapSDD.cxx \
 		AliITSDriftSpeedArraySDD.cxx \
 		AliITSBadChannelsSSD.cxx \
+		AliITSBadChannelsSSDv2.cxx \
 		AliITSGainSSD.cxx \
+		AliITSGainSSDv2.cxx \
 		AliITSNoiseSSD.cxx \
+		AliITSNoiseSSDv2.cxx \
 		AliITSChannelDaSSD.cxx \
                 AliITSModuleDaSSD.cxx \
                 AliITSHandleDaSSD.cxx \
@@ -64,6 +67,7 @@ SRCS = 	AliITSgeom.cxx \
                 AliITSIntMap.cxx \
 		AliITSIntMapNode.cxx \
 		AliITSPedestalSSD.cxx \
+		AliITSPedestalSSDv2.cxx \
 		AliITSSurveyToAlignSSD.cxx
 
 HDRS:=  $(SRCS:.cxx=.h)
