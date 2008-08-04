@@ -30,31 +30,47 @@ const Int_t minclustersTPC2 = 50;
 const Int_t maxnsigmatovertex2 = 3;
 
 
-  void runProofCumulants(const Char_t* data="/PWG2/akisiel/LHC500C2030", Int_t nRuns=100, Int_t offset=0) {
+  void runProofCumulants(const Char_t* data="/PWG2/akisiel/LHC500C2030", Int_t nRuns=4, Int_t offset=0) {
+  //void runProofCumulants(const Char_t* data="/PWG2/akisiel/LHC500C0005", Int_t nRuns=-1, Int_t offset=0){ 
+
+  //void runProofCumulants(const Char_t* data="/PWG2/pganoti/Pythia6At10TeV_05T_b", Int_t nRuns=1000, Int_t offset=0){ 
+  //void runProofCumulants(const Char_t* data="/PWG2/jgrosseo/sim_1600XX_esd", Int_t nRuns=-1, Int_t offset=0){ 
+  
+  //void runProofCumulants(const Char_t* data="/COMMON/COMMON/run15035_PbPb", Int_t nRuns=-1, Int_t offset=0){
+
+  //void runProofCumulants(const Char_t* data="/PWG2/hricaud/LHC07f_160033DataSet", Int_t nRuns=-1, Int_t offset=0){
+
+  //void runProofCumulants(const Char_t* data="/PWG2/hricaud/LHC07f_160038_root_archiveDataSet", Int_t nRuns=-1, Int_t offset=0){
+
+ //void runProofCumulants(const Char_t* data="/PWG2/belikov/40825", Int_t nRuns=-1, Int_t offset=0){
+ 
+
+
   TStopwatch timer;
   timer.Start();
 
   printf("*** Connect to PROOF ***\n");
-  //  TProof::Open("snelling@lxb6046.cern.ch");
-  TProof::Open("snelling@localhost");
+  TProof::Open("abilandz@lxb6046.cern.ch");
+  //TProof::Open("snelling@localhost");
 
-  gProof->UploadPackage("STEERBase.par");
-  gProof->EnablePackage("STEERBase");
-  gProof->UploadPackage("ESD.par");
-  gProof->EnablePackage("ESD");
-  gProof->UploadPackage("AOD.par");
-  gProof->EnablePackage("AOD");
-  gProof->UploadPackage("ANALYSIS.par");
-  gProof->EnablePackage("ANALYSIS");
-  gProof->UploadPackage("ANALYSISalice.par");
-  gProof->EnablePackage("ANALYSISalice");
-  gProof->UploadPackage("PWG2AOD.par");
-  gProof->EnablePackage("PWG2AOD");
-  gProof->UploadPackage("CORRFW.par");
-  gProof->EnablePackage("CORRFW");
-  //  gProof->ClearPackage("PWG2flow");
-  gProof->UploadPackage("PWG2flow.par");
-  gProof->EnablePackage("PWG2flow");
+ gProof->UploadPackage("STEERBase.par");
+ gProof->EnablePackage("STEERBase");
+ gProof->UploadPackage("ESD.par");
+ gProof->EnablePackage("ESD");
+ gProof->UploadPackage("AOD.par");
+ gProof->EnablePackage("AOD");
+ gProof->UploadPackage("ANALYSIS.par");
+ gProof->EnablePackage("ANALYSIS");
+ gProof->UploadPackage("ANALYSISalice.par");
+ gProof->EnablePackage("ANALYSISalice");
+ gProof->UploadPackage("PWG2AOD.par");
+ gProof->EnablePackage("PWG2AOD");
+ gProof->UploadPackage("CORRFW.par");
+ gProof->EnablePackage("CORRFW");
+ gProof->ClearPackage("PWG2flow");
+ gProof->UploadPackage("PWG2flow.par");
+ gProof->EnablePackage("PWG2flow");
+
 
 
 //____________________________________________//
@@ -106,7 +122,7 @@ const Int_t maxnsigmatovertex2 = 3;
  AliCFTrackCutPid* cutPID2 = new AliCFTrackCutPid("cutPID2","ESD_PID") ;
  int n_species = AliPID::kSPECIES ;
  Double_t* prior = new Double_t[n_species];
-
+ 
  prior[0] = 0.0244519 ;
  prior[1] = 0.0143988 ;
  prior[2] = 0.805747  ;
@@ -168,7 +184,7 @@ const Int_t maxnsigmatovertex2 = 3;
  TObjArray* fPIDCutList2 = new TObjArray(0) ;
  fPIDCutList2->AddLast(cutPID2);
 
- printf("CREATE INTERFACE AND CUTS\n");
+printf("CREATE INTERFACE AND CUTS\n");
  AliCFManager* cfmgr1 = new AliCFManager();
  cfmgr1->SetParticleCutsList(AliCFManager::kPartGenCuts,mcList1);
  //cfmgr1->SetParticleCutsList(AliCFManager::kPartAccCuts,accList);
@@ -180,27 +196,57 @@ const Int_t maxnsigmatovertex2 = 3;
  //cfmgr2->SetParticleCutsList(AliCFManager::kPartAccCuts,accList);
  cfmgr2->SetParticleCutsList(AliCFManager::kPartRecCuts,recList2);
  cfmgr2->SetParticleCutsList(AliCFManager::kPartSelCuts,fPIDCutList2);
+ 
+ 
+ 
+ 
+ //____________________________________________//
+ // Make the analysis manager
+ AliAnalysisManager *mgr = new AliAnalysisManager("TestManager");
 
+ if (type == "ESD"){
+   AliVEventHandler* esdH = new AliESDInputHandler;
+   //esdH->SetInactiveBranches("FMD CaloCluster");   //needed?
+   mgr->SetInputEventHandler(esdH); }
 
-  //____________________________________________//
-  // Make the analysis manager
-  AliAnalysisManager *mgr = new AliAnalysisManager("TestManager");
-  AliESDInputHandler* esdH = new AliESDInputHandler;
-  esdH->SetInactiveBranches("FMD CaloCluster");
-  mgr->SetInputEventHandler(esdH);  
+ if (type == "AOD"){
+   AliVEventHandler* aodH = new AliAODInputHandler;
+   mgr->SetInputEventHandler(aodH); }
+
+ if (type == "MC" || type == "ESDMC0" || type == "ESDMC1"){
+   AliVEventHandler* esdH = new AliESDInputHandler;
+   mgr->SetInputEventHandler(esdH);
+
+   AliMCEventHandler *mc = new AliMCEventHandler();
+   mgr->SetMCtruthEventHandler(mc); }
+
+  
+  
+  
+  
+  
+  
+  
+  
   //____________________________________________//
   // 1st Pt task
   AliAnalysisTaskCumulants *task1 = new AliAnalysisTaskCumulants("TaskCumulants");
-  task1->SetAnalysisType("ESD");
+  task1->SetAnalysisType(type);
   task1->SetCFManager1(cfmgr1);
   task1->SetCFManager2(cfmgr2);
   mgr->AddTask(task1);
 
-
+ 
   // Create containers for input/output
-  AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("cchain1",TChain::Class(),AliAnalysisManager::kInputContainer);
-  //  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("clist1", TList::Class(),AliAnalysisManager::kOutputContainer,"OutputFromCumulantAnlysisESD.root");
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("clist1", TList::Class(),AliAnalysisManager::kOutputContainer,"outputFromCumulantAnalysisESD.root");
+ AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("cchain1",TChain::Class(),AliAnalysisManager::kInputContainer);
+ TString outputName = "outputFromCumulantAnalysis";
+ outputName+=type;
+ outputName+=".root";
+ AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("clist1", TList::Class(),AliAnalysisManager::kOutputContainer,outputName);
+  
+ //added according to Andrei:
+ //coutput1->SetSpecialOutput();
+  
   
   //____________________________________________//
   mgr->ConnectInput(task1,0,cinput1);
