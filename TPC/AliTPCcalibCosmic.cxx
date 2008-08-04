@@ -477,7 +477,19 @@ void AliTPCcalibCosmic::BinLogX(TH1 *h) {
   
 }
 
-
+AliExternalTrackParam *AliTPCcalibCosmic::Invert(AliExternalTrackParam *input)
+{
+  //
+  // Invert paramerameter  - not covariance yet
+  //
+  AliExternalTrackParam *output = new AliExternalTrackParam(*input);
+  Double_t * param = (Double_t*)output->GetParameter();
+  param[0]*=-1;
+  param[3]*=-1;
+  param[4]*=-1;
+  //
+  return output;
+}
 
 
 /*
@@ -535,5 +547,60 @@ TString * thetaParam = TStatToolkit::FitPlane(chain,"Tr0.fP[3]+Tr1.fP[3]", strFi
 (-0.009263+(Tr0.fP[1]/250)*(-0.009693)+(Tr0.fP[1]/250)^2*(0.009062)+(Tr0.fP[3])*(0.002256)+(Tr0.fP[3])^2*(-0.052775)+(Tr0.fP[1]/250)^2*Tr0.fP[3]*(-0.020627)+(Tr0.fP[1]/250)^2*Tr0.fP[3]^2*(0.049030))
 
 */
+
+
+/*
+gSystem->Load("libANALYSIS");
+gSystem->Load("libSTAT");
+gSystem->Load("libTPCcalib");
+
+TStatToolkit toolkit;
+Double_t chi2;
+TVectorD fitParam;
+TMatrixD covMatrix;
+Int_t npoints;
+//
+TCut cutT("cutT","abs(Tr1.fP[3]+Tr0.fP[3])<0.03");  // OK
+TCut cutD("cutD","abs(Tr0.fP[0]+Tr1.fP[0])<5");     // OK
+TCut cutPt("cutPt","abs(Tr1.fP[4]+Tr0.fP[4])<0.2&&abs(Tr0.fP[4])+abs(Tr1.fP[4])<10");
+TCut cutN("cutN","min(Orig0.fTPCncls,Orig1.fTPCncls)>110");
+TCut cutA="abs(norm-1)<0.3"+cutT+cutD+cutPt+cutN;
+
+
+
+TTree * chain = Track0;
+
+
+chain->SetAlias("norm","signalTot0.fElements[3]/signalTot1.fElements[3]");
+//
+chain->SetAlias("dr1","(signalTot0.fElements[1]/signalTot0.fElements[3])");
+chain->SetAlias("dr2","(signalTot0.fElements[2]/signalTot0.fElements[3])");
+chain->SetAlias("dr4","(signalTot0.fElements[4]/signalTot0.fElements[3])");
+chain->SetAlias("dr5","(signalTot0.fElements[5]/signalTot0.fElements[3])");
+
+TString fstring="";  
+fstring+="dr1++";
+fstring+="dr2++";
+fstring+="dr4++";
+fstring+="dr5++";
+//
+fstring+="dr1*dr2++";
+fstring+="dr1*dr4++";
+fstring+="dr1*dr5++";
+fstring+="dr2*dr4++";
+fstring+="dr2*dr5++";
+fstring+="dr4*dr5++";
+
+
+
+TString *strqdedx = toolkit.FitPlane(chain,"norm",fstring->Data(), cutA, chi2,npoints,fitParam,covMatrix,-1,0,200000);
+  
+chain->SetAlias("corQT",strqdedx->Data());
+
+*/
+
+
+
+
 
 

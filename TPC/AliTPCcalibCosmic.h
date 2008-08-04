@@ -30,6 +30,7 @@ public:
   void              SetGainMap(AliTPCCalPad *GainMap){fGainMap = GainMap;};
   static void       CalculateBetheParams(TH2F *hist, Double_t * initialParam);
   static Double_t   CalculateMIPvalue(TH1F * hist);
+  AliExternalTrackParam *Invert(AliExternalTrackParam *input);
   //
   TH1F   *          GetHistNTracks(){return fHistNTracks;};
   TH1F   *          GetHistClusters(){return fClusters;};
