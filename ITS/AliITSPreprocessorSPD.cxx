@@ -259,7 +259,7 @@ UInt_t AliITSPreprocessorSPD::Process(TMap* /*dcsAliasMap*/)
     handler->SetFileLocation(fileLoc.Data());
     handler->ReadNoisyFromFiles();
     for (Int_t module=0; module<240; module++) {
-      ((AliITSCalibrationSPD*) spdEntryNoisy->At(module)) -> SetNrBad( handler->GetNrNoisy(module) );
+      ((AliITSCalibrationSPD*) spdEntryNoisy->At(module)) -> SetNrBadSingle( handler->GetNrNoisy(module) );
       ((AliITSCalibrationSPD*) spdEntryNoisy->At(module)) -> SetBadList( handler->GetNoisyArray(module) );
     }
     delete handler;
@@ -378,9 +378,20 @@ UInt_t AliITSPreprocessorSPD::Process(TMap* /*dcsAliasMap*/)
     // Add dead from the copied FXS files
     handOld->SetFileLocation(".");
     handOld->ReadSilentFromFiles();
-    for (Int_t module=0; module<240; module++) {
-      ((AliITSCalibrationSPD*) spdEntryDead->At(module)) -> SetNrBad( handOld->GetNrSilent(module) );
-      ((AliITSCalibrationSPD*) spdEntryDead->At(module)) -> SetBadList( handOld->GetSilentArray(module) );
+    for (UInt_t module=0; module<240; module++) {
+      AliITSCalibrationSPD* calibSPD = (AliITSCalibrationSPD*) spdEntryDead->At(module);
+      calibSPD->SetNrBad( handOld->GetNrDead(module) );
+      calibSPD->SetBadList( handOld->GetDeadArray(module) );
+      for (UInt_t chipIndex=0; chipIndex<5; chipIndex++) {
+	UInt_t eq,hs,chip,col,row;
+	AliITSRawStreamSPD::OfflineToOnline(module, chipIndex*32, 0, eq, hs, chip, col, row);
+	if (handOld->IsSilentChip(eq,hs,chip)) {
+	  calibSPD->SetChipBad(chipIndex);
+	}
+	else {
+	  calibSPD->UnSetChipBad(chipIndex);
+	}
+      }
     }
     delete handOld;
     // Store the new calibration objects in OCDB

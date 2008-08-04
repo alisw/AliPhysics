@@ -22,7 +22,6 @@ AliITSRawStreamSPDErrorLog::AliITSRawStreamSPDErrorLog() :
   for (UInt_t eq=0; eq<20; eq++) {
     fTextTmp[eq] = new TGText();
     fNEvents[eq] = 0;
-    fPayloadSizeSet[eq] = kFALSE;
     fByteOffset[eq] = 0;
     fSuppressEq[eq] = kFALSE;
     for (UInt_t err=0; err<kNrErrorCodes; err++) {
@@ -45,8 +44,6 @@ AliITSRawStreamSPDErrorLog::AliITSRawStreamSPDErrorLog(const AliITSRawStreamSPDE
       fErrEventCounter[err][eq] = logger.fErrEventCounter[err][eq];
     }
     fNEvents[eq] = logger.fNEvents[eq];
-    fPayloadSize[eq] = logger.fPayloadSize[eq];
-    fPayloadSizeSet[eq] = logger.fPayloadSizeSet[eq];
     fByteOffset[eq] = logger.fByteOffset[eq];
     fSuppressEq[eq] = logger.fSuppressEq[eq];
   }
@@ -63,7 +60,7 @@ AliITSRawStreamSPDErrorLog::AliITSRawStreamSPDErrorLog(const AliITSRawStreamSPDE
   for (UInt_t eq=0; eq<20; eq++) {
     for (UInt_t err=0; err<kNrErrorCodes; err++) {
       fConsErrEvent[err][eq] = new TGraph(*logger.fConsErrEvent[err][eq]);
-      fConsErrPos[err][eq] = new TH1F(*logger.fConsErrPos[err][eq]);
+      fConsErrPos[err][eq] = new TGraph(*logger.fConsErrPos[err][eq]);
     }
     fConsErrType[eq] = new TH1F(*logger.fConsErrType[eq]);
     fConsErrFraction[eq] = new TH1F(*logger.fConsErrFraction[eq]);
@@ -85,8 +82,6 @@ AliITSRawStreamSPDErrorLog& AliITSRawStreamSPDErrorLog::operator=(const AliITSRa
 	fErrEventCounter[err][eq] = logger.fErrEventCounter[err][eq];
       }
       fNEvents[eq] = logger.fNEvents[eq];
-      fPayloadSize[eq] = logger.fPayloadSize[eq];
-      fPayloadSizeSet[eq] = logger.fPayloadSizeSet[eq];
       fByteOffset[eq] = logger.fByteOffset[eq];
       fSuppressEq[eq] = logger.fSuppressEq[eq];
     }
@@ -103,7 +98,7 @@ AliITSRawStreamSPDErrorLog& AliITSRawStreamSPDErrorLog::operator=(const AliITSRa
     for (UInt_t eq=0; eq<20; eq++) {
       for (UInt_t err=0; err<kNrErrorCodes; err++) {
 	fConsErrEvent[err][eq] = new TGraph(*logger.fConsErrEvent[err][eq]);
-	fConsErrPos[err][eq] = new TH1F(*logger.fConsErrPos[err][eq]);
+	fConsErrPos[err][eq] = new TGraph(*logger.fConsErrPos[err][eq]);
       }
       fConsErrType[eq] = new TH1F(*logger.fConsErrType[eq]);
       fConsErrFraction[eq] = new TH1F(*logger.fConsErrFraction[eq]);
@@ -140,12 +135,11 @@ void AliITSRawStreamSPDErrorLog::InitHistograms() {
     
     for (UInt_t err=0; err<kNrErrorCodes; err++) {
       fConsErrEvent[err][eq]=new TGraph();
+      fConsErrPos[err][eq]=new TGraph();
+      fConsErrPosTMP[err][eq]=new TGraph();
       fErrEventCounter[err][eq] = 0;
-      histName = Form("ConsErrPos %d %d",err,eq);
-      histTitle = Form("Position in event, eq %d , error code %d",eq,err);
-      fConsErrPos[err][eq]=new TH1F(histName.Data(),histTitle.Data(),200,0,100);
-      fConsErrPos[err][eq]->SetXTitle("Position [%]");
-      fConsErrPos[err][eq]->SetYTitle("Nr Errors");
+      fErrPosCounter[err][eq] = 0;
+      fErrPosTMPCounter[err][eq] = 0;
     }
   }
 }
@@ -158,6 +152,7 @@ void AliITSRawStreamSPDErrorLog::DeleteHistograms() const {
     for (UInt_t err=0; err<kNrErrorCodes; err++) {
       delete fConsErrEvent[err][eq];
       delete fConsErrPos[err][eq];
+      delete fConsErrPosTMP[err][eq];
     }
   }
 }
@@ -170,13 +165,17 @@ void AliITSRawStreamSPDErrorLog::Reset() {
     fConsErrType[eq]->Reset();
     fConsErrFraction[eq]->Reset();
     fNEvents[eq] = 0;
-    fPayloadSizeSet[eq] = kFALSE;
     for (UInt_t err=0; err<kNrErrorCodes; err++) {
       fNErrors[err][eq] = 0;
       delete fConsErrEvent[err][eq];
+      delete fConsErrPos[err][eq];
+      delete fConsErrPosTMP[err][eq];
       fErrEventCounter[err][eq] = 0;
+      fErrPosCounter[err][eq] = 0;
+      fErrPosTMPCounter[err][eq] = 0;
       fConsErrEvent[err][eq] = new TGraph();
-      fConsErrPos[err][eq]->Reset();
+      fConsErrPos[err][eq] = new TGraph();
+      fConsErrPosTMP[err][eq] = new TGraph();
     }
   }
 }
@@ -192,9 +191,13 @@ void AliITSRawStreamSPDErrorLog::ProcessError(UInt_t errorCode, UInt_t eq, Int_t
     fNErrors[errorCode][eq]++;
     if (errorCode!=kTotal) fNErrors[kTotal][eq]++;
 
-    if (fPayloadSizeSet[eq]) {
-      fConsErrPos[errorCode][eq]->Fill(100.*bytesRead/fPayloadSize[eq]);
-      if (errorCode!=kTotal) fConsErrPos[kTotal][eq]->Fill(100.*bytesRead/fPayloadSize[eq]);
+    if (bytesRead>=0) {
+      fConsErrPosTMP[errorCode][eq]->SetPoint(fErrPosTMPCounter[errorCode][eq],0,bytesRead+fByteOffset[eq]);
+      fErrPosTMPCounter[errorCode][eq]++;
+      if (errorCode!=kTotal) {
+	fConsErrPosTMP[kTotal][eq]->SetPoint(fErrPosTMPCounter[kTotal][eq],0,bytesRead+fByteOffset[eq]);
+	fErrPosTMPCounter[kTotal][eq]++;
+      }
     }
 
     TString msg;
@@ -235,7 +238,14 @@ void AliITSRawStreamSPDErrorLog::SummarizeEvent(UInt_t eventNum) {
 	fErrEventCounter[err][eq]++;
 	fConsErrFraction[eq]->Fill(err);
       }
+      for (UInt_t pind=0; pind<fErrPosTMPCounter[err][eq]; pind++) {
+	Double_t x,y;
+	fConsErrPosTMP[err][eq]->GetPoint(pind,x,y);
+	fConsErrPos[err][eq]->SetPoint(fErrPosCounter[err][eq],eventNum,y);
+	fErrPosCounter[err][eq]++;
+      }
     }
+
     fNEvents[eq]++;
     if (fNErrors[kTotal][eq]>0) {
       msg = Form("*** Event %d , Eq %d: ***",eventNum,eq);
@@ -243,23 +253,19 @@ void AliITSRawStreamSPDErrorLog::SummarizeEvent(UInt_t eventNum) {
       fText->AddText(fTextTmp[eq]);
       fText->InsLine(fText->RowCount()," ");
     }
-    fPayloadSizeSet[eq]=kFALSE;
     fByteOffset[eq]=0;
     fTextTmp[eq]->Clear();
     for (UInt_t err=0; err<kNrErrorCodes; err++) {
       fNErrors[err][eq]=0;
     }
   }
-}
-//________________________________________________________________________________________________
-void AliITSRawStreamSPDErrorLog::SetPayloadSize(UInt_t eq, UInt_t size) {
-  // set the payload size for this event
-  if (eq<20) {
-    fPayloadSize[eq]=size;
-    fPayloadSizeSet[eq]=kTRUE;
-  }
-  else {
-    AliWarning(Form("Equipment number (%d) out of range",eq));
+
+  for (UInt_t eq=0; eq<20; eq++) {
+    for (UInt_t err=0; err<kNrErrorCodes; err++) {
+      delete fConsErrPosTMP[err][eq];
+      fErrPosTMPCounter[err][eq] = 0;
+      fConsErrPosTMP[err][eq] = new TGraph();
+    }
   }
 }
 //________________________________________________________________________________________________
@@ -385,7 +391,7 @@ TH1F* AliITSRawStreamSPDErrorLog::GetConsErrFractionUnScaled(UInt_t eq) {
   }
 }
 //________________________________________________________________________________________________
-TH1F* AliITSRawStreamSPDErrorLog::GetConsErrPos(UInt_t errorCode, UInt_t eq) {
+TGraph* AliITSRawStreamSPDErrorLog::GetConsErrPos(UInt_t errorCode, UInt_t eq) {
   // returns a pointer to the histogram
   if (errorCode<kNrErrorCodes && eq<20) return fConsErrPos[errorCode][eq];
   else {

@@ -43,6 +43,7 @@ extern "C" {
 #include <TROOT.h>
 #include <TPluginManager.h>
 #include <TObjArray.h>
+#include <TObjString.h>
 #include <TString.h>
 #include <TFitter.h>
 
@@ -118,10 +119,8 @@ int main(int argc, char **argv) {
 	paramsFile >> paramN;
 	if (paramsFile.eof()) break;
 	paramsFile >> paramV;
-	TString* paramNS = new TString(paramN);
-	TString* paramVS = new TString(paramV);
-	paramNames.AddAtAndExpand((TObject*)paramNS,nrTuningParams);
-	paramVals.AddAtAndExpand((TObject*)paramVS,nrTuningParams);
+	paramNames.AddAtAndExpand(new TObjString(paramN),nrTuningParams);
+	paramVals.AddAtAndExpand(new TObjString(paramV),nrTuningParams);
 	nrTuningParams++;
 	if (paramsFile.eof()) break;
       }
@@ -129,7 +128,8 @@ int main(int argc, char **argv) {
     }
   }
   //  for (UInt_t i=0; i<nrTuningParams; i++) {
-  //    printf("Entry %d: N=%s , V=%s\n",i,((TString*)paramNames.At(i))->Data(),((TString*)paramVals.At(i))->Data());
+  //  //    printf("Entry %d: N=%s , V=%s\n",i,((TString*)paramNames.At(i))->Data(),((TString*)paramVals.At(i))->Data());
+  //    printf("Entry %d: N=%s , V=%s\n",i,((TObjString*)paramNames.At(i))->GetString().Data(),((TObjString*)paramVals.At(i))->GetString().Data());
   //  }
 
   // perm noisy list:
@@ -496,7 +496,7 @@ int main(int argc, char **argv) {
 
     // configure analyzer with tuning parameters etc:
     for (UInt_t i=0; i<nrTuningParams; i++) {
-      analyzer->SetParam(((TString*)paramNames.At(i))->Data(),((TString*)paramVals.At(i))->Data());
+      analyzer->SetParam(((TObjString*)paramNames.At(i))->GetString().Data(),((TObjString*)paramVals.At(i))->GetString().Data());
     }
 
     UInt_t type  = analyzer->GetType();

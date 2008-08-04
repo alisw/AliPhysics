@@ -70,6 +70,13 @@ AliITSRawStreamSPD::AliITSRawStreamSPD(AliRawReader* rawReader) :
   }
   for (UInt_t eq=0; eq<20; eq++) {
     fActiveEq[eq]=kFALSE;
+    for (UInt_t hs=0; hs<6; hs++) {
+      fActiveHS[eq][hs]=kFALSE;
+      for (UInt_t chip=0; chip<10; chip++) {
+	fActiveChip[eq][hs][chip]=kFALSE;
+	fEventCounterFull[eq][hs][chip] = -1;
+      }
+    }
   }
   NewEvent();
 }
@@ -171,7 +178,7 @@ Int_t AliITSRawStreamSPD::ReadCalibHeader() {
   fFillOutOfSynch = kFALSE;
 
   // set eq active and the participating half-staves (for access from outside this class), 
-  // set what number of chip headers/trailers to expect
+  // set what number of chip headers/trailers to expect (for the moment not used)
   fActiveEq[ddlID]=kTRUE;
   fExpectedHeaderTrailerCount = 0;
   for (UInt_t hs=0; hs<6; hs++) {
@@ -290,6 +297,8 @@ Bool_t AliITSRawStreamSPD::Next() {
 	if (fAdvancedErrorLog) fAdvLogger->ProcessError(kHSNumberErr,fDDLID,fEqPLBytesRead,fEqPLChipHeadersRead,errMess.Data());
 	fHalfStaveNr=0;
       }
+      fActiveChip[fDDLID][fHalfStaveNr][fChipAddr]=kTRUE;
+      fEventCounterFull[fDDLID][fHalfStaveNr][fChipAddr] = eventCounter;
       // translate  ("online") ddl, hs, chip nr  to  ("offline") module id :
       fModuleID = GetOfflineModuleFromOnline(fDDLID,fHalfStaveNr,fChipAddr);
     } 
@@ -367,14 +376,14 @@ void AliITSRawStreamSPD::CheckHeaderAndTrailerCount(Int_t ddlID) {
 			   fEqPLChipHeadersRead,fExpectedHeaderTrailerCount,ddlID);
     AliError(errMess.Data());
     fRawReader->AddMajorErrorLog(kHeaderCountErr,errMess.Data());
-    if (fAdvancedErrorLog) fAdvLogger->ProcessError(kHeaderCountErr,ddlID,-1,-1,errMess.Data());
+    if (fAdvancedErrorLog) fAdvLogger->ProcessError(kHeaderCountErr,ddlID,fEqPLBytesRead,fEqPLChipHeadersRead,errMess.Data());
   }
   if (fEqPLChipTrailersRead != fExpectedHeaderTrailerCount) {
     TString errMess = Form("Chip trailer count inconsistent %d != %d (expected) for ddl %d",
 			   fEqPLChipTrailersRead,fExpectedHeaderTrailerCount,ddlID);
     AliError(errMess.Data());
     fRawReader->AddMajorErrorLog(kHeaderCountErr,errMess.Data());
-    if (fAdvancedErrorLog) fAdvLogger->ProcessError(kTrailerCountErr,ddlID,-1,-1,errMess.Data());
+    if (fAdvancedErrorLog) fAdvLogger->ProcessError(kHeaderCountErr,ddlID,fEqPLBytesRead,fEqPLChipHeadersRead,errMess.Data());
   }
 }
 //__________________________________________________________________________
@@ -412,6 +421,36 @@ const Char_t* AliITSRawStreamSPD::GetErrorName(UInt_t errorCode) {
   else return "";
 }
 //__________________________________________________________________________
+Bool_t AliITSRawStreamSPD::IsActiveEq(UInt_t eq) const {
+  // returns if the eq is active (seen in data)
+  if (eq>=20) {
+    TString errMess = Form("eq = %d out of bounds. Return kFALSE.",eq);
+    AliError(errMess.Data());
+    return kFALSE;
+  }
+  return fActiveEq[eq];
+}
+//__________________________________________________________________________
+Bool_t AliITSRawStreamSPD::IsActiveHS(UInt_t eq, UInt_t hs) const {
+  // returns if the hs is active (info from block attr)
+  if (eq>=20 || hs>=6) {
+    TString errMess = Form("eq,hs = %d,%d out of bounds. Return kFALSE.",eq,hs);
+    AliError(errMess.Data());
+    return kFALSE;
+  }
+  return fActiveHS[eq][hs];
+}
+//__________________________________________________________________________
+Bool_t AliITSRawStreamSPD::IsActiveChip(UInt_t eq, UInt_t hs, UInt_t chip) const {
+  // returns if the chip is active (seen in data)
+  if (eq>=20 || hs>=6 || chip>=10) {
+    TString errMess = Form("eq,hs,chip = %d,%d,%d out of bounds. Return kFALSE.",eq,hs,chip);
+    AliError(errMess.Data());
+    return kFALSE;
+  }
+  return fActiveChip[eq][hs][chip];
+}
+//__________________________________________________________________________
 Bool_t AliITSRawStreamSPD::GetHalfStavePresent(UInt_t hs) {
   // Reads the half stave present status from the block attributes
   // This is not really needed anymore (kept for now in case it is still used somewhere).
@@ -434,6 +473,83 @@ Bool_t AliITSRawStreamSPD::GetHalfStavePresent(UInt_t hs) {
       return kTRUE;
     }
   }
+}
+//__________________________________________________________________________
+Bool_t AliITSRawStreamSPD::IsEventCounterFullConsistent() const {
+  // checks if the event counter values are consistent within the event
+  Short_t reference = -1;
+  for (UInt_t eq=0; eq<20; eq++) {
+    if (IsActiveEq(eq)) {
+      for (UInt_t hs=0; hs<6; hs++) {
+	if (IsActiveHS(eq,hs)) {
+	  for (UInt_t chip=0; chip<10; chip++) {
+	    if (fEventCounterFull[eq][hs][chip]!=-1) {
+	      if (reference==-1) reference = fEventCounterFull[eq][hs][chip];
+	      if (fEventCounterFull[eq][hs][chip] != reference) return kFALSE;
+	    }
+	  }
+	}
+      }
+    }
+  }
+  return kTRUE;
+}
+//__________________________________________________________________________
+Short_t AliITSRawStreamSPD::GetEventCounterFullEq(UInt_t eq) const {
+  // if the eq is active; returns the event counter value
+  if (eq>=20) {
+    TString errMess = Form("eq (%d) out of bounds",eq);
+    AliError(errMess.Data());
+    return -1;
+  }
+  if (IsActiveEq(eq)) {
+    for (UInt_t hs=0; hs<6; hs++) {
+      if (IsActiveHS(eq,hs)) {
+	for (UInt_t chip=0; chip<10; chip++) {
+	  if (fEventCounterFull[eq][hs][chip]!=-1) {
+	    return fEventCounterFull[eq][hs][chip];
+	  }
+	}
+      }
+    }
+  }
+  return -1;
+}
+//__________________________________________________________________________
+Short_t AliITSRawStreamSPD::GetEventCounterFullHS(UInt_t eq, UInt_t hs) const {
+  // if the eq,hs is active; returns the event counter value
+  if (eq>=20 || hs>=6) {
+    TString errMess = Form("eq,hs (%d,%d) out of bounds",eq,hs);
+    AliError(errMess.Data());
+    return -1;
+  }
+  if (IsActiveEq(eq)) {
+    if (IsActiveHS(eq,hs)) {
+      for (UInt_t chip=0; chip<10; chip++) {
+	if (fEventCounterFull[eq][hs][chip]!=-1) {
+	  return fEventCounterFull[eq][hs][chip];
+	}
+      }
+    }
+  }
+  return -1;
+}
+//__________________________________________________________________________
+Short_t AliITSRawStreamSPD::GetEventCounterFullChip(UInt_t eq, UInt_t hs, UInt_t chip) const {
+  // if the eq,hs,chip is active; returns the event counter value
+  if (eq>=20 || hs>=6 || chip>=10) {
+    TString errMess = Form("eq,hs,chip (%d,%d,%d) out of bounds",eq,hs,chip);
+    AliError(errMess.Data());
+    return -1;
+  }
+  if (IsActiveEq(eq)) {
+    if (IsActiveHS(eq,hs)) {
+      if (IsActiveChip(eq,hs,chip)) {
+	return fEventCounterFull[eq][hs][chip];
+      }
+    }
+  }
+  return -1;
 }
 //__________________________________________________________________________
 Bool_t AliITSRawStreamSPD::GetHhalfStaveScanned(UInt_t hs) const {

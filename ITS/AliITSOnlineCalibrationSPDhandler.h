@@ -98,63 +98,67 @@ class AliITSOnlineCalibrationSPDhandler {
   Bool_t  UnSetNoisyPixel(UInt_t eq, UInt_t hs, UInt_t chip, UInt_t col, UInt_t row);
   Bool_t  UnSetDeadPixelM(UInt_t module, UInt_t colM, UInt_t row);
   Bool_t  UnSetNoisyPixelM(UInt_t module, UInt_t colM, UInt_t row);
-  UInt_t  SetDeadChip(UInt_t eq, UInt_t hs, UInt_t chip);
-  UInt_t  SetNoisyChip(UInt_t eq, UInt_t hs, UInt_t chip);
-  Bool_t  UnSetDeadChip(UInt_t eq, UInt_t hs, UInt_t chip);
-  Bool_t  UnSetNoisyChip(UInt_t eq, UInt_t hs, UInt_t chip);
 
+  Bool_t  IsPixelBad(UInt_t eq, UInt_t hs, UInt_t chip, UInt_t col, UInt_t row) const;
   Bool_t  IsPixelSilent(UInt_t eq, UInt_t hs, UInt_t chip, UInt_t col, UInt_t row) const; // silent = dead or inactive
   Bool_t  IsPixelDead(UInt_t eq, UInt_t hs, UInt_t chip, UInt_t col, UInt_t row) const;
   Bool_t  IsPixelNoisy(UInt_t eq, UInt_t hs, UInt_t chip, UInt_t col, UInt_t row) const;
+  Bool_t  IsPixelBadM(UInt_t module, UInt_t colM, UInt_t row) const;
   Bool_t  IsPixelSilentM(UInt_t module, UInt_t colM, UInt_t row) const;
   Bool_t  IsPixelDeadM(UInt_t module, UInt_t colM, UInt_t row) const;
   Bool_t  IsPixelNoisyM(UInt_t module, UInt_t colM, UInt_t row) const;
+  Bool_t  IsPixelBadKey(Int_t key) const;
   Bool_t  IsPixelSilentKey(Int_t key) const;
   Bool_t  IsPixelDeadKey(Int_t key) const;
   Bool_t  IsPixelNoisyKey(Int_t key) const;
 
+  UInt_t  GetNrBad() const; // bad = silent or noisy
   UInt_t  GetNrSilent() const; // silent = dead or inactive
   UInt_t  GetNrDead() const;
-  UInt_t  GetDeadEqIdAt(UInt_t index);
-  UInt_t  GetDeadHSAt(UInt_t index);
-  UInt_t  GetDeadChipAt(UInt_t index);
-  UInt_t  GetDeadColAt(UInt_t index);
-  UInt_t  GetDeadRowAt(UInt_t index);
+  UInt_t  GetDeadEqIdAt(UInt_t index) const;
+  UInt_t  GetDeadHSAt(UInt_t index) const;
+  UInt_t  GetDeadChipAt(UInt_t index) const;
+  UInt_t  GetDeadColAt(UInt_t index) const;
+  UInt_t  GetDeadRowAt(UInt_t index) const;
   UInt_t  GetNrNoisy() const;
-  UInt_t  GetNoisyEqIdAt(UInt_t index);
-  UInt_t  GetNoisyHSAt(UInt_t index);
-  UInt_t  GetNoisyChipAt(UInt_t index);
-  UInt_t  GetNoisyColAt(UInt_t index);
-  UInt_t  GetNoisyRowAt(UInt_t index);
+  UInt_t  GetNoisyEqIdAt(UInt_t index) const;
+  UInt_t  GetNoisyHSAt(UInt_t index) const;
+  UInt_t  GetNoisyChipAt(UInt_t index) const;
+  UInt_t  GetNoisyColAt(UInt_t index) const;
+  UInt_t  GetNoisyRowAt(UInt_t index) const;
 
+
+  UInt_t  GetNrBad(UInt_t module) const; // bad = silent or noisy
   UInt_t  GetNrSilent(UInt_t module) const; // silent = dead or inactive
   UInt_t  GetNrDead(UInt_t module) const;
-  UInt_t  GetDeadEqIdAt(UInt_t module,UInt_t index);
-  UInt_t  GetDeadHSAt(UInt_t module,UInt_t index);
-  UInt_t  GetDeadChipAt(UInt_t module,UInt_t index);
-  UInt_t  GetDeadColAt(UInt_t module,UInt_t index);
-  UInt_t  GetDeadRowAt(UInt_t module,UInt_t index);
+  UInt_t  GetDeadEqIdAt(UInt_t module,UInt_t index) const;
+  UInt_t  GetDeadHSAt(UInt_t module,UInt_t index) const;
+  UInt_t  GetDeadChipAt(UInt_t module,UInt_t index) const;
+  UInt_t  GetDeadColAt(UInt_t module,UInt_t index) const;
+  UInt_t  GetDeadRowAt(UInt_t module,UInt_t index) const;
   UInt_t  GetNrNoisy(UInt_t module) const;
-  UInt_t  GetNoisyEqIdAt(UInt_t module, UInt_t index);
-  UInt_t  GetNoisyHSAt(UInt_t module, UInt_t index);
-  UInt_t  GetNoisyChipAt(UInt_t module, UInt_t index);
-  UInt_t  GetNoisyColAt(UInt_t module, UInt_t index);
-  UInt_t  GetNoisyRowAt(UInt_t module, UInt_t index);
+  UInt_t  GetNoisyEqIdAt(UInt_t module, UInt_t index) const;
+  UInt_t  GetNoisyHSAt(UInt_t module, UInt_t index) const;
+  UInt_t  GetNoisyChipAt(UInt_t module, UInt_t index) const;
+  UInt_t  GetNoisyColAt(UInt_t module, UInt_t index) const;
+  UInt_t  GetNoisyRowAt(UInt_t module, UInt_t index) const;
 
+  UInt_t  GetNrBadEq(UInt_t eq) const; // bad = silent or noisy
   UInt_t  GetNrSilentEq(UInt_t eq) const; // silent = dead or inactive
   UInt_t  GetNrDeadEq(UInt_t eq) const;
   UInt_t  GetDeadEqIdAtEq(UInt_t eq, UInt_t index) const;
-  UInt_t  GetDeadHSAtEq(UInt_t eq, UInt_t index);
-  UInt_t  GetDeadChipAtEq(UInt_t eq, UInt_t index);
-  UInt_t  GetDeadColAtEq(UInt_t eq, UInt_t index);
-  UInt_t  GetDeadRowAtEq(UInt_t eq, UInt_t index);
+  UInt_t  GetDeadHSAtEq(UInt_t eq, UInt_t index) const;
+  UInt_t  GetDeadChipAtEq(UInt_t eq, UInt_t index) const;
+  UInt_t  GetDeadColAtEq(UInt_t eq, UInt_t index) const;
+  UInt_t  GetDeadRowAtEq(UInt_t eq, UInt_t index) const;
   UInt_t  GetNrNoisyEq(UInt_t eq) const;
   UInt_t  GetNoisyEqIdAtEq(UInt_t eq, UInt_t index) const;
-  UInt_t  GetNoisyHSAtEq(UInt_t eq, UInt_t index);
-  UInt_t  GetNoisyChipAtEq(UInt_t eq, UInt_t index);
-  UInt_t  GetNoisyColAtEq(UInt_t eq, UInt_t index);
-  UInt_t  GetNoisyRowAtEq(UInt_t eq, UInt_t index);
+  UInt_t  GetNoisyHSAtEq(UInt_t eq, UInt_t index) const;
+  UInt_t  GetNoisyChipAtEq(UInt_t eq, UInt_t index) const;
+  UInt_t  GetNoisyColAtEq(UInt_t eq, UInt_t index) const;
+  UInt_t  GetNoisyRowAtEq(UInt_t eq, UInt_t index) const;
 
+  UInt_t  GetNrBadC(UInt_t eq, UInt_t hs, UInt_t chip) const; // bad = silent or noisy
   UInt_t  GetNrSilentC(UInt_t eq, UInt_t hs, UInt_t chip) const; // silent = dead or inactive
   UInt_t  GetNrDeadC(UInt_t eq, UInt_t hs, UInt_t chip) const;
   UInt_t  GetDeadEqIdAtC(UInt_t eq, UInt_t hs, UInt_t chip, UInt_t index) const;
@@ -172,14 +176,27 @@ class AliITSOnlineCalibrationSPDhandler {
   const Char_t* GetDeadPixelAsTextC(UInt_t eq, UInt_t hs, UInt_t chip, UInt_t index) const;
   const Char_t* GetNoisyPixelAsTextC(UInt_t eq, UInt_t hs, UInt_t chip, UInt_t index) const;
 
-  void   ActivateALL();
-  void   ActivateEq(UInt_t eq, Bool_t setval = kTRUE);
-  void   ActivateHS(UInt_t eq, UInt_t hs, Bool_t setval = kTRUE);
-  void   ActivateChip(UInt_t eq, UInt_t hs, UInt_t chip, Bool_t setval = kTRUE);
+  void    ActivateALL();
+  void    ActivateEq(UInt_t eq, Bool_t setval = kTRUE);
+  void    ActivateHS(UInt_t eq, UInt_t hs, Bool_t setval = kTRUE);
+  void    ActivateChip(UInt_t eq, UInt_t hs, UInt_t chip, Bool_t setval = kTRUE);
 
-  Bool_t IsActiveEq(UInt_t eq) const;
-  Bool_t IsActiveHS(UInt_t eq, UInt_t hs) const;
-  Bool_t IsActiveChip(UInt_t eq, UInt_t hs, UInt_t chip) const;
+  void    UnSetDeadALL();
+  void    SetDeadEq(UInt_t eq, Bool_t setval = kTRUE);
+  void    SetDeadHS(UInt_t eq, UInt_t hs, Bool_t setval = kTRUE);
+  void    SetDeadChip(UInt_t eq, UInt_t hs, UInt_t chip, Bool_t setval = kTRUE);
+
+  Bool_t  IsActiveEq(UInt_t eq) const;
+  Bool_t  IsActiveHS(UInt_t eq, UInt_t hs) const;
+  Bool_t  IsActiveChip(UInt_t eq, UInt_t hs, UInt_t chip) const;
+
+  Bool_t  IsDeadEq(UInt_t eq) const;
+  Bool_t  IsDeadHS(UInt_t eq, UInt_t hs) const;
+  Bool_t  IsDeadChip(UInt_t eq, UInt_t hs, UInt_t chip) const;
+
+  Bool_t  IsSilentEq(UInt_t eq) const;
+  Bool_t  IsSilentHS(UInt_t eq, UInt_t hs) const;
+  Bool_t  IsSilentChip(UInt_t eq, UInt_t hs, UInt_t chip) const;
 
 
   UInt_t  AddSilentFrom(AliITSOnlineCalibrationSPDhandler* other);
@@ -205,6 +222,9 @@ class AliITSOnlineCalibrationSPDhandler {
   Bool_t fActiveEq[20];               // active bit for each equipment
   Bool_t fActiveHS[20][6];            // active bit for each half-stave
   Bool_t fActiveChip[20][6][10];      // active bit for each chip
+  Bool_t fDeadEq[20];                 // dead bit for each equipment
+  Bool_t fDeadHS[20][6];              // dead bit for each half-stave
+  Bool_t fDeadChip[20][6][10];        // dead bit for each chip
 
   Int_t    GetKey(UInt_t eq, UInt_t hs, UInt_t chip, UInt_t col, UInt_t row) const 
     {return eq*6*10*32*256 + hs*10*32*256 + chip*32*256 + col*256 + row;}
@@ -230,12 +250,12 @@ class AliITSOnlineCalibrationSPDhandler {
   UInt_t   GetHSGlo(UInt_t gloChip) const {return (gloChip%60)/10;}
   UInt_t   GetChipGlo(UInt_t gloChip) const {return (gloChip%60)%10;}
 
-  void     GetChipAndIndexDead(UInt_t module, UInt_t index, UInt_t& gloChip, UInt_t& chipIndex);
-  void     GetChipAndIndexNoisy(UInt_t module, UInt_t index, UInt_t& gloChip, UInt_t& chipIndex);
-  void     GetChipAndIndexEqDead(UInt_t eq, UInt_t index, UInt_t& gloChip, UInt_t& chipIndex);
-  void     GetChipAndIndexEqNoisy(UInt_t eq, UInt_t index, UInt_t& gloChip, UInt_t& chipIndex);
-  void     GetChipAndIndexTotDead(UInt_t index, UInt_t& gloChip, UInt_t& chipIndex);
-  void     GetChipAndIndexTotNoisy(UInt_t index, UInt_t& gloChip, UInt_t& chipIndex);
+  void     GetChipAndIndexDead(UInt_t module, UInt_t index, UInt_t& gloChip, UInt_t& chipIndex) const;
+  void     GetChipAndIndexNoisy(UInt_t module, UInt_t index, UInt_t& gloChip, UInt_t& chipIndex) const;
+  void     GetChipAndIndexEqDead(UInt_t eq, UInt_t index, UInt_t& gloChip, UInt_t& chipIndex) const;
+  void     GetChipAndIndexEqNoisy(UInt_t eq, UInt_t index, UInt_t& gloChip, UInt_t& chipIndex) const;
+  void     GetChipAndIndexTotDead(UInt_t index, UInt_t& gloChip, UInt_t& chipIndex) const;
+  void     GetChipAndIndexTotNoisy(UInt_t index, UInt_t& gloChip, UInt_t& chipIndex) const;
 
   UInt_t   GetEqIdFromOffline(UInt_t module) const;
   UInt_t   GetHSFromOffline(UInt_t module) const;

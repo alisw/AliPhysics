@@ -313,20 +313,17 @@ UInt_t AliITSOnlineSPDphysAnalyzer::ProcessDeadPixels() {
   fNrEqHits = 0;
 
 
-  AliITSOnlineCalibrationSPDhandler *deadPixelHandler = new AliITSOnlineCalibrationSPDhandler();
-
   for (UInt_t hs=0; hs<6; hs++) {
-    if (!(fHandler->IsActiveHS(GetEqNr(),hs))) {
+    if (!fHandler->IsActiveHS(GetEqNr(),hs)) {
       fNrDeadChips+=10;
     }
     else {
       for (UInt_t chip=0; chip<10; chip++) {
-	if (!(fHandler->IsActiveChip(GetEqNr(),hs,chip))) {
+	if (!fHandler->IsActiveChip(GetEqNr(),hs,chip)) {
 	  fNrDeadChips++;
 	}
 	else {
 	  // perform search for individual dead pixels...
-	  deadPixelHandler->ResetDead();
 	  Bool_t good=kFALSE;
 
 	  UInt_t nrPossiblyDeadPixels = 0;
@@ -341,7 +338,9 @@ UInt_t AliITSOnlineSPDphysAnalyzer::ProcessDeadPixels() {
 		nrPixels++;
 		if (nrHits==0) {
 		  nrPossiblyDeadPixels++;
-		  deadPixelHandler->SetDeadPixel(GetEqNr(),hs,chip,col,row);
+		}
+		else {
+		  fHandler->UnSetDeadPixel(GetEqNr(),hs,chip,col,row); // unset (no action unless dead before)
 		}
 	      }
 	      else {
@@ -351,24 +350,10 @@ UInt_t AliITSOnlineSPDphysAnalyzer::ProcessDeadPixels() {
 	  }
 	  fNrEqHits+=nrChipHits;
 
-	  // check all pixels that were declared dead from before...
-	  UInt_t nrDeadBefore = fHandler->GetNrDeadC(GetEqNr(),hs,chip);
-	  AliITSOnlineCalibrationSPDhandler *tmpHand = new AliITSOnlineCalibrationSPDhandler();
-	  for (UInt_t index=0; index<nrDeadBefore; index++) {
-	    UInt_t col = fHandler->GetDeadColAtC(GetEqNr(),hs,chip,index);
-	    UInt_t row = fHandler->GetDeadRowAtC(GetEqNr(),hs,chip,index);
-	    if (fPhysObj->GetHits(hs,chip,col,row)>0) {
-	      //	    fHandler->UnSetDeadPixel(GetEqNr(),hs,chip,col,row); // This was a bug - cannot delete while moving through indices, use tmpHand instead
-	      tmpHand->SetDeadPixel(GetEqNr(),hs,chip,col,row);
-	    }
+	  if (nrChipHits>0) {
+	    // make sure the chip is not flagged as dead
+	    fHandler->SetDeadChip(GetEqNr(),hs,chip,kFALSE);
 	  }
-	  UInt_t nrToRemove = tmpHand->GetNrDead();
-	  for (UInt_t index=0; index<nrToRemove; index++) {
-	    fHandler->UnSetDeadPixel(GetEqNr(),hs,chip,tmpHand->GetDeadColAtC(GetEqNr(),hs,chip,index),tmpHand->GetDeadRowAtC(GetEqNr(),hs,chip,index));
-	  }
-	  delete tmpHand;
-
-
 
 	  if (nrPossiblyDeadPixels==0) {
 	    // no need to see if we have enough statistics...
@@ -381,7 +366,6 @@ UInt_t AliITSOnlineSPDphysAnalyzer::ProcessDeadPixels() {
 
 	  if (nrChipHits==0) {
 	    nrPossiblyDeadChips++;
-	    //!!!	    deadChipHandler->SetDeadChip(GetEqNr(),hs,chip);
 	    possiblyDead->Insert(hs,chip);
 	    good=kFALSE;
 	    //	printf("%3d",good);
@@ -406,7 +390,18 @@ UInt_t AliITSOnlineSPDphysAnalyzer::ProcessDeadPixels() {
 		fNrEnoughStatChips++;
 		good=kTRUE;
 		// add dead pixels to handler
-		fHandler->AddDeadFrom(deadPixelHandler);
+		for (UInt_t col=0; col<32; col++) {
+		  for (UInt_t row=0; row<256; row++) {
+		    UInt_t nrHits = fPhysObj->GetHits(hs,chip,col,row);
+		    if (!fHandler->IsPixelNoisy(GetEqNr(),hs,chip,col,row)) {
+		      // don't include noisy pixels
+		      nrPixels++;
+		      if (nrHits==0) {
+			fHandler->SetDeadPixel(GetEqNr(),hs,chip,col,row);
+		      }
+		    }
+		  }
+		}
 		break;
 	      }
 	    }
@@ -432,13 +427,13 @@ UInt_t AliITSOnlineSPDphysAnalyzer::ProcessDeadPixels() {
     }
   } // for hs
  
-  delete deadPixelHandler;
 
   Int_t key,val;
+
   // dead chips?
   if (fNrEqHits>fMinNrEqHitsForDeadChips) {
     while (possiblyDead->Pop(key,val)) {
-      fHandler->ActivateChip(GetEqNr(),key,val,kFALSE);
+      fHandler->SetDeadChip(GetEqNr(),key,val,kFALSE);
     }
     fNrDeadChips+=nrPossiblyDeadChips;
   }

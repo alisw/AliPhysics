@@ -21,7 +21,7 @@
 //
 //  Modified by D. Elia, G.E. Bruno, H. Tydesjo
 //  March-April 2006
-//  Last mod:  H. Tydesjo  Oct 2007
+//  Last mod:  H. Tydesjo  Aug 2008
 //  September   2007: CouplingRowDefault = 0.055 (was 0.047)
 //
 ///////////////////////////////////////////////////////////////////////////
@@ -31,7 +31,7 @@ const Double_t AliITSCalibrationSPD::fgkCouplColDefault = 0.;
 const Double_t AliITSCalibrationSPD::fgkCouplRowDefault = 0.055;
 const Double_t AliITSCalibrationSPD::fgkBiasVoltageDefault = 18.182;
 
-ClassImp(AliITSCalibrationSPD)	
+ClassImp(AliITSCalibrationSPD)
 
 //______________________________________________________________________
 AliITSCalibrationSPD::AliITSCalibrationSPD():
@@ -52,85 +52,188 @@ fBadChannels(0){
    SetBiasVoltage(fgkBiasVoltageDefault);
    SetNoiseParam(0.,0.);
    SetDataType("simulated");
+   ClearBad();
+}
+//____________________________________________________________________________
+void AliITSCalibrationSPD::ClearBad() {
+  // clear all bad pixels (single+chips)
+  fBadChannels.Reset();
+  fNrBad=0;
+  for (UInt_t chip=0; chip<5; chip++) {
+    fBadChip[chip]=kFALSE;
+  }
 }
 //____________________________________________________________________________
 void AliITSCalibrationSPD::AddBad(UInt_t col, UInt_t row) {
-  //
-  // add bad pixel 
-  //
+  // add single bad pixel 
   fBadChannels.Set(fNrBad*2+2);
   fBadChannels.AddAt(col,fNrBad*2);
   fBadChannels.AddAt(row,fNrBad*2+1);
   fNrBad++;
 }
 //____________________________________________________________________________
-Int_t AliITSCalibrationSPD::GetBadColAt(UInt_t index) {
-  //
+void AliITSCalibrationSPD::SetChipBad(UInt_t chip) {
+  // set full chip bad
+  if (chip>=5) {AliError("Wrong chip number");}
+  fBadChip[chip]=kTRUE;
+}
+//____________________________________________________________________________
+void AliITSCalibrationSPD::UnSetChipBad(UInt_t chip) {
+  // unset full chip bad
+  if (chip>=5) {AliError("Wrong chip number");}
+  fBadChip[chip]=kFALSE;
+}
+//____________________________________________________________________________
+Int_t AliITSCalibrationSPD::GetBadColAt(UInt_t index) const {
   // Get column of index-th bad pixel
-  //
-  if (index<fNrBad) {
+  if ((Int_t)index<GetNrBadSingle()) {
     return fBadChannels.At(index*2);
   }
-  return -1;
-}
-//____________________________________________________________________________
-Int_t AliITSCalibrationSPD::GetBadRowAt(UInt_t index) {
-  //
-  // Get row of index-th bad pixel
-  //
-  if (index<fNrBad) {
-    return fBadChannels.At(index*2+1);
-  }
-  return -1;
-}
-//____________________________________________________________________________
-Bool_t AliITSCalibrationSPD::IsPixelBad(Int_t col, Int_t row) const {
-  //
-  // Check if pixel (col,row) is bad
-  //
-  for (UInt_t i=0; i<fNrBad; i++) { 
-    if (fBadChannels.At(i*2)==col && fBadChannels.At(i*2+1)==row) {
-      return true;
+  else {
+    Int_t badChipIndex=(index-GetNrBadSingle())/(32*256);
+    Int_t badChipsFound =0;
+    for (UInt_t chip=0; chip<5; chip++) {
+      if (fBadChip[chip]) badChipsFound++;
+      if (badChipIndex==badChipsFound-1) {
+	Int_t badPixelIndex=(index-GetNrBadSingle())%(32*256);
+	return chip*32 + badPixelIndex/256;
+      }
     }
   }
-  return false;
+  AliError(Form("Index %d is out of bounds - returning -1",index));
+  return -1;
 }
-
 //____________________________________________________________________________
-void AliITSCalibrationSPD::GetBadPixel(Int_t i, Int_t &row, Int_t &col) const {
-  //
-  // i: is the i-th bad pixel in fBadChannels
+Int_t AliITSCalibrationSPD::GetBadRowAt(UInt_t index) const {
+  // Get row of index-th bad pixel
+  if ((Int_t)index<GetNrBadSingle()) {
+    return fBadChannels.At(index*2+1);
+  }
+  else {
+    Int_t badChipIndex=(index-GetNrBadSingle())/(32*256);
+    Int_t badChipsFound =0;
+    for (UInt_t chip=0; chip<5; chip++) {
+      if (fBadChip[chip]) badChipsFound++;
+      if (badChipIndex==badChipsFound-1) {
+	Int_t badPixelIndex=(index-GetNrBadSingle())%(32*256);
+	return badPixelIndex%256;
+      }
+    }
+  }
+  AliError(Form("Index %d is out of bounds - returning -1",index));
+  return -1;
+}
+//____________________________________________________________________________
+void AliITSCalibrationSPD::GetBadPixel(Int_t index, Int_t &row, Int_t &col) const {
+  // i: is the i-th bad pixel in single bad pixel list
   // row: is the corresponding row (-1 if i is out of range)
   // col: is the corresponding column (-1 if i is out of range)
   row = -1;
   col = -1;
-  if(i<0 || i>=GetNrBad()){
-    AliWarning(Form("Index %d is out of bounds - nothing done",i));
+  if(index>=0 && index<GetNrBadSingle()){
+    col = GetBadColAt(index);
+    row = GetBadRowAt(index);
     return;
   }
-  col = fBadChannels.At(i*2);
-  row = fBadChannels.At(i*2+1);
+  else {
+    if (index>=0) {
+      Int_t badChipIndex=(index-GetNrBadSingle())/(32*256);
+      Int_t badChipsFound =0;
+      for (UInt_t chip=0; chip<5; chip++) {
+	if (fBadChip[chip]) badChipsFound++;
+	if (badChipIndex==badChipsFound-1) {
+	  Int_t badPixelIndex=(index-GetNrBadSingle())%(32*256);
+	  col = chip*32 + badPixelIndex/256;
+	  row = badPixelIndex%256;
+	  return;
+	}
+      }
+    }
+  }
+  AliError(Form("Index %d is out of bounds - nothing done",index));
 }
- 
 //___________________________________________________________________________
-Int_t  AliITSCalibrationSPD::GetNrBadInColumn(Int_t col) const {
- //
- // Count n. of bad in a given column: col. range [0,159]
- //
- if(col<0 || col>159) {AliWarning("GetNrBadInColumn: wrong column number"); return -1;}
- Int_t bad=0;
- for (UInt_t i=0; i<fNrBad; i++) if (fBadChannels.At(i*2)==col) bad++;
- return bad;
+Int_t  AliITSCalibrationSPD::GetNrBad() const {
+  // Total number of bad pixels (including bad chips) in a given module
+  Int_t bad=0;
+  // single pixels:
+  bad+=fNrBad;
+  // whole chips:
+  for (UInt_t chip=0; chip<5; chip++) {
+    bad+=fBadChip[chip]*32*256;
+  }
+  return bad;
 }
 //___________________________________________________________________________
 Int_t  AliITSCalibrationSPD::GetNrBadInChip(Int_t chip) const {
- //
- // Count n. of bad in a given chip: chip range [0,4]
- //
- if(chip<0 || chip>4) {AliWarning("GetNrBadInChip: wrong chip number"); return -1;}
- Int_t bad=0;
- for (Int_t col=32*chip; col<32*(chip+1); col++) bad+=GetNrBadInColumn(col);
- return bad;
+  // Total number of bad pixels (including bad chips) in a given chip: chip range [0,4]
+  if(chip<0 || chip>4) {AliError("Wrong chip number"); return -1;}
+  if (fBadChip[chip]) return 32*256;
+  else {
+    Int_t bad=0;
+    for (UInt_t i=0; i<fNrBad; i++) {
+      Int_t col = GetBadColAt(i);
+      if (col!=-1) {
+	if (GetChipIndexFromCol(col)==chip) bad++;
+      }
+    }
+    return bad;
+  }
+}
+//___________________________________________________________________________
+Int_t  AliITSCalibrationSPD::GetNrBadInColumn(Int_t col) const {
+  // Total number of bad pixels (including bad chips) in a given column: col. range [0,159]
+  if(col<0 || col>159) {AliError("Wrong column number"); return -1;}
+  if (fBadChip[GetChipIndexFromCol(col)]) return 256;
+  else {
+    Int_t bad=0;
+    for (UInt_t i=0; i<fNrBad; i++) {
+      if (GetBadColAt(i)==col) bad++;
+    }
+    return bad;
+  }
+}
+//______________________________________________________________________
+Bool_t AliITSCalibrationSPD::IsBad() const {
+  // Are all chips of this module bad?
+  for (UInt_t chip=0; chip<5; chip++) {
+    if (!fBadChip[chip]) return kFALSE;
+  }
+  return kTRUE;
+}
+//______________________________________________________________________
+Bool_t AliITSCalibrationSPD::IsChipBad(Int_t chip) const {
+  // Is the full chip bad?
+  return (GetNrBadInChip(chip)==32*256);
+}
+//______________________________________________________________________
+Bool_t AliITSCalibrationSPD::IsColumnBad(Int_t col) const {
+  // Is the full column bad?
+  return (GetNrBadInColumn(col)==256);
+}
+//____________________________________________________________________________
+Bool_t AliITSCalibrationSPD::IsPixelBad(Int_t col, Int_t row) const {
+  // Is this pixel bad?
+  if(col<0 || col>159) {AliError("Wrong column number"); return kFALSE;}
+  Int_t chip = GetChipIndexFromCol(col);
+  if (fBadChip[chip]) return kTRUE;
+  for (UInt_t i=0; i<fNrBad; i++) { 
+    if (GetBadColAt(i)==col && GetBadRowAt(i)==row) {
+      return kTRUE;
+    }
+  }
+  return kFALSE;
+}
+//______________________________________________________________________
+Int_t AliITSCalibrationSPD::GetChipIndexFromCol(UInt_t col) const {
+  // returns chip index for specific column
+  if(col>=160) {AliWarning("Wrong column number"); return -1;}
+  return col/32;
+}
+//______________________________________________________________________
+void AliITSCalibrationSPD::SetNrBad(UInt_t /*nr*/) {
+  // should not be used anymore !!!
+  AliError("This method should not be used anymore. Use SetNrBadSingle instead!!!");
 }
 //______________________________________________________________________
 void AliITSCalibrationSPD::Streamer(TBuffer &R__b) {
@@ -147,15 +250,24 @@ void AliITSCalibrationSPD::Streamer(TBuffer &R__b) {
     R__b >> fCouplRow;
     R__b >> fBiasVoltage;
     R__b >> fNrBad;
-    if (R__v > 5) {
+    if (R__v >= 7) {
       fBadChannels.Streamer(R__b);
+      R__b.ReadStaticArray((bool*)fBadChip);
     }
     else {
-      TArrayI fBadChannelsV1;
-      fBadChannelsV1.Streamer(R__b);
-      fBadChannels.Set(fNrBad*2);
-      for (UInt_t i=0; i<fNrBad*2; i++) {
-	fBadChannels[i] = fBadChannelsV1[i];
+      if (R__v == 6) {
+	fBadChannels.Streamer(R__b);
+      }
+      else {
+	TArrayI fBadChannelsV1;
+	fBadChannelsV1.Streamer(R__b);
+	fBadChannels.Set(fNrBad*2);
+	for (UInt_t i=0; i<fNrBad*2; i++) {
+	  fBadChannels[i] = fBadChannelsV1[i];
+	}
+      }
+      for (UInt_t i=0; i<5; i++) {
+	fBadChip[i]=kFALSE;
       }
     }
     R__b.CheckByteCount(R__s, R__c, AliITSCalibrationSPD::IsA());
@@ -172,6 +284,7 @@ void AliITSCalibrationSPD::Streamer(TBuffer &R__b) {
     R__b << fBiasVoltage;
     R__b << fNrBad;
     fBadChannels.Streamer(R__b);
+    R__b.WriteArray(fBadChip, 5);
     R__b.SetByteCount(R__c, kTRUE);
   }
 }

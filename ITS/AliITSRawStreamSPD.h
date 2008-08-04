@@ -54,10 +54,15 @@ class AliITSRawStreamSPD: public AliITSRawStream {
     static UInt_t GetOfflineColFromOnline(UInt_t eqId, UInt_t hs, UInt_t chip, UInt_t col);
     static UInt_t GetOfflineRowFromOnline(UInt_t eqId, UInt_t hs, UInt_t chip, UInt_t row);
 
-    Int_t  GetEventCounter() {return fEventCounter;}
+    Int_t   GetEventCounter() const {return fEventCounter;}    // get last read event counter value
+    Short_t GetEventCounterFullEq(UInt_t eq) const;
+    Short_t GetEventCounterFullHS(UInt_t eq, UInt_t hs) const;
+    Short_t GetEventCounterFullChip(UInt_t eq, UInt_t hs, UInt_t chip) const;
+    Bool_t  IsEventCounterFullConsistent() const;
 
-    Bool_t IsActiveEq(UInt_t eq) const {return fActiveEq[eq];}
-    Bool_t IsActiveHS(UInt_t eq, UInt_t hs) const {return fActiveHS[eq][hs];}
+    Bool_t IsActiveEq(UInt_t eq) const;
+    Bool_t IsActiveHS(UInt_t eq, UInt_t hs) const;
+    Bool_t IsActiveChip(UInt_t eq, UInt_t hs, UInt_t chip) const;
 
     Bool_t GetHalfStavePresent(UInt_t hs);
 
@@ -116,6 +121,8 @@ class AliITSRawStreamSPD: public AliITSRawStream {
     void	CheckHeaderAndTrailerCount(Int_t ddlID);
 
     Int_t       fEventCounter;                // chip event counter
+    Short_t     fEventCounterFull[20][6][10]; // chip event counter
+
     UShort_t    fChipAddr;                    // chip nr
     UShort_t    fHalfStaveNr;                 // half stave nr
     UInt_t      fCol;                         // chip column nr
@@ -144,6 +151,7 @@ class AliITSRawStreamSPD: public AliITSRawStream {
 
     Bool_t      fActiveEq[20];               // which equipments are active (found in data)
     Bool_t      fActiveHS[20][6];            // which half-staves are active (blockattribute bits)
+    Bool_t      fActiveChip[20][6][10];      // which chips are active (found in data)
 
     ClassDef(AliITSRawStreamSPD, 0) // class for reading ITS SPD raw digits
 };

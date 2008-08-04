@@ -19,6 +19,35 @@ class AliITSCalibrationSPD :  public AliITSCalibration {
     AliITSCalibrationSPD(); // default constructor
     virtual ~AliITSCalibrationSPD() {;} // destructror
 
+    virtual void   ClearBad();
+
+    virtual Int_t  GetNrBad() const;
+    virtual Int_t  GetNrBadInChip(Int_t chip) const;
+    virtual Int_t  GetNrBadInColumn(Int_t col) const;
+
+    virtual Int_t  GetBadColAt(UInt_t index) const;
+    virtual Int_t  GetBadRowAt(UInt_t index) const;
+    virtual void   GetBadPixel(Int_t index, Int_t &row, Int_t &col) const;
+
+    virtual Int_t  GetNrBadSingle() const {return fNrBad;}
+    virtual void   SetNrBadSingle(UInt_t nr) {fNrBad=nr;} // used to be called SetNrBad, but misleading
+    virtual void   SetBadList(TArrayS badlist) {fBadChannels=badlist;}
+    virtual void   SetNrBad(UInt_t /*nr*/); // Use SetNrBadSingle!!!
+
+    virtual Bool_t IsBad() const;
+    virtual Bool_t IsChipBad(Int_t chip) const;
+    virtual Bool_t IsColumnBad(Int_t col) const;
+    virtual Bool_t IsPixelBad(Int_t col, Int_t row) const;
+
+    virtual void   SetChipBad(UInt_t chip);
+    virtual void   UnSetChipBad(UInt_t chip);
+
+    virtual void   AddBad(UInt_t col, UInt_t row);
+
+    virtual Int_t  GetChipIndexFromCol(UInt_t col) const;
+    //    virtual Int_t  GetChipFromChipIndex(UInt_t index) const;
+
+
     // Set Threshold and noise + threshold fluctuations parameter values
     virtual  void   SetThresholds(Double_t thresh, Double_t sigma)
 	{fThresh=thresh; fSigma=sigma;}
@@ -70,21 +99,7 @@ class AliITSCalibrationSPD :  public AliITSCalibration {
     virtual void SetSigmaDiffusionAsymmetry(Double_t ecc) {((AliITSresponseSPD*)fResponse)->SetSigmaDiffusionAsymmetry(ecc);}
     virtual void GetSigmaDiffusionAsymmetry(Double_t &ecc) const {((AliITSresponseSPD*)fResponse)->GetSigmaDiffusionAsymmetry(ecc);}
     
-    void   AddBad(UInt_t col, UInt_t row);
-    Int_t  GetNrBad() const {return fNrBad;}
-    Int_t  GetNrBadInChip(Int_t chip) const ;
-    Int_t  GetNrBadInColumn(Int_t col) const ;
-    Int_t  GetBadColAt(UInt_t index); //returns -1 if out of bounds
-    Int_t  GetBadRowAt(UInt_t index); //returns -1 if out of bounds
-    void   ClearBad() {fBadChannels.Reset(); fNrBad=0;}
-    Bool_t IsPixelBad(Int_t col, Int_t row) const ;
-    void GetBadPixel(Int_t i, Int_t &row, Int_t &col) const;
 
-    void   SetBadList(TArrayS badlist) {fBadChannels=badlist;}
-    void   SetNrBad(UInt_t nr) {fNrBad=nr;}
-    virtual Bool_t IsBad() const {return (GetNrBad()==256*160);};
-    virtual Bool_t IsChipBad(Int_t chip) const {return (GetNrBadInChip(chip)==256*32);};
-    Bool_t  IsColumnBad(Int_t col) const {return (GetNrBadInColumn(col)==256);};
 
  protected:
     // static const Double_t fgkDiffCoeffDefault; //default for fDiffCoeff
@@ -100,10 +115,11 @@ class AliITSCalibrationSPD :  public AliITSCalibration {
     Double_t fCouplCol;        // Coupling parameter along the cols
     Double_t fCouplRow;        // Coupling parameter along the rows
     Double_t fBiasVoltage;     // Bias Voltage for the SPD (used to compute DistanceOverVoltage)
-    UInt_t   fNrBad;           // Nr of bad pixels
+    UInt_t   fNrBad;           // Nr of SINGLE bad pixels
     TArrayS  fBadChannels;     // Array with bad channels info (col0,row0,col1...rowN) N = fNrBad
+    Bool_t   fBadChip[5];     // Is chip completely dead?
 
-    ClassDef(AliITSCalibrationSPD,6) // SPD response
+    ClassDef(AliITSCalibrationSPD,7) // SPD response
 };
 
 #endif

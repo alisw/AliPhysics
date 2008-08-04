@@ -35,10 +35,13 @@ extern "C" {
 #include "AliLog.h"
 #include <iostream>
 #include <fstream>
+//#include <time.h>
 #include <TROOT.h>
 #include <TPluginManager.h>
 #include <TObjArray.h>
+#include <TObjString.h>
 #include <TString.h>
+
 
 int main(int argc, char **argv) {
   if (argc<2) {
@@ -108,10 +111,8 @@ int main(int argc, char **argv) {
 	paramsFile >> paramN;
 	if (paramsFile.eof()) break;
 	paramsFile >> paramV;
-	TString* paramNS = new TString(paramN);
-	TString* paramVS = new TString(paramV);
-	paramNames.AddAtAndExpand((TObject*)paramNS,nrTuningParams);
-	paramVals.AddAtAndExpand((TObject*)paramVS,nrTuningParams);
+	paramNames.AddAtAndExpand(new TObjString(paramN),nrTuningParams);
+	paramVals.AddAtAndExpand(new TObjString(paramV),nrTuningParams);
 	nrTuningParams++;
 	if (paramsFile.eof()) break;
       }
@@ -119,7 +120,8 @@ int main(int argc, char **argv) {
     }
   }
   //  for (UInt_t i=0; i<nrTuningParams; i++) {
-  //    printf("Entry %d: N=%s , V=%s\n",i,((TString*)paramNames.At(i))->Data(),((TString*)paramVals.At(i))->Data());
+  //  //    printf("Entry %d: N=%s , V=%s\n",i,((TString*)paramNames.At(i))->Data(),((TString*)paramVals.At(i))->Data());
+  //    printf("Entry %d: N=%s , V=%s\n",i,((TObjString*)paramNames.At(i))->GetString().Data(),((TObjString*)paramVals.At(i))->GetString().Data());
   //  }
 
 
@@ -131,10 +133,7 @@ int main(int argc, char **argv) {
   // Read silent=dead+inactive info from previous calibrations
   handler->SetFileLocation(saveDirDead);
   handler->ReadSilentFromFiles();
-//!!!  // start by deactivating all eq - should then be activated when found in raw data
-//!!!  for (UInt_t eq=0; eq<20; eq++) {
-//!!!    handler->ActivateEq(eq,kFALSE);
-//!!!  }
+  printf("Nr dead pixels before: %d\n",handler->GetNrDead());
 
 
 
@@ -156,9 +155,9 @@ int main(int argc, char **argv) {
   // container objects
   AliITSOnlineSPDphys *physObj[20];
   Bool_t bPhysInit[20];
-  for (UInt_t eqId=0; eqId<20; eqId++) {
-    physObj[eqId]=NULL;
-    bPhysInit[eqId]=kFALSE;
+  for (UInt_t eq=0; eq<20; eq++) {
+    physObj[eq]=NULL;
+    bPhysInit[eq]=kFALSE;
   }
 
 
@@ -230,58 +229,71 @@ int main(int argc, char **argv) {
 
 	while (str->Next()) {
 
-	  Int_t eqId = reader->GetDDLID();
+	  Int_t eq = reader->GetDDLID();
 	  // check that this hs is active in handler object
-	  if (!(handler->IsActiveEq(eqId))) {
-	    printf("Warning: Found Eq (%d) , previously inactive in this run!\n",eqId);
-	    handler->ActivateEq(eqId);
+	  if (!(handler->IsActiveEq(eq))) {
+	    printf("Info: Found Eq (%d) , previously inactive\n",eq);
+	    handler->ActivateEq(eq);
 	  }
-	  if (eqId>=0 && eqId<20) {
-	    if (!bPhysInit[eqId]) { // this code is duplicated for the moment... (see also below)
-	      TString fileName = Form("%s/SPDphys_run_%d_eq_%d.root",saveDirNoisyRef,runNr,eqId);
-	      physObj[eqId] = new AliITSOnlineSPDphys(fileName.Data());
-	      physObj[eqId]->AddRunNr(runNr);
-	      physObj[eqId]->SetEqNr(eqId);
-	      bPhysInit[eqId]=kTRUE;
+	  if (eq>=0 && eq<20) {
+	    if (!bPhysInit[eq]) { // this code is duplicated for the moment... (see also below)
+	      TString fileName = Form("%s/SPDphys_run_%d_eq_%d.root",saveDirNoisyRef,runNr,eq);
+	      physObj[eq] = new AliITSOnlineSPDphys(fileName.Data());
+	      physObj[eq]->AddRunNr(runNr);
+	      physObj[eq]->SetEqNr(eq);
+	      bPhysInit[eq]=kTRUE;
 	    }
 
 	    UInt_t hs = str->GetHalfStaveNr();
 	    // check that this hs is active in handler object
-	    if (!(handler->IsActiveHS(eqId,hs))) {
-	      printf("Warning: Found HS (%d,%d) , previously inactive in this run!\n",eqId,hs);
-	      handler->ActivateHS(eqId,hs);
+	    if (!(handler->IsActiveHS(eq,hs))) {
+	      printf("Info: Found HS (%d,%d) , previously inactive\n",eq,hs);
+	      handler->ActivateHS(eq,hs);
 	    }
 	    UInt_t chip = str->GetChipAddr();
 	    // check that this chip is active in handler object
-	    if (!(handler->IsActiveChip(eqId,hs,chip))) {
-	      printf("Info: Found Chip (%d,%d,%d) , inactive in previous run.\n",eqId,hs,chip);
-	      handler->ActivateChip(eqId,hs,chip);
+	    if (!(handler->IsActiveChip(eq,hs,chip))) {
+	      printf("Info: Found Chip (%d,%d,%d) , previously inactive\n",eq,hs,chip);
+	      handler->ActivateChip(eq,hs,chip);
 	    }
-	    physObj[eqId]->IncrementHits(hs,chip,str->GetChipCol(),str->GetChipRow());
+	    physObj[eq]->IncrementHits(hs,chip,str->GetChipCol(),str->GetChipRow());
 	    
 	  }
 	}
 
 
-	// check which eq and hs are active for first event only
+	// check which eq and hs are active, for first event only
 	if (eventNr==0) {
-	  for (UInt_t eqId=0; eqId<20; eqId++) {
+	  for (UInt_t eq=0; eq<20; eq++) {
 	    // activate Eq and HSs in handler object
-	    if (str->IsActiveEq(eqId)) {
-	      handler->ActivateEq(eqId);
+	    if (str->IsActiveEq(eq)) {
+	      handler->ActivateEq(eq);
 	      for (UInt_t hs=0; hs<6; hs++) {
-		handler->ActivateHS(eqId,hs,str->IsActiveHS(eqId,hs));
+		if (str->IsActiveHS(eq,hs)) {
+		  handler->ActivateHS(eq,hs);
+		  for (UInt_t chip=0; chip<10; chip++) {
+		    if (str->IsActiveChip(eq,hs,chip)) {
+		      handler->ActivateChip(eq,hs,chip);
+		    }
+		    else {
+		      handler->ActivateChip(eq,hs,chip,kFALSE);
+		    }
+		  }
+		}
+		else {
+		  handler->ActivateHS(eq,hs,kFALSE);
+		}
 	      }
-	      if (!bPhysInit[eqId]) { // this code is duplicated for the moment... (see also above)
-		TString fileName = Form("%s/SPDphys_run_%d_eq_%d.root",saveDirNoisyRef,runNr,eqId);
-		physObj[eqId] = new AliITSOnlineSPDphys(fileName.Data());
-		physObj[eqId]->AddRunNr(runNr);
-		physObj[eqId]->SetEqNr(eqId);
-		bPhysInit[eqId]=kTRUE;
+	      if (!bPhysInit[eq]) { // this code is duplicated for the moment... (see also above)
+		TString fileName = Form("%s/SPDphys_run_%d_eq_%d.root",saveDirNoisyRef,runNr,eq);
+		physObj[eq] = new AliITSOnlineSPDphys(fileName.Data());
+		physObj[eq]->AddRunNr(runNr);
+		physObj[eq]->SetEqNr(eq);
+		bPhysInit[eq]=kTRUE;
 	      }
 	    }
 	    else {
-	      handler->ActivateEq(eqId,kFALSE);
+	      handler->ActivateEq(eq,kFALSE);
 	    }
 	  }
 	}
@@ -322,6 +334,9 @@ int main(int argc, char **argv) {
 
   // ********* STEP 2: Analyze phys container files. ************************************************
 
+  //  time_t timeStamp = time(NULL);
+  //  printf("*** Start step2 , %d\n",time(NULL) - timeStamp);
+
   // clear noisyToFXS dir:
   TString command;
   command = Form("cd %s; rm -f *",saveDirNoisyToFXS);
@@ -361,7 +376,7 @@ int main(int argc, char **argv) {
 
     // configure analyzer with tuning parameters etc:
     for (UInt_t i=0; i<nrTuningParams; i++) {
-      noisyAnalyzer->SetParam(((TString*)paramNames.At(i))->Data(),((TString*)paramVals.At(i))->Data());
+      noisyAnalyzer->SetParam(((TObjString*)paramNames.At(i))->GetString().Data(),((TObjString*)paramVals.At(i))->GetString().Data());
     }
 
     printf("SPD phys STEP 2: Noisy search for eq %d\n",eq);  
@@ -401,11 +416,10 @@ int main(int argc, char **argv) {
   }
   // *** *** *** end loop over equipments (eq_id)
 
-  printf("Noisy search finished. %d noisy pixels found. %d chips (%d) had enough statistics.\n",
-	 handler->GetNrNoisy(),nrEnoughStatNoisy,nrEqActiveNoisy*60);
+  printf("Noisy search finished. %d noisy pixels found. %d chips had enough statistics.\n",
+	 handler->GetNrNoisy(),nrEnoughStatNoisy);
   handler->SetFileLocation(saveDirNoisyToFXS);
   handler->WriteNoisyToFiles();
-
 
 
 
@@ -434,7 +448,7 @@ int main(int argc, char **argv) {
 	       deadAnalyzer->GetEqNr(),eq);
       }
       delete deadAnalyzer;
-      //!!!      nrDeadChips+=60; // since this eq is inactive...
+      nrDeadChips+=60; // since this eq is inactive...
       continue;
     }
 
@@ -443,7 +457,7 @@ int main(int argc, char **argv) {
 
     // configure analyzer with tuning parameters etc:
     for (UInt_t i=0; i<nrTuningParams; i++) {
-      deadAnalyzer->SetParam(((TString*)paramNames.At(i))->Data(),((TString*)paramVals.At(i))->Data());
+      deadAnalyzer->SetParam(((TObjString*)paramNames.At(i))->GetString().Data(),((TObjString*)paramVals.At(i))->GetString().Data());
     }
 
     printf("SPD phys STEP 2: Dead search for eq %d\n",eq);  
@@ -455,6 +469,7 @@ int main(int argc, char **argv) {
 
     delete deadAnalyzer;
 
+
 #ifndef SPD_DA_OFF
     daqDA_progressReport((unsigned int)(50+(eq+1)*2.5));
 #else
@@ -463,8 +478,12 @@ int main(int argc, char **argv) {
   }
   // *** *** *** end loop over equipments (eq_id)
 
+
+
   
-  printf("Dead search finished. %d dead pixels in total.\n%d chips (%d) had enough statistics. %d chips were dead. %d chips were inefficient.\n",handler->GetNrDead(),nrEnoughStatChips,nrEqActiveDead*60,nrDeadChips,nrInefficientChips);
+  printf("Dead search finished.\n");
+  printf("%d single dead pixels , %d dead or inactive pixels in total.\n",handler->GetNrDead(),handler->GetNrSilent());
+  printf("%d chips had enough statistics. %d chips are dead. %d chips are inefficient.\n",nrEnoughStatChips,nrDeadChips,nrInefficientChips);
   handler->SetFileLocation(saveDirDead);
   handler->WriteSilentToFilesAlways();
   handler->SetFileLocation(saveDirDeadToFXS);
@@ -478,7 +497,7 @@ int main(int argc, char **argv) {
 
 
   // send (dead) reference data for this run to FXS - only if there is no chip in category "needsMoreStat"
-  if (nrEnoughStatChips+nrDeadChips+nrInefficientChips == nrEqActiveDead*60) {
+  if (nrEnoughStatChips+nrDeadChips+nrInefficientChips == 1200) {
     printf("Dead calibration is complete.\n");    // calibration is complete
     printf("Preparing dead reference data\n");
     // send reference data for dead pixels to FXS
@@ -510,6 +529,7 @@ int main(int argc, char **argv) {
   }
 
 
+
   // send (noisy) reference data for this run to FXS
   printf("Preparing noisy reference data\n");
   TString tarFiles = "";
@@ -532,6 +552,8 @@ int main(int argc, char **argv) {
   idsFXSfile << Form("%s\n",id.Data());
 
 
+
+
   // send dead pixels to FXS
   printf("Preparing dead files\n");
   // send a tared file of all the dead files
@@ -548,6 +570,7 @@ int main(int argc, char **argv) {
   }
 #endif
   idsFXSfile << Form("%s\n",id.Data());
+
 
 
   // send noisy pixels to FXS
@@ -570,6 +593,7 @@ int main(int argc, char **argv) {
   }
 
 
+
   // send ids file to FXS
   idsFXSfile.close();
   id = "SPD_id_list";
@@ -585,6 +609,8 @@ int main(int argc, char **argv) {
 
 
   delete handler;
+
+  //  printf("*** End step2 , %d\n",time(NULL) - timeStamp);
 
 
   return 0;
