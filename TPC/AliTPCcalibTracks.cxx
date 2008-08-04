@@ -44,6 +44,13 @@ TFile fcalib("CalibObjects.root");
 TObjArray * array = (TObjArray*)fcalib.Get("TPCCalib");
 AliTPCcalibTracks * calibTracks = ( AliTPCcalibTracks *)array->FindObject("calibTracks");
 
+
+//USAGE of debug stream example
+ gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");
+  gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+")
+  AliXRDPROOFtoolkit tool;
+  TChain * chainres = tool.MakeChain("tracks.txt","ResolCl",0,10200);
+  chainres->Lookup();
 */
 
 
@@ -511,16 +518,6 @@ AliTPCcalibTracks::~AliTPCcalibTracks() {
 }
    
   
-void AliTPCcalibTracks::AddInfo(TChain * chain, char* fileName){
-   // 
-   // Add the neccessary information for processing to the chain 
-   // (cluster parametrization)
-   // 
-   TFile clusterParamFile(fileName);
-   AliTPCClusterParam *clusterParam  =  (AliTPCClusterParam *) clusterParamFile.Get("Param");
-   chain->GetUserInfo()->AddLast((TObject*)clusterParam);
-   cout << "Clusterparametrization added to the chain." << endl;
-}
 
 void AliTPCcalibTracks::Process(AliTPCseed *track){
    // 
@@ -2503,6 +2500,97 @@ AliTPCcalibTracks* AliTPCcalibTracks::TestMerge(AliTPCcalibTracks *ct, AliTPCClu
 
 }
 
+
+void  AliTPCcalibTracks::MakeQPosNormAll(TTree * chainres, AliTPCClusterParam * param, Int_t maxPoints, Int_t verbose){
+  //
+  // Make position corrections
+  // for the moment Only using debug streamer 
+  // chainres  - debug tree
+  // param     - parameters to be updated
+  // maxPoints - maximal number of points using for fit
+  // verbose   - print info flag
+  /*
+    //Defaults
+    Int_t maxPoints=100000;
+  */
+}
+
+/*
+  gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");
+  gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+")
+  AliXRDPROOFtoolkit tool;  
+  TChain * chainres = tool.MakeChain("tracks.txt","ResolCl",0,10200);
+  chainres->Lookup();
+  //
+  //
+  //
+
+
+  gSystem->Load("libSTAT.so");
+
+  TStatToolkit toolkit;
+  Double_t chi2;
+  TVectorD fitParamY0;
+  TVectorD fitParamY1;
+  TVectorD fitParamZ0;
+  TVectorD fitParamZ1;
+  TMatrixD covMatrix;
+  Int_t npoints;
+
+  chainres->SetAlias("dp","(-1+(Cl.fZ>0)*2)*((Cl.fPad-int(Cl.fPad))-0.5)");
+  chainres->SetAlias("dt","(-1+(Cl.fZ>0)*2)*((Cl.fTimeBin-0.66-int(Cl.fTimeBin-0.66))-0.5)");
+  chainres->SetAlias("sp","(sin(dp*pi)-dp*pi)");
+  chainres->SetAlias("st","(sin(dt)-dt)");
+  //
+  chainres->SetAlias("di","sqrt(1.-abs(Cl.fZ/250.))");
+  chainres->SetAlias("dq","sqrt(15./(5+Cl.fMax))");
+  chainres->SetAlias("sy","(0.32/sqrt(0.01^2+Cl.fSigmaY2))");
+  chainres->SetAlias("sz","(0.32/sqrt(0.01^2+Cl.fSigmaZ2))");
+  //
+  //
+  //
+  TCut cutA("1")
+  
+  TString fstringY="";  
+  //
+  fstringY+="(dp)++";            //1
+  fstringY+="(dp)*di++";         //2
+  fstringY+="(dp)*dq++";         //3
+  fstringY+="(dp)*sy++";         //4
+  //
+  fstringY+="(sp)++";            //5
+  fstringY+="(sp)*di++";         //6
+  fstringY+="(sp)*dq++";         //7
+  fstringY+="(sp)*sy++";         //8
+  //
+
+  TString fstringZ="";  
+  fstringZ+="(dt)++";            //1
+  fstringZ+="(dt)*di++";         //2
+  fstringZ+="(dt)*dq++";         //3
+  fstringZ+="(dt)*sz++";         //4
+  //
+  fstringZ+="(st)++";            //5
+  fstringZ+="(st)*di++";         //6
+  fstringZ+="(st)*dq++";         //7
+  fstringZ+="(st)*sz++";         //8
+
+  
+  TString *strZ0 = toolkit.FitPlane(chainres,"(Cl.fZ-PZ0.fElements[0]):CSigmaZ0",fstringZ->Data(), "Cl.fDetector<36"+cutA, chi2,npoints,fitParamZ0,covMatrix,-1,0,100000);
+  TString *strZ1 = toolkit.FitPlane(chainres,"(Cl.fZ-PZ0.fElements[0]):CSigmaZ0",fstringZ->Data(), "Cl.fDetector>36"+cutA, chi2,npoints,fitParamZ1,covMatrix,-1,0,100000);
+
+  TString *strY0 = toolkit.FitPlane(chainres,"(Cl.fY-PY0.fElements[0]):CSigmaY0",fstringY->Data(), "Cl.fDetector<36"+cutA, chi2,npoints,fitParamY0,covMatrix,-1,0,100000);
+  TString *strY1 = toolkit.FitPlane(chainres,"(Cl.fY-PY0.fElements[0]):CSigmaY0",fstringY->Data(), "Cl.fDetector>36"+cutA, chi2,npoints,fitParamY1,covMatrix,-1,0,100000);
+
+  chainres->SetAlias("fitZ0",strZ0->Data());
+  chainres->SetAlias("fitZ1",strZ1->Data());
+  chainres->SetAlias("fitY0",strY0->Data());
+  chainres->SetAlias("fitY1",strY1->Data());
+  chainres->Draw("Cl.fZ-PZ0.fElements[0]","CSigmaY0<0.7&&CSigmaZ0<0.7"+cutA,"",10000)
+
+
+
+*/
 
 
 
