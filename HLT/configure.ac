@@ -755,6 +755,24 @@ fi
 if test "x$enable_muon" = "xyes" ; then 
   AC_DEFINE(HLT_MUON)
   ALIMUON_LIBS=$ALIHLTMODULE_LIBS
+  AC_LANG_PUSH(C++)
+  dnl
+  dnl Check for functionality GetRawStream AliMUONDigitMaker.h
+  dnl 
+  have_muon_digitmaker_getrawstream=no
+  AC_MSG_CHECKING(for GetRawStream methods of AliMUONDigitMaker)
+    CPPFLAGS="$save_CPPFLAGS $ALIROOT_CPPFLAGS -I${ALICE_ROOT}/MUON"
+    LDFLAGS="$save_LDFLAGS -L${ROOTLIBDIR} $ALIROOT_LDFLAGS"
+    LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS $ALIMUON_LIBS"
+    AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <AliMUONDigitMaker.h>], 
+                                    [AliMUONDigitMaker dm;
+  				       dm.GetRawStreamTracker();])],
+                                    [have_muon_digitmaker_getrawstream=yes], 
+  				      [AC_DEFINE(HAVE_NOT_MUON_DIGITMAKER_GETRAWSTREAM)])
+    LIBS=$save_LIBS
+  AC_MSG_RESULT([$have_muon_digitmaker_getrawstream])
+
+  AC_LANG_POP(C++)
 else
   enable_module=$enable_muon
 fi

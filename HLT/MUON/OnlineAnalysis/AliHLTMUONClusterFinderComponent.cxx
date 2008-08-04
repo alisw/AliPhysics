@@ -213,11 +213,13 @@ int AliHLTMUONClusterFinderComponent::DoInit(int argc, const char** argv)
 			return result;
 		}
 	}
-	
+
+#ifndef HAVE_NOT_MUON_DIGITMAKER_GETRAWSTREAM	
 	AliMUONRawStreamTrackerHP* stream = static_cast<AliMUONRawStreamTrackerHP*>(
 			fDigitMaker->GetRawStreamTracker()
 		);
 	stream->TryRecover(tryRecover);
+#endif //HAVE_NOT_MUON_DIGITMAKER_GETRAWSTREAM
 	
 	return 0;
 }
@@ -354,10 +356,12 @@ int AliHLTMUONClusterFinderComponent::DoEvent(
 		fRawReader->Reset();
 		fRawReader->NextEvent();
 		fDigitMaker->Raw2Digits(fRawReader, digitStore, NULL);
+#ifndef HAVE_NOT_MUON_DIGITMAKER_GETRAWSTREAM
 		if (fDigitMaker->GetRawStreamTracker()->IsErrorMessage() and DumpDataOnError())
 		{
 			DumpEvent(evtData, blocks, trigData, outputPtr, size, outputBlocks);
 		}
+#endif //HAVE_NOT_MUON_DIGITMAKER_GETRAWSTREAM
 	}
 
 	fDigitCalibrator->Calibrate(*digitStore);
