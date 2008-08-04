@@ -169,48 +169,7 @@ void AliEveEventManager::Open()
 
   Int_t runNo = -1;
 
-  TString gaPath(Form("%s/galice.root", fPath.Data()));
-  // If i use open directly, we get fatal.
-  // Is this (AccessPathName check) ok for xrootd / alien?
-  if (gSystem->AccessPathName(gaPath, kReadPermission) == kFALSE)
-  {
-    fRunLoader = AliRunLoader::Open(gaPath);
-    if (fRunLoader)
-    {
-      TString alicePath = fPath + "/";
-      fRunLoader->SetDirName(alicePath);
-
-      if (fRunLoader->LoadgAlice() != 0)
-        Warning(kEH, "failed loading gAlice via run-loader.");
-
-      if (fRunLoader->LoadHeader() == 0)
-      {
-        runNo = fRunLoader->GetHeader()->GetRun();
-      }
-      else
-      {
-        Warning(kEH, "failed loading run-loader's header.");
-        delete fRunLoader;
-        fRunLoader = 0;
-      }
-    }
-    else // run-loader open failed
-    {
-      Warning(kEH, "failed opening ALICE run-loader from '%s'.", gaPath.Data());
-    }
-  }
-  else // galice not readable
-  {
-    Warning(kEH, "can not read '%s'.", gaPath.Data());
-  }
-  if (fRunLoader == 0)
-  {
-    if (fgAssertRunLoader)
-      throw (kEH + "Bootstraping of run-loader failed. Its precence was requested.");
-    else
-      Warning(kEH, "Bootstraping of run-loader failed.");
-  }
-
+  // Open ESD and ESDfriends
 
   TString esdPath(Form("%s/%s", fPath.Data(), fgESDFileName.Data()));
   if ((fESDFile = TFile::Open(esdPath)))
@@ -221,7 +180,8 @@ void AliEveEventManager::Open()
     {
       fESD->ReadFromTree(fESDTree);
       fESDTree->GetEntry(0);
-      runNo = fESD->GetESDRun()->GetRunNumber();
+      if (runNo < 0)
+        runNo = fESD->GetESDRun()->GetRunNumber();
 
       // Check if ESDfriends exists and attach the branch
       TString p(Form("%s/AliESDfriends.root", fPath.Data()));
@@ -251,6 +211,53 @@ void AliEveEventManager::Open()
       Warning(kEH, "ESD not initialized.");
     }
   }
+
+  // Open RunLoader from galice.root
+
+  TString gaPath(Form("%s/galice.root", fPath.Data()));
+  // If i use open directly, we get fatal.
+  // Is AccessPathName check ok for xrootd / alien? Yes, not for http.
+  if (gSystem->AccessPathName(gaPath, kReadPermission) == kFALSE)
+  {
+    fRunLoader = AliRunLoader::Open(gaPath);
+    if (fRunLoader)
+    {
+      TString alicePath = fPath + "/";
+      fRunLoader->SetDirName(alicePath);
+
+      if (fRunLoader->LoadgAlice() != 0)
+        Warning(kEH, "failed loading gAlice via run-loader.");
+
+      if (fRunLoader->LoadHeader() == 0)
+      {
+        if (runNo < 0)
+          runNo = fRunLoader->GetHeader()->GetRun();
+      }
+      else
+      {
+        Warning(kEH, "failed loading run-loader's header.");
+        delete fRunLoader;
+        fRunLoader = 0;
+      }
+    }
+    else // run-loader open failed
+    {
+      Warning(kEH, "failed opening ALICE run-loader from '%s'.", gaPath.Data());
+    }
+  }
+  else // galice not readable
+  {
+    Warning(kEH, "can not read '%s'.", gaPath.Data());
+  }
+  if (fRunLoader == 0)
+  {
+    if (fgAssertRunLoader)
+      throw (kEH + "Bootstraping of run-loader failed. Its precence was requested.");
+    else
+      Warning(kEH, "Bootstraping of run-loader failed.");
+  }
+
+  // Open raw-data file
 
   TString rawPath(Form("%s/%s", fPath.Data(), fgRawFileName.Data()));
   // If i use open directly, raw-reader reports an error but i have
@@ -370,18 +377,18 @@ void AliEveEventManager::GotoEvent(Int_t event)
   static const TEveException kEH("AliEveEventManager::GotoEvent ");
 
   Int_t maxEvent = 0;
-  if (fRunLoader)
-  {
-    maxEvent = fRunLoader->GetNumberOfEvents() - 1;
-    if (event < 0)
-      event = fRunLoader->GetNumberOfEvents() + event;
-  }
-  else if (fESDTree)
+  if (fESDTree)
   {
     fESDTree->Refresh();
     maxEvent = fESDTree->GetEntries() - 1;
     if (event < 0)
       event = fESDTree->GetEntries() + event;
+  }
+  else if (fRunLoader)
+  {
+    maxEvent = fRunLoader->GetNumberOfEvents() - 1;
+    if (event < 0)
+      event = fRunLoader->GetNumberOfEvents() + event;
   }
   else if (fRawReader)
   {
@@ -410,17 +417,17 @@ void AliEveEventManager::GotoEvent(Int_t event)
   // additinal parents.
   DestroyElements();
 
-  if (fRunLoader) {
-    if (fRunLoader->GetEvent(event) != 0)
-      throw (kEH + "failed getting required event.");
-  }
-
   if (fESDTree) {
     if (fESDTree->GetEntry(event) <= 0)
       throw (kEH + "failed getting required event from ESD.");
 
     if (fESDfriendExists)
       fESD->SetESDfriend(fESDfriend);
+  }
+
+  if (fRunLoader) {
+    if (fRunLoader->GetEvent(event) != 0)
+      throw (kEH + "failed getting required event.");
   }
 
   if (fRawReader)
