@@ -3053,7 +3053,7 @@ TGeoVolumeAssembly* AliITSv11GeometrySPD::CreateConeModule(TGeoManager *mgr) con
     
     TGeoRotation *rot1 = new TGeoRotation(*gGeoIdentity);
     rot1->RotateX(88.5);
-    TGeoCombiTrans *tr = new TGeoCombiTrans(1.0, x[0] + 0.5*(x[5] - x[0]), -3.0, rot1);
+    TGeoCombiTrans *tr = new TGeoCombiTrans(1.0, x[0] + 0.5*(x[5] - x[0]), -2.95, rot1);
     container->AddNode(volTube, 0, tr);
     
     TGeoTranslation *tr1 = new TGeoTranslation(0.5*plateThickness - 0.5*(plateThickness-thickness), x[3] - x[0] - 0.52*plateLength, 0.0);
