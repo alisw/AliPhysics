@@ -38,11 +38,11 @@ AliACORDERawReader::AliACORDERawReader (AliRawReader *rawReader, Bool_t isOnline
        fRawReader(rawReader),
        fData(NULL),
        fPosition(0),
-       fIsOnline(isOnline)
+       fIsOnline(isOnline),
+	fDataSize(0)
 {
 
 	fWord[0] = fWord[1] = fWord[2] = fWord[3] = 0;
-
 
 }
 //_____________________________________________________________________________
