@@ -66,6 +66,12 @@ class AliMUONDigitMaker : public TObject
   void  SetFastTrackerDecoder(Bool_t useFastDecoder);
   void  SetFastTriggerDecoder(Bool_t useFastDecoder);
 
+  /// Return the raw stream object which decodes DDL raw data from tracking stations.
+  AliMUONVRawStreamTracker* GetRawStreamTracker() const { return fRawStreamTracker; }
+
+  /// Return the raw stream object which decodes DDL raw data from the trigger system.
+  AliMUONVRawStreamTrigger* GetRawStreamTrigger() const { return fRawStreamTrigger; }
+
   void Print(Option_t* opt="") const;
 
 private:
