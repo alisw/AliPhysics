@@ -23,7 +23,7 @@
 
 class AliTRDtrackingChamber;
 class AliTRDgeometry;
-
+class AliTRDReconstructor;
 class AliTRDtrackingSector 
 {
 
@@ -49,7 +49,7 @@ public:
 	AliTRDtrackingChamber** GetStack(Int_t stack);
 	Int_t    GetSector() const {return fSector;}	
 
-	void     Init();
+	void     Init(const AliTRDReconstructor *rec);
 	void     Print(Option_t *opt = 0x0);
 	
 	void     SetGeometry(AliTRDgeometry *geo) {fGeom = geo;}

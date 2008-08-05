@@ -1,17 +1,17 @@
 /**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Author: The ALICE Off-line Project.                                    *
- * Contributors are mentioned in the code where appropriate.              *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+*                                                                        *
+* Author: The ALICE Off-line Project.                                    *
+* Contributors are mentioned in the code where appropriate.              *
+*                                                                        *
+* Permission to use, copy, modify and distribute this software and its   *
+* documentation strictly for non-commercial purposes is hereby granted   *
+* without fee, provided that the above copyright notice appears in all   *
+* copies and that both the copyright notice and this permission notice   *
+* appear in the supporting documentation. The authors make no claims     *
+* about the suitability of this software for any purpose. It is          *
+* provided "as is" without express or implied warranty.                  *
+**************************************************************************/
 
 /* $Id: AliTRDchamberTimeBin.cxx 23313 2008-01-11 14:56:43Z cblume $ */
 
@@ -50,6 +50,7 @@ ClassImp(AliTRDchamberTimeBin)
 //_____________________________________________________________________________
 AliTRDchamberTimeBin::AliTRDchamberTimeBin(Int_t plane, Int_t stack, Int_t sector, Double_t z0, Double_t zLength)
   :TObject()
+  ,fReconstructor(0x0)
   ,fOwner(kFALSE)
   ,fPlane(plane)
   ,fStack(stack)
@@ -64,11 +65,11 @@ AliTRDchamberTimeBin::AliTRDchamberTimeBin(Int_t plane, Int_t stack, Int_t secto
   // Default constructor (Only provided to use AliTRDchamberTimeBin with arrays)
   //
 
-	for(int i=0; i<kMaxRows; i++) fPositions[i] = 0xff;
-	for(int ic=0; ic<kMaxClustersLayer; ic++){
-		fClusters[ic] = 0x0;
-		fIndex[ic]    = 0xffff;
-	}
+  for(int i=0; i<kMaxRows; i++) fPositions[i] = 0xff;
+  for(int ic=0; ic<kMaxClustersLayer; ic++){
+    fClusters[ic] = 0x0;
+    fIndex[ic]    = 0xffff;
+  }
 }
 
 // //_____________________________________________________________________________
@@ -130,23 +131,24 @@ AliTRDchamberTimeBin::AliTRDchamberTimeBin(Int_t plane, Int_t stack, Int_t secto
 
 //_____________________________________________________________________________
 AliTRDchamberTimeBin::AliTRDchamberTimeBin(const AliTRDchamberTimeBin &layer):
-	TObject()
-	,fOwner(layer.fOwner)
+  TObject()
+  ,fReconstructor(layer.fReconstructor)
+  ,fOwner(layer.fOwner)
   ,fPlane(layer.fPlane)
   ,fStack(layer.fStack)
   ,fSector(layer.fSector)
-	,fNRows(layer.fNRows)
+  ,fNRows(layer.fNRows)
   ,fN(layer.fN)
   ,fX(layer.fX)
-	,fZ0(layer.fZ0)
-	,fZLength(layer.fZLength)
+  ,fZ0(layer.fZ0)
+  ,fZLength(layer.fZLength)
 {
 // Copy Constructor (performs a deep copy)
-	
-	SetT0(layer.IsT0());
-	for(int i=0; i<kMaxRows; i++) fPositions[i] = layer.fPositions[i];
-	memcpy(&fClusters[0], &layer.fClusters[0], kMaxClustersLayer*sizeof(UChar_t));
-	memcpy(&fIndex[0], &layer.fIndex[0], kMaxClustersLayer*sizeof(UInt_t));
+  
+  SetT0(layer.IsT0());
+  for(int i=0; i<kMaxRows; i++) fPositions[i] = layer.fPositions[i];
+  memcpy(&fClusters[0], &layer.fClusters[0], kMaxClustersLayer*sizeof(UChar_t));
+  memcpy(&fIndex[0], &layer.fIndex[0], kMaxClustersLayer*sizeof(UInt_t));
 
 
 // 	BuildIndices();
@@ -157,46 +159,47 @@ AliTRDchamberTimeBin &AliTRDchamberTimeBin::operator=(const AliTRDchamberTimeBin
 {
 // Assignment operator
 
-	if (this != &layer) layer.Copy(*this);
+  if (this != &layer) layer.Copy(*this);
   return *this;
 }
 
 //_____________________________________________________________________________
 void AliTRDchamberTimeBin::Clear(const Option_t *) 
 { 
-	for (Int_t i = 0; i < fN; i++){ 
+  for (Int_t i = 0; i < fN; i++){ 
     if(!fClusters[i]) continue;
     if(fOwner) delete fClusters[i];
     fClusters[i] = NULL;
   }
-	fN = 0; 
+  fN = 0; 
 }
 
 //_____________________________________________________________________________
 void AliTRDchamberTimeBin::Copy(TObject &o) const
 {
 // Copy method. Performs a deep copy of all data from this object to object o.
-	
-	AliTRDchamberTimeBin &layer = (AliTRDchamberTimeBin &)o;
-	layer.fOwner       = kFALSE;
-	layer.fPlane       = fPlane;
-	layer.fStack       = fStack;
-	layer.fSector      = fSector;
-	layer.fNRows       = fNRows;
-	layer.fN           = fN;
-	layer.fX           = fX;
-	layer.fZ0          = fZ0;
-	layer.fZLength     = fZLength;
-	layer.SetT0(IsT0());
-	
-	for(int i = 0; i < kMaxRows; i++) layer.fPositions[i] = 0;
-	
-	for(int i=0; i<kMaxRows; i++) layer.fPositions[i] = fPositions[i];
-	memcpy(&layer.fClusters[0], &fClusters[0], kMaxClustersLayer*sizeof(UChar_t));
-	memcpy(&layer.fIndex[0], &fIndex[0], kMaxClustersLayer*sizeof(UInt_t));
-	
-	TObject::Copy(layer); // copies everything into layer
-	
+  
+  AliTRDchamberTimeBin &layer = (AliTRDchamberTimeBin &)o;
+  layer.fReconstructor = fReconstructor;
+  layer.fOwner       = kFALSE;
+  layer.fPlane       = fPlane;
+  layer.fStack       = fStack;
+  layer.fSector      = fSector;
+  layer.fNRows       = fNRows;
+  layer.fN           = fN;
+  layer.fX           = fX;
+  layer.fZ0          = fZ0;
+  layer.fZLength     = fZLength;
+  layer.SetT0(IsT0());
+  
+  for(int i = 0; i < kMaxRows; i++) layer.fPositions[i] = 0;
+  
+  for(int i=0; i<kMaxRows; i++) layer.fPositions[i] = fPositions[i];
+  memcpy(&layer.fClusters[0], &fClusters[0], kMaxClustersLayer*sizeof(UChar_t));
+  memcpy(&layer.fIndex[0], &fIndex[0], kMaxClustersLayer*sizeof(UInt_t));
+  
+  TObject::Copy(layer); // copies everything into layer
+  
 // 	layer.BuildIndices();
 }
 
@@ -204,7 +207,7 @@ void AliTRDchamberTimeBin::Copy(TObject &o) const
 AliTRDchamberTimeBin::~AliTRDchamberTimeBin()
 {
 // Destructor
-	if(fOwner) for(int ic=0; ic<fN; ic++) delete fClusters[ic];
+  if(fOwner) for(int ic=0; ic<fN; ic++) delete fClusters[ic];
 }
 
 //_____________________________________________________________________________
@@ -216,8 +219,8 @@ void AliTRDchamberTimeBin::SetRange(const Float_t z0, const Float_t zLength)
 //   z0      : starting position of layer in the z direction
 //   zLength : length of layer in the z direction 
 
-	fZ0 = (z0 <= z0 + zLength) ? z0 : z0 + zLength;
-	fZLength = TMath::Abs(zLength);
+  fZ0 = (z0 <= z0 + zLength) ? z0 : z0 + zLength;
+  fZLength = TMath::Abs(zLength);
 }
 
 //_____________________________________________________________________________
@@ -268,92 +271,92 @@ void AliTRDchamberTimeBin::BuildIndices(Int_t iter)
 // Sorting algorithm: TreeSearch
 //
 
-	if(!fN) return;
+  if(!fN) return;
 
-	// Select clusters that belong to the Stack
-	Int_t nClStack = 0;					// Internal counter
-	for(Int_t i = 0; i < fN; i++){
-		if(fClusters[i]->IsUsed()){
-			fClusters[i] = 0x0;
-			fIndex[i] = 0xffff;
-		} else nClStack++;
-	}
-	if(nClStack > kMaxClustersLayer) AliWarning(Form("Number of clusters in stack %d exceed buffer size %d. Truncating.", nClStack, kMaxClustersLayer));
-		
-	// Nothing in this time bin. Reset indexes 
-	if(!nClStack){
-		fN = 0;
-		memset(&fPositions[0], 0xff, sizeof(UChar_t) * kMaxRows);
-		memset(&fClusters[0], 0x0, sizeof(AliTRDcluster*) * kMaxClustersLayer);
-		memset(&fIndex[0], 0xffff, sizeof(UInt_t) * kMaxClustersLayer);
-		return;
-	}
-	
-	// Make a copy
-	AliTRDcluster *helpCL[kMaxClustersLayer];
-	Int_t helpInd[kMaxClustersLayer];
-	nClStack = 0;
-	for(Int_t i = 0; i < TMath::Min(fN, kMaxClustersLayer); i++){
-		if(!fClusters[i]) continue;
-		helpCL[nClStack]  = fClusters[i];
-		helpInd[nClStack] = fIndex[i];
-		fClusters[i]      = 0x0;
-		fIndex[i]         = 0xffff;
-		nClStack++;
-	}
-	
-	// do clusters arrangement
-	fX = 0.;
-	fN =  nClStack;
-	nClStack = 0;
-	// Reset Positions array
-	memset(fPositions, 0, sizeof(UChar_t)*kMaxRows);
-	for(Int_t i = 0; i < fN; i++){
-		// boundary check
-		AliTRDcluster *cl = helpCL[i];
-		UChar_t rowIndex = cl->GetPadRow();
-		// Insert Leaf
-		Int_t pos = FindYPosition(cl->GetY(), rowIndex, i);
-		if(pos == -1){		// zbin is empty;
-			Int_t upper = (rowIndex == fNRows - 1) ? nClStack : fPositions[rowIndex + 1];
-			memmove(fClusters + upper + 1, fClusters + upper, (sizeof(AliTRDcluster *))*(nClStack-upper));
-			memmove(fIndex + upper + 1, fIndex + upper, (sizeof(UInt_t))*(nClStack-upper));
-			fClusters[upper] = cl;
-			fIndex[upper] = helpInd[i]; 
-			// Move All pointer one position back
-			for(UChar_t j = rowIndex + 1; j < fNRows; j++) fPositions[j]++;
-			nClStack++;
-		} else {		// zbin not empty
-			memmove(fClusters + pos + 2, fClusters + pos+1, (sizeof(AliTRDcluster *))*(nClStack-(pos+1)));
-			memmove(fIndex + pos + 2, fIndex + pos+1, (sizeof(UInt_t))*(nClStack-(pos+1)));
-			fClusters[pos + 1] = cl;	//fIndex[i];
-			fIndex[pos + 1] = helpInd[i];
-			// Move All pointer one position back
-			for(UChar_t j = rowIndex + 1; j < fNRows; j++) fPositions[j]++;	
-			nClStack++;
-		}
+  // Select clusters that belong to the Stack
+  Int_t nClStack = 0;					// Internal counter
+  for(Int_t i = 0; i < fN; i++){
+    if(fClusters[i]->IsUsed()){
+      fClusters[i] = 0x0;
+      fIndex[i] = 0xffff;
+    } else nClStack++;
+  }
+  if(nClStack > kMaxClustersLayer) AliWarning(Form("Number of clusters in stack %d exceed buffer size %d. Truncating.", nClStack, kMaxClustersLayer));
+    
+  // Nothing in this time bin. Reset indexes 
+  if(!nClStack){
+    fN = 0;
+    memset(&fPositions[0], 0xff, sizeof(UChar_t) * kMaxRows);
+    memset(&fClusters[0], 0x0, sizeof(AliTRDcluster*) * kMaxClustersLayer);
+    memset(&fIndex[0], 0xffff, sizeof(UInt_t) * kMaxClustersLayer);
+    return;
+  }
+  
+  // Make a copy
+  AliTRDcluster *helpCL[kMaxClustersLayer];
+  Int_t helpInd[kMaxClustersLayer];
+  nClStack = 0;
+  for(Int_t i = 0; i < TMath::Min(fN, kMaxClustersLayer); i++){
+    if(!fClusters[i]) continue;
+    helpCL[nClStack]  = fClusters[i];
+    helpInd[nClStack] = fIndex[i];
+    fClusters[i]      = 0x0;
+    fIndex[i]         = 0xffff;
+    nClStack++;
+  }
+  
+  // do clusters arrangement
+  fX = 0.;
+  fN =  nClStack;
+  nClStack = 0;
+  // Reset Positions array
+  memset(fPositions, 0, sizeof(UChar_t)*kMaxRows);
+  for(Int_t i = 0; i < fN; i++){
+    // boundary check
+    AliTRDcluster *cl = helpCL[i];
+    UChar_t rowIndex = cl->GetPadRow();
+    // Insert Leaf
+    Int_t pos = FindYPosition(cl->GetY(), rowIndex, i);
+    if(pos == -1){		// zbin is empty;
+      Int_t upper = (rowIndex == fNRows - 1) ? nClStack : fPositions[rowIndex + 1];
+      memmove(fClusters + upper + 1, fClusters + upper, (sizeof(AliTRDcluster *))*(nClStack-upper));
+      memmove(fIndex + upper + 1, fIndex + upper, (sizeof(UInt_t))*(nClStack-upper));
+      fClusters[upper] = cl;
+      fIndex[upper] = helpInd[i]; 
+      // Move All pointer one position back
+      for(UChar_t j = rowIndex + 1; j < fNRows; j++) fPositions[j]++;
+      nClStack++;
+    } else {		// zbin not empty
+      memmove(fClusters + pos + 2, fClusters + pos+1, (sizeof(AliTRDcluster *))*(nClStack-(pos+1)));
+      memmove(fIndex + pos + 2, fIndex + pos+1, (sizeof(UInt_t))*(nClStack-(pos+1)));
+      fClusters[pos + 1] = cl;	//fIndex[i];
+      fIndex[pos + 1] = helpInd[i];
+      // Move All pointer one position back
+      for(UChar_t j = rowIndex + 1; j < fNRows; j++) fPositions[j]++;	
+      nClStack++;
+    }
 
-		// calculate mean x
-		fX += cl->GetX(); 
-		
-		// Debug Streaming
-		if(AliTRDtrackerV1::DebugStreamer() && AliTRDReconstructor::GetRecoParam()->GetStreamLevel() >= 3){
-			TTreeSRedirector &cstream = *AliTRDtrackerV1::DebugStreamer();
-			cstream << "BuildIndices"
-			<< "Plane="    << fPlane
-			<< "Stack="    << fStack
-			<< "Sector="   << fSector
-			<< "Iter="     << iter
-			<< "C.="       << cl
-			<< "rowIndex=" << rowIndex
-			<< "\n";
-		}
-	}
+    // calculate mean x
+    fX += cl->GetX(); 
+    
+    // Debug Streaming
+    if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker) >= 3){
+      TTreeSRedirector &cstream = *AliTRDtrackerV1::DebugStreamer();
+      cstream << "BuildIndices"
+      << "Plane="    << fPlane
+      << "Stack="    << fStack
+      << "Sector="   << fSector
+      << "Iter="     << iter
+      << "C.="       << cl
+      << "rowIndex=" << rowIndex
+      << "\n";
+    }
+  }
 
 // 	AliInfo("Positions");
 // 	for(int ir=0; ir<fNRows; ir++) printf("pos[%d] %d\n", ir, fPositions[ir]);
 
-	fX /= fN;
+  fX /= fN;
 }
 
 //_____________________________________________________________________________
@@ -399,19 +402,19 @@ Int_t AliTRDchamberTimeBin::FindYPosition(Double_t y, UChar_t z, Int_t nClusters
 // Index of the nearest left cluster in the StackLayer indexing (-1 if no clusters are found)
 //
 
-	Int_t start = fPositions[z]; 		// starting Position of the bin
-	Int_t upper = (Int_t)((z != fNRows - 1) ? fPositions[z+1] : nClusters); // ending Position of the bin 
-	Int_t end = upper - 1; // ending Position of the bin 
-	if(end < start) return -1; // Bin is empty
-	Int_t middle = static_cast<Int_t>((start + end)/2);
-	// 1st Part: climb down the tree: get the next cluster BEFORE ypos
-	while(start + 1 < end){
-		if(y >= fClusters[middle]->GetY()) start = middle;
-		else end = middle;
-		middle = static_cast<Int_t>((start + end)/2);
-	}
-	if(y > fClusters[end]->GetY()) return end;
-	return start;
+  Int_t start = fPositions[z]; 		// starting Position of the bin
+  Int_t upper = (Int_t)((z != fNRows - 1) ? fPositions[z+1] : nClusters); // ending Position of the bin 
+  Int_t end = upper - 1; // ending Position of the bin 
+  if(end < start) return -1; // Bin is empty
+  Int_t middle = static_cast<Int_t>((start + end)/2);
+  // 1st Part: climb down the tree: get the next cluster BEFORE ypos
+  while(start + 1 < end){
+    if(y >= fClusters[middle]->GetY()) start = middle;
+    else end = middle;
+    middle = static_cast<Int_t>((start + end)/2);
+  }
+  if(y > fClusters[end]->GetY()) return end;
+  return start;
 }
 
 //_____________________________________________________________________________
@@ -430,16 +433,16 @@ Int_t AliTRDchamberTimeBin::FindNearestYCluster(Double_t y, UChar_t z) const
 // Index of the nearest cluster in the StackLayer indexing (-1 if no clusters are found)
 //
 
-	Int_t position = FindYPosition(y, z, fN);
-	if(position == -1) return position; // bin empty
-	// FindYPosition always returns the left Neighbor. We don't know if the left or the right Neighbor is nearest
-	// to the Reference y-position, so test both
-	Int_t upper = (Int_t)((z < fNRows-1) ? fPositions[z+1] : fN); // ending Position of the bin
-	if((position + 1) < (upper)){
-		if(TMath::Abs(y - fClusters[position + 1]->GetY()) < TMath::Abs(y - fClusters[position]->GetY())) return position + 1;
-		else return position;
-	}
-	return position;
+  Int_t position = FindYPosition(y, z, fN);
+  if(position == -1) return position; // bin empty
+  // FindYPosition always returns the left Neighbor. We don't know if the left or the right Neighbor is nearest
+  // to the Reference y-position, so test both
+  Int_t upper = (Int_t)((z < fNRows-1) ? fPositions[z+1] : fN); // ending Position of the bin
+  if((position + 1) < (upper)){
+    if(TMath::Abs(y - fClusters[position + 1]->GetY()) < TMath::Abs(y - fClusters[position]->GetY())) return position + 1;
+    else return position;
+  }
+  return position;
 }
 
 //_____________________________________________________________________________
@@ -466,69 +469,69 @@ Int_t AliTRDchamberTimeBin::SearchNearestCluster(Double_t y, Double_t z, Double_
 // 2. For each z bin find nearest y cluster.
 // 3. Select best candidate
 //
-	Int_t   index   = -1;
-	// initial minimal distance will be represented as ellipse: semi-major = z-direction
-	// later 2-Norm will be used  
+  Int_t   index   = -1;
+  // initial minimal distance will be represented as ellipse: semi-major = z-direction
+  // later 2-Norm will be used  
 // 	Float_t nExcentricity = TMath::Sqrt(maxroadz*maxroadz - maxroad*maxroad)/maxroadz;
-	Float_t mindist = maxroadz;
-	
-	// not very nice but unfortunately neccessarry: we have ho check the neighbors in both directions (+ and -) too. How 
-	// much neighbors depends on the Quotient maxroadz/fZLength   
-	UChar_t maxRows = 3;
-	UChar_t zpos[kMaxRows];
+  Float_t mindist = maxroadz;
+  
+  // not very nice but unfortunately neccessarry: we have ho check the neighbors in both directions (+ and -) too. How 
+  // much neighbors depends on the Quotient maxroadz/fZLength   
+  UChar_t maxRows = 3;
+  UChar_t zpos[kMaxRows];
   // Float_t mindist = TMath::Sqrt(maxroad*maxroad + maxroadz*maxroadz);
 // 	UChar_t myZbin = FindTreePosition(z, fZ0 + fZLength/2, fZLength/4, 8, 8, kFALSE);
-	UChar_t myZbin = fNRows - 1 - (UChar_t)(TMath::Abs(fZ0 - z)/fZLength * fNRows);
-	if(z < fZ0) myZbin = fNRows - 1;
-	if(z > fZ0 + fZLength) myZbin = 0;
-	//printf("\n%f < %f < %f [%d]\n", fZ0, z, fZ0 + fZLength, myZbin);
-	//for(int ic=0; ic<fN; ic++) printf("%d z = %f row %d\n", ic, fClusters[ic]->GetZ(), fClusters[ic]->GetPadRow());
+  UChar_t myZbin = fNRows - 1 - (UChar_t)(TMath::Abs(fZ0 - z)/fZLength * fNRows);
+  if(z < fZ0) myZbin = fNRows - 1;
+  if(z > fZ0 + fZLength) myZbin = 0;
+  //printf("\n%f < %f < %f [%d]\n", fZ0, z, fZ0 + fZLength, myZbin);
+  //for(int ic=0; ic<fN; ic++) printf("%d z = %f row %d\n", ic, fClusters[ic]->GetZ(), fClusters[ic]->GetPadRow());
 
-	UChar_t nNeighbors = 0;
-	for(UChar_t i = 0; i < maxRows; i++){
-		if((myZbin - 1 + i) < 0) continue;
-		if((myZbin - 1 + i) > fNRows - 1) break;
-		zpos[nNeighbors] = myZbin - 1 + i;
-		nNeighbors++;
-	}
-	Float_t ycl = 0, zcl = 0;
-	for(UChar_t neighbor = 0; neighbor < nNeighbors; neighbor++){	// Always test the neighbors too
-		Int_t pos = FindNearestYCluster(y, zpos[neighbor]);
-		if(pos == -1) continue;	// No cluster in bin
-		AliTRDcluster *c = (AliTRDcluster *) (fClusters[pos]);
-		if(c->IsUsed()) continue;		// we are only interested in unused clusters
-		ycl = c->GetY();
-		// Too far away in y-direction (Prearrangement)
-		if (TMath::Abs(ycl - y) > maxroady){ 
-			//printf("y[%f] ycl[%f] roady[%f]\n", y, ycl, maxroady);
-			continue;
-		}
-		zcl = c->GetZ();
-		// Too far away in z-Direction
-		// (Prearrangement since we have not so many bins to test)
-		if (TMath::Abs(zcl - z) > maxroadz) continue;
-		
-		Float_t dist;		// distance defined as 2-Norm	
-		// if we havent found a Particle that is in the ellipse around (y,z) with maxroad as semi-minor and
-		// maxroadz as semi-major, we take the radius of the ellipse concerning the cluster as mindist, later we 
-		// take the 2-Norm when we found a cluster inside the ellipse (The value 10000 is taken because it is surely
-		// large enough to be usable as an indicator whether we have found a nearer cluster or not)
+  UChar_t nNeighbors = 0;
+  for(UChar_t i = 0; i < maxRows; i++){
+    if((myZbin - 1 + i) < 0) continue;
+    if((myZbin - 1 + i) > fNRows - 1) break;
+    zpos[nNeighbors] = myZbin - 1 + i;
+    nNeighbors++;
+  }
+  Float_t ycl = 0, zcl = 0;
+  for(UChar_t neighbor = 0; neighbor < nNeighbors; neighbor++){	// Always test the neighbors too
+    Int_t pos = FindNearestYCluster(y, zpos[neighbor]);
+    if(pos == -1) continue;	// No cluster in bin
+    AliTRDcluster *c = (AliTRDcluster *) (fClusters[pos]);
+    if(c->IsUsed()) continue;		// we are only interested in unused clusters
+    ycl = c->GetY();
+    // Too far away in y-direction (Prearrangement)
+    if (TMath::Abs(ycl - y) > maxroady){ 
+      //printf("y[%f] ycl[%f] roady[%f]\n", y, ycl, maxroady);
+      continue;
+    }
+    zcl = c->GetZ();
+    // Too far away in z-Direction
+    // (Prearrangement since we have not so many bins to test)
+    if (TMath::Abs(zcl - z) > maxroadz) continue;
+    
+    Float_t dist;		// distance defined as 2-Norm	
+    // if we havent found a Particle that is in the ellipse around (y,z) with maxroad as semi-minor and
+    // maxroadz as semi-major, we take the radius of the ellipse concerning the cluster as mindist, later we 
+    // take the 2-Norm when we found a cluster inside the ellipse (The value 10000 is taken because it is surely
+    // large enough to be usable as an indicator whether we have found a nearer cluster or not)
 // 		if(mindist > 10000.){
 // 			Float_t phi = ((zcl - z) == 0) ? TMath::Pi()/2 : TMath::ATan((ycl - y)/(zcl - z));
 // 			mindist = maxroad/TMath::Sqrt(1 - nExcentricity*nExcentricity * (TMath::Cos(phi))*(TMath::Cos(phi)));
 // 		}
-		dist = TMath::Max(TMath::Abs(y-ycl),TMath::Abs(z-zcl));	// infinity Norm
+    dist = TMath::Max(TMath::Abs(y-ycl),TMath::Abs(z-zcl));	// infinity Norm
 // 		dist = TMath::Sqrt((ycl - y)*(ycl - y) + (zcl - z)*(zcl - z));
-		if((Int_t)(dist * 100000) < (Int_t)(mindist * 100000)){
-		//if((dist = TMath::Sqrt((ycl - y)*(ycl - y) + (zcl - z)*(zcl - z))) < mindist){
-			mindist = dist;
-			index   = pos;
-		}	
-	}
-	// This is the Array Position in fIndex2D of the Nearest cluster: if a
-	// cluster is called, then the function has to retrieve the Information
-	// which is Stored in the Array called, the function
-	return index;
+    if((Int_t)(dist * 100000) < (Int_t)(mindist * 100000)){
+    //if((dist = TMath::Sqrt((ycl - y)*(ycl - y) + (zcl - z)*(zcl - z))) < mindist){
+      mindist = dist;
+      index   = pos;
+    }	
+  }
+  // This is the Array Position in fIndex2D of the Nearest cluster: if a
+  // cluster is called, then the function has to retrieve the Information
+  // which is Stored in the Array called, the function
+  return index;
 }
 
 //_____________________________________________________________________________
@@ -556,22 +559,22 @@ void AliTRDchamberTimeBin::BuildCond(AliTRDcluster *cl, Double_t *cond, UChar_t 
 //End_Html
 //
 
-	if(!AliTRDReconstructor::GetRecoParam()){
-		AliError("Reconstruction parameters not initialized.");
-		return;
-	}
-	
-	if(Layer == 0){
-		cond[0] = cl->GetY();			// center: y-Direction
-		cond[1] = cl->GetZ();			// center: z-Direction
-		cond[2] = AliTRDReconstructor::GetRecoParam()->GetMaxPhi()   * (cl->GetX() - GetX()) + 1.0;			// deviation: y-Direction
-		cond[3] = AliTRDReconstructor::GetRecoParam()->GetMaxTheta() * (cl->GetX() - GetX()) + 1.0;			// deviation: z-Direction
-	} else {
-		cond[0] = cl->GetY() + phi   * (GetX() - cl->GetX()); 
-		cond[1] = cl->GetZ() + theta * (GetX() - cl->GetX());
-		cond[2] = AliTRDReconstructor::GetRecoParam()->GetRoad0y() + phi;
-		cond[3] = AliTRDReconstructor::GetRecoParam()->GetRoad0z();
-	}
+  if(!fReconstructor){
+    AliError("Reconstructor not set.");
+    return;
+  }
+  
+  if(Layer == 0){
+    cond[0] = cl->GetY();			// center: y-Direction
+    cond[1] = cl->GetZ();			// center: z-Direction
+    cond[2] = fReconstructor->GetRecoParam()->GetMaxPhi()   * (cl->GetX() - GetX()) + 1.0;			// deviation: y-Direction
+    cond[3] = fReconstructor->GetRecoParam()->GetMaxTheta() * (cl->GetX() - GetX()) + 1.0;			// deviation: z-Direction
+  } else {
+    cond[0] = cl->GetY() + phi   * (GetX() - cl->GetX()); 
+    cond[1] = cl->GetZ() + theta * (GetX() - cl->GetX());
+    cond[2] = fReconstructor->GetRecoParam()->GetRoad0y() + phi;
+    cond[3] = fReconstructor->GetRecoParam()->GetRoad0z();
+  }
 }
 
 //_____________________________________________________________________________
@@ -592,42 +595,42 @@ void AliTRDchamberTimeBin::GetClusters(Double_t *cond, Int_t *index, Int_t& ncl,
 // Function returs an array containing the indices in the stacklayer of
 // the clusters found an  the number of found clusters in the stacklayer
 
-	ncl = 0;
-	memset(index, 0, BufferSize*sizeof(Int_t));
-	if(fN == 0) return;
-		
-	//Boundary checks
-	Double_t zvals[2];
-	if(((cond[1] - cond[3]) >= (fZ0 + fZLength)) || (cond[1] + cond[3]) <= fZ0) return; // We are outside of the chamvber
-	zvals[0] = ((cond[1] - cond[3]) < fZ0) ? fZ0 : (cond[1] - cond[3]);
-	zvals[1] = ((cond[1] + cond[3]) < fZ0 + fZLength) ? (cond[1] + cond[3]) : fZ0 + fZLength - 1.E-3;
+  ncl = 0;
+  memset(index, 0, BufferSize*sizeof(Int_t));
+  if(fN == 0) return;
+    
+  //Boundary checks
+  Double_t zvals[2];
+  if(((cond[1] - cond[3]) >= (fZ0 + fZLength)) || (cond[1] + cond[3]) <= fZ0) return; // We are outside of the chamvber
+  zvals[0] = ((cond[1] - cond[3]) < fZ0) ? fZ0 : (cond[1] - cond[3]);
+  zvals[1] = ((cond[1] + cond[3]) < fZ0 + fZLength) ? (cond[1] + cond[3]) : fZ0 + fZLength - 1.E-3;
 
-	UChar_t zhi = fNRows - 1 - (UChar_t)(TMath::Abs(fZ0 - zvals[0])/fZLength * fNRows);
-	UChar_t zlo = fNRows - 1 - (UChar_t)(TMath::Abs(fZ0 - zvals[1])/fZLength * fNRows);
+  UChar_t zhi = fNRows - 1 - (UChar_t)(TMath::Abs(fZ0 - zvals[0])/fZLength * fNRows);
+  UChar_t zlo = fNRows - 1 - (UChar_t)(TMath::Abs(fZ0 - zvals[1])/fZLength * fNRows);
 
 /*	AliInfo(Form("yc[%f] zc[%f] dy[%f] dz[%f]", cond[0], cond[1], cond[2], cond[3]));
-	PrintClusters();
-	AliInfo(Form("zlo[%f] zhi[%f]", zvals[0], zvals[1]));
-	AliInfo(Form("zlo[%d] zhi[%d]", zlo, zhi));*/
-	
-	//Preordering in Direction z saves a lot of loops (boundary checked)
-	for(UChar_t z = zlo; z <= zhi; z++){
-		UInt_t upper = (z < fNRows-1) ? fPositions[z+1] : fN;
-		//AliInfo(Form("z[%d] y [%d %d]", z, fPositions[z], upper));
-		for(Int_t y = fPositions[z]; y < (Int_t)upper; y++){
-			if(ncl == BufferSize){
-				AliWarning("Buffer size riched. Some clusters may be lost.");
-				return;	//Buffer filled
-			}
-			
-			if(fClusters[y]->GetY() > (cond[0] + cond[2])) break;			// Abbortion conditions!!!
-			if(fClusters[y]->GetY() < (cond[0] - cond[2])) continue;	// Too small
-			if(((Int_t)((fClusters[y]->GetZ())*1000) < (Int_t)(zvals[0]*1000)) || ((Int_t)((fClusters[y]->GetZ())*1000) > (Int_t)(zvals[1]*1000))){/*printf("exit z\n"); TODO*/ continue;}
-			index[ncl] = y;
-			ncl++;
-		}
-	}
-	if(ncl>fN) AliError(Form("Clusters found %d > %d (clusters in layer)", ncl, fN));
+  PrintClusters();
+  AliInfo(Form("zlo[%f] zhi[%f]", zvals[0], zvals[1]));
+  AliInfo(Form("zlo[%d] zhi[%d]", zlo, zhi));*/
+  
+  //Preordering in Direction z saves a lot of loops (boundary checked)
+  for(UChar_t z = zlo; z <= zhi; z++){
+    UInt_t upper = (z < fNRows-1) ? fPositions[z+1] : fN;
+    //AliInfo(Form("z[%d] y [%d %d]", z, fPositions[z], upper));
+    for(Int_t y = fPositions[z]; y < (Int_t)upper; y++){
+      if(ncl == BufferSize){
+        AliWarning("Buffer size riched. Some clusters may be lost.");
+        return;	//Buffer filled
+      }
+      
+      if(fClusters[y]->GetY() > (cond[0] + cond[2])) break;			// Abbortion conditions!!!
+      if(fClusters[y]->GetY() < (cond[0] - cond[2])) continue;	// Too small
+      if(((Int_t)((fClusters[y]->GetZ())*1000) < (Int_t)(zvals[0]*1000)) || ((Int_t)((fClusters[y]->GetZ())*1000) > (Int_t)(zvals[1]*1000))){/*printf("exit z\n"); TODO*/ continue;}
+      index[ncl] = y;
+      ncl++;
+    }
+  }
+  if(ncl>fN) AliError(Form("Clusters found %d > %d (clusters in layer)", ncl, fN));
 }
 
 //_____________________________________________________________________________
@@ -645,15 +648,15 @@ AliTRDcluster *AliTRDchamberTimeBin::GetNearestCluster(Double_t *cond)
 //
 // returns a pointer to the nearest cluster (nullpointer if not
 // successfull) by the help of the method FindNearestCluster
-	
-	
-	Double_t maxroad  = AliTRDReconstructor::GetRecoParam()->GetRoad2y();
-	Double_t maxroadz = AliTRDReconstructor::GetRecoParam()->GetRoad2z();
-	
-	Int_t index = SearchNearestCluster(cond[0],cond[1],maxroad,maxroadz);
-	AliTRDcluster *returnCluster = 0x0;
-	if(index != -1) returnCluster = (AliTRDcluster *) fClusters[index];
-	return returnCluster;
+  
+  
+  Double_t maxroad  = fReconstructor->GetRecoParam()->GetRoad2y();
+  Double_t maxroadz = fReconstructor->GetRecoParam()->GetRoad2z();
+  
+  Int_t index = SearchNearestCluster(cond[0],cond[1],maxroad,maxroadz);
+  AliTRDcluster *returnCluster = 0x0;
+  if(index != -1) returnCluster = (AliTRDcluster *) fClusters[index];
+  return returnCluster;
 }
 
 //_____________________________________________________________________________
@@ -661,12 +664,12 @@ void AliTRDchamberTimeBin::PrintClusters() const
 {
 // Prints the position of each cluster in the stacklayer on the stdout
 //
-	printf("\nnRows = %d\n", fNRows);
-	printf("Z0 = %f\n", fZ0);
-	printf("Z1 = %f\n", fZ0+fZLength);
-	printf("clusters in AliTRDchamberTimeBin %d\n", fN);
-	for(Int_t i = 0; i < fN; i++){
-		printf("AliTRDchamberTimeBin: index=%i, Cluster: X = %3.3f [%d] Y = %3.3f [%d] Z = %3.3f [%d]\n", i,  fClusters[i]->GetX(), fClusters[i]->GetLocalTimeBin(), fClusters[i]->GetY(), fClusters[i]->GetPadCol(), fClusters[i]->GetZ(), fClusters[i]->GetPadRow());
-		if(fClusters[i]->IsUsed()) printf("cluster allready used. rejected in search algorithm\n");
-	}
+  printf("\nnRows = %d\n", fNRows);
+  printf("Z0 = %f\n", fZ0);
+  printf("Z1 = %f\n", fZ0+fZLength);
+  printf("clusters in AliTRDchamberTimeBin %d\n", fN);
+  for(Int_t i = 0; i < fN; i++){
+    printf("AliTRDchamberTimeBin: index=%i, Cluster: X = %3.3f [%d] Y = %3.3f [%d] Z = %3.3f [%d]\n", i,  fClusters[i]->GetX(), fClusters[i]->GetLocalTimeBin(), fClusters[i]->GetY(), fClusters[i]->GetPadCol(), fClusters[i]->GetZ(), fClusters[i]->GetPadRow());
+    if(fClusters[i]->IsUsed()) printf("cluster allready used. rejected in search algorithm\n");
+  }
 }

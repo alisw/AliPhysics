@@ -30,6 +30,7 @@ class AliRieman;
 class AliTRDtrackingChamber;
 class AliTRDcluster;
 class AliTRDtrackV1;
+class AliTRDReconstructor;
 class AliTRDseedV1 : public AliTRDseed
 {
 
@@ -80,13 +81,13 @@ class AliTRDseedV1 : public AliTRDseed
 	void      SetPlane(Int_t p)                      { fPlane     = p;   }
 	void      SetSnp(Double_t snp) {fSnp = snp;}
 	void      SetTgl(Double_t tgl) {fTgl = tgl;}
-
+  void      SetReconstructor(const AliTRDReconstructor *rec) {fReconstructor = rec;}
  protected:
 
 	void Copy(TObject &ref) const;
 
  private:
-
+  const AliTRDReconstructor *fReconstructor;
 	Int_t            fPlane;                  //  TRD plane
 	Float_t          fMom;                    //  Momentum estimate for tracklet [GeV/c]
 	Float_t          fSnp;                    // sin of track with respect to x direction in XY plane	

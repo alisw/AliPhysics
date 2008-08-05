@@ -18,23 +18,15 @@
 class AliTRDrecoParam : public AliDetectorRecoParam
 {
 public:
-  enum AliTRDpidMethod{
-    kLQPID = 0,
-    kNNPID = 1
-  };
-  
   AliTRDrecoParam();
   AliTRDrecoParam(const AliTRDrecoParam &rec);
   ~AliTRDrecoParam() { }
 
-  Int_t    GetADCbaseline() const           { return fADCbaseline;     };
   Double_t GetChi2Y() const                 { return fkChi2Y;    }
   Double_t GetChi2Z() const                 { return fkChi2Z;    }
   Double_t GetFindableClusters() const      { return fkFindable; }
   Double_t GetMaxTheta() const              { return fkMaxTheta; }
   Double_t GetMaxPhi() const                { return fkMaxPhi;   }
-  Int_t    GetNdEdxSlices() const           { return fkPIDMethod == kNNPID ? kNNslices : kLQslices;}
-  AliTRDpidMethod    GetPIDMethod() const   { return fkPIDMethod;}
   Double_t GetPlaneQualityThreshold() const { return fkPlaneQualityThreshold; }
   Double_t GetRoad0y() const                { return fkRoad0y;   }
   Double_t GetRoad0z() const                { return fkRoad0z;   }
@@ -43,7 +35,6 @@ public:
   Double_t GetRoad2y() const                { return fkRoad2y;   }
   Double_t GetRoad2z() const                { return fkRoad2z;   }
   Double_t GetTrackLikelihood() const       { return fkTrackLikelihood;       }
-  Int_t    GetStreamLevel() const           { return fkStreamLevel;           }
   inline void GetSysCovMatrix(Double_t *sys) const;  
   Double_t GetMinMaxCutSigma() const        { return fMinMaxCutSigma;     };
   Double_t GetMinLeftRightCutSigma() const  { return fMinLeftRightCutSigma;  };
@@ -60,19 +51,13 @@ public:
 
   Bool_t   IsClusterSharing() const         { return TestBit(kClusterSharing);}
   Bool_t   IsLUT() const                    { return TestBit(kLUT);}
-  Bool_t   IsSeeding() const                { return TestBit(kSeeding); }
   Bool_t   IsTailCancelation() const        { return TestBit(kTC);}
   Bool_t   IsVertexConstrained() const      { return TestBit(kVertexConstrained); }
-  Bool_t   IsTrackletWriteEnabled() const   { return TestBit(kTrackletWriting); };
-
 
 
   void     SetFindableClusters(Double_t r) {fkFindable = r;}
   void     SetClusterSharing(Bool_t share = kTRUE)            { SetBit(kClusterSharing, share);  };
-  void     SetPIDMethod(AliTRDpidMethod pid)                  { fkPIDMethod = pid; };
-  void     SetSeeding(Bool_t so = kTRUE)             { SetBit(kSeeding, so); }
   void     SetVertexConstrained(Bool_t vc = kTRUE) { SetBit(kVertexConstrained, vc); }
-  void     SetStreamLevel(Int_t streamLevel= 1)               { fkStreamLevel = streamLevel; }
   void     SetLUT(Bool_t lut = kTRUE)                            { SetBit(kLUT, lut);};
   void     SetMinMaxCutSigma(Float_t minMaxCutSigma)          { fMinMaxCutSigma   = minMaxCutSigma; };
   void     SetMinLeftRightCutSigma(Float_t minLeftRightCutSigma) { fMinLeftRightCutSigma   = minLeftRightCutSigma; };
@@ -80,29 +65,18 @@ public:
   void     SetClusSigThresh(Float_t thresh)                   { fClusSigThresh   = thresh; };
   void     SetTailCancelation(Bool_t tc = kTRUE)                 { SetBit(kTC, tc);  };
   void     SetNexponential(Int_t nexp)                        { fTCnexp          = nexp;   };
-  void     SetADCbaseline(Int_t base)                         { fADCbaseline     = base;   };
   inline void SetSysCovMatrix(Double_t *sys);
   void     SetNumberOfPresamples(Int_t n) {fNumberOfPresamples = n;}
   void     SetNumberOfPostsamples(Int_t n) {fNumberOfPostsamples = n;}
-  void     SetTrackletWriteEnabled(Bool_t enablewritetracklet = kFALSE) { SetBit(kTrackletWriting, enablewritetracklet); };
-
 
 private:
   enum{
-    kNNslices = 8
-   ,kLQslices = 3
-  };
-  
-  enum{
     kClusterSharing    = 1 // Toggle cluster sharing
-   ,kSeeding           = 2 // Do stand alone tracking in the TRD
-   ,kVertexConstrained = 3 // Perform vertex constrained fit
-   ,kLUT               = 4 // 
-   ,kTC                = 5 // tail cancelation
-   ,kTrackletWriting   = 6
+   ,kVertexConstrained = 2 // Perform vertex constrained fit
+   ,kLUT               = 3 // 
+   ,kTC                = 4 // tail cancelation
   };
 
-  AliTRDpidMethod fkPIDMethod;       // PID method selector 0(LQ) 1(NN)
   Double_t  fkMaxTheta;              // Maximum theta
   Double_t  fkMaxPhi;                // Maximum phi
 
@@ -120,7 +94,6 @@ private:
   Double_t  fkChi2Z;                 // Max chi2 on the z direction for seeding clusters fit
   Double_t  fkChi2Y;                 // Max chi2 on the y direction for seeding clusters Rieman fit
   Double_t  fkTrackLikelihood;       // Track likelihood for tracklets Rieman fit
-  Int_t     fkStreamLevel;					 // Streaming Level in TRD Reconstruction
   
   Double_t  fSysCovMatrix[5];        // Systematic uncertainty from calibration and alignment for each tracklet
 
@@ -132,11 +105,10 @@ private:
   Int_t     fTCnexp;                 // Number of exponentials, digital filter
   
   // ADC parameter
-  Int_t     fADCbaseline;            // ADC baseline to be subtracted
   Int_t     fNumberOfPresamples;     // number of presamples 
   Int_t     fNumberOfPostsamples;     // number of postsamples 
 
-  ClassDef(AliTRDrecoParam, 5)       // Reconstruction parameters for TRD detector
+  ClassDef(AliTRDrecoParam, 4)       // Reconstruction parameters for TRD detector
 
 };
 

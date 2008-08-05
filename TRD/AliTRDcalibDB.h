@@ -15,8 +15,8 @@
 #include "TObject.h"
 #endif
 
-#ifndef ALITRDRECOPARAM_H
-#include "AliTRDrecoParam.h"
+#ifndef ALITRDRECONSTRUCTOR_H
+#include "AliTRDReconstructor.h"
 #endif
 
 class AliCDBEntry;
@@ -26,7 +26,6 @@ class AliTRDCalMonitoring;
 class AliTRDCalROC;
 class AliTRDCalDet;
 class AliTRDCalSingleChamberStatus;
-
 class AliTRDcalibDB : public TObject {
 
  public:
@@ -86,7 +85,7 @@ class AliTRDcalibDB : public TObject {
   Bool_t                              IsChamberMasked(Int_t det);
 
   const AliTRDCalMonitoring          *GetMonitoringObject();
-  const AliTRDCalPID                 *GetPIDObject(AliTRDrecoParam::AliTRDpidMethod method);
+  const AliTRDCalPID                 *GetPIDObject(AliTRDReconstructor::AliTRDpidMethod method);
 
   // Related functions, these depend on calibration data
   static Float_t                      GetOmegaTau(Float_t vdrift, Float_t bz);

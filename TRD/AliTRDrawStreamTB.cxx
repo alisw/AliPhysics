@@ -1,17 +1,17 @@
 #/**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Author: The ALICE Off-line Project.                                    *
- * Contributors are mentioned in the code where appropriate.              *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+*                                                                        *
+* Author: The ALICE Off-line Project.                                    *
+* Contributors are mentioned in the code where appropriate.              *
+*                                                                        *
+* Permission to use, copy, modify and distribute this software and its   *
+* documentation strictly for non-commercial purposes is hereby granted   *
+* without fee, provided that the above copyright notice appears in all   *
+* copies and that both the copyright notice and this permission notice   *
+* appear in the supporting documentation. The authors make no claims     *
+* about the suitability of this software for any purpose. It is          *
+* provided "as is" without express or implied warranty.                  *
+**************************************************************************/
 
 /* $Id$ */
 
@@ -226,9 +226,9 @@ AliTRDrawStreamTB::AliTRDrawStreamTB(AliRawReader *rawReader)
   if (fRawReader)
     {	  
       if (Init() == kFALSE)
-	{
-	  AliWarning("Unable to Init. Try setting up the reader with SetReader or buffer with Init(void *, UInt_t )");	  
-	}
+  {
+    AliWarning("Unable to Init. Try setting up the reader with SetReader or buffer with Init(void *, UInt_t )");	  
+  }
     }
   else
     {
@@ -322,13 +322,13 @@ AliTRDrawStreamTB::SwapOnEndian()
       fpPos = fpBegin;
       UInt_t iutmp = 0;
       while (fpPos < fpEnd)
-	{
-	  fpPos += 1;
-	  iutmp = (((*fpPos & 0x000000ffU) << 24) | ((*fpPos & 0x0000ff00U) <<  8) |
-		   ((*fpPos & 0x00ff0000U) >>  8) | ((*fpPos & 0xff000000U) >> 24));
-	  // here we override the value in the buffer!
-	  *fpPos = iutmp;	  
-	}
+  {
+    fpPos += 1;
+    iutmp = (((*fpPos & 0x000000ffU) << 24) | ((*fpPos & 0x0000ff00U) <<  8) |
+      ((*fpPos & 0x00ff0000U) >>  8) | ((*fpPos & 0xff000000U) >> 24));
+    // here we override the value in the buffer!
+    *fpPos = iutmp;	  
+  }
       fpPos = fpBegin;
     }
 }
@@ -342,14 +342,14 @@ AliTRDrawStreamTB::DumpWords(UInt_t *px, UInt_t iw, UInt_t marker)
   for (UInt_t i = 0; i < iw; i++)
     {
       if (px + iw >= fpEnd)
-	return kFALSE;
+  return kFALSE;
 
       if (i % 8 == 0)
-	tsreturn += "\n                              ";
+  tsreturn += "\n                              ";
       if (marker != 0 && marker == px[i])
-	tsreturn += Form(" *>0x%08x<* ", px[i]);
+  tsreturn += Form(" *>0x%08x<* ", px[i]);
       else
-	tsreturn += Form("0x%08x ", px[i]);
+  tsreturn += Form("0x%08x ", px[i]);
     }
   tsreturn += "\n";
 
@@ -388,14 +388,14 @@ AliTRDrawStreamTB::SetReader(AliRawReader *reader)
     {
       fRawReader = reader;
       if (fRawReader)
-	{	  
-	  return Init();
-	}
+  {	  
+    return Init();
+  }
       else
-	{
-	  AliWarning("Unable to setup reader.");
-	  return kFALSE;
-	}
+  {
+    AliWarning("Unable to setup reader.");
+    return kFALSE;
+  }
     }
   else
     {
@@ -422,35 +422,35 @@ AliTRDrawStreamTB::NextBuffer()
       UInt_t length = 0;
       Bool_t kBufferSet = fRawReader->ReadNextData(buffer);
       if (kBufferSet == kTRUE)
-	{
-	  if (fgDebugFlag)  AliDebug(9, "Buffer is set.");
-	  length = fRawReader->GetDataSize();
-	  if (fgExtraSkip == kTRUE)
-	    {
-	      buffer += EXTRA_LEAD_WORDS * WORD_SIZE;
-	      length -= EXTRA_LEAD_WORDS * WORD_SIZE;
-	    }
+  {
+    if (fgDebugFlag)  AliDebug(9, "Buffer is set.");
+    length = fRawReader->GetDataSize();
+    if (fgExtraSkip == kTRUE)
+      {
+        buffer += EXTRA_LEAD_WORDS * WORD_SIZE;
+        length -= EXTRA_LEAD_WORDS * WORD_SIZE;
+      }
 
-	  if (fgSkipCDH == kTRUE)
-	    {
-	      buffer += CDH_WORDS * WORD_SIZE;
-	      length -= CDH_WORDS * WORD_SIZE;	      
-	    }
+    if (fgSkipCDH == kTRUE)
+      {
+        buffer += CDH_WORDS * WORD_SIZE;
+        length -= CDH_WORDS * WORD_SIZE;	      
+      }
 
-	  if (length > 0)
-	    {
-	      if (fgDebugFlag)  AliDebug(9, Form("Buffer length : %d", length));
+    if (length > 0)
+      {
+        if (fgDebugFlag)  AliDebug(9, Form("Buffer length : %d", length));
               if (fgEnableMemoryReset) ResetMemory(); //[mj]
-	      if (DecodeSM((void*)buffer, length) == kTRUE)
-		return 1;
-	      else
-		return 0;
-	    }
-	}
+        if (DecodeSM((void*)buffer, length) == kTRUE)
+    return 1;
+        else
+    return 0;
+      }
+  }
       else
-	{
-	  return -1;
-	}
+  {
+    return -1;
+  }
     }
 
   return -1;
@@ -506,7 +506,7 @@ AliTRDrawStreamTB::ResetPerSM()
   fSM.fClean = kTRUE;
   fSM.fPos = NULL;
   for (Int_t i=0; i<5; i++){
-     fSM.fStackActive[i] = kFALSE;
+    fSM.fStackActive[i] = kFALSE;
   }
 }     
 
@@ -522,10 +522,10 @@ AliTRDrawStreamTB::ResetPerStack()
   fStack->fActiveLinks = 0;
   fStack->fPos = NULL;
   for (Int_t i=0; i<12; i++){
-     fStack->fLinksActive[i] = kFALSE;
-     fStack->fLinksDataType[i] = 0;
-     fStack->fLinksMonitor[i] = 0;
-     fStack->fLinkMonitorError[i] = 0;
+    fStack->fLinksActive[i] = kFALSE;
+    fStack->fLinksDataType[i] = 0;
+    fStack->fLinksMonitor[i] = 0;
+    fStack->fLinkMonitorError[i] = 0;
   }
 }
 
@@ -589,7 +589,7 @@ AliTRDrawStreamTB::ResetPerMCM()
   fMCM->fADCcounter = 0;
 
   for (Int_t i=0; i<21; i++){
-     fMCM->fADCchannel[i] = 0;
+    fMCM->fADCchannel[i] = 0;
   }
 }
 
@@ -607,7 +607,7 @@ AliTRDrawStreamTB::ResetPerADC()
   fADC->fCorrupted = 0;
 
   for (Int_t i=0; i<30; i++){
-     fADC->fSignals[i] = 0;
+    fADC->fSignals[i] = 0;
   }
 }
 
@@ -621,20 +621,20 @@ AliTRDrawStreamTB::ResetMemory()
   //              
   ResetPerSM();
   for (Int_t istack=0; istack<5; istack++){
-     fStack = &fSM.fStacks[istack];
-     ResetPerStack();
-     for (Int_t ilink=0; ilink<12; ilink++){
+    fStack = &fSM.fStacks[istack];
+    ResetPerStack();
+    for (Int_t ilink=0; ilink<12; ilink++){
         fHC = &fStack->fHalfChambers[ilink];
         ResetPerHC();
         for (Int_t imcm=0; imcm<12; imcm++){
-           fMCM = &fHC->fMCMs[imcm];
-           ResetPerMCM();
-           for (Int_t iadc=0; iadc<12; iadc++){
+          fMCM = &fHC->fMCMs[imcm];
+          ResetPerMCM();
+          for (Int_t iadc=0; iadc<12; iadc++){
               fADC = &fMCM->fADCs[iadc];
               ResetPerADC();
-           }
+          }
         }
-     }      
+    }      
   }
 }         
 
@@ -647,86 +647,86 @@ AliTRDrawStreamTB::Next()
   // returns with true on next adc read
   // returns false on errors and end of buffer
   // 
- if (fBufferRead)
-   {
+if (fBufferRead)
+  {
 
     while (fStackNumber < 5 && fSM.fActiveStacks > 0)
       {
         if(fSM.fStackActive[fStackNumber] == kTRUE)
-	  {
-	    fStack = &fSM.fStacks[fStackNumber];
-	    while (fStackLinkNumber < 12)
-	      {
-	        if (fStack->fLinksActive[fStackLinkNumber] == kTRUE && fStack->fLinksMonitor[fStackLinkNumber] == 0)
-		  {
-		    fHC = &fStack->fHalfChambers[fStackLinkNumber];
-		    if (!fHC)
-		      {
-		        AliError(Form("HC missing at stack %d link %d", fStackNumber, fStackLinkNumber));
-		        return kFALSE;
-		      }
-		    if (fHC->fCorrupted == 0 && (fHC->fH0Corrupted == 0 && fHC->fH1Corrupted == 0)) // if HC data corrupted(in any case), we don't read data at all from this HC 
-		      {
-		        while (fhcMCMcounter < fHC->fMCMmax)
-			  {
-			    fMCM = &fHC->fMCMs[fhcMCMcounter];
-			    if (!fMCM)
-			      {
-			        AliError(Form("HC missing at stack %d link %d atMCMslot %d", 
-				  	    fStackNumber, fStackLinkNumber, fhcMCMcounter));
-			        return kFALSE;
-			      }
-			    while(fmcmADCcounter < fMCM->fADCmax)
-			      {
-			        fADC = &fMCM->fADCs[fmcmADCcounter];
-			        if (!fADC)
-				  {
-				    AliError(Form("ADC missing at stack %d link %d MCMslot %d ADCslot %d", 
-				  		fStackNumber, fStackLinkNumber, fhcMCMcounter, fmcmADCcounter));
-				    return kFALSE;
-				  }
-			        fmcmADCcounter++;
-			        if (fSharedPadsOn)
-			 	  {
-				    return kTRUE;
-				  }
-			        else
-				  {
-				    if (fADC->fIsShared == kFALSE)
-				      return kTRUE;
-				  }
-			      } //while adc in MCM
-			    fhcMCMcounter++;
-			    // next MCM should go through all active ADCs
-			    fmcmADCcounter = 0;
-			  } // while mcm
-		      } // if HC OK
-		  }// if link active
-	        fStackLinkNumber++;
-	        // next stack link (HC) should go through all active MCMs
-	        fhcMCMcounter = 0;
-	      }// while links
-	  }// if stack active
+    {
+      fStack = &fSM.fStacks[fStackNumber];
+      while (fStackLinkNumber < 12)
+        {
+          if (fStack->fLinksActive[fStackLinkNumber] == kTRUE && fStack->fLinksMonitor[fStackLinkNumber] == 0)
+      {
+        fHC = &fStack->fHalfChambers[fStackLinkNumber];
+        if (!fHC)
+          {
+            AliError(Form("HC missing at stack %d link %d", fStackNumber, fStackLinkNumber));
+            return kFALSE;
+          }
+        if (fHC->fCorrupted == 0 && (fHC->fH0Corrupted == 0 && fHC->fH1Corrupted == 0)) // if HC data corrupted(in any case), we don't read data at all from this HC 
+          {
+            while (fhcMCMcounter < fHC->fMCMmax)
+        {
+          fMCM = &fHC->fMCMs[fhcMCMcounter];
+          if (!fMCM)
+            {
+              AliError(Form("HC missing at stack %d link %d atMCMslot %d", 
+                fStackNumber, fStackLinkNumber, fhcMCMcounter));
+              return kFALSE;
+            }
+          while(fmcmADCcounter < fMCM->fADCmax)
+            {
+              fADC = &fMCM->fADCs[fmcmADCcounter];
+              if (!fADC)
+          {
+            AliError(Form("ADC missing at stack %d link %d MCMslot %d ADCslot %d", 
+              fStackNumber, fStackLinkNumber, fhcMCMcounter, fmcmADCcounter));
+            return kFALSE;
+          }
+              fmcmADCcounter++;
+              if (fSharedPadsOn)
+          {
+            return kTRUE;
+          }
+              else
+          {
+            if (fADC->fIsShared == kFALSE)
+              return kTRUE;
+          }
+            } //while adc in MCM
+          fhcMCMcounter++;
+          // next MCM should go through all active ADCs
+          fmcmADCcounter = 0;
+        } // while mcm
+          } // if HC OK
+      }// if link active
+          fStackLinkNumber++;
+          // next stack link (HC) should go through all active MCMs
+          fhcMCMcounter = 0;
+        }// while links
+    }// if stack active
         fStackNumber++;
         // next stack should go through all links - start from 0
         fStackLinkNumber = 0;
       }
-   } // fBufferRead
+  } // fBufferRead
 
-   // in case rawreader manages the mem buffers, go for the next buffer 
-   if (fRawReader)
-     {
-       Int_t nextBuff = NextBuffer();
-       while (nextBuff != -1)
-	  {
-	    if (nextBuff > 0)
+  // in case rawreader manages the mem buffers, go for the next buffer 
+  if (fRawReader)
+    {
+      Int_t nextBuff = NextBuffer();
+      while (nextBuff != -1)
+    {
+      if (nextBuff > 0)
               {
                 fBufferRead = kTRUE;
-	        return Next();	   	  
+          return Next();	   	  
               }
-	    nextBuff = NextBuffer();
-	  }
-     }
+      nextBuff = NextBuffer();
+    }
+    }
 
   return kFALSE;
 }
@@ -747,20 +747,6 @@ AliTRDrawStreamTB::NextChamber(AliTRDdigitsManager *digitsManager, UInt_t **trac
   AliTRDdataArrayI *track2 = 0; 
   AliTRDSignalIndex *indexes = 0;
 
-  // Get the ADC baseline
-  Int_t adcBaseline = 0;
-  //   if (!AliTRDReconstructor::RecoParam())
-  //     {
-  //       AliError("RecoParam does not exist\n");
-  //       return 0;
-  //     }
-  //   else 
-  //     {
-  //       adcBaseline = ((Int_t) AliTRDReconstructor::RecoParam()->GetADCbaseline());
-  //     }
-
-  static AliTRDrecoParam * par = AliTRDrecoParam::GetLowFluxParam();
-  adcBaseline = par->GetADCbaseline();
   // Loop through the digits
   Int_t lastdet = -1;
   Int_t det     = -1;
@@ -771,7 +757,7 @@ AliTRDrawStreamTB::NextChamber(AliTRDdigitsManager *digitsManager, UInt_t **trac
 
   if (trackletContainer){ 
     for (Int_t i = 0; i < 2; i++) 
-       for (Int_t j = 0; j < MAX_TRACKLETS_PERHC; j++) 
+      for (Int_t j = 0; j < MAX_TRACKLETS_PERHC; j++) 
           trackletContainer[i][j] = 0; 
   }
 
@@ -782,114 +768,114 @@ AliTRDrawStreamTB::NextChamber(AliTRDdigitsManager *digitsManager, UInt_t **trac
 
       if (trackletContainer)
         {
-         if ((det + side*AliTRDgeometry::kNdet) != (lastdet + lastside*AliTRDgeometry::kNdet))
-         {
-           if (det != lastdet)
-             {
+        if ((det + side*AliTRDgeometry::kNdet) != (lastdet + lastside*AliTRDgeometry::kNdet))
+        {
+          if (det != lastdet)
+            {
               if (lastdet != -1)
                 {
-                 return lastdet;
+                return lastdet;
                 }
-             }
-           ntracklets = GetNTracklets();
-           if(ntracklets > 0) memcpy(trackletContainer[side], GetTrackletWords(), sizeof(UInt_t) * ntracklets); //copy tracklet words to trackletContainer array
-           lastside = side; 
+            }
+          ntracklets = GetNTracklets();
+          if(ntracklets > 0) memcpy(trackletContainer[side], GetTrackletWords(), sizeof(UInt_t) * ntracklets); //copy tracklet words to trackletContainer array
+          lastside = side; 
           } 
         } 
 
       if (det != lastdet) 
-	{ 
-	  // If new detector found
-	  if (lastdet == -1)
-	    {
-	      lastdet = det;
-	    }
-	  else
-	    {
-	      return lastdet;
-	    }
+  { 
+    // If new detector found
+    if (lastdet == -1)
+      {
+        lastdet = det;
+      }
+    else
+      {
+        return lastdet;
+      }
 
-	  if (det < 0 || det >= AliTRDgeometry::kNdet)
-	    {
-	      if (fSM.fClean == kTRUE)
-		{
-		  AliError(Form("Strange Det Number %d BUT event buffer seems to be clean.", det));
-		}
-	      else
-		{
-		  AliError(Form("Strange Det Number %d. Event buffer marked NOT clean!", det));
-		}
-	      continue;
-	    }
+    if (det < 0 || det >= AliTRDgeometry::kNdet)
+      {
+        if (fSM.fClean == kTRUE)
+    {
+      AliError(Form("Strange Det Number %d BUT event buffer seems to be clean.", det));
+    }
+        else
+    {
+      AliError(Form("Strange Det Number %d. Event buffer marked NOT clean!", det));
+    }
+        continue;
+      }
 
-	  // Add a container for the digits of this detector
-	  digits = (AliTRDdataArrayDigits *) digitsManager->GetDigits(det);
+    // Add a container for the digits of this detector
+    digits = (AliTRDdataArrayDigits *) digitsManager->GetDigits(det);
 
           if (digitsManager->UsesDictionaries()) 
             {
-	      track0 = (AliTRDdataArrayI *) digitsManager->GetDictionary(det,0);
-	      track1 = (AliTRDdataArrayI *) digitsManager->GetDictionary(det,1);
-	      track2 = (AliTRDdataArrayI *) digitsManager->GetDictionary(det,2);
-	    }
+        track0 = (AliTRDdataArrayI *) digitsManager->GetDictionary(det,0);
+        track1 = (AliTRDdataArrayI *) digitsManager->GetDictionary(det,1);
+        track2 = (AliTRDdataArrayI *) digitsManager->GetDictionary(det,2);
+      }
 
-	  if (!digits)
-	    {
-	      if (fSM.fClean == kTRUE)
-		{
-		  AliError(Form("Unable to get digits for det %d BUT event buffer seems to be clean.", det));
-		}
-	      else
-		{
-		  AliError(Form("Unable to get digits for det %d. Event buffer is NOT clean!", det));
-		}
-	      return -1;
-	    }
+    if (!digits)
+      {
+        if (fSM.fClean == kTRUE)
+    {
+      AliError(Form("Unable to get digits for det %d BUT event buffer seems to be clean.", det));
+    }
+        else
+    {
+      AliError(Form("Unable to get digits for det %d. Event buffer is NOT clean!", det));
+    }
+        return -1;
+      }
 
-	  Int_t rowMax = GetRowMax();
-	  Int_t colMax = GetColMax();
-	  Int_t ntbins = GetNumberOfTimeBins();
+    Int_t rowMax = GetRowMax();
+    Int_t colMax = GetColMax();
+    Int_t ntbins = GetNumberOfTimeBins();
 
-	  // Allocate memory space for the digits buffer
-	  if (digits->GetNtime() == 0) 
-	    {
-	      digits->Allocate(rowMax, colMax, ntbins);
+    // Allocate memory space for the digits buffer
+    if (digits->GetNtime() == 0) 
+      {
+        digits->Allocate(rowMax, colMax, ntbins);
               if (digitsManager->UsesDictionaries()) 
                 {
-	          track0->Allocate(rowMax, colMax, ntbins);
-	          track1->Allocate(rowMax, colMax, ntbins);
-	          track2->Allocate(rowMax, colMax, ntbins);
-		}
-	    }
+            track0->Allocate(rowMax, colMax, ntbins);
+            track1->Allocate(rowMax, colMax, ntbins);
+            track2->Allocate(rowMax, colMax, ntbins);
+    }
+      }
 
-	  indexes = digitsManager->GetIndexes(det);
-	  indexes->SetSM(GetSM());
-	  indexes->SetStack(GetStack());
-	  indexes->SetLayer(GetLayer());
-	  indexes->SetDetNumber(det);
-	  if (indexes->IsAllocated() == kFALSE)
-	    indexes->Allocate(rowMax, colMax, ntbins);
-	}
+    indexes = digitsManager->GetIndexes(det);
+    indexes->SetSM(GetSM());
+    indexes->SetStack(GetStack());
+    indexes->SetLayer(GetLayer());
+    indexes->SetDetNumber(det);
+    if (indexes->IsAllocated() == kFALSE)
+      indexes->Allocate(rowMax, colMax, ntbins);
+  }
 
       Char_t padStatus =  cal->GetPadStatus(det, GetCol(), GetRow());
 
       // ntimebins data are ready to read
       for (it = 0; it < GetNumberOfTimeBins(); it++)
-	{
-	  if ((GetSignals()[it] - adcBaseline) > 0)
-	    {
-	      digits->SetDataUnchecked(GetRow(), GetCol(), it, GetSignals()[it] - adcBaseline);
-	      if(padStatus)
-		digits->SetPadStatus(GetRow(), GetCol(), it, padStatus);
-	      	      
-	      indexes->AddIndexTBin(GetRow(), GetCol(), it);
+  {
+    if (GetSignals()[it] > 0)
+      {
+        digits->SetDataUnchecked(GetRow(), GetCol(), it, GetSignals()[it]);
+        if(padStatus)
+    digits->SetPadStatus(GetRow(), GetCol(), it, padStatus);
+                
+        indexes->AddIndexTBin(GetRow(), GetCol(), it);
               if (digitsManager->UsesDictionaries()) 
                 {
-	          track0->SetDataUnchecked(GetRow(), GetCol(), it, 0);
-	          track1->SetDataUnchecked(GetRow(), GetCol(), it, 0);
-	          track2->SetDataUnchecked(GetRow(), GetCol(), it, 0);
-		}
-	    }
-	} // tbins
+            track0->SetDataUnchecked(GetRow(), GetCol(), it, 0);
+            track1->SetDataUnchecked(GetRow(), GetCol(), it, 0);
+            track2->SetDataUnchecked(GetRow(), GetCol(), it, 0);
+    }
+      }
+  } // tbins
     }// while Next()
 
   return det;
@@ -970,9 +956,9 @@ AliTRDrawStreamTB::InitBuffer(void *buffer, UInt_t length)
     {
       AliInfo(Form("---------- Dumping %u words from the beginnig of the buffer ----------",fgDumpHead));
       if (DumpWords(fpBegin, fgDumpHead) == kFALSE)
-	{
-	  AliError("Dump failed. Not enough data.");	  
-	}
+  {
+    AliError("Dump failed. Not enough data.");	  
+  }
       AliInfo(Form("---------- Dumping ended ----------------------------------------------"));
     }
 
@@ -994,39 +980,39 @@ AliTRDrawStreamTB::DecodeGTUheader()
       // fSM.fHeaderSize represent additional Supermodule header size which contains additional information regarding hardware design.
       // For the moment, we skip decoding these words 
       if (SkipWords(fSM.fHeaderSize) == kTRUE)
-	{
-	  for (Int_t istack = 0; istack < 5; istack++)
-	    {
-	      if (fSM.fStackActive[istack] == kFALSE)
-		continue;
+  {
+    for (Int_t istack = 0; istack < 5; istack++)
+      {
+        if (fSM.fStackActive[istack] == kFALSE)
+    continue;
 
-	      fStack = &fSM.fStacks[istack];
+        fStack = &fSM.fStacks[istack];
 
               // Decode Stack Index Word of given stack
-	      DecodeStackInfo(fpPos, fStack);
-	      fpPos++;
+        DecodeStackInfo(fpPos, fStack);
+        fpPos++;
 
-	      fSM.fNexpectedHalfChambers += fStack->fActiveLinks;
-	      
-	      if (fgDebugFlag)  AliDebug(5, DumpStackInfo(fStack));
-	      
-	      if (SkipWords(fStack->fHeaderSize-6) == kFALSE) // 6 is the 6 stack header words for 12 links 
-		{
-		  if (fRawReader) fRawReader->AddMajorErrorLog(kDecodeStackInfo, "Stack header words missing");
-		  return kFALSE;
-		}
+        fSM.fNexpectedHalfChambers += fStack->fActiveLinks;
+        
+        if (fgDebugFlag)  AliDebug(5, DumpStackInfo(fStack));
+        
+        if (SkipWords(fStack->fHeaderSize-6) == kFALSE) // 6 is the 6 stack header words for 12 links 
+    {
+      if (fRawReader) fRawReader->AddMajorErrorLog(kDecodeStackInfo, "Stack header words missing");
+      return kFALSE;
+    }
               for (Int_t iword=0; iword<6; iword++) // decode 6 stack header words
-                 {
-                   // Decode Stack Header Word of given stack
-	           DecodeStackHeader(fpPos, fStack, iword); 
-	           fpPos++;
-                 }
-	    }
-	}
+                {
+                  // Decode Stack Header Word of given stack
+            DecodeStackHeader(fpPos, fStack, iword); 
+            fpPos++;
+                }
+      }
+  }
       else
-	{
-	  return kFALSE;
-	}
+  {
+    return kFALSE;
+  }
     }
   else
     {
@@ -1076,16 +1062,16 @@ AliTRDrawStreamTB::DecodeSM(void *buffer, UInt_t length)
     {
       fStackNumber = istack; 
       if (fSM.fStackActive[istack] == kFALSE)
-	continue;
+  continue;
       
       fStack = &fSM.fStacks[istack];
 
       fgLastHC  = -1; // to check rob number odering 
       for (Int_t ilink = 0; ilink < 12; ilink++)
-	{
-	  fStackLinkNumber = ilink; 
-	  if (fStack->fLinksActive[ilink] == kFALSE)
-	    continue;
+  {
+    fStackLinkNumber = ilink; 
+    if (fStack->fLinksActive[ilink] == kFALSE)
+      continue;
 
           // check GTU link monitor 
           if (!(fStack->fLinksDataType[ilink] == 0 && fStack->fLinksMonitor[ilink] == 0))
@@ -1096,64 +1082,64 @@ AliTRDrawStreamTB::DecodeSM(void *buffer, UInt_t length)
               continue; 
             }
 
-	  if (fpPos >= fpEnd)
-	    {
-	      if (fRawReader) fRawReader->AddMajorErrorLog(kLinkDataMissing, "Link data missing");	      
+    if (fpPos >= fpEnd)
+      {
+        if (fRawReader) fRawReader->AddMajorErrorLog(kLinkDataMissing, "Link data missing");	      
               if (fgWarnError) AliError("Link data missing.");      
-	      fSM.fClean = kFALSE;
-	      break;
-	    }
+        fSM.fClean = kFALSE;
+        break;
+      }
 
-	  fHC = &fStack->fHalfChambers[ilink];
+    fHC = &fStack->fHalfChambers[ilink];
           ResetPerHC();
 
-	  if (fSM.fTrackletEnable == kTRUE)
-	    {
-	      if (DecodeTracklets() == kFALSE)
-		{
-		  
-		  fSM.fClean = kFALSE;
-		  SeekEndOfData();
+    if (fSM.fTrackletEnable == kTRUE)
+      {
+        if (DecodeTracklets() == kFALSE)
+    {
+      
+      fSM.fClean = kFALSE;
+      SeekEndOfData();
 
-		  if (fgWarnError) 
-		    {
-		      AliError(Form("Tracklet decoding failed stack %d link %d", fStackNumber, fStackLinkNumber));
-		    }
-		  continue;
-		}
-	    }
+      if (fgWarnError) 
+        {
+          AliError(Form("Tracklet decoding failed stack %d link %d", fStackNumber, fStackLinkNumber));
+        }
+      continue;
+    }
+      }
 
-	  if (fpPos >= fpEnd)
-	    {
-	      if (fRawReader) fRawReader->AddMajorErrorLog(kHCdataMissing, "HC data missing");	      
+    if (fpPos >= fpEnd)
+      {
+        if (fRawReader) fRawReader->AddMajorErrorLog(kHCdataMissing, "HC data missing");	      
               if (fgWarnError) AliError("HC data missing.");      
-	      fSM.fClean = kFALSE;
-	      break;
-	    }
-	  
+        fSM.fClean = kFALSE;
+        break;
+      }
+    
           fgLastROB   = -1; // to check mcm number odering 
           fgLastIndex = -1 ; // to check mcm number odering 
-	  if (DecodeHC() == kFALSE)
-	    {
-	      fSM.fClean = kFALSE;
+    if (DecodeHC() == kFALSE)
+      {
+        fSM.fClean = kFALSE;
               if (fHC->fCorrupted < 16)  SeekEndOfData(); // In case that we meet END_OF_TRACKLET_MARKERNEW 
                                                           // during ADC data decoding or MCM header decoding
                                                           // we don't seek ENDOFRAWDATAMARKER
 
-	      if (fgWarnError) 
-		{
-		  AliError(Form("Failed HC : %s", DumpHCinfoH0(fHC)));
-		  AliError(Form("Failed HC : %s", DumpHCinfoH1(fHC)));
-		}
-	      	      
-	      continue;
-	    }
-	  else
-	    {
-	      SeekEndOfData(); // make sure that finish off with the end of data markers
-	    }
+        if (fgWarnError) 
+    {
+      AliError(Form("Failed HC : %s", DumpHCinfoH0(fHC)));
+      AliError(Form("Failed HC : %s", DumpHCinfoH1(fHC)));
+    }
+                
+        continue;
+      }
+    else
+      {
+        SeekEndOfData(); // make sure that finish off with the end of data markers
+      }
 
-	} // ilink
+  } // ilink
     } // istack
 
   ResetIterators(); // need to do it again for Next() function 
@@ -1164,10 +1150,10 @@ AliTRDrawStreamTB::DecodeSM(void *buffer, UInt_t length)
   if (fgCleanDataOnly && (fSM.fClean == kFALSE))
     {
       if (fgWarnError) 
-	{
-	  AliWarning("Buffer with errors. Returning FALSE.");
-	  AliWarning(Form("--- Failed SM : %s ---", DumpSMInfo(&fSM)));
-	}
+  {
+    AliWarning("Buffer with errors. Returning FALSE.");
+    AliWarning(Form("--- Failed SM : %s ---", DumpSMInfo(&fSM)));
+  }
       fSM.fActiveStacks = 0; // Next() will not give data
       return kFALSE;
     }
@@ -1186,11 +1172,11 @@ AliTRDrawStreamTB::DecodeSM()
     {      
       Int_t nextBuff = NextBuffer();
       while (nextBuff != -1)
-	{
-	  if (nextBuff > 0)
-	    return nextBuff;	   	  
-	  nextBuff = NextBuffer();
-	}
+  {
+    if (nextBuff > 0)
+      return nextBuff;	   	  
+    nextBuff = NextBuffer();
+  }
       return -1;
     }
   else
@@ -1286,10 +1272,10 @@ AliTRDrawStreamTB::SeekNextMCMheader()
   while ( *fpPos != ENDOFRAWDATAMARKER && fpPos < fpEnd )
     {
       if (MCM_HEADER_MASK_ERR(*fpPos) == 0 && MCM_HEADER_MASK_ERR(*(fpPos+1)) == 0)      
-	{
-	  if (fgDebugFlag) AliDebug(11,Form("^^^ Found : Pos 0x%08x : Val 0x%08x", fpPos, *fpPos));
-	  return kTRUE;
-	}
+  {
+    if (fgDebugFlag) AliDebug(11,Form("^^^ Found : Pos 0x%08x : Val 0x%08x", fpPos, *fpPos));
+    return kTRUE;
+  }
       if ( *fpPos == END_OF_TRACKLET_MARKERNEW) 
         {  
           fMCM->fCorrupted += 16;
@@ -1328,13 +1314,13 @@ AliTRDrawStreamTB::DecodeTracklets()
       fLinkTrackletCounter++;
 
       if (fLinkTrackletCounter > MAX_TRACKLETS_PERHC)
-	{
-	  if (fgDebugFlag) AliDebug(11,Form("Max number of tracklets exceeded %d > %d.", 
-			  fLinkTrackletCounter, MAX_TRACKLETS_PERHC));
-	  if (fRawReader) fRawReader->AddMajorErrorLog(kTrackletOverflow,"Too many tracklets"); 
+  {
+    if (fgDebugFlag) AliDebug(11,Form("Max number of tracklets exceeded %d > %d.", 
+        fLinkTrackletCounter, MAX_TRACKLETS_PERHC));
+    if (fRawReader) fRawReader->AddMajorErrorLog(kTrackletOverflow,"Too many tracklets"); 
           fHC->fTrackletError = 1;
-	  return kFALSE;
-	}
+    return kFALSE;
+  }
 
       fHC->fTrackletWords[fLinkTrackletCounter-1] = UInt_t(*fpPos); //store tracklet words into array  
       fHC->fNTracklets = fLinkTrackletCounter;
@@ -1365,10 +1351,10 @@ Bool_t
 AliTRDrawStreamTB::IsRowValid()
 {
   if ( (fHC->fStack == 2 && fMCM->fROW >= fGeometry->RowmaxC0()) ||
-       (fHC->fStack != 2 && fMCM->fROW >= fGeometry->RowmaxC1()) || fMCM->fROW < 0 ) 
+      (fHC->fStack != 2 && fMCM->fROW >= fGeometry->RowmaxC1()) || fMCM->fROW < 0 ) 
     {
       if (fgDebugFlag) AliDebug(11,Form("SM%d L%dS%d: Wrong Padrow (%d) fROB=%d, fSIDE=%d, fMCM=%02d"
-		      , fHC->fSM, fHC->fLayer, fHC->fStack, fMCM->fROW, fMCM->fROB, fHC->fSide, fMCM->fMCM ));
+          , fHC->fSM, fHC->fLayer, fHC->fStack, fMCM->fROW, fMCM->fROB, fHC->fSide, fMCM->fMCM ));
       return kFALSE;
     }
   return kTRUE;
@@ -1391,14 +1377,14 @@ AliTRDrawStreamTB::IsMCMheaderOK()
     {
       Int_t matchingcounter = 0; 
       for (Int_t i=fgLastIndex+1; i<16; i++)
-         { 
-           if ( fMCM->fMCM == fgMCMordering[i] )
-             {
-               fgLastIndex = i;
-               matchingcounter++;
-               break;
-             }
-         }
+        { 
+          if ( fMCM->fMCM == fgMCMordering[i] )
+            {
+              fgLastIndex = i;
+              matchingcounter++;
+              break;
+            }
+        }
       if (matchingcounter == 0)   
         {
           fMCM->fMCMhdCorrupted += 2;
@@ -1410,14 +1396,14 @@ AliTRDrawStreamTB::IsMCMheaderOK()
     {
       if ( fMCM->fROB < (fMCM-1)->fROB )
         {
-         fMCM->fMCMhdCorrupted += 2;
-         AliDebug(11,Form("ROB number from last MCM is larger: ROB # from last MCM %d,  ROB # from current MCM %d \n",(fMCM-1)->fROB, fMCM->fROB));
+        fMCM->fMCMhdCorrupted += 2;
+        AliDebug(11,Form("ROB number from last MCM is larger: ROB # from last MCM %d,  ROB # from current MCM %d \n",(fMCM-1)->fROB, fMCM->fROB));
         }
       else fgLastROB = fMCM->fROB; 
     }
- 
+
   fgLastHC = fHC->fLayer*2 + fHC->fSide; 
- 
+
   /*
   // this check will come back later again when we have "patched MCM map"
   int expectedROB = -1;
@@ -1509,23 +1495,23 @@ AliTRDrawStreamTB::DecodeMCMheader()
     {
       fpPos++;
       if ( fpPos < fpEnd )
-	{
-	  DecodeMask(fpPos, fMCM); 
+  {
+    DecodeMask(fpPos, fMCM); 
           if (fHC->fCorrupted >= 16)
             {
               fpPos--; 
               return kFALSE;
             }
-	  MCMADCwordsWithTbins(fHC->fTimeBins, fMCM);
-	  fMCM->fAdcDataPos = fpPos + 1;
-	}
+    MCMADCwordsWithTbins(fHC->fTimeBins, fMCM);
+    fMCM->fAdcDataPos = fpPos + 1;
+  }
       else
-	{
-	  if (fgDebugFlag) AliDebug(11,"Expected ADC mask word. Fail due to buffer END.");	  
-	  if (fRawReader) fRawReader->AddMajorErrorLog(kMCMADCMaskMissing,"Missing"); 
+  {
+    if (fgDebugFlag) AliDebug(11,"Expected ADC mask word. Fail due to buffer END.");	  
+    if (fRawReader) fRawReader->AddMajorErrorLog(kMCMADCMaskMissing,"Missing"); 
           fHC->fCorrupted += 32;
-	  return kFALSE;
-	}
+    return kFALSE;
+  }
     }
   else
     {
@@ -1543,7 +1529,7 @@ AliTRDrawStreamTB::DecodeMCMheader()
 
   if (IsMCMheaderOK() == kFALSE)
       return kFALSE;
-     
+    
   return kTRUE;
 }
 
@@ -1575,26 +1561,26 @@ AliTRDrawStreamTB::IsHCheaderOK()
 
   if (fgStackNumberChecker)
     {
-     if (fHC->fStack != fStackNumber) 
-       {
+    if (fHC->fStack != fStackNumber) 
+      {
         if (fgDebugFlag) AliDebug(11,Form("Missmatch: Stack number between HC header %d and GTU link mask %d", 
-				       fHC->fStack, fStackNumber));
+              fHC->fStack, fStackNumber));
         fStackNumber = -1;
         return kFALSE;
-     }
+    }
     }
 
   if (fgStackLinkNumberChecker)
     {
-     //if (fHC->fLayer * 2 + fHC->fSide != fStackLinkNumber) 
-     // let it make flexible to consider known fiber swapping
-     if ((fHC->fLayer * 2 != fStackLinkNumber) && (fHC->fLayer * 2 != fStackLinkNumber - 1))  
-       {
+    //if (fHC->fLayer * 2 + fHC->fSide != fStackLinkNumber) 
+    // let it make flexible to consider known fiber swapping
+    if ((fHC->fLayer * 2 != fStackLinkNumber) && (fHC->fLayer * 2 != fStackLinkNumber - 1))  
+      {
         if (fgDebugFlag) AliDebug(11,Form("Missmatch: Layer number between HC header %d and GTU link mask %d | %s", 
- 			               fHC->fLayer, fStackLinkNumber, DumpStackInfo(fStack)));
+                    fHC->fLayer, fStackLinkNumber, DumpStackInfo(fStack)));
         fStackLinkNumber = -1;
         return kFALSE;      
-       }
+      }
     }
 
   // SLOW GEOM : consistancy check with geometry
@@ -1610,8 +1596,8 @@ AliTRDrawStreamTB::IsHCheaderOK()
       || fHC->fSM <0 || fHC->fSM >= AliTRDgeometry::kNsector)
     {
       if (fgDebugFlag) AliDebug(11,Form("Wrong SM(sector) %d (Geometry says: %d) Stack=%d Layer=%d Det=%d", 
-				       fHC->fSM, fGeometry->GetSector(fHC->fDET),
-				       fHC->fStack, fHC->fLayer, fHC->fDET));      
+              fHC->fSM, fGeometry->GetSector(fHC->fDET),
+              fHC->fStack, fHC->fLayer, fHC->fDET));      
       if (fRawReader) fRawReader->AddMajorErrorLog(kHCHeaderWrongSM, "Wrong SM");       
       return kFALSE;
     }
@@ -1655,16 +1641,16 @@ AliTRDrawStreamTB::DecodeHCheader()
     {
       fpPos++;
       if (fpPos < fpEnd)
-	{
-	  if (DecodeHCwordH1(fpPos, fHC) == kFALSE)
+  {
+    if (DecodeHCwordH1(fpPos, fHC) == kFALSE)
             return kFALSE;
-	}
+  }
       else
-	{
-	  if (fgDebugFlag) AliDebug(11,"Expected HC header word 1. Fail due to buffer END.");
-	  if (fRawReader) fRawReader->AddMajorErrorLog(kHCWordMissing,"Next HC word 1 (count from 0) missing"); 
-	  return kFALSE;
-	}
+  {
+    if (fgDebugFlag) AliDebug(11,"Expected HC header word 1. Fail due to buffer END.");
+    if (fRawReader) fRawReader->AddMajorErrorLog(kHCWordMissing,"Next HC word 1 (count from 0) missing"); 
+    return kFALSE;
+  }
     }
 
   if (fgDebugFlag)  AliDebug(5, DumpHCinfoH0(fHC));
@@ -1699,32 +1685,32 @@ AliTRDrawStreamTB::DecodeHC()
     {
       fpPos++;
       if (fpPos >= fpEnd)
-	{
+  {
           fHC->fCorrupted += 1;
-	  if (fgDebugFlag) AliDebug(11,"No MCM data? Not enough data in the buffer.");
-	  if (fRawReader) fRawReader->AddMajorErrorLog(kMCMdataMissing, "MCM data missing"); 
-	  return kFALSE;
-	}
+    if (fgDebugFlag) AliDebug(11,"No MCM data? Not enough data in the buffer.");
+    if (fRawReader) fRawReader->AddMajorErrorLog(kMCMdataMissing, "MCM data missing"); 
+    return kFALSE;
+  }
     }
 
   fHC->fMCMmax = 0;
   while (*fpPos != ENDOFRAWDATAMARKER && fpPos < fpEnd)
     {
       if (fHC->fMCMmax > TRD_MAX_MCM)
-	{
+  {
           fHC->fCorrupted += 2;
-	  if (fgDebugFlag) AliDebug(11,"More mcm data than expected!");
-	  if (fRawReader) fRawReader->AddMajorErrorLog(kMCMoverflow, "Too many mcms found!"); 
-	  return kFALSE;
-	}
+    if (fgDebugFlag) AliDebug(11,"More mcm data than expected!");
+    if (fRawReader) fRawReader->AddMajorErrorLog(kMCMoverflow, "Too many mcms found!"); 
+    return kFALSE;
+  }
 
       fMCM = &fHC->fMCMs[fHC->fMCMmax];
 
       if (DecodeMCMheader() == kFALSE)
-	{
+  {
           if (fHC->fCorrupted < 4) fHC->fCorrupted += 4; // benchmark hc data corruption as 4
-	  
-	  if (fgSkipData == kTRUE || fHC->fCorrupted >= 16)
+    
+    if (fgSkipData == kTRUE || fHC->fCorrupted >= 16)
               return kFALSE; // stop HC data reading
           
           fHC->fMCMmax++; // increase mcm counter to match with expected rob/mcm number
@@ -1733,76 +1719,76 @@ AliTRDrawStreamTB::DecodeHC()
           if (fMCM->fADCmaskCorrupted < 2) 
             {  
               if (SkipMCMdata(fMCM->fADCcount*fMCM->fSingleADCwords) == kFALSE)
-	          return kFALSE;
+            return kFALSE;
               continue;
             }
           else 
             {
               if (SeekNextMCMheader() == kFALSE)
-	          return kFALSE;
+            return kFALSE;
               continue;
             }
-	}
+  }
 
       fHC->fMCMmax++;
- 
+
       if (fMCM->fADCmax > 0)
-	{
-	  fpPos++;
-	  if (fpPos >= fpEnd)
-	    {
+  {
+    fpPos++;
+    if (fpPos >= fpEnd)
+      {
               fMCM->fCorrupted += 1;
               if (fHC->fCorrupted < 4) fHC->fCorrupted += 4; // benchmark hc data corruption as 4
-	      if (fgDebugFlag)  AliDebug(9, Form("Buffer short of data. ADC data expected."));	  
-	      return kFALSE;
-	    }
+        if (fgDebugFlag)  AliDebug(9, Form("Buffer short of data. ADC data expected."));	  
+        return kFALSE;
+      }
 
-	  for (Int_t iadc = 0; iadc < fMCM->fADCmax; iadc++)
-	    {
-	      fADC = &fMCM->fADCs[iadc];
-	      fADC->fADCnumber = fMCM->fADCchannel[iadc];
+    for (Int_t iadc = 0; iadc < fMCM->fADCmax; iadc++)
+      {
+        fADC = &fMCM->fADCs[iadc];
+        fADC->fADCnumber = fMCM->fADCchannel[iadc];
 
-	      if (fgDebugFlag)  AliDebug(9, Form("This is ADC %d of %d. ADC number is %d.", 
-						iadc+1, fMCM->fADCmax, fMCM->fADCchannel[iadc]));
+        if (fgDebugFlag)  AliDebug(9, Form("This is ADC %d of %d. ADC number is %d.", 
+            iadc+1, fMCM->fADCmax, fMCM->fADCchannel[iadc]));
 
-	      if (fpPos + fMCM->fSingleADCwords >= fpEnd)
-		{
-		  
+        if (fpPos + fMCM->fSingleADCwords >= fpEnd)
+    {
+      
                   fMCM->fCorrupted += 2;
                   if (fHC->fCorrupted < 4) fHC->fCorrupted += 4; // benchmark hc data corruption as 4
-		  if (fgDebugFlag) AliDebug(11,"ADC (10 words) expected. Not enough data in the buffer.");
-		  return kFALSE;
-		}
+      if (fgDebugFlag) AliDebug(11,"ADC (10 words) expected. Not enough data in the buffer.");
+      return kFALSE;
+    }
 
               if (fHC->fRawVMajor < 64) // normal(real) ADC data
                 {
-	          if (DecodeADC() == kFALSE)
-		    {
+            if (DecodeADC() == kFALSE)
+        {
                       if (fMCM->fCorrupted < 4) fMCM->fCorrupted += 4; // benchmark mcm data corruption as 4
                       if (fHC->fCorrupted < 4) fHC->fCorrupted += 4;   // benchmark hc data corruption as 4
-		      if (fADC->fIsShared && fADC->fCorrupted == 16)   // check if we are out of the det when the pad is shared
-		        {
-		          fADC->fCOL = -1;
-		          fpPos = fADC->fPos + fMCM->fSingleADCwords;
-		        }
-		      else
-		        {
-		          if (fgDebugFlag) AliDebug(11,Form("ADC decode failed."));
-	                  if (fgSkipData == kTRUE || fHC->fCorrupted >= 16) 
-                             return kFALSE; // stop HC data reading
-		        }
-		    }
+          if (fADC->fIsShared && fADC->fCorrupted == 16)   // check if we are out of the det when the pad is shared
+            {
+              fADC->fCOL = -1;
+              fpPos = fADC->fPos + fMCM->fSingleADCwords;
+            }
+          else
+            {
+              if (fgDebugFlag) AliDebug(11,Form("ADC decode failed."));
+                    if (fgSkipData == kTRUE || fHC->fCorrupted >= 16) 
+                            return kFALSE; // stop HC data reading
+            }
+        }
                 } 
               else // test pattern data
                 {
                   if (fgWarnError) AliError("These are test pattern data. You need other reader"); // will be served in other class
                 }
-	    } 
-	} 
+      } 
+  } 
       else
-	{
-	  fpPos++;
-	}
+  {
+    fpPos++;
+  }
     }//while eof data
 
   if (fpPos >= fpEnd)
@@ -1837,20 +1823,20 @@ AliTRDrawStreamTB::DecodeADC()
       if (HC_HEADER_MASK_ERR(*fpPos) == 0 || *fpPos == END_OF_TRACKLET_MARKERNEW)
         {
           if (fgWarnError) AliError(Form("There should be ADC data. We meet HC header or END_OF_TRACKLET_MARKER 0x%08x",*fpPos));
-	  fADC->fCorrupted += 16;
+    fADC->fCorrupted += 16;
           fHC->fCorrupted += 16; 
           fpPos--;
 
           return kFALSE;
         }
       if (fMaskADCword != ADC_WORD_MASK(*fpPos))
-	{
-	  fADC->fCorrupted += 1;
+  {
+    fADC->fCorrupted += 1;
           if (fgDebugFlag) AliDebug(11,Form("Wrong ADC data mask! ADC channel number: %02d [Expected mask: 0x%08x  Current mask: 0x%08x] MCM= %s Error : %d",
-                                           fADC->fADCnumber, fMaskADCword, ADC_WORD_MASK(*fpPos),DumpMCMinfo(fMCM),fADC->fCorrupted));
+                                          fADC->fADCnumber, fMaskADCword, ADC_WORD_MASK(*fpPos),DumpMCMinfo(fMCM),fADC->fCorrupted));
           fpPos++;
-	  continue;
-	}
+    continue;
+  }
 
       // here we subtract the baseline ( == common additive)
       fADC->fSignals[fTbinADC + 0] = ((*fpPos & 0x00000ffc) >>  2) - fgCommonAdditive;
@@ -1883,18 +1869,18 @@ AliTRDrawStreamTB::DecodeADC()
   if (fADC->fCOL >= fHC->fColMax || fADC->fCOL < 0)
     {
       if (fADC->fIsShared == kFALSE)
-	{
-	  fADC->fCorrupted += 32;
-	  if (fgDebugFlag) AliDebug(11,Form("Wrong column! ADCnumber %d MaxIs %d Col %d MaxIs %d MCM= %s", 
-					   fADC->fADCnumber, fMaxADCgeom, fADC->fCOL, fHC->fColMax, DumpMCMinfo(fMCM)));
-	}
+  {
+    fADC->fCorrupted += 32;
+    if (fgDebugFlag) AliDebug(11,Form("Wrong column! ADCnumber %d MaxIs %d Col %d MaxIs %d MCM= %s", 
+            fADC->fADCnumber, fMaxADCgeom, fADC->fCOL, fHC->fColMax, DumpMCMinfo(fMCM)));
+  }
       //else
-	//{
-	  // we are out of the det when the pad is shared
-	  //if (fgDebugFlag) AliDebug(11, Form("Column out of the detector! ADCnumber %d MaxIs %d Col %d MaxIs %d MCM= %s", 
-	  //				     fADC->fADCnumber, fMaxADCgeom, fADC->fCOL, fHC->fColMax, DumpMCMinfo(fMCM)));
-	  //fADC->fCorrupted += 32;
-	//}
+  //{
+    // we are out of the det when the pad is shared
+    //if (fgDebugFlag) AliDebug(11, Form("Column out of the detector! ADCnumber %d MaxIs %d Col %d MaxIs %d MCM= %s", 
+    //				     fADC->fADCnumber, fMaxADCgeom, fADC->fCOL, fHC->fColMax, DumpMCMinfo(fMCM)));
+    //fADC->fCorrupted += 32;
+  //}
     }
 
   if (fADC->fCorrupted > 0)
@@ -1933,14 +1919,14 @@ void AliTRDrawStreamTB::DecodeSMInfo(const UInt_t *word, struct AliTRDrawSM *sm)
   for (Int_t i = 0; i < 5; i++)
     {
       if (IS_BIT_SET(stackMask,i) > 0)
-	{
-	  sm->fStackActive[i] = kTRUE;
-	  sm->fActiveStacks++;
-	}
+  {
+    sm->fStackActive[i] = kTRUE;
+    sm->fActiveStacks++;
+  }
       else
-	{
-	  sm->fStackActive[i] = kFALSE;
-	}
+  {
+    sm->fStackActive[i] = kFALSE;
+  }
     }
 }
 
@@ -1951,10 +1937,10 @@ const char *AliTRDrawStreamTB::DumpSMInfo(const struct AliTRDrawSM *sm)
   // Get SM structure into a const char
   //
   return Form("[ SM Info 0x%08x] : Hsize %d TrackletEnable %d Stacks %d %d %d %d %d",
-	      *sm->fPos,
-	      sm->fHeaderSize, sm->fTrackletEnable,
-	      sm->fStackActive[0], sm->fStackActive[1], sm->fStackActive[2],
-	      sm->fStackActive[3], sm->fStackActive[4]);      
+        *sm->fPos,
+        sm->fHeaderSize, sm->fTrackletEnable,
+        sm->fStackActive[0], sm->fStackActive[1], sm->fStackActive[2],
+        sm->fStackActive[3], sm->fStackActive[4]);      
 }
 
 //--------------------------------------------------------
@@ -1976,14 +1962,14 @@ void AliTRDrawStreamTB::DecodeStackInfo(const UInt_t *word, struct AliTRDrawStac
   for (Int_t i = 0; i < 12; i++)
     {
       if (IS_BIT_SET(linkMask,i) > 0)
-	{
-	  st->fLinksActive[i] = kTRUE;
-	  st->fActiveLinks++;
-	}
+  {
+    st->fLinksActive[i] = kTRUE;
+    st->fActiveLinks++;
+  }
       else
-	{
-	  st->fLinksActive[i] = kFALSE;
-	}
+  {
+    st->fLinksActive[i] = kFALSE;
+  }
     }
 }
   
@@ -2007,11 +1993,11 @@ const char *AliTRDrawStreamTB::DumpStackInfo(const struct AliTRDrawStack *st)
   //
 
   return Form("[ Stack Info 0x%08x ] : Hsize %d Links Active %d %d %d %d %d %d %d %d %d %d %d %d",
-	      *st->fPos,
-	      st->fHeaderSize,
-	      st->fLinksActive[0], st->fLinksActive[1], st->fLinksActive[2], st->fLinksActive[3],
-	      st->fLinksActive[4], st->fLinksActive[5], st->fLinksActive[6], st->fLinksActive[7],
-	      st->fLinksActive[8], st->fLinksActive[9], st->fLinksActive[10], st->fLinksActive[11]);
+        *st->fPos,
+        st->fHeaderSize,
+        st->fLinksActive[0], st->fLinksActive[1], st->fLinksActive[2], st->fLinksActive[3],
+        st->fLinksActive[4], st->fLinksActive[5], st->fLinksActive[6], st->fLinksActive[7],
+        st->fLinksActive[8], st->fLinksActive[9], st->fLinksActive[10], st->fLinksActive[11]);
 
 }
 
@@ -2026,8 +2012,8 @@ Bool_t AliTRDrawStreamTB::DecodeHCwordH0(const UInt_t *word, struct AliTRDrawHC 
   hc->fH0Corrupted = HC_HEADER_MASK_ERR(vword);
   if (hc->fH0Corrupted > 0)
     {
-     if (fgDebugFlag) AliDebug(11,Form("H0 Header Mask Error. Word 0x%08x", *fHC->fPos));
-     return kFALSE;
+    if (fgDebugFlag) AliDebug(11,Form("H0 Header Mask Error. Word 0x%08x", *fHC->fPos));
+    return kFALSE;
     }
 
   hc->fSpecialRawV =  HC_SPECIAL_RAW_VERSION(vword);
@@ -2058,8 +2044,8 @@ Bool_t AliTRDrawStreamTB::DecodeHCwordH1(const UInt_t *word, struct AliTRDrawHC 
   hc->fH1Corrupted = HC_HEADER_MASK_ERR(vword);
   if (hc->fH1Corrupted > 0)
     { 
-     if (fgDebugFlag) AliDebug(11,Form("H1 Header Mask Error. Word 0x%08x", *fHC->fPos));
-     return kFALSE;
+    if (fgDebugFlag) AliDebug(11,Form("H1 Header Mask Error. Word 0x%08x", *fHC->fPos));
+    return kFALSE;
     }
 
   hc->fTimeBins = HC_NTIMEBINS(vword);
@@ -2082,7 +2068,7 @@ const char *AliTRDrawStreamTB::DumpHCinfoH0(const struct AliTRDrawHC *hc)
     return Form("Unable to dump. Null received as parameter!?!");
   else
     return Form("[ HC[0] at 0x%08x ] : 0x%08x Info is : RawV %d SM %d Stack %d Layer %d Side %d DCSboard %d",
-		hc->fPos[0], *(hc->fPos[0]), hc->fRawVMajor, hc->fSM, hc->fStack, hc->fLayer, hc->fSide, hc->fDCSboard);
+    hc->fPos[0], *(hc->fPos[0]), hc->fRawVMajor, hc->fSM, hc->fStack, hc->fLayer, hc->fSide, hc->fDCSboard);
 }
 
 //--------------------------------------------------------
@@ -2095,7 +2081,7 @@ const char *AliTRDrawStreamTB::DumpHCinfoH1(const struct AliTRDrawHC *hc)
     return Form("Unable to dump. Null received as parameter!?!");
   else
     return Form("[ HC[1] at 0x%08x ] : 0x%08x Info is : TBins %d BCcount %d PreTrigCount %d PreTrigPhase %d",
-		hc->fPos[1], *(hc->fPos[1]), hc->fTimeBins, hc->fBunchCrossCounter, hc->fPreTriggerCounter, hc->fPreTriggerPhase);
+    hc->fPos[1], *(hc->fPos[1]), hc->fTimeBins, hc->fBunchCrossCounter, hc->fPreTriggerCounter, hc->fPreTriggerPhase);
 }
 
 //--------------------------------------------------------
@@ -2171,14 +2157,14 @@ void AliTRDrawStreamTB::DecodeMask(const UInt_t *word, struct AliTRDrawMCM *mcm)
   if (mcm->fADCMask > 0)
     {
       for (Int_t i = 0; i < TRD_MAX_ADC; i++)
-	{
-	  mcm->fADCchannel[mcm->fADCmax] = 0;
-	  if( IS_BIT_SET(mcm->fADCMask,i) )
-	    {
-	      mcm->fADCchannel[mcm->fADCmax] = i;
-	      mcm->fADCmax++;
-	    }
-	}
+  {
+    mcm->fADCchannel[mcm->fADCmax] = 0;
+    if( IS_BIT_SET(mcm->fADCMask,i) )
+      {
+        mcm->fADCchannel[mcm->fADCmax] = i;
+        mcm->fADCmax++;
+      }
+  }
     }
   if (mcm->fADCcount != mcm->fADCmax && fHC->fRawVMajor >= 32) // backward compatibility
     {

@@ -29,13 +29,12 @@ class AliTRDdigitsManager;
 class AliTRDSignalIndex;
 class AliTRDtransform;
 class AliTRDCalROC;
-
-class AliTRDclusterizer : public TNamed {
-
- public:
-
-  AliTRDclusterizer();
-  AliTRDclusterizer(const Text_t* name, const Text_t* title);
+class AliTRDReconstructor;
+class AliTRDclusterizer : public TNamed 
+{
+public:
+  AliTRDclusterizer(AliTRDReconstructor *rec = 0x0);
+  AliTRDclusterizer(const Text_t* name, const Text_t* title, AliTRDReconstructor *rec = 0x0);
   AliTRDclusterizer(const AliTRDclusterizer &c);
   virtual         ~AliTRDclusterizer();
   AliTRDclusterizer &operator=(const AliTRDclusterizer &c);
@@ -64,30 +63,30 @@ class AliTRDclusterizer : public TNamed {
 
   virtual Bool_t   AddLabels(Int_t idet, Int_t firstClusterROC, Int_t nClusterROC);
   virtual Bool_t   SetAddLabels(Bool_t kset) { fAddLabels = kset; 
-                                               return fAddLabels;  } // should we assign labels to clusters
+            return fAddLabels;  } // should we assign labels to clusters
   virtual void     SetRawVersion(Int_t iver) { fRawVersion = iver; } // set the expected raw data version
+  void             SetReconstructor(const AliTRDReconstructor *rec) {fReconstructor = rec;}
+  static UChar_t GetStatus(Short_t &signal);
 
-	static UChar_t GetStatus(Short_t &signal);
-
- protected:
-
-          void     DeConvExp(Double_t *source, Double_t *target
-                           , Int_t nTimeTotal, Int_t nexp);
-	  void     TailCancelation(AliTRDdataArrayDigits *digitsIn
-                                 , AliTRDdataArrayF *digitsOut 
-                                 , AliTRDSignalIndex *indexesIn
-			         , AliTRDSignalIndex *indexesOut
-			         , Int_t nTimeTotal
-		                 , Float_t ADCthreshold
-		                 , AliTRDCalROC *calGainFactorROC
-		                 , Float_t calGainFactorDetValue);
+protected:
+  void     DeConvExp(Double_t *source, Double_t *target
+              , Int_t nTimeTotal, Int_t nexp);
+  void     TailCancelation(AliTRDdataArrayDigits *digitsIn
+              , AliTRDdataArrayF *digitsOut 
+              , AliTRDSignalIndex *indexesIn
+              , AliTRDSignalIndex *indexesOut
+              , Int_t nTimeTotal
+              , Float_t ADCthreshold
+              , AliTRDCalROC *calGainFactorROC
+              , Float_t calGainFactorDetValue);
   virtual Double_t Unfold(Double_t eps, Int_t layer, Double_t *padSignal);
-          Double_t GetCOG(Double_t signal[5]) const; 
-          void     FillLUT();
-          Double_t LUTposition(Int_t ilayer, Double_t ampL, Double_t ampC, Double_t ampR) const;
-
+  Double_t GetCOG(Double_t signal[5]) const; 
+  void     FillLUT();
+  Double_t LUTposition(Int_t ilayer, Double_t ampL, Double_t ampC, Double_t ampR) const;
   virtual void     ResetHelperIndexes(AliTRDSignalIndex *indexesIn);
 
+protected:
+  const AliTRDReconstructor *fReconstructor;       //! reconstructor
   AliRunLoader        *fRunLoader;           //! Run Loader
   TTree               *fClusterTree;         //! Tree with the cluster
   TObjArray           *fRecPoints;           //! Array of clusters

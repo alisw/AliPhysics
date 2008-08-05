@@ -50,6 +50,7 @@ ClassImp(AliTRDseedV1)
 //____________________________________________________________________
 AliTRDseedV1::AliTRDseedV1(Int_t plane) 
   :AliTRDseed()
+  ,fReconstructor(0x0)
   ,fPlane(plane)
   ,fMom(0.)
   ,fSnp(0.)
@@ -66,6 +67,7 @@ AliTRDseedV1::AliTRDseedV1(Int_t plane)
 //____________________________________________________________________
 AliTRDseedV1::AliTRDseedV1(const AliTRDseedV1 &ref)
   :AliTRDseed((AliTRDseed&)ref)
+  ,fReconstructor(0x0)
   ,fPlane(ref.fPlane)
   ,fMom(ref.fMom)
   ,fSnp(ref.fSnp)
@@ -221,7 +223,7 @@ void AliTRDseedV1::CookdEdx(Int_t nslices)
 		nclusters[slice]++;
 	} // End of loop over clusters
 
-	if(AliTRDReconstructor::GetRecoParam()->GetPIDMethod() == AliTRDrecoParam::kLQPID){
+	if(fReconstructor->GetPIDMethod() == AliTRDReconstructor::kLQPID){
 	// calculate mean charge per slice (only LQ PID)
 		for(int is=0; is<nslices; is++){ 
 	    if(nclusters[is]) fdEdx[is] /= nclusters[is];
@@ -256,26 +258,25 @@ Double_t* AliTRDseedV1::GetProbability()
     return 0x0;
   }
 
-  const AliTRDrecoParam *rec = AliTRDReconstructor::GetRecoParam();
-  if (!rec) {
-    AliError("No TRD reco param.");
+  if (!fReconstructor) {
+    AliError("Reconstructor not set.");
     return 0x0;
   }
 
   // Retrieve the CDB container class with the parametric detector response
-  const AliTRDCalPID *pd = calibration->GetPIDObject(rec->GetPIDMethod());
+  const AliTRDCalPID *pd = calibration->GetPIDObject(fReconstructor->GetPIDMethod());
   if (!pd) {
     AliError("No access to AliTRDCalPID object");
     return 0x0;
   }
-	//AliInfo(Form("Method[%d] : %s", AliTRDReconstructor::GetRecoParam()->GetPIDMethod(), pd->IsA()->GetName()));
+	//AliInfo(Form("Method[%d] : %s", fReconstructor->GetRecoParam() ->GetPIDMethod(), pd->IsA()->GetName()));
 
 	// calculate tracklet length TO DO
   Float_t length = (AliTRDgeometry::AmThick() + AliTRDgeometry::DrThick());
   /// TMath::Sqrt((1.0 - fSnp[iPlane]*fSnp[iPlane]) / (1.0 + fTgl[iPlane]*fTgl[iPlane]));
   
   //calculate dE/dx
-  CookdEdx(rec->GetNdEdxSlices());
+  CookdEdx(fReconstructor->GetNdEdxSlices());
   
   // Sets the a priori probabilities
   for(int ispec=0; ispec<AliPID::kSPECIES; ispec++) {
@@ -318,6 +319,12 @@ void AliTRDseedV1::GetCovAt(Double_t /*x*/, Double_t *cov) const
 	cov[0] = sy2;
 	cov[1] = fTilt*(sy2-sz2);
 	cov[2] = sz2;
+
+  // insert systematic uncertainties calibration and misalignment
+  Double_t sys[15];
+  fReconstructor->GetRecoParam()->GetSysCovMatrix(sys);
+  cov[0] += (sys[0]*sys[0]);
+  cov[2] += (sys[1]*sys[1]);
 }
 
 
@@ -355,13 +362,13 @@ Bool_t	AliTRDseedV1::AttachClustersIter(AliTRDtrackingChamber *chamber, Float_t 
 	// debug level 7
 	//
 	
-	if(!AliTRDReconstructor::GetRecoParam()){
+	if(!fReconstructor->GetRecoParam() ){
 		AliError("Seed can not be used without a valid RecoParam.");
 		return kFALSE;
 	}
 
 	AliTRDchamberTimeBin *layer = 0x0;
-	if(AliTRDReconstructor::GetRecoParam()->GetStreamLevel()>=7 && c){
+	if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker)>=7 && c){
 		TClonesArray clusters("AliTRDcluster", 24);
 		clusters.SetOwner(kTRUE);
 		AliTRDcluster *cc = 0x0;
@@ -389,7 +396,7 @@ Bool_t	AliTRDseedV1::AttachClustersIter(AliTRDtrackingChamber *chamber, Float_t 
 	}
 
 	Float_t  tquality;
-	Double_t kroady = AliTRDReconstructor::GetRecoParam()->GetRoad1y();
+	Double_t kroady = fReconstructor->GetRecoParam() ->GetRoad1y();
 	Double_t kroadz = fPadLength * .5 + 1.;
 	
 	// initialize configuration parameters
@@ -429,7 +436,7 @@ Bool_t	AliTRDseedV1::AttachClustersIter(AliTRDtrackingChamber *chamber, Float_t 
 			fZ[iTime]        = cl->GetZ();
 			ncl++;
 		}
-  	if(AliTRDReconstructor::GetRecoParam()->GetStreamLevel()>=7) AliInfo(Form("iter = %d ncl [%d] = %d", iter, fPlane, ncl));
+  	if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker)>=7) AliInfo(Form("iter = %d ncl [%d] = %d", iter, fPlane, ncl));
 		
 		if(ncl>1){	
 			// calculate length of the time bin (calibration aware)
@@ -470,7 +477,7 @@ Bool_t	AliTRDseedV1::AttachClustersIter(AliTRDtrackingChamber *chamber, Float_t 
 			
 			AliTRDseed::Update();
 		}
-  	if(AliTRDReconstructor::GetRecoParam()->GetStreamLevel()>=7) AliInfo(Form("iter = %d nclFit [%d] = %d", iter, fPlane, fN2));
+  	if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker)>=7) AliInfo(Form("iter = %d nclFit [%d] = %d", iter, fPlane, fN2));
 		
 		if(IsOK()){
 			tquality = GetQuality(kZcorr);
@@ -506,7 +513,7 @@ Bool_t	AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *chamber
   // 6. fit tracklet
   //	
 
-	if(!AliTRDReconstructor::GetRecoParam()){
+	if(!fReconstructor->GetRecoParam() ){
 		AliError("Seed can not be used without a valid RecoParam.");
 		return kFALSE;
 	}
@@ -514,7 +521,7 @@ Bool_t	AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *chamber
 	const Int_t kClusterCandidates = 2 * knTimebins;
 	
 	//define roads
-	Double_t kroady = AliTRDReconstructor::GetRecoParam()->GetRoad1y();
+	Double_t kroady = fReconstructor->GetRecoParam() ->GetRoad1y();
 	Double_t kroadz = fPadLength * 1.5 + 1.;
 	// correction to y for the tilting angle
 	Float_t zcorr = kZcorr ? fTilt * (fZProb - fZref[0]) : 0.;
@@ -606,7 +613,7 @@ Bool_t	AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *chamber
 	}
 	
 	// number of minimum numbers of clusters expected for the tracklet
-	Int_t kClmin = Int_t(AliTRDReconstructor::GetRecoParam()->GetFindableClusters()*AliTRDtrackerV1::GetNTimeBins());
+	Int_t kClmin = Int_t(fReconstructor->GetRecoParam() ->GetFindableClusters()*AliTRDtrackerV1::GetNTimeBins());
   if (fN2 < kClmin){
 		AliWarning(Form("Not enough clusters to fit the tracklet %d [%d].", fN2, kClmin));
     fN2 = 0;

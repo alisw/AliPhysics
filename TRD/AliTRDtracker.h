@@ -39,6 +39,7 @@ class AliTRDcluster;
 class AliTRDseed;
 class AliESDEvent;
 class AliTRDpropagationLayer;
+class AliTRDReconstructor;
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
@@ -58,12 +59,13 @@ class AliTRDtracker : public AliTracker {
        , kMaxTimeBinIndex      = 216
        , kTrackingSectors      = 18   };
   
-  AliTRDtracker();
+  AliTRDtracker(AliTRDReconstructor *rec = 0x0);
   AliTRDtracker(const AliTRDtracker &t);
-  AliTRDtracker(const TFile *in);
+  AliTRDtracker(const TFile *in, AliTRDReconstructor *rec = 0x0);
   virtual         ~AliTRDtracker(); 
   AliTRDtracker   &operator=(const AliTRDtracker &/*t*/) { return *this;          } 
   
+  void             SetReconstructor(AliTRDReconstructor *rec) {fReconstructor = rec;}
   void             SetAddTRDseeds()               { fAddTRDseeds = kTRUE;         }
   void             SetNoTilt()                    { fNoTilt      = kTRUE;         }
   
@@ -148,7 +150,7 @@ class AliTRDtracker : public AliTracker {
   };
   
  protected:
-
+  AliTRDReconstructor     *fReconstructor;
   AliTRDgeometry          *fGeom;                          // Pointer to TRD geometry
   AliTRDtrackingSector    *fTrSec[kTrackingSectors];       // Array of tracking sectors;    
   Int_t                    fNclusters;                     // Number of clusters in TRD 

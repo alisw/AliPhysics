@@ -38,6 +38,7 @@ class TLinearFitter;
 class AliRieman;
 class AliESDEvent;
 class AliCluster;
+class AliTrackPoint;
 
 class AliTRDcluster;
 class AliTRDseedV1;
@@ -45,7 +46,7 @@ class AliTRDtrackingChamber;
 class AliTRDchamberTimeBin;
 class AliTRDtrackerFitter;
 class AliTRDtrackV1;
-class AliTrackPoint;
+class AliTRDReconstructor;
 class AliTRDtrackerV1 : public AliTracker
 {
 public:
@@ -59,7 +60,7 @@ public:
     , kMaxTracksStack     = 100
     , kNConfigs           = 15
   };
-  AliTRDtrackerV1();
+  AliTRDtrackerV1(AliTRDReconstructor *rec = 0x0);
   virtual ~AliTRDtrackerV1();
   
   //temporary
@@ -95,6 +96,7 @@ public:
   Int_t           ReadClusters(TClonesArray* &array, TTree *in) const;
   Int_t           RefitInward(AliESDEvent *event);
   static void     SetNTimeBins(Int_t nTimeBins){fgNTimeBins = nTimeBins; }
+  void            SetReconstructor(const AliTRDReconstructor *rec) {fReconstructor = rec;}
   void            UnloadClusters();
   
   static Int_t    Freq(Int_t n, const Int_t *inlist, Int_t *outlist, Bool_t down); // to be removed 
@@ -134,19 +136,20 @@ protected:
   AliTRDseedV1*  SetTracklet(AliTRDseedV1 *tracklet);
 
 private:
-	AliTRDtrackerV1(const AliTRDtrackerV1 &tracker);
-	AliTRDtrackerV1 &operator=(const AliTRDtrackerV1 &tracker);
-	Double_t       	CookLikelihood(AliTRDseedV1 *cseed, Int_t planes[4], Double_t *chi2);
-	Double_t       	CalculateTrackLikelihood(AliTRDseedV1 *tracklets, Double_t *chi2);
-	Int_t          	ImproveSeedQuality(AliTRDtrackingChamber **stack, AliTRDseedV1 *tracklet);
-	static Float_t	CalculateReferenceX(AliTRDseedV1 *tracklets);
-	void        ResetSeedTB();
-	Float_t     GetChi2Y(AliTRDseedV1 *tracklets) const;
-	Float_t     GetChi2Z(AliTRDseedV1 *tracklets) const;
+  AliTRDtrackerV1(const AliTRDtrackerV1 &tracker);
+  AliTRDtrackerV1 &operator=(const AliTRDtrackerV1 &tracker);
+  Double_t       	CookLikelihood(AliTRDseedV1 *cseed, Int_t planes[4], Double_t *chi2);
+  Double_t       	CalculateTrackLikelihood(AliTRDseedV1 *tracklets, Double_t *chi2);
+  Int_t          	ImproveSeedQuality(AliTRDtrackingChamber **stack, AliTRDseedV1 *tracklet);
+  static Float_t	CalculateReferenceX(AliTRDseedV1 *tracklets);
+  void        ResetSeedTB();
+  Float_t     GetChi2Y(AliTRDseedV1 *tracklets) const;
+  Float_t     GetChi2Z(AliTRDseedV1 *tracklets) const;
 
 private:
-  AliTRDgeometry          *fGeom;                          // Pointer to TRD geometry
-  AliTRDtrackingSector    fTrSec[kTrackingSectors];       // Array of tracking sectors;    
+  const AliTRDReconstructor *fReconstructor;                 // reconstructor manager
+  AliTRDgeometry      *fGeom;                          // Pointer to TRD geometry
+  AliTRDtrackingSector fTrSec[kTrackingSectors];       // Array of tracking sectors;    
 
   TClonesArray        *fClusters;                       // List of clusters
   TClonesArray        *fTracklets;                      // List of tracklets

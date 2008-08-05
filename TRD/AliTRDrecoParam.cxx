@@ -33,7 +33,6 @@ ClassImp(AliTRDrecoParam)
 //______________________________________________________________
 AliTRDrecoParam::AliTRDrecoParam()
   :AliDetectorRecoParam()
-  ,fkPIDMethod(kLQPID) // LQ PID
   ,fkMaxTheta(1.0)
   ,fkMaxPhi(2.0)
   ,fkRoad0y(6.0)
@@ -47,13 +46,11 @@ AliTRDrecoParam::AliTRDrecoParam()
   ,fkChi2Z(30./*14.*//*12.5*/)
   ,fkChi2Y(.25)
   ,fkTrackLikelihood(-15.)
-  ,fkStreamLevel(0)
   ,fMinMaxCutSigma(4.)
   ,fMinLeftRightCutSigma(8.)
   ,fClusMaxThresh(4.5)
   ,fClusSigThresh(3.5)
   ,fTCnexp(1)
-  ,fADCbaseline(0)
   ,fNumberOfPresamples(0)
   ,fNumberOfPostsamples(0)
 {
@@ -61,12 +58,10 @@ AliTRDrecoParam::AliTRDrecoParam()
   // Default constructor
   //
   SetClusterSharing(kFALSE);
-  SetSeeding(kFALSE);
   SetVertexConstrained();
   SetLUT();
   SetTailCancelation();
-  SetTrackletWriteEnabled();
-  
+
   fSysCovMatrix[0] = 1.; // y direction (1 cm)
   fSysCovMatrix[1] = 1.; // z direction (1 cm)
   fSysCovMatrix[2] = 0.; // snp
@@ -77,7 +72,6 @@ AliTRDrecoParam::AliTRDrecoParam()
 //______________________________________________________________
 AliTRDrecoParam::AliTRDrecoParam(const AliTRDrecoParam &ref)
   :AliDetectorRecoParam(ref)
-  ,fkPIDMethod(ref.fkPIDMethod)
   ,fkMaxTheta(ref.fkMaxTheta)
   ,fkMaxPhi(ref.fkMaxPhi)
   ,fkRoad0y(ref.fkRoad0y)
@@ -91,13 +85,11 @@ AliTRDrecoParam::AliTRDrecoParam(const AliTRDrecoParam &ref)
   ,fkChi2Z(ref.fkChi2Z)
   ,fkChi2Y(ref.fkChi2Y)
   ,fkTrackLikelihood(ref.fkTrackLikelihood)
-  ,fkStreamLevel(ref.fkStreamLevel)
   ,fMinMaxCutSigma(ref.fMinMaxCutSigma)
   ,fMinLeftRightCutSigma(ref.fMinLeftRightCutSigma)
   ,fClusMaxThresh(ref.fClusMaxThresh)
   ,fClusSigThresh(ref.fClusSigThresh)
   ,fTCnexp(ref.fTCnexp)
-  ,fADCbaseline(ref.fADCbaseline)
   ,fNumberOfPresamples(ref.fNumberOfPresamples)
   ,fNumberOfPostsamples(ref.fNumberOfPostsamples)
 {
@@ -105,11 +97,9 @@ AliTRDrecoParam::AliTRDrecoParam(const AliTRDrecoParam &ref)
   // Copy constructor
   //
   SetClusterSharing(ref.IsClusterSharing());
-  SetSeeding(ref.IsSeeding());
   SetVertexConstrained(ref.IsVertexConstrained());
   SetLUT(ref.IsLUT());
   SetTailCancelation(ref.IsTailCancelation());
-  SetTrackletWriteEnabled(ref.IsTrackletWriteEnabled());
 
   memcpy(fSysCovMatrix, ref.fSysCovMatrix, 5*sizeof(Double_t));
 }
@@ -145,8 +135,6 @@ AliTRDrecoParam *AliTRDrecoParam::GetCosmicTestParam()
 
   AliTRDrawStreamBase::SetRawStreamVersion("TB");
   AliTRDrecoParam *par = new AliTRDrecoParam();
-  par->SetADCbaseline(10);
-  par->SetSeeding();
   par->SetVertexConstrained();
   return par;
 

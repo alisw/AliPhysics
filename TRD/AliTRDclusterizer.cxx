@@ -58,8 +58,9 @@
 ClassImp(AliTRDclusterizer)
 
 //_____________________________________________________________________________
-AliTRDclusterizer::AliTRDclusterizer()
+AliTRDclusterizer::AliTRDclusterizer(AliTRDReconstructor *rec)
   :TNamed()
+  ,fReconstructor(rec)  
   ,fRunLoader(NULL)
   ,fClusterTree(NULL)
   ,fRecPoints(NULL)
@@ -85,12 +86,20 @@ AliTRDclusterizer::AliTRDclusterizer()
 
   fRawVersion = AliTRDfeeParam::Instance()->GetRAWversion();
 
-
+  // Initialize debug stream
+  if(fReconstructor){
+    if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kClusterizer) > 1){
+      TDirectory *savedir = gDirectory; 
+      //fgDebugStreamer    = new TTreeSRedirector("TRD.ClusterizerDebug.root");
+      savedir->cd();
+    }
+  }
 }
 
 //_____________________________________________________________________________
-AliTRDclusterizer::AliTRDclusterizer(const Text_t *name, const Text_t *title)
+AliTRDclusterizer::AliTRDclusterizer(const Text_t *name, const Text_t *title, AliTRDReconstructor *rec)
   :TNamed(name,title)
+  ,fReconstructor(rec)
   ,fRunLoader(NULL)
   ,fClusterTree(NULL)
   ,fRecPoints(NULL)
@@ -114,6 +123,15 @@ AliTRDclusterizer::AliTRDclusterizer(const Text_t *name, const Text_t *title)
     AliFatal("Could not get calibration object");
   }
 
+  // Initialize debug stream
+  if(fReconstructor){
+    if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kClusterizer) > 1){
+      TDirectory *savedir = gDirectory; 
+      //fgDebugStreamer    = new TTreeSRedirector("TRD.ClusterizerDebug.root");
+      savedir->cd();
+    }
+  }
+
   fDigitsManager->CreateArrays();
 
   fRawVersion = AliTRDfeeParam::Instance()->GetRAWversion();
@@ -125,6 +143,7 @@ AliTRDclusterizer::AliTRDclusterizer(const Text_t *name, const Text_t *title)
 //_____________________________________________________________________________
 AliTRDclusterizer::AliTRDclusterizer(const AliTRDclusterizer &c)
   :TNamed(c)
+  ,fReconstructor(c.fReconstructor)
   ,fRunLoader(NULL)
   ,fClusterTree(NULL)
   ,fRecPoints(NULL)
@@ -295,7 +314,7 @@ Bool_t AliTRDclusterizer::OpenOutput(TTree *clusterTree)
 
 
   // tracklet writing
-  if (AliTRDReconstructor::GetRecoParam()->IsTrackletWriteEnabled()){
+  if (fReconstructor->IsWritingTracklets()){
     TString evfoldname = AliConfig::GetDefaultEventFolderName();
     fRunLoader         = AliRunLoader::GetRunLoader(evfoldname);
 
@@ -647,7 +666,7 @@ Bool_t AliTRDclusterizer::Raw2ClustersChamber(AliRawReader *rawReader)
   fDigitsManager->SetUseDictionaries(fAddLabels);
 
   // tracklet container for raw tracklet writing
-  if (!fTrackletContainer && AliTRDReconstructor::GetRecoParam()->IsTrackletWriteEnabled()) 
+  if (!fTrackletContainer && fReconstructor->IsWritingTracklets()) 
     {
      fTrackletContainer = new UInt_t *[2];
      for (Int_t i=0; i<2 ;i++){
@@ -677,11 +696,11 @@ Bool_t AliTRDclusterizer::Raw2ClustersChamber(AliRawReader *rawReader)
       fDigitsManager->RemoveDictionaries(det);
       fDigitsManager->ClearIndexes(det);
      
-      if (!AliTRDReconstructor::GetRecoParam()->   IsTrackletWriteEnabled()) continue;
+      if (!fReconstructor->IsWritingTracklets()) continue;
       if (*(fTrackletContainer[0]) > 0 || *(fTrackletContainer[1]) > 0) WriteTracklets(det); // if there is tracklet words in this det
     }
   
-  if (AliTRDReconstructor::GetRecoParam()->IsTrackletWriteEnabled()){
+  if (fReconstructor->IsWritingTracklets()){
     delete [] fTrackletContainer;
     fTrackletContainer = NULL;
   }
@@ -752,21 +771,20 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
   // There is no ADC threshold anymore, and simParam should not be used in clusterizer. KO
   Float_t adcThreshold   = 0; 
 
-  if (!AliTRDReconstructor::GetRecoParam())
-    {
-      AliError("RecoParam does not exist\n");
-      return kFALSE;
-    }
+  if (!fReconstructor){
+    AliError("Reconstructor not set\n");
+    return kFALSE;
+  }
 
   // Threshold value for the maximum
-  Float_t maxThresh      = AliTRDReconstructor::GetRecoParam()->GetClusMaxThresh();
+  Float_t maxThresh      = fReconstructor->GetRecoParam() ->GetClusMaxThresh();
   // Threshold value for the digit signal
-  Float_t sigThresh      = AliTRDReconstructor::GetRecoParam()->GetClusSigThresh();
+  Float_t sigThresh      = fReconstructor->GetRecoParam() ->GetClusSigThresh();
 
   // Threshold value for the maximum ( cut noise)
-  Float_t minMaxCutSigma = AliTRDReconstructor::GetRecoParam()->GetMinMaxCutSigma();
+  Float_t minMaxCutSigma = fReconstructor->GetRecoParam() ->GetMinMaxCutSigma();
   // Threshold value for the sum pad ( cut noise)
-  Float_t minLeftRightCutSigma = AliTRDReconstructor::GetRecoParam()->GetMinLeftRightCutSigma();
+  Float_t minLeftRightCutSigma = fReconstructor->GetRecoParam() ->GetMinLeftRightCutSigma();
 
   // Iteration limit for unfolding procedure
   const Float_t kEpsilon = 0.01;             
@@ -982,7 +1000,7 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
 
         // The position of the cluster in COL direction relative to the center pad (pad units)
         Double_t clusterPosCol = 0.0;
-        if (AliTRDReconstructor::GetRecoParam()->IsLUT()) {
+        if (fReconstructor->GetRecoParam() ->IsLUT()) {
           // Calculate the position of the cluster by using the
           // lookup table method
           clusterPosCol = LUTposition(ilayer,clusterSignal[2]
@@ -1299,9 +1317,9 @@ void AliTRDclusterizer::TailCancelation(AliTRDdataArrayDigits *digitsIn
 	{
 	  // Apply the tail cancelation via the digital filter
 	  // (only for non-coorupted pads)
-	  if (AliTRDReconstructor::GetRecoParam()->IsTailCancelation()) 
+	  if (fReconstructor->GetRecoParam() ->IsTailCancelation()) 
 	    {
-	      DeConvExp(inADC,outADC,nTimeTotal,AliTRDReconstructor::GetRecoParam()->GetTCnexp());
+	      DeConvExp(inADC,outADC,nTimeTotal,fReconstructor->GetRecoParam() ->GetTCnexp());
 	    }
 	}
 

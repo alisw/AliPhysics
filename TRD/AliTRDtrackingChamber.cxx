@@ -55,7 +55,7 @@ void AliTRDtrackingChamber::Clear(const Option_t *opt)
 //_______________________________________________________
 void AliTRDtrackingChamber::InsertCluster(AliTRDcluster *c, Int_t index)
 {
-	fTB[c->GetLocalTimeBin()].InsertCluster(c, index);
+	fTB[c->GetPadTime()].InsertCluster(c, index);
 }
 
 //_______________________________________________________
@@ -156,7 +156,7 @@ Double_t AliTRDtrackingChamber::GetQuality()
 
 
 //_______________________________________________________
-Bool_t AliTRDtrackingChamber::GetSeedingLayer(AliTRDchamberTimeBin *&fakeLayer, AliTRDgeometry *geo)
+Bool_t AliTRDtrackingChamber::GetSeedingLayer(AliTRDchamberTimeBin *&fakeLayer, AliTRDgeometry *geo, const AliTRDReconstructor *rec)
 {
   //
   // Creates a seeding layer
@@ -166,8 +166,8 @@ Bool_t AliTRDtrackingChamber::GetSeedingLayer(AliTRDchamberTimeBin *&fakeLayer, 
 	const Int_t kMaxRows = 16;
 	const Int_t kMaxCols = 144;
 	const Int_t kMaxPads = 2304;
-	Int_t timeBinMin = AliTRDReconstructor::GetRecoParam()->GetNumberOfPresamples();
-	Int_t timeBinMax = AliTRDReconstructor::GetRecoParam()->GetNumberOfPostsamples();
+	Int_t timeBinMin = rec->GetRecoParam()->GetNumberOfPresamples();
+	Int_t timeBinMax = rec->GetRecoParam()->GetNumberOfPostsamples();
 
 	// Get the geometrical data of the chamber
 	Int_t layer = geo->GetLayer(fDetector);
@@ -243,7 +243,7 @@ Bool_t AliTRDtrackingChamber::GetSeedingLayer(AliTRDchamberTimeBin *&fakeLayer, 
 	TMath::Sort(nPads, hvals, indices);			// bins storing a 0 should not matter
 	// Set Threshold
 	Int_t maximum = hvals[indices[0]];	// best
-	Int_t threshold = Int_t(maximum * AliTRDReconstructor::GetRecoParam()->GetFindableClusters());
+	Int_t threshold = Int_t(maximum * rec->GetRecoParam()->GetFindableClusters());
 	Int_t col, row, lower, lower1, upper, upper1;
 	for(Int_t ib = 0; ib < nPads; ib++){
 		if(nCandidates >= AliTRDtrackerV1::kMaxTracksStack){
@@ -331,7 +331,7 @@ Bool_t AliTRDtrackingChamber::GetSeedingLayer(AliTRDchamberTimeBin *&fakeLayer, 
 	fakeLayer->BuildIndices();
 	//fakeLayer->PrintClusters();
 	
-	if(AliTRDReconstructor::GetRecoParam()->GetStreamLevel() >= 3){
+	if(rec->GetStreamLevel(AliTRDReconstructor::kTracker) >= 3){
 		//TMatrixD hist(nRows, nCols);
 		//for(Int_t i = 0; i < nRows; i++)
 		//	for(Int_t j = 0; j < nCols; j++)
