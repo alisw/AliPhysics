@@ -262,7 +262,8 @@ TEveElementList* esd_tracks_vertex_cut()
 
   AliESDEvent* esd = AliEveEventManager::AssertESD();
 
-  TEveElementList* cont = new TEveElementList("ESD Tracks", 0, kTRUE);
+  TEveElementList* cont = new TEveElementList("ESD Tracks");
+
   gEve->AddElement(cont);
   TEveTrackList *tl[5];
   Int_t            tc[5];

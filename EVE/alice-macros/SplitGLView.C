@@ -726,7 +726,7 @@ SplitGLView::SplitGLView(const TGWindow *p, UInt_t w, UInt_t h, Bool_t embed) :
       // projections
       fRhoZMgr = new TEveProjectionManager();
       gEve->AddElement(fRhoZMgr, (TEveElement *)s);
-      gEve->AddToListTree(fRhoZMgr, kTRUE);
+      gEve->AddToListTree(fRhoZMgr, kFALSE);
    }
 
    // get bottom left split frame
@@ -771,7 +771,7 @@ SplitGLView::SplitGLView(const TGWindow *p, UInt_t w, UInt_t h, Bool_t embed) :
       // projections
       fRPhiMgr = new TEveProjectionManager();
       gEve->AddElement(fRPhiMgr, (TEveElement *)s);
-      gEve->AddToListTree(fRPhiMgr, kTRUE);
+      gEve->AddToListTree(fRPhiMgr, kFALSE);
    }
 
    // get bottom right frame

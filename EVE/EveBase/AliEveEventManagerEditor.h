@@ -36,6 +36,8 @@ public:
    void DoSetAutoLoadTime();
    void DoPrevEvent();
    void DoNextEvent();
+   void DoLastEvent();
+   void DoRefresh();
 
 protected:
    AliEveEventManager            *fM; // Model object.
@@ -46,6 +48,8 @@ protected:
 
    TGTextButton     *fNextEvent; // Load next event
    TGTextButton     *fPrevEvent; // Load previous event
+   TGTextButton     *fLastEvent; // Load last event
+   TGTextButton     *fRefresh;   // Refresh opened data-files (reopen)
 
    TGTextView       *fEventInfo; // Text box with event info
 

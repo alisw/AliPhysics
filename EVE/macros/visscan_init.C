@@ -57,7 +57,7 @@ void visscan_init()
 
 
   // geometry
-  gGeomGentle    = geom_gentle();
+  gGeomGentle = geom_gentle();
   if (gShowTRD) gGeomGentleTRD = geom_gentle_trd();
 
 
@@ -85,6 +85,8 @@ void visscan_init()
   // event
   gAliEveEvent->AddNewEventCommand("on_new_event();");
   gAliEveEvent->GotoEvent(0);
+
+  gEve->EditElement(g_trkcnt);
 
   gEve->Redraw3D(kTRUE);
 }

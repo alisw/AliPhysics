@@ -262,21 +262,10 @@ void AliEveEventManager::Open()
   TString rawPath(Form("%s/%s", fPath.Data(), fgRawFileName.Data()));
   // If i use open directly, raw-reader reports an error but i have
   // no way to detect it.
-  // Is this (AccessPathName check) ok for xrootd / alien?
+  // Is this (AccessPathName check) ok for xrootd / alien? Yes, not for http.
   if (gSystem->AccessPathName(rawPath, kReadPermission) == kFALSE)
   {
-    if (fgRawFileName.EndsWith("/"))
-    {
-      fRawReader = new AliRawReaderFile(rawPath);
-    }
-    else if (fgRawFileName.EndsWith(".root"))
-    {
-      fRawReader = new AliRawReaderRoot(rawPath);
-    }
-    else if (!fgRawFileName.IsNull())
-    {
-      fRawReader = new AliRawReaderDate(rawPath);
-    } 
+    fRawReader = AliRawReader::Create(rawPath);
   }
 
   if (fRawReader == 0)
@@ -295,7 +284,7 @@ void AliEveEventManager::Open()
     {
       fRawReader->NextEvent();
       runNo = fRawReader->GetRunNumber();
-      printf("Determining run-no from raw ... run=%d\n", runNo);
+      Info(kEH, "Determining run-no from raw ... run=%d.", runNo);
       fRawReader->RewindEvents();
     } else {
       throw (kEH + "unknown run number.");
@@ -379,7 +368,10 @@ void AliEveEventManager::GotoEvent(Int_t event)
   Int_t maxEvent = 0;
   if (fESDTree)
   {
-    fESDTree->Refresh();
+    // Refresh crashes with root-5.21.1-alice.
+    // Fixed by Philippe 5.8.2008 r25053, can be reactivated
+    // when we move to a newer root.
+    // fESDTree->Refresh();
     maxEvent = fESDTree->GetEntries() - 1;
     if (event < 0)
       event = fESDTree->GetEntries() + event;
@@ -432,25 +424,29 @@ void AliEveEventManager::GotoEvent(Int_t event)
 
   if (fRawReader)
   {
-    Int_t rawEv = fEventId;
-    if (event < rawEv)
+    // AliRawReader::GotoEvent(Int_t) works for AliRawReaderRoot/Chain.
+    if (fRawReader->GotoEvent(event) == kFALSE)
     {
-      fRawReader->RewindEvents();
-      rawEv = -1;
-    }
-
-    while (rawEv < event)
-    {
-      if ( ! fRawReader->NextEvent())
+      // Use fallback method - iteration with NextEvent().
+      Int_t rawEv = fEventId;
+      if (event < rawEv)
       {
         fRawReader->RewindEvents();
-        fEventId = -1;
-        throw (kEH + Form("Error going to next raw-event from event %d.", rawEv));
+        rawEv = -1;
       }
-      ++rawEv;
-    }
 
-    printf ("Loaded raw-event %d.\n", rawEv);
+      while (rawEv < event)
+      {
+        if ( ! fRawReader->NextEvent())
+        {
+          fRawReader->RewindEvents();
+          fEventId = -1;
+          throw (kEH + Form("Error going to next raw-event from event %d.", rawEv));
+        }
+        ++rawEv;
+      }
+      Warning(kEH, "Loaded raw-event %d with fallback method.\n", rawEv);
+    }
   }
 
   fEventId = event;
@@ -494,16 +490,23 @@ void AliEveEventManager::PrevEvent()
 
 void AliEveEventManager::Close()
 {
-  // Close the event files.
-  // For the moment only ESD is closed. Needs to be investigated for
-  // AliRunLoader and Raw.
+  // Close the event data-files and delete ESD, ESDfriend, run-loader
+  // and raw-reader.
 
   if (fESDTree) {
     delete fESD;       fESD       = 0;
     delete fESDfriend; fESDfriend = 0;
 
-    delete fESDTree; fESDTree = 0;
-    delete fESDFile; fESDFile = 0;
+    delete fESDTree;   fESDTree = 0;
+    delete fESDFile;   fESDFile = 0;
+  }
+
+  if (fRunLoader) {
+    delete fRunLoader; fRunLoader = 0;
+  }
+
+  if (fRawReader) {
+    delete fRawReader; fRawReader = 0;
   }
 }
 

@@ -33,6 +33,8 @@ AliEveEventManagerEditor::AliEveEventManagerEditor(const TGWindow *p, Int_t widt
   fAutoLoadTime(0),
   fNextEvent(0),
   fPrevEvent(0),
+  fLastEvent(0),
+  fRefresh(0),
   fEventInfo(0)
 {
   // Constructor.
@@ -60,13 +62,33 @@ AliEveEventManagerEditor::AliEveEventManagerEditor(const TGWindow *p, Int_t widt
   {
     TGHorizontalFrame* f = new TGHorizontalFrame(this);
     fPrevEvent = new TGTextButton(f, "Previous Event");
-    f->AddFrame(fPrevEvent, new TGLayoutHints(kLHintsExpandX, 0,4,0,0));
+    fPrevEvent->SetWidth(100);
+    fPrevEvent->ChangeOptions(fPrevEvent->GetOptions() | kFixedWidth);
+    f->AddFrame(fPrevEvent, new TGLayoutHints(kLHintsNormal, 0,4,0,0));
     fPrevEvent->Connect("Clicked()",
 			"AliEveEventManagerEditor", this, "DoPrevEvent()");
     fNextEvent = new TGTextButton(f, "Next Event");
-    f->AddFrame(fNextEvent, new TGLayoutHints(kLHintsExpandX, 4,0,0,0));
+    fNextEvent->SetWidth(100);
+    fNextEvent->ChangeOptions(fNextEvent->GetOptions() | kFixedWidth);
+    f->AddFrame(fNextEvent, new TGLayoutHints(kLHintsNormal, 4,0,0,0));
     fNextEvent->Connect("Clicked()",
 			"AliEveEventManagerEditor", this, "DoNextEvent()");
+    AddFrame(f, new TGLayoutHints(kLHintsExpandX, 8,8,8,0));
+  }
+  {
+    TGHorizontalFrame* f = new TGHorizontalFrame(this);
+    fLastEvent = new TGTextButton(f, "Last Event");
+    fLastEvent->SetWidth(100);
+    fLastEvent->ChangeOptions(fLastEvent->GetOptions() | kFixedWidth);
+    f->AddFrame(fLastEvent, new TGLayoutHints(kLHintsNormal, 0,4,0,0));
+    fLastEvent->Connect("Clicked()",
+			"AliEveEventManagerEditor", this, "DoLastEvent()");
+    fRefresh = new TGTextButton(f, "Refresh");
+    fRefresh->SetWidth(100);
+    fRefresh->ChangeOptions(fRefresh->GetOptions() | kFixedWidth);
+    f->AddFrame(fRefresh, new TGLayoutHints(kLHintsNormal, 4,0,0,0));
+    fRefresh->Connect("Clicked()",
+			"AliEveEventManagerEditor", this, "DoRefresh()");
     AddFrame(f, new TGLayoutHints(kLHintsExpandX, 8,8,8,0));
   }
 
@@ -138,4 +160,21 @@ void AliEveEventManagerEditor::DoNextEvent()
 {
   // Load next event
   fM->NextEvent();
+}
+
+//______________________________________________________________________________
+void AliEveEventManagerEditor::DoLastEvent()
+{
+  // Load last event
+  fM->GotoEvent(-1);
+}
+
+//______________________________________________________________________________
+void AliEveEventManagerEditor::DoRefresh()
+{
+  // Refresh / reopen data-files
+  Int_t ev = fM->GetEventId();
+  fM->Close();
+  fM->Open();
+  fM->GotoEvent(ev);
 }
