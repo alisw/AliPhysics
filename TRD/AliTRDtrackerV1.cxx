@@ -613,6 +613,7 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
     ptrTracklet  = t.GetTracklet(ilayer);
     if(!ptrTracklet){
       ptrTracklet = new(&tracklet) AliTRDseedV1(ilayer);
+      ptrTracklet->SetReconstructor(fReconstructor);
       alpha = t.GetAlpha();
       Int_t sector = Int_t(alpha/AliTRDgeometry::GetAlpha() + (alpha>0. ? 0 : AliTRDgeometry::kNsector));
 
@@ -620,7 +621,7 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
       
       if((x = fTrSec[sector].GetX(ilayer)) < 1.) continue;
     
-      if (!t.GetProlongation(x, y, z)) return -1;
+      if (!t.GetProlongation(x, y, z)) return -nClustersExpected;
       Int_t stack = fGeom->GetStack(z, ilayer);
       Int_t nCandidates = stack >= 0 ? 1 : 2;
       z -= stack >= 0 ? 0. : 4.; 
@@ -653,17 +654,17 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
     }
     if(!ptrTracklet->IsOK()){
       if(x < 1.) continue; //temporary
-      if(!PropagateToX(t, x-fgkMaxStep, fgkMaxStep)) return -1;
-      if(!AdjustSector(&t)) return -1;
-      if(TMath::Abs(t.GetSnp()) > fgkMaxSnp) return -1;
+      if(!PropagateToX(t, x-fgkMaxStep, fgkMaxStep)) return -nClustersExpected;
+      if(!AdjustSector(&t)) return -nClustersExpected;
+      if(TMath::Abs(t.GetSnp()) > fgkMaxSnp) return -nClustersExpected;
       continue;
     }
     
     // Propagate closer to the current chamber if neccessary 
     x -= clength;
-    if (x > (fgkMaxStep + t.GetX()) && !PropagateToX(t, x-fgkMaxStep, fgkMaxStep)) return -1;
-    if (!AdjustSector(&t)) return -1;
-    if (TMath::Abs(t.GetSnp()) > fgkMaxSnp) return -1;
+    if (x > (fgkMaxStep + t.GetX()) && !PropagateToX(t, x-fgkMaxStep, fgkMaxStep)) return -nClustersExpected;
+    if (!AdjustSector(&t)) return -nClustersExpected;
+    if (TMath::Abs(t.GetSnp()) > fgkMaxSnp) return -nClustersExpected;
     
     // load tracklet to the tracker and the track
     ptrTracklet = SetTracklet(ptrTracklet);
@@ -676,7 +677,7 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
     t.GetXYZ(xyz0);
     alpha = t.GetAlpha();
     x = ptrTracklet->GetX0();
-    if (!t.GetProlongation(x, y, z)) return -1;
+    if (!t.GetProlongation(x, y, z)) return -nClustersExpected;
     Double_t xyz1[3]; // exit point
     xyz1[0] =  x * TMath::Cos(alpha) - y * TMath::Sin(alpha); 
     xyz1[1] = +x * TMath::Sin(alpha) + y * TMath::Cos(alpha);
@@ -688,10 +689,10 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
     Double_t xx0  = param[1]; // radiation length
     
     // Propagate and update track
-    if (!t.PropagateTo(x, xx0, xrho)) return -1;
-    if (!AdjustSector(&t)) return -1;
+    if (!t.PropagateTo(x, xx0, xrho)) return -nClustersExpected;
+    if (!AdjustSector(&t)) return -nClustersExpected;
     Double_t maxChi2 = t.GetPredictedChi2(ptrTracklet);
-    if (!t.Update(ptrTracklet, maxChi2)) return -1;
+    if (!t.Update(ptrTracklet, maxChi2)) return -nClustersExpected;
     if (maxChi2<1e+10) { 
       nClustersExpected += ptrTracklet->GetN();
       //t.SetTracklet(&tracklet, index);
@@ -2147,13 +2148,12 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *ss
       
         AliTRDseedV1 *tseed = 0x0;
         for(int iLayer=0; iLayer<kNPlanes; iLayer++){
-          Int_t jLayer = planes[iLayer];
-          tseed = &cseed[jLayer];
-          tseed->SetPlane(jLayer);
-          tseed->SetTilt(hL[jLayer]);
-          tseed->SetPadLength(padlength[jLayer]);
-          if(stack[jLayer])tseed->SetX0(stack[jLayer]->GetX());
+          tseed = &cseed[iLayer];
+          tseed->SetPlane(iLayer);
+          tseed->SetTilt(hL[iLayer]);
+          tseed->SetPadLength(padlength[iLayer]);
           tseed->SetReconstructor(fReconstructor);
+          if(stack[iLayer])tseed->SetX0(stack[iLayer]->GetX());
           tseed->Init(GetRiemanFitter());
         }
       

@@ -297,6 +297,7 @@ Bool_t AliTRDtrackingChamber::GetSeedingLayer(AliTRDchamberTimeBin *&fakeLayer, 
 	Short_t signal[7]; memset(&signal[0], 0, 7*sizeof(Short_t));
 	
   new(fakeLayer) AliTRDchamberTimeBin(layer, stack, sector, z0, zl);
+  fakeLayer->SetReconstructor(rec);
 	AliTRDcluster *cluster = 0x0;
 	if(nCandidates){
 		UInt_t fakeIndex = 0;

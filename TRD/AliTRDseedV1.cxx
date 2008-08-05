@@ -67,7 +67,7 @@ AliTRDseedV1::AliTRDseedV1(Int_t plane)
 //____________________________________________________________________
 AliTRDseedV1::AliTRDseedV1(const AliTRDseedV1 &ref)
   :AliTRDseed((AliTRDseed&)ref)
-  ,fReconstructor(0x0)
+  ,fReconstructor(ref.fReconstructor)
   ,fPlane(ref.fPlane)
   ,fMom(ref.fMom)
   ,fSnp(ref.fSnp)
@@ -126,12 +126,13 @@ void AliTRDseedV1::Copy(TObject &ref) const
 
 	//AliInfo("");
 	AliTRDseedV1 &target = (AliTRDseedV1 &)ref; 
-	
+
 	target.fPlane         = fPlane;
 	target.fMom           = fMom;
 	target.fSnp           = fSnp;
 	target.fTgl           = fTgl;
 	target.fdX            = fdX;
+	target.fReconstructor = fReconstructor;
 	
 	for(int islice=0; islice < knSlices; islice++) target.fdEdx[islice] = fdEdx[islice];
 	for(int ispec=0; ispec<AliPID::kSPECIES; ispec++) target.fProb[ispec] = fProb[ispec];
