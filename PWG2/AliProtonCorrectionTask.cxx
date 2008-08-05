@@ -65,8 +65,7 @@ AliProtonCorrectionTask::AliProtonCorrectionTask(const Char_t* name) :
   fReadAODData(0),
   fCFManager(0x0),
   fQAHistList(0x0),
-  fHistEventsProcessed(0x0)
-{
+  fHistEventsProcessed(0x0) {
   //
   // Constructor. Initialization of Inputs and Outputs
   //
@@ -82,8 +81,7 @@ AliProtonCorrectionTask::AliProtonCorrectionTask(const Char_t* name) :
 }
 
 //___________________________________________________________________________
-AliProtonCorrectionTask& AliProtonCorrectionTask::operator=(const AliProtonCorrectionTask& c) 
-{
+AliProtonCorrectionTask& AliProtonCorrectionTask::operator=(const AliProtonCorrectionTask& c) {
   //
   // Assignment operator
   //
@@ -105,8 +103,7 @@ AliProtonCorrectionTask::AliProtonCorrectionTask(const AliProtonCorrectionTask& 
   fReadAODData(c.fReadAODData),
   fCFManager(c.fCFManager),
   fQAHistList(c.fQAHistList),
-  fHistEventsProcessed(c.fHistEventsProcessed)
-{
+  fHistEventsProcessed(c.fHistEventsProcessed) {
   //
   // Copy Constructor
   //
@@ -124,8 +121,7 @@ AliProtonCorrectionTask::~AliProtonCorrectionTask() {
 }
 
 //_________________________________________________
-void AliProtonCorrectionTask::UserExec(Option_t *)
-{
+void AliProtonCorrectionTask::UserExec(Option_t *) {
   //
   // Main loop function
   //
@@ -165,11 +161,10 @@ void AliProtonCorrectionTask::UserExec(Option_t *)
     if (!fCFManager->CheckParticleCuts(AliCFManager::kPartAccCuts,mcPart)) continue;
     //fill the container for Acceptance-level selection
     fCFManager->GetParticleContainer()->Fill(containerInput,kStepReconstructible);
-  }    
+  }//loop over MC particles
 
-  //Now go to rec level
+  //ESD track loop
   for (Int_t iTrack = 0; iTrack<fEvent->GetNumberOfTracks(); iTrack++) {
-    
     track = fEvent->GetTrack(iTrack);
     
     if (fReadTPCTracks) {
@@ -189,9 +184,7 @@ void AliProtonCorrectionTask::UserExec(Option_t *)
     if (!fCFManager->CheckParticleCuts(AliCFManager::kPartRecCuts,track)) continue;
     
     // is track associated to particle ?
-
     Int_t label = track->GetLabel();
-
     if (label<0) continue;
     AliMCParticle *mcPart  = fMCEvent->GetTrack(label);
     
@@ -199,9 +192,6 @@ void AliProtonCorrectionTask::UserExec(Option_t *)
     if (!fCFManager->CheckParticleCuts(AliCFManager::kPartGenCuts,mcPart)) continue; 
     
     //fill the container
-    Double_t mom[3];
-    track->PxPyPz(mom);
-    Double_t pt=TMath::Sqrt(mom[0]*mom[0]+mom[1]*mom[1]);
     containerInput[0] = Rapidity(track->Px(),
                                  track->Py(),
                                  track->Pz());
@@ -224,8 +214,7 @@ void AliProtonCorrectionTask::UserExec(Option_t *)
 
 
 //___________________________________________________________________________
-void AliProtonCorrectionTask::Terminate(Option_t*)
-{
+void AliProtonCorrectionTask::Terminate(Option_t*) {
   // The Terminate() function is the last function to be called during
   // a query. It always runs on the client, it can be used to present
   // the results graphically or save the results to file.
@@ -247,8 +236,8 @@ void AliProtonCorrectionTask::Terminate(Option_t*)
   TH1D* h12 =   cont->ShowProjection(1,2) ;
   TH1D* h13 =   cont->ShowProjection(1,3) ;
 
-  Double_t max1 = h00->GetMaximum();
-  Double_t max2 = h10->GetMaximum();
+  //Double_t max1 = h00->GetMaximum();
+  //Double_t max2 = h10->GetMaximum();
 
   /*h00->GetYaxis()->SetRangeUser(0,max1*1.2);
   h01->GetYaxis()->SetRangeUser(0,max1*1.2);
