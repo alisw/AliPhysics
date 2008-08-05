@@ -96,7 +96,13 @@ void AliTRDtrackingSector::Init(const AliTRDReconstructor *rec)
   
   AliTRDchamberTimeBin *tb = 0x0;
   AliTRDtrackingChamber *tc = 0x0; int ic = 0; 
-  while((ic<kNChambersSector) && (tc = fChamber[ic++])) tc->Build(fGeom);
+  while((ic<kNChambersSector) && (tc = fChamber[ic++])){
+    for(Int_t itb=0; itb<AliTRDtrackingChamber::kNTimeBins; itb++){
+      if(!(tb = tc->GetTB(itb))) continue;
+      tb->SetReconstructor(rec);
+    }
+    tc->Build(fGeom);
+  }
     
   Int_t nl;
   for(int il=0; il<AliTRDgeometry::kNlayer; il++){
@@ -106,10 +112,6 @@ void AliTRDtrackingSector::Init(const AliTRDReconstructor *rec)
       if(fIndex[idx]<0) continue;
       tc = GetChamber(fIndex[idx]);
       fX0[il] += tc->GetX(); nl++; 
-      for(Int_t itb=0; itb<AliTRDtrackingChamber::kNTimeBins; itb++){
-        if(!(tb = tc->GetTB(itb))) continue;
-        tb->SetReconstructor(rec);
-      }
     }
     if(!nl){
       //printf("Could not estimate radial position  of plane %d in sector %d.\n", ip, fSector);
