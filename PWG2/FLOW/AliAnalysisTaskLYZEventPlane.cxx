@@ -17,6 +17,7 @@
 #include "TChain.h"
 #include "TTree.h"
 #include "TFile.h"
+#include "TList.h"
 
 class AliAnalysisTask;
 #include "AliAnalysisManager.h"
@@ -29,6 +30,8 @@ class AliAnalysisTask;
 
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
+
+#include "../../CORRFW/AliCFManager.h"
 
 #include "AliAnalysisTaskLYZEventPlane.h"
 #include "AliFlowEventSimpleMaker.h"
@@ -52,7 +55,9 @@ AliAnalysisTaskLYZEventPlane::AliAnalysisTaskLYZEventPlane(const char *name) :
   fLyzEp(NULL),
   fLyz(NULL),
   fEventMaker(NULL),
-  fFirstRunFile(NULL),
+  fCFManager1(NULL),
+  fCFManager2(NULL),
+  fListHistos(NULL),
   fSecondRunFile(NULL)
 {
   // Constructor
@@ -62,9 +67,33 @@ AliAnalysisTaskLYZEventPlane::AliAnalysisTaskLYZEventPlane(const char *name) :
   // Input slot #0 works with a TChain
   DefineInput(0, TChain::Class());
   DefineInput(1, TList::Class());
-  DefineInput(2, TList::Class());
   // Output slot #0 writes into a TList container
   DefineOutput(0, TList::Class());  
+}
+
+//________________________________________________________________________
+AliAnalysisTaskLYZEventPlane::AliAnalysisTaskLYZEventPlane() : 
+  fESD(NULL), 
+  fAOD(NULL),
+  fAnalysisType("ESD"), 
+  fLyzEp(NULL),
+  fLyz(NULL),
+  fEventMaker(NULL),
+  fCFManager1(NULL),
+  fCFManager2(NULL),
+  fListHistos(NULL),
+  fSecondRunFile(NULL)
+{
+  // Constructor
+  cout<<"AliAnalysisTaskLYZEventPlane::AliAnalysisTaskLYZEventPlane()"<<endl;
+}
+
+
+//________________________________________________________________________
+AliAnalysisTaskLYZEventPlane::~AliAnalysisTaskLYZEventPlane() 
+{
+  //destructor
+
 }
 
 //________________________________________________________________________
@@ -137,28 +166,23 @@ void AliAnalysisTaskLYZEventPlane::CreateOutputObjects()
   fLyzEp = new AliFlowLYZEventPlane() ;
   //Analyser
   fLyz = new AliFlowAnalysisWithLYZEventPlane() ;
-
-  //output file
-  TString outputName = "outputFromLYZEventPlaneAnalysis" ;
-  outputName += fAnalysisType.Data() ;
-  outputName += ".root" ;
-  fLyz->SetOutFileName( outputName.Data() );
      
-  // Get data from input slot 1 and 2
-  fFirstRunFile = (TFile*)GetInputData(1);
-  cerr<<"fFirstRunFile ("<<fFirstRunFile<<")"<<endl;
-  if (fFirstRunFile) cerr<<"fFirstRunFile -> IsOpen() = "<<fFirstRunFile -> IsOpen()<<endl;
-  fSecondRunFile = (TFile*)GetInputData(2);
+  // Get data from input slot
+  fSecondRunFile = (TFile*)GetInputData(1);
   cerr<<"fSecondRunFile ("<<fSecondRunFile<<")"<<endl;
   if (fSecondRunFile) cerr<<"fSecondRunFile -> IsOpen() = "<<fSecondRunFile -> IsOpen()<<endl;
-  
-  fLyzEp -> SetFirstRunFile(fFirstRunFile);
+ 
   fLyzEp -> SetSecondRunFile(fSecondRunFile);
-  fLyz -> SetFirstRunFile(fFirstRunFile);
   fLyz -> SetSecondRunFile(fSecondRunFile);
 
   fLyzEp-> Init();
   fLyz-> Init();
+
+  if (fLyz->GetHistList()) {
+    fListHistos = fLyz->GetHistList();
+    fListHistos->Print();
+  }
+  else { cout<<"ERROR: Could not retrieve histogram list"<<endl;}
 
 
 }
@@ -168,6 +192,7 @@ void AliAnalysisTaskLYZEventPlane::Exec(Option_t *)
 {
   // Main loop
   // Called for each event
+
   if (fAnalysisType == "MC") {
     // Process MC truth, therefore we receive the AliAnalysisManager and ask it for the AliMCEventHandler
     // This handler can return the current MC event
@@ -184,10 +209,13 @@ void AliAnalysisTaskLYZEventPlane::Exec(Option_t *)
       return;
     }
 
+    fCFManager1->SetEventInfo(mcEvent);
+    fCFManager2->SetEventInfo(mcEvent);
+
     Printf("MC particles: %d", mcEvent->GetNumberOfTracks());
 
     //lee yang zeros analysis 
-    AliFlowEventSimple* fEvent = fEventMaker->FillTracks(mcEvent);
+    AliFlowEventSimple* fEvent = fEventMaker->FillTracks(mcEvent,fCFManager1,fCFManager2);
     fLyz->Make(fEvent,fLyzEp);
 
     delete fEvent;
@@ -200,11 +228,11 @@ void AliAnalysisTaskLYZEventPlane::Exec(Option_t *)
     Printf("There are %d tracks in this event", fESD->GetNumberOfTracks());
     
     //lee yang zeros analysis 
-    AliFlowEventSimple* fEvent = fEventMaker->FillTracks(fESD);
+    AliFlowEventSimple* fEvent = fEventMaker->FillTracks(fESD,fCFManager1,fCFManager2);
     fLyz->Make(fEvent,fLyzEp);
     delete fEvent;
   }
-  else if (fAnalysisType == "ESDMC0") {
+  else if (fAnalysisType == "ESDMC0" || fAnalysisType == "ESDMC1") {
     if (!fESD) {
       Printf("ERROR: fESD not available");
       return;
@@ -223,37 +251,22 @@ void AliAnalysisTaskLYZEventPlane::Exec(Option_t *)
       return;
     }
 
+    fCFManager1->SetEventInfo(mcEvent);
+    fCFManager2->SetEventInfo(mcEvent);
+
     //lee yang zeros analysis 
-    AliFlowEventSimple* fEvent = fEventMaker->FillTracks(fESD,mcEvent,0); //0 = kine from ESD, 1 = kine from MC
+    AliFlowEventSimple* fEvent = NULL;
+    if (fAnalysisType == "ESDMC0") {
+      fEvent = fEventMaker->FillTracks(fESD, mcEvent,fCFManager1, fCFManager2,0);  //0 = kine from ESD, 1 = kine from MC
+    } else if (fAnalysisType == "ESDMC1") {
+      fEvent = fEventMaker->FillTracks(fESD, mcEvent,fCFManager1, fCFManager2,0);  //0 = kine from ESD, 1 = kine from MC
+    }
+
     fLyz->Make(fEvent,fLyzEp);
     delete fEvent;
     //delete mcEvent;
   }
-  else if (fAnalysisType == "ESDMC1") {
-    if (!fESD) {
-      Printf("ERROR: fESD not available");
-      return;
-    }
-    Printf("There are %d tracks in this event", fESD->GetNumberOfTracks());
-    
-    AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-    if (!eventHandler) {
-      Printf("ERROR: Could not retrieve MC event handler");
-      return;
-    }
-
-    AliMCEvent* mcEvent = eventHandler->MCEvent();
-    if (!mcEvent) {
-      Printf("ERROR: Could not retrieve MC event");
-      return;
-    }
-
-    //lee yang zeros analysis 
-    AliFlowEventSimple* fEvent = fEventMaker->FillTracks(fESD,mcEvent,1); //0 = kine from ESD, 1 = kine from MC
-    fLyz->Make(fEvent,fLyzEp);
-    delete fEvent;
-    //delete mcEvent;
-  }
+  
   else if (fAnalysisType == "AOD") {
     if (!fAOD) {
       Printf("ERROR: fAOD not available");
@@ -262,12 +275,14 @@ void AliAnalysisTaskLYZEventPlane::Exec(Option_t *)
     Printf("There are %d tracks in this event", fAOD->GetNumberOfTracks());
 
     //lee yang zeros analysis 
+    //for the moment don't use CF
+    //AliFlowEventSimple* fEvent = fEventMaker->FillTracks(fAOD,fCFManager1,fCFManager2);
     AliFlowEventSimple* fEvent = fEventMaker->FillTracks(fAOD);
     fLyz->Make(fEvent,fLyzEp);
     delete fEvent;
   }
   
-  PostData(0,fLyz->GetOutFile());
+  PostData(0,fListHistos);
 }      
 
 //________________________________________________________________________
@@ -276,9 +291,13 @@ void AliAnalysisTaskLYZEventPlane::Terminate(Option_t *)
   // Called once at the end of the query
   fLyz->Finish();
 
-  delete fLyz;
-  delete fLyzEp;
-  delete fEventMaker;
+  TList* fOutHistos = (TList*)GetOutputData(0);
+  if (fOutHistos) { fOutHistos->Print(); }
+  else { cout<<"hostogram list pointer in Terminate is empty"<<endl; }
+
+  //delete fLyz;
+  //delete fLyzEp;
+  //delete fEventMaker;
 }
 
 

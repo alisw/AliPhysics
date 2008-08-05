@@ -19,6 +19,7 @@
 #include "TFile.h"      //needed as include
 #include "TProfile.h"   //needed as include
 #include "TComplex.h"   //needed as include
+#include "TList.h"
 
 class TH1F;
 
@@ -46,8 +47,7 @@ ClassImp(AliFlowAnalysisWithMCEventPlane)
    fQ2sum(0),
    fEventNumber(0),
    fDebug(kFALSE),
-   fHistFileName(0),
-   fHistFile(0),
+   fHistList(NULL),
    fCommonHists(NULL),
    fCommonHistsRes(NULL),
    fHistProFlow(NULL),
@@ -56,6 +56,8 @@ ClassImp(AliFlowAnalysisWithMCEventPlane)
 {
 
   // Constructor.
+  fHistList = new TList();
+
   fQsum = new TVector2;        // flow vector sum
 }
 
@@ -66,6 +68,7 @@ ClassImp(AliFlowAnalysisWithMCEventPlane)
  AliFlowAnalysisWithMCEventPlane::~AliFlowAnalysisWithMCEventPlane() 
  {
    //destructor
+   delete fHistList;
    delete fQsum;
  }
  
@@ -80,19 +83,32 @@ void AliFlowAnalysisWithMCEventPlane::Init() {
   Double_t  dPtMin = AliFlowCommonConstants::GetPtMin();	     
   Double_t  dPtMax = AliFlowCommonConstants::GetPtMax();
 
-  // analysis file (output)
-  fHistFile = new TFile(fHistFileName.Data(),"RECREATE") ;
-
   fCommonHists = new AliFlowCommonHist("MC");
+  fHistList->Add(fCommonHists->GetHistMultOrig());
+  fHistList->Add(fCommonHists->GetHistMultInt());
+  fHistList->Add(fCommonHists->GetHistMultDiff());
+  fHistList->Add(fCommonHists->GetHistPtInt());
+  fHistList->Add(fCommonHists->GetHistPtDiff());
+  fHistList->Add(fCommonHists->GetHistPhiInt());
+  fHistList->Add(fCommonHists->GetHistPhiDiff());
+  fHistList->Add(fCommonHists->GetHistEtaInt());
+  fHistList->Add(fCommonHists->GetHistEtaDiff());
+  fHistList->Add(fCommonHists->GetHistProMeanPtperBin());
+  fHistList->Add(fCommonHists->GetHistQ());
   fCommonHistsRes = new AliFlowCommonHistResults("MC");
+  fHistList->Add(fCommonHistsRes->GetHistDiffFlow()); 
+  fHistList->Add(fCommonHistsRes->GetHistChi()); 
+  fHistList->Add(fCommonHistsRes->GetHistIntFlow()); 
 
   fHistProFlow = new TProfile("FlowPro_VPt_MC","FlowPro_VPt_MC",iNbinsPt,dPtMin,dPtMax);
   fHistProFlow->SetXTitle("Pt");
   fHistProFlow->SetYTitle("v2 (%)");
+  fHistList->Add(fHistProFlow);
 
   fHistRP = new TH1F("Flow_RP_MC","Flow_RP_MC",100,0.,3.14);
   fHistRP->SetXTitle("Reaction Plane Angle");
   fHistRP->SetYTitle("Counts");
+  fHistList->Add(fHistRP);
 
  
   fEventNumber = 0;  //set number of events to zero
@@ -179,10 +195,7 @@ void AliFlowAnalysisWithMCEventPlane::Finish() {
   dErrV = TMath::Sqrt(dErrV);
   cout<<"dV is "<<dV<<" +- "<<dErrV<<endl;
   fCommonHistsRes->FillIntegratedFlow(dV,dErrV); 
-
-  // write to file
-  fHistFile->Write();
-    	  
+      	  
   cout<<".....finished"<<endl;
  }
 
