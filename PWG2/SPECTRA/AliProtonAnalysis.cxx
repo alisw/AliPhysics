@@ -70,12 +70,10 @@ AliProtonAnalysis::AliProtonAnalysis() :
   fElectronFunction(0), fMuonFunction(0),
   fPionFunction(0), fKaonFunction(0), fProtonFunction(0),
   fUseTPCOnly(kFALSE), fHistEvents(0), fHistYPtProtons(0), fHistYPtAntiProtons(0),
-  fCorrectionList2D(0), fEfficiencyList1D(0), fCorrectionList1D(0) {
+  fCorrectionListProtons2D(0), fEfficiencyListProtons1D(0), fCorrectionListProtons1D(0),
+  fCorrectionListAntiProtons2D(0), fEfficiencyListAntiProtons1D(0), fCorrectionListAntiProtons1D(0) {
   //Default constructor
   for(Int_t i = 0; i < 5; i++) fPartFrac[i] = 0.0;
-  fCorrectionList2D = new TList(); 
-  fEfficiencyList1D = new TList(); 
-  fCorrectionList1D = new TList();
 }
 
 //____________________________________________________________________//
@@ -107,7 +105,8 @@ AliProtonAnalysis::AliProtonAnalysis(Int_t nbinsY, Float_t fLowY, Float_t fHighY
   fElectronFunction(0), fMuonFunction(0),
   fPionFunction(0), fKaonFunction(0), fProtonFunction(0),
   fUseTPCOnly(kFALSE), fHistEvents(0), fHistYPtProtons(0), fHistYPtAntiProtons(0),
-  fCorrectionList2D(0), fEfficiencyList1D(0), fCorrectionList1D(0) {
+  fCorrectionListProtons2D(0), fEfficiencyListProtons1D(0), fCorrectionListProtons1D(0),
+  fCorrectionListAntiProtons2D(0), fEfficiencyListAntiProtons1D(0), fCorrectionListAntiProtons1D(0) {
   //Default constructor
 
   fHistEvents = new TH1I("fHistEvents","Analyzed events",1,0,1);
@@ -131,9 +130,6 @@ AliProtonAnalysis::~AliProtonAnalysis() {
   if(fHistEvents) delete fHistEvents;
   if(fHistYPtProtons) delete fHistYPtProtons;
   if(fHistYPtAntiProtons) delete fHistYPtAntiProtons;
-  if(fCorrectionList2D) delete fCorrectionList2D;
-  if(fEfficiencyList1D) delete fEfficiencyList1D;
-  if(fCorrectionList1D) delete fCorrectionList1D;
   if(fGlobalQAList) delete fGlobalQAList;
   if(fQA2DList) delete fQA2DList;
   if(fQAPrimaryProtonsAcceptedList) delete fQAPrimaryProtonsAcceptedList;
@@ -144,6 +140,12 @@ AliProtonAnalysis::~AliProtonAnalysis() {
   if(fQAPrimaryAntiProtonsRejectedList) delete fQAPrimaryAntiProtonsRejectedList;
   if(fQASecondaryAntiProtonsAcceptedList) delete fQASecondaryAntiProtonsAcceptedList;
   if(fQASecondaryAntiProtonsRejectedList) delete fQASecondaryAntiProtonsRejectedList; 
+  if(fCorrectionListProtons2D) delete fCorrectionListProtons2D;
+  if(fEfficiencyListProtons1D) delete fEfficiencyListProtons1D;
+  if(fCorrectionListProtons1D) delete fCorrectionListProtons1D;
+  if(fCorrectionListAntiProtons2D) delete fCorrectionListAntiProtons2D;
+  if(fEfficiencyListAntiProtons1D) delete fEfficiencyListAntiProtons1D;
+  if(fCorrectionListAntiProtons1D) delete fCorrectionListAntiProtons1D;
 }
 
 //____________________________________________________________________//
@@ -1221,19 +1223,25 @@ Bool_t AliProtonAnalysis::ReadCorrectionContainer(const char* filename) {
     status = kFALSE;
   }
 
-  AliCFContainer *corrfwContainer = (AliCFContainer*) (file->Get("container"));
-  if(!corrfwContainer) {
-    cout<<"CORRFW container not found!"<<endl;
+  //________________________________________//
+  //Protons
+  fCorrectionListProtons2D = new TList(); 
+  fEfficiencyListProtons1D = new TList(); 
+  fCorrectionListProtons1D = new TList();
+  
+  AliCFContainer *corrfwContainerProtons = (AliCFContainer*) (file->Get("containerProtons"));
+  if(!corrfwContainerProtons) {
+    cout<<"CORRFW container for protons not found!"<<endl;
     status = kFALSE;
   }
   
-  Int_t nSteps = corrfwContainer->GetNStep();
+  Int_t nSteps = corrfwContainerProtons->GetNStep();
   TH2D *gYPt[4];
   //currently the GRID is formed by the y-pT parameters
   //Add Vz as a next step
   Int_t iRap = 0, iPt = 1;
   for(Int_t iStep = 0; iStep < nSteps; iStep++) {
-    gYPt[iStep] = corrfwContainer->ShowProjection(iRap,iPt,iStep);
+    gYPt[iStep] = corrfwContainerProtons->ShowProjection(iRap,iPt,iStep);
     //fCorrectionList2D->Add(gYPt[iStep]);
   }
 
@@ -1245,18 +1253,18 @@ Bool_t AliProtonAnalysis::ReadCorrectionContainer(const char* filename) {
 
   //Get the 2D efficiency maps
   for(Int_t iStep = 1; iStep < nSteps; iStep++) { 
-    gTitle = "Efficiency_Step0_Step"; gTitle += iStep; 
+    gTitle = "EfficiencyProtons_Step0_Step"; gTitle += iStep; 
     efficiency[iStep] = new AliCFEffGrid(gTitle.Data(),
-					 gTitle.Data(),*corrfwContainer);
+					 gTitle.Data(),*corrfwContainerProtons);
     efficiency[iStep]->CalculateEfficiency(iStep,0); //eff= step[i]/step0
-    fCorrectionList2D->Add(efficiency[iStep]);  
+    fCorrectionListProtons2D->Add(efficiency[iStep]);  
   }
   //Get the projection of the efficiency maps
   for(Int_t iParameter = 0; iParameter < 2; iParameter++) { 
     for(Int_t iStep = 1; iStep < nSteps; iStep++) { 
       gEfficiency[iParameter][iStep-1] = efficiency[iStep]->Project(iParameter);
-      fEfficiencyList1D->Add(gEfficiency[iParameter][iStep-1]);  
-      gTitle = "Correction_Parameter"; gTitle += iParameter+1;
+      fEfficiencyListProtons1D->Add(gEfficiency[iParameter][iStep-1]);  
+      gTitle = "ProtonsCorrection_Parameter"; gTitle += iParameter+1;
       gTitle += "_Step0_Step"; gTitle += iStep; 
       gCorrection[iParameter][iStep-1] = new TH1D(gTitle.Data(),
 						   gTitle.Data(),
@@ -1272,7 +1280,60 @@ Bool_t AliProtonAnalysis::ReadCorrectionContainer(const char* filename) {
   for(Int_t iParameter = 0; iParameter < 2; iParameter++) { 
     for(Int_t iStep = 1; iStep < nSteps; iStep++) { 
       gCorrection[iParameter][iStep-1]->Divide(gEfficiency[iParameter][iStep-1]);
-      fCorrectionList1D->Add(gCorrection[iParameter][iStep-1]);  
+      fCorrectionListProtons1D->Add(gCorrection[iParameter][iStep-1]);  
+    }
+  }
+
+  //________________________________________//
+  //AntiProtons
+  fCorrectionListAntiProtons2D = new TList(); 
+  fEfficiencyListAntiProtons1D = new TList(); 
+  fCorrectionListAntiProtons1D = new TList();
+  
+  AliCFContainer *corrfwContainerAntiProtons = (AliCFContainer*) (file->Get("containerAntiProtons"));
+  if(!corrfwContainerAntiProtons) {
+    cout<<"CORRFW container for antiprotons not found!"<<endl;
+    status = kFALSE;
+  }
+  
+  nSteps = corrfwContainerAntiProtons->GetNStep();
+  //currently the GRID is formed by the y-pT parameters
+  //Add Vz as a next step
+  iRap = 0; iPt = 1;
+  for(Int_t iStep = 0; iStep < nSteps; iStep++) {
+    gYPt[iStep] = corrfwContainerAntiProtons->ShowProjection(iRap,iPt,iStep);
+  }
+
+  //Get the 2D efficiency maps
+  for(Int_t iStep = 1; iStep < nSteps; iStep++) { 
+    gTitle = "EfficiencyAntiProtons_Step0_Step"; gTitle += iStep; 
+    efficiency[iStep] = new AliCFEffGrid(gTitle.Data(),
+					 gTitle.Data(),*corrfwContainerAntiProtons);
+    efficiency[iStep]->CalculateEfficiency(iStep,0); //eff= step[i]/step0
+    fCorrectionListAntiProtons2D->Add(efficiency[iStep]);  
+  }
+  //Get the projection of the efficiency maps
+  for(Int_t iParameter = 0; iParameter < 2; iParameter++) { 
+    for(Int_t iStep = 1; iStep < nSteps; iStep++) { 
+      gEfficiency[iParameter][iStep-1] = efficiency[iStep]->Project(iParameter);
+      fEfficiencyListProtons1D->Add(gEfficiency[iParameter][iStep-1]);  
+      gTitle = "AntiProtonsCorrection_Parameter"; gTitle += iParameter+1;
+      gTitle += "_Step0_Step"; gTitle += iStep; 
+      gCorrection[iParameter][iStep-1] = new TH1D(gTitle.Data(),
+						   gTitle.Data(),
+						   gEfficiency[iParameter][iStep-1]->GetNbinsX(),
+						   gEfficiency[iParameter][iStep-1]->GetXaxis()->GetXmin(),
+						   gEfficiency[iParameter][iStep-1]->GetXaxis()->GetXmax());
+      //initialisation of the correction
+      for(Int_t iBin = 1; iBin <= gEfficiency[iParameter][iStep-1]->GetNbinsX(); iBin++)
+	gCorrection[iParameter][iStep-1]->SetBinContent(iBin,1.0);
+    }//step loop
+  }//parameter loop
+  //Calculate the 1D correction parameters as a function of y and pT
+  for(Int_t iParameter = 0; iParameter < 2; iParameter++) { 
+    for(Int_t iStep = 1; iStep < nSteps; iStep++) { 
+      gCorrection[iParameter][iStep-1]->Divide(gEfficiency[iParameter][iStep-1]);
+      fCorrectionListAntiProtons1D->Add(gCorrection[iParameter][iStep-1]);  
     }
   }
 
