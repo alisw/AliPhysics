@@ -173,9 +173,9 @@ Bool_t AliPHOSRawDecoderv1::NextDigit()
   const Float_t sampleMaxHG=102.332 ;  //maximal height of HG sample with given parameterization
   const Float_t sampleMaxLG=277.196 ;  //maximal height of HG sample with given parameterization
   const Float_t maxEtoFit=5 ; //fit only samples above this energy, accept all samples (with good aRMS) below it
-  
+
   while ( in->Next() ) { 
-    
+
     if(!tLength) {
       tLength = in->GetTimeLength();
       if(tLength!=fSamples->GetSize()) {
@@ -191,7 +191,8 @@ Bool_t AliPHOSRawDecoderv1::NextDigit()
     }
     
     // Fit the full sample
-    if(in->IsNewHWAddress() && iBin != fSamples->GetSize()) {
+    if((in->IsNewHWAddress() && iBin != fSamples->GetSize()) //new HW address
+       ||(iBin<=0)) {  //or new signal in same address
 
       //First remember new sample
       fNewLowGainFlag = in->IsLowGain();                                                                                                        
@@ -199,7 +200,8 @@ Bool_t AliPHOSRawDecoderv1::NextDigit()
       fNewRow    = in->GetRow()   +1;                                                                                                           
       fNewColumn = in->GetColumn()+1;                                                                                                           
       fNewAmp = in->GetSignal() ;
-      fNewTime=in->GetTime() ;                                                                                                                                       
+      fNewTime=in->GetTime() ;  
+  
       //new handle already collected 
       Double_t pedestal =0. ;
       if(fPedSubtract){ 
@@ -317,7 +319,7 @@ Bool_t AliPHOSRawDecoderv1::NextDigit()
 
 	gMinuit->SetObjectFit((TObject*)fToFit) ;         // To tranfer pointer to UnfoldingChiSquare
 	Int_t ierflg ;
-	gMinuit->mnparm(0, "t0",  1.*tStart, 0.01, 0, 0, ierflg) ;
+	gMinuit->mnparm(0, "t0",  1.*tStart, 0.01, -500., 500., ierflg) ;
 	if(ierflg != 0){
 //	  AliWarning(Form("Unable to set initial value for fit procedure : t0=%e\n",1.*tStart) ) ;
 	  fEnergy=0. ;
@@ -360,7 +362,6 @@ Bool_t AliPHOSRawDecoderv1::NextDigit()
 	gMinuit->mnexcm("SET NOW", &p2 , 0, ierflg) ;  // No Warnings
 	
 	gMinuit->mnexcm("MIGRAD", &p0, 0, ierflg) ;    // minimize 
-
 	
 	Double_t err,t0err ;
 	Double_t t0,efit ;
@@ -442,8 +443,9 @@ Bool_t AliPHOSRawDecoderv1::NextDigit()
 //====================
 
       fEnergy=efit ;
-      fTime=t0 ;
-
+      fTime=t0-4.024*bfit ; //-10.402*bfit+4.669*bfit*bfit ; //Correction for 70 samples
+//      fTime=t0+2.8*bfit ; //-10.402*bfit+4.669*bfit*bfit ; //Correction for 50 samples
+//      fQuality = bfit ;
       
       return kTRUE;
     }
@@ -511,7 +513,6 @@ void AliPHOSRawDecoderv1::UnfoldingChiSquare(Int_t & /*nPar*/, Double_t * Grad, 
   Double_t overflow=params->At(5) ;
   Int_t iBin = (Int_t) params->At(6) ;
   Int_t nSamples=TMath::Min(iBin+70,samples->GetSize()) ; //Here we set number of points to fit (70)
-
   // iBin - first non-zero sample 
   Int_t tStep=times->At(iBin+1)-times->At(iBin) ;
   Double_t ddt=times->At(iBin)-t0-tStep ;
@@ -522,10 +523,12 @@ void AliPHOSRawDecoderv1::UnfoldingChiSquare(Int_t & /*nPar*/, Double_t * Grad, 
   for(Int_t i = iBin; i<nSamples ; i++) {
     Double_t dt=double(times->At(i))-t0 ;
     Double_t fsample = double(samples->At(i)) ;
+    if(fsample>=overflow)
+      continue ;
     Double_t diff ;
     exp1*=dexp1 ;
     exp2*=dexp2 ;
-    if(dt<0.){
+    if(dt<=0.){
       diff=fsample - ped ; 
       fret += diff*diff ;
       continue ;
@@ -534,12 +537,12 @@ void AliPHOSRawDecoderv1::UnfoldingChiSquare(Int_t & /*nPar*/, Double_t * Grad, 
     Double_t dtnE=dtn*exp1 ;
     Double_t dt2E=dt*dt*exp2 ;
     Double_t fit=ped+en*(dtnE + b*dt2E) ;
-    if(fit>=overflow){
-      diff=fsample-overflow ;
-      fret += diff*diff ;
-      //zero gradient here
-    }
-    else{
+//    if(fit>=overflow){
+//      diff=fsample-overflow ;
+//      fret += diff*diff ;
+//      //zero gradient here
+//    }
+//    else{
       diff = fsample - fit ;
       fret += diff*diff ;
       if(iflag == 2){  // calculate gradient
@@ -547,7 +550,7 @@ void AliPHOSRawDecoderv1::UnfoldingChiSquare(Int_t & /*nPar*/, Double_t * Grad, 
         Grad[1] -= diff*(dtnE+b*dt2E) ;
         Grad[2] -= en*diff*dt2E ;
       }
-    }
+//    }
   }
   if(iflag == 2)
     for(Int_t iparam = 0 ; iparam < 3 ; iparam++)    
