@@ -52,8 +52,10 @@ class AliProtonCorrectionTask : public AliAnalysisTaskSE {
   void     Terminate(Option_t *);
   
   // CORRECTION FRAMEWORK RELATED FUNCTIONS
-  void           SetCFManager(AliCFManager* io) {fCFManager = io;}   // global correction manager
-  AliCFManager * GetCFManager() const {return fCFManager;}           // get corr manager
+  void           SetCFManagerProtons(AliCFManager* io) {fCFManagerProtons = io;}   // global correction manager
+  AliCFManager * GetCFManagerProtons() const {return fCFManagerProtons;}           // get corr manager
+  void           SetCFManagerAntiProtons(AliCFManager* io) {fCFManagerAntiProtons = io;} // global correction manager
+  AliCFManager * GetCFManagerAntiProtons() const {return fCFManagerAntiProtons;}         // get corr manager
   void           SetQAList(TList* list) {fQAHistList = list;}
 
   // Data types
@@ -65,10 +67,11 @@ class AliProtonCorrectionTask : public AliAnalysisTaskSE {
  protected:
   Double_t Rapidity(Double_t px, Double_t py, Double_t pz);
 
-  Bool_t          fReadTPCTracks ; // flag to loop on TPC tracks only
-  Bool_t          fReadAODData ;   // flag for AOD/ESD input files
-  AliCFManager   *fCFManager    ;  // pointer to the CF manager
-  TList          *fQAHistList   ;  // list of QA histograms
+  Bool_t          fReadTPCTracks;         // flag to loop on TPC tracks only
+  Bool_t          fReadAODData;           // flag for AOD/ESD input files
+  AliCFManager   *fCFManagerProtons;      // pointer to the CF manager
+  AliCFManager   *fCFManagerAntiProtons;  // pointer to the CF manager
+  TList          *fQAHistList;            // list of QA histograms
 
   // Histograms
   //Number of events

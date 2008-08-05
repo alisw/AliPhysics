@@ -69,11 +69,18 @@ Bool_t runProtonCorrection(Int_t stats = 0, const char* dataset = 0x0) {
   //values for bin lower bounds
   for(Int_t i=0; i<=nbin1; i++) binLim1[i]=(Double_t)ymin  + (ymax-ymin)  /nbin1*(Double_t)i;
   for(Int_t i=0; i<=nbin2; i++) binLim2[i]=(Double_t)ptmin + (ptmax-ptmin)/nbin2*(Double_t)i; 
-  //one "container" for MC
-  AliCFContainer* container = new AliCFContainer("container","container for tracks",nstep,nvar,iBin);
+  //CF container for protons
+  AliCFContainer* containerProtons = new AliCFContainer("containerProtons","container for protons",
+							nstep,nvar,iBin);
   //setting the bin limits
-  container -> SetBinLimits(iy,binLim1);
-  container -> SetBinLimits(ipT,binLim2);
+  containerProtons->SetBinLimits(iy,binLim1);
+  containerProtons->SetBinLimits(ipT,binLim2);
+ //CF container for protons
+  AliCFContainer* containerAntiProtons = new AliCFContainer("containerAntiProtons","container for antiprotons",
+							    nstep,nvar,iBin);
+  //setting the bin limits
+  containerAntiProtons->SetBinLimits(iy,binLim1);
+  containerAntiProtons->SetBinLimits(ipT,binLim2);
 
   //________________________________________//
   // SET TLIST FOR QA HISTOS
@@ -81,8 +88,10 @@ Bool_t runProtonCorrection(Int_t stats = 0, const char* dataset = 0x0) {
   //Cuts
   const Int_t    mintrackrefsTPC = 2;
   const Int_t    mintrackrefsITS = 3;
-  const Int_t    charge  = 1;
-  const Int_t    PDG = 2212; 
+  const Int_t    chargeProtons  = 1;
+  const Int_t    PDGProtons = 2212; 
+  const Int_t    chargeAntiProtons  = -1;
+  const Int_t    PDGAntiProtons = -2212; 
 
   const Int_t    minclustersTPC = 50;
   const Float_t  maxChi2PerTPCCluster = 3.5;
@@ -97,32 +106,51 @@ Bool_t runProtonCorrection(Int_t stats = 0, const char* dataset = 0x0) {
   const Float_t  maxSigmaToVertex = 2.5;
 
   // Gen-Level kinematic cuts
-  AliCFTrackKineCuts *mcKineCuts = new AliCFTrackKineCuts("mcKineCuts","MC-level kinematic cuts");
-  mcKineCuts->SetPtRange(ptmin,ptmax);
-  mcKineCuts->SetRapidityRange(ymin,ymax);
-  mcKineCuts->SetChargeMC(charge);
-  mcKineCuts->SetQAOn(qaList);
+  AliCFTrackKineCuts *mcKineCutsProtons = new AliCFTrackKineCuts("mcKineCutsProtons",
+								 "MC-level kinematic cuts");
+  mcKineCutsProtons->SetPtRange(ptmin,ptmax);
+  mcKineCutsProtons->SetRapidityRange(ymin,ymax);
+  mcKineCutsProtons->SetChargeMC(chargeProtons);
+  mcKineCutsProtons->SetQAOn(qaList);
+
+  AliCFTrackKineCuts *mcKineCutsAntiProtons = new AliCFTrackKineCuts("mcKineCutsAntiProtons",
+								     "MC-level kinematic cuts");
+  mcKineCutsAntiProtons->SetPtRange(ptmin,ptmax);
+  mcKineCutsAntiProtons->SetRapidityRange(ymin,ymax);
+  mcKineCutsAntiProtons->SetChargeMC(chargeAntiProtons);
+  mcKineCutsAntiProtons->SetQAOn(qaList);
 
   //Particle-Level cuts:  
-  AliCFParticleGenCuts* mcGenCuts = new AliCFParticleGenCuts("mcGenCuts","MC particle generation cuts");
+  AliCFParticleGenCuts* mcGenCuts = new AliCFParticleGenCuts("mcGenCuts",
+							     "MC particle generation cuts");
   mcGenCuts->SetRequireIsPrimary();
-  mcGenCuts->SetRequirePdgCode(PDG);
+  mcGenCuts->SetRequirePdgCode(PDGProtons);
   mcGenCuts->SetQAOn(qaList);
 
   //Acceptance Cuts
-  AliCFAcceptanceCuts *mcAccCuts = new AliCFAcceptanceCuts("mcAccCuts","MC acceptance cuts");
+  AliCFAcceptanceCuts *mcAccCuts = new AliCFAcceptanceCuts("mcAccCuts",
+							   "MC acceptance cuts");
   mcAccCuts->SetMinNHitITS(mintrackrefsITS);
   mcAccCuts->SetMinNHitTPC(mintrackrefsTPC);
   mcAccCuts->SetQAOn(qaList);
 
   // Rec-Level kinematic cuts
-  AliCFTrackKineCuts *recKineCuts = new AliCFTrackKineCuts("recKineCuts","rec-level kine cuts");
-  recKineCuts->SetPtRange(ptmin,ptmax);
-  recKineCuts->SetRapidityRange(ymin,ymax);
-  recKineCuts->SetChargeRec(charge);
-  recKineCuts->SetQAOn(qaList);
+  AliCFTrackKineCuts *recKineCutsProtons = new AliCFTrackKineCuts("recKineCutsProtons",
+								  "rec-level kine cuts");
+  recKineCutsProtons->SetPtRange(ptmin,ptmax);
+  recKineCutsProtons->SetRapidityRange(ymin,ymax);
+  recKineCutsProtons->SetChargeRec(chargeProtons);
+  recKineCutsProtons->SetQAOn(qaList);
 
-  AliCFTrackQualityCuts *recQualityCuts = new AliCFTrackQualityCuts("recQualityCuts","rec-level quality cuts");
+  AliCFTrackKineCuts *recKineCutsAntiProtons = new AliCFTrackKineCuts("recKineCutsAntiProtons",
+								      "rec-level kine cuts");
+  recKineCutsAntiProtons->SetPtRange(ptmin,ptmax);
+  recKineCutsAntiProtons->SetRapidityRange(ymin,ymax);
+  recKineCutsAntiProtons->SetChargeRec(chargeAntiProtons);
+  recKineCutsAntiProtons->SetQAOn(qaList);
+
+  AliCFTrackQualityCuts *recQualityCuts = new AliCFTrackQualityCuts("recQualityCuts",
+								    "rec-level quality cuts");
   recQualityCuts->SetMinNClusterTPC(minclustersTPC);
   recQualityCuts->SetMaxChi2PerClusterTPC(maxChi2PerTPCCluster);
   recQualityCuts->SetMaxCovDiagonalElements(maxCov11,maxCov22,maxCov33,maxCov44,maxCov55);
@@ -131,7 +159,8 @@ Bool_t runProtonCorrection(Int_t stats = 0, const char* dataset = 0x0) {
   //recQualityCuts->SetRequireITSRefit(kTRUE);
   recQualityCuts->SetQAOn(qaList);
 
-  AliCFTrackIsPrimaryCuts *recIsPrimaryCuts = new AliCFTrackIsPrimaryCuts("recIsPrimaryCuts","rec-level isPrimary cuts");
+  AliCFTrackIsPrimaryCuts *recIsPrimaryCuts = new AliCFTrackIsPrimaryCuts("recIsPrimaryCuts",
+									  "rec-level isPrimary cuts");
   recIsPrimaryCuts->SetMaxNSigmaToVertex(maxSigmaToVertex);
   recIsPrimaryCuts->SetQAOn(qaList);
 
@@ -152,19 +181,26 @@ Bool_t runProtonCorrection(Int_t stats = 0, const char* dataset = 0x0) {
   cutPID->SetQAOn(qaList);
 
   //________________________________________// 
-  TObjArray* mcList = new TObjArray(0);
-  mcList->AddLast(mcKineCuts);
-  mcList->AddLast(mcGenCuts);
+  TObjArray* mcListProtons = new TObjArray(0);
+  mcListProtons->AddLast(mcKineCutsProtons);
+  mcListProtons->AddLast(mcGenCuts);
+  TObjArray* mcListAntiProtons = new TObjArray(0);
+  mcListAntiProtons->AddLast(mcKineCutsAntiProtons);
+  mcListAntiProtons->AddLast(mcGenCuts);
 
   printf("CREATE ACCEPTANCE CUTS\n");
   TObjArray* accList = new TObjArray(0);
   accList->AddLast(mcAccCuts);
 
   printf("CREATE RECONSTRUCTION CUTS\n");
-  TObjArray* recList = new TObjArray(0);
-  recList->AddLast(recKineCuts);
-  recList->AddLast(recQualityCuts);
-  recList->AddLast(recIsPrimaryCuts);
+  TObjArray* recListProtons = new TObjArray(0);
+  recListProtons->AddLast(recKineCutsProtons);
+  recListProtons->AddLast(recQualityCuts);
+  recListProtons->AddLast(recIsPrimaryCuts);
+  TObjArray* recListAntiProtons = new TObjArray(0);
+  recListAntiProtons->AddLast(recKineCutsAntiProtons);
+  recListAntiProtons->AddLast(recQualityCuts);
+  recListAntiProtons->AddLast(recIsPrimaryCuts);
 
   printf("CREATE PID CUTS\n");
   TObjArray* fPIDCutList = new TObjArray(0);
@@ -172,17 +208,25 @@ Bool_t runProtonCorrection(Int_t stats = 0, const char* dataset = 0x0) {
 
   //________________________________________// 
   //CREATE THE INTERFACE TO CORRECTION FRAMEWORK USED IN THE TASK
-  AliCFManager* man = new AliCFManager();
-  man->SetParticleContainer(container);
-  man->SetParticleCutsList(AliCFManager::kPartGenCuts,mcList);
-  man->SetParticleCutsList(AliCFManager::kPartAccCuts,accList);
-  man->SetParticleCutsList(AliCFManager::kPartRecCuts,recList);
-  man->SetParticleCutsList(AliCFManager::kPartSelCuts,fPIDCutList);
+  AliCFManager* manProtons = new AliCFManager();
+  manProtons->SetParticleContainer(containerProtons);
+  manProtons->SetParticleCutsList(AliCFManager::kPartGenCuts,mcListProtons);
+  manProtons->SetParticleCutsList(AliCFManager::kPartAccCuts,accList);
+  manProtons->SetParticleCutsList(AliCFManager::kPartRecCuts,recListProtons);
+  manProtons->SetParticleCutsList(AliCFManager::kPartSelCuts,fPIDCutList);
+
+  AliCFManager* manAntiProtons = new AliCFManager();
+  manAntiProtons->SetParticleContainer(containerAntiProtons);
+  manAntiProtons->SetParticleCutsList(AliCFManager::kPartGenCuts,mcListAntiProtons);
+  manAntiProtons->SetParticleCutsList(AliCFManager::kPartAccCuts,accList);
+  manAntiProtons->SetParticleCutsList(AliCFManager::kPartRecCuts,recListAntiProtons);
+  manAntiProtons->SetParticleCutsList(AliCFManager::kPartSelCuts,fPIDCutList);
 
   //________________________________________// 
   //CREATE THE TASK
   AliProtonCorrectionTask *task = new AliProtonCorrectionTask("AliProtonCorrectionTask");
-  task->SetCFManager(man); //here is set the CF manager
+  task->SetCFManagerProtons(manProtons); //here is set the CF manager
+  task->SetCFManagerAntiProtons(manAntiProtons); //here is set the CF manager
   task->SetQAList(qaList);
 
   //SETUP THE ANALYSIS MANAGER TO READ INPUT CHAIN AND WRITE DESIRED OUTPUTS
@@ -200,13 +244,23 @@ Bool_t runProtonCorrection(Int_t stats = 0, const char* dataset = 0x0) {
 
   // ----- output data -----
   //slot 0 : default output tree (by default handled by AliAnalysisTaskSE)
-  AliAnalysisDataContainer *coutput0 = mgr->CreateContainer("ctree0", TTree::Class(),AliAnalysisManager::kOutputContainer,"output.root");
+  AliAnalysisDataContainer *coutput0 = mgr->CreateContainer("ctree0", TTree::Class(),
+							    AliAnalysisManager::kOutputContainer,"corrections.root");
   // output TH1I for event counting
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("chist0", TH1I::Class(),AliAnalysisManager::kOutputContainer,"output.root");
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("chist0", TH1I::Class(),
+							    AliAnalysisManager::kOutputContainer,"corrections.root");
   // output Correction Framework Container (for acceptance & efficiency calculations)
-  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("ccontainer0", AliCFContainer::Class(),AliAnalysisManager::kOutputContainer,"output.root");
+  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("ccontainer0", 
+							    AliCFContainer::Class(),
+							    AliAnalysisManager::kOutputContainer,"corrections.root");
+  // output Correction Framework Container (for acceptance & efficiency calculations)
+  AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("ccontainer1", 
+							    AliCFContainer::Class(),
+							    AliAnalysisManager::kOutputContainer,"corrections.root");
   // output QA histograms 
-  AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("clist0", TList::Class(),AliAnalysisManager::kOutputContainer,"output.root");
+  AliAnalysisDataContainer *coutput4 = mgr->CreateContainer("clist0", 
+							    TList::Class(),
+							    AliAnalysisManager::kOutputContainer,"corrections.root");
   
   mgr->AddTask(task);
   mgr->ConnectInput(task,0,cinput0);
@@ -214,6 +268,7 @@ Bool_t runProtonCorrection(Int_t stats = 0, const char* dataset = 0x0) {
   mgr->ConnectOutput(task,1,coutput1);
   mgr->ConnectOutput(task,2,coutput2);
   mgr->ConnectOutput(task,3,coutput3);
+  mgr->ConnectOutput(task,4,coutput4);
 
   //________________________________________// 
   if (mgr->InitAnalysis()) {
