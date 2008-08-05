@@ -150,7 +150,7 @@ class AliTPCClusterParam : public TObject {
   //
  protected:
   static AliTPCClusterParam*   fgInstance; //! Instance of this class (singleton implementation)
-  ClassDef(AliTPCClusterParam,2)    //  TPC Cluster parameter class
+  ClassDef(AliTPCClusterParam,3)    //  TPC Cluster parameter class
 };
 
 #endif
