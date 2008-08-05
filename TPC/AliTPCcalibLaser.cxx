@@ -404,7 +404,7 @@ Int_t  AliTPCcalibLaser::FindMirror(AliESDtrack *track, AliTPCseed *seed){
   AliTracker::PropagateTrackTo(&param,kRadius,0.10566,0.1,kTRUE);
   AliTPCLaserTrack ltr;
   AliTPCLaserTrack *ltrp=0x0;
-  AliTPCLaserTrack *ltrpjw=0x0;
+  //  AliTPCLaserTrack *ltrpjw=0x0;
   //
   Int_t id   = AliTPCLaserTrack::IdentifyTrack(&param);
  // Int_t idjw = AliTPCLaserTrack::IdentifyTrackJW(&param);
@@ -902,10 +902,12 @@ void AliTPCcalibLaser::RefitLaserJW(Int_t id){
       TProfile *profz = (TProfile*)fDeltaZres.UncheckedAt(id);
       if (!profy){
 	profy=new TProfile(Form("pry%03d",id),Form("Y Residuals for Laser Beam %03d",id),115,80,250);
+	profy->SetDirectory(0);
 	fDeltaYres.AddAt(profy,id);
       }
       if (!profz){
 	profz=new TProfile(Form("prz%03d",id),Form("Z Residuals for Laser Beam %03d",id),115,80,250);
+	profz->SetDirectory(0);
 	fDeltaZres.AddAt(profz,id);
       }
       for (Int_t irow=158;irow>-1;--irow) {
@@ -915,8 +917,12 @@ void AliTPCcalibLaser::RefitLaserJW(Int_t id){
 	Double_t yfit = vecY1[irow];
 	Double_t zcl  = vecClZ[irow];
 	Double_t zfit = vecZ1[irow];
-	profy->Fill(x,yfit-ycl);
-	profz->Fill(x,zfit-zcl);
+	if (profy) 
+	  if (profy->GetEntries()<1000000) 
+	    profy->Fill(x,yfit-ycl);
+	if (profz) 
+	  if (profz->GetEntries()<1000000) 
+	    profz->Fill(x,zfit-zcl);
       }
       //===============================//
       // Fill Fit Parameter Histograms //
@@ -934,27 +940,39 @@ void AliTPCcalibLaser::RefitLaserJW(Int_t id){
 	  pol2InnerY =new TH1F(Form("pol2par2inY%03d",id),
 			       Form("2nd derivative from pol2 fit in Y for Laser beam %03d (inner sector)",id),
 			       100,-.005,.005);
+	  pol2InnerY->SetDirectory(0);
 	  pol2OuterY =new TH1F(Form("pol2par2outY%03d",id),
 			       Form("2nd derivative from pol2 fit in Y for Laser beam %03d (outer sector)",id),
 			       100,0.01,.01);
+	  pol2OuterY->SetDirectory(0);
+
 	  diff1InnerY=new TH1F(Form("diff1inY%03d",id),
 			       Form("diff of 1st derivative from pol1 and pol2 in Y fit for Laser beam %03d (inner sector)",id),
 			       100,-.5,.5);
+	  diff1InnerY->SetDirectory(0);
+
 	  diff1OuterY=new TH1F(Form("diff1outY%03d",id),
 			       Form("diff of 1st derivative from pol1 and pol2 in Yfit for Laser beam %03d (outer sector)",id),
 			       100,-1,1);
+	  diff1OuterY->SetDirectory(0);
+
 	  pol2InnerZ =new TH1F(Form("pol2par2inZ%03d",id),
 			       Form("2nd derivative from pol2 fit in Z for Laser beam %03d (inner sector)",id),
 			       100,-.002,.002);
+	  pol2InnerZ->SetDirectory(0);
+
 	  pol2OuterZ =new TH1F(Form("pol2par2outZ%03d",id),
 			       Form("2nd derivative from pol2 fit in Z for Laser beam %03d (outer sector)",id),
 			       100,-.005,.005);
+	  pol2OuterZ->SetDirectory(0);
 	  diff1InnerZ=new TH1F(Form("diff1inZ%03d",id),
 			       Form("diff of 1st derivative from pol1 and pol2 in Z fit for Laser beam %03d (inner sector)",id),
 			       100,-.02,.02);
+	  diff1InnerZ->SetDirectory(0);
 	  diff1OuterZ=new TH1F(Form("diff1outZ%03d",id),
 			       Form("diff of 1st derivative from pol1 and pol2 in Zfit for Laser beam %03d (outer sector)",id),
 			       100,-.03,.03);
+	  diff1OuterZ->SetDirectory(0);
           //add
 	  fPol2Par2InY.AddAt(pol2InnerY,id);
 	  fDiffPar1InY.AddAt(diff1InnerY,id);
@@ -1369,6 +1387,7 @@ Long64_t AliTPCcalibLaser::Merge(TCollection *li) {
       h  = (TH1F*)fDeltaZ.At(id);
       if (!h) {
 	h=new TH1F(Form("hisdz%d",id),Form("hisdz%d",id),1000,-10,10);
+	h->SetDirectory(0);
 	fDeltaZ.AddAt(h,id);
       }
       if (hm) h->Add(hm);
@@ -1377,6 +1396,7 @@ Long64_t AliTPCcalibLaser::Merge(TCollection *li) {
       h  = (TH1F*)fDeltaPhi.At(id);
       if (!h) {
 	h= new TH1F(Form("hisdphi%d",id),Form("hisdphi%d",id),1000,-1,1);
+	h->SetDirectory(0);
 	fDeltaPhi.AddAt(h,id);
       }
       if (hm) h->Add(hm);
@@ -1385,6 +1405,7 @@ Long64_t AliTPCcalibLaser::Merge(TCollection *li) {
       h  = (TH1F*)fDeltaPhiP.At(id);
       if (!h) {
 	h=new TH1F(Form("hisdphiP%d",id),Form("hisdphiP%d",id),1000,-0.01,0.01);
+	h->SetDirectory(0);
 	fDeltaPhiP.AddAt(h,id);
       }
       if (hm) h->Add(hm);
@@ -1393,6 +1414,7 @@ Long64_t AliTPCcalibLaser::Merge(TCollection *li) {
       h  = (TH1F*)fSignals.At(id);
       if (!h) {
 	h=new TH1F(Form("hisSignal%d",id),Form("hisSignal%d",id),1000,0,1000);
+	h->SetDirectory(0);
 	fSignals.AddAt(h,id);
       }
       if (hm) h->Add(hm);
@@ -1402,7 +1424,8 @@ Long64_t AliTPCcalibLaser::Merge(TCollection *li) {
       hpm = (TProfile*)cal->fDeltaYres.At(id);
       hp  = (TProfile*)fDeltaYres.At(id);
       if (!hp) {
-	hp=new TProfile(Form("pry%03d",id),Form("Y Residuals for Laser Beam %03d",id),115,80,250);;
+	hp=new TProfile(Form("pry%03d",id),Form("Y Residuals for Laser Beam %03d",id),115,80,250);
+	hp->SetDirectory(0);
 	fDeltaYres.AddAt(hp,id);
       }
       if (hpm) hp->Add(hpm);
@@ -1410,7 +1433,8 @@ Long64_t AliTPCcalibLaser::Merge(TCollection *li) {
       hpm = (TProfile*)cal->fDeltaZres.At(id);
       hp  = (TProfile*)fDeltaZres.At(id);
       if (!hp) {
-	hp=new TProfile(Form("prz%03d",id),Form("Z Residuals for Laser Beam %03d",id),115,80,250);;
+	hp=new TProfile(Form("prz%03d",id),Form("Z Residuals for Laser Beam %03d",id),115,80,250);
+	hp->SetDirectory(0);
 	fDeltaZres.AddAt(hp,id);
       }
       if (hpm) hp->Add(hpm);
@@ -1440,27 +1464,38 @@ Long64_t AliTPCcalibLaser::Merge(TCollection *li) {
           pol2InnerY =new TH1F(Form("pol2par2inY%03d",id),
 			       Form("2nd derivative from pol2 fit in Y for Laser beam %03d (inner sector)",id),
 			       100,-.005,.005);
+	  pol2InnerY->SetDirectory(0);
+
 	  pol2OuterY =new TH1F(Form("pol2par2outY%03d",id),
 			       Form("2nd derivative from pol2 fit in Y for Laser beam %03d (outer sector)",id),
 			       100,0.01,.01);
+	  pol2OuterY->SetDirectory(0);
 	  diff1InnerY=new TH1F(Form("diff1inY%03d",id),
 			       Form("diff of 1st derivative from pol1 and pol2 in Y fit for Laser beam %03d (inner sector)",id),
 			       100,-.5,.5);
 	  diff1OuterY=new TH1F(Form("diff1outY%03d",id),
 			       Form("diff of 1st derivative from pol1 and pol2 in Yfit for Laser beam %03d (outer sector)",id),
 			       100,-1,1);
+	  diff1InnerY->SetDirectory(0);
+
+
 	  pol2InnerZ =new TH1F(Form("pol2par2inZ%03d",id),
 			       Form("2nd derivative from pol2 fit in Z for Laser beam %03d (inner sector)",id),
 			       100,-.002,.002);
+	  pol2InnerZ->SetDirectory(0);
+
 	  pol2OuterZ =new TH1F(Form("pol2par2outZ%03d",id),
 			       Form("2nd derivative from pol2 fit in Z for Laser beam %03d (outer sector)",id),
 			       100,-.005,.005);
+	  pol2OuterZ->SetDirectory(0);
 	  diff1InnerZ=new TH1F(Form("diff1inZ%03d",id),
 			       Form("diff of 1st derivative from pol1 and pol2 in Z fit for Laser beam %03d (inner sector)",id),
 			       100,-.02,.02);
+	  diff1InnerZ->SetDirectory(0);
 	  diff1OuterZ=new TH1F(Form("diff1outZ%03d",id),
 			       Form("diff of 1st derivative from pol1 and pol2 in Zfit for Laser beam %03d (outer sector)",id),
 			       100,-.03,.03);
+	  diff1OuterZ->SetDirectory(0);
       }
       pol2InnerYm =(TH1F*)cal->fPol2Par2InY.UncheckedAt(id);
       diff1InnerYm=(TH1F*)cal->fDiffPar1InY.UncheckedAt(id);
