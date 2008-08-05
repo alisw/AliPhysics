@@ -351,17 +351,7 @@ void AliEveTRDTrack::ProcessData()
   AliTRDtrackV1 *track = (AliTRDtrackV1*)GetUserData();
   AliInfo(Form("Clusters[%d]", track->GetNumberOfClusters()));
   
-  const AliTRDrecoParam *rec = 0x0;
-  if(!(rec = AliTRDReconstructor::GetRecoParam())){
-    AliWarning("TRD reco param missing.");
-    return;
-  } 
-  //  rec->SetPIDMethod(AliTRDrecoParam::kLQPID);
   track->CookPID();
   printf("PIDLQ : "); for(int is=0; is<AliPID::kSPECIES; is++) printf("%s[%5.2f] ", AliPID::ParticleName(is), 1.E2*track->GetPID(is)); printf("\n");
-
-  //  rec->SetPIDMethod(AliTRDrecoParam::kNNPID);
-  //  track->CookPID();
-  //  printf("PIDNN : "); for(int is=0; is<AliPID::kSPECIES; is++) printf("%s[%5.2f] ", AliPID::ParticleName(is), 1.E2*track->GetPID(is)); printf("\n");
 }
 
