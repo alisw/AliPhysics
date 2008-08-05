@@ -32,6 +32,8 @@ class AliAnalysisTask;
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
 
+#include "../../CORRFW/AliCFManager.h"
+
 #include "AliGenCocktailEventHeader.h"
 #include "AliGenHijingEventHeader.h"
 
@@ -52,9 +54,12 @@ AliAnalysisTaskMCEventPlane::AliAnalysisTaskMCEventPlane(const char *name) :
   AliAnalysisTask(name, ""), 
   fESD(0),
   fAOD(0),
+  fAnalysisType("MC"),
+  fCFManager1(NULL),
+  fCFManager2(NULL),
   fMc(0),
   fEventMaker(0),
-  fAnalysisType("MC")
+  fListHistos(NULL)
 {
   // Constructor
   cout<<"AliAnalysisTaskMCEventPlane::AliAnalysisTaskMCEventPlane(const char *name)"<<endl;
@@ -64,6 +69,30 @@ AliAnalysisTaskMCEventPlane::AliAnalysisTaskMCEventPlane(const char *name) :
   DefineInput(0, TChain::Class());
   // Output slot #0 writes into a TList container
   DefineOutput(0, TList::Class());  
+}
+
+//________________________________________________________________________
+AliAnalysisTaskMCEventPlane::AliAnalysisTaskMCEventPlane() : 
+  fESD(0),
+  fAOD(0),
+  fAnalysisType("MC"),
+  fCFManager1(NULL),
+  fCFManager2(NULL),
+  fMc(0),
+  fEventMaker(0),
+  fListHistos(NULL)
+{
+  // Constructor
+  cout<<"AliAnalysisTaskMCEventPlane::AliAnalysisTaskMCEventPlane()"<<endl;
+
+}
+
+//________________________________________________________________________
+AliAnalysisTaskMCEventPlane::~AliAnalysisTaskMCEventPlane()
+{
+
+  //destructor
+
 }
 
 //________________________________________________________________________
@@ -140,15 +169,15 @@ void AliAnalysisTaskMCEventPlane::CreateOutputObjects()
   fEventMaker = new AliFlowEventSimpleMaker();
   //Analyser
   fMc  = new AliFlowAnalysisWithMCEventPlane() ;
-
-  //output file
-  TString outputName = "outputFromMCEventPlaneAnalysis" ;
-  outputName += fAnalysisType.Data() ;
-  outputName += ".root" ;
-  fMc->SetHistFileName( outputName.Data() );
-    
+      
   fMc-> Init();
 
+  if (fMc->GetHistList()) {
+	fMc->GetHistList()->Print();
+	fListHistos = fMc->GetHistList();
+	fListHistos->Print();
+  }
+  else {Printf("ERROR: Could not retrieve histogram list"); }
 
 }
 
@@ -173,6 +202,9 @@ void AliAnalysisTaskMCEventPlane::Exec(Option_t *)
     Printf("ERROR: Could not retrieve MC event");
     return;
   }
+
+  fCFManager1->SetEventInfo(mcEvent);
+  fCFManager2->SetEventInfo(mcEvent);
 
   Printf("MC particles: %d", mcEvent->GetNumberOfTracks());
   
@@ -199,9 +231,9 @@ void AliAnalysisTaskMCEventPlane::Exec(Option_t *)
   
   if (fAnalysisType == "MC") {
     // analysis 
-    AliFlowEventSimple* fEvent = fEventMaker->FillTracks(mcEvent);
+    //AliFlowEventSimple* fEvent = fEventMaker->FillTracks(mcEvent);
+    AliFlowEventSimple* fEvent = fEventMaker->FillTracks(mcEvent,fCFManager1,fCFManager2);
     fMc->Make(fEvent,fRP);
-
     delete fEvent;
   }
 
@@ -213,7 +245,8 @@ void AliAnalysisTaskMCEventPlane::Exec(Option_t *)
     Printf("There are %d tracks in this event", fESD->GetNumberOfTracks());
     
     // analysis 
-    AliFlowEventSimple* fEvent = fEventMaker->FillTracks(fESD);
+    //AliFlowEventSimple* fEvent = fEventMaker->FillTracks(fESD);
+    AliFlowEventSimple* fEvent = fEventMaker->FillTracks(fESD,fCFManager1,fCFManager2);
     fMc->Make(fEvent,fRP);
     delete fEvent;
   }
@@ -226,7 +259,8 @@ void AliAnalysisTaskMCEventPlane::Exec(Option_t *)
     Printf("There are %d tracks in this event", fESD->GetNumberOfTracks());
 
     // analysis 
-    AliFlowEventSimple* fEvent = fEventMaker->FillTracks(fESD,mcEvent,0); //0 = kine from ESD, 1 = kine from MC
+    //AliFlowEventSimple* fEvent = fEventMaker->FillTracks(fESD,mcEvent,0); //0 = kine from ESD, 1 = kine from MC
+    AliFlowEventSimple* fEvent = fEventMaker->FillTracks(fESD, mcEvent, fCFManager1, fCFManager2, 0);
     fMc->Make(fEvent,fRP);
     delete fEvent;
   }
@@ -239,7 +273,8 @@ void AliAnalysisTaskMCEventPlane::Exec(Option_t *)
     Printf("There are %d tracks in this event", fESD->GetNumberOfTracks());
 
     // analysis 
-    AliFlowEventSimple* fEvent = fEventMaker->FillTracks(fESD,mcEvent,1); //0 = kine from ESD, 1 = kine from MC
+    //AliFlowEventSimple* fEvent = fEventMaker->FillTracks(fESD,mcEvent,1); //0 = kine from ESD, 1 = kine from MC
+    AliFlowEventSimple* fEvent = fEventMaker->FillTracks(fESD, mcEvent, fCFManager1, fCFManager2, 1);
     fMc->Make(fEvent,fRP);
     delete fEvent;
   }
@@ -252,10 +287,12 @@ void AliAnalysisTaskMCEventPlane::Exec(Option_t *)
     Printf("There are %d tracks in this event", fAOD->GetNumberOfTracks());
 
     // analysis 
-    AliFlowEventSimple* fEvent = fEventMaker->FillTracks(fAOD);
+    AliFlowEventSimple* fEvent = fEventMaker->FillTracks(fAOD);  //no CF yet!
     fMc->Make(fEvent,fRP);
     delete fEvent;
   }
+
+  //PostData(0,fListHistos); //here for CAF
 
 }      
 
@@ -264,8 +301,8 @@ void AliAnalysisTaskMCEventPlane::Terminate(Option_t *)
 {
   // Called once at the end of the query
   fMc->Finish();
-  PostData(0,fMc->GetHistFile());
+  PostData(0,fListHistos);
 
-  delete fMc;
-  delete fEventMaker;
+  //delete fMc;
+  //delete fEventMaker;
 }

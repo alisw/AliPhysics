@@ -27,14 +27,7 @@ class AliFlowLYZEventPlane {
   Double_t GetWR() const  {return this->fWR; }
   Double_t GetPsi() const {return this->fPsi; }
   
-  // input files
-  void	   SetFirstRunFileName(TString name) 	
-    { this->fFirstRunFileName = name ; }      // Sets input file name
-  TString  GetFirstRunFileName() const		
-    { return this->fFirstRunFileName ; }      // Gets output file name
-  void     SetFirstRunFile(TFile* file)         
-    { this->fFirstRunFile = file ; }          // Sets first run file
-
+  // input file
   void	   SetSecondRunFileName(TString name) 	
     { this->fSecondRunFileName = name ; }     // Sets input file name
   TString  GetSecondRunFileName() const		
@@ -43,15 +36,12 @@ class AliFlowLYZEventPlane {
     { this->fSecondRunFile = file ; }         // Sets second run file
 
 
-
  private:
   
   AliFlowLYZEventPlane(const AliFlowLYZEventPlane& aAnalysis);             // copy constructor
   AliFlowLYZEventPlane& operator=(const AliFlowLYZEventPlane& aAnalysis);  // assignment operator
   
-  TFile*   fFirstRunFile ;          //! pointer to file from first run
   TFile*   fSecondRunFile ;         //! pointer to file from second run
-  TString  fFirstRunFileName;       //!
   TString  fSecondRunFileName;      //!
 
   Double_t fWR;            // event weight

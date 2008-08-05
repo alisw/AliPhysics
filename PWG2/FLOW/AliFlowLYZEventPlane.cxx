@@ -38,9 +38,7 @@ ClassImp(AliFlowLYZEventPlane)
   //-----------------------------------------------------------------------
   
 AliFlowLYZEventPlane::AliFlowLYZEventPlane():
-  fFirstRunFile(0),
   fSecondRunFile(0),
-  fFirstRunFileName("noname.ESD"),
   fSecondRunFileName("noname.ESD"),
   fWR(0),            
   fPsi(0),
@@ -73,15 +71,11 @@ void AliFlowLYZEventPlane::Init()
     exit(-1);
   } else if (fSecondRunFile->IsOpen()){
     cout<<"----secondRunFile is open----"<<endl;
-    fSecondReDtheta = ( TProfile*)fSecondRunFile->Get("Second_FlowPro_ReDtheta_LYZ");
-    fSecondImDtheta = ( TProfile*)fSecondRunFile->Get("Second_FlowPro_ImDtheta_LYZ");
-  }
-  if (fFirstRunFile->IsZombie()){ //check if file exists
-    cout << "Error opening file, run first regular LYZ first run" << endl;
-    exit(-1);
-  } else if (fFirstRunFile->IsOpen()){
-    cout<<"----firstRunFile is open----"<<endl<<endl;
-    fFirstr0theta = (TProfile*)fFirstRunFile->Get("First_FlowPro_r0theta_LYZ");
+    //get List
+    TList* list = (TList*)fSecondRunFile->Get("cobj1");
+    fSecondReDtheta = ( TProfile*)list->FindObject("Second_FlowPro_ReDtheta_LYZ");
+    fSecondImDtheta = ( TProfile*)list->FindObject("Second_FlowPro_ImDtheta_LYZ");
+    fFirstr0theta   = ( TProfile*)list->FindObject("First_FlowPro_r0theta_LYZ");
   }
 
 }

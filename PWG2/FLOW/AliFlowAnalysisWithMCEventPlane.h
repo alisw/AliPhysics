@@ -22,6 +22,7 @@ class TProfile;
 class TProfile2D;
 class TObjArray;
 class TFile;
+class TList;
 class TComplex;
 class Riostream;
 
@@ -35,8 +36,7 @@ class AliFlowAnalysisWithMCEventPlane {
 
  public:
  
-   AliFlowAnalysisWithMCEventPlane();   //default constructor
- 
+   AliFlowAnalysisWithMCEventPlane();            //default constructor
    virtual  ~AliFlowAnalysisWithMCEventPlane();  //destructor
  
    void    Init();                             //defines variables and histograms
@@ -48,9 +48,7 @@ class AliFlowAnalysisWithMCEventPlane {
 
 
    // Output 
-   void	    SetHistFileName(TString name) 	{ this->fHistFileName = name ; } // Sets output file name
-   TString  GetHistFileName() const		{ return this->fHistFileName ; } // Gets output file name
-   TFile*   GetHistFile() const                 { return this->fHistFile ; }     // Gets output file
+   TList*   GetHistList() const                  { return this->fHistList ; }  
   
    
  private:
@@ -67,8 +65,7 @@ class AliFlowAnalysisWithMCEventPlane {
    Int_t        fEventNumber;       // event counter
    Bool_t       fDebug ;            //! flag for lyz analysis: more print statements
 
-   TString      fHistFileName;      //!
-   TFile*       fHistFile;          //!
+   TList*       fHistList;          //list to hold all output histograms  
     
    AliFlowCommonHist* fCommonHists;              //
    AliFlowCommonHistResults* fCommonHistsRes;    //

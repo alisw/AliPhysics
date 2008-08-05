@@ -10,11 +10,12 @@ void LookupWrite(TChain* chain, const char* target) ;
 // LYZ2  = Lee Yang Zeroes second run
 // LYZEP = Lee Yang Zeroes Event Plane
 // CUM   = Cumulants
-const TString method = "SP";
+// MCEP  = Flow calculated from the real MC event plane (only for simulated data)
+const TString method = "MCEP";
 
 //Type of analysis can be:
 // ESD, AOD, MC, ESDMC0, ESDMC1
-const TString type = "ESDMC1";
+const TString type = "ESD";
 
 
 //SETTING THE CUTS
@@ -199,16 +200,27 @@ void runAliAnalysisTaskFlow(Int_t nRuns = 10, const Char_t* dataDir="/data/alice
 
  
   if (method == "LYZ2"){  
-    // read the input files from the first run 
-    TString firstRunFileName = "outputLYZ1analysis" ;
-    firstRunFileName += type;
-    firstRunFileName += "_firstrun.root";
-    cout<<"The input file is "<<firstRunFileName.Data()<<endl;
-    TFile* fFirstRunFile = new TFile(firstRunFileName.Data(),"READ");
-    if(!fFirstRunFile || fFirstRunFile->IsZombie()) { cerr << " ERROR: NO First Run file... " << endl ; }
-    cout<<"input files read..."<<endl;
+    // read the input file from the first run 
+    TString inputFileName = "outputLYZ1analysis" ;
+    inputFileName += type;
+    inputFileName += "_firstrun.root";
+    cout<<"The input file is "<<inputFileName.Data()<<endl;
+    TFile* fInputFile = new TFile(inputFileName.Data(),"READ");
+    if(!fInputFile || fInputFile->IsZombie()) { cerr << " ERROR: NO First Run file... " << endl ; }
+    cout<<"input file read..."<<endl;
   }
 
+  if (method == "LYZEP") {
+    // read the input file from the second LYZ run
+    TString inputFileName = "outputLYZ2analysis" ;
+    inputFileName += type;
+    inputFileName += "_secondrun.root";
+    cout<<"The input file is "<<inputFileName.Data()<<endl;
+    TFile* fInputFile = new TFile(inputFileName.Data(),"READ");
+    if(!fInputFile || fInputFile->IsZombie()) { cerr << " ERROR: NO First Run file... " << endl ; }
+    cout<<"input file read..."<<endl;
+  }
+    
 
   //____________________________________________//
   // Make the analysis manager
@@ -216,11 +228,17 @@ void runAliAnalysisTaskFlow(Int_t nRuns = 10, const Char_t* dataDir="/data/alice
   
   if (type == "ESD"){
     AliVEventHandler* esdH = new AliESDInputHandler;
-    mgr->SetInputEventHandler(esdH); }
+    mgr->SetInputEventHandler(esdH); 
+    if (method == "MCEP") {
+      AliMCEventHandler *mc = new AliMCEventHandler();
+      mgr->SetMCtruthEventHandler(mc);}  }
    
   if (type == "AOD"){
     AliVEventHandler* aodH = new AliAODInputHandler;
-    mgr->SetInputEventHandler(aodH); }
+    mgr->SetInputEventHandler(aodH);
+    if (method == "MCEP") {
+      AliMCEventHandler *mc = new AliMCEventHandler();
+      mgr->SetMCtruthEventHandler(mc);}  }
   
   if (type == "MC" || type == "ESDMC0" || type == "ESDMC1"){
     AliVEventHandler* esdH = new AliESDInputHandler;
@@ -259,8 +277,8 @@ void runAliAnalysisTaskFlow(Int_t nRuns = 10, const Char_t* dataDir="/data/alice
   else if (method == "LYZEP"){
     AliAnalysisTaskLYZEventPlane *task1 = new AliAnalysisTaskLYZEventPlane("TaskLYZEventPlane");
     task1->SetAnalysisType(type);
-    //task1->SetCFManager1(cfmgr1);
-    //task1->SetCFManager2(cfmgr2);
+    task1->SetCFManager1(cfmgr1);
+    task1->SetCFManager2(cfmgr2);
     mgr->AddTask(task1);
   }
   else if (method == "CUM"){
@@ -270,13 +288,21 @@ void runAliAnalysisTaskFlow(Int_t nRuns = 10, const Char_t* dataDir="/data/alice
     //task1->SetCFManager2(cfmgr2);
     mgr->AddTask(task1);
   }
+  else if (method == "MCEP"){
+    AliAnalysisTaskMCEventPlane *task1 = new AliAnalysisTaskMCEventPlane("TaskMCEventPlane");
+    task1->SetAnalysisType(type);
+    task1->SetCFManager1(cfmgr1);
+    task1->SetCFManager2(cfmgr2);
+    mgr->AddTask(task1);
+  }
 
 
   // Create containers for input/output
   AliAnalysisDataContainer *cinput1 = 
     mgr->CreateContainer("cchain1",TChain::Class(),AliAnalysisManager::kInputContainer);
 
-  if (method == "LYZ2"){ AliAnalysisDataContainer *cinput2 = 
+  if (method == "LYZ2" || method == "LYZEP"){ 
+    AliAnalysisDataContainer *cinput2 = 
 		    mgr->CreateContainer("cobj2",TList::Class(),AliAnalysisManager::kInputContainer); } 
 
 
@@ -290,12 +316,15 @@ void runAliAnalysisTaskFlow(Int_t nRuns = 10, const Char_t* dataDir="/data/alice
   AliAnalysisDataContainer *coutput1 = 
     mgr->CreateContainer("cobj1", TList::Class(),AliAnalysisManager::kOutputContainer,outputName);
 
+
   //____________________________________________//
   mgr->ConnectInput(task1,0,cinput1);
-  if (method == "LYZ2") { mgr->ConnectInput(task1,1,cinput2); }
+  if (method == "LYZ2" || method == "LYZEP") { 
+    mgr->ConnectInput(task1,1,cinput2); }
   mgr->ConnectOutput(task1,0,coutput1);
 
-  if (method == "LYZ2"){ cinput2->SetData(fFirstRunFile);}
+  if (method == "LYZ2" || method == "LYZEP"){ 
+    cinput2->SetData(fInputFile);}
 
   if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();

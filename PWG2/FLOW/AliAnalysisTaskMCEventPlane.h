@@ -13,16 +13,20 @@
 
 class AliESDEvent;
 class AliAODEvent;
+class AliCFManager;
 class AliFlowAnalysisWithMCEventPlane;
 class AliFlowEventSimpleMaker;
+class TList;
 
 #include "TString.h"
 #include "AliAnalysisTask.h"
 
 class AliAnalysisTaskMCEventPlane : public AliAnalysisTask {
  public:
-  AliAnalysisTaskMCEventPlane(const char *name = "AliAnalysisTaskMCEventPlane");
-  virtual ~AliAnalysisTaskMCEventPlane() {}
+
+  AliAnalysisTaskMCEventPlane();
+  AliAnalysisTaskMCEventPlane(const char *name);
+  virtual ~AliAnalysisTaskMCEventPlane();
   
   virtual void   ConnectInputData(Option_t *);
   virtual void   CreateOutputObjects();
@@ -32,6 +36,11 @@ class AliAnalysisTaskMCEventPlane : public AliAnalysisTask {
   void SetAnalysisType(TString type) { this->fAnalysisType = type; }
   TString GetAnalysisType() const    { return this->fAnalysisType; }
   
+  void           SetCFManager1(AliCFManager* cfmgr) {this->fCFManager1 = cfmgr; } 
+  AliCFManager*  GetCFManager1()               {return this->fCFManager1; }
+  void           SetCFManager2(AliCFManager* cfmgr) {this->fCFManager2 = cfmgr; } 
+  AliCFManager*  GetCFManager2()               {return this->fCFManager2; }
+
  private:
  
   AliAnalysisTaskMCEventPlane(const AliAnalysisTaskMCEventPlane& aAnalysis);
@@ -39,9 +48,13 @@ class AliAnalysisTaskMCEventPlane : public AliAnalysisTask {
   
   AliESDEvent *fESD;                      // ESD object
   AliAODEvent *fAOD;                      // AOD object
+  TString fAnalysisType;                  // can be MC, ESD or AOD
+  AliCFManager*    fCFManager1;           // correction framework manager
+  AliCFManager*    fCFManager2;           // correction framework manager
   AliFlowAnalysisWithMCEventPlane* fMc;   // MC EP analysis object
   AliFlowEventSimpleMaker* fEventMaker;   // FlowEventSimple maker object
-  TString fAnalysisType;                  // can be MC, ESD or AOD
+  
+  TList*           fListHistos;           // collection of output
 
   ClassDef(AliAnalysisTaskMCEventPlane, 1); // example of analysis
 };
