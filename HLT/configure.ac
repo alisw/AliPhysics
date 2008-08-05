@@ -709,12 +709,13 @@ else
     CPPFLAGS="$save_CPPFLAGS $ALIROOT_CPPFLAGS -I$ALICE_ROOT/TRD"
     # AliTRDclusterizer::SetRawVersion() requires >v4-07-Release
     # changed to AliTRDrecoParam::SetSeedingOn() due to revision 26327, Mon Jun 2 2008
-    AC_MSG_CHECKING([for required functions in AliTRDrecoParam])
-    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <AliTRDrecoParam.h>], 
-                                       [AliTRDrecoParam p;
-				       p.SetSeeding(0)])],
+    # changed to AliTRDReconstructor::SetStreamLevel() due to revision 27797, Tue Aug 5 2008
+    AC_MSG_CHECKING([for required functions in AliTRDReconstructor])
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <AliTRDReconstructor.h>], 
+                                       [AliTRDReconstructor r;
+				       r.SetStreamLevel(0)])],
                                        [], 
-  				       [enable_trd="no...requires.AliRoot>v4-13-Release"])
+  				       [enable_trd="no...requires.AliRoot>v4-14-Release"])
     AC_MSG_RESULT([$enable_trd])       
     AC_LANG_POP(C++)
     CPPFLAGS="$save_CPPFLAGS"

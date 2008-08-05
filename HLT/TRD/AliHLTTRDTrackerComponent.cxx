@@ -189,11 +189,13 @@ int AliHLTTRDTrackerComponent::DoInit( int argc, const char** argv )
       fGeoManager = (TGeoManager *)fGeometryFile->Get("Geometry");
       //fTracker = new AliTRDtrackerHLT(fGeometryFile);
      	AliTRDrecoParam *fPars = AliTRDrecoParam::GetLowFluxParam();
-			fPars->SetSeeding(kTRUE);
-			fPars->SetStreamLevel(0);
-			AliTRDReconstructor reconstructor; reconstructor.SetRecoParam(fPars);
+			//AB 10.Jul.08 - Memory leak - please consider a better strategy on HLT
+      AliTRDReconstructor *fReconstructor = new AliTRDReconstructor();
+      fReconstructor->SetRecoParam(fPars);
+			fReconstructor->SetOption("sa,!cw");
+			fReconstructor->SetStreamLevel(0);
       fTracker = new AliTRDtracker(fGeometryFile);
-      //fTracker = new AliTRDtracker(fGeometryFile);
+      fTracker->SetReconstructor(fReconstructor);
     }
   else
     {

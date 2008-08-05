@@ -16,7 +16,7 @@ class AliCDBManager;
 class AliMagFMaps;
 class AliTRDtrackerV1;
 class AliTRDrecoParam;
-
+class AliTRDReconstructor;
 /**
  * @class AliHLTTRDTrackerComponent
  * @brief A TRDTrackerV1 HLT processing component. 
@@ -71,6 +71,7 @@ class AliHLTTRDTrackerV1Component : public AliHLTProcessor
 	TFile *fGeometryFile; //! // Pointer to the geom root file
 	TGeoManager *fGeoManager; //! Pointer to geometry manager 
 
+	AliTRDReconstructor *fReconstructor; //!
 	AliTRDtrackerV1 *fTracker;//! Offline-pure/HLT tracker V1
 	AliTRDrecoParam *fRecoParam; //! Offline reco params
 

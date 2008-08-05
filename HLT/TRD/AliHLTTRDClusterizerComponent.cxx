@@ -59,6 +59,7 @@ AliHLTTRDClusterizerComponent::AliHLTTRDClusterizerComponent()
   : AliHLTProcessor()
   , fOutputPercentage(100) // By default we copy to the output exactly what we got as input  
   , fStrorageDBpath("local://$ALICE_ROOT")
+  , fReconstructor(NULL)
   , fClusterizer(NULL)
   , fRecoParam(NULL)
   , fCDB(NULL)
@@ -248,7 +249,14 @@ int AliHLTTRDClusterizerComponent::DoInit( int argc, const char** argv )
       return -1;
     }
 
-  AliTRDReconstructor reconstructor; reconstructor.SetRecoParam(fRecoParam);
+  //AliTRDReconstructor reconstructor; reconstructor.SetRecoParam(fRecoParam);
+  // Alex Bercuci - quick fix on 10.Jul.08
+  // HLT should decide how they get the recoParam
+  // and who owns the TRD reconstructor
+  fReconstructor = new AliTRDReconstructor();
+  fReconstructor->SetRecoParam(fRecoParam);
+  fReconstructor->SetStreamLevel(0, AliTRDReconstructor::kClusterizer); // default value
+  fReconstructor->SetOption("!cw");
 
   // init the raw data type to be used...
   // the switch here will become obsolete as soon as the data structures is fixed 
@@ -298,6 +306,8 @@ int AliHLTTRDClusterizerComponent::DoInit( int argc, const char** argv )
   fMemReader = new AliRawReaderMemory;
 
   fClusterizer = new AliTRDclusterizerHLT("TRDCclusterizer", "TRDCclusterizer");
+  // AB 10.Jul.08
+  fClusterizer->SetReconstructor(fReconstructor);
   fClusterizer->SetRawVersion(iRawDataVersion);
   fClusterizer->InitClusterTree();
   return 0;
@@ -310,6 +320,9 @@ int AliHLTTRDClusterizerComponent::DoDeinit()
   fMemReader = 0;
   delete fClusterizer;
   fClusterizer = 0;
+  // AB 10.Jul.08
+  delete fReconstructor;
+  fReconstructor = 0x0;
   return 0;
 
   if (fGeometryFile)

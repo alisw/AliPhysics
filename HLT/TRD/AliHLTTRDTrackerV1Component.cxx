@@ -59,6 +59,7 @@ AliHLTTRDTrackerV1Component::AliHLTTRDTrackerV1Component()
   , fGeometryFileName("")
   , fGeometryFile(NULL)
   , fGeoManager(NULL)
+  , fReconstructor(NULL)
   , fTracker(NULL)
   , fRecoParam(NULL)
 {
@@ -307,12 +308,18 @@ int AliHLTTRDTrackerV1Component::DoInit( int argc, const char** argv )
     }
 
   // this is important in case we want to ::PropagateBack - see the TrackerV1.cxx
-  fRecoParam->SetSeeding(kTRUE);
+  //fRecoParam->SetSeeding(kTRUE);
   // no debug stream -> no debug files! on HLT
-  fRecoParam->SetStreamLevel(0);
+  //fRecoParam->SetStreamLevel(0);
   
-  AliTRDReconstructor reconstructor; reconstructor.SetRecoParam(fRecoParam);
-    
+  //AliTRDReconstructor reconstructor; reconstructor.SetRecoParam(fRecoParam);
+  // AB 10.Jul.08
+  // temporary until recoParam in the OCDB
+  fReconstructor = new AliTRDReconstructor();
+  fReconstructor->SetRecoParam(fRecoParam);
+  fReconstructor->SetStreamLevel(0); // default value
+  fReconstructor->SetOption("sa,!cw");
+
   // geometry:
   // for some unknown at this point reason (30th of April 2008)
   // the TrackerV1 initializes new TRDgeometry in the constructor
@@ -333,6 +340,7 @@ int AliHLTTRDTrackerV1Component::DoInit( int argc, const char** argv )
   
   // create the tracker
   fTracker = new AliTRDtrackerV1();
+  fTracker->SetReconstructor(fReconstructor);
   HLTDebug("TRDTracker at 0x%x", fTracker);
 
   if (fTracker == 0)
@@ -356,6 +364,10 @@ int AliHLTTRDTrackerV1Component::DoDeinit()
   delete fTracker;
   fTracker = 0;
   
+  // AB 10.Jul.08
+  delete fReconstructor;
+  fReconstructor = 0x0;
+
   if (fGeometryFile)
     {
       fGeometryFile->Close();
