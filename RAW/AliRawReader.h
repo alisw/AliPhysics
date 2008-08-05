@@ -18,6 +18,7 @@
 #include "AliRawDataErrorLog.h"
 #include "AliRawDataHeader.h"
 
+class TChain;
 class AliRawEventHeaderBase;
 
 class AliRawReader: public TObject {
@@ -119,6 +120,8 @@ class AliRawReader: public TObject {
 
     virtual Bool_t   NextEvent() = 0;
     virtual Bool_t   RewindEvents() = 0;
+    virtual Bool_t   GotoEvent(Int_t event);
+    virtual Int_t    GetEventIndex() const { return -1; }
 
     enum {kErrMagic=1, kErrNoDataHeader=2, 
 	  kErrSize=4, kErrOutOfBounds=8};
@@ -152,6 +155,7 @@ class AliRawReader: public TObject {
     // ESD tree inside AliReconstruction. For the moment it will be
     // activated only for AliRawReaderDateOnline.
     virtual Bool_t   UseAutoSaveESD() const { return kFALSE; }
+    virtual TChain*  GetChain() const { return NULL; }
 
   protected :
     virtual void     SelectEvents(Int_t type, ULong64_t triggerMask = 0);

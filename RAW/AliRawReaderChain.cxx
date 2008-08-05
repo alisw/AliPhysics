@@ -56,8 +56,7 @@ AliRawReaderChain::AliRawReaderChain(const char* listFileName) :
     return;
   }
 
-  fChain->SetBranchStatus("*",0);
-  fChain->SetBranchStatus("rawevent",1);
+  fChain->SetBranchStatus("*",1);
 
   fEvent = new AliRawEvent;
   fChain->SetBranchAddress("rawevent", &fEvent);
@@ -76,8 +75,20 @@ AliRawReaderChain::AliRawReaderChain(TFileCollection *collection) :
     return;
   }
 
-  fChain->SetBranchStatus("*",0);
-  fChain->SetBranchStatus("rawevent",1);
+  fChain->SetBranchStatus("*",1);
+
+  fEvent = new AliRawEvent;
+  fChain->SetBranchAddress("rawevent", &fEvent);
+}
+
+AliRawReaderChain::AliRawReaderChain(TChain *chain) :
+  AliRawReaderRoot(),
+  fChain(chain)
+{
+// create raw-reader objects which takes as an input a root chain
+// from a root file collection
+
+  fChain->SetBranchStatus("*",1);
 
   fEvent = new AliRawEvent;
   fChain->SetBranchAddress("rawevent", &fEvent);
@@ -119,7 +130,10 @@ Bool_t AliRawReaderChain::NextEvent()
   do {
     delete fEvent;
     fEvent = new AliRawEvent;
-    if (fChain->GetEntry(fEventIndex+1) <= 0)
+    TBranch *branch = fChain->GetBranch("rawevent");
+    if (!branch)
+      return kFALSE;
+    if (branch->GetEntry(fEventIndex+1) <= 0)
       return kFALSE;
     fEventIndex++;
   } while (!IsEventSelected());
@@ -135,5 +149,25 @@ Bool_t AliRawReaderChain::RewindEvents()
   delete fEvent;
   fEvent = new AliRawEvent;
   fEventNumber = -1;
+  return Reset();
+}
+
+Bool_t  AliRawReaderChain::GotoEvent(Int_t event)
+{
+  // go to a particular event
+  // Uses the absolute event index inside the
+  // chain with raw data
+
+  if (!fChain || !fChain->GetListOfFiles()->GetEntriesFast()) return kFALSE;
+
+  delete fEvent;
+  fEvent = new AliRawEvent;
+  TBranch *branch = fChain->GetBranch("rawevent");
+  if (!branch)
+    return kFALSE;
+  if (branch->GetEntry(event) <= 0)
+    return kFALSE;
+  fEventIndex = event;
+  fEventNumber++;
   return Reset();
 }

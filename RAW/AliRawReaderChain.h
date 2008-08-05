@@ -19,12 +19,16 @@ class AliRawReaderChain: public AliRawReaderRoot {
     AliRawReaderChain();
     AliRawReaderChain(const char* listFileName);
     AliRawReaderChain(TFileCollection *collection);
+    AliRawReaderChain(TChain *chain);
     AliRawReaderChain(const AliRawReaderChain& rawReader);
     AliRawReaderChain& operator = (const AliRawReaderChain& rawReader);
     virtual ~AliRawReaderChain();
 
     virtual Bool_t   NextEvent();
     virtual Bool_t   RewindEvents();
+    virtual Bool_t   GotoEvent(Int_t event);
+
+    virtual TChain*  GetChain() const { return fChain; }
 
   protected :
     TChain*          fChain;        // root chain with raw events

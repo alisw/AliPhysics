@@ -481,6 +481,11 @@ Bool_t AliRawReader::ReadNextChar(UChar_t& data)
   return kTRUE;
 }
 
+Bool_t  AliRawReader::GotoEvent(Int_t event)
+{
+  Error("GotoEvent","Method not implemented! Nothing done");
+  return kFALSE;
+}
 
 Int_t AliRawReader::CheckData() const
 {

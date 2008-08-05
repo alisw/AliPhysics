@@ -57,6 +57,8 @@ class AliRawReaderRoot: public AliRawReader {
 
     virtual Bool_t   NextEvent();
     virtual Bool_t   RewindEvents();
+    virtual Bool_t   GotoEvent(Int_t event);
+    virtual Int_t    GetEventIndex() const { return fEventIndex; }
 
     virtual Int_t    CheckData() const;
 

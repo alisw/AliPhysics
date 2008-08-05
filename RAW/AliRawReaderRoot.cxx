@@ -542,6 +542,23 @@ Bool_t AliRawReaderRoot::RewindEvents()
   return Reset();
 }
 
+Bool_t  AliRawReaderRoot::GotoEvent(Int_t event)
+{
+  // go to a particular event
+  // Uses the absolute event index inside the
+  // raw-data file
+
+  if (!fBranch) return kFALSE;
+
+  delete fEvent;
+  fEvent = new AliRawEvent;
+  fBranch->SetAddress(&fEvent);
+  if (fBranch->GetEntry(event) <= 0)
+    return kFALSE;
+  fEventIndex = event;
+  fEventNumber++;
+  return Reset();
+}
 
 Int_t AliRawReaderRoot::CheckData() const
 {
