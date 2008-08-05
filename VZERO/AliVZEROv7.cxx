@@ -2104,8 +2104,30 @@ Int_t AliVZEROv7::GetCellId(Int_t *vol, Float_t *hits)
     }
     fCellId   = index;           
   } else if (hits[2] > 0.0) {
-    index = (index - 7 + 48) + ( ( ringNumber - 1 ) * 8);
-    fCellId   = index;
+    //    cout << " vol[0] = " << vol[0] << " copy : " << vol[1] 
+    //	 << " called " << gMC->VolName(vol[0]) << endl;
+    // cout << " vol[2] = " << vol[2] << " copy : " << vol[3] 
+    //	 << " called " << gMC->VolName(vol[2]) << endl;
+    if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0L1")) fCellId = vol[1]+47;
+    if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0L2")) fCellId = 8+vol[1]+47;
+    if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0L3")) fCellId = 16+vol[1]+47;
+    if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0L4")) fCellId = 24+vol[1]+47;
+    if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0L15")) fCellId = 48+4;
+    if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0L16")) fCellId = 48+5;
+    if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0L17")) fCellId = 48+6;
+    if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0L18")) fCellId = 48+7;
+    if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0L25")) fCellId = 8+48+4;
+    if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0L26")) fCellId = 8+48+5;
+    if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0L27")) fCellId = 8+48+6;
+    if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0L28")) fCellId = 8+48+7;
+    if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0L35")) fCellId = 16+48+4;
+    if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0L36")) fCellId = 16+48+5;
+    if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0L37")) fCellId = 16+48+6;
+    if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0L38")) fCellId = 16+48+7;
+    if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0L45")) fCellId = 24+48+4;
+    if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0L46")) fCellId = 24+48+5;
+    if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0L47")) fCellId = 24+48+6;
+    if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0L48")) fCellId = 24+48+7;
   }
 
   return fCellId;
