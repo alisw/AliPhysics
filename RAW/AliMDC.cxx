@@ -319,7 +319,9 @@ Int_t AliMDC::ProcessEvent(void* event, Bool_t isIovecArray)
       if (header->Get("Type") == AliRawEventHeaderBase::kPhysicsEvent ||
 	  header->Get("Type") == AliRawEventHeaderBase::kCalibrationEvent ||
 	  header->Get("Type") == AliRawEventHeaderBase::kSystemSoftwareTriggerEvent ||
-	  header->Get("Type") == AliRawEventHeaderBase::kDetectorSoftwareTriggerEvent) {
+	  header->Get("Type") == AliRawEventHeaderBase::kDetectorSoftwareTriggerEvent ||
+	  header->Get("Type") == AliRawEventHeaderBase::kStartOfData ||
+	  header->Get("Type") == AliRawEventHeaderBase::kEndOfData) {
 	while (rawSize > 0) {
 	  AliRawEquipment &equipment = *subEvent->NextEquipment();
 	  AliRawEquipmentHeader &equipmentHeader = 
@@ -367,7 +369,9 @@ Int_t AliMDC::ProcessEvent(void* event, Bool_t isIovecArray)
     if (header->Get("Type") == AliRawEventHeaderBase::kPhysicsEvent ||
 	header->Get("Type") == AliRawEventHeaderBase::kCalibrationEvent ||
 	header->Get("Type") == AliRawEventHeaderBase::kSystemSoftwareTriggerEvent ||
-	header->Get("Type") == AliRawEventHeaderBase::kDetectorSoftwareTriggerEvent) {
+	header->Get("Type") == AliRawEventHeaderBase::kDetectorSoftwareTriggerEvent ||
+	header->Get("Type") == AliRawEventHeaderBase::kStartOfData ||
+	header->Get("Type") == AliRawEventHeaderBase::kEndOfData) {
       Bool_t result = kFALSE;
       for (Int_t iFilter = 0; iFilter < fFilters.GetEntriesFast(); iFilter++) {
 	AliFilter* filter = (AliFilter*) fFilters[iFilter];
