@@ -90,52 +90,99 @@ Bool_t AliHMPIDPreprocessor::ProcDcs(TMap* pMap)
   TObjArray arQthre(42);       arQthre.SetOwner(kTRUE);     //42 Qthre=f(time) one per sector
   
   AliDCSValue *pVal; Int_t cnt=0;
+  
+  Double_t xP,yP;
 
-// evaluate environment pressure
-  TObjArray *pPenv=(TObjArray*)pMap->GetValue("HMP_DET/HMP_ENV/HMP_ENV_PENV.actual.value");TIter nextPenv(pPenv);
-  TGraph *pGrPenv=new TGraph; cnt=0;
-  while((pVal=(AliDCSValue*)nextPenv())) pGrPenv->SetPoint(cnt++,pVal->GetTimeStamp(),pVal->GetFloat());        //P env
-  if( cnt!=0) pGrPenv->Fit(new TF1("Penv","1000+x*[0]",fStartTime,fEndTime),"Q");                               //clm: if no DCS map entry don't fit
-  delete pGrPenv;
+// evaluate Environment Pressure
+  
+  TObjArray *pPenv=(TObjArray*)pMap->GetValue("HMP_DET/HMP_ENV/HMP_ENV_PENV.actual.value");
+  if(pPenv->GetEntries()) {
+    TIter nextPenv(pPenv);
+    TGraph *pGrPenv=new TGraph; cnt=0;
+    while((pVal=(AliDCSValue*)nextPenv())) pGrPenv->SetPoint(cnt++,pVal->GetTimeStamp(),pVal->GetFloat());        //P env
+    if( cnt==1) {
+      pGrPenv->GetPoint(0,xP,yP);
+      new TF1("Penv",Form("%f",yP),fStartTime,fEndTime);
+    } else {
+      pGrPenv->Fit(new TF1("Penv","1000+x*[0]",fStartTime,fEndTime),"Q");
+    }
+    delete pGrPenv;
+  } else {AliWarning(" No Data Points from HMP_ENV_PENV.actual.value!");return kFALSE;}
     
-  for(Int_t iCh=0;iCh<7;iCh++){                   
 // evaluate Pressure
+  
+  for(Int_t iCh=0;iCh<7;iCh++){                   
     TObjArray *pP =(TObjArray*)pMap->GetValue(Form("HMP_DET/HMP_MP%i/HMP_MP%i_GAS/HMP_MP%i_GAS_PMWPC.actual.value",iCh,iCh,iCh));
-    TIter nextP(pP);    
-    TGraph *pGrP=new TGraph; cnt=0; 
-    while((pVal=(AliDCSValue*)nextP())) pGrP->SetPoint(cnt++,pVal->GetTimeStamp(),pVal->GetFloat());            //P
-    if( cnt!=0) pGrP->Fit(new TF1(Form("P%i",iCh),"[0] + x*[1]",fStartTime,fEndTime),"Q");                        //clm: if no DCS map entry don't fit
-    delete pGrP;
+    if(pP->GetEntries()) {
+      TIter nextP(pP);    
+      TGraph *pGrP=new TGraph; cnt=0; 
+      while((pVal=(AliDCSValue*)nextP())) pGrP->SetPoint(cnt++,pVal->GetTimeStamp(),pVal->GetFloat());            //P
+      if( cnt==1) {
+        pGrP->GetPoint(0,xP,yP);
+        new TF1(Form("P%i",iCh),Form("%f",yP),fStartTime,fEndTime);
+      } else {
+        pGrP->Fit(new TF1(Form("P%i",iCh),"[0] + x*[1]",fStartTime,fEndTime),"Q");
+      }
+      delete pGrP;
+    } else {AliWarning(" No Data Points from HMP_MP0-6_GAS_PMWPC.actual.value!");return kFALSE;}
+    
+// evaluate High Voltage
     
     for(Int_t iSec=0;iSec<6;iSec++){
-// evaluate High Voltage
-     TObjArray *pHV=(TObjArray*)pMap->GetValue(Form("HMP_DET/HMP_MP%i/HMP_MP%i_PW/HMP_MP%i_SEC%i/HMP_MP%i_SEC%i_HV.actual.vMon",iCh,iCh,iCh,iSec,iCh,iSec));TIter nextHV(pHV);
-     TGraph *pGrHV=new TGraph; cnt=0;
-     while((pVal=(AliDCSValue*)nextHV())) pGrHV->SetPoint(cnt++,pVal->GetTimeStamp(),pVal->GetFloat());            //HV
-     if( cnt!=0) pGrHV->Fit(new TF1(Form("HV%i_%i",iCh,iSec),"[0]+x*[1]",fStartTime,fEndTime),"Q");               //clm: if no DCS map entry don't fit
-     delete pGrHV;
+      TObjArray *pHV=(TObjArray*)pMap->GetValue(Form("HMP_DET/HMP_MP%i/HMP_MP%i_PW/HMP_MP%i_SEC%i/HMP_MP%i_SEC%i_HV.actual.vMon",iCh,iCh,iCh,iSec,iCh,iSec));
+      if(pHV->GetEntries()) {
+        TIter nextHV(pHV);
+        TGraph *pGrHV=new TGraph; cnt=0;
+        while((pVal=(AliDCSValue*)nextHV())) pGrHV->SetPoint(cnt++,pVal->GetTimeStamp(),pVal->GetFloat());            //HV
+        if( cnt==1) {
+          pGrHV->GetPoint(0,xP,yP);
+          new TF1(Form("HV%i_%i",iCh,iSec),Form("%f",yP),fStartTime,fEndTime);               
+        } else {
+          pGrHV->Fit(new TF1(Form("HV%i_%i",iCh,iSec),"[0]+x*[1]",fStartTime,fEndTime),"Q");               
+        }
+        delete pGrHV;
+      } else {AliWarning(" No Data Points from HMP_MP0-6_SEC0-5_HV.actual.vMon!");return kFALSE;}
+     
 // evaluate Qthre
-     arQthre.AddAt(new TF1(Form("HMP_QthreC%iS%i",iCh,iSec),
-         Form("3*10^(3.01e-3*HV%i_%i - 4.72)+170745848*exp(-(P%i+Penv)*0.0162012)",iCh,iSec,iCh),fStartTime,fEndTime),6*iCh+iSec);
+     
+      arQthre.AddAt(new TF1(Form("HMP_QthreC%iS%i",iCh,iSec),
+          Form("3*10^(3.01e-3*HV%i_%i - 4.72)+170745848*exp(-(P%i+Penv)*0.0162012)",iCh,iSec,iCh),fStartTime,fEndTime),6*iCh+iSec);
     }
     
-// evaluate Temperatures    
+// evaluate Temperatures: in and out of the radiators    
+    
+    // T in
     for(Int_t iRad=0;iRad<3;iRad++){
-      TObjArray *pT1=(TObjArray*)pMap->GetValue(Form("HMP_DET/HMP_MP%i/HMP_MP%i_LIQ_LOOP.actual.sensors.Rad%iIn_Temp",iCh,iCh,iRad));  TIter nextT1(pT1);//Tin
-      TObjArray *pT2=(TObjArray*)pMap->GetValue(Form("HMP_DET/HMP_MP%i/HMP_MP%i_LIQ_LOOP.actual.sensors.Rad%iOut_Temp",iCh,iCh,iRad)); TIter nextT2(pT2);//Tout      
-      
-      TGraph *pGrT1=new TGraph; cnt=0;  while((pVal=(AliDCSValue*)nextT1())) pGrT1->SetPoint(cnt++,pVal->GetTimeStamp(),pVal->GetFloat()); //T inlet
-      if(cnt!=0) pGrT1->Fit(new TF1(Form("Tin%i%i",iCh,iRad),"[0]+[1]*x+[2]*sin([3]*x)",fStartTime,fEndTime),"Q");       //fit Tin graph -- clm: if DCS entry
-      
-      TGraph *pGrT2=new TGraph; cnt=0;  while((pVal=(AliDCSValue*)nextT2())) pGrT2->SetPoint(cnt++,pVal->GetTimeStamp(),pVal->GetFloat()); //T outlet 
-      if(cnt!=0) pGrT2->Fit(new TF1(Form("Tou%i%i",iCh,iRad),"[0]+[1]*x+[2]*sin([3]*x)",fStartTime,fEndTime),"Q");       //fit Tout graph -- clm: if DCS entry
-            
-      delete pGrT1;  delete pGrT2;
+      TObjArray *pT1=(TObjArray*)pMap->GetValue(Form("HMP_DET/HMP_MP%i/HMP_MP%i_LIQ_LOOP.actual.sensors.Rad%iIn_Temp",iCh,iCh,iRad));  
+      if(pT1->GetEntries()) {
+        TIter nextT1(pT1);//Tin
+        TGraph *pGrT1=new TGraph; cnt=0;  while((pVal=(AliDCSValue*)nextT1())) pGrT1->SetPoint(cnt++,pVal->GetTimeStamp(),pVal->GetFloat()); //T inlet
+        if(cnt==1) { 
+          pGrT1->GetPoint(0,xP,yP);
+          new TF1(Form("Tin%i%i",iCh,iRad),Form("%f",yP),fStartTime,fEndTime);
+        } else {
+          pGrT1->Fit(new TF1(Form("Tin%i%i",iCh,iRad),"[0]+[1]*x+[2]*sin([3]*x)",fStartTime,fEndTime),"Q");
+        }
+        delete pGrT1;
+      } else {AliWarning(" No Data Points from HMP_MP0-6_LIQ_LOOP.actual.sensors.Rad0-2In_Temp!");return kFALSE;}
+    // T out
+      TObjArray *pT2=(TObjArray*)pMap->GetValue(Form("HMP_DET/HMP_MP%i/HMP_MP%i_LIQ_LOOP.actual.sensors.Rad%iOut_Temp",iCh,iCh,iRad)); 
+      if(pT2->GetEntries()) {
+        TIter nextT2(pT2);//Tout      
+        TGraph *pGrT2=new TGraph; cnt=0;  while((pVal=(AliDCSValue*)nextT2())) pGrT2->SetPoint(cnt++,pVal->GetTimeStamp(),pVal->GetFloat()); //T outlet 
+        if(cnt==1) { 
+          pGrT2->GetPoint(0,xP,yP);
+          new TF1(Form("Tou%i%i",iCh,iRad),Form("%f",yP),fStartTime,fEndTime);
+        } else {
+          pGrT2->Fit(new TF1(Form("Tou%i%i",iCh,iRad),"[0]+[1]*x+[2]*sin([3]*x)",fStartTime,fEndTime),"Q");
+        }
+        delete pGrT2;
+      } else {AliWarning(" No Data Points from HMP_MP0-6_LIQ_LOOP.actual.sensors.Rad0-2Out_Temp!");return kFALSE;}
 	
-	    
-//      arTmean.Add(pRadTempF);  
 // evaluate Mean Refractive Index
+      
       arNmean.AddAt(new TF1(Form("HMP_Nmean%i-%i",iCh,iRad),"1.292",fStartTime,fEndTime),3*iCh+iRad); //Nmean=f(t)
+      
     }//radiators loop
   }//chambers loop
   
@@ -225,7 +272,3 @@ Double_t ProcTrans()
   return eMean;
 }   
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 
-
-
-
