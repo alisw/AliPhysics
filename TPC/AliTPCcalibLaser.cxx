@@ -939,39 +939,39 @@ void AliTPCcalibLaser::RefitLaserJW(Int_t id){
       if (!pol2InnerY){
 	  pol2InnerY =new TH1F(Form("pol2par2inY%03d",id),
 			       Form("2nd derivative from pol2 fit in Y for Laser beam %03d (inner sector)",id),
-			       100,-.005,.005);
+			       500,-.005,.005);
 	  pol2InnerY->SetDirectory(0);
 	  pol2OuterY =new TH1F(Form("pol2par2outY%03d",id),
 			       Form("2nd derivative from pol2 fit in Y for Laser beam %03d (outer sector)",id),
-			       100,0.01,.01);
+			       500,0.01,.01);
 	  pol2OuterY->SetDirectory(0);
 
 	  diff1InnerY=new TH1F(Form("diff1inY%03d",id),
 			       Form("diff of 1st derivative from pol1 and pol2 in Y fit for Laser beam %03d (inner sector)",id),
-			       100,-.5,.5);
+			       500,-.5,.5);
 	  diff1InnerY->SetDirectory(0);
 
 	  diff1OuterY=new TH1F(Form("diff1outY%03d",id),
 			       Form("diff of 1st derivative from pol1 and pol2 in Yfit for Laser beam %03d (outer sector)",id),
-			       100,-1,1);
+			       500,-1,1);
 	  diff1OuterY->SetDirectory(0);
 
 	  pol2InnerZ =new TH1F(Form("pol2par2inZ%03d",id),
 			       Form("2nd derivative from pol2 fit in Z for Laser beam %03d (inner sector)",id),
-			       100,-.002,.002);
+			       500,-.002,.002);
 	  pol2InnerZ->SetDirectory(0);
 
 	  pol2OuterZ =new TH1F(Form("pol2par2outZ%03d",id),
 			       Form("2nd derivative from pol2 fit in Z for Laser beam %03d (outer sector)",id),
-			       100,-.005,.005);
+			       500,-.005,.005);
 	  pol2OuterZ->SetDirectory(0);
 	  diff1InnerZ=new TH1F(Form("diff1inZ%03d",id),
 			       Form("diff of 1st derivative from pol1 and pol2 in Z fit for Laser beam %03d (inner sector)",id),
-			       100,-.02,.02);
+			       500,-.02,.02);
 	  diff1InnerZ->SetDirectory(0);
 	  diff1OuterZ=new TH1F(Form("diff1outZ%03d",id),
 			       Form("diff of 1st derivative from pol1 and pol2 in Zfit for Laser beam %03d (outer sector)",id),
-			       100,-.03,.03);
+			       500,-.03,.03);
 	  diff1OuterZ->SetDirectory(0);
           //add
 	  fPol2Par2InY.AddAt(pol2InnerY,id);
@@ -1463,38 +1463,38 @@ Long64_t AliTPCcalibLaser::Merge(TCollection *li) {
       if (!pol2InnerY){
           pol2InnerY =new TH1F(Form("pol2par2inY%03d",id),
 			       Form("2nd derivative from pol2 fit in Y for Laser beam %03d (inner sector)",id),
-			       100,-.005,.005);
+			       500,-.005,.005);
 	  pol2InnerY->SetDirectory(0);
 
 	  pol2OuterY =new TH1F(Form("pol2par2outY%03d",id),
 			       Form("2nd derivative from pol2 fit in Y for Laser beam %03d (outer sector)",id),
-			       100,0.01,.01);
+			       500,0.01,.01);
 	  pol2OuterY->SetDirectory(0);
 	  diff1InnerY=new TH1F(Form("diff1inY%03d",id),
 			       Form("diff of 1st derivative from pol1 and pol2 in Y fit for Laser beam %03d (inner sector)",id),
-			       100,-.5,.5);
+			       500,-.5,.5);
 	  diff1OuterY=new TH1F(Form("diff1outY%03d",id),
 			       Form("diff of 1st derivative from pol1 and pol2 in Yfit for Laser beam %03d (outer sector)",id),
-			       100,-1,1);
+			       500,-1,1);
 	  diff1InnerY->SetDirectory(0);
 
 
 	  pol2InnerZ =new TH1F(Form("pol2par2inZ%03d",id),
 			       Form("2nd derivative from pol2 fit in Z for Laser beam %03d (inner sector)",id),
-			       100,-.002,.002);
+			       500,-.002,.002);
 	  pol2InnerZ->SetDirectory(0);
 
 	  pol2OuterZ =new TH1F(Form("pol2par2outZ%03d",id),
 			       Form("2nd derivative from pol2 fit in Z for Laser beam %03d (outer sector)",id),
-			       100,-.005,.005);
+			       500,-.005,.005);
 	  pol2OuterZ->SetDirectory(0);
 	  diff1InnerZ=new TH1F(Form("diff1inZ%03d",id),
 			       Form("diff of 1st derivative from pol1 and pol2 in Z fit for Laser beam %03d (inner sector)",id),
-			       100,-.02,.02);
+			       500,-.02,.02);
 	  diff1InnerZ->SetDirectory(0);
 	  diff1OuterZ=new TH1F(Form("diff1outZ%03d",id),
 			       Form("diff of 1st derivative from pol1 and pol2 in Zfit for Laser beam %03d (outer sector)",id),
-			       100,-.03,.03);
+			       500,-.03,.03);
 	  diff1OuterZ->SetDirectory(0);
       }
       pol2InnerYm =(TH1F*)cal->fPol2Par2InY.UncheckedAt(id);
