@@ -50,7 +50,8 @@ ClassImp(AliProtonCorrectionTask)
 AliProtonCorrectionTask::AliProtonCorrectionTask() :
   fReadTPCTracks(0),
   fReadAODData(0),
-  fCFManager(0x0),
+  fCFManagerProtons(0x0),
+  fCFManagerAntiProtons(0x0),
   fQAHistList(0x0),
   fHistEventsProcessed(0x0)
 {
@@ -63,7 +64,8 @@ AliProtonCorrectionTask::AliProtonCorrectionTask(const Char_t* name) :
   AliAnalysisTaskSE(name),
   fReadTPCTracks(0),
   fReadAODData(0),
-  fCFManager(0x0),
+  fCFManagerProtons(0x0),
+  fCFManagerAntiProtons(0x0),
   fQAHistList(0x0),
   fHistEventsProcessed(0x0) {
   //
@@ -77,7 +79,8 @@ AliProtonCorrectionTask::AliProtonCorrectionTask(const Char_t* name) :
   */
   DefineOutput(1,TH1I::Class());
   DefineOutput(2,AliCFContainer::Class());
-  DefineOutput(3,TList::Class());
+  DefineOutput(3,AliCFContainer::Class());
+  DefineOutput(4,TList::Class());
 }
 
 //___________________________________________________________________________
@@ -89,7 +92,8 @@ AliProtonCorrectionTask& AliProtonCorrectionTask::operator=(const AliProtonCorre
     AliAnalysisTaskSE::operator=(c) ;
     fReadTPCTracks = c.fReadTPCTracks ;
     fReadAODData = c.fReadAODData ;
-    fCFManager  = c.fCFManager;
+    fCFManagerProtons  = c.fCFManagerProtons;
+    fCFManagerAntiProtons  = c.fCFManagerAntiProtons;
     fQAHistList = c.fQAHistList ;
     fHistEventsProcessed = c.fHistEventsProcessed;
   }
@@ -101,7 +105,8 @@ AliProtonCorrectionTask::AliProtonCorrectionTask(const AliProtonCorrectionTask& 
   AliAnalysisTaskSE(c),
   fReadTPCTracks(c.fReadTPCTracks),
   fReadAODData(c.fReadAODData),
-  fCFManager(c.fCFManager),
+  fCFManagerProtons(c.fCFManagerProtons),
+  fCFManagerAntiProtons(c.fCFManagerAntiProtons),
   fQAHistList(c.fQAHistList),
   fHistEventsProcessed(c.fHistEventsProcessed) {
   //
@@ -115,7 +120,8 @@ AliProtonCorrectionTask::~AliProtonCorrectionTask() {
   //destructor
   //
   Info("~AliProtonCorrectionTask","Calling Destructor");
-  if (fCFManager)           delete fCFManager ;
+  if (fCFManagerProtons) delete fCFManagerProtons ;
+  if (fCFManagerAntiProtons) delete fCFManagerAntiProtons ;
   if (fHistEventsProcessed) delete fHistEventsProcessed ;
   if (fQAHistList) {fQAHistList->Clear(); delete fQAHistList;}
 }
@@ -138,31 +144,54 @@ void AliProtonCorrectionTask::UserExec(Option_t *) {
   if (!fMCEvent) Error("UserExec","NO MC INFO FOUND");
   
   //pass the MC evt handler to the cuts that need it 
-  fCFManager->SetEventInfo(fMCEvent);
+  fCFManagerProtons->SetEventInfo(fMCEvent);
+  fCFManagerAntiProtons->SetEventInfo(fMCEvent);
 
   // MC-event selection
   Double_t containerInput[2] ;
         
+  //__________________________________________________________//
   //loop on the MC event
   for (Int_t ipart=0; ipart<fMCEvent->GetNumberOfTracks(); ipart++) { 
     AliMCParticle *mcPart  = fMCEvent->GetTrack(ipart);
 
     //check the MC-level cuts
-    if (!fCFManager->CheckParticleCuts(AliCFManager::kPartGenCuts,mcPart)) continue;
+    if (!fCFManagerProtons->CheckParticleCuts(AliCFManager::kPartGenCuts,mcPart)) continue;
     
     containerInput[0] = Rapidity(mcPart->Px(),
 				 mcPart->Py(),
 				 mcPart->Pz());
     containerInput[1] = (Float_t)mcPart->Pt();
     //fill the container for Gen-level selection
-    fCFManager->GetParticleContainer()->Fill(containerInput,kStepGenerated);
+    fCFManagerProtons->GetParticleContainer()->Fill(containerInput,kStepGenerated);
 
     //check the Acceptance-level cuts
-    if (!fCFManager->CheckParticleCuts(AliCFManager::kPartAccCuts,mcPart)) continue;
+    if (!fCFManagerProtons->CheckParticleCuts(AliCFManager::kPartAccCuts,mcPart)) continue;
     //fill the container for Acceptance-level selection
-    fCFManager->GetParticleContainer()->Fill(containerInput,kStepReconstructible);
-  }//loop over MC particles
+    fCFManagerProtons->GetParticleContainer()->Fill(containerInput,kStepReconstructible);
+  }//loop over MC particles (protons)
+  //__________________________________________________________//
+  //loop on the MC event
+  for (Int_t ipart=0; ipart<fMCEvent->GetNumberOfTracks(); ipart++) { 
+    AliMCParticle *mcPart  = fMCEvent->GetTrack(ipart);
 
+    //check the MC-level cuts
+    if (!fCFManagerAntiProtons->CheckParticleCuts(AliCFManager::kPartGenCuts,mcPart)) continue;
+    
+    containerInput[0] = Rapidity(mcPart->Px(),
+				 mcPart->Py(),
+				 mcPart->Pz());
+    containerInput[1] = (Float_t)mcPart->Pt();
+    //fill the container for Gen-level selection
+    fCFManagerAntiProtons->GetParticleContainer()->Fill(containerInput,kStepGenerated);
+
+    //check the Acceptance-level cuts
+    if (!fCFManagerAntiProtons->CheckParticleCuts(AliCFManager::kPartAccCuts,mcPart)) continue;
+    //fill the container for Acceptance-level selection
+    fCFManagerAntiProtons->GetParticleContainer()->Fill(containerInput,kStepReconstructible);
+  }//loop over MC particles (antiprotons)
+
+  //__________________________________________________________//
   //ESD track loop
   for (Int_t iTrack = 0; iTrack<fEvent->GetNumberOfTracks(); iTrack++) {
     track = fEvent->GetTrack(iTrack);
@@ -181,7 +210,7 @@ void AliProtonCorrectionTask::UserExec(Option_t *) {
       track = esdTrackTPC ;
     }
 
-    if (!fCFManager->CheckParticleCuts(AliCFManager::kPartRecCuts,track)) continue;
+    if (!fCFManagerProtons->CheckParticleCuts(AliCFManager::kPartRecCuts,track)) continue;
     
     // is track associated to particle ?
     Int_t label = track->GetLabel();
@@ -189,17 +218,58 @@ void AliProtonCorrectionTask::UserExec(Option_t *) {
     AliMCParticle *mcPart  = fMCEvent->GetTrack(label);
     
     // check if this track was part of the signal
-    if (!fCFManager->CheckParticleCuts(AliCFManager::kPartGenCuts,mcPart)) continue; 
+    if (!fCFManagerProtons->CheckParticleCuts(AliCFManager::kPartGenCuts,mcPart)) continue; 
     
     //fill the container
     containerInput[0] = Rapidity(track->Px(),
                                  track->Py(),
                                  track->Pz());
     containerInput[1] = track->Pt();
-    fCFManager->GetParticleContainer()->Fill(containerInput,kStepReconstructed) ;   
+    fCFManagerProtons->GetParticleContainer()->Fill(containerInput,kStepReconstructed) ;   
 
-    if (!fCFManager->CheckParticleCuts(AliCFManager::kPartSelCuts,track)) continue ;
-    fCFManager->GetParticleContainer()->Fill(containerInput,kStepSelected);
+    if (!fCFManagerProtons->CheckParticleCuts(AliCFManager::kPartSelCuts,track)) continue ;
+    fCFManagerProtons->GetParticleContainer()->Fill(containerInput,kStepSelected);
+
+    if (fReadTPCTracks) delete track;
+  }
+  //__________________________________________________________//
+  //ESD track loop
+  for (Int_t iTrack = 0; iTrack<fEvent->GetNumberOfTracks(); iTrack++) {
+    track = fEvent->GetTrack(iTrack);
+    
+    if (fReadTPCTracks) {
+      if (fReadAODData) {
+	Error("UserExec","TPC-only tracks are not supported with AOD");
+	return ;
+      }
+      AliESDtrack* esdTrack    = (AliESDtrack*) track;
+      AliESDtrack* esdTrackTPC = new AliESDtrack();
+      if (!esdTrack->FillTPCOnlyTrack(*esdTrackTPC)) {
+	Error("UserExec","Could not retrieve TPC info");
+	continue;
+      }
+      track = esdTrackTPC ;
+    }
+
+    if (!fCFManagerAntiProtons->CheckParticleCuts(AliCFManager::kPartRecCuts,track)) continue;
+    
+    // is track associated to particle ?
+    Int_t label = track->GetLabel();
+    if (label<0) continue;
+    AliMCParticle *mcPart  = fMCEvent->GetTrack(label);
+    
+    // check if this track was part of the signal
+    if (!fCFManagerAntiProtons->CheckParticleCuts(AliCFManager::kPartGenCuts,mcPart)) continue; 
+    
+    //fill the container
+    containerInput[0] = Rapidity(track->Px(),
+                                 track->Py(),
+                                 track->Pz());
+    containerInput[1] = track->Pt();
+    fCFManagerAntiProtons->GetParticleContainer()->Fill(containerInput,kStepReconstructed) ;   
+
+    if (!fCFManagerAntiProtons->CheckParticleCuts(AliCFManager::kPartSelCuts,track)) continue ;
+    fCFManagerAntiProtons->GetParticleContainer()->Fill(containerInput,kStepSelected);
 
     if (fReadTPCTracks) delete track;
   }
@@ -208,8 +278,9 @@ void AliProtonCorrectionTask::UserExec(Option_t *) {
 
   /* PostData(0) is taken care of by AliAnalysisTaskSE */
   PostData(1,fHistEventsProcessed) ;
-  PostData(2,fCFManager->GetParticleContainer()) ;
-  PostData(3,fQAHistList) ;
+  PostData(2,fCFManagerProtons->GetParticleContainer()) ;
+  PostData(3,fCFManagerAntiProtons->GetParticleContainer()) ;
+  PostData(4,fQAHistList) ;
 }
 
 
@@ -236,48 +307,17 @@ void AliProtonCorrectionTask::Terminate(Option_t*) {
   TH1D* h12 =   cont->ShowProjection(1,2) ;
   TH1D* h13 =   cont->ShowProjection(1,3) ;
 
-  //Double_t max1 = h00->GetMaximum();
-  //Double_t max2 = h10->GetMaximum();
-
-  /*h00->GetYaxis()->SetRangeUser(0,max1*1.2);
-  h01->GetYaxis()->SetRangeUser(0,max1*1.2);
-  h02->GetYaxis()->SetRangeUser(0,max1*1.2);
-  h03->GetYaxis()->SetRangeUser(0,max1*1.2);
-
-  h10->GetYaxis()->SetRangeUser(0,max2*1.2);
-  h11->GetYaxis()->SetRangeUser(0,max2*1.2);
-  h12->GetYaxis()->SetRangeUser(0,max2*1.2);
-  h13->GetYaxis()->SetRangeUser(0,max2*1.2);
-
-  h00->SetMarkerStyle(23) ;
-  h01->SetMarkerStyle(24) ;
-  h02->SetMarkerStyle(25) ;
-  h03->SetMarkerStyle(26) ;
-
-  h10->SetMarkerStyle(23) ;
-  h11->SetMarkerStyle(24) ;
-  h12->SetMarkerStyle(25) ;
-  h13->SetMarkerStyle(26) ;*/
-
   TCanvas * c =new TCanvas("c","",1400,800);
   c->Divide(4,2);
 
-  c->cd(1);
-  h00->Draw("p");
-  c->cd(2);
-  h01->Draw("p");
-  c->cd(3);
-  h02->Draw("p");
-  c->cd(4);
-  h03->Draw("p");
-  c->cd(5);
-  h10->Draw("p");
-  c->cd(6);
-  h11->Draw("p");
-  c->cd(7);
-  h12->Draw("p");
-  c->cd(8);
-  h13->Draw("p");
+  c->cd(1); h00->Draw("p");
+  c->cd(2); h01->Draw("p");
+  c->cd(3); h02->Draw("p");
+  c->cd(4); h03->Draw("p");
+  c->cd(5); h10->Draw("p");
+  c->cd(6); h11->Draw("p");
+  c->cd(7); h12->Draw("p");
+  c->cd(8); h13->Draw("p");
 
   c->SaveAs("plots.eps");
 }
