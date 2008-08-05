@@ -71,6 +71,13 @@ AliTRDReconstructor::AliTRDReconstructor(const AliTRDReconstructor &r)
   memcpy(fTCParams, r.fTCParams, 8*sizeof(Double_t));
 }
 
+//_____________________________________________________________________________
+void AliTRDReconstructor::Init(){
+	//
+	// Init Options
+	//
+	SetOption(GetOption());
+}
 
 //_____________________________________________________________________________
 void AliTRDReconstructor::ConvertDigits(AliRawReader *rawReader
@@ -193,7 +200,37 @@ void AliTRDReconstructor::SetOption(Option_t *opt)
     } else if(sopt.Contains("ar")){
       fSteerParam |= kDriftGas;
       continue;	
-    }
+    } else if(sopt.Contains("sl")){
+    	TObjArray *stl = sopt.Tokenize("_");
+    	if(stl->GetEntriesFast() < 3) continue;
+			TString taskstr(((TObjString*)(*stl)[1])->String());
+			TString levelstring(((TObjString*)(*stl)[2])->String());
+    	// Set the stream Level
+    	Int_t level = levelstring.Atoi();
+    	AliTRDReconstructorTask task = kTracker;
+    	if(taskstr.CompareTo("cl") == 0) task = kClusterizer;	
+    	else if(taskstr.CompareTo("tr") == 0) task = kTracker;
+    	else if(taskstr.CompareTo("pi") == 0) task = kPID;
+    	SetStreamLevel(level, task);
+    	continue;
+		}
   }
 }
 
+//_____________________________________________________________________________
+void AliTRDReconstructor::SetStreamLevel(Int_t level, AliTRDReconstructorTask task){
+	//
+	// Set the Stream Level for one of the tasks Clusterizer, Tracker or PID
+	//
+	TString taskname;
+	switch(task){
+		case kClusterizer: taskname = "Clusterizer";
+											 break;
+		case kTracker: taskname = "Tracker";
+									 break;
+		case kPID: taskname = "PID";
+							 break;
+	}
+ 	AliInfo(Form("Setting Stream Level for Task %s to %d", taskname.Data(),level));
+	fStreamLevel[(Int_t)task] = level;
+}

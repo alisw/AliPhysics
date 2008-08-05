@@ -2994,6 +2994,14 @@ Int_t AliTRDtrackerV1::Freq(Int_t n, const Int_t *inlist
 
 }
 
+void AliTRDtrackerV1::SetReconstructor(const AliTRDReconstructor *rec){
+	fReconstructor = rec;
+	if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker) > 1){
+		if(!fgDebugStreamer)
+			fgDebugStreamer = new TTreeSRedirector("TRD.TrackerDebug.root");
+	}	
+}
+
 //_____________________________________________________________________________
 Float_t AliTRDtrackerV1::GetChi2Y(AliTRDseedV1 *tracklets) const
 {

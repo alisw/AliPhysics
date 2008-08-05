@@ -44,6 +44,8 @@ public:
   AliTRDReconstructor(const AliTRDReconstructor &r);
   virtual ~AliTRDReconstructor() {;}
   AliTRDReconstructor& operator = (const AliTRDReconstructor&)          { return *this;}
+	
+	virtual void        Init();
 
   virtual void        ConvertDigits(AliRawReader *rawReader, TTree *digitsTree) const;
   virtual AliTracker* CreateTracker() const;
@@ -66,7 +68,7 @@ public:
 
   void	              SetOption(Option_t *opt);
   inline void         SetTCParams(Double_t *par);
-  void                SetStreamLevel(Int_t level, AliTRDReconstructorTask task= kTracker) {fStreamLevel[(Int_t)task] = level;}
+  void                SetStreamLevel(Int_t level, AliTRDReconstructorTask task= kTracker);
 
 private:
   enum{
