@@ -56,7 +56,7 @@ void split_hltout()
   rec.SetRunLocalReconstruction("HLT");
   rec.SetRunTracking("");
   rec.SetFillESD("");
-  rec.SetRunQA(kFALSE);
+  rec.SetRunQA(":");
   rec.SetFillTriggerESD(kFALSE);
   rec.SetRunVertexFinder(kFALSE);
   rec.SetOption("HLT", "libAliHLTUtil.so loglevel=0x7c chains=sink1");

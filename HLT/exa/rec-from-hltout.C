@@ -47,7 +47,7 @@ void rec_from_hltout()
   rec.SetRunLocalReconstruction("ITS HLT");
   rec.SetRunTracking("ITS");
   rec.SetFillESD("ITS HLT");
-  rec.SetRunQA(kFALSE);
+  rec.SetRunQA(":");
   rec.SetFillTriggerESD(kFALSE);
 
   // set the redirection for ITS SDD

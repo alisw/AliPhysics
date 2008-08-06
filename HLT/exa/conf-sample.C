@@ -20,7 +20,7 @@
    rec.SetInput("./");                    // to be independent of galice.root
    rec.SetLoadAlignFromCDB(kFALSE);
    rec.SetFillTriggerESD(kFALSE);
-   rec.SetRunQA(kFALSE);
+   rec.SetRunQA(":");
    rec.SetRunVertexFinder(kFALSE);
    rec.SetRunLocalReconstruction("HLT");  // run local rec only for HLT 
    rec.SetRunTracking("");                // switch off tracking

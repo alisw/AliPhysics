@@ -119,7 +119,7 @@ void rec_hlt_tpc(const char* input="./", bool bUseClusterFinderDecoder=false)
   rec.SetRunLocalReconstruction("HLT");
   rec.SetRunTracking("");
   rec.SetLoadAlignFromCDB(0);
-  rec.SetRunQA(kFALSE);
+  rec.SetRunQA(":");
   AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., AliMagFMaps::k5kG);
   AliTracker::SetFieldMap(field,kTRUE);
   rec.SetFillESD("HLT");

@@ -79,7 +79,7 @@ void publish_rawreader_data(const char* input, int iMinDDLno, int iMaxDDLno)
   rec.SetRunTracking("");
   rec.SetFillESD("HLT");
   rec.SetFillTriggerESD(kFALSE);
-  rec.SetRunQA(kFALSE);
+  rec.SetRunQA(":");
   rec.SetRunVertexFinder(kFALSE);
   rec.SetLoadAlignFromCDB(0);
   rec.SetFillTriggerESD(kFALSE);
