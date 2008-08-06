@@ -59,7 +59,7 @@ ClassImp(AliTPCPreprocessor)
 //______________________________________________________________________________________________
 AliTPCPreprocessor::AliTPCPreprocessor(AliShuttleInterface* shuttle) :
   AliPreprocessor("TPC",shuttle),
-  fConfEnv(0), fTemp(0), fHighVoltage(0), fHighVoltageStat(0), fConfigOK(kTRUE), fROC(0)
+  fConfEnv(0), fTemp(0), fHighVoltage(0), fHighVoltageStat(0), fGoofie(0), fConfigOK(kTRUE), fROC(0)
 {
   // constructor
   fROC = AliTPCROC::Instance();
@@ -79,7 +79,7 @@ AliTPCPreprocessor::AliTPCPreprocessor(AliShuttleInterface* shuttle) :
 //______________________________________________________________________________________________
  AliTPCPreprocessor::AliTPCPreprocessor(const AliTPCPreprocessor&  ) :
    AliPreprocessor("TPC",0),
-   fConfEnv(0), fTemp(0), fHighVoltage(0), fHighVoltageStat(0), fConfigOK(kTRUE), fROC(0)
+   fConfEnv(0), fTemp(0), fHighVoltage(0), fHighVoltageStat(0), fGoofie(0), fConfigOK(kTRUE), fROC(0)
  {
 
    Fatal("AliTPCPreprocessor", "copy constructor not implemented");
@@ -180,6 +180,25 @@ void AliTPCPreprocessor::Initialize(Int_t run, UInt_t startTime,
         }
         fHighVoltageStat = new AliDCSSensorArray(startTimeLocal, endTimeLocal, confTree);
       }
+
+   // Goofie values
+     
+      TString goofieConf = fConfEnv->GetValue("Goofie","ON");
+      goofieConf.ToUpper();
+      if (goofieConf != "OFF" ) { 
+        confTree=0;
+        entry=0;
+        entry = GetFromOCDB("Config", "Goofie");
+        if (entry) confTree = (TTree*) entry->GetObject();
+        if ( confTree==0 ) {
+           Log("AliTPCPreprocsessor: Goofie Config OCDB entry missing.\n");
+           fConfigOK = kFALSE;
+           return;
+        }
+        fGoofie = new AliDCSSensorArray(startTimeLocal, endTimeLocal, confTree);
+      }
+
+
 }
 
 //______________________________________________________________________________________________
@@ -233,6 +252,18 @@ UInt_t AliTPCPreprocessor::Process(TMap* dcsAliasMap)
    UInt_t hvResult = MapHighVoltage(dcsAliasMap);
    result+=hvResult;
    status = new TParameter<int>("hvResult",hvResult);
+   resultArray->Add(status);
+ }
+
+  // Goofie values
+
+
+  TString goofieConf = fConfEnv->GetValue("Goofie","ON");
+  goofieConf.ToUpper();
+  if (goofieConf != "OFF" ) { 
+   UInt_t goofieResult = MapGoofie(dcsAliasMap);
+   result+=goofieResult;
+   status = new TParameter<int>("goofieResult",goofieResult);
    resultArray->Add(status);
  }
 
@@ -454,6 +485,41 @@ UInt_t AliTPCPreprocessor::MapHighVoltage(TMap* dcsAliasMap)
 	metaData.SetComment("Preprocessor AliTPC data base entries.");
 
 	Bool_t storeOK = Store("Calib", "HighVoltage", fHighVoltage, &metaData, 0, kFALSE);
+        if ( !storeOK )  result=1;
+
+   }
+
+   return result;
+
+}
+
+//______________________________________________________________________________________________
+UInt_t AliTPCPreprocessor::MapGoofie(TMap* dcsAliasMap)
+{
+
+   // extract DCS Goofie maps. Do not perform fits (low update rate)
+
+  UInt_t result=0;
+
+  TMap *map = fGoofie->ExtractDCS(dcsAliasMap);
+  if (map) {
+    fGoofie->ClearFit();
+    fGoofie->SetGraph(map);
+  } else {
+    Log("No Goofie recordings extracted. \n");
+    result=9;
+  }
+  delete map;
+
+  // Now store the final CDB file
+
+  if ( result == 0 ) {
+        AliCDBMetaData metaData;
+	metaData.SetBeamPeriod(0);
+	metaData.SetResponsible("Haavard Helstrup");
+	metaData.SetComment("Preprocessor AliTPC data base entries.");
+
+	Bool_t storeOK = Store("Calib", "Goofie", fGoofie, &metaData, 0, kFALSE);
         if ( !storeOK )  result=1;
 
    }
