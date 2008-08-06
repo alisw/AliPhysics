@@ -44,16 +44,17 @@ class AliRecoParam : public TObject
   void                          AddDetRecoParam(Int_t iDet, AliDetectorRecoParam* param);
   Bool_t                        AddDetRecoParamArray(Int_t iDet, TObjArray* parArray);
 
+  AliRecoParam(const AliRecoParam&);
+
 private:
 
-  AliRecoParam(const AliRecoParam&); // Not implemented
   AliRecoParam& operator=(const AliRecoParam&); // Not implemented
 
-  Int_t      fDetRecoParamsIndex[kNSpecies][kNDetectors]; //!index to fDetRecoParams arrays
-  TObjArray *fDetRecoParams[kNDetectors];   //!array with reconstruction-parameter objects for all detectors
-  EventSpecie_t fEventSpecie;               //!current event specie
+  Int_t      fDetRecoParamsIndex[kNSpecies][kNDetectors]; // index to fDetRecoParams arrays
+  TObjArray *fDetRecoParams[kNDetectors];   // array with reconstruction-parameter objects for all detectors
+  EventSpecie_t fEventSpecie;               // current event specie
 
-  ClassDef(AliRecoParam, 3)
+  ClassDef(AliRecoParam, 4)
 };
 
 

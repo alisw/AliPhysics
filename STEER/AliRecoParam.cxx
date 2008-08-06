@@ -48,6 +48,35 @@ AliRecoParam::AliRecoParam():
   }
 }
 
+AliRecoParam::AliRecoParam(const AliRecoParam& par) :
+  TObject(),
+  fEventSpecie(par.fEventSpecie)
+{
+  // copy constructor
+  for(Int_t iDet = 0; iDet < kNDetectors; iDet++) {
+    //    fDetRecoParams[iDet] = new TObjArray;
+    //    for(Int_t i = 0; i < par.fDetRecoParams[iDet]->GetEntriesFast(); i++) {
+    //      if (!par.fDetRecoParams[iDet]->UncheckedAt(i)) {
+    //	fDetRecoParams[iDet]->AddAt(NULL,i);
+    //	continue;
+    //      }
+    //      fDetRecoParams[iDet]->AddAt(par.fDetRecoParams[iDet]->UncheckedAt(i)->Clone(),i);
+    //    }
+    //  }
+//    fDetRecoParams[iDet] = par.fDetRecoParams[iDet];
+//  }
+    if (par.fDetRecoParams[iDet])
+      fDetRecoParams[iDet] = (TObjArray*)(par.fDetRecoParams[iDet]->Clone());
+    else
+      fDetRecoParams[iDet] = NULL;
+  }
+  for(Int_t iSpecie = 0; iSpecie < kNSpecies; iSpecie++) {
+    for(Int_t iDet = 0; iDet < kNDetectors; iDet++) {
+      fDetRecoParamsIndex[iSpecie][iDet] = par.fDetRecoParamsIndex[iSpecie][iDet];
+    }
+  }
+}
+
 AliRecoParam::~AliRecoParam(){
   // Destructor
   // ...
