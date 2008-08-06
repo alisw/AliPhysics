@@ -294,8 +294,6 @@ void RenderHit(TClonesArray *pHitLst)
 void RenderDig(TObjArray *pDigLst)
 {//used by ReadEvent() to render digs to Tbox structures, one per chamber
 
-  Printf("RENDERDIG : event n. %i",fEvt);
-  
   for(Int_t iCh=0;iCh<=6;iCh++){                                    //chambers loop   
     TClonesArray *pDigCham=(TClonesArray*)pDigLst->At(iCh);         //get digs list for this chamber
     nDigs[iCh] = 0;
@@ -563,8 +561,12 @@ void CloseInfo()
 void DoZoom(Int_t evt, Int_t px, Int_t py, TObject *)
 {
 //  Printf(" px %i py%i event %i",px,py,evt);
+  
+  if(evt== 1) evt = 5;  //for laptop with touchpad: zoom in with left button
+  if(evt== 2) evt = 6;  //for laptop with touchpad: zoom out with both buttons
+  
   if(evt==kMouseMotion||evt==kButton1Down) DisplayInfo(evt,px,py);
-  if(evt==11)  CloseInfo();
+//  if(evt==11)  CloseInfo();
   if(evt!=5 && evt!=6) return; //5- zoom in 6-zoom out
   const Int_t minZoom=64;
   const Int_t maxZoom=2;
@@ -607,7 +609,6 @@ void GetEvent()
 {
   ClearRenders();
   
-  Printf("get Event...... event n. %i",fEvt);
   ReadEvent();
   
   while(!Trigger()) {
@@ -876,7 +877,7 @@ void ReadEvent(){
   if(fNevt && fEvt>=fNevt) fEvt=0; //loop over max event
   if(fNevt && fEvt<0) fEvt=fNevt-1; //loop over max event
   
-  Printf("getting event %i out of %i",fEvt,fNevt);
+//  Printf("getting event %i out of %i",fEvt,fNevt);
   
   if(gDL) {
   
