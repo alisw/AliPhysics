@@ -146,7 +146,7 @@ Bool_t AliHMPIDRawStream::Turbo()
   fNPads=0;
 //  Int_t gw=0;
   for(Int_t i=1;i<cntGlob;i++) {
-    GetWord(1);
+    if(!GetWord(1)) return kFALSE;
     if (((fWord >> kbit27) & 1)) continue;
     UInt_t statusControlRow = 0x32a8; 
     UInt_t rowControlWord = fWord >> kbit0 & 0xfbff;
@@ -545,7 +545,11 @@ Bool_t AliHMPIDRawStream::GetWord(Int_t n,EDirection dir)
   // independent.
   
   fWord = 0;
-  if (!fData || fPosition < 0) AliFatal("Raw data payload buffer is not yet initialized !");
+  if (fPosition < 0) {
+    AliWarning("fPosition<0");
+    fRawReader->AddMajorErrorLog(kRawDataSizeErr,"fPosition<0");
+    return kFALSE;
+  }
 
   if(dir==kBwd) n = -n; 
   fPosition+=4*n-4;
