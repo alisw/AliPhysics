@@ -172,6 +172,7 @@ int AliHLTTPCEsdWriterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* pESD,
 {
   // see header file for class documentation
   int iResult=0;
+  int iAddedDataBlocks=0;
   if (pESD && blocks) {
       pESD->Reset();
     
@@ -207,6 +208,7 @@ int AliHLTTPCEsdWriterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* pESD,
 	    HLTDebug("reading block %d (slice %d): %d tracklets", ndx, minslice, inPtr->fTrackletCnt);
 	    if ((iResult=tracks.FillTracksChecked(inPtr->fTracklets, inPtr->fTrackletCnt, iter->fSize, minslice, 0/*don't rotate*/))>=0) {
 	      if ((iResult=Tracks2ESD(&tracks, pESD))>=0) {
+		iAddedDataBlocks++;
 	      }
 	    }
 	  } else {
@@ -215,13 +217,14 @@ int AliHLTTPCEsdWriterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* pESD,
 	  }
 	}
       }
-      if (iResult>=0 && pTree) {
+      if (iAddedDataBlocks>0 && pTree) {
 	pTree->Fill();
       }
 
   } else {
     iResult=-EINVAL;
   }
+  if (iResult>=0) iResult=iAddedDataBlocks;
   return iResult;
 }
 
@@ -439,7 +442,7 @@ int AliHLTTPCEsdWriterComponent::AliConverter::DoEvent(const AliHLTComponentEven
       pESD->WriteToTree(pTree);
     }
 
-    if ((iResult=fBase->ProcessBlocks(pTree, pESD, blocks, (int)evtData.fBlockCnt))>=0) {
+    if ((iResult=fBase->ProcessBlocks(pTree, pESD, blocks, (int)evtData.fBlockCnt))>0) {
 	// TODO: set the specification correctly
       if (pTree) {
 	// the esd structure is written to the user info and is
