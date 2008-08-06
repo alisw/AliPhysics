@@ -49,6 +49,8 @@ void UpdateCDBIdealGeom(const char* cdbUri, const char* cfgFile){
     Printf("Unable to produce a valid geometry to be put in the CDB!");
     return;
   }
+  gGeoManager->DefaultColors(); // assign default colors according to Z of material
+  // (many colors turned into dark gray nuances some time ago, when the root palette was changed)
   
   Printf("Storing in CDB geometry produced with root version %s and AliRoot version %s",rootv,av.Data());
   storage->Put(gGeoManager,id,md);
