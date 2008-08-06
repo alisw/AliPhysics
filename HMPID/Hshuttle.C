@@ -7,8 +7,9 @@ void Hshuttle(Int_t runTime=1500)
   TMap *pDcsMap = new TMap;       pDcsMap->SetOwner(1);          //DCS archive map
   
   AliTestShuttle* pShuttle = new AliTestShuttle(0,0,1000000);   
- // pShuttle->SetInputRunType("PHYSICS");
-   pShuttle->SetInputRunType("CALIBRATION");
+//  pShuttle->SetInputRunType("PHYSICS");
+//  pShuttle->SetInputRunType("CALIBRATION");
+  pShuttle->SetInputRunType("PHYSICS");
   SimPed();   
   for(Int_t ldc=51;ldc<=52;ldc++) 
   {
@@ -81,8 +82,8 @@ void SimMap(TMap *pDcsMap,Int_t runTime=1500)
     for(Int_t iRad=0;iRad<3;iRad++){//radiators loop
       TObjArray *pT1=new TObjArray; pT1->SetOwner(1);
       TObjArray *pT2=new TObjArray; pT2->SetOwner(1);
-      for (Int_t time=0;time<runTime;time+=stepTime)  pT1->Add(new AliDCSValue(13,time));  //sample inlet temperature                    Nmean=1.292 @ 13 degrees
-      for (Int_t time=0;time<runTime;time+=stepTime)  pT2->Add(new AliDCSValue(14,time));  //sample outlet temperature
+      for (Int_t time=0;time<runTime;time+=stepTime)  pT1->Add(new AliDCSValue((Float_t)(13.0+gRandom->Rndm()),time));  //sample inlet temperature                    Nmean=1.292 @ 13 degrees
+      for (Int_t time=0;time<runTime;time+=stepTime)  pT2->Add(new AliDCSValue((Float_t)(18.0+gRandom->Rndm()),time));  //sample outlet temperature
       pDcsMap->Add(new TObjString(Form("HMP_DET/HMP_MP%i/HMP_MP%i_LIQ_LOOP.actual.sensors.Rad%iIn_Temp",iCh,iCh,iRad)) ,pT1);               //Temperature in  Rad 
       pDcsMap->Add(new TObjString(Form("HMP_DET/HMP_MP%i/HMP_MP%i_LIQ_LOOP.actual.sensors.Rad%iOut_Temp",iCh,iCh,iRad)),pT2);               //Temperature out Rad
     }//radiators loop
@@ -91,6 +92,7 @@ void SimMap(TMap *pDcsMap,Int_t runTime=1500)
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void DrawInput(TMap *pDcsMap)
 {
+  
   TCanvas *c=new TCanvas("cc","Input data",600,600);    c->Divide(3,3);
   
   AliDCSValue *pVal; Int_t cnt;
@@ -110,9 +112,12 @@ void DrawInput(TMap *pDcsMap)
       TObjArray *pT2=(TObjArray*)pDcsMap->GetValue(Form("HMP_DET/HMP_MP%i/HMP_MP%i_LIQ_LOOP.actual.sensors.Rad%iOut_Temp",iCh,iCh,iRad)); TIter nextT2(pT2);
       TGraph *pGrT1=new TGraph; pGrT1->SetMarkerStyle(5); 
       TGraph *pGrT2=new TGraph; pGrT2->SetMarkerStyle(5); 
+      pGrT1->SetMaximum(40);
+      pGrT2->SetMaximum(40);
       cnt=0; while((pVal=(AliDCSValue*)nextT1())) pGrT1->SetPoint(cnt++,pVal->GetTimeStamp(),pVal->GetFloat());
       cnt=0; while((pVal=(AliDCSValue*)nextT2())) pGrT2->SetPoint(cnt++,pVal->GetTimeStamp(),pVal->GetFloat());
-      pGrT1->Draw("AP");  pGrT2->Draw("same");
+      if(iRad==0) pGrT1->Draw("AP"); else pGrT1->Draw("same");
+      pGrT2->Draw("same");
     }//radiators loop
   }//chambers loop  
 }//DrawInput()

@@ -96,6 +96,7 @@ Bool_t AliHMPIDPreprocessor::ProcDcs(TMap* pMap)
 // evaluate Environment Pressure
   
   TObjArray *pPenv=(TObjArray*)pMap->GetValue("HMP_DET/HMP_ENV/HMP_ENV_PENV.actual.value");
+  Log(Form(" Environment Pressure data              ---> %3i entries",pPenv->GetEntries()));
   if(pPenv->GetEntries()) {
     TIter nextPenv(pPenv);
     TGraph *pGrPenv=new TGraph; cnt=0;
@@ -113,6 +114,7 @@ Bool_t AliHMPIDPreprocessor::ProcDcs(TMap* pMap)
   
   for(Int_t iCh=0;iCh<7;iCh++){                   
     TObjArray *pP =(TObjArray*)pMap->GetValue(Form("HMP_DET/HMP_MP%i/HMP_MP%i_GAS/HMP_MP%i_GAS_PMWPC.actual.value",iCh,iCh,iCh));
+      Log(Form(" Pressure for module %i data             ---> %3i entries",iCh,pP->GetEntries()));
     if(pP->GetEntries()) {
       TIter nextP(pP);    
       TGraph *pGrP=new TGraph; cnt=0; 
@@ -130,6 +132,7 @@ Bool_t AliHMPIDPreprocessor::ProcDcs(TMap* pMap)
     
     for(Int_t iSec=0;iSec<6;iSec++){
       TObjArray *pHV=(TObjArray*)pMap->GetValue(Form("HMP_DET/HMP_MP%i/HMP_MP%i_PW/HMP_MP%i_SEC%i/HMP_MP%i_SEC%i_HV.actual.vMon",iCh,iCh,iCh,iSec,iCh,iSec));
+      Log(Form(" HV for module %i and secto %i data       ---> %3i entries",iCh,iSec,pHV->GetEntries()));
       if(pHV->GetEntries()) {
         TIter nextHV(pHV);
         TGraph *pGrHV=new TGraph; cnt=0;
@@ -154,6 +157,7 @@ Bool_t AliHMPIDPreprocessor::ProcDcs(TMap* pMap)
     // T in
     for(Int_t iRad=0;iRad<3;iRad++){
       TObjArray *pT1=(TObjArray*)pMap->GetValue(Form("HMP_DET/HMP_MP%i/HMP_MP%i_LIQ_LOOP.actual.sensors.Rad%iIn_Temp",iCh,iCh,iRad));  
+      Log(Form(" Temperatures for module %i inside data  ---> %3i entries",iCh,pT1->GetEntries()));
       if(pT1->GetEntries()) {
         TIter nextT1(pT1);//Tin
         TGraph *pGrT1=new TGraph; cnt=0;  while((pVal=(AliDCSValue*)nextT1())) pGrT1->SetPoint(cnt++,pVal->GetTimeStamp(),pVal->GetFloat()); //T inlet
@@ -167,6 +171,7 @@ Bool_t AliHMPIDPreprocessor::ProcDcs(TMap* pMap)
       } else {AliWarning(" No Data Points from HMP_MP0-6_LIQ_LOOP.actual.sensors.Rad0-2In_Temp!");return kFALSE;}
     // T out
       TObjArray *pT2=(TObjArray*)pMap->GetValue(Form("HMP_DET/HMP_MP%i/HMP_MP%i_LIQ_LOOP.actual.sensors.Rad%iOut_Temp",iCh,iCh,iRad)); 
+      Log(Form(" Temperatures for module %i outside data ---> %3i entries",iCh,pT2->GetEntries()));
       if(pT2->GetEntries()) {
         TIter nextT2(pT2);//Tout      
         TGraph *pGrT2=new TGraph; cnt=0;  while((pVal=(AliDCSValue*)nextT2())) pGrT2->SetPoint(cnt++,pVal->GetTimeStamp(),pVal->GetFloat()); //T outlet 
