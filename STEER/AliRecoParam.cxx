@@ -54,17 +54,6 @@ AliRecoParam::AliRecoParam(const AliRecoParam& par) :
 {
   // copy constructor
   for(Int_t iDet = 0; iDet < kNDetectors; iDet++) {
-    //    fDetRecoParams[iDet] = new TObjArray;
-    //    for(Int_t i = 0; i < par.fDetRecoParams[iDet]->GetEntriesFast(); i++) {
-    //      if (!par.fDetRecoParams[iDet]->UncheckedAt(i)) {
-    //	fDetRecoParams[iDet]->AddAt(NULL,i);
-    //	continue;
-    //      }
-    //      fDetRecoParams[iDet]->AddAt(par.fDetRecoParams[iDet]->UncheckedAt(i)->Clone(),i);
-    //    }
-    //  }
-//    fDetRecoParams[iDet] = par.fDetRecoParams[iDet];
-//  }
     if (par.fDetRecoParams[iDet])
       fDetRecoParams[iDet] = (TObjArray*)(par.fDetRecoParams[iDet]->Clone());
     else
@@ -75,6 +64,18 @@ AliRecoParam::AliRecoParam(const AliRecoParam& par) :
       fDetRecoParamsIndex[iSpecie][iDet] = par.fDetRecoParamsIndex[iSpecie][iDet];
     }
   }
+}
+
+//_____________________________________________________________________________
+AliRecoParam& AliRecoParam::operator = (const AliRecoParam& par)
+{
+  // assignment operator
+
+  if(&par == this) return *this;
+
+  this->~AliRecoParam();
+  new(this) AliRecoParam(par);
+  return *this;
 }
 
 AliRecoParam::~AliRecoParam(){

@@ -45,10 +45,9 @@ class AliRecoParam : public TObject
   Bool_t                        AddDetRecoParamArray(Int_t iDet, TObjArray* parArray);
 
   AliRecoParam(const AliRecoParam&);
+  AliRecoParam& operator=(const AliRecoParam&);
 
 private:
-
-  AliRecoParam& operator=(const AliRecoParam&); // Not implemented
 
   Int_t      fDetRecoParamsIndex[kNSpecies][kNDetectors]; // index to fDetRecoParams arrays
   TObjArray *fDetRecoParams[kNDetectors];   // array with reconstruction-parameter objects for all detectors
