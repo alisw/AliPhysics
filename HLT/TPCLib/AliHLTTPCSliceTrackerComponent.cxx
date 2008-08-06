@@ -1,33 +1,27 @@
 // $Id$
 
-/**************************************************************************
- * This file is property of and copyright by the ALICE HLT Project        * 
- * ALICE Experiment at CERN, All rights reserved.                         *
- *                                                                        *
- * Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
- *                  Timm Steinbeck <timm@kip.uni-heidelberg.de>           *
- *                  for The ALICE HLT Project.                            *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+//**************************************************************************
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//*                                                                        *
+//* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
+//*                  Timm Steinbeck <timm@kip.uni-heidelberg.de>           *
+//*                  for The ALICE HLT Project.                            *
+//*                                                                        *
+//* Permission to use, copy, modify and distribute this software and its   *
+//* documentation strictly for non-commercial purposes is hereby granted   *
+//* without fee, provided that the above copyright notice appears in all   *
+//* copies and that both the copyright notice and this permission notice   *
+//* appear in the supporting documentation. The authors make no claims     *
+//* about the suitability of this software for any purpose. It is          *
+//* provided "as is" without express or implied warranty.                  *
+//**************************************************************************
 
 /** @file   AliHLTTPCSliceTrackerComponent.cxx
     @author Timm Steinbeck, Matthias Richter
     @date   
     @brief  The TPC conformal mapping tracker component.
 */
-
-// see header file for class documentation
-// or
-// refer to README to build package
-// or
-// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
 #if __GNUC__>= 3
 using namespace std;
@@ -417,9 +411,12 @@ int AliHLTTPCSliceTrackerComponent::DoDeinit()
 int AliHLTTPCSliceTrackerComponent::DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
 					      AliHLTComponentTriggerData& /*trigData*/, AliHLTUInt8_t* outputPtr, 
 					      AliHLTUInt32_t& size, AliHLTComponentBlockDataList& outputBlocks )
-    {
+{
   // see header file for class documentation
-    Logging( kHLTLogDebug, "HLT::TPCSliceTracker::DoEvent", "DoEvent", "DoEvent()" );
+  int iResult=0;
+  AliHLTUInt32_t capacity=size;
+  size=0;
+
     if ( evtData.fBlockCnt<=0 )
       {
 	Logging( kHLTLogWarning, "HLT::TPCSliceTracker::DoEvent", "DoEvent", "no blocks in event" );
@@ -454,12 +451,28 @@ int AliHLTTPCSliceTrackerComponent::DoEvent( const AliHLTComponentEventData& evt
 	{
 	iter = blocks+ndx;
 
-	if(iter->fDataType!=AliHLTTPCDefinitions::fgkClustersDataType){
-	  HLTDebug("Data block type is not of type AliHLTTPCDefinitions::fgkClustersDataType");
+	bool bIsClusterDataBlock=false;
+	bool bIsVertexDataBlock=false;
+	if(!(bIsClusterDataBlock=(iter->fDataType==AliHLTTPCDefinitions::fgkClustersDataType)) &&
+	   !(bIsVertexDataBlock=(iter->fDataType==AliHLTTPCDefinitions::fgkVertexDataType))){
 	  continue;
 	}
 
 	slice = AliHLTTPCDefinitions::GetMinSliceNr( *iter );
+	if (slice<0 || slice>=AliHLTTPCTransform::GetNSlice()) {
+	  HLTError("invalid slice number %d extracted from specification 0x%08lx,  skipping block of type %s",
+		   slice, iter->fSpecification, DataType2Text(iter->fDataType).c_str());
+	  // just remember the error, if there are other valid blocks ignore the
+	  // error, return code otherwise
+	  iResult=-EBADF;
+	  continue;
+	}
+	if (slice!=AliHLTTPCDefinitions::GetMaxSliceNr( *iter )) {
+	  // the code was not written for/ never used with multiple slices
+	  // in one data block/ specification
+	  HLTWarning("specification 0x%08lx indicates multiple slices in data block %s: never used before, please audit the code",
+		     iter->fSpecification, DataType2Text(iter->fDataType).c_str());
+	}
 	found = false;
 	slIter = slices.begin();
 	slEnd = slices.end();
@@ -482,7 +495,7 @@ int AliHLTTPCSliceTrackerComponent::DoEvent( const AliHLTComponentEventData& evt
 	else
 	    *slCntIter++;
 
-	if ( iter->fDataType == AliHLTTPCDefinitions::fgkVertexDataType )
+	if (bIsVertexDataBlock)
 	    {
 	    inPtrV = (AliHLTTPCVertexData*)(iter->fPtr);
 	    vertexIter = iter;
@@ -490,7 +503,7 @@ int AliHLTTPCSliceTrackerComponent::DoEvent( const AliHLTComponentEventData& evt
 	    fVertex->Read( inPtrV );
 	    vertexSlice = slice;
 	    }
-	if ( iter->fDataType == AliHLTTPCDefinitions::fgkClustersDataType )
+	if (bIsClusterDataBlock)
 	    {
 	    patch = AliHLTTPCDefinitions::GetMinPatchNr( *iter );
 	    if ( minPatch>patch )
@@ -537,9 +550,13 @@ int AliHLTTPCSliceTrackerComponent::DoEvent( const AliHLTComponentEventData& evt
       }
     else
       {
-	slice = -1;
+	// there is no sense in running the tracker without input, do not send an
+	// empty output block
+	return iResult;
       }
     
+    iResult=0;
+
     if ( vertexSlice != slice )
 	{
 	// multiple vertex blocks in event and we used the wrong one...
@@ -594,7 +611,6 @@ int AliHLTTPCSliceTrackerComponent::DoEvent( const AliHLTComponentEventData& evt
 	pIter++;
 	}
 
-    outPtr = (AliHLTTPCTrackletData*)(outBPtr);
 
     if ( fmainvertextracking == kTRUE && fnonvertextracking == kFALSE){	
       Logging( kHLTLogDebug, "HLT::TPCSliceTracker::DoEvent", "Tracking", " ---MAINVERTEXTRACKING---");
@@ -629,6 +645,8 @@ int AliHLTTPCSliceTrackerComponent::DoEvent( const AliHLTComponentEventData& evt
     } 
     ntracks0=0;
     AliHLTTPCTrackArray* pArray=fTracker->GetTracks();
+    if (pArray->GetOutSize()+sizeof(AliHLTTPCTrackletData)<=capacity) {
+    outPtr = (AliHLTTPCTrackletData*)(outBPtr);
     mysize = pArray->WriteTracks( ntracks0, outPtr->fTracklets );
     outPtr->fTrackletCnt = ntracks0;
 
@@ -638,15 +656,18 @@ int AliHLTTPCSliceTrackerComponent::DoEvent( const AliHLTComponentEventData& evt
 
     fTracker->Reset();
 
-    tSize += mysize+sizeof(AliHLTTPCTrackletData);
-    outBPtr += mysize+sizeof(AliHLTTPCTrackletData);
-    
     AliHLTComponentBlockData bd;
     FillBlockData( bd );
     bd.fOffset = offset;
-    bd.fSize = tSize;
+    bd.fSize = mysize+sizeof(AliHLTTPCTrackletData);
     bd.fSpecification = AliHLTTPCDefinitions::EncodeDataSpecification( slice, slice, minPatch, maxPatch );
     outputBlocks.push_back( bd );
+
+    tSize += bd.fSize;
+    outBPtr += bd.fSize;
+    } else {
+      iResult=-ENOSPC;
+    }
 
 #ifdef FORWARD_VERTEX_BLOCK
     if ( vertexIter )
@@ -658,7 +679,7 @@ int AliHLTTPCSliceTrackerComponent::DoEvent( const AliHLTComponentEventData& evt
 #endif // FORWARD_VERTEX_BLOCK
 
     size = tSize;
-    return 0;
+    return iResult;
     }
 
 int AliHLTTPCSliceTrackerComponent::Configure(const char* arguments)

@@ -1,21 +1,21 @@
 // $Id$
 
-/**************************************************************************
- * This file is property of and copyright by the ALICE HLT Project        * 
- * ALICE Experiment at CERN, All rights reserved.                         *
- *                                                                        *
- * Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
- *                  Timm Steinbeck <timm@kip.uni-heidelberg.de>           *
- *                  for The ALICE HLT Project.                            *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+//**************************************************************************
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//*                                                                        *
+//* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
+//*                  Timm Steinbeck <timm@kip.uni-heidelberg.de>           *
+//*                  for The ALICE HLT Project.                            *
+//*                                                                        *
+//* Permission to use, copy, modify and distribute this software and its   *
+//* documentation strictly for non-commercial purposes is hereby granted   *
+//* without fee, provided that the above copyright notice appears in all   *
+//* copies and that both the copyright notice and this permission notice   *
+//* appear in the supporting documentation. The authors make no claims     *
+//* about the suitability of this software for any purpose. It is          *
+//* provided "as is" without express or implied warranty.                  *
+//**************************************************************************
 
 /** @file   AliHLTTPCGlobalMergerComponent.cxx
     @author Timm Steinbeck, Matthias Richter
@@ -23,19 +23,13 @@
     @brief  HLT TPC global merger component.
 */
 
-// see header file for class documentation                                   //
-// or                                                                        //
-// refer to README to build package                                          //
-// or                                                                        //
-// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt                          //
-
 #if __GNUC__>= 3
 using namespace std;
 #endif
 
 #include <climits>
 #include "AliHLTTPCGlobalMergerComponent.h"
-//#include "AliHLTTPCTransform.h"
+#include "AliHLTTPCTransform.h"
 #include "AliHLTTPCGlobalMerger.h"
 #include "AliHLTTPCVertex.h"
 #include "AliHLTTPCVertexData.h"
@@ -140,6 +134,8 @@ int AliHLTTPCGlobalMergerComponent::DoEvent( const AliHLTComponentEventData& evt
 {
   // see header file for class documentation
   int iResult=0;
+  AliHLTUInt32_t capacity=size;
+  size=0;
   const AliHLTComponentBlockData* iter = NULL;
   const AliHLTComponentBlockData* lastVertexBlock = NULL;
   unsigned long ndx;
@@ -158,7 +154,28 @@ int AliHLTTPCGlobalMergerComponent::DoEvent( const AliHLTComponentEventData& evt
   for ( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
     {
       iter = blocks+ndx;
+      bool bIsTrackSegDataBlock=false;
+      bool bIsVertexDataBlock=false;
+      if(!(bIsTrackSegDataBlock=(iter->fDataType==AliHLTTPCDefinitions::fgkTrackSegmentsDataType)) &&
+	 !(bIsVertexDataBlock=(iter->fDataType==AliHLTTPCDefinitions::fgkVertexDataType))){
+	continue;
+      }
+
       slice = AliHLTTPCDefinitions::GetMinSliceNr( *iter );
+      if (slice<0 || slice>=AliHLTTPCTransform::GetNSlice()) {
+	HLTError("invalid slice number %d extracted from specification 0x%08lx,  skipping block of type %s",
+		 slice, iter->fSpecification, DataType2Text(iter->fDataType).c_str());
+	// just remember the error, if there are other valid blocks ignore the
+	// error, return code otherwise
+	iResult=-EBADF;
+	continue;
+      }
+      if (slice!=AliHLTTPCDefinitions::GetMaxSliceNr( *iter )) {
+	// the code was not written for/ never used with multiple slices
+	// in one data block/ specification
+	HLTWarning("specification 0x%08lx indicates multiple slices in data block %s: never used before, please audit the code",
+		   iter->fSpecification, DataType2Text(iter->fDataType).c_str());
+      }
       found=false;
       sdIter = slices.begin();
       sdEnd = slices.end();
@@ -184,7 +201,7 @@ int AliHLTTPCGlobalMergerComponent::DoEvent( const AliHLTComponentEventData& evt
 	}
       if ( sdIter->fSlice == slice )
 	{
-	  if ( iter->fDataType == AliHLTTPCDefinitions::fgkTrackSegmentsDataType )
+	  if (bIsTrackSegDataBlock)
 	    {
 	      if ( !sdIter->fTrackletBlock )
 		{
@@ -198,7 +215,7 @@ int AliHLTTPCGlobalMergerComponent::DoEvent( const AliHLTComponentEventData& evt
 			   slice, evtData.fEventID, evtData.fEventID, sdIter->fTrackletBlockIndex, ndx );
 		}
 	    }
-	  if ( iter->fDataType == AliHLTTPCDefinitions::fgkVertexDataType )
+	  if (bIsVertexDataBlock)
 	    {
 	      lastVertexBlock = iter;
 	      if ( !sdIter->fVertexBlock )
@@ -215,6 +232,12 @@ int AliHLTTPCGlobalMergerComponent::DoEvent( const AliHLTComponentEventData& evt
 	    }
 	}
     }
+
+  // skip the processing if there was no track segment data
+  if (slices.size()==0) {
+    return iResult;
+  }
+  iResult=0;
 
   //fGlobalMerger->Setup( minSlice, maxSlice );
   fGlobalMerger->Setup( 0, 35 );
@@ -268,7 +291,7 @@ int AliHLTTPCGlobalMergerComponent::DoEvent( const AliHLTComponentEventData& evt
 
   // check if there was enough space in the output buffer
   UInt_t ntracks0=fGlobalMerger->GetOutTracks()->GetNTracks();
-  if (outputPtr==NULL || (sizeof(AliHLTTPCTrackletData)+ntracks0*sizeof(AliHLTTPCTrackSegmentData)>size)) {
+  if (outputPtr==NULL || (sizeof(AliHLTTPCTrackletData)+ntracks0*sizeof(AliHLTTPCTrackSegmentData)>capacity)) {
     iResult=-ENOSPC;
   } else {
   outPtr = (AliHLTTPCTrackletData*)(outputPtr);
