@@ -11,6 +11,7 @@
   Output Files:            peds.csv
   Trigger types used:      PEDESTAL
 */
+#include <iostream>
 #include <TSystem.h>
 #include <TString.h>
 #include <AliFMDParameters.h>
@@ -22,20 +23,18 @@
 #include "daqDA.h"
 #include "TROOT.h"
 #include "TPluginManager.h"
-
+#include <AliLog.h>
 
 
 int main(int argc, char **argv) 
 {
-
-  //#if 0
   /* magic line from Rene - for future reference! */
   gROOT->GetPluginManager()->AddHandler("TVirtualStreamerInfo",
-					"*",
+  					"*",
 					"TStreamerInfo",
 					"RIO",
 					"TStreamerInfo()");
-  //#endif
+  
   
   Bool_t diagnostics = kFALSE;
   Char_t* fileName = argv[1];
@@ -55,7 +54,7 @@ int main(int argc, char **argv)
   }
   Bool_t old = kTRUE;
 
-
+  AliLog::SetModuleDebugLevel("FMD", 1);
   AliFMDParameters::Instance()->Init(kFALSE,0);
   AliFMDParameters::Instance()->UseCompleteHeader(old);
 
