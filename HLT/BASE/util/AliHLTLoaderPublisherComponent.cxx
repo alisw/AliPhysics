@@ -200,6 +200,10 @@ int AliHLTLoaderPublisherComponent::GetEvent(const AliHLTComponentEventData& /*e
 					     AliHLTComponentTriggerData& /*trigData*/)
 {
   // see header file for class documentation
+
+  // process data events only
+  if (!IsDataEvent()) return 0;
+
   int iResult=0;
   // fetch runLoader instance from interface
   AliRunLoader* pRunLoader=GetRunLoader();

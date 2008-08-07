@@ -222,6 +222,10 @@ int AliHLTRawReaderPublisherComponent::GetEvent(const AliHLTComponentEventData& 
 {
   // see header file for class documentation
   int iResult=0;
+
+  // process data events only
+  if (!IsDataEvent()) return 0;
+
   unsigned int offset=0;
   assert(outputPtr!=NULL || size==0);
   AliRawReader* pRawReader=GetRawReader();

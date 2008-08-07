@@ -195,6 +195,10 @@ int AliHLTOUTPublisherComponent::GetEvent( const AliHLTComponentEventData& /*evt
 {
   // see header file for class documentation
   int iResult=0;
+
+  // process data events only
+  if (!IsDataEvent()) return 0;
+
   unsigned int offset=0;
   AliHLTOUT* pHLTOUT=NULL;
   AliRawReader* pRawReader=GetRawReader();

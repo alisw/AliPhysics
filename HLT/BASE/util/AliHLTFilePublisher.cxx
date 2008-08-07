@@ -328,6 +328,10 @@ int AliHLTFilePublisher::GetEvent( const AliHLTComponentEventData& /*evtData*/,
 				   AliHLTComponentBlockDataList& outputBlocks )
 {
   // see header file for class documentation
+
+  // process data events only
+  if (!IsDataEvent()) return 0;
+
   int iResult=0;
   TObjLink *lnk=fpCurrent;
   if (lnk==NULL) lnk=fEvents.FirstLink();

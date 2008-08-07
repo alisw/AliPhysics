@@ -92,7 +92,7 @@ int AliHLTEsdCollectorComponent::DumpEvent( const AliHLTComponentEventData& /*ev
        pBlock=GetNextInputBlock()) {
     if (pBlock->fDataType!=kAliHLTDataTypeESDObject &&
 	pBlock->fDataType!=kAliHLTDataTypeESDTree) continue;
-    HLTInfo("writing ESD, data type %s", (DataType2Text(pBlock->fDataType).c_str()));
+    HLTInfo("writing ESD, data type %s event %d", (DataType2Text(pBlock->fDataType).c_str()), GetEventCount());
     iResult=fpManager->WriteESD(reinterpret_cast<const AliHLTUInt8_t*>(pBlock->fPtr),
 				pBlock->fSize, pBlock->fDataType, NULL, GetEventCount());
   }

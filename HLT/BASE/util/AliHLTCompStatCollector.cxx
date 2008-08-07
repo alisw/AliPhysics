@@ -184,21 +184,24 @@ int AliHLTCompStatCollector::DoEvent( const AliHLTComponentEventData& /*evtData*
       fpSpecArray[current]=pBlock->fSpecification;
       fpBlockNoArray[current]=blockNo;
     }
+    // indicate availability of component statistic block
+    iResult=1;
   }
 
-  if (iResult>=0) {
+  if (iResult>0) {
     fNofSets=fPosition;
     fpStatTree->Fill();
     iResult=PushBack(fpStatTree, kAliHLTDataTypeTTree);
+
+    // init the timer for the next cycle
+    if (!fpTimer)  fpTimer=new TStopwatch;
+    if (fpTimer) {
+      fpTimer->Reset();
+      fpTimer->Start();
+    }
   }
 
-  // init the timer for the next cycle
-  if (!fpTimer)  fpTimer=new TStopwatch;
-  if (fpTimer) {
-    fpTimer->Reset();
-    fpTimer->Start();
-  }
-
+  if (iResult>0) iResult=-1;
   return iResult;
 }
 
