@@ -1556,12 +1556,10 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
     // write ESD
     if (fCleanESD) CleanESD(fesd);
 
-    if (fRunQA) {
-      if (fRunGlobalQA) {
-	AliQADataMaker *qadm = fQASteer->GetQADataMaker(AliQA::kGLOBAL);
-	if (qadm && fQATasks.Contains(Form("%d", AliQA::kESDS)))
-	  qadm->Exec(AliQA::kESDS, fesd);
-      }
+    if (fRunGlobalQA) {
+      AliQADataMaker *qadm = fQASteer->GetQADataMaker(AliQA::kGLOBAL);
+      if (qadm && fQATasks.Contains(Form("%d", AliQA::kESDS)))
+	qadm->Exec(AliQA::kESDS, fesd);
     }
 
     if (fWriteESDfriend) {
@@ -1595,17 +1593,17 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
 
   // End of cycle for the in-loop  
     if (fInLoopQA && fRunQA) {
-			fQASteer->RunOneEvent(fesd) ; 
-			fQASteer->EndOfCycle() ;
-		}
-    if (fRunGlobalQA) {
+      fQASteer->RunOneEvent(fesd) ; 
+      fQASteer->EndOfCycle() ;
+    }
+    if (fInLoopQA && fRunGlobalQA) {
       AliQADataMaker *qadm = fQASteer->GetQADataMaker(AliQA::kGLOBAL);
       if (qadm) {
-				if (fQATasks.Contains(Form("%d", AliQA::kRECPOINTS))) 
-					qadm->EndOfCycle(AliQA::kRECPOINTS);
-				if (fQATasks.Contains(Form("%d", AliQA::kESDS))) 
-					qadm->EndOfCycle(AliQA::kESDS);
-				qadm->Finish();
+	if (fQATasks.Contains(Form("%d", AliQA::kRECPOINTS))) 
+	  qadm->EndOfCycle(AliQA::kRECPOINTS);
+	if (fQATasks.Contains(Form("%d", AliQA::kESDS))) 
+	  qadm->EndOfCycle(AliQA::kESDS);
+	qadm->Finish();
       }
     }
 
