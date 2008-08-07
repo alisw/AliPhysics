@@ -122,6 +122,7 @@ class AliRawReader: public TObject {
     virtual Bool_t   RewindEvents() = 0;
     virtual Bool_t   GotoEvent(Int_t event);
     virtual Int_t    GetEventIndex() const { return -1; }
+    virtual Int_t    GetNumberOfEvents() const { return -1; }
 
     enum {kErrMagic=1, kErrNoDataHeader=2, 
 	  kErrSize=4, kErrOutOfBounds=8};

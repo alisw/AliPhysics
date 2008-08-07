@@ -560,6 +560,16 @@ Bool_t  AliRawReaderRoot::GotoEvent(Int_t event)
   return Reset();
 }
 
+Int_t AliRawReaderRoot::GetNumberOfEvents() const
+{
+  // Get the total number of events in
+  // the raw-data tree
+
+  if (!fBranch) return -1;
+
+  return fBranch->GetEntries();
+}
+
 Int_t AliRawReaderRoot::CheckData() const
 {
 // check the consistency of the data

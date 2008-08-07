@@ -171,3 +171,13 @@ Bool_t  AliRawReaderChain::GotoEvent(Int_t event)
   fEventNumber++;
   return Reset();
 }
+
+Int_t AliRawReaderChain::GetNumberOfEvents() const
+{
+  // Get the total number of events in the chain
+  // of raw-data files
+
+  if (!fChain) return -1;
+
+  return fChain->GetEntries();
+}

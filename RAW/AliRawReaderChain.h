@@ -27,6 +27,7 @@ class AliRawReaderChain: public AliRawReaderRoot {
     virtual Bool_t   NextEvent();
     virtual Bool_t   RewindEvents();
     virtual Bool_t   GotoEvent(Int_t event);
+    virtual Int_t    GetNumberOfEvents() const;
 
     virtual TChain*  GetChain() const { return fChain; }
 
