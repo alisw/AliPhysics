@@ -74,8 +74,10 @@ AliHLTComponent::AliHLTComponent()
   fpDDLList(NULL),
   fCDBSetRunNoFunc(false),
   fChainId(),
+  fChainIdCrc(0),
   fpBenchmark(NULL),
-  fRequireSteeringBlocks(false)
+  fRequireSteeringBlocks(false),
+  fEventType(gkAliEventTypeUnknown)
 {
   // see header file for class documentation
   // or
@@ -306,7 +308,7 @@ int AliHLTComponent::SetRunDescription(const AliHLTRunDesc* desc, const char* /*
 
 int AliHLTComponent::SetComponentDescription(const char* desc)
 {
-  // default implementation, childs can overload
+  // see header file for function documentation
   int iResult=0;
   if (!desc) return 0;
 
@@ -322,11 +324,13 @@ int AliHLTComponent::SetComponentDescription(const char* desc)
 	argument.ReplaceAll("chainid", "");
 	if (argument.BeginsWith("=")) {
 	  fChainId=argument.Replace(0,1,"");
+	  fChainIdCrc=CalculateChecksum((const AliHLTUInt8_t*)fChainId.c_str(), fChainId.length());
+	  HLTDebug("setting component description: chain id %s crc 0x%8x", fChainId.c_str(), fChainIdCrc);
 	} else {
 	  fChainId="";
 	}
       } else {
-	HLTWarning("unknown component discription %s", argument.Data());
+	HLTWarning("unknown component description %s", argument.Data());
       }
     }
   }
@@ -523,17 +527,22 @@ int AliHLTComponent::FindMatchingDataTypes(AliHLTComponent* pConsumer, AliHLTCom
       }
     }
     ((AliHLTComponent*)pConsumer)->GetInputDataTypes(itypes);
-    AliHLTComponentDataTypeList::iterator itype=itypes.begin();
-    while (itype!=itypes.end()) {
-      //PrintDataTypeContent((*itype), "consumer \'%s\'");
-      AliHLTComponentDataTypeList::iterator otype=otypes.begin();
-      while (otype!=otypes.end() && (*itype)!=(*otype)) otype++;
-      //if (otype!=otypes.end()) PrintDataTypeContent(*otype, "publisher \'%s\'");
-      if (otype!=otypes.end()) {
-	if (tgtList) tgtList->push_back(*itype);
+    AliHLTComponentDataTypeList::iterator otype=otypes.begin();
+    for (;otype!=otypes.end();otype++) {
+      //PrintDataTypeContent((*otype), "publisher \'%s\'");
+      if ((*otype)==(kAliHLTAnyDataType|kAliHLTDataOriginPrivate)) {
+	if (tgtList) tgtList->push_back(*otype);
+	iResult++;
+	continue;
+      }
+      
+      AliHLTComponentDataTypeList::iterator itype=itypes.begin();
+      for (;itype!=itypes.end() && (*itype)!=(*otype); itype++);
+      //if (itype!=itypes.end()) PrintDataTypeContent(*itype, "consumer \'%s\'");
+      if (itype!=itypes.end()) {
+	if (tgtList) tgtList->push_back(*otype);
 	iResult++;
       }
-      itype++;
     }
   } else {
     iResult=-EINVAL;
@@ -625,6 +634,7 @@ void AliHLTComponent::FillEventData(AliHLTComponentEventData& evtData)
   // see header file for function documentation
   memset(&evtData, 0, sizeof(AliHLTComponentEventData));
   evtData.fStructSize=sizeof(AliHLTComponentEventData);
+  evtData.fEventID=kAliHLTVoidEventID;
 }
 
 void AliHLTComponent::PrintComponentDataTypeInfo(const AliHLTComponentDataType& dt) 
@@ -1249,6 +1259,7 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
 #if defined(__DEBUG) || defined(HLT_COMPONENT_STATISTICS)
   AliHLTComponentStatistics outputStat;
   memset(&outputStat, 0, sizeof(AliHLTComponentStatistics));
+  outputStat.fId=fChainIdCrc;
   compStats.push_back(outputStat);
   if (fpBenchmark) {
     fpBenchmark->Reset();
@@ -1256,12 +1267,14 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
   }
 #endif
 
-  // data processing is skipped if there are only steering events
-  // in the block list. It is not skipped if there is no block list
-  // at all for the sake of data source components. Data processing
-  // is always skipped if the event is of type
-  // - gkAliEventTypeConfiguration
-  // - gkAliEventTypeReadPreprocessor
+  // data processing is skipped
+  // -  if there are only steering events in the block list.
+  //    For the sake of data source components data processing
+  //    is not skipped if there is no block list at all or if it
+  //    just contains the eventType block
+  // - always skipped if the event is of type
+  //   - gkAliEventTypeConfiguration
+  //   - gkAliEventTypeReadPreprocessor
   const unsigned int skipModeDefault=0x1;
   const unsigned int skipModeForce=0x2;
   unsigned int bSkipDataProcessing=skipModeDefault;
@@ -1270,7 +1283,6 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
   if (fpInputBlocks && evtData.fBlockCnt>0) {
     // first look for all special events and execute in the appropriate
     // sequence afterwords
-    AliHLTUInt32_t eventType=gkAliEventTypeUnknown;
     int indexComConfEvent=-1;
     int indexUpdtDCSEvent=-1;
     int indexSOREvent=-1;
@@ -1298,9 +1310,17 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
       } else if (fpInputBlocks[i].fDataType==kAliHLTDataTypeUpdtDCS) {
 	indexUpdtDCSEvent=i;
       } else if (fpInputBlocks[i].fDataType==kAliHLTDataTypeEvent) {
-	eventType=fpInputBlocks[i].fSpecification;
+	fEventType=fpInputBlocks[i].fSpecification;
+
+	// skip always in case of gkAliEventTypeConfiguration
 	if (fpInputBlocks[i].fSpecification==gkAliEventTypeConfiguration) bSkipDataProcessing|=skipModeForce;
+
+	// skip always in case of gkAliEventTypeReadPreprocessor
 	if (fpInputBlocks[i].fSpecification==gkAliEventTypeReadPreprocessor) bSkipDataProcessing|=skipModeForce;
+
+	// never skip if the event type block is the only block
+	if (evtData.fBlockCnt==1) bSkipDataProcessing&=~skipModeDefault;
+
       } else if (fpInputBlocks[i].fDataType==kAliHLTDataTypeComponentStatistics) {
 	if (compStats.size()>0) {
 	  AliHLTUInt8_t* pData=reinterpret_cast<AliHLTUInt8_t*>(fpInputBlocks[i].fPtr);
@@ -1330,6 +1350,7 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
       // start of run
       if (fpRunDesc==NULL) {
 	fpRunDesc=new AliHLTRunDesc;
+	if (fpRunDesc) *fpRunDesc=kAliHLTVoidRunDesc;
       }
       if (fpRunDesc) {
 	AliHLTRunDesc rundesc;
@@ -1365,7 +1386,7 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
 	HLTWarning("did not receive SOR, ignoring EOR");
       }
     }
-    if (indexComConfEvent>=0 || eventType==gkAliEventTypeConfiguration) {
+    if (indexComConfEvent>=0 || fEventType==gkAliEventTypeConfiguration) {
       TString cdbEntry;
       if (indexComConfEvent>=0 && fpInputBlocks[indexComConfEvent].fPtr!=NULL && fpInputBlocks[indexComConfEvent].fSize>0) {
 	cdbEntry.Append(reinterpret_cast<const char*>(fpInputBlocks[indexComConfEvent].fPtr), fpInputBlocks[indexComConfEvent].fSize);
@@ -1376,7 +1397,7 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
 	HLTWarning("reconfiguration of component %p (%s) failed with error code %d", this, GetComponentID(), tmpResult);
       }
     }
-    if (indexUpdtDCSEvent>=0 || eventType==gkAliEventTypeReadPreprocessor) {
+    if (indexUpdtDCSEvent>=0 || fEventType==gkAliEventTypeReadPreprocessor) {
       TString modules;
       if (fpInputBlocks[indexUpdtDCSEvent].fPtr!=NULL && fpInputBlocks[indexUpdtDCSEvent].fSize>0) {
 	modules.Append(reinterpret_cast<const char*>(fpInputBlocks[indexUpdtDCSEvent].fPtr), fpInputBlocks[indexUpdtDCSEvent].fSize);
@@ -1454,7 +1475,7 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
     outputBlocks=NULL;
   }
   CleanupInputObjects();
-  if (iResult>=0 && !bSkipDataProcessing) {
+  if (iResult>=0 && IsDataEvent()) {
     IncrementEventCounter();
   }
   if (outputBlockCnt==0) {
@@ -1636,6 +1657,15 @@ AliHLTUInt32_t AliHLTComponent::GetRunType() const
   return fpRunDesc->fRunType;
 }
 
+bool AliHLTComponent::IsDataEvent(AliHLTUInt32_t* pTgt)
+{
+  // see header file for function documentation
+  if (pTgt) *pTgt=fEventType;
+  return (fEventType==gkAliEventTypeData ||
+	  fEventType==gkAliEventTypeDataReplay ||
+	  fEventType==gkAliEventTypeCalibration);
+}
+
 int AliHLTComponent::CopyStruct(void* pStruct, unsigned int iStructSize, unsigned int iBlockNo,
 				const char* structname, const char* eventname)
 {
@@ -1739,4 +1769,50 @@ Int_t AliHLTComponent::GetFirstUsedDDLWord(AliHLTEventDDL &list) const
   }
 
   return iResult;
+}
+
+AliHLTUInt32_t AliHLTComponent::CalculateChecksum(const AliHLTUInt8_t* buffer, int size)
+{
+  // see header file for function documentation
+  AliHLTUInt32_t  remainder = 0; 
+  const AliHLTUInt8_t crcwidth=(8*sizeof(AliHLTUInt32_t));
+  const AliHLTUInt32_t topbit=1 << (crcwidth-1);
+  const AliHLTUInt32_t polynomial=0xD8;  /* 11011 followed by 0's */
+
+  // code from
+  // http://www.netrino.com/Embedded-Systems/How-To/CRC-Calculation-C-Code
+
+  /*
+   * Perform modulo-2 division, a byte at a time.
+   */
+  for (int byte = 0; byte < size; ++byte)
+    {
+      /*
+       * Bring the next byte into the remainder.
+       */
+      remainder ^= (buffer[byte] << (crcwidth - 8));
+
+      /*
+       * Perform modulo-2 division, a bit at a time.
+       */
+      for (uint8_t bit = 8; bit > 0; --bit)
+        {
+	  /*
+	   * Try to divide the current data bit.
+	   */
+	  if (remainder & topbit)
+            {
+	      remainder = (remainder << 1) ^ polynomial;
+            }
+	  else
+            {
+	      remainder = (remainder << 1);
+            }
+        }
+    }
+
+  /*
+   * The final remainder is the CRC result.
+   */
+  return (remainder);
 }

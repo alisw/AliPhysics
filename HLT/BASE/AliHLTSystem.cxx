@@ -647,7 +647,6 @@ int AliHLTSystem::SendControlEvent(AliHLTComponentDataType dt)
   AliHLTRunDesc runDesc;
   memset(&runDesc, 0, sizeof(AliHLTRunDesc));
   runDesc.fStructSize=sizeof(AliHLTRunDesc);
-  AliHLTDataSource::AliSpecialEventGuard g(&runDesc, dt, kAliHLTVoidDataSpec);
   HLTDebug("sending event %s, run descriptor %p", AliHLTComponent::DataType2Text(dt).c_str(), &runDesc);
   TObjLink *lnk=fTaskList.FirstLink();
   while (lnk && iResult>=0) {

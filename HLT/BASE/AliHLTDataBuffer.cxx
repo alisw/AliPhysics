@@ -588,7 +588,7 @@ int AliHLTDataBuffer::ResetDataBuffer()
   desc=fActiveConsumers.begin();
   while (desc!=fActiveConsumers.end()) {
     AliHLTConsumerDescriptor* pDesc=*desc;
-    HLTWarning("consumer %p was not released", pDesc);
+    HLTWarning("consumer %p (%s) was not released", pDesc, pDesc->GetComponent()?pDesc->GetComponent()->GetComponentID():"### invalid component ###");
     fActiveConsumers.erase(desc);
     desc=fActiveConsumers.begin();
     fConsumers.push_back(pDesc);

@@ -143,11 +143,11 @@ typedef vector<AliHLTMemoryFile*>         AliHLTMemoryFilePList;
  *   also implements a standard method for @ref GetInputDataTypes.
  *   
  * - AliHLTProcessor for components of type @ref kProcessor <br>
- *   All types of data processors can inherit from AliHLTDataSource and must
+ *   All types of data processors can inherit from AliHLTProcessor and must
  *   implement the @ref AliHLTProcessor::DoEvent method.
  *
  * - AliHLTDataSink for components of type @ref kSink <br>
- *   All types of data processors can inherit from AliHLTDataSource and must
+ *   All types of data processors can inherit from AliHLTDataSink and must
  *   implement the @ref AliHLTDataSink::DumpEvent method. The class
  *   also implements a standard method for @ref GetOutputDataType and @ref
  *   GetOutputDataSize.
@@ -165,7 +165,7 @@ typedef vector<AliHLTMemoryFile*>         AliHLTMemoryFilePList;
  * and AliHLTDataSink provides it's own processing method (see
  * @ref alihltcomponent-type-std), which splits into a high and a low-level
  * method. For the @ref alihltcomponent-low-level-interface, all parameters are
- * shipped as function arguments, the component is supposed to dump data to the
+ * shipped as function arguments, the component is supposed to write data to the
  * output buffer and handle all block descriptors. 
  * The @ref alihltcomponent-high-level-interface is the standard processing
  * method and will be used whenever the low-level method is not overloaded.
@@ -176,7 +176,7 @@ typedef vector<AliHLTMemoryFile*>         AliHLTMemoryFilePList;
  * For that reason the @ref GetOutputDataSize function should return a rough
  * estimatian of the data to be produced by the component. The component is
  * responsible for checking the memory size and must return -ENOSPC if the
- * available buffer is to small, and update the estimator respectively. The
+ * available buffer is too small, and update the estimator respectively. The
  * framework will allocate a buffer of appropriate size and call the processing
  * again.
  *
@@ -505,6 +505,12 @@ class AliHLTComponent : public AliHLTLogging {
   static string DataType2Text( const AliHLTComponentDataType& type, int mode=0);
 
   /**
+   * Calculate a CRC checksum of a data buffer.
+   * Polynomial for the calculation is 0xD8.
+   */
+  static AliHLTUInt32_t CalculateChecksum(const AliHLTUInt8_t* buffer, int size);
+
+  /**
    * Helper function to print content of data type.
    */
   static void PrintDataTypeContent(AliHLTComponentDataType& dt, const char* format=NULL);
@@ -736,6 +742,15 @@ class AliHLTComponent : public AliHLTLogging {
    * @return neg. error code if failed
    */
   virtual int EndOfRun();
+
+  /**
+   * Check whether a component requires all steering blocks.
+   * Childs can overload in order to indicate that they want to
+   * receive also the steering data blocks. There is also the
+   * possibility to add the required data types to the input
+   * data type list in GetInputDataTypes().
+   */
+  virtual bool RequireSteeringBlocks() const {return false;}
 
   /**
    * General memory allocation method.
@@ -1126,6 +1141,13 @@ class AliHLTComponent : public AliHLTLogging {
   const char* GetChainId() const {return fChainId.c_str();}
 
   /**
+   * Check whether the current event is a valid data event.
+   * @param pTgt    optional pointer to get the event type
+   * @return true if the current event is a real data event
+   */
+  bool IsDataEvent(AliHLTUInt32_t* pTgt=NULL);
+
+  /**
    * Set a bit to 1 in a readout list ( = AliHLTEventDDL )
    * -> enable DDL for readout
    * @param list        readout list
@@ -1349,12 +1371,18 @@ class AliHLTComponent : public AliHLTLogging {
   /** id of the component in the analysis chain */
   string fChainId;                                                 //! transient
 
+  /** crc value of the chainid, used as a 32bit id */
+  AliHLTUInt32_t fChainIdCrc;                                      //! transient
+
   /** optional benchmarking for the component statistics */
   TStopwatch* fpBenchmark;                                         //! transient
 
   /** component requires steering data blocks */
   bool fRequireSteeringBlocks;                                     //! transient
 
-  ClassDef(AliHLTComponent, 7)
+  /** current event type */
+  AliHLTUInt32_t fEventType;                                       //! transient
+
+  ClassDef(AliHLTComponent, 8)
 };
 #endif

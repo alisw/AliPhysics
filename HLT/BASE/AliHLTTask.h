@@ -78,6 +78,14 @@ class AliHLTTask : public TObject, public AliHLTLogging {
   int Init(AliHLTConfiguration* pConf, AliHLTComponentHandler* pCH);
 
   /**
+   * Create the component.
+   * @param pConf    configuration descritption
+   * @param pCH      component handler
+   * @return component instance
+   */
+  virtual int CreateComponent(AliHLTConfiguration* pConf, AliHLTComponentHandler* pCH, AliHLTComponent*& pComponent) const;
+
+  /**
    * De-Initialize the task.
    * Final cleanup after the run. The @ref AliHLTComponent::Deinit method of
    * the component is called. The analysis component is deleted.
@@ -197,7 +205,7 @@ class AliHLTTask : public TObject, public AliHLTLogging {
    * processing, the data blocks are released. <br>
    * The @ref StartRun method must be called before.
    */
-  int ProcessTask(Int_t eventNo);
+  int ProcessTask(Int_t eventNo, AliHLTUInt32_t eventType=gkAliEventTypeData);
 
   /**
    * Determine the number of matching data block between the component and the

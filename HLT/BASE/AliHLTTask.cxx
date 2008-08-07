@@ -104,22 +104,41 @@ int AliHLTTask::Init(AliHLTConfiguration* pConf, AliHLTComponentHandler* pCH)
 	       fpConfiguration, GetName(), pConf);
   }
   if (pConf!=NULL) fpConfiguration=pConf;
-  if (fpConfiguration) {
+  iResult=CreateComponent(fpConfiguration, pCH, fpComponent);
+  if (iResult>=0) {
+    iResult=CustomInit(pCH);
+  }
+  return iResult;
+}
+
+int AliHLTTask::CreateComponent(AliHLTConfiguration* pConf, AliHLTComponentHandler* pCH, AliHLTComponent*& pComponent) const
+{
+  // see header file for class documentation
+  int iResult=0;
+  if (pConf) {
     if (pCH) {
       int argc=0;
       const char** argv=NULL;
-      if ((iResult=fpConfiguration->GetArguments(&argv))>=0) {
+      if ((iResult=pConf->GetArguments(&argv))>=0) {
 	argc=iResult; // just to make it clear
 	// TODO: we have to think about the optional environment parameter,
-	// currently just set to NULL. 
-	iResult=pCH->CreateComponent(fpConfiguration->GetComponentID(), NULL, argc, argv, fpComponent);
-	if (fpComponent && iResult>=0) {
-	  //HLTDebug("component %s (%p) created", fpComponent->GetComponentID(), fpComponent); 
+	// currently just set to NULL.
+	iResult=pCH->CreateComponent(pConf->GetComponentID(), pComponent);
+	if (pComponent && iResult>=0) {
+	  TString description;
+	  description.Form("chainid=%s", GetName());
+	  pComponent->SetComponentDescription(description.Data());
+	  const AliHLTAnalysisEnvironment* pEnv=pCH->GetEnvironment();
+	  if ((iResult=pComponent->Init(pEnv, NULL, argc, argv))>=0) {
+	    //HLTDebug("component %s (%p) created", pComponent->GetComponentID(), pComponent); 
+	  } else {
+	    HLTError("Initialization of component \"%s\" failed with error %d", pComponent->GetComponentID(), iResult);
+	  }
 	} else {
-	  //HLTError("can not find component \"%s\" (%d)", fpConfiguration->GetComponentID(), iResult);
+	  //HLTError("can not find component \"%s\" (%d)", pConf->GetComponentID(), iResult);
 	}
       } else {
-	HLTError("can not get argument list for configuration %s (%s)", fpConfiguration->GetName(), fpConfiguration->GetComponentID());
+	HLTError("can not get argument list for configuration %s (%s)", pConf->GetName(), pConf->GetComponentID());
 	iResult=-EINVAL;
       }
     } else {
@@ -129,9 +148,6 @@ int AliHLTTask::Init(AliHLTConfiguration* pConf, AliHLTComponentHandler* pCH)
   } else {
     HLTError("configuration object instance needed for task initialization");
     iResult=-EINVAL;
-  }
-  if (iResult>=0) {
-    iResult=CustomInit(pCH);
   }
   return iResult;
 }
@@ -428,7 +444,7 @@ int AliHLTTask::EndRun()
   return iResult;
 }
 
-int AliHLTTask::ProcessTask(Int_t eventNo)
+int AliHLTTask::ProcessTask(Int_t eventNo, AliHLTUInt32_t eventType)
 {
   // see header file for function documentation
   int iResult=0;
@@ -504,7 +520,6 @@ int AliHLTTask::ProcessTask(Int_t eventNo)
     do {
       long unsigned int iOutputDataSize=0;
       AliHLTConfiguration* pConf=GetConf();
-      assert(pConf);
       // check if there was a buffer size specified, query output size
       // estimator from component otherwize
       if (pConf && pConf->GetOutputBufferSize()>=0) {
@@ -531,8 +546,8 @@ int AliHLTTask::ProcessTask(Int_t eventNo)
       //HLTDebug("provided raw buffer %p", pTgtBuffer);
       AliHLTComponentEventData evtData;
       AliHLTComponent::FillEventData(evtData);
-      evtData.fEventID=(AliHLTEventID_t)eventNo;
-      evtData.fBlockCnt=iSourceDataBlock;
+      if (eventNo>=0)
+	evtData.fEventID=(AliHLTEventID_t)eventNo;
       AliHLTComponentTriggerData trigData;
       trigData.fStructSize=sizeof(trigData);
       trigData.fDataSize=0;
@@ -542,14 +557,28 @@ int AliHLTTask::ProcessTask(Int_t eventNo)
       AliHLTComponentBlockData* outputBlocks=NULL;
       AliHLTComponentEventDoneData* edd=NULL;
       if (pTgtBuffer!=NULL || iOutputDataSize==0) {
+	// add event type data block
+	AliHLTComponentBlockData eventTypeBlock;
+	AliHLTComponent::FillBlockData(eventTypeBlock);
+	// Note: no payload!
+	eventTypeBlock.fDataType=kAliHLTDataTypeEvent;
+	eventTypeBlock.fSpecification=eventType;
+	fBlockDataArray.push_back(eventTypeBlock);
+
+	// process
+	evtData.fBlockCnt=fBlockDataArray.size();
 	iResult=pComponent->ProcessEvent(evtData, &fBlockDataArray[0], trigData, pTgtBuffer, size, outputBlockCnt, outputBlocks, edd);
 	HLTDebug("task %s: component %s ProcessEvent finnished (%d): size=%d blocks=%d", GetName(), pComponent->GetComponentID(), iResult, size, outputBlockCnt);
+
+	// remove event data block
+	fBlockDataArray.pop_back();
+
 	if (iResult>=0 && outputBlocks) {
 	  if (fListTargets.First()!=NULL) {
 	    AliHLTComponentBlockDataList segments;
 	    for (AliHLTUInt32_t oblock=0; oblock<outputBlockCnt; oblock++) {
 	      AliHLTUInt32_t iblock=0;
-	      for (; iblock<evtData.fBlockCnt; iblock++) {
+	      for (; iblock<fBlockDataArray.size(); iblock++) {
 		if (fBlockDataArray[iblock].fPtr==outputBlocks[oblock].fPtr) {
 		  assert(subscribedTaskList[iblock]!=NULL);
 		  if (subscribedTaskList[iblock]==NULL) continue;
@@ -559,7 +588,7 @@ int AliHLTTask::ProcessTask(Int_t eventNo)
 		  break;
 		}
 	      }
-	      if (iblock==evtData.fBlockCnt) segments.push_back(outputBlocks[oblock]);
+	      if (iblock==fBlockDataArray.size()) segments.push_back(outputBlocks[oblock]);
 	    }
 	    if (pTgtBuffer && segments.size()>0) {
 	      iResult=fpDataBuffer->SetSegments(pTgtBuffer, &segments[0], segments.size());
