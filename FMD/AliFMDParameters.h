@@ -113,7 +113,7 @@ public:
   void Init(AliFMDPreprocessor* pp, 
 	    Bool_t forceReInit=kFALSE, 
 	    UInt_t what = (kPulseGain|kPedestal|kDeadMap|kSampleRate|
-			   kZeroSuppression|kAltroMap));
+			   kZeroSuppression|kAltroMap|kStripRange));
   /** Print all parameters. 
       @param option Option string */
   void Print(Option_t* option="A") const;
