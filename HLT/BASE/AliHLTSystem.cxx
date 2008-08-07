@@ -40,6 +40,7 @@ using namespace std;
 #include "AliHLTOUT.h"
 #include "AliHLTOUTHandler.h"
 #include "AliHLTOUTTask.h"
+#include "AliHLTControlTask.h"
 #include <TObjArray.h>
 #include <TObjString.h>
 #include <TStopwatch.h>
@@ -63,7 +64,7 @@ const char* AliHLTSystem::fgkHLTDefaultLibs[]= {
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTSystem)
 
-AliHLTSystem::AliHLTSystem(AliHLTComponentLogSeverity loglevel)
+AliHLTSystem::AliHLTSystem(AliHLTComponentLogSeverity loglevel, const char* name)
   :
   fpComponentHandler(AliHLTComponentHandler::CreateHandler()),
   fpConfigurationHandler(AliHLTConfigurationHandler::CreateHandler()),
@@ -76,7 +77,9 @@ AliHLTSystem::AliHLTSystem(AliHLTComponentLogSeverity loglevel)
   fpChainHandlers(NULL),
   fpEsdHandlers(NULL),
   fpProprietaryHandlers(NULL),
-  fpHLTOUTTask(NULL)
+  fpHLTOUTTask(NULL),
+  fpControlTask(NULL),
+  fName(name)
 {
   // see header file for class documentation
   // or
@@ -128,6 +131,9 @@ AliHLTSystem::~AliHLTSystem()
     fpComponentHandler->Destroy();
   }
   fpComponentHandler=NULL;
+
+  // note: fpHLTOUTTask and fpControlTask are deleted by
+  // CleanTaskList
 }
 
 int AliHLTSystem::fgNofInstances=0;
@@ -275,11 +281,14 @@ int AliHLTSystem::CleanTaskList()
 {
   // see header file for class documentation
   int iResult=0;
+  fpHLTOUTTask=NULL;
+  fpControlTask=NULL;
   TObjLink* lnk=NULL;
   while ((lnk=fTaskList.LastLink())!=NULL) {
     delete (lnk->GetObject());
     fTaskList.Remove(lnk);
   }
+
   return iResult;
 }
 
@@ -403,7 +412,7 @@ int AliHLTSystem::InitTasks()
   TObjLink *lnk=fTaskList.FirstLink();
 
   if (lnk==NULL) {
-    HLTWarning("Task list is empty, skipping HLT");
+    HLTWarning("%s%sTask list is empty, skipping HLT", fName.Data(), fName.IsNull()?"":": ");
     return -126 /*ENOKEY*/;
   }
   while (lnk && iResult>=0) {
@@ -419,7 +428,7 @@ int AliHLTSystem::InitTasks()
     lnk = lnk->Next();
   }
   if (iResult<0) {
-    HLTError("can not initialize task list, error %d", iResult);
+    HLTError("%s%scan not initialize task list, error %d", fName.Data(), fName.IsNull()?"":": ", iResult);
   }
 
   return iResult;
@@ -569,13 +578,13 @@ int AliHLTSystem::StartTasks()
     lnk = lnk->Next();
   }
   if (iResult<0) {
-    HLTError("can not start task list, error %d", iResult);
+    HLTError("%s%scan not start task list, error %d", fName.Data(), fName.IsNull()?"":": ", iResult);
   } else {
     SetStatusFlags(kStarted);
     fEventCount=0;
     fGoodEvents=0;
     if ((iResult=SendControlEvent(kAliHLTDataTypeSOR))<0) {
-      HLTError("can not send SOR event");
+      HLTError("%s%scan not send SOR event", fName.Data(), fName.IsNull()?"":": ");
     }
   }
   return iResult;
@@ -601,10 +610,10 @@ int AliHLTSystem::ProcessTasks(Int_t eventNo)
   }
 
   if (iResult>=0) {
-    HLTImportant("Event %d successfully finished (%d)", eventNo, iResult);
+    HLTImportant("%s%sEvent %d successfully finished (%d)", fName.Data(), fName.IsNull()?"":": ", eventNo, iResult);
     iResult=0;
   } else {
-    HLTError("Processing of event %d failed (%d)", eventNo, iResult);
+    HLTError("%s%sProcessing of event %d failed (%d)", fName.Data(), fName.IsNull()?"":": ", eventNo, iResult);
   }
 
   return iResult;
@@ -615,8 +624,15 @@ int AliHLTSystem::StopTasks()
   // see header file for class documentation
   int iResult=0;
   if ((iResult=SendControlEvent(kAliHLTDataTypeEOR))<0) {
-    HLTError("can not send EOR event");
+    HLTError("%s%scan not send EOR event", fName.Data(), fName.IsNull()?"":": ");
   }
+
+  // cleanup blocks from the last event. This is a bit awkward. All output
+  // blocks from the chains need to be stored in the HLTOUT task. Though,
+  // we do not know, whether HLTOUT is going to be processed or not.
+  if (fpHLTOUTTask)
+    fpHLTOUTTask->Reset();
+
   TObjLink *lnk=fTaskList.FirstLink();
   while (lnk) {
     TObject* obj=lnk->GetObject();
@@ -1268,21 +1284,76 @@ int AliHLTSystem::BuildTaskListsFromReconstructionChains(AliRawReader* rawReader
       // there are components in the chain which produce data which need to be
       // piped to an HLTOUT sub-collection
       if (!fpHLTOUTTask) {
-	fpHLTOUTTask=new AliHLTOUTTask(chains.Data());
-	if (fpHLTOUTTask) {
-	  if (fpHLTOUTTask->GetConf() && fpHLTOUTTask->GetConf()->SourcesResolved()>=0) {
-	    iResult=InsertTask(fpHLTOUTTask);
-	  } else {
-	    HLTError("HLTOUT task (%s) sources not resolved", fpHLTOUTTask->GetName());
-	    iResult=-ENOENT;
-	  }
-	}
+	iResult=AddHLTOUTTask(chains.Data());
       }
     }
   }
 
   if (iResult>=0) SetStatusFlags(kTaskListCreated);
 
+  return iResult;
+}
+
+int AliHLTSystem::AddHLTOUTTask(const char* hltoutchains)
+{
+  // see header file for class documentation
+  int iResult=0;
+  if (!hltoutchains || hltoutchains[0]==0) return 0;
+
+  // check chains for output
+  TString chains=hltoutchains;
+  TObjArray* pTokens=chains.Tokenize(" ");
+  if (pTokens) {
+    int iEntries=pTokens->GetEntries();
+    for (int i=0; i<iEntries && iResult>=0; i++) {
+      const char* token=((TObjString*)pTokens->At(i))->GetString().Data();
+      AliHLTConfiguration* pConf=fpConfigurationHandler->FindConfiguration(token);
+      if (pConf) {
+	TString cid=pConf->GetComponentID();
+	if (fpComponentHandler->HasOutputData(cid.Data())) {
+	  continue;
+	}
+      } else {
+	HLTWarning("can not find configuration %s", token);
+      }
+      // remove from the list of hltout chains
+      chains.ReplaceAll(token, "");
+    }
+    delete pTokens;
+  }
+
+  // do not create the HLTOUT task if none of the chains have output
+  if (chains.IsNull()) return 0;
+
+  // indicate the task to be available
+  iResult=1;
+
+  if (fpHLTOUTTask) {
+    if (strcmp(chains.Data(), fpHLTOUTTask->GetSourceChains())==0) {
+      HLTWarning("HLTOUT task already added for chains \"%s\" %p", chains.Data(), fpHLTOUTTask);
+    } else {
+      HLTError("HLTOUT task already added for chains \"%s\" %p, ignoring new chains  \"%s\"",
+	       fpHLTOUTTask->GetSourceChains(), fpHLTOUTTask, chains.Data());
+    }
+    return iResult;
+  }
+
+  fpHLTOUTTask=new AliHLTOUTTask(chains);
+  if (fpHLTOUTTask) {
+    if (fpHLTOUTTask->GetConf() && fpHLTOUTTask->GetConf()->SourcesResolved()>=0) {
+      iResult=InsertTask(fpHLTOUTTask);
+    } else {
+      HLTError("HLTOUT task (%s) sources not resolved", fpHLTOUTTask->GetName());
+      iResult=-ENOENT;
+    }
+
+    if (iResult<0) {
+      delete fpHLTOUTTask;
+    }
+
+  } else {
+    iResult=-ENOMEM;
+  }
   return iResult;
 }
 

@@ -115,7 +115,10 @@ int AliHLTOUTTask::GenerateIndex()
       }
     }
   } else {
-    HLTWarning("no data buffer available");
+    // 2008-08-07 this is not a failure condition
+    // If the chain has not been processed because LocalReconstruction
+    // is not enabled, the task will be empty
+    //HLTWarning("no data buffer available");
   }
   return iResult;
 }
@@ -160,4 +163,11 @@ int AliHLTOUTTask::ResetInput()
   }
   fBlockDescList.clear();
   return iResult;
+}
+
+const char* AliHLTOUTTask::GetSourceChains() const
+{
+  // see header file for class documentation
+  if (!fpConfiguration) return "";
+  return fpConfiguration->GetSourceSettings();
 }

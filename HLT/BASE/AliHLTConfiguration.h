@@ -114,6 +114,16 @@ class AliHLTConfiguration : public TObject, public AliHLTLogging {
   const char* GetComponentID() const {return fComponent;}
 
   /**
+   * Return the source string.
+   */
+  const char* GetSourceSettings() const {return fStringSources;}
+
+  /**
+   * Return the argument string.
+   */
+  const char* GetArgumentSettings() const {return fArguments;}
+
+  /**
    * Print status info.
    * Short summary on id, component, sources and unresolved sources.
    */

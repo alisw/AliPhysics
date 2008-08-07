@@ -29,6 +29,7 @@ class AliHLTConfigurationHandler;
 class AliHLTTask;
 class AliHLTOUT;
 class AliHLTOUTTask;
+class AliHLTControlTask;
 class AliRunLoader;
 class AliRawReader;
 class AliESDEvent;
@@ -48,7 +49,7 @@ class TStopwatch;
 class AliHLTSystem : public AliHLTLogging {
  public:
   /** default constructor */
-  AliHLTSystem(AliHLTComponentLogSeverity loglevel=kHLTLogDefault);
+  AliHLTSystem(AliHLTComponentLogSeverity loglevel=kHLTLogDefault, const char* name="");
   /** destructor */
   virtual ~AliHLTSystem();
 
@@ -117,6 +118,17 @@ class AliHLTSystem : public AliHLTLogging {
    * @param pTask    pointer to task to add
    */
   int InsertTask(AliHLTTask* pTask);
+
+  /**
+   * Add HLTOUT task to the end of the task list.
+   * If one of the specified chains has output, an AliHLTOUTTask is
+   * added which controls the output. All other chains are removed from the
+   * AliHLTOUTTask input.
+   * @return 0 if no task has been added, 1 if task has been added
+   */
+  int AddHLTOUTTask(const char* chains);
+
+  AliHLTOUTTask* GetHLTOUTTask() const {return fpHLTOUTTask;}
 
   /**
    * Find a task with an id.
@@ -475,7 +487,13 @@ class AliHLTSystem : public AliHLTLogging {
   /** active HLTOUT task for the reconstruction */
   AliHLTOUTTask* fpHLTOUTTask;                                     //!transient
 
-  ClassDef(AliHLTSystem, 10);
+  /** special task to publish the control events */
+  AliHLTControlTask* fpControlTask;                                //!transient
+
+  /** name of this system instance */
+  TString fName;                                                   //!transient
+
+  ClassDef(AliHLTSystem, 12);
 };
 
 #endif

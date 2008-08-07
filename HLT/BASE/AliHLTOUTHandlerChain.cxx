@@ -29,6 +29,7 @@
 #include "TString.h"
 #include "TObjString.h"
 #include "TObjArray.h"
+#include <cassert>
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTOUTHandlerChain)
@@ -38,7 +39,7 @@ AliHLTOUTHandlerChain::AliHLTOUTHandlerChain(const char* arguments)
   fChains(),
   fOptions(),
   fpSystem(NULL),
-  fpTask(NULL)
+  fbHaveOutput(false)
 { 
   // see header file for class documentation
   // or
@@ -88,19 +89,24 @@ int AliHLTOUTHandlerChain::ProcessData(AliHLTOUT* pData)
     return iResult;
   }
 
-  if (fpSystem->CheckStatus(AliHLTSystem::kError) || !fpTask) {
+  if (fpSystem->CheckStatus(AliHLTSystem::kError)) {
     HLTWarning("kChain handler '%s': system in error state, skipping processing of associated HLTOUT blocks", fChains.Data());
     return -EACCES;
   }
 
   // run one event and do not stop the chain
-  fpTask->Reset();
   {
     AliHLTOUT::AliHLTOUTGlobalInstanceGuard g(pData);
     if ((iResult=fpSystem->Run(1,0))>=0) {
       // sub-collection is going to be reset from the
       // parent HLTOUT collection
-      AliHLTOUT* pSubCollection=dynamic_cast<AliHLTOUT*>(fpTask);
+      AliHLTOUTTask* pTask=fpSystem->GetHLTOUTTask();
+
+      // either have the task or none of the chains controlled by the chain
+      // handler has output
+      assert(pTask || !fbHaveOutput);
+      if (pTask) {
+      AliHLTOUT* pSubCollection=dynamic_cast<AliHLTOUT*>(pTask);
       pSubCollection->Init();
 
       // filter out some data blocks which should not be processed
@@ -117,10 +123,12 @@ int AliHLTOUTHandlerChain::ProcessData(AliHLTOUT* pData)
 	  pSubCollection->MarkDataBlockProcessed();
 	}
       }
-      
       pData->AddSubCollection(pSubCollection);
-    } else {
-      fpTask->Reset();
+      } else if (fbHaveOutput) {
+	// this is an error condition since task has been created and should
+	// be available
+	HLTError("can not get instance of HLTOUT task from HLT system %p", fpSystem);
+      }
     }
   }
 
@@ -139,7 +147,9 @@ int AliHLTOUTHandlerChain::InitSystem()
   int iResult=0;
   if (!fpSystem) {
     // init AliHLTSystem
-    fpSystem = new AliHLTSystem(GetGlobalLoggingLevel());
+    TString systemName="kChain_"; systemName+=fChains;
+    systemName.ReplaceAll(" ", "_");
+    fpSystem = new AliHLTSystem(GetGlobalLoggingLevel(), systemName);
     if (fpSystem) {
       if ((iResult=fpSystem->ScanOptions(fOptions.Data()))>=0) {
 	// load configurations if not specified by external macro
@@ -152,23 +162,15 @@ int AliHLTOUTHandlerChain::InitSystem()
 
 	// add AliHLTOUTTask on top of the configuartions in order to
 	// collect the data
-	fpTask=new AliHLTOUTTask(fChains.Data());
+	// remember if task has been created (result>0)
+	fbHaveOutput=((iResult=fpSystem->AddHLTOUTTask(fChains.Data()))>0);
       }
     } else {
       iResult=-ENOMEM;
     }
-    if (iResult>=0 && fpSystem && fpTask) {
-      if (fpTask->GetConf() && fpTask->GetConf()->SourcesResolved()>=0) {
-	iResult=fpSystem->InsertTask(fpTask);
-      } else {
-	HLTError("HLTOUT task (%s) sources not resolved", fpTask->GetName());
-	iResult=-ENOENT;
-      }
-    }
-    if (iResult<0 || !fpTask) {
+    if (iResult<0) {
       SetStatusFlag(kHandlerError);
       if (fpSystem) delete fpSystem; fpSystem=NULL;
-      if (fpTask) delete fpTask; fpTask=NULL;
     }
   }
   return iResult;

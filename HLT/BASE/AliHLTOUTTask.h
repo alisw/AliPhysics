@@ -30,6 +30,11 @@ class AliHLTOUTTask : public AliHLTOUT, public AliHLTTask {
   /** standard destructor */
   virtual ~AliHLTOUTTask();
 
+  /**
+   * Get string of the source chains.
+   */
+  const char* GetSourceChains() const;
+
  protected:
 
  private:

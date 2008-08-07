@@ -17,7 +17,6 @@
 #include "TString.h"
 
 class AliHLTSystem;
-class AliHLTOUTTask;
 class AliHLTConfiguration;
 class AliHLTConfigurationHandler;
 
@@ -118,8 +117,8 @@ class AliHLTOUTHandlerChain : public AliHLTOUTHandler {
   TString fOptions; //! transient
 
   AliHLTSystem* fpSystem; //!transient
-  AliHLTOUTTask* fpTask; //!transient
+  bool fbHaveOutput; //!transient
 
-  ClassDef(AliHLTOUTHandlerChain, 0)
+  ClassDef(AliHLTOUTHandlerChain, 1)
 };
 #endif
