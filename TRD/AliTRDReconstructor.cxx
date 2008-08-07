@@ -56,16 +56,16 @@ AliTRDReconstructor::AliTRDReconstructor()
   fTCParams[2] = 0.114; // c1
   fTCParams[3] = 0.624; // c2
   // Ar tail cancellation parameters
-  fTCParams[4] = 1.156; // r1
-  fTCParams[5] = 0.130; // r2
-  fTCParams[6] = 0.114; // c1
-  fTCParams[7] = 0.624; // c2
+  fTCParams[4] = 6.;    // r1
+  fTCParams[5] = 0.62;  // r2
+  fTCParams[6] = 0.0087;// c1
+  fTCParams[7] = 0.07;  // c2
 }
 
 //_____________________________________________________________________________
 AliTRDReconstructor::AliTRDReconstructor(const AliTRDReconstructor &r)
   :AliReconstructor(r)
-  ,fSteerParam(0x00000007)
+  ,fSteerParam(r.fSteerParam)
 {
   memcpy(fStreamLevel, r.fStreamLevel, 5*sizeof(UChar_t));
   memcpy(fTCParams, r.fTCParams, 8*sizeof(Double_t));

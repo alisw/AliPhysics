@@ -1367,10 +1367,12 @@ void AliTRDclusterizer::DeConvExp(Double_t *source, Double_t *target
     c2 = 0.000;
   }
   if (nexp == 2) {   // 2 Exponentials
-    r1 = 1.156;
-    r2 = 0.130;
-    c1 = 0.114;
-    c2 = 0.624;
+    Double_t par[4];
+    fReconstructor->GetTCParams(par);
+    r1 = par[0];//1.156;
+    r2 = par[1];//0.130;
+    c1 = par[2];//0.114;
+    c2 = par[3];//0.624;
   }
 
   coefficients[0] = c1;

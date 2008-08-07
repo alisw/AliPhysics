@@ -25,6 +25,7 @@
 
 class AliTRDcluster;
 class AliESDtrack;
+class AliTRDReconstructor;
 class AliTRDtrackV1 : public AliKalmanTrack
 {
 public:
@@ -80,6 +81,7 @@ public:
   void           SetOwner();
   void           SetStopped(Bool_t stop) {SetBit(2, stop);}
   void           SetTracklet(AliTRDseedV1 *trklt,  Int_t index);
+  inline void    SetReconstructor(const AliTRDReconstructor *rec);
   inline Float_t StatusForTOF();
   Bool_t         Update(AliTRDseedV1 *tracklet, Double_t chi2);
   //Bool_t         Update(const AliTRDcluster *c, Double_t chi2, Int_t index, Double_t h01){ return AliTRDtrack::Update(c,chi2,index,h01); };
@@ -129,6 +131,17 @@ inline Int_t AliTRDtrackV1::GetNumberOfTracklets() const
   }
   return n;
 }
+
+
+//____________________________________________________
+inline void AliTRDtrackV1::SetReconstructor(const AliTRDReconstructor *rec)
+{
+  for(Int_t ip=0; ip<kNplane; ip++){
+    if(!fTracklet[ip]) continue;
+    fTracklet[ip]->SetReconstructor(rec);
+  }
+}
+
 
 //____________________________________________________________________________
 inline Float_t AliTRDtrackV1::StatusForTOF()

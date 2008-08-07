@@ -50,7 +50,7 @@ AliTRDrecoParam::AliTRDrecoParam()
   ,fMinLeftRightCutSigma(8.)
   ,fClusMaxThresh(4.5)
   ,fClusSigThresh(3.5)
-  ,fTCnexp(1)
+  ,fTCnexp(2)
   ,fNumberOfPresamples(0)
   ,fNumberOfPostsamples(0)
 {
