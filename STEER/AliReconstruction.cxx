@@ -120,6 +120,8 @@
 #include <TArrayD.h>
 #include <TObjArray.h>
 #include <TMap.h>
+#include <TChain.h>
+#include <TProof.h>
 
 #include "AliReconstruction.h"
 #include "AliCodeTimer.h"
@@ -131,6 +133,7 @@
 #include "AliRawReaderDate.h"
 #include "AliRawReaderRoot.h"
 #include "AliRawEventHeaderBase.h"
+#include "AliRawEvent.h"
 #include "AliESDEvent.h"
 #include "AliESDMuonTrack.h"
 #include "AliESDfriend.h"
@@ -154,7 +157,6 @@
 #include "AliESDPmdTrack.h"
 
 #include "AliESDTagCreator.h"
-#include "AliAODTagCreator.h"
 
 #include "AliGeomManager.h"
 #include "AliTrackPointArray.h"
@@ -189,17 +191,14 @@
 
 ClassImp(AliReconstruction)
 
-
 //_____________________________________________________________________________
 const char* AliReconstruction::fgkDetectorName[AliReconstruction::fgkNDetectors] = {"ITS", "TPC", "TRD", "TOF", "PHOS", "HMPID", "EMCAL", "MUON", "FMD", "ZDC", "PMD", "T0", "VZERO", "ACORDE", "HLT"};
 
 //_____________________________________________________________________________
-AliReconstruction::AliReconstruction(const char* gAliceFilename,
-				     const char* name, const char* title) :
-  TNamed(name, title),
-
+AliReconstruction::AliReconstruction(const char* gAliceFilename) :
+  TSelector(),
   fUniformField(kFALSE),
-  fForcedFieldMap(0x0),
+  fForcedFieldMap(NULL),
   fRunVertexFinder(kTRUE),
   fRunVertexFinderTracks(kTRUE),
   fRunHLTTracking(kFALSE),
@@ -209,7 +208,6 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename,
   fStopOnError(kFALSE),
   fWriteAlignmentData(kFALSE),
   fWriteESDfriend(kFALSE),
-  fWriteAOD(kFALSE),
   fFillTriggerESD(kTRUE),
 
   fCleanESD(kTRUE),
@@ -223,7 +221,7 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename,
   fFillESD("ALL"),
   fUseTrackingErrorsForAlignment(""),
   fGAliceFileName(gAliceFilename),
-  fInput(""),
+  fRawInput(""),
   fEquipIdMap(""),
   fFirstEvent(0),
   fLastEvent(-1),
@@ -272,7 +270,8 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename,
   fhlttree(NULL),
   ftVertexer(NULL),
   fIsNewRunLoader(kFALSE),
-  fRunAliEVE(kFALSE)
+  fRunAliEVE(kFALSE),
+  fChain(NULL)
 {
 // create reconstruction object with default parameters
   
@@ -280,21 +279,17 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename,
     fReconstructor[iDet] = NULL;
     fLoader[iDet] = NULL;
     fTracker[iDet] = NULL;
-		fQACycles[iDet] = 999999;	
+    fQACycles[iDet] = 999999;	
   }
-  fQASteer = new AliQADataMakerSteer("rec") ; 
-	fQASteer->SetActiveDetectors(fQADetectors) ; 
-	fQATasks = Form("%d %d %d", AliQA::kRAWS, AliQA::kRECPOINTS, AliQA::kESDS) ; 
-	fQASteer->SetTasks(fQATasks) ; 
+  fQATasks = Form("%d %d %d", AliQA::kRAWS, AliQA::kRECPOINTS, AliQA::kESDS) ; 
   AliPID pid;
 }
 
 //_____________________________________________________________________________
 AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
-  TNamed(rec),
-
+  TSelector(),
   fUniformField(rec.fUniformField),
-  fForcedFieldMap(0x0),
+  fForcedFieldMap(NULL),
   fRunVertexFinder(rec.fRunVertexFinder),
   fRunVertexFinderTracks(rec.fRunVertexFinderTracks),
   fRunHLTTracking(rec.fRunHLTTracking),
@@ -304,7 +299,6 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fStopOnError(rec.fStopOnError),
   fWriteAlignmentData(rec.fWriteAlignmentData),
   fWriteESDfriend(rec.fWriteESDfriend),
-  fWriteAOD(rec.fWriteAOD),
   fFillTriggerESD(rec.fFillTriggerESD),
 
   fCleanESD(rec.fCleanESD),
@@ -318,7 +312,7 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fFillESD(rec.fFillESD),
   fUseTrackingErrorsForAlignment(rec.fUseTrackingErrorsForAlignment),
   fGAliceFileName(rec.fGAliceFileName),
-  fInput(rec.fInput),
+  fRawInput(rec.fRawInput),
   fEquipIdMap(rec.fEquipIdMap),
   fFirstEvent(rec.fFirstEvent),
   fLastEvent(rec.fLastEvent),
@@ -335,11 +329,11 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fRawReader(NULL),
   fParentRawReader(NULL),
 
-  fRecoParam(),
+  fRecoParam(rec.fRecoParam),
 
   fVertexer(NULL),
-  fDiamondProfile(NULL),
-  fDiamondProfileTPC(NULL),
+  fDiamondProfile(rec.fDiamondProfile),
+  fDiamondProfileTPC(rec.fDiamondProfileTPC),
   fMeanVertexConstraint(rec.fMeanVertexConstraint),
 
   fGRPData(NULL),
@@ -350,7 +344,7 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fInitCDBCalled(rec.fInitCDBCalled),
   fSetRunNumberFromDataCalled(rec.fSetRunNumberFromDataCalled),
   fQADetectors(rec.fQADetectors), 
-  fQASteer(rec.fQASteer),  
+  fQASteer(NULL),  
   fQATasks(rec.fQATasks), 
   fRunQA(rec.fRunQA),  
   fRunGlobalQA(rec.fRunGlobalQA),
@@ -366,7 +360,8 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fhlttree(NULL),
   ftVertexer(NULL),
   fIsNewRunLoader(rec.fIsNewRunLoader),
-  fRunAliEVE(kFALSE)
+  fRunAliEVE(kFALSE),
+  fChain(NULL)
 {
 // copy constructor
 
@@ -383,16 +378,113 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
     if (rec.fSpecCDBUri[i]) fSpecCDBUri.Add(rec.fSpecCDBUri[i]->Clone());
   }
 
-  fForcedFieldMap=new AliMagWrapCheb(*((AliMagWrapCheb*)rec.fForcedFieldMap));
 }
 
 //_____________________________________________________________________________
 AliReconstruction& AliReconstruction::operator = (const AliReconstruction& rec)
 {
 // assignment operator
+// Used in PROOF mode
+// Be very careful while modifing it!
+// Simple rules to follow:
+// for persistent data members - use their assignment operators
+// for non-persistent ones - do nothing or take the default values from constructor
+// TSelector members should not be touched
+  if(&rec == this) return *this;
 
-  this->~AliReconstruction();
-  new(this) AliReconstruction(rec);
+  fUniformField          = rec.fUniformField;
+  fForcedFieldMap        = NULL;
+  fRunVertexFinder       = rec.fRunVertexFinder;
+  fRunVertexFinderTracks = rec.fRunVertexFinderTracks;
+  fRunHLTTracking        = rec.fRunHLTTracking;
+  fRunMuonTracking       = rec.fRunMuonTracking;
+  fRunV0Finder           = rec.fRunV0Finder;
+  fRunCascadeFinder      = rec.fRunCascadeFinder;
+  fStopOnError           = rec.fStopOnError;
+  fWriteAlignmentData    = rec.fWriteAlignmentData;
+  fWriteESDfriend        = rec.fWriteESDfriend;
+  fFillTriggerESD        = rec.fFillTriggerESD;
+
+  fCleanESD  = rec.fCleanESD;
+  fV0DCAmax  = rec.fV0DCAmax;
+  fV0CsPmin  = rec.fV0CsPmin;
+  fDmax      = rec.fDmax;
+  fZmax      = rec.fZmax;
+
+  fRunLocalReconstruction        = rec.fRunLocalReconstruction;
+  fRunTracking                   = rec.fRunTracking;
+  fFillESD                       = rec.fFillESD;
+  fUseTrackingErrorsForAlignment = rec.fUseTrackingErrorsForAlignment;
+  fGAliceFileName                = rec.fGAliceFileName;
+  fRawInput                      = rec.fRawInput;
+  fEquipIdMap                    = rec.fEquipIdMap;
+  fFirstEvent                    = rec.fFirstEvent;
+  fLastEvent                     = rec.fLastEvent;
+  fNumberOfEventsPerFile         = rec.fNumberOfEventsPerFile;
+
+  for (Int_t i = 0; i < rec.fOptions.GetEntriesFast(); i++) {
+    if (rec.fOptions[i]) fOptions.Add(rec.fOptions[i]->Clone());
+  }
+
+  fLoadAlignFromCDB              = rec.fLoadAlignFromCDB;
+  fLoadAlignData                 = rec.fLoadAlignData;
+  fESDPar                        = rec.fESDPar;
+  fUseHLTData                    = rec.fUseHLTData;
+
+  delete fRunInfo; fRunInfo = NULL;
+  if (rec.fRunInfo) fRunInfo = new AliRunInfo(*rec.fRunInfo);
+
+  fEventInfo                     = rec.fEventInfo;
+
+  fRunLoader       = NULL;
+  fRawReader       = NULL;
+  fParentRawReader = NULL;
+
+  fRecoParam = rec.fRecoParam;
+
+  for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
+    delete fReconstructor[iDet]; fReconstructor[iDet] = NULL;
+    delete fLoader[iDet]; fLoader[iDet] = NULL;
+    delete fTracker[iDet]; fTracker[iDet] = NULL;
+    fQACycles[iDet] = rec.fQACycles[iDet];	
+  }
+
+  fVertexer             = NULL;
+  delete fDiamondProfile; fDiamondProfile = NULL;
+  if (rec.fDiamondProfile) fDiamondProfile = new AliESDVertex(*rec.fDiamondProfile);
+  delete fDiamondProfileTPC; fDiamondProfileTPC = NULL;
+  if (rec.fDiamondProfileTPC) fDiamondProfileTPC = new AliESDVertex(*rec.fDiamondProfileTPC);
+  fMeanVertexConstraint = rec.fMeanVertexConstraint;
+
+  delete fGRPData; fGRPData = NULL;
+  if (rec.fGRPData) fGRPData = (TMap*)((rec.fGRPData)->Clone());
+
+  delete fAlignObjArray; fAlignObjArray = NULL;
+
+  fCDBUri        = "";
+  fSpecCDBUri.Delete();
+  fInitCDBCalled               = rec.fInitCDBCalled;
+  fSetRunNumberFromDataCalled  = rec.fSetRunNumberFromDataCalled;
+  fQADetectors                 = rec.fQADetectors;
+  fQASteer                     = NULL;  
+  fQATasks                     = rec.fQATasks; 
+  fRunQA                       = rec.fRunQA;  
+  fRunGlobalQA                 = rec.fRunGlobalQA;
+  fInLoopQA                    = rec.fInLoopQA;
+  fSameQACycle                 = rec.fSameQACycle;
+  fRunPlaneEff                 = rec.fRunPlaneEff;
+
+  fesd     = NULL;
+  fhltesd  = NULL;
+  fesdf    = NULL;
+  ffile    = NULL;
+  ftree    = NULL;
+  fhlttree = NULL;
+  ftVertexer = NULL;
+  fIsNewRunLoader = rec.fIsNewRunLoader;
+  fRunAliEVE = kFALSE;
+  fChain = NULL;
+
   return *this;
 }
 
@@ -402,10 +494,14 @@ AliReconstruction::~AliReconstruction()
 // clean up
 
   CleanUp();
-  fOptions.Delete();
-  fSpecCDBUri.Delete();
   delete fForcedFieldMap;
-  delete fQASteer ;
+  fOptions.Delete();
+  if (fAlignObjArray) {
+    fAlignObjArray->Delete();
+    delete fAlignObjArray;
+  }
+  fSpecCDBUri.Delete();
+  delete fQASteer;
   AliCodeTimer::Instance()->Print();
 }
 
@@ -520,40 +616,45 @@ Bool_t AliReconstruction::SetRunNumberFromData()
   fSetRunNumberFromDataCalled = kTRUE;
   
   AliCDBManager* man = AliCDBManager::Instance();
-  
-  if(man->GetRun() > 0) {
+ 
+  if(fRawReader) {
+    if(fRawReader->NextEvent()) {
+      if(man->GetRun() > 0) {
   	AliWarning("Run number is taken from raw-event header! Ignoring settings in AliCDBManager!");
-  } 
-  
-  if (!fRunLoader) {
-      AliError("No run loader is found !"); 
-      return kFALSE;
+      } 
+      man->SetRun(fRawReader->GetRunNumber());
+      fRawReader->RewindEvents();
     }
-    // read run number from gAlice
-    if(fRunLoader->GetAliRun())
-      AliCDBManager::Instance()->SetRun(fRunLoader->GetHeader()->GetRun());
     else {
-      if(fRawReader) {
-	if(fRawReader->NextEvent()) {
-	  AliCDBManager::Instance()->SetRun(fRawReader->GetRunNumber());
-	  fRawReader->RewindEvents();
-	}
-	else {
-	  if(man->GetRun() > 0) {
-	    AliWarning("No raw events is found ! Using settings in AliCDBManager !");
-	    man->Print();  
-	    return kTRUE;
-	  }
-	  else {
-	    AliWarning("Neither raw events nor settings in AliCDBManager are found !");
-	    return kFALSE;
-	  }
-	}
+      if(man->GetRun() > 0) {
+	AliWarning("No raw-data events are found ! Using settings in AliCDBManager !");
       }
       else {
-	AliError("Neither gAlice nor RawReader objects are found !");
+	AliWarning("Neither raw events nor settings in AliCDBManager are found !");
 	return kFALSE;
       }
+    }
+  }
+  else {
+    AliRunLoader *rl = AliRunLoader::Open(fGAliceFileName.Data());
+    if (!rl) {
+      AliError(Form("No run loader found in file %s", fGAliceFileName.Data()));
+      return kFALSE;
+    }
+    else {
+      rl->LoadHeader();
+      // read run number from gAlice
+      if(rl->GetHeader()) {
+	man->SetRun(rl->GetHeader()->GetRun());
+	rl->UnloadHeader();
+	delete rl;
+      }
+      else {
+	AliError("Neither run-loader header nor RawReader objects are found !");
+	delete rl;
+	return kFALSE;
+      }
+    }
   }
 
   man->Print();  
@@ -612,7 +713,10 @@ Bool_t AliReconstruction::MisalignGeometry(const TString& detectors)
     }
   }
   
-  delete fAlignObjArray; fAlignObjArray=0;
+  if (fAlignObjArray) {
+    fAlignObjArray->Delete();
+    delete fAlignObjArray; fAlignObjArray=NULL;
+  }
 
   return kTRUE;
 }
@@ -634,7 +738,7 @@ void AliReconstruction::SetInput(const char* input)
   // mem://: - events taken from DAQ monitoring libs online
   //  or
   // mem://<filename> - emulation of the above mode (via DATE monitoring libs)
-  fInput = input;
+  if (input) fRawInput = input;
 }
 
 //_____________________________________________________________________________
@@ -734,7 +838,11 @@ Bool_t AliReconstruction::InitGRP() {
   //------------------------------------
   AliCDBEntry* entry = AliCDBManager::Instance()->Get("GRP/GRP/Data");
 
-  if (entry) fGRPData = dynamic_cast<TMap*>(entry->GetObject());  
+  if (entry) {
+    fGRPData = dynamic_cast<TMap*>(entry->GetObject());
+    entry->SetOwner(0);
+    AliCDBManager::Instance()->UnloadFromCache("GRP/GRP/Data");
+  }
 
   if (!fGRPData) {
      AliError("No GRP entry found in OCDB!");
@@ -784,7 +892,6 @@ Bool_t AliReconstruction::InitGRP() {
     fRunTracking = MatchDetectorList(fRunTracking,detMask);
     fFillESD = MatchDetectorList(fFillESD,detMask);
     fQADetectors = MatchDetectorList(fQADetectors,detMask);
-		fQASteer->SetActiveDetectors(fQADetectors) ; 
   }
 
   AliInfo("===================================================================================");
@@ -849,7 +956,6 @@ Bool_t AliReconstruction::InitGRP() {
 
   }
 
-
   //*** Get the diamond profile from OCDB
   entry = AliCDBManager::Instance()->Get("GRP/Calib/MeanVertex");
   if (entry) {
@@ -871,39 +977,78 @@ Bool_t AliReconstruction::InitGRP() {
 } 
 
 //_____________________________________________________________________________
+Bool_t AliReconstruction::LoadCDB()
+{
+  AliCodeTimerAuto("");
+
+  AliCDBManager::Instance()->Get("GRP/CTP/Config");
+
+  TString detStr = fRunLocalReconstruction;
+  for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
+    if (!IsSelected(fgkDetectorName[iDet], detStr)) continue;
+    AliCDBManager::Instance()->GetAll(Form("%s/Calib/*",fgkDetectorName[iDet]));
+  }
+  return kTRUE;
+}
+
+//_____________________________________________________________________________
 Bool_t AliReconstruction::Run(const char* input)
 {
   // Run Run Run
   AliCodeTimerAuto("");
 
-  if (!InitRun(input)) return kFALSE;
-  //******* The loop over events
-  Int_t iEvent = 0;
-  while ((iEvent < fRunLoader->GetNumberOfEvents()) ||
-	 (fRawReader && fRawReader->NextEvent())) {
-    if (!RunEvent(iEvent)) return kFALSE;
-    iEvent++;
-  }
+  InitRun(input);
+  if (GetAbort() != TSelector::kContinue) return kFALSE;
 
-  if (!FinishRun()) return kFALSE;
+  TChain *chain = NULL;
+  if (fRawReader && (chain = fRawReader->GetChain())) {
+    // Proof mode
+    if (gProof) {
+      gProof->AddInput(gGeoManager);
+      gGeoManager = NULL;
+      gProof->AddInput(AliCDBManager::Instance());
+      gProof->AddInput((AliMagF*)AliTracker::GetFieldMap());
+      gProof->AddInput(this);
+      chain->SetProof();
+      chain->Process("AliReconstruction");
+    }
+    else {
+      chain->Process(this);
+    }
+  }
+  else {
+    Begin(NULL);
+    if (GetAbort() != TSelector::kContinue) return kFALSE;
+    SlaveBegin(NULL);
+    if (GetAbort() != TSelector::kContinue) return kFALSE;
+    //******* The loop over events
+    Int_t iEvent = 0;
+    while ((iEvent < fRunLoader->GetNumberOfEvents()) ||
+	   (fRawReader && fRawReader->NextEvent())) {
+      if (!ProcessEvent(iEvent)) {
+	Abort("ProcessEvent",TSelector::kAbortFile);
+	return kFALSE;
+      }
+      iEvent++;
+    }
+    SlaveTerminate();
+    if (GetAbort() != TSelector::kContinue) return kFALSE;
+    Terminate();
+    if (GetAbort() != TSelector::kContinue) return kFALSE;
+  }
 
   return kTRUE;
 }
 
 //_____________________________________________________________________________
-Bool_t AliReconstruction::InitRun(const char* input)
+void AliReconstruction::InitRawReader(const char* input)
 {
-  // Initialize all the stuff before
-  // going into the event loop
-  // If the second argument is given, the first one is ignored and
-  // the reconstruction works in an online mode
   AliCodeTimerAuto("");
 
-  // Overwrite the previous setting
-  if (input) fInput = input;
-
+  // Init raw-reader and
   // set the input in case of raw data
-  fRawReader = AliRawReader::Create(fInput.Data());
+  if (input) fRawInput = input;
+  fRawReader = AliRawReader::Create(fRawInput.Data());
   if (!fRawReader)
     AliInfo("Reconstruction will run over digits");
 
@@ -921,19 +1066,29 @@ Bool_t AliReconstruction::InitRun(const char* input)
       AliError(Form("can not create Raw Reader for HLT input %s", fUseHLTData.Data()));
     }
   }
+  AliSysInfo::AddStamp("CreateRawReader");
+}
 
-   AliSysInfo::AddStamp("Start");
-  // get the run loader
-  if (!InitRunLoader()) return kFALSE;
-   AliSysInfo::AddStamp("LoadLoader");
+//_____________________________________________________________________________
+void AliReconstruction::InitRun(const char* input)
+{
+  // Initialization of raw-reader,
+  // run number, CDB etc.
+  AliCodeTimerAuto("");
+  AliSysInfo::AddStamp("Start");
+
+  InitRawReader(input);
+  AliSysInfo::AddStamp("CreateRawReader");
 
   // Initialize the CDB storage
   InitCDB();
-  
-  AliSysInfo::AddStamp("LoadCDB");
+  AliSysInfo::AddStamp("InitCDB");
 
   // Set run number in CDBManager (if it is not already set by the user)
-  if (!SetRunNumberFromData()) if (fStopOnError) return kFALSE;
+  if (!SetRunNumberFromData()) {
+    Abort("SetRunNumberFromData", TSelector::kAbortProcess);
+    return;
+  }
   
   // Set CDB lock: from now on it is forbidden to reset the run number
   // or the default storage or to activate any further storage!
@@ -944,55 +1099,112 @@ Bool_t AliReconstruction::InitRun(const char* input)
     TString geom(gSystem->DirName(fGAliceFileName));
     geom += "/geometry.root";
     AliGeomManager::LoadGeometry(geom.Data());
-
+    if (!gGeoManager) {
+      Abort("LoadGeometry", TSelector::kAbortProcess);
+      return;
+    }
     TString detsToCheck=fRunLocalReconstruction;
-    if(!AliGeomManager::CheckSymNamesLUT(detsToCheck.Data()))
-	  AliFatalClass("Current loaded geometry differs in the definition of symbolic names!");
-    if (!gGeoManager) if (fStopOnError) return kFALSE;
+    if(!AliGeomManager::CheckSymNamesLUT(detsToCheck.Data())) {
+      Abort("CheckSymNamesLUT", TSelector::kAbortProcess);
+      return;
+    }
   }
 
-  if (!MisalignGeometry(fLoadAlignData)) if (fStopOnError) return kFALSE;
-   AliSysInfo::AddStamp("LoadGeom");
+  if (!MisalignGeometry(fLoadAlignData)) {
+    Abort("MisalignGeometry", TSelector::kAbortProcess);
+    return;
+  }
+  AliCDBManager::Instance()->UnloadFromCache("GRP/Geometry/Data");
+  AliSysInfo::AddStamp("LoadGeom");
 
+  if (!InitGRP()) {
+    Abort("InitGRP", TSelector::kAbortProcess);
+    return;
+  }
+  AliSysInfo::AddStamp("InitGRP");
 
-  if (!InitGRP()) return kFALSE;
+  if (!LoadCDB()) {
+    Abort("LoadCDB", TSelector::kAbortProcess);
+    return;
+  }
+  AliSysInfo::AddStamp("LoadCDB");
 
   // Read the reconstruction parameters from OCDB
   if (!InitRecoParams()) {
-    if (fStopOnError) {
-      CleanUp(); 
-      return kFALSE;
-    }
+    Abort("InitRecoParams", TSelector::kAbortProcess);
+    return;
   }
-   AliSysInfo::AddStamp("ReadRecoParam");
+  AliSysInfo::AddStamp("InitRecoParams");
 
+}
+
+//_____________________________________________________________________________
+void AliReconstruction::Begin(TTree *)
+{
+  // Initialize AlReconstruction before
+  // going into the event loop
+  // Should follow the TSelector convention
+  // i.e. initialize only the object on the client side
+
+}
+
+//_____________________________________________________________________________
+void AliReconstruction::SlaveBegin(TTree*)
+{
+  // Initialization related to run-loader,
+  // vertexer, trackers, recontructors
+  // In proof mode it is executed on the slave
+  AliCodeTimerAuto("");
+
+  if (fInput) {
+    if (TGeoManager *tgeo = (TGeoManager*)fInput->FindObject("Geometry")) {
+      gGeoManager = tgeo;
+      AliGeomManager::SetGeometry(tgeo);
+    }
+    if (AliCDBManager *man = (AliCDBManager*)fInput->FindObject("AliCDBManager")) {
+      man->Dump();
+      // TO BE ACTIVATED AS SOON AS WE COMMIT THE FIXES TO ALICDBMANAGER
+      //      man->SetAsInstance();
+    }
+    if (AliMagF *map = (AliMagF*)fInput->FindObject("Maps")) {
+      AliTracker::SetFieldMap(map,fUniformField);
+    }
+    if (AliReconstruction *reco = (AliReconstruction*)fInput->FindObject("AliReconstruction")) {
+      *this = *reco;
+    }
+    AliSysInfo::AddStamp("ReadSelectorInput");
+  }
+
+  // get the run loader
+  if (!InitRunLoader()) {
+    Abort("InitRunLoader", TSelector::kAbortProcess);
+    return;
+  }
+  AliSysInfo::AddStamp("LoadLoader");
+ 
   ftVertexer = new AliVertexerTracks(AliTracker::GetBz());
   if(fDiamondProfile && fMeanVertexConstraint) ftVertexer->SetVtxStart(fDiamondProfile);
 
   // get vertexer
   if (fRunVertexFinder && !CreateVertexer()) {
-    if (fStopOnError) {
-      CleanUp(); 
-      return kFALSE;
-    }
+    Abort("CreateVertexer", TSelector::kAbortProcess);
+    return;
   }
-   AliSysInfo::AddStamp("Vertexer");
+  AliSysInfo::AddStamp("CreateVertexer");
 
   // get trackers
   if (!fRunTracking.IsNull() && !CreateTrackers(fRunTracking)) {
-    if (fStopOnError) {
-      CleanUp(); 
-      return kFALSE;
-    }      
-  }
-   AliSysInfo::AddStamp("LoadTrackers");
+    Abort("CreateTrackers", TSelector::kAbortProcess);
+    return;
+  }      
+  AliSysInfo::AddStamp("CreateTrackers");
 
   // create the ESD output file and tree
   ffile = TFile::Open("AliESDs.root", "RECREATE");
   ffile->SetCompressionLevel(2);
   if (!ffile->IsOpen()) {
-    AliError("opening AliESDs.root failed");
-    if (fStopOnError) {CleanUp(ffile); return kFALSE;}    
+    Abort("OpenESDFile", TSelector::kAbortProcess);
+    return;
   }
 
   ftree = new TTree("esdTree", "Tree with ESD objects");
@@ -1013,15 +1225,15 @@ Bool_t AliReconstruction::InitRun(const char* input)
     fesd->AddObject(fesdf);
   }
 
-
-
-  if (fRawReader) fRawReader->RewindEvents();
-
   ProcInfo_t ProcInfo;
   gSystem->GetProcInfo(&ProcInfo);
   AliInfo(Form("Current memory usage %d %d", ProcInfo.fMemResident, ProcInfo.fMemVirtual));
   
   //QA
+  fQASteer = new AliQADataMakerSteer("rec") ; 
+  fQASteer->SetActiveDetectors(fQADetectors) ; 
+  fQASteer->SetTasks(fQATasks) ; 
+
   if ( !fInLoopQA ) {
     if (fRunQA && fRawReader && fQATasks.Contains(Form("%d", AliQA::kRAWS))) { 
       fQASteer->Run(fQADetectors, fRawReader) ; 
@@ -1031,43 +1243,74 @@ Bool_t AliReconstruction::InitRun(const char* input)
 	
   //Initialize the QA and start of cycle for out-of-loop QA
   if (fRunQA) {
-		fQASteer->InitQADataMaker(AliCDBManager::Instance()->GetRun(), fRecoParam, fSameQACycle, !fInLoopQA) ;
-	}
+    fQASteer->InitQADataMaker(AliCDBManager::Instance()->GetRun(), fRecoParam, fSameQACycle, !fInLoopQA) ;
+  }
 	
-	if (fRunGlobalQA) {
-		fSameQACycle = kFALSE;
-		AliQADataMaker *qadm = fQASteer->GetQADataMaker(AliQA::kGLOBAL);
-		AliInfo(Form("Initializing the global QA data maker"));
-		if (fQATasks.Contains(Form("%d", AliQA::kRECPOINTS))) {
-			TObjArray *arr=qadm->Init(AliQA::kRECPOINTS, AliCDBManager::Instance()->GetRun());
-			AliTracker::SetResidualsArray(arr);
-			if (!fInLoopQA) {
-				qadm->StartOfCycle(AliQA::kRECPOINTS, fSameQACycle);
-				fSameQACycle = kTRUE;
-			}
-		}
-		if (fQATasks.Contains(Form("%d", AliQA::kESDS))) {
-			qadm->Init(AliQA::kESDS, AliCDBManager::Instance()->GetRun());
-			if (!fInLoopQA) {
-				qadm->StartOfCycle(AliQA::kESDS, fSameQACycle);
-				fSameQACycle = kTRUE;	
-			}
-		}
-	}
+  if (fRunGlobalQA) {
+    fSameQACycle = kFALSE;
+    AliQADataMaker *qadm = fQASteer->GetQADataMaker(AliQA::kGLOBAL);
+    AliInfo(Form("Initializing the global QA data maker"));
+    if (fQATasks.Contains(Form("%d", AliQA::kRECPOINTS))) {
+      TObjArray *arr=qadm->Init(AliQA::kRECPOINTS, AliCDBManager::Instance()->GetRun());
+      AliTracker::SetResidualsArray(arr);
+      if (!fInLoopQA) {
+	qadm->StartOfCycle(AliQA::kRECPOINTS, fSameQACycle);
+	fSameQACycle = kTRUE;
+      }
+    }
+    if (fQATasks.Contains(Form("%d", AliQA::kESDS))) {
+      qadm->Init(AliQA::kESDS, AliCDBManager::Instance()->GetRun());
+      if (!fInLoopQA) {
+	qadm->StartOfCycle(AliQA::kESDS, fSameQACycle);
+	fSameQACycle = kTRUE;	
+      }
+    }
+  }
 
   //Initialize the Plane Efficiency framework
   if (fRunPlaneEff && !InitPlaneEff()) {
-    if(fStopOnError) {CleanUp(ffile); return kFALSE;}
+    Abort("InitPlaneEff", TSelector::kAbortProcess);
+    return;
   }
 
   if (strcmp(gProgName,"alieve") == 0)
     fRunAliEVE = InitAliEVE();
 
-  return kTRUE;
+  return;
 }
 
 //_____________________________________________________________________________
-Bool_t AliReconstruction::RunEvent(Int_t iEvent)
+Bool_t AliReconstruction::Process(Long64_t entry)
+{
+  // run the reconstruction over a single entry
+  // from the chain with raw data
+  AliCodeTimerAuto("");
+
+  TTree *currTree = fChain->GetTree();
+  AliRawEvent *event = new AliRawEvent;
+  currTree->SetBranchAddress("rawevent",&event);
+  currTree->GetEntry(entry);
+  fRawReader = new AliRawReaderRoot(event);
+  fStatus = ProcessEvent(fRunLoader->GetNumberOfEvents());  
+  delete fRawReader;
+  fRawReader = NULL;
+  delete event;
+
+  return fStatus;
+}
+
+//_____________________________________________________________________________
+void AliReconstruction::Init(TTree *tree)
+{
+  if (tree == 0) {
+    AliError("The input tree is not found!");
+    return;
+  }
+  fChain = tree;
+}
+
+//_____________________________________________________________________________
+Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
 {
   // run the reconstruction over a single event
   // The event loop is steered in Run method
@@ -1078,8 +1321,9 @@ Bool_t AliReconstruction::RunEvent(Int_t iEvent)
     fRunLoader->SetEventNumber(iEvent);
     fRunLoader->GetHeader()->Reset(fRawReader->GetRunNumber(), 
 				   iEvent, iEvent);
-    //??      fRunLoader->MakeTree("H");
     fRunLoader->TreeE()->Fill();
+    if (fRawReader && fRawReader->UseAutoSaveESD())
+      fRunLoader->TreeE()->AutoSave("SaveSelf");
   }
 
   if ((iEvent < fFirstEvent) || ((fLastEvent >= 0) && (iEvent > fLastEvent))) {
@@ -1094,28 +1338,22 @@ Bool_t AliReconstruction::RunEvent(Int_t iEvent)
 
   //Start of cycle for the in-loop QA
   if (fInLoopQA && fRunQA) {
-		fQASteer->InitQADataMaker(AliCDBManager::Instance()->GetRun(), fRecoParam, fSameQACycle, fInLoopQA) ;
-	}
-	if (fInLoopQA && fRunGlobalQA) {
-		fSameQACycle = kFALSE;
-		AliQADataMaker *qadm = fQASteer->GetQADataMaker(AliQA::kGLOBAL);
-		if (fQATasks.Contains(Form("%d", AliQA::kRECPOINTS))) {
-			qadm->StartOfCycle(AliQA::kRECPOINTS, fSameQACycle);
-			fSameQACycle = kTRUE;
-		}
-		if (fQATasks.Contains(Form("%d", AliQA::kESDS))) {
-			qadm->StartOfCycle(AliQA::kESDS, fSameQACycle);
-			fSameQACycle = kTRUE;
-		}
-	}		   
+    fQASteer->InitQADataMaker(AliCDBManager::Instance()->GetRun(), fRecoParam, fSameQACycle, fInLoopQA) ;
+  }
+  if (fInLoopQA && fRunGlobalQA) {
+    fSameQACycle = kFALSE;
+    AliQADataMaker *qadm = fQASteer->GetQADataMaker(AliQA::kGLOBAL);
+    if (fQATasks.Contains(Form("%d", AliQA::kRECPOINTS))) {
+      qadm->StartOfCycle(AliQA::kRECPOINTS, fSameQACycle);
+      fSameQACycle = kTRUE;
+    }
+    if (fQATasks.Contains(Form("%d", AliQA::kESDS))) {
+      qadm->StartOfCycle(AliQA::kESDS, fSameQACycle);
+      fSameQACycle = kTRUE;
+    }
+  }		   
 
-	fRunLoader->GetEvent(iEvent);
-
-    char aFileName[256];
-    sprintf(aFileName, "ESD_%d.%d_final.root", 
-	    fRunLoader->GetHeader()->GetRun(), 
-	    fRunLoader->GetHeader()->GetEventNrInRun());
-    if (!gSystem->AccessPathName(aFileName)) return kTRUE;
+  fRunLoader->GetEvent(iEvent);
 
     // QA on single raw 
     if (fInLoopQA && fRunQA) 
@@ -1128,12 +1366,12 @@ Bool_t AliReconstruction::RunEvent(Int_t iEvent)
       // ;-( IsSelected changes the string
       if (IsSelected("HLT", detectors) &&
 	  !RunLocalEventReconstruction("HLT")) {
-	if (fStopOnError) {CleanUp(ffile); return kFALSE;}
+	if (fStopOnError) {CleanUp(); return kFALSE;}
       }
       detectors=fRunLocalReconstruction;
       detectors.ReplaceAll("HLT", "");
       if (!RunLocalEventReconstruction(detectors)) {
-	if (fStopOnError) {CleanUp(ffile); return kFALSE;}
+	if (fStopOnError) {CleanUp(); return kFALSE;}
       }
     }
 
@@ -1153,10 +1391,8 @@ Bool_t AliReconstruction::RunEvent(Int_t iEvent)
 
     // vertex finder
     if (fRunVertexFinder) {
-      if (!ReadESD(fesd, "vertex")) {
-	if (!RunVertexFinder(fesd)) {
-	  if (fStopOnError) {CleanUp(ffile); return kFALSE;}
-	}
+      if (!RunVertexFinder(fesd)) {
+	if (fStopOnError) {CleanUp(); return kFALSE;}
       }
     }
 
@@ -1164,17 +1400,15 @@ Bool_t AliReconstruction::RunEvent(Int_t iEvent)
     if (!fRunTracking.IsNull()) {
       if (fRunMuonTracking) {
 	if (!RunMuonTracking(fesd)) {
-	  if (fStopOnError) {CleanUp(ffile); return kFALSE;}
+	  if (fStopOnError) {CleanUp(); return kFALSE;}
 	}
       }
     }
 
     // barrel tracking
     if (!fRunTracking.IsNull()) {
-      if (!ReadESD(fesd, "tracking")) {
-	if (!RunTracking(fesd)) {
-	  if (fStopOnError) {CleanUp(ffile); return kFALSE;}
-	}
+      if (!RunTracking(fesd)) {
+	if (fStopOnError) {CleanUp(); return kFALSE;}
       }
     }
 
@@ -1185,7 +1419,7 @@ Bool_t AliReconstruction::RunEvent(Int_t iEvent)
       // ;-( IsSelected changes the string
       if (IsSelected("HLT", detectors) &&
 	  !FillESD(fhltesd, "HLT")) {
-	if (fStopOnError) {CleanUp(ffile); return kFALSE;}
+	if (fStopOnError) {CleanUp(); return kFALSE;}
       }
       detectors=fFillESD;
       // Temporary fix to avoid problems with HLT that overwrites the offline ESDs
@@ -1198,7 +1432,7 @@ Bool_t AliReconstruction::RunEvent(Int_t iEvent)
       }
       detectors.ReplaceAll("HLT", "");
       if (!FillESD(fesd, detectors)) {
-	if (fStopOnError) {CleanUp(ffile); return kFALSE;}
+	if (fStopOnError) {CleanUp(); return kFALSE;}
       }
     }
   
@@ -1209,10 +1443,8 @@ Bool_t AliReconstruction::RunEvent(Int_t iEvent)
     AliESDpid::MakePID(fesd);
 
     if (fFillTriggerESD) {
-      if (!ReadESD(fesd, "trigger")) {
-	if (!FillTriggerESD(fesd)) {
-	  if (fStopOnError) {CleanUp(ffile); return kFALSE;}
-	}
+      if (!FillTriggerESD(fesd)) {
+	if (fStopOnError) {CleanUp(); return kFALSE;}
       }
     }
 
@@ -1387,9 +1619,9 @@ Bool_t AliReconstruction::RunEvent(Int_t iEvent)
 }
 
 //_____________________________________________________________________________
-Bool_t AliReconstruction::FinishRun()
+void AliReconstruction::SlaveTerminate()
 {
-  // Finalize the run
+  // Finalize the run on the slave side
   // Called after the exit
   // from the event loop
   AliCodeTimerAuto("");
@@ -1453,96 +1685,36 @@ Bool_t AliReconstruction::FinishRun()
    AliWarning("Finish PlaneEff evaluation failed");
   }
 
-  gROOT->cd();
-  CleanUp(ffile);
-    
-  if (fWriteAOD) {
-    AliWarning("AOD creation not supported anymore during reconstruction. See ANALYSIS/AliAnalysisTaskESDfilter.cxx instead.");
-  }
-
-  // Create tags for the events in the ESD tree (the ESD tree is always present)
-  // In case of empty events the tags will contain dummy values
-  AliESDTagCreator *esdtagCreator = new AliESDTagCreator();
-  esdtagCreator->CreateESDTags(fFirstEvent,fLastEvent,fGRPData);
-  if (fWriteAOD) {
-    AliWarning("AOD tag creation not supported anymore during reconstruction.");
-  }
-
   //Finish QA and end of cycle for out-of-loop QA
   if (!fInLoopQA && fRunQA) 
-		fQASteer->Run(fRunLocalReconstruction.Data(), AliQA::kNULLTASKINDEX, fSameQACycle) ; 
-	if (!fInLoopQA && fRunGlobalQA) {
-		AliQADataMaker *qadm = fQASteer->GetQADataMaker(AliQA::kGLOBAL);
-			if (qadm) {
-				if (fQATasks.Contains(Form("%d", AliQA::kRECPOINTS))) 
-					qadm->EndOfCycle(AliQA::kRECPOINTS);
-				if (fQATasks.Contains(Form("%d", AliQA::kESDS))) 
-					qadm->EndOfCycle(AliQA::kESDS);
-				qadm->Finish();
-			}
-		}
+    fQASteer->Run(fRunLocalReconstruction.Data(), AliQA::kNULLTASKINDEX, fSameQACycle) ; 
+  if (!fInLoopQA && fRunGlobalQA) {
+    AliQADataMaker *qadm = fQASteer->GetQADataMaker(AliQA::kGLOBAL);
+    if (qadm) {
+      if (fQATasks.Contains(Form("%d", AliQA::kRECPOINTS))) 
+	qadm->EndOfCycle(AliQA::kRECPOINTS);
+      if (fQATasks.Contains(Form("%d", AliQA::kESDS))) 
+	qadm->EndOfCycle(AliQA::kESDS);
+      qadm->Finish();
+    }
+  }
+
+  gROOT->cd();
+  CleanUp();
+}
+    
+//_____________________________________________________________________________
+void AliReconstruction::Terminate()
+{
+  // Create tags for the events in the ESD tree (the ESD tree is always present)
+  // In case of empty events the tags will contain dummy values
+  AliCodeTimerAuto("");
+
+  AliESDTagCreator *esdtagCreator = new AliESDTagCreator();
+  esdtagCreator->CreateESDTags(fFirstEvent,fLastEvent,fGRPData);
 
   // Cleanup of CDB manager: cache and active storages!
   AliCDBManager::Instance()->ClearCache();
-  
-  return kTRUE;
-}
-
-
-//_____________________________________________________________________________
-Bool_t AliReconstruction::RunLocalReconstruction(const TString& /*detectors*/)
-{
-// run the local reconstruction
-  static Int_t eventNr=0;
-  AliCodeTimerAuto("")
-
- //  AliCDBManager* man = AliCDBManager::Instance();
-//   Bool_t origCache = man->GetCacheFlag();
-
-//   TString detStr = detectors;
-//   for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
-//     if (!IsSelected(fgkDetectorName[iDet], detStr)) continue;
-//     AliReconstructor* reconstructor = GetReconstructor(iDet);
-//     if (!reconstructor) continue;
-//     if (reconstructor->HasLocalReconstruction()) continue;
-
-//     AliCodeTimerStart(Form("running reconstruction for %s", fgkDetectorName[iDet]));
-//     AliInfo(Form("running reconstruction for %s", fgkDetectorName[iDet]));
-    
-//     AliCodeTimerStart(Form("Loading calibration data from OCDB for %s", fgkDetectorName[iDet]));                          
-//     AliInfo(Form("Loading calibration data from OCDB for %s", fgkDetectorName[iDet]));
-
-//     man->SetCacheFlag(kTRUE);
-//     TString calibPath = Form("%s/Calib/*", fgkDetectorName[iDet]);
-//     man->GetAll(calibPath); // entries are cached!
-
-//     AliCodeTimerStop(Form("Loading calibration data from OCDB for %s", fgkDetectorName[iDet]));
-     
-//     if (fRawReader) {
-//       fRawReader->RewindEvents();
-//       reconstructor->Reconstruct(fRunLoader, fRawReader);
-//     } else {
-//       reconstructor->Reconstruct(fRunLoader);
-//     }
-     
-//      AliCodeTimerStop(Form("running reconstruction for %s", fgkDetectorName[iDet]));
-    // AliSysInfo::AddStamp(Form("LRec%s_%d",fgkDetectorName[iDet],eventNr));
-
-//     // unload calibration data
-//     man->UnloadFromCache(calibPath);
-//     //man->ClearCache();
-//   }
-
-//   man->SetCacheFlag(origCache);
-
-//   if ((detStr.CompareTo("ALL") != 0) && !detStr.IsNull()) {
-//     AliError(Form("the following detectors were not found: %s",
-//                   detStr.Data()));
-//     if (fStopOnError) return kFALSE;
-//   }
-
-	  eventNr++;
-  return kTRUE;
 }
 
 //_____________________________________________________________________________
@@ -1966,38 +2138,35 @@ Bool_t AliReconstruction::FillESD(AliESDEvent*& esd, const TString& detectors)
   if (!IsSelected(fgkDetectorName[iDet], detStr)) continue;
     AliReconstructor* reconstructor = GetReconstructor(iDet);
     if (!reconstructor) continue;
-    if (!ReadESD(esd, fgkDetectorName[iDet])) {
-      AliDebug(1, Form("filling ESD for %s", fgkDetectorName[iDet]));
-      TTree* clustersTree = NULL;
+    AliDebug(1, Form("filling ESD for %s", fgkDetectorName[iDet]));
+    TTree* clustersTree = NULL;
+    if (fLoader[iDet]) {
+      fLoader[iDet]->LoadRecPoints("read");
+      clustersTree = fLoader[iDet]->TreeR();
+      if (!clustersTree) {
+	AliError(Form("Can't get the %s clusters tree", 
+		      fgkDetectorName[iDet]));
+	if (fStopOnError) return kFALSE;
+      }
+    }
+    if (fRawReader && !reconstructor->HasDigitConversion()) {
+      reconstructor->FillESD(fRawReader, clustersTree, esd);
+    } else {
+      TTree* digitsTree = NULL;
       if (fLoader[iDet]) {
-	fLoader[iDet]->LoadRecPoints("read");
-	clustersTree = fLoader[iDet]->TreeR();
-	if (!clustersTree) {
-	  AliError(Form("Can't get the %s clusters tree", 
+	fLoader[iDet]->LoadDigits("read");
+	digitsTree = fLoader[iDet]->TreeD();
+	if (!digitsTree) {
+	  AliError(Form("Can't get the %s digits tree", 
 			fgkDetectorName[iDet]));
 	  if (fStopOnError) return kFALSE;
 	}
       }
-      if (fRawReader && !reconstructor->HasDigitConversion()) {
-        reconstructor->FillESD(fRawReader, clustersTree, esd);
-      } else {
-	TTree* digitsTree = NULL;
-	if (fLoader[iDet]) {
-	  fLoader[iDet]->LoadDigits("read");
-	  digitsTree = fLoader[iDet]->TreeD();
-	  if (!digitsTree) {
-	    AliError(Form("Can't get the %s digits tree", 
-			  fgkDetectorName[iDet]));
-	    if (fStopOnError) return kFALSE;
-	  }
-	}
-	reconstructor->FillESD(digitsTree, clustersTree, esd);
-	if (fLoader[iDet]) fLoader[iDet]->UnloadDigits();
-      }
-      if (fLoader[iDet]) {
-	fLoader[iDet]->UnloadRecPoints();
-      }
-
+      reconstructor->FillESD(digitsTree, clustersTree, esd);
+      if (fLoader[iDet]) fLoader[iDet]->UnloadDigits();
+    }
+    if (fLoader[iDet]) {
+      fLoader[iDet]->UnloadRecPoints();
     }
   }
 
@@ -2140,8 +2309,6 @@ Bool_t AliReconstruction::InitRunLoader()
   } else {               // galice.root does not exist
     if (!fRawReader) {
       AliError(Form("the file %s does not exist", fGAliceFileName.Data()));
-      CleanUp();
-      return kFALSE;
     }
     fRunLoader = AliRunLoader::Open(fGAliceFileName.Data(),
 				    AliConfig::GetDefaultEventFolderName(),
@@ -2309,7 +2476,7 @@ Bool_t AliReconstruction::CreateTrackers(const TString& detectors)
 }
 
 //_____________________________________________________________________________
-void AliReconstruction::CleanUp(TFile* file)
+void AliReconstruction::CleanUp()
 {
 // delete trackers and the run loader and close and delete the file
 
@@ -2320,92 +2487,37 @@ void AliReconstruction::CleanUp(TFile* file)
     delete fTracker[iDet];
     fTracker[iDet] = NULL;
   }
-  if (fRunInfo) delete fRunInfo;
+  delete fRunInfo;
   fRunInfo = NULL;
 
   delete fVertexer;
   fVertexer = NULL;
 
-  if (ftVertexer) delete ftVertexer;
+  delete ftVertexer;
   ftVertexer = NULL;
   
   if(!(AliCDBManager::Instance()->GetCacheFlag())) {
-  	delete fDiamondProfile;
-  	fDiamondProfile = NULL;
-  	delete fDiamondProfileTPC;
-  	fDiamondProfileTPC = NULL;
-	delete fGRPData;
-	fGRPData = NULL;
+    delete fDiamondProfile;
+    fDiamondProfile = NULL;
+    delete fDiamondProfileTPC;
+    fDiamondProfileTPC = NULL;
   }
-
+  delete fGRPData;
+  fGRPData = NULL;
 
   delete fRunLoader;
   fRunLoader = NULL;
   delete fRawReader;
   fRawReader = NULL;
-  if (fParentRawReader) delete fParentRawReader;
+  delete fParentRawReader;
   fParentRawReader=NULL;
 
-  if (file) {
-    file->Close();
-    delete file;
+  if (ffile) {
+    ffile->Close();
+    delete ffile;
+    ffile = NULL;
   }
-
 }
-
-//_____________________________________________________________________________
-
-Bool_t AliReconstruction::ReadESD(AliESDEvent*& esd, const char* recStep) const
-{
-// read the ESD event from a file
-
-  if (!esd) return kFALSE;
-  char fileName[256];
-  sprintf(fileName, "ESD_%d.%d_%s.root", 
-	  esd->GetRunNumber(), esd->GetEventNumberInFile(), recStep);
-  if (gSystem->AccessPathName(fileName)) return kFALSE;
-
-  AliInfo(Form("reading ESD from file %s", fileName));
-  AliDebug(1, Form("reading ESD from file %s", fileName));
-  TFile* file = TFile::Open(fileName);
-  if (!file || !file->IsOpen()) {
-    AliError(Form("opening %s failed", fileName));
-    delete file;
-    return kFALSE;
-  }
-
-  gROOT->cd();
-  delete esd;
-  esd = (AliESDEvent*) file->Get("ESD");
-  file->Close();
-  delete file;
-  return kTRUE;
-
-}
-
-
-
-//_____________________________________________________________________________
-void AliReconstruction::WriteESD(AliESDEvent* esd, const char* recStep) const
-{
-// write the ESD event to a file
-
-  if (!esd) return;
-  char fileName[256];
-  sprintf(fileName, "ESD_%d.%d_%s.root", 
-	  esd->GetRunNumber(), esd->GetEventNumberInFile(), recStep);
-
-  AliDebug(1, Form("writing ESD to file %s", fileName));
-  TFile* file = TFile::Open(fileName, "recreate");
-  if (!file || !file->IsOpen()) {
-    AliError(Form("opening %s failed", fileName));
-  } else {
-    esd->Write("ESD");
-    file->Close();
-  }
-  delete file;
-}
-
 
 void AliReconstruction::WriteAlignmentData(AliESDEvent* esd)
 {
@@ -2711,8 +2823,6 @@ Bool_t AliReconstruction::SetRunQA(TString detAndAction)
 	tempo.ReplaceAll(Form("%d", AliQA::kRAWS), AliQA::GetTaskName(AliQA::kRAWS)) 	;
 	tempo.ReplaceAll(Form("%d", AliQA::kRECPOINTS), AliQA::GetTaskName(AliQA::kRECPOINTS)) ;	
 	tempo.ReplaceAll(Form("%d", AliQA::kESDS), AliQA::GetTaskName(AliQA::kESDS)) ; 	
-	fQASteer->SetActiveDetectors(fQADetectors) ; 
-	fQASteer->SetTasks(fQATasks) ; 
 	AliInfo( Form("QA will be done on \"%s\" for \"%s\"\n", fQADetectors.Data(), tempo.Data()) ) ;  
 	fRunQA = kTRUE ;
 	return kTRUE; 
@@ -2760,6 +2870,7 @@ Bool_t AliReconstruction::InitRecoParams()
 	isOK = kFALSE;
       }
       entry->SetOwner(0);
+      AliCDBManager::Instance()->UnloadFromCache(path.GetPath());
     }
   }
 
@@ -2899,3 +3010,37 @@ const char *AliReconstruction::MatchDetectorList(const char *detectorList, UInt_
   return resultList.Data();
 
 }
+
+//______________________________________________________________________________
+void AliReconstruction::Abort(const char *method, EAbort what)
+{
+  // Abort processing. If what = kAbortProcess, the Process() loop will be
+  // aborted. If what = kAbortFile, the current file in a chain will be
+  // aborted and the processing will continue with the next file, if there
+  // is no next file then Process() will be aborted. Abort() can also  be
+  // called from Begin(), SlaveBegin(), Init() and Notify(). After abort
+  // the SlaveTerminate() and Terminate() are always called. The abort flag
+  // can be checked in these methods using GetAbort().
+  //
+  // The method is overwritten in AliReconstruction for better handling of
+  // reco specific errors 
+
+  if (!fStopOnError) return;
+
+  CleanUp();
+
+  TString whyMess = method;
+  whyMess += " failed! Aborting...";
+
+  AliError(whyMess.Data());
+
+  fAbort = what;
+  TString mess = "Abort";
+  if (fAbort == kAbortProcess)
+    mess = "AbortProcess";
+  else if (fAbort == kAbortFile)
+    mess = "AbortFile";
+
+  Info(mess, whyMess.Data());
+}
+

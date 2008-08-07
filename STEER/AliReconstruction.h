@@ -17,7 +17,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 
-#include <TNamed.h>
+#include <TSelector.h>
 #include <TString.h>
 #include <TObjArray.h>
 
@@ -43,11 +43,9 @@ class AliRunInfo;
 #include "AliEventInfo.h"
 #include "AliRecoParam.h"
 
-class AliReconstruction: public TNamed {
+class AliReconstruction: public TSelector {
 public:
-  AliReconstruction(const char* gAliceFilename = "galice.root",
-		    const char* name = "AliReconstruction", 
-		    const char* title = "reconstruction");
+  AliReconstruction(const char* gAliceFilename = "galice.root");
   virtual ~AliReconstruction();
 
   void           SetGAliceFile(const char* fileName);
@@ -95,7 +93,6 @@ public:
   void SetStopOnError(Bool_t flag=kTRUE) {fStopOnError=flag;}
   void SetWriteAlignmentData(Bool_t flag=kTRUE){fWriteAlignmentData=flag;}
   void SetWriteESDfriend(Bool_t flag=kTRUE){fWriteESDfriend=flag;}
-  void SetWriteAOD(Bool_t flag=kTRUE){fWriteAOD=flag;}
   void SetFillTriggerESD(Bool_t flag=kTRUE){fFillTriggerESD=flag;}
   void SetDiamondProfile(AliESDVertex *dp) {fDiamondProfile=dp;}
   void SetDiamondProfileTPC(AliESDVertex *dp) {fDiamondProfileTPC=dp;}
@@ -122,10 +119,16 @@ public:
                    {fAlignObjArray = array;
 		   fLoadAlignFromCDB = kFALSE;}
 
-  virtual Bool_t InitRun(const char* input);
-  virtual Bool_t RunEvent(Int_t iEvent);
-  virtual Bool_t FinishRun();
+  virtual Int_t  Version() const {return 2;}
+  virtual void   Begin(TTree*);
+  virtual void   SlaveBegin(TTree*);
+  virtual void   Init(TTree *tree);
+  virtual Bool_t Process(Long64_t entry);
+  virtual Bool_t ProcessEvent(Int_t iEvent);
+  virtual void   SlaveTerminate();
+  virtual void   Terminate();
   virtual Bool_t Run(const char* input = NULL);
+  void           Abort(const char *method, EAbort what);
 
   // Trackers
   AliTracker* GetTracker(Int_t idx) { return fTracker[idx]; }
@@ -150,11 +153,13 @@ private:
   AliReconstruction(const AliReconstruction& rec);
   AliReconstruction& operator = (const AliReconstruction& rec);
 
+  void           InitRun(const char* input);
+  void           InitRawReader(const char* input);
   void 		 InitCDB();
   Bool_t 	 InitGRP();
   void 		 SetCDBLock();
   Bool_t         SetRunNumberFromData();
-  Bool_t         RunLocalReconstruction(const TString& detectors);
+  Bool_t         LoadCDB();
   Bool_t         RunLocalEventReconstruction(const TString& detectors);
   Bool_t         RunVertexFinder(AliESDEvent*& esd);
   Bool_t         RunHLTTracking(AliESDEvent*& esd);
@@ -169,10 +174,7 @@ private:
   Bool_t         InitRunLoader();
   AliReconstructor* GetReconstructor(Int_t iDet);
   Bool_t         CreateVertexer();
-  void           CleanUp(TFile* file = NULL);
-
-  Bool_t         ReadESD(AliESDEvent*& esd, const char* recStep) const;
-  void           WriteESD(AliESDEvent* esd, const char* recStep) const;
+  void           CleanUp();
 
   //==========================================//
   void           WriteAlignmentData(AliESDEvent* esd);
@@ -197,7 +199,7 @@ private:
 
   //*** Magnetic field map settings *******************
   Bool_t         fUniformField;       // uniform field tracking flag
-  AliMagF       *fForcedFieldMap;     // independent, not GRP, field map
+  AliMagF       *fForcedFieldMap;     //! independent, not GRP, field map
 
   //*** Global reconstruction flags *******************
   Bool_t         fRunVertexFinder;    // run the vertex finder
@@ -209,7 +211,6 @@ private:
   Bool_t         fStopOnError;        // stop or continue on errors
   Bool_t         fWriteAlignmentData; // write track space-points flag
   Bool_t         fWriteESDfriend;     // write ESD friend flag
-  Bool_t         fWriteAOD;           // write AOD flag
   Bool_t         fFillTriggerESD;     // fill trigger info into ESD
 
   //*** Clean ESD flag and parameters *******************
@@ -224,7 +225,7 @@ private:
   TString        fFillESD;            // fill ESD for these detectors
   TString        fUseTrackingErrorsForAlignment; // for these detectors
   TString        fGAliceFileName;     // name of the galice file
-  TString        fInput;              // name of input file or directory
+  TString        fRawInput;           // name of input raw-data file or directory
   TString        fEquipIdMap;         // name of file with equipment id map
   Int_t          fFirstEvent;         // index of first event to be reconstr.
   Int_t          fLastEvent;          // index of last event to be reconstr.
@@ -243,7 +244,7 @@ private:
 
   static const char* fgkDetectorName[fgkNDetectors]; //! names of detectors
   AliReconstructor*  fReconstructor[fgkNDetectors];  //! array of reconstructor objects
-  AliRecoParam   fRecoParam;                      //! container for the reco-param objects for detectors
+  AliRecoParam   fRecoParam;                      // container for the reco-param objects for detectors
   AliLoader*     fLoader[fgkNDetectors];   //! detector loaders
   AliVertexer*   fVertexer;                //! vertexer for ITS
   AliTracker*    fTracker[fgkNDetectors];  //! trackers
@@ -253,17 +254,17 @@ private:
 
   TMap*          fGRPData;              // Data from the GRP/GRP/Data CDB folder
 
-  TObjArray* 	 fAlignObjArray;      // array with the alignment objects to be applied to the geometry
+  TObjArray* 	 fAlignObjArray;      //! array with the alignment objects to be applied to the geometry
 
-  TString	 fCDBUri;	      // Uri of the default CDB storage
-  TObjArray      fSpecCDBUri;         // Array with detector specific CDB storages
+  TString	 fCDBUri;	      //! Uri of the default CDB storage
+  TObjArray      fSpecCDBUri;         //! Array with detector specific CDB storages
   Bool_t 	 fInitCDBCalled;               //! flag to check if CDB storages are already initialized
   Bool_t 	 fSetRunNumberFromDataCalled;  //! flag to check if run number is already loaded from run loader
 
   //Quality Assurance
   Int_t fQACycles[      fgkNDetectors]; // # events over which QA data are accumulated
   TString               fQADetectors ;  // list of detectors to be QA'ed 	
-	AliQADataMakerSteer * fQASteer    ;   // steering class to run QA
+  AliQADataMakerSteer * fQASteer    ;   //! steering class to run QA
   TString               fQATasks ;      // list of QA tasks to be performed	
   Bool_t                fRunQA ;        // Run QA flag
   Bool_t                fRunGlobalQA;   // Run global QA flag
@@ -284,7 +285,9 @@ private:
   Bool_t               fIsNewRunLoader; // galice.root created from scratch (real raw data case)
   Bool_t               fRunAliEVE;  // Run AliEVE or not
 
-  ClassDef(AliReconstruction, 26)      // class for running the reconstruction
+  TTree*              fChain;      //! The raw-data chain in case of AliRawReaderChain
+
+  ClassDef(AliReconstruction, 27)      // class for running the reconstruction
 };
 
 #endif
