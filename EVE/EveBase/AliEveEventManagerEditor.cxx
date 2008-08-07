@@ -178,3 +178,129 @@ void AliEveEventManagerEditor::DoRefresh()
   fM->Open();
   fM->GotoEvent(ev);
 }
+
+
+/******************************************************************************/
+// AliEveEventManagerWindow
+/******************************************************************************/
+
+//______________________________________________________________________________
+//
+// Horizontal GUI for AliEveEventManager, to be placed in the
+// bottom part of ROOT browser.
+
+ClassImp(AliEveEventManagerWindow)
+
+AliEveEventManagerWindow::AliEveEventManagerWindow() :
+  TGMainFrame(0, 400, 100, kVerticalFrame),
+  fFirstEvent(0),
+  fPrevEvent(0),
+  fNextEvent(0),
+  fLastEvent(0),
+  fEventId  (0),
+  fInfoLabel(0)
+{
+  // Constructor.
+
+  {
+    Int_t width = 50;
+
+    TGHorizontalFrame* f = new TGHorizontalFrame(this);
+    fFirstEvent = new TGTextButton(f, "First");
+    fFirstEvent->SetWidth(width);
+    fFirstEvent->ChangeOptions(fFirstEvent->GetOptions() | kFixedWidth);
+    f->AddFrame(fFirstEvent, new TGLayoutHints(kLHintsNormal, 2,2,0,0));
+    fFirstEvent->Connect("Clicked()",
+                         "AliEveEventManagerWindow", this, "DoFirstEvent()");
+    fPrevEvent = new TGTextButton(f, "Prev");
+    fPrevEvent->SetWidth(width);
+    fPrevEvent->ChangeOptions(fPrevEvent->GetOptions() | kFixedWidth);
+    f->AddFrame(fPrevEvent, new TGLayoutHints(kLHintsNormal, 2,2,0,0));
+    fPrevEvent->Connect("Clicked()",
+			"AliEveEventManagerWindow", this, "DoPrevEvent()");
+
+    fEventId = new TGNumberEntry(f, 0, 5, -1,TGNumberFormat::kNESInteger, TGNumberFormat::kNEANonNegative,
+                                 TGNumberFormat::kNELLimitMinMax, 0, 10000);
+    f->AddFrame(fEventId, new TGLayoutHints(kLHintsNormal, 10, 5, 0, 0));
+    fEventId->Connect("ValueSet(Long_t)",
+                      "AliEveEventManagerWindow", this, "DoSetEvent()");
+    fInfoLabel = new TGLabel(f);
+    f->AddFrame(fInfoLabel, new TGLayoutHints(kLHintsNormal, 5, 10, 4, 0));
+
+    fNextEvent = new TGTextButton(f, "Next");
+    fNextEvent->SetWidth(width);
+    fNextEvent->ChangeOptions(fNextEvent->GetOptions() | kFixedWidth);
+    f->AddFrame(fNextEvent, new TGLayoutHints(kLHintsNormal, 2,2,0,0));
+    fNextEvent->Connect("Clicked()",
+			"AliEveEventManagerWindow", this, "DoNextEvent()");
+    fLastEvent = new TGTextButton(f, "Last");
+    fLastEvent->SetWidth(width);
+    fLastEvent->ChangeOptions(fLastEvent->GetOptions() | kFixedWidth);
+    f->AddFrame(fLastEvent, new TGLayoutHints(kLHintsNormal, 2,2,0,0));
+    fLastEvent->Connect("Clicked()",
+			"AliEveEventManagerWindow", this, "DoLastEvent()");
+    AddFrame(f, new TGLayoutHints(kLHintsExpandX, 0,0,2,2));
+  }
+
+  gAliEveEvent->Connect("NewEventLoaded()",
+                        "AliEveEventManagerWindow", this, "Update()");
+  Update();
+
+  SetCleanup(kDeepCleanup);
+  Layout();
+  MapSubwindows();
+  MapWindow();
+}
+
+//______________________________________________________________________________
+AliEveEventManagerWindow::~AliEveEventManagerWindow()
+{
+  // Destructor.
+
+  gAliEveEvent->Disconnect("NewEventLoaded()", this);
+}
+
+//______________________________________________________________________________
+void AliEveEventManagerWindow::DoFirstEvent()
+{
+  // Load previous event
+  gAliEveEvent->GotoEvent(0);
+}
+
+//______________________________________________________________________________
+void AliEveEventManagerWindow::DoPrevEvent()
+{
+  // Load previous event
+  gAliEveEvent->PrevEvent();
+}
+
+//______________________________________________________________________________
+void AliEveEventManagerWindow::DoNextEvent()
+{
+  // Load next event
+  gAliEveEvent->NextEvent();
+}
+
+//______________________________________________________________________________
+void AliEveEventManagerWindow::DoLastEvent()
+{
+  // Load previous event
+  gAliEveEvent->GotoEvent(-1);
+}
+
+//______________________________________________________________________________
+void AliEveEventManagerWindow::DoSetEvent()
+{
+  // Set current event
+  gAliEveEvent->GotoEvent((Int_t) fEventId->GetNumber());
+}
+
+//______________________________________________________________________________
+void AliEveEventManagerWindow::Update()
+{
+  // Update current event, number of available events.
+
+  fEventId->SetNumber(gAliEveEvent->GetEventId());
+  fInfoLabel->SetText(Form("/ %d", gAliEveEvent->GetMaxEventId()));
+  Layout();
+}

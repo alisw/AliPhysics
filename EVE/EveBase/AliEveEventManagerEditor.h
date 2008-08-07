@@ -12,11 +12,12 @@
 
 #include "TGedFrame.h"
 
-class TGCheckButton;
-class TEveGValuator;
-class TGTextView;
-
 class AliEveEventManager;
+class TEveGValuator;
+class TGCheckButton;
+class TGTextView;
+class TGNumberEntry;
+class TGLabel;
 
 //______________________________________________________________________________
 // Short description of AliEveEventManagerEditor
@@ -58,6 +59,38 @@ private:
    AliEveEventManagerEditor& operator=(const AliEveEventManagerEditor&); // Not implemented
 
    ClassDef(AliEveEventManagerEditor, 0); // GUI editor for AliEveEventManager.
+};
+
+
+class AliEveEventManagerWindow : public TGMainFrame
+{
+public:
+   AliEveEventManagerWindow();
+   virtual ~AliEveEventManagerWindow();
+
+   void DoFirstEvent();
+   void DoPrevEvent();
+   void DoNextEvent();
+   void DoLastEvent();
+
+   void DoSetEvent();
+
+   void Update();
+
+protected:
+   TGTextButton         *fFirstEvent;
+   TGTextButton         *fPrevEvent;
+   TGTextButton         *fNextEvent;
+   TGTextButton         *fLastEvent;
+
+   TGNumberEntry        *fEventId;
+   TGLabel              *fInfoLabel;
+
+private:
+   AliEveEventManagerWindow(const AliEveEventManagerWindow&);            // Not implemented
+   AliEveEventManagerWindow& operator=(const AliEveEventManagerWindow&); // Not implemented
+
+   ClassDef(AliEveEventManagerWindow, 0); // GUI window for AliEveEventManager.
 };
 
 #endif

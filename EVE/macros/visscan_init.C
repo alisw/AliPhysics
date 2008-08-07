@@ -24,6 +24,12 @@ void visscan_init()
   TEveUtil::LoadMacro("alieve_init.C");
   alieve_init(".", -1);
 
+  TEveBrowser* b = gEve->GetBrowser();
+  b->StartEmbedding(TRootBrowser::kBottom);
+  new AliEveEventManagerWindow;
+  b->StopEmbedding("EventCtrl");
+
+
   TEveUtil::LoadMacro("geom_gentle.C");
   if (gShowTRD) TEveUtil::LoadMacro("geom_gentle_trd.C");
 
@@ -52,7 +58,7 @@ void visscan_init()
   gEve->AddToListTree(fitter, 1);
   gEve->AddElement(fitter, gEve->GetEventScene());
 
-  TEveTrackCounter* g_trkcnt = new TEveTrackCounter("Primary Counter");
+  AliEveTrackCounter* g_trkcnt = new AliEveTrackCounter("Primary Counter");
   gEve->AddToListTree(g_trkcnt, kFALSE);
 
 
@@ -134,7 +140,7 @@ void on_new_event()
   // First two have reasonable primaries (sigma-to-prim-vertex < 5).
   // Other three are almost certainly secondaries.
   Int_t count = 1;
-  TEveTrackCounter* g_trkcnt = TEveTrackCounter::fgInstance;
+  AliEveTrackCounter* g_trkcnt = AliEveTrackCounter::fgInstance;
   g_trkcnt->Reset();
   g_trkcnt->SetEventId(gAliEveEvent->GetEventId());
   TEveElement::List_i i = cont->BeginChildren();

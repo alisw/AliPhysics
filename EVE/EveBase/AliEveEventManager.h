@@ -11,6 +11,7 @@
 #define AliEveEventManager_H
 
 #include <TEveEventManager.h>
+#include <TQObject.h>
 
 class AliRunLoader;
 class AliESDEvent;
@@ -32,7 +33,8 @@ class TGeoManager;
 //
 
 
-class AliEveEventManager : public TEveEventManager
+class AliEveEventManager : public TEveEventManager,
+                           public TQObject
 {
 public:
   static void SetESDFileName(const Text_t* esd);
@@ -47,7 +49,7 @@ public:
 
   virtual void  Open();
   void          SetEvent(AliRunLoader *runLoader, AliRawReader *rawReader, AliESDEvent *esd);
-  virtual Int_t GetMaxEventId(Bool_t refreshESD=kFALSE) const;	    
+  virtual Int_t GetMaxEventId(Bool_t refreshESD=kFALSE) const;
   virtual void  GotoEvent(Int_t event);
   virtual void  NextEvent();
   virtual void  PrevEvent();
@@ -79,6 +81,8 @@ public:
   Bool_t        GetIsOnline() const {return fIsOnline;}
 
   void          StartStopAutoLoadTimer();
+
+  void          NewEventLoaded(); // *SIGNAL*
 
 protected:
   TString       fPath;			// URL to event-data.

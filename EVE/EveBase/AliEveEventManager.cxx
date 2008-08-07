@@ -321,7 +321,7 @@ void AliEveEventManager::SetEvent(AliRunLoader *runLoader, AliRawReader *rawRead
   AfterNewEventLoaded();
 }
 
-Int_t AliEveEventManager::GetMaxEventId(Bool_t refreshESD) const
+Int_t AliEveEventManager::GetMaxEventId(Bool_t /*refreshESD*/) const
 {
   // Returns maximum available event id.
   // If raw-data is the only data-source this can not be known
@@ -332,15 +332,18 @@ Int_t AliEveEventManager::GetMaxEventId(Bool_t refreshESD) const
 
   static const TEveException kEH("AliEveEventManager::GetMaxEventId ");
 
-  if (fRunLoader)
+  if (fESDTree)
+  {
+    // Refresh crashes with root-5.21.1-alice.
+    // Fixed by Philippe 5.8.2008 r25053, can be reactivated
+    // when we move to a newer root.
+    // if (refreshESD)
+    //   fESDTree->Refresh();
+    return fESDTree->GetEntries() - 1;
+  }
+  else if (fRunLoader)
   {
     return fRunLoader->GetNumberOfEvents() - 1;
-  }
-  else if (fESDTree)
-  {
-    if (refreshESD)
-      fESDTree->Refresh();
-    return fESDTree->GetEntries() - 1;
   }
   else if (fRawReader)
   {
@@ -457,6 +460,7 @@ void AliEveEventManager::GotoEvent(Int_t event)
   ElementChanged();
 
   AfterNewEventLoaded();
+  NewEventLoaded();
 }
 
 void AliEveEventManager::NextEvent()
@@ -471,8 +475,7 @@ void AliEveEventManager::NextEvent()
     DestroyElements();
 
     gSystem->ExitLoop();
-  }
-  else {
+  } else {
     if (fEventId < GetMaxEventId(kTRUE))
       GotoEvent(fEventId + 1);
     else
@@ -645,16 +648,26 @@ void AliEveEventManager::StartStopAutoLoadTimer()
 {
   // Create if needed and start
   // the automatic event loading timer
-  if (fAutoLoad) {
-    if (!fAutoLoadTimer) {
+  if (fAutoLoad)
+  {
+    if (!fAutoLoadTimer)
+    {
       fAutoLoadTimer = new TTimer;
       fAutoLoadTimer->Connect("Timeout()","AliEveEventManager",this,"NextEvent()");
     }
     fAutoLoadTimer->Start((Long_t)fAutoLoadTime*1000,kTRUE);
   }
-  else {
+  else
+  {
     if (fAutoLoadTimer) fAutoLoadTimer->Stop();
   }
+}
+
+void AliEveEventManager::NewEventLoaded()
+{
+  // Emit NewEventLoaded signal.
+
+  Emit("NewEventLoaded()");
 }
 
 const char* AliEveEventManager::GetEventInfo() const

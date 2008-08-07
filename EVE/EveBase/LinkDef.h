@@ -14,12 +14,17 @@
 // AliEveEventManager
 #pragma link C++ class AliEveEventManager+;
 #pragma link C++ class AliEveEventManagerEditor+;
+#pragma link C++ class AliEveEventManagerWindow+;
 
 #pragma link C++ global gAliEveEvent;
 
 #pragma link C++ class AliEveKineTools+;
 
 #pragma link C++ class AliEveVSDCreator+;
+
+// AliEveTrackcounter
+#pragma link C++ class AliEveTrackCounter+;
+#pragma link C++ class AliEveTrackCounterEditor+;
 
 // AliEveTrackFitter
 #pragma link C++ class AliEveTrackFitter+;
