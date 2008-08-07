@@ -89,7 +89,7 @@ fCDBManager(0) {
       gHistCounter += 1;
       
       for(Int_t iStrip = 0; iStrip < 2*fgkNumberOfPSideStrips; iStrip++)
-	fOccupancyMatrix[iModule][iStrip] = 0; 
+	fOccupancyMatrix[iModule-500][iStrip] = 0; 
     }//module loop
   }//online flag
   else {
@@ -177,8 +177,8 @@ void AliITSQASSDDataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjAr
       gHistPositionOccupancyPerLadder = (gLayer == 5) ? 2*(gLadder - 1) : 2*(gLadder - 1 + fgkSSDLADDERSLAYER5);
       
       //P-SIDE OCCUPANCY                                                                     
-      occupancy = GetOccupancyModule((TH1 *)fAliITSQADataMakerRec->GetRawsData(fGenOffset+fSSDRawsCommonLevelOffset+fgkSSDMODULES+gHistPositionOccupancyPerModule),0);
-      fAliITSQADataMakerRec->GetRawsData(fGenOffset+fSSDRawsCommonLevelOffset+fgkSSDMODULES+fgkSSDMODULES+gHistPositionOccupancyPerLadder)->Fill(gModule,occupancy);
+      occupancy = GetOccupancyModule((TH1 *)fAliITSQADataMakerRec->GetRawsData(fGenOffset+fSSDRawsCommonLevelOffset+gHistPositionOccupancyPerModule),0);
+      fAliITSQADataMakerRec->GetRawsData(fGenOffset+fSSDRawsCommonLevelOffset+fgkSSDMODULES+gHistPositionOccupancyPerLadder)->Fill(gModule,occupancy);
       lLadderLocationY = 3*gLadder; // sideP=1 sideN=0 
       if(gLayer == 5)                                                               
         ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenOffset+fSSDRawsCommonLevelOffset+fgkSSDMODULES+2*fgkSSDLADDERSLAYER5+2*fgkSSDLADDERSLAYER6))->SetBinContent(gModule,lLadderLocationY,occupancy);
@@ -186,8 +186,8 @@ void AliITSQASSDDataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjAr
         ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenOffset+fSSDRawsCommonLevelOffset+fgkSSDMODULES+2*fgkSSDLADDERSLAYER5+2*fgkSSDLADDERSLAYER6+1))->SetBinContent(gModule,lLadderLocationY,occupancy);
 
       //N-SIDE OCCUPANCY                                                                           
-      occupancy = GetOccupancyModule((TH1 *)fAliITSQADataMakerRec->GetRawsData(fGenOffset+fSSDRawsCommonLevelOffset+fgkSSDMODULES+gHistPositionOccupancyPerModule),1);   
-      fAliITSQADataMakerRec->GetRawsData(fGenOffset+fSSDRawsCommonLevelOffset+fgkSSDMODULES+fgkSSDMODULES+gHistPositionOccupancyPerLadder+1)->Fill(gModule,occupancy);
+      occupancy = GetOccupancyModule((TH1 *)fAliITSQADataMakerRec->GetRawsData(fGenOffset+fSSDRawsCommonLevelOffset+gHistPositionOccupancyPerModule),1);   
+      fAliITSQADataMakerRec->GetRawsData(fGenOffset+fSSDRawsCommonLevelOffset+fgkSSDMODULES+gHistPositionOccupancyPerLadder+1)->Fill(gModule,occupancy);
       if(gLayer == 5)                                                               
         ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenOffset+fSSDRawsCommonLevelOffset+fgkSSDMODULES+2*fgkSSDLADDERSLAYER5+2*fgkSSDLADDERSLAYER6))->SetBinContent(gModule,lLadderLocationY-1,occupancy);
       else if(gLayer == 6)
