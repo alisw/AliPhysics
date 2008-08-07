@@ -260,14 +260,7 @@ void AliEveEventManager::Open()
   // Open raw-data file
 
   TString rawPath(Form("%s/%s", fPath.Data(), fgRawFileName.Data()));
-  // If i use open directly, raw-reader reports an error but i have
-  // no way to detect it.
-  // Is this (AccessPathName check) ok for xrootd / alien? Yes, not for http.
-  if (gSystem->AccessPathName(rawPath, kReadPermission) == kFALSE)
-  {
-    fRawReader = AliRawReader::Create(rawPath);
-  }
-
+  fRawReader = AliRawReader::Create(rawPath);
   if (fRawReader == 0)
   {
     if (fgAssertRaw)
