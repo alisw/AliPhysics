@@ -92,9 +92,9 @@ AliFMDBaseDA::AliFMDBaseDA() :
   fConditionsFile(),
   fSaveHistograms(kFALSE),
   fDetectorArray(),
-  fPulseSize(16),
-  fPulseLength(16),
-  fRequiredEvents(5),
+  fPulseSize(10),
+  fPulseLength(10),
+  fRequiredEvents(0),
   fCurrentEvent(0)
  {
   fDetectorArray.SetOwner();
@@ -135,36 +135,37 @@ void AliFMDBaseDA::Run(AliRawReader* reader)
   
   
   InitContainer(diagFile);
-  Init();
+  //Init();
 
 
   reader->Reset();
   
   AliFMDRawReader* fmdReader  = new AliFMDRawReader(reader,0);
   TClonesArray*    digitArray = new TClonesArray("AliFMDDigit",0);
+  
+  
+  reader->NextEvent(); // Read Start-of-Run event
+  reader->NextEvent(); // Read Start-of-Files event
+  
+  reader->NextEvent(); // Start-of-Data
+  UInt_t eventType = reader->GetType();
+  Bool_t SOD_read = kFALSE;
+  if(eventType == AliRawEventHeaderBase::kStartOfData || 
+     eventType == AliRawEventHeaderBase::kFormatError) { 
     
-  //reader->NextEvent(); // Read Start-of-Run event
-  // reader->NextEvent(); // Read Start-of-Files event
-  
-  // reader->NextEvent(); // Start-of-Data
-  
+    WriteConditionsData(fmdReader);
+    Init();
+    SOD_read = kTRUE;
+  }
+  else {
+    AliWarning("No SOD event detected!");
+  }
+    
   
   int lastProgress = 0;
   
   for(Int_t n =1;n <= GetRequiredEvents(); n++) {
     if(!reader->NextEvent()) continue;
-    
-    UInt_t eventType = reader->GetType();
-    if(eventType == AliRawEventHeaderBase::kStartOfData || 
-       eventType == AliRawEventHeaderBase::kFormatError) { 
-      
-      WriteConditionsData(fmdReader);
-      
-    }
-    if(eventType != AliRawEventHeaderBase::kPhysicsEvent)  {
-      n--; 
-      continue; 
-    }
     
     SetCurrentEvent(n);
     digitArray->Clear();
@@ -336,10 +337,46 @@ void AliFMDBaseDA::WriteConditionsData(AliFMDRawReader* fmdReader)
   
   // Strip Range
   
- 
+  fConditionsFile.write("# Gain Events \n",15);
+  
+  for(UShort_t det=1; det<=3;det++) {
+    UShort_t firstring = (det == 1 ? 1 : 0);
+    for(UShort_t iring = firstring; iring <=1;iring++) {
+      Char_t ring = (iring == 1 ? 'I' : 'O');
+      for(UShort_t board =0 ; board <=1; board++) {
+	
+	Int_t idx = GetHalfringIndex(det,ring,board);
+	
+	fConditionsFile << det                     << ','
+			<< ring                    << ','
+			<< board                   << ','
+			<< fPulseLength.At(idx)    << "\n";
+	
+      }
+    }
+  }
+  
+  fConditionsFile.write("# Gain Pulse \n",14);
+  
+  for(UShort_t det=1; det<=3;det++) {
+    UShort_t firstring = (det == 1 ? 1 : 0);
+    for(UShort_t iring = firstring; iring <=1;iring++) {
+      Char_t ring = (iring == 1 ? 'I' : 'O');
+      for(UShort_t board =0 ; board <=1; board++) {
+	
+	Int_t idx = GetHalfringIndex(det,ring,board);
+	
+	fConditionsFile << det                     << ','
+			<< ring                    << ','
+			<< board                   << ','
+			<< fPulseSize.At(idx)      << "\n";
+	
+      }
+    }
+  }
   
   
-  
+
   // Gain Relevant stuff
   /*
   UShort_t defPulseSize = 32 ; 
@@ -379,7 +416,7 @@ Int_t AliFMDBaseDA::GetHalfringIndex(UShort_t det, Char_t ring, UShort_t board) 
   
   Int_t index = (((det-1) << 2) | (iring << 1) | (board << 0));
   
-  return index;
+  return index-2;
   
 }
 
