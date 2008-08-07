@@ -171,6 +171,11 @@ AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData
 
   //  cout << "AliHLTPHOSRawAnalyzerComponent::DoEvent TP1" << endl;
 
+
+
+
+
+
   for( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
     {
       //    cout << "AliHLTPHOSRawAnalyzerComponent::DoEvent TP2" << endl;     
