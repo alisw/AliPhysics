@@ -68,8 +68,8 @@ bool AliHLTMUONESDMaker::IgnoreArgument(const char* arg) const
 	/// Return true if the argument is one of -cdbpath -run or -delaysetup
 	/// to prevent the parent class from parsing these arguments in DoInit.
 	
-	if (strcmp(arg, "-cdbpath") == 0 or strcmp(arg, "-run") != 0 or
-	    strcmp(arg, "-delaysetup") != 0)
+	if (strcmp(arg, "-cdbpath") == 0 or strcmp(arg, "-run") == 0 or
+	    strcmp(arg, "-delaysetup") == 0)
 	{
 		return true;
 	}
