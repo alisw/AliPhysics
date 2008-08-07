@@ -151,9 +151,9 @@ AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData
   //comment
 
 
-  cout << "AliHLTPHOSRawAnalyzerComponent::DoEven. fPhosEventCount = " <<  fPhosEventCount <<endl;
+  //  cout << "AliHLTPHOSRawAnalyzerComponent::DoEven. fPhosEventCount = " <<  fPhosEventCount <<endl;
 
-  cout << "AliHLTPHOSRawAnalyzerComponent::DoEvent TP0" << endl;
+  //  cout << "AliHLTPHOSRawAnalyzerComponent::DoEvent TP0" << endl;
 
   UInt_t offset            = 0; 
   UInt_t mysize            = 0;
@@ -169,11 +169,11 @@ AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData
   UInt_t nSelected = 0;
   UInt_t specification = 0;
 
-  cout << "AliHLTPHOSRawAnalyzerComponent::DoEvent TP1" << endl;
+  //  cout << "AliHLTPHOSRawAnalyzerComponent::DoEvent TP1" << endl;
 
   for( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
     {
-      cout << "AliHLTPHOSRawAnalyzerComponent::DoEvent TP2" << endl;     
+      //    cout << "AliHLTPHOSRawAnalyzerComponent::DoEvent TP2" << endl;     
 
       Int_t tmpChannelCnt     = 0;
       iter = blocks+ndx;
@@ -182,15 +182,15 @@ AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData
       Int_t crazyness = 0;
       UInt_t tmpSize = 0;
       mysize += sizeof(AliHLTPHOSRcuCellEnergyDataStruct);
-      cout << "AliHLTPHOSRawAnalyzerComponent::DoEvent TP3" << endl;     
+      //     cout << "AliHLTPHOSRawAnalyzerComponent::DoEvent TP3" << endl;     
   
       if ( iter->fDataType != AliHLTPHOSDefinitions::fgkDDLPackedRawDataType )
 	{
-	  cout << "AliHLTPHOSRawAnalyzerComponent::DoEvent TP4" << endl;     
+	  //	  cout << "AliHLTPHOSRawAnalyzerComponent::DoEvent TP4" << endl;     
 	  continue; 
 	}
 
-      cout << "AliHLTPHOSRawAnalyzerComponent::DoEvent TP5" << endl;     
+      //     cout << "AliHLTPHOSRawAnalyzerComponent::DoEvent TP5" << endl;     
       
       specification = specification|iter->fSpecification;
 
@@ -213,15 +213,15 @@ AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData
 	    {
 	      if(nSamples != fNTotalSamples)
 		{
-		  cout <<"processing event " << fPhosEventCount << endl;;  
-		  cout << "Wrong number of samples Expected  "<< fNTotalSamples << " samples (assuming non zero supressed data) but recieved  " << nSamples << endl;
+		  //		  cout <<"processing event " << fPhosEventCount << endl;;  
+		  //		  cout << "Wrong number of samples Expected  "<< fNTotalSamples << " samples (assuming non zero supressed data) but recieved  " << nSamples << endl;
 		  Logging( kHLTLogError, __FILE__ , "Wrong number of samples", "Expected  %lu samples (assuming non zero supressed data) but recieved %lu", fNTotalSamples,  nSamples); 
 		  fNCorruptedBlocks ++;	  
 		  continue;  
 		}
 	      else
 		{
-		  cout <<"The number of samples is " << fNTotalSamples << endl;
+		  //	  cout <<"The number of samples is " << fNTotalSamples << endl;
 		}
 
 	    }
@@ -257,7 +257,7 @@ AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData
 	    {
 	      tmpSize += nSamples + 1;
 	      *rawDataBufferPos = nSamples;
-	      cout << "# samples: " << *rawDataBufferPos << endl;
+	      //	      cout << "# samples: " << *rawDataBufferPos << endl;
 
 	      for(int sample = 0; sample < nSamples; sample++)
 		{
@@ -306,7 +306,7 @@ AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData
       bdCellEnergy.fSize = mysize;
       bdCellEnergy.fDataType = AliHLTPHOSDefinitions::fgkCellEnergyDataType;
       bdCellEnergy.fSpecification = specification;
-      cout << "Pushing cell energies" << endl;
+      //    cout << "Pushing cell energies" << endl;
       outputBlocks.push_back( bdCellEnergy );
       
       tSize += mysize;
