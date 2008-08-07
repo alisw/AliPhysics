@@ -61,7 +61,7 @@
 #include <TTree.h>		// ROOT_TTree
 #include <TClonesArray.h>	// ROOT_TClonesArray
 #include <TString.h>
-// #include <iostream>
+ #include <iostream>
 // #include <iomanip>
 
 //____________________________________________________________________
@@ -419,7 +419,7 @@ Bool_t AliFMDRawReader::ReadSODevent(AliFMDCalibSampleRate* sampleRate,
     
     for (ULong_t i = 1; i <= nPayloadWords ; i++) {
       UInt_t payloadWord = Get32bitWord(i);
-      // if(!((i-CDH_length-1)%2)) {
+      
 	// address is only 24 bit
 	UInt_t address       = (0xffffff & payloadWord);
 	UInt_t type          = ((address >> 21) & 0xf);
@@ -437,29 +437,46 @@ Bool_t AliFMDRawReader::ReadSODevent(AliFMDCalibSampleRate* sampleRate,
 	  channel            = ((address >> 5) & 0x5);
 	  instruction        = (address & 0x1f);
 	}
-	if(error)
-	  {
-	    AliWarning(Form("error bit detected at Word 0x%06x; error % d, type %d, bc_not_altro %d, bcast %d, board 0x%02x, chip 0x%x, channel 0x%02x, instruction 0x%03x",address, error, type, bc_not_altro, bcast,board,chip,channel,instruction));
-	    i++;
-	    UInt_t errorWord = Get32bitWord(i);
-	    //process error
-	    continue;
-	  }
+	
 	Bool_t readDataWord = kFALSE;
 	switch(type) {
-	case 0x00:  i++;  readDataWord = kTRUE;  break;   //FEC_RD
-      	case 0x01:  i++;  readDataWord = kFALSE; break;   //FEC_CMD
-	case 0x10:  i++;  readDataWord = kFALSE; break;   //FEC_WR
-	case 0x11:        readDataWord = kFALSE; break;   //IS: LOOP, WAIT, ENDSEQ, ENDMEM
-	default:    i++;  readDataWord = kFALSE; break;
+	case 0x0: // Fec read
+	  readDataWord = kTRUE;  
+	case 0x1: // Fec cmd
+	case 0x2: // Fec write
+	  i++;  
+	  break;
+	case 0x4: // Loop
+	case 0x5: // Wait
+	  break;
+	case 0x6: // End sequence
+	case 0x7: // End Mem
+	  i = nPayloadWords + 1;
+	  break;
+	default:    
+	  break;
 	}
+	
+	
 	
 	if(!readDataWord)  //Don't read unless we have a FEC_RD
 	  continue;
 	UInt_t dataWord      = Get32bitWord(i);
-	UInt_t data          = (0xFFFFFF & dataWord) ;
+	UInt_t data          = (0xFFFFF & dataWord) ;
 	//UInt_t data          = (0xFFFF & dataWord) ;
 	
+	if(error) {
+	  AliWarning(Form("error bit detected at Word 0x%06x; "
+			  "error % d, type %d, bc_not_altro %d, "
+			  "bcast %d, board 0x%02x, chip 0x%x, "
+			  "channel 0x%02x, instruction 0x%03x",
+			  address, error, type, bc_not_altro, 
+			  bcast,board,chip,channel,instruction));
+	  
+	  
+	  //process error
+	  continue;
+	}
 	
 	
 	switch(instruction) {
@@ -553,34 +570,82 @@ Bool_t AliFMDRawReader::ReadSODevent(AliFMDCalibSampleRate* sampleRate,
 	  break; 
 	case 0x2C: break; // FMD: Commands
 	case 0x4B: // FMD: Cal events 
-	  pulse_length[board] = ((data >> 8 ) & 0xFF);
+	  pulse_length[board] = ((data >> 0 ) & 0xFF);
 	  break; 
 	default: break;
 	
 	}
-	
+	AliFMDDebug(50, ("instruction 0x%x, dataword 0x%x",instruction,dataWord));
     }
     
     UShort_t det,sector,strip;
     Char_t ring;
-    UInt_t samplerate=1;
+   
     const UInt_t boards[4] = {0,1,16,17};
     for(Int_t i=0;i<4;i++) {
-      
+      if(ddl==0 && (i==1 || i==3))
+	continue;
       UInt_t chip =0, channel=0;
       
       AliFMDParameters::Instance()->Hardware2Detector(ddl,boards[i],chip,channel,det,ring,sector,strip);
-            
+     
+      UInt_t samplerate = 1;
+      
+      if(sample_clk[boards[i]] == 0) {
+	  if(ddl == 0) {
+	    Int_t sample1 = sample_clk[boards[0]];
+	    Int_t sample2 = sample_clk[boards[2]];	    
+	    if(sample1) sample_clk[boards[i]] = sample1;
+	    else sample_clk[boards[i]] = sample2;
+	  }
+	  
+	  if(ddl!=0) {
+	    Int_t sample1 = sample_clk[boards[0]];
+	    Int_t sample2 = sample_clk[boards[1]];
+	    Int_t sample3 = sample_clk[boards[2]];
+	    Int_t sample4 = sample_clk[boards[3]];
+	    Int_t agreement = 0;
+	    if(sample1 == sample2) agreement++;
+	    if(sample1 == sample3) agreement++;
+	    if(sample1 == sample4) agreement++;
+	    if(sample2 == sample3) agreement++;
+	    if(sample2 == sample4) agreement++;
+	    if(sample3 == sample4) agreement++;
+	    
+	    Int_t idx = 0;
+	    if(i<3) idx = i+1;
+	    else  idx = i-1;
+	    if(agreement == 3) {
+	      sample_clk[boards[i]] = sample_clk[boards[idx]];
+	      shift_clk[boards[i]] = shift_clk[boards[idx]];
+	      strip_low[boards[i]] = strip_low[boards[idx]];
+	      strip_high[boards[i]] = strip_high[boards[idx]];
+	      pulse_length[boards[i]] = pulse_length[boards[idx]];
+	      pulse_size[boards[i]] = pulse_size[boards[idx]];
+	      AliFMDDebug(0, ("Vote taken for ddl %d, board 0x%x",ddl,boards[i]));
+	    }
+	  }
+      } 
+      
       if(sample_clk[boards[i]])
-	samplerate = shift_clk[boards[i]]/sample_clk[boards[i]];
+      samplerate = shift_clk[boards[i]]/sample_clk[boards[i]];
       sampleRate->Set(det,ring,sector,0,samplerate);
       stripRange->Set(det,ring,sector,0,strip_low[boards[i]],strip_high[boards[i]]);
-      pulseSize.AddAt(pulse_size[boards[i]],GetHalfringIndex(det,ring,boards[i]%16));
-      pulseLength.AddAt(pulse_length[boards[i]],GetHalfringIndex(det,ring,boards[i]%16));
       
-      AliFMDDebug(20, ("board %d, strip_low %d, strip_high %d",boards[i],strip_low[i],strip_high[i]));
-      AliFMDDebug(20, ("board %d, shift_clk %d, sample_clk %d",boards[i],shift_clk[i],sample_clk[i]));
+      AliFMDDebug(20, ("det %d, ring %c, ",det,ring));
+      pulseLength.AddAt(pulse_length[boards[i]],GetHalfringIndex(det,ring,boards[i]/16));
+      pulseSize.AddAt(pulse_size[boards[i]],GetHalfringIndex(det,ring,boards[i]/16));
       
+      
+      
+      AliFMDDebug(20, (": Board: 0x%02x\n"
+		      "\tstrip_low  %3d, strip_high   %3d\n"
+		      "\tshift_clk  %3d, sample_clk   %3d\n"
+		      "\tpulse_size %3d, pulse_length %3d",
+		      boards[i], 
+		      strip_low[boards[i]], strip_high[boards[i]],
+		      shift_clk[boards[i]], sample_clk[boards[i]],
+		      pulse_size[boards[i]],pulse_length[boards[i]]));
     }
     
   }
@@ -614,11 +679,7 @@ UInt_t AliFMDRawReader::Get32bitWord(Int_t idx)
   }
 
   UInt_t word = 0;
-  //word  = fData[--index] << 24;
-  // word |= fData[--index] << 16;
-  // word |= fData[--index] << 8;
-  //word |= fData[--index];
-  
+   
   word  = fData[--index] << 24;
   word |= fData[--index] << 16;
   word |= fData[--index] << 8;
@@ -633,7 +694,7 @@ Int_t AliFMDRawReader::GetHalfringIndex(UShort_t det, Char_t ring, UShort_t boar
   
   Int_t index = (((det-1) << 2) | (iring << 1) | (board << 0));
   
-  return index;
+  return index-2;
   
 }
 //____________________________________________________________________
