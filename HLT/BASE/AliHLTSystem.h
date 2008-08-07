@@ -237,6 +237,11 @@ class AliHLTSystem : public AliHLTLogging {
   int DeinitTasks();
 
   /**
+   * Cleanup all internal objects from HLTOUT processing.
+   */
+  int CleanHLTOUT();
+
+  /**
    * The memory allocation function for components.
    * This function is part of the running environment of the components.
    */

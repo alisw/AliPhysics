@@ -56,7 +56,7 @@ const char* AliHLTSystem::fgkHLTDefaultLibs[]= {
   //  "libAliHLTSample.so",
   //"libAliHLTPHOS.so",
   "libAliHLTMUON.so",
-  "libAliHLTTRD.so",
+  //"libAliHLTTRD.so",
   "libAliHLTTrigger.so",
   NULL
 };
@@ -120,6 +120,7 @@ AliHLTSystem::~AliHLTSystem()
 {
   // see header file for class documentation
   fgNofInstances--;
+  CleanHLTOUT();
   CleanTaskList();
   AliHLTConfiguration::GlobalDeinit(fpConfigurationHandler);
   if (fpConfigurationHandler) {
@@ -296,9 +297,24 @@ int AliHLTSystem::InsertTask(AliHLTTask* pTask)
 {
   // see header file for class documentation
   int iResult=0;
-  TObjLink *lnk = NULL;
-  if ((iResult=pTask->CheckDependencies())>0)
-    lnk=fTaskList.FirstLink();
+  if (fpControlTask==NULL) {
+    fpControlTask=new AliHLTControlTask;
+    if (!fpControlTask) return -ENOMEM;
+    fTaskList.AddFirst(fpControlTask);
+  }
+  TObjLink *controlLnk=NULL;
+  TObjLink *lnk = fTaskList.FirstLink();
+  assert(!lnk || lnk->GetObject()==fpControlTask || fpControlTask==NULL);
+  if (lnk && lnk->GetObject()==fpControlTask) {
+    if (pTask->GetConf() && pTask->GetConf()->GetFirstSource()==NULL) {
+      pTask->SetDependency(fpControlTask);
+      fpControlTask->SetTarget(pTask);
+    }
+    controlLnk=lnk;
+    lnk=lnk->Next();
+  }
+  if ((iResult=pTask->CheckDependencies())<=0)
+    lnk=NULL;
   while (lnk && iResult>0) {
     AliHLTTask* pCurr = (AliHLTTask*)lnk->GetObject();
     //HLTDebug("checking  \"%s\"", pCurr->GetName());
@@ -319,6 +335,8 @@ int AliHLTSystem::InsertTask(AliHLTTask* pTask)
   if (iResult==0) {
       if (lnk) {
 	fTaskList.AddAfter(lnk, pTask);
+      } else if (controlLnk) {
+	fTaskList.AddAfter(controlLnk, pTask);
       } else {
 	fTaskList.AddFirst(pTask);
       }
@@ -655,25 +673,32 @@ int AliHLTSystem::StopTasks()
 int AliHLTSystem::SendControlEvent(AliHLTComponentDataType dt)
 {
   // see header file for class documentation
-
-  // disabled for the moment
-  return 0;
-
   int iResult=0;
+
   AliHLTRunDesc runDesc;
   memset(&runDesc, 0, sizeof(AliHLTRunDesc));
   runDesc.fStructSize=sizeof(AliHLTRunDesc);
+  AliHLTControlTask::AliHLTControlEventGuard g(fpControlTask, dt, kAliHLTVoidDataSpec, (AliHLTUInt8_t*)&runDesc, sizeof(AliHLTRunDesc));
   HLTDebug("sending event %s, run descriptor %p", AliHLTComponent::DataType2Text(dt).c_str(), &runDesc);
   TObjLink *lnk=fTaskList.FirstLink();
   while (lnk && iResult>=0) {
     TObject* obj=lnk->GetObject();
     if (obj) {
       AliHLTTask* pTask=(AliHLTTask*)obj;
-      iResult=pTask->ProcessTask(-1);
+      AliHLTUInt32_t eventType=gkAliEventTypeUnknown;
+      if (dt==kAliHLTDataTypeSOR) eventType=gkAliEventTypeStartOfRun;
+      else if (dt==kAliHLTDataTypeEOR) eventType=gkAliEventTypeEndOfRun;
+      else HLTWarning("unknown control event %s", AliHLTComponent::DataType2Text(dt).c_str());
+      iResult=pTask->ProcessTask(-1, eventType);
     } else {
     }
     lnk = lnk->Next();
   }
+
+  // control events are not supposed to go into the HLTOUT
+  if (fpHLTOUTTask)
+    fpHLTOUTTask->Reset();
+
   HLTDebug("event %s done (%d)", AliHLTComponent::DataType2Text(dt).c_str(), iResult);
   return iResult;
 }
@@ -699,6 +724,44 @@ int AliHLTSystem::DeinitTasks()
   fGoodEvents=-1;
 
   return iResult;
+}
+
+int AliHLTSystem::CleanHLTOUT()
+{
+  // see header file for class documentation
+  if (fpChainHandlers) {
+    AliHLTOUT::AliHLTOUTHandlerListEntryVector* pHandlers=reinterpret_cast<AliHLTOUT::AliHLTOUTHandlerListEntryVector*>(fpChainHandlers);
+    fpChainHandlers=NULL;
+    if (pHandlers) {
+      AliHLTOUT::InvalidateBlocks(*pHandlers);
+      AliHLTOUT::RemoveEmptyDuplicateHandlers(*pHandlers);
+    }
+    assert(pHandlers->size()==0);
+    delete pHandlers;
+  }
+
+  if (fpEsdHandlers) {
+    AliHLTOUT::AliHLTOUTHandlerListEntryVector* pHandlers=reinterpret_cast<AliHLTOUT::AliHLTOUTHandlerListEntryVector*>(fpEsdHandlers);
+    fpEsdHandlers=NULL;
+    if (pHandlers) {
+      AliHLTOUT::InvalidateBlocks(*pHandlers);
+      AliHLTOUT::RemoveEmptyDuplicateHandlers(*pHandlers);
+    }
+    assert(pHandlers->size()==0);
+    delete pHandlers;
+  }
+
+  if (fpProprietaryHandlers) {
+    AliHLTOUT::AliHLTOUTHandlerListEntryVector* pHandlers=reinterpret_cast<AliHLTOUT::AliHLTOUTHandlerListEntryVector*>(fpProprietaryHandlers);
+    fpProprietaryHandlers=NULL;
+    if (pHandlers) {
+      AliHLTOUT::InvalidateBlocks(*pHandlers);
+      AliHLTOUT::RemoveEmptyDuplicateHandlers(*pHandlers);
+    }
+    assert(pHandlers->size()==0);
+    delete pHandlers;
+  }
+  return 0;
 }
 
 void* AliHLTSystem::AllocMemory( void* /*param*/, unsigned long size )
@@ -728,6 +791,7 @@ int AliHLTSystem::Reconstruct(int nofEvents, AliRunLoader* runLoader,
 	if (!CheckStatus(kError)) {
 	StopTasks();
 	DeinitTasks();
+	CleanHLTOUT();
 	}
       } else {
       if ((iResult=AliHLTOfflineInterface::SetParamsToComponents(runLoader, rawReader))>=0) {

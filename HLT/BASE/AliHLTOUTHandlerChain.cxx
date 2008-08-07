@@ -70,6 +70,14 @@ AliHLTOUTHandlerChain::~AliHLTOUTHandlerChain()
 {
   // see header file for class documentation
   if (fpSystem) {
+    // TODO: the EOR is currenttly not send because the reconstruction
+    // chian is not stopped. Trying it here gives an error, there is
+    // some state mismatch in AliHLTSystem. Probably due to the fact,
+    // that the AliHLTSystem::Reconstruct method is not used
+//     if (!fpSystem->CheckStatus(AliHLTSystem::kError)) {
+//       // send specific 'event' to execute the stop sequence
+//       fpSystem->Reconstruct(0, NULL, NULL);
+//     }
     delete fpSystem;
   }
 }

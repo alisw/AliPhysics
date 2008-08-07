@@ -119,11 +119,11 @@ int AliHLTControlTask::AliHLTControlEventComponent::GetEvent(const AliHLTCompone
 
   // return if no event has been set
   if (pParent->fEvent==kAliHLTVoidDataType) {
-    HLTInfo("no control event to send");
+    //HLTInfo("no control event to send");
     return 0;
   }
 
-  HLTInfo("publishing control event %s", DataType2Text(pParent->fEvent).c_str());
+  HLTDebug("publishing control event %s", DataType2Text(pParent->fEvent).c_str());
   AliHLTComponentBlockData bd;
   FillBlockData(bd);
   bd.fOffset=0;
