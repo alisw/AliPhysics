@@ -19,6 +19,7 @@
 #include <AliFMDGainDA.h>
 #include <AliRawReaderDate.h>
 #include <AliRawReaderRoot.h>
+#include <AliLog.h>
 #include "daqDA.h"
 #include "TROOT.h"
 #include "TPluginManager.h"
@@ -56,19 +57,21 @@ int main(int argc, char **argv)
   AliFMDParameters::Instance()->Init(kFALSE,0);
 
   //This will only work for FDR 1 data. When newer data becomes available the ! must be removed!
-  AliFMDParameters::Instance()->UseCompleteHeader(!old);
+  AliFMDParameters::Instance()->UseCompleteHeader(old);
   
+  AliLog::SetModuleDebugLevel("FMD", 1);
   
   AliRawReader *reader = 0;
   TString fileNam(fileName);
-  if (fileNam.EndsWith(".root")) reader = new AliRawReaderRoot(fileName);
+  if (fileNam.EndsWith(".root")) 
+    reader = new AliRawReaderRoot(fileName);
   else reader = new AliRawReaderDate(fileName);
   if (!reader) { 
     std::cerr << "Don't know how to make reader for " << fileNam 
 	      << std::endl;
     return -2;
   }
-  
+
   
   TStopwatch timer;
   timer.Start();
