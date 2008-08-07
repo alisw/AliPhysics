@@ -293,6 +293,28 @@ void AliITSQADataMakerRec::InitESDs()
   hSPDTrkVertexDeltaZ->Sumw2();
   Add2ESDsList(hSPDTrkVertexDeltaZ, 14);
     
+  // SPD Tracklets
+
+  TH1F* hSPDTracklets = 
+    new TH1F("hSPDTracklets","N SPD Tracklets; N tracklets; Counts",300,0.,300.);
+  hSPDTracklets->Sumw2();
+  Add2ESDsList(hSPDTracklets, 15); 
+    
+  TH1F* hSPDTrackletsDePhi = 
+    new TH1F("hSPDTrackletsDePhi","DeltaPhi SPD Tracklets; DeltaPhi [rad]; N events",200,-0.2,0.2);
+  hSPDTrackletsDePhi->Sumw2();
+  Add2ESDsList(hSPDTrackletsDePhi, 16); 
+    
+  TH1F* hSPDTrackletsPhi = 
+    new TH1F("hSPDTrackletsPhi","Phi SPD Tracklets; Phi [rad]; N events",1000,0.,2*TMath::Pi());
+  hSPDTrackletsPhi->Sumw2();
+  Add2ESDsList(hSPDTrackletsPhi, 17); 
+    
+  TH1F* hSPDTrackletsTheta = 
+    new TH1F("hSPDTrackletsTheta","Theta SPD Tracklets; Theta [rad]; N events",500,0.,TMath::Pi());
+  hSPDTrackletsTheta->Sumw2();
+  Add2ESDsList(hSPDTrackletsTheta, 18); 
+
   return;
 }
 
@@ -365,6 +387,19 @@ void AliITSQADataMakerRec::MakeESDs(AliESDEvent *esd)
     GetESDsData(13)->Fill(vtxSPD->GetYv()-vtxTrk->GetYv());
     GetESDsData(14)->Fill(vtxSPD->GetZv()-vtxTrk->GetZv());
   }
+
+  // SPD Tracklets
+
+  // Loop over tracklets
+  GetESDsData(15)->Fill(mult);
+  for (Int_t itr=0; itr<mult; ++itr) {
+    Float_t dePhiTr = ((AliMultiplicity*)(esd->GetMultiplicity()))->GetDeltaPhi(itr);
+    Float_t phiTr   = ((AliMultiplicity*)(esd->GetMultiplicity()))->GetPhi(itr);
+    Float_t thetaTr = ((AliMultiplicity*)(esd->GetMultiplicity()))->GetTheta(itr);
+    GetESDsData(16)->Fill(dePhiTr);
+    GetESDsData(17)->Fill(phiTr);
+    GetESDsData(18)->Fill(thetaTr);
+  } // end loop on tracklets
 
   return;
 }
