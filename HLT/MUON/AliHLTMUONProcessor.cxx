@@ -171,14 +171,14 @@ bool AliHLTMUONProcessor::ArgumentAlreadyHandled(int& i, const char* argi) const
 	if (strcmp(argi, "-cdbpath") == 0)
 	{
 		if (IgnoreArgument(argi)) return false;
-		i++;
+		i++;  // argument takes one parameter
 		return true;
 	}
 
 	if (strcmp(argi, "-run") == 0)
 	{
 		if (IgnoreArgument(argi)) return false;
-		i++;
+		i++;  // argument takes one parameter
 		return true;
 	}
 	
@@ -197,7 +197,7 @@ bool AliHLTMUONProcessor::ArgumentAlreadyHandled(int& i, const char* argi) const
 	if (strcmp(argi, "-dumppath") == 0)
 	{
 		if (IgnoreArgument(argi)) return false;
-		i++;
+		i++;  // argument takes one parameter
 		return true;
 	}
 

@@ -16,6 +16,7 @@ CLASS_HDRS := 	OfflineInterface/AliHLTMUONAgent.h \
 		OnlineAnalysis/AliHLTMUONClusterFinderComponent.h \
 		utils/AliHLTMUONEmptyEventFilterComponent.h \
 		utils/AliHLTMUONDataCheckerComponent.h \
+		utils/AliHLTMUONRawDataHistoComponent.h \
 		AliHLTMUONProcessor.h \
 		AliHLTMUONRecHit.h \
 		AliHLTMUONTriggerRecord.h \

@@ -131,6 +131,8 @@ AliHLTMUONConstants::fgkESDDataType = AliHLTComponentDataTypeInitializer(kAliHLT
 const AliHLTComponentDataType
 AliHLTMUONConstants::fgkClusterStoreDataType = AliHLTComponentDataTypeInitializer("CLUSTORE", kAliHLTDataOriginMUON);
 
+const AliHLTComponentDataType
+AliHLTMUONConstants::fgkHistogramDataType = AliHLTComponentDataTypeInitializer("ROOTHIST", kAliHLTDataOriginMUON);
 
 const char* AliHLTMUONConstants::fgkRecHitsSourceId = "MUONRecHitsSource";
 const char* AliHLTMUONConstants::fgkTriggerRecordsSourceId = "MUONTriggerRecordsSource";
@@ -145,6 +147,7 @@ const char* AliHLTMUONConstants::fgkRootifierComponentId = "MUONRootifier";
 const char* AliHLTMUONConstants::fgkEmptyEventFilterComponentId = "MUONEmptyEventFilter";
 const char* AliHLTMUONConstants::fgkDataCheckerComponentId = "MUONDataChecker";
 const char* AliHLTMUONConstants::fgkClusterFinderId = "MUONClusterFinder";
+const char* AliHLTMUONConstants::fgkRawDataHistogrammerId = "MUONRawDataHistogrammer";
 
 const char* AliHLTMUONConstants::fgkTriggerReconstructorCDBPath = "HLT/ConfigMUON/TriggerReconstructor";
 const char* AliHLTMUONConstants::fgkHitReconstructorCDBPath = "HLT/ConfigMUON/HitReconstructor";

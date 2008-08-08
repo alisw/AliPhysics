@@ -165,6 +165,11 @@ public:
 	{
 		return fgkClusterStoreDataType;
 	}
+
+	static const AliHLTComponentDataType& HistogramDataType()
+	{
+		return fgkHistogramDataType;
+	}
 	
 	static const char* RecHitsSourceId()
 	{
@@ -231,6 +236,11 @@ public:
 		return fgkClusterFinderId;
 	}
 	
+	static const char* RawDataHistogrammerId()
+	{
+		return fgkRawDataHistogrammerId;
+	}
+	
 	static const char* TriggerReconstructorCDBPath()
 	{
 		return fgkTriggerReconstructorCDBPath;
@@ -284,6 +294,7 @@ private:
 	static const AliHLTComponentDataType fgkPairsDecisionBlockDataType; // Trigger decision block type for pairs of particles.
 	static const AliHLTComponentDataType fgkESDDataType; // The ESD data type with origin equal to MUON.
 	static const AliHLTComponentDataType fgkClusterStoreDataType; // Offline algorithm cluster store object.
+	static const AliHLTComponentDataType fgkHistogramDataType; // TH1/2/3 histogram type.
 	
 	// Component ID names:
 	static const char* fgkRecHitsSourceId; // Name of source component for reconstructed hits for debugging.
@@ -299,6 +310,7 @@ private:
 	static const char* fgkEmptyEventFilterComponentId; // The name of the event filter debugging component.
 	static const char* fgkDataCheckerComponentId; // Name of data checking component for debugging.
 	static const char* fgkClusterFinderId; // Name of cluster finder implementing offline algorithms.
+	static const char* fgkRawDataHistogrammerId; // Raw data histogrammer component name.
 	
 	// CDB path entries to configuration information.
 	static const char* fgkTriggerReconstructorCDBPath; // Path to CDB entry for the trigger reconstruction component.
