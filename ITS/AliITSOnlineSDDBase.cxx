@@ -86,7 +86,7 @@ void  AliITSOnlineSDDBase::ValidateAnodes(){
 void AliITSOnlineSDDBase::AddEvent(TH2F* hrawd){
   // 
   fNEvents++;
-  const Int_t kTimeBins=fLastGoodTB-fFirstGoodTB+1;
+  const Int_t kTimeBins=fLastGoodTB+1;
   Float_t sum[fgkNAnodes];
   for(Int_t ian=0;ian<fgkNAnodes;ian++){
     Float_t sumQ=0.;

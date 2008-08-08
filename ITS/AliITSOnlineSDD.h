@@ -22,7 +22,7 @@ class AliITSOnlineSDD : public TObject {
   void SetCarlos(Int_t nc){fCarlos=nc;}
   void SetDetectorSide(Int_t sid){fSide=sid;}
   void SetFirstGoodTB(Int_t itb=1){fFirstGoodTB=itb;}
-  void SetLastGoodTB(Int_t itb=127){fLastGoodTB=itb;}
+  void SetLastGoodTB(Int_t itb=126){fLastGoodTB=itb;}
 
   Int_t GetDDL() const {return fDDL;}
   Int_t GetCarlos() const {return fCarlos;}

@@ -109,7 +109,7 @@ void  AliITSOnlineSDDCMN::ValidateAnodes(){
 void AliITSOnlineSDDCMN::AddEvent(TH2F* hrawd){
   // 
   fNEvents++;
-  const Int_t kTimeBins=fLastGoodTB-fFirstGoodTB+1;
+  const Int_t kTimeBins=fLastGoodTB+1;
   TH2F* hcorrd=new TH2F("hcorrd","",hrawd->GetNbinsX(),hrawd->GetXaxis()->GetXmin(),hrawd->GetXaxis()->GetXmax(),hrawd->GetNbinsY(),hrawd->GetYaxis()->GetXmin(),hrawd->GetYaxis()->GetXmax());
   for(Int_t itb=fFirstGoodTB;itb<=fLastGoodTB;itb++){
     Float_t sumEven=0., sumOdd=0.;
