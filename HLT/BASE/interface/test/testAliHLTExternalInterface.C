@@ -201,6 +201,7 @@ int main(int /*argc*/, const char** /*argv*/)
     return iResult;
   }
 
+#ifdef HLT_MUON
   const char* module=NULL;
   module="MUON";
   libraryPath="../../../";
@@ -211,7 +212,9 @@ int main(int /*argc*/, const char** /*argv*/)
   if ((iResult=fctLoadLibrary(libraryPath.c_str()))<0) {
     return iResult;
   }
+#endif //HLT_MUON
 
+#ifdef HLT_PHOS
   module="PHOS";
   libraryPath="../../../";
   libraryPath+=module;
@@ -221,7 +224,9 @@ int main(int /*argc*/, const char** /*argv*/)
   if ((iResult=fctLoadLibrary(libraryPath.c_str()))<0) {
     return iResult;
   }
+#endif //HLT_PHOS
 
+#ifdef HLT_TRD
   module="TRD";
   libraryPath="../../../";
   libraryPath+=module;
@@ -231,7 +236,9 @@ int main(int /*argc*/, const char** /*argv*/)
   if ((iResult=fctLoadLibrary(libraryPath.c_str()))<0) {
     return iResult;
   }
+#endif //HLT_TRD
 
+#ifdef HLT_TPC
   module="TPC";
   libraryPath="../../../";
   libraryPath+=module;
@@ -241,7 +248,9 @@ int main(int /*argc*/, const char** /*argv*/)
   if ((iResult=fctLoadLibrary(libraryPath.c_str()))<0) {
     return iResult;
   }
+#endif //HLT_TPC
 
+#ifdef HLT_ITS
   module="ITS";
   libraryPath="../../../";
   libraryPath+=module;
@@ -251,7 +260,9 @@ int main(int /*argc*/, const char** /*argv*/)
   if ((iResult=fctLoadLibrary(libraryPath.c_str()))<0) {
     return iResult;
   }
+#endif //HLT_ITS
 
+#ifdef HLT_TRIGGER
   module="Trigger";
   libraryPath="../../../";
   libraryPath+="trigger";
@@ -261,7 +272,9 @@ int main(int /*argc*/, const char** /*argv*/)
   if ((iResult=fctLoadLibrary(libraryPath.c_str()))<0) {
     return iResult;
   }
+#endif //HLT_TRIGGER
 
+#ifdef HLT_COMP
   module="Comp";
   libraryPath="../../../";
   libraryPath+="comp";
@@ -271,7 +284,9 @@ int main(int /*argc*/, const char** /*argv*/)
   if ((iResult=fctLoadLibrary(libraryPath.c_str()))<0) {
     return iResult;
   }
+#endif //HLT_COMP
 
+#ifdef HLT_RCU
   module="RCU";
   libraryPath="../../../";
   libraryPath+=module;
@@ -281,6 +296,7 @@ int main(int /*argc*/, const char** /*argv*/)
   if ((iResult=fctLoadLibrary(libraryPath.c_str()))<0) {
     return iResult;
   }
+#endif //HLT_RCU
 
   AliHLTExtFctCreateComponent fctCreateComponent=(AliHLTExtFctCreateComponent)fctGetSystemCall("int AliHLTAnalysisCreateComponent(const char*,void*,int,const char**,AliHLTComponentHandle*,const char*)");
   if (!fctCreateComponent) {
