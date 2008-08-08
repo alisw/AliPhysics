@@ -77,6 +77,14 @@ void AliTRDReconstructor::Init(){
 	// Init Options
 	//
 	SetOption(GetOption());
+
+  AliInfo("TRD reconstruction will use the following settings:");
+  printf("\tWrite Clusters         [cw] : %s\n", fSteerParam&kWriteClusters?"yes":"no");
+  printf("\tWrite Online Tracklets [tw] : %s\n", fSteerParam&kWriteTracklets?"yes":"no");
+  printf("\tDrift Gas Argon        [ar] : %s\n", fSteerParam&kDriftGas?"yes":"no");
+  printf("\tStand Alone Tracking   [sa] : %s\n", fSteerParam&kSeeding?"yes":"no");
+  printf("\tNN PID                 [nn] : %s\n", fSteerParam&kSteerPID?"yes":"no");
+  printf("\tStreaming Levels            : Clusterizer[%d] Tracker[%d] PID[%d]\n", fStreamLevel[kClusterizer], fStreamLevel[kTracker], fStreamLevel[kPID]);
 }
 
 //_____________________________________________________________________________
@@ -195,10 +203,10 @@ void AliTRDReconstructor::SetOption(Option_t *opt)
       fSteerParam &= ~kSteerPID;
       continue;
     } else if(sopt.Contains("tw")){
-      fSteerParam |= kWriteTracklets;
+      if(!sopt.Contains("!")) fSteerParam |= kWriteTracklets;
       continue;	
     } else if(sopt.Contains("ar")){
-      fSteerParam |= kDriftGas;
+      if(!sopt.Contains("!")) fSteerParam |= kDriftGas;
       continue;	
     } else if(sopt.Contains("sl")){
     	TObjArray *stl = sopt.Tokenize("_");
@@ -231,6 +239,6 @@ void AliTRDReconstructor::SetStreamLevel(Int_t level, AliTRDReconstructorTask ta
 		case kPID: taskname = "PID";
 							 break;
 	}
- 	AliInfo(Form("Setting Stream Level for Task %s to %d", taskname.Data(),level));
+ 	//AliInfo(Form("Setting Stream Level for Task %s to %d", taskname.Data(),level));
 	fStreamLevel[(Int_t)task] = level;
 }
