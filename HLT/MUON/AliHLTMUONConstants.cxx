@@ -96,84 +96,40 @@ AliHLTMUONConstants::fgkNilPairDecisionStruct = {0, 0, 0, 0};
 
 
 const AliHLTComponentDataType
-AliHLTMUONConstants::fgkDDLRawDataType = (AliHLTComponentDataType){
-	sizeof(AliHLTComponentDataType),
-	kAliHLTDDLRawDataTypeID,
-	kAliHLTDataOriginAny
-} | kAliHLTDataOriginMUON;
+AliHLTMUONConstants::fgkDDLRawDataType = AliHLTComponentDataTypeInitializer(kAliHLTDataTypeDDLRaw.fID, kAliHLTDataOriginMUON);
 
 const AliHLTComponentDataType
-AliHLTMUONConstants::fgkTriggerRecordsBlockDataType = (AliHLTComponentDataType){
-	sizeof(AliHLTComponentDataType),
-	{'T','R','I','G','R','E','C','S'},
-	kAliHLTDataOriginAny
-} | kAliHLTDataOriginMUON;
+AliHLTMUONConstants::fgkTriggerRecordsBlockDataType = AliHLTComponentDataTypeInitializer("TRIGRECS", kAliHLTDataOriginMUON);
 
 const AliHLTComponentDataType
-AliHLTMUONConstants::fgkTrigRecsDebugBlockDataType = (AliHLTComponentDataType){
-	sizeof(AliHLTComponentDataType),
-	{'T','R','I','G','R','D','B','G'},
-	kAliHLTDataOriginAny
-} | kAliHLTDataOriginMUON;
+AliHLTMUONConstants::fgkTrigRecsDebugBlockDataType = AliHLTComponentDataTypeInitializer("TRIGRDBG", kAliHLTDataOriginMUON);
 
 const AliHLTComponentDataType
-AliHLTMUONConstants::fgkRecHitsBlockDataType = (AliHLTComponentDataType){
-	sizeof(AliHLTComponentDataType),
-	{'R','E','C','H','I','T','S',' '},
-	kAliHLTDataOriginAny
-} | kAliHLTDataOriginMUON;
+AliHLTMUONConstants::fgkRecHitsBlockDataType = AliHLTComponentDataTypeInitializer("RECHITS ", kAliHLTDataOriginMUON);
 
 const AliHLTComponentDataType
-AliHLTMUONConstants::fgkClusterBlockDataType = (AliHLTComponentDataType){
-	sizeof(AliHLTComponentDataType),
-	{'C','L','U','S','T','E','R','S'},
-	kAliHLTDataOriginAny
-} | kAliHLTDataOriginMUON;
+AliHLTMUONConstants::fgkClusterBlockDataType = AliHLTComponentDataTypeInitializer("CLUSTERS", kAliHLTDataOriginMUON);
 
 const AliHLTComponentDataType
-AliHLTMUONConstants::fgkChannelBlockDataType = (AliHLTComponentDataType){
-	sizeof(AliHLTComponentDataType),
-	{'C','H','A','N','N','E','L','S'},
-	kAliHLTDataOriginAny
-} | kAliHLTDataOriginMUON;
+AliHLTMUONConstants::fgkChannelBlockDataType = AliHLTComponentDataTypeInitializer("CHANNELS", kAliHLTDataOriginMUON);
 
 const AliHLTComponentDataType
-AliHLTMUONConstants::fgkMansoTracksBlockDataType = (AliHLTComponentDataType){
-	sizeof(AliHLTComponentDataType),
-	{'M','A','N','T','R','A','C','K'},
-	kAliHLTDataOriginAny
-} | kAliHLTDataOriginMUON;
+AliHLTMUONConstants::fgkMansoTracksBlockDataType = AliHLTComponentDataTypeInitializer("MANTRACK", kAliHLTDataOriginMUON);
 
 const AliHLTComponentDataType
-AliHLTMUONConstants::fgkMansoCandidatesBlockDataType = (AliHLTComponentDataType){
-	sizeof(AliHLTComponentDataType),
-	{'M','N','C','A','N','D','I','D'},
-	kAliHLTDataOriginAny
-} | kAliHLTDataOriginMUON;
+AliHLTMUONConstants::fgkMansoCandidatesBlockDataType = AliHLTComponentDataTypeInitializer("MNCANDID", kAliHLTDataOriginMUON);
 
 const AliHLTComponentDataType
-AliHLTMUONConstants::fgkSinglesDecisionBlockDataType = (AliHLTComponentDataType){
-	sizeof(AliHLTComponentDataType),
-	{'D','E','C','I','D','S','I','N'},
-	kAliHLTDataOriginAny
-} | kAliHLTDataOriginMUON;
+AliHLTMUONConstants::fgkSinglesDecisionBlockDataType = AliHLTComponentDataTypeInitializer("DECIDSIN", kAliHLTDataOriginMUON);
 
 const AliHLTComponentDataType
-AliHLTMUONConstants::fgkPairsDecisionBlockDataType = (AliHLTComponentDataType){
-	sizeof(AliHLTComponentDataType),
-	{'D','E','C','I','D','P','A','R'},
-	kAliHLTDataOriginAny
-} | kAliHLTDataOriginMUON;
+AliHLTMUONConstants::fgkPairsDecisionBlockDataType = AliHLTComponentDataTypeInitializer("DECIDPAR", kAliHLTDataOriginMUON);
 
 const AliHLTComponentDataType
-AliHLTMUONConstants::fgkESDDataType = kAliHLTDataTypeESDObject | kAliHLTDataOriginMUON;
+AliHLTMUONConstants::fgkESDDataType = AliHLTComponentDataTypeInitializer(kAliHLTDataTypeESDObject.fID, kAliHLTDataOriginMUON);
 
 const AliHLTComponentDataType
-AliHLTMUONConstants::fgkClusterStoreDataType = (AliHLTComponentDataType){
-	sizeof(AliHLTComponentDataType),
-	{'C','L','U','S','T','O','R','E'},
-	kAliHLTDataOriginAny
-} | kAliHLTDataOriginMUON;
+AliHLTMUONConstants::fgkClusterStoreDataType = AliHLTComponentDataTypeInitializer("CLUSTORE", kAliHLTDataOriginMUON);
 
 
 const char* AliHLTMUONConstants::fgkRecHitsSourceId = "MUONRecHitsSource";

@@ -29,49 +29,30 @@
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTPCDefinitions)
 
-const AliHLTComponentDataType AliHLTTPCDefinitions::fgkDDLPackedRawDataType = 
-  (AliHLTComponentDataType){sizeof(AliHLTComponentDataType),                          {'D','D','L','_','R','W','P','K'},  kAliHLTDataOriginAny} | kAliHLTDataOriginTPC;
-const AliHLTComponentDataType AliHLTTPCDefinitions::fgkDDLEncodedEntropyRawDataType = 								  	      
-  (AliHLTComponentDataType){sizeof(AliHLTComponentDataType),                          {'D','D','L','E','N','C','E','N'},  kAliHLTDataOriginAny} | kAliHLTDataOriginTPC;
+const AliHLTComponentDataType AliHLTTPCDefinitions::fgkDDLPackedRawDataType = AliHLTComponentDataTypeInitializer("DDL_RWPK", kAliHLTDataOriginTPC);
+const AliHLTComponentDataType AliHLTTPCDefinitions::fgkDDLEncodedEntropyRawDataType = AliHLTComponentDataTypeInitializer("DDLENCEN", kAliHLTDataOriginTPC);
 										      								  	      
-const AliHLTComponentDataType AliHLTTPCDefinitions::fgkPackedRawDataType = 	      								  	      
-  (AliHLTComponentDataType){sizeof(AliHLTComponentDataType),                          {'R','A','W','P','A','K','E','D'},  kAliHLTDataOriginAny} | kAliHLTDataOriginTPC;
-const AliHLTComponentDataType AliHLTTPCDefinitions::fgkUnpackedRawDataType =	      								  	      
-  (AliHLTComponentDataType){sizeof(AliHLTComponentDataType),                          {'R','A','W','U','N','P','A','K'},  kAliHLTDataOriginAny} | kAliHLTDataOriginTPC;
-const AliHLTComponentDataType AliHLTTPCDefinitions::fgkClustersDataType = 	      								  	      
-  (AliHLTComponentDataType){sizeof(AliHLTComponentDataType),                          {'C','L','U','S','T','E','R','S'},  kAliHLTDataOriginAny} | kAliHLTDataOriginTPC;
-const AliHLTComponentDataType AliHLTTPCDefinitions::fgkVertexDataType =		      								  	      
-  (AliHLTComponentDataType){sizeof(AliHLTComponentDataType),                          {'V','E','R','T','E','X',' ',' '},  kAliHLTDataOriginAny} | kAliHLTDataOriginTPC;
-const AliHLTComponentDataType AliHLTTPCDefinitions::fgkTrackSegmentsDataType =	      								  	      
-  (AliHLTComponentDataType){sizeof(AliHLTComponentDataType),                          {'T','R','A','K','S','E','G','S'},  kAliHLTDataOriginAny} | kAliHLTDataOriginTPC;
-const AliHLTComponentDataType AliHLTTPCDefinitions::fgkTracksDataType =		      								  	      
-  (AliHLTComponentDataType){sizeof(AliHLTComponentDataType),                          {'T','R','A','C','K','S',' ',' '},  kAliHLTDataOriginAny} | kAliHLTDataOriginTPC;
+const AliHLTComponentDataType AliHLTTPCDefinitions::fgkPackedRawDataType = AliHLTComponentDataTypeInitializer("RAWPAKED", kAliHLTDataOriginTPC);
+const AliHLTComponentDataType AliHLTTPCDefinitions::fgkUnpackedRawDataType = AliHLTComponentDataTypeInitializer("RAWUNPAK", kAliHLTDataOriginTPC);
+const AliHLTComponentDataType AliHLTTPCDefinitions::fgkClustersDataType = AliHLTComponentDataTypeInitializer("CLUSTERS", kAliHLTDataOriginTPC);
+const AliHLTComponentDataType AliHLTTPCDefinitions::fgkVertexDataType = AliHLTComponentDataTypeInitializer("VERTEX  ", kAliHLTDataOriginTPC);
+const AliHLTComponentDataType AliHLTTPCDefinitions::fgkTrackSegmentsDataType = AliHLTComponentDataTypeInitializer("TRAKSEGS", kAliHLTDataOriginTPC);
+const AliHLTComponentDataType AliHLTTPCDefinitions::fgkTracksDataType = AliHLTComponentDataTypeInitializer("TRACKS  ", kAliHLTDataOriginTPC);
 
-const AliHLTComponentDataType AliHLTTPCDefinitions::fgkClusterTracksModelDataType =
-  (AliHLTComponentDataType){ sizeof(AliHLTComponentDataType),                         {'C','L','S','T','R','K','M','D'},  kAliHLTDataOriginAny} | kAliHLTDataOriginTPC;
-const AliHLTComponentDataType AliHLTTPCDefinitions::fgkRemainingClustersModelDataType =
-  (AliHLTComponentDataType) { sizeof(AliHLTComponentDataType),                        {'R','E','M','C','L','S','M','D'},  kAliHLTDataOriginAny} | kAliHLTDataOriginTPC;
-const AliHLTComponentDataType AliHLTTPCDefinitions::fgkClusterTracksCompressedDataType =
-  (AliHLTComponentDataType) { sizeof(AliHLTComponentDataType),                        {'C','L','S','T','R','K','C','M'},  kAliHLTDataOriginAny} | kAliHLTDataOriginTPC;
-const AliHLTComponentDataType AliHLTTPCDefinitions::fgkRemainingClustersCompressedDataType =
-  (AliHLTComponentDataType) { sizeof(AliHLTComponentDataType),                        {'R','E','M','C','L','S','C','M'},  kAliHLTDataOriginAny} | kAliHLTDataOriginTPC;
+const AliHLTComponentDataType AliHLTTPCDefinitions::fgkClusterTracksModelDataType = AliHLTComponentDataTypeInitializer("CLSTRKMD", kAliHLTDataOriginTPC);
+const AliHLTComponentDataType AliHLTTPCDefinitions::fgkRemainingClustersModelDataType = AliHLTComponentDataTypeInitializer("REMCLSMD", kAliHLTDataOriginTPC);
+const AliHLTComponentDataType AliHLTTPCDefinitions::fgkClusterTracksCompressedDataType = AliHLTComponentDataTypeInitializer("CLSTRKCM", kAliHLTDataOriginTPC);
+const AliHLTComponentDataType AliHLTTPCDefinitions::fgkRemainingClustersCompressedDataType = AliHLTComponentDataTypeInitializer("REMCLSCM", kAliHLTDataOriginTPC);
 										      								  	      
-const AliHLTComponentDataType AliHLTTPCDefinitions::fgkCalibPedestalDataType =	      								  	      
-  (AliHLTComponentDataType){sizeof(AliHLTComponentDataType),                          {'C','A','L','_','P','E','D',' '},  kAliHLTDataOriginAny} | kAliHLTDataOriginTPC;
-const AliHLTComponentDataType AliHLTTPCDefinitions::fgkCalibPulserDataType =	      								  	      
-  (AliHLTComponentDataType){sizeof(AliHLTComponentDataType),                          {'C','A','L','_','P','U','L','S'},  kAliHLTDataOriginAny} | kAliHLTDataOriginTPC;
-const AliHLTComponentDataType AliHLTTPCDefinitions::fgkCalibCEDataType =	      								  	      
-  (AliHLTComponentDataType){sizeof(AliHLTComponentDataType),                          {'C','A','L','_','C','E',' ',' '},  kAliHLTDataOriginAny} | kAliHLTDataOriginTPC;
+const AliHLTComponentDataType AliHLTTPCDefinitions::fgkCalibPedestalDataType = AliHLTComponentDataTypeInitializer("CAL_PED ", kAliHLTDataOriginTPC);
+const AliHLTComponentDataType AliHLTTPCDefinitions::fgkCalibPulserDataType = AliHLTComponentDataTypeInitializer("CAL_PULS", kAliHLTDataOriginTPC);
+const AliHLTComponentDataType AliHLTTPCDefinitions::fgkCalibCEDataType = AliHLTComponentDataTypeInitializer("CAL_CE  ", kAliHLTDataOriginTPC);
 
-const AliHLTComponentDataType AliHLTTPCDefinitions::fgkOfflineCalibAlignDataType =	      								  	      
+const AliHLTComponentDataType AliHLTTPCDefinitions::fgkOfflineCalibAlignDataType = AliHLTComponentDataTypeInitializer("CALALIGN", kAliHLTDataOriginTPC);
 
-  (AliHLTComponentDataType){sizeof(AliHLTComponentDataType),                          {'C','A','L','A','L','I','G','N'},  kAliHLTDataOriginAny} | kAliHLTDataOriginTPC;
+const AliHLTComponentDataType AliHLTTPCDefinitions::fgkOfflineCalibTracksDataType = AliHLTComponentDataTypeInitializer("CALTRACK", kAliHLTDataOriginTPC);
 
-const AliHLTComponentDataType AliHLTTPCDefinitions::fgkOfflineCalibTracksDataType =	      								  	      
-  (AliHLTComponentDataType){sizeof(AliHLTComponentDataType),                          {'C','A','L','T','R','A','C','K'},  kAliHLTDataOriginAny} | kAliHLTDataOriginTPC;
-
-const AliHLTComponentDataType AliHLTTPCDefinitions::fgkOfflineCalibTracksGainDataType =	      								  	      
-  (AliHLTComponentDataType){sizeof(AliHLTComponentDataType),                          {'C','A','L','G','A','I','N',' '},  kAliHLTDataOriginAny} | kAliHLTDataOriginTPC;
+const AliHLTComponentDataType AliHLTTPCDefinitions::fgkOfflineCalibTracksGainDataType = AliHLTComponentDataTypeInitializer("CALGAIN ", kAliHLTDataOriginTPC);
 
 
 AliHLTTPCDefinitions::AliHLTTPCDefinitions()

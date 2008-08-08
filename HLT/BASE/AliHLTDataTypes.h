@@ -1060,4 +1060,33 @@ inline AliHLTComponentDataType operator|(const AliHLTComponentDataType srcdt, co
   return dt;
 }
 
+/**
+ * Helper function to initialize a data type from an id char array and origin string.
+ * @return data type structure initialized with the specified id and origin
+ * @ingroup alihlt_component_datatypes
+ */
+inline AliHLTComponentDataType AliHLTComponentDataTypeInitializer(const char id[kAliHLTComponentDataTypefIDsize], const char* origin)
+{
+  AliHLTComponentDataType dt=kAliHLTVoidDataType;
+  int i=0;
+  for (i = 0; i < kAliHLTComponentDataTypefIDsize; i++)
+    dt.fID[i]=id[i];
+  for (i = 0; i < kAliHLTComponentDataTypefOriginSize && origin[i]!=0; i++ )
+    dt.fOrigin[i]=origin[i];
+  return dt;
+}
+
+/**
+ * Helper function to initialize a data type from a default data type and
+ * an origin string. Basically it merges the specified origin into the data
+ * type.
+ * @return data type structure initialized with the id from specified data type
+ *         and origin
+ * @ingroup alihlt_component_datatypes
+ */
+inline AliHLTComponentDataType AliHLTComponentDataTypeInitializer(const AliHLTComponentDataType src, const char* origin)
+{
+  return AliHLTComponentDataTypeInitializer(src.fID, origin);
+}
+
 #endif 

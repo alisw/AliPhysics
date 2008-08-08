@@ -27,188 +27,121 @@
 
 // those types can not be implemented in the header files as rootcint
 // can not cope with the type id and origin defines.
+//
+// change Aug 01 2008
+// some compilers can not cope with the fomerly used initialization of the
+// default data type variable by using the operator | like e.g
+//   const AliHLTComponentDataType kAliHLTDataTypeComponentTable = (AliHLTComponentDataType) {
+//     sizeof(AliHLTComponentDataType),
+//     kAliHLTComponentTableDataTypeID,
+//     kAliHLTDataOriginAny
+//   }|kAliHLTDataOriginPrivate;
+// Mainly the compined type cast and utilization of the operator| is the problem.
+// An initializer function has been defined in order to work around this issue.
 
 /** multiple output data types */
-const AliHLTComponentDataType kAliHLTMultipleDataType =  (AliHLTComponentDataType) {
-  sizeof(AliHLTComponentDataType),
-  {'M','U','L','T','I','P','L','E'},
-  kAliHLTDataOriginAny
-}|kAliHLTDataOriginPrivate;
+const char kAliHLTMultipleDataTypeIDstring[8] = {'M','U','L','T','I','P','L','E'};
+const AliHLTComponentDataType kAliHLTMultipleDataType =  AliHLTComponentDataTypeInitializer(kAliHLTMultipleDataTypeIDstring, kAliHLTDataOriginPrivate);
 
 /** data to file exchange subscriber */
-const AliHLTComponentDataType kAliHLTDataTypeFXSCalib =  (AliHLTComponentDataType) {
-  sizeof(AliHLTComponentDataType),
-  kAliHLTFXSCalibDataTypeID,
-  kAliHLTDataOriginAny
-}|kAliHLTDataOriginOut;
+const char kAliHLTFXSCalibDataTypeIDstring[8] = kAliHLTFXSCalibDataTypeID;
+const AliHLTComponentDataType kAliHLTDataTypeFXSCalib = AliHLTComponentDataTypeInitializer(kAliHLTFXSCalibDataTypeIDstring, kAliHLTDataOriginOut);
 
 /** DDL list data type */
-const AliHLTComponentDataType kAliHLTDataTypeDDL  =  (AliHLTComponentDataType) {
-  sizeof(AliHLTComponentDataType),
-  kAliHLTDDLDataTypeID,
-  kAliHLTDataOriginAny
-}|kAliHLTDataOriginOut;
+const char kAliHLTDDLDataTypeIDstring[8] = kAliHLTDDLDataTypeID;
+const AliHLTComponentDataType kAliHLTDataTypeDDL = AliHLTComponentDataTypeInitializer(kAliHLTDDLDataTypeIDstring, kAliHLTDataOriginOut);
 
 /** SOR data type */
-const AliHLTComponentDataType kAliHLTDataTypeSOR  =  (AliHLTComponentDataType) {
-  sizeof(AliHLTComponentDataType),
-  kAliHLTSORDataTypeID,
-  kAliHLTDataOriginAny
-}|kAliHLTDataOriginPrivate;
+const char kAliHLTSORDataTypeIDstring[8] = kAliHLTSORDataTypeID;
+const AliHLTComponentDataType kAliHLTDataTypeSOR = AliHLTComponentDataTypeInitializer(kAliHLTSORDataTypeIDstring, kAliHLTDataOriginPrivate);
 
 /** EOR data type */
-const AliHLTComponentDataType kAliHLTDataTypeEOR  =  (AliHLTComponentDataType) {
-  sizeof(AliHLTComponentDataType),
-  kAliHLTEORDataTypeID,
-  kAliHLTDataOriginAny
-}|kAliHLTDataOriginPrivate;
+const char kAliHLTEORDataTypeIDstring[8] = kAliHLTEORDataTypeID;
+const AliHLTComponentDataType kAliHLTDataTypeEOR = AliHLTComponentDataTypeInitializer(kAliHLTEORDataTypeIDstring, kAliHLTDataOriginPrivate);
 
 /** run type data block */
-const AliHLTComponentDataType kAliHLTDataTypeRunType  =  (AliHLTComponentDataType) {
-  sizeof(AliHLTComponentDataType),
-  kAliHLTRunTypeDataTypeID,
-  kAliHLTDataOriginAny
-}|kAliHLTDataOriginPrivate;
+const char kAliHLTRunTypeDataTypeIDstring[8] = kAliHLTRunTypeDataTypeID;
+const AliHLTComponentDataType kAliHLTDataTypeRunType = AliHLTComponentDataTypeInitializer(kAliHLTRunTypeDataTypeIDstring, kAliHLTDataOriginPrivate);
 
 /** Event type specification */
-const AliHLTComponentDataType kAliHLTDataTypeEvent  =  (AliHLTComponentDataType) {
-  sizeof(AliHLTComponentDataType),
-  kAliHLTEventDataTypeID,
-  kAliHLTDataOriginAny
-}|kAliHLTDataOriginPrivate;
+const char kAliHLTEventDataTypeIDstring[8] = kAliHLTEventDataTypeID;
+const AliHLTComponentDataType kAliHLTDataTypeEvent = AliHLTComponentDataTypeInitializer(kAliHLTEventDataTypeIDstring, kAliHLTDataOriginPrivate);
 
 /** Configuration event data type */
-const AliHLTComponentDataType kAliHLTDataTypeComConf  =  (AliHLTComponentDataType) {
-  sizeof(AliHLTComponentDataType),
-  kAliHLTComConfDataTypeID,
-  kAliHLTDataOriginAny
-}|kAliHLTDataOriginPrivate;
+const char kAliHLTComConfDataTypeIDstring[8] = kAliHLTComConfDataTypeID;
+const AliHLTComponentDataType kAliHLTDataTypeComConf = AliHLTComponentDataTypeInitializer(kAliHLTComConfDataTypeIDstring, kAliHLTDataOriginPrivate);
 
 /** DCS value update event */
-const AliHLTComponentDataType kAliHLTDataTypeUpdtDCS  =  (AliHLTComponentDataType) {
-  sizeof(AliHLTComponentDataType),
-  kAliHLTUpdtDCSDataTypeID,
-  kAliHLTDataOriginAny
-}|kAliHLTDataOriginPrivate;
+const char kAliHLTUpdtDCSDataTypeIDstring[8] = kAliHLTUpdtDCSDataTypeID;
+const AliHLTComponentDataType kAliHLTDataTypeUpdtDCS = AliHLTComponentDataTypeInitializer(kAliHLTUpdtDCSDataTypeIDstring, kAliHLTDataOriginPrivate);
 
 /** RAW DDL data specification, data publisher will set type id and origin correctly */
-const AliHLTComponentDataType kAliHLTDataTypeDDLRaw =  (AliHLTComponentDataType) {
-  sizeof(AliHLTComponentDataType),
-  kAliHLTDDLRawDataTypeID,
-  kAliHLTDataOriginAny
-};
+const char kAliHLTDDLRawDataTypeIDstring[8] = kAliHLTDDLRawDataTypeID;
+const AliHLTComponentDataType kAliHLTDataTypeDDLRaw = AliHLTComponentDataTypeInitializer(kAliHLTDDLRawDataTypeIDstring, kAliHLTDataOriginAny);
 
 /** ESD data specification */
-const AliHLTComponentDataType kAliHLTDataTypeESDObject =  (AliHLTComponentDataType) {
-  sizeof(AliHLTComponentDataType),
-  kAliHLTESDObjectDataTypeID,
-  kAliHLTDataOriginAny
-};
+const char kAliHLTESDObjectDataTypeIDstring[8] = kAliHLTESDObjectDataTypeID;
+const AliHLTComponentDataType kAliHLTDataTypeESDObject = AliHLTComponentDataTypeInitializer(kAliHLTESDObjectDataTypeIDstring, kAliHLTDataOriginAny);
 
 /** ESD tree data specification */
-const AliHLTComponentDataType kAliHLTDataTypeESDTree =  (AliHLTComponentDataType) {
-  sizeof(AliHLTComponentDataType),
-  kAliHLTESDTreeDataTypeID,
-  kAliHLTDataOriginAny
-};
+const char kAliHLTESDTreeDataTypeIDstring[8] = kAliHLTESDTreeDataTypeID;
+const AliHLTComponentDataType kAliHLTDataTypeESDTree = AliHLTComponentDataTypeInitializer(kAliHLTESDTreeDataTypeIDstring, kAliHLTDataOriginAny);
 
 /** AliRoot TreeD data specification */
-const AliHLTComponentDataType kAliHLTDataTypeAliTreeD =  (AliHLTComponentDataType) {
-  sizeof(AliHLTComponentDataType),
-  kAliHLTTreeDDataTypeID,
-  kAliHLTDataOriginAny
-};
+const char kAliHLTTreeDDataTypeIDstring[8] = kAliHLTTreeDDataTypeID;
+const AliHLTComponentDataType kAliHLTDataTypeAliTreeD = AliHLTComponentDataTypeInitializer(kAliHLTTreeDDataTypeIDstring, kAliHLTDataOriginAny);
 
 /** AliRoot TreeR data specification */
-const AliHLTComponentDataType kAliHLTDataTypeAliTreeR =  (AliHLTComponentDataType) {
-  sizeof(AliHLTComponentDataType),
-  kAliHLTTreeRDataTypeID,
-  kAliHLTDataOriginAny
-};
+const char kAliHLTTreeRDataTypeIDstring[8] = kAliHLTTreeRDataTypeID;
+const AliHLTComponentDataType kAliHLTDataTypeAliTreeR = AliHLTComponentDataTypeInitializer(kAliHLTTreeRDataTypeIDstring, kAliHLTDataOriginAny);
 
 /** 16 bit Hardware address selection data specification, origin is 'any' */
-const AliHLTComponentDataType kAliHLTDataTypeHwAddr16 = (AliHLTComponentDataType) {
-  sizeof(AliHLTComponentDataType),
-  kAliHLTHwAddr16DataTypeID,
-  kAliHLTDataOriginAny
-};
+const char kAliHLTHwAddr16DataTypeIDstring[8] = kAliHLTHwAddr16DataTypeID;
+const AliHLTComponentDataType kAliHLTDataTypeHwAddr16 = AliHLTComponentDataTypeInitializer(kAliHLTHwAddr16DataTypeIDstring, kAliHLTDataOriginAny);
 
 /** Event statistics */
-const AliHLTComponentDataType kAliHLTDataTypeEventStatistics = (AliHLTComponentDataType) {
-  sizeof(AliHLTComponentDataType),
-  kAliHLTEventStatisticsDataTypeID,
-  kAliHLTDataOriginAny
-};
+const char kAliHLTEventStatisticsDataTypeIDstring[8] = kAliHLTEventStatisticsDataTypeID;
+const AliHLTComponentDataType kAliHLTDataTypeEventStatistics = AliHLTComponentDataTypeInitializer(kAliHLTEventStatisticsDataTypeIDstring, kAliHLTDataOriginAny);
 
 /** Event summary */
-const AliHLTComponentDataType kAliHLTDataTypeEventSummary = (AliHLTComponentDataType) {
-  sizeof(AliHLTComponentDataType),
-  kAliHLTEventSummaryDataTypeID,
-  kAliHLTDataOriginAny
-}|kAliHLTDataOriginOut;
+const char kAliHLTEventSummaryDataTypeIDstring[8] = kAliHLTEventSummaryDataTypeID;
+const AliHLTComponentDataType kAliHLTDataTypeEventSummary = AliHLTComponentDataTypeInitializer(kAliHLTEventSummaryDataTypeIDstring, kAliHLTDataOriginOut);
 
 /** Run statistics */
-const AliHLTComponentDataType kAliHLTDataTypeRunStatistics = (AliHLTComponentDataType) {
-  sizeof(AliHLTComponentDataType),
-  kAliHLTRunStatisticsDataTypeID,
-  kAliHLTDataOriginAny
-};
+const char kAliHLTRunStatisticsDataTypeIDstring[8] = kAliHLTRunStatisticsDataTypeID;
+const AliHLTComponentDataType kAliHLTDataTypeRunStatistics = AliHLTComponentDataTypeInitializer(kAliHLTRunStatisticsDataTypeIDstring, kAliHLTDataOriginAny);
 
 /** Run summary */
-const AliHLTComponentDataType kAliHLTDataTypeRunSummary = (AliHLTComponentDataType) {
-  sizeof(AliHLTComponentDataType),
-  kAliHLTRunSummaryDataTypeID,
-  kAliHLTDataOriginAny
-}|kAliHLTDataOriginOut;
+const char kAliHLTRunSummaryDataTypeIDstring[8] = kAliHLTRunSummaryDataTypeID;
+const AliHLTComponentDataType kAliHLTDataTypeRunSummary = AliHLTComponentDataTypeInitializer(kAliHLTRunSummaryDataTypeIDstring, kAliHLTDataOriginOut);
 
 /** Component statistics */
-const AliHLTComponentDataType kAliHLTDataTypeComponentStatistics = (AliHLTComponentDataType) {
-  sizeof(AliHLTComponentDataType),
-  kAliHLTComponentStatisticsDataTypeID,
-  kAliHLTDataOriginAny
-}|kAliHLTDataOriginPrivate;
+const char  kAliHLTComponentStatisticsDataTypeIDstring[8] = kAliHLTComponentStatisticsDataTypeID;
+const AliHLTComponentDataType kAliHLTDataTypeComponentStatistics = AliHLTComponentDataTypeInitializer(kAliHLTComponentStatisticsDataTypeIDstring, kAliHLTDataOriginPrivate);
 
 /** Component table */
-const AliHLTComponentDataType kAliHLTDataTypeComponentTable = (AliHLTComponentDataType) {
-  sizeof(AliHLTComponentDataType),
-  kAliHLTComponentTableDataTypeID,
-  kAliHLTDataOriginAny
-}|kAliHLTDataOriginPrivate;
+const char kAliHLTComponentTableDataTypeIDstring[8] = kAliHLTComponentTableDataTypeID;
+const AliHLTComponentDataType kAliHLTDataTypeComponentTable = AliHLTComponentDataTypeInitializer(kAliHLTComponentTableDataTypeIDstring, kAliHLTDataOriginPrivate);
 
 /** general ROOT TObject */
-const AliHLTComponentDataType kAliHLTDataTypeTObject = (AliHLTComponentDataType) {
-  sizeof(AliHLTComponentDataType),
-  kAliHLTTObjectDataTypeID,
-  kAliHLTDataOriginAny
-};
+const char kAliHLTTObjectDataTypeIDstring[8] = kAliHLTTObjectDataTypeID;
+const AliHLTComponentDataType kAliHLTDataTypeTObject = AliHLTComponentDataTypeInitializer(kAliHLTTObjectDataTypeIDstring, kAliHLTDataOriginAny);
 
 /** ROOT TObjArray */
-const AliHLTComponentDataType kAliHLTDataTypeTObjArray = (AliHLTComponentDataType) {
-  sizeof(AliHLTComponentDataType),
-  kAliHLTTObjArrayDataTypeID,
-  kAliHLTDataOriginAny
-};
+const char kAliHLTTObjArrayDataTypeIDstring[8] = kAliHLTTObjArrayDataTypeID;
+const AliHLTComponentDataType kAliHLTDataTypeTObjArray = AliHLTComponentDataTypeInitializer(kAliHLTTObjArrayDataTypeIDstring, kAliHLTDataOriginAny);
 
 /** ROOT TTree */
-const AliHLTComponentDataType kAliHLTDataTypeTTree = (AliHLTComponentDataType) {
-  sizeof(AliHLTComponentDataType),
-  kAliHLTTTreeDataTypeID,
-  kAliHLTDataOriginAny
-};
+const char kAliHLTTTreeDataTypeIDstring[8] = kAliHLTTTreeDataTypeID;
+const AliHLTComponentDataType kAliHLTDataTypeTTree = AliHLTComponentDataTypeInitializer(kAliHLTTTreeDataTypeIDstring, kAliHLTDataOriginAny);
 
 /** ROOT TH1 (can be used for all histograms, they derive from TH1) */
-const AliHLTComponentDataType kAliHLTDataTypeHistogram = (AliHLTComponentDataType) {
-  sizeof(AliHLTComponentDataType),
-  kAliHLTHistogramDataTypeID,
-  kAliHLTDataOriginAny
-};
+const char kAliHLTHistogramDataTypeIDstring[8] = kAliHLTHistogramDataTypeID;
+const AliHLTComponentDataType kAliHLTDataTypeHistogram = AliHLTComponentDataTypeInitializer(kAliHLTHistogramDataTypeIDstring, kAliHLTDataOriginAny);
 
 /** ROOT TNtuple */
-const AliHLTComponentDataType kAliHLTDataTypeTNtuple = (AliHLTComponentDataType) {
-  sizeof(AliHLTComponentDataType),
-  kAliHLTTNtupleDataTypeID,
-  kAliHLTDataOriginAny
-};
+const char kAliHLTTNtupleDataTypeIDstring[8] = kAliHLTTNtupleDataTypeID;
+const AliHLTComponentDataType kAliHLTDataTypeTNtuple = AliHLTComponentDataTypeInitializer(kAliHLTTNtupleDataTypeIDstring, kAliHLTDataOriginAny);
 
 //////////////////////////////////////////////////////////////////////////
 //
