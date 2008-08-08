@@ -1240,41 +1240,79 @@ Bool_t AliProtonAnalysis::ReadCorrectionContainer(const char* filename) {
   //currently the GRID is formed by the y-pT parameters
   //Add Vz as a next step
   Int_t iRap = 0, iPt = 1;
-  for(Int_t iStep = 0; iStep < nSteps; iStep++) {
-    gYPt[iStep] = corrfwContainerProtons->ShowProjection(iRap,iPt,iStep);
-    //fCorrectionList2D->Add(gYPt[iStep]);
-  }
+  AliCFEffGrid *effProtonsStep0Step1 = new AliCFEffGrid("eff10",
+					 "effProtonsStep0Step1",
+					 *corrfwContainerProtons);
+  effProtonsStep0Step1->CalculateEfficiency(1,0); //eff= step1/step0
+  gYPt[0] = effProtonsStep0Step1->Project(iRap,iPt);
+  fCorrectionListProtons2D->Add(gYPt[0]);
+  
+  AliCFEffGrid *effProtonsStep0Step2 = new AliCFEffGrid("eff20",
+					 "effProtonsStep0Step2",
+					 *corrfwContainerProtons);
+  effProtonsStep0Step2->CalculateEfficiency(2,0); //eff= step2/step0
+  gYPt[1] = effProtonsStep0Step2->Project(iRap,iPt);
+  fCorrectionListProtons2D->Add(gYPt[1]);
 
-  //construct the efficiency grid from the data container                                           
+  AliCFEffGrid *effProtonsStep0Step3 = new AliCFEffGrid("eff30",
+					 "effProtonsStep0Step3",
+					 *corrfwContainerProtons);
+  effProtonsStep0Step3->CalculateEfficiency(3,0); //eff= step1/step0
+  gYPt[2] = effProtonsStep0Step3->Project(iRap,iPt);
+  fCorrectionListProtons2D->Add(gYPt[2]);
+
+  TH1D *gEfficiency[2][3]; //efficiency as a function of pT and of y (raws-[2])
+  TH1D *gCorrection[2][3]; //efficiency as a function of pT and of y (raws-[2])
   TString gTitle = 0;
-  AliCFEffGrid *efficiency[3]; //The efficiency array has nStep-1 entries!!!
-  TH1D *gEfficiency[2][3]; //efficiency as a function of pT and of y (raws - [2]) 
-  TH1D *gCorrection[2][3]; //efficiency as a function of pT and of y (raws - [2]) 
-
-  //Get the 2D efficiency maps
-  for(Int_t iStep = 1; iStep < nSteps; iStep++) { 
-    gTitle = "EfficiencyProtons_Step0_Step"; gTitle += iStep; 
-    efficiency[iStep] = new AliCFEffGrid(gTitle.Data(),
-					 gTitle.Data(),*corrfwContainerProtons);
-    efficiency[iStep]->CalculateEfficiency(iStep,0); //eff= step[i]/step0
-    fCorrectionListProtons2D->Add(efficiency[iStep]);  
-  }
   //Get the projection of the efficiency maps
-  for(Int_t iParameter = 0; iParameter < 2; iParameter++) { 
-    for(Int_t iStep = 1; iStep < nSteps; iStep++) { 
-      gEfficiency[iParameter][iStep-1] = efficiency[iStep]->Project(iParameter);
-      fEfficiencyListProtons1D->Add(gEfficiency[iParameter][iStep-1]);  
-      gTitle = "ProtonsCorrection_Parameter"; gTitle += iParameter+1;
-      gTitle += "_Step0_Step"; gTitle += iStep; 
-      gCorrection[iParameter][iStep-1] = new TH1D(gTitle.Data(),
-						   gTitle.Data(),
-						   gEfficiency[iParameter][iStep-1]->GetNbinsX(),
-						   gEfficiency[iParameter][iStep-1]->GetXaxis()->GetXmin(),
-						   gEfficiency[iParameter][iStep-1]->GetXaxis()->GetXmax());
-      //initialisation of the correction
-      for(Int_t iBin = 1; iBin <= gEfficiency[iParameter][iStep-1]->GetNbinsX(); iBin++)
-	gCorrection[iParameter][iStep-1]->SetBinContent(iBin,1.0);
-    }//step loop
+  for(Int_t iParameter = 0; iParameter < 2; iParameter++) {
+    gEfficiency[iParameter][0] = effProtonsStep0Step1->Project(iParameter);
+    gTitle = "ProtonsEfficiency_Parameter"; gTitle += iParameter+1;
+    gTitle += "_Step0_Step1"; 
+    gEfficiency[iParameter][0]->SetName(gTitle.Data());
+    fEfficiencyListProtons1D->Add(gEfficiency[iParameter][0]);  
+    gTitle = "ProtonsCorrection_Parameter"; gTitle += iParameter+1;
+    gTitle += "_Step0_Step1"; 
+    gCorrection[iParameter][0] = new TH1D(gTitle.Data(),
+					  gTitle.Data(),
+					  gEfficiency[iParameter][0]->GetNbinsX(),
+					  gEfficiency[iParameter][0]->GetXaxis()->GetXmin(),
+					  gEfficiency[iParameter][0]->GetXaxis()->GetXmax());
+    //initialisation of the correction
+    for(Int_t iBin = 1; iBin <= gEfficiency[iParameter][0]->GetNbinsX(); iBin++)
+      gCorrection[iParameter][0]->SetBinContent(iBin,1.0);
+
+    gEfficiency[iParameter][1] = effProtonsStep0Step2->Project(iParameter);
+    gTitle = "ProtonsEfficiency_Parameter"; gTitle += iParameter+1;
+    gTitle += "_Step0_Step2"; 
+    gEfficiency[iParameter][1]->SetName(gTitle.Data());
+    fEfficiencyListProtons1D->Add(gEfficiency[iParameter][1]);  
+    gTitle = "ProtonsCorrection_Parameter"; gTitle += iParameter+1;
+    gTitle += "_Step0_Step2"; 
+    gCorrection[iParameter][1] = new TH1D(gTitle.Data(),
+					  gTitle.Data(),
+					  gEfficiency[iParameter][1]->GetNbinsX(),
+					  gEfficiency[iParameter][1]->GetXaxis()->GetXmin(),
+					  gEfficiency[iParameter][1]->GetXaxis()->GetXmax());
+    //initialisation of the correction
+    for(Int_t iBin = 1; iBin <= gEfficiency[iParameter][1]->GetNbinsX(); iBin++)
+      gCorrection[iParameter][1]->SetBinContent(iBin,1.0);
+
+    gEfficiency[iParameter][2] = effProtonsStep0Step3->Project(iParameter);
+    gTitle = "ProtonsEfficiency_Parameter"; gTitle += iParameter+1;
+    gTitle += "_Step0_Step3"; 
+    gEfficiency[iParameter][2]->SetName(gTitle.Data());
+    fEfficiencyListProtons1D->Add(gEfficiency[iParameter][2]);  
+    gTitle = "ProtonsCorrection_Parameter"; gTitle += iParameter+1;
+    gTitle += "_Step0_Step3"; 
+    gCorrection[iParameter][2] = new TH1D(gTitle.Data(),
+					  gTitle.Data(),
+					  gEfficiency[iParameter][2]->GetNbinsX(),
+					  gEfficiency[iParameter][2]->GetXaxis()->GetXmin(),
+					  gEfficiency[iParameter][2]->GetXaxis()->GetXmax());
+    //initialisation of the correction
+    for(Int_t iBin = 1; iBin <= gEfficiency[iParameter][2]->GetNbinsX(); iBin++)
+      gCorrection[iParameter][2]->SetBinContent(iBin,1.0);
   }//parameter loop
   //Calculate the 1D correction parameters as a function of y and pT
   for(Int_t iParameter = 0; iParameter < 2; iParameter++) { 
@@ -1299,35 +1337,76 @@ Bool_t AliProtonAnalysis::ReadCorrectionContainer(const char* filename) {
   nSteps = corrfwContainerAntiProtons->GetNStep();
   //currently the GRID is formed by the y-pT parameters
   //Add Vz as a next step
-  iRap = 0; iPt = 1;
-  for(Int_t iStep = 0; iStep < nSteps; iStep++) {
-    gYPt[iStep] = corrfwContainerAntiProtons->ShowProjection(iRap,iPt,iStep);
-  }
+  AliCFEffGrid *effAntiProtonsStep0Step1 = new AliCFEffGrid("eff10",
+					 "effAntiProtonsStep0Step1",
+					 *corrfwContainerAntiProtons);
+  effAntiProtonsStep0Step1->CalculateEfficiency(1,0); //eff= step1/step0
+  gYPt[0] = effAntiProtonsStep0Step1->Project(iRap,iPt);
+  fCorrectionListAntiProtons2D->Add(gYPt[0]);
+  
+  AliCFEffGrid *effAntiProtonsStep0Step2 = new AliCFEffGrid("eff20",
+					 "effAntiProtonsStep0Step2",
+					 *corrfwContainerAntiProtons);
+  effAntiProtonsStep0Step2->CalculateEfficiency(2,0); //eff= step2/step0
+  gYPt[1] = effAntiProtonsStep0Step2->Project(iRap,iPt);
+  fCorrectionListAntiProtons2D->Add(gYPt[1]);
 
-  //Get the 2D efficiency maps
-  for(Int_t iStep = 1; iStep < nSteps; iStep++) { 
-    gTitle = "EfficiencyAntiProtons_Step0_Step"; gTitle += iStep; 
-    efficiency[iStep] = new AliCFEffGrid(gTitle.Data(),
-					 gTitle.Data(),*corrfwContainerAntiProtons);
-    efficiency[iStep]->CalculateEfficiency(iStep,0); //eff= step[i]/step0
-    fCorrectionListAntiProtons2D->Add(efficiency[iStep]);  
-  }
+  AliCFEffGrid *effAntiProtonsStep0Step3 = new AliCFEffGrid("eff30",
+					 "effAntiProtonsStep0Step3",
+					 *corrfwContainerAntiProtons);
+  effAntiProtonsStep0Step3->CalculateEfficiency(3,0); //eff= step1/step0
+  gYPt[2] = effAntiProtonsStep0Step3->Project(iRap,iPt);
+  fCorrectionListAntiProtons2D->Add(gYPt[2]);
+
   //Get the projection of the efficiency maps
-  for(Int_t iParameter = 0; iParameter < 2; iParameter++) { 
-    for(Int_t iStep = 1; iStep < nSteps; iStep++) { 
-      gEfficiency[iParameter][iStep-1] = efficiency[iStep]->Project(iParameter);
-      fEfficiencyListProtons1D->Add(gEfficiency[iParameter][iStep-1]);  
-      gTitle = "AntiProtonsCorrection_Parameter"; gTitle += iParameter+1;
-      gTitle += "_Step0_Step"; gTitle += iStep; 
-      gCorrection[iParameter][iStep-1] = new TH1D(gTitle.Data(),
-						   gTitle.Data(),
-						   gEfficiency[iParameter][iStep-1]->GetNbinsX(),
-						   gEfficiency[iParameter][iStep-1]->GetXaxis()->GetXmin(),
-						   gEfficiency[iParameter][iStep-1]->GetXaxis()->GetXmax());
-      //initialisation of the correction
-      for(Int_t iBin = 1; iBin <= gEfficiency[iParameter][iStep-1]->GetNbinsX(); iBin++)
-	gCorrection[iParameter][iStep-1]->SetBinContent(iBin,1.0);
-    }//step loop
+  for(Int_t iParameter = 0; iParameter < 2; iParameter++) {
+    gEfficiency[iParameter][0] = effAntiProtonsStep0Step1->Project(iParameter);
+    gTitle = "AntiProtonsEfficiency_Parameter"; gTitle += iParameter+1;
+    gTitle += "_Step0_Step1"; 
+    gEfficiency[iParameter][0]->SetName(gTitle.Data());
+    fEfficiencyListAntiProtons1D->Add(gEfficiency[iParameter][0]);  
+    gTitle = "AntiProtonsCorrection_Parameter"; gTitle += iParameter+1;
+    gTitle += "_Step0_Step1"; 
+    gCorrection[iParameter][0] = new TH1D(gTitle.Data(),
+					  gTitle.Data(),
+					  gEfficiency[iParameter][0]->GetNbinsX(),
+					  gEfficiency[iParameter][0]->GetXaxis()->GetXmin(),
+					  gEfficiency[iParameter][0]->GetXaxis()->GetXmax());
+    //initialisation of the correction
+    for(Int_t iBin = 1; iBin <= gEfficiency[iParameter][0]->GetNbinsX(); iBin++)
+      gCorrection[iParameter][0]->SetBinContent(iBin,1.0);
+
+    gEfficiency[iParameter][1] = effAntiProtonsStep0Step2->Project(iParameter);
+    gTitle = "AntiProtonsEfficiency_Parameter"; gTitle += iParameter+1;
+    gTitle += "_Step0_Step2"; 
+    gEfficiency[iParameter][1]->SetName(gTitle.Data());
+    fEfficiencyListAntiProtons1D->Add(gEfficiency[iParameter][1]);  
+    gTitle = "AntiProtonsCorrection_Parameter"; gTitle += iParameter+1;
+    gTitle += "_Step0_Step2"; 
+    gCorrection[iParameter][1] = new TH1D(gTitle.Data(),
+					  gTitle.Data(),
+					  gEfficiency[iParameter][1]->GetNbinsX(),
+					  gEfficiency[iParameter][1]->GetXaxis()->GetXmin(),
+					  gEfficiency[iParameter][1]->GetXaxis()->GetXmax());
+    //initialisation of the correction
+    for(Int_t iBin = 1; iBin <= gEfficiency[iParameter][1]->GetNbinsX(); iBin++)
+      gCorrection[iParameter][1]->SetBinContent(iBin,1.0);
+
+    gEfficiency[iParameter][2] = effAntiProtonsStep0Step3->Project(iParameter);
+    gTitle = "AntiProtonsEfficiency_Parameter"; gTitle += iParameter+1;
+    gTitle += "_Step0_Step3"; 
+    gEfficiency[iParameter][2]->SetName(gTitle.Data());
+    fEfficiencyListAntiProtons1D->Add(gEfficiency[iParameter][2]);  
+    gTitle = "AntiProtonsCorrection_Parameter"; gTitle += iParameter+1;
+    gTitle += "_Step0_Step3"; 
+    gCorrection[iParameter][2] = new TH1D(gTitle.Data(),
+					  gTitle.Data(),
+					  gEfficiency[iParameter][2]->GetNbinsX(),
+					  gEfficiency[iParameter][2]->GetXaxis()->GetXmin(),
+					  gEfficiency[iParameter][2]->GetXaxis()->GetXmax());
+    //initialisation of the correction
+    for(Int_t iBin = 1; iBin <= gEfficiency[iParameter][2]->GetNbinsX(); iBin++)
+      gCorrection[iParameter][2]->SetBinContent(iBin,1.0);
   }//parameter loop
   //Calculate the 1D correction parameters as a function of y and pT
   for(Int_t iParameter = 0; iParameter < 2; iParameter++) { 
