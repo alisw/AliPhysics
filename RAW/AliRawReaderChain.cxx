@@ -58,9 +58,7 @@ AliRawReaderChain::AliRawReaderChain(const char* listFileName) :
   }
 
   fChain->SetBranchStatus("*",1);
-
-  fEvent = new AliRawEvent;
-  fChain->SetBranchAddress("rawevent", &fEvent);
+  fChain->SetBranchAddress("rawevent",&fEvent,&fBranch);
 }
 
 AliRawReaderChain::AliRawReaderChain(TFileCollection *collection) :
@@ -78,9 +76,7 @@ AliRawReaderChain::AliRawReaderChain(TFileCollection *collection) :
   }
 
   fChain->SetBranchStatus("*",1);
-
-  fEvent = new AliRawEvent;
-  fChain->SetBranchAddress("rawevent", &fEvent);
+  fChain->SetBranchAddress("rawevent",&fEvent,&fBranch);
 }
 
 AliRawReaderChain::AliRawReaderChain(TChain *chain) :
@@ -93,9 +89,7 @@ AliRawReaderChain::AliRawReaderChain(TChain *chain) :
   if (!fChain) fIsValid = kFALSE;
 
   fChain->SetBranchStatus("*",1);
-
-  fEvent = new AliRawEvent;
-  fChain->SetBranchAddress("rawevent", &fEvent);
+  fChain->SetBranchAddress("rawevent",&fEvent,&fBranch);
 }
 
 AliRawReaderChain::AliRawReaderChain(const AliRawReaderChain& rawReader) :
@@ -134,10 +128,10 @@ Bool_t AliRawReaderChain::NextEvent()
   do {
     delete fEvent;
     fEvent = new AliRawEvent;
-    TBranch *branch = fChain->GetBranch("rawevent");
-    if (!branch)
+    Long64_t treeEntry = fChain->LoadTree(fEventIndex+1);
+    if (!fBranch)
       return kFALSE;
-    if (branch->GetEntry(fEventIndex+1) <= 0)
+    if (fBranch->GetEntry(treeEntry) <= 0)
       return kFALSE;
     fEventIndex++;
   } while (!IsEventSelected());
@@ -166,10 +160,10 @@ Bool_t  AliRawReaderChain::GotoEvent(Int_t event)
 
   delete fEvent;
   fEvent = new AliRawEvent;
-  TBranch *branch = fChain->GetBranch("rawevent");
-  if (!branch)
+  Long64_t treeEntry = fChain->LoadTree(event);
+   if (!fBranch)
     return kFALSE;
-  if (branch->GetEntry(event) <= 0)
+  if (fBranch->GetEntry(treeEntry) <= 0)
     return kFALSE;
   fEventIndex = event;
   fEventNumber++;
