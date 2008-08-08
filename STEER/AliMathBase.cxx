@@ -728,3 +728,14 @@ TGraph * AliMathBase::MakeStat1D(TH3 * his, Int_t delta1, Int_t type){
   }
   return graph;
 }
+
+Double_t AliMathBase::TruncatedGaus(Double_t mean, Double_t sigma, Double_t cutat)
+{
+  // return number generated according to a gaussian distribution N(mean,sigma) truncated at cutat
+  //
+  Double_t value;
+  do{
+    value=gRandom->Gaus(mean,sigma);
+  }while(TMath::Abs(value-mean)>cutat);
+  return value;
+}
