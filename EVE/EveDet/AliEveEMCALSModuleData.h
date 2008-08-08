@@ -37,9 +37,9 @@ public:
   Int_t       GetNsm()       const {return fNsm;};
   Int_t       GetNsmf()      const {return fNsmfull;};
   Int_t       GetNsmh()      const {return fNsmhalf;};
-  vector< vector<Double_t> > GetDigitBuffer()   { return fDigitArray;   };  
-  vector< vector<Double_t> > GetClusterBuffer() { return fClusterArray; };  
-  vector< vector<Float_t> > GetHitBuffer()     { return fHitArray;     };  
+  std::vector< std::vector<Double_t> > GetDigitBuffer()   { return fDigitArray;   };  
+  std::vector< std::vector<Double_t> > GetClusterBuffer() { return fClusterArray; };  
+  std::vector< std::vector<Float_t> > GetHitBuffer()     { return fHitArray;     };  
 
   void        GetSModuleBigBox(Float_t& bbox0, Float_t& bbox1, Float_t& bbox2) 
   { bbox0 = fSModuleBigBox0; bbox1 = fSModuleBigBox1; bbox2 = fSModuleBigBox2;};
@@ -65,9 +65,9 @@ public:
   Float_t           fPhiTileSize;          // Typical phi size of a QuadSet (digit)
   Float_t           fEtaTileSize;          // Typical eta size of a QuadSet (digit)
   
-  vector< vector<Float_t> > fHitArray;     //|| Hit coordinates, etc.
-  vector< vector<Double_t> > fDigitArray;   //|| Digit coordinates, etc.
-  vector< vector<Double_t> > fClusterArray; //|| Rec point coordinates, etc.
+  std::vector< std::vector<Float_t> > fHitArray;     //|| Hit coordinates, etc.
+  std::vector< std::vector<Double_t> > fDigitArray;   //|| Digit coordinates, etc.
+  std::vector< std::vector<Double_t> > fClusterArray; //|| Rec point coordinates, etc.
   
   static Float_t    fSModuleBigBox0;       // SM envelope box
   static Float_t    fSModuleBigBox1;       // SM envelope box

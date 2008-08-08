@@ -8,7 +8,6 @@
 //*************************************************************************
 
 #include <Riostream.h>
-#include <vector>
 
 #include "AliEveEMCALSModuleData.h"
 
@@ -174,7 +173,7 @@ void AliEveEMCALSModuleData::RegisterDigit(Int_t AbsId, Int_t isupMod, Double_t 
   // Add a digit to this SM
   //
 
-  vector<Double_t> bufDig(6);
+  std::vector<Double_t> bufDig(6);
   bufDig[0] = AbsId;
   bufDig[1] = isupMod;
   bufDig[2] = iamp;
@@ -195,7 +194,7 @@ void AliEveEMCALSModuleData::RegisterHit(Int_t AbsId, Int_t isupMod, Double_t ia
   // Add a hit to this SM
   //
 
-  vector<Float_t> bufHit(6);
+  std::vector<Float_t> bufHit(6);
   bufHit[0] = AbsId;
   bufHit[1] = isupMod;
   bufHit[2] = iamp;
@@ -216,7 +215,7 @@ void AliEveEMCALSModuleData::RegisterCluster(Int_t isupMod, Double_t iamp, Doubl
   // Add a cluster to this SM
   //
 
-  vector<Double_t> bufClu(5);
+  std::vector<Double_t> bufClu(5);
   bufClu[0] = isupMod;
   bufClu[1] = iamp;
   bufClu[2] = ix;
