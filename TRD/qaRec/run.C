@@ -1,26 +1,15 @@
-Char_t *source = "/d/alice12/mfasel/train"; // To Be Changed
-
-void run(const Char_t *list="list.txt", Int_t nmax=-1) {
+void run(const Char_t *list=0x0, Int_t nmax=-1) {
   TStopwatch timer;
   timer.Start();
-  Char_t *source = Form("%s/TRD/qaRec",gSystem->ExpandPathName("$ALICE_ROOT"));
 
-/*  gSystem->Load("libSTEERBase.so");               
-  gSystem->Load("libESD.so");
-  gSystem->Load("libVMC.so");
-  gSystem->Load("libAOD.so");*/
   gSystem->Load("libANALYSIS.so");
-  gSystem->Load(Form("%s/AliTRDtrackInfo/libTRDtrackInfo.so",source));
+  gSystem->Load("libTRDqaRec.so");
 	
-  gROOT->LoadMacro(Form("%s/AliTRDtrackInfoGen.cxx+", source));
-  gROOT->LoadMacro(Form("%s/AliTRDtrackingEfficiency.cxx+", source));
-  gROOT->LoadMacro(Form("%s/AliTRDtrackingEfficiencyCombined.cxx+", source));
 
   //____________________________________________//
 
-  TChain* chain = 0x0;
-  gROOT->LoadMacro(Form("%s/CreateESDChain.C", source));
-  chain = CreateESDChain(list,nmax);
+  gROOT->LoadMacro(Form("%s/TRD/qaRec/CreateESDChain.C", gSystem->ExpandPathName("$ALICE_ROOT")));
+  TChain *chain = CreateESDChain(list, nmax);
   //chain->SetBranchStatus("*", 0);
   chain->SetBranchStatus("*FMD*",0);
   chain->SetBranchStatus("*Calo*",0);

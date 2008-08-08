@@ -3,16 +3,19 @@ TChain* CreateESDChain(const char* filename = "ESDfiles.txt", Int_t nfiles=-1 )
   // Create the chain
   TChain* chain = new TChain("esdTree");
 
-  // Open the input stream
+  if(!filename){
+    chain->Add(Form("%s/AliESDs.root", gSystem->pwd()));
+    return chain;
+  }
+
+
+  // read ESD files from the input list.
   ifstream in;
   in.open(filename);
-
-  // Read the input list of files and add them to the chain
   TString esdfile;
   while(in.good() && (nfiles--) ) {
     in >> esdfile;
     if (!esdfile.Contains("root")) continue; // protection
-
     chain->Add(esdfile.Data());
   }
 
