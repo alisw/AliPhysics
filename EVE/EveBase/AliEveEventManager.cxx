@@ -347,7 +347,8 @@ Int_t AliEveEventManager::GetMaxEventId(Bool_t /*refreshESD*/) const
   }
   else if (fRawReader)
   {
-    return 10000000;
+    Int_t n = fRawReader->GetNumberOfEvents() - 1;
+    return n > -1 ? n : 10000000;
   }
   else
   {
@@ -390,12 +391,21 @@ void AliEveEventManager::GotoEvent(Int_t event)
   }
   else if (fRawReader)
   {
-    maxEvent = 10000000;
-    if (event < 0) {
-      Error(kEH, "negative event id passed for raw-data as source. Operation not supported.");
-      return;
+    maxEvent = fRawReader->GetNumberOfEvents() - 1;
+    if (maxEvent < 0)
+    {
+      maxEvent = 10000000;
+      if (event < 0) {
+        Error(kEH, "current raw-data source does not support direct event access.");
+        return;
+      }
+      Info(kEH, "number of events unknown for current raw-data source, setting max-event id to 10M.");
     }
-    Info(kEH, "number of events unknown for raw-data, setting max-event id to 10M.");
+    else
+    {
+      if (event < 0)
+        event = fRawReader->GetNumberOfEvents() + event;
+    }
   }
   else
   {
@@ -469,13 +479,16 @@ void AliEveEventManager::NextEvent()
   // either in automatic (online) or
   // manual mode
   
-  if (fIsOnline) {
+  if (fIsOnline)
+  {
     if (fAutoLoadTimer) fAutoLoadTimer->Stop();
 
     DestroyElements();
 
     gSystem->ExitLoop();
-  } else {
+  }
+  else
+  {
     if (fEventId < GetMaxEventId(kTRUE))
       GotoEvent(fEventId + 1);
     else
