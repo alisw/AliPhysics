@@ -76,6 +76,7 @@ AliRawReaderDate::AliRawReaderDate(
   fFile = fopen(fileName, "rb");
   if (!fFile) {
     Error("AliRawReaderDate", "could not open file %s", fileName);
+    fIsValid = kFALSE;
     return;
   }
   if (eventNumber < 0) return;

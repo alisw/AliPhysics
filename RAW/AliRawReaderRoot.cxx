@@ -78,16 +78,19 @@ AliRawReaderRoot::AliRawReaderRoot(const char* fileName, Int_t eventNumber) :
   dir->cd();
   if (!fFile || !fFile->IsOpen()) {
     Error("AliRawReaderRoot", "could not open file %s", fileName);
+    fIsValid = kFALSE;
     return;
   }
   TTree* tree = (TTree*) fFile->Get("RAW");
   if (!tree) {
     Error("AliRawReaderRoot", "no raw data tree found");
+    fIsValid = kFALSE;
     return;
   }
   fBranch = tree->GetBranch("rawevent");
   if (!fBranch) {
     Error("AliRawReaderRoot", "no raw data branch found");
+    fIsValid = kFALSE;
     return;
   }
 
@@ -96,6 +99,7 @@ AliRawReaderRoot::AliRawReaderRoot(const char* fileName, Int_t eventNumber) :
   if (fEventIndex >= 0) {
     if (fBranch->GetEntry(fEventIndex) <= 0) {
       Error("AliRawReaderRoot", "no event with number %d found", fEventIndex);
+      fIsValid = kFALSE;
       return;
     }
   }
@@ -115,7 +119,7 @@ AliRawReaderRoot::AliRawReaderRoot(AliRawEvent* event) :
   fEnd(NULL)
 {
 // create an object to read digits from the given raw event
-
+  if (!fEvent) fIsValid = kFALSE;
 }
 
 AliRawReaderRoot::AliRawReaderRoot(const AliRawReaderRoot& rawReader) :
@@ -141,16 +145,19 @@ AliRawReaderRoot::AliRawReaderRoot(const AliRawReaderRoot& rawReader) :
     if (!fFile || !fFile->IsOpen()) {
       Error("AliRawReaderRoot", "could not open file %s", 
 	    rawReader.fFile->GetName());
+      fIsValid = kFALSE;
       return;
     }
     TTree* tree = (TTree*) fFile->Get("RAW");
     if (!tree) {
       Error("AliRawReaderRoot", "no raw data tree found");
+      fIsValid = kFALSE;
       return;
     }
     fBranch = tree->GetBranch("rawevent");
     if (!fBranch) {
       Error("AliRawReaderRoot", "no raw data branch found");
+      fIsValid = kFALSE;
       return;
     }
 
@@ -160,6 +167,7 @@ AliRawReaderRoot::AliRawReaderRoot(const AliRawReaderRoot& rawReader) :
       if (fBranch->GetEntry(fEventIndex) <= 0) {
 	Error("AliRawReaderRoot", "no event with number %d found", 
 	      fEventIndex);
+	fIsValid = kFALSE;
 	return;
       }
     }

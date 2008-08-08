@@ -77,6 +77,7 @@ AliRawReaderDateV3::AliRawReaderDateV3(const char* fileName,
   fFile = fopen(fileName, "rb");
   if (!fFile) {
     Error("AliRawReaderDateV3", "could not open file %s", fileName);
+    fIsValid = kFALSE;
     return;
   }
   if (eventNumber < 0) return;

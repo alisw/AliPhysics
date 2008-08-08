@@ -67,7 +67,8 @@ AliRawReader::AliRawReader() :
   fErrorCode(0),
   fEventNumber(-1),
   fErrorLogs("AliRawDataErrorLog",100),
-  fHeaderSwapped(NULL)
+  fHeaderSwapped(NULL),
+  fIsValid(kTRUE)
 {
 // default constructor: initialize data members
 // Allocate the swapped header in case of Mac
@@ -124,7 +125,8 @@ AliRawReader::AliRawReader(const AliRawReader& rawReader) :
   fErrorCode(0),
   fEventNumber(-1),
   fErrorLogs("AliRawDataErrorLog",100),
-  fHeaderSwapped(NULL)
+  fHeaderSwapped(NULL),
+  fIsValid(rawReader.fIsValid)
 {
 // copy constructor
 // Allocate the swapped header in case of Mac
@@ -153,6 +155,8 @@ AliRawReader& AliRawReader::operator = (const AliRawReader& rawReader)
 
   fEventNumber = rawReader.fEventNumber;
   fErrorLogs = *((TClonesArray*)rawReader.fErrorLogs.Clone());
+
+  fIsValid = rawReader.fIsValid;
 
   return *this;
 }
@@ -224,6 +228,14 @@ AliRawReader* AliRawReader::Create(const char *uri)
     } else {
       rawReader = new AliRawReaderDate(fileURI);
     }
+  }
+
+  if (!rawReader->IsRawReaderValid()) {
+    AliErrorClass(Form("Raw-reader is invalid - check the input URI (%s)",fileURI.Data()));
+    delete rawReader;
+    fields->Delete();
+    delete fields;
+    return NULL;
   }
 
   // Now apply event selection criteria (if specified)

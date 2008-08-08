@@ -60,7 +60,8 @@ AliRawReaderFile::AliRawReaderFile(Int_t eventNumber) :
 // in the current directory
 
   fDirectory = OpenDirectory();
-  OpenNextFile();
+  if (!fDirectory) fIsValid = kFALSE;
+  if (!OpenNextFile()) fIsValid = kFALSE;
   fHeader = new AliRawDataHeader;
 
   fId[0] = fId[1] = 0;
@@ -86,7 +87,8 @@ AliRawReaderFile::AliRawReaderFile(const char* dirName, Int_t eventNumber) :
 // create an object to read digits from the given directory
 
   fDirectory = OpenDirectory();
-  OpenNextFile();
+  if (!fDirectory) fIsValid = kFALSE;
+  if (!OpenNextFile()) fIsValid = kFALSE;
   fHeader = new AliRawDataHeader;
 
   fId[0] = fId[1] = 0;

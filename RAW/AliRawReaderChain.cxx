@@ -53,6 +53,7 @@ AliRawReaderChain::AliRawReaderChain(const char* listFileName) :
   fChain = new TChain("RAW");
   if (!fChain->AddFileInfoList((TCollection*)(collection.GetList()))) {
     Error("AliRawReaderChain","Bad file list in collection, the chain is empty");
+    fIsValid = kFALSE;
     return;
   }
 
@@ -72,6 +73,7 @@ AliRawReaderChain::AliRawReaderChain(TFileCollection *collection) :
   fChain = new TChain("RAW");
   if (!fChain->AddFileInfoList((TCollection*)(collection->GetList()))) {
     Error("AliRawReaderChain","Bad file list in collection, the chain is empty");
+    fIsValid = kFALSE;
     return;
   }
 
@@ -87,6 +89,8 @@ AliRawReaderChain::AliRawReaderChain(TChain *chain) :
 {
 // create raw-reader objects which takes as an input a root chain
 // from a root file collection
+
+  if (!fChain) fIsValid = kFALSE;
 
   fChain->SetBranchStatus("*",1);
 

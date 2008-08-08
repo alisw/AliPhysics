@@ -158,6 +158,8 @@ class AliRawReader: public TObject {
     virtual Bool_t   UseAutoSaveESD() const { return kFALSE; }
     virtual TChain*  GetChain() const { return NULL; }
 
+    Bool_t           IsRawReaderValid() const { return fIsValid; }
+
   protected :
     virtual void     SelectEvents(Int_t type, ULong64_t triggerMask = 0);
     Bool_t           IsSelected() const;
@@ -187,6 +189,8 @@ class AliRawReader: public TObject {
 
     UInt_t SwapWord(UInt_t x) const;
     UShort_t SwapShort(UShort_t x) const;
+
+    Bool_t           fIsValid;              // is raw-reader created successfully
 
     ClassDef(AliRawReader, 0) // base class for reading raw digits
 };
