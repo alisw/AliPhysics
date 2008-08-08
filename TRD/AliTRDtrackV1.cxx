@@ -145,7 +145,7 @@ AliTRDtrackV1::AliTRDtrackV1(AliTRDseedV1 *trklts, const Double_t p[5], const Do
 
   Double_t pp[5] = { p[0]    
                    , p[1]
-                   , x*p[4] - p[2]
+                   , p[2]
                    , p[3]
                    , p[4]*cnv      };
 

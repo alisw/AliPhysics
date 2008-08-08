@@ -1850,17 +1850,17 @@ Int_t AliTRDtrackerV1::Clusters2TracksStack(AliTRDtrackingChamber **stack, TClon
         
   // Build track parameters
   AliTRDseedV1 *lseed =&sseed[trackIndex*6];
-  Int_t idx = 0;
+/*  Int_t idx = 0;
   while(idx<3 && !lseed->IsOK()) {
     idx++;
     lseed++;
-  }
+  }*/
   Double_t cR = lseed->GetC();
-  Double_t x = lseed->GetX0() - 3.5;
+  Double_t x = lseed->GetX0();// - 3.5;
   trackParams[0] = x; //NEW AB
-  trackParams[1] = lseed->GetYat(x);//lseed->GetYref(0);
-  trackParams[2] = lseed->GetZat(x);//lseed->GetZref(0);
-  trackParams[3] = lseed->GetX0() * cR - TMath::Sin(TMath::ATan(lseed->GetYref(1)));
+  trackParams[1] = lseed->GetYref(0); // lseed->GetYat(x);  
+  trackParams[2] = lseed->GetZref(0); // lseed->GetZat(x); 
+  trackParams[3] = TMath::Sin(TMath::ATan(lseed->GetYref(1)));
   trackParams[4] = lseed->GetZref(1) / TMath::Sqrt(1. + lseed->GetYref(1) * lseed->GetYref(1));
   trackParams[5] = cR;
   Int_t ich = 0; while(!(chamber = stack[ich])) ich++;
@@ -1909,7 +1909,6 @@ Int_t AliTRDtrackerV1::Clusters2TracksStack(AliTRDtrackingChamber **stack, TClon
         << "Ncl="				<< ncl
         << "NLayers="			<< nlayers
         << "Findable="			<< findable
-
         << "NUsed="				<< nused
         << "\n";
   }
@@ -2076,6 +2075,9 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *ss
   // chi2[1] = tracklet chi2 on the R direction
   Double_t chi2[4];
 
+	// Default positions for the anode wire in all 6 Layers in case of a stack with missing clusters
+	// Positions taken using cosmic data taken with SM3 after rebuild
+  Double_t x_def[kNPlanes] = {300.2, 312.8, 325.4, 338, 350.6, 363.2};
 
   // this should be data member of AliTRDtrack
   Double_t seedQuality[kMaxTracksStack];
@@ -2153,7 +2155,9 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *ss
           tseed->SetTilt(hL[iLayer]);
           tseed->SetPadLength(padlength[iLayer]);
           tseed->SetReconstructor(fReconstructor);
-          if(stack[iLayer])tseed->SetX0(stack[iLayer]->GetX());
+          Double_t x_anode = stack[iLayer] ? stack[iLayer]->GetX() : x_def[iLayer];
+          tseed->SetX0(x_anode);
+          //if(stack[iLayer]) tseed->SetX0(stack[iLayer]->GetX());
           tseed->Init(GetRiemanFitter());
         }
       
@@ -2412,7 +2416,7 @@ AliTRDtrackV1* AliTRDtrackerV1::MakeTrack(AliTRDseedV1 *seeds, Double_t *params)
   AliTRDtrackV1 track(seeds, &params[1], c, params[0], params[6]*alpha+shift);
   track.PropagateTo(params[0]-5.0);
   track.ResetCovariance(1);
-  Int_t nc = FollowBackProlongation(track);
+  Int_t nc = TMath::Abs(FollowBackProlongation(track));
   if (nc < 30) return 0x0;
 
   AliTRDtrackV1 *ptrTrack = SetTrack(&track);
