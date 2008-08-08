@@ -24,7 +24,7 @@ class TEveElement;
 #include "AliTRDcluster.h"
 #endif
 
-TEveElementList* trd_detectors(Int_t sector = 2, TEveElement *cont = 0)
+TEveElementList* trd_detectors(Int_t sector = -1, TEveElement *cont = 0)
 {
   // Link data containers
   AliCDBManager *fCDBManager=AliCDBManager::Instance();
@@ -62,9 +62,9 @@ TEveElementList* trd_detectors(Int_t sector = 2, TEveElement *cont = 0)
     while(!(c = (AliTRDcluster*)clusters->UncheckedAt(icl++))) {;}
     idet = c->GetDetector();
     ism  = geo->GetSector(idet);
-    istk = geo->GetChamber(idet);
-    ipla = geo->GetPlane(idet);
-    if(ism != sector) continue;
+    istk = geo->GetStack(idet);
+    ipla = geo->GetLayer(idet);
+    if(sector>=0 && ism != sector) continue;
     if(!sm){ 
       list->AddElement(sm = new AliEveTRDNode("SM", ism));
       sm->SetElementTitle(Form("Supermodule %2d", ism));
