@@ -558,6 +558,7 @@ int AliHLTTask::ProcessTask(Int_t eventNo, AliHLTUInt32_t eventType)
       AliHLTComponentEventDoneData* edd=NULL;
       if (pTgtBuffer!=NULL || iOutputDataSize==0) {
 	// add event type data block
+	// the block is removed immediately after processing from the list
 	AliHLTComponentBlockData eventTypeBlock;
 	AliHLTComponent::FillBlockData(eventTypeBlock);
 	// Note: no payload!
@@ -573,10 +574,53 @@ int AliHLTTask::ProcessTask(Int_t eventNo, AliHLTUInt32_t eventType)
 	// remove event data block
 	fBlockDataArray.pop_back();
 
+	// check for forwarded blocks.
+	// loop over all output blocks and check
+	// 1. for duplicate blocks (pointing to same location in output buffer
+	//    or to the same buffer)
+	// 2. for blocks forwarded from the input.
 	if (iResult>=0 && outputBlocks) {
 	  if (fListTargets.First()!=NULL) {
 	    AliHLTComponentBlockDataList segments;
 	    for (AliHLTUInt32_t oblock=0; oblock<outputBlockCnt; oblock++) {
+	      // consistency check for data reference
+	      if (outputBlocks[oblock].fPtr!=NULL && outputBlocks[oblock].fOffset!=0) {
+		HLTWarning("output block %s 0x%08x has inconsistent data reference ptr=%p offset=0x%08x: "
+			   "for new blocks use offset only, forwarded blocks have fPtr set only",
+			   AliHLTComponent::DataType2Text(outputBlocks[oblock].fDataType).c_str(),
+			   outputBlocks[oblock].fSpecification,
+			   outputBlocks[oblock].fPtr, outputBlocks[oblock].fOffset);
+	      }
+
+	      // check for duplicates in the output
+	      AliHLTUInt32_t checkblock=0;
+	      for (; checkblock<oblock; checkblock++) {
+		if (outputBlocks[oblock].fPtr!=NULL && outputBlocks[checkblock].fPtr==outputBlocks[oblock].fPtr) {
+		  if (outputBlocks[checkblock].fSize!=outputBlocks[oblock].fSize ||
+		      outputBlocks[checkblock].fDataType!=outputBlocks[oblock].fDataType) {
+		    HLTWarning("output blocks %d (%s 0x%08x) and %d (%s 0x%08x) have identical data references ptr=%p "
+			       "but differ in data type and/or size: %d vs. %d",
+			       oblock,
+			       AliHLTComponent::DataType2Text(outputBlocks[oblock].fDataType).c_str(),
+			       outputBlocks[oblock].fSpecification,
+			       checkblock,
+			       AliHLTComponent::DataType2Text(outputBlocks[checkblock].fDataType).c_str(),
+			       outputBlocks[checkblock].fSpecification,
+			       outputBlocks[oblock].fPtr,
+			       outputBlocks[oblock].fSize,
+			       outputBlocks[checkblock].fSize);
+		  }
+		  // ignore from the second copy
+		  break;
+		}
+	      }
+	      if (checkblock<oblock) continue;
+
+	      // search for the forwarded data blocks
+	      // new data blocks are announced to the data buffer, forwarded data blocks
+	      // to the publisher task. The publisher task of a forwarded data block is
+	      // removed from the list in order to keep the buffer open. It will be releases
+	      // when the subscribing task releases it
 	      AliHLTUInt32_t iblock=0;
 	      for (; iblock<fBlockDataArray.size(); iblock++) {
 		if (fBlockDataArray[iblock].fPtr==outputBlocks[oblock].fPtr) {
