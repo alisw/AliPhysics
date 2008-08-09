@@ -1001,9 +1001,9 @@ class AliHLTComponent : public AliHLTLogging {
    * @param headerSize size of Header
    * @return neg. error code if failed 
    */
-  int PushBack(void* pBuffer, int iSize, const AliHLTComponentDataType& dt,
+  int PushBack(const void* pBuffer, int iSize, const AliHLTComponentDataType& dt,
 	       AliHLTUInt32_t spec=kAliHLTVoidDataSpec,
-	       void* pHeader=NULL, int headerSize=0);
+	       const void* pHeader=NULL, int headerSize=0);
 
   /**
    * Insert an object into the output.
@@ -1016,9 +1016,9 @@ class AliHLTComponent : public AliHLTLogging {
    * @param headerSize size of Header
    * @return neg. error code if failed 
    */
-  int PushBack(void* pBuffer, int iSize, const char* dtID, const char* dtOrigin,
+  int PushBack(const void* pBuffer, int iSize, const char* dtID, const char* dtOrigin,
 	       AliHLTUInt32_t spec=kAliHLTVoidDataSpec,
-	       void* pHeader=NULL, int headerSize=0);
+	       const void* pHeader=NULL, int headerSize=0);
 
   /**
    * Estimate size of a TObject
@@ -1294,19 +1294,35 @@ class AliHLTComponent : public AliHLTLogging {
    * @param iHeaderSize size of Header
    * @return neg. error code if failed
    */
-  int InsertOutputBlock(void* pBuffer, int iBufferSize,
+  int InsertOutputBlock(const void* pBuffer, int iBufferSize,
 			const AliHLTComponentDataType& dt,
 			AliHLTUInt32_t spec,
-			void* pHeader=NULL, int iHeaderSize=0);
+			const void* pHeader=NULL, int iHeaderSize=0);
 
   /**
    * Add a component statistics block to the output.
+   * @return size of the added data
    */
   int AddComponentStatistics(AliHLTComponentBlockDataList& blocks, 
 			     AliHLTUInt8_t* buffer,
 			     AliHLTUInt32_t bufferSize,
 			     AliHLTUInt32_t offset,
 			     AliHLTComponentStatisticsList& stats) const;
+
+  /**
+   * Add a component table entry (descriptor) to the output
+   * This is done at SOR/EOR. The component table is a list of chain ids
+   * and 32bit ids calculated by a crc algorithm from the chian id. This
+   * allows to tag data blocks with the id number rather than the string.
+   *
+   * The kAliHLTDataTypeComponentTable data block currently has the string
+   * as payload and the crc id as specification.
+   * @return size of the added data
+   */
+  int  AddComponentTableEntry(AliHLTComponentBlockDataList& blocks, 
+			      AliHLTUInt8_t* buffer,
+			      AliHLTUInt32_t bufferSize,
+			      AliHLTUInt32_t offset) const;
 
   /** The global component handler instance */
   static AliHLTComponentHandler* fgpComponentHandler;              //! transient

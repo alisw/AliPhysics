@@ -994,6 +994,7 @@ int AliHLTComponent::PushBack(TObject* pObject, const AliHLTComponentDataType& d
     Int_t iMsgLength=msg.Length();
     if (iMsgLength>0) {
       msg.SetLength(); // sets the length to the first (reserved) word
+      assert(msg.Buffer()!=NULL);
       iResult=InsertOutputBlock(msg.Buffer(), iMsgLength, dt, spec, pHeader, headerSize);
       if (iResult>=0) {
 	HLTDebug("object %s (%p) size %d inserted to output", pObject->ClassName(), pObject, iMsgLength);
@@ -1018,16 +1019,16 @@ int AliHLTComponent::PushBack(TObject* pObject, const char* dtID, const char* dt
   return PushBack(pObject, dt, spec, pHeader, headerSize);
 }
 
-int AliHLTComponent::PushBack(void* pBuffer, int iSize, const AliHLTComponentDataType& dt, AliHLTUInt32_t spec,
-			      void* pHeader, int headerSize)
+int AliHLTComponent::PushBack(const void* pBuffer, int iSize, const AliHLTComponentDataType& dt, AliHLTUInt32_t spec,
+			      const void* pHeader, int headerSize)
 {
   // see header file for function documentation
   ALIHLTCOMPONENT_BASE_STOPWATCH();
   return InsertOutputBlock(pBuffer, iSize, dt, spec, pHeader, headerSize);
 }
 
-int AliHLTComponent::PushBack(void* pBuffer, int iSize, const char* dtID, const char* dtOrigin, AliHLTUInt32_t spec,
-			      void* pHeader, int headerSize)
+int AliHLTComponent::PushBack(const void* pBuffer, int iSize, const char* dtID, const char* dtOrigin, AliHLTUInt32_t spec,
+			      const void* pHeader, int headerSize)
 {
   // see header file for function documentation
   ALIHLTCOMPONENT_BASE_STOPWATCH();
@@ -1036,35 +1037,33 @@ int AliHLTComponent::PushBack(void* pBuffer, int iSize, const char* dtID, const 
   return PushBack(pBuffer, iSize, dt, spec, pHeader, headerSize);
 }
 
-int AliHLTComponent::InsertOutputBlock(void* pBuffer, int iBufferSize, const AliHLTComponentDataType& dt, AliHLTUInt32_t spec,
-			      void* pHeader, int iHeaderSize)
+int AliHLTComponent::InsertOutputBlock(const void* pBuffer, int iBufferSize, const AliHLTComponentDataType& dt, AliHLTUInt32_t spec,
+				       const void* pHeader, int iHeaderSize)
 {
   // see header file for function documentation
   int iResult=0;
   int iBlkSize = iBufferSize + iHeaderSize;
-  if (pBuffer) {
+
+  if ((pBuffer!=NULL && iBufferSize>0) || (pHeader!=NULL && iHeaderSize>0)) {
     if (fpOutputBuffer && iBlkSize<=(int)(fOutputBufferSize-fOutputBufferFilled)) {
       AliHLTUInt8_t* pTgt=fpOutputBuffer+fOutputBufferFilled;
-      AliHLTComponentBlockData bd;
-      FillBlockData( bd );
-      bd.fOffset        = fOutputBufferFilled;
-      bd.fSize          = iBlkSize;
-      bd.fDataType      = dt;
-      bd.fSpecification = spec;
+
+      // copy header if provided but skip if the header is the target location
+      // in that case it has already been copied
       if (pHeader!=NULL && pHeader!=pTgt) {
 	memcpy(pTgt, pHeader, iHeaderSize);
       }
 
       pTgt += (AliHLTUInt8_t) iHeaderSize;
 
+      // copy buffer if provided but skip if buffer is the target location
+      // in that case it has already been copied
       if (pBuffer!=NULL && pBuffer!=pTgt) {
 	memcpy(pTgt, pBuffer, iBufferSize);
 	
 	//AliHLTUInt32_t firstWord=*((AliHLTUInt32_t*)pBuffer);	
 	//HLTDebug("copy %d bytes from %p to output buffer %p, first word %#x", iBufferSize, pBuffer, pTgt, firstWord);
       }
-      fOutputBufferFilled+=bd.fSize;
-      fOutputBlocks.push_back( bd );
       //HLTDebug("buffer inserted to output: size %d data type %s spec %#x", iBlkSize, DataType2Text(dt).c_str(), spec);
     } else {
       if (fpOutputBuffer) {
@@ -1074,9 +1073,18 @@ int AliHLTComponent::InsertOutputBlock(void* pBuffer, int iBufferSize, const Ali
       }
       iResult=-ENOSPC;
     }
-  } else {
-    iResult=-EINVAL;
   }
+  if (iResult>=0) {
+    AliHLTComponentBlockData bd;
+    FillBlockData( bd );
+    bd.fOffset        = fOutputBufferFilled;
+    bd.fSize          = iBlkSize;
+    bd.fDataType      = dt;
+    bd.fSpecification = spec;
+    fOutputBlocks.push_back( bd );
+    fOutputBufferFilled+=bd.fSize;
+  }
+
   return iResult;
 }
 
@@ -1255,7 +1263,12 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
   fOutputBlocks.clear();
   outputBlockCnt=0;
   outputBlocks=NULL;
+
+  AliHLTComponentBlockDataList forwardedBlocks;
+
+  // optional component statistics
   AliHLTComponentStatisticsList compStats;
+  bool bAddComponentTableEntry=false;
 #if defined(__DEBUG) || defined(HLT_COMPONENT_STATISTICS)
   AliHLTComponentStatistics outputStat;
   memset(&outputStat, 0, sizeof(AliHLTComponentStatistics));
@@ -1334,6 +1347,8 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
 	    compStats.push_back(*pStat);
 	  }
 	}
+      } else if (fpInputBlocks[i].fDataType==kAliHLTDataTypeComponentTable) {
+	forwardedBlocks.push_back(fpInputBlocks[i]);
       } else {
 	// the processing function is called if there is at least one
 	// non-steering data block. Steering blocks are not filtered out
@@ -1348,6 +1363,7 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
 
     if (indexSOREvent>=0) {
       // start of run
+      bAddComponentTableEntry=true;
       if (fpRunDesc==NULL) {
 	fpRunDesc=new AliHLTRunDesc;
 	if (fpRunDesc) *fpRunDesc=kAliHLTVoidRunDesc;
@@ -1368,6 +1384,7 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
       }
     }
     if (indexEOREvent>=0) {
+      bAddComponentTableEntry=true;
       if (fpRunDesc!=NULL) {
 	if (fpRunDesc) {
 	  AliHLTRunDesc rundesc;
@@ -1454,6 +1471,13 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
 	    int offset=AddComponentStatistics(fOutputBlocks, fpOutputBuffer, fOutputBufferSize, fOutputBufferFilled, compStats);
 	    if (offset>0) fOutputBufferFilled+=offset;
 	  }
+	  if (bAddComponentTableEntry) {
+	    int offset=AddComponentTableEntry(fOutputBlocks, fpOutputBuffer, fOutputBufferSize, fOutputBufferFilled);
+	    if (offset>0) size+=offset;
+	  }
+	  if (forwardedBlocks.size()>0) {
+	    fOutputBlocks.insert(fOutputBlocks.end(), forwardedBlocks.begin(), forwardedBlocks.end());
+	  }
 	  iResult=MakeOutputDataBlockList(fOutputBlocks, &outputBlockCnt, &outputBlocks);
 	  size=fOutputBufferFilled;
 	}
@@ -1463,6 +1487,13 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
       if (compStats.size()>0) {
 	int offset=AddComponentStatistics(blockData, fpOutputBuffer, fOutputBufferSize, size, compStats);
 	if (offset>0) size+=offset;
+      }
+      if (bAddComponentTableEntry) {
+	int offset=AddComponentTableEntry(blockData, fpOutputBuffer, fOutputBufferSize, size);
+	if (offset>0) size+=offset;
+      }
+      if (forwardedBlocks.size()>0) {
+	blockData.insert(blockData.end(), forwardedBlocks.begin(), forwardedBlocks.end());
       }
       iResult=MakeOutputDataBlockList(blockData, &outputBlockCnt, &outputBlocks);
     }
@@ -1493,6 +1524,7 @@ int  AliHLTComponent::AddComponentStatistics(AliHLTComponentBlockDataList& block
 {
   // see header file for function documentation
   int iResult=0;
+#if defined(__DEBUG) || defined(HLT_COMPONENT_STATISTICS)
   if (stats.size()==0) return -ENOENT;
   stats[0].fTotalOutputSize=offset;
   stats[0].fOutputBlockCount=blocks.size();
@@ -1530,6 +1562,30 @@ int  AliHLTComponent::AddComponentStatistics(AliHLTComponentBlockDataList& block
     blocks.push_back(bd);
     iResult=bd.fSize;
   }
+#endif
+  return iResult;
+}
+
+int  AliHLTComponent::AddComponentTableEntry(AliHLTComponentBlockDataList& blocks, 
+					     AliHLTUInt8_t* buffer,
+					     AliHLTUInt32_t bufferSize,
+					     AliHLTUInt32_t offset) const
+{
+  // see header file for function documentation
+  int iResult=0;
+#if defined(__DEBUG) || defined(HLT_COMPONENT_STATISTICS)
+  if (buffer && (offset+fChainId.size()+1<=bufferSize)) {
+    AliHLTComponentBlockData bd;
+    FillBlockData( bd );
+    bd.fOffset        = offset;
+    bd.fSize          = fChainId.size()+1;
+    bd.fDataType      = kAliHLTDataTypeComponentTable;
+    bd.fSpecification = fChainIdCrc;
+    memcpy(buffer+offset, fChainId.c_str(), fChainId.size()+1);
+    blocks.push_back(bd);
+    iResult=bd.fSize;
+  }
+ #endif
   return iResult;
 }
 
