@@ -61,6 +61,17 @@
  *      concatenate all events into one file, this skips the event no,
  *      the block no, and the block data type in the file name. Currently,
  *      this implies the -concatenate-blocks option.
+ * \li -write-all-events <br>
+ *      by default, the file writer ignores all steering events like the
+ *      the SOR/EOR events, with this option, all events will be considered
+ *      the beginning.
+ * \li -write-all-blocks <br>
+ *      by default, the file writer ignores all blocks of origin {PRIV}
+ *      (::kAliHLTDataOriginPrivate), with this option, all blocks will
+ *      be written. For SOR/EOR events, a short string will be added in
+ *      the beginning.
+ * \li -write-all <br>
+ *      combines both -write-all-events and -write-all-blocks
  *
  * <h2>Configuration:</h2>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
@@ -232,8 +243,13 @@ class AliHLTFileWriter : public AliHLTDataSink  {
     kConcatenateEvents = 0x2,
 
     /** event enumeration flag */
-    kEnumerate = 0x4
+    kEnumerate = 0x4,
 
+    /** write all events including steering events */
+    kWriteAllEvents = 0x8,
+
+    /** write all blocks including private ones */
+    kWriteAllBlocks = 0x10
   };
 
  private:

@@ -168,6 +168,19 @@ int AliHLTFileWriter::DoInit( int argc, const char** argv )
     } else if (argument.CompareTo("-concatenate-events")==0) {
       SetMode(kConcatenateEvents);
 
+      // -write-all-events
+    } else if (argument.CompareTo("-write-all-events")==0) {
+      SetMode(kWriteAllEvents);
+
+      // -write-all-blocks
+    } else if (argument.CompareTo("-write-all-blocks")==0) {
+      SetMode(kWriteAllBlocks);
+
+      // -write-all
+    } else if (argument.CompareTo("-write-all")==0) {
+      SetMode(kWriteAllEvents);
+      SetMode(kWriteAllBlocks);
+
     } else {
       if ((iResult=ScanArgument(argc-i, &argv[i]))==-EINVAL) {
 	HLTError("unknown argument %s", argument.Data());
@@ -245,6 +258,8 @@ int AliHLTFileWriter::DumpEvent( const AliHLTComponentEventData& evtData,
 {
   // see header file for class documentation
   int iResult=0;
+  if (!IsDataEvent() && !CheckMode(kWriteAllEvents)) return 0;
+
   if (CheckMode(kConcatenateEvents)==0) {
     // reset the current file name in order to open a new file
     // for the first block. If events are concatenated, the current
@@ -255,6 +270,8 @@ int AliHLTFileWriter::DumpEvent( const AliHLTComponentEventData& evtData,
 
   int blockno=0;
   for (pDesc=GetFirstInputBlock(); pDesc!=NULL; pDesc=GetNextInputBlock(), blockno++) {
+    if (pDesc->fDataType==(kAliHLTAnyDataType|kAliHLTDataOriginPrivate) && !CheckMode(kWriteAllBlocks))
+      continue;
     HLTDebug("block %d out of %d", blockno, evtData.fBlockCnt);
     TString filename;
     HLTDebug("dataspec 0x%x", pDesc->fSpecification);
@@ -291,6 +308,12 @@ int AliHLTFileWriter::BuildFileName(const AliHLTEventID_t eventID, const int blo
   int iResult=0;
   //HLTDebug("build file name for event %d block %d", eventID, blockID);
   filename="";
+
+  AliHLTUInt32_t eventType=gkAliEventTypeUnknown;
+  IsDataEvent(&eventType);
+  if (eventType==gkAliEventTypeStartOfRun && CheckMode(kWriteAllEvents)) filename+="SOR_";
+  else if (eventType==gkAliEventTypeEndOfRun && CheckMode(kWriteAllEvents)) filename+="EOR_";
+
   if (!fDirectory.IsNull()) {
     filename+=fDirectory;
     if (!filename.EndsWith("/"))

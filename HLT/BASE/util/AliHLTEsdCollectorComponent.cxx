@@ -85,6 +85,7 @@ int AliHLTEsdCollectorComponent::DumpEvent( const AliHLTComponentEventData& /*ev
 {
   // see header file for class documentation
   int iResult=0;
+  if (!IsDataEvent() && !CheckMode(kWriteAllEvents)) return 0;
   if (!fpManager) return -ENODEV;
 
   for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock();

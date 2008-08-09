@@ -79,6 +79,8 @@ int AliHLTRootFileWriterComponent::DumpEvent( const AliHLTComponentEventData& ev
 {
   // see header file for class documentation
   int iResult=0;
+  if (!IsDataEvent() && !CheckMode(kWriteAllEvents)) return 0;
+
   int count=0;
   for (const TObject* pObj=GetFirstInputObject();
        pObj && iResult>=0;
