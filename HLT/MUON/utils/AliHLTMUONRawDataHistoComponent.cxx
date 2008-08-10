@@ -31,7 +31,6 @@
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
 #include "AliRawDataHeader.h"
-#include "TH1D.h"
 #include "TTimeStamp.h"
 #include <cstdlib>
 #include <cstring>
@@ -49,9 +48,13 @@ ClassImp(AliHLTMUONRawDataHistoComponent);
 
 AliHLTMUONRawDataHistoComponent::AliHLTMUONRawDataHistoComponent() :
 	AliHLTMUONProcessor(),
+	fTrackerDecoder(),
+	fTriggerDecoder(),
 	fLastPublishTime(-1),
 	fCurrentEventTime(-1),
-	fPublishDelay(1)
+	fPublishDelay(1),
+	fSuppressEmptyHists(false),
+	fProcessDataEventsOnly(false)
 {
 	/// Default constructor initialises all histogram object pointers to NULL.
 	
@@ -64,6 +67,16 @@ AliHLTMUONRawDataHistoComponent::AliHLTMUONRawDataHistoComponent() :
 		fManuHist[i] = NULL;
 		fSignalHist[i] = NULL;
 	}
+	
+	fTrackerDecoder.ExitOnError(false);
+	fTrackerDecoder.TryRecover(false);
+	fTrackerDecoder.SendDataOnParityError(true);
+	fTrackerDecoder.AutoDetectTrailer(true);
+	fTrackerDecoder.CheckForTrailer(true);
+	
+	fTriggerDecoder.ExitOnError(false);
+	fTriggerDecoder.TryRecover(false);
+	fTriggerDecoder.AutoDetectScalars(false);
 }
 
 
@@ -76,9 +89,7 @@ AliHLTMUONRawDataHistoComponent::~AliHLTMUONRawDataHistoComponent()
 
 const char* AliHLTMUONRawDataHistoComponent::GetComponentID()
 {
-	///
 	/// Inherited from AliHLTComponent. Returns the component ID.
-	///
 	
 	return AliHLTMUONConstants::RawDataHistogrammerId();
 }
@@ -86,9 +97,7 @@ const char* AliHLTMUONRawDataHistoComponent::GetComponentID()
 
 void AliHLTMUONRawDataHistoComponent::GetInputDataTypes(AliHLTComponentDataTypeList& list)
 {
-	///
 	/// Inherited from AliHLTProcessor. Returns the list of expected input data types.
-	///
 	
 	assert( list.empty() );
 	list.push_back( AliHLTMUONConstants::DDLRawDataType() );
@@ -107,9 +116,7 @@ void AliHLTMUONRawDataHistoComponent::GetOutputDataSize(
 		unsigned long& constBase, double& inputMultiplier
 	)
 {
-	///
 	/// Inherited from AliHLTComponent. Returns an estimate of the expected output data size.
-	///
 	
 	constBase = sizeof(TH1D) * 1024*1024;
 	inputMultiplier = 0;
@@ -118,9 +125,7 @@ void AliHLTMUONRawDataHistoComponent::GetOutputDataSize(
 
 AliHLTComponent* AliHLTMUONRawDataHistoComponent::Spawn()
 {
-	///
 	/// Inherited from AliHLTComponent. Creates a new object instance.
-	///
 	
 	return new AliHLTMUONRawDataHistoComponent;
 }
@@ -157,6 +162,10 @@ int AliHLTMUONRawDataHistoComponent::DoInit(int argc, const char** argv)
 	fLastPublishTime = fCurrentEventTime = -1;
 	fPublishDelay = 1;
 	bool pubDelaySet = false;
+	fSuppressEmptyHists = false;
+	fProcessDataEventsOnly = false;
+	fTrackerDecoder.TryRecover(false);
+	fTriggerDecoder.TryRecover(false);
 	
 	for (int i = 0; i < argc; i++)
 	{
@@ -192,6 +201,25 @@ int AliHLTMUONRawDataHistoComponent::DoInit(int argc, const char** argv)
 			i++;
 			continue;
 		}
+		
+		if (strcmp(argv[i], "-noemptyhists") == 0)
+		{
+			fSuppressEmptyHists = true;
+			continue;
+		}
+		
+		if (strcmp(argv[i], "-onlydataevents") == 0)
+		{
+			fProcessDataEventsOnly = true;
+			continue;
+		}
+		
+		if (strcmp(argv[i], "-tryrecover") == 0)
+		{
+			fTrackerDecoder.TryRecover(true);
+			fTriggerDecoder.TryRecover(true);
+			continue;
+		}
 
 		HLTError("Unknown option '%s'.", argv[i]);
 		return -EINVAL;
@@ -211,7 +239,6 @@ int AliHLTMUONRawDataHistoComponent::DoInit(int argc, const char** argv)
 			AliHLTInt32_t equipId = AliHLTMUONUtils::DDLNumberToEquipId(i);
 			sprintf(name, "rawDataErrors_%d", equipId);
 			sprintf(title, "Distribution of errors found in raw data from DDL %d.", equipId);
-			cout << "TRACE: " << name << endl;
 			fErrorHist[i] = new TH1D(name, title, 40, 0.5, 40.5);
 			fErrorHist[i]->SetXTitle("Error code");
 			fErrorHist[i]->SetYTitle("Number of errors");
@@ -262,6 +289,8 @@ int AliHLTMUONRawDataHistoComponent::DoEvent(
 	/// Inherited from AliHLTProcessor.
 	/// Processes the new event data and generates summary histograms.
 	
+	if (fProcessDataEventsOnly and not IsDataEvent()) return 0;  // Only process data events.
+	
 	fCurrentEventTime = TTimeStamp().AsDouble();
 	
 	const AliHLTComponentBlockData* block = GetFirstInputBlock(AliHLTMUONConstants::DDLRawDataType());
@@ -291,10 +320,14 @@ int AliHLTMUONRawDataHistoComponent::DoEvent(
 		}
 	}
 	
-	if (fLastPublishTime == -1 or fCurrentEventTime - fLastPublishTime > fPublishDelay)
+	// See if 'fPublishDelay' number of seconds has elapsed or this is the first event,
+	// in that case publish the histograms. Do not publish histograms that are empty
+	// if the fSuppressEmptyHists flag is set.
+	if (fLastPublishTime == -1 or fCurrentEventTime - fLastPublishTime >= fPublishDelay)
 	{
 		for (int i = 0; i < 22; i++)
 		{
+			if (fSuppressEmptyHists and fErrorHist[i]->GetEntries() == 0) continue;
 			PushBack(fErrorHist[i],
 				AliHLTMUONConstants::HistogramDataType(),
 				AliHLTMUONUtils::DDLNumberToSpec(i)
@@ -303,8 +336,14 @@ int AliHLTMUONRawDataHistoComponent::DoEvent(
 		for (int i = 0; i < 20; i++)
 		{
 			AliHLTUInt32_t spec = AliHLTMUONUtils::DDLNumberToSpec(i);
-			PushBack(fManuHist[i], AliHLTMUONConstants::HistogramDataType(), spec);
-			PushBack(fSignalHist[i], AliHLTMUONConstants::HistogramDataType(), spec);
+			if (not (fSuppressEmptyHists and fManuHist[i]->GetEntries() == 0))
+			{
+				PushBack(fManuHist[i], AliHLTMUONConstants::HistogramDataType(), spec);
+			}
+			if (not (fSuppressEmptyHists and fSignalHist[i]->GetEntries() == 0))
+			{
+				PushBack(fSignalHist[i], AliHLTMUONConstants::HistogramDataType(), spec);
+			}
 		}
 		fLastPublishTime = fCurrentEventTime;
 	}
@@ -320,11 +359,16 @@ void AliHLTMUONRawDataHistoComponent::ProcessTrackerDDL(const AliHLTComponentBlo
 	AliHLTInt32_t ddl = AliHLTMUONUtils::SpecToDDLNumber(block->fSpecification);
 	assert(0 <= ddl and ddl < 20);
 	
+	fTrackerDecoder.GetHandler().ErrorHist(fErrorHist[ddl]);
+	fTrackerDecoder.GetHandler().ManuHist(fManuHist[ddl]);
+	fTrackerDecoder.GetHandler().SignalHist(fSignalHist[ddl]);
+	
 	if (block->fSize >= sizeof(AliRawDataHeader))
 	{
-		AliHLTUInt8_t* buffer = reinterpret_cast<AliHLTUInt8_t*>(block->fPtr);
-		buffer += sizeof(AliRawDataHeader);
-		UInt_t bufferSize = UInt_t(block->fSize) - sizeof(AliRawDataHeader);
+		AliHLTUInt8_t* payload = reinterpret_cast<AliHLTUInt8_t*>(block->fPtr)
+			+ sizeof(AliRawDataHeader);
+		UInt_t payloadSize = UInt_t(block->fSize) - sizeof(AliRawDataHeader);
+		fTrackerDecoder.Decode(payload, payloadSize);
 	}
 	else
 	{
@@ -341,16 +385,18 @@ void AliHLTMUONRawDataHistoComponent::ProcessTriggerDDL(const AliHLTComponentBlo
 {
 	/// Processes a raw data block from the trigger stations.
 	
-	HLTFatal("Processing of trigger data not yet implemented!");
-	
 	AliHLTInt32_t ddl = AliHLTMUONUtils::SpecToDDLNumber(block->fSpecification);
 	assert(21 <= ddl and ddl < 22);
+	
+	fTriggerDecoder.GetHandler().ErrorHist(fErrorHist[ddl]);
 	
 	if (block->fSize >= sizeof(AliRawDataHeader))
 	{
 		AliRawDataHeader* header = reinterpret_cast<AliRawDataHeader*>(block->fPtr);
-		AliHLTUInt8_t* buffer = reinterpret_cast<AliHLTUInt8_t*>(header+1);
-		UInt_t bufferSize = UInt_t(block->fSize) - sizeof(AliRawDataHeader);
+		AliHLTUInt8_t* payload = reinterpret_cast<AliHLTUInt8_t*>(header+1);
+		UInt_t payloadSize = UInt_t(block->fSize) - sizeof(AliRawDataHeader);
+		bool scalarEvent = ((header->GetL1TriggerMessage() & 0x1) == 0x1);
+		fTriggerDecoder.Decode(payload, payloadSize, scalarEvent);
 	}
 	else
 	{
@@ -389,3 +435,4 @@ void AliHLTMUONRawDataHistoComponent::FreeObjects()
 		}
 	}
 }
+
