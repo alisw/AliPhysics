@@ -3,13 +3,10 @@
 
 // Analysis task creating a the 2d y-p_t spectrum of p and antip
 // Author: Panos Cristakoglou
-class TString;
 class TList;
 class AliESDEvent;
-class AliAODEvent;
 class AliMCEvent;
 class AliProtonAnalysis;
-class TF1;
 
 #include "AliAnalysisTask.h"
 
