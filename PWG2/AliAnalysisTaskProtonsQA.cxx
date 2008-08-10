@@ -35,11 +35,8 @@ AliAnalysisTaskProtonsQA::AliAnalysisTaskProtonsQA()
 
 //________________________________________________________________________
 AliAnalysisTaskProtonsQA::AliAnalysisTaskProtonsQA(const char *name) 
-: AliAnalysisTask(name, ""), fESD(0), fAOD(0), fMC(0), fAnalysisType("ESD"),
-  fList(0), fAnalysis(0), 
-  fElectronFunction(0), fMuonFunction(0),
-  fPionFunction(0), fKaonFunction(0), fProtonFunction(0),
-  fFunctionUsed(kFALSE) { 
+: AliAnalysisTask(name, ""), fESD(0), fMC(0),
+  fList(0), fAnalysis(0) {
   // Constructor
 
   // Define input and output slots here
@@ -121,7 +118,7 @@ void AliAnalysisTaskProtonsQA::CreateOutputObjects() {
   fAnalysis->SetPriorProbabilities(partFrac);
 
   fList = new TList();
-  fList = GetGlobalQAList();
+  fList = fAnalysis->GetGlobalQAList();
 }
 
 //________________________________________________________________________

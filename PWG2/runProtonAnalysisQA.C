@@ -31,6 +31,8 @@ void runProof(Int_t stats = 0, const char* dataset = 0x0) {
   gProof->EnablePackage("ANALYSIS");
   gProof->UploadPackage("ANALYSISalice.par");
   gProof->EnablePackage("ANALYSISalice");
+  gProof->UploadPackage("CORRFW.par");
+  gProof->EnablePackage("CORRFW");
   gProof->UploadPackage("PWG2spectra.par");
   gProof->EnablePackage("PWG2spectra");
   
@@ -51,9 +53,11 @@ void runProof(Int_t stats = 0, const char* dataset = 0x0) {
 
   // Create containers for input/output
   AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("dataChain",
-							   TChain::Class(),AliAnalysisManager::kInputContainer);
+							   TChain::Class(),
+							   AliAnalysisManager::kInputContainer);
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("outputList1", 
-							    TList::Class(),AliAnalysisManager::kOutputContainer,
+							    TList::Class(),
+							    AliAnalysisManager::kOutputContainer,
 							    outputFilename.Data());
 
   //____________________________________________//
@@ -73,6 +77,7 @@ void runProof(Int_t stats = 0, const char* dataset = 0x0) {
     chain->SetBranchStatus("*Calo*",0);
 
     mgr->StartAnalysis("proof",chain);
+    //mgr->StartAnalysis("local",chain);
   }
 
   timer.Stop();
