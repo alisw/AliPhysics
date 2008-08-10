@@ -16,6 +16,9 @@
 //------------------------------------------------------------------------- 
 // Jet AOD Reader 
 // AOD reader for jet analysis
+// This is the reader which must be used if the jet analysis task
+// is executed after the ESD filter task, in order to read its output
+//
 // Author: Davide Perrino <davide.perrino@cern.ch>
 //------------------------------------------------------------------------- 
 
@@ -126,6 +129,7 @@ Bool_t AliJetAODReader::FillMomentumArray()
 {
   // Clear momentum array
   ClearArray();
+  fRef->Clear();
   fDebug = fReaderHeader->GetDebug();
   
   if (!fAOD) {
@@ -134,7 +138,7 @@ Bool_t AliJetAODReader::FillMomentumArray()
   
   // get number of tracks in event (for the loop)
   Int_t nt = fAOD->GetNTracks();
-  printf("AOD tracks: %5d ", nt);
+  printf("AOD tracks: %5d \t", nt);
   
   // temporary storage of signal and pt cut flag
   Int_t* sflag  = new Int_t[nt];
@@ -145,6 +149,7 @@ Bool_t AliJetAODReader::FillMomentumArray()
   Float_t etaMin = fReaderHeader->GetFiducialEtaMin();
   Float_t etaMax = fReaderHeader->GetFiducialEtaMax();  
   UInt_t  filterMask =  ((AliJetAODReaderHeader*)fReaderHeader)->GetTestFilterMask();
+
   //loop over tracks
   Int_t aodTrack = 0;
   Float_t pt, eta;
@@ -152,20 +157,23 @@ Bool_t AliJetAODReader::FillMomentumArray()
 
   for (Int_t it = 0; it < nt; it++) {
     AliAODTrack *track = fAOD->GetTrack(it);
+    UInt_t status = track->GetStatus();
     
     Double_t mom[3] = {track->Px(),track->Py(),track->Pz()};
     p3.SetXYZ(mom[0],mom[1],mom[2]);
     pt = p3.Pt();
     eta = p3.Eta();
+    if (status == 0) continue;
     if((filterMask>0)&&!(track->TestFilterBit(filterMask)))continue;
-    if ( pt < ptMin )                      continue;      // checking pt  cut
     if ( (eta > etaMax) || (eta < etaMin)) continue;      // checking eta cut
-    sflag[aodTrack]=1;
-    cflag[aodTrack]=1;
-    new ((*fMomentumArray)[aodTrack++]) TLorentzVector(p3,p3.Mag());
+
+    new ((*fMomentumArray)[aodTrack]) TLorentzVector(p3,p3.Mag());
+    sflag[aodTrack] = (TMath::Abs(track->GetLabel()) < 10000) ? 1 : 0;
+    cflag[aodTrack] = ( pt > ptMin ) ? 1: 0;
+    aodTrack++;
     fRef->Add(track);
   }
-  printf("Used AOD tracks: %5d ", aodTrack);
+  printf("Used AOD tracks: %5d \n", aodTrack);
   // set the signal flags
   fSignalFlag.Set(aodTrack,sflag);
   fCutFlag.Set(aodTrack,cflag);

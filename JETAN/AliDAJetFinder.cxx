@@ -96,21 +96,26 @@ void AliDAJetFinder::InitDetAnn(Double_t &dEtSum,Double_t **xData,TVectorD *vPx,
 {
 //Initialise the variables used by the algorithm
 	fBeta=0.1;
-	TClonesArray *lvArray = fReader->GetMomentumArray();
-	fNin = lvArray->GetEntries();
 	fNclustMax= ((AliDAJetHeader*)fHeader)->GetFixedCl() ? 
 	    ((AliDAJetHeader*)fHeader)->GetNclustMax() : 
 	    TMath::Max((Int_t)TMath::Sqrt(fNin),5);
+	TClonesArray *lvArray = fReader->GetMomentumArray();
+	Int_t nEntr = lvArray->GetEntries();
+	fNin=0;
+	for (Int_t iEn=0; iEn<nEntr; iEn++) if (fReader->GetCutFlag(iEn)==1) fNin++;
 	Double_t *xEta = new Double_t[fNin];
-    Double_t *xPhi = new Double_t[fNin];
+	Double_t *xPhi = new Double_t[fNin];
 	xData[0]=xEta; xData[1]=xPhi;
 	vPx->ResizeTo(fNin);
-	for (Int_t iIn=0; iIn<fNin; iIn++){
-		TLorentzVector *lv=(TLorentzVector*)lvArray->At(iIn);
+	Int_t iIn=0;
+	for (Int_t iEn=0; iEn<nEntr; iEn++){
+		if (fReader->GetCutFlag(iEn)==0) continue;
+		TLorentzVector *lv=(TLorentzVector*)lvArray->At(iEn);
 		xEta[iIn] = lv->Eta();
 		xPhi[iIn] = lv->Phi()<0 ? lv->Phi() + 2*TMath::Pi() : lv->Phi();
 		(*vPx)(iIn)=lv->Pt();
 		dEtSum+=(*vPx)(iIn);
+		iIn++;
 	}
 	for (Int_t iIn=0; iIn<fNin; iIn++) (*vPx)(iIn)=(*vPx)(iIn)/dEtSum;
 
@@ -128,7 +133,6 @@ void AliDAJetFinder::InitDetAnn(Double_t &dEtSum,Double_t **xData,TVectorD *vPx,
 		xpos+=(*vPx)(iIn)*TMath::Cos(xPhi[iIn]);
 	}
 	(*mY)(1,0)=(atan2(ypos,xpos)>0) ? atan2(ypos,xpos) : atan2(ypos,xpos)+2*TMath::Pi();
-	lvArray->Delete();
 }
 
 //-----------------------------------------------------------------------------------
@@ -463,8 +467,15 @@ void AliDAJetFinder::StoreJets(Int_t nk,Double_t **xData,Int_t *xx,TMatrixD *mY)
 			pz = (*mY)(3,iClust)/TMath::Tan(2.0 * TMath::ATan(TMath::Exp(-(*mY)(0,iClust))));
 			en = TMath::Sqrt(px * px + py * py + pz * pz);
 			AliAODJet jet(px, py, pz, en);
-			if (fromAod) 
-			    for (Int_t iIn=0; iIn<fNin; iIn++) if (xx[iIn]==iClust) jet.AddTrack(refs->At(iIn));
+			if (fromAod){
+				Int_t iIn=0;
+				Int_t nEntr = fReader->GetMomentumArray()->GetEntries();
+				for (Int_t iEn=0; iEn<nEntr; iEn++){
+					if (fReader->GetCutFlag(iEn)==0) continue;
+					if (xx[iIn]==iClust) jet.AddTrack(refs->At(iEn));
+					iIn++;
+				}
+			}
 			AddJet(jet);
 			printf("jet %d, Eta: %f, Phi: %f, Et: %f\n",iClust,jet.Eta(),jet.Phi(),jet.Pt());
 		}
