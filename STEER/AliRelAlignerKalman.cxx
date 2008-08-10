@@ -24,7 +24,7 @@
 //    Fit parameters are:
 //    - 3 shifts, x,y,z
 //    - 3 Cardan angles, psi, theta, phi (see definition in alignment docs),
-//    - TPC drift velocity slope correction (vel(y) = vel(y0) + (1+correction)*y),
+//    - TPC drift velocity correction,
 //    - TPC offset correction.
 //
 //    Basic usage:
@@ -94,40 +94,39 @@ AliRelAlignerKalman::AliRelAlignerKalman():
     fRejectOutliers(kTRUE),
     fCalibrationMode(kFALSE),
     fFillHistograms(kTRUE),
-    fRequireDoubleTPCtrack(kFALSE),
+    fRequireMatchInTPC(kFALSE),
     fApplyCovarianceCorrection(kFALSE),
     fCuts(kFALSE),
-    fMinPointsVol1(2),
+    fMinPointsVol1(3),
     fMinPointsVol2(50),
     fMinMom(0.),
     fMaxMom(1e100),
-    fMinAbsSinPhi(0.),
-    fMaxAbsSinPhi(1.),
-    fMinSinTheta(-1.),
-    fMaxSinTheta(1.),
-    fMaxMatchingAngle(0.2),
-    fMaxMatchingDistance(2.),  //in cm
+    fMaxMatchingAngle(0.1),
+    fMaxMatchingDistance(5),  //in cm
     fNTracks(0),
     fNUpdates(0),
     fNOutliers(0),
     fNMatchedCosmics(0),
+    fNMatchedTPCtracklets(0),
     fNProcessedEvents(0),
-    fPMes0Hist(new TH1D("y","y", 50, 0, 0)),
-    fPMes1Hist(new TH1D("z","z", 50, 0, 0)),
-    fPMes2Hist(new TH1D("sinphi","sinphi", 50, 0, 0)),
-    fPMes3Hist(new TH1D("tanlambda","tanlambda", 50, 0, 0)),
-    fPMesErr0Hist(new TH1D("mescov11","mescov11", 50, 0, 0)),
-    fPMesErr1Hist(new TH1D("mescov22","mescov22", 50, 0, 0)),
-    fPMesErr2Hist(new TH1D("mescov33","mescov33", 50, 0, 0)),
-    fPMesErr3Hist(new TH1D("mescov44","mescov44", 50, 0, 0)),
+    fNHistogramBins(200),
+    fPMes0Hist(new TH1D("res y","res y", fNHistogramBins, 0, 0)),
+    fPMes1Hist(new TH1D("res z","res z", fNHistogramBins, 0, 0)),
+    fPMes2Hist(new TH1D("res sinphi","res sinphi", fNHistogramBins, 0, 0)),
+    fPMes3Hist(new TH1D("res tgl","res tgl", fNHistogramBins, 0, 0)),
+    fPMesErr0Hist(new TH1D("mescov11","mescov11", fNHistogramBins, 0, 0)),
+    fPMesErr1Hist(new TH1D("mescov22","mescov22", fNHistogramBins, 0, 0)),
+    fPMesErr2Hist(new TH1D("mescov33","mescov33", fNHistogramBins, 0, 0)),
+    fPMesErr3Hist(new TH1D("mescov44","mescov44", fNHistogramBins, 0, 0)),
     fPMeasurementCovCorr(new TMatrixDSym(fgkNMeasurementParams))
 {
     //Default constructor
     
     //default seed: zero, reset errors to large default
     ResetCovariance();
+    (*fPX)(6)=1.;
     //initialize the differentials per parameter
-    for (Int_t i=0;i<fgkNSystemParams;i++) fDelta[i] = 1.e-6;
+    for (Int_t i=0;i<fgkNSystemParams;i++) fDelta[i] = 1.e-7;
     //fDelta[0] = 3e-8;
     //fDelta[1] = 3e-8;
     //fDelta[2] = 3e-8;
@@ -136,7 +135,6 @@ AliRelAlignerKalman::AliRelAlignerKalman():
     //fDelta[5] = 3e-6;
     //fDelta[6] = 3e-12;
     //fDelta[7] = 3e-8;
-    (*fPX)(6)=1.;
 }
 
 //______________________________________________________________________________
@@ -172,10 +170,9 @@ Bool_t AliRelAlignerKalman::AddCosmicEventSeparateTracking( AliESDEvent* pEvent 
 {
     //Add an cosmic with separately tracked ITS and TPC parts, do trackmatching
 
-    fNProcessedEvents++; //update the counter
-
-    Int_t iits1,iits2,itpc1,itpc2;
-    if (!FindCosmicTrackletNumbersInEvent( iits1, itpc1, iits2, itpc2, pEvent )) return kFALSE;
+    TArrayI pITStrackTArr(1);
+    TArrayI pTPCtrackTArr(1);
+    if (!FindCosmicTrackletNumbersInEvent( pITStrackTArr, pTPCtrackTArr, pEvent )) return kFALSE;
    // printf("Found tracks: %d, %d,    %d, %d\n",iits1,itpc1,iits2,itpc2);
     Double_t field = pEvent->GetMagneticField();
     AliESDtrack* ptrack;
@@ -183,11 +180,10 @@ Bool_t AliRelAlignerKalman::AddCosmicEventSeparateTracking( AliESDEvent* pEvent 
     AliExternalTrackParam* pparams;
     
     ////////////////////////////////
-    //first pair:
-    if (iits1>=0 || itpc2>=0)
+    for (Int_t i=0;i<pITStrackTArr.GetSize();i++)
     {
         //ITS track
-        ptrack = pEvent->GetTrack(iits1);
+        ptrack = pEvent->GetTrack(pITStrackTArr[i]);
         constpparams = ptrack->GetOuterParam();
         if (!constpparams) return kFALSE;
         pparams = const_cast<AliExternalTrackParam*>(constpparams);
@@ -195,7 +191,7 @@ Bool_t AliRelAlignerKalman::AddCosmicEventSeparateTracking( AliESDEvent* pEvent 
         //pparams->PropagateTo(fLocalX, field);
         SetTrackParams1(pparams);
         //TPC track
-        ptrack = pEvent->GetTrack(itpc1);
+        ptrack = pEvent->GetTrack(pTPCtrackTArr[i]);
         constpparams = ptrack->GetInnerParam();
         if (!constpparams) return kFALSE;
         pparams = const_cast<AliExternalTrackParam*>(constpparams);
@@ -205,29 +201,6 @@ Bool_t AliRelAlignerKalman::AddCosmicEventSeparateTracking( AliESDEvent* pEvent 
         //do some accounting and update
         if (PrepareUpdate()) Update();
     }
-    ////////////////////////////////
-    //second pair:
-    if (iits2>=0 || itpc2>=0)
-    {
-        //ITS track
-        ptrack = pEvent->GetTrack(iits2);
-        constpparams = ptrack->GetOuterParam();
-        if (!constpparams) return kFALSE;
-        pparams = const_cast<AliExternalTrackParam*>(constpparams);
-        SetRefSurface( pparams->GetX(), pparams->GetAlpha() );
-        //pparams->PropagateTo(fLocalX, field);
-        SetTrackParams1(pparams);
-        //TPC track
-        ptrack = pEvent->GetTrack(itpc2);
-        constpparams = ptrack->GetInnerParam();
-        if (!constpparams) return kFALSE;
-        pparams = const_cast<AliExternalTrackParam*>(constpparams);
-        pparams->Rotate(fAlpha);
-        pparams->PropagateTo(fLocalX, field);
-        SetTrackParams2(pparams);
-        //do some accounting and update
-        if (PrepareUpdate()) Update();
-    } 
     return kTRUE;
 }
 
@@ -236,8 +209,8 @@ void AliRelAlignerKalman::Print(Option_t*) const
 {
     //Print some useful info
     printf("\nAliRelAlignerKalman:\n");
-    printf("  %i tracks, %i updates, %i outliers,", fNTracks, fNUpdates, fNOutliers );
-    printf(" %i found cosmics in %i events\n", fNMatchedCosmics, fNProcessedEvents );
+    printf("  %i pairs, %i updates, %i outliers,\n", fNTracks, fNUpdates, fNOutliers );
+    printf("  %i TPC matches, %i good cosmics in %i events\n", fNMatchedTPCtracklets, fNMatchedCosmics, fNProcessedEvents );
     printf("  psi(x):           % .3f ± (%.2f) mrad\n", 1e3*(*fPX)(0),1e3*TMath::Sqrt((*fPXcov)(0,0)));
     printf("  theta(y):         % .3f ± (%.2f) mrad\n", 1e3*(*fPX)(1),1e3*TMath::Sqrt((*fPXcov)(1,1)));
     printf("  phi(z):           % .3f ± (%.2f) mrad\n", 1e3*(*fPX)(2),1e3*TMath::Sqrt((*fPXcov)(2,2)));
@@ -328,8 +301,8 @@ Bool_t AliRelAlignerKalman::Update()
     if (fCalibrationMode) return UpdateCalibration();
     if (fFillHistograms)
     {
-        if (!UpdateCalibration()) return kFALSE;
-        return UpdateEstimateKalman();
+        if (!UpdateEstimateKalman()) return kFALSE;
+        return UpdateCalibration(); //Update histograms only when update ok.
     }
     else return UpdateEstimateKalman();
 }
@@ -400,6 +373,7 @@ Bool_t AliRelAlignerKalman::PrepareSystemMatrix()
     TVectorD x1( *fPX );
     TVectorD x2( *fPX );
     TMatrixD D( fgkNMeasurementParams, 1 );
+    //get the derivatives
     for ( Int_t i=0; i<fgkNSystemParams; i++ )
     {
         x1 = *fPX;
@@ -419,13 +393,13 @@ Bool_t AliRelAlignerKalman::PrepareSystemMatrix()
 Bool_t AliRelAlignerKalman::PredictMeasurement( TVectorD& pred, const TVectorD& state )
 {
     // Implements a system model for the Kalman fit
-    // pred is [dy,dz,dsinphi,dtanlambda]
+    // pred is [dy,dz,dsinphi,dtgl]
     // state is [psi,theta,phi,x,y,z,driftTPC,offsetTPC]
     // note: the measurement is in a local frame, so the prediction also has to be
     // note: state is the misalignment in global reference system
 
     AliExternalTrackParam track(*fPTrackParam1); //make a copy of first track
-    if (!MisalignTrack( &track, state )) return kFALSE;              //apply misalignments to get a prediction
+    if (!MisalignTrack( &track, state )) return kFALSE; //apply misalignments to get a prediction
 
     const Double_t* oldparam = fPTrackParam1->GetParameter();
     const Double_t* newparam = track.GetParameter();
@@ -549,62 +523,53 @@ void AliRelAlignerKalman::PrintCorrelationMatrix()
 }
 
 //______________________________________________________________________________
-Bool_t AliRelAlignerKalman::FindCosmicTrackletNumbersInEvent( Int_t& ITSgood1, Int_t& TPCgood1, Int_t& ITSgood2, Int_t& TPCgood2, const AliESDEvent* pEvent )
+Bool_t AliRelAlignerKalman::FindCosmicTrackletNumbersInEvent( TArrayI& outITSindexTArr, TArrayI& outTPCindexTArr, const AliESDEvent* pEvent )
 {
-    //Find track point arrays belonging to one cosmic in a separately tracked ESD
-    //and put them in the apropriate data members
+    //Find matching track segments in an event with tracks in TPC and ITS(standalone)
+
+    fNProcessedEvents++; //update the counter
 
     //Sanity cuts on tracks + check which tracks are ITS which are TPC
-    Int_t ntracks = pEvent->GetNumberOfTracks(); //printf("number of tracks in event: %i\n", ntracks);
-    if(ntracks<2) return kFALSE;
+    Int_t ntracks = pEvent->GetNumberOfTracks(); ////printf("number of tracks in event: %i\n", ntracks);
+    Double_t field = pEvent->GetMagneticField();
+    if(ntracks<2)
+    {
+        //printf("TrackFinder: less than 2 tracks!\n");
+        return kFALSE;
+    }
     Float_t* phiArr = new Float_t[ntracks];
     Float_t* thetaArr = new Float_t[ntracks];
-    Double_t* distanceFromVertexArr = new Double_t[ntracks];
     Int_t* goodtracksArr = new Int_t[ntracks];
+    Int_t* candidateTPCtracksArr = new Int_t[ntracks];
+    Int_t* matchedITStracksArr = new Int_t[ntracks];
+    Int_t* matchedTPCtracksArr = new Int_t[ntracks];
     Int_t* ITStracksArr = new Int_t[ntracks];
     Int_t* TPCtracksArr = new Int_t[ntracks];
     Int_t* nPointsArr = new Int_t[ntracks];
     Int_t nITStracks = 0;
     Int_t nTPCtracks = 0;
     Int_t nGoodTracks = 0;
+    Int_t nCandidateTPCtracks = 0;
+    Int_t nMatchedITStracks = 0;
     AliESDtrack* pTrack = NULL;
-    
-    const AliESDVertex* pVertex = pEvent->GetVertex();
-    Double_t vertexposition[3];
-    pVertex->GetXYZ(vertexposition);
-    
+    Bool_t foundMatchTPC = kFALSE;
 
-    //select sane tracks
+    //select and clasify tracks
     for (Int_t itrack=0; itrack < ntracks; itrack++)
     {
         pTrack = pEvent->GetTrack(itrack);
         if (!pTrack) {std::cout<<"no track!"<<std::endl;continue;}
-        if(pTrack->GetNcls(0)+pTrack->GetNcls(1) < fMinPointsVol1) continue;
-        Float_t phi = pTrack->GetAlpha()+TMath::ASin(pTrack->GetSnp());
-        Float_t theta = 0.5*TMath::Pi()-TMath::ATan(pTrack->GetTgl());
-        //printf("phi: %4.2f theta: %4.2f\n", phi, theta);
         if(fCuts)
         {
             if(pTrack->GetP()<fMinMom || pTrack->GetP()>fMaxMom) continue;
-            Float_t abssinphi = TMath::Abs(TMath::Sin(phi));
-            if(abssinphi<fMinAbsSinPhi || abssinphi>fMaxAbsSinPhi) continue;
-            Float_t sintheta = TMath::Sin(theta);
-            if(sintheta<fMinSinTheta || sintheta>fMaxSinTheta) continue;
         }
         goodtracksArr[nGoodTracks]=itrack;
+        Float_t phi = pTrack->GetAlpha()+TMath::ASin(pTrack->GetSnp());
+        Float_t theta = 0.5*TMath::Pi()-TMath::ATan(pTrack->GetTgl());
         phiArr[nGoodTracks]=phi;
         thetaArr[nGoodTracks]=theta;
 
-        //Double_t magfield = pEvent->GetMagneticField();
-        //pTrack->RelateToVertex( pVertex, magfield, 10000. );
-        //Double_t trackposition[3];
-        //pTrack->GetXYZ( trackposition );
-        //distanceFromVertexArr[nGoodTracks] = 
-        //      TMath::Sqrt((trackposition[0]-vertexposition[0])*(trackposition[0]-vertexposition[0])
-        //               + (trackposition[1]-vertexposition[1])*(trackposition[1]-vertexposition[1])
-        //               + (trackposition[2]-vertexposition[2])*(trackposition[2]-vertexposition[2]));
-
-        //check if track is ITS or TPC
+        //check if track is ITS
         Int_t nClsITS = pTrack->GetNcls(0);
         Int_t nClsTPC = pTrack->GetNcls(1);
         if ( ((pTrack->GetStatus()&AliESDtrack::kITSout)>0)&&
@@ -613,141 +578,199 @@ Bool_t AliRelAlignerKalman::FindCosmicTrackletNumbersInEvent( Int_t& ITSgood1, I
         {
             ITStracksArr[nITStracks] = nGoodTracks;
             nITStracks++;
+            nGoodTracks++;
+            continue;
         }
 
+        //check if track is TPC
         if ( ((pTrack->GetStatus()&AliESDtrack::kTPCin)>0)&&
              !(nClsTPC<fMinPointsVol2) )  //enough points
         {
             TPCtracksArr[nTPCtracks] = nGoodTracks;
             nTPCtracks++;
+            nGoodTracks++;
+            //printf("TPCtracksArr[%d]=%d, goodtracksArr[%d]=%d\n",nTPCtracks-1,TPCtracksArr[nTPCtracks-1],nGoodTracks-1,goodtracksArr[nGoodTracks-1]);
+            continue;
         }
-        //if(nClsITS>=2 && nClsTPC==0)
-        //{ // ITS SA
-        //    ITStracksArr[nITStracks] = nGoodTracks;
-        //    nITStracks++;
-        //}
-        //if(nClsTPC>=50)
-        //{ // TPC
-        //    TPCtracksArr[nTPCtracks] = nGoodTracks;
-        //    nTPCtracks++;
-        //}
+    }//for itrack   -   selection fo tracks
 
-        nGoodTracks++;
-    }//for itrack   -   sanity cuts
-
-    //printf("TrackFinder: there are good tracks, %d in ITS and %d TPC.\n", nITStracks, nTPCtracks);
+    //printf("TrackFinder: %d ITS | %d TPC out of %d tracks in event\n", nITStracks,nTPCtracks,ntracks);
     
-    if( nITStracks < 2 || nTPCtracks < 2 )
+    if( nITStracks < 1 || nTPCtracks < 1 )
     {
-        delete [] goodtracksArr; goodtracksArr=0;
-        delete [] ITStracksArr; ITStracksArr=0;
-        delete [] TPCtracksArr; TPCtracksArr=0;
-        delete [] nPointsArr; nPointsArr=0;
-        delete [] phiArr; phiArr=0;
-        delete [] thetaArr; thetaArr=0;
-        delete [] distanceFromVertexArr; distanceFromVertexArr=0;
-        //printf("TrackFinder: not enough tracks in ITS or TPC\n");
+        delete [] phiArr;
+        delete [] thetaArr;
+        delete [] goodtracksArr;
+        delete [] matchedITStracksArr;
+        delete [] candidateTPCtracksArr;
+        delete [] matchedTPCtracksArr;
+        delete [] ITStracksArr;
+        delete [] TPCtracksArr;
+        delete [] nPointsArr;
         return kFALSE;
     }
 
     //find matching in TPC
-    Float_t min = 10000000.;
-    TPCgood1 = -1;
-    TPCgood2 = -1;
-    for(Int_t itr1=0; itr1<nTPCtracks; itr1++)
+    if (nTPCtracks>1)  //if there is something to be matched, try and match it
     {
-        for(Int_t itr2=itr1+1; itr2<nTPCtracks; itr2++)
+        Float_t min = 10000000.;
+        for(Int_t itr1=0; itr1<nTPCtracks; itr1++)
         {
-            Float_t deltatheta = TMath::Abs(TMath::Pi()-thetaArr[TPCtracksArr[itr1]]-thetaArr[TPCtracksArr[itr2]]);
-            if(deltatheta > fMaxMatchingAngle) continue;
-            Float_t deltaphi = TMath::Abs(TMath::Abs(phiArr[TPCtracksArr[itr1]]-phiArr[TPCtracksArr[itr2]])-TMath::Pi());
-            if(deltaphi > fMaxMatchingAngle) continue;
-            //printf("ITS: %f  %f     %f  %f\n",deltaphi,deltatheta,thetaArr[ITStracksArr[itr1]],thetaArr[ITStracksArr[itr2]]);
-            if(deltatheta+deltaphi<min) //only the best matching pair
+            for(Int_t itr2=itr1+1; itr2<nTPCtracks; itr2++)
             {
-                min=deltatheta+deltaphi;
-                TPCgood1 = TPCtracksArr[itr1];  //store the index of track in goodtracksArr[]
-                TPCgood2 = TPCtracksArr[itr2];
+                Float_t deltatheta = TMath::Abs(TMath::Pi()-thetaArr[TPCtracksArr[itr1]]-thetaArr[TPCtracksArr[itr2]]);
+                if(deltatheta > fMaxMatchingAngle) continue;
+                Float_t deltaphi = TMath::Abs(TMath::Abs(phiArr[TPCtracksArr[itr1]]-phiArr[TPCtracksArr[itr2]])-TMath::Pi());
+                if(deltaphi > fMaxMatchingAngle) continue;
+                if(deltatheta+deltaphi<min) //only the best matching pair
+                {
+                    min=deltatheta+deltaphi;
+                    candidateTPCtracksArr[0] = TPCtracksArr[itr1];  //store the index of track in goodtracksArr[]
+                    candidateTPCtracksArr[1] = TPCtracksArr[itr2];
+                    nCandidateTPCtracks = 2;
+                    foundMatchTPC = kTRUE;
+                    //printf("TrackFinder: Matching TPC tracks candidates:\n");
+                    //printf("TrackFinder: candidateTPCtracksArr[0]=%d\n",TPCtracksArr[itr1]);
+                    //printf("TrackFinder: candidateTPCtracksArr[1]=%d\n",TPCtracksArr[itr2]);
+                }
             }
         }
-    }
-    if (TPCgood1 < 0) //no dubble cosmic track
+    }//if nTPCtracks>1
+    else //if nTPCtracks==1 - if nothing to match, take the only one we've got
     {
-        delete [] goodtracksArr; goodtracksArr=0;
-        delete [] ITStracksArr; ITStracksArr=0;
-        delete [] TPCtracksArr; TPCtracksArr=0;
-        delete [] nPointsArr; nPointsArr=0;
-        delete [] phiArr; phiArr=0;
-        delete [] thetaArr; thetaArr=0;
-        delete [] distanceFromVertexArr; distanceFromVertexArr=0;
-        //printf("TrackFinder: no cosmic pair inside ITS\n");
+        candidateTPCtracksArr[0] = TPCtracksArr[0];
+        nCandidateTPCtracks = 1;
+        foundMatchTPC = kFALSE;
+    }
+    if (foundMatchTPC) fNMatchedTPCtracklets++;
+    //if no match but the requirement is set return kFALSE
+    if (fRequireMatchInTPC && !foundMatchTPC) 
+    {
+        delete [] phiArr;
+        delete [] thetaArr;
+        delete [] goodtracksArr;
+        delete [] candidateTPCtracksArr;
+        delete [] matchedITStracksArr;
+        delete [] matchedTPCtracksArr;
+        delete [] ITStracksArr;
+        delete [] TPCtracksArr;
+        delete [] nPointsArr;
+        //printf("TrackFinder: no match in TPC && required\n");
         return kFALSE;
     }
 
-    //find for the first TPC track the matching ITS track
-    ITSgood1 = -1;
-    min = 10000000.;
-    for(Int_t i=0; i<nITStracks; i++)
+    //if no match and more than one track take all TPC tracks
+    if (!fRequireMatchInTPC && !foundMatchTPC) 
     {
-        Float_t deltatheta = TMath::Abs(thetaArr[TPCgood1]-thetaArr[ITStracksArr[i]]);
-        if(deltatheta > fMaxMatchingAngle) continue;
-        Float_t deltaphi = TMath::Abs(phiArr[TPCgood1]-phiArr[ITStracksArr[i]]);
-        if(deltaphi > fMaxMatchingAngle) continue;
-        //printf("ITS: %f  %f     %f  %f\n",deltaphi,deltatheta,thetaArr[ITStracksArr[itr1]],thetaArr[ITStracksArr[itr2]]);
-        if(deltatheta+deltaphi<min) //only the best matching pair
+        for (Int_t i=0;i<nTPCtracks;i++)
         {
-            min=deltatheta+deltaphi;
-            ITSgood1 = ITStracksArr[i];  //store the index of track in goodtracksArr[]
+            candidateTPCtracksArr[i] = TPCtracksArr[i];
         }
+        nCandidateTPCtracks = nTPCtracks;
     }
+    //printf("TrackFinder: nCandidateTPCtracks: %i\n", nCandidateTPCtracks);
 
-    //find for the second TPC track the matching ITS track
-    ITSgood2 = -1;
-    min = 10000000.;
-    for(Int_t i=0; i<nITStracks; i++)
+    Double_t* minDifferenceArr = new Double_t[nCandidateTPCtracks];
+    
+    //find ITS matches for good TPC tracks
+    Bool_t MatchedITStracks=kFALSE;
+    for (Int_t itpc=0;itpc<nCandidateTPCtracks;itpc++)
     {
-        Float_t deltatheta = TMath::Abs(thetaArr[TPCgood2]-thetaArr[ITStracksArr[i]]);
-        if(deltatheta > fMaxMatchingAngle) continue;
-        Float_t deltaphi = TMath::Abs(phiArr[TPCgood2]-phiArr[ITStracksArr[i]]);
-        if(deltaphi > fMaxMatchingAngle) continue;
-        //printf("ITS: %f  %f     %f  %f\n",deltaphi,deltatheta,thetaArr[ITStracksArr[itr1]],thetaArr[ITStracksArr[itr2]]);
-        if(deltatheta+deltaphi<min) //only the best matching pair
+        minDifferenceArr[nMatchedITStracks] = 10000000.;
+        MatchedITStracks=kFALSE;
+        for (Int_t iits=0; iits<nITStracks; iits++)
         {
-            min=deltatheta+deltaphi;
-            ITSgood2 = ITStracksArr[i];  //store the index of track in goodtracksArr[]
+            AliESDtrack* itstrack = pEvent->GetTrack(goodtracksArr[ITStracksArr[iits]]);
+            const AliExternalTrackParam* parits = itstrack->GetOuterParam();
+            AliESDtrack* tpctrack = pEvent->GetTrack(goodtracksArr[candidateTPCtracksArr[itpc]]);
+            const AliExternalTrackParam* tmp = tpctrack->GetInnerParam();
+            AliExternalTrackParam partpc(*tmp);  //make a copy to avoid tampering with original params
+            partpc.Rotate(parits->GetAlpha());
+            partpc.PropagateTo(parits->GetX(),field);
+            Float_t dtgl = TMath::Abs(partpc.GetTgl()-parits->GetTgl());
+            if(dtgl > fMaxMatchingAngle) continue;
+            Float_t dsnp = TMath::Abs(partpc.GetSnp()-parits->GetSnp());
+            if(dsnp > fMaxMatchingAngle) continue;
+            Float_t dy = TMath::Abs(partpc.GetY()-parits->GetY());
+            Float_t dz = TMath::Abs(partpc.GetZ()-parits->GetZ());
+            if(TMath::Sqrt(dy*dy+dz*dz) > fMaxMatchingDistance) continue;
+            if(dtgl+dsnp<minDifferenceArr[nMatchedITStracks]) //only the best matching pair
+            {
+                minDifferenceArr[nMatchedITStracks]=dtgl+dsnp;
+                matchedITStracksArr[nMatchedITStracks] = ITStracksArr[iits];
+                matchedTPCtracksArr[nMatchedITStracks] = candidateTPCtracksArr[itpc]; //this tells us minDifferenceArrwhich TPC track this ITS track belongs to
+                //printf("TrackFinder: Matching ITS to TPC:\n");
+                //printf("TrackFinder: minDifferenceArr[%i]=%.2f\n",nMatchedITStracks,minDifferenceArr[nMatchedITStracks]);
+                //printf("TrackFinder: matchedITStracksArr[%i]=%i\n",nMatchedITStracks,matchedITStracksArr[nMatchedITStracks]);
+                //printf("TrackFinder: matchedTPCtracksArr[%i]=%i\n",nMatchedITStracks,matchedTPCtracksArr[nMatchedITStracks]);
+                MatchedITStracks=kTRUE;;
+            }
         }
+        if (MatchedITStracks) nMatchedITStracks++;
     }
     
-    if ((ITSgood1 < 0) && (ITSgood2 < 0))
+    if (nMatchedITStracks==0) //no match in ITS
     {
-        delete [] goodtracksArr; goodtracksArr=0;
-        delete [] ITStracksArr; ITStracksArr=0;
-        delete [] TPCtracksArr; TPCtracksArr=0;
-        delete [] nPointsArr; nPointsArr=0;
-        delete [] phiArr; phiArr=0;
-        delete [] thetaArr; thetaArr=0;
-        delete [] distanceFromVertexArr; distanceFromVertexArr=0;
+        delete [] phiArr;
+        delete [] thetaArr;
+        delete [] minDifferenceArr;
+        delete [] goodtracksArr;
+        delete [] matchedITStracksArr;
+        delete [] candidateTPCtracksArr;
+        delete [] matchedTPCtracksArr;
+        delete [] ITStracksArr;
+        delete [] TPCtracksArr;
+        delete [] nPointsArr;
+        //printf("TrackFinder: No match in ITS\n");
         return kFALSE;
     }
 
+    //printf("TrackFinder: nMatchedITStracks: %i\n",nMatchedITStracks);
     //we found a cosmic
     fNMatchedCosmics++;
     
+    //Now we may have ended up with more matches than we want in the case there was
+    //no TPC match and there were many TPC tracks
+    //a cosmic in a scenario like this will only have produced 1 pair, the rest is garbage
+    //so take only the best pair.
+    //same applies when there are more matches than ITS tracks - means that one ITS track
+    //matches more TPC tracks.
+    if ((nMatchedITStracks>2 && !foundMatchTPC) || nMatchedITStracks>nITStracks)
+    {
+        Int_t imin = TMath::LocMin(nMatchedITStracks,minDifferenceArr);
+        matchedITStracksArr[0] = matchedITStracksArr[imin];
+        matchedTPCtracksArr[0] = matchedTPCtracksArr[imin];
+        nMatchedITStracks = 1;
+        //printf("TrackFinder: too many matches - take only the best one\n");
+        //printf("TrackFinder: LocMin in matched its tracks: %d\n",imin);
+        //printf("TrackFinder: matchedITStracksArr[0]=%d\n",matchedITStracksArr[0]);
+        //printf("TrackFinder: matchedTPCtracksArr[0]=%d\n",matchedTPCtracksArr[0]);
+    }
+
     ///////////////////////////////////////////////////////////////////////////
-    // convert indexes from local goodtrackarrays to global track index
-    TPCgood1 = goodtracksArr[TPCgood1];
-    TPCgood2 = goodtracksArr[TPCgood2];
-    ITSgood1 = (ITSgood1==-1) ? -1 : goodtracksArr[ITSgood1];
-    ITSgood2 = (ITSgood2==-1) ? -1 : goodtracksArr[ITSgood2];
+    outITSindexTArr.Set(nMatchedITStracks);
+    outTPCindexTArr.Set(nMatchedITStracks);
+    for (Int_t i=0;i<nMatchedITStracks;i++)
+    {
+        outITSindexTArr.AddAt( goodtracksArr[matchedITStracksArr[i]], i );
+        outTPCindexTArr.AddAt( goodtracksArr[matchedTPCtracksArr[i]], i );
+        //printf("TrackFinder: Fill the output\n");
+        //printf("TrackFinder: matchedITStracksArr[%d]=%d\n",i,matchedITStracksArr[i]);
+        //printf("TrackFinder: matchedTPCtracksArr[%d]=%d\n",i,matchedTPCtracksArr[i]);
+    }
+    //printf("TrackFinder: Size of outputarrays: %d, %d\n", outITSindexTArr.GetSize(), outTPCindexTArr.GetSize());
     ///////////////////////////////////////////////////////////////////////////
 
+    delete [] phiArr;
+    delete [] thetaArr;
+    delete [] minDifferenceArr;
     delete [] goodtracksArr;
+    delete [] candidateTPCtracksArr;
+    delete [] matchedITStracksArr;
+    delete [] matchedTPCtracksArr;
     delete [] ITStracksArr;
     delete [] TPCtracksArr;
     delete [] nPointsArr;
-    delete [] phiArr;
-    delete [] thetaArr;
-    delete [] distanceFromVertexArr;
     return kTRUE;
 }
 //_______________________________________________________________________________
@@ -883,17 +906,13 @@ AliRelAlignerKalman::AliRelAlignerKalman(const AliRelAlignerKalman& a):
     fRejectOutliers(a.fRejectOutliers),
     fCalibrationMode(a.fCalibrationMode),
     fFillHistograms(a.fFillHistograms),
-    fRequireDoubleTPCtrack(a.fRequireDoubleTPCtrack),
+    fRequireMatchInTPC(a.fRequireMatchInTPC),
     fApplyCovarianceCorrection(a.fApplyCovarianceCorrection),
     fCuts(a.fCuts),
     fMinPointsVol1(a.fMinPointsVol1),
     fMinPointsVol2(a.fMinPointsVol2),
     fMinMom(a.fMinMom),
     fMaxMom(a.fMaxMom),
-    fMinAbsSinPhi(a.fMinAbsSinPhi),
-    fMaxAbsSinPhi(a.fMaxAbsSinPhi),
-    fMinSinTheta(a.fMinSinTheta),
-    fMaxSinTheta(a.fMaxSinTheta),
     fMaxMatchingAngle(a.fMaxMatchingAngle),
     fMaxMatchingDistance(a.fMaxMatchingDistance),  //in cm
     fNTracks(a.fNTracks),
@@ -934,17 +953,13 @@ AliRelAlignerKalman& AliRelAlignerKalman::operator=(const AliRelAlignerKalman& a
     fRejectOutliers=a.fRejectOutliers;
     fCalibrationMode=a.fCalibrationMode;
     fFillHistograms=a.fFillHistograms;
-    fRequireDoubleTPCtrack=a.fRequireDoubleTPCtrack;
+    fRequireMatchInTPC=a.fRequireMatchInTPC;
     fApplyCovarianceCorrection=a.fApplyCovarianceCorrection;
     fCuts=a.fCuts;
     fMinPointsVol1=a.fMinPointsVol1;
     fMinPointsVol2=a.fMinPointsVol2;
     fMinMom=a.fMinMom;
     fMaxMom=a.fMaxMom;
-    fMinAbsSinPhi=a.fMinAbsSinPhi;
-    fMaxAbsSinPhi=a.fMaxAbsSinPhi;
-    fMinSinTheta=a.fMinSinTheta;
-    fMaxSinTheta=a.fMaxSinTheta;
     fMaxMatchingAngle=a.fMaxMatchingAngle;
     fMaxMatchingDistance=a.fMaxMatchingDistance,  //in c;
     fNTracks=a.fNTracks;
@@ -967,7 +982,8 @@ AliRelAlignerKalman& AliRelAlignerKalman::operator=(const AliRelAlignerKalman& a
 //______________________________________________________________________________
 Bool_t AliRelAlignerKalman::MisalignTrack( AliExternalTrackParam* tr, const TVectorD& misal )
 {
-    //Misalign the track
+    //implements the system model - 
+    //misaligns a track
     
     Double_t x = tr->GetX();
     Double_t alpha = tr->GetAlpha();
@@ -1020,16 +1036,34 @@ Bool_t AliRelAlignerKalman::MisalignTrack( AliExternalTrackParam* tr, const TVec
 }
 
 //______________________________________________________________________________
-void AliRelAlignerKalman::ResetCovariance()
+void AliRelAlignerKalman::ResetCovariance( const Double_t number )
 {
-    //Resets the covariance of the fit to a default value
-    fPXcov->UnitMatrix();
-    (*fPXcov)(0,0) = .1*.1; //psi (rad)
-    (*fPXcov)(1,1) = .1*.1; //theta (rad
-    (*fPXcov)(2,2) = .1*.1; //phi (rad)
-    (*fPXcov)(3,3) = 1.*1.; //x (cm)
-    (*fPXcov)(4,4) = 1.*1.; //y (cm)
-    (*fPXcov)(5,5) = 1.*1.; //z (cm)
-    (*fPXcov)(6,6) = .1*.1;//drift slope correction (fraction: 1. is 100%)
-    (*fPXcov)(7,7) = 1.*1.; //offset (cm)
+    //Resets the covariance to the default if arg=0 or resets the off diagonals
+    //to zero and releases the diagonals by factor arg.
+    if (number==0.)
+    {
+        //Resets the covariance of the fit to a default value
+        fPXcov->UnitMatrix();
+        (*fPXcov)(0,0) = .01*.01; //psi (rad)
+        (*fPXcov)(1,1) = .01*.01; //theta (rad
+        (*fPXcov)(2,2) = .01*.01; //phi (rad)
+        (*fPXcov)(3,3) = .5*.5; //x (cm)
+        (*fPXcov)(4,4) = .5*.5; //y (cm)
+        (*fPXcov)(5,5) = .5*.5; //z (cm)
+        (*fPXcov)(6,6) = .05*.05;//drift velocity correction
+        (*fPXcov)(7,7) = 1.*1.; //offset (cm)
+    }
+    else
+    {
+        for (Int_t z=0;z<fgkNSystemParams;z++)
+        {
+            for (Int_t zz=0;zz<fgkNSystemParams;zz++)
+            {
+                if (zz==z) continue;
+                (*fPXcov)(zz,z) = 0.;
+                (*fPXcov)(z,zz) = 0.;
+            }
+            (*fPXcov)(z,z)*=number;
+        }
+    }
 }

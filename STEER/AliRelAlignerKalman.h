@@ -48,6 +48,22 @@ public:
     
     void Print(Option_t* option="") const;
 
+    Double_t GetPsi() {return (*fPX)(0);}
+    Double_t GetTheta() {return (*fPX)(1);}
+    Double_t GetPhi() {return (*fPX)(2);}
+    Double_t GetX() {return (*fPX)(3);}
+    Double_t GetY() {return (*fPX)(4);}
+    Double_t GetZ() {return (*fPX)(5);}
+    Double_t GetTPCdriftCorr() {return (*fPX)(6);}
+    Double_t GetTPCoffset() {return (*fPX)(7);}
+    Double_t GetPsiErr() {return TMath::Sqrt((*fPXcov)(0,0));}
+    Double_t GetThetaErr() {return TMath::Sqrt((*fPXcov)(1,1));}
+    Double_t GetPhiErr() {return TMath::Sqrt((*fPXcov)(2,2));}
+    Double_t GetXErr() {return TMath::Sqrt((*fPXcov)(3,3));}
+    Double_t GetYErr() {return TMath::Sqrt((*fPXcov)(4,4));}
+    Double_t GetZErr() {return TMath::Sqrt((*fPXcov)(5,5));}
+    Double_t GetTPCdriftCorrErr() {return TMath::Sqrt((*fPXcov)(6,6));}
+    Double_t GetTPCoffsetErr() {return TMath::Sqrt((*fPXcov)(7,7));}
     void GetMeasurement( TVectorD& mes ) { mes = *fPMeasurement; }
     void GetMeasurementCov( TMatrixDSym& cov ) { cov = *fPMeasurementCov; }
     void GetState( TVectorD& state ) { state = *fPX; }
@@ -60,7 +76,7 @@ public:
     void SetSeed( const TVectorD& seed, const TMatrixDSym& seedCov ) {*fPX = seed; *fPXcov = seedCov; }
 
     //Expert methods:
-    Bool_t FindCosmicTrackletNumbersInEvent( Int_t& ITSgood1, Int_t& TPCgood1, Int_t& ITSgood2, Int_t& TPCgood2, const AliESDEvent* pEvent );
+    Bool_t FindCosmicTrackletNumbersInEvent( TArrayI& outITStracksTArr, TArrayI& outTPCtracksTArr, const AliESDEvent* pEvent );
     Bool_t PrepareUpdate();
     Bool_t Update();
     void SetRefSurface( const Double_t x, const Double_t alpha );
@@ -68,7 +84,7 @@ public:
     void PrintCorrelationMatrix();
     void PrintCovarianceCorrection();
     void PrintSystemMatrix();
-    void ResetCovariance();
+    void ResetCovariance( const Double_t number=0. );
     Double_t* GetStateArr() { return fPX->GetMatrixArray(); }
     Double_t* GetStateCovArr() { return fPXcov->GetMatrixArray(); }
     Double_t* GetMeasurementArr() { return fPMeasurement->GetMatrixArray(); }
@@ -90,7 +106,13 @@ public:
     void GetCovarianceCorrection( TMatrixDSym& c ) {c=*fPMeasurementCovCorr;}
     void SetTrackParams1( const AliExternalTrackParam* exparam );
     void SetTrackParams2( const AliExternalTrackParam* exparam );
+    void SetMinPointsVol1( const Int_t min ) {fMinPointsVol1=min;}
+    void SetMinPointsVol2( const Int_t min ) {fMinPointsVol2=min;}
+    void SetRequireMatchInTPC( const Bool_t s=kTRUE ) {fRequireMatchInTPC = s;}
+    void SetNHistogramBins( const Int_t n ) {fNHistogramBins = n;}
     void SetQ( const Double_t Q = 1e-10 ) { fQ = Q; }
+    void SetMaxMatchingDistance( const Double_t m ) {fMaxMatchingDistance=m;}
+    void SetMaxMatchingAngle( const Double_t m ) {fMaxMatchingAngle=m;}
     static Bool_t MisalignTrack( AliExternalTrackParam* tr, const TVectorD& misalignment );
     static void Angles( TVectorD &angles, const TMatrixD &rotmat );
     static void RotMat( TMatrixD& R, const TVectorD& angles );
@@ -129,17 +151,13 @@ private:
     Bool_t fRejectOutliers; //whether to do outlier rejection in the Kalman filter
     Bool_t fCalibrationMode;            //are we running in calibration mode?
     Bool_t fFillHistograms;     //whether to fill the histograms with residuals
-    Bool_t fRequireDoubleTPCtrack;
+    Bool_t fRequireMatchInTPC;  //when looking for a cosmic in event, require that TPC has 2 matching segments
     Bool_t fApplyCovarianceCorrection;         //add the correction to the covariance of measurement
     Bool_t fCuts;    //track cuts?
     Int_t fMinPointsVol1;   //mininum number of points in volume 1
     Int_t fMinPointsVol2;   //mininum number of points in volume 2
     Double_t fMinMom;       //min momentum of track for track cuts
     Double_t fMaxMom;       //max momentum of track for track cuts
-    Double_t fMinAbsSinPhi; //more cuts
-    Double_t fMaxAbsSinPhi; //more cuts
-    Double_t fMinSinTheta;  //cuts
-    Double_t fMaxSinTheta;  //cuts
     Double_t fMaxMatchingAngle; //cuts
     Double_t fMaxMatchingDistance; //cuts
     
@@ -148,9 +166,11 @@ private:
     Int_t fNUpdates; //number of successful Kalman updates
     Int_t fNOutliers; //number of outliers
     Int_t fNMatchedCosmics; //number of cosmic events with matching tracklets
+    Int_t fNMatchedTPCtracklets;
     Int_t fNProcessedEvents; //number of processed events
 
     //Calibration histograms
+    Int_t fNHistogramBins;   //how many bins in control histograms
     TH1D* fPMes0Hist;  //histo of x measurement
     TH1D* fPMes1Hist;  //histo of y measurement
     TH1D* fPMes2Hist; //histo of phi measurement
