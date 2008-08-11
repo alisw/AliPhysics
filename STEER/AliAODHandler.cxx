@@ -35,6 +35,15 @@ AliAODHandler::AliAODHandler() :
     AliVEventHandler(),
     fIsStandard(kTRUE),
     fNeedsHeaderReplication(kFALSE),
+    fNeedsTracksBranchReplication(kFALSE),
+    fNeedsVerticesBranchReplication(kFALSE),
+    fNeedsV0sBranchReplication(kFALSE),
+    fNeedsTrackletsBranchReplication(kFALSE),
+    fNeedsPMDClustersBranchReplication(kFALSE),
+    fNeedsJetsBranchReplication(kFALSE),
+    fNeedsFMDClustersBranchReplication(kFALSE),
+    fNeedsCaloClustersBranchReplication(kFALSE),
+    fAODIsReplicated(kFALSE),
     fAODEvent(NULL),
     fTreeA(NULL),
     fFileA(NULL),
@@ -48,6 +57,15 @@ AliAODHandler::AliAODHandler(const char* name, const char* title):
     AliVEventHandler(name, title),
     fIsStandard(kTRUE),
     fNeedsHeaderReplication(kFALSE),
+    fNeedsTracksBranchReplication(kFALSE),
+    fNeedsVerticesBranchReplication(kFALSE),
+    fNeedsV0sBranchReplication(kFALSE),
+    fNeedsTrackletsBranchReplication(kFALSE),
+    fNeedsPMDClustersBranchReplication(kFALSE),
+    fNeedsJetsBranchReplication(kFALSE),
+    fNeedsFMDClustersBranchReplication(kFALSE),
+    fNeedsCaloClustersBranchReplication(kFALSE),
+    fAODIsReplicated(kFALSE),
     fAODEvent(NULL),
     fTreeA(NULL),
     fFileA(NULL),
@@ -108,6 +126,9 @@ Bool_t AliAODHandler::FinishEvent()
     fAODEvent->MakeEntriesReferencable();
     FillTree();
     if (fIsStandard) fAODEvent->ResetStd();
+    // Reset AOD replication flag
+    fAODIsReplicated = kFALSE;
+    
     return kTRUE;
 }
 

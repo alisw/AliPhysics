@@ -37,6 +37,15 @@ class AliAODHandler : public AliVEventHandler {
     //
     virtual void         SetCreateNonStandardAOD()   {fIsStandard = kFALSE;}
     virtual void         SetNeedsHeaderReplication() {fNeedsHeaderReplication = kTRUE;}
+    virtual void         SetNeedsTracksBranchReplication() {fNeedsTracksBranchReplication = kTRUE;}
+    virtual void         SetNeedsVerticesBranchReplication() {fNeedsVerticesBranchReplication = kTRUE;}
+    virtual void         SetNeedsV0sBranchReplication() {fNeedsV0sBranchReplication = kTRUE;}
+    virtual void         SetNeedsTrackletsBranchReplication() {fNeedsTrackletsBranchReplication = kTRUE;}
+    virtual void         SetNeedsPMDClustersBranchReplication() {fNeedsPMDClustersBranchReplication = kTRUE;}
+    virtual void         SetNeedsJetsBranchReplication() {fNeedsJetsBranchReplication = kTRUE;}
+    virtual void         SetNeedsFMDClustersBranchReplication() {fNeedsFMDClustersBranchReplication = kTRUE;}
+    virtual void         SetNeedsCaloClustersBranchReplication() {fNeedsCaloClustersBranchReplication = kTRUE;}
+    virtual void         SetAODIsReplicated() {fAODIsReplicated = kTRUE;}
     //
     AliAODEvent*         GetAOD()  {return fAODEvent;}
     virtual TTree*       GetTree() const {return fTreeA;}
@@ -46,14 +55,33 @@ class AliAODHandler : public AliVEventHandler {
     void                 AddBranch(const char* cname, void* addobj);
     Bool_t               IsStandard() {return fIsStandard;}
     Bool_t               NeedsHeaderReplication() {return  fNeedsHeaderReplication;}
+    Bool_t               NeedsTracksBranchReplication() {return  fNeedsTracksBranchReplication;}
+    Bool_t               NeedsVerticesBranchReplication() {return  fNeedsVerticesBranchReplication;}
+    Bool_t               NeedsV0sBranchReplication() {return  fNeedsV0sBranchReplication;}
+    Bool_t               NeedsTrackletsBranchReplication() {return  fNeedsTrackletsBranchReplication;}
+    Bool_t               NeedsPMDClustersBranchReplication() {return  fNeedsPMDClustersBranchReplication;}
+    Bool_t               NeedsJetsBranchReplication() {return  fNeedsJetsBranchReplication;}
+    Bool_t               NeedsFMDClustersBranchReplication() {return  fNeedsFMDClustersBranchReplication;}
+    Bool_t               NeedsCaloClustersBranchReplication() {return  fNeedsCaloClustersBranchReplication;}
+    Bool_t               AODIsReplicated() {return fAODIsReplicated;}
     //
     void                 SetInputTree(TTree* /*tree*/) {;}
  private:
     AliAODHandler(const AliAODHandler&);             // Not implemented
     AliAODHandler& operator=(const AliAODHandler&);  // Not implemented
  private:
-    Bool_t                   fIsStandard;             // Flag for standard aod creation
-    Bool_t                   fNeedsHeaderReplication; // Flag for header replication
+    Bool_t                   fIsStandard;                         // Flag for standard aod creation
+    Bool_t                   fNeedsHeaderReplication;             // Flag for header replication
+    Bool_t                   fNeedsTracksBranchReplication;       // Flag for tracks replication
+    Bool_t                   fNeedsVerticesBranchReplication;     // Flag for vertices replication
+    Bool_t                   fNeedsV0sBranchReplication;          // Flag for V0s replication
+    Bool_t                   fNeedsTrackletsBranchReplication;    // Flag for Tracklets replication
+    Bool_t                   fNeedsPMDClustersBranchReplication;  // Flag for PMDClusters replication
+    Bool_t                   fNeedsJetsBranchReplication;         // Flag for Jets replication
+    Bool_t                   fNeedsFMDClustersBranchReplication;  // Flag for FMDClusters replication
+    Bool_t                   fNeedsCaloClustersBranchReplication; // Flag for CaloClusters replication
+    Bool_t                   fAODIsReplicated;                    // Flag true if replication as been executed
+    
     AliAODEvent             *fAODEvent;               //! Pointer to the AOD event
     TTree                   *fTreeA;                  //! tree for AOD persistency
     TFile                   *fFileA;                  //! Output file
