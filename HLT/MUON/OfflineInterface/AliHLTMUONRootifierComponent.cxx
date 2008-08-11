@@ -140,7 +140,7 @@ int AliHLTMUONRootifierComponent::GetOutputDataTypes(AliHLTComponentDataTypeList
 	/// Inherited from AliHLTComponent. Returns the output data types.
 	
 	tgtList.push_back(kAliHLTAnyDataType);
-	return 1;
+	return tgtList.size();
 }
 
 

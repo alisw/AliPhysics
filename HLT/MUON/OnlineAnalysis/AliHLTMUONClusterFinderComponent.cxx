@@ -122,7 +122,7 @@ int AliHLTMUONClusterFinderComponent::GetOutputDataTypes(AliHLTComponentDataType
 	assert( list.empty() );
 	list.push_back( AliHLTMUONConstants::ClusterStoreDataType() );
 	list.push_back( AliHLTMUONConstants::RecHitsBlockDataType() );
-	return 1;
+	return list.size();
 }
 
 

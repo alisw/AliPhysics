@@ -119,7 +119,7 @@ int AliHLTMUONDecisionComponent::GetOutputDataTypes(AliHLTComponentDataTypeList&
 	assert( list.empty() );
 	list.push_back( AliHLTMUONConstants::SinglesDecisionBlockDataType() );
 	list.push_back( AliHLTMUONConstants::PairsDecisionBlockDataType() );
-	return 1;
+	return list.size();
 }
 
 
