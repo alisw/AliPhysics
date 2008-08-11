@@ -84,8 +84,9 @@ void AliAnalysisTaskProtonsQA::CreateOutputObjects() {
   //proton analysis object
   fAnalysis = new AliProtonAnalysis();
   fAnalysis->SetQAOn();
+  fAnalysis->InitQA();
 
-  //Use of TPConly tracks                                                                                                                                                      
+  //Use of TPConly tracks
   fAnalysis->SetQAYPtBins(10, -0.5, 0.5, 12, 0.5, 0.9); //TPC only
   fAnalysis->UseTPCOnly();
   fAnalysis->SetMinTPCClusters(50);
