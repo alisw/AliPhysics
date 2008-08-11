@@ -620,6 +620,9 @@ void AliITSPlaneEffSPD::InitHistos() {
   TString histnameClusErrX="HistClusErrX_mod_";
   TString histnameClusErrZ="HistClusErrZ_mod_";
 //
+
+  TH1::AddDirectory(kFALSE);
+
   fHisResX=new TH1F*[kNHisto];
   fHisResZ=new TH1F*[kNHisto];
   fHisResXZ=new TH2F*[kNHisto];
@@ -723,6 +726,9 @@ void AliITSPlaneEffSPD::InitHistos() {
     fHisClusErrZ[nhist]->SetTitle(aux.Data());
 
   }
+
+  TH1::AddDirectory(kTRUE);
+
 return;
 }
 //__________________________________________________________
