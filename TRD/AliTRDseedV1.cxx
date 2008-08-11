@@ -60,6 +60,8 @@ AliTRDseedV1::AliTRDseedV1(Int_t plane)
   //
   // Constructor
   //
+	printf("AliTRDseedV1::AliTRDseedV1()\n");
+
 	for(int islice=0; islice < knSlices; islice++) fdEdx[islice] = 0.;
 	for(int ispec=0; ispec<AliPID::kSPECIES; ispec++) fProb[ispec]  = -1.;
 }
@@ -78,7 +80,7 @@ AliTRDseedV1::AliTRDseedV1(const AliTRDseedV1 &ref)
   // Copy Constructor performing a deep copy
   //
 
-	//AliInfo("");
+	printf("AliTRDseedV1::AliTRDseedV1(const AliTRDseedV1 &)\n");
 	for(int islice=0; islice < knSlices; islice++) fdEdx[islice] = ref.fdEdx[islice];
 	for(int ispec=0; ispec<AliPID::kSPECIES; ispec++) fProb[ispec] = ref.fProb[ispec];
 }
@@ -91,7 +93,7 @@ AliTRDseedV1& AliTRDseedV1::operator=(const AliTRDseedV1 &ref)
   // Assignment Operator using the copy function
   //
 
-	//AliInfo("");
+  printf("AliTRDseedV1::operator=()\n");
 	if(this != &ref){
 		ref.Copy(*this);
 	}
@@ -106,7 +108,7 @@ AliTRDseedV1::~AliTRDseedV1()
   // Destructor. The RecoParam object belongs to the underlying tracker.
   //
 
-	//AliInfo(Form("fOwner[%s]", fOwner?"YES":"NO"));
+	printf("I-AliTRDseedV1::~AliTRDseedV1() : Owner[%s]\n", IsOwner()?"YES":"NO");
 
 	if(IsOwner()) 
 		for(int itb=0; itb<knTimebins; itb++){
@@ -339,7 +341,7 @@ void AliTRDseedV1::SetOwner(Bool_t own)
 			if(!fClusters[ic]) continue;
 			fClusters[ic] = new AliTRDcluster(*fClusters[ic]);
 		}
-		SetBit(1);
+		SetBit(kOwner);
 	} else {
 		if(IsOwner()){
 			for(int ic=0; ic<knTimebins; ic++){
@@ -348,7 +350,7 @@ void AliTRDseedV1::SetOwner(Bool_t own)
 				//fClusters[ic] = tracker->GetClusters(index) TODO
 			}
 		}
-		SetBit(1, kFALSE);
+		SetBit(kOwner, kFALSE);
 	}
 }
 
@@ -734,7 +736,7 @@ Bool_t AliTRDseedV1::Fit()
 		if(dzdx * fZref[1] < 0.){
 			AliInfo("tracklet direction does not correspond to the track direction. TODO.");
 		}
-		SetBit(2, kTRUE); // mark pad row crossing
+		SetBit(kRowCross, kTRUE); // mark pad row crossing
 		fCross[0] = xc[nc]; fCross[2] = zc[nc]; fCross[3] = sz[nc]; 
 		fitterZ.AddPoint(&xc[nc], zc[nc], sz[nc]);
 		fitterZ.Eval();

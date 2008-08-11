@@ -46,6 +46,8 @@ AliTRDtrackV1::AliTRDtrackV1() : AliKalmanTrack()
   //
   // Default constructor
   //
+  printf("AliTRDtrackV1::AliTRDtrackV1()\n");
+
   for(int i =0; i<3; i++) fBudget[i] = 0.;
   
   Float_t pid = 1./AliPID::kSPECIES;
@@ -66,6 +68,8 @@ AliTRDtrackV1::AliTRDtrackV1(const AliTRDtrackV1 &ref) : AliKalmanTrack(ref)
   //
   // Copy constructor
   //
+
+  printf("AliTRDtrackV1::AliTRDtrackV1(const AliTRDtrackV1 &)\n");
 
   for(int ip=0; ip<kNplane; ip++){ 
     fTrackletIndex[ip] = ref.fTrackletIndex[ip];
@@ -145,7 +149,7 @@ AliTRDtrackV1::AliTRDtrackV1(AliTRDseedV1 *trklts, const Double_t p[5], const Do
 
   Double_t pp[5] = { p[0]    
                    , p[1]
-                   , p[2]
+                   , x*p[4] - p[2]
                    , p[3]
                    , p[4]*cnv      };
 
@@ -188,12 +192,14 @@ AliTRDtrackV1::AliTRDtrackV1(AliTRDseedV1 *trklts, const Double_t p[5], const Do
 //_______________________________________________________________
 AliTRDtrackV1::~AliTRDtrackV1()
 {
+  //AliInfo("");
+  printf("I-AliTRDtrackV1::~AliTRDtrackV1() : Owner[%s]\n", TestBit(kOwner)?"YES":"NO");
   if(fBackupTrack) {
     delete fBackupTrack;
   }
   fBackupTrack = 0x0;
 
-  if(TestBit(1)){
+  if(TestBit(kOwner)){
     for(Int_t ip=0; ip<kNplane; ip++){
       if(fTracklet[ip]) delete fTracklet[ip];
       fTracklet[ip] = 0x0;
@@ -567,13 +573,13 @@ void AliTRDtrackV1::SetOwner()
   // Toggle ownership of tracklets
   //
 
-  if(TestBit(1)) return;
+  if(TestBit(kOwner)) return;
   for (Int_t ip = 0; ip < kNplane; ip++) {
     if(fTrackletIndex[ip] == 0xffff) continue;
     fTracklet[ip] = new AliTRDseedV1(*fTracklet[ip]);
     fTracklet[ip]->SetOwner();
   }
-  SetBit(1);
+  SetBit(kOwner);
 }
 
 //_______________________________________________________________

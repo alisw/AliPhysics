@@ -39,9 +39,10 @@ public:
         , kNslice    =   3
         , kNMLPslice =   8 };
   
-  enum AliTRDPIDMethod {
-          kNN = 0
-        , kLQ = 1 };
+  enum AliTRDtrackStatus {
+          kOwner   = BIT(1)
+        , kStopped = BIT(2) 
+  };
 
   AliTRDtrackV1();
   AliTRDtrackV1(AliTRDseedV1 *trklts, const Double_t p[5], const Double_t cov[15], Double_t x, Double_t alpha);
@@ -69,8 +70,8 @@ public:
   Int_t          GetTrackletIndex(Int_t plane) const          { return (plane>=0 && plane<kNplane) ? fTrackletIndex[plane] : -1;} 
   UShort_t*      GetTrackletIndexes() {return &fTrackletIndex[0];}
   
-  Bool_t         IsOwner() const {return TestBit(1);};
-  Bool_t         IsStopped() const {return TestBit(2);};
+  Bool_t         IsOwner() const {return TestBit(kOwner);};
+  Bool_t         IsStopped() const {return TestBit(kStopped);};
   
   void           MakeBackupTrack();
   Bool_t         PropagateTo(Double_t xr, Double_t x0 = 8.72, Double_t rho = 5.86e-3);
@@ -79,7 +80,7 @@ public:
   void           SetBudget(Int_t i, Double_t b) {if(i>=0 && i<3) fBudget[i] = b;}
   void           SetNumberOfClusters();
   void           SetOwner();
-  void           SetStopped(Bool_t stop) {SetBit(2, stop);}
+  void           SetStopped(Bool_t stop) {SetBit(kStopped, stop);}
   void           SetTracklet(AliTRDseedV1 *trklt,  Int_t index);
   inline void    SetReconstructor(const AliTRDReconstructor *rec);
   inline Float_t StatusForTOF();
