@@ -7,6 +7,7 @@
 #pragma link off all functions;
 
 #pragma link C++ class  AliTRDtrackInfoGen+;
+#pragma link C++ class  AliTRDtrackingResolution+;
 #pragma link C++ class  AliTRDtrackingEfficiency+;
 #pragma link C++ class  AliTRDtrackingEfficiencyCombined+;
 #pragma link C++ class  AliTRDtrackInfo+;
