@@ -45,7 +45,9 @@ class AliITSOnlineSDDInjectors : public AliITSOnlineSDD {
     fPadStatusCutForFit=cutval;
   }
   void SetDefaults();
-  
+  void SetTimeStep(Float_t tstep) {
+    fTimeStep=tstep;
+  }
 
   TGraphErrors* GetTimeVsDistGraph(Int_t jpad) const;
   TGraphErrors* GetDriftSpeedGraph() const;
@@ -55,6 +57,7 @@ class AliITSOnlineSDDInjectors : public AliITSOnlineSDD {
   Float_t GetDriftSpeedErr(Int_t jpad) const{return fDriftSpeedErr[jpad];}
   Float_t GetTimeBinZero() const{return fTbZero;}
 
+  Float_t GetTimeStep() const{return fTimeStep;}
   Int_t GetAnodeNumber(Int_t iInjPad) const;
   Int_t GetInjPadNumberFromAnode(Int_t nAnode) const;
   Int_t GetInjPadStatus(Int_t jpad) const;  
@@ -98,6 +101,7 @@ class AliITSOnlineSDDInjectors : public AliITSOnlineSDD {
   static const Float_t fgkDefaultMaxSpeed;   // Default for fMaxDriftSpeed
   static const Float_t fgkDefaultMaxErr;     // Default for fMaxDriftSpeedErr
   static const Int_t   fgkDefaultPolOrder;   // Default for fPolOrder
+  static const Float_t fgkDefaultTimeStep;   // Default for fTimeStep
   static const UShort_t   fgkDefaultTbMin[kInjLines];  // Defaults for fTbMin
   static const UShort_t   fgkDefaultTbMax[kInjLines];  // Defaults for fTbMax
 
@@ -125,7 +129,8 @@ class AliITSOnlineSDDInjectors : public AliITSOnlineSDD {
   Int_t fLastPadForFit;              // last injector pad used in fit
   Int_t fPadStatusCutForFit;         // minimum value of pad status for fit
 
+  Float_t fTimeStep;                 // time bin value (25 or 50 ns)
 
-  ClassDef(AliITSOnlineSDDInjectors,3)
+  ClassDef(AliITSOnlineSDDInjectors,4)
 };
 #endif

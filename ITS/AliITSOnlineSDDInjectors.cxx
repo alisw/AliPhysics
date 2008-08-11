@@ -35,22 +35,25 @@ const Float_t AliITSOnlineSDDInjectors::fgkDefaultMinSpeed = 5.5;
 const Float_t AliITSOnlineSDDInjectors::fgkDefaultMaxSpeed = 9.0;
 const Float_t AliITSOnlineSDDInjectors::fgkDefaultMaxErr = 1.5;
 const Int_t   AliITSOnlineSDDInjectors::fgkDefaultPolOrder = 3;
-const UShort_t AliITSOnlineSDDInjectors::fgkDefaultTbMin[kInjLines] = {20,90,170};
-const UShort_t AliITSOnlineSDDInjectors::fgkDefaultTbMax[kInjLines] = {50,160,240};
+const Float_t AliITSOnlineSDDInjectors::fgkDefaultTimeStep = 50.;
+const UShort_t AliITSOnlineSDDInjectors::fgkDefaultTbMin[kInjLines] = {10,50,100};
+const UShort_t AliITSOnlineSDDInjectors::fgkDefaultTbMax[kInjLines] = {20,70,120};
 
 //______________________________________________________________________
-AliITSOnlineSDDInjectors::AliITSOnlineSDDInjectors():AliITSOnlineSDD(),fHisto(),fTbZero(0.),fParam(),fPolOrder(0),fMinDriftSpeed(0.),fMaxDriftSpeed(0.),fMaxDriftSpeedErr(0.),fLowThreshold(0.),fHighThreshold(0.),fFirstPadForFit(0),fLastPadForFit(0),fPadStatusCutForFit(0)
+AliITSOnlineSDDInjectors::AliITSOnlineSDDInjectors():AliITSOnlineSDD(),fHisto(),fTbZero(0.),fParam(),fPolOrder(0),fMinDriftSpeed(0.),fMaxDriftSpeed(0.),fMaxDriftSpeedErr(0.),fLowThreshold(0.),fHighThreshold(0.),fFirstPadForFit(0),fLastPadForFit(0),fPadStatusCutForFit(0),fTimeStep(0.)
 {
   // default constructor
   SetPositions();
   SetDefaults();
+  SetTimeStep(fgkDefaultTimeStep);
 }
 //______________________________________________________________________
-AliITSOnlineSDDInjectors::AliITSOnlineSDDInjectors(Int_t nddl, Int_t ncarlos, Int_t sid):AliITSOnlineSDD(nddl,ncarlos,sid),fHisto(),fTbZero(0.),fParam(),fPolOrder(0),fMinDriftSpeed(0.),fMaxDriftSpeed(0.),fMaxDriftSpeedErr(0.),fLowThreshold(0.),fHighThreshold(0.),fFirstPadForFit(0),fLastPadForFit(0),fPadStatusCutForFit(0)
+AliITSOnlineSDDInjectors::AliITSOnlineSDDInjectors(Int_t nddl, Int_t ncarlos, Int_t sid):AliITSOnlineSDD(nddl,ncarlos,sid),fHisto(),fTbZero(0.),fParam(),fPolOrder(0),fMinDriftSpeed(0.),fMaxDriftSpeed(0.),fMaxDriftSpeedErr(0.),fLowThreshold(0.),fHighThreshold(0.),fFirstPadForFit(0),fLastPadForFit(0),fPadStatusCutForFit(0),fTimeStep(0.)
 { 
 // standard constructor
   SetPositions();
   SetDefaults();
+  SetTimeStep(fgkDefaultTimeStep);
 }
 //______________________________________________________________________
 AliITSOnlineSDDInjectors::~AliITSOnlineSDDInjectors(){
@@ -293,17 +296,17 @@ void AliITSOnlineSDDInjectors::CalcDriftSpeed(Int_t jpad){
   if(npt>1){ 
     Float_t slope=(sumWEI*sumXY-sumY*sumX)/(sumWEI*sumXX-sumX*sumX);
     Float_t eslope=TMath::Sqrt(sumWEI/(sumWEI*sumXX-sumX*sumX));
-    if(slope!=0){
-      vel=1./slope*10000./25.;// micron/ns
-      evel=eslope/slope/slope*10000./25.;// micron/ns
+    if(slope!=0 && fTimeStep>0.){
+      vel=1./slope*10000./fTimeStep;// micron/ns
+      evel=eslope/slope/slope*10000./fTimeStep;// micron/ns
     }
   }
   if(npt==1){
     Float_t slope=(sumY-tzero)/sumX;
     Float_t eslope=erry/sumX;
-    if(slope!=0){
-      vel=1./slope*10000./25.;// micron/ns    
-      evel=eslope/slope/slope*10000./25.;// micron/ns
+    if(slope!=0 && fTimeStep>0.){
+      vel=1./slope*10000./fTimeStep;// micron/ns    
+      evel=eslope/slope/slope*10000./fTimeStep;// micron/ns
     }
   }
   if(vel>fMaxDriftSpeed||vel<fMinDriftSpeed || evel>fMaxDriftSpeedErr){ 
