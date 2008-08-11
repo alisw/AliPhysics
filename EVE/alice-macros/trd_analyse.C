@@ -5,12 +5,13 @@
 // function ExportToCINT 
 // 
 // Usage:
-// .L trd_analysis.C
+// .L trd_analyse.C
 // analyseXXX(ptr)
 // 
 // Author:
 // Alex Bercuci (A.Bercuci@gsi.de)
 // 
+//_______________________________________________________
 void analyseDigits(AliEveTRDDigits *digits = 0x0)
 {
 // Simple print digits from a detector
@@ -36,13 +37,13 @@ void analyseDigits(AliEveTRDDigits *digits = 0x0)
   data->Compress(1);
 }
 
-
+//_______________________________________________________
 void analyseClusters(TEvePointSet *points = 0x0)
 {
 // print some info about clusters in one detector or 
 // attached to tracks.
   if(!points) {
-    Info("analyseClusters", "Invalid points set.");
+    Info("analyseClusters", "Invalid clusters set.");
     return;
   }
 
@@ -54,16 +55,54 @@ void analyseClusters(TEvePointSet *points = 0x0)
   }
 }
 
-void analyseTracklet(TEveLine *line)
+//_______________________________________________________
+void analyseTracklet(AliEveTRDTracklet *line)
 {
 // print tracklet information
   if(!line) {
-    Info("analyseTracklet", "Invalid line.");
+    Info("analyseTracklet", "Invalid tracklet.");
     return;
   }
   
   AliTRDseedV1 *tracklet = 0x0;
-  tracklet = (AliTRDseedV1*)line->GetUserData(0);
+  tracklet = (AliTRDseedV1*)line->GetUserData();
   tracklet->Print();
 }
 
+//_______________________________________________________
+void analyseTrack(AliEveTRDTrack *line)
+{
+// print tracklet information
+  if(!line) {
+    Info("analyseTrack", "Invalid track.");
+    return;
+  }
+  
+  AliTRDtrackV1 *track = 0x0;
+  track = (AliTRDtrackV1*)line->GetUserData();
+  
+  AliTRDReconstructor *rec = new AliTRDReconstructor();
+  rec->SetRecoParam(AliTRDrecoParam::GetLowFluxParam());
+  track->SetReconstructor(rec);
+
+  rec->SetOption("!nn");
+  track->CookPID();
+  printf("PID LQ : "); for(int is=0; is<AliPID::kSPECIES; is++) printf("%s[%5.2f] ", AliPID::ParticleName(is), 1.E2*track->GetPID(is)); printf("\n");
+
+  rec->SetOption("nn");
+  track->CookPID();
+  printf("PID NN : "); for(int is=0; is<AliPID::kSPECIES; is++) printf("%s[%5.2f] ", AliPID::ParticleName(is), 1.E2*track->GetPID(is)); printf("\n");
+}
+
+//_______________________________________________________
+void trd_analyse()
+{
+  Info("trd_analyse", "******************************");
+  Info("trd_analyse", "Example function which shows how to analyse TRD data exported from the EVE display.");
+  Info("trd_analyse", "Usage : Load the macro. Select a TRD data object (digits, clusters, tracklet, track) and call the function \"ExportToCINT()\". Afterwards call the appropiate function (analyseXXX()) on the pointer.");
+  Info("trd_analyse", "E.g. If \"tracklet\" is a pointer to a TRD track than one can call :"); 
+  Info("trd_analyse", "analyseTrack(track)");
+
+  //gROOT->LoadMacro("$ALICE_ROOT/EVE/alice-macros/trd_analyse.C");
+  return;
+}
