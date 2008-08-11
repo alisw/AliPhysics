@@ -527,8 +527,12 @@ int AliHLTTask::ProcessTask(Int_t eventNo, AliHLTUInt32_t eventType)
       } else {
       long unsigned int iConstBase=0;
       double fInputMultiplier=0;
-      if (pComponent->GetComponentType()!=AliHLTComponent::kSink)
+      if (pComponent->GetComponentType()!=AliHLTComponent::kSink) {
 	pComponent->GetOutputDataSize(iConstBase, fInputMultiplier);
+	// add a small margin to the buffer to allow optional component
+	// statistics
+	iConstBase+=100;
+      }
       if (fInputMultiplier<0) {
 	HLTWarning("ignoring negative input multiplier");
 	fInputMultiplier=0;

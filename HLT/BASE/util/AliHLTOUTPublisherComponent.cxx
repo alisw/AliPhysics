@@ -195,6 +195,8 @@ int AliHLTOUTPublisherComponent::GetEvent( const AliHLTComponentEventData& /*evt
 {
   // see header file for class documentation
   int iResult=0;
+  AliHLTUInt32_t capacity=size;
+  size=0;
 
   // process data events only
   if (!IsDataEvent()) return 0;
@@ -252,7 +254,7 @@ int AliHLTOUTPublisherComponent::GetEvent( const AliHLTComponentEventData& /*evt
 	const AliHLTUInt8_t* pBuffer=NULL;
 	AliHLTUInt32_t bufferSize=0;
 	if ((iResult=pHLTOUT->GetDataBuffer(pBuffer, bufferSize))>=0) {
-	  if (bufferSize+offset<=size) {
+	  if (bufferSize+offset<=capacity) {
 	    memcpy(outputPtr+offset, pBuffer, bufferSize);
 	    AliHLTComponentBlockData bd;
 	    FillBlockData( bd );
@@ -272,7 +274,7 @@ int AliHLTOUTPublisherComponent::GetEvent( const AliHLTComponentEventData& /*evt
       if (iResult==-ENOENT) iResult=0;
 
       // indicate too little space in buffer for repeated processing
-      if (offset>size) {
+      if (offset>capacity) {
 	iResult=-ENOSPC;
       }
     } else if (GetEventCount()<5) {
@@ -292,8 +294,6 @@ int AliHLTOUTPublisherComponent::GetEvent( const AliHLTComponentEventData& /*evt
   // finally set the output size
   if (iResult>=0)
     size=offset;
-  else
-    size=0;
 
   return iResult;
 }

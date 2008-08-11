@@ -414,11 +414,14 @@ int AliHLTTPCEsdWriterComponent::AliConverter::DoEvent(const AliHLTComponentEven
 						       const AliHLTComponentBlockData* blocks, 
 						       AliHLTComponentTriggerData& /*trigData*/,
 						       AliHLTUInt8_t* /*outputPtr*/, 
-						       AliHLTUInt32_t& /*size*/,
+						       AliHLTUInt32_t& size,
 						       AliHLTComponentBlockDataList& /*outputBlocks*/ )
 {
   // see header file for class documentation
   int iResult=0;
+  // no direct writing to the output buffer
+  size=0;
+
   assert(fBase);
   if (!fESD) {
     fESD = new AliESDEvent;

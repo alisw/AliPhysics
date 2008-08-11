@@ -63,11 +63,12 @@ int AliHLTProcessor::DoEvent( const AliHLTComponentEventData& evtData,
 			      const AliHLTComponentBlockData* /*blocks*/, 
 			      AliHLTComponentTriggerData& trigData,
 			      AliHLTUInt8_t* /*outputPtr*/, 
-			      AliHLTUInt32_t& /*size*/,
+			      AliHLTUInt32_t& size,
 			      vector<AliHLTComponentBlockData>& /*outputBlocks*/ )
 {
   // we just forward to the high level method, all other parameters already
   // have been stored internally
+  size=0;
   return DoEvent(evtData, trigData);
 }
 

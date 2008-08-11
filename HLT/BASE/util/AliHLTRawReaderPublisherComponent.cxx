@@ -222,6 +222,8 @@ int AliHLTRawReaderPublisherComponent::GetEvent(const AliHLTComponentEventData& 
 {
   // see header file for class documentation
   int iResult=0;
+  AliHLTUInt32_t capacity=size;
+  size=0;
 
   // process data events only
   if (!IsDataEvent()) return 0;
@@ -252,7 +254,7 @@ int AliHLTRawReaderPublisherComponent::GetEvent(const AliHLTComponentEventData& 
 	continue;
       }
       processedIds.push_back(id);
-      if (readSize+offset<=size) {
+      if (readSize+offset<=capacity) {
 	memcpy(outputPtr+offset, pHeader, sizeof(AliRawDataHeader));
 	if (readSize>sizeof(AliRawDataHeader)) {
 	  if (!pRawReader->ReadNext(outputPtr+offset+sizeof(AliRawDataHeader), readSize-sizeof(AliRawDataHeader))) {
@@ -289,7 +291,7 @@ int AliHLTRawReaderPublisherComponent::GetEvent(const AliHLTComponentEventData& 
 	if (curr!=processedIds.end() && *curr<=id) {
 	  curr++;
 	} else {
-	  if (sizeof(AliRawDataHeader)<=size-offset) {
+	  if (sizeof(AliRawDataHeader)<=capacity-offset) {
 	    HLTInfo("add empty data block for equipment id %d", id);
 	    memcpy(outputPtr+offset, &header, sizeof(AliRawDataHeader));
 	    AliHLTComponentBlockData bd;
@@ -312,10 +314,9 @@ int AliHLTRawReaderPublisherComponent::GetEvent(const AliHLTComponentEventData& 
 	}
       }
     }
-    if (offset<=size) {
+    if (offset<=capacity) {
       size=offset;
     } else {
-      size=0;
       outputBlocks.clear();
     }
   } else {

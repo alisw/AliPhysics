@@ -331,6 +331,8 @@ int AliHLTFilePublisher::GetEvent( const AliHLTComponentEventData& /*evtData*/,
 
   // process data events only
   if (!IsDataEvent()) return 0;
+  AliHLTUInt32_t capacity=size;
+  size=0;
 
   int iResult=0;
   TObjLink *lnk=fpCurrent;
@@ -350,7 +352,7 @@ int AliHLTFilePublisher::GetEvent( const AliHLTComponentEventData& /*evtData*/,
 	if (pFileDesc && (pFile=*pFileDesc)!=NULL) {
 	  int iCopy=pFile->GetSize();
 	  pFile->Seek(0);
-	  if (iCopy+iTotalSize<=(int)size) {
+	  if (iCopy+iTotalSize<=(int)capacity) {
 	    if (pFile->ReadBuffer((char*)outputPtr+iTotalSize, iCopy)!=0) {
 	      // ReadBuffer returns 1 in case of failure and 0 in case of success
 	      iResult=-EIO;

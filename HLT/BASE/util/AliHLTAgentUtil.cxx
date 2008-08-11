@@ -128,7 +128,8 @@ int AliHLTAgentUtil::GetHandlerDescription(AliHLTComponentDataType dt,
   // see header file for class documentation
 
   // handler for the component statistics data blocks {'COMPSTAT':'PRIV'}
-  if (dt==kAliHLTDataTypeComponentStatistics) {
+  if (dt==kAliHLTDataTypeComponentStatistics ||
+      dt==kAliHLTDataTypeComponentTable) {
       desc=AliHLTOUTHandlerDesc(kChain, dt, GetModuleId());
       return 1;
   }
@@ -142,7 +143,8 @@ AliHLTOUTHandler* AliHLTAgentUtil::GetOutputHandler(AliHLTComponentDataType dt,
   // see header file for class documentation
 
   // handler for the component statistics data blocks {'COMPSTAT':'PRIV'}
-  if (dt==kAliHLTDataTypeComponentStatistics) {
+  if (dt==kAliHLTDataTypeComponentStatistics ||
+      dt==kAliHLTDataTypeComponentTable) {
     if (fCompStatDataHandler==NULL)
       fCompStatDataHandler=new AliHLTOUTHandlerChain("chains=UTIL-compstat-writer");
     return fCompStatDataHandler;
