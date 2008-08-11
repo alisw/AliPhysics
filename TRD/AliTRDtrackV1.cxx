@@ -46,7 +46,7 @@ AliTRDtrackV1::AliTRDtrackV1() : AliKalmanTrack()
   //
   // Default constructor
   //
-  printf("AliTRDtrackV1::AliTRDtrackV1()\n");
+  //printf("AliTRDtrackV1::AliTRDtrackV1()\n");
 
   for(int i =0; i<3; i++) fBudget[i] = 0.;
   
@@ -69,7 +69,7 @@ AliTRDtrackV1::AliTRDtrackV1(const AliTRDtrackV1 &ref) : AliKalmanTrack(ref)
   // Copy constructor
   //
 
-  printf("AliTRDtrackV1::AliTRDtrackV1(const AliTRDtrackV1 &)\n");
+  //printf("AliTRDtrackV1::AliTRDtrackV1(const AliTRDtrackV1 &)\n");
 
   for(int ip=0; ip<kNplane; ip++){ 
     fTrackletIndex[ip] = ref.fTrackletIndex[ip];
@@ -193,7 +193,7 @@ AliTRDtrackV1::AliTRDtrackV1(AliTRDseedV1 *trklts, const Double_t p[5], const Do
 AliTRDtrackV1::~AliTRDtrackV1()
 {
   //AliInfo("");
-  printf("I-AliTRDtrackV1::~AliTRDtrackV1() : Owner[%s]\n", TestBit(kOwner)?"YES":"NO");
+  //printf("I-AliTRDtrackV1::~AliTRDtrackV1() : Owner[%s]\n", TestBit(kOwner)?"YES":"NO");
   if(fBackupTrack) {
     delete fBackupTrack;
   }

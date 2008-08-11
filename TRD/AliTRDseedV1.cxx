@@ -60,7 +60,7 @@ AliTRDseedV1::AliTRDseedV1(Int_t plane)
   //
   // Constructor
   //
-	printf("AliTRDseedV1::AliTRDseedV1()\n");
+	//printf("AliTRDseedV1::AliTRDseedV1()\n");
 
 	for(int islice=0; islice < knSlices; islice++) fdEdx[islice] = 0.;
 	for(int ispec=0; ispec<AliPID::kSPECIES; ispec++) fProb[ispec]  = -1.;
@@ -80,7 +80,7 @@ AliTRDseedV1::AliTRDseedV1(const AliTRDseedV1 &ref)
   // Copy Constructor performing a deep copy
   //
 
-	printf("AliTRDseedV1::AliTRDseedV1(const AliTRDseedV1 &)\n");
+	//printf("AliTRDseedV1::AliTRDseedV1(const AliTRDseedV1 &)\n");
 	for(int islice=0; islice < knSlices; islice++) fdEdx[islice] = ref.fdEdx[islice];
 	for(int ispec=0; ispec<AliPID::kSPECIES; ispec++) fProb[ispec] = ref.fProb[ispec];
 }
@@ -93,7 +93,6 @@ AliTRDseedV1& AliTRDseedV1::operator=(const AliTRDseedV1 &ref)
   // Assignment Operator using the copy function
   //
 
-  printf("AliTRDseedV1::operator=()\n");
 	if(this != &ref){
 		ref.Copy(*this);
 	}
@@ -108,7 +107,7 @@ AliTRDseedV1::~AliTRDseedV1()
   // Destructor. The RecoParam object belongs to the underlying tracker.
   //
 
-	printf("I-AliTRDseedV1::~AliTRDseedV1() : Owner[%s]\n", IsOwner()?"YES":"NO");
+	//printf("I-AliTRDseedV1::~AliTRDseedV1() : Owner[%s]\n", IsOwner()?"YES":"NO");
 
 	if(IsOwner()) 
 		for(int itb=0; itb<knTimebins; itb++){
