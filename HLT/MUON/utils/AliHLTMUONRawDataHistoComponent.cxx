@@ -118,7 +118,7 @@ void AliHLTMUONRawDataHistoComponent::GetOutputDataSize(
 {
 	/// Inherited from AliHLTComponent. Returns an estimate of the expected output data size.
 	
-	constBase = sizeof(TH1D) * 1024*1024;
+	constBase = (sizeof(TH1D)+50*sizeof(double))*22 + (sizeof(TH1D)+1024*4*sizeof(double))*20*2;
 	inputMultiplier = 0;
 }
 
@@ -332,6 +332,8 @@ int AliHLTMUONRawDataHistoComponent::DoEvent(
 				AliHLTMUONConstants::HistogramDataType(),
 				AliHLTMUONUtils::DDLNumberToSpec(i)
 			);
+			// clear histogram when published.
+			fErrorHist[i]->Reset("M");
 		}
 		for (int i = 0; i < 20; i++)
 		{
@@ -339,10 +341,12 @@ int AliHLTMUONRawDataHistoComponent::DoEvent(
 			if (not (fSuppressEmptyHists and fManuHist[i]->GetEntries() == 0))
 			{
 				PushBack(fManuHist[i], AliHLTMUONConstants::HistogramDataType(), spec);
+				fManuHist[i]->Reset("M");
 			}
 			if (not (fSuppressEmptyHists and fSignalHist[i]->GetEntries() == 0))
 			{
 				PushBack(fSignalHist[i], AliHLTMUONConstants::HistogramDataType(), spec);
+				fSignalHist[i]->Reset("M");
 			}
 		}
 		fLastPublishTime = fCurrentEventTime;
