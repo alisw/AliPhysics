@@ -29,7 +29,7 @@ ifneq ($(ANALYSISalice_INCLUDE),)
   ALICEINC += -I../$(ANALYSISalice_INCLUDE)
 endif
 
-ifneq ($(COORFW_INCLUDE),)
+ifneq ($(CORRFW_INCLUDE),)
   ALICEINC += -I../$(CORRFW_INCLUDE)
 endif
 
