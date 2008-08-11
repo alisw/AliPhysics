@@ -10,6 +10,7 @@
 class AliVEvent;
 class AliAODEvent;
 class AliAODHeader;
+class AliAODTracklets;
 class AliMCEvent;
 class AliInputEventHandler;
 class TTree;
@@ -51,8 +52,15 @@ class AliAnalysisTaskSE : public AliAnalysisTask
     AliAODEvent*          fOutputAOD;       //! AOD out 
     AliMCEvent*           fMCEvent;         //! MC
     TTree*                fTreeA;           //  AOD output Tree
-    static Bool_t         fgHeaderCopied;   //  Flag to signal replicated AOD header
-    static AliAODHeader*  fgAODHeader;      //! Header for replication
+    static AliAODHeader*    fgAODHeader;        //! Header for replication
+    static TClonesArray*    fgAODTracks;        //! Tracks for replication
+    static TClonesArray*    fgAODVertices;      //! Vertices for replication
+    static TClonesArray*    fgAODV0s;           //! V0s for replication
+    static TClonesArray*    fgAODPMDClusters;   //! PMDClusters for replication
+    static TClonesArray*    fgAODJets;          //! Jets for replication
+    static TClonesArray*    fgAODFMDClusters;   //! FMDClusters for replication
+    static TClonesArray*    fgAODCaloClusters;  //! CaloClusters for replication
+    static AliAODTracklets* fgAODTracklets;     //! Tracklets for replication
     ClassDef(AliAnalysisTaskSE, 1); // Analysis task for standard jet analysis
 };
  

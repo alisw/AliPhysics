@@ -28,6 +28,7 @@
 #include "AliESD.h"
 #include "AliAODEvent.h"
 #include "AliAODHeader.h"
+#include "AliAODTracklets.h"
 #include "AliVEvent.h"
 #include "AliAODHandler.h"
 #include "AliAODInputHandler.h"
@@ -41,8 +42,16 @@
 ClassImp(AliAnalysisTaskSE)
 
 ////////////////////////////////////////////////////////////////////////
-Bool_t        AliAnalysisTaskSE::fgHeaderCopied = kFALSE;
-AliAODHeader* AliAnalysisTaskSE::fgAODHeader    = NULL;
+AliAODHeader*    AliAnalysisTaskSE::fgAODHeader        = NULL;
+TClonesArray*    AliAnalysisTaskSE::fgAODTracks        = NULL;
+TClonesArray*    AliAnalysisTaskSE::fgAODVertices      = NULL;
+TClonesArray*    AliAnalysisTaskSE::fgAODV0s           = NULL;
+TClonesArray*    AliAnalysisTaskSE::fgAODPMDClusters   = NULL;
+TClonesArray*    AliAnalysisTaskSE::fgAODJets          = NULL;
+TClonesArray*    AliAnalysisTaskSE::fgAODFMDClusters   = NULL;
+TClonesArray*    AliAnalysisTaskSE::fgAODCaloClusters  = NULL;
+AliAODTracklets* AliAnalysisTaskSE::fgAODTracklets     = NULL;
+
 
 AliAnalysisTaskSE::AliAnalysisTaskSE():
     AliAnalysisTask(),
@@ -146,16 +155,66 @@ void AliAnalysisTaskSE::CreateOutputObjects()
     AliAODHandler* handler = (AliAODHandler*) 
          ((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
     
+    // Check if AOD replication has been required
+    
     if (handler) {
 	fOutputAOD   = handler->GetAOD();
 	fTreeA = handler->GetTree();
-	// Check if AOD Header replication has been required
-	if (!(handler->IsStandard())            && 
-	    (handler->NeedsHeaderReplication()) &&
-	    !(fgAODHeader))
-	{
-	    fgAODHeader = new AliAODHeader;
-	    handler->AddBranch("AliAODHeader", &fgAODHeader);
+	if (!(handler->IsStandard())) {
+	    if ((handler->NeedsHeaderReplication()) && !(fgAODHeader)) 
+		{
+		    if (fDebug > 1) AliInfo("Replicating header");
+		    fgAODHeader = new AliAODHeader;
+		    handler->AddBranch("AliAODHeader", &fgAODHeader);
+		}
+	    if ((handler->NeedsTracksBranchReplication()) && !(fgAODTracks))      
+	    {   
+		if (fDebug > 1) AliInfo("Replicating track branch\n");
+		fgAODTracks = new TClonesArray("AliAODTrack",500);
+		handler->AddBranch("TClonesArray", &fgAODTracks);
+	    }    
+	    if ((handler->NeedsVerticesBranchReplication()) && !(fgAODVertices))
+	    {
+		if (fDebug > 1) AliInfo("Replicating vertices branch\n");
+		fgAODVertices = new TClonesArray("AliAODVertex",500);
+		handler->AddBranch("TClonesArray", &fgAODVertices);
+	    }	
+	    if ((handler->NeedsV0sBranchReplication()) && !(fgAODV0s))	  
+	    {   
+		if (fDebug > 1) AliInfo("Replicating V0s branch\n");
+		fgAODV0s = new TClonesArray("AliAODv0",500);
+		handler->AddBranch("TClonesArray", &fgAODV0s);
+	    }
+	    if ((handler->NeedsTrackletsBranchReplication()) && !(fgAODTracklets))	  
+	    {   
+		if (fDebug > 1) AliInfo("Replicating Tracklets branch\n");
+		fgAODTracklets = new AliAODTracklets("AliAODTracklets","AliAODTracklets");
+		handler->AddBranch("AliAODTracklets", &fgAODTracklets);
+	    }
+	    if ((handler->NeedsPMDClustersBranchReplication()) && !(fgAODPMDClusters))	  
+	    {   
+		if (fDebug > 1) AliInfo("Replicating PMDClusters branch\n");
+		fgAODPMDClusters = new TClonesArray("AliAODPmdCluster",500);
+		handler->AddBranch("TClonesArray", &fgAODPMDClusters);
+	    }
+	    if ((handler->NeedsJetsBranchReplication()) && !(fgAODJets))	  
+	    {   
+		if (fDebug > 1) AliInfo("Replicating Jets branch\n");
+		fgAODJets = new TClonesArray("AliAODJet",500);
+		handler->AddBranch("TClonesArray", &fgAODJets);
+	    }
+	    if ((handler->NeedsFMDClustersBranchReplication()) && !(fgAODFMDClusters))	  
+	    {   
+		AliInfo("Replicating FMDClusters branch\n");
+		fgAODFMDClusters = new TClonesArray("AliAODFmdCluster",500);
+		handler->AddBranch("TClonesArray", &fgAODFMDClusters);
+	    }
+	    if ((handler->NeedsCaloClustersBranchReplication()) && !(fgAODCaloClusters))	  
+	    {   
+		if (fDebug > 1) AliInfo("Replicating CaloClusters branch\n");
+		fgAODCaloClusters = new TClonesArray("AliAODCaloCluster",500);
+		handler->AddBranch("TClonesArray", &fgAODCaloClusters);
+	    }
 	}
     } else {
 	AliWarning("No AOD Event Handler connected.") ; 
@@ -177,21 +236,58 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
 
     AliAODHandler* handler = (AliAODHandler*) 
 	((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
-    if (handler) {
-	if (!(handler->IsStandard())            && 
-	    (handler->NeedsHeaderReplication()) &&
-	    (fgAODHeader))
-	{
-	    // Header should be replicated
-	    AliAODInputHandler* aodH = dynamic_cast<AliAODInputHandler*>(fInputHandler);
-	    if (aodH) {
-		// Input is AOD
-		fgAODHeader =  dynamic_cast<AliAODHeader*>(InputEvent()->GetHeader());
-		fgHeaderCopied = kTRUE;
+    AliAODInputHandler* aodH = dynamic_cast<AliAODInputHandler*>(fInputHandler);
+
+    if (handler && aodH) {
+	if (!(handler->IsStandard()) && !(handler->AODIsReplicated())) {
+	    if ((handler->NeedsHeaderReplication()) && (fgAODHeader))
+	    {
+		fgAODHeader = dynamic_cast<AliAODHeader*>(InputEvent()->GetHeader());
 	    }
+	    if ((handler->NeedsTracksBranchReplication()) && (fgAODTracks))
+	    {
+		TClonesArray* tracks = (dynamic_cast<AliAODEvent*>(InputEvent()))->GetTracks();
+		new (fgAODTracks) TClonesArray(*tracks);
+	    }
+	    if ((handler->NeedsVerticesBranchReplication()) && (fgAODVertices))
+	    {
+		TClonesArray* vertices = (dynamic_cast<AliAODEvent*>(InputEvent()))->GetVertices();
+		new (fgAODVertices) TClonesArray(*vertices);
+	    }
+	    if ((handler->NeedsV0sBranchReplication()) && (fgAODV0s))
+	    {
+		TClonesArray* V0s = (dynamic_cast<AliAODEvent*>(InputEvent()))->GetV0s();
+		new (fgAODV0s) TClonesArray(*V0s);
+	    }
+	    if ((handler->NeedsTrackletsBranchReplication()) && (fgAODTracklets))
+	    {
+		    fgAODTracklets = (dynamic_cast<AliAODEvent*>(InputEvent()))->GetTracklets();
+	    }
+	    if ((handler->NeedsPMDClustersBranchReplication()) && (fgAODPMDClusters))
+	    {
+		TClonesArray* PMDClusters = (dynamic_cast<AliAODEvent*>(InputEvent()))->GetPmdClusters();
+		new (fgAODPMDClusters) TClonesArray(*PMDClusters);
+	    }
+	    if ((handler->NeedsJetsBranchReplication()) && (fgAODJets))
+	    {
+		TClonesArray* Jets = (dynamic_cast<AliAODEvent*>(InputEvent()))->GetJets();
+		new (fgAODJets) TClonesArray(*Jets);
+	    }
+	    if ((handler->NeedsFMDClustersBranchReplication()) && (fgAODFMDClusters))
+	    {
+		TClonesArray* FMDClusters = (dynamic_cast<AliAODEvent*>(InputEvent()))->GetFmdClusters();
+		new (fgAODFMDClusters) TClonesArray(*FMDClusters);
+	    }
+	    if ((handler->NeedsCaloClustersBranchReplication()) && (fgAODCaloClusters))
+	    {
+		TClonesArray* CaloClusters = (dynamic_cast<AliAODEvent*>(InputEvent()))->GetCaloClusters();
+		new (fgAODCaloClusters) TClonesArray(*CaloClusters);
+	    }
+	    //
+	    handler->SetAODIsReplicated();
+	    
 	}
     }
-    
 
 // Call the user analysis    
     UserExec(option);
