@@ -81,7 +81,7 @@ class AliTRDseedV1 : public AliTRDseed
   void      Print(Option_t *o = "") const;
   
   void      SetMomentum(Double_t mom) {fMom = mom;}
-  void      SetOwner(Bool_t own = kTRUE);
+  void      SetOwner();
   void      SetPlane(Int_t p)                      { fPlane     = p;   }
   void      SetSnp(Double_t snp) {fSnp = snp;}
   void      SetTgl(Double_t tgl) {fTgl = tgl;}

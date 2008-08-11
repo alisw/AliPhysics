@@ -70,7 +70,7 @@ AliTRDtrackV1::AliTRDtrackV1(const AliTRDtrackV1 &ref) : AliKalmanTrack(ref)
   //
 
   //printf("AliTRDtrackV1::AliTRDtrackV1(const AliTRDtrackV1 &)\n");
-
+  SetBit(kOwner, kFALSE);
   for(int ip=0; ip<kNplane; ip++){ 
     fTrackletIndex[ip] = ref.fTrackletIndex[ip];
     fTracklet[ip]      = ref.fTracklet[ip];
