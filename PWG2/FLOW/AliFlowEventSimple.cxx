@@ -82,7 +82,7 @@ AliFlowTrackSimple* AliFlowEventSimple::GetTrack(Int_t i)
 }
 
 //-----------------------------------------------------------------------   
- AliFlowVector AliFlowEventSimple::GetQ() 
+ AliFlowVector AliFlowEventSimple::GetQ(Int_t n) 
 {
   //calculate Q. 
   
@@ -90,7 +90,8 @@ AliFlowTrackSimple* AliFlowEventSimple::GetTrack(Int_t i)
   Double_t dQY = 0.;
   AliFlowVector vQ;
   vQ.Set(0.,0.);
-  Double_t dOrder = 2.;
+  
+  Int_t iOrder = n;
   Int_t iUsedTracks = 0;
 
   for (Int_t i=0;i<fNumberOfTracks;i++)                  
@@ -99,8 +100,8 @@ AliFlowTrackSimple* AliFlowEventSimple::GetTrack(Int_t i)
       if (pTrack){
 	if (pTrack->UseForIntegratedFlow()) {
 	  Double_t dPhi = pTrack->Phi();
-	  dQX += TMath::Cos(dOrder*dPhi);
-	  dQY += TMath::Sin(dOrder*dPhi);
+	  dQX += TMath::Cos(iOrder*dPhi);
+	  dQY += TMath::Sin(iOrder*dPhi);
 	  iUsedTracks++;
 	}
       } //if particle
