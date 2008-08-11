@@ -48,6 +48,9 @@ class AliFlowCommonHist: public TObject {
   TList*    GetHistList()                   {return fHistList;} ;  
 
   virtual Double_t  Merge(TCollection *aList);  //merge function
+  //method to print stats
+  void Print(Option_t* option = "") const;
+
  
  private:
 

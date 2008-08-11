@@ -325,6 +325,26 @@ Double_t AliFlowCommonHist::GetMeanPt(Int_t aBin)
     
 }
 
+void AliFlowCommonHist::Print(Option_t *option) const
+{
+   //   -*-*-*-*-*Print some global quantities for this histogram collection class *-*-*-*-*-*-*-*
+   //             ===============================================
+   //
+   //  If option "base" is given, number of bins and ranges are also printed
+   //  If option "range" is given, bin contents and errors are also printed
+   //                     for all bins in the current range (default 1-->nbins)
+   //  If option "all" is given, bin contents and errors are also printed
+   //                     for all bins including under and overflows.
+   //
+  //   printf( "TH1.Print Name  = %s, Entries= %d, Total sum= %g\n",GetName(),Int_t(fEntries),GetSumOfWeights());
+  printf( "Class.Print Name = AliFlowCommonHist, Histogram list:");
+
+  fHistList->Print(option);
+
+}
+
+
+
 
 
 

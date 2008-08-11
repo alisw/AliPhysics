@@ -28,7 +28,7 @@ class AliFlowEventSimple: public TObject {
   void SetEventNSelTracksIntFlow(Int_t nr)  { this->fEventNSelTracksIntFlow = nr; }
   AliFlowTrackSimple* GetTrack(Int_t i);
   TObjArray* TrackCollection() const        { return this->fTrackCollection; }
-  AliFlowVector GetQ() ;
+  AliFlowVector GetQ(Int_t n=2);//default harmonic n=2
   
  private:
   TObjArray*           fTrackCollection;         // collection of tracks
@@ -39,4 +39,3 @@ class AliFlowEventSimple: public TObject {
 };
 
 #endif
-
