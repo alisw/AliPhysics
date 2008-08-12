@@ -1,18 +1,18 @@
 void recraw() {
   const char * kYear = "08" ; 
  
-	AliLog::SetGlobalLogLevel(AliLog::kError);
+  AliLog::SetGlobalLogLevel(AliLog::kError);
 	
 //	gSystem->Load("libRAliEn.so");
 //  gSystem->Load("libNet.so");
- // gSystem->Load("libMonaLisa.so");
+// gSystem->Load("libMonaLisa.so");
 //  new TMonaLisaWriter(0, "GridAliRoot-rec.C", 0, 0, "global");
- // gSystem->Setenv("APMON_INTERVAL", "120");
+// gSystem->Setenv("APMON_INTERVAL", "120");
 	
 	// Set the CDB storage location
-	AliCDBManager * man = AliCDBManager::Instance();
+  AliCDBManager * man = AliCDBManager::Instance();
   man->SetDefaultStorage("local://$ALICE_ROOT");
-  //man->SetDefaultStorage("alien://Folder=/alice/data/2008/LHC08b/OCDB/");
+  //man->SetDefaultStorage("alien://Folder=/alice/data/2008/LHC08c/OCDB/");
 
 	// Example in case a specific CDB storage is needed
 	//man->SetSpecificStorage("EMCAL/*","local://DB");
@@ -22,26 +22,26 @@ void recraw() {
   AliMagFMaps *field=new AliMagFMaps("Maps", "Maps", 2, 1., 10., AliMagFMaps::k5kG);
   Bool_t uniform = kFALSE;
   AliTracker::SetFieldMap(field, uniform);
-	Double_t mostProbPt=0.35;
+  Double_t mostProbPt=0.35;
   AliExternalTrackParam::SetMostProbablePt(mostProbPt);
 	
 	// AliReconstruction settings
-	AliReconstruction reco;
-	reco.SetRecoParam("TPC",AliTPCRecoParam::GetLowFluxParam());
+  AliReconstruction reco;
+  reco.SetRecoParam("TPC",AliTPCRecoParam::GetLowFluxParam());
   reco.SetRecoParam("TRD",AliTRDrecoParam::GetLowFluxParam());
   reco.SetRecoParam("PHOS",AliPHOSRecoParam::GetDefaultParameters());
   reco.SetRecoParam("MUON",AliMUONRecoParam::GetLowFluxParam());
-	reco.SetUniformFieldTracking(uniform);
-	reco.SetWriteESDfriend(kTRUE);
+  reco.SetUniformFieldTracking(uniform);
+  reco.SetWriteESDfriend(kTRUE);
   reco.SetWriteAlignmentData();
-	reco.SetInput("raw.root");
-	reco.SetUseTrackingErrorsForAlignment("ITS");
+  reco.SetInput("raw.root");
+  reco.SetUseTrackingErrorsForAlignment("ITS");
 	
 	// In case some detectors have to be switched off.aliextr..
-	reco.SetRunReconstruction("ITS TPC TRD TOF HMPID PHOS MUON FMD PMD T0 VZERO ZDC ACORDE");
+  reco.SetRunReconstruction("ITS TPC TRD TOF HMPID PHOS MUON FMD PMD T0 VZERO ZDC ACORDE");
 	//reco.SetRunReconstruction("ITS TRD TOF HMPID PHOS MUON FMD PMD VZERO ZDC ACORDE");
 
-	reco.SetRunVertexFinder(kTRUE);
+  reco.SetRunVertexFinder(kTRUE);
 	
 	// all events in one single file
   reco.SetNumberOfEventsPerFile(-1);
@@ -54,7 +54,7 @@ void recraw() {
 	//AliQA::SetQARefStorage(Form("%s%s/", AliQA::GetQARefDefaultStorage(), kYear)) ;
   AliQA::SetQARefStorage("local://$ALICE_ROOT") ;
   
-	AliLog::Flush();
+  AliLog::Flush();
 	
   TStopwatch timer;
   timer.Start();

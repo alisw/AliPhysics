@@ -4,9 +4,8 @@ void recqa()
  	gEnv->SetValue("Root.Stacktrace","no");
 	gEnv->SetValue("Root.Stacktrace","no");
 	AliCDBManager * man = AliCDBManager::Instance();
-	man->SetDefaultStorage("alien://Folder=/alice/simulation/2008/v4-13-Release/Ideal/");
-	//man->SetDefaultStorage("alien://Folder=/alice/data/2008/LHC08b/OCDB/") ; 
-	//man->SetDefaultStorage("local://$ALICE_ROOT");
+	//man->SetDefaultStorage("alien://Folder=/alice/data/2008/LHC08c/OCDB/") ; 
+	man->SetDefaultStorage("local://$ALICE_ROOT");
 	TString detectors("ITS TPC TRD TOF PHOS HMPID EMCAL/*MUON*/ FMD ZDC PMD T0 VZERO");
 	
 	//AliQA::SetQARefStorage(Form("%s%s/", AliQA::GetQARefDefaultStorage(), kYear)) ;

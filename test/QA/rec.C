@@ -1,8 +1,8 @@
 void rec() {
   const char * kYear = "08" ; 
   AliCDBManager * man = AliCDBManager::Instance();
-  man->SetDefaultStorage("alien://Folder=/alice/data/2008/LHC08c/OCDB/");
-  //man->SetDefaultStorage("local://$ALICE_ROOT");
+  //man->SetDefaultStorage("alien://Folder=/alice/data/2008/LHC08c/OCDB/");
+  man->SetDefaultStorage("local://$ALICE_ROOT");
   man->SetSpecificStorage("EMCAL/*","local://DB");
   
   AliReconstruction reco;
@@ -10,15 +10,15 @@ void rec() {
   reco.SetWriteESDfriend();
   reco.SetWriteAlignmentData();
 
-	reco.SetRecoParam("TPC",AliTPCRecoParam::GetLowFluxParam());
+  reco.SetRecoParam("TPC",AliTPCRecoParam::GetLowFluxParam());
   reco.SetRecoParam("TRD",AliTRDrecoParam::GetLowFluxParam());
   reco.SetRecoParam("PHOS",AliPHOSRecoParam::GetDefaultParameters());
   reco.SetRecoParam("MUON",AliMUONRecoParam::GetLowFluxParam());
 	
-	AliTPCReconstructor::SetStreamLevel(1);
+ 	AliTPCReconstructor::SetStreamLevel(1);
   reco.SetRunReconstruction("ITS TPC TRD TOF HMPID PHOS EMCAL MUON T0 VZERO FMD PMD ZDC ACORDE");
   reco.SetRunQA("ALL:ALL") ;
-	reco.SetInLoopQA() ; 
+	 reco.SetInLoopQA() ; 
 	  
 	// AliQA::SetQARefStorage(Form("%s%s/", AliQA::GetQARefDefaultStorage(), kYear)) ;
   AliQA::SetQARefStorage("local://$ALICE_ROOT") ;
