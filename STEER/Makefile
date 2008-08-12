@@ -21,6 +21,16 @@ ifneq ($(STEERBase_INCLUDE),)
    ALICEINC += -I../$(STEERBase_INCLUDE)
 endif
 
+# only if no par file was loaded before
+ifeq ($(ALICEINC),-I.)
+  ifneq ($(ALICE_ROOT),)
+    ALICEINC += -I$(ALICE_ROOT)/include
+  endif
+endif
+
+
+
+
 CXXFLAGS += $(ALICEINC) -g
 
 SRCS         += G__$(PACKAGE).cxx
