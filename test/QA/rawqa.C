@@ -75,7 +75,7 @@ void rawqa(const Int_t runNumber, Int_t maxFiles = 10, const char* year = "08")
 	if (local) 
 		in.open("tempo.txt", ifstream::in) ; 
 
-	AliQADataMakerSteer qas ; 
+	AliQADataMakerSteer qas("rec") ; 
 	TString detectors  = ""; 
 	TString detectorsW = ""; 
 	UShort_t file = 0 ; 
