@@ -62,8 +62,9 @@ public:
   inline Float_t GetMomentum(Int_t plane) const;
   inline Int_t   GetNCross();
   inline Int_t   GetNumberOfTracklets() const;
-  Double_t       GetPIDsignal() const {return 0.;}
+  Double_t       GetPIDsignal() const   { return 0.;}
   Double_t       GetPID(Int_t is) const { return (is >=0 && is < AliPID::kSPECIES) ? fPID[is] : -1.;}
+  UChar_t        GetPIDquality() const  { return fPIDquality;}
   Double_t       GetPredictedChi2(const AliTRDseedV1 *tracklet) const;
   Double_t       GetPredictedChi2(const AliCluster* /*c*/) const                   { return 0.0; }
   Int_t          GetProlongation(Double_t xk, Double_t &y, Double_t &z);
