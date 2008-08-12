@@ -14,7 +14,7 @@
 class AliPDG : public TObject {
 public:
     static void AddParticlesToPdgDataBase();
- private:
+ private:    
     ClassDef(AliPDG,1)  // PDG database related information
 };
 

@@ -938,39 +938,44 @@ Bool_t AliStack::GetEvent()
 
 Bool_t AliStack::IsStable(Int_t pdg) const
 {
-//
-// Decide whether particle (pdg) is stable
-//
+  //
+  // Decide whether particle (pdg) is stable
+  //
+  
+  
+  // All ions/nucleons are considered as stable
+  // Nuclear code is 10LZZZAAAI
+  if(pdg>1000000000)return kTRUE;
 
-    const Int_t kNstable = 14;
-    Int_t i;
-
-    Int_t pdgStable[kNstable] = {
-	kGamma,             // Photon
-	kElectron,          // Electron
-	kMuonPlus,          // Muon 
-	kPiPlus,            // Pion
-	kKPlus,             // Kaon
-	kProton,            // Proton 
-	kNeutron,           // Neutron
-	kLambda0,           // Lambda_0
-	kSigmaMinus,        // Sigma Minus
-	kSigma0,            // Sigma_0
-	kSigmaPlus,         // Sigma Plus
-	3312,               // Xsi Minus 
-	3322,               // Xsi 
-	3334,               // Omega
-    };
+  const Int_t kNstable = 14;
+  Int_t i;
+  
+  Int_t pdgStable[kNstable] = {
+    kGamma,             // Photon
+    kElectron,          // Electron
+    kMuonPlus,          // Muon 
+    kPiPlus,            // Pion
+    kKPlus,             // Kaon
+    kProton,            // Proton 
+    kNeutron,           // Neutron
+    kLambda0,           // Lambda_0
+    kSigmaMinus,        // Sigma Minus
+    kSigma0,            // Sigma_0
+    kSigmaPlus,         // Sigma Plus
+    3312,               // Xsi Minus 
+    3322,               // Xsi 
+    3334,               // Omega
+  };
     
-    Bool_t isStable = kFALSE;
-    for (i = 0; i < kNstable; i++) {
-	if (pdg == TMath::Abs(pdgStable[i])) {
-	    isStable = kTRUE;
-	    break;
-	}
+  Bool_t isStable = kFALSE;
+  for (i = 0; i < kNstable; i++) {
+    if (pdg == TMath::Abs(pdgStable[i])) {
+      isStable = kTRUE;
+      break;
     }
-
-    return isStable;
+  }
+  
+  return isStable;
 }
 
 Bool_t AliStack::IsPhysicalPrimary(Int_t index)
