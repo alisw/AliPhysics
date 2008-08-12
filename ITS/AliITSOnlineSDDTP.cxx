@@ -158,7 +158,9 @@ void AliITSOnlineSDDTP::StatGain(Float_t &mean, Float_t  &rms){
   }
   if(cnt>0){ 
     mean=sum/(Float_t)cnt;
-    rms=TMath::Sqrt(sumq/(Float_t)cnt-mean*mean);
+    Float_t variance=sumq/(Float_t)cnt-mean*mean;
+    if(variance>0.) rms=TMath::Sqrt(variance);
+    else rms = 0;
   }else{ 
     mean=0.;
     rms=0.;
