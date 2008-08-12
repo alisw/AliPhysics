@@ -65,6 +65,13 @@ class AliITSRecoParam : public AliDetectorRecoParam
 
   void PrintParameters() const; 
 
+  void     SetTracker(Int_t tracker=0) { fTracker=tracker; }
+  Int_t    GetTracker() const { return fTracker; }
+  void     SetITSonly(Bool_t flag=kTRUE) { fITSonly=flag; }
+  Bool_t   GetITSonly() const { return fITSonly; }
+  void     SetVertexer(Int_t vertexer=0) { fVertexer=vertexer; }
+  Int_t    GetVertexer() const { return fVertexer; }
+
   Double_t GetSigmaY2(Int_t i) const { return fSigmaY2[i]; }
   Double_t GetSigmaZ2(Int_t i) const { return fSigmaZ2[i]; }
 
@@ -125,9 +132,11 @@ class AliITSRecoParam : public AliDetectorRecoParam
 
   void   SetClusterErrorsParam(Int_t param=1) { fClusterErrorsParam=param; return; }
   Int_t  GetClusterErrorsParam() const { return fClusterErrorsParam; }
-  void    SetClusterMisalError(Float_t err=0.) { fClusterMisalError=err; return; }
-  Float_t GetClusterMisalError() const { return fClusterMisalError; }
-
+  void   SetClusterMisalErrorY(Float_t e0,Float_t e1,Float_t e2,Float_t e3,Float_t e4,Float_t e5) { fClusterMisalErrorY[0]=e0; fClusterMisalErrorY[1]=e1; fClusterMisalErrorY[2]=e2; fClusterMisalErrorY[3]=e3; fClusterMisalErrorY[4]=e4; fClusterMisalErrorY[5]=e5; return; }
+  void   SetClusterMisalErrorZ(Float_t e0,Float_t e1,Float_t e2,Float_t e3,Float_t e4,Float_t e5) { fClusterMisalErrorZ[0]=e0; fClusterMisalErrorZ[1]=e1; fClusterMisalErrorZ[2]=e2; fClusterMisalErrorZ[3]=e3; fClusterMisalErrorZ[4]=e4; fClusterMisalErrorZ[5]=e5; return; }
+  void   SetClusterMisalError(Float_t err=0.) { SetClusterMisalErrorY(err,err,err,err,err,err); SetClusterMisalErrorZ(err,err,err,err,err,err); }
+  Float_t GetClusterMisalErrorY(Int_t i) const { return fClusterMisalErrorY[i]; }
+  Float_t GetClusterMisalErrorZ(Int_t i) const { return fClusterMisalErrorZ[i]; }
 
   void   SetUseAmplitudeInfo(Bool_t use=kTRUE) { for(Int_t i=0;i<AliITSgeomTGeo::kNLayers;i++) fUseAmplitudeInfo[i]=use; return; }
   void   SetUseAmplitudeInfo(Int_t ilay,Bool_t use) { fUseAmplitudeInfo[ilay]=use; return; }
@@ -248,6 +257,11 @@ class AliITSRecoParam : public AliDetectorRecoParam
   static const Double_t fgkSPDdetzlength;     // SPD ladder length in z
   static const Double_t fgkSPDdetxlength;     // SPD ladder length in x
 
+
+  Int_t  fTracker;  // ITS tracker to be used (see AliITSReconstructor)
+  Bool_t fITSonly;  // tracking only in ITS (no TPC)
+  Int_t  fVertexer; // ITS vertexer to be used (see AliITSReconstructor)
+
   Int_t fLayersToSkip[AliITSgeomTGeo::kNLayers]; // array with layers to skip (MI,SA)
 
   // spatial resolutions of the detectors
@@ -312,9 +326,12 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Int_t fUseTGeoInTracker; // use TGeo to get material budget in tracker MI
   Bool_t fAllowSharedClusters; // if kFALSE don't set to kITSin tracks with shared clusters (MI)
   Int_t fClusterErrorsParam; // parametrization for cluster errors (MI), see AliITSRecoParam::GetError()
-  Float_t fClusterMisalError; // [cm] additional error on cluster pos. due to misalignment (MI,SA)
+  Float_t fClusterMisalError; // [cm] left here for backward compatibility
+  Float_t fClusterMisalErrorY[AliITSgeomTGeo::kNLayers]; // [cm] additional error on cluster Y pos. due to misalignment (MI,SA)
+  Float_t fClusterMisalErrorZ[AliITSgeomTGeo::kNLayers]; // [cm] additional error on cluster Z pos. due to misalignment (MI,SA)
 
   Bool_t fUseAmplitudeInfo[AliITSgeomTGeo::kNLayers]; // use cluster charge in cluster-track matching (SDD,SSD) (MI)
+
   // Plane Efficiency evaluation
   Bool_t fComputePlaneEff;  // flag to enable computation of PlaneEfficiency
   Bool_t fHistoPlaneEff;  // flag to enable auxiliary PlaneEff histograms (e.g. residual distributions)
@@ -351,7 +368,7 @@ class AliITSRecoParam : public AliDetectorRecoParam
 
   Bool_t fUseChargeMatchingInClusterFinderSSD; // SSD
 
-  ClassDef(AliITSRecoParam,6) // ITS reco parameters
+  ClassDef(AliITSRecoParam,7) // ITS reco parameters
 };
 
 #endif

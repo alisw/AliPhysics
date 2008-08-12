@@ -136,10 +136,12 @@ Int_t AliITSClusterParam::GetError(Int_t layer,
 
   if(addMisalErr) {
     // add error due to misalignment (to be improved)
-    Float_t errmisal2 = AliITSReconstructor::GetRecoParam()->GetClusterMisalError()
-      *AliITSReconstructor::GetRecoParam()->GetClusterMisalError();
-    erry = TMath::Sqrt(erry*erry+errmisal2);
-    errz = TMath::Sqrt(errz*errz+errmisal2);
+    Float_t errmisalY2 = AliITSReconstructor::GetRecoParam()->GetClusterMisalErrorY(layer)
+      *AliITSReconstructor::GetRecoParam()->GetClusterMisalErrorY(layer);
+    Float_t errmisalZ2 = AliITSReconstructor::GetRecoParam()->GetClusterMisalErrorZ(layer)
+      *AliITSReconstructor::GetRecoParam()->GetClusterMisalErrorZ(layer);
+    erry = TMath::Sqrt(erry*erry+errmisalY2);
+    errz = TMath::Sqrt(errz*errz+errmisalZ2);
   }
 
   return retval;

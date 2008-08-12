@@ -62,6 +62,9 @@ const Double_t AliITSRecoParam::fgkSPDdetxlength=1.298; // 1.410-2*0.056
 
 //_____________________________________________________________________________
 AliITSRecoParam::AliITSRecoParam() : AliDetectorRecoParam(),
+fTracker(0),
+fITSonly(kFALSE),
+fVertexer(0),
 fMaxSnp(1.),
 fNSigmaYLayerForRoadY(0),
 fNSigmaRoadY(0),
@@ -98,7 +101,7 @@ fXPassDeadZoneHits(0),
 fUseTGeoInTracker(3),
 fAllowSharedClusters(kTRUE),
 fClusterErrorsParam(1),
-fClusterMisalError(0.0),
+fClusterMisalError(0.),
 fComputePlaneEff(kFALSE),
 fHistoPlaneEff(kFALSE),
 fIPlanePlaneEff(0),
@@ -141,6 +144,7 @@ fUseChargeMatchingInClusterFinderSSD(kTRUE)
   SetAddVirtualClustersInDeadZone(kFALSE);
   SetUseAmplitudeInfo(kTRUE);
   SetClusterErrorsParam(1);
+  SetClusterMisalError(0.);
 }
 //_____________________________________________________________________________
 AliITSRecoParam::~AliITSRecoParam() 
@@ -338,6 +342,10 @@ AliITSRecoParam *AliITSRecoParam::GetCosmicTestParam()
   //
   AliITSRecoParam *param = new AliITSRecoParam();
 
+  // vertexer for cosmics
+  param->SetVertexer(2);
+
+
   // larger seach windows for SA (in case of large misalignments)
   param->SetFactorSAWindowSizes(3.); 
 
@@ -498,7 +506,7 @@ void AliITSRecoParam::PrintParameters() const
   //
 
   printf("=============================  AliITSRecoParam::PrintParameters ");
-  printf("============================= \n \n");
+  printf("============================= \n\n");
   for(Int_t i=0; i<AliITSgeomTGeo::kNLayers; i++) {
     if(!fLayersToSkip[i]) {
       printf("ITS Traking: using layer %d\n",i);
@@ -514,7 +522,7 @@ void AliITSRecoParam::PrintParameters() const
     }
   }
   for(Int_t i=0; i<AliITSgeomTGeo::kNLayers; i++)
-    printf("Layer %d:\n  sigmaY2 %f, sigma Z2 %f\n  max norm chi2 for non constrained tracks %f\n  max norm chi2 for constrained tracks %f\n  max predicted chi2 (cluster & track prol.) %f\n",i,fSigmaY2[i],fSigmaZ2[i],fMaxNormChi2NonC[i],fMaxNormChi2C[i],fMaxChi2s[i]);
+    printf("Layer %d:\n  sigmaY2 %f, sigmaZ2 %f\n  sigmaMisalY %f, sigmaMisalZ %f\n  max norm chi2 for non constrained tracks %f\n  max norm chi2 for constrained tracks %f\n  max predicted chi2 (cluster & track prol.) %f\n",i,fSigmaY2[i],fSigmaZ2[i],fClusterMisalErrorY[i],fClusterMisalErrorZ[i],fMaxNormChi2NonC[i],fMaxNormChi2C[i],fMaxChi2s[i]);
 
 
   Dump();
