@@ -2,20 +2,24 @@ void JetAnalysisManagerCAF()
 {
     //
     if (gApplication) gApplication->InitializeGraphics();
-    gROOT->LoadMacro("CreateESDChain.C");
     //
     // Connect to proof
     
-    TProof::Reset("proof://morsch@lxb6046.cern.ch"); 
-    TProof::Open("proof://morsch@lxb6046.cern.ch"); 
-    
-    //   gProof->SetParallel(1);
+//    TProof::Reset("proof://morsch@lxb6046.cern.ch"); 
+    TProof::Open("proof://morsch@lxb6046.cern.ch");
+//    gProof->SetParallel(1);
+//    gProof->ClearPackage("STEERBase");
 //    gProof->ClearPackage("ESD");
 //    gProof->ClearPackage("AOD");
-    //gProof->ClearPackage("JETAN");
-    //gProof->ClearPackage("ANALYSIS");
+//    gProof->ClearPackage("JETAN");
+//    gProof->ClearPackage("ANALYSIS");
+//    gProof->ClearPackage("ANALYSISalice");
     
     gProof->ShowEnabledPackages();
+
+    // Enable the STEERBase Package
+    gProof->UploadPackage("STEERBase.par");
+    gProof->EnablePackage("STEERBase");
     // Enable the ESD Package
     gProof->UploadPackage("ESD.par");
     gProof->EnablePackage("ESD");
@@ -25,6 +29,9 @@ void JetAnalysisManagerCAF()
      // Enable the Analysis Package
     gProof->UploadPackage("ANALYSIS.par");
     gProof->EnablePackage("ANALYSIS");
+
+    gProof->UploadPackage("ANALYSISalice.par");
+    gProof->EnablePackage("ANALYSISalice");
 
     // Enable the JETAN Package
     gProof->UploadPackage("JETAN.par");
@@ -37,28 +44,24 @@ void JetAnalysisManagerCAF()
     //
     // Create the chain
     //
-    TChain* chain = CreateESDChain("test.txt", 200);
-    
+    // TChain* chain = CreateESDChain("test.txt", 200);
+ // Input 
+    AliESDInputHandler* inpHandler = new AliESDInputHandler();
     //
     // Create the analysis manager
     //
     AliAODHandler* aodHandler   = new AliAODHandler();
-    aodHandler->SetOutputFileName("aod.root");
+    aodHandler->SetOutputFileName("jets.root");
     
     AliAnalysisManager *mgr  = new AliAnalysisManager("Jet Manager", "Jet Manager");
-    mgr->SetEventHandler(aodHandler);
+    mgr->SetOutputEventHandler(aodHandler);
+    mgr->SetInputEventHandler(inpHandler);
     mgr-> SetDebugLevel(10);
 
-//
-//   Jet Finder Task
-//
 
-    AliAnalysisTaskJets *jetana = new AliAnalysisTaskJets("JetAnalysis");
-    jetana->SetDebugLevel(10);
-    mgr->AddTask(jetana);
-//
-//  ESD Filter Task
-//
+    //
+    //  ESD Filter Task
+    //
     //
     // Set of cuts
     // 
@@ -72,25 +75,23 @@ void JetAnalysisManagerCAF()
     esdTrackCutsL->SetRequireSigmaToVertex(kTRUE);
     esdTrackCutsL->SetAcceptKingDaughters(kFALSE);
     //
-    // hard
-    AliESDtrackCuts* esdTrackCutsH = new AliESDtrackCuts("AliESDtrackCuts", "Hard");
-    esdTrackCutsH->SetMinNClustersTPC(100);
-    esdTrackCutsH->SetMaxChi2PerClusterTPC(2.0);
-    esdTrackCutsH->SetMaxCovDiagonalElements(2,2,0.5,0.5,2);
-    esdTrackCutsH->SetRequireTPCRefit(kTRUE);
-    esdTrackCutsH->SetMinNsigmaToVertex(2);
-    esdTrackCutsH->SetRequireSigmaToVertex(kTRUE);
-    esdTrackCutsH->SetAcceptKingDaughters(kFALSE);
-    //
     //
     AliAnalysisFilter* trackFilter = new AliAnalysisFilter("trackFilter");
     trackFilter->AddCuts(esdTrackCutsL);
-    trackFilter->AddCuts(esdTrackCutsH);
     //
     AliAnalysisTaskESDfilter *esdfilter = new AliAnalysisTaskESDfilter("ESD Filter");
     esdfilter->SetTrackFilter(trackFilter);
     esdfilter->SetDebugLevel(10);
     mgr->AddTask(esdfilter);
+
+//
+//   Jet Finder Task
+//
+
+    AliAnalysisTaskJets *jetana = new AliAnalysisTaskJets("JetAnalysis");
+    jetana->SetDebugLevel(10);
+    jetana->SetConfigFile("ConfigJetAnalysisAOD.C");
+    mgr->AddTask(jetana);
     //
     // Create containers for input/output
     AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("cchain",TChain::Class(), 
@@ -98,20 +99,23 @@ void JetAnalysisManagerCAF()
 
     AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("tree", TTree::Class(),
 							      AliAnalysisManager::kOutputContainer, "default");
-
-    AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("histos", TH1F::Class(),
+    coutput1->SetSpecialOutput();
+    
+    AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("histos", TList::Class(),
 							      AliAnalysisManager::kOutputContainer, "histos.root");
+
+    mgr->ConnectInput  (esdfilter,  0, cinput1 );
+    mgr->ConnectOutput (esdfilter,  0, coutput1);
 
     mgr->ConnectInput (jetana, 0, cinput1);
     mgr->ConnectOutput(jetana, 0, coutput1);
     mgr->ConnectOutput(jetana, 1, coutput2);
 
-    mgr->ConnectInput  (esdfilter,  0, cinput1 );
-    mgr->ConnectOutput (esdfilter,  0, coutput1);
+
     //
     // Run the analysis
     //    
     mgr->InitAnalysis();
     mgr->PrintStatus();
-    mgr->StartAnalysis("proof",chain);
+    mgr->StartAnalysis("proof","/PWG4/arian/jetjetAbove_50_real");
 }
