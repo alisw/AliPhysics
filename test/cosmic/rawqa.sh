@@ -21,9 +21,10 @@ export RUNNUM=$1
 
 [ ! -e "$HOME/.globus/usercert.pem" ] && { echo "FAILED: There is no certificate in $HOME/.globus"; exit 1; }
 
-[ -e "/tmp/gclient_env_$UID" ] && { source /tmp/gclient_env_$UID; }
-echo 12==========================  $LD_LIBRARY_PATH
+#[ -e "/tmp/gclient_env_$UID" ] && { source /tmp/gclient_env_$UID; }
+#echo 12==========================  $LD_LIBRARY_PATH
 alien-token-init 
+source /tmp/gclient_env_$UID;
 
 [ ! "$?" -eq "0" ] && { echo "FAILED: Token creation failed"; exit 1; }
 
