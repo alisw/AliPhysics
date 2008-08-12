@@ -91,12 +91,14 @@ void AliITSOnlineSDDBase::AddEvent(TH2F* hrawd){
   for(Int_t ian=0;ian<fgkNAnodes;ian++){
     Float_t sumQ=0.;
     sum[ian]=0.;
+    Int_t cnt=0;
     for(Int_t itb=fFirstGoodTB;itb<=fLastGoodTB;itb++){
       sum[ian]+=hrawd->GetBinContent(itb+1,ian+1);
-      sumQ+=TMath::Power(hrawd->GetBinContent(itb+1,ian+1),2);      
+      sumQ+=TMath::Power(hrawd->GetBinContent(itb+1,ian+1),2);
+      cnt++;
     }
-    sum[ian]/=(Float_t)kTimeBins;
-    sumQ/=(Float_t)kTimeBins;
+    sum[ian]/=(Float_t)cnt;
+    sumQ/=(Float_t)cnt;
     fSumBaseline[ian]+=sum[ian];
     fSumRawNoise[ian]+=sumQ;
   }
