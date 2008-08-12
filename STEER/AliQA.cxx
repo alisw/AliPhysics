@@ -244,6 +244,7 @@ const char * AliQA::GetAliTaskName(ALITASK_t tsk)
 	}
 	return tskName.Data() ;
 }
+
 //_______________________________________________________________
 const char * AliQA::GetBitName(QABIT_t bit) const
 {
@@ -532,6 +533,26 @@ AliQA *  AliQA::Instance(const TASKINDEX_t tsk)
 		index = kESD ; 
 
 	return Instance(index) ; 
+}
+
+//_______________________________________________________________
+void AliQA::Merge(TCollection * list) {
+	// Merge the QA resuls in the list into this single AliQA object
+	
+	for (Int_t det = 0 ; det < kNDET ; det++) {
+		Set(DETECTORINDEX_t(det)) ; 
+		for (Int_t task = 0 ; task < kNTASK ; task++) {
+			Set(ALITASK_t(task)) ; 
+			for (Int_t bit = 0 ; bit < kNBIT ; bit++) {
+				TIter next(list) ;
+				AliQA * qa ; 
+				while ( (qa = (AliQA*)next() ) ) {
+					qa->IsSet(DETECTORINDEX_t(det), ALITASK_t(task), QABIT_t(bit)) ;
+					Set(QABIT_t(bit)) ; 
+				} // qa list
+			} // bit
+		} // task
+	} // detector
 }
 
 //_______________________________________________________________
