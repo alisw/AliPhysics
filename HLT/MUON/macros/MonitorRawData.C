@@ -167,15 +167,8 @@ bool UpdateHists(AliHLTHOMERReader& homerReader, const char* hostname, UShort_t 
 }
 
 
-void MonitorRawData(const char* hostname = "fepdimutrg", UShort_t port = 49152, bool addHists = false)
+void MonitorRawData(const char* hostname = "alihlt-dcs0", UShort_t port = 58784, bool addHists = false)
 {
-	AliHLTHOMERReader homerReader(hostname, port);
-	if (homerReader.GetConnectionStatus() != 0)
-	{
-		cerr << "ERROR: Could not connect to HLT on " << hostname << ":" << port << endl;
-		return;
-	}
-
 	if (gErrorHist == NULL && gDirectory->Get("errorHist") == NULL)
 	{
 		gErrorHist = new TH1D("errorHist", "Error codes found in raw data", 40, 0.5, 40.5);
@@ -198,24 +191,63 @@ void MonitorRawData(const char* hostname = "fepdimutrg", UShort_t port = 49152, 
 	TCanvas* c1 = new TCanvas("errorCanvas", "Error histogram", 0, 0, 600, 450);
 	gErrorHist->Draw();
 	TCanvas* c2 = new TCanvas("manuCanvas", "MANU histogram", 610, 00, 600, 450);
-	c2->SetLogy();
+	if (gManuHist->GetEntries() > 0) c2->SetLogy();
 	gManuHist->Draw();
 	TCanvas* c3 = new TCanvas("signalCanvas", "Signal histogram", 0, 480, 600, 450);
-	c3->SetLogy();
+	if (gSignalHist->GetEntries() > 0) c3->SetLogy();
 	gSignalHist->Draw();
 	
 	for (;;)
 	{
-		if (! UpdateHists(homerReader, hostname, port, addHists)) break;
-		c1->cd();
-		gErrorHist->Draw();
+		bool updateOk = true;
+
+		AliHLTHOMERReader homerReader(hostname, port);
+		int status = homerReader.GetConnectionStatus();
+		if (status == 0)
+		{
+			try
+			{
+				updateOk = UpdateHists(homerReader, hostname, port, addHists);
+			}
+			catch (...)
+			{
+				cerr << "ERROR: exception occured. Trying to recover and continue..." << endl;
+			}
+		}
+		else
+		{
+			cerr << "ERROR: Could not connect to HLT on " << hostname << ":" << port << endl;
+		}
+
+		// Clear histograms on errors. This is usualy due to end of run.
+		if (! updateOk || status != 0)
+		{
+			gErrorHist->Reset("M");
+			gManuHist->Reset("M");
+			gSignalHist->Reset("M");
+			c1->cd();
+			gErrorHist->Draw();
+			c2->cd();
+			c2->SetLogy(kFALSE);
+			gManuHist->Draw();
+			c3->cd();
+			c3->SetLogy(kFALSE);
+			gSignalHist->Draw();
+		}
+
+		if (gManuHist->GetEntries() > 0) c2->SetLogy();
+		if (gSignalHist->GetEntries() > 0) c3->SetLogy();
+
 		c1->Update();
-		c2->cd();
-		gManuHist->Draw();
 		c2->Update();
-		c3->cd();
-		gSignalHist->Draw();
 		c3->Update();
-		gSystem->Sleep(1000);
+
+		// Effectively wait for 2 seconds but dispatch ROOT events while waiting.
+		for (int i = 0; i < 200; i++)
+		{
+			gSystem->DispatchOneEvent(kTRUE);
+			gSystem->Sleep(10);
+		}
 	}
 }
+
