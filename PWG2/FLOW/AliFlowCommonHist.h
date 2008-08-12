@@ -19,12 +19,12 @@ class TProfile;
 class TCollection;
 class TList;
 
-class AliFlowCommonHist: public TObject {
+class AliFlowCommonHist: public TNamed {
 
  public:
 
   AliFlowCommonHist();
-  AliFlowCommonHist(TString anInput);
+  AliFlowCommonHist(const char *name,const char *title = "AliFlowCommonHist");
   virtual ~AliFlowCommonHist();
 
   //make fill methods here

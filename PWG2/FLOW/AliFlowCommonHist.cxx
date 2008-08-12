@@ -32,14 +32,14 @@ class TH1D;
 //
 // Description: Class to organise common histograms for Flow Analysis
 
-// authors: N. van der Kolk (kolk@nikhef.nl) and A. Bilandzic (anteb@nikhef.nl)
+// authors: N. van der Kolk (kolk@nikhef.nl), A. Bilandzic (anteb@nikhef.nl), RS
 
 
 ClassImp(AliFlowCommonHist)
 
 //-----------------------------------------------------------------------
 
-  AliFlowCommonHist::AliFlowCommonHist():TObject(),
+  AliFlowCommonHist::AliFlowCommonHist():TNamed(),
    fHistMultOrig(NULL),
    fHistMultInt(NULL),
    fHistMultDiff(NULL),
@@ -60,7 +60,7 @@ ClassImp(AliFlowCommonHist)
 
 //-----------------------------------------------------------------------
 
-  AliFlowCommonHist::AliFlowCommonHist(TString anInput):TObject(),
+  AliFlowCommonHist::AliFlowCommonHist(const char *anInput,const char *title):TNamed(anInput,title),
    fHistMultOrig(NULL),
    fHistMultInt(NULL),
    fHistMultDiff(NULL),
@@ -327,20 +327,13 @@ Double_t AliFlowCommonHist::GetMeanPt(Int_t aBin)
 
 void AliFlowCommonHist::Print(Option_t *option) const
 {
-   //   -*-*-*-*-*Print some global quantities for this histogram collection class *-*-*-*-*-*-*-*
-   //             ===============================================
-   //
-   //  If option "base" is given, number of bins and ranges are also printed
-   //  If option "range" is given, bin contents and errors are also printed
-   //                     for all bins in the current range (default 1-->nbins)
-   //  If option "all" is given, bin contents and errors are also printed
-   //                     for all bins including under and overflows.
-   //
+  //   -*-*-*-*-*Print some global quantities for this histogram collection class *-*-*-*-*-*-*-*
+  //             ===============================================
   //   printf( "TH1.Print Name  = %s, Entries= %d, Total sum= %g\n",GetName(),Int_t(fEntries),GetSumOfWeights());
-  printf( "Class.Print Name = AliFlowCommonHist, Histogram list:");
-
+  printf( "Class.Print Name = %s, Histogram list:\n",GetName());
+  
   fHistList->Print(option);
-
+  
 }
 
 

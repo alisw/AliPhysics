@@ -79,7 +79,10 @@ void AliFlowAnalysisWithScalarProduct::Init() {
   fHistList->Add(fHistProUQ);
 
   fCommonHists = new AliFlowCommonHist("SP");
-  //fHistList->Add(fCommonHists->GetHistList());
+  //  fHistList->Add(fCommonHists->GetHistList());
+
+  //  fHistList->Add(fCommonHists);
+  // commented for test writing full object
   fHistList->Add(fCommonHists->GetHistMultOrig());
   fHistList->Add(fCommonHists->GetHistMultInt());
   fHistList->Add(fCommonHists->GetHistMultDiff());
@@ -91,6 +94,8 @@ void AliFlowAnalysisWithScalarProduct::Init() {
   fHistList->Add(fCommonHists->GetHistEtaDiff());
   fHistList->Add(fCommonHists->GetHistProMeanPtperBin());
   fHistList->Add(fCommonHists->GetHistQ());
+  // end test
+
   //fCommonHistsRes = new AliFlowCommonHistResults("SP");
   
   fEventNumber = 0;  //set number of events to zero    
