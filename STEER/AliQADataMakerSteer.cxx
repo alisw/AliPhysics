@@ -580,12 +580,23 @@ Bool_t AliQADataMakerSteer::IsSelected(const char * det)
 //_____________________________________________________________________________
 Bool_t AliQADataMakerSteer::Merge(const Int_t runNumber) const
 {
+	// Merge data from all the cycles from all detectors in one single file per run
+	// Merge the QA results from all the data chunks in one run 
+ Bool_t rv = MergeData(runNumber) ; 
+ rv *= MergeResults(runNumber) ;
+ return rv ; 
+}
+	
+	
+//_____________________________________________________________________________
+Bool_t AliQADataMakerSteer::MergeData(const Int_t runNumber) const
+{
 	// Merge all the cycles from all detectors in one single file per run
 	TString cmd ;
-	if ( runNumber == -1 )
-		cmd = Form(".! ls *%s*.*.*.root > tempo.txt", AliQA::GetQADataFileName()) ; 
-	else 
+	if (runNumber == -1) 
 		cmd = Form(".! ls *%s*.%d.*.root > tempo.txt", AliQA::GetQADataFileName(), runNumber) ; 
+	else 
+		cmd = Form(".! ls *%s*.*.*.root > tempo.txt", AliQA::GetQADataFileName()) ; 
 	gROOT->ProcessLine(cmd.Data()) ;
 	ifstream in("tempo.txt") ; 
 	const Int_t runMax = 10 ;  
@@ -629,7 +640,7 @@ Bool_t AliQADataMakerSteer::Merge(const Int_t runNumber) const
 	}
 	for (Int_t irun = 0 ; irun < runIndexMax ; irun++) {
 		TFileMerger merger ; 
-		TString outFileName(Form("Merged.%s.%d.root",AliQA::GetQADataFileName(),run[irun]));		
+		TString outFileName(Form("Merged.%s.Data.%d.root",AliQA::GetQADataFileName(),run[irun]));		
 		merger.OutputFile(outFileName.Data()) ; 
 		for (Int_t ifile = 0 ; ifile < index-1 ; ifile++) {
 			TString pattern(Form("%s.%d.", AliQA::GetQADataFileName(), run[irun])) ; 
@@ -640,6 +651,44 @@ Bool_t AliQADataMakerSteer::Merge(const Int_t runNumber) const
 		}
 		merger.Merge() ; 
 	}
+	
+	return kTRUE ; 
+}
+
+//_____________________________________________________________________________
+Bool_t AliQADataMakerSteer::MergeResults(const Int_t runNumber) const
+{
+	// Merge the QA result from all the data chunks in a run 
+	TString cmd ;
+	cmd = Form(".! ls %s*.root > tempo.txt", AliQA::GetQADataFileName()) ; 
+	gROOT->ProcessLine(cmd.Data()) ;
+	ifstream in("tempo.txt") ; 
+	const Int_t chunkMax = 100 ;  
+	TString fileList[chunkMax] ;
+	
+	Int_t index = 0 ; 
+	while ( 1 ) {
+		TString file ; 
+		in >> fileList[index] ; 
+		if ( !in.good() ) 
+			break ; 
+		AliInfo(Form("index = %d file = %s", index, (fileList[index].Data()))) ; 
+		index++ ;
+	}
+	
+	if ( index == 0 ) { 
+		AliError("No QA Result File found") ; 
+		return kFALSE ; 
+	}
+	
+	TFileMerger merger ; 
+	TString outFileName(Form("Merged.%s.Result.%d.root", AliQA::GetQADataFileName(), runNumber));		
+	merger.OutputFile(outFileName.Data()) ; 
+	for (Int_t ifile = 0 ; ifile < index ; ifile++) {
+		TString file = fileList[ifile] ; 
+		merger.AddFile(file) ; 
+	}
+	merger.Merge() ; 
 	
 	return kTRUE ; 
 }
