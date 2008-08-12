@@ -43,6 +43,7 @@
 	includePath        += "-I${ALICE_ROOT}/MUON ";
 	includePath        += "-I${ALICE_ROOT}/MUON/mapping ";
 	includePath        += "-I${ALICE_ROOT}/HLT/BASE ";
+	includePath        += "-I${ALICE_ROOT}/HLT/BASE/HOMER ";
 	includePath        += "-I${ALICE_ROOT}/HLT/MUON ";
 	includePath        += "-I${ALICE_ROOT}/HLT/MUON/macros ";
 	includePath        += "-I${ALICE_ROOT}/HLT/MUON/OfflineInterface ";
@@ -54,6 +55,7 @@
 	gROOT->SetMacroPath(macroPath);
 	
 	gSystem->Load("libAliHLTMUON.so");
+	gSystem->Load("libAliHLTHOMER.so");
 	
 	// Setup the CDB default storage and run number if nothing was set.
 	AliCDBManager* cdbManager = AliCDBManager::Instance();

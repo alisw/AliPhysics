@@ -172,6 +172,7 @@ private:
 	TH1D* fSignalHist[20]; /// Histograms for signal distributions per DDL.
 	bool fSuppressEmptyHists;  /// Flag indicating if empty histograms should be published or not.
 	bool fProcessDataEventsOnly;  /// Flag indicating if only data events should be processed.
+	bool fClearAfterPublish;  /// Inficates if the histograms should be reset after being published.
 	
 	ClassDef(AliHLTMUONRawDataHistoComponent, 0);  // Trigger decision component for the dimuon HLT.
 };

@@ -52,9 +52,10 @@ AliHLTMUONRawDataHistoComponent::AliHLTMUONRawDataHistoComponent() :
 	fTriggerDecoder(),
 	fLastPublishTime(-1),
 	fCurrentEventTime(-1),
-	fPublishDelay(1),
+	fPublishDelay(0),
 	fSuppressEmptyHists(false),
-	fProcessDataEventsOnly(false)
+	fProcessDataEventsOnly(false),
+	fClearAfterPublish(false)
 {
 	/// Default constructor initialises all histogram object pointers to NULL.
 	
@@ -160,10 +161,11 @@ int AliHLTMUONRawDataHistoComponent::DoInit(int argc, const char** argv)
 	if (result != 0) return result;
 
 	fLastPublishTime = fCurrentEventTime = -1;
-	fPublishDelay = 1;
+	fPublishDelay = 0;
 	bool pubDelaySet = false;
 	fSuppressEmptyHists = false;
 	fProcessDataEventsOnly = false;
+	fClearAfterPublish = false;
 	fTrackerDecoder.TryRecover(false);
 	fTriggerDecoder.TryRecover(false);
 	
@@ -211,6 +213,12 @@ int AliHLTMUONRawDataHistoComponent::DoInit(int argc, const char** argv)
 		if (strcmp(argv[i], "-onlydataevents") == 0)
 		{
 			fProcessDataEventsOnly = true;
+			continue;
+		}
+		
+		if (strcmp(argv[i], "-clearafterpub") == 0)
+		{
+			fClearAfterPublish = true;
 			continue;
 		}
 		
@@ -332,8 +340,8 @@ int AliHLTMUONRawDataHistoComponent::DoEvent(
 				AliHLTMUONConstants::HistogramDataType(),
 				AliHLTMUONUtils::DDLNumberToSpec(i)
 			);
-			// clear histogram when published.
-			fErrorHist[i]->Reset("M");
+			// If requested, clear histogram when published.
+			if (fClearAfterPublish) fErrorHist[i]->Reset("M");
 		}
 		for (int i = 0; i < 20; i++)
 		{
@@ -341,12 +349,12 @@ int AliHLTMUONRawDataHistoComponent::DoEvent(
 			if (not (fSuppressEmptyHists and fManuHist[i]->GetEntries() == 0))
 			{
 				PushBack(fManuHist[i], AliHLTMUONConstants::HistogramDataType(), spec);
-				fManuHist[i]->Reset("M");
+				if (fClearAfterPublish) fManuHist[i]->Reset("M");
 			}
 			if (not (fSuppressEmptyHists and fSignalHist[i]->GetEntries() == 0))
 			{
 				PushBack(fSignalHist[i], AliHLTMUONConstants::HistogramDataType(), spec);
-				fSignalHist[i]->Reset("M");
+				if (fClearAfterPublish) fSignalHist[i]->Reset("M");
 			}
 		}
 		fLastPublishTime = fCurrentEventTime;
