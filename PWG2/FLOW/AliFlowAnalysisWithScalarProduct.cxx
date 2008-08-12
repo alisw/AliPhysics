@@ -81,7 +81,7 @@ void AliFlowAnalysisWithScalarProduct::Init() {
   fCommonHists = new AliFlowCommonHist("SP");
   //  fHistList->Add(fCommonHists->GetHistList());
 
-  //  fHistList->Add(fCommonHists);
+  fHistList->Add(fCommonHists);
   // commented for test writing full object
   fHistList->Add(fCommonHists->GetHistMultOrig());
   fHistList->Add(fCommonHists->GetHistMultInt());

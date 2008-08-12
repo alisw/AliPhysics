@@ -331,9 +331,14 @@ void AliFlowCommonHist::Print(Option_t *option) const
   //             ===============================================
   //   printf( "TH1.Print Name  = %s, Entries= %d, Total sum= %g\n",GetName(),Int_t(fEntries),GetSumOfWeights());
   printf( "Class.Print Name = %s, Histogram list:\n",GetName());
-  
-  fHistList->Print(option);
-  
+
+  if (fHistList) {  
+    fHistList->Print(option);
+  }
+  else
+    {
+      printf( "Empty histogram list \n");
+    }
 }
 
 
