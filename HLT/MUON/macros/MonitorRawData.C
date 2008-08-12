@@ -117,7 +117,7 @@ bool UpdateHists(AliHLTHOMERReader& homerReader, const char* hostname, UShort_t 
 				<< ", block type = " << DataTypeToString(homerReader.GetBlockDataType(n))
 				<< ", origin = " << OriginToString(homerReader.GetBlockDataOrigin(n))
 				<< ", but unknown class type. Skipping block." << endl;
-			delete buffer;
+			//delete buffer;
 			continue;
 		}
 		TObject* obj = msg.ReadObject(objclass);
