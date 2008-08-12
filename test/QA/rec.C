@@ -1,8 +1,8 @@
 void rec() {
   const char * kYear = "08" ; 
   AliCDBManager * man = AliCDBManager::Instance();
-  //man->SetDefaultStorage("alien://Folder=/alice/simulation/2007/PDC07_v4-09-Rev-00/Ideal/CDB/");
-  man->SetDefaultStorage("local://$ALICE_ROOT");
+  man->SetDefaultStorage("alien://Folder=/alice/data/2008/LHC08c/OCDB/");
+  //man->SetDefaultStorage("local://$ALICE_ROOT");
   man->SetSpecificStorage("EMCAL/*","local://DB");
   
   AliReconstruction reco;
