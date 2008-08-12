@@ -49,8 +49,8 @@ ClassImp(AliITSSurveyToAlignSSD)
 AliITSSurveyToAlignSSD::AliITSSurveyToAlignSSD() :
   TObject(),
   fRun(0),
-  fFileLoc(0x0),
-  fFileGlob(0x0),
+  fFileLocal(0x0),
+  fFileGrid(0x0),
   fSurveyPoints(0),
   fSSDAlignObj(new TClonesArray("AliAlignObjParams",100)),
   fSSDAlignObjParam(0),
@@ -61,11 +61,11 @@ AliITSSurveyToAlignSSD::AliITSSurveyToAlignSSD() :
 }   
 
 //________________________________________________________________________
-AliITSSurveyToAlignSSD::AliITSSurveyToAlignSSD(Int_t /* run */, Int_t reportloc, Int_t reportglob) :
+AliITSSurveyToAlignSSD::AliITSSurveyToAlignSSD(Int_t reportId, Int_t runNumber) :
   TObject(),
   fRun(0),
-  fFileLoc(0x0),
-  fFileGlob(0x0),
+  fFileLocal(0x0),
+  fFileGrid(0x0),
   fSurveyPoints(0),
   fSSDAlignObj(new TClonesArray("AliAlignObjParams",100)),
   fSSDAlignObjParam(0),
@@ -73,22 +73,21 @@ AliITSSurveyToAlignSSD::AliITSSurveyToAlignSSD(Int_t /* run */, Int_t reportloc,
   //
   // constructor - defines data files
   //
-  fFileLoc = new Char_t[80];
-  fFileGlob = new Char_t[80];
+  fRun = runNumber;
+  fFileLocal = new Char_t[80];
+  fFileGrid = new Char_t[80];
   Char_t path[50];
-  sprintf(path,gSystem->Getenv("ALICE_ROOT")); 
-  //
-  sprintf(fFileLoc,"%s/ITS/Survey_SSD_%d.txt",path,reportloc);  
-  sprintf(fFileGlob,"%s/ITS/Survey_SSD_%d.txt",path,reportglob);
-  //
 
+  sprintf(path,gSystem->Getenv("ALICE_ROOT")); 
+  sprintf(fFileLocal,"%s/ITS/Survey_SSD_%d.txt",path,reportId);  
 }
+
 //_________________________________________________________________________
 AliITSSurveyToAlignSSD::AliITSSurveyToAlignSSD(const AliITSSurveyToAlignSSD &align) :
   TObject(),
   fRun(0),
-  fFileLoc(0x0),
-  fFileGlob(0x0),
+  fFileLocal(0x0),
+  fFileGrid(0x0),
   fSurveyPoints(0),
   fSSDAlignObj(new TClonesArray("AliAlignObjParams",100)),
   fSSDAlignObjParam(0),
@@ -131,7 +130,6 @@ void AliITSSurveyToAlignSSD::Run() {
   }
   CreateAlignObj();
   StoreAlignObj();
-  //
 }
 
 //__________________________________________________________________________
@@ -144,7 +142,7 @@ Bool_t AliITSSurveyToAlignSSD::LoadSurveyData() {
   
   //Load survey data from the local file
   AliSurveyObj * s1 = new AliSurveyObj();
-  if(s1->FillFromLocalFile(fFileGlob))
+  if(s1->FillFromLocalFile(fFileLocal))
     fSurveyPoints = s1->GetData();
   else 
     return kFALSE;
@@ -218,7 +216,6 @@ void AliITSSurveyToAlignSSD::StoreAlignObj(){
   }
   cout<<"Saving alignment objects to the file "<<filename<<endl;
   f->cd();
-  f->WriteObject(fSSDAlignObj,"SSDAlignObjs","kSingleKey");
+  f->WriteObject(fSSDAlignObj,"ITSAlignObjs","kSingleKey");
   f->Close();
-
 }

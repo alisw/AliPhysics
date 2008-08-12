@@ -12,6 +12,7 @@
 //                                                                     //
 //     Author: Panos.Christakoglou@cern.ch - NIKHEF/UU                 //
 /////////////////////////////////////////////////////////////////////////
+#include <TSystem.h>
 #include <TObjArray.h>
 #include <TClonesArray.h>
 
@@ -22,9 +23,17 @@ class AliITSSurveyToAlignSSD : public TObject {
 
  public:
   AliITSSurveyToAlignSSD();
-  AliITSSurveyToAlignSSD(Int_t /* run */, Int_t reportloc, Int_t reportglob);
+  AliITSSurveyToAlignSSD(Int_t reportId, Int_t runNumber);
   AliITSSurveyToAlignSSD(const AliITSSurveyToAlignSSD &align); // copy constructor
   AliITSSurveyToAlignSSD &operator = (const AliITSSurveyToAlignSSD &align); //assignment operator
+
+  void SetRun(Int_t runNumber) {fRun = runNumber;}
+  void SetReportId(Int_t reportId) {
+      fFileLocal = new Char_t[80];
+      Char_t path[50];
+      sprintf(path,gSystem->Getenv("ALICE_ROOT")); 
+    sprintf(fFileLocal,"%s/ITS/Survey_SSD_%d.txt",path,reportId);  
+  }
   Bool_t LoadSurveyData();
   void CreateAlignObj();
   void Run();
@@ -33,9 +42,9 @@ class AliITSSurveyToAlignSSD : public TObject {
   virtual   ~AliITSSurveyToAlignSSD();
   //
  private:
-  Int_t   fRun;                         // the run number for the OCDB
-  Char_t *fFileLoc;                     // file with ideal points
-  Char_t *fFileGlob;                    // file with surveyed points
+  Int_t fRun;                           // run number 
+  Char_t *fFileLocal;                   // local file with surveyed points
+  Char_t *fFileGrid;                    // GRID file with surveyed points
   TObjArray *fSurveyPoints;             // array of survey points
   TClonesArray *fSSDAlignObj;           // TClonesArray of AliAlignObj
   AliAlignObjParams *fSSDAlignObjParam; // SSD alignment object param
