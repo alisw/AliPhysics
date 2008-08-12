@@ -39,9 +39,10 @@ public:
         , kNslice    =   3
         , kNMLPslice =   8 };
   
+  // bits from 0-13 are reserved by ROOT (see TObject.h)
   enum AliTRDtrackStatus {
-          kOwner   = BIT(1)
-        , kStopped = BIT(2) 
+          kOwner   = BIT(14)
+        , kStopped = BIT(15) 
   };
 
   AliTRDtrackV1();

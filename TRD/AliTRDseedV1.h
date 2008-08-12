@@ -39,9 +39,10 @@ class AliTRDseedV1 : public AliTRDseed
   enum {
     knSlices = 10
   };
+  // bits from 0-13 are reserved by ROOT (see TObject.h)
   enum AliTRDtrackletStatus {
-    kOwner    = BIT(1)
-  , kRowCross = BIT(2) 
+    kOwner    = BIT(14)
+  , kRowCross = BIT(15) 
   };
 
   AliTRDseedV1(Int_t plane = -1);
