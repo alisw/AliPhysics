@@ -274,6 +274,14 @@ endif
 
 aliroot: alilibs $(BINPATH) $(ALLEXECS) 
 
+ALIRECO.par: macros/loadlibsrec.C STEER/PROOF-INF.ALIRECO/SETUP.C
+	$(MUTE)echo "***** Creating package archive" $@ "*****"
+	$(MUTE)rm -rf ALIRECO
+	$(MUTE)mkdir -p ALIRECO/PROOF-INF
+	$(MUTE)cat $^ > ALIRECO/PROOF-INF/SETUP.C
+	(tar cfzh $@ ALIRECO 2> /dev/null && echo "Package archive" $@ "created in" $(PWD)/$@) || (tar cfzh /tmp/$@ ALIRECO 2> /dev/null && echo "Package archive" $@ "created in /tmp/"$@)
+	$(MUTE)rm -rf ALIRECO
+
 ROOTALIBDIR=$(shell root-config --libdir)
 
 ALIMDCSPECFILE=$(RAWDIRO)/alimdc.spec
