@@ -256,7 +256,7 @@ Bool_t AliShuttle::StoreOCDB()
 	//
 	
 	UpdateShuttleStatus(AliShuttleStatus::kStoreStarted);
-				
+			
 	if (fTestMode & kErrorGrid)
 	{
 		Log("SHUTTLE", "StoreOCDB - In TESTMODE - Simulating error while storing in the Grid");
@@ -1385,16 +1385,42 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 
 				if (expiredTime > fConfig->GetPPTimeOut())
 				{
-					TString tmp;
-					tmp.Form("Process - Process of %s time out. "
-							"Run time: %d seconds. Killing...",
-							fCurrentDetector.Data(), expiredTime);
-					Log("SHUTTLE", tmp);
-					Log(fCurrentDetector, tmp);
+                                        TString logMsg;
+					AliShuttleStatus *currentStatus = ReadShuttleStatus();
+					AliShuttleStatus::Status newStatus = AliShuttleStatus::kInvalid;
+					
+					if (currentStatus->GetStatus() <= AliShuttleStatus::kPPDone)
+					{
+						// in case pp not yet done set status to kPPTimeOut
+					
+						logMsg.Form("Process - Process of %s timed out. Run time: %d seconds. Killing...",
+								fCurrentDetector.Data(), expiredTime);
+						newStatus = AliShuttleStatus::kPPTimeOut;
+					}
+					else if (currentStatus->GetStatus() == AliShuttleStatus::kStoreStarted)
+					{
+						// in case the pp goes in TimeOut while storing the objects in the OCDB
+						// set status to kStoreError
+						
+						logMsg.Form("Process - Process of %s timed out while storing the OCDB object. Run time: %d seconds. Killing... and setting status to StoreError.",
+								fCurrentDetector.Data(), expiredTime);
+						newStatus = AliShuttleStatus::kStoreError;
+					}
+					else 
+					{
+						// in other cases don't change the status
+						
+					       	logMsg.Form("Process - Process of %s timed out in status = %s. Run time: %d seconds. Killing... without changing the status",
+								fCurrentDetector.Data(), currentStatus->GetStatusName(), expiredTime);
+					}
+				
+					Log("SHUTTLE", logMsg);
+					Log(fCurrentDetector, logMsg);
 
 					kill(pid, 9);
 
-					UpdateShuttleStatus(AliShuttleStatus::kPPTimeOut);
+					if (newStatus != AliShuttleStatus::kInvalid)
+						UpdateShuttleStatus(newStatus);
 					hasError = kTRUE;
 
 					gSystem->Sleep(1000);
