@@ -5,7 +5,7 @@
  * Contributors are mentioned in the code where appropriate.              *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
+ * documentation strictly for non-commerciatobjl purposes is hereby granted   *
  * without fee, provided that the above copyright notice appears in all   *
  * copies and that both the copyright notice and this permission notice   *
  * appear in the supporting documentation. The authors make no claims     *
@@ -18,6 +18,7 @@
 #include "AliESDtrackCuts.h"
 
 #include <AliESDtrack.h>
+#include <AliESDVertex.h>
 #include <AliESDEvent.h>
 #include <AliLog.h>
 
@@ -745,6 +746,10 @@ AliESDtrack* AliESDtrackCuts::GetTPCOnlyTrack(AliESDEvent* esd, Int_t iTrack)
   if (!esd->GetPrimaryVertexTPC())
     return 0; // No TPC vertex no TPC tracks
 
+  if(!esd->GetPrimaryVertexTPC()->GetStatus())
+    return 0; // TPC Vertex is created by default in AliESDEvent, do not use in this case
+  
+
   AliESDtrack* track = esd->GetTrack(iTrack);
   if (!track)
     return 0;
@@ -789,6 +794,7 @@ TObjArray* AliESDtrackCuts::GetAcceptedTracks(AliESDEvent* esd,Bool_t bTPC)
   for (Int_t iTrack = 0; iTrack < esd->GetNumberOfTracks(); iTrack++) {
     if(bTPC){
       if(!esd->GetPrimaryVertexTPC())return acceptedTracks; // No TPC vertex no TPC tracks
+      if(!esd->GetPrimaryVertexTPC()->GetStatus())return acceptedTracks; // No proper TPC vertex, only the default
 
       AliESDtrack *tpcTrack = GetTPCOnlyTrack(esd, iTrack);
       if (!tpcTrack)
