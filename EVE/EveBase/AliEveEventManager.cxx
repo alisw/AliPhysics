@@ -8,6 +8,7 @@
  **************************************************************************/
 
 #include "AliEveEventManager.h"
+#include "AliEveMacroExecutor.h"
 #include <TEveManager.h>
 
 #include <AliRunLoader.h>
@@ -72,7 +73,8 @@ AliEveEventManager::AliEveEventManager() :
   fAutoLoad(kFALSE),
   fAutoLoadTime(5.),
   fAutoLoadTimer(0),
-  fIsOnline(kFALSE)
+  fIsOnline(kFALSE),
+  fExecutor(new AliEveMacroExecutor)
 {
   // Default constructor.
 }
@@ -88,7 +90,8 @@ AliEveEventManager::AliEveEventManager(TString path, Int_t ev) :
   fAutoLoad(kFALSE),
   fAutoLoadTime(5.),
   fAutoLoadTimer(0),
-  fIsOnline(kFALSE)
+  fIsOnline(kFALSE),
+  fExecutor(new AliEveMacroExecutor)
 {
   // Constructor with event-directory URL and event-id.
 
@@ -470,7 +473,6 @@ void AliEveEventManager::GotoEvent(Int_t event)
   ElementChanged();
 
   AfterNewEventLoaded();
-  NewEventLoaded();
 }
 
 void AliEveEventManager::NextEvent()
@@ -533,6 +535,34 @@ void AliEveEventManager::Close()
 /******************************************************************************/
 // Static convenience functions, mainly used from macros.
 /******************************************************************************/
+
+Bool_t AliEveEventManager::HasRunLoader()
+{
+  // Check if AliRunLoader is initialized.
+
+  return gAliEveEvent && gAliEveEvent->fRunLoader;
+}
+
+Bool_t AliEveEventManager::HasESD()
+{
+  // Check if AliESDEvent is initialized.
+
+  return gAliEveEvent && gAliEveEvent->fESD;
+}
+
+Bool_t AliEveEventManager::HasESDfriend()
+{
+  // Check if AliESDfriend is initialized.
+
+  return gAliEveEvent && gAliEveEvent->fESDfriend;
+}
+
+Bool_t AliEveEventManager::HasRawReader()
+{
+  // Check if raw-reader is initialized.
+
+  return gAliEveEvent && gAliEveEvent->fRawReader;
+}
 
 AliRunLoader* AliEveEventManager::AssertRunLoader()
 {
@@ -674,6 +704,21 @@ void AliEveEventManager::StartStopAutoLoadTimer()
   {
     if (fAutoLoadTimer) fAutoLoadTimer->Stop();
   }
+}
+
+void AliEveEventManager::AfterNewEventLoaded()
+{
+  // Execute registered macros and commands.
+  // At the end emit NewEventLoaded signal.
+  //
+  // Virtual from TEveEventManager.
+
+  if (fExecutor)
+    fExecutor->ExecMacros();
+
+  TEveEventManager::AfterNewEventLoaded();
+
+  NewEventLoaded();
 }
 
 void AliEveEventManager::NewEventLoaded()

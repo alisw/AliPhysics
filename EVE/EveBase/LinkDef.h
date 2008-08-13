@@ -18,6 +18,12 @@
 
 #pragma link C++ global gAliEveEvent;
 
+// AliEveMacro and AliEveMacroExecutor
+#pragma link C++ class AliEveMacro+;
+#pragma link C++ class AliEveMacroEditor+;
+#pragma link C++ class AliEveMacroExecutor+;
+#pragma link C++ class AliEveMacroExecutorWindow+;
+
 #pragma link C++ class AliEveKineTools+;
 
 #pragma link C++ class AliEveVSDCreator+;

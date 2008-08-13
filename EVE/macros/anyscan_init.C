@@ -7,6 +7,8 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
+class AliEveMacroExecutor;
+
 class TEveProjectionManager;
 class TEveGeoShape;
 class TEveUtil;
@@ -19,10 +21,15 @@ TEveGeoShape *gGeomGentleTRD = 0;
 
 Bool_t gShowTRD = kFALSE;
 
-void visscan_init()
+void anyscan_init()
 {
   TEveUtil::LoadMacro("alieve_init.C");
   alieve_init(".", -1);
+
+  TEveLine::SetDefaultSmooth(1);
+
+  TEveUtil::AssertMacro("VizDB_scan.C");
+
 
   AliEveTrackFitter* fitter = new AliEveTrackFitter();
   gEve->AddToListTree(fitter, 1);
@@ -36,22 +43,22 @@ void visscan_init()
   TEveBrowser* browser = gEve->GetBrowser();
   browser->ExecPlugin("SplitGLView", 0, "new SplitGLView(gClient->GetRoot(), 600, 450, kTRUE)");
 
-   if (gRPhiMgr) {
-      TEveProjectionAxes* a = new TEveProjectionAxes(gRPhiMgr);
-      a->SetNumTickMarks(3);
-      a->SetText("R-Phi");
-      a->SetFontFile("comicbd");
-      a->SetFontSize(10);
-      gEve->GetScenes()->FindChild("R-Phi Projection")->AddElement(a);
-   }
-   if (gRhoZMgr) {
-      TEveProjectionAxes* a = new TEveProjectionAxes(gRhoZMgr);
-      a->SetNumTickMarks(3);
-      a->SetText("Rho-Z");
-      a->SetFontFile("comicbd");
-      a->SetFontSize(10);
-      gEve->GetScenes()->FindChild("Rho-Z Projection")->AddElement(a);
-   }
+  if (gRPhiMgr) {
+    TEveProjectionAxes* a = new TEveProjectionAxes(gRPhiMgr);
+    a->SetNumTickMarks(3);
+    a->SetText("R-Phi");
+    a->SetFontFile("comicbd");
+    a->SetFontSize(10);
+    gEve->GetScenes()->FindChild("R-Phi Projection")->AddElement(a);
+  }
+  if (gRhoZMgr) {
+    TEveProjectionAxes* a = new TEveProjectionAxes(gRhoZMgr);
+    a->SetNumTickMarks(3);
+    a->SetText("Rho-Z");
+    a->SetFontFile("comicbd");
+    a->SetFontSize(10);
+    gEve->GetScenes()->FindChild("Rho-Z Projection")->AddElement(a);
+  }
 
   // geometry
   TEveUtil::LoadMacro("geom_gentle.C");
@@ -61,19 +68,28 @@ void visscan_init()
     gGeomGentleTRD = geom_gentle_trd();
   }
 
-  // event data
-  TEveUtil::LoadMacro("primary_vertex.C");
-  TEveUtil::LoadMacro("esd_V0_points.C");
-  TEveUtil::LoadMacro("esd_V0.C");
-  TEveUtil::LoadMacro("esd_tracks.C");
-  TEveUtil::LoadMacro("its_clusters.C+");
-  TEveUtil::LoadMacro("tpc_clusters.C+");
-  TEveUtil::LoadMacro("trd_clusters.C+");
-  TEveUtil::LoadMacro("tof_clusters.C+");
 
-  TEveLine::SetDefaultSmooth(1);
+  AliEveMacroExecutor *exec = gAliEveEvent->GetExecutor();
+
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "primary_vertex.C", "primary_vertex"));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "esd_V0_points.C",  "esd_V0_points"));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "esd_V0.C",         "esd_V0"));
+  // exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "esd_tracks.C",     ""));
+  TEveUtil::LoadMacro("esd_tracks.C");
+
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "its_clusters.C+", "its_clusters"));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "tpc_clusters.C+", "tpc_clusters"));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "trd_clusters.C+", "trd_clusters"));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "tof_clusters.C+", "tof_clusters"));
 
   TEveBrowser* browser = gEve->GetBrowser();
+
+  browser->StartEmbedding(TRootBrowser::kRight);
+  AliEveMacroExecutorWindow* exewin = new AliEveMacroExecutorWindow(exec);
+  browser->StopEmbedding("DataSelection");
+  exewin->PopulateMacros();
+
+  browser->GetTabRight()->SetTab(1);
 
   browser->StartEmbedding(TRootBrowser::kBottom);
   new AliEveEventManagerWindow;
@@ -92,38 +108,7 @@ void visscan_init()
 
 void on_new_event()
 {
-  try {
-    TEvePointSet* itsc = its_clusters();
-    if (itsc) {
-      itsc->SetMarkerColor(5);
-    }
-
-    TEvePointSet* tpcc = tpc_clusters();
-    if (tpcc) {
-      tpcc->SetMarkerColor(4);
-    }
-
-    TEvePointSet* trdc = trd_clusters();
-    if (trdc) {
-      trdc->SetMarkerColor(7);
-      trdc->SetMarkerStyle(4);
-      trdc->SetMarkerSize(0.5);
-    }
-
-    TEvePointSet* tofc = tof_clusters();
-    if (tofc) {
-      tofc->SetMarkerColor(kOrange);
-      tofc->SetMarkerStyle(4);
-      tofc->SetMarkerSize(0.5);
-    }
-  }
-  catch(TEveException& exc) {
-    printf("Exception loading ITS/TPC clusters: %s\n", exc.Data());
-  }
-
-  primary_vertex(1, 1);
-  esd_V0_points();
-  esd_V0();
+  printf("on_new_event() entered ...\n");
 
   TEveElementList* cont = esd_tracks_vertex_cut();
 

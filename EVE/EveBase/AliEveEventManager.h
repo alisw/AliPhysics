@@ -13,6 +13,8 @@
 #include <TEveEventManager.h>
 #include <TQObject.h>
 
+class AliEveMacroExecutor;
+
 class AliRunLoader;
 class AliESDEvent;
 class AliESDfriend;
@@ -65,6 +67,11 @@ public:
   virtual const Text_t* GetTitle()   const { return fPath.Data(); }
   const char*   GetEventInfo() const;
 
+  static Bool_t HasRunLoader();
+  static Bool_t HasESD();
+  static Bool_t HasESDfriend();
+  static Bool_t HasRawReader();
+
   static AliRunLoader* AssertRunLoader();
   static AliESDEvent*  AssertESD();
   static AliESDfriend* AssertESDfriend();
@@ -82,7 +89,10 @@ public:
 
   void          StartStopAutoLoadTimer();
 
-  void          NewEventLoaded(); // *SIGNAL*
+  virtual void  AfterNewEventLoaded();
+  void          NewEventLoaded();      // *SIGNAL*
+
+  AliEveMacroExecutor* GetExecutor() const { return fExecutor; }
 
 protected:
   TString       fPath;			// URL to event-data.
@@ -102,6 +112,8 @@ protected:
   Double_t      fAutoLoadTime;          // Auto-load time in seconds
   TTimer       *fAutoLoadTimer;         // Timer for automatic event loading
   Bool_t        fIsOnline;              // Are we running online?
+
+  AliEveMacroExecutor *fExecutor;       // Executor for std macros
 
   static TString  fgESDFileName;        // Name by which to open ESD.
   static TString  fgRawFileName;        // Name by which to open raw-data file.
