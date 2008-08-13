@@ -12,6 +12,7 @@
   Trigger types used:      PHYSICS_EVENT
 */
 #include "monitor.h"
+#include "event.h"
 #include <TSystem.h>
 #include <TString.h>
 #include <AliFMDParameters.h>
@@ -41,40 +42,76 @@ int main(int argc, char **argv)
   
   const Char_t* tableSOD[]  = {"ALL", "no", "SOD", "all", NULL, NULL};
 
-
+  Bool_t old = kTRUE;
   monitorDeclareTable(const_cast<char**>(tableSOD));
 
-  
-  Char_t* fileName = argv[1];
-  
-  Bool_t old = kTRUE;
-  
   AliFMDParameters::Instance()->Init(kFALSE,0);
-  AliFMDParameters::Instance()->UseCompleteHeader(!old);
-  
-  
-  TString fileNam(fileName);
-  if (fileNam.Contains("^") || fileNam.Contains("@"))
-    fileName = Form("mem://%s",fileName);
-    
-  AliRawReader *reader = AliRawReader::Create(fileName);
-  if (!reader) { 
-    std::cerr << "Don't know how to make reader for " << fileNam 
-    	      << std::endl;
-    return -2;
+  AliFMDParameters::Instance()->UseCompleteHeader(old);
+  struct eventHeaderStruct *event;
+  int status;
+  /* define data source : this is argument 1 */  
+  status=monitorSetDataSource( argv[1] );
+  if (status!=0) {
+    printf("monitorSetDataSource() failed : %s\n",monitorDecodeError(status));
+    return -1;
   }
   
-  TStopwatch timer;
-  timer.Start();
-  AliFMDBaseDA baseDA;
+  /* declare monitoring program */
+  status=monitorDeclareMp( __FILE__ );
+  if (status!=0) {
+    printf("monitorDeclareMp() failed : %s\n",monitorDecodeError(status));
+    return -1;
+  }
   
-  baseDA.Run(reader);
-  
-  timer.Stop();
-  timer.Print();
+  monitorSetNowait();
+  monitorSetNoWaitNetworkTimeout(1000);
 
-  Int_t  retval = daqDA_FES_storeFile("conditions.csv", AliFMDParameters::Instance()->GetConditionsShuttleID());
-  if (retval != 0) std::cerr << "Base DA failed" << std::endl;
-  
+  AliRawReader *reader = 0;
+  AliFMDBaseDA baseDA;
+  Int_t  retval = 0;
+  Int_t iev = 0;
+  Bool_t SODread = kFALSE;
+  while(!SODread && iev<1000) {
+    
+    /* check shutdown condition */
+    if (daqDA_checkShutdown()) {break;}
+    
+    /* get next event (blocking call until timeout) */
+    status=monitorGetEventDynamic((void **)&event);
+    if (status==MON_ERR_EOF) {
+      printf ("End of File detected\n");
+      break; /* end of monitoring file has been reached */
+    }
+    
+    if (status!=0) {
+      printf("monitorGetEventDynamic() failed : %s\n",monitorDecodeError(status));
+      break;
+    }
+    
+    /* retry if got no event */
+    if (event==NULL) {
+      continue;
+    }
+    
+    iev++; 
+    
+    switch (event->eventType){
+      
+    case START_OF_DATA:
+      reader = new AliRawReaderDate((void*)event);
+      baseDA.Run(reader);
+      SODread = kTRUE;
+      retval = daqDA_FES_storeFile("conditions.csv", AliFMDParameters::Instance()->GetConditionsShuttleID());
+      if (retval != 0) std::cerr << "Base DA failed" << std::endl;
+      
+      break;
+    
+    default:
+      break;
+    
+    }
+  }
+ 
+   
   return retval;
 }
