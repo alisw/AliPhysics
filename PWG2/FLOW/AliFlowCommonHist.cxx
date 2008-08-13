@@ -39,24 +39,76 @@ ClassImp(AliFlowCommonHist)
 
 //-----------------------------------------------------------------------
 
-  AliFlowCommonHist::AliFlowCommonHist():TNamed(),
-   fHistMultOrig(NULL),
-   fHistMultInt(NULL),
-   fHistMultDiff(NULL),
-   fHistPtInt(NULL),
-   fHistPtDiff(NULL),
-   fHistPhiInt(NULL),
-   fHistPhiDiff(NULL),
-   fHistEtaInt(NULL),
-   fHistEtaDiff(NULL),
-   fHistProMeanPtperBin(NULL),
-   fHistQ(NULL),
-   fHistList(NULL)
- {
+AliFlowCommonHist::AliFlowCommonHist():TNamed(),
+  fHistMultOrig(NULL),
+  fHistMultInt(NULL),
+  fHistMultDiff(NULL),
+  fHistPtInt(NULL),
+  fHistPtDiff(NULL),
+  fHistPhiInt(NULL),
+  fHistPhiDiff(NULL),
+  fHistEtaInt(NULL),
+  fHistEtaDiff(NULL),
+  fHistProMeanPtperBin(NULL),
+  fHistQ(NULL),
+  fHistList(NULL)
+{
+  
+  //default constructor
+  
+}
 
-   //default constructor
+AliFlowCommonHist::AliFlowCommonHist(const AliFlowCommonHist& a):
+  TNamed(),
+  fHistMultOrig(new TH1F(*a.fHistMultOrig)),
+  fHistMultInt(new TH1F(*a.fHistMultInt)),
+  fHistMultDiff(new TH1F(*a.fHistMultDiff)),
+  fHistPtInt(new TH1F(*a.fHistPtInt)),
+  fHistPtDiff(new TH1F(*a.fHistPtDiff)),
+  fHistPhiInt(new TH1F(*a.fHistPhiInt)),
+  fHistPhiDiff(new TH1F(*a.fHistPhiDiff)),
+  fHistEtaInt(new TH1F(*a.fHistEtaInt)),
+  fHistEtaDiff(new TH1F(*a.fHistEtaDiff)),
+  fHistProMeanPtperBin(new TProfile(*a.fHistProMeanPtperBin)),
+  fHistQ(new TH1F(*a.fHistQ)),
+  fHistList(NULL)
+{
+  // copy constructor
 
- }
+  fHistList = new TList();
+  fHistList-> Add(fHistMultOrig);        
+  fHistList-> Add(fHistMultInt);        
+  fHistList-> Add(fHistMultDiff);       
+  fHistList-> Add(fHistPtInt);          
+  fHistList-> Add(fHistPtDiff);         
+  fHistList-> Add(fHistPhiInt);          
+  fHistList-> Add(fHistPhiDiff);         
+  fHistList-> Add(fHistEtaInt);          
+  fHistList-> Add(fHistEtaDiff);         
+  fHistList-> Add(fHistProMeanPtperBin); 
+  fHistList-> Add(fHistQ);           
+  //  TListIter next = TListIter(a.fHistList);
+
+}
+
+AliFlowCommonHist& AliFlowCommonHist::operator=(const AliFlowCommonHist& a) 
+{
+  *fHistMultOrig = *a.fHistMultOrig;
+  *fHistMultInt = *a.fHistMultInt;
+  *fHistMultDiff = *a.fHistMultDiff;
+  *fHistPtInt = *a.fHistPtInt;
+  *fHistPtDiff = *a.fHistPtDiff;
+  *fHistPhiInt = *a.fHistPhiInt;
+  *fHistPhiDiff = *a.fHistPhiDiff;
+  *fHistEtaInt = *a.fHistEtaInt;
+  *fHistEtaDiff = *a.fHistEtaDiff;
+  *fHistProMeanPtperBin = *a.fHistProMeanPtperBin;
+  *fHistQ = *a.fHistQ;
+  //  *fHistList = *a.fHistList;
+  fHistList = NULL;
+ 
+  return *this;
+}
 
 //-----------------------------------------------------------------------
 
@@ -174,7 +226,7 @@ ClassImp(AliFlowCommonHist)
   fHistQ ->SetXTitle("Qvector/Mult");
   fHistQ ->SetYTitle("Counts");  
 
-  //list of histograms
+  //list of histograms if added here also add in copy constructor
   fHistList = new TList();
   fHistList-> Add(fHistMultOrig);        
   fHistList-> Add(fHistMultInt);        
