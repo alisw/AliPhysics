@@ -275,6 +275,8 @@ AliFMDBaseDigitizer::Init()
 {
   // Initialization
   AliFMDParameters::Instance()->Init();
+  if (AliLog::GetDebugLevel("FMD","") >= 10) 
+    AliFMDParameters::Instance()->Print("ALL");
   return kTRUE;
 }
  
@@ -421,7 +423,24 @@ AliFMDBaseDigitizer::DigitizeHits(AliFMD* fmd) const
 	  Float_t edep = fEdep(detector, ring, sector, strip).fEdep;
 	  ConvertToCount(edep, last, detector, ring, sector, strip, counts);
 	  last = edep;
-	  if (edep<=0) continue;
+	  
+	  // The following line was introduced - wrongly - by Peter
+	  // Hristov.  It _will_ break the digitisation and the
+	  // following reconstruction.  The behviour of the
+	  // digitisation models exactly the front-end as it should
+	  // (no matter what memory concuption it may entail).  The
+	  // check should be on zero suppression, since that's what
+	  // models the front-end - if zero suppression is turned on
+	  // in the front-end, then we can suppress empty digits -
+	  // otherwise we shoud never do that.  Note, that the line
+	  // affects _both_ normal digitisation and digitisation for
+	  // summable digits, since the condition is on the energy
+	  // deposition and not on the actual number of counts.  If
+	  // this line should go anywhere, it should be in the
+	  // possible overloaded AliFMDSDigitizer::AddDigit - not
+	  // here. 
+	  // 
+	  //   if (edep<=0) continue;
 	  AddDigit(fmd, detector, ring, sector, strip, edep, 
 		   UShort_t(counts[0]), Short_t(counts[1]), 
 		   Short_t(counts[2]), Short_t(counts[3]));
