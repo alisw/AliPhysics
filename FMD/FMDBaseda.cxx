@@ -18,7 +18,7 @@
 #include <AliRawReader.h>
 #include <TStopwatch.h>
 #include <AliFMDBaseDA.h>
-#include <AliRawReaderDate.h>
+#include <AliRawReaderDateOnline.h>
 #include <AliRawReaderRoot.h>
 #include "daqDA.h"
 #include "TROOT.h"
@@ -55,7 +55,7 @@ int main(int argc, char **argv)
   AliRawReader *reader = 0;
   TString fileNam(fileName);
   if (fileNam.EndsWith(".root")) reader = new AliRawReaderRoot(fileName);
-  else reader = new AliRawReaderDate(fileName);
+  else reader = new AliRawReaderDateOnline(fileName);
   if (!reader) { 
     std::cerr << "Don't know how to make reader for " << fileNam 
 	      << std::endl;
