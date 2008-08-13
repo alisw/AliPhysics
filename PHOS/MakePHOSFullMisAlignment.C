@@ -1,37 +1,89 @@
-void MakePHOSFullMisAlignment(){
-  // Create TClonesArray of full misalignment objects for PHOS
-  //
+void MakePHOSFullMisAlignment()
+{
+  // Create misalignment object for PHOS module 2 
+  // from the survey measurements on P2 in May 2008.
+  // To store alignment in OCDB, define the evnironment variables:
+  // TOCDB=kTRUE
+  // STORAGE="local://$ALICE_ROOT"
+  // Author: Timur Pocheptsov, 19.06.2008
+
+  const char * macroName = "MakePHOS2Alignment";
+  
   const AliPHOSGeometry *phosGeom = AliPHOSGeometry::GetInstance("IHEP", "IHEP");
   if (!phosGeom) {
-    Error("MakePHOSFullMisAlignment", "Cannot obtain AliPHOSGeometry singleton\n");
+    Error(macroName, "Cannot obtain AliPHOSGeometry singleton.\n");
     return;
   }
 
-  AliPHOSEMCAGeometry *emca = phosGeom->GetEMCAGeometry();
-  TClonesArray *array = new TClonesArray("AliAlignObjParams", 16 + phosGeom->GetNModules() * 
-                                         emca->GetNStripX() * emca->GetNStripZ());
-  TClonesArray &alobj = *array;
+  //Activate CDB storage and load geometry from CDB
+  //I need valid gGeoManager to create local transformations.
+  
+  //[Part of code, taken from ITS version of MakexxxFullMisalignment
+  AliCDBManager * cdb = AliCDBManager::Instance();
+  if (!cdb->IsDefaultStorageSet())
+    cdb->SetDefaultStorage("local://$ALICE_ROOT");
+  cdb->SetRun(0);
+
+  if (TString(gSystem->Getenv("TOCDB")) == TString("kTRUE")) {
+    const TString storageENV(gSystem->Getenv("STORAGE"));
+    if (!storageENV.BeginsWith("local://") && !storageENV.BeginsWith("alien://")) {
+      Error(macroName, "STORAGE variable set to %s is not valid.\n", storageENV.Data());
+      return;
+    }
+    
+    AliCDBStorage * storage = cdb->GetStorage(storageENV.Data());
+    if (!storage) {
+      Error(macroName, "Unable to open storage %s.\n", storageENV.Data());
+      return;
+    }
+    
+    AliCDBPath path("GRP","Geometry","Data");
+    AliCDBEntry * entry = storage->Get(path.GetPath(), cdb->GetRun());
+    if (!entry) {
+      Error(macroName,"Could not get the specified CDB entry!");
+      return;  
+    }
+    
+    entry->SetOwner(0);
+    AliGeomManager::SetGeometry((TGeoManager*) entry->GetObject());
+  }else{
+    AliGeomManager::LoadGeometry("geometry.root"); //load geom from default CDB storage
+  }    
+  //end of code taken from ITS version of MakexxxFullMisalignment]
+
+  AliPHOSEMCAGeometry * emca = phosGeom->GetEMCAGeometry();
+  TClonesArray alobj("AliAlignObjParams", 16);// + phosGeom->GetNModules() * emca->GetNStripX() * emca->GetNStripZ());
    
-  Double_t dpsi=0., dtheta=0., dphi=0.;
-  Double_t displacement = 10;
-  Int_t iIndex=0; //let all modules have index=0 in a layer with no LUT
-  AliGeomManager::ELayerID iLayer = AliGeomManager::kInvalidLayer;
-  UShort_t volid = AliGeomManager::LayerToVolUID(iLayer,iIndex);
-  Int_t i=0 ;
+  const Double_t dpsi = 0., dtheta = 0., dphi = 0.;
+  const Double_t displacement = 10.;
+  Int_t iIndex = 0; //let all modules have index=0 in a layer with no LUT
+  const AliGeomManager::ELayerID iLayer = AliGeomManager::kInvalidLayer;
+  UShort_t volid = AliGeomManager::LayerToVolUID(iLayer, iIndex);
+  Int_t i = 0;
 
   // Alignment for 5 PHOS modules
-  new(alobj[i++]) AliAlignObjParams("PHOS/Module1",
-	  volid, -20., -10.,   0., dpsi, dtheta, 5, kTRUE);
-  new(alobj[i++]) AliAlignObjParams("PHOS/Module2",
-	  volid, -10.,   0., -10., dpsi, dtheta, 2, kTRUE);
-  new(alobj[i++]) AliAlignObjParams("PHOS/Module3",
-	  volid,   5., -10.,  10., dpsi, dtheta, 0, kTRUE);
-  new(alobj[i++]) AliAlignObjParams("PHOS/Module4",
-	  volid, +10.,  -0., -10., dpsi, dtheta, 2, kTRUE);
-  new(alobj[i++]) AliAlignObjParams("PHOS/Module5",
-	  volid, +20., -10.,   0., dpsi, dtheta, 5, kTRUE);
 
-  Double_t dx=0., dy=0., dz=0. ;
+  new(alobj[i++]) AliAlignObjParams("PHOS/Module1",
+	  volid, 0., 0., 0., 0., 0., 0., kTRUE);
+  new(alobj[i++]) AliAlignObjParams("PHOS/Module2",
+	  volid, 0., 0., 0., 0., 0., 0., kTRUE);
+
+  Double_t rotMatrix[9] = {0.999992695, -0.00295322, -0.0024267, 
+			   0.002955489, 0.999995199, 0.00093165, 
+			   0.002423942, -0.000938811, 0.99999662};
+  TGeoRotation rotation;
+  rotation.SetMatrix(rotMatrix);
+  Double_t dX=1.25474126, dY=-1.4088643, dZ=-12.856;
+  AliAlignObjParams * mod3 = 
+    new(alobj[i++]) AliAlignObjParams("PHOS/Module3", volid, dX, dY, dZ, 0., 0., 0., kFALSE);
+  mod3->SetRotation(rotation);
+  
+  new(alobj[i++]) AliAlignObjParams("PHOS/Module4",
+	  volid, 0.,  0., 0., 0., 0., 0., kTRUE);
+  new(alobj[i++]) AliAlignObjParams("PHOS/Module5",
+	  volid, 0., 0., 0., 0., 0., 0., kTRUE);
+
+  const Double_t dx = 0., dy = 0., dz = 0. ;
   // Alignment of CPV modules
   new(alobj[i++]) AliAlignObjParams("PHOS/Module1/CPV",
         volid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
@@ -60,50 +112,43 @@ void MakePHOSFullMisAlignment(){
   new(alobj[i++]) AliAlignObjParams("PHOS/Wheel3",
 	  volid, 0., 0., +displacement, dpsi, dtheta, dphi, kTRUE);
 
-//  AliPHOSSurvey geodesicData("phos_mod3_survey.txt");
-//  geodesicData.CreateAliAlignObjParams(alobj);
-
-  AliPHOSSurvey1 geodesicData("phos_mod3_survey_EDMS.txt", "T1_");
-  geodesicData.CreateAliAlignObjParams(alobj);
-
   // *************************    2nd step    ***************
-
-  const char* macroname = "MakePHOSFullMisAlignment.C";
-  if( TString(gSystem->Getenv("TOCDB")) != TString("kTRUE") ){
+  if ( TString(gSystem->Getenv("TOCDB")) != TString("kTRUE") ) {
     // save on file
-    const char* filename = "PHOSfullMisalignment.root";
-    TFile f(filename,"RECREATE");
-    if(!f){
-      Error(macroname,"cannot open file for output\n");
+    const char * fileName = "PHOSfullMisalignment.root";
+    TFile f(fileName,"RECREATE");
+    if (!f) {
+      Error(macroName, "cannot open file for output\n");
       return;
     }
-    Info(macroname,"Saving alignment objects to the file %s", filename);
+    
+    Info(macroName,"Saving alignment objects to the file %s", fileName);
     f.cd();
-    f.WriteObject(array,"PHOSAlignObjs","kSingleKey");
+    f.WriteObject(&alobj,"PHOSAlignObjs","kSingleKey");
     f.Close();
   }else{
     // save in CDB storage
-    TString Storage = gSystem->Getenv("STORAGE");
-    if(!Storage.BeginsWith("local://") && !Storage.BeginsWith("alien://")) {
-      Error(macroname,"STORAGE variable set to %s is not valid. Exiting\n",Storage.Data());
+    TString storageENV = gSystem->Getenv("STORAGE");
+    if(!storageENV.BeginsWith("local://") && !storageENV.BeginsWith("alien://")) {
+      Error(macroName,"STORAGE variable set to %s is not valid. Exiting\n", storageENV.Data());
       return;
     }
-    Info(macroname,"Saving alignment objects in CDB storage %s",
-	 Storage.Data());
-    AliCDBManager* cdb = AliCDBManager::Instance();
-    AliCDBStorage* storage = cdb->GetStorage(Storage.Data());
-    if(!storage){
-      Error(macroname,"Unable to open storage %s\n",Storage.Data());
+    
+    Info(macroName,"Saving alignment objects in CDB storage %s", storageENV.Data());
+    AliCDBManager * cdb = AliCDBManager::Instance();
+    AliCDBStorage * storage = cdb->GetStorage(storageENV.Data());
+    if (!storage) {
+      Error(macroName, "Unable to open storage %s\n", storageENV.Data());
       return;
     }
-    AliCDBMetaData *md= new AliCDBMetaData();
-    md->SetResponsible("Yuri Kharlov");
-    md->SetComment("Alignment objects for fully misaligned geometry");
-    md->SetAliRootVersion(gSystem->Getenv("ARVERSION"));
+    
+    AliCDBMetaData md;
+    md.SetResponsible("Timur Pocheptsov");
+    md.SetComment("Alignment objects for PHOS module 2; survey in May 2008");
+    md.SetAliRootVersion(gSystem->Getenv("ARVERSION"));
     AliCDBId id("PHOS/Align/Data",0,AliCDBRunRange::Infinity());
-    storage->Put(array,id, md);
+    storage->Put(&alobj, id, &md);
   }
 
-  array->Delete();
-
+  alobj.Delete();
 }
