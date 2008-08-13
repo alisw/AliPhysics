@@ -49,6 +49,12 @@ void runLocal() {
   setupPar("ANALYSISalice");
   gSystem->Load("libANALYSISalice.so");
 
+  //__________________________________________________//
+  //___________Setting up CORRFW.par__________________//
+  //__________________________________________________//
+  gProof->UploadPackage("CORRFW.par");
+  gProof->EnablePackage("CORRFW");
+
   //____________________________________________________________//
   //_____________Setting up PWG2spectra.par_____________________//
   //____________________________________________________________//
@@ -93,9 +99,11 @@ void runLocal() {
 
   // Create containers for input/output                                                                              
   AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("dataChain",
-                                                           TChain::Class(),AliAnalysisManager::kInputContainer);
+                                                           TChain::Class(),
+							   AliAnalysisManager::kInputContainer);
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("outputList1",
-                                                            TList::Class(),AliAnalysisManager::kOutputCont
+                                                            TList::Class(),
+							    AliAnalysisManager::kOutputCont
                                                             "Protons.ESD.root");
 
   //____________________________________________//
@@ -149,6 +157,12 @@ void runInteractive() {
   setupPar("ANALYSISalice");
   gSystem->Load("libANALYSISalice.so");
 
+  //__________________________________________________//
+  //___________Setting up CORRFW.par__________________//
+  //__________________________________________________//
+  gProof->UploadPackage("CORRFW.par");
+  gProof->EnablePackage("CORRFW");
+
   //____________________________________________________________//
   //_____________Setting up PWG2spectra.par_____________________//
   //____________________________________________________________//
@@ -196,9 +210,11 @@ void runInteractive() {
 
   // Create containers for input/output                                                                               
   AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("dataChain",
-                                                           TChain::Class(),AliAnalysisManager::kInputContainer);
+                                                           TChain::Class(),
+							   AliAnalysisManager::kInputContainer);
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("outputList1",
-                                                            TList::Class(),AliAnalysisManager::kOutputCont
+                                                            TList::Class(),
+							    AliAnalysisManager::kOutputCont
                                                             "Protons.ESD.root");
   
   //____________________________________________//
@@ -309,7 +325,9 @@ void runBatch() {
 }
 
 //_________________________________________________//
-void runProof(const char* mode = "ESD", Int_t stats = 0, const char* dataset = 0x0) {
+void runProof(const char* mode = "ESD", 
+	      Int_t stats = 0, 
+	      const char* dataset = 0x0) {
   TStopwatch timer;
   timer.Start();
   
@@ -332,6 +350,8 @@ void runProof(const char* mode = "ESD", Int_t stats = 0, const char* dataset = 0
   gProof->EnablePackage("ANALYSIS");
   gProof->UploadPackage("ANALYSISalice.par");
   gProof->EnablePackage("ANALYSISalice");
+  gProof->UploadPackage("CORRFW.par");
+  gProof->EnablePackage("CORRFW");
   gProof->UploadPackage("PWG2spectra.par");
   gProof->EnablePackage("PWG2spectra");
   
@@ -365,9 +385,11 @@ void runProof(const char* mode = "ESD", Int_t stats = 0, const char* dataset = 0
 
   // Create containers for input/output
   AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("dataChain",
-							   TChain::Class(),AliAnalysisManager::kInputContainer);
+							   TChain::Class(),
+							   AliAnalysisManager::kInputContainer);
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("outputList1", 
-							    TList::Class(),AliAnalysisManager::kOutputContainer,
+							    TList::Class(),
+							    AliAnalysisManager::kOutputContainer,
 							    outputFilename.Data());
 
   //____________________________________________//

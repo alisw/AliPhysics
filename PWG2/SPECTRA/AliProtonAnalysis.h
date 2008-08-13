@@ -13,16 +13,18 @@
 //    Origin: Panos Christakoglou, UOA-CERN, Panos.Christakoglou@cern.ch
 //-------------------------------------------------------------------------
 
-#include <TObject.h>
+#include "TObject.h"
 #include "TH1I.h"
 #include "TList.h"
 
 #include "AliPID.h"
 
 class TF1;
-class TH2F;
-class TH1D;
+class TH2D;
+class TH1F;
 
+class AliCFDataGrid;
+class AliCFContainer;
 class AliAODEvent;
 class AliAODtrack;
 class AliESDEvent;
@@ -46,18 +48,25 @@ class AliProtonAnalysis : public TObject {
   void Analyze(AliAODEvent *fAOD);
   void Analyze(AliStack *stack);
   
-  TH2F *GetProtonYPtHistogram() {return fHistYPtProtons;}
-  TH2F *GetAntiProtonYPtHistogram() {return fHistYPtAntiProtons;}
+  AliCFContainer *GetProtonContainer() {return fProtonContainer;}
+  AliCFContainer *GetAntiProtonContainer() {return fAntiProtonContainer;}
+
+  TH2D *GetProtonYPtHistogram() {return fHistYPtProtons;}
+  TH2D *GetAntiProtonYPtHistogram() {return fHistYPtAntiProtons;}
   TH1D *GetProtonYHistogram();
   TH1D *GetAntiProtonYHistogram();
   TH1D *GetProtonPtHistogram();
   TH1D *GetAntiProtonPtHistogram();
+  TH1D *GetProtonCorrectedYHistogram();
+  TH1D *GetAntiProtonCorrectedYHistogram();
+  TH1D *GetProtonCorrectedPtHistogram();
+  TH1D *GetAntiProtonCorrectedPtHistogram();
   TH1D *GetYRatioHistogram();
   TH1D *GetPtRatioHistogram();
   TH1D *GetYAsymmetryHistogram();
   TH1D *GetPtAsymmetryHistogram();
 
-  TH1I *GetEvenHtistogram() {return fHistEvents;}
+  TH1I *GetEventHistogram() {return fHistEvents;}
 
   Int_t   GetNumberOfAnalyzedEvents() {return (Int_t)fHistEvents->GetEntries();} 
   Bool_t  PrintMean(TH1 *hist, Double_t edge);
@@ -80,11 +89,16 @@ class AliProtonAnalysis : public TObject {
     fMaxChi2PerTPCCluster = maxChi2PerTPCCluster;
     fMaxChi2PerTPCClusterFlag = kTRUE;
   }
-  void    SetMaxCov11(Double_t maxCov11) {fMaxCov11 = maxCov11; fMaxCov11Flag = kTRUE;}
-  void    SetMaxCov22(Double_t maxCov22) {fMaxCov22 = maxCov22; fMaxCov22Flag = kTRUE;}
-  void    SetMaxCov33(Double_t maxCov33) {fMaxCov33 = maxCov33; fMaxCov33Flag = kTRUE;}
-  void    SetMaxCov44(Double_t maxCov44) {fMaxCov44 = maxCov44; fMaxCov44Flag = kTRUE;}
-  void    SetMaxCov55(Double_t maxCov55) {fMaxCov55 = maxCov55; fMaxCov55Flag = kTRUE;}
+  void    SetMaxCov11(Double_t maxCov11) {
+    fMaxCov11 = maxCov11; fMaxCov11Flag = kTRUE;}
+  void    SetMaxCov22(Double_t maxCov22) {
+    fMaxCov22 = maxCov22; fMaxCov22Flag = kTRUE;}
+  void    SetMaxCov33(Double_t maxCov33) {
+    fMaxCov33 = maxCov33; fMaxCov33Flag = kTRUE;}
+  void    SetMaxCov44(Double_t maxCov44) {
+    fMaxCov44 = maxCov44; fMaxCov44Flag = kTRUE;}
+  void    SetMaxCov55(Double_t maxCov55) {
+    fMaxCov55 = maxCov55; fMaxCov55Flag = kTRUE;}
   void    SetMaxSigmaToVertex(Double_t maxSigmaToVertex) {
     fMaxSigmaToVertex = maxSigmaToVertex;
     fMaxSigmaToVertexFlag = kTRUE;
@@ -114,17 +128,18 @@ class AliProtonAnalysis : public TObject {
   }
   void SetQAYPtBins(Int_t nbinsY, Double_t minY, Double_t maxY,
 		    Int_t nbinsPt, Double_t minPt, Double_t maxPt) {
-      fNBinsY = nbinsY;
-      fMinY = minY; fMaxY = maxY;
-      fNBinsPt = nbinsPt;
-      fMinPt = minPt; fMaxPt = maxPt;
-    }
+    fNBinsY = nbinsY;
+    fMinY = minY; fMaxY = maxY;
+    fNBinsPt = nbinsPt;
+    fMinPt = minPt; fMaxPt = maxPt;
+  }
   void InitQA();
   void RunQA(AliStack *stack, AliESDEvent *esd);
   TList *GetGlobalQAList() {return fGlobalQAList;}
 
   //Prior probabilities
-  void SetPriorProbabilities(Double_t *partFrac) {for(Int_t i = 0; i < AliPID::kSPECIESN; i++) fPartFrac[i] = partFrac[i];} 
+  void SetPriorProbabilities(Double_t *partFrac) {
+    for(Int_t i = 0; i < AliPID::kSPECIESN; i++) fPartFrac[i] = partFrac[i];} 
   void SetPriorProbabilityFunctions(TF1 *felectron, TF1 *fmuon, TF1 *fpion, TF1 *fkaon, TF1 *fproton) {
     fFunctionProbabilityFlag = kTRUE;
     fElectronFunction = felectron; 
@@ -136,6 +151,7 @@ class AliProtonAnalysis : public TObject {
   Double_t GetParticleFraction(Int_t i, Double_t p);
 
   //interface to the correction framework
+  void Correct(Int_t step);
   Bool_t ReadCorrectionContainer(const char* filename);
   TList *GetCorrectionListProtons2D() {return fCorrectionListProtons2D;} 
   TList *GetEfficiencyListProtons1D() {return fEfficiencyListProtons1D;} 
@@ -197,18 +213,25 @@ class AliProtonAnalysis : public TObject {
   //Detectors
   Bool_t fUseTPCOnly; //kTRUE if TPC only information is used
 
+  //Analysis containers
+  AliCFContainer *fProtonContainer; //container for protons
+  AliCFContainer *fAntiProtonContainer; //container for antiprotons
   TH1I *fHistEvents; //event counter
-  TH2F *fHistYPtProtons; //Y-Pt of Protons
-  TH2F *fHistYPtAntiProtons; // Y-Pt of Antiprotons
+  TH2D *fHistYPtProtons; //Y-Pt of Protons
+  TH2D *fHistYPtAntiProtons; // Y-Pt of Antiprotons
 
   //Corrections
+  TList *fEffGridListProtons; //list for the efficiency grid - protons 
   TList *fCorrectionListProtons2D; //list for the 2d corrections 
   TList *fEfficiencyListProtons1D; //list for the 1d efficiencies
   TList *fCorrectionListProtons1D; //list for the 1d corrections 
+  TList *fEffGridListAntiProtons; //list for the efficiency grid - antiprotons 
   TList *fCorrectionListAntiProtons2D; //list for the 2d corrections 
   TList *fEfficiencyListAntiProtons1D; //list for the 1d efficiencies
   TList *fCorrectionListAntiProtons1D; //list for the 1d corrections 
-  
+  AliCFDataGrid *fCorrectProtons; //corrected data grid for protons
+  AliCFDataGrid *fCorrectAntiProtons; //corrected data grid for antiprotons
+
   ClassDef(AliProtonAnalysis,0);
 };
 

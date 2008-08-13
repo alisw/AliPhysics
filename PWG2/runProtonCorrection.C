@@ -70,14 +70,12 @@ Bool_t runProtonCorrection(Int_t stats = 0, const char* dataset = 0x0) {
   for(Int_t i=0; i<=nbin1; i++) binLim1[i]=(Double_t)ymin  + (ymax-ymin)  /nbin1*(Double_t)i;
   for(Int_t i=0; i<=nbin2; i++) binLim2[i]=(Double_t)ptmin + (ptmax-ptmin)/nbin2*(Double_t)i; 
   //CF container for protons
-  AliCFContainer* containerProtons = new AliCFContainer("containerProtons","container for protons",
-							nstep,nvar,iBin);
+  AliCFContainer* containerProtons = new AliCFContainer("containerProtons","container for protons",nstep,nvar,iBin);
   //setting the bin limits
   containerProtons->SetBinLimits(iy,binLim1);
   containerProtons->SetBinLimits(ipT,binLim2);
- //CF container for protons
-  AliCFContainer* containerAntiProtons = new AliCFContainer("containerAntiProtons","container for antiprotons",
-							    nstep,nvar,iBin);
+ //CF container for antiprotons
+  AliCFContainer* containerAntiProtons = new AliCFContainer("containerAntiProtons","container for antiprotons",nstep,nvar,iBin);
   //setting the bin limits
   containerAntiProtons->SetBinLimits(iy,binLim1);
   containerAntiProtons->SetBinLimits(ipT,binLim2);

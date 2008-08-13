@@ -18,6 +18,7 @@
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
 #include "AliStack.h"
+#include "AliCFContainer.h"
 
 #include "PWG2spectra/SPECTRA/AliProtonAnalysis.h"
 #include "AliAnalysisTaskProtons.h"
@@ -104,10 +105,10 @@ void AliAnalysisTaskProtons::CreateOutputObjects() {
   
   //proton analysis object
   fAnalysis = new AliProtonAnalysis();
-  fAnalysis->InitHistograms(10,-1.0,1.0,30,0.1,3.1);
+  fAnalysis->InitAnalysisHistograms(10,-1.0,1.0,26,0.5,3.1);
 
   if(fAnalysisType == "ESD") {
-    //Use of TPConly tracks                                                                                                                                                      
+    //Use of TPConly tracks
     fAnalysis->UseTPCOnly();
 
     //TPC related cuts       
@@ -121,9 +122,9 @@ void AliAnalysisTaskProtons::CreateOutputObjects() {
     fAnalysis->SetMaxSigmaToVertex(2.5);
     fAnalysis->SetTPCRefit();
 
-    //ITS related cuts - to be used in the case of the analysis of global tracks                                                                                                
-    //fAnalysis->SetMinITSClusters(5);                                                                                                                                          
-    //fAnalysis->SetITSRefit();                                                                                                                                                  
+    //ITS related cuts - to be used for the analysis of global tracking 
+    //fAnalysis->SetMinITSClusters(5);
+    //fAnalysis->SetITSRefit();
   }
 
   if(fFunctionUsed)
@@ -139,6 +140,8 @@ void AliAnalysisTaskProtons::CreateOutputObjects() {
   fList->Add(fAnalysis->GetProtonYPtHistogram());
   fList->Add(fAnalysis->GetAntiProtonYPtHistogram());
   fList->Add(fAnalysis->GetEventHistogram());
+  fList->Add(fAnalysis->GetProtonContainer());
+  fList->Add(fAnalysis->GetAntiProtonContainer());
 }
 
 //________________________________________________________________________
