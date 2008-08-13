@@ -52,10 +52,12 @@ class AliProtonCorrectionTask : public AliAnalysisTaskSE {
   void     Terminate(Option_t *);
   
   // CORRECTION FRAMEWORK RELATED FUNCTIONS
-  void           SetCFManagerProtons(AliCFManager* io) {fCFManagerProtons = io;}   // global correction manager
-  AliCFManager * GetCFManagerProtons() const {return fCFManagerProtons;}           // get corr manager
-  void           SetCFManagerAntiProtons(AliCFManager* io) {fCFManagerAntiProtons = io;} // global correction manager
-  AliCFManager * GetCFManagerAntiProtons() const {return fCFManagerAntiProtons;}         // get corr manager
+  void  SetCFManagerProtons(AliCFManager* io) {fCFManagerProtons = io;}  
+  // global correction manager
+  AliCFManager * GetCFManagerProtons() const {return fCFManagerProtons;}
+  // get corr manager
+  void SetCFManagerAntiProtons(AliCFManager* io) {fCFManagerAntiProtons = io;} // global correction manager
+  AliCFManager * GetCFManagerAntiProtons() const {return fCFManagerAntiProtons;}// get corr manager
   void           SetQAList(TList* list) {fQAHistList = list;}
 
   // Data types
