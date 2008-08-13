@@ -143,24 +143,24 @@ void AliFMDBaseDA::Run(AliRawReader* reader)
   AliFMDRawReader* fmdReader  = new AliFMDRawReader(reader,0);
   TClonesArray*    digitArray = new TClonesArray("AliFMDDigit",0);
   
-  
-  reader->NextEvent(); // Read Start-of-Run event
-  reader->NextEvent(); // Read Start-of-Files event
-  
-  reader->NextEvent(); // Start-of-Data
-  UInt_t eventType = reader->GetType();
   Bool_t SOD_read = kFALSE;
-  if(eventType == AliRawEventHeaderBase::kStartOfData || 
-     eventType == AliRawEventHeaderBase::kFormatError) { 
+  
+  for(Int_t i=0;i<3;i++) {
+    reader->NextEvent(); // Read Start-of-Run / Start-of-Files event
     
-    WriteConditionsData(fmdReader);
-    Init();
-    SOD_read = kTRUE;
+    UInt_t eventType = reader->GetType();
+    if(eventType == AliRawEventHeaderBase::kStartOfData || 
+       eventType == AliRawEventHeaderBase::kFormatError) { 
+      
+      WriteConditionsData(fmdReader);
+      Init();
+      SOD_read = kTRUE;
+      break;
+    }
   }
-  else {
+  
+  if(!SOD_read) 
     AliWarning("No SOD event detected!");
-  }
-    
   
   int lastProgress = 0;
   
