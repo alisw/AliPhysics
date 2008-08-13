@@ -120,6 +120,8 @@ void AnalyzeLaser(){
 void MakeFit(){
   //
   //
+  LoadData();
+  LoadViewer();
   TStatToolkit stat;
   Int_t npoints;
   Double_t chi2;
