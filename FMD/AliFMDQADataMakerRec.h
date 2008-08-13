@@ -37,7 +37,7 @@ private:
   virtual void   MakeRecPoints(TTree * recpoTree); 
   virtual void   MakeRaws(AliRawReader* rawReader); 
   virtual void   StartOfDetectorCycle(); 
-
+  Int_t GetHalfringIndex(UShort_t det, Char_t ring, UShort_t board);
   ClassDef(AliFMDQADataMakerRec,0)  // description 
   TClonesArray fDigitsArray;
   TClonesArray fRecPointsArray;
