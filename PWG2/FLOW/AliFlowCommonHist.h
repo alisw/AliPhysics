@@ -71,7 +71,7 @@ class AliFlowCommonHist: public TNamed {
   TProfile* fHistProMeanPtperBin; //mean pt for each pt bin (for differential flow)
   TH1F*     fHistQ;               //Qvector distribution
 
-  TList* fHistList;               //list to hold all histograms  
+  TList*    fHistList;            //list to hold all histograms  
 
   ClassDef(AliFlowCommonHist,0);  // macro for rootcint
 };
