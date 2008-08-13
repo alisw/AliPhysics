@@ -132,13 +132,14 @@ AliTRDCalibraFillHisto::AliTRDCalibraFillHisto()
   ,fRelativeScale(0)
   ,fThresholdClusterPRF2(15.0)
   ,fLimitChargeIntegration(kFALSE)
+  ,fFillWithZero(kTRUE)
   ,fCalibraMode(new AliTRDCalibraMode())
   ,fDebugStreamer(0)
   ,fDebugLevel(0)
   ,fDetectorPreviousTrack(-1)
   ,fMCMPrevious(-1)
   ,fROBPrevious(-1)
-  ,fNumberClusters(18)
+  ,fNumberClusters(0)
   ,fNumberClustersf(30)
   ,fProcent(6.0)
   ,fDifference(17)
@@ -195,6 +196,7 @@ AliTRDCalibraFillHisto::AliTRDCalibraFillHisto(const AliTRDCalibraFillHisto &c)
   ,fRelativeScale(c.fRelativeScale)
   ,fThresholdClusterPRF2(c.fThresholdClusterPRF2)
   ,fLimitChargeIntegration(c.fLimitChargeIntegration)
+  ,fFillWithZero(c.fFillWithZero)
   ,fCalibraMode(0x0)
   ,fDebugStreamer(0)
   ,fDebugLevel(c.fDebugLevel)
@@ -345,7 +347,7 @@ Bool_t AliTRDCalibraFillHisto::Init2Dhistos()
   fSf                 = parCom->GetSamplingFrequency();
   fRelativeScale      = 20;
   fNumberClustersf    = fTimeMax;
-  fNumberClusters     = (Int_t)(0.6*fTimeMax);
+  fNumberClusters     = (Int_t)(0.5*fTimeMax);
  
   //calib object from database used for reconstruction
   if(fCalDetGain) delete fCalDetGain;
@@ -762,7 +764,7 @@ Bool_t AliTRDCalibraFillHisto::FindP1TrackPHtracklet(AliTRDtrack *t, Int_t index
   TVectorD pars;
   linearFitterTracklet.Eval();
   linearFitterTracklet.GetParameters(pars);
-  pointError  =  TMath::Sqrt(linearFitterTracklet.GetChisquare()/nbli);
+  pointError  =  TMath::Sqrt(linearFitterTracklet.GetChisquare()/(nbli-2));
   errorpar    =  linearFitterTracklet.GetParError(1)*pointError;
   dydt        = pars[1]; 
 
@@ -907,10 +909,11 @@ Bool_t AliTRDCalibraFillHisto::FindP1TrackPHtrackletV1(const AliTRDseedV1 *track
   ////////////////////////////////////
   // Do the straight line fit now
   ///////////////////////////////////
+  if(nbli <= 2) return kFALSE; 
   TVectorD pars;
   linearFitterTracklet.Eval();
   linearFitterTracklet.GetParameters(pars);
-  pointError  =  TMath::Sqrt(linearFitterTracklet.GetChisquare()/nbli);
+  pointError  =  TMath::Sqrt(linearFitterTracklet.GetChisquare()/(nbli-2));
   errorpar    =  linearFitterTracklet.GetParError(1)*pointError;
   dydt        = pars[1]; 
  
@@ -1042,7 +1045,7 @@ Bool_t AliTRDCalibraFillHisto::HandlePRFtracklet(AliTRDtrack *t, Int_t index0, I
     //Take the cluster
     AliTRDcluster *cl  = (AliTRDcluster *) t->GetCluster(k+index0);
     Short_t  *signals  = cl->GetSignals();
-    Double_t     time  = cl->GetPadTime();
+    Double_t     time  = cl->GetLocalTimeBin();
     //Calculate x if possible 
     Float_t xcenter    = 0.0;    
     Bool_t  echec1      = kTRUE;   
@@ -1082,7 +1085,9 @@ Bool_t AliTRDCalibraFillHisto::HandlePRFtracklet(AliTRDtrack *t, Int_t index0, I
   TVectorD line(2);
   fitter.GetParameters(line);
   Float_t  pointError  = -1.0;
-  pointError  =  TMath::Sqrt(fitter.GetChisquare()/nb3pc);
+  if(fitter.GetChisquare()>=0.0) {
+    pointError  =  TMath::Sqrt(fitter.GetChisquare()/(nb3pc-2));
+  }
   
   /////////////////////////////////////////////////////
   // Now fill the PRF: second loop over clusters
@@ -1091,7 +1096,7 @@ Bool_t AliTRDCalibraFillHisto::HandlePRFtracklet(AliTRDtrack *t, Int_t index0, I
     //Take the cluster
     AliTRDcluster *cl      = (AliTRDcluster *) t->GetCluster(k+index0);
     Short_t  *signals      = cl->GetSignals();              // signal
-    Double_t     time      = cl->GetPadTime();              // time bin
+    Double_t     time      = cl->GetLocalTimeBin();              // time bin
     Float_t padPosTracklet = line[0]+line[1]*time;          // reconstruct position from fit
     Float_t padPos         = cl->GetPadCol();               // middle pad
     Double_t dpad          = padPosTracklet - padPos;       // reconstruct position relative to middle pad from fit 
@@ -1351,7 +1356,7 @@ Bool_t AliTRDCalibraFillHisto::HandlePRFtrackletV1(const AliTRDseedV1 *tracklet,
   for(int ic=0; ic<AliTRDseed::knTimebins; ic++){
     if(!(cl = tracklet->GetClusters(ic))) continue;
     
-    Double_t     time  = cl->GetPadTime();
+    Double_t     time  = cl->GetLocalTimeBin();
     if((time<=7) || (time>=21)) continue;
     Short_t  *signals  = cl->GetSignals(); 
     Float_t xcenter    = 0.0;    
@@ -1401,7 +1406,7 @@ Bool_t AliTRDCalibraFillHisto::HandlePRFtrackletV1(const AliTRDseedV1 *tracklet,
   fitter.GetParameters(line);
   Float_t  pointError  = -1.0;
   if(fitter.GetChisquare()>=0.0) {
-  pointError  =  TMath::Sqrt(fitter.GetChisquare()/nb3pc);
+  pointError  =  TMath::Sqrt(fitter.GetChisquare()/(nb3pc-2));
   }
 
   //printf("PRF second loop \n");
@@ -1412,7 +1417,7 @@ Bool_t AliTRDCalibraFillHisto::HandlePRFtrackletV1(const AliTRDseedV1 *tracklet,
     if(!(cl = tracklet->GetClusters(ic))) continue;
 
     Short_t  *signals      = cl->GetSignals();              // signal
-    Double_t     time      = cl->GetPadTime();              // time bin
+    Double_t     time      = cl->GetLocalTimeBin();         // time bin
     Float_t padPosTracklet = line[0]+line[1]*time;          // reconstruct position from fit
     Float_t padPos         = cl->GetPadCol();               // middle pad
     Double_t dpad          = padPosTracklet - padPos;       // reconstruct position relative to middle pad from fit 
@@ -1893,7 +1898,7 @@ void AliTRDCalibraFillHisto::FillTheInfoOfTheTrackCH(Int_t nbclusters)
       fEntriesCH[fCalibraMode->GetXbins(0)+fd]++;
       if (fHisto2d) {
 	FillCH2d(fCalibraMode->GetXbins(0)+fd,fAmpTotal[fd]/fRelativeScale);
- 	//fCH2d->Fill(fAmpTotal[fd]/fRelativeScale,fCalibraMode->GetXbins(0)+fd+0.5);
+	//fCH2d->Fill(fAmpTotal[fd]/fRelativeScale,fCalibraMode->GetXbins(0)+fd+0.5);
       }
       if (fVector2d) {
 	fCalibraVector->UpdateVectorCH(fDetectorPreviousTrack,fd,fAmpTotal[fd]/fRelativeScale);
@@ -2011,11 +2016,17 @@ void AliTRDCalibraFillHisto::FillTheInfoOfTheTrackPH()
       fNumberUsedPh[0]++;
       for (Int_t i = 0; i < fTimeMax; i++) {
 	if (fHisto2d) {
-	  fPH2d->Fill((Float_t) i/fSf,(fCalibraMode->GetXbins(1)+fd1)+0.5,(Float_t) fPHValue[i]);
+	  if(fFillWithZero) fPH2d->Fill((Float_t) i/fSf,(fCalibraMode->GetXbins(1)+fd1)+0.5,(Float_t) fPHValue[i]);
+	  else {
+	    if(((Float_t) fPHValue[i] > 0.0)) fPH2d->Fill((Float_t) i/fSf,(fCalibraMode->GetXbins(1)+fd1)+0.5,(Float_t) fPHValue[i]);
+	      }
 	  //printf("Fill the time bin %d with %f\n",i,fPHValue[i]);
 	}
 	if (fVector2d) {
-	  fCalibraVector->UpdateVectorPH(fDetectorPreviousTrack,fd1,i,fPHValue[i]);
+	  if(fFillWithZero) fCalibraVector->UpdateVectorPH(fDetectorPreviousTrack,fd1,i,fPHValue[i]);
+	  else {
+	    if(((Float_t) fPHValue[i] > 0.0)) fCalibraVector->UpdateVectorPH(fDetectorPreviousTrack,fd1,i,fPHValue[i]);  
+	  }
 	}
       }
       break;
@@ -2028,10 +2039,16 @@ void AliTRDCalibraFillHisto::FillTheInfoOfTheTrackPH()
 	  fNumberUsedPh[1]++;
 	  for (Int_t i = 0; i < fTimeMax; i++) {
 	    if (fHisto2d) {
-	      fPH2d->Fill((Float_t) i/fSf,(fCalibraMode->GetXbins(1)+fd1)+0.5,(Float_t) fPHValue[i]);
+	      if(fFillWithZero) fPH2d->Fill((Float_t) i/fSf,(fCalibraMode->GetXbins(1)+fd1)+0.5,(Float_t) fPHValue[i]);
+	      else {
+		if(((Float_t) fPHValue[i] > 0.0)) fPH2d->Fill((Float_t) i/fSf,(fCalibraMode->GetXbins(1)+fd1)+0.5,(Float_t) fPHValue[i]);
+		  }
 	    }
 	    if (fVector2d) {
-	      fCalibraVector->UpdateVectorPH(fDetectorPreviousTrack,fd1,i,fPHValue[i]);
+	      if(fFillWithZero) fCalibraVector->UpdateVectorPH(fDetectorPreviousTrack,fd1,i,fPHValue[i]);
+	      else {
+		if(((Float_t) fPHValue[i] > 0.0)) fCalibraVector->UpdateVectorPH(fDetectorPreviousTrack,fd1,i,fPHValue[i]);
+		  }
 	    }
 	  }
 	}
@@ -2040,10 +2057,16 @@ void AliTRDCalibraFillHisto::FillTheInfoOfTheTrackPH()
 	  fNumberUsedPh[1]++;
 	  for (Int_t i = 0; i < fTimeMax; i++) {
 	    if (fHisto2d) {
-	      fPH2d->Fill((Float_t) i/fSf,(fCalibraMode->GetXbins(1)+fd2)+0.5,(Float_t) fPHValue[i]);
+	      if(fFillWithZero) fPH2d->Fill((Float_t) i/fSf,(fCalibraMode->GetXbins(1)+fd2)+0.5,(Float_t) fPHValue[i]);
+	      else {
+		if(((Float_t) fPHValue[i] > 0.0)) fPH2d->Fill((Float_t) i/fSf,(fCalibraMode->GetXbins(1)+fd2)+0.5,(Float_t) fPHValue[i]);
+	      }
 	    }
 	  if (fVector2d) {
-	    fCalibraVector->UpdateVectorPH(fDetectorPreviousTrack,fd2,i,fPHValue[i]);
+	    if(fFillWithZero) fCalibraVector->UpdateVectorPH(fDetectorPreviousTrack,fd2,i,fPHValue[i]);
+	    else {
+	      if(((Float_t) fPHValue[i] > 0.0)) fCalibraVector->UpdateVectorPH(fDetectorPreviousTrack,fd2,i,fPHValue[i]);
+	    }
 	  }
 	  }
 	}
@@ -2059,10 +2082,16 @@ void AliTRDCalibraFillHisto::FillTheInfoOfTheTrackPH()
 	      fNumberUsedPh[1]++;
 	      for (Int_t i = 0; i < fTimeMax; i++) {
 		if (fHisto2d) {
-		  fPH2d->Fill((Float_t) i/fSf,(fCalibraMode->GetXbins(1)+fd1)+0.5,(Float_t) fPHValue[i]);
+		  if(fFillWithZero) fPH2d->Fill((Float_t) i/fSf,(fCalibraMode->GetXbins(1)+fd1)+0.5,(Float_t) fPHValue[i]);
+		  else {
+		    if(((Float_t) fPHValue[i] > 0.0)) fPH2d->Fill((Float_t) i/fSf,(fCalibraMode->GetXbins(1)+fd1)+0.5,(Float_t) fPHValue[i]);
+		  }
 		}
 		if (fVector2d) {
-		  fCalibraVector->UpdateVectorPH(fDetectorPreviousTrack,fd1,i,fPHValue[i]);
+		  if(fFillWithZero) fCalibraVector->UpdateVectorPH(fDetectorPreviousTrack,fd1,i,fPHValue[i]);
+		  else {
+		    if(((Float_t) fPHValue[i] > 0.0)) fCalibraVector->UpdateVectorPH(fDetectorPreviousTrack,fd1,i,fPHValue[i]);
+		  }
 		}
 	      }
 	    }
@@ -2071,10 +2100,16 @@ void AliTRDCalibraFillHisto::FillTheInfoOfTheTrackPH()
 	      fNumberUsedPh[1]++;
 	      for (Int_t i = 0; i < fTimeMax; i++) {
 		if (fHisto2d) {
-		  fPH2d->Fill((Float_t) i/fSf,(fCalibraMode->GetXbins(1)+fd2)+0.5,(Float_t) fPHValue[i]);
+		  if(fFillWithZero) fPH2d->Fill((Float_t) i/fSf,(fCalibraMode->GetXbins(1)+fd2)+0.5,(Float_t) fPHValue[i]);
+		  else {
+		    if(((Float_t) fPHValue[i] > 0.0)) fPH2d->Fill((Float_t) i/fSf,(fCalibraMode->GetXbins(1)+fd2)+0.5,(Float_t) fPHValue[i]);
+		  }
 		}
 		if (fVector2d) {
-		  fCalibraVector->UpdateVectorPH(fDetectorPreviousTrack,fd2,i,fPHValue[i]);
+		  if(fFillWithZero) fCalibraVector->UpdateVectorPH(fDetectorPreviousTrack,fd2,i,fPHValue[i]);
+		  else {
+		    if(((Float_t) fPHValue[i] > 0.0)) fCalibraVector->UpdateVectorPH(fDetectorPreviousTrack,fd2,i,fPHValue[i]);
+		  }
 		}
 	      }
 	    }
@@ -2090,10 +2125,16 @@ void AliTRDCalibraFillHisto::FillTheInfoOfTheTrackPH()
 	      fNumberUsedPh[1]++;
 	      for (Int_t i = 0; i < fTimeMax; i++) {
 		if (fHisto2d) {
-		  fPH2d->Fill((Float_t) i/fSf,(fCalibraMode->GetXbins(1)+fd1)+0.5,(Float_t) fPHValue[i]);
+		  if(fFillWithZero) fPH2d->Fill((Float_t) i/fSf,(fCalibraMode->GetXbins(1)+fd1)+0.5,(Float_t) fPHValue[i]);
+		  else {
+		    if(((Float_t) fPHValue[i] > 0.0)) fPH2d->Fill((Float_t) i/fSf,(fCalibraMode->GetXbins(1)+fd1)+0.5,(Float_t) fPHValue[i]);
+		  }
 		}
 		if (fVector2d) {
-		  fCalibraVector->UpdateVectorPH(fDetectorPreviousTrack,fd1,i,fPHValue[i]);
+		  if(fFillWithZero) fCalibraVector->UpdateVectorPH(fDetectorPreviousTrack,fd1,i,fPHValue[i]);
+		  else {
+		    if(((Float_t) fPHValue[i] > 0.0)) fCalibraVector->UpdateVectorPH(fDetectorPreviousTrack,fd1,i,fPHValue[i]);
+		  }
 		}
 	      }
 	    }
@@ -2102,10 +2143,16 @@ void AliTRDCalibraFillHisto::FillTheInfoOfTheTrackPH()
 	      fNumberUsedPh[1]++;
 	      for (Int_t i = 0; i < fTimeMax; i++) {
 		if (fHisto2d) {
-		  fPH2d->Fill((Float_t) i/fSf,(fCalibraMode->GetXbins(1)+fd2)+0.5,(Float_t) fPHValue[i]);
+		  if(fFillWithZero) fPH2d->Fill((Float_t) i/fSf,(fCalibraMode->GetXbins(1)+fd2)+0.5,(Float_t) fPHValue[i]);
+		  else {
+		    if(((Float_t) fPHValue[i] > 0.0)) fPH2d->Fill((Float_t) i/fSf,(fCalibraMode->GetXbins(1)+fd2)+0.5,(Float_t) fPHValue[i]);
+		  }
 		}
 		if (fVector2d) {
-		  fCalibraVector->UpdateVectorPH(fDetectorPreviousTrack,fd2,i,fPHValue[i]);
+		  if(fFillWithZero) fCalibraVector->UpdateVectorPH(fDetectorPreviousTrack,fd2,i,fPHValue[i]);
+		  else {
+		    if(((Float_t) fPHValue[i] > 0.0)) fCalibraVector->UpdateVectorPH(fDetectorPreviousTrack,fd2,i,fPHValue[i]);
+		  }
 		}
 	      }
 	    }
@@ -2874,7 +2921,10 @@ Int_t AliTRDCalibraFillHisto::FillDAQ(Double_t phvalue[16][144][36]){
   //if((TMath::RMS(fTimeMax,sum) <= 10.0) && (sum[0] > 200.0)) return 1;
   if(used == 0){
     for(Int_t it = 0; it < fTimeMax; it++){
-      UpdateDAQ(fDetectorPreviousTrack,0,0,it,sum[it],fTimeMax);  
+      if(fFillWithZero) UpdateDAQ(fDetectorPreviousTrack,0,0,it,sum[it],fTimeMax); 
+      else{
+	if(sum[it] > 0.0) UpdateDAQ(fDetectorPreviousTrack,0,0,it,sum[it],fTimeMax); 
+      } 
     }
     
    

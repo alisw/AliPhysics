@@ -241,8 +241,10 @@ Double_t AliTRDCalROC::GetMean(AliTRDCalROC* outlierROC)
    Int_t NPoints = 0;
    for (Int_t i=0;i<fNchannels;i++) {
       if ((!outlierROC) || (!(outlierROC->GetValue(i)))) {
-         ddata[NPoints]= (Double_t) fData[NPoints]/10000;
+	if(fData[i] > 0.000000000000001){
+         ddata[NPoints]= (Double_t) fData[i]/10000;
          NPoints++;
+	}
       }
    }
    Double_t mean = TMath::Mean(NPoints,ddata);
@@ -261,9 +263,11 @@ Double_t AliTRDCalROC::GetMedian(AliTRDCalROC* outlierROC)
    Int_t NPoints = 0;
    for (Int_t i=0;i<fNchannels;i++) {
        if ((!outlierROC) || (!(outlierROC->GetValue(i)))) {
-         ddata[NPoints]= (Double_t) fData[NPoints]/10000;
-         NPoints++;
-      }
+	 if(fData[i] > 0.000000000000001){         
+	   ddata[NPoints]= (Double_t) fData[i]/10000;
+	   NPoints++;
+	 }
+       }
    }
    Double_t mean = TMath::Median(NPoints,ddata);
    delete [] ddata;
@@ -278,16 +282,18 @@ Double_t AliTRDCalROC::GetRMS(AliTRDCalROC* outlierROC)
   //
 
   Double_t *ddata = new Double_t[fNchannels];
-   Int_t NPoints = 0;
-   for (Int_t i=0;i<fNchannels;i++) {
-     if ((!outlierROC) || (!(outlierROC->GetValue(i)))) {
-         ddata[NPoints]= (Double_t)fData[NPoints]/10000;
+  Int_t NPoints = 0;
+  for (Int_t i=0;i<fNchannels;i++) {
+    if ((!outlierROC) || (!(outlierROC->GetValue(i)))) {
+       if(fData[i] > 0.000000000000001){
+         ddata[NPoints]= (Double_t)fData[i]/10000;
          NPoints++;
-      }
-   }
-   Double_t mean = TMath::RMS(NPoints,ddata);
-   delete [] ddata;
-   return mean;
+       }
+    }
+  }
+  Double_t mean = TMath::RMS(NPoints,ddata);
+  delete [] ddata;
+  return mean;
 }
 
 //______________________________________________________________________________________________
@@ -302,8 +308,10 @@ Double_t AliTRDCalROC::GetLTM(Double_t *sigma, Double_t fraction, AliTRDCalROC* 
   UInt_t NPoints = 0;
   for (Int_t i=0;i<fNchannels;i++) {
      if (!outlierROC || !(outlierROC->GetValue(i))) {
-        ddata[NPoints]= (Double_t) fData[NPoints]/10000;
-        NPoints++;
+       if(fData[i] > 0.000000000000001){
+	 ddata[NPoints]= (Double_t) fData[i]/10000;
+	 NPoints++;
+       }
      }
   }
   Int_t hh = TMath::Min(TMath::Nint(fraction *NPoints), Int_t(NPoints));
@@ -404,6 +412,53 @@ Bool_t AliTRDCalROC::Divide(const AliTRDCalROC*  roc)
     }
     else result = kFALSE;
   }
+  return result;
+}
+//______________________________________________________________________________________________
+Bool_t AliTRDCalROC::Unfold() 
+{
+  //
+  // Compute the mean value per pad col
+  // Divide with this value each pad col
+  // This is for the noise study
+  // Return kFALSE if one or more of the pad col was not normalised
+  //
+  Bool_t result = kTRUE;
+  Float_t kEpsilon=0.00000000000000001;
+  
+  // calcul the mean value per col
+  for(Int_t icol = 0; icol < fNcols; icol++){
+
+    Float_t mean = 0.0;
+    Float_t nb   = 0.0;
+
+    for(Int_t irow = 0; irow < fNrows; irow++){
+      if((GetValue(icol,irow) > 0.06) && (GetValue(icol,irow) < 0.15)){
+	mean += GetValue(icol,irow);
+	nb += 1.0;
+      }
+    }
+    
+    if(nb > kEpsilon) {
+      
+      mean = mean/nb;
+
+      if(mean > kEpsilon){
+	for(Int_t irow = 0; irow < fNrows; irow++){
+	  Float_t value = GetValue(icol,irow);
+	  SetValue(icol,irow,(Float_t)(value/mean));
+	}    
+      }
+      else result = kFALSE;
+      
+    }
+
+    else result = kFALSE;
+
+    
+  }
+ 
+
   return result;
 }
 

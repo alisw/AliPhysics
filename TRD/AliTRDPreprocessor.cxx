@@ -421,7 +421,7 @@ Bool_t AliTRDPreprocessor::ExtractPedestals()
     for(Int_t half = 0; half < 2; half++){
 
       Bool_t data         = AreThereDataPedestal(calROCStatus,(Bool_t)half);
-      printf("There are data for the detector %d the half %d: %d\n",det,half,data);
+      //printf("There are data for the detector %d the half %d: %d\n",det,half,data);
       if(!data){
 	// look if data in the OCDB
 	Bool_t dataPrevious = AreThereDataPedestal(calROCPreviousStatus,(Bool_t)half);
@@ -498,7 +498,7 @@ Bool_t AliTRDPreprocessor::AreThereDataPedestal(AliTRDCalSingleChamberStatus *ca
   for(Int_t col = nCol0; col < nColE; col++){
     for(Int_t row = 0; row < calROCStatus->GetNrows(); row++){
       //printf("ismasked %d\n",(Int_t)calROCStatus->IsMasked(col,row));
-      if(!calROCStatus->IsMasked(col,row)) {
+      if(!calROCStatus->GetStatus(col,row)) {
 	data = kTRUE;
 	continue;
       }

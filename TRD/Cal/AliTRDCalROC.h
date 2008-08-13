@@ -62,6 +62,9 @@ class AliTRDCalROC : public TObject
   Bool_t Add(const AliTRDCalROC * roc, Double_t c1 = 1);
   Bool_t Multiply(const AliTRDCalROC * roc);   
   Bool_t Divide(const AliTRDCalROC * roc);   
+
+  // noise
+  Bool_t Unfold();
   
   //Plots
   TH2F *   MakeHisto2D(Float_t min, Float_t max,Int_t type, Float_t mu = 1.0);

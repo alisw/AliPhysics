@@ -397,7 +397,7 @@ TH2F* AliTRDCalibPadStatus::GetHisto(Int_t det, TObjArray *arr, /*FOLD00*/
     // if we are forced and histogram doesn't yes exist create it
     Char_t name[255], title[255];
 
-    sprintf(name,"hCalib%s%.2d",type,det);
+    sprintf(name,"hCalib%s%.3d",type,det);
     sprintf(title,"%s calibration histogram detector %.2d;ADC channel;Channel (pad)",type,det);
 
    
@@ -581,6 +581,7 @@ AliTRDCalPadStatus* AliTRDCalibPadStatus::CreateCalPadStatus()
 {
   //
   // Create Pad Status out of Mean and RMS values
+  // The chamber without data are masked, this is the corrected in the preprocessor
   //
 
   AliTRDCalPadStatus* obj = new AliTRDCalPadStatus("padstatus", "padstatus");
@@ -589,45 +590,95 @@ AliTRDCalPadStatus* AliTRDCalibPadStatus::CreateCalPadStatus()
     {
       AliTRDCalSingleChamberStatus *calROC = obj->GetCalROC(idet);
 
-      //Take the stuff
-      AliTRDCalROC *calRocMean    = ((AliTRDCalROC *)GetCalRocMean(idet));
-      AliTRDCalROC *calRocRMS     = ((AliTRDCalROC *)GetCalRocRMS(idet));
 
-      //Take the stuff second chance
-      AliTRDCalROC *calRocMeand    = ((AliTRDCalROC *)GetCalRocMeand(idet));
-      AliTRDCalROC *calRocRMSd     = ((AliTRDCalROC *)GetCalRocRMSd(idet));
-
-      if ( !calRocMean ) {
+      if ( !GetCalRocMean(idet)) {
 	for(Int_t k = 0; k < calROC->GetNchannels(); k++){
-	  calROC->SetStatus(k,AliTRDCalPadStatus::kMasked);
+	  calROC->SetStatus(k,AliTRDCalPadStatus::kNotConnected);
 	}
 	continue;
       }
       
+
+      //Take the stuff
+      AliTRDCalROC *calRocMean    = new AliTRDCalROC(*( (AliTRDCalROC *) GetCalRocMean(idet)));
+      AliTRDCalROC *calRocRMS     = new AliTRDCalROC(*( (AliTRDCalROC *) GetCalRocRMS(idet)));
+
+      //Take the stuff second chance
+      AliTRDCalROC *calRocMeand    = new AliTRDCalROC(*( (AliTRDCalROC *) GetCalRocMeand(idet)));
+      AliTRDCalROC *calRocRMSd     = new AliTRDCalROC(*( (AliTRDCalROC *) GetCalRocRMSd(idet)));
+
+      calRocRMS->Unfold();
+      calRocRMSd->Unfold();
+
+     
       //Range
-      Int_t channels = calROC->GetNchannels();
+      Int_t row      = calROC->GetNrows();
+      Int_t col      = calROC->GetNcols();
       
       Double_t rmsmean       = calRocMean->GetRMS()*10.0;
       Double_t meanmean      = calRocMean->GetMean()*10.0;
-      Double_t meansquares   = calRocRMS->GetMean()*10.0;
+      Double_t meansquares   = calRocRMS->GetMean();
 
-      for(Int_t ich = 0; ich < channels; ich++){
+      
+      for(Int_t irow = 0; irow < row; irow++){
 	
-	Float_t mean     = calRocMean->GetValue(ich)*10.0;
-	Float_t rms      = calRocRMS->GetValue(ich)*10.0;
+	// for bridged pads
+	Float_t meanprevious = 0.0;
+	Float_t rmsprevious  = 0.0; 
+	Float_t mean         = 0.0;
+	Float_t rms          = 0.0;
 	
-	if((rms <= 0.0001) || (TMath::Abs(mean-meanmean)>(5*rmsmean)) || (TMath::Abs(rms)>(5.0*TMath::Abs(meansquares)))) {
-	  // look at second chance
-	  Float_t meand     = calRocMeand->GetValue(ich)*10.0;
-	  Float_t rmsd      = calRocRMSd->GetValue(ich)*10.0;
+	for(Int_t icol = 0; icol < col; icol++){
+	  
+	  mean     = calRocMean->GetValue(icol,irow)*10.0;
+	  rms      = calRocRMS->GetValue(icol,irow);
 
-	  if((rmsd <= 0.0001) || (TMath::Abs(meand-meanmean)>(5*rmsmean)) || (TMath::Abs(rmsd)>(5.0*TMath::Abs(meansquares)))) {
-	    calROC->SetStatus(ich, AliTRDCalPadStatus::kMasked);
+	  if(icol > 0) {
+	    meanprevious     = calRocMean->GetValue((icol -1),irow)*10.0;
+	    rmsprevious      = calRocRMS->GetValue((icol - 1),irow);
 	  }
-	  else calROC->SetStatus(ich, AliTRDCalPadStatus::kReadSecond);
+	  
+	  Bool_t pb = kFALSE;
+	  // masked if two noisy
+	  if((rms <= 0.0001) || (TMath::Abs(mean-meanmean)>(5*rmsmean)) || (TMath::Abs(rms)>(5.0*TMath::Abs(meansquares)))) {
+	    
+	    pb = kTRUE;
+	    // look at second chance
+	    Float_t meand     = calRocMeand->GetValue(icol,irow)*10.0;
+	    Float_t rmsd      = calRocRMSd->GetValue(icol,irow);
+	    
+	    if((rmsd <= 0.0001) || (TMath::Abs(meand-meanmean)>(5*rmsmean)) || (TMath::Abs(rmsd)>(5.0*TMath::Abs(meansquares)))) {
+	      if((rmsd <= 0.0001) && (rms <= 0.0001)) {
+		calROC->SetStatus(icol,irow,AliTRDCalPadStatus::kNotConnected);
+	      }
+	      else {
+		calROC->SetStatus(icol, irow, AliTRDCalPadStatus::kMasked);
+	      }
+	    }
+	    else {
+	      calROC->SetStatus(icol, irow, AliTRDCalPadStatus::kReadSecond);
+	    }
+	  }
+
+
+	  // bridge if previous pad found something
+	  if(!pb) {
+	    if((meanprevious == mean) && (rmsprevious == rms) && (mean > 0.0001)) {
+	      //printf("mean previous %f, mean %f, rms %f, rmsprevious %f, col %d\n",meanprevious,mean,rms,rmsprevious,icol);
+	      calROC->SetStatus(icol -1 ,irow, AliTRDCalPadStatus::kPadBridgedRight);
+	      calROC->SetStatus(icol ,irow, AliTRDCalPadStatus::kPadBridgedLeft);
+	    }	    
+	  }
+
 	}
-	
       }
+
+      delete calRocMean;
+      delete calRocRMS;
+      delete calRocMeand;
+      delete calRocRMSd;
+
+
     }
   
   return obj;
