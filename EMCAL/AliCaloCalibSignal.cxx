@@ -26,13 +26,12 @@
 */
 // fed an event:
 //  fSignals->ProcessEvent(fCaloRawStream,fRawEventHeaderBase);
-// asked to draw graphs or profiles:
-//  fSignals->GetGraphAmpVsTimeHighGain(module,column,row)->Draw("ap");
-// or
-//  fSignals->GetProfAmpVsTimeHighGain(module,column,row)->Draw();
+// get some info:
+//  fSignals->GetXXX..()
 // etc.
 //________________________________________________________________________
 
+#include "TProfile.h"
 #include "TFile.h"
 
 #include "AliRawReader.h"
@@ -45,6 +44,12 @@
 ClassImp(AliCaloCalibSignal)
 
 using namespace std;
+
+// variables for TTree filling; not sure if they should be static or not
+static int fChannelNum;
+static double fAmp;
+static double fAvgAmp;
+static double fRMS;
 
 // ctor; initialize everything in order to avoid compiler warnings
 // put some reasonable defaults
@@ -66,7 +71,9 @@ AliCaloCalibSignal::AliCaloCalibSignal(kDetType detectorType) :
   fUseAverage(kTRUE),
   fSecInAverage(1800), 
   fNEvents(0),
-  fNAcceptedEvents(0)
+  fNAcceptedEvents(0),
+  fTreeAmpVsTime(NULL),
+  fTreeAvgAmpVsTime(NULL)
 {
   //Default constructor. First we set the detector-type related constants.
   if (detectorType == kPhos) {
@@ -87,39 +94,25 @@ AliCaloCalibSignal::AliCaloCalibSignal(kDetType detectorType) :
 
   fDetType = detectorType;
 
-  // Set the number of points for each Amp vs. Time graph to 0
-  memset(fNHighGain, 0, sizeof(fNHighGain));
-  memset(fNLowGain, 0, sizeof(fNLowGain));
-
-  CreateGraphs(); // set up the TGraphs
-
-  // init TProfiles to NULL=0 also
-  memset(fProfAmpVsTimeHighGain, 0, sizeof(fProfAmpVsTimeHighGain));
-  memset(fProfAmpVsTimeLowGain, 0, sizeof(fProfAmpVsTimeLowGain));
+  ResetInfo(); // trees and counters
 } 
 
 // dtor
 //_____________________________________________________________________
 AliCaloCalibSignal::~AliCaloCalibSignal()
 {
-  ClearObjects();
+  DeleteTrees();
 }
 
 //_____________________________________________________________________
-void AliCaloCalibSignal::ClearObjects()
+void AliCaloCalibSignal::DeleteTrees()
 {
-  // delete what was created in the ctor (TGraphs), and possible later (TProfiles)
-  for (int i=0; i<fgkMaxTowers; i++) {
-    if ( fGraphAmpVsTimeHighGain[i] ) { delete fGraphAmpVsTimeHighGain[i]; }
-    if ( fGraphAmpVsTimeLowGain[i] ) { delete fGraphAmpVsTimeLowGain[i]; }
-    if ( fProfAmpVsTimeHighGain[i] ) { delete fProfAmpVsTimeHighGain[i]; }
-    if ( fProfAmpVsTimeLowGain[i] ) { delete fProfAmpVsTimeLowGain[i]; }
-  }
-  // set pointers
-  memset(fGraphAmpVsTimeHighGain, 0, sizeof(fGraphAmpVsTimeHighGain));
-  memset(fGraphAmpVsTimeLowGain, 0, sizeof(fGraphAmpVsTimeLowGain));
-  memset(fProfAmpVsTimeHighGain, 0, sizeof(fProfAmpVsTimeHighGain));
-  memset(fProfAmpVsTimeLowGain, 0, sizeof(fProfAmpVsTimeLowGain));
+  // delete what was created in the ctor (TTrees)
+  if (fTreeAmpVsTime) delete fTreeAmpVsTime;
+  if (fTreeAvgAmpVsTime) delete fTreeAvgAmpVsTime;
+  // and reset pointers
+  fTreeAmpVsTime = NULL;
+  fTreeAvgAmpVsTime = NULL;
 
   return;
 }
@@ -144,9 +137,11 @@ AliCaloCalibSignal::AliCaloCalibSignal(const AliCaloCalibSignal &sig) :
   fUseAverage(sig.GetUseAverage()),
   fSecInAverage(sig.GetSecInAverage()),
   fNEvents(sig.GetNEvents()),
-  fNAcceptedEvents(sig.GetNAcceptedEvents())
+  fNAcceptedEvents(sig.GetNAcceptedEvents()),
+  fTreeAmpVsTime(NULL),
+  fTreeAvgAmpVsTime(NULL)
 {
-  // also the TGraph contents
+  // also the TTree contents
   AddInfo(&sig);
 }
 
@@ -162,67 +157,49 @@ AliCaloCalibSignal& AliCaloCalibSignal::operator = (const AliCaloCalibSignal &so
 }
 
 //_____________________________________________________________________
-void AliCaloCalibSignal::CreateGraphs()
+void AliCaloCalibSignal::CreateTrees()
 {
-  //Then, loop for the requested number of modules
-  TString title, name;
-  for (int i = 0; i < fModules; i++) {
-    
-    // Amplitude vs. Time graph for each channel
-    for(int ic=0;ic < fColumns;ic++){
-      for(int ir=0;ir < fRows;ir++){
-	
-	int id = GetTowerNum(i, ic, ir);
-	
-	// high gain graph
-	name = "fGraphAmpVsTimeHighGain_"; name += i;
-	name += "_"; name += ic;
-	name += "_"; name += ir;
-	title = "Amp vs. Time High Gain Mod "; title += i;
-	title += " Col "; title += ic;
-	title += " Row "; title += ir;
-	
-	fGraphAmpVsTimeHighGain[id] = new TGraph();
-	fGraphAmpVsTimeHighGain[id]->SetName(name);
-	fGraphAmpVsTimeHighGain[id]->SetTitle(title);
-	fGraphAmpVsTimeHighGain[id]->SetMarkerStyle(20);
-	
-	// Low Gain
-	name = "fGraphAmpVsTimeLowGain_"; name += i;
-	name += "_"; name += ic;
-	name += "_"; name += ir;
-	title = "Amp vs. Time Low Gain Mod "; title += i;
-	title += " Col "; title += ic;
-	title += " Row "; title += ir;
-	
-	fGraphAmpVsTimeLowGain[id] = new TGraph();
-	fGraphAmpVsTimeLowGain[id]->SetName(name);
-	fGraphAmpVsTimeLowGain[id]->SetTitle(title);
-	fGraphAmpVsTimeLowGain[id]->SetMarkerStyle(20);
-	
-      }
-    }
+  // initialize trees
+  // first, regular version
+  fTreeAmpVsTime = new TTree("fTreeAmpVsTime","Amplitude vs. Time Tree Variables");
 
-  }//end for nModules 
+  fTreeAmpVsTime->Branch("fChannelNum", &fChannelNum, "fChannelNum/I");
+  fTreeAmpVsTime->Branch("fHour", &fHour, "fHour/D");
+  fTreeAmpVsTime->Branch("fAmp", &fAmp, "fAmp/D");
+
+  // then, average version
+  fTreeAvgAmpVsTime = new TTree("fTreeAvgAmpVsTime","Average Amplitude vs. Time Tree Variables");
+
+  fTreeAvgAmpVsTime->Branch("fChannelNum", &fChannelNum, "fChannelNum/I");
+  fTreeAvgAmpVsTime->Branch("fHour", &fHour, "fHour/D");
+  fTreeAvgAmpVsTime->Branch("fAvgAmp", &fAvgAmp, "fAvgAmp/D");
+  fTreeAvgAmpVsTime->Branch("fRMS", &fRMS, "fRMS/D");
+
+  return;
 }
 
 //_____________________________________________________________________
-void AliCaloCalibSignal::Reset()
+void AliCaloCalibSignal::ResetInfo()
 {
   Zero(); // set all counters to 0
-  ClearObjects(); // delete previous TGraphs and TProfiles
-  CreateGraphs(); // and create some new ones
+  DeleteTrees(); // delete previous stuff
+  CreateTrees(); // and create some new ones
   return;
 }
 
 //_____________________________________________________________________
 void AliCaloCalibSignal::Zero()
 {
-  // set all counters to 0; not cuts etc.though
+  // set all counters to 0; not cuts etc. though
   fHour = 0;
   fLatestHour = 0;
   fNEvents = 0;
   fNAcceptedEvents = 0;
+
+  // Set the number of points for each Amp vs. Time graph to 0
+  memset(fNHighGain, 0, sizeof(fNHighGain));
+  memset(fNLowGain, 0, sizeof(fNLowGain));
+
   return;
 }
 
@@ -254,56 +231,37 @@ Bool_t AliCaloCalibSignal::CheckFractionAboveAmp(int *AmpVal, int nTotChan)
 //_____________________________________________________________________
 Bool_t AliCaloCalibSignal::AddInfo(const AliCaloCalibSignal *sig)
 {
-  // just do this for the basic graphs/profiles that get filled in ProcessEvent
-  // may not have data for all channels, but let's just Add everything..
-  // Note: this method will run into problems with TProfile adding if the binning of
-  // the local profiles is not the same as those provided by the argument *sig..
-  int numGraphPoints = 0;
-  int id = 0;
-  int ip = 0;
-  for (int i = 0; i < fModules; i++) {
-    for (int j = 0; j < fColumns; j++) {
-      for (int k = 0; k < fRows; k++) {
-	
-	id = GetTowerNum(i,j,k);
+  // add info from sig's TTrees to ours..
+  TTree *sigAmp = sig->GetTreeAmpVsTime();
+  TTree *sigAvgAmp = sig->GetTreeAvgAmpVsTime();
 
-	if(fUseAverage){ // add to Profiles
- 	  if (sig->GetProfAmpVsTimeHighGain(id)) {
-	    GetProfAmpVsTimeHighGain(id)->Add(sig->GetProfAmpVsTimeHighGain(id));
-	  }
- 	  if (sig->GetProfAmpVsTimeLowGain(id)) {
-	    GetProfAmpVsTimeLowGain(id)->Add(sig->GetProfAmpVsTimeLowGain(id));
-	  }
-	}
-	else{ // add to Graphs	  
-	  // high gain
-	  numGraphPoints= sig->GetGraphAmpVsTimeHighGain(id)->GetN();
-	  if (numGraphPoints > 0) {
-	    // get the values
-	    double *graphX = sig->GetGraphAmpVsTimeHighGain(id)->GetX();
-	    double *graphY = sig->GetGraphAmpVsTimeHighGain(id)->GetY();
-	    for(ip=0; ip < numGraphPoints; ip++){
-	      fGraphAmpVsTimeHighGain[id]->SetPoint(fNHighGain[id]++,graphX[ip],graphY[ip]);
-	    }
-	  }
-	  // low gain
-	  numGraphPoints= sig->GetGraphAmpVsTimeLowGain(id)->GetN();
-	  if (numGraphPoints > 0) {
-	    // get the values
-	    double *graphX = sig->GetGraphAmpVsTimeLowGain(id)->GetX();
-	    double *graphY = sig->GetGraphAmpVsTimeLowGain(id)->GetY();
-	    for(ip=0; ip < numGraphPoints; ip++){
-	      fGraphAmpVsTimeLowGain[id]->SetPoint(fNLowGain[id]++,graphX[ip],graphY[ip]);
-	    }
-	  }
+  // we could try some merging via TList or what also as a more elegant approach
+  // but I wanted with the stupid/simple and hopefully safe approach of looping
+  // over what we want to add..
 
-	}
+  // associate variables for sigAmp and sigAvgAmp:
+  sigAmp->SetBranchAddress("fChannelNum",&fChannelNum);
+  sigAmp->SetBranchAddress("fHour",&fHour);
+  sigAmp->SetBranchAddress("fAmp",&fAmp);
 
-      }//end for nModules 
-    }//end for nColumns
-  }//end for nRows
+  // loop over the trees.. note that since we use the same variables we should not need
+  // to do any assignments between the getting and filling
+  for (int i=0; i<sigAmp->GetEntries(); i++) {
+    sigAmp->GetEntry(i);
+    fTreeAmpVsTime->Fill();
+  }
 
-  return kTRUE;//We succesfully added info from the supplied object
+  sigAvgAmp->SetBranchAddress("fChannelNum",&fChannelNum);
+  sigAvgAmp->SetBranchAddress("fHour",&fHour);
+  sigAvgAmp->SetBranchAddress("fAvgAmp",&fAvgAmp);
+  sigAvgAmp->SetBranchAddress("fRMS",&fRMS);
+
+  for (int i=0; i<sigAvgAmp->GetEntries(); i++) {
+    sigAvgAmp->GetEntry(i);
+    fTreeAvgAmpVsTime->Fill();
+  }
+
+  return kTRUE;//We hopefully succesfully added info from the supplied object
 }
 
 //_____________________________________________________________________
@@ -358,7 +316,7 @@ Bool_t AliCaloCalibSignal::ProcessEvent(AliCaloRawStream *in, AliRawEventHeaderB
       
       //Debug
       if (arrayPos < 0 || arrayPos >= fModules) {
-	printf("Oh no: arrayPos = %i.\n", arrayPos); 
+	printf("AliCaloCalibSignal::ProcessEvent = Oh no: arrayPos = %i.\n", arrayPos); 
       }
 
       // get tower number for AmpVal array
@@ -403,18 +361,24 @@ Bool_t AliCaloCalibSignal::ProcessEvent(AliCaloRawStream *in, AliRawEventHeaderB
     fLatestHour = fHour; 
   }
   
-  // it is a led event, now fill graphs (maybe profiles later)
-  for(int i=0;i<fModules;i++){
-    for(int j=0;j<fColumns;j++){
-      for(int k=0;k<fRows;k++){
+  // it is a led event, now fill TTree
+  for(int i=0; i<fModules; i++){
+    for(int j=0; j<fColumns; j++){
+      for(int k=0; k<fRows; k++){
 	
 	TowerNum = GetTowerNum(i, j, k); 
 
 	if(AmpValHighGain[TowerNum]) {
-	  fGraphAmpVsTimeHighGain[TowerNum]->SetPoint(fNHighGain[TowerNum]++,fHour,AmpValHighGain[TowerNum]);
+	  fAmp = AmpValHighGain[TowerNum];
+	  fChannelNum = GetChannelNum(i,j,k,1);
+	  fTreeAmpVsTime->Fill();//fChannelNum,fHour,AmpValHighGain[TowerNum]);
+	  fNHighGain[TowerNum]++;
 	}
 	if(AmpValLowGain[TowerNum]) {
- 	  fGraphAmpVsTimeLowGain[TowerNum]->SetPoint(fNLowGain[TowerNum]++,fHour,AmpValLowGain[TowerNum]);
+	  fAmp = AmpValLowGain[TowerNum];
+	  fChannelNum = GetChannelNum(i,j,k,0);
+	  fTreeAmpVsTime->Fill();//fChannelNum,fHour,AmpValLowGain[TowerNum]);
+	  fNLowGain[TowerNum]++;
 	}
       }
     }
@@ -424,39 +388,9 @@ Bool_t AliCaloCalibSignal::ProcessEvent(AliCaloRawStream *in, AliRawEventHeaderB
 }
 
 //_____________________________________________________________________
-void AliCaloCalibSignal::CreateProfile(int imod, int ic, int ir, int towerId, int gain,
-				       int nbins, double min, double max)
-{ //! create/setup a TProfile
-  TString title, name;   
-  if (gain == 0) { 
-    name = "fProfAmpVsTimeLowGain_";   
-    title = "Amp vs. Time Low Gain Mod "; 
-  } 
-  else if (gain == 1) { 
-    name = "fProfAmpVsTimeHighGain_"; 
-    title = "Amp vs. Time High Gain Mod "; 
-  } 
-  name += imod;
-  name += "_"; name += ic;
-  name += "_"; name += ir;
-  title += imod;
-  title += " Col "; title += ic;
-  title += " Row "; title += ir;
-	    
-  // use "s" option for RMS
-  if (gain==0) { 
-    fProfAmpVsTimeLowGain[towerId] = new TProfile(name,title, nbins, min, max,"s");
-  }
-  else if (gain==1) {
-    fProfAmpVsTimeHighGain[towerId] = new TProfile(name,title, nbins, min, max,"s");
-  }
-
-  return;
-}
-//_____________________________________________________________________
-Bool_t AliCaloCalibSignal::Save(TString fileName, Bool_t saveEmptyGraphs)
+Bool_t AliCaloCalibSignal::Save(TString fileName)
 {
-  //Saves all the histograms (or profiles, to be accurate) to the designated file
+  //Saves all the TTrees to the designated file
   
   TFile destFile(fileName, "recreate");
   
@@ -466,101 +400,107 @@ Bool_t AliCaloCalibSignal::Save(TString fileName, Bool_t saveEmptyGraphs)
   
   destFile.cd();
 
-  // setup variables for the TProfile plot
+  // save the trees
+  fTreeAmpVsTime->Write();
+  if (fUseAverage) { 
+    Analyze(); // get the latest and greatest averages
+    fTreeAvgAmpVsTime->Write();
+  }
+
+  destFile.Close();
+  
+  return kTRUE;
+}
+
+//_____________________________________________________________________
+Bool_t AliCaloCalibSignal::Analyze()
+{
+  // Fill the tree holding the average values
+  if (!fUseAverage) { return kFALSE; }
+
+  // Reset the average TTree if Analyze has already been called earlier,
+  // meaning that the TTree could have been partially filled
+  if (fTreeAvgAmpVsTime->GetEntries() > 0) {
+    fTreeAvgAmpVsTime->Reset();
+  }
+
+  //0: setup variables for the TProfile plots that we'll use to do the averages
   int numProfBins = 0;
   double timeMin = 0;
   double timeMax = 0;
-  if (fUseAverage) {
-    if (fSecInAverage > 0) {
-      numProfBins = (int)( (fLatestHour*fgkNumSecInHr)/fSecInAverage + 1 ); // round-off
+  if (fSecInAverage > 0) {
+    numProfBins = (int)( (fLatestHour*fgkNumSecInHr)/fSecInAverage + 1 ); // round-off
+  }
+  numProfBins += 2; // add extra buffer : first and last
+  double binSize = 1.0*fSecInAverage / fgkNumSecInHr;
+  timeMin = - binSize;
+  timeMax = timeMin + numProfBins*binSize;
+
+  //1: set up TProfiles for the towers that had data
+  TProfile * profile[fgkMaxTowers*2]; // *2 is since we include both high and low gains
+  memset(profile, 0, sizeof(profile));
+
+  char name[200]; // for profile id and title
+  int TowerNum = 0;
+
+  for (int i = 0; i<fModules; i++) {
+    for (int ic=0; ic<fColumns; ic++){
+      for (int ir=0; ir<fRows; ir++) {
+
+	TowerNum = GetTowerNum(i, ic, ir);
+	// high gain
+	if (fNHighGain[TowerNum] > 0) {
+	  fChannelNum = GetChannelNum(i, ic, ir, 1); 
+	  sprintf(name, "profileChan%d", fChannelNum);
+	  profile[fChannelNum] = new TProfile(name, name, numProfBins, timeMin, timeMax, "s");
+	}
+
+	// same for low gain
+	if (fNLowGain[TowerNum] > 0) {
+	  fChannelNum = GetChannelNum(i, ic, ir, 0); 
+	  sprintf(name, "profileChan%d", fChannelNum);
+	  profile[fChannelNum] = new TProfile(name, name, numProfBins, timeMin, timeMax, "s");
+	}
+
+      } // rows
+    } // columns
+  } // modules
+
+  //2: fill profiles by looping over tree
+  // Set addresses for tree-readback also
+  fTreeAmpVsTime->SetBranchAddress("fChannelNum", &fChannelNum);
+  fTreeAmpVsTime->SetBranchAddress("fHour", &fHour);
+  fTreeAmpVsTime->SetBranchAddress("fAmp", &fAmp);
+
+  for (int ient=0; ient<fTreeAmpVsTime->GetEntries(); ient++) {
+    fTreeAmpVsTime->GetEntry(ient);
+    if (profile[fChannelNum]) { 
+      // profile should always have been created above, for active channels
+      profile[fChannelNum]->Fill(fHour, fAmp);
     }
-    numProfBins += 2; // add extra buffer : first and last
-    double binSize = 1.0*fSecInAverage / fgkNumSecInHr;
-    timeMin = - binSize;
-    timeMax = timeMin + numProfBins*binSize;
   }
 
-  int numGraphPoints= 0;
-  int TowerNum = 0;    
-  for (int i = 0; i < fModules; i++) {
-    
-    for(int ic=0;ic < fColumns;ic++){
-      for(int ir=0;ir < fRows;ir++){
+  // re-associating the branch addresses here seems to be needed for OK 'average' storage	    
+  fTreeAvgAmpVsTime->SetBranchAddress("fChannelNum", &fChannelNum);
+  fTreeAvgAmpVsTime->SetBranchAddress("fHour", &fHour);
+  fTreeAvgAmpVsTime->SetBranchAddress("fAvgAmp", &fAvgAmp);
+  fTreeAvgAmpVsTime->SetBranchAddress("fRMS", &fRMS);
 
-	TowerNum = GetTowerNum(i, ic, ir); 
+  //3: fill avg tree by looping over the profiles
+  for (fChannelNum = 0; fChannelNum<(fgkMaxTowers*2); fChannelNum++) {
+    if (profile[fChannelNum]) { // profile was created
+      if (profile[fChannelNum]->GetEntries() > 0) { // profile had some entries
+	for(int it=0; it<numProfBins; it++) {
+	  if (profile[fChannelNum]->GetBinEntries(it+1) > 0) {
+	    fAvgAmp = profile[fChannelNum]->GetBinContent(it+1);
+	    fHour = profile[fChannelNum]->GetBinCenter(it+1);
+	    fRMS = profile[fChannelNum]->GetBinError(it+1);
+	    fTreeAvgAmpVsTime->Fill();
+	  } // some entries for this bin
+	} // loop over bins
+      } // some entries for this profile
+    } // profile exists  
+  } // loop over all possible channels
 
-	// 1st: high gain
-	numGraphPoints= fGraphAmpVsTimeHighGain[TowerNum]->GetN();
-	if( numGraphPoints>0 || saveEmptyGraphs) {
-	  
-	  // average the graphs points over time if requested and put them in a profile plot
-	  if(fUseAverage && numGraphPoints>0) {
-	    
-	    // get the values
-	    double *graphX = fGraphAmpVsTimeHighGain[TowerNum]->GetX();
-	    double *graphY = fGraphAmpVsTimeHighGain[TowerNum]->GetY();
-
-	    // create the TProfile: 1 is for High gain	    	    
-	    CreateProfile(i, ic, ir, TowerNum, 1,
-			  numProfBins, timeMin, timeMax);
-
-	    // loop over graph points and fill profile
-	    for(int ip=0; ip < numGraphPoints; ip++){
-	      fProfAmpVsTimeHighGain[TowerNum]->Fill(graphX[ip],graphY[ip]);
-	    }
-	    
-	    fProfAmpVsTimeHighGain[TowerNum]->GetXaxis()->SetTitle("Hours");
-	    fProfAmpVsTimeHighGain[TowerNum]->GetYaxis()->SetTitle("MaxAmplitude - Pedestal");
-	    fProfAmpVsTimeHighGain[TowerNum]->Write();
-
-	  }
-	   else{
-	     //otherwise, just save the graphs and forget the profiling
-	     fGraphAmpVsTimeHighGain[TowerNum]->GetXaxis()->SetTitle("Hours");
-	     fGraphAmpVsTimeHighGain[TowerNum]->GetYaxis()->SetTitle("MaxAmplitude - Pedestal");
-	     fGraphAmpVsTimeHighGain[TowerNum]->Write();
-	   }
-	  
-	} // low gain graph info should be saved in one form or another
-	
-	// 2nd: now go to the low gain case
-	numGraphPoints= fGraphAmpVsTimeLowGain[TowerNum]->GetN();
-	if( numGraphPoints>0 || saveEmptyGraphs) {
-	  
-	  // average the graphs points over time if requested and put them in a profile plot
-	  if(fUseAverage && numGraphPoints>0) {
-	    
-	    double *graphX = fGraphAmpVsTimeLowGain[TowerNum]->GetX();
-	    double *graphY = fGraphAmpVsTimeLowGain[TowerNum]->GetY();
-	    
-	    // create the TProfile: 0 is for Low gain	    
-	    CreateProfile(i, ic, ir, TowerNum, 0,
-			  numProfBins, timeMin, timeMax);
-
-	    // loop over graph points and fill profile
-	    for(int ip=0; ip < numGraphPoints; ip++){
-	      fProfAmpVsTimeLowGain[TowerNum]->Fill(graphX[ip],graphY[ip]);
-	    }
-	    
-	    fProfAmpVsTimeLowGain[TowerNum]->GetXaxis()->SetTitle("Hours");
-	    fProfAmpVsTimeLowGain[TowerNum]->GetYaxis()->SetTitle("MaxAmplitude - Pedestal");
-	    fProfAmpVsTimeLowGain[TowerNum]->Write();
-
-	  }
-	  else{
-	     //otherwise, just save the graphs and forget the profiling
-	    fGraphAmpVsTimeLowGain[TowerNum]->GetXaxis()->SetTitle("Hours");
-	    fGraphAmpVsTimeLowGain[TowerNum]->GetYaxis()->SetTitle("MaxAmplitude - Pedestal");
-	    fGraphAmpVsTimeLowGain[TowerNum]->Write();
-	  }
-	  
-	} // low gain graph info should be saved in one form or another
-
-      } // fRows
-    } // fColumns
-
-  } // fModules
-  destFile.Close();
-  
   return kTRUE;
 }

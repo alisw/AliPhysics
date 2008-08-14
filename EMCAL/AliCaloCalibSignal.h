@@ -22,8 +22,9 @@
 //   \version $Revision:  $
 //   \date $Date: $
 
-#include "TGraph.h"
-#include "TProfile.h"
+#include "TString.h"
+#include "TTree.h"
+
 class AliCaloRawStream;
 class AliCaloAltroMapping;
 class AliRawReader;
@@ -53,27 +54,11 @@ class AliCaloCalibSignal : public TObject {
 
   ////////////////////////////
   //Simple getters
-  // need public access to the TGraphs.. 
-  TGraph * GetGraphAmpVsTimeHighGain(int imod, int icol, int irow) const // Return a pointer to the high gain graph
-    { int towId = GetTowerNum(imod, icol, irow); return fGraphAmpVsTimeHighGain[towId];}; //!
-  TGraph * GetGraphAmpVsTimeLowGain(int imod, int icol, int irow) const // Return a pointer to the low gain graph
-    {int towId = GetTowerNum(imod, icol, irow); return fGraphAmpVsTimeLowGain[towId];};	
-  TGraph * GetGraphAmpVsTimeHighGain(int towId) const // Return a pointer to the high gain graph
-    { return fGraphAmpVsTimeHighGain[towId];}; //!
-  TGraph * GetGraphAmpVsTimeLowGain(int towId) const // Return a pointer to the low gain graph
-    { return fGraphAmpVsTimeLowGain[towId];}; //!	
+  // for TTree
+  TTree * GetTreeAmpVsTime() const { return fTreeAmpVsTime; } //!
+  TTree * GetTreeAvgAmpVsTime() const {return fTreeAvgAmpVsTime; } //!
 
-  // and similarly for the TProfiles
-  TProfile * GetProfAmpVsTimeHighGain(int imod, int icol, int irow) const // Return a pointer to the high gain profile
-    { int towId = GetTowerNum(imod, icol, irow); return fProfAmpVsTimeHighGain[towId];}; //!	
-  TProfile * GetProfAmpVsTimeLowGain(int imod, int icol, int irow) const // Return a pointer to the low gain profile
-    { int towId = GetTowerNum(imod, icol, irow); return fProfAmpVsTimeLowGain[towId];}; //!	
-  TProfile * GetProfAmpVsTimeHighGain(int towId) const // Return a pointer to the high gain profile
-    { return fProfAmpVsTimeHighGain[towId];}; //!	
-  TProfile * GetProfAmpVsTimeLowGain(int towId) const // Return a pointer to the low gain profile
-    { return fProfAmpVsTimeLowGain[towId];}; //!	
-
-  // how many points do we have in each TGraph
+  // how many points do we have for each tower&gain
   int GetNHighGain(int imod, int icol, int irow) const //!
     { int towId = GetTowerNum(imod, icol, irow); return fNHighGain[towId];};	//!
   int GetNLowGain(int imod, int icol, int irow) const //!
@@ -88,7 +73,18 @@ class AliCaloCalibSignal : public TObject {
   int GetColumns() const {return fColumns;}; //The number of columns per module
   int GetRows() const {return fRows;}; //The number of rows per module
   int GetModules() const {return fModules;}; //The number of modules
-  int GetTowerNum(int imod, int icol, int irow) const { return imod*fColumns*fRows + icol*fRows + irow;}; // help index
+  int GetTowerNum(int imod, int icol, int irow) const { return (imod*fColumns*fRows + icol*fRows + irow);}; // help index
+
+  int GetChannelNum(int imod, int icol, int irow, int igain) const { return (igain*fModules*fColumns*fRows + imod*fColumns*fRows + icol*fRows + irow);}; // channel number with gain included
+
+  Bool_t DecodeChannelNum(int chanId, int *imod, int *icol, int *irow, int *igain) const {
+    *igain = chanId/(fModules*fColumns*fRows);
+    *imod = (chanId/(fColumns*fRows)) % fModules;
+    *icol = (chanId/fRows) % fColumns;
+    *irow = chanId % fRows;
+    
+    return kTRUE;
+  }; // return the module, column, row, and gain for a given channel number
 
   // Basic Counters
   int GetNEvents() const {return fNEvents;};
@@ -102,12 +98,11 @@ class AliCaloCalibSignal : public TObject {
   void SetReqFractionAboveAmpCutVal(double d) { fReqFractionAboveAmpCutVal = d; } //!
   double GetReqFractionAboveAmpCutVal() const { return fReqFractionAboveAmpCutVal; }; //!
   void SetReqFractionAboveAmp(bool b) { fReqFractionAboveAmp = b; } //!
-  double GetReqFractionAboveAmp() const { return fReqFractionAboveAmp; }; //!
+  bool GetReqFractionAboveAmp() const { return fReqFractionAboveAmp; }; //!
 
-  // We may select to only use the averaged info in the TProfiles rather than the
-  // the full in the TGraphs
+  // We may select to get averaged info
   void SetUseAverage(bool b) { fUseAverage = b; } //!
-  double GetUseAverage() const { return fUseAverage; }; //!
+  bool GetUseAverage() const { return fUseAverage; }; //!
   void SetSecInAverage(int secInAverage) {fSecInAverage = secInAverage;}; // length of the interval that should be used for the average calculation (determines number of bins in TProfile)
   int GetSecInAverage() const {return fSecInAverage;}; //!
 
@@ -128,19 +123,18 @@ class AliCaloCalibSignal : public TObject {
 
   /////////////////////////////
   //Analysis functions
-  void Reset();//Resets the whole class.
+  void ResetInfo();// trees and counters.
   Bool_t AddInfo(const AliCaloCalibSignal *sig);//picks up new info from supplied argument  
 
   //Saving functions
-  Bool_t Save(TString fileName, Bool_t saveEmptyGraphs = kFALSE); //Saves the TGraphs to a .root file
+  Bool_t Save(TString fileName); //Saves the objects to a .root file
+  Bool_t Analyze(); // makes average tree and summary tree 
 
  private:
-
-  void ClearObjects(); // delete old objects and set pointers
+ 
+  void DeleteTrees(); // delete old objects and set pointers
   void Zero(); // set all counters to 0
-  void CreateGraphs(); //! create/setup the TGraphs
-  void CreateProfile(int imod, int icol, int irow, int towerId, int gain,
-		     int nbins, double min, double max); //! create/setup a TProfile
+  void CreateTrees(); //! create/setup the TTrees
     
  private:
 
@@ -184,15 +178,15 @@ class AliCaloCalibSignal : public TObject {
   
   static const int fgkNumSecInHr = 3600;  // number of seconds in an hour, for the fractional hour conversion on the time graph
   
-  TGraph *fGraphAmpVsTimeHighGain[fgkMaxTowers]; // Amplitude vs. Time Graph for each high gain channel
-  TGraph *fGraphAmpVsTimeLowGain[fgkMaxTowers]; // Amplitude vs. Time Graph for each low gain channel
-  TProfile *fProfAmpVsTimeHighGain[fgkMaxTowers]; // Amplitude vs. Time Profile for each high gain channel
-  TProfile *fProfAmpVsTimeLowGain[fgkMaxTowers]; // Amplitude vs. Time Profile for each low gain channel
-  
+  // trees
+  TTree *fTreeAmpVsTime; // stores channel, gain, amp, and time info
+  TTree *fTreeAvgAmpVsTime; // stores channel, gain, avg amp., and time info
+
+  // counters
   int fNHighGain[fgkMaxTowers]; // Number of points for each Amp. vs. Time graph
   int fNLowGain[fgkMaxTowers]; // Number of points for each Amp. vs. Time graph
   
-  ClassDef(AliCaloCalibSignal,1)
+  ClassDef(AliCaloCalibSignal, 2) // don't forget to change version if you change class member list..
     
 };
     
