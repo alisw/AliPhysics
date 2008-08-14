@@ -1688,30 +1688,4 @@ Bool_t AliGeomManager::ApplyAlignObjsToGeom(const char* detName, Int_t runnum, I
   return ApplyAlignObjsToGeom(*alignObjArray);
 }
 
-//_____________________________________________________________________________
-Int_t AliGeomManager::CheckOverlapsExtrusions(TGeoNode* start, Double_t threshold)
-{
-  // For the given node check for overlaps and extrusions within threshold by means
-  // both of the standard checker and of the checker by sampling.
-  // Returns the total number of overlaps for the given node.
-  //
-  TGeoVolume* vol = start->GetVolume();
-  gGeoManager->ClearOverlaps();
-  gGeoManager->SetCheckingOverlaps();
-  AliDebugClass(2,Form("Checking overlaps for volume %s",vol->GetName()));
-  vol->CheckOverlaps(threshold); 
-  AliDebugClass(2,Form("Checking overlaps by sampling for node %s",start->GetName()));
-  start->CheckOverlaps(threshold,"s");  
-
-  TObjArray* ovexArray = (TObjArray*)gGeoManager->GetListOfOverlaps();
-  Int_t nOvEx = ovexArray->GetEntriesFast();
-  AliDebugClass(2,Form("Number of overlaps/extrusions: %d", nOvEx));
-  if(AliLog::GetDebugLevel("","AliGeomManager")>2) gGeoManager->PrintOverlaps();
-  ovexArray->Delete();
-  delete ovexArray;
-
-  gGeoManager->SetCheckingOverlaps(kFALSE);
-
-  return nOvEx;
-}
 

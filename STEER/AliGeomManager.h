@@ -19,7 +19,6 @@
 class TGeoManager;
 class TGeoPNEntry;
 class TGeoHMatrix;
-class TGeoNode;
 class TObjArray;
 
 class AliAlignObj;
@@ -97,7 +96,6 @@ public:
   static Bool_t         ApplyAlignObjsFromCDB(const char* AlDetsList);
   static Bool_t         LoadAlignObjsFromCDBSingleDet(const char* detName, TObjArray& alignObjArray);
   static Bool_t         CheckSymNamesLUT(const char* detsToBeChecked);
-  static Int_t          CheckOverlapsExtrusions(TGeoNode* start, Double_t threshold=0.01);
 
   ~AliGeomManager();
 

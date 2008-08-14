@@ -25,6 +25,7 @@
 #include <TGeoManager.h>
 #include <TGeoMatrix.h>
 #include <TGeoPhysicalNode.h>
+#include <TGeoOverlap.h>
 #include <TMath.h>
 #include <TMatrixDSym.h>
 
@@ -694,17 +695,8 @@ Bool_t AliAlignObj::ApplyToGeometry(Bool_t ovlpcheck)
     return kFALSE;
   }
 
-  Int_t nOvlpBefore = 0, nOvlpAfter = 0;
-  Double_t threshold = 0.01;
+  Double_t threshold = 0.001;
   
-  if(ovlpcheck)
-  {
-    gGeoManager->cd(path);
-    gGeoManager->CdUp();
-    TGeoNode* start = gGeoManager->GetCurrentNode();
-    nOvlpBefore = AliGeomManager::CheckOverlapsExtrusions(start, threshold);
-  }
-
   TGeoHMatrix align,gprime;
   gprime = *node->GetMatrix();
   GetMatrix(align);
@@ -717,20 +709,23 @@ Bool_t AliAlignObj::ApplyToGeometry(Bool_t ovlpcheck)
   Int_t modId; // unique identity for volume inside layer in the alobj
   GetVolUID(layerId, modId);
   AliDebug(2,Form("Aligning volume %s of detector layer %d with local ID %d",symname,layerId,modId));
-  node->Align(ginv,0);
-
-  
   if(ovlpcheck){
-    TGeoNode* start = node->GetNode();
-    nOvlpAfter = AliGeomManager::CheckOverlapsExtrusions(start, threshold);
-    if(nOvlpBefore < nOvlpAfter){
-      TString error(Form("The alignment of volume %s introduced %d new overlap",GetSymName(), nOvlpAfter-nOvlpBefore));
-      if(nOvlpAfter-nOvlpBefore > 1) error+="s";
-      AliError(error.Data());
-      //return kFALSE;
+    node->Align(ginv,0,kTRUE); //(trunk of root takes threshold as additional argument)
+  }else{
+    node->Align(ginv,0,kFALSE);
+  }
+  if(ovlpcheck)
+  {
+    TObjArray* ovlpArray =  gGeoManager->GetListOfOverlaps();
+    Int_t nOvlp = ovlpArray->GetEntriesFast();
+    if(nOvlp)
+    {
+      AliInfo(Form("Misalignment of node %s generated the following overlaps/extrusions:",node->GetName()));
+      for(Int_t i=0; i<nOvlp; i++)
+	((TGeoOverlap*)ovlpArray->UncheckedAt(i))->PrintInfo();
     }
   }
-
+      
   return kTRUE;
 }
 
