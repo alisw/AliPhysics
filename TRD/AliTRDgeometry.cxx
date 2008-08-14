@@ -1393,8 +1393,8 @@ void AliTRDgeometry::CreateFrame(Int_t *idtmed)
   //
 
   // The envelope volume (aluminum)
-  parTRD[0]  =  90.00/2.0;
-  parTRD[1]  = 114.00/2.0;
+  parTRD[0]  =  90.00/2.0 - 0.1;
+  parTRD[1]  = 114.00/2.0 - 0.1;
   parTRD[2]  =   1.50/2.0;
   parTRD[3]  =  70.30/2.0;
   gMC->Gsvolu("USCB","TRD1",idtmed[1301-1],parTRD,kNparTRD);
