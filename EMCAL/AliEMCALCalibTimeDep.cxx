@@ -35,7 +35,9 @@
 const double fkSecToHour = 1.0/3600.0; // conversion factor from seconds to hours
 
 // some global variables for APD handling; assume the same for all, at least to start with
-const double fkTempSlope = 0.017; // 1.7% per deg. C, seems about right for all APDs, from studies at Catania, and by Rachid
+const double fkTempSlope = 0.017; // 1.7% per deg. C, seems about right for all APDs, from studies at Catania, and by Rachid. 
+// Note that this is only valid at gain M~30; i.e. voltages at V30. 
+// At V50, it's more like 2.25%/C, and at V20 about 1.35%/C (also info from Catania)
 const double fkNormTemp = 20; // let's say that 20 degrees C is normal as default
 
 const double fkErrorCode = -999; // to indicate that something went wrong
