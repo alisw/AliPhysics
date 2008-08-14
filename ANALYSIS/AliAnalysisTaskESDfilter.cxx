@@ -455,7 +455,6 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
     //
     // V0s
     //
-    TList v0objects;
     
     for (Int_t nV0 = 0; nV0 < nV0s; ++nV0) {
 	
@@ -468,10 +467,11 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 
 	// V0 selection 
 	//
-	AliESDVertex* esdVtx = (AliESDVertex*)((esd->GetPrimaryVertex())->Clone());
+	AliESDVertex *esdVtx = new AliESDVertex(*(esd->GetPrimaryVertex()));
 	
 	AliESDtrack *esdV0Pos = esd->GetTrack(posFromV0);
 	AliESDtrack *esdV0Neg = esd->GetTrack(negFromV0);
+	TList v0objects;
 	v0objects.AddAt(v0,                      0);
 	v0objects.AddAt(esdV0Pos,                1);
 	v0objects.AddAt(esdV0Neg,                2);
@@ -479,16 +479,15 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 	UInt_t selectV0 = 0;
 	if (fV0Filter) {
 	  selectV0 = fV0Filter->IsSelected(&v0objects);
-	  delete esdVtx;
+	  // this is a little awkward but otherwise the 
+	  // list wants to access the pointer again when going out of scope
+	  delete v0objects.RemoveAt(3);
 	  if (!selectV0) 
 	    continue;
 	}
 	else{
-	  // delete in any case
-	  delete esdVtx;
+	  delete v0objects.RemoveAt(3);
 	}
-	//
-	//
     
 	v0->GetXYZ(pos[0], pos[1], pos[2]);
 
@@ -733,7 +732,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 			esdTrackD->GetXYZ(pos);
 			esdTrackD->GetCovarianceXYZPxPyPz(covTr);
 			esdTrackD->GetESDpid(pid);
-			UInt_t selectInfo = 0;
+			selectInfo = 0;
 			if (fTrackFilter) selectInfo = fTrackFilter->IsSelected(esdTrackD);
 			daughter = 
 			    new(tracks[jTracks++]) AliAODTrack(esdTrackD->GetID(),
