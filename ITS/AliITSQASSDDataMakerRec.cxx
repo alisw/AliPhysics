@@ -139,6 +139,29 @@ void AliITSQASSDDataMakerRec::StartOfDetectorCycle()
 {
   //Detector specific actions at start of cycle
   AliDebug(1,"AliITSQADM::Start of SSD Cycle\n");
+  //online part
+  if(fkOnline) {
+    for(Int_t iModule = 500; iModule < fgkSSDMODULES + 500; iModule++) {
+      for(Int_t iStrip = 0; iStrip < 2*fgkNumberOfPSideStrips; iStrip++)
+	fOccupancyMatrix[iModule-500][iStrip] = 0; 
+    }//module loop
+
+    Int_t gHistPositionOccupancyPerLadder = 0;
+    Int_t gLayer = 0, gLadder = 0, gModule = 0;
+    for(Int_t iModule = 0; iModule < fgkSSDMODULES; iModule++) {
+      AliITSgeomTGeo::GetModuleId(iModule+500,gLayer,gLadder,gModule);
+      
+      gHistPositionOccupancyPerLadder = (gLayer == 5) ? 2*(gLadder - 1) : 2*(gLadder - 1 + fgkSSDLADDERSLAYER5);
+      
+      //P-SIDE OCCUPANCY
+      fAliITSQADataMakerRec->GetRawsData(fGenOffset+fSSDRawsCommonLevelOffset+fgkSSDMODULES+gHistPositionOccupancyPerLadder)->Reset();
+      //N-SIDE OCCUPANCY
+      fAliITSQADataMakerRec->GetRawsData(fGenOffset+fSSDRawsCommonLevelOffset+fgkSSDMODULES+gHistPositionOccupancyPerLadder+1)->Reset();
+
+      ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenOffset+fSSDRawsCommonLevelOffset+fgkSSDMODULES+2*fgkSSDLADDERSLAYER5+2*fgkSSDLADDERSLAYER6))->Reset();
+      ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenOffset+fSSDRawsCommonLevelOffset+fgkSSDMODULES+2*fgkSSDLADDERSLAYER5+2*fgkSSDLADDERSLAYER6+1))->Reset();
+    }//module loop
+  }//online flag
 }
 
 //____________________________________________________________________________ 
@@ -176,19 +199,19 @@ void AliITSQASSDDataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjAr
       gHistPositionOccupancyPerModule = (gLayer == 5) ? ((gLadder - 1)*fgkSSDMODULESPERLADDERLAYER5 + gModule - 1) : ((gLadder - 1)*fgkSSDMODULESPERLADDERLAYER6 + gModule + fgkSSDMODULESLAYER5 - 1);
       gHistPositionOccupancyPerLadder = (gLayer == 5) ? 2*(gLadder - 1) : 2*(gLadder - 1 + fgkSSDLADDERSLAYER5);
       
-      //P-SIDE OCCUPANCY                                                                     
+      //P-SIDE OCCUPANCY
       occupancy = GetOccupancyModule((TH1 *)fAliITSQADataMakerRec->GetRawsData(fGenOffset+fSSDRawsCommonLevelOffset+gHistPositionOccupancyPerModule),0);
       fAliITSQADataMakerRec->GetRawsData(fGenOffset+fSSDRawsCommonLevelOffset+fgkSSDMODULES+gHistPositionOccupancyPerLadder)->Fill(gModule,occupancy);
       lLadderLocationY = 3*gLadder; // sideP=1 sideN=0 
-      if(gLayer == 5)                                                               
+      if(gLayer == 5)
         ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenOffset+fSSDRawsCommonLevelOffset+fgkSSDMODULES+2*fgkSSDLADDERSLAYER5+2*fgkSSDLADDERSLAYER6))->SetBinContent(gModule,lLadderLocationY,occupancy);
       else if(gLayer == 6)
         ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenOffset+fSSDRawsCommonLevelOffset+fgkSSDMODULES+2*fgkSSDLADDERSLAYER5+2*fgkSSDLADDERSLAYER6+1))->SetBinContent(gModule,lLadderLocationY,occupancy);
 
-      //N-SIDE OCCUPANCY                                                                           
+      //N-SIDE OCCUPANCY
       occupancy = GetOccupancyModule((TH1 *)fAliITSQADataMakerRec->GetRawsData(fGenOffset+fSSDRawsCommonLevelOffset+gHistPositionOccupancyPerModule),1);   
       fAliITSQADataMakerRec->GetRawsData(fGenOffset+fSSDRawsCommonLevelOffset+fgkSSDMODULES+gHistPositionOccupancyPerLadder+1)->Fill(gModule,occupancy);
-      if(gLayer == 5)                                                               
+      if(gLayer == 5)
         ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenOffset+fSSDRawsCommonLevelOffset+fgkSSDMODULES+2*fgkSSDLADDERSLAYER5+2*fgkSSDLADDERSLAYER6))->SetBinContent(gModule,lLadderLocationY-1,occupancy);
       else if(gLayer == 6)
         ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenOffset+fSSDRawsCommonLevelOffset+fgkSSDMODULES+2*fgkSSDLADDERSLAYER5+2*fgkSSDLADDERSLAYER6+1))->SetBinContent(gModule,lLadderLocationY-1,occupancy);
@@ -475,10 +498,15 @@ void AliITSQASSDDataMakerRec::MakeRaws(AliRawReader* rawReader) {
   }
   while (gSSDStream.Next()) {
     if(gSSDStream.GetModuleID() < 0) continue;
+    /*cout<<"DDL: "<<rawReader->GetDDLID()<<
+      " - LDC: "<<rawReader->GetLDCId()<<
+      " - Size: "<<rawReader->GetDataSize()<<
+      " - Equipment size: "<<rawReader->GetEquipmentSize()<<endl;*/
     gSizePerDDL[rawReader->GetDDLID()] = rawReader->GetDataSize();
     gSizePerLDC[rawReader->GetLDCId()-6] = rawReader->GetDataSize();
     AliITSgeomTGeo::GetModuleId(gSSDStream.GetModuleID(),gLayer,gLadder,gModule);
-    gStripNumber = (gSSDStream.GetSideFlag() == 0) ? gSSDStream.GetStrip() : gSSDStream.GetStrip() + fgkNumberOfPSideStrips;
+    if(gSSDStream.GetStrip() < 0) continue;
+    gStripNumber = (gSSDStream.GetSideFlag() == 0) ? gSSDStream.GetStrip() : -gSSDStream.GetStrip() + 2*fgkNumberOfPSideStrips;
     gHistPosition = (gLayer == 5) ? ((gLadder - 1)*fgkSSDMODULESPERLADDERLAYER5 + gModule - 1) : ((gLadder - 1)*fgkSSDMODULESPERLADDERLAYER6 + gModule + fgkSSDMODULESLAYER5 - 1);
     //AliInfo(Form("ModulePosition: %d - Layer: %d - Ladder: %d - Module: %d\n",gHistPosition,gLayer,gLadder,gModule));
     if(fkOnline)
@@ -499,6 +527,8 @@ void AliITSQASSDDataMakerRec::MakeRaws(AliRawReader* rawReader) {
     if(gSizePerLDC[i] > 0) {
       (fAliITSQADataMakerRec->GetRawsData(fGenOffset+21))->Fill(i+6);
       (fAliITSQADataMakerRec->GetRawsData(fGenOffset+23+i))->Fill(TMath::Log10(gSizePerLDC[i]));
+      //cout<<"Event: "<<fSSDEventPerCycle<<" - LDC: "<<i+6<<
+      //" - Data size: "<<gSizePerLDC[i]<<endl;
     }
     (fAliITSQADataMakerRec->GetRawsData(fGenOffset+22))->Fill(i+6,gSizePerLDC[i]/1e+06);
   }
@@ -509,8 +539,19 @@ void AliITSQASSDDataMakerRec::MakeRaws(AliRawReader* rawReader) {
 
   //Occupancy calculation
   if(fkOnline) {
-    for(Int_t iModule = 0; iModule < fgkSSDMODULES; iModule++)
+    for(Int_t iModule = 0; iModule < fgkSSDMODULES; iModule++) {
       GetOccupancyStrip(fHistSSDRawSignalModule[iModule],fOccupancyMatrix[iModule]);
+      //if(iModule == 156) {    
+	//cout<<"========================================"<<endl;
+	//AliITSgeomTGeo::GetModuleId(656,gLayer,gLadder,gModule);
+	/*for(Int_t iBin = 1; iBin < fHistSSDRawSignalModule[iModule]->GetXaxis()->GetNbins(); iBin++) {
+	  if((iBin >= 750)&&(iBin <= 780))
+	  cout<<"Event: "<<fSSDEventPerCycle<<" - Ladder: "<<gLadder+499<<
+	  " - Module: "<<gModule<<" - Strip: "<<iBin<<
+	  " - Signal: "<<fHistSSDRawSignalModule[iModule]->GetBinContent(iBin)<<endl;
+	  }*///strip loop --> to be removed
+      //}//module cut --> to be removed
+    }//module loop
   }//online flag for SSD
 }
 
@@ -520,15 +561,22 @@ void AliITSQASSDDataMakerRec::GetOccupancyStrip(TH1 *lHisto, Int_t *occupancyMat
   //on whether the signal for each strip is larger than the cutoff
   //Currently the cutoff is at 0 which means that if ZS
   //works, whatever comes from the FEROM is considered as "signal"
-  Double_t cutoff = 0.0;
+  //  Double_t cutoff = 0.0;
+  TString histname = lHisto->GetName();
+  //cout<<histname.Data()<<endl;
+  //if(histname.Contains("Layer5_Ladder8_Module3")) {
   for(Int_t iBin = 1; iBin < lHisto->GetXaxis()->GetNbins(); iBin++) {
     Double_t y = lHisto->GetBinContent(iBin);
-    if(y > cutoff) {
+    if(y) {
       occupancyMatrix[iBin-1] += 1;
-      //cout<<"Event: "<<iEvent<<" - Strip: "<<i<<" - Signal: "<<fRawSignal->GetBinContent(i)<<                              
-      //" - Occupancy: "<<fOccupancy[i-1]<<endl;                                                                  
     }
+    //if((iBin >= 750)&&(iBin <= 780))
+    //cout<<"Strip: "<<iBin<<
+    //" - Signal: "<<y<<
+    //" - Occupancy: "<<occupancyMatrix[iBin-1]<<endl;
+    
   }
+  //}
 }
 
 //____________________________________________________________________________ 
@@ -537,12 +585,22 @@ Double_t AliITSQASSDDataMakerRec::GetOccupancyModule(TH1 *lHisto, Int_t stripsid
   //stripside == 0 --> P-side
   //stripside == 1 --> N-side
   Int_t lNumFiredBins = 0;
+  TString histname = lHisto->GetName();
   for(Int_t iBin = 1 + stripside*fgkNumberOfPSideStrips; iBin < fgkNumberOfPSideStrips*(1 + stripside); iBin++){
+    /*if(histname.Contains("Layer5_Ladder507_Module3")) {
+      cout<<lHisto->GetName()<<
+      " - Strip: "<<iBin<<
+      " - Bin content: "<<lHisto->GetBinContent(iBin)<<endl;
+      }*/
     if (lHisto->GetBinContent(iBin) > 0)
       lNumFiredBins++; 
   }
   
   Double_t lOccupancy = (100.*lNumFiredBins)/fgkNumberOfPSideStrips; // percentage
+  
+  /*if(histname.Contains("Layer5_Ladder507_Module3"))
+    cout<<"Fired strips: "<<lNumFiredBins<<
+    " - Occupancy: "<<lOccupancy<<endl;*/
   //AliInfo(Form("Fired strips: %d - Total strips: %d - Occupancy :%lf\n",lNumFiredBins,lHisto->GetNbinsX(),lOccupancy));
   
   return lOccupancy;
