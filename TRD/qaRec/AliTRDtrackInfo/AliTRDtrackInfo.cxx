@@ -98,7 +98,10 @@ AliTRDtrackInfo::AliTRDtrackInfo(const AliTRDtrackInfo &trdInfo):
       fTrackRefs[ien] = new AliTrackReference(*(trdInfo.fTrackRefs[ien]));
   }
   if(trdInfo.fOP) fOP = new AliExternalTrackParam(*trdInfo.fOP);
-  if(trdInfo.fTRDtrack) fTRDtrack = new AliTRDtrackV1(*trdInfo.fTRDtrack);
+  if(trdInfo.fTRDtrack){ 
+    fTRDtrack = new AliTRDtrackV1(*trdInfo.fTRDtrack);
+    if(trdInfo.fTRDtrack->IsOwner()) fTRDtrack->SetOwner();
+  }
 }
 
 //___________________________________________________

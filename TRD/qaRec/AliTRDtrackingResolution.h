@@ -15,7 +15,7 @@
 
 class TObjArray;
 class TList;
-class TH1F;
+class TH2I;
 class TProfile;
 class TTreeSRedirector;
 
@@ -42,7 +42,9 @@ private:
   };
   TObjArray *fTrackObjects;     // Input Track Info container
   TList     *fOutputHistograms; // Container for the output histograms
-  TH1F      *fYres;             // y-Resolution
+  TH2I      *fYRes;
+  TH2I      *fPhiRes;
+  //TGraph      *fSigmaY;             // y-Resolution
 /*		TH1F *fZres;														// z-Resolution
     TProfile *fYresAngle;										// y-Resolution dependent on Angle*/
 /*		TH1F *fYresLayer[kNLayers];							// y-Resolution histograms for each Layer

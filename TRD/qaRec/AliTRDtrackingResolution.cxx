@@ -26,8 +26,11 @@
 
 #include <TObjArray.h>
 #include <TList.h>
-#include <TH1F.h>
+#include <TH2.h>
+#include <TH1.h>
+#include <TF1.h>
 #include <TProfile.h>
+#include <TGraphErrors.h>
 #include <TMath.h>
 
 #include "AliAnalysisManager.h"
@@ -47,20 +50,11 @@ AliTRDtrackingResolution::AliTRDtrackingResolution(const char * name):
   AliAnalysisTask(name, ""),
   fTrackObjects(0x0),
   fOutputHistograms(0x0),
-  fYres(0x0),
-/*	fZres(0),
-  fYresAngle(0),
+  fYRes(0x0),
   fPhiRes(0x0),
-  fPhiResAngle(0x0),*/
   fDebugLevel(0),
   fDebugStream(0x0)
 {
-// 	memset(fYresLayer, 0, sizeof(TH1F *) * kNLayers);
-// 	memset(fZresLayer, 0, sizeof(TH1F *) * kNLayers);
-// 	memset(fYresLayerAngle, 0, sizeof(TProfile *) * kNLayers);
-// 	memset(fPhiResLayer, 0, sizeof(TH1F *) * kNLayers);
-// 	memset(fPhiResLayerAngle, 0, sizeof(TProfile *) * kNLayers);
-
   DefineInput(0, TObjArray::Class());
   DefineOutput(0, TList::Class());
 }
@@ -74,83 +68,55 @@ void AliTRDtrackingResolution::ConnectInputData(Option_t *){
 void AliTRDtrackingResolution::CreateOutputObjects()
 {
   // spatial resolution
-  printf("Creating Histograms\n");
   OpenFile(0, "RECREATE");
   fOutputHistograms = new TList();
-  fYres = new TH1F("fYres", "y-Resolution", 100, -1.5, 1.5);
-  fOutputHistograms->Add(fYres);
-// 	fZres = new TH1F("fZres", "z-Resolution", 100, -1.5, 1.5);
-// 	fOutputHistograms->Add(fZres);
-// 
-// 	fYresAngle = new TProfile("fYresAngle", "y-Resolution - Angluar dependence", 80, -40, 40);
-// 	fOutputHistograms->Add(fYresAngle);
-// 
-// 	// angular resolution
-// 	fPhiRes = new TH1F("fPhiRes", "phi-resolution", 20, -10, 10);
-// 	fOutputHistograms->Add(fPhiRes);
-// 	
-// 	fPhiResAngle = new TProfile("fPhiResAngle", "phi-resolution - Angular dependence", 80, -40, 40);
-// 	fOutputHistograms->Add(fPhiResAngle);
-
-/*	for(Int_t iplane = 0; iplane < kNLayers; iplane++){
-    // spatial resolution
-    fYresLayer[iplane] = new TH1F(Form("fYresLayer%d", iplane), Form("y-Resolution in Layer %d", iplane), 100, -1.5, 1.5);
-    fOutputHistograms->Add(fYresLayer[iplane]);
-
-    fZresLayer[iplane] = new TH1F(Form("fZresLayer%d", iplane), Form("z-Resolution in Layer %d", iplane), 100, -1.5, 1.5);
-    fOutputHistograms->Add(fZresLayer[iplane]);
-
-    fYresLayerAngle[iplane] = new TProfile(Form("fYresLayerAngle%d", iplane), Form("y-Resolution in Layer %d - Angluar dependence", iplane), 80, -40, 40);
-    fOutputHistograms->Add(fYresLayerAngle[iplane]);
-
-    // angular resolution
-    fPhiResLayer[iplane] = new TH1F(Form("fPhiResLayer%d", iplane), Form("phi-resolution in Layer %d", iplane), 20, -10, 10);
-    fOutputHistograms->Add(fPhiResLayer[iplane]);
-
-    fPhiResLayerAngle[iplane] = new TProfile(Form("fPhiResAngle%d", iplane), Form("phi-resolution in Layer %d - Angular dependence", iplane), 80, -40, 40);
-    fOutputHistograms->Add(fPhiResLayerAngle[iplane]);
-  }*/
+  fYRes = new TH2I("fY", "", 21, -21., 21., 100, -.5, .5);
+  fOutputHistograms->Add(fYRes);
+  fPhiRes = new TH2I("fPhi", "", 21, -21., 21., 100, -10., 10.);
+  fOutputHistograms->Add(fPhiRes);
 }
 
 //________________________________________________________
-void AliTRDtrackingResolution::Exec(Option_t *){
+void AliTRDtrackingResolution::Exec(Option_t *)
+{
   // spatial Resolution: res = pos_{Tracklet}(x = x_{Anode wire}) - pos_{TrackRef}(x = x_{Anode wire})
   // angular Resolution: res = Tracklet angle - TrackRef Angle
+
   Int_t nTrackInfos = fTrackObjects->GetEntriesFast();
   if(fDebugLevel>=2) printf("Number of Histograms: %d\n", fOutputHistograms->GetEntries());
   AliTRDtrackInfo *fInfo = 0x0;
   if(fDebugLevel>=2) printf("Number of TrackInfos: %d\n", nTrackInfos);
   for(Int_t iTI = 0; iTI < nTrackInfos; iTI++){
-    if(fDebugLevel>=2) printf("Doing Object %d\n", iTI);
-    fInfo = dynamic_cast<AliTRDtrackInfo *>(fTrackObjects->UncheckedAt(iTI));
     // check if ESD and MC-Information are available
-    if(!fInfo || !fInfo->GetTRDtrack() || fInfo->GetNTrackRefs() < 2) continue; 
+    if(!(fInfo = dynamic_cast<AliTRDtrackInfo *>(fTrackObjects->UncheckedAt(iTI)))) continue;
+    if(!fInfo->GetTRDtrack()) continue;
+    if(fDebugLevel>=3) printf("\tDoing track[%d] NTrackRefs[%d]\n", iTI, fInfo->GetNTrackRefs());
+
+    if(fInfo->GetNTrackRefs() < 2) continue; 
     AliTRDseedV1*fTracklet = 0;
     AliTrackReference *fTrackRefs[2];
     for(Int_t iplane = 0; iplane < kNLayers; iplane++){
-      if(fDebugLevel>=2) printf("plane %d\n", iplane);
-      fTracklet = fInfo->GetTracklet(iplane);
-      if(!fTracklet) continue;
+      if(!(fTracklet = fInfo->GetTracklet(iplane))) continue;
+      if(fDebugLevel>=4) printf("\t\tLy[%d] X0[%6.3f] Ncl[%d]\n", iplane, fTracklet->GetX0(), fTracklet->GetN());
+
       // check for 2 track ref where the radial position has a distance less than 3.7mm
-      if(fDebugLevel>=2) printf("Find Track References for x = %f\n", fTracklet->GetX0());
-      if(fDebugLevel>=2) printf("Number of Clusters: %d\n", fTracklet->GetN());
       Int_t nFound = 0;
       memset(fTrackRefs, 0, sizeof(AliTrackReference*) * 2);
       AliTrackReference *tempTrackRef = 0;
       for(Int_t itr = 0; itr < fInfo->GetNTrackRefs(); itr++){
-        if(fDebugLevel>=2) printf("nFound = %d\n", nFound);
+        if(fDebugLevel>=5) printf("nFound = %d\n", nFound);
         if(nFound >= 2) break;
         tempTrackRef = fInfo->GetTrackRef(itr);
         if(!tempTrackRef) continue;
-        if(fDebugLevel>=2) printf("TrackRef %d: x = %f\n", itr, tempTrackRef->LocalX());
+        if(fDebugLevel>=5) printf("TrackRef %d: x = %f\n", itr, tempTrackRef->LocalX());
         if(fTracklet->GetX0() - tempTrackRef->LocalX() > 3.7) continue;
         if(tempTrackRef->LocalX() - fTracklet->GetX0() > 3.7) break;
-        if(fDebugLevel>=2) printf("accepted\n");
+        if(fDebugLevel>=5) printf("accepted\n");
         if(nFound == 1)
           if(fTrackRefs[0]->LocalX() >= tempTrackRef->LocalX()) continue;
         fTrackRefs[nFound++] = tempTrackRef;
       }
-      if(fDebugLevel>=2) printf("nFound = %d\n", nFound);
+      if(fDebugLevel>=4) printf("\t\tFound track crossing [%d]\n", nFound);
       if(nFound < 2) continue;
       // We found 2 track refs for the tracklet, get y and z at the anode wire by a linear approximation
       Double_t dx = fTrackRefs[1]->LocalX() - fTrackRefs[0]->LocalX();
@@ -164,28 +130,20 @@ void AliTRDtrackingResolution::Exec(Option_t *){
       Double_t dz = fTracklet->GetZfit(0) - zmc;
       //res_y *= 100; // in mm
       Double_t momentum = fTrackRefs[0]->P();
-      
-      // Fill Histograms
-      if(fDebugLevel>=2) printf("dy = %f\n", dy);
-      fYres->Fill(dy);
-// 			fZres->Fill(res_z);
-/*			fYresLayer[iplane]->Fill(res_y);
-      fZresLayer[iplane]->Fill(res_z);*/
 
 //       Double_t phi     = fTrackRefs[0]->Phi();
 //       Double_t theta   = fTrackRefs[0]->Theta();
       Double_t phi   = TMath::ATan(dydx);
       Double_t theta = TMath::ATan(dzdx);
+      Double_t dphi   = TMath::ATan(fTracklet->GetYfit(1)) - phi;
       
-// 			fYresAngle->Fill(phi, res_y);
-// 			fYresLayerAngle[iplane]->Fill(phi, res_y);
-      
-      Double_t dphi   = TMath::ATan(fTracklet->GetZfit(1)) - phi;
-      
-// 			fPhiRes->Fill(dphi);
-// 			fPhiResLayer[iplane]->Fill(dphi);
-// 			fPhiResAngle->Fill(phi, dphi);
-// 			fPhiResLayerAngle[iplane]->Fill(phi, dphi);
+      // Fill Histograms
+      if(TMath::Abs(dx-3.7)<1.E-3){
+        fYRes->Fill(phi*TMath::RadToDeg(), dy);
+        fPhiRes->Fill(phi*TMath::RadToDeg(), dphi*TMath::RadToDeg());
+      }
+
+      if(fDebugLevel>=4) printf("\t\tdx[%6.4f] dy[%6.4f] dz[%6.4f] dphi[%6.4f] \n", dx, dy, dz, dphi);
       
       // Fill Debug Tree
       if(fDebugLevel>=1){
@@ -206,9 +164,62 @@ void AliTRDtrackingResolution::Exec(Option_t *){
 }
 
 //________________________________________________________
-void AliTRDtrackingResolution::Terminate(Option_t *){
-  //printf("Tracking Resolution: Terminate\n");
+void AliTRDtrackingResolution::Terminate(Option_t *)
+{
   if(fDebugStream) delete fDebugStream;
+
+  //process distributions
+  fOutputHistograms = dynamic_cast<TList*>(GetOutputData(0));
+  if (!fOutputHistograms) {
+    Printf("ERROR: list not available");
+    return;
+  }
+  TH2I *h2 = 0x0;
+  TH1D *h = 0x0;
+
+  // y resolution
+  TF1 *f = new TF1("f1", "gaus", -.5, .5);  
+  h2 = (TH2I*)fOutputHistograms->At(0);
+  TGraphErrors *gm = new TGraphErrors(h2->GetNbinsX());
+  gm->SetNameTitle("meany", "Mean dy");
+  TGraphErrors *gs = new TGraphErrors(h2->GetNbinsX());
+  gs->SetNameTitle("sigmy", "Sigma y");
+  for(Int_t iphi=1; iphi<=h2->GetNbinsX(); iphi++){
+    Double_t phi = h2->GetXaxis()->GetBinCenter(iphi);
+    f->SetParameter(1, 0.);f->SetParameter(2, 2.e-2);
+    h = h2->ProjectionY("py", iphi, iphi);
+    h->Fit(f, "q", "goff", -.5, .5);
+    Int_t jphi = iphi -1;
+    gm->SetPoint(jphi, phi, f->GetParameter(1));
+    gm->SetPointError(jphi, 0., f->GetParError(1));
+    gs->SetPoint(jphi, phi, f->GetParameter(2));
+    gs->SetPointError(jphi, 0., f->GetParError(2));
+  }
+  fOutputHistograms->Add(gm);
+  fOutputHistograms->Add(gs);
+
+  // phi resolution
+  h2 = (TH2I*)fOutputHistograms->At(1);
+  gm = new TGraphErrors(h2->GetNbinsX());
+  gm->SetNameTitle("meanphi", "Mean Phi");
+  gs = new TGraphErrors(h2->GetNbinsX());
+  gs->SetNameTitle("sigmphi", "Sigma Phi");
+  for(Int_t iphi=1; iphi<=h2->GetNbinsX(); iphi++){
+    Double_t phi = h2->GetXaxis()->GetBinCenter(iphi);
+    f->SetParameter(1, 0.);f->SetParameter(2, 2.e-2);
+    h = h2->ProjectionY("py", iphi, iphi);
+    h->Fit(f, "q", "goff", -.5, .5);
+    Int_t jphi = iphi -1;
+    gm->SetPoint(jphi, phi, f->GetParameter(1));
+    gm->SetPointError(jphi, 0., f->GetParError(1));
+    gs->SetPoint(jphi, phi, f->GetParameter(2));
+    gs->SetPointError(jphi, 0., f->GetParError(2));
+  }
+  fOutputHistograms->Add(gm);
+  fOutputHistograms->Add(gs);
+
+
+  delete f;
 }
 
 //________________________________________________________
