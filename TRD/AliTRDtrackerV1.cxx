@@ -1297,6 +1297,121 @@ Double_t AliTRDtrackerV1::FitRiemanTilt(AliTRDtrackV1 *track, AliTRDseedV1 *trac
 }
 
 
+//____________________________________________________________________
+Double_t AliTRDtrackerV1::FitKalman(AliTRDtrackV1 *track, AliTRDseedV1 *tracklets, Bool_t up, Int_t np, AliTrackPoint *points)
+{
+//   Kalman filter implementation for the TRD.
+//   It returns the positions of the fit in the array "points"
+// 
+//   Author : A.Bercuci@gsi.de
+
+  //printf("Start track @ x[%f]\n", track->GetX());
+	
+  //prepare marker points along the track
+  Int_t ip = np ? 0 : 1;
+  while(ip<np){
+    if((up?-1:1) * (track->GetX() - points[ip].GetX()) > 0.) break;
+    //printf("AliTRDtrackerV1::FitKalman() : Skip track marker x[%d] = %7.3f. Before track start ( %7.3f ).\n", ip, points[ip].GetX(), track->GetX());
+    ip++;
+  }
+  //if(points) printf("First marker point @ x[%d] = %f\n", ip, points[ip].GetX());
+
+
+  AliTRDseedV1 tracklet, *ptrTracklet = 0x0;
+
+  //Loop through the TRD planes
+  for (Int_t jplane = 0; jplane < kNPlanes; jplane++) {
+    // GET TRACKLET OR BUILT IT		
+    Int_t iplane = up ? jplane : kNPlanes - 1 - jplane;
+    if(tracklets){ 
+      if(!(ptrTracklet = &tracklets[iplane])) continue;
+    }else{
+      if(!(ptrTracklet  = track->GetTracklet(iplane))){ 
+      /*AliTRDtrackerV1 *tracker = 0x0;
+        if(!(tracker = dynamic_cast<AliTRDtrackerV1*>( AliTRDReconstructor::Tracker()))) continue;
+        ptrTracklet = new(&tracklet) AliTRDseedV1(iplane);
+        if(!tracker->MakeTracklet(ptrTracklet, track)) */
+        continue;
+      }
+    }
+    if(!ptrTracklet->IsOK()) continue;
+
+    Double_t x = ptrTracklet->GetX0();
+
+    while(ip < np){
+      //don't do anything if next marker is after next update point.
+      if((up?-1:1) * (points[ip].GetX() - x) - fgkMaxStep < 0) break;
+
+      //printf("Propagate to x[%d] = %f\n", ip, points[ip].GetX());
+
+      if(((up?-1:1) * (points[ip].GetX() - track->GetX()) < 0) && !PropagateToX(*track, points[ip].GetX(), fgkMaxStep)) return -1.;
+      
+      Double_t xyz[3]; // should also get the covariance
+      track->GetXYZ(xyz); points[ip].SetXYZ(xyz[0], xyz[1], xyz[2]);
+      ip++;
+    }
+    //printf("plane[%d] tracklet[%p] x[%f]\n", iplane, ptrTracklet, x);
+
+    //Propagate closer to the next update point 
+    if(((up?-1:1) * (x - track->GetX()) + fgkMaxStep < 0) && !PropagateToX(*track, x + (up?-1:1)*fgkMaxStep, fgkMaxStep)) return -1.;
+
+    if(!AdjustSector(track)) return -1;
+    if(TMath::Abs(track->GetSnp()) > fgkMaxSnp) return -1;
+    
+    //load tracklet to the tracker and the track
+/*    Int_t index;
+    if((index = FindTracklet(ptrTracklet)) < 0){
+      ptrTracklet = SetTracklet(&tracklet);
+      index = fTracklets->GetEntriesFast()-1;
+    }
+    track->SetTracklet(ptrTracklet, index);*/
+
+
+    // register tracklet to track with tracklet creation !!
+    // PropagateBack : loaded tracklet to the tracker and update index 
+    // RefitInward : update index 
+    // MakeTrack   : loaded tracklet to the tracker and update index 
+    if(!tracklets) track->SetTracklet(ptrTracklet, -1);
+    
+  
+    //Calculate the mean material budget along the path inside the chamber
+    Double_t xyz0[3]; track->GetXYZ(xyz0);
+    Double_t alpha = track->GetAlpha();
+    Double_t xyz1[3], y, z;
+    if(!track->GetProlongation(x, y, z)) return -1;
+    xyz1[0] =  x * TMath::Cos(alpha) - y * TMath::Sin(alpha); 
+    xyz1[1] = +x * TMath::Sin(alpha) + y * TMath::Cos(alpha);
+    xyz1[2] =  z;
+    Double_t param[7];
+    AliTracker::MeanMaterialBudget(xyz0, xyz1, param);	
+    Double_t xrho = param[0]*param[4]; // density*length
+    Double_t xx0  = param[1]; // radiation length
+    
+    //Propagate the track
+    track->PropagateTo(x, xx0, xrho);
+    if (!AdjustSector(track)) break;
+  
+    //Update track
+    Double_t chi2 = track->GetPredictedChi2(ptrTracklet);
+    if(chi2<1e+10) track->Update(ptrTracklet, chi2);
+
+    if(!up) continue;
+
+		//Reset material budget if 2 consecutive gold
+		if(iplane>0 && track->GetTracklet(iplane-1) && ptrTracklet->GetN() + track->GetTracklet(iplane-1)->GetN() > 20) track->SetBudget(2, 0.);
+	} // end planes loop
+
+  // extrapolation
+  while(ip < np){
+    if(((up?-1:1) * (points[ip].GetX() - track->GetX()) < 0) && !PropagateToX(*track, points[ip].GetX(), fgkMaxStep)) return -1.;
+    
+    Double_t xyz[3]; // should also get the covariance
+    track->GetXYZ(xyz); points[ip].SetXYZ(xyz[0], xyz[1], xyz[2]);
+    ip++;
+  }
+
+	return track->GetChi2();
+}
 
 //_________________________________________________________________________
 Float_t AliTRDtrackerV1::CalculateChi2Z(AliTRDseedV1 *tracklets, Double_t offset, Double_t slope, Double_t xref)
