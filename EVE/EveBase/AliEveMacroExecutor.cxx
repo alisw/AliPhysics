@@ -55,6 +55,21 @@ void AliEveMacroExecutor::AddMacro(AliEveMacro* mac)
   fMacros->Add(mac);
 }
 
+AliEveMacro* AliEveMacroExecutor::FindMacro(const TString& func)
+{
+  // Find macro with given function name (it is supposed to be unique).
+  // Returns 0 if not found.
+
+  TIter next(fMacros);
+  AliEveMacro* mac;
+  while ((mac = (AliEveMacro*) next()))
+  {
+    if (mac->GetFunc() == func)
+      return mac;
+  }
+  return 0;
+}
+
 /******************************************************************************/
 
 #include "Api.h"

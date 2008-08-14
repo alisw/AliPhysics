@@ -13,32 +13,37 @@
 #include "AliEveEventManager.h"
 
 #include <TGedEditor.h>
+#include <TGLabel.h>
 #include <TGListBox.h>
+#include <TGTextEntry.h>
 #include <Buttons.h>
 
-namespace
-{
-class FooEntry : public TGTextLBEntry
+#include <TPRegexp.h>
+
+class AliEveMEWEntry : public TGTextLBEntry
 {
 public:
   static void SetFont() { fgDefaultFont = gClient->GetFontPool()->GetFont("-*-lucidatypewriter-*-*-*-*-12-*-*-*-*-*-iso8859-1"); }
 };
 
-class FooEditor : public TGedEditor
+class AliEveMEWEditor : public TGedEditor
 {
 protected:
   AliEveMacroExecutorWindow* fMEW;
 
 public:
-  FooEditor(AliEveMacroExecutorWindow* w) : TGedEditor(0), fMEW(w) {}
-  virtual ~FooEditor() {}
+  AliEveMEWEditor(AliEveMacroExecutorWindow* w) : TGedEditor(0), fMEW(w) {}
+  virtual ~AliEveMEWEditor() {}
   virtual void Update(TGedFrame* gframe=0)
   {
     TGedEditor::Update(gframe);
     fMEW->PopulateMacros();
   }
+  virtual void Refresh()
+  {
+    SetModel(fPad, fModel, kButton1Down);
+  }
 };
-}
 
 //______________________________________________________________________________
 // Full description of AliEveMacroExecutorWindow
@@ -49,22 +54,44 @@ ClassImp(AliEveMacroExecutorWindow)
 //______________________________________________________________________________
 AliEveMacroExecutorWindow::AliEveMacroExecutorWindow(AliEveMacroExecutor* master) :
   TGMainFrame(gClient->GetRoot()), fM(master),
-  fMainFrame(0), fCtrlFrame(0), fListBox(0), fEditor(0)
+  fMainFrame(0), fCtrlFrame(0), fListBox(0), fEditor(0),
+  fSelectTags(0)
 {
   // Constructor.
 
   fMainFrame = new TGVerticalFrame(this);
   AddFrame(fMainFrame, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 
+  TGHorizontalFrame *f = 0;
+  TGButton* b = 0;
   {
-    fCtrlFrame = new TGHorizontalFrame(fMainFrame);
-    fMainFrame->AddFrame(fCtrlFrame, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
-    fCtrlFrame->Resize(400, 120);
+    fCtrlFrame = MkHFrame(fMainFrame);
+    fCtrlFrame->Resize(400, 22);
 
-    TGButton* b = new TGTextButton(fCtrlFrame, "Reload event");
+    b = new TGTextButton(fCtrlFrame, "Reload event");
     fCtrlFrame->AddFrame(b);
     b->Connect("Clicked()", "AliEveMacroExecutorWindow", this,
 	       "DoReloadEvent()");
+
+    MkLabel(fCtrlFrame, "Select:", 64);
+    fSelectTags = new TGTextEntry(f);
+    f->AddFrame(fSelectTags, new TGLayoutHints(kLHintsNormal));//|kLHintsExpandX));
+    fSelectTags->Connect("ReturnPressed()", "AliEveMacroEditor", this,
+			 "DoSelectTags()");
+    b = new TGTextButton(fCtrlFrame, "Select");
+    fCtrlFrame->AddFrame(b);
+    b->Connect("Clicked()", "AliEveMacroExecutorWindow", this,
+	       "DoSelectTags()");
+
+    b = new TGTextButton(fCtrlFrame, "Enable all");
+    fCtrlFrame->AddFrame(b);
+    b->Connect("Clicked()", "AliEveMacroExecutorWindow", this,
+	       "DoEnableAll()");
+
+    b = new TGTextButton(fCtrlFrame, "Disable all");
+    fCtrlFrame->AddFrame(b);
+    b->Connect("Clicked()", "AliEveMacroExecutorWindow", this,
+	       "DoDisableAll()");
   }
 
   fListBox = new TGListBox(fMainFrame);
@@ -75,7 +102,7 @@ AliEveMacroExecutorWindow::AliEveMacroExecutorWindow(AliEveMacroExecutor* master
 
   fMainFrame->SetEditDisabled(kEditEnable);
   fMainFrame->SetEditable();
-  fEditor = new FooEditor(this);
+  fEditor = new AliEveMEWEditor(this);
   fEditor->SetGlobal(kFALSE);
   fMainFrame->SetEditable(kEditDisable);
   fMainFrame->SetEditable(kFALSE);
@@ -129,7 +156,14 @@ void AliEveMacroExecutorWindow::PopulateMacros(Bool_t keep_selected)
   fListBox->RemoveAll();
   fBoxContents.clear();
 
-  FooEntry::SetFont(); 
+  AliEveMEWEntry::SetFont(); 
+
+  TPMERegexp *regexp = 0;
+  TString     select = fSelectTags->GetText();
+  if ( ! select.IsNull())
+  {
+    regexp = new TPMERegexp(select, "io");
+  }
 
   TIter next(fM->fMacros);
   AliEveMacro *mac;
@@ -137,8 +171,11 @@ void AliEveMacroExecutorWindow::PopulateMacros(Bool_t keep_selected)
   Int_t    sel_id = -1;
   while ((mac = (AliEveMacro*) next()))
   {
+    if (regexp && regexp->Match(mac->GetTags()) == 0)
+      continue;
     if (mac == ex_sel)
       sel_id = id;
+
     fListBox->AddEntry(mac->FormForDisplay(), id++);
     fBoxContents.push_back(mac);
   }
@@ -148,6 +185,17 @@ void AliEveMacroExecutorWindow::PopulateMacros(Bool_t keep_selected)
 
   fListBox->MapSubwindows();
   fListBox->Layout();
+}
+
+void AliEveMacroExecutorWindow::SetActiveStateOfShownMacros(Bool_t active)
+{
+  // Set active-state of all shown macros to active.
+  // Automatically refreshes the list and editor.
+
+  for (std::vector<AliEveMacro*>::iterator m = fBoxContents.begin(); m != fBoxContents.end(); ++m)
+    (*m)->SetActive(active);
+  PopulateMacros();
+  fEditor->Refresh();
 }
 
 /******************************************************************************/
@@ -166,9 +214,42 @@ void AliEveMacroExecutorWindow::DoReloadEvent()
   gAliEveEvent->GotoEvent(gAliEveEvent->GetEventId());
 }
 
+void AliEveMacroExecutorWindow::DoSelectTags()
+{
+  // Slot for select-tags.
+
+  PopulateMacros();
+}
+
 void AliEveMacroExecutorWindow::DoMacroSelected(Int_t mid)
 {
   // Slot for macro-selected.
 
   fEditor->SetModel(0, fBoxContents[mid], kButton1Down);
+}
+
+/******************************************************************************/
+
+TGHorizontalFrame* AliEveMacroExecutorWindow::MkHFrame(TGCompositeFrame* p)
+{
+  // Make standard horizontal frame.
+
+  if (p == 0)
+    p = this;
+  TGHorizontalFrame* f = new TGHorizontalFrame(p);
+  p->AddFrame(f, new TGLayoutHints(kLHintsNormal|kLHintsExpandX));
+  return f;
+}
+
+TGLabel* AliEveMacroExecutorWindow::MkLabel(TGCompositeFrame* p, const char* txt, Int_t width,
+					    Int_t lo, Int_t ro, Int_t to, Int_t bo)
+{
+  // Make standard label.
+
+  TGLabel *l = new TGLabel(p, txt);
+  p->AddFrame(l, new TGLayoutHints(kLHintsNormal, lo,ro,to,bo));
+  l->SetTextJustify(kTextRight);
+  l->SetWidth(width);
+  l->ChangeOptions(l->GetOptions() | kFixedWidth);
+  return l;
 }

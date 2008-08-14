@@ -71,16 +71,20 @@ void anyscan_init()
 
   AliEveMacroExecutor *exec = gAliEveEvent->GetExecutor();
 
-  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "primary_vertex.C", "primary_vertex"));
-  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "esd_V0_points.C",  "esd_V0_points"));
-  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "esd_V0.C",         "esd_V0"));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "SIM Track",   "kine_tracks.C", "kine_tracks", "", kFALSE));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "SIM Hit ITS", "its_hits.C",    "its_hits",    "", kFALSE));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "SIM Hit TPC", "tpc_hits.C",    "tpc_hits",    "", kFALSE));
+
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX", "primary_vertex.C", "primary_vertex"));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC V0",   "esd_V0_points.C",  "esd_V0_points"));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC V0",   "esd_V0.C",         "esd_V0"));
   // exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "esd_tracks.C",     ""));
   TEveUtil::LoadMacro("esd_tracks.C");
 
-  exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "its_clusters.C+", "its_clusters"));
-  exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "tpc_clusters.C+", "tpc_clusters"));
-  exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "trd_clusters.C+", "trd_clusters"));
-  exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "tof_clusters.C+", "tof_clusters"));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clus ITS", "its_clusters.C+", "its_clusters"));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clus TPC", "tpc_clusters.C+", "tpc_clusters"));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clus TRD", "trd_clusters.C+", "trd_clusters"));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clus TOF", "tof_clusters.C+", "tof_clusters"));
 
   TEveBrowser* browser = gEve->GetBrowser();
 

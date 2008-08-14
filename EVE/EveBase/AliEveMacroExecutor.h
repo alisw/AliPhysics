@@ -26,7 +26,8 @@ public:
   AliEveMacroExecutor();
   virtual ~AliEveMacroExecutor();
 
-  void AddMacro(AliEveMacro* mac);
+  void         AddMacro(AliEveMacro* mac);
+  AliEveMacro* FindMacro(const TString& func);
 
   void ExecMacros();
 

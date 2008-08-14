@@ -32,6 +32,7 @@ public:
   virtual void SetModel(TObject* obj);
 
   void DoSources(Int_t v);
+  void DoTags();
   void DoMacro();
   void DoFunc();
   void DoArgs();
@@ -41,6 +42,7 @@ protected:
   AliEveMacro           *fM; // Model object.
 
   TGComboBox            *fSources;
+  TGTextEntry           *fTags;
   TGTextEntry           *fMacro;
   TGTextEntry           *fFunc;
   TGTextEntry           *fArgs;

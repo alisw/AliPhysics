@@ -19,10 +19,11 @@
 ClassImp(AliEveMacro)
 
 //______________________________________________________________________________
-AliEveMacro::AliEveMacro(Int_t src, const TString& mac, const TString& foo,
-			 const TString& args, Bool_t act) :
+AliEveMacro::AliEveMacro(Int_t src, const TString& tags, const TString& mac,
+			 const TString& foo, const TString& args, Bool_t act) :
   TObject(),
-  fSources(src), fMacro(mac), fFunc(foo), fArgs(args), fActive(act)
+  fSources(src), fTags(tags), fMacro (mac),
+  fFunc   (foo), fArgs(args), fActive(act)
 {
   // Constructor.
 }
@@ -41,5 +42,5 @@ TString AliEveMacro::FormForDisplay() const
   // Return string suitable for display.
 
   TString act(fActive ? " x " : "    ");
-  return act + fMacro + " :: " + fFunc + " (" + fArgs + ")";
+  return act + fMacro + " :: " + fFunc + " (" + fArgs + ")" + " --- " + fTags;
 }

@@ -16,8 +16,11 @@
 
 class AliEveMacroExecutor;
 class AliEveMacro;
+class AliEveMEWEditor;
+
+class TGLabel;
 class TGListBox;
-class TGedEditor;
+class TGTextEntry;
 
 //______________________________________________________________________________
 // Short description of AliEveMacroExecutorWindow
@@ -31,9 +34,14 @@ public:
 
   void PopulateMacros(Bool_t keep_selected=kTRUE);
 
+  void SetActiveStateOfShownMacros(Bool_t active);
+
   void NewEventLoaded();
 
+  void DoEnableAll()  { SetActiveStateOfShownMacros(kTRUE);  }
+  void DoDisableAll() { SetActiveStateOfShownMacros(kFALSE); }
   void DoReloadEvent();
+  void DoSelectTags();
   void DoMacroSelected(Int_t mid);
 
 protected:
@@ -42,10 +50,15 @@ protected:
   TGCompositeFrame *fMainFrame;
   TGCompositeFrame *fCtrlFrame;
   TGListBox        *fListBox;
-  TGedEditor       *fEditor;
+  AliEveMEWEditor  *fEditor;
+
+  TGTextEntry      *fSelectTags;
 
   std::vector<AliEveMacro*> fBoxContents;
 
+  TGHorizontalFrame* MkHFrame(TGCompositeFrame* p=0);
+  TGLabel*           MkLabel (TGCompositeFrame* p, const char* txt, Int_t width,
+			      Int_t lo=0, Int_t ro=0, Int_t to=2, Int_t bo=0);
 private:
   AliEveMacroExecutorWindow(const AliEveMacroExecutorWindow&);            // Not implemented
   AliEveMacroExecutorWindow& operator=(const AliEveMacroExecutorWindow&); // Not implemented

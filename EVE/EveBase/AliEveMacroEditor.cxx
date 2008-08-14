@@ -32,6 +32,7 @@ AliEveMacroEditor::AliEveMacroEditor(const TGWindow *p, Int_t width, Int_t heigh
   TGedFrame(p, width, height, options | kVerticalFrame, back),
   fM(0),
   fSources(0),
+  fTags(0),
   fMacro(0),
   fFunc(0),
   fArgs(0),
@@ -53,7 +54,7 @@ AliEveMacroEditor::AliEveMacroEditor(const TGWindow *p, Int_t width, Int_t heigh
     fActive->Connect("Clicked()", "AliEveMacroEditor", this,
 		     "DoActive()");
 
-    MkLabel(f, "Source: ", labelW, 32);
+    MkLabel(f, "Source: ", 56);
     fSources = new TGComboBox(f);
     f->AddFrame(fSources); // new TGLayoutHints());
     fSources->AddEntry("None",      AliEveMacro::kNone);
@@ -65,15 +66,21 @@ AliEveMacroEditor::AliEveMacroEditor(const TGWindow *p, Int_t width, Int_t heigh
       TGListBox* lb = fSources->GetListBox();
       lb->Resize(lb->GetWidth(), 5*16);
     }
-    fSources->Resize(100, 20);
+    fSources->Resize(92, 20);
     fSources->Connect("Selected(Int_t)", "AliEveMacroEditor", this,
 		      "DoSources(Int_t)");
+
+    MkLabel(f, "Tags: ", 40);
+    fTags = new TGTextEntry(f);
+    f->AddFrame(fTags, new TGLayoutHints(kLHintsNormal|kLHintsExpandX));
+    fTags->Connect("TextChanged(const char *)", "AliEveMacroEditor", this,
+		    "DoTags()");
   }
   {
     f = MkHFrame();
     MkLabel(f, "Macro: ", labelW);
     fMacro = new TGTextEntry(f);
-    f->AddFrame(fMacro, new TGLayoutHints(kLHintsNormal|kLHintsExpandX));
+    f->AddFrame(fMacro, new TGLayoutHints(kLHintsNormal));//|kLHintsExpandX));
     fMacro->Connect("TextChanged(const char *)", "AliEveMacroEditor", this,
 		    "DoMacro()");
 
@@ -105,6 +112,7 @@ void AliEveMacroEditor::SetModel(TObject* obj)
   fSources->Select  (fM->GetSources(), kFALSE);
   // TGTextEntry emits a signal no matter what ...
   TQObject::BlockAllSignals(kTRUE);
+  fTags   ->SetText (fM->GetTags());
   fMacro  ->SetText (fM->GetMacro());
   fFunc   ->SetText (fM->GetFunc());
   fArgs   ->SetText (fM->GetArgs());
@@ -118,6 +126,15 @@ void AliEveMacroEditor::DoSources(Int_t v)
    // Slot for Sources.
 
    fM->SetSources(v);
+   Update();
+}
+
+//______________________________________________________________________________
+void AliEveMacroEditor::DoTags()
+{
+   // Slot for Tags.
+
+   fM->SetTags(fTags->GetText());
    Update();
 }
 
@@ -181,4 +198,3 @@ TGLabel* AliEveMacroEditor::MkLabel(TGCompositeFrame* p, const char* txt, Int_t 
   l->ChangeOptions(l->GetOptions() | kFixedWidth);
   return l;
 }
-
