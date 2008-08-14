@@ -478,12 +478,15 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 	v0objects.AddAt(esdVtx,                  3);
 	UInt_t selectV0 = 0;
 	if (fV0Filter) {
-	    selectV0 = fV0Filter->IsSelected(&v0objects);
-	    delete esdVtx;
-	    if (!selectV0) 
-		continue;
+	  selectV0 = fV0Filter->IsSelected(&v0objects);
+	  delete esdVtx;
+	  if (!selectV0) 
+	    continue;
 	}
-		
+	else{
+	  // delete in any case
+	  delete esdVtx;
+	}
 	//
 	//
     
