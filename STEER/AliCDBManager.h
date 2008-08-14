@@ -113,10 +113,11 @@ class AliCDBManager: public TObject {
 
   	void ClearCache();
   	void UnloadFromCache(const char* path);
+	const TMap* GetEntryCache() const {return &fEntryCache;}
 
 	Bool_t IsShortLived(const char* path);
 
-	static AliCDBManager* Instance();
+	static AliCDBManager* Instance(TMap *entryCache = NULL, Int_t run = -1);
 
  private:
 
@@ -139,6 +140,7 @@ class AliCDBManager: public TObject {
 
 	void Init();
 	void InitShortLived();
+	void InitFromCache(TMap *entryCache, Int_t run);
 
 
 	TList fFactories; 		//! list of registered storage factories

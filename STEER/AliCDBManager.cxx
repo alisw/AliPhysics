@@ -40,13 +40,16 @@ TString AliCDBManager::fgkRefUri("alien://folder=/alice/cern.ch/user/a/aliprod/t
 AliCDBManager* AliCDBManager::fgInstance = 0x0;
 
 //_____________________________________________________________________________
-AliCDBManager* AliCDBManager::Instance()
+AliCDBManager* AliCDBManager::Instance(TMap *entryCache, Int_t run)
 {
 // returns AliCDBManager instance (singleton)
 
 	if (!fgInstance) {
 		fgInstance = new AliCDBManager();
-		fgInstance->Init();
+		if (!entryCache)
+		  fgInstance->Init();
+		else
+		  fgInstance->InitFromCache(entryCache,run);
 	}
 
 	return fgInstance;
@@ -68,6 +71,24 @@ void AliCDBManager::Init() {
 
 	InitShortLived();
 }
+
+//_____________________________________________________________________________
+void AliCDBManager::InitFromCache(TMap *entryCache, Int_t run) {
+// initialize manager from existing cache
+// used on the slaves in case of parallel reconstruction
+  SetRun(run);
+
+  TIter iter(entryCache->GetTable());
+  TPair* pair = 0;
+
+  while((pair = dynamic_cast<TPair*> (iter.Next()))){
+    fEntryCache.Add(pair->Key(),pair->Value());
+  }
+  // fEntry is the new owner of the cache
+  fEntryCache.SetOwnerKeyValue(kTRUE,kTRUE);
+  AliInfo(Form("%d cache entries have been loaded",fEntryCache.GetEntries()));
+}
+
 //_____________________________________________________________________________
 void AliCDBManager::Destroy() {
 // delete ALCDBManager instance and active storages
@@ -101,6 +122,7 @@ AliCDBManager::AliCDBManager():
 	fFactories.SetOwner(1);
 	fActiveStorages.SetOwner(1);
 	fSpecificStorages.SetOwner(1);
+	fEntryCache.SetName("CDBEntryCache");
 	fEntryCache.SetOwner(1);
 
 	fStorageMap = new TMap();
@@ -502,11 +524,6 @@ AliCDBEntry* AliCDBManager::Get(const AliCDBPath& path,
 AliCDBEntry* AliCDBManager::Get(const AliCDBId& query) {
 // get an AliCDBEntry object from the database
 	
-	if(!fDefaultStorage) {
-		AliError("No storage set!");
-		return NULL;
-	}
-
 	// check if query's path and runRange are valid
 	// query is invalid also if version is not specified and subversion is!
 	if (!query.IsValid()) {
@@ -538,6 +555,10 @@ AliCDBEntry* AliCDBManager::Get(const AliCDBId& query) {
 		return entry;
 	}
 
+	if(!fDefaultStorage) {
+		AliError("No storage set!");
+		return NULL;
+	}
 	// Entry is not in cache -> retrieve it from CDB and cache it!!
 	AliCDBStorage *aStorage=0;
 	AliCDBParam *aPar=SelectSpecificStorage(query.GetPath());
