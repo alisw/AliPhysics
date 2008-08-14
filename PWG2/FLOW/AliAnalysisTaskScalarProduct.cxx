@@ -37,6 +37,7 @@ class AliAnalysisTask;
 #include "AliAnalysisTaskScalarProduct.h"
 #include "AliFlowEventSimpleMaker.h"
 #include "AliFlowAnalysisWithScalarProduct.h"
+#include "AliFlowCommonHist.h"
 
 // AliAnalysisTaskScalarProduct:
 //
@@ -292,6 +293,20 @@ void AliAnalysisTaskScalarProduct::Terminate(Option_t *)
   if (fListHistos) 
     {
       fListHistos->Print();
+//       AliFlowCommonHist *SDHistClass = dynamic_cast<AliFlowCommonHist*> 
+// 	(fListHistos->FindObject("SP"));
+//       if (SDHistClass)
+// 	{ 
+// 	  // open a file and write the CLASS to the file
+// 	  TFile *f = new TFile("mytest.root","recreate");
+// 	  SDHistClass->Write();
+// 	  SDHistClass->Print();
+// 	  f->Close();
+// 	}
+//       else
+// 	{
+// 	  cout << "SD class pointer is NULL" << endl;
+// 	}
     }	
   else
     {

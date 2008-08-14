@@ -18,6 +18,7 @@ class TH1D;
 class TProfile;
 class TCollection;
 class TList;
+class TBrowser;
 
 class AliFlowCommonHist: public TNamed {
 
@@ -26,10 +27,12 @@ class AliFlowCommonHist: public TNamed {
   AliFlowCommonHist();
   AliFlowCommonHist(const char *name,const char *title = "AliFlowCommonHist");
   virtual ~AliFlowCommonHist();
+  AliFlowCommonHist(const AliFlowCommonHist& aSetOfHists);
 
+  Bool_t  IsFolder() const {return kTRUE;};
   //make fill methods here
   Bool_t FillControlHistograms(AliFlowEventSimple* anEvent);
- 
+  void Browse(TBrowser *b); 
   //make get methods here
   Double_t GetEntriesInPtBin(Int_t iBin);   //gets entries from fHistPtDiff
   Double_t GetMeanPt(Int_t iBin);           //gets the mean pt for this bin from fHistProMeanPtperBin   
@@ -54,7 +57,6 @@ class AliFlowCommonHist: public TNamed {
  
  private:
 
-  AliFlowCommonHist(const AliFlowCommonHist& aSetOfHists);
   AliFlowCommonHist& operator=(const AliFlowCommonHist& aSetOfHists);
 
   //define histograms here
@@ -73,7 +75,7 @@ class AliFlowCommonHist: public TNamed {
 
   TList*    fHistList;            //list to hold all histograms  
 
-  ClassDef(AliFlowCommonHist,0);  // macro for rootcint
+  ClassDef(AliFlowCommonHist,1)  // macro for rootcint
 };
 #endif
 
