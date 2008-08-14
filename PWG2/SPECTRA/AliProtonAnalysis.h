@@ -117,14 +117,40 @@ class AliProtonAnalysis : public TObject {
     fQAHistograms = kTRUE;
     fGlobalQAList = new TList();
     fQA2DList = new TList();
+    fQA2DList->SetName("fQA2DList");
+    fGlobalQAList->Add(fQA2DList);
+
     fQAPrimaryProtonsAcceptedList = new TList();
+    fQAPrimaryProtonsAcceptedList->SetName("fQAPrimaryProtonsAcceptedList");
+    fGlobalQAList->Add(fQAPrimaryProtonsAcceptedList);
+
     fQAPrimaryProtonsRejectedList = new TList();
+    fQAPrimaryProtonsRejectedList->SetName("fQAPrimaryProtonsRejectedList");
+    fGlobalQAList->Add(fQAPrimaryProtonsRejectedList);
+
     fQASecondaryProtonsAcceptedList = new TList();
+    fQASecondaryProtonsAcceptedList->SetName("fQASecondaryProtonsAcceptedList");
+    fGlobalQAList->Add(fQASecondaryProtonsAcceptedList);
+
     fQASecondaryProtonsRejectedList = new TList();
+    fQASecondaryProtonsRejectedList->SetName("fQASecondaryProtonsRejectedList");
+    fGlobalQAList->Add(fQASecondaryProtonsRejectedList);
+
     fQAPrimaryAntiProtonsAcceptedList = new TList();
+    fQAPrimaryAntiProtonsAcceptedList->SetName("fQAPrimaryAntiProtonsAcceptedList");
+    fGlobalQAList->Add(fQAPrimaryAntiProtonsAcceptedList);
+
     fQAPrimaryAntiProtonsRejectedList = new TList();
+    fQAPrimaryAntiProtonsRejectedList->SetName("fQAPrimaryAntiProtonsRejectedList");
+    fGlobalQAList->Add(fQAPrimaryAntiProtonsRejectedList);
+
     fQASecondaryAntiProtonsAcceptedList = new TList();
+    fQASecondaryAntiProtonsAcceptedList->SetName("fQASecondaryAntiProtonsAcceptedList");
+    fGlobalQAList->Add(fQASecondaryAntiProtonsAcceptedList);
+
     fQASecondaryAntiProtonsRejectedList = new TList();
+    fQASecondaryAntiProtonsRejectedList->SetName("fQASecondaryAntiProtonsRejectedList");
+    fGlobalQAList->Add(fQASecondaryAntiProtonsRejectedList);
   }
   void SetQAYPtBins(Int_t nbinsY, Double_t minY, Double_t maxY,
 		    Int_t nbinsPt, Double_t minPt, Double_t maxPt) {
@@ -164,9 +190,9 @@ class AliProtonAnalysis : public TObject {
   AliProtonAnalysis(const AliProtonAnalysis&); // Not implemented
   AliProtonAnalysis& operator=(const AliProtonAnalysis&); // Not implemented
 
-  Bool_t IsAccepted(AliESDtrack *track);
-  Bool_t IsAccepted(AliESDtrack *track, AliStack *stack);
-  Float_t GetSigmaToVertex(AliESDtrack* esdTrack); 
+  Bool_t   IsAccepted(AliESDtrack *track);
+  void     FillQA(AliESDtrack *track, AliStack *stack);
+  Float_t  GetSigmaToVertex(AliESDtrack* esdTrack); 
   Double_t Rapidity(Double_t Px, Double_t Py, Double_t Pz);
   
   Int_t fNBinsY; //number of bins in y

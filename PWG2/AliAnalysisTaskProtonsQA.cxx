@@ -87,7 +87,7 @@ void AliAnalysisTaskProtonsQA::CreateOutputObjects() {
   fAnalysis->InitQA();
 
   //Use of TPConly tracks
-  fAnalysis->SetQAYPtBins(10, -0.5, 0.5, 12, 0.5, 0.9); //TPC only
+  /*fAnalysis->SetQAYPtBins(10, -0.5, 0.5, 12, 0.5, 0.9); //TPC only
   fAnalysis->UseTPCOnly();
   fAnalysis->SetMinTPCClusters(50);
   fAnalysis->SetMaxChi2PerTPCCluster(3.5);
@@ -98,10 +98,10 @@ void AliAnalysisTaskProtonsQA::CreateOutputObjects() {
   fAnalysis->SetMaxCov55(2.0);
   fAnalysis->SetMaxSigmaToVertexTPC(2.5);
   fAnalysis->SetTPCRefit();
-  fAnalysis->SetTPCpid();
+  fAnalysis->SetTPCpid();*/
 
   //Combined tracking
-  /*fAnalysis->SetQAYPtBins(20, -1.0, 1.0, 27, 0.4, 3.1); //combined tracking
+  fAnalysis->SetQAYPtBins(20, -1.0, 1.0, 27, 0.4, 3.1); //combined tracking
   fAnalysis->SetMinTPCClusters(50);
   fAnalysis->SetMaxChi2PerTPCCluster(3.5);
   fAnalysis->SetMaxCov11(2.0);
@@ -111,10 +111,10 @@ void AliAnalysisTaskProtonsQA::CreateOutputObjects() {
   fAnalysis->SetMaxCov55(2.0);
   fAnalysis->SetMaxSigmaToVertexTPC(2.5);
   fAnalysis->SetTPCRefit();
-  //ITS related cuts - to be used in the case of the analysis of global tracks                                                                                                
-  fAnalysis->SetMinITSClusters(5);                                                                                                                                          
-  fAnalysis->SetITSRefit();                                                                                                                                                  
-  fAnalysis->SetESDpid();*/
+  //ITS related cuts - to be used in the case of the analysis of global tracks
+  fAnalysis->SetMinITSClusters(5);
+  fAnalysis->SetITSRefit();
+  fAnalysis->SetESDpid();
 
   fAnalysis->SetPriorProbabilities(partFrac);
 
