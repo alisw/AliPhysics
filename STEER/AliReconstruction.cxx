@@ -122,6 +122,7 @@
 #include <TMap.h>
 #include <TChain.h>
 #include <TProof.h>
+#include <TParameter.h>
 
 #include "AliReconstruction.h"
 #include "AliCodeTimer.h"
@@ -274,6 +275,7 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename) :
   fChain(NULL)
 {
 // create reconstruction object with default parameters
+  gGeoManager = NULL;
   
   for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
     fReconstructor[iDet] = NULL;
@@ -511,6 +513,7 @@ void AliReconstruction::InitCDB()
 // activate a default CDB storage
 // First check if we have any CDB storage set, because it is used 
 // to retrieve the calibration and alignment constants
+  AliCodeTimerAuto("");
 
   if (fInitCDBCalled) return;
   fInitCDBCalled = kTRUE;
@@ -550,7 +553,7 @@ void AliReconstruction::InitCDB()
     AliDebug(2, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
     man->SetSpecificStorage(obj->GetName(), obj->GetTitle());
   }
-  
+  AliSysInfo::AddStamp("InitCDB");
 }
 
 //_____________________________________________________________________________
@@ -1004,11 +1007,6 @@ Bool_t AliReconstruction::Run(const char* input)
   if (fRawReader && (chain = fRawReader->GetChain())) {
     // Proof mode
     if (gProof) {
-      gProof->AddInput(gGeoManager);
-      gGeoManager = NULL;
-      gProof->AddInput(const_cast<TMap*>(AliCDBManager::Instance()->GetEntryCache()));
-      gProof->SetParameter("RunNumber",AliCDBManager::Instance()->GetRun());
-      gProof->AddInput((AliMagF*)AliTracker::GetFieldMap());
       gProof->AddInput(this);
       chain->SetProof();
       chain->Process("AliReconstruction");
@@ -1078,23 +1076,39 @@ void AliReconstruction::InitRun(const char* input)
   AliCodeTimerAuto("");
   AliSysInfo::AddStamp("Start");
 
+  // Initialize raw-reader if any
   InitRawReader(input);
-  AliSysInfo::AddStamp("CreateRawReader");
 
   // Initialize the CDB storage
   InitCDB();
-  AliSysInfo::AddStamp("InitCDB");
 
   // Set run number in CDBManager (if it is not already set by the user)
   if (!SetRunNumberFromData()) {
     Abort("SetRunNumberFromData", TSelector::kAbortProcess);
     return;
   }
-  
+
   // Set CDB lock: from now on it is forbidden to reset the run number
   // or the default storage or to activate any further storage!
   SetCDBLock();
   
+}
+
+//_____________________________________________________________________________
+void AliReconstruction::Begin(TTree *)
+{
+  // Initialize AlReconstruction before
+  // going into the event loop
+  // Should follow the TSelector convention
+  // i.e. initialize only the object on the client side
+  if (fInput) {
+    if (AliReconstruction *reco = (AliReconstruction*)fInput->FindObject("AliReconstruction")) {
+      *this = *reco;
+      fInput->Remove(reco);
+    }
+    AliSysInfo::AddStamp("ReadInputInBegin");
+  }
+
   // Import ideal TGeo geometry and apply misalignment
   if (!gGeoManager) {
     TString geom(gSystem->DirName(fGAliceFileName));
@@ -1134,20 +1148,18 @@ void AliReconstruction::InitRun(const char* input)
 
   // Read the reconstruction parameters from OCDB
   if (!InitRecoParams()) {
-    Abort("InitRecoParams", TSelector::kAbortProcess);
-    return;
+    AliWarning("Not all detectors have correct RecoParam objects initialized");
   }
   AliSysInfo::AddStamp("InitRecoParams");
 
-}
-
-//_____________________________________________________________________________
-void AliReconstruction::Begin(TTree *)
-{
-  // Initialize AlReconstruction before
-  // going into the event loop
-  // Should follow the TSelector convention
-  // i.e. initialize only the object on the client side
+  if (fInput) {
+    fInput->Add(gGeoManager);
+    gGeoManager = NULL;
+    fInput->Add(const_cast<TMap*>(AliCDBManager::Instance()->GetEntryCache()));
+    fInput->Add(new TParameter<Int_t>("RunNumber",AliCDBManager::Instance()->GetRun()));
+    fInput->Add((AliMagF*)AliTracker::GetFieldMap());
+    fInput->Add(this);
+  }
 
 }
 
@@ -1179,7 +1191,7 @@ void AliReconstruction::SlaveBegin(TTree*)
     if (AliReconstruction *reco = (AliReconstruction*)fInput->FindObject("AliReconstruction")) {
       *this = *reco;
     }
-    AliSysInfo::AddStamp("ReadSelectorInput");
+    AliSysInfo::AddStamp("ReadInputInSlaveBegin");
   }
 
   // get the run loader
