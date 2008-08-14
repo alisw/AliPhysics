@@ -588,7 +588,8 @@ int AliHLTTask::ProcessTask(Int_t eventNo, AliHLTUInt32_t eventType)
 	    AliHLTComponentBlockDataList segments;
 	    for (AliHLTUInt32_t oblock=0; oblock<outputBlockCnt; oblock++) {
 	      // consistency check for data reference
-	      if (outputBlocks[oblock].fPtr!=NULL && outputBlocks[oblock].fOffset!=0) {
+	      if (outputBlocks[oblock].fPtr!=NULL && outputBlocks[oblock].fPtr!=pTgtBuffer &&
+		  outputBlocks[oblock].fOffset!=0) {
 		HLTWarning("output block %s 0x%08x has inconsistent data reference ptr=%p offset=0x%08x: "
 			   "for new blocks use offset only, forwarded blocks have fPtr set only",
 			   AliHLTComponent::DataType2Text(outputBlocks[oblock].fDataType).c_str(),
@@ -599,7 +600,8 @@ int AliHLTTask::ProcessTask(Int_t eventNo, AliHLTUInt32_t eventType)
 	      // check for duplicates in the output
 	      AliHLTUInt32_t checkblock=0;
 	      for (; checkblock<oblock; checkblock++) {
-		if (outputBlocks[oblock].fPtr!=NULL && outputBlocks[checkblock].fPtr==outputBlocks[oblock].fPtr) {
+		if (outputBlocks[oblock].fPtr!=NULL && outputBlocks[oblock].fPtr!=pTgtBuffer &&
+		    outputBlocks[checkblock].fPtr==outputBlocks[oblock].fPtr) {
 		  if (outputBlocks[checkblock].fSize!=outputBlocks[oblock].fSize ||
 		      outputBlocks[checkblock].fDataType!=outputBlocks[oblock].fDataType) {
 		    HLTWarning("output blocks %d (%s 0x%08x) and %d (%s 0x%08x) have identical data references ptr=%p "
@@ -627,6 +629,9 @@ int AliHLTTask::ProcessTask(Int_t eventNo, AliHLTUInt32_t eventType)
 	      // when the subscribing task releases it
 	      AliHLTUInt32_t iblock=0;
 	      for (; iblock<fBlockDataArray.size(); iblock++) {
+		if (outputBlocks[oblock].fDataType==kAliHLTDataTypeEvent) {
+		  // the event type data block is ignored if it was forwarded
+		}
 		if (fBlockDataArray[iblock].fPtr==outputBlocks[oblock].fPtr) {
 		  assert(subscribedTaskList[iblock]!=NULL);
 		  if (subscribedTaskList[iblock]==NULL) continue;

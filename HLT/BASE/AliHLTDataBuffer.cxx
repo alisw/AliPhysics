@@ -369,7 +369,8 @@ int AliHLTDataBuffer::SetSegments(AliHLTUInt8_t* pTgt, AliHLTComponentBlockData*
 	  if (arrayBlockData[i].fPtr==NULL ||
 	      arrayBlockData[i].fPtr==*fpBuffer) {
 	    arrayBlockData[i].fPtr=*fpBuffer;
-	    if (arrayBlockData[i].fOffset+arrayBlockData[i].fSize<=fpBuffer->GetUsedSize()) {
+	    if ((arrayBlockData[i].fOffset+arrayBlockData[i].fSize<=fpBuffer->GetUsedSize()) ||
+		((arrayBlockData[i].fOffset==~(AliHLTUInt32_t)0) && arrayBlockData[i].fSize==0)) {
 	      segment.fSegmentOffset=arrayBlockData[i].fOffset;
 	      segment.fPtr=(AliHLTUInt8_t*)arrayBlockData[i].fPtr;
 	      segment.fSegmentSize=arrayBlockData[i].fSize;
