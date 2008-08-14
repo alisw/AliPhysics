@@ -179,7 +179,7 @@ void AliEveTOFSector::InitStatics()
   Float_t dy = 370.6*2.;
   fgTOFsectorFrameBox = new TEveFrameBox();
   fgTOFsectorFrameBox->SetAABox(-dx*0.5, -dy*0.5, -dz*0.5, dx, dy, dz);
-  fgTOFsectorFrameBox->SetFrameColor(32);
+  fgTOFsectorFrameBox->SetFrameColor(Color_t(32));
   fgTOFsectorFrameBox->IncRefCount();
 
   //fgTOFsectorPalette  = new TEveRGBAPalette(0, 2048); // TOT

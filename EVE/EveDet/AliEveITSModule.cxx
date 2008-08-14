@@ -89,7 +89,7 @@ void AliEveITSModule::InitStatics(AliEveITSDigitsInfo* info)
 
     fgSPDFrameBox = new TEveFrameBox();
     fgSPDFrameBox->SetAAQuadXZ(-dx, 0, -dz, 2*dx, 2*dz);
-    fgSPDFrameBox->SetFrameColor(31);
+    fgSPDFrameBox->SetFrameColor(Color_t(31));
     fgSPDFrameBox->SetFrameFill(kTRUE);
     fgSPDFrameBox->IncRefCount();
     fgSPDPalette  = new TEveRGBAPalette(info->fSPDMinVal,info->fSPDMaxVal);
@@ -102,7 +102,7 @@ void AliEveITSModule::InitStatics(AliEveITSDigitsInfo* info)
 
     fgSDDFrameBox = new TEveFrameBox();
     fgSDDFrameBox->SetAAQuadXZ(-dx, 0, -dz, 2*dx, 2*dz);
-    fgSDDFrameBox->SetFrameColor(32);
+    fgSDDFrameBox->SetFrameColor(Color_t(32));
     fgSDDFrameBox->SetFrameFill(kTRUE);
     fgSDDFrameBox->IncRefCount();
     fgSDDPalette  = new TEveRGBAPalette(info->fSDDMinVal,info->fSDDMaxVal);
@@ -116,7 +116,7 @@ void AliEveITSModule::InitStatics(AliEveITSDigitsInfo* info)
 
     fgSSDFrameBox = new TEveFrameBox();
     fgSSDFrameBox->SetAAQuadXZ(-dx, 0, -dz, 2*dx, 2*dz);
-    fgSSDFrameBox->SetFrameColor(33);
+    fgSSDFrameBox->SetFrameColor(Color_t(33));
     fgSSDFrameBox->SetFrameFill(kTRUE);
     fgSSDFrameBox->IncRefCount();
     fgSSDPalette  = new TEveRGBAPalette(info->fSSDMinVal,info->fSSDMaxVal);

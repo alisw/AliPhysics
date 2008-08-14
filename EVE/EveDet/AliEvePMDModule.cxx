@@ -67,7 +67,7 @@ void AliEvePMDModule::DisplayInit(Int_t ism)
 
   TEveFrameBox *pmdModBox = new TEveFrameBox();
   pmdModBox->SetAAQuadXY(xism, yism, 0, dxism, dyism);
-  pmdModBox->SetFrameColor(31);
+  pmdModBox->SetFrameColor(Color_t(31));
   pmdModBox->SetFrameFill(kTRUE);
   SetFrame(pmdModBox);
 
