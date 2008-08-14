@@ -78,22 +78,22 @@ void AliFlowAnalysisWithScalarProduct::Init() {
   fHistProUQ->SetYTitle("<uQ>");
   fHistList->Add(fHistProUQ);
 
-  fCommonHists = new AliFlowCommonHist("SP");
+  fCommonHists = new AliFlowCommonHist("AliFlowCommonHistSP");
   //  fHistList->Add(fCommonHists->GetHistList());
 
   fHistList->Add(fCommonHists);
   // commented for test writing full object
-  fHistList->Add(fCommonHists->GetHistMultOrig());
-  fHistList->Add(fCommonHists->GetHistMultInt());
-  fHistList->Add(fCommonHists->GetHistMultDiff());
-  fHistList->Add(fCommonHists->GetHistPtInt());
-  fHistList->Add(fCommonHists->GetHistPtDiff());
-  fHistList->Add(fCommonHists->GetHistPhiInt());
-  fHistList->Add(fCommonHists->GetHistPhiDiff());
-  fHistList->Add(fCommonHists->GetHistEtaInt());
-  fHistList->Add(fCommonHists->GetHistEtaDiff());
-  fHistList->Add(fCommonHists->GetHistProMeanPtperBin());
-  fHistList->Add(fCommonHists->GetHistQ());
+  //   fHistList->Add(fCommonHists->GetHistMultOrig());
+  //   fHistList->Add(fCommonHists->GetHistMultInt());
+  //   fHistList->Add(fCommonHists->GetHistMultDiff());
+  //   fHistList->Add(fCommonHists->GetHistPtInt());
+  //   fHistList->Add(fCommonHists->GetHistPtDiff());
+  //   fHistList->Add(fCommonHists->GetHistPhiInt());
+  //   fHistList->Add(fCommonHists->GetHistPhiDiff());
+  //   fHistList->Add(fCommonHists->GetHistEtaInt());
+  //   fHistList->Add(fCommonHists->GetHistEtaDiff());
+  //   fHistList->Add(fCommonHists->GetHistProMeanPtperBin());
+  //   fHistList->Add(fCommonHists->GetHistQ());
   // end test
 
   //fCommonHistsRes = new AliFlowCommonHistResults("SP");

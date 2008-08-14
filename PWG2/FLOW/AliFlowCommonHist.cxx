@@ -24,6 +24,7 @@
 #include "TMath.h"   //needed as include
 #include "TList.h"
 #include "AliFlowVector.h"
+#include "TBrowser.h"
 
 class TH1F;
 class TH1D;
@@ -91,24 +92,24 @@ AliFlowCommonHist::AliFlowCommonHist(const AliFlowCommonHist& a):
 
 }
 
-AliFlowCommonHist& AliFlowCommonHist::operator=(const AliFlowCommonHist& a) 
-{
-  *fHistMultOrig = *a.fHistMultOrig;
-  *fHistMultInt = *a.fHistMultInt;
-  *fHistMultDiff = *a.fHistMultDiff;
-  *fHistPtInt = *a.fHistPtInt;
-  *fHistPtDiff = *a.fHistPtDiff;
-  *fHistPhiInt = *a.fHistPhiInt;
-  *fHistPhiDiff = *a.fHistPhiDiff;
-  *fHistEtaInt = *a.fHistEtaInt;
-  *fHistEtaDiff = *a.fHistEtaDiff;
-  *fHistProMeanPtperBin = *a.fHistProMeanPtperBin;
-  *fHistQ = *a.fHistQ;
-  //  *fHistList = *a.fHistList;
-  fHistList = NULL;
+// AliFlowCommonHist& AliFlowCommonHist::operator=(const AliFlowCommonHist& a) 
+// {
+//   *fHistMultOrig = *a.fHistMultOrig;
+//   *fHistMultInt = *a.fHistMultInt;
+//   *fHistMultDiff = *a.fHistMultDiff;
+//   *fHistPtInt = *a.fHistPtInt;
+//   *fHistPtDiff = *a.fHistPtDiff;
+//   *fHistPhiInt = *a.fHistPhiInt;
+//   *fHistPhiDiff = *a.fHistPhiDiff;
+//   *fHistEtaInt = *a.fHistEtaInt;
+//   *fHistEtaDiff = *a.fHistEtaDiff;
+//   *fHistProMeanPtperBin = *a.fHistProMeanPtperBin;
+//   *fHistQ = *a.fHistQ;
+//   //  *fHistList = *a.fHistList;
+//   fHistList = NULL;
  
-  return *this;
-}
+//   return *this;
+// }
 
 //-----------------------------------------------------------------------
 
@@ -393,7 +394,13 @@ void AliFlowCommonHist::Print(Option_t *option) const
     }
 }
 
+//----------------------------------------------------------------------- 
+ void AliFlowCommonHist::Browse(TBrowser *b)
+{
 
+  if (!b) return;
+  if (fHistList) b->Add(fHistList,"AliFlowCommonHistList");
+}
 
 
 
