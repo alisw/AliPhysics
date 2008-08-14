@@ -144,6 +144,7 @@ AliAODTrack::~AliAODTrack()
 {
   // destructor
   delete fCovMatrix;
+  delete fDetPid;
 }
 
 
