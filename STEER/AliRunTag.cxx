@@ -99,8 +99,8 @@ void AliRunTag::AddEventTag(const AliEventTag & EvTag) {
 //___________________________________________________________________________
 void AliRunTag::Clear(const char *) {
   //Resets the number of events and detectors
-  fEventTag.Clear();
+  fEventTag.Delete();
   fNumEvents = 0;
-  fDetectorTag.Clear();
+  fDetectorTag.Delete();
   fNumDetectors = 0;
 }
