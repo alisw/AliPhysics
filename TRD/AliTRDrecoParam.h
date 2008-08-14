@@ -53,28 +53,31 @@ public:
   Bool_t   IsLUT() const                    { return TestBit(kLUT);}
   Bool_t   IsTailCancelation() const        { return TestBit(kTC);}
   Bool_t   IsVertexConstrained() const      { return TestBit(kVertexConstrained); }
+  Bool_t   HasImproveTracklets() const       { return TestBit(kImproveTracklet); }
 
 
   void     SetFindableClusters(Double_t r) {fkFindable = r;}
-  void     SetClusterSharing(Bool_t share = kTRUE)            { SetBit(kClusterSharing, share);  };
-  void     SetVertexConstrained(Bool_t vc = kTRUE) { SetBit(kVertexConstrained, vc); }
-  void     SetLUT(Bool_t lut = kTRUE)                            { SetBit(kLUT, lut);};
-  void     SetMinMaxCutSigma(Float_t minMaxCutSigma)          { fMinMaxCutSigma   = minMaxCutSigma; };
+  void     SetClusterSharing(Bool_t share = kTRUE)            { SetBit(kClusterSharing, share);}
+  void     SetImproveTracklets(Bool_t improve = kTRUE)         { SetBit(kImproveTracklet, improve);}
+  void     SetVertexConstrained(Bool_t vc = kTRUE)            { SetBit(kVertexConstrained, vc); }
+  void     SetLUT(Bool_t lut = kTRUE)                         { SetBit(kLUT, lut);};
+  void     SetMinMaxCutSigma(Float_t minMaxCutSigma)          { fMinMaxCutSigma   = minMaxCutSigma; }
   void     SetMinLeftRightCutSigma(Float_t minLeftRightCutSigma) { fMinLeftRightCutSigma   = minLeftRightCutSigma; };
   void     SetClusMaxThresh(Float_t thresh)                   { fClusMaxThresh   = thresh; };
   void     SetClusSigThresh(Float_t thresh)                   { fClusSigThresh   = thresh; };
-  void     SetTailCancelation(Bool_t tc = kTRUE)                 { SetBit(kTC, tc);  };
+  void     SetTailCancelation(Bool_t tc = kTRUE)              { SetBit(kTC, tc);  };
   void     SetNexponential(Int_t nexp)                        { fTCnexp          = nexp;   };
   inline void SetSysCovMatrix(Double_t *sys);
-  void     SetNumberOfPresamples(Int_t n) {fNumberOfPresamples = n;}
-  void     SetNumberOfPostsamples(Int_t n) {fNumberOfPostsamples = n;}
+  void     SetNumberOfPresamples(Int_t n)                     { fNumberOfPresamples = n;}
+  void     SetNumberOfPostsamples(Int_t n)                    { fNumberOfPostsamples = n;}
 
 private:
   enum{
-    kClusterSharing    = 1 // Toggle cluster sharing
-   ,kVertexConstrained = 2 // Perform vertex constrained fit
-   ,kLUT               = 3 // 
-   ,kTC                = 4 // tail cancelation
+    kTC                = BIT(14) // tail cancelation
+   ,kLUT               = BIT(15) // look up table for cluster position determination 
+   ,kClusterSharing    = BIT(16) // Toggle cluster sharing
+   ,kVertexConstrained = BIT(17) // Perform vertex constrained fit
+   ,kImproveTracklet   = BIT(18) // Improve tracklet in the SA TRD track finder 
   };
 
   Double_t  fkMaxTheta;              // Maximum theta

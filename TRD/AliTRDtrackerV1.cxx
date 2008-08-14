@@ -2291,7 +2291,7 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *ss
               << "\n";
         }
               
-        if(ImproveSeedQuality(stack, cseed) < 4){
+        if(fReconstructor->GetRecoParam()->HasImproveTracklets() && ImproveSeedQuality(stack, cseed) < 4){
           AliTRDtrackerDebug::SetCandidateNumber(AliTRDtrackerDebug::GetCandidateNumber() + 1);
           continue;
         }

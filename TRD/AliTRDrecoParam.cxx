@@ -57,10 +57,11 @@ AliTRDrecoParam::AliTRDrecoParam()
   //
   // Default constructor
   //
+  SetTailCancelation();
+  SetLUT();
   SetClusterSharing(kFALSE);
   SetVertexConstrained();
-  SetLUT();
-  SetTailCancelation();
+  SetImproveTracklets(kFALSE);
 
   fSysCovMatrix[0] = 1.; // y direction (1 cm)
   fSysCovMatrix[1] = 1.; // z direction (1 cm)
@@ -100,6 +101,7 @@ AliTRDrecoParam::AliTRDrecoParam(const AliTRDrecoParam &ref)
   SetVertexConstrained(ref.IsVertexConstrained());
   SetLUT(ref.IsLUT());
   SetTailCancelation(ref.IsTailCancelation());
+  SetImproveTracklets(ref.HasImproveTracklets());
 
   memcpy(fSysCovMatrix, ref.fSysCovMatrix, 5*sizeof(Double_t));
 }
@@ -122,7 +124,9 @@ AliTRDrecoParam *AliTRDrecoParam::GetHighFluxParam()
   // Parameters for the high flux environment
   //
 
-  return new AliTRDrecoParam();
+  AliTRDrecoParam *rec = new AliTRDrecoParam();
+  rec->SetImproveTracklets(kTRUE);
+  return rec;
 
 }
 
