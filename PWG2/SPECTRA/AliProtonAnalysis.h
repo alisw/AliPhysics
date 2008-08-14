@@ -23,8 +23,8 @@ class TF1;
 class TH2D;
 class TH1F;
 
+#include "AliCFContainer.h"
 class AliCFDataGrid;
-class AliCFContainer;
 class AliAODEvent;
 class AliAODtrack;
 class AliESDEvent;
@@ -61,6 +61,7 @@ class AliProtonAnalysis : public TObject {
   TH1D *GetAntiProtonCorrectedYHistogram();
   TH1D *GetProtonCorrectedPtHistogram();
   TH1D *GetAntiProtonCorrectedPtHistogram();
+  
   TH1D *GetYRatioHistogram();
   TH1D *GetPtRatioHistogram();
   TH1D *GetYAsymmetryHistogram();
@@ -113,52 +114,9 @@ class AliProtonAnalysis : public TObject {
   void    SetTPCpid() {fTPCpidFlag = kTRUE;}
 
   //QA histograms
-  void SetQAOn() {
-    fQAHistograms = kTRUE;
-    fGlobalQAList = new TList();
-    fQA2DList = new TList();
-    fQA2DList->SetName("fQA2DList");
-    fGlobalQAList->Add(fQA2DList);
-
-    fQAPrimaryProtonsAcceptedList = new TList();
-    fQAPrimaryProtonsAcceptedList->SetName("fQAPrimaryProtonsAcceptedList");
-    fGlobalQAList->Add(fQAPrimaryProtonsAcceptedList);
-
-    fQAPrimaryProtonsRejectedList = new TList();
-    fQAPrimaryProtonsRejectedList->SetName("fQAPrimaryProtonsRejectedList");
-    fGlobalQAList->Add(fQAPrimaryProtonsRejectedList);
-
-    fQASecondaryProtonsAcceptedList = new TList();
-    fQASecondaryProtonsAcceptedList->SetName("fQASecondaryProtonsAcceptedList");
-    fGlobalQAList->Add(fQASecondaryProtonsAcceptedList);
-
-    fQASecondaryProtonsRejectedList = new TList();
-    fQASecondaryProtonsRejectedList->SetName("fQASecondaryProtonsRejectedList");
-    fGlobalQAList->Add(fQASecondaryProtonsRejectedList);
-
-    fQAPrimaryAntiProtonsAcceptedList = new TList();
-    fQAPrimaryAntiProtonsAcceptedList->SetName("fQAPrimaryAntiProtonsAcceptedList");
-    fGlobalQAList->Add(fQAPrimaryAntiProtonsAcceptedList);
-
-    fQAPrimaryAntiProtonsRejectedList = new TList();
-    fQAPrimaryAntiProtonsRejectedList->SetName("fQAPrimaryAntiProtonsRejectedList");
-    fGlobalQAList->Add(fQAPrimaryAntiProtonsRejectedList);
-
-    fQASecondaryAntiProtonsAcceptedList = new TList();
-    fQASecondaryAntiProtonsAcceptedList->SetName("fQASecondaryAntiProtonsAcceptedList");
-    fGlobalQAList->Add(fQASecondaryAntiProtonsAcceptedList);
-
-    fQASecondaryAntiProtonsRejectedList = new TList();
-    fQASecondaryAntiProtonsRejectedList->SetName("fQASecondaryAntiProtonsRejectedList");
-    fGlobalQAList->Add(fQASecondaryAntiProtonsRejectedList);
-  }
+  void SetQAOn();
   void SetQAYPtBins(Int_t nbinsY, Double_t minY, Double_t maxY,
-		    Int_t nbinsPt, Double_t minPt, Double_t maxPt) {
-    fNBinsY = nbinsY;
-    fMinY = minY; fMaxY = maxY;
-    fNBinsPt = nbinsPt;
-    fMinPt = minPt; fMaxPt = maxPt;
-  }
+		    Int_t nbinsPt, Double_t minPt, Double_t maxPt);
   void InitQA();
   void RunQA(AliStack *stack, AliESDEvent *esd);
   TList *GetGlobalQAList() {return fGlobalQAList;}
@@ -185,6 +143,12 @@ class AliProtonAnalysis : public TObject {
   TList *GetCorrectionListAntiProtons2D() {return fCorrectionListAntiProtons2D;} 
   TList *GetEfficiencyListAntiProtons1D() {return fEfficiencyListAntiProtons1D;} 
   TList *GetCorrectionListAntiProtons1D() {return fCorrectionListAntiProtons1D;} 
+  
+  //iStep=0->MC - iStep=1->Acceptance - iStep=2->Reconstruction - iStep=3->PID
+  TH1D  *GetUncorrectedProtonYHistogram(Int_t iStep) {return fProtonContainer->ShowProjection(0, iStep);}
+  TH1D  *GetUncorrectedProtonPtHistogram(Int_t iStep) {return fProtonContainer->ShowProjection(1, iStep);}
+  TH1D  *GetUncorrectedAntiProtonYHistogram(Int_t iStep) {return fAntiProtonContainer->ShowProjection(0, iStep);}
+  TH1D  *GetUncorrectedAntiProtonPtHistogram(Int_t iStep) {return fAntiProtonContainer->ShowProjection(1, iStep);}
 
  private:
   AliProtonAnalysis(const AliProtonAnalysis&); // Not implemented

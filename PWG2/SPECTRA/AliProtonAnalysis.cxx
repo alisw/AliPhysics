@@ -52,7 +52,8 @@ AliProtonAnalysis::AliProtonAnalysis() :
   fMaxSigmaToVertex(0), fMaxSigmaToVertexTPC(0),
   fMinTPCClustersFlag(kFALSE), fMinITSClustersFlag(kFALSE),
   fMaxChi2PerTPCClusterFlag(kFALSE), fMaxChi2PerITSClusterFlag(kFALSE),
-  fMaxCov11Flag(kFALSE), fMaxCov22Flag(kFALSE), fMaxCov33Flag(kFALSE), fMaxCov44Flag(kFALSE), fMaxCov55Flag(kFALSE),
+  fMaxCov11Flag(kFALSE), fMaxCov22Flag(kFALSE), 
+  fMaxCov33Flag(kFALSE), fMaxCov44Flag(kFALSE), fMaxCov55Flag(kFALSE),
   fMaxSigmaToVertexFlag(kFALSE), fMaxSigmaToVertexTPCFlag(kFALSE),
   fITSRefitFlag(kFALSE), fTPCRefitFlag(kFALSE),
   fESDpidFlag(kFALSE), fTPCpidFlag(kFALSE),
@@ -92,7 +93,8 @@ AliProtonAnalysis::AliProtonAnalysis(Int_t nbinsY, Float_t fLowY, Float_t fHighY
   fMaxSigmaToVertex(0), fMaxSigmaToVertexTPC(0),
   fMinTPCClustersFlag(kFALSE), fMinITSClustersFlag(kFALSE),
   fMaxChi2PerTPCClusterFlag(kFALSE), fMaxChi2PerITSClusterFlag(kFALSE),
-  fMaxCov11Flag(kFALSE), fMaxCov22Flag(kFALSE), fMaxCov33Flag(kFALSE), fMaxCov44Flag(kFALSE), fMaxCov55Flag(kFALSE),
+  fMaxCov11Flag(kFALSE), fMaxCov22Flag(kFALSE), 
+  fMaxCov33Flag(kFALSE), fMaxCov44Flag(kFALSE), fMaxCov55Flag(kFALSE),
   fMaxSigmaToVertexFlag(kFALSE), fMaxSigmaToVertexTPCFlag(kFALSE),
   fITSRefitFlag(kFALSE), fTPCRefitFlag(kFALSE),
   fESDpidFlag(kFALSE), fTPCpidFlag(kFALSE),
@@ -1658,6 +1660,58 @@ Bool_t AliProtonAnalysis::ReadCorrectionContainer(const char* filename) {
   }
 
   return status;
+}
+ 
+//____________________________________________________________________//
+void AliProtonAnalysis::SetQAOn() {
+  //initializes the QA lists
+  fQAHistograms = kTRUE;
+  fGlobalQAList = new TList();
+  fQA2DList = new TList();
+  fQA2DList->SetName("fQA2DList");
+  fGlobalQAList->Add(fQA2DList);
+  
+  fQAPrimaryProtonsAcceptedList = new TList();
+  fQAPrimaryProtonsAcceptedList->SetName("fQAPrimaryProtonsAcceptedList");
+  fGlobalQAList->Add(fQAPrimaryProtonsAcceptedList);
+  
+  fQAPrimaryProtonsRejectedList = new TList();
+  fQAPrimaryProtonsRejectedList->SetName("fQAPrimaryProtonsRejectedList");
+  fGlobalQAList->Add(fQAPrimaryProtonsRejectedList);
+  
+  fQASecondaryProtonsAcceptedList = new TList();
+  fQASecondaryProtonsAcceptedList->SetName("fQASecondaryProtonsAcceptedList");
+  fGlobalQAList->Add(fQASecondaryProtonsAcceptedList);
+  
+  fQASecondaryProtonsRejectedList = new TList();
+  fQASecondaryProtonsRejectedList->SetName("fQASecondaryProtonsRejectedList");
+  fGlobalQAList->Add(fQASecondaryProtonsRejectedList);
+  
+  fQAPrimaryAntiProtonsAcceptedList = new TList();
+  fQAPrimaryAntiProtonsAcceptedList->SetName("fQAPrimaryAntiProtonsAcceptedList");
+  fGlobalQAList->Add(fQAPrimaryAntiProtonsAcceptedList);
+  
+  fQAPrimaryAntiProtonsRejectedList = new TList();
+  fQAPrimaryAntiProtonsRejectedList->SetName("fQAPrimaryAntiProtonsRejectedList");
+  fGlobalQAList->Add(fQAPrimaryAntiProtonsRejectedList);
+  
+  fQASecondaryAntiProtonsAcceptedList = new TList();
+  fQASecondaryAntiProtonsAcceptedList->SetName("fQASecondaryAntiProtonsAcceptedList");
+  fGlobalQAList->Add(fQASecondaryAntiProtonsAcceptedList);
+  
+  fQASecondaryAntiProtonsRejectedList = new TList();
+  fQASecondaryAntiProtonsRejectedList->SetName("fQASecondaryAntiProtonsRejectedList");
+  fGlobalQAList->Add(fQASecondaryAntiProtonsRejectedList);
+}
+
+//____________________________________________________________________//
+void AliProtonAnalysis::SetQAYPtBins(Int_t nbinsY, Double_t minY, Double_t maxY,
+				      Int_t nbinsPt, Double_t minPt, Double_t maxPt) {
+  //Initializes the QA binning
+  fNBinsY = nbinsY;
+  fMinY = minY; fMaxY = maxY;
+  fNBinsPt = nbinsPt;
+  fMinPt = minPt; fMaxPt = maxPt;
 }
 
 //____________________________________________________________________//
