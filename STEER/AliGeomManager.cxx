@@ -1592,16 +1592,24 @@ Bool_t AliGeomManager::ApplyAlignObjsToGeom(TObjArray& alignObjArray, Bool_t ovl
   Bool_t flag = kTRUE;
 
   for(Int_t j=0; j<nvols; j++)
+  {
+    AliAlignObj* alobj = (AliAlignObj*) alignObjArray.UncheckedAt(j);
+    flag = alobj->ApplyToGeometry(ovlpcheck);
+    if(!flag)
     {
-      AliAlignObj* alobj = (AliAlignObj*) alignObjArray.UncheckedAt(j);
-      if (alobj->ApplyToGeometry(ovlpcheck) == kFALSE) flag = kFALSE;
+      AliErrorClass(Form("Error applying alignment object for volume %s !",alobj->GetSymName()));
+    }else{
+      AliDebugClass(5,Form("Alignment object for volume %s applied successfully",alobj->GetSymName()));
     }
 
-  if (AliDebugLevelClass() >= 1) {
-    fgGeometry->GetTopNode()->CheckOverlaps(1);
+  }
+
+  if (AliDebugLevelClass() > 5) {
+    fgGeometry->CheckOverlaps(0.001);
     TObjArray* ovexlist = fgGeometry->GetListOfOverlaps();
     if(ovexlist->GetEntriesFast()){  
       AliErrorClass("The application of alignment objects to the geometry caused huge overlaps/extrusions!");
+      fgGeometry->PrintOverlaps();
    }
   }
 
