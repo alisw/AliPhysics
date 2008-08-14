@@ -37,8 +37,8 @@ AliAODCaloCluster::AliAODCaloCluster() :
   fTOF(0.),
   fTracksMatched(),
   fNCells(0),
-  fCellsAbsId(),
-  fCellsAmpFraction()
+  fCellsAbsId(0x0),
+  fCellsAmpFraction(0x0)
 {
   // default constructor
 
@@ -63,8 +63,8 @@ AliAODCaloCluster::AliAODCaloCluster(Int_t id,
   fTOF(0.),
   fTracksMatched(),
   fNCells(0),
-  fCellsAbsId(),
-  fCellsAmpFraction()
+  fCellsAbsId(0x0),
+  fCellsAmpFraction(0x0)
 {
   // constructor
 
@@ -89,8 +89,8 @@ AliAODCaloCluster::AliAODCaloCluster(Int_t id,
   fTOF(0.),
   fTracksMatched(),
   fNCells(0),
-  fCellsAbsId(),
-  fCellsAmpFraction()
+  fCellsAbsId(0x0),
+  fCellsAmpFraction(0x0)
 {
   // constructor
 }
@@ -117,8 +117,8 @@ AliAODCaloCluster::AliAODCaloCluster(const AliAODCaloCluster& clus) :
   fTOF(clus.fTOF),
   fTracksMatched(clus.fTracksMatched),
   fNCells(clus.fNCells),
-  fCellsAbsId(),
-  fCellsAmpFraction()
+  fCellsAbsId(0x0),
+  fCellsAmpFraction(0x0)
 {
   // Copy constructor
 
@@ -158,6 +158,10 @@ AliAODCaloCluster& AliAODCaloCluster::operator=(const AliAODCaloCluster& clus)
     fTracksMatched = clus.fTracksMatched;
 
     fNCells= clus. fNCells;
+    // delete anyway 
+    if(fCellsAbsId)delete [] fCellsAbsId;
+    if(fCellsAmpFraction)delete [] fCellsAmpFraction;
+
     if (clus.fNCells > 0) {
       
       if(clus.fCellsAbsId){
@@ -221,8 +225,8 @@ void  AliAODCaloCluster::SetCellsAbsId(UShort_t *array)
 {
     //  Set the array of cell absId numbers 
     if (fNCells) {
-	fCellsAbsId = new  UShort_t[fNCells];
-	for (Int_t i = 0; i < fNCells; i++) fCellsAbsId[i] = array[i];
+      if(!fCellsAbsId)fCellsAbsId = new  UShort_t[fNCells];
+      for (Int_t i = 0; i < fNCells; i++) fCellsAbsId[i] = array[i];
     }
 }
 
@@ -230,7 +234,7 @@ void  AliAODCaloCluster::SetCellsAmplitudeFraction(Double32_t *array)
 {
     //  Set the array of cell amplitude fraction
     if (fNCells) {
-	fCellsAmpFraction = new  Double32_t[fNCells];
-	for (Int_t i = 0; i < fNCells; i++) fCellsAmpFraction[i] = array[i];
+      if(!fCellsAmpFraction)fCellsAmpFraction = new  Double32_t[fNCells];
+      for (Int_t i = 0; i < fNCells; i++) fCellsAmpFraction[i] = array[i];
     }
 }

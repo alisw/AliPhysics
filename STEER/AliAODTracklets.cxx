@@ -64,7 +64,10 @@ AliAODTracklets& AliAODTracklets::operator=(const AliAODTracklets& tracklet)
 // Assignment operator
     if(&tracklet == this) return *this;
     TNamed::operator=(tracklet);
-    fNTracks = tracklet.fNTracks;
+    if(fNTracks!=tracklet.fNTracks){
+      fNTracks = tracklet.fNTracks;
+      CreateContainer(fNTracks);
+    }
     for (Int_t i = 0; i < fNTracks; i++) {
 	fTheta[i]    = tracklet.fTheta[i];
 	fPhi[i]      = tracklet.fPhi[i];

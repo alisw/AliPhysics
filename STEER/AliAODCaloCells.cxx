@@ -88,6 +88,10 @@ void AliAODCaloCells::CreateContainer(Short_t nCells)
 
   fCellNumber = new Short_t[fNCells];
   fAmplitude = new Double32_t[fNCells];
+  // set to zero
+  for(int i = 0;i<fNCells;++i){
+    fAmplitude[i] = fCellNumber[i] = 0;
+  }
 }
 
 void AliAODCaloCells::DeleteContainer()

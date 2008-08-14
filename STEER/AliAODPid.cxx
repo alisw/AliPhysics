@@ -44,6 +44,8 @@ AliAODPid::AliAODPid():
 //______________________________________________________________________________
 AliAODPid::~AliAODPid() 
 {
+  delete [] fTRDslices;
+  fTRDslices = 0;
   // destructor
 }
 
@@ -70,13 +72,21 @@ AliAODPid& AliAODPid::operator=(const AliAODPid& pid)
   // Assignment operator
   if(this!=&pid) {
     // copy stuff
-  fITSsignal=pid.fITSsignal; 
-  fTPCsignal=pid.fTPCsignal;
-  fTRDnSlices=pid.fTRDnSlices;
-  for(Int_t i=0; i< fTRDnSlices; i++) fTRDslices[i]=pid.fTRDslices[i];
-  fTOFesdsignal=pid.fTOFesdsignal;
-  fHMPIDsignal=pid.fHMPIDsignal;
-  for(Int_t i=0; i<kSPECIES; i++) fIntTime[i]=pid.fIntTime[i];
+    fITSsignal=pid.fITSsignal; 
+    fTPCsignal=pid.fTPCsignal;
+    
+    if(pid.fTRDnSlices<=0||(fTRDnSlices!=pid.fTRDnSlices)){
+      // only delete if number changed or is 0
+      delete [] fTRDslices;
+      fTRDslices = 0;
+      if(pid.fTRDnSlices>0) fTRDslices = new Double32_t[fTRDnSlices];
+    }
+    fTRDnSlices=pid.fTRDnSlices;
+    
+    for(Int_t i=0; i< fTRDnSlices; i++) fTRDslices[i]=pid.fTRDslices[i];
+    fTOFesdsignal=pid.fTOFesdsignal;
+    fHMPIDsignal=pid.fHMPIDsignal;
+    for(Int_t i=0; i<kSPECIES; i++) fIntTime[i]=pid.fIntTime[i];
   }
 
   return *this;

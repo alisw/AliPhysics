@@ -150,21 +150,27 @@ AliAODRecoDecay &AliAODRecoDecay::operator=(const AliAODRecoDecay &source)
   fEventNumber = source.fEventNumber;
   fRunNumber = source.fRunNumber;
   if(source.GetNProngs()>0) {
+    if(fd0)delete [] fd0; 
     fd0 = new Double_t[GetNProngs()];
     memcpy(fd0,source.fd0,GetNProngs()*sizeof(Double_t));
     if(source.fPx) {
+      if(fPx) delete [] fPx; 
       fPx = new Double_t[GetNProngs()];
+      if(fPy) delete [] fPy; 
       fPy = new Double_t[GetNProngs()];
+      if(fPz) delete [] fPz; 
       fPz = new Double_t[GetNProngs()];
       memcpy(fPx,source.fPx,GetNProngs()*sizeof(Double_t));
       memcpy(fPy,source.fPy,GetNProngs()*sizeof(Double_t));
       memcpy(fPz,source.fPz,GetNProngs()*sizeof(Double_t));
     }
     if(source.fPID) {
+      if(fPID) delete [] fPID; 
       fPID = new Double_t[5*GetNProngs()];
       memcpy(fPID,source.fPID,GetNProngs()*sizeof(Double_t));
     }
     if(source.fDCA) {
+      if(fDCA) delete [] fDCA; 
       fDCA = new Double_t[GetNProngs()*(GetNProngs()-1)/2];
       memcpy(fDCA,source.fDCA,(GetNProngs()*(GetNProngs()-1)/2)*sizeof(Double32_t));
     }
