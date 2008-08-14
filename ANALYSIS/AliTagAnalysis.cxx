@@ -159,8 +159,8 @@ TChain *AliTagAnalysis::QueryTags(AliRunTagCuts *runTagCuts, AliLHCTagCuts *lhcT
   TEntryList *fGlobalList = new TEntryList();
   
   //Defining tag objects
-  AliRunTag *tag = new AliRunTag;
-  AliEventTag *evTag = new AliEventTag;
+  AliRunTag   *tag     = new AliRunTag;
+  AliEventTag *evTag   = new AliEventTag;
   fChain->SetBranchAddress("AliTAG",&tag);
 
   TString guid = 0;
@@ -186,7 +186,6 @@ TChain *AliTagAnalysis::QueryTags(AliRunTagCuts *runTagCuts, AliLHCTagCuts *lhcT
 	    else fLocalList->SetFileName(path.Data());
 	    if(evTagCuts->IsAccepted(evTag)) fLocalList->Enter(i);
 	  }//event loop
-	  
 	  if(path != "") fESDchain->AddFile(path);
 	  else if(turl != "") fESDchain->AddFile(turl);
 	  fGlobalList->Add(fLocalList);
@@ -194,6 +193,7 @@ TChain *AliTagAnalysis::QueryTags(AliRunTagCuts *runTagCuts, AliLHCTagCuts *lhcT
 	}//detector tag cuts
       }//lhc tag cuts
     }//run tags cut
+    tag->Clear();
   }//tag file loop
   AliInfo(Form("Accepted events: %d",iAccepted));
   fESDchain->SetEntryList(fGlobalList,"ne");
@@ -314,6 +314,7 @@ Bool_t AliTagAnalysis::CreateXMLCollection(const char* name, AliRunTagCuts *runT
 	}//detector tag cuts
       }//lhc tag cuts 
     }//run tag cuts
+    tag->Clear();
   }//tag file loop
   collection->Export();
 
