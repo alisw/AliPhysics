@@ -27,6 +27,7 @@
 
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
+#include "AliPDG.h"
 #include "AliTrackReference.h"
 #include "AliHeader.h"
 #include "AliStack.h"
@@ -60,7 +61,11 @@ AliMCEventHandler::AliMCEventHandler() :
     fEventsPerFile(0),
     fReadTR(kTRUE)
 {
-    // Default constructor
+  //
+  // Default constructor
+  //
+  // Be sure to add all particles to the PDG database
+  AliPDG::AddParticlesToPdgDataBase();
 }
 
 AliMCEventHandler::AliMCEventHandler(const char* name, const char* title) :
@@ -82,7 +87,11 @@ AliMCEventHandler::AliMCEventHandler(const char* name, const char* title) :
     fEventsPerFile(0),
     fReadTR(kTRUE)
 {
-    // Constructor
+  //
+  // Constructor
+  //
+  // Be sure to add all particles to the PDG database
+  AliPDG::AddParticlesToPdgDataBase();
 }
 AliMCEventHandler::~AliMCEventHandler()
 { 
