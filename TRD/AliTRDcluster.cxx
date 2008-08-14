@@ -97,7 +97,7 @@ AliTRDcluster::AliTRDcluster(const AliTRDcluster &c)
   // Copy constructor 
   //
 
-  SetBit(1, c.IsInChamber());
+  SetBit(kInChamber, c.IsInChamber());
   SetLabel(c.GetLabel(0),0);
   SetLabel(c.GetLabel(1),1);
   SetLabel(c.GetLabel(2),2);

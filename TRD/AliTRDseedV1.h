@@ -92,7 +92,7 @@ protected:
   void Copy(TObject &ref) const;
 
 private:
-  const AliTRDReconstructor *fReconstructor;
+  const AliTRDReconstructor *fReconstructor;//! local reconstructor
   Int_t            fPlane;                  //  TRD plane
   Float_t          fMom;                    //  Momentum estimate for tracklet [GeV/c]
   Float_t          fSnp;                    // sin of track with respect to x direction in XY plane	
