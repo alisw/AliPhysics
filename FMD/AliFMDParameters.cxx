@@ -307,9 +307,12 @@ AliFMDParameters::Print(Option_t* option) const
   
   
   if (opt.Contains("fmd",TString::kIgnoreCase)) {
-    showStrips    = kTRUE;
-    size_t   i    = opt.Index("fmd",TString::kIgnoreCase);
-    size_t   j    = opt.Index("]",TString::kIgnoreCase);
+    Int_t   i    = opt.Index("fmd",TString::kIgnoreCase);
+    Int_t   j    = opt.Index("]",TString::kIgnoreCase);
+    if (j != kNPOS)
+      showStrips    = kTRUE;
+    else 
+      j = opt.Length();
     enum {
       kReadDet, 
       kReadRing, 

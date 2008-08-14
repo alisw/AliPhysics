@@ -20,7 +20,8 @@ PrintCalibration(Int_t r=0, const char* what="gain")
   cdb->SetRun(r);
   AliFMDParameters* p = AliFMDParameters::Instance();
   p->Init(kTRUE);
-  p->Print("fmd3*[8,0]");
+  // p->Print("fmd3*[8,0]");
+  p->Print("fmd3*[*,*]");
   // p->Draw(what);
 }
 //____________________________________________________________________

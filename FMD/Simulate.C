@@ -30,6 +30,7 @@ Simulate(Int_t n=1)
   sim.SetMakeDigits("FMD"); 
   sim.SetWriteRawData("FMD"); 
   // sim.SetMakeDigitsFromHits("FMD"); 
+  sim.SetRunQA("FMD");
   TStopwatch w; 
   w.Start(); 
   sim.Run(n);  

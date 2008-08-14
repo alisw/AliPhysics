@@ -40,9 +40,12 @@ Reconstruct()
   AliReconstruction rec;   
   rec.SetRunLocalReconstruction("FMD");
   rec.SetRunVertexFinder(kFALSE);
+  rec.SetRunReconstruction("FMD");
   rec.SetRunTracking(""); 
   rec.SetFillESD("FMD"); 
-  /// rec.SetInput("./");
+  rec.SetInput("./");
+  // rec.SetRecoParam("TOF", new AliTOFRecoParam());
+  
   rec.Run(); 
 }
 

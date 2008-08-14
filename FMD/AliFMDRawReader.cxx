@@ -137,7 +137,7 @@ AliFMDRawReader::ReadAdcs(TClonesArray* array)
   Bool_t isGood = kTRUE;
   while (isGood) {
     isGood = input.ReadChannel(ddl, hwaddr, last, data);
-    if (!isGood) break;
+    // if (!isGood) break;
 
     AliFMDDebug(5, ("Read channel 0x%x of size %d", hwaddr, last));
     UShort_t det, sec, str;
