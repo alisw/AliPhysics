@@ -94,3 +94,6 @@
 #pragma link C++ class AliEveTOFDigitsInfoEditor+;
 #pragma link C++ class AliEveTOFSectorEditor+;
 #pragma link C++ class AliEveTOFStripEditor+;
+
+// FMD
+#pragma link C++ class AliEveFMDLoader+;
