@@ -111,6 +111,7 @@ AliEveFMDLoader::AliEveFMDLoader(const char* name, Bool_t useBoxes,
   fDigitPalette.IncRefCount();
   fMultPalette.IncRefCount();
   
+  
   // Initialize the FMD geometry manager 
   AliEveEventManager::AssertGeometry();
   AliFMDGeometry* geom = AliFMDGeometry::Instance();
@@ -171,7 +172,7 @@ AliEveFMDLoader::AliEveFMDLoader(const char* name, Bool_t useBoxes,
 	er->AddElement(em);
 	em->SetTransMatrix(*(detector->FindTransform(ring->GetId(), 2*m)));
 	em->SetShape(ring->GetId() == 'I' ? inner : outer);
-	em->SetMainColor(kRed);
+	em->SetMainColor(Color_t(kRed));
 	em->SetMainTransparency(32);
 	em->IncDenyDestroy();
 
