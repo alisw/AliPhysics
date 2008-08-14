@@ -1006,7 +1006,8 @@ Bool_t AliReconstruction::Run(const char* input)
     if (gProof) {
       gProof->AddInput(gGeoManager);
       gGeoManager = NULL;
-      gProof->AddInput(AliCDBManager::Instance());
+      gProof->AddInput(const_cast<TMap*>(AliCDBManager::Instance()->GetEntryCache()));
+      gProof->SetParameter("RunNumber",AliCDBManager::Instance()->GetRun());
       gProof->AddInput((AliMagF*)AliTracker::GetFieldMap());
       gProof->AddInput(this);
       chain->SetProof();
@@ -1103,11 +1104,13 @@ void AliReconstruction::InitRun(const char* input)
       Abort("LoadGeometry", TSelector::kAbortProcess);
       return;
     }
+    AliSysInfo::AddStamp("LoadGeom");
     TString detsToCheck=fRunLocalReconstruction;
     if(!AliGeomManager::CheckSymNamesLUT(detsToCheck.Data())) {
       Abort("CheckSymNamesLUT", TSelector::kAbortProcess);
       return;
     }
+    AliSysInfo::AddStamp("CheckGeom");
   }
 
   if (!MisalignGeometry(fLoadAlignData)) {
@@ -1115,7 +1118,7 @@ void AliReconstruction::InitRun(const char* input)
     return;
   }
   AliCDBManager::Instance()->UnloadFromCache("GRP/Geometry/Data");
-  AliSysInfo::AddStamp("LoadGeom");
+  AliSysInfo::AddStamp("MisalignGeom");
 
   if (!InitGRP()) {
     Abort("InitGRP", TSelector::kAbortProcess);
@@ -1161,10 +1164,14 @@ void AliReconstruction::SlaveBegin(TTree*)
       gGeoManager = tgeo;
       AliGeomManager::SetGeometry(tgeo);
     }
-    if (AliCDBManager *man = (AliCDBManager*)fInput->FindObject("AliCDBManager")) {
-      man->Dump();
-      // TO BE ACTIVATED AS SOON AS WE COMMIT THE FIXES TO ALICDBMANAGER
-      //      man->SetAsInstance();
+    if (TMap *entryCache = (TMap*)fInput->FindObject("CDBEntryCache")) {
+      Int_t runNumber = -1;
+      if (TProof::GetParameter(fInput,"RunNumber",runNumber) == 0) {
+	AliCDBManager *man = AliCDBManager::Instance(entryCache,runNumber);
+	man->SetCacheFlag(kTRUE);
+	man->SetLock(kTRUE);
+	man->Print();
+      }
     }
     if (AliMagF *map = (AliMagF*)fInput->FindObject("Maps")) {
       AliTracker::SetFieldMap(map,fUniformField);
