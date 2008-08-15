@@ -38,26 +38,29 @@ void CalibExB(){
 
   TString fstring="";
   //
-  fstring+="((dr)^3-1)*bz++";           //1
-  fstring+="((dr)^3-1)*bz*ta++";        //2
+  fstring+="((dr)^3-1)*bz++";             //1
   fstring+="((dr)^3-1)*bz*sa++";        //3
-  fstring+="((dr)^3-1)*bz*sa*ta++";     //4
   fstring+="((dr)^3-1)*bz*ca++";        //5
-  fstring+="((dr)^3-1)*bz*ca*ta++";     //6
-
-  fstring+="side*((dr)^3-1)*bz++";           //1
-  fstring+="side*((dr)^3-1)*bz*ta++";        //2
-  fstring+="side*((dr)^3-1)*bz*sa++";        //3
-  fstring+="side*((dr)^3-1)*bz*sa*ta++";     //4
-  fstring+="side*((dr)^3-1)*bz*ca++";        //5
-  fstring+="side*((dr)^3-1)*bz*ca*ta++";     //6
-
+  //
+  fstring+="((dr)^1-1)*bz++";           //1
+  fstring+="((dr)^1-1)*bz*sa++";        //3
+  fstring+="((dr)^1-1)*bz*ca++";        //5
+  //
   fstring+="side*((dr)^1-1)*bz++";           //7
-  fstring+="side*((dr)^1-1)*bz*ta++";        //8 
   fstring+="side*((dr)^1-1)*bz*sa++";        //9
-  fstring+="side*((dr)^1-1)*bz*sa*ta++";     //10
   fstring+="side*((dr)^1-1)*bz*ca++";        //11
-  fstring+="side*((dr)^1-1)*bz*ca*ta++";     //12
+  //
+  fstring+="((dr)^3-1)*bz^2*ta++";        //2
+  fstring+="((dr)^3-1)*bz^2*sa*ta++";     //4
+  fstring+="((dr)^3-1)*bz^2*ca*ta++";     //6
+
+  fstring+="((dr)^1-1)*bz^2*ta++";        //2
+  fstring+="((dr)^1-1)*bz^2*sa*ta++";     //4
+  fstring+="((dr)^1-1)*bz^2*ca*ta++";     //6
+  //  
+  fstring+="side*((dr)^1-1)*bz^2*ta++";        //8 
+  fstring+="side*((dr)^1-1)*bz^2*sa*ta++";     //10
+  fstring+="side*((dr)^1-1)*bz^2*ca*ta++";     //12
 
 
 
@@ -69,8 +72,8 @@ void CalibExB(){
   
   TString fstringeb="";
   //
-  fstringeb+="AliTPCExB::GetDrphi(260,atan2(lx1,lx0),LTr.fP[1])++";       //1
-  fstringeb+="AliTPCExB::GetDr(260,atan2(lx1,lx0),LTr.fP[1])*ta++";       //1
+  fstringeb+="bz*AliTPCExB::GetDrphi(260,atan2(lx1,lx0),LTr.fP[1])++";       //1
+  fstringeb+="bz*AliTPCExB::GetDr(260,atan2(lx1,lx0),LTr.fP[1])*ta++";       //1
   // fstringeb+="bz*bz*AliTPCExB::GetDrphi(260,atan2(lx1,lx0),LTr.fP[1])++";              //1
   //fstringeb+="bz*bz*AliTPCExB::GetDr(260,atan2(lx1,lx0),LTr.fP[1])*ta++";       //1
   
@@ -83,7 +86,7 @@ void CalibExB(){
   
   
   
-  TString *strExB = toolkit.FitPlane(treeT,"gphi1-pphi0",fstringeb->Data(), "abs(bz+0.4)<0.05"+cutA, chi2,npoints,fitParam,covMatrix);
+  TString *strExB = toolkit.FitPlane(treeT,"gphi1-pphi0",fstringeb->Data(), cutA, chi2,npoints,fitParam,covMatrix);
   strExB->Tokenize("+")->Print();
   treeT->SetAlias("fitEB",strExB->Data());
 }
