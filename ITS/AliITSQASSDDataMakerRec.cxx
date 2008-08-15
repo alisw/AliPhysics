@@ -138,7 +138,13 @@ AliITSQASSDDataMakerRec::~AliITSQASSDDataMakerRec() {
 void AliITSQASSDDataMakerRec::StartOfDetectorCycle()
 {
   //Detector specific actions at start of cycle
-  AliDebug(1,"AliITSQADM::Start of SSD Cycle\n");
+  AliDebug(1,"AliITSQADM::Start of SSD Cycle\n");    
+
+  //Data size per DDL
+  ((TH1D *)(fAliITSQADataMakerRec->GetRawsData(fGenOffset+4)))->Reset();
+  //Data size per LDC
+  ((TH1D *)(fAliITSQADataMakerRec->GetRawsData(fGenOffset+22)))->Reset();
+
   //online part
   if(fkOnline) {
     for(Int_t iModule = 500; iModule < fgkSSDMODULES + 500; iModule++) {
@@ -169,7 +175,18 @@ void AliITSQASSDDataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjAr
 {
   // launch the QA checking
   AliDebug(1,"AliITSDM instantiates checker with Run(AliQA::kITS, task, list)\n"); 
+  //Data size per DDL
+  for(Int_t i = 0; i < fgkNumOfDDLs; i++) {
+    Double_t gSizePerDDL = TMath::Power(10,(fAliITSQADataMakerRec->GetRawsData(fGenOffset+5+i))->GetMean())/1e+06;
+    ((TH1D *)(fAliITSQADataMakerRec->GetRawsData(fGenOffset+4)))->SetBinContent(i+2,gSizePerDDL);
+  }
   
+  //Data size per LDC
+  for(Int_t i = 0; i < fgkNumOfLDCs; i++) {
+    Double_t gSizePerLDC = TMath::Power(10,(fAliITSQADataMakerRec->GetRawsData(fGenOffset+23+i))->GetMean())/1e+06;
+    ((TH1D *)(fAliITSQADataMakerRec->GetRawsData(fGenOffset+22)))->SetBinContent(i+6,gSizePerLDC);
+  }
+
   //online part
   if(fkOnline) {
     //Output of the DA
@@ -283,13 +300,16 @@ void AliITSQASSDDataMakerRec::InitRaws() {
   fSSDRawsOffset += 1;
   TH1F *fHistSSDDataSizePerLDC = new TH1F("fHistSSDDataSizePerLDC",
 					  ";LDC id;<SSD data size> [MB]",
-					  100,0,20);
+					  20,0.5,20.5);
   fAliITSQADataMakerRec->Add2RawsList(fHistSSDDataSizePerLDC, 
 				      fGenOffset+fSSDRawsOffset);
   fSSDRawsOffset += 1;
   TH1F *fHistSSDDataSizeLDC[fgkNumOfLDCs];
   for(Int_t i = 1; i < fgkNumOfLDCs+1; i++) {
-    gTitle = "fHistSSDDataSizeLDC"; gTitle += i;
+    gTitle = "fHistSSDDataSizeLDC"; 
+    if(i == 1) gTitle += "082";
+    if(i == 2) gTitle += "086";
+    if(i == 3) gTitle += "085";
     fHistSSDDataSizeLDC[i-1] = new TH1F(gTitle.Data(),
 					";log(SSD data size) [Bytes];Events",
 					100,1,8);
@@ -521,16 +541,28 @@ void AliITSQASSDDataMakerRec::MakeRaws(AliRawReader* rawReader) {
       (fAliITSQADataMakerRec->GetRawsData(fGenOffset+3))->Fill(i+512);
       (fAliITSQADataMakerRec->GetRawsData(fGenOffset+5+i))->Fill(TMath::Log10(gSizePerDDL[i]));
     }
-    (fAliITSQADataMakerRec->GetRawsData(fGenOffset+4))->Fill(i+512,gSizePerDDL[i]/1e+06);
+    //(fAliITSQADataMakerRec->GetRawsData(fGenOffset+4))->Fill(i+512,gSizePerDDL[i]/1e+06);
   }
   for(Int_t i = 0; i < fgkNumOfLDCs; i++) {
     if(gSizePerLDC[i] > 0) {
       (fAliITSQADataMakerRec->GetRawsData(fGenOffset+21))->Fill(i+6);
+      //LDC 082
+      if(i == 0)
+	gSizePerLDC[i] = gSizePerDDL[8] + gSizePerDDL[9] + gSizePerDDL[10] +
+	  gSizePerDDL[11] + gSizePerDDL[12] + gSizePerDDL[13];
+      //LDC 086
+      if(i == 1)
+	gSizePerLDC[i] = gSizePerDDL[3] + gSizePerDDL[4] + gSizePerDDL[5] +
+	  gSizePerDDL[6] + gSizePerDDL[7];
+      //LDC 085
+      if(i == 2)
+	gSizePerLDC[i] = gSizePerDDL[0] + gSizePerDDL[1] + gSizePerDDL[2] +
+	  gSizePerDDL[14] + gSizePerDDL[15];
       (fAliITSQADataMakerRec->GetRawsData(fGenOffset+23+i))->Fill(TMath::Log10(gSizePerLDC[i]));
       //cout<<"Event: "<<fSSDEventPerCycle<<" - LDC: "<<i+6<<
       //" - Data size: "<<gSizePerLDC[i]<<endl;
     }
-    (fAliITSQADataMakerRec->GetRawsData(fGenOffset+22))->Fill(i+6,gSizePerLDC[i]/1e+06);
+    //(fAliITSQADataMakerRec->GetRawsData(fGenOffset+22))->Fill(i+6,gSizePerLDC[i]/1e+06);
   }
   if(sumSSDDataSize) 
     (fAliITSQADataMakerRec->GetRawsData(fGenOffset+1))->Fill(TMath::Log10(sumSSDDataSize));
@@ -561,7 +593,7 @@ void AliITSQASSDDataMakerRec::GetOccupancyStrip(TH1 *lHisto, Int_t *occupancyMat
   //on whether the signal for each strip is larger than the cutoff
   //Currently the cutoff is at 0 which means that if ZS
   //works, whatever comes from the FEROM is considered as "signal"
-  //  Double_t cutoff = 0.0;
+  //Double_t cutoff = 0.0;
   TString histname = lHisto->GetName();
   //cout<<histname.Data()<<endl;
   //if(histname.Contains("Layer5_Ladder8_Module3")) {
