@@ -42,7 +42,6 @@
 #include "TChain.h"
 #include "AliESDtrack.h"
 #include "AliLog.h"
-#include "AliTPCtrack.h"
 
 ClassImp(AliCFSingleTrackTask)
 

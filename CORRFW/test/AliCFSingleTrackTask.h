@@ -64,7 +64,7 @@ class AliCFSingleTrackTask : public AliAnalysisTaskSE {
 
  protected:
   
-  Bool_t          fReadTPCTracks ; // flag to loop on TPC tracks only
+  Bool_t          fReadTPCTracks ; // flag to loop on TPC tracks only (ESD mode only)
   Bool_t          fReadAODData ;   // flag for AOD/ESD input files
   AliCFManager   *fCFManager    ;  // pointer to the CF manager
   TList          *fQAHistList   ;  // list of QA histograms
