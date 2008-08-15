@@ -142,7 +142,7 @@ void AliCorrQADataMakerRec::MakeRaws()
   //Fill prepared histograms with Raw digit properties
   if ( fMaxRawVar > 0 ) {
     const Int_t kSize = fMaxRawVar ; 
-    Double_t  varvalue[kSize] ;
+    Double_t  *varvalue = new Double_t[kSize] ;
     Int_t index = 0 ;
     for ( Int_t detIndex = 0 ; detIndex < AliQA::kNDET ; detIndex++ ) {
       AliQADataMaker * qadm = fqadm[detIndex] ; 
@@ -156,6 +156,7 @@ void AliCorrQADataMakerRec::MakeRaws()
       }
     }
     (dynamic_cast<TNtupleD*>(fObject))->Fill(varvalue);
+    delete [] varvalue;
   }
 }
 
