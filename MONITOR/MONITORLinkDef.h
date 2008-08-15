@@ -25,5 +25,7 @@
 #pragma link C++ class  AliMonitorDialog+;
 #pragma link C++ class  AliMonitorClient+;
 
+#pragma link C++ class  AliQAHistNavigator+;
+#pragma link C++ class  AliQAHistViewer+;
 #endif
 

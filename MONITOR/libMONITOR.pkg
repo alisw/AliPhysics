@@ -6,7 +6,8 @@ SRCS:=  AliMonitorPlot.cxx AliMonitorHisto.cxx AliMonitorTrend.cxx \
 	AliMonitorTPC.cxx AliMonitorITS.cxx AliMonitorV0s.cxx \
 	AliMonitorDataTPC.cxx \
 	AliMonitorProcess.cxx AliMonitorControl.cxx \
-	AliMonitorDialog.cxx AliMonitorClient.cxx
+	AliMonitorDialog.cxx AliMonitorClient.cxx \
+	AliQAHistNavigator.cxx AliQAHistViewer.cxx
 
 # Matthias 2007-10-03 HLT legacy code disabled
 #	AliMonitorHLT.cxx AliMonitorHLTHough.cxx \
