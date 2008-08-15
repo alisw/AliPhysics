@@ -59,6 +59,7 @@ protected:
   TGHorizontalFrame* MkHFrame(TGCompositeFrame* p=0);
   TGLabel*           MkLabel (TGCompositeFrame* p, const char* txt, Int_t width,
 			      Int_t lo=0, Int_t ro=0, Int_t to=2, Int_t bo=0);
+
 private:
   AliEveMacroExecutorWindow(const AliEveMacroExecutorWindow&);            // Not implemented
   AliEveMacroExecutorWindow& operator=(const AliEveMacroExecutorWindow&); // Not implemented

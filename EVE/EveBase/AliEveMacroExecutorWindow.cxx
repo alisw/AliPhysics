@@ -20,11 +20,42 @@
 
 #include <TPRegexp.h>
 
-class AliEveMEWEntry : public TGTextLBEntry
+class AliEveMEWListBox : public TGListBox
 {
 public:
-  static void SetFont() { fgDefaultFont = gClient->GetFontPool()->GetFont("-*-lucidatypewriter-*-*-*-*-12-*-*-*-*-*-iso8859-1"); }
+  AliEveMEWListBox(const TGWindow* p = 0, Int_t id = -1) : TGListBox(p, id)
+  {
+    if (gfGC == 0)
+    {
+      const TGGC& old = TGTextLBEntry::GetDefaultGC();
+
+      gfFont = gClient->GetFontPool()->GetFont("-*-lucidatypewriter-*-*-*-*-12-*-*-*-*-*-iso8859-1");
+      gfGC   = gClient->GetGCPool()->GetGC((GCValues_t*) old.GetAttributes(), kTRUE);
+      gfGC->SetFont(gVirtualX->GetFontHandle(gfFont->GetFontStruct()));
+    }
+  }
+
+  using TGListBox::AddEntry;
+  virtual void AddEntry(const char* s, Int_t id)
+  {
+    static const Pixel_t gkBackground[] = { 0x00ffffff, 0xf5f7f8 };
+
+    TGTextLBEntry *lbe = new TGTextLBEntry(fLbc, new TGString(s), id,
+					   gfGC->GetGC(), gfFont->GetFontStruct());
+    fItemVsize = TMath::Max(fItemVsize, lbe->GetDefaultHeight());
+    fLbc->AddEntry(lbe, new TGLayoutHints(kLHintsExpandX | kLHintsTop));
+    // Need to set it here as the above line sets it to white (for some strange reason).
+    lbe->SetBackgroundColor(gkBackground[id%2]);
+  }
+
+protected:
+  static TGGC    *gfGC;
+  static TGFont  *gfFont;
 };
+
+TGGC   *AliEveMEWListBox::gfGC   = 0;
+TGFont *AliEveMEWListBox::gfFont = 0;
+
 
 class AliEveMEWEditor : public TGedEditor
 {
@@ -62,8 +93,8 @@ AliEveMacroExecutorWindow::AliEveMacroExecutorWindow(AliEveMacroExecutor* master
   fMainFrame = new TGVerticalFrame(this);
   AddFrame(fMainFrame, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 
-  TGHorizontalFrame *f = 0;
-  TGButton* b = 0;
+  // TGHorizontalFrame *f = 0;
+  TGButton          *b = 0;
   {
     fCtrlFrame = MkHFrame(fMainFrame);
     fCtrlFrame->Resize(400, 22);
@@ -73,10 +104,10 @@ AliEveMacroExecutorWindow::AliEveMacroExecutorWindow(AliEveMacroExecutor* master
     b->Connect("Clicked()", "AliEveMacroExecutorWindow", this,
 	       "DoReloadEvent()");
 
-    MkLabel(fCtrlFrame, "Select:", 64);
-    fSelectTags = new TGTextEntry(f);
-    f->AddFrame(fSelectTags, new TGLayoutHints(kLHintsNormal));//|kLHintsExpandX));
-    fSelectTags->Connect("ReturnPressed()", "AliEveMacroEditor", this,
+    MkLabel(fCtrlFrame, "Select: ", 48);
+    fSelectTags = new TGTextEntry(fCtrlFrame);
+    fCtrlFrame->AddFrame(fSelectTags, new TGLayoutHints(kLHintsNormal));//|kLHintsExpandX));
+    fSelectTags->Connect("ReturnPressed()", "AliEveMacroExecutorWindow", this,
 			 "DoSelectTags()");
     b = new TGTextButton(fCtrlFrame, "Select");
     fCtrlFrame->AddFrame(b);
@@ -94,7 +125,7 @@ AliEveMacroExecutorWindow::AliEveMacroExecutorWindow(AliEveMacroExecutor* master
 	       "DoDisableAll()");
   }
 
-  fListBox = new TGListBox(fMainFrame);
+  fListBox = new AliEveMEWListBox(fMainFrame);
   fMainFrame->AddFrame(fListBox, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
   fListBox->Resize(400, 400);
   fListBox->Connect("Selected(Int_t)", "AliEveMacroExecutorWindow", this,
@@ -119,7 +150,7 @@ AliEveMacroExecutorWindow::AliEveMacroExecutorWindow(AliEveMacroExecutor* master
 	}
     }
   }
-  fEditor->Resize(400, 160);
+  fEditor->Resize(400, 150);
   fEditor->ChangeOptions(fEditor->GetOptions() | kFixedHeight);
 
   Resize(400, 700);
@@ -156,13 +187,14 @@ void AliEveMacroExecutorWindow::PopulateMacros(Bool_t keep_selected)
   fListBox->RemoveAll();
   fBoxContents.clear();
 
-  AliEveMEWEntry::SetFont(); 
-
   TPMERegexp *regexp = 0;
   TString     select = fSelectTags->GetText();
   if ( ! select.IsNull())
   {
-    regexp = new TPMERegexp(select, "io");
+    // "i" does not work (get pcre_exec error = -3 PCRE_ERROR_BADOPTION)
+    // same for 1 (the value of PCRE_CASELESS)
+    // using case-sensitive matching then ... must investigate in root
+    regexp = new TPMERegexp(select);
   }
 
   TIter next(fM->fMacros);
