@@ -46,13 +46,13 @@
 
 ClassImp(AliTRDclusterizerHLT)
 
-//_____________________________________________________________________________
-AliTRDclusterizerHLT::AliTRDclusterizerHLT() 
-  : AliTRDclusterizer()
-  , fTreeCreatedHere(kFALSE)
-  , fNclusters(-1)
-  , fRawDataSource(0)
-  , fFeeParams(0)
+  //_____________________________________________________________________________
+  AliTRDclusterizerHLT::AliTRDclusterizerHLT() 
+    : AliTRDclusterizer()
+    , fTreeCreatedHere(kFALSE)
+    , fNclusters(-1)
+    , fRawDataSource(0)
+    , fFeeParams(0)
 {
   //
   // AliTRDclusterizerHLT default constructor
@@ -60,12 +60,12 @@ AliTRDclusterizerHLT::AliTRDclusterizerHLT()
 }
 
 //_____________________________________________________________________________
-AliTRDclusterizerHLT::AliTRDclusterizerHLT(const Text_t *name, const Text_t *title) 
-  : AliTRDclusterizer(name,title)
-  , fTreeCreatedHere(kFALSE)
-  , fNclusters(-1)
-  , fRawDataSource(0)
-  , fFeeParams(0)
+AliTRDclusterizerHLT::AliTRDclusterizerHLT(const Text_t *name, const Text_t *title, AliTRDReconstructor * rec) 
+  : AliTRDclusterizer(name,title,rec)
+   , fTreeCreatedHere(kFALSE)
+   , fNclusters(-1)
+   , fRawDataSource(0)
+   , fFeeParams(0)
 {
   //
   // AliTRDclusterizerHLT constructor
@@ -122,9 +122,9 @@ void AliTRDclusterizerHLT::Copy(TObject &c) const
 
   //use the parameter c - no warning...
   ((AliTRDclusterizerHLT &) c).fDigitsManager = 0;
-//   ((AliTRDclusterizerHLT &) c).fDigitsManager = 0;
-//   ((AliTRDclusterizerHLT &) c).fTreeCreatedHere = kFALSE;
-//   AliTRDclusterizer::Copy(c);
+  //   ((AliTRDclusterizerHLT &) c).fDigitsManager = 0;
+  //   ((AliTRDclusterizerHLT &) c).fTreeCreatedHere = kFALSE;
+  //   AliTRDclusterizer::Copy(c);
 
 }
 

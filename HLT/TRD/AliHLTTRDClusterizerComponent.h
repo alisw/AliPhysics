@@ -16,7 +16,6 @@ class AliCDBManager;
 class AliTRDclusterizerHLT;
 class AliRawReaderMemory;
 class TFile;
-class TGeoManager;
 class AliTRDrecoParam;
 class AliTRDReconstructor;
 
@@ -70,15 +69,15 @@ class AliHLTTRDClusterizerComponent : public AliHLTProcessor
 
 	string fStrorageDBpath; // Default path for OCDB
 
-	AliTRDReconstructor  *fReconstructor; //!
 	AliTRDclusterizerHLT *fClusterizer; //! Offline derived HLT clusterizer
 	AliTRDrecoParam *fRecoParam; //! Offline reco params
 	AliCDBManager *fCDB; //! Pointer to OCDB
 	AliRawReaderMemory *fMemReader; //! Input raw data reader
+	AliTRDReconstructor *fReconstructor;
+	
 
 	string fGeometryFileName; // Path to geometry file 
 	TFile *fGeometryFile; //! // Pointer to the geom root file
-	TGeoManager *fGeoManager; //! Pointer to geometry manager 
 	
 	ClassDef(AliHLTTRDClusterizerComponent, 0)
 

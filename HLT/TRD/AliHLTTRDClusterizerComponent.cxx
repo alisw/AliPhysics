@@ -38,9 +38,10 @@ using namespace std;
 #include "AliHLTTRDClusterizerComponent.h"
 #include "AliHLTTRDDefinitions.h"
 
+#include "AliGeomManager.h"
+#include "AliTRDReconstructor.h"
 #include "AliCDBManager.h"
 #include "AliTRDclusterizerHLT.h"
-#include "AliTRDReconstructor.h"
 #include "AliTRDrecoParam.h"
 #include "AliTRDrawStreamBase.h"
 
@@ -59,14 +60,13 @@ AliHLTTRDClusterizerComponent::AliHLTTRDClusterizerComponent()
   : AliHLTProcessor()
   , fOutputPercentage(100) // By default we copy to the output exactly what we got as input  
   , fStrorageDBpath("local://$ALICE_ROOT")
-  , fReconstructor(NULL)
   , fClusterizer(NULL)
   , fRecoParam(NULL)
   , fCDB(NULL)
   , fMemReader(NULL)
   , fGeometryFileName("")
   , fGeometryFile(NULL)
-  , fGeoManager(NULL)
+  , fReconstructor(NULL)
 {
   // Default constructor
 
@@ -77,9 +77,8 @@ AliHLTTRDClusterizerComponent::AliHLTTRDClusterizerComponent()
 AliHLTTRDClusterizerComponent::~AliHLTTRDClusterizerComponent()
 {
   // Destructor
-  ;
+  // Work is Done in DoDeInit()
 }
-
 const char* AliHLTTRDClusterizerComponent::GetComponentID()
 {
   // Return the component ID const char *
@@ -127,22 +126,22 @@ int AliHLTTRDClusterizerComponent::DoInit( int argc, const char** argv )
   
   while ( i < argc )
     {
-      Logging( kHLTLogDebug, "HLT::TRDClusterizer::DoInit", "Arguments", "argv[%d] == %s", i, argv[i] );
+      HLTDebug("argv[%d] == %s", i, argv[i] );
       if ( !strcmp( argv[i], "output_percentage" ) )
 	{
 	  if ( i+1>=argc )
 	    {
-	      Logging(kHLTLogError, "HLT::TRDClusterizer::DoInit", "Missing Argument", "Missing output_percentage parameter");
+	      HLTError("Missing output_percentage parameter");
 	      return ENOTSUP;
 	    }
-	  Logging( kHLTLogDebug, "HLT::TRDClusterizer::DoInit", "Arguments", "argv[%d+1] == %s", i, argv[i+1] );
+	  HLTDebug("argv[%d+1] == %s", i, argv[i+1] );
 	  fOutputPercentage = strtoul( argv[i+1], &cpErr, 0 );
 	  if ( *cpErr )
 	    {
-	      Logging(kHLTLogError, "HLT::TRDClusterizer::DoInit", "Wrong Argument", "Cannot convert output_percentage parameter '%s'", argv[i+1] );
+	      HLTError("Cannot convert output_percentage parameter '%s'", argv[i+1] );
 	      return EINVAL;
 	    }
-	  Logging( kHLTLogInfo, "HLT::TRDClusterizer::DoInit", "Output percentage set", "Output percentage set to %lu %%", fOutputPercentage );
+	  HLTInfo("Output percentage set to %lu %%", fOutputPercentage );
 	  i += 2;
 	  continue;
 	}
@@ -151,11 +150,11 @@ int AliHLTTRDClusterizerComponent::DoInit( int argc, const char** argv )
 	{
 	  if ( i+1 >= argc )
 	    {
-	      Logging(kHLTLogError, "HLT::TRDClusterizer::DoInit", "Missing Argument", "Missing -cdb argument");
+	      HLTError("Missing -cdb argument");
 	      return ENOTSUP;	      
 	    }
 	  fStrorageDBpath = argv[i+1];
-	  Logging( kHLTLogInfo, "HLT::TRDClusterizer::DoInit", "DB storage set", "DB storage is %s", fStrorageDBpath.c_str() );	  
+	  HLTInfo("DB storage is %s", fStrorageDBpath.c_str() );	  
 	  i += 2;
 	  continue;
 	}      
@@ -172,7 +171,15 @@ int AliHLTTRDClusterizerComponent::DoInit( int argc, const char** argv )
       if ( strcmp( argv[i], "-highflux" ) == 0)
 	{
 	  iRecoParamType = 1;	  
-	  HLTDebug("Low flux reco selected.");
+	  HLTDebug("High flux reco selected.");
+	  i++;
+	  continue;
+	}      
+
+      if ( strcmp( argv[i], "-cosmics" ) == 0)
+	{
+	  iRecoParamType = 2;	  
+	  HLTDebug("Cosmic test reco selected.");
 	  i++;
 	  continue;
 	}      
@@ -196,11 +203,11 @@ int AliHLTTRDClusterizerComponent::DoInit( int argc, const char** argv )
 	{
 	  if ( i+1 >= argc )
 	    {
-	      Logging(kHLTLogError, "HLT::TRDClusterizer::DoInit", "Missing Argument", "Missing -rawver argument");
+	      HLTError("Missing -rawver argument");
 	      return ENOTSUP;	      
 	    }
 	  iRawDataVersion = atoi( argv[i+1] );
-	  Logging( kHLTLogInfo, "HLT::TRDClusterizer::DoInit", "Raw Data", "Version is %d", iRawDataVersion );	  
+	  HLTInfo("Raw data version is %d", iRawDataVersion );	  
 	  i += 2;
 	  continue;
 	}      
@@ -209,23 +216,22 @@ int AliHLTTRDClusterizerComponent::DoInit( int argc, const char** argv )
 	{
 	  if ( i+1 >= argc )
 	    {
-	      Logging(kHLTLogError, "HLT::TRDTracker::DoInit", "Missing Argument", "Missing -geometry argument");
+	      HLTError("Missing -geometry argument");
 	      return ENOTSUP;	      
 	    }
 	  fGeometryFileName = argv[i+1];
-	  Logging( kHLTLogInfo, "HLT::TRDTracker::DoInit", "GeomFile storage set", "GeomFile storage is %s", 
-		   fGeometryFileName.c_str() );	  
+	  HLTInfo("GeomFile storage is %s", fGeometryFileName.c_str() );	  
 	  i += 2;
 	  continue;
 	}      
 
-      Logging(kHLTLogError, "HLT::TRDClusterizer::DoInit", "Unknown Option", "Unknown option '%s'", argv[i] );
+      HLTError("Unknown option '%s'", argv[i] );
       return EINVAL;
     }
 
   // THE "REAL" INIT COMES HERE
 
-  if (iRecoParamType < 0 || iRecoParamType > 1)
+  if (iRecoParamType < 0 || iRecoParamType > 2)
     {
       HLTWarning("No reco param selected. Use -lowflux or -highflux flag. Defaulting to low flux.");
       iRecoParamType = 0;
@@ -243,20 +249,23 @@ int AliHLTTRDClusterizerComponent::DoInit( int argc, const char** argv )
       HLTDebug("High flux params init.");
     }
 
+  if (iRecoParamType == 2)
+    {
+      fRecoParam = AliTRDrecoParam::GetCosmicTestParam();
+      HLTDebug("Cosmic Test params init.");
+    }
+
   if (fRecoParam == 0)
     {
       HLTError("No reco params initialized. Sniffing big trouble!");
       return -1;
     }
 
-  //AliTRDReconstructor reconstructor; reconstructor.SetRecoParam(fRecoParam);
-  // Alex Bercuci - quick fix on 10.Jul.08
-  // HLT should decide how they get the recoParam
-  // and who owns the TRD reconstructor
   fReconstructor = new AliTRDReconstructor();
   fReconstructor->SetRecoParam(fRecoParam);
   fReconstructor->SetStreamLevel(0, AliTRDReconstructor::kClusterizer); // default value
   fReconstructor->SetOption("!cw");
+  //fReconstructor->Init();
 
   // init the raw data type to be used...
   // the switch here will become obsolete as soon as the data structures is fixed 
@@ -283,31 +292,29 @@ int AliHLTTRDClusterizerComponent::DoInit( int argc, const char** argv )
   fCDB = AliCDBManager::Instance();
   if (!fCDB)
     {
-      Logging(kHLTLogError, "HLT::TRDCalibration::DoInit", "Could not get CDB instance", "fCDB 0x%x", fCDB);
+     HLTError("Could not get CDB instance", "fCDB 0x%x", fCDB);
     }
   else
     {
       fCDB->SetRun(0); // THIS HAS TO BE RETRIEVED !!!
       fCDB->SetDefaultStorage(fStrorageDBpath.c_str());
-      Logging(kHLTLogDebug, "HLT::TRDCalibration::DoInit", "CDB instance", "fCDB 0x%x", fCDB);
+      HLTDebug("CDB instance; fCDB 0x%x", fCDB);
     }
 
   fGeometryFile = TFile::Open(fGeometryFileName.c_str());
   if (fGeometryFile)
     {
-      fGeoManager = (TGeoManager *)fGeometryFile->Get("Geometry");
+      AliGeomManager::LoadGeometry(fGeometryFileName.c_str());
     }
   else
     {
-      Logging(kHLTLogError, "HLT::TRDTracker::DoInit", "fGeometryFile", "Unable to open file. FATAL!");
+      HLTError("Unable to open file. FATAL!");
       return -1;
     }
 
   fMemReader = new AliRawReaderMemory;
 
-  fClusterizer = new AliTRDclusterizerHLT("TRDCclusterizer", "TRDCclusterizer");
-  // AB 10.Jul.08
-  fClusterizer->SetReconstructor(fReconstructor);
+  fClusterizer = new AliTRDclusterizerHLT("TRDCclusterizer", "TRDCclusterizer", fReconstructor);
   fClusterizer->SetRawVersion(iRawDataVersion);
   fClusterizer->InitClusterTree();
   return 0;
@@ -320,7 +327,6 @@ int AliHLTTRDClusterizerComponent::DoDeinit()
   fMemReader = 0;
   delete fClusterizer;
   fClusterizer = 0;
-  // AB 10.Jul.08
   delete fReconstructor;
   fReconstructor = 0x0;
   return 0;
@@ -334,7 +340,7 @@ int AliHLTTRDClusterizerComponent::DoDeinit()
 
   if (fCDB)
     {
-      Logging( kHLTLogDebug, "HLT::TRDCalibration::DoDeinit", "destroy", "fCDB");
+      HLTDebug("destroy fCDB");
       fCDB->Destroy();
       fCDB = 0;
     }
@@ -347,102 +353,76 @@ int AliHLTTRDClusterizerComponent::DoDeinit()
     }
 }
 
-int AliHLTTRDClusterizerComponent::DoEvent( const AliHLTComponent_EventData& evtData, 
-					    const AliHLTComponent_BlockData* blocks, 
-					    AliHLTComponent_TriggerData& trigData, 
+int AliHLTTRDClusterizerComponent::DoEvent( const AliHLTComponentEventData& evtData, 
+					    const AliHLTComponentBlockData* blocks, 
+					    AliHLTComponent_TriggerData& /*trigData*/, 
 					    AliHLTUInt8_t* /*outputPtr*/, 
 					    AliHLTUInt32_t& size, 
 					    vector<AliHLTComponent_BlockData>& /*outputBlocks*/ )
 {
   // Process an event
-  HLTDebug("NofBlocks %lu", evtData.fBlockCnt );
+  HLTDebug( "NofBlocks %lu", evtData.fBlockCnt );
   // Process an event
-  unsigned long totalSize = 0;
-  AliHLTUInt32_t dBlockSpecification = 0;
 
   //implement a usage of the following
   //   AliHLTUInt32_t triggerDataStructSize = trigData.fStructSize;
   //   AliHLTUInt32_t triggerDataSize = trigData.fDataSize;
   //   void *triggerData = trigData.fData;
-  HLTDebug("Trigger data received. Struct size %d Data size %d Data location 0x%x", trigData.fStructSize, trigData.fDataSize, (UInt_t*)trigData.fData);
+  //HLTDebug( "Trigger data received. Struct size %d Data size %d Data location 0x%x", trigData.fStructSize, trigData.fDataSize, (UInt_t*)trigData.fData);
 
   // Loop over all input blocks in the event
+  AliHLTComponentDataType expectedDataType = (kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTRD);
   for ( unsigned long i = 0; i < evtData.fBlockCnt; i++ )
     {
       // lets not use the internal TRD data types here : AliHLTTRDDefinitions::fgkDDLRawDataType
       // which is depreciated - we use HLT global defs instead
-      if ( blocks[i].fDataType != (kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTRD) )
+      //      if ( blocks[i].fDataType != (kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTRD) )
+      AliHLTComponentDataType inputDataType = blocks[i].fDataType;
+      if ( inputDataType != expectedDataType)
 	{
- 	  HLTWarning("COMPARE FAILED received type=%d expected-or-type=%d",
-		     blocks[i].fDataType, kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTRD);
+	  HLTDebug( "Event 0x%08LX (%Lu) received datatype: %s - required datatype: %s",
+		   evtData.fEventID, evtData.fEventID, 
+		   DataType2Text(inputDataType).c_str(), 
+		   DataType2Text(expectedDataType).c_str());
 	  continue;
 	}
 
-      dBlockSpecification = blocks[i].fSpecification;
-      unsigned long blockSize = blocks[i].fSize;
-      totalSize += blockSize;
-    }
+      //      fMemReader->Reset();
+      fMemReader->SetMemory((UChar_t*) blocks[i].fPtr, blocks[i].fSize);
 
-  void *memBufIn = calloc(totalSize, 1);
-  AliHLTUInt8_t *pBuf = (AliHLTUInt8_t *)memBufIn;
-  if (memBufIn == NULL)
-    {
-      HLTError("Unable to allocate %lu bytes", totalSize);
-      return -1;
-    }
+      AliHLTUInt32_t spec = blocks[i].fSpecification;
+      
+      Int_t id = 1024;
+      
+      for ( Int_t ii = 0; ii < 18 ; ii++ ) {
+	if ( spec & 0x00000001 ) {
+	  id += ii;
+	  break;
+	}
+	spec = spec >> 1 ;
+      }
+      
+      fMemReader->SetEquipmentID( id ); 
 
-  // Make the memory continuous
-  unsigned long copied = 0;
-  for ( unsigned long i = 0; i < evtData.fBlockCnt; i++ )
-    {
-      // we process only the raw data from TRD
-      if ( blocks[i].fDataType != (kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTRD) )
-	continue;
-
-      void *pos = (void*)(pBuf + copied);
-      void *copyret = memcpy(pos, blocks[i].fPtr, blocks[i].fSize);
-      if (copyret < 0)
+      fClusterizer->ResetTree();  
+      Bool_t iclustered = fClusterizer->Raw2ClustersChamber(fMemReader);
+      if (iclustered == kTRUE)
 	{
-	  //Logging( kHLTLogError, "HLT::TRDClusterizer::DoEvent", "MEMORY", "Unable to copy %lu bytes", blocks[i].fSize);
-	  // so here i am not sure which log scheme finaly to use...
-	  HLTError("MEMORY Unable to copy %lu bytes", blocks[i].fSize);
-	  // maybe put a reasonable return value here...
+	  HLTDebug( "Clustered successfully");
+	}
+      else
+	{
+	  HLTError("Clustering ERROR");
 	  return -1;
 	}
-      copied += blocks[i].fSize;
+
+      // put the tree into output blocks
+      TTree *fcTree = fClusterizer->GetClusterTree();
+      //fcTree->Print();
+      
+      PushBack(fcTree, AliHLTTRDDefinitions::fgkClusterDataType, blocks[i].fSpecification);
+
     }
-  
-  // lets see what we copied...
-  HLTDebug("COPY STATS total=%lu copied=%lu", totalSize, copied);
-
-  fMemReader->Reset();
-  fMemReader->SetMemory((UChar_t*)memBufIn, totalSize);
-
-  //fMemReader->SelectEquipment(0, 1024, 1041);
-
-  // 1024 is good for SM 0 - it should be good for any other too
-  // but in principle the EquipmentID should come with the data
-  fMemReader->SetEquipmentID(1024);
-
-  fClusterizer->ResetTree();  
-  Bool_t iclustered = fClusterizer->Raw2ClustersChamber(fMemReader);
-  if (iclustered == kTRUE)
-    {
-      HLTDebug("Clustered successfully");
-    }
-  else
-    {
-      HLTError("Clustering ERROR");
-      return -1;
-    }
-
-  // free the memory
-  free(memBufIn);
-  
-  // put the tree into output blocks
-  TTree *fcTree = fClusterizer->GetClusterTree();
-  
-  PushBack(fcTree, AliHLTTRDDefinitions::fgkClusterDataType, dBlockSpecification);
 
   size=0; // this function did not write data to the buffer directly
   return 0;

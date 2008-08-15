@@ -31,6 +31,7 @@ using namespace std;
 #include "TFile.h"
 #include "TChain.h"
 
+#include "AliGeomManager.h"
 #include "AliCDBManager.h"
 #include "AliESDEvent.h"
 #include "AliMagFMaps.h"
@@ -58,8 +59,6 @@ AliHLTTRDTrackerV1Component::AliHLTTRDTrackerV1Component()
   , fField(NULL)
   , fGeometryFileName("")
   , fGeometryFile(NULL)
-  , fGeoManager(NULL)
-  , fReconstructor(NULL)
   , fTracker(NULL)
   , fRecoParam(NULL)
 {
@@ -71,7 +70,7 @@ AliHLTTRDTrackerV1Component::AliHLTTRDTrackerV1Component()
 
 AliHLTTRDTrackerV1Component::~AliHLTTRDTrackerV1Component()
 {
-  // Destructor
+// Destructor
 }
 
 const char* AliHLTTRDTrackerV1Component::GetComponentID()
@@ -103,7 +102,6 @@ void AliHLTTRDTrackerV1Component::GetOutputDataSize( unsigned long& constBase, d
 // Spawn function, return new instance of this class
 AliHLTComponent* AliHLTTRDTrackerV1Component::Spawn()
 {
-  // Spawn function, return new instance of this class
   return new AliHLTTRDTrackerV1Component;
 };
 
@@ -120,22 +118,22 @@ int AliHLTTRDTrackerV1Component::DoInit( int argc, const char** argv )
 
   while ( i < argc )
     {
-      Logging( kHLTLogDebug, "HLT::TRDTrackerV1::DoInit", "Arguments", "argv[%d] == %s", i, argv[i] );
+      HLTDebug("argv[%d] == %s", i, argv[i] );
       if ( !strcmp( argv[i], "output_percentage" ) )
 	{
 	  if ( i+1>=argc )
 	    {
-	      Logging(kHLTLogError, "HLT::TRDTrackerV1::DoInit", "Missing Argument", "Missing output_percentage parameter");
+	      HLTError("Missing output_percentage parameter");
 	      return ENOTSUP;
 	    }
-	  Logging( kHLTLogDebug, "HLT::TRDTrackerV1::DoInit", "Arguments", "argv[%d+1] == %s", i, argv[i+1] );
+	  HLTDebug("argv[%d+1] == %s", i, argv[i+1] );
 	  fOutputPercentage = strtoul( argv[i+1], &cpErr, 0 );
 	  if ( *cpErr )
 	    {
-	      Logging(kHLTLogError, "HLT::TRDTrackerV1::DoInit", "Wrong Argument", "Cannot convert output_percentage parameter '%s'", argv[i+1] );
+	      HLTError("Cannot convert output_percentage parameter '%s'", argv[i+1] );
 	      return EINVAL;
 	    }
-	  Logging( kHLTLogInfo, "HLT::TRDTrackerV1::DoInit", "Output percentage set", "Output percentage set to %lu %%", fOutputPercentage );
+	  HLTInfo("Output percentage set to %lu %%", fOutputPercentage );
 	  i += 2;
 	  continue;
 	}
@@ -162,11 +160,11 @@ int AliHLTTRDTrackerV1Component::DoInit( int argc, const char** argv )
 	{
 	  if ( i+1 >= argc )
 	    {
-	      Logging(kHLTLogError, "HLT::TRDTrackerV1::DoInit", "Missing Argument", "Missing -cdb argument");
+	      HLTError( "Missing -cdb argument");
 	      return ENOTSUP;	      
 	    }
 	  fStrorageDBpath = argv[i+1];
-	  Logging( kHLTLogInfo, "HLT::TRDTrackerV1::DoInit", "DB storage set", "DB storage is %s", fStrorageDBpath.c_str() );	  
+	  HLTInfo("DB storage is %s", fStrorageDBpath.c_str() );	  
 	  i += 2;
 	  continue;
 	}      
@@ -175,11 +173,11 @@ int AliHLTTRDTrackerV1Component::DoInit( int argc, const char** argv )
 	{
 	  if ( i+1 >= argc )
 	    {
-	      Logging(kHLTLogError, "HLT::TRDTrackerV1::DoInit", "Missing Argument", "Missing -geometry argument");
+	      HLTError("Missing -geometry argument");
 	      return ENOTSUP;	      
 	    }
 	  fGeometryFileName = argv[i+1];
-	  Logging( kHLTLogInfo, "HLT::TRDTrackerV1::DoInit", "GeomFile storage set", "GeomFile storage is %s", 
+	  HLTInfo("GeomFile storage is %s", 
 		   fGeometryFileName.c_str() );	  
 	  i += 2;
 	  continue;
@@ -201,6 +199,14 @@ int AliHLTTRDTrackerV1Component::DoInit( int argc, const char** argv )
 	  i++;
 	  continue;
 	}      
+
+      if ( strcmp( argv[i], "-cosmics" ) == 0)
+	{
+	  iRecoParamType = 2;	  
+	  HLTDebug("Cosmic test reco selected.");
+	  i++;
+	  continue;
+	}      
       
       if ( strcmp( argv[i], "-magnetic_field_ON" ) == 0)
 	{
@@ -216,7 +222,7 @@ int AliHLTTRDTrackerV1Component::DoInit( int argc, const char** argv )
 	  continue;
 	}
 
-	Logging(kHLTLogError, "HLT::TRDTrackerV1::DoInit", "Unknown Option", "Unknown option '%s'", argv[i] );
+      HLTError("Unknown option '%s'", argv[i] );
       return EINVAL;
     }
 
@@ -225,14 +231,14 @@ int AliHLTTRDTrackerV1Component::DoInit( int argc, const char** argv )
   fCDB = AliCDBManager::Instance();
   if (!fCDB)
     {
-      Logging(kHLTLogError, "HLT::TRDCalibration::DoInit", "Could not get CDB instance", "fCDB 0x%x", fCDB);
+      HLTError("Could not get CDB instance", "fCDB 0x%x", fCDB);
       return -1;
     }
   else
     {
       fCDB->SetRun(0); // THIS HAS TO BE RETRIEVED !!!
       fCDB->SetDefaultStorage(fStrorageDBpath.c_str());
-      Logging(kHLTLogDebug, "HLT::TRDCalibration::DoInit", "CDB instance", "fCDB 0x%x", fCDB);
+      HLTDebug("CDB instance", "fCDB 0x%x", fCDB);
     }
 
   // check if the N of time bins make sense
@@ -283,7 +289,7 @@ int AliHLTTRDTrackerV1Component::DoInit( int argc, const char** argv )
   AliTracker::SetFieldMap(fField,kTRUE);
 
   // reconstruction parameters
-  if (iRecoParamType < 0 || iRecoParamType > 1)
+  if (iRecoParamType < 0 || iRecoParamType > 2)
     {
       HLTWarning("No reco param selected. Use -lowflux or -highflux flag. Defaulting to low flux.");
       iRecoParamType = 0;
@@ -301,46 +307,49 @@ int AliHLTTRDTrackerV1Component::DoInit( int argc, const char** argv )
       HLTDebug("High flux params init.");
     }
 
+  if (iRecoParamType == 2)
+    {
+      fRecoParam = AliTRDrecoParam::GetCosmicTestParam();
+      HLTDebug("Cosmic Test params init.");
+    }
+
   if (fRecoParam == 0)
     {
       HLTError("No reco params initialized. Sniffing big trouble!");
       return -1;
     }
 
-  // this is important in case we want to ::PropagateBack - see the TrackerV1.cxx
-  //fRecoParam->SetSeeding(kTRUE);
-  // no debug stream -> no debug files! on HLT
-  //fRecoParam->SetStreamLevel(0);
-  
-  //AliTRDReconstructor reconstructor; reconstructor.SetRecoParam(fRecoParam);
-  // AB 10.Jul.08
-  // temporary until recoParam in the OCDB
   fReconstructor = new AliTRDReconstructor();
   fReconstructor->SetRecoParam(fRecoParam);
-  fReconstructor->SetStreamLevel(0); // default value
+  // no debug stream -> no debug files! on HLT
+  fReconstructor->SetStreamLevel(0);
+// write clusters [cw] = true
+// track seeding (stand alone tracking) [sa] = true
+// PID method in reconstruction (NN) [nn] = true
+// write online tracklets [tw] = false
+// drift gas [ar] = false
   fReconstructor->SetOption("sa,!cw");
-
+  //fReconstructor->Init();
+  
+    
   // geometry:
   // for some unknown at this point reason (30th of April 2008)
   // the TrackerV1 initializes new TRDgeometry in the constructor
   // we avoid it here
   fGeometryFile = 0;
-  //   fGeometryFile = TFile::Open(fGeometryFileName.c_str());
-  //   if (fGeometryFile)
-  //     {
-  //       fGeoManager = (TGeoManager *)fGeometryFile->Get("Geometry");
-  //       // for the old tracker we would do this:
-  //       fTracker = new AliTRDtracker(fGeometryFile);
-  //     }
-  //   else
-  //     {
-  //       Logging(kHLTLogError, "HLT::TRDTrackerV1::DoInit", "fGeometryFile", "Unable to open file. FATAL!");
-  //       return -1;
-  //     }
+     fGeometryFile = TFile::Open(fGeometryFileName.c_str());
+     if (fGeometryFile)
+      {
+	AliGeomManager::LoadGeometry(fGeometryFileName.c_str());
+      }
+    else
+      {
+        HLTError("Unable to open file. FATAL!");
+        return -1;
+      }
   
   // create the tracker
-  fTracker = new AliTRDtrackerV1();
-  fTracker->SetReconstructor(fReconstructor);
+  fTracker = new AliTRDtrackerV1(fReconstructor);
   HLTDebug("TRDTracker at 0x%x", fTracker);
 
   if (fTracker == 0)
@@ -359,20 +368,19 @@ int AliHLTTRDTrackerV1Component::DoDeinit()
   // Deinitialization of the component
 
   delete fField;
-  fField = 0;
+  fField = 0x0;
 
   delete fTracker;
-  fTracker = 0;
-  
-  // AB 10.Jul.08
+  fTracker = 0x0;
+
   delete fReconstructor;
   fReconstructor = 0x0;
-
+  
   if (fGeometryFile)
     {
       fGeometryFile->Close();
       delete fGeometryFile;
-      fGeometryFile = 0;
+      fGeometryFile = 0x0;
     }
 
   return 0;
@@ -383,8 +391,8 @@ int AliHLTTRDTrackerV1Component::DoEvent( const AliHLTComponentEventData & evtDa
 {
   // Process an event
   
-  Logging( kHLTLogInfo, "HLT::TRDTrackerV1::DoEvent", "Output percentage set", "Output percentage set to %lu %%", fOutputPercentage );
-  Logging( kHLTLogInfo, "HLT::TRDTrackerV1::DoEvent", "BLOCKS", "NofBlocks %lu", evtData.fBlockCnt );
+  HLTInfo("Output percentage set to %lu %%", fOutputPercentage );
+  HLTInfo("NofBlocks %lu", evtData.fBlockCnt );
 
   AliHLTUInt32_t dBlockSpecification = 0;
 
@@ -392,8 +400,7 @@ int AliHLTTRDTrackerV1Component::DoEvent( const AliHLTComponentEventData & evtDa
   //   AliHLTUInt32_t triggerDataStructSize = trigData.fStructSize;
   //   AliHLTUInt32_t triggerDataSize = trigData.fDataSize;
   //   void *triggerData = trigData.fData;
-  Logging( kHLTLogDebug, "HLT::TRDTrackerV1::DoEvent", "Trigger data received", 
-	   "Struct size %d Data size %d Data location 0x%x", trigData.fStructSize, trigData.fDataSize, (UInt_t*)trigData.fData);
+  HLTDebug("Struct size %d Data size %d Data location 0x%x", trigData.fStructSize, trigData.fDataSize, (UInt_t*)trigData.fData);
   
   AliHLTComponentBlockData *dblock = (AliHLTComponentBlockData *)GetFirstInputBlock( AliHLTTRDDefinitions::fgkClusterDataType );
   if (dblock != 0)
@@ -402,40 +409,40 @@ int AliHLTTRDTrackerV1Component::DoEvent( const AliHLTComponentEventData & evtDa
     }
   else
     {
-      Logging( kHLTLogWarning, "HLT::TRDTrackerV1::DoEvent", "DATAIN", "First Input Block not found! 0x%x", dblock);
+      HLTWarning("First Input Block not found! 0x%x", dblock);
       return -1;
     }
 
   int ibForce = 0;
   
   TObject *tobjin = (TObject *)GetFirstInputObject( AliHLTTRDDefinitions::fgkClusterDataType, "TTree", ibForce);
-  Logging( kHLTLogInfo, "HLT::TRDTrackerV1::DoEvent", "1stBLOCK", "Pointer = 0x%x", tobjin);
+  HLTInfo("1stBLOCK; Pointer = 0x%x", tobjin);
 
   TTree *clusterTree = (TTree*)tobjin;
   if (!clusterTree)
     {
-      Logging( kHLTLogWarning, "HLT::TRDTrackerV1::DoEvent", "DATAIN", "First Input Block not a tree! 0x%x", tobjin);
+      HLTWarning("First Input Block not a tree! 0x%x", tobjin);
       return -1;
     }
 
-  Logging( kHLTLogInfo, "HLT::TRDTrackerV1::DoEvent", "1stBLOCK", "Pointer = 0x%x Name = %s", clusterTree, clusterTree->GetName());
+  HLTInfo("1stBLOCK; Pointer = 0x%x Name = %s", clusterTree, clusterTree->GetName());
 
   while (tobjin != 0)
     {
       if (clusterTree)
 	{
-	  Logging( kHLTLogInfo, "HLT::TRDTrackerV1::DoEvent", "CLUSTERS", "Pointer = 0x%x Name = %s", clusterTree, clusterTree->GetName());
+	  HLTInfo("CLUSTERS; Pointer = 0x%x Name = %s", clusterTree, clusterTree->GetName());
 	  Int_t iNentries = clusterTree->GetEntries();
-	  Logging( kHLTLogInfo, "HLT::TRDTrackerV1::DoEvent", "COUNT", "N of tree entries = %d", iNentries);
+	  HLTInfo("N of tree entries = %d", iNentries);
 	  fTracker->LoadClusters(clusterTree);
 	}
       else
 	{
-	  Logging( kHLTLogError, "HLT::TRDTrackerV1::DoEvent", "CLUSTERS", "Tree Pointer = 0x%x", clusterTree);
+	  HLTError("CLUSTERS; Tree Pointer = 0x%x", clusterTree);
 	}
 
       tobjin = (TObject *)GetNextInputObject( ibForce );
-      Logging( kHLTLogInfo, "HLT::TRDTrackerV1::DoEvent", "nextBLOCK", "Pointer = 0x%x", tobjin);
+      HLTInfo("nextBLOCK; Pointer = 0x%x", tobjin);
       clusterTree = (TTree*)tobjin;
     }
 
@@ -452,7 +459,7 @@ int AliHLTTRDTrackerV1Component::DoEvent( const AliHLTComponentEventData & evtDa
   Int_t nTRDTracks = esd->GetNumberOfTrdTracks();
   HLTInfo("Number of tracks %d Number of TRD tracks %d", nTracks, nTRDTracks);  
   //esd->Print();
-  PushBack(esd, AliHLTTRDDefinitions::fgkTRDSAEsdDataType);
+  //PushBack(esd, AliHLTTRDDefinitions::fgkTRDSAEsdDataType);
 
   // extract the friend ?
   //   AliESDfriend *esdFriend = new AliESDfriend();
@@ -461,6 +468,18 @@ int AliHLTTRDTrackerV1Component::DoEvent( const AliHLTComponentEventData & evtDa
   //   delete esdFriend;
 
   //HLTInfo("now deleting");
+  TClonesArray* trdTracks = fTracker->GetListOfTracks();
+  
+  if (trdTracks)
+    {
+      HLTDebug("Pointer to trdTracks = 0x%x, nbEntries = %i", trdTracks, trdTracks->GetEntries());
+      HLTInfo("Size of the TClonesArray of trdTracks for output is %i bytes (sizeof) or %i (GetSize)", sizeof(*trdTracks), trdTracks->GetSize());
+      PushBack(trdTracks, AliHLTTRDDefinitions::fgkTRDSATracksDataType);
+    }
+  else 
+    HLTWarning("Bad array trdTracks = 0x%x", trdTracks);
+
+
   delete esd;
 
   delete clusterTree;
