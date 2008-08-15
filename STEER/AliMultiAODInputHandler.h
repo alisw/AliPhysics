@@ -18,6 +18,7 @@ class AliAODEvent;
 class AliMultiAODInputHandler : public AliInputEventHandler {
 
  public:
+    AliMultiAODInputHandler();
     AliMultiAODInputHandler(Int_t size);
     AliMultiAODInputHandler(const char* name, const char* title, Int_t size);
     virtual ~AliMultiAODInputHandler();
@@ -27,10 +28,10 @@ class AliMultiAODInputHandler : public AliInputEventHandler {
     Int_t  GetNBuffered()            const {return fNBuffered;}
     Bool_t IsBufferReady()           const {return (fNBuffered >= fBufferSize);}
     Bool_t IsFreshBuffer()           const {return (fIndex == (fBufferSize - 1));}
-	    
     TObject              *GetEventPool()      const {return fEventPool;}
     virtual AliVEvent    *GetEvent()          const {return 0;}
     virtual AliAODEvent  *GetEvent(Int_t iev) const;
+    AliAODEvent          *GetLatestEvent()    const {return GetEvent(fIndex);}
     // From the interface
     virtual Bool_t Init(Option_t* /*opt*/)    {return kTRUE;}
     virtual Bool_t Init(TTree* tree, Option_t* /*opt*/);
