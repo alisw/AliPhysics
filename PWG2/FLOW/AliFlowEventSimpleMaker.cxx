@@ -276,12 +276,11 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliMCEvent* anInput, Ali
  
   AliFlowEventSimple* pEvent = new AliFlowEventSimple(10);
     
-  //Int_t iN = 256; //multiplicity for chi=1
-  Int_t iN = iNumberOfInputTracks;
-  Int_t iGoodTracks = 0;
-  Int_t itrkN = 0;
-  Int_t iSelParticlesDiff = 0;
-  Int_t iSelParticlesInt = 0;
+  Int_t iN = iNumberOfInputTracks; //maximum number of tracks in AliFlowEventSimple
+  Int_t iGoodTracks = 0;           //number of good tracks
+  Int_t itrkN = 0;                 //track counter
+  Int_t iSelParticlesDiff = 0;     //number of tracks selected for Diff
+  Int_t iSelParticlesInt = 0;      //number of tracks selected for Int
 
    
   //normal loop
@@ -391,13 +390,11 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliESDEvent* anInput, Al
   
   AliFlowEventSimple* pEvent = new AliFlowEventSimple(10);
     
-  //Int_t iN = 256; //multiplicity for chi=1
-  Int_t iN = iNumberOfInputTracks;
-  Int_t iGoodTracks = 0;
-  Int_t itrkN = 0;
-  Int_t iSelParticlesDiff = 0;
-  Int_t iSelParticlesInt = 0;
-
+  Int_t iN = iNumberOfInputTracks; //maximum number of tracks in AliFlowEventSimple
+  Int_t iGoodTracks = 0;           //number of good tracks
+  Int_t itrkN = 0;                 //track counter
+  Int_t iSelParticlesDiff = 0;     //number of tracks selected for Diff
+  Int_t iSelParticlesInt = 0;      //number of tracks selected for Int
 
   //normal loop
   while (iGoodTracks < iN && itrkN < iNumberOfInputTracks) {
@@ -409,10 +406,12 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliESDEvent* anInput, Al
     pTrack->SetPhi(pParticle->Phi() );
     //check if pParticle passes the cuts
 
-    if (intCFManager->CheckParticleCuts(AliCFManager::kPartRecCuts,pParticle)) {
+    if (intCFManager->CheckParticleCuts(AliCFManager::kPartRecCuts,pParticle) &&
+	intCFManager->CheckParticleCuts(AliCFManager::kPartSelCuts,pParticle)) {
       pTrack->SetForIntegratedFlow(kTRUE);
     }
-    if (diffCFManager->CheckParticleCuts(AliCFManager::kPartSelCuts,pParticle)) {
+    if (diffCFManager->CheckParticleCuts(AliCFManager::kPartRecCuts,pParticle) &&
+	diffCFManager->CheckParticleCuts(AliCFManager::kPartSelCuts,pParticle)) {
       pTrack->SetForDifferentialFlow(kTRUE);}
 
     //check if any bits are set
@@ -498,15 +497,13 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliAODEvent* anInput,  A
   cerr<<"anInput->GetNumberOfTracks() = "<<iNumberOfInputTracks<<endl;
   
   AliFlowEventSimple* pEvent = new AliFlowEventSimple(10);
-    
-  //Int_t iN = 256; //multiplicity for chi=1
-  Int_t iN = iNumberOfInputTracks;
-  Int_t iGoodTracks = 0;
-  Int_t itrkN = 0;
-  Int_t iSelParticlesDiff = 0;
-  Int_t iSelParticlesInt = 0;
-
   
+  Int_t iN = iNumberOfInputTracks; //maximum number of tracks in AliFlowEventSimple
+  Int_t iGoodTracks = 0;           //number of good tracks
+  Int_t itrkN = 0;                 //track counter
+  Int_t iSelParticlesDiff = 0;     //number of tracks selected for Diff
+  Int_t iSelParticlesInt = 0;      //number of tracks selected for Int
+
   //normal loop
   while (iGoodTracks < iN && itrkN < iNumberOfInputTracks) {
     AliAODTrack* pParticle = anInput->GetTrack(itrkN);   //get input particle
@@ -517,9 +514,11 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliAODEvent* anInput,  A
     pTrack->SetPhi(pParticle->Phi() );
 
     //check if pParticle passes the cuts
-    if (intCFManager->CheckParticleCuts(AliCFManager::kPartRecCuts,pParticle)) {          //check these cuts!!
+    if (intCFManager->CheckParticleCuts(AliCFManager::kPartRecCuts,pParticle) &&
+	intCFManager->CheckParticleCuts(AliCFManager::kPartSelCuts,pParticle)) {          
       pTrack->SetForIntegratedFlow(kTRUE); }
-    if (diffCFManager->CheckParticleCuts(AliCFManager::kPartSelCuts,pParticle)) {
+    if (diffCFManager->CheckParticleCuts(AliCFManager::kPartRecCuts,pParticle) &&
+	diffCFManager->CheckParticleCuts(AliCFManager::kPartSelCuts,pParticle)) {
       pTrack->SetForDifferentialFlow(kTRUE);}	
 
     //check if any bits are set
@@ -630,14 +629,7 @@ AliFlowEventSimple*  AliFlowEventSimpleMaker::FillTracks(AliESDEvent* anInput, A
 {
   //fills the event with tracks from the ESD and kinematics from the MC info via the track label
 
-  ///////////////////////////////////////////////////
-  //
-  //   WARNING: this method is not correct yet!
-  //   The PID cut has to be implemented correctly
-  //   24/06/08
-  //
-  //////////////////////////////////////////////////
-
+  
   if (!(anOption ==0 || anOption ==1)) {
     cout<<"WRONG OPTION IN AliFlowEventSimpleMaker::FillTracks(AliESDEvent* anInput, AliMCEvent* anInputMc, Int_t anOption)"<<endl;
     exit(1);
@@ -648,13 +640,13 @@ AliFlowEventSimple*  AliFlowEventSimpleMaker::FillTracks(AliESDEvent* anInput, A
   
   AliFlowEventSimple* pEvent = new AliFlowEventSimple(10);
     
-  //Int_t iN = 256; //multiplicity for chi=1
-  Int_t iN = iNumberOfInputTracks;
-  Int_t iGoodTracks = 0;
-  Int_t itrkN = 0;
-  Int_t iSelParticlesDiff = 0;
-  Int_t iSelParticlesInt = 0;
+  Int_t iN = iNumberOfInputTracks; //maximum number of tracks in AliFlowEventSimple
+  Int_t iGoodTracks = 0;           //number of good tracks
+  Int_t itrkN = 0;                 //track counter
+  Int_t iSelParticlesDiff = 0;     //number of tracks selected for Diff
+  Int_t iSelParticlesInt = 0;      //number of tracks selected for Int
 
+ 
   //normal loop
   while (iGoodTracks < iN && itrkN < iNumberOfInputTracks) {
     AliESDtrack* pParticle = anInput->GetTrack(itrkN);   //get input particle
@@ -684,10 +676,10 @@ AliFlowEventSimple*  AliFlowEventSimpleMaker::FillTracks(AliESDEvent* anInput, A
     if(anOption == 0) { 
       //cout<<"take the PID from the MC & the kinematics from the ESD"<<endl;
       if (intCFManager->CheckParticleCuts(AliCFManager::kPartGenCuts,pMcParticle,"mcGenCuts1") && 
-	  intCFManager->CheckParticleCuts(AliCFManager::kPartRecCuts,pParticle)) {  //????which cuts to use on which particle
+	  intCFManager->CheckParticleCuts(AliCFManager::kPartRecCuts,pParticle)) {  
 	pTrack->SetForIntegratedFlow(kTRUE); }
       if (diffCFManager->CheckParticleCuts(AliCFManager::kPartGenCuts,pMcParticle,"mcGenCuts2") &&
-	  diffCFManager->CheckParticleCuts(AliCFManager::kPartRecCuts,pParticle)) {  //????which cuts to use on which particle
+	  diffCFManager->CheckParticleCuts(AliCFManager::kPartRecCuts,pParticle)) {  
 	pTrack->SetForDifferentialFlow(kTRUE);}
     }
     else if (anOption == 1) { 
