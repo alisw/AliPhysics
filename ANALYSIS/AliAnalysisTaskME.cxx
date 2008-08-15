@@ -128,6 +128,7 @@ void AliAnalysisTaskME::Exec(Option_t* option)
 {
 //
 // Exec analysis of one event
+
     if (fDebug > 1) AliInfo("AliAnalysisTaskME::Exec() \n");
     if( fInputHandler ) 
        fEntry = fInputHandler->GetReadEntry();
@@ -141,6 +142,8 @@ void AliAnalysisTaskME::Exec(Option_t* option)
 	    UserExec(option);
 	    PostData(0, fTreeA);
 	}
+    } else {
+	AliInfo(Form("Waiting for buffer to be ready !\n"));
     }
 }
 
