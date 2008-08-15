@@ -22,8 +22,8 @@
 //-------------------------------------------------------------------------
 
 #include "AliMultiAODInputHandler.h"
-//#include "AliEventPool.h"
 #include "AliAODEvent.h"
+#include "AliVEventPool.h"
 #include "AliLog.h"
 #include <TObjArray.h>
 #include <TTree.h>
@@ -31,12 +31,26 @@
 
 ClassImp(AliMultiAODInputHandler)
 
+AliMultiAODInputHandler::AliMultiAODInputHandler() :
+    AliInputEventHandler(),
+    fBufferSize(0),
+    fNBuffered(0),
+    fIndex(0),
+    fCurrentBin(0),
+    fTree(0),
+    fEventPool(0),
+    fEventBuffer(0)
+{
+  // Default constructor
+}
+
 //______________________________________________________________________________
 AliMultiAODInputHandler::AliMultiAODInputHandler(Int_t size) :
     AliInputEventHandler(),
     fBufferSize(size),
     fNBuffered(0),
     fIndex(0),
+    fCurrentBin(0),
     fTree(0),
     fEventPool(0),
     fEventBuffer(new AliAODEvent*[size])
@@ -52,6 +66,7 @@ AliMultiAODInputHandler::AliMultiAODInputHandler(const char* name, const char* t
     fBufferSize(size),
     fNBuffered(0),
     fIndex(0),
+    fCurrentBin(0),
     fTree(0),
     fEventPool(0),
     fEventBuffer(new AliAODEvent*[size])
@@ -74,8 +89,20 @@ Bool_t AliMultiAODInputHandler::Init(TTree* tree, Option_t* /*opt*/)
     if (!fTree) return kFALSE;
     // Get pointer to AOD event
     fEventBuffer[0]->ReadFromTree(fTree);
-    fIndex = 0;
+    fIndex     = 0;
     fNBuffered = 1;
+    return kTRUE;
+}
+
+Bool_t AliMultiAODInputHandler::BeginEvent(Long64_t /*entry*/)
+{
+    // Actions before analysis of each event 
+    //
+    // Reset the number of events buffered for this bin to 0
+    if (fCurrentBin != (fEventPool->BinNumber())) {
+	fCurrentBin = fEventPool->BinNumber();
+	fNBuffered = 0;
+    }
     return kTRUE;
 }
 
@@ -84,13 +111,15 @@ Bool_t AliMultiAODInputHandler::FinishEvent()
     // 
     // Connect the next event in the buffer to the tree
     fIndex++;
-    fNBuffered++;
-    if (fNBuffered > fBufferSize) fNBuffered = fBufferSize;
     
     fIndex %= fBufferSize;
     AliInfo(Form("Connecting buffer entry %5d", fIndex));
-    fEventBuffer[fIndex]->Clear();
+
     fEventBuffer[fIndex]->ReadFromTree(fTree, "reconnect");
+
+    fNBuffered++;
+    if (fNBuffered > fBufferSize) fNBuffered = fBufferSize;
+
     return (kTRUE);
 }
 
