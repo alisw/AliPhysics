@@ -88,7 +88,7 @@ AliRawReaderFile::AliRawReaderFile(const char* dirName, Int_t eventNumber) :
 
   fDirectory = OpenDirectory();
   if (!fDirectory) fIsValid = kFALSE;
-  if (!OpenNextFile()) fIsValid = kFALSE;
+  if (fEventIndex >= 0 && (!OpenNextFile())) fIsValid = kFALSE;
   fHeader = new AliRawDataHeader;
 
   fId[0] = fId[1] = 0;
