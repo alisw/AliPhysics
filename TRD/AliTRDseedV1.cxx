@@ -674,9 +674,9 @@ Bool_t AliTRDseedV1::Fit()
     xc[nc]   = fX0 - c->GetX();
     yc[nc]   = c->GetY();
     zc[nc]   = c->GetZ();
-    sy[ic]   = w; // all clusters have the same sigma
-    sz[ic]   = fPadLength*convert;
-    fitterZ.AddPoint(&xc[ic], zc[ic], sz[ic]);
+    sy[nc]   = w; // all clusters have the same sigma
+    sz[nc]   = fPadLength*convert;
+    fitterZ.AddPoint(&xc[nc], zc[nc], sz[nc]);
     nc++;
   }
   // to few clusters
