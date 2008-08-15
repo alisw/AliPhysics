@@ -68,6 +68,8 @@ TTree* GetESDTree(TFile *esdFile);
 void MUONClusterInfo(Int_t nevents = -1, const char* esdFileName = "AliESDs.root", const char* outFileName = "clusterInfo.root")
 {
   /// load ESD event in the ESDInterface to recover MUON objects;
+  /// track parameters at each cluster are recomputed by the interface using Kalman filter + Smoother
+  /// (It can be changed by resetting the tracker in the interface with a new recoParam object);
   /// fill AliMUONESDClusterInfo object with ESD cluster + corresponding track parameters;
   /// write results in a new root file.
   
@@ -248,11 +250,11 @@ void Prepare()
     exit(-1);
   }
   
-  // eventually set reconstruction parameters for refit (otherwise read from OCDB)
-/*  AliMUONRecoParam *muonRecoParam = AliMUONRecoParam::GetLowFluxParam();
-  muonRecoParam->Print("FULL");
-  AliRecoParam::Instance()->RegisterRecoParam(muonRecoParam);
-*/  
+  // Reset the reconstruction parameters for track refitting if needed
+  // (by default will use Kalman filter + Smoother)
+//  AliMUONRecoParam *muonRecoParam = AliMUONRecoParam::GetLowFluxParam();
+//  AliMUONESDInterface::ResetTracker(muonRecoParam);
+  
 }
 
 //-----------------------------------------------------------------------

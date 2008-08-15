@@ -1384,9 +1384,11 @@ void AliMUONTrackReconstructorK::ComplementTracks(const AliMUONVClusterStore& cl
 	if ((AliLog::GetDebugLevel("MUON","AliMUONTrackReconstructorK") >= 1) || (AliLog::GetGlobalDebugLevel() >= 1)) {
 	  cout << "ComplementTracks: found one cluster in chamber(1..): " << chamberId+1 << endl;
 	  bestTrackParamAtCluster.GetClusterPtr()->Print();
-	  cout<<endl<<"Track parameters and covariances at cluster:"<<endl;
-	  bestTrackParamAtCluster.GetParameters().Print();
-	  bestTrackParamAtCluster.GetCovariances().Print();
+	  if ((AliLog::GetDebugLevel("MUON","AliMUONTrackReconstructorK") >= 2) || (AliLog::GetGlobalDebugLevel() >= 2)) {
+	    cout<<endl<<"Track parameters and covariances at cluster:"<<endl;
+	    bestTrackParamAtCluster.GetParameters().Print();
+	    bestTrackParamAtCluster.GetCovariances().Print();
+	  }
 	}
 	
 	trackParam->SetRemovable(kTRUE);
@@ -1537,7 +1539,7 @@ Bool_t AliMUONTrackReconstructorK::RefitTrack(AliMUONTrack &track, Bool_t enable
   /// re-fit the given track
   
   // check validity of the track
-  if (!track.IsValid(GetRecoParam()->RequestedStationMask())) {
+  if (track.GetNClusters() < 3) {
     AliWarning("the track does not contain enough clusters --> unable to refit");
     return kFALSE;
   }

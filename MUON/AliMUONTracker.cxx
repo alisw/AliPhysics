@@ -22,11 +22,9 @@
 /// reconstruct tracks from recpoints
 ///
 /// Actual tracking is performed by some AliMUONVTrackReconstructor children
-/// Tracking modes (ORIGINAL, KALMAN) and associated options and parameters
-/// can be changed by using:
-/// AliMUONRecoParam *muonRecoParam = AliMUONRecoParam::GetLow(High)FluxParam();
-/// muonRecoParam->Set...(); // see methods in AliMUONRecoParam.h for details
-/// AliMUONReconstructor::SetRecoParam(muonRecoParam);
+/// Tracking modes (ORIGINAL, KALMAN) and associated options and parameters can be changed
+/// through the AliMUONRecoParam object set in the reconstruction macro or read from the CDB
+/// (see methods in AliMUONRecoParam.h file for details)
 ///
 /// \author Christian Finck and Laurent Aphecetche, SUBATECH Nantes
 //-----------------------------------------------------------------------------

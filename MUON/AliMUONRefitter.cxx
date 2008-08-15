@@ -38,7 +38,9 @@
 //-----------------------------------------------------------------------------
 /// \class AliMUONRefitter
 ///
-/// create new MUON object from ESD objects given as input (through the ESDInterface):
+/// This class has been developped to simplify the re-reconstruction of the MUON tracks
+/// stored into ESD with different recoParams and/or after having re-calibrated the digits.
+/// It creates new MUON object from ESD objects given as input (through the ESDInterface) then:
 ///
 /// - re-clusterize the ESD clusters using the attached ESD pads
 ///   (several new clusters can be reconstructed per ESD cluster)
@@ -61,6 +63,7 @@ ClassImp(AliMUONRefitter)
 //_____________________________________________________________________________
 AliMUONRefitter::AliMUONRefitter(const AliMUONRecoParam* recoParam)
 : TObject(),
+  fRecoParam(recoParam),
   fGeometryTransformer(0x0),
   fClusterServer(0x0),
   fTracker(0x0),

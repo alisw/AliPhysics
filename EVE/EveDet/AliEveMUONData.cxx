@@ -28,7 +28,6 @@
 #include "AliMUONTrack.h"
 #include "AliMUONESDInterface.h"
 #include "AliESDMuonTrack.h"
-#include "AliMUONRecoParam.h"
 #include "AliESDEvent.h"
 #include "TTree.h"
 #include "TString.h"
@@ -276,15 +275,11 @@ void AliEveMUONData::LoadRecPointsFromESD(Char_t *fileName)
     return;
   }
     
-  AliMUONRecoParam* recoParam = AliMUONRecoParam::GetCosmicParam();
-  
-  cout << "FIXME: I should get the RecoParams from the OCDB at this point !" << endl;
-  
   Int_t nTracks = Int_t(esdEvent->GetNumberOfMuonTracks());
   for (Int_t iTrack = 0; iTrack < nTracks; iTrack++) {
     esdTrack = esdEvent->GetMuonTrack(iTrack);
     if (!esdTrack->ClustersStored()) continue;
-    AliMUONESDInterface::ESDToMUON(recoParam,*esdTrack,muonTrack);
+    AliMUONESDInterface::ESDToMUON(*esdTrack,muonTrack);
     nTrackParam = muonTrack.GetTrackParamAtCluster()->GetEntries();
     for(Int_t iCluster = 0; iCluster < nTrackParam; iCluster++) {
       trackParam = (AliMUONTrackParam *) muonTrack.GetTrackParamAtCluster()->At(iCluster);
@@ -303,8 +298,6 @@ void AliEveMUONData::LoadRecPointsFromESD(Char_t *fileName)
   }
 
   delete esdEvent;
-  
-  delete recoParam;
   
   esdFile->Close();
 

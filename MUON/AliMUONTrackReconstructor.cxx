@@ -1421,7 +1421,7 @@ Bool_t AliMUONTrackReconstructor::RefitTrack(AliMUONTrack &track, Bool_t enableI
   /// re-fit the given track
   
   // check validity of the track
-  if (!track.IsValid(GetRecoParam()->RequestedStationMask())) {
+  if (track.GetNClusters() < 3) {
     AliWarning("the track does not contain enough clusters --> unable to refit");
     return kFALSE;
   }

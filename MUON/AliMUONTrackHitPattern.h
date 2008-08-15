@@ -98,6 +98,7 @@ private:
 
   void CheckConstants() const;
 
+  const AliMUONRecoParam* fRecoParam; //!< pointer to reco parameters
   const AliMUONGeometryTransformer& fTransformer; //!< geometry transformer
   const AliMUONDigitMaker& fDigitMaker; //!< pointer to digit maker
 
@@ -117,8 +118,6 @@ private:
     kSlatEff,
     kBoardEff
   };
-
-  const AliMUONRecoParam* fRecoParam; //!< pointer to reco parameters
   
   ClassDef(AliMUONTrackHitPattern, 0) // MUON track hit pattern
 };

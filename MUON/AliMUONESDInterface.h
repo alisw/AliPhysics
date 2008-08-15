@@ -38,7 +38,7 @@ class AliMUONESDInterface : public TObject
 {
 public: // methods to play with internal objects
   
-  AliMUONESDInterface(AliMUONRecoParam* recoParam);
+  AliMUONESDInterface();
   virtual ~AliMUONESDInterface();
   
   virtual void Clear(Option_t* = "");
@@ -79,9 +79,11 @@ public: // methods to play with internal objects
   TIterator* CreateDigitIteratorInCluster(UInt_t clusterId) const;
   TIterator* CreateLocalTriggerIterator() const;
   
-  const AliMUONRecoParam* GetRecoParam() const { return fRecoParam; }
   
 public: // static methods
+  
+  /// Reset the MUON tracker (using "recoParam" if provided)
+  static void ResetTracker(const AliMUONRecoParam* recoParam = 0x0);
   
   /// Set the version of track store
   static void UseTrackStore(TString name) {fgTrackStoreName = name;}
@@ -111,7 +113,7 @@ public: // static methods
   static void SetParamCov(const AliMUONTrackParam& trackParam, AliESDMuonTrack& esdTrack);
   
   // ESDMuon objects --> MUON objects conversion
-  static void ESDToMUON(const AliMUONRecoParam* recoParam, const AliESDMuonTrack& esdTrack, AliMUONTrack& track);
+  static void ESDToMUON(const AliESDMuonTrack& esdTrack, AliMUONTrack& track);
   static void ESDToMUON(const AliESDMuonTrack& esdTrack, AliMUONLocalTrigger& locTrg);
   static void ESDToMUON(const AliESDMuonCluster& esdCluster, AliMUONVCluster& cluster);
   static void ESDToMUON(const AliESDMuonPad& esdPad, AliMUONVDigit& digit);
@@ -125,7 +127,7 @@ public: // static methods
   
   // Add ESD object into the corresponding MUON store
   // return a pointer to the corresponding MUON object into the store
-  static AliMUONTrack*    Add(const AliMUONRecoParam* recoParam, const AliESDMuonTrack& esdTrack, AliMUONVTrackStore& trackStore);
+  static AliMUONTrack*    Add(const AliESDMuonTrack& esdTrack, AliMUONVTrackStore& trackStore);
   static void             Add(const AliESDMuonTrack& esdTrack, AliMUONVTriggerStore& triggerStore);
   static AliMUONVCluster* Add(const AliESDMuonCluster& esdCluster, AliMUONVClusterStore& clusterStore);
   static AliMUONVDigit*   Add(const AliESDMuonPad& esdPad, AliMUONVDigitStore& digitStore);
@@ -145,7 +147,8 @@ private:
   
 private:
   
-  static AliMUONVTrackReconstructor* fgTracker; ///< track reconstructor for refitting
+  static AliMUONRecoParam*           fgRecoParam; ///< reconstruction parameters for refitting
+  static AliMUONVTrackReconstructor* fgTracker;   ///< track reconstructor for refitting
     
   static TString fgTrackStoreName;   ///< class name of the track store to use
   static TString fgClusterStoreName; ///< class name of the cluster store to use
@@ -161,7 +164,6 @@ private:
   AliMpExMap* fClusterMap; ///< map of clusters
   AliMpExMap* fDigitMap;   ///< map of digits
   
-  const AliMUONRecoParam* fRecoParam; ///< get reco param
   
   ClassDef(AliMUONESDInterface,0)
 };

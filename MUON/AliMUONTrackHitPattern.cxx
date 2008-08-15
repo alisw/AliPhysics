@@ -58,7 +58,6 @@
 #include "AliMpVSegmentation.h"
 #include "AliMpDEManager.h"
 #include "AliMUONReconstructor.h"
-#include "AliMUONRecoParam.h"
 #include "AliMUONTriggerTrack.h"
 #include "AliMUONVTriggerTrackStore.h"
 

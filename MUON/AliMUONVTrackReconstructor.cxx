@@ -27,10 +27,9 @@
 /// * ValidateTracksWithTrigger to match tracker/trigger tracks
 ///
 /// Several options and adjustable parameters are available for both KALMAN and ORIGINAL
-/// tracking algorithms. They can be changed by using:
-/// AliMUONRecoParam *muonRecoParam = AliMUONRecoParam::GetLow(High)FluxParam();
-/// muonRecoParam->Set...(); // see methods in AliMUONRecoParam.h for details
-/// AliMUONReconstructor::SetRecoParam(muonRecoParam);
+/// tracking algorithms. They can be changed through the AliMUONRecoParam object
+/// set in the reconstruction macro or read from the CDB
+/// (see methods in AliMUONRecoParam.h file for details)
 ///
 /// Main parameters and options are:
 /// - *fgkSigmaToCutForTracking* : quality cut used to select new clusters to be

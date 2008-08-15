@@ -19,10 +19,9 @@
 ///
 /// Implementation of AliReconstructor for MUON subsystem.
 ///
-/// The clustering mode and the associated parameters can be changed by using
-/// AliMUONRecoParam *muonRecoParam = AliMUONRecoParam::GetLow(High)FluxParam();
-/// muonRecoParam->Set...(); // see methods in AliMUONRecoParam.h for details
-/// AliRecoParam::Instance()->RegisterRecoParam(muonRecoParam);
+/// The clustering mode and the associated parameters can be changed through the
+/// AliMUONRecoParam object set in the reconstruction macro or read from the CDB
+/// (see methods in AliMUONRecoParam.h file for details)
 ///
 /// Valid modes are :
 ///

@@ -26,9 +26,10 @@
 
 
 #include "AliMUONRecoParam.h"
-
-#include "AliLog.h"
 #include "AliMUONPadStatusMaker.h"
+
+#include "AliRecoParam.h"
+#include "AliLog.h"
 
 #include <Riostream.h>
 
@@ -70,12 +71,9 @@ AliMUONRecoParam::AliMUONRecoParam()
   fChargeSigmaCut(4.0)
 {
   /// Constructor
-  SetNameTitle("MUON","MUON");
   
-	SetDefaultLimits();
-	
-  // use the default parameters for low flux environment
-  SetLowFluxParam();
+  SetNameTitle("Dummy","Dummy");
+  SetDefaultLimits();
 }
 
 //_____________________________________________________________________________
@@ -147,6 +145,8 @@ void AliMUONRecoParam::SetLowFluxParam()
 {
   /// Set reconstruction parameters for low flux environment
   
+  SetNameTitle("Low Flux","Low Flux");
+  SetEventSpecie(AliRecoParam::kLowMult);
   fMinBendingMomentum = 1.;
   fMaxBendingMomentum = 3000.;
   fMaxNonBendingSlope = 0.3;
@@ -180,6 +180,8 @@ void AliMUONRecoParam::SetHighFluxParam()
 {
   /// Set reconstruction parameters for high flux environment
   
+  SetNameTitle("High Flux","High Flux");
+  SetEventSpecie(AliRecoParam::kHighMult);
   fMinBendingMomentum = 1.;
   fMaxBendingMomentum = 3000.;
   fMaxNonBendingSlope = 0.3;
@@ -229,6 +231,8 @@ void AliMUONRecoParam::SetCosmicParam()
 {
   /// Set reconstruction parameters for high flux environment
   
+  SetNameTitle("Cosmic","Cosmic");
+  SetEventSpecie(AliRecoParam::kCosmic);
   fMinBendingMomentum = 1.;
   fMaxBendingMomentum = 10000000.;
   fMaxNonBendingSlope = 0.3;
@@ -263,7 +267,9 @@ void AliMUONRecoParam::Print(Option_t *option) const
   /// print reconstruction parameters
   /// if option = FULL then print also unused parameters
   
-  cout<<endl<<"\t------Reconstruction parameters------"<<endl;
+  cout<<endl<<"\t------Reconstruction parameters ("<<GetName()<<")------"<<endl;
+  
+  if (IsDefault()) cout<<"\t\t*** Parameters used by default ***"<<endl;
   
   cout<<Form("Calibration mode = %s",fCalibrationMode.Data())<<endl;
   cout<<Form("Clustering mode = %s",fClusteringMode.Data())<<endl;
@@ -402,7 +408,7 @@ void AliMUONRecoParam::Print(Option_t *option) const
   
   cout << Form("And we cut on charge >= %7.2f x ( pedestal sigma ) ",ChargeSigmaCut()) << endl;
   
-  cout<<"\t-------------------------------------"<<endl<<endl;
+  cout<<"\t----------------------------------------------"<<endl<<endl;
   
 }
 

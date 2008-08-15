@@ -66,12 +66,12 @@ private:
   
 private:
     
+  const AliMUONRecoParam*     fRecoParam;           ///< pointer to reco param (not owner)
   AliMUONGeometryTransformer* fGeometryTransformer; ///< geometry transformer (owner)
   AliMUONVClusterServer*      fClusterServer;       ///< clusterizer (owner)
   AliMUONVTrackReconstructor* fTracker;             ///< tracker (owner)
   AliMUONESDInterface*        fESDInterface;        ///< container of MUON tracks/clusters/digits (not owner)
   
-  const AliMUONRecoParam* fRecoParam; ///< pointer to reco param
   
   ClassDef(AliMUONRefitter,0)
 };

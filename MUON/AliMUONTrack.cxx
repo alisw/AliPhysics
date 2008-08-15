@@ -24,7 +24,6 @@
 #include "AliMUONTrack.h"
 
 #include "AliMUONReconstructor.h"
-#include "AliMUONRecoParam.h"
 #include "AliMUONVCluster.h"
 #include "AliMUONVClusterStore.h"
 #include "AliMUONObjectPair.h"
@@ -457,25 +456,15 @@ Bool_t AliMUONTrack::IsValid(UInt_t requestedStationMask)
   Int_t nClusters = GetNClusters();
   AliMUONTrackParam *trackParam;
   Int_t currentStation(0);
+  UInt_t presentStationMask(0);
   
-  UInt_t m(0);
-  
-  for (Int_t i = 0; i < nClusters; i++) 
-  {
+  for (Int_t i = 0; i < nClusters; i++) {
     trackParam = (AliMUONTrackParam*) fTrackParamAtCluster->UncheckedAt(i);
-    
-    // skip unrequested stations
-//    while (expectedStation < AliMUONConstants::NTrackingSt() &&
-//	   !AliMUONReconstructor::GetRecoParam()->RequestStation(expectedStation)) expectedStation++;
-//    
-
     currentStation = trackParam->GetClusterPtr()->GetChamberId()/2;
-    
-    m |= ( 1 << currentStation );
-    
+    presentStationMask |= ( 1 << currentStation );
   }
   
-  return ( (requestedStationMask & m) == requestedStationMask ) ;
+  return ( (requestedStationMask & presentStationMask) == requestedStationMask );
 }
 
   //__________________________________________________________________________

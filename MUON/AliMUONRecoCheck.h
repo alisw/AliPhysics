@@ -18,12 +18,11 @@ class TTree;
 class AliESDEvent;
 class AliMCEventHandler;
 class AliMUONVTrackStore;
-class AliMUONRecoParam;
 
 class AliMUONRecoCheck : public TObject 
 {
 public:
-  AliMUONRecoCheck(AliMUONRecoParam* recoParam, Char_t *chLoader, Char_t *pathSim = "./");
+  AliMUONRecoCheck(Char_t *chLoader, Char_t *pathSim = "./");
   virtual ~AliMUONRecoCheck();
 
   /// Return the list of reconstructed tracks
@@ -50,8 +49,6 @@ private:
   /// Not implemented
   AliMUONRecoCheck& operator = (const AliMUONRecoCheck& rhs);
 
-  const AliMUONRecoParam* GetRecoParam() const { return fRecoParam; }
-  
   void ResetStores();
   
   void MakeReconstructedTracks();
@@ -73,8 +70,6 @@ private:
   AliMUONVTrackStore* fTrackRefStore;     ///< current simulated tracks (owner)
   AliMUONVTrackStore* fRecoTrackRefStore; ///< current reconstructible tracks (owner)
   AliMUONVTrackStore* fRecoTrackStore;    ///< current reconstructed tracks (owner)
-  
-  const AliMUONRecoParam* fRecoParam; ///< pointer to reco param
   
   ClassDef(AliMUONRecoCheck, 0)   //Utility class to check reconstruction
 };

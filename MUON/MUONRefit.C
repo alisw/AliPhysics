@@ -70,16 +70,22 @@ void MUONRefit(Int_t nevents = -1, const char* esdFileNameIn = "AliESDs.root", c
   // prepare the refitting
   gRandom->SetSeed(1);
   Prepare();
+  
+  // set reconstruction parameters used for refitting
+  AliMUONRecoParam *muonRecoParam = AliMUONRecoParam::GetLowFluxParam();
+  muonRecoParam->Print("FULL");
+  
   AliMUONESDInterface esdInterface;
-  AliMUONRefitter refitter;
+  AliMUONRefitter refitter(muonRecoParam);
   refitter.Connect(&esdInterface);
   
   // open the ESD file and tree
   TFile* esdFile = TFile::Open(esdFileNameIn);
   TTree* esdTree = GetESDTree(esdFile);
   
-  // create the ESD output tree
-  gROOT->cd();
+  // create the ESD output file and tree
+  TFile* newESDFile = TFile::Open(esdFileNameOut, "RECREATE");
+  newESDFile->SetCompressionLevel(2);
   TTree* newESDTree = esdTree->CloneTree(0);
   
   // connect ESD event to the ESD tree
@@ -179,14 +185,13 @@ void MUONRefit(Int_t nevents = -1, const char* esdFileNameIn = "AliESDs.root", c
   timer.Stop();
   
   // write output ESD tree
-  TFile* newESDFile = TFile::Open(esdFileNameOut, "RECREATE");
-  newESDFile->SetCompressionLevel(2);
+  newESDFile->cd();
   newESDTree->Write();
+  delete newESDTree;
   newESDFile->Close();
   
   // free memory
   esdFile->Close();
-  delete newESDTree;
   delete esd;
   
   cout<<endl<<"time to refit: R:"<<timer.RealTime()<<" C:"<<timer.CpuTime()<<endl<<endl;
@@ -220,12 +225,6 @@ void Prepare()
     Error("MUONRefit","Could not access mapping from OCDB !");
     exit(-1);
   }
-  
-  // set reconstruction parameters
-  AliMUONRecoParam *muonRecoParam = AliMUONRecoParam::GetLowFluxParam();
-  muonRecoParam->CombineClusterTrackReco(kFALSE);
-  muonRecoParam->Print("FULL");
-  AliRecoParam::Instance()->RegisterRecoParam(muonRecoParam);
   
 }
 

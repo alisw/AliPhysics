@@ -26,7 +26,6 @@
 #include "AliMUONTrackParam.h"
 #include "AliMUONConstants.h"
 #include "AliMUONReconstructor.h"
-#include "AliMUONRecoParam.h"
 
 #include "AliMagF.h" 
 

@@ -12,7 +12,6 @@
 //  Author: Philippe Pillot
 
 #include "AliMUONReconstructor.h"
-#include "AliMUONRecoParam.h"
 
 #include <TObject.h>
 
@@ -56,29 +55,6 @@ class AliMUONVTrackReconstructor : public TObject {
   /// re-fit the given track
   virtual Bool_t RefitTrack(AliMUONTrack &track, Bool_t enableImprovement = kTRUE) = 0;
   
-  
-  // methods previously got from the static muonrecoparam:
-  //
-  // MakeMoreTrackCandidates()
-  //    
-  // ComplementTracks()
-  //    
-  // ImproveTracks()
-  //
-  // GetMaxNonBendingSlope()
-  // GetMaxBendingSlope()
-  //
-  // GetMinBendingMomentum()
-  // GetMaxBendingMomentum()
-  //
-  // UseChamber(Int_t chamberId)
-  //
-  // GetMaxNonBendingDistanceToTrack()
-  // GetSigmaCutForTracking()
-  // GetMaxBendingDistanceToTrack()
-  // GetSigmaCutForTracking()
-  // TrackAllTracks()
-  // RequestStation(Int_t stationId)
   
  protected:
 

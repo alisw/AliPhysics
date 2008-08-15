@@ -44,7 +44,6 @@
 #include "AliMUONTrackParam.h"
 #include "AliMUONGeometryTransformer.h"
 #include "AliMUONESDInterface.h"
-#include "AliMUONRecoParam.h"
 
 #include "AliESDEvent.h"
 #include "AliESDMuonTrack.h"
@@ -208,7 +207,7 @@ void MUONAlignment(Int_t nEvents = 100000, char* geoFilename = "geometry.root", 
 	fBenMom->Fill(1./invBenMom);
 	if (TMath::Abs(invBenMom)<=1.04) {
 	  AliMUONTrack track;
-	  AliMUONESDInterface::ESDToMUON(AliMUONRecoParam::GetLowFluxParam(),*esdTrack, track);
+	  AliMUONESDInterface::ESDToMUON(*esdTrack, track);
 	  alig->ProcessTrack(&track);
 	  alig->LocalFit(iTrackOk++,trackParams,0);
 	}
