@@ -66,7 +66,7 @@ void MakePHOSFullMisAlignment()
   new(alobj[i++]) AliAlignObjParams("PHOS/Module1",
 	  volid, 0., 0., 0., 0., 0., 0., kTRUE);
   new(alobj[i++]) AliAlignObjParams("PHOS/Module2",
-	  volid, 0., 0., 0., 0., 0., 0., kTRUE);
+	  volid, 2., 0., 0., 0., 0., 0., kTRUE);
 
   Double_t rotMatrix[9] = {0.999992695, -0.00295322, -0.0024267, 
 			   0.002955489, 0.999995199, 0.00093165, 
