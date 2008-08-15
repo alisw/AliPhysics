@@ -328,14 +328,15 @@ void AliAODEvent::ResetStd(Int_t trkArrSize,
 void AliAODEvent::ClearStd()
 {
   // clears the standard arrays
-  fTracks        ->Clear();
-  fVertices      ->Clear();
-  fV0s           ->Clear();
+  fHeader        ->RemoveQTheta();
+  fTracks        ->Delete();
+  fVertices      ->Delete();
+  fV0s           ->Delete();
   fTracklets     ->DeleteContainer();
   fJets          ->Delete();
   fEmcalCells    ->DeleteContainer();
   fPhosCells     ->DeleteContainer();
-  fCaloClusters  ->Clear();
+  fCaloClusters  ->Delete();
   fFmdClusters   ->Clear();
   fPmdClusters   ->Clear();
 }
@@ -425,15 +426,18 @@ void AliAODEvent::ReadFromTree(TTree *tree, Option_t* opt /*= ""*/)
     // Check if already connected to tree
     TList* connectedList = (TList*) (tree->GetUserInfo()->FindObject("AODObjectsConnectedToTree"));
     if (connectedList && (strcmp(opt, "reconnect"))) {
-	// If connected use the connected list if objects
+	// If connected use the connected list of objects
+	printf("Delete and reconnect \n");
+	
 	fAODObjects->Delete();
 	fAODObjects = connectedList;
 	GetStdContent(); 
 	fConnected = kTRUE;
 	return;
-    }
+    } 
     // Connect to tree
     // prevent a memory leak when reading back the TList
+    if (!(strcmp(opt, "reconnect"))) fAODObjects->Delete();
     delete fAODObjects;
     fAODObjects = 0;
     // create a new TList from the UserInfo TList... 
