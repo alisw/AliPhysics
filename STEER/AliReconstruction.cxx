@@ -122,6 +122,7 @@
 #include <TMap.h>
 #include <TChain.h>
 #include <TProof.h>
+#include <TProofOutputFile.h>
 #include <TParameter.h>
 
 #include "AliReconstruction.h"
@@ -1008,6 +1009,12 @@ Bool_t AliReconstruction::Run(const char* input)
     // Proof mode
     if (gProof) {
       gProof->AddInput(this);
+      TUrl outputFile;
+      outputFile.SetProtocol("root",kTRUE);
+      outputFile.SetHost(gSystem->HostName());
+      outputFile.SetFile(Form("%s/AliESDs.root",gSystem->pwd()));
+      AliInfo(Form("Output file with ESDs is %s",outputFile.GetUrl()));
+      gProof->AddInput(new TNamed("PROOF_OUTPUTFILE",outputFile.GetUrl()));
       chain->SetProof();
       chain->Process("AliReconstruction");
     }
@@ -1101,6 +1108,8 @@ void AliReconstruction::Begin(TTree *)
   // going into the event loop
   // Should follow the TSelector convention
   // i.e. initialize only the object on the client side
+  AliCodeTimerAuto("");
+
   AliReconstruction *reco = NULL;
   if (fInput) {
     if (reco = (AliReconstruction*)fInput->FindObject("AliReconstruction")) {
@@ -1171,7 +1180,11 @@ void AliReconstruction::SlaveBegin(TTree*)
   // In proof mode it is executed on the slave
   AliCodeTimerAuto("");
 
+  TProofOutputFile *outProofFile = NULL;
   if (fInput) {
+    if (AliReconstruction *reco = (AliReconstruction*)fInput->FindObject("AliReconstruction")) {
+      *this = *reco;
+    }
     if (TGeoManager *tgeo = (TGeoManager*)fInput->FindObject("Geometry")) {
       gGeoManager = tgeo;
       AliGeomManager::SetGeometry(tgeo);
@@ -1188,8 +1201,10 @@ void AliReconstruction::SlaveBegin(TTree*)
     if (AliMagF *map = (AliMagF*)fInput->FindObject("Maps")) {
       AliTracker::SetFieldMap(map,fUniformField);
     }
-    if (AliReconstruction *reco = (AliReconstruction*)fInput->FindObject("AliReconstruction")) {
-      *this = *reco;
+    if (TNamed *outputFileName = (TNamed *) fInput->FindObject("PROOF_OUTPUTFILE")) {
+      outProofFile = new TProofOutputFile(gSystem->BaseName(TUrl(outputFileName->GetTitle()).GetFile()));
+      outProofFile->SetOutputFileName(outputFileName->GetTitle());
+      fOutput->Add(outProofFile);
     }
     AliSysInfo::AddStamp("ReadInputInSlaveBegin");
   }
@@ -1219,11 +1234,21 @@ void AliReconstruction::SlaveBegin(TTree*)
   AliSysInfo::AddStamp("CreateTrackers");
 
   // create the ESD output file and tree
-  ffile = TFile::Open("AliESDs.root", "RECREATE");
-  ffile->SetCompressionLevel(2);
-  if (!ffile->IsOpen()) {
-    Abort("OpenESDFile", TSelector::kAbortProcess);
-    return;
+  if (!outProofFile) {
+    ffile = TFile::Open("AliESDs.root", "RECREATE");
+    ffile->SetCompressionLevel(2);
+    if (!ffile->IsOpen()) {
+      Abort("OpenESDFile", TSelector::kAbortProcess);
+      return;
+    }
+  }
+  else {
+    if (!(ffile = outProofFile->OpenFile("RECREATE"))) {
+      Abort(Form("Problems opening output PROOF file: %s/%s",
+		 outProofFile->GetDir(), outProofFile->GetFileName()),
+	    TSelector::kAbortProcess);
+      return;
+    }
   }
 
   ftree = new TTree("esdTree", "Tree with ESD objects");
