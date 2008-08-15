@@ -11,7 +11,9 @@ Several fit methods implemented
    StoreData();  - Store
    StoreTree();
 
-3. LoadViewer(); - Browse the fit parameters
+3. MakeRes();    - Make the final calibration  + conbination of different components
+
+4. LoadViewer(); - Browse the fit parameters
 
 4. 
  
@@ -87,6 +89,8 @@ AliTPCCalPad *calPadTL   = 0;           // tan
 AliTPCCalPad *calPadQ     = 0;          // time (q)  correction
 AliTPCCalPad *calPadGXY   = 0;          // global XY missalign (drift velocity grad) 
 AliTPCCalPad *calPadOff   = 0;          // normalization offset fit
+AliTPCCalPad *calPadRes   = 0;          // final calibration  
+
 
 //
 // working variables
@@ -257,15 +261,15 @@ void MakeFit(){
   //
   // fits
   // 
-  calPad0 = makePad->GetCalPad("f0","cutCE", "ffit0");
-  calPad1 = makePad->GetCalPad("f1","cutCE", "ffit1");
-  calPad2 = makePad->GetCalPad("f2","cutCE", "ffit2");
-  calPadInOut = makePad->GetCalPad("fInOut","cutCE", "fInOut");
-  calPadLX    = makePad->GetCalPad("fLX","cutCE", "fLX");
-  calPadTL    = makePad->GetCalPad("fTL","cutCE", "fTL");
-  calPadQ      = makePad->GetCalPad("fQ","cutCE", "fQ");
-  calPadGXY    = makePad->GetCalPad("fGXY","cutCE", "fGXY");
-  calPadOff    = makePad->GetCalPad("fOff","cutCE", "fOff");  
+  calPad0      = makePad->GetCalPad("f0","1", "ffit0");
+  calPad1      = makePad->GetCalPad("f1","1", "ffit1");
+  calPad2      = makePad->GetCalPad("f2","1", "ffit2");
+  calPadInOut  = makePad->GetCalPad("fInOut","1", "fInOut");
+  calPadLX     = makePad->GetCalPad("fLX","1", "fLX");
+  calPadTL     = makePad->GetCalPad("fTL","1", "fTL");
+  calPadQ      = makePad->GetCalPad("fQ","1", "fQ");
+  calPadGXY    = makePad->GetCalPad("fGXY","1", "fGXY");
+  calPadOff    = makePad->GetCalPad("fOff","1", "fOff");  
 }
 
 void LoadViewer(){
@@ -292,7 +296,7 @@ void RebuildData(){
   tree = makePad->GetTree();
   MakeAliases0(); //
   //
-  calPadCor = makePad->GetCalPad("tcor","(cutA||cutC)", "tcor");
+  calPadCor = makePad->GetCalPad("tcor","1", "tcor");
   calPadOut = makePad->GetCalPad("1","!((cutA||cutC)&&abs(ly.fElements/lx.fElements)<0.155)", "out");
   calPadIn  = makePad->GetCalPad("dt-tcor","(cutA||cutC)&&abs(ly.fElements/lx.fElements)<0.155","timeIn");
   calPadF1  = calPadIn->GlobalFit("timeF1", calPadOut,kTRUE,0,0.9);
@@ -357,6 +361,7 @@ void LoadData(){
   calPadQ     = (AliTPCCalPad*)f.Get("fQ");    // time (q)  correction
   calPadGXY   = (AliTPCCalPad*)f.Get("fGXY");  // global XY missalign (drift velocity grad) 
   calPadOff   = (AliTPCCalPad*)f.Get("fOff");  // normalization offset fit
+  calPadRes   = (AliTPCCalPad*)f.Get("Result");  //resulting calibration
 }
 
 void StoreData(){
@@ -384,6 +389,7 @@ void StoreData(){
   if (calPadQ)   calPadQ->Write("fQ");       // time (q)  correction
   if (calPadGXY) calPadGXY->Write("fGXY");   // global XY missalign (drift velocity grad) 
   if (calPadOff) calPadOff->Write("fOff");   // normalization offset fit
+  if (calPadRes) calPadRes->Write("Result");   //resulting calibration
   fstore->Close();
   delete fstore;
 }
@@ -414,6 +420,7 @@ void StoreTree(){
   if (calPadQ)   preprocesor->AddComponent(calPadQ->Clone());
   if (calPadGXY) preprocesor->AddComponent(calPadGXY->Clone());
   if (calPadOff) preprocesor->AddComponent(calPadOff->Clone());
+  if (calPadRes) preprocesor->AddComponent(calPadRes->Clone());
   preprocesor->DumpToFile(fname);
   delete preprocesor;
 }
@@ -467,8 +474,37 @@ void MakeAliases1(){
   tree->SetAlias("gxr","(gx.fElements/250.)"); //
   tree->SetAlias("gyr","(gy.fElements/250.)"); //
   tree->SetAlias("lxr","(lx.fElements-133.41)/250.");
-  tree->SetAlias("qp","(sqrt(qIn.fElements)/10.)"); //
+  tree->SetAlias("qp","(sqrt(qIn.fElements)/10.+(out.fElements>0.5))"); //
   tree->SetAlias("tl","(ly.fElements/lx.fElements)/0.17");  
 }
 
 
+void MakeRes()
+{
+  //
+  // make final calibration
+  //
+  AliTPCCalPad * calPadRes0 =new AliTPCCalPad(*calPadIn);
+  calPadRes0->Add(calPadCor);       // add correction
+  calPadRes0->Add(calPad2,-1);      // remove global fit
+  calPadRes  = calPadRes0->GlobalFit("Result", calPadOut,kTRUE,1,0.9);
+  //
+  //
+  {
+    Float_t tlmedian =  calPadTL->GetMedian();
+    for (Int_t isector=0;isector<72; isector++){
+      for (UInt_t ich=0;ich<calPadIn->GetCalROC(isector)->GetNchannels();ich++){
+	//
+	//
+	Float_t val0 = calPadRes->GetCalROC(isector)->GetValue(ich);
+	if (TMath::Abs(val0)>0.5) calPadRes->GetCalROC(isector)->SetValue(ich,0);
+	Float_t tl = calPadTL->GetCalROC(isector)->GetValue(ich);
+	Float_t inOut = calPadInOut->GetCalROC(isector)->GetValue(ich);
+	calPadRes->GetCalROC(isector)->SetValue(ich,calPadRes->GetCalROC(isector)->GetValue(ich)+tl+inOut);
+	//
+      }
+    }
+  }
+  calPadRes->Add(calPadCor,-1);     // remove back correction (e.g Pulser time 0)
+
+}
