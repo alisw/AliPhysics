@@ -131,7 +131,8 @@ protected:
 	       AliHLTUInt32_t& size, AliHLTComponentBlockDataList& outputBlocks );
 
   int Reconfigure(const char* cdbEntry, const char* chainId);
-
+  int ReadPreprocessorValues(const char* modules);
+  
   using AliHLTProcessor::DoEvent;
   
 private:

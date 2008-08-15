@@ -47,6 +47,7 @@ using namespace std;
 #include "TObjArray.h"
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
+#include "AliCDBStorage.h"
 //#include "AliHLTTPC.h"
 //#include <stdlib.h>
 //#include <cerrno>
@@ -813,9 +814,49 @@ int AliHLTTPCSliceTrackerComponent::Configure(const char* arguments)
   return iResult;
 }
 
+int AliHLTTPCSliceTrackerComponent::ReadPreprocessorValues(const char* modules)
+{
+  // see header file for class documentation
+  
+  int iResult = 0;
+  TString str(modules);
+  if(str.Contains("HLT") || str.Contains("TPC") || str.Contains("GRP")){
+  
+    const char* pathBField=kAliHLTCDBSolenoidBz;
+    if (pathBField) {
+
+      HLTInfo("reconfigure B-Field from entry %s, modules %s", pathBField,(modules!=NULL && modules[0]!=0)?modules:"<none>");
+      //AliCDBEntry *pEntry = AliCDBManager::Instance()->Get(pathBField/*,GetRunNo()*/);
+      
+      AliCDBPath path(pathBField);
+      
+      AliCDBStorage *stor = AliCDBManager::Instance()->GetDefaultStorage();
+      Int_t version    = stor->GetLatestVersion(pathBField, GetRunNo());
+      Int_t subVersion = stor->GetLatestSubVersion(pathBField, GetRunNo(), version);
+      AliCDBEntry *pEntry = stor->Get(path,GetRunNo(), version, subVersion);
+      
+      HLTImportant("RunNo %d, Version %d, subversion %d", GetRunNo(), version, subVersion);
+      
+      if (pEntry) {
+    	TObjString* pString=dynamic_cast<TObjString*>(pEntry->GetObject());
+    	if (pString) {
+   	  HLTImportant("received configuration object string: \'%s\'", pString->GetString().Data());
+   	  iResult=Configure(pString->GetString().Data());
+    	} else {
+   	  HLTError("configuration object \"%s\" has wrong type, required TObjString", pathBField);
+    	}
+      } else {
+    	HLTError("cannot fetch object \"%s\" from CDB", pathBField);
+      }
+    }
+  }  
+  return iResult;
+}
+
 int AliHLTTPCSliceTrackerComponent::Reconfigure(const char* cdbEntry, const char* chainId)
 {
   // see header file for class documentation
+
   int iResult=0;
   const char* path="HLT/ConfigTPC/SliceTrackerComponent";
   const char* defaultNotify="";
@@ -835,7 +876,7 @@ int AliHLTTPCSliceTrackerComponent::Reconfigure(const char* cdbEntry, const char
 	HLTError("configuration object \"%s\" has wrong type, required TObjString", path);
       }
     } else {
-      HLTError("can not fetch object \"%s\" from CDB", path);
+      HLTError("cannot fetch object \"%s\" from CDB", path);
     }
   }
 
@@ -853,11 +894,12 @@ int AliHLTTPCSliceTrackerComponent::Reconfigure(const char* cdbEntry, const char
 	HLTError("configuration object \"%s\" has wrong type, required TObjString", path);
       }
     } else {
-      HLTError("can not fetch object \"%s\" from CDB", path);
+      HLTError("cannot fetch object \"%s\" from CDB", path);
     }
   }
   
   return iResult;
+
 }
 
 void AliHLTTPCSliceTrackerComponent::SetTrackerParam1()

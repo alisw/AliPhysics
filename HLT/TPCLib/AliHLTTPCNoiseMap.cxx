@@ -55,9 +55,8 @@ AliHLTTPCNoiseMap* AliHLTTPCNoiseMap::Instance(){
   return pNoiseMapInstance; // address of sole instance
 }
 
-AliTPCCalPad* AliHLTTPCNoiseMap::ReadNoiseMap(){
+AliTPCCalPad* AliHLTTPCNoiseMap::ReadNoiseMap(Int_t runNo){
 // see header file for class documentation
-  
   const char* pathNoiseMap = "TPC/Calib/PadNoise";
   AliTPCCalPad *padNoise = NULL;
 
@@ -67,15 +66,32 @@ AliTPCCalPad* AliHLTTPCNoiseMap::ReadNoiseMap(){
     //AliCDBEntry *pEntry = AliCDBManager::Instance()->Get(path); // read from the default storage 
     // for local testing purposes
     
-    AliCDBStorage *stor   = AliCDBManager::Instance()->GetStorage(pathNoiseMap);
-    AliCDBEntry   *pEntry = stor->Get(pathNoiseMap,AliCDBManager::Instance()->GetRun());
+    AliCDBStorage *stor = AliCDBManager::Instance()->GetDefaultStorage();
+    if(!stor){
+       HLTError("Cannot get HCDB default storage.");
+       return NULL;
+    }
     
+    AliCDBPath path(pathNoiseMap);
+    Int_t version    = stor->GetLatestVersion(pathNoiseMap, runNo);
+    Int_t subVersion = stor->GetLatestSubVersion(pathNoiseMap, runNo, version);
+    
+    //HLTInfo("RunNo %d, version %d, subversion %d", runNo, version, subVersion);
+    
+    AliCDBEntry *pEntry = stor->Get(path, runNo, version, subVersion);
+        
     if(pEntry){ 
        padNoise = (AliTPCCalPad*)pEntry->GetObject();
-       TObjString *pString = dynamic_cast<TObjString*>(pEntry->GetObject());
-       if(pString){ HLTInfo("received configuration object string: \'%s\'", pString->GetString().Data()); }
+       if(padNoise){
+       	 TObjString *pString = dynamic_cast<TObjString*>(pEntry->GetObject());
+       	 if(pString){ 
+	    HLTInfo("received configuration object string: \'%s\'", pString->GetString().Data()); }
+         }
     } // end if pEntry 
-    else { HLTError("cannot fetch object \"%s\" from CDB", pathNoiseMap); } 
+    else { 
+       HLTError("cannot fetch object \"%s\" from CDB", pathNoiseMap); 
+    } 
   } // end if pathNoiseMap
   return padNoise;
+  
 }

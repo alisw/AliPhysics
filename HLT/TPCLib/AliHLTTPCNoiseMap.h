@@ -40,7 +40,7 @@ public:
   static AliHLTTPCNoiseMap* Instance();
   
   /** method to retrieve the noise map from HCDB */
-  AliTPCCalPad* ReadNoiseMap();
+  AliTPCCalPad* ReadNoiseMap(Int_t runNo);
 
 private:
   /** standard constructor prohibited */

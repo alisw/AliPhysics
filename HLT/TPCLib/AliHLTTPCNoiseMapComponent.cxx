@@ -34,6 +34,7 @@ using namespace std;
 
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
+#include "AliCDBStorage.h"
 #include "AliHLTTPCNoiseMap.h"
 
 #include "AliTPCCalPad.h"
@@ -202,8 +203,16 @@ int AliHLTTPCNoiseMapComponent::DoInit( int argc, const char** argv ) {
   
   if(fApplyNoiseMap){
      AliHLTTPCNoiseMap *nm = AliHLTTPCNoiseMap::Instance();
-     AliTPCCalPad *noisePad = nm->ReadNoiseMap();
-     fHistCDBMap = noisePad->MakeHisto2D(1);
+     if(!nm) { 
+         HLTWarning("AliHLTTPCNoiseMap instance not existent."); 
+     }
+     else {
+         AliTPCCalPad *noisePad = nm->ReadNoiseMap(GetRunNo());
+         if(noisePad) {
+	    fHistCDBMap = noisePad->MakeHisto2D(1);
+	    
+	 }
+     }
   }
 
 //   if(fApplyNoiseMap){
@@ -214,6 +223,19 @@ int AliHLTTPCNoiseMapComponent::DoInit( int argc, const char** argv ) {
 //     //fHistCDBMap = noisePad->MakeHisto2D(1); //side C
 //   }
    
+  if(fPlotSideA){
+     fHistSideA = new TH2F("fHistSideA","TPC Side A",250,-250,250,250,-250,250);		
+     fHistSideA->SetXTitle("global X (cm)"); fHistSideA->SetYTitle("global Y (cm)");
+  }   
+  
+  if(fPlotSideC){    
+     fHistSideC = new TH2F("fHistSideC","TPC Side C",250,-250,250,250,-250,250);
+     fHistSideC->SetXTitle("global X (cm)"); fHistSideC->SetYTitle("global Y (cm)");
+  }
+ 
+  fHistMaxSignal = new TH2F("fHistMaxSignal","maximum signal",   250,-250,250,250,-250,250);
+  fHistTotSignal = new TH2F("fHistTotSignal","total signal",     250,-250,250,250,-250,250);
+  fHistPadRMS    = new TH2F("fHistPadRMS",   "RMS",              250,-250,250,250,-250,250);
  
 //   HLTDebug("using AliHLTTPCDigitReaderDecoder");
 //   pDigitReader = new AliHLTTPCDigitReaderDecoder(); // double-loop
@@ -224,35 +246,30 @@ int AliHLTTPCNoiseMapComponent::DoInit( int argc, const char** argv ) {
 } // end DoInit()
 
 int AliHLTTPCNoiseMapComponent::DoDeinit() { 
-// see header file for class documentation       
-    return 0;
+// see header file for class documentation  
+
+  if(fHistMaxSignal) delete fHistMaxSignal; fHistMaxSignal = NULL;
+  if(fHistTotSignal) delete fHistTotSignal; fHistTotSignal = NULL;
+  if(fHistPadRMS)    delete fHistPadRMS;    fHistPadRMS    = NULL;
+  if(fHistSideA)     delete fHistSideA;     fHistSideA     = NULL;
+  if(fHistSideC)     delete fHistSideC;     fHistSideC     = NULL;
+       
+  return 0;
 }
 
 int AliHLTTPCNoiseMapComponent::DoEvent(const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& /*trigData*/){
 // see header file for class documentation
  
-  HLTInfo("--- Entering DoEvent() in TPCNoiseMap ---");
+  //HLTInfo("--- Entering DoEvent() in TPCNoiseMap ---");
  
   if(GetFirstInputBlock( kAliHLTDataTypeSOR ) || GetFirstInputBlock( kAliHLTDataTypeEOR )) return 0;
-  
-  if(fPlotSideA){
-     fHistSideA = new TH2F("fHistSideA","TPC Side A",250,-250,250,250,-250,250);		
-     fHistSideA->SetXTitle("global X (cm)"); fHistSideA->SetYTitle("global Y (cm)");
-  }   
-  
-  if(fPlotSideC){    
-     fHistSideC = new TH2F("fHistSideC","TPC Side C",250,-250,250,250,-250,250);
-     fHistSideC->SetXTitle("global X (cm)"); fHistSideC->SetYTitle("global Y (cm)");
-  }
-  
+   
   const AliHLTComponentBlockData *iter = NULL;
 
   Float_t xyz[3]; 
   Int_t thissector, thisrow;
-
-  fHistMaxSignal = new TH2F("fHistMaxSignal","maximum signal",   250,-250,250,250,-250,250);
-  fHistTotSignal = new TH2F("fHistTotSignal","total signal",     250,-250,250,250,-250,250);
-  fHistPadRMS    = new TH2F("fHistPadRMS",   "RMS",              250,-250,250,250,-250,250);
+  
+  ResetHistograms();
   
   for(iter = GetFirstInputBlock(kAliHLTDataTypeDDLRaw|kAliHLTDataOriginTPC); iter != NULL; iter = GetNextInputBlock()){
       
@@ -348,7 +365,7 @@ int AliHLTTPCNoiseMapComponent::DoEvent(const AliHLTComponentEventData& evtData,
 
 void AliHLTTPCNoiseMapComponent::MakeHistosPublic() {
 // see header file for class documentation
-  
+ 
 //   TFile *outputfile = new TFile("test.root","RECREATE");
 //   fHistSignal->Write();
 //   outputfile->Save();
@@ -367,11 +384,11 @@ void AliHLTTPCNoiseMapComponent::MakeHistosPublic() {
     
   //PushBack( (TObject*) &histos, kAliHLTDataTypeHistogram, fSpecification);    
  
-  if(fHistMaxSignal) delete fHistMaxSignal; fHistMaxSignal = NULL;
-  if(fHistTotSignal) delete fHistTotSignal; fHistTotSignal = NULL;
-  if(fHistPadRMS)    delete fHistPadRMS;    fHistPadRMS    = NULL;
-  if(fHistSideA)     delete fHistSideA;     fHistSideA     = NULL;
-  if(fHistSideC)     delete fHistSideC;     fHistSideC     = NULL;
+//   if(fHistMaxSignal) delete fHistMaxSignal; fHistMaxSignal = NULL;
+//   if(fHistTotSignal) delete fHistTotSignal; fHistTotSignal = NULL;
+//   if(fHistPadRMS)    delete fHistPadRMS;    fHistPadRMS    = NULL;
+//   if(fHistSideA)     delete fHistSideA;     fHistSideA     = NULL;
+//   if(fHistSideC)     delete fHistSideC;     fHistSideC     = NULL;
   
 }
 
@@ -447,26 +464,39 @@ int AliHLTTPCNoiseMapComponent::Reconfigure(const char* cdbEntry, const char* ch
   int iResult=0;
   const char* path="HLT/ConfigTPC/TPCNoiseMapComponent";
   const char* defaultNotify="";
-  if (cdbEntry) {
-      path=cdbEntry;
-      defaultNotify=" (default)";
+  if(cdbEntry){
+      path          = cdbEntry;
+      defaultNotify = "(manual operator entry)";
   }
   
-  if (path) {
-    HLTInfo("reconfigure from entry %s%s, chain id %s", path, defaultNotify,(chainId!=NULL && chainId[0]!=0)?chainId:"<none>");
-    AliCDBEntry *pEntry = AliCDBManager::Instance()->Get(path/*,GetRunNo()*/);
-    if (pEntry) {
-      TObjString* pString=dynamic_cast<TObjString*>(pEntry->GetObject());
-      if (pString) {
-	HLTInfo("received configuration object string: \'%s\'", pString->GetString().Data());
-	iResult=Configure(pString->GetString().Data());
-      } else {
-	HLTError("configuration object \"%s\" has wrong type, required TObjString", path);
-      }
-    } else {
-      HLTError("cannot fetch object \"%s\" from CDB", path);
-    }
-  }
+  if(path){          
+     HLTInfo("reconfigure from entry %s%s, chain id %s", path, defaultNotify,(chainId!=NULL && chainId[0]!=0)?chainId:"<none>" );
+     
+     AliCDBPath argumentPath(path);
+     AliCDBStorage *stor = AliCDBManager::Instance()->GetDefaultStorage();
+        
+     if(stor){
+        Int_t version    = stor->GetLatestVersion(path, GetRunNo());
+        Int_t subVersion = stor->GetLatestSubVersion(path, GetRunNo(), version);
+        AliCDBEntry *pEntry = stor->Get(argumentPath,GetRunNo(), version, subVersion);
+
+        if(pEntry){
+            TObjString* pString = dynamic_cast<TObjString*>(pEntry->GetObject());
+            if(pString){
+               HLTInfo("received configuration object string: \'%s\'", pString->GetString().Data());
+               iResult = Configure(pString->GetString().Data());
+            } // if pString is valid
+	    else {
+               HLTError("configuration object \"%s\" has wrong type, required TObjString", path);
+            }
+        } // if pEntry is valid
+	else {
+           HLTError("cannot fetch object \"%s\" from CDB", path);
+        }
+     } // if stor is valid
+  } // if path is valid
   
   return iResult;
+
+
 }
