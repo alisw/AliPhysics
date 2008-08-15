@@ -636,7 +636,7 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
         x = chamber->GetX();
       
         AliTRDpadPlane *pp = fGeom->GetPadPlane(ilayer, stack);
-        tracklet.SetTilt(TMath::Tan(-TMath::DegToRad()*pp->GetTiltingAngle()));
+        tracklet.SetTilt(TMath::Tan(TMath::DegToRad()*pp->GetTiltingAngle()));
         tracklet.SetPadLength(pp->GetLengthIPad());
         tracklet.SetPlane(ilayer);
         tracklet.SetX0(x);
@@ -1211,7 +1211,8 @@ Double_t AliTRDtrackerV1::FitRiemanTilt(AliTRDtrackV1 *track, AliTRDseedV1 *trac
       nPoints++;
     }
   }
-  fitter->Eval();
+  if(fitter->Eval()) return 1.E10;
+
   Double_t z0    = fitter->GetParameter(3);
   Double_t dzdx  = fitter->GetParameter(4);
 
@@ -3218,6 +3219,8 @@ void AliTRDtrackerV1::AliTRDLeastSquare::Eval(){
   //
   
   Double_t denominator = fSums[0] * fSums[4] - fSums[1] *fSums[1];
+  if(denominator==0) return;
+
   //	for(Int_t isum = 0; isum < 5; isum++)
   //		printf("fSums[%d] = %f\n", isum, fSums[isum]);
   //	printf("denominator = %f\n", denominator);
