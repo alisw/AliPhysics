@@ -24,6 +24,9 @@
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 
+#include <cstring>
+
+
 #include <TObjArray.h>
 #include <TList.h>
 #include <TH2.h>
@@ -32,29 +35,45 @@
 #include <TProfile.h>
 #include <TGraphErrors.h>
 #include <TMath.h>
+#include "TTreeStream.h"
+#include "TGeoManager.h"
 
 #include "AliAnalysisManager.h"
-#include "AliTRDseedV1.h"
 #include "AliTrackReference.h"
-#include "TTreeStream.h"
+#include "AliTrackPointArray.h"
+#include "AliCDBManager.h"
+
+#include "AliTRDcluster.h"
+#include "AliTRDseedV1.h"
+#include "AliTRDtrackV1.h"
+#include "AliTRDtrackerV1.h"
+#include "AliTRDReconstructor.h"
+#include "AliTRDrecoParam.h"
 
 #include "AliTRDtrackInfo/AliTRDtrackInfo.h"
 #include "AliTRDtrackingResolution.h"
-
-#include <cstring>
 
 ClassImp(AliTRDtrackingResolution)
 
 //________________________________________________________
 AliTRDtrackingResolution::AliTRDtrackingResolution(const char * name):
-  AliAnalysisTask(name, ""),
-  fTrackObjects(0x0),
-  fOutputHistograms(0x0),
-  fYRes(0x0),
-  fPhiRes(0x0),
-  fDebugLevel(0),
-  fDebugStream(0x0)
+  AliAnalysisTask(name, "")
+  ,fTrackObjects(0x0)
+  ,fOutputHistograms(0x0)
+  ,fYRes(0x0)
+  ,fPhiRes(0x0)
+  ,fReconstructor(0x0)
+  ,fDebugLevel(0)
+  ,fDebugStream(0x0)
 {
+  AliCDBManager *cdb = AliCDBManager::Instance();
+  cdb->SetDefaultStorage("local://$ALICE_ROOT");
+  cdb->SetRun(0);
+  TGeoManager::Import("geometry.root");
+  fReconstructor = new AliTRDReconstructor();
+  fReconstructor->SetRecoParam(AliTRDrecoParam::GetLowFluxParam());
+  AliTRDtrackerV1::SetNTimeBins(24);
+
   DefineInput(0, TObjArray::Class());
   DefineOutput(0, TList::Class());
 }
@@ -84,19 +103,25 @@ void AliTRDtrackingResolution::Exec(Option_t *)
 
   Int_t nTrackInfos = fTrackObjects->GetEntriesFast();
   if(fDebugLevel>=2) printf("Number of Histograms: %d\n", fOutputHistograms->GetEntries());
+
+  Double_t dy, dz;
+  AliTRDtrackV1 *fTrack = 0x0;
   AliTRDtrackInfo *fInfo = 0x0;
   if(fDebugLevel>=2) printf("Number of TrackInfos: %d\n", nTrackInfos);
   for(Int_t iTI = 0; iTI < nTrackInfos; iTI++){
     // check if ESD and MC-Information are available
     if(!(fInfo = dynamic_cast<AliTRDtrackInfo *>(fTrackObjects->UncheckedAt(iTI)))) continue;
-    if(!fInfo->GetTRDtrack()) continue;
+    if(!(fTrack = fInfo->GetTRDtrack())) continue;
     if(fDebugLevel>=3) printf("\tDoing track[%d] NTrackRefs[%d]\n", iTI, fInfo->GetNTrackRefs());
 
     if(fInfo->GetNTrackRefs() < 2) continue; 
-    AliTRDseedV1*fTracklet = 0;
+  
+    AliTRDseedV1 *fTracklet = 0x0;
     AliTrackReference *fTrackRefs[2];
     for(Int_t iplane = 0; iplane < kNLayers; iplane++){
-      if(!(fTracklet = fInfo->GetTracklet(iplane))) continue;
+      if(!(fTracklet = fTrack->GetTracklet(iplane))) continue;
+      if(!fTracklet->IsOK()) continue;
+
       if(fDebugLevel>=4) printf("\t\tLy[%d] X0[%6.3f] Ncl[%d]\n", iplane, fTracklet->GetX0(), fTracklet->GetN());
 
       // check for 2 track ref where the radial position has a distance less than 3.7mm
@@ -119,6 +144,9 @@ void AliTRDtrackingResolution::Exec(Option_t *)
       if(fDebugLevel>=4) printf("\t\tFound track crossing [%d]\n", nFound);
       if(nFound < 2) continue;
       // We found 2 track refs for the tracklet, get y and z at the anode wire by a linear approximation
+
+
+      // RESOLUTION
       Double_t dx = fTrackRefs[1]->LocalX() - fTrackRefs[0]->LocalX();
       Double_t dydx = (fTrackRefs[1]->LocalY() - fTrackRefs[0]->LocalY()) / dx;
       Double_t dzdx = (fTrackRefs[1]->Z() - fTrackRefs[0]->Z()) / dx;
@@ -126,8 +154,12 @@ void AliTRDtrackingResolution::Exec(Option_t *)
       Double_t ymc =  fTrackRefs[1]->LocalY() - dydx*dx0;
       Double_t zmc =  fTrackRefs[1]->Z() - dzdx*dx0;
       
-      Double_t dy = fTracklet->GetYfit(0) - ymc;
-      Double_t dz = fTracklet->GetZfit(0) - zmc;
+      // recalculate tracklet based on the MC info
+      fTracklet->SetYref(0, zmc);
+      fTracklet->SetYref(1, dzdx);
+      fTracklet->Fit();
+      dy = fTracklet->GetYfit(0) - ymc;
+      dz = fTracklet->GetZfit(0) - zmc;
       //res_y *= 100; // in mm
       Double_t momentum = fTrackRefs[0]->P();
 
@@ -141,7 +173,7 @@ void AliTRDtrackingResolution::Exec(Option_t *)
       if(TMath::Abs(dx-3.7)<1.E-3){
         fYRes->Fill(phi*TMath::RadToDeg(), dy);
         fPhiRes->Fill(phi*TMath::RadToDeg(), dphi*TMath::RadToDeg());
-      }
+      }      
 
       if(fDebugLevel>=4) printf("\t\tdx[%6.4f] dy[%6.4f] dz[%6.4f] dphi[%6.4f] \n", dx, dy, dz, dphi);
       
@@ -159,6 +191,52 @@ void AliTRDtrackingResolution::Exec(Option_t *)
           << "\n";
       }
     }
+    if(fTrack->GetNumberOfTracklets() < 6) continue;
+
+    // RESIDUALS
+    Int_t nc = 0;
+    AliTrackPoint tr[AliTRDtrackV1::kMAXCLUSTERSPERTRACK], cl[AliTRDtrackV1::kMAXCLUSTERSPERTRACK];
+    // prepare
+    for(Int_t iplane = 0; iplane < kNLayers; iplane++){
+      if(!(fTracklet = fTrack->GetTracklet(iplane))) continue;
+      if(!fTracklet->IsOK()) continue;
+      AliTRDcluster *c = 0x0;
+      for(Int_t ic=AliTRDseed::knTimebins-1; ic>=0; ic--){
+        if(!(c = fTracklet->GetClusters(ic))) continue;
+        tr[nc].SetXYZ(c->GetX(), 0., 0.);
+        cl[nc].SetXYZ(c->GetX(), c->GetY(), c->GetZ());
+        nc++;
+      }
+    }
+    AliTRDtrackerV1::FitRiemanTilt(fTrack, 0x0, kTRUE, nc, tr);
+    for(Int_t ip=0; ip<nc; ip++){
+      dy = cl[ip].GetY() - tr[ip].GetY();
+      dz = cl[ip].GetZ() - tr[ip].GetZ();
+      if(fDebugLevel>=1){
+        (*fDebugStream) << "ResidualsRT"
+          << "dy="		  << dy
+          << "dz="	 	  << dz
+/*          << "phi="			<< phi
+          << "theta="		<< theta
+          << "dphi="		<< dphi*/
+          << "\n";
+      }
+    }
+
+//     AliTRDtrackerV1::FitKalman(fTrack, 0x0, kFALSE, nc, tr);
+//     for(Int_t ip=0; ip<nc; ip++){
+//       dy = cl[ip].GetY() - tr[ip].GetY();
+//       dz = cl[ip].GetZ() - tr[ip].GetZ();
+//       if(fDebugLevel>=1){
+//         (*fDebugStream) << "ResidualsKF"
+//           << "dy="		  << dy
+//           << "dz="	 	  << dz
+// /*          << "phi="			<< phi
+//           << "theta="		<< theta
+//           << "dphi="		<< dphi*/
+//           << "\n";
+//       }
+//     }    
   }
   PostData(0, fOutputHistograms);
 }
@@ -228,4 +306,10 @@ void AliTRDtrackingResolution::SetDebugLevel(Int_t level){
   if(!fDebugLevel) return;
   if(fDebugStream) return;
   fDebugStream = new TTreeSRedirector("TRD.Resolution.root");
+}
+
+//________________________________________________________
+void AliTRDtrackingResolution::SetRecoParam(AliTRDrecoParam *r)
+{
+  fReconstructor->SetRecoParam(r);
 }

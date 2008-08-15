@@ -18,7 +18,8 @@ class TList;
 class TH2I;
 class TProfile;
 class TTreeSRedirector;
-
+class AliTRDReconstructor;
+class AliTRDrecoParam;
 class AliTRDtrackingResolution : public AliAnalysisTask{
 public:
   AliTRDtrackingResolution(const char *name = "TRD Tracking Resolution");
@@ -26,11 +27,11 @@ public:
   
   void ConnectInputData(Option_t *);
   void CreateOutputObjects();
-  void Exec(Option_t *);
-  void Terminate(Option_t *);
-  
-  void SetDebugLevel(Int_t level);
   Int_t GetDebugLevel() const { return fDebugLevel;}
+  void Exec(Option_t *);
+  void SetDebugLevel(Int_t level);
+  void SetRecoParam(AliTRDrecoParam *r);
+  void Terminate(Option_t *);
   
 private:
   AliTRDtrackingResolution(const AliTRDtrackingResolution&);
@@ -44,18 +45,10 @@ private:
   TList     *fOutputHistograms; // Container for the output histograms
   TH2I      *fYRes;
   TH2I      *fPhiRes;
-  //TGraph      *fSigmaY;             // y-Resolution
-/*		TH1F *fZres;														// z-Resolution
-    TProfile *fYresAngle;										// y-Resolution dependent on Angle*/
-/*		TH1F *fYresLayer[kNLayers];							// y-Resolution histograms for each Layer
-    TH1F *fZresLayer[kNLayers];							// z-Resolution histograms for each Layer
-    TProfile *fYresLayerAngle[kNLayers];		// y-Resolution histograms for each Layer - Angular Dependence*/
-/*		TH1F *fPhiRes;													// Angular resolution in Phi-Direction
-    TProfile *fPhiResAngle;									// Phi-resolution dependent on angle*/
-/*		TH1F *fPhiResLayer[kNLayers];						// Phi-Resolution histograms for each Layer
-    TProfile *fPhiResLayerAngle[kNLayers];	// Phi-resolution histograms for each Layer - Angular Dependence */
-    Int_t fDebugLevel;											// Debug Level
-    TTreeSRedirector *fDebugStream; 				// Debug stream
+  
+  AliTRDReconstructor   *fReconstructor;  //! local reconstructor
+  Int_t fDebugLevel;											// Debug Level
+  TTreeSRedirector *fDebugStream; 				// Debug stream
   
   ClassDef(AliTRDtrackingResolution, 1) // tracking resolution task
 };
