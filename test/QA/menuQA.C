@@ -72,7 +72,7 @@ void MakeDetMenu(char * detName)
 		if (taskName.Contains(AliQA::GetTaskName(AliQA::kRAWS)) )
 			tt = AliQA::kRAW ; 
 		else if (taskName.Contains(AliQA::GetTaskName(AliQA::kRECPOINTS)) ||
-				taskName.Contains(AliQA::GetTaskName(AliQA::kESDs)) )
+				taskName.Contains(AliQA::GetTaskName(AliQA::kESDS)) )
 			tt = AliQA::kREC ; 
 		else if (taskName.Contains(AliQA::GetTaskName(AliQA::kHITS)) ||
 						 taskName.Contains(AliQA::GetTaskName(AliQA::kSDIGITS)) ||
