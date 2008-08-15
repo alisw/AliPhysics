@@ -223,6 +223,7 @@ private:
   TString        fRunLocalReconstruction; // run the local reconstruction for these detectors
   TString        fRunTracking;        // run the tracking for these detectors
   TString        fFillESD;            // fill ESD for these detectors
+  TString        fLoadCDB;            // prefetch CDB entries and init reco-params for these detectors
   TString        fUseTrackingErrorsForAlignment; // for these detectors
   TString        fGAliceFileName;     // name of the galice file
   TString        fRawInput;           // name of input raw-data file or directory

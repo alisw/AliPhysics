@@ -221,6 +221,7 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename) :
   fRunLocalReconstruction("ALL"),
   fRunTracking("ALL"),
   fFillESD("ALL"),
+  fLoadCDB(""),
   fUseTrackingErrorsForAlignment(""),
   fGAliceFileName(gAliceFilename),
   fRawInput(""),
@@ -313,6 +314,7 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fRunLocalReconstruction(rec.fRunLocalReconstruction),
   fRunTracking(rec.fRunTracking),
   fFillESD(rec.fFillESD),
+  fLoadCDB(rec.fLoadCDB),
   fUseTrackingErrorsForAlignment(rec.fUseTrackingErrorsForAlignment),
   fGAliceFileName(rec.fGAliceFileName),
   fRawInput(rec.fRawInput),
@@ -417,6 +419,7 @@ AliReconstruction& AliReconstruction::operator = (const AliReconstruction& rec)
   fRunLocalReconstruction        = rec.fRunLocalReconstruction;
   fRunTracking                   = rec.fRunTracking;
   fFillESD                       = rec.fFillESD;
+  fLoadCDB                       = rec.fLoadCDB;
   fUseTrackingErrorsForAlignment = rec.fUseTrackingErrorsForAlignment;
   fGAliceFileName                = rec.fGAliceFileName;
   fRawInput                      = rec.fRawInput;
@@ -892,10 +895,16 @@ Bool_t AliReconstruction::InitGRP() {
   // Process the list of active detectors
   if (activeDetectors && activeDetectors->GetString().IsDigit()) {
     UInt_t detMask = activeDetectors->GetString().Atoi();
+    fLoadCDB.Form("%s %s %s %s",
+		  fRunLocalReconstruction.Data(),
+		  fRunTracking.Data(),
+		  fFillESD.Data(),
+		  fQADetectors.Data());
     fRunLocalReconstruction = MatchDetectorList(fRunLocalReconstruction,detMask);
     fRunTracking = MatchDetectorList(fRunTracking,detMask);
     fFillESD = MatchDetectorList(fFillESD,detMask);
     fQADetectors = MatchDetectorList(fQADetectors,detMask);
+    fLoadCDB = MatchDetectorList(fLoadCDB,detMask);
   }
 
   AliInfo("===================================================================================");
@@ -903,6 +912,7 @@ Bool_t AliReconstruction::InitGRP() {
   AliInfo(Form("Running tracking for detectors: %s",fRunTracking.Data()));
   AliInfo(Form("Filling ESD for detectors: %s",fFillESD.Data()));
   AliInfo(Form("Quality assurance is active for detectors: %s",fQADetectors.Data()));
+  AliInfo(Form("CDB and reconstruction parameters are loaded for detectors: %s",fLoadCDB.Data()));
   AliInfo("===================================================================================");
 
   //*** Dealing with the magnetic field map
@@ -987,7 +997,7 @@ Bool_t AliReconstruction::LoadCDB()
 
   AliCDBManager::Instance()->Get("GRP/CTP/Config");
 
-  TString detStr = fRunLocalReconstruction;
+  TString detStr = fLoadCDB;
   for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
     if (!IsSelected(fgkDetectorName[iDet], detStr)) continue;
     AliCDBManager::Instance()->GetAll(Form("%s/Calib/*",fgkDetectorName[iDet]));
@@ -2878,7 +2888,10 @@ Bool_t AliReconstruction::InitRecoParams()
 
   Bool_t isOK = kTRUE;
 
+  TString detStr = fLoadCDB;
   for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
+
+    if (!IsSelected(fgkDetectorName[iDet], detStr)) continue;
 
     if (fRecoParam.GetDetRecoParamArray(iDet)) {
       AliInfo(Form("Using custom reconstruction parameters for detector %s",fgkDetectorName[iDet]));
