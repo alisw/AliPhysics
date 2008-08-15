@@ -1101,10 +1101,10 @@ void AliReconstruction::Begin(TTree *)
   // going into the event loop
   // Should follow the TSelector convention
   // i.e. initialize only the object on the client side
+  AliReconstruction *reco = NULL;
   if (fInput) {
-    if (AliReconstruction *reco = (AliReconstruction*)fInput->FindObject("AliReconstruction")) {
+    if (reco = (AliReconstruction*)fInput->FindObject("AliReconstruction")) {
       *this = *reco;
-      fInput->Remove(reco);
     }
     AliSysInfo::AddStamp("ReadInputInBegin");
   }
@@ -1153,12 +1153,12 @@ void AliReconstruction::Begin(TTree *)
   AliSysInfo::AddStamp("InitRecoParams");
 
   if (fInput) {
+    if (reco) *reco = *this;
     fInput->Add(gGeoManager);
     gGeoManager = NULL;
     fInput->Add(const_cast<TMap*>(AliCDBManager::Instance()->GetEntryCache()));
     fInput->Add(new TParameter<Int_t>("RunNumber",AliCDBManager::Instance()->GetRun()));
     fInput->Add((AliMagF*)AliTracker::GetFieldMap());
-    fInput->Add(this);
   }
 
 }
