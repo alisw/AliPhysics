@@ -78,7 +78,7 @@ TEveElementList* trd_detectors(Int_t sector = -1, TEveElement *cont = 0)
     chm->LoadClusters(clusters);
     chm->LoadDigits(&dm);
 
-    clusters->Clear();
+    //clusters->Clear();
   }
 
   gEve->AddElement(list, cont);
