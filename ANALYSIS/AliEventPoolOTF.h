@@ -34,6 +34,8 @@ class AliEventPoolOTF : public AliVEventPool
 	{fMultMin = min; fMultMax = max; fMultStep = step;}
     //
     void SetTagDirectory(char* dirname) {fTagDirectory = dirname;};
+    virtual Int_t BinNumber() {return fBinNumber;}
+	    
  private:
     AliEventPoolOTF(const AliEventPoolOTF& obj);
     AliEventPoolOTF& operator=(const AliEventPoolOTF& other);
@@ -48,6 +50,8 @@ class AliEventPoolOTF : public AliVEventPool
     Int_t                fMultMax;      // Maximum multiplicity
     Int_t                fMultStep;     // Multiplicity step-size 
     Int_t                fMultiplicity; // Current multiplicity
+    Int_t                fBinNumber;    // Current bin number
+    
     ClassDef(AliEventPoolOTF, 0); 
 };
  

@@ -67,7 +67,8 @@ class AliEventPoolSparse : public AliVEventPool {
   TTreeFormula * GetLHCCut() const {return fLHCCut;}
   TTreeFormula * GetDetCut() const {return fDetCut;}
   TTreeFormula * GetEventCut() const {return fEvCut;}
-
+  Int_t BinNumber() {return fBinNumber;}
+	  
  protected:
 
   void Set(Int_t n);
@@ -90,6 +91,7 @@ class AliEventPoolSparse : public AliVEventPool {
   TTreeFormula * fLHCCut;// LNC-based selection
   TTreeFormula * fDetCut;// Detector-based selection
   TTreeFormula * fEvCut; // Event-based selection
+  Int_t fBinNumber;      // Current bin
   
   ClassDef(AliEventPoolSparse,1)  // 
 };

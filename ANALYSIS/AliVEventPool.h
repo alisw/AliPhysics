@@ -22,10 +22,11 @@ class AliVEventPool : public TNamed
 
     virtual ~AliVEventPool() {;}
     // Interface
-    virtual TChain* GetNextChain()                = 0;
-    virtual void  GetCurrentBin(Float_t* /*bin*/) = 0;
-    virtual Int_t GetDimension()                  = 0;
-    virtual void  Init()                          = 0;
+    virtual TChain* GetNextChain()                 = 0;
+    virtual void   GetCurrentBin(Float_t* /*bin*/) = 0;
+    virtual Int_t  GetDimension()                  = 0;
+    virtual void   Init()                          = 0;
+    virtual Int_t  BinNumber()                     = 0;
     // Basic functionality
     virtual void SetChain(TChain* chain) {fChain = chain;}
     AliVEventPool(const AliVEventPool& obj);

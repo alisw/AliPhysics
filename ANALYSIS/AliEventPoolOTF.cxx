@@ -45,7 +45,8 @@ AliEventPoolOTF::AliEventPoolOTF():
     fMultMin(0),
     fMultMax(0),
     fMultStep(0),
-    fMultiplicity()
+    fMultiplicity(),
+    fBinNumber(0)
 {
   // Default constructor
 }
@@ -61,7 +62,8 @@ AliEventPoolOTF::AliEventPoolOTF(const char* name, const char* title):
     fMultMin(0),
     fMultMax(0),
     fMultStep(0),
-    fMultiplicity()
+    fMultiplicity(),
+    fBinNumber(0)
 {
   // Constructor
 }
@@ -78,7 +80,8 @@ AliEventPoolOTF::AliEventPoolOTF(const AliEventPoolOTF& obj):
     fMultMin(0),
     fMultMax(0),
     fMultStep(0),
-    fMultiplicity()
+    fMultiplicity(),
+    fBinNumber(0)
 {
     // Copy constructor
 }
@@ -102,7 +105,7 @@ TChain* AliEventPoolOTF::GetNextChain()
 {
     //
     TChain* chain = 0;
-    
+    fBinNumber++;
     Int_t mmax = fMultiplicity + fMultStep;
     if (mmax > fMultMax) {
 	return 0;

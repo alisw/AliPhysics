@@ -120,7 +120,9 @@ AliEventPoolSparse::AliEventPoolSparse() :
   fRunCut(0x0),
   fLHCCut(0x0),
   fDetCut(0x0),
-  fEvCut(0x0){
+  fEvCut(0x0),
+  fBinNumber(0)
+{
   // Default constructor. Initializes the THnSparseI,
   // the initial size of the array and the array itself
   fN = fChunkSize;
@@ -142,7 +144,8 @@ AliEventPoolSparse::AliEventPoolSparse(const char* name, const char* title, TCha
   fRunCut(0x0),
   fLHCCut(0x0),
   fDetCut(0x0),
-  fEvCut(0x0){
+  fEvCut(0x0),
+  fBinNumber(0){
   // Constructor. Initializes the THnSparseI,
   // the initial size of the pool array and the array itself
   // It uses the provided array of variables to create TTreeFormulas
@@ -196,6 +199,8 @@ TChain* AliEventPoolSparse::GetNextChain(){
     return 0x0;
   }
 
+  fBinNumber++;
+  
   fChain->SetEntryList(fPool[fCurrentBin++],"ne"); 
   return fChain;
 }
