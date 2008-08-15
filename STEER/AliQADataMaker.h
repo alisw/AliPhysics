@@ -44,7 +44,7 @@ public:
 	virtual Int_t Add2ESDsList(TH1 * hist, const Int_t index)            = 0 ; 
 	virtual Int_t Add2HitsList(TH1 * hist, const Int_t index)            = 0 ; 
 	virtual Int_t Add2RecPointsList(TH1 * hist, const Int_t index)       = 0 ; 
-	virtual Int_t Add2RawsList(TH1 * hist, const Int_t index)            = 0 ; 
+	virtual Int_t Add2RawsList(TH1 * hist, const Int_t index, const Bool_t saveForCorr = kFALSE)            = 0 ; 
 	virtual Int_t Add2SDigitsList(TH1 * hist, const Int_t index)         = 0 ; 
 	virtual void        Exec(AliQA::TASKINDEX_t, TObject * data)                 = 0 ;
 	virtual void        EndOfCycle(AliQA::TASKINDEX_t)                           = 0 ;
@@ -56,6 +56,7 @@ public:
 	virtual TH1 *       GetRawsData(const Int_t index)                         = 0 ; 
 	virtual TH1 *       GetSDigitsData(const Int_t index)                      = 0 ; 
 	const char *        GetDetectorDirName() const { return fDetectorDirName.Data() ; }
+  TList *             GetParameterList() const { return fParameterList ; }
 	const Int_t         Increment() { return ++fCycleCounter ; } 
 	virtual TObjArray * Init(AliQA::TASKINDEX_t, Int_t run, Int_t cycles = -1)                   = 0 ;
 	virtual void        Init(AliQA::TASKINDEX_t, TObjArray * list, Int_t run, Int_t cycles = -1) = 0 ;
@@ -64,11 +65,11 @@ public:
 	void                SetCycle(Int_t nevts) { fCycle = nevts ; } 
 	virtual void        StartOfCycle(AliQA::TASKINDEX_t, const Bool_t sameCycle = kFALSE) = 0 ;
 
-	virtual void                SetRecoParam(const AliDetectorRecoParam */*param*/) { return; }
+	virtual void        SetRecoParam(const AliDetectorRecoParam */*param*/) { return; }
 	  
 protected: 
 
-	Int_t          Add2List(TH1 * hist, const Int_t index, TObjArray * list) ;
+	Int_t          Add2List(TH1 * hist, const Int_t index, TObjArray * list, const Bool_t saveForCorr = kFALSE) ;
 	virtual void   DefaultEndOfDetectorCycle(AliQA::TASKINDEX_t task ) ; 
 	virtual void   EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray * obj ) = 0 ; 
 	TObject *      GetData(TObjArray * list, const Int_t index) ;
@@ -100,6 +101,7 @@ protected:
 	Int_t          fCurrentCycle ;    //! current cycle number
 	Int_t          fCycle ;           //! length (# events) of the QA data acquisition cycle  
 	Int_t          fCycleCounter ;    //! cycle counter
+  TList *        fParameterList ;   //! list of QA data parameters
 	Int_t          fRun ;             //! run number
 
 private:

@@ -30,6 +30,7 @@
 #include "AliQA.h"
 #include "AliQAChecker.h"
 #include "AliQACheckerBase.h"
+#include "AliCorrQAChecker.h"
 #include "AliGlobalQAChecker.h"
 
 #include <TKey.h>
@@ -41,6 +42,7 @@
 #include <TString.h> 
 #include <TSystem.h> 
 #include <TList.h>
+#include <TNtupleD.h>
 
 ClassImp(AliQAChecker)
   AliQAChecker * AliQAChecker::fgQAChecker = 0x0 ;
@@ -108,6 +110,8 @@ AliQAChecker::~AliQAChecker()
 	
 	if (det == AliQA::kGLOBAL) {
 		qac = new AliGlobalQAChecker() ; 
+	} else if (det == AliQA::kCORR) {
+		qac = new AliCorrQAChecker() ; 
 	} else {
 		AliDebug(1, Form("Retrieving QA checker for %s", detName.Data())) ; 
 		TPluginManager* pluginManager = gROOT->GetPluginManager() ;
@@ -325,7 +329,7 @@ Bool_t AliQAChecker::Run(const char * fileName)
 }
 
 //_____________________________________________________________________________
-Bool_t AliQAChecker::Run(AliQA::DETECTORINDEX_t det, AliQA::TASKINDEX_t task, TObjArray * list)
+Bool_t AliQAChecker::Run(AliQA::DETECTORINDEX_t det, AliQA::TASKINDEX_t task, TObject * obj)
 {
 	// run the Quality Assurance Checker for detector det, for task task starting from data in list
 
@@ -359,9 +363,15 @@ Bool_t AliQAChecker::Run(AliQA::DETECTORINDEX_t det, AliQA::TASKINDEX_t task, TO
 	GetRefSubDir(AliQA::GetDetName(det), AliQA::GetTaskName(task), refDir, refOCDBDir) ;
 	if ( refDir || refOCDBDir)  // references found
 	  qac->SetRefandData(refDir, refOCDBDir) ; 
-	qac->Run(index, list) ; 
+	
+  TString className(obj->ClassName()) ; 
+  if (className.Contains(TObjArray::Class()->GetName())) {
+    qac->Run(index, static_cast<TObjArray *>(obj)) ; 
+  } else if (className.Contains(TNtupleD::Class()->GetName())) {
+    qac->Run(index, static_cast<TNtupleD *>(obj)) ; 
+  } else {
+    AliError(Form("%s class not implemented", className.Data())) ; 
+    return kFALSE ; 
+  }
 	return kTRUE ; 
 }
-
-
-

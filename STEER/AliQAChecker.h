@@ -39,7 +39,7 @@ public:
 //  void                   SetRefDirName(const char * name) ; 
 
   virtual Bool_t Run(const char * fileName = NULL) ;
-  virtual Bool_t Run(AliQA::DETECTORINDEX_t det, AliQA::TASKINDEX_t task, TObjArray * list);
+  virtual Bool_t Run(AliQA::DETECTORINDEX_t det, AliQA::TASKINDEX_t task, TObject * obj = NULL);
   void SetRunInfo(AliRunInfo * ei) {fRunInfo = ei;}
 
 private:

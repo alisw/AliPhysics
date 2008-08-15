@@ -34,7 +34,7 @@ public:
 	virtual Int_t Add2ESDsList(TH1 * hist, const Int_t index)  { return Add2List(hist, index, fESDsQAList) ; }
 	virtual Int_t Add2HitsList(TH1 * /*hist*/, const Int_t /*index*/)       { return -1 ; }  
 	virtual Int_t Add2RecPointsList(TH1 * hist, const Int_t index)  { return Add2List(hist, index, fRecPointsQAList) ; }
-	virtual Int_t Add2RawsList(TH1 * hist, const Int_t index)  { return Add2List(hist, index, fRawsQAList) ; }
+	virtual Int_t Add2RawsList(TH1 * hist, const Int_t index, const Bool_t saveForCorr = kFALSE)  { return Add2List(hist, index, fRawsQAList, saveForCorr) ; }
 	virtual Int_t Add2SDigitsList(TH1 * /*hist*/, const Int_t /*index*/)   { return -1 ; } 
 	virtual void        Exec(AliQA::TASKINDEX_t task, TObject * data) ;
 	virtual void        EndOfCycle(AliQA::TASKINDEX_t task) ;
@@ -49,7 +49,7 @@ public:
 	virtual void        Init(AliQA::TASKINDEX_t task, TObjArray * list, Int_t run, Int_t cycles = -1) ;
 	virtual void        StartOfCycle(AliQA::TASKINDEX_t task, const Bool_t sameCycle = kFALSE) ;
 
-	virtual void                SetRecoParam(const AliDetectorRecoParam *param) { fRecoParam = param; }
+	virtual void        SetRecoParam(const AliDetectorRecoParam *param) { fRecoParam = param; }
 
 protected: 
 
@@ -73,11 +73,11 @@ protected:
 	virtual void   MakeSDigits(TTree * )               {AliFatal("Call not valid") ; }    
 	virtual void   StartOfDetectorCycle()              {AliInfo("To be implemented by detectors");} 
 
-	TObjArray *    fESDsQAList ;      //! list of the ESDs QA data objects
-	TObjArray *    fRawsQAList ;      //! list of the raws QA data objects
-	TObjArray *    fRecPointsQAList ; //! list of the RecPoints QA data objects
-
-	const AliDetectorRecoParam *fRecoParam; //! const pointer to the reco parameters to be used in the reco QA
+	TObjArray *                 fESDsQAList ;      //! list of the ESDs QA data objects
+	TObjArray *                 fRawsQAList ;      //! list of the raws QA data objects
+	TObjArray *                 fRecPointsQAList ; //! list of the RecPoints QA data objects
+  TObject   *                 fObject ;          //! This is used by Corr only ro hold its Ntuple. Allows to write something else than TH1 to QA data file
+  const AliDetectorRecoParam *fRecoParam;        //! const pointer to the reco parameters to be used in the reco QA
   
  ClassDef(AliQADataMakerRec,2)  // description 
 

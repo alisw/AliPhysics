@@ -29,6 +29,7 @@
 #include <TList.h> 
 #include <TTree.h>
 #include <TClonesArray.h>
+#include <TParameter.h>
 
 // --- Standard library ---
 
@@ -50,6 +51,7 @@ AliQADataMaker::AliQADataMaker(const char * name, const char * title) :
   fCurrentCycle(-1), 
   fCycle(9999999), 
   fCycleCounter(0), 
+  fParameterList(0x0), 
   fRun(0)
 {
   // ctor
@@ -65,6 +67,7 @@ AliQADataMaker::AliQADataMaker(const AliQADataMaker& qadm) :
   fCurrentCycle(qadm.fCurrentCycle), 
   fCycle(qadm.fCycle), 
   fCycleCounter(qadm.fCycleCounter), 
+  fParameterList(qadm.fParameterList),  
   fRun(qadm.fRun)
 {
   //copy ctor
@@ -72,7 +75,7 @@ AliQADataMaker::AliQADataMaker(const AliQADataMaker& qadm) :
 }
 
 //____________________________________________________________________________
-Int_t AliQADataMaker::Add2List(TH1 * hist, const Int_t index, TObjArray * list) 
+Int_t AliQADataMaker::Add2List(TH1 * hist, const Int_t index, TObjArray * list, const Bool_t saveForCorr) 
 { 
 	// Set histograms memory resident and add to the list
 	// Maximm allowed is 10000
@@ -87,8 +90,15 @@ Int_t AliQADataMaker::Add2List(TH1 * hist, const Int_t index, TObjArray * list)
 	} else {
 		hist->SetDirectory(0) ; 
 		list->AddAtAndExpand(hist, index) ; 
-		return list->GetLast() ;
-	}
+    char * name = Form("%s_%s", list->GetName(), hist->GetName()) ;  
+    TParameter<double> * p = new TParameter<double>(name, 9999.9999) ;
+    if(saveForCorr) {  
+      if ( ! fParameterList )
+        fParameterList = new TList() ; 
+      fParameterList->Add(p) ;
+    }
+    return list->GetLast() ;
+  }
 }
 
 //____________________________________________________________________________

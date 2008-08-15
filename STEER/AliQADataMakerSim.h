@@ -32,7 +32,7 @@ public:
 	virtual Int_t Add2ESDsList(TH1 * /*hist*/, const Int_t /*index*/)      { return -1 ; } 
 	virtual Int_t Add2HitsList(TH1 * hist, const Int_t index)      { return Add2List(hist, index, fHitsQAList) ; }
 	virtual Int_t Add2RecPointsList(TH1 * /*hist*/, const Int_t /*index*/) { return -1 ; } 
-	virtual Int_t Add2RawsList(TH1 * /*hist*/, const Int_t /*index*/)      { return -1 ; }  
+	virtual Int_t Add2RawsList(TH1 * /*hist*/, const Int_t /*index*/, const Bool_t saveForCorr = kFALSE)      { return -1 ; }  
 	virtual Int_t Add2SDigitsList(TH1 * hist, const Int_t index)   { return Add2List(hist, index, fSDigitsQAList) ; }
 	virtual void        Exec(AliQA::TASKINDEX_t task, TObject * data) ;
 	virtual void        EndOfCycle(AliQA::TASKINDEX_t task) ;

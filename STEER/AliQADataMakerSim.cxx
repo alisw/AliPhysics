@@ -168,18 +168,21 @@ TObjArray *  AliQADataMakerSim::Init(AliQA::TASKINDEX_t task, Int_t run, Int_t c
 	if ( task == AliQA::kHITS ) {
 		if ( ! fHitsQAList ) {
 			fHitsQAList = new TObjArray(100) ;	 
+   fHitsQAList->SetName(Form("%s/%s", GetName(), AliQA::GetTaskName(task).Data())) ; 
 			InitHits() ;
 		}
 		rv = fHitsQAList ;
 	} else if ( task == AliQA::kSDIGITS ) {
 		if ( ! fSDigitsQAList ) {
 			fSDigitsQAList = new TObjArray(100) ; 
+   fSDigitsQAList->SetName(Form("%s/%s", GetName(), AliQA::GetTaskName(task).Data())) ; 
 			InitSDigits() ;
 		}
 		rv = fSDigitsQAList ;
    } else if ( task == AliQA::kDIGITS ) {
 	   if ( ! fDigitsQAList ) {
 		   fDigitsQAList = new TObjArray(100) ;
+     fDigitsQAList->SetName(Form("%s/%s", GetName(), AliQA::GetTaskName(task).Data())) ; 
 		   InitDigits() ;
 	   }
 	   rv =  fDigitsQAList ;

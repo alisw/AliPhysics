@@ -19,7 +19,7 @@ public:
 
 	enum DETECTORINDEX_t {
     kNULLDET=-1, kITS, kTPC, kTRD, kTOF, kPHOS, kHMPID, kEMCAL, kMUON, kFMD,
-    kZDC, kPMD, kT0, kVZERO, kACORDE, kHLT, kGLOBAL, kNDET };
+    kZDC, kPMD, kT0, kVZERO, kACORDE, kHLT, kGLOBAL, kCORR, kNDET};
 	enum ALITASK_t {
     kNULLTASK=-1, kRAW, kSIM, kREC, kESD, kANA, kNTASK };
 	enum QABIT_t {
@@ -63,6 +63,7 @@ public:
 														{return Form("%s.%s.%d.%d.root", name, fgQADataFileName.Data(), run, cycle)  ; }
 	static const char *    GetQADataFileName() { return fgQADataFileName.Data() ; }
 	static const char *    GetQAName() { return fkgQAName ; } 
+  static const char *    GetQACorrName() { return fkgQACorrNtName ; }
 	static TFile *         GetQAResultFile() ; 
 	static const char  *   GetQAResultFileName() { return (fgQAResultDirName + fgQAResultFileName).Data() ; }
 	static const char  *   GetQARefDefaultStorage() { return fkgQARefOCDBDefault.Data() ; }
@@ -127,6 +128,7 @@ private:
 	static const TString fkgLabAliEnOCDB        ; //! label to identify a file as AliEn OCDB 
 	static const TString fkgRefFileName         ; //! name of Reference File Name 
 	static const TString fkgQAName              ; //! name of QA object 
+	static const TString fkgQACorrNtName        ; //! name of QA Correlation Ntuple
 	static const TString fkgRefOCDBDirName      ; //! name of Reference directory name in OCDB  	
 	static       TString fkgRefDataDirName      ; //! name of Reference directory name in OCDB for data  	
 	static const TString fkgQARefOCDBDefault    ; //! default storage for QA in OCDB 

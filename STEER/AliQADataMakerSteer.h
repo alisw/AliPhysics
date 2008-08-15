@@ -30,6 +30,7 @@ class AliESDEvent ;
 class AliQADataMaker ;
 class AliRawReader ;  
 class AliRunLoader ; 
+class AliCorrQADataMakerRec ;
 
 class AliQADataMakerSteer: public TNamed {
 public:
@@ -64,10 +65,10 @@ public:
 	void        SetTasks(TString tasks) { fTasks = tasks ; }
 
 private: 
-	Bool_t			     DoIt(const AliQA::TASKINDEX_t taskIndex) ;
+	Bool_t			  DoIt(const AliQA::TASKINDEX_t taskIndex) ;
 	AliLoader   * GetLoader(Int_t iDet) ; 
 	const Int_t   GetQACycles(const Int_t iDet) { return fQACycles[iDet] ; }
-	Bool_t			     Init(const AliQA::TASKINDEX_t taskIndex, const  char * fileName = NULL) ;
+	Bool_t			  Init(const AliQA::TASKINDEX_t taskIndex, const  char * fileName = NULL) ;
 	Bool_t        InitRunLoader() ; 
 	Bool_t        IsSelected(const char * detName)  ;
 	Bool_t        Finish(const AliQA::TASKINDEX_t taskIndex) ;
@@ -76,27 +77,27 @@ private:
 	Bool_t        SaveIt2OCDB(const Int_t runNumber, TFile * inputFile, const char * year) const ;  
 
  
-	UInt_t             fCurrentEvent ;                 //! event counter
-	Bool_t		   	       fCycleSame ;                    //! true if 2 consecutive data making for a same detector   
-	TString            fDetectors ;                    //! list of active detectors 
-	TString            fDetectorsW ;                   //! list of active detectors with QA implemented 
-	AliESDEvent *      fESD ;                          //! current ESD
-	TTree *            fESDTree ;                      //! current ESD Tree
-	TString            fGAliceFileName ;               //! name of the galice file
-	UInt_t             fFirstEvent ;                   //! first event to process
-	Int_t              fMaxEvents ;                    //! number of events to process
-	char *             fMode ;                         //! sim or rec
-	Long64_t           fNumberOfEvents ;               //! number of events in the run 
-  AliRecoParam       fRecoParam;                     //! container for the reco-param objects for detectors
-	UInt_t             fRunNumber ;                    //! current run number
-	AliRawReader     * fRawReader ;                    //! current raw reader object 
-	Bool_t             fRawReaderDelete ;              //! tells if the rawReader has been created by this
-	AliRunLoader *     fRunLoader ;                    //! current run loader object
-	TString            fTasks ;                        //! list of QA tasks to be performed
-	static const UInt_t fgkNDetectors = AliQA::kNDET ; //! number of detectors    
-	AliLoader      *   fLoader[fgkNDetectors];         //! array of detectors loader
-	AliQADataMaker *   fQADataMaker[fgkNDetectors];    //! array of QA data maker objects
-	Int_t              fQACycles[fgkNDetectors];       //! array of QA cycle length
+	UInt_t                  fCurrentEvent ;                 //! event counter
+	Bool_t                  fCycleSame ;                    //! true if 2 consecutive data making for a same detector   
+	TString                 fDetectors ;                    //! list of active detectors 
+	TString                 fDetectorsW ;                   //! list of active detectors with QA implemented 
+	AliESDEvent *           fESD ;                          //! current ESD
+	TTree *                 fESDTree ;                      //! current ESD Tree
+	TString                 fGAliceFileName ;               //! name of the galice file
+	UInt_t                  fFirstEvent ;                   //! first event to process
+	Int_t                   fMaxEvents ;                    //! number of events to process
+	char *                  fMode ;                         //! sim or rec
+	Long64_t                fNumberOfEvents ;               //! number of events in the run 
+  AliRecoParam            fRecoParam;                     //! container for the reco-param objects for detectors
+	UInt_t                  fRunNumber ;                    //! current run number
+	AliRawReader *          fRawReader ;                    //! current raw reader object 
+	Bool_t                  fRawReaderDelete ;              //! tells if the rawReader has been created by this
+	AliRunLoader *          fRunLoader ;                    //! current run loader object
+	TString                 fTasks ;                        //! list of QA tasks to be performed
+	static const UInt_t     fgkNDetectors = AliQA::kNDET ;  //! number of detectors    
+	AliLoader      *        fLoader[fgkNDetectors];         //! array of detectors loader
+	AliQADataMaker *        fQADataMaker[fgkNDetectors];    //! array of QA data maker objects
+	Int_t                   fQACycles[fgkNDetectors];       //! array of QA cycle length
 	
   ClassDef(AliQADataMakerSteer, 0)      // class for running the QA makers
 };

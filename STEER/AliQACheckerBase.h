@@ -20,6 +20,7 @@ class TFile ;
 class TH1 ; 
 class TObjArray ; 
 class TDirectory ; 
+class TNtupleD ;
 
 // --- Standard library ---
 
@@ -34,12 +35,13 @@ public:
   virtual ~AliQACheckerBase() {;} // dtor
 
   void   Init(const AliQA::DETECTORINDEX_t det) ; 
-  void   Run(AliQA::ALITASK_t tsk, TObjArray * list=0x0); 
+  void   Run(AliQA::ALITASK_t tsk, TObject * obj = NULL); 
   void   SetRefandData(TDirectory * ref, TObjArray * refOCDB, TDirectory * data=NULL) { fRefSubDir = ref ;  fRefOCDBSubDir = refOCDB, fDataSubDir = data ; }
 
 protected:
   virtual const Double_t Check(AliQA::ALITASK_t index) ;
-  virtual const Double_t Check(AliQA::ALITASK_t index, TObjArray * list) ;
+  virtual const Double_t Check(AliQA::ALITASK_t, TObjArray *) ; 
+  virtual const Double_t Check(AliQA::ALITASK_t, TNtupleD *) {;} 
   const Double_t DiffC(const TH1 * href, const TH1 * hin) const ;   
   const Double_t DiffK(const TH1 * href, const TH1 * hin) const ;   
   void           Finish() const ; 

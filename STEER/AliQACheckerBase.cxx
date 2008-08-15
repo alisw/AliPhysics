@@ -30,6 +30,7 @@
 #include <TKey.h> 
 #include <TFile.h> 
 #include <TList.h>
+#include <TNtupleD.h>
 
 // --- Standard library ---
 
@@ -196,22 +197,31 @@ void AliQACheckerBase::Init(const AliQA::DETECTORINDEX_t det)
   AliQA::Instance(det) ; 
 }
  
+
 //____________________________________________________________________________
-void AliQACheckerBase::Run(AliQA::ALITASK_t index, TObjArray * list) 
+void AliQACheckerBase::Run(AliQA::ALITASK_t index, TObject * obj) 
 { 
 	AliDebug(1, Form("Processing %s", AliQA::GetAliTaskName(index))) ; 
-
+  
 	Double_t rv = -1 ;	
-	if (list)
-		rv = Check(index, list) ;
-	else 
-		rv = Check(index) ;   
-
-	SetQA(index, rv) ; 
+  if ( !obj ) {
+    rv = Check(index) ;
+  } else { 
+    TString className(obj->IsA()->GetName()) ; 
+    if (className.Contains("TObjArray")) {
+      rv = Check(index, static_cast<TObjArray *>(obj)) ;
+    } else if (className.Contains("TNtupleD")) { 
+      rv = Check(index, static_cast<TNtupleD *>(obj)) ;
+    }  else {
+      AliError(Form("%s class not implemented", className.Data())) ; 
+    }
+  }
+  
+	SetQA(index, rv) ; 	
 	
-	AliDebug(1, Form("Test result of %s", AliQA::GetAliTaskName(index))) ;
+  AliDebug(1, Form("Test result of %s", AliQA::GetAliTaskName(index))) ;
 	
-	Finish() ; 
+  Finish() ; 
 }
 
 //____________________________________________________________________________

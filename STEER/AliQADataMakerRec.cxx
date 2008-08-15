@@ -40,10 +40,11 @@ ClassImp(AliQADataMakerRec)
 //____________________________________________________________________________ 
 AliQADataMakerRec::AliQADataMakerRec(const char * name, const char * title) : 
   AliQADataMaker(name, title), 
-  fESDsQAList(0x0), 
-  fRawsQAList(0x0), 
-  fRecPointsQAList(0x0),
-  fRecoParam(0x0)
+  fESDsQAList(NULL), 
+  fRawsQAList(NULL), 
+  fRecPointsQAList(NULL),
+  fObject(NULL), 
+  fRecoParam(NULL) 
 {
   // ctor
 	fDetectorDirName = GetName() ; 
@@ -55,8 +56,8 @@ AliQADataMakerRec::AliQADataMakerRec(const AliQADataMakerRec& qadm) :
   fESDsQAList(qadm.fESDsQAList),
   fRawsQAList(qadm.fRawsQAList),
   fRecPointsQAList(qadm.fRecPointsQAList),
-  fRecoParam(qadm.fRecoParam)
-  
+  fObject(qadm.fObject),  
+  fRecoParam(qadm.fRecoParam) 
 {
   //copy ctor
  	SetName(qadm.GetName()) ; 
@@ -99,7 +100,7 @@ void AliQADataMakerRec::EndOfCycle(AliQA::TASKINDEX_t task)
 {
 	// Finishes a cycle of QA data acquistion
 	
-	TObjArray * list = 0x0 ; 
+	TObjArray * list = NULL ; 
 	
 	if ( task == AliQA::kRAWS )     
 		list = fRawsQAList ; 
@@ -110,13 +111,15 @@ void AliQADataMakerRec::EndOfCycle(AliQA::TASKINDEX_t task)
 
 	//DefaultEndOfDetectorCycle(task) ;
 	EndOfDetectorCycle(task, list) ;
-	TDirectory * subDir = 0x0 ;
+	TDirectory * subDir = NULL ;
 	if (fDetectorDir) 
 		subDir = fDetectorDir->GetDirectory(AliQA::GetTaskName(task)) ; 
 	if ( subDir ) {
 		subDir->cd() ; 
 		if (list) 
 			list->Write() ;
+    if (fObject)
+      fObject->Write() ; 
 	}
 	//Finish() ; 
 }
@@ -165,18 +168,21 @@ TObjArray *  AliQADataMakerRec::Init(AliQA::TASKINDEX_t task, Int_t run, Int_t c
 	if ( task == AliQA::kRAWS ) {
 		if (! fRawsQAList ) { 
 			fRawsQAList = new TObjArray(100) ;	 
+      fRawsQAList->SetName(Form("%s_%s", GetName(), AliQA::GetTaskName(task).Data())) ; 
 			InitRaws() ;
 		}
 		rv = fRawsQAList ;
 	} else if ( task == AliQA::kRECPOINTS ) {
 		if ( ! fRecPointsQAList ) {
 			fRecPointsQAList = new TObjArray(100) ; 
+      fRecPointsQAList->SetName(Form("%s_%s", GetName(), AliQA::GetTaskName(task).Data())) ; 
 			InitRecPoints() ;
 		}
 		rv = fRecPointsQAList ;
 	} else if ( task == AliQA::kESDS ) {
 		if ( ! fESDsQAList ) {
-			fESDsQAList = new TObjArray(100) ; 
+			fESDsQAList = new TObjArray(100) ;
+      fESDsQAList->SetName(Form("%s_%s", GetName(), AliQA::GetTaskName(task).Data())) ; 
 			InitESDs() ;
 		}
 		rv = fESDsQAList ;
@@ -225,7 +231,7 @@ void AliQADataMakerRec::StartOfCycle(AliQA::TASKINDEX_t task, const Bool_t sameC
 		subDir = fDetectorDir->mkdir(AliQA::GetTaskName(task)) ;  
 	subDir->cd() ; 
 
-	TObjArray * list = 0x0 ; 
+	TObjArray * list = NULL ; 
   
   if ( task == AliQA::kRAWS ) 
 	  list = fRawsQAList ; 
