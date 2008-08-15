@@ -77,7 +77,8 @@ void AliAnalysisTaskPhiCorr::UserExec(Option_t *)
     } // event loop
     
 //    Correlated 
-    AliAODEvent* aod = GetEvent(0);
+    AliAODEvent* aod = fInputHandler->GetLatestEvent();
+    
     Int_t ntracks = aod->GetNumberOfTracks();
     for (Int_t iTracks = 0; iTracks < ntracks; iTracks++) {
 	for (Int_t jTracks = (iTracks+1); jTracks < ntracks; jTracks++) {
