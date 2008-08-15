@@ -2211,7 +2211,7 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *ss
   AliTRDpadPlane *pp = 0x0;
   for(int iplane=0; iplane<kNPlanes; iplane++){
     pp                = fGeom->GetPadPlane(iplane, istack);
-    hL[iplane]        = TMath::Tan(-TMath::DegToRad()*pp->GetTiltingAngle());
+    hL[iplane]        = TMath::Tan(TMath::DegToRad()*pp->GetTiltingAngle());
     padlength[iplane] = pp->GetLengthIPad();
   }
   
