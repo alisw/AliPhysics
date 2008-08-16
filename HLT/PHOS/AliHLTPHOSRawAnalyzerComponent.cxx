@@ -123,16 +123,21 @@ AliHLTPHOSRawAnalyzerComponent::GetOutputDataType()
   //  return AliHLTPHOSDefinitions::fgkDigitDataType;
 }
 
+
 int 
 AliHLTPHOSRawAnalyzerComponent::GetOutputDataTypes(AliHLTComponentDataTypeList& tgtList)
 {
   // Added by OD
   // see header file for class documentation
+  
   tgtList.clear();
   tgtList.push_back(AliHLTPHOSDefinitions::fgkCellEnergyDataType);
-   tgtList.push_back(kAliHLTDataTypeHwAddr16);
+  tgtList.push_back(kAliHLTDataTypeHwAddr16);
   return tgtList.size();
+
 }
+
+
 
 void
 AliHLTPHOSRawAnalyzerComponent::GetOutputDataSize(unsigned long& constBase, double& inputMultiplier )
@@ -312,6 +317,11 @@ AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData
       bdCellEnergy.fDataType = AliHLTPHOSDefinitions::fgkCellEnergyDataType;
       bdCellEnergy.fSpecification = specification;
       //    cout << "Pushing cell energies" << endl;
+
+
+      cout << "nRawAanalyzer: offset ="<< offset << "mysize =" << mysize << "specification =" << specification <<endl;
+
+
       outputBlocks.push_back( bdCellEnergy );
       
       tSize += mysize;

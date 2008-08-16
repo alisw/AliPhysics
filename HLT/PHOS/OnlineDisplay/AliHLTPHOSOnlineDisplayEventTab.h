@@ -30,6 +30,8 @@ class AliHLTPHOSOnlineDisplayEventTab : public AliHLTPHOSOnlineDisplayTab
   void UpdateDisplay();
   int GetNextEvent();
   virtual void ReadBlockData(AliHLTHOMERReader *homeReaderPtr);
+  void FindFourierBlocks(AliHLTHOMERReader *homeReaderPtr);
+
   void ResetDisplay();
   TGTab               *fTab;
   TGTab               *fSubTab1;

@@ -127,14 +127,36 @@ AliHLTPHOSOnlineDisplayEventTab::GetNextEvent()
 }
 
 
+void
+AliHLTPHOSOnlineDisplayEventTab::FindFourierBlocks(AliHLTHOMERReader *homerReaderPtr)
+{
+ cout << "AliHLTPHOSOnlineDisplayEventTab::FindFourierBlocks" << endl; 
+  // unsigned long blk = homeReaderPtr->FindBlockNdx("RENELLEC","SOHP", 0xFFFFFFFF );
+  unsigned long blk = homerReaderPtr->FindBlockNdx(" TREIRUOF","SOHP", 0xFFFFFFFF );
+
+  while ( blk != ~(unsigned long)0 )
+    {
+      cout << "AliHLTPHOSOnlineDisplayEventTab::FindFourierBlocks(homerReaderPtr) FOUND FOURIER DATA !!!!!!!!!!!!!!" << endl;
+
+
+      blk = homerReaderPtr->FindBlockNdx("TREIRUOF","SOHP", 0xFFFFFFFF );
+    }
+
+}
+
 
 void 
 AliHLTPHOSOnlineDisplayEventTab::ReadBlockData(AliHLTHOMERReader *homeReaderPtr)
 {  
   AliHLTPHOSValidCellDataStruct *currentChannel =0;
-  cout << "AliHLTPHOSOnlineDisplayEventTab::ReadBlockDat, Reading block data" << endl;
+  cout << "AliHLTPHOSOnlineDisplayEventTab::ReadBlockDat, Reading block data, therere are " <<  homeReaderPtr->GetBlockCnt() << " blocks " <<endl;
+
+  FindFourierBlocks(homeReaderPtr);
 
   unsigned long blk = homeReaderPtr->FindBlockNdx("RENELLEC","SOHP", 0xFFFFFFFF );
+
+  //CRAP PT
+  //  FindFourierBlocks(homeReaderPtr);
 
   while ( blk != ~(unsigned long)0 ) 
     {
@@ -197,10 +219,12 @@ AliHLTPHOSOnlineDisplayEventTab::ReadBlockData(AliHLTHOMERReader *homeReaderPtr)
 	  currentChannel = fShmPtr->NextChannel();
 	}
       
-
       blk = homeReaderPtr->FindBlockNdx("RENELLEC","SOHP", 0xFFFFFFFF, blk+1);
+
     }
 }
+
+
 
 
 void

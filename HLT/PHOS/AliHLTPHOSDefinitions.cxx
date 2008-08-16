@@ -30,6 +30,8 @@
 
 #include "AliHLTPHOSDefinitions.h"
 //CRAP PTH
+const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkFourierTransform              = { sizeof(AliHLTComponentDataType),       {'F','O','U','R','I','E','R','T'},{'P','H','O','S'}};;
+
 //const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkDDLPackedRawDataType          = { sizeof(AliHLTComponentDataType),       {'D','D','L','_','R','W','P','K'},{'P','H','O','S'}};;
 const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkDDLPackedRawDataType          = { sizeof(AliHLTComponentDataType),       {'D','D','L','_','R','A','W',' '},{'P','H','O','S'}};;
 const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkCellEnergyDataType            = { sizeof(AliHLTComponentDataType),       {'C','E','L','L','E','N','E','R'},{'P','H','O','S'}};;
