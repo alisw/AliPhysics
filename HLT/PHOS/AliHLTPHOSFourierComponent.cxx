@@ -186,6 +186,7 @@ AliHLTPHOSFourierComponent::DoEvent(const AliHLTComponentEventData& evtData,
       
 
 
+
       cout <<"size left is "<<  size  <<"  FourierComponenet: offset ="<< offset << "mysize =" << mysize << "specification =" << specification <<endl;
       tSize += mysize;
    
