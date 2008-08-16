@@ -1122,7 +1122,7 @@ void AliReconstruction::Begin(TTree *)
 
   AliReconstruction *reco = NULL;
   if (fInput) {
-    if (reco = (AliReconstruction*)fInput->FindObject("AliReconstruction")) {
+    if ((reco = (AliReconstruction*)fInput->FindObject("AliReconstruction"))) {
       *this = *reco;
     }
     AliSysInfo::AddStamp("ReadInputInBegin");

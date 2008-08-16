@@ -129,6 +129,9 @@ public:
   virtual void   Terminate();
   virtual Bool_t Run(const char* input = NULL);
   void           Abort(const char *method, EAbort what);
+  virtual void	 SetOption(const char* option) {
+    TSelector::SetOption(option);
+  }
 
   // Trackers
   AliTracker* GetTracker(Int_t idx) { return fTracker[idx]; }
