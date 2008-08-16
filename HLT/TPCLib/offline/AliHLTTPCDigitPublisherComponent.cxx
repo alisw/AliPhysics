@@ -197,12 +197,18 @@ int AliHLTTPCDigitPublisherComponent::DoDeinit()
 int AliHLTTPCDigitPublisherComponent::GetEvent(const AliHLTComponentEventData& /*evtData*/,
 					       AliHLTComponentTriggerData& /*trigData*/,
 					       AliHLTUInt8_t* outputPtr, 
-					       AliHLTUInt32_t& size,
+					       AliHLTUInt32_t& osize,
 					       vector<AliHLTComponentBlockData>& outputBlocks)
 {
   // see header file for class documentation
   int iResult=0;
-  if (outputPtr==NULL || size==0) {
+  AliHLTUInt32_t capacity=osize;
+  osize=0;
+
+  // process data events only
+  if (!IsDataEvent()) return 0;
+
+  if (outputPtr==NULL || capacity==0) {
     HLTError("no target buffer provided");
     return -EFAULT;
   }
@@ -212,7 +218,7 @@ int AliHLTTPCDigitPublisherComponent::GetEvent(const AliHLTComponentEventData& /
     AliHLTTPCUnpackedRawData* pTgt=reinterpret_cast<AliHLTTPCUnpackedRawData*>(outputPtr);
     if (pTgt) {
       UInt_t nrow=0;
-      UInt_t tgtSize=size-sizeof(AliHLTTPCUnpackedRawData);
+      UInt_t tgtSize=capacity-sizeof(AliHLTTPCUnpackedRawData);
       if (fgCurrEvent>=0 && fgCurrEvent!=event) {
 	HLTDebug("new event %d, free digit tree for event %d", event, fgCurrEvent);
 	fgpFileHandler->FreeDigitsTree();
@@ -222,7 +228,7 @@ int AliHLTTPCDigitPublisherComponent::GetEvent(const AliHLTComponentEventData& /
       fgpFileHandler->Init(fMinSlice,fMinPart);
       AliHLTTPCDigitRowData* pData=fgpFileHandler->AliDigits2Memory(nrow, event, reinterpret_cast<Byte_t*>(pTgt->fDigits), &tgtSize);
       if (pData==NULL && tgtSize>0 && tgtSize>fMaxSize) {
-	HLTDebug("target buffer too small: %d byte required, %d available", tgtSize+sizeof(AliHLTTPCUnpackedRawData), size);
+	HLTDebug("target buffer too small: %d byte required, %d available", tgtSize+sizeof(AliHLTTPCUnpackedRawData), capacity);
 	// indicate insufficient buffer size, on occasion the frameworks calls
 	// again with the corrected buffer 
 	fMaxSize=tgtSize;
@@ -233,14 +239,14 @@ int AliHLTTPCDigitPublisherComponent::GetEvent(const AliHLTComponentEventData& /
 	catch (...) {/* no action */}
 	iResult=-EIO;
       } else {
-	size=tgtSize+sizeof(AliHLTTPCUnpackedRawData);
+	osize=tgtSize+sizeof(AliHLTTPCUnpackedRawData);
 	AliHLTComponentBlockData bd;
 	FillBlockData( bd );
 	bd.fOffset = 0;
-	bd.fSize = size;
+	bd.fSize = osize;
 	bd.fSpecification = AliHLTTPCDefinitions::EncodeDataSpecification(fMinSlice, fMinSlice, fMinPart, fMinPart);
 	outputBlocks.push_back( bd );
-	HLTDebug("added AliHLTTPCUnpackedRawData size %d, first row %d nof digits %d", size, pTgt->fDigits->fRow, pTgt->fDigits->fNDigit);
+	HLTDebug("added AliHLTTPCUnpackedRawData size %d, first row %d nof digits %d", osize, pTgt->fDigits->fRow, pTgt->fDigits->fNDigit);
       }
     }
   } else {
