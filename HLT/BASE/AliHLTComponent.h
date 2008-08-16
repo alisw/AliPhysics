@@ -581,6 +581,15 @@ class AliHLTComponent : public AliHLTLogging {
   static void SetDataType(AliHLTComponentDataType& dt, AliHLTUInt64_t id, AliHLTUInt32_t orig); 
 
   /**
+   * Extract a component table entry from the payload buffer.
+   * The entry consists of the AliHLTComponentTableEntry structure, the array of
+   * parents and a description string of the format 'chain-id{component-id:component-args}'.
+   * The function fills all the variables after a consistency check.
+   */
+  static int ExtractComponentTableEntry(const AliHLTUInt8_t* pBuffer, AliHLTUInt32_t size,
+					string& chainId, string& compId, string& compParam,
+					vector<AliHLTUInt32_t>& parents);
+  /**
    * Stopwatch type for benchmarking.
    */
   enum AliHLTStopwatchType {
@@ -1322,7 +1331,8 @@ class AliHLTComponent : public AliHLTLogging {
   int  AddComponentTableEntry(AliHLTComponentBlockDataList& blocks, 
 			      AliHLTUInt8_t* buffer,
 			      AliHLTUInt32_t bufferSize,
-			      AliHLTUInt32_t offset) const;
+			      AliHLTUInt32_t offset,
+			      const vector<AliHLTUInt32_t>& parents) const;
 
   /** The global component handler instance */
   static AliHLTComponentHandler* fgpComponentHandler;              //! transient
@@ -1398,6 +1408,9 @@ class AliHLTComponent : public AliHLTLogging {
 
   /** current event type */
   AliHLTUInt32_t fEventType;                                       //! transient
+
+  /** component arguments */
+  string fComponentArgs;                                           //! transient
 
   ClassDef(AliHLTComponent, 8)
 };

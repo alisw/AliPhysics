@@ -20,11 +20,22 @@ class TH1F;
 class TH2F;
 class TH2C;
 class TTree;
+class TFolder;
 
 /**
  * @class AliHLTCompStatCollector
+ * Collector component for the statistics entries produced by the
+ * AliHLTComponent base class.
  *
  * <h2>General properties:</h2>
+ * This components collects all data blocks of types
+ * ::kAliHLTDataTypeComponentStatistics and ::kAliHLTDataTypeComponentTable
+ * which can be produced by the AliHLTComponent base class for every component
+ * and event. Component statistics entries are data blocks of
+ * ::AliHLTComponentStatistics arrays containing a couple of informations
+ * about each component. The information is extracted and stored into a
+ * TTree. The component table entries (AliHLTComponentTable structs) are sent
+ * on SOR and EOR events and are arranged in a TFolder hierarchy.
  *
  * Component ID: \b StatisticsCollector                                 <br>
  * Library: \b libAliHLTUtil.so					        <br>
@@ -92,11 +103,20 @@ class AliHLTCompStatCollector : public AliHLTProcessor
   /** delete all internal objects */
   void ClearAll();
 
+  /**
+   * Remove entries from the parent list if they occur further down in the
+   * hierarchy.
+   */
+  int RemoveRecurrence(TFolder* pRoot) const;
+
   /** event cycle timer */
   TStopwatch* fpTimer; //!transient
 
+  /** top folder */
+  TFolder* fpFolder; //!transient
+
   /** statistics tree */
-  TTree* fpStatTree;
+  TTree* fpStatTree; //!transient
 
   /** branch filling variable */
   Float_t fCycleTime; //!transient
@@ -127,6 +147,6 @@ class AliHLTCompStatCollector : public AliHLTProcessor
   /** branch filling variable */
   UInt_t* fpTotalOutputSizeArray; //!transient
 
-  ClassDef(AliHLTCompStatCollector, 0)
+  ClassDef(AliHLTCompStatCollector, 1)
 };
 #endif

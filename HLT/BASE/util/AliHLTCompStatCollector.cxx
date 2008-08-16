@@ -28,7 +28,19 @@
 #include "TH2F.h"
 #include "TH2C.h"
 #include "TTree.h"
+#include "TFolder.h"
+#include "TNamed.h"
 #include "TString.h"
+#include <cassert>
+
+#define HLTSTAT_FOLDER_NAME               "HLTstat"
+#define HLTSTAT_FOLDER_DESC               "ALICE HLT component statistics"
+#define HLTSTAT_ENTRY_PARENT_FOLDER_NAME  "parents"
+#define HLTSTAT_ENTRY_PARENT_FOLDER_DESC  "parent components"
+#define HLTSTAT_ENTRY_PROPS_FOLDER_NAME   "props"
+#define HLTSTAT_ENTRY_PROPS_FOLDER_DESC   "component properties"
+#define HLTSTAT_ENTRY_PROPS_IDOBJ_NAME    "id"
+#define HLTSTAT_ENTRY_PROPS_IDOBJ_DESC    "numerical id calculated from chain id"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTCompStatCollector)
@@ -37,6 +49,7 @@ AliHLTCompStatCollector::AliHLTCompStatCollector()
   :
   AliHLTProcessor(),
   fpTimer(NULL),
+  fpFolder(NULL),
   fpStatTree(NULL),
   fCycleTime(0),
   fNofSets(0),
@@ -169,9 +182,141 @@ int AliHLTCompStatCollector::DoEvent( const AliHLTComponentEventData& /*evtData*
   // see header file for class documentation
   int iResult=0;
 
+  AliHLTUInt32_t eventType=gkAliEventTypeUnknown;
+  IsDataEvent(&eventType);
+
   ResetFillingVariables();
   if (fpTimer) {
     fCycleTime=fpTimer->RealTime()*1000000;
+  }
+
+  bool bEmbeddedTree=false;
+  bool bFolderCreated=false;
+  if (bFolderCreated=(fpFolder==NULL)) {
+    fpFolder=new TFolder(HLTSTAT_FOLDER_NAME, HLTSTAT_FOLDER_DESC);
+    if (bEmbeddedTree) fpFolder->Add(fpStatTree);
+  }
+  if (!fpFolder) return -ENOMEM;
+  vector<TFolder*> newFolders;
+
+  for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeComponentTable);
+       pBlock && iResult>=0;
+       pBlock=GetNextInputBlock()) {
+    string chainId, compId, compArgs;
+    vector<AliHLTUInt32_t> parents;
+    iResult=ExtractComponentTableEntry((const AliHLTUInt8_t*)pBlock->fPtr, pBlock->fSize,
+				       chainId, compId, compArgs,
+				       parents);
+    if (iResult>0) {
+      HLTDebug("%s(%s) 0x%08x", chainId.c_str(), compId.c_str(), pBlock->fSpecification);
+      TObject* pObj=NULL;
+      TFolder* pEntry=NULL;
+      if ((pObj=fpFolder->FindObjectAny(chainId.c_str()))!=NULL &&
+	  (pEntry=dynamic_cast<TFolder*>(pObj))!=NULL ) {
+	
+      } else if (pObj) {
+	HLTError("entry %s exists in folder, but is not a sub-folder", chainId.c_str());
+      } else if (chainId.size()>0) {
+	pEntry=new TFolder(chainId.c_str(), chainId.c_str());
+	if (pEntry) {
+	  pEntry->SetOwner();
+	  TFolder* pProps=pEntry->AddFolder(HLTSTAT_ENTRY_PROPS_FOLDER_NAME, HLTSTAT_ENTRY_PROPS_FOLDER_DESC);
+	  if (pProps) {
+	    pProps->Add(new TObjString(compId.c_str()));
+	    if (!compArgs.empty())
+	      pProps->Add(new TObjString(compArgs.c_str()));
+	    TNamed* pCRC=new TNamed(HLTSTAT_ENTRY_PROPS_IDOBJ_NAME, HLTSTAT_ENTRY_PROPS_IDOBJ_DESC);
+	    if (pCRC) {
+	      pCRC->SetUniqueID(pBlock->fSpecification);
+	      pProps->Add(pCRC);
+	    }
+	  }
+	  TFolder* pParents=pEntry->AddFolder(HLTSTAT_ENTRY_PARENT_FOLDER_NAME, HLTSTAT_ENTRY_PARENT_FOLDER_DESC);
+	  if (pParents) {
+	    for (vector<AliHLTUInt32_t>::iterator parent=parents.begin();
+		 parent!=parents.end(); parent++) {
+	      TString name; name.Form("0x%08x", *parent);
+	      pParents->Add(new TObjString(name));
+	    }
+	  }
+	  if (parents.size()==0) {
+	    newFolders.push_back(pEntry);
+	  } else {
+	    vector<TFolder*>::iterator iter=newFolders.begin();
+	    vector<AliHLTUInt32_t>::iterator parent=parents.begin();
+	    while (iter!=newFolders.end() && parent!=parents.end()) {
+	      TObject* idobj=(*iter)->FindObjectAny(HLTSTAT_ENTRY_PROPS_IDOBJ_NAME);
+	      AliHLTUInt32_t crcid=0;
+	      if (idobj) crcid=idobj->GetUniqueID();
+	      HLTDebug("check: %s 0x%08x", (*iter)->GetName(), crcid);
+	      if (idobj && crcid==*parent) break;
+	      if ((++parent!=parents.end())) continue;
+	      parent=parents.begin();
+	      iter++;
+	    }
+	    newFolders.insert(iter,pEntry);
+	  }
+	}
+      } else {
+	HLTError("missing chain id for table entry 0x%08x (%p %d), skipping ...", pBlock->fSpecification, pBlock->fPtr, pBlock->fSize);
+      }
+    } else if (iResult!=0) {
+      HLTError("extraction of table entry 0x%08x (%p %d) failed with %d", pBlock->fSpecification, pBlock->fPtr, pBlock->fSize, iResult);
+    }
+    iResult=0;
+  }
+
+  if (newFolders.size()>0) {
+    vector<TFolder*> revert;
+    vector<TFolder*>::iterator iter=newFolders.begin();
+    while (iter!=newFolders.end()) {
+      revert.insert(revert.begin(), *iter);
+      HLTDebug("%s", (*iter)->GetName());
+      iter++;
+    }
+    newFolders.empty();
+    newFolders.assign(revert.begin(), revert.end());
+
+    vector<TFolder*>::iterator publisher=newFolders.begin();
+    while (publisher!=newFolders.end()) {
+      bool bRemove=false;
+      HLTDebug("checking %s for parents", (*publisher)->GetName());
+      TFolder* propsFolder=dynamic_cast<TFolder*>((*publisher)->FindObject(HLTSTAT_ENTRY_PROPS_FOLDER_NAME));
+      assert(propsFolder);
+      TObject* idobj=NULL;
+      if (propsFolder) idobj=propsFolder->FindObject(HLTSTAT_ENTRY_PROPS_IDOBJ_NAME);
+      assert(idobj);
+      AliHLTUInt32_t crcid=idobj->GetUniqueID();
+      TString idstr; idstr.Form("0x%08x", crcid);
+      if (idobj) {
+	for (vector<TFolder*>::iterator consumer=publisher+1;
+	     consumer!=newFolders.end(); consumer++) {
+	  HLTDebug("   checking %s", (*consumer)->GetName());
+	  TFolder* parentFolder=dynamic_cast<TFolder*>((*consumer)->FindObject(HLTSTAT_ENTRY_PARENT_FOLDER_NAME));
+	  assert(parentFolder);
+	  if (parentFolder) {
+	    TIter entries(parentFolder->GetListOfFolders());
+	    while (TObject* entry=entries.Next())
+	      HLTDebug("   searching %s in %s: %s", idstr.Data(), (*consumer)->GetName(), entry->GetName());
+
+	    TObject* parent=parentFolder->FindObjectAny(idstr);
+	    if (parent) {
+	      parentFolder->Add(*publisher);
+	      parentFolder->Remove(parent);
+	      bRemove=true;
+	    }
+	  }
+	}
+      }
+      if (bRemove) publisher=newFolders.erase(publisher);
+      else publisher++;
+    }
+
+    for (publisher=newFolders.begin();
+	 publisher!=newFolders.end(); publisher++) {
+      RemoveRecurrence(*publisher);
+      fpFolder->Add(*publisher);
+    }
   }
 
   int blockNo=0;
@@ -191,7 +336,8 @@ int AliHLTCompStatCollector::DoEvent( const AliHLTComponentEventData& /*evtData*
   if (iResult>0) {
     fNofSets=fPosition;
     fpStatTree->Fill();
-    iResult=PushBack(fpStatTree, kAliHLTDataTypeTTree);
+    if (!bEmbeddedTree)
+      iResult=PushBack(fpStatTree, kAliHLTDataTypeTTree|kAliHLTDataOriginOut);
 
     // init the timer for the next cycle
     if (!fpTimer)  fpTimer=new TStopwatch;
@@ -201,7 +347,11 @@ int AliHLTCompStatCollector::DoEvent( const AliHLTComponentEventData& /*evtData*
     }
   }
 
-  if (iResult>0) iResult=-1;
+  if (iResult>=0 /*&& eventType==gkAliEventTypeEndOfRun*/) {
+    PushBack(fpFolder, kAliHLTDataTypeTObject|kAliHLTDataOriginOut);
+  }
+
+  if (iResult>0) iResult=0;
   return iResult;
 }
 
@@ -273,7 +423,9 @@ int AliHLTCompStatCollector::FillVariablesSorted(void* ptr, int size)
 
 void AliHLTCompStatCollector::ClearAll()
 {
+  // see header file for class documentation
   if (fpTimer) delete fpTimer; fpTimer=NULL;
+  if (fpFolder) delete fpFolder; fpFolder=NULL;
   if (fpStatTree) delete fpStatTree; fpStatTree=NULL;
   if (fpLevelArray) delete fpLevelArray; fpLevelArray=NULL;
   if (fpSpecArray) delete fpSpecArray; fpSpecArray=NULL;
@@ -285,4 +437,42 @@ void AliHLTCompStatCollector::ClearAll()
   if (fpTotalInputSizeArray) delete fpTotalInputSizeArray; fpTotalInputSizeArray=NULL;
   if (fpOutputBlockCountArray) delete fpOutputBlockCountArray; fpOutputBlockCountArray=NULL;
   if (fpTotalOutputSizeArray) delete fpTotalOutputSizeArray; fpTotalOutputSizeArray=NULL;
+}
+
+int AliHLTCompStatCollector::RemoveRecurrence(TFolder* pRoot) const
+{
+  // see header file for class documentation
+  int iResult=0;
+  if (!pRoot) return -EINVAL;
+  TFolder* parentFolder=dynamic_cast<TFolder*>(pRoot->FindObject(HLTSTAT_ENTRY_PARENT_FOLDER_NAME));
+  assert(parentFolder);
+  vector<TFolder*> listRemove;
+  if (parentFolder) {
+    TIter entries(parentFolder->GetListOfFolders());
+    TFolder* entry=NULL;
+    TObject* obj=NULL;
+    while ((obj=entries.Next())!=NULL && (entry=dynamic_cast<TFolder*>(obj))!=NULL) {
+      TString name=entry->GetName();
+      HLTDebug("checking %s for recurrence", name.Data());
+      TIter tokens(parentFolder->GetListOfFolders());
+      TFolder* token=NULL;
+      while ((obj=tokens.Next())!=NULL && (token=dynamic_cast<TFolder*>(obj))!=NULL) {
+	if (name.CompareTo(token->GetName())==0) continue;
+	if ((obj=token->FindObjectAny(name))!=NULL) {
+	  listRemove.push_back(entry);
+	  HLTDebug("found recurrence in %s", token->GetName());
+	  break;
+	} else {
+	  HLTDebug("no recurrence found in %s", token->GetName());
+	}
+      }
+      RemoveRecurrence(entry);
+    }
+    for (vector<TFolder*>::iterator removeElement=listRemove.begin();
+	 removeElement!=listRemove.end(); removeElement++) {
+      parentFolder->Remove(*removeElement);
+    }
+  }
+  
+  return iResult;  
 }

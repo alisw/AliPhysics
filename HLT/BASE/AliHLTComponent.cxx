@@ -77,7 +77,8 @@ AliHLTComponent::AliHLTComponent()
   fChainIdCrc(0),
   fpBenchmark(NULL),
   fRequireSteeringBlocks(false),
-  fEventType(gkAliEventTypeUnknown)
+  fEventType(gkAliEventTypeUnknown),
+  fComponentArgs()
 {
   // see header file for class documentation
   // or
@@ -148,6 +149,7 @@ int AliHLTComponent::Init(const AliHLTAnalysisEnvironment* comenv, void* environ
     fEnvironment.fStructSize=sizeof(AliHLTAnalysisEnvironment);
     fEnvironment.fParam=environParam;
   }
+  fComponentArgs="";
   const char** pArguments=NULL;
   int iNofChildArgs=0;
   TString argument="";
@@ -156,6 +158,8 @@ int AliHLTComponent::Init(const AliHLTAnalysisEnvironment* comenv, void* environ
     pArguments=new const char*[argc];
     if (pArguments) {
       for (int i=0; i<argc && iResult>=0; i++) {
+	if (fComponentArgs.size()>0) fComponentArgs+=" ";
+	fComponentArgs+=argv[i];
 	argument=argv[i];
 	if (argument.IsNull()) continue;
 
@@ -1269,6 +1273,7 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
   // optional component statistics
   AliHLTComponentStatisticsList compStats;
   bool bAddComponentTableEntry=false;
+  vector<AliHLTUInt32_t> parentComponentTables;
 #if defined(__DEBUG) || defined(HLT_COMPONENT_STATISTICS)
   AliHLTComponentStatistics outputStat;
   memset(&outputStat, 0, sizeof(AliHLTComponentStatistics));
@@ -1349,6 +1354,7 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
 	}
       } else if (fpInputBlocks[i].fDataType==kAliHLTDataTypeComponentTable) {
 	forwardedBlocks.push_back(fpInputBlocks[i]);
+	parentComponentTables.push_back(fpInputBlocks[i].fSpecification);
       } else {
 	// the processing function is called if there is at least one
 	// non-steering data block. Steering blocks are not filtered out
@@ -1467,12 +1473,12 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
 	  HLTError("low level and high interface must not be mixed; use PushBack methods to insert data blocks");
 	  iResult=-EFAULT;
 	} else {
-	  if (compStats.size()>0) {
+	  if (compStats.size()>0 && IsDataEvent()) {
 	    int offset=AddComponentStatistics(fOutputBlocks, fpOutputBuffer, fOutputBufferSize, fOutputBufferFilled, compStats);
 	    if (offset>0) fOutputBufferFilled+=offset;
 	  }
 	  if (bAddComponentTableEntry) {
-	    int offset=AddComponentTableEntry(fOutputBlocks, fpOutputBuffer, fOutputBufferSize, fOutputBufferFilled);
+	    int offset=AddComponentTableEntry(fOutputBlocks, fpOutputBuffer, fOutputBufferSize, fOutputBufferFilled, parentComponentTables);
 	    if (offset>0) size+=offset;
 	  }
 	  if (forwardedBlocks.size()>0) {
@@ -1489,7 +1495,7 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
 	if (offset>0) size+=offset;
       }
       if (bAddComponentTableEntry) {
-	int offset=AddComponentTableEntry(blockData, fpOutputBuffer, fOutputBufferSize, size);
+	int offset=AddComponentTableEntry(blockData, fpOutputBuffer, fOutputBufferSize, size, parentComponentTables);
 	if (offset>0) size+=offset;
       }
       if (forwardedBlocks.size()>0) {
@@ -1569,19 +1575,64 @@ int  AliHLTComponent::AddComponentStatistics(AliHLTComponentBlockDataList& block
 int  AliHLTComponent::AddComponentTableEntry(AliHLTComponentBlockDataList& blocks, 
 					     AliHLTUInt8_t* buffer,
 					     AliHLTUInt32_t bufferSize,
-					     AliHLTUInt32_t offset) const
+					     AliHLTUInt32_t offset,
+					     const vector<AliHLTUInt32_t>& parents) const
 {
   // see header file for function documentation
   int iResult=0;
 #if defined(__DEBUG) || defined(HLT_COMPONENT_STATISTICS)
-  if (buffer && (offset+fChainId.size()+1<=bufferSize)) {
+  // the payload consists of the AliHLTComponentTableEntry struct,
+  // followed by a an array of 32bit crc chain ids and the component
+  // description string
+  unsigned int payloadSize=sizeof(AliHLTComponentTableEntry);
+  payloadSize+=parents.size()*sizeof(AliHLTUInt32_t);
+
+  // the component description has the following format:
+  // chain-id{component-id:arguments}
+  const char* componentId=const_cast<AliHLTComponent*>(this)->GetComponentID();
+  unsigned int descriptionSize=fChainId.size()+1;
+  descriptionSize+=2; // the '{}' around the component id
+  descriptionSize+=strlen(componentId);
+  descriptionSize+=1; // the ':' between component id and arguments
+  descriptionSize+=fComponentArgs.size();
+
+  payloadSize+=descriptionSize;
+  if (buffer && (offset+payloadSize<=bufferSize)) {
+    AliHLTUInt8_t* pTgt=buffer+offset;
+    memset(pTgt, 0, payloadSize);
+
+    // write entry
+    AliHLTComponentTableEntry* pEntry=reinterpret_cast<AliHLTComponentTableEntry*>(pTgt);
+    pEntry->fStructSize=sizeof(AliHLTComponentTableEntry);
+    pEntry->fNofParents=parents.size();
+    pEntry->fSizeDescription=descriptionSize;
+    pTgt=pEntry->fBuffer;
+
+    // write array of parents
+    if (parents.size()>0) {
+      unsigned int copy=parents.size()*sizeof(vector<AliHLTUInt32_t>::value_type);
+      memcpy(pTgt, &parents[0], parents.size()*sizeof(vector<AliHLTUInt32_t>::value_type));
+      pTgt+=copy;
+    }
+
+    // write component description
+    memcpy(pTgt, fChainId.c_str(), fChainId.size());
+    pTgt+=fChainId.size();
+    *pTgt++='{';
+    memcpy(pTgt, componentId, strlen(componentId));
+    pTgt+=strlen(componentId);
+    *pTgt++=':';
+    memcpy(pTgt, fComponentArgs.c_str(), fComponentArgs.size());
+    pTgt+=fComponentArgs.size();
+    *pTgt++='}';
+    *pTgt++=0;
+
     AliHLTComponentBlockData bd;
     FillBlockData( bd );
     bd.fOffset        = offset;
-    bd.fSize          = fChainId.size()+1;
+    bd.fSize          = payloadSize;
     bd.fDataType      = kAliHLTDataTypeComponentTable;
     bd.fSpecification = fChainIdCrc;
-    memcpy(buffer+offset, fChainId.c_str(), fChainId.size()+1);
     blocks.push_back(bd);
     iResult=bd.fSize;
   }
@@ -1871,4 +1922,68 @@ AliHLTUInt32_t AliHLTComponent::CalculateChecksum(const AliHLTUInt8_t* buffer, i
    * The final remainder is the CRC result.
    */
   return (remainder);
+}
+
+int AliHLTComponent::ExtractComponentTableEntry(const AliHLTUInt8_t* pBuffer, AliHLTUInt32_t size,
+						string& retChainId, string& retCompId, string& retCompArgs,
+						vector<AliHLTUInt32_t>& parents)
+{
+  // see header file for function documentation
+  retChainId.clear();
+  retCompId.clear();
+  retCompArgs.clear();
+  parents.clear();
+  if (!pBuffer || size==0) return 0;
+
+  const AliHLTComponentTableEntry* pEntry=reinterpret_cast<const AliHLTComponentTableEntry*>(pBuffer);
+  if (size<8/* the initial size of the structure*/ ||
+      pEntry==NULL || pEntry->fStructSize<8) return -ENOMSG;
+  const AliHLTUInt32_t* pParents=reinterpret_cast<const AliHLTUInt32_t*>(pEntry->fBuffer);
+  const AliHLTUInt8_t* pEnd=pBuffer+size;
+
+  if (pParents+pEntry->fNofParents>=reinterpret_cast<const AliHLTUInt32_t*>(pEnd)) return -ENODEV;
+  for (unsigned int i=0; i<pEntry->fNofParents; i++, pParents++) {
+    parents.push_back(*pParents);
+  }
+
+  const char* pDescription=reinterpret_cast<const char*>(pParents);
+  if (pDescription+pEntry->fSizeDescription>=reinterpret_cast<const char*>(pEnd) ||
+      *(pDescription+pEntry->fSizeDescription)!=0) {
+    return -EBADF;
+  }
+
+  TString descriptor=reinterpret_cast<const char*>(pDescription);
+  TString chainId;
+  TString compId;
+  TString compArgs;
+  TObjArray* pTokens=descriptor.Tokenize("{");
+  if (pTokens) {
+    int n=0;
+    if (pTokens->GetEntries()>n) {
+      retChainId=((TObjString*)pTokens->At(n++))->GetString();
+    }
+    if (pTokens->GetEntries()>n) {
+      compId=((TObjString*)pTokens->At(n++))->GetString();
+    }
+    delete pTokens;
+  }
+  if (!compId.IsNull() && (pTokens=compId.Tokenize(":"))!=NULL) {
+    int n=0;
+    if (pTokens->GetEntries()>n) {
+      compId=((TObjString*)pTokens->At(n++))->GetString();
+    }
+    if (pTokens->GetEntries()>n) {
+      compArgs=((TObjString*)pTokens->At(n++))->GetString();
+    }
+    delete pTokens;
+  }
+  compId.ReplaceAll("}", "");
+  compArgs.ReplaceAll("}", "");
+
+  retCompId=compId;
+  retCompArgs=compArgs;
+
+  if (retChainId.size()==0) return -ENODATA;
+
+  return 1;
 }
