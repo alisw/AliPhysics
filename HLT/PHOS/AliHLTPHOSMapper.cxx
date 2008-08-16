@@ -23,9 +23,11 @@
 //
 
 #include "AliHLTPHOSMapper.h"
+#include "unistd.h"
+#include <iostream>
 
-
-AliHLTPHOSMapper::AliHLTPHOSMapper() : AliHLTPHOSBase(), 
+AliHLTPHOSMapper::AliHLTPHOSMapper() :
+  // AliHLTPHOSBase(), 
 				       fHw2geomapPtr(0),
 				       fIsInitializedMapping(false)
 {

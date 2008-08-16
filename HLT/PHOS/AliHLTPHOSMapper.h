@@ -20,11 +20,12 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-#include "AliHLTPHOSBase.h"
+//#include "AliHLTPHOSBase.h"
 
 //using namespace PhosHLTConst;
 
-class AliHLTPHOSMapper : public AliHLTPHOSBase
+//class AliHLTPHOSMapper : public AliHLTPHOSBase
+class AliHLTPHOSMapper 
 {
  public:
   AliHLTPHOSMapper();

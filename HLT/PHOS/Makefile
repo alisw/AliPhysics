@@ -14,12 +14,9 @@ INCLUDES	 =  $(ROOTINCLUDE) $(ALIROOTINCLUDE)
 #MAINO       = testDecoder.$(ObjSuf) AliHLTAltroData.$(ObjSuf)  AliHLTAltroBunch.$(ObjSuf) AliHLTDDLDecoder.$(ObjSuf)
 #MAINS       = testDecoder.$(SrcSuf) AliHLTAltroData.$(SrcSuf)  AliHLTAltroBunch.$(SrcSuf) AliHLTDDLDecoder.$(SrcSuf)
 
-
 MAINO       = testDecoder.$(ObjSuf)
 MAINS       = testDecoder.$(SrcSuf) 
-
 MAIN        = testDecoder$(ExeSuf)
-
 
 OBJS          = $(MAINO) 
 PROGRAMS      = $(MAIN) 
