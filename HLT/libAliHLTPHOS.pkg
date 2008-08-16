@@ -55,7 +55,9 @@ CLASS_HDRS:=	  AliHLTPHOSBase.h \
 		  AliHLTPHOSModuleCalibrationProcessorComponent.h \
 		  AliHLTPHOSRcuDAComponent.h \
                   AliHLTPHOSRcuProperties.h \
-		  AliHLTPHOSUtilities.h 
+		  AliHLTPHOSUtilities.h \
+		  AliHLTPHOSFourier.h \
+		  AliHLTPHOSFourierComponent.h		 
 #		  AliHLTPHOSTreeMaker.h \
 #  		  AliHLTPHOSTreeMakerComponent.h \
 #		  AliHLTPHOSEmcCalibrationHistogramProducer.h 
@@ -84,8 +86,8 @@ MODULE_HDRS:=	  $(CLASS_HDRS) \
 		  AliHLTPHOSRcuDigitContainerDataStruct.h \
 		  AliHLTPHOSDigitDataStruct.h \
 		  AliHLTPHOSCaloClusterDataStruct.h \
-		  AliHLTPHOSCaloClusterContainerStruct.h
-
+		  AliHLTPHOSCaloClusterContainerStruct.h \
+		  AliHLTPHOSRcuFFTDataStruct.h
 
 MODULE_DHDR:=	  HLTPHOSLinkDef.h
 
