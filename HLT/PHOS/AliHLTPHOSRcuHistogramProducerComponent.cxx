@@ -99,7 +99,10 @@ int  AliHLTPHOSRcuHistogramProducerComponent::DoEvent( const AliHLTComponentEven
 					      AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
 					      AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks )
 {
-  //See html documentation of base class
+  
+  cout <<  "  AliHLTPHOSRcuHistogramProducerComponent::Doevent, entering event loop" << endl;
+
+ //See html documentation of base class
  
   // trigData++;
   // trigData--; //shutting up the compiler, we dont use trigData now but will do in near future
@@ -119,9 +122,13 @@ int  AliHLTPHOSRcuHistogramProducerComponent::DoEvent( const AliHLTComponentEven
 
   for( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
     {
+      cout <<  "  AliHLTPHOSRcuHistogramProducerComponent::DoEvent, recieved block" << endl;
       iter = blocks+ndx;
       if(iter->fDataType != AliHLTPHOSDefinitions::fgkCellEnergyDataType)
 	{
+	  cout <<  "  AliHLTPHOSRcuHistogramProducerComponent::DoEvent, recieved block of wrong type" << endl;
+	  cout << "evtData.fSize ="  << evtData.fStructSize  <<  "evtData.fBlockCnt =" << evtData.fBlockCnt   <<endl ;
+
 	  continue;
 	}
       

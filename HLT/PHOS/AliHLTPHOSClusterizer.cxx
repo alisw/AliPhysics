@@ -84,12 +84,24 @@ AliHLTPHOSClusterizer::SetRecPointContainer(AliHLTPHOSRecPointContainerStruct* r
   }
 
 void
-AliHLTPHOSClusterizer::SetRecoParameters(AliPHOSRecoParam* params)
+//AliHLTPHOSClusterizer::SetRecoParameters(AliPHOSRecoParam* params)
+//CRAP PTH
+AliHLTPHOSClusterizer::SetRecoParameters(AliPHOSRecoParam* /*params*/)
 {
+  //<<<<<<< HEAD:AliHLTPHOSClusterizer.cxx
+  //=======
+
+
+
+    //>>>>>>> e76e4d6d226ed1b3b26e0441a108cfe0e0bf0290:AliHLTPHOSClusterizer.cxx
   /*
   //see header file for documentation
 #ifndef HAVE_NOT_PHOSRECOPARAMEMC // set from configure if EMC functionality not available in AliPHOSRecoParam
   // the new AliPHOSRecoParam functions, available from revision
+
+    CRAP PTH
+    temporarily commeneted out by PTH
+    
   fEmcClusteringThreshold = params->GetEMCClusteringThreshold();
   fEmcMinEnergyThreshold = params->GetEMCMinE();
   fLogWeight = params->GetEMCLogWeight();

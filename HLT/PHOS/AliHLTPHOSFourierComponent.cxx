@@ -65,6 +65,10 @@ AliHLTPHOSFourierComponent::Spawn()
 void 
 AliHLTPHOSFourierComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
 {
+  list.clear();
+  list.push_back(AliHLTPHOSDefinitions::fgkCellEnergyDataType);
+
+  /*
   const AliHLTComponentDataType* pType=fgkInputDataTypes;
 
   while (pType->fID!=0) 
@@ -72,6 +76,7 @@ AliHLTPHOSFourierComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& 
       list.push_back(*pType);
       pType++;
     }
+  */
 }
 
 
@@ -142,6 +147,7 @@ AliHLTPHOSFourierComponent::DoEvent(const AliHLTComponentEventData& evtData,
   for( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
     {
       iter = blocks+ndx;
+  
       if(iter->fDataType != AliHLTPHOSDefinitions::fgkCellEnergyDataType)
 	{
 	  
@@ -181,7 +187,8 @@ AliHLTPHOSFourierComponent::DoEvent(const AliHLTComponentEventData& evtData,
       bd.fSize = mysize;
       bd.fDataType = AliHLTPHOSDefinitions::fgkFourierTransform;
       // bd.fSpecification = 0xFFFFFFFF;
-      bd.fSpecification = specification;
+      //     bd.fSpecification = specification;
+      bd.fSpecification = 1;
       outputBlocks.push_back( bd );
       
 

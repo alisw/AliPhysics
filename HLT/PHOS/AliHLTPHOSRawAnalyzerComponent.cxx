@@ -1,3 +1,7 @@
+////THIS IS A TEST, PTH
+
+
+
 /**************************************************************************
  * This file is property of and copyright by the Experimental Nuclear     *
  * Physics Group, Dep. of Physics                                         *
@@ -373,7 +377,7 @@ AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData
 	  Logging(kHLTLogBenchmark, __FILE__ , IntToChar(  __LINE__ ) , "Analyzing event %lu", fPhosEventCount);
 	}  
  
-   }
+    }
 
   return 0;
 }//end DoEvent
