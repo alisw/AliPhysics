@@ -159,7 +159,7 @@ AliHLTPHOSFourierComponent::DoEvent(const AliHLTComponentEventData& evtData,
 	  Int_t *data;
 	  Int_t nsamples = 0;
 	  data= fShmPtr->GetRawData(nsamples);
-	  //	  fFourierPtr->ProcessFourier(data, nsamples, currentChannel->fZ, currentChannel->fX, currentChannel->fGain  ); 
+	  fFourierPtr->ProcessFourier(data, nsamples, currentChannel->fZ, currentChannel->fX, currentChannel->fGain  ); 
 	  currentChannel = fShmPtr->NextChannel();
 	}
           
