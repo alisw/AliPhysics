@@ -410,6 +410,11 @@ void AliITSDetTypeRec::SetDefaults(){
     }
     if(dettype==1){
       seg = new AliITSsegmentationSDD();
+      AliITSCalibrationSDD* cal=(AliITSCalibrationSDD*)GetCalibrationModel(fgkDefaultNModulesSPD+1);
+      if(cal->IsAMAt20MHz()){ 
+	seg->SetPadSize(seg->Dpz(0),20.);
+	seg->SetNPads(seg->Npz()/2,128);
+      }
       SetSegmentationModel(dettype,seg);
       SetDigitClassName(dettype,"AliITSdigitSDD");
       SetClusterClassName(dettype,"AliITSRawClusterSDD");

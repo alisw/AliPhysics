@@ -152,6 +152,9 @@ class AliITSCalibrationSDD : public AliITSCalibration {
     virtual void SetZeroSupp(Bool_t opt=kTRUE) {fZeroSupp=opt;}
     virtual Bool_t GetZeroSupp() const {return fZeroSupp;}
 
+    virtual void SetAMAt20MHz() {fAMAt20MHz=kTRUE;}
+    virtual Bool_t IsAMAt20MHz() const {return fAMAt20MHz;}
+
     virtual Float_t GetDriftPath(Float_t time, Float_t xAnode) const {return time*GetDriftSpeedAtAnode(xAnode);}
     void GetCorrections(Float_t z, Float_t x, Float_t &devz, Float_t &devx, AliITSsegmentationSDD* seg);
     virtual Float_t GetThresholdAnode(Int_t anode,Int_t nsigma=3) const {
@@ -171,6 +174,7 @@ class AliITSCalibrationSDD : public AliITSCalibration {
     static const Float_t fgkGainDefault; //default for gain
 
     Bool_t fZeroSupp;    // zero suppression
+    Bool_t fAMAt20MHz;   // flag for Analog memory of Pascal at 20 MHz
     Int_t fDeadChips;                     // Number of dead chips
     Int_t fDeadChannels;                  // Number of dead channels
     Float_t fGain[fgkWings*fgkChips*fgkChannels];           //Array for channel gains
@@ -201,7 +205,7 @@ class AliITSCalibrationSDD : public AliITSCalibration {
     AliITSCalibrationSDD& operator=(const AliITSCalibrationSDD & /* source */); // ass. op.
 
 
-    ClassDef(AliITSCalibrationSDD,12) 
+    ClassDef(AliITSCalibrationSDD,13) 
     
     };
 #endif

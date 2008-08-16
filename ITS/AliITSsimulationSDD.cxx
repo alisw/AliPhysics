@@ -150,7 +150,7 @@ void AliITSsimulationSDD::Init(){
     SetDoFFT();
 
     AliITSsegmentationSDD* seg = (AliITSsegmentationSDD*)GetSegmentationModel(1);
-    
+    if(seg->Npx()==128) fScaleSize=8;
     AliITSSimuParam* simpar = fDetType->GetSimuParam();
     fpList = new AliITSpList( seg->Npz(),
                               fScaleSize*seg->Npx() );
@@ -251,7 +251,6 @@ void AliITSsimulationSDD::FastFourierTransform(Double_t *real,
         m /= 2;
         m2 += m2;
     } // end for i
-  
     for(j=0; j<samples; j++) {
         Int_t j1 = j;
         Int_t p = 0;
@@ -519,8 +518,7 @@ void AliITSsimulationSDD::HitsToAnalogDigits( AliITSmodule *mod ) {
 	if(timeSample > fScaleSize*fMaxNofSamples) {
 	  AliWarning(Form("Wrong Time Sample: %e",timeSample));
 	  continue;
-	} // end if timeSample > fScaleSize*fMaxNoofSamples
-	
+	} // end if timeSample > fScaleSize*fMaxNofSamples
 	if(zAnode>nofAnodes) zAnode-=nofAnodes;  // to have the anode number between 0. and 256.
 	if(zAnode*anodePitch > sddWidth || zAnode*anodePitch < 0.) 
 	  AliWarning(Form("Exceeding sddWidth=%e Z = %e",sddWidth,zAnode*anodePitch));
@@ -540,7 +538,7 @@ void AliITSsimulationSDD::HitsToAnalogDigits( AliITSmodule *mod ) {
 	// Peak amplitude in nanoAmpere
 	amplitude  = fScaleSize*160.*depEnergy/
 	  (timeStep*eVpairs*2.*acos(-1.)*sigT*sigA);
-	amplitude *= timeStep/25.; // WARNING!!!!! Amplitude scaling to 
+	//amplitude *= timeStep/25.; // WARNING!!!!! Amplitude scaling to 
 	// account for clock variations 
 	// (reference value: 40 MHz)
 	chargeloss = 1.-cHloss*driftPath/1000.;
@@ -701,7 +699,7 @@ void AliITSsimulationSDD::ChargeToSignal(Int_t mod,Bool_t bAddNoise, Bool_t bAdd
       }
       fInZI[k]  = 0.;
     } // end for k
-    if(!fDoFFT) {
+    if(!fDoFFT) {      
       for(k=0; k<fMaxNofSamples; k++) {
 	Double_t newcont = 0.;
 	Double_t maxcont = 0.;

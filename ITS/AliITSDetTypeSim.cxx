@@ -283,7 +283,12 @@ void AliITSDetTypeSim::SetDefaultSegmentation(Int_t idet){
     if(idet==0){
 	seg = new AliITSsegmentationSPD();
     }else if(idet==1){
-	seg = new AliITSsegmentationSDD();
+      seg = new AliITSsegmentationSDD();
+      AliITSCalibrationSDD* cal=(AliITSCalibrationSDD*)GetCalibrationModel(fgkDefaultNModulesSPD+1);
+      if(cal->IsAMAt20MHz()){ 
+	seg->SetPadSize(seg->Dpz(0),20.);
+	seg->SetNPads(seg->Npz()/2,128);
+      }
     }else {
 	seg = new AliITSsegmentationSSD();
     }
