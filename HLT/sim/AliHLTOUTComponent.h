@@ -207,6 +207,12 @@ class AliHLTOUTComponent : public AliHLTOfflineDataSink  {
   /** array of TArrayC output buffers and branches */
   TArrayC** fppDigitArrays; //!transient
 
-  ClassDef(AliHLTOUTComponent, 2)
+  /** Id of HOMER writer kept from previous event */
+  int fReservedWriter; //!transient
+
+  /** Data size kept in the internal buffer */
+  int fReservedData; //!transient
+
+  ClassDef(AliHLTOUTComponent, 3)
 };
 #endif

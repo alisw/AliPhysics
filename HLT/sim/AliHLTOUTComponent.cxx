@@ -53,7 +53,9 @@ AliHLTOUTComponent::AliHLTOUTComponent()
   fpLibManager(NULL),
   fpDigitFile(NULL),
   fpDigitTree(NULL),
-  fppDigitArrays(NULL)
+  fppDigitArrays(NULL),
+  fReservedWriter(-1),
+  fReservedData(0)
 {
   // see header file for class documentation
   // or
@@ -200,10 +202,35 @@ int AliHLTOUTComponent::DumpEvent( const AliHLTComponentEventData& evtData,
   // see header file for class documentation
   int iResult=0;
   HLTInfo("write %d output block(s)", evtData.fBlockCnt);
+  int writerNo=0;
+  AliHLTUInt32_t eventType=gkAliEventTypeUnknown;
+  bool bIsDataEvent=IsDataEvent(&eventType);
   if (iResult>=0) {
     homer_uint64 homerHeader[kCount_64b_Words];
     HOMERBlockDescriptor homerDescriptor(homerHeader);
     for (int n=0; n<(int)evtData.fBlockCnt; n++ ) {
+      if (blocks[n].fDataType==kAliHLTDataTypeEvent ||
+	  blocks[n].fDataType==kAliHLTDataTypeSOR ||
+	  blocks[n].fDataType==kAliHLTDataTypeEOR ||
+	  blocks[n].fDataType==kAliHLTDataTypeComConf ||
+	  blocks[n].fDataType==kAliHLTDataTypeUpdtDCS)
+	{
+	  // the special events have to be ignored.
+	  continue;
+	}
+      if (!bIsDataEvent &&
+	  (blocks[n].fDataType!=kAliHLTDataTypeComponentTable))
+	{
+	  // In simulation, there are no SOR and EOR events created. Thats
+	  // why all data blocks of those events are currently ignored.
+	  // Strictly speaking, components should not create output blocks
+	  // on the SOR/EOR event
+	  //
+	  // Exeptions: some blocks are added, the buffer must be prepared and
+	  // kept since the pointers will be invalid
+	  // - kAliHLTDataTypeComponentTable component table entries
+	  continue;
+	}
       memset( homerHeader, 0, sizeof(homer_uint64)*kCount_64b_Words );
       homerDescriptor.Initialize();
       // for some traditional reason the TCPDumpSubscriber swaps the bytes
@@ -219,7 +246,9 @@ int AliHLTOUTComponent::DumpEvent( const AliHLTComponentEventData& evtData,
       homerDescriptor.SetSubType1(AliHLTOUT::ByteSwap64(origin));
       homerDescriptor.SetSubType2(blocks[n].fSpecification);
       homerDescriptor.SetBlockSize(blocks[n].fSize);
-      int writerNo=ShuffleWriters(fWriters, blocks[n].fSize);
+      if (bIsDataEvent) {
+	writerNo=ShuffleWriters(fWriters, blocks[n].fSize);
+      }
       assert(writerNo>=0 && writerNo<(int)fWriters.size());
       // I'm puzzled by the different headers, buffers etc. used in the
       // HOMER writer/data. In additional, there is no type check as there
@@ -231,6 +260,24 @@ int AliHLTOUTComponent::DumpEvent( const AliHLTComponentEventData& evtData,
     }
   }
 
+  if (iResult>=0 && !bIsDataEvent) {
+    // data blocks from a special event are kept to be added to the
+    // following event.
+    if (fReservedWriter>=0) {
+      HLTWarning("overriding previous buffer of non-data event data blocks");
+    }
+    const AliHLTUInt8_t* pBuffer=NULL;
+    int bufferSize=0;
+    // TODO: not yet clear whether it is smart to send the event id of
+    // this special event or if it should be set from the id of the
+    // following event where the data will be added
+    if ((bufferSize=FillOutputBuffer(evtData.fEventID, fWriters[writerNo], pBuffer))>0) {
+      fReservedWriter=writerNo;
+      fReservedData=bufferSize;
+    }
+    fWriters[writerNo]->Clear();
+  }
+
   return iResult;
 }
 
@@ -238,12 +285,20 @@ int AliHLTOUTComponent::FillESD(int eventNo, AliRunLoader* runLoader, AliESDEven
 {
   // see header file for class documentation
   int iResult=0;
+
   if (fWriters.size()==0) return 0;
   
+  if (fReservedWriter>=0) {
+    if (fgOptions&kWriteDigits) WriteDigitArray(fReservedWriter, &fBuffer[0], fReservedData);
+    if (fgOptions&kWriteRawFiles) WriteRawFile(eventNo, runLoader, fReservedWriter, &fBuffer[0], fReservedData);
+    fReservedData=0;
+  }
+
   // search for the writer with the biggest data volume in order to allocate the
   // output buffer of sufficient size
   vector<int> sorted;
   for (size_t i=0; i<fWriters.size(); i++) {
+    if ((int)i==fReservedWriter) continue;    
     assert(fWriters[i]);
     if (fWriters[i]) {
       if (sorted.size()==0 || fWriters[i]->GetTotalMemorySize()<=fWriters[sorted[0]]->GetTotalMemorySize()) {
@@ -253,6 +308,7 @@ int AliHLTOUTComponent::FillESD(int eventNo, AliRunLoader* runLoader, AliESDEven
       }
     }
   }
+  fReservedWriter=-1;
 
   vector<int>::iterator ddlno=sorted.begin();
   while (ddlno!=sorted.end()) {
@@ -279,6 +335,7 @@ int AliHLTOUTComponent::ShuffleWriters(AliHLTMonitoringWriterPVector &list, AliH
   vector<int> writers;
   size_t i=0;
   for (i=0; i<list.size(); i++) {
+    if ((int)i==fReservedWriter) continue;
     if (list[i]->GetTotalMemorySize()==0)
       writers.push_back(i);
     else if (iResult<0 ||
