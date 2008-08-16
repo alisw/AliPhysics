@@ -146,10 +146,10 @@ void AliITSCalibrationSDD::GetCorrections(Float_t z, Float_t x, Float_t &devz, F
   //correction of coordinates using the maps stored in the DB
   Int_t nSide=seg->GetSideFromLocalX(x);
   devz=0;
-  if(fUseACorrMap){
-    if(nSide==0) devz=fMapAW0->GetCorrection(z,x,seg);
-    else devz=fMapAW1->GetCorrection(z,x,seg);
-  }
+//   if(fUseACorrMap){
+//     if(nSide==0) devz=fMapAW0->GetCorrection(z,x,seg);
+//     else devz=fMapAW1->GetCorrection(z,x,seg);
+//   }
   devx=0;
   if(fUseTCorrMap){
     if(nSide==0) devx=fMapTW0->GetCorrection(z,x,seg);
