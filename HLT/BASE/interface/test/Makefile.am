@@ -7,9 +7,10 @@ AM_CPPFLAGS			= -I$(top_srcdir)/BASE \
 
 EXTRA_DIST	= 
 
-check_PROGRAMS	= testAliHLTExternalInterface
+check_PROGRAMS	= 
+# check_PROGRAMS	= testAliHLTExternalInterface
 
-testAliHLTExternalInterface_SOURCES = testAliHLTExternalInterface.C
-testAliHLTExternalInterface_LDADD = $(top_builddir)/BASE/libHLTbase.la
+# testAliHLTExternalInterface_SOURCES = testAliHLTExternalInterface.C
+# testAliHLTExternalInterface_LDADD = $(top_builddir)/BASE/libHLTbase.la
 
 TESTS		= $(check_PROGRAMS)
