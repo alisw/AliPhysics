@@ -631,6 +631,7 @@ int AliHLTTask::ProcessTask(Int_t eventNo, AliHLTUInt32_t eventType)
 	      for (; iblock<fBlockDataArray.size(); iblock++) {
 		if (outputBlocks[oblock].fDataType==kAliHLTDataTypeEvent) {
 		  // the event type data block is ignored if it was forwarded
+		  break;
 		}
 		if (fBlockDataArray[iblock].fPtr==outputBlocks[oblock].fPtr) {
 		  assert(subscribedTaskList[iblock]!=NULL);
