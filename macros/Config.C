@@ -38,7 +38,7 @@
 #include "PMD/AliPMDv1.h"
 #include "T0/AliT0v1.h"
 #include "EMCAL/AliEMCALv2.h"
-#include "ACORDE/AliACORDEv0.h"
+#include "ACORDE/AliACORDEv1.h"
 #include "VZERO/AliVZEROv7.h"
 #endif
 
@@ -194,27 +194,27 @@ void Config()
     gAlice->SetField(field);    
 
 
-    Int_t   iABSO  =  1;
-    Int_t   iDIPO  =  1;
-    Int_t   iFMD   =  1;
-    Int_t   iFRAME =  1;
-    Int_t   iHALL  =  1;
-    Int_t   iITS   =  1;
-    Int_t   iMAG   =  1;
-    Int_t   iMUON  =  1;
-    Int_t   iPHOS  =  1;
-    Int_t   iPIPE  =  1;
-    Int_t   iPMD   =  1;
-    Int_t   iHMPID  =  1;
-    Int_t   iSHIL  =  1;
-    Int_t   iT0 =  1;
-    Int_t   iTOF   =  1;
-    Int_t   iTPC   =  1;
-    Int_t   iTRD   =  1;
-    Int_t   iZDC   =  1;
-    Int_t   iEMCAL =  1;
-    Int_t   iACORDE   =  0;
-    Int_t   iVZERO =  1;
+    Int_t   iABSO   = 1;
+    Int_t   iDIPO   = 1;
+    Int_t   iFMD    = 1;
+    Int_t   iFRAME  = 1;
+    Int_t   iHALL   = 1;
+    Int_t   iITS    = 1;
+    Int_t   iMAG    = 1;
+    Int_t   iMUON   = 1;
+    Int_t   iPHOS   = 1;
+    Int_t   iPIPE   = 1;
+    Int_t   iPMD    = 1;
+    Int_t   iHMPID  = 1;
+    Int_t   iSHIL   = 1;
+    Int_t   iT0     = 1;
+    Int_t   iTOF    = 1;
+    Int_t   iTPC    = 1;
+    Int_t   iTRD    = 1;
+    Int_t   iZDC    = 1;
+    Int_t   iEMCAL  = 1;
+    Int_t   iACORDE = 1;
+    Int_t   iVZERO  = 1;
     rl->CdGAFile();
     //=================== Alice BODY parameters =============================
     AliBODY *BODY = new AliBODY("BODY", "Alice envelop");
@@ -355,12 +355,12 @@ void Config()
      if (iACORDE)
     {
         //=================== ACORDE parameters ============================
-        AliACORDE *ACORDE = new AliACORDEv0("ACORDE", "normal ACORDE");
+        AliACORDE *ACORDE = new AliACORDEv1("ACORDE", "normal ACORDE");
     }
 
      if (iVZERO)
     {
-        //=================== ACORDE parameters ============================
+        //=================== VZERO parameters ============================
         AliVZERO *VZERO = new AliVZEROv7("VZERO", "normal VZERO");
     }
 
