@@ -179,7 +179,7 @@ class AliProtonAnalysis : public TObject {
   Bool_t fESDpidFlag, fTPCpidFlag; //shows if this cut is used or not
   
   //QA histograms
-  Bool_t fQAHistograms; //Boolean to activate the QA histograms
+  //Bool_t fQAHistograms; //Boolean to activate the QA histograms
   TList *fGlobalQAList; //TList storing the directories for the QA histograms
   TList *fQA2DList; //TList storing the accepted primary/secondary (anti)protons
   TList *fQAPrimaryProtonsAcceptedList; //list of the QA histos for accepted primary protons
