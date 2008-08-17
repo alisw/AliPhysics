@@ -36,7 +36,6 @@ extern "C" void R__zip (Int_t cxlevel, Int_t *nin, char *bufin, Int_t *lout, cha
 extern "C" void R__unzip(Int_t *nin, UChar_t *bufin, Int_t *lout, char *bufout, Int_t *nout);
 const Int_t kMAXBUF = 0xffffff;
 
-
 ClassImp(AliHLTMessage)
 
 //______________________________________________________________________________
@@ -73,13 +72,16 @@ AliHLTMessage::AliHLTMessage(UInt_t what)
 
 }
 
+const Int_t AliHLTMessage::fgkMinimumSize=30;
+UInt_t AliHLTMessage::fgkDefaultBuffer[2]={0,0};
+
 //______________________________________________________________________________
 AliHLTMessage::AliHLTMessage(void *buf, Int_t bufsize)
   :
 # if defined(ROOT_TBufferFile)
-  TBufferFile(kRead, bufsize, buf, 0),
+  TBufferFile(kRead, bufsize>fgkMinimumSize?bufsize:sizeof(fgkDefaultBuffer), bufsize>fgkMinimumSize?buf:&fgkDefaultBuffer, 0),
 # else
-  TBuffer(kRead, bufsize, buf, 0),
+  TBuffer(kRead, bufsize>fgkMinimumSize?bufsize:sizeof(fgkDefaultBuffer), bufsize>fgkMinimumSize?buf:&fgkDefaultBuffer, 0),
 # endif
   AliHLTLogging(),
   fWhat(0),

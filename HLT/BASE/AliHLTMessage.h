@@ -61,8 +61,7 @@
  *
  * A simple test macro for a file can look like
  * <pre>
- *  const char* filename="TPC_804.ddl";
- *  //const char* filename="TPC_768.ddl";
+ *  const char* filename="myobject.dat";
  *  TString param=filename;
  *  param+="?filetype=raw";
  *  TFile file(param);
@@ -84,6 +83,19 @@
  *
  * @see AliHLTRootFileWriterComponent for an easy way to save objects
  * exported via AliHLTMessage in a ROOT file.
+ *
+ * To serialize an object into a buffer, the normal ROOT TMessage mechanism
+ * can be used.
+ * <pre>
+ *    AliHLTMessage msg(kMESS_OBJECT);
+ *    msg.WriteObject(pObject);
+ *    Int_t iMsgLength=msg.Length();
+ *    if (iMsgLength>0) {
+ *      msg.SetLength(); // sets the length to the first (reserved) word
+ *      char* pMsgBuffer msg.Buffer();
+ *      // do something with pMsgBuffer and iMsgLenghth
+ *    }
+ * </pre>
  */
 class AliHLTMessage 
 :
@@ -126,6 +138,12 @@ private:
    // AliHLTMessage objects cannot be copied or assigned
    AliHLTMessage(const AliHLTMessage &);           // not implemented
    void operator=(const AliHLTMessage &);     // not implemented
+
+   /** the minimum size of a serialized TObject */
+   static const Int_t fgkMinimumSize; //!transient
+
+   /** a default buffer describing an empty message */
+   static UInt_t fgkDefaultBuffer[2]; //!transient
 
    ClassDef(AliHLTMessage,0)  // Message buffer class
 };
