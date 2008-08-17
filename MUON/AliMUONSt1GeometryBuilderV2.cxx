@@ -1645,6 +1645,8 @@ void AliMUONSt1GeometryBuilderV2::CreateFrame(Int_t chamber)
     posX = kOUTX;
     posY = kTOPY+((kBl1OCTF+kTl1OCTF)/2.);
     posZ = 0.;     
+    // shift to solve overlap with SQ17to23 and SQ18to24
+    posX += 0.02;
     gMC->Gspos("SQ26",1,quadrantMLayerName,posX, posY, posZ, rot1,"ONLY"); 
 
 // VertEarthFaceCu - 2 copies
