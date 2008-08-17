@@ -57,7 +57,7 @@ AliProtonAnalysis::AliProtonAnalysis() :
   fMaxSigmaToVertexFlag(kFALSE), fMaxSigmaToVertexTPCFlag(kFALSE),
   fITSRefitFlag(kFALSE), fTPCRefitFlag(kFALSE),
   fESDpidFlag(kFALSE), fTPCpidFlag(kFALSE),
-  fQAHistograms(kFALSE),
+  //fQAHistograms(kFALSE),
   fGlobalQAList(0), fQA2DList(0),
   fQAPrimaryProtonsAcceptedList(0),
   fQAPrimaryProtonsRejectedList(0),
@@ -98,7 +98,7 @@ AliProtonAnalysis::AliProtonAnalysis(Int_t nbinsY, Float_t fLowY, Float_t fHighY
   fMaxSigmaToVertexFlag(kFALSE), fMaxSigmaToVertexTPCFlag(kFALSE),
   fITSRefitFlag(kFALSE), fTPCRefitFlag(kFALSE),
   fESDpidFlag(kFALSE), fTPCpidFlag(kFALSE),
-  fQAHistograms(kFALSE), 
+  //fQAHistograms(kFALSE), 
   fGlobalQAList(0), fQA2DList(0),
   fQAPrimaryProtonsAcceptedList(0),
   fQAPrimaryProtonsRejectedList(0),
@@ -1665,7 +1665,7 @@ Bool_t AliProtonAnalysis::ReadCorrectionContainer(const char* filename) {
 //____________________________________________________________________//
 void AliProtonAnalysis::SetQAOn() {
   //initializes the QA lists
-  fQAHistograms = kTRUE;
+  //fQAHistograms = kTRUE;
   fGlobalQAList = new TList();
   fQA2DList = new TList();
   fQA2DList->SetName("fQA2DList");
@@ -1712,12 +1712,14 @@ void AliProtonAnalysis::SetQAYPtBins(Int_t nbinsY, Double_t minY, Double_t maxY,
   fMinY = minY; fMaxY = maxY;
   fNBinsPt = nbinsPt;
   fMinPt = minPt; fMaxPt = maxPt;
+  InitQA();
 }
 
 //____________________________________________________________________//
 void AliProtonAnalysis::InitQA() {
   //Initializes the QA histograms and builds the directory structure
-  if(!fQAHistograms) SetQAOn();
+  //if(!fQAHistograms) 
+  SetQAOn();
 
   //2D histograms
   //TDirectory *dir2D = gDirectory->mkdir("2D");
@@ -1729,28 +1731,59 @@ void AliProtonAnalysis::InitQA() {
   gHistYPtPrimaryProtonsPass->SetStats(kTRUE);
   gHistYPtPrimaryProtonsPass->GetXaxis()->SetTitleColor(1);
   fQA2DList->Add(gHistYPtPrimaryProtonsPass);
-  TH2D *gHistYPtPrimaryAntiProtonsPass = new TH2D("gHistYPtAntiPrimaryProtonsPass",
-						  ";y;P_{T} [GeV/c]",
-						  fNBinsY,fMinY,fMaxY,
-						  fNBinsPt,fMinPt,fMaxPt);
-  gHistYPtPrimaryAntiProtonsPass->SetStats(kTRUE);
-  gHistYPtPrimaryAntiProtonsPass->GetXaxis()->SetTitleColor(1);
-  fQA2DList->Add(gHistYPtPrimaryAntiProtonsPass);
-  TH2D *gHistYPtSecondaryProtonsPass = new TH2D("gHistYPtSecondaryAntiProtonsPass",
+  TH2D *gHistYPtPrimaryProtonsReject = new TH2D("gHistYPtPrimaryProtonsReject",
+						";y;P_{T} [GeV/c]",
+						fNBinsY,fMinY,fMaxY,
+						fNBinsPt,fMinPt,fMaxPt);
+  gHistYPtPrimaryProtonsReject->SetStats(kTRUE);
+  gHistYPtPrimaryProtonsReject->GetXaxis()->SetTitleColor(1);
+  fQA2DList->Add(gHistYPtPrimaryProtonsReject);
+
+  TH2D *gHistYPtSecondaryProtonsPass = new TH2D("gHistYPtSecondaryProtonsPass",
 						";y;P_{T} [GeV/c]",
 						fNBinsY,fMinY,fMaxY,
 						fNBinsPt,fMinPt,fMaxPt);
   gHistYPtSecondaryProtonsPass->SetStats(kTRUE);
   gHistYPtSecondaryProtonsPass->GetXaxis()->SetTitleColor(1);
   fQA2DList->Add(gHistYPtSecondaryProtonsPass);
-  TH2D *gHistYPtSecondaryAntiAntiProtonsPass = new TH2D("gHistYPtAntiSecondaryAntiProtonsPass",
-							";y;P_{T} [GeV/c]",
-							fNBinsY,fMinY,fMaxY,
-							fNBinsPt,fMinPt,fMaxPt);
-  gHistYPtSecondaryAntiAntiProtonsPass->SetStats(kTRUE);
-  gHistYPtSecondaryAntiAntiProtonsPass->GetXaxis()->SetTitleColor(1);
-  fQA2DList->Add(gHistYPtSecondaryAntiAntiProtonsPass);
-  
+  TH2D *gHistYPtSecondaryProtonsReject = new TH2D("gHistYPtSecondaryProtonsReject",
+						  ";y;P_{T} [GeV/c]",
+						  fNBinsY,fMinY,fMaxY,
+						  fNBinsPt,fMinPt,fMaxPt);
+  gHistYPtSecondaryProtonsReject->SetStats(kTRUE);
+  gHistYPtSecondaryProtonsReject->GetXaxis()->SetTitleColor(1);
+  fQA2DList->Add(gHistYPtSecondaryProtonsReject);
+
+  TH2D *gHistYPtPrimaryAntiProtonsPass = new TH2D("gHistYPtPrimaryAntiProtonsPass",
+						  ";y;P_{T} [GeV/c]",
+						  fNBinsY,fMinY,fMaxY,
+						  fNBinsPt,fMinPt,fMaxPt);
+  gHistYPtPrimaryAntiProtonsPass->SetStats(kTRUE);
+  gHistYPtPrimaryAntiProtonsPass->GetXaxis()->SetTitleColor(1);
+  fQA2DList->Add(gHistYPtPrimaryAntiProtonsPass);
+  TH2D *gHistYPtPrimaryAntiProtonsReject = new TH2D("gHistYPtPrimaryAntiProtonsReject",
+						  ";y;P_{T} [GeV/c]",
+						  fNBinsY,fMinY,fMaxY,
+						  fNBinsPt,fMinPt,fMaxPt);
+  gHistYPtPrimaryAntiProtonsReject->SetStats(kTRUE);
+  gHistYPtPrimaryAntiProtonsReject->GetXaxis()->SetTitleColor(1);
+  fQA2DList->Add(gHistYPtPrimaryAntiProtonsReject);
+
+  TH2D *gHistYPtSecondaryAntiProtonsPass = new TH2D("gHistYPtSecondaryAntiProtonsPass",
+						  ";y;P_{T} [GeV/c]",
+						  fNBinsY,fMinY,fMaxY,
+						  fNBinsPt,fMinPt,fMaxPt);
+  gHistYPtSecondaryAntiProtonsPass->SetStats(kTRUE);
+  gHistYPtSecondaryAntiProtonsPass->GetXaxis()->SetTitleColor(1);
+  fQA2DList->Add(gHistYPtSecondaryAntiProtonsPass);
+  TH2D *gHistYPtSecondaryAntiProtonsReject = new TH2D("gHistYPtSecondaryAntiProtonsReject",
+						  ";y;P_{T} [GeV/c]",
+						  fNBinsY,fMinY,fMaxY,
+						  fNBinsPt,fMinPt,fMaxPt);
+  gHistYPtSecondaryAntiProtonsReject->SetStats(kTRUE);
+  gHistYPtSecondaryAntiProtonsReject->GetXaxis()->SetTitleColor(1);
+  fQA2DList->Add(gHistYPtSecondaryAntiProtonsReject);
+
   /*gDirectory->cd("../");
   //protons
   TDirectory *dirProtons = gDirectory->mkdir("Protons");
@@ -2309,7 +2342,7 @@ void AliProtonAnalysis::RunQA(AliStack *stack, AliESDEvent *fESD) {
 							  track->Pz()),
 						 Pt);
             else if(track->Charge() < 0)
-              ((TH2D *)(fQA2DList->At(1)))->Fill(Rapidity(track->Px(),
+              ((TH2D *)(fQA2DList->At(4)))->Fill(Rapidity(track->Px(),
 							  track->Py(),
 							  track->Pz()),
 						 Pt);
@@ -2321,7 +2354,33 @@ void AliProtonAnalysis::RunQA(AliStack *stack, AliESDEvent *fESD) {
 							  track->Pz()),
 						 Pt);
             else if(track->Charge() < 0)
+              ((TH2D *)(fQA2DList->At(6)))->Fill(Rapidity(track->Px(),
+							  track->Py(),
+							  track->Pz()),
+						 Pt);
+	  }//secondary particles
+	}//cuts
+	else if(!IsAccepted(track)) {
+	  if(label <= stack->GetNprimary()) {
+            if(track->Charge() > 0)
+              ((TH2D *)(fQA2DList->At(1)))->Fill(Rapidity(track->Px(),
+							  track->Py(),
+							  track->Pz()),
+						 Pt);
+            else if(track->Charge() < 0)
+              ((TH2D *)(fQA2DList->At(5)))->Fill(Rapidity(track->Px(),
+							  track->Py(),
+							  track->Pz()),
+						 Pt);
+	  }//primary particles
+	  else if(label > stack->GetNprimary()) {
+	    if(track->Charge() > 0)
               ((TH2D *)(fQA2DList->At(3)))->Fill(Rapidity(track->Px(),
+							  track->Py(),
+							  track->Pz()),
+						 Pt);
+            else if(track->Charge() < 0)
+              ((TH2D *)(fQA2DList->At(7)))->Fill(Rapidity(track->Px(),
 							  track->Py(),
 							  track->Pz()),
 						 Pt);
@@ -2347,25 +2406,54 @@ void AliProtonAnalysis::RunQA(AliStack *stack, AliESDEvent *fESD) {
 	FillQA(track, stack);
 	if(IsAccepted(track)) {
 	  if(label <= stack->GetNprimary()) {
-	    if(track->Charge() > 0)
-	      ((TH2D *)(fQA2DList->At(0)))->Fill(Rapidity(track->Px(),
+            if(track->Charge() > 0)
+              ((TH2D *)(fQA2DList->At(0)))->Fill(Rapidity(track->Px(),
 							  track->Py(),
-							  track->Pz())
-						 ,Pt);
-	    else if(track->Charge() < 0)
-	      ((TH2D *)(fQA2DList->At(1)))->Fill(Rapidity(track->Px(),
+							  track->Pz()),
+						 Pt);
+            else if(track->Charge() < 0)
+              ((TH2D *)(fQA2DList->At(4)))->Fill(Rapidity(track->Px(),
 							  track->Py(),
 							  track->Pz()),
 						 Pt);
 	  }//primary particles
 	  else if(label > stack->GetNprimary()) {
 	    if(track->Charge() > 0)
-	      ((TH2D *)(fQA2DList->At(2)))->Fill(Rapidity(track->Px(),
+              ((TH2D *)(fQA2DList->At(2)))->Fill(Rapidity(track->Px(),
 							  track->Py(),
 							  track->Pz()),
 						 Pt);
-	    else if(track->Charge() < 0)
-	      ((TH2D *)(fQA2DList->At(3)))->Fill(Rapidity(track->Px(),track->Py(),track->Pz()),Pt);
+            else if(track->Charge() < 0)
+              ((TH2D *)(fQA2DList->At(6)))->Fill(Rapidity(track->Px(),
+							  track->Py(),
+							  track->Pz()),
+						 Pt);
+	  }//secondary particles
+	}//cuts
+	else if(!IsAccepted(track)) {
+	  if(label <= stack->GetNprimary()) {
+            if(track->Charge() > 0)
+              ((TH2D *)(fQA2DList->At(1)))->Fill(Rapidity(track->Px(),
+							  track->Py(),
+							  track->Pz()),
+						 Pt);
+            else if(track->Charge() < 0)
+              ((TH2D *)(fQA2DList->At(5)))->Fill(Rapidity(track->Px(),
+							  track->Py(),
+							  track->Pz()),
+						 Pt);
+	  }//primary particles
+	  else if(label > stack->GetNprimary()) {
+	    if(track->Charge() > 0)
+              ((TH2D *)(fQA2DList->At(3)))->Fill(Rapidity(track->Px(),
+							  track->Py(),
+							  track->Pz()),
+						 Pt);
+            else if(track->Charge() < 0)
+              ((TH2D *)(fQA2DList->At(7)))->Fill(Rapidity(track->Px(),
+							  track->Py(),
+							  track->Pz()),
+						 Pt);
 	  }//secondary particles
 	}//cuts
       }//proton check
