@@ -305,14 +305,12 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
     //Array of MC indeces
     TArrayI arrayPrim(primMult,primList);
     ec->AddLabels(arrayPrim);
-
-    //Array of tracks uncomment when available in future
-    //TArrayS arrayTrackMatched(1);// Only one track, temporal solution.
-    //arrayTrackMatched[0]= (Short_t)(matchedTrack[iClust]);
-    //ec->AddTracksMatched(arrayTrackMatched);
     
-    // add the track to the esd object
-
+    //Matched ESD track
+    TArrayI arrayTrackMatched(1);
+    arrayTrackMatched[0]= ts->GetTrackIndex();
+    ec->AddTracksMatched(arrayTrackMatched);
+    
     esd->AddCaloCluster(ec);
     delete ec;   
     delete [] fracList;

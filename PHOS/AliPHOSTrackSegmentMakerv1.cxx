@@ -238,12 +238,71 @@ void  AliPHOSTrackSegmentMakerv1::GetDistanceInPHOSPlane(AliPHOSEmcRecPoint * em
                                                          Float_t &dx, Float_t &dz) const
 {
   // Calculates the distance between the EMC RecPoint and the CPV RecPoint
+  // If no CPV, calculates the distance between the EMC RecPoint and the track
+  // prolongation to the PHOS module plane.
   // Clusters are sorted in "rows" and "columns" of width 1 cm
 
 //  Float_t delta = 1 ;  // Width of the rows in sorting of RecPoints (in cm)
 //                       // if you change this value, change it as well in xxxRecPoint::Compare()
-  Float_t distance2Track = fRtpc ; 
 
+  if(!cpvClu) {
+
+    TVector3 emcGlobal;
+    fGeom->GetGlobalPHOS((AliPHOSRecPoint*)emcClu,emcGlobal);
+
+    TVector3 emcLocal;
+    emcClu->GetLocalPosition(emcLocal);
+
+    // Radius from IP to current point
+    Double_t rEMC = emcGlobal.Pt() ;
+
+    // Extrapolate the global track direction to EMC
+    // and find the closest track
+
+    Int_t nTracks = fESD->GetNumberOfTracks();
+    Int_t iClosestTrack = -1;
+    Double_t minDistance = 1.e6;
+    Float_t delta_x,delta_z,distance2Track;
+    
+    AliESDtrack *track;
+    Double_t xyz[3] ;
+
+    for (Int_t iTrack=0; iTrack<nTracks; iTrack++) {
+      track = fESD->GetTrack(iTrack);
+      if (!track->GetXYZAt(rEMC, fESD->GetMagneticField(), xyz)) continue;
+      printf("track prolongation: (%.3f,%.3f,%.3f)  emcGlobal: (%.3f,%.3f,%.3f)\n",
+             xyz[0], xyz[1],xyz[2],emcGlobal.X(),emcGlobal.Y(),emcGlobal.Z());
+      
+      TVector3 globTrack(xyz);
+      TVector3 locTrack;
+      Int_t phosMod = emcClu->GetPHOSMod();
+      fGeom->Global2Local(locTrack,globTrack,phosMod);
+      delta_x = locTrack.X()-emcLocal.X();
+      delta_z = locTrack.Z()-emcLocal.Z();
+      printf("delta_x: %.3f  delta_z: %.3f. PHOS module: %d\n",
+	     delta_x,delta_z,phosMod);
+
+      distance2Track = TMath::Sqrt(delta_x*delta_x + delta_z*delta_z);
+
+      if (distance2Track < minDistance) {
+        minDistance = distance2Track;
+        iClosestTrack = iTrack;
+        dx = delta_x;
+        dz = delta_z;
+      }
+    }
+
+    trackindex = iClosestTrack;
+    if(trackindex <0) {
+      dx=999.;
+      dz=999.;
+    }
+
+    return;
+  }
+  
+  Float_t distance2Track = fRtpc ; 
+  
   trackindex = -1 ; // closest track within fRCpv 
 
   TVector3 vecEmc ;   // Local position of EMC recpoint
@@ -445,11 +504,16 @@ void  AliPHOSTrackSegmentMakerv1::MakePairs()
     Int_t iEmcRP ;
     for(iEmcRP = 0; iEmcRP < fEmcLast-fEmcFirst  ; iEmcRP++ ){
       if(emcExist[iEmcRP] > 0 ){
-       new ((*fTrackSegments)[fNTrackSegments])  
-         AliPHOSTrackSegment(dynamic_cast<AliPHOSEmcRecPoint *>(fEMCRecPoints->At(iEmcRP+fEmcFirst)), 
-                           nullpointer) ;
-       (dynamic_cast<AliPHOSTrackSegment *>(fTrackSegments->At(fNTrackSegments)))->SetIndexInList(fNTrackSegments);
-       fNTrackSegments++;    
+        Int_t track = -1 ;
+        Float_t dx,dz ;
+        AliPHOSEmcRecPoint *emcclu = dynamic_cast<AliPHOSEmcRecPoint *>(fEMCRecPoints->At(iEmcRP+fEmcFirst));
+        GetDistanceInPHOSPlane(emcclu, 0, track,dx,dz);
+        if(track<0)
+	  new ((*fTrackSegments)[fNTrackSegments]) AliPHOSTrackSegment(emcclu,nullpointer) ;
+        else
+          new ((*fTrackSegments)[fNTrackSegments]) AliPHOSTrackSegment(emcclu,0,track,dx,dz);
+	(dynamic_cast<AliPHOSTrackSegment *>(fTrackSegments->At(fNTrackSegments)))->SetIndexInList(fNTrackSegments);
+	fNTrackSegments++;    
       } 
     }
   }
