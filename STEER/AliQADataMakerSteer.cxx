@@ -181,7 +181,7 @@ Bool_t AliQADataMakerSteer::DoIt(const AliQA::TASKINDEX_t taskIndex)
 					qadm->EndOfCycle(AliQA::kRAWS) ;
 					qadm->StartOfCycle(AliQA::kRAWS) ;
 				}
-				TTree * data ; 
+				TTree * data = NULL ; 
 				AliLoader* loader = GetLoader(qadm->GetUniqueID());
 				switch (taskIndex) {
 					case AliQA::kNULLTASKINDEX : 
@@ -190,41 +190,49 @@ Bool_t AliQADataMakerSteer::DoIt(const AliQA::TASKINDEX_t taskIndex)
 						qadm->Exec(taskIndex, fRawReader) ; 
 						break ; 
 					case AliQA::kHITS :
-						loader->LoadHits() ; 
-						data = loader->TreeH() ; 
-						if ( ! data ) {
-							AliWarning(Form(" Hit Tree not found for  %s", AliQA::GetDetName(iDet))) ; 
-						} else {
-							qadm->Exec(taskIndex, data) ;
-						} 
+            if( loader ) {
+              loader->LoadHits() ; 
+              data = loader->TreeH() ; 
+              if ( ! data ) {
+                AliWarning(Form(" Hit Tree not found for  %s", AliQA::GetDetName(iDet))) ; 
+                break ; 
+              } 
+            } 
+            qadm->Exec(taskIndex, data) ;
 						break ;
 						case AliQA::kSDIGITS :
-						loader->LoadSDigits() ; 
-						data = loader->TreeS() ; 
-						if ( ! data ) {
-							AliWarning(Form(" SDigit Tree not found for  %s", AliQA::GetDetName(iDet))) ; 
-						} else {
-							qadm->Exec(taskIndex, data) ; 
-					}
+            if( loader ) {      
+              loader->LoadSDigits() ; 
+              data = loader->TreeS() ; 
+              if ( ! data ) {
+                AliWarning(Form(" SDigit Tree not found for  %s", AliQA::GetDetName(iDet))) ; 
+                break ; 
+              } 
+            }
+            qadm->Exec(taskIndex, data) ; 
 						break; 
 						case AliQA::kDIGITS :
-						loader->LoadDigits() ; 
-						data = loader->TreeD() ; 
-						if ( ! data ) {
-							AliWarning(Form(" Digit Tree not found for  %s", AliQA::GetDetName(iDet))) ; 
-						} else {
-							qadm->Exec(taskIndex, data) ;
-						}
+            if( loader ) {      
+              loader->LoadDigits() ; 
+              data = loader->TreeD() ; 
+              if ( ! data ) {
+                AliWarning(Form(" Digit Tree not found for  %s", AliQA::GetDetName(iDet))) ; 
+                break ; 
+              } 
+            }
+            qadm->Exec(taskIndex, data) ;
 						break; 
 						case AliQA::kRECPOINTS :
-						loader->LoadRecPoints() ; 
-						data = loader->TreeR() ; 
-						if (!data) {
-							AliWarning(Form("RecPoints not found for %s", AliQA::GetDetName(iDet))) ; 
-						} else {
-							qadm->Exec(taskIndex, data) ; 
-						}
-						break; 
+            if( loader ) {      
+              loader->LoadRecPoints() ; 
+              data = loader->TreeR() ; 
+              if (!data) {
+                AliWarning(Form("RecPoints not found for %s", AliQA::GetDetName(iDet))) ; 
+                break ; 
+              } 
+            }
+            qadm->Exec(taskIndex, data) ; 
+            break; 
 						case AliQA::kTRACKSEGMENTS :
 						break; 
 						case AliQA::kRECPARTICLES :
@@ -291,7 +299,7 @@ AliLoader * AliQADataMakerSteer::GetLoader(Int_t iDet)
 {
 	// get the loader for a detector
 
-	if ( !fRunLoader ) 
+	if ( !fRunLoader || iDet == AliQA::kCORR) 
 		return NULL ; 
 	
 	TString detName = AliQA::GetDetName(iDet) ;
