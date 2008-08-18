@@ -133,7 +133,7 @@ Double_t AliTPCExB::GetDr(Double_t r, Double_t phi, Double_t z){
   // 
   //
   if (!fgInstance) return 0;
-  Double_t pos0[3] = {r*TMath::Sin(phi), r*TMath::Cos(phi),z};
+  Double_t pos0[3] = {r*TMath::Cos(phi), r*TMath::Sin(phi),z};
   Double_t pos1[3];
   fgInstance->Correct(pos0,pos1);
   Double_t dx=pos1[0]-pos0[0];
@@ -148,7 +148,7 @@ Double_t AliTPCExB::GetDrphi(Double_t r, Double_t phi, Double_t z){
   //
   //
   if (!fgInstance) return 0;
-  Double_t pos0[3] = {r*TMath::Sin(phi), r*TMath::Cos(phi),z};
+  Double_t pos0[3] = {r*TMath::Cos(phi), r*TMath::Sin(phi),z};
   Double_t pos1[3];
   fgInstance->Correct(pos0,pos1);
   Double_t dphi=TMath::ATan2(pos1[1],pos1[0])-TMath::ATan2(pos0[1],pos0[0]);
@@ -162,7 +162,7 @@ Double_t AliTPCExB::GetDphi(Double_t r, Double_t phi, Double_t z){
   //
   //
   if (!fgInstance) return 0;
-  Double_t pos0[3] = {r*TMath::Sin(phi), r*TMath::Cos(phi),z};
+  Double_t pos0[3] = {r*TMath::Cos(phi), r*TMath::Sin(phi),z};
   Double_t pos1[3];
   fgInstance->Correct(pos0,pos1);
   Double_t dphi=TMath::ATan2(pos1[1],pos1[0])-TMath::ATan2(pos0[1],pos0[0]);
@@ -175,7 +175,7 @@ Double_t AliTPCExB::GetDz(Double_t r, Double_t phi, Double_t z){
   //
   //
   if (!fgInstance) return 0;
-  Double_t pos0[3] = {r*TMath::Sin(phi), r*TMath::Cos(phi),z};
+  Double_t pos0[3] = {r*TMath::Cos(phi), r*TMath::Sin(phi),z};
   Double_t pos1[3];
   fgInstance->Correct(pos0,pos1);
   Double_t dz=pos1[2]-pos0[2];
