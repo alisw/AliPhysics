@@ -189,6 +189,7 @@
 #include <TProfile.h>
 #include <TProfile2D.h>
 #include <TProof.h>
+#include <TStatToolkit.h>
 
 //
 // AliRoot includes
