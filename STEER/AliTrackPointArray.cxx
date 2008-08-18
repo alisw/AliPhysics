@@ -89,7 +89,11 @@ AliTrackPointArray::AliTrackPointArray(const AliTrackPointArray &array):
   memcpy(fX,array.fX,fNPoints*sizeof(Float_t));
   memcpy(fY,array.fY,fNPoints*sizeof(Float_t));
   memcpy(fZ,array.fZ,fNPoints*sizeof(Float_t));
-  memcpy(fCharge,array.fCharge,fNPoints*sizeof(Float_t));
+  if (array.fCharge) {
+    memcpy(fCharge,array.fCharge,fNPoints*sizeof(Float_t));
+  } else {
+    memset(fCharge, 0, fNPoints*sizeof(Float_t));
+  }
   memcpy(fVolumeID,array.fVolumeID,fNPoints*sizeof(UShort_t));
   memcpy(fCov,array.fCov,fSize*sizeof(Float_t));
 }
