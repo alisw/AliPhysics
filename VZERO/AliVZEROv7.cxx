@@ -403,11 +403,7 @@ void AliVZEROv7::CreateGeometry()
     double v0APts[16];
     double sin654   = TMath::Sin(1.14);
     double cos654   = TMath::Cos(1.14);
-    //double sin65   = TMath::Sin(1.13);
-    //double cos65   = TMath::Cos(1.13);
-    //double sin665   = TMath::Sin(1.16); 
-    //double cos665   = TMath::Cos(1.16);
-
+    
     ////////////////////////////
     /// Definition sector 1
     TGeoVolume *v0ASec = new TGeoVolumeAssembly("V0ASec");
@@ -1197,7 +1193,7 @@ void AliVZEROv7::CreateGeometry()
     v0LE->AddNode(v0ASec6, 1); 
  
      
-    //Definition of sector 7
+     //Definition of sector 7
     TGeoVolume *v0ASec7 = new TGeoVolumeAssembly("V0ASec7");
 
     /// For boolean sustraction
@@ -1396,7 +1392,7 @@ void AliVZEROv7::CreateGeometry()
     TGeoVolume *v0APMB7 = new TGeoVolume("V0APMB7",sV0APMB7, medV0APMAlum);
     v0APMB7->SetLineColor(kV0AColorPMA);
     v0APM7->AddNode(v0APMB7,1);
-
+    
     /// PMTubes 
     TGeoTube *sV0APMT17 = new TGeoTube("sV0APMT17", fV0APMTR1, fV0APMTR2, fV0APMTH/2.);
     TGeoVolume *v0APMT17 = new TGeoVolume("V0APMT17", sV0APMT17, medV0APMGlass);
@@ -1425,7 +1421,7 @@ void AliVZEROv7::CreateGeometry()
     double shiftZ7 = fV0APMBHt/2. * cosAngPMB
       -   ( fV0ASciWd + 2 * fV0AOctWd + 2 * fV0APlaWd )/2.   -   fV0APMBTh/2. * sinAngPMB;
     double shiftR7 = fV0AR6  + fV0AR1 + fV0AOctWd + fV0APlaAl/3.;
-    v0ASec7->AddNode(v0APM7,1, new TGeoCombiTrans( shiftR7*cos45, -shiftR7*sin45, shiftZ7, rot)); 
+    v0ASec7->AddNode(v0APM7,1, new TGeoCombiTrans( shiftR7*cos45+1.3, -shiftR7*sin45, shiftZ7, rot)); 
     
     // Aluminium nail
     TGeoTube *sV0ANail71 = new TGeoTube("sV0ANail71", 0.0, 0.4, 5.09/2.);
@@ -1445,27 +1441,28 @@ void AliVZEROv7::CreateGeometry()
     
     // Adding sector to v0LE volume 
     v0LE->AddNode(v0ASec7,1);
+    
 
    //Definition of sector 8
    TGeoVolume *v0ASec8 = new TGeoVolumeAssembly("V0ASec8"); 
-
-   /// For boolean sustraction
+  
+  /// For boolean sustraction
       for (int i=0;i<2;i++) {
-      v0APts[0+8*i] = fV0AR0-fV0AFraWd/2.-preShape;  v0APts[1+8*i] = preShape;
-      v0APts[2+8*i] = fV0AR0-fV0AFraWd/2.-preShape;  v0APts[3+8*i] = -fV0AFraWd/2.;
-      v0APts[4+8*i] = fV0AR4+fV0AFraWd/2.+preShape;  v0APts[5+8*i] = -fV0AFraWd/2.;
-      v0APts[6+8*i] = fV0AR4+fV0AFraWd/2.+preShape;  v0APts[7+8*i] = preShape;
+      v0APts[0+8*i] = fV0AR0-fV0AFraWd/2.+preShape;  v0APts[1+8*i] = 0.0;
+      v0APts[2+8*i] = fV0AR0-fV0AFraWd/2.+preShape;  v0APts[3+8*i] = -preShape;
+      v0APts[4+8*i] = fV0AR4+fV0AFraWd/2.-preShape;  v0APts[5+8*i] = -preShape;
+      v0APts[6+8*i] = fV0AR4+fV0AFraWd/2.-preShape;  v0APts[7+8*i] = 0.0;
     }
     new TGeoArb8("sV0ACha18",fV0ASciWd/1.5,v0APts);
     for (int i=0;i<2;i++) {
-      v0APts[0+8*i] = fV0AR0*cos45-preShape;
-      v0APts[1+8*i] = -(fV0AR0-fV0AFraWd)*sin45-preShape;
-      v0APts[2+8*i] = (fV0AR0-fV0AFraWd/2.)*cos45-preShape;
+      v0APts[0+8*i] = fV0AR0*sin45-fV0AFraWd/2.-preShape;
+      v0APts[1+8*i] = -(fV0AR0-fV0AFraWd)*sin45+preShape;
+      v0APts[2+8*i] = (fV0AR0-fV0AFraWd/2.)*sin45-preShape;
       v0APts[3+8*i] = -(fV0AR0-fV0AFraWd/2.)*sin45;
-      v0APts[4+8*i] = (fV0AR4+fV0AFraWd/2.)*cos45+preShape;
-      v0APts[5+8*i] = -(fV0AR4+fV0AFraWd/2.)*sin45+2.*preShape;
-      v0APts[6+8*i] = (fV0AR4+fV0AFraWd)*cos45+preShape;
-      v0APts[7+8*i] = -fV0AR4*sin45+preShape;
+      v0APts[4+8*i] = (fV0AR4+fV0AFraWd/2.)*sin45+preShape;
+      v0APts[5+8*i] = -(fV0AR4+fV0AFraWd/2.)*sin45-2.*preShape;
+      v0APts[6+8*i] = (fV0AR4+fV0AFraWd)*sin45+preShape;
+      v0APts[7+8*i] = -fV0AR4*sin45-preShape;
     }
     new TGeoArb8("sV0ACha28", fV0ASciWd/2.+2.*preShape, v0APts);
     new TGeoCompositeShape("sV0ACha128","sV0ACha18+sV0ACha28");
@@ -1488,25 +1485,25 @@ void AliVZEROv7::CreateGeometry()
     new TGeoTube("sV0ANail2PlaOuHole8", 0.0, 0.4, (fV0APlaAl)/2.);
     new TGeoTube("sV0ANail3PlaOuHole8", 0.0, 0.4, (fV0APlaAl)/2.);
     new TGeoCompositeShape("sV0ANailsPlaOuHoles8","sV0ANail1PlaOuHole8:pos18+sV0ANail2PlaOuHole8:pos28+sV0ANail3PlaOuHole8:pos38");
-
-    /// Frame
-    TGeoVolume *v0AFra8 = new TGeoVolumeAssembly("V0AFra8");
+    
+    /// Frame 
+    TGeoVolume *v0AFra8 = new TGeoVolumeAssembly("V0AFra8"); 
     for (int i=0;i<2;i++) {
       v0APts[0+8*i] = fV0AR0-fV0AFraWd/2.;  v0APts[1+8*i] = 0.0;
-      v0APts[2+8*i] = fV0AR0-fV0AFraWd/2.;  v0APts[3+8*i] = -fV0AFraWd/2.;
-      v0APts[4+8*i] = fV0AR4+fV0AFraWd/2.;  v0APts[5+8*i] = -fV0AFraWd/2.;
+      v0APts[2+8*i] = fV0AR0-fV0AFraWd/2.;  v0APts[3+8*i] = -fV0AFraWd/4.; 
+      v0APts[4+8*i] = fV0AR4+fV0AFraWd/2.;  v0APts[5+8*i] = -fV0AFraWd/4.;
       v0APts[6+8*i] = fV0AR4+fV0AFraWd/2.;  v0APts[7+8*i] = 0.0;
     }    
     TGeoArb8 *sV0AFraB18 = new TGeoArb8("sV0AFraB18",fV0ASciWd/2.,v0APts);
-    TGeoVolume *v0AFraB18 = new TGeoVolume("V0AFraB18",sV0AFraB18,medV0AFra); 
+    TGeoVolume *v0AFraB18 = new TGeoVolume("V0AFraB18",sV0AFraB18,medV0AFra);  
     for (int i=0;i<2;i++) {
-      v0APts[0+8*i] = fV0AR0*cos45;
-      v0APts[1+8*i] = -(fV0AR0-fV0AFraWd)*sin45;
-      v0APts[2+8*i] = (fV0AR0-fV0AFraWd/2.)*cos45;
+      v0APts[0+8*i] = fV0AR0*sin45-fV0AFraWd/2.;
+      v0APts[1+8*i] = -(fV0AR0-fV0AFraWd)*sin45; 
+      v0APts[2+8*i] = (fV0AR0-fV0AFraWd/2.)*sin45;
       v0APts[3+8*i] = -(fV0AR0-fV0AFraWd/2.)*sin45;
-      v0APts[4+8*i] = (fV0AR4+fV0AFraWd/2.)*cos45;
+      v0APts[4+8*i] = (fV0AR4+fV0AFraWd/2.)*sin45;
       v0APts[5+8*i] = -(fV0AR4+fV0AFraWd/2.)*sin45;
-      v0APts[6+8*i] = (fV0AR4+fV0AFraWd)*cos45;
+      v0APts[6+8*i] = (fV0AR4+fV0AFraWd)*sin45;
       v0APts[7+8*i] = -fV0AR4*sin45;
     }
     TGeoArb8 *sV0AFraB28 = new TGeoArb8("sV0AFraB28", fV0ASciWd/2., v0APts);
@@ -1567,7 +1564,7 @@ void AliVZEROv7::CreateGeometry()
     v0ASci8->AddNode(v0L18,1);
     v0ASci8->AddNode(v0L28,1);
     v0ASci8->AddNode(v0L38,1);
-    v0ASci8->AddNode(v0L48,1);
+    v0ASci8->AddNode(v0L48,1); 
 
     /// Segment of octagon   
     for (int i=0;i<2;i++) {
@@ -1683,7 +1680,7 @@ void AliVZEROv7::CreateGeometry()
     double shiftZ8 = fV0APMBHt/2. * cosAngPMB
       -   ( fV0ASciWd + 2 * fV0AOctWd + 2 * fV0APlaWd )/2.   -   fV0APMBTh/2. * sinAngPMB;
     double shiftR8 = fV0AR6  +  fV0AOctH2 + fV0APlaAl;
-    v0ASec8->AddNode(v0APM8,1, new TGeoCombiTrans( shiftR8*cos225, -shiftR8*sin225, shiftZ8, rot));
+    v0ASec8->AddNode(v0APM8,1, new TGeoCombiTrans( shiftR8*cos225 + 1.3, -shiftR8*sin225, shiftZ8, rot));
 
     // Aluminium nails
     TGeoTube *sV0ANail81 = new TGeoTube("sV0ANail81", 0.0, 0.4, 5.09/2.);
@@ -1695,7 +1692,7 @@ void AliVZEROv7::CreateGeometry()
     v0ANail82->SetLineColor(kV0AColorPMA);
     v0ASec8->AddNode(v0ANail82,1,new TGeoTranslation(30.8,-30.04,0.0));  
       
-    // Adding sector to v0LE volume
+    // Adding sector to v0LE volume 
     v0LE->AddNode(v0ASec8, 1);
     
       
@@ -2114,3 +2111,4 @@ Int_t AliVZEROv7::GetCellId(Int_t *vol, Float_t *hits)
 
   return fCellId;
 }
+
