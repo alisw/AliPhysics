@@ -44,7 +44,7 @@ void menuQA()
 	for (Int_t det = 0 ; det < listOfDetectors->GetEntries() ; det++) {
 		char * detName = listOfDetectors->At(det)->GetName() ; 
 		if (fQAResult->IsSetAny(AliQA::GetDetIndex(detName)))
-			char * buttonName = Form("QA SIGNALLED !! : %s", detName) ; 
+			char * buttonName = Form("QA SIGNALS ERROR !! : %s", detName) ; 
 		else 
 			char * buttonName = Form("QA OK : %s", detName) ; 
 	  fQA->AddButton(buttonName, Form("MakeDetMenu(\"%s\")", detName), Form("Display the QA histograms for %s", detName));	
@@ -79,7 +79,7 @@ void MakeDetMenu(char * detName)
 						 taskName.Contains(AliQA::GetTaskName(AliQA::kDIGITS)) )
 			tt = AliQA::kSIM ;
 		if (fQAResult->IsSetAny(AliQA::GetDetIndex(detName), tt))
-			char * buttonName = Form("QA SIGNALLED !! : %s", taskName.Data()) ; 
+			char * buttonName = Form("QA SIGNALS ERROR!! : %s", taskName.Data()) ; 
 		else 
 			char * buttonName = Form("QA OK : %s", taskName.Data()) ; 
 			fDet->AddButton(buttonName, Form("MakeTaskMenu(\"%s\", \"%s\")", detName, taskName.Data()), Form("Display the QA histograms for %s", taskName.Data()));	
@@ -94,17 +94,21 @@ void MakeTaskMenu(char * detName, char * taskName )
 		delete fHist ; 
 	if (fCa)
 		delete fCa ; 
-	fHist = new TControlBar("vertical", Form("QA histos for %s/%s", detName, taskName), 900, 300);
-	fHist->SetButtonWidth(300) ; 
-	fHist->AddButton("ALL", Form("DisplayAll(\"%s\", \"%s\")", detName, taskName), Form("Display the QA histograms for %s", detName));
 	TDirectory * save = gDirectory ; 
 	gDirectory->cd(Form("%s/%s", detName, taskName)) ; 
 	TList * listOfHistos = gDirectory->GetListOfKeys() ; 
-	for (Int_t h = 0 ; h < listOfHistos->GetEntries() ; h++) {
-		char * hName = listOfHistos->At(h)->GetName() ; 
-		fHist->AddButton(hName, Form("Display(\"%s\")", hName), Form("Display the QA histograms %s", hName));
-	}
-	fHist->Show() ; 
+	if ( listOfHistos->GetEntries()  == 0 ) { 
+		printf(" no histograms found for %s/%s\n", detName, taskName) ; 
+	} else {			
+		fHist = new TControlBar("vertical", Form("QA histos for %s/%s", detName, taskName), 900, 300);
+		fHist->SetButtonWidth(300) ; 
+		fHist->AddButton("ALL", Form("DisplayAll(\"%s\", \"%s\")", detName, taskName), Form("Display the QA histograms for %s", detName));
+		for (Int_t h = 0 ; h < listOfHistos->GetEntries() ; h++) {
+			char * hName = listOfHistos->At(h)->GetName() ; 
+			fHist->AddButton(hName, Form("Display(\"%s\")", hName), Form("Display the QA histograms %s", hName));
+		}
+		fHist->Show() ;
+	} 
 	gDirectory = save ; 
 }
 
@@ -131,25 +135,32 @@ void DisplayAll(char * detName, char * taskName)
 	gDirectory->cd(Form("%s/%s", detName, taskName)) ; 
 	TList * listOfHistos = gDirectory->GetListOfKeys() ; 
 	Int_t nHisto = listOfHistos->GetEntries() ; 
-	Int_t ny = TMath::Sqrt(nHisto) ; 
-	Int_t nx = nHisto / ny + 1 ;
-	if (fCa) 
-		delete fCa ; 
-	fCa = new TCanvas(Form("QA %s in %s", taskName, detName), Form("QA %s in %s", taskName, detName), nx*300, ny*300) ;
-	fCa->Divide(nx, ny) ;
-	for (Int_t h = 0 ; h < listOfHistos->GetEntries() ; h++) {
-		char * hName = listOfHistos->At(h)->GetName() ; 
-		TH1 * hh = dynamic_cast<TH1*>(gDirectory->FindObjectAny(hName));
-		TPad * pad = fCa->cd(h+1) ;
-		pad->SetLogy() ; 
-		if (hh) {
-			hh->Draw() ; 
-			fCa->Modified() ; 
-			fCa->Update() ;			
+	if ( nHisto == 0 ) {
+		printf(" no histograms found for %s/%s\n", detName, taskName) ; 
+	} else {		
+		Int_t ny = TMath::Sqrt(nHisto) ; 
+		Int_t nx = 1 ; 
+		if ( ny > 0 ) 
+			nx = nHisto / ny + 1 ;
+		if (fCa) 
+			delete fCa ; 
+		fCa = new TCanvas(Form("QA %s in %s", taskName, detName), Form("QA %s in %s", taskName, detName), nx*300, ny*300) ;
+		fCa->Divide(nx, ny) ;
+		for (Int_t h = 0 ; h < listOfHistos->GetEntries() ; h++) {
+			char * hName = listOfHistos->At(h)->GetName() ; 
+			TH1 * hh = dynamic_cast<TH1*>(gDirectory->FindObjectAny(hName));
+			TPad * pad = fCa->cd(h+1) ;
+			if (hh) {
+				if ( hh->GetEntries()) 
+					pad->SetLogy() ; 
+				hh->Draw() ; 
+				fCa->Modified() ; 
+				fCa->Update() ;			
+			}
 		}
+		fCa->Modified() ; 
+		fCa->Update() ;
 	}
-	fCa->Modified() ; 
-	fCa->Update() ;
 	gDirectory = save ; 
 }
 
