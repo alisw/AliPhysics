@@ -2035,17 +2035,16 @@ Int_t AliTRDtrackerV1::Clusters2TracksStack(AliTRDtrackingChamber **stack, TClon
     continue;
   }
   //AliInfo("End of MakeTrack()");
-  AliESDtrack esdTrack;
-  esdTrack.UpdateTrackParams(track, AliESDtrack::kTRDout);
-  esdTrack.SetLabel(track->GetLabel());
-  track->UpdateESDtrack(&esdTrack);
+  AliESDtrack *esdTrack = new ((*esdTrackList)[ntracks0++]) AliESDtrack();
+  esdTrack->UpdateTrackParams(track, AliESDtrack::kTRDout);
+  esdTrack->SetLabel(track->GetLabel());
+  track->UpdateESDtrack(esdTrack);
   // write ESD-friends if neccessary
   if (fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker) > 0){
     AliTRDtrackV1 *calibTrack = new AliTRDtrackV1(*track);
     calibTrack->SetOwner();
-    esdTrack.AddCalibObject(calibTrack);
+    esdTrack->AddCalibObject(calibTrack);
   }
-  new ((*esdTrackList)[ntracks0++]) AliESDtrack(esdTrack);
   ntracks1++;
   AliTRDtrackerDebug::SetTrackNumber(AliTRDtrackerDebug::GetTrackNumber() + 1);
       }
