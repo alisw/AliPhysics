@@ -26,7 +26,7 @@
     classes for customized class that do some sort of analysis on the
     various types of data produced by the FMD.
 */
-#include <TObject.h>
+#include <TNamed.h>
 #ifndef ROOT_TString
 # include <TString.h>
 #endif
@@ -98,7 +98,7 @@ class TChain;
     various scripts in @c FMD/scripts. 
     @ingroup FMD_util
  */
-class AliFMDInput : public TObject
+class AliFMDInput : public TNamed
 {
 public:
   /** The kinds of data that can be read in. */
@@ -242,7 +242,7 @@ protected:
   /** Copy ctor 
       @param o Object to copy from  */
   AliFMDInput(const AliFMDInput& o) 
-    : TObject(o),
+    : TNamed(o),
       fGAliceFile(""),
       fLoader(0),
       fRun(0),

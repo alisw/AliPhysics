@@ -362,6 +362,9 @@ public:
   /** Set the TClonesArray to read hits into.
       @param b The branch to containn the hits */
   virtual void          SetHitsAddressBranch(TBranch *b);
+  /** Set the TClonesArray to read sdigits into.
+      @param b The branch to containn the sdigits */
+  virtual void          SetSDigitsAddressBranch(TBranch *b);
   /** Set branch address for the Hits, Digits, and SDigits Tree. */
   virtual void          SetTreeAddress();
   /** Get the array of summable digits
@@ -483,6 +486,10 @@ public:
       @param manager Digitization manager
       @return a newly allocated AliFMDDigitizer */
   virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* manager) const;
+  /** Create a digitizer object
+      @param manager Digitization manager
+      @return a newly allocated AliFMDSDigitizer */
+  virtual AliDigitizer* CreateSDigitizer(AliRunDigitizer* manager) const;
   /** Create AliFMDDigit's from AliFMDHit's.  This is done by creating
       an AliFMDDigitizer object, and executing it.  */
   virtual        void   Hits2Digits();

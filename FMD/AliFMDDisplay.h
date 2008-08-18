@@ -94,6 +94,10 @@ public:
       @param digit Digit to draw
       @return @c false on error  */
   virtual Bool_t ProcessDigit(AliFMDDigit* digit);
+  /** Visualize a summable digit
+      @param sdigit Summable digit to draw
+      @return @c false on error  */
+  virtual Bool_t ProcessSDigit(AliFMDSDigit* sdigit);
   /** Visualize a raw digit
       @param digit Raw digit.
       @return @c false on error  */

@@ -18,6 +18,8 @@ PatternDigits()
   gSystem->Load("libFMDutil.so");
   AliFMDPattern* d = new AliFMDPattern;
   d->AddLoad(AliFMDInput::kDigits);
+  d->SetName("digit");
+  d->SetTitle("Digits");
   // d->AddLoad(AliFMDInput::kKinematics);
   d->Run();
 }

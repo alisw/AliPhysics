@@ -113,6 +113,10 @@
 #include "AliFMDRing.h"		// ALIFMDRING_H
 #include "AliFMDDigitizer.h"	// ALIFMDDIGITIZER_H
 #include "AliFMDSDigitizer.h"	// ALIFMDSDIGITIZER_H
+// #define USE_SSDIGITIZER 
+#ifdef USE_SSDIGITIZER
+# include "AliFMDSSDigitizer.h"	// ALIFMDSDIGITIZER_H
+#endif
 // #include "AliFMDGeometryBuilder.h"
 #include "AliFMDRawWriter.h"	// ALIFMDRAWWRITER_H
 #include "AliFMDPoints.h"       // ALIFMDPOINTS_H
@@ -756,6 +760,13 @@ AliFMD::SetHitsAddressBranch(TBranch *b)
   // Set the TClonesArray to read hits into. 
   b->SetAddress(&fHits);
 }
+//____________________________________________________________________
+void 
+AliFMD::SetSDigitsAddressBranch(TBranch *b)
+{
+  // Set the TClonesArray to read hits into. 
+  b->SetAddress(&fSDigits);
+}
 
 //____________________________________________________________________
 void 
@@ -982,6 +993,7 @@ AliFMD::AddSDigitByFields(UShort_t detector,
   //    count3    ADC count (a 10-bit word), or -1 if not used
   //
   TClonesArray& a = *(SDigitsArray());
+  // AliFMDDebug(0, ("Adding sdigit # %d", fNsdigits));
   
   new (a[fNsdigits++]) 
     AliFMDSDigit(detector, ring, sector, strip, edep, 
@@ -1046,13 +1058,14 @@ AliFMD::Hits2Digits()
   // Create AliFMDDigit's from AliFMDHit's.  This is done by making a
   // AliFMDDigitizer, and executing that code.
   // 
+#if 0
   Warning("Hits2Digits", "Try not to use this method.\n"
 	  "Instead, use AliSimulator");
+#endif
   AliRunDigitizer* manager = new AliRunDigitizer(1, 1);
   manager->SetInputStream(0, "galice.root");
-  manager->SetOutputFile("H2Dfile");
-  
-  /* AliDigitizer* dig =*/ CreateDigitizer(manager);
+  manager->SetOutputFile("H2Dfile.root");
+  new AliFMDDigitizer(manager);
   manager->Exec("");
   delete manager;
 }
@@ -1064,9 +1077,25 @@ AliFMD::Hits2SDigits()
   // Create AliFMDSDigit's from AliFMDHit's.  This is done by creating
   // an AliFMDSDigitizer object, and executing it. 
   // 
+
+#if 0
+  Warning("Hits2SDigits", "Try not to use this method.\n"
+	  "Instead, use AliSimulator");
+  // Create AliFMDSDigit's from AliFMDHit's.  This is done by creating
+  // an AliFMDSDigitizer object, and executing it. 
+  // 
   AliFMDSDigitizer* digitizer = new AliFMDSDigitizer("galice.root");
   digitizer->Exec("");
   delete digitizer;
+#endif
+  AliRunDigitizer* manager = new AliRunDigitizer(1, 1);
+  manager->SetInputStream(0, "galice.root");
+  // manager->SetOutputFile("H2Sfile.root");
+  
+  new AliFMDSDigitizer(manager);
+  manager->Exec("");
+  // Hmm!
+  delete manager;
 }
 
   
@@ -1075,7 +1104,26 @@ AliDigitizer*
 AliFMD::CreateDigitizer(AliRunDigitizer* manager) const
 {
   // Create a digitizer object 
-  AliFMDDigitizer* digitizer = new AliFMDDigitizer(manager);
+  
+  /* This is what we probably _should_ do */
+  AliFMDBaseDigitizer* digitizer = 0;
+  
+#ifdef USE_SSDIGITIZER
+  digitizer = new AliFMDSSDigitizer(manager);
+#else 
+  /* This is what we actually do, and will work */
+  AliInfo("SDigit->Digit conversion not really supported, "
+	  "doing Hit->Digit conversion instead");
+  digitizer = new AliFMDDigitizer(manager);
+#endif
+  return digitizer;
+}
+//____________________________________________________________________
+AliDigitizer* 
+AliFMD::CreateSDigitizer(AliRunDigitizer* manager) const
+{
+  // Create a digitizer object 
+  AliFMDSDigitizer* digitizer = new AliFMDSDigitizer(manager);
   return digitizer;
 }
 

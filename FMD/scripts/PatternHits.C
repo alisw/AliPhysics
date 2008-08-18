@@ -15,6 +15,8 @@ PatternHits()
   gSystem->Load("libFMDutil.so");
   AliFMDPattern* d = new AliFMDPattern;
   d->AddLoad(AliFMDInput::kHits);
+  d->SetName("hit");
+  d->SetTitle("Hits");
   // d->AddLoad(AliFMDInput::kKinematics);
   d->Run();
 }

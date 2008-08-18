@@ -10,6 +10,7 @@ SRCS		=  AliFMD.cxx 				\
 		   AliFMDBaseDigitizer.cxx		\
 		   AliFMDDigitizer.cxx			\
 		   AliFMDSDigitizer.cxx			\
+		   AliFMDSSDigitizer.cxx		\
 		   AliFMDEdepMap.cxx			\
 		   AliFMDRawWriter.cxx			\
 		   AliFMDQADataMakerSim.cxx		

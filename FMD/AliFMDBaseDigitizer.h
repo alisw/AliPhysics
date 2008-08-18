@@ -170,7 +170,9 @@ public:
    
   /** Initialize */
   virtual Bool_t Init();
-
+  /** Run this task */
+  virtual void Exec(Option_t* option="");
+  
   /** The response shape of the VA1 shaping circuit is approximently
       given by 
       @f[
@@ -185,6 +187,19 @@ public:
   /** @return Get the shaping time */
   Float_t  GetShapingTime()      const { return fShapingTime; }
 protected:
+  /** Set-up loaders, etc. 
+      @param fmd  On return, contains pointer to loaded AliFMD object.
+      @param outFMD On return, contains pointer to loaded loader. 
+      @return kTRUE on success, kFALSE otherwise */
+  virtual Bool_t  SetupLoaders(AliFMD*& fmd, AliLoader*& outFMD);
+  /** Set-up loaders, etc. 
+      @param fmd Pointer to loaded AliFMD object 
+      @return kFALSE on failures. */
+  virtual Bool_t  LoopOverInput(AliFMD* fmd);
+  /** Output to disk 
+      @param outFMD Loader
+      @param fmd    AliFMD object */
+  virtual void OutputTree(AliLoader* outFMD, AliFMD* fmd) = 0;
   /** Sum energy deposited contributions from each hit in a cache
       @param fmd Pointer to detector */
   virtual void     SumContributions(AliFMD* fmd);

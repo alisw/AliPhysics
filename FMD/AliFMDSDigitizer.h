@@ -42,17 +42,19 @@ class AliFMDSDigitizer : public AliFMDBaseDigitizer
 {
 public:
   /** CTOR */
-  AliFMDSDigitizer();
-  /** CTOR
-      @param headerFile Where to write headings
-      @param sdigFile   Where to write digits. */
-  AliFMDSDigitizer(const Char_t* headerFile, const Char_t* sdigFile="");
+  AliFMDSDigitizer() : AliFMDBaseDigitizer() {}
+  /** CTOR 
+      @param manager Manager of digitization */
+  AliFMDSDigitizer(AliRunDigitizer * manager)
+    : AliFMDBaseDigitizer(manager) 
+  {}
   /** DTOR */
-  virtual ~AliFMDSDigitizer();
-  /** Do it all 
-      @param option Not used */
-  virtual void  Exec(Option_t* option=0);
+  virtual ~AliFMDSDigitizer() {}
 protected:
+  /** Output to disk 
+      @param outFMD Loader
+      @param fmd    AliFMD object */
+  virtual void OutputTree(AliLoader* outFMD, AliFMD* fmd);
   /** Add a digit to output.
       @param fmd      Pointer to detector object
       @param detector Detector #

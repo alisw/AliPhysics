@@ -235,7 +235,7 @@ AliFMDDetector::InitTransformations()
 	// Get transformation matrix for this node, and store it. 
 	TGeoMatrix*  t = new TGeoHMatrix(*pm);
 	trans->AddAt(t, base+imod);
-	AliFMDDebug(1, ("Found matrix for path \"%s\": %p",path.Data(),pm));
+	AliFMDDebug(5, ("Found matrix for path \"%s\": %p",path.Data(),pm));
       }
     }
   }

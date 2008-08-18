@@ -50,6 +50,7 @@
 #include "AliFMDDisplay.h"	// ALIFMDDISPLAY_H
 #include "AliFMDHit.h"          // ALIFMDHIT_H
 #include "AliFMDDigit.h"        // ALIFMDDIGIT_H
+#include "AliFMDSDigit.h"       // ALIFMDSDIGIT_H
 #include "AliFMDRecPoint.h"     // ALIFMDRECPOINT_H
 #include "AliFMDGeometry.h"	// ALIFMDGEOMETRY_H
 #include "AliFMDParameters.h"	// ALIFMDPARAMETERS_H
@@ -126,6 +127,8 @@ AliFMDDisplay::AliFMDDisplay(Bool_t onlyFMD, const char* gAliceFile)
   // Constructor of an FMD display object. 
   // Must be called 
   // before Instance 
+  SetName("AliFMDDisplay");
+  SetTitle("3D Display of various kinds of FMD data");
   AddLoad(kGeometry);
   if (fgInstance) delete fgInstance;
   fgInstance = this;
@@ -142,7 +145,9 @@ AliFMDDisplay::MakeCanvas(const char** which)
   // gStyle->SetCanvasPreferGL(kTRUE);
   Double_t y1 = .10;
   Int_t    w  = 700;
-  fCanvas = new TCanvas("gldisplay", "Display", w, Int_t(w / (1-y1)));
+  fCanvas = new TCanvas(Form("gl%s", GetName()), 
+			Form("%s - Display", GetTitle()), 
+			w, Int_t(w / (1-y1)));
   fCanvas->SetFillColor(1);
   fCanvas->ToggleEventStatus();
   fCanvas->cd();
@@ -175,9 +180,10 @@ AliFMDDisplay::MakeCanvas(const char** which)
 			   "lower limit");
     }
   }
-  if (TESTBIT(fTreeMask, kHits)   || 
-      TESTBIT(fTreeMask, kESD)    || 
-      TESTBIT(fTreeMask, kDigits) || 
+  if (TESTBIT(fTreeMask, kHits)    || 
+      TESTBIT(fTreeMask, kESD)     || 
+      TESTBIT(fTreeMask, kDigits)  || 
+      TESTBIT(fTreeMask, kSDigits) || 
       TESTBIT(fTreeMask, kRaw)) {
     yb = .05;
     fSlider = new TSlider("genCut", "Multiplicity cut", 0, 0, xb, yb);
@@ -544,7 +550,7 @@ AliFMDDisplay::ChangeFactor()
   // The factor depends on what is 
   // drawn in the AUX canvas
   AliInfo(Form("Noise factor is now %4.1f, pedestal factor %3.1f", 
-	       fFactor->GetMinimum()*10,fFactor->GetMaximum()));
+	       10*fFactor->GetMinimum(),fFactor->GetMaximum()));
   Redisplay();
 }
 
@@ -699,6 +705,34 @@ AliFMDDisplay::ProcessDigit(AliFMDDigit* digit)
   
 
   AddMarker(det, ring, sec, str, digit, counts, rMin, rMax);
+  return kTRUE;
+}
+
+//____________________________________________________________________
+Bool_t 
+AliFMDDisplay::ProcessSDigit(AliFMDSDigit* sdigit)
+{
+  // Process a sdigit 
+  // Parameters: 
+  //   sdigit Digit information 
+
+  static const Float_t rMin  = 0;
+  static const Float_t rMax  = 1023;
+  if (!sdigit) { AliError("No sdigit");   return kFALSE; }
+  
+  UShort_t det           =  sdigit->Detector();
+  Char_t   ring          =  sdigit->Ring();
+  UShort_t sec           =  sdigit->Sector();
+  UShort_t str           =  sdigit->Strip();
+  Float_t  counts        =  sdigit->Counts();
+
+  if (fHits)                          fHits->Add(sdigit);
+  if (fSpec)                          fSpec->Fill(counts);
+  if (!InsideCut(counts, rMin, rMax)) return kTRUE;
+  if (fSpecCut)                       fSpecCut->Fill(counts);
+  
+
+  AddMarker(det, ring, sec, str, sdigit, counts, rMin, rMax);
   return kTRUE;
 }
 

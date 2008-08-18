@@ -224,6 +224,9 @@ AliFMDPattern::AliFMDPattern(const char* gAliceFile)
   //   gAliceFile	The galice.root file to use - if any. 
   // 
 
+  SetName("AliFMDPattern");
+  SetName("2D display of FMD data");
+  
   // RemoveLoad(kGeometry);
   fEvent.SetBit(TLatex::kTextNDC);
   fFMD1Sum.SetBit(TLatex::kTextNDC);

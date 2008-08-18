@@ -51,16 +51,18 @@ class AliFMDDigitizer : public AliFMDBaseDigitizer
 {
 public:
   /** CTOR */
-  AliFMDDigitizer();
+  AliFMDDigitizer() : AliFMDBaseDigitizer() {}
   /** CTOR 
       @param manager Manager of digitization */
-  AliFMDDigitizer(AliRunDigitizer * manager);
+  AliFMDDigitizer(AliRunDigitizer * manager)
+    : AliFMDBaseDigitizer(manager) {}
   /** DTOR */
   virtual ~AliFMDDigitizer() {}
-  /** Do everything
-      @param option Not used */
-  virtual void  Exec(Option_t* option=0);
 protected:
+  /** Output to disk 
+      @param outFMD Loader
+      @param fmd    AliFMD object */
+  virtual void OutputTree(AliLoader* outFMD, AliFMD* fmd);
   /** Add a digit to output.
       @param fmd      Pointer to detector object
       @param detector Detector #

@@ -22,21 +22,13 @@
 //////////////////////////////////////////////////////////////////////////////
 //
 //  This class contains the procedures simulation ADC  signal for the
-//  Forward Multiplicity detector  : Hits->Digits and Hits->SDigits
+//  Forward Multiplicity detector  : Hits->Digits
 // 
 //  Digits consists of
 //   - Detector #
 //   - Ring ID                                             
 //   - Sector #     
 //   - Strip #
-//   - ADC count in this channel                                  
-//
-//  Digits consists of
-//   - Detector #
-//   - Ring ID                                             
-//   - Sector #     
-//   - Strip #
-//   - Total energy deposited in the strip
 //   - ADC count in this channel                                  
 //
 // As the Digits and SDigits have so much in common, the classes
@@ -80,6 +72,7 @@
 //         we'd like have the option, and so it should be reflected in
 //         the code.
 //
+// These parameters are fetched from OCDB via the mananger AliFMDParameters.
 //
 // The shaping function of the VA1_ALICE is generally given by 
 //
@@ -198,14 +191,9 @@
 
 #include <TTree.h>		// ROOT_TTree
 #include <TRandom.h>		// ROOT_TRandom
-// #include <AliLog.h>		// ALILOG_H
-#include "AliFMDDebug.h" // Better debug macros
+#include "AliFMDDebug.h"        // Better debug macros
 #include "AliFMDDigitizer.h"	// ALIFMDDIGITIZER_H
 #include "AliFMD.h"		// ALIFMD_H
-// #include "AliFMDGeometry.h"	// ALIFMDGEOMETRY_H
-// #include "AliFMDDetector.h"	// ALIFMDDETECTOR_H
-// #include "AliFMDRing.h"	        // ALIFMDRING_H
-// #include "AliFMDHit.h"		// ALIFMDHIT_H
 #include "AliFMDDigit.h"	// ALIFMDDIGIT_H
 #include "AliFMDParameters.h"   // ALIFMDPARAMETERS_H
 #include <AliRunDigitizer.h>	// ALIRUNDIGITIZER_H
@@ -217,66 +205,12 @@
 ClassImp(AliFMDDigitizer)
 
 //____________________________________________________________________
-AliFMDDigitizer::AliFMDDigitizer()  
-  : AliFMDBaseDigitizer()
+void 
+AliFMDDigitizer::OutputTree(AliLoader* outFMD, AliFMD* fmd)
 {
-  // Default ctor - don't use it
-}
-
-//____________________________________________________________________
-AliFMDDigitizer::AliFMDDigitizer(AliRunDigitizer* manager) 
-  : AliFMDBaseDigitizer(manager)
-{
-  // Normal CTOR
-  AliFMDDebug(1, (" processed"));
-}
-
-//____________________________________________________________________
-void
-AliFMDDigitizer::Exec(Option_t*) 
-{
-  // Get the output manager 
-  TString outFolder(fManager->GetOutputFolderName());
-  AliRunLoader* out = 
-    AliRunLoader::GetRunLoader(outFolder.Data());
-  // Get the FMD output manager 
-  AliLoader* outFMD = out->GetLoader("FMDLoader");
-
-  // Get the input loader 
-  TString inFolder(fManager->GetInputFolderName(0));
-  fRunLoader = 
-    AliRunLoader::GetRunLoader(inFolder.Data());
-  if (!fRunLoader) {
-    AliError("Can not find Run Loader for input stream 0");
-    return;
-  }
-  // Get the AliRun object 
-  if (!fRunLoader->GetAliRun()) fRunLoader->LoadgAlice();
-
-  // Get the AliFMD object 
-  AliFMD* fmd = 
-    static_cast<AliFMD*>(fRunLoader->GetAliRun()->GetDetector("FMD"));
-  if (!fmd) {
-    AliError("Can not get FMD from gAlice");
-    return;
-  }
-
-  Int_t nFiles= fManager->GetNinputs();
-  for (Int_t inputFile = 0; inputFile < nFiles; inputFile++) {
-    AliFMDDebug(1, (" Digitizing event number %d",
-		    fManager->GetOutputEventNr()));
-    // Get the current loader 
-    fRunLoader = 
-      AliRunLoader::GetRunLoader(fManager->GetInputFolderName(inputFile));
-    if (!fRunLoader) Fatal("Exec", "no run loader");
-    // Cache contriutions 
-    SumContributions(fmd);
-  }
-  // Digitize the event 
-  DigitizeHits(fmd);
-
   // Load digits from the tree 
   outFMD->LoadDigits("update");
+
   // Get the tree of digits 
   TTree* digitTree = outFMD->TreeD();
   if (!digitTree) {
@@ -284,8 +218,16 @@ AliFMDDigitizer::Exec(Option_t*)
     digitTree = outFMD->TreeD();
   }
   digitTree->Reset();
+  
+  // Get the digits 
+  TClonesArray* digits =  fmd->Digits();
+  if (!digits) { 
+    AliError("Failed to get digits");
+    return;
+  }
+  AliFMDDebug(1, ("Got a total of %5d digits", digits->GetEntries()));
+
   // Make a branch in the tree 
-  TClonesArray* digits = fmd->Digits();
   fmd->MakeBranchInTree(digitTree, fmd->GetName(), &(digits), 4000, 0);
   // TBranch* digitBranch = digitTree->GetBranch(fmd->GetName());
   // Fill the tree 
@@ -301,7 +243,6 @@ AliFMDDigitizer::Exec(Option_t*)
   // Reset the digits in the AliFMD object 
   fmd->ResetDigits();
 }
-
 
 //____________________________________________________________________
 UShort_t

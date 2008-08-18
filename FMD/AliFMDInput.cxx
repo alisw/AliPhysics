@@ -71,7 +71,8 @@ ClassImp(AliFMDInput)
 
 //____________________________________________________________________
 AliFMDInput::AliFMDInput()
-  : fGAliceFile(""), 
+  : TNamed("AliFMDInput", "Input handler for various FMD data"), 
+    fGAliceFile(""), 
     fLoader(0),
     fRun(0), 
     fStack(0),
@@ -111,7 +112,8 @@ AliFMDInput::AliFMDInput()
 
 //____________________________________________________________________
 AliFMDInput::AliFMDInput(const char* gAliceFile)
-  : fGAliceFile(gAliceFile),
+  : TNamed("AliFMDInput", "Input handler for various FMD data"), 
+    fGAliceFile(gAliceFile),
     fLoader(0),
     fRun(0), 
     fStack(0),
@@ -293,14 +295,14 @@ AliFMDInput::Begin(Int_t event)
   // Possibly load global kinematics information 
   if (TESTBIT(fTreeMask, kKinematics) || TESTBIT(fTreeMask, kTracks)) {
     // AliInfo("Getting kinematics");
-    if (fLoader->LoadKinematics()) return kFALSE;
+    if (fLoader->LoadKinematics("READ")) return kFALSE;
     fStack = fLoader->Stack();
   }
 
   // Possibly load FMD Hit information 
   if (TESTBIT(fTreeMask, kHits) || TESTBIT(fTreeMask, kTracks)) {
     // AliInfo("Getting FMD hits");
-    if (!fFMDLoader || fFMDLoader->LoadHits()) return kFALSE;
+    if (!fFMDLoader || fFMDLoader->LoadHits("READ")) return kFALSE;
     fTreeH = fFMDLoader->TreeH();
     if (!fArrayH) fArrayH = fFMD->Hits(); 
   }
@@ -315,7 +317,7 @@ AliFMDInput::Begin(Int_t event)
   // Possibly load FMD Digit information 
   if (TESTBIT(fTreeMask, kDigits)) {
     // AliInfo("Getting FMD digits");
-    if (!fFMDLoader || fFMDLoader->LoadDigits()) return kFALSE;
+    if (!fFMDLoader || fFMDLoader->LoadDigits("READ")) return kFALSE;
     fTreeD = fFMDLoader->TreeD();
     if (fTreeD) {
       if (!fArrayD) fArrayD = fFMD->Digits();
@@ -329,7 +331,7 @@ AliFMDInput::Begin(Int_t event)
   // Possibly load FMD Sdigit information 
   if (TESTBIT(fTreeMask, kSDigits)) {
     // AliInfo("Getting FMD summable digits");
-    if (!fFMDLoader || fFMDLoader->LoadSDigits()) return kFALSE;
+    if (!fFMDLoader || fFMDLoader->LoadSDigits("READ")) return kFALSE;
     fTreeS = fFMDLoader->TreeS();
     if (!fArrayS) fArrayS = fFMD->SDigits();
   }
@@ -337,7 +339,7 @@ AliFMDInput::Begin(Int_t event)
   // Possibly load FMD RecPoints information 
   if (TESTBIT(fTreeMask, kRecPoints)) {
     // AliInfo("Getting FMD reconstructed points");
-    if (!fFMDLoader || fFMDLoader->LoadRecPoints()) return kFALSE;
+    if (!fFMDLoader || fFMDLoader->LoadRecPoints("READ")) return kFALSE;
     fTreeR = fFMDLoader->TreeR();
     if (!fArrayR) fArrayR = new TClonesArray("AliFMDRecPoint");
     fTreeR->SetBranchAddress("FMD",  &fArrayR);
@@ -495,11 +497,21 @@ AliFMDInput::ProcessDigits()
 {
   // Read the digit tree, and pass each digit to the member function
   // ProcessDigit.
+  if (!fTreeD) {
+    AliError("No digit tree defined");
+    return kFALSE;
+  }
+  if (!fArrayD) {
+    AliError("No digit array defined");
+    return kFALSE;
+  }
+
   Int_t nEv = fTreeD->GetEntries();
   for (Int_t i = 0; i < nEv; i++) {
     Int_t digitRead  = fTreeD->GetEntry(i);
     if (digitRead <= 0) continue;
     Int_t nDigit = fArrayD->GetEntries();
+    AliFMDDebug(0, ("Got %5d digits for this event", nDigit));
     if (nDigit <= 0) continue;
     for (Int_t j = 0; j < nDigit; j++) {
       AliFMDDigit* digit = static_cast<AliFMDDigit*>(fArrayD->At(j));
@@ -516,11 +528,21 @@ AliFMDInput::ProcessSDigits()
 {
   // Read the summable digit tree, and pass each sumable digit to the
   // member function ProcessSdigit.
-  Int_t nEv = fTreeD->GetEntries();
+  if (!fTreeS) {
+    AliWarning("No sdigit tree defined");
+    return kTRUE; // Empty SDigits is fine
+  }
+  if (!fArrayS) {
+    AliWarning("No sdigit array defined");
+    return kTRUE; // Empty SDigits is fine
+  }
+
+  Int_t nEv = fTreeS->GetEntries();
   for (Int_t i = 0; i < nEv; i++) {
     Int_t sdigitRead  = fTreeS->GetEntry(i);
     if (sdigitRead <= 0) continue;
     Int_t nSdigit = fArrayS->GetEntries();
+    AliFMDDebug(0, ("Got %5d digits for this event", nSdigit));
     if (nSdigit <= 0) continue;
     for (Int_t j = 0; j < nSdigit; j++) {
       AliFMDSDigit* sdigit = static_cast<AliFMDSDigit*>(fArrayS->At(j));
@@ -537,6 +559,11 @@ AliFMDInput::ProcessRawDigits()
 {
   // Read the digit tree, and pass each digit to the member function
   // ProcessDigit.
+  if (!fArrayA) {
+    AliError("No raw digit array defined");
+    return kFALSE;
+  }
+
   Int_t nDigit = fArrayA->GetEntries();
   if (nDigit <= 0) return kTRUE;
   for (Int_t j = 0; j < nDigit; j++) {
@@ -553,6 +580,15 @@ AliFMDInput::ProcessRecPoints()
 {
   // Read the reconstrcted points tree, and pass each reconstruction
   // object (AliFMDRecPoint) to either ProcessRecPoint.
+  if (!fTreeR) {
+    AliError("No recpoint tree defined");
+    return kFALSE;
+  }
+  if (!fArrayR) {
+    AliError("No recpoints array defined");
+    return kFALSE;
+  }
+
   Int_t nEv = fTreeR->GetEntries();
   for (Int_t i = 0; i < nEv; i++) {
     Int_t recRead  = fTreeR->GetEntry(i);

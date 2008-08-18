@@ -497,7 +497,7 @@ AliFMDParameters::InitPulseGain(AliFMDPreprocessor* pp)
   AliCDBEntry*   gain     = GetEntry(fgkPulseGain, pp);
   if (!gain) return;
   
-  AliFMDDebug(1, ("Got gain from CDB"));
+  AliFMDDebug(5, ("Got gain from CDB"));
   fPulseGain = dynamic_cast<AliFMDCalibGain*>(gain->GetObject());
   if (!fPulseGain) AliFatal("Invalid pulser gain object from CDB");
 }
@@ -509,7 +509,7 @@ AliFMDParameters::InitPedestal(AliFMDPreprocessor* pp)
   AliCDBEntry*   pedestal = GetEntry(fgkPedestal, pp);
   if (!pedestal) return;
 
-  AliFMDDebug(1, ("Got pedestal from CDB"));
+  AliFMDDebug(5, ("Got pedestal from CDB"));
   fPedestal = dynamic_cast<AliFMDCalibPedestal*>(pedestal->GetObject());
   if (!fPedestal) AliFatal("Invalid pedestal object from CDB");
 }
@@ -522,7 +522,7 @@ AliFMDParameters::InitDeadMap(AliFMDPreprocessor* pp)
   AliCDBEntry*   deadMap  = GetEntry(fgkDead, pp);
   if (!deadMap) return;
   
-  AliFMDDebug(1, ("Got dead map from CDB"));
+  AliFMDDebug(5, ("Got dead map from CDB"));
   fDeadMap = dynamic_cast<AliFMDCalibDeadMap*>(deadMap->GetObject());
   if (!fDeadMap) AliFatal("Invalid dead map object from CDB");
 }
@@ -534,7 +534,7 @@ AliFMDParameters::InitZeroSuppression(AliFMDPreprocessor* pp)
   // Get 0-suppression from CDB 
   AliCDBEntry*   zeroSup  = GetEntry(fgkZeroSuppression, pp);
   if (!zeroSup) return;
-  AliFMDDebug(1, ("Got zero suppression from CDB"));
+  AliFMDDebug(5, ("Got zero suppression from CDB"));
   fZeroSuppression = 
     dynamic_cast<AliFMDCalibZeroSuppression*>(zeroSup->GetObject());
   if (!fZeroSuppression)AliFatal("Invalid zero suppression object from CDB");
@@ -547,7 +547,7 @@ AliFMDParameters::InitSampleRate(AliFMDPreprocessor* pp)
   // get Sample rate from CDB
   AliCDBEntry*   sampRat  = GetEntry(fgkSampleRate, pp);
   if (!sampRat) return;
-  AliFMDDebug(1, ("Got zero suppression from CDB"));
+  AliFMDDebug(5, ("Got zero suppression from CDB"));
   fSampleRate = dynamic_cast<AliFMDCalibSampleRate*>(sampRat->GetObject());
   if (!fSampleRate) AliFatal("Invalid zero suppression object from CDB");
 }
@@ -564,7 +564,7 @@ AliFMDParameters::InitAltroMap(AliFMDPreprocessor* pp)
   AliCDBEntry*   hwMap    = GetEntry(fgkAltroMap, pp, kFALSE);       
   if (!hwMap) return;
 
-  AliFMDDebug(1, ("Got ALTRO map from CDB"));
+  AliFMDDebug(5, ("Got ALTRO map from CDB"));
   fAltroMap = dynamic_cast<AliFMDAltroMapping*>(hwMap->GetObject());
   if (!fAltroMap) {
     AliFatal("Invalid ALTRO map object from CDB");
@@ -579,7 +579,7 @@ AliFMDParameters::InitStripRange(AliFMDPreprocessor* pp)
   // Get strips read-out from CDB
   AliCDBEntry*   range    = GetEntry(fgkStripRange, pp);
   if (!range) return;
-  AliFMDDebug(1, ("Got strip range from CDB"));
+  AliFMDDebug(5, ("Got strip range from CDB"));
   fStripRange = dynamic_cast<AliFMDCalibStripRange*>(range->GetObject());
   if (!fStripRange) AliFatal("Invalid strip range object from CDB");
 }

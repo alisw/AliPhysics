@@ -22,16 +22,9 @@
 //////////////////////////////////////////////////////////////////////////////
 //
 //  This class contains the procedures simulation ADC  signal for the
-//  Forward Multiplicity detector  : Hits->Digits and Hits->SDigits
+//  Forward Multiplicity detector  : Hits->SDigits
 // 
-//  Digits consists of
-//   - Detector #
-//   - Ring ID                                             
-//   - Sector #     
-//   - Strip #
-//   - ADC count in this channel                                  
-//
-//  Digits consists of
+//  SDigits consists of
 //   - Detector #
 //   - Ring ID                                             
 //   - Sector #     
@@ -80,6 +73,7 @@
 //         we'd like have the option, and so it should be reflected in
 //         the code.
 //
+// These parameters are fetched from OCDB via the mananger AliFMDParameters.
 //
 // The shaping function of the VA1_ALICE is generally given by 
 //
@@ -196,19 +190,10 @@
 //                    -1 + B + exp(-B)
 //
 
-// #include <TTree.h>		// ROOT_TTree
-//#include <TRandom.h>		// ROOT_TRandom
-// #include <AliLog.h>		// ALILOG_H
 #include "AliFMDDebug.h" // Better debug macros
 #include "AliFMDSDigitizer.h"	// ALIFMDDIGITIZER_H
 #include "AliFMD.h"		// ALIFMD_H
-// #include "AliFMDGeometry.h"	// ALIFMDGEOMETRY_H
-// #include "AliFMDDetector.h"	// ALIFMDDETECTOR_H
-// #include "AliFMDRing.h"	        // ALIFMDRING_H
 #include "AliFMDHit.h"		// ALIFMDHIT_H
-// #include "AliFMDDigit.h"	// ALIFMDDIGIT_H
-// #include "AliFMDParameters.h"   // ALIFMDPARAMETERS_H
-// #include <AliRunDigitizer.h>	// ALIRUNDIGITIZER_H
 #include <AliRun.h>		// ALIRUN_H
 #include <AliLoader.h>		// ALILOADER_H
 #include <AliRunLoader.h>	// ALIRUNLOADER_H
@@ -216,41 +201,34 @@
 //====================================================================
 ClassImp(AliFMDSDigitizer)
 
-//____________________________________________________________________
-AliFMDSDigitizer::AliFMDSDigitizer()  
-{
-  // Default ctor - don't use it
-}
-
+#if 0
 //____________________________________________________________________
 AliFMDSDigitizer::AliFMDSDigitizer(const Char_t* headerFile, 
-				   const Char_t* /* sdigfile */)
+                                  const Char_t* /* sdigfile */)
   : AliFMDBaseDigitizer("FMDSDigitizer", "FMD SDigitizer")
 {
   // Normal CTOR
-  AliFMDDebug(1, (" processed"));
+  AliFMDDebug(1, ("Constructed"));
 
   fRunLoader = AliRunLoader::GetRunLoader(); // Open(headerFile);
   if (!fRunLoader) 
     Fatal("AliFMDSDigitizer", "cannot open session, header file '%s'",
-	  headerFile);
+         headerFile);
   AliLoader* loader = fRunLoader->GetLoader("FMDLoader");
   if (!loader) 
     Fatal("AliFMDSDigitizer", "cannot find FMD loader in specified event");
 
   // Add task to tasks folder 
   loader->PostSDigitizer(this);
-
 }
-
 //____________________________________________________________________
 AliFMDSDigitizer::~AliFMDSDigitizer() 
 {
   // Destructor
   AliLoader* loader = fRunLoader->GetLoader("FMDLoader");
   loader->CleanSDigitizer();
+  AliFMDDebug(1, ("Destructed"));
 }
-
 //____________________________________________________________________
 void
 AliFMDSDigitizer::Exec(Option_t*) 
@@ -296,6 +274,48 @@ AliFMDSDigitizer::Exec(Option_t*)
   }
 }
 
+#endif
+
+//____________________________________________________________________
+void 
+AliFMDSDigitizer::OutputTree(AliLoader* outFMD, AliFMD* fmd)
+{
+  // Load sdigits from the tree 
+  outFMD->LoadSDigits("update");
+
+  // Get the tree of sdigits 
+  TTree* sdigitTree = outFMD->TreeS();
+  if (!sdigitTree) {
+    outFMD->MakeTree("S");
+    sdigitTree = outFMD->TreeS();
+  }
+  sdigitTree->Reset();
+  
+  // Get the sdigits 
+  TClonesArray* sdigits =  fmd->SDigits();
+  if (!sdigits) { 
+    AliError("Failed to get sdigits");
+    return;
+  }
+  AliFMDDebug(5, ("Got a total of %5d sdigits", sdigits->GetEntries()));
+
+  // Make a branch in the tree 
+  fmd->MakeBranchInTree(sdigitTree, fmd->GetName(), &(sdigits), 4000, 0);
+  // TBranch* sdigitBranch = sdigitTree->GetBranch(fmd->GetName());
+  // Fill the tree 
+  Int_t write = 0;
+  write = sdigitTree->Fill();
+  AliFMDDebug(1, ("Wrote %d bytes to sdigit tree", write));
+  
+  // Write the sdigits to disk 
+  outFMD->WriteSDigits("OVERWRITE");
+  outFMD->UnloadHits();
+  outFMD->UnloadSDigits();
+
+  // Reset the sdigits in the AliFMD object 
+  fmd->ResetSDigits();
+}
+
 //____________________________________________________________________
 void
 AliFMDSDigitizer::AddDigit(AliFMD*  fmd,
@@ -311,9 +331,9 @@ AliFMDSDigitizer::AddDigit(AliFMD*  fmd,
 {
   // Add a summable digit
   if (count1 == 0 && 
-      count1 == count2 && 
-      count2 == count3 && 
-      count3 == count4)
+      count2 <= 0 && 
+      count3 <= 0 && 
+      count4 <= 0)
     return;
   fmd->AddSDigitByFields(detector, ring, sector, strip, edep, 
 			 count1, count2, count3, count4); 
