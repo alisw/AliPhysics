@@ -40,6 +40,7 @@
 
 #include <fstream>
 #include <stdexcept>
+#include <cstdlib>
 
 
 using namespace std;

@@ -24,6 +24,7 @@
 
 #include "AliHLTPHOSMapper.h"
 #include "unistd.h"
+#include <cstdlib>
 #include <iostream>
 
 AliHLTPHOSMapper::AliHLTPHOSMapper() :
