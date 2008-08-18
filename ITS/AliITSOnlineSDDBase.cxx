@@ -183,10 +183,11 @@ void AliITSOnlineSDDBase::WriteToASCII(){
   Float_t finalVal=basMin;
   if(basMin>fGoldenBaseline && basMax<fGoldenBaseline+fgkMaxCorr) finalVal=fGoldenBaseline;
   if(basMax<basMin+fgkMaxCorr && basMax>fGoldenBaseline+fgkMaxCorr) finalVal=basMax-fgkMaxCorr;
-  
+
   Float_t avNoise=CalcMeanRawNoise();
   Int_t thrL=(Int_t)(finalVal+fLowThrFact*avNoise+0.5);
   Int_t thrH=(Int_t)(finalVal+fHighThrFact*avNoise+0.5);
+  if(CountGoodAnodes()==0) thrH=255;
 
   sprintf(outfilnam,"SDDbase_step1_ddl%02dc%02d_sid%d.data",fDDL,fCarlos,fSide);
   FILE* outf=fopen(outfilnam,"w");

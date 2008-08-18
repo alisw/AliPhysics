@@ -46,6 +46,11 @@ class AliITSOnlineSDDBase : public AliITSOnlineSDD {
     else return 0;
   }
 
+  Int_t CountGoodAnodes() const{
+    Int_t nGdAn=0;
+    for(Int_t ian=0;ian<fgkNAnodes;ian++) if(fGoodAnode[ian]) nGdAn++;  
+    return nGdAn;
+  }
   Float_t CalcMeanRawNoise() const;
   Float_t GetAnodeCommonMode(Int_t iAnode) const{
     if(fNEvents>0) return fSumCMN[iAnode]/fNEvents;
