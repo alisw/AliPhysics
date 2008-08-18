@@ -226,8 +226,8 @@ void AliTPCcalibCosmic::FindPairs(AliESDEvent *event) {
     if (!track0) continue;
     if (!track0->GetOuterParam()) continue;
     if (track0->GetOuterParam()->GetAlpha()<0) continue;
-    Double_t d1[3];
-    track0->GetDirection(d1);    
+    Double_t dir0[3];
+    track0->GetDirection(dir0);    
     for (Int_t j=0;j<ntracks;++j) {
       if (i==j) continue;
       AliESDtrack *track1 = event->GetTrack(j);   
@@ -236,8 +236,8 @@ void AliTPCcalibCosmic::FindPairs(AliESDEvent *event) {
       if (!track1->GetOuterParam()) continue;
       if (track1->GetOuterParam()->GetAlpha()>0) continue;
       //
-      Double_t d2[3];
-      track1->GetDirection(d2);
+      Double_t dir1[3];
+      track1->GetDirection(dir1);
       
       AliTPCseed * seed0 = (AliTPCseed*) tpcSeeds.At(i);
       AliTPCseed * seed1 = (AliTPCseed*) tpcSeeds.At(j);
@@ -252,7 +252,7 @@ void AliTPCcalibCosmic::FindPairs(AliESDEvent *event) {
       Float_t dedx0O = seed0->CookdEdxNorm(0.05,0.55,0,64,159,fGainMap);
       Float_t dedx1O = seed1->CookdEdxNorm(0.05,0.55,0,64,159,fGainMap);
       //
-      Float_t dir = (d1[0]*d2[0] + d1[1]*d2[1] + d1[2]*d2[2]);
+      Float_t dir = (dir0[0]*dir1[0] + dir0[1]*dir1[1] + dir0[2]*dir1[2]);
       Float_t d0  = track0->GetLinearD(0,0);
       Float_t d1  = track1->GetLinearD(0,0);
       //
@@ -298,16 +298,36 @@ void AliTPCcalibCosmic::FindPairs(AliESDEvent *event) {
       if (fStreamLevel>0){
 	TTreeSRedirector * cstream =  GetDebugStreamer();
 	printf("My stream=%p\n",(void*)cstream);
+	AliExternalTrackParam *ip0 = (AliExternalTrackParam *)track0->GetInnerParam();
+	AliExternalTrackParam *ip1 = (AliExternalTrackParam *)track1->GetInnerParam();
+	AliExternalTrackParam *op0 = (AliExternalTrackParam *)track0->GetOuterParam();
+	AliExternalTrackParam *op1 = (AliExternalTrackParam *)track1->GetOuterParam();
+	Bool_t isCrossI = ip0->GetZ()*ip1->GetZ()<0;
+	Bool_t isCrossO = op0->GetZ()*op1->GetZ()<0;
+	Double_t alpha0 = TMath::ATan2(dir0[1],dir0[0]);
+	Double_t alpha1 = TMath::ATan2(dir1[1],dir1[0]);
+	Int_t runNr = event->GetRunNumber();
+	UInt_t time = event->GetTimeStamp();
 	if (cstream) {
 	  (*cstream) << "Track0" <<
+	    "runNr="<<runNr<<           //  run number
+	    "time="<<time<<             //  time stamp of event
 	    "dir="<<dir<<               //  direction
 	    "OK="<<isPair<<             //  will be accepted
 	    "b0="<<b0<<                 //  propagate status
 	    "b1="<<b1<<                 //  propagate status
+	    "crossI="<<isCrossI<<       //  cross inner
+	    "crossO="<<isCrossO<<       //  cross outer
+	    //
 	    "Orig0.=" << track0 <<      //  original track  0
 	    "Orig1.=" << track1 <<      //  original track  1
 	    "Tr0.="<<&param0<<          //  track propagated to the DCA 0,0
 	    "Tr1.="<<&param1<<          //  track propagated to the DCA 0,0	   
+	    "Ip0.="<<ip0<<              //  inner param - upper
+	    "Ip1.="<<ip1<<              //  inner param - lower
+	    "Op0.="<<op0<<              //  outer param - upper
+	    "Op1.="<<op1<<              //  outer param - lower
+	    //
 	    "v00="<<dvertex0[0]<<       //  distance using kalman
 	    "v01="<<dvertex0[1]<<       // 
 	    "v10="<<dvertex1[0]<<       //
@@ -315,13 +335,26 @@ void AliTPCcalibCosmic::FindPairs(AliESDEvent *event) {
 	    "d0="<<d0<<                 //  linear distance to 0,0
 	    "d1="<<d1<<                 //  linear distance to 0,0
 	    //
-	    "x00="<<xyz0[0]<<
+	    //
+	    //
+	    "x00="<<xyz0[0]<<           // global position close to vertex
 	    "x01="<<xyz0[1]<<
 	    "x02="<<xyz0[2]<<
 	    //
-	    "x10="<<xyz1[0]<<
+	    "x10="<<xyz1[0]<<           // global position close to vertex
 	    "x11="<<xyz1[1]<<
 	    "x12="<<xyz1[2]<<
+	    //
+	    "alpha0="<<alpha0<<
+	    "alpha1="<<alpha1<<
+	    "dir00="<<dir0[0]<<           // direction upper
+	    "dir01="<<dir0[1]<<
+	    "dir02="<<dir0[2]<<
+	    //
+	    "dir10="<<dir1[0]<<           // direction lower
+	    "dir11="<<dir1[1]<<
+	    "dir12="<<dir1[2]<<
+	    //
 	    //
 	    "Seed0.=" << seed0 <<       //  original seed 0
 	    "Seed1.=" << seed1 <<       //  original seed 1
@@ -491,15 +524,155 @@ AliExternalTrackParam *AliTPCcalibCosmic::Invert(AliExternalTrackParam *input)
   return output;
 }
 
+/*
+
+void Init(){
+  
+.x ~/UliStyle.C
+.x ~/rootlogon.C
+gSystem->Load("libSTAT.so");
+gSystem->Load("libANALYSIS");
+gSystem->Load("libTPCcalib");
+gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");
+
+gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+")
+AliXRDPROOFtoolkit tool; 
+TChain * chain = tool.MakeChain("cosmic.txt","Track0",0,1000000);
+chain->Lookup();
+
+TCut cutT("cutT","abs(Tr1.fP[3]+Tr0.fP[3])<0.01");  // OK
+TCut cutD("cutD","abs(Tr0.fP[0]+Tr1.fP[0])<2");     // OK
+TCut cutP1("cutP1","abs(Tr0.fP[1]-Tr1.fP[1])<4");   // OK
+TCut cutPt("cutPt","abs(Tr1.fP[4]+Tr0.fP[4])<0.1&&abs(Tr0.fP[4])+abs(Tr1.fP[4])<10");
+TCut cutN("cutN","min(Orig0.fTPCncls,Orig1.fTPCncls)>100");
+TCut cutA=cutT+cutD+cutPt+cutN+cutP1;
+
+TCut cutS("cutS","Orig0.fIp.fP[1]*Orig1.fIp.fP[1]>0");
+
+//
+chain->Draw(">>listEL",cutA,"entryList");
+TEntryList *elist = (TEntryList*)gDirectory->Get("listEL");
+chain->SetEntryList(elist);
+//
+chain->Draw(">>listV40Z100","abs(d0)<40&&abs(v01)<100","entryList");
+TEntryList *elistV40Z100 = (TEntryList*)gDirectory->Get("listV40Z100");
+chain->SetEntryList(elistV40Z100);
+
+//
+// Aliases
+//
+chain->SetAlias("side","(-1+(Tr0.fP[1]>0)*2)");
+chain->SetAlias("hpt","abs(Tr0.fP[4])<0.2");
+chain->SetAlias("dtheta","(Tr0.fP[3]+Tr1.fP[3])");
+chain->SetAlias("mtheta","(Tr0.fP[3]-Tr1.fP[3])*0.5")
+chain->SetAlias("sa","(sin(Tr0.fAlpha+0.))");
+chain->SetAlias("ca","(cos(Tr0.fAlpha+0.))");
+
+}
+
+
+*/
+
+
+/*
+void MatchTheta(){
+
+TStatToolkit toolkit;
+Double_t chi2=0;
+Int_t    npoints=0;
+TVectorD fitParamA0;
+TVectorD fitParamA1;
+TVectorD fitParamC0;
+TVectorD fitParamC1;
+TMatrixD covMatrix;
+
+
+TString fstring="";
+// 
+fstring+="ca++";
+fstring+="sa++";
+fstring+="ca*mtheta++";
+fstring+="sa*mtheta++";
+fstring+="side++";
+fstring+="side*ca++";
+fstring+="side*sa++";
+fstring+="side*ca*mtheta++";
+fstring+="side*sa*mtheta++";
+
+
+TString *strTheta0 = toolkit.FitPlane(chain,"dtheta",fstring->Data(), "hpt"+cutS, chi2,npoints,fitParamA0,covMatrix,0.8);
+chain->SetAlias("dtheta0",strTheta0.Data());
+strTheta0->Tokenize("+")->Print();
+
+
+//fstring+="mtheta++";
+//fstring+="mtheta^2++";
+//fstring+="ca*mtheta^2++";
+//fstring+="sa*mtheta^2++";
+
+
+
+}
+
+*/
+
+
+
+
+/*
+ void PosCorrection()
+
+ 
+
+ 
+ TStatToolkit toolkit;
+ Double_t chi2=0;
+ Int_t    npoints=0;
+ TVectorD fitParam;
+ TMatrixD covMatrix;
+ 
+ //Theta
+chain->SetAlias("dthe","(Tr0.fP[3]+Tr1.fP[3])");
+chain->SetAlias("sign","(-1+(Tr0.fP[1]>0)*2)");
+chain->SetAlias("di","(1-abs(Tr0.fP[1])/250)");
+//
+//
+TString strFit="";
+//
+strFit+="sign++";                              //1
+strFit+="Tr0.fP[3]++";                         //2
+// 
+strFit+="sin(Tr0.fAlpha)*(Tr0.fP[1]>0)++";     //3
+strFit+="sin(Tr0.fAlpha)*(Tr0.fP[1]<0)++";     //4
+//
+strFit+="cos(Tr0.fAlpha)*(Tr0.fP[1]>0)++";     //5
+strFit+="cos(Tr0.fAlpha)*(Tr0.fP[1]<0)++";     //6  
+//
+strFit+="sin(Tr0.fAlpha)*Tr0.fP[3]++";         //7
+strFit+="cos(Tr0.fAlpha)*Tr0.fP[3]++";         //8
+ 
+ 
+ //					    
+ TString * thetaParam = toolkit.FitPlane(chain,"dthe", strFit.Data(),"1", chi2,npoints,fitParam,covMatrix,0.8,0,10000)
+ 
+ chain->SetAlias("corTheta",thetaParam->Data());
+ chain->Draw("dthe:Tr0.fP[1]","","",50000);
+
+
+
+*/
+
+
 
 /*
 
 void AliTPCcalibCosmic::dEdxCorrection(){
-  TCut cutT("cutT","abs(Tr1.fP[3]+Tr0.fP[3])<0.03");  // OK
-  TCut cutD("cutD","abs(Tr0.fP[0]+Tr1.fP[0])<5");     // OK
-  TCut cutPt("cutPt","abs(Tr1.fP[4]+Tr0.fP[4])<0.2&&abs(Tr0.fP[4])+abs(Tr1.fP[4])<10");
-  TCut cutN("cutN","min(Orig0.fTPCncls,Orig1.fTPCncls)>70");
-  TCut cutA=cutT+cutD+cutPt+cutN;
+  TCut cutT("cutT","abs(Tr1.fP[3]+Tr0.fP[3])<0.01");  // OK
+  TCut cutD("cutD","abs(Tr0.fP[0]+Tr1.fP[0])<2");     // OK
+  TCut cutPt("cutPt","abs(Tr1.fP[4]+Tr0.fP[4])<0.1&&abs(Tr0.fP[4])+abs(Tr1.fP[4])<10");
+  TCut cutN("cutN","min(Orig0.fTPCncls,Orig1.fTPCncls)>100");
+  TCut cutS("cutS","Orig0.fIp.fP[1]*Orig1.fIp.fP[1]>0");
+  TCut cutA=cutT+cutD+cutPt+cutN+cutS;
 
 
  .x ~/UliStyle.C
@@ -510,10 +683,14 @@ void AliTPCcalibCosmic::dEdxCorrection(){
  AliXRDPROOFtoolkit tool; 
   TChain * chain = tool.MakeChain("cosmic.txt","Track0",0,1000000);
   chain->Lookup();
+  
+  chain->Draw(">>listEL",cutA,"entryList");
+  TEntryList *elist = (TEntryList*)gDirectory->Get("listEL");
+  chain->SetEntryList(elist);
 
   .x ~/rootlogon.C
    gSystem->Load("libSTAT.so");
-
+   TStatToolkit toolkit;
   Double_t chi2=0;
   Int_t    npoints=0;
   TVectorD fitParam;
@@ -527,24 +704,9 @@ void AliTPCcalibCosmic::dEdxCorrection(){
   strFit+="(Tr0.fP[3])++";
   strFit+="(Tr0.fP[3])^2++";
 
-  TString * ptParam = TStatToolkit::FitPlane(chain,"Tr0.fP[4]+Tr1.fP[4]", strFit.Data(),cutA, chi2,npoints,fitParam,covMatrix) 
-
-strFit+="(Tr0.fP[1]/250)++";
-strFit+="(Tr0.fP[1]/250)^2++";
-strFit+="(Tr0.fP[3])++";
-strFit+="(Tr0.fP[3])^2++";
-strFit+="(Tr0.fP[1]/250)^2*Tr0.fP[3]++";
-strFit+="(Tr0.fP[1]/250)^2*Tr0.fP[3]^2++";
-//
-
-strFit+="sign(Tr0.fP[1])++"
-strFit+="sign(Tr0.fP[1])*(1-abs(Tr0.fP[1]/250))"
-					    
-TString * thetaParam = TStatToolkit::FitPlane(chain,"Tr0.fP[3]+Tr1.fP[3]", strFit.Data(),cutA, chi2,npoints,fitParam,covMatrix)
+  TString * ptParam = TStatToolkit::FitPlane(chain,"Tr0.fP[4]+Tr1.fP[4]", strFit.Data(),"1", chi2,npoints,fitParam,covMatrix) 
 
 
-
-(-0.009263+(Tr0.fP[1]/250)*(-0.009693)+(Tr0.fP[1]/250)^2*(0.009062)+(Tr0.fP[3])*(0.002256)+(Tr0.fP[3])^2*(-0.052775)+(Tr0.fP[1]/250)^2*Tr0.fP[3]*(-0.020627)+(Tr0.fP[1]/250)^2*Tr0.fP[3]^2*(0.049030))
 
 */
 
@@ -598,9 +760,5 @@ TString *strqdedx = toolkit.FitPlane(chain,"norm",fstring->Data(), cutA, chi2,np
 chain->SetAlias("corQT",strqdedx->Data());
 
 */
-
-
-
-
 
 
