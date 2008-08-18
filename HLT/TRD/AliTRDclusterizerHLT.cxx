@@ -185,7 +185,7 @@ Bool_t AliTRDclusterizerHLT::InitClusterTree()
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDclusterizerHLT::InsertClusters(TObjArray *tobjarr, Int_t idet)
+Bool_t AliTRDclusterizerHLT::InsertClusters(TClonesArray *tobjarr, Int_t idet)
 {
   //
   // Fill the tree with clusters - from a different component for example
