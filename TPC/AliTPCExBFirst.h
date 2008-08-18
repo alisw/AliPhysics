@@ -48,7 +48,7 @@ private:
   static const Double_t fgkEM; //! elementary charge over electron mass (C/kg)
   static const Double_t fgkDriftField; //! the TPC drift field (V/m) (modulus)
 
-  ClassDef(AliTPCExBFirst,1)
+  ClassDef(AliTPCExBFirst,2)
 };
 
 #endif

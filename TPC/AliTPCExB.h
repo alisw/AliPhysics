@@ -58,7 +58,7 @@ public:
   static AliTPCExB*   fgInstance;  //! Instance of this class (singleton implementation)
   static TObjArray    fgArray;     //! array of magnetic fields
   //
-  ClassDef(AliTPCExB,1)
+  ClassDef(AliTPCExB,2)
 };
 
 #endif
