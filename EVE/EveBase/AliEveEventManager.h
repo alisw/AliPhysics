@@ -65,7 +65,8 @@ public:
   AliESDfriend* GetESDfriend()       const { return fESDfriend; }
   Bool_t        GetESDfriendExists() const { return fESDfriendExists; }
   virtual const Text_t* GetTitle()   const { return fPath.Data(); }
-  const char*   GetEventInfo() const;
+  TString       GetEventInfoHorizontal() const;
+  TString       GetEventInfoVertical()   const;
 
   static Bool_t HasRunLoader();
   static Bool_t HasESD();

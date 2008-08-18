@@ -29,6 +29,7 @@
 #include <TTree.h>
 #include <TGeoManager.h>
 #include <TSystem.h>
+#include <TTimeStamp.h>
 
 //==============================================================================
 //==============================================================================
@@ -728,41 +729,93 @@ void AliEveEventManager::NewEventLoaded()
   Emit("NewEventLoaded()");
 }
 
-const char* AliEveEventManager::GetEventInfo() const
+//==============================================================================
+
+TString AliEveEventManager::GetEventInfoHorizontal() const
 {
-  // Dumps the event-header contents
+  // Dumps the event-header contents in vertical formatting.
 
-  static TString eventInfo;
+  TString rawInfo, esdInfo;
 
-  if (!fRawReader) {
-    eventInfo.Form("No raw-data event info is available!\n");
+  if (!fRawReader)
+  {
+    rawInfo = "No raw-data event info is available!\n";
   }
-  else {
+  else
+  {
     const UInt_t* attr = fRawReader->GetAttributes();
-    eventInfo.Form("Raw-data event info:\nRun#: %d\nEvent type: %d (%s)\nPeriod: %x\nOrbit: %x   BC: %x\nTrigger: %llx\nDetectors: %x (%s)\nAttributes:%x-%x-%x\nTimestamp: %x\n",
-		   fRawReader->GetRunNumber(),fRawReader->GetType(),AliRawEventHeaderBase::GetTypeName(fRawReader->GetType()),
-		   fRawReader->GetPeriod(),fRawReader->GetOrbitID(),fRawReader->GetBCID(),
-		   fRawReader->GetClassMask(),
-		   *fRawReader->GetDetectorPattern(),AliDAQ::ListOfTriggeredDetectors(*fRawReader->GetDetectorPattern()),
-		   attr[0],attr[1],attr[2],
-		   fRawReader->GetTimestamp());
-  }
-  if (!fESD) {
-    eventInfo.Append(Form("\nNo ESD event info is available!\n"));
-  }
-  else {
-    TString acttrclasses = fESD->GetESDRun()->GetActiveTriggerClasses();
-    TString firedtrclasses = fESD->GetFiredTriggerClasses();
-    eventInfo.Append(Form("\nESD event info:\nRun#: %d\nActive trigger classes: %s\nEvent type: %d (%s)\nPeriod: %x\nOrbit: %x   BC: %x\nTrigger: %llx (%s)\nEvent# in file:%d\nTimestamp: %x\n",
-			  fESD->GetRunNumber(),
- 			  acttrclasses.Data(),
-			  fESD->GetEventType(),AliRawEventHeaderBase::GetTypeName(fESD->GetEventType()),
-			  fESD->GetPeriodNumber(),fESD->GetOrbitNumber(),fESD->GetBunchCrossNumber(),
-			  fESD->GetTriggerMask(),firedtrclasses.Data(),
-			  fESD->GetEventNumberInFile(),
-			  fESD->GetTimeStamp()));
+    TTimeStamp ts(fRawReader->GetTimestamp());
+    rawInfo.Form("RAW event info: Run#: %d  Event type: %d (%s)  Period: %x  Orbit: %x  BC: %x\n"
+		 "Trigger: %llx\nDetectors: %x (%s)\nAttributes:%x-%x-%x  Timestamp: %s\n",
+		 fRawReader->GetRunNumber(),fRawReader->GetType(),AliRawEventHeaderBase::GetTypeName(fRawReader->GetType()),
+		 fRawReader->GetPeriod(),fRawReader->GetOrbitID(),fRawReader->GetBCID(),
+		 fRawReader->GetClassMask(),
+		 *fRawReader->GetDetectorPattern(),AliDAQ::ListOfTriggeredDetectors(*fRawReader->GetDetectorPattern()),
+		 attr[0],attr[1],attr[2], ts.AsString("s"));
   }
 
-  return eventInfo.Data();
+  if (!fESD)
+  {
+    esdInfo = "No ESD event info is available!";
+  }
+  else
+  {
+    TString acttrclasses   = fESD->GetESDRun()->GetActiveTriggerClasses();
+    TString firedtrclasses = fESD->GetFiredTriggerClasses();
+    TTimeStamp ts(fESD->GetTimeStamp());
+    esdInfo.Form("ESD event info: Run#: %d  Event type: %d (%s)  Period: %x  Orbit: %x  BC: %x\n"
+		 "Active trigger classes: %s\nTrigger: %llx (%s)\nEvent# in file: %d  Timestamp: %s",
+		 fESD->GetRunNumber(),
+		 fESD->GetEventType(),AliRawEventHeaderBase::GetTypeName(fESD->GetEventType()),
+		 fESD->GetPeriodNumber(),fESD->GetOrbitNumber(),fESD->GetBunchCrossNumber(),
+		 acttrclasses.Data(),
+		 fESD->GetTriggerMask(),firedtrclasses.Data(),
+		 fESD->GetEventNumberInFile(), ts.AsString("s"));
+  }
+
+  return rawInfo + esdInfo;
+}
+
+TString AliEveEventManager::GetEventInfoVertical() const
+{
+  // Dumps the event-header contents in vertical formatting.
+
+  TString rawInfo, esdInfo;
+
+  if (!fRawReader)
+  {
+    rawInfo = "No raw-data event info is available!\n";
+  }
+  else
+  {
+    const UInt_t* attr = fRawReader->GetAttributes();
+    rawInfo.Form("Raw-data event info:\nRun#: %d\nEvent type: %d (%s)\nPeriod: %x\nOrbit: %x   BC: %x\nTrigger: %llx\nDetectors: %x (%s)\nAttributes:%x-%x-%x\nTimestamp: %x\n",
+		 fRawReader->GetRunNumber(),fRawReader->GetType(),AliRawEventHeaderBase::GetTypeName(fRawReader->GetType()),
+		 fRawReader->GetPeriod(),fRawReader->GetOrbitID(),fRawReader->GetBCID(),
+		 fRawReader->GetClassMask(),
+		 *fRawReader->GetDetectorPattern(),AliDAQ::ListOfTriggeredDetectors(*fRawReader->GetDetectorPattern()),
+		 attr[0],attr[1],attr[2],
+		 fRawReader->GetTimestamp());
+  }
+
+  if (!fESD)
+  {
+    esdInfo = "No ESD event info is available!\n";
+  }
+  else
+  {
+    TString acttrclasses   = fESD->GetESDRun()->GetActiveTriggerClasses();
+    TString firedtrclasses = fESD->GetFiredTriggerClasses();
+    esdInfo.Form("ESD event info:\nRun#: %d\nActive trigger classes: %s\nEvent type: %d (%s)\nPeriod: %x\nOrbit: %x   BC: %x\nTrigger: %llx (%s)\nEvent# in file:%d\nTimestamp: %x\n",
+		 fESD->GetRunNumber(),
+		 acttrclasses.Data(),
+		 fESD->GetEventType(),AliRawEventHeaderBase::GetTypeName(fESD->GetEventType()),
+		 fESD->GetPeriodNumber(),fESD->GetOrbitNumber(),fESD->GetBunchCrossNumber(),
+		 fESD->GetTriggerMask(),firedtrclasses.Data(),
+		 fESD->GetEventNumberInFile(),
+		 fESD->GetTimeStamp());
+  }
+
+  return rawInfo + "\n" + esdInfo;
 }
   

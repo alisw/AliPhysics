@@ -93,6 +93,10 @@ void anyscan_init()
   browser->StopEmbedding("DataSelection");
   exewin->PopulateMacros();
 
+  browser->StartEmbedding();
+  new AliQAHistViewer(gClient->GetRoot(), 600, 400, kTRUE);
+  browser->StopEmbedding("QA histograms");
+
   browser->GetTabRight()->SetTab(1);
 
   browser->StartEmbedding(TRootBrowser::kBottom);

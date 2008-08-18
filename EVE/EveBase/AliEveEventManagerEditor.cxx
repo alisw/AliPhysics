@@ -103,12 +103,10 @@ AliEveEventManagerEditor::AliEveEventManagerEditor(const TGWindow *p, Int_t widt
 
     AddFrame(f, new TGLayoutHints(kLHintsNormal | kLHintsExpandX));
   }
-
 }
 
 /******************************************************************************/
 
-//______________________________________________________________________________
 void AliEveEventManagerEditor::SetModel(TObject* obj)
 {
   // Set model object.
@@ -122,7 +120,7 @@ void AliEveEventManagerEditor::SetModel(TObject* obj)
 
   fPrevEvent->SetEnabled(!fM->GetIsOnline()); 
 
-  fEventInfo->LoadBuffer(fM->GetEventInfo());
+  fEventInfo->LoadBuffer(fM->GetEventInfoVertical());
 }
 
 /******************************************************************************/
@@ -192,13 +190,14 @@ void AliEveEventManagerEditor::DoRefresh()
 ClassImp(AliEveEventManagerWindow)
 
 AliEveEventManagerWindow::AliEveEventManagerWindow() :
-  TGMainFrame(0, 400, 100, kVerticalFrame),
+  TGMainFrame(gClient->GetRoot(), 400, 100, kVerticalFrame),
   fFirstEvent(0),
   fPrevEvent(0),
   fNextEvent(0),
   fLastEvent(0),
   fEventId  (0),
-  fInfoLabel(0)
+  fInfoLabel(0),
+  fEventInfo(0)
 {
   // Constructor.
 
@@ -242,9 +241,15 @@ AliEveEventManagerWindow::AliEveEventManagerWindow() :
     AddFrame(f, new TGLayoutHints(kLHintsExpandX, 0,0,2,2));
   }
 
+  {
+    TGHorizontalFrame* f = new TGHorizontalFrame(this);
+    fEventInfo = new TGTextView(f, 800, 600);
+    f->AddFrame(fEventInfo, new TGLayoutHints(kLHintsNormal | kLHintsExpandX | kLHintsExpandY));
+    AddFrame(f, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY, 0,0,2,2));
+  }
+
   gAliEveEvent->Connect("NewEventLoaded()",
                         "AliEveEventManagerWindow", this, "Update()");
-  Update();
 
   SetCleanup(kDeepCleanup);
   Layout();
@@ -302,5 +307,8 @@ void AliEveEventManagerWindow::Update()
 
   fEventId->SetNumber(gAliEveEvent->GetEventId());
   fInfoLabel->SetText(Form("/ %d", gAliEveEvent->GetMaxEventId()));
+
+  fEventInfo->LoadBuffer(gAliEveEvent->GetEventInfoHorizontal());
+
   Layout();
 }

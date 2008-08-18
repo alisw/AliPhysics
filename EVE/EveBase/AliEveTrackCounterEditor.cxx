@@ -9,7 +9,9 @@
 
 #include "AliEveTrackCounterEditor.h"
 #include "AliEveTrackCounter.h"
+#include "AliEveEventManager.h"
 
+#include "TGedEditor.h"
 #include "TVirtualPad.h"
 #include "TColor.h"
 
@@ -139,9 +141,26 @@ AliEveTrackCounterEditor::AliEveTrackCounterEditor(const TGWindow *p, Int_t widt
       AddFrame(f, new TGLayoutHints(kLHintsLeft, 0, 0, 0, 0));
    }
 
+  gAliEveEvent->Connect("NewEventLoaded()",
+                        "AliEveTrackCounterEditor", this, "UpdateModel()");
+}
+
+AliEveTrackCounterEditor::~AliEveTrackCounterEditor()
+{
+  // Destructor.
+
+  gAliEveEvent->Disconnect("NewEventLoaded()", this);
 }
 
 /******************************************************************************/
+
+void AliEveTrackCounterEditor::UpdateModel()
+{
+  if (fGedEditor && fM && fGedEditor->GetModel() == fM->GetEditorObject())
+  {
+    SetModel(fM->GetEditorObject());
+  }
+}
 
 //______________________________________________________________________________
 void AliEveTrackCounterEditor::SetModel(TObject* obj)
@@ -162,8 +181,7 @@ void AliEveTrackCounterEditor::DoPrev()
 {
    // Slot for Prev.
 
-   TEveUtil::Macro("event_prev.C");
-   gEve->EditElement(fM);
+   gAliEveEvent->PrevEvent();
 }
 
 //______________________________________________________________________________
@@ -171,18 +189,14 @@ void AliEveTrackCounterEditor::DoNext()
 {
    // Slot for Next.
 
-   TEveUtil::Macro("event_next.C");
-   gEve->EditElement(fM);
+   gAliEveEvent->NextEvent();
 }
 
 //______________________________________________________________________________
 void AliEveTrackCounterEditor::DoSetEvent()
 {
    // Slot for SetEvent.
-
-   TEveUtil::LoadMacro("event_goto.C");
-   gROOT->ProcessLine(Form("event_goto(%d);", (Int_t) fEventId->GetNumber()));
-   gEve->EditElement(fM);
+   gAliEveEvent->GotoEvent((Int_t) fEventId->GetNumber());
 }
 
 /******************************************************************************/

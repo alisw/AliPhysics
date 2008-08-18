@@ -27,7 +27,9 @@ class AliEveTrackCounterEditor : public TGedFrame
 public:
    AliEveTrackCounterEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30,
                             UInt_t options = kChildFrame, Pixel_t back=GetDefaultFrameBackground());
-   virtual ~AliEveTrackCounterEditor() {}
+   virtual ~AliEveTrackCounterEditor();
+
+   void UpdateModel();
 
    virtual void SetModel(TObject* obj);
 

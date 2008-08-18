@@ -86,6 +86,8 @@ protected:
    TGNumberEntry        *fEventId;
    TGLabel              *fInfoLabel;
 
+   TGTextView           *fEventInfo; // Text box with event info
+
 private:
    AliEveEventManagerWindow(const AliEveEventManagerWindow&);            // Not implemented
    AliEveEventManagerWindow& operator=(const AliEveEventManagerWindow&); // Not implemented
