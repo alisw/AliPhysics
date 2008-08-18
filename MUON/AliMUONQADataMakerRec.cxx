@@ -174,7 +174,7 @@ void AliMUONQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArra
 			TString classname(o->ClassName());
 			if ( classname.Contains("TrackerData") ) alreadyThere = kTRUE;
 		}
-		if (!alreadyThere) list->AddAt(fTrackerDataMaker->Data(),(Int_t)kTrackerData);
+		if (!alreadyThere && fTrackerDataMaker) list->AddAt(fTrackerDataMaker->Data(),(Int_t)kTrackerData);
 	}
 	
 	// do the QA checking
