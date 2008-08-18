@@ -198,14 +198,15 @@ void AliQAHistViewer::FillComboBoxWithListEntries( TGComboBox* box, const TList*
 //_________________________________________________________________________
 void AliQAHistViewer::UpdateAllPathComboBoxes()
 {
-   FillComboBoxWithListEntries( fFileListBox, fQANavigator->GetFileList() );
-   FillComboBoxWithListEntries( fDetectorListBox, fQANavigator->GetDetectorList() );
-   FillComboBoxWithListEntries( fLevelListBox, fQANavigator->GetLevelList() );
-   FillComboBoxWithListEntries( fHistListBox, fQANavigator->GetHistList() );
-   fFileListBox->Select(fQANavigator->GetCurrListOfFiles()->IndexOf(fQANavigator->GetCurrFile()),kFALSE);
-   fDetectorListBox->Select(fQANavigator->GetCurrFile()->IndexOf(fQANavigator->GetCurrDetector()),kFALSE);
-   fLevelListBox->Select(fQANavigator->GetCurrDetector()->IndexOf(fQANavigator->GetCurrLevel()),kFALSE);
-   fHistListBox->Select(fQANavigator->GetCurrLevel()->IndexOf(fQANavigator->GetCurrHistName()),kFALSE);
+    if (!fQANavigator->InitOK()) return;
+    FillComboBoxWithListEntries( fFileListBox, fQANavigator->GetFileList() );
+    FillComboBoxWithListEntries( fDetectorListBox, fQANavigator->GetDetectorList() );
+    FillComboBoxWithListEntries( fLevelListBox, fQANavigator->GetLevelList() );
+    FillComboBoxWithListEntries( fHistListBox, fQANavigator->GetHistList() );
+    fFileListBox->Select(fQANavigator->GetCurrListOfFiles()->IndexOf(fQANavigator->GetCurrFile()),kFALSE);
+    fDetectorListBox->Select(fQANavigator->GetCurrFile()->IndexOf(fQANavigator->GetCurrDetector()),kFALSE);
+    fLevelListBox->Select(fQANavigator->GetCurrDetector()->IndexOf(fQANavigator->GetCurrLevel()),kFALSE);
+    fHistListBox->Select(fQANavigator->GetCurrLevel()->IndexOf(fQANavigator->GetCurrHistName()),kFALSE);
 }
 
 //_________________________________________________________________________

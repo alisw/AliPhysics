@@ -66,6 +66,8 @@ public:
     TList* GetCurrDetector() {return fPCurrDetector;}
     TList* GetCurrLevel() {return fPCurrLevel;}
     TObjString* GetCurrHistName() {return fPCurrHistName;}
+    Bool_t InitOK() {return fInitOK;}
+    Bool_t ReReadFiles();
 
     Bool_t CloneDirStructure();
 
@@ -91,6 +93,8 @@ private:
     Bool_t fLoopAllFiles;  //whether to loop over all files
     Bool_t fLoopAllDetectors;  //whether to loop over all detectors
     Bool_t fLoopAllLevels;   //whether to loop over all levels
+    
+    Bool_t fInitOK;  //whether there is data to navigate
 
     ClassDef(AliQAHistNavigator,999)     //AliQAHistNavigator class
 };

@@ -37,33 +37,10 @@ AliQAHistNavigator::AliQAHistNavigator(Int_t run, Int_t rev):
     fPListOfFiles( new TList() ),
     fLoopAllFiles(kTRUE),
     fLoopAllDetectors(kTRUE),
-    fLoopAllLevels(kTRUE)
+    fLoopAllLevels(kTRUE),
+    fInitOK(kFALSE)
 {
-    if (CloneDirStructure())
-    {
-        fPCurrFile = (TList*)fPListOfFiles->First();
-        if (fPCurrFile)
-        {
-            fPCurrDetector = (TList*)fPCurrFile->First();
-            if (fPCurrDetector)
-            {
-                fPCurrLevel = (TList*) fPCurrDetector->First();
-                if (fPCurrLevel)
-                {
-                    fPCurrHistName = (TObjString*) fPCurrLevel->First();
-                    if (fPCurrHistName)
-                    {
-                        OpenCurrentFile();
-                        OpenCurrentDirectory();
-                    }
-                }
-            }
-        }
-    } else
-    {
-        printf("AliQAHistNavigator::AliQAHistNavigator(): error reading files\n");
-    }
-    
+    ReReadFiles();
 }
 
 //_________________________________________________________________________
@@ -87,7 +64,15 @@ Bool_t AliQAHistNavigator::GetNextHistogram(TH1*& hist)
 //_________________________________________________________________________
 Bool_t AliQAHistNavigator::GetHistogram(TH1*& hist)
 {
-    gDirectory->GetObject(GetFileName()+":"+GetDirName()+"/"+GetHistName(),hist);
+    TString file = GetFileName();
+    TString dir = GetDirName();
+    TString histname = GetHistName();
+    if (file==""||dir==""||histname=="") 
+    {
+        printf("GetHistogram: nothing to fetch...\n");
+        return kFALSE;
+    }
+    gDirectory->GetObject(file+":"+dir+"/"+histname,hist);
     if (!hist)
     {
         printf("GetHistogram: null pointer returned by gDirectory\n");
@@ -117,7 +102,7 @@ Bool_t AliQAHistNavigator::GetPrevHistogram(TH1*& hist)
 //_________________________________________________________________________
 Bool_t AliQAHistNavigator::Next()
 {
-    if (!fPCurrHistName) return kFALSE;
+    if (!fPCurrHistName||!fPCurrFile||!fPCurrDetector||!fPCurrLevel) return kFALSE;
     if (!(fPCurrHistName=(TObjString*)fPCurrLevel->After(fPCurrHistName)))
     {
         if (!(fPCurrLevel=(TList*)fPCurrDetector->After(fPCurrLevel)))
@@ -373,7 +358,10 @@ TString AliQAHistNavigator::GetFileName()
 //_________________________________________________________________________
 TString AliQAHistNavigator::GetDirName()
 {
-    TString dir = "/"+ GetDetectorName()+"/"+GetLevelName();
+    TString detector = GetDetectorName();
+    TString level = GetLevelName();
+    if (detector==""||level=="") return "";
+    TString dir = "/"+ detector +"/"+ level;
     return dir;
 }
 
@@ -591,3 +579,35 @@ Bool_t AliQAHistNavigator::Crawl(TList* dir)
     }
     return kTRUE;
 }
+
+Bool_t AliQAHistNavigator::ReReadFiles()
+{
+    if (CloneDirStructure())
+    {
+        fPCurrFile = (TList*)fPListOfFiles->First();
+        if (fPCurrFile)
+        {
+            fPCurrDetector = (TList*)fPCurrFile->First();
+            if (fPCurrDetector)
+            {
+                fPCurrLevel = (TList*) fPCurrDetector->First();
+                if (fPCurrLevel)
+                {
+                    fPCurrHistName = (TObjString*) fPCurrLevel->First();
+                    if (fPCurrHistName)
+                    {
+                        fInitOK = kTRUE;
+                        OpenCurrentFile();
+                        OpenCurrentDirectory();
+                    }
+                }
+            }
+        }
+    } else
+    {
+        printf("AliQAHistNavigator::AliQAHistNavigator(): error reading files\n");
+        return kFALSE;
+    }
+    return kTRUE;
+}
+
