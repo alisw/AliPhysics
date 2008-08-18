@@ -102,7 +102,7 @@ void run(Char_t *tasks="ALL", const Char_t *files=0x0, Int_t nmax=-1)
     task2->SetDebugLevel(1);
     mgr->AddTask(task2);
     //Create containers for input/output
-    AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("TrackingEfficiency", TList::Class(), AliAnalysisManager::kOutputContainer, "TRD.TrackingEfficiency.root");
+    AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("Efficiency", TList::Class(), AliAnalysisManager::kOutputContainer, "TRD.TrackingEfficiency.root");
     mgr->ConnectInput( task2, 0, coutput1);
     mgr->ConnectOutput(task2, 0, coutput2);
   }
@@ -114,19 +114,19 @@ void run(Char_t *tasks="ALL", const Char_t *files=0x0, Int_t nmax=-1)
     task3->SetDebugLevel(0);
     mgr->AddTask(task3);
     // Create containers for input/output
-    AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("TrackingEfficiencyCombined", TObjArray::Class(), AliAnalysisManager::kOutputContainer, "TRD.TrackingEfficiencyCombined.root");
+    AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("Efficiency2", TObjArray::Class(), AliAnalysisManager::kOutputContainer, "TRD.TrackingEfficiencyCombined.root");
     mgr->ConnectInput( task3, 0, coutput1);
     mgr->ConnectOutput(task3, 0, coutput3);
   }
 
   //____________________________________________
-  // TRD combined tracking efficiency
+  // TRD tracking resolution
   if(TESTBIT(fSteerTask, kTrackingResolution)){
     AliTRDtrackingResolution *task4 = new AliTRDtrackingResolution();
     task4->SetDebugLevel(1);
     mgr->AddTask(task4);
     // Create containers for input/output
-    AliAnalysisDataContainer *coutput4 = mgr->CreateContainer("Tracking Resolution", TList::Class(), AliAnalysisManager::kOutputContainer, "TRD.TrackingResolution.root");
+    AliAnalysisDataContainer *coutput4 = mgr->CreateContainer("Resolution", TList::Class(), AliAnalysisManager::kOutputContainer, "TRD.TrackingResolution.root");
     mgr->ConnectInput( task4, 0, coutput1);
     mgr->ConnectOutput(task4, 0, coutput4);
   }
