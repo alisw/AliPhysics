@@ -51,6 +51,9 @@ class AliTRDtrackerV1 : public AliTracker
 {
 public:
   enum{
+    kOwner = BIT(14)
+  };
+  enum{
     kMaxLayersPerSector   = 1000
     , kMaxTimeBinIndex    = 216
     , kTrackingSectors    = 18
@@ -89,9 +92,13 @@ public:
  	static Double_t FitLine(AliTRDtrackV1 *trk, AliTRDseedV1 *tracklets = 0x0, Bool_t err=0, Int_t np = 0, AliTrackPoint *points = 0x0);
  	static Double_t FitKalman(AliTRDtrackV1 *trk, AliTRDseedV1 *tracklets = 0x0, Bool_t up=0, Int_t np = 0, AliTrackPoint *points = 0x0);
 
+  Bool_t          IsClustersOwner() const {return TestBit(kOwner);}
+  void            SetClustersOwner(Bool_t own=kTRUE) {SetBit(kOwner, own); if(!own) fClusters = 0x0;}
+
   Int_t           FollowBackProlongation(AliTRDtrackV1 &t);
   Int_t           FollowProlongation(AliTRDtrackV1 &t);
   Int_t           LoadClusters(TTree *cTree);
+  Int_t           LoadClusters(TClonesArray *clusters);
   Int_t           PropagateBack(AliESDEvent *event);
   Int_t           ReadClusters(TClonesArray* &array, TTree *in) const;
   Int_t           RefitInward(AliESDEvent *event);
@@ -124,6 +131,7 @@ public:
 protected:
   static Bool_t  AdjustSector(AliTRDtrackV1 *track); 
   Double_t       BuildSeedingConfigs(AliTRDtrackingChamber **stack, Int_t *configs);
+  Int_t          BuildTrackingContainers();
   static Float_t CalculateChi2Z(AliTRDseedV1 *tracklets, Double_t offset, Double_t slope, Double_t xref);
   Int_t          Clusters2TracksSM(Int_t sector, AliESDEvent *esd);
   Int_t          Clusters2TracksStack(AliTRDtrackingChamber **stack, TClonesArray *esdTrackList);

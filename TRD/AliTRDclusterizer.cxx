@@ -25,6 +25,7 @@
 #include <TTree.h>
 #include <TH1.h>
 #include <TFile.h>
+#include <TClonesArray.h>
 #include <TObjArray.h>
 
 #include "AliRunLoader.h"
@@ -148,8 +149,8 @@ AliTRDclusterizer::AliTRDclusterizer(const AliTRDclusterizer &c)
   ,fClusterTree(NULL)
   ,fRecPoints(NULL)
   ,fTrackletTree(NULL)
-  ,fTrackletContainer(NULL)
   ,fDigitsManager(NULL)
+  ,fTrackletContainer(NULL)
   ,fAddLabels(kTRUE)
   ,fRawVersion(2)
   ,fIndexesOut(NULL)
@@ -173,48 +174,40 @@ AliTRDclusterizer::~AliTRDclusterizer()
   // AliTRDclusterizer destructor
   //
 
-  if (fRecPoints) 
-    {
-      fRecPoints->Delete();
-      delete fRecPoints;
-    }
+  if (fRecPoints && IsClustersOwner()){
+    fRecPoints->Delete();
+    delete fRecPoints;
+  }
 
-  if (fDigitsManager) 
-    {
-      delete fDigitsManager;
-      fDigitsManager = NULL;
-    }
+  if (fDigitsManager) {
+    delete fDigitsManager;
+    fDigitsManager = NULL;
+  }
 
-  if (fTrackletContainer)
-    {
-      delete fTrackletContainer;
-      fTrackletContainer = NULL;
-    }
+  if (fTrackletContainer){
+    delete fTrackletContainer;
+    fTrackletContainer = NULL;
+  }
 
-  if (fIndexesOut)
-    {
-      delete fIndexesOut;
-      fIndexesOut    = NULL;
-    }
+  if (fIndexesOut){
+    delete fIndexesOut;
+    fIndexesOut    = NULL;
+  }
 
-  if (fIndexesMaxima)
-    {
-      delete fIndexesMaxima;
-      fIndexesMaxima = NULL;
-    }
+  if (fIndexesMaxima){
+    delete fIndexesMaxima;
+    fIndexesMaxima = NULL;
+  }
 
-  if (fTransform)
-    {
-      delete fTransform;
-      fTransform     = NULL;
-    }
+  if (fTransform){
+    delete fTransform;
+    fTransform     = NULL;
+  }
 
-  if (fLUT) 
-    {
-      delete [] fLUT;
-      fLUT           = NULL;
-    }
-
+  if (fLUT) {
+    delete [] fLUT;
+    fLUT           = NULL;
+  }
 }
 
 //_____________________________________________________________________________
@@ -288,13 +281,15 @@ Bool_t AliTRDclusterizer::OpenOutput()
   // Open the output file
   //
 
-  TObjArray *ioArray = 0;
+  if (!fReconstructor->IsWritingClusters()) return kTRUE;
+
+  TObjArray *ioArray = 0x0; 
 
   AliLoader* loader = fRunLoader->GetLoader("TRDLoader");
   loader->MakeTree("R");
 
   fClusterTree = loader->TreeR();
-  fClusterTree->Branch("TRDcluster","TObjArray",&ioArray,32000,0);
+  fClusterTree->Branch("TRDcluster", "TObjArray", &ioArray, 32000, 0);
 
   return kTRUE;
 
@@ -307,11 +302,12 @@ Bool_t AliTRDclusterizer::OpenOutput(TTree *clusterTree)
   // Connect the output tree
   //
 
-  TObjArray *ioArray = 0;
-
-  fClusterTree = clusterTree;
-  fClusterTree->Branch("TRDcluster","TObjArray",&ioArray,32000,0);
-
+  // clusters writing
+  if (fReconstructor->IsWritingClusters()){
+    TObjArray *ioArray = 0x0;
+    fClusterTree = clusterTree;
+    fClusterTree->Branch("TRDcluster", "TObjArray", &ioArray, 32000, 0);
+  }
 
   // tracklet writing
   if (fReconstructor->IsWritingTracklets()){
@@ -378,67 +374,38 @@ Bool_t AliTRDclusterizer::WriteClusters(Int_t det)
     return kFALSE;
   }
  
+  TObjArray *ioArray = new TObjArray(400);
   TBranch *branch = fClusterTree->GetBranch("TRDcluster");
   if (!branch) {
-    TObjArray *ioArray = 0;
     branch = fClusterTree->Branch("TRDcluster","TObjArray",&ioArray,32000,0);
-  }
+  } else branch->SetAddress(&ioArray);
 
-  if ((det >=                      0) && 
-      (det <  AliTRDgeometry::Ndet())) {
-
-    Int_t nRecPoints = RecPoints()->GetEntriesFast();
-    TObjArray *detRecPoints = new TObjArray(400);
-
+  
+  Int_t nRecPoints = RecPoints()->GetEntriesFast();
+  if(det >= 0){
     for (Int_t i = 0; i < nRecPoints; i++) {
       AliTRDcluster *c = (AliTRDcluster *) RecPoints()->UncheckedAt(i);
-      if (det == c->GetDetector()) {
-        detRecPoints->AddLast(c);
-      }
-      else {
-        AliError(Form("Attempt to write a cluster with unexpected detector index: got=%d expected=%d\n"
-                     ,c->GetDetector()
-                     ,det));
-      }
+      if(det != c->GetDetector()) continue;
+      ioArray->AddLast(c);
     }
-
-    branch->SetAddress(&detRecPoints);
     fClusterTree->Fill();
+  } else {
+    //AliInfo(Form("Writing the cluster tree %s for event %d.", fClusterTree->GetName(), fRunLoader->GetEventNumber()));
 
-    delete detRecPoints;
-    
-    return kTRUE;
-
-  }
-
-  if (det == -1) {
-
-    AliInfo(Form("Writing the cluster tree %s for event %d."
-	        ,fClusterTree->GetName(),fRunLoader->GetEventNumber()));
-
-    if (fRecPoints) {
-
-      branch->SetAddress(&fRecPoints);
-
-      AliLoader *loader = fRunLoader->GetLoader("TRDLoader");
-      loader->WriteRecPoints("OVERWRITE");
-  
+    Int_t detOld = -1;
+    for (Int_t i = 0; i < nRecPoints; i++) {
+      AliTRDcluster *c = (AliTRDcluster *) RecPoints()->UncheckedAt(i);
+      if(c->GetDetector() != detOld){
+        fClusterTree->Fill();
+        ioArray->Clear();
+        detOld = c->GetDetector();
+      } 
+      ioArray->AddLast(c);
     }
-    else {
-
-      AliError("Cluster tree does not exist. Cannot write clusters.\n");
-      return kFALSE;
-
-    }
-
-    return kTRUE;  
-
   }
+  delete ioArray;
 
-  AliError(Form("Unexpected detector index %d.\n",det));
- 
-  return kFALSE;  
-  
+  return kTRUE;  
 }
 
 //_____________________________________________________________________________
@@ -583,59 +550,51 @@ Bool_t AliTRDclusterizer::MakeClusters()
   //
 
   // Propagate info from the digits manager
-  if (fAddLabels == kTRUE)
-    {
-      fAddLabels = fDigitsManager->UsesDictionaries();
-    }
-
+  if (fAddLabels == kTRUE){
+    fAddLabels = fDigitsManager->UsesDictionaries();
+  }
+  
   Bool_t fReturn = kTRUE;
-  for (Int_t i = 0; i < AliTRDgeometry::kNdet; i++)
-    {
-
-      AliTRDdataArrayDigits *digitsIn = (AliTRDdataArrayDigits*) fDigitsManager->GetDigits(i);      
-      // This is to take care of switched off super modules
-      if (!digitsIn->HasData()) 
-        {
-	  continue;
-        }
-      digitsIn->Expand();
-      AliTRDSignalIndex* indexes = fDigitsManager->GetIndexes(i);
-      if (indexes->IsAllocated() == kFALSE)
-	{
-	  fDigitsManager->BuildIndexes(i);
-	}
-
-      Bool_t fR = kFALSE;
-      if (indexes->HasEntry())
-	{
-	  if (fAddLabels)
-	    {
-	      for (Int_t iDict = 0; iDict < AliTRDdigitsManager::kNDict; iDict++) 
-		{
-		  AliTRDdataArrayI *tracksIn = 0;
-		  tracksIn = (AliTRDdataArrayI *) fDigitsManager->GetDictionary(i,iDict);
-		  tracksIn->Expand();
-		}
-	    }
-	  fR = MakeClusters(i);
-	  fReturn = fR && fReturn;
-	}
-
-      if (fR == kFALSE)
-	{
-	  WriteClusters(i);
-	  ResetRecPoints();
-	}
-
-      // No compress just remove
-      fDigitsManager->RemoveDigits(i);
-      fDigitsManager->RemoveDictionaries(i);      
-      fDigitsManager->ClearIndexes(i);
-
+  for (Int_t i = 0; i < AliTRDgeometry::kNdet; i++){
+  
+    AliTRDdataArrayDigits *digitsIn = (AliTRDdataArrayDigits*) fDigitsManager->GetDigits(i);      
+    // This is to take care of switched off super modules
+    if (!digitsIn->HasData()) continue;
+    digitsIn->Expand();
+    AliTRDSignalIndex* indexes = fDigitsManager->GetIndexes(i);
+    if (indexes->IsAllocated() == kFALSE){
+      fDigitsManager->BuildIndexes(i);
     }
+  
+    Bool_t fR = kFALSE;
+    if (indexes->HasEntry()){
+      if (fAddLabels){
+        for (Int_t iDict = 0; iDict < AliTRDdigitsManager::kNDict; iDict++){
+          AliTRDdataArrayI *tracksIn = 0;
+          tracksIn = (AliTRDdataArrayI *) fDigitsManager->GetDictionary(i,iDict);
+          tracksIn->Expand();
+        }
+      }
+      fR = MakeClusters(i);
+      fReturn = fR && fReturn;
+    }
+  
+    //if (fR == kFALSE){
+    //  if(IsWritingClusters()) WriteClusters(i);
+    //  ResetRecPoints();
+    //}
+        
+    // No compress just remove
+    fDigitsManager->RemoveDigits(i);
+    fDigitsManager->RemoveDictionaries(i);      
+    fDigitsManager->ClearIndexes(i);  
+  }
+  
+  if(fReconstructor->IsWritingClusters()) WriteClusters(-1);
+
+  AliInfo(Form("Number of found clusters : %d", RecPoints()->GetEntriesFast())); 
 
   return fReturn;
-
 }
 
 //_____________________________________________________________________________
@@ -657,22 +616,12 @@ Bool_t AliTRDclusterizer::Raw2ClustersChamber(AliRawReader *rawReader)
   //
 
   // Create the digits manager
-  if (!fDigitsManager)
-    {
-      fDigitsManager = new AliTRDdigitsManager();
-      fDigitsManager->CreateArrays();
-    }
+  if (!fDigitsManager){
+    fDigitsManager = new AliTRDdigitsManager();
+    fDigitsManager->CreateArrays();
+  }
 
   fDigitsManager->SetUseDictionaries(fAddLabels);
-
-  // tracklet container for raw tracklet writing
-  if (!fTrackletContainer && fReconstructor->IsWritingTracklets()) 
-    {
-     fTrackletContainer = new UInt_t *[2];
-     for (Int_t i=0; i<2 ;i++){
-        fTrackletContainer[i] = new UInt_t[256]; // maximum tracklets for one HC
-     }
-    }
 
   AliTRDrawStreamBase *pinput = AliTRDrawStreamBase::GetRawStream(rawReader);
   AliTRDrawStreamBase &input = *pinput;
@@ -680,38 +629,26 @@ Bool_t AliTRDclusterizer::Raw2ClustersChamber(AliRawReader *rawReader)
   AliInfo(Form("Stream version: %s", input.IsA()->GetName()));
   
   Int_t det    = 0;
-  while ((det = input.NextChamber(fDigitsManager,fTrackletContainer)) >= 0)
-    {
-      Bool_t iclusterBranch = kFALSE;
-      if (fDigitsManager->GetIndexes(det)->HasEntry())
-        {
-          iclusterBranch = MakeClusters(det);
-        }
-      if (iclusterBranch == kFALSE)
-        {
-          WriteClusters(det);
-          ResetRecPoints();
-        }
-      fDigitsManager->RemoveDigits(det);
-      fDigitsManager->RemoveDictionaries(det);
-      fDigitsManager->ClearIndexes(det);
-     
-      if (!fReconstructor->IsWritingTracklets()) continue;
-      if (*(fTrackletContainer[0]) > 0 || *(fTrackletContainer[1]) > 0) WriteTracklets(det); // if there is tracklet words in this det
+  while ((det = input.NextChamber(fDigitsManager)) >= 0){
+    Bool_t iclusterBranch = kFALSE;
+    if (fDigitsManager->GetIndexes(det)->HasEntry()){
+    iclusterBranch = MakeClusters(det);
     }
-  
-  if (fReconstructor->IsWritingTracklets()){
-    delete [] fTrackletContainer;
-    fTrackletContainer = NULL;
+
+    fDigitsManager->RemoveDigits(det);
+    fDigitsManager->RemoveDictionaries(det);      
+    fDigitsManager->ClearIndexes(det);
   }
+  if(fReconstructor->IsWritingClusters()) WriteClusters(-1);
 
   delete fDigitsManager;
   fDigitsManager = NULL;
 
   delete pinput;
   pinput = NULL;
-  return kTRUE;
 
+  AliInfo(Form("Number of found clusters : %d", RecPoints()->GetEntriesFast())); 
+  return kTRUE;
 }
 
 //_____________________________________________________________________________
@@ -1067,19 +1004,21 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
         clusterSig[1] = clusterXYZ[5];
         Double_t clusterCharge  = clusterXYZ[3];
         Char_t   clusterTimeBin = ((Char_t) clusterRCT[2]);
-        AliTRDcluster *cluster = new AliTRDcluster(idet
-                                                  ,clusterCharge
-                                                  ,clusterPos
-                                                  ,clusterSig
-                                                  ,0x0
-                                                  ,((Char_t) nPadCount)
-                                                  ,signals
-                                                  ,((UChar_t) col)
-                                                  ,((UChar_t) row)
-                                                  ,((UChar_t) time)
-                                                  ,clusterTimeBin
-                                                  ,clusterPosCol
-                                                  ,volid);
+
+        Int_t n = RecPoints()->GetEntriesFast();
+        AliTRDcluster *cluster = new((*RecPoints())[n]) AliTRDcluster(idet
+                  ,clusterCharge
+                  ,clusterPos
+                  ,clusterSig
+                  ,0x0
+                  ,((Char_t) nPadCount)
+                  ,signals
+                  ,((UChar_t) col)
+                  ,((UChar_t) row)
+                  ,((UChar_t) time)
+                  ,clusterTimeBin
+                  ,clusterPosCol
+                  ,volid);
         cluster->SetInChamber(!out);
 
         UChar_t maskPosition = padStatus.GetDataUnchecked(row, col, time);
@@ -1102,7 +1041,7 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
         cluster->SetLabel( col,1);
         cluster->SetLabel(time,2);
   
-        RecPoints()->Add(cluster);
+        //RecPoints()->Add(cluster);
 
         // Store the index of the first cluster in the current ROC
         if (firstClusterROC < 0) {
@@ -1121,8 +1060,8 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
   if (fAddLabels) AddLabels(idet, firstClusterROC, nClusterROC);
 
   // Write the cluster and reset the array
-  WriteClusters(idet);
-  ResetRecPoints();
+  //WriteClusters(idet);
+  //ResetRecPoints();
 
   return kTRUE;
 
@@ -1427,18 +1366,16 @@ void AliTRDclusterizer::ResetRecPoints()
 }
 
 //_____________________________________________________________________________
-TObjArray *AliTRDclusterizer::RecPoints() 
+TClonesArray *AliTRDclusterizer::RecPoints() 
 {
   //
   // Returns the list of rec points
   //
 
   if (!fRecPoints) {
-    fRecPoints = new TObjArray(400);
+    fRecPoints = new TClonesArray("AliTRDcluster", 400);
   }
- 
   return fRecPoints;
-
 }
 
 //_____________________________________________________________________________

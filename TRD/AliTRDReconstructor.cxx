@@ -24,6 +24,7 @@
 #include <TFile.h>
 #include <TObjString.h>
 #include <TObjArray.h>
+#include <TClonesArray.h>
 
 #include "AliRunLoader.h"
 #include "AliRawReader.h"
@@ -43,7 +44,7 @@
 
 ClassImp(AliTRDReconstructor)
 
-
+TClonesArray *AliTRDReconstructor::fgClusters = 0x0;
 //_____________________________________________________________________________
 AliTRDReconstructor::AliTRDReconstructor()
   :AliReconstructor()
@@ -115,7 +116,7 @@ void AliTRDReconstructor::Reconstruct(AliRawReader *rawReader
   // Reconstruct clusters
   //
 
-  AliInfo("Reconstruct TRD clusters from RAW data [RawReader -> Cluster TTree]");
+  //AliInfo("Reconstruct TRD clusters from RAW data [RawReader -> Cluster TTree]");
 
 
   rawReader->Reset();
@@ -127,7 +128,12 @@ void AliTRDReconstructor::Reconstruct(AliRawReader *rawReader
   clusterer.OpenOutput(clusterTree);
   clusterer.SetAddLabels(kFALSE);
   clusterer.Raw2ClustersChamber(rawReader);
+  
+  if(IsWritingClusters()) return;
 
+  // take over ownership of clusters
+  fgClusters = clusterer.RecPoints();
+  clusterer.SetClustersOwner(kFALSE);
 }
 
 //_____________________________________________________________________________
@@ -138,7 +144,7 @@ void AliTRDReconstructor::Reconstruct(TTree *digitsTree
   // Reconstruct clusters
   //
 
-  AliInfo("Reconstruct TRD clusters from Digits [Digit TTree -> Cluster TTree]");
+  //AliInfo("Reconstruct TRD clusters from Digits [Digit TTree -> Cluster TTree]");
 
   AliTRDclusterizer clusterer("clusterer","TRD clusterizer");
   clusterer.SetReconstructor(this);
@@ -146,6 +152,11 @@ void AliTRDReconstructor::Reconstruct(TTree *digitsTree
   clusterer.ReadDigits(digitsTree);
   clusterer.MakeClusters();
 
+  if(IsWritingClusters()) return;
+
+  // take over ownership of clusters
+  fgClusters = clusterer.RecPoints();
+  clusterer.SetClustersOwner(kFALSE);
 }
 
 //_____________________________________________________________________________

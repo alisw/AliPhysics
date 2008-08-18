@@ -15,6 +15,7 @@
 #include "AliDetectorRecoParam.h"
 #include "AliTRDrecoParam.h"
 
+class TClonesArray;
 class AliRawReader;
 class AliTRDReconstructor: public AliReconstructor 
 {
@@ -52,6 +53,7 @@ public:
 
   virtual void        FillESD(AliRawReader *, TTree *clusterTree, AliESDEvent *esd) const { FillESD((TTree * )NULL, clusterTree, esd);                    }
   virtual void        FillESD(TTree *digitsTree, TTree *clusterTree, AliESDEvent *esd) const;
+  static TClonesArray* GetClusters() {return fgClusters;}
   Int_t               GetNdEdxSlices() const     { return GetPIDMethod() == kNNPID ? kNNslices : kLQslices;}
   AliTRDdriftGas      GetDriftGas() const        { return fSteerParam&kDriftGas ? kAr : kXe;}
   AliTRDpidMethod     GetPIDMethod() const       { return fSteerParam&kSteerPID ? kNNPID : kLQPID;}
@@ -66,6 +68,7 @@ public:
   virtual void        Reconstruct(AliRawReader *rawReader, TTree *clusterTree) const;
   virtual void        Reconstruct(TTree *digitsTree, TTree *clusterTree) const;
 
+  static void         SetClusters(TClonesArray *clusters) {fgClusters = clusters;}
   void	              SetOption(Option_t *opt);
   inline void         SetTCParams(Double_t *par);
   void                SetStreamLevel(Int_t level, AliTRDReconstructorTask task= kTracker);
@@ -79,8 +82,9 @@ private:
   UInt_t        fSteerParam;          // steering flags
   Double_t      fTCParams[8];         // Tail Cancellation parameters for drift gases 
  
+  static TClonesArray *fgClusters;    // list of clusters for local reconstructor
 
-  ClassDef(AliTRDReconstructor, 1)         //  Class for the TRD reconstruction
+  ClassDef(AliTRDReconstructor, 1)    //  Class for the TRD reconstruction
 
 };
 

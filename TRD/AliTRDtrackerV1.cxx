@@ -1557,23 +1557,62 @@ Int_t AliTRDtrackerV1::ReadClusters(TClonesArray* &array, TTree *clusterTree) co
 Int_t AliTRDtrackerV1::LoadClusters(TTree *cTree)
 {
   //
-  // Fills clusters into TRD tracking_sectors 
-  // Note that the numbering scheme for the TRD tracking_sectors 
-  // differs from that of TRD sectors
+  // Fills clusters into TRD tracking sectors
   //
-
   
-  if (ReadClusters(fClusters, cTree)) {
-    AliError("Problem with reading the clusters !");
-    return 1;
+  if(!(fClusters = AliTRDReconstructor::GetClusters())){
+    if (ReadClusters(fClusters, cTree)) {
+      AliError("Problem with reading the clusters !");
+      return 1;
+    }
   }
-  Int_t ncl  = fClusters->GetEntriesFast(), nin = 0;
-  if(!ncl){ 
-    AliInfo("Clusters 0");
+  SetClustersOwner();
+
+  if(!fClusters->GetEntriesFast()){ 
+    AliInfo("No TRD clusters");
     return 1;
   }
 
-  Int_t icl = ncl;
+  //Int_t nin = 
+  BuildTrackingContainers();  
+
+  //Int_t ncl  = fClusters->GetEntriesFast();
+  //AliInfo(Form("Clusters %d [%6.2f %% in the active volume]", ncl, 100.*float(nin)/ncl));
+
+  return 0;
+}
+
+//_____________________________________________________________________________
+Int_t AliTRDtrackerV1::LoadClusters(TClonesArray *clusters)
+{
+  //
+  // Fills clusters into TRD tracking sectors
+  // Function for use in the HLT
+  
+  if(!clusters || !clusters->GetEntriesFast()){ 
+    AliInfo("No TRD clusters");
+    return 1;
+  }
+
+  fClusters = clusters;
+  SetClustersOwner();
+
+  //Int_t nin = 
+  BuildTrackingContainers();  
+
+  //Int_t ncl  = fClusters->GetEntriesFast();
+  //AliInfo(Form("Clusters %d [%6.2f %% in the active volume]", ncl, 100.*float(nin)/ncl));
+
+  return 0;
+}
+
+
+//____________________________________________________________________
+Int_t AliTRDtrackerV1::BuildTrackingContainers()
+{
+// Building tracking containers for clusters
+
+  Int_t nin =0, icl = fClusters->GetEntriesFast();
   while (icl--) {
     AliTRDcluster *c = (AliTRDcluster *) fClusters->UncheckedAt(icl);
     if(c->IsInChamber()) nin++;
@@ -1584,15 +1623,15 @@ Int_t AliTRDtrackerV1::LoadClusters(TTree *cTree)
     
     fTrSec[sector].GetChamber(stack, layer, kTRUE)->InsertCluster(c, icl);
   }
-  AliInfo(Form("Clusters %d in %6.2f %%", ncl, 100.*float(nin)/ncl));
   
   for(int isector =0; isector<AliTRDgeometry::kNsector; isector++){ 
     if(!fTrSec[isector].GetNChambers()) continue;
     fTrSec[isector].Init(fReconstructor);
   }
-  
-  return 0;
+
+  return nin;
 }
+
 
 
 //____________________________________________________________________
@@ -1604,7 +1643,7 @@ void AliTRDtrackerV1::UnloadClusters()
 
   if(fTracks) fTracks->Delete(); 
   if(fTracklets) fTracklets->Delete();
-  if(fClusters) fClusters->Delete();
+  if(fClusters && IsClustersOwner()) fClusters->Delete();
 
   for (int i = 0; i < AliTRDgeometry::kNsector; i++) fTrSec[i].Clear();
 

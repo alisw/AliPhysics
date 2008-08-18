@@ -15,7 +15,7 @@
 
 class TFile;
 class TTree;
-class TObjArray;
+class TClonesArray;
 
 class AliRunLoader;
 class AliRawReader;
@@ -33,6 +33,11 @@ class AliTRDReconstructor;
 class AliTRDclusterizer : public TNamed 
 {
 public:
+  // steering flags
+  enum{
+    kOwner = BIT(14)
+  };
+  
   AliTRDclusterizer(AliTRDReconstructor *rec = 0x0);
   AliTRDclusterizer(const Text_t* name, const Text_t* title, AliTRDReconstructor *rec = 0x0);
   AliTRDclusterizer(const AliTRDclusterizer &c);
@@ -52,7 +57,7 @@ public:
 
   virtual Bool_t   WriteClusters(Int_t det);
           void     ResetRecPoints();
-  TObjArray       *RecPoints();
+  TClonesArray       *RecPoints();
           Bool_t   WriteTracklets(Int_t det);
 
   virtual Bool_t   Raw2Clusters(AliRawReader *rawReader);
@@ -66,7 +71,10 @@ public:
             return fAddLabels;  } // should we assign labels to clusters
   virtual void     SetRawVersion(Int_t iver) { fRawVersion = iver; } // set the expected raw data version
   void             SetReconstructor(const AliTRDReconstructor *rec) {fReconstructor = rec;}
-  static UChar_t GetStatus(Short_t &signal);
+  static UChar_t   GetStatus(Short_t &signal);
+
+  Bool_t           IsClustersOwner() const {return TestBit(kOwner);}
+  void             SetClustersOwner(Bool_t own=kTRUE) {SetBit(kOwner, own); if(!own) fRecPoints = 0x0;}
 
 protected:
   void     DeConvExp(Double_t *source, Double_t *target
@@ -89,7 +97,7 @@ protected:
   const AliTRDReconstructor *fReconstructor;       //! reconstructor
   AliRunLoader        *fRunLoader;           //! Run Loader
   TTree               *fClusterTree;         //! Tree with the cluster
-  TObjArray           *fRecPoints;           //! Array of clusters
+  TClonesArray        *fRecPoints;           //! Array of clusters
 
   TTree               *fTrackletTree;         //! Tree for tracklets
 
