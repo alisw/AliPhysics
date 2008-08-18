@@ -73,6 +73,20 @@
   AliXRDPROOFtoolkit tool;
   TChain * chain = tool.MakeChain("align.txt","Track",0,10200);
   chain->Lookup();
+  
+  .x ~/UliStyle.C
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libTPCcalib");
+  TFile fcalib("CalibObjects.root");
+  TObjArray * array = (TObjArray*)fcalib.Get("TPCCalib");
+  AliTPCcalibAlign * align = ( AliTPCcalibAlign *)array->FindObject("alignTPC");
+  //
+  //
+  align->MakeTree("alignTree.root");
+  TFile f("alignTree.root");
+  TTree * tree = (TTree*)f.Get("Align");
+  
+
 */
 
 ////
@@ -145,10 +159,14 @@ AliTPCcalibAlign::~AliTPCcalibAlign() {
 }
 
 void AliTPCcalibAlign::Process(AliTPCseed *seed) {
+  //
+  // 
+  //
+  
   TObjArray tracklets=
     AliTPCTracklet::CreateTracklets(seed,AliTPCTracklet::kKalman,
 				    kFALSE,20,2);
- //  TObjArray trackletsL=
+  //  TObjArray trackletsL=
 //     AliTPCTracklet::CreateTracklets(seed,AliTPCTracklet::kLinear,
 // 				    kFALSE,20,2);
 //   TObjArray trackletsQ=
@@ -276,7 +294,7 @@ void AliTPCcalibAlign::ProcessTracklets(const AliExternalTrackParam &tp1,
   //   4. dphi
   //   5. dtheta
   //   6. d1pt
-  printf("Process track\n");
+  if (GetDebugLevel()>50) printf("Process track\n");
   if (TMath::Abs(tp1.GetParameter()[0]-tp2.GetParameter()[0])>2)    return;
   if (TMath::Abs(tp1.GetParameter()[1]-tp2.GetParameter()[1])>2)    return;
   if (TMath::Abs(tp1.GetParameter()[2]-tp2.GetParameter()[2])>0.02) return;
@@ -284,7 +302,7 @@ void AliTPCcalibAlign::ProcessTracklets(const AliExternalTrackParam &tp1,
   if (TMath::Abs(tp1.GetParameter()[4]-tp2.GetParameter()[4])>0.3)  return;
   if (TMath::Abs((tp1.GetParameter()[4]+tp2.GetParameter()[4])*0.5)>3)  return;
   if (TMath::Abs((tp1.GetParameter()[0]-tp2.GetParameter()[0]))<0.000000001)  return;
-  printf("Filling track\n");
+   if (GetDebugLevel()>50) printf("Filling track\n");
   //
   // fill resolution histograms - previous cut included
   FillHisto(tp1,tp2,s1,s2);  
