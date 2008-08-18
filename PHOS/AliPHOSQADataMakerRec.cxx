@@ -28,6 +28,7 @@
 #include <TH1F.h> 
 #include <TH1I.h> 
 #include <TH2F.h> 
+#include <TParameter.h>
 
 // --- Standard library ---
 
@@ -185,17 +186,17 @@ void AliPHOSQADataMakerRec::InitRaws()
                                                                                                                                            
   TH1F * h16 = new TH1F("hLowNtot", "Low Gain Total Number of raw hits in PHOS", 500, 0., 5000.) ;                                         
   h16->Sumw2() ;                                                                                                                           
-  Add2RawsList(h16, kNtotLG) ;                                                                                                             
+  Add2RawsList(h16, kNtotLG, kTRUE) ;                                                                                                             
   TH1F * h17 = new TH1F("hHighNtot", "High Gain Total Number of raw hits in PHOS",500,0., 5000.) ;                                         
   h17->Sumw2() ;                                                                                                                           
-  Add2RawsList(h17, kNtotHG) ;                                                                                                             
+  Add2RawsList(h17, kNtotHG, kTRUE) ;                                                                                                             
                                                                                                                                            
   TH1F * h18 = new TH1F("hLowEtot", "Low Gain Total Energy of raw hits in PHOS", 500, 0., 5000.) ;                                       
   h18->Sumw2() ;                                                                                                                           
-  Add2RawsList(h18, kEtotLG) ;                                                                                                             
+  Add2RawsList(h18, kEtotLG, kTRUE) ;                                                                                                             
   TH1F * h19 = new TH1F("hHighEtot", "High Gain Total Energy of raw hits in PHOS",500,0., 100000.) ;                                       
   h19->Sumw2() ;                                                                                                                           
-  Add2RawsList(h19, kEtotHG) ;                                                                                                             
+  Add2RawsList(h19, kEtotHG, kTRUE) ;                                                                                                             
   
 }
 
@@ -279,9 +280,17 @@ void AliPHOSQADataMakerRec::MakeRaws(AliRawReader* rawReader)
    }                 
   }                    
   GetRawsData(kEtotLG)->Fill(lgEtot) ; 
+  TParameter<double> * p = dynamic_cast<TParameter<double>*>(GetParameterList()->FindObject(Form("%s_%s_%s", GetName(), AliQA::GetTaskName(AliQA::kRAWS).Data(), GetRawsData(kEtotLG)->GetName()))) ; 
+  p->SetVal(lgEtot) ; 
   GetRawsData(kEtotHG)->Fill(hgEtot) ;  
+  p = dynamic_cast<TParameter<double>*>(GetParameterList()->FindObject(Form("%s_%s_%s", GetName(), AliQA::GetTaskName(AliQA::kRAWS).Data(), GetRawsData(kEtotHG)->GetName()))) ; 
+  p->SetVal(hgEtot) ; 
   GetRawsData(kNtotLG)->Fill(lgNtot) ;
+  p = dynamic_cast<TParameter<double>*>(GetParameterList()->FindObject(Form("%s_%s_%s", GetName(), AliQA::GetTaskName(AliQA::kRAWS).Data(), GetRawsData(kNtotLG)->GetName()))) ; 
+  p->SetVal(lgNtot) ; 
   GetRawsData(kNtotHG)->Fill(hgNtot) ;
+  p = dynamic_cast<TParameter<double>*>(GetParameterList()->FindObject(Form("%s_%s_%s", GetName(), AliQA::GetTaskName(AliQA::kRAWS).Data(), GetRawsData(kNtotHG)->GetName()))) ; 
+  p->SetVal(hgNtot) ; 
 }
 //____________________________________________________________________________
 void AliPHOSQADataMakerRec::MakeRecPoints(TTree * clustersTree)

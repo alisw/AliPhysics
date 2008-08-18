@@ -149,14 +149,14 @@ void AliITSQASDDDataMakerRec::InitRaws()
   TH1D *h0 = new TH1D("ModPattern","HW Modules pattern",fgknSDDmodules,-0.5,259.5);
   h0->GetXaxis()->SetTitle("Module Number");
   h0->GetYaxis()->SetTitle("Counts");
-  fAliITSQADataMakerRec->Add2RawsList((new TH1D(*h0)),0+fGenOffset);
+  fAliITSQADataMakerRec->Add2RawsList((new TH1D(*h0)),0+fGenOffset, kTRUE);
   delete h0;
   fSDDhTask++;
   if(fLDC==0 || fLDC==1 || fLDC==2){
     TH1D *h1 = new TH1D("LadPatternL3","Ladder pattern L3",14,0.5,14.5);  
     h1->GetXaxis()->SetTitle("Ladder Number on Lay3");
     h1->GetYaxis()->SetTitle("Counts");
-    fAliITSQADataMakerRec->Add2RawsList((new TH1D(*h1)),1+fGenOffset);
+    fAliITSQADataMakerRec->Add2RawsList((new TH1D(*h1)),1+fGenOffset, kTRUE);
 	delete h1;
     fSDDhTask++;
   }	
@@ -164,7 +164,7 @@ void AliITSQASDDDataMakerRec::InitRaws()
     TH1D *h2 = new TH1D("LadPatternL4","Ladder pattern L4",22,0.5,22.5);  
     h2->GetXaxis()->SetTitle("Ladder Number on Lay4");
     h2->GetYaxis()->SetTitle("Counts");
-    fAliITSQADataMakerRec->Add2RawsList((new TH1D(*h2)),2+fGenOffset);
+    fAliITSQADataMakerRec->Add2RawsList((new TH1D(*h2)),2+fGenOffset, kTRUE);
 	delete h2;
     fSDDhTask++;
   }
@@ -174,7 +174,7 @@ void AliITSQASDDDataMakerRec::InitRaws()
       TH1D *h3 = new TH1D(hname0,hname0,6,0.5,6.5);
       h3->GetXaxis()->SetTitle("Module Number");
       h3->GetYaxis()->SetTitle("Counts");
-      fAliITSQADataMakerRec->Add2RawsList((new TH1D(*h3)),i-1+3+fGenOffset);
+      fAliITSQADataMakerRec->Add2RawsList((new TH1D(*h3)),i-1+3+fGenOffset, kTRUE);
 	  delete h3;
       fSDDhTask++;
     }
@@ -185,7 +185,7 @@ void AliITSQASDDDataMakerRec::InitRaws()
 	  TH1D *h4 = new TH1D(hname0,hname0,8,0.5,8.5);
       h4->GetXaxis()->SetTitle("Module Number");
       h4->GetYaxis()->SetTitle("Counts");
-      fAliITSQADataMakerRec->Add2RawsList((new TH1D(*h4)),i-1+17+fGenOffset);
+      fAliITSQADataMakerRec->Add2RawsList((new TH1D(*h4)),i-1+17+fGenOffset, kTRUE);
 	  delete h4;
       fSDDhTask++;
     }
