@@ -133,13 +133,13 @@ void AliT0QADataMakerRec::InitRaws()
       fhRawQTC[i] = new TH1F(qtcname.Data(), qtcname.Data(),1500,1000,7000);
       Add2RawsList( fhRawQTC[i],i+48+1);
      }
-  
+  const Bool_t saveForCorr = kTRUE;
   TH1F* fhRawMean = new TH1F("hRawMean","online mean signal", 100,2400,2500);
-  Add2RawsList( fhRawMean,73);
+  Add2RawsList( fhRawMean,73, saveForCorr);
   TH1F* fhRawVertex = new TH1F("hRawVertex","online vertex signal", 100,0,600);
-  Add2RawsList( fhRawVertex,74);
+  Add2RawsList( fhRawVertex,74,saveForCorr );
   TH1F* fhRawORA = new TH1F("hRawORA","online OR A", 100,2500,2800);
-  Add2RawsList( fhRawORA,75);
+  Add2RawsList( fhRawORA,75, saveForCorr);
   TH1F* fhRawORC = new TH1F("hRawORC","online OR C", 100,2000,2300);
   Add2RawsList( fhRawORC,76);
   for (Int_t i=0; i<24; i++)
@@ -160,16 +160,16 @@ void AliT0QADataMakerRec::InitRaws()
     }
   TH1F* fhRawMeanCal = new TH1F("hRawMeanCal","online mean signal, calibration event",
 				10000,0,10000);
-  Add2RawsList( fhRawMeanCal,149);
+  Add2RawsList( fhRawMeanCal,149, saveForCorr);
   TH1F* fhRawVertexCal = new TH1F("hRawVertexCal","online vertex signal, calibration even ",
 				  10000,0,10000);
-  Add2RawsList( fhRawVertexCal,150);
+  Add2RawsList( fhRawVertexCal,150, saveForCorr);
   TH1F* fhRawORAcal = new TH1F("hRawORAcal","online OR A", 10000,0,10000);
-  Add2RawsList( fhRawORAcal,151);
+  Add2RawsList( fhRawORAcal,151, saveForCorr );
   TH1F* fhRawORCcal = new TH1F("hRawORCcal","online OR C", 10000,0,10000);
-  Add2RawsList( fhRawORCcal,152);
+  Add2RawsList( fhRawORCcal,152, saveForCorr);
   TH1F* fhMultcal = new TH1F("hMultcal","full mulltiplicity", 10000,0,10000);
-  Add2RawsList( fhMultcal,153);
+  Add2RawsList( fhMultcal,153 );
   TH1F* fhMultScal = new TH1F("hMultScal","full multiplicity with semi-central trigger",
 			      10000,0,10000);
   Add2RawsList( fhMultScal,154);
