@@ -85,7 +85,8 @@ void TestMUONPreprocessor(Int_t runNumber=80, const char* runType="CALIBRATION")
   AliTestShuttle* shuttle = new AliTestShuttle(runNumber, 0, 1);
   
   const char* inputCDB = "local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB";
-    
+  //const char* inputCDB = "alien://folder=/alice/testdata/2008/TS08a/OCDB";
+  
   AliTestShuttle::SetMainCDB(inputCDB);
   AliTestShuttle::SetMainRefStorage("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestReference");
 
@@ -124,29 +125,25 @@ void TestMUONPreprocessor(Int_t runNumber=80, const char* runType="CALIBRATION")
 //  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","PEDESTALS","LDC2","$ALICE_ROOT/MUON/data/LDC2.ped");
 //  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","PEDESTALS","LDC3","$ALICE_ROOT/MUON/data/LDC3.ped");
 
-  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","PEDESTALS","LDC0","$HOME/Alice/Online/GAINRUN/raw.81.LDC0.ped");
-  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","PEDESTALS","LDC1","$HOME/Alice/Online/GAINRUN/raw.81.LDC1.ped");
-  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","PEDESTALS","LDC2","$HOME/Alice/Online/GAINRUN/raw.81.LDC2.ped");
-//  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","PEDESTALS","LDC3","$HOME/Alice/Online/GAINRUN/raw.81.LDC3.ped");
-  
-//  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","GAINS","LDC0","$HOME/Desktop/Jean-Luc Charvet/run000001191_MCH_ldc-MTRK-S1-0_GAINS");
+  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","PEDESTALS","LDC0","/afs/cern.ch/user/l/laphecet/public/PEDESTALS/LDC0.ped");
+  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","PEDESTALS","LDC1","/afs/cern.ch/user/l/laphecet/public/PEDESTALS/LDC1.ped");
+  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","PEDESTALS","LDC2","/afs/cern.ch/user/l/laphecet/public/PEDESTALS/LDC2.ped");
+  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","PEDESTALS","LDC3","/afs/cern.ch/user/l/laphecet/public/PEDESTALS/LDC3.ped");
 
-//  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","GAINS","LDC0","$HOME/Desktop/Jean-Luc Charvet/run000001183_MCH_ldc-MTRK-S1-0_GAINS");
+  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","GAINS","LDC0","/afs/cern.ch/user/l/laphecet/public/GAINS/LDC0.gain");
+  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","GAINS","LDC1","/afs/cern.ch/user/l/laphecet/public/GAINS/LDC1.gain");
+  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","GAINS","LDC2","/afs/cern.ch/user/l/laphecet/public/GAINS/LDC2.gain");
+  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","GAINS","LDC3","/afs/cern.ch/user/l/laphecet/public/GAINS/LDC3.gain");
 
-  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","GAINS","LDC0","$HOME/Alice/Online/GAINRUN/LDC0.gain");
-//  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","GAINS","LDC1","$ALICE_ROOT/MUON/data/LDC1.gain");
-//  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","GAINS","LDC2","$ALICE_ROOT/MUON/data/LDC2.gain");
-//  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","GAINS","LDC3","$ALICE_ROOT/MUON/data/LDC3.gain");
-  
   // and GMS file
-  shuttle->AddInputFile(AliTestShuttle::kDCS,"MCH","GMS","GMS","$ALICE_ROOT/MUON/data/GMS.root");
+  shuttle->AddInputFile(AliTestShuttle::kDCS,"MCH","GMS","GMS","/afs/cern.ch/user/l/laphecet/public/GMS/GMS.root");
 
   // and then the trigger stuff
-  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MTR","LOCAL","LDC0","$ALICE_ROOT/MUON/data/MtgLocalMask-1.dat");
-  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MTR","REGIONAL","LDC0","$ALICE_ROOT/MUON/data/MtgRegionalCrate-1.dat");
-  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MTR","GLOBAL","LDC0","$ALICE_ROOT/MUON/data/MtgGlobalCrate-1.dat");
-  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MTR","LUT","LDC0","$ALICE_ROOT/MUON/data/MtgLocalLut-1.dat");
-  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MTR","EXPORTED","LDC0","$ALICE_ROOT/MUON/data/ExportedFiles.dat");
+  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MTR","LOCAL","LDC0","/afs/cern.ch/user/l/laphecet/public/TRIGGER/MtgLocalMask-1.dat");
+  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MTR","REGIONAL","LDC0","/afs/cern.ch/user/l/laphecet/public/TRIGGER/MtgRegionalCrate-1.dat");
+  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MTR","GLOBAL","LDC0","/afs/cern.ch/user/l/laphecet/public/TRIGGER/MtgGlobalCrate-1.dat");
+  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MTR","LUT","LDC0","/afs/cern.ch/user/l/laphecet/public/TRIGGER/MtgLocalLut-1.dat");
+  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MTR","EXPORTED","LDC0","/afs/cern.ch/user/l/laphecet/public/TRIGGER/ExportedFiles.dat");
   
   // The shuttle can read run parameters stored in the DAQ run logbook.
   // To test it, we must provide the run parameters manually. They will be retrieved in the preprocessor
