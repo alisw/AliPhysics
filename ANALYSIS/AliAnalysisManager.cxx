@@ -637,7 +637,7 @@ void AliAnalysisManager::Terminate()
    AliAnalysisDataContainer *output;
    while ((output=(AliAnalysisDataContainer*)next1())) {
       // Special outputs have the files already closed and written.
-      if (output->IsSpecialOutput()) continue;
+     if (output->IsSpecialOutput()&&(fMode == kProofAnalysis)) continue;
       const char *filename = output->GetFileName();
       if (!(strcmp(filename, "default"))) {
          if (fOutputEventHandler) filename = fOutputEventHandler->GetOutputFileName();
