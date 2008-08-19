@@ -182,23 +182,43 @@ void AliEveEventManager::Open()
     fESDTree = (TTree*) fESDFile->Get("esdTree");
     if (fESDTree != 0)
     {
-      fESD->ReadFromTree(fESDTree);
-      fESDTree->GetEntry(0);
-      if (runNo < 0)
-        runNo = fESD->GetESDRun()->GetRunNumber();
-
       // Check if ESDfriends exists and attach the branch
       TString p(Form("%s/AliESDfriends.root", fPath.Data()));
-      if (gSystem->AccessPathName(p, kReadPermission) == kFALSE)
-      {
-        fESDfriendExists = kTRUE;
-        fESDTree->SetBranchStatus ("ESDfriend*", 1);
-        fESDTree->SetBranchAddress("ESDfriend.", &fESDfriend);
+      TFile *esdFriendFile = TFile::Open(p);
+      if (esdFriendFile) {
+	if (!esdFriendFile->IsZombie())
+	  {
+	    esdFriendFile->Close();
+	    delete esdFriendFile;
+	    fESDfriendExists = kTRUE;
+	    fESDTree->SetBranchStatus ("ESDfriend*", 1);
+	    fESDTree->SetBranchAddress("ESDfriend.", &fESDfriend);
+	  }
+	else
+	  {
+	    esdFriendFile->Close();
+	    delete esdFriendFile;
+	  }
       }
+
+      fESD->ReadFromTree(fESDTree);
+      if (!fESDfriendExists) fESDTree->SetBranchStatus ("ESDfriend*", 0);
+      if (fESDTree->GetEntry(0) <= 0)
+	{
+	  delete fESDFile; fESDFile = 0;
+	  delete fESD; fESD = 0;
+	  Warning(kEH, "failed getting the first entry from esdTree.");
+	}
+      else
+	{
+	  if (runNo < 0)
+	    runNo = fESD->GetESDRun()->GetRunNumber();
+	}
     }
     else // esdtree == 0
     {
       delete fESDFile; fESDFile = 0;
+      delete fESD; fESD = 0;
       Warning(kEH, "failed getting the esdTree.");
     }
   }
