@@ -11,16 +11,14 @@
 ///
 
 // --- AliRoot header files ---
+#include "AliQADataMakerRec.h"
+#include "AliMUONRecoParam.h"
+
 class AliMUONDigitMaker;
 class AliMUONVDigitStore;
 class AliMUONVTriggerStore;
 class AliMUONVClusterStore;
-
-#include "AliQADataMakerRec.h"
-#include "AliMUONRecoParam.h"
-
 class AliMUONVTrackerDataMaker;
-class AliMUONRecoParam;
 
 class AliMUONQADataMakerRec: public AliQADataMakerRec {
 
@@ -33,38 +31,57 @@ public:
 private:
   /// Raw histograms indices
   enum ERaw { 
-		kTrackerData           = 3,   ///< Accumulated data
-    kTriggerScalersBP      = 22,  ///< Trigger scalers on BP histogram per chamber index
-    kTriggerScalersNBP     = 23,  ///< Trigger scalers on NBP histogram per chamber index
-    kTriggerScalersDisplay = 24   ///< Trigger scalers display histogram per chamber index
+    kTrackerData           = 3,  ///< Accumulated data
+    kTriggerScalersBP      = 22, ///< Trigger scalers on BP histogram per chamber index
+    kTriggerScalersNBP     = 23, ///< Trigger scalers on NBP histogram per chamber index
+    kTriggerScalersDisplay = 24  ///< Trigger scalers display histogram per chamber index
   };
          
   /// Rec points histograms indices
   enum ERecPoints { 
-    
-		kTriggerDigitsBendPlane    = 0,  ///< Trigger digits on BP histogram index
+    kTriggerDigitsBendPlane    = 0,  ///< Trigger digits on BP histogram index
     kTriggerDigitsNonBendPlane = 1,  ///< Trigger digits on NBP histogram index
     kTriggeredBoards           = 2,  ///< Triggered boards histogram index
     kTriggerDigitsDisplay      = 3,  ///< Trigger digits display histogram per plane index
-    kTriggerBoardsDisplay      = 11,  ///< Triggered boards display histogram index
-
-		kTrackerNumberOfClustersPerChamber = 100, ///< Tracker: # of clusters per chamber
-		kTrackerClusterMultiplicityPerChamber = 200, ///< Tracker: cluster multiplicity per chamber
-		kTrackerClusterChargePerChamber = 300, ///< Tracker: cluster charge per chamber
+    kTriggerBoardsDisplay      = 11, ///< Triggered boards display histogram index
+    
+    kTrackerNumberOfClustersPerChamber    = 100, ///< Tracker: # of clusters per chamber
+    kTrackerClusterMultiplicityPerChamber = 200, ///< Tracker: cluster multiplicity per chamber
+    kTrackerClusterChargePerChamber       = 300, ///< Tracker: cluster charge per chamber
 				
-		kTrackerNumberOfClustersPerDE    = 1000, ///< Tracker : number of clusters per DE		
-		kTrackerClusterMultiplicityPerDE = 3000, ///< Tracker : cluster multiplicity per DE		
-		kTrackerClusterChargePerDE       = 5000 ///< Tracker : cluster charge per DE
-		
+    kTrackerNumberOfClustersPerDE    = 1000, ///< Tracker : number of clusters per DE		
+    kTrackerClusterMultiplicityPerDE = 3000, ///< Tracker : cluster multiplicity per DE		
+    kTrackerClusterChargePerDE       = 5000  ///< Tracker : cluster charge per DE
   };
-          
+  
   /// ESD histograms indices
   enum EESD { 
-    kESDnTracks       = 0,  ///< ESD nTrack histogram index
-    kESDMomentum      = 1,  ///< ESD momentum histogram index
-    kESDPt            = 2,  ///< ESD Pt histogram index
-    kESDRapidity      = 3,  ///< ESD Rapidity histogram index
-    kESDClusterHitMap = 4   ///< ESD Cluster hit map histogram index
+    kESDnTracks             = 0,  ///< number of tracks
+    kESDMatchTrig           = 1,  ///< number of tracks matched with trigger
+    kESDMomentum            = 2,  ///< P distribution
+    kESDPt                  = 3,  ///< Pt distribution
+    kESDRapidity            = 4,  ///< rapidity distribution
+    kESDChi2                = 5,  ///< normalized chi2 distribution
+    
+    kESDClusterHitMap       = 6,  ///< cluster position distribution in chamber i
+    kESDnClustersPerTrack   = 16, ///< number of clusters per track
+    kESDnClustersPerCh      = 17, ///< number of clusters per chamber
+    kESDnClustersPerDE      = 18, ///< number of clusters per DE
+    kESDClusterCharge       = 19, ///< cluster charge distribution
+    kESDClusterChargeInCh   = 20, ///< cluster charge distribution in chamber i
+    kESDClusterChargePerDE  = 30, ///< cluster charge per DE: mean +- dispersion
+    kESDClusterMult         = 31, ///< cluster multiplicity distribution
+    kESDClusterMultInCh     = 32, ///< cluster multiplicity distribution in chamber i
+    kESDClusterMultPerDE    = 42, ///< cluster multiplicity per DE: mean +- dispersion
+    
+    kESDResidualX           = 43, ///< cluster-track residual-X distribution
+    kESDResidualY           = 44, ///< cluster-track residual-Y distribution
+    kESDResidualXInCh       = 45, ///< cluster-track residual-X distribution in chamber i
+    kESDResidualYInCh       = 55, ///< cluster-track residual-Y distribution in chamber i
+    kESDResidualXPerDEMean  = 65, ///< cluster-track residual-X per DE: mean
+    kESDResidualYPerDEMean  = 66, ///< cluster-track residual-Y per DE: mean
+    kESDResidualXPerDESigma = 67, ///< cluster-track residual-X per DE: sigma
+    kESDResidualYPerDESigma = 68  ///< cluster-track residual-Y per DE: sigma
   };
 
 protected:
