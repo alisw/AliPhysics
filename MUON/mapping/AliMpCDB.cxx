@@ -57,10 +57,6 @@ TObject*  AliMpCDB::GetCDBEntryObject(const char* dataPath)
 /// Load CDB entry object with checks
 
   AliCDBManager* cdbManager = AliCDBManager::Instance();
-  if ( ! cdbManager->GetDefaultStorage() ) {
-    AliErrorClassStream() << "CDB default storage has not been set." << endl; 
-    return 0;
-  }  
 
   Int_t run = cdbManager->GetRun();
   if ( run < 0 ) {
