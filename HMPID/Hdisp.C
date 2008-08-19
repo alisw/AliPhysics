@@ -164,10 +164,21 @@ void PrintEsd()
   Printf("List of HMPID ESD summary for event %i",fEvt);
   for(Int_t iTrk=0;iTrk<fEsd->GetNumberOfTracks();iTrk++){
     AliESDtrack *pTrk = fEsd->GetTrack(iTrk);
+    
+    Double_t xout[3],pout[3];
+    
+    pTrk->GetOuterPxPyPz(pout);
+    Double_t pMomOut = TMath::Sqrt(pout[0]*pout[0]+pout[1]*pout[1]+pout[2]*pout[2]);
+    
     Float_t x,y;Int_t q,nacc;   pTrk->GetHMPIDmip(x,y,q,nacc);
-    Printf("Track %02i with phi %7.2f theta %7.2f p %7.2f with ThetaCer %5.3f with %i photons",iTrk,pTrk->Phi()*TMath::RadToDeg(),
-                                                                                                    pTrk->Theta()*TMath::RadToDeg(),
-												    pTrk->GetP(),pTrk->GetHMPIDsignal(),nacc);
+    Int_t ch,idx,size;
+    Int_t word = pTrk->GetHMPIDcluIdx();
+    ch = word/1000000;
+    word = word%1000000;
+    size = word/1000;
+    idx = word%1000;
+    Printf("Track %02i Ch. %2i with pOuter %7.2f with ThetaCer %7.3f with %3i photons with MIP Q %4i size %2i (idx %3i)",iTrk,ch,pMomOut,
+        pTrk->GetHMPIDsignal(),nacc,q,size,idx);
   }  
 }//PrintEsd()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
