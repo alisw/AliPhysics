@@ -177,28 +177,15 @@ AliMUONCalibrationData::CreateObject(Int_t runNumber, const char* path, Int_t* s
   
   AliCDBManager* man = AliCDBManager::Instance();
   
-  if ( !man->IsDefaultStorageSet() )
-  {
-    AliErrorClass("CDB Storage not set. Must use AliCDBManager::Instance()->SetDefaultStorage() first.");
-    return 0x0;
-  }
+  AliCDBEntry* entry =  man->Get(path,runNumber);
   
-  Bool_t cacheStatus = man->GetCacheFlag();
-  
-  man->SetCacheFlag(kFALSE);
-  
-  AliCDBEntry* entry =  AliCDBManager::Instance()->Get(path,runNumber);
-  
-  man->SetCacheFlag(cacheStatus);
-
-	
   if (entry)
   {
 		if ( startOfValidity ) *startOfValidity = entry->GetId().GetFirstRun();
 		
     TObject* object = entry->GetObject();
     entry->SetOwner(kFALSE);
-    delete entry;
+    if (!(man->GetCacheFlag())) delete entry;
     return object;
   }
 	else
