@@ -12,6 +12,7 @@ void Hlib()
   gSystem->Load("libNet");
   gSystem->Load("libTree");
  
+  gSystem->Load("libProof");
   gSystem->Load("libSTEERBase");
   gSystem->Load("libESD");
   gSystem->Load("libCDB");
@@ -29,6 +30,7 @@ void Hlib()
 
   gSystem->AddIncludePath("-I$ALICE_ROOT/include -I$ALICE_ROOT/HMPID"); 
 }
+
 
 
 
