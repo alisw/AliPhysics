@@ -29,11 +29,13 @@ void loadlibs ()
   gSystem->Load("libVMC");
   gSystem->Load("libMinuit");
   gSystem->Load("libTree");
-
+  gSystem->Load("libProofPlayer");
+  
   gSystem->Load("libSTEERBase"); 
   gSystem->Load("libESD");
   gSystem->Load("libAOD");
   
+  gSystem->Load("libRAWDatabase");
   gSystem->Load("libRAWDatarec");
   gSystem->Load("libCDB");
   gSystem->Load("libSTEER"); 
