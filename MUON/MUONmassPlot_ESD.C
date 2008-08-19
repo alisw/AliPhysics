@@ -14,12 +14,7 @@
 #include <TROOT.h>
 
 // STEER includes
-#include "AliRun.h"
 #include "AliLog.h"
-#include "AliRunLoader.h"
-#include "AliHeader.h"
-#include "AliLoader.h"
-#include "AliStack.h"
 #include "AliMagFMaps.h"
 #include "AliESDEvent.h"
 #include "AliESDVertex.h"
@@ -48,7 +43,7 @@
 ///
 /// Add parameters and histograms for analysis 
 
-Bool_t MUONmassPlot(char* filename = "generated/galice.root", Int_t ExtrapToVertex = -1, char* geoFilename = "geometry.root", 
+Bool_t MUONmassPlot(Int_t ExtrapToVertex = -1, char* geoFilename = "geometry.root", 
 		  Int_t FirstEvent = 0, Int_t LastEvent = 10000, char* esdFileName = "AliESDs.root", Int_t ResType = 553, 
                   Float_t Chi2Cut = 100., Float_t PtCutMin = 1., Float_t PtCutMax = 10000.,
                   Float_t massMin = 9.17,Float_t massMax = 9.77)
@@ -137,7 +132,7 @@ Bool_t MUONmassPlot(char* filename = "generated/galice.root", Int_t ExtrapToVert
   if (!gGeoManager) {
     TGeoManager::Import(geoFilename);
     if (!gGeoManager) {
-      Error("MUONmass_ESD", "getting geometry from file %s failed", filename);
+      Error("MUONmass_ESD", "getting geometry from file %s failed", geoFilename);
       return kFALSE;
     }
   }
@@ -147,20 +142,6 @@ Bool_t MUONmassPlot(char* filename = "generated/galice.root", Int_t ExtrapToVert
   printf("Loading field map...\n");
   AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 1, 1., 10., AliMagFMaps::k5kG);
   AliTracker::SetFieldMap(field, kFALSE);
-
-  // open run loader and load gAlice, kinematics and header
-  AliRunLoader* runLoader = AliRunLoader::Open(filename);
-  if (!runLoader) {
-    Error("MUONmass_ESD", "getting run loader from file %s failed", filename);
-    return kFALSE;
-  }
-/*  
-  runLoader->LoadgAlice();
-  if (!gAlice) {
-    Error("MUONmass_ESD", "no galice object found");
-    return kFALSE;
-  }
-*/  
 
   // open the ESD file
   TFile* esdFile = TFile::Open(esdFileName);
@@ -178,18 +159,13 @@ Bool_t MUONmassPlot(char* filename = "generated/galice.root", Int_t ExtrapToVert
 //  tree->SetBranchAddress("ESD", &esd);
   esd->ReadFromTree(tree);
   
-
-  runLoader->LoadHeader();
-  nevents = runLoader->GetNumberOfEvents();
+  nevents = (Int_t)tree->GetEntries();
   
   AliMUONTrackParam trackParam;
 
   // Loop over events
   for (Int_t iEvent = FirstEvent; iEvent <= TMath::Min(LastEvent, nevents - 1); iEvent++) {
 
-    // get current event
-    runLoader->GetEvent(iEvent);
-   
     // get the event summary data
     tree->GetEvent(iEvent);
     if (!esd) {
