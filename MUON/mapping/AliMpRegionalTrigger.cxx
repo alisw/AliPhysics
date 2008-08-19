@@ -119,6 +119,7 @@ Bool_t AliMpRegionalTrigger::ReadData(istream& in)
   TArrayI listInt;
   UShort_t crateId;
   Int_t nofBoards;
+  Int_t localBoardIndex(0);
   char line[80];
  
   // decode file and store in objects
@@ -188,8 +189,10 @@ Bool_t AliMpRegionalTrigger::ReadData(istream& in)
         board->SetTC(listInt[4]);
         
         // add local board into array
-        fLocalBoardArray.AddAt(board,board->GetId());
+        fLocalBoardArray.AddAt(board,localBoardIndex);
         fLocalBoardMap.Add(board->GetId(),board);
+      
+      ++localBoardIndex;
     }
   }
   return kTRUE;
@@ -281,7 +284,7 @@ Int_t AliMpRegionalTrigger::GetNofLocalBoards() const
 { 
     /// Return number of local boards
     
-    return fLocalBoardArray.GetSize(); 
+    return fLocalBoardArray.GetLast()+1; 
 }
 
 //______________________________________________________________________________

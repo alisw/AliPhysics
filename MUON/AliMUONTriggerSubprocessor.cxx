@@ -156,13 +156,13 @@ AliMUONTriggerSubprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTi
   AliMUONTriggerIO tio;
   
   Bool_t ok = tio.ReadConfig(GetFileName("LOCAL").Data(),
-                            GetFileName("REGIONAL").Data(),
-                            GetFileName("GLOBAL").Data(),
-                            fLocalMasks,fRegionalConfig,fGlobalConfig);
+                             GetFileName("REGIONAL").Data(),
+                             GetFileName("GLOBAL").Data(),
+                             fLocalMasks,fRegionalConfig,fGlobalConfig);
   
   if (!ok)
   {
-    Master()->Log("ERROR : ReadMasks failed");
+    Master()->Log("ERROR : ReadConfig failed");
     delete fLocalMasks;
     delete fRegionalConfig;
     delete fGlobalConfig;

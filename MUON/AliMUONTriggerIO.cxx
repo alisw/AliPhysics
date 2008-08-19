@@ -209,11 +209,11 @@ AliMUONTriggerIO::ReadLocalMasks(const char* localFile, AliMUONVStore& localMask
   
   UShort_t maskBuffer[8];
   
-  Int_t nLocalBoards(1);
+  Int_t localBoardIndex(0);
     
   while ( fread ( maskBuffer, 2, 8, fp ) )
   {
-    Int_t localBoardId = fRegionalTrigger.LocalBoardId(nLocalBoards);
+    Int_t localBoardId = fRegionalTrigger.LocalBoardId(localBoardIndex);
     AliDebug(1,Form("LB %03d X1 %4x X2 %4x X3 %4x X4 %4x "
                     "Y1 %4x Y2 %4x Y3 %4x Y4 %4x",
                     localBoardId,
@@ -226,28 +226,32 @@ AliMUONTriggerIO::ReadLocalMasks(const char* localFile, AliMUONVStore& localMask
                     maskBuffer[6],
                     maskBuffer[7]));
     
-    if ( localBoardId ) 
+    if ( localBoardId > 0 ) 
     {
       AliMUONVCalibParam* localBoard = new AliMUONCalibParamNI(1,8,localBoardId,0,0);
       for ( Int_t index = 0; index < 8; ++index )
       {
-	localBoard->SetValueAsInt(index,0,maskBuffer[index]);
+        localBoard->SetValueAsInt(index,0,maskBuffer[index]);
       }
       localMasks.Add(localBoard);
     }
+    else
+    {
+      AliError(Form("Oups. Got localBoardId=%d for index=%d",localBoardId,localBoardIndex));
+    }
     
-    ++nLocalBoards;
+    ++localBoardIndex;
   }
   
-  if ( nLocalBoards != NofLocalBoards() ) 
+  if ( localBoardIndex != NofLocalBoards() ) 
   {
     AliError(Form("Read %d out of %d local boards",
-                  nLocalBoards, NofLocalBoards()));
+                  localBoardIndex, NofLocalBoards()));
   }
   
   fclose(fp);
   
-  return nLocalBoards;
+  return localBoardIndex+1;
 }
 
 //_____________________________________________________________________________
@@ -394,9 +398,15 @@ AliMUONTriggerIO::ReadConfig(const char* localFile,
     return kFALSE;
   }
   
+  AliDebug(1,Form("regionalConfig=%p",regionalConfig));
+  
   Int_t nCrates = ReadRegionalConfig(regionalFile, regionalConfig);
 
-  if (!nCrates) return kFALSE;
+  if (!nCrates) 
+  {
+    AliError("nCrates=0 !");
+    return kFALSE;
+  }
   
   if (localMasks && localFile)
   {
@@ -405,7 +415,7 @@ AliMUONTriggerIO::ReadConfig(const char* localFile,
   }
   
   Int_t nDarc = ReadGlobalConfig(globalFile, globalConfig);
-  AliDebug(1,Form("Read disable for %d DARC boards",nDarc));
+  AliDebug(1,Form("Read config for %d DARC boards",nDarc));
   
   if (!nDarc) return kFALSE;
   
@@ -433,6 +443,9 @@ Int_t
 AliMUONTriggerIO::ReadRegionalConfig(const char* regionalFile, AliMUONRegionalTriggerConfig* regionalConfig)
 {
   /// Read regional file to fill  
+  
+  AliDebug(1,Form("regionalConfig=%p",regionalConfig));
+  
   Int_t nCrates = 0;
   if ( !(nCrates = regionalConfig->ReadData(regionalFile)) ) return 0;
 
