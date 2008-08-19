@@ -113,7 +113,7 @@ private:
 	                           //  -1 indicates that we should rather use the event
 	                           // numbers as given by the system.
 	
-	ClassDef(AliHLTMUONTriggerRecordsSource, 0); // dHLT data source for trigger record data blocks.
+	ClassDef(AliHLTMUONTriggerRecordsSource, 0) // dHLT data source for trigger record data blocks.
 };
 
 #endif // ALIHLTMUONTRIGGERRECORDSSOURCE_H
