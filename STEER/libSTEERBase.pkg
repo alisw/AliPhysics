@@ -4,6 +4,7 @@ SRCS = AliVParticle.cxx \
        AliVEvent.cxx \
        AliVHeader.cxx \
        AliVEventHandler.cxx \
+       AliVEventPool.cxx \
        AliPID.cxx AliLog.cxx \
        AliRunTag.cxx AliLHCTag.cxx AliDetectorTag.cxx AliEventTag.cxx \
        AliEventTagCuts.cxx AliRunTagCuts.cxx \
