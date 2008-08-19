@@ -105,6 +105,7 @@ Bool_t AliHMPIDReconHTA::CkovHiddenTrk(AliESDtrack *pTrk,TClonesArray *pCluLst,D
   Float_t mipX=-1,mipY=-1;Int_t mipId=-1,mipQ=-1;                                                                           
   Double_t qRef = 0;
   Int_t nCh=0;
+  Int_t sizeClu=0;
   for (Int_t iClu=0;iClu<pCluLst->GetEntriesFast();iClu++){                                   //clusters loop
     AliHMPIDCluster *pClu=(AliHMPIDCluster*)pCluLst->UncheckedAt(iClu);                       //get pointer to current cluster    
     nCh = pClu->Ch();
@@ -114,6 +115,7 @@ Bool_t AliHMPIDReconHTA::CkovHiddenTrk(AliESDtrack *pTrk,TClonesArray *pCluLst,D
     if(pClu->Q()>qRef){                                                                       //searching the highest charge to select a MIP      
       qRef = pClu->Q();
       mipId=iClu; mipX=pClu->X();mipY=pClu->Y();mipQ=(Int_t)pClu->Q();
+      sizeClu=pClu->Size();
     }                                                                                    
 //    Printf(" n. %d x %f y %f Q %f",iClu,pClu->X(),pClu->Y(),pClu->Q());
   }//clusters loop
@@ -130,7 +132,7 @@ Bool_t AliHMPIDReconHTA::CkovHiddenTrk(AliESDtrack *pTrk,TClonesArray *pCluLst,D
     }                                                                           //Do track and ring reconstruction,if problems returns 1
     pTrk->SetHMPIDtrk(fRadX,fRadY,fThTrkFit,fPhTrkFit);                                        //store track intersection info
     pTrk->SetHMPIDmip(fMipX,fMipY,(Int_t)fMipQ,fNClu);                                         //store mip info 
-    pTrk->SetHMPIDcluIdx(nCh,fIdxMip);                                                         //set cham number and index of cluster
+    pTrk->SetHMPIDcluIdx(nCh,fIdxMip+1000*sizeClu);                                            //set cham number, index of cluster + cluster size
     pTrk->SetHMPIDsignal(fCkovFit);                                                            //find best Theta ckov for ring i.e. track
     pTrk->SetHMPIDchi2(fCkovSig2);                                                             //errors squared
 //    Printf(" n clusters tot %i accepted %i",pCluLst->GetEntriesFast(),fNClu);

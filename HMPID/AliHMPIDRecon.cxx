@@ -102,14 +102,16 @@ void AliHMPIDRecon::CkovAngle(AliESDtrack *pTrk,TClonesArray *pCluLst,Double_t n
 
   fParam->SetRefIdx(nmean);
 
-  Float_t dMin=999,mipX=-1,mipY=-1;Int_t chId=-1,mipId=-1,mipQ=-1;                                                                           
-  fPhotCnt=0;                                                      
+  Float_t dMin=999,mipX=-1,mipY=-1;Int_t chId=-1,mipId=-1,mipQ=-1;
+  Int_t sizeClu = -1;
+  fPhotCnt=0;
   for (Int_t iClu=0; iClu<pCluLst->GetEntriesFast();iClu++){//clusters loop
     AliHMPIDCluster *pClu=(AliHMPIDCluster*)pCluLst->UncheckedAt(iClu);                       //get pointer to current cluster    
     chId=pClu->Ch();
     if(pClu->Q()>qthre){                                                                      //charge compartible with MIP clusters      
       Float_t dX=fPc.X()-pClu->X(),dY=fPc.Y()-pClu->Y(),d =TMath::Sqrt(dX*dX+dY*dY);          //distance between current cluster and intersection point
-      if( d < dMin) {mipId=iClu; dMin=d;mipX=pClu->X();mipY=pClu->Y();mipQ=(Int_t)pClu->Q();} //current cluster is closer, overwrite data for min cluster
+      if( d < dMin) {mipId=iClu; dMin=d;mipX=pClu->X();
+                     mipY=pClu->Y();mipQ=(Int_t)pClu->Q();sizeClu=pClu->Size();}              //current cluster is closer, overwrite data for min cluster
     }else{                                                                                    //charge compatible with photon cluster
       Double_t thetaCer,phiCer;
       if(FindPhotCkov(pClu->X(),pClu->Y(),thetaCer,phiCer)){                                  //find ckov angle for this  photon candidate
@@ -120,11 +122,12 @@ void AliHMPIDRecon::CkovAngle(AliESDtrack *pTrk,TClonesArray *pCluLst,Double_t n
       }
     }
   }//clusters loop
-  
+
+  pTrk->SetHMPIDmip(mipX,mipY,mipQ,fPhotCnt);                                                //store mip info in any case 
+     
   if(fPhotCnt<=nMinPhotAcc) {                                                                 //no reconstruction with <=3 photon candidates
     pTrk->SetHMPIDsignal(kNoPhotAccept);                                                      //set the appropriate flag
-    pTrk->SetHMPIDmip(mipX,mipY,mipQ,fPhotCnt);                                               //store mip info 
-    pTrk->SetHMPIDcluIdx(-1,-1);                                                              //set index of cluster
+    pTrk->SetHMPIDcluIdx(chId,mipId+1000*sizeClu);                                            //set index of cluster
     return;
   }
   
@@ -133,7 +136,7 @@ void AliHMPIDRecon::CkovAngle(AliESDtrack *pTrk,TClonesArray *pCluLst,Double_t n
     pTrk->SetHMPIDsignal(kMipQdcCut);
     return;
   }                                                                                           //no clusters with QDC more the threshold at all
-    pTrk->SetHMPIDcluIdx(chId,mipId);                                                         //set index of cluster
+    pTrk->SetHMPIDcluIdx(chId,mipId+1000*sizeClu);                                            //set chamber, index of cluster + cluster size
     if(dMin>fParam->DistCut()) {pTrk->SetHMPIDsignal(kMipDistCut); return;}                   //closest cluster with enough charge is still too far from intersection
   
   fMipPos.Set(mipX,mipY);
