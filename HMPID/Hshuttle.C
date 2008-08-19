@@ -2,7 +2,8 @@ void Hshuttle(Int_t runTime=1500)
 {// this macro is to simulate the functionality of SHUTTLE.
   gSystem->Load("$ALICE_ROOT/SHUTTLE/TestShuttle/libTestShuttle.so");
 //  AliTestShuttle::SetMainCDB(TString("local://$HOME/CDB"));
-  AliTestShuttle::SetMainCDB(TString("local://$HOME"));
+//  AliTestShuttle::SetMainCDB(TString("local://$HOME"));
+  AliTestShuttle::SetMainCDB(TString("local://$ALICE_ROOT"));
   
   TMap *pDcsMap = new TMap;       pDcsMap->SetOwner(1);          //DCS archive map
   
@@ -18,7 +19,8 @@ void Hshuttle(Int_t runTime=1500)
   }
   SimMap(pDcsMap,runTime); pShuttle->SetDCSInput(pDcsMap);                                    //DCS map
   
-  AliPreprocessor* pp = new AliHMPIDPreprocessor(pShuttle); pShuttle->Process();  delete pp;  //here goes preprocessor 
+  AliPreprocessor* pp = new AliHMPIDPreprocessor(pShuttle); pShuttle->Process();              //here goes preprocessor  
+//  delete pp;   
 
   DrawInput(pDcsMap); DrawOutput();
   gSystem->Exec("rm -rf HmpidPedDdl*.txt");
@@ -58,6 +60,42 @@ void SimMap(TMap *pDcsMap,Int_t runTime=1500)
 {
   Int_t stepTime=100; //time interval between measurements
   Int_t startTime=0;
+
+ // phototube current (microAmper)
+ 
+  Float_t aArgonCell[] = {2.392914534,1.052269816,0.426667392,0.266823828,0.230182067,0.237871274,0.273670882,0.321822613,0.386860102,0.467150569,0.542086422,0.587703943,0.620307803,0.64317745,0.654298306,0.65143925,0.668053627,0.687757671,0.705103695,0.734520793,0.757498145,0.795069814,0.830174983,0.863526344,0.907381952,0.957449734,0.983424425,1.016224384,1.041821599,1.059507251};
+
+  Float_t aArgonRef[] = {1.149247766,0.496981889,0.186563596,0.10783793,0.085225783,0.084287018,0.095322073,0.109832592,0.130130395,0.157257095,0.180872142,0.196021155,0.205875158,0.212933287,0.217398748,0.218543261,0.223784506,0.233313993,0.243647426,0.254273385,0.270319641,0.288991749,0.310744852,0.333126128,0.359347552,0.383723944,0.412809372,0.432352483,0.455913931,0.477137864}; 
+
+
+  Float_t aFreonCell[] = {0.000104553,0.00011161,0.0002890787,0.0002893622,0.00025613,0.020953063,0.068830326,0.127829805,0.193517566,0.273626387,0.35040611,0.41024375,0.45290783,0.492588729,0.522967756,0.552341878,0.582529366,0.615325809,0.647942483,0.683176041,0.721948683,0.7626279,0.804566145,0.847852349,0.891971886,0.937028468,0.977787018,1.017553926,1.050016046,1.078630805}; 
+
+
+  Float_t aFreonRef[] = {1.125558376,0.475898296,0.178687423,0.100295901,0.078788362,0.077350542,0.087279864,0.101818182,0.121531218,0.147556156,0.170467392,0.184769839,0.194379449,0.202385217,0.209258303,0.215506181,0.222740307,0.231011033,0.241791919,0.253416091,0.2687684,0.286887407,0.310744882,0.332763016,0.356916934,0.383346796,0.409290999,0.433670729,0.454144865,0.474498451};
+
+  TObjArray *pWaveLenght[30], *pArgonCell[30], *pArgonRef[30], *pFreonCell[30], *pFreonRef[30];
+
+  for(Int_t i=0; i<30; i++){
+      
+      pWaveLenght[i] = new TObjArray; pWaveLenght[i]->SetOwner(1);
+      pArgonCell[i]  = new TObjArray; pArgonCell[i]->SetOwner(1);
+      pArgonRef[i]   = new TObjArray; pArgonRef[i]->SetOwner(1);
+      pFreonCell[i]  = new TObjArray; pFreonCell[i]->SetOwner(1);
+      pFreonRef[i]   = new TObjArray; pFreonRef[i]->SetOwner(1);
+
+      pWaveLenght[i]->Add(new AliDCSValue((Float_t)(160+2*i),0));        // wavelenght (nm)
+      pArgonCell[i] ->Add(new AliDCSValue((Float_t)(aArgonCell[i]),0));
+      pArgonRef[i]  ->Add(new AliDCSValue((Float_t)(aArgonRef[i]),0));
+      pFreonRef[i] ->Add(new AliDCSValue((Float_t)(aFreonRef[i]),0));
+      pFreonCell[i] ->Add(new AliDCSValue((Float_t)(aFreonCell[i]),0));     
+
+
+      pDcsMap->Add(new TObjString(Form("HMP_DET/HMP_INFR/HMP_INFR_TRANPLANT/HMP_INFR_TRANPLANT_MEASURE.measure[%i].waveLenght",i)),pWaveLenght[i]);
+      pDcsMap->Add(new TObjString(Form("HMP_DET/HMP_INFR/HMP_INFR_TRANPLANT/HMP_INFR_TRANPLANT_MEASURE.measure[%i].argonCell",i)),pArgonCell[i]);
+      pDcsMap->Add(new TObjString(Form("HMP_DET/HMP_INFR/HMP_INFR_TRANPLANT/HMP_INFR_TRANPLANT_MEASURE.measure[%i].argonReference",i)),pArgonRef[i]);
+      pDcsMap->Add(new TObjString(Form("HMP_DET/HMP_INFR/HMP_INFR_TRANPLANT/HMP_INFR_TRANPLANT_MEASURE.measure[%i].c6f14Cell",i)),pFreonCell[i]);
+      pDcsMap->Add(new TObjString(Form("HMP_DET/HMP_INFR/HMP_INFR_TRANPLANT/HMP_INFR_TRANPLANT_MEASURE.measure[%i].c6f14Reference",i)),pFreonRef[i]);    
+     }
   
   TObjArray *pHV[7];
   for(Int_t iCh=0;iCh<7;iCh++){//chambers loop
@@ -93,7 +131,7 @@ void SimMap(TMap *pDcsMap,Int_t runTime=1500)
 void DrawInput(TMap *pDcsMap)
 {
   
-  TCanvas *c=new TCanvas("cc","Input data",600,600);    c->Divide(3,3);
+  TCanvas *c=new TCanvas("cc","Input data",800,800); c->Divide(3,3);
   
   AliDCSValue *pVal; Int_t cnt;
   
@@ -124,7 +162,6 @@ void DrawInput(TMap *pDcsMap)
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void DrawOutput()
 {
-//  AliCDBManager::Instance()->SetDefaultStorage("local://$HOME/CDB"); AliCDBManager::Instance()->SetRun(0);
   AliCDBManager::Instance()->SetDefaultStorage("local://$HOME"); AliCDBManager::Instance()->SetRun(0);
   AliCDBEntry *pQthreEnt =AliCDBManager::Instance()->Get("HMPID/Calib/Qthre");
   AliCDBEntry *pNmeanEnt =AliCDBManager::Instance()->Get("HMPID/Calib/Nmean");
@@ -137,7 +174,7 @@ void DrawOutput()
   TObjArray *pDaqSig=(TObjArray*)pDaqSigEnt->GetObject();
    
   TF1 *pRad0,*pRad1,*pRad2;  
-  TCanvas *c2=new TCanvas("c2","Output"); c2->Divide(3,3);
+  TCanvas *c2=new TCanvas("c2","Output",800,800); c2->Divide(3,3);
   
   TH1F *pSig[7];
   
