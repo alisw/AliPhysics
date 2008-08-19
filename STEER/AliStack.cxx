@@ -947,7 +947,7 @@ Bool_t AliStack::IsStable(Int_t pdg) const
   // Nuclear code is 10LZZZAAAI
   if(pdg>1000000000)return kTRUE;
 
-  const Int_t kNstable = 14;
+  const Int_t kNstable = 15;
   Int_t i;
   
   Int_t pdgStable[kNstable] = {
@@ -956,11 +956,12 @@ Bool_t AliStack::IsStable(Int_t pdg) const
     kMuonPlus,          // Muon 
     kPiPlus,            // Pion
     kKPlus,             // Kaon
+    kK0Short,           // K0s
+    kK0Long,            // K0l
     kProton,            // Proton 
     kNeutron,           // Neutron
     kLambda0,           // Lambda_0
     kSigmaMinus,        // Sigma Minus
-    kSigma0,            // Sigma_0
     kSigmaPlus,         // Sigma Plus
     3312,               // Xsi Minus 
     3322,               // Xsi 
