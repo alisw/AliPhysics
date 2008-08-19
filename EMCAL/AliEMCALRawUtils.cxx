@@ -576,16 +576,15 @@ const Double_t dtime, const Double_t damp, Int_t * adcH, Int_t * adcL) const
   // N:   par[3]                            
   // ped: par[4]
 
-  TF1 signalF("signal", RawResponseFunction, 0, GetRawFormatTimeMax(), 5);
+  TF1 signalF("signal", RawResponseFunction, 0, GetRawFormatTimeBins(), 5);
   signalF.SetParameter(0, damp) ; 
-  signalF.SetParameter(1, dtime + fgTimeTrigger) ; 
+  signalF.SetParameter(1, (dtime + fgTimeTrigger)/fgTimeBinWidth) ; 
   signalF.SetParameter(2, fTau) ; 
   signalF.SetParameter(3, fOrder);
   signalF.SetParameter(4, fgPedestalValue);
 
   for (Int_t iTime = 0; iTime < GetRawFormatTimeBins(); iTime++) {
-    Double_t time = iTime * GetRawFormatTimeBinWidth() ;
-    Double_t signal = signalF.Eval(time) ;     
+    Double_t signal = signalF.Eval(iTime) ;     
 
     //According to Terry Awes, 13-Apr-2008
     //add gaussian noise in quadrature to each sample
