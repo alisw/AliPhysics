@@ -43,8 +43,7 @@ public:
   static Float_t SizeAllX    (                               )     {return fgAllX;                                   }  //all PCs size x, [cm]        
   static Float_t SizeAllY    (                               )     {return fgAllY;                                   }  //all PCs size y, [cm]    
 
-  static Float_t LorsX       (Int_t pc,Int_t padx             )     {return (padx    +0.5)*SizePadX()+fgkMinPcX[pc]; }  //center of the pad x, [cm]
-
+  static Float_t LorsX       (Int_t pc,Int_t padx             )    {return (padx    +0.5)*SizePadX()+fgkMinPcX[pc]; }   //center of the pad x, [cm]
   static Float_t LorsY       (Int_t pc,Int_t pady            )     {return (pady    +0.5)*SizePadY()+fgkMinPcY[pc];  }  //center of the pad y, [cm]
 
   inline static void   Lors2Pad(Float_t x,Float_t y,Int_t &pc,Int_t &px,Int_t &py);                                     //(x,y)->(pc,px,py) 
@@ -58,24 +57,43 @@ public:
 
   static Bool_t  IsOverTh    (Float_t q                      )     {return q >= fgSigmas;                            }  //is digit over threshold?
   
-  Double_t GetRefIdx         (                               )const{return fRadNmean;                                }  //refractive index of freon
   Bool_t  GetInstType        (                               )const{return fgInstanceType;                            }  //return if the instance is from geom or ideal                        
   
   inline static Bool_t IsInDead(Float_t x,Float_t y        );                                                           //is the point in dead area?
   inline static Int_t  InHVSector(           Float_t y     );                                                           //find HV sector
+  static Int_t  Radiator(          Float_t y               )       {if (InHVSector(y)<0) return -1; return InHVSector(y)/2;}
   static Bool_t  IsInside    (Float_t x,Float_t y,Float_t d=0)     {return  x>-d&&y>-d&&x<fgkMaxPcX[kMaxPc]+d&&y<fgkMaxPcY[kMaxPc]+d; } //is point inside chamber boundaries?
 
-            Double_t   MeanIdxRad              ()const {return 1.29204;}   //<--TEMPORAR--> to be removed in future. Mean ref index C6F14
-            Double_t   MeanIdxWin              ()const {return 1.57819;}   //<--TEMPORAR--> to be removed in future. Mean ref index quartz
-            Float_t    DistCut                 ()const {return 1.0;}       //<--TEMPORAR--> to be removed in future. Cut for MIP-TRACK residual 
-            Float_t    QCut                    ()const {return 100;}       //<--TEMPORAR--> to be removed in future. Separation PHOTON-MIP charge 
-            Float_t    MultCut                 ()const {return 200;}       //<--TEMPORAR--> to be removed in future. Multiplicity cut to activate WEIGHT procedure 
+  //For optical properties
+  static Double_t   EPhotMin()                       {return 5.5;}           //
+  static Double_t   EPhotMax()                       {return 8.5;}           //Photon energy range,[eV]
+  static Double_t NIdxRad(Double_t eV,Double_t temp) {return TMath::Sqrt(1+0.554*(1239.84/eV)*(1239.84/eV)/((1239.84/eV)*(1239.84/eV)-5769)-0.0005*(temp-20));}
+  static Double_t NIdxWin(Double_t eV)               {return TMath::Sqrt(1+46.411/(10.666*10.666-eV*eV)+228.71/(18.125*18.125-eV*eV));}  
+  static Double_t NMgF2Idx(Double_t eV)              {return 1.7744 - 2.866e-3*(1239.842609/eV) + 5.5564e-6*(1239.842609/eV)*(1239.842609/eV);}          // MgF2 idx of trasparency system
+  static Double_t NIdxGap(Double_t eV)               {return 1+0.12489e-6/(2.62e-4 - eV*eV/1239.84/1239.84);}
+  static Double_t LAbsRad(Double_t eV)               {return (eV<7.8)*(GausPar(eV,3.20491e16,-0.00917890,0.742402)+GausPar(eV,3035.37,4.81171,0.626309))+(eV>=7.8)*0.0001;}
+  static Double_t LAbsWin(Double_t eV)               {return (eV<8.2)*(818.8638-301.0436*eV+36.89642*eV*eV-1.507555*eV*eV*eV)+(eV>=8.2)*0.0001;}//fit from DiMauro data 28.10.03
+  static Double_t LAbsGap(Double_t eV)               {return (eV<7.75)*6512.399+(eV>=7.75)*3.90743e-2/(-1.655279e-1+6.307392e-2*eV-8.011441e-3*eV*eV+3.392126e-4*eV*eV*eV);}
+  static Double_t QEffCSI(Double_t eV)               {return (eV>6.07267)*0.344811*(1-exp(-1.29730*(eV-6.07267)));}//fit from DiMauro data 28.10.03
+  static Double_t GausPar(Double_t x,Double_t a1,Double_t a2,Double_t a3) {return a1*TMath::Exp(-0.5*((x-a2)/a3)*((x-a2)/a3));}
+  inline static Double_t FindTemp(Double_t tLow,Double_t tUp,Double_t y);    //find the temperature of the C6F14 in a given point with coord. y (in x is uniform)
+  
+  
+  Double_t   GetEPhotMean            ()const {return fPhotEMean;} 
+  Double_t   GetRefIdx               ()const {return fRefIdx;}                       //running refractive index
+  
+  Double_t   MeanIdxRad              ()const {return NIdxRad(fPhotEMean,fTemp);}
+  Double_t   MeanIdxWin              ()const {return NIdxWin(fPhotEMean);}
+  //
+  Float_t    DistCut                 ()const {return 1.0;}       //<--TEMPORAR--> to be removed in future. Cut for MIP-TRACK residual 
+  Float_t    QCut                    ()const {return 100;}       //<--TEMPORAR--> to be removed in future. Separation PHOTON-MIP charge 
+  Float_t    MultCut                 ()const {return 200;}       //<--TEMPORAR--> to be removed in future. Multiplicity cut to activate WEIGHT procedure 
 
-            Double_t   RadThick                ()const {return 1.5;}       //<--TEMPORAR--> to be removed in future. Radiator thickness
-            Double_t   WinThick                ()const {return 0.5;}       //<--TEMPORAR--> to be removed in future. Window thickness
-            Double_t   GapThick                ()const {return 8.0;}       //<--TEMPORAR--> to be removed in future. Proximity gap thickness
-            Double_t   WinIdx                  ()const {return 1.5787;}    //<--TEMPORAR--> to be removed in future. Mean refractive index of WIN material (SiO2) 
-            Double_t   GapIdx                  ()const {return 1.0005;}    //<--TEMPORAR--> to be removed in future. Mean refractive index of GAP material (CH4)
+  Double_t   RadThick                ()const {return 1.5;}       //<--TEMPORAR--> to be removed in future. Radiator thickness
+  Double_t   WinThick                ()const {return 0.5;}       //<--TEMPORAR--> to be removed in future. Window thickness
+  Double_t   GapThick                ()const {return 8.0;}       //<--TEMPORAR--> to be removed in future. Proximity gap thickness
+  Double_t   WinIdx                  ()const {return 1.5787;}    //<--TEMPORAR--> to be removed in future. Mean refractive index of WIN material (SiO2) 
+  Double_t   GapIdx                  ()const {return 1.0005;}    //<--TEMPORAR--> to be removed in future. Mean refractive index of GAP material (CH4)
 
   static        Int_t      Stack(Int_t evt=-1,Int_t tid=-1);              //Print stack info for event and tid
   static        Int_t      StackCount(Int_t pid,Int_t evt);               //Counts stack particles of given sort in given event  
@@ -90,9 +108,13 @@ public:
                                                                                            ph=TMath::ATan2(l[1],l[0]);}    
   TVector3 Norm        (Int_t c                                             )const{Double_t n[3]; Norm(c,n); return TVector3(n);               }//norm 
   void     Norm        (Int_t c,Double_t *n                                 )const{Double_t l[3]={0,0,1};fM[c]->LocalToMasterVect(l,n);        }//norm
-  void     Point       (Int_t c,Double_t *p,Int_t plane                     )const{Lors2Mars(c,0,0,p,plane);}      //point of given chamber plane
+  void     Point       (Int_t c,Double_t *p,Int_t plane                     )const{Lors2Mars(c,0,0,p,plane);}         //point of given chamber plane
 
-  void     SetRefIdx      (Double_t refRadIdx                                  ) {fRadNmean = refRadIdx;}             //set refractive index of freon
+  void     SetTemp        (Double_t temp                                       ) {fTemp = temp;}                      //set actual temperature of the C6F14
+  void     SetEPhotMean   (Double_t ePhotMean                                  ) {fPhotEMean = ePhotMean;}            //set mean photon energy
+  
+  void     SetRefIdx      (Double_t refRadIdx                                  ) {fRefIdx = refRadIdx;}               //set running refractive index
+  
   void     SetSigmas      (Int_t sigmas                                        ) {fgSigmas = sigmas;}                 //set sigma cut    
   void     SetInstanceType(Bool_t inst                                         ) {fgInstanceType = inst;}             //kTRUE if from geomatry kFALSE if from ideal geometry
   //For PID
@@ -143,14 +165,15 @@ protected:
 
   TGeoHMatrix *fM[7];                 //pointers to matrices defining HMPID chambers rotations-translations
   Float_t fX;                         //x shift of LORS with respect to rotated MARS 
-  Float_t fY;                         //y shift of LORS with respect to rotated MARS   
-  Double_t fRadNmean;                 //C6F14 mean index as a running parameter
-  
+  Float_t fY;                         //y shift of LORS with respect to rotated MARS
+  Double_t fRefIdx;                   //running refractive index of C6F14
+  Double_t fPhotEMean;                //mean energy of photon
+  Double_t fTemp;                     //actual temparature of C6F14  
 private:
   AliHMPIDParam(const AliHMPIDParam& r);              //dummy copy constructor
   AliHMPIDParam &operator=(const AliHMPIDParam& r);   //dummy assignment operator
       
-  ClassDef(AliHMPIDParam,0)           //HMPID main parameters class
+  ClassDef(AliHMPIDParam,1)           //HMPID main parameters class
 };
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -212,6 +235,17 @@ Int_t AliHMPIDParam::InHVSector(Float_t y)
    hvsec = (py+(pc/2)*(kMaxPy+1))/((kMaxPy+1)/2);
    
    return hvsec;
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Double_t AliHMPIDParam::FindTemp(Double_t tLow,Double_t tHigh,Double_t y)
+{
+//  Model for gradient in temperature
+  
+//  Double_t gradT = (t2-t1)/SizePcY();  // linear gradient
+//  return gradT*y+t1;
+  Double_t halfPadSize = 0.5*SizePadY();
+  Double_t gradT = (TMath::Log(SizePcY()) - TMath::Log(halfPadSize))/(TMath::Log(tHigh)-TMath::Log(tLow));
+  return tLow*TMath::Power(y/halfPadSize,1./gradT);  
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #endif

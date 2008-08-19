@@ -80,7 +80,7 @@ Int_t AliHMPIDTracker::PropagateBack(AliESDEvent *pEsd)
 // Interface pure virtual in AliTracker. Invoked from AliReconstruction::RunTracking() after invocation of AliTracker::LoadClusters() once per event
 // Agruments: pEsd - pointer to ESD
 //   Returns: error code    
-  AliCDBEntry *pNmeanEnt =AliCDBManager::Instance()->Get("HMPID/Calib/Nmean"); //contains TObjArray of 21 TF1
+  AliCDBEntry *pNmeanEnt =AliCDBManager::Instance()->Get("HMPID/Calib/Nmean"); //contains TObjArray of 42 TF1 + 1 EPhotMean
   AliCDBEntry *pQthreEnt =AliCDBManager::Instance()->Get("HMPID/Calib/Qthre"); //contains TObjArray of 42 (7ch * 6sec) TF1
   if(!pNmeanEnt) AliFatal("No Nmean C6F14 ");
   if(!pQthreEnt) AliFatal("No Qthre");
@@ -105,14 +105,23 @@ Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmea
       continue;                                                                         
     }
     pTrk->SetHMPIDtrk(xRa,yRa,theta,phi);                                                        //store initial infos
-    Double_t nmean=((TF1*)pNmean->At(3*cham))->Eval(pEsd->GetTimeStamp());                       //C6F14 Nmean for this chamber
+    Double_t nmean;
+    if(pNmean->GetEntries()==21) {                                                               //for backward compatibility
+       nmean=((TF1*)pNmean->At(3*cham))->Eval(pEsd->GetTimeStamp());                             //C6F14 Nmean for this chamber
+     } else {
+       Int_t iRad     = AliHMPIDParam::Radiator(yRa);                                            //evaluate the radiator involved
+       Double_t tLow  = ((TF1*)pNmean->At(6*cham+2*iRad  ))->Eval(pEsd->GetTimeStamp());         //C6F14 low  temp for this chamber
+       Double_t tHigh = ((TF1*)pNmean->At(6*cham+2*iRad+1))->Eval(pEsd->GetTimeStamp());         //C6F14 high temp for this chamber
+       Double_t tExp  = AliHMPIDParam::FindTemp(tLow,tHigh,yRa);                                 //estimated temp for that chamber at that y
+       nmean = AliHMPIDParam::NIdxRad(AliHMPIDParam::Instance()->GetEPhotMean(),tExp);           //mean ref idx @ a given temp
+     }
     Double_t qthre = 0; 
     if(pQthre->GetEntriesFast()==AliHMPIDParam::kMaxCh+1)                                        // just for backward compatibility
       qthre=((TF1*)pQthre->At(cham))->Eval(pEsd->GetTimeStamp());                                //
     else {                                                                                       // in the past just 1 qthre
       Int_t hvsec = AliHMPIDParam::InHVSector(yPc);                                              //  per chamber
       if (hvsec>=0)
-	qthre=((TF1*)pQthre->At(6*cham+hvsec))->Eval(pEsd->GetTimeStamp());                        //
+	qthre=((TF1*)pQthre->At(6*cham+hvsec))->Eval(pEsd->GetTimeStamp());                      //
     }                                                                                            //
     recon.SetImpPC(xPc,yPc);                                                                     //store track impact to PC
     recon.CkovAngle(pTrk,(TClonesArray *)pClus->At(cham),nmean,qthre);                           //search for Cerenkov angle of this track

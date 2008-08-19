@@ -17,6 +17,8 @@
 #include "AliLog.h"         //general
 #include <AliRunLoader.h>   //Stack()
 #include <AliStack.h>       //Stack()
+#include "AliCDBManager.h"  //ctor
+#include "AliCDBEntry.h"    //ctor
 #include <TLatex.h>         //TestTrans()  
 #include <TView.h>          //TestTrans()
 #include <TPolyMarker3D.h>  //TestTrans()
@@ -24,6 +26,8 @@
 #include <TParticle.h>      //Stack()    
 #include <TGeoPhysicalNode.h> //ctor
 #include <TGeoBBox.h>
+#include <TF1.h>                 //ctor
+
 ClassImp(AliHMPIDParam)
 
 
@@ -65,14 +69,33 @@ Int_t AliHMPIDParam::fgSigmas=4;
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 AliHMPIDParam::AliHMPIDParam(Bool_t noGeo=kFALSE):
   TNamed("HmpidParam","default version"),
-  fX(0), fY(0), fRadNmean(0)
+  fX(0), fY(0), fRefIdx(1.28947),fPhotEMean(6.675),fTemp(25)                          //just set a refractive index for C6F14 at ephot=6.675 eV @ T=25 C
 {
 // Here all the intitializition is taken place when AliHMPIDParam::Instance() is invoked for the first time.
 // In particular, matrices to be used for LORS<->MARS trasnformations are initialized from TGeo structure.    
 // Note that TGeoManager should be already initialized from geometry.root file  
 
+  AliCDBManager *pCDB = AliCDBManager::Instance();
+  if(!pCDB) {
+     AliWarning("No Nmean C6F14 from OCDB. Default is taken from ctor.");
+  } else {
+    AliCDBEntry *pNmeanEnt =pCDB->Get("HMPID/Calib/Nmean"); //contains TObjArray of 42 TF1 + 1 EPhotMean
+    if(!pNmeanEnt) {
+      AliWarning("No Nmean C6F14 from OCDB. Default is taken from ctor.");
+    } else {
+      TObjArray *pNmean = (TObjArray*)pNmeanEnt->GetObject();
+      if(pNmean->GetEntries()==43) {                                               //for backward compatibility
+        Double_t tmin,tmax;
+        ((TF1*)pNmean->At(42))->GetRange(tmin,tmax);
+        fPhotEMean = ((TF1*)pNmean->At(42))->Eval(tmin);                          //photon eMean from OCDB
+        AliInfo(Form("EPhotMean = %f eV successfully loaded from OCDB",fPhotEMean));
+      } else {
+        AliWarning("For backward compatibility EPhotMean is taken from ctor.");
+      }
+    }
+  }
 
-  fRadNmean = MeanIdxRad(); //initialization of the running ref. index of freon
+  fRefIdx = MeanIdxRad(); //initialization of the running ref. index of freon
   
   Float_t dead=2.6;// cm of the dead zones between PCs-> See 2CRC2099P1
 

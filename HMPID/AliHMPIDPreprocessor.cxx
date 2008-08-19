@@ -56,7 +56,7 @@ UInt_t AliHMPIDPreprocessor::Process(TMap* pMap)
     	Log("HMPID - Pedestal processing successful!!");                    return kFALSE;  // ok for pedestals
     }
   } else if ( runType=="STANDALONE" || runType=="PHYSICS"){
-    if (!ProcDcs(pMap)){
+  if (!ProcDcs(pMap)){
     	Log("HMPID - ERROR - DCS processing failed!!");                     return kTRUE;   // error in DCS processing
     } else {
     	Log("HMPID - DCS processing successful!!");                         return kFALSE;  // ok for DCS
@@ -68,7 +68,9 @@ UInt_t AliHMPIDPreprocessor::Process(TMap* pMap)
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Bool_t AliHMPIDPreprocessor::ProcDcs(TMap* pMap)
 {
-// Process: 1. inlet and outlet C6F14 temperature, stores TObjArray of 21 TF1, where TF1 is Nmean=f(t), one per radiator
+// Process: 1 (old). inlet and outlet C6F14 temperature, stores TObjArray of 21 TF1, where TF1 is Nmean=f(t), one per radiator
+// Process: 1. inlet and outlet C6F14 temperature, stores TObjArray of 42 TF1, where TF1 are Tin and Tout per radiator
+//             + one function for the mean energy photon (in total 43).
 //          2. CH4 pressure and HV                 stores TObjArray of 7 TF1 where TF1 is thr=f(t), one per chamber
 // Arguments: pDcsMap - map of structure "alias name" - TObjArray of AliDCSValue
 // Assume that: HV is the same during the run for a given chamber, different chambers might have different HV
@@ -77,21 +79,21 @@ Bool_t AliHMPIDPreprocessor::ProcDcs(TMap* pMap)
 
   Bool_t stDcsStore=kFALSE;
 
-  TF2 idx("RidxC4F14","sqrt(1+0.554*(1239.84/x)^2/((1239.84/x)^2-5769)-0.0005*(y-20))",5.5 ,8.5 ,0  ,50);  //N=f(Ephot,T) [eV,grad C] DiMauro mail
-  
 // Qthr=f(HV,P) [V,mBar]  logA0=k*HV+b is taken from p. 64 TDR plot 2.59 for PC32 
 //                           A0=f(P) is taken from DiMauro mail
 // Qthr is estimated as 3*A0
+
   TF2 thr("RthrCH4"  ,"3*10^(3.01e-3*x-4.72)+170745848*exp(-y*0.0162012)"             ,2000,3000,900,1200); 
   
-  TObjArray arTmean(21);       arTmean.SetOwner(kTRUE);     //21 Tmean=f(time) one per radiator
-  TObjArray arPress(7);        arPress.SetOwner(kTRUE);     //7  Press=f(time) one per chamber
-  TObjArray arNmean(21);       arNmean.SetOwner(kTRUE);     //21 Nmean=f(time) one per radiator
+  TObjArray arNmean(43);       arNmean.SetOwner(kTRUE);     //42 Tin and Tout one per radiator + 1 for ePhotMean
   TObjArray arQthre(42);       arQthre.SetOwner(kTRUE);     //42 Qthre=f(time) one per sector
   
   AliDCSValue *pVal; Int_t cnt=0;
   
   Double_t xP,yP;
+
+  TF1 **pTin  = new TF1*[21];
+  TF1 **pTout = new TF1*[21];
 
 // evaluate Environment Pressure
   
@@ -151,11 +153,13 @@ Bool_t AliHMPIDPreprocessor::ProcDcs(TMap* pMap)
       arQthre.AddAt(new TF1(Form("HMP_QthreC%iS%i",iCh,iSec),
           Form("3*10^(3.01e-3*HV%i_%i - 4.72)+170745848*exp(-(P%i+Penv)*0.0162012)",iCh,iSec,iCh),fStartTime,fEndTime),6*iCh+iSec);
     }
-    
 // evaluate Temperatures: in and out of the radiators    
-    
     // T in
     for(Int_t iRad=0;iRad<3;iRad++){
+      
+      pTin[3*iCh+iRad]  = new TF1(Form("Tin%i%i" ,iCh,iRad),"[0]+[1]*x",fStartTime,fEndTime);
+      pTout[3*iCh+iRad] = new TF1(Form("Tout%i%i",iCh,iRad),"[0]+[1]*x",fStartTime,fEndTime);          
+      
       TObjArray *pT1=(TObjArray*)pMap->GetValue(Form("HMP_DET/HMP_MP%i/HMP_MP%i_LIQ_LOOP.actual.sensors.Rad%iIn_Temp",iCh,iCh,iRad));  
       Log(Form(" Temperatures for module %i inside data  ---> %3i entries",iCh,pT1->GetEntries()));
       if(pT1->GetEntries()) {
@@ -163,9 +167,10 @@ Bool_t AliHMPIDPreprocessor::ProcDcs(TMap* pMap)
         TGraph *pGrT1=new TGraph; cnt=0;  while((pVal=(AliDCSValue*)nextT1())) pGrT1->SetPoint(cnt++,pVal->GetTimeStamp(),pVal->GetFloat()); //T inlet
         if(cnt==1) { 
           pGrT1->GetPoint(0,xP,yP);
-          new TF1(Form("Tin%i%i",iCh,iRad),Form("%f",yP),fStartTime,fEndTime);
+          pTin[3*iCh+iRad]->SetParameter(0,yP);
+          pTin[3*iCh+iRad]->SetParameter(1,0);
         } else {
-          pGrT1->Fit(new TF1(Form("Tin%i%i",iCh,iRad),"[0]+[1]*x+[2]*sin([3]*x)",fStartTime,fEndTime),"Q");
+          pGrT1->Fit(pTin[3*iCh+iRad],"Q");
         }
         delete pGrT1;
       } else {AliWarning(" No Data Points from HMP_MP0-6_LIQ_LOOP.actual.sensors.Rad0-2In_Temp!");return kFALSE;}
@@ -177,20 +182,25 @@ Bool_t AliHMPIDPreprocessor::ProcDcs(TMap* pMap)
         TGraph *pGrT2=new TGraph; cnt=0;  while((pVal=(AliDCSValue*)nextT2())) pGrT2->SetPoint(cnt++,pVal->GetTimeStamp(),pVal->GetFloat()); //T outlet 
         if(cnt==1) { 
           pGrT2->GetPoint(0,xP,yP);
-          new TF1(Form("Tou%i%i",iCh,iRad),Form("%f",yP),fStartTime,fEndTime);
+          pTout[3*iCh+iRad]->SetParameter(0,yP);
+          pTout[3*iCh+iRad]->SetParameter(1,0);
         } else {
-          pGrT2->Fit(new TF1(Form("Tou%i%i",iCh,iRad),"[0]+[1]*x+[2]*sin([3]*x)",fStartTime,fEndTime),"Q");
+          pGrT2->Fit(pTout[3*iCh+iRad],"Q");
         }
         delete pGrT2;
       } else {AliWarning(" No Data Points from HMP_MP0-6_LIQ_LOOP.actual.sensors.Rad0-2Out_Temp!");return kFALSE;}
 	
 // evaluate Mean Refractive Index
       
-      arNmean.AddAt(new TF1(Form("HMP_Nmean%i-%i",iCh,iRad),"1.292",fStartTime,fEndTime),3*iCh+iRad); //Nmean=f(t)
+      arNmean.AddAt(pTin[3*iCh+iRad] ,6*iCh+2*iRad  ); //Tin =f(t)
+      arNmean.AddAt(pTout[3*iCh+iRad],6*iCh+2*iRad+1); //Tout=f(t)
       
     }//radiators loop
   }//chambers loop
   
+  Double_t eMean = ProcTrans(pMap);
+  arNmean.AddAt(new TF1("HMP_PhotEmean",Form("%f",eMean),fStartTime,fEndTime),42); //Photon energy mean
+    
   AliCDBMetaData metaData; 
   metaData.SetBeamPeriod(0); 
   metaData.SetResponsible("AliHMPIDPreprocessor"); 
@@ -201,6 +211,13 @@ Bool_t AliHMPIDPreprocessor::ProcDcs(TMap* pMap)
   if(!stDcsStore) {
     Log("HMPID - failure to store DCS data results in OCDB");    
   }
+  
+//  arNmean.Delete();
+//  arQthre.Delete();
+
+//  for(Int_t i=0;i<21;i++) delete pTin[i]; delete []pTin;
+//  for(Int_t i=0;i<21;i++) delete pTout[i]; delete []pTout;
+  
   return stDcsStore;
 }//Process()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -270,10 +287,107 @@ Bool_t AliHMPIDPreprocessor::ProcPed()
   
 }//ProcPed()  
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Double_t ProcTrans()
+Double_t AliHMPIDPreprocessor::ProcTrans(TMap* pMap)
 {
-// Process transparency monitoring data and calculates Emean  
-  Double_t eMean=6.67786;     //mean energy of photon defined  by transperancy window
+  //  Process transparency monitoring data and calculates Emean  
+
+  
+  Double_t sEnergProb=0, sProb=0;
+
+  Double_t tRefCR5 = 19. ;                                      // mean temperature of CR5 where the system is in place
+
+  Double_t eMean = 0;
+      
+  AliDCSValue *pVal;
+
+  for(Int_t i=0; i<30; i++){
+
+    // evaluate wavelenght 
+    TObjArray *pWaveLenght  = (TObjArray*)pMap->GetValue(Form("HMP_DET/HMP_INFR/HMP_INFR_TRANPLANT/HMP_INFR_TRANPLANT_MEASURE.measure[%i].waveLenght",i));
+    TIter NextWl(pWaveLenght); pVal=(AliDCSValue*)NextWl();
+    Double_t lambda = pVal->GetFloat();
+
+    Double_t photEn = 1239.842609/lambda;     // 1239.842609 from nm to eV
+    
+    if(photEn<AliHMPIDParam::EPhotMin() || photEn>AliHMPIDParam::EPhotMax()) continue;
+    
+    // evaluate phototube current for argon reference
+    TObjArray *pArgonRef  = (TObjArray*)pMap->GetValue(Form("HMP_DET/HMP_INFR/HMP_INFR_TRANPLANT/HMP_INFR_TRANPLANT_MEASURE.measure[%i].argonReference",i));
+    TIter NextArRef(pArgonRef); pVal=(AliDCSValue*)NextArRef();
+    Double_t aRefArgon = pVal->GetFloat();
+
+    // evaluate phototube current for argon cell
+    TObjArray *pArgonCell = (TObjArray*)pMap->GetValue(Form("HMP_DET/HMP_INFR/HMP_INFR_TRANPLANT/HMP_INFR_TRANPLANT_MEASURE.measure[%i].argonCell",i));
+    TIter NextArCell(pArgonCell); pVal=(AliDCSValue*)NextArCell();
+    Double_t aCellArgon = pVal->GetFloat();
+
+    //evaluate phototube current for freon reference
+    TObjArray *pFreonRef  = (TObjArray*)pMap->GetValue(Form("HMP_DET/HMP_INFR/HMP_INFR_TRANPLANT/HMP_INFR_TRANPLANT_MEASURE.measure[%i].c6f14Reference",i));
+    TIter NextFrRef(pFreonRef); pVal=(AliDCSValue*)NextFrRef();
+    Double_t aRefFreon = pVal->GetFloat();
+
+    //evaluate phototube current for freon cell
+    TObjArray *pFreonCell = (TObjArray*)pMap->GetValue(Form("HMP_DET/HMP_INFR/HMP_INFR_TRANPLANT/HMP_INFR_TRANPLANT_MEASURE.measure[%i].c6f14Cell",i));
+    TIter NextFrCell(pFreonCell); pVal=(AliDCSValue*)NextFrCell();
+    Double_t aCellFreon = pVal->GetFloat();
+ 
+   //evaluate correction factor to calculate trasparency (Ref. NIMA 486 (2002) 590-609)
+    
+    Double_t aN1 = AliHMPIDParam::NIdxRad(photEn,tRefCR5);
+    Double_t aN2 = AliHMPIDParam::NMgF2Idx(photEn);
+    Double_t aN3 = 1;                              // Argon Idx
+
+    Double_t aR1               = ((aN1 - aN2)*(aN1 - aN2))/((aN1 + aN2)*(aN1 + aN2));
+    Double_t aR2               = ((aN2 - aN3)*(aN2 - aN3))/((aN2 + aN3)*(aN2 + aN3));
+    Double_t aT1               = (1 - aR1);
+    Double_t aT2               = (1 - aR2);
+    Double_t aCorrFactor       = (aT1*aT1)/(aT2*aT2);
+
+    // evaluate 15 mm of thickness C6F14 Trans
+    Double_t aTransRad;
+    
+    if(aRefFreon*aRefArgon>0) {
+      aTransRad  = TMath::Power((aCellFreon/aRefFreon)/(aCellArgon/aRefArgon)*aCorrFactor,1.5);
+    } else {
+      return DefaultEMean();
+    }
+
+    // evaluate 0.5 mm of thickness SiO2 Trans
+    Double_t aTransSiO2 = TMath::Exp(-0.5/AliHMPIDParam::LAbsWin(photEn));
+
+    // evaluate 80 cm of thickness Gap (low density CH4) transparency
+    Double_t aTransGap  = TMath::Exp(-80./AliHMPIDParam::LAbsGap(photEn));
+
+    // evaluate CsI quantum efficiency
+    Double_t aCsIQE            = AliHMPIDParam::QEffCSI(photEn);
+
+    // evaluate total convolution of all material optical properties
+    Double_t aTotConvolution   = aTransRad*aTransSiO2*aTransGap*aCsIQE;
+
+    sEnergProb+=aTotConvolution*photEn;  
+  
+    sProb+=aTotConvolution;  
+}
+
+  if(sProb>0) {
+    eMean = sEnergProb/sProb;
+  } else {
+    return DefaultEMean();
+  }
+
+  Log(Form(" Mean energy photon calculated ---> %f eV ",eMean));
+
+  if(eMean<AliHMPIDParam::EPhotMin() || eMean>AliHMPIDParam::EPhotMax()) return DefaultEMean();
+  
   return eMean;
+
 }   
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Double_t AliHMPIDPreprocessor::DefaultEMean()
+{
+    Double_t eMean = 6.675;      //just set a refractive index for C6F14 at ephot=6.675 eV @ T=25 C
+    AliWarning(Form("Mean energy for photons out of range [%f,%f] in Preprocessor. Default value Eph=%f eV taken.",AliHMPIDParam::EPhotMin(),
+                                                                                                                   AliHMPIDParam::EPhotMax(),
+                                                                                                                   eMean));
+    return eMean;
+}
