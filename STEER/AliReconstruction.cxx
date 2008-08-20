@@ -1177,7 +1177,9 @@ void AliReconstruction::Begin(TTree *)
     gGeoManager = NULL;
     fInput->Add(const_cast<TMap*>(AliCDBManager::Instance()->GetEntryCache()));
     fInput->Add(new TParameter<Int_t>("RunNumber",AliCDBManager::Instance()->GetRun()));
-    fInput->Add((AliMagF*)AliTracker::GetFieldMap());
+    AliMagF *magFieldMap = (AliMagF*)AliTracker::GetFieldMap();
+    magFieldMap->SetName("MagneticFieldMap");
+    fInput->Add(magFieldMap);
   }
 
 }
@@ -1191,7 +1193,7 @@ void AliReconstruction::SlaveBegin(TTree*)
   AliCodeTimerAuto("");
 
   TProofOutputFile *outProofFile = NULL;
-  if (fInput) {
+  if (fInput) { 
     if (AliReconstruction *reco = (AliReconstruction*)fInput->FindObject("AliReconstruction")) {
       *this = *reco;
     }
@@ -1208,7 +1210,7 @@ void AliReconstruction::SlaveBegin(TTree*)
 	man->Print();
       }
     }
-    if (AliMagF *map = (AliMagF*)fInput->FindObject("Maps")) {
+    if (AliMagF *map = (AliMagF*)fInput->FindObject("MagneticFieldMap")) {
       AliTracker::SetFieldMap(map,fUniformField);
     }
     if (TNamed *outputFileName = (TNamed *) fInput->FindObject("PROOF_OUTPUTFILE")) {
