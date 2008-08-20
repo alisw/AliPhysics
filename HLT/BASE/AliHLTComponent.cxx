@@ -173,9 +173,9 @@ int AliHLTComponent::Init(const AliHLTAnalysisEnvironment* comenv, void* environ
 	  parameter.Remove(TString::kLeading, ' '); // remove all blanks
 	  if (parameter.BeginsWith("0x") &&
 	      parameter.Replace(0,2,"",0).IsHex()) {
-	    AliHLTComponentLogSeverity loglevel=kHLTLogNone;
-	    sscanf(parameter.Data(),"%x", (unsigned int*)&loglevel);
-	    SetLocalLoggingLevel(loglevel);
+	    unsigned int loglevel=kHLTLogNone;
+	    sscanf(parameter.Data(),"%x", &loglevel);
+	    SetLocalLoggingLevel((AliHLTComponentLogSeverity)loglevel);
 	  } else {
 	    HLTError("wrong parameter for argument %s, hex number expected", argument.Data());
 	    iResult=-EINVAL;
@@ -1568,6 +1568,10 @@ int  AliHLTComponent::AddComponentStatistics(AliHLTComponentBlockDataList& block
     blocks.push_back(bd);
     iResult=bd.fSize;
   }
+#else
+  if (blocks.size() && buffer && bufferSize && offset && stats.size()) {
+    // get rid of warning
+  }
 #endif
   return iResult;
 }
@@ -1635,6 +1639,10 @@ int  AliHLTComponent::AddComponentTableEntry(AliHLTComponentBlockDataList& block
     bd.fSpecification = fChainIdCrc;
     blocks.push_back(bd);
     iResult=bd.fSize;
+  }
+#else
+  if (blocks.size() && buffer && bufferSize && offset && parents.size()) {
+    // get rid of warning
   }
  #endif
   return iResult;
