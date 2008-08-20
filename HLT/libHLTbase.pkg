@@ -47,6 +47,7 @@ MODULE_SRCS= 	AliHLT_C_Component_WrapperInterface.cxx \
 
 MODULE_HDRS:= 	$(CLASS_HDRS) \
 		AliHLTDataTypes.h \
+		AliHLTExternalTrackParam.h \
 		AliHLTCommonCDBEntries.h \
 		AliHLTMisc.h \
 		AliHLT_C_Component_WrapperInterface.h \
