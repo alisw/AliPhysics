@@ -224,12 +224,10 @@ int main(int argc, char **argv) {
   f->Close();
   
   /* Store output files to the File Exchange Server */
-  char fesfileid[128];
   
   for(Int_t iMod=0; iMod<5; iMod++) {
     sprintf(localfile,"PHOS_Module%d_LED.root",iMod);
-    sprintf(fesfileid,"PHOS_Module%d_LED",iMod);
-    daqDA_FES_storeFile(localfile,fesfileid);
+    daqDA_FES_storeFile(localfile,"LED");
   }
   
   printf("%d physics events of %d total processed.\n",nevents_physics,nevents_total);
