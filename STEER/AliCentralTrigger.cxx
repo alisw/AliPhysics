@@ -415,11 +415,17 @@ Bool_t AliCentralTrigger::CheckTriggeredDetectors() const
     }
     // Compare the stored cluster mask with the one
     // that we get from trigger classes
-    // To be enables after we store the cluster mask in the trigger tree
     if (clusterMask != fClusterMask) {
-      AliError(Form("Wrong cluster mask from trigger classes (%x), expecting (%x)! Loaded trigger configuration is possibly wrong!",
-		    (UInt_t)clusterMask,(UInt_t)fClusterMask));
-      return kFALSE;
+      if ((clusterMask & fClusterMask) == clusterMask) {
+	AliInfo(Form("Cluster mask from trigger classes (%x) and from data (%x) differ. Concurrent DAQ run(s) could be the reason.",
+		     (UInt_t)clusterMask,(UInt_t)fClusterMask));
+	return kTRUE;
+      }
+      else {
+	AliError(Form("Wrong cluster mask from trigger classes (%x), expecting (%x)! Loaded trigger configuration is possibly wrong!",
+		      (UInt_t)clusterMask,(UInt_t)fClusterMask));
+	return kFALSE;
+      }
     }
   }
 
