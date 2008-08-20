@@ -701,6 +701,7 @@ Bool_t AliReconstruction::MisalignGeometry(const TString& detectors)
     } // end loop over detectors
     loadAlObjsListOfDets.Prepend("GRP "); //add alignment objects for non-sensitive modules
     AliGeomManager::ApplyAlignObjsFromCDB(loadAlObjsListOfDets.Data());
+    AliCDBManager::Instance()->UnloadFromCache("*/Align/*");
   }else{
     // Check if the array with alignment objects was
     // provided by the user. If yes, apply the objects
@@ -2931,7 +2932,7 @@ Bool_t AliReconstruction::InitRecoParams()
     }
   }
 
-  fRecoParam.Print();
+  if (AliDebugLevel() > 0) fRecoParam.Print();
 
   return isOK;
 }
