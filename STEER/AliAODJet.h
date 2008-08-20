@@ -60,9 +60,11 @@ class AliAODJet : public AliVParticle {
 
     virtual Double_t   EffectiveAreaCharged()   const { return  fEffectiveArea[0];}
     virtual Double_t   EffectiveAreaNeutral()   const { return  fEffectiveArea[1];}
+    virtual Double_t   DeltaR(const AliVParticle* part);
 
+    
     TLorentzVector*    MomentumVector()         const {return fMomentum;}
-    virtual void     Print(Option_t* /*option*/) const;
+    virtual void       Print(Option_t* /*option*/) const;
     
 // Dummy  
     virtual Short_t Charge()      const { return 0;}

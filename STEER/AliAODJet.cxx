@@ -140,3 +140,16 @@ void  AliAODJet::SetPxPyPzE(Double_t px, Double_t py, Double_t pz, Double_t e){
     fMomentum->SetPxPyPzE(px,py,pz,e);
   }
 }
+
+Double_t AliAODJet::DeltaR(const AliVParticle* part){
+
+  // Helper function to calculate the distance between two jets
+  // or a jet and particle
+
+  Double_t dPhi = Phi() - part->Phi(); 
+  if(dPhi>TMath::Pi())dPhi = dPhi - 2.*TMath::Pi();
+  if(dPhi<(-1.*TMath::Pi()))dPhi = dPhi + 2.*TMath::Pi();
+  Double_t dEta = Eta() - part->Eta(); 
+  Double_t dR = TMath::Sqrt(dPhi*dPhi+dEta*dEta);
+  return dR;
+}
