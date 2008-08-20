@@ -42,8 +42,10 @@
  *           interface is going to be compiled independently of AliHLT, new
  *           interface provided by the libHLTinterface.so
  *           AliHLTComponentEnvironment -> AliHLTAnalysisEnvironment
+ *   9       added data types for arrays of AliHLTExternalTrackParam sets and
+ *           TClonesArrays of AliExternalTrackParam objects.
  */
-#define ALIHLT_DATA_TYPES_VERSION 8
+#define ALIHLT_DATA_TYPES_VERSION 9
 
 //////////////////////////////////////////////////////////////////////////
 //
@@ -311,6 +313,18 @@ const int kAliHLTComponentDataTypefIDsize=8;
  * @ingroup alihlt_component_datatypes
  */
 #define kAliHLTTNtupleDataTypeID              {'R','O','O','T','T','U','P','L'}
+
+/** HLT Track
+ * - Struct for Tracks based on AliExternalTrackParam
+ * - varying origin
+ * @ingroup alihlt_component_datatypes
+ */
+#define kAliHLTTrackDataTypeID                {'H','L','T','T','R','A','C','K'}
+
+/** TClonesArray of AliExternalTrackParam
+ * @ingroup alihlt_component_datatypes
+ */
+#define kAliHLTExternalTrackParamDataTypeID   {'T','C','A','E','X','T','T','R'}
 
 using namespace std;
 
@@ -832,6 +846,20 @@ extern "C" {
    * @ingroup alihlt_component_datatypes
    */							  		
   extern const AliHLTComponentDataType kAliHLTDataTypeTNtuple;		  // {ROOTTUPL,"***"}
+
+  /** General track array for the barrel tracks based on AliExternalTrackParam
+   * Data format defined by AliHLTTracksData
+   *
+   * We follow the naming scheme of AliESDEvent where 'Tracks' denote the
+   * barrel tracks and detector tracks get names 'DETTracks'
+   * @ingroup alihlt_component_datatypes
+   */	
+  extern const AliHLTComponentDataType kAliHLTDataTypeTrack;             // {HLTTRACK,"***"}
+
+  /** TClonesArray of AliExternalTrackParam
+   * @ingroup alihlt_component_datatypes
+   */	
+  extern const AliHLTComponentDataType kAliHLTDataTypeExternalTrackParam;// {TCAEXTTR,"***"}
 
   //////////////////////////////////////////////////////////////////////////
   //

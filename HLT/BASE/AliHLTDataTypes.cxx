@@ -143,6 +143,14 @@ const AliHLTComponentDataType kAliHLTDataTypeHistogram = AliHLTComponentDataType
 const char kAliHLTTNtupleDataTypeIDstring[8] = kAliHLTTNtupleDataTypeID;
 const AliHLTComponentDataType kAliHLTDataTypeTNtuple = AliHLTComponentDataTypeInitializer(kAliHLTTNtupleDataTypeIDstring, kAliHLTDataOriginAny);
 
+/** Array of HLT Tracks (AliHLTTracksData) */
+const char kAliHLTTrackDataTypeIDstring[8] = kAliHLTTrackDataTypeID;
+const AliHLTComponentDataType kAliHLTTrack = AliHLTComponentDataTypeInitializer(kAliHLTTrackDataTypeIDstring, kAliHLTDataOriginAny);
+
+/** TClonesArray of AliExternalTrackParam */
+const char kAliHLTExternalTrackParamDataTypeIDstring[8] = kAliHLTExternalTrackParamDataTypeID;
+const AliHLTComponentDataType kAliHLTDataTypeExternalTrackParam = AliHLTComponentDataTypeInitializer(kAliHLTExternalTrackParamDataTypeIDstring, kAliHLTDataOriginAny);
+
 //////////////////////////////////////////////////////////////////////////
 //
 // Data origin variables, to be used with the operator|
