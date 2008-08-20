@@ -48,10 +48,27 @@ class AliVertexerTracks : public TObject {
   AliESDVertex* RemoveTracksFromVertex(AliESDVertex *inVtx,
 				       TObjArray *trkArray,UShort_t *id,
 				       Float_t *diamondxy); 
+  void SetITSMode(Double_t dcacut=0.1,
+		  Double_t dcacutIter0=0.1,
+		  Double_t maxd0z0=0.5,
+		  Int_t minITScls=5,
+		  Int_t mintrks=1,
+		  Double_t nsigma=3.,
+		  Double_t mindetfitter=100.,
+		  Double_t maxtgl=1000.); 
+  void SetTPCMode(Double_t dcacut=0.1,
+		  Double_t dcacutIter0=1.0,
+		  Double_t maxd0z0=5.0,
+		  Int_t minITScls=0,
+		  Int_t mintrks=1,
+		  Double_t nsigma=3.,
+		  Double_t mindetfitter=0.1,
+		  Double_t maxtgl=1.5); 
   void  SetConstraintOff() { fConstraint=kFALSE; return; }
   void  SetConstraintOn() { fConstraint=kTRUE; return; }
   void  SetDebug(Int_t optdebug=0) { fDebug=optdebug; return; }
   void  SetDCAcut(Double_t maxdca) { fDCAcut=maxdca; return; }
+  void  SetDCAcutIter0(Double_t maxdca) { fDCAcutIter0=maxdca; return; }
   void  SetFinderAlgorithm(Int_t opt=1) { fAlgo=opt; return; }
   void  SetITSrefitRequired() { fITSrefit=kTRUE; return; }
   void  SetITSrefitNotRequired() { fITSrefit=kFALSE; return; }
@@ -60,6 +77,8 @@ class AliVertexerTracks : public TObject {
   void  SetMinTracks(Int_t n=1) { fMinTracks=n; return; }
   void  SetNSigmad0(Double_t n=3) { fNSigma=n; return; }
   Double_t GetNSigmad0() const { return fNSigma; }
+  void  SetMinDetFitter(Double_t mindet=100.) { fMinDetFitter=mindet; return; }
+  void  SetMaxTgl(Double_t maxtgl=1.) { fMaxTgl=maxtgl; return; }
   void  SetOnlyFitter() { if(!fConstraint) AliFatal("Set constraint first!"); 
      fOnlyFitter=kTRUE; return; }
   void  SetSkipTracks(Int_t n,Int_t *skipped);
@@ -86,6 +105,8 @@ class AliVertexerTracks : public TObject {
   void     OneTrackVertFinder();
   Int_t    PrepareTracks(TObjArray &trkArrayOrig,UShort_t *idOrig,
 			 Int_t optImpParCut);
+  Bool_t   PropagateTrackTo(AliExternalTrackParam *track,
+			    Double_t xToGo);
   Bool_t   TrackToPoint(AliExternalTrackParam *t,
 		        TMatrixD &ri,TMatrixD &wWi,
 			Bool_t uUi3by3=kFALSE) const;     
@@ -96,28 +117,32 @@ class AliVertexerTracks : public TObject {
 
   AliESDVertex fVert;         // vertex after vertex finder
   AliESDVertex *fCurrentVertex;  // ESD vertex after fitter
+  UShort_t  fMode;            // 0 ITS+TPC; 1 TPC
   Double_t  fFieldkG;         // z component of field (kGauss) 
   Double_t  fNominalPos[3];   // initial knowledge on vertex position
   Double_t  fNominalCov[6];   // initial knowledge on vertex position
+  TObjArray fTrkArraySel;     // array with tracks to be processed
+  UShort_t  *fIdSel;          // IDs of the tracks (AliESDtrack::GetID())
+  Int_t     *fTrksToSkip;     // track IDs to be skipped for find and fit 
+  Int_t     fNTrksToSkip;     // number of tracks to be skipped 
   Bool_t    fConstraint;      // true when "mean vertex" was set in 
                               // fNominal ... and must be used in the fit
   Bool_t    fOnlyFitter;      // primary with one fitter shot only
                               // (use only with beam constraint)
   Int_t     fMinTracks;       // minimum number of tracks
   Int_t     fMinITSClusters;  // minimum number of ITS clusters per track
-  TObjArray fTrkArraySel;     // array with tracks to be processed
-  UShort_t  *fIdSel;          // IDs of the tracks (AliESDtrack::GetID())
-  Int_t     *fTrksToSkip;     // track IDs to be skipped for find and fit 
-  Int_t     fNTrksToSkip;     // number of tracks to be skipped 
   Double_t  fDCAcut;          // maximum DCA between 2 tracks used for vertex
-  Int_t     fAlgo;            // option for vertex finding algorythm
+  Double_t  fDCAcutIter0;     // maximum DCA between 2 tracks used for vertex
   Double_t  fNSigma;          // number of sigmas for d0 cut in PrepareTracks()
   Double_t  fMaxd0z0;         // value for sqrt(d0d0+z0z0) cut 
                               // in PrepareTracks(1) if fConstraint=kFALSE
+  Double_t  fMinDetFitter;    // minimum determinant to try to invertex matrix
+  Double_t  fMaxTgl;          // maximum tgl of tracks
   Bool_t    fITSrefit;        // if kTRUE (default), use only kITSrefit tracks
                               // if kFALSE, use all tracks (also TPC only)
   Double_t  fnSigmaForUi00;   // n. sigmas from finder in TrackToPoint
   Int_t     fDebug;           //! debug flag - verbose printing if >0
+  Int_t     fAlgo;            // option for vertex finding algorythm
   // fAlgo=1 (default) finds minimum-distance point among all selected tracks
   //         approximated as straight lines 
   //         and uses errors on track parameters as weights
@@ -136,7 +161,7 @@ class AliVertexerTracks : public TObject {
   AliVertexerTracks(const AliVertexerTracks & source);
   AliVertexerTracks & operator=(const AliVertexerTracks & source);
 
-  ClassDef(AliVertexerTracks,10) // 3D Vertexing with tracks 
+  ClassDef(AliVertexerTracks,11) // 3D Vertexing with tracks 
 };
 
 #endif

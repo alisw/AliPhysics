@@ -1554,7 +1554,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
     }
     if (fRunVertexFinderTracks) {
        // TPC + ITS primary vertex
-       ftVertexer->SetITSrefitRequired();
+       ftVertexer->SetITSMode();
        if(fDiamondProfile && fMeanVertexConstraint) {
 	 ftVertexer->SetVtxStart(fDiamondProfile);
        } else {
@@ -1572,7 +1572,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
        }
 
        // TPC-only primary vertex
-       ftVertexer->SetITSrefitNotRequired();
+       ftVertexer->SetTPCMode();
        if(fDiamondProfileTPC && fMeanVertexConstraint) {
 	 ftVertexer->SetVtxStart(fDiamondProfileTPC);
        } else {
