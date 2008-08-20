@@ -266,7 +266,7 @@ AliMUONDigit::Used(Bool_t value)
   }
   else
   {
-    fFlags ^= fgkUsedMask;
+    fFlags &= ~fgkUsedMask;
   }
 }
 
@@ -282,7 +282,7 @@ AliMUONDigit::Calibrated(Bool_t value)
   }
   else
   {
-    fFlags ^= fgkCalibratedMask;
+    fFlags &= ~fgkCalibratedMask;
   }
 }
 
@@ -298,7 +298,7 @@ AliMUONDigit::EfficiencyApplied(Bool_t value)
   }
   else
   {
-    fFlags ^= fgkEfficiencyMask;
+    fFlags &= ~fgkEfficiencyMask;
   }
 }
 
@@ -337,7 +337,7 @@ AliMUONDigit::NoiseOnly(Bool_t value)
   }
   else
   {
-    fFlags ^= fgkNoiseOnlyMask;
+    fFlags &= ~fgkNoiseOnlyMask;
   }
 }
 
@@ -378,7 +378,7 @@ AliMUONDigit::Saturated(Bool_t value)
   }
   else
   {
-    fFlags ^= fgkSaturatedMask;
+    fFlags &= ~fgkSaturatedMask;
   }
 }
 
