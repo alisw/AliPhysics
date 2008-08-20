@@ -132,8 +132,7 @@ Bool_t AliMCEventHandler::Init(Option_t* opt)
     // Reset the event number
     fEvent      = -1;
     fFileNumber =  0;
-    printf("AliMCEvenHandler::Init() %d\n",__LINE__);
-    AliInfo(Form("AliMCEventHandler:Number of events in this directory %5d \n", fNEvent));
+    AliInfo(Form("Number of events in this directory %5d \n", fNEvent));
     return kTRUE;
 }
 
@@ -251,7 +250,7 @@ Bool_t AliMCEventHandler::Notify(const char *path)
     }
     
     *fPathName = fileName;
-    printf("AliMCEventHandler::Notify() Path: %s\n", fPathName->Data());
+    AliInfo(Form("Notify() Path: %s\n", fPathName->Data()));
     
     ResetIO();
     InitIO("");
