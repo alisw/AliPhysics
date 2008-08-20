@@ -66,11 +66,27 @@ class AliITSRecoParam : public AliDetectorRecoParam
   void PrintParameters() const; 
 
   void     SetTracker(Int_t tracker=0) { fTracker=tracker; }
+  void     SetTrackerSA() { SetTracker(0); }
+  void     SetTrackerMI() { SetTracker(1); }
+  void     SetTrackerV2() { SetTracker(2); }
   Int_t    GetTracker() const { return fTracker; }
   void     SetITSonly(Bool_t flag=kTRUE) { fITSonly=flag; }
   Bool_t   GetITSonly() const { return fITSonly; }
   void     SetVertexer(Int_t vertexer=0) { fVertexer=vertexer; }
+  void     SetVertexer3D() { SetVertexer(0); }
+  void     SetVertexerZ() { SetVertexer(1); }
+  void     SetVertexerCosmics() { SetVertexer(2); }
+  void     SetVertexerIons() { SetVertexer(3); }
+  void     SetVertexerSmearMC() { SetVertexer(4); }
   Int_t    GetVertexer() const { return fVertexer; }
+  void     SetClusterFinder(Int_t cf=0) { fClusterFinder=cf; }
+  void     SetClusterFinderV2() { SetClusterFinder(0); }
+  void     SetClusterFinderOrig() { SetClusterFinder(1); }
+  Int_t    GetClusterFinder() const { return fClusterFinder; }
+  void     SetPID(Int_t pid=0) {fPID=pid;}
+  void     SetDefaultPID() {SetPID(0);}
+  void     SetLandauFitPID() {SetPID(1);}
+  Int_t    GetPID() const {return fPID;}
 
   Double_t GetSigmaY2(Int_t i) const { return fSigmaY2[i]; }
   Double_t GetSigmaZ2(Int_t i) const { return fSigmaZ2[i]; }
@@ -261,6 +277,8 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Int_t  fTracker;  // ITS tracker to be used (see AliITSReconstructor)
   Bool_t fITSonly;  // tracking only in ITS (no TPC)
   Int_t  fVertexer; // ITS vertexer to be used (see AliITSReconstructor)
+  Int_t  fClusterFinder; // ITS cf to be used (see AliITSReconstructor)
+  Int_t  fPID;      // ITS PID method to be used (see AliITSReconstructor)
 
   Int_t fLayersToSkip[AliITSgeomTGeo::kNLayers]; // array with layers to skip (MI,SA)
 
@@ -326,7 +344,6 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Int_t fUseTGeoInTracker; // use TGeo to get material budget in tracker MI
   Bool_t fAllowSharedClusters; // if kFALSE don't set to kITSin tracks with shared clusters (MI)
   Int_t fClusterErrorsParam; // parametrization for cluster errors (MI), see AliITSRecoParam::GetError()
-  Float_t fClusterMisalError; // [cm] left here for backward compatibility
   Float_t fClusterMisalErrorY[AliITSgeomTGeo::kNLayers]; // [cm] additional error on cluster Y pos. due to misalignment (MI,SA)
   Float_t fClusterMisalErrorZ[AliITSgeomTGeo::kNLayers]; // [cm] additional error on cluster Z pos. due to misalignment (MI,SA)
 
@@ -368,7 +385,7 @@ class AliITSRecoParam : public AliDetectorRecoParam
 
   Bool_t fUseChargeMatchingInClusterFinderSSD; // SSD
 
-  ClassDef(AliITSRecoParam,7) // ITS reco parameters
+  ClassDef(AliITSRecoParam,8) // ITS reco parameters
 };
 
 #endif
