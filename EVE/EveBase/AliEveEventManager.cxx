@@ -71,11 +71,9 @@ AliEveEventManager::AliEveEventManager() :
   fESDFile   (0), fESDTree (0), fESD (0),
   fESDfriend (0), fESDfriendExists(kFALSE),
   fRawReader (0),
-  fAutoLoad(kFALSE),
-  fAutoLoadTime(5.),
-  fAutoLoadTimer(0),
-  fIsOnline(kFALSE),
-  fExecutor(new AliEveMacroExecutor)
+  fAutoLoad  (kFALSE), fAutoLoadTime (5.),     fAutoLoadTimer(0),
+  fIsOpen    (kFALSE), fHasEvent     (kFALSE), fExternalCtrl (kFALSE),
+  fExecutor  (new AliEveMacroExecutor)
 {
   // Default constructor.
 }
@@ -88,11 +86,9 @@ AliEveEventManager::AliEveEventManager(TString path, Int_t ev) :
   fESDFile   (0), fESDTree (0), fESD (0),
   fESDfriend (0), fESDfriendExists(kFALSE),
   fRawReader (0),
-  fAutoLoad(kFALSE),
-  fAutoLoadTime(5.),
-  fAutoLoadTimer(0),
-  fIsOnline(kFALSE),
-  fExecutor(new AliEveMacroExecutor)
+  fAutoLoad  (kFALSE), fAutoLoadTime (5.),     fAutoLoadTimer(0),
+  fIsOpen    (kFALSE), fHasEvent     (kFALSE), fExternalCtrl (kFALSE),
+  fExecutor  (new AliEveMacroExecutor)
 {
   // Constructor with event-directory URL and event-id.
 
@@ -103,6 +99,11 @@ AliEveEventManager::AliEveEventManager(TString path, Int_t ev) :
 AliEveEventManager::~AliEveEventManager()
 {
   // Destructor.
+
+  if (fIsOpen)
+  {
+    Close();
+  }
 
   if (fAutoLoadTimer) delete fAutoLoadTimer;
   // Somewhat unclear what to do here.
@@ -155,6 +156,15 @@ void AliEveEventManager::Open()
   // to throw exceptions instead.
 
   static const TEveException kEH("AliEveEventManager::Open ");
+
+  if (fExternalCtrl)
+  {
+    throw (kEH + "Event-loop is under external control.");
+  }
+  if (fIsOpen)
+  {
+    throw (kEH + "Event-files already opened.");
+  }
 
   gSystem->ExpandPathName(fPath);
   // The following magick is required for ESDriends to be loaded properly
@@ -328,18 +338,32 @@ void AliEveEventManager::Open()
 
   SetName(Form("Event %d", fEventId));
   SetTitle(fPath);
+  fIsOpen = kTRUE;
 }
 
 void AliEveEventManager::SetEvent(AliRunLoader *runLoader, AliRawReader *rawReader, AliESDEvent *esd)
 {
   // Set an event from an external source
   // The method is used in the online visualisation
+
+  static const TEveException kEH("AliEveEventManager::SetEvent ");
+
+  if (fIsOpen)
+  {
+    Warning(kEH, "Event-files were open. Closing and switching to external control.");
+    Close();
+  }
+
   fRunLoader = runLoader;
   fRawReader = rawReader;
-  fESD = esd;
-  fIsOnline = kTRUE;
+  fESD       = esd;
+
+  fEventId++;
+  fHasEvent     = kTRUE;
+  fExternalCtrl = kTRUE;
+
   SetTitle("Online event in memory");
-  SetName("Online Event");
+  SetName ("Online Event");
 
   ElementChanged();
   AfterNewEventLoaded();
@@ -348,6 +372,7 @@ void AliEveEventManager::SetEvent(AliRunLoader *runLoader, AliRawReader *rawRead
 Int_t AliEveEventManager::GetMaxEventId(Bool_t /*refreshESD*/) const
 {
   // Returns maximum available event id.
+  // If under external control or event is not opened -1 is returned.
   // If raw-data is the only data-source this can not be known
   // and 10,000,000 is returned.
   // If neither data-source is initialised an exception is thrown.
@@ -355,6 +380,11 @@ Int_t AliEveEventManager::GetMaxEventId(Bool_t /*refreshESD*/) const
   // its header is re-read from disk.
 
   static const TEveException kEH("AliEveEventManager::GetMaxEventId ");
+
+  if (fExternalCtrl || fIsOpen == kFALSE)
+  {
+    return -1;
+  }
 
   if (fESDTree)
   {
@@ -395,6 +425,17 @@ void AliEveEventManager::GotoEvent(Int_t event)
   // as the number of events is not known.
 
   static const TEveException kEH("AliEveEventManager::GotoEvent ");
+
+  if (fExternalCtrl)
+  {
+    throw (kEH + "Event-loop is under external control.");
+  }
+  if (!fIsOpen)
+  {
+    throw (kEH + "Event-files not opened.");
+  }
+
+  fHasEvent = kFALSE;
 
   Int_t maxEvent = 0;
   if (fESDTree)
@@ -489,7 +530,8 @@ void AliEveEventManager::GotoEvent(Int_t event)
     }
   }
 
-  fEventId = event;
+  fHasEvent = kTRUE;
+  fEventId  = event;
   SetName(Form("Event %d", fEventId));
   ElementChanged();
 
@@ -498,11 +540,10 @@ void AliEveEventManager::GotoEvent(Int_t event)
 
 void AliEveEventManager::NextEvent()
 {
-  // Loads next event
-  // either in automatic (online) or
-  // manual mode
+  // Loads next event.
+  // Does magick needed for online display when under external event control.
   
-  if (fIsOnline)
+  if (fExternalCtrl)
   {
     if (fAutoLoadTimer) fAutoLoadTimer->Stop();
 
@@ -522,18 +563,34 @@ void AliEveEventManager::NextEvent()
 
 void AliEveEventManager::PrevEvent()
 {
-  // Loads previous event
-  // only in case of manual mode
-  if (!fIsOnline) {
-    GotoEvent(fEventId - 1);
-    StartStopAutoLoadTimer();
+  // Loads previous event.
+
+  static const TEveException kEH("AliEveEventManager::PrevEvent ");
+
+  if (fExternalCtrl)
+  {
+    throw (kEH + "Event-loop is under external control.");
   }
+  if (!fIsOpen)
+  {
+    throw (kEH + "Event-files not opened.");
+  }
+
+  GotoEvent(fEventId - 1);
+  StartStopAutoLoadTimer();
 }
 
 void AliEveEventManager::Close()
 {
   // Close the event data-files and delete ESD, ESDfriend, run-loader
   // and raw-reader.
+
+  static const TEveException kEH("AliEveEventManager::Close ");
+
+  if (!fIsOpen)
+  {
+    throw (kEH + "Event-files not opened.");
+  }
 
   if (fESDTree) {
     delete fESD;       fESD       = 0;
@@ -550,39 +607,43 @@ void AliEveEventManager::Close()
   if (fRawReader) {
     delete fRawReader; fRawReader = 0;
   }
+
+  fEventId  = -1;
+  fIsOpen   = kFALSE;
+  fHasEvent = kFALSE;
 }
 
 
-/******************************************************************************/
+//------------------------------------------------------------------------------
 // Static convenience functions, mainly used from macros.
-/******************************************************************************/
+//------------------------------------------------------------------------------
 
 Bool_t AliEveEventManager::HasRunLoader()
 {
   // Check if AliRunLoader is initialized.
 
-  return gAliEveEvent && gAliEveEvent->fRunLoader;
+  return gAliEveEvent && gAliEveEvent->fHasEvent && gAliEveEvent->fRunLoader;
 }
 
 Bool_t AliEveEventManager::HasESD()
 {
   // Check if AliESDEvent is initialized.
 
-  return gAliEveEvent && gAliEveEvent->fESD;
+  return gAliEveEvent && gAliEveEvent->fHasEvent && gAliEveEvent->fESD;
 }
 
 Bool_t AliEveEventManager::HasESDfriend()
 {
   // Check if AliESDfriend is initialized.
 
-  return gAliEveEvent && gAliEveEvent->fESDfriend;
+  return gAliEveEvent && gAliEveEvent->fHasEvent && gAliEveEvent->fESDfriend;
 }
 
 Bool_t AliEveEventManager::HasRawReader()
 {
   // Check if raw-reader is initialized.
 
-  return gAliEveEvent && gAliEveEvent->fRawReader;
+  return gAliEveEvent && gAliEveEvent->fHasEvent && gAliEveEvent->fRawReader;
 }
 
 AliRunLoader* AliEveEventManager::AssertRunLoader()
@@ -593,7 +654,7 @@ AliRunLoader* AliEveEventManager::AssertRunLoader()
 
   static const TEveException kEH("AliEveEventManager::AssertRunLoader ");
 
-  if (gAliEveEvent == 0)
+  if (gAliEveEvent == 0 || gAliEveEvent->fHasEvent == kFALSE)
     throw (kEH + "ALICE event not ready.");
   if (gAliEveEvent->fRunLoader == 0)
     throw (kEH + "AliRunLoader not initialised.");
@@ -608,7 +669,7 @@ AliESDEvent* AliEveEventManager::AssertESD()
 
   static const TEveException kEH("AliEveEventManager::AssertESD ");
 
-  if (gAliEveEvent == 0)
+  if (gAliEveEvent == 0 || gAliEveEvent->fHasEvent == kFALSE)
     throw (kEH + "ALICE event not ready.");
   if (gAliEveEvent->fESD == 0)
     throw (kEH + "AliESD not initialised.");
@@ -623,7 +684,7 @@ AliESDfriend* AliEveEventManager::AssertESDfriend()
 
   static const TEveException kEH("AliEveEventManager::AssertESDfriend ");
 
-  if (gAliEveEvent == 0)
+  if (gAliEveEvent == 0 || gAliEveEvent->fHasEvent == kFALSE)
     throw (kEH + "ALICE event not ready.");
   if (gAliEveEvent->fESDfriend == 0)
     throw (kEH + "AliESDfriend not initialised.");
@@ -636,7 +697,7 @@ AliRawReader* AliEveEventManager::AssertRawReader()
 
   static const TEveException kEH("AliEveEventManager::AssertRawReader ");
 
-  if (gAliEveEvent == 0)
+  if (gAliEveEvent == 0 || gAliEveEvent->fHasEvent == kFALSE)
     throw (kEH + "ALICE event not ready.");
   if (gAliEveEvent->fRawReader == 0)
     throw (kEH + "RawReader not ready.");
@@ -646,9 +707,13 @@ AliRawReader* AliEveEventManager::AssertRawReader()
 
 AliMagF* AliEveEventManager::AssertMagField()
 {
-  // Make sure AliMagF is initialized and return it.
+  // Make sure AliMagF is initialized and returns it.
+  // Run-loader must be initialized to get the correct magnetic field!
   // Throws exception in case magnetic field is not available.
   // Static utility for macros.
+
+  // !!!! This should be fixed ... get field also in some other way,
+  // not only via run-loader.
 
   if (fgMagField == 0)
   {
@@ -694,9 +759,15 @@ TGeoManager* AliEveEventManager::AssertGeometry()
   return gGeoManager;
 }
 
+
+//------------------------------------------------------------------------------
+// Autoloading
+//------------------------------------------------------------------------------
+
 void AliEveEventManager::SetAutoLoad(Bool_t autoLoad)
 {
   // Set the automatic event loading mode
+
   fAutoLoad = autoLoad;
   StartStopAutoLoadTimer();
 }
@@ -704,6 +775,7 @@ void AliEveEventManager::SetAutoLoad(Bool_t autoLoad)
 void AliEveEventManager::SetAutoLoadTime(Double_t time)
 {
   // Set the auto-load time in seconds
+
   fAutoLoadTime = time;
   StartStopAutoLoadTimer();
 }
@@ -712,20 +784,26 @@ void AliEveEventManager::StartStopAutoLoadTimer()
 {
   // Create if needed and start
   // the automatic event loading timer
+
   if (fAutoLoad)
   {
     if (!fAutoLoadTimer)
     {
       fAutoLoadTimer = new TTimer;
-      fAutoLoadTimer->Connect("Timeout()","AliEveEventManager",this,"NextEvent()");
+      fAutoLoadTimer->Connect("Timeout()", "AliEveEventManager", this, "NextEvent()");
     }
-    fAutoLoadTimer->Start((Long_t)fAutoLoadTime*1000,kTRUE);
+    fAutoLoadTimer->Start((Long_t)fAutoLoadTime*1000, kTRUE);
   }
   else
   {
     if (fAutoLoadTimer) fAutoLoadTimer->Stop();
   }
 }
+
+
+//------------------------------------------------------------------------------
+// Post event-loading functions
+//------------------------------------------------------------------------------
 
 void AliEveEventManager::AfterNewEventLoaded()
 {
@@ -749,7 +827,10 @@ void AliEveEventManager::NewEventLoaded()
   Emit("NewEventLoaded()");
 }
 
-//==============================================================================
+
+//------------------------------------------------------------------------------
+// Event info dumpers
+//------------------------------------------------------------------------------
 
 TString AliEveEventManager::GetEventInfoHorizontal() const
 {

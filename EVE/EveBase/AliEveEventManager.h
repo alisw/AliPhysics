@@ -86,7 +86,10 @@ public:
   Double_t      GetAutoLoadTime() const {return fAutoLoadTime;}
   void          SetAutoLoad(Bool_t autoLoad);
   void          SetAutoLoadTime(Double_t time);
-  Bool_t        GetIsOnline() const {return fIsOnline;}
+
+  Bool_t AreEventFilesOpened()    const { return fIsOpen;       }
+  Bool_t IsEventAvailable()       const { return fHasEvent;     }
+  Bool_t IsUnderExternalControl() const { return fExternalCtrl; }
 
   void          StartStopAutoLoadTimer();
 
@@ -112,7 +115,11 @@ protected:
   Bool_t        fAutoLoad;              // Automatic loading of events (online)
   Double_t      fAutoLoadTime;          // Auto-load time in seconds
   TTimer       *fAutoLoadTimer;         // Timer for automatic event loading
-  Bool_t        fIsOnline;              // Are we running online?
+
+  Bool_t        fIsOpen;                // Are event-files opened.
+  Bool_t        fHasEvent;              // Is an event available.
+  Bool_t        fExternalCtrl;          // Are we under external event-loop.
+
 
   AliEveMacroExecutor *fExecutor;       // Executor for std macros
 

@@ -14,10 +14,16 @@
 
 class AliEveEventManager;
 class TEveGValuator;
+class TGButton;
 class TGCheckButton;
+class TGTextButton;
 class TGTextView;
 class TGNumberEntry;
 class TGLabel;
+
+//==============================================================================
+// AliEveEventManagerEditor
+//==============================================================================
 
 //______________________________________________________________________________
 // Short description of AliEveEventManagerEditor
@@ -32,27 +38,13 @@ public:
 
    virtual void SetModel(TObject* obj);
 
-   // Declare callback/slot methods
-   void DoSetAutoLoad();
-   void DoSetAutoLoadTime();
-   void DoPrevEvent();
    void DoNextEvent();
-   void DoLastEvent();
-   void DoRefresh();
 
 protected:
-   AliEveEventManager            *fM; // Model object.
+   AliEveEventManager  *fM;         // Model object.
 
-   // Declare widgets
-   TGCheckButton    *fAutoLoad;  // Check-box for automatic loading of events
-   TEveGValuator    *fAutoLoadTime; // Time for automatic loading of events
-
-   TGTextButton     *fNextEvent; // Load next event
-   TGTextButton     *fPrevEvent; // Load previous event
-   TGTextButton     *fLastEvent; // Load last event
-   TGTextButton     *fRefresh;   // Refresh opened data-files (reopen)
-
-   TGTextView       *fEventInfo; // Text box with event info
+   TGTextButton        *fNextEvent; // Load next event
+   TGTextView          *fEventInfo; // Text box with event info
 
 private:
    AliEveEventManagerEditor(const AliEveEventManagerEditor&);            // Not implemented
@@ -62,37 +54,58 @@ private:
 };
 
 
+//==============================================================================
+// AliEveEventManagerWindow
+//==============================================================================
+
+//______________________________________________________________________________
+// Short description of AliEveEventManagerWindow
+//
+
 class AliEveEventManagerWindow : public TGMainFrame
 {
 public:
-   AliEveEventManagerWindow();
-   virtual ~AliEveEventManagerWindow();
+  AliEveEventManagerWindow();
+  virtual ~AliEveEventManagerWindow();
 
-   void DoFirstEvent();
-   void DoPrevEvent();
-   void DoNextEvent();
-   void DoLastEvent();
+  void DoFirstEvent();
+  void DoPrevEvent();
+  void DoNextEvent();
+  void DoLastEvent();
 
-   void DoSetEvent();
+  void DoSetEvent();
 
-   void Update();
+  void DoRefresh();
+  void DoSetAutoLoad();
+  void DoSetAutoLoadTime();
+
+  void Update();
 
 protected:
-   TGTextButton         *fFirstEvent;
-   TGTextButton         *fPrevEvent;
-   TGTextButton         *fNextEvent;
-   TGTextButton         *fLastEvent;
+  TGTextButton         *fFirstEvent;   // Go to first event
+  TGTextButton         *fPrevEvent;    // Go to prev event
+  TGTextButton         *fNextEvent;    // Go to next event
+  TGTextButton         *fLastEvent;    // Go to last event
+  TGTextButton         *fRefresh;      // Refresh event-file state
 
-   TGNumberEntry        *fEventId;
-   TGLabel              *fInfoLabel;
+  TGNumberEntry        *fEventId;      // Display/edit current event id
+  TGLabel              *fInfoLabel;    // Display last available event id
 
-   TGTextView           *fEventInfo; // Text box with event info
+  TGCheckButton        *fAutoLoad;     // Check-box for automatic loading of events
+  TEveGValuator        *fAutoLoadTime; // Time for automatic loading of events
+
+  TGTextView           *fEventInfo;    // Text box with event info
+
+  TGTextButton* MkTxtButton(TGCompositeFrame* p, const char* txt, Int_t width=0,
+			    Int_t lo=0, Int_t ro=0, Int_t to=0, Int_t bo=0);
+  TGLabel* MkLabel(TGCompositeFrame* p, const char* txt, Int_t width,
+		   Int_t lo=0, Int_t ro=0, Int_t to=2, Int_t bo=0);
 
 private:
-   AliEveEventManagerWindow(const AliEveEventManagerWindow&);            // Not implemented
-   AliEveEventManagerWindow& operator=(const AliEveEventManagerWindow&); // Not implemented
+  AliEveEventManagerWindow(const AliEveEventManagerWindow&);            // Not implemented
+  AliEveEventManagerWindow& operator=(const AliEveEventManagerWindow&); // Not implemented
 
-   ClassDef(AliEveEventManagerWindow, 0); // GUI window for AliEveEventManager.
+  ClassDef(AliEveEventManagerWindow, 0); // GUI window for AliEveEventManager.
 };
 
 #endif
