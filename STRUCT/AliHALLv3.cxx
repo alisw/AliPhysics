@@ -146,9 +146,9 @@ void AliHALLv3::CreateGeometry()
   // RB24/26 wall 
   phid     = phi * kRaddeg;
   TGeoVolume* voHUWA = new TGeoVolume("HUWA",
-				      new TGeoTubeSeg(r, r+dr, hullen, phid - 90., 270. - phid),
+				      new TGeoTubeSeg(r, r+dr, hullen, phid - 90. + 0.002, 270. - phid - 0.002),
 				      kMedCC);
-  asHall->AddNode(voHUWA, 1, new TGeoTranslation(70., 40., -zHall26 - hullen ));
+  asHall->AddNode(voHUWA, 1, new TGeoTranslation(70., 40., -zHall26 - hullen + 0.002 ));
   //
   // Air inside tunnel
   TGeoTube* shHUWAT1 = new TGeoTube(0., r, hullen);
@@ -174,7 +174,7 @@ void AliHALLv3::CreateGeometry()
   //  RB26 side
   phid      = 16.197;
   Float_t dzFloor26 = zHall26 - dzL3/2.;
-  TGeoBBox* shHHF1 = new TGeoBBox(dxFloor/2. + 470., dyFloor/2., dzFloor26/2.);
+  TGeoBBox* shHHF1 = new TGeoBBox(dxFloor/2. + 470., dyFloor/2., dzFloor26/2. - 0.002);
   shHHF1->SetName("shHHF1");
   TGeoVolume* voHHF1 = new TGeoVolume("HHF1", shHHF1, kMedCC);
   asHall->AddNode(voHHF1, 2, new TGeoTranslation(0., yFloor, -(dzL3/2. + dzFloor26/2.)));
@@ -200,7 +200,7 @@ void AliHALLv3::CreateGeometry()
   Float_t trALP1 = TMath::ATan((trBL1 - trTL1) / 2. / trH1) * kRaddeg;
   dx = 1.5 * trBL1 - 0.5 * trTL1 + dxFloor/2. + dyFloor * TMath::Tan(phid * kDegrad);
   TGeoVolume* voHHW11 = new TGeoVolume("HHW11",
-				       new TGeoTrap(dzFloor26/2., 0., 0., 
+				       new TGeoTrap(dzFloor26/2. - 0.002, 0., 0., 
 						    trH1, trBL1, trTL1, trALP1, trH1, trBL1, trTL1, trALP1),
 				       kMedCC);
   TGeoVolume* voHHW12 = new TGeoVolume("HHW12",
@@ -212,13 +212,13 @@ void AliHALLv3::CreateGeometry()
   
   asHall->AddNode(voHHW12, 1, new TGeoTranslation( dx, dy,  (dzL3/2. + dzFloor24/2.)));
   asHall->AddNode(voHHW12, 2, new TGeoCombiTrans (-dx, dy,  (dzL3/2. + dzFloor24/2.), rot001));
-  asHall->AddNode(voHHW11, 3, new TGeoTranslation( dx, dy, -(dzL3/2. + dzFloor26/2.)));
-  asHall->AddNode(voHHW11, 4, new TGeoCombiTrans (-dx, dy, -(dzL3/2. + dzFloor26/2.), rot001));
+  asHall->AddNode(voHHW11, 1, new TGeoTranslation( dx, dy, -(dzL3/2. + dzFloor26/2.)));
+  asHall->AddNode(voHHW11, 2, new TGeoCombiTrans (-dx, dy, -(dzL3/2. + dzFloor26/2.), rot001));
 
   Float_t boDY =  (yHall - (yFloor + dyFloor/2.) - 2. * trH1)/ 2.;
   Float_t dzHall = zHall26 + zHall24;
 
-  TGeoVolume* voHBW1 = new TGeoVolume("HBW1", new TGeoBBox(50., boDY, dzHall / 2.), kMedCC);
+  TGeoVolume* voHBW1 = new TGeoVolume("HBW1", new TGeoBBox(50., boDY, dzHall / 2. - 0.05), kMedCC);
 
   asHall->AddNode(voHBW1, 1,  new TGeoTranslation( 1120., yHall - boDY, (zHall24-zHall26)/2.));
   asHall->AddNode(voHBW1, 2,  new TGeoTranslation(-1120., yHall - boDY, (zHall24-zHall26)/2.));
@@ -231,7 +231,7 @@ void AliHALLv3::CreateGeometry()
   am   = hm * TMath::Tan(phim / 2. * kDegrad);
   bm   = (hm + 76.) / hm * am;
   cm   = bm * 2. / TMath::Sqrt(2.);
-  trH1   =  (1273.78 - cm) / 2.;
+  trH1   =  (1273.78 - cm) / 2. - 0.002;
   trBL1  =  235. - cm * TMath::Tan(phid * kDegrad) / 2.;
   trTL1  =   50.;
   trALP1 = TMath::ATan((trBL1 - trTL1) / 2. / trH1) * kRaddeg;
@@ -240,7 +240,7 @@ void AliHALLv3::CreateGeometry()
   dx = cm * TMath::Tan(phid * kDegrad) + dxFloor/2. + trBL1 * 1.5 - trTL1 * .5;
 
   TGeoVolume* voHHW2 = new TGeoVolume("HHW2",
-				      new TGeoTrap(dzL3/2., 0., 0., 
+				      new TGeoTrap(dzL3/2. - 0.002, 0., 0., 
 						   trH1, trBL1, trTL1, trALP1, trH1, trBL1, trTL1, trALP1),
 				      kMedCC);
 
