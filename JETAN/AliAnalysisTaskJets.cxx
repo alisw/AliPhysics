@@ -25,6 +25,7 @@
 #include "AliAnalysisTaskJets.h"
 #include "AliAnalysisManager.h"
 #include "AliJetFinder.h"
+#include "AliJetHeader.h"
 #include "AliJetHistos.h"
 #include "AliESDEvent.h"
 #include "AliESD.h"
@@ -69,6 +70,7 @@ void AliAnalysisTaskJets::UserCreateOutputObjects()
 //
     if (fDebug > 1) printf("AnalysisTaskJets::CreateOutPutData() \n");
 
+    
 
     if(fNonStdBranch.Length()==0){
       //  Connec default AOD to jet finder
@@ -89,6 +91,19 @@ void AliAnalysisTaskJets::UserCreateOutputObjects()
     fHistos       = new AliJetHistos();
     fHistos->AddHistosToList(fListOfHistos);
     
+    // Add the JetFinderInforamtion to the Outputlist
+    AliJetHeader *fH = fJetFinder->GetHeader();
+    // Compose a characteristic output name
+    // with the name of the output branch
+    if(fH){
+      if(fNonStdBranch.Length()==0){
+	fH->SetName("AliJetHeader_jets");
+      }
+      else{
+	fH->SetName(Form("AliJetHeader_%s",fNonStdBranch.Data()));
+      }
+    }
+    OutputTree()->GetUserInfo()->Add(fH);
 }
 
 void AliAnalysisTaskJets::Init()
