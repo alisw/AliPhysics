@@ -100,7 +100,7 @@ void AliZDCReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) co
        tZN1Corr[quad] = (Float_t) (digit.GetADCValue(0)-meanPed[pedindex]);
        if(tZN1Corr[quad]<0.) tZN1Corr[quad] = 0.;
        tZN1Corr[quad+5] = (Float_t) (digit.GetADCValue(1)-meanPed[pedindex+kNch]);
-       if(tZN1Corr[quad+5]<0.) tZN1Corr[quad] = 0.;
+       if(tZN1Corr[quad+5]<0.) tZN1Corr[quad+5] = 0.;
        //printf("\t pedindex %d tZN1Corr[%d] = %1.0f tZN1Corr[%d] = %1.0f", 
        //	pedindex, quad, tZN1Corr[quad], quad+5, tZN1Corr[quad+5]);
     }
@@ -109,7 +109,7 @@ void AliZDCReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) co
        tZP1Corr[quad] = (Float_t) (digit.GetADCValue(0)-meanPed[pedindex]);
        if(tZP1Corr[quad]<0.) tZP1Corr[quad] = 0.;
        tZP1Corr[quad+5] = (Float_t) (digit.GetADCValue(1)-meanPed[pedindex+kNch]);
-       if(tZP1Corr[quad+5]<0.) tZP1Corr[quad] = 0.;
+       if(tZP1Corr[quad+5]<0.) tZP1Corr[quad+5] = 0.;
        //printf("\t pedindex %d tZP1Corr[%d] = %1.0f tZP1Corr[%d] = %1.0f", 
        //	pedindex, quad, tZP1Corr[quad], quad+5, tZP1Corr[quad+5]);
     }
