@@ -107,6 +107,7 @@ AliEMCALRawUtils::AliEMCALRawUtils()
   //To make sure we match with the geometry in a simulation file,
   //let's try to get it first.  If not, take the default geometry
   AliRunLoader *rl = AliRunLoader::GetRunLoader();
+  if(!rl) AliError("Cannot find RunLoader!");
   if (rl->GetAliRun() && rl->GetAliRun()->GetDetector("EMCAL")) {
     fGeom = dynamic_cast<AliEMCAL*>(rl->GetAliRun()->GetDetector("EMCAL"))->GetGeometry();
   } else {
@@ -371,8 +372,8 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr)
 
     FitRaw(gSig, signalF, amp, time) ; 
     
-    if (amp > 0 && amp < 10000) {  //check both high and low end of
-				   //result, 10000 is somewhat arbitrary
+    if (amp > 0 && amp < 2000) {  //check both high and low end of
+				   //result, 2000 is somewhat arbitrary
       AliDebug(2,Form("id %d lowGain %d amp %g", id, lowGain, amp));
       //cout << "col " << col-40 << " row " << row-8 << " lowGain " << lowGain << " amp " << amp << endl;
 
@@ -466,6 +467,7 @@ void AliEMCALRawUtils::FitRaw(TGraph * gSig, TF1* signalF, Float_t & amp, Float_
   Int_t n_ped_after_sig = 0;
   Int_t plateau_width = 0;
   Int_t plateau_start = 9999;
+  Float_t Cut = 0.3;
 
   for (Int_t i=fNPedSamples; i < gSig->GetN(); i++) {
     Double_t ttime, signal;
@@ -488,6 +490,10 @@ void AliEMCALRawUtils::FitRaw(TGraph * gSig, TF1* signalF, Float_t & amp, Float_
         max_fit = tmin_after_sig;
         break;
       }
+      if ( signal < Cut*max){   //stop fit at 30% amplitude(avoid the pulse shape falling edge)
+        max_fit = i;
+        break;
+      }
       if ( signal < ped + fNoiseThreshold)
         n_ped_after_sig++;
       if (n_ped_after_sig >= 5) {  // include 5 pedestal bins after peak
@@ -503,11 +509,10 @@ void AliEMCALRawUtils::FitRaw(TGraph * gSig, TF1* signalF, Float_t & amp, Float_
   }
 
   if(plateau_width > 0) {
-    for(int j = 0; j < plateau_width-2; j++) {
+    for(int j = 0; j < plateau_width; j++) {
       //Note, have to remove the same point N times because after each
       //remove, the positions of all subsequent points have shifted down
-      //We leave the first and last as anchor points
-      gSig->RemovePoint(plateau_start+1);
+      gSig->RemovePoint(plateau_start);
     }
   }
 
