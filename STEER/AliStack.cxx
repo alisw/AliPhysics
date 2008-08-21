@@ -992,7 +992,7 @@ Bool_t AliStack::IsPhysicalPrimary(Int_t index)
     
     //
     // Initial state particle
-    if (ist > 20) return kFALSE;
+    if (ist > 1) return kFALSE;
     
     Int_t pdg = TMath::Abs(p->GetPdgCode());
     
