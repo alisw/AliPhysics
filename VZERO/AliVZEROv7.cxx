@@ -1207,13 +1207,13 @@ void AliVZEROv7::CreateGeometry()
     new TGeoArb8("sV0ACha17",fV0ASciWd/1.5,v0APts);
     for (int i=0;i<2;i++) {
     v0APts[0+8*i] = fV0AR0*cos45-preShape7;
-    v0APts[1+8*i] = -(fV0AR0-fV0AFraWd)*sin45-preShape7;
+    v0APts[1+8*i] = -(fV0AR0-fV0AFraWd)*sin45+preShape7;
     v0APts[2+8*i] = (fV0AR0-fV0AFraWd/2.)*cos45-preShape7;
     v0APts[3+8*i] = -(fV0AR0-fV0AFraWd/2.)*sin45;
     v0APts[4+8*i] = (fV0AR4+fV0AFraWd/2.)*cos45+preShape7;
-    v0APts[5+8*i] = -(fV0AR4+fV0AFraWd/2.)*sin45+2.*preShape7;
+    v0APts[5+8*i] = -(fV0AR4+fV0AFraWd/2.)*sin45-2.*preShape7;
     v0APts[6+8*i] = (fV0AR4+fV0AFraWd)*cos45+preShape7;
-    v0APts[7+8*i] = -fV0AR4*sin45+preShape7;
+    v0APts[7+8*i] = -fV0AR4*sin45-preShape7;
     }
     new TGeoArb8("sV0ACha27", fV0ASciWd/2.+2.*preShape, v0APts);
     new TGeoCompositeShape("sV0ACha127","sV0ACha17+sV0ACha27");
@@ -1244,10 +1244,10 @@ void AliVZEROv7::CreateGeometry()
     v0APts[1+8*i] = -(fV0AR0-fV0AFraWd)*sin45;
     v0APts[2+8*i] = (fV0AR0-fV0AFraWd/2.)*cos45;
     v0APts[3+8*i] = -(fV0AR0-fV0AFraWd/2.)*sin45;
-    v0APts[4+8*i] = (fV0AR4+fV0AFraWd/2.)*cos45;
-    v0APts[5+8*i] = -(fV0AR4+fV0AFraWd/2.)*sin45;
-    v0APts[6+8*i] = (fV0AR4+fV0AFraWd)*cos45;
-    v0APts[7+8*i] = -fV0AR4*sin45;
+    v0APts[4+8*i] = (fV0AR4+fV0AFraWd/2.)*cos45/2.;
+    v0APts[5+8*i] = -(fV0AR4+fV0AFraWd/2.)*sin45/2.;
+    v0APts[6+8*i] = (fV0AR4+fV0AFraWd)*cos45/2.;
+    v0APts[7+8*i] = -fV0AR4*sin45/2.;
     }
     TGeoArb8 *sV0AFraB27 = new TGeoArb8("sV0AFraB27", fV0ASciWd/2., v0APts);
     TGeoVolume *v0AFraB27 = new TGeoVolume("V0AFraB27",sV0AFraB27,medV0AFra);
@@ -1459,7 +1459,7 @@ void AliVZEROv7::CreateGeometry()
       v0APts[1+8*i] = -(fV0AR0-fV0AFraWd)*sin45+preShape;
       v0APts[2+8*i] = (fV0AR0-fV0AFraWd/2.)*sin45-preShape;
       v0APts[3+8*i] = -(fV0AR0-fV0AFraWd/2.)*sin45;
-      v0APts[4+8*i] = (fV0AR4+fV0AFraWd/2.)*sin45+preShape;
+      v0APts[4+8*i] = (fV0AR4+fV0AFraWd/2.)*sin45+preShape; 
       v0APts[5+8*i] = -(fV0AR4+fV0AFraWd/2.)*sin45-2.*preShape;
       v0APts[6+8*i] = (fV0AR4+fV0AFraWd)*sin45+preShape;
       v0APts[7+8*i] = -fV0AR4*sin45-preShape;
@@ -1490,8 +1490,8 @@ void AliVZEROv7::CreateGeometry()
     TGeoVolume *v0AFra8 = new TGeoVolumeAssembly("V0AFra8"); 
     for (int i=0;i<2;i++) {
       v0APts[0+8*i] = fV0AR0-fV0AFraWd/2.;  v0APts[1+8*i] = 0.0;
-      v0APts[2+8*i] = fV0AR0-fV0AFraWd/2.;  v0APts[3+8*i] = -fV0AFraWd/4.; 
-      v0APts[4+8*i] = fV0AR4+fV0AFraWd/2.;  v0APts[5+8*i] = -fV0AFraWd/4.;
+      v0APts[2+8*i] = fV0AR0-fV0AFraWd/2.;  v0APts[3+8*i] = -fV0AFraWd/8.; 
+      v0APts[4+8*i] = fV0AR4+fV0AFraWd/2.;  v0APts[5+8*i] = -fV0AFraWd/8.;
       v0APts[6+8*i] = fV0AR4+fV0AFraWd/2.;  v0APts[7+8*i] = 0.0;
     }    
     TGeoArb8 *sV0AFraB18 = new TGeoArb8("sV0AFraB18",fV0ASciWd/2.,v0APts);
@@ -1501,10 +1501,10 @@ void AliVZEROv7::CreateGeometry()
       v0APts[1+8*i] = -(fV0AR0-fV0AFraWd)*sin45; 
       v0APts[2+8*i] = (fV0AR0-fV0AFraWd/2.)*sin45;
       v0APts[3+8*i] = -(fV0AR0-fV0AFraWd/2.)*sin45;
-      v0APts[4+8*i] = (fV0AR4+fV0AFraWd/2.)*sin45;
-      v0APts[5+8*i] = -(fV0AR4+fV0AFraWd/2.)*sin45;
-      v0APts[6+8*i] = (fV0AR4+fV0AFraWd)*sin45;
-      v0APts[7+8*i] = -fV0AR4*sin45;
+      v0APts[4+8*i] = (fV0AR4+fV0AFraWd/2.)*sin45/2.;
+      v0APts[5+8*i] = -(fV0AR4+fV0AFraWd/2.)*sin45/2.;
+      v0APts[6+8*i] = (fV0AR4+fV0AFraWd)*sin45/2.;
+      v0APts[7+8*i] = -fV0AR4*sin45/2.;
     }
     TGeoArb8 *sV0AFraB28 = new TGeoArb8("sV0AFraB28", fV0ASciWd/2., v0APts);
     TGeoVolume *v0AFraB28 = new TGeoVolume("V0AFraB28",sV0AFraB28,medV0AFra);
