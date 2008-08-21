@@ -2820,7 +2820,7 @@ Bool_t AliReconstruction::InitAliEVE()
   AliInfo(Form("Loading AliEVE macro: %s",macroStr.Data()));
   if (gROOT->LoadMacro(macroStr.Data()) != 0) return kFALSE;
 
-  gROOT->ProcessLine("if (!gAliEveEvent) {gAliEveEvent = new AliEveEventManager();gAliEveEvent->SetAutoLoad(kTRUE);gAliEveEvent->AddNewEventCommand(\"alieve_online_on_new_event()\");gEve->AddEvent(gAliEveEvent);};");
+  gROOT->ProcessLine("if (!gAliEveEvent) {gAliEveEvent = new AliEveEventManager();gAliEveEvent->AddNewEventCommand(\"alieve_online_on_new_event()\");gEve->AddEvent(gAliEveEvent);};");
   gROOT->ProcessLine("alieve_online_init()");
 
   return kTRUE;
@@ -2836,7 +2836,6 @@ void AliReconstruction::RunAliEVE()
 
   AliInfo("Running AliEVE...");
   gROOT->ProcessLine(Form("gAliEveEvent->SetEvent((AliRunLoader*)%p,(AliRawReader*)%p,(AliESDEvent*)%p);",fRunLoader,fRawReader,fesd));
-  gROOT->ProcessLine("gAliEveEvent->StartStopAutoLoadTimer();");
   gSystem->Run();
 }
 

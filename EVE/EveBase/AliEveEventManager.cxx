@@ -384,6 +384,8 @@ void AliEveEventManager::SetEvent(AliRunLoader *runLoader, AliRawReader *rawRead
 
   ElementChanged();
   AfterNewEventLoaded();
+
+  if (fAutoLoad) StartAutoLoadTimer(); 
 }
 
 Int_t AliEveEventManager::GetMaxEventId(Bool_t /*refreshESD*/) const
@@ -856,7 +858,7 @@ void AliEveEventManager::AutoLoadNextEvent()
 
   StopAutoLoadTimer();
   NextEvent();
-  if (fAutoLoad)
+  if (fAutoLoad && !fExternalCtrl)
     StartAutoLoadTimer();
 }
 

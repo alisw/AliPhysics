@@ -48,6 +48,13 @@ void alieve_online_init()
     gEve->GetScenes()->FindChild("Rho-Z Projection")->AddElement(a);
   }
 
+  TEveBrowser* browser = gEve->GetBrowser();
+
+  browser->StartEmbedding(TRootBrowser::kBottom);
+  new AliEveEventManagerWindow;
+  browser->StopEmbedding("EventCtrl");
+
+
   gEve->Redraw3D(kTRUE);
 }
 
