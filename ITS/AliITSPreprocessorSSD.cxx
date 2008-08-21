@@ -177,7 +177,7 @@ UInt_t AliITSPreprocessorSSD::Process(TMap* /*dcsAliasMap*/)
         return 1;
       }  
       
-      if(!StoreReferenceData("Calib","PedestalSSD",  (TObject*)pedel, &metaData)) {
+      if(!StoreReferenceData("Ref","PedestalSSD",  (TObject*)pedel, &metaData)) {
 	Log("no store");
 	return 1;
       }
