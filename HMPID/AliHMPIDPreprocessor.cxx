@@ -206,8 +206,10 @@ Bool_t AliHMPIDPreprocessor::ProcDcs(TMap* pMap)
   metaData.SetResponsible("AliHMPIDPreprocessor"); 
   metaData.SetComment("HMPID preprocessor fills TObjArrays.");
 
-  stDcsStore =   Store("Calib","Qthre",&arQthre,&metaData) &&    // from DCS 
-                 Store("Calib","Nmean",&arNmean,&metaData);      // from DCS
+  stDcsStore =   Store("Calib","Qthre",&arQthre,&metaData,0,kTRUE) &&    // from DCS  0,kTRUE generates the file from Run 0 to Run 99999999
+                 Store("Calib","Nmean",&arNmean,&metaData,0,kTRUE);      // from DCS
+//  stDcsStore =   Store("Calib","Qthre",&arQthre,&metaData) &&    // from DCS 
+//                 Store("Calib","Nmean",&arNmean,&metaData);      // from DCS
   if(!stDcsStore) {
     Log("HMPID - failure to store DCS data results in OCDB");    
   }
@@ -280,6 +282,7 @@ Bool_t AliHMPIDPreprocessor::ProcPed()
   metaData.SetResponsible("AliHMPIDPreprocessor"); 
   metaData.SetComment("HMPID processor fills TObjArrays.");  
   stPedStore = Store("Calib","DaqSig",&aDaqSig,&metaData,0,kTRUE);
+//  stPedStore = Store("Calib","DaqSig",&aDaqSig,&metaData);
   if(!stPedStore) {
     Log("HMPID - failure to store PEDESTAL data results in OCDB");    
   }
