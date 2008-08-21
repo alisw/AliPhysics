@@ -82,16 +82,15 @@ public:
 
   static TGeoManager*  AssertGeometry();
 
-  Bool_t        GetAutoLoad() const {return fAutoLoad;}
-  Double_t      GetAutoLoadTime() const {return fAutoLoadTime;}
+  Double_t      GetAutoLoadTime()        const { return fAutoLoadTime; }
+  Bool_t        GetAutoLoad()            const { return fAutoLoad;     }
+  void          SetAutoLoadTime(Float_t time);
   void          SetAutoLoad(Bool_t autoLoad);
-  void          SetAutoLoadTime(Double_t time);
+  void          AutoLoadNextEvent();
 
-  Bool_t AreEventFilesOpened()    const { return fIsOpen;       }
-  Bool_t IsEventAvailable()       const { return fHasEvent;     }
-  Bool_t IsUnderExternalControl() const { return fExternalCtrl; }
-
-  void          StartStopAutoLoadTimer();
+  Bool_t        AreEventFilesOpened()    const { return fIsOpen;       }
+  Bool_t        IsEventAvailable()       const { return fHasEvent;     }
+  Bool_t        IsUnderExternalControl() const { return fExternalCtrl; }
 
   virtual void  AfterNewEventLoaded();
   void          NewEventLoaded();      // *SIGNAL*
@@ -113,7 +112,7 @@ protected:
   AliRawReader* fRawReader;             // Raw-adata reader.
 
   Bool_t        fAutoLoad;              // Automatic loading of events (online)
-  Double_t      fAutoLoadTime;          // Auto-load time in seconds
+  Float_t       fAutoLoadTime;          // Auto-load time in seconds
   TTimer       *fAutoLoadTimer;         // Timer for automatic event loading
 
   Bool_t        fIsOpen;                // Are event-files opened.
@@ -135,6 +134,12 @@ protected:
 private:
   AliEveEventManager(const AliEveEventManager&);            // Not implemented
   AliEveEventManager& operator=(const AliEveEventManager&); // Not implemented
+
+  void InitInternals();
+  void StartAutoLoadTimer();
+  void StopAutoLoadTimer();
+
+  Bool_t fAutoLoadTimerRunning; // State of auto-load timer.
 
   ClassDef(AliEveEventManager, 0); // Interface for getting all event components in a uniform way.
 };

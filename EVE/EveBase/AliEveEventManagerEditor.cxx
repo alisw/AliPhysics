@@ -108,7 +108,7 @@ AliEveEventManagerWindow::AliEveEventManagerWindow() :
 {
   // Constructor.
 
-  TString cls("AliEveEventManagerWindow");
+  const TString cls("AliEveEventManagerWindow");
   TGTextButton *b = 0;
   {
     Int_t width = 50;
@@ -235,8 +235,6 @@ void AliEveEventManagerWindow::DoSetAutoLoadTime()
   // Set the auto-load time in seconds
 
   gAliEveEvent->SetAutoLoadTime(fAutoLoadTime->GetValue());
-  gAliEveEvent->SetAutoLoad(fAutoLoad->IsOn());
-  Update();
 }
 
 //______________________________________________________________________________

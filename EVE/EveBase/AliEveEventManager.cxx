@@ -62,6 +62,15 @@ TString  AliEveEventManager::fgCdbUri("local://$ALICE_ROOT");
 
 AliMagF* AliEveEventManager::fgMagField = 0;
 
+void AliEveEventManager::InitInternals()
+{
+  // Initialize internal members.
+
+  fAutoLoadTimer = new TTimer;
+  fAutoLoadTimer->Connect("Timeout()", "AliEveEventManager", this, "AutoLoadNextEvent()");
+
+  fExecutor = new AliEveMacroExecutor;
+}
 
 AliEveEventManager::AliEveEventManager() :
   TEveEventManager(),
@@ -73,9 +82,12 @@ AliEveEventManager::AliEveEventManager() :
   fRawReader (0),
   fAutoLoad  (kFALSE), fAutoLoadTime (5.),     fAutoLoadTimer(0),
   fIsOpen    (kFALSE), fHasEvent     (kFALSE), fExternalCtrl (kFALSE),
-  fExecutor  (new AliEveMacroExecutor)
+  fExecutor  (0),
+  fAutoLoadTimerRunning(kFALSE)
 {
   // Default constructor.
+
+  InitInternals();
 }
 
 AliEveEventManager::AliEveEventManager(TString path, Int_t ev) :
@@ -86,14 +98,20 @@ AliEveEventManager::AliEveEventManager(TString path, Int_t ev) :
   fESDFile   (0), fESDTree (0), fESD (0),
   fESDfriend (0), fESDfriendExists(kFALSE),
   fRawReader (0),
-  fAutoLoad  (kFALSE), fAutoLoadTime (5.),     fAutoLoadTimer(0),
+  fAutoLoad  (kFALSE), fAutoLoadTime (5),      fAutoLoadTimer(0),
   fIsOpen    (kFALSE), fHasEvent     (kFALSE), fExternalCtrl (kFALSE),
-  fExecutor  (new AliEveMacroExecutor)
+  fExecutor  (0),
+  fAutoLoadTimerRunning(kFALSE)
 {
   // Constructor with event-directory URL and event-id.
 
+  InitInternals();
+
   Open();
-  if (ev >= 0) GotoEvent(ev);
+  if (ev >= 0)
+  {
+    GotoEvent(ev);
+  }
 }
 
 AliEveEventManager::~AliEveEventManager()
@@ -105,9 +123,8 @@ AliEveEventManager::~AliEveEventManager()
     Close();
   }
 
-  if (fAutoLoadTimer) delete fAutoLoadTimer;
   // Somewhat unclear what to do here.
-  // In principle should close all data sources and deregister from
+  // In principle should wipe event data and deregister from
   // TEveManager.
 }
 
@@ -426,11 +443,15 @@ void AliEveEventManager::GotoEvent(Int_t event)
 
   static const TEveException kEH("AliEveEventManager::GotoEvent ");
 
+  if (fAutoLoadTimerRunning)
+  {
+    throw (kEH + "Event auto-load timer is running.");
+  }
   if (fExternalCtrl)
   {
     throw (kEH + "Event-loop is under external control.");
   }
-  if (!fIsOpen)
+  else if (!fIsOpen)
   {
     throw (kEH + "Event-files not opened.");
   }
@@ -543,10 +564,17 @@ void AliEveEventManager::NextEvent()
   // Loads next event.
   // Does magick needed for online display when under external event control.
   
+  static const TEveException kEH("AliEveEventManager::NextEvent ");
+
+  if (fAutoLoadTimerRunning)
+  {
+    throw (kEH + "Event auto-load timer is running.");
+  }
+
   if (fExternalCtrl)
   {
-    if (fAutoLoadTimer) fAutoLoadTimer->Stop();
-
+    // !!! This should really go somewhere else. It is done in GotoEvent(),
+    // so here we should do it in SetEvent().
     DestroyElements();
 
     gSystem->ExitLoop();
@@ -557,7 +585,6 @@ void AliEveEventManager::NextEvent()
       GotoEvent(fEventId + 1);
     else
       GotoEvent(0);
-    StartStopAutoLoadTimer();
   }
 }
 
@@ -567,17 +594,16 @@ void AliEveEventManager::PrevEvent()
 
   static const TEveException kEH("AliEveEventManager::PrevEvent ");
 
+  if (fAutoLoadTimerRunning)
+  {
+    throw (kEH + "Event auto-load timer is running.");
+  }
   if (fExternalCtrl)
   {
     throw (kEH + "Event-loop is under external control.");
   }
-  if (!fIsOpen)
-  {
-    throw (kEH + "Event-files not opened.");
-  }
 
   GotoEvent(fEventId - 1);
-  StartStopAutoLoadTimer();
 }
 
 void AliEveEventManager::Close()
@@ -591,6 +617,9 @@ void AliEveEventManager::Close()
   {
     throw (kEH + "Event-files not opened.");
   }
+
+  if (fAutoLoadTimerRunning)
+    StopAutoLoadTimer();
 
   if (fESDTree) {
     delete fESD;       fESD       = 0;
@@ -761,43 +790,74 @@ TGeoManager* AliEveEventManager::AssertGeometry()
 
 
 //------------------------------------------------------------------------------
-// Autoloading
+// Autoloading of events
 //------------------------------------------------------------------------------
+
+void AliEveEventManager::SetAutoLoadTime(Float_t time)
+{
+  // Set the auto-load time in seconds
+
+  fAutoLoadTime = time;
+}
 
 void AliEveEventManager::SetAutoLoad(Bool_t autoLoad)
 {
   // Set the automatic event loading mode
 
+  static const TEveException kEH("AliEveEventManager::SetAutoLoad ");
+
+  if (fAutoLoad == autoLoad)
+  {
+    Warning(kEH, "Setting autoload to the same value as before - %s. Ignoring.", fAutoLoad ? "true" : "false");
+    return;
+  }
+
   fAutoLoad = autoLoad;
-  StartStopAutoLoadTimer();
-}
-
-void AliEveEventManager::SetAutoLoadTime(Double_t time)
-{
-  // Set the auto-load time in seconds
-
-  fAutoLoadTime = time;
-  StartStopAutoLoadTimer();
-}
-
-void AliEveEventManager::StartStopAutoLoadTimer()
-{
-  // Create if needed and start
-  // the automatic event loading timer
-
   if (fAutoLoad)
   {
-    if (!fAutoLoadTimer)
-    {
-      fAutoLoadTimer = new TTimer;
-      fAutoLoadTimer->Connect("Timeout()", "AliEveEventManager", this, "NextEvent()");
-    }
-    fAutoLoadTimer->Start((Long_t)fAutoLoadTime*1000, kTRUE);
+    StartAutoLoadTimer();
   }
   else
   {
-    if (fAutoLoadTimer) fAutoLoadTimer->Stop();
+    StopAutoLoadTimer();
   }
+}
+
+void AliEveEventManager::StartAutoLoadTimer()
+{
+  // Start the auto-load timer.
+
+  fAutoLoadTimer->SetTime((Long_t)(1000*fAutoLoadTime));
+  fAutoLoadTimer->Reset();
+  fAutoLoadTimer->TurnOn();
+  fAutoLoadTimerRunning = kTRUE;
+}
+
+void AliEveEventManager::StopAutoLoadTimer()
+{
+  // Stop the auto-load timer.
+
+  fAutoLoadTimerRunning = kFALSE;
+  fAutoLoadTimer->TurnOff();
+}
+
+void AliEveEventManager::AutoLoadNextEvent()
+{
+  // Called from auto-load timer, so it has to be public.
+  // Do NOT call it directly.
+
+  static const TEveException kEH("AliEveEventManager::AutoLoadNextEvent ");
+
+  if ( ! fAutoLoadTimerRunning || ! fAutoLoadTimer->HasTimedOut())
+  {
+    Warning(kEH, "Called unexpectedly - ignoring the call. Should ONLY be called from an internal timer.");
+    return;
+  }
+
+  StopAutoLoadTimer();
+  NextEvent();
+  if (fAutoLoad)
+    StartAutoLoadTimer();
 }
 
 
