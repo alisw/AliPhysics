@@ -347,7 +347,7 @@ void AliZDCReconstructor::ReconstructEventpp(TTree *clustersTree, Float_t* ZN1AD
   
   // create the output tree
   AliZDCReco reco(calibSumZN1, calibSumZP1, calibSumZN2, calibSumZP2, 
-  		  calibTowZN1, calibTowZN2, calibTowZP1, calibTowZP2, 
+  		  calibTowZN1, calibTowZP1, calibTowZN2, calibTowZP2, 
 		  ZEM1ADCCorr, ZEM2ADCCorr, PMRef1, PMRef2,
 		  nDetSpecNLeft, nDetSpecPLeft, nDetSpecNRight, nDetSpecPRight, 
 		  nGenSpecNLeft, nGenSpecPLeft, nGenSpecLeft, nGenSpecNRight, 
@@ -523,7 +523,7 @@ void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree, Float_t* ZN1
   
   // create the output tree
   AliZDCReco reco(calibSumZN1, calibSumZP1, calibSumZN2, calibSumZP2, 
-  		  calibTowZN1, calibTowZN2, calibTowZP1, calibTowZP2, 
+  		  calibTowZN1, calibTowZP1, calibTowZN2, calibTowZP2, 
 		  ZEM1ADCCorr, ZEM2ADCCorr, PMRef1, PMRef2,
 		  nDetSpecNLeft, nDetSpecPLeft, nDetSpecNRight, nDetSpecPRight, 
 		  nGenSpecNLeft, nGenSpecPLeft, nGenSpecLeft, nGenSpecNRight, 
