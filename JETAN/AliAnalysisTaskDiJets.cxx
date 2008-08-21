@@ -65,7 +65,20 @@ void AliAnalysisTaskDiJets::UserExec(Option_t */*option*/)
 //
     fDiJets->Delete();
     AliAODEvent* aod   = dynamic_cast<AliAODEvent*> (InputEvent());
+
+    if(!aod){
+      // We do not have an input AOD, look in the output
+      aod = AODEvent();
+      if(!aod){
+	Printf("%s:%d AODEvent not found in the Output",(char*)__FILE__,__LINE__);
+	return;
+      }    
+    }
+
     TClonesArray* jets = aod->GetJets();
+
+    // N.B. if we take the aod from the output this is always
+    // empty and since it is the same as fDiJets 
     fDiJetsIn = (TClonesArray*) (aod->GetList()->FindObject("Dijets"));
    
     if (fDiJetsIn) {
