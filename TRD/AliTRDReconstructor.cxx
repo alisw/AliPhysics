@@ -84,6 +84,7 @@ void AliTRDReconstructor::Init(){
   printf("\tWrite Online Tracklets [tw] : %s\n", fSteerParam&kWriteTracklets?"yes":"no");
   printf("\tDrift Gas Argon        [ar] : %s\n", fSteerParam&kDriftGas?"yes":"no");
   printf("\tStand Alone Tracking   [sa] : %s\n", fSteerParam&kSeeding?"yes":"no");
+  printf("\tHLT         Tracking  [hlt] : %s\n", fSteerParam&kHLT?"yes":"no");
   printf("\tNN PID                 [nn] : %s\n", fSteerParam&kSteerPID?"yes":"no");
   printf("\tStreaming Levels            : Clusterizer[%d] Tracker[%d] PID[%d]\n", fStreamLevel[kClusterizer], fStreamLevel[kTracker], fStreamLevel[kPID]);
 }
@@ -197,6 +198,7 @@ void AliTRDReconstructor::SetOption(Option_t *opt)
 // PID method in reconstruction (NN) [nn] = true
 // write online tracklets [tw] = false
 // drift gas [ar] = false
+// HLT tracking [hlt] = false
 //
   fSteerParam = 0x00000007;
 
@@ -218,6 +220,9 @@ void AliTRDReconstructor::SetOption(Option_t *opt)
       continue;	
     } else if(sopt.Contains("ar")){
       if(!sopt.Contains("!")) fSteerParam |= kDriftGas;
+      continue;	
+    } else if(sopt.Contains("hlt")){
+      if(!sopt.Contains("!")) fSteerParam |= kHLT;
       continue;	
     } else if(sopt.Contains("sl")){
     	TObjArray *stl = sopt.Tokenize("_");

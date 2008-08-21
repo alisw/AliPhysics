@@ -2094,6 +2094,8 @@ Int_t AliTRDtrackerV1::Clusters2TracksStack(AliTRDtrackingChamber **stack, TClon
 
     // increment counters
     ntracks2 += ntracks1;
+
+    if(fReconstructor->IsHLT()) break;
     fSieveSeeding++;
 
     // Rebuild plane configurations and indices taking only unused clusters into account
@@ -2375,13 +2377,25 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *ss
         // try attaching clusters to tracklets
         Int_t nUsedCl = 0;
         Int_t mlayers = 0;
-        for(int iLayer=0; iLayer<kNSeedPlanes; iLayer++){
+        Int_t kLayers = fReconstructor->IsHLT() ? kNPlanes : kNSeedPlanes; 
+        for(int iLayer=0; iLayer<kLayers; iLayer++){
           Int_t jLayer = planes[iLayer];
           if(!cseed[jLayer].AttachClustersIter(stack[jLayer], 5., kFALSE, c[iLayer])) continue;
           nUsedCl += cseed[jLayer].GetNUsed();
           if(nUsedCl > 25) break;
           mlayers++;
         }
+        if(fReconstructor->IsHLT()){ 
+          fTrackQuality[ntracks] = 1.; // dummy value
+          ntracks++;
+          if(ntracks == kMaxTracksStack){
+            AliWarning(Form("Number of seeds reached maximum allowed (%d) in stack.", kMaxTracksStack));
+            return ntracks;
+          }
+          cseed += 6; 
+          continue;
+        }
+
         if(mlayers < kNSeedPlanes){ 
           //AliInfo(Form("Failed updating all seeds %d [%d].", mlayers, kNSeedPlanes));
           AliTRDtrackerDebug::SetCandidateNumber(AliTRDtrackerDebug::GetCandidateNumber() + 1);
