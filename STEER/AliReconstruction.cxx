@@ -1549,13 +1549,14 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
     //
     // Improve the reconstructed primary vertex position using the tracks
     //
-    TObject *obj = fOptions.FindObject("ITS");
-    if (obj) {
-      TString optITS = obj->GetTitle();
-      if (optITS.Contains("cosmics") || optITS.Contains("COSMICS")) 
-	fRunVertexFinderTracks=kFALSE;
+    Bool_t runVertexFinderTracks = fRunVertexFinderTracks;
+    if(fesd->GetPrimaryVertexSPD()) {
+      TString vtitle = fesd->GetPrimaryVertexSPD()->GetTitle();
+      if(vtitle.Contains("cosmics")) {
+	runVertexFinderTracks=kFALSE;
+      }
     }
-    if (fRunVertexFinderTracks) {
+    if (runVertexFinderTracks) { 
        // TPC + ITS primary vertex
        ftVertexer->SetITSMode();
        if(fDiamondProfile && fMeanVertexConstraint) {
