@@ -2370,8 +2370,8 @@ void AliZDCv3::StepManager()
     
     else if(vol[0]==2){	//Quadrant in ZPC
       // Calculating particle coordinates inside ZPC
-      xdet[0] = x[0]-fPosZPA[0];
-      xdet[1] = x[1]-fPosZPA[1];
+      xdet[0] = x[0]-fPosZPC[0];
+      xdet[1] = x[1]-fPosZPC[1];
       if(xdet[0]>=fDimZP[0])  xdet[0]=fDimZP[0]-0.01;
       if(xdet[0]<=-fDimZP[0]) xdet[0]=-fDimZP[0]+0.01;
       // Calculating tower in ZP
@@ -2423,8 +2423,8 @@ void AliZDCv3::StepManager()
     //
     else if(vol[0]==5){	//Quadrant in ZPA
       // Calculating particle coordinates inside ZPA
-      xdet[0] = x[0]-fPosZPC[0];
-      xdet[1] = x[1]-fPosZPC[1];
+      xdet[0] = x[0]-fPosZPA[0];
+      xdet[1] = x[1]-fPosZPA[1];
       if(xdet[0]>=fDimZP[0])  xdet[0]=fDimZP[0]-0.01;
       if(xdet[0]<=-fDimZP[0]) xdet[0]=-fDimZP[0]+0.01;
       // Calculating tower in ZP
