@@ -117,6 +117,7 @@ fUseBadZonesFromOCDB(kFALSE),
 fUseSingleBadChannelsFromOCDB(kFALSE),
 fMinFractionOfBadInRoad(0),
 fAllowProlongationWithEmptyRoad(kFALSE),
+fOuterStartLayerSA(0),
 fFactorSAWindowSizes(1.),
 fNLoopsSA(33),
 fMinPhiSA(0.002),
@@ -346,6 +347,9 @@ AliITSRecoParam *AliITSRecoParam::GetCosmicTestParam()
   // vertexer for cosmics
   param->SetVertexer(2);
 
+  // find independently ITS SA tracks 
+  param->SetSAUseAllClusters();
+  param->SetOuterStartLayerSA(AliITSgeomTGeo::GetNLayers()-2);
 
   // larger seach windows for SA (in case of large misalignments)
   param->SetFactorSAWindowSizes(3.); 

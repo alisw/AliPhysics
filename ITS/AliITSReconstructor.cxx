@@ -102,14 +102,14 @@ void AliITSReconstructor::Reconstruct(TTree *digitsTree, TTree *clustersTree) co
 {
 // reconstruct clusters
 
-  TString option = GetOption();
-  Bool_t clusfinder=kTRUE;   // Default: V2 cluster finder
-  if(option.Contains("OrigCF"))clusfinder=kFALSE;
+  Int_t cluFindOpt = GetRecoParam()->GetClusterFinder();
+  Bool_t useV2=kTRUE;   // Default: V2 cluster finder
+  if(cluFindOpt==1) useV2=kFALSE;
 
   fDetTypeRec->SetTreeAddressD(digitsTree);
   fDetTypeRec->MakeBranch(clustersTree,"R");
   fDetTypeRec->SetTreeAddressR(clustersTree);
-  fDetTypeRec->DigitsToRecPoints(digitsTree,clustersTree,0,"All",clusfinder);    
+  fDetTypeRec->DigitsToRecPoints(digitsTree,clustersTree,0,"All",useV2);    
 }
 
 //_________________________________________________________________
@@ -126,30 +126,29 @@ AliTracker* AliITSReconstructor::CreateTracker() const
 {
 // create a ITS tracker
 
-  
-  TString selectedTracker = GetOption();
+  Int_t trackerOpt = GetRecoParam()->GetTracker();
   AliTracker* tracker;    
-  if (selectedTracker.Contains("MI")) {
+  if (trackerOpt==1) {
     tracker = new AliITStrackerMI(0);
     AliITStrackerMI *mit=(AliITStrackerMI*)tracker;
     mit->SetDetTypeRec(fDetTypeRec);
   }  
-  else if (selectedTracker.Contains("V2")) {
+  else if (trackerOpt==2) {
     tracker = new AliITStrackerV2(0);
   }
   else {
     tracker =  new AliITStrackerSA(0);  // inherits from AliITStrackerMI
     AliITStrackerSA *sat=(AliITStrackerSA*)tracker;
     sat->SetDetTypeRec(fDetTypeRec);
-    if(selectedTracker.Contains("onlyITS"))sat->SetSAFlag(kTRUE);
+    if(GetRecoParam()->GetTrackerSAOnly()) sat->SetSAFlag(kTRUE);
     if(sat->GetSAFlag())AliDebug(1,"Tracking Performed in ITS only\n");
-    if(selectedTracker.Contains("cosmics")||selectedTracker.Contains("COSMICS"))
-      sat->SetOuterStartLayer(AliITSgeomTGeo::GetNLayers()-2);
+    sat->SetOuterStartLayer(GetRecoParam()->GetOuterStartLayerSA());
   }
 
-  TString selectedPIDmethod = GetOption();
+  Int_t pidOpt = GetRecoParam()->GetPID();
+
   AliITSReconstructor* nc = const_cast<AliITSReconstructor*>(this);
-  if(selectedPIDmethod.Contains("LandauFitPID")){
+  if(pidOpt==1){
     Info("FillESD","ITS LandauFitPID option has been selected\n");
     nc->fItsPID = new AliITSpidESD2((AliITStrackerMI*)tracker);
   }
@@ -168,21 +167,21 @@ AliVertexer* AliITSReconstructor::CreateVertexer() const
 {
 // create a ITS vertexer
 
-  TString selectedVertexer = GetOption();
-  if(selectedVertexer.Contains("ions") || selectedVertexer.Contains("IONS")){
+  Int_t vtxOpt = GetRecoParam()->GetVertexer();
+  if(vtxOpt==3){
     Info("CreateVertexer","a AliITSVertexerIons object has been selected\n");
     return new AliITSVertexerIons();
   }
-  if(selectedVertexer.Contains("smear") || selectedVertexer.Contains("SMEAR")){
+  if(vtxOpt==4){
     Double_t smear[3]={0.005,0.005,0.01};
     Info("CreateVertexer","a AliITSVertexerFast object has been selected\n"); 
     return new AliITSVertexerFast(smear);
   }
-  if(selectedVertexer.Contains("vertexerz") || selectedVertexer.Contains("VERTEXERZ")){
+  if(vtxOpt==1){
     Info("CreateVertexer","a AliITSVertexerZ object has been selected\n");
     return new AliITSVertexerZ();
   }
-  if(selectedVertexer.Contains("cosmics") || selectedVertexer.Contains("COSMICS")){
+  if(vtxOpt==2){
     Info("CreateVertexer","a AliITSVertexerCosmics object has been selected\n");
     return new AliITSVertexerCosmics();
   }
@@ -197,11 +196,10 @@ void AliITSReconstructor::FillESD(TTree * /*digitsTree*/, TTree *clustersTree,
 {
 // make PID, find V0s and cascade
   if(fItsPID!=0) {
-    TString selectedPIDmethod = GetOption();
-    if(selectedPIDmethod.Contains("LandauFitPID")){
+    Int_t pidOpt = GetRecoParam()->GetPID();
+    if(pidOpt==1){
       fItsPID->MakePID(clustersTree,esd);
-    }
-    else{
+    }else{
       fItsPID->MakePID(esd);
     }
   }

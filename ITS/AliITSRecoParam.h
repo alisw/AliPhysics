@@ -66,12 +66,12 @@ class AliITSRecoParam : public AliDetectorRecoParam
   void PrintParameters() const; 
 
   void     SetTracker(Int_t tracker=0) { fTracker=tracker; }
-  void     SetTrackerSA() { SetTracker(0); }
+  void     SetTrackerDefault() { SetTracker(0); } // = MI and SA
   void     SetTrackerMI() { SetTracker(1); }
   void     SetTrackerV2() { SetTracker(2); }
   Int_t    GetTracker() const { return fTracker; }
-  void     SetITSonly(Bool_t flag=kTRUE) { fITSonly=flag; }
-  Bool_t   GetITSonly() const { return fITSonly; }
+  void     SetTrackerSAOnly(Bool_t flag=kTRUE) { fITSonly=flag; }
+  Bool_t   GetTrackerSAOnly() const { return fITSonly; }
   void     SetVertexer(Int_t vertexer=0) { fVertexer=vertexer; }
   void     SetVertexer3D() { SetVertexer(0); }
   void     SetVertexerZ() { SetVertexer(1); }
@@ -191,6 +191,8 @@ class AliITSRecoParam : public AliDetectorRecoParam
   void   SetMinFractionOfBadInRoad(Float_t frac=0) { fMinFractionOfBadInRoad=frac; return; }
   Float_t GetMinFractionOfBadInRoad() const { return fMinFractionOfBadInRoad; }
 
+  void   SetOuterStartLayerSA(Int_t lay) { fOuterStartLayerSA=lay; return; }
+  Int_t  GetOuterStartLayerSA() const { return fOuterStartLayerSA; }
   void   SetFactorSAWindowSizes(Double_t fact=1.) { fFactorSAWindowSizes=fact; return; }
   Double_t GetFactorSAWindowSizes() const { return fFactorSAWindowSizes; }
 
@@ -366,6 +368,7 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Bool_t fUseSingleBadChannelsFromOCDB; // enable using OCDB info on bad single SPD pixels and SDD anodes (MI)
   Float_t fMinFractionOfBadInRoad; // to decide whether to skip the layer (MI)
   Bool_t fAllowProlongationWithEmptyRoad; // allow to prolong even if road is empty (MI)
+  Int_t fOuterStartLayerSA;      // outer ITS layer to start track in SA
   Double_t fFactorSAWindowSizes; // larger window sizes in SA
   Int_t fNLoopsSA;               // number of loops in tracker SA
   Double_t fMinPhiSA;               // minimum phi value for SA windows
@@ -385,7 +388,7 @@ class AliITSRecoParam : public AliDetectorRecoParam
 
   Bool_t fUseChargeMatchingInClusterFinderSSD; // SSD
 
-  ClassDef(AliITSRecoParam,8) // ITS reco parameters
+  ClassDef(AliITSRecoParam,9) // ITS reco parameters
 };
 
 #endif
