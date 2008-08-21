@@ -9,6 +9,12 @@
 /// The format of the raw data corresponds to the one
 /// implemented in AliVZEROBuffer class.
 ///
+/// PLEASE NOTE that Int_t channel is here the FEE channel from 0 to 63 in the 
+/// order defined by Yannick Zoccarato which is not the same order as the order 
+/// defined in aliroot by the naming and numbering conventions.
+/// Therefore one has to go from FEE_Channel to AliRoot_Channel using 
+/// GetOfflineChannel(Int_t channel)  when going from Online to Offline !!!
+///
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <TObject.h>
@@ -59,8 +65,23 @@ class AliVZERORawStream: public TObject {
     UInt_t            GetWidth(Int_t channel) const
       { return fWidth[channel]; }
 
+// Getter of Offline Channel number as used in aliroot (defined by aliroot 
+// numbering convention) from FEE channel (electronic channel number given 
+// by the V0 electronics readout) - See comment above - 
+
+    Int_t              GetOfflineChannel(Int_t channel)  const
+      { Int_t  fOfflineChannel[64] = {39, 38, 37, 36, 35, 34, 33, 32, 
+                                      47, 46, 45, 44, 43, 42, 41, 40, 
+			              55, 54, 53, 52, 51, 50, 49, 48, 
+			              63, 62, 61, 60, 59, 58, 57, 56,
+			               7,  6,  5,  4,  3,  2,  1,  0, 
+			              15, 14, 13, 12, 11, 10,  9,  8,
+			              23, 22, 21, 20, 19, 18, 17, 16, 
+			              31, 30, 29, 28, 27, 26, 25, 24};
+               return fOfflineChannel[channel]; }	
+
     enum EVZERORawDataParams {
-      kNChannels = 64, // number of electronic channels in V0
+      kNChannels = 64, // number of electronic channels in V0 (FEE numbering)
       kNEvOfInt  = 21, // number of events of interest
       kNScalers  = 16, // number of scalers
       kNBunches  = 10  // number of bunches used in Minimum Bias information 
@@ -98,6 +119,7 @@ class AliVZERORawStream: public TObject {
     UShort_t      fTriggerMask;    // VZERO trigger inputs mask
 
     Int_t         fPosition;       // current position in the raw-data payload
+    
 
     AliRawReader* fRawReader;      // object for reading the raw data
 
