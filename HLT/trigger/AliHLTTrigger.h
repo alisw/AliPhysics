@@ -54,13 +54,14 @@ class AliHLTTrigger : public AliHLTProcessor
    *                                   input data volume  
    * @param inputMultiplier  <i>[out]</i>: multiplication ratio
    */
-  virtual void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier)
-  {
-    constBase = strlen(GetTriggerName()) + sizeof(TObjString) + 1;
-    inputMultiplier = 1;
-  }
+  virtual void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
 
  protected:
+
+  /// Not implemented.
+  AliHLTTrigger(const AliHLTTrigger& obj);
+  /// Not implemented.
+  AliHLTTrigger& operator = (const AliHLTTrigger& obj);
 
   /**
    * This method needs to be implemented by child classes to implement the actual
@@ -96,6 +97,44 @@ class AliHLTTrigger : public AliHLTProcessor
    */
   AliHLTComponentTriggerData* GetTriggerData() const { return fTriggerData; }
 
+  /**
+   * Set a bit to 1 in the readout list which will enable that DDL for readout
+   * @param ddlId     Equipment ID of DDL to readout, in decimal.
+   */
+  void EnableDDLBit(Int_t ddlId)
+  {
+    AliHLTComponent::SetDDLBit(fReadoutList, ddlId, kTRUE);
+  }
+
+  /**
+   * Set a bit to 0 in the readout list which will exclude that DDL from the readout.
+   * @param ddlId     Equipment ID of DDL not to readout, in decimal.
+   */
+  void DisableDDLBit(Int_t ddlId)
+  {
+    AliHLTComponent::SetDDLBit(fReadoutList, ddlId, kFALSE);
+  }
+  
+  /**
+   * Set or unset bit in the readout list.
+   * @param ddlId     Equipment ID of DDL to set, in decimal.
+   * @param state     kTRUE will enable readout of that DDL, kFALSE will disable readout.
+   */
+  void SetDDLBit(Int_t ddlId, Bool_t state)
+  {
+    AliHLTComponent::SetDDLBit(fReadoutList, ddlId, state);
+  }
+  
+  /**
+   * Returns the DDL readout list for modification by hand.
+   */
+  const AliHLTEventDDL& GetReadoutList() const { return fReadoutList; }
+
+  /**
+   * Returns the DDL readout list.
+   */
+  AliHLTEventDDL& GetReadoutList() { return fReadoutList; }
+
  private:
  
   /**
@@ -130,6 +169,7 @@ class AliHLTTrigger : public AliHLTProcessor
   AliHLTComponentTriggerData* fTriggerData; ///! Trigger data for the current event. Only valid inside DoTrigger.
   bool fDecisionMade;  ///! Flag indicating if the trigger decision has been made for this trigger yet.
   int fTriggerEventResult;  ///! Result returned by PushBack method in the TriggerEvent method.
+  AliHLTEventDDL fReadoutList; ///! The readout DDL list.
   
   ClassDef(AliHLTTrigger, 0) // Base class for HLT triggers.
 

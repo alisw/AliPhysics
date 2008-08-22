@@ -9,6 +9,7 @@
 # class header files, the link definition for the root dictionary
 # will be created from the names of the header files
 CLASS_HDRS:= \
+                AliHLTTrigger.h                          \
                 AliHLTEventSummary.h                        \
                 AliHLTEventSummaryProducerComponent.h       \
                 AliHLTRunSummary.h                          \

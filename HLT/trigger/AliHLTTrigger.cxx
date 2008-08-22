@@ -15,6 +15,7 @@
  **************************************************************************/
 
 #include "AliHLTTrigger.h"
+#include "TObjString.h"
 
 ClassImp(AliHLTTrigger)
 
@@ -24,15 +25,25 @@ AliHLTTrigger::AliHLTTrigger() :
 	fEventData(NULL),
 	fTriggerData(NULL),
 	fDecisionMade(false),
-	fTriggerEventResult(0)
+	fTriggerEventResult(0),
+	fReadoutList()
 {
-  // Default constructor sets pointers to NULL.
+  /// Default constructor sets pointers to NULL.
 }
 
 
 AliHLTTrigger::~AliHLTTrigger()
 {
-  // Default destructor.
+  /// Default destructor.
+}
+
+
+void AliHLTTrigger::GetOutputDataSize(unsigned long& constBase, double& inputMultiplier)
+{
+  /// Returns output data size estimate.
+
+  constBase = strlen(GetTriggerName()) + sizeof(TObjString) + 1;
+  inputMultiplier = 1;
 }
 
 
@@ -54,6 +65,11 @@ int AliHLTTrigger::DoEvent(const AliHLTComponentEventData& evtData, AliHLTCompon
   {
     TriggerEvent(false);
   }
+
+//TODO
+//  result = PushBack(&fReadoutList, kAliHLTDataTypeTObject|kAliHLTDataOriginOut);
+//  if (result != 0) return result;
+
   // Cleanup
   fEventData = NULL;
   fTriggerData = NULL;
@@ -68,6 +84,6 @@ void AliHLTTrigger::TriggerEvent(bool value)
   if (fTriggerEventResult != 0) return;  // Do not do anything if a previous call failed.
   TObjString triggerResult(GetTriggerName());
   triggerResult.SetBit(BIT(14), value);  // Use bit 14 for the boolean decision.
-  fTriggerEventResult = PushBack(triggerResult, kAliHLTDataTypeTObject|kAliHLTDataOriginOut);
+  fTriggerEventResult = PushBack(&triggerResult, kAliHLTDataTypeTObject|kAliHLTDataOriginOut);
 }
 
