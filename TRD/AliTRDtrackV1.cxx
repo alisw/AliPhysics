@@ -644,6 +644,7 @@ void AliTRDtrackV1::UpdateESDtrack(AliESDtrack *track)
   }
 
   // copy PID to ESD
+  if(!fPIDquality) return;
   track->SetTRDpid(fPID);
   track->SetTRDpidQuality(fPIDquality);
 }
