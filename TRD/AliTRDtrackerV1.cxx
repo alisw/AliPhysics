@@ -1885,39 +1885,40 @@ Int_t AliTRDtrackerV1::Clusters2TracksStack(AliTRDtrackingChamber **stack, TClon
       // Check track candidates
       candidates = 0;
       for (Int_t itrack = 0; itrack < ntracks; itrack++) {
-  Int_t trackIndex = sort[itrack];
-  if (signedTrack[trackIndex] || fakeTrack[trackIndex]) continue;
+        Int_t trackIndex = sort[itrack];
+        if (signedTrack[trackIndex] || fakeTrack[trackIndex]) continue;
   
         
-  // Calculate track parameters from tracklets seeds
-  Int_t labelsall[1000];
-  Int_t nlabelsall = 0;
-  Int_t naccepted  = 0;
-  Int_t ncl        = 0;
-  Int_t nused      = 0;
-  Int_t nlayers    = 0;
-  Int_t findable   = 0;
-  for (Int_t jLayer = 0; jLayer < kNPlanes; jLayer++) {
-    Int_t jseed = kNPlanes*trackIndex+jLayer;
-    if(!sseed[jseed].IsOK()) continue;
-    if (TMath::Abs(sseed[jseed].GetYref(0) / sseed[jseed].GetX0()) < 0.15) findable++;
-  
-    sseed[jseed].UpdateUsed();
-    ncl   += sseed[jseed].GetN2();
-    nused += sseed[jseed].GetNUsed();
-    nlayers++;
-  
-    // Cooking label
-    for (Int_t itime = 0; itime < fgNTimeBins; itime++) {
-      if(!sseed[jseed].IsUsable(itime)) continue;
-      naccepted++;
-      Int_t tindex = 0, ilab = 0;
-      while(ilab<3 && (tindex = sseed[jseed].GetClusters(itime)->GetLabel(ilab)) >= 0){
-        labelsall[nlabelsall++] = tindex;
-        ilab++;
-      }
-    }
-  }
+        // Calculate track parameters from tracklets seeds
+        Int_t labelsall[1000];
+        Int_t nlabelsall = 0;
+        Int_t naccepted  = 0;
+        Int_t ncl        = 0;
+        Int_t nused      = 0;
+        Int_t nlayers    = 0;
+        Int_t findable   = 0;
+        for (Int_t jLayer = 0; jLayer < kNPlanes; jLayer++) {
+          Int_t jseed = kNPlanes*trackIndex+jLayer;
+          if(!sseed[jseed].IsOK()) continue;
+          if (TMath::Abs(sseed[jseed].GetYref(0) / sseed[jseed].GetX0()) < 0.15) findable++;
+        
+          sseed[jseed].UpdateUsed();
+          ncl   += sseed[jseed].GetN2();
+          nused += sseed[jseed].GetNUsed();
+          nlayers++;
+        
+//           // Cooking label
+//           for (Int_t itime = 0; itime < fgNTimeBins; itime++) {
+//             if(!sseed[jseed].IsUsable(itime)) continue;
+//             naccepted++;
+//             Int_t tindex = 0, ilab = 0;
+//             while(ilab<3 && (tindex = sseed[jseed].GetClusters(itime)->GetLabel(ilab)) >= 0){
+//               labelsall[nlabelsall++] = tindex;
+//               ilab++;
+//             }
+//           }
+        }
+
   // Filter duplicated tracks
   if (nused > 30){
     //printf("Skip %d nused %d\n", trackIndex, nused);
@@ -1964,28 +1965,6 @@ Int_t AliTRDtrackerV1::Clusters2TracksStack(AliTRDtrackingChamber **stack, TClon
   }
   signedTrack[trackIndex] = kTRUE;
             
-
-  // Build track label - what happens if measured data ???
-  Int_t labels[1000];
-  Int_t outlab[1000];
-  Int_t nlab = 0;
-  for (Int_t iLayer = 0; iLayer < 6; iLayer++) {
-    Int_t jseed = kNPlanes*trackIndex+iLayer;
-    if(!sseed[jseed].IsOK()) continue;
-    for(int ilab=0; ilab<2; ilab++){
-      if(sseed[jseed].GetLabels(ilab) < 0) continue;
-      labels[nlab] = sseed[jseed].GetLabels(ilab);
-      nlab++;
-    }
-  }
-  Freq(nlab,labels,outlab,kFALSE);
-  Int_t   label     = outlab[0];
-  Int_t   frequency = outlab[1];
-  Freq(nlabelsall,labelsall,outlab,kFALSE);
-  Int_t   label1    = outlab[0];
-  Int_t   label2    = outlab[2];
-  Float_t fakeratio = (naccepted - outlab[1]) / Float_t(naccepted);
-  
         
   // Sign clusters
   AliTRDcluster *cl = 0x0; Int_t clusterIndex = -1;
@@ -2025,11 +2004,31 @@ Int_t AliTRDtrackerV1::Clusters2TracksStack(AliTRDtrackingChamber **stack, TClon
           
     Int_t nclusters = 0;
     AliTRDseedV1 *dseed[6];
-    for(int is=0; is<6; is++){
-      dseed[is] = new AliTRDseedV1(sseed[trackIndex*6+is]);
-      dseed[is]->SetOwner();
-      nclusters += sseed[is].GetN2();
+
+    // Build track label - what happens if measured data ???
+    Int_t labels[1000];
+    Int_t outlab[1000];
+    Int_t nlab = 0;
+    for (Int_t iLayer = 0; iLayer < kNPlanes; iLayer++) {
+      Int_t jseed = kNPlanes*trackIndex+iLayer;
+      dseed[iLayer] = new AliTRDseedV1(sseed[jseed]);
+      dseed[iLayer]->SetOwner();
+      nclusters += sseed[jseed].GetN2();
+      if(!sseed[jseed].IsOK()) continue;
+      for(int ilab=0; ilab<2; ilab++){
+        if(sseed[jseed].GetLabels(ilab) < 0) continue;
+        labels[nlab] = sseed[jseed].GetLabels(ilab);
+        nlab++;
+      }
     }
+    Freq(nlab,labels,outlab,kFALSE);
+    Int_t   label     = outlab[0];
+    Int_t   frequency = outlab[1];
+    Freq(nlabelsall,labelsall,outlab,kFALSE);
+    Int_t   label1    = outlab[0];
+    Int_t   label2    = outlab[2];
+    Float_t fakeratio = (naccepted - outlab[1]) / Float_t(naccepted);
+
     //Int_t eventNrInFile = esd->GetEventNumberInFile();
     //AliInfo(Form("Number of clusters %d.", nclusters));
     Int_t eventNumber = AliTRDtrackerDebug::GetEventNumber();
@@ -2301,7 +2300,7 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *ss
         // 				AliInfo("Seeding clusters found. Building seeds ...");
         // 				for(Int_t i = 0; i < kNSeedPlanes; i++) printf("%i. coordinates: x = %6.3f, y = %6.3f, z = %6.3f\n", i, c[i]->GetX(), c[i]->GetY(), c[i]->GetZ());
               
-        for (Int_t il = 0; il < 6; il++) cseed[il].Reset();
+        for (Int_t il = 0; il < kNPlanes; il++) cseed[il].Reset();
       
         FitRieman(c, chi2);
       
@@ -2314,7 +2313,6 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *ss
           tseed->SetReconstructor(fReconstructor);
           Double_t x_anode = stack[iLayer] ? stack[iLayer]->GetX() : x_def[iLayer];
           tseed->SetX0(x_anode);
-          //if(stack[iLayer]) tseed->SetX0(stack[iLayer]->GetX());
           tseed->Init(GetRiemanFitter());
         }
       

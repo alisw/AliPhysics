@@ -481,7 +481,7 @@ Bool_t	AliTRDseedV1::AttachClustersIter(AliTRDtrackingChamber *chamber, Float_t 
   } // Loop: iter
   if (!IsOK()) return kFALSE;
 
-  CookLabels();
+  if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker)>=1) CookLabels();
   UpdateUsed();
   return kTRUE;	
 }
