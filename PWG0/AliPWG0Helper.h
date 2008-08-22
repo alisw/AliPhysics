@@ -29,7 +29,7 @@ class AliPWG0Helper : public TObject
 
     static Bool_t IsEventTriggered(const AliESD* aEsd, Trigger trigger = kMB2);
     static Bool_t IsEventTriggered(ULong64_t triggerMask, Trigger trigger = kMB2);
-    static const AliESDVertex* GetVertex(const AliESDEvent* aEsd, AnalysisMode analysisMethod, Bool_t debug = kFALSE);
+    static const AliESDVertex* GetVertex(AliESDEvent* aEsd, AnalysisMode analysisMethod, Bool_t debug = kFALSE,Bool_t bRedoTPC = false);
 
     static Bool_t IsPrimaryCharged(TParticle* aParticle, Int_t aTotalPrimaries, Bool_t adebug = kFALSE);
 
