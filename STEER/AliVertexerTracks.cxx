@@ -55,7 +55,7 @@ fNTrksToSkip(0),
 fConstraint(kFALSE),
 fOnlyFitter(kFALSE),
 fMinTracks(1),
-fMinITSClusters(5),
+fMinClusters(5),
 fDCAcut(0.1),
 fDCAcutIter0(0.1),
 fNSigma(3.),
@@ -63,6 +63,8 @@ fMaxd0z0(0.5),
 fMinDetFitter(100.),
 fMaxTgl(1000.),
 fITSrefit(kTRUE),
+fFiducialR(3.),
+fFiducialZ(30.),
 fnSigmaForUi00(1.5),
 fDebug(0),
 fAlgo(1)
@@ -72,7 +74,6 @@ fAlgo(1)
 //
   SetVtxStart();
   SetVtxStartSigma();
-  SetITSMode();
 }
 //----------------------------------------------------------------------------
 AliVertexerTracks::AliVertexerTracks(Double_t fieldkG):
@@ -88,7 +89,7 @@ fNTrksToSkip(0),
 fConstraint(kFALSE),
 fOnlyFitter(kFALSE),
 fMinTracks(1),
-fMinITSClusters(5),
+fMinClusters(5),
 fDCAcut(0.1),
 fDCAcutIter0(0.1),
 fNSigma(3.),
@@ -96,6 +97,8 @@ fMaxd0z0(0.5),
 fMinDetFitter(100.),
 fMaxTgl(1000.),
 fITSrefit(kTRUE),
+fFiducialR(3.),
+fFiducialZ(30.),
 fnSigmaForUi00(1.5),
 fDebug(0),
 fAlgo(1)
@@ -105,7 +108,7 @@ fAlgo(1)
 //
   SetVtxStart();
   SetVtxStartSigma();
-  SetITSMode();
+  SetTPCMode();
 }
 //-----------------------------------------------------------------------------
 AliVertexerTracks::~AliVertexerTracks() 
@@ -161,10 +164,11 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertex(const AliESDEvent *esdEvent)
     }
     if(skipThis) continue;
 
+    // check number of clusters in ITS or TPC
+    if(esdt->GetNcls(fMode) < fMinClusters) continue;
+
     if(fMode==0) {        // ITS mode
       if(fITSrefit && !(esdt->GetStatus()&AliESDtrack::kITSrefit)) continue;
-      // check number of clusters in ITS
-      if(esdt->GetNcls(0)<fMinITSClusters) continue;
       Double_t x,p[5],cov[15];
       esdt->GetExternalParameters(x,p);
       esdt->GetExternalCovariance(cov);
@@ -534,7 +538,6 @@ Int_t AliVertexerTracks::PrepareTracks(TObjArray &trkArrayOrig,
   Int_t nTrksOrig = (Int_t)trkArrayOrig.GetEntriesFast();
   Int_t nTrksSel = 0;
   Double_t maxd0rphi; 
-  Double_t fiducialR = 3.0, fiducialZ = 20.0; // pipe and 1.5xSPD
   Double_t sigmaCurr[3];
   Double_t normdistx,normdisty;
   Double_t d0z0[2],covd0z0[3]; 
@@ -573,7 +576,7 @@ Int_t AliVertexerTracks::PrepareTracks(TObjArray &trkArrayOrig,
     sigmad0 = TMath::Sqrt(covd0z0[0]);
     maxd0rphi = fNSigma*sigmad0;
     if(optImpParCut==1) maxd0rphi *= 5.;
-    maxd0rphi = TMath::Min(maxd0rphi,fiducialR); 
+    maxd0rphi = TMath::Min(maxd0rphi,fFiducialR); 
     //sigmad0z0 = TMath::Sqrt(covd0z0[0]+covd0z0[2]); // for future improvement
     //maxd0z0 = 10.*fNSigma*sigmad0z0;
 
@@ -583,7 +586,7 @@ Int_t AliVertexerTracks::PrepareTracks(TObjArray &trkArrayOrig,
     //---- track selection based on impact parameters ----//
 
     // always reject tracks outside fiducial volume
-    if(TMath::Abs(d0z0[0])>fiducialR || TMath::Abs(d0z0[1])>fiducialZ) { 
+    if(TMath::Abs(d0z0[0])>fFiducialR || TMath::Abs(d0z0[1])>fFiducialZ) { 
       if(fDebug) printf("     rejected\n");
       delete track; continue; 
     }
@@ -791,11 +794,13 @@ AliESDVertex* AliVertexerTracks::RemoveTracksFromVertex(AliESDVertex *inVtx,
 void AliVertexerTracks::SetITSMode(Double_t dcacut,
 				   Double_t dcacutIter0,
 				   Double_t maxd0z0,
-				   Int_t minITScls,
+				   Int_t minCls,
 				   Int_t mintrks,
 				   Double_t nsigma,
 				   Double_t mindetfitter,
-				   Double_t maxtgl) 
+				   Double_t maxtgl,
+				   Double_t fidR,
+				   Double_t fidZ) 
 {
 //
 //  Cut values for ITS mode
@@ -805,11 +810,12 @@ void AliVertexerTracks::SetITSMode(Double_t dcacut,
   SetDCAcut(dcacut);
   SetDCAcutIter0(dcacutIter0);
   SetMaxd0z0(maxd0z0);
-  SetMinITSClusters(minITScls);
+  SetMinClusters(minCls);
   SetMinTracks(mintrks);
   SetNSigmad0(nsigma);
   SetMinDetFitter(mindetfitter);
   SetMaxTgl(maxtgl);
+  SetFiducialRZ(fidR,fidZ);
 
   return; 
 }
@@ -817,11 +823,13 @@ void AliVertexerTracks::SetITSMode(Double_t dcacut,
 void AliVertexerTracks::SetTPCMode(Double_t dcacut,
 				   Double_t dcacutIter0,
 				   Double_t maxd0z0,
-				   Int_t minITScls,
+				   Int_t minCls,
 				   Int_t mintrks,
 				   Double_t nsigma,
 				   Double_t mindetfitter,
-				   Double_t maxtgl) 
+				   Double_t maxtgl,
+				   Double_t fidR,
+				   Double_t fidZ) 
 {
 //
 //  Cut values for TPC mode
@@ -831,11 +839,12 @@ void AliVertexerTracks::SetTPCMode(Double_t dcacut,
   SetDCAcut(dcacut);
   SetDCAcutIter0(dcacutIter0);
   SetMaxd0z0(maxd0z0);
-  SetMinITSClusters(minITScls);
+  SetMinClusters(minCls);
   SetMinTracks(mintrks);
   SetNSigmad0(nsigma);
   SetMinDetFitter(mindetfitter);
   SetMaxTgl(maxtgl);
+  SetFiducialRZ(fidR,fidZ);
 
   return; 
 }

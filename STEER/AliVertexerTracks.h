@@ -51,19 +51,23 @@ class AliVertexerTracks : public TObject {
   void SetITSMode(Double_t dcacut=0.1,
 		  Double_t dcacutIter0=0.1,
 		  Double_t maxd0z0=0.5,
-		  Int_t minITScls=5,
+		  Int_t minCls=5,
 		  Int_t mintrks=1,
 		  Double_t nsigma=3.,
 		  Double_t mindetfitter=100.,
-		  Double_t maxtgl=1000.); 
+		  Double_t maxtgl=1000.,
+		  Double_t fidR=3.,
+		  Double_t fidZ=30.); 
   void SetTPCMode(Double_t dcacut=0.1,
 		  Double_t dcacutIter0=1.0,
 		  Double_t maxd0z0=5.0,
-		  Int_t minITScls=0,
+		  Int_t minCls=10,
 		  Int_t mintrks=1,
 		  Double_t nsigma=3.,
 		  Double_t mindetfitter=0.1,
-		  Double_t maxtgl=1.5); 
+		  Double_t maxtgl=1.5, 
+		  Double_t fidR=3.,
+		  Double_t fidZ=30.); 
   void  SetConstraintOff() { fConstraint=kFALSE; return; }
   void  SetConstraintOn() { fConstraint=kTRUE; return; }
   void  SetDebug(Int_t optdebug=0) { fDebug=optdebug; return; }
@@ -72,8 +76,9 @@ class AliVertexerTracks : public TObject {
   void  SetFinderAlgorithm(Int_t opt=1) { fAlgo=opt; return; }
   void  SetITSrefitRequired() { fITSrefit=kTRUE; return; }
   void  SetITSrefitNotRequired() { fITSrefit=kFALSE; return; }
+  void  SetFiducialRZ(Double_t r=3,Double_t z=30) { fFiducialR=r; fFiducialZ=z; return; }
   void  SetMaxd0z0(Double_t maxd0z0=0.5) { fMaxd0z0=maxd0z0; return; }
-  void  SetMinITSClusters(Int_t n=5) { fMinITSClusters=n; return; }
+  void  SetMinClusters(Int_t n=5) { fMinClusters=n; return; }
   void  SetMinTracks(Int_t n=1) { fMinTracks=n; return; }
   void  SetNSigmad0(Double_t n=3) { fNSigma=n; return; }
   Double_t GetNSigmad0() const { return fNSigma; }
@@ -130,7 +135,7 @@ class AliVertexerTracks : public TObject {
   Bool_t    fOnlyFitter;      // primary with one fitter shot only
                               // (use only with beam constraint)
   Int_t     fMinTracks;       // minimum number of tracks
-  Int_t     fMinITSClusters;  // minimum number of ITS clusters per track
+  Int_t     fMinClusters;     // minimum number of ITS or TPC clusters per track
   Double_t  fDCAcut;          // maximum DCA between 2 tracks used for vertex
   Double_t  fDCAcutIter0;     // maximum DCA between 2 tracks used for vertex
   Double_t  fNSigma;          // number of sigmas for d0 cut in PrepareTracks()
@@ -140,6 +145,8 @@ class AliVertexerTracks : public TObject {
   Double_t  fMaxTgl;          // maximum tgl of tracks
   Bool_t    fITSrefit;        // if kTRUE (default), use only kITSrefit tracks
                               // if kFALSE, use all tracks (also TPC only)
+  Double_t  fFiducialR;       // radius of fiducial cylinder for tracks 
+  Double_t  fFiducialZ;       // length of fiducial cylinder for tracks
   Double_t  fnSigmaForUi00;   // n. sigmas from finder in TrackToPoint
   Int_t     fDebug;           //! debug flag - verbose printing if >0
   Int_t     fAlgo;            // option for vertex finding algorythm
