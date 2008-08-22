@@ -20,8 +20,9 @@ keepTempFolder: 1
 dcsTimeOut: 1100
 sendMail: 1
 amandaAdmin: svetozar.kapusta@cern.ch
+amandaAdmin: Peter.Chochula@cern.ch
 nDCSretries: 5
 ppmaxRetries: 2
 passwdFilePath: /home/shuttle/.shuttle_prod
-AliEnPath: /alice/testdata/
+AliEnPath: /alice/data/
 

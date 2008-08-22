@@ -1,4 +1,3 @@
-# PMD Config
 dn: det=PMD,o=shuttle_prod,dc=cern,dc=ch
 objectClass: top
 objectClass: detectorConfig
@@ -11,3 +10,6 @@ objectClass: dcsConfig
 dcsHost: alidcsamanda.cern.ch
 dcsPort: 1337
 multiSplit: 4000
+dcsAlias: PMD_PRE_SM[01..05]_HV.actual.vMon
+dcsAlias: PMD_PRE_SM[20..23]_HV.actual.vMon
+

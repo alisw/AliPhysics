@@ -1,22 +1,48 @@
-# TRD Config
 dn: det=TRD,o=shuttle_prod,dc=cern,dc=ch
 objectClass: detectorConfig
 det: TRD
 strictRunOrder: 0
 responsible: r.bailhache@gsi.de
+responsible: kramer@pcikf3.ikf.physik.uni-frankfurt.de
+responsible: o.busch@gsi.de
+responsible: watanabe@sakura.cc.tsukuba.ac.jp
 
 dn: dcsHost=alidcsamanda.cern.ch,det=TRD,o=shuttle_prod,dc=cern,dc=ch
 objectClass: dcsConfig
 dcsHost: alidcsamanda.cern.ch
 dcsPort: 1337
 multiSplit: 4000
-
+dcsAlias: trd_goofieHv
+dcsAlias: trd_goofiePeakPos00
+dcsAlias: trd_goofiePeakPos01
+dcsAlias: trd_goofiePeakArea[00..01]
+dcsAlias: trd_goofieTemp[00..01]
+dcsAlias: trd_goofiePressure
+dcsAlias: trd_goofieGain[00..01]
+dcsAlias: trd_goofieCO2
+dcsAlias: trd_goofieN2
+dcsAlias: trd_gasO2
+dcsAlias: trd_gasH2O
+dcsAlias: trd_gasCO2
+dcsAlias: trd_gasOverpressure
+dcsAlias: trd_adcClkPhase
+dcsAlias: trd_goofieVelocity
 dcsAlias: trd_chamberStatus[000..029]
-dcsAlias: trd_chamberStatus[240..269]
+dcsAlias: trd_chamberStatus[240..299]
+dcsAlias: trd_chamberStatus[510..539]
 dcsAlias: trd_envTemp[000..029]
-dcsAlias: trd_envTemp[240..269]
-dcsAlias: trd_hvAnodeImon[000..062]
-dcsAlias: trd_hvDriftImon[000..062]
-dcsAlias: trd_hvAnodeUmon[000..062]
-dcsAlias: trd_hvDriftUmon[000..062]
+dcsAlias: trd_envTemp[240..299]
+dcsAlias: trd_envTemp[510..539]
+dcsAlias: trd_hvAnodeImon[000..029]
+dcsAlias: trd_hvAnodeImon[240..299]
+dcsAlias: trd_hvAnodeImon[510..539]
+dcsAlias: trd_hvDriftImon[000..029]
+dcsAlias: trd_hvDriftImon[240..299]
+dcsAlias: trd_hvDriftImon[510..539]
+dcsAlias: trd_hvAnodeUmon[000..029]
+dcsAlias: trd_hvAnodeUmon[240..299]
+dcsAlias: trd_hvAnodeUmon[510..539]
+dcsAlias: trd_hvDriftUmon[000..029]
+dcsAlias: trd_hvDriftUmon[240..299]
+dcsAlias: trd_hvDriftUmon[510..539]
 

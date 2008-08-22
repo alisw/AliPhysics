@@ -1,18 +1,13 @@
-# PHS config
 dn: det=PHS,o=shuttle_prod,dc=cern,dc=ch
 objectClass: detectorConfig
 det: PHS
 strictRunOrder: 0
 responsible: Boris.Polichtchouk@cern.ch
+responsible: p.t.hille@fys.uio.no
 
 dn: dcsHost=alidcsamanda.cern.ch,det=PHS,o=shuttle_prod,dc=cern,dc=ch
 objectClass: dcsConfig
 dcsHost: alidcsamanda.cern.ch
 dcsPort: 1337
 multiSplit: 4000
-dcsAlias: phs_hvIsegMeasVoltage[0..4]
-dcsAlias: phs_hvIsegMeasCurrent[0..4]
-dcsAlias: phs_hvIsegMeasAlarm[0..4]
-dcsAlias: phs_lvWienerMeasCurrent[00..19]
-dcsAlias: phs_lvWienerMeasAlarm[00..19]
-dcsAlias: phs_temperatureCold[00..24]
+

@@ -1,4 +1,3 @@
-# T00 config;
 dn: det=T00,o=shuttle_prod,dc=cern,dc=ch
 objectClass: top
 objectClass: detectorConfig
@@ -6,10 +5,26 @@ det: T00
 strictRunOrder: 0
 responsible: tomatkie@cc.jyu.fi
 responsible: moledzki@gmail.com
+responsible: alla@mail.cern.ch
 
 dn: dcsHost=alidcsamanda.cern.ch,det=T00,o=shuttle_prod,dc=cern,dc=ch
 objectClass: dcsConfig
 dcsHost: alidcsamanda.cern.ch
 dcsPort: 1337
 multiSplit: 4000
+dcsAlias: t00_a_hv_imon_[00..11]
+dcsAlias: t00_a_hv_vmon_[00..11]
+dcsAlias: t00_a_lv_imon_[0..1]
+dcsAlias: t00_a_lv_vmon_[0..1]
+dcsAlias: t00_c_hv_imon_[00..11]
+dcsAlias: t00_c_hv_vmon_[00..11]
+dcsAlias: t00_c_lv_imon_[0..1]
+dcsAlias: t00_c_lv_vmon_[0..1]
+dcsAlias: t00_a_cfd_thre_[00..11]
+dcsAlias: t00_a_cfd_walk_[00..11]
+dcsAlias: t00_c_cfd_thre_[00..11]
+dcsAlias: t00_c_cfd_walk_[00..11]
+dcsAlias: t00_ac_scaler_[00..31]
+dcsAlias: t00_ac_trm_[00..19]
+dcsAlias: t00_ac_drm
 

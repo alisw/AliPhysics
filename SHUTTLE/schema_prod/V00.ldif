@@ -1,4 +1,3 @@
-# V00 config;
 dn: det=V00,o=shuttle_prod,dc=cern,dc=ch
 objectClass: top
 objectClass: detectorConfig
@@ -6,10 +5,12 @@ det: V00
 strictRunOrder: 0
 responsible: b.cheynis@ipnl.in2p3.fr
 responsible: tieulent@in2p3.fr
- 
 
 dn: dcsHost=alidcsamanda.cern.ch,det=V00,o=shuttle_prod,dc=cern,dc=ch
 objectClass: dcsConfig
 dcsHost: alidcsamanda.cern.ch
 dcsPort: 1337
 multiSplit: 4000
+dcsAlias: V00/HV/V0A/SECTOR[0..7]/RING[0..3]
+dcsAlias: V00/HV/V0C/SECTOR[0..7]/RING[0..3]
+
