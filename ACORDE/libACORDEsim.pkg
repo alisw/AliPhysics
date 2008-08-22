@@ -2,7 +2,8 @@
 
 SRCS = AliACORDE.cxx AliACORDEv1.cxx AliACORDEhit.cxx \
        AliACORDEDigitizer.cxx AliACORDETrigger.cxx \
-       AliACORDERawData.cxx AliACORDEQADataMakerSim.cxx 
+       AliACORDERawData.cxx AliACORDEQADataMakerSim.cxx \
+       AliACORDEv0.cxx
 
 
 HDRS:= $(SRCS:.cxx=.h)

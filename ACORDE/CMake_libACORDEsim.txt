@@ -4,6 +4,7 @@ set(SRCS
 AliACORDE.cxx AliACORDEv1.cxx AliACORDEhit.cxx 
 AliACORDEDigitizer.cxx AliACORDETrigger.cxx 
 AliACORDERawData.cxx AliACORDEQADataMakerSim.cxx 
+AliACORDEv0.cxx
 )
 
 # fill list of header files from list of source files
