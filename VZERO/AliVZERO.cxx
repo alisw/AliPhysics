@@ -331,10 +331,12 @@ void AliVZERO::Digits2Raw()
      if(ndig == 0) continue;
      if(verbose == 2) {ftxt.open("VZEROdigits.txt",ios::app);}
      for(Int_t k=0; k<ndig; k++){
-         AliVZEROdigit* fVZERODigit = (AliVZEROdigit*) VZEROdigits->At(k);			
-	 ADC[k]       = (UInt_t) fVZERODigit->ADC();
-	 PMNumber[k]  = fVZERODigit->PMNumber();
-	 Time[k]      = (UInt_t) fVZERODigit->Time();
+         AliVZEROdigit* fVZERODigit = (AliVZEROdigit*) VZEROdigits->At(k);
+         // Convert aliroot channel k into FEE channel iChannel before writing data
+	 Int_t iChannel = buffer->GetOnlineChannel(k);		
+	 ADC[iChannel]       = (UInt_t) fVZERODigit->ADC();
+	 PMNumber[iChannel]  = fVZERODigit->PMNumber();
+	 Time[iChannel]      = (UInt_t) fVZERODigit->Time();
          if(verbose == 1) { cout <<"DDL: "<<fileName<< "\tdigit number: "<< k<<"\tPM number: "
 	                    <<PMNumber[k]<<"\tADC: "<< ADC[k] << "\tTime: "<< Time[k] << endl;} 
 	 if(verbose == 2) {
