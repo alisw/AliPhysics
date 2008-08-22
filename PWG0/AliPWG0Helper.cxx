@@ -20,6 +20,7 @@
 #include <AliESD.h>
 #include <AliESDEvent.h>
 #include <AliESDVertex.h>
+#include <AliVertexerTracks.h>
 
 #include <AliGenEventHeader.h>
 #include <AliGenPythiaEventHeader.h>
@@ -78,7 +79,7 @@ Bool_t AliPWG0Helper::IsEventTriggered(ULong64_t triggerMask, Trigger trigger)
 }
 
 //____________________________________________________________________
-const AliESDVertex* AliPWG0Helper::GetVertex(const AliESDEvent* aEsd, AnalysisMode analysisMode, Bool_t debug)
+const AliESDVertex* AliPWG0Helper::GetVertex(AliESDEvent* aEsd, AnalysisMode analysisMode, Bool_t debug,Bool_t bRedoTPC)
 {
   // Get the vertex from the ESD and returns it if the vertex is valid
   //
@@ -96,8 +97,21 @@ const AliESDVertex* AliPWG0Helper::GetVertex(const AliESDEvent* aEsd, AnalysisMo
   }
   else if (analysisMode == kTPC) 
   {
+    if(bRedoTPC){
+      Double_t kBz = aEsd->GetMagneticField(); 
+      AliVertexerTracks vertexer(kBz);
+      vertexer.SetTPCMode(); 
+      AliESDVertex *vTPC = vertexer.FindPrimaryVertex(aEsd);
+      aEsd->SetPrimaryVertexTPC(vTPC);
+      for (Int_t i=0; i<aEsd->GetNumberOfTracks(); i++) {
+	AliESDtrack *t = aEsd->GetTrack(i);
+	t->RelateToVertexTPC(vTPC, kBz, kVeryBig);
+      } 
+      delete vTPC;
+    }
+
     vertex = aEsd->GetPrimaryVertexTPC();
-    requiredZResolution = 0.6;
+    requiredZResolution = 10.;
     if (debug)
       Printf("AliPWG0Helper::GetVertex: Returning vertex from tracks");
   }
@@ -112,8 +126,11 @@ const AliESDVertex* AliPWG0Helper::GetVertex(const AliESDEvent* aEsd, AnalysisMo
 
   // check Ncontributors
   if (vertex->GetNContributors() <= 0) {
-    if (debug)
-      Printf("AliPWG0Helper::GetVertex: NContributors() <= 0");
+    if (debug){
+      Printf("AliPWG0Helper::GetVertex: NContributors() <= 0: %d",vertex->GetNContributors());
+      Printf("AliPWG0Helper::GetVertex: NIndices(): %d",vertex->GetNIndices());
+
+    }
     return 0;
   }
 
@@ -127,7 +144,10 @@ const AliESDVertex* AliPWG0Helper::GetVertex(const AliESDEvent* aEsd, AnalysisMo
   }
 
   if (debug)
-    Printf("AliPWG0Helper::GetVertex: Returning valid vertex");
+  {
+    Printf("AliPWG0Helper::GetVertex: Returning valid vertex: %s", vertex->GetTitle());
+    vertex->Print();
+  }
 
   return vertex;
 }
@@ -153,12 +173,21 @@ Bool_t AliPWG0Helper::IsPrimaryCharged(TParticle* aParticle, Int_t aTotalPrimari
   }
 
   Int_t pdgCode = TMath::Abs(aParticle->GetPdgCode());
+  
 
   // skip quarks and gluon
   if (pdgCode <= 10 || pdgCode == 21)
   {
     if (adebug)
       printf("Dropping particle because it is a quark or gluon.\n");
+    return kFALSE;
+  }
+
+  Int_t status = aParticle->GetStatusCode();
+  // skip non final state particles..
+  if(status!=1){
+    if (adebug)
+      printf("Dropping particle because it is not a final state particle.\n");
     return kFALSE;
   }
 
