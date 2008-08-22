@@ -48,6 +48,8 @@
 #include <TH1F.h>
 #include <TMath.h>
 
+Int_t GetOfflineChannel(Int_t channel);
+
 /* Main routine --- Arguments: monitoring data source */
       
 int main(int argc, char **argv) {
@@ -64,11 +66,17 @@ int main(int argc, char **argv) {
      return -1;
   }
   
+  // Online values (using FEE channel numbering):
   Double_t ADCmean[128];
   Double_t ADCsigma[128];
   Double_t PEDmean[128];
   Double_t PEDsigma[128];
-     
+  // Offline values(same but ordered as in aliroot for offliners): 
+  Double_t ADCmean_Off[128];
+  Double_t ADCsigma_Off[128];
+  Double_t PEDmean_Off[128];
+  Double_t PEDsigma_Off[128];
+       
 //___________________________________________________
 // Get cuts from V00DA.config file
 
@@ -215,8 +223,9 @@ int main(int argc, char **argv) {
   
   printf("%d physics events processed\n",nevents_physics);
     
-//________________________________________________________________________
-//  Computes mean values, dumps them into the output text file
+//___________________________________________________________________________
+//  Computes mean values, converts FEE channels into Offline AliRoot channels
+//  and dumps the ordered values into the output text file for SHUTTLE
 	
   for(Int_t i=0; i<128; i++) {
       hPEDname[i]->GetXaxis()->SetRange(0,kHighCut);
@@ -225,7 +234,27 @@ int main(int argc, char **argv) {
       hADCname[i]->GetXaxis()->SetRange(kLowCut,1024);
       ADCmean[i]  = hADCname[i]->GetMean();
       ADCsigma[i] = hADCname[i]->GetRMS(); 
-      fprintf(fp," %.3f %.3f %.3f %.3f\n",PEDmean[i],PEDsigma[i],ADCmean[i],ADCsigma[i]);
+//      printf(" i = %d, %.3f %.3f %.3f %.3f\n",i,PEDmean[i],PEDsigma[i],ADCmean[i],ADCsigma[i]);
+      if (i < 64) {
+          Int_t j = GetOfflineChannel(i);     
+          PEDmean_Off[j]  = PEDmean[i];
+          PEDsigma_Off[j] = PEDsigma[i];
+          ADCmean_Off[j]  = ADCmean[i];
+          ADCsigma_Off[j] = ADCsigma[i]; }
+      else{
+          Int_t j = GetOfflineChannel(i-64);     
+          PEDmean_Off[j+64]  = PEDmean[i];
+          PEDsigma_Off[j+64] = PEDsigma[i];
+          ADCmean_Off[j+64]  = ADCmean[i];
+          ADCsigma_Off[j+64] = ADCsigma[i];
+      }
+  }
+  
+  for(Int_t j=0; j<128; j++) {
+//      printf(" j = %d, %.3f %.3f %.3f %.3f\n",j,PEDmean_Off[j],PEDsigma_Off[j],
+//                                                ADCmean_Off[j],ADCsigma_Off[j]);
+      fprintf(fp," %.3f %.3f %.3f %.3f\n",PEDmean_Off[j],PEDsigma_Off[j],
+                                          ADCmean_Off[j],ADCsigma_Off[j]);				       
   }
    
 //________________________________________________________________________
@@ -260,3 +289,18 @@ int main(int argc, char **argv) {
       
   return status;
 }
+
+ Int_t GetOfflineChannel(Int_t channel) {
+
+// Channel mapping Online - Offline:
+ 
+ Int_t fOfflineChannel[64] = {39, 38, 37, 36, 35, 34, 33, 32, 
+                              47, 46, 45, 44, 43, 42, 41, 40, 
+			      55, 54, 53, 52, 51, 50, 49, 48, 
+			      63, 62, 61, 60, 59, 58, 57, 56,
+			       7,  6,  5,  4,  3,  2,  1,  0, 
+			      15, 14, 13, 12, 11, 10,  9,  8,
+			      23, 22, 21, 20, 19, 18, 17, 16, 
+			      31, 30, 29, 28, 27, 26, 25, 24};
+ return	fOfflineChannel[channel];		      
+}			      
