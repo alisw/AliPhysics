@@ -72,7 +72,7 @@ void AliVZEROReconstructor::Init()
 //______________________________________________________________________
 void AliVZEROReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digitsTree) const
 {
-// converts to digits
+// converts RAW to digits
 
   if (!digitsTree) {
     AliError("No digits tree!");
@@ -84,13 +84,26 @@ void AliVZEROReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
 
   rawReader->Reset();
   AliVZERORawStream rawStream(rawReader);
-  if (rawStream.Next()) {
-    for(Int_t iChannel = 0; iChannel < 64; iChannel++) {
-    Int_t adc = rawStream.GetADC(iChannel);  
-    Int_t time = rawStream.GetTime(iChannel);
-    new ((*digitsArray)[digitsArray->GetEntriesFast()])
-      AliVZEROdigit(iChannel,adc,time);
-    }
+  if (rawStream.Next()) {  
+     Int_t ADC_max[64], adc[64], time[64];   
+     for(Int_t i=0; i<64; i++) {
+         // Search for the maximun charge in the train of 21 LHC clocks 
+         // regardless of the integrator which has been operated:
+         ADC_max[i] = 0;
+         for(Int_t iClock=0; iClock<21; iClock++){
+             if((Int_t)rawStream.GetPedestal(i,iClock) > ADC_max[i])  
+	        {ADC_max[i]=(Int_t)rawStream.GetPedestal(i,iClock);}
+         }
+	 // Convert i (FEE channel numbering) to j (aliroot channel numbering)
+	 Int_t j =  rawStream.GetOfflineChannel(i);
+	 adc[j]  =  ADC_max[i];
+	 time[j] =  rawStream.GetTime(i); 
+     }  
+     // Channels(aliroot numbering) will be ordered in the tree
+     for(Int_t iChannel = 0; iChannel < 64; iChannel++) {
+         new ((*digitsArray)[digitsArray->GetEntriesFast()])
+             AliVZEROdigit(iChannel,adc[iChannel],time[iChannel]);
+     }
   }
 
   digitsTree->Fill();
