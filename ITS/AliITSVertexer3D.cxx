@@ -55,7 +55,7 @@ fMeanPtSelTrk(0.)
   SetMaxRCut();
   SetZCutDiamond();
   SetMaxZCut();
-  SetDCAcut();
+  SetDCACut();
   SetDiffPhiMax();
   SetMeanPSelTracks();
   SetMeanPtSelTracks();

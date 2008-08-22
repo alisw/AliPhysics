@@ -187,7 +187,19 @@ AliVertexer* AliITSReconstructor::CreateVertexer() const
   }
   // by default an AliITSVertexer3D object is instatiated
   Info("CreateVertexer","a AliITSVertexer3D object has been selected\n");
-  return new AliITSVertexer3D();
+  AliITSVertexer3D*  vtxr = new AliITSVertexer3D();
+  Float_t dzw=GetRecoParam()->GetVertexer3DWideFiducialRegionZ();
+  Float_t drw=GetRecoParam()->GetVertexer3DWideFiducialRegionR();
+  vtxr->SetWideFiducialRegion(dzw,drw);
+  Float_t dzn=GetRecoParam()->GetVertexer3DNarrowFiducialRegionZ();
+  Float_t drn=GetRecoParam()->GetVertexer3DNarrowFiducialRegionR();
+  vtxr->SetNarrowFiducialRegion(dzn,drn);
+  Float_t dphil=GetRecoParam()->GetVertexer3DLooseDeltaPhiCut();
+  Float_t dphit=GetRecoParam()->GetVertexer3DTightDeltaPhiCut();
+  vtxr->SetDeltaPhiCuts(dphil,dphit);
+  Float_t dcacut=GetRecoParam()->GetVertexer3DDCACut();
+  vtxr->SetDCACut(dcacut);
+  return vtxr;
 }
 
 //_____________________________________________________________________________

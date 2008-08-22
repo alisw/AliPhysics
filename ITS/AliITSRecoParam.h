@@ -88,6 +88,38 @@ class AliITSRecoParam : public AliDetectorRecoParam
   void     SetLandauFitPID() {SetPID(1);}
   Int_t    GetPID() const {return fPID;}
 
+  void     SetVertexer3DFiducialRegions(Float_t dzwid=14.0, Float_t drwid=2.5, Float_t dznar=0.5, Float_t drnar=0.5){
+    SetVertexer3DWideFiducialRegion(dzwid,drwid);
+    SetVertexer3DNarrowFiducialRegion(dznar,drnar);
+  }
+  void     SetVertexer3DWideFiducialRegion(Float_t dz=14.0, Float_t dr=2.5){
+    fVtxr3DZCutWide=dz; fVtxr3DRCutWide=dr;
+  }
+  void     SetVertexer3DNarrowFiducialRegion(Float_t dz=0.5, Float_t dr=0.5){
+    fVtxr3DZCutNarrow=dz; fVtxr3DRCutNarrow=dr;
+  }
+  void     SetVertexer3DDeltaPhiCuts(Float_t dphiloose=0.5, Float_t dphitight=0.01){
+    fVtxr3DPhiCutLoose=dphiloose;
+    fVtxr3DPhiCutTight=dphitight;
+  }
+  void     SetVertexer3DDCACut(Float_t dca=0.1){
+    fVtxr3DDCACut=dca;
+  }
+  void SetVertexer3DDefaults(){
+    SetVertexer3DFiducialRegions();
+    SetVertexer3DDeltaPhiCuts();
+    SetVertexer3DDCACut();    
+  }
+
+  Float_t  GetVertexer3DWideFiducialRegionZ() const {return fVtxr3DZCutWide;}
+  Float_t  GetVertexer3DWideFiducialRegionR() const {return fVtxr3DRCutWide;}
+  Float_t  GetVertexer3DNarrowFiducialRegionZ() const {return fVtxr3DZCutNarrow;}
+  Float_t  GetVertexer3DNarrowFiducialRegionR() const {return fVtxr3DRCutNarrow;}
+  Float_t  GetVertexer3DLooseDeltaPhiCut() const {return fVtxr3DPhiCutLoose;}
+  Float_t  GetVertexer3DTightDeltaPhiCut() const {return fVtxr3DPhiCutTight;}
+  Float_t  GetVertexer3DDCACut() const {return fVtxr3DDCACut;}
+  
+
   Double_t GetSigmaY2(Int_t i) const { return fSigmaY2[i]; }
   Double_t GetSigmaZ2(Int_t i) const { return fSigmaZ2[i]; }
 
@@ -282,6 +314,15 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Int_t  fClusterFinder; // ITS cf to be used (see AliITSReconstructor)
   Int_t  fPID;      // ITS PID method to be used (see AliITSReconstructor)
 
+
+  Float_t fVtxr3DZCutWide;    // Z extension of the wide fiducial region for vertexer 3D
+  Float_t fVtxr3DRCutWide;    // R extension of the wide fiducial region for vertexer 3D
+  Float_t fVtxr3DZCutNarrow;  // Z extension of the narrow fiducial region for vertexer 3D
+  Float_t fVtxr3DRCutNarrow;  // R extension of the narrow fiducial region for vertexer 3D
+  Float_t fVtxr3DPhiCutLoose; // loose deltaPhi cut to define tracklets in vertexer 3D
+  Float_t fVtxr3DPhiCutTight; // tight deltaPhi cut to define tracklets in vertexer 3D
+  Float_t fVtxr3DDCACut;      // cut on tracklet-to-tracklet DCA in vertexer3D
+
   Int_t fLayersToSkip[AliITSgeomTGeo::kNLayers]; // array with layers to skip (MI,SA)
 
   // spatial resolutions of the detectors
@@ -388,7 +429,7 @@ class AliITSRecoParam : public AliDetectorRecoParam
 
   Bool_t fUseChargeMatchingInClusterFinderSSD; // SSD
 
-  ClassDef(AliITSRecoParam,9) // ITS reco parameters
+  ClassDef(AliITSRecoParam,10) // ITS reco parameters
 };
 
 #endif

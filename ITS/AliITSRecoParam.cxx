@@ -67,6 +67,13 @@ fITSonly(kFALSE),
 fVertexer(0),
 fClusterFinder(0),
 fPID(0),
+fVtxr3DZCutWide(0.),
+fVtxr3DRCutWide(0.),
+fVtxr3DZCutNarrow(0.),
+fVtxr3DRCutNarrow(0.),
+fVtxr3DPhiCutLoose(0.),
+fVtxr3DPhiCutTight(0.),
+fVtxr3DDCACut(0.),
 fMaxSnp(1.),
 fNSigmaYLayerForRoadY(0),
 fNSigmaRoadY(0),
@@ -147,6 +154,7 @@ fUseChargeMatchingInClusterFinderSSD(kTRUE)
   SetUseAmplitudeInfo(kTRUE);
   SetClusterErrorsParam(1);
   SetClusterMisalError(0.);
+  SetVertexer3DDefaults();
 }
 //_____________________________________________________________________________
 AliITSRecoParam::~AliITSRecoParam() 
@@ -162,6 +170,7 @@ AliITSRecoParam *AliITSRecoParam::GetHighFluxParam()
   // make default reconstruction  parameters for hig  flux env.
   //
   AliITSRecoParam *param = new AliITSRecoParam();
+  param->SetVertexer3DDefaults();
 
   param->fMaxSnp = 0.95;
 
@@ -252,6 +261,7 @@ AliITSRecoParam *AliITSRecoParam::GetLowFluxParam()
   // make default reconstruction  parameters for low  flux env.
   //
   AliITSRecoParam *param = new AliITSRecoParam();
+  param->SetVertexer3DDefaults();
 
   param->fMaxSnp = 0.95;
 
@@ -333,7 +343,7 @@ AliITSRecoParam *AliITSRecoParam::GetLowFluxParam()
   param->fSigmaZDeadZoneHit2 = 0.001/12.;
   param->fXPassDeadZoneHits = 0.018;
   param->SetNLoopsSA(10);
-  
+
   return param;
 }
 //_____________________________________________________________________________
