@@ -1989,7 +1989,7 @@ Int_t AliTRDtrackerV1::Clusters2TracksStack(AliTRDtrackingChamber **stack, TClon
         
   // Sign clusters
   AliTRDcluster *cl = 0x0; Int_t clusterIndex = -1;
-  for (Int_t jLayer = 0; jLayer < 6; jLayer++) {
+  for (Int_t jLayer = 0; jLayer < kNPlanes; jLayer++) {
     Int_t jseed = kNPlanes*trackIndex+jLayer;
     if(!sseed[jseed].IsOK()) continue;
     if(TMath::Abs(sseed[jseed].GetYfit(1) - sseed[jseed].GetYfit(1)) >= .2) continue; // check this condition with Marian
@@ -2010,14 +2010,13 @@ Int_t AliTRDtrackerV1::Clusters2TracksStack(AliTRDtrackingChamber **stack, TClon
     idx++;
     lseed++;
   }*/
-  Double_t cR = lseed->GetC();
   Double_t x = lseed->GetX0();// - 3.5;
   trackParams[0] = x; //NEW AB
   trackParams[1] = lseed->GetYref(0); // lseed->GetYat(x);  
   trackParams[2] = lseed->GetZref(0); // lseed->GetZat(x); 
   trackParams[3] = TMath::Sin(TMath::ATan(lseed->GetYref(1)));
   trackParams[4] = lseed->GetZref(1) / TMath::Sqrt(1. + lseed->GetYref(1) * lseed->GetYref(1));
-  trackParams[5] = cR;
+  trackParams[5] = lseed->GetC();
   Int_t ich = 0; while(!(chamber = stack[ich])) ich++;
   trackParams[6] = fGeom->GetSector(chamber->GetDetector());/* *alpha+shift;	// Supermodule*/
 
@@ -2222,7 +2221,7 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *ss
   //
 
   AliTRDtrackingChamber *chamber = 0x0;
-  AliTRDcluster *c[4] = {0x0, 0x0, 0x0, 0x0}; // initilize seeding clusters
+  AliTRDcluster *c[kNSeedPlanes] = {0x0, 0x0, 0x0, 0x0}; // initilize seeding clusters
   AliTRDseedV1 *cseed = &sseed[0]; // initialize tracklets for first track
   Int_t ncl, mcl; // working variable for looping over clusters
   Int_t index[AliTRDchamberTimeBin::kMaxClustersLayer], jndex[AliTRDchamberTimeBin::kMaxClustersLayer];
@@ -2242,7 +2241,9 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *ss
   Int_t config  = ipar[0];
   Int_t ntracks = ipar[1];
   Int_t planes[kNSeedPlanes]; GetSeedingConfig(config, planes);	
-  
+  Int_t planesExt[kNPlanes-kNSeedPlanes];         GetExtrapolationConfig(config, planesExt);
+
+
   // Init chambers geometry
   Int_t ic = 0; while(!(chamber = stack[ic])) ic++;
   Int_t istack = fGeom->GetStack(chamber->GetDetector());
@@ -2377,15 +2378,28 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *ss
         // try attaching clusters to tracklets
         Int_t nUsedCl = 0;
         Int_t mlayers = 0;
-        Int_t kLayers = fReconstructor->IsHLT() ? kNPlanes : kNSeedPlanes; 
-        for(int iLayer=0; iLayer<kLayers; iLayer++){
+        for(int iLayer=0; iLayer<kNSeedPlanes; iLayer++){
           Int_t jLayer = planes[iLayer];
           if(!cseed[jLayer].AttachClustersIter(stack[jLayer], 5., kFALSE, c[iLayer])) continue;
           nUsedCl += cseed[jLayer].GetNUsed();
           if(nUsedCl > 25) break;
           mlayers++;
         }
+
+        if(mlayers < kNSeedPlanes){ 
+          //AliInfo(Form("Failed updating all seeds %d [%d].", mlayers, kNSeedPlanes));
+          AliTRDtrackerDebug::SetCandidateNumber(AliTRDtrackerDebug::GetCandidateNumber() + 1);
+          continue;
+        }
+
+        // temporary exit door for the HLT
         if(fReconstructor->IsHLT()){ 
+          // attach clusters to extrapolation chambers
+          for(int iLayer=0; iLayer<kNPlanes-kNSeedPlanes; iLayer++){
+            Int_t jLayer = planesExt[iLayer];
+            if(!(chamber = stack[jLayer])) continue;
+            cseed[jLayer].AttachClustersIter(chamber, 1000.);
+          }
           fTrackQuality[ntracks] = 1.; // dummy value
           ntracks++;
           if(ntracks == kMaxTracksStack){
@@ -2396,11 +2410,7 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *ss
           continue;
         }
 
-        if(mlayers < kNSeedPlanes){ 
-          //AliInfo(Form("Failed updating all seeds %d [%d].", mlayers, kNSeedPlanes));
-          AliTRDtrackerDebug::SetCandidateNumber(AliTRDtrackerDebug::GetCandidateNumber() + 1);
-          continue;
-        }
+
         // fit tracklets and cook likelihood
         FitTiltedRieman(&cseed[0], kTRUE);// Update Seeds and calculate Likelihood
         chi2[0] = GetChi2Y(&cseed[0]);
@@ -2422,11 +2432,9 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *ss
         fSeedLayer[ntracks]  = config;/*sLayer;*/
       
         // attach clusters to the extrapolation seeds
-        Int_t lextrap[2];
-        GetExtrapolationConfig(config, lextrap);
         Int_t nusedf   = 0; // debug value
-        for(int iLayer=0; iLayer<2; iLayer++){
-          Int_t jLayer = lextrap[iLayer];
+        for(int iLayer=0; iLayer<kNPlanes-kNSeedPlanes; iLayer++){
+          Int_t jLayer = planesExt[iLayer];
           if(!(chamber = stack[jLayer])) continue;
       
           // fit extrapolated seed

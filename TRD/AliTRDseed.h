@@ -106,7 +106,7 @@ class AliTRDseed : public TObject {
           Float_t        fY[knTimebins];        //! Y position
           Float_t        fZ[knTimebins];        //! Z position
           Int_t          fIndexes[knTimebins];  //! Indexes
-          AliTRDcluster *fClusters[knTimebins]; //  Clusters
+          AliTRDcluster *fClusters[knTimebins]; // Clusters
           Bool_t         fUsable[knTimebins];   //  Indication  - usable cluster
           Float_t        fYref[2];              //  Reference y
           Float_t        fZref[2];              //  Reference z
