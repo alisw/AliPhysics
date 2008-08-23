@@ -1597,8 +1597,11 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
     ftree->Fill();
 
     // Auto-save the ESD tree in case of prompt reco @P2
-    if (fRawReader && fRawReader->UseAutoSaveESD())
+    if (fRawReader && fRawReader->UseAutoSaveESD()) {
       ftree->AutoSave("SaveSelf");
+      TFile *friendfile = (TFile *)(gROOT->GetListOfFiles()->FindObject("AliESDfriends.root"));
+      if (friendfile) friendfile->Save();
+    }
 
     // write HLT ESD
     fhlttree->Fill();
