@@ -94,10 +94,6 @@ class AliITSCalibrationSPD :  public AliITSCalibration {
     virtual void    SigmaSpread(Double_t & /* p1 */,Double_t & /* p2 */) const 
       {NotImplemented("SigmaSpread");}
 
-    virtual void GetCouplingOption(char *opt) const {((AliITSresponseSPD*)fResponse)->CouplingOption(opt);}
-    virtual void SetCouplingOption(const char* opt) {((AliITSresponseSPD*)fResponse)->SetCouplingOption(opt);}
-    virtual void SetSigmaDiffusionAsymmetry(Double_t ecc) {((AliITSresponseSPD*)fResponse)->SetSigmaDiffusionAsymmetry(ecc);}
-    virtual void GetSigmaDiffusionAsymmetry(Double_t &ecc) const {((AliITSresponseSPD*)fResponse)->GetSigmaDiffusionAsymmetry(ecc);}
     
 
 

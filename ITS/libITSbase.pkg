@@ -48,10 +48,12 @@ SRCS = 	AliITSgeom.cxx \
                 AliITSHandleDaSSD.cxx \
 		AliITSDDLRawData.cxx \
 		AliITSRawStream.cxx \
+		AliITSRawStreamSDDCompressed.cxx \
 		AliITSRawStreamSDDv2.cxx \
 		AliITSRawStreamSDDv3.cxx \
 		AliITSRawStreamSSD.cxx \
 		AliITSRawStreamSDD.cxx \
+		AliITSCompressRawDataSDD.cxx \
 		AliITSRawStreamSPD.cxx \
 		AliITSEventHeader.cxx \
 		AliITSRawStreamSSDv1.cxx \
