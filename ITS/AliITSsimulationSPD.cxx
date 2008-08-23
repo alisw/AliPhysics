@@ -90,9 +90,6 @@ fTanLorAng(0){
     //    A default constructed AliITSsimulationSPD class.
 
     AliDebug(1,Form("Calling standard constructor "));
-//      AliITSCalibrationSPD* res = (AliITSCalibrationSPD*)GetCalibrationModel(fDetType->GetITSgeom()->GetStartSPD());
-//      res->SetTemperature(0.0);
-//      res->SetDistanceOverVoltage(0.0);
     Init();
 }
 //______________________________________________________________________
@@ -109,14 +106,14 @@ void AliITSsimulationSPD::Init(){
     SetModuleNumber(0);
     SetEventNumber(0);
     SetMap(new AliITSpList(GetNPixelsZ(),GetNPixelsX()));
-    AliITSCalibrationSPD* res = (AliITSCalibrationSPD*)GetCalibrationModel(fDetType->GetITSgeom()->GetStartSPD());
+    AliITSSimuParam* simpar = fDetType->GetSimuParam();
     AliITSsegmentationSPD* seg = (AliITSsegmentationSPD*)GetSegmentationModel(0);
-    Double_t bias = res->GetBiasVoltage();
+    Double_t bias = simpar->GetSPDBiasVoltage();
 //    cout << "Bias Voltage --> " << bias << endl; // dom    
-    res->SetDistanceOverVoltage(kmictocm*seg->Dy(),bias);
+    simpar->SetDistanceOverVoltage(kmictocm*seg->Dy(),bias);
 // set kind of coupling ("old" or "new")
     char opt[20];
-    res->GetCouplingOption(opt);
+    simpar->GetSPDCouplingOption(opt);
     char *old = strstr(opt,"old");
     if (old) {
         fCoupling=2;
@@ -147,13 +144,13 @@ Bool_t AliITSsimulationSPD::SetTanLorAngle(Double_t WeightHole) {
         AliWarning("AliITSsimulationSPD::SetTanLorAngle: I'm going to use only holes");
      }
      Double_t WeightEle=1.-WeightHole;
-     AliITSCalibrationSPD* res = (AliITSCalibrationSPD*)GetCalibrationModel(fDetType->GetITSgeom()->GetStartSPD());
+     AliITSSimuParam* simpar = fDetType->GetSimuParam();
      AliMagF *mf = gAlice->Field();
      Float_t pos[3]={0.,0.,0.};
      Float_t B[3]={0.,0.,0.};
      mf->Field(pos,B);
-     fTanLorAng = TMath::Tan(WeightHole*res->LorentzAngleHole(B[2]) +
-                              WeightEle*res->LorentzAngleElectron(B[2]));
+     fTanLorAng = TMath::Tan(WeightHole*simpar->LorentzAngleHole(B[2]) +
+                              WeightEle*simpar->LorentzAngleElectron(B[2]));
      fTanLorAng*=-1.; // this only for the old geometry
                        // comment the upper line for the new geometry
      return kTRUE;
@@ -242,8 +239,12 @@ void AliITSsimulationSPD::InitSimulationModule(Int_t module, Int_t event){
     //    none
 
     AliDebug(1,Form("(module=%d,event=%d)",module,event));
+    const Double_t kmictocm = 1.0e-4; // convert microns to cm.
+    AliITSSimuParam* simpar = fDetType->GetSimuParam();
+    AliITSsegmentationSPD* seg = (AliITSsegmentationSPD*)GetSegmentationModel(0);
     SetModuleNumber(module);
     SetEventNumber(event);
+    simpar->SetDistanceOverVoltage(kmictocm*seg->Dy(),simpar->GetSPDBiasVoltage(module)); 
     ClearMap();
 }
 //_____________________________________________________________________
@@ -269,6 +270,7 @@ void AliITSsimulationSPD::SDigitiseModule(AliITSmodule *mod,Int_t,
     } // end if
     SetModuleNumber(mod->GetIndex());
     SetEventNumber(event);
+    InitSimulationModule( GetModuleNumber() , event );
     // HitToSDigit(mod);
     HitToSDigitFast(mod);
     RemoveDeadPixels(mod);
@@ -322,7 +324,7 @@ void AliITSsimulationSPD::FinishSDigitiseModule(){
 }
 //______________________________________________________________________
 void AliITSsimulationSPD::DigitiseModule(AliITSmodule *mod,Int_t,
-                                              Int_t){
+                                              Int_t event){
     //  This function creates Digits straight from the hits and then adds
     //  electronic noise to the digits before adding them to pList
     //  Each of the input variables is passed along to HitToSDigit
@@ -337,6 +339,7 @@ void AliITSsimulationSPD::DigitiseModule(AliITSmodule *mod,Int_t,
 
     AliDebug(1,Form("(mod=%p,,)",mod));
     // HitToSDigit(mod);
+    InitSimulationModule( mod->GetIndex(), event );
     HitToSDigitFast(mod);
     RemoveDeadPixels(mod);
 //    cout << "After Remove in DigitiseModule in module " << mod->GetIndex() << endl; // dom
@@ -360,9 +363,9 @@ void AliITSsimulationSPD::HitToSDigit(AliITSmodule *mod){
     Double_t x0=0.0,x1=0.0,y0=0.0,y1=0.0,z0=0.0,z1=0.0,de=0.0,ld=0.0;
     Double_t x,y,z,t,tp,st,dt=0.2,el,sig,sigx,sigz,fda;
     AliITSsegmentationSPD* seg = (AliITSsegmentationSPD*)GetSegmentationModel(0);
-    AliITSCalibrationSPD* res = (AliITSCalibrationSPD*)GetCalibrationModel(fDetType->GetITSgeom()->GetStartSPD());
+    AliITSSimuParam *simpar = fDetType->GetSimuParam();
     Double_t thick = 0.5*kmictocm*seg->Dy();  // Half Thickness
-    res->GetSigmaDiffusionAsymmetry(fda);
+    simpar->GetSPDSigmaDiffusionAsymmetry(fda);  //
 
     AliDebug(1,Form("(mod=%p) fCoupling=%d",mod,fCoupling));
     if(nhits<=0) return;
@@ -383,12 +386,13 @@ void AliITSsimulationSPD::HitToSDigit(AliITSmodule *mod){
                 y   = y0+y1*tp;
                 z   = z0+z1*tp;
                 if(!(seg->LocalToDet(x,z,ix,iz))) continue; // outside
-                el  = res->GeVToCharge((Double_t)(dt*de));
+                //el  = res->GeVToCharge((Double_t)(dt*de));
+                el  = dt * de / simpar->GetGeVToCharge();
                 if(GetDebug(1)){
                     if(el<=0.0) cout<<"el="<<el<<" dt="<<dt
                                     <<" de="<<de<<endl;
                 } // end if GetDebug
-                sig = res->SigmaDiffusion1D(TMath::Abs(thick + y)); 
+                sig = simpar->SigmaDiffusion1D(TMath::Abs(thick + y)); 
                 sigx=sig;
                 sigz=sig*fda;
                 if (fLorentz) ld=(y+thick)*fTanLorAng;
@@ -399,8 +403,9 @@ void AliITSsimulationSPD::HitToSDigit(AliITSmodule *mod){
             y   = y0;
             z   = z0;
             if(!(seg->LocalToDet(x,z,ix,iz))) continue; // outside
-            el  = res->GeVToCharge((Double_t)de);
-            sig = res->SigmaDiffusion1D(TMath::Abs(thick + y));
+            //el  = res->GeVToCharge((Double_t)de);
+            el  = de / simpar->GetGeVToCharge();
+            sig = simpar->SigmaDiffusion1D(TMath::Abs(thick + y));
             sigx=sig;
             sigz=sig*fda;
             if (fLorentz) ld=(y+thick)*fTanLorAng;
@@ -457,9 +462,9 @@ void AliITSsimulationSPD::HitToSDigitFast(AliITSmodule *mod){
     Double_t x0=0.0,x1=0.0,y0=0.0,y1=0.0,z0=0.0,z1=0.0,de=0.0,ld=0.0;
     Double_t x,y,z,t,st,el,sig,sigx,sigz,fda;
     AliITSsegmentationSPD* seg = (AliITSsegmentationSPD*)GetSegmentationModel(0);
-    AliITSCalibrationSPD* res = (AliITSCalibrationSPD*)GetCalibrationModel(fDetType->GetITSgeom()->GetStartSPD());
+    AliITSSimuParam* simpar = fDetType->GetSimuParam();
     Double_t thick = 0.5*kmictocm*seg->Dy();  // Half thickness
-    res->GetSigmaDiffusionAsymmetry(fda);
+    simpar->GetSPDSigmaDiffusionAsymmetry(fda);
 //    cout << "Half Thickness " << thick << endl;  // dom
 //    cout << "Diffusion asymm " << fda << endl;  // dom
 
@@ -478,14 +483,12 @@ void AliITSsimulationSPD::HitToSDigitFast(AliITSmodule *mod){
             y   = y0+y1*t;
             z   = z0+z1*t;
                 if(!(seg->LocalToDet(x,z,ix,iz))) continue; // outside
-                // el  = res->GeVToCharge((Double_t)(dt*de));
-                // el  = 1./kn10*res->GeVToCharge((Double_t)de);
-                el  = kwi[i]*res->GeVToCharge((Double_t)de); 
+                el  = kwi[i]*de/simpar->GetGeVToCharge();
                 if(GetDebug(1)){
                     if(el<=0.0) cout<<"el="<<el<<" kwi["<<i<<"]="<<kwi[i]
                                     <<" de="<<de<<endl;
                 } // end if GetDebug
-                sig = res->SigmaDiffusion1D(TMath::Abs(thick + y));
+                sig = simpar->SigmaDiffusion1D(TMath::Abs(thick + y));
                 sigx=sig;
                 sigz=sig*fda;
                 if (fLorentz) ld=(y+thick)*fTanLorAng;
@@ -497,8 +500,8 @@ void AliITSsimulationSPD::HitToSDigitFast(AliITSmodule *mod){
             y   = y0;
             z   = z0;
             if(!(seg->LocalToDet(x,z,ix,iz))) continue; // outside
-            el  = res->GeVToCharge((Double_t)de);
-            sig = res->SigmaDiffusion1D(TMath::Abs(thick + y));
+            el  = de / simpar->GetGeVToCharge();
+            sig = simpar->SigmaDiffusion1D(TMath::Abs(thick + y));
             sigx=sig;
             sigz=sig*fda;
             if (fLorentz) ld=(y+thick)*fTanLorAng;
@@ -725,7 +728,7 @@ void AliITSsimulationSPD::FrompListToDigits(){
     Double_t sig;
     const Int_t    knmaxtrk=AliITSdigit::GetNTracks();
     static AliITSdigitSPD dig;
-    AliITSCalibrationSPD* res = (AliITSCalibrationSPD*)GetCalibrationModel(fDetType->GetITSgeom()->GetStartSPD());
+    AliITSSimuParam *simpar = fDetType->GetSimuParam();
     if(GetDebug(1)) Info("FrompListToDigits","()");
     for(iz=0; iz<GetNPixelsZ(); iz++) for(ix=0; ix<GetNPixelsX(); ix++){
 // NEW (for the moment plugged by hand, in the future possibly read from Data Base)
@@ -742,9 +745,9 @@ void AliITSsimulationSPD::FrompListToDigits(){
 //          eff=1.-p1*exp(-p2*x);
 //          if (gRandom->Rndm() >= eff) continue;
 //        } // end  if 
- // END parametrize the efficiency
- // 
-        electronics = res->ApplyBaselineAndNoise();
+// END parametrize the efficiency
+// 
+        electronics = simpar->ApplySPDBaselineAndNoise();
         UpdateMapNoise(ix,iz,electronics);
         //
         // Apply Threshold and write Digits.

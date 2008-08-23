@@ -3,7 +3,7 @@
 /* Copyright(c) 2007-2009, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id:$ */
+/* $Id$ */
 
 ///////////////////////////////////////////////////////////////////
 //                                                               //
@@ -12,7 +12,7 @@
 // Origin: F.Prino, Torino, prino@to.infn.it                     //
 //                                                               //
 ///////////////////////////////////////////////////////////////////
-
+#include <TRandom.h>
 #include<TObject.h>
 #include <TString.h>
 #include <TArrayF.h>
@@ -37,13 +37,24 @@ class AliITSSimuParam : public TObject {
 
 
 
-  void    SetSPDBiasVoltage(Double_t bias=18.182) {fSPDBiasVoltage=bias;}
-  Double_t  GetSPDBiasVoltage() const {return fSPDBiasVoltage;}
+  void    SetSPDBiasVoltageAll(Double_t bias=18.182) {for(Int_t i=0;i<240;i++) fSPDBiasVoltage[i]=bias;}
+  void    SetSPDBiasVoltage(Int_t mod, Double_t bias=18.182) {if(mod<0 || mod>239) return; fSPDBiasVoltage[mod]=bias;}
+  Double_t  GetSPDBiasVoltage(Int_t mod=0) const {if(mod<0 || mod>239) return 0;  return fSPDBiasVoltage[mod];}
 
-  void   SetSPDThresholds(Double_t thresh, Double_t sigma)
-	{fSPDThresh=thresh; fSPDSigma=sigma;}
-  void   Thresholds(Double_t &thresh, Double_t &sigma) const
-	{thresh=fSPDThresh; sigma=fSPDSigma;}
+  void   SetSPDThresholdsAll(Double_t thresh, Double_t sigma)
+        {for(Int_t i=0;i<240;i++) {fSPDThresh[i]=thresh; fSPDSigma[i]=sigma;}}
+  void   SetSPDThresholds(Int_t mod,Double_t thresh, Double_t sigma)
+        {if(mod<0 || mod>239) return; fSPDThresh[mod]=thresh; fSPDSigma[mod]=sigma; }
+  void   SPDThresholds(const Int_t mod, Double_t& thresh, Double_t& sigma) const;
+  void   SetSPDNoiseAll(Double_t noise, Double_t baseline)
+        {for(Int_t i=0;i<240;i++) {fSPDNoise[i]=noise; fSPDBaseline[i]=baseline;}}
+  void   SetSPDNoise(Int_t mod,Double_t noise, Double_t baseline)
+        {if(mod<0 || mod>239) return; fSPDNoise[mod]=noise; fSPDBaseline[mod]=baseline; }
+  void   SPDNoise(const Int_t mod,Double_t &noise, Double_t &baseline) const;
+  // Applies a random noise and addes the baseline
+  Double_t ApplySPDBaselineAndNoise(Int_t mod=0) const 
+    {if (mod<0 || mod>239) mod=0; return fSPDBaseline[mod]+fSPDNoise[mod]*gRandom->Gaus();}
+
 
   void SetSPDCouplingOption(const char *opt) {fSPDCouplOpt=opt;}
   void GetSPDCouplingOption(char *opt) const {strcpy(opt,fSPDCouplOpt.Data());}
@@ -98,6 +109,62 @@ class AliITSSimuParam : public TObject {
     if(i<0 || i>=fNcomps) return 0.;return fGaus->At(i);
   }
 
+  // Set the impurity concentrations in [#/cm^3]
+  void SetImpurity(Double_t n=0.0){fN = n;}
+  // Returns the impurity consentration in [#/cm^3]
+  Double_t Impurity() const {return fN;}
+
+  // Electron mobility in Si. [cm^2/(Volt Sec)]. T in degree K, N in #/cm^3
+  Double_t MobilityElectronSiEmp() const ;
+  // Hole mobility in Si. [cm^2/(Volt Sec)]  T in degree K, N in #/cm^3
+  Double_t MobilityHoleSiEmp() const ;
+  // Einstein relation for Diffusion Coefficient of Electrons. [cm^2/sec]
+  //  T in degree K, N in #/cm^3
+  Double_t DiffusionCoefficientElectron() const ;
+  // Einstein relation for Diffusion Coefficient of Holes. [cm^2/sec]
+  //  T in [degree K], N in [#/cm^3]
+  Double_t DiffusionCoefficientHole() const ;
+  // Electron <speed> under an applied electric field E=Volts/cm. [cm/sec]
+  // d distance-thickness in [cm], v in [volts], T in [degree K],
+  // N in [#/cm^3]
+  Double_t SpeedElectron() const ;
+  // Holes <speed> under an applied electric field E=Volts/cm. [cm/sec]
+  // d distance-thickness in [cm], v in [volts], T in [degree K],
+  // N in [#/cm^3]
+  Double_t SpeedHole() const ;
+  // Returns the Gaussian sigma == <x^2+z^2> [cm^2] due to the defusion of
+  // electrons or holes through a distance l [cm] caused by an applied
+  // voltage v [volt] through a distance d [cm] in any material at a
+  // temperature T [degree K].
+  Double_t SigmaDiffusion3D(Double_t  l) const;
+  // Returns the Gaussian sigma == <x^2 +y^2+z^2> [cm^2] due to the
+  // defusion of electrons or holes through a distance l [cm] caused by an
+  // applied voltage v [volt] through a distance d [cm] in any material at a
+  // temperature T [degree K].
+  Double_t SigmaDiffusion2D(Double_t l) const;
+  // Returns the Gaussian sigma == <x^2+z^2> [cm^2] due to the defusion of
+  // electrons or holes through a distance l [cm] caused by an applied
+  // voltage v [volt] through a distance d [cm] in any material at a
+  // temperature T [degree K].
+  Double_t SigmaDiffusion1D(Double_t l) const;
+  // Computes the Lorentz angle for Electron and Hole, under the Magnetic field bz (in kGauss)
+  Double_t LorentzAngleElectron(Double_t bz) const;
+  Double_t LorentzAngleHole(Double_t bz) const;
+  // Compute the thickness of the depleted region in a Si detector, version A
+  Double_t DepletedRegionThicknessA(Double_t dopCons,
+                                    Double_t voltage,
+                                    Double_t elecCharge,
+                                    Double_t voltBuiltIn=0.5)const;
+  // Compute the thickness of the depleted region in a Si detector, version B
+  Double_t DepletedRegionThicknessB(Double_t resist,Double_t voltage,
+                                    Double_t mobility,
+                                    Double_t voltBuiltIn=0.5,
+                                    Double_t dielConst=1.E-12)const;
+  // Computes the temperature dependance of the reverse bias current
+  Double_t ReverseBiasCurrent(Double_t temp,Double_t revBiasCurT1,
+  	                      Double_t tempT1,Double_t energy=1.2)const;
+
+
   void PrintParameters() const; 
 
  protected:
@@ -128,12 +195,14 @@ class AliITSSimuParam : public TObject {
  private:
   Double_t fGeVcharge;      // Energy to ionize (free an electron) in GeV
   Double_t fDOverV;  // The parameter d/v where d is the disance over which the
-                   // the potential v is applied d/v [cm/volts]
+                     // the potential v is applied d/v [cm/volts]
 
   
-  Double_t fSPDBiasVoltage; // Bias Voltage for the SPD
-  Double_t fSPDThresh;      // SPD Threshold value
-  Double_t fSPDSigma;       // SPD Noise + threshold fluctuations value  
+  Double_t fSPDBiasVoltage[240]; // Bias Voltage for the SPD
+  Double_t fSPDThresh[240];      // SPD Threshold value
+  Double_t fSPDSigma[240];       // SPD threshold fluctuations spread
+  Double_t fSPDNoise[240];       // SPD electronic noise: sigma
+  Double_t fSPDBaseline[240];    // SPD electronic noise: baseline
   TString  fSPDCouplOpt;    // SPD Coupling Option
   Double_t fSPDCouplCol;    // SPD Coupling parameter along the cols
   Double_t fSPDCouplRow;    // SPD Coupling parameter along the rows
@@ -160,6 +229,9 @@ class AliITSSimuParam : public TObject {
   Int_t      fNcomps;  // Number of samplings along the gaussian
   TArrayF   *fGaus;    // Gaussian lookup table for signal generation
 
-  ClassDef(AliITSSimuParam,1);
+  Double_t fN;  // the impurity concentration of the material in #/cm^3  (NOT USED!)
+  Float_t fT;   // The temperature of the Si in Degree K.
+
+  ClassDef(AliITSSimuParam,2);
 };
 #endif

@@ -17,7 +17,7 @@
 
 class TH1F;
 class AliITSmodule;
-class AliITSresponseSPD;
+//class AliITSresponseSPD;
 
 //-------------------------------------------------------------------
 
