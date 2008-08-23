@@ -35,6 +35,7 @@ public:
 	virtual Int_t Add2RawsList(TH1 * /*hist*/, const Int_t /*index*/, const Bool_t saveForCorr = kFALSE)      { return -1 ; }  
 	virtual Int_t Add2SDigitsList(TH1 * hist, const Int_t index)   { return Add2List(hist, index, fSDigitsQAList) ; }
 	virtual void        Exec(AliQA::TASKINDEX_t task, TObject * data) ;
+	virtual void        EndOfCycle() ;
 	virtual void        EndOfCycle(AliQA::TASKINDEX_t task) ;
 	virtual void        EndOfDetectorCycle(AliQA::TASKINDEX_t, TObjArray * ) {AliInfo("To be implemented by detectors");} 
 	virtual TH1 *       GetDigitsData(const Int_t index)    { return dynamic_cast<TH1 *>(GetData(fDigitsQAList, index)) ; }
@@ -43,9 +44,10 @@ public:
 	virtual TH1 *       GetRecPointsData(const Int_t /*index*/) { return NULL ; }
 	virtual TH1 *       GetRawsData(const Int_t /*index*/)      { return NULL ; } 
 	virtual TH1 *       GetSDigitsData(const Int_t index)   { return dynamic_cast<TH1 *>(GetData(fSDigitsQAList, index)) ; }
-	virtual TObjArray * Init(AliQA::TASKINDEX_t task, Int_t run, Int_t cycles = -1) ;
+	virtual TObjArray * Init(AliQA::TASKINDEX_t task, Int_t cycles = -1) ;
 	virtual void        Init(AliQA::TASKINDEX_t task, TObjArray * list, Int_t run, Int_t cycles = -1) ;
-	virtual void        StartOfCycle(AliQA::TASKINDEX_t task, const Bool_t sameCycle = kFALSE) ;
+	virtual void        StartOfCycle(Int_t run = -1) ;
+	virtual void        StartOfCycle(AliQA::TASKINDEX_t task, Int_t run, const Bool_t sameCycle = kFALSE) ;
 
 protected: 
 	

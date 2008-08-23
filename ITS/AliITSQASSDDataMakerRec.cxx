@@ -138,6 +138,10 @@ AliITSQASSDDataMakerRec::~AliITSQASSDDataMakerRec() {
 void AliITSQASSDDataMakerRec::StartOfDetectorCycle()
 {
   //Detector specific actions at start of cycle
+  
+  if (  fAliITSQADataMakerRec->GetRawsData(0) == NULL ) // Raws not defined
+    return ; 
+  
   AliDebug(1,"AliITSQADM::Start of SSD Cycle\n");    
 
   //Data size per DDL
@@ -174,6 +178,9 @@ void AliITSQASSDDataMakerRec::StartOfDetectorCycle()
 void AliITSQASSDDataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray* list)
 {
   // launch the QA checking
+  if (  fAliITSQADataMakerRec->GetRawsData(0) == NULL ) // Raws not defined
+    return ; 
+  
   AliDebug(1,"AliITSDM instantiates checker with Run(AliQA::kITS, task, list)\n"); 
   //Data size per DDL
   for(Int_t i = 0; i < fgkNumOfDDLs; i++) {

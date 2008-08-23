@@ -89,6 +89,16 @@ AliQADataMakerSim& AliQADataMakerSim::operator = (const AliQADataMakerSim& qadm 
 }
 
 //____________________________________________________________________________
+void AliQADataMakerSim::EndOfCycle() 
+{ 
+  // Finishes a cycle of QA for all tasks
+  EndOfCycle(AliQA::kHITS) ; 
+  EndOfCycle(AliQA::kSDIGITS) ; 
+  EndOfCycle(AliQA::kDIGITS) ;
+  ResetCycle() ; 
+}
+
+//____________________________________________________________________________
 void AliQADataMakerSim::EndOfCycle(AliQA::TASKINDEX_t task) 
 { 
   // Finishes a cycle of QA data acquistion
@@ -100,13 +110,16 @@ void AliQADataMakerSim::EndOfCycle(AliQA::TASKINDEX_t task)
 		list = fSDigitsQAList ; 
 	else if ( task == AliQA::kDIGITS ) 
 		list = fDigitsQAList ; 
-	
+  
+  if ( ! list ) 
+    return ; 
 	EndOfDetectorCycle(task, list) ; 
 	TDirectory * subDir = fDetectorDir->GetDirectory(AliQA::GetTaskName(task)) ; 
 	if (subDir) { 
 		subDir->cd() ; 
 		list->Write() ; 
 	}
+  ResetCycle() ; 
 }
  
 //____________________________________________________________________________
@@ -157,11 +170,10 @@ void AliQADataMakerSim::Exec(AliQA::TASKINDEX_t task, TObject * data)
 }
 
 //____________________________________________________________________________ 
-TObjArray *  AliQADataMakerSim::Init(AliQA::TASKINDEX_t task, Int_t run, Int_t cycles)
+TObjArray *  AliQADataMakerSim::Init(AliQA::TASKINDEX_t task, Int_t cycles)
 {
   // general intialisation
 	
-	fRun = run ;
 	if (cycles > 0)
 		SetCycle(cycles) ;  
 	TObjArray * rv = NULL ; 
@@ -210,14 +222,27 @@ void AliQADataMakerSim::Init(AliQA::TASKINDEX_t task, TObjArray * list, Int_t ru
 }
 
 //____________________________________________________________________________
-void AliQADataMakerSim::StartOfCycle(AliQA::TASKINDEX_t task, const Bool_t sameCycle) 
+void AliQADataMakerSim::StartOfCycle(Int_t run) 
+{ 
+  // Finishes a cycle of QA for all tasks
+  Bool_t samecycle = kFALSE ; 
+  StartOfCycle(AliQA::kHITS,    run, samecycle) ;
+  samecycle = kTRUE ; 
+  StartOfCycle(AliQA::kSDIGITS, run, samecycle) ;
+  StartOfCycle(AliQA::kDIGITS,  run, samecycle) ;
+}
+
+//____________________________________________________________________________
+void AliQADataMakerSim::StartOfCycle(AliQA::TASKINDEX_t task, Int_t run, const Bool_t sameCycle) 
 { 
   // Finishes a cycle of QA data acquistion
+  if ( run > 0 ) 
+    fRun = run ; 
 	if ( !sameCycle || fCurrentCycle == -1) {
 		ResetCycle() ;
 	if (fOutput) 
 		fOutput->Close() ; 
-	fOutput = AliQA::GetQADataFile(GetName(), fRun, fCurrentCycle) ; 	
+	fOutput = AliQA::GetQADataFile(GetName(), fRun) ; 	
 	}	
 
 	AliInfo(Form(" Run %d Cycle %d task %s file %s", 
@@ -231,21 +256,6 @@ void AliQADataMakerSim::StartOfCycle(AliQA::TASKINDEX_t task, const Bool_t sameC
 	if (!subDir)
 		subDir = fDetectorDir->mkdir(AliQA::GetTaskName(task)) ;  
 	subDir->cd() ; 
-	
-	TObjArray * list = 0x0 ; 
-  
-	if ( task == AliQA::kHITS )  
-		list = fHitsQAList ;
-	else if ( task == AliQA::kSDIGITS )  
-		list = fSDigitsQAList ;
-	else  if ( task == AliQA::kDIGITS ) 
-		list = fDigitsQAList ;
-	
-// Should be the choice of detectors
-//	TIter next(list) ;
-//	TH1 * h ; 
-//	while ( (h = dynamic_cast<TH1 *>(next())) )
-//		h->Reset() ;  
-//
+	  
 	StartOfDetectorCycle() ; 
 }

@@ -44,7 +44,8 @@ public:
 	UInt_t      GetCurrentEvent() const { return fCurrentEvent ; }
 	TObjArray * GetFromOCDB(AliQA::DETECTORINDEX_t det, AliQA::TASKINDEX_t task, const char * year) const ; 
 	AliQADataMaker * GetQADataMaker(const Int_t iDet) ; 
-	void        InitQADataMaker(UInt_t run, const AliRecoParam & par, Bool_t sameCycle, Bool_t startOption=kTRUE, TObjArray * detArray=0x0) ; 
+	void        Increment() ;
+	void        InitQADataMaker(UInt_t run, const AliRecoParam & par, TObjArray * detArray=0x0) ;
 	Bool_t      Merge(const Int_t runNumber = -1 ) const ;  
 	void        Reset(const Bool_t sameCycle = kFALSE) ;  
 	TString     Run(const char * detectors, const AliQA::TASKINDEX_t taskIndex=AliQA::kNULLTASKINDEX, Bool_t const sameCycle = kFALSE, const char * fileName = NULL) ; 

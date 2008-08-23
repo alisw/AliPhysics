@@ -76,6 +76,7 @@ const TString AliQA::fkgQACorrNtName     = "CorrQA" ;
 const TString AliQA::fkgRefOCDBDirName   = "Ref"  ; 
 TString AliQA::fkgRefDataDirName	 = ""  ; 
 const TString AliQA::fkgQARefOCDBDefault = "alien://folder=/alice/QA/20"  ; 
+
 //____________________________________________________________________________
 AliQA::AliQA() : 
   TNamed("", ""), 
@@ -300,10 +301,10 @@ const char * AliQA::GetDetName(Int_t det)
 }
 
 //_______________________________________________________________
-TFile * AliQA::GetQADataFile(const char * name, const Int_t run, const Int_t cycle) 
+TFile * AliQA::GetQADataFile(const char * name, const Int_t run) 
 {
   // opens the file to store the detectors Quality Assurance Data Maker results
-	const char * temp = Form("%s.%s.%d.%d.root", name, fgQADataFileName.Data(), run, cycle) ; 
+	const char * temp = Form("%s.%s.%d.root", name, fgQADataFileName.Data(), run) ; 
 	TString opt ; 
 	if (! fgQADataFile ) {     
 		if  (gSystem->AccessPathName(temp))

@@ -87,7 +87,7 @@ fTrackerData(0x0)
                   fPedestals->ClassName(),
                   fGains->ClassName()));
   
-  TString qaFileName(AliQA::GetQADataFileName("MUON",calibData.RunNumber(),0));
+  TString qaFileName(AliQA::GetQADataFileName("MUON",calibData.RunNumber()));
   
   // search the QA file in memory first.
   TFile* f = static_cast<TFile*>(gROOT->GetListOfFiles()->FindObject(qaFileName.Data()));

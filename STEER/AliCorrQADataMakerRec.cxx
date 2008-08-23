@@ -75,8 +75,9 @@ void AliCorrQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArra
 {
   //Detector specific actions at end of cycle
   // do the QA checking
-  if (task == AliQA::kRAWS) 
-    AliQAChecker::Instance()->Run(AliQA::kCORR, task, fObject) ; 
+  if (task == AliQA::kRAWS) {
+     AliQAChecker::Instance()->Run(AliQA::kCORR, task, fObject) ; 
+  }
 }
 
 //____________________________________________________________________________ 
@@ -137,7 +138,7 @@ void AliCorrQADataMakerRec::MakeESDs(AliESDEvent * /*esd*/)
 }
 
 //____________________________________________________________________________
-void AliCorrQADataMakerRec::MakeRaws()
+void AliCorrQADataMakerRec::MakeRaws(AliRawReader *)
 {
   //Fill prepared histograms with Raw digit properties
   if ( fMaxRawVar > 0 ) {
@@ -170,4 +171,5 @@ void AliCorrQADataMakerRec::MakeRecPoints(TTree * /*clustersTree*/)
 void AliCorrQADataMakerRec::StartOfDetectorCycle()
 {
   //Detector specific actions at start of cycle  
+
 }

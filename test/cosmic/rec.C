@@ -17,8 +17,8 @@ void rec(const char *filename="raw.root", const Int_t mfield=1)
 
   // Set the CDB storage location
   AliCDBManager * man = AliCDBManager::Instance();
-  //  man->SetDefaultStorage("local://$ALICE_ROOT");
-  man->SetDefaultStorage("alien://folder=/alice/data/2008/LHC08b/OCDB/");
+    man->SetDefaultStorage("local://$ALICE_ROOT");
+  //man->SetDefaultStorage("alien://folder=/alice/data/2008/LHC08a/OCDB/");
   man->SetSpecificStorage("ITS/Calib/*","local://$ALICE_ROOT");
   
   // Example in case a specific CDB storage is needed

@@ -30,7 +30,6 @@ public:
   AliCorrQADataMakerRec(const AliCorrQADataMakerRec& qadm) ;   
   AliCorrQADataMakerRec& operator = (const AliCorrQADataMakerRec& qadm) ;
   virtual ~AliCorrQADataMakerRec() {;} // dtor
-  void    MakeRaws() ; 
   
 private:
 
@@ -40,7 +39,7 @@ private:
   virtual void   InitRaws() ; 
   virtual void   MakeESDs(AliESDEvent * esd) ;
   virtual void   MakeRecPoints(TTree * recpoTree) ; 
-  virtual void   MakeRaws(AliRawReader *) { AliWarning("May not use") ;} 
+  virtual void   MakeRaws(AliRawReader *) ; 
   virtual void   StartOfDetectorCycle() ; 
 
   Int_t fMaxRawVar ;              //! number of raw parameters in the ntuple

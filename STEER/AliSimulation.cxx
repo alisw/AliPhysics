@@ -139,7 +139,6 @@
 #include "AliGenEventHeader.h"
 #include "AliMC.h"
 #include "AliHLTSimulation.h"
-#include "AliQADataMakerSteer.h"
 #include "AliSysInfo.h"
 #include "AliMagF.h"
 
@@ -195,8 +194,6 @@ AliSimulation::AliSimulation(const char* configFileName,
   SetGAliceFile("galice.root");
   
 // for QA
-   for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) 
-		 fQACycles[iDet] = 999999;
 	fQASteer = new AliQADataMakerSteer("sim") ; 
 	fQASteer->SetActiveDetectors(fQADetectors) ; 
 	fQATasks = Form("%d %d %d", AliQA::kHITS, AliQA::kSDIGITS, AliQA::kDIGITS) ; 
@@ -261,10 +258,6 @@ AliSimulation::AliSimulation(const AliSimulation& sim) :
     if (sim.fSpecCDBUri[i]) fSpecCDBUri.Add(sim.fSpecCDBUri[i]->Clone());
   }
   fgInstance = this;
-
-// for QA
-   for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) 
-	fQACycles[iDet] = sim.fQACycles[iDet];
 }
 
 //_____________________________________________________________________________

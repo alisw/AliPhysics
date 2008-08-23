@@ -57,10 +57,10 @@ public:
 	static const TString   GetDetName(DETECTORINDEX_t det) { return fgDetNames[det] ; }
 	static const char *    GetDetName(Int_t det) ;
 	static const TString   GetGRPPath() { return fgGRPPath ; }  
-	static TFile *         GetQADataFile(const char * name, const Int_t run, const Int_t cycle) ; 
+	static TFile *         GetQADataFile(const char * name, const Int_t run) ; 
 	static TFile *	       GetQADataFile(const char * fileName) ;
-	static const char *    GetQADataFileName(const char * name, const Int_t run, const Int_t cycle) 
-														{return Form("%s.%s.%d.%d.root", name, fgQADataFileName.Data(), run, cycle)  ; }
+	static const char *    GetQADataFileName(const char * name, const Int_t run) 
+														{return Form("%s.%s.%d.root", name, fgQADataFileName.Data(), run)  ; }
 	static const char *    GetQADataFileName() { return fgQADataFileName.Data() ; }
 	static const char *    GetQAName() { return fkgQAName ; } 
   static const char *    GetQACorrName() { return fkgQACorrNtName ; }

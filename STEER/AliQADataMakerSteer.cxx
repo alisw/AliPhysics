@@ -178,8 +178,7 @@ Bool_t AliQADataMakerSteer::DoIt(const AliQA::TASKINDEX_t taskIndex)
 			if (IsSelected(AliQA::GetDetName(iDet))) {
 				AliQADataMaker * qadm = GetQADataMaker(iDet) ;
 				if ( qadm->IsCycleDone() ) {
-					qadm->EndOfCycle(AliQA::kRAWS) ;
-					qadm->StartOfCycle(AliQA::kRAWS) ;
+					qadm->EndOfCycle(taskIndex) ;
 				}
 				TTree * data = NULL ; 
 				AliLoader* loader = GetLoader(qadm->GetUniqueID());
@@ -245,6 +244,7 @@ Bool_t AliQADataMakerSteer::DoIt(const AliQA::TASKINDEX_t taskIndex)
 				} //task switch
 			}
 		} // detector loop
+    Increment() ; 
 	} // event loop	
 	// Save QA data for all detectors
 	rv = Finish(taskIndex) ;
@@ -421,6 +421,19 @@ void  AliQADataMakerSteer::EndOfCycle(TObjArray * detArray)
 }
 
 //_____________________________________________________________________________
+void AliQADataMakerSteer::Increment()
+{
+  // Increments the cycle counter for all QA Data Makers
+ 	for (UInt_t iDet = 0; iDet < fgkNDetectors ; iDet++) {
+		if (IsSelected(AliQA::GetDetName(iDet))) {
+			AliQADataMaker * qadm = GetQADataMaker(iDet) ;
+			if (qadm) 
+        qadm->Increment() ;
+    }
+  }
+}
+  
+//_____________________________________________________________________________
 Bool_t AliQADataMakerSteer::Init(const AliQA::TASKINDEX_t taskIndex, const  char * input )
 {
 	// Initialize the event source and QA data makers
@@ -485,12 +498,12 @@ Bool_t AliQADataMakerSteer::Init(const AliQA::TASKINDEX_t taskIndex, const  char
 	if ( !  AliGeomManager::GetGeometry() ) 
 		AliGeomManager::LoadGeometry() ; 
 	
-	InitQADataMaker(fRunNumber, fRecoParam, fCycleSame, kTRUE, detArray) ; 
+	InitQADataMaker(fRunNumber, fRecoParam, detArray) ; //, fCycleSame, kTRUE, detArray) ; 
 	return kTRUE ; 
 }
 
 //_____________________________________________________________________________
-void  AliQADataMakerSteer::InitQADataMaker(UInt_t run, const AliRecoParam & par, Bool_t sameCycle, Bool_t startOption, TObjArray * detArray) 
+void  AliQADataMakerSteer::InitQADataMaker(UInt_t run, const AliRecoParam & par, TObjArray * detArray) 
 {
 	// Initializes The QADataMaker for all active detectors and for all active tasks 
 
@@ -510,13 +523,12 @@ void  AliQADataMakerSteer::InitQADataMaker(UInt_t run, const AliRecoParam & par,
 				}
 	      // Set default reco params
 				qadm->SetRecoParam(par.GetDetRecoParam(iDet));
+        Bool_t sameCycle = kFALSE ; 
 				for (UInt_t taskIndex = 0; taskIndex < AliQA::kNTASKINDEX; taskIndex++) {
 					if ( fTasks.Contains(Form("%d", taskIndex)) ) {
-						qadm->Init(AliQA::GetTaskIndex(AliQA::GetTaskName(taskIndex)), run, GetQACycles(qadm->GetUniqueID())) ;
-						if (startOption) {
-							qadm->StartOfCycle(AliQA::GetTaskIndex(AliQA::GetTaskName(taskIndex)), sameCycle) ;
-							sameCycle = kTRUE ;
-						}
+            qadm->StartOfCycle(AliQA::GetTaskIndex(AliQA::GetTaskName(taskIndex)), run,  sameCycle) ;
+						qadm->Init(AliQA::GetTaskIndex(AliQA::GetTaskName(taskIndex)), GetQACycles(qadm->GetUniqueID())) ;
+            sameCycle = kTRUE ;
 					}
 				}
 			}
@@ -723,7 +735,7 @@ void AliQADataMakerSteer::Reset(const Bool_t sameCycle)
 	for (UInt_t iDet = 0; iDet < fgkNDetectors ; iDet++) {
 		if (IsSelected(AliQA::GetDetName(iDet))) {
 			AliQADataMaker * qadm = GetQADataMaker(iDet);
-			qadm->Reset(sameCycle);
+			qadm->Reset();
 		}
 	} 
 	if (fRawReaderDelete) { 
@@ -846,7 +858,8 @@ TString AliQADataMakerSteer::Run(const char * detectors, const AliQA::TASKINDEX_
 void AliQADataMakerSteer::RunOneEvent(AliRawReader * rawReader) 
 {
 	//Runs all the QA data Maker for Raws only and on one event only (event loop done by calling method)
-
+  if ( ! rawReader ) 
+    return ; 
 	AliCodeTimerAuto("") ;
   if (fTasks.Contains(Form("%d", AliQA::kRAWS))){
     for (UInt_t iDet = 0; iDet < fgkNDetectors; iDet++) {
@@ -855,6 +868,9 @@ void AliQADataMakerSteer::RunOneEvent(AliRawReader * rawReader)
       AliQADataMaker *qadm = GetQADataMaker(iDet);  
       if (!qadm) 
         continue;
+      if ( qadm->IsCycleDone() ) {
+        qadm->EndOfCycle() ;
+      }
       AliCodeTimerStart(Form("running RAW quality assurance data maker for %s", AliQA::GetDetName(iDet))); 
 			qadm->Exec(AliQA::kRAWS, rawReader) ;
       AliCodeTimerStop(Form("running RAW quality assurance data maker for %s", AliQA::GetDetName(iDet)));
@@ -875,6 +891,9 @@ void AliQADataMakerSteer::RunOneEvent(AliESDEvent *& esd)
       AliQADataMaker *qadm = GetQADataMaker(iDet);  
       if (!qadm) 
         continue;
+      if ( qadm->IsCycleDone() ) {
+        qadm->EndOfCycle() ;
+      }
       AliCodeTimerStart(Form("running ESD quality assurance data maker for %s", AliQA::GetDetName(iDet)));
 			qadm->Exec(AliQA::kESDS, esd) ;
       AliCodeTimerStop(Form("running ESD quality assurance data maker for %s", AliQA::GetDetName(iDet)));
@@ -888,15 +907,18 @@ void AliQADataMakerSteer::RunOneEventInOneDetector(Int_t det, TTree * tree)
 	// Runs all the QA data Maker for ESDs only and on one event only (event loop done by calling method)
 	AliCodeTimerAuto("") ;
   if (fTasks.Contains(Form("%d", AliQA::kRECPOINTS))) {
-    if (!IsSelected(AliQA::GetDetName(det))) {
+    if (IsSelected(AliQA::GetDetName(det))) {
       AliQADataMaker *qadm = GetQADataMaker(det);  
       if (qadm) { 
+        if ( qadm->IsCycleDone() ) {
+          qadm->EndOfCycle() ;
+        }
         AliCodeTimerStart(Form("running RecPoints quality assurance data maker for %s", AliQA::GetDetName(det)));
         qadm->Exec(AliQA::kRECPOINTS, tree) ;
-				AliCodeTimerStop(Form("running RecPoints quality assurance data maker for %s", AliQA::GetDetName(det)));
-			}
-		}
-	}
+        AliCodeTimerStop(Form("running RecPoints quality assurance data maker for %s", AliQA::GetDetName(det)));
+      }
+    }
+  }
 }
 
 //_____________________________________________________________________________

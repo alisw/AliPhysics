@@ -1,4 +1,4 @@
-void rec() {
+ void rec() {
   const char * kYear = "08" ; 
   AliCDBManager * man = AliCDBManager::Instance();
   //man->SetDefaultStorage("alien://Folder=/alice/data/2008/LHC08c/OCDB/");
@@ -19,10 +19,13 @@ void rec() {
 //  reco.SetRunReconstruction("ITS TPC TRD TOF HMPID PHOS EMCAL MUON T0 VZERO FMD PMD ZDC ACORDE");
   reco.SetRunReconstruction("ITS TPC TRD HMPID PHOS EMCAL MUON T0 VZERO FMD PMD ZDC ACORDE");
   reco.SetRunQA("ALL:ALL") ;
-	 reco.SetInLoopQA() ; 
 	  
 	// AliQA::SetQARefStorage(Form("%s%s/", AliQA::GetQARefDefaultStorage(), kYear)) ;
   AliQA::SetQARefStorage("local://$ALICE_ROOT") ;
+  
+  for (Int_t det = 0 ; det < AliQA::kNDET ; det++) {
+    reco.SetQACycles(det, 2) ;
+  }
   
 // **** The field map settings must be the same as in Config.C !
   AliMagFMaps *field=new AliMagFMaps("Maps","Maps",2,1.,10.,AliMagFMaps::k5kG);

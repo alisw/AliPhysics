@@ -48,7 +48,7 @@ AliQADataMaker::AliQADataMaker(const char * name, const char * title) :
   fOutput(0x0),
   fDetectorDir(0x0),
   fDetectorDirName(""), 
-  fCurrentCycle(-1), 
+  fCurrentCycle(0), 
   fCycle(9999999), 
   fCycleCounter(0), 
   fParameterList(0x0), 
@@ -136,14 +136,5 @@ TObject * AliQADataMaker::GetData(TObjArray * list, const Int_t index)
 	} else {
 		AliError("Data list is NULL !!") ; 
 		return NULL ; 		
-	}
-}
-
-//____________________________________________________________________________
-void AliQADataMaker::Reset(const Bool_t sameCycle) 
-{ 
-  // Resets defaut value of data members 
-	if (!sameCycle) {
-		fCycleCounter = 0 ; 
 	}
 }

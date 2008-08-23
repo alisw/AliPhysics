@@ -96,9 +96,19 @@ AliQADataMakerRec& AliQADataMakerRec::operator = (const AliQADataMakerRec& qadm 
 }
 
 //____________________________________________________________________________
+void AliQADataMakerRec::EndOfCycle() 
+{
+  // Finishes a cycle of QA for all the tasks
+  EndOfCycle(AliQA::kRAWS) ; 
+  EndOfCycle(AliQA::kRECPOINTS) ; 
+  EndOfCycle(AliQA::kESDS) ; 
+  ResetCycle() ; 
+}
+
+//____________________________________________________________________________
 void AliQADataMakerRec::EndOfCycle(AliQA::TASKINDEX_t task) 
 {
-	// Finishes a cycle of QA data acquistion
+	// Finishes a cycle of QA 
 	
 	TObjArray * list = NULL ; 
 	
@@ -109,7 +119,10 @@ void AliQADataMakerRec::EndOfCycle(AliQA::TASKINDEX_t task)
 	else if ( task == AliQA::kESDS )
 		list = fESDsQAList ; 
 
-	//DefaultEndOfDetectorCycle(task) ;
+ 
+	if ( ! list && ! fObject ) 
+    return ; 
+  //DefaultEndOfDetectorCycle(task) ;
 	EndOfDetectorCycle(task, list) ;
 	TDirectory * subDir = NULL ;
 	if (fDetectorDir) 
@@ -118,10 +131,10 @@ void AliQADataMakerRec::EndOfCycle(AliQA::TASKINDEX_t task)
 		subDir->cd() ; 
 		if (list) 
 			list->Write() ;
-    if (fObject)
+    if (fObject) {
       fObject->Write() ; 
+    }
 	}
-	//Finish() ; 
 }
  
 //____________________________________________________________________________
@@ -135,7 +148,7 @@ void AliQADataMakerRec::Exec(AliQA::TASKINDEX_t task, TObject * data)
 		if (rawReader) 
 			MakeRaws(rawReader) ;
 		else
-		AliError("Wrong data type") ;     
+		AliInfo("Raw data are not processed") ;     
 	} else if ( task == AliQA::kRECPOINTS ) {
 		AliDebug(1, "Processing RecPoints QA") ; 
 		TTree * tree = dynamic_cast<TTree *>(data) ; 
@@ -155,13 +168,12 @@ void AliQADataMakerRec::Exec(AliQA::TASKINDEX_t task, TObject * data)
 }
 
 //____________________________________________________________________________ 
-TObjArray *  AliQADataMakerRec::Init(AliQA::TASKINDEX_t task, Int_t run, Int_t cycles)
+TObjArray *  AliQADataMakerRec::Init(AliQA::TASKINDEX_t task, Int_t cycles)
 {
   // general intialisation
 	
 	TObjArray * rv = NULL ; 
   
-	fRun = run ;
 	if (cycles > 0)
 		SetCycle(cycles) ;  
 	
@@ -210,14 +222,27 @@ void AliQADataMakerRec::Init(AliQA::TASKINDEX_t task, TObjArray * list, Int_t ru
 }
 
 //____________________________________________________________________________
-void AliQADataMakerRec::StartOfCycle(AliQA::TASKINDEX_t task, const Bool_t sameCycle) 
+void AliQADataMakerRec::StartOfCycle(Int_t run) 
+{
+  // Finishes a cycle of QA for all the tasks
+  Bool_t samecycle = kFALSE ; 
+  StartOfCycle(AliQA::kRAWS,      run, samecycle) ;
+  samecycle = kTRUE ; 
+  StartOfCycle(AliQA::kRECPOINTS, run, samecycle) ; 
+  StartOfCycle(AliQA::kESDS,      run, samecycle) ; 
+}
+
+//____________________________________________________________________________
+void AliQADataMakerRec::StartOfCycle(AliQA::TASKINDEX_t task, Int_t run, const Bool_t sameCycle) 
 { 
   // Finishes a cycle of QA data acquistion
+  if ( run > 0 ) 
+    fRun = run ; 
 	if ( !sameCycle || fCurrentCycle == -1) {
 		ResetCycle() ;
 		if (fOutput) 
 			fOutput->Close() ; 
-		fOutput = AliQA::GetQADataFile(GetName(), fRun, fCurrentCycle) ; 	
+		fOutput = AliQA::GetQADataFile(GetName(), fRun) ; 	
 	}	
 	AliInfo(Form(" Run %d Cycle %d task %s file %s", 
 				 fRun, fCurrentCycle, AliQA::GetTaskName(task).Data(), fOutput->GetName() )) ;
@@ -230,21 +255,6 @@ void AliQADataMakerRec::StartOfCycle(AliQA::TASKINDEX_t task, const Bool_t sameC
 	if (!subDir)
 		subDir = fDetectorDir->mkdir(AliQA::GetTaskName(task)) ;  
 	subDir->cd() ; 
-
-	TObjArray * list = NULL ; 
-  
-  if ( task == AliQA::kRAWS ) 
-	  list = fRawsQAList ; 
-  else if ( task == AliQA::kRECPOINTS)  
-	  list = fRecPointsQAList ;
-  else if ( task == AliQA::kESDS )  
-	  list = fESDsQAList ;
-	
-// Should be the choice of detectors
-//	TIter next(list) ;
-//	TH1 * h ; 
-//	while ( (h = dynamic_cast<TH1 *>(next())) )
-//		h->Reset() ;  
 
 	StartOfDetectorCycle() ; 
 }

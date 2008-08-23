@@ -40,6 +40,7 @@ class TMap;
 class AliRecoParam;
 class AliDetectorRecoParam;
 class AliRunInfo;
+#include "AliQA.h"
 #include "AliEventInfo.h"
 #include "AliRecoParam.h"
 
@@ -139,10 +140,9 @@ public:
   void        ImportRunLoader(AliRunLoader* rl) { fRunLoader = rl; }
 
   // Quality Assurance 
-  void    SetQACycles(const char * detector, const Int_t cycles) { fQACycles[GetDetIndex(detector)] = cycles ; }
+  void    SetQACycles(AliQA::DETECTORINDEX_t det, const Int_t cycles) { fQACycles[det] = cycles ; }
   Bool_t  SetRunQA(TString detAndAction="ALL:ALL") ; 
   void    SetRunGlobalQA(Bool_t flag=kTRUE){fRunGlobalQA = flag;}
-  void    SetInLoopQA(Bool_t flag=kTRUE)   {fInLoopQA    = flag;} 
 
   // Plane Efficiency Evaluation
   void    SetRunPlaneEff(Bool_t flag=kFALSE)  {fRunPlaneEff = flag;}
@@ -158,9 +158,9 @@ private:
 
   void           InitRun(const char* input);
   void           InitRawReader(const char* input);
-  void 		 InitCDB();
-  Bool_t 	 InitGRP();
-  void 		 SetCDBLock();
+  void           InitCDB();
+  Bool_t         InitGRP();
+  void           SetCDBLock();
   Bool_t         SetRunNumberFromData();
   Bool_t         LoadCDB();
   Bool_t         RunLocalEventReconstruction(const TString& detectors);
@@ -185,7 +185,6 @@ private:
   void           FillRawDataErrorLog(Int_t iEvent, AliESDEvent* esd);
 
   //Quality Assurance
-  const Int_t          GetQACycles(const char * detector) { return fQACycles[GetDetIndex(detector)] ; }
   void                 CheckQA() ;
 
   // Plane Efficiency evaluation
@@ -272,7 +271,6 @@ private:
   TString               fQATasks ;      // list of QA tasks to be performed	
   Bool_t                fRunQA ;        // Run QA flag
   Bool_t                fRunGlobalQA;   // Run global QA flag
-  Bool_t                fInLoopQA;      // In-loop QA flag
   Bool_t                fSameQACycle;   //! open a new QA data file or not
   // Plane Efficiency Evaluation
   Bool_t         fRunPlaneEff ;      // Evaluate Plane Efficiency

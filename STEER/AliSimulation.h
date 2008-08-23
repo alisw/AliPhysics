@@ -16,11 +16,11 @@
 #include <TString.h>
 #include <TObjArray.h>
 #include "AliQA.h"
+#include "AliQADataMakerSteer.h"
 
 class AliCDBId;
 class AliCDBParam;
 class AliRunLoader;
-class AliQADataMakerSteer ; 
 
 class AliSimulation: public TNamed {
 public:
@@ -105,8 +105,7 @@ public:
 
   //Quality Assurance
   Int_t       GetDetIndex(const char * detector);
-  const Int_t GetQACycles(const char * detector) { return fQACycles[GetDetIndex(detector)] ; }
-  void        SetQACycles(const char * detector, const Int_t cycles) { fQACycles[GetDetIndex(detector)] = cycles ; }
+  void        SetQACycles(AliQA::DETECTORINDEX_t det, const Int_t cycles) {  fQASteer->SetCycleLength(det, cycles) ; }
   Bool_t      RunQA() ;
   Bool_t      SetRunQA(TString detAndAction="ALL:ALL") ; 
 
@@ -161,7 +160,6 @@ private:
   //QA stuff
   static const Int_t   fgkNDetectors = 15 ;             // number of detectors
   static const char *  fgkDetectorName[fgkNDetectors] ; // names of detectors
-  Int_t                fQACycles[fgkNDetectors] ;       // cycle length (# events) over which QA data are accumulated
   TString              fQADetectors ;                   // list of detectors to be QA'ed 	
   TString              fQATasks ;                       // list of QA tasks to be performed	
 	AliQADataMakerSteer * fQASteer ;                      // steering object to run QA

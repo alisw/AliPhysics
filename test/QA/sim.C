@@ -1,8 +1,10 @@
-void sim(Int_t nev=1) {
+void sim(Int_t nev=4) {
   const char * kYear = "08" ; 
   AliSimulation simu;
-  simu.SetMakeSDigits("TRD TOF PHOS HMPID  EMCAL MUON FMD PMD T0 ZDC VZERO");
-  simu.SetMakeDigits ("TRD TOF PHOS HMPID  EMCAL MUON FMD PMD T0 ZDC VZERO");
+//  simu.SetMakeSDigits("TRD TOF PHOS HMPID  EMCAL MUON FMD PMD T0 ZDC VZERO");
+  simu.SetMakeSDigits("TRD TOF PHOS HMPID  EMCAL PMD T0 ZDC VZERO");
+  simu.SetMakeDigits ("TRD TOF PHOS HMPID  EMCAL PMD T0 ZDC VZERO");
+//  simu.SetMakeDigits ("TRD TOF PHOS HMPID  EMCAL MUON FMD PMD T0 ZDC VZERO");
   simu.SetMakeDigitsFromHits("ITS TPC");
   simu.SetWriteRawData("ALL","raw.root",kTRUE);
 //  simu.SetDefaultStorage("alien://Folder=/alice/data/2008/LHC08c/OCDB/");
@@ -13,7 +15,10 @@ void sim(Int_t nev=1) {
  // AliQA::SetQARefStorage(Form("%s%s/", AliQA::GetQARefDefaultStorage(), kYear)) ;
   AliQA::SetQARefStorage("local://$ALICE_ROOT") ;
   // AliQA::SetQARefDataDirName(AliQA::kMONTECARLO) ; //RUN_TYPE
-
+  for (Int_t det = 0 ; det < AliQA::kNDET ; det++) {
+    simu.SetQACycles(det, 2) ;
+  }
+  
   TStopwatch timer;
   timer.Start();
   simu.Run(nev);

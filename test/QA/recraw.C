@@ -49,10 +49,12 @@ void recraw() {
 	// switch off cleanESD
   reco.SetCleanESD(kFALSE);
 	
-        reco.SetInLoopQA() ; 
  	reco.SetRunQA("ALL:ALL") ;
 	//AliQA::SetQARefStorage(Form("%s%s/", AliQA::GetQARefDefaultStorage(), kYear)) ;
   AliQA::SetQARefStorage("local://$ALICE_ROOT") ;
+  for (Int_t det = 0 ; det < AliQA::kNDET ; det++) {
+    reco.SetQACycles(det, 2) ;
+  }
   
   AliLog::Flush();
 	
