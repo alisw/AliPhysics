@@ -36,7 +36,7 @@
 #include "PMD/AliPMDv1.h"
 #include "T0/AliT0v1.h"
 #include "EMCAL/AliEMCALv1.h"
-#include "ACORDE/AliACORDEv0.h"
+#include "ACORDE/AliACORDEv1.h"
 #include "VZERO/AliVZEROv3.h"
 #endif
 
@@ -453,7 +453,7 @@ void Config()
      if (iACORDE)
     {
         //=================== ACORDE parameters ============================
-        AliACORDE *ACORDE = new AliACORDEv0("ACORDE", "normal ACORDE");
+        AliACORDE *ACORDE = new AliACORDEv1("ACORDE", "normal ACORDE");
     }
 
      if (iVZERO)

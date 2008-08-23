@@ -924,7 +924,7 @@ void Config()
 
         //=================== ACORDE parameters ============================
 
-        AliACORDE *ACORDE = new AliACORDEv0("ACORDE", "normal ACORDE");
+        AliACORDE *ACORDE = new AliACORDEv1("ACORDE", "normal ACORDE");
 
 	// ACORDE->SetITSGeometry(kTRUE);
 

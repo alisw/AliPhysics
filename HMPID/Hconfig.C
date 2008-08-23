@@ -507,7 +507,7 @@ void HmpConfig::WriteDet(FILE *pF)
 //different phase space detectors  
   if(fDetBG->GetButton(kPHOS )->GetState()) fprintf(pF,"\n  AliPHOS *PHOS = new AliPHOSv1(\"PHOS\",\"IHEP\");\n");
   if(fDetBG->GetButton(kEMCAL)->GetState()) fprintf(pF,"\n  AliEMCAL *EMCAL = new AliEMCALv2(\"EMCAL\",\"SHISH_77_TRD1_2X2_FINAL_110DEG\");\n");
-  if(fDetBG->GetButton(kACORDE  )->GetState()) fprintf(pF,"\n  AliACORDE *ACORDE = new AliACORDEv0(\"ACORDE\",\"normal ACORDE\");\n");
+  if(fDetBG->GetButton(kACORDE  )->GetState()) fprintf(pF,"\n  AliACORDE *ACORDE = new AliACORDEv1(\"ACORDE\",\"normal ACORDE\");\n");
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void HmpConfig::GuiBatch(TGHorizontalFrame *pMainF)

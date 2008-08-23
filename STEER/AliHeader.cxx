@@ -49,6 +49,7 @@ AliHeader::AliHeader():
   //
   // Default constructor
   //
+  printf("I was here\n");
 }
 
 //_______________________________________________________________________

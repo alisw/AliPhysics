@@ -65,7 +65,7 @@
 #include "PMD/AliPMDv1.h"
 #include "T0/AliT0v1.h"
 #include "EMCAL/AliEMCALv2.h"
-#include "ACORDE/AliACORDEv0.h"
+#include "ACORDE/AliACORDEv1.h"
 #include "VZERO/AliVZEROv7.h"
 #endif
 

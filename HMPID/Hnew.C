@@ -352,7 +352,7 @@ void HmpGui::CreateConfigC()
   if(fDetBG->GetButton(kZDC  )->GetState()) f<<Form("\n  new AliZDCv2          (\"ZDC\"   ,\"normal ZDC\");");
   if(fDetBG->GetButton(kPHOS )->GetState()) f<<Form("\n  new AliPHOSv1         (\"PHOS\"  ,\"IHEP\");");              
   if(fDetBG->GetButton(kEMCAL)->GetState()) f<<Form("\n  new AliEMCALv2        (\"EMCAL\" ,\"SHISH_77_TRD1_2X2_FINAL_110DEG\");");
-  if(fDetBG->GetButton(kACRD )->GetState()) f<<Form("\n  new AliACORDEv0       (\"ACORDE\",\"normal ACORDE\");");
+  if(fDetBG->GetButton(kACRD )->GetState()) f<<Form("\n  new AliACORDEv1       (\"ACORDE\",\"normal ACORDE\");");
   
   f<<Form("\n  ::Info(\"----------> HMPID private config\",\"Stop\\n\\n\\n\");\n");   f<<Form("}\n");  //end of Config.C file:  
   f.close(); 

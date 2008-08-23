@@ -649,7 +649,7 @@ Config()
 
   if (useACORDE) {
     // =================== ACORDE parameters ============================
-    AliACORDE *ACORDE = new AliACORDEv0("ACORDE", "normal ACORDE");
+    AliACORDE *ACORDE = new AliACORDEv1("ACORDE", "normal ACORDE");
   }
 
   if (useVZERO) {
