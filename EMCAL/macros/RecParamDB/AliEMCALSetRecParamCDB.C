@@ -67,7 +67,7 @@ void SetRecParam()
   recParamDB->SetTrkCutZ(6.0);
   recParamDB->SetTrkCutR(10.0);
   recParamDB->SetTrkCutAlphaMin(-50.0);
-  recParamDB->SetTrkCutAlphaMin( 50.0);
+  recParamDB->SetTrkCutAlphaMax( 50.0);
   recParamDB->SetTrkCutAngle(10000.0);      // i.e. exclude this for the moment
 
   //PID
