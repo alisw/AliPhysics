@@ -54,15 +54,14 @@ void runReconstruction(int seed, const char* input, const char* recoptions)
   MuonRec->SetLoadAlignData("MUON");
   MuonRec->SetNumberOfEventsPerFile(1000);
   MuonRec->SetOption("MUON",recoptions);
-  //MuonRec->SetRunQA("MUON:ALL");
+  MuonRec->SetRunQA("MUON:ALL");
   
   // uncomment the following lines if you want to set custom RecoParam
   // instead of getting them from the OCDB
-//  AliMUONRecoParam *muonRecoParam = AliMUONRecoParam::GetLowFluxParam();
-//  muonRecoParam->SaveFullClusterInESD(kTRUE,100.);
-//  MuonRec->SetRecoParam("MUON",muonRecoParam);
+  //  AliMUONRecoParam *muonRecoParam = AliMUONRecoParam::GetLowFluxParam();
+  //  muonRecoParam->SaveFullClusterInESD(kTRUE,100.);
+  //  MuonRec->SetRecoParam("MUON",muonRecoParam);
   
-
   MuonRec->Run();
   
   delete MuonRec;
