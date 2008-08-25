@@ -1978,14 +1978,14 @@ AliShuttleLogbookEntry* AliShuttle::QueryRunParameters(Int_t run)
 
 	Bool_t skip = kFALSE;
 				
-	if (totEvents <= 1) 
+	if (endTime != 0 && endTime >= now - dcsDelay)
+	{
+		Log("SHUTTLE", Form("Skipping run %d for now, because DCS buffer time is not yet expired", run));
+	}
+	else if (totEvents <= 1) 
 	{
 		Log("SHUTTLE", Form("QueryRunParameters - Run %d has 1 event or less - Skipping!", run));
 		skip = kTRUE;
-	}
-	else if (endTime != 0 && endTime >= now - dcsDelay)
-	{
-		Log("SHUTTLE", Form("Skipping run %d for now, because DCS buffer time is not yet expired", run));
 	}
 	else
 	{
