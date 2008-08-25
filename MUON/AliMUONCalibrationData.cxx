@@ -97,7 +97,8 @@ fNeighbours(0x0)
 AliMUONCalibrationData::~AliMUONCalibrationData()
 {
   /// Destructor. Note that we're the owner of our pointers.
-  Reset();
+  //PH The owner of the objects is CDB, do not delete them!
+  //  Reset();
 }
 
 //_____________________________________________________________________________
