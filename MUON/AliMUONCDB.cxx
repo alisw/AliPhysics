@@ -679,8 +679,8 @@ AliMUONCDB::MakeGlobalTriggerConfigStore(AliMUONGlobalCrateConfig& gtm) const
   /// Make a global trigger config store. All masks (disable) set to 0x00 for each Darc board (Ch.F.)
   
   AliCodeTimerAuto("");
-
-    return gtm.ReadData(AliMpFiles::GlobalTriggerBoardMapping());
+  
+  return gtm.ReadData(AliMpFiles::GlobalTriggerBoardMapping());
 }
 
 
@@ -716,14 +716,9 @@ AliMUONCDB::WriteToCDB(const char* calibpath, TObject* object,
 {
   /// Write a given object to OCDB
   
-  AliCDBId id(calibpath,startRun,endRun);
-  AliCDBMetaData md;
-  md.SetAliRootVersion(gROOT->GetVersion());
-  md.SetComment(gSystem->ExpandPathName(filename));
-  md.SetResponsible("Uploaded using AliMUONCDB class");
-  AliCDBManager* man = AliCDBManager::Instance();
-  man->SetDefaultStorage(fCDBPath);
-  man->Put(object,id,&md);
+  TString comment(gSystem->ExpandPathName(filename));
+  
+  WriteToCDB(object, calibpath, startRun, endRun, comment.Data());
 }
 
 //_____________________________________________________________________________
@@ -733,21 +728,27 @@ AliMUONCDB::WriteToCDB(const char* calibpath, TObject* object,
 {
   /// Write a given object to OCDB
   
+  TString comment;
+  if ( defaultValues ) comment += "Test with default values";
+  else comment += "Test with random values";
+  
+  WriteToCDB(object, calibpath, startRun, endRun, comment.Data());
+}
+
+//_____________________________________________________________________________
+void
+AliMUONCDB::WriteToCDB(TObject* object, const char* calibpath, Int_t startRun, Int_t endRun,
+		       const char* comment, const char* responsible)
+{
+  /// Write a given object to OCDB
+  
   AliCDBId id(calibpath,startRun,endRun);
   AliCDBMetaData md;
   md.SetAliRootVersion(gROOT->GetVersion());
-  if ( defaultValues )
-  {
-    md.SetComment("Test with default values");
-  }
-  else
-  {
-    md.SetComment("Test with random values");
-  }
-  md.SetResponsible("AliMUONCDB tester class");
-  
+  md.SetComment(comment);
+  md.SetResponsible(responsible);
   AliCDBManager* man = AliCDBManager::Instance();
-  man->SetDefaultStorage(fCDBPath);
+  if (!man->IsDefaultStorageSet()) man->SetDefaultStorage(fCDBPath);
   man->Put(object,id,&md);
 }
 
@@ -1043,3 +1044,4 @@ AliMUONCDB::WriteTracker(Bool_t defaultValues, Int_t startRun, Int_t endRun)
   WriteCapacitances(defaultValues,startRun,endRun);
   WriteNeighbours(startRun,endRun);
 }
+

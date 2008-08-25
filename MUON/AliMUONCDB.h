@@ -59,6 +59,8 @@ public:
                   Int_t startRun, Int_t endRun, Bool_t defaultValues);
   void WriteToCDB(const char* calibpath, TObject* object, 
                   Int_t startRun, Int_t endRun, const char* filename);
+  void WriteToCDB(TObject* object, const char* calibpath, Int_t startRun=0, Int_t endRun=AliCDBRunRange::Infinity(),
+		  const char* comment="", const char* responsible="AliMUONCDB tester class");
 
   void WriteTrigger(Int_t startRun=0,Int_t endRun=AliCDBRunRange::Infinity());
   void WriteTracker(Bool_t defaultValues=kTRUE, Int_t startRun=0,Int_t endRun=AliCDBRunRange::Infinity());
