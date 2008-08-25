@@ -43,7 +43,10 @@ public:
  private:
 
   void GetOccupancyStrip(TH1 *lHisto, Int_t *occupancyMatrix); 
-  Double_t GetOccupancyModule(TH1 *lHisto, Int_t stripside); 
+  Double_t GetOccupancyModule(TH1 *lHisto, 
+			      Int_t stripside,
+			      Int_t mode,
+			      Double_t threshold); 
   void MonitorOCDBObjects();
 
   static const Int_t fgkNumOfLDCs = 3;      //number of SSD LDCs

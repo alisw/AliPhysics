@@ -137,11 +137,10 @@ AliITSQASSDDataMakerRec::~AliITSQASSDDataMakerRec() {
 //____________________________________________________________________________ 
 void AliITSQASSDDataMakerRec::StartOfDetectorCycle()
 {
-  //Detector specific actions at start of cycle
-  
   if (  fAliITSQADataMakerRec->GetRawsData(0) == NULL ) // Raws not defined
     return ; 
-  
+
+  //Detector specific actions at start of cycle
   AliDebug(1,"AliITSQADM::Start of SSD Cycle\n");    
 
   //Data size per DDL
@@ -180,7 +179,8 @@ void AliITSQASSDDataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjAr
   // launch the QA checking
   if (  fAliITSQADataMakerRec->GetRawsData(0) == NULL ) // Raws not defined
     return ; 
-  
+ 
+  // launch the QA checking
   AliDebug(1,"AliITSDM instantiates checker with Run(AliQA::kITS, task, list)\n"); 
   //Data size per DDL
   for(Int_t i = 0; i < fgkNumOfDDLs; i++) {
@@ -216,7 +216,7 @@ void AliITSQASSDDataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjAr
     //occupancy per ladder
     Int_t gHistPositionOccupancyPerLadder = 0;
     Int_t lLadderLocationY = 0;
-    Double_t occupancy = 0.0;
+    Double_t occupancy = 0.0, occupancyThreshold = 0.0, occupancyAverage = 0.0;
     for(Int_t iModule = 0; iModule < fgkSSDMODULES; iModule++) {
       AliITSgeomTGeo::GetModuleId(iModule+500,gLayer,gLadder,gModule);
       
@@ -224,21 +224,51 @@ void AliITSQASSDDataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjAr
       gHistPositionOccupancyPerLadder = (gLayer == 5) ? 2*(gLadder - 1) : 2*(gLadder - 1 + fgkSSDLADDERSLAYER5);
       
       //P-SIDE OCCUPANCY
-      occupancy = GetOccupancyModule((TH1 *)fAliITSQADataMakerRec->GetRawsData(fGenOffset+fSSDRawsCommonLevelOffset+gHistPositionOccupancyPerModule),0);
+      occupancy = GetOccupancyModule((TH1 *)fAliITSQADataMakerRec->GetRawsData(fGenOffset+fSSDRawsCommonLevelOffset+gHistPositionOccupancyPerModule),0,0,0);
+      occupancyThreshold = GetOccupancyModule((TH1 *)fAliITSQADataMakerRec->GetRawsData(fGenOffset+fSSDRawsCommonLevelOffset+gHistPositionOccupancyPerModule),0,1,3);
+      occupancyAverage = GetOccupancyModule((TH1 *)fAliITSQADataMakerRec->GetRawsData(fGenOffset+fSSDRawsCommonLevelOffset+gHistPositionOccupancyPerModule),0,2,0);
+
       fAliITSQADataMakerRec->GetRawsData(fGenOffset+fSSDRawsCommonLevelOffset+fgkSSDMODULES+gHistPositionOccupancyPerLadder)->Fill(gModule,occupancy);
       lLadderLocationY = 3*gLadder; // sideP=1 sideN=0 
-      if(gLayer == 5)
+      if(gLayer == 5) {
+	//occupancy per module - no threshold
         ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenOffset+fSSDRawsCommonLevelOffset+fgkSSDMODULES+2*fgkSSDLADDERSLAYER5+2*fgkSSDLADDERSLAYER6))->SetBinContent(gModule,lLadderLocationY,occupancy);
-      else if(gLayer == 6)
+	//occupancy per module - threshold @ 3%
+        ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenOffset+fSSDRawsCommonLevelOffset+fgkSSDMODULES+2*fgkSSDLADDERSLAYER5+2*fgkSSDLADDERSLAYER6+2))->SetBinContent(gModule,lLadderLocationY,occupancyThreshold);
+	//average occupancy per module
+        ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenOffset+fSSDRawsCommonLevelOffset+fgkSSDMODULES+2*fgkSSDLADDERSLAYER5+2*fgkSSDLADDERSLAYER6+4))->SetBinContent(gModule,lLadderLocationY,occupancyAverage);
+      }
+      else if(gLayer == 6) {
+	//occupancy per module - no threshold
         ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenOffset+fSSDRawsCommonLevelOffset+fgkSSDMODULES+2*fgkSSDLADDERSLAYER5+2*fgkSSDLADDERSLAYER6+1))->SetBinContent(gModule,lLadderLocationY,occupancy);
+	//occupancy per module - threshold @ 3%
+        ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenOffset+fSSDRawsCommonLevelOffset+fgkSSDMODULES+2*fgkSSDLADDERSLAYER5+2*fgkSSDLADDERSLAYER6+3))->SetBinContent(gModule,lLadderLocationY,occupancyThreshold);
+	//average occupancy per module
+        ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenOffset+fSSDRawsCommonLevelOffset+fgkSSDMODULES+2*fgkSSDLADDERSLAYER5+2*fgkSSDLADDERSLAYER6+5))->SetBinContent(gModule,lLadderLocationY,occupancyAverage);
+      }
 
       //N-SIDE OCCUPANCY
-      occupancy = GetOccupancyModule((TH1 *)fAliITSQADataMakerRec->GetRawsData(fGenOffset+fSSDRawsCommonLevelOffset+gHistPositionOccupancyPerModule),1);   
+      occupancy = GetOccupancyModule((TH1 *)fAliITSQADataMakerRec->GetRawsData(fGenOffset+fSSDRawsCommonLevelOffset+gHistPositionOccupancyPerModule),1,0,0);   
+      occupancyThreshold = GetOccupancyModule((TH1 *)fAliITSQADataMakerRec->GetRawsData(fGenOffset+fSSDRawsCommonLevelOffset+gHistPositionOccupancyPerModule),1,1,3);   
+      occupancyAverage = GetOccupancyModule((TH1 *)fAliITSQADataMakerRec->GetRawsData(fGenOffset+fSSDRawsCommonLevelOffset+gHistPositionOccupancyPerModule),1,2,0);   
+
       fAliITSQADataMakerRec->GetRawsData(fGenOffset+fSSDRawsCommonLevelOffset+fgkSSDMODULES+gHistPositionOccupancyPerLadder+1)->Fill(gModule,occupancy);
-      if(gLayer == 5)
+      if(gLayer == 5) {
+	//occupancy per module - no threshold
         ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenOffset+fSSDRawsCommonLevelOffset+fgkSSDMODULES+2*fgkSSDLADDERSLAYER5+2*fgkSSDLADDERSLAYER6))->SetBinContent(gModule,lLadderLocationY-1,occupancy);
-      else if(gLayer == 6)
+	//occupancy per module - threshold @ 3%
+        ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenOffset+fSSDRawsCommonLevelOffset+fgkSSDMODULES+2*fgkSSDLADDERSLAYER5+2*fgkSSDLADDERSLAYER6+2))->SetBinContent(gModule,lLadderLocationY-1,occupancyThreshold);
+	//average occupancy per module
+        ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenOffset+fSSDRawsCommonLevelOffset+fgkSSDMODULES+2*fgkSSDLADDERSLAYER5+2*fgkSSDLADDERSLAYER6+4))->SetBinContent(gModule,lLadderLocationY-1,occupancyAverage);
+      }
+      else if(gLayer == 6) {
+	//occupancy per module - no threshold
         ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenOffset+fSSDRawsCommonLevelOffset+fgkSSDMODULES+2*fgkSSDLADDERSLAYER5+2*fgkSSDLADDERSLAYER6+1))->SetBinContent(gModule,lLadderLocationY-1,occupancy);
+	//occupancy per module - threshold @ 3%
+        ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenOffset+fSSDRawsCommonLevelOffset+fgkSSDMODULES+2*fgkSSDLADDERSLAYER5+2*fgkSSDLADDERSLAYER6+3))->SetBinContent(gModule,lLadderLocationY-1,occupancyThreshold);
+	//average occupancy per module
+        ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenOffset+fSSDRawsCommonLevelOffset+fgkSSDMODULES+2*fgkSSDLADDERSLAYER5+2*fgkSSDLADDERSLAYER6+5))->SetBinContent(gModule,lLadderLocationY-1,occupancyAverage);
+      }
     }//module loop
   }//online flag for SSD
 
@@ -393,12 +423,14 @@ void AliITSQASSDDataMakerRec::InitRaws() {
     }//layer loop
 
     //top level occupancy plots
+    //occupancy per module - no threshold
     TH2D *fHistSSDOccupancyLayer5 = new TH2D("fHistSSDOccupancyLayer5",
 					     ";N_{modules};N_{Ladders}",
 					     fgkSSDMODULESPERLADDERLAYER5,
 					     0,fgkSSDMODULESPERLADDERLAYER5,
 					     3*fgkSSDLADDERSLAYER5,
 					     0,fgkSSDLADDERSLAYER5);  
+    fHistSSDOccupancyLayer5->SetTitle("Occupancy per module (Layer 5) - No threshold");
     Char_t fLabel[3];
     for(Int_t iBin = 1; iBin < fgkSSDMODULESPERLADDERLAYER5 + 1; iBin++){
       sprintf(fLabel,"%d",iBin);
@@ -412,11 +444,68 @@ void AliITSQASSDDataMakerRec::InitRaws() {
 					     0,fgkSSDMODULESPERLADDERLAYER6,
 					     3*fgkSSDLADDERSLAYER6,
 					     0,fgkSSDLADDERSLAYER6);
+    fHistSSDOccupancyLayer6->SetTitle("Occupancy per module (Layer 6) - No threshold");
     for(Int_t iBin = 1; iBin < fgkSSDMODULESPERLADDERLAYER6 + 1; iBin++){
       sprintf(fLabel,"%d",iBin);
       fHistSSDOccupancyLayer6->GetXaxis()->SetBinLabel(iBin,fLabel);
     }
     fAliITSQADataMakerRec->Add2RawsList(fHistSSDOccupancyLayer6, fGenOffset+fSSDRawsOffset);
+    fSSDRawsOffset += 1;
+
+    //occupancy per module - threshold @ 3%
+    TH2D *fHistSSDOccupancyThresholdLayer5 = new TH2D("fHistSSDOccupancyThresholdLayer5",
+					     ";N_{modules};N_{Ladders}",
+					     fgkSSDMODULESPERLADDERLAYER5,
+					     0,fgkSSDMODULESPERLADDERLAYER5,
+					     3*fgkSSDLADDERSLAYER5,
+					     0,fgkSSDLADDERSLAYER5);  
+    fHistSSDOccupancyThresholdLayer5->SetTitle("Occupancy per module (Layer 5) - Threshold 3%");
+     for(Int_t iBin = 1; iBin < fgkSSDMODULESPERLADDERLAYER5 + 1; iBin++){
+      sprintf(fLabel,"%d",iBin);
+      fHistSSDOccupancyThresholdLayer5->GetXaxis()->SetBinLabel(iBin,fLabel);
+    }
+    fAliITSQADataMakerRec->Add2RawsList(fHistSSDOccupancyThresholdLayer5, fGenOffset+fSSDRawsOffset);
+    fSSDRawsOffset += 1;
+    TH2D *fHistSSDOccupancyThresholdLayer6 = new TH2D("fHistSSDOccupancyThresholdLayer6",
+					     ";N_{modules};N_{Ladders}",
+					     fgkSSDMODULESPERLADDERLAYER6,
+					     0,fgkSSDMODULESPERLADDERLAYER6,
+					     3*fgkSSDLADDERSLAYER6,
+					     0,fgkSSDLADDERSLAYER6);
+    fHistSSDOccupancyThresholdLayer6->SetTitle("Occupancy per module (Layer 6) - Threshold 3%");
+    for(Int_t iBin = 1; iBin < fgkSSDMODULESPERLADDERLAYER6 + 1; iBin++){
+      sprintf(fLabel,"%d",iBin);
+      fHistSSDOccupancyThresholdLayer6->GetXaxis()->SetBinLabel(iBin,fLabel);
+    }
+    fAliITSQADataMakerRec->Add2RawsList(fHistSSDOccupancyThresholdLayer6, fGenOffset+fSSDRawsOffset);
+    fSSDRawsOffset += 1;
+
+    //Average occupancy per module
+    TH2D *fHistSSDAverageOccupancyLayer5 = new TH2D("fHistSSDAverageOccupancyLayer5",
+					     ";N_{modules};N_{Ladders}",
+					     fgkSSDMODULESPERLADDERLAYER5,
+					     0,fgkSSDMODULESPERLADDERLAYER5,
+					     3*fgkSSDLADDERSLAYER5,
+					     0,fgkSSDLADDERSLAYER5);  
+    fHistSSDAverageOccupancyLayer5->SetTitle("Average occupancy per module (Layer 5)");
+    for(Int_t iBin = 1; iBin < fgkSSDMODULESPERLADDERLAYER5 + 1; iBin++){
+      sprintf(fLabel,"%d",iBin);
+      fHistSSDAverageOccupancyLayer5->GetXaxis()->SetBinLabel(iBin,fLabel);
+    }
+    fAliITSQADataMakerRec->Add2RawsList(fHistSSDAverageOccupancyLayer5, fGenOffset+fSSDRawsOffset);
+    fSSDRawsOffset += 1;
+    TH2D *fHistSSDAverageOccupancyLayer6 = new TH2D("fHistSSDAverageOccupancyLayer6",
+					     ";N_{modules};N_{Ladders}",
+					     fgkSSDMODULESPERLADDERLAYER6,
+					     0,fgkSSDMODULESPERLADDERLAYER6,
+					     3*fgkSSDLADDERSLAYER6,
+					     0,fgkSSDLADDERSLAYER6);
+    fHistSSDAverageOccupancyLayer6->SetTitle("Average occupancy per module (Layer 6)");
+    for(Int_t iBin = 1; iBin < fgkSSDMODULESPERLADDERLAYER6 + 1; iBin++){
+      sprintf(fLabel,"%d",iBin);
+      fHistSSDAverageOccupancyLayer6->GetXaxis()->SetBinLabel(iBin,fLabel);
+    }
+    fAliITSQADataMakerRec->Add2RawsList(fHistSSDAverageOccupancyLayer6, fGenOffset+fSSDRawsOffset);
     fSSDRawsOffset += 1;
 
     //Output of the DA
@@ -619,11 +708,21 @@ void AliITSQASSDDataMakerRec::GetOccupancyStrip(TH1 *lHisto, Int_t *occupancyMat
 }
 
 //____________________________________________________________________________ 
-Double_t AliITSQASSDDataMakerRec::GetOccupancyModule(TH1 *lHisto, Int_t stripside) { 
+Double_t AliITSQASSDDataMakerRec::GetOccupancyModule(TH1 *lHisto, 
+						     Int_t stripside,
+						     Int_t mode,
+						     Double_t threshold) {
+  //Mode 0: calculates the occupancy of a module 
+  //        without a threshold in the strip occupancy
+  //Mode 1: calculates the occupancy of a module 
+  //        with the set threshold in the strip occupancy
+  //Mode 2: calculates the average occupancy of a module 
+
   // bo: TDC >0 or # of sigmas wrt noise ?
   //stripside == 0 --> P-side
   //stripside == 1 --> N-side
   Int_t lNumFiredBins = 0;
+  Double_t sumOccupancy = 0.0;
   TString histname = lHisto->GetName();
   for(Int_t iBin = 1 + stripside*fgkNumberOfPSideStrips; iBin < fgkNumberOfPSideStrips*(1 + stripside); iBin++){
     /*if(histname.Contains("Layer5_Ladder507_Module3")) {
@@ -631,12 +730,18 @@ Double_t AliITSQASSDDataMakerRec::GetOccupancyModule(TH1 *lHisto, Int_t stripsid
       " - Strip: "<<iBin<<
       " - Bin content: "<<lHisto->GetBinContent(iBin)<<endl;
       }*/
-    if (lHisto->GetBinContent(iBin) > 0)
+    if (lHisto->GetBinContent(iBin) > threshold) {
       lNumFiredBins++; 
+      sumOccupancy = lHisto->GetBinContent(iBin);
+    }
   }
   
-  Double_t lOccupancy = (100.*lNumFiredBins)/fgkNumberOfPSideStrips; // percentage
-  
+  Double_t lOccupancy = 0.0;
+  if((mode == 0)||(mode == 1))
+    lOccupancy = (100.*lNumFiredBins)/fgkNumberOfPSideStrips; // percentage  
+  else if(mode == 2)
+    lOccupancy = 100.*sumOccupancy/fgkNumberOfPSideStrips;
+
   /*if(histname.Contains("Layer5_Ladder507_Module3"))
     cout<<"Fired strips: "<<lNumFiredBins<<
     " - Occupancy: "<<lOccupancy<<endl;*/
