@@ -1295,7 +1295,8 @@ void AliReconstruction::SlaveBegin(TTree*)
   }
   
   if (fRunGlobalQA) {
-    Bool_t sameCycle = kFALSE ; 
+    Bool_t sameCycle = kFALSE ;
+    if (!fQASteer) fQASteer = new AliQADataMakerSteer("rec") ; 
     AliQADataMaker *qadm = fQASteer->GetQADataMaker(AliQA::kGLOBAL);
     AliInfo(Form("Initializing the global QA data maker"));
     if (fQATasks.Contains(Form("%d", AliQA::kRECPOINTS))) {
