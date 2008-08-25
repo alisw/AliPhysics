@@ -107,7 +107,8 @@ AliFMDRawReader::Exec(Option_t*)
 Bool_t
 AliFMDRawReader::ReadAdcs(TClonesArray* array) 
 {
-
+  
+  fReader->Select("FMD");
   // Read raw data into the digits array, using AliFMDAltroReader. 
   if (!array) {
     AliError("No TClonesArray passed");
@@ -138,6 +139,11 @@ AliFMDRawReader::ReadAdcs(TClonesArray* array)
   while (isGood) {
     isGood = input.ReadChannel(ddl, hwaddr, last, data);
     // if (!isGood) break;
+    if (ddl >= UInt_t(-1)) { 
+      AliFMDDebug(5, ("At end of event with %d digits", 
+		      array->GetEntriesFast()));
+      break;
+    }
 
     AliFMDDebug(5, ("Read channel 0x%x of size %d", hwaddr, last));
     UShort_t det, sec, str;
@@ -147,6 +153,7 @@ AliFMDRawReader::ReadAdcs(TClonesArray* array)
 		    "and hardware address 0x%x", ddl, hwaddr));
       continue;
     }
+    
     rate     = pars->GetSampleRate(det, ring, sec, str);
     stripMin = pars->GetMinStrip(det, ring, sec, str);
     stripMax = pars->GetMaxStrip(det, ring, sec, str);
