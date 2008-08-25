@@ -285,7 +285,9 @@ Int_t AliTRDtrackerV1::PropagateBack(AliESDEvent *event)
     //track->Print();
     //Int_t   lbl         = seed->GetLabel();
     //track.SetSeedLabel(lbl);
-    seed->UpdateTrackParams(&track, AliESDtrack::kTRDbackup); // Make backup
+
+    // Make backup and mark entrance in the TRD
+    seed->UpdateTrackParams(&track, AliESDtrack::kTRDbackup | AliESDtrack::kTRDin); 
     Float_t p4          = track.GetC();
     expectedClr = FollowBackProlongation(track);
 
@@ -443,8 +445,11 @@ Int_t AliTRDtrackerV1::RefitInward(AliESDEvent *event)
     }
 
     ULong_t status = seed->GetStatus();
+    // reject tracks which failed propagation in the TRD
     if((status & AliESDtrack::kTRDout) == 0) continue;
-    if((status & AliESDtrack::kTRDin)  != 0) continue;
+
+    // reject tracks which are produced by the TRD stand alone track finder.
+    if((status & AliESDtrack::kTRDin)  == 0) continue;
     nseed++; 
 
     track.ResetCovariance(50.0);
