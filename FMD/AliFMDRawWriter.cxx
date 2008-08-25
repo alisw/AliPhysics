@@ -66,6 +66,7 @@ AliFMDRawWriter::AliFMDRawWriter(AliFMD* fmd)
     fThreshold(0)
 {
   // CTOR 
+  AliFMDDebug(5, ("Created AliFMDRawWriter object"));
 }
 
 
@@ -130,10 +131,10 @@ AliFMDRawWriter::Exec(Option_t*)
   // Note, that this method assumes that the digits are ordered. 
   // 
   AliLoader* loader = fFMD->GetLoader();
-  loader->LoadDigits();
+  loader->LoadDigits("READ");
   TTree* digitTree = loader->TreeD();
   if (!digitTree) {
-    Error("Digits2Raw", "no digit tree");
+    AliError("no digit tree");
     return;
   }
   
@@ -141,7 +142,7 @@ AliFMDRawWriter::Exec(Option_t*)
   fFMD->SetTreeAddress();
   TBranch* digitBranch = digitTree->GetBranch(fFMD->GetName());
   if (!digitBranch) {
-    Error("Digits2Raw", "no branch for %s", fFMD->GetName());
+    AliError(Form("no branch for %s", fFMD->GetName()));
     return;
   }
   digitBranch->SetAddress(&digits);

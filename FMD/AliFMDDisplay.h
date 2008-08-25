@@ -123,6 +123,9 @@ public:
       @param max Maximum (for example 1023 for digits)
       @return @c false on error  */
   virtual Int_t  LookupColor(Float_t x, Float_t min, Float_t max)  const;
+
+  /** Set range of displayed values */
+  virtual void SetCut(Float_t l=0., Float_t h=1.); //*MENU*
 protected:
   /** Copy constructor 
       @param o Object to copy from  */
@@ -210,6 +213,17 @@ protected:
   TH1*                  fSpecCut;   // Cut spectra
   TCanvas*              fAux;       // Aux canvas.
   Bool_t                fReturn;    // Stop 
+
+
+  struct Range_t { 
+    UInt_t  fNbins;
+    Float_t fLow;
+    Float_t fHigh;
+  };
+  static const Range_t fgkEdepRange;
+  static const Range_t fgkAdcRange;
+  static const Range_t fgkMultRange;
+
   ClassDef(AliFMDDisplay,0)  // FMD specialised event display
 };
 

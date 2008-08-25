@@ -68,6 +68,12 @@ ClassImp(AliFMDDisplay)
 AliFMDDisplay* AliFMDDisplay::fgInstance = 0;
 
 //____________________________________________________________________
+const AliFMDDisplay::Range_t AliFMDDisplay::fgkEdepRange = {  100, 0.,    2. };
+const AliFMDDisplay::Range_t AliFMDDisplay::fgkAdcRange  = { 1024, 0., 1023. };
+const AliFMDDisplay::Range_t AliFMDDisplay::fgkMultRange = {  500, 0.,   20. };
+
+  
+//____________________________________________________________________
 AliFMDDisplay* 
 AliFMDDisplay::Instance()
 {
@@ -387,27 +393,30 @@ AliFMDDisplay::MakeAux()
   // MAke the aux canvas 
   // This is used to display spectra
   // etc, 
-  if ((TESTBIT(fTreeMask, kESD) || 
-       TESTBIT(fTreeMask, kDigits) || 
-       TESTBIT(fTreeMask, kRaw))) {
-    if (!fAux) {
-      fAux = new TCanvas("aux", "Aux");
-      fAux->SetLogy();
-      if (TESTBIT(fTreeMask, kESD)) 
-	fSpec = new TH1D("spec", "Mult spectra", 500, 0, 10);
-      else 
-	fSpec = new TH1D("spec", "Adc spectra", 1024, -.5, 1023.5);
-      fSpecCut = static_cast<TH1*>(fSpec->Clone("specCut"));
-      fSpec->SetFillColor(2);
-      fSpec->SetFillStyle(3001);
-      fSpecCut->SetFillColor(4);
-      fSpecCut->SetFillStyle(3001);
-    }
-    else {
-      fSpec->Reset();
-      fSpecCut->Reset();
-    }
+  const Range_t* range = 0;
+  if      (TESTBIT(fTreeMask, kESD))      range = &fgkMultRange;
+  else if (TESTBIT(fTreeMask, kDigits))   range = &fgkAdcRange;
+  else if (TESTBIT(fTreeMask, kSDigits))  range = &fgkAdcRange;
+  else if (TESTBIT(fTreeMask, kRaw))      range = &fgkAdcRange;
+  else if (TESTBIT(fTreeMask, kHits))     range = &fgkEdepRange;
+  if (!range) return;
+  
+  if (!fAux) {
+    fAux = new TCanvas("aux", "Aux");
+    fAux->SetLogy();
+    Float_t dBin = (range->fHigh - range->fLow) / range->fNbins;
+    fSpec = new TH1D("spec", "Spectra", range->fNbins, 
+		     range->fLow-dBin/2, range->fHigh-dBin/2);
+    fSpecCut = static_cast<TH1*>(fSpec->Clone("specCut"));
+    fSpec->SetFillColor(2);
+    fSpec->SetFillStyle(3001);
+    fSpecCut->SetFillColor(4);
+    fSpecCut->SetFillStyle(3001);
   }
+  else {
+    fSpec->Reset();
+    fSpecCut->Reset();
+  }  
 }
 
 //____________________________________________________________________
@@ -533,13 +542,33 @@ AliFMDDisplay::LookupColor(Float_t x, Float_t min, Float_t max) const
 
 //____________________________________________________________________
 void
+AliFMDDisplay::SetCut(Float_t l, Float_t h) 
+{
+  // Change the cut on the slider. 
+  fSlider->SetMinimum(l);
+  fSlider->SetMaximum(h);
+  ChangeCut();
+}
+
+//____________________________________________________________________
+void
 AliFMDDisplay::ChangeCut() 
 {
   // Change the cut on the slider. 
   // The factor depends on what is 
   // drawn in the AUX canvas
-  AliInfo(Form("Range is now %3.1f - %3.1f", fSlider->GetMinimum(), 
+  AliInfo(Form("Range is now %7.5f - %7.5f", fSlider->GetMinimum(), 
 	       fSlider->GetMaximum()));
+  if ((TESTBIT(fTreeMask, kESD) || 
+       TESTBIT(fTreeMask, kDigits) || 
+       TESTBIT(fTreeMask, kSDigits) || 
+       TESTBIT(fTreeMask, kRaw))) {
+    Float_t l = fSlider->GetMinimum();
+    Float_t h = fSlider->GetMaximum();
+    l         = 1024 * l + 0;
+    h         = 1024 * h + 0;
+    AliInfo(Form("ADC range is now %4d - %4d", int(l), int(h)));
+  }
   Redisplay();
 }
 //____________________________________________________________________
@@ -659,17 +688,17 @@ AliFMDDisplay::ProcessHit(AliFMDHit* hit, TParticle* /* p */)
   // Process a hit. 
   // Parameters: 
   //   hit   Hit data
-
-  static const Float_t rMin  = 0;
-  static const Float_t rMax  = .1;
+  static const Float_t rMin  = fgkEdepRange.fLow;
+  static const Float_t rMax  = fgkEdepRange.fHigh;
 
   if (!hit) { AliError("No hit");   return kFALSE; }
   // if (!p)   { AliError("No track"); return kFALSE; }
-
-  if (fHits) fHits->Add(hit);
   Float_t  edep  = hit->Edep();
 
+  if (fHits)                        fHits->Add(hit);
+  if (fSpec)                        fSpec->Fill(edep);
   if (!InsideCut(edep, rMin, rMax)) return kTRUE;
+  if (fSpecCut)                     fSpecCut->Fill(edep);
   
   AddMarker(hit->X(), hit->Y(), hit->Z(), hit, edep, rMin, rMax);
   return kTRUE;
@@ -682,9 +711,9 @@ AliFMDDisplay::ProcessDigit(AliFMDDigit* digit)
   // Process a digit 
   // Parameters: 
   //   digit Digit information 
+  static const Float_t rMin  = fgkAdcRange.fLow;
+  static const Float_t rMax  = fgkAdcRange.fHigh;
 
-  static const Float_t rMin  = 0;
-  static const Float_t rMax  = 1023;
   if (!digit) { AliError("No digit");   return kFALSE; }
 
   AliFMDParameters* parm = AliFMDParameters::Instance();
@@ -715,9 +744,9 @@ AliFMDDisplay::ProcessSDigit(AliFMDSDigit* sdigit)
   // Process a sdigit 
   // Parameters: 
   //   sdigit Digit information 
+  static const Float_t rMin  = fgkAdcRange.fLow;
+  static const Float_t rMax  = fgkAdcRange.fHigh;
 
-  static const Float_t rMin  = 0;
-  static const Float_t rMax  = 1023;
   if (!sdigit) { AliError("No sdigit");   return kFALSE; }
   
   UShort_t det           =  sdigit->Detector();
@@ -731,7 +760,6 @@ AliFMDDisplay::ProcessSDigit(AliFMDSDigit* sdigit)
   if (!InsideCut(counts, rMin, rMax)) return kTRUE;
   if (fSpecCut)                       fSpecCut->Fill(counts);
   
-
   AddMarker(det, ring, sec, str, sdigit, counts, rMin, rMax);
   return kTRUE;
 }
@@ -753,8 +781,9 @@ AliFMDDisplay::ProcessRecPoint(AliFMDRecPoint* recpoint)
   // Process reconstructed point 
   // Parameters: 
   //  recpoint  Reconstructed multiplicity/energy
-  static const Float_t rMin  = 0;
-  static const Float_t rMax  = 20;
+  static const Float_t rMin  = fgkMultRange.fLow;
+  static const Float_t rMax  = fgkMultRange.fHigh;
+
 
   if (!recpoint) { AliError("No recpoint");   return kFALSE; }
 
@@ -775,8 +804,8 @@ AliFMDDisplay::ProcessESD(UShort_t det, Char_t rng, UShort_t sec, UShort_t str,
   // Parameters 
   //   det,rng,sec,str   Detector coordinates. 
   //   mult              Multiplicity. 
-  static const Float_t rMin = 0;
-  static const Float_t rMax = 20;
+  static const Float_t rMin  = fgkMultRange.fLow;
+  static const Float_t rMax  = fgkMultRange.fHigh;
   
   Double_t cmult = mult;
   if (fSpec) fSpec->Fill(cmult);

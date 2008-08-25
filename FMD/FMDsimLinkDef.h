@@ -27,8 +27,9 @@
 #pragma link C++ class  AliFMDv1+;
 #pragma link C++ class  AliFMDBaseDigitizer+;
 #pragma link C++ class  AliFMDDigitizer+;
-#pragma link C++ class  AliFMDSDigitizer+;
-#pragma link C++ class  AliFMDSSDigitizer+;
+// #pragma link C++ class  AliFMDSDigitizer+;
+// #pragma link C++ class  AliFMDSSDigitizer+;
+#pragma link C++ class  AliFMDHitDigitizer+;
 #pragma link C++ class  AliFMDRawWriter+;
 #pragma link C++ class  AliFMDQADataMakerSim+;
 

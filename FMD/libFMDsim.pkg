@@ -9,11 +9,13 @@ SRCS		=  AliFMD.cxx 				\
 		   AliFMDHit.cxx 			\
 		   AliFMDBaseDigitizer.cxx		\
 		   AliFMDDigitizer.cxx			\
-		   AliFMDSDigitizer.cxx			\
-		   AliFMDSSDigitizer.cxx		\
+		   AliFMDHitDigitizer.cxx		\
 		   AliFMDEdepMap.cxx			\
 		   AliFMDRawWriter.cxx			\
 		   AliFMDQADataMakerSim.cxx		
+
+#		   AliFMDSDigitizer.cxx			\
+#		   AliFMDSSDigitizer.cxx		
 
 HDRS		=  $(SRCS:.cxx=.h) AliFMDEdepHitPair.h
 DHDR		:= FMDsimLinkDef.h

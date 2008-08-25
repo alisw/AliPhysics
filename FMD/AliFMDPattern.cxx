@@ -411,10 +411,21 @@ AliFMDPattern::ProcessHit(AliFMDHit* hit, TParticle*)
   //	HIT		The hit to process. 
   // 
   // The TParticle argument is never used. 
+  static const Float_t rMin  = fgkEdepRange.fLow;
+  static const Float_t rMax  = fgkEdepRange.fHigh;
+
+  if (!hit) { AliError("No hit");   return kFALSE; }
+  // if (!p)   { AliError("No track"); return kFALSE; }
+  Float_t  edep  = hit->Edep();
+
+  if (fHits)                        fHits->Add(hit);
+  if (fSpec)                        fSpec->Fill(edep);
+  if (InsideCut(edep, rMin, rMax) && fSpecCut) fSpecCut->Fill(edep);
+
   switch (hit->Detector()) {
-  case 1: fFMD1.AddMarker(hit->X(), hit->Y(), hit->Edep(), 1); break;
-  case 2: fFMD2.AddMarker(hit->X(), hit->Y(), hit->Edep(), 1); break;
-  case 3: fFMD3.AddMarker(hit->X(), hit->Y(), hit->Edep(), 1); break;
+  case 1: fFMD1.AddMarker(hit->X(), hit->Y(), hit->Edep(), rMax); break;
+  case 2: fFMD2.AddMarker(hit->X(), hit->Y(), hit->Edep(), rMax); break;
+  case 3: fFMD3.AddMarker(hit->X(), hit->Y(), hit->Edep(), rMax); break;
   }
   return kTRUE;
 }

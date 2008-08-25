@@ -12,8 +12,8 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/* $Id$ */
-/** @file    AliFMDDigitizer.cxx
+/* $Id: AliFMDHitDigitizer.cxx 28055 2008-08-18 00:33:20Z cholm $ */
+/** @file    AliFMDHitDigitizer.cxx
     @author  Christian Holm Christensen <cholm@nbi.dk>
     @date    Mon Mar 27 12:38:26 2006
     @brief   FMD Digitizers implementation
@@ -22,7 +22,7 @@
 //////////////////////////////////////////////////////////////////////////////
 //
 //  This class contains the procedures simulation ADC  signal for the
-//  Forward Multiplicity detector  : SDigits->Digits
+//  Forward Multiplicity detector  : Hits->Digits
 // 
 //  Digits consists of
 //   - Detector #
@@ -31,16 +31,8 @@
 //   - Strip #
 //   - ADC count in this channel                                  
 //
-//  Digits consists of
-//   - Detector #
-//   - Ring ID                                             
-//   - Sector #     
-//   - Strip #
-//   - Total energy deposited in the strip
-//   - ADC count in this channel                                  
-//
 // As the Digits and SDigits have so much in common, the classes
-// AliFMDDigitizer and AliFMDSDigitizer are implemented via a base
+// AliFMDHitDigitizer and AliFMDSDigitizer are implemented via a base
 // class AliFMDBaseDigitizer.
 //
 //                 +---------------------+
@@ -51,18 +43,14 @@
 //                +----------+---------+
 //                |                    |
 //      +-----------------+     +------------------+
-//      | AliFMDDigitizer |	| AliFMDSDigitizer |
+//      | AliFMDHitDigitizer |	| AliFMDSDigitizer |
 //      +-----------------+	+------------------+
-//                |
-//     +-------------------+
-//     | AliFMDSSDigitizer |
-//     +-------------------+
 //
 // These classes has several paramters: 
 //
 //     fPedestal
 //     fPedestalWidth
-//         (Only AliFMDDigitizer)
+//         (Only AliFMDHitDigitizer)
 //         Mean and width of the pedestal.  The pedestal is simulated
 //         by a Guassian, but derived classes my override MakePedestal
 //         to simulate it differently (or pick it up from a database).
@@ -84,6 +72,7 @@
 //         we'd like have the option, and so it should be reflected in
 //         the code.
 //
+// These parameters are fetched from OCDB via the mananger AliFMDParameters.
 //
 // The shaping function of the VA1_ALICE is generally given by 
 //
@@ -201,217 +190,284 @@
 //
 
 #include <TTree.h>		// ROOT_TTree
-#include <TFile.h>
-#include "AliFMDDebug.h" 	// Better debug macros
-#include "AliFMDDigitizer.h"	// ALIFMDSSDIGITIZER_H
+#include "AliFMDDebug.h"        // Better debug macros
+#include "AliFMDHitDigitizer.h"	// ALIFMDDIGITIZER_H
 #include "AliFMD.h"		// ALIFMD_H
-#include "AliFMDSDigit.h"	// ALIFMDDIGIT_H
 #include "AliFMDDigit.h"	// ALIFMDDIGIT_H
 #include "AliFMDParameters.h"   // ALIFMDPARAMETERS_H
-#include <AliRunDigitizer.h>	// ALIRUNDIGITIZER_H
 #include <AliRun.h>		// ALIRUN_H
 #include <AliLoader.h>		// ALILOADER_H
 #include <AliRunLoader.h>	// ALIRUNLOADER_H
-    
+#include <AliFMDHit.h>
+#include <TFile.h>
+
 //====================================================================
-ClassImp(AliFMDDigitizer)
+ClassImp(AliFMDHitDigitizer)    
 #if 0
 ;
 #endif
 
 //____________________________________________________________________
-Bool_t
-AliFMDDigitizer::Init()
+AliFMDHitDigitizer::AliFMDHitDigitizer(AliFMD* fmd, Output_t  output)
+  : AliFMDBaseDigitizer("FMD", (fOutput == kDigits ? 
+				"FMD Hit->Digit digitizer" :
+				"FMD Hit->SDigit digitizer")),
+    fOutput(output)
 {
-  // Initialisation
-  if (!AliFMDBaseDigitizer::Init()) return kFALSE;
-  
-#if 0
-  // Get the AliRun object 
-  AliRun* run = fRunLoader->GetAliRun();
-  if (!run) { 
-    AliWarning("Loading gAlice");
-    fRunLoader->LoadgAlice();
-    if (!run) { 
-      AliError("Can not get Run from Run Loader");
-      return kFALSE;
-    }
-  }
-  
-  // Get the AliFMD object 
-  fFMD = static_cast<AliFMD*>(run->GetDetector("FMD"));
-  if (!fFMD) {
-    AliError("Can not get FMD from gAlice");
-    return kFALSE;
-  }  
-#endif
-  return kTRUE;
+  fFMD = fmd;
 }
-
 
 //____________________________________________________________________
 void
-AliFMDDigitizer::Exec(Option_t*)
+AliFMDHitDigitizer::Exec(Option_t* /*option*/)
 {
-  if (!fManager) { 
-    AliError("No digitisation manager defined");
+  // Run this digitizer 
+  // Get an inititialize parameter manager
+  AliFMDParameters::Instance()->Init();
+  if (AliLog::GetDebugLevel("FMD","") >= 10) 
+    AliFMDParameters::Instance()->Print("ALL");
+
+  // Get loader, and ask it to read in the hits 
+  AliLoader* loader = fFMD->GetLoader();
+  if (!loader) { 
+    AliError("Failed to get loader from detector object");
     return;
   }
-
-  // Clear array of deposited energies 
-  fEdep.Reset();
-
-  AliRunLoader* runLoader = 0;
-  if (!gAlice) { 
-    TString folderName(fManager->GetInputFolderName(0));
-    runLoader = AliRunLoader::GetRunLoader(folderName.Data());
-    if (!runLoader) { 
-      AliError(Form("Failed at getting run loader from %s",
-		    folderName.Data()));
+  loader->LoadHits("READ");
+  
+  // Get the run loader 
+  AliRunLoader* runLoader = loader->GetRunLoader();
+  if (!runLoader) {
+    AliError("Failed to get run loader from loader");
+    return;
+  }
+  
+  // Now loop over events
+  Int_t nEvents = runLoader->GetNumberOfEvents();
+  for (Int_t event = 0; event < nEvents; event++) { 
+    // Get the current event folder. 
+    TFolder* folder = loader->GetEventFolder();
+    if (!folder) { 
+      AliError("Failed to get event folder from loader");
       return;
     }
-    runLoader->LoadgAlice();
-    runLoader->GetAliRun();
-  }
-  if (!gAlice) { 
-    AliError("Can not get Run from Run Loader");
-    return;
-  }
-  
-  // Get the AliFMD object 
-  fFMD = static_cast<AliFMD*>(gAlice->GetDetector("FMD"));
-  if (!fFMD) {
-    AliError("Can not get FMD from gAlice");
-    return;
-  }  
 
-
-  // Loop over input files
-  Int_t nFiles= fManager->GetNinputs();
-  AliFMDDebug(1, (" Digitizing event number %d, got %d inputs",
-		  fManager->GetOutputEventNr(), nFiles));
-  for (Int_t inputFile = 0; inputFile < nFiles; inputFile++) {
-    AliFMDDebug(5, ("Now reading input # %d", inputFile));
-    // Get the current loader 
-    AliRunLoader* currentLoader = 
-      AliRunLoader::GetRunLoader(fManager->GetInputFolderName(inputFile));
-    if (!currentLoader) { 
-      Error("Exec", Form("no run loader for input file # %d", inputFile));
-      continue;
+    // Get the run-loader of this event. 
+    const char* loaderName = AliRunLoader::GetRunLoaderName();
+    AliRunLoader* thisLoader = 
+      static_cast<AliRunLoader*>(folder->FindObject(loaderName));
+    if (!thisLoader) { 
+      AliError(Form("Failed to get loader '%s' from event folder", loaderName));
+      return;
     }
-
-    // Cache contriutions 
-    AliFMDDebug(5, ("Now summing the contributions from input # %d",inputFile));
-
-    // Get the FMD loader 
-    AliLoader* inFMD = currentLoader->GetLoader("FMDLoader");
-    // And load the summable digits
-    inFMD->LoadSDigits("READ");
-  
-    // Get the tree of summable digits
-    TTree* sdigitsTree = inFMD->TreeS();
-    if (!sdigitsTree)  {
-      AliError("No sdigit tree from manager");
-      continue;
+    
+    // Read in the event
+    AliFMDDebug(5, ("Now digitizing (Hits->%s) event # %d", 
+		    (fOutput == kDigits ? "digits" : "sdigits"), event));
+    thisLoader->GetEvent(event);
+    
+    // Check that we have the hits 
+    if (!loader->TreeH() && loader->LoadHits()) {
+      AliError("Failed to load hits");
+      return;
     }
-    if (AliLog::GetDebugLevel("FMD","") >= 10) {
-      TFile* file = sdigitsTree->GetCurrentFile();
+    TTree*   hitsTree = loader->TreeH();
+    TBranch* hitsBranch = hitsTree->GetBranch(fFMD->GetName());
+    if (!hitsBranch) { 
+      AliError("Failed to get hits branch in tree");
+      return;
+    }
+    // Check that we can make the output digits - This must come
+    // before AliFMD::SetBranchAddress
+    TTree* outTree = MakeOutputTree(loader);
+    if (!outTree) { 
+      AliError("Failed to get output tree");
+      return;
+    }
+    AliFMDDebug(5, ("Output tree name for %s is '%s'", 
+		    (fOutput == kDigits ? "digits" : "sdigits"),
+		    outTree->GetName()));
+    if (AliLog::GetDebugLevel("FMD","") >= 5) {
+      TFile* file = outTree->GetCurrentFile();
       if (!file) {
-	AliWarning("Input tree has no file!");
+	AliWarning("Output tree has no file!");
       }
       else { 
-	AliFMDDebug(10, ("Input tree file %s content:", file->GetName()));
+	AliFMDDebug(5, ("Output tree file %s content:", file->GetName()));
 	file->ls();
       }
-      // AliFMDDebug(5, ("Input tree %s file structure:", 
-      //                 sdigitsTree->GetName()));
-      // sdigitsTree->Print();
     }
 
-    // Get the FMD branch 
-    TBranch* sdigitsBranch = sdigitsTree->GetBranch("FMD");
-    if (!sdigitsBranch) {
-      AliError("Failed to get sdigit branch");
-      return;
-    }
-
-    // Set the branch addresses 
+    // Set-up the branch addresses 
     fFMD->SetTreeAddress();
+    
+    // Now sum all contributions in cache 
+    SumContributions(hitsBranch);
+    loader->UnloadHits();
 
-    // Sum contributions from the sdigits
-    SumContributions(sdigitsBranch);
+    // And now digitize the hits 
+    DigitizeHits();
+    
+    // Write digits to tree
+    Int_t write = outTree->Fill();
+    AliFMDDebug(1, ("Wrote %d bytes to digit tree", write));
 
-    // Unload the sdigits
-    inFMD->UnloadSDigits();
+    // Store the digits
+    StoreDigits(loader);
+
   }  
+}
 
-  TString       outFolder(fManager->GetOutputFolderName());
-  AliRunLoader* out    = AliRunLoader::GetRunLoader(outFolder.Data());
-  AliLoader*    outFMD = out->GetLoader("FMDLoader");
-  if (!outFMD) { 
-    AliError("Cannot get the FMDLoader output folder");
+//____________________________________________________________________
+TTree*
+AliFMDHitDigitizer::MakeOutputTree(AliLoader* loader)
+{
+  if (fOutput == kDigits) 
+    return AliFMDBaseDigitizer::MakeOutputTree(loader);
+  
+  AliFMDDebug(5, ("Making sdigits tree"));
+  loader->LoadSDigits("UPDATE"); // RECREATE");
+  TTree* out = loader->TreeS();
+  if (!out) loader->MakeTree("S");
+  out = loader->TreeS(); 
+  if (out) { 
+    out->Reset();
+    fFMD->MakeBranch("S");
+  }
+  return out;
+}
+
+
+//____________________________________________________________________
+void
+AliFMDHitDigitizer::SumContributions(TBranch* hitsBranch) 
+{
+  // Sum energy deposited contributions from each hit in a cache
+  // (fEdep).  
+  
+  // Clear array of deposited energies 
+  fEdep.Reset();
+  
+  // Get a list of hits from the FMD manager 
+  AliFMDDebug(5, ("Get array of FMD hits"));
+  TClonesArray *fmdHits = fFMD->Hits();
+  
+
+  // Get number of entries in the tree 
+  AliFMDDebug(5, ("Get # of tracks"));
+  Int_t ntracks  = Int_t(hitsBranch->GetEntries());
+  AliFMDDebug(5, ("We got %d tracks", ntracks));
+
+  Int_t read = 0;
+  // Loop over the tracks in the 
+  for (Int_t track = 0; track < ntracks; track++)  {
+    // Read in entry number `track' 
+    read += hitsBranch->GetEntry(track);
+    
+    // Get the number of hits 
+    Int_t nhits = fmdHits->GetEntries ();
+    for (Int_t hit = 0; hit < nhits; hit++) {
+      // Get the hit number `hit'
+      AliFMDHit* fmdHit = 
+	static_cast<AliFMDHit*>(fmdHits->UncheckedAt(hit));
+      
+      // Extract parameters 
+      AddContribution(fmdHit->Detector(),
+		      fmdHit->Ring(),
+		      fmdHit->Sector(),
+		      fmdHit->Strip(),
+		      fmdHit->Edep());
+    }  // hit loop
+  } // track loop
+  AliFMDDebug(5, ("Size of cache: %d bytes, read %d bytes", 
+		   sizeof(fEdep), read));
+}
+
+
+//____________________________________________________________________
+UShort_t
+AliFMDHitDigitizer::MakePedestal(UShort_t  detector, 
+				 Char_t    ring, 
+				 UShort_t  sector, 
+				 UShort_t  strip) const 
+{
+  // Make a pedestal 
+  if (fOutput == kSDigits) return 0;
+  return AliFMDBaseDigitizer::MakePedestal(detector, ring, sector, strip);
+}
+
+
+
+//____________________________________________________________________
+void
+AliFMDHitDigitizer::AddDigit(UShort_t  detector, 
+			     Char_t    ring,
+			     UShort_t  sector, 
+			     UShort_t  strip, 
+			     Float_t   edep, 
+			     UShort_t  count1, 
+			     Short_t   count2, 
+			     Short_t   count3,
+			     Short_t   count4) const
+{
+  // Add a digit or summable digit
+  if (fOutput == kDigits) { 
+    AliFMDBaseDigitizer::AddDigit(detector, ring, sector, strip, 0,
+				  count1, count2, count3, count4);
     return;
   }
-  TTree* outTree = MakeOutputTree(outFMD);
-  if (!outTree) { 
-    AliError("Failed to get output tree");
-    return;
-  }
-  // Set the branch address 
-  fFMD->SetTreeAddress();
-  
-  // And digitize the cached data 
-  DigitizeHits();
-  
-  // Fill the tree
-  Int_t write = outTree->Fill();
-  AliFMDDebug(1, ("Wrote %d bytes to digit tree", write));
-  
-  // Store the digits
-  StoreDigits(outFMD);
+  if (edep <= 0) return;
+  if (count1 == 0 && count2 <= 0 && count3 <= 0 && count4 <= 0) return;
+  fFMD->AddSDigitByFields(detector, ring, sector, strip, edep,
+			  count1, count2, count3, count4);
 }
 
 //____________________________________________________________________
 void
-AliFMDDigitizer::SumContributions(TBranch* sdigitsBranch) 
+AliFMDHitDigitizer::CheckDigit(AliFMDDigit*    digit,
+			       UShort_t        nhits,
+			       const TArrayI&  counts) 
 {
-  // Sum energy deposited contributions from each sdigits in a cache
-  // (fEdep).  
-  AliFMDDebug(1, ("Runnin our version of SumContributions"));
-
-  // Get a list of hits from the FMD manager 
-  TClonesArray *fmdSDigits = fFMD->SDigits();
+  // Check that digit is consistent
+  AliFMDParameters* param = AliFMDParameters::Instance();
+  UShort_t          det   = digit->Detector();
+  Char_t            ring  = digit->Ring();
+  UShort_t          sec   = digit->Sector();
+  UShort_t          str   = digit->Strip();
+  Float_t           mean  = param->GetPedestal(det,ring,sec,str);
+  Float_t           width = param->GetPedestalWidth(det,ring,sec,str);
+  UShort_t          range = param->GetVA1MipRange();
+  UShort_t          size  = param->GetAltroChannelSize();
+  Int_t             integral = counts[0];
+  if (counts[1] >= 0) integral += counts[1];
+  if (counts[2] >= 0) integral += counts[2];
+  if (counts[3] >= 0) integral += counts[3];
+  integral -= Int_t(mean + 2 * width);
+  if (integral < 0) integral = 0;
   
-  // Get number of entries in the tree 
-  Int_t nevents  = Int_t(sdigitsBranch->GetEntries());
-  
-  Int_t read = 0;
-  // Loop over the events in the 
-  for (Int_t event = 0; event < nevents; event++)  {
-    // Read in entry number `event' 
-    read += sdigitsBranch->GetEntry(event);
-    
-    // Get the number of sdigits 
-    Int_t nsdigits = fmdSDigits->GetEntries ();
-    AliFMDDebug(1, ("Got %5d SDigits", nsdigits));
-    for (Int_t sdigit = 0; sdigit < nsdigits; sdigit++) {
-      // Get the sdigit number `sdigit'
-      AliFMDSDigit* fmdSDigit = 
-	static_cast<AliFMDSDigit*>(fmdSDigits->UncheckedAt(sdigit));
-      
-      // Extract parameters 
-      AddContribution(fmdSDigit->Detector(),
-		      fmdSDigit->Ring(),
-		      fmdSDigit->Sector(),
-		      fmdSDigit->Strip(),
-		      fmdSDigit->Edep());
-    }  // sdigit loop
-  } // event loop
-
-
-  AliFMDDebug(3, ("Size of cache: %d bytes, read %d bytes", 
-		   sizeof(fEdep), read));
+  Float_t convF = Float_t(range) / size;
+  Float_t mips  = integral * convF;
+  if (mips > Float_t(nhits) + .5 || mips < Float_t(nhits) - .5) 
+    Warning("CheckDigit", "Digit -> %4.2f MIPS != %d +/- .5 hits", 
+	    mips, nhits);
 }
+
+//____________________________________________________________________
+void
+AliFMDHitDigitizer::StoreDigits(AliLoader* loader)
+{
+  if (fOutput == kDigits) { 
+    AliFMDBaseDigitizer::StoreDigits(loader);
+    return;
+  }
+  AliFMDDebug(5, ("Storing %d sdigits",   fFMD->SDigits()->GetEntries()));
+  // Write the digits to disk 
+  loader->WriteSDigits("OVERWRITE");
+  loader->UnloadSDigits();
+  // Reset the digits in the AliFMD object 
+  fFMD->ResetSDigits();
+}
+
 
 //____________________________________________________________________
 //

@@ -170,8 +170,6 @@ public:
    
   /** Initialize */
   virtual Bool_t Init();
-  /** Run this task */
-  virtual void Exec(Option_t* option="");
   
   /** The response shape of the VA1 shaping circuit is approximently
       given by 
@@ -187,27 +185,11 @@ public:
   /** @return Get the shaping time */
   Float_t  GetShapingTime()      const { return fShapingTime; }
 protected:
-  /** Set-up loaders, etc. 
-      @param fmd  On return, contains pointer to loaded AliFMD object.
-      @param outFMD On return, contains pointer to loaded loader. 
-      @return kTRUE on success, kFALSE otherwise */
-  virtual Bool_t  SetupLoaders(AliFMD*& fmd, AliLoader*& outFMD);
-  /** Set-up loaders, etc. 
-      @param fmd Pointer to loaded AliFMD object 
-      @return kFALSE on failures. */
-  virtual Bool_t  LoopOverInput(AliFMD* fmd);
-  /** Output to disk 
-      @param outFMD Loader
-      @param fmd    AliFMD object */
-  virtual void OutputTree(AliLoader* outFMD, AliFMD* fmd) = 0;
-  /** Sum energy deposited contributions from each hit in a cache
-      @param fmd Pointer to detector */
-  virtual void     SumContributions(AliFMD* fmd);
   /** For the stored energy contributions in the cache, convert the
       energy signal to ADC counts, and store the created digit in  
       the digits array
       @param fmd Pointer to detector */
-  virtual void     DigitizeHits(AliFMD* fmd) const;
+  virtual void     DigitizeHits() const;
   /** Convert the total energy deposited to a (set of) ADC count(s).
       See also the class description for more details. 
       @param edep     Total energy deposited in detector
@@ -236,18 +218,32 @@ protected:
 				UShort_t  strip) const;
   /** Add noise to each sample */
   virtual void     AddNoise(TArrayI&) const {}
-  /** Add a digit to output */
-  virtual void     AddDigit(AliFMD*  /* fmd      */,
-			    UShort_t /* detector */, 
-			    Char_t   /* ring     */,
-			    UShort_t /* sector   */, 
-			    UShort_t /* strip    */, 
-			    Float_t  /* edep     */, 
-			    UShort_t /* count1   */, 
-			    Short_t  /* count2   */, 
-			    Short_t  /* count3   */,
-			    Short_t  /* count4   */) const {}
 
+  /** Add edep contribution from (detector,ring,sector,strip) to cache */ 
+  virtual void AddContribution(UShort_t detector, 
+			       Char_t   ring, 
+			       UShort_t sector, 
+			       UShort_t strip, 
+			       Float_t  edep);
+  /** Add a digit to output */
+  virtual void     AddDigit(UShort_t detector, 
+			    Char_t   ring,
+			    UShort_t sector, 
+			    UShort_t strip, 
+			    Float_t  edep, 
+			    UShort_t count1, 
+			    Short_t  count2, 
+			    Short_t  count3,
+			    Short_t  count4) const;
+  /** Make the output tree using the passed loader 
+      @param loader 
+      @return The generated tree. */
+  virtual TTree* MakeOutputTree(AliLoader* loader);
+  /** Store the data using the loader 
+      @param loader The loader */
+  virtual void StoreDigits(AliLoader* loader);
+
+  AliFMD*       fFMD;
   AliRunLoader* fRunLoader;	   //! Run loader
   AliFMDEdepMap fEdep;             // Cache of Energy from hits 
   Float_t       fShapingTime;      // Shaping profile parameter
@@ -256,16 +252,21 @@ protected:
       @param o object to copy from  */
   AliFMDBaseDigitizer(const AliFMDBaseDigitizer& o) 
     : AliDigitizer(o),
+      fFMD(o.fFMD),
       fRunLoader(0),
-      fEdep(AliFMDMap::kMaxDetectors, 
-	    AliFMDMap::kMaxRings, 
-	    AliFMDMap::kMaxSectors, 
-	    AliFMDMap::kMaxStrips),
-      fShapingTime(0)
+      fEdep(o.fEdep),
+      fShapingTime(o.fShapingTime)
   {}
   /** Assignment operator
       @return Reference to this object */
-  AliFMDBaseDigitizer& operator=(const AliFMDBaseDigitizer&) { return *this; }
+  AliFMDBaseDigitizer& operator=(const AliFMDBaseDigitizer& o) 
+  { 
+    AliDigitizer::operator=(o);
+    fRunLoader   = o.fRunLoader;
+    fEdep        = o.fEdep;
+    fShapingTime = o.fShapingTime;
+    return *this; 
+  }
   ClassDef(AliFMDBaseDigitizer,2) // Base class for FMD digitizers
 };
 

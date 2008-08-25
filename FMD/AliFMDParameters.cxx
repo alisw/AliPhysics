@@ -406,17 +406,20 @@ AliFMDParameters::Print(Option_t* option) const
       if (det == 1 && ring == 'O') continue;
       UShort_t min  = GetMinStrip(det, ring, 0, 0);
       UShort_t max  = GetMaxStrip(det, ring, 0, 0);
-      UShort_t rate = GetSampleRate(det, ring, 0, 0);
       std::cout << "FMD" << det << ring 
 		<< "  Strip range: " 
 		<< std::setw(3) << min << "," 
-		<< std::setw(3) << max << "  Rate: " 
-		<< std::setw(2) << rate << std::endl;
+		<< std::setw(3) << max << std::endl;
 
-      if (!showStrips) continue;
       UShort_t nSec = ( ring == 'I' ? 20  :  40 );
       UShort_t nStr = ( ring == 'I' ? 512 : 256 );
       for (UShort_t sec = minSector; sec < maxSector && sec < nSec; sec++) {
+
+	UShort_t rate = GetSampleRate(det, ring, sec, 0);
+	std::cout << "FMD" << det << ring << "[" << std::setw(2) << sec 
+		  << "] sample rate: " << rate << std::endl;
+
+	if (!showStrips) continue;
 	std::cout 
 	  << "  Strip |     Pedestal      |    Gain    | ZS thr. | Address\n" 
 	  << "--------+-------------------+------------+---------+---------" 

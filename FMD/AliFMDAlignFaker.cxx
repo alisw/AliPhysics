@@ -224,9 +224,11 @@ AliFMDAlignFaker::Exec(Option_t*)
       alignName     = Form("FMD/FMD%c_%c", currentDet, currentHalf);
     }
     if (IS_NODE_SENSOR(name)) {
-      Char_t ring  = name[1];
-      Int_t  copy  = node->GetNumber();
-      alignName    = Form("FMD/FMD%c_%c/FMD%c_%02d", 
+      Char_t ring      = name[1];
+      Int_t  lvl       = next.GetLevel();
+      TGeoNode* parent = next.GetNode(lvl-1);
+      Int_t     copy   = parent->GetNumber();
+      alignName        = Form("FMD/FMD%c_%c/FMD%c_%02d", 
 			  currentDet, currentHalf, ring, copy);
     }
     if (alignName.IsNull()) continue;
