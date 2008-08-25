@@ -250,7 +250,7 @@ Float_t AliZDC::ZMin(void) const
 Float_t AliZDC::ZMax(void) const
 {
   // Maximum dimension of the ZDC module in z
-  return -11750.;
+  return 11750.;
 }
   
 
@@ -266,8 +266,17 @@ void AliZDC::MakeBranch(Option_t *opt)
 
   const char *cH = strstr(opt,"H");
   
-  if(cH && fLoader->TreeH())
-   fHits   = new TClonesArray("AliZDCHit",1000); 
+  if(cH && fLoader->TreeH()) {
+    if (fHits) {
+      fHits->Clear();
+      fNhits = 0;
+    }
+    else {
+      fHits   = new TClonesArray("AliZDCHit",1000); 
+      if (gAlice && gAlice->GetMCApp())
+	gAlice->GetMCApp()->AddHitList(fHits);
+    }
+  }
   
   AliDetector::MakeBranch(opt);
 }
