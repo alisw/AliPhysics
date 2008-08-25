@@ -171,7 +171,8 @@ AliFMDDisplay::MakeCanvas(const char** which)
   Double_t yb = 0;
   Double_t xb = 1;
   fCanvas->cd();
-  if (TESTBIT(fTreeMask, kDigits)) { 
+  if (TESTBIT(fTreeMask, kDigits) || 
+      TESTBIT(fTreeMask, kRaw)) { 
     yb = .05;
     xb = .66;
     fFactor = new TSlider("pedFactor", "Pedestal Factor", xb+.01, 0, 1, yb);
@@ -725,8 +726,11 @@ AliFMDDisplay::ProcessDigit(AliFMDDigit* digit)
   Double_t pedW          =  parm->GetPedestalWidth(det,ring, sec, str);
   Double_t threshold     =  (ped * fFactor->GetMaximum()
 			     + pedW * fFactor->GetMinimum());
+  if (threshold > fgkAdcRange.fHigh) threshold = fgkAdcRange.fHigh;
   Float_t  counts        =  digit->Counts();
 
+  AliFMDDebug(10, ("FMD%d%c[%02d,%03d] counts %4d threshold %4d", 
+		   det, ring, sec, str, Int_t(counts), Int_t(threshold)));
   if (fHits)                                    fHits->Add(digit);
   if (fSpec)                                    fSpec->Fill(counts);
   if (!InsideCut(counts-threshold, rMin, rMax)) return kTRUE;
@@ -766,11 +770,15 @@ AliFMDDisplay::ProcessSDigit(AliFMDSDigit* sdigit)
 
 //____________________________________________________________________
 Bool_t 
-AliFMDDisplay::ProcessRaw(AliFMDDigit* digit)
+AliFMDDisplay::ProcessRawDigit(AliFMDDigit* digit)
 {
   // PRocess raw data 
   // Parameters: 
   //   digit Digit information 
+  AliFMDDebug(50, ("Forwarding call of ProcessRaw to ProcessDigit "
+		  "for FMD%d&c[%02d,%03d] %d", 
+		  digit->Detector(), digit->Ring(), digit->Sector(), 
+		  digit->Strip(), digit->Counts()));
   return ProcessDigit(digit);
 }
 

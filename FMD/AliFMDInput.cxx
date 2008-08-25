@@ -154,6 +154,7 @@ Int_t
 AliFMDInput::NEvents() const 
 {
   // Get number of events
+  if (TESTBIT(fTreeMask, kRaw)) return -1;
   if (fTreeE) return fTreeE->GetEntries();
   return -1;
 }
@@ -169,36 +170,38 @@ AliFMDInput::Init()
     AliWarning("Already initialized");
     return fIsInit;
   }
-  if (fGAliceFile.IsNull()) fGAliceFile = "galice.root";
-  // Get the loader
-  fLoader = AliRunLoader::Open(fGAliceFile.Data(), "Alice", "read");
-  if (!fLoader) {
-    AliError(Form("Coulnd't read the file %s", fGAliceFile.Data()));
-    return kFALSE;
-  }
-  
   // Get the run 
-  if  (fLoader->LoadgAlice()) return kFALSE;
-  fRun = fLoader->GetAliRun();
+  if (!TESTBIT(fTreeMask, kRaw)) { 
+    if (fGAliceFile.IsNull()) fGAliceFile = "galice.root";
+    // Get the loader
+    fLoader = AliRunLoader::Open(fGAliceFile.Data(), "Alice", "read");
+    if (!fLoader) {
+      AliError(Form("Coulnd't read the file %s", fGAliceFile.Data()));
+      return kFALSE;
+    }
   
-  // Get the FMD 
-  fFMD = static_cast<AliFMD*>(fRun->GetDetector("FMD"));
-  if (!fFMD) {
-    AliError("Failed to get detector FMD from loader");
-    return kFALSE;
-  }
+    if  (fLoader->LoadgAlice()) return kFALSE;
+    fRun = fLoader->GetAliRun();
   
-  // Get the FMD loader
-  fFMDLoader = fLoader->GetLoader("FMDLoader");
-  if (!fFMDLoader) {
-    AliError("Failed to get detector FMD loader from loader");
-    return kFALSE;
+    // Get the FMD 
+    fFMD = static_cast<AliFMD*>(fRun->GetDetector("FMD"));
+    if (!fFMD) {
+      AliError("Failed to get detector FMD from loader");
+      return kFALSE;
+    }
+  
+    // Get the FMD loader
+    fFMDLoader = fLoader->GetLoader("FMDLoader");
+    if (!fFMDLoader) {
+      AliError("Failed to get detector FMD loader from loader");
+      return kFALSE;
+    }
+    if (fLoader->LoadHeader()) { 
+      AliError("Failed to get event header information from loader");
+      return kFALSE;
+    }
+    fTreeE = fLoader->TreeE();
   }
-  if (fLoader->LoadHeader()) { 
-    AliError("Failed to get event header information from loader");
-    return kFALSE;
-  }
-  fTreeE = fLoader->TreeE();
 
   // Optionally, get the ESD files
   if (TESTBIT(fTreeMask, kESD)) {
@@ -236,16 +239,21 @@ AliFMDInput::Init()
   
   // Optionally, get the geometry 
   if (TESTBIT(fTreeMask, kGeometry)) {
-    TString fname(fRun->GetGeometryFileName());
-    if (fname.IsNull()) {
-      Warning("Init", "No file name for the geometry from AliRun");
-      fname = gSystem->DirName(fGAliceFile);
-      fname.Append("/geometry.root");
+    if (fRun) {
+      TString fname(fRun->GetGeometryFileName());
+      if (fname.IsNull()) {
+	Warning("Init", "No file name for the geometry from AliRun");
+	fname = gSystem->DirName(fGAliceFile);
+	fname.Append("/geometry.root");
+      }
+      fGeoManager = TGeoManager::Import(fname.Data());
+      if (!fGeoManager) {
+	Fatal("Init", "No geometry manager found");
+	return kFALSE;
+      }
     }
-    fGeoManager = TGeoManager::Import(fname.Data());
-    if (!fGeoManager) {
-      Fatal("Init", "No geometry manager found");
-      return kFALSE;
+    else { 
+      AliGeomManager::LoadGeometry();
     }
     AliCDBManager* cdb   = AliCDBManager::Instance();
     AliCDBEntry*   align = cdb->Get("FMD/Align/Data");
@@ -289,7 +297,7 @@ AliFMDInput::Begin(Int_t event)
   }
 
   // Get the event 
-  if (fLoader->GetEvent(event)) return kFALSE;
+  if (fLoader && fLoader->GetEvent(event)) return kFALSE;
   AliInfo(Form("Now in event %8d/%8d", event, NEvents()));
 
   // Possibly load global kinematics information 
@@ -368,11 +376,12 @@ AliFMDInput::Begin(Int_t event)
 
   // Possibly load FMD Digit information 
   if (TESTBIT(fTreeMask, kRaw)) {
-    // AliInfo("Getting FMD raw data digits");
+    AliInfo("Getting FMD raw data digits");
     if (!fReader->NextEvent()) return kFALSE;
     AliFMDRawReader r(fReader, 0);
     fArrayA->Clear();
     r.ReadAdcs(fArrayA);
+    AliFMDDebug(1, ("Got a total of %d digits", fArrayA->GetEntriesFast()));
   }
   fEventCount++;
   return kTRUE;
@@ -569,6 +578,8 @@ AliFMDInput::ProcessRawDigits()
   for (Int_t j = 0; j < nDigit; j++) {
     AliFMDDigit* digit = static_cast<AliFMDDigit*>(fArrayA->At(j));
     if (!digit) continue;
+    if (AliLog::GetDebugLevel("FMD","") >= 40 && j < 30) 
+      digit->Print();
     if (!ProcessRawDigit(digit)) return kFALSE;
   }    
   return kTRUE;
@@ -682,7 +693,7 @@ AliFMDInput::Run()
   if (!(retval = Init())) return retval;
 
   Int_t nEvents = NEvents();
-  for (Int_t event = 0; event < nEvents; event++) {
+  for (Int_t event = 0; nEvents < 0 || event < nEvents; event++) {
     if (!(retval = Begin(event))) break;
     if (!(retval = Event())) break;
     if (!(retval = End())) break;

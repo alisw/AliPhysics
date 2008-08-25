@@ -101,7 +101,7 @@ public:
   /** Visualize a raw digit
       @param digit Raw digit.
       @return @c false on error  */
-  virtual Bool_t ProcessRaw(AliFMDDigit* digit);
+  virtual Bool_t ProcessRawDigit(AliFMDDigit* digit);
   /** Visualize a reconstructed point.
       @param recpoint Reconstructed point
       @return @c false on error  */
