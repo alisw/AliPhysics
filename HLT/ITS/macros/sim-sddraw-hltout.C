@@ -56,9 +56,8 @@ void sim_sddraw_hltout() {
   //     in this case we want to just forward the DDL data blocks
   //     to the HLTOUT. We need to set the location of the formerly generated
   //     rawfiles with the rawfile
-//   sim.SetRunHLT("libAliHLTITS.so loglevel=0x7c rawfile=./ "
-// 		"config=$ALICE_ROOT/HLT/ITS/macros/conf-sddraw-hltout.C chains=publisher");
-  sim.SetRunHLT("libAliHLTUtil.so loglevel=0x7c rawfile=./ "
-		"config=~/src/work/HLT-HEAD/ITS/macros/conf-sddraw-hltout.C chains=publisher");
+  sim.SetRunHLT("libAliHLTITS.so loglevel=0x7c rawfile=./ "
+		"config=$ALICE_ROOT/HLT/ITS/macros/conf-sddraw-hltout.C chains=publisher");
+
   sim.Run();
 }
