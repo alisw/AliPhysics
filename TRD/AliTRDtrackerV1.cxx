@@ -599,12 +599,19 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
   AliTRDtrackingChamber *chamber = 0x0;
   
   AliTRDseedV1 tracklet, *ptrTracklet = 0x0;
+  // in case of stand alone tracking we store all the pointers to the tracklets in a temporary array
+  AliTRDseedV1 *tracklets[kNPlanes];
+  memset(tracklets, 0, sizeof(AliTRDseedV1 *) * kNPlanes);
+  for(Int_t ip = 0; ip < kNPlanes; ip++){
+    tracklets[ip] = t.GetTracklet(ip);
+    t.UnsetTracklet(ip);
+  } 
 
   // Loop through the TRD layers
   for (Int_t ilayer = 0; ilayer < AliTRDgeometry::Nlayer(); ilayer++) {
     // BUILD TRACKLET IF NOT ALREADY BUILT
     Double_t x = 0., y, z, alpha;
-    ptrTracklet  = t.GetTracklet(ilayer);
+    ptrTracklet  = tracklets[ilayer];
     if(!ptrTracklet){
       ptrTracklet = new(&tracklet) AliTRDseedV1(ilayer);
       ptrTracklet->SetReconstructor(fReconstructor);

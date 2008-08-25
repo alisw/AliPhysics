@@ -86,6 +86,7 @@ public:
   void           SetTracklet(AliTRDseedV1 *trklt,  Int_t index);
   inline void    SetReconstructor(const AliTRDReconstructor *rec);
   inline Float_t StatusForTOF();
+  void           UnsetTracklet(Int_t plane);
   Bool_t         Update(AliTRDseedV1 *tracklet, Double_t chi2);
   //Bool_t         Update(const AliTRDcluster *c, Double_t chi2, Int_t index, Double_t h01){ return AliTRDtrack::Update(c,chi2,index,h01); };
   Bool_t         Update(const AliCluster *, Double_t, Int_t)                        { return kFALSE; };

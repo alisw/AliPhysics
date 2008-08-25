@@ -597,6 +597,15 @@ void AliTRDtrackV1::SetTracklet(AliTRDseedV1 *trklt, Int_t index)
 }
 
 //_______________________________________________________________
+void AliTRDtrackV1::UnsetTracklet(Int_t plane)
+{
+  if(plane<0 && plane >= kNplane) return;
+  fTrackletIndex[plane] = 0xffff;
+  fTracklet[plane] = 0x0;
+}
+
+
+//_______________________________________________________________
 Bool_t  AliTRDtrackV1::Update(AliTRDseedV1 *trklt, Double_t chisq)
 {
   //
