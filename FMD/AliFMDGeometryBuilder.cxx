@@ -354,43 +354,51 @@ AliFMDGeometryBuilder::RingGeometry(AliFMDRing* r)
   Double_t ddit = r->GetFMDDChipThickness();
   Double_t ddt  = ddpt + ddct + ddit;
   
-  TGeoShape* fmddPcbShape  = new TGeoTubeSeg(ddlr, ddhr, ddpt/2,0,180);
-  TGeoShape* fmddCuShape   = new TGeoTubeSeg(ddlr, ddhr, ddct/2,0,180);
-  TGeoShape* fmddChipShape = new TGeoTubeSeg(ddlr, ddhr, ddit/2,0,180);
-  fmddPcbShape->SetName(Form(fgkFMDDPCBName, id));
-  fmddCuShape->SetName(Form(fgkFMDDCuName, id));
-  fmddChipShape->SetName(Form(fgkFMDDChipName, id));
-  if (id == 'O' || id == 'o') { 
-    TString pcbName(fmddPcbShape->GetName());
-    TString cuName(fmddCuShape->GetName());
-    TString chipName(fmddChipShape->GetName());
-    
-    fmddPcbShape->SetName(Form("%s_inner",  pcbName.Data()));
-    fmddCuShape->SetName(Form("%s_inner",   cuName.Data()));
-    fmddChipShape->SetName(Form("%s_inner", chipName.Data()));
-    new TGeoBBox(Form("%s_clip",  pcbName.Data()), ddlr+3, ddhr/2, ddpt);
-    new TGeoBBox(Form("%s_clip",  cuName.Data()),  ddlr+3, ddhr/2, ddpt);
-    new TGeoBBox(Form("%s_clip",  chipName.Data()),ddlr+3, ddhr/2, ddpt);
-    TGeoTranslation* trans = new TGeoTranslation(Form("%s_trans",
-						      pcbName.Data()), 
-						 0, ddhr/2, 0);
-    trans->RegisterYourself();
-    fmddPcbShape = new TGeoCompositeShape(pcbName.Data(), 
-					  Form("%s_inner*%s_clip:%s_trans",
-					       pcbName.Data(), 
-					       pcbName.Data(), 
-					       pcbName.Data())); 
-    fmddCuShape = new TGeoCompositeShape(cuName.Data(), 
-					 Form("%s_inner*%s_clip:%s_trans",
-					      cuName.Data(), 
-					      cuName.Data(), 
-					      pcbName.Data()));
-    fmddChipShape = new TGeoCompositeShape(chipName.Data(), 
-					   Form("%s_inner*%s_clip:%s_trans",
-						chipName.Data(), 
-						chipName.Data(), 
-						pcbName.Data()));
+  TString    pcbName(Form(fgkFMDDPCBName, id));
+  TString    cuName(Form(fgkFMDDCuName, id));
+  TString    chipName(Form(fgkFMDDChipName, id));
+  new TGeoTubeSeg(Form("%s_inner", pcbName.Data()),  ddlr, ddhr, ddpt/2,0,180);
+  new TGeoTubeSeg(Form("%s_inner", cuName.Data()),   ddlr, ddhr, ddct/2,0,180);
+  new TGeoTubeSeg(Form("%s_inner", chipName.Data()), ddlr, ddhr, ddit/2,0,180);
+  
+  Double_t clipWX = 0;
+  Double_t clipWY = 0;
+  Double_t clipY  = 1;
+  
+  if (id == 'I' || id == 'i') { 
+    clipWX = ddhr;
+    clipWY = ddhr/2;
   }
+  else { 
+    clipWX = ddlr+3;
+    clipWY = ddhr/2;
+  }
+  
+  new TGeoBBox(Form("%s_clip",  pcbName.Data()), clipWX, clipWY, ddpt);
+  new TGeoBBox(Form("%s_clip",  cuName.Data()),  clipWX, clipWY, ddct);
+  new TGeoBBox(Form("%s_clip",  chipName.Data()),clipWX, clipWY, ddit);
+  TGeoTranslation* trans = new TGeoTranslation(Form("%s_trans",
+						    pcbName.Data()), 
+					       0, clipWY+clipY, 0);
+  trans->RegisterYourself();
+  TGeoShape* fmddPcbShape = 
+    new TGeoCompositeShape(pcbName.Data(), 
+			   Form("%s_inner*%s_clip:%s_trans",
+				pcbName.Data(), 
+				pcbName.Data(), 
+				pcbName.Data())); 
+  TGeoShape* fmddCuShape = 
+    new TGeoCompositeShape(cuName.Data(), 
+			   Form("%s_inner*%s_clip:%s_trans",
+				cuName.Data(), 
+				cuName.Data(), 
+				pcbName.Data()));
+  TGeoShape* fmddChipShape = 
+    new TGeoCompositeShape(chipName.Data(), 
+			   Form("%s_inner*%s_clip:%s_trans",
+				chipName.Data(), 
+				chipName.Data(), 
+				pcbName.Data()));
   fmddPcbShape->SetTitle(Form("FMD %s digitiser PCB", lName));
   fmddCuShape->SetTitle(Form("FMD %s digitiser copper", lName));
   fmddChipShape->SetTitle(Form("FMD %s digitiser chip", lName));
@@ -1087,7 +1095,7 @@ AliFMDGeometryBuilder::FMD3Geometry(AliFMD3* fmd3,
   //__________________________________________________________________
   // Tension boxes. 
   TGeoBBox* tensionOuter = new TGeoBBox("FMD3_tension_outer", .5, 3, 5);
-  new TGeoBBox("FMD3_tension_inner", .51, 2.7, 4.3);
+  new TGeoBBox("FMD3_tension_inner", .51, 2.5, 4.6);
   TString tensionExpr("FMD3_tension_outer-FMD3_tension_inner");
   TGeoCompositeShape* tensionShape = new TGeoCompositeShape(tensionExpr.Data());
   tensionShape->SetName("FMD3_tension_box");
@@ -1104,7 +1112,7 @@ AliFMDGeometryBuilder::FMD3Geometry(AliFMD3* fmd3,
   tensionBox->AddNode(springVolume, 0, new TGeoTranslation(0,0,4.2/2));
   
   Double_t         tensionD     = 5*TMath::Cos(fmd3->GetConeOuterAngle());
-  Double_t         tensionZ     = (r4->Z() - 2 * tensionD - 
+  Double_t         tensionZ     = (r4->Z() - 2 * tensionD - 5 -
 				   2*.5*TMath::Cos(fmd3->GetConeOuterAngle()));
   Double_t         tensionX     = (fmd3->ConeR(fmd3->GetInnerZ()
 					       +fmd3->GetNoseZ() 
@@ -1115,16 +1123,17 @@ AliFMDGeometryBuilder::FMD3Geometry(AliFMD3* fmd3,
   TGeoCombiTrans*  tensionBase  = new TGeoCombiTrans(tensionX, 0, tensionZ, 
 						     tensionRot);
   
+  Double_t         wireT        = .1;
   Double_t         wireR1       = fmd3->ConeR(fmd3->GetInnerZ()
-					      +fmd3->GetNoseZ());
+					      +fmd3->GetNoseZ()) + wireT;
   Double_t         wireR2       = fmd3->ConeR(fmd3->GetInnerZ()
 					      +fmd3->GetNoseZ()-
-					      tensionZ+tensionD);
+					      tensionZ+tensionD) + wireT;
   Double_t         wireL        = TMath::Sqrt(TMath::Power(wireR1-wireR2,2)+ 
 					      TMath::Power(tensionZ-
 							   tensionD,2));
   Double_t         wireAngle    = TMath::ATan2(wireR2-wireR1,tensionZ-tensionD);
-  TGeoTube*        wireShape    = new TGeoTube("FMD3_wire", 0, .1, wireL/2);
+  TGeoTube*        wireShape    = new TGeoTube("FMD3_wire", 0, wireT, wireL/2);
   TGeoVolume*      wireVolume   = new TGeoVolume("FMD3_wire", wireShape,fSteel);
   TGeoRotation*    wireRot      = new TGeoRotation();
   wireRot->RotateY(180/TMath::Pi()*wireAngle);
