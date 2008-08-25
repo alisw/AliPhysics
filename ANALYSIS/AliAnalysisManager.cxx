@@ -498,7 +498,8 @@ void AliAnalysisManager::PackOutput(TList *target)
             if (fDebug > 2) {
                printf("   file %s listing content:\n", output->GetFileName());
                file->ls();
-            }   
+            }
+            TString outFilename = file->GetName();
             file->Close();
             // Restore current directory
             if (opwd) opwd->cd();
@@ -509,7 +510,7 @@ void AliAnalysisManager::PackOutput(TList *target)
                Int_t gid = gROOT->ProcessLine("gProofServ->GetGroupId();");
                remote += Form("%s_%d_", gSystem->HostName(), gid);
                remote += output->GetFileName();
-               TFile::Cp(output->GetFileName(), remote.Data());
+               TFile::Cp ( outFilename.Data(), remote.Data() );
             } else {
             // No special location specified-> use TProofOutputFile as merging utility
             // The file at this output slot must be opened in CreateOutputObjects
