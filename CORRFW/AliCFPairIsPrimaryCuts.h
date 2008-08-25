@@ -42,8 +42,12 @@ class AliCFPairIsPrimaryCuts : public AliCFCutBase
   {fCutNeg->SetMaxNSigmaToVertex(neg); fCutPos->SetMaxNSigmaToVertex(pos);}
   void SetRequireSigmaToVertex(Bool_t b1, Bool_t b2)
   {fCutNeg->SetRequireSigmaToVertex(b1); fCutPos->SetRequireSigmaToVertex(b2);}
+  void SetAcceptKinkDaughters(Bool_t b1, Bool_t b2)
+  {fCutNeg->SetAcceptKinkDaughters(b1); fCutPos->SetAcceptKinkDaughters(b2);}
+  void SetAODType(Char_t typeNeg, Char_t typePos)
+  {fCutNeg->SetAODType(typeNeg); fCutPos->SetAODType(typePos);}
 
-  ClassDef(AliCFPairIsPrimaryCuts,1);
+  ClassDef(AliCFPairIsPrimaryCuts,2);
 
  private :
   AliCFTrackIsPrimaryCuts *fCutNeg ; // isprimary cut on negative daughter

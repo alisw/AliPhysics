@@ -85,8 +85,8 @@ Bool_t AliCFPairIsPrimaryCuts::IsSelected(TObject* obj) {
 
   AliCFPair* pair = dynamic_cast<AliCFPair*>(obj);
 
-  AliESDtrack* tneg = pair->GetNeg();
-  AliESDtrack* tpos = pair->GetPos();
+  AliVParticle* tneg = pair->GetNeg();
+  AliVParticle* tpos = pair->GetPos();
   if (!tneg || !tpos) return kFALSE ;
 
   if ( ! fCutNeg->IsSelected((TObject*)tneg) || ! fCutPos->IsSelected((TObject*)tpos) ) return kFALSE ;

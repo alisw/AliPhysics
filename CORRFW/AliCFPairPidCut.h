@@ -52,6 +52,7 @@ class AliCFPairPidCut : public AliCFCutBase
   {fCutNeg->SetMinDiffResp(check1,mindiff1); fCutPos->SetMinDiffResp(check2,mindiff2);}     //set checking at det. response level
   void SetMinDiffProb(Bool_t check1, Double_t mindiff1, Bool_t check2, Double_t mindiff2)
   {fCutNeg->SetMinDiffProb(check1,mindiff1); fCutPos->SetMinDiffProb(check2,mindiff2);}  //set checking at probability level
+  void SetAODmode(Bool_t mode) {fCutNeg->SetAODmode(mode); fCutPos->SetAODmode(mode);}
 
   Bool_t IsSelected(TObject *obj); //boolean for detectors
   Bool_t IsSelected(TList* /*list*/) {return kTRUE;}

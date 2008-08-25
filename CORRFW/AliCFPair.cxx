@@ -28,15 +28,19 @@
 #include "AliESDv0.h"
 #include "AliESDEvent.h"
 #include "TMath.h"
+#include "AliAODv0.h"
 
 ClassImp(AliCFPair)
 
-AliCFPair::AliCFPair(AliESDtrack*t1, AliESDtrack*t2) :
+AliCFPair::AliCFPair(AliVParticle* t1, AliVParticle* t2) :
   AliVParticle(),
   fIsV0(0),
   fTrackNeg(t1),
   fTrackPos(t2),
-  fV0(0x0)
+  fESDV0(0x0),
+  fAODV0(0x0),
+  fLabel(-1),
+  fV0PDG(0)
 {
   //  
   // 2-track ctor
@@ -47,7 +51,24 @@ AliCFPair::AliCFPair(AliESDv0* v0, AliESDEvent* esd) :
   fIsV0(1),
   fTrackNeg(esd->GetTrack(v0->GetNindex())),
   fTrackPos(esd->GetTrack(v0->GetPindex())),
-  fV0(v0)
+  fESDV0(v0),
+  fAODV0(0x0),
+  fLabel(-1),
+  fV0PDG(0)
+{
+  //  
+  // V0 ctor
+  //
+}
+AliCFPair::AliCFPair(AliAODv0* v0) :
+  AliVParticle(),
+  fIsV0(1),
+  fTrackNeg((AliVParticle*)v0->GetSecondaryVtx()->GetDaughter(1)),
+  fTrackPos((AliVParticle*)v0->GetSecondaryVtx()->GetDaughter(0)),
+  fESDV0(0x0),
+  fAODV0(v0),
+  fLabel(-1),
+  fV0PDG(0)
 {
   //  
   // V0 ctor
@@ -58,7 +79,10 @@ AliCFPair::AliCFPair(const AliCFPair& c) :
   fIsV0(c.fIsV0),
   fTrackNeg(c.fTrackNeg),
   fTrackPos(c.fTrackPos),
-  fV0(c.fV0)
+  fESDV0(c.fESDV0),
+  fAODV0(c.fAODV0),
+  fLabel(c.fLabel),
+  fV0PDG(c.fV0PDG)
 {
   // 
   // Copy constructor.
@@ -74,7 +98,10 @@ AliCFPair& AliCFPair::operator=(const AliCFPair& c) {
     fIsV0 = c.fIsV0;
     fTrackNeg = c.fTrackNeg ;
     fTrackPos = c.fTrackPos ;
-    fV0 = c.fV0 ;
+    fESDV0 = c.fESDV0 ;
+    fAODV0 = c.fAODV0 ;
+    fLabel = c.fLabel ;
+    fV0PDG = c.fV0PDG ;
   }
   return *this;
 }
@@ -82,16 +109,17 @@ Bool_t AliCFPair::PxPyPz(Double_t p[3]) const {
   //
   // sets pair total momentum in vector p
   //
-  if (fIsV0) 
-    fV0->GetPxPyPz(p[0],p[1],p[2]);
-  else {
-    Double32_t p1[3], p2[3];
-    fTrackNeg->PxPyPz(p1);
-    fTrackPos->PxPyPz(p2);
-    p[0]=p1[0]+p2[0];
-    p[1]=p1[1]+p2[1];
-    p[2]=p1[2]+p2[2];
+  if (fIsV0) {
+    if      (fESDV0) fESDV0->GetPxPyPz(p[0],p[1],p[2]);
+    else if (fAODV0) fAODV0->PxPyPz(p);
+    else Error("PxPyPz","Pointer to V0 not found");
   }
+  else if (fTrackNeg && fTrackPos) {
+    p[0]=fTrackNeg->Px()+fTrackPos->Px();
+    p[1]=fTrackNeg->Py()+fTrackPos->Py();
+    p[2]=fTrackNeg->Pz()+fTrackPos->Pz();
+  }
+  else Error("PxPyPz","Could not find V0 nor track pointers");
   return kTRUE;
 }
 
@@ -151,16 +179,15 @@ Bool_t AliCFPair::XvYvZv(Double_t x[3]) const {
   // since this class is designed for resonances, the assumed pair position
   // should be the same for both tracks. neg track position is kept here
   //
- 
-  if (fIsV0) 
-    fV0->GetXYZ(x[0],x[1],x[2]);
-  else {
-    Double32_t x1[3];
-    fTrackNeg->PxPyPz(x1);
-    x[0]=x1[0];
-    x[1]=x1[1];
-    x[2]=x1[2];
+  
+  if (fIsV0) {
+    if      (fESDV0) fESDV0->GetXYZ(x[0],x[1],x[2]);
+    else if (fAODV0) fAODV0->XvYvZv(x);
+    else Error("PxPyPz","Pointer to V0 not found");
   }
+  else if (fTrackNeg) fTrackNeg->PxPyPz(x);
+  else Error("PxPyPz","Could not find V0 nor track pointers");
+
   return kTRUE;
 }
 Double32_t AliCFPair::Xv() const {
@@ -233,13 +260,29 @@ Double32_t AliCFPair::M() const {
   // otherwise returns ESD-calculated mass
   //
 
-  Double32_t minv ;
+  Double32_t minv = 0. ;
 
-  if (fIsV0) minv = (Double32_t)fV0->GetEffMass();
-  else {
+  if (fIsV0) {
+    if      (fESDV0) {
+      fESDV0->ChangeMassHypothesis(fV0PDG);
+      minv = (Double32_t)fESDV0->GetEffMass();
+    }
+    else if (fAODV0) {
+      switch (fV0PDG) {
+      case 310  : minv = fAODV0->MassK0Short()    ; break ;
+      case 3122 : minv = fAODV0->MassLambda()     ; break ;
+      case -3122: minv = fAODV0->MassAntiLambda() ; break ;
+      default:    minv = -1.              ; break ;
+      }
+    }
+    else Error("PxPyPz","Pointer to V0 not found");
+  }
+  else if (fTrackNeg && fTrackPos) {
     Double32_t p  = P() ;
     Double32_t e = fTrackNeg->E() + fTrackPos->E() ;
     minv = TMath::Sqrt(e*e-p*p);
   }
+  else Error("M","Could not find V0 nor track pointers");
+  
   return minv ;
 }

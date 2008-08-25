@@ -32,6 +32,7 @@
 #include "AliCFCutBase.h"
 
 class TObject;
+class AliVEvent;
 
 class AliCFV0TopoCuts : public AliCFCutBase 
 {
@@ -43,6 +44,7 @@ class AliCFV0TopoCuts : public AliCFCutBase
   virtual ~AliCFV0TopoCuts() { } ;
   Bool_t IsSelected(TObject* v0) ;
   Bool_t IsSelected(TList* /*list*/) {return kTRUE;}
+  void   SetEvtInfo(TObject* evt) {fEvent = (AliVEvent*)evt;}
   void   SetMaxDcaDaughters (Double32_t dca)  {fMaxDcaDaughters = dca;}
   void   SetMinDcaNeg       (Double32_t dca)  {fMinDcaNeg = dca;}
   void   SetMinDcaPos       (Double32_t dca)  {fMinDcaPos = dca;}
@@ -53,6 +55,7 @@ class AliCFV0TopoCuts : public AliCFCutBase
   Double32_t   fMinDcaNeg ;       // min impact parameter (aka dca to prim. vertex) of neg. daughter
   Double32_t   fMinDcaPos ;       // min impact parameter (aka dca to prim. vertex) of pos. daughter
   Double32_t   fMinCosP ;         // min cosine of pointing angle
+  AliVEvent*   fEvent;            // pointer to current event (needed for cuts related to PV position)
   
   ClassDef(AliCFV0TopoCuts,0);
 };

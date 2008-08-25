@@ -30,6 +30,9 @@
 #include "AliESDv0.h"
 #include "AliESDtrack.h"
 #include "AliCFPair.h"
+#include "AliAODv0.h"
+#include "AliVEvent.h"
+#include "AliAODEvent.h"
 
 ClassImp(AliCFV0TopoCuts)
 
@@ -39,7 +42,8 @@ AliCFV0TopoCuts::AliCFV0TopoCuts() :
   fMaxDcaDaughters(1.e99),
   fMinDcaNeg(0),
   fMinDcaPos(0),
-  fMinCosP(0)
+  fMinCosP(0),
+  fEvent(0x0)
 {
   //
   //default constructor
@@ -52,7 +56,8 @@ AliCFV0TopoCuts::AliCFV0TopoCuts(const Char_t* name, const Char_t* title) :
   fMaxDcaDaughters(1.e99),
   fMinDcaNeg(0),
   fMinDcaPos(0),
-  fMinCosP(0)
+  fMinCosP(0),
+  fEvent(0x0)
 {
   //
 }
@@ -63,7 +68,8 @@ AliCFV0TopoCuts::AliCFV0TopoCuts(const AliCFV0TopoCuts& c) :
   fMaxDcaDaughters(c.fMaxDcaDaughters),
   fMinDcaNeg(c.fMinDcaNeg),
   fMinDcaPos(c.fMinDcaPos),
-  fMinCosP(c.fMinCosP)
+  fMinCosP(c.fMinCosP),
+  fEvent(c.fEvent)
 {
   //
   // copy constructor
@@ -83,6 +89,7 @@ AliCFV0TopoCuts& AliCFV0TopoCuts::operator=(const AliCFV0TopoCuts& c)
     fMinDcaNeg       = c.fMinDcaNeg ;
     fMinDcaPos       = c.fMinDcaPos ;
     fMinCosP         = c.fMinCosP ;
+    fEvent           = c.fEvent ;
   }
   return *this ;
 }
@@ -102,25 +109,41 @@ Bool_t AliCFV0TopoCuts::IsSelected(TObject *obj) {
     return kFALSE ;
   }
 
-  AliCFPair * pair = dynamic_cast<AliCFPair*>(obj);
-  AliESDv0    * v0          = pair->GetV0();
-  AliESDtrack * negDaughter = pair->GetNeg();
-  AliESDtrack * posDaughter = pair->GetPos();
+  AliCFPair    * pair        = dynamic_cast<AliCFPair*>(obj);
+  AliESDv0     * esdV0       = pair->GetESDV0();
+  AliAODv0     * aodV0       = pair->GetAODV0();
+  AliVParticle * negDaughter = pair->GetNeg();
+  AliVParticle * posDaughter = pair->GetPos();
 
-  if (v0->GetDcaV0Daughters() > fMaxDcaDaughters)  return kFALSE ;
-  if (v0->GetV0CosineOfPointingAngle() < fMinCosP) return kFALSE ;
+  Double32_t dcaDaughters = 0. ;
+  Double32_t cosP   = 0. ;
+  Double32_t negDca = 0. ;
+  Double32_t posDca = 0. ;
 
+  if (esdV0) {
+    dcaDaughters = esdV0->GetDcaV0Daughters() ;
+    cosP         = esdV0->GetV0CosineOfPointingAngle() ;
 
-  Float_t tDca[2];
-  if (negDaughter) negDaughter->GetImpactParameters(tDca[0],tDca[1]);
-  else { tDca[0]=1.e99;  tDca[1]=1.e99;}
-  Double32_t negDca = TMath::Sqrt(tDca[0]*tDca[0]+tDca[1]*tDca[1]);
-  if (posDaughter) posDaughter->GetImpactParameters(tDca[0],tDca[1]);
-  else { tDca[0]=1.e99;  tDca[1]=1.e99;}
-  Double32_t posDca = TMath::Sqrt(tDca[0]*tDca[0]+tDca[1]*tDca[1]);
+    Float_t tDca[2];
+    if (negDaughter) ((AliESDtrack*)negDaughter)->GetImpactParameters(tDca[0],tDca[1]);
+    else { tDca[0]=1.e99;  tDca[1]=1.e99;}
+    negDca = TMath::Sqrt(tDca[0]*tDca[0]+tDca[1]*tDca[1]);
+    if (posDaughter) ((AliESDtrack*)posDaughter)->GetImpactParameters(tDca[0],tDca[1]);
+    else { tDca[0]=1.e99;  tDca[1]=1.e99;}
+    posDca = TMath::Sqrt(tDca[0]*tDca[0]+tDca[1]*tDca[1]);
+  }
+  else if (aodV0) {
+    dcaDaughters = aodV0->DcaV0Daughters() ;
+    negDca       = aodV0->DcaNegToPrimVertex() ;
+    posDca       = aodV0->DcaPosToPrimVertex() ;
+    cosP         = aodV0->CosPointingAngle(((AliAODEvent*)fEvent)->GetPrimaryVertex()) ;
+  }
+  else Error("IsSelected","No V0 pointer available");
 
-  if (negDca < fMinDcaNeg) return kFALSE ;
-  if (posDca < fMinDcaPos) return kFALSE ; 
+  if (dcaDaughters > fMaxDcaDaughters) return kFALSE ;
+  if (cosP         < fMinCosP        ) return kFALSE ;
+  if (negDca       < fMinDcaNeg      ) return kFALSE ;
+  if (posDca       < fMinDcaPos      ) return kFALSE ; 
 
   return kTRUE ;
 }

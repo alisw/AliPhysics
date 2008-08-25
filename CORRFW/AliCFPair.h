@@ -32,19 +32,23 @@
 class AliESDtrack ;
 class AliESDv0;
 class AliESDEvent;
+class AliAODv0;
 
 class AliCFPair : public AliVParticle {
 
  public:
-  AliCFPair(AliESDtrack* t1, AliESDtrack* t2);
+  AliCFPair(AliVParticle* t1, AliVParticle* t2);
   AliCFPair(AliESDv0* v0, AliESDEvent* esd);
+  AliCFPair(AliAODv0* v0);
   AliCFPair(const AliCFPair& c);
   AliCFPair& operator=(const AliCFPair& c);
   virtual ~AliCFPair(){};
 
-  AliESDtrack* GetNeg() const {return fTrackNeg;}
-  AliESDtrack* GetPos() const {return fTrackPos;}
-  AliESDv0*    GetV0()  const {return fV0;}
+  AliVParticle* GetNeg() const {return fTrackNeg;}
+  AliVParticle* GetPos() const {return fTrackPos;}
+  AliESDv0*    GetESDV0()  const {return fESDV0;}
+  AliAODv0*    GetAODV0()  const {return fAODV0;}
+  void         SetV0PDG(Int_t pdg) {fV0PDG=pdg;}
   virtual Bool_t       PxPyPz(Double_t p[3]) const ;
   virtual Double32_t   P()  const ;
   virtual Double32_t   Pt() const ;
@@ -64,16 +68,20 @@ class AliCFPair : public AliVParticle {
   virtual Double32_t Eta() const ;
   virtual Double32_t Y() const ;
   virtual Short_t    Charge() const {return 0;} // returns 0 because opposite charge tracks... maybe to extend to all kinds of pairs
-
+  virtual Int_t      GetLabel() const {return fLabel;}
+  virtual void       SetLabel(Int_t label) {fLabel=label;}
   // PID
   virtual const Double_t *PID() const {return 0;} // return PID object (to be defined, still)
 
 
  private:
   Bool_t fIsV0;            // true if V0 passed to the constructor
-  AliESDtrack* fTrackNeg;  // pointer to the negative track
-  AliESDtrack* fTrackPos;  // pointer to the positive track
-  AliESDv0*    fV0;        // pointer to the V0 if V0 is passed to the constructor
+  AliVParticle* fTrackNeg; // pointer to the negative track 
+  AliVParticle* fTrackPos; // pointer to the positive track 
+  AliESDv0*    fESDV0;     // pointer to the ESD V0 if AliESDv0 is passed to the constructor
+  AliAODv0*    fAODV0;     // pointer to the AOD V0 if AliAODv0 is passed to the constructor
+  Int_t        fLabel;     // associated MC label
+  Int_t        fV0PDG;     // assumed V0 PDG
   
   ClassDef(AliCFPair,0);
 };

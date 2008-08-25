@@ -48,22 +48,17 @@ class AliCFPairQualityCuts : public AliCFCutBase
   {fCutNeg->SetMaxChi2PerClusterTPC(chi2Neg); fCutPos->SetMaxChi2PerClusterTPC(chi2Pos);}
   virtual void SetMaxChi2PerClusterITS(Double32_t chi2Neg, Double32_t chi2Pos) 
   {fCutNeg->SetMaxChi2PerClusterITS(chi2Neg); fCutPos->SetMaxChi2PerClusterITS(chi2Pos);}
-  virtual void SetRequireTPCRefit(Bool_t neg, Bool_t pos) 
-  {fCutNeg->SetRequireTPCRefit(neg); fCutPos->SetRequireTPCRefit(pos);}
-  virtual void SetRequireITSRefit(Bool_t neg, Bool_t pos) 
-  {fCutNeg->SetRequireITSRefit(neg); fCutPos->SetRequireITSRefit(pos);}
-  virtual void SetMaxCovDiagonalElements(Double32_t* neg/*[5]*/, Double32_t* pos/*[5]*/) { 
+  virtual void SetMaxCovDiagonalElements(Double32_t* neg/*[5]*/, Double32_t* pos/*[5]*/) {
     fCutNeg->SetMaxCovDiagonalElements(neg[0],neg[1],neg[2],neg[3],neg[4]); 
     fCutPos->SetMaxCovDiagonalElements(pos[0],pos[1],pos[2],pos[3],pos[4]); }
-
-  
-
-  ClassDef(AliCFPairQualityCuts,1);
+  virtual void SetStatus(ULong_t statusNeg, ULong_t statusPos) 
+  {fCutNeg->SetStatus(statusNeg); fCutPos->SetStatus(statusPos);}
 
  private :
   AliCFTrackQualityCuts *fCutNeg ; // quality cut on negative daughter
   AliCFTrackQualityCuts *fCutPos ; // quality cut on positive daughter
 
+  ClassDef(AliCFPairQualityCuts,2);
 };
 
 #endif
