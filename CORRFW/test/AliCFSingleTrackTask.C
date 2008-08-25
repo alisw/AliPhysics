@@ -128,12 +128,13 @@ Bool_t AliCFSingleTrackTask(
   recKineCuts->SetQAOn(qaList);
 
   AliCFTrackQualityCuts *recQualityCuts = new AliCFTrackQualityCuts("recQualityCuts","rec-level quality cuts");
-  recQualityCuts->SetMinNClusterTPC(minclustersTPC);
-  recQualityCuts->SetRequireITSRefit(kTRUE);
+  if (!readAOD)       recQualityCuts->SetMinNClusterTPC(minclustersTPC);
+  if (!readTPCTracks) recQualityCuts->SetStatus(AliESDtrack::kITSrefit);
   recQualityCuts->SetQAOn(qaList);
-  
+
   AliCFTrackIsPrimaryCuts *recIsPrimaryCuts = new AliCFTrackIsPrimaryCuts("recIsPrimaryCuts","rec-level isPrimary cuts");
-  recIsPrimaryCuts->SetMaxNSigmaToVertex(3);
+  if (readAOD) recIsPrimaryCuts->SetAODType(AliAODTrack::kPrimary);
+  else         recIsPrimaryCuts->SetMaxNSigmaToVertex(3);
   recIsPrimaryCuts->SetQAOn(qaList);
 
   AliCFTrackCutPid* cutPID = new AliCFTrackCutPid("cutPID","ESD_PID") ;

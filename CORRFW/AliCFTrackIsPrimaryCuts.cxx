@@ -53,6 +53,7 @@ AliCFTrackIsPrimaryCuts::AliCFTrackIsPrimaryCuts() :
   fNSigmaToVertex(0),
   fNSigmaToVertexMax(0),
   fRequireSigmaToVertex(0),
+  fAODType(AliAODTrack::kUndef),
   fAcceptKinkDaughters(0),
   fhCutStatistics(0),
   fhCutCorrelation(0),
@@ -83,6 +84,7 @@ AliCFTrackIsPrimaryCuts::AliCFTrackIsPrimaryCuts(Char_t* name, Char_t* title) :
   fNSigmaToVertex(0),
   fNSigmaToVertexMax(0),
   fRequireSigmaToVertex(0),
+  fAODType(AliAODTrack::kUndef),
   fAcceptKinkDaughters(0),
   fhCutStatistics(0),
   fhCutCorrelation(0),
@@ -113,6 +115,7 @@ AliCFTrackIsPrimaryCuts::AliCFTrackIsPrimaryCuts(const AliCFTrackIsPrimaryCuts& 
   fNSigmaToVertex(c.fNSigmaToVertex),
   fNSigmaToVertexMax(c.fNSigmaToVertexMax),
   fRequireSigmaToVertex(c.fRequireSigmaToVertex),
+  fAODType(c.fAODType),
   fAcceptKinkDaughters(c.fAcceptKinkDaughters),
   fhCutStatistics(c.fhCutStatistics),
   fhCutCorrelation(c.fhCutCorrelation),
@@ -148,6 +151,7 @@ AliCFTrackIsPrimaryCuts& AliCFTrackIsPrimaryCuts::operator=(const AliCFTrackIsPr
     fNSigmaToVertex = c.fNSigmaToVertex ;
     fNSigmaToVertexMax = c.fNSigmaToVertexMax ;
     fRequireSigmaToVertex = c.fRequireSigmaToVertex ;
+    fAODType = c.fAODType ;
     fAcceptKinkDaughters = c.fAcceptKinkDaughters ;
     fhCutStatistics = c.fhCutStatistics ;
     fhCutCorrelation = c.fhCutCorrelation ;
@@ -167,11 +171,11 @@ AliCFTrackIsPrimaryCuts& AliCFTrackIsPrimaryCuts::operator=(const AliCFTrackIsPr
     fhBinLimDcaXYnorm = c.fhBinLimDcaXYnorm;
     fhBinLimDcaZnorm = c.fhBinLimDcaZnorm;
 
-    for (Int_t i=0; i<c.kNHist; i++){
-      for (Int_t j=0; j<c.kNStepQA; j++){
+    for (Int_t j=0; j<c.kNStepQA; j++){
+      if(c.fhDcaXYvsDcaZ[j]) fhDcaXYvsDcaZ[j] = (TH2F*)c.fhDcaXYvsDcaZ[j]->Clone();
+      if(c.fhDcaXYvsDcaZnorm[j]) fhDcaXYvsDcaZnorm[j] = (TH2F*)c.fhDcaXYvsDcaZnorm[j]->Clone();
+      for (Int_t i=0; i<c.kNHist; i++){
 	if(c.fhQA[i][j]) fhQA[i][j] = (TH1F*)c.fhQA[i][j]->Clone();
-	if(c.fhDcaXYvsDcaZ[j]) fhDcaXYvsDcaZ[j] = (TH2F*)c.fhDcaXYvsDcaZ[j]->Clone();
-	if(c.fhDcaXYvsDcaZnorm[j]) fhDcaXYvsDcaZnorm[j] = (TH2F*)c.fhDcaXYvsDcaZnorm[j]->Clone();
       }
     }
     ((AliCFTrackIsPrimaryCuts &) c).Copy(*this);
@@ -212,10 +216,12 @@ void AliCFTrackIsPrimaryCuts::Initialise()
   fNSigmaToVertexMax = 0;
   fRequireSigmaToVertex = 0;
   fAcceptKinkDaughters = 0;
+  fAODType = AliAODTrack::kUndef;
 
   SetMaxNSigmaToVertex();
   SetRequireSigmaToVertex();
   SetAcceptKinkDaughters();
+  SetAODType();
 
   for (Int_t j=0; j<kNStepQA; j++)  {
     fhDcaXYvsDcaZ[j] = 0x0;
@@ -262,6 +268,7 @@ void AliCFTrackIsPrimaryCuts::GetSigmaToVertex(AliESDtrack* esdTrack)
 {
   //
   // Calculates the number of sigma to the vertex.
+  // Currently applicable for ESD tracks only
   //
   Float_t b[2];
   Float_t bRes[2];
@@ -316,24 +323,59 @@ void AliCFTrackIsPrimaryCuts::SelectionBitMap(TObject* obj)
 
   // check TObject and cast into ESDtrack
   if (!obj) return;
-  if (!obj->InheritsFrom("AliESDtrack")) AliError("object must derived from AliESDtrack !");
-  AliESDtrack* esdTrack = dynamic_cast<AliESDtrack *>(obj);
-  if ( !esdTrack ) return;
+  if (!obj->InheritsFrom("AliVParticle")) {
+    AliError("object must derived from AliVParticle !");
+    return;
+  }
 
-  // get the track to vertex parameter
-  GetSigmaToVertex(esdTrack);
+  Bool_t isESDTrack = strcmp(obj->ClassName(),"AliESDtrack") == 0 ? kTRUE : kFALSE ;
+  Bool_t isAODTrack = strcmp(obj->ClassName(),"AliAODTrack") == 0 ? kTRUE : kFALSE ;
+
+  AliESDtrack * esdTrack = 0x0 ;
+  AliAODTrack * aodTrack = 0x0 ; 
+  if (isESDTrack) esdTrack = dynamic_cast<AliESDtrack*>(obj);
+  if (isAODTrack) aodTrack = dynamic_cast<AliAODTrack*>(obj);
+
+  // get the track to vertex parameter for ESD track
+  if (isESDTrack) GetSigmaToVertex(esdTrack);
 
   // fill the bitmap
   Int_t iCutBit = 0;
-  if (fNSigmaToVertex <= fNSigmaToVertexMax)
-	fBitmap->SetBitNumber(iCutBit,kTRUE);
-  iCutBit++;
-  if (!fRequireSigmaToVertex || (fNSigmaToVertex>=0 && fRequireSigmaToVertex))
-	fBitmap->SetBitNumber(iCutBit,kTRUE);
-  iCutBit++;
-  if (fAcceptKinkDaughters || (!fAcceptKinkDaughters && esdTrack->GetKinkIndex(0)<=0))
-	fBitmap->SetBitNumber(iCutBit,kTRUE);
 
+  if (isESDTrack) {
+    if (fNSigmaToVertex <= fNSigmaToVertexMax) {
+      fBitmap->SetBitNumber(iCutBit,kTRUE);
+    }
+  }
+  else fBitmap->SetBitNumber(iCutBit,kTRUE);
+
+  iCutBit++;
+
+  if (isESDTrack) {
+    if (!fRequireSigmaToVertex || (fNSigmaToVertex>=0 && fRequireSigmaToVertex)) {
+      fBitmap->SetBitNumber(iCutBit,kTRUE);
+    }
+  }
+  else fBitmap->SetBitNumber(iCutBit,kTRUE);
+
+  iCutBit++;
+
+  if (esdTrack) {
+    if (fAcceptKinkDaughters || (!fAcceptKinkDaughters && esdTrack->GetKinkIndex(0)<=0)) {
+      fBitmap->SetBitNumber(iCutBit,kTRUE);
+    }
+  }
+  else fBitmap->SetBitNumber(iCutBit,kTRUE);
+  
+  iCutBit++;
+  
+  if (isAODTrack) {
+    if (fAODType==AliAODTrack::kUndef || fAODType == aodTrack->GetType()) {
+      fBitmap->SetBitNumber(iCutBit,kTRUE);
+    }
+  }
+  else fBitmap->SetBitNumber(iCutBit,kTRUE);
+  
   return;
 }
 //__________________________________________________________________________________
@@ -471,16 +513,19 @@ void AliCFTrackIsPrimaryCuts::SetHistogramBins(Int_t index, Int_t nbins, Double_
   fhCutStatistics->GetXaxis()->SetBinLabel(1,"n dca");
   fhCutStatistics->GetXaxis()->SetBinLabel(2,"require dca");
   fhCutStatistics->GetXaxis()->SetBinLabel(3,"kink daughter");
+  fhCutStatistics->GetXaxis()->SetBinLabel(4,"AOD type");
 
   fhCutCorrelation = new TH2F(Form("%s_cut_correlation",GetName()), Form("%s cut  correlation",GetName()), kNCuts,0.5,kNCuts+0.5,kNCuts,0.5,kNCuts+0.5);
   fhCutCorrelation->SetLineWidth(2);
   fhCutCorrelation->GetXaxis()->SetBinLabel(1,"n dca");
   fhCutCorrelation->GetXaxis()->SetBinLabel(2,"require dca");
   fhCutCorrelation->GetXaxis()->SetBinLabel(3,"kink daughter");
+  fhCutCorrelation->GetXaxis()->SetBinLabel(4,"AOD type");
 
   fhCutCorrelation->GetYaxis()->SetBinLabel(1,"n dca");
   fhCutCorrelation->GetYaxis()->SetBinLabel(2,"require dca");
   fhCutCorrelation->GetYaxis()->SetBinLabel(3,"kink daughter");
+  fhCutCorrelation->GetYaxis()->SetBinLabel(4,"AOD type");
 
   // book QA histograms
   Char_t str[256];
@@ -520,43 +565,49 @@ void AliCFTrackIsPrimaryCuts::FillHistograms(TObject* obj, Bool_t f)
   // fill the QA histograms
   //
 
-  // cast TObject into ESDtrack
   if (!obj) return;
-  AliESDtrack* esdTrack = dynamic_cast<AliESDtrack *>(obj);
-  if ( !esdTrack ) return;
+
+  Bool_t isESDTrack = strcmp(obj->ClassName(),"AliESDtrack") == 0 ? kTRUE : kFALSE ;
+  Bool_t isAODTrack = strcmp(obj->ClassName(),"AliAODTrack") == 0 ? kTRUE : kFALSE ;
+
+  AliESDtrack * esdTrack = 0x0 ;
+  AliAODTrack * aodTrack = 0x0 ; 
+  if (isESDTrack) esdTrack = dynamic_cast<AliESDtrack*>(obj);
+  if (isAODTrack) aodTrack = dynamic_cast<AliAODTrack*>(obj);
 
   // f = 0: fill histograms before cuts
   // f = 1: fill histograms after cuts
 
-	Float_t b[2];
-	Float_t bRes[2];
-	Float_t bCov[3];
-	esdTrack->GetImpactParameters(b,bCov);
-	if (bCov[0]<=0 || bCov[2]<=0) {
-	   AliDebug(1, "Estimated b resolution lower or equal zero!");
-	   bCov[0]=0; bCov[2]=0;
-	}
-	bRes[0] = TMath::Sqrt(bCov[0]);
-	bRes[1] = TMath::Sqrt(bCov[2]);
+  if (esdTrack) {
+    Float_t b[2];
+    Float_t bRes[2];
+    Float_t bCov[3];
+    esdTrack->GetImpactParameters(b,bCov);
+    if (bCov[0]<=0 || bCov[2]<=0) {
+      AliDebug(1, "Estimated b resolution lower or equal zero!");
+      bCov[0]=0; bCov[2]=0;
+    }
+    bRes[0] = TMath::Sqrt(bCov[0]);
+    bRes[1] = TMath::Sqrt(bCov[2]);
+  
+    fhQA[kDcaZ][f]->Fill(b[1]);
+    fhQA[kDcaXY][f]->Fill(b[0]);
+    fhDcaXYvsDcaZ[f]->Fill(b[1],b[0]);
+    
+    if (bRes[0]!=0 && bRes[1]!=0) {
+      fhQA[kDcaZnorm][f]->Fill(b[1]/bRes[1]);
+      fhQA[kDcaXYnorm][f]->Fill(b[0]/bRes[0]);
+      fhDcaXYvsDcaZnorm[f]->Fill(b[1]/bRes[1], b[0]/bRes[0]);
+    }
 
-	fhQA[kDcaZ][f]->Fill(b[1]);
-	fhQA[kDcaXY][f]->Fill(b[0]);
-	fhDcaXYvsDcaZ[f]->Fill(b[1],b[0]);
-
-	if (bRes[0]!=0 && bRes[1]!=0) {
-	   fhQA[kDcaZnorm][f]->Fill(b[1]/bRes[1]);
-	   fhQA[kDcaXYnorm][f]->Fill(b[0]/bRes[0]);
-	   fhDcaXYvsDcaZnorm[f]->Fill(b[1]/bRes[1], b[0]/bRes[0]);
-	}
-
-  fhQA[kCutNSigmaToVertex][f]->Fill(fNSigmaToVertex);
-  if (fNSigmaToVertex<0 && fRequireSigmaToVertex) fhQA[kCutRequireSigmaToVertex][f]->Fill(0.);
-  if (!(fNSigmaToVertex<0 && fRequireSigmaToVertex)) fhQA[kCutRequireSigmaToVertex][f]->Fill(1.);
-
-
-  if (!fAcceptKinkDaughters && esdTrack->GetKinkIndex(0)>0) fhQA[kCutAcceptKinkDaughters][f]->Fill(0.);
-  if (!(!fAcceptKinkDaughters && esdTrack->GetKinkIndex(0)>0)) fhQA[kCutAcceptKinkDaughters][f]->Fill(0.);
-
+    fhQA[kCutNSigmaToVertex][f]->Fill(fNSigmaToVertex);
+    if (fNSigmaToVertex<0 && fRequireSigmaToVertex) fhQA[kCutRequireSigmaToVertex][f]->Fill(0.);
+    if (!(fNSigmaToVertex<0 && fRequireSigmaToVertex)) fhQA[kCutRequireSigmaToVertex][f]->Fill(1.);
+    
+    if (!fAcceptKinkDaughters && esdTrack->GetKinkIndex(0)>0) fhQA[kCutAcceptKinkDaughters][f]->Fill(0.);
+    if (!(!fAcceptKinkDaughters && esdTrack->GetKinkIndex(0)>0)) fhQA[kCutAcceptKinkDaughters][f]->Fill(0.);
+  }
+    
   // fill cut statistics and cut correlation histograms with information from the bitmap
   if (f) return;
 

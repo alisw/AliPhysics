@@ -40,9 +40,8 @@
 #define ALICFTRACKISPRIMARYCUTS_H
 
 #include "AliCFCutBase.h"
-
+#include "AliAODTrack.h"
 #include <TH2.h>
-// class TH2 ;
 class TBits;
 class AliESDtrack ;
 
@@ -58,12 +57,13 @@ class AliCFTrackIsPrimaryCuts : public AliCFCutBase
 
   Bool_t IsSelected(TObject* obj);
   Bool_t IsSelected(TList* /*list*/) {return kTRUE;}
-  void GetSigmaToVertex(AliESDtrack* esdTrack);
+  void GetSigmaToVertex(AliESDtrack* esdTrack); // calculates nSigma to PV for an AliESDtrack
 
   // cut value setter
   void SetMaxNSigmaToVertex(Double_t sigma=1.e+03)	{fNSigmaToVertexMax = sigma;}
   void SetRequireSigmaToVertex(Bool_t b=kFALSE)	{fRequireSigmaToVertex=b;}
   void SetAcceptKinkDaughters(Bool_t b=kTRUE)	{fAcceptKinkDaughters=b;}
+  void SetAODType(Char_t type=AliAODTrack::kUndef) {fAODType = type;}
 
   // QA histograms
   void DrawHistograms();
@@ -83,7 +83,8 @@ class AliCFTrackIsPrimaryCuts : public AliCFCutBase
     kDcaZ,			// controll histogram: dca along z axis
     kDcaXYnorm,			// controll histogram: normalised dca in xy plane
     kDcaZnorm,			// controll histogram: normalised dca along z axis
-    kNCuts=3,			// number of single selections
+    kCutAODType,                // cut on AliAODTrack::fType
+    kNCuts=4,			// number of single selections
     kNStepQA=2,			// number of QA steps (before/after the cuts)
     kNHist=7			// number of QA histograms
   };
@@ -96,7 +97,9 @@ class AliCFTrackIsPrimaryCuts : public AliCFCutBase
 					// Fills histograms before and after cuts
   Double_t fNSigmaToVertex;		// track distance to main vertex in units of sigma
   Double_t fNSigmaToVertexMax;		// cut value: max distance to main vertex in units of sigma
-  Bool_t  fRequireSigmaToVertex;	// require calculable distance to main vertex
+  Bool_t   fRequireSigmaToVertex;	// require calculable distance to main vertex
+  Char_t   fAODType;                    // type of AOD track (undef, primary, secondary, orphan)
+                                        // applicable at AOD level only !
 
   TH2F* fhDcaXYvsDcaZ[2];		// Histogram: dca xy vs. z
   TH2F* fhDcaXYvsDcaZnorm[2];		// Histogram: (dca xy / sigma xy) vs. (dca z / simga z)
@@ -125,7 +128,7 @@ class AliCFTrackIsPrimaryCuts : public AliCFCutBase
   Double_t *fhBinLimDcaXYnorm; //[fhNBinsDcaXYnorm] bin limits: normalised dca in transverse plane
   Double_t *fhBinLimDcaZnorm;//[fhNBinsDcaZnorm] bin limits: normalised dca along beam axis
 
-  ClassDef(AliCFTrackIsPrimaryCuts,2);
+  ClassDef(AliCFTrackIsPrimaryCuts,3);
 };
 
 #endif
