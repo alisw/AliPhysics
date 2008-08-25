@@ -657,6 +657,7 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
       
         break;
       }
+      ptrTracklet->UseClusters();
     }
     if(!ptrTracklet->IsOK()){
       if(x < 1.) continue; //temporary
