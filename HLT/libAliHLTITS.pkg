@@ -4,7 +4,8 @@
 CLASS_HDRS:=  	AliHLTITStrack.h \
 		AliHLTITStracker.h \
 		AliHLTITSVertexerZ.h \
-		AliHLTITSclusterer.h
+		AliHLTITSclusterer.h \
+		AliHLTITSAgent.h
 
 MODULE_SRCS= 	$(CLASS_HDRS:.h=.cxx)
 
