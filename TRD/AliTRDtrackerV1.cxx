@@ -82,7 +82,7 @@ TLinearFitter* AliTRDtrackerV1::fgTiltedRiemanConstrained = 0x0;
 //____________________________________________________________________
 AliTRDtrackerV1::AliTRDtrackerV1(AliTRDReconstructor *rec) 
   :AliTracker()
-  ,fReconstructor(rec)
+  ,fReconstructor(0x0)
   ,fGeom(new AliTRDgeometry())
   ,fClusters(0x0)
   ,fTracklets(0x0)
@@ -104,13 +104,7 @@ AliTRDtrackerV1::AliTRDtrackerV1(AliTRDReconstructor *rec)
   for(Int_t isl =0; isl<kNSeedPlanes; isl++) fSeedTB[isl] = 0x0;
 
   // Initialize debug stream
-  if(fReconstructor){
-    if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker) > 1){
-      TDirectory *savedir = gDirectory; 
-      fgDebugStreamer    = new TTreeSRedirector("TRD.TrackerDebug.root");
-      savedir->cd();
-    }
-  }
+  if(rec) SetReconstructor(rec);
 }
 
 //____________________________________________________________________
@@ -3172,12 +3166,18 @@ Int_t AliTRDtrackerV1::Freq(Int_t n, const Int_t *inlist
 
 }
 
-void AliTRDtrackerV1::SetReconstructor(const AliTRDReconstructor *rec){
-	fReconstructor = rec;
-	if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker) > 1){
-		if(!fgDebugStreamer)
-			fgDebugStreamer = new TTreeSRedirector("TRD.TrackerDebug.root");
-	}	
+
+//____________________________________________________________________
+void AliTRDtrackerV1::SetReconstructor(const AliTRDReconstructor *rec)
+{
+  fReconstructor = rec;
+  if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker) > 1){
+    if(!fgDebugStreamer){
+      TDirectory *savedir = gDirectory;
+      fgDebugStreamer = new TTreeSRedirector("TRD.TrackerDebug.root");
+      savedir->cd();
+    }
+  }	
 }
 
 //_____________________________________________________________________________
