@@ -126,6 +126,7 @@
 #include "AliESDtrack.h"
 #include "AliPHOSEmcRecPoint.h"
 #include "AliPHOSCpvRecPoint.h"
+#include "AliLog.h"
 
 ClassImp( AliPHOSTrackSegmentMakerv1) 
 
@@ -246,58 +247,76 @@ void  AliPHOSTrackSegmentMakerv1::GetDistanceInPHOSPlane(AliPHOSEmcRecPoint * em
 //                       // if you change this value, change it as well in xxxRecPoint::Compare()
 
   if(!cpvClu) {
+    
+    trackindex = -1;
+    dx=999.;
+    dz=999.;
+    
+    if(!emcClu) {
+      return;
+    }
 
     TVector3 emcGlobal;
     fGeom->GetGlobalPHOS((AliPHOSRecPoint*)emcClu,emcGlobal);
-
-    TVector3 emcLocal;
-    emcClu->GetLocalPosition(emcLocal);
-
+    
     // Radius from IP to current point
-    Double_t rEMC = emcGlobal.Pt() ;
-
+    Double_t rEMC = TMath::Abs(emcGlobal.Pt());
+    
     // Extrapolate the global track direction to EMC
     // and find the closest track
-
+    
     Int_t nTracks = fESD->GetNumberOfTracks();
-    Int_t iClosestTrack = -1;
-    Double_t minDistance = 1.e6;
-    Float_t delta_x,delta_z,distance2Track;
     
     AliESDtrack *track;
-    Double_t xyz[3] ;
+    Double_t xyz[] = {-1,-1,-1};
+    Double_t pxyz[3];
+    Double_t zEMC,xEMC;
+    Int_t module;
+    TVector3 vecP;
+    TVector3 locClu;
+
+    Float_t minDistance = 1.e6;
+    Float_t dr;
 
     for (Int_t iTrack=0; iTrack<nTracks; iTrack++) {
       track = fESD->GetTrack(iTrack);
       if (!track->GetXYZAt(rEMC, fESD->GetMagneticField(), xyz)) continue;
-      printf("track prolongation: (%.3f,%.3f,%.3f)  emcGlobal: (%.3f,%.3f,%.3f)\n",
-             xyz[0], xyz[1],xyz[2],emcGlobal.X(),emcGlobal.Y(),emcGlobal.Z());
+
+      AliDebug(1,Form("Event %d, iTrack: %d, (%.3f,%.3f,%.3f)",
+	     fESD->GetEventNumberInFile(),iTrack,xyz[0],xyz[1],xyz[2]));
       
-      TVector3 globTrack(xyz);
-      TVector3 locTrack;
-      Int_t phosMod = emcClu->GetPHOSMod();
-      fGeom->Global2Local(locTrack,globTrack,phosMod);
-      delta_x = locTrack.X()-emcLocal.X();
-      delta_z = locTrack.Z()-emcLocal.Z();
-      printf("delta_x: %.3f  delta_z: %.3f. PHOS module: %d\n",
-	     delta_x,delta_z,phosMod);
+      if (track->GetPxPyPzAt(rEMC,fESD->GetMagneticField(),pxyz)) { 
 
-      distance2Track = TMath::Sqrt(delta_x*delta_x + delta_z*delta_z);
+	vecP.SetXYZ(pxyz[0],pxyz[1],pxyz[2]);
+	fGeom->ImpactOnEmc(xyz,vecP.Theta(),vecP.Phi(),module,zEMC,xEMC) ;
 
-      if (distance2Track < minDistance) {
-        minDistance = distance2Track;
-        iClosestTrack = iTrack;
-        dx = delta_x;
-        dz = delta_z;
+	if(!module) continue;
+	AliDebug(1,Form("\t\tTrack hit PHOS! Module: %d, (x,z)=(%.3f,%.3f)",module,xEMC,zEMC));
+	
+	if(emcClu->GetPHOSMod() != module) continue;
+	
+	// match track to EMC cluster
+	emcClu->GetLocalPosition(locClu);
+	
+	Float_t delta_x = xEMC - locClu.X();
+	Float_t delta_z = zEMC - locClu.Z();
+	dr = TMath::Sqrt(delta_x*delta_x + delta_z*delta_z);
+	AliDebug(1,Form("\tMatch iTrack=%d: (dx,dz)=(%.3f,%.3f)",iTrack,delta_x,delta_z));
+	
+	if(dr<minDistance) {
+	  trackindex = iTrack;
+	  minDistance = dr;
+	  dx = delta_x;
+	  dz = delta_z;
+	}
       }
+      
     }
-
-    trackindex = iClosestTrack;
-    if(trackindex <0) {
-      dx=999.;
-      dz=999.;
-    }
-
+    
+    if(trackindex>=0)
+      AliDebug(1,Form("\t\tBest match for (xClu,zClu,eClu)=(%.3f,%.3f,%.3f): iTrack=%d, dR=%.3f",
+		      locClu.X(),locClu.Z(),emcClu->GetEnergy(),
+		      trackindex,TMath::Sqrt(dx*dx+dz*dz)));	  
     return;
   }
   
