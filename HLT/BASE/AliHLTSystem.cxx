@@ -57,6 +57,7 @@ const char* AliHLTSystem::fgkHLTDefaultLibs[]= {
   //"libAliHLTPHOS.so",
   "libAliHLTMUON.so",
   //"libAliHLTTRD.so",
+  "libAliHLTITS.so",
   "libAliHLTTrigger.so",
   NULL
 };
