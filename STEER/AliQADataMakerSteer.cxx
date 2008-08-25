@@ -177,6 +177,7 @@ Bool_t AliQADataMakerSteer::DoIt(const AliQA::TASKINDEX_t taskIndex)
 		for (UInt_t iDet = 0; iDet < fgkNDetectors ; iDet++) {
 			if (IsSelected(AliQA::GetDetName(iDet))) {
 				AliQADataMaker * qadm = GetQADataMaker(iDet) ;
+				if (!qadm) continue; // This detector doesn't have any QA (for example, HLT)
 				if ( qadm->IsCycleDone() ) {
 					qadm->EndOfCycle(taskIndex) ;
 				}
@@ -262,7 +263,7 @@ Bool_t AliQADataMakerSteer::Finish(const AliQA::TASKINDEX_t taskIndex)
 	for (UInt_t iDet = 0; iDet < fgkNDetectors ; iDet++) {
 		if (IsSelected(AliQA::GetDetName(iDet))) {
 			AliQADataMaker * qadm = GetQADataMaker(iDet) ;
-			qadm->EndOfCycle(taskIndex) ; 
+			if (qadm) qadm->EndOfCycle(taskIndex) ; 
 		}
 	}
 	return kTRUE ; 
