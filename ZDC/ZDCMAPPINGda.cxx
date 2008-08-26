@@ -49,7 +49,7 @@ int main(int argc, char **argv) {
   int status = 0;
 
   /* log start of process */
-  printf("ZDC PEDESTAL program started\n");  
+  printf("\nZDC MAPPING program started\n");  
 
   /* check that we got some arguments = list of files */
   if (argc<2) {
