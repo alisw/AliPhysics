@@ -32,11 +32,25 @@ TObjArray* AliEMCALRecParam::fgkMaps =0; //ALTRO mappings
 // Author: Yuri Kharlov
 //-----------------------------------------------------------------------------
 
-AliEMCALRecParam::AliEMCALRecParam():
-  fClusteringThreshold(0.5),fW0(4.5),fMinECut(0.45), fUnfold(kFALSE), fLocMaxCut(0.03), //clustering
-  fTrkCutX(6.0), fTrkCutY(6.0), fTrkCutZ(6.0),  fTrkCutR(10.0),//track matching
-  fTrkCutAlphaMin(-50.0), fTrkCutAlphaMax(50.0), fTrkCutAngle(10000.0), //track matching
-  fHighLowGainFactor(16.0), fOrderParameter(2), fTau(2.35), fNoiseThreshold(3), fNPedSamples(5) //raw signal
+AliEMCALRecParam::AliEMCALRecParam() :
+  AliDetectorRecoParam(),
+  fClusteringThreshold(0.5),
+  fW0(4.5),
+  fMinECut(0.45), 
+  fUnfold(kFALSE), 
+  fLocMaxCut(0.03), //clustering
+  fTrkCutX(6.0), 
+  fTrkCutY(6.0), 
+  fTrkCutZ(6.0),  
+  fTrkCutR(10.0),
+  fTrkCutAlphaMin(-50.0), 
+  fTrkCutAlphaMax(50.0), 
+  fTrkCutAngle(10000.0), //track matching
+  fHighLowGainFactor(16.0), 
+  fOrderParameter(2), 
+  fTau(2.35), 
+  fNoiseThreshold(3), 
+  fNPedSamples(5) //raw signal
 {
   // default reco values
 
@@ -151,9 +165,94 @@ AliEMCALRecParam::AliEMCALRecParam():
 }
 
 //-----------------------------------------------------------------------------
+AliEMCALRecParam::AliEMCALRecParam(const AliEMCALRecParam& rp) :
+  AliDetectorRecoParam(),
+  fClusteringThreshold(rp.fClusteringThreshold),
+  fW0(rp.fW0),
+  fMinECut(rp.fMinECut), 
+  fUnfold(rp.fUnfold), 
+  fLocMaxCut(rp.fLocMaxCut), //clustering
+  fTrkCutX(rp.fTrkCutX), 
+  fTrkCutY(rp.fTrkCutY), 
+  fTrkCutZ(rp.fTrkCutZ),  
+  fTrkCutR(rp.fTrkCutR),
+  fTrkCutAlphaMin(rp.fTrkCutAlphaMin), 
+  fTrkCutAlphaMax(rp.fTrkCutAlphaMax), 
+  fTrkCutAngle(rp.fTrkCutAngle), //track matching
+  fHighLowGainFactor(rp.fHighLowGainFactor), 
+  fOrderParameter(rp.fOrderParameter), 
+  fTau(rp.fTau), 
+  fNoiseThreshold(rp.fNoiseThreshold), 
+  fNPedSamples(rp.fNPedSamples) //raw signal
+{
+  //copy constructor
+
+  //PID values
+  Int_t i, j;
+  for (i = 0; i < 6; i++) {
+    for (j = 0; j < 6; j++) {
+      fGamma[i][j] = rp.fGamma[i][j];
+      fHadron[i][j] = rp.fHadron[i][j];
+      fPiZero5to10[i][j] = rp.fPiZero5to10[i][j];
+      fPiZero10to60[i][j] = rp.fPiZero10to60[i][j];
+    }
+  }
+
+}
+
+//-----------------------------------------------------------------------------
+AliEMCALRecParam& AliEMCALRecParam::operator = (const AliEMCALRecParam& rp)
+{
+  //assignment operator
+
+  if(this != &rp) {
+    fClusteringThreshold = rp.fClusteringThreshold;
+    fW0 = rp.fW0;
+    fMinECut = rp.fMinECut;
+    fUnfold = rp.fUnfold;
+    fLocMaxCut = rp.fLocMaxCut; //clustering
+    fTrkCutX = rp.fTrkCutX;
+    fTrkCutY = rp.fTrkCutY;
+    fTrkCutZ = rp.fTrkCutZ;
+    fTrkCutR = rp.fTrkCutR;
+    fTrkCutAlphaMin = rp.fTrkCutAlphaMin;
+    fTrkCutAlphaMax = rp.fTrkCutAlphaMax;
+    fTrkCutAngle = rp.fTrkCutAngle; //track matching
+    fHighLowGainFactor = rp.fHighLowGainFactor; 
+    fOrderParameter = rp.fOrderParameter;
+    fTau = rp.fTau;
+    fNoiseThreshold = rp.fNoiseThreshold;
+    fNPedSamples = rp.fNPedSamples; //raw signal
+
+    //PID values
+    Int_t i, j;
+    for (i = 0; i < 6; i++) {
+      for (j = 0; j < 6; j++) {
+	fGamma[i][j] = rp.fGamma[i][j];
+	fHadron[i][j] = rp.fHadron[i][j];
+	fPiZero5to10[i][j] = rp.fPiZero5to10[i][j];
+	fPiZero10to60[i][j] = rp.fPiZero10to60[i][j];
+      }
+    }
+
+  }    
+  
+  return *this;
+
+}
+
+//-----------------------------------------------------------------------------
+AliEMCALRecParam* AliEMCALRecParam::GetDefaultParameters()
+{
+  //default parameters for the reconstruction
+  AliEMCALRecParam* params = new AliEMCALRecParam();
+  return params;
+
+}
+
+//-----------------------------------------------------------------------------
 void AliEMCALRecParam::Print(Option_t *) const
 {
-  printf("AliEMCALRecParam::Print()\n");
   // Print reconstruction parameters to stdout
   AliInfo(Form("Clusterization parameters :\n fClusteringThreshold=%.3f,\n fW0=%.3f,\n fMinECut=%.3f,\n fUnfold=%d,\n fLocMaxCut=%.3f \n",
 	       fClusteringThreshold,fW0,fMinECut,fUnfold,fLocMaxCut));
@@ -205,18 +304,17 @@ void AliEMCALRecParam::Print(Option_t *) const
 
 }
 
-//-----------------------------------------------------------------------------                           
+//-----------------------------------------------------------------------------
 const TObjArray* AliEMCALRecParam::GetMappings()
 {
-  //Returns array of AliAltroMappings for RCU0..RCUX.                                                     
-  //If not found, read it from OCDB.                                                                      
+  //Returns array of AliAltroMappings for RCU0..RCUX.
+  //If not found, read it from OCDB.                                           
 
-  //Quick check as follows:                                                                               
-  //  root [0]
-  //AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");                       
-  //  root [1] AliCDBManager::Instance()->SetRun(1);                                                      
-  //  root [2] TObjArray* maps = AliEMCALRecParam::GetMappings();                                      
-  //  root [3] maps->Print();                                                                             
+  //Quick check as follows:                                                   
+  //  root [0] AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT"
+  //  root [1] AliCDBManager::Instance()->SetRun(1);                             
+  //  root [2] TObjArray* maps = AliEMCALRecParam::GetMappings();                
+  //  root [3] maps->Print();                                                    
 
   if(fgkMaps) return fgkMaps;
 

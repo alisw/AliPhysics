@@ -17,14 +17,16 @@
 
 // --- ROOT system ---
 
-#include "TObject.h" 
+#include "AliDetectorRecoParam.h" 
 #include "AliLog.h"
 
-class AliEMCALRecParam : public TObject
+class AliEMCALRecParam : public AliDetectorRecoParam
 {
 public:
   
   AliEMCALRecParam() ;
+  AliEMCALRecParam(const AliEMCALRecParam& recParam);
+  AliEMCALRecParam& operator = (const AliEMCALRecParam& recParam);
   virtual ~AliEMCALRecParam() {}
  
   //Clustering (Unfolding : Cynthia)
@@ -84,6 +86,7 @@ public:
  
   virtual void Print(Option_t * option="") const ;
 
+  static AliEMCALRecParam* GetDefaultParameters();
   static const  TObjArray* GetMappings();
 
 private:
@@ -118,7 +121,7 @@ private:
 
   static TObjArray* fgkMaps;       // ALTRO mappings for RCU0..RCUX
 
-  ClassDef(AliEMCALRecParam,5)   // Reconstruction parameters
+  ClassDef(AliEMCALRecParam,6)   // Reconstruction parameters
 
 } ;
 
