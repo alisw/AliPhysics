@@ -13,6 +13,7 @@ const Double32_t nsigmavtx = 3. ;       //max track sigma to PVertex
 
 Bool_t AliCFRsnTask(
 		    const Bool_t useGrid = 1,
+		    const Bool_t readAOD = 0,
 		    const char * kTagXMLFile="wn.xml", // XML file containing tags
 		    )
 {
@@ -44,9 +45,23 @@ Bool_t AliCFRsnTask(
     analysisChain = tagAna->QueryTags(runCuts,lhcCuts,detCuts,eventCuts); 
   }
   else {// local data
-    analysisChain = new TChain("esdTree");
     //here put your input data path
-    analysisChain->Add("AliESDs.root");
+    if (readAOD) {
+      analysisChain = new TChain("aodTree");
+      //analysisChain->Add("AliAOD.root");
+      analysisChain->Add("/home/vernet/Data/LHC08b2/300000/001/AliAOD.root");
+      analysisChain->Add("/home/vernet/Data/LHC08b2/300000/002/AliAOD.root");
+      analysisChain->Add("/home/vernet/Data/LHC08b2/300000/003/AliAOD.root");
+      analysisChain->Add("/home/vernet/Data/LHC08b2/300000/004/AliAOD.root");
+    }
+    else {
+      analysisChain = new TChain("esdTree");
+      //analysisChain->Add("AliESDs.root");
+      analysisChain->Add("/home/vernet/Data/LHC08b2/300000/001/AliESDs.root");
+      analysisChain->Add("/home/vernet/Data/LHC08b2/300000/002/AliESDs.root");
+      analysisChain->Add("/home/vernet/Data/LHC08b2/300000/003/AliESDs.root");
+      analysisChain->Add("/home/vernet/Data/LHC08b2/300000/004/AliESDs.root");
+    }
   }
   
   
@@ -102,11 +117,15 @@ Bool_t AliCFRsnTask(
   recKineCuts->SetChargeRec(charge);
 
   AliCFPairQualityCuts *recQualityCuts = new AliCFPairQualityCuts("recQualityCuts","rec-level quality cuts");
-  recQualityCuts->SetMinNClusterTPC(minclustersTPC,minclustersTPC);
-  recQualityCuts->SetRequireITSRefit(kTRUE,kTRUE);
+  if (!readAOD) recQualityCuts->SetMinNClusterTPC(minclustersTPC,minclustersTPC);
+  recQualityCuts->SetStatus(AliESDtrack::kTPCrefit & AliESDtrack::kITSrefit, 
+			    AliESDtrack::kTPCrefit & AliESDtrack::kITSrefit) ;
+
+
 
   AliCFPairIsPrimaryCuts *recIsPrimaryCuts = new AliCFPairIsPrimaryCuts("recIsPrimaryCuts","rec-level isPrimary cuts");
-  recIsPrimaryCuts->SetMaxNSigmaToVertex(nsigmavtx,nsigmavtx);
+  if (readAOD) recIsPrimaryCuts->SetAODType(AliAODTrack::kPrimary,AliAODTrack::kPrimary);
+  else         recIsPrimaryCuts->SetMaxNSigmaToVertex(nsigmavtx,nsigmavtx);
 
   AliCFPairPidCut* cutPID = new AliCFPairPidCut("cutPID","ESD_PID") ;
   Double_t prior_pp[AliPID::kSPECIES] = {0.0244519,
@@ -125,6 +144,9 @@ Bool_t AliCFRsnTask(
   cutPID->SetPriors(prior_pbpb);
   cutPID->SetProbabilityCut(0.,0.);
   cutPID->SetDetectors("TPC ITS TOF TRD","TPC ITS TOF TRD");
+  if (readAOD) cutPID->SetAODmode(kTRUE);
+  else         cutPID->SetAODmode(kFALSE);
+  
   switch(PDG) {
   case  -313  : cutPID->SetParticleType(AliPID::kKaon  ,kTRUE,AliPID::kPion  ,kTRUE); break;
   case   313  : cutPID->SetParticleType(AliPID::kPion  ,kTRUE,AliPID::kKaon  ,kTRUE); break;
@@ -182,9 +204,13 @@ Bool_t AliCFRsnTask(
   else mgr->SetAnalysisType(AliAnalysisManager::kLocalAnalysis);
 
   AliMCEventHandler* mcHandler = new AliMCEventHandler();
-  AliESDInputHandler* esdHandler = new AliESDInputHandler();
   mgr->SetMCtruthEventHandler(mcHandler);
-  mgr->SetInputEventHandler(esdHandler);
+
+  AliInputEventHandler* dataHandler ;
+  if (readAOD) dataHandler = new AliAODInputHandler();
+  else         dataHandler = new AliESDInputHandler();
+  mgr->SetInputEventHandler(dataHandler);
+  
 
 
   // Create and connect containers for input/output

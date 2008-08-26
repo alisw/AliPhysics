@@ -1,3 +1,4 @@
+
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -33,7 +34,9 @@
 #include "AliLog.h"
 #include "AliRsnDaughter.h"
 #include "AliCFPair.h"
-#include "AliRsnParticle.h"
+#include "AliRsnMCInfo.h"
+#include "AliRsnPairParticle.h"
+#include "AliAODEvent.h"
 
 //__________________________________________________________________________
 AliCFRsnTask::AliCFRsnTask() :
@@ -111,9 +114,8 @@ void AliCFRsnTask::UserExec(Option_t *)
   //
   Info("UserExec","") ;
 
-  AliESDEvent* fESD = dynamic_cast<AliESDEvent*>(fInputEvent);
-  if (!fESD) {
-    Error("UserExec","NO ESD FOUND!");
+  if (!fInputEvent) {
+    Error("UserExec","NO EVENT FOUND!");
     return;
   }
 
@@ -121,6 +123,9 @@ void AliCFRsnTask::UserExec(Option_t *)
   fCFManager->SetEventInfo(fMCEvent);
 
   AliStack*   stack   = fMCEvent->Stack();
+
+  Bool_t isESDEvent = strcmp(fInputEvent->ClassName(),"AliESDEvent") == 0 ? kTRUE : kFALSE ;
+  Bool_t isAODEvent = strcmp(fInputEvent->ClassName(),"AliAODEvent") == 0 ? kTRUE : kFALSE ;
 
   // MC-event selection
   Double_t containerInput[2] ;
@@ -145,86 +150,96 @@ void AliCFRsnTask::UserExec(Option_t *)
 
 
   //Now go to rec level
-  Info("UserExec","Looping on ESD event");
-
-  //SET THE ESD AS EVENT INFO IN RECONSTRUCTION CUTS
-  TObjArray* fCutsReco = fCFManager->GetParticleCutsList(AliCFManager::kPartRecCuts);
-  TObjArray* fCutsPID = fCFManager->GetParticleCutsList(AliCFManager::kPartSelCuts);
-  TObjArrayIter iter1(fCutsReco);
-  TObjArrayIter iter2(fCutsPID);
-  AliCFCutBase *cut = 0;
-  while ( (cut = (AliCFCutBase*)iter1.Next()) ) {
-    cut->SetEvtInfo(fESD);
-  }
-  while ( (cut = (AliCFCutBase*)iter2.Next()) ) {
-    cut->SetEvtInfo(fESD);
-  }
-
+  Info("UserExec","Looping on %s",fInputEvent->ClassName());
+  
   // Loop on negative tracks
-  for (Int_t iTrack1 = 0; iTrack1<fESD->GetNumberOfTracks(); iTrack1++) {
-    AliESDtrack* esdTrack1 = fESD->GetTrack(iTrack1);
+  for (Int_t iTrack1 = 0; iTrack1<fInputEvent->GetNumberOfTracks(); iTrack1++) {
+    AliVParticle* track1 = fInputEvent->GetTrack(iTrack1);
     //track1 is negative
-    if (esdTrack1->Charge()>=0) continue;
-    Int_t esdLabel1 = esdTrack1->GetLabel();
-    if (esdLabel1<0) continue;
+    if (track1->Charge()>=0) continue;
+    Int_t label1 = track1->GetLabel();
+    if (label1<0) continue;
 
     //Loop on positive tracks
-    for (Int_t iTrack2 = 0; iTrack2<fESD->GetNumberOfTracks(); iTrack2++) {
-      AliESDtrack* esdTrack2 = fESD->GetTrack(iTrack2);
+    for (Int_t iTrack2 = 0; iTrack2<fInputEvent->GetNumberOfTracks(); iTrack2++) {
+      AliVParticle* track2 = fInputEvent->GetTrack(iTrack2);
       //track2 is positive
-      if (esdTrack2->Charge()<=0) continue;
-      Int_t esdLabel2 = esdTrack2->GetLabel();
-      if (esdLabel2<0) continue;
-	
-      //Create Resonance daughter objects
-      AliRsnDaughter* tmp1 = new AliRsnDaughter(esdTrack1);
-      AliRsnDaughter* tmp2 = new AliRsnDaughter(esdTrack2);
-      AliRsnDaughter track1(*tmp1);
-      AliRsnDaughter track2(*tmp2);
-      delete tmp1;
-      delete tmp2;
+      if (track2->Charge()<=0) continue;
+      Int_t label2 = track2->GetLabel();
+      if (label2<0) continue;
 
-      //Set MC information to resonance daughters
-      TParticle *part1 = stack->Particle(esdLabel1);
-      track1.InitParticle(part1);
-      track1.GetParticle()->SetPDG(part1->GetPdgCode());
+      //Create Resonance daughter objects
+      AliRsnDaughter* daughter1tmp = 0x0 ;
+      AliRsnDaughter* daughter2tmp = 0x0 ;
+      if (isESDEvent) {
+	daughter1tmp = new AliRsnDaughter((AliESDtrack*)track1) ;
+	daughter2tmp = new AliRsnDaughter((AliESDtrack*)track2) ;
+      }
+      else if (isAODEvent) {
+	daughter1tmp = new AliRsnDaughter((AliAODTrack*)track1) ;
+	daughter2tmp = new AliRsnDaughter((AliAODTrack*)track2) ;
+      }
+      else {
+	Error("UserExec","Error: input data file is not an ESD nor an AOD");
+	return;
+      }
+
+      AliRsnDaughter daughter1(*daughter1tmp);
+      AliRsnDaughter daughter2(*daughter2tmp);
+      delete daughter1tmp;
+      delete daughter2tmp;
+
+      AliCFPair pair(track1,track2); // This object is used for cuts 
+                                     // (to be replaced when AliRsnPairParticle 
+                                     // inherits from AliVParticle)
+
+      //Set MC PDG information to resonance daughters
+      TParticle *part1 = stack->Particle(label1);
+      daughter1.InitMCInfo(part1);
+      daughter1.GetMCInfo()->SetPDG(part1->GetPdgCode());
+      daughter1.SetM(part1->GetCalcMass()); // assign true mass
 
       Int_t mother1 = part1->GetFirstMother();
-      track1.GetParticle()->SetMother(mother1);
+      daughter1.GetMCInfo()->SetMother(mother1);
       if (mother1 >= 0) {
 	TParticle *mum = stack->Particle(mother1);
-	track1.GetParticle()->SetMotherPDG(mum->GetPdgCode());
+	daughter1.GetMCInfo()->SetMotherPDG(mum->GetPdgCode());
       }
-      
-      TParticle *part2 = stack->Particle(esdLabel2);
-      track2.InitParticle(part2);
-      track2.GetParticle()->SetPDG(part2->GetPdgCode());
+
+      TParticle *part2 = stack->Particle(label2);
+      daughter2.InitMCInfo(part2);
+      daughter2.GetMCInfo()->SetPDG(part2->GetPdgCode());
+      daughter2.SetM(part2->GetCalcMass()); // assign true mass
 
       Int_t mother2 = part2->GetFirstMother();
-      track2.GetParticle()->SetMother(mother2);
+      daughter2.GetMCInfo()->SetMother(mother2);
       if (mother2 >= 0) {
 	TParticle *mum = stack->Particle(mother2);
-	track2.GetParticle()->SetMotherPDG(mum->GetPdgCode());
+	daughter2.GetMCInfo()->SetMotherPDG(mum->GetPdgCode());
       }
 	
       //make a mother resonance from the 2 candidate daughters
-      AliRsnDaughter rsn = AliRsnDaughter::Sum(track1,track2) ;
-      AliCFPair pair(esdTrack1,esdTrack2); // This object is used for cuts (to be replaced)
+      AliRsnPairParticle rsn;
+      rsn.SetPair(&daughter1,&daughter2);
 
       //check if true resonance
-      if (rsn.GetParticle()->PDG() != fRsnPDG) continue;
+      if (!rsn.IsTruePair(fRsnPDG)) continue;
       if (!fCFManager->CheckParticleCuts(AliCFManager::kPartRecCuts,&pair)) continue;
 
       //check if associated MC resonance passes the cuts
-      Int_t motherLabel=rsn.Label();
+      Int_t motherLabel = rsn.GetDaughter(0)->GetMCInfo()->Mother() ;
       if (motherLabel<0) continue ;
+
       AliMCParticle* mcRsn = fMCEvent->GetTrack(motherLabel);
       if (!mcRsn) continue;
       if (!fCFManager->CheckParticleCuts(AliCFManager::kPartGenCuts,mcRsn)) continue; 
 
-      //fill the container
-      containerInput[0] = rsn.Pt() ;
-      containerInput[1] = GetRapidity(rsn.E(),rsn.Pz());
+      // fill the container
+      Double_t rsnEnergy = rsn.GetDaughter(0)->E()  + rsn.GetDaughter(1)->E()  ;
+      Double_t rsnPz     = rsn.GetDaughter(0)->Pz() + rsn.GetDaughter(1)->Pz() ;
+
+      containerInput[0] = rsn.GetPt() ;
+      containerInput[1] = GetRapidity(rsnEnergy,rsnPz);
       fCFManager->GetParticleContainer()->Fill(containerInput,kStepReconstructed) ;   
 
       if (!fCFManager->CheckParticleCuts(AliCFManager::kPartSelCuts,&pair)) continue ;
@@ -251,53 +266,67 @@ void AliCFRsnTask::Terminate(Option_t*)
   // the results graphically or save the results to file.
 
   Info("Terminate","");
+  AliAnalysisTaskSE::Terminate();
 
-  Double_t max1 = fCFManager->GetParticleContainer()->ShowProjection(0,0)->GetMaximum();
-  Double_t max2 = fCFManager->GetParticleContainer()->ShowProjection(1,0)->GetMaximum();
 
-  fCFManager->GetParticleContainer()->ShowProjection(0,0)->GetYaxis()->SetRangeUser(0,max1*1.2);
-  fCFManager->GetParticleContainer()->ShowProjection(0,1)->GetYaxis()->SetRangeUser(0,max1*1.2);
-  fCFManager->GetParticleContainer()->ShowProjection(0,2)->GetYaxis()->SetRangeUser(0,max1*1.2);
-  fCFManager->GetParticleContainer()->ShowProjection(0,3)->GetYaxis()->SetRangeUser(0,max1*1.2);
+  //draw some example plots....
 
-  fCFManager->GetParticleContainer()->ShowProjection(1,0)->GetYaxis()->SetRangeUser(0,max2*1.2);
-  fCFManager->GetParticleContainer()->ShowProjection(1,1)->GetYaxis()->SetRangeUser(0,max2*1.2);
-  fCFManager->GetParticleContainer()->ShowProjection(1,2)->GetYaxis()->SetRangeUser(0,max2*1.2);
-  fCFManager->GetParticleContainer()->ShowProjection(1,3)->GetYaxis()->SetRangeUser(0,max2*1.2);
+  AliCFContainer *cont= dynamic_cast<AliCFContainer*> (GetOutputData(2));
 
-  fCFManager->GetParticleContainer()->ShowProjection(0,0)->SetMarkerStyle(23) ;
-  fCFManager->GetParticleContainer()->ShowProjection(0,1)->SetMarkerStyle(24) ;
-  fCFManager->GetParticleContainer()->ShowProjection(0,2)->SetMarkerStyle(25) ;
-  fCFManager->GetParticleContainer()->ShowProjection(0,3)->SetMarkerStyle(26) ;
+  TH1D* h00 =   cont->ShowProjection(0,0) ;
+  TH1D* h01 =   cont->ShowProjection(0,1) ;
+  TH1D* h02 =   cont->ShowProjection(0,2) ;
+  TH1D* h03 =   cont->ShowProjection(0,3) ;
 
-  fCFManager->GetParticleContainer()->ShowProjection(1,0)->SetMarkerStyle(23) ;
-  fCFManager->GetParticleContainer()->ShowProjection(1,1)->SetMarkerStyle(24) ;
-  fCFManager->GetParticleContainer()->ShowProjection(1,2)->SetMarkerStyle(25) ;
-  fCFManager->GetParticleContainer()->ShowProjection(1,3)->SetMarkerStyle(26) ;
+  TH1D* h10 =   cont->ShowProjection(1,0) ;
+  TH1D* h11 =   cont->ShowProjection(1,1) ;
+  TH1D* h12 =   cont->ShowProjection(1,2) ;
+  TH1D* h13 =   cont->ShowProjection(1,3) ;
+
+  Double_t max1 = h00->GetMaximum();
+  Double_t max2 = h10->GetMaximum();
+
+  h00->GetYaxis()->SetRangeUser(0,max1*1.2);
+  h01->GetYaxis()->SetRangeUser(0,max1*1.2);
+  h02->GetYaxis()->SetRangeUser(0,max1*1.2);
+  h03->GetYaxis()->SetRangeUser(0,max1*1.2);
+
+  h10->GetYaxis()->SetRangeUser(0,max2*1.2);
+  h11->GetYaxis()->SetRangeUser(0,max2*1.2);
+  h12->GetYaxis()->SetRangeUser(0,max2*1.2);
+  h13->GetYaxis()->SetRangeUser(0,max2*1.2);
+
+  h00->SetMarkerStyle(23) ;
+  h01->SetMarkerStyle(24) ;
+  h02->SetMarkerStyle(25) ;
+  h03->SetMarkerStyle(26) ;
+
+  h10->SetMarkerStyle(23) ;
+  h11->SetMarkerStyle(24) ;
+  h12->SetMarkerStyle(25) ;
+  h13->SetMarkerStyle(26) ;
 
   TCanvas * c =new TCanvas("c","",1400,800);
   c->Divide(4,2);
 
   c->cd(1);
-  fCFManager->GetParticleContainer()->ShowProjection(0,0)->Draw("p");
+  h00->Draw("p");
   c->cd(2);
-  fCFManager->GetParticleContainer()->ShowProjection(0,1)->Draw("p");
+  h01->Draw("p");
   c->cd(3);
-  fCFManager->GetParticleContainer()->ShowProjection(0,2)->Draw("p");
+  h02->Draw("p");
   c->cd(4);
-  fCFManager->GetParticleContainer()->ShowProjection(0,3)->Draw("p");
+  h03->Draw("p");
   c->cd(5);
-  fCFManager->GetParticleContainer()->ShowProjection(1,0)->Draw("p");
+  h10->Draw("p");
   c->cd(6);
-  fCFManager->GetParticleContainer()->ShowProjection(1,1)->Draw("p");
+  h11->Draw("p");
   c->cd(7);
-  fCFManager->GetParticleContainer()->ShowProjection(1,2)->Draw("p");
+  h12->Draw("p");
   c->cd(8);
-  fCFManager->GetParticleContainer()->ShowProjection(1,3)->Draw("p");
+  h13->Draw("p");
 
   c->SaveAs("plots.eps");
-
-  delete fHistEventsProcessed ;
 }
 
 //___________________________________________________________________________

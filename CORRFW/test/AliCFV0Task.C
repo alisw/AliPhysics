@@ -14,6 +14,7 @@ const Int_t    chargeV0 = 0 ;
 
 Bool_t AliCFV0Task(
 		   const Bool_t useGrid = 1,
+		   const Bool_t readAOD = 0,
 		   const char * kTagXMLFile="wn.xml", // XML file containing tags
 		   )
 {
@@ -48,9 +49,15 @@ Bool_t AliCFV0Task(
     analysisChain = tagAna->QueryTags(runCuts,lhcCuts,detCuts,eventCuts); 
   }
   else {// local data
-    analysisChain = new TChain("esdTree");
     //here put your input data path
-    analysisChain->Add("AliESDs.root");
+    if (readAOD) {
+      analysisChain = new TChain("aodTree");
+      analysisChain->Add("AliAOD.root");
+    }
+    else {
+      analysisChain = new TChain("esdTree");
+      analysisChain->Add("AliESDs.root");
+    }
   }
   
   
@@ -105,7 +112,9 @@ Bool_t AliCFV0Task(
   recKineCuts->SetChargeRec(0);
 
   AliCFPairQualityCuts *recQualityCuts = new AliCFPairQualityCuts("recQualityCuts","V0 rec-level quality cuts");
-  recQualityCuts->SetMinNClusterTPC(minclustersTPC,minclustersTPC);
+  if (!readAOD) recQualityCuts->SetMinNClusterTPC(minclustersTPC,minclustersTPC);
+  recQualityCuts->SetStatus(AliESDtrack::kTPCrefit & AliESDtrack::kITSrefit, 
+			    AliESDtrack::kTPCrefit & AliESDtrack::kITSrefit) ;
 
   AliCFV0TopoCuts *recTopoCuts = new AliCFV0TopoCuts("recTopoCuts","V0 Topological Cuts");
   recTopoCuts->SetMaxDcaDaughters(0.1);
@@ -126,8 +135,10 @@ Bool_t AliCFV0Task(
 					   0.7152 ,
 					   0.0442,
 					   0.0733 };
-  cutPID->SetPriors(prior_pbpb);
+  cutPID->SetPriors(prior_pp);
   cutPID->SetDetectors("ITS TPC TRD","ITS TPC TRD");
+  if (readAOD) cutPID->SetAODmode(kTRUE);
+  else         cutPID->SetAODmode(kFALSE);
   cutPID->SetProbabilityCut(0,0);
   switch(TMath::Abs(PDG)) {
   case  310    : cutPID->SetParticleType(AliPID::kPion  , kTRUE, AliPID::kPion  , kTRUE); break;
@@ -170,7 +181,7 @@ Bool_t AliCFV0Task(
   // create the task
   AliCFV0Task *task = new AliCFV0Task("AliCFV0Task");
   task->SetCFManager(man); //here is set the CF manager
-  task->SetRebuildV0s(kTRUE);
+  if (!readAOD)      task->SetRebuildV0s(kTRUE);
   task->SetV0PDG(PDG);
 
   //SETUP THE ANALYSIS MANAGER TO READ INPUT CHAIN AND WRITE DESIRED OUTPUTS
@@ -182,10 +193,13 @@ Bool_t AliCFV0Task(
   else mgr->SetAnalysisType(AliAnalysisManager::kLocalAnalysis);
 
   AliMCEventHandler* mcHandler = new AliMCEventHandler();
-  AliESDInputHandler* esdHandler = new AliESDInputHandler();
   mgr->SetMCtruthEventHandler(mcHandler);
-  mgr->SetInputEventHandler(esdHandler);
 
+  AliInputEventHandler* dataHandler ;
+
+  if   (readAOD) dataHandler = new AliAODInputHandler();
+  else           dataHandler = new AliESDInputHandler();
+  mgr->SetInputEventHandler(dataHandler);
 
   // Create and connect containers for input/output
 
@@ -224,41 +238,13 @@ Bool_t AliCFV0Task(
 }
 
 void Load(Bool_t useGrid) {
-  //remove this file which can cause problems
-  if (!useGrid) 
-    gSystem->Exec("rm $ALICE_ROOT/ANALYSIS/AliAnalysisSelector_cxx.so");
-  
+
   //load the required aliroot libraries
   gSystem->Load("libANALYSIS") ;
   gSystem->Load("libANALYSISalice") ;
-  
-  gSystem->SetIncludePath("-I. -I$ALICE_ROOT/include -I$ROOTSYS/include -I$ALICE_ROOT/PWG2/RESONANCES -I$ALICE_ROOT/CORRFW");
+  gSystem->Load("libCORRFW.so") ;
 
-  if (!useGrid) {
-    //load local CF library
-    gSystem->Load("libCORRFW");
-  }
-  else {
-    //compile online the task class
-      gSystem->Exec("tar zxvf cf_classes.tgz");
-    gROOT->LoadMacro("./AliCFFrame.cxx+");
-    gROOT->LoadMacro("./AliCFVGrid.cxx+");
-    gROOT->LoadMacro("./AliCFGrid.cxx+");
-    gROOT->LoadMacro("./AliCFGridSparse.cxx+");
-    gROOT->LoadMacro("./AliCFContainer.cxx+");
-    gROOT->LoadMacro("./AliCFCutBase.cxx+");
-    gROOT->LoadMacro("./AliCFTrackKineCuts.cxx+");
-    gROOT->LoadMacro("./AliCFTrackQualityCuts.cxx+");
-    gROOT->LoadMacro("./AliCFParticleGenCuts.cxx+");
-    gROOT->LoadMacro("./AliCFAcceptanceCuts.cxx+");
-    gROOT->LoadMacro("./AliCFTrackCutPid.cxx+");
-    gROOT->LoadMacro("./AliCFManager.cxx+");
-    gSystem->Exec("tar zxvf cf_V0.tgz");
-    gROOT->LoadMacro("./AliCFPair.cxx+");
-    gROOT->LoadMacro("./AliCFPairAcceptanceCuts.cxx+");
-    gROOT->LoadMacro("./AliCFPairQualityCuts.cxx+");
-    gROOT->LoadMacro("./AliCFPairPidCut.cxx+");
-    gROOT->LoadMacro("./AliCFV0TopoCuts.cxx+");
-  }
+  //compile online the task class
+  gSystem->SetIncludePath("-I. -I$ALICE_ROOT/include -I$ROOTSYS/include");
   gROOT->LoadMacro("./AliCFV0Task.cxx+");
 }

@@ -41,8 +41,10 @@
 #include "AliV0vertexer.h"
 #include "AliCFPair.h"
 #include "AliESDEvent.h"
+#include "AliAODEvent.h"
 #include "TChain.h"
 #include "AliCFParticleGenCuts.h"
+#include "AliAODv0.h"
 
 //__________________________________________________________________________
 AliCFV0Task::AliCFV0Task() :
@@ -124,14 +126,20 @@ void AliCFV0Task::UserExec(Option_t *)
   //
   Info("UserExec","") ;
 
-  AliESDEvent* fESD = dynamic_cast<AliESDEvent*>(fInputEvent);
-  if (!fESD) {
-    Error("UserExec","NO ESD FOUND!");
+  if (!fInputEvent) {
+    Error("UserExec","NO EVENT FOUND!");
     return;
   }
 
   if (!fMCEvent) Error("UserExec","NO MC INFO FOUND!");
   fCFManager->SetEventInfo(fMCEvent);
+
+  Bool_t isESDEvent = strcmp(fInputEvent->ClassName(),"AliESDEvent") == 0 ? kTRUE : kFALSE ;
+  Bool_t isAODEvent = strcmp(fInputEvent->ClassName(),"AliAODEvent") == 0 ? kTRUE : kFALSE ;
+
+  AliESDEvent* fESD = dynamic_cast<AliESDEvent*>(fInputEvent);
+  AliAODEvent* fAOD = dynamic_cast<AliAODEvent*>(fInputEvent);
+  
 
   // MC-event selection
   Double_t containerInput[2] ;
@@ -156,23 +164,49 @@ void AliCFV0Task::UserExec(Option_t *)
 
 
   //Now go to rec level
-  Info("UserExec","Looping on ESD event");
+  Info("UserExec","Looping on %s",fInputEvent->ClassName());
+ 
+  //SET THE ESD AS EVENT INFO IN RECONSTRUCTION CUTS
+  TObjArray* fCutsReco = fCFManager->GetParticleCutsList(AliCFManager::kPartRecCuts);
+  TObjArrayIter iter1(fCutsReco);
+  AliCFCutBase *cut = 0;
+  while ( (cut = (AliCFCutBase*)iter1.Next()) ) {
+    cut->SetEvtInfo(fInputEvent);
+  }
 
-  if (fRebuildV0s) RebuildV0s(fESD) ;
-  Info("UserExec","There are %d V0s in event",fESD->GetNumberOfV0s());
-  for (Int_t iV0 = 0; iV0<fESD->GetNumberOfV0s(); iV0++) {
+  if (isESDEvent && fRebuildV0s) RebuildV0s(fESD) ;
 
-    AliESDv0* esdV0 = fESD->GetV0(iV0);
+  Info("UserExec","There are %d V0s in event",fInputEvent->GetNumberOfV0s());
+  
+  AliESDv0*  esdV0 = 0x0;
+  AliAODv0*  aodV0 = 0x0;
+  AliCFPair* pair  = 0x0;
+  Int_t      labMCV0 = 0;
 
-    //check if mother reconstructed V0 can be associated to a MC V0
-    Int_t labMCV0 = IsMcV0(esdV0) ;
-    if (labMCV0 <0) continue;
+  for (Int_t iV0 = 0; iV0<fInputEvent->GetNumberOfV0s(); iV0++) {
 
-    esdV0->ChangeMassHypothesis(fV0PDG); //important to do that before entering the cut check
-
-    AliCFPair pair(esdV0,fESD);
-    if (!fCFManager->CheckParticleCuts(AliCFManager::kPartRecCuts,&pair)) continue;
-
+    if (isESDEvent) {
+      esdV0 = fESD->GetV0(iV0);
+      //check if mother reconstructed V0 can be associated to a MC V0
+      labMCV0 = IsMcV0(esdV0);
+      if (labMCV0 <0) continue;
+      pair = new AliCFPair(esdV0,fESD);
+    }
+    else if (isAODEvent) {
+      aodV0 = fAOD->GetV0(iV0);
+      labMCV0 = IsMcV0(aodV0);
+      if (labMCV0 <0) continue;
+      pair = new AliCFPair(aodV0);
+    }
+    else {
+      Error("UserExec","Error: input data file is not an ESD nor an AOD");
+      return;
+    }
+    
+    pair->SetV0PDG(fV0PDG);
+    pair->SetLabel(labMCV0);
+    if (!fCFManager->CheckParticleCuts(AliCFManager::kPartRecCuts,pair)) continue;
+    
     //check if associated MC v0 passes the cuts
     AliMCParticle* mcV0 = fMCEvent->GetTrack(labMCV0);
     if (!mcV0) continue;
@@ -180,17 +214,28 @@ void AliCFV0Task::UserExec(Option_t *)
     if (!fCFManager->CheckParticleCuts(AliCFManager::kPartGenCuts,mcV0)) continue; 
     
     //fill the container
-    Double_t mom[3];
-    esdV0->GetPxPyPz(mom[0],mom[1],mom[2]);
-    Double_t pt2 = mom[0]*mom[0]+mom[1]*mom[1] ;
-    Double_t pt  = TMath::Sqrt(pt2);
-    Double_t energy  = TMath::Sqrt(pt2 + mom[2]*mom[2] + TMath::Power(TDatabasePDG::Instance()->GetParticle(fV0PDG)->Mass(),2));
-
+    Double_t pt, rapidity;
+    
+    if (isESDEvent) {
+      Double_t mom[3];
+      esdV0->GetPxPyPz(mom[0],mom[1],mom[2]);
+      Double_t pt2 = mom[0]*mom[0]+mom[1]*mom[1] ;
+      pt  = TMath::Sqrt(pt2);
+      Double_t energy  = TMath::Sqrt(pt2 + mom[2]*mom[2] + TMath::Power(TDatabasePDG::Instance()->GetParticle(fV0PDG)->Mass(),2));
+      rapidity = GetRapidity(energy,mom[2]) ;
+    }
+    else {
+      pt = aodV0->Pt();
+      rapidity = aodV0->Y(fV0PDG);
+    }
+    
     containerInput[0] = pt ;
-    containerInput[1] = GetRapidity(energy,mom[2]);
+    containerInput[1] = rapidity ;
     fCFManager->GetParticleContainer()->Fill(containerInput,kStepReconstructed) ;   
-    if (!fCFManager->CheckParticleCuts(AliCFManager::kPartSelCuts,&pair)) continue ;
+    if (!fCFManager->CheckParticleCuts(AliCFManager::kPartSelCuts,pair)) continue ;
     fCFManager->GetParticleContainer()->Fill(containerInput,kStepSelected);
+    
+    delete pair;
   }
   
   fHistEventsProcessed->Fill(0);
@@ -325,6 +370,10 @@ Int_t AliCFV0Task::GetV0Label(UInt_t lab1, UInt_t lab2) const {
 
 //___________________________________________________________________________
 Double_t AliCFV0Task::GetRapidity(Double_t energy, Double_t pz) {
+  //
+  // calculates rapidity, checking energy is larger than pz, otherwise returns 999.
+  //
+  
   if (energy == pz || energy == -pz) {
     printf("GetRapidity : ERROR : rapidity for 4-vector with E = Pz -- infinite result");
     return 999;
@@ -339,6 +388,11 @@ Double_t AliCFV0Task::GetRapidity(Double_t energy, Double_t pz) {
 
 //___________________________________________________________________________
 Int_t AliCFV0Task::IsMcV0(AliESDv0* v0) const {
+  //
+  // check if the passed V0 is associated to a MC one, 
+  //   and returns the corresponding geant label.
+  // returns -1 if the V0 is fake (i.e. label<0).
+  //
 
   AliESDEvent* fESD = dynamic_cast<AliESDEvent*>(fInputEvent);
 
@@ -352,6 +406,29 @@ Int_t AliCFV0Task::IsMcV0(AliESDv0* v0) const {
   Int_t nlab  = nTrack->GetLabel() ;
   Int_t plab  = pTrack->GetLabel() ;
   
+  if (nlab <0 || plab <0) return -1 ;
+
+  return GetV0Label((UInt_t)nlab,(UInt_t)plab) ;
+}
+
+//___________________________________________________________________________
+Int_t AliCFV0Task::IsMcV0(AliAODv0* v0) const {
+  //
+  // check if the passed V0 is associated to a MC one, 
+  //   and returns the corresponding geant label.
+  // returns -1 if the V0 is fake (i.e. label<0).
+  //
+
+  AliAODVertex * vtx = v0->GetSecondaryVtx();
+
+  AliAODTrack *nTrack = (AliAODTrack*)vtx->GetDaughter(1); //neg is filled after pos in AliAnalysisTaskStrange
+  AliAODTrack *pTrack = (AliAODTrack*)vtx->GetDaughter(0);
+  
+  if (!nTrack || !pTrack) return -1 ;
+
+  Int_t nlab  = nTrack->GetLabel() ;
+  Int_t plab  = pTrack->GetLabel() ;
+
   if (nlab <0 || plab <0) return -1 ;
 
   return GetV0Label((UInt_t)nlab,(UInt_t)plab) ;

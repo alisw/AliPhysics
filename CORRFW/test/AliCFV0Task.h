@@ -29,6 +29,7 @@ class AliMCEventHandler;
 class AliCFManager;
 class AliESDv0;
 class AliESDEvent;
+class AliAODv0;
 
 class AliCFV0Task : public AliAnalysisTaskSE {
   public:
@@ -58,6 +59,7 @@ class AliCFV0Task : public AliAnalysisTaskSE {
   void     SetRebuildV0s(Bool_t flag)       {fRebuildV0s = flag;}       // setter for V0 on-the-fly reconstruction
   void     SetV0PDG(Int_t code)             {fV0PDG = code; }           // defines the PDG code of searched V0's
   Int_t    IsMcV0(AliESDv0*) const ;           // checks if the AliESDv0 can be associated, returns mother label
+  Int_t    IsMcV0(AliAODv0*) const ;           // checks if the AliAODv0 can be associated, returns mother label
   Int_t    GetV0Label(UInt_t, UInt_t) const ;                // returns label of V0 given 2 daughter labels
   static   Double_t GetRapidity(Double_t, Double_t) ;  // returns the rapidity of the V0 (assuming PDG code)
 
@@ -67,7 +69,7 @@ class AliCFV0Task : public AliAnalysisTaskSE {
 
   Bool_t          fRebuildV0s;   //  flag for on-the-fly V0 reconstruction
   Int_t           fV0PDG;        //  PDG code of searched V0's
-  AliCFManager   *fCFManager  ;  // pointer to the CF manager
+  AliCFManager   *fCFManager  ;  //  pointer to the CF manager
 
   // Histograms
   //Number of events

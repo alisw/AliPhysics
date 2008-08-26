@@ -268,6 +268,6 @@ void Load() {
   gSystem->Load("libCORRFW.so") ;
 
   //compile online the task class
-  gSystem->SetIncludePath("-I. -I$ALICE_ROOT/include -I$ALICE_ROOT/TPC -I$ROOTSYS/include");
+  gSystem->SetIncludePath("-I. -I$ALICE_ROOT/include -I$ROOTSYS/include");
   gROOT->LoadMacro("./AliCFSingleTrackTask.cxx+");
 }
