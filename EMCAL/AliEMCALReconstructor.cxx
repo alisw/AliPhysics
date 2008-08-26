@@ -122,14 +122,6 @@ void AliEMCALReconstructor::InitRecParam() const
   if(!fgkRecParam) {
     fgkRecParam = dynamic_cast<const AliEMCALRecParam*>(AliReconstructor::GetRecoParam(6));
   }
-
-  /*
- if (!fgkRecParam  && (AliCDBManager::Instance()->IsDefaultStorageSet())) {
-    AliCDBEntry *entry = (AliCDBEntry*) 
-      AliCDBManager::Instance()->Get("EMCAL/Config/RecParam");
-    if (entry) fgkRecParam =  (AliEMCALRecParam*) entry->GetObject();
-  }
-  */
   
   if(!fgkRecParam){
     AliWarning("The Reconstruction parameters for EMCAL nonitialized - Used default one");
