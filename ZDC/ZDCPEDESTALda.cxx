@@ -57,7 +57,7 @@ int main(int argc, char **argv) {
   int status = 0;
 
   /* log start of process */
-  printf("ZDC PEDESTAL program started\n");  
+  printf("\n ZDC PEDESTAL program started\n");  
 
   /* check that we got some arguments = list of files */
   if (argc<2) {
@@ -362,8 +362,7 @@ int main(int argc, char **argv) {
   fileShuttle = fopen(fName,"w");
   //
   Float_t MeanPed[2*kNChannels], MeanPedWidth[2*kNChannels], 
-   	MeanPedOOT[2*kNChannels], MeanPedWidthOOT[2*kNChannels],
-   	CorrCoeff0[2*kNChannels], CorrCoeff1[2*kNChannels];
+   	MeanPedOOT[2*kNChannels], MeanPedWidthOOT[2*kNChannels];
   // --- In-time pedestals
   TF1 *ADCfunchg[kNChannels];
   for(Int_t i=0; i<kNChannels; i++){
@@ -402,8 +401,15 @@ int main(int argc, char **argv) {
      fprintf(fileShuttle,"\t%d\t%f\t%f\n",i+kNChannels,MeanPedOOT[i+kNChannels],MeanPedWidthOOT[i+kNChannels]);
      //printf("\t MeanPedOOT[%d] = %f\n",i+kNChannels, MeanPedOOT[i+kNChannels]);
   }
-  //
+  
+  // ***************************************************
+  //   Unless we have a narrow correlation to fit we
+  //    don't fit and store in-time vs. out-of-time
+  //    histograms -> mean pedstal subtracted!!!!!!
+  // ***************************************************
   // --- Correlations
+/*
+  Float_t CorrCoeff0[2*kNChannels], CorrCoeff1[2*kNChannels];
   TProfile *hPedCorrProfhg[kNChannels], *hPedCorrProflg[kNChannels];
   TF1 *ffunchg[kNChannels], *ffunclg[kNChannels];
   char namhist4[50];
@@ -430,6 +436,7 @@ int main(int argc, char **argv) {
      //printf("\t CorrCoeff0[%d] = %f, CorrCoeff1[%d] = %f\n",
      //		i+kNChannels, CorrCoeff0[i+kNChannels], i+kNChannels, CorrCoeff1[i+kNChannels]);
   }    
+*/
   //						       
   fclose(fileShuttle);
   //
@@ -455,15 +462,23 @@ int main(int argc, char **argv) {
   daqDA_progressReport(90);
 
   /* store the result files on FES */
+  // [1] File with mapping
   status = daqDA_FES_storeFile(mapfName,"ZDCCHMAPPING_data");
   if(status){
-    printf("Failed to export file : %d\n",status);
+    printf("Failed to export file %d to DAQ FES\n",status);
     return -1;
   }
-  //
+  // [2] File with pedestal data
   status = daqDA_FES_storeFile(fName,"ZDCPEDESTAL_data");
   if(status){
-    printf("Failed to export file : %d\n",status);
+    printf("Failed to export file %d to DAQ FES\n",status);
+    return -1;
+  }
+  
+  /* store the result files on DB */
+  status = daqDA_DB_storeFile(fName,"ZDCPEDESTAL_data");  
+  if(status){
+    printf("Failed to export file %d to DAQ DB\n",status);
     return -1;
   }
 
