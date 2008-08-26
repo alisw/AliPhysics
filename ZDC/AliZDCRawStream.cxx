@@ -361,7 +361,7 @@ Bool_t AliZDCRawStream::Next()
 	    // Protection manually set since it returns:
 	    // RawData48 mod. 3 ch. 2048 signal 515
 	    // to be checked with Pietro!!!!!!!!!!!!!!!!!!!!!!!
-	    AliWarning("\t AliZDCRawStream -> ERROR: no. of cabled channels > 48!!!\n");
+	    //AliWarning("\t AliZDCRawStream -> ERROR: no. of cabled channels > 48!!!\n");
 	    return kFALSE;
 	  }
 	}

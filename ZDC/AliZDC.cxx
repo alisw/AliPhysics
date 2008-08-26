@@ -144,11 +144,6 @@ void AliZDC::AddHit(Int_t track, Int_t *vol, Float_t *hits)
 {
   //
   // 		Add a ZDC hit to the hit list.
-  // -> We make use of 2 array of hits:
-  // [1]  fHits (the usual one) that contains hits for each PRIMARY
-  // [2]  fStHits that contains hits for each EVENT and is used to
-  //	  obtain digits at the end of each event
-  //
   
   static Float_t primKinEn=0., xImpact=0., yImpact=0., sFlag=0.;
   static Int_t   pcPDGcode;
