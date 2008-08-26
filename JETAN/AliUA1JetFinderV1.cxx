@@ -166,6 +166,7 @@ void AliUA1JetFinderV1::FindJets()
   Int_t nselectj = 0;
 //  printf("Found %d jets \n", nj);
   
+  TRefArray *refs = fReader->GetReferences();
   for(Int_t kj=0; kj<nj; kj++){
      if ((etaJet[kj] > (header->GetJetEtaMax())) ||
           (etaJet[kj] < (header->GetJetEtaMin())) ||
@@ -177,13 +178,19 @@ void AliUA1JetFinderV1::FindJets()
       en = TMath::Sqrt(px * px + py * py + pz * pz);
       fJets->AddJet(px, py, pz, en);
       AliAODJet jet(px, py, pz, en);
+
+     for(Int_t jpart = 0; jpart < nIn; jpart++) // loop for all particles in array
+         if (injet[jpart] == kj && fReader->GetCutFlag(jpart) == 1)
+		   jet.AddTrack(refs->At(jpart));  // check if the particle belongs to the jet and add the ref
+      
       //jet.Print("");
       
       AddJet(jet);
       
       idxjets[nselectj] = kj;
       nselectj++;
-  }
+  } //end particle loop
+
   //add signal percentage and total signal  in AliJets for analysis tool
   Float_t* percentage  = new Float_t[nselectj];
   Int_t* ncells      = new Int_t[nselectj];
