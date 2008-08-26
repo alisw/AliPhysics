@@ -22,6 +22,7 @@ void TestEMCALDigit()
 
   //AliEMCALGeometry * geom = AliEMCALGeometry::GetInstance();
   //AliEMCALGeometry *geom = dynamic_cast<AliEMCAL*>(rl->GetAliRun()->GetDetector("EMCAL"))->GetGeometry();
+  TGeoManager::Import("geometry.root");
 
   AliRun * alirun   = rl->GetAliRun(); // Needed to get Geometry
   AliEMCAL * emcal  = (AliEMCAL*)alirun->GetDetector("EMCAL");
@@ -29,6 +30,8 @@ void TestEMCALDigit()
   
   if (geom==0)
     cout<<"Did not get geometry from EMCALLoader"<<endl;
+
+  //  geom->PrintGeometry();
 
   //Load Digits
   rl->LoadDigits("EMCAL");
@@ -89,5 +92,7 @@ void TestEMCALDigit()
       }
       
     }
+
+
 }
 
