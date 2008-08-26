@@ -28,9 +28,13 @@ class AliITSDDLRawData:public TObject{
   // This method generates the files with the Silicon pixel detector data
   void SetVerbose(Int_t Verbose){fVerbose=Verbose;}
   // To set the verbose level
+  void SetUseCompressedSDDFormat(Bool_t opt=kFALSE){
+    fUseCompressedSDDFormat=opt;
+  }
  private: 
   void  GetDigitsSPD(TClonesArray *ITSdigits, Int_t mod,Int_t ddl,UInt_t *buf);
   //This method formats and stores in buf all the digits of a SPD module
+  void  GetDigitsSDDCompressed(TClonesArray *ITSdigits, Int_t mod,UInt_t *buf);
   void  GetDigitsSDD(TClonesArray *ITSdigits, Int_t mod,Int_t modR,Int_t ddl,UInt_t *buf);
   //This method formats and stores in buf all the digits of a SDD module
   void  GetDigitsSSD(TClonesArray *ITSdigits, Int_t mod,Int_t modR,Int_t ddl,UInt_t *buf);
@@ -43,7 +47,9 @@ class AliITSDDLRawData:public TObject{
   Int_t fVerbose;            //Verbose level (0:no msg, 1:msg, 2:digits in txt files)
   Int_t fIndex;             //number of 32 words to be stored into the output file
   Int_t fHalfStaveModule;     //first or second half of an Half Stave module
-  ClassDef(AliITSDDLRawData,1)
+  Bool_t fUseCompressedSDDFormat;  // flag for use the compressed SDD raw data format
+
+  ClassDef(AliITSDDLRawData,2)
 };
     
 #endif

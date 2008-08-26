@@ -44,7 +44,8 @@ ClassImp(AliITSDDLRawData)
 AliITSDDLRawData::AliITSDDLRawData():
 fVerbose(0),
 fIndex(-1),
-fHalfStaveModule(-1){
+fHalfStaveModule(-1),
+fUseCompressedSDDFormat(0){
   //Default constructor
 
 }
@@ -55,7 +56,8 @@ AliITSDDLRawData::AliITSDDLRawData(const AliITSDDLRawData &source) :
     TObject(source),
 fVerbose(source.fVerbose),
 fIndex(source.fIndex),
-fHalfStaveModule(source.fHalfStaveModule){
+fHalfStaveModule(source.fHalfStaveModule),
+fUseCompressedSDDFormat(source.fUseCompressedSDDFormat){
   //Copy Constructor
 }
 
@@ -66,6 +68,7 @@ AliITSDDLRawData& AliITSDDLRawData::operator=(const AliITSDDLRawData &source){
   this->fIndex=source.fIndex;
   this->fHalfStaveModule=source.fHalfStaveModule;
   this->fVerbose=source.fVerbose;
+  this->fUseCompressedSDDFormat=source.fUseCompressedSDDFormat;
   return *this;
 }
 
@@ -124,6 +127,41 @@ void AliITSDDLRawData::GetDigitsSSD(TClonesArray *ITSdigits,Int_t mod,Int_t modR
 ////////////////////////////////////////////////////////////////////////////////////////
 //Silicon Drift Detector
 //
+
+void AliITSDDLRawData::GetDigitsSDDCompressed(TClonesArray *ITSdigits, Int_t mod, UInt_t *buf){ 
+//This method packs the SDD digits in the compressed format (32 bit per digit)
+// see AliITSRawStreamSDDCompressed for details on the dta format
+
+  UInt_t dataWord=0;
+  Int_t ndigits = ITSdigits->GetEntries();
+  AliITSdigit *digs;
+  if(ndigits){
+    for (Int_t digit=0;digit<ndigits;digit++) {
+      digs = (AliITSdigit*)ITSdigits->UncheckedAt(digit);
+      Int_t iz=digs->GetCoord1();  // Anode
+      Int_t ix=digs->GetCoord2();  // Time
+      Int_t is=digs->GetSignal();  // ADC Signal - 10 bit
+      dataWord=mod<<27;
+      Int_t sid=0;
+      if(iz>=256){
+	sid=1;
+	iz-=256;
+      }
+      dataWord+=sid<<26;
+      dataWord+=iz<<18;
+      dataWord+=ix<<10;
+      dataWord+=is;
+      fIndex++;
+      buf[fIndex]=dataWord;
+    }
+  }
+  UInt_t finalWord=15<<28;
+  finalWord+=mod;
+  fIndex++;
+  buf[fIndex]=finalWord;  
+}
+
+//______________________________________________________________________
 
 void AliITSDDLRawData::GetDigitsSDD(TClonesArray *ITSdigits,Int_t mod,Int_t modR,Int_t ddl,UInt_t *buf){  
   //This method packs the SDD digits in a proper 32 bits structure
@@ -606,8 +644,10 @@ Int_t AliITSDDLRawData::RawDataSDD(TBranch* branch, AliITSDDLModuleMapSDD* ddlsd
 
 
     //first 1 "dummy" word to be skipped
-    retcode = AliBitPacking::PackWord(0xFFFFFFFF,skippedword,0,31);
-    outfile->WriteBuffer((char*)(&skippedword),sizeof(skippedword));
+    if(!fUseCompressedSDDFormat){
+      retcode = AliBitPacking::PackWord(0xFFFFFFFF,skippedword,0,31);
+      outfile->WriteBuffer((char*)(&skippedword),sizeof(skippedword));
+    }
 
     //Loops over Modules of a particular DDL
     for (Int_t mod=0; mod<AliITSRawStreamSDD::kModulesPerDDL; mod++){
@@ -619,17 +659,22 @@ Int_t AliITSDDLRawData::RawDataSDD(TBranch* branch, AliITSDDLModuleMapSDD* ddlsd
 	//For each Module, buf contains the array of data words in Binary format	  
 	//fIndex gives the number of 32 bits words in the buffer for each module
 	//	cout<<"MODULE NUMBER:"<<mapSDD[i][mod]<<endl;
-	GetDigitsSDD(digits,mod,moduleNumber,i,buf);
-	outfile->WriteBuffer((char *)buf,((fIndex+1)*sizeof(UInt_t)));
-	for(Int_t iw=0;iw<3;iw++) outfile->WriteBuffer((char*)(&carlosFooterWord),sizeof(carlosFooterWord));
+	if(fUseCompressedSDDFormat){
+	  GetDigitsSDDCompressed(digits,mod,buf);
+	  outfile->WriteBuffer((char *)buf,((fIndex+1)*sizeof(UInt_t)));
+	}else{
+	  GetDigitsSDD(digits,mod,moduleNumber,i,buf);
+	  outfile->WriteBuffer((char *)buf,((fIndex+1)*sizeof(UInt_t)));
+	  for(Int_t iw=0;iw<3;iw++) outfile->WriteBuffer((char*)(&carlosFooterWord),sizeof(carlosFooterWord));
+	}
 	fIndex=-1;
       }//end if
     }//end for
     // 12 words with FIFO footers (=4 FIFO x 3 3F1F1F1F words per DDL)
-    for(Int_t iw=0;iw<12;iw++) outfile->WriteBuffer((char*)(&fifoFooterWord),sizeof(fifoFooterWord));
-   
-    outfile->WriteBuffer((char*)(&jitterWord),sizeof(jitterWord));      
-    
+    if(!fUseCompressedSDDFormat){
+      for(Int_t iw=0;iw<12;iw++) outfile->WriteBuffer((char*)(&fifoFooterWord),sizeof(fifoFooterWord));
+      outfile->WriteBuffer((char*)(&jitterWord),sizeof(jitterWord));      
+    }
     //Write REAL DATA HEADER
     UInt_t currentFilePosition=outfile->Tellp();
     outfile->Seekp(dataHeaderPosition);
