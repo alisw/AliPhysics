@@ -12,6 +12,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #include "TObject.h"
+#include "AliTOFCableLengthMap.h"
 
 class TBranch;
 class TClonesArray;
@@ -77,6 +78,8 @@ class AliTOFDDLRawData:public TObject {
   TClonesArray *fTOFdigitArray;   //Pointer to the TOF digits
 
   AliTOFRawStream *fTOFrawStream; //Pointer to the AliTOFRawStream class
+
+  AliTOFCableLengthMap *fTOFCableLengthMap; // Pointer to the map of Amphenol cable length
 
   ClassDef(AliTOFDDLRawData,2)
 

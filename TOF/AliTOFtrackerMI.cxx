@@ -577,6 +577,14 @@ void AliTOFtrackerMI::MatchTracksMI(Bool_t mLastStep){
     t->SetTOFInfo(info);
     t->SetTOFsignal(tof2);
     t->SetTOFcluster(cgold->GetIndex());  
+
+    AliDebug(2, Form("%7i     %7i     %10i     %10i  %10i  %10i      %7i",
+		     i,
+		     fnmatch,
+		     TMath::Abs(trackTOFin->GetLabel()),
+		     tlab[0], tlab[1], tlab[2],
+		     igold)); // AdC
+
     AliTOFtrack *trackTOFout = new AliTOFtrack(*t); 
     trackTOFout->PropagateTo(379.);
     t->UpdateTrackParams(trackTOFout,AliESDtrack::kTOFout);    

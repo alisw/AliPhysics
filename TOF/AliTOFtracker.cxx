@@ -577,6 +577,14 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
 
 
     AliTOFcluster *c=fClusters[idclus];
+
+    AliDebug(2, Form("%7i     %7i     %10i     %10i  %10i  %10i      %7i",
+		     iseed,
+		     fnmatch,
+		     TMath::Abs(trackTOFin->GetLabel()),
+		     c->GetLabel(0), c->GetLabel(1), c->GetLabel(2),
+		     idclus)); // AdC
+
     c->Use(); 
 
     // Track length correction for matching Step 2 

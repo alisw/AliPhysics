@@ -442,6 +442,15 @@ void AliTOFtrackerV1::MatchTracks( ){
     }
 
     fnmatch++;
+
+    AliDebug(2, Form("%7i     %7i     %10i     %10i  %10i  %10i",
+		     iseed,
+		     fnmatch,
+		     TMath::Abs(trackTOFin->GetLabel()),
+		     bestCluster->GetLabel(0), 
+		     bestCluster->GetLabel(1), 
+		     bestCluster->GetLabel(2))); // AdC
+
     bestCluster->Use(); 
     if (
 	(bestCluster->GetLabel(0)==TMath::Abs(trackTOFin->GetLabel()))

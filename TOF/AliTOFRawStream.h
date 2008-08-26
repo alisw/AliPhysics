@@ -16,6 +16,7 @@
 //#include "AliTOFHitData.h"
 #include "AliTOFHitDataBuffer.h"
 #include "AliTOFDecoder.h"
+#include "AliTOFCableLengthMap.h"
 
 class AliTOFHitData;
 
@@ -528,6 +529,12 @@ class AliTOFRawStream: public TObject {
   Int_t   fLocalEventCounterLTM;//adc
   Int_t  *fLocalEventCounterTRM;//adc
   Int_t **fLocalEventCounterChain;//adc
+
+  AliTOFCableLengthMap * fCableLengthMap;
+
+  UInt_t fEventID; // event ID
+
+  static const Int_t fgkddlBCshift[72]; //
 
   ClassDef(AliTOFRawStream, 3)  // class for reading TOF raw digits
 };

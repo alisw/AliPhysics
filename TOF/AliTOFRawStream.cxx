@@ -101,10 +101,35 @@ Revision 0.01  2005/07/22 A. De Caro
 #include "AliTOFrawData.h"
 #include "AliTOFRawMap.h"
 #include "AliTOFRawStream.h"
+//#include "AliTOFCableLengthMap.h"
 
 #include "AliTOFHitData.h"
 
+#include "AliRawEventHeaderBase.h"
+
 ClassImp(AliTOFRawStream)
+
+const Int_t AliTOFRawStream::fgkddlBCshift[72] = 
+{
+  2, 2, -1, -1,
+  2, 3,  0,  0,
+  2, 2,  0,  0,
+  2, 2,  0,  0,
+  2, 2,  0,  0,
+  2, 2,  0,  0,
+  2, 2,  0,  0,
+  2, 2,  0,  0,
+  2, 2,  0,  0,
+  2, 2,  0,  0,
+  2, 2, -1, -1,
+  2, 2, -1, -1,
+  2, 2, -2, -2,
+  2, 2, -2, -2,
+  2, 2, -2, -2,
+  2, 2, -1, -1,
+  2, 2, -1, -1,
+  2, 2, -1, -1
+};
 
 
 //_____________________________________________________________________________
@@ -141,7 +166,9 @@ AliTOFRawStream::AliTOFRawStream(AliRawReader* rawReader):
   fLocalEventCounterDRM(-1),
   fLocalEventCounterLTM(-1),
   fLocalEventCounterTRM(0x0),
-  fLocalEventCounterChain(0x0)
+  fLocalEventCounterChain(0x0),
+  fCableLengthMap(0x0),
+  fEventID(0)
 {
   //
   // create an object to read TOF raw digits
@@ -167,6 +194,16 @@ AliTOFRawStream::AliTOFRawStream(AliRawReader* rawReader):
       fLocalEventCounterChain[j][k] = -1;//adc
     }//adc
   }//adc
+
+  fCableLengthMap = new AliTOFCableLengthMap();
+
+  const AliRawEventHeaderBase * eventHeader = fRawReader->GetEventHeader();
+  //UInt_t run = rawReader->GetRunNumber();
+  const UInt_t *id = eventHeader->GetP("Id");
+  fEventID = ((id)[1]&0x00000fff); //bunch crossing
+  //UInt_t orbit=((((id)[0]<<20)&0xf00000)|(((id)[1]>>12)&0xfffff)); //orbit number
+  //UInt_t period=(((id)[0]>>4)&0x0fffffff); //period number
+  //UInt_t type=eventHeader->Get("Type"); //this is 7 in physics events
 
 }
 
@@ -204,7 +241,9 @@ AliTOFRawStream::AliTOFRawStream():
   fLocalEventCounterDRM(-1),
   fLocalEventCounterLTM(-1),
   fLocalEventCounterTRM(0x0),
-  fLocalEventCounterChain(0x0)
+  fLocalEventCounterChain(0x0),
+  fCableLengthMap(0x0),
+  fEventID(0)
 {
   //
   // default ctr
@@ -226,6 +265,8 @@ AliTOFRawStream::AliTOFRawStream():
       fLocalEventCounterChain[j][k] = -1;//adc
     }//adc
   }//adc
+
+  fCableLengthMap = new AliTOFCableLengthMap();
 
 }
 
@@ -264,7 +305,9 @@ AliTOFRawStream::AliTOFRawStream(const AliTOFRawStream& stream) :
   fLocalEventCounterDRM(-1),
   fLocalEventCounterLTM(-1),
   fLocalEventCounterTRM(0x0),
-  fLocalEventCounterChain(0x0)
+  fLocalEventCounterChain(0x0),
+  fCableLengthMap(0x0),
+  fEventID(0)
 {
   //
   // copy constructor
@@ -320,6 +363,10 @@ AliTOFRawStream::AliTOFRawStream(const AliTOFRawStream& stream) :
       fLocalEventCounterChain[j][k] = stream.fLocalEventCounterChain[j][k];//adc
     }//adc
   }//adc
+
+  fCableLengthMap = stream.fCableLengthMap;
+
+  fEventID = stream.fEventID;
 
 }
 
@@ -380,6 +427,10 @@ AliTOFRawStream& AliTOFRawStream::operator = (const AliTOFRawStream& stream)
     }//adc
   }//adc
 
+  fCableLengthMap = stream.fCableLengthMap;
+
+  fEventID = stream.fEventID;
+
   return *this;
 
 }
@@ -402,9 +453,10 @@ AliTOFRawStream::~AliTOFRawStream()
   delete fTOFrawData;
 
   delete [] fLocalEventCounterTRM;
-  for (Int_t ii=0; ii<13; ii++) 
-	  delete [] fLocalEventCounterChain[ii];
-  delete [] fLocalEventCounterChain;
+  for (Int_t ii=0; ii<2; ii++) 
+    delete [] fLocalEventCounterChain[ii];
+
+  delete fCableLengthMap;
 
 }
 
@@ -710,24 +762,52 @@ Bool_t AliTOFRawStream::Next()
 
       case 0: // packing ok, digit time and TOT
 	fToT  = GetField(data,TRM_TOT_WIDTH_MASK, TRM_TOT_WIDTH_POSITION);
-	fTime = GetField(data,TRM_DIGIT_TIME_MASK,TRM_DIGIT_TIME_POSITION);
+	fTime = GetField(data,TRM_DIGIT_TIME_MASK,TRM_DIGIT_TIME_POSITION)
+	  -
+	  fCableLengthMap->GetCableTimeShiftBin(fDDL, fTRM, fTRMchain, fTDC)
+	  /*+
+	  (Int_t)(fgkddlBCshift[fDDL]*25.*1000./AliTOFGeometry::TdcBinWidth())
+	  +
+	  (Int_t)((fLocalEventCounterChain[fTRM][fTRMchain]-fEventID)*25.*1000./AliTOFGeometry::TdcBinWidth())*/
+	  ;
 	break;
 
       case 1: // leading edge digit, long digit time, no TOT
 	//fToT  = -1;
 	//fTime  = -1;
-	fLeadingEdge = GetField(data,TRM_LONG_DIGIT_TIME_MASK,TRM_LONG_DIGIT_TIME_POSITION);
+	fLeadingEdge = GetField(data,TRM_LONG_DIGIT_TIME_MASK,TRM_LONG_DIGIT_TIME_POSITION)
+	  -
+	  fCableLengthMap->GetCableTimeShiftBin(fDDL, fTRM, fTRMchain, fTDC)
+	  /*+
+	  (Int_t)(fgkddlBCshift[fDDL]*25.*1000./AliTOFGeometry::TdcBinWidth())
+	  +
+	  (Int_t)((fLocalEventCounterChain[fTRM][fTRMchain]-fEventID)*25.*1000./AliTOFGeometry::TdcBinWidth())*/
+	  ;
 	break;
 
       case 2: // trailing edge digit, long digit time, no TOT
 	//fToT  = -1;
 	//fTime  = -1;
-	fTrailingEdge = GetField(data,TRM_LONG_DIGIT_TIME_MASK,TRM_LONG_DIGIT_TIME_POSITION);
+	fTrailingEdge = GetField(data,TRM_LONG_DIGIT_TIME_MASK,TRM_LONG_DIGIT_TIME_POSITION)
+	  -
+	  fCableLengthMap->GetCableTimeShiftBin(fDDL, fTRM, fTRMchain, fTDC)
+	  /*+
+	  (Int_t)(fgkddlBCshift[fDDL]*25.*1000./AliTOFGeometry::TdcBinWidth())
+	  +
+	  (Int_t)((fLocalEventCounterChain[fTRM][fTRMchain]-fEventID)*25.*1000./AliTOFGeometry::TdcBinWidth())*/
+	  ;
 	break;
 
       case 3: // TOT overflow
 	fToT  = GetField(data,TRM_TOT_WIDTH_MASK, TRM_TOT_WIDTH_POSITION);
-	fTime = GetField(data,TRM_DIGIT_TIME_MASK,TRM_DIGIT_TIME_POSITION);
+	fTime = GetField(data,TRM_DIGIT_TIME_MASK,TRM_DIGIT_TIME_POSITION)
+	  -
+	  fCableLengthMap->GetCableTimeShiftBin(fDDL, fTRM, fTRMchain, fTDC)
+	  /*+
+	  (Int_t)(fgkddlBCshift[fDDL]*25.*1000./AliTOFGeometry::TdcBinWidth())
+	  +
+	  (Int_t)((fLocalEventCounterChain[fTRM][fTRMchain]-fEventID)*25.*1000./AliTOFGeometry::TdcBinWidth())*/
+	  ;
 	break;
 
       } // end switch PS bits inside TRM chains
@@ -1384,7 +1464,9 @@ AliTOFRawStream::LoadRawDataBuffers(Int_t indexDDL, Int_t verbose)
     Int_t   hitTimeBin = hitData->GetTimeBin();
     Int_t   hitTOTBin = hitData->GetTOTBin();
     
-    Int_t hitLeading = hitData->GetTimeBin();//-1; // adc
+    Int_t hitLeading = hitData->GetTimeBin()
+      -
+      fCableLengthMap->GetCableTimeShiftBin(indexDDL, hitSlotID, hitChain, hitTDC);//-1; // adc
     Int_t hitTrailing = -1;
     Int_t hitError = -1;
     

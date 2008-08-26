@@ -80,13 +80,14 @@ Revision 0.01  2004/6/11 A.De Caro, S.B.Sellitto, R.Silvestri
 #include "AliLog.h"
 //#include "AliRawDataHeader.h"
 #include "AliRawDataHeaderSim.h"
+#include "AliFstream.h"
 
 #include "AliTOFDDLRawData.h"
 #include "AliTOFDigitMap.h"
 #include "AliTOFdigit.h"
 #include "AliTOFGeometry.h"
 #include "AliTOFRawStream.h"
-#include "AliFstream.h"
+//#include "AliTOFCableLengthMap.h"
 
 extern TRandom *gRandom;
 
@@ -96,12 +97,13 @@ ClassImp(AliTOFDDLRawData)
 AliTOFDDLRawData::AliTOFDDLRawData():
   fVerbose(0),
   fIndex(-1),
-  fPackedAcquisition(kTRUE),
+  fPackedAcquisition(kFALSE),
   fFakeOrphaneProduction(kFALSE),
   fMatchingWindow(8192),
   fTOFdigitMap(new AliTOFDigitMap()),
   fTOFdigitArray(0x0),
-  fTOFrawStream(new AliTOFRawStream())
+  fTOFrawStream(new AliTOFRawStream()),
+  fTOFCableLengthMap(new AliTOFCableLengthMap())
 {
   //Default constructor
 }
@@ -110,12 +112,13 @@ AliTOFDDLRawData::AliTOFDDLRawData(const AliTOFDDLRawData &source) :
   TObject(source),
   fVerbose(0),
   fIndex(-1),
-  fPackedAcquisition(kTRUE),
+  fPackedAcquisition(kFALSE),
   fFakeOrphaneProduction(kFALSE),
   fMatchingWindow(8192),
   fTOFdigitMap(new AliTOFDigitMap()),
   fTOFdigitArray(0x0),
-  fTOFrawStream(new AliTOFRawStream())
+  fTOFrawStream(new AliTOFRawStream()),
+  fTOFCableLengthMap(new AliTOFCableLengthMap())
  {
   //Copy Constructor
   this->fIndex=source.fIndex;
@@ -126,6 +129,7 @@ AliTOFDDLRawData::AliTOFDDLRawData(const AliTOFDDLRawData &source) :
   this->fTOFdigitMap=source.fTOFdigitMap;
   this->fTOFdigitArray=source.fTOFdigitArray;
   this->fTOFrawStream=source.fTOFrawStream;
+  this->fTOFCableLengthMap=source.fTOFCableLengthMap;
   return;
 }
 
@@ -140,6 +144,7 @@ AliTOFDDLRawData& AliTOFDDLRawData::operator=(const AliTOFDDLRawData &source) {
   this->fTOFdigitMap=source.fTOFdigitMap;
   this->fTOFdigitArray=source.fTOFdigitArray;
   this->fTOFrawStream=source.fTOFrawStream;
+  this->fTOFCableLengthMap=source.fTOFCableLengthMap;
   return *this;
 }
 
@@ -148,6 +153,7 @@ AliTOFDDLRawData::~AliTOFDDLRawData()
 {
   delete fTOFdigitMap;
   delete fTOFrawStream;
+  delete fTOFCableLengthMap;
 }
 //----------------------------------------------------------------------------
 Int_t AliTOFDDLRawData::RawDataTOF(TBranch* branch)
@@ -1047,9 +1053,11 @@ void AliTOFDDLRawData::MakeTDCdigits(Int_t nDDL, Int_t nTRM, Int_t iChain,
 	    digs->GetPadx()  !=volume[3] ||
 	    digs->GetPadz()  !=volume[4]) AliWarning(" --- ERROR --- ");
 
-	timeOfFlight = (Int_t)(digs->GetTdc());
+	timeOfFlight = (Int_t)(digs->GetTdc())
+	  +
+	  fTOFCableLengthMap->GetCableTimeShiftBin(nDDL, nTRM, iChain, nTDC);
 
-	if (timeOfFlight>=fMatchingWindow) continue;
+	if (timeOfFlight>=fMatchingWindow+1000) continue; // adc
 
 	//numberOfMeasuresPerChannel++;
 
