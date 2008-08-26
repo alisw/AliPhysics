@@ -121,8 +121,7 @@ Int_t ShowITSRecPoints(Int_t nevfordisp=0){
       branch = ITSloader->TreeR()->GetBranch("ITSRecPoints");
       if(branch)branch->SetAddress(&ITSrec);
     }
-    Int_t nparticles = rl->GetHeader()->GetNtrack();
-    cout<<"Event #"<<iev<<"   #Particles="<<nparticles<<endl;
+    if(iev%100==0) printf("Event #%d\n",iev);
 
 
     Int_t ipt=0;
