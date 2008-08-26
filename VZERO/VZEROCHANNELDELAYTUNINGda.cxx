@@ -60,16 +60,16 @@ int main(int argc, char **argv) {
                     "RIO",
                     "TStreamerInfo()");
   int status;
-  status = daqDA_DB_getFile("V00da_results","./V0_Ped_Width_Gain.dat");
+  status = daqDA_DB_getFile("V00da_results","./V0_Pedestals.dat");
   if (status) {
-      printf("Failed to get Pedestal file (V0_Ped_Width_Gain.dat) from DAQ DB, status=%d\n", status);
+      printf("Failed to get Pedestal file (V0_Pedestals.dat) from DAQ DB, status=%d\n", status);
       return -1;   
   }
   
   Float_t MeanPed[128], SigPed[128], fdump;
   
   /* open the pedestal file and retrieve pedestal mean and sigma */
-  FILE *fpPed = fopen("V0_Ped_Width_Gain.dat","r");
+  FILE *fpPed = fopen("V0_Pedestals.dat","r");
   for(int i=0;i<128;i++){
       fscanf(fpPed,"%f %f %f %f \n",&MeanPed[i],&SigPed[i],&fdump,&fdump);
 //      printf("%.3f %.3f \n",MeanPed[i],SigPed[i]);
@@ -95,15 +95,15 @@ int main(int argc, char **argv) {
   printf("Number of events skipped = %d ; Number of sigmas for threshold cut = %f\n",kNbEventSkipped,kSigmaCut);
 //______________________________________________________________________________
 
-  Int_t BBFlag[64];
-  Int_t BGFlag[64];
-  Int_t ChargeEoI = 0;
+  Int_t  BBFlag[64];
+  Int_t  BGFlag[64];
+  Int_t  ChargeEoI  = 0;
   Bool_t Integrator = 0;
   Int_t NHit[64];
   for(Int_t i=0; i<64; i++) {
       BBFlag[i] = 0;
       BGFlag[i] = 0;
-      NHit[i] = 0;
+      NHit[i]   = 0;
   } 
       
   /* log start of process */
@@ -186,14 +186,22 @@ int main(int argc, char **argv) {
 	     rawStream->Next();	
 	     if(nevents_physics > kNbEventSkipped){
 		for(Int_t i=0; i<64; i++) {
-	            ChargeEoI = rawStream->GetADC(i);
-		    Integrator = rawStream->GetIntegratorFlag(i,10);
+	            //ChargeEoI= rawStream->GetADC(i); takes EoI as central clock
+		    // Look for the maximum in the LHC clock train instead of central clock 10
+                    ChargeEoI    = 0;
+                    Int_t iClock = 0;
+                    for(size_t iEvent=0; iEvent<21; iEvent++){
+                         if(rawStream->GetPedestal(i,iEvent)>ChargeEoI) 
+	                    {ChargeEoI= rawStream->GetPedestal(i,iEvent);
+	                    iClock    = iEvent;}
+                    }   		    
+		    Integrator = rawStream->GetIntegratorFlag(i,iClock);
 		    Float_t Threshold = MeanPed[i + 64 * Integrator] + kSigmaCut * SigPed[i + 64 * Integrator];
 
 		    if((float)ChargeEoI>Threshold) {
 			NHit[i]+=1;
-	        	if(rawStream->GetBBFlag(i,10)) BBFlag[i]+=1;       
-			if(rawStream->GetBGFlag(i,10)) BGFlag[i]+=1; 
+	        	if(rawStream->GetBBFlag(i,iClock)) BBFlag[i]+=1;       
+			if(rawStream->GetBGFlag(i,iClock)) BGFlag[i]+=1; 
 		    }		 
           	}    
 	     }
