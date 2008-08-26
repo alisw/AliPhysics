@@ -60,7 +60,7 @@
 
 ClassImp(AliEMCALReconstructor) 
 
-AliEMCALRecParam* AliEMCALReconstructor::fgkRecParam = 0;  // EMCAL rec. parameters
+const AliEMCALRecParam* AliEMCALReconstructor::fgkRecParam = 0;  // EMCAL rec. parameters
 AliEMCALRawUtils* AliEMCALReconstructor::fgRawUtils = 0;   // EMCAL raw utilities class
 AliEMCALClusterizer* AliEMCALReconstructor::fgClusterizer = 0;   // EMCAL clusterizer class
 TClonesArray*     AliEMCALReconstructor::fgDigitsArr = 0;  // shoud read just once at event
@@ -119,16 +119,23 @@ void AliEMCALReconstructor::InitRecParam() const
   // Check if the instance of AliEMCALRecParam exists, 
   // if not, get it from OCDB if available, otherwise create a default one
 
+  if(!fgkRecParam) {
+    fgkRecParam = dynamic_cast<const AliEMCALRecParam*>(AliReconstructor::GetRecoParam(6));
+  }
+
+  /*
  if (!fgkRecParam  && (AliCDBManager::Instance()->IsDefaultStorageSet())) {
     AliCDBEntry *entry = (AliCDBEntry*) 
       AliCDBManager::Instance()->Get("EMCAL/Config/RecParam");
     if (entry) fgkRecParam =  (AliEMCALRecParam*) entry->GetObject();
   }
+  */
   
   if(!fgkRecParam){
     AliWarning("The Reconstruction parameters for EMCAL nonitialized - Used default one");
-    fgkRecParam = new AliEMCALRecParam;
+    fgkRecParam = new AliEMCALRecParam();
   }
+
 }
 
 //____________________________________________________________________________

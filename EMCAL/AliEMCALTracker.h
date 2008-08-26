@@ -32,7 +32,6 @@ class AliESDCaloCluster;
 class AliEMCALTrack;
 class AliEMCALRecPoint;
 class AliEMCALGeometry;
-class AliEMCALRecParam;
 
 class AliEMCALTracker : public AliTracker 
 {
@@ -152,9 +151,8 @@ private:
 	TList      *fMatches;         //! collection of matches between tracks and clusters
 	
 	AliEMCALGeometry *fGeom;      //! EMCAL geometry
-	static AliEMCALRecParam*   fgkRecParam; // track-matching parameters for EMCAL
 	
-	ClassDef(AliEMCALTracker, 2)  // EMCAL "tracker"
+	ClassDef(AliEMCALTracker, 3)  // EMCAL "tracker"
 };
 
 #endif

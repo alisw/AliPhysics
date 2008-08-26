@@ -82,12 +82,12 @@ private:
   AliEMCALGeometry         *fGeom;           // pointer to the EMCAL geometry
 
   static AliEMCALClusterizer* fgClusterizer; // clusterizer
-  static AliEMCALRecParam*   fgkRecParam; // reconstruction parameters for EMCAL
+  static const AliEMCALRecParam*   fgkRecParam; // reconstruction parameters for EMCAL
   static AliEMCALRawUtils*   fgRawUtils;  // raw utilities class -
 					  // only need one per reco
   static TClonesArray*       fgDigitsArr; // Array with EMCAL digits
 
-  ClassDef(AliEMCALReconstructor,5)  // Reconstruction algorithm class (Base Class)
+  ClassDef(AliEMCALReconstructor,6)  // Reconstruction algorithm class (Base Class)
 
 }; 
 

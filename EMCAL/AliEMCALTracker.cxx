@@ -58,8 +58,6 @@
 
 ClassImp(AliEMCALTracker)
 
-AliEMCALRecParam* AliEMCALTracker::fgkRecParam = 0;  // EMCAL rec. parameters
-
 //
 //------------------------------------------------------------------------------
 //
@@ -152,26 +150,18 @@ void AliEMCALTracker::InitParameters()
 	//
 	
   // Check if the instance of AliEMCALRecParam exists, 
-  // if not, get it from OCDB if available, otherwise create a default one
-  
-  if (!fgkRecParam  && (AliCDBManager::Instance()->IsDefaultStorageSet())) {
-    AliCDBEntry *entry = (AliCDBEntry*) 
-      AliCDBManager::Instance()->Get("EMCAL/Config/RecParam");
-    if (entry) fgkRecParam =  (AliEMCALRecParam*) entry->GetObject();
+  const AliEMCALRecParam* recParam = AliEMCALReconstructor::GetRecParam();
+  if(!recParam){
+    AliFatal("Reconstruction parameters for EMCAL not set!");
   }
   
-  if(!fgkRecParam){
-    AliWarning("The Track Matching parameters for EMCAL nonitialized - Used default one");
-    fgkRecParam = new AliEMCALRecParam;
-  }
-  
-  fCutX =  fgkRecParam->GetTrkCutX();
-  fCutY =  fgkRecParam->GetTrkCutY();
-  fCutZ =  fgkRecParam->GetTrkCutZ();
-  fMaxDist =  fgkRecParam->GetTrkCutR();
-  fCutAngle =  fgkRecParam->GetTrkCutAngle();
-  fCutAlphaMin =  fgkRecParam->GetTrkCutAlphaMin();
-  fCutAlphaMax =  fgkRecParam->GetTrkCutAlphaMax();
+  fCutX =  recParam->GetTrkCutX();
+  fCutY =  recParam->GetTrkCutY();
+  fCutZ =  recParam->GetTrkCutZ();
+  fMaxDist =  recParam->GetTrkCutR();
+  fCutAngle =  recParam->GetTrkCutAngle();
+  fCutAlphaMin =  recParam->GetTrkCutAlphaMin();
+  fCutAlphaMax =  recParam->GetTrkCutAlphaMax();
   
 }
 //

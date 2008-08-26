@@ -58,7 +58,6 @@ ClassImp(AliEMCALLoader)
   
 const TString AliEMCALLoader::fgkECARecPointsBranchName("EMCALECARP");//Name for branch with ECA Reconstructed Points
 AliEMCALCalibData* AliEMCALLoader::fgCalibData = 0; //calibation data
-AliEMCALRecParam * AliEMCALLoader::fgRecParam  = 0; //reconstruction parameters
 
 //____________________________________________________________________________ 
 AliEMCALLoader::AliEMCALLoader()
@@ -166,24 +165,6 @@ AliEMCALCalibData* AliEMCALLoader::CalibData()
   
 }
 
-//____________________________________________________________________________ 
-AliEMCALRecParam* AliEMCALLoader::RecParam()
-{ 
-  // Check if the instance of AliEMCALRecParam exists, if not, create it if 
-  // the OCDB is available, and finally return it.
-
-  if(!fgRecParam && (AliCDBManager::Instance()->IsDefaultStorageSet())) {
-    AliCDBEntry *entry = (AliCDBEntry*) 
-      AliCDBManager::Instance()->Get("EMCAL/Config/RecParam/");
-    if (entry) fgRecParam =  (AliEMCALRecParam*) entry->GetObject();
-  }
-  
-  if(!fgRecParam)
-    AliWarning("Recostruction parameters not found in CDB!");
-  
-  return fgRecParam;
-  
-}
 
 //____________________________________________________________________________ 
 Int_t AliEMCALLoader::CalibrateRaw(Double_t energy, Int_t module, 
