@@ -177,7 +177,7 @@ AliTRDtrackV1::AliTRDtrackV1(AliTRDseedV1 *trklts, const Double_t p[5], const Do
     fTrackletIndex[iplane] = 0xffff;
 		if(!trklts[iplane].IsOK()) fTracklet[iplane] = 0x0;
     else{ 
-      fTracklet[iplane] = new AliTRDseedV1(trklts[iplane]);
+      fTracklet[iplane] = &trklts[iplane];
       ncls += fTracklet[iplane]->GetN();
     }
 	}
@@ -194,16 +194,14 @@ AliTRDtrackV1::~AliTRDtrackV1()
 {
   //AliInfo("");
   //printf("I-AliTRDtrackV1::~AliTRDtrackV1() : Owner[%s]\n", TestBit(kOwner)?"YES":"NO");
-  if(fBackupTrack) {
-    delete fBackupTrack;
-  }
+
+  if(fBackupTrack) delete fBackupTrack;
   fBackupTrack = 0x0;
 
-  if(TestBit(kOwner)){
-    for(Int_t ip=0; ip<kNplane; ip++){
-      if(fTracklet[ip]) delete fTracklet[ip];
-      fTracklet[ip] = 0x0;
-    }
+  for(Int_t ip=0; ip<kNplane; ip++){
+    if(TestBit(kOwner) && fTracklet[ip]) delete fTracklet[ip];
+    fTracklet[ip] = 0x0;
+    fTrackletIndex[ip] = 0xffff;
   }
 }
 	
@@ -332,14 +330,15 @@ Int_t  AliTRDtrackV1::GetClusterIndex(Int_t id) const
   Int_t n = 0;
   for(Int_t ip=0; ip<kNplane; ip++){
     if(!fTracklet[ip]) continue;
-    if(n+fTracklet[ip]->GetN() < id){ 
+    if(n+fTracklet[ip]->GetN() <= id){ 
       n+=fTracklet[ip]->GetN();
       continue;
     }
-    for(Int_t ic=34; ic>=0; ic--){
-      if(!fTracklet[ip]->GetClusters(ic)) continue;
-      n++;
-      if(n<id) continue;
+    AliTRDcluster *c = 0x0;
+    for(Int_t ic=AliTRDseed::knTimebins-1; ic>=0; ic--){
+      if(!(c = fTracklet[ip]->GetClusters(ic))) continue;
+
+      if(n<id){n++; continue;}
       return fTracklet[ip]->GetIndexes(ic);
     }
   }
@@ -589,9 +588,7 @@ void AliTRDtrackV1::SetTracklet(AliTRDseedV1 *trklt, Int_t index)
   // Set the tracklets
   //
   Int_t plane = trklt->GetPlane();
-  if(fTrackletIndex[plane]==0xffff && fTracklet[plane]){ 
-    delete fTracklet[plane];
-  }
+
   fTracklet[plane]      = trklt;
   fTrackletIndex[plane] = index;
 }

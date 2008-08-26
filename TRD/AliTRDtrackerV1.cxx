@@ -287,7 +287,8 @@ Int_t AliTRDtrackerV1::PropagateBack(AliESDEvent *event)
     //track.SetSeedLabel(lbl);
 
     // Make backup and mark entrance in the TRD
-    seed->UpdateTrackParams(&track, AliESDtrack::kTRDbackup | AliESDtrack::kTRDin); 
+    seed->UpdateTrackParams(&track, AliESDtrack::kTRDin);
+    seed->UpdateTrackParams(&track, AliESDtrack::kTRDbackup);
     Float_t p4          = track.GetC();
     expectedClr = FollowBackProlongation(track);
 
@@ -325,11 +326,12 @@ Int_t AliTRDtrackerV1::PropagateBack(AliESDEvent *event)
         //track.CookdEdxTimBin(seed->GetID());
         track.CookLabel(1. - fgkLabelFraction);
         if(track.GetBackupTrack()) UseClusters(track.GetBackupTrack());
-        
 
         // Sign only gold tracks
         if (track.GetChi2() / track.GetNumberOfClusters() < 4) {
-          if ((seed->GetKinkIndex(0)      ==   0) && (track.Pt() <  1.5)) UseClusters(&track);
+          if ((seed->GetKinkIndex(0)      ==   0) && (track.Pt() <  1.5)){
+            //UseClusters(&track);
+          }
         }
         Bool_t isGold = kFALSE;
   
@@ -657,7 +659,7 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
       
         break;
       }
-      ptrTracklet->UseClusters();
+      //ptrTracklet->UseClusters();
     }
     if(!ptrTracklet->IsOK()){
       if(x < 1.) continue; //temporary
@@ -2078,6 +2080,7 @@ Int_t AliTRDtrackerV1::Clusters2TracksStack(AliTRDtrackingChamber **stack, TClon
     AliWarning("Fail to build a TRD Track.");
     continue;
   }
+
   //AliInfo("End of MakeTrack()");
   AliESDtrack *esdTrack = new ((*esdTrackList)[ntracks0++]) AliESDtrack();
   esdTrack->UpdateTrackParams(track, AliESDtrack::kTRDout);
