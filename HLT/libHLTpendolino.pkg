@@ -5,6 +5,7 @@ CLASS_HDRS:=  	AliHLTPredictionProcessorInterface.h \
 		AliHLTPendolino.h \
 		AliHLTPendolinoLoggerOStream.h \
 		AliHLTPredictionProcessorDummy.h \
+		AliHLTPendolinoLogger.h \
 		AliHLTPendolinoLoggerDump.h \
 		HLT/AliHLTPredicProcTempMonitor.h \
 		HLT/AliHLTPredictionProcessorHLT.h \
@@ -15,8 +16,7 @@ CLASS_HDRS:=  	AliHLTPredictionProcessorInterface.h \
 
 MODULE_SRCS:= 	$(CLASS_HDRS:.h=.cxx)
 
-MODULE_HDRS:= 	$(CLASS_HDRS) \
-		AliHLTPendolinoLogger.h
+MODULE_HDRS:= 	$(CLASS_HDRS)
 
 MODULE_DHDR:= 		
 

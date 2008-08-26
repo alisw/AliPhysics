@@ -33,12 +33,12 @@ class AliHLTPendolinoLogger : public TObject {
 		/**
 		 * Constructor for AliHLTPendolinoLogger
 		 */
-		AliHLTPendolinoLogger() {};
+		AliHLTPendolinoLogger();
 
 		/**
 		 * Destructor for AliHLTPendolinoLogger
 		 */
-		virtual ~AliHLTPendolinoLogger() {};
+		virtual ~AliHLTPendolinoLogger();
 
 		/**
 		 * logging function for the Pendolino. Pure virtual, is implemented in 
