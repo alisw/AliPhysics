@@ -2605,6 +2605,8 @@ AliTRDtrackV1* AliTRDtrackerV1::MakeTrack(AliTRDseedV1 *seeds, Double_t *params)
 
   AliTRDtrackV1 *ptrTrack = SetTrack(&track);
   ptrTrack->CookLabel(.9);
+  if(fReconstructor->IsHLT()) return ptrTrack;
+  
   // computes PID for track
   ptrTrack->CookPID();
   // update calibration references using this track
