@@ -62,7 +62,7 @@ AliMUONTriggerCrateConfig::AliMUONTriggerCrateConfig(TRootIOCtor* ioCtor)
     fMode(0),
     fCoinc(0),
     fId(0),
-    fLocalBoard()
+    fLocalBoard(ioCtor)
 {
 /// Standard constructor for Shuttle + DA
 }

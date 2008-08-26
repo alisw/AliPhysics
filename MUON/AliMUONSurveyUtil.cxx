@@ -679,7 +679,7 @@ void AliMUONSurveyUtil::SetAlignmentResolution(const TClonesArray* misAlignArray
 
   AliAlignObjMatrix *alignMat = 0x0;
 
-  Int_t modId = (chId<4)? chId : 4+(chId-4)*2;   
+//  Int_t modId = (chId<4)? chId : 4+(chId-4)*2;   
   TString chName1;
   TString chName2;
   if (chId<4){

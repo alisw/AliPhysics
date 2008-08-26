@@ -77,6 +77,7 @@ AliMUONTriggerGUIbdmap::AliMUONTriggerGUIbdmap(const TGWindow *p, const TGWindow
     fNStripX(0),
     fNStripY(0),
     fBoards(0),
+    fCalibrationData(0x0),
     fCrateManager(0)
 {
   /// frame constructor
