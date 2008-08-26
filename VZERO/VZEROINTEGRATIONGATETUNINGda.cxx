@@ -62,16 +62,16 @@ int main(int argc, char **argv) {
                     "TStreamerInfo()");
 
   int status;
-  status = daqDA_DB_getFile("V00da_results","./V0_Ped_Width_Gain.dat");
+  status = daqDA_DB_getFile("V00da_results","./V0_Pedestals.dat");
   if (status) {
-      printf("Failed to get Pedestal file (V0_Ped_Width_Gain.dat) from DAQ DB, status=%d\n", status);
+      printf("Failed to get Pedestal file (V0_Pedestals.dat) from DAQ DB, status=%d\n", status);
       return -1;   
   }
   
   Float_t MeanPed[128], SigPed[128], fdump;
   
   /* open the pedestal file and retrieve pedestal mean and sigma */
-  FILE *fpPed = fopen("V0_Ped_Width_Gain.dat","r");
+  FILE *fpPed = fopen("V0_Pedestals.dat","r");
   for(int i=0;i<128;i++){
       fscanf(fpPed,"%f %f %f %f \n",&MeanPed[i],&SigPed[i],&fdump,&fdump);
 //      printf("%.3f %.3f \n",MeanPed[i],SigPed[i]);
@@ -184,8 +184,16 @@ int main(int argc, char **argv) {
 	     AliVZERORawStream* rawStream  = new AliVZERORawStream(rawReader); 
 	     rawStream->Next();	
 	     for(Int_t i=0; i<64; i++) {
-	         Integrator = rawStream->GetIntegratorFlag(i,10);
-	         ChargeEoI  = (float)rawStream->GetADC(i) - MeanPed[i + 64*Integrator];
+	         // Look for the maximum in the LHC clock train instead of central clock 10
+                 ChargeEoI     = 0.0;
+                 Int_t iClock  =   0;
+                 for(size_t iEvent=0; iEvent<21; iEvent++){
+                     if((float)rawStream->GetPedestal(i,iEvent)>ChargeEoI) 
+	                {ChargeEoI = (float)rawStream->GetPedestal(i,iEvent);
+	                iClock     = iEvent;}
+                 }   	     
+	         Integrator = rawStream->GetIntegratorFlag(i,iClock);
+	         ChargeEoI  =  ChargeEoI - MeanPed[i + 64*Integrator];
 		 Float_t Threshold = kSigmaCut * SigPed[i + 64*Integrator];
 
 	         if(ChargeEoI  > Threshold) {	        		   
