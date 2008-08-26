@@ -110,16 +110,19 @@ void AliMUONAlignment::Init(Int_t nGlobal,  /* number of global paramers */
   /// Initialization of AliMillepede. Fix parameters, define constraints ...
   fMillepede->InitMille(nGlobal,nLocal,nStdDev,fResCut,fResCutInitial);
 
-  Bool_t bStOnOff[5] = {kTRUE,kTRUE,kTRUE,kTRUE,kTRUE};
-  Bool_t bSpecLROnOff[2] = {kTRUE,kTRUE};
+//  Bool_t bStOnOff[5] = {kTRUE,kTRUE,kTRUE,kTRUE,kTRUE};
+//  Bool_t bChOnOff[10] = {kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE};
+//  Bool_t bSpecLROnOff[2] = {kTRUE,kTRUE};
 
-  AllowVariations(bStOnOff);
+//   AllowVariations(bChOnOff);
 
   // Fix parameters or add constraints here
-  for (Int_t iSt=0; iSt<5; iSt++)
-    if (!bStOnOff[iSt]) FixStation(iSt+1);
+//   for (Int_t iSt=0; iSt<5; iSt++)
+//     if (!bStOnOff[iSt]) FixStation(iSt+1);
+//   for (Int_t iCh=0; iCh<10; iCh++)
+//     if (!bChOnOff[iCh]) FixChamber(iCh+1);
 
-  FixHalfSpectrometer(bStOnOff,bSpecLROnOff);
+//   FixHalfSpectrometer(bChOnOff,bSpecLROnOff);
 
   ResetConstraints();
   
@@ -152,15 +155,25 @@ void AliMUONAlignment::FixStation(Int_t iSt){
   }
 }
 
-void AliMUONAlignment::FixHalfSpectrometer(Bool_t *lStOnOff, Bool_t *lSpecLROnOff){
+void AliMUONAlignment::FixChamber(Int_t iCh){
+  /// Fix all detection elements of chamber iCh
+  Int_t iDetElemFirst = (iCh>1) ? fgSNDetElemCh[iCh-2] : 0; 
+  Int_t iDetElemLast = fgSNDetElemCh[iCh-1]; 
+  for (Int_t i = iDetElemFirst; i < iDetElemLast; i++){    
+    FixParameter(i*fgNParCh+0, 0.0);
+    FixParameter(i*fgNParCh+1, 0.0);
+    FixParameter(i*fgNParCh+2, 0.0);
+  }
+}
+
+void AliMUONAlignment::FixHalfSpectrometer(Bool_t *lChOnOff, Bool_t *lSpecLROnOff){
   /// Fix left or right detector
   for (Int_t i = 0; i < fgNDetElem; i++){    
     Int_t iCh=0;
     for (iCh=1; iCh<=fgNCh; iCh++){
       if (i<fgSNDetElemCh[iCh-1]) break;
     }
-    Int_t iSt = lStOnOff[(iCh-1)/2] ? (iCh+1)/2 : 0; 
-    if (iSt){
+    if (lChOnOff[iCh-1]){
       Int_t lDetElemNumber = (iCh==1) ? i : i-fgSNDetElemCh[iCh-2];
       if (iCh>=1 && iCh<=4){
 	if ((lDetElemNumber==1 || lDetElemNumber==2) && !lSpecLROnOff[0]){ // From track crossings
@@ -204,15 +217,14 @@ void AliMUONAlignment::FixHalfSpectrometer(Bool_t *lStOnOff, Bool_t *lSpecLROnOf
   }
 }
 
-void AliMUONAlignment::SetNonLinear(Bool_t *lStOnOff,Bool_t *lVarXYT){
-  /// Set non linear parameter flag selected stations and degrees of freedom
+void AliMUONAlignment::SetNonLinear(Bool_t *lChOnOff,Bool_t *lVarXYT){
+  /// Set non linear parameter flag selected chambers and degrees of freedom
   for (Int_t i = 0; i < fgNDetElem; i++){    
     Int_t iCh=0;
     for (iCh=1; iCh<=fgNCh; iCh++){
       if (i<fgSNDetElemCh[iCh-1]) break;
     }
-    Int_t iSt = lStOnOff[(iCh-1)/2] ? (iCh+1)/2 : 0; 
-    if (iSt){
+    if (lChOnOff[iCh-1]){
       if (lVarXYT[0]) { // X constraint
 	SetNonLinear(i*fgNParCh+0);
       }
@@ -226,15 +238,14 @@ void AliMUONAlignment::SetNonLinear(Bool_t *lStOnOff,Bool_t *lVarXYT){
   }
 }
 
-void AliMUONAlignment::AddConstraints(Bool_t *lStOnOff,Bool_t *lVarXYT){
-  /// Add constraint equations for selected stations and degrees of freedom 
+void AliMUONAlignment::AddConstraints(Bool_t *lChOnOff,Bool_t *lVarXYT){
+  /// Add constraint equations for selected chambers and degrees of freedom 
   for (Int_t i = 0; i < fgNDetElem; i++){    
     Int_t iCh=0;
     for (iCh=1; iCh<=fgNCh; iCh++){
       if (i<fgSNDetElemCh[iCh-1]) break;
     }
-    Int_t iSt = lStOnOff[(iCh-1)/2] ? (iCh+1)/2 : 0; 
-    if (iSt){
+    if (lChOnOff[iCh-1]){
       if (lVarXYT[0]) { // X constraint
 	fConstraintX[i*fgNParCh+0]=1.0;
       }
@@ -257,8 +268,8 @@ void AliMUONAlignment::AddConstraints(Bool_t *lStOnOff,Bool_t *lVarXYT){
   }
 }
 
-void AliMUONAlignment::AddConstraints(Bool_t *lStOnOff,Bool_t *lVarXYT, Bool_t *lDetTLBR, Bool_t *lSpecLROnOff){
-  /// Add constraint equations for selected stations, degrees of freedom and detector half 
+void AliMUONAlignment::AddConstraints(Bool_t *lChOnOff,Bool_t *lVarXYT, Bool_t *lDetTLBR, Bool_t *lSpecLROnOff){
+  /// Add constraint equations for selected chambers, degrees of freedom and detector half 
   Double_t lDetElemLocX = 0.;
   Double_t lDetElemLocY = 0.;
   Double_t lDetElemLocZ = 0.;
@@ -275,8 +286,7 @@ void AliMUONAlignment::AddConstraints(Bool_t *lStOnOff,Bool_t *lVarXYT, Bool_t *
     for (iCh=1; iCh<=fgNCh; iCh++){
       if (i<fgSNDetElemCh[iCh-1]) break;
     }
-    Int_t iSt = lStOnOff[(iCh-1)/2] ? (iCh+1)/2 : 0; 
-    if (iSt){
+    if (lChOnOff[iCh-1]){ 
       Int_t lDetElemNumber = (iCh==1) ? i : i-fgSNDetElemCh[iCh-2];
       Int_t lDetElemId = iCh*100+lDetElemNumber;
       fTransform->Local2Global(lDetElemId,lDetElemLocX,lDetElemLocY,lDetElemLocZ,
@@ -346,8 +356,7 @@ void AliMUONAlignment::AddConstraints(Bool_t *lStOnOff,Bool_t *lVarXYT, Bool_t *
     for (iCh=1; iCh<=fgNCh; iCh++){
       if (i<fgSNDetElemCh[iCh-1]) break;
     }
-    Int_t iSt = lStOnOff[(iCh-1)/2] ? (iCh+1)/2 : 0; 
-    if (iSt){
+    if (lChOnOff[iCh-1]){
       Int_t lDetElemNumber = (iCh==1) ? i : i-fgSNDetElemCh[iCh-2];
       Int_t lDetElemId = iCh*100+lDetElemNumber;
       fTransform->Local2Global(lDetElemId,lDetElemLocX,lDetElemLocY,lDetElemLocZ,
@@ -704,12 +713,12 @@ void AliMUONAlignment::ResetLocalEquation()
   }
 }
 
-void AliMUONAlignment::AllowVariations(Bool_t *bStOnOff) {
-  /// Set allowed variation for selected stations based on fDoF and fAllowVar
-  for (Int_t iSt=1; iSt<=5; iSt++) {
-    if (bStOnOff[iSt-1]) {
-      Int_t iDetElemFirst = (iSt>1) ? fgSNDetElemCh[2*(iSt-1)-1] : 0; 
-      Int_t iDetElemLast = fgSNDetElemCh[2*(iSt)-1]; 
+void AliMUONAlignment::AllowVariations(Bool_t *bChOnOff) {
+  /// Set allowed variation for selected chambers based on fDoF and fAllowVar
+  for (Int_t iCh=1; iCh<=10; iCh++) {
+    if (bChOnOff[iCh-1]) {
+      Int_t iDetElemFirst = (iCh>1) ? fgSNDetElemCh[iCh-2] : 0; 
+      Int_t iDetElemLast = fgSNDetElemCh[iCh-1]; 
       for (int i=0; i<fgNParCh; i++) {
 	AliDebug(1,Form("fDoF[%d]= %d",i,fDoF[i]));    
 	if (fDoF[i]) {

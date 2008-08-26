@@ -130,20 +130,26 @@ void MUONAlignment(Int_t nEvents = 100000, char* geoFilename = "geometry.root", 
   
   // Set tracking station to use
   Bool_t bStOnOff[5] = {kTRUE,kTRUE,kTRUE,kTRUE,kTRUE};
+  Bool_t bChOnOff[10] = {kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE};
 
   // Fix parameters or add constraints here
-  for (Int_t iSt=0; iSt<5; iSt++)
-    if (!bStOnOff[iSt]) alig->FixStation(iSt+1);
+//   for (Int_t iSt=0; iSt<5; iSt++)
+//     if (!bStOnOff[iSt]) alig->FixStation(iSt+1);
+  for (Int_t iCh=0; iCh<10; iCh++)
+    if (!bChOnOff[iCh]) alig->FixChamber(iCh+1);
 
   // Left and right sides of the detector are independent, one can choose to align 
   // only one side
   Bool_t bSpecLROnOff[2] = {kTRUE,kTRUE};
-  alig->FixHalfSpectrometer(bStOnOff,bSpecLROnOff);
+  alig->FixHalfSpectrometer(bChOnOff,bSpecLROnOff);
+
+  alig->SetChOnOff(bChOnOff);
+  alig->SetSpecLROnOff(bChOnOff);
 
   // Set predifined global constrains: X, Y, P, XvsZ, YvsZ, PvsZ, XvsY, YvsY, PvsY
   Bool_t bVarXYT[9] = {kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE};
   Bool_t bDetTLBR[4] = {kFALSE,kTRUE,kFALSE,kTRUE};
-  alig->AddConstraints(bStOnOff,bVarXYT,bDetTLBR,bSpecLROnOff);
+  alig->AddConstraints(bChOnOff,bVarXYT,bDetTLBR,bSpecLROnOff);
 
 
   char cFileName[100];  
@@ -299,7 +305,7 @@ void MUONAlignment(Int_t nEvents = 100000, char* geoFilename = "geometry.root", 
   AliCDBMetaData* cdbData = new AliCDBMetaData();
   cdbData->SetResponsible("Dimuon Offline project");
   cdbData->SetComment("MUON alignment objects with residual misalignment");
-  AliCDBId id("MUON/Align/Data", 0, 0); 
+  AliCDBId id("MUON/Align/Data", 0, AliCDBRunRange::Infinity()); 
   cdbManager->Put(const_cast<TClonesArray*>(array), id, cdbData);
 
 }

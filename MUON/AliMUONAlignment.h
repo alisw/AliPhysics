@@ -38,12 +38,21 @@ public:
   void SetBFieldOn(Bool_t bBFieldOn) {
     fBFieldOn =  bBFieldOn;
   }
+  void SetChOnOff(Bool_t *bChOnOff) {
+    for(int iCh=0; iCh<10; iCh++)
+      fChOnOff[iCh] =  bChOnOff[iCh];
+  }
+  void SetSpecLROnOff(Bool_t *bSpecLROnOff) {
+    fSpecLROnOff[0] =  bSpecLROnOff[0];    
+    fSpecLROnOff[1] =  bSpecLROnOff[1];    
+  }
   void FixStation(Int_t iSt);
-  void FixHalfSpectrometer(Bool_t *bStOnOff, Bool_t *bSpecLROnOff);
-  void AllowVariations(Bool_t *bStOnOff);
-  void SetNonLinear(Bool_t *bStOnOff, Bool_t *bVarXYT);
-  void AddConstraints(Bool_t *bStOnOff, Bool_t *bVarXYT);
-  void AddConstraints(Bool_t *bStOnOff, Bool_t *bVarXYT, Bool_t *bDetTLBR, Bool_t *bSpecLROnOff);
+  void FixChamber(Int_t iCh);
+  void FixHalfSpectrometer(Bool_t *bChOnOff, Bool_t *bSpecLROnOff);
+  void AllowVariations(Bool_t *bChOnOff);
+  void SetNonLinear(Bool_t *bChOnOff, Bool_t *bVarXYT);
+  void AddConstraints(Bool_t *bChOnOff, Bool_t *bVarXYT);
+  void AddConstraints(Bool_t *bChOnOff, Bool_t *bVarXYT, Bool_t *bDetTLBR, Bool_t *bSpecLROnOff);
   void ResetConstraints();
 
   void FixParameter(Int_t param, Double_t value);
@@ -89,7 +98,8 @@ public:
   TGeoCombiTrans ReAlign(const TGeoCombiTrans& transform, double *detElemMisAlignment) const;
 
   Bool_t fBFieldOn;        ///< Flag for Magnetic filed On/Off
-		       	 		       	       		       
+  Bool_t fChOnOff[10];     ///< Flags for chamber On/Off
+  Bool_t fSpecLROnOff[2];  ///< Flags for left right On/Off		       	 		       	       		       
   Bool_t fDoF[3];          ///< Flags degrees of freedom to align (x,y,phi)
   Double_t fAllowVar[3];   ///< "Encouraged" variation for degrees of freedom 
   Double_t fStartFac;      ///< Initial value for chi2 cut 
