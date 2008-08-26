@@ -7,8 +7,8 @@
 - DA Type:    MON
 - Number of events needed: >=500
 - Input Files:  argument list
-- Output Files: local files  VZERO_Histos.root, V0_Ped_Width_Gain.dat
-                FXS file     V0_Ped_Width_Gain.dat
+- Output Files: local files  VZERO_Histos.root, V0_Pedestals.dat (Online mapping)
+                FXS file     V0_Ped_Width_Gain.dat (Offline mapping)
 - Trigger types used: PHYSICS_EVENT
 **********************************************************************************/
 
@@ -66,12 +66,14 @@ int main(int argc, char **argv) {
      return -1;
   }
   
-  // Online values (using FEE channel numbering):
+  // Online values (using FEE channel numbering), 
+  // stored into local V0_Pedestals.dat:
   Double_t ADCmean[128];
   Double_t ADCsigma[128];
   Double_t PEDmean[128];
   Double_t PEDsigma[128];
-  // Offline values(same but ordered as in aliroot for offliners): 
+  // Offline values(same but ordered as in aliroot for offliners)
+  // stored into V0_Ped_Width_Gain.dat: 
   Double_t ADCmean_Off[128];
   Double_t ADCsigma_Off[128];
   Double_t PEDmean_Off[128];
@@ -113,6 +115,13 @@ int main(int argc, char **argv) {
        hPEDname[i]  = new TH1F(PEDname,texte,1024,-0.5, 1023.5);
   }
 //___________________________________________________ 
+
+  /* open result file to be exported to FES */
+  FILE *fpLocal=NULL;
+  fpLocal=fopen("./V0_Pedestals.dat","w");
+  if (fpLocal==NULL) {
+      printf("Failed to open local result file\n");
+      return -1;}
    
   /* open result file to be exported to FES */
   FILE *fp=NULL;
@@ -235,6 +244,8 @@ int main(int argc, char **argv) {
       ADCmean[i]  = hADCname[i]->GetMean();
       ADCsigma[i] = hADCname[i]->GetRMS(); 
 //      printf(" i = %d, %.3f %.3f %.3f %.3f\n",i,PEDmean[i],PEDsigma[i],ADCmean[i],ADCsigma[i]);
+      fprintf(fpLocal," %.3f %.3f %.3f %.3f\n",PEDmean[i],PEDsigma[i],
+                                               ADCmean[i],ADCsigma[i]);
       if (i < 64) {
           Int_t j = GetOfflineChannel(i);     
           PEDmean_Off[j]  = PEDmean[i];
@@ -272,7 +283,8 @@ int main(int argc, char **argv) {
   
 //________________________________________________________________________
    
-  /* close result file */
+  /* close local result file and FXS result file*/
+  fclose(fpLocal);
   fclose(fp);
  
   /* export result file to FES */
@@ -282,7 +294,7 @@ int main(int argc, char **argv) {
       return -1; }
 
   /* store result file into Online DB */
-  status=daqDA_DB_storeFile("./V0_Ped_Width_Gain.dat","V00da_results");
+  status=daqDA_DB_storeFile("./V0_Pedestals.dat","V00da_results");
   if (status)    {
       printf("Failed to store file into Online DB: %d\n",status);
       return -1; }
