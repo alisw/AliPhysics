@@ -862,6 +862,23 @@ void AliTOFtracker::InitCheckHists() {
   //Init histos for Digits/Reco QA and Calibration
 
 
+  TDirectory *dir = gDirectory;
+  TFile *logFileTOF = 0;
+
+  TSeqCollection *list = gROOT->GetListOfFiles();
+  int n = list->GetEntries();
+  Bool_t isThere=kFALSE;
+  for(int i=0; i<n; i++) {
+    logFileTOF = (TFile*)list->At(i);
+    if (strstr(logFileTOF->GetName(), "TOFQA.root")){
+      isThere=kTRUE;
+      break;
+    } 
+  }
+
+  if(!isThere)logFileTOF = new TFile( "TOFQA.root","RECREATE");
+  logFileTOF->cd(); 
+
   fCalTree = new TTree("CalTree", "Tree for TOF calibration");
   fCalTree->Branch("TOFchannelindex",&fIch,"iTOFch/I");
   fCalTree->Branch("ToT",&fToT,"TOFToT/F");
@@ -883,6 +900,9 @@ void AliTOFtracker::InitCheckHists() {
   fHRecSigZVsP=new TH2F("TOFDig_SigZVsP", "",40,0.,4.,100, 0.,5.);
   fHRecSigYVsPWin=new TH2F("TOFDig_SigYVsPWin", "",40,0.,4.,100, 0.,50.);
   fHRecSigZVsPWin=new TH2F("TOFDig_SigZVsPWin", "",40,0.,4.,100, 0.,50.);
+
+  dir->cd();
+
 }
 
 //_________________________________________________________________________
@@ -891,16 +911,10 @@ void AliTOFtracker::SaveCheckHists() {
   //write histos for Digits/Reco QA and Calibration
 
   TDirectory *dir = gDirectory;
-  TFile *logFile = 0;
   TFile *logFileTOF = 0;
 
   TSeqCollection *list = gROOT->GetListOfFiles();
   int n = list->GetEntries();
-  for(int i=0; i<n; i++) {
-    logFile = (TFile*)list->At(i);
-    if (strstr(logFile->GetName(), "AliESDs.root")) break;
-  }
-
   Bool_t isThere=kFALSE;
   for(int i=0; i<n; i++) {
     logFileTOF = (TFile*)list->At(i);
@@ -910,21 +924,10 @@ void AliTOFtracker::SaveCheckHists() {
     } 
   }
    
-  logFile->cd();
-  fHDigClusMap->Write(fHDigClusMap->GetName(), TObject::kOverwrite);
-  fHDigNClus->Write(fHDigNClus->GetName(), TObject::kOverwrite);
-  fHDigClusTime->Write(fHDigClusTime->GetName(), TObject::kOverwrite);
-  fHDigClusToT->Write(fHDigClusToT->GetName(), TObject::kOverwrite);
-  fHRecNClus->Write(fHRecNClus->GetName(), TObject::kOverwrite);
-  fHRecDist->Write(fHRecDist->GetName(), TObject::kOverwrite);
-  fHRecSigYVsP->Write(fHRecSigYVsP->GetName(), TObject::kOverwrite);
-  fHRecSigZVsP->Write(fHRecSigZVsP->GetName(), TObject::kOverwrite);
-  fHRecSigYVsPWin->Write(fHRecSigYVsPWin->GetName(), TObject::kOverwrite);
-  fHRecSigZVsPWin->Write(fHRecSigZVsPWin->GetName(), TObject::kOverwrite);
-  //fCalTree->Write(fCalTree->GetName(),TObject::kOverwrite);
-  logFile->Flush();  
-
-  if(!isThere)logFileTOF = new TFile( "TOFQA.root","RECREATE");
+  if(!isThere) {
+	  AliError(Form("File TOFQA.root not found!! not wring histograms...."));
+	  return;
+  }
   logFileTOF->cd(); 
   fHDigClusMap->Write(fHDigClusMap->GetName(), TObject::kOverwrite);
   fHDigNClus->Write(fHDigNClus->GetName(), TObject::kOverwrite);
