@@ -26,8 +26,8 @@ public:
   virtual void Field(Float_t *x, Float_t *b) const;
   virtual void ReadField() {}
   virtual void ZDCField(Float_t *x, Float_t *b) const;
-  virtual void SetBeamType(BeamType_t type)      {fBeamType = type;}
-  virtual void SetBeamEnergy(Int_t energy)       {fBeamEnergy = energy;}
+  virtual void SetBeamType(BeamType_t type)      {fBeamType    = type;}
+  virtual void SetBeamEnergy(Float_t energy)     {fBeamEnergy  = energy;}
   virtual void SetCompensatorMagnet(Bool_t flag) {fCompensator = flag;}
 
 private:
