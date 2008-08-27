@@ -277,7 +277,9 @@ void AliTOFDigitizer::CreateDigits()
       
       Int_t tdc=tofsdigit->GetTdc(islot); digit[0]=tdc;
       Int_t adc=tofsdigit->GetAdc(islot); digit[1]=adc;
-      
+
+      //if (tdc>=8192) continue;//AdC
+
       tracknum[0]=tofsdigit->GetTrack(islot,0);
       tracknum[1]=tofsdigit->GetTrack(islot,1);
       tracknum[2]=tofsdigit->GetTrack(islot,2);

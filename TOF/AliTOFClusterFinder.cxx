@@ -760,7 +760,8 @@ void AliTOFClusterFinder::Raw2Digits(Int_t iEvent, AliRawReader *rawReader)
 
       AliTOFrawData *tofRawDatum = (AliTOFrawData*)clonesRawData->UncheckedAt(iRawData);
 
-      if (!tofRawDatum->GetTOT() || !tofRawDatum->GetTOF()) continue;
+      //if (!tofRawDatum->GetTOT() || !tofRawDatum->GetTOF()) continue;
+      if (tofRawDatum->GetTOF()==-1) continue;
 
       tofInput.EquipmentId2VolumeId(indexDDL, tofRawDatum->GetTRM(), tofRawDatum->GetTRMchain(),
 				    tofRawDatum->GetTDC(), tofRawDatum->GetTDCchannel(), detectorIndex);
@@ -848,7 +849,8 @@ void AliTOFClusterFinder::Raw2Digits(AliRawReader *rawReader, TTree* digitsTree)
 
       AliTOFrawData *tofRawDatum = (AliTOFrawData*)clonesRawData->UncheckedAt(iRawData);
 
-      if (!tofRawDatum->GetTOT() || !tofRawDatum->GetTOF()) continue;
+      //if (!tofRawDatum->GetTOT() || !tofRawDatum->GetTOF()) continue;
+      if (tofRawDatum->GetTOF()==-1) continue;
 
       tofInput.EquipmentId2VolumeId(indexDDL, tofRawDatum->GetTRM(), tofRawDatum->GetTRMchain(),
 				    tofRawDatum->GetTDC(), tofRawDatum->GetTDCchannel(), detectorIndex);
@@ -958,6 +960,19 @@ void AliTOFClusterFinder::FillRecPoint()
     UShort_t volIdClus=GetClusterVolIndex(detectorIndex);
     GetClusterPars(detectorIndex,posClus,covClus);
     new(lRecPoints[ii]) AliTOFcluster(volIdClus,posClus[0],posClus[1],posClus[2],covClus[0],covClus[1],covClus[2],covClus[3],covClus[4],covClus[5],trackLabels,detectorIndex, parTOF,status,digitIndex);
+
+    AliDebug(2, Form(" %4i  %4i  %f %f %f  %f %f %f %f %f %f  %3i %3i %3i  %2i %1i %2i %1i %2i  %4i %3i %3i %4i %4i  %1i  %4i", 
+		     ii, volIdClus, posClus[0], posClus[1], posClus[2],
+		     fTofClusters[ii]->GetSigmaX2(),
+		     fTofClusters[ii]->GetSigmaXY(),
+		     fTofClusters[ii]->GetSigmaXZ(),
+		     fTofClusters[ii]->GetSigmaY2(),
+		     fTofClusters[ii]->GetSigmaYZ(),
+		     fTofClusters[ii]->GetSigmaZ2(),
+		     trackLabels[0], trackLabels[1], trackLabels[2],
+		     detectorIndex[0], detectorIndex[1], detectorIndex[2], detectorIndex[3], detectorIndex[4],
+		     parTOF[0], parTOF[1], parTOF[2], parTOF[3], parTOF[4],
+		     status, digitIndex));
 
   } // loop on clusters
 

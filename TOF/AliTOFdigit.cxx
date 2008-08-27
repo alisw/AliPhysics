@@ -54,7 +54,7 @@ AliTOFdigit::AliTOFdigit()
 {
 }
 //______________________________________________________________________________
-AliTOFdigit::AliTOFdigit(Int_t *tracks, Int_t *vol,Int_t *digit)
+AliTOFdigit::AliTOFdigit(Int_t *tracks, Int_t *vol, Int_t *digit)
   :AliDigit(tracks),
    fSector(-1),
    fPlate(-1),
@@ -108,9 +108,9 @@ AliTOFdigit::AliTOFdigit(const AliTOFdigit & digit)
   fPadx   = digit.fPadx;
   fPadz   = digit.fPadz;
   fTdc    = digit.fTdc;
-  fTdcND    = digit.fTdcND;
+  fTdcND  = digit.fTdcND;
   fAdc    = digit.fAdc;
-  fToT = digit.fToT;
+  fToT    = digit.fToT;
 
 }
 
@@ -136,24 +136,24 @@ AliTOFdigit::AliTOFdigit(Int_t sector, Int_t plate, Int_t strip, Int_t padx,
   fPadx   = padx;
   fPadz   = padz;  
   fTdc    = tdc;   
-  fTdcND    = 0;   
+  fTdcND  = 0;   
   fAdc    = adc;     
-  fToT = 0;
+  fToT    = 0;
 }
    
 //______________________________________________________________________________
-void AliTOFdigit::GetLocation(Int_t *Loc) const
+void AliTOFdigit::GetLocation(Int_t *loc) const
 {
 //
 // Get the cohordinates of the digit
 // in terms of Sector - Plate - Strip - Pad
 //
 
-   Loc[0]=fSector;
-   Loc[1]=fPlate;
-   Loc[2]=fStrip;
-   Loc[3]=fPadx;
-   Loc[4]=fPadz;
+   loc[0] = fSector;
+   loc[1] = fPlate;
+   loc[2] = fStrip;
+   loc[3] = fPadx;
+   loc[4] = fPadz;
 }
 
 //______________________________________________________________________________

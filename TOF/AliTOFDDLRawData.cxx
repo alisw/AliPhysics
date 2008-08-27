@@ -182,6 +182,8 @@ Int_t AliTOFDDLRawData::RawDataTOF(TBranch* branch)
   
   GetDigits();
 
+  //if (!fPackedAcquisition) fMatchingWindow = 2097152;//AdC
+
   Int_t jj = -1;
   Int_t iDDL = -1;
   Int_t nDDL = -1;
