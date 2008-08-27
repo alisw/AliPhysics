@@ -23,7 +23,7 @@ class AliTPCCalibTCF : public TNamed {
 public:
 
   AliTPCCalibTCF();
-  AliTPCCalibTCF(Int_t gateWidth, Int_t Sample, Int_t pulseLength, Int_t lowPulseLim, Int_t upPulseLim, Double_t rmsLim);
+  AliTPCCalibTCF(Int_t gateWidth, Int_t Sample, Int_t pulseLength, Int_t lowPulseLim, Int_t upPulseLim, Double_t rmsLim, Double_t ratioIntLim);
   AliTPCCalibTCF(const AliTPCCalibTCF &sig);
   virtual ~AliTPCCalibTCF();
   
@@ -35,7 +35,7 @@ public:
 
   void MergeHistoPerSector(const char *nameFileIn);
 
-  void AnalyzeRootFile(const char *nameFileIn, Int_t minNumPulse=1);
+  void AnalyzeRootFile(const char *nameFileIn, Int_t minNumPulse=1, Int_t histStart=1, Int_t histEnd=1000000);
   Int_t AnalyzePulse(TH1F *hisIn, Double_t *coefZ, Double_t *coefP); 
 
   void TestTCFonRootFile(const char *nameFileIn, const char *nameFileTCF, Int_t plotFlag=0, Int_t lowKey=1, Int_t upKey=1000000);
@@ -48,6 +48,8 @@ public:
 
   void PrintPulseThresholds();
 
+  void MergeHistsPerFile(const char *fileNameIn, const char *fileSum);
+
 
 private:
   
@@ -58,12 +60,13 @@ private:
   Int_t fLowPulseLim;   // lower pulse height limit
   Int_t fUpPulseLim;    // upper pulse height limit
   Double_t fRMSLim;     // signal RMS limit
+  Double_t fRatioIntLim;// ratio of signal-integral/pulse-integral limit
 
   Int_t FitPulse(TNtuple *dataTuple, Double_t *coefZ, Double_t *coefP);
   static void FitFcn(Int_t &nPar, Double_t *grad, Double_t &f, Double_t *par, Int_t iflag);
 
   Double_t* ExtractPZValues(Double_t *param);
-  void Equalization(TNtuple *dataTuple, Double_t *coefZ, Double_t *coefP);
+  Int_t Equalization(TNtuple *dataTuple, Double_t *coefZ, Double_t *coefP);
 
   Int_t FindCorTCFparam(TH1F *hisIn, const char *nameFileTCF, Double_t *coefZ, Double_t *coefP);
   Double_t *GetQualityOfTCF(TH1F *hisIn, Double_t *coefZ, Double_t *coefP,Int_t plotFlag=0); 

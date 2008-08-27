@@ -19,7 +19,7 @@
 // Class for Evaluation and Validation of the ALTRO Tail Cancelation Filter  //
 // (TCF) parameters out of TPC Raw data                                      //
 //                                                                           //
-// Author: Stefan Rossegger                                                  //
+// Author: Stefan Rossegger, Simon Feigl                                     //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -32,11 +32,11 @@
 #include <TStyle.h>
 #include <TMinuit.h>
 #include <TH1F.h>
+#include <TH2F.h>
 
 #include <TMath.h>
 #include <TNtuple.h>
 #include <TEntryList.h>
-
 #include "AliRawReaderRoot.h"
 #include "AliTPCRawStream.h"
 #include "AliTPCROC.h"
@@ -52,7 +52,9 @@ AliTPCCalibTCF::AliTPCCalibTCF() :
   fPulseLength(500),
   fLowPulseLim(30),
   fUpPulseLim(1000),
-  fRMSLim(4.)
+  fRMSLim(2.5),
+  fRatioIntLim(2.5)
+
 {
   //
   //  AliTPCCalibTCF standard constructor
@@ -60,14 +62,15 @@ AliTPCCalibTCF::AliTPCCalibTCF() :
 }
   
 //_____________________________________________________________________________
-AliTPCCalibTCF::AliTPCCalibTCF(Int_t gateWidth, Int_t sample, Int_t pulseLength, Int_t lowPulseLim, Int_t upPulseLim, Double_t rmsLim) : 
+AliTPCCalibTCF::AliTPCCalibTCF(Int_t gateWidth, Int_t sample, Int_t pulseLength, Int_t lowPulseLim, Int_t upPulseLim, Double_t rmsLim, Double_t ratioIntLim) : 
   TNamed(),
   fGateWidth(gateWidth),
   fSample(sample),
   fPulseLength(pulseLength),
   fLowPulseLim(lowPulseLim),
   fUpPulseLim(upPulseLim),
-  fRMSLim(rmsLim)
+  fRMSLim(rmsLim),
+  fRatioIntLim(ratioIntLim)
 {
   //
   //  AliTPCCalibTCF constructor with specific (non-standard) thresholds
@@ -82,7 +85,8 @@ AliTPCCalibTCF::AliTPCCalibTCF(const AliTPCCalibTCF &tcf) :
   fPulseLength(tcf.fPulseLength),
   fLowPulseLim(tcf.fLowPulseLim),
   fUpPulseLim(tcf.fUpPulseLim),
-  fRMSLim(tcf.fRMSLim)
+  fRMSLim(tcf.fRMSLim),
+  fRatioIntLim(tcf.fRatioIntLim)
 {
   //
   //  AliTPCCalibTCF copy constructor
@@ -123,11 +127,13 @@ void AliTPCCalibTCF::ProcessRawFile(const char *nameRawFile, const char *nameFil
   AliRawReader *rawReader = new AliRawReaderRoot(nameRawFile);
   rawReader->Reset();
 
+  Int_t ievent=0;
   while ( rawReader->NextEvent() ){ // loop
-    printf("Reading next event ...");
+    printf("Reading next event ... Nr: %d\n",ievent);
     AliTPCRawStream rawStream(rawReader);
     rawReader->Select("TPC");
     ProcessRawEvent(&rawStream, nameFileOut);
+    ievent++;
   }
 
   rawReader->~AliRawReader();
@@ -148,8 +154,11 @@ void AliTPCCalibTCF::ProcessRawEvent(AliTPCRawStream *rawStream, const char *nam
 
   Int_t sector = rawStream->GetSector();
   Int_t row    = rawStream->GetRow();
+
+  Int_t prevSec  = 999999;
+  Int_t prevRow  = 999999;
+  Int_t prevPad  = 999999;
   Int_t prevTime = 999999;
-  Int_t prevPad = 999999;
 
   TFile fileOut(nameFileOut,"UPDATE");
   fileOut.cd();  
@@ -168,21 +177,47 @@ void AliTPCCalibTCF::ProcessRawEvent(AliTPCRawStream *rawStream, const char *nam
     Int_t pad = rawStream->GetPad();
     Int_t time = rawStream->GetTime();
     Int_t signal = rawStream->GetSignal();
+    
+    // Reading signal from one Pad 
+    if (!rawStream->IsNewPad()) {
 
-    if (!rawStream->IsNewPad()) { // Reading signal from one Pad 
+      // this pad always gave a useless signal, probably induced by the supply
+      // voltage of the gate signal (date:2008-Aug-07) 
+      if(sector==51 && row==95 && pad==0) {
+	rawStream->Dump();
+	continue;
+      }
+
+      // only process pulses of pads with correct address
+      if(sector<0 || sector+1 > Int_t(AliTPCROC::Instance()->GetNSector())) {
+	rawStream->Dump();
+	continue;
+      }
+      if(row<0 || row+1 > Int_t(AliTPCROC::Instance()->GetNRows(sector))) {
+	rawStream->Dump();
+	continue;
+      }
+      if(pad<0 || pad+1 > Int_t(AliTPCROC::Instance()->GetNPads(sector,row))) {
+	rawStream->Dump();
+	continue;
+      }
+      
       if (time>prevTime) {
         printf("Wrong time: %d %d\n",rawStream->GetTime(),prevTime);
         rawStream->Dump();
+	continue;
       } else {
 	// still the same pad, save signal to temporary histogram
 	if (time<=fSample+fGateWidth && time>fGateWidth) {
 	  tempHis->SetBinContent(time,signal);
 	}
-      }      
-    } else { 
-      // complete pulse found and stored into tempHis, now calculation 
-      // of it's properties and comparison to given thresholds
+      }   
    
+    } else { 
+
+      // complete pulse found and stored into tempHis, now calculation 
+      // of the properties and comparison to given thresholds
+      
       Int_t max = (Int_t)tempHis->GetMaximum(FLT_MAX);
       Int_t maxpos =  tempHis->GetMaximumBin();
       
@@ -198,6 +233,7 @@ void AliTPCCalibTCF::ProcessRawEvent(AliTPCRawStream *rawStream, const char *nam
 	// at the end to get rid of pulses with serious baseline fluctuations
 	tempRMSHis->Fill(tempHis->GetBinContent(last-ipos)); 
       }
+
       Double_t baseline = tempRMSHis->GetMean();
       Double_t rms = tempRMSHis->GetRMS();
       tempRMSHis->Reset();
@@ -205,10 +241,30 @@ void AliTPCCalibTCF::ProcessRawEvent(AliTPCRawStream *rawStream, const char *nam
       Double_t lowLim = fLowPulseLim+baseline;
       Double_t upLim = fUpPulseLim+baseline;
 
+      // get rid of pulses which contain gate signal and/or too much noise
+      // with the help of ratio of integrals
+      Double_t intHist = 0;
+      Double_t intPulse = 0;
+      Double_t binValue;
+      for(Int_t ipos=first; ipos<=last; ipos++) {
+	binValue = TMath::Abs(tempHis->GetBinContent(ipos) - baseline);
+	intHist += binValue;
+	if(ipos>=first+5 && ipos<=first+25) {intPulse += binValue;}
+      }
+        
+      // gets rid of high frequency noise:
+      // calculating ratio (value one to the right of maximum)/(maximum)
+      // has to be >= 0.1; if maximum==0 set ratio to 0.1
+      Double_t maxCorr = max - baseline;
+      Double_t binRatio = 0.1;
+      if(maxCorr != 0) {
+	binRatio = (tempHis->GetBinContent(maxpos+1) - baseline) / maxCorr;
+      }
+      
       // Decision if found pulse is a proper one according to given tresholds
-      if (max>lowLim && max<upLim && !((last-first)<fPulseLength) && rms<fRMSLim){
+      if (max>lowLim && max<upLim && !((last-first)<fPulseLength) && rms<fRMSLim && (intHist/intPulse)<fRatioIntLim && binRatio >= 0.1) {
 	char hname[100];
-	sprintf(hname,"sec%drow%dpad%d",sector,row,prevPad);
+	sprintf(hname,"sec%drow%dpad%d",prevSec,prevRow,prevPad);
 	
 	TH1F *his = (TH1F*)fileOut.Get(hname);
 	
@@ -216,9 +272,9 @@ void AliTPCCalibTCF::ProcessRawEvent(AliTPCRawStream *rawStream, const char *nam
 	  
 	  his = new TH1F(hname,hname, fPulseLength+4, 0, fPulseLength+4);
 	  his->SetBinContent(1,1);       //  pulse counter (1st pulse)
-	  his->SetBinContent(2,sector);  //  sector
-	  his->SetBinContent(3,row);     //  row
-	  his->SetBinContent(4,prevPad); //  pad	  
+	  his->SetBinContent(2,prevSec);  //  sector
+	  his->SetBinContent(3,prevRow);  //  row
+	  his->SetBinContent(4,prevPad);  //  pad	  
        
 	  for (Int_t ipos=0; ipos<last-first; ipos++){
 	    Int_t signal = (Int_t)(tempHis->GetBinContent(ipos+first)-baseline);
@@ -241,6 +297,8 @@ void AliTPCCalibTCF::ProcessRawEvent(AliTPCRawStream *rawStream, const char *nam
       tempHis->Reset();
     }
     prevTime = time;
+    prevSec = sector;
+    prevRow = row;
     prevPad = pad;
   }
 
@@ -321,15 +379,12 @@ void AliTPCCalibTCF::MergeHistoPerSector(const char *nameFileIn) {
   fileIn.Close();
   fileOut.Close();
 
-  // calculate TCF parameters on averaged pulse per Sector
-  AnalyzeRootFile(nameFileOut);
-
 
 }
 
 
 //____________________________________________________________________________
-void AliTPCCalibTCF::AnalyzeRootFile(const char *nameFileIn, Int_t minNumPulse) {
+void AliTPCCalibTCF::AnalyzeRootFile(const char *nameFileIn, Int_t minNumPulse, Int_t histStart, Int_t histEnd) {
   //
   // This function takes a prepeared root file (accumulated histograms: output
   // of process function) and performs an analysis (fit and equalization) in 
@@ -346,7 +401,7 @@ void AliTPCCalibTCF::AnalyzeRootFile(const char *nameFileIn, Int_t minNumPulse) 
   TIter next( fileIn.GetListOfKeys() );
 
   char nameFileOut[100];
-  sprintf(nameFileOut,"TCFparam-%s",nameFileIn);
+  sprintf(nameFileOut,"TCF-%s",nameFileIn);
   
   TFile fileOut(nameFileOut,"RECREATE");
   fileOut.cd();
@@ -357,8 +412,9 @@ void AliTPCCalibTCF::AnalyzeRootFile(const char *nameFileIn, Int_t minNumPulse) 
   Int_t iHist = 0;  // counter for print of analysis-status
   
   while ((key = (TKey *) next())) { // loop over histograms
-  
-    printf("Analyze histogramm %d out of %d\n",++iHist,nHist);
+    ++iHist;
+    if(iHist < histStart || iHist  > histEnd) {continue;}
+    printf("Analyze histogramm %d out of %d\n",iHist,nHist);
     hisIn = (TH1F*)fileIn.Get(key->GetName()); // copy object to memory
 
     Int_t numPulse = (Int_t)hisIn->GetBinContent(1); 
@@ -400,7 +456,7 @@ Int_t AliTPCCalibTCF::AnalyzePulse(TH1F *hisIn, Double_t *coefZ, Double_t *coefP
   //
 
   Int_t pulseLength = hisIn->GetNbinsX() -4; 
-  // -1 because the first four timebins usually contain pad specific informations
+  // -4 because the first four timebins usually contain pad specific informations
   Int_t npulse = (Int_t)hisIn->GetBinContent(1);
   Int_t sector = (Int_t)hisIn->GetBinContent(2);
   Int_t row = (Int_t)hisIn->GetBinContent(3);
@@ -428,8 +484,15 @@ Int_t AliTPCCalibTCF::AnalyzePulse(TH1F *hisIn, Double_t *coefZ, Double_t *coefP
   if (fitOk) {
     // calculates the 3rd set (remaining 2 PZ values) in order to restore the
     // original height of the pulse
-    Equalization(dataTuple, coefZ, coefP);
-      
+    Int_t equOk = Equalization(dataTuple, coefZ, coefP);
+    if (!equOk) {
+      Error("FindFit", "Pulse equalisation procedure failed - pulse abandoned ");
+      printf("in Sector %d | Row %d | Pad %d |", sector, row, pad);
+      printf(" Npulses: %d \n\n", npulse);
+      coefP[2] = 0; coefZ[2] = 0;
+      dataTuple->~TNtuple();
+      return 0;
+    }  
     printf("Calculated TCF parameters for: \n");
     printf("Sector %d | Row %d | Pad %d |", sector, row, pad);
     printf(" Npulses: %d \n", npulse);
@@ -548,25 +611,31 @@ void AliTPCCalibTCF::TestTCFonRawFile(const char *nameRawFile, const char *nameF
     coefZ[i] = 0;
   }
 
+  Int_t ievent = 0;
+  
+  TH1I *tempHis = new TH1I("tempHis","tempHis",fSample+fGateWidth,fGateWidth,fSample+fGateWidth);
+  TH1I *tempRMSHis = new TH1I("tempRMSHis","tempRMSHis",2000,0,2000);
+  
+  TFile fileOut(nameFileOut,"UPDATE"); // Quality Parameters storage
+  TNtuple *qualityTuple = (TNtuple*)fileOut.Get("TCFquality");
+  if (!qualityTuple) { // no entry in file
+    qualityTuple = new TNtuple("TCFquality","TCF quality Values","sec:row:pad:npulse:heightDev:areaRed:widthRed:undershot:maxUndershot:pulseRMS");
+  }
+
   while ( rawReader->NextEvent() ){
 
-    printf("Reading next event...");
+    printf("Reading next event ... Nr:%d\n",ievent);
     AliTPCRawStream rawStream(rawReader);
     rawReader->Select("TPC");
+    ievent++;
 
     Int_t sector = rawStream.GetSector();
     Int_t row    = rawStream.GetRow();
+
+    Int_t prevSec  = 999999;
+    Int_t prevRow  = 999999;
+    Int_t prevPad  = 999999;
     Int_t prevTime = 999999;
-    Int_t prevPad = 999999;
-    
-    TH1I *tempHis = new TH1I("tempHis","tempHis",fSample+fGateWidth,fGateWidth,fSample+fGateWidth);
-    TH1I *tempRMSHis = new TH1I("tempRMSHis","tempRMSHis",2000,0,2000);
-    
-    TFile fileOut(nameFileOut,"UPDATE"); // Quality Parameters storage
-    TNtuple *qualityTuple = (TNtuple*)fileOut.Get("TCFquality");
-    if (!qualityTuple) { // no entry in file
-      qualityTuple = new TNtuple("TCFquality","TCF quality Values","sec:row:pad:npulse:heightDev:areaRed:widthRed:undershot:maxUndershot:pulseRMS");
-    }
 
     while (rawStream.Next()) {
     
@@ -580,10 +649,34 @@ void AliTPCCalibTCF::TestTCFonRawFile(const char *nameRawFile, const char *nameF
       Int_t signal = rawStream.GetSignal();
       
       if (!rawStream.IsNewPad()) { // Reading signal from one Pad 
+
+	// this pad always gave a useless signal, probably induced by the supply
+	// voltage of the gate signal (date:2008-Aug-07)
+	if(sector==51 && row==95 && pad==0) {
+	  rawStream.Dump();
+	  continue;
+	}
+
+	// only process pulses of pads with correct address
+	if(sector<0 || sector+1 > Int_t(AliTPCROC::Instance()->GetNSector())) {
+	  rawStream.Dump();
+	  continue;
+	}
+	if(row<0 || row+1 > Int_t(AliTPCROC::Instance()->GetNRows(sector))) {
+	  rawStream.Dump();
+	  continue;
+	}
+	if(pad<0 || pad+1 > Int_t(AliTPCROC::Instance()->GetNPads(sector,row))) {
+	  rawStream.Dump();
+	  continue;
+	}
+
 	if (time>prevTime) {
 	  printf("Wrong time: %d %d\n",rawStream.GetTime(),prevTime);
 	  rawStream.Dump();
+	  continue;
 	} else {
+	  // still the same pad, save signal to temporary histogram
 	  if (time<=fSample+fGateWidth && time>fGateWidth) {
 	    tempHis->SetBinContent(time,signal);
 	  }
@@ -613,17 +706,39 @@ void AliTPCCalibTCF::TestTCFonRawFile(const char *nameRawFile, const char *nameF
 	Double_t lowLim = fLowPulseLim+baseline;
 	Double_t upLim = fUpPulseLim+baseline;
 	
+	// get rid of pulses which contain gate signal and/or too much noise
+	// with the help of ratio of integrals
+	Double_t intHist = 0;
+	Double_t intPulse = 0;
+	Double_t binValue;
+	for(Int_t ipos=first; ipos<=last; ipos++) {
+	  binValue = TMath::Abs(tempHis->GetBinContent(ipos) - baseline);
+	  intHist += binValue;
+	  if(ipos>=first+5 && ipos<=first+25) {intPulse += binValue;}
+	}
+	
+	// gets rid of high frequency noise:
+	// calculating ratio (value one to the right of maximum)/(maximum)
+	// has to be >= 0.1; if maximum==0 set ratio to 0.1
+	Double_t maxCorr = max - baseline;
+	Double_t binRatio = 0.1;
+	if(maxCorr != 0) {
+	  binRatio = (tempHis->GetBinContent(maxpos+1) - baseline) / maxCorr;
+	}
+
+
 	// Decision if found pulse is a proper one according to given tresholds
-	if (max>lowLim && max<upLim && !((last-first)<fPulseLength) && rms<fRMSLim){
+	if (max>lowLim && max<upLim && !((last-first)<fPulseLength) && rms<fRMSLim && intHist/intPulse<fRatioIntLim && binRatio >= 0.1){
 	  // note:
 	  // assuming that lowLim is higher than the pedestal value!
 	  char hname[100];
-	  sprintf(hname,"sec%drow%dpad%d",sector,row,prevPad);
+	  sprintf(hname,"sec%drow%dpad%d",prevSec,prevRow,prevPad);
 	  TH1F *his = new TH1F(hname,hname, fPulseLength+4, 0, fPulseLength+4);
 	  his->SetBinContent(1,1); //  pulse counter (1st pulse)
-	  his->SetBinContent(2,sector); //  sector
-	  his->SetBinContent(3,row);    //  row
-	  his->SetBinContent(4,prevPad);    //  pad
+	  his->SetBinContent(2,prevSec);  //  sector
+          his->SetBinContent(3,prevRow);  //  row
+          his->SetBinContent(4,prevPad);  //  pad
+
 	  for (Int_t ipos=0; ipos<last-first; ipos++){
 	   Int_t signal = (Int_t)(tempHis->GetBinContent(ipos+first)-baseline);
 	   his->SetBinContent(ipos+5,signal);
@@ -645,22 +760,24 @@ void AliTPCCalibTCF::TestTCFonRawFile(const char *nameRawFile, const char *nameF
 	tempHis->Reset();
       }
       prevTime = time;
+      prevSec = sector;
+      prevRow = row;
       prevPad = pad;
+      
     }   
 
-    tempHis->~TH1I();
-    tempRMSHis->~TH1I();
-
-    printf("Finished to read event - close output file ... \n");
-   
-    fileOut.cd();
-    qualityTuple->Write("TCFquality",kOverwrite);
-    fileOut.Close();
-
-
+    printf("Finished to read event ... \n");   
 
   } // event loop
 
+  printf("Finished to read file - close output file ... \n");
+  
+  fileOut.cd();
+  qualityTuple->Write("TCFquality",kOverwrite);
+  fileOut.Close();
+  
+  tempHis->~TH1I();
+  tempRMSHis->~TH1I();
 
   coefP->~Double_t();
   coefZ->~Double_t();
@@ -730,7 +847,7 @@ TNtuple *AliTPCCalibTCF::PlotOccupSummary(const char *nameFile, Int_t nPulseMin)
   gPad->SetTitle("A side");
 
   c1->cd(2);
-  sprintf(cSel,"z<0&&npulse>%d",nPulseMin);
+  sprintf(cSel,"z<0&&npulse>=%d",nPulseMin);
   ntuple->Draw("y:x:npulse",cSel,"colz");
   gPad->SetTitle("C side");
 
@@ -761,7 +878,27 @@ void AliTPCCalibTCF::PlotQualitySummary(const char *nameFileQuality, const char 
   TFile file(nameFileQuality,"READ");
   TNtuple *qualityTuple = (TNtuple*)file.Get("TCFquality");
   gStyle->SetPalette(1);
-  qualityTuple->Draw(plotSpec,cut,pOpt);
+  
+  TH2F *his2D = new TH2F(plotSpec,nameFileQuality,11,-10,1,25,1,100);
+  char plSpec[100];
+  sprintf(plSpec,"%s>>%s",plotSpec,plotSpec);
+  qualityTuple->Draw(plSpec,cut,pOpt);
+
+  gStyle->SetLabelSize(0.03,"X");
+  gStyle->SetLabelSize(0.03,"Y");
+  gStyle->SetLabelSize(0.03,"Z");
+  gStyle->SetLabelOffset(-0.02,"X");
+  gStyle->SetLabelOffset(-0.01,"Y");
+  gStyle->SetLabelOffset(-0.03,"Z");
+
+  gPad->SetPhi(0.1);gPad->SetTheta(90);
+
+  his2D->GetXaxis()->SetTitle("max. undershot [ADC]");
+  his2D->GetYaxis()->SetTitle("width Reduction [%]");
+
+  his2D->DrawCopy(pOpt);
+  
+  his2D->~TH2F();
   
 }
 
@@ -832,7 +969,8 @@ Int_t AliTPCCalibTCF::FitPulse(TNtuple *dataTuple, Double_t *coefZ, Double_t *co
   //
  
   // initialize TMinuit with a maximum of 8 params
-  TMinuit *gMinuit = new TMinuit(8);
+  TMinuit *gMinuit = new
+ TMinuit(8);
   gMinuit->mncler();                    // Reset Minuit's list of paramters
   gMinuit->SetPrintLevel(-1);           // No Printout
   gMinuit->SetFCN(AliTPCCalibTCF::FitFcn); // To set the address of the 
@@ -1033,7 +1171,7 @@ Double_t* AliTPCCalibTCF::ExtractPZValues(Double_t *param) {
 
 
 //____________________________________________________________________________
-void AliTPCCalibTCF::Equalization(TNtuple *dataTuple, Double_t *coefZ, Double_t *coefP) {
+Int_t AliTPCCalibTCF::Equalization(TNtuple *dataTuple, Double_t *coefZ, Double_t *coefP) {
   //
   // calculates the 3rd set of TCF parameters (remaining 2 PZ values) in 
   // order to restore the original pulse height and adds them to the passed arrays
@@ -1084,6 +1222,7 @@ void AliTPCCalibTCF::Equalization(TNtuple *dataTuple, Double_t *coefZ, Double_t 
     coefP[2] = 0;
     coefZ[2] = (s2ampl - s0ampl)/s0[s0pos-1];
   } else { // same height ? will most likely not happen ?
+    printf("No equalization because of identical height\n");
     coefP[2] = 0;
     coefZ[2] = 0;
   }
@@ -1091,6 +1230,13 @@ void AliTPCCalibTCF::Equalization(TNtuple *dataTuple, Double_t *coefZ, Double_t 
   s0->~Double_t();
   s1->~Double_t();
   s2->~Double_t();
+
+  // if equalization out of range (<0 or >=1) it failed!
+  if (coefP[2]<0 || coefZ[2]<0 || coefP[2]>=1 || coefZ[2]>=1) {
+    return 0; 
+  } else {
+    return 1;
+  }
    
 }
 
@@ -1229,7 +1375,7 @@ Double_t *AliTPCCalibTCF::GetQualityOfTCF(TH1F *hisIn, Double_t *coefZ, Double_t
 	startOfPulse = 1;
 	posOfStart = i;
       }
-      if( (sig < threshADC) && (startOfPulse == 1) ){
+      if( (sig <= threshADC) && (startOfPulse == 1) ){
 	widthFound = 1;
 	width = i - posOfStart + 1;	
       }
@@ -1240,7 +1386,7 @@ Double_t *AliTPCCalibTCF::GetQualityOfTCF(TH1F *hisIn, Double_t *coefZ, Double_t
 	startOfPulseTCF = 1;
 	posOfStartTCF = i;
       }
-      if( (sigTCF < threshADC) && (startOfPulseTCF == 1) ){
+      if( (sigTCF <= threshADC) && (startOfPulseTCF == 1) ){
 	widthFoundTCF = 1;
 	widthTCF = i -posOfStartTCF + 1;
       }
@@ -1412,8 +1558,6 @@ TNtuple *AliTPCCalibTCF::ApplyTCFilter(TH1F *hisIn, Double_t *coefZ, Double_t *c
 }
 
 
-
-
 //____________________________________________________________________________
 void AliTPCCalibTCF::PrintPulseThresholds() {
   //
@@ -1428,3 +1572,53 @@ void AliTPCCalibTCF::PrintPulseThresholds() {
   printf("   %4.1f [ADC] ... maximal pulse RMS \n", fRMSLim);
 
 } 
+
+
+//____________________________________________________________________________
+void AliTPCCalibTCF::MergeHistsPerFile(const char *fileNameIn, const char *fileSum)
+{
+  // gets histograms from fileNameIn and adds contents to fileSum
+  // if fileSum doesn't exist, fileSum is created
+  // if histogram "hisName" doesn't exist in fileSum, histogram "hisName" is created in fileSum
+  //
+  // make sure not to add the same file more than once!
+  
+  TFile fileIn(fileNameIn,"READ");
+  TH1F *hisIn;                             
+  TKey *key;                                          
+  TIter next(fileIn.GetListOfKeys());  
+  TFile fileOut(fileSum,"UPDATE");
+  //fileOut.cd();
+  
+  Int_t nHist=fileIn.GetNkeys();
+  Int_t iHist=0;
+  
+  while((key=(TKey*)next())) {
+    const char *hisName = key->GetName();
+
+    hisIn=(TH1F*)fileIn.Get(hisName);          
+    Int_t numPulse=(Int_t)hisIn->GetBinContent(1);
+    Int_t pulseLength= hisIn->GetNbinsX()-4;    
+
+    printf("Histogram %d / %d, %s, Action: ",++iHist,nHist,hisName);
+
+    TH1F *his=(TH1F*)fileOut.Get(hisName);
+    if (!his) {
+      printf("NEW\n");
+      his=hisIn;
+      his->Write(hisName);
+    } else {
+      printf("ADD\n");
+      his->AddBinContent(1,numPulse);
+      for (Int_t ii=5; ii<pulseLength+5; ii++) {
+	his->AddBinContent(ii,hisIn->GetBinContent(ii));
+      }
+      his->Write(hisName,TObject::kOverwrite);
+    }
+  }
+  printf("closing files (may take a while)...\n");
+  fileOut.Close();
+  fileIn.Close();
+  printf("...DONE\n\n");
+}
+

@@ -146,6 +146,7 @@ TLinearFitter *AliTPCTempMap::GetLinearFitter(Int_t type, Int_t side, UInt_t tim
   //       1 ... OuterContainmentVessel (OFC)
   //       2 ... InnerContainmentVessel (IFC) + ThermalScreener (TS)
   //       3 ... Within the TPC (DriftVolume) (TPC)
+  //       4 ... Only InnerContainmentVessel (IFC) 
   // side: Can be choosen for type 0 and 3 (otherwise it will be ignored in 
   //       in order to get all temperature sensors of interest)
   //       0 ... Shaft Side (A)
@@ -156,7 +157,7 @@ TLinearFitter *AliTPCTempMap::GetLinearFitter(Int_t type, Int_t side, UInt_t tim
   Double_t *x = new Double_t[3];
   Double_t y = 0;
 
-  if (type == 1 || type == 2) {
+  if (type == 1 || type == 2 || type == 4) {
     fitter->SetFormula("x0++x1++TMath::Sin(x2)"); // returns Z,Y gradient
   } else {
     fitter->SetFormula("x0++x1++x2"); // returns X,Y gradient
@@ -193,6 +194,15 @@ TLinearFitter *AliTPCTempMap::GetLinearFitter(Int_t type, Int_t side, UInt_t tim
 	y = entry->GetValue(timeSec);
 	fitter->AddPoint(x,y,1);
 	i++;	
+      }
+    } else if (type==4) { // ONLY IFC
+      if (entry->GetType()==2) {
+	x[0]=1;
+	x[1]=entry->GetZ();
+	x[2]=entry->GetPhi();    
+	y = entry->GetValue(timeSec);
+	fitter->AddPoint(x,y,1); 
+	i++;
       }
     }
   }  
