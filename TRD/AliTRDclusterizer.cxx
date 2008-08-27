@@ -174,7 +174,7 @@ AliTRDclusterizer::~AliTRDclusterizer()
   // AliTRDclusterizer destructor
   //
 
-  if (fRecPoints && IsClustersOwner()){
+  if (fRecPoints/* && IsClustersOwner()*/){
     fRecPoints->Delete();
     delete fRecPoints;
   }
@@ -1361,8 +1361,8 @@ void AliTRDclusterizer::ResetRecPoints()
 
   if (fRecPoints) {
     fRecPoints->Delete();
+    delete fRecPoints;
   }
-
 }
 
 //_____________________________________________________________________________
@@ -1373,7 +1373,11 @@ TClonesArray *AliTRDclusterizer::RecPoints()
   //
 
   if (!fRecPoints) {
-    fRecPoints = new TClonesArray("AliTRDcluster", 400);
+    if(!(fRecPoints = AliTRDReconstructor::GetClusters())){
+      fRecPoints = new TClonesArray("AliTRDcluster", 400);
+    }
+    //SetClustersOwner(kTRUE);
+    AliTRDReconstructor::SetClusters(0x0);
   }
   return fRecPoints;
 }

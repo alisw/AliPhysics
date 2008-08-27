@@ -44,7 +44,7 @@ public:
 
   AliTRDReconstructor();
   AliTRDReconstructor(const AliTRDReconstructor &r);
-  virtual ~AliTRDReconstructor() {;}
+  virtual ~AliTRDReconstructor();
   AliTRDReconstructor& operator = (const AliTRDReconstructor&)          { return *this;}
 	
 	virtual void        Init();

@@ -121,7 +121,9 @@ AliTRDtrackerV1::~AliTRDtrackerV1()
   for(Int_t isl =0; isl<kNSeedPlanes; isl++) if(fSeedTB[isl]) delete fSeedTB[isl];
   if(fTracks) {fTracks->Delete(); delete fTracks;}
   if(fTracklets) {fTracklets->Delete(); delete fTracklets;}
-  if(fClusters) {fClusters->Delete(); delete fClusters;}
+  if(fClusters) {
+    fClusters->Delete(); delete fClusters;
+  }
   if(fGeom) delete fGeom;
 }
 
@@ -1569,7 +1571,9 @@ Int_t AliTRDtrackerV1::LoadClusters(TTree *cTree)
   // Fills clusters into TRD tracking sectors
   //
   
-  if(!(fClusters = AliTRDReconstructor::GetClusters())){
+  if(!fReconstructor->IsWritingClusters()){ 
+    fClusters = AliTRDReconstructor::GetClusters();
+  } else {
     if (ReadClusters(fClusters, cTree)) {
       AliError("Problem with reading the clusters !");
       return 1;
@@ -1577,7 +1581,7 @@ Int_t AliTRDtrackerV1::LoadClusters(TTree *cTree)
   }
   SetClustersOwner();
 
-  if(!fClusters->GetEntriesFast()){ 
+  if(!fClusters || !fClusters->GetEntriesFast()){ 
     AliInfo("No TRD clusters");
     return 1;
   }
@@ -1653,6 +1657,15 @@ void AliTRDtrackerV1::UnloadClusters()
   if(fTracks) fTracks->Delete(); 
   if(fTracklets) fTracklets->Delete();
   if(fClusters && IsClustersOwner()) fClusters->Delete();
+  if(fClusters){ 
+    if(IsClustersOwner()) fClusters->Delete();
+    
+    // save clusters array in the reconstructor for further use.
+    if(!fReconstructor->IsWritingClusters()){
+      AliTRDReconstructor::SetClusters(fClusters);
+      SetClustersOwner(kFALSE);
+    } else AliTRDReconstructor::SetClusters(0x0);
+  }
 
   for (int i = 0; i < AliTRDgeometry::kNsector; i++) fTrSec[i].Clear();
 
@@ -2584,8 +2597,6 @@ AliTRDtrackV1* AliTRDtrackerV1::MakeTrack(AliTRDseedV1 *seeds, Double_t *params)
   // To be discussed with Marian !!
   //
 
-  AliTRDCalibraFillHisto *calibra = AliTRDCalibraFillHisto::Instance();
-  if (!calibra) AliInfo("Could not get Calibra instance\n");
 
   Double_t alpha = AliTRDgeometry::GetAlpha();
   Double_t shift = AliTRDgeometry::GetAlpha()/2.0;
@@ -2604,14 +2615,18 @@ AliTRDtrackV1* AliTRDtrackerV1::MakeTrack(AliTRDseedV1 *seeds, Double_t *params)
   if (nc < 30) return 0x0;
 
   AliTRDtrackV1 *ptrTrack = SetTrack(&track);
-  ptrTrack->CookLabel(.9);
   if(fReconstructor->IsHLT()) return ptrTrack;
+
+  ptrTrack->CookLabel(.9);
   
   // computes PID for track
   ptrTrack->CookPID();
   // update calibration references using this track
-  if(calibra->GetHisto2d()) calibra->UpdateHistogramsV1(ptrTrack);
-
+  AliTRDCalibraFillHisto *calibra = AliTRDCalibraFillHisto::Instance();
+  if (!calibra){ 
+    AliInfo("Could not get Calibra instance\n");
+    if(calibra->GetHisto2d()) calibra->UpdateHistogramsV1(ptrTrack);
+  }
   return ptrTrack;
 }
 

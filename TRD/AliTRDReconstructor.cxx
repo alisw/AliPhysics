@@ -73,6 +73,15 @@ AliTRDReconstructor::AliTRDReconstructor(const AliTRDReconstructor &r)
 }
 
 //_____________________________________________________________________________
+AliTRDReconstructor::~AliTRDReconstructor()
+{
+  if(fgClusters) {
+    fgClusters->Delete(); delete fgClusters;
+  }
+}
+
+
+//_____________________________________________________________________________
 void AliTRDReconstructor::Init(){
 	//
 	// Init Options
