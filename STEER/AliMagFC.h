@@ -1,7 +1,7 @@
 #ifndef ALIMAGFC_H
 #define ALIMAGFC_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
+*See cxx source for full Copyright notice                               */
 
 /* $Id$ */
 
@@ -13,95 +13,71 @@
 
 #include "AliMagF.h"
 
+enum BeamType_t {kBeamTypeAA, kBeamTypepp};
 class AliMagFC  : public AliMagF
 {
   //Alice Constant Magnetic Field
 
 public:
-  AliMagFC():AliMagF(),fCompensator(kFALSE){}
+  AliMagFC();
   AliMagFC(const char *name, const char *title, Int_t integ, 
 	   Float_t factor, Float_t fmax);
   virtual ~AliMagFC(){}
   virtual void Field(Float_t *x, Float_t *b) const;
   virtual void ReadField() {}
   virtual void ZDCField(Float_t *x, Float_t *b) const;
+  virtual void SetBeamType(BeamType_t type)      {fBeamType = type;}
+  virtual void SetBeamEnergy(Int_t energy)       {fBeamEnergy = energy;}
   virtual void SetCompensatorMagnet(Bool_t flag) {fCompensator = flag;}
- private:
-  Bool_t  fCompensator; // Flag for compensator magnetic field (kTrue -> ON)
-  ClassDef(AliMagFC,2)  //Class for all Alice Constant MagField 
+
+private:
+  Bool_t     fCompensator; // Flag for compensator magnetic field (kTrue -> ON)
+  BeamType_t fBeamType;    // Beam type: A-A (fBeamType=0) or p-p (fBeamType=1)
+  Float_t    fBeamEnergy;  // Beam energy in GeV
+  Float_t    fQuadGradient;// Gradient field for inner triplet quadrupoles
+  Float_t    fDipoleField; // Field value for D1 and D2 dipoles
+  Float_t    fCCorrField;  // Side C 2nd compensator field
+  Float_t    fACorr1Field; // Side A 1st compensator field 
+  Float_t    fACorr2Field; // Side A 2nd compensator field
+  
+  ClassDef(AliMagFC,3)  //Class for all Alice Constant MagField 
 };
 
 
-//ZDC part -------------------------------------------------------------------
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  ZDC part  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 // ************************ LHC optics v6.5 *****************************
-static const Float_t kG1=20.707;
-static const Float_t kFDIP=-37.71;
-static const Float_t kFCORN2=-9.667; 
+// ---- Position of the magnetic elements of LHC beam optics ----
+// -> SIDE C
+static const Float_t kCCorrBegin = -1972.5, kCCorrEnd = kCCorrBegin - 153., kCCorrSqRadius = 4.5*4.5;
 //
-// ZBEG       Beginning of the inner triplet
-// D1BEG      Beginning of separator dipole 1
-// D2BEG      Beginning of separator dipole 2
-// CORBEG     Corrector dipole beginning (because of dimuon arm)
+static const Float_t kCTripletBegin  = -2296.5;
+static const Float_t kCQ1Begin = kCTripletBegin,        kCQ1End = kCQ1Begin-637., kCQ1SqRadius = 3.5*3.5;
+static const Float_t kCQ2Begin = kCTripletBegin-908.5,  kCQ2End = kCQ2Begin-550., kCQ2SqRadius = 3.5*3.5;
+static const Float_t kCQ3Begin = kCTripletBegin-1558.5, kCQ3End = kCQ3Begin-550., kCQ3SqRadius = 3.5*3.5;
+static const Float_t kCQ4Begin = kCTripletBegin-2400.,  kCQ4End = kCQ4Begin-637., kCQ4SqRadius = 3.5*3.5;
 //
-static const Float_t kCORBEG2 = -1972.5,kCOREND2 = kCORBEG2 - 153., kCOR2RA2 = 4.5 * 4.5;
+static const Float_t kCD1Begin = -5838.3,  kCD1End = kCD1Begin-945., kCD1SqRadius = 4.5*4.5;
+static const Float_t kCD2Begin = -12167.8, kCD2End = kCD2Begin-945., kCD2SqRadius = 4.5*4.5;
+static const Float_t kCD2XCentre1 = -9.7;
+static const Float_t kCD2XCentre2 =  9.7;
 //
-static const Float_t kZBEG  = -2296.5;
-static const Float_t kZ1BEG = kZBEG +   0.,   kZ1END = kZ1BEG - 637.,kZ1RA2 = 3.5 * 3.5;
-static const Float_t kZ2BEG = kZBEG - 908.5,  kZ2END = kZ2BEG - 550.,kZ2RA2 = 3.5 * 3.5;
-static const Float_t kZ3BEG = kZBEG - 1558.5, kZ3END = kZ3BEG - 550.,kZ3RA2 = 3.5 * 3.5;
-static const Float_t kZ4BEG = kZBEG - 2400.,  kZ4END = kZ4BEG - 637.,kZ4RA2 = 3.5 * 3.5;
-static const Float_t kD1BEG = - 5838.3    ,kD1END = kD1BEG - 945., kD1RA2 = 4.5 * 4.5;
-static const Float_t kD2BEG = - 12167.8   ,kD2END = kD2BEG - 945., kD2RA2 = 4.5 * 4.5;
+// -> SIDE A
+// NB -> kACorr1Begin = 919. to be checked
+static const Float_t kACorr1Begin = 919., kACorr1End = kACorr1Begin+260., kCCorr1SqRadius = 4.*4.;
+static const Float_t kACorr2Begin = 1972.5, kACorr2End = kACorr2Begin+153., kCCorr2SqRadius = 4.5*4.5;
+static const Float_t kATripletBegin  = 2296.5;
+static const Float_t kAQ1Begin = kATripletBegin,	kAQ1End = kAQ1Begin+637., kAQ1SqRadius = 3.5*3.5;
+static const Float_t kAQ2Begin = kATripletBegin+908.5,  kAQ2End = kAQ2Begin+550., kAQ2SqRadius = 3.5*3.5;
+static const Float_t kAQ3Begin = kATripletBegin+1558.5, kAQ3End = kAQ3Begin+550., kAQ3SqRadius = 3.5*3.5;
+static const Float_t kAQ4Begin = kATripletBegin+2400.,  kAQ4End = kAQ4Begin+637., kAQ4SqRadius = 3.5*3.5;
 //
-static const Float_t kXCEN1D2 = -9.7     ,kYCEN1D2 = 0.;
-static const Float_t kXCEN2D2 =  9.7     ,kYCEN2D2 = 0.;
+static const Float_t kAD1Begin = 5838.3,  kAD1End = kAD1Begin+945., kAD1SqRadius = 3.375*3.375;
+static const Float_t kAD2Begin = 12167.8, kAD2End = kAD2Begin+945., kAD2SqRadius = 3.75*3.75;
+static const Float_t kAD2XCentre1 = -9.4;
+static const Float_t kAD2XCentre2 =  9.4;
 
-
-// ************************ Left line *****************************************
-// ************************ LHC optics v6.5 (official version for ions)****************
-static const Float_t kG1l=20.707;
-static const Float_t kFDIPl=-37.71;
-static const Float_t kFCORN2l=-11.72; 
-//
-//
-// ZBEG       Beginning of the inner triplet
-// D1BEG      Beginning of separator dipole 1
-// D2BEG      Beginning of separator dipole 2
-// CORBEG     Corrector dipole beginning (because of dimuon arm)
-//
-static const Float_t kCORBEG2l = 1972.5,kCOREND2l = kCORBEG2l + 153., kCOR2RA2l = 4.5 * 4.5;// second corrector
-static const Float_t kZBEGl  = 2296.5;// inner triplet beginning
-static const Float_t kZ1BEGl = kZBEGl +   0.,   kZ1ENDl = kZ1BEGl + 637.,kZ1RA2l = 3.5 * 3.5;// Q1
-static const Float_t kZ2BEGl = kZBEGl + 908.5,  kZ2ENDl = kZ2BEGl + 550.,kZ2RA2l = 3.5 * 3.5;// Q2A
-static const Float_t kZ3BEGl = kZBEGl + 1558.5, kZ3ENDl = kZ3BEGl + 550.,kZ3RA2l = 3.5 * 3.5;// Q2B
-static const Float_t kZ4BEGl = kZBEGl + 2400.,  kZ4ENDl = kZ4BEGl + 637.,kZ4RA2l = 3.5 * 3.5;// Q3
-static const Float_t kD1BEGl = 5838.3	 ,kD1ENDl = kD1BEGl + 945., kD1RA2l = 3.375 * 3.375;// D1
-static const Float_t kD2BEGl = 12167.8   ,kD2ENDl = kD2BEGl + 945., kD2RA2l = 3.75 * 3.75;// D2
-static const Float_t kXCEN1D2l = -9.4	  ,kYCEN1D2l = 0.;// D2
-static const Float_t kXCEN2D2l =  9.4	  ,kYCEN2D2l = 0.;// D2
-
-
-/*
-// ************************ LHC optics v6.500 (official version for pp 7TeV) **********
-static const Float_t kG1l=22.000;
-static const Float_t kFDIPl=-37.804;
-//static const Float_t kFCORN1l=13.201; 
-static const Float_t kFCORN2l=-11.751;
-//
-static const Float_t kCORBEG1l = 945.,kCOREND1l = kCORBEG1l + 260., kCOR1RA2l = 4.5 * 4.5;// first corrector 
-static const Float_t kCORBEG2l = 1972.5,kCOREND2l = kCORBEG2l + 153., kCOR2RA2l = 4.5 * 4.5;// second corrector
-static const Float_t kZBEGl  = 2296.5;// inner triplet beginning
-static const Float_t kZ1BEGl = kZBEGl +   0.,	kZ1ENDl = kZ1BEGl + 637.,kZ1RA2l = 3.5 * 3.5;// Q1
-static const Float_t kZ2BEGl = kZBEGl + 908.5,  kZ2ENDl = kZ2BEGl + 550.,kZ2RA2l = 3.5 * 3.5;// Q2A
-static const Float_t kZ3BEGl = kZBEGl + 1558.5, kZ3ENDl = kZ3BEGl + 550.,kZ3RA2l = 3.5 * 3.5;// Q2B
-static const Float_t kZ4BEGl = kZBEGl + 2400.,  kZ4ENDl = kZ4BEGl + 637.,kZ4RA2l = 3.5 * 3.5;// Q3
-static const Float_t kD1BEGl = 5838.3	 ,kD1ENDl = kD1BEGl + 945., kD1RA2l = 3.375 * 3.375;// D1
-static const Float_t kD2BEGl = 12167.8   ,kD2ENDl = kD2BEGl + 945., kD2RA2l = 3.75 * 3.75;// D2
-static const Float_t kXCEN1D2l = -9.4	  ,kYCEN1D2l = 0.;// D2
-static const Float_t kXCEN2D2l =  9.4	  ,kYCEN2D2l = 0.;// D2
-*/
-
-//ZDC part -------------------------------------------------------------------
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  ZDC part  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 #endif
+

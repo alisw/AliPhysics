@@ -29,16 +29,64 @@
 ClassImp(AliMagFC)
 
 //________________________________________
+AliMagFC::AliMagFC()
+    :AliMagF(),
+    fCompensator(kFALSE),
+    fBeamType(kBeamTypepp),
+    fBeamEnergy(0),
+    fQuadGradient(0),
+    fDipoleField(0),
+    fCCorrField(0), 
+    fACorr1Field(0),
+    fACorr2Field(0)
+{
+  // 
+  // Default constructor
+  //
+}
+
+//________________________________________
 AliMagFC::AliMagFC(const char *name, const char *title, Int_t integ, 
 		   Float_t factor, Float_t fmax)
     : AliMagF(name,title,integ,factor,fmax),
-      fCompensator(kFALSE)
+    fCompensator(kFALSE),
+    fBeamType(kBeamTypepp), 
+    fBeamEnergy(7000.),
+    fQuadGradient(0),
+    fDipoleField(0),
+    fCCorrField(0), 
+    fACorr1Field(0),
+    fACorr2Field(0)
+
 {
   // 
   // Standard constructor
   //
   fType = kConst;
   fMap  = 1;
+  
+  //////////////////////////////////////////////////////////////////////
+  // ---- Magnetic field values (according to beam type and energy) ----
+  // p-p @ 5+5 TeV
+  if(fBeamType==kBeamTypepp && fBeamEnergy==5000.){
+    fQuadGradient = 15.7145;
+    fDipoleField  = 27.0558;
+    // SIDE C
+    fCCorrField   = 9.7017; 
+    // SIDE A
+    fACorr1Field  = -13.2143; 
+    fACorr2Field  = -11.9909; 
+  }
+  // Pb-Pb @ 2.7+2.7 TeV or p-p @ 7+7 TeV
+  else{
+    fQuadGradient = 22.0002;
+    fDipoleField  = 37.8781;
+    // SIDE C
+    fCCorrField   = 9.6908; 
+    // SIDE A
+    fACorr1Field  = -13.2014; 
+    fACorr2Field  = -9.6908; 
+  }
 }
 
 //________________________________________
@@ -51,8 +99,9 @@ void AliMagFC::Field(Float_t *x, Float_t *b) const
   if(fMap==1) {
     if(TMath::Abs(x[2])<700 && x[0]*x[0]+(x[1]+30)*(x[1]+30) < 560*560) {
       b[2]=2;
-    } else {
-      if ( -725 >= x[2] && x[2] >= -1225 ) {
+    } 
+    else {
+      if(-725 >= x[2] && x[2] >= -1225 ){
 	Float_t dz = TMath::Abs(-975-x[2])*0.01;
 	b[0] = - (1-0.1*dz*dz)*7;
       }
@@ -65,109 +114,109 @@ void AliMagFC::Field(Float_t *x, Float_t *b) const
 	b[1]*=fFactor;
 	b[2]*=fFactor;
     }
-  } else {
+  } 
+  else {
       AliFatal(Form("Invalid field map for constant field %d",fMap));
   }
 }
 
-
+//___________________________________________________
 void AliMagFC::ZDCField(Float_t *x, Float_t *b) const
 {
-//This is the ZDC part
-    Float_t rad2 = x[0] * x[0] + x[1] * x[1];
-
-    if (fCompensator && (x[2] > 919. && x[2] < 1231.) && rad2 < 16.) {
+  // ---- This is the ZDC part
+  
+  Float_t rad2 = x[0] * x[0] + x[1] * x[1];
+  
+  // SIDE C **************************************************
+  if(x[2]<0.){  
+    if(x[2] < kCCorrBegin && x[2] > kCCorrEnd && rad2 < kCCorrSqRadius){
+	b[0] = fCCorrField;
+	b[1] = 0.;
+	b[2] = 0.;
+    }
+    else if(x[2] < kCQ1Begin && x[2] > kCQ1End && rad2 < kCQ1SqRadius){
+	b[0] = fQuadGradient*x[1];
+	b[1] = fQuadGradient*x[0];
+	b[2] = 0.;
+    }
+    else if(x[2] < kCQ2Begin && x[2] > kCQ2End && rad2 < kCQ2SqRadius){
+	b[0] = -fQuadGradient*x[1];
+	b[1] = -fQuadGradient*x[0];
+	b[2] = 0.;
+    }
+    else if(x[2] < kCQ3Begin && x[2] > kCQ3End && rad2 < kCQ3SqRadius){
+	b[0] = -fQuadGradient*x[1];
+	b[1] = -fQuadGradient*x[0];
+	b[2] = 0.;
+    }
+    else if(x[2] < kCQ4Begin && x[2] > kCQ4End && rad2 < kCQ4SqRadius){
+	b[0] = fQuadGradient*x[1];
+	b[1] = fQuadGradient*x[0];
+	b[2] = 0.;
+    }
+    else if(x[2] < kCD1Begin && x[2] > kCD1End && rad2 < kCD1SqRadius){
+	b[1] = fDipoleField;
+	b[2] = 0.;
+	b[2] = 0.;
+    }
+    else if(x[2] < kCD2Begin && x[2] > kCD2End){
+	if(((x[0]-kCD2XCentre1)*(x[0]-kCD2XCentre1)+(x[1]*x[1]))<kCD2SqRadius
+	   || ((x[0]-kCD2XCentre2)*(x[0]-kCD2XCentre2)+(x[1]*x[1]))<kCD2SqRadius){
+	  b[1] = -fDipoleField;
+	  b[2] = 0.;
+	  b[2] = 0.;
+	}
+    }
+  }
+  
+  // SIDE A **************************************************
+  else{        
+    if(fCompensator && (x[2] > kACorr1Begin && x[2] < kACorr1End) && rad2 < kCCorr1SqRadius) {
       // Compensator magnet at z = 1075 m 
-	b[0] = 10.9;
+	b[0] = fACorr1Field;
 	b[1] = 0.;
 	b[2] = 0.;
 	return;
     }
     
-    
-    if(x[2] < kCORBEG2 && x[2] > kCOREND2){
-	if(rad2<kCOR2RA2){
-	    b[0] = - kFCORN2;
-	}
-    }
-    else if(x[2] < kZ1BEG && x[2] > kZ1END){  
-	if(rad2<kZ1RA2){
-	    b[0] =  kG1*x[1];
-	    b[1] =  kG1*x[0];
-	}
-    }
-    else if(x[2] < kZ2BEG && x[2] > kZ2END){  
-	if(rad2<kZ2RA2){
-	    b[0] = -kG1*x[1];
-	    b[1] = -kG1*x[0];
-	}
-    }
-    else if(x[2] < kZ3BEG && x[2] > kZ3END){  
-	if(rad2<kZ3RA2){
-	    b[0] = -kG1*x[1];
-	    b[1] = -kG1*x[0];
-	}
-    }
-    else if(x[2] < kZ4BEG && x[2] > kZ4END){  
-	if(rad2<kZ4RA2){
-	    b[0] =  kG1*x[1];
-	    b[1] =  kG1*x[0];
-	}
-    }
-    else if(x[2] < kD1BEG && x[2] > kD1END){ 
-	if(rad2<kD1RA2){
-	    b[1] = -kFDIP;
-	}
-    }
-    else if(x[2] < kD2BEG && x[2] > kD2END){
-	if(((x[0]-kXCEN1D2)*(x[0]-kXCEN1D2)+(x[1]-kYCEN1D2)*(x[1]-kYCEN1D2))<kD2RA2
-	   || ((x[0]-kXCEN2D2)*(x[0]-kXCEN2D2)+(x[1]-kYCEN2D2)*(x[1]-kYCEN2D2))<kD2RA2){
-	    b[1] = kFDIP;
-	}
-    }
-    
-// *************************** LEFT LINE ***********************************************
-    
-    if(x[2] > kCORBEG2l && x[2] < kCOREND2l){
-	if(rad2<kCOR2RA2l){
-	    b[0] = kFCORN2l;
-	}
+    if(x[2] > kACorr2Begin && x[2] < kACorr2End && rad2 < kCCorr2SqRadius){
+	b[0] = fACorr2Field;
+	b[1] = 0.;
+	b[2] = 0.;
     }          
-    else if(x[2] > kZ1BEGl && x[2] < kZ1ENDl){  
-	if(rad2<kZ1RA2l){
+    else if(x[2] > kAQ1Begin && x[2] < kAQ1End && rad2 < kAQ1SqRadius){
 	// First quadrupole of inner triplet de-focussing in x-direction
-	    b[0] = -kG1l*x[1];
-	    b[1] = -kG1l*x[0];
+	b[0] = -fQuadGradient*x[1];
+	b[1] = -fQuadGradient*x[0];
+	b[2] = 0.;
+    }
+    else if(x[2] > kAQ2Begin && x[2] < kAQ2End && rad2 < kAQ2SqRadius){
+	b[0] = fQuadGradient*x[1];
+	b[1] = fQuadGradient*x[0];
+	b[2] = 0.;
+    }
+    else if(x[2] > kAQ3Begin && x[2] < kAQ3End && rad2 < kAQ3SqRadius){
+	b[0] = fQuadGradient*x[1];
+	b[1] = fQuadGradient*x[0];
+	b[2] = 0.;
+    }
+    else if(x[2] > kAQ4Begin && x[2] < kAQ4End && rad2 < kAQ4SqRadius){
+	b[0] = -fQuadGradient*x[1];
+	b[1] = -fQuadGradient*x[0];
+	b[2] = 0.;
+    }
+    else if(x[2] > kAD1Begin && x[2] < kAD1End && rad2 < kAD1SqRadius){
+	b[0] = 0.;
+	b[1] = -fDipoleField;
+	b[2] = 0.;
+    }
+    else if(x[2] > kAD2Begin && x[2] < kAD2End){
+	if(((x[0]-kAD2XCentre1)*(x[0]-kAD2XCentre1)+(x[1]*x[1])) < kAD2SqRadius
+	   || ((x[0]-kAD2XCentre2)*(x[0]-kAD2XCentre2)+(x[1]*x[1])) < kAD2SqRadius){
+	    b[1] = fDipoleField;
 	}
     }
-    else if(x[2] > kZ2BEGl && x[2] < kZ2ENDl){  
-	if(rad2<kZ2RA2l){
-	    b[0] = kG1l*x[1];
-	    b[1] = kG1l*x[0];
-	}
-    }
-    else if(x[2] > kZ3BEGl && x[2] < kZ3ENDl){  
-	if(rad2<kZ3RA2l){
-	    b[0] = kG1l*x[1];
-	    b[1] = kG1l*x[0];
-	}
-    }
-    else if(x[2] > kZ4BEGl && x[2] < kZ4ENDl){  
-	if(rad2<kZ4RA2l){
-	    b[0] = -kG1l*x[1];
-	    b[1] = -kG1l*x[0];
-	}
-    }
-    else if(x[2] > kD1BEGl && x[2] < kD1ENDl){ 
-	if(rad2<kD1RA2l){
-	    b[1] = kFDIPl;
-	}
-    }
-    else if(x[2] > kD2BEGl && x[2] < kD2ENDl){
-	if(((x[0]-kXCEN1D2l)*(x[0]-kXCEN1D2l)+(x[1]-kYCEN1D2l)*(x[1]-kYCEN1D2l))<kD2RA2l
-	   || ((x[0]-kXCEN2D2l)*(x[0]-kXCEN2D2l)+(x[1]-kYCEN2D2l)*(x[1]-kYCEN2D2l))<kD2RA2l){
-	    b[1] = -kFDIPl;
-	}
-    }
+  }
     
 }
+
