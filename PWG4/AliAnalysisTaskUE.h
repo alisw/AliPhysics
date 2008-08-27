@@ -132,7 +132,7 @@ AliAnalysisTaskUE&   operator=(const  AliAnalysisTaskUE &det);
               
       //        TH2F*  fhValidRegion; //! test to be canceled
          
-    ClassDef( AliAnalysisTaskUE, 1); // Analysis task for Underlying Event analysis
+    ClassDef( AliAnalysisTaskUE, 1) // Analysis task for Underlying Event analysis
 };
  
 #endif
