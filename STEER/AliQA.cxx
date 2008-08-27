@@ -76,6 +76,7 @@ const TString AliQA::fkgQACorrNtName     = "CorrQA" ;
 const TString AliQA::fkgRefOCDBDirName   = "Ref"  ; 
 TString AliQA::fkgRefDataDirName	 = ""  ; 
 const TString AliQA::fkgQARefOCDBDefault = "alien://folder=/alice/QA/20"  ; 
+const TString AliQA::fkgExpert                  = "QAExpErT" ; 
 
 //____________________________________________________________________________
 AliQA::AliQA() : 

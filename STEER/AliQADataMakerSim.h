@@ -28,12 +28,12 @@ public:
 	AliQADataMakerSim& operator = (const AliQADataMakerSim& qadm) ;
 	virtual ~AliQADataMakerSim() ; // dtor
   
-	virtual Int_t Add2DigitsList(TH1 * hist, const Int_t index)    { return Add2List(hist, index, fDigitsQAList) ; }
-	virtual Int_t Add2ESDsList(TH1 * /*hist*/, const Int_t /*index*/)      { return -1 ; } 
-	virtual Int_t Add2HitsList(TH1 * hist, const Int_t index)      { return Add2List(hist, index, fHitsQAList) ; }
-	virtual Int_t Add2RecPointsList(TH1 * /*hist*/, const Int_t /*index*/) { return -1 ; } 
-	virtual Int_t Add2RawsList(TH1 * /*hist*/, const Int_t /*index*/, const Bool_t saveForCorr = kFALSE)      { return -1 ; }  
-	virtual Int_t Add2SDigitsList(TH1 * hist, const Int_t index)   { return Add2List(hist, index, fSDigitsQAList) ; }
+	virtual Int_t Add2DigitsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE)    { return Add2List(hist, index, fDigitsQAList, expert) ; }
+	virtual Int_t Add2ESDsList(TH1 * /*hist*/, const Int_t /*index*/, const Bool_t /*expert = kFALSE*/)      { return -1 ; } 
+	virtual Int_t Add2HitsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE)      { return Add2List(hist, index, fHitsQAList, expert) ; }
+	virtual Int_t Add2RecPointsList(TH1 * /*hist*/, const Int_t /*index*/, const Bool_t /*expert = kFALSE*/) { return -1 ; } 
+	virtual Int_t Add2RawsList(TH1 * /*hist*/, const Int_t /*index*/, const Bool_t /*expert = kFALSE*/, const Bool_t /*saveForCorr = kFALSE*/)      { return -1 ; }  
+	virtual Int_t Add2SDigitsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE)   { return Add2List(hist, index, fSDigitsQAList, expert) ; }
 	virtual void        Exec(AliQA::TASKINDEX_t task, TObject * data) ;
 	virtual void        EndOfCycle() ;
 	virtual void        EndOfCycle(AliQA::TASKINDEX_t task) ;

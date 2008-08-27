@@ -42,7 +42,7 @@ ClassImp(AliCorrQADataMakerRec)
            
 //____________________________________________________________________________ 
 AliCorrQADataMakerRec::AliCorrQADataMakerRec(AliQADataMaker ** qadm ) : 
-  AliQADataMakerRec("Corr", "Corr Quality Assurance Data Maker"),
+AliQADataMakerRec(AliQA::GetDetName(AliQA::kCORR), "Corr Quality Assurance Data Maker"),
   fMaxRawVar(0),  
   fqadm(qadm)
 {

@@ -75,7 +75,7 @@ AliQADataMaker::AliQADataMaker(const AliQADataMaker& qadm) :
 }
 
 //____________________________________________________________________________
-Int_t AliQADataMaker::Add2List(TH1 * hist, const Int_t index, TObjArray * list, const Bool_t saveForCorr) 
+Int_t AliQADataMaker::Add2List(TH1 * hist, const Int_t index, TObjArray * list, const Bool_t expert, const Bool_t saveForCorr) 
 { 
 	// Set histograms memory resident and add to the list
 	// Maximm allowed is 10000
@@ -89,6 +89,11 @@ Int_t AliQADataMaker::Add2List(TH1 * hist, const Int_t index, TObjArray * list, 
 		return -1 ; 
 	} else {
 		hist->SetDirectory(0) ; 
+    if (expert) {
+      TString name(hist->GetTitle()) ; 
+      name.Append(AliQA::GetExpert()) ; 
+      hist->SetTitle(name) ;
+    }
 		list->AddAtAndExpand(hist, index) ; 
     char * name = Form("%s_%s", list->GetName(), hist->GetName()) ;  
     TParameter<double> * p = new TParameter<double>(name, 9999.9999) ;

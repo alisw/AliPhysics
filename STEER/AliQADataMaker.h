@@ -40,12 +40,12 @@ public:
 	AliQADataMaker(const AliQADataMaker& qadm) ;   
 	virtual ~AliQADataMaker() {} // dtor
   
-	virtual Int_t Add2DigitsList(TH1 * hist, const Int_t index)          = 0 ; 
-	virtual Int_t Add2ESDsList(TH1 * hist, const Int_t index)            = 0 ; 
-	virtual Int_t Add2HitsList(TH1 * hist, const Int_t index)            = 0 ; 
-	virtual Int_t Add2RecPointsList(TH1 * hist, const Int_t index)       = 0 ; 
-	virtual Int_t Add2RawsList(TH1 * hist, const Int_t index, const Bool_t saveForCorr = kFALSE)            = 0 ; 
-	virtual Int_t Add2SDigitsList(TH1 * hist, const Int_t index)         = 0 ; 
+	virtual Int_t Add2DigitsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE)          = 0 ; 
+	virtual Int_t Add2ESDsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE)            = 0 ; 
+	virtual Int_t Add2HitsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE)            = 0 ; 
+	virtual Int_t Add2RecPointsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE)       = 0 ; 
+	virtual Int_t Add2RawsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE, const Bool_t saveForCorr = kFALSE)            = 0 ; 
+	virtual Int_t Add2SDigitsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE)         = 0 ; 
 	virtual void        Exec(AliQA::TASKINDEX_t, TObject * data)         = 0 ;
 	virtual void        EndOfCycle()                                     = 0 ;
 	virtual void        EndOfCycle(AliQA::TASKINDEX_t)                   = 0 ;
@@ -71,7 +71,7 @@ public:
 	  
 protected: 
 
-	Int_t          Add2List(TH1 * hist, const Int_t index, TObjArray * list, const Bool_t saveForCorr = kFALSE) ;
+	Int_t          Add2List(TH1 * hist, const Int_t index, TObjArray * list, const Bool_t expert = kFALSE, const Bool_t saveForCorr = kFALSE) ;
 	virtual void   DefaultEndOfDetectorCycle(AliQA::TASKINDEX_t task ) ; 
 	virtual void   EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray * obj ) = 0 ; 
 	TObject *      GetData(TObjArray * list, const Int_t index) ;
