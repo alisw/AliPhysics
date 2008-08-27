@@ -166,7 +166,9 @@ void AliUA1JetFinderV1::FindJets()
   Int_t nselectj = 0;
 //  printf("Found %d jets \n", nj);
   
-  TRefArray *refs = fReader->GetReferences();
+  TRefArray *refs = 0;
+  Bool_t fromAod = !strcmp(fReader->ClassName(),"AliJetAODReader");
+  if (fromAod) refs = fReader->GetReferences();
   for(Int_t kj=0; kj<nj; kj++){
      if ((etaJet[kj] > (header->GetJetEtaMax())) ||
           (etaJet[kj] < (header->GetJetEtaMin())) ||
@@ -179,9 +181,11 @@ void AliUA1JetFinderV1::FindJets()
       fJets->AddJet(px, py, pz, en);
       AliAODJet jet(px, py, pz, en);
 
-     for(Int_t jpart = 0; jpart < nIn; jpart++) // loop for all particles in array
-         if (injet[jpart] == kj && fReader->GetCutFlag(jpart) == 1)
-		   jet.AddTrack(refs->At(jpart));  // check if the particle belongs to the jet and add the ref
+      if (fromAod){
+        for(Int_t jpart = 0; jpart < nIn; jpart++) // loop for all particles in array
+          if (injet[jpart] == kj && fReader->GetCutFlag(jpart) == 1)
+		    jet.AddTrack(refs->At(jpart));  // check if the particle belongs to the jet and add the ref
+      }
       
       //jet.Print("");
       
