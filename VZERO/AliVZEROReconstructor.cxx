@@ -144,13 +144,15 @@ void AliVZEROReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,
     Int_t nDigits = digitsArray->GetEntriesFast();
     
     for (Int_t d=0; d<nDigits; d++) {    
-      AliVZEROdigit* digit = (AliVZEROdigit*)digitsArray->At(d);      
-      Int_t  pmNumber      = digit->PMNumber();  
-      adc[pmNumber] = (Short_t) digit->ADC(); 
-      time[pmNumber] = (Short_t) digit->Time();
-      // cut of ADC at MIP/2
-      if  (adc[pmNumber] > (mip[pmNumber]/2)) 
-	mult[pmNumber] += float(adc[pmNumber])/mip[pmNumber];
+        AliVZEROdigit* digit = (AliVZEROdigit*)digitsArray->At(d);      
+        Int_t  pmNumber      = digit->PMNumber(); 
+        // Pedestal retrieval and suppression: 
+        Int_t  pedestal      = int(fCalibData->GetPedestal(d));
+        adc[pmNumber]  = (Short_t) digit->ADC() - pedestal; 
+        time[pmNumber] = (Short_t) digit->Time();
+        // cut of ADC at MIP/2
+        if  (adc[pmNumber] > (mip[pmNumber]/2)) 
+	    mult[pmNumber] += float(adc[pmNumber])/mip[pmNumber];
     } // end of loop over digits
   } // end of loop over events in digits tree
   
