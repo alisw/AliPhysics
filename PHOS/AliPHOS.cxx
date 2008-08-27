@@ -537,7 +537,7 @@ void AliPHOS::Digits2Raw()
 		    relId[0]-1,relId[3]-1,relId[2]-1));
     // if a signal is out of time range, write only trailer
     if (digit->GetTimeR() > pulse->GetRawFormatTimeMax()*0.5 ) {
-      AliInfo("Signal is out of time range.\n");
+      AliDebug(2,"Signal is out of time range.\n");
       buffer[iDDL]->FillBuffer(0);
       buffer[iDDL]->FillBuffer(pulse->GetRawFormatTimeBins() );  // time bin
       buffer[iDDL]->FillBuffer(3);                               // bunch length
