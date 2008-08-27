@@ -59,7 +59,9 @@ AliVZEROCalibData::AliVZEROCalibData(const AliVZEROCalibData& calibda) :
   for(int t=0; t<128; t++) { 
       fPedestal[t] = calibda.GetPedestal(t);
       fSigma[t]    = calibda.GetSigma(t);
-      fGain[t]     = calibda.GetGain(t); }
+      fGain[t]     = calibda.GetGain(t); 
+      fADCsigma[t] = calibda.GetADCsigma(t); 
+      }
       
   for(int t=0; t<64; t++) { 
       fTimeOffset[t]   = calibda.GetTimeOffset(t);
@@ -80,7 +82,9 @@ AliVZEROCalibData &AliVZEROCalibData::operator =(const AliVZEROCalibData& calibd
   for(int t=0; t<128; t++) {
       fPedestal[t] = calibda.GetPedestal(t);
       fSigma[t]    = calibda.GetSigma(t);
-      fGain[t]     = calibda.GetGain(t); }
+      fGain[t]     = calibda.GetGain(t); 
+      fADCsigma[t] = calibda.GetADCsigma(t);
+      }
       
   for(int t=0; t<64; t++) { 
       fTimeOffset[t]   = calibda.GetTimeOffset(t);
@@ -97,8 +101,6 @@ AliVZEROCalibData::~AliVZEROCalibData()
 {
   // destructor
 }
-
-                                                                                   
 
 //________________________________________________________________
 void AliVZEROCalibData::SetPedestal(Float_t* Pedestal)
@@ -119,6 +121,13 @@ void AliVZEROCalibData::SetGain(Float_t* Gain)
 {
   if(Gain) for(int t=0; t<128; t++) fGain[t] = Gain[t];
   else for(int t=0; t<128; t++) fGain[t] = 0.0;
+}
+
+//________________________________________________________________
+void AliVZEROCalibData::SetADCsigma(Float_t* ADCsigma) 
+{
+  if(ADCsigma) for(int t=0; t<128; t++) fADCsigma[t] = ADCsigma[t];
+  else for(int t=0; t<128; t++) fADCsigma[t] = 0.0;
 }
 
 //________________________________________________________________
