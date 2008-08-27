@@ -29,6 +29,8 @@ class AliVZEROCalibData: public TNamed {
   Float_t* GetSigma()   const {return (float*)fSigma;}
   Float_t  GetGain(Int_t channel)	const {return fGain[channel];}
   Float_t* GetGain()   const {return (float*)fGain;}
+  Float_t  GetADCsigma(Int_t channel)	const {return fADCsigma[channel];}
+  Float_t* GetADCsigma()   const {return (float*)fADCsigma;}
   
   Float_t  GetTimeOffset(Int_t channel)	const {return fTimeOffset[channel];}
   Float_t* GetTimeOffset()   const {return (float*)fTimeOffset;}
@@ -48,7 +50,9 @@ class AliVZEROCalibData: public TNamed {
   void     SetSigma(Float_t* Sigma);
   void 	   SetGain(Float_t val, Int_t channel) {fGain[channel]=val;}
   void 	   SetGain(Float_t* Gain);
-
+  void 	   SetADCsigma(Float_t val, Int_t channel) {fADCsigma[channel]=val;}
+  void 	   SetADCsigma(Float_t* ADCsigma);
+  
   void     SetTimeOffset(Float_t val, Int_t channel) {fTimeOffset[channel]=val;}
   void     SetTimeOffset(Float_t* TimeOffset);
   void     SetTimeGain(Float_t val, Int_t channel) {fTimeGain[channel]=val;}
@@ -60,12 +64,11 @@ class AliVZEROCalibData: public TNamed {
   void     SetWidthHV(Float_t val, Int_t channel) {fWidthHV[channel]=val;}
   void     SetWidthHV(Float_t* WidthHVs);
 
-  
-
  protected:
   Float_t  fPedestal[128];     // Mean pedestal values
   Float_t  fSigma[128];        // Sigmas of pedestal peaks
-  Float_t  fGain[128];	       // PM gains
+  Float_t  fGain[128];	       // ADC mean values
+  Float_t  fADCsigma[128];     // ADC sigma values
   
   Float_t  fTimeOffset[64];
   Float_t  fTimeGain[64];
