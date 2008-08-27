@@ -193,7 +193,7 @@ int main(int argc, char **argv) {
 
 /* store the pedestal file on FES */
  
-    status = daqDA_FES_storeFile("PMD_PED.root","pedestal");
+    status = daqDA_FES_storeFile("PMD_PED.root","PMD_PED.root");
     if (status) {
 	status = -2;
     }

@@ -272,7 +272,7 @@ int main(int argc, char **argv) {
     if (filestatus == 0)
       {
 	printf("root file is created and getting exported\n");
-	status = daqDA_FES_storeFile("PMDGAINS.root","gaincalib");
+	status = daqDA_FES_storeFile("PMDGAINS.root","PMDGAINS.root");
       }
 
     if (status) {
