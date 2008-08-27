@@ -22,7 +22,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <cstdlib>
-//#include "TFile.h"
 #include "TObjArray.h"
 #include "TString.h"
 
@@ -30,6 +29,7 @@
 #include "AliRawReader.h"
 
 #include "AliTOFClusterFinder.h"
+#include "AliTOFClusterFinderV1.h"
 #include "AliTOFcalib.h"
 #include "AliTOFtrackerMI.h"
 #include "AliTOFtracker.h"
@@ -37,13 +37,8 @@
 #include "AliTOFReconstructor.h"
 
 class TTree;
-//class TFile;
-//class TDirectory;
 
 class AliESDEvent;
-
-//extern TDirectory *gDirectory;
-//extern TFile *gFile;
 
 ClassImp(AliTOFReconstructor)
 
@@ -99,10 +94,20 @@ AliTOFReconstructor::~AliTOFReconstructor()
 void AliTOFReconstructor::Reconstruct(AliRawReader *rawReader,
                                       TTree *clustersTree) const
 {
-// reconstruct clusters from Raw Data
+  //
+  // reconstruct clusters from Raw Data
+  //
 
-  static AliTOFClusterFinder tofClus(fTOFcalib);
-  tofClus.Digits2RecPoints(rawReader, clustersTree);
+  TString selectedClusterFinder = GetOption();
+  // use V1 cluster finder if selected
+  if (selectedClusterFinder.Contains("NCF")) {
+    static AliTOFClusterFinderV1 tofClus(fTOFcalib);
+    tofClus.Digits2RecPoints(rawReader, clustersTree);
+  }
+  else {
+    static AliTOFClusterFinder tofClus(fTOFcalib);
+    tofClus.Digits2RecPoints(rawReader, clustersTree);
+  }
 
 }
 
@@ -110,11 +115,22 @@ void AliTOFReconstructor::Reconstruct(AliRawReader *rawReader,
 void AliTOFReconstructor::Reconstruct(TTree *digitsTree,
                                       TTree *clustersTree) const
 {
-// reconstruct clusters from Raw Data
+  //
+  // reconstruct clusters from digits
+  //
 
   AliDebug(2,Form("Global Event loop mode: Creating Recpoints from Digits Tree")); 
-  static AliTOFClusterFinder tofClus(fTOFcalib);
-  tofClus.Digits2RecPoints(digitsTree, clustersTree);
+
+  TString selectedClusterFinder = GetOption();
+  // use V1 cluster finder if selected
+  if (selectedClusterFinder.Contains("NCF")) {
+    static AliTOFClusterFinderV1 tofClus(fTOFcalib);
+    tofClus.Digits2RecPoints(digitsTree, clustersTree);
+  }
+  else {
+    static AliTOFClusterFinder tofClus(fTOFcalib);
+    tofClus.Digits2RecPoints(digitsTree, clustersTree);
+  }
 
 }
 //_____________________________________________________________________________
@@ -123,8 +139,17 @@ void AliTOFReconstructor::Reconstruct(TTree *digitsTree,
 // reconstruct clusters from digits
 
   AliDebug(2,Form("Global Event loop mode: Converting Raw Data to a Digits Tree")); 
-  AliTOFClusterFinder tofClus(fTOFcalib);
-  tofClus.Raw2Digits(reader, digitsTree);
+
+  TString selectedClusterFinder = GetOption();
+  // use V1 cluster finder if selected
+  if (selectedClusterFinder.Contains("NCF")) {
+    static AliTOFClusterFinderV1 tofClus(fTOFcalib);
+    tofClus.Raw2Digits(reader, digitsTree);
+  }
+  else {
+    static AliTOFClusterFinder tofClus(fTOFcalib);
+    tofClus.Raw2Digits(reader, digitsTree);
+  }
 
 }
 
@@ -138,5 +163,5 @@ AliTracker* AliTOFReconstructor::CreateTracker() const
   if (selectedTracker.Contains("MI")) return new AliTOFtrackerMI();
   if (selectedTracker.Contains("V1")) return new AliTOFtrackerV1();
   return new AliTOFtracker();
-}
 
+}

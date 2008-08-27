@@ -1,0 +1,158 @@
+#ifndef ALITOFCLUSTERFINDERV1_H
+#define ALITOFCLUSTERFINDERV1_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+// AliTOFClusterFinderV1 Class
+// Task: Transform digits/raw data to TOF Clusters, to fill TOF RecPoints
+// and feed TOF tracking 
+
+#include "TObject.h"
+
+class TClonesArray;
+class TTree;
+
+class AliRunLoader;
+class AliRawReader;
+
+class AliTOFcluster;
+class AliTOFcalib;
+class AliTOFDigitMap;
+
+class AliTOFClusterFinderV1 : public TObject
+{
+
+  enum {kTofMaxCluster=77777}; //maximal number of the TOF clusters
+
+ public:
+
+  AliTOFClusterFinderV1(AliTOFcalib *calib);
+  AliTOFClusterFinderV1(const AliTOFClusterFinderV1 &source); // copy constructor
+  AliTOFClusterFinderV1& operator=(const AliTOFClusterFinderV1 &source); // ass. op.
+  virtual ~AliTOFClusterFinderV1();
+
+  void Digits2RecPoints(TTree* digitsTree, TTree* clusterTree);
+  void Digits2RecPoints(AliRawReader *rawReader, TTree *clustersTree);
+  void Raw2Digits(AliRawReader *rawReader, TTree* digitsTree); 
+
+  AliTOFClusterFinderV1(AliRunLoader* runLoader, AliTOFcalib *calib);
+  void Digits2RecPoints(Int_t iEvent);
+  void Digits2RecPoints(Int_t ievt, AliRawReader *rawReader);
+  void Raw2Digits(Int_t ievt, AliRawReader *rawReader);
+
+  void FillRecPoint();
+  void ResetRecpoint();
+  void ResetDigits();
+  void SetVerbose(Int_t Verbose){fVerbose=Verbose;} // To set the verbose level
+  void SetDecoderVersion(Int_t version){fDecoderVersion=version;} // To set the decoder version
+  Bool_t GetDecoderVersion() const {return fDecoderVersion;} // To get the decoder version
+  UShort_t GetClusterVolIndex(Int_t *ind) const; //Volume Id getter
+  void GetClusterPars(Int_t *ind, Double_t *pos, Double_t *cov) const; //cluster par getter
+  void GetClusterPars(Bool_t check, Int_t counter, Int_t **ind, Double_t *weight,
+		      Double_t *pos, Double_t *cov) const; //cluster par getter
+
+  void FindOnePadClusterPerStrip(Int_t nSector, Int_t nPlate, Int_t nStrip);
+  void FindClustersPerStrip(Int_t nSector, Int_t nPlate, Int_t nStrip, Int_t group);
+
+  void FindClusters34(Int_t nSector, Int_t nPlate, Int_t nStrip);
+  void FindClusters23(Int_t nSector, Int_t nPlate, Int_t nStrip);
+  void FindClusters24(Int_t nSector, Int_t nPlate, Int_t nStrip);
+
+  void SetMaxDeltaTime(Int_t a) {fMaxDeltaTime = a;};
+  Int_t GetMaxDeltaTime()       {return fMaxDeltaTime;};
+
+ public:
+  class AliTOFselectedDigit { 
+    friend class AliTOFClusterFinderV1; 
+   public:
+   AliTOFselectedDigit() 
+     :
+     fTDC(0.),
+     fADC(0.),
+     fTOT(0.),
+     fWeight(0.),
+     fIndex(-1) {
+     fDetectorIndex[0]=-1;
+     fDetectorIndex[1]=-1;
+     fDetectorIndex[2]=-1;
+     fDetectorIndex[3]=-1;
+     fDetectorIndex[4]=-1;
+     fTrackLabel[0]=-1;
+     fTrackLabel[1]=-1;
+     fTrackLabel[2]=-1;
+   };
+   AliTOFselectedDigit(Int_t *ind, Double_t h1, Double_t h2, Double_t h3, Double_t h4, Int_t idx, Int_t *l)
+     :
+     fTDC(h1),
+     fADC(h2),
+     fTOT(h3),
+     fWeight(h4),
+     fIndex(idx) {
+     fDetectorIndex[0]=ind[0];
+     fDetectorIndex[1]=ind[1];
+     fDetectorIndex[2]=ind[2];
+     fDetectorIndex[3]=ind[3];
+     fDetectorIndex[4]=ind[4];
+     fTrackLabel[0]=l[0];
+     fTrackLabel[1]=l[1];
+     fTrackLabel[2]=l[2];
+   };
+
+
+   Double_t GetTDC()    const {return fTDC;} // digit TOF
+   Double_t GetADC()    const {return fADC;} // digit ADC
+   Double_t GetTOT()    const {return fTOT;} // digit TOT
+   Double_t GetWeight() const {return fWeight;} // digit weight
+   Int_t GetTrackLabel(Int_t n)    const {return fTrackLabel[n];} // Labels of tracks in digit
+   Int_t GetDetectorIndex(Int_t n) const {return fDetectorIndex[n];} // Digit Detector Index n
+   Int_t GetIndex()     const {return fIndex;} // Digit Index
+
+   private: 
+
+   Int_t fDetectorIndex[5]; //digit detector indices (sector, plate, strip, padX, padZ) 
+   Double_t fTDC; //TDC count
+   Double_t fADC; //ADC count
+   Double_t fTOT; //TOT count
+   Double_t fWeight; //weight
+   Int_t fIndex; //index of the digit in the TOF digit tree
+   Int_t fTrackLabel[3]; //track labels
+   }; 
+
+
+ protected:
+
+  AliRunLoader *fRunLoader;   // Pointer to Run Loader
+  AliTOFcluster *fTofClusters[kTofMaxCluster];  // pointers to the TOF clusters
+  TClonesArray *fDigits;      // List of digits
+  TClonesArray *fRecPoints;   // List of reconstructed points
+  Int_t fNumberOfTofClusters; // Number of TOF Clusters
+  Int_t fNumberOfTofDigits;   // Number of TOF Digits
+
+ private:
+
+  Int_t fMaxDeltaTime; // max time difference in between two tof measurements
+                       // for two neighbouring pads
+
+  Int_t InsertCluster(AliTOFcluster *tofCluster);    // Fills TofClusters Array
+  Int_t FindClusterIndex(Double_t z) const; // Returns cluster index 
+  Bool_t MakeSlewingCorrection(Int_t *detectorIndex, Int_t tofDigitToT, Int_t tofDigitTdc,
+			       Int_t &tdcCorr);
+  void TOFclusterError(Bool_t check, Int_t counter, Int_t **ind, Double_t *weight,
+		       Double_t ppos[], Double_t cov[]) const;
+
+  void AverageCalculations(Int_t number, Float_t *interestingX,
+			   Float_t *interestingY, Float_t *interestingZ,
+			   Double_t *interestingTOF, Double_t *interestingTOT,
+			   Double_t *interestingADC, Double_t *interestingWeight,
+			   Int_t *parTOF, Double_t *posClus, Bool_t &check);
+
+  Int_t fVerbose;           // Verbose level (0:no msg, 1:msg, 2:digits in txt files)
+  Bool_t fDecoderVersion;   // setting whether to use the new decoder version 
+                            //  -true -> new version
+                            //  -false ->old version  (default value!!)
+  AliTOFcalib *fTOFcalib;       // pointer to the TOF calibration info
+  AliTOFDigitMap* fTOFdigitMap; // TOF digit map pointer
+
+  ClassDef(AliTOFClusterFinderV1,1) // To run TOF clustering
+};
+#endif
+
