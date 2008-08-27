@@ -191,16 +191,22 @@ void AliFMDGainDA::Analyse(UShort_t det,
   fitFunc.SetParameters(100,3);
   grChannel->Fit("fitFunc","Q0+","",0,fHighPulse);
      
-  Float_t chi2ndf = 0;
-  if(fitFunc.GetNDF())
-    chi2ndf = fitFunc.GetChisquare() / fitFunc.GetNDF();
-   
+  Float_t gain    = -1;
+  Float_t error   = -1; 
+  Float_t chi2ndf = -1;
+  if((fitFunc.GetParameter(1)) == (fitFunc.GetParameter(1))) {
+    gain    = fitFunc.GetParameter(1);
+    error   = fitFunc.GetParError(1);
+    if(fitFunc.GetNDF())
+      chi2ndf = fitFunc.GetChisquare() / fitFunc.GetNDF();
+  }
+  
   fOutputFile << det                         << ','
 	      << ring                        << ','
 	      << sec                         << ','
 	      << strip                       << ','
-	      << fitFunc.GetParameter(1)     << ','
-	      << fitFunc.GetParError(1)      << ','
+	      << gain                        << ','
+	      << error                       << ','
 	      << chi2ndf                     <<"\n";
   
   //due to RCU trouble, first strips on VAs are excluded
