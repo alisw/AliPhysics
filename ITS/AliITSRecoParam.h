@@ -78,6 +78,8 @@ class AliITSRecoParam : public AliDetectorRecoParam
   void     SetVertexerCosmics() { SetVertexer(2); }
   void     SetVertexerIons() { SetVertexer(3); }
   void     SetVertexerSmearMC() { SetVertexer(4); }
+  void     SetVertexerFixedOnTDI() {SetVertexer(5);} // for injection tests
+  void     SetVertexerFixedOnTED() {SetVertexer(6);} // for injection tests
   Int_t    GetVertexer() const { return fVertexer; }
   void     SetClusterFinder(Int_t cf=0) { fClusterFinder=cf; }
   void     SetClusterFinderV2() { SetClusterFinder(0); }

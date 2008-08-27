@@ -45,6 +45,8 @@
 #pragma link C++ class  AliITSVertexerZ+;
 #pragma link C++ class  AliITSVertexer3D+;
 #pragma link C++ class  AliITSVertexer3DTapan+;
+#pragma link C++ class AliITSVertexerFast+;
+#pragma link C++ class AliITSVertexerFixed+;
 #pragma link C++ class  AliITSMeanVertexer+;
 #pragma link C++ class  AliITSZPoint+;
 
@@ -60,7 +62,6 @@
 #pragma link C++ class AliITSclusterTable+;
 #pragma link C++ class AliITStrackerSA+;
 #pragma link C++ class AliITStrackSA+;
-#pragma link C++ class AliITSVertexerFast+;
 #pragma link C++ class AliITSReconstructor+;
 #pragma link C++ class AliITSRecoParam+;
 #pragma link C++ class AliITSClusterFinderV2+;

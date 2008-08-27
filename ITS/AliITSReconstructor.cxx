@@ -33,6 +33,7 @@
 #include "AliITStrackerSA.h"
 #include "AliITSVertexerIons.h"
 #include "AliITSVertexerFast.h"
+#include "AliITSVertexerFixed.h"
 #include "AliITSVertexer3D.h"
 #include "AliITSVertexerZ.h"
 #include "AliITSVertexerCosmics.h"
@@ -184,6 +185,14 @@ AliVertexer* AliITSReconstructor::CreateVertexer() const
   if(vtxOpt==2){
     Info("CreateVertexer","a AliITSVertexerCosmics object has been selected\n");
     return new AliITSVertexerCosmics();
+  }
+  if(vtxOpt==5){ 
+    Info("CreateVertexer","vertex is fixed in the position of the TDI\n");
+    return new AliITSVertexerFixed("TDI");
+  }
+  if(vtxOpt==6){ 
+    Info("CreateVertexer","vertex is fixed in the position of the TED\n");
+    return new AliITSVertexerFixed("TED");
   }
   // by default an AliITSVertexer3D object is instatiated
   Info("CreateVertexer","a AliITSVertexer3D object has been selected\n");
