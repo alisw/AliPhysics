@@ -711,7 +711,11 @@ void AliTPCclustererMI::Digits2Clusters()
 	Int_t j=digarr.CurrentRow()+3, i=digarr.CurrentColumn()+3;
 	Float_t gain = gainROC->GetValue(row,digarr.CurrentColumn());
 	Int_t bin = i*fMaxTime+j;
-	fBins[bin]=dig/gain;
+	if (gain>0){
+	  fBins[bin]=dig/gain;
+	}else{
+	  fBins[bin]=0;
+	}
 	fSigBins[fNSigBins++]=bin;
       } while (digarr.Next());
     digarr.ExpandTrackBuffer();
@@ -880,7 +884,11 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
 
       if (!calcPedestal) {
 	Int_t bin = iPad*fMaxTime+iTimeBin;
-	allBins[iRow][bin] = signal/gain;
+	if (gain>0){
+	  allBins[iRow][bin] = signal/gain;
+	}else{
+	  allBins[iRow][bin] =0;
+	}
 	allSigBins[iRow][allNSigBins[iRow]++] = bin;
       }else{
 	allBins[iRow][iPad*fMaxTime+iTimeBin] = signal;
