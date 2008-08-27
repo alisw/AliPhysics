@@ -2,11 +2,15 @@ void Init(){
   //
   // Initialize
   //
-  //  AliMagF* field = new AliMagWrapCheb("Maps","Maps", 2, 1, 10., AliMagWrapCheb::k5kG);
   AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., AliMagFMaps::k5kG);
   AliTPCExB::RegisterField(0,field);
+  AliMagF* fieldC0 = new AliMagWrapCheb("Maps","Maps", 2, 1, 10., AliMagWrapCheb::k5kG);
+  AliTPCExB::RegisterField(1,fieldC0);
+  AliMagF* fieldC1 = new AliMagWrapCheb("Maps","Maps", 2, 1, 10., AliMagWrapCheb::k5kG,kTRUE,"$(ALICE_ROOT)/data/maps/mfchebKGI_sym.root");
+  AliTPCExB::RegisterField(2,fieldC1);
+
   gSystem->Load("libSTAT.so");
-  AliTPCExBFirst *exbfirst1  = new  AliTPCExBFirst(field,1.0*2.6400e+04,50,50,50);
+  AliTPCExBFirst *exbfirst1  = new  AliTPCExBFirst(fieldC1,0.88*2.6400e+04,50,50,50);
   AliTPCExB::SetInstance(exbfirst1);
 
 }
@@ -178,11 +182,11 @@ void CalibExB(){
 
 
   
-  treeT->SetAlias("bir1",  "-AliTPCExB::GetBrI(254,atan2(lx1,lx0+0),LTr.fP[1])");
-  treeT->SetAlias("birfi1","-AliTPCExB::GetBrfiI(254,atan2(lx1,lx0+0),LTr.fP[1])");
+  treeT->SetAlias("bir1",  "-AliTPCExB::GetBrI(254,atan2(lx1,lx0+0),LTr.fP[1],2)");
+  treeT->SetAlias("birfi1","-AliTPCExB::GetBrfiI(254,atan2(lx1,lx0+0),LTr.fP[1],2)");
 
-  treeT->SetAlias("bir0",  "AliTPCExB::GetBrI(254,atan2(lx1,lx0+0),LTr.fP[1])");
-  treeT->SetAlias("birfi0","AliTPCExB::GetBrfiI(254,atan2(lx1,lx0+0),LTr.fP[1])");
+  treeT->SetAlias("bir0",  "AliTPCExB::GetBrI(254,atan2(lx1,lx0+0),LTr.fP[1],2)");
+  treeT->SetAlias("birfi0","AliTPCExB::GetBrfiI(254,atan2(lx1,lx0+0),LTr.fP[1],2)");
 
   treeT->SetAlias("fbz00", "(bir0+birfi0*ta)");
   treeT->SetAlias("fbz02", "(birfi0+bir0*ta)");
@@ -206,7 +210,7 @@ void CalibExB(){
   //fstringeb+="side*((dr)^3-1)*bz*ca++";        //11
   
   //  
-  TString *strExB = toolkit.FitPlane(treeT,"gphi1-pphi0",fstringeb->Data(), "abs(gphi1-pphi0-fit)<0.06&&abs(bz)>0.3&&pphiP2<1.2&&pphi2<1.2"+cutA, chi2,npoints,fitParam,covMatrix);
+  TString *strExB = toolkit.FitPlane(treeT,"gphi1-pphi0",fstringeb->Data(), "abs(gphi1-pphi0-fit)<0.06&&abs(bz)>0.1"+cutA, chi2,npoints,fitParam,covMatrix);
   strExB->Tokenize("+")->Print();
   printf("Chi2/npoints = %f\n",TMath::Sqrt(chi2/npoints));
   treeT->SetAlias("fitEB",strExB->Data());
@@ -255,4 +259,11 @@ void CalibExB(){
 
 
 
+
+void MakePic(){
+  //
+  //
+  //
+
+}
 
