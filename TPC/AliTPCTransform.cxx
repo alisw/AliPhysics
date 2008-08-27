@@ -219,6 +219,13 @@ void AliTPCTransform::Local2RotatedGlobal(Int_t sector, Double_t *x) const {
   // Y coordinate
   //
   x[1]=(x[1]-0.5*maxPad)*padWidth;
+  // pads are mirrorred on C-side
+  if (sector%36>17){
+    x[1]*=-1;
+  }
+  
+  //
+  
   //
   // Z coordinate
   //

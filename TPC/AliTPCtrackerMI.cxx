@@ -1326,9 +1326,9 @@ void   AliTPCtrackerMI::Transform(AliTPCclusterMI * cluster){
   Double_t x[3]={cluster->GetRow(),cluster->GetPad(),cluster->GetTimeBin()};
   Int_t i[1]={cluster->GetDetector()};
   transform->Transform(x,i,0,1);  
-  if (cluster->GetDetector()%36>17){
-    x[1]*=-1;
-  }
+  //  if (cluster->GetDetector()%36>17){
+  //  x[1]*=-1;
+  //}
 
   //
   // in debug mode  check the transformation
