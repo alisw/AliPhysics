@@ -37,6 +37,7 @@
 #include "AliMUONTriggerTrackToTrackerClusters.h"
 #include "AliMUONVCluster.h"
 #include "AliMUONVClusterStore.h"
+#include "AliMUONRecoParam.h"
 #include "AliMpArea.h"
 #include <TCollection.h>
 
@@ -67,7 +68,8 @@ AliMUONLegacyClusterServer::~AliMUONLegacyClusterServer()
 Int_t 
 AliMUONLegacyClusterServer::Clusterize(Int_t chamberId, 
                                        AliMUONVClusterStore& clusterStore,
-                                       const AliMpArea& /*area*/)
+                                       const AliMpArea& /*area*/,
+                                       const AliMUONRecoParam* /*recoParam*/)
 {
   /// Fills clusterStore with clusters in given chamber
   ///

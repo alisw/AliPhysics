@@ -525,7 +525,7 @@ AliMUONReconstructor::FillTreeR(AliMUONVTriggerStore* triggerStore,
         if ( ( i == 6 || i == 7 )  && GetRecoParam()->BypassSt4() ) continue;
         if ( ( i == 8 || i == 9 )  && GetRecoParam()->BypassSt5() ) continue;
         
-        fClusterServer->Clusterize(i,*fClusterStore,area);
+        fClusterServer->Clusterize(i,*fClusterStore,area,GetRecoParam());
       }
     }
     

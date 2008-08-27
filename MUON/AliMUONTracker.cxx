@@ -51,7 +51,6 @@
 #include "AliMUONTriggerTrackStoreV1.h"
 #include "AliMUONTriggerTrack.h"
 #include "AliMUONLocalTrigger.h"
-#include "AliMUONVCluster.h"
 #include "AliMUONVClusterServer.h"
 #include "AliMUONVDigitStore.h"
 #include "AliMUONVTriggerStore.h"

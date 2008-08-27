@@ -33,7 +33,8 @@ public:
   
   Int_t Clusterize(Int_t chamberId,
                    AliMUONVClusterStore& clusterStore,
-                   const AliMpArea& area);
+                   const AliMpArea& area,
+                   const AliMUONRecoParam* recoParam = 0x0);
   
   void UseDigits(TIter& next);
   

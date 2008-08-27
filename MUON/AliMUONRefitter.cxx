@@ -212,7 +212,7 @@ AliMUONVClusterStore* AliMUONRefitter::ReClusterize(UInt_t trackId, UInt_t clust
   // re-clusterize
   TIter next(fESDInterface->CreateDigitIterator(trackId, clusterId));
   fClusterServer->UseDigits(next);
-  fClusterServer->Clusterize(cluster->GetChamberId(),*clusterStore,AliMpArea());
+  fClusterServer->Clusterize(cluster->GetChamberId(),*clusterStore,AliMpArea(),GetRecoParam());
   
   return clusterStore;
 }
@@ -246,7 +246,7 @@ AliMUONVClusterStore* AliMUONRefitter::ReClusterize(UInt_t clusterId)
   // re-clusterize
   TIter next(fESDInterface->CreateDigitIteratorInCluster(clusterId));
   fClusterServer->UseDigits(next);
-  fClusterServer->Clusterize(cluster->GetChamberId(),*clusterStore,AliMpArea());
+  fClusterServer->Clusterize(cluster->GetChamberId(),*clusterStore,AliMpArea(),GetRecoParam());
   
   return clusterStore;
 }
@@ -306,7 +306,7 @@ AliMUONTrack* AliMUONRefitter::RetrackFromDigits(const AliMUONTrack& track)
     // re-clusterize current cluster
     TIter nextDigit(fESDInterface->CreateDigitIterator(trackId, cluster->GetUniqueID()));
     fClusterServer->UseDigits(nextDigit);
-    Int_t nNewClusters = fClusterServer->Clusterize(cluster->GetChamberId(),*newClusterStore,AliMpArea());
+    Int_t nNewClusters = fClusterServer->Clusterize(cluster->GetChamberId(),*newClusterStore,AliMpArea(),GetRecoParam());
     
     // check that re-clusterizing succeeded
     if (nNewClusters == 0) {

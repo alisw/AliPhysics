@@ -380,7 +380,7 @@ void AliMUONVTrackReconstructor::AskForNewClustersInChamber(const AliMUONTrackPa
   AliMpArea area(position, dimensions);
   
   // ask to cluterize in the given area of the given chamber
-  fClusterServer->Clusterize(chamber, clusterStore, area);
+  fClusterServer->Clusterize(chamber, clusterStore, area, GetRecoParam());
   
 }
 

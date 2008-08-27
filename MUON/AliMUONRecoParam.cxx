@@ -169,7 +169,11 @@ void AliMUONRecoParam::SetLowFluxParam()
   fComplementTracks = kTRUE;
   fImproveTracks = kTRUE;
   fUseSmoother = kTRUE;
-  for (Int_t iCh = 0; iCh < 10; iCh++) fUseChamber[iCh] = kTRUE;
+  for (Int_t iCh = 0; iCh < 10; iCh++) {
+    fUseChamber[iCh] = kTRUE;
+    fDefaultNonBendingReso[iCh] = 0.144;
+    fDefaultBendingReso[iCh] = 0.01;
+  }
   for (Int_t iSt = 0; iSt < 5; iSt++) fRequestStation[iSt] = kTRUE;
   fBypassSt45 = 0;
   
@@ -204,7 +208,11 @@ void AliMUONRecoParam::SetHighFluxParam()
   fComplementTracks = kTRUE;
   fImproveTracks = kTRUE;
   fUseSmoother = kTRUE;
-  for (Int_t iCh = 0; iCh < 10; iCh++) fUseChamber[iCh] = kTRUE;
+  for (Int_t iCh = 0; iCh < 10; iCh++) {
+    fUseChamber[iCh] = kTRUE;
+    fDefaultNonBendingReso[iCh] = 0.144;
+    fDefaultBendingReso[iCh] = 0.01;
+  }
   for (Int_t iSt = 0; iSt < 5; iSt++) fRequestStation[iSt] = kTRUE;
   fBypassSt45 = 0;
   
@@ -255,7 +263,11 @@ void AliMUONRecoParam::SetCosmicParam()
   fImproveTracks = kTRUE;
   fUseSmoother = kTRUE;
   fSaveFullClusterInESD = kTRUE;
-  for (Int_t iCh = 0; iCh < 10; iCh++) fUseChamber[iCh] = kTRUE;
+  for (Int_t iCh = 0; iCh < 10; iCh++) {
+    fUseChamber[iCh] = kTRUE;
+    fDefaultNonBendingReso[iCh] = 0.144;
+    fDefaultBendingReso[iCh] = 0.01;
+  }
   for (Int_t iSt = 0; iSt < 5; iSt++) fRequestStation[iSt] = kTRUE;
   fBypassSt45 = 0;
   
@@ -392,21 +404,28 @@ void AliMUONRecoParam::Print(Option_t *option) const
   } while (++st < 5);
   if (discardedSt) cout<<endl;
   
-	cout << Form("Pad goodness policy mask is 0x%x",PadGoodnessMask()) << endl;
-	cout << "Which means we reject pads having the condition = " <<
-	AliMUONPadStatusMaker::AsCondition(PadGoodnessMask()).Data() << endl;
-	
-	cout << "The pad limits we are using are :" << endl;
-	
-	cout << Form("%5.0f <= HVSt12 <= %5.0f Volts",HVSt12LowLimit(),HVSt12HighLimit()) << endl;
-	cout << Form("%5.0f <= HVSt345 <= %5.0f Volts",HVSt345LowLimit(),HVSt345HighLimit()) << endl;
-	cout << Form("%7.2f <= Pedestal mean <= %7.2f",PedMeanLowLimit(),PedMeanHighLimit()) << endl;
-	cout << Form("%7.2f <= Pedestal sigma <= %7.2f",PedSigmaLowLimit(),PedSigmaHighLimit()) << endl;
-	cout << Form("%e <= Gain linear term <= %e",GainA1LowLimit(),GainA1HighLimit()) << endl;
-	cout << Form("%e <= Gain quadratic term <= %e",GainA2LowLimit(),GainA2HighLimit()) << endl;
-	cout << Form("%5.0f <= Gain threshold term <= %5.0f",GainThresLowLimit(),GainThresHighLimit()) << endl;
+  cout << Form("Pad goodness policy mask is 0x%x",PadGoodnessMask()) << endl;
+  cout << "Which means we reject pads having the condition = " <<
+  AliMUONPadStatusMaker::AsCondition(PadGoodnessMask()).Data() << endl;
+  
+  cout << "The pad limits we are using are :" << endl;
+  
+  cout << Form("%5.0f <= HVSt12 <= %5.0f Volts",HVSt12LowLimit(),HVSt12HighLimit()) << endl;
+  cout << Form("%5.0f <= HVSt345 <= %5.0f Volts",HVSt345LowLimit(),HVSt345HighLimit()) << endl;
+  cout << Form("%7.2f <= Pedestal mean <= %7.2f",PedMeanLowLimit(),PedMeanHighLimit()) << endl;
+  cout << Form("%7.2f <= Pedestal sigma <= %7.2f",PedSigmaLowLimit(),PedSigmaHighLimit()) << endl;
+  cout << Form("%e <= Gain linear term <= %e",GainA1LowLimit(),GainA1HighLimit()) << endl;
+  cout << Form("%e <= Gain quadratic term <= %e",GainA2LowLimit(),GainA2HighLimit()) << endl;
+  cout << Form("%5.0f <= Gain threshold term <= %5.0f",GainThresLowLimit(),GainThresHighLimit()) << endl;
   
   cout << Form("And we cut on charge >= %7.2f x ( pedestal sigma ) ",ChargeSigmaCut()) << endl;
+  
+  cout << "chamber non bending resolution = |";
+  for (Int_t iCh = 0; iCh < 10; iCh++) cout << Form(" %6.3f |",fDefaultNonBendingReso[iCh]);
+  cout << endl;
+  cout << "chamber bending resolution = |";
+  for (Int_t iCh = 0; iCh < 10; iCh++) cout << Form(" %6.3f |",fDefaultBendingReso[iCh]);
+  cout << endl;
   
   cout<<"\t----------------------------------------------"<<endl<<endl;
   

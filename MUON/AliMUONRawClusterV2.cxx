@@ -25,7 +25,6 @@
 
 
 #include "AliMUONRawClusterV2.h"
-#include "AliMUONConstants.h"
 
 #include "AliLog.h"
 
@@ -43,8 +42,8 @@ AliMUONRawClusterV2::AliMUONRawClusterV2()
     fX(FLT_MAX),
     fY(FLT_MAX),
     fZ(FLT_MAX),
-    fErrX2(AliMUONConstants::DefaultNonBendingReso2()),
-    fErrY2(AliMUONConstants::DefaultBendingReso2()),
+    fErrX2(FLT_MAX),
+    fErrY2(FLT_MAX),
     fQ(0.),
     fChi2(0.),
     fNDigits(0),
@@ -59,8 +58,8 @@ AliMUONRawClusterV2::AliMUONRawClusterV2(Int_t chamberId, Int_t detElemId, Int_t
     fX(FLT_MAX),
     fY(FLT_MAX),
     fZ(FLT_MAX),
-    fErrX2(AliMUONConstants::DefaultNonBendingReso2()),
-    fErrY2(AliMUONConstants::DefaultBendingReso2()),
+    fErrX2(FLT_MAX),
+    fErrY2(FLT_MAX),
     fQ(0.),
     fChi2(0.),
     fNDigits(0),

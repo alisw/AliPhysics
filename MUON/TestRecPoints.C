@@ -38,6 +38,8 @@
 #include "AliRunLoader.h"
 #include "AliLoader.h"
 #include "AliCDBManager.h"
+#include "AliCDBEntry.h"
+#include "AliCDBPath.h"
 
 // tracker
 #include "AliGeomManager.h"
@@ -63,6 +65,7 @@
 #include "AliMUONVDigitStore.h"
 #include "AliMUONDigitStoreV2R.h"
 #include "AliMUONVCluster.h"
+#include "AliMUONRecoParam.h"
 
 #endif
 
@@ -179,6 +182,7 @@ void TestRecPoints(TString baseDir=".", TString outDir=".", Float_t adcCut = 10.
   
   AliMUONGeometryTransformer* transformer = 0x0;
   
+  AliMUONRecoParam* recoParam = 0x0;
   
   AliMUONClusterStoreV2 clusterStore;
   AliMUONVClusterFinder* clusterFinder = 0x0;
@@ -202,6 +206,19 @@ void TestRecPoints(TString baseDir=".", TString outDir=".", Float_t adcCut = 10.
     transformer = new AliMUONGeometryTransformer();
     // Load geometry data
     transformer->LoadGeometryData();
+    // Load reconstruction parameters
+    AliCDBPath path("MUON","Calib","RecoParam");
+    AliCDBEntry *entry=AliCDBManager::Instance()->Get(path.GetPath());
+    if(entry) {
+      recoParam = dynamic_cast<AliMUONRecoParam*>(entry->GetObject());
+      entry->SetOwner(0);
+      AliCDBManager::Instance()->UnloadFromCache(path.GetPath());
+    }
+    if (!recoParam) {
+      printf("Couldn't find RecoParam object in OCDB: create default one");
+      recoParam = AliMUONRecoParam::GetLowFluxParam();
+    }
+    recoParam->Print("FULL");
     clusterFinder = new AliMUONClusterFinderMLEM(kFALSE,new AliMUONPreClusterFinder);
     clusterServer = new AliMUONSimpleClusterServer(clusterFinder,*transformer);
   }
@@ -297,7 +314,7 @@ void TestRecPoints(TString baseDir=".", TString outDir=".", Float_t adcCut = 10.
       clusterServer->UseDigits(nextDigitTrackCut);
       
       for (Int_t ch = firstChamber; ch <= lastChamber; ++ch ){
-        clusterServer->Clusterize(ch, clusterStore, AliMpArea());
+        clusterServer->Clusterize(ch, clusterStore, AliMpArea(),recoParam);
       }
       
       TIter next(clusterStore.CreateIterator());

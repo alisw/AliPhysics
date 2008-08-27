@@ -92,7 +92,7 @@ void AliMUONTrackReconstructor::MakeTrackCandidates(AliMUONVClusterStore& cluste
 
   for (Int_t i = firstChamber; i <= lastChamber; ++i ) 
   {
-    if (fClusterServer && GetRecoParam()->UseChamber(i)) fClusterServer->Clusterize(i, clusterStore, AliMpArea());
+    if (fClusterServer && GetRecoParam()->UseChamber(i)) fClusterServer->Clusterize(i, clusterStore, AliMpArea(), GetRecoParam());
   }
   
   // Loop over stations(1..) 5 and 4 and make track candidates

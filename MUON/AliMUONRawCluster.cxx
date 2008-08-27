@@ -30,7 +30,6 @@
 #include <TString.h>
 
 #include "AliMUONRawCluster.h"
-#include "AliMUONConstants.h"
 
 /// \cond CLASSIMP
 ClassImp(AliMUONRawCluster)
@@ -62,8 +61,8 @@ AliMUONRawCluster::AliMUONRawCluster()
 	}
     }
     fNcluster[0]=fNcluster[1]=-1;
-    fErrXY[0] = AliMUONConstants::DefaultNonBendingReso();
-    fErrXY[1] = AliMUONConstants::DefaultBendingReso();
+    fErrXY[0] = FLT_MAX;
+    fErrXY[1] = FLT_MAX;
 }
 
 //____________________________________________________

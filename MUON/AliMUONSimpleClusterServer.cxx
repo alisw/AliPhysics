@@ -28,6 +28,7 @@
 #include "AliMUONVClusterFinder.h"
 #include "AliMUONVClusterStore.h"
 #include "AliMUONVDigitStore.h"
+#include "AliMUONRecoParam.h"
 #include "AliMpArea.h"
 #include "AliMpDEIterator.h"
 #include "AliMpDEManager.h"
@@ -95,7 +96,8 @@ AliMUONSimpleClusterServer::~AliMUONSimpleClusterServer()
 Int_t 
 AliMUONSimpleClusterServer::Clusterize(Int_t chamberId,
                                        AliMUONVClusterStore& clusterStore,
-                                       const AliMpArea& area)
+                                       const AliMpArea& area,
+                                       const AliMUONRecoParam* recoParam)
 {
   /// Area is in absolute coordinate. If not valid, means clusterize all
   /// the chamber.
@@ -108,6 +110,11 @@ AliMUONSimpleClusterServer::Clusterize(Int_t chamberId,
   if ( fTriggerTrackStore && chamberId >= 6 ) 
   {
     return fBypass->GenerateClusters(chamberId,clusterStore);
+  }
+  
+  if (!recoParam) {
+    AliError("Reconstruction parameters are missing: unable to clusterize");
+    return 0;
   }
   
   AliMpDEIterator it;
@@ -167,7 +174,7 @@ AliMUONSimpleClusterServer::Clusterize(Int_t chamberId,
         {      
           // add new cluster to the store with information to build its ID
           // increment the number of clusters into the store
-          AliMUONVCluster* rawCluster = clusterStore.Add(AliMpDEManager::GetChamberId(detElemId), detElemId, fNCluster++);
+          AliMUONVCluster* rawCluster = clusterStore.Add(chamberId, detElemId, fNCluster++);
           
           ++nofAddedClusters;
           
@@ -194,6 +201,7 @@ AliMUONSimpleClusterServer::Clusterize(Int_t chamberId,
                                     cluster->Position().X(), cluster->Position().Y(), 
                                     0, xg, yg, zg);
           rawCluster->SetXYZ(xg, yg, zg);
+          rawCluster->SetErrXY(recoParam->GetDefaultNonBendingReso(chamberId),recoParam->GetDefaultBendingReso(chamberId));
           
           AliDebug(1,Form("Adding RawCluster detElemId %4d mult %2d charge %e (xl,yl,zl)=(%e,%e,%e) (xg,yg,zg)=(%e,%e,%e)",
                           detElemId,rawCluster->GetNDigits(),rawCluster->GetCharge(),

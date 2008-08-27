@@ -24,15 +24,16 @@ class AliMUONLegacyClusterServer : public AliMUONVClusterServer
 {
 public:
   AliMUONLegacyClusterServer(const AliMUONGeometryTransformer& transformer, 
-														 AliMUONVClusterStore* store=0x0,
-														 Bool_t bypassSt4=kFALSE,
-														 Bool_t bypassSt5=kFALSE);
+                             AliMUONVClusterStore* store=0x0,
+                             Bool_t bypassSt4=kFALSE,
+                             Bool_t bypassSt5=kFALSE);
 
   virtual ~AliMUONLegacyClusterServer();
   
   virtual Int_t Clusterize(Int_t chamberId, 
                            AliMUONVClusterStore& clusterStore,
-                           const AliMpArea& area);
+                           const AliMpArea& area,
+                           const AliMUONRecoParam* recoParam = 0x0);
   
   virtual void UseDigits(TIter& next);
 

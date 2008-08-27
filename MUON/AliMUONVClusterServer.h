@@ -18,6 +18,7 @@
 
 class AliMUONVClusterStore;
 class AliMUONVTriggerTrackStore;
+class AliMUONRecoParam;
 class AliMpArea;
 class TIter;
 
@@ -30,7 +31,8 @@ public:
   /// Find and add clusters from a given region of a given chamber to the store.
   virtual Int_t Clusterize(Int_t chamberId, 
                            AliMUONVClusterStore& clusterStore,
-                           const AliMpArea& area) = 0;
+                           const AliMpArea& area,
+			   const AliMUONRecoParam* recoParam = 0x0) = 0;
   
   /// Specify an iterator to loop over the digits needed to perform our job.
   virtual void UseDigits(TIter& next) = 0;
