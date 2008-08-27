@@ -37,6 +37,7 @@ ClassImp(AliT0CalibTimeEq)
   AliT0CalibTimeEq::AliT0CalibTimeEq():TNamed()
 {
   //
+
 }
 
 //________________________________________________________________
@@ -94,6 +95,7 @@ void  AliT0CalibTimeEq::Print(Option_t*) const
   printf("\n	----	PM Arrays	----\n\n");
   printf(" Time delay CFD \n");
   for (Int_t i=0; i<24; i++) printf(" CFD  %f ",fTimeEq[i]);
+  printf("\n Mean Vertex %f \n", fMeanVertex);
 } 
 
 
@@ -101,9 +103,9 @@ void  AliT0CalibTimeEq::Print(Option_t*) const
 void AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
 {
   // compute online equalized time
-  Double_t mean=0;
+  Double_t mean=0, meanver=0;
   gFile = TFile::Open(filePhys);
-
+  
   if(!gFile) {
     AliError("No input PHYS data found ");
   }
@@ -114,13 +116,16 @@ void AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
 	{
 	  sprintf(buf1,"CFD1-CFD%d",i+1);
 	  TH1F *cfd = (TH1F*) gFile->Get(buf1);
+	  if(!cfd) AliWarning(Form("no histograms collected by PHYS DA for channel %i", i));
 	  //      printf(" i = %d buf1 = %s\n", i, buf1);
 	  if(cfd) mean=cfd->GetMean();
 	  SetTimeEq(i,mean);
-	  if(!cfd) AliWarning(Form("no histograms collected by PHYS DA for channel %i", i));
-    if (cfd) delete cfd;
+	  if (cfd) delete cfd;
 	}
-      
+      TH1F *ver = (TH1F*) gFile->Get("hVertex");
+      if(!ver) AliWarning("no Vertex histograms collected by PHYS DA for Zvertex");
+      if(ver)  meanver = ver->GetMean();
+      SetMeanVertex(meanver);
       
       gFile->Close();
       delete gFile;

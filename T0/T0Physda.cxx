@@ -63,28 +63,28 @@ int main(int argc, char **argv) {
                                         "TStreamerInfo",
                                         "RIO",
                                         "TStreamerInfo()");
-
+  
   if(daqDA_DB_getFile(FILE_IN, FILE_IN)){
-     printf("Couldn't get input file >>inPhys.dat<< from DAQ_DB !!!\n");
-     return -1;
+    printf("Couldn't get input file >>inPhys.dat<< from DAQ_DB !!!\n");
+    return -1;
   }
-
+  
   
   FILE *inp;
   char c;
   inp = fopen(FILE_IN, "r");
   if(!inp){
-        printf("Input file >>inPhys.dat<< not found !!!\n");
-        return -1;
+    printf("Input file >>inPhys.dat<< not found !!!\n");
+    return -1;
   }
-
+  
   while((c=getc(inp))!=EOF) {
     switch(c) {
-      case 'a': {fscanf(inp, "%d", &ccbx ); break;} //N of X bins hCFD1_CFD
-      case 'b': {fscanf(inp, "%f", &cclx ); break;} //Low x hCFD1_CFD
-      case 'c': {fscanf(inp, "%f", &ccmx ); break;} //High x hCFD1_CFD
-//      case 'd': {fscanf(inp, "%d", &cbx ); break;} //N of X bins hCFD
-//      case 'e': {fscanf(inp, "%f", &clx ); break;} //Low x hCFD
+    case 'a': {fscanf(inp, "%d", &ccbx ); break;} //N of X bins hCFD1_CFD
+    case 'b': {fscanf(inp, "%f", &cclx ); break;} //Low x hCFD1_CFD
+    case 'c': {fscanf(inp, "%f", &ccmx ); break;} //High x hCFD1_CFD
+      //      case 'd': {fscanf(inp, "%d", &cbx ); break;} //N of X bins hCFD
+      //      case 'e': {fscanf(inp, "%f", &clx ); break;} //Low x hCFD
 //      case 'f': {fscanf(inp, "%f", &cmx ); break;} //High x hCFD
     }
   }
@@ -94,7 +94,7 @@ int main(int argc, char **argv) {
     printf("Wrong number of arguments\n");
     return -1;
   }
-
+  
 
   /* define data source : this is argument 1 */  
   status=monitorSetDataSource( argv[1] );
@@ -102,32 +102,35 @@ int main(int argc, char **argv) {
     printf("monitorSetDataSource() failed : %s\n",monitorDecodeError(status));
     return -1;
   }
-
-
+  
+  
   /* declare monitoring program */
   status=monitorDeclareMp( __FILE__ );
   if (status!=0) {
     printf("monitorDeclareMp() failed : %s\n",monitorDecodeError(status));
     return -1;
   }
-
-
+  
+  
   /* define wait event timeout - 1s max */
   monitorSetNowait();
   monitorSetNoWaitNetworkTimeout(1000);
   
-
+  
   /* log start of process */
   printf("T0 monitoring program started\n");  
-
+  
   // Allocation of histograms - start
 
   TH1F *hCFD1minCFD[24];  
    
-   for(Int_t ic=0; ic<24; ic++) {
-        hCFD1minCFD[ic] = new TH1F(Form("CFD1-CFD%d",ic+1),"CFD-CFD",ccbx,cclx,ccmx);
-    }
-
+  for(Int_t ic=0; ic<24; ic++) {
+    hCFD1minCFD[ic] = new TH1F(Form("CFD1-CFD%d",ic+1),"CFD-CFD",ccbx,cclx,ccmx);
+  }
+  TH1F *hVertex = new TH1F("hVertex","Z vertex",ccbx,cclx,ccmx);
+  
+  Float_t meanShift[24];
+  
   // Allocation of histograms - end
 
   Int_t iev=0;
@@ -135,7 +138,7 @@ int main(int argc, char **argv) {
   for(;;) {
     struct eventHeaderStruct *event;
     eventTypeType eventT;
-  
+    
     /* check shutdown condition */
     if (daqDA_checkShutdown()) {break;}
     
@@ -150,75 +153,101 @@ int main(int argc, char **argv) {
       printf("monitorGetEventDynamic() failed : %s\n",monitorDecodeError(status));
       break;
     }
-
+    
     /* retry if got no event */
     if (event==NULL) {
       continue;
     }
-
+    
     /* use event - here, just write event id to result file */
     eventT=event->eventType;
-   
+    
     switch (event->eventType){
-
+      
       case START_OF_RUN:
 	break;
-
-      case END_OF_RUN:
-	break;
-
+	
+    case END_OF_RUN:
+      break;
+      
     case PHYSICS_EVENT:
-      //  case CALIBRATION_EVENT:
+      //    case CALIBRATION_EVENT:
       iev++;
-
+      
       if(iev==1){
-           printf("First event - %i\n",iev);
+	printf("First event - %i\n",iev);
       }
-
+      
       // Initalize raw-data reading and decoding
       AliRawReader *reader = new AliRawReaderDate((void*)event);
-          
+      
       // Enable the following two lines in case of real-data
-      	  reader->RequireHeader(kTRUE);
+      reader->RequireHeader(kTRUE);
       AliT0RawReader *start = new AliT0RawReader(reader, kTRUE);
-
+      
       // Read raw data
       Int_t allData[105][5];
       for(Int_t i0=0;i0<105;i0++)
       	for(Int_t j0=0;j0<5;j0++)
-		allData[i0][j0] = 0;
-
-       if(start->Next()){
-       for (Int_t i=0; i<105; i++) {
-	for(Int_t iHit=0;iHit<5;iHit++){
-	  allData[i][iHit]= start->GetData(i,iHit);
-        }
-       }
-      }
-	else 
-	printf("No T0 data found!!!\n");
-
-      // Fill the histograms
-	
-      for (Int_t ik = 0; ik<24; ik++)
-         for (Int_t iHt=0; iHt<1; iHt++){
-                if(allData[ik+1][iHt]!=0 ){
-		  if(ik<12){
-			 hCFD1minCFD[ik]->Fill(allData[ik+1][iHt]-allData[1][iHt]);
-		  }
-                  if(ik>11){
-                         hCFD1minCFD[ik]->Fill(allData[ik+45][iHt]-allData[57][iHt]);
-                  }
-		}
+	  allData[i0][j0] = 0;
+      
+      if(start->Next()){
+	for (Int_t i=0; i<105; i++) {
+	  for(Int_t iHit=0;iHit<5;iHit++){
+	    allData[i][iHit]= start->GetData(i,iHit);
+	  }
 	}
-
-     delete start;
-	start = 0x0;
-     reader->Reset();
+      }
+      else 
+	printf("No T0 data found!!!\n");
+      
+      // Fill the histograms
+      Float_t besttimeA=9999999;
+      Float_t besttimeC=9999999;
+      Float_t time[24]; 
+      for (Int_t ik = 0; ik<24; ik++)
+	if(allData[ik+1][0]!=0 ){
+	  if(ik<12){
+	     hCFD1minCFD[ik]->Fill(allData[ik+1][0]-allData[1][0]);
+	     if(iev == 20000) 	meanShift[ik] =  hCFD1minCFD[ik]->GetMean();  
+	  }
+	  if(ik>11){
+	    hCFD1minCFD[ik]->Fill(allData[ik+45][0]-allData[57][0]);
+	    if(iev == 20000) 	
+	      meanShift[ik] =  hCFD1minCFD[ik]->GetMean();  
+	  }
+	}
+      //fill vertex & mean time _ fast reconstruction
+      if (iev > 20000 && iev <50000)
+	{
+	  for (Int_t in=0; in<12; in++)  
+	    {
+	      time[in] = allData[in+1][0] - meanShift[in] + 5000 - allData[0][0] ;
+	      time[in+12] = allData[in+56+1][0] - meanShift[in+12] + 5000 - allData[0][0];
+	    }
+	  for (Int_t ipmt=0; ipmt<12; ipmt++){
+	    if(time[ipmt] > 1 ) {
+	      if(time[ipmt]<besttimeC)
+		besttimeC=time[ipmt]; //timeC
+	    }
+	  }
+	   for ( Int_t ipmt=12; ipmt<24; ipmt++){
+	     if(time[ipmt] > 1) {
+	       if(time[ipmt]<besttimeA) 
+		 besttimeA=time[ipmt]; //timeA
+	     }
+	   }
+	   Float_t vertex = 0.0299792 *(besttimeC - besttimeA)*24.4/2.; 
+	   hVertex->Fill(vertex);
+	   
+	}
+      delete start;
+      start = 0x0;
+      reader->Reset();
       // End of fill histograms
-
+      
     }
-
+    
     /* free resources */
     free(event);
     
@@ -236,6 +265,7 @@ int main(int argc, char **argv) {
   for(Int_t j=0;j<24;j++){
      hCFD1minCFD[j]->Write();
     }
+  hVertex->Write();
   hist->Close();
   delete hist;
 

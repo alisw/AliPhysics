@@ -197,6 +197,19 @@ AliT0Parameters::GetTimeDelayCFD(Int_t ipmt)
 }
 //__________________________________________________________________
 
+Float_t
+AliT0Parameters:: GetMeanVertex()
+{ 
+  if (!fCalibentry) 
+    {
+      fMeanVertex=0;
+      return fMeanVertex;
+    }
+   
+  return fgCalibData->GetMeanVertex();
+}
+//__________________________________________________________________
+
 TGraph *AliT0Parameters::GetAmpLEDRec(Int_t ipmt) const
 {
    if (!fSlewCorr) {

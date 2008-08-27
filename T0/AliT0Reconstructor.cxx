@@ -123,7 +123,7 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
   //  Int_t mV2Mip = param->GetmV2Mip();     
   //mV2Mip = param->GetmV2Mip();     
   Float_t channelWidth = fParam->GetChannelWidth() ;  
-  //  Int_t meanT0 = fParam->GetMeanT0();
+  Float_t meanVertex = fParam->GetMeanVertex();
   
   AliDebug(1,Form("Start DIGITS reconstruction "));
   
@@ -159,7 +159,7 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
   AliT0RecPoint* frecpoints= new AliT0RecPoint ();
   clustersTree->Branch( "T0", "AliT0RecPoint" ,&frecpoints, 405,1);
   
- Float_t time[24], adc[24];
+  Float_t time[24], adc[24];
   for (Int_t ipmt=0; ipmt<24; ipmt++) {
     if(timeCFD->At(ipmt)>0 ){
       Double_t qt0 = Double_t(chargeQT0->At(ipmt));
@@ -215,7 +215,7 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
     timeDiff = (besttimeC - besttimeA)*channelWidth;
     meanTime = (Float_t((besttimeA + besttimeC -4000)/2) * channelWidth); 
     //    meanTime = (meanT0 - (besttimeA + besttimeC)/2) * channelWidth;
-    vertex = c*(timeDiff)/2. + (fdZonA - fdZonC)/2; //-(lenr-lenl))/2;
+    vertex = meanVertex - c*(timeDiff)/2. + (fdZonA - fdZonC)/2; 
     frecpoints->SetVertex(vertex);
     frecpoints->SetMeanTime(Int_t(meanTime));
     //online mean
@@ -223,17 +223,7 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
     AliDebug(1,Form("  timeDiff %f ps,  meanTime %f ps, vertex %f cm online mean %i ps",timeDiff, meanTime,vertex, Int_t(onlineMean * channelWidth )));
     
   }
- 
-  //time in each channel as time[ipmt]-MeanTimeinThisChannel(with vertex=0)
-  /*  
-  for (Int_t ipmt=0; ipmt<24; ipmt++) {
-    if(time[ipmt]>1) {
-      //      time[ipmt] = (time[ipmt] - fTime0vertex[ipmt])*channelWidth;
-      time[ipmt] =Int_t  ( Float_t(time[ipmt]) * channelWidth);
-      frecpoints->SetTime(ipmt,time[ipmt]);
-    }
-  }
-*/
+  
   clustersTree->Fill();
 
   delete timeCFD;
@@ -270,7 +260,9 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   Float_t timeDiff=9999999, meanTime=0;
   Double_t qt=0;
   Int_t mv2MIP = fParam-> GetmV2Mip();     
-  UInt_t type =rawReader->GetType();	 
+  Float_t meanVertex = fParam->GetMeanVertex();
+
+  //  UInt_t type =rawReader->GetType();	 
   
   AliT0RecPoint* frecpoints= new AliT0RecPoint ();
   
@@ -304,7 +296,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	  }
        }
       
-      if(option == "cosmic" && type == 7 )
+      if(option == "cosmic"  ) //&& type == 7 )
 	{
 	  
 	  for (Int_t in=0; in<12; in++)  
@@ -362,7 +354,8 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	   
 	   
 	     //for physics  data
-	   if(option == "cosmic" && type == 7) {
+	   if(option == "cosmic") // && type == 7)
+	     {
 	     if(( chargeQT1[ipmt] - chargeQT0[ipmt])>0)  
 	       adc[ipmt] = chargeQT1[ipmt] - chargeQT0[ipmt];
 	     else
@@ -421,7 +414,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	   meanTime =  Float_t((besttimeA + besttimeC)/2);  
 	   onlineMean = onlineMean -allData[0][0];;
 	 }
-	 vertex = c*(timeDiff)/2.+ (fdZonA - fdZonC)/2; 
+	 vertex =  meanVertex -c*(timeDiff)/2.; //+ (fdZonA - fdZonC)/2; 
 	 frecpoints->SetVertex(vertex);
 	 frecpoints->SetMeanTime(Int_t(meanTime));
 	 AliDebug(1,Form("  timeDiff %f ps,  meanTime %f ps, vertex %f cm online mean %i ",timeDiff, meanTime,vertex, onlineMean));

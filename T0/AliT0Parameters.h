@@ -76,8 +76,10 @@ public:
   Float_t GetTimeDelayCFD(Int_t ipmt);
 //  Float_t GetTimeV0(Int_t ipmt = 512) {return  fTimeV0;}
 
-  void SetMeanT0(Int_t mean=512) { fMeanT0 = mean; };
-  Int_t GetMeanT0 () {return fMeanT0;};
+  void SetMeanT0(Float_t mean=512) { fMeanT0 = mean; };
+  Float_t GetMeanT0 () {return fMeanT0;};
+  void SetMeanVertex(Float_t mean=0) { fMeanVertex = mean; };
+   Float_t GetMeanVertex ();
 
   TMap * GetMapLookup();
   Int_t GetChannel(Int_t trm,  Int_t tdc, Int_t chain, Int_t channel);
@@ -105,7 +107,8 @@ public:
   Float_t   fTimeDelayCFD;  // sum time delay for CFD channel
  // Float_t   fTimeV0;  // sum time delay for CFD channel
   Float_t   fTimeDelayTVD;  //time delay for TVD (vertex trigger channel)
-  Int_t     fMeanT0; //mean of T0distribution with vertex=0;
+  Float_t     fMeanT0; //mean of T0distribution with vertex=0;
+  Float_t     fMeanVertex; // mean of vertex distribution;
   
   TMap      fLookUp;           //lookup table
   Int_t     fNumberOfTRMs;    // number of TRMs in setup
@@ -123,7 +126,7 @@ public:
   AliT0Parameters(const  AliT0Parameters&);
   AliT0Parameters& operator=(const AliT0Parameters&);
   
-  ClassDef(AliT0Parameters,4)
+  ClassDef(AliT0Parameters,5)
  
 };
 

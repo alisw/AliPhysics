@@ -31,14 +31,17 @@ class AliT0CalibTimeEq: public TNamed {
   void SetCFDvalue(Int_t channel, Int_t number, Float_t val) {fCFDvalue[channel][number]=val;}
   void SetTimeEq(Int_t channel, Float_t val) {fTimeEq[channel]=val;}
   
+  void SetMeanVertex(Float_t mean=0) { fMeanVertex = mean; };
+  Float_t GetMeanVertex () {return fMeanVertex;};
+
 
  protected:
 
   Float_t     fCFDvalue[24][5];       // CFD values
   Float_t     fTimeEq[24];	      // Time Equalized for OCDB	 
-
+  Float_t fMeanVertex;
   //
-  ClassDef(AliT0CalibTimeEq,2)    // T0 Sensor Calibration data
+  ClassDef(AliT0CalibTimeEq,3)    // T0 Sensor Calibration data
 };
 
 typedef AliT0CalibTimeEq AliSTARTCalibTimeEq; // for backward compatibility
