@@ -28,7 +28,7 @@
 
 ClassImp(AliITSVertexerFixed)
 
-
+/* $Id$ */
 
 //______________________________________________________________________
 AliITSVertexerFixed::AliITSVertexerFixed():AliITSVertexer()

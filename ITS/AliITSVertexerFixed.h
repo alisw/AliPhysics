@@ -3,7 +3,7 @@
 /* Copyright(c) 1998-2003, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/*$Id $*/
+/* $Id$ */
 
 #include <AliITSVertexer.h>
 class TString;
