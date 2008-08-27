@@ -21,6 +21,7 @@ Output Files: ZDCEMDCalib.dat, ZDCChMapping.dat
 Trigger Types Used: Standalone Trigger
 
 */
+#define PEDDATA_FILE  "ZDCPedestal.dat"
 
 #include <stdio.h>
 #include <Riostream.h>
@@ -104,31 +105,52 @@ int main(int argc, char **argv) {
   
   FILE *mapFile4Shuttle;
   const char *mapfName = "ZDCChMapping.dat";
-
-  /* define data source : this is argument 1 */  
-  status = monitorSetDataSource( argv[1] );
-  if(status!=0) {
-    printf("monitorSetDataSource() failed : %s\n",monitorDecodeError(status));
+  // *** To analyze LASER events you MUST have a pedestal data file!!!
+  // *** -> check if a pedestal run has been analyzied
+  int read = 0;
+  read = daqDA_FES_storeFile(PEDDATA_FILE,"ZDCPEDESTAL_data");
+  if(read){
+    printf("\t ERROR!!! ZDCPedestal.dat file NOT FOUND in DAQ db!!!\n");
+    return -1;
+  }
+  else printf("\t ZDCPedestal.dat file retrieved from DAQ db\n");
+  
+  FILE *filePed = fopen(PEDDATA_FILE,"r");
+  if (filePed==NULL) {
+    printf("\t ERROR!!! Can't open ZDCPedestal.dat file!!!\n");
     return -1;
   }
 
-
-  /* declare monitoring program */
-  status = monitorDeclareMp( __FILE__ );
-  if (status!=0) {
-    printf("monitorDeclareMp() failed : %s\n",monitorDecodeError(status));
-    return -1;
+  // 144 = 48 in-time + 48 out-of-time + 48 correlations
+  Float_t readValues[2][144], MeanPed[44], MeanPedWidth[44], 
+  	MeanPedOOT[44], MeanPedWidthOOT[44];
+  // ***************************************************
+  //   Unless we have a narrow correlation to fit we
+  //	don't fit and store in-time vs. out-of-time
+  //	histograms -> mean pedstal subtracted!!!!!!
+  // ***************************************************
+  //Float_t CorrCoeff0[44], CorrCoeff1[44];
+  //
+  for(int jj=0; jj<144; jj++){
+    for(int ii=0; ii<2; ii++){
+       fscanf(filePed,"%f",&readValues[ii][jj]);
+    }
+    if(jj<48){
+      MeanPed[jj] = readValues[0][jj];
+      MeanPedWidth[jj] = readValues[1][jj];
+      //printf("\t MeanPed[%d] = %1.1f\n",jj, MeanPed[jj]);
+    }
+    else if(jj>48 && jj<96){
+      MeanPedOOT[jj-48] = readValues[0][jj];
+      MeanPedWidthOOT[jj-48] = readValues[1][jj];
+    }
+    /*else if(jj>144){
+      CorrCoeff0[jj-96] = readValues[0][jj]; 
+      CorrCoeff1[jj-96] = readValues[1][jj];;
+    }
+    */
   }
 
-
-  /* define wait event timeout - 1s max */
-  monitorSetNowait();
-  monitorSetNoWaitNetworkTimeout(1000);
-  
-
-  /* log start of process */
-  printf("ZDC EMD monitoring program started\n");  
-  
   /* report progress */
   daqDA_progressReport(10);
 
@@ -213,41 +235,8 @@ int main(int argc, char **argv) {
       }
     
     if(eventT==PHYSICS_EVENT){
-      //
-      // *** To analyze EMD events you MUST have a pedestal data file!!!
-      // *** -> check if a pedestal run has been analyzied
-      FILE *filePed=NULL;
-      filePed=fopen("./ZDCPedestal.dat","r");
-      if (filePed==NULL) {
-        printf("\t ERROR!!! You MUST have a ZDCPedestal.dat file!!!\n");
-        return -1;
-      }
-      // 144 = 48 in-time + 48 out-of-time + 48 correlations
-      Float_t readValues[2][144], MeanPed[44], MeanPedWidth[44], 
-   	      MeanPedOOT[44], MeanPedWidthOOT[44],
-   	      CorrCoeff0[44], CorrCoeff1[44];
-      //
-      for(int jj=0; jj<144; jj++){
-        for(int ii=0; ii<2; ii++){
-           fscanf(filePed,"%f",&readValues[ii][jj]);
-        }
-	if(jj<48){
-	  MeanPed[jj] = readValues[0][jj];
-	  MeanPedWidth[jj] = readValues[1][jj];
-	}
-	else if(jj>48 && jj<96){
-	  MeanPedOOT[jj-48] = readValues[0][jj];
-	  MeanPedWidthOOT[jj-48] = readValues[1][jj];
-	}
-	else if(jj>144){
-	  CorrCoeff0[jj-96] = readValues[0][jj]; 
-	  CorrCoeff1[jj-96] = readValues[1][jj];;
-	}
-      }
-      //
-
-	// --- Reading data header
-        reader->ReadHeader();
+      // --- Reading data header
+      reader->ReadHeader();
       const AliRawDataHeader* header = reader->GetDataHeader();
       if(header){
          UChar_t message = header->GetAttributes();
