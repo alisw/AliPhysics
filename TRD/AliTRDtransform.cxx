@@ -277,7 +277,7 @@ Bool_t AliTRDtransform::Transform(Double_t *x, Int_t *i, UInt_t time, Bool_t &ou
     // apply ExB correction to the Y-position
     // and move to the Z-position relative to the middle of the chamber
     posLocal[0] = -xLocal;
-    posLocal[1] =  (fPadPlane->GetColPos(col) + (0.5 - x[0]) * colSize) - driftLength * exbCorr;
+    posLocal[1] =  (fPadPlane->GetColPos(col) + (0.5 + x[0]) * colSize) - driftLength * exbCorr;
     posLocal[2] =  (fPadPlane->GetRowPos(row) -         0.5  * rowSize) - fZShiftIdeal;
 
     // Go to tracking coordinates
