@@ -5,6 +5,8 @@
 #pragma link off all functions;
 
 #pragma link C++ class AliAnalysisTaskUE+;
+#pragma link C++ class AliAnalysisTaskJetSpectrum+;
+#pragma link C++ class AliAnalysisHelperJetTasks+;
 
 
 #endif

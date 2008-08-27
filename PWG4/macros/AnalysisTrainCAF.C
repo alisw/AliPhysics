@@ -1,23 +1,29 @@
 //______________________________________________________________________________
-void AnalysisTrainCAF()
+void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 0)
 {
 // Example of running analysis train in CAF. To run in debug mode:
 //  - export ROOTSYS=debug  on your local client
 //  - un-comment gProof->ClearPackages()
-//  - un-comme lines with debugging info
+//  - un-comment lines with debugging info
 
 // WHY AOD is not a exchange container when running from ESD->AOD
 
     Bool_t debug         = kTRUE;
     Bool_t useMC         = kTRUE;
     Bool_t readTR        = kFALSE;
+    Bool_t bPROOF         = kTRUE;
+
+
     
     Int_t iAODanalysis   = 0;
     Int_t iAODhandler    = 1;
     Int_t iESDfilter     = 1;  // Only active if iAODanalysis=0
     Int_t iJETAN         = 1;
-    Int_t iJETANMC       = 1;
-    Int_t iPWG4UE      = 1;
+    Int_t iJETANAOD      = 0;
+    Int_t iJETANMC       = 0;
+    Int_t iDIJETAN       = 0;
+    Int_t iPWG4SPECTRUM  = 1;
+    Int_t iPWG4UE        = 0;
 
     if (iAODanalysis) {
        useMC = kFALSE;
@@ -25,11 +31,16 @@ void AnalysisTrainCAF()
        iESDfilter = 0;
        iMUONfilter = 0;
     }    
-    if (iJETAN) iESDfilter=1;
+    if (iJETANAOD) iESDfilter=1;
     if (iESDfilter) iAODhandler=1;
 
     // Dataset from CAF
     TString dataset = "/PWG4/arian/jetjet15-50";
+    // CKB quick hack
+    gROOT->LoadMacro("CreateESDChain.C");
+    TChain *chain = CreateESDChain("jetjet15-50.txt",10);
+
+
     printf("==================================================================\n");
     printf("===========    RUNNING ANALYSIS TRAIN IN CAF MODE    =============\n");
     printf("==================================================================\n");
@@ -37,8 +48,11 @@ void AnalysisTrainCAF()
     else              printf("=  ESD analysis on dataset: %s\n", dataset.Data());
     if (iESDfilter)   printf("=  ESD filter                                                    =\n");
     if (iJETAN)       printf("=  Jet analysis                                                  =\n");
-    if (iJETANMC)       printf("=  Jet analysis from Kinematics                                  =\n");
-    if (iPWG4UE)  printf("=  PWG4 UE                                                   =\n");
+    if (iJETANAOD)    printf("=  Jet analysis from AOD                                        =\n");
+    if (iJETANMC)     printf("=  Jet analysis from Kinematics                                  =\n");
+    if (iDIJETAN)     printf("=  DiJet analysis                                                =\n");
+    if (iPWG4SPECTRUM)printf("=  PWG4 Jet spectrum analysis                                    =\n");
+    if (iPWG4UE)      printf("=  PWG4 UE                                                       =\n");
     printf("==================================================================\n");
     if (useMC) printf(":: use MC    TRUE\n");
     else       printf(":: use MC    FALSE\n");
@@ -61,50 +75,65 @@ void AnalysisTrainCAF()
     const char* proofNode = "lxb6046";
     //    const char* proofNode = "kleinb@localhost";
 
-    TProof::Mgr(proofNode)->ShowROOTVersions();
-    //    TProof::Mgr(proofNode)->SetROOTVersion("vHEAD-r24503_dbg");
+
+
 
     // Connect to proof
-    TProof::Open(proofNode); // may be username@lxb6046 if user not the same as on local
+    if(bPROOF){
+      TProof::Mgr(proofNode)->ShowROOTVersions();
+      TProof::Mgr(proofNode)->SetROOTVersion("v5-21-01-alice_dbg");
+      TProof::Open(proofNode); 
 
-    // Clear packages if changing ROOT version on CAF or local
-    //    gProof->ClearPackages();
-    // Enable proof debugging if needed
-    //    gProof->SetLogLevel(5);
-    // To debug the train in PROOF mode, type in a root session:
-    // root[0] TProof::Mgr("lxb6064")->GetSessionLogs()->Display("*",0,10000);
-    // Common packages
-    // --- Enable the STEERBase Package
-    gProof->UploadPackage("pars/STEERBase.par");
-    gProof->EnablePackage("STEERBase");
-    // --- Enable the ESD Package
-    gProof->UploadPackage("pars/ESD.par");
-    gProof->EnablePackage("ESD");
-    // --- Enable the AOD Package
-    gProof->UploadPackage("pars/AOD.par");
-    gProof->EnablePackage("AOD");
-    // --- Enable the ANALYSIS Package
-    gProof->UploadPackage("pars/ANALYSIS.par");
-    gProof->EnablePackage("ANALYSIS");
-    // --- Enable the ANALYSISalice Package
-    gProof->UploadPackage("pars/ANALYSISalice.par");
-    gProof->EnablePackage("ANALYSISalice");
+      // Clear packages if changing ROOT version on CAF or local
+      //    gProof->ClearPackages();
+      // Enable proof debugging if needed
+      //    gProof->SetLogLevel(5);
+      // To debug the train in PROOF mode, type in a root session:
+      // root[0] TProof::Mgr("lxb6064")->GetSessionLogs()->Display("*",0,10000);
+      // Common packages
+      // --- Enable the STEERBase Package
+      gProof->UploadPackage("${ALICE_ROOT}/STEERBase.par");
+      gProof->EnablePackage("STEERBase");
+      // --- Enable the ESD Package
+      gProof->UploadPackage("${ALICE_ROOT}/ESD.par");
+      gProof->EnablePackage("ESD");
+      // --- Enable the AOD Package
+      gProof->UploadPackage("${ALICE_ROOT}/AOD.par");
+      gProof->EnablePackage("AOD");
+      // --- Enable the ANALYSIS Package
+      gProof->UploadPackage("${ALICE_ROOT}/ANALYSIS.par");
+      gProof->EnablePackage("ANALYSIS");
+      // --- Enable the ANALYSISalice Package
+      gProof->UploadPackage("${ALICE_ROOT}/ANALYSISalice.par");
+      gProof->EnablePackage("ANALYSISalice");
 
-    AliPDG::AddParticlesToPdgDataBase();
 
-    // --- Enable the JETAN Package
-    if (iJETAN||iJETANMC) {
-       gProof->UploadPackage("pars/JETAN.par");
-       gProof->EnablePackage("JETAN");
-    }   
-    // --- Enable particle correlation analysis
-    if (iPWG4UE) {
-       gProof->UploadPackage("pars/PWG4JetTasks.par");
-       gProof->EnablePackage("PWG4JetTasks");
-    }   
+      // --- Enable the JETAN Package
+      if (iJETAN||iJETANMC) {
+	gProof->UploadPackage("${ALICE_ROOT}/JETAN.par");
+	gProof->EnablePackage("JETAN");
+      }   
+      // --- Enable particle correlation analysis
+      if (iPWG4UE||iPWG4SPECTRUM) {
+	gProof->UploadPackage("${ALICE_ROOT}/PWG4JetTasks.par");
+	gProof->EnablePackage("PWG4JetTasks");
+      }   
 
-    // Create the chain
-    //
+    }
+    else{
+      gSystem->Load("libSTEERBase");
+      gSystem->Load("libESD");
+      gSystem->Load("libAOD");
+      gSystem->Load("libANALYSIS");
+      gSystem->Load("libANALYSISalice");
+
+
+      // --- Enable the JETAN Package
+      if (iJETAN||iJETANMC) gSystem->Load("libJETAN");
+      // --- Enable particle correlation analysis
+      if (iPWG4UE||iPWG4SPECTRUM)gSystem->Load("libPWG4JetTasks");  
+    }
+
 
     // Make the analysis manager
     AliAnalysisManager *mgr  = new AliAnalysisManager("Analysis Train", "A test setup for the analysis train");
@@ -134,17 +163,18 @@ void AnalysisTrainCAF()
        // AOD output handler
        AliAODHandler* aodHandler   = new AliAODHandler();
        mgr->SetOutputEventHandler(aodHandler);
-       aodHandler->SetOutputFileName("AliAODs.root");
-//       aodHandler->SetCreateNonStandardAOD();
+       aodHandler->SetOutputFileName(Form("AliAODs_CKB_%07d-%07d.root",nOffset,nOffset+nEvents));
+       //       aodHandler->SetSelectAll(kFALSE);
+       //       aodHandler->SetCreateNonStandardAOD();
        cout_aod = mgr->CreateContainer("cAOD", TTree::Class(),
-							      AliAnalysisManager::kOutputContainer, "default");
+				       AliAnalysisManager::kOutputContainer, "default");
        cout_aod->SetSpecialOutput();
     }   
 
     // Debugging if needed
-    if (debug) mgr->SetDebugLevel(3);
+    if (debug) mgr->SetDebugLevel(0);
 //    AliLog::EnableDebug(kTRUE);
-//    AliLog::SetGlobalLogLevel(2);
+    AliLog::SetGlobalLogLevel(0);
 
 
     if (iESDfilter && !iAODanalysis) {
@@ -191,6 +221,25 @@ void AnalysisTrainCAF()
        // mgr->ConnectOutput (jetana,     0, cout_aod );
        mgr->ConnectOutput (jetana,     1, cout_jet );
     }   
+    // JETANALYSIS from the AOD
+    if (iJETANAOD) {
+       AliAnalysisTaskJets *jetanaAOD = new AliAnalysisTaskJets("AODJetAnalysis");
+       jetanaAOD->SetDebugLevel(10);
+       jetanaAOD->SetNonStdBranch("jetsAOD");    
+       jetanaAOD->SetConfigFile("${ALICE_ROOT}/JETAN/ConfigJetAnalysisAOD.C");
+       mgr->AddTask(jetanaAOD);
+       // Output histograms list for jet analysis                       
+       AliAnalysisDataContainer *cout_jetAOD = mgr->CreateContainer("jethistAOD", TList::Class(),
+							      AliAnalysisManager::kOutputContainer, "jethistAOD.root");
+       // Dummy AOD output container for jet analysis (no client yet)
+       c_aodjet0 = mgr->CreateContainer("cAODjet0", TTree::Class(),
+                           AliAnalysisManager::kExchangeContainer);
+       // Connect to data containers
+       mgr->ConnectInput  (jetanaAOD,     0, cout_aod  );
+       mgr->ConnectOutput (jetanaAOD,     0, c_aodjet0 );
+       // mgr->ConnectOutput (jetana,     0, cout_aod );
+       mgr->ConnectOutput (jetanaAOD,     1, cout_jetAOD );
+    }   
     // Jet analysisMC
     AliAnalysisDataContainer *c_aodjetMC = 0;
     if (iJETANMC && useMC) {
@@ -211,10 +260,51 @@ void AnalysisTrainCAF()
        // mgr->ConnectOutput (jetanaMC,     0, cout_aod );
        mgr->ConnectOutput (jetanaMC,     1, cout_jetMC );
     }   
+    // Dijet analysis
+    if(iDIJETAN){
+      AliAnalysisTaskDiJets *dijetana = new AliAnalysisTaskDiJets("DiJetAnalysis");
+      dijetana->SetDebugLevel(2);
+      
+      mgr->AddTask(dijetana);
+
+      //
+      // Create containers for input/output
+      AliAnalysisDataContainer *c_aod_dijet = mgr->CreateContainer("cAODdijet", TTree::Class(),
+								   AliAnalysisManager::kExchangeContainer);
+      mgr->ConnectInput  (dijetana,  0, cinput  );
+      mgr->ConnectOutput (dijetana,  0, c_aod_dijet);
+    }
+
+
+    if (iPWG4SPECTRUM) {
+      AliAnalysisTaskJetSpectrum* pwg4spec = new  AliAnalysisTaskJetSpectrum("Jet Spectrum");
+      
+      // default parameters use a switch via iPWGSPECTRUM
+      // or a config file
+      pwg4spec->SetAnalysisType(AliAnalysisTaskJetSpectrum::kAnaMC);
+      //      if(iAODanalysis)pwg4spec->SetAODInput(kTRUE);
+      pwg4spec->SetDebugLevel(11); 
+      //      pwg4spec->SetBranchRec("jetsMC"); 
+      //      pwg4spec->SetBranchGen("jetsAOD"); 
+      mgr->AddTask(pwg4spec);
+
+      AliAnalysisDataContainer *coutput1_Spec = mgr->CreateContainer("pwg4spec", TList::Class(),AliAnalysisManager::kOutputContainer, "histos_pwg4spec.root");
+      // coutput1_Spec->SetSpecialOutput();
+      // Dummy AOD output container for jet analysis (no client yet)
+      c_aodSpec = mgr->CreateContainer("cAODjetSpec", TTree::Class(),
+					AliAnalysisManager::kExchangeContainer);
+      mgr->ConnectInput  (pwg4spec,  0, cinput);    
+      // mgr->ConnectInput  (pwg4spec,  0, c_aodjet);    
+      mgr->ConnectOutput (pwg4spec,  0, c_aodSpec );
+      //       mgr->ConnectOutput (pwg4spec,  1, coutput1_Spec );
+       
+      mgr->ConnectOutput (pwg4spec,  1, coutput1_Spec );
+    }   
+
     
     // Particle correlation analysis
     if (iPWG4UE) {
-      AliAnalysisTaskUE* ueana = new  AliAnalysisTaskUE("Undelying Event");
+      AliAnalysisTaskUE* ueana = new  AliAnalysisTaskUE("Underlying Event");
       
 
       // default parameters use a switch via iPWGUE
@@ -242,8 +332,8 @@ void AnalysisTrainCAF()
 
       AliAnalysisDataContainer *coutput1_UE = mgr->CreateContainer("histosUE", TList::Class(),AliAnalysisManager::kOutputContainer, "histosUE.root");
 
-      //      mgr->ConnectInput  (ueana,  0, cinput);    
-      mgr->ConnectInput  (ueana,  0, c_aodjet);    
+      mgr->ConnectInput  (ueana,  0, cinput);    
+      //      mgr->ConnectInput  (ueana,  0, c_aodjet);    
       mgr->ConnectOutput (ueana,     0, coutput1_UE );
     }   
 
@@ -251,6 +341,7 @@ void AnalysisTrainCAF()
     //    
     if (mgr->InitAnalysis()) {
        mgr->PrintStatus();
-       mgr->StartAnalysis("proof",dataset.Data(), 20000);
+       if(bPROOF)mgr->StartAnalysis("proof",dataset.Data(), nEvents,nOffset);
+       else mgr->StartAnalysis("local",chain);
     }   
 }

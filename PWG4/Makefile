@@ -30,6 +30,10 @@ ifneq ($(ANALYSISalice_INCLUDE),)
   ALICEINC += -I../$(ANALYSISalice_INCLUDE)
 endif
 
+ifneq ($(JETAN_INCLUDE),)
+  ALICEINC += -I../$(JETAN_INCLUDE)
+endif
+
 ifneq ($(PWG4PartCorr_INCLUDE),)
   ALICEINC += -I../$(PWG4PartCorr_INCLUDE)
 endif
@@ -44,6 +48,7 @@ endif
 ifeq ($(ALICEINC),-I.)
   ifneq ($(ALICE_ROOT),)
     ALICEINC += -I$(ALICE_ROOT)/include
+    ALICEINC += -I$(ALICE_ROOT)/JETAN   # some extra includes
   endif
 endif
 
