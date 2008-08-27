@@ -38,6 +38,8 @@
 #include "AliESDMuonTrack.h"
 #include "AliRecoParam.h"
 #include "AliCDBManager.h"
+#include "AliCDBEntry.h"
+#include "AliCDBPath.h"
 #include "AliGeomManager.h"
 
 // MUON includes
@@ -46,8 +48,6 @@
 #include "AliMUONESDInterface.h"
 #include "AliMUONRefitter.h"
 #include "AliMUONVDigit.h"
-#include "AliMUONVCluster.h"
-#include "AliMUONVClusterStore.h"
 #include "AliMUONTrack.h"
 #include "AliMUONVTrackStore.h"
 #include "AliMUONTrackParam.h"
@@ -71,12 +71,13 @@ void MUONRefit(Int_t nevents = -1, const char* esdFileNameIn = "AliESDs.root", c
   gRandom->SetSeed(1);
   Prepare();
   
-  // set reconstruction parameters used for refitting
-  AliMUONRecoParam *muonRecoParam = AliMUONRecoParam::GetLowFluxParam();
-  muonRecoParam->Print("FULL");
+  // reconstruction parameters for the refitting
+  AliMUONRecoParam* recoParam = AliMUONRecoParam::GetLowFluxParam();
+  Info("MUONRefit", "\n Reconstruction parameters for refitting:");
+  recoParam->Print("FULL");
   
   AliMUONESDInterface esdInterface;
-  AliMUONRefitter refitter(muonRecoParam);
+  AliMUONRefitter refitter(recoParam);
   refitter.Connect(&esdInterface);
   
   // open the ESD file and tree
@@ -107,7 +108,7 @@ void MUONRefit(Int_t nevents = -1, const char* esdFileNameIn = "AliESDs.root", c
     // get the ESD of current event
     esdTree->GetEvent(iEvent);
     if (!esd) {
-      Error("CheckESD", "no ESD object found for event %d", iEvent);
+      Error("MUONRefit", "no ESD object found for event %d", iEvent);
       return;
     }
     Int_t nTracks = (Int_t)esd->GetNumberOfMuonTracks();
@@ -225,6 +226,23 @@ void Prepare()
     Error("MUONRefit","Could not access mapping from OCDB !");
     exit(-1);
   }
+  
+  // Load initial reconstruction parameters from OCDB
+  AliMUONRecoParam* recoParam = 0x0;
+  AliCDBPath path("MUON","Calib","RecoParam");
+  AliCDBEntry *entry=man->Get(path.GetPath());
+  if(entry) {
+    recoParam = dynamic_cast<AliMUONRecoParam*>(entry->GetObject());
+    entry->SetOwner(0);
+    AliCDBManager::Instance()->UnloadFromCache(path.GetPath());
+  }
+  if (!recoParam) {
+    printf("Couldn't find RecoParam object in OCDB: create default one");
+    recoParam = AliMUONRecoParam::GetLowFluxParam();
+  }
+  Info("MUONRefit", "\n initial recontruction parameters:");
+  recoParam->Print("FULL");
+  AliMUONESDInterface::ResetTracker(recoParam);
   
 }
 
