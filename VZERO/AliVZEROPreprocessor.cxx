@@ -108,22 +108,25 @@ UInt_t AliVZEROPreprocessor::Process(TMap* dcsAliasMap)
 		if((file = fopen(fileName.Data(),"r")) == NULL){
             	                   Log(Form("Cannot open file %s",fileName.Data()));
 	    	  	           return 1;}
-		Float_t Pedestals[128], Sigmas[128], Gains[128];
-		for(Int_t j=0; j<128; j++)fscanf(file,"%f %f %f ",
-			                  &Pedestals[j], &Sigmas[j], &Gains[j]);
+		Float_t PEDmean[128], PEDsigma[128], ADCmean[128], ADCsigma[128] ;
+		for(Int_t j=0; j<128; j++)fscanf(file,"%f %f %f %f",
+			                  &PEDmean[j], &PEDsigma[j], &ADCmean[j], &ADCsigma[j]);
 		fclose(file);
 	    	
-		calibData->SetPedestal(Pedestals);
-		calibData->SetSigma(Sigmas);			
-		calibData->SetGain(Gains); }				
+		calibData->SetPedestal(PEDmean);
+		calibData->SetSigma(PEDsigma);			
+		calibData->SetGain(ADCmean); 
+		calibData->SetADCsigma(ADCsigma);
+		}				
 
 	delete source;      
   
   // Check that everything was properly transmitted
 
-//   for(Int_t j=0; j<128; j++){printf("ADCPedestal[%d] -> %f \n",j,calibData->GetPedestal(j));}
-//   for(Int_t j=0; j<128; j++){printf("ADCGain[%d] -> %f \n",j,calibData->GetGain(j));}
-//   for(Int_t j=0; j<128; j++){printf("ADCSigma[%d] -> %f \n",j,calibData->GetSigma(j));}
+//   for(Int_t j=0; j<128; j++){printf("Pedestal[%d] -> %f \n",j,calibData->GetPedestal(j));}
+//   for(Int_t j=0; j<128; j++){printf("PedSigma[%d] -> %f \n",j,calibData->GetSigma(j));}
+//   for(Int_t j=0; j<128; j++){printf("Gain[%d] -> %f \n",j,calibData->GetGain(j));}
+//   for(Int_t j=0; j<128; j++){printf("ADCsigma[%d] -> %f \n",j,calibData->GetADCsigma(j));}
 //   for(Int_t j=0; j<64; j++){printf("MeanHV[%d] -> %f \n",j,calibData->GetMeanHV(j));}
 //   for(Int_t j=0; j<64; j++){printf("WidthHV[%d] -> %f \n",j,calibData->GetWidthHV(j));}
   
