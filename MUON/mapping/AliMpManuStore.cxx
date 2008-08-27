@@ -328,10 +328,10 @@ Bool_t  AliMpManuStore::WriteData(const TString& outDir)
     }
     
     // Loop over map
-    TExMapIter it(&fManuToSerialNbs);
+    TExMapIter it2(&fManuToSerialNbs);
     Long_t key;
     Long_t value;
-    while ( ( it.Next(key, value) ) ) {
+    while ( ( it2.Next(key, value) ) ) {
       AliMpIntPair pair = AliMpExMap::GetPair(key);
       
       if ( pair.GetFirst() != detElemId ) continue;
