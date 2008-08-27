@@ -80,6 +80,8 @@ UInt_t AliPHOSPreprocessor::Process(TMap* /*valueSet*/)
 
   if(runType=="STANDALONE") {
     Bool_t ledOK = ProcessLEDRun();
+    Bool_t badmap_OK = FindBadChannelsEmc();
+    if(!badmap_OK) Log(Form("WARNING! FindBadChannels() completed with BAD status!"));
     if(ledOK) return 0;
     else
       return 1;
@@ -87,12 +89,9 @@ UInt_t AliPHOSPreprocessor::Process(TMap* /*valueSet*/)
   
   if(runType=="PHYSICS") {
     
-    Bool_t badmap_OK = FindBadChannelsEmc();
-    if(!badmap_OK) Log(Form("WARNING!! FindBadChannels() completed with BAD status!"));
-    
     Bool_t calibEmc_OK = CalibrateEmc();
     
-    if(calibEmc_OK && badmap_OK) return 0;
+    if(calibEmc_OK) return 0;
     else
       return 1;
   }
@@ -173,7 +172,7 @@ Bool_t AliPHOSPreprocessor::ProcessLEDRun()
 
   } // end of loop over files
 
-  //Store bad channels map
+  //Store the updated High Gain/Low Gain ratios
   AliCDBMetaData emcMetaData;
 
   //Data valid from current run fRun until updated (validityInfinite=kTRUE)
@@ -445,7 +444,7 @@ Bool_t AliPHOSPreprocessor::DoCalibrateEmc(Int_t system, TList* list, const AliP
     
     if(nkeys< 2){
       Log(Form("Not enough histograms (%d) for calibration.",nkeys));
-      return 0;
+      return 1; // it's not fatal! May be short run..
     }
     
     while(!ok){
@@ -484,7 +483,7 @@ Bool_t AliPHOSPreprocessor::DoCalibrateEmc(Int_t system, TList* list, const AliP
       
       if(!ok && counter > nkeys){
 	Log("No histogram with enough statistics for reference. Exit.");
-	return 0;
+	return 1; // Not fatal, just wait..
       }
     }
     
@@ -499,14 +498,10 @@ Bool_t AliPHOSPreprocessor::DoCalibrateEmc(Int_t system, TList* list, const AliP
     for(Int_t mod=0; mod<nMod; mod++) {
       for(Int_t col=0; col<nCol; col++) {
 	for(Int_t row=0; row<nRow; row++) {
-
-	  //High Gain to Low Gain ratio
-	  Float_t ratio = HG2LG(mod,row,col,&f);
-	  calibData.SetHighLowRatioEmc(mod+1,col+1,row+1,ratio);
 	  
 	  sprintf(hnam,"%d_%d_%d_1",mod,row,col); // high gain!
 	  h2 = (TH2F*)f.Get(hnam);
-
+	  
 	  //TODO: dead channels exclusion!
 	  if(h2) {
 	    h1 = h2->ProjectionX();
