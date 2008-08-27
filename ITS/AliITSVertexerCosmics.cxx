@@ -205,7 +205,7 @@ AliESDVertex* AliITSVertexerCosmics::FindVertexForCurrentEvent(TTree *itsCluster
   Int_t i1InnLay,i2InnLay,iOutLay;
 
   // build fake vertices
-  printf("Building tracklets on layer %d\n",ilayer);
+  //printf("Building tracklets on layer %d\n",ilayer);
 
   // InnLay - first cluster
   for(i1InnLay=0; i1InnLay<nclInnLayStored; i1InnLay++) { 
