@@ -128,41 +128,38 @@ Bool_t AliITSRawStreamSDDCompressed::Next()
 // returns kTRUE and fCompletedModule=kFALSE when a digit is found
 // returns kTRUE and fCompletedModule=kTRUE  when a module is completed 
 
-  fDDL=fRawReader->GetDDLID();
-  Int_t ddln = fRawReader->GetDDLID();
-  if(ddln <0) ddln=0;
-  fCompletedModule=kFALSE;
-  UInt_t masksod=8;    // start of DDL has the 4 most significant bits = 1000
+
+//  UInt_t masksod=8;    // start of DDL has the 4 most significant bits = 1000
   UInt_t maskeom=15;   // end of module has the 4 most significant bits = 1111
   UInt_t maskmod=15;   // last 4 bits for module number in end of module word
-  UInt_t maskDDL=0xFF; // last 8 bits for DDL number in start of DDL word
-
+  //  UInt_t maskDDL=0xFF; // last 8 bits for DDL number in start of DDL word
+    
   UInt_t maskCarlos=15<<27; // 4 bits  (27-30) for CarlosId in data word
   UInt_t maskSide=1<<26;    // 1 bit   (26)    for side     in data word
   UInt_t maskAnode=255<<18; // 8 bits  (18-25) for Nanode   in data word
   UInt_t maskTb=255<<10;    // 8 bits  (10-27) for Ntimebin in data word
   UInt_t maskADC=1023;      // 10 bits (0-9)   for ADC      in data word
-
-  if (!fRawReader->ReadNextInt(fData)) return kFALSE;  // read next word
-
-  UInt_t mostsigbits=fData>>28; 
-  if(mostsigbits==masksod){ 
-    fDDL=fData&maskDDL;
-  }else if(mostsigbits==maskeom){
-    fCarlosId=fData&maskmod;
-    fModuleID = GetModuleNumber(fDDL,fCarlosId);
-    fCompletedModule=kTRUE;
-    return kTRUE;
-  }else{
-    fCarlosId=(fData&maskCarlos)>>27;
-    fModuleID = GetModuleNumber(fDDL,fCarlosId);
-    fChannel=(fData&maskSide)>>26;
-    fCoord1=(fData&maskAnode)>>18;
-    fCoord2=(fData&maskTb)>>10;
-    fSignal=fData&maskADC;
-    fSignal+=fLowThresholdArray[fModuleID-kSPDModules][fChannel];
-    fCompletedModule=kFALSE;
-    return kTRUE;
+    
+  while(kTRUE){
+    fDDL=fRawReader->GetDDLID();
+    if (!fRawReader->ReadNextInt(fData)) return kFALSE;  // read next word
+    UInt_t mostsigbits=fData>>28; 
+    if(mostsigbits==maskeom){
+      fCarlosId=fData&maskmod;
+      fModuleID = GetModuleNumber(fDDL,fCarlosId);
+      fCompletedModule=kTRUE;
+      return kTRUE;
+    }else{
+      fCarlosId=(fData&maskCarlos)>>27;
+      fModuleID = GetModuleNumber(fDDL,fCarlosId);
+      fChannel=(fData&maskSide)>>26;
+      fCoord1=(fData&maskAnode)>>18;
+      fCoord2=(fData&maskTb)>>10;
+      fSignal=fData&maskADC;
+      fSignal+=fLowThresholdArray[fModuleID-kSPDModules][fChannel];
+      fCompletedModule=kFALSE;
+      return kTRUE;
+    }
   }
   return kFALSE;
 }

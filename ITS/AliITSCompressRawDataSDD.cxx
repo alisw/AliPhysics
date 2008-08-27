@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id:$*/
+/* $Id$*/
 
 ///////////////////////////////////////////////////////////////////
 //                                                               //
@@ -53,14 +53,15 @@
 //    1  |                                                       //
 //    0 -                                                        //
 //                                                               //
-// Plus 2 types of control words:                                //
-// - DDL identifier with the 4 more significant bits     = 1000  //
-// - End of module data (needed by the Cluster Finder)   = 1111  //
+// Plus 1 type of control words:                                 //
+// - End of module data (needed by the Cluster Finder)           //
+//       first 4 most significant bits                   = 1111  //
 //                                                               //
 // Origin: F.Prino, Torino, prino@to.infn.it                     //
 //                                                               //
 ///////////////////////////////////////////////////////////////////
 
+#include"AliLog.h"
 #include "AliITSCompressRawDataSDD.h"
 #include "AliRawReader.h"
 #include "AliRawReaderDate.h"
@@ -70,25 +71,49 @@
 
 ClassImp(AliITSCompressRawDataSDD)
 
-AliITSCompressRawDataSDD::AliITSCompressRawDataSDD(TString filename):
+AliITSCompressRawDataSDD::AliITSCompressRawDataSDD():
 TObject(),
+fRawReader(0),
+fPointerToData(0),
+fSizeInMemory(0),
 fEventRange(kFALSE),
 fFirstEvent(0),
 fLastEvent(0)
 {
+  // default constructor
+  fNameFile="";
+}
+//______________________________________________________________________
+AliITSCompressRawDataSDD::AliITSCompressRawDataSDD(TString filename):
+TObject(),
+fRawReader(0),
+fPointerToData(0),
+fSizeInMemory(0),
+fEventRange(kFALSE),
+fFirstEvent(0),
+fLastEvent(0)
+{
+  // Contructor for tests
   fNameFile=filename;
 }
 //______________________________________________________________________
+AliITSCompressRawDataSDD::~AliITSCompressRawDataSDD(){
+  // raw reader is passed from outdside, don't delete it
+}
+
+//______________________________________________________________________
 void AliITSCompressRawDataSDD::Compress(){
+  // Test method to dump raw data on ascii file
   Int_t iev=0;
   if(fEventRange) iev=fFirstEvent;
-  AliRawReader *rd;   
+
+  AliRawReader* rd;
   if(fNameFile.Contains(".root")){
     rd=new AliRawReaderRoot(fNameFile.Data(),iev);
   }else{
     rd=new AliRawReaderDate(fNameFile.Data(),iev);
   }
-
+  
   FILE *outtxt=fopen("data.txt","w");
   Int_t oldddl=-1;
   UInt_t word=0;
@@ -121,4 +146,54 @@ void AliITSCompressRawDataSDD::Compress(){
     if(fEventRange && iev>fLastEvent) break;
   }while(rd->NextEvent());
   fclose(outtxt);
+}
+//______________________________________________________________________
+UInt_t AliITSCompressRawDataSDD::CompressEvent(UChar_t* inputPtr){
+  // Method to be used in HLT
+  UInt_t siz=0;
+  memcpy(fPointerToData,inputPtr,32); // event header, 8 words
+  fPointerToData+=32;
+  siz+=32;
+  UInt_t word=0;
+  AliITSRawStreamSDD s(fRawReader);
+  Int_t mask1=0xFF000000;
+  Int_t mask2=0x00FF0000;
+  Int_t mask3=0x0000FF00;
+  Int_t mask4=0x000000FF;
+  while(s.Next()){
+    if(s.IsCompletedModule()==kFALSE){
+      word=s.GetCarlosId()<<27;
+      word+=s.GetChannel()<<26;
+      word+=s.GetCoord1()<<18;
+      word+=s.GetCoord2()<<10;
+      word+=s.GetSignal();
+      if(siz+4<fSizeInMemory){
+	*(fPointerToData)=(word&mask1)>>24;
+	++fPointerToData;
+	*(fPointerToData)=(word&mask2)>>16;
+	++fPointerToData;
+	*(fPointerToData)=(word&mask3)>>8;
+	++fPointerToData;
+	*(fPointerToData)=(word&mask4);
+	++fPointerToData;
+	siz+=4;
+      }
+    }
+    if(s.IsCompletedModule()==kTRUE){
+      word=15<<28;
+      word+=s.GetCarlosId();
+      if(siz+4<fSizeInMemory){
+	*(fPointerToData)=(word&mask1)>>24;
+	++fPointerToData;
+	*(fPointerToData)=(word&mask2)>>16;
+	++fPointerToData;
+	*(fPointerToData)=(word&mask3)>>8;
+	++fPointerToData;
+	*(fPointerToData)=(word&mask4);
+	++fPointerToData;
+	siz+=4;
+      }
+    }
+  }
+  return siz;
 }

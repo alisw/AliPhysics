@@ -8,6 +8,8 @@
 
 #include<TObject.h>
 #include<TString.h>
+#include"AliRawReader.h"
+
 ///////////////////////////////////////////////////////////////////
 //                                                               //
 // Class to decode the SDD Raw Data from the CarlosRX format to  //
@@ -19,19 +21,42 @@
 class AliITSCompressRawDataSDD : public TObject {
 
  public:
+  AliITSCompressRawDataSDD();
   AliITSCompressRawDataSDD(TString filename);
+  ~AliITSCompressRawDataSDD();
   void SetEventRange(Int_t first, Int_t last){
     fEventRange=kTRUE;
     fFirstEvent=first;
     fLastEvent=last;
   }
+  void SetRawReader(AliRawReader* rd){
+    fRawReader=rd;
+  }
+  void SetPointerToData(UChar_t* pt){
+    fPointerToData=pt;
+  }
+  void SetSize(UInt_t siz){
+    fSizeInMemory=siz;
+  }
+
   void Compress();
+  UInt_t CompressEvent(UChar_t* inputPtr);
 
  protected:
-  TString fNameFile;    // name of the raw data file
-  Bool_t  fEventRange;  // flag to select a range of events
-  Int_t   fFirstEvent;  // first event (used only if fEventRange==kTRUE)
-  Int_t   fLastEvent;  // first event (used only if fEventRange==kTRUE)
+
+ private:
+  AliITSCompressRawDataSDD(const AliITSCompressRawDataSDD& /*c*/);
+
+  AliITSCompressRawDataSDD& operator=(const AliITSCompressRawDataSDD& /*c*/);
+ 
+
+  AliRawReader* fRawReader; // pointer to raw reader
+  UChar_t* fPointerToData;   // pointer to the start of data in memory
+  UInt_t  fSizeInMemory;    // free space in memory in Bytes
+  Bool_t  fEventRange;      // flag to select a range of events
+  Int_t   fFirstEvent;      // first event (used only if fEventRange==kTRUE)
+  Int_t   fLastEvent;       // first event (used only if fEventRange==kTRUE)
+  TString fNameFile;        // name of the raw data file
 
   ClassDef(AliITSCompressRawDataSDD, 0)
 };
