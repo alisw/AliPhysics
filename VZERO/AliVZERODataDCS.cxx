@@ -125,11 +125,12 @@ void AliVZERODataDCS::ProcessData(TMap& aliasMap){
   }
   
   	// calculate mean and rms of the first two histos
+	// and convert index to aliroot channel
 	for(int i=0;i<kNAliases;i++){
-		fMeanHV[i] = fHv[i]->GetMean();
-		fWidthHV[i] = fHv[i]->GetRMS();
+	        Int_t iChannel     = GetOfflineChannel(i);	
+		fMeanHV[iChannel]  = fHv[i]->GetMean();
+		fWidthHV[iChannel] = fHv[i]->GetRMS();
 	}
-
     
   fIsProcessed=kTRUE;
 }
