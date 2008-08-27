@@ -224,7 +224,7 @@ Bool_t CheckESD(const char* gAliceFileName = "galice.root",
   hResTOFWrong->SetLineColor(kRed);
 
   // calorimeters
-  TH1F* hEPHOS = CreateHisto("hEPHOS", "PHOS", 100, 0, 5, "E [GeV]", "N");
+  TH1F* hEPHOS = CreateHisto("hEPHOS", "PHOS", 100, 0, 50, "E [GeV]", "N");
   TH1F* hEEMCAL = CreateHisto("hEEMCAL", "EMCAL", 100, 0, 50, "E [GeV]", "N");
 
   // muons
