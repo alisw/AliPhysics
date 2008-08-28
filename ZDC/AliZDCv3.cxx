@@ -208,7 +208,12 @@ void AliZDCv3::CreateBeamLine()
   
   Float_t zc, zq, zd1, zd2, zql, zd2l;
   Float_t conpar[9], tubpar[3], tubspar[5], boxpar[3];
-  Int_t im1, im2;
+
+  //-- rotation matrices for the legs
+  Int_t irotpipe7, irotpipe8;
+  gMC->Matrix(irotpipe7,90.-1.0027,0.,90.,90.,1.0027,180.);      
+  gMC->Matrix(irotpipe8,90.+1.0027,0.,90.,90.,1.0027,0.);
+
   //
   Int_t *idtmed = fIdtmed->GetArray();
   
@@ -429,61 +434,124 @@ void AliZDCv3::CreateBeamLine()
   
   tubpar[0] = 68./2.;
   tubpar[1] = 68.4/2.;
-  tubpar[2] = 927.3/2.;
+  tubpar[2] = 848.6/2.;
   gMC->Gsvolu("QT13", "TUBE", idtmed[7], tubpar, 3);
   gMC->Gspos("QT13", 1, "ZDCC", 0., 0., -tubpar[2]-zd1, 0, "ONLY");
   // Ch.debug
   //printf("\n	QT13 TUBE pipe from z = %f to z= %f\n",-zd1,-2*tubpar[2]-zd1);
   
   zd1 += tubpar[2] * 2.;
+
+  // --------------------------------------------------------
+  // RECOMBINATION CHAMBER IMPLEMENTED USING TGeo CLASSES!!!!
+  // author: Chiara (August 2008)
+  // --------------------------------------------------------
+  // TRANSFORMATION MATRICES
+  // Combi transformation: 
+  Double_t dx = -3.970000;
+  Double_t dy = 0.000000;
+  Double_t dz = 0.0;
+  // Rotation: 
+  Double_t thx = 84.989100;   Double_t phx = 0.000000;
+  Double_t thy = 90.000000;   Double_t phy = 90.000000;
+  Double_t thz = 5.010900;    Double_t phz = 180.000000;
+  TGeoRotation *rotMatrix1c = new TGeoRotation("c",thx,phx,thy,phy,thz,phz);
+  // Combi transformation: 
+  dx = -3.970000;
+  dy = 0.000000;
+  dz = 0.0;
+  TGeoCombiTrans *rotMatrix2c = new TGeoCombiTrans("ZDCC_c1", dx,dy,dz,rotMatrix1c);
+  rotMatrix2c->RegisterYourself();
+  // Combi transformation: 
+  dx = 3.970000;
+  dy = 0.000000;
+  dz = 0.0;
+  // Rotation: 
+  thx = 95.010900;    phx = 0.000000;
+  thy = 90.000000;    phy = 90.000000;
+  thz = 5.010900;    phz = 0.000000;
+  TGeoRotation *rotMatrix3c = new TGeoRotation("",thx,phx,thy,phy,thz,phz);
+  TGeoCombiTrans *rotMatrix4c = new TGeoCombiTrans("ZDCC_c2", dx,dy,dz,rotMatrix3c);
+  rotMatrix4c->RegisterYourself();
+
+  // VOLUMES DEFINITION
+  // Volume: ZDCC
+  TGeoVolume *pZDCC = gGeoManager->GetVolume("ZDCC");
+  //pZDCC->PrintNodes();
   
-  tubpar[0] = 0./2.;
-  tubpar[1] = 68.4/2.;
-  tubpar[2] = 0.2/2.;
-  gMC->Gsvolu("QT14", "TUBE", idtmed[8], tubpar, 3);
-  gMC->Gspos("QT14", 1, "ZDCC", 0., 0., -tubpar[2]-zd1, 0, "ONLY");
+  conpar[0] = (90.1-0.95-0.26)/2.;
+  conpar[1] = 0.0/2.;
+  conpar[2] = 21.6/2.;
+  conpar[3] = 0.0/2.;
+  conpar[4] = 5.8/2.;
+  TGeoShape *pConeExtC = new TGeoCone("QCLext", conpar[0],conpar[1],conpar[2],conpar[3],conpar[4]);
+  
+  conpar[0] = (90.1-0.95-0.26)/2.;
+  conpar[1] = 0.0/2.;
+  conpar[2] = 21.2/2.;
+  conpar[3] = 0.0/2.;
+  conpar[4] = 5.4/2.;
+  TGeoShape *pConeIntC = new TGeoCone("QCLint", conpar[0],conpar[1],conpar[2],conpar[3],conpar[4]);
+
+  // Outer trousers
+  TGeoCompositeShape *pOutTrousersC = new TGeoCompositeShape("outTrousersC", "QCLext:ZDCC_c1+QCLext:ZDCC_c2");
+  
+  // Volume: QCLext
+  TGeoMedium *medZDCFe = gGeoManager->GetMedium("ZDC_ZIRON");
+  TGeoVolume *pQCLext = new TGeoVolume("QCLext",pOutTrousersC, medZDCFe);
+  pQCLext->SetLineColor(4);
+  pQCLext->SetVisLeaves(kTRUE);
+  //
+  TGeoTranslation *tr1c = new TGeoTranslation(0., 0., (Double_t) conpar[0]+0.95+zd1);
+  pZDCC->AddNode(pQCLext, 1, tr1c);
+  // Inner trousers
+  TGeoCompositeShape *pIntTrousersC = new TGeoCompositeShape("intTrousersC", "QCLint:ZDCC_c1+QCLint:ZDCC_c2");
+  // Volume: QCLint
+  TGeoMedium *medZDCvoid = gGeoManager->GetMedium("ZDC_ZVOID");
+  TGeoVolume *pQCLint = new TGeoVolume("QCLint",pIntTrousersC, medZDCvoid);
+  pQCLint->SetLineColor(6);
+  pQCLint->SetVisLeaves(kTRUE);
+  pQCLext->AddNode(pQCLint, 1);
+    
+  zd1 += 90.1;
+  
+  //  second section : 2 tubes (ID = 54. OD = 58.)  
+  tubpar[0] = 5.4/2.;
+  tubpar[1] = 5.8/2.;
+  tubpar[2] = 40.0/2.;
+  gMC->Gsvolu("QC14", "TUBE", idtmed[7], tubpar, 3);
+  gMC->Gspos("QC14", 1, "ZDCC", -15.8/2., 0., -tubpar[2]-zd1, 0, "ONLY");
+  gMC->Gspos("QC14", 2, "ZDCC",  15.8/2., 0., -tubpar[2]-zd1, 0, "ONLY");  
   // Ch.debug
-  //printf("\n	QT14 TUBE pipe from z = %f to z= %f\n",-zd1,-2*tubpar[2]-zd1);
+  //printf("	QC14 TUBE from z = %f to z= %f\n",-zd1,-2*tubpar[2]-zd1);
   
-  zd1 += tubpar[2] * 2.;
+  zd1 += 2.*tubpar[2];
   
-  tubpar[0] = 0./2.;
-  tubpar[1] = 6.4/2.;
-  tubpar[2] = 0.2/2.;
-  gMC->Gsvolu("QT15", "TUBE", idtmed[11], tubpar, 3);
-  //-- Position QT15 inside QT14
-  gMC->Gspos("QT15", 1, "QT14", -7.7, 0., 0., 0, "ONLY");
+  // transition x2zdc to recombination chamber : skewed cone  
+  conpar[0] = (10.-0.2)/2.;
+  conpar[1] = 5.4/2.;
+  conpar[2] = 5.8/2.;
+  conpar[3] = 6.3/2.;
+  conpar[4] = 7.0/2.;
+  gMC->Gsvolu("QC15", "CONE", idtmed[7], conpar, 5); 
+  gMC->Gspos("QC15", 1, "ZDCC", -7.9-0.175, 0., -conpar[0]-0.1-zd1, irotpipe7, "ONLY");
+  gMC->Gspos("QC15", 2, "ZDCC", 7.9+0.175, 0., -conpar[0]-0.1-zd1, irotpipe8, "ONLY");
+  //printf("	QC15 CONE from z = %f to z= %f\n",-zd1,-2*conpar[0]-0.2-zd1);
 
-  gMC->Gsvolu("QT16", "TUBE", idtmed[11], tubpar, 3);  
-  //-- Position QT16 inside QT14
-  gMC->Gspos("QT16", 1, "QT14", 7.7, 0., 0., 0, "ONLY");
+  zd1 += 2.*conpar[0]+0.2;
   
-  
-  //-- BEAM PIPE BETWEEN END OF CONICAL PIPE AND BEGINNING OF D2 
-  
-  tubpar[0] = 6.4/2.;
-  tubpar[1] = 6.8/2.;
-  tubpar[2] = 680.8/2.;
-  gMC->Gsvolu("QT17", "TUBE", idtmed[7], tubpar, 3);
+  // 2 tubes (ID = 63 mm OD=70 mm)      
+  tubpar[0] = 6.3/2.;
+  tubpar[1] = 7.0/2.;
+  tubpar[2] = 512.9/2.;
+  gMC->Gsvolu("QC16", "TUBE", idtmed[7], tubpar, 3);
+  gMC->Gspos("QC16", 1, "ZDCC", -16.5/2., 0., -tubpar[2]-zd1, 0, "ONLY");
+  gMC->Gspos("QC16", 2, "ZDCC",  16.5/2., 0., -tubpar[2]-zd1, 0, "ONLY");
+  //printf("	QA16 TUBE from z = %f to z= %f\n",-zd1,-2*tubpar[2]-zd1);  
 
-  tubpar[0] = 6.4/2.;
-  tubpar[1] = 6.8/2.;
-  tubpar[2] = 680.8/2.;
-  gMC->Gsvolu("QT18", "TUBE", idtmed[7], tubpar, 3);
-  
-  // -- ROTATE PIPES 
-  Float_t angle = 0.143*kDegrad; // Rotation angle
-  
-  //AliMatrix(im1, 90.+0.143, 0., 90., 90., 0.143, 0.); // x<0
-  gMC->Matrix(im1, 90.+0.143, 0., 90., 90., 0.143, 0.); // x<0  
-  gMC->Gspos("QT17", 1, "ZDCC", TMath::Sin(angle) * 680.8/ 2. - 9.4, 
-             0., -tubpar[2]-zd1, im1, "ONLY"); 
-  //printf("\n	QT17-18 pipe from z = %f to z= %f\n",-zd1,-2*tubpar[2]-zd1);
-	     
-  //AliMatrix(im2, 90.-0.143, 0., 90., 90., 0.143, 180.); // x>0 (ZP)
-  gMC->Matrix(im2, 90.-0.143, 0., 90., 90., 0.143, 180.); // x>0 (ZP)  
-  gMC->Gspos("QT18", 1, "ZDCC", 9.7 - TMath::Sin(angle) * 680.8 / 2., 
-             0., -tubpar[2]-zd1, im2, "ONLY"); 
+  zd1 += 2.*tubpar[2];
+  printf("\n	END OF SIDE C BEAM PIPE DEFINITION AT z= %f\n",-zd1);
+
 	   
   // -- Luminometer (Cu box) in front of ZN - side C
   boxpar[0] = 8.0/2.;
@@ -503,18 +571,16 @@ void AliZDCv3::CreateBeamLine()
   ///////////////////////////////////////////////////////////////
 
   // Rotation Matrices definition
-  Int_t irotpipe2, irotpipe1;
-  //Int_t irotpipe5, irotpipe6
-  Int_t irotpipe7, irotpipe8;
-  //-- rotation matrices for the tilted tube before and after the TDI 
-  gMC->Matrix(irotpipe2,90.+6.3025,0.,90.,90.,6.3025,0.);       
+  Int_t irotpipe1, irotpipe2;
   //-- rotation matrices for the tilted cone after the TDI to recenter vacuum chamber      
   gMC->Matrix(irotpipe1,90.-2.2918,0.,90.,90.,2.2918,180.);    
-  //-- rotation matrices for the legs
-  /*gMC->Matrix(irotpipe5,90.-5.0109,0.,90.,90.,5.0109,180.);      
-  gMC->Matrix(irotpipe6,90.+5.0109,0.,90.,90.,5.0109,0.);*/	   
+  //-- rotation matrices for the tilted tube before and after the TDI 
+  gMC->Matrix(irotpipe2,90.+6.3025,0.,90.,90.,6.3025,0.);       
+/*  //-- rotation matrices for the legs
+  Int_t irotpipe7, irotpipe8;
   gMC->Matrix(irotpipe7,90.-1.0027,0.,90.,90.,1.0027,180.);      
   gMC->Matrix(irotpipe8,90.+1.0027,0.,90.,90.,1.0027,0.);
+*/
 
   // -- Mother of the ZDCs (Vacuum PCON)		
   zd2 = 1910.22;// zd2 initial value
@@ -1203,13 +1269,13 @@ void AliZDCv3::CreateBeamLine()
   // --------------------------------------------------------
   // TRANSFORMATION MATRICES
   // Combi transformation: 
-  Double_t dx = -3.970000;
-  Double_t dy = 0.000000;
-  Double_t dz = 0.0;
+  dx = -3.970000;
+  dy = 0.000000;
+  dz = 0.0;
   // Rotation: 
-  Double_t thx = 84.989100;   Double_t phx = 0.000000;
-  Double_t thy = 90.000000;   Double_t phy = 90.000000;
-  Double_t thz = 5.010900;    Double_t phz = 180.000000;
+  thx = 84.989100;   phx = 0.000000;
+  thy = 90.000000;   phy = 90.000000;
+  thz = 5.010900;    phz = 180.000000;
   TGeoRotation *rotMatrix1 = new TGeoRotation("",thx,phx,thy,phy,thz,phz);
   // Combi transformation: 
   dx = -3.970000;
@@ -1222,13 +1288,14 @@ void AliZDCv3::CreateBeamLine()
   dy = 0.000000;
   dz = 0.0;
   // Rotation: 
-  thx = 95.010900;    phx = 0.000000;
-  thy = 90.000000;    phy = 90.000000;
+  thx = 95.010900;   phx = 0.000000;
+  thy = 90.000000;   phy = 90.000000;
   thz = 5.010900;    phz = 0.000000;
   TGeoRotation *rotMatrix3 = new TGeoRotation("",thx,phx,thy,phy,thz,phz);
   TGeoCombiTrans *rotMatrix4 = new TGeoCombiTrans("ZDC_c2", dx,dy,dz,rotMatrix3);
   rotMatrix4->RegisterYourself();
-
+  
+  
   // VOLUMES DEFINITION
   // Volume: ZDCA
   TGeoVolume *pZDCA = gGeoManager->GetVolume("ZDCA");
@@ -1252,9 +1319,9 @@ void AliZDCv3::CreateBeamLine()
   TGeoCompositeShape *pOutTrousers = new TGeoCompositeShape("outTrousers", "QALext:ZDC_c1+QALext:ZDC_c2");
   
   // Volume: QALext
-  TGeoMedium *medZDCFe = gGeoManager->GetMedium("ZDC_ZIRON");
+  //TGeoMedium *medZDCFe = gGeoManager->GetMedium("ZDC_ZIRON");
   TGeoVolume *pQALext = new TGeoVolume("QALext",pOutTrousers, medZDCFe);
-  pQALext->SetLineColor(5);
+  pQALext->SetLineColor(4);
   pQALext->SetVisLeaves(kTRUE);
   //
   TGeoTranslation *tr1 = new TGeoTranslation(0., 0., (Double_t) conpar[0]+0.95+zd2);
@@ -1262,7 +1329,7 @@ void AliZDCv3::CreateBeamLine()
   // Inner trousers
   TGeoCompositeShape *pIntTrousers = new TGeoCompositeShape("intTrousers", "QALint:ZDC_c1+QALint:ZDC_c2");
   // Volume: QALint
-  TGeoMedium *medZDCvoid = gGeoManager->GetMedium("ZDC_ZVOID");
+  //TGeoMedium *medZDCvoid = gGeoManager->GetMedium("ZDC_ZVOID");
   TGeoVolume *pQALint = new TGeoVolume("QALint",pIntTrousers, medZDCvoid);
   pQALint->SetLineColor(7);
   pQALint->SetVisLeaves(kTRUE);
