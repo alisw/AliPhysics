@@ -160,6 +160,7 @@ AliTPCcalibDB::AliTPCcalibDB():
   fTransform(0),
   fExB(0),
   fPadGainFactor(0),
+  fDedxGainFactor(0),
   fPadTime0(0),
   fPadNoise(0),
   fPedestals(0),
@@ -181,6 +182,7 @@ AliTPCcalibDB::AliTPCcalibDB(const AliTPCcalibDB& ):
   fTransform(0),
   fExB(0),
   fPadGainFactor(0),
+  fDedxGainFactor(0),
   fPadTime0(0),
   fPadNoise(0),
   fPedestals(0),
@@ -267,6 +269,12 @@ void AliTPCcalibDB::Update(){
     //if (fPadGainFactor) delete fPadGainFactor;
     entry->SetOwner(kTRUE);
     fPadGainFactor = (AliTPCCalPad*)entry->GetObject();
+  }
+  //
+  entry          = GetCDBEntry("TPC/Calib/GainFactorDedx");
+  if (entry){
+    entry->SetOwner(kTRUE);
+    fDedxGainFactor = (AliTPCCalPad*)entry->GetObject();
   }
   //
   entry          = GetCDBEntry("TPC/Calib/PadTime0");

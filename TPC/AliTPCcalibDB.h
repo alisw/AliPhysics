@@ -34,6 +34,7 @@ class AliTPCcalibDB : public TObject
   AliTPCTransform* GetTransform() {return fTransform;}
   AliTPCExB* GetExB() {return fExB;}
   AliTPCCalPad* GetPadGainFactor() {return fPadGainFactor;}
+  AliTPCCalPad* GetDedxGainFactor() {return fDedxGainFactor;}
   AliTPCCalPad* GetPadTime0() {return fPadTime0;}
   AliTPCCalPad* GetPadNoise() {return fPadNoise;}
   AliTPCCalPad* GetPedestals() {return fPedestals;}
@@ -57,6 +58,7 @@ protected:
   // calibration parameters per pad
   //
   AliTPCCalPad* fPadGainFactor;   // Gain calibration entry
+  AliTPCCalPad* fDedxGainFactor;   // Gain calibration entry - for dEdx
   AliTPCCalPad* fPadTime0;        // Time0 calibration entry
   AliTPCCalPad* fPadNoise;        // Noise calibration entry
   AliTPCCalPad* fPedestals;       // Pedestal calibration entry
