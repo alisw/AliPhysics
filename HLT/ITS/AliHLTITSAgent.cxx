@@ -29,6 +29,7 @@
 // header files of library components
 
 // header file of the module preprocessor
+#include "AliHLTITSCompressRawDataSDDComponent.h"
 
 // raw data handler of HLTOUT data
 #include "AliHLTOUTHandlerEquId.h"
@@ -83,7 +84,7 @@ int AliHLTITSAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
   // see header file for class documentation
   assert(pHandler);
   if (!pHandler) return -EINVAL;
-  //pHandler->AddComponent(new ...);
+  pHandler->AddComponent(new AliHLTITSCompressRawDataSDDComponent);
 
   return 0;
 }

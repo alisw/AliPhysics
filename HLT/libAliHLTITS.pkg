@@ -5,7 +5,8 @@ CLASS_HDRS:=  	AliHLTITStrack.h \
 		AliHLTITStracker.h \
 		AliHLTITSVertexerZ.h \
 		AliHLTITSclusterer.h \
-		AliHLTITSAgent.h
+		AliHLTITSAgent.h\
+		AliHLTITSCompressRawDataSDDComponent.h	
 
 MODULE_SRCS= 	$(CLASS_HDRS:.h=.cxx)
 
@@ -15,7 +16,7 @@ MODULE_DHDR:=
 
 EINCLUDE := HLT/BASE HLT/ITS HLT/MUON/src TPC ITS MUON STEER RAW
 
-LIBRARY_DEP := -lITSrec -lITSbase -lESD -lSTEER -lSTEERBase
+LIBRARY_DEP := -lHLTbase -lAliHLTUtil -lRAWDatarec -lRAWDatabase -lITSrec -lITSbase -lESD -lSTEER -lSTEERBase $(shell root-config --libdir) -lEG
 
 ###############################################################################
 #
