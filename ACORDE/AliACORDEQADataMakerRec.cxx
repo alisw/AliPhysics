@@ -25,7 +25,7 @@
 //
 //  Created: June 13th 2008
 //---
-
+// Last Update: Aug. 27th 2008 --> Implementation to declare QA expert histogram
 
 
 // --- ROOT system ---
@@ -92,7 +92,7 @@ fhACORDEBitPattern[2] = new TH1D("ACORDERawDataSMM","ACORDE-SingleMuonMultiplici
 fhACORDEBitPattern[3] = new TH1D("ACORDERawDataMMM","ACORDE-MultiMuonMultiplicity",60,1,60);//AcordeMultiMuon Multiplicity
 for(Int_t i=0;i<4;i++)
 {
-	Add2RawsList(fhACORDEBitPattern[i],i);
+	Add2RawsList(fhACORDEBitPattern[i],i,kFALSE);
 }
 }
 //____________________________________________________________________________ 
@@ -114,11 +114,11 @@ void AliACORDEQADataMakerRec::InitESDs()
 
    name = "hESDsSingle";
    fhESDsSingle = new TH1F(name.Data(),"hESDsSingle",60,0,60);
-   Add2ESDsList( fhESDsSingle,0);
+   Add2ESDsList(fhESDsSingle,0,kFALSE);
 
    name = "hESDsMulti";
    fhESDsMulti = new TH1F(name.Data(),"hESDsMulti",60,0,60);
-   Add2ESDsList( fhESDsMulti,1);
+   Add2ESDsList(fhESDsMulti,1,kFALSE);
 }
 //____________________________________________________________________________
 void AliACORDEQADataMakerRec::MakeRaws(AliRawReader* rawReader)

@@ -27,6 +27,8 @@
 //
 //  Created: June 13th 2008
 //---
+// Last Update: Aug. 27th 2008 ---> Implementation to declare QA expert histogram 
+
 
 // --- ROOT system ---
 #include <TClonesArray.h>
@@ -87,7 +89,7 @@ void AliACORDEQADataMakerSim::InitHits()
 	
 	TH1F *   fHitsACORDE;
 	fHitsACORDE = new TH1F("hACORDEBitPattern","Distribution of fired modules",60,0,60);
-	Add2HitsList(fHitsACORDE,0);
+	Add2HitsList(fHitsACORDE,0,kFALSE);
 }
 //____________________________________________________________________________ 
 void AliACORDEQADataMakerSim::InitDigits()
@@ -98,7 +100,7 @@ void AliACORDEQADataMakerSim::InitDigits()
    TString   modulename;
    modulename = "hDigitsModule";
    fhDigitsModule = new TH1F(modulename.Data(),"hDigitsModuleSingle",60,0,60);
-   Add2DigitsList( fhDigitsModule,0);
+   Add2DigitsList(fhDigitsModule,0,kFALSE);
 
 }
 //____________________________________________________________________________
