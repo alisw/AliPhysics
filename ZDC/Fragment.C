@@ -1,9 +1,6 @@
 void Fragment(Int_t nev=0, Int_t debug=0)
 {
  gROOT->Reset();
- gStyle->SetPalette(1);
- gStyle->SetCanvasColor(33);
- gStyle->SetFrameFillColor(38);
  
  Float_t b;
  Int_t nspectp, nspectn, nspectpfree, nspectnfree; 
@@ -40,13 +37,13 @@ void Fragment(Int_t nev=0, Int_t debug=0)
    }
 //
 // Generation of fragments
-   gallio->GenerateIMF(zz, nalpha);
+   gallio->GenerateIMF();
    Int_t NFrag = gallio->GetFragmentNum();
 //
 // Attach neutrons
    ztot=0;
    ntot=0;
-   gallio->AttachNeutrons(zz, nn, ztot, ntot);
+   gallio->AttachNeutrons();
    nspectpfree = nspectp-ztot-2*nalpha;
    nspectnfree = nspectn-ntot-2*nalpha;
    hFragp -> Fill(b,nspectpfree);
