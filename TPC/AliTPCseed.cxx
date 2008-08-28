@@ -27,6 +27,7 @@
 #include "AliTPCClusterParam.h"
 #include "AliTPCCalPad.h"
 #include "AliTPCCalROC.h"
+#include "AliTPCcalibDB.h"
 
 
 
@@ -1060,6 +1061,7 @@ Float_t  AliTPCseed::CookdEdxNorm(Double_t low, Double_t up, Int_t type, Int_t i
     if (!cluster) continue;
     if (TMath::Abs(cluster->GetY())>cluster->GetX()*ktany-kedgey) continue; // edge cluster
     Float_t charge= (type%2)? cluster->GetMax():cluster->GetQ();
+    if (!gainMap) gainMap =  AliTPCcalibDB::Instance()->GetDedxGainFactor();
     if (gainMap) {      
       Float_t factor = 1;      
       AliTPCCalROC * roc = gainMap->GetCalROC(cluster->GetDetector());
