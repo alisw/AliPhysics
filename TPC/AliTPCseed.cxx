@@ -1034,7 +1034,7 @@ Bool_t AliTPCseed::GetSharedMapBit(int ibit)
 
 
 
-Float_t  AliTPCseed::CookdEdxNorm(Double_t low, Double_t up, Int_t type, Int_t i1, Int_t i2, AliTPCCalPad * gainMap, Bool_t posNorm){
+Float_t  AliTPCseed::CookdEdxNorm(Double_t low, Double_t up, Int_t type, Int_t i1, Int_t i2, AliTPCCalPad * gainMap, Bool_t posNorm, Bool_t padNorm){
  
   //
   // calculates dedx using the cluster
@@ -1100,13 +1100,20 @@ Float_t  AliTPCseed::CookdEdxNorm(Double_t low, Double_t up, Int_t type, Int_t i
 
 
     amp[ncl] *= 2.0;     // put mean value to channel 50
-    if (ipad==0) {
-      amp[ncl] /= 0.65; // this we will take form OCDB
-    } else
-      if (ipad==2){
-	amp[ncl] /=1.57;
-      }else{
-      }      
+    if (padNorm){
+      corr=1;
+      if (type==0 && parcl->fQpadTnorm) corr = (*parcl->fQpadTnorm)[ipad];
+      if (type==1 && parcl->fQpadTnorm) corr = (*parcl->fQpadMnorm)[ipad];
+      amp[ncl]/=corr;
+    }
+
+    // if (ipad==0) {
+//       amp[ncl] /= 0.65; // this we will take form OCDB
+//     } else
+//       if (ipad==2){
+// 	amp[ncl] /=1.57;
+//       }else{
+//       }      
     ncl++;
   }
 
