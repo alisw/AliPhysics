@@ -23,6 +23,23 @@
 //   In reality it overwrites the content of the ESD 
 //    
 
+/*
+
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libTPCcalib");
+  //
+  gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");
+  gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+")
+  AliXRDPROOFtoolkit tool; 
+  TChain * chain = tool.MakeChain("esd.txt","esdTree",0,5000);
+  chain->Lookup();
+
+
+
+*/
+
+
+
 //  marian.ivanov@cern.ch
 // 
 #include "AliTPCcalibCalib.h"
@@ -138,9 +155,6 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed){
     Double_t x[3]={cluster->GetRow(),cluster->GetPad(),cluster->GetTimeBin()};
     Int_t i[1]={cluster->GetDetector()};
     transform->Transform(x,i,0,1);
-    if (cluster->GetDetector()%36>17){
-      x[1]*=-1;
-    }
     //
     cluster->SetX(x[0]);
     cluster->SetY(x[1]);
@@ -159,7 +173,7 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed){
   // 
   // And now do refit
   //
-  AliExternalTrackParam * trackInOld  = (AliExternalTrackParam*)track->GetInnerParam();
+  AliExternalTrackParam * trackInOld  = (AliExternalTrackParam*)track->GetTPCInnerParam();
   AliExternalTrackParam * trackOutOld = (AliExternalTrackParam*)track->GetOuterParam();
 
   AliExternalTrackParam trackIn  = *trackOutOld;
@@ -180,7 +194,7 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed){
 
     if (TMath::Abs(dalpha)>0.01)
       trackOut.Rotate(TMath::DegToRad()*(sector%18*20.+10.));
-    //if (RejectCluster(cl,&trackOut)) continue;
+    if (RejectCluster(cl,&trackOut)) continue;
     Double_t r[3]={cl->GetX(),cl->GetY(),cl->GetZ()};
     Double_t cov[3]={0.01,0.,0.01}; //TODO: correct error parametrisation
     trackOut.GetXYZ(xyz);
@@ -201,7 +215,7 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed){
     Float_t dalpha = TMath::DegToRad()*(sector%18*20.+10.)-trackIn.GetAlpha();
     if (TMath::Abs(dalpha)>0.01)
       trackIn.Rotate(TMath::DegToRad()*(sector%18*20.+10.));
-    //if (RejectCluster(cl,&trackIn)) continue;
+    if (RejectCluster(cl,&trackIn)) continue;
     Double_t r[3]={cl->GetX(),cl->GetY(),cl->GetZ()};
     Double_t cov[3]={0.01,0.,0.01}; //TODO: correct error parametrisation
     trackOut.GetXYZ(xyz);
@@ -210,6 +224,17 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed){
     if (trackIn.PropagateTo(r[0],bz)) nclIn++;
     trackIn.Update(&r[1],cov);    
   }
+  trackIn.Rotate(trackInOld->GetAlpha());
+  trackOut.Rotate(trackOutOld->GetAlpha());
+  //
+  trackInOld->GetXYZ(xyz);
+  Double_t bz = AliTracker::GetBz(xyz);
+  trackIn.PropagateTo(trackInOld->GetX(),bz);
+  //
+  trackOutOld->GetXYZ(xyz);
+  bz = AliTracker::GetBz(xyz);  
+  trackOut.PropagateTo(trackOutOld->GetX(),bz);
+  
 
   if (fStreamLevel>0){
     TTreeSRedirector *cstream = GetDebugStreamer();
@@ -225,6 +250,15 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed){
 	"\n";
     }
   }
+  //
+  // And now rewrite ESDtrack
+  //
+ 
+  (*trackInOld)  = trackIn;
+  (*trackOutOld) = trackOut;
+  AliExternalTrackParam *t = &trackIn;
+  track->Set(t->GetX(),t->GetAlpha(),t->GetParameter(),t->GetCovariance());
+
 }
 
 
