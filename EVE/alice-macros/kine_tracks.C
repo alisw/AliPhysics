@@ -36,11 +36,12 @@ kine_tracks(Double_t min_pt  = 0,     Double_t min_p   = 0,
   gEve->AddElement(cont);
   Int_t count = 0;
   Int_t N = stack->GetNtrack();
-  for (Int_t i=0; i<N; ++i)
+  Int_t Np = stack->GetNprimary();
+  for (Int_t i = 0; i < Np; ++i)
   {
-    if (stack->IsPhysicalPrimary(i))
+    TParticle* p = stack->Particle(i);
+    if (p->GetStatusCode() <= 1)
     {
-      TParticle* p = stack->Particle(i);
       if (p->Pt() < min_pt && p->P() < min_p) continue;
 
       ++count;
