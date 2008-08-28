@@ -209,38 +209,48 @@ void AliEveEventManager::Open()
     fESDTree = (TTree*) fESDFile->Get("esdTree");
     if (fESDTree != 0)
     {
-      // Check if ESDfriends exists and attach the branch
+      // Check if ESDfriends exists and attach the branch.
+      // We use TFile::Open() instead of gSystem->AccessPathName
+      // as it seems to work better when attachine alieve to a
+      // running reconstruction process with auto-save on.
+      // There was also a problem with TTree::Refresh() - it didn't
+      // save the friend branch on a separate file, fixed in 5.22.2 -
+      // so we might want to try the old way again soon.
       TString p(Form("%s/AliESDfriends.root", fPath.Data()));
       TFile *esdFriendFile = TFile::Open(p);
-      if (esdFriendFile) {
+      if (esdFriendFile)
+      {
 	if (!esdFriendFile->IsZombie())
-	  {
-	    esdFriendFile->Close();
-	    delete esdFriendFile;
-	    fESDfriendExists = kTRUE;
-	    fESDTree->SetBranchStatus ("ESDfriend*", 1);
-	    fESDTree->SetBranchAddress("ESDfriend.", &fESDfriend);
-	  }
-	else
-	  {
-	    esdFriendFile->Close();
-	    delete esdFriendFile;
-	  }
+	{
+	  esdFriendFile->Close();
+	  fESDfriendExists = kTRUE;
+	  fESDTree->SetBranchStatus ("ESDfriend*", 1);
+	}
+	delete esdFriendFile;
       }
 
       fESD->ReadFromTree(fESDTree);
-      if (!fESDfriendExists) fESDTree->SetBranchStatus ("ESDfriend*", 0);
-      if (fESDTree->GetEntry(0) <= 0)
-	{
-	  delete fESDFile; fESDFile = 0;
-	  delete fESD; fESD = 0;
-	  Warning(kEH, "failed getting the first entry from esdTree.");
-	}
+      if (fESDfriendExists)
+      {
+	fESDfriend = (AliESDfriend*) fESD->FindListObject("AliESDfriend");
+	Info(kEH, "found and attached ESD friend.");
+      }
       else
-	{
-	  if (runNo < 0)
-	    runNo = fESD->GetESDRun()->GetRunNumber();
-	}
+      {
+	Warning(kEH, "ESDfriend not found.");
+      }
+
+      if (fESDTree->GetEntry(0) <= 0)
+      {
+	delete fESDFile; fESDFile = 0;
+	delete fESD; fESD = 0;
+	Warning(kEH, "failed getting the first entry from esdTree.");
+      }
+      else
+      {
+	if (runNo < 0)
+	  runNo = fESD->GetESDRun()->GetRunNumber();
+      }
     }
     else // esdtree == 0
     {
@@ -626,6 +636,7 @@ void AliEveEventManager::Close()
   if (fESDTree) {
     delete fESD;       fESD       = 0;
     delete fESDfriend; fESDfriend = 0;
+    fESDfriendExists = kFALSE;
 
     delete fESDTree;   fESDTree = 0;
     delete fESDFile;   fESDFile = 0;

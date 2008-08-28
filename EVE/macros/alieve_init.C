@@ -37,9 +37,8 @@ void alieve_init(const Text_t* path   = ".", Int_t event=0,
   // Open event
   if(path != 0)
   {
-    printf("Opening event %d from '%s' ...", event, path); fflush(stdout);
+    Info("alieve_init", "Opening event %d from '%s' ...", event, path);
     gAliEveEvent = new AliEveEventManager(path, event);
-    printf(" done.\n");
     gEve->AddEvent(gAliEveEvent);
   }
 }
