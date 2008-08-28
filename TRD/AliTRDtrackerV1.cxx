@@ -2610,13 +2610,37 @@ AliTRDtrackV1* AliTRDtrackerV1::MakeTrack(AliTRDseedV1 *seeds, Double_t *params)
 
   AliTRDtrackV1 track(seeds, &params[1], c, params[0], params[6]*alpha+shift);
   track.PropagateTo(params[0]-5.0);
+  if(fReconstructor->IsHLT()) return SetTrack(&track);
+
   track.ResetCovariance(1);
   Int_t nc = TMath::Abs(FollowBackProlongation(track));
+  if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker) > 5){
+    Int_t eventNumber 		= AliTRDtrackerDebug::GetEventNumber();
+    Int_t candidateNumber = AliTRDtrackerDebug::GetCandidateNumber();
+    Double_t p[5]; // Track Params for the Debug Stream
+    track.GetExternalParameters(params[0], p);
+    TTreeSRedirector &cs = *fgDebugStreamer;
+    cs << "MakeTrack"
+    << "EventNumber="     << eventNumber
+    << "CandidateNumber=" << candidateNumber
+    << "nc="     << nc
+    << "X="      << params[0]
+    << "Y="      << p[0]
+    << "Z="      << p[1]
+    << "snp="    << p[2]
+    << "tnd="    << p[3]
+    << "crv="    << p[4]
+    << "Yin="    << params[1]
+    << "Zin="    << params[2]
+    << "snpin="  << params[3]
+    << "tndin="  << params[4]
+    << "crvin="  << params[5]
+    << "track.=" << &track
+    << "\n";
+  }
   if (nc < 30) return 0x0;
 
   AliTRDtrackV1 *ptrTrack = SetTrack(&track);
-  if(fReconstructor->IsHLT()) return ptrTrack;
-
   ptrTrack->CookLabel(.9);
   
   // computes PID for track
