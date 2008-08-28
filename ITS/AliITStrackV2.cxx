@@ -238,8 +238,9 @@ Bool_t AliITStrackV2::Update(const AliCluster* c, Double_t chi2, Int_t index)
 
   if (!AliExternalTrackParam::Update(p,cov)) return kFALSE;
 
+  Int_t n=GetNumberOfClusters();
   if (!Invariant()) {
-     AliWarning("Wrong invariant !");
+     if (n>fgkWARN) AliWarning("Wrong invariant !");
      return kFALSE;
   }
 
@@ -247,7 +248,6 @@ Bool_t AliITStrackV2::Update(const AliCluster* c, Double_t chi2, Int_t index)
 
   AliTracker::FillResiduals(this,p,cov,c->GetVolumeId());
 
-  Int_t n=GetNumberOfClusters();
   fIndex[n]=index;
   SetNumberOfClusters(n+1);
   SetChi2(GetChi2()+chi2);
@@ -481,4 +481,3 @@ GetLocalXat(Double_t r,Double_t &xloc) const {
 
   return kTRUE;
 }
-
