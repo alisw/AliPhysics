@@ -109,6 +109,9 @@ int main(int argc, char **argv) {
   Int_t gain = -1;
   Int_t X = -1;
   Int_t Z = -1;
+  Int_t nFired = -1;
+
+  TH1I fFiredCells("fFiredCells","Number of fired cells per event",100,0,1000);
 
   /* main loop (infinite) */
   for(;;) {
@@ -150,6 +153,8 @@ int main(int argc, char **argv) {
 	}
       }
 
+      nFired = 0;
+
       rawReader = new AliRawReaderDate((void*)event);
 //       AliPHOSRawDecoderv1 dc(rawReader,mapping);
       AliPHOSRawDecoder dc(rawReader,mapping);
@@ -167,10 +172,14 @@ int main(int argc, char **argv) {
 	e[X][Z][gain] = dc.GetEnergy();
 	t[X][Z][gain] = dc.GetTime();
 	
+	if(gain && dc.GetEnergy()>40)
+	  nFired++;
+
       }
       
       da1.FillHistograms(e,t);
-      
+      fFiredCells.Fill(nFired);
+
       delete rawReader;     
       nevents_physics++;
     }
@@ -221,14 +230,11 @@ int main(int argc, char **argv) {
     }
   }
   
+  fFiredCells.Write();
   f->Close();
   
   /* Store output files to the File Exchange Server */
-  
-  for(Int_t iMod=0; iMod<5; iMod++) {
-    sprintf(localfile,"PHOS_Module%d_LED.root",iMod);
-    daqDA_FES_storeFile(localfile,"LED");
-  }
+  daqDA_FES_storeFile("PHOS_Module2_LED.root","LED");
   
   printf("%d physics events of %d total processed.\n",nevents_physics,nevents_total);
   printf("%d histograms has >10 entries in maximum, max. is %d entries ",nGood,nMax);

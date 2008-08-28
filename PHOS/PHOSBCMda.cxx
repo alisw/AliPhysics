@@ -106,13 +106,14 @@ int main(int argc, char **argv) {
 
   AliRawReader *rawReader = NULL;
 
-  AliPHOSDA2 da2(2); // DA2 ("Checking for bad channels") for module2
+  AliPHOSDA2* da2 = new AliPHOSDA2(2); // DA2 ("Checking for bad channels") for module2
   
   Float_t q[64][56][2];
 
   Int_t gain = -1;
   Int_t X = -1;
   Int_t Z = -1;
+  Int_t nFired = -1;
 
   /* main loop (infinite) */
   for(;;) {
@@ -153,6 +154,8 @@ int main(int argc, char **argv) {
 	}
       }
 
+      nFired = 0;
+
       rawReader = new AliRawReaderDate((void*)event);
       AliPHOSRawDecoderv1 dc(rawReader,mapping);
       dc.SubtractPedestals(kTRUE);
@@ -167,10 +170,14 @@ int main(int argc, char **argv) {
 	  gain = 1;
 	
 	q[X][Z][gain] = dc.GetSampleQuality();
+
+	if(gain && dc.GetEnergy()>40)
+	  nFired++;
 	
       }
       
-      da2.FillQualityHistograms(q);       
+      da2->FillQualityHistograms(q);
+      da2->FillFiredCellsHistogram(nFired);
       //da1.UpdateHistoFile();
       
       delete rawReader;     
@@ -190,14 +197,12 @@ int main(int argc, char **argv) {
   }
   
   for(Int_t i = 0; i < 4; i++) delete mapping[i];  
+
+  /* Be sure that all histograms are saved */
+  delete da2;
   
   /* Store output files to the File Exchange Server */
-  char localfile[128];
-
-  for(Int_t iMod=0; iMod<5; iMod++) {
-    sprintf(localfile,"PHOS_Module%d_BCM.root",iMod);
-    daqDA_FES_storeFile(localfile,"BAD_CHANNELS");
-  }
+  daqDA_FES_storeFile("PHOS_Module2_BCM.root","BAD_CHANNELS");
 
   return status;
 }

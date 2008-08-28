@@ -5,7 +5,7 @@ ClassImp(AliPHOSDA2)
 
 //----------------------------------------------------------------
 AliPHOSDA2::AliPHOSDA2(int module) : TNamed(),
- fHistoFile(0),fMod(module)
+ fHistoFile(0),fFiredCells(0),fMod(module)
 
 {
   // Create AliPHOSDA2 ("Bad channels finder") object.
@@ -35,11 +35,13 @@ AliPHOSDA2::AliPHOSDA2(int module) : TNamed(),
   fMaps[0]=0;
   fMaps[1]=0;
 
+  fFiredCells = new TH1I("fFiredCells","Number of fired cells per event",100,0,1000);
+
 }
 
 //-------------------------------------------------------------------
 AliPHOSDA2::AliPHOSDA2(const AliPHOSDA2& da) : TNamed(da),
-  fHistoFile(0),fMod(da.fMod)
+  fHistoFile(0),fFiredCells(0),fMod(da.fMod)
 {
   // Copy constructor.
 
@@ -70,6 +72,7 @@ AliPHOSDA2::AliPHOSDA2(const AliPHOSDA2& da) : TNamed(da),
     fMaps[1] = 0;
   
   fHistoFile = new TFile(da.GetName(),"recreate");
+  fFiredCells = new TH1I(*da.fFiredCells);
   
 }
 
@@ -111,6 +114,11 @@ AliPHOSDA2& AliPHOSDA2::operator= (const AliPHOSDA2& da)
       delete fMaps[1];
       fMaps[1] = da.fMaps[1];
     } 
+    
+    if(fFiredCells) {
+      delete fFiredCells;
+      fFiredCells = da.fFiredCells;
+    }
     
   }
   
@@ -163,6 +171,12 @@ void AliPHOSDA2::FillQualityHistograms(Float_t quality[64][56][2])
 }
 
 //-------------------------------------------------------------------
+void  AliPHOSDA2::FillFiredCellsHistogram(Int_t nCells)
+{
+  fFiredCells->Fill(nCells);
+}
+
+//-------------------------------------------------------------------
 void AliPHOSDA2::UpdateHistoFile()
 {
   // Write histograms to file
@@ -205,6 +219,8 @@ void AliPHOSDA2::UpdateHistoFile()
 
   fMaps[0]->Write(fMaps[0]->GetName(),TObject::kWriteDelete);
   fMaps[1]->Write(fMaps[1]->GetName(),TObject::kWriteDelete);
+
+  fFiredCells->Write();
 
 }
 

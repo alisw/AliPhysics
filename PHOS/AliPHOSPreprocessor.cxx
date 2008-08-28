@@ -130,6 +130,7 @@ Bool_t AliPHOSPreprocessor::ProcessLEDRun()
   
   TIter iter(list);
   TObjString *source;
+  Bool_t firedOK = kFALSE;
   
   while ((source = dynamic_cast<TObjString *> (iter.Next()))) {
     
@@ -145,6 +146,25 @@ Bool_t AliPHOSPreprocessor::ProcessLEDRun()
       return kFALSE;
     }
 
+    TH1I* fFiredCells = (TH1I*)f.Get("fFiredCells");
+
+    if(!fFiredCells) {
+      Log(Form("fFiredCells histogram not found in %s, skip this source.",fileName.Data()));
+      firedOK=kFALSE;
+    }
+    else {
+      const Double_t nFiredCells = fFiredCells->GetMean();
+      if(nFiredCells>100 && nFiredCells<600) { 
+	firedOK = kTRUE;
+	Log(Form("Number of fired cells per event is %d.",nFiredCells));
+      }
+      else {
+	Log(Form("Number of fired cells per event is %d, possibly not a LED run!",nFiredCells));
+	firedOK = kFALSE;
+      }
+      
+    }
+
     const Int_t nMod=5; // 1:5 modules
     const Int_t nCol=56; //1:56 columns in each module
     const Int_t nRow=64; //1:64 rows in each module
@@ -153,12 +173,14 @@ Bool_t AliPHOSPreprocessor::ProcessLEDRun()
       for(Int_t col=0; col<nCol; col++) {
 	for(Int_t row=0; row<nRow; row++) {
 
-	  //High Gain to Low Gain ratio 
-          Float_t ratio = HG2LG(mod,row,col,&f);
-          calibData.SetHighLowRatioEmc(mod+1,col+1,row+1,ratio);
-	  if(ratio != 16.)
-	    AliInfo(Form("mod %d iX %d iZ %d  ratio %.3f\n",mod,row,col,ratio));
-	  
+	  //High Gain to Low Gain ratio
+	  if(firedOK) {
+	    Float_t ratio = HG2LG(mod,row,col,&f);
+	    calibData.SetHighLowRatioEmc(mod+1,col+1,row+1,ratio);
+	    if(ratio != 16.)
+	      AliInfo(Form("mod %d iX %d iZ %d  ratio %.3f\n",mod,row,col,ratio));
+	  }	  
+
 	  if(clb) {
 	    Double_t coeff = clb->GetADCchannelEmc(mod+1,col+1,row+1);
 	    calibData.SetADCchannelEmc(mod+1,col+1,row+1,coeff);
@@ -295,8 +317,22 @@ Bool_t AliPHOSPreprocessor::DoFindBadChannelsEmc(Int_t system, TList* list, AliP
       Log(Form("File %s is not opened, something goes wrong!",fileName.Data()));
       return kFALSE;
     }
+
+    TH1I* fFiredCells = (TH1I*)f.Get("fFiredCells");
+
+    if(!fFiredCells) {
+      Log(Form("fFiredCells histogram not found in %s, skip this source.",fileName.Data()));
+      continue;
+    }
+
+    const Double_t nFiredCells = fFiredCells->GetMean();
+
+    if(nFiredCells<100. || nFiredCells>600. ) {
+      Log(Form("Number of fired cells per event is %d, possibly not a LED run!",nFiredCells));
+      continue; // not a LED run!
+    }
     
-    Log(Form("Begin check for bad channels."));
+    Log(Form("Number of fired cells per event %d. Begin check for bad channels.",nFiredCells));
     
     for(Int_t mod=0; mod<5; mod++) {
       for(Int_t iX=0; iX<64; iX++) {
