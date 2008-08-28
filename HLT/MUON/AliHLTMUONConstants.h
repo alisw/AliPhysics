@@ -260,6 +260,10 @@ public:
 	{
 		return fgkDecisionComponentCDBPath;
 	}
+	
+	static double DefaultNonBendingReso() { return 0.01; }
+	
+	static double DefaultBendingReso() { return 0.144; }
 
 private:
 

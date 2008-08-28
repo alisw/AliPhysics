@@ -332,8 +332,8 @@ int AliHLTMUONESDMaker::DoEvent(
 				cluster.SetUniqueID(AliMUONVCluster::BuildUniqueID(chamber, detElemId, clusterIndex++));
 				cluster.SetXYZ(t.fHit[i].fX, t.fHit[i].fY, t.fHit[i].fZ);
 				cluster.SetErrXY(    // Use nominal values.
-						AliMUONConstants::DefaultNonBendingReso(),
-						AliMUONConstants::DefaultBendingReso()
+						AliHLTMUONConstants::DefaultNonBendingReso(),
+						AliHLTMUONConstants::DefaultBendingReso()
 					);
 				cluster.SetCharge(-1.);   // Indicate no total charge calculated.
 				cluster.SetChi2(-1.);   // Indicate no fit made.
