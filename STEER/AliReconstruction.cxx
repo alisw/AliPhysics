@@ -1584,10 +1584,13 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
     // write ESD
     if (fCleanESD) CleanESD(fesd);
 
-    if (fRunGlobalQA) {
+  if (fRunQA) 
+    fQASteer->RunOneEvent(fesd) ; 
+
+  if (fRunGlobalQA) {
       AliQADataMaker *qadm = fQASteer->GetQADataMaker(AliQA::kGLOBAL);
       if (qadm && fQATasks.Contains(Form("%d", AliQA::kESDS)))
-	qadm->Exec(AliQA::kESDS, fesd);
+        qadm->Exec(AliQA::kESDS, fesd);
     }
 
     if (fWriteESDfriend) {
@@ -1700,7 +1703,6 @@ void AliReconstruction::SlaveTerminate()
 
   // End of cycle for the in-loop  
   if (fRunQA) {
-    fQASteer->RunOneEvent(fesd) ; 
     fQASteer->EndOfCycle() ;
   }
   if (fRunGlobalQA) {
