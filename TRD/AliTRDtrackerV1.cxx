@@ -1912,9 +1912,6 @@ Int_t AliTRDtrackerV1::Clusters2TracksStack(AliTRDtrackingChamber **stack, TClon
   
         
         // Calculate track parameters from tracklets seeds
-        Int_t labelsall[1000];
-        Int_t nlabelsall = 0;
-        Int_t naccepted  = 0;
         Int_t ncl        = 0;
         Int_t nused      = 0;
         Int_t nlayers    = 0;
@@ -1928,17 +1925,6 @@ Int_t AliTRDtrackerV1::Clusters2TracksStack(AliTRDtrackingChamber **stack, TClon
           ncl   += sseed[jseed].GetN2();
           nused += sseed[jseed].GetNUsed();
           nlayers++;
-        
-//           // Cooking label
-//           for (Int_t itime = 0; itime < fgNTimeBins; itime++) {
-//             if(!sseed[jseed].IsUsable(itime)) continue;
-//             naccepted++;
-//             Int_t tindex = 0, ilab = 0;
-//             while(ilab<3 && (tindex = sseed[jseed].GetClusters(itime)->GetLabel(ilab)) >= 0){
-//               labelsall[nlabelsall++] = tindex;
-//               ilab++;
-//             }
-//           }
         }
 
   // Filter duplicated tracks
@@ -2031,6 +2017,11 @@ Int_t AliTRDtrackerV1::Clusters2TracksStack(AliTRDtrackingChamber **stack, TClon
     Int_t labels[1000];
     Int_t outlab[1000];
     Int_t nlab = 0;
+
+    Int_t labelsall[1000];
+    Int_t nlabelsall = 0;
+    Int_t naccepted  = 0;
+
     for (Int_t iLayer = 0; iLayer < kNPlanes; iLayer++) {
       Int_t jseed = kNPlanes*trackIndex+iLayer;
       dseed[iLayer] = new AliTRDseedV1(sseed[jseed]);
@@ -2041,6 +2032,17 @@ Int_t AliTRDtrackerV1::Clusters2TracksStack(AliTRDtrackingChamber **stack, TClon
         if(sseed[jseed].GetLabels(ilab) < 0) continue;
         labels[nlab] = sseed[jseed].GetLabels(ilab);
         nlab++;
+      }
+
+      // Cooking label
+      for (Int_t itime = 0; itime < fgNTimeBins; itime++) {
+        if(!sseed[jseed].IsUsable(itime)) continue;
+        naccepted++;
+        Int_t tindex = 0, ilab = 0;
+        while(ilab<3 && (tindex = sseed[jseed].GetClusters(itime)->GetLabel(ilab)) >= 0){
+          labelsall[nlabelsall++] = tindex;
+          ilab++;
+        }
       }
     }
     Freq(nlab,labels,outlab,kFALSE);
