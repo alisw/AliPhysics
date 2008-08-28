@@ -132,13 +132,13 @@ const Double_t AliT0QAChecker::Check(AliQA::ALITASK_t index,TObjArray * list)
 	if(index == 2){
 	  //rec points
 	  if ( TMath::Abs(fhRecMean->GetMean() - fhOnlineMean->GetMean()) > 5) 
-	    AliWarning(Form("rec mean %f -> online mean %f",fhRecMean->GetMean(), fhOnlineMean->GetMean())) ;
+	    AliDebug(10,Form("rec mean %f -> online mean %f",fhRecMean->GetMean(), fhOnlineMean->GetMean())) ;
 	  Double_t meanLED, meanQTC;
 	  for (Int_t idet=0; idet<24; idet++) {
 	    meanLED = fhRecLEDAmp[idet]->GetMean();
 	    meanQTC = fhRecQTC[idet]->GetMean();
 	    if (TMath::Abs(meanLED-meanQTC)> 1.) 
-	      AliWarning(Form("Amplitude measurements are different in channel %i : Amp LED %f -> Amp QTC %f",idet,meanLED, meanQTC)) ;
+	      AliDebug(1,Form("Amplitude measurements are different in channel %i : Amp LED %f -> Amp QTC %f",idet,meanLED, meanQTC)) ;
 	  }
 	}	
 	 
@@ -150,17 +150,17 @@ const Double_t AliT0QAChecker::Check(AliQA::ALITASK_t index,TObjArray * list)
 	    {
 	      Double_t diff = TMath::Abs(nent[i]-realNumber);
 	      if (diff > 0.1*realNumber )
-		AliWarning(Form("Problem in Number of entried in hist %s  is %f number of RefPoints %f\n",hname[i].Data() , nent[i],realNumber )) ; 
+		AliDebug(1,Form("Problem in Number of entried in hist %s  is %f number of RefPoints %f\n",hname[i].Data() , nent[i],realNumber )) ; 
 	    }
 	}
  	if (index == 3) {
 	  //ESD
 	  Double_t rmsMeanTime = fhESDMean->GetRMS();
 	  if (rmsMeanTime>3) 		
-	    AliWarning(Form("Mean time with bad resolution, RMS= %f",rmsMeanTime)) ; 
+	    AliDebug(1,Form("Mean time with bad resolution, RMS= %f",rmsMeanTime)) ; 
 	  Double_t rmsVertex = fhESDVertex->GetRMS();
 	  if (rmsVertex>3) 		
-	    AliWarning(Form("Vertex with bad resolution, RMS= %f",rmsVertex)) ; 
+	    AliDebug(1,Form("Vertex with bad resolution, RMS= %f",rmsVertex)) ; 
 	}
  
       }
