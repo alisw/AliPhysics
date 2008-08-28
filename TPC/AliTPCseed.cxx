@@ -1034,7 +1034,7 @@ Bool_t AliTPCseed::GetSharedMapBit(int ibit)
 
 
 
-Float_t  AliTPCseed::CookdEdxNorm(Double_t low, Double_t up, Int_t type, Int_t i1, Int_t i2, AliTPCCalPad * gainMap){
+Float_t  AliTPCseed::CookdEdxNorm(Double_t low, Double_t up, Int_t type, Int_t i1, Int_t i2, AliTPCCalPad * gainMap, Bool_t posNorm){
  
   //
   // calculates dedx using the cluster
@@ -1046,6 +1046,7 @@ Float_t  AliTPCseed::CookdEdxNorm(Double_t low, Double_t up, Int_t type, Int_t i
   // normalization parametrization taken from AliTPCClusterParam
   //
   AliTPCClusterParam * parcl = AliTPCClusterParam::Instance();
+  if (!parcl) parcl = AliTPCcalibDB::Instance()->GetClusterParam();
   if (!parcl) return 0;
   Float_t amp[160];
   Int_t   indexes[160];
@@ -1088,7 +1089,16 @@ Float_t  AliTPCseed::CookdEdxNorm(Double_t low, Double_t up, Int_t type, Int_t i
       corr  = parcl->Qnorm(ipad,type,dr,ty,tz);
     }
     amp[ncl]=charge/corr;
-    
+    if (posNorm){
+      //
+      //
+      //
+      corr = parcl->QnormPos(ipad,type, cluster->GetPad(),cluster->GetTimeBin(), cluster->GetZ(),
+			     cluster->GetSigmaY2(),cluster->GetSigmaZ2(),cluster->GetMax(),cluster->GetQ());
+      amp[ncl]/=corr;
+    }
+
+
     amp[ncl] *= 2.0;     // put mean value to channel 50
     if (ipad==0) {
       amp[ncl] /= 0.65; // this we will take form OCDB
