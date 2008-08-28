@@ -354,10 +354,12 @@ Int_t AliITSAlignMilleModule::SensVolOrigGlobalMatrix(UShort_t volid, TGeoHMatri
   (*m)=mo;
 
   // SPD y-shift by 81 mu
-  Double_t oLoc[3]={0.0,0.0081,0.0};
-  Double_t oGlo[3]={0,0,0};
-  m->LocalToMaster(oLoc,oGlo);
-  m->SetTranslation(oGlo);
+  if (volid<5000) { 
+    Double_t oLoc[3]={0.0,0.0081,0.0};
+    Double_t oGlo[3]={0,0,0};
+    m->LocalToMaster(oLoc,oGlo);
+    m->SetTranslation(oGlo);
+  }
   return 0;
 }
 //-------------------------------------------------------------

@@ -17,7 +17,7 @@
 
 //-----------------------------------------------------------------------------
 /// \class AliITSAlignMille
-/// Alignment class fro the ALICE ITS detector
+/// Alignment class for the ALICE ITS detector
 ///
 /// ITS specific alignment class which interface to AliMillepede.   
 /// For each track ProcessTrack calculates the local and global derivatives
@@ -43,7 +43,8 @@
 #include "AliTrackPointArray.h"
 #include "AliAlignObjParams.h"
 #include "AliLog.h"
-#include "TSystem.h"  // come si fa?
+#include "TSystem.h"
+#include "AliTrackFitterRieman.h"
 
 /// \cond CLASSIMP
 ClassImp(AliITSAlignMille)
@@ -59,7 +60,7 @@ AliITSAlignMille::AliITSAlignMille(const Char_t *configFilename, Bool_t initmill
     fResCutInitial(100.), 
     fResCut(100.),
     fNGlobal(ITSMILLE_NDETELEM*ITSMILLE_NPARCH),
-    fNLocal(ITSMILLE_NLOCAL),
+    fNLocal(4),
     fNStdDev(ITSMILLE_NSTDEV),
     fIsMilleInit(kFALSE),
     fParSigTranslations(0.0100),
@@ -67,12 +68,18 @@ AliITSAlignMille::AliITSAlignMille(const Char_t *configFilename, Bool_t initmill
     fTrack(NULL),
     fCluster(),
     fGlobalDerivatives(NULL),
+    fSigmaXfactor(1.0),
+    fSigmaZfactor(1.0),
     fTempAlignObj(NULL),
     fDerivativeXLoc(0),
     fDerivativeZLoc(0),
-    fDeltaPar(0),
     fMinNPtsPerTrack(3),
     fInitTrackParamsMeth(1),
+    fProcessedPoints(NULL),
+    fTotBadLocEqPoints(0),
+    fRieman(NULL),
+    fRequirePoints(kFALSE),
+    fTempExcludedModule(-1),
     fGeometryFileName("geometry.root"),
     fPreAlignmentFileName(""),
     fGeoManager(0),
@@ -83,21 +90,42 @@ AliITSAlignMille::AliITSAlignMille(const Char_t *configFilename, Bool_t initmill
     fUseLocalShifts(kTRUE),
     fUseSuperModules(kFALSE),
     fUsePreAlignment(kFALSE),
+    fUseSortedTracks(kTRUE),
+    fBOn(kFALSE),
+    fBField(0.0),
     fNSuperModules(0),
-    fCurrentModuleHMatrix(NULL)
+    fCurrentModuleHMatrix(NULL),
+    fIsConfigured(kFALSE),
+    fBug(0)
 {
   /// main constructor that takes input from configuration file
   
   fMillepede = new AliMillepede();
   fGlobalDerivatives = new Double_t[fNGlobal];
-  //fTempHMat = new TGeoHMatrix;
-  //fCurrentModuleHMatrix = new TGeoHMatrix;
-  
+
+  for (Int_t i=0; i<ITSMILLE_NDETELEM*2; i++) {
+    fPreAlignQF[i]=-1;
+    fSensVolSigmaXfactor[i]=1.0;
+    fSensVolSigmaZfactor[i]=1.0;
+  }
+
+  for (Int_t i=0; i<6; i++) {
+    fNReqLayUp[i]=0;
+    fNReqLayDown[i]=0;
+    fNReqLay[i]=0;
+  }
+  for (Int_t i=0; i<3; i++) {
+    fNReqDetUp[i]=0;
+    fNReqDetDown[i]=0;
+    fNReqDet[i]=0;
+  }
+
   Int_t lc=LoadConfig(configFilename);
   if (lc) {
     AliInfo(Form("Error %d loading configuration from %s",lc,configFilename));
   }
   else {    
+    fIsConfigured=kTRUE;
     if (initmille && fNGlobal<20000) {
       AliInfo(Form("Initializing Millepede with %d gpar, %d lpar and %d stddev ...",fNGlobal, fNLocal, fNStdDev));
       Init(fNGlobal, fNLocal, fNStdDev);      
@@ -109,22 +137,23 @@ AliITSAlignMille::AliITSAlignMille(const Char_t *configFilename, Bool_t initmill
     }
   }
   
-  fDeltaPar=0.0; // not used at the moment - to be checked later...
-  
+  if (fNModules) {
+    fProcessedPoints=new Int_t[fNModules];
+    for (Int_t ipp=0; ipp<fNModules; ipp++) fProcessedPoints[ipp]=0;
+  }
 }
 
 AliITSAlignMille::~AliITSAlignMille() {
   /// Destructor
   if (fMillepede) delete fMillepede;
   delete [] fGlobalDerivatives;
-  //delete fCurrentModuleHMatrix;
-  //delete fTempHMat;
   for (int i=0; i<fNModules; i++) delete fMilleModule[i];
   for (int i=0; i<fNSuperModules; i++) delete fSuperModule[i];
+  if (fNModules) delete [] fProcessedPoints;
+  if (fRieman) delete fRieman;
 }
 
 ///////////////////////////////////////////////////////////////////////
-
 Int_t AliITSAlignMille::LoadConfig(const Char_t *cfile) {
   /// return 0 if success
   ///        1 if error in module index or voluid
@@ -135,7 +164,7 @@ Int_t AliITSAlignMille::LoadConfig(const Char_t *cfile) {
   Char_t st[200],st2[200];
   Char_t tmp[100];
   Int_t idx,itx,ity,itz,ith,ips,iph;
-  Float_t f1;
+  Float_t f1,f2;
   UShort_t voluid;
   Int_t nmod=0;
 
@@ -179,6 +208,21 @@ Int_t AliITSAlignMille::LoadConfig(const Char_t *cfile) {
       if (LoadSuperModuleFile(st2)) return -1;
     }
 
+    if (strstr(st,"SET_B_FIELD")) {
+      sscanf(st,"%s %f",tmp,&f1);
+      if (f1>0) {
+	fBField = f1;
+	fBOn = kTRUE;
+	fNLocal = 5; // helices
+	fRieman = new AliTrackFitterRieman();
+      }  
+      else {
+	fBField = 0.0;
+	fBOn = kFALSE;
+	fNLocal = 4;
+      }
+    }
+
     if (strstr(st,"SET_PARSIG_TRA")) {
       sscanf(st,"%s %f",tmp,&f1);
       fParSigTranslations=f1;
@@ -204,17 +248,52 @@ Int_t AliITSAlignMille::LoadConfig(const Char_t *cfile) {
       fResCut=f1;
     }
 
+    if (strstr(st,"SET_LOCALSIGMAFACTOR")) {
+      sscanf(st,"%s %f %f",tmp,&f1,&f2);
+      if (f1>0 && f2>0) {
+	fSigmaXfactor=f1;
+	fSigmaZfactor=f2;
+      }
+    }
+
     if (strstr(st,"SET_STARTFAC")) {
       sscanf(st,"%s %f",tmp,&f1);
       fStartFac=f1;
     }
+
+    if (strstr(st,"REQUIRE_POINT")) {
+      // syntax:   REQUIRE_POINT where ndet updw nreqpts
+      //    where = LAYER or DETECTOR
+      //    ndet = detector number: 1-6 for LAYER and 1-3 for DETECTOR (SPD=1, SDD=2, SSD=3)
+      //    updw = 1 for Y>0, -1 for Y<0, 0 if not specified
+      //    nreqpts = minimum number of points of that type
+      sscanf(st,"%s %s %d %d %d",tmp,st2,&itx,&ity,&itz);
+      itx--;
+      if (strstr(st2,"LAYER")) {
+	if (itx<0 || itx>5) return -7;
+	if (ity>0) fNReqLayUp[itx]=itz;
+	else if (ity<0) fNReqLayDown[itx]=itz;
+	else fNReqLay[itx]=itz;
+	fRequirePoints=kTRUE;
+      }
+      else if (strstr(st2,"DETECTOR")) { // DETECTOR
+	if (itx<0 || itx>2) return -7;
+	if (ity>0) fNReqDetUp[itx]=itz;
+	else if (ity<0) fNReqDetDown[itx]=itz;
+	else fNReqDet[itx]=itz;	
+	fRequirePoints=kTRUE;
+      }
+    }
+    
 
     if (strstr(st,"SET_LOCAL_SHIFTS")) { // only enabled mode...
       fUseLocalShifts = kTRUE;
     }
 
     if (strstr(st,"MODULE_INDEX")) { // works only for sensitive modules
-      sscanf(st,"%s %d %d %d %d %d %d %d",tmp,&idx,&itx,&ity,&itz,&iph,&ith,&ips);
+      f1=0; f2=0;
+      sscanf(st,"%s %d %d %d %d %d %d %d %f %f",tmp,&idx,&itx,&ity,&itz,&iph,&ith,&ips,&f1,&f2);
+      if (idx<0 || idx>2197) return 1; // bad index
       voluid=GetModuleVolumeID(idx);
       if (!voluid || voluid>14300) return 1; // bad index
       fModuleIndex[nmod]=idx;
@@ -226,11 +305,14 @@ Int_t AliITSAlignMille::LoadConfig(const Char_t *cfile) {
       fFreeParam[nmod][4]=ith;
       fFreeParam[nmod][5]=ips;
       fMilleModule[nmod] = new AliITSAlignMilleModule(voluid);
+      if (f1>0) fSensVolSigmaXfactor[idx]=f1;
+      if (f2>0) fSensVolSigmaZfactor[idx]=f2;
       nmod++;
     }
    
     if (strstr(st,"MODULE_VOLUID")) {
-      sscanf(st,"%s %d %d %d %d %d %d %d",tmp,&idx,&itx,&ity,&itz,&iph,&ith,&ips);
+      f1=0; f2=0;
+      sscanf(st,"%s %d %d %d %d %d %d %d %f %f",tmp,&idx,&itx,&ity,&itz,&iph,&ith,&ips,&f1,&f2);
       voluid=UShort_t(idx);
       if (voluid>14335 && fUseSuperModules) { // custom supermodule
 	int ism=-1;
@@ -247,7 +329,18 @@ Int_t AliITSAlignMille::LoadConfig(const Char_t *cfile) {
 	fFreeParam[nmod][4]=ith;
 	fFreeParam[nmod][5]=ips;
 	fMilleModule[nmod] = new AliITSAlignMilleModule(*fSuperModule[ism]);
-	nmod++;
+	if (f1>0) {
+	  for (int kk=0; kk<fMilleModule[nmod]->GetNSensitiveVolumes(); kk++) {
+	    idx=AliITSAlignMilleModule::GetIndexFromVolumeID(fMilleModule[nmod]->GetSensitiveVolumeVolumeID()[kk]);
+	    if (idx>=0) fSensVolSigmaXfactor[idx]=f1;
+	  }
+	}
+	if (f2>0) {
+	  for (int kk=0; kk<fMilleModule[nmod]->GetNSensitiveVolumes(); kk++) {
+	    idx=AliITSAlignMilleModule::GetIndexFromVolumeID(fMilleModule[nmod]->GetSensitiveVolumeVolumeID()[kk]);
+	    if (idx>=0) fSensVolSigmaZfactor[idx]=f2;
+	  }
+	}	nmod++;
       }
       else { // sensitive volume
 	idx=GetModuleIndex(voluid);
@@ -261,6 +354,8 @@ Int_t AliITSAlignMille::LoadConfig(const Char_t *cfile) {
 	fFreeParam[nmod][4]=ith;
 	fFreeParam[nmod][5]=ips;
 	fMilleModule[nmod] = new AliITSAlignMilleModule(voluid);
+	if (f1>0) fSensVolSigmaXfactor[idx]=f1;
+	if (f2>0) fSensVolSigmaZfactor[idx]=f2;
 	nmod++;
       }
     }
@@ -273,6 +368,30 @@ Int_t AliITSAlignMille::LoadConfig(const Char_t *cfile) {
  
   fclose(pfc);
   return 0;
+}
+
+void AliITSAlignMille::SetRequiredPoint(Char_t* where, Int_t ndet, Int_t updw, Int_t nreqpts) 
+{
+  // set minimum number of points in specific detector or layer
+  // where = LAYER or DETECTOR
+  // ndet = detector number: 1-6 for LAYER and 1-3 for DETECTOR (SPD=1, SDD=2, SSD=3)
+  // updw = 1 for Y>0, -1 for Y<0, 0 if not specified
+  // nreqpts = minimum number of points of that type
+  ndet--;
+  if (strstr(where,"LAYER")) {
+    if (ndet<0 || ndet>5) return;
+    if (updw>0) fNReqLayUp[ndet]=nreqpts;
+    else if (updw<0) fNReqLayDown[ndet]=nreqpts;
+    else fNReqLay[ndet]=nreqpts;
+    fRequirePoints=kTRUE;
+  }
+  else if (strstr(where,"DETECTOR")) {
+    if (ndet<0 || ndet>2) return;
+    if (updw>0) fNReqDetUp[ndet]=nreqpts;
+    else if (updw<0) fNReqDetDown[ndet]=nreqpts;
+    else fNReqDet[ndet]=nreqpts;	
+    fRequirePoints=kTRUE;
+  }
 }
 
 Int_t AliITSAlignMille::GetModuleIndex(const Char_t *symname) {
@@ -333,7 +452,6 @@ void AliITSAlignMille::InitGeometry() {
     return;
   }
   // temporary align object, just use the rotation...
-  //fTempAlignObj=new AliAlignObjParams(AliITSgeomTGeo::GetSymName(7),2055,0,0,0,0,0,0,kFALSE);
   fTempAlignObj=new AliAlignObjParams;
 }
 
@@ -350,7 +468,7 @@ void AliITSAlignMille::Init(Int_t nGlobal,  /* number of global paramers */
     for (Int_t j=0; j<ITSMILLE_NPARCH; j++) {
       if (!fFreeParam[i][j]) FixParameter(i*ITSMILLE_NPARCH+j,0.0);
       else {
-	// pepopepo: da sistemare il settaggio delle sigma...
+	// pepopepo: da verificare il settaggio delle sigma, ma forse va bene...
 	Double_t parsig=0;
 	if (j<3) parsig=fParSigTranslations; // translations (0.0100 cm)
 	else parsig=fParSigRotations; // rotations (1/10 deg)
@@ -419,6 +537,11 @@ Int_t AliITSAlignMille::ApplyToGeometry() {
 
   for (int ix=0; ix<nprea; ix++) {
     AliAlignObjParams *preo=(AliAlignObjParams*) prea->UncheckedAt(ix);
+    Int_t index=AliITSAlignMilleModule::GetIndexFromVolumeID(preo->GetVolUID());
+    if (index>=0) {
+      fPreAlignQF[index] = (int) preo->GetUniqueID();
+      //printf("index=%d   QF=%d\n",index,preo->GetUniqueID());
+    }
     if (!preo->ApplyToGeometry()) return -4;
   }
   pref->Close();
@@ -428,16 +551,205 @@ Int_t AliITSAlignMille::ApplyToGeometry() {
   return 0;
 }
 
+Int_t AliITSAlignMille::GetPreAlignmentQualityFactor(Int_t index) {
+  /// works for sensitive volumes
+  if (!fUsePreAlignment || index<0 || index>2197) return -1;
+  return fPreAlignQF[index];
+}
+
+AliTrackPointArray *AliITSAlignMille::PrepareTrack(AliTrackPointArray *atp) {
+  /// create a new AliTrackPointArray keeping only defined modules
+  /// move points according to a given prealignment, if any
+  /// sort alitrackpoints w.r.t. global Y direction, if selected
+
+  AliTrackPointArray *atps=NULL;
+  Int_t idx[20];
+  Int_t npts=atp->GetNPoints();
+
+  /// checks if AliTrackPoints belong to defined modules
+  Int_t ngoodpts=0;
+  Int_t intidx[20];
+  
+  for (int j=0; j<npts; j++) {
+    intidx[j] = IsContained(atp->GetVolumeID()[j]);
+    if (intidx[j]>=0) ngoodpts++;
+  }
+  AliDebug(3,Form("Number of points in defined modules: %d",ngoodpts));
+
+  // reject track if not enough points are left
+  if (ngoodpts<fMinNPtsPerTrack) {
+    AliInfo("Track with not enough points!");
+    return NULL;
+  }
+
+  AliTrackPoint p;
+  // check points in specific places
+  if (fRequirePoints) {
+    Int_t nlayup[6],nlaydown[6],nlay[6];
+    Int_t ndetup[3],ndetdown[3],ndet[3];
+    for (Int_t j=0; j<6; j++) {nlayup[j]=0; nlaydown[j]=0; nlay[j]=0;}
+    for (Int_t j=0; j<3; j++) {ndetup[j]=0; ndetdown[j]=0; ndet[j]=0;}
+    
+    for (int i=0; i<npts; i++) {
+      // skip not defined points
+      if (intidx[i]<0) continue;
+      Float_t xx=atp->GetX()[i];
+      Float_t yy=atp->GetY()[i];
+      Float_t r=TMath::Sqrt(xx*xx + yy*yy);
+      int lay=-1;
+      if (r<5) lay=0;
+      else if (r>5 && r<10) lay=1;
+      else if (r>10 && r<18) lay=2;
+      else if (r>18 && r<30) lay=3;
+      else if (r>30 && r<40) lay=4;
+      else if (r>40) lay=5;
+      if (lay<0) continue;
+      int det=lay/2;
+      //printf("Point %d - x=%f  y=%f  R=%f  lay=%d  det=%d\n",i,xx,yy,r,lay,det);
+
+      if (yy>=0.0) { // UP point
+	nlayup[lay]++;
+	nlay[lay]++;
+	ndetup[det]++;
+	ndet[det]++;
+      }
+      else {
+	nlaydown[lay]++;
+	nlay[lay]++;
+	ndetdown[det]++;
+	ndet[det]++;
+      }
+    }
+    
+    // checks minimum values
+    Bool_t isok=kTRUE;
+    for (Int_t j=0; j<6; j++) {
+      if (nlayup[j]<fNReqLayUp[j]) isok=kFALSE; 
+      if (nlaydown[j]<fNReqLayDown[j]) isok=kFALSE; 
+      if (nlay[j]<fNReqLay[j]) isok=kFALSE; 
+    }
+    for (Int_t j=0; j<3; j++) {
+      if (ndetup[j]<fNReqDetUp[j]) isok=kFALSE; 
+      if (ndetdown[j]<fNReqDetDown[j]) isok=kFALSE; 
+      if (ndet[j]<fNReqDet[j]) isok=kFALSE; 
+    }
+    if (!isok) {
+      AliInfo("Track does not meet all location point requirements!");
+      return NULL;
+    }
+  }
+  
+  // build a new track with (sorted) (prealigned) good points
+  atps=new AliTrackPointArray(ngoodpts);
+
+  for (int i=0; i<npts; i++) idx[i]=i;
+  // sort track if required
+  if (fUseSortedTracks) TMath::Sort(npts,atp->GetY(),idx); // sort descending...
+
+  Int_t npto=0;
+  for (int i=0; i<npts; i++) {
+    // skip not defined points
+    if (intidx[idx[i]]<0) continue;
+    atp->GetPoint(p,idx[i]);
+
+    // prealign point if required
+    // get IDEAL matrix
+    TGeoHMatrix *svOrigMatrix = fMilleModule[intidx[idx[i]]]->GetSensitiveVolumeOrigGlobalMatrix(p.GetVolumeID());
+    // get back real local coordinates: use OriginalGlobalMatrix because AliTrackPoints were written
+    // with idel geometry  
+    Double_t pg[3],pl[3];
+    pg[0]=p.GetX();
+    pg[1]=p.GetY();
+    pg[2]=p.GetZ();
+    AliDebug(3,Form("Global coordinates of measured point : X=%f  Y=%f  Z=%f \n",pg[0],pg[1],pg[2]));
+    svOrigMatrix->MasterToLocal(pg,pl);
+
+    AliDebug(3,Form("Local coordinates of measured point : X=%f  Y=%f  Z=%f \n",pl[0],pl[1],pl[2]));
+
+    // update covariance matrix
+    TGeoHMatrix hcov;
+    Double_t hcovel[9];
+    hcovel[0]=double(p.GetCov()[0]);
+    hcovel[1]=double(p.GetCov()[1]);
+    hcovel[2]=double(p.GetCov()[2]);
+    hcovel[3]=double(p.GetCov()[1]);
+    hcovel[4]=double(p.GetCov()[3]);
+    hcovel[5]=double(p.GetCov()[4]);
+    hcovel[6]=double(p.GetCov()[2]);
+    hcovel[7]=double(p.GetCov()[4]);
+    hcovel[8]=double(p.GetCov()[5]);
+    hcov.SetRotation(hcovel);
+    // now rotate in local system
+    hcov.Multiply(svOrigMatrix);
+    hcov.MultiplyLeft(&svOrigMatrix->Inverse());
+    // now hcov is LOCAL COVARIANCE MATRIX
+
+
+    // pepopepo
+    if (fBug==1) {
+      // correzione bug LAYER 5  SSD temporanea..
+      int ssdidx=AliITSAlignMilleModule::GetIndexFromVolumeID(p.GetVolumeID());
+      if (ssdidx>=500 && ssdidx<1248) {
+	int ladder=(ssdidx-500)%22;
+      if (ladder==18) p.SetVolumeID(AliITSAlignMilleModule::GetVolumeIDFromIndex(ssdidx+1));
+      if (ladder==19) p.SetVolumeID(AliITSAlignMilleModule::GetVolumeIDFromIndex(ssdidx-1));
+      }
+    }
+
+    /// get (evenctually prealigned) matrix of sens. vol.
+    TGeoHMatrix *svMatrix = fMilleModule[intidx[idx[i]]]->GetSensitiveVolumeMatrix(p.GetVolumeID());
+    // modify global coordinates according with pre-aligment
+    svMatrix->LocalToMaster(pl,pg);
+    // now rotate in local system
+    hcov.Multiply(&svMatrix->Inverse());
+    hcov.MultiplyLeft(svMatrix);
+    // hcov is back in GLOBAL RF
+    Float_t pcov[6];
+    pcov[0]=hcov.GetRotationMatrix()[0];
+    pcov[1]=hcov.GetRotationMatrix()[1];
+    pcov[2]=hcov.GetRotationMatrix()[2];
+    pcov[3]=hcov.GetRotationMatrix()[4];
+    pcov[4]=hcov.GetRotationMatrix()[5];
+    pcov[5]=hcov.GetRotationMatrix()[8];
+
+    p.SetXYZ(pg[0],pg[1],pg[2],pcov);
+    AliDebug(3,Form("New global coordinates of measured point : X=%f  Y=%f  Z=%f \n",pg[0],pg[1],pg[2]));
+    atps->AddPoint(npto,&p);
+    AliDebug(2,Form("Adding point[%d] = ( %f , %f , %f )     volid = %d",npto,atps->GetX()[npto],atps->GetY()[npto],atps->GetZ()[npto],atps->GetVolumeID()[npto] ));
+
+    npto++;
+  }
+
+  return atps;
+}
+
+
+
+AliTrackPointArray *AliITSAlignMille::SortTrack(AliTrackPointArray *atp) {
+  /// sort alitrackpoints w.r.t. global Y direction
+  AliTrackPointArray *atps=NULL;
+  Int_t idx[20];
+  Int_t npts=atp->GetNPoints();
+  AliTrackPoint p;
+  atps=new AliTrackPointArray(npts);
+
+  TMath::Sort(npts,atp->GetY(),idx);
+
+  for (int i=0; i<npts; i++) {
+    atp->GetPoint(p,idx[i]);
+    atps->AddPoint(i,&p);
+    AliDebug(2,Form("Point[%d] = ( %f , %f , %f )     volid = %d",i,atps->GetX()[i],atps->GetY()[i],atps->GetZ()[i],atps->GetVolumeID()[i] ));
+  }
+  return atps;
+}
+
+
 Int_t AliITSAlignMille::InitModuleParams() {
   /// initialize geometry parameters for a given detector
   /// for current cluster (fCluster)
   /// fGlobalInitParam[] is set as:
   ///    [tx,ty,tz,psi,theta,phi]
-  ///    (old was [tx,ty,tz,theta,psi,phi] ROOT's angles...)
-  /// *** At the moment: using Raffalele's angles definition ***
   ///
-  /// Num of Dets: ITSMILLE_NDETELEM = fgNDetElem
-  /// Num of Par : ITSMILLE_NPARCH = fgNParCh
   /// return 0 if success
 
   if (!fGeoManager) {
@@ -450,7 +762,7 @@ Int_t AliITSAlignMille::InitModuleParams() {
   // set the internal index (index in module list)
   UShort_t voluid=fCluster.GetVolumeID();
   Int_t k=fNModules-1;
-  while (k>=0 && !(fMilleModule[k]->IsIn(voluid)) ) k--;  // new
+  while (k>=0 && !(fMilleModule[k]->IsIn(voluid)) ) k--; 
   if (k<0) return -3;    
   fCurrentModuleInternalIndex=k; // the internal index of the SUPERMODULE
 
@@ -467,68 +779,56 @@ Int_t AliITSAlignMille::InitModuleParams() {
   fModuleInitParam[3] = 0.0; // psi   (X)
   fModuleInitParam[4] = 0.0; // theta (Y)
   fModuleInitParam[5] = 0.0; // phi   (Z)
-
-  /// get global (corrected) matrix  
-  //  if (!AliITSgeomTGeo::GetOrigMatrix(index,*fCurrentModuleHMatrix)) return -3;
-//   Double_t rott[9];
-//   if (!AliITSgeomTGeo::GetRotation(index,rott)) return -3;
-//   fCurrentModuleHMatrix->SetRotation(rott);
-//   Double_t oLoc[3]={0,0,0};
-//   if (!AliITSgeomTGeo::LocalToGlobal(index,oLoc,fCurrentModuleTranslation)) return -4;
-//   fCurrentModuleHMatrix->SetTranslation(fCurrentModuleTranslation);
   
-// new
   fCurrentModuleHMatrix = fMilleModule[fCurrentModuleInternalIndex]->GetMatrix();
 
   for (int ii=0; ii<3; ii++)
     fCurrentModuleTranslation[ii]=fCurrentModuleHMatrix->GetTranslation()[ii];
 
-  TGeoHMatrix *svOrigMatrix = fMilleModule[fCurrentModuleInternalIndex]->GetSensitiveVolumeOrigGlobalMatrix(voluid);
-
-  /// get back local coordinates
-  fMeasGlo[0] = fCluster.GetX();
-  fMeasGlo[1] = fCluster.GetY();
-  fMeasGlo[2] = fCluster.GetZ();
-  svOrigMatrix->MasterToLocal(fMeasGlo,fMeasLoc);
-  //svMatrix->MasterToLocal(fMeasGlo,fMeasLoc);
-  AliDebug(2,Form("Local coordinates of measured point : X=%f  Y=%f  Z=%f \n",fMeasLoc[0] ,fMeasLoc[1] ,fMeasLoc[2] ));
-
+  /// get (evenctually prealigned) matrix of sens. vol.
   TGeoHMatrix *svMatrix = fMilleModule[fCurrentModuleInternalIndex]->GetSensitiveVolumeMatrix(voluid);
   
-  // modify global coordinates according with pre-aligment
-  svMatrix->LocalToMaster(fMeasLoc,fMeasGlo);
-  fCluster.SetXYZ(fMeasGlo[0],fMeasGlo[1] ,fMeasGlo[2]);
-  AliDebug(2,Form("New global coordinates of measured point : X=%f  Y=%f  Z=%f \n",fMeasGlo[0] ,fMeasGlo[1] ,fMeasGlo[2] ));
-
-  // mettere il new GetLocalSigma...
+  fMeasGlo[0] = fCluster.GetX();
+  fMeasGlo[1] = fCluster.GetY();
+  fMeasGlo[2] = fCluster.GetZ(); 
+  svMatrix->MasterToLocal(fMeasGlo,fMeasLoc);  
+  AliDebug(2,Form("Local coordinates of measured point : X=%f  Y=%f  Z=%f \n",fMeasLoc[0] ,fMeasLoc[1] ,fMeasLoc[2] ));
+  
   // set stdev from cluster
   TGeoHMatrix hcov;
   Double_t hcovel[9];
   hcovel[0]=double(fCluster.GetCov()[0]);
   hcovel[1]=double(fCluster.GetCov()[1]);
-  hcovel[2]=double(fCluster.GetCov()[3]);
+  hcovel[2]=double(fCluster.GetCov()[2]);
   hcovel[3]=double(fCluster.GetCov()[1]);
-  hcovel[4]=double(fCluster.GetCov()[2]);
+  hcovel[4]=double(fCluster.GetCov()[3]);
   hcovel[5]=double(fCluster.GetCov()[4]);
-  hcovel[6]=double(fCluster.GetCov()[3]);
+  hcovel[6]=double(fCluster.GetCov()[2]);
   hcovel[7]=double(fCluster.GetCov()[4]);
   hcovel[8]=double(fCluster.GetCov()[5]);
   hcov.SetRotation(hcovel);
   // now rotate in local system
-  hcov.MultiplyLeft(&svMatrix->Inverse());
   hcov.Multiply(svMatrix);
+  hcov.MultiplyLeft(&svMatrix->Inverse());
 
-  // per i ruotati c'e' delle sigmaY che compaiono... prob
-  // e' un problema di troncamento
+  // set local sigmas
   fSigmaLoc[0] = TMath::Sqrt(TMath::Abs(hcov.GetRotationMatrix()[0]));
   fSigmaLoc[1] = TMath::Sqrt(TMath::Abs(hcov.GetRotationMatrix()[4]));
   fSigmaLoc[2] = TMath::Sqrt(TMath::Abs(hcov.GetRotationMatrix()[8]));
 
-  // set minimum value for SigmaLoc to 10 micron
+  // set minimum value for SigmaLoc to 10 micron 
   if (fSigmaLoc[0]<0.0010) fSigmaLoc[0]=0.0010;
   if (fSigmaLoc[2]<0.0010) fSigmaLoc[2]=0.0010;
 
-    AliDebug(2,Form("Setting StDev from CovMat : fSigmaLocX=%f  fSigmaLocY=%f fSigmaLocZ=%f \n",fSigmaLoc[0] ,fSigmaLoc[1] ,fSigmaLoc[2] ));
+  // multiply local sigmas by global factor
+  fSigmaLoc[0] *= fSigmaXfactor;
+  fSigmaLoc[2] *= fSigmaZfactor;
+
+  // multiply local sigmas by individual factor
+  fSigmaLoc[0] *= fSensVolSigmaXfactor[index];
+  fSigmaLoc[2] *= fSensVolSigmaZfactor[index];
+
+  AliDebug(2,Form("Setting StDev from CovMat : fSigmaLocX=%g  fSigmaLocY=%g fSigmaLocZ=%g \n",fSigmaLoc[0] ,fSigmaLoc[1] ,fSigmaLoc[2] ));
    
   return 0;
 }
@@ -540,20 +840,14 @@ void AliITSAlignMille::SetCurrentModule(Int_t index) {
     return;
   }
   UShort_t voluid=GetModuleVolumeID(index);
-  //Int_t k=IsDefined(voluid);
   Int_t k=IsContained(voluid);
   if (k>=0){
-    //if (voluid<14336) 
     fCluster.SetVolumeID(voluid);
-    //else {
-    //fCluster.SetVolumeID(fMilleModule[k]->GetSensitiveVolumeVolumeID()[0]);
-    //printf("current module is a supermodule: fCluster set to first sensitive volume of the supermodule\n");
-    //}
     fCluster.SetXYZ(0,0,0);
     InitModuleParams();
   }
   else
-    printf("module %d not defined\n",index);    
+    AliInfo(Form("module %d not defined\n",index));    
 }
 
 void AliITSAlignMille::SetCurrentSensitiveModule(Int_t index) {
@@ -564,19 +858,18 @@ void AliITSAlignMille::SetCurrentSensitiveModule(Int_t index) {
   }
   UShort_t voluid=AliITSAlignMilleModule::GetVolumeIDFromIndex(index);
   Int_t k=IsDefined(voluid);
-  //printf("---> voluid=%d   k=%d\n",voluid,k);
   if (k>=0){
     fCluster.SetVolumeID(voluid);
     fCluster.SetXYZ(0,0,0);
     InitModuleParams();
   }
   else
-    printf("module %d not defined\n",index);    
+    AliInfo(Form("module %d not defined\n",index));    
 }
 
 void AliITSAlignMille::Print(Option_t*) const 
 {
-  ///
+  /// print infos
   printf("*** AliMillepede for ITS ***\n");
   printf("    number of defined super modules: %d\n",fNModules);
   
@@ -595,18 +888,36 @@ void AliITSAlignMille::Print(Option_t*) const
   else
     printf("    prealignment not used\n");    
 
+  if (fBOn) 
+    printf("    B Field set to %f T - using Riemann's helices\n",fBField);
+  else
+    printf("    B Field OFF - using straight lines \n");
+
   if (fUseLocalShifts) 
     printf("    Alignment shifts will be computed in LOCAL RS\n");
   else
     printf("    Alignment shifts will be computed in GLOBAL RS\n");    
+
+  if (fRequirePoints) printf("    Required points in tracks:\n");
+  for (Int_t i=0; i<6; i++) {
+    if (fNReqLayUp[i]>0) printf("        Layer %d : %d points with Y>0\n",i+1,fNReqLayUp[i]);
+    if (fNReqLayDown[i]>0) printf("        Layer %d : %d points with Y<0\n",i+1,fNReqLayDown[i]);
+    if (fNReqLay[i]>0) printf("        Layer %d : %d points \n",i+1,fNReqLay[i]);
+  }
+  for (Int_t i=0; i<3; i++) {
+    if (fNReqDetUp[i]>0) printf("        Detector %d : %d points with Y>0\n",i+1,fNReqDetUp[i]);
+    if (fNReqDetDown[i]>0) printf("        Detector %d : %d points with Y<0\n",i+1,fNReqDetDown[i]);
+    if (fNReqDet[i]>0) printf("        Detector %d : %d points \n",i+1,fNReqDet[i]);
+  }
   
-  printf("    Millepede configuration parameters:\n");
-  printf("       init parsig for translations  : %.4f\n",fParSigTranslations);
-  printf("       init parsig for rotations     : %.4f\n",fParSigRotations);
-  printf("       init value for chi2 cut       : %.4f\n",fStartFac);
-  printf("       first iteration cut value     : %.4f\n",fResCutInitial);
-  printf("       other iterations cut value    : %.4f\n",fResCut);
-  printf("       number of stddev for chi2 cut : %d\n",fNStdDev);
+  printf("\n    Millepede configuration parameters:\n");
+  printf("        init parsig for translations  : %.4f\n",fParSigTranslations);
+  printf("        init parsig for rotations     : %.4f\n",fParSigRotations);
+  printf("        init value for chi2 cut       : %.4f\n",fStartFac);
+  printf("        first iteration cut value     : %.4f\n",fResCutInitial);
+  printf("        other iterations cut value    : %.4f\n",fResCut);
+  printf("        number of stddev for chi2 cut : %d\n",fNStdDev);
+  printf("        mult. fact. for local sigmas  : %.4f %.4f\n",fSigmaXfactor, fSigmaZfactor);
 
   printf("List of defined modules:\n");
   printf("  intidx\tindex\tvoluid\tname\n");
@@ -638,6 +949,37 @@ void AliITSAlignMille::PrintCurrentModuleInfo()
   fMilleModule[k]->Print("");
 }
 
+Bool_t AliITSAlignMille::InitRiemanFit() {
+  // Initialize Riemann Fitter for current track
+  // return kFALSE if error
+
+  if (!fBOn) return kFALSE;
+
+  Int_t npts=0;
+  AliTrackPoint ap;
+  npts = fTrack->GetNPoints();
+  AliDebug(3,Form("Fitting track with %d points",npts));
+
+  fRieman->Reset();
+  fRieman->SetTrackPointArray(fTrack);
+
+  TArrayI ai(npts);
+  for (Int_t ipt=0; ipt<npts; ipt++) ai[ipt]=fTrack->GetVolumeID()[ipt];
+  
+  // fit track with 5 params in his own tracking-rotated reference system
+  // xc = -p[1]/p[0];
+  // yc = 1/p[0];
+  // R  = sqrt( x0*x0 + y0*y0 - y0*p[2]);
+  if (!fRieman->Fit(&ai,NULL,(AliGeomManager::ELayerID)1,(AliGeomManager::ELayerID)6)) {
+    return kFALSE;
+  }
+
+  for (int i=0; i<5; i++)
+    fLocalInitParam[i] = fRieman->GetParam()[i];
+  
+  return kTRUE;
+}
+
 
 void AliITSAlignMille::InitTrackParams(int meth) {
   /// initialize local parameters with different methods
@@ -661,6 +1003,7 @@ void AliITSAlignMille::InitTrackParams(int meth) {
     
     // test #1: linear fit in x(y) and z(y)
     npts = fTrack->GetNPoints();
+    AliDebug(3,Form("*** initializing track with %d points ***",npts));
 
     f1=new TF1("f1","[0]+x*[1]",-50,50);
 
@@ -691,19 +1034,28 @@ void AliITSAlignMille::InitTrackParams(int meth) {
     
     // test #1: linear fit in x(y) and z(y)
     npts = fTrack->GetNPoints();
+    AliDebug(3,Form("*** initializing track with %d points ***",npts));
+
     for (Int_t isig=0; isig<npts; isig++) {
       fTrack->GetPoint(ap,isig);
       sigmax[isig]=ap.GetCov()[0]; 
       if (sigmax[isig]<1.0e-07) sigmax[isig]=1.0e-07; // minimum sigma=3 mu
       sigmax[isig]=TMath::Sqrt(sigmax[isig]);
 
-      sigmay[isig]=ap.GetCov()[2]; 
+      sigmay[isig]=ap.GetCov()[3]; 
       if (sigmay[isig]<1.0e-07) sigmay[isig]=1.0e-07; // minimum sigma=3 mu
       sigmay[isig]=TMath::Sqrt(sigmay[isig]);
 
       sigmaz[isig]=ap.GetCov()[5]; 
       if (sigmaz[isig]<1.0e-07) sigmaz[isig]=1.0e-07; // minimum sigma=3 mu
       sigmaz[isig]=TMath::Sqrt(sigmaz[isig]);      
+
+      if (fTempExcludedModule>=0 && fTempExcludedModule==AliITSAlignMilleModule::GetIndexFromVolumeID(ap.GetVolumeID())) {
+	sigmax[isig] *= 1000.;
+	sigmay[isig] *= 1000.;
+	sigmaz[isig] *= 1000.;
+	fTempExcludedModule=-1;
+      }
     }
 
     f1=new TF1("f1","[0]+x*[1]",-50,50);
@@ -772,7 +1124,7 @@ Int_t AliITSAlignMille::CheckCurrentTrack() {
       ngoodpts++;
     }
   }
-  // pepo da controllare...
+
   if (ngoodpts<fMinNPtsPerTrack) return 0;
 
   return ngoodpts;
@@ -789,105 +1141,158 @@ Int_t AliITSAlignMille::ProcessTrack(AliTrackPointArray *track) {
   }
 
   Int_t npts = track->GetNPoints();
-  AliDebug(2,Form("\n*** Processing track with %d points ***\n",npts));
-  fTrack = track;
+  AliDebug(2,Form("*** Input track with %d points ***",npts));
 
-  // checks if there are enough good points
-  if (!CheckCurrentTrack()) {
-    AliInfo("Track with not enough good points - will not be used...");
-    return -1;
+  // preprocessing of the input track: keep only points in defined volumes,
+  // move points if prealignment is set, sort by Yglo if required
+  
+  fTrack=PrepareTrack(track);
+  if (!fTrack) return -1;
+
+  npts = fTrack->GetNPoints();
+  AliDebug(2,Form("*** Processing prepared track with %d points ***",npts));
+  
+  if (!fBOn) { // straight lines  
+    // set local starting parameters (to be substituted by ESD track parms)
+    // local parms (fLocalInitParam[]) are:
+    //      [0] = global x coord. of straight line intersection at y=0 plane
+    //      [1] = global z coord. of straight line intersection at y=0 plane
+    //      [2] = px/py  
+    //      [3] = pz/py
+    InitTrackParams(fInitTrackParamsMeth);  
+  } 
+  else {
+    // local parms (fLocalInitParam[]) are the Riemann Fitter params
+    if (!InitRiemanFit()) {
+      AliInfo("Riemann fit failed! skipping this track...");
+      delete fTrack;
+      fTrack=NULL;
+      return -5;
+    }
   }
-
-  // set local starting parameters (to be substituted by ESD track parms)
-  // local parms (fLocalInitParam[]) are:
-  //      [0] = global x coord. of straight line intersection at y=0 plane
-  //      [1] = global z coord. of straight line intersection at y=0 plane
-  //      [2] = px/py  
-  //      [3] = pz/py
-  InitTrackParams(fInitTrackParamsMeth);  
-
+  
+  Int_t nloceq=0;
+  MilleData *md = new MilleData[npts];
+  
   for (Int_t ipt=0; ipt<npts; ipt++) {
     fTrack->GetPoint(fCluster,ipt);
-    if (!CheckVolumeID(fCluster.GetVolumeID())) continue;
-    AliDebug(2,Form("  Original Point = ( %f , %f , %f )   volid=%d\n",fCluster.GetX(),fCluster.GetY(),fCluster.GetZ(),fCluster.GetVolumeID()));
+    AliDebug(2,Form("\n--- processing point %d --- \n",ipt));    
 
     // set geometry parameters for the the current module
-    AliDebug(2,Form("\n--- processing point %d --- \n",ipt));    
     if (InitModuleParams()) continue;
-
     AliDebug(2,Form("    VolID=%d  Index=%d  InternalIdx=%d  symname=%s\n", track->GetVolumeID()[ipt], fCurrentModuleIndex ,fCurrentModuleInternalIndex, AliGeomManager::SymName(track->GetVolumeID()[ipt]) ));
-    AliDebug(2,Form("  Preprocessed Point = ( %f , %f , %f ) \n",fCluster.GetX(),fCluster.GetY(),fCluster.GetZ()));
+    AliDebug(2,Form("    Preprocessed Point = ( %f , %f , %f ) \n",fCluster.GetX(),fCluster.GetY(),fCluster.GetZ()));
     
-    if (SetLocalEquations()) return -1;    
-
+    if (!AddLocalEquation(md[nloceq])) {
+      nloceq++;    
+      fProcessedPoints[fCurrentModuleInternalIndex]++;
+    }
+    else {
+      fTotBadLocEqPoints++;
+    }
+    
   } // end loop over points
+  
+  delete fTrack;
+  fTrack=NULL;
+
+  // not enough good points!
+  if (nloceq<fMinNPtsPerTrack) {
+    delete [] md;      
+    return -1;
+  }
+  
+  // finally send local equations to millepede
+  SetLocalEquations(md,nloceq);
+
+  delete [] md;
   
   return 0;
 }
 
 Int_t AliITSAlignMille::CalcIntersectionPoint(Double_t *lpar, Double_t *gpar) {
-  /// calculate track intersection point in local coordinates
-  /// according with a given set of parameters (local(4) and global(6))
+  /// calculate intersection point of track with current module in local coordinates
+  /// according with a given set of parameters (local(4/5) and global(6))
   /// and fill fPintLoc/Glo
-  ///    local are:   pgx0, pgz0, ugx0, ugz0
+  ///    local are:   pgx0, pgz0, ugx, ugz   OR   riemann fitters pars
   ///    global are:  tx,ty,tz,psi,theta,phi (Raff's delta angles in deg.)
   /// return 0 if success
   
-  AliDebug(3,Form("lpar = %g %g %g %g \ngpar= %g %g %g %g %g %g\n",lpar[0],lpar[1],lpar[2],lpar[3],gpar[0],gpar[1],gpar[2],gpar[3],gpar[4],gpar[5]));
+  AliDebug(3,Form("lpar = %g %g %g %g %g\ngpar= %g %g %g %g %g %g\n",lpar[0],lpar[1],lpar[2],lpar[3],lpar[4],gpar[0],gpar[1],gpar[2],gpar[3],gpar[4],gpar[5]));
+  AliDebug(3,Form("deltalpar = %g %g %g %g %g\n",lpar[0]-fLocalInitParam[0],lpar[1]-fLocalInitParam[1],lpar[2]-fLocalInitParam[2],lpar[3]-fLocalInitParam[3],lpar[4]-fLocalInitParam[4]));
+
   
-  // vector of initial straight line direction in glob. coord
-  // ATTENZIONE: forse va rinormalizzato tutto...
-  Double_t v0g[3];
-  //Double_t 
-  v0g[0]=lpar[2];
-  v0g[1]=1.0;
-  v0g[2]=lpar[3];
-
-  // intercept in yg=0 plane in glob coord
-  Double_t p0g[3];
-  p0g[0]=lpar[0];
-  p0g[1]=0.0;
-  p0g[2]=lpar[1];
-
-
   // prepare the TGeoHMatrix
-//   Double_t tr[3],ang[3];
-//   //Double_t rad2deg=180./TMath::Pi();
-//   if (fUseLocalShifts) { // just Delta matrix
-//     tr[0]=gpar[0]; 
-//     tr[1]=gpar[1]; 
-//     tr[2]=gpar[2];
-//     ang[0]=gpar[3]; // psi   (X)
-//     ang[1]=gpar[4]; // theta (Y)
-//     ang[2]=gpar[5]; // phi   (Z)
-//   }
-//   else { // total matrix with shifted parameter
-//     AliInfo("global shifts not implemented yet!");
-//     return -1;
-//   }
-
-//   //printf("fTempRot = 0x%x  - ang = %g %g %g \n",fTempRot,gpar[5]*rad2deg,gpar[3]*rad2deg,gpar[4]*rad2deg);
-
-//   fTempAlignObj->SetRotation(ang[0],ang[1],ang[2]);
-//   AliDebug(3,Form("Delta angles: psi=%f  theta=%f   phi=%f",ang[0],ang[1],ang[2]));
-//   TGeoHMatrix hm;
-//   fTempAlignObj->GetMatrix(hm);
-//   fTempHMat->SetRotation(hm.GetRotationMatrix());
-//   fTempHMat->SetTranslation(tr);
-  
-//   // in this case the gpar[] array contains only shifts
-//   // and fInitModuleParam[] are set to 0
-//   // fCurrentModuleHMatrix is then modified as fCurrentHM*fTempHM
-//   if (fUseLocalShifts) 
-//     fTempHMat->MultiplyLeft(fCurrentModuleHMatrix);
   TGeoHMatrix *fTempHMat = fMilleModule[fCurrentModuleInternalIndex]->GetSensitiveVolumeModifiedMatrix(fCluster.GetVolumeID(),gpar);
   if (!fTempHMat) return -1;
+  
+  Double_t v0g[3]; // vector with straight line direction in global coord.
+  Double_t p0g[3]; // point of the straight line (glo)
+  
+  if (fBOn) { // B FIELD!
+    AliTrackPoint prf; 
+    for (int ip=0; ip<5; ip++)
+      fRieman->SetParam(ip,lpar[ip]);
 
+    if (!fRieman->GetPCA(fCluster,prf))  {
+      AliInfo(Form("error in GetPCA for point %d",fCluster.GetVolumeID()));
+      return -3;
+    }
+    // now determine straight line passing tangent to fit curve at prf
+    // ugx = dX/dY_glo = DeltaX/DeltaY_glo
+    // mo' P1=(X,Y,Z)_glo_prf
+    //       => (x,y,Z)_trk_prf ruotando di alpha...
+    Double_t alpha=fRieman->GetAlpha();
+    Double_t x1g = prf.GetX();
+    Double_t y1g = prf.GetY();
+    Double_t z1g = prf.GetZ();
+    Double_t x1t =  x1g*TMath::Cos(alpha) + y1g*TMath::Sin(alpha);
+    Double_t y1t = -x1g*TMath::Sin(alpha) + y1g*TMath::Cos(alpha);
+    Double_t z1t =  z1g;    
+
+    Double_t x2t = x1t+1.0;
+    Double_t y2t = y1t+fRieman->GetDYat(x1t);
+    Double_t z2t = z1t+fRieman->GetDZat(x1t);
+    Double_t x2g =  x2t*TMath::Cos(alpha) - y2t*TMath::Sin(alpha);
+    Double_t y2g =  x2t*TMath::Sin(alpha) + y2t*TMath::Cos(alpha);
+    Double_t z2g =  z2t;  
+
+    AliDebug(3,Form("Riemann frame:  fAlpha = %f  =  %f  ",alpha,alpha*180./TMath::Pi()));
+    AliDebug(3,Form("   prf_glo=( %f , %f , %f )  prf_rf=( %f , %f , %f )\n", x1g,y1g,z1g, x1t,y1t,z1t));
+    AliDebug(3,Form("   mov_glo=( %f , %f , %f )      rf=( %f , %f , %f )\n",x2g,y2g,z2g, x2t,y2t,z2t));
+        
+    if (TMath::Abs(y2g-y1g)<1e-15) {
+      AliInfo("DeltaY=0! Cannot proceed...");
+      return -1;
+    }
+    // ugx,1,ugz
+    v0g[0] = (x2g-x1g)/(y2g-y1g);
+    v0g[1]=1.0;
+    v0g[2] = (z2g-z1g)/(y2g-y1g);
+    
+    // point: just keep prf
+    p0g[0]=x1g;
+    p0g[1]=y1g;
+    p0g[2]=z1g;
+  }  
+  else { // staight line
+    // vector of initial straight line direction in glob. coord
+    v0g[0]=lpar[2];
+    v0g[1]=1.0;
+    v0g[2]=lpar[3];
+    
+    // intercept in yg=0 plane in glob coord
+    p0g[0]=lpar[0];
+    p0g[1]=0.0;
+    p0g[2]=lpar[1];
+  }
+  AliDebug(3,Form("Line vector: ( %f , %f , %f )  point:( %f , %f , %f )\n",v0g[0],v0g[1],v0g[2],p0g[0],p0g[1],p0g[2]));
+  
   // same in local coord.
   Double_t p0l[3],v0l[3];
   fTempHMat->MasterToLocalVect(v0g,v0l);
   fTempHMat->MasterToLocal(p0g,p0l);
-
+  
   if (TMath::Abs(v0l[1])<1e-15) {
     AliInfo("Track Y direction in local frame is zero! Cannot proceed...");
     return -1;
@@ -901,14 +1306,14 @@ Int_t AliITSAlignMille::CalcIntersectionPoint(Double_t *lpar, Double_t *gpar) {
   // global intersection point
   fTempHMat->LocalToMaster(fPintLoc,fPintGlo);
   AliDebug(3,Form("Intesect. point: L( %f , %f , %f )  G( %f , %f , %f )\n",fPintLoc[0],fPintLoc[1],fPintLoc[2],fPintGlo[0],fPintGlo[1],fPintGlo[2]));
-
+  
   return 0;
 }
 
 Int_t AliITSAlignMille::CalcDerivatives(Int_t paridx, Bool_t islpar) {
   /// calculate numerically (ROOT's style) the derivatives for
   /// local X intersection  and local Z intersection
-  /// parlist: local  (islpar=kTRUE)  pgx0, pgz0, ugx0, ugz0
+  /// parlist: local  (islpar=kTRUE)  pgx0, pgz0, ugx0, ugz0  OR riemann's params
   ///          global (islpar=kFALSE) tx, ty, tz, psi, theta, phi (Raf's angles in deg)
   /// return 0 if success
   
@@ -918,23 +1323,50 @@ Int_t AliITSAlignMille::CalcDerivatives(Int_t paridx, Bool_t islpar) {
   for (Int_t i=0; i<ITSMILLE_NLOCAL; i++) lpar[i]=fLocalInitParam[i];
   for (Int_t i=0; i<ITSMILLE_NPARCH; i++) gpar[i]=fModuleInitParam[i];
 
-  // pepopepo  
   // trial with fixed dpar...
   Double_t dpar=0.0;
-  if (islpar) {
+
+  if (islpar) { // track parameters
     //dpar=fLocalInitParam[paridx]*0.001;
     // set minimum dpar
-    if (paridx<2) dpar=1.0e-4; // translations
-    else dpar=1.0e-6; // direction
+    if (!fBOn) {
+      if (paridx<2) dpar=1.0e-4; // translations
+      else dpar=1.0e-6; // direction
+    }
+    else { // B Field
+      // pepo: proviamo con 1/1000, poi evenctually 1/100...
+      Double_t dfrac=0.01;
+      switch(paridx) {
+      case 0:
+	// RMS cosmics: 1e-4
+	dpar = TMath::Max(1.0e-6,TMath::Abs(fLocalInitParam[paridx]*dfrac)); 
+	break;
+      case 1: 
+	// RMS cosmics: 0.2
+	dpar = TMath::Max(0.002,TMath::Abs(fLocalInitParam[paridx]*dfrac)); 
+	break;
+      case 2: 
+	// RMS cosmics: 9
+	dpar = TMath::Max(0.09,TMath::Abs(fLocalInitParam[paridx]*dfrac)); 
+	break;
+      case 3: 
+	// RMS cosmics: 7
+	dpar = TMath::Max(0.07,TMath::Abs(fLocalInitParam[paridx]*dfrac)); 
+	break;
+      case 4: 
+	// RMS cosmics: 0.3
+	dpar = TMath::Max(0.003,TMath::Abs(fLocalInitParam[paridx]*dfrac)); 
+	break;
+      }
+    }
   }
-  else {
+  else { // alignment global parameters
     //dpar=fModuleInitParam[paridx]*0.001;
     if (paridx<3) dpar=1.0e-4; // translations
     else dpar=1.0e-2; // angles    
   }
-  AliDebug(3,Form("\n+++ automatic dpar=%g\n",dpar));
-  if (fDeltaPar) dpar=fDeltaPar;
-  AliDebug(3,Form("+++ using dpar=%g\n\n",dpar));
+
+  AliDebug(3,Form("+++ using dpar=%g",dpar));
   
   // calculate derivative ROOT's like:
   //  using f(x+h),f(x-h),f(x+h/2),f(x-h2)...
@@ -985,18 +1417,20 @@ Int_t AliITSAlignMille::CalcDerivatives(Int_t paridx, Bool_t islpar) {
   return 0;
 }
 
-Int_t AliITSAlignMille::SetLocalEquations() {
-  /// Define local equation for current track and cluster in x coor.
+
+Int_t AliITSAlignMille::AddLocalEquation(MilleData &m) {
+  /// Define local equation for current cluster in X and Z coor.
+  /// and store them to memory
   /// return 0 if success
   
   // store first interaction point
-  CalcIntersectionPoint(fLocalInitParam, fModuleInitParam);  
+  if (CalcIntersectionPoint(fLocalInitParam, fModuleInitParam)) return -4;  
   for (Int_t i=0; i<3; i++) fPintLoc0[i]=fPintLoc[i];
   AliDebug(2,Form("Intesect. point: L( %f , %f , %f )",fPintLoc[0],fPintLoc[1],fPintLoc[2]));
   
   // calculate local derivatives numerically
   Double_t dXdL[ITSMILLE_NLOCAL],dZdL[ITSMILLE_NLOCAL];
-  for (Int_t i=0; i<ITSMILLE_NLOCAL; i++) {
+  for (Int_t i=0; i<fNLocal; i++) {
     if (CalcDerivatives(i,kTRUE)) return -1;
     dXdL[i]=fDerivativeXLoc;
     dZdL[i]=fDerivativeZLoc;
@@ -1010,31 +1444,97 @@ Int_t AliITSAlignMille::SetLocalEquations() {
   }
 
   AliDebug(2,Form("\n***************\n"));
-  for (Int_t i=0; i<ITSMILLE_NLOCAL; i++)
+  for (Int_t i=0; i<fNLocal; i++)
     AliDebug(2,Form("Local parameter %d - dXdpar = %g  - dZdpar = %g\n",i,dXdL[i],dZdL[i]));
   for (Int_t i=0; i<ITSMILLE_NPARCH; i++)
     AliDebug(2,Form("Global parameter %d - dXdpar = %g  - dZdpar = %g\n",i,dXdG[i],dZdG[i]));
   AliDebug(2,Form("\n***************\n"));
 
-  
-  AliDebug(2,Form("setting local equation X with fMeas=%.6f  and fSigma=%.6f",(fMeasLoc[0]-fPintLoc0[0]), fSigmaLoc[0]));
-  // set equation for Xloc coordinate
-  for (Int_t i=0; i<ITSMILLE_NLOCAL; i++) 
-    SetLocalDerivative(i,dXdL[i]);
-  for (Int_t i=0; i<ITSMILLE_NPARCH; i++)
-    SetGlobalDerivative(fCurrentModuleInternalIndex*ITSMILLE_NPARCH+i,dXdG[i]);
-  fMillepede->SetLocalEquation(fGlobalDerivatives, fLocalDerivatives, (fMeasLoc[0]-fPintLoc0[0]), fSigmaLoc[0]);  
-  
+  // check if at least 1 local and 1 global derivs. are not null
+  Double_t nonzero=0.0;
+  for (Int_t i=0; i<fNLocal; i++) nonzero += TMath::Abs(dXdL[i]);
+  if (nonzero==0.0) {
+    AliInfo("Aborting local equations for this point beacuse of zero local X derivatives!");
+    return -2;
+  }
+  nonzero=0.0;
+  for (Int_t i=0; i<ITSMILLE_NPARCH; i++) nonzero += TMath::Abs(dXdG[i]);
+  if (nonzero==0.0) {
+    AliInfo("Aborting local equations for this point beacuse of zero global X derivatives!");
+    return -2;
+  }
+  nonzero=0.0;
+  for (Int_t i=0; i<fNLocal; i++) nonzero += TMath::Abs(dZdL[i]);
+  if (nonzero==0.0) {
+    AliInfo("Aborting local equations for this point beacuse of zero local Z derivatives!");
+    return -2;
+  }
+  nonzero=0.0;
+  for (Int_t i=0; i<ITSMILLE_NPARCH; i++) nonzero += TMath::Abs(dZdG[i]);
+  if (nonzero==0.0) {
+    AliInfo("Aborting local equations for this point beacuse of zero global Z derivatives!");
+    return -2;
+  }
 
-  AliDebug(2,Form("setting local equation Z with fMeas=%.6f  and fSigma=%.6f",(fMeasLoc[2]-fPintLoc0[2]), fSigmaLoc[2]));
-  // set equation for Zloc coordinate
-  for (Int_t i=0; i<ITSMILLE_NLOCAL; i++) 
-    SetLocalDerivative(i,dZdL[i]);
-  for (Int_t i=0; i<ITSMILLE_NPARCH; i++)
-    SetGlobalDerivative(fCurrentModuleInternalIndex*ITSMILLE_NPARCH+i,dZdG[i]);
-  fMillepede->SetLocalEquation(fGlobalDerivatives, fLocalDerivatives, (fMeasLoc[2]-fPintLoc0[2]), fSigmaLoc[2]);  
+  // ok, can copy to m
+
+  AliDebug(2,Form("Adding local equation X with fMeas=%.6f  and fSigma=%.6f",(fMeasLoc[0]-fPintLoc0[0]), fSigmaLoc[0]));
+  // set equation for Xloc coordinate
+  for (Int_t i=0; i<fNLocal; i++) {
+    m.idxlocX[i]=i;
+    m.derlocX[i]=dXdL[i];
+  }
+  for (Int_t i=0; i<ITSMILLE_NPARCH; i++) {
+    m.idxgloX[i]=fCurrentModuleInternalIndex*ITSMILLE_NPARCH+i;
+    m.dergloX[i]=dXdG[i];    
+  }
+  m.measX = fMeasLoc[0]-fPintLoc0[0];
+  m.sigmaX = fSigmaLoc[0];
   
+  AliDebug(2,Form("Adding local equation Z with fMeas=%.6f  and fSigma=%.6f",(fMeasLoc[2]-fPintLoc0[2]), fSigmaLoc[2]));
+  // set equation for Zloc coordinate
+  for (Int_t i=0; i<fNLocal; i++) {
+    m.idxlocZ[i]=i;
+    m.derlocZ[i]=dZdL[i];
+  }
+  for (Int_t i=0; i<ITSMILLE_NPARCH; i++) {
+    m.idxgloZ[i]=fCurrentModuleInternalIndex*ITSMILLE_NPARCH+i;
+    m.dergloZ[i]=dZdG[i];    
+  }
+  m.measZ = fMeasLoc[2]-fPintLoc0[2];
+  m.sigmaZ = fSigmaLoc[2];
+ 
   return 0;
+}
+
+
+void AliITSAlignMille::SetLocalEquations(MilleData *m, Int_t neq) {
+  /// Set local equations with data stored in m
+  /// return 0 if success
+  
+  for (Int_t j=0; j<neq; j++) {
+    
+    AliDebug(2,Form("setting local equation X with fMeas=%.6f  and fSigma=%.6f",m[j].measX, m[j].sigmaX));
+    // set equation for Xloc coordinate
+    for (Int_t i=0; i<fNLocal; i++) 
+      SetLocalDerivative( m[j].idxlocX[i], m[j].derlocX[i] );
+    
+    for (Int_t i=0; i<ITSMILLE_NPARCH; i++)
+      SetGlobalDerivative( m[j].idxgloX[i], m[j].dergloX[i] );
+    
+    fMillepede->SetLocalEquation(fGlobalDerivatives, fLocalDerivatives, m[j].measX, m[j].sigmaX);  
+    
+    
+    AliDebug(2,Form("setting local equation Z with fMeas=%.6f  and fSigma=%.6f",m[j].measZ, m[j].sigmaZ));
+    // set equation for Zloc coordinate
+    for (Int_t i=0; i<fNLocal; i++) 
+      SetLocalDerivative( m[j].idxlocZ[i], m[j].derlocZ[i] );
+    
+    for (Int_t i=0; i<ITSMILLE_NPARCH; i++)
+      SetGlobalDerivative( m[j].idxgloZ[i], m[j].dergloZ[i] );
+    
+    fMillepede->SetLocalEquation(fGlobalDerivatives, fLocalDerivatives, m[j].measZ, m[j].sigmaZ);  
+  }
 }
 
 

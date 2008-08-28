@@ -14,6 +14,7 @@
 
 #include <TString.h>
 #include <TObject.h>
+#include <TArray.h>
 #include "AliTrackPointArray.h"
 
 class AliMillepede;
@@ -21,22 +22,40 @@ class AliAlignObjParams;
 class TGeoManager;
 class TGeoHMatrix;
 class AliITSAlignMilleModule;
+class AliTrackFitterRieman;
 
 // number of used objects
 #define ITSMILLE_NDETELEM    2198
 #define ITSMILLE_NPARCH         6
-#define ITSMILLE_NLOCAL         4
+#define ITSMILLE_NLOCAL         5
 #define ITSMILLE_NSTDEV         3       
+
+
+struct MilleData {
+  /// structure to store data for 2 LocalEquations (X and Z)
+  Double_t measX;
+  Double_t sigmaX;
+  Int_t    idxlocX[ITSMILLE_NLOCAL];
+  Double_t derlocX[ITSMILLE_NLOCAL];
+  Int_t    idxgloX[ITSMILLE_NPARCH];  
+  Double_t dergloX[ITSMILLE_NPARCH];
+
+  Double_t measZ;
+  Double_t sigmaZ;
+  Int_t    idxlocZ[ITSMILLE_NLOCAL];
+  Double_t derlocZ[ITSMILLE_NLOCAL];
+  Int_t    idxgloZ[ITSMILLE_NPARCH];  
+  Double_t dergloZ[ITSMILLE_NPARCH];
+};
 
 class AliITSAlignMille:public TObject
 {
-
 public:
   AliITSAlignMille(const Char_t *configFilename="AliITSAlignMille.conf", Bool_t initmille=kTRUE);
   virtual ~AliITSAlignMille();
   
   // geometry methods 
-  Int_t  GetModuleIndex(const Char_t *symname);
+  Int_t     GetModuleIndex(const Char_t *symname);
   Int_t     GetModuleIndex(UShort_t voluid);
   UShort_t  GetModuleVolumeID(const Char_t *symname);
   UShort_t  GetModuleVolumeID(Int_t index);
@@ -50,11 +69,16 @@ public:
   const Char_t* GetPreAlignmentFileName() {return fPreAlignmentFileName.Data();}
   void      PrintCurrentModuleInfo();
   void      Print(Option_t*) const;
+  Bool_t    IsConfigured() const {return fIsConfigured;}
+  void      SetRequiredPoint(Char_t* where, Int_t ndet, Int_t updw, Int_t nreqpts);
   
   // fitting methods
   void      SetMinNPtsPerTrack(Int_t pts=3) {fMinNPtsPerTrack=pts;}
   Int_t     ProcessTrack(AliTrackPointArray *track);
+  AliTrackPointArray *PrepareTrack(AliTrackPointArray *track); // build a new AliTrackPointArray with selected conditions
   void      InitTrackParams(int meth=1);
+  Bool_t    InitRiemanFit();
+  AliTrackFitterRieman  *GetRiemanFitter() const {return fRieman;}
   Int_t     InitModuleParams();
   Int_t     CheckCurrentTrack();
   Bool_t    CheckVolumeID(UShort_t voluid) const; // checks voluid for sensitive volumes
@@ -65,6 +89,8 @@ public:
   Double_t* GetLocalIntersectionPoint() {return fPintLoc;}
   Double_t* GetGlobalIntersectionPoint() {return fPintGlo;}
   void      SetInitTrackParamsMeth(Int_t meth=1) {fInitTrackParamsMeth=meth;}
+  AliTrackPointArray *SortTrack(AliTrackPointArray *atp);
+  void      SetTemporaryExcludedModule(Int_t index) {fTempExcludedModule=index;}
 
   // millepede methods
   void      FixParameter(Int_t param, Double_t value);
@@ -78,23 +104,40 @@ public:
   void      GlobalFit(Double_t *parameters,Double_t *errors,Double_t *pulls);
   void      PrintGlobalParameters();
   Double_t  GetParError(Int_t iPar);
-  Int_t     SetLocalEquations();
+  Int_t     AddLocalEquation(MilleData &m);
+  void      SetLocalEquations(MilleData *m, Int_t neq);
   
   // fitting stuffs
   AliTrackPointArray *GetCurrentTrack() {return fTrack;}
   AliTrackPoint      *GetCurrentCluster() {return &fCluster;}
+  void      SetCurrentTrack(AliTrackPointArray *atp) {fTrack=atp;}
+  void      SetCurrentCluster(AliTrackPoint &atp) {fCluster=atp;}
 
   // geometry stuffs
-  Int_t  GetNModules() const {return fNModules;}
-  Int_t  GetCurrentModuleIndex() const {return fCurrentModuleIndex;}
+  Int_t     GetNModules() const {return fNModules;}
+  Int_t     GetCurrentModuleIndex() const {return fCurrentModuleIndex;}
   TGeoHMatrix *GetCurrentModuleHMatrix() {return fCurrentModuleHMatrix;}
-  Double_t    *GetCurrentModuleTranslation() {return fCurrentModuleTranslation;}
-  Int_t  GetCurrentModuleInternalIndex() const {return fCurrentModuleInternalIndex;}
-  Int_t       *GetModuleIndexArray() {return fModuleIndex;}
+  Double_t *GetCurrentModuleTranslation() {return fCurrentModuleTranslation;}
+  Int_t     GetCurrentModuleInternalIndex() const {return fCurrentModuleInternalIndex;}
+  Int_t    *GetModuleIndexArray() {return fModuleIndex;}
+  Int_t    *GetProcessedPoints() {return fProcessedPoints;}
+  Int_t     GetTotBadLocEqPoints() const {return fTotBadLocEqPoints;}
   AliITSAlignMilleModule  *GetMilleModule(UShort_t voluid); // get pointer to the defined supermodule
   AliITSAlignMilleModule  *GetCurrentModule();
-  UShort_t    *GetModuleVolumeIDArray() {return fModuleVolumeID;}
-  
+  UShort_t *GetModuleVolumeIDArray() {return fModuleVolumeID;}
+
+  // debug stuffs
+  Double_t  *GetMeasLoc() { return fMeasLoc;}
+  Double_t  *GetSigmaLoc() { return fSigmaLoc;}
+  Double_t   GetBField() const {return fBField;}
+  Double_t  *GetLocalInitParam() {return fLocalInitParam;}
+  Double_t   GetLocalDX() const {return fDerivativeXLoc;}
+  Double_t   GetLocalDZ() const {return fDerivativeZLoc;}
+  Double_t   GetParSigTranslations() const {return fParSigTranslations;}
+  Double_t   GetParSigRotations() const {return fParSigRotations;}
+  Int_t      GetPreAlignmentQualityFactor(Int_t index); // if not prealign. return -1
+  void       SetBug(Int_t bug) {fBug=bug;} // 1:SSD inversion sens.18-19
+
  private:
 
   // configuration methods
@@ -135,13 +178,24 @@ public:
   Double_t      fMeasLoc[3]; // current point local coordinates (the original ones)
   Double_t      fMeasGlo[3]; // current point glob. coord (AliTrackPoint)
   Double_t      fSigmaLoc[3]; // stdev current point
-  //TGeoHMatrix  *fTempHMat; ///
+  Double_t      fSigmaXfactor; ///
+  Double_t      fSigmaZfactor; ///
   AliAlignObjParams *fTempAlignObj; ///
   Double_t      fDerivativeXLoc; // localX deriv.
   Double_t      fDerivativeZLoc; // localZ deriv.
-  Double_t      fDeltaPar; ///
   Int_t         fMinNPtsPerTrack; ///
   Int_t         fInitTrackParamsMeth; ///
+  Int_t        *fProcessedPoints; /// array of statistics of used points per module
+  Int_t         fTotBadLocEqPoints; /// total number of reject points because of bad EqLoc
+  AliTrackFitterRieman *fRieman; /// riemann fitter for helices
+  Bool_t        fRequirePoints;  // required points in specific layers
+  Int_t         fNReqLayUp[6];    /// number of points required in layer[n] with Y>0
+  Int_t         fNReqLayDown[6];  /// number of points required in layer[n] with Y<0
+  Int_t         fNReqLay[6];      /// number of points required in layer[n] 
+  Int_t         fNReqDetUp[3];    /// number of points required in Detector[n] with Y>0
+  Int_t         fNReqDetDown[3];  /// number of points required in Detector[n] with Y<0
+  Int_t         fNReqDet[3];      /// number of points required in Detector[n]
+  Int_t         fTempExcludedModule; /// single module temporary excluded from initial fit
 
   // geometry stuffs
   TString       fGeometryFileName;  ///
@@ -158,8 +212,16 @@ public:
   Bool_t        fUseLocalShifts; /// 
   Bool_t        fUseSuperModules; /// 
   Bool_t        fUsePreAlignment; /// 
+  Bool_t        fUseSortedTracks; /// default is kTRUE 
+  Bool_t        fBOn; /// magentic field ON
+  Double_t      fBField; /// value of magnetic field
   Int_t         fNSuperModules; /// number of custom supermodules in SM file
   TGeoHMatrix  *fCurrentModuleHMatrix; /// SuperModule matrix
+  Bool_t        fIsConfigured; ///
+  Int_t         fPreAlignQF[ITSMILLE_NDETELEM*2]; ///
+  Double_t      fSensVolSigmaXfactor[ITSMILLE_NDETELEM*2]; ///
+  Double_t      fSensVolSigmaZfactor[ITSMILLE_NDETELEM*2]; ///
+  Int_t         fBug; /// tag for temporary bug correction
 
   AliITSAlignMilleModule *fMilleModule[ITSMILLE_NDETELEM*2]; /// array of super modules to be aligned
 
