@@ -74,7 +74,7 @@ void AliZDCPreprocessor::Initialize(Int_t run, UInt_t startTime,
 UInt_t AliZDCPreprocessor::ProcessChMap(TString runType)
 { 
   // Writing channel map in the OCDB
-  TList* daqSource;
+  TList* daqSource=0;
   if(runType.CompareTo("STANDALONE_PEDESTAL"))
     daqSource = GetFileSources(kDAQ, "PEDESTALS");
   else if(runType.CompareTo("STANDALONE_LASER"))
@@ -97,6 +97,7 @@ UInt_t AliZDCPreprocessor::ProcessChMap(TString runType)
   TIter iter(daqSource);
   TObjString* source = 0;
   Int_t isou=0;
+  Int_t res=999;
   while((source = dynamic_cast<TObjString*> (iter.Next()))){
      Log(Form("\n\t Getting file #%d\n",++isou));
      TString fileName;
@@ -152,10 +153,11 @@ UInt_t AliZDCPreprocessor::ProcessChMap(TString runType)
     metaData.SetResponsible("Chiara Oppedisano");
     metaData.SetComment("Filling AliZDCChMap object");  
     //
-    Int_t res = Store("Calib","ChMap",mapCalib, &metaData, 0, 1);
-    return res;
+    res = Store("Calib","ChMap",mapCalib, &metaData, 0, 1);
   }
   delete daqSource; daqSource=0;
+  
+  return res;
 
 }
 
@@ -347,25 +349,24 @@ else if(runType=="STANDALONE_LASER"){
     	 }
     	 Log(Form("File %s connected to process data from LASER events", laserFileName));
     	 //
-	 Float_t ivalRef[2], ivalRead[2][4]; 
-    	 for(Int_t j=0; j<3; j++){
-	   if(j==0){
-             for(Int_t k=0; k<2; k++){
-               fscanf(file,"%f",&ivalRef[k]);
-	       lCalib->SetReferenceValue(k,ivalRef[k]);	    
-	     }
-           }
-	   else{
-             for(Int_t k=0; k<4; k++){
-               fscanf(file,"%f",&ivalRead[j-1][k]);
-    	       printf(" %d %1.0f  ",k, ivalRead[j-1][k]);
-    	     }
-	     lCalib->SetSector(j-1, ivalRead[j-1][0]);
-	     lCalib->SetGain(j-1, ivalRead[j-1][1]);
-	     lCalib->SetfPMRefValue(j-1, ivalRead[j-1][2]);
-	     lCalib->SetfPMRefWidth(j-1, ivalRead[j-1][3]);
-	   }
-	   printf("\n");
+	 Float_t ivalRead[4][2]; 
+    	 for(Int_t j=0; j<4; j++){
+            for(Int_t k=0; k<2; k++){
+              fscanf(file,"%f",&ivalRead[j][k]);
+    	      //printf(" %d %1.0f  ",k, ivalRead[j][k]);
+    	    }
+	    if(j==0 || j==1){
+	      lCalib->SetGain(j, 0);
+	      if(j==0) lCalib->SetSector(j, 1);
+	      else lCalib->SetSector(j, 4);
+	    }
+	    else if(j==2 || j==3){
+	      lCalib->SetGain(j, 1);
+	      if(j==2) lCalib->SetSector(j, 1);
+	      else lCalib->SetSector(j, 4);
+	    }
+	    lCalib->SetfPMRefValue(j, ivalRead[j][0]);
+	    lCalib->SetfPMRefWidth(j, ivalRead[j][1]);
 	 }
 	 fclose(file);
        }

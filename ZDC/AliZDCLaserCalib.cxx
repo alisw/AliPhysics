@@ -41,8 +41,7 @@ TNamed()
   SetName(namst.Data());
   SetTitle(namst.Data());
   Reset();
-  for(Int_t i=0; i<2; i++){
-    fReferenceValue[i] = 0.;
+  for(Int_t i=0; i<4; i++){
     fSector[i] = 0;
     fGain[i] = 0;
     fPMRefValue[i] = 0.;
@@ -61,7 +60,6 @@ AliZDCLaserCalib::AliZDCLaserCalib(const AliZDCLaserCalib& calibda) :
   SetTitle(calibda.GetName());
   Reset();
   for(int t=0; t<2; t++){
-     fReferenceValue[t] = calibda.GetReferenceValue(t);
      fSector[t] = calibda.GetSector(t);
      fGain[t] = calibda.GetGain(t);
      fPMRefValue[t] = calibda.GetPMRefValue(t);
@@ -76,8 +74,7 @@ AliZDCLaserCalib &AliZDCLaserCalib::operator =(const AliZDCLaserCalib& calibda)
   SetName(calibda.GetName());
   SetTitle(calibda.GetName());
   Reset();
-  for(int t=0; t<2; t++){
-     fReferenceValue[t] = calibda.GetReferenceValue(t);
+  for(int t=0; t<4; t++){
      fSector[t]     = calibda.GetSector(t);
      fGain[t] = calibda.GetGain(t);
      fPMRefValue[t] = calibda.GetPMRefValue(t);
@@ -96,11 +93,10 @@ AliZDCLaserCalib::~AliZDCLaserCalib()
 void AliZDCLaserCalib::Reset()
 {
   // Reset
-  memset(fReferenceValue,0,2*sizeof(Float_t));
-  memset(fSector,0,2*sizeof(Float_t));
-  memset(fGain,0,2*sizeof(Float_t));
-  memset(fPMRefValue,0,2*sizeof(Float_t));
-  memset(fPMRefWidth,0,2*sizeof(Float_t));
+  memset(fSector,0,4*sizeof(Float_t));
+  memset(fGain,0,4*sizeof(Float_t));
+  memset(fPMRefValue,0,4*sizeof(Float_t));
+  memset(fPMRefWidth,0,4*sizeof(Float_t));
 }                                                                                       
 
 
@@ -109,10 +105,10 @@ void  AliZDCLaserCalib::Print(Option_t *) const
 {
    // Printing of calibration object
    printf("\n\n ******************* AliZDCLaserCalib object *******************\n");
-   for(Int_t i=0; i<2; i++){
+   for(Int_t i=0; i<4; i++){
      if(fSector[i]==1.) printf("  side C ->");
      else if(fSector[i]==4.) printf("  side A->");
-     printf("  Ref.Values %1.2f  Gain %1.0f",fReferenceValue[i], fGain[i]);
+     printf("  Gain chain %1.0f",fGain[i]);
      printf(" PMRefValue = %1.0f  PMRefWidth = %1.0f\n",fPMRefValue[i],fPMRefWidth[i]);
    }
    printf(" ***************************************************************\n\n");

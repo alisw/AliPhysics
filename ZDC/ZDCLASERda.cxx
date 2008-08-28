@@ -297,19 +297,21 @@ int main(int argc, char **argv) {
   Float_t xMaxRef[4], maxXvalRef[4], xlowRef[4]; 
   Float_t meanRef[2], sigmaRef[2];
   TF1 *funRef[4];
-  //
+  
+  // ~~~~~~~~ PM Ref side C high gain chain ~~~~~~~~
   maxBinRef[0] = hPMRefChg->GetMaximumBin();
   nBinRef[0] = (hPMRefChg->GetXaxis())->GetNbins();
   xMaxRef[0] = (hPMRefChg->GetXaxis())->GetXmax();
   maxXvalRef[0] = maxBinRef[0]*xMaxRef[0]/nBinRef[0];
-  //
+  // 
   if(maxXvalRef[0]-100.<0.) {xlowRef[0]=0.;}
   else xlowRef[0] = maxXvalRef[0];
   hPMRefChg->Fit("gaus","Q","",xlowRef[0],maxXvalRef[0]+100.);
   funRef[0] = hPMRefChg->GetFunction("gaus");
   meanRef[0] = (Float_t) (funRef[0]->GetParameter(1));
   sigmaRef[0] = (Float_t) (funRef[0]->GetParameter(2));
-  //
+  
+  // ~~~~~~~~ PM Ref side A high gain chain ~~~~~~~~
   maxBinRef[1] = hPMRefAhg->GetMaximumBin();
   nBinRef[1] = (hPMRefAhg->GetXaxis())->GetNbins();
   xMaxRef[1] = (hPMRefAhg->GetXaxis())->GetXmax();
@@ -321,7 +323,8 @@ int main(int argc, char **argv) {
   funRef[1] = hPMRefAhg->GetFunction("gaus");
   meanRef[1] = (Float_t) (funRef[1]->GetParameter(1));
   sigmaRef[1] = (Float_t) (funRef[1]->GetParameter(2));
-  //
+  
+  // ~~~~~~~~ PM Ref side C low gain chain ~~~~~~~~
   maxBinRef[2] = hPMRefClg->GetMaximumBin();
   nBinRef[2] = (hPMRefClg->GetXaxis())->GetNbins();
   xMaxRef[2] = (hPMRefClg->GetXaxis())->GetXmax();
@@ -333,7 +336,8 @@ int main(int argc, char **argv) {
   funRef[2] = hPMRefClg->GetFunction("gaus");
   meanRef[2] = (Float_t) (funRef[2]->GetParameter(1));
   sigmaRef[2] = (Float_t) (funRef[2]->GetParameter(2));
-  //
+  
+  // ~~~~~~~~ PM Ref side A low gain chain ~~~~~~~~
   maxBinRef[3] = hPMRefAlg->GetMaximumBin();
   nBinRef[3] = (hPMRefAlg->GetXaxis())->GetNbins();
   xMaxRef[3] = (hPMRefAlg->GetXaxis())->GetXmax();
