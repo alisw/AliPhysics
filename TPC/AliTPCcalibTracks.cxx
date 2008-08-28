@@ -88,6 +88,7 @@ using namespace std;
 #include <TCollection.h>
 #include <iostream>
 #include <TLinearFitter.h>
+#include <TString.h>
 
 //
 // AliROOT includes 
@@ -113,6 +114,8 @@ using namespace std;
 #include "TText.h"
 #include "TPaveText.h"
 #include "TSystem.h"
+#include "TStatToolkit.h"
+#include "TCut.h"
 
 
 
@@ -657,7 +660,7 @@ void  AliTPCcalibTracks::FillResolutionHistoLocal(AliTPCseed * track){
   if (GetDebugLevel() > 5) Info("FillResolutionHistoLocal"," ***** Start of FillResolutionHistoLocal *****");
    const Int_t   kDelta    = 10;          // delta rows to fit
    const Float_t kMinRatio = 0.75;        // minimal ratio
-   const Float_t kCutChi2  = 6.;          // cut chi2 - left right  - kink removal
+   //   const Float_t kCutChi2  = 6.;          // cut chi2 - left right  - kink removal
    const Float_t kErrorFraction = 0.5;    // use only clusters with small interpolation error - for error param
    const Int_t   kFirstLargePad = 127;    // medium pads -> long pads
    const Float_t kLargePadSize  = 1.5;    // factor between medium and long pads' area
@@ -2509,13 +2512,134 @@ void  AliTPCcalibTracks::MakeQPosNormAll(TTree * chainres, AliTPCClusterParam * 
   // param     - parameters to be updated
   // maxPoints - maximal number of points using for fit
   // verbose   - print info flag
-  /*
+  //
+  // Current implementation - only using debug streamers
+  // 
+  
+  /*    
     //Defaults
     Int_t maxPoints=100000;
   */
+  /*
+    Usage: 
+    //0. Load libraries
+    gSystem->Load("libANALYSIS");
+    gSystem->Load("libSTAT");
+    gSystem->Load("libTPCcalib");
+    
+
+    //1. Load Parameters to be modified:
+    //e.g:
+    
+    AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+    AliCDBManager::Instance()->SetRun(0) 
+    AliTPCClusterParam * param = AliTPCcalibDB::Instance()->GetClusterParam();
+
+    //2. Load chain from debug streamers
+    //
+    //e.g
+    gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");
+    gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+")
+    AliXRDPROOFtoolkit tool;  
+    TChain * chainres = tool.MakeChain("tracks.txt","ResolCl",0,10200);
+    chainres->Lookup();
+    //3. Do fits and store results
+    // 
+    AliTPCcalibTracks::MakeQPosNormAll(chainres,param,200000,0) ;
+    TFile f("paramout.root","recreate");
+    param->Write("clusterParam");
+    f.Close();
+    //4. Verification
+    TFile f2("paramout.root");
+    AliTPCClusterParam *param2 = (AliTPCClusterParam*)f2.Get("clusterParam");
+    param2->SetInstance(param2);
+    chainres->Draw("fitZ0:AliTPCClusterParam::SPosCorrection(1,0,Cl.fPad,Cl.fTimeBin,Cl.fZ,Cl.fSigmaY2,Cl.fSigmaZ2,Cl.fMax)","Cl.fDetector<36","",10000); // should be line 
+    
+   */
+
+
+  TStatToolkit toolkit;
+  Double_t chi2;
+  TVectorD fitParamY0;
+  TVectorD fitParamY1;
+  TVectorD fitParamZ0;
+  TVectorD fitParamZ1;
+  TMatrixD covMatrix;
+  Int_t npoints;
+  
+  chainres->SetAlias("dp","(-1+(Cl.fZ>0)*2)*((Cl.fPad-int(Cl.fPad))-0.5)");
+  chainres->SetAlias("dt","(-1+(Cl.fZ>0)*2)*((Cl.fTimeBin-0.66-int(Cl.fTimeBin-0.66))-0.5)");
+  chainres->SetAlias("sp","(sin(dp*pi)-dp*pi)");
+  chainres->SetAlias("st","(sin(dt)-dt)");
+  //
+  chainres->SetAlias("di","sqrt(1.-abs(Cl.fZ/250.))");
+  chainres->SetAlias("dq","sqrt(15./(5+Cl.fMax))");
+  chainres->SetAlias("sy","(0.32/sqrt(0.01^2+Cl.fSigmaY2))");
+  chainres->SetAlias("sz","(0.32/sqrt(0.01^2+Cl.fSigmaZ2))");
+  //
+  //
+  //
+  TCut cutA("1");
+  TString fstringY="";  
+  //
+  fstringY+="(dp)++";            //1
+  fstringY+="(dp)*di++";         //2
+  fstringY+="(dp)*dq++";         //3
+  fstringY+="(dp)*sy++";         //4
+  //
+  fstringY+="(sp)++";            //5
+  fstringY+="(sp)*di++";         //6
+  fstringY+="(sp)*dq++";         //7
+  fstringY+="(sp)*sy++";         //8
+  //
+
+  TString fstringZ="";  
+  fstringZ+="(dt)++";            //1
+  fstringZ+="(dt)*di++";         //2
+  fstringZ+="(dt)*dq++";         //3
+  fstringZ+="(dt)*sz++";         //4
+  //
+  fstringZ+="(st)++";            //5
+  fstringZ+="(st)*di++";         //6
+  fstringZ+="(st)*dq++";         //7
+  fstringZ+="(st)*sz++";         //8
+  //
+  // Z corrections
+  //
+  TString *strZ0 = toolkit.FitPlane(chainres,"(Cl.fZ-PZ0.fElements[0]):CSigmaZ0",fstringZ.Data(), "Cl.fDetector<36"+cutA, chi2,npoints,fitParamZ0,covMatrix,-1,0,maxPoints);
+  printf("Z0 - chi2/npoints = %f\n",TMath::Sqrt(chi2/npoints));
+  param->fPosZcor[0] = (TVectorD*) fitParamZ0.Clone();
+  //
+  TString *strZ1 = toolkit.FitPlane(chainres,"(Cl.fZ-PZ0.fElements[0]):CSigmaZ0",fstringZ.Data(), "Cl.fDetector>36"+cutA, chi2,npoints,fitParamZ1,covMatrix,-1,0,maxPoints);
+  //
+  printf("Z1 - chi2/npoints = %f\n",TMath::Sqrt(chi2/npoints));
+  param->fPosZcor[1] = (TVectorD*) fitParamZ1.Clone();
+  param->fPosZcor[2] = (TVectorD*) fitParamZ1.Clone();
+  //
+  // Y corrections
+  //   
+  TString *strY0 = toolkit.FitPlane(chainres,"(Cl.fY-PY0.fElements[0]):CSigmaY0",fstringY.Data(), "Cl.fDetector<36"+cutA, chi2,npoints,fitParamY0,covMatrix,-1,0,maxPoints);
+  printf("Y0 - chi2/npoints = %f\n",TMath::Sqrt(chi2/npoints));
+  param->fPosYcor[0] = (TVectorD*) fitParamY0.Clone();
+  
+
+  TString *strY1 = toolkit.FitPlane(chainres,"(Cl.fY-PY0.fElements[0]):CSigmaY0",fstringY.Data(), "Cl.fDetector>36"+cutA, chi2,npoints,fitParamY1,covMatrix,-1,0,maxPoints);
+  //
+  printf("Y1 - chi2/npoints = %f\n",TMath::Sqrt(chi2/npoints));
+  param->fPosYcor[1] = (TVectorD*) fitParamY1.Clone();
+  param->fPosYcor[2] = (TVectorD*) fitParamY1.Clone();
+  //
+  //
+  //
+  chainres->SetAlias("fitZ0",strZ0->Data());
+  chainres->SetAlias("fitZ1",strZ1->Data());
+  chainres->SetAlias("fitY0",strY0->Data());
+  chainres->SetAlias("fitY1",strY1->Data());
+  //  chainres->Draw("Cl.fZ-PZ0.fElements[0]","CSigmaY0<0.7&&CSigmaZ0<0.7"+cutA,"",10000);   
 }
 
 /*
+  gSystem->Load("libSTAT.so");
   gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");
   gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+")
   AliXRDPROOFtoolkit tool;  
@@ -2526,7 +2650,6 @@ void  AliTPCcalibTracks::MakeQPosNormAll(TTree * chainres, AliTPCClusterParam * 
   //
 
 
-  gSystem->Load("libSTAT.so");
 
   TStatToolkit toolkit;
   Double_t chi2;
@@ -2576,16 +2699,16 @@ void  AliTPCcalibTracks::MakeQPosNormAll(TTree * chainres, AliTPCClusterParam * 
   fstringZ+="(st)*sz++";         //8
 
   
-  TString *strZ0 = toolkit.FitPlane(chainres,"(Cl.fZ-PZ0.fElements[0]):CSigmaZ0",fstringZ->Data(), "Cl.fDetector<36"+cutA, chi2,npoints,fitParamZ0,covMatrix,-1,0,100000);
-  TString *strZ1 = toolkit.FitPlane(chainres,"(Cl.fZ-PZ0.fElements[0]):CSigmaZ0",fstringZ->Data(), "Cl.fDetector>36"+cutA, chi2,npoints,fitParamZ1,covMatrix,-1,0,100000);
+  TString *strZ0 = toolkit.FitPlane(chainres,"(Cl.fZ-PZ0.fElements[0]):CSigmaZ0",fstringZ.Data(), "Cl.fDetector<36"+cutA, chi2,npoints,fitParamZ0,covMatrix,-1,0,100000);
+  TString *strZ1 = toolkit.FitPlane(chainres,"(Cl.fZ-PZ0.fElements[0]):CSigmaZ0",fstringZ.Data(), "Cl.fDetector>36"+cutA, chi2,npoints,fitParamZ1,covMatrix,-1,0,100000);
 
-  TString *strY0 = toolkit.FitPlane(chainres,"(Cl.fY-PY0.fElements[0]):CSigmaY0",fstringY->Data(), "Cl.fDetector<36"+cutA, chi2,npoints,fitParamY0,covMatrix,-1,0,100000);
-  TString *strY1 = toolkit.FitPlane(chainres,"(Cl.fY-PY0.fElements[0]):CSigmaY0",fstringY->Data(), "Cl.fDetector>36"+cutA, chi2,npoints,fitParamY1,covMatrix,-1,0,100000);
+  TString *strY0 = toolkit.FitPlane(chainres,"(Cl.fY-PY0.fElements[0]):CSigmaY0",fstringY.Data(), "Cl.fDetector<36"+cutA, chi2,npoints,fitParamY0,covMatrix,-1,0,100000);
+  TString *strY1 = toolkit.FitPlane(chainres,"(Cl.fY-PY0.fElements[0]):CSigmaY0",fstringY.Data(), "Cl.fDetector>36"+cutA, chi2,npoints,fitParamY1,covMatrix,-1,0,100000);
 
-  chainres->SetAlias("fitZ0",strZ0->Data());
-  chainres->SetAlias("fitZ1",strZ1->Data());
-  chainres->SetAlias("fitY0",strY0->Data());
-  chainres->SetAlias("fitY1",strY1->Data());
+  chainres->SetAlias("fitZ0",strZ0.Data());
+  chainres->SetAlias("fitZ1",strZ1.Data());
+  chainres->SetAlias("fitY0",strY0.Data());
+  chainres->SetAlias("fitY1",strY1.Data());
   chainres->Draw("Cl.fZ-PZ0.fElements[0]","CSigmaY0<0.7&&CSigmaZ0<0.7"+cutA,"",10000)
 
 

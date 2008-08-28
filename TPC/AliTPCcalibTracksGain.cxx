@@ -630,26 +630,26 @@ void AliTPCcalibTracksGain::Add(AliTPCcalibTracksGain* cal) {
    // Adds another AliTPCcalibTracksGain object to this object.
    //
    
-   fSimpleFitter->Add(cal->fSimpleFitter);
-   fSqrtFitter->Add(cal->fSqrtFitter);
-   fLogFitter->Add(cal->fLogFitter);
-   fSingleSectorFitter->Add(cal->fSingleSectorFitter);
-   //
-   //
-   //
-   fFitter0M->Add(cal->fFitter0M);
-   fFitter1M->Add(cal->fFitter1M);
-   fFitter2M->Add(cal->fFitter2M);
-   fFitter0T->Add(cal->fFitter0T);
-   fFitter1T->Add(cal->fFitter1T);
-   fFitter2T->Add(cal->fFitter2T);
-   //
-   fDFitter0M->Add(cal->fDFitter0M);
-   fDFitter1M->Add(cal->fDFitter1M);
-   fDFitter2M->Add(cal->fDFitter2M);
-   fDFitter0T->Add(cal->fDFitter0T);
-   fDFitter1T->Add(cal->fDFitter1T);
-   fDFitter2T->Add(cal->fDFitter2T);
+  fSimpleFitter->Add(cal->fSimpleFitter);
+  fSqrtFitter->Add(cal->fSqrtFitter);
+  fLogFitter->Add(cal->fLogFitter);
+  fSingleSectorFitter->Add(cal->fSingleSectorFitter);
+  //
+  //
+  //
+  if (cal->fFitter0M->GetNpoints()>0) fFitter0M->Add(cal->fFitter0M);
+  if (cal->fFitter1M->GetNpoints()>0) fFitter1M->Add(cal->fFitter1M);
+  if (cal->fFitter2M->GetNpoints()>0) fFitter2M->Add(cal->fFitter2M);
+  if (cal->fFitter0T->GetNpoints()>0) fFitter0T->Add(cal->fFitter0T);
+  if (cal->fFitter1T->GetNpoints()>0) fFitter1T->Add(cal->fFitter1T);
+  if (cal->fFitter2T->GetNpoints()>0) fFitter2T->Add(cal->fFitter2T);
+  //
+  if (cal->fDFitter0M->GetNpoints()>0) fDFitter0M->Add(cal->fDFitter0M);
+  if (cal->fDFitter1M->GetNpoints()>0) fDFitter1M->Add(cal->fDFitter1M);
+  if (cal->fDFitter2M->GetNpoints()>0) fDFitter2M->Add(cal->fDFitter2M);
+  if (cal->fDFitter0T->GetNpoints()>0) fDFitter0T->Add(cal->fDFitter0T);
+  if (cal->fDFitter1T->GetNpoints()>0) fDFitter1T->Add(cal->fDFitter1T);
+  if (cal->fDFitter2T->GetNpoints()>0) fDFitter2T->Add(cal->fDFitter2T);
    //
    //
    // histograms
@@ -1684,7 +1684,13 @@ void  AliTPCcalibTracksGain::MakeQPosNormAll(TTree * chain, AliTPCClusterParam *
   // Fill the content of the of the AliTPCclusterParam
   // with fitted values of corrections 
   //
-  
+  param->fPosQTnorm[0] = MakeQPosNorm(chain,0,kTRUE,100000,kTRUE);
+  param->fPosQTnorm[1] = MakeQPosNorm(chain,1,kTRUE,100000,kTRUE);
+  param->fPosQTnorm[2] = MakeQPosNorm(chain,1,kTRUE,100000,kTRUE);
+  //
+  param->fPosQMnorm[0] = MakeQPosNorm(chain,0,kFALSE,100000,kTRUE);
+  param->fPosQMnorm[1] = MakeQPosNorm(chain,1,kFALSE,100000,kTRUE);
+  param->fPosQMnorm[2] = MakeQPosNorm(chain,2,kFALSE,100000,kTRUE);
 }
 
 

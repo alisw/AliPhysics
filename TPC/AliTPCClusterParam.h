@@ -40,7 +40,10 @@ class AliTPCClusterParam : public TObject {
   Float_t Qnorm(Int_t ipad, Int_t itype, Float_t dr, Float_t ty, Float_t tz);   
 
   Float_t QnormPos(Int_t ipad, Bool_t isMax,  Float_t pad, Float_t time, Float_t z, Float_t sy2, Float_t sz2, Float_t qm, Float_t qt);
-
+  static Float_t SQnormPos(Int_t ipad, Bool_t isMax,  Float_t pad, Float_t time, Float_t z, Float_t sy2, Float_t sz2, Float_t qm, Float_t qt){ return fgInstance->QnormPos(ipad,isMax,pad,time,z,sy2,sz2,qm,qt);;}
+ 
+  Float_t PosCorrection(Int_t type, Int_t ipad,  Float_t pad, Float_t time, Float_t z, Float_t sy2, Float_t sz2, Float_t qm);
+  static Float_t  SPosCorrection(Int_t type, Int_t ipad,  Float_t pad, Float_t time, Float_t z, Float_t sy2, Float_t sz2, Float_t qm){ return fgInstance->PosCorrection(type,ipad,pad,time,z,sy2,sz2,qm);}
   //
   // Error parameterization
   //
@@ -143,10 +146,16 @@ class AliTPCClusterParam : public TObject {
   // charge normalization parametrization
   //
   TObjArray *fQNorm;              // q norm paramters
-  TVectorD  *fPosQTnorm[3];        // q position normalization
-  TVectorD  *fPosQMnorm[3];        // q position normalization
-  TVectorD  *fQpadTnorm;           // q pad normalization - Total charge
-  TVectorD  *fQpadMnorm;           // q pad normalization - Max charge
+  //
+  TVectorD  *fPosQTnorm[3];       // q position normalization
+  TVectorD  *fPosQMnorm[3];       // q position normalization
+  TVectorD  *fQpadTnorm;          // q pad normalization - Total charge
+  TVectorD  *fQpadMnorm;          // q pad normalization - Max charge
+  //
+  // Position corrections
+  // 
+  TVectorD  *fPosYcor[3];       //  position correction parameterization 
+  TVectorD  *fPosZcor[3];       //  position correction parameterization
   //
  protected:
   static AliTPCClusterParam*   fgInstance; //! Instance of this class (singleton implementation)
