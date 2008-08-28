@@ -73,6 +73,19 @@ AliTRDclusterizerHLT::AliTRDclusterizerHLT(const Text_t *name, const Text_t *tit
 }
 
 //_____________________________________________________________________________
+AliTRDclusterizerHLT::AliTRDclusterizerHLT(const Text_t *name, const Text_t *title) 
+  : AliTRDclusterizer(name,title)
+   , fTreeCreatedHere(kFALSE)
+   , fNclusters(-1)
+   , fRawDataSource(0)
+   , fFeeParams(0)
+{
+  //
+  // AliTRDclusterizerHLT constructor
+  //
+}
+
+//_____________________________________________________________________________
 AliTRDclusterizerHLT::AliTRDclusterizerHLT(const AliTRDclusterizerHLT &c)
   : AliTRDclusterizer(c)
   , fTreeCreatedHere(kFALSE)

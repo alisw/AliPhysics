@@ -118,6 +118,8 @@ int AliHLTTRDClusterizerComponent::DoInit( int argc, const char** argv )
   Int_t iRawDataVersion = 2;
   int i = 0;
   char* cpErr;
+  Bool_t bWriteClusters = kTRUE;
+  
 
   Int_t iRecoParamType = -1; // default will be the low flux
 
@@ -143,10 +145,8 @@ int AliHLTTRDClusterizerComponent::DoInit( int argc, const char** argv )
 	    }
 	  HLTInfo("Output percentage set to %lu %%", fOutputPercentage );
 	  i += 2;
-	  continue;
 	}
-
-      if ( strcmp( argv[i], "-cdb" ) == 0)
+      else if ( strcmp( argv[i], "-cdb" ) == 0)
 	{
 	  if ( i+1 >= argc )
 	    {
@@ -156,50 +156,49 @@ int AliHLTTRDClusterizerComponent::DoInit( int argc, const char** argv )
 	  fStrorageDBpath = argv[i+1];
 	  HLTInfo("DB storage is %s", fStrorageDBpath.c_str() );	  
 	  i += 2;
-	  continue;
+	  
 	}      
 
-      // the flux parametrizations
-      if ( strcmp( argv[i], "-lowflux" ) == 0)
+      else if ( strcmp( argv[i], "-lowflux" ) == 0)
 	{
 	  iRecoParamType = 0;	  
 	  HLTDebug("Low flux reco selected.");
 	  i++;
-	  continue;
+	  
 	}      
 
-      if ( strcmp( argv[i], "-highflux" ) == 0)
+      else if ( strcmp( argv[i], "-highflux" ) == 0)
 	{
 	  iRecoParamType = 1;	  
 	  HLTDebug("High flux reco selected.");
 	  i++;
-	  continue;
+	  
 	}      
 
-      if ( strcmp( argv[i], "-cosmics" ) == 0)
+      else if ( strcmp( argv[i], "-cosmics" ) == 0)
 	{
 	  iRecoParamType = 2;	  
 	  HLTDebug("Cosmic test reco selected.");
 	  i++;
-	  continue;
+	  
 	}      
 
       // raw data type - sim or experiment
-      if ( strcmp( argv[i], "-simulation" ) == 0)
+      else if ( strcmp( argv[i], "-simulation" ) == 0)
 	{
 	  iRecoDataType = 0;
 	  i++;
-	  continue;
+	  
 	}
 
-      if ( strcmp( argv[i], "-experiment" ) == 0)
+      else if ( strcmp( argv[i], "-experiment" ) == 0)
 	{
 	  iRecoDataType = 1;
 	  i++;
-	  continue;
+	  
 	}
 
-      if ( strcmp( argv[i], "-rawver" ) == 0)
+      else if ( strcmp( argv[i], "-rawver" ) == 0)
 	{
 	  if ( i+1 >= argc )
 	    {
@@ -209,10 +208,10 @@ int AliHLTTRDClusterizerComponent::DoInit( int argc, const char** argv )
 	  iRawDataVersion = atoi( argv[i+1] );
 	  HLTInfo("Raw data version is %d", iRawDataVersion );	  
 	  i += 2;
-	  continue;
+	  
 	}      
 
-      if ( strcmp( argv[i], "-geometry" ) == 0)
+      else if ( strcmp( argv[i], "-geometry" ) == 0)
 	{
 	  if ( i+1 >= argc )
 	    {
@@ -222,11 +221,13 @@ int AliHLTTRDClusterizerComponent::DoInit( int argc, const char** argv )
 	  fGeometryFileName = argv[i+1];
 	  HLTInfo("GeomFile storage is %s", fGeometryFileName.c_str() );	  
 	  i += 2;
-	  continue;
+	  
 	}      
-
-      HLTError("Unknown option '%s'", argv[i] );
-      return EINVAL;
+      else{
+	HLTError("Unknown option '%s'", argv[i] );
+	return EINVAL;
+      }
+      
     }
 
   // THE "REAL" INIT COMES HERE
@@ -263,9 +264,8 @@ int AliHLTTRDClusterizerComponent::DoInit( int argc, const char** argv )
 
   fReconstructor = new AliTRDReconstructor();
   fReconstructor->SetRecoParam(fRecoParam);
-  fReconstructor->SetStreamLevel(0, AliTRDReconstructor::kClusterizer); // default value
-  fReconstructor->SetOption("!cw");
-  //fReconstructor->Init();
+  //fReconstructor->SetStreamLevel(0, AliTRDReconstructor::kClusterizer); // default value
+  fReconstructor->SetOption("!cw,sl_cf_0");
 
   // init the raw data type to be used...
   // the switch here will become obsolete as soon as the data structures is fixed 
@@ -292,7 +292,7 @@ int AliHLTTRDClusterizerComponent::DoInit( int argc, const char** argv )
   fCDB = AliCDBManager::Instance();
   if (!fCDB)
     {
-     HLTError("Could not get CDB instance", "fCDB 0x%x", fCDB);
+      HLTError("Could not get CDB instance", "fCDB 0x%x", fCDB);
     }
   else
     {
@@ -314,7 +314,9 @@ int AliHLTTRDClusterizerComponent::DoInit( int argc, const char** argv )
 
   fMemReader = new AliRawReaderMemory;
 
-  fClusterizer = new AliTRDclusterizerHLT("TRDCclusterizer", "TRDCclusterizer", fReconstructor);
+  fClusterizer = new AliTRDclusterizerHLT("TRDCclusterizer", "TRDCclusterizer");
+  fClusterizer->SetReconstructor(fReconstructor);
+
   fClusterizer->SetRawVersion(iRawDataVersion);
   fClusterizer->InitClusterTree();
   return 0;
@@ -327,6 +329,8 @@ int AliHLTTRDClusterizerComponent::DoDeinit()
   fMemReader = 0;
   delete fClusterizer;
   fClusterizer = 0;
+  
+  fReconstructor->SetClusters(0x0);
   delete fReconstructor;
   fReconstructor = 0x0;
   return 0;
@@ -380,13 +384,18 @@ int AliHLTTRDClusterizerComponent::DoEvent( const AliHLTComponentEventData& evtD
       AliHLTComponentDataType inputDataType = blocks[i].fDataType;
       if ( inputDataType != expectedDataType)
 	{
-	  HLTDebug( "Event 0x%08LX (%Lu) received datatype: %s - required datatype: %s",
-		   evtData.fEventID, evtData.fEventID, 
-		   DataType2Text(inputDataType).c_str(), 
-		   DataType2Text(expectedDataType).c_str());
+	  HLTDebug( "Block # %i/%i; Event 0x%08LX (%Lu) received datatype: %s - required datatype: %s; Skipping",
+		    i, evtData.fBlockCnt,
+		    evtData.fEventID, evtData.fEventID, 
+		    DataType2Text(inputDataType).c_str(), 
+		    DataType2Text(expectedDataType).c_str());
 	  continue;
 	}
-
+      else 
+	{
+	  HLTDebug("We get the right data type!");
+	}
+      
       //      fMemReader->Reset();
       fMemReader->SetMemory((UChar_t*) blocks[i].fPtr, blocks[i].fSize);
 
@@ -417,13 +426,28 @@ int AliHLTTRDClusterizerComponent::DoEvent( const AliHLTComponentEventData& evtD
 	}
 
       // put the tree into output blocks
-      TTree *fcTree = fClusterizer->GetClusterTree();
       //fcTree->Print();
+      TClonesArray *clusterArray = fClusterizer->RecPoints();
+      fClusterizer->SetClustersOwner(kFALSE);
+	
+      if (clusterArray){
+	HLTDebug("clusterArray: Entries - %i; Size - %i",clusterArray->GetEntriesFast(),sizeof(clusterArray));
+	PushBack(clusterArray, AliHLTTRDDefinitions::fgkClusterDataType, blocks[i].fSpecification);
+      }
+      else 
+	HLTWarning("Array of clusters is empty!");
+	
+      if (clusterArray){
+	clusterArray->Delete();
+	delete clusterArray;
+      }
       
-      PushBack(fcTree, AliHLTTRDDefinitions::fgkClusterDataType, blocks[i].fSpecification);
 
-    }
+    }//  for ( unsigned long i = 0; i < evtData.fBlockCnt; i++ )
 
+  
+  
+  
   size=0; // this function did not write data to the buffer directly
   return 0;
 }

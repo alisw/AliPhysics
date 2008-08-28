@@ -11,6 +11,7 @@
 
 #include "AliHLTCalibrationProcessor.h"
 class AliCDBManager;
+class AliTRDCalibraFillHisto;
 
 /**
  * @class AliHLTTRDCalibrationComponent
@@ -50,7 +51,9 @@ class AliHLTTRDCalibrationComponent : public AliHLTCalibrationProcessor
 	// Protected functions to implement AliHLTComponent's interface.
 	// These functions provide initialization as well as the actual processing
 	// capabilities of the component. 
-
+	
+	AliTRDCalibraFillHisto *fTRDCalibraFillHisto;
+	
 	virtual Int_t InitCalibration();
 	virtual Int_t ScanArgument(int argc, const char** argv);
 	virtual Int_t DeinitCalibration();

@@ -35,6 +35,7 @@ using namespace std;
 #include "AliCDBManager.h"
 #include "AliTRDclusterizerHLT.h"
 #include "AliRawReaderMemory.h"
+#include "AliTRDCalibraFillHisto.h"
 
 #include <cstdlib>
 #include <cerrno>
@@ -153,12 +154,27 @@ Int_t AliHLTTRDCalibrationComponent::InitCalibration()
       fCDB->SetDefaultStorage(fStrorageDBpath.c_str());
       Logging(kHLTLogDebug, "HLT::TRDCalibration::InitCalibration", "CDB instance", "fCDB 0x%x", fCDB);
     }
+  fTRDCalibraFillHisto = AliTRDCalibraFillHisto::Instance();
+  fTRDCalibraFillHisto->SetHisto2d(); // choose to use histograms
+  fTRDCalibraFillHisto->SetCH2dOn();  // choose to calibrate the gain
+  fTRDCalibraFillHisto->SetPH2dOn();  // choose to calibrate the drift velocity
+  fTRDCalibraFillHisto->SetPRF2dOn(); // choose to look at the PRF
+  fTRDCalibraFillHisto->Init2Dhistos(); // initialise the histos
   return 0;
 }
 
 Int_t AliHLTTRDCalibrationComponent::DeinitCalibration()
 {
+  HLTDebug("DeinitCalibration");
+  
   // Deinitialization of the component
+  // gain histo
+  TH2I *hCH2d = fTRDCalibraFillHisto->GetCH2d(); 
+  // drift velocity histo
+  TProfile2D *hPH2d = fTRDCalibraFillHisto->GetPH2d(); 
+  // PRF histo
+  TProfile2D *hPRF2d = fTRDCalibraFillHisto->GetPRF2d(); 
+
   if (fCDB)
     {
       Logging( kHLTLogDebug, "HLT::TRDCalibration::DeinitCalibration", "destroy", "fCDB");
@@ -191,6 +207,18 @@ Int_t AliHLTTRDCalibrationComponent::ProcessCalibration( const AliHLTComponentEv
     {
       tobjin = (TObject *)GetNextInputObject( ibForce );
       Logging( kHLTLogInfo, "HLT::TRDCalibration::ProcessCalibration", "nextBLOCK", "Pointer = 0x%x", tobjin);
+      TClonesArray* trdTracks = (TClonesArray* )tobjin;
+      if (trdTracks)
+	{
+	  Int_t nbEntries = trdTracks->GetEntries();
+	  AliTRDtrackV1* trdTrack = 0x0;
+	  for (Int_t i = 0; i < nbEntries; i++){
+	    trdTrack = (AliTRDtrackV1*)trdTracks->At(i);
+	    fTRDCalibraFillHisto->UpdateHistogramsV1(trdTrack);
+	  }
+	  
+	}
+      
     }
 
   return 0;

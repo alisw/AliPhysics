@@ -26,6 +26,7 @@ class AliTRDclusterizerHLT : public AliTRDclusterizer
 
   AliTRDclusterizerHLT();
   AliTRDclusterizerHLT(const Text_t* name, const Text_t* title, AliTRDReconstructor* reconstructor);
+  AliTRDclusterizerHLT(const Text_t* name, const Text_t* title);
   AliTRDclusterizerHLT(const AliTRDclusterizerHLT &c);
   virtual             ~AliTRDclusterizerHLT();
   AliTRDclusterizerHLT &operator=(const AliTRDclusterizerHLT &c);
