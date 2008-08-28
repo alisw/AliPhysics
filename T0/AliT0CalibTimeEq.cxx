@@ -34,14 +34,18 @@
 ClassImp(AliT0CalibTimeEq)
 
 //________________________________________________________________
-  AliT0CalibTimeEq::AliT0CalibTimeEq():TNamed()
+  AliT0CalibTimeEq::AliT0CalibTimeEq():TNamed(),
+				       fMeanVertex(0),        
+				       fRmsVertex(0)      
 {
   //
 
 }
 
 //________________________________________________________________
-AliT0CalibTimeEq::AliT0CalibTimeEq(const char* name):TNamed()
+AliT0CalibTimeEq::AliT0CalibTimeEq(const char* name):TNamed(),
+				       fMeanVertex(0),        
+				       fRmsVertex(0)      
 {
   //constructor
 
@@ -52,7 +56,9 @@ AliT0CalibTimeEq::AliT0CalibTimeEq(const char* name):TNamed()
 }
 
 //________________________________________________________________
-AliT0CalibTimeEq::AliT0CalibTimeEq(const AliT0CalibTimeEq& calibda):TNamed(calibda)		
+AliT0CalibTimeEq::AliT0CalibTimeEq(const AliT0CalibTimeEq& calibda):TNamed(calibda),		
+				       fMeanVertex(0),        
+				       fRmsVertex(0)      
 {
 // copy constructor
   SetName(calibda.GetName());
@@ -104,9 +110,10 @@ void AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
 {
   // compute online equalized time
   Double_t mean=0, meanver=0;
+  Double_t rms=0, rmsver=0;
+
   gFile = TFile::Open(filePhys);
-  
-  if(!gFile) {
+    if(!gFile) {
     AliError("No input PHYS data found ");
   }
   else
@@ -118,14 +125,22 @@ void AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
 	  TH1F *cfd = (TH1F*) gFile->Get(buf1);
 	  if(!cfd) AliWarning(Form("no histograms collected by PHYS DA for channel %i", i));
 	  //      printf(" i = %d buf1 = %s\n", i, buf1);
-	  if(cfd) mean=cfd->GetMean();
-	  SetTimeEq(i,mean);
+	  if(cfd) {
+	    mean=cfd->GetMean();
+	    rms=cfd->GetRMS();
+	  }
+	   SetTimeEq(i,mean);
+	   SetTimeEqRms(i,rms);
 	  if (cfd) delete cfd;
 	}
       TH1F *ver = (TH1F*) gFile->Get("hVertex");
       if(!ver) AliWarning("no Vertex histograms collected by PHYS DA for Zvertex");
-      if(ver)  meanver = ver->GetMean();
+      if(ver) {
+	meanver = ver->GetMean();
+	rmsver = ver->GetRMS();
+      }
       SetMeanVertex(meanver);
+      SetRmsVertex(rmsver);
       
       gFile->Close();
       delete gFile;

@@ -27,21 +27,29 @@ class AliT0CalibTimeEq: public TNamed {
   Float_t* GetCFDvalue()          const {return (float*)fCFDvalue;}
   Float_t  GetTimeEq(Int_t channel)        const {return fTimeEq[channel];}
   Float_t* GetTimeEq()          const {return (float*)fTimeEq;}
-  const Float_t  GetMeanT0() const {return 1.;} // WARNING: USED IN AliT0Parameters!!!!
+ 
+  Float_t  GetTimeEqRms(Int_t channel)        const {return fTimeEqRms[channel];}
+
+ const Float_t  GetMeanT0() const {return 1.;} // WARNING: USED IN AliT0Parameters!!!!
   void SetCFDvalue(Int_t channel, Int_t number, Float_t val) {fCFDvalue[channel][number]=val;}
   void SetTimeEq(Int_t channel, Float_t val) {fTimeEq[channel]=val;}
+  void  SetTimeEqRms(Int_t channel, Float_t rms)  { fTimeEqRms[channel]=rms;}
   
   void SetMeanVertex(Float_t mean=0) { fMeanVertex = mean; };
   Float_t GetMeanVertex () {return fMeanVertex;};
 
+  void SetRmsVertex(Float_t rms=0) { fRmsVertex = rms; };
+  Float_t GetRmsVertex () {return fRmsVertex;};
 
  protected:
 
   Float_t     fCFDvalue[24][5];       // CFD values
   Float_t     fTimeEq[24];	      // Time Equalized for OCDB	 
-  Float_t fMeanVertex;
+  Float_t     fTimeEqRms[24];	      // RMS of Time Equalized for OCDB	 
+  Float_t     fMeanVertex;            // mean of vertex distribution   
+  Float_t     fRmsVertex;            // RMS of vertex distribution   
   //
-  ClassDef(AliT0CalibTimeEq,3)    // T0 Sensor Calibration data
+  ClassDef(AliT0CalibTimeEq,4)    // T0 Sensor Calibration data
 };
 
 typedef AliT0CalibTimeEq AliSTARTCalibTimeEq; // for backward compatibility
