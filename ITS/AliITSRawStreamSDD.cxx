@@ -38,7 +38,6 @@ fEventId(0),
 fCarlosId(-1),
 fChannel(0),
 fJitter(0),
-fNCarlos(kModulesPerDDL),
 fDDL(0),
 fEndWords(0),
 fResetSkip(0)
@@ -69,7 +68,6 @@ fEventId(0),
 fCarlosId(-1),
 fChannel(0),
 fJitter(0),
-fNCarlos(kModulesPerDDL),
 fDDL(0),
 fEndWords(0),
 fResetSkip(0)
@@ -126,8 +124,6 @@ Bool_t AliITSRawStreamSDD::Next()
 
   fPrevModuleID = fModuleID;
   fDDL=fRawReader->GetDDLID();
-  Int_t ddln = fRawReader->GetDDLID();
-  if(ddln <0) ddln=0;
   fCompletedModule=kFALSE;
 
   while (kTRUE) {
@@ -139,7 +135,7 @@ Bool_t AliITSRawStreamSDD::Next()
   
     if ((fChannel < 0) || (fCarlosId < 0) || (fChannel >= 2) || (fCarlosId >= kModulesPerDDL) || (fLastBit[fCarlosId][fChannel] < fReadBits[fCarlosId][fChannel]) ) {
       if (!fRawReader->ReadNextInt(fData)) return kFALSE;  // read next word
-      ddln = fRawReader->GetDDLID();
+      Int_t ddln = fRawReader->GetDDLID();
       if(ddln!=fDDL) { 
 	Reset();
 	fDDL=fRawReader->GetDDLID();
@@ -166,7 +162,6 @@ Bool_t AliITSRawStreamSDD::Next()
 	  if(fEndWords==12) continue; // out of event
 	  fCarlosId = fData-fICarlosWord[0];
 	  Int_t iFifoIdx = fCarlosId/3;
-	  if(fNCarlos == 8) iFifoIdx=fCarlosId/2;
 	  fNfifo[iFifoIdx] = fCarlosId;
 	} else if (fData>=fIFifoWord[0]&&fData<=fIFifoWord[3]){ // FIFO word
 	  if(fEndWords==12) continue; // out of event
@@ -201,7 +196,6 @@ Bool_t AliITSRawStreamSDD::Next()
 	return kFALSE;
       }
       
-      if (fNCarlos == 8 && fCarlosId >= 8) continue;  // old data, fNCarlos = 8;
       if(fCarlosId>=0 && fCarlosId <kModulesPerDDL){
 	 fModuleID = GetModuleNumber(ddln,fCarlosId);
       }

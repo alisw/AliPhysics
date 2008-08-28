@@ -38,7 +38,6 @@ class AliITSRawStreamSDD: public AliITSRawStream {
       {fLowThreshold[i]=th;}
     virtual void     SetZeroSuppLowThreshold(Int_t iMod, Int_t iSid, Int_t th) 
       {fLowThresholdArray[iMod][iSid]=th;}
-    virtual void     SetNCarlos(Int_t nC=12){fNCarlos=nC;}
     Int_t   GetModuleNumber(UInt_t iDDL, UInt_t iModule) const {
       return fDDLModuleMap->GetModuleNumber(iDDL,iModule);
     }
@@ -75,7 +74,6 @@ class AliITSRawStreamSDD: public AliITSRawStream {
     UInt_t           fReadBits[kModulesPerDDL][2];   // number of bits to read
     Int_t            fLowThresholdArray[kSDDModules][2]; // array with low thresholds for all modules
     Int_t            fLowThreshold[2];    // obsolete -- needed to compile AliITSRawStreamSDDv2
-    Int_t            fNCarlos;         // number of Carlos 
     Int_t            fNfifo[kFifoWords];  // FIFO number
     Int_t            fTimeBin[kModulesPerDDL][2];  // current timebin [ncarlos][nchannels]
     Int_t            fAnode[kModulesPerDDL][2]; // current anode [ncarlos][nchannels]
@@ -85,7 +83,7 @@ class AliITSRawStreamSDD: public AliITSRawStream {
     Int_t            fICountFoot[kModulesPerDDL]; // counter for carlos footer words
     Int_t            fEndWords;      //number of 3f1f1f1f
     Int_t            fResetSkip;     //if it is 0, the ResetSkip Funcion is called
-    ClassDef(AliITSRawStreamSDD, 8) // class for reading ITS SDD raw digits
+    ClassDef(AliITSRawStreamSDD, 9) // class for reading ITS SDD raw digits
 };
 
 #endif
