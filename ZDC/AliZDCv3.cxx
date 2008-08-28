@@ -2275,7 +2275,8 @@ void AliZDCv3::StepManager()
   // --- This part is for no shower developement in beam pipe and TDI
   // If particle interacts with beam pipe or TDI -> return
   if((gMC->CurrentMedium() == fMedSensPI) || (gMC->CurrentMedium() == fMedSensTDI)){ 
-     // If option NoShower is set -> StopTrack
+    // If option NoShower is set -> StopTrack
+    Int_t ipr = 0; 
     if(fNoShower==1){
       gMC->TrackPosition(s[0],s[1],s[2]);
       if(gMC->CurrentMedium() == fMedSensPI){
@@ -2283,10 +2284,12 @@ void AliZDCv3::StepManager()
         if(!strncmp(knamed,"YMQ",3)){
 	  if(s[2]<0) fpLostITC += 1;
 	  else fpLostITA += 1;
+	  ipr=1;
         }
 	else if(!strncmp(knamed,"YD1",3)){
 	  if(s[2]<0) fpLostD1C += 1;
 	  else fpLostD1A += 1;
+	  ipr=1;
 	}
 	else if(!strncmp(knamed,"QAL",3)) fnTrou++;
       }
@@ -2295,11 +2298,13 @@ void AliZDCv3::StepManager()
         if(!strncmp(knamed,"MD1",3)){
 	  if(s[2]<0) fpLostD1C += 1;
 	  else  fpLostD1A += 1;
+	  ipr=1;
         }
 	else if(!strncmp(knamed,"QTD",3)) fpLostTDI += 1;
 	else if(!strncmp(knamed,"QLU",3)){
 	  if(s[2]<0) fnLumiC ++;
 	  else fnLumiA++;
+	  ipr=1;
 	}
       }
       //
@@ -2307,18 +2312,20 @@ void AliZDCv3::StepManager()
       //printf("\t Particle: mass = %1.3f, E = %1.3f GeV, pz = %1.2f GeV -> stopped in volume %s\n", 
       //     gMC->TrackMass(), p[3], p[2], gMC->CurrentVolName());
       //
-      printf("\n\t **********************************\n");
-      printf("\t ********** Side C **********\n");
-      printf("\t # of spectators in IT = %d\n",fpLostITC);
-      printf("\t # of spectators in D1 = %d\n",fpLostD1C);
-      printf("\t # of spectators in luminometer = %d\n",fnLumiC);
-      printf("\t ********** Side A **********\n");
-      printf("\t # of spectators in IT = %d\n",fpLostITA);
-      printf("\t # of spectators in D1 = %d\n",fpLostD1A);
-      printf("\t # of spectators in TDI = %d\n",fpLostTDI);
-      printf("\t # of spectators in luminometer = %d\n",fnLumiA);
-      printf("\t # of spectators in trousers = %d\n",fnTrou);
-      printf("\t **********************************\n");
+      if(ipr!=0){
+        printf("\n\t **********************************\n");
+        printf("\t ********** Side C **********\n");
+        printf("\t # of spectators in IT = %d\n",fpLostITC);
+        printf("\t # of spectators in D1 = %d\n",fpLostD1C);
+        printf("\t # of spectators in luminometer = %d\n",fnLumiC);
+        printf("\t ********** Side A **********\n");
+        printf("\t # of spectators in IT = %d\n",fpLostITA);
+        printf("\t # of spectators in D1 = %d\n",fpLostD1A);
+        printf("\t # of spectators in TDI = %d\n",fpLostTDI);
+        printf("\t # of spectators in luminometer = %d\n",fnLumiA);
+        printf("\t # of spectators in trousers = %d\n",fnTrou);
+        printf("\t **********************************\n");
+      }
       gMC->StopTrack();
     }
     return;
