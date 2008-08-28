@@ -57,6 +57,8 @@ public:
 
 
   void     SetFindableClusters(Double_t r) {fkFindable = r;}
+  void     SetChi2Y(Double_t chi2) {fkChi2Y = chi2;}
+  void     SetChi2Z(Double_t chi2) {fkChi2Z = chi2;}
   void     SetClusterSharing(Bool_t share = kTRUE)            { SetBit(kClusterSharing, share);}
   void     SetImproveTracklets(Bool_t improve = kTRUE)         { SetBit(kImproveTracklet, improve);}
   void     SetVertexConstrained(Bool_t vc = kTRUE)            { SetBit(kVertexConstrained, vc); }

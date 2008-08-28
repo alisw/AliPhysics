@@ -23,17 +23,25 @@ void AliTRDmakeRecoParam()
 //____________________________________________________
 TObjArray* CreateRecoParamObject()
 {
-  TObjArray *recos = new TObjArray(3);
+  TObjArray *recos = new TObjArray(4);
 
   AliTRDrecoParam *rec = 0x0;
   recos->AddLast(rec = AliTRDrecoParam::GetLowFluxParam());
   rec->SetAsDefault();
+  rec->SetNameTitle("LOW", "TRD Low Flux Reco Param");
   // further settings for low flux reco param
   // reco->SetThisAndThat()
 
+  recos->AddLast(rec = AliTRDrecoParam::GetLowFluxParam());
+  rec->SetNameTitle("HLT", "TRD HLT Reco Param");
+  rec->SetChi2Y(.1);
+  rec->SetChi2Z(5.);
+
   recos->AddLast(rec = AliTRDrecoParam::GetHighFluxParam());
+  rec->SetNameTitle("HIGH", "TRD High Flux Reco Param");
 
   recos->AddLast(rec = AliTRDrecoParam::GetCosmicTestParam());
+  rec->SetNameTitle("COSMIC", "TRD Cosmic Reco Param");
 
   return recos;
 }
