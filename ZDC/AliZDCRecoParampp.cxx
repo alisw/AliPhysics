@@ -43,11 +43,11 @@ AliZDCRecoParampp::~AliZDCRecoParampp()
 AliZDCRecoParampp *AliZDCRecoParampp::GetppRecoParam()
 {
   //
-  // Makes default reconstruction parameters for low flux environment
+  // Makes default reconstruction parameters 
   //
   AliZDCRecoParampp *param = new AliZDCRecoParampp();
   //
-  param->SetBeamEnergy(7.);
+  param->SetBeamEnergy(5.);
   
   return param;
 

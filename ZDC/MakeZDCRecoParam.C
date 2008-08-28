@@ -17,6 +17,7 @@ void MakeZDCRecoParam(Int_t type=0){
   switch(type) {
   case 0:
     zdcRecoParam = (AliZDCRecoParampp*) AliZDCRecoParampp::GetppRecoParam();
+    zdcRecoParam->SetBeamEnergy(5000.); 
     break;
   case 1:
     zdcRecoParam = (AliZDCRecoParamPbPb*) AliZDCRecoParamPbPb::GetPbPbRecoParam();
