@@ -140,7 +140,6 @@ Bool_t AliITSRawStreamSDD::Next()
 	Reset();
 	fDDL=fRawReader->GetDDLID();
       }
-      if(ddln < 0 || ddln > (kDDLsNumber-1)) ddln  = 0;
 
       fChannel = -1;
       if((fData >> 16) == 0x7F00){ // jitter word
@@ -167,13 +166,11 @@ Bool_t AliITSRawStreamSDD::Next()
 	  if(fEndWords==12) continue; // out of event
 	  fCarlosId = fNfifo[fData-fIFifoWord[0]];	    
 	} else if(fData==0x3FFFFFFF){ // Carlos footer
-	  if(fCarlosId>=0 && fCarlosId<kModulesPerDDL){
-	    fICountFoot[fCarlosId]++; // stop before the last word (last word=jitter)
-	    if(fICountFoot[fCarlosId]==3){
-	      fCompletedModule=kTRUE;
-	      //	      printf("Completed module %d DDL %d\n",fCarlosId,ddln);
-	      return kTRUE;
-	    }
+	  fICountFoot[fCarlosId]++; // stop before the last word (last word=jitter)
+	  if(fICountFoot[fCarlosId]==3){
+	    fCompletedModule=kTRUE;
+	    //	      printf("Completed module %d DDL %d\n",fCarlosId,ddln);
+	    return kTRUE;
 	  }
 	} else if(fData==0x3F1F1F1F){ // CarlosRX footer
 	  fEndWords++;
@@ -185,11 +182,9 @@ Bool_t AliITSRawStreamSDD::Next()
 	}
       } else if (nData30 == 0x02 || nData30 == 0x03) {
 	fChannel = nData30-2;
-	if(fCarlosId>=0 && fChannel>=0 && fCarlosId <kModulesPerDDL && fChannel<2){
-	  fChannelData[fCarlosId][fChannel] += 
-	    (ULong64_t(fData & 0x3FFFFFFF) << fLastBit[fCarlosId][fChannel]);
-	  fLastBit[fCarlosId][fChannel] += 30;
-	}
+	fChannelData[fCarlosId][fChannel] += 
+	  (ULong64_t(fData & 0x3FFFFFFF) << fLastBit[fCarlosId][fChannel]);
+	fLastBit[fCarlosId][fChannel] += 30;
       } else {                               // unknown data format
 	fRawReader->AddMajorErrorLog(kDataFormatErr,Form("Invalid data %8.8x",fData));
 	AliWarning(Form("invalid data: %8.8x\n", fData));
