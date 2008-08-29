@@ -1,8 +1,7 @@
 #-*- Mode: Makefile -*-
-
 # $Id$
 
-SRCS:= AliPMD.cxx AliPMDv0.cxx AliPMDv1.cxx AliPMDhit.cxx AliPMDcell.cxx AliPMDDigitizer.cxx AliPMDDDLRawData.cxx AliPMDQADataMakerSim.cxx
+SRCS:= AliPMD.cxx AliPMDv0.cxx AliPMDv1.cxx AliPMDv2008.cxx AliPMDhit.cxx AliPMDcell.cxx AliPMDDigitizer.cxx AliPMDDDLRawData.cxx AliPMDQADataMakerSim.cxx
 
 HDRS:= $(SRCS:.cxx=.h) 
 

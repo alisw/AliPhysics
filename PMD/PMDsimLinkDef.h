@@ -11,6 +11,7 @@
 #pragma link C++ class  AliPMD+;
 #pragma link C++ class  AliPMDv0+;
 #pragma link C++ class  AliPMDv1+;
+#pragma link C++ class  AliPMDv2008+;
 #pragma link C++ class  AliPMDhit+;
 #pragma link C++ class  AliPMDcell+;
 #pragma link C++ class  AliPMDDigitizer+;
