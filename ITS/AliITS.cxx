@@ -1077,8 +1077,10 @@ void AliITS::Digits2Raw(){
   }
   fDetTypeSim->SetTreeAddressD(digits,(Char_t*)GetName());
   AliITSDDLModuleMapSDD* ddlsdd=fDetTypeSim->GetDDLModuleMapSDD();
-
+  Bool_t isHLTmodeC=fDetTypeSim->IsHLTmodeC();
   AliITSDDLRawData rawWriter;
+  if(isHLTmodeC) rawWriter.SetUseCompressedSDDFormat(kTRUE);
+  else rawWriter.SetUseCompressedSDDFormat(kFALSE);
   //Verbose level
   // 0: Silent
   // 1: cout messages

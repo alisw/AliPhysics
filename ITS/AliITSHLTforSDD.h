@@ -26,7 +26,7 @@ class AliITSHLTforSDD : public TObject {
   virtual ~AliITSHLTforSDD(){};
 
   void SetHLTmodeC(Bool_t isHLTmodC){fHLTmodeC=isHLTmodC;}
-  Bool_t IsHLTmodeC(){return fHLTmodeC;}
+  Bool_t IsHLTmodeC() const {return fHLTmodeC;}
 
 
  protected:

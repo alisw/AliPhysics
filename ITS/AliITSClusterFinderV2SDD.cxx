@@ -30,6 +30,7 @@
 #include "AliITSDetTypeRec.h"
 #include "AliRawReader.h"
 #include "AliITSRawStreamSDD.h"
+#include "AliITSRawStreamSDDCompressed.h"
 #include "AliITSCalibrationSDD.h"
 #include "AliITSresponseSDD.h"
 #include "AliITSDetTypeRec.h"
@@ -275,9 +276,15 @@ void AliITSClusterFinderV2SDD::RawdataToClusters(AliRawReader* rawReader,TClones
   // This function creates ITS clusters from raw data
   //------------------------------------------------------------
   rawReader->Reset();
-  AliITSRawStreamSDD inputSDD(rawReader);
+  AliITSRawStream* inputSDD;
+  if(fDetTypeRec->IsHLTmodeC()==kTRUE){
+    inputSDD=new AliITSRawStreamSDDCompressed(rawReader);
+  }else{
+    inputSDD=new AliITSRawStreamSDD(rawReader);
+  }
+
   AliITSDDLModuleMapSDD *ddlmap=(AliITSDDLModuleMapSDD*)fDetTypeRec->GetDDLModuleMapSDD();
-  inputSDD.SetDDLModuleMap(ddlmap);
+  inputSDD->SetDDLModuleMap(ddlmap);
   for(Int_t iddl=0; iddl<AliITSDDLModuleMapSDD::GetNDDLs(); iddl++){
     for(Int_t icar=0; icar<AliITSDDLModuleMapSDD::GetNModPerDDL();icar++){
       Int_t iMod=ddlmap->GetModuleNumber(iddl,icar);
@@ -289,14 +296,14 @@ void AliITSClusterFinderV2SDD::RawdataToClusters(AliRawReader* rawReader,TClones
       }
       Bool_t isZeroSupp=cal->GetZeroSupp();
       if(isZeroSupp){ 
-	for(Int_t iSid=0; iSid<2; iSid++) inputSDD.SetZeroSuppLowThreshold(iMod-240,iSid,cal->GetZSLowThreshold(iSid));
+	for(Int_t iSid=0; iSid<2; iSid++) inputSDD->SetZeroSuppLowThreshold(iMod-240,iSid,cal->GetZSLowThreshold(iSid));
       }else{
-	for(Int_t iSid=0; iSid<2; iSid++) inputSDD.SetZeroSuppLowThreshold(iMod-240,iSid,0);
+	for(Int_t iSid=0; iSid<2; iSid++) inputSDD->SetZeroSuppLowThreshold(iMod-240,iSid,0);
       }
     }
   }
-  FindClustersSDD(&inputSDD,clusters);
-
+  FindClustersSDD(inputSDD,clusters);
+  delete inputSDD;
 }
 
 void AliITSClusterFinderV2SDD::FindClustersSDD(AliITSRawStream* input, 

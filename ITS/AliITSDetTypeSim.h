@@ -67,6 +67,7 @@ class AliITSDetTypeSim : public TObject {
     }
     virtual AliITSSimuParam* GetSimuParam() const {return fSimuPar;}
 
+    virtual Bool_t IsHLTmodeC() const {return fIsHLTmodeC;}
     virtual AliITSDDLModuleMapSDD* GetDDLModuleMapSDD()const { return fDDLMapSDD;}
     TObjArray* GetCalibrationArray() const {return fCalibration;}
     TObjArray* GetSegmentation() const {return fSegmentation;}
@@ -143,8 +144,9 @@ class AliITSDetTypeSim : public TObject {
     Char_t*       fDigClassName[3]; //! String with digit class name.
     AliITSLoader* fLoader;          //! loader  
     Bool_t        fFirstcall;       //! flag
+    Bool_t        fIsHLTmodeC;    //! flag for HLT mode C status (used by SDD)
     
-    ClassDef(AliITSDetTypeSim,7) // ITS Simulation structure
+    ClassDef(AliITSDetTypeSim,8) // ITS Simulation structure
  
 };
 

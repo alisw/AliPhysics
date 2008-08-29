@@ -12,6 +12,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <TObject.h>
+#include "AliITSDDLModuleMapSDD.h"
+#include "AliLog.h"
 
 class AliRawReader;
 
@@ -32,6 +34,14 @@ class AliITSRawStream: public TObject {
     Int_t            GetCoord2() const {return fCoord2;};
     Int_t            GetSignal() const {return fSignal;};
     virtual Bool_t   IsCompletedModule() const {return fCompletedModule;}; // to be implemented in derived class
+    virtual void     SetDDLModuleMap(AliITSDDLModuleMapSDD* /*ddlsdd*/){
+      AliError("This method must be implemented in a derived class");
+    };
+    virtual void     SetZeroSuppLowThreshold(Int_t /*iMod*/, Int_t /*iSid*/, Int_t /*th*/) {
+      AliError("This method must be implemented in a derived class");
+    };
+
+
   protected :
     AliRawReader*    fRawReader;    // object for reading the raw data
 
