@@ -15,36 +15,36 @@
 
 class TObjArray;
 class TList;
-class TH2I;
 class TProfile;
 class TTreeSRedirector;
 class AliTRDReconstructor;
 class AliTRDrecoParam;
+class AliTRDseedV1;
+class AliTRDtrackInfo;
 class AliTRDtrackingResolution : public AliAnalysisTask{
 public:
   AliTRDtrackingResolution(const char *name = "TRD Tracking Resolution");
   ~AliTRDtrackingResolution(){};
   
-  void ConnectInputData(Option_t *);
-  void CreateOutputObjects();
-  Int_t GetDebugLevel() const { return fDebugLevel;}
-  void Exec(Option_t *);
-  void SetDebugLevel(Int_t level);
-  void SetRecoParam(AliTRDrecoParam *r);
-  void Terminate(Option_t *);
+  void    ConnectInputData(Option_t *);
+  void    CreateOutputObjects();
+  Int_t   GetDebugLevel() const { return fDebugLevel;}
+  void    Exec(Option_t *);
+  void    SetDebugLevel(Int_t level);
+  void    SetRecoParam(AliTRDrecoParam *r);
+  void    Terminate(Option_t *);
   
 private:
   AliTRDtrackingResolution(const AliTRDtrackingResolution&);
   AliTRDtrackingResolution& operator=(const AliTRDtrackingResolution&);
+  Bool_t  Resolution(AliTRDseedV1 *tracklet, AliTRDtrackInfo *info, Float_t &phi);
 
 private:
   enum{
     kNLayers = 6
   };
-  TObjArray *fTrackObjects;     // Input Track Info container
-  TList     *fOutputHistograms; // Container for the output histograms
-  TH2I      *fYRes;
-  TH2I      *fPhiRes;
+  TObjArray *fTracks;     // Input Track Info container
+  TList     *fHistos;           // Container for the output histograms
   
   AliTRDReconstructor   *fReconstructor;  //! local reconstructor
   Int_t fDebugLevel;											// Debug Level

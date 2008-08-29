@@ -153,6 +153,7 @@ AliTRDtrackInfo& AliTRDtrackInfo::operator=(const AliTRDtrackInfo &trdInfo)
   		fTRDtrack = new AliTRDtrackV1(*trdInfo.fTRDtrack);
   	else
   		new(fTRDtrack) AliTRDtrackV1(*trdInfo.fTRDtrack);
+    if(trdInfo.fTRDtrack->IsOwner()) fTRDtrack->SetOwner();
   }
 
   return *this;
