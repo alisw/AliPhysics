@@ -12,7 +12,6 @@
 #include <TObject.h>
 #include <TString.h>
 #include "AliLog.h"
-#include "AliITSresponse.h"
 #include "AliITSMapSDD.h"
 #include "AliITSDriftSpeedArraySDD.h"
 
