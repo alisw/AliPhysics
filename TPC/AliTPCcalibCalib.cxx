@@ -258,7 +258,7 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed){
   (*trackOutOld) = trackOut;
   AliExternalTrackParam *t = &trackIn;
   track->Set(t->GetX(),t->GetAlpha(),t->GetParameter(),t->GetCovariance());
-
+  return kTRUE;
 }
 
 
