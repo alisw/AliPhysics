@@ -53,6 +53,7 @@
 #pragma link C++ class  AliITSCalibrationSDD+;
 #pragma link C++ class  AliITSCalibrationSSD+;
 #pragma link C++ class  AliITSChannelStatus+;
+#pragma link C++ class  AliITSHLTforSDD+;
 #pragma link C++ class  AliITSMapSDD+;
 #pragma link C++ class  AliITSDriftSpeedSDD+;
 #pragma link C++ class  AliITSDriftSpeedArraySDD+;

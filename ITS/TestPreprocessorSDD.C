@@ -29,7 +29,7 @@ void TestPreprocessorSDD(Char_t *optRunType="PULSER"){
     shuttle->AddInputFile(AliShuttleInterface::kDAQ, "SDD","SDD_Calib","LDC2","SDDbase_LDC2.tar");
     shuttle->AddInputFile(AliShuttleInterface::kDAQ, "SDD","SDD_Calib","LDC3","SDDbase_LDC3.tar");
     shuttle->AddInputFile(AliShuttleInterface::kDAQ, "SDD","SDD_Calib","LDC4","SDDbase_LDC4.tar");
-  }else if(optRunType=="PHYSICS" || optRunType=="INJECTOR"){ 
+  }else if(optRunType=="INJECTOR"){ 
     shuttle->AddInputFile(AliShuttleInterface::kDAQ, "SDD","SDD_Injec","LDC1","SDDinj_LDC1.tar");
     shuttle->AddInputFile(AliShuttleInterface::kDAQ, "SDD","SDD_Injec","LDC2","SDDinj_LDC2.tar");
     shuttle->AddInputFile(AliShuttleInterface::kDAQ, "SDD","SDD_Injec","LDC3","SDDinj_LDC3.tar");
@@ -59,10 +59,13 @@ void TestPreprocessorSDD(Char_t *optRunType="PULSER"){
   if(optRunType=="PULSER"){
     sprintf(theDir,"ITS/Calib/CalibSDD");
     doCheck=kTRUE;
-  }else if(optRunType=="PHYSICS" || optRunType=="INJECTOR"){ 
+  }else if(optRunType=="INJECTOR"){ 
     sprintf(theDir,"ITS/Calib/DriftSpeedSDD");
     doCheck=kTRUE;
-  }
+  }else if(optRunType=="PHYSICS"){
+    sprintf(theDir,"ITS/Calib/HLTforSDD");
+    doCheck=kTRUE;
+  } 
   if(doCheck){
     AliCDBEntry* chkEntry = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainCDB())->Get(theDir, 7);
     if (!chkEntry){

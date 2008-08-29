@@ -28,6 +28,7 @@
 #include "AliITSDriftSpeedSDD.h"
 #include "AliITSDriftSpeedArraySDD.h"
 #include "AliITSDCSAnalyzerSDD.h"
+#include "AliITSHLTforSDD.h"
 #include "AliShuttleInterface.h"
 #include "AliCDBEntry.h"
 #include "AliCDBMetaData.h"
@@ -78,6 +79,8 @@ UInt_t AliITSPreprocessorSDD::Process(TMap* dcsAliasMap){
   }else if(runType== "INJECTOR"){
     Log("Process FXS files from INJECTOR RUN");
     retcode=ProcessInjector(ddlmap);
+  }else if(runType== "PHYSICS"){
+    retcode=ProcessPhysics();
   }
   if(retcode!=0) return retcode;
 
@@ -86,6 +89,25 @@ UInt_t AliITSPreprocessorSDD::Process(TMap* dcsAliasMap){
   if(retcodedcs) return 0; 
   else return 1;           
 
+}
+//______________________________________________________________________
+UInt_t AliITSPreprocessorSDD::ProcessPhysics(){
+  // Get the HLT status for the PHYSICS run 
+  // needeed to define the raw data format  
+
+  AliITSHLTforSDD *hltSDD=new AliITSHLTforSDD();
+  TString hltMode = GetRunParameter("HLTmode");
+  TSubString firstChar = hltMode(0,1);
+  if (firstChar == "C") hltSDD->SetHLTmodeC(kTRUE);
+  else hltSDD->SetHLTmodeC(kFALSE);
+
+  AliCDBMetaData *md= new AliCDBMetaData();
+  md->SetResponsible("Francesco Prino");
+  md->SetBeamPeriod(0);
+  md->SetComment("HLT mode C flag for PHYSICS run");
+  Bool_t retCode = Store("Calib","HLTforSDD",hltSDD,md);
+  if(retCode) return 0;
+  else return 1;
 }
 //______________________________________________________________________
 UInt_t AliITSPreprocessorSDD::ProcessPulser(AliITSDDLModuleMapSDD* ddlmap){
