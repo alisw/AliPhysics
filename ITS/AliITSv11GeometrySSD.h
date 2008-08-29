@@ -67,7 +67,7 @@ private:
   // Variable for Vertical Disalignement of Modules
   /////////////////////////////////////////////////////////////////////////////////
   static const Double_t fgkSSDModuleVerticalDisalignment;  // Vertical Disalignement of Volume
-  static const Double_t fgkSSDModuleVerticalDisalignment2;  // Vertical Disalignement of Volume
+  static const Double_t fgkSSDModuleSideDisalignment;  // Vertical Disalignement of Volume
   static const Double_t fgkSSDTolerance;  // SSD Tolerance
   /////////////////////////////////////////////////////////////////////////
   // Layer5 (lengths are in mm and angles in degrees)

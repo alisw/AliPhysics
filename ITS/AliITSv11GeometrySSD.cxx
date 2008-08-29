@@ -49,9 +49,8 @@ const char* AliITSv11GeometrySSD::fgSSDsensitiveVolName6 = "ITSssdSensitivL6";
 // Variable for Vertical Disalignement of Modules
 /////////////////////////////////////////////////////////////////////////////////
 const Double_t AliITSv11GeometrySSD::fgkSSDTolerance = 0.0001*fgkmm;
-//const Double_t AliITSv11GeometrySSD::fgkSSDTolerance = 1.*fgkmm;
-const Double_t AliITSv11GeometrySSD::fgkSSDModuleVerticalDisalignment = 0.*fgkmm;
-const Double_t AliITSv11GeometrySSD::fgkSSDModuleVerticalDisalignment2 = 0.2*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkSSDModuleVerticalDisalignment = 0.2*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkSSDModuleSideDisalignment     = 0.2*fgkmm;
 /////////////////////////////////////////////////////////////////////////////////
 // Layer5 (lengths are in mm and angles in degrees)
 /////////////////////////////////////////////////////////////////////////////////
@@ -175,8 +174,8 @@ const Double_t AliITSv11GeometrySSD::fgkSSDSensorSideSupportLength		       =
 const Double_t AliITSv11GeometrySSD::fgkSSDSensorSideSupportWidth          =  
 																	 2.000*fgkmm;
 const Double_t AliITSv11GeometrySSD::fgkSSDSensorSideSupportHeight[2]      =
-												     { 4.620*fgkmm-fgkSSDModuleVerticalDisalignment2, 
-												       5.220*fgkmm-fgkSSDModuleVerticalDisalignment2};
+												     { 4.620*fgkmm-fgkSSDModuleVerticalDisalignment, 
+												       5.220*fgkmm-fgkSSDModuleVerticalDisalignment};
 //const Double_t AliITSv11GeometrySSD::fgkSSDSensorSideSupportHeight[2]      =
 //												     { 4.520*fgkmm, 5.130*fgkmm};
 const Double_t AliITSv11GeometrySSD::fgkSSDSensorSideSupportThickness[2]   = 
@@ -208,12 +207,12 @@ const Double_t AliITSv11GeometrySSD::fgkSSDChipCablesHeight[4]   =
 				  {  0.014*fgkmm,  0.010*fgkmm, fgkSSDModuleCoolingBlockToSensor
 								  -  (fgkSSDSensorSideSupportHeight[1]
 								  -   fgkSSDSensorSideSupportHeight[0])
-								  -   fgkSSDModuleVerticalDisalignment2	
+								  -   fgkSSDModuleVerticalDisalignment
 								  -   fgkSSDCoolingBlockHoleCenter
 								  -   fgkSSDStiffenerHeight
 								  -   fgkSSDChipHeight-fgkSSDSensorHeight,
 									  fgkSSDModuleCoolingBlockToSensor
-								  -   fgkSSDModuleVerticalDisalignment2	
+								  -   fgkSSDModuleVerticalDisalignment	
 								  -   fgkSSDCoolingBlockHoleCenter
 								  -	  fgkSSDStiffenerHeight
 								  -   fgkSSDChipHeight-fgkSSDSensorHeight};
@@ -366,25 +365,21 @@ const Double_t AliITSv11GeometrySSD::fgkMountingBlockSupportRadius[2] = {fgkSSDL
 												  -  fgkSSDMountingBlockHeight[1]
 												  +  0.5*fgkCoolingTubeSupportHeight
 												  +	 fgkSSDModuleCoolingBlockToSensor
-												  +  fgkSSDModuleVerticalDisalignment
 												  -	 fgkMountingBlockSupportDownHeight,
 													 fgkSSDLay6RadiusMin
 												  -  fgkSSDMountingBlockHeight[1]
 												  +  0.5*fgkCoolingTubeSupportHeight
 												  +	 fgkSSDModuleCoolingBlockToSensor
-												  +  fgkSSDModuleVerticalDisalignment
 												  -	 fgkMountingBlockSupportDownHeight}; 
 const Double_t AliITSv11GeometrySSD::fgkMountingBlockSupportUpHeight[2] = {fgkSSDLay5RadiusMax
    												    -  fgkSSDMountingBlockHeight[1]
 												    +  0.5*fgkCoolingTubeSupportHeight
 												    +  fgkSSDModuleCoolingBlockToSensor
-													+  fgkSSDModuleVerticalDisalignment
 													-  fgkMountingBlockSupportRadius[0],
 													   fgkSSDLay6RadiusMax
    												    -  fgkSSDMountingBlockHeight[1]
 												    +  0.5*fgkCoolingTubeSupportHeight
 												    +  fgkSSDModuleCoolingBlockToSensor
-													+  fgkSSDModuleVerticalDisalignment
 													-  fgkMountingBlockSupportRadius[1]};
 const Double_t AliITSv11GeometrySSD::fgkLadderSupportHeigth = 10.0*fgkmm; // To be verified
 const Double_t AliITSv11GeometrySSD::fgkLadderSupportRingLay5Position = 451.35*fgkmm;
@@ -1200,7 +1195,7 @@ void AliITSv11GeometrySSD::CreateTransformationMatrices(){
                       -       fgkSSDSensorCenterSupportThickness[0]),
                       -      (fgkSSDModuleCoolingBlockToSensor+0.5*fgkCoolingTubeSupportHeight
                       -       fgkSSDSensorHeight-fgkSSDChipCablesHeight[3]-fgkSSDChipHeight
-					  -       fgkSSDModuleVerticalDisalignment2)); 
+					  -       fgkSSDModuleVerticalDisalignment)); 
   fhybridmatrix = new TGeoHMatrix();
   for(Int_t i=0; i<khybridmatrixnumber; i++) fhybridmatrix->MultiplyLeft(localhybridtrans[i]);
   /////////////////////////////////////////////////////////////
@@ -1264,7 +1259,8 @@ void AliITSv11GeometrySSD::CreateTransformationMatrices(){
   Double_t ssdflexboxlength = fgkSSDFlexFullLength-2.*fgkSSDFlexAngle
                             * TMath::DegToRad()*ssdflexradiusmax
 					                       - fgkSSDFlexLength[2]-TMath::Pi()
-					                       * fgkSSDStiffenerHeight-fgkSSDFlexLength[0];
+					                       * fgkSSDStiffenerHeight-fgkSSDFlexLength[0]
+										   - 0.1*fgkSSDFlexFullLength;
   Double_t trans = ssdflexboxlength*CosD(2.*fgkSSDFlexAngle)
                             + (ssdflexradiusmax-fgkSSDStiffenerHeight)*SinD(2.*fgkSSDFlexAngle)
                             +      fgkSSDFlexLength[2];
@@ -1577,17 +1573,15 @@ void AliITSv11GeometrySSD::CreateTransformationMatrices(){
 					 - fgkCarbonFiberLowerSupportWidth 
 					 - fgkLowerSupportToSensorZ,
 							0.5*fgkSSDSensorHeight-0.5*fgkCoolingTubeSupportHeight
-					  -		fgkSSDModuleCoolingBlockToSensor-0.5*fgkSSDModuleVerticalDisalignment
+					  -		fgkSSDModuleCoolingBlockToSensor
 					  +    (fgkSSDSensorSideSupportHeight[1]
-					  -		fgkSSDSensorSideSupportHeight[0])
-					  +     0.5*fgkSSDModuleVerticalDisalignment2);
+					  -		fgkSSDSensorSideSupportHeight[0]));
   localssdsensortrans[1]->SetTranslation(0.5*fgkCarbonFiberTriangleLength,
 					 fgkCarbonFiberJunctionWidth 
 					 - fgkCarbonFiberLowerSupportWidth 
 					 - fgkLowerSupportToSensorZ,
 						    0.5*fgkSSDSensorHeight-0.5*fgkCoolingTubeSupportHeight
-							-fgkSSDModuleCoolingBlockToSensor-0.5*fgkSSDModuleVerticalDisalignment
-						+	0.5*fgkSSDModuleVerticalDisalignment2);
+							-fgkSSDModuleCoolingBlockToSensor);
   for(Int_t i=0; i<2; i++) 
 	localssdsensorcombitrans[i] = new TGeoCombiTrans(*localssdsensortrans[i],
 													 *localssdsensorrot);	
@@ -2868,7 +2862,8 @@ TGeoVolume* AliITSv11GeometrySSD::GetSSDEndFlex(){
   Double_t ssdflexboxlength = fgkSSDFlexFullLength-2.*fgkSSDFlexAngle
 					        * TMath::DegToRad()*ssdflexradiusmax
 					        - fgkSSDFlexLength[2]-TMath::Pi()
-					        * fgkSSDStiffenerHeight-fgkSSDFlexLength[0];
+					        * fgkSSDStiffenerHeight-fgkSSDFlexLength[0]
+							- 0.1*fgkSSDFlexFullLength;
   const Int_t knedges = 20;  
   const Int_t karcnumber = 2;
   TVector3* vertexposition[karcnumber*(knedges+1)];
@@ -2971,8 +2966,9 @@ for(Int_t i=0; i<karcnumber; i++){
 									   xmothervertex,ymothervertex);
   ssdendflexmothershape->DefineSection(0,-0.5*fgkSSDFlexWidth[0]);
   ssdendflexmothershape->DefineSection(1, 0.5*fgkSSDFlexWidth[0]);
-  TGeoVolume* ssdendflexmother = new TGeoVolume("SSDEndFlexMother",
-								 ssdendflexmothershape,fSSDAir);	
+//  TGeoVolume* ssdendflexmother = new TGeoVolume("SSDEndFlexMother",
+//								 ssdendflexmothershape,fSSDAir);	
+  TGeoVolumeAssembly* ssdendflexmother = new TGeoVolumeAssembly("SSDEndFlexMother");
   //////////////////////////////////////
   // End Flex TGeoXtru Layer Definition 
   //////////////////////////////////////
@@ -3034,8 +3030,7 @@ TGeoVolume* AliITSv11GeometrySSD::GetSSDMountingBlock(){
 			 -     fgkSSDMountingBlockScrewHoleRadius[0];
   xvertex[7] = xvertex[6];
   yvertex[0] = -0.5*fgkCoolingTubeSupportHeight-fgkSSDModuleCoolingBlockToSensor
-			 +	fgkSSDMountingBlockHeight[1]-0.5*fgkSSDMountingBlockHeight[0]
-			 -  fgkSSDModuleVerticalDisalignment;
+			 +	fgkSSDMountingBlockHeight[1]-0.5*fgkSSDMountingBlockHeight[0];
   yvertex[1] = 0.5*fgkSSDMountingBlockHeight[0];
   yvertex[2] = yvertex[1]; 
   yvertex[3] = fgkSSDMountingBlockHeight[1]-yvertex[1];
@@ -3222,8 +3217,7 @@ TGeoVolume* AliITSv11GeometrySSD::GetSSDMountingBlock(){
   xmothervertex[8] = -0.25*(fgkSSDMountingBlockLength[0]-fgkSSDMountingBlockLength[1]); 
   xmothervertex[9] = xmothervertex[8]; 
   ymothervertex[0] = -0.5*fgkCoolingTubeSupportHeight-fgkSSDModuleCoolingBlockToSensor
-			       + fgkSSDMountingBlockHeight[1]-0.5*fgkSSDMountingBlockHeight[0]
-				   - fgkSSDModuleVerticalDisalignment;
+			       + fgkSSDMountingBlockHeight[1]-0.5*fgkSSDMountingBlockHeight[0];
   ymothervertex[1] = 0.5*fgkSSDMountingBlockHeight[0]+fgkMountingBlockClipThickness;
   ymothervertex[2] = ymothervertex[1];
   ymothervertex[3] = ymothervertex[2]+(fgkSSDMountingBlockHeight[1]
@@ -3334,18 +3328,19 @@ TList* AliITSv11GeometrySSD::GetCoolingTubeList()const{
    // Ladder Cooling Tubes
    coolingtubeshape[0][0] = new TGeoTube(fgkCoolingTubeRmin,fgkCoolingTubeRmax,
 					  0.25 * (fgkSSDSensorLength-2.*fgkSSDModuleStiffenerPosition[1]
-						  -	2.*fgkSSDCoolingBlockWidth-fgkCoolingTubeSupportWidth));
+						  -	2.*fgkSSDCoolingBlockWidth-fgkCoolingTubeSupportWidth)
+						  -0.5*fgkSSDTolerance);
    coolingtubeshape[0][1] = new TGeoTube(0.0,fgkCoolingTubeRmin,
 										 coolingtubeshape[0][0]->GetDz());
    coolingtubeshape[1][0] = new TGeoTube(fgkCoolingTubeRmin,fgkCoolingTubeRmax,
 										 0.5*(fgkSSDModuleStiffenerPosition[1]
-						  -					  fgkSSDSensorOverlap));
+						  -					  fgkSSDSensorOverlap-fgkSSDTolerance));
    coolingtubeshape[1][1] = new TGeoTube(0.0,fgkCoolingTubeRmin,
 										 coolingtubeshape[1][0]->GetDz());
    coolingtubeshape[2][0] = new TGeoTube(fgkCoolingTubeRmin,fgkCoolingTubeRmax,
-										 0.5*(fgkSSDModuleStiffenerPosition[1]));
+										 0.5*(fgkSSDModuleStiffenerPosition[1]-fgkSSDTolerance));
    coolingtubeshape[2][1] = new TGeoTube(0.0,fgkCoolingTubeRmin,
-										 coolingtubeshape[2][0]->GetDz());
+										 coolingtubeshape[2][0]->GetDz()-0.5*fgkSSDTolerance);
    // End Ladder Cooling Tubes	
    TGeoTube** endladdercoolingtubeshape[fgkendladdercoolingtubenumber];
    for(Int_t i=0; i<fgkendladdercoolingtubenumber; i++) 
@@ -3360,14 +3355,14 @@ TList* AliITSv11GeometrySSD::GetCoolingTubeList()const{
 						  +			fgkendladdercoolingsupportdistance[1]
 						  -			fgkCoolingTubeSupportWidth-fgkSSDTolerance));
    endladdercoolingtubeshape[1][1] = new TGeoTube(0.0,fgkCoolingTubeRmin,
-									endladdercoolingtubeshape[1][0]->GetDz());
+									endladdercoolingtubeshape[1][0]->GetDz()-0.5*fgkSSDTolerance);
    endladdercoolingtubeshape[2][0] = new TGeoTube(fgkCoolingTubeRmin,fgkCoolingTubeRmax,
 							0.50 * (fgkEndLadderCarbonFiberLowerJunctionLength[0]
 						  -			fgkEndLadderMountingBlockPosition[0]
 						  -			fgkendladdercoolingsupportdistance[1]		
 						  -			fgkCoolingTubeSupportWidth-fgkSSDTolerance));
    endladdercoolingtubeshape[2][1] = new TGeoTube(0.0,fgkCoolingTubeRmin,
-									endladdercoolingtubeshape[2][0]->GetDz());
+									endladdercoolingtubeshape[2][0]->GetDz()-0.5*fgkSSDTolerance);
    endladdercoolingtubeshape[3][0] = new TGeoTube(fgkCoolingTubeRmin,fgkCoolingTubeRmax,
 							  0.50 * (fgkMountingBlockToSensorSupport
 							- 0.50 * (fgkSSDFlexHoleWidth-fgkSSDSensorSideSupportWidth)
@@ -3378,11 +3373,11 @@ TList* AliITSv11GeometrySSD::GetCoolingTubeList()const{
 							-		  fgkEndLadderMountingBlockPosition[1]
 							-		  fgkCoolingTubeSupportWidth-fgkSSDTolerance));
    endladdercoolingtubeshape[3][1] = new TGeoTube(0.0,fgkCoolingTubeRmin,
-									endladdercoolingtubeshape[3][0]->GetDz());
+									endladdercoolingtubeshape[3][0]->GetDz()-0.5*fgkSSDTolerance);
    endladdercoolingtubeshape[4][0] = new TGeoTube(fgkCoolingTubeRmin,fgkCoolingTubeRmax,
 							  0.50 * (fgkendladdercoolingsupportdistance[2]-fgkSSDTolerance));
    endladdercoolingtubeshape[4][1] = new TGeoTube(0.0,fgkCoolingTubeRmin,
-									endladdercoolingtubeshape[4][0]->GetDz());
+									endladdercoolingtubeshape[4][0]->GetDz()-0.5*fgkSSDTolerance);
    // Ladder Cooling Tubes
    TGeoVolume** coolingtube[fgkcoolingtubenumber];
    for(Int_t i=0; i<fgkcoolingtubenumber; i++) coolingtube[i] = 
@@ -3441,6 +3436,7 @@ TList* AliITSv11GeometrySSD::GetCoolingTubeList()const{
 		endladdercoolingtube[i][0]->SetLineColor(fColorPhynox);
 		endladdercoolingtube[i][1]->SetLineColor(fColorWater);
    }
+  
   /////////////////////////////////////////////////////////////
   // Virtual Volume containing Cooling Tubes
   /////////////////////////////////////////////////////////////
@@ -4303,8 +4299,7 @@ void AliITSv11GeometrySSD::SetLadder(){
   Double_t laddercablethickness = (fgkSSDLay6SensorsNumber+2)
 								* (fgkSSDFlexHeight[0]+fgkSSDFlexHeight[1]);
   xmothervertex[0][0] = -0.5*fgkSSDSensorWidth;
-  ymothervertex[0][0] = -0.5*fgkCoolingTubeSupportHeight-fgkSSDModuleCoolingBlockToSensor
-					  -  fgkSSDModuleVerticalDisalignment;
+  ymothervertex[0][0] = -0.5*fgkCoolingTubeSupportHeight-fgkSSDModuleCoolingBlockToSensor;
   xmothervertex[0][1] = xmothervertex[0][0];
   ymothervertex[0][1] = 0.0;
   xmothervertex[0][2] = - 0.5*fgkSSDModuleSensorSupportDistance-2.*fgkCoolingTubeSupportRmax
@@ -4324,16 +4319,91 @@ void AliITSv11GeometrySSD::SetLadder(){
 	xmothervertex[1][i] = xmothervertex[0][i];
 	ymothervertex[1][i] = ymothervertex[0][i];
   }
-  const char* laddername[fgkladdernumber] = {"ITSssdLay5Ladd","ITSssdLay6Ladd"};
+///////////////////////////////////////////////////////////////////////////
+// Disalignement Mother Volume corrections 25/08/08
+///////////////////////////////////////////////////////////////////////////
+  TGeoXtru* leftladdershape[fgkladdernumber];	
+  TGeoXtru* centersensorladdershape[fgkladdernumber];	
+  TGeoXtru* rightladdershape[fgkladdernumber];	
   for(Int_t i=0; i<fgkladdernumber; i++){
-	laddershape[i]->DefinePolygon(kmothervertexnumber,xmothervertex[i],
-								    ymothervertex[i]);
-    laddershape[i]->DefineSection(0,-fgkEndLadderCarbonFiberLowerJunctionLength[1]);
-    laddershape[i]->DefineSection(1,ssdlaysensorsnumber[i]*fgkCarbonFiberJunctionWidth
+   leftladdershape[i] = new TGeoXtru(2);
+   centersensorladdershape[i] = new TGeoXtru(2);
+   rightladdershape[i] = new TGeoXtru(2);
+   }
+  //////////////////////////////////////
+   // Setting the names for shapes  
+  //////////////////////////////////////
+  leftladdershape[0]->SetName("Lay5LeftLadderSegmentContainer");
+  leftladdershape[1]->SetName("Lay6LeftLadderSegmentContainer");
+  centersensorladdershape[0]->SetName("Lay5CenterSensorContainer");
+  centersensorladdershape[1]->SetName("Lay6CenterSensorContainer");
+  rightladdershape[0]->SetName("Lay5RightLadderSegmentContainer");
+  rightladdershape[1]->SetName("Lay6RightLadderSegmentContainer");
+  //////////////////////////////////////
+  Double_t xleftladdervertex[fgkladdernumber][kmothervertexnumber];
+  Double_t yleftladdervertex[fgkladdernumber][kmothervertexnumber];
+  Double_t xcentersensorvertex[fgkladdernumber][kmothervertexnumber];
+  Double_t ycentersensorvertex[fgkladdernumber][kmothervertexnumber];
+  Double_t xrightladdervertex[fgkladdernumber][kmothervertexnumber];
+  Double_t yrightladdervertex[fgkladdernumber][kmothervertexnumber];
+  for(Int_t i=0; i<fgkladdernumber; i++)
+	for(Int_t j=0; j<kmothervertexnumber; j++){
+		xleftladdervertex[i][j] = xmothervertex[i][j];
+		yleftladdervertex[i][j] = ymothervertex[i][j];
+		xcentersensorvertex[i][j] = xmothervertex[i][j];
+		ycentersensorvertex[i][j] = ymothervertex[i][j];
+		xrightladdervertex[i][j] = xmothervertex[i][j];
+		yrightladdervertex[i][j] = ymothervertex[i][j];
+	}
+	xcentersensorvertex[0][0] -= fgkSSDModuleSideDisalignment;	
+	xcentersensorvertex[0][1] =  xcentersensorvertex[0][0];
+	xcentersensorvertex[0][6] = -xcentersensorvertex[0][1];
+	xcentersensorvertex[0][7] = -xcentersensorvertex[0][0];
+
+	xcentersensorvertex[1][0] = xcentersensorvertex[0][0];	
+	xcentersensorvertex[1][1] = xcentersensorvertex[0][1];
+	xcentersensorvertex[1][6] = xcentersensorvertex[0][6];
+	xcentersensorvertex[1][7] = xcentersensorvertex[0][7];
+
+	ycentersensorvertex[0][0] -= fgkSSDModuleSideDisalignment;	
+	ycentersensorvertex[0][7] = ycentersensorvertex[0][0];
+
+	ycentersensorvertex[1][0] = ycentersensorvertex[0][0];	
+	ycentersensorvertex[1][7] = ycentersensorvertex[0][7];
+	for(Int_t i=0; i<fgkladdernumber; i++){
+		// Left Ladder Piece
+		leftladdershape[i]->DefinePolygon(kmothervertexnumber,xleftladdervertex[i],
+										  yleftladdervertex[i]);
+		leftladdershape[i]->DefineSection(0,-fgkEndLadderCarbonFiberLowerJunctionLength[1]);
+		leftladdershape[i]->DefineSection(1,-fgkEndLadderCarbonFiberLowerJunctionLength[1]
+											+1.45*fgkSSDMountingBlockWidth);
+		// Center Ladder Piece
+		centersensorladdershape[i]->DefinePolygon(kmothervertexnumber,xcentersensorvertex[i],
+									  ycentersensorvertex[i]);
+		centersensorladdershape[i]->DefineSection(0,-fgkEndLadderCarbonFiberLowerJunctionLength[1]
+													+ 1.45*fgkSSDMountingBlockWidth);
+		centersensorladdershape[i]->DefineSection(1,ssdlaysensorsnumber[i]*fgkCarbonFiberJunctionWidth
+											+		fgkEndLadderCarbonFiberLowerJunctionLength[0]
+											-		2.4*fgkSSDMountingBlockWidth);
+		// Right Ladder Piece
+		rightladdershape[i]->DefinePolygon(kmothervertexnumber,xrightladdervertex[i],
+										  yrightladdervertex[i]);
+		rightladdershape[i]->DefineSection(0,ssdlaysensorsnumber[i]*fgkCarbonFiberJunctionWidth
+											+fgkEndLadderCarbonFiberLowerJunctionLength[0]
+											-2.4*fgkSSDMountingBlockWidth);
+		rightladdershape[i]->DefineSection(1,ssdlaysensorsnumber[i]*fgkCarbonFiberJunctionWidth
 											+fgkEndLadderCarbonFiberLowerJunctionLength[0]);
-    fladder[i] = new TGeoVolume(laddername[i],laddershape[i],fSSDAir);
-	fladder[i]->SetLineColor(4);
- }
+	}
+	TGeoCompositeShape* laddershapecontainer[2];
+	laddershapecontainer[0] = new TGeoCompositeShape("Lay5LadderCompositeShape",
+							  "Lay5LeftLadderSegmentContainer+Lay5CenterSensorContainer+Lay5RightLadderSegmentContainer");
+	laddershapecontainer[1] = new TGeoCompositeShape("Lay6LadderCompositeShape",
+							  "Lay6LeftLadderSegmentContainer+Lay6CenterSensorContainer+Lay6RightLadderSegmentContainer");
+	const char* laddername[fgkladdernumber] = {"ITSssdLay5Ladd","ITSssdLay6Ladd"};
+    for(Int_t i=0; i<fgkladdernumber; i++){
+		fladder[i] = new TGeoVolume(laddername[i],laddershapecontainer[i],fSSDAir);
+		fladder[i]->SetLineColor(4);
+	}
 ///////////////////////////////////////////////////////////////////////////
  if(!fCreateMaterials) CreateMaterials();
  if(!fTransformationMatrices) CreateTransformationMatrices();
@@ -4407,8 +4477,8 @@ void AliITSv11GeometrySSD::SetLadder(){
 		laddercableassemblylist[j] = 
 		GetLadderCableAssemblyList(sidecablenumber[i][j<2?0:1],
 								   ssdendladdercablelength[j]);
-//	    fladder[i]->AddNode((TGeoVolume*)laddercableassemblylist[j]->At(j%2==0?0:1),
-//									j<2?1:2,fladdercablematrix[i][j]);
+			fladder[i]->AddNode((TGeoVolume*)laddercableassemblylist[j]->At(j%2==0?0:1),
+									j<2?1:2,fladdercablematrix[i][j]);
   }
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -4663,8 +4733,7 @@ void AliITSv11GeometrySSD::Layer6(TGeoVolume* moth){
 	mountingblockpiecedownyvertex[i][1] = mountingblockpiecedownyvertex[i][0]
 										+ fgkSSDMountingBlockHeight[1]
 										- 0.5*fgkCoolingTubeSupportHeight
-										- fgkSSDModuleCoolingBlockToSensor
-										- 2.*fgkSSDModuleVerticalDisalignment;
+										- fgkSSDModuleCoolingBlockToSensor;
 	mountingblockpiecedownxvertex[i][2] = 0.5*fgkSSDMountingBlockLength[0];	
 	mountingblockpiecedownyvertex[i][2] = mountingblockpiecedownyvertex[i][1];
 	mountingblockpiecedownxvertex[i][3] = mountingblockpiecedownxvertex[i][2];	
@@ -4698,8 +4767,7 @@ void AliITSv11GeometrySSD::Layer6(TGeoVolume* moth){
 	mountingblockpieceupyvertex[i][1] = mountingblockpieceupyvertex[i][0]
 										+ fgkSSDMountingBlockHeight[1]
 										- 0.5*fgkCoolingTubeSupportHeight
-										- fgkSSDModuleCoolingBlockToSensor
-										- 2.*fgkSSDModuleVerticalDisalignment;
+										- fgkSSDModuleCoolingBlockToSensor;
 	mountingblockpieceupxvertex[i][2] = 0.5*fgkSSDMountingBlockLength[0];	
 	mountingblockpieceupyvertex[i][2] = mountingblockpieceupyvertex[i][1];
 	mountingblockpieceupxvertex[i][3] = mountingblockpieceupxvertex[i][2];	
@@ -4851,8 +4919,7 @@ void AliITSv11GeometrySSD::Layer6(TGeoVolume* moth){
 								   +			   fgkMountingBlockSupportDownHeight
 								   +			   fgkSSDMountingBlockHeight[1]
 								   -			   0.5*fgkCoolingTubeSupportHeight
-								   -			   fgkSSDModuleCoolingBlockToSensor
-								   -			   2.*fgkSSDModuleVerticalDisalignment);
+								   -			   fgkSSDModuleCoolingBlockToSensor);
     downmotherladdersupport[i] = new TGeoVolume(downmotheladdersupportname,
 								          downmotherladdersupportshape[i],fSSDAir);
     upmotherladdersupportshape[i] = new TGeoXtru(2);
@@ -4862,8 +4929,7 @@ void AliITSv11GeometrySSD::Layer6(TGeoVolume* moth){
 								   +			   fgkMountingBlockSupportUpHeight[i]
 								   +			   fgkSSDMountingBlockHeight[1]
 								   -			   0.5*fgkCoolingTubeSupportHeight
-								   -			   fgkSSDModuleCoolingBlockToSensor
-								   -               2.*fgkSSDModuleVerticalDisalignment);
+								   -			   fgkSSDModuleCoolingBlockToSensor);
 	upmotherladdersupport[i] = new TGeoVolumeAssembly(upmotheladdersupportname);
 //    upmotherladdersupport[i] = new TGeoVolume(upmotheladdersupportname,
 //											  upmotherladdersupportshape[i],fSSDAir);
@@ -8497,4 +8563,3 @@ void AliITSv11GeometrySSD::CreateMaterials(){
   fCreateMaterials = kTRUE;
 }
 /////////////////////////////////////////////////////////////////////
-
