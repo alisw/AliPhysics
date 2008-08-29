@@ -541,14 +541,20 @@ void AliPHOSClusterizerv1::MakeClusters()
   fNumberOfEmcClusters     = 0 ;
 
   //Mark all digits as unused yet
+  const Int_t maxNDigits = 1500;
   Int_t nDigits=fDigitsArr->GetEntriesFast() ;
+  if (nDigits > maxNDigits) {
+    AliWarning(Form("Skip event with too high digit occupancy: nDigits=%d",nDigits));
+    return;
+  }
+
   for(Int_t i=0; i<nDigits; i++){
     fDigitsUsed[i]=0 ;
   }
   Int_t iFirst = 0 ; //first index of digit which potentially can be a part of cluster
                      //e.g. first digit in this module, first CPV digit etc.
   AliPHOSDigit * digit ; 
-  TArrayI clusterdigitslist(1500) ;   
+  TArrayI clusterdigitslist(maxNDigits) ;   
   AliPHOSRecPoint * clu = 0 ; 
   for(Int_t i=0; i<nDigits; i++){
     if(fDigitsUsed[i])
