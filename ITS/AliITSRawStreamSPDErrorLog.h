@@ -24,7 +24,7 @@ class AliITSRawStreamSPDErrorLog : public TObject {
   AliITSRawStreamSPDErrorLog& operator=(const AliITSRawStreamSPDErrorLog& logger);
   virtual ~AliITSRawStreamSPDErrorLog();
 
-  enum    {kNrErrorCodes = 17};
+  enum    {kNrErrorCodes = 18};
   enum    {kTotal = 0};
 
   void    Reset();

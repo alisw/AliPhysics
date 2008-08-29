@@ -54,6 +54,8 @@ class AliITSRawStreamSPD: public AliITSRawStream {
     static UInt_t GetOfflineColFromOnline(UInt_t eqId, UInt_t hs, UInt_t chip, UInt_t col);
     static UInt_t GetOfflineRowFromOnline(UInt_t eqId, UInt_t hs, UInt_t chip, UInt_t row);
 
+    Bool_t  GetFastOrSignal(UInt_t eq, UInt_t hs, UInt_t chip);
+
     Int_t   GetEventCounter() const {return fEventCounter;}    // get last read event counter value
     Short_t GetEventCounterFullEq(UInt_t eq) const;
     Short_t GetEventCounterFullHS(UInt_t eq, UInt_t hs) const;
@@ -109,7 +111,8 @@ class AliITSRawStreamSPD: public AliITSRawStream {
       kChipAddrErr,
       kCalHeaderLengthErr,
       kAdvEventCounterErr,     // used by SPDmood
-      kAdvEventCounterOrderErr // used by SPDmood
+      kAdvEventCounterOrderErr,// used by SPDmood
+      kTrailerErrorBitErr
     };
 
   private :
@@ -148,6 +151,8 @@ class AliITSRawStreamSPD: public AliITSRawStream {
 
     Bool_t      fAdvancedErrorLog;           // is the advanced error logging activated?
     AliITSRawStreamSPDErrorLog *fAdvLogger;  // pointer to special error logger object
+
+    Bool_t      fFastOrSignal[20][6][10];    // fastor signal bit (one per chip)
 
     Bool_t      fActiveEq[20];               // which equipments are active (found in data)
     Bool_t      fActiveHS[20][6];            // which half-staves are active (blockattribute bits)

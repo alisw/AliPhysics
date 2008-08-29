@@ -158,6 +158,13 @@ void AliITSRawStreamSPD::NewEvent() {
   fEventCounter = -1;
   fDDLID = -1;
   fLastDDLID = -1;
+  for (UInt_t eq=0; eq<20; eq++) {
+    for (UInt_t hs=0; hs<6; hs++) {
+      for (UInt_t chip=0; chip<10; chip++) {
+	fFastOrSignal[eq][hs][chip] = kFALSE;
+      }
+    }
+  }
 }
 //__________________________________________________________________________
 Int_t AliITSRawStreamSPD::ReadCalibHeader() {
@@ -301,7 +308,8 @@ Bool_t AliITSRawStreamSPD::Next() {
       fEventCounterFull[fDDLID][fHalfStaveNr][fChipAddr] = eventCounter;
       // translate  ("online") ddl, hs, chip nr  to  ("offline") module id :
       fModuleID = GetOfflineModuleFromOnline(fDDLID,fHalfStaveNr,fChipAddr);
-    } 
+    }
+
     else if ((fData & 0xC000) == 0x0000) {    // trailer
       if ( (fEqPLBytesRead+fFillOutOfSynch*2)%4 != 0 ) {
 	TString errMess = "Fill word is missing";
@@ -319,14 +327,24 @@ Bool_t AliITSRawStreamSPD::Next() {
       }
       fHeaderOrTrailerReadLast = kFALSE;
       fEqPLChipTrailersRead++;
-      UShort_t hitCount = fData & 0x1FFF;
+      UShort_t hitCount = fData & 0x0FFF;
       if (hitCount != fHitCount){
 	TString errMess = Form("Number of hits %d, while %d expected",fHitCount,hitCount);
 	AliError(errMess.Data());
 	fRawReader->AddMajorErrorLog(kNumberHitsErr,errMess.Data());
 	if (fAdvancedErrorLog) fAdvLogger->ProcessError(kNumberHitsErr,fDDLID,fEqPLBytesRead,fEqPLChipHeadersRead,errMess.Data());
       }
+      Bool_t errorBit = fData & 0x1000;
+      if (errorBit) {
+	TString errMess = Form("Trailer error bit set for chip %d,%d,%d",fDDLID,fHalfStaveNr,fChipAddr);
+	AliError(errMess.Data());
+	fRawReader->AddMajorErrorLog(kTrailerErrorBitErr,errMess.Data());
+	if (fAdvancedErrorLog) fAdvLogger->ProcessError(kTrailerErrorBitErr,fDDLID,fEqPLBytesRead,fEqPLChipHeadersRead,errMess.Data());
+      }
+      Bool_t fastorBit = fData & 0x2000;
+      fFastOrSignal[fDDLID][fHalfStaveNr][fChipAddr] = fastorBit;
     }
+
     else if ((fData & 0xC000) == 0x8000) {    // pixel hit
       if (!fHeaderOrTrailerReadLast) {
 	TString errMess = "Chip header missing";
@@ -343,7 +361,8 @@ Bool_t AliITSRawStreamSPD::Next() {
       fCoord2 = GetOfflineRowFromOnline(fDDLID,fHalfStaveNr,fChipAddr,fRow);
 
       return kTRUE;
-    } 
+    }
+
     else {                                    // fill word
       if ((fData & 0xC000) != 0xC000) {
 	TString errMess = "Wrong fill word!";
@@ -418,7 +437,18 @@ const Char_t* AliITSRawStreamSPD::GetErrorName(UInt_t errorCode) {
   else if (errorCode==kCalHeaderLengthErr)      return "Calib Header Length Error";
   else if (errorCode==kAdvEventCounterErr)      return "Event Counter Error (Adv)";
   else if (errorCode==kAdvEventCounterOrderErr) return "Event Counter Jump Error (Adv)";
+  else if (errorCode==kTrailerErrorBitErr)      return "Trailer Error Bit Set";
   else return "";
+}
+//__________________________________________________________________________
+Bool_t AliITSRawStreamSPD::GetFastOrSignal(UInt_t eq, UInt_t hs, UInt_t chip) {
+  // returns if there was a fastor signal from this chip
+  if (eq>=20 || hs>=6 || chip>=10) {
+    TString errMess = Form("eq,hs,chip = %d,%d,%d out of bounds. Return kFALSE.",eq,hs,chip);
+    AliError(errMess.Data());
+    return kFALSE;
+  }
+  return fFastOrSignal[eq][hs][chip];
 }
 //__________________________________________________________________________
 Bool_t AliITSRawStreamSPD::IsActiveEq(UInt_t eq) const {
