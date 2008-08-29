@@ -56,16 +56,18 @@ TEveElementList* trd_detectors(Int_t sector = -1, TEveElement *cont = 0)
 
   for(Int_t i=0; i<tR->GetEntries(); i++) {
     if (!tR->GetEvent(i)) continue;
-
-    Int_t idet, ism, istk, ipla, icl=0; 
-    AliTRDcluster *c = 0x0;
+    if(!clusters->GetEntries()) continue;
+    Int_t icl=0; AliTRDcluster *c = 0x0;
     while(!(c = (AliTRDcluster*)clusters->UncheckedAt(icl++))) {;}
+    if(!c) continue;
+
+    Int_t idet, ism, istk, ipla; 
     idet = c->GetDetector();
     ism  = geo->GetSector(idet);
     istk = geo->GetStack(idet);
     ipla = geo->GetLayer(idet);
     if(sector>=0 && ism != sector) continue;
-    if(!sm){ 
+    if(!(sm = list->FindChild(Form("SM%03d", ism)))){ 
       list->AddElement(sm = new AliEveTRDNode("SM", ism));
       sm->SetElementTitle(Form("Supermodule %2d", ism));
     }
