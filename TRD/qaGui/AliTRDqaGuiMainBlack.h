@@ -27,6 +27,7 @@ class AliTRDqaGuiBlackSM;
 class AliTRDqaGuiBlackChamber;  
 class AliTRDqaGuiBlackError;
 class AliTRDqaGuiBlackGlobal;
+class AliTRDqaGuiBlackGTU;
 
 class AliTRDqaGuiMainBlack : public TGMainFrame {
 
@@ -45,6 +46,7 @@ class AliTRDqaGuiMainBlack : public TGMainFrame {
   AliTRDqaGuiBlackChamber  *fGChamber; // Something 
   AliTRDqaGuiBlackError    *fGError;  // somethig
   AliTRDqaGuiBlackGlobal   *fGGlobal;  // global view
+  AliTRDqaGuiBlackGTU      *fGGTU;      // view status of optical links
 
  private:  
   AliTRDqaGuiMainBlack& operator = (const AliTRDqaGuiMainBlack& /*g*/) { return *this; };

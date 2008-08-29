@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id: AliTRDqaGuiBlackGlobal.cxx 23387 2008-01-17 17:25:16Z cblume $ */
+/* $Id: AliTRDqaGuiBlackGTU.cxx 23387 2008-01-17 17:25:16Z cblume $ */
 
 //////////////////////////////////////////////////////////////////////////////////
 //
@@ -29,7 +29,7 @@
 // 
 //////////////////////////////////////////////////////////////////////////////////
 
-#include "AliTRDqaGuiBlackGlobal.h"
+#include "AliTRDqaGuiBlackGTU.h"
 
 #include "TH1D.h"
 #include "TGraph.h"
@@ -41,11 +41,11 @@
 
 #include "TRootEmbeddedCanvas.h"
 
-ClassImp(AliTRDqaGuiBlackGlobal)
+ClassImp(AliTRDqaGuiBlackGTU)
 
 //////////////////////////////////////////////////////////////////////////////////
 
-AliTRDqaGuiBlackGlobal::AliTRDqaGuiBlackGlobal() 
+AliTRDqaGuiBlackGTU::AliTRDqaGuiBlackGTU() 
 {
   //
   // Default constructor
@@ -55,7 +55,7 @@ AliTRDqaGuiBlackGlobal::AliTRDqaGuiBlackGlobal()
 
 //////////////////////////////////////////////////////////////////////////////////
 
-AliTRDqaGuiBlackGlobal::AliTRDqaGuiBlackGlobal(TGWindow *parent) 
+AliTRDqaGuiBlackGTU::AliTRDqaGuiBlackGTU(TGWindow *parent) 
   : TGCompositeFrame(parent, 720, 500)
 {
   //
@@ -77,26 +77,28 @@ AliTRDqaGuiBlackGlobal::AliTRDqaGuiBlackGlobal(TGWindow *parent)
 
 //////////////////////////////////////////////////////////////////////////////////
 
-void AliTRDqaGuiBlackGlobal::SetQAFile(const char *filename) {
+void AliTRDqaGuiBlackGTU::SetQAFile(const char *filename) {
   //
   // Set the file with histograms
   //
 
+  // printf("GTU status \n");
+
   TGaxis::SetMaxDigits(3);
   
   const char *names[6] = {
-    "noiseTotal", "peakPeak", "mcmEvDist_999",
-    "trendMCM", "fracPP_0", "nADCinEvent"
+    "smLink", "smBeaf", "smData",
+    "grSmLink", "grSmBeaf", "grSmData"
   };  
 
   const char *title[6] = {
-    ";noise (ADC)", 
-    ";peak-peak (ADC)",
-    ";#Delta Event Number from MCM",
+    "connected half-chambers;super-module;half chamber",
+    "beaf-beaf half-chambers;super-module;half chamber",
+    "half-chambers with data;super-module;half chamber",    
 
-    "number of active MCMs;event number",
-    "number of ADCs with PP > 10;event number",
-    "number of ADC chanels;event number"
+    "connected half-chambers;event number",
+    "beaf-beaf half-chambers;event number",
+    "half-chambers with data;event number",        
   };
 
 
@@ -114,25 +116,36 @@ void AliTRDqaGuiBlackGlobal::SetQAFile(const char *filename) {
   TFile *file = new TFile(filename);
   
   for(Int_t i=0; i<3; i++) {
-
-    fHistList[i] = (TH1D*)file->Get(names[i]);
-    if (fHistList[i]) {
-      
-      fCanvasList[i]->GetCanvas()->cd();
-      gPad->SetLogy();      
-      fHistList[i]->Draw();
-      fHistList[i]->SetTitle(title[i]);
-    }
     
+    //printf("name = %s\n", names[i]);
+    fHistList[i] = (TH1D*)file->Get(names[i]);
+    // if (fHistList[i])  fHistList[i]->Print();
+
+    if (fHistList[i]) {
+
+      fCanvasList[i]->GetCanvas()->cd();
+      fHistList[i]->SetTitle(title[i]);
+      fHistList[i]->Draw("colz");
+
+      // draw lines
+      for(Int_t stx=1; stx < 5; stx++) {
+	TLine *line = new TLine(-0.5, stx*12-0.5, 17.5, stx*12-0.5);
+	line->Draw(); 
+      }
+    }
     
     fGraphList[i] = (TGraph*)file->Get(names[i+3]);
     if (fGraphList[i]) {
       fCanvasList[i+3]->GetCanvas()->cd();
       fGraphList[i]->Draw("apl");
-      fGraphList[i]->SetMarkerStyle(7);
       fGraphList[i]->GetHistogram()->SetTitle(title[i+3]);
+      fGraphList[i]->SetMinimum(0);
+      fGraphList[i]->SetMaximum(250);
+      fGraphList[i]->SetMarkerStyle(7);
     }
   }
+  
+  // file->Close();
 }
 
 //////////////////////////////////////////////////////////////////////////////////

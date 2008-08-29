@@ -95,10 +95,10 @@ void AliTRDqaGuiBlackError::SetQAFile(const char *filename) {
   };  
 
   const char *title[9] = {
-    ";HC error ID", ";MCM error ID", ";ADC error ID",
-    "Error HC;event number;fraction with error (%)",
-    "Error MCM;event number;fraction with error (%)",
-    "Error ADC;event number;fraction with error (%)",
+    "half-chamber;HC error ID", "MCM;MCM error ID", "ADC;ADC error ID",
+    "fraction with HC error (%);event number",
+    "fraction with MCM error (%);event number",
+    "fraction with ADC error (%);event number",    
     ";sm id;number of errors",
     ";sm id;number of errors",
     ";sm id;number of errors"
@@ -135,6 +135,7 @@ void AliTRDqaGuiBlackError::SetQAFile(const char *filename) {
     if (fGraphList[i]) {
       fCanvasList[i+3]->GetCanvas()->cd();
       fGraphList[i]->Draw("apl");
+      fGraphList[i]->SetMarkerStyle(7);
       fGraphList[i]->GetHistogram()->SetTitle(title[i+3]);
     }
 
