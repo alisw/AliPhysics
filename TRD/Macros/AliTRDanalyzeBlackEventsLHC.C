@@ -11,6 +11,7 @@ void AliTRDanalyzeBlackEventsLHC(const char *filename) {
   //AliTRDRawStreamTB::SupressWarnings(kTRUE);
   //AliTRDrawStreamTB::SetForceCleanDataOnly();
   AliTRDrawStreamTB::AllowCorruptedData();
+
   AliTRDrawStreamTB::DisableStackNumberChecker();
   AliTRDrawStreamTB::DisableStackLinkNumberChecker();
   AliTRDrawStreamTB::DisableSkipData();
