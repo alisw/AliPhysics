@@ -56,10 +56,11 @@ class AliITSDetTypeSim : public TObject {
 
     virtual void SetCalibrationModel(Int_t iMod,AliITSCalibration *resp);
     virtual AliITSCalibration* GetCalibrationModel(Int_t iMod);
-    virtual AliITSresponse* GetResponse(Int_t dettype) {
+    /* 
+   virtual AliITSresponse* GetResponse(Int_t dettype) {
 	return GetCalibrationModel(
 	    GetITSgeom()->GetStartDet(dettype))->GetResponse();}
-
+    */
     virtual void SetSimuParam(AliITSSimuParam* spar){
       if(fSimuPar) delete fSimuPar;
       fSimuPar = new AliITSSimuParam(*spar);

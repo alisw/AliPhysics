@@ -12,7 +12,6 @@
 
 #include "TObjArray.h"
 #include "AliITSsimulation.h"
-#include "AliITSCalibrationSPD.h"
 #include "AliITSsegmentationSPD.h"
 
 class TH1F;
@@ -103,12 +102,12 @@ class AliITSsimulationSPD : public AliITSsimulation {
     // Getters for data kept in fSegmentation and fResponse.
     // Returns the Threshold in electrons
     Double_t GetThreshold(){
-      Double_t th,sig;AliITSCalibrationSPD* res=(AliITSCalibrationSPD*)GetCalibrationModel(GetModuleNumber()); 
-	res->Thresholds(th,sig);return th;};
+      Double_t th,sig;AliITSSimuParam* simpar = fDetType->GetSimuParam(); 
+        simpar->SPDThresholds(GetModuleNumber(),th,sig);return th;}; 
     // Returns the couplings Columb and Row.
     void GetCouplings(Double_t &cc,Double_t &cr){
-      AliITSCalibrationSPD* res = (AliITSCalibrationSPD*)GetCalibrationModel(GetModuleNumber());
-      res->GetCouplingParam(cc,cr);};
+      AliITSSimuParam* simpar = fDetType->GetSimuParam();
+      simpar->GetSPDCouplingParam(cc,cr);};
     // Returns the number of pixels in x
     Int_t GetNPixelsX(){return GetSegmentationModel(0)->Npx();};
     // Returns the number of pixels in z

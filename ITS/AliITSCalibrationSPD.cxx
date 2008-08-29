@@ -20,37 +20,17 @@
 //  Silicon pixels                                  
 //
 //  Modified by D. Elia, G.E. Bruno, H. Tydesjo
-//  March-April 2006
-//  Last mod:  H. Tydesjo  Aug 2008
-//  September   2007: CouplingRowDefault = 0.055 (was 0.047)
-//
 ///////////////////////////////////////////////////////////////////////////
-const Double_t AliITSCalibrationSPD::fgkThreshDefault = 3000.;
-const Double_t AliITSCalibrationSPD::fgkSigmaDefault = 250.;
-const Double_t AliITSCalibrationSPD::fgkCouplColDefault = 0.;
-const Double_t AliITSCalibrationSPD::fgkCouplRowDefault = 0.055;
-const Double_t AliITSCalibrationSPD::fgkBiasVoltageDefault = 18.182;
 
 ClassImp(AliITSCalibrationSPD)
 
 //______________________________________________________________________
 AliITSCalibrationSPD::AliITSCalibrationSPD():
 AliITSCalibration(),
-fBaseline(0.0),
-fNoise(0.0),
-fThresh(fgkThreshDefault),
-fSigma(fgkSigmaDefault),
-fCouplCol(fgkCouplColDefault),
-fCouplRow(fgkCouplRowDefault),
-fBiasVoltage(fgkBiasVoltageDefault),
 fNrBad(0),
 fBadChannels(0){
   // constructor
 
-   SetThresholds(fgkThreshDefault,fgkSigmaDefault);
-   SetCouplingParam(fgkCouplColDefault,fgkCouplRowDefault);
-   SetBiasVoltage(fgkBiasVoltageDefault);
-   SetNoiseParam(0.,0.);
    SetDataType("simulated");
    ClearBad();
 }
@@ -242,32 +222,40 @@ void AliITSCalibrationSPD::Streamer(TBuffer &R__b) {
   if (R__b.IsReading()) {
     Version_t R__v = R__b.ReadVersion(&R__s, &R__c); if (R__v) { }
     AliITSCalibration::Streamer(R__b);
-    R__b >> fBaseline;
-    R__b >> fNoise;
-    R__b >> fThresh;
-    R__b >> fSigma;
-    R__b >> fCouplCol;
-    R__b >> fCouplRow;
-    R__b >> fBiasVoltage;
-    R__b >> fNrBad;
-    if (R__v >= 7) {
+    if (R__v >= 8) {
+      R__b >> fNrBad;
       fBadChannels.Streamer(R__b);
       R__b.ReadStaticArray((bool*)fBadChip);
     }
     else {
-      if (R__v == 6) {
+      Double_t dummy;
+      R__b >> dummy;
+      R__b >> dummy;
+      R__b >> dummy;
+      R__b >> dummy;
+      R__b >> dummy;
+      R__b >> dummy;
+      R__b >> dummy;
+      R__b >> fNrBad;
+      if (R__v == 7) {
 	fBadChannels.Streamer(R__b);
+	R__b.ReadStaticArray((bool*)fBadChip);
       }
       else {
-	TArrayI fBadChannelsV1;
-	fBadChannelsV1.Streamer(R__b);
-	fBadChannels.Set(fNrBad*2);
-	for (UInt_t i=0; i<fNrBad*2; i++) {
-	  fBadChannels[i] = fBadChannelsV1[i];
+	if (R__v == 6) {
+	  fBadChannels.Streamer(R__b);
 	}
-      }
-      for (UInt_t i=0; i<5; i++) {
-	fBadChip[i]=kFALSE;
+	else {
+	  TArrayI fBadChannelsV1;
+	  fBadChannelsV1.Streamer(R__b);
+	  fBadChannels.Set(fNrBad*2);
+	  for (UInt_t i=0; i<fNrBad*2; i++) {
+	    fBadChannels[i] = fBadChannelsV1[i];
+	  }
+	}
+	for (UInt_t i=0; i<5; i++) {
+	  fBadChip[i]=kFALSE;
+	}
       }
     }
     R__b.CheckByteCount(R__s, R__c, AliITSCalibrationSPD::IsA());
@@ -275,13 +263,6 @@ void AliITSCalibrationSPD::Streamer(TBuffer &R__b) {
   else {
     R__c = R__b.WriteVersion(AliITSCalibrationSPD::IsA(), kTRUE);
     AliITSCalibration::Streamer(R__b);
-    R__b << fBaseline;
-    R__b << fNoise;
-    R__b << fThresh;
-    R__b << fSigma;
-    R__b << fCouplCol;
-    R__b << fCouplRow;
-    R__b << fBiasVoltage;
     R__b << fNrBad;
     fBadChannels.Streamer(R__b);
     R__b.WriteArray(fBadChip, 5);

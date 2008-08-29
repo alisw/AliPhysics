@@ -22,12 +22,6 @@ class AliITSCalibrationSSD : public AliITSCalibration {
     AliITSCalibrationSSD(const char *dataType);
     virtual ~AliITSCalibrationSSD();
 
-    virtual  void   SetNoiseParam(Double_t , Double_t ) {
-      NotImplemented("SetNoiseParam");}
-    
-    virtual void    GetNoiseParam(Double_t &, Double_t &) const {
-      NotImplemented("SetNoiseParam");}
-
     Float_t GetNoiseP(Int_t n) {return fNoise->GetNoiseP(fModule,n); }
     Float_t GetNoiseN(Int_t n) {return fNoise->GetNoiseN(fModule,n); }
     void SetNoise( AliITSNoiseSSDv2* noise) {fNoise=noise;}
@@ -88,21 +82,15 @@ class AliITSCalibrationSSD : public AliITSCalibration {
     virtual void    SigmaSpread(Double_t &, Double_t &) const {
       NotImplemented("SetSigmaSpread");}
     
-    
-    virtual void   SetThresholds(Double_t /* a */, Double_t /* b */)
-      {NotImplemented("SetThresholds");}
-    virtual void   Thresholds(Double_t & /* a */, Double_t & /* b */) const 
-      {NotImplemented("Thresholds");}
-  
- void SetModule(Int_t mod){fModule = mod;}
+    void SetModule(Int_t mod){fModule = mod;}
 
-  void SetKeVperADC(Double_t a=86.4/120.){fKeVperADC = a;}
-  Double_t ADCToKeV(Double_t adc) const {return adc*fKeVperADC;}
+    void SetKeVperADC(Double_t a=86.4/120.){fKeVperADC = a;}
+    Double_t ADCToKeV(Double_t adc) const {return adc*fKeVperADC;}
 
-  void SetSSDADCpereV(Double_t a=120./24888.9){fSSDADCpereV = a;}
-  Double_t GetSSDDEvToADC(Double_t eV) const {return eV*fSSDADCpereV;}
-  Int_t GetSSDIEvToADC(Double_t eV) const { 
-      return ((Int_t) GetSSDDEvToADC(eV)); }
+    void SetSSDADCpereV(Double_t a=120./24888.9){fSSDADCpereV = a;}
+    Double_t GetSSDDEvToADC(Double_t eV) const {return eV*fSSDADCpereV;}
+    Int_t GetSSDIEvToADC(Double_t eV) const { 
+                                  return ((Int_t) GetSSDDEvToADC(eV)); }
 
 
  protected:

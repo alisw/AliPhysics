@@ -133,12 +133,7 @@ AliITSDetTypeSim::~AliITSDetTypeSim(){
     }
     fSegmentation = 0;
     if(fCalibration && fRunNumber<0){
-	AliITSresponse* rspd = ((AliITSCalibration*)fCalibration->At(
-                               GetITSgeom()->GetStartSPD()))->GetResponse();
-	AliITSresponse* rssd = ((AliITSCalibration*)fCalibration->At(
-                               GetITSgeom()->GetStartSSD()))->GetResponse();
-	if(rspd) delete rspd;
-	if(rssd) delete rssd;
+
 	fCalibration->Delete();
 	delete fCalibration;
     }
@@ -352,12 +347,14 @@ void AliITSDetTypeSim::SetCalibrationModel(Int_t iMod, AliITSCalibration *resp){
 void AliITSDetTypeSim::ResetCalibrationArray(){
     //resets response array
     if(fCalibration && fRunNumber<0){  // if fRunNumber<0 fCalibration is owner
+      /*
 	AliITSresponse* rspd = ((AliITSCalibration*)fCalibration->At(
                                 GetITSgeom()->GetStartSPD()))->GetResponse();
 	AliITSresponse* rssd = ((AliITSCalibration*)fCalibration->At(
                                 GetITSgeom()->GetStartSSD()))->GetResponse();
 	if(rspd) delete rspd;
 	if(rssd) delete rssd;
+      */
 	fCalibration->Clear();
     }else if (fCalibration && fRunNumber>=0){
 	fCalibration->Clear();
@@ -446,27 +443,17 @@ Bool_t AliITSDetTypeSim::GetCalibration() {
   AliCDBEntry *entryGainSSD = AliCDBManager::Instance()->Get("ITS/Calib/GainSSD");
   AliCDBEntry *entryBadChannelsSSD = AliCDBManager::Instance()->Get("ITS/Calib/BadChannelsSSD");
 
-  AliCDBEntry *entry2SPD = AliCDBManager::Instance()->Get("ITS/Calib/RespSPD", run);
-
   if(!entrySPD || !entrySDD || !entryNoiseSSD || !entryGainSSD || !entryBadChannelsSSD || 
-     !entry2SPD || !drSpSDD || !ddlMapSDD || !mapTSDD){
+      !drSpSDD || !ddlMapSDD || !mapTSDD){
     AliFatal("Calibration object retrieval failed! ");
     return kFALSE;
   }  	
-
-//   if(!entrySPD || !entrySDD || !entryNoiseSSD || !entryGainSSD || !entryBadChannelsSSD || 
-//      !entry2SPD || !entry2SSD){
-//     AliFatal("Calibration object retrieval failed! ");
-//     return kFALSE;
-//   }  	
+	
 
   TObjArray *calSPD = (TObjArray *)entrySPD->GetObject();
   if(!isCacheActive)entrySPD->SetObject(NULL);
   entrySPD->SetOwner(kTRUE);
 
-  AliITSresponseSPD *pSPD = (AliITSresponseSPD*)entry2SPD->GetObject();
-  if(!isCacheActive)entry2SPD->SetObject(NULL);
-  entry2SPD->SetOwner(kTRUE);
    
   TObjArray *calSDD = (TObjArray *)entrySDD->GetObject();
   if(!isCacheActive)entrySDD->SetObject(NULL);
@@ -551,7 +538,6 @@ Bool_t AliITSDetTypeSim::GetCalibration() {
     delete entryNoiseSSD;
     delete entryGainSSD;
     delete entryBadChannelsSSD;
-    delete entry2SPD;
 //    delete mapASDD;   
     delete mapTSDD;
     delete drSpSDD;
@@ -560,7 +546,7 @@ Bool_t AliITSDetTypeSim::GetCalibration() {
   
   AliCDBManager::Instance()->SetCacheFlag(origCacheStatus);
 
-  if ((!pSPD)|| (!calSPD) || (!calSDD) || (!drSp) || (!ddlsdd)
+  if ((!calSPD) || (!calSDD) || (!drSp) || (!ddlsdd)
       || (!mapT) || (!noiseSSD)|| (!gainSSD)|| (!badChannelsSSD)) {
     AliWarning("Can not get calibration from calibration database !");
     return kFALSE;
@@ -574,7 +560,6 @@ Bool_t AliITSDetTypeSim::GetCalibration() {
   AliITSCalibration* cal;
   for (Int_t i=0; i<fNMod[0]; i++) {
     cal = (AliITSCalibration*) calSPD->At(i);
-    cal->SetResponse(pSPD);
     SetCalibrationModel(i, cal);
   }
 
@@ -619,24 +604,6 @@ Bool_t AliITSDetTypeSim::GetCalibration() {
   fSSDCalibration->SetBadChannels(badChannelsSSD);
   //fSSDCalibration->FillBadChipMap();
 
-
-  /*
-  for (Int_t i=0; i<fNMod[2]; i++) {
-    AliITSCalibrationSSD *calibSSD = new AliITSCalibrationSSD();
-    calibSSD->SetResponse((AliITSresponse*)pSSD);
-    
-    AliITSNoiseSSD *noise = (AliITSNoiseSSD*) (noiseSSD->At(i));
-    calibSSD->SetNoise(noise);
-    AliITSGainSSD *gain = (AliITSGainSSD*) (gainSSD->At(i));
-    calibSSD->SetGain(gain);
-    AliITSBadChannelsSSD *bad = (AliITSBadChannelsSSD*) (badchannelsSSD->At(i));
-    calibSSD->SetBadChannels(bad);
-
-    Int_t iMod = i + fgkDefaultNModulesSPD + fgkDefaultNModulesSDD;
-    SetCalibrationModel(iMod, calibSSD);
-
-    }
-  */
 
 
   return kTRUE;

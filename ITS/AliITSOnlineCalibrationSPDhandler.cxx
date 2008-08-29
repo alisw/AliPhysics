@@ -611,7 +611,7 @@ Bool_t AliITSOnlineCalibrationSPDhandler::ReadDeadFromDB(Int_t runNr, Bool_t tre
   for (UInt_t module=0; module<240; module++) {
     calibSPD = (AliITSCalibrationSPD*) spdEntry->At(module);
     UInt_t nrDead = calibSPD->GetNrBadSingle();
-    if (nrDead>0) {    
+    if (nrDead>0) {
       if (!treeSerial) RecursiveInsertDead(calibSPD,module,0,nrDead-1);
       else {
 	for (UInt_t index=0; index<nrDead; index++) {
@@ -656,7 +656,6 @@ Bool_t AliITSOnlineCalibrationSPDhandler::ReadNoisyFromDB(Int_t runNr, Bool_t tr
   }
   AliITSCalibrationSPD* calibSPD;
   for (UInt_t module=0; module<240; module++) {
-    //    printf("Reading module %d\n",module);
     calibSPD = (AliITSCalibrationSPD*) spdEntry->At(module);
     UInt_t nrNoisy = calibSPD->GetNrBadSingle();
     if (nrNoisy>0) {    
@@ -730,21 +729,11 @@ Bool_t AliITSOnlineCalibrationSPDhandler::WriteDeadToDB(Int_t runNrStart, Int_t 
   spdEntry->SetOwner(kTRUE);
   for(UInt_t module=0; module<240; module++){
     AliITSCalibrationSPD* calibSPD = new AliITSCalibrationSPD();
-
-    // *** this is temporarily hard coded here ********************
-    // (later these parameters will be separated from the cal.obj.)
-    calibSPD->SetThresholds(3000, 250);
-    calibSPD->SetBiasVoltage(18.182);
-    calibSPD->SetNoiseParam(0,0);
-    calibSPD->SetCouplingParam(0.,0.055);
-    // *** remove later...
-    // ************************************************************
-
     spdEntry->Add(calibSPD);
   }
   for(UInt_t module=0; module<240; module++){
     AliITSCalibrationSPD* calibSPD = (AliITSCalibrationSPD*) spdEntry->At(module);
-    calibSPD->SetNrBadSingle( GetNrDead(module) );
+    calibSPD->SetNrBadSingle( GetNrDeadSingle(module) );
     calibSPD->SetBadList( GetDeadArray(module) );
     for (UInt_t chipIndex=0; chipIndex<5; chipIndex++) {
       UInt_t eq,hs,chip,col,row;
@@ -780,21 +769,11 @@ Bool_t AliITSOnlineCalibrationSPDhandler::WriteNoisyToDB(Int_t runNrStart, Int_t
   spdEntry->SetOwner(kTRUE);
   for(UInt_t module=0; module<240; module++){
     AliITSCalibrationSPD* calibSPD = new AliITSCalibrationSPD();
-
-    // *** this is temporarily hard coded here ********************
-    // (later these parameters will be separated from the cal.obj.)
-    calibSPD->SetThresholds(3000, 250);
-    calibSPD->SetBiasVoltage(18.182);
-    calibSPD->SetNoiseParam(0,0);
-    calibSPD->SetCouplingParam(0.,0.055);
-    // *** remove later...
-    // ************************************************************
-
     spdEntry->Add(calibSPD);
   }
   for(UInt_t module=0; module<240; module++){
     AliITSCalibrationSPD* calibSPD = (AliITSCalibrationSPD*) spdEntry->At(module);
-    calibSPD->SetNrBadSingle( GetNrNoisy(module) );
+    calibSPD->SetNrBadSingle( GetNrNoisySingle(module) );
     calibSPD->SetBadList( GetNoisyArray(module) );
   }
   AliCDBEntry* cdbEntry = new AliCDBEntry((TObject*)spdEntry,idCalSPD,metaData);
@@ -922,11 +901,7 @@ TArrayS AliITSOnlineCalibrationSPDhandler::GetDeadArray(UInt_t module, Bool_t tr
 
   UInt_t eq = GetEqIdFromOffline(module);
   UInt_t hs = GetHSFromOffline(module);
-  UInt_t size=0;
-  for (UInt_t ch=0; ch<5; ch++) {
-    UInt_t gloChip = GetGloChip(eq,hs,GetChipFromOffline(module,ch*32));
-    size += fNrDead[gloChip];
-  }
+  UInt_t size=GetNrDeadSingle(module);
   returnArray.Set(size*2);
   UInt_t gloIndex=0;
   for (UInt_t ch=0; ch<5; ch++) {
@@ -954,11 +929,7 @@ TArrayS AliITSOnlineCalibrationSPDhandler::GetNoisyArray(UInt_t module, Bool_t t
 
   UInt_t eq = GetEqIdFromOffline(module);
   UInt_t hs = GetHSFromOffline(module);
-  UInt_t size=0;
-  for (UInt_t ch=0; ch<5; ch++) {
-    UInt_t gloChip = GetGloChip(eq,hs,GetChipFromOffline(module,ch*32));
-    size += fNrNoisy[gloChip];
-  }
+  UInt_t size=GetNrNoisySingle(module);
   returnArray.Set(size*2);
   UInt_t gloIndex=0;
   for (UInt_t ch=0; ch<5; ch++) {
@@ -1564,6 +1535,30 @@ UInt_t AliITSOnlineCalibrationSPDhandler::GetNrSilent(UInt_t module) const {
     }
   }
   return nrSilent;
+}
+//____________________________________________________________________________________________
+UInt_t AliITSOnlineCalibrationSPDhandler::GetNrDeadSingle(UInt_t module) const {
+  // returns the number of single dead pixels (excluding the ones on silent chips) for a certain module
+  if (module>=240) {
+    Error("AliITSOnlineCalibrationSPDhandler::GetNrDeadSingle", "module nr (%d) out of bounds.",module);
+    return 0;
+  }
+  UInt_t nrDead = 0;
+  UInt_t eq = GetEqIdFromOffline(module);
+  UInt_t hs = GetHSFromOffline(module);
+  for (UInt_t ch=0; ch<5; ch++) {
+    UInt_t chip = GetChipFromOffline(module,ch*32);
+    if (!IsSilentChip(eq,hs,chip)) {
+      UInt_t gloChip = GetGloChip(eq,hs,chip);
+      nrDead+=fNrDead[gloChip];
+    }
+  }
+  return nrDead;
+}
+//____________________________________________________________________________________________
+UInt_t AliITSOnlineCalibrationSPDhandler::GetNrNoisySingle(UInt_t module) const {
+  // returns the number of noisy pixels for a certain module
+  return GetNrNoisy(module);
 }
 //____________________________________________________________________________________________
 UInt_t AliITSOnlineCalibrationSPDhandler::GetNrDead(UInt_t module) const {

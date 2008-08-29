@@ -18,7 +18,7 @@ $Id$
 #include "AliITSCalibrationSPD.h"
 #include "AliITSsegmentationSPD.h"
 #include "AliITSsimulation.h"
-#include "AliITSresponseSPD.h"
+//#include "AliITSresponseSPD.h"
 
 class AliITSMapA2;
 class AliITSpList;

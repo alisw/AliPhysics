@@ -131,12 +131,14 @@ class AliITSOnlineCalibrationSPDhandler {
   UInt_t  GetNrBad(UInt_t module) const; // bad = silent or noisy
   UInt_t  GetNrSilent(UInt_t module) const; // silent = dead or inactive
   UInt_t  GetNrDead(UInt_t module) const;
+  UInt_t  GetNrDeadSingle(UInt_t module) const;
   UInt_t  GetDeadEqIdAt(UInt_t module,UInt_t index) const;
   UInt_t  GetDeadHSAt(UInt_t module,UInt_t index) const;
   UInt_t  GetDeadChipAt(UInt_t module,UInt_t index) const;
   UInt_t  GetDeadColAt(UInt_t module,UInt_t index) const;
   UInt_t  GetDeadRowAt(UInt_t module,UInt_t index) const;
   UInt_t  GetNrNoisy(UInt_t module) const;
+  UInt_t  GetNrNoisySingle(UInt_t module) const;
   UInt_t  GetNoisyEqIdAt(UInt_t module, UInt_t index) const;
   UInt_t  GetNoisyHSAt(UInt_t module, UInt_t index) const;
   UInt_t  GetNoisyChipAt(UInt_t module, UInt_t index) const;

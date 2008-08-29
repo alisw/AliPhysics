@@ -1173,7 +1173,7 @@ Bool_t AliITS::Raw2SDigits(AliRawReader* rawReader)
  
 	last = (modA[module])->GetEntries();
 	TClonesArray& dum = *modA[module];
-	fDetTypeSim->GetCalibrationModel(module)->Thresholds(thr,sigma);
+	fDetTypeSim->GetSimuParam()->SPDThresholds(module,thr,sigma);
 	thr += 1.;
 	new (dum[last]) AliITSpListItem(-1, -1, module, index, thr);
     }

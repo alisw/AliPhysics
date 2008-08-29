@@ -49,8 +49,6 @@ class AliITSCalibration : public TObject {
     virtual const char  *DataType() const {return fDataType.Data();}
     // Type of data - real or simulated
     virtual void    SetDataType(const char *data="simulated") {fDataType=data;}
-    // Set noise parameters 
-    virtual void   SetNoiseParam(Double_t, Double_t) = 0;
     // Number of parameters to be set
     virtual  void   SetNDetParam(Int_t) = 0;
     // Set detector parameters: gain, coupling ...
@@ -58,9 +56,6 @@ class AliITSCalibration : public TObject {
 
     virtual Int_t  NDetParam() const = 0;
     virtual void   GetDetParam(Double_t *) const = 0;
-    virtual void   GetNoiseParam(Double_t&, Double_t&) const = 0;
-    virtual void   SetThresholds(Double_t, Double_t) = 0;
-    virtual void   Thresholds(Double_t &, Double_t &) const = 0;
     virtual void   SetMapA(Int_t, AliITSMapSDD*) {AliError("This method must be implemented in a derived class");}
     virtual void   SetMapT(Int_t, AliITSMapSDD*) {AliError("This method must be implemented in a derived class");}
     virtual void   SetDriftSpeed(Int_t, AliITSDriftSpeedArraySDD*) {AliError("This method must be implemented in a derived class");}
@@ -78,11 +73,6 @@ class AliITSCalibration : public TObject {
     virtual void Print(Option_t *option="") const {TObject::Print(option);}
     virtual Int_t Read(const char *name) {return TObject::Read(name);}
 
-    void SetResponse(AliITSresponse* response) {fResponse=response;}
-    AliITSresponse* GetResponse() const {return fResponse;}
-
-    virtual void SetDiffCoeff(Float_t p1, Float_t p2) {fResponse->SetDiffCoeff(p1,p2);}
-    virtual void DiffCoeff(Float_t &diff,Float_t &diff1) const {fResponse->DiffCoeff(diff,diff1);} 
 
  protected:
     AliITSCalibration(const AliITSCalibration &ob); // copy constructor
@@ -93,10 +83,9 @@ class AliITSCalibration : public TObject {
     TString  fDataType;   // data type - real or simulated
     
     Float_t fT;   // The temperature of the Si in Degree K.
-    AliITSresponse* fResponse; //! ptr to base response obj. It is not
                  // deleted here but in AliITSDetTypeSim and AliITSDetTypeRec
 
-    ClassDef(AliITSCalibration,2) // Detector type response virtual base class 
+    ClassDef(AliITSCalibration,3) // Detector type response virtual base class 
 };
 // Input and output function for standard C++ input/output.
 ostream& operator<<(ostream &os,AliITSCalibration &source);

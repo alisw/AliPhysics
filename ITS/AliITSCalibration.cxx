@@ -35,18 +35,18 @@ ClassImp(AliITSCalibration)
 AliITSCalibration::AliITSCalibration():
 TObject(),
 fDataType(),
-fT(300.),
-fResponse(){
+fT(300.)
+{
     // Default Constructor (300 microns and 80 volts)
-    fResponse = 0;
+
 }
 
 //______________________________________________________________________
 AliITSCalibration::AliITSCalibration(const AliITSCalibration &ob):
 TObject(ob),
 fDataType(ob.fDataType),
-fT(ob.fT),
-fResponse(ob.fResponse)
+fT(ob.fT)
+
 {
   // Copy constructor
 

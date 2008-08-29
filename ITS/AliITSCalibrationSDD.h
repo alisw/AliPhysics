@@ -25,21 +25,12 @@ class AliITSCalibrationSDD : public AliITSCalibration {
     AliITSCalibrationSDD();
     AliITSCalibrationSDD(const char *dataType);
     virtual ~AliITSCalibrationSDD();
-    virtual void  SetNoiseParam(Double_t /*n*/, Double_t /*b*/){
-      NotImplemented("SetNoiseParam");}
- 
-    virtual void  GetNoiseParam(Double_t &/*n*/, Double_t &/*b*/) const {
-      NotImplemented("GetNoiseParam");}
 
     virtual Float_t GetBaseline(Int_t anode) const {return fBaseline[anode];}
     virtual void SetBaseline(Int_t anode,Double_t bas) {fBaseline[anode]=bas;}
     virtual Float_t GetNoise(Int_t anode) const {return fNoise[anode];}
     virtual void SetNoise(Int_t anode, Double_t noise) {fNoise[anode]=noise;}
 
-    virtual void   SetThresholds(Double_t  /* mv */, Double_t /* b */) {
-      NotImplemented("SetThresholds");}
-    virtual void   Thresholds(Double_t &  /* mv */, Double_t & /* b */) const {
-      NotImplemented("Thresholds");}
     virtual void  GiveCompressParam(Int_t *x) const;
 
     void SetZSLowThreshold(Int_t iWing, Int_t thr=25){fZSTL[iWing]=thr;}
