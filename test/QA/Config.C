@@ -411,12 +411,12 @@ void Config()
   Int_t iACORDE= 1;
   Int_t iDIPO  = 1;
   Int_t iEMCAL = 1;
-  Int_t iFMD   = 0;
+  Int_t iFMD   = 1;
   Int_t iFRAME = 1;
   Int_t iHALL  = 1;
   Int_t iITS   = 1;
   Int_t iMAG   = 1;
-  Int_t iMUON  = 0;
+  Int_t iMUON  = 1;
   Int_t iPHOS  = 1;
   Int_t iPIPE  = 1;
   Int_t iPMD   = 1;

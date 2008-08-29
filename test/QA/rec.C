@@ -16,8 +16,7 @@
   reco.SetRecoParam("MUON",AliMUONRecoParam::GetLowFluxParam());
 	
  	AliTPCReconstructor::SetStreamLevel(1);
-//  reco.SetRunReconstruction("ITS TPC TRD TOF HMPID PHOS EMCAL MUON T0 VZERO FMD PMD ZDC ACORDE");
-  reco.SetRunReconstruction("ITS TPC TRD HMPID PHOS EMCAL MUON T0 VZERO FMD PMD ZDC ACORDE");
+  reco.SetRunReconstruction("ITS TPC TRD TOF HMPID PHOS EMCAL MUON T0 VZERO FMD PMD ZDC ACORDE");
   reco.SetRunQA("ALL:ALL") ;
 	  
 	// AliQA::SetQARefStorage(Form("%s%s/", AliQA::GetQARefDefaultStorage(), kYear)) ;
