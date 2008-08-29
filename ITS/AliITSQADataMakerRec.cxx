@@ -199,6 +199,8 @@ void AliITSQADataMakerRec::InitESDs()
 {
   // Create ESDs histograms in ESDs subdir
 
+  Bool_t expertHistogram = kTRUE;
+
   TH1F *hESDClustersMI = 
     new TH1F("hESDClustersMI", "N ITS clusters per track (MI); N clusters; Counts",
 	     7, -0.5, 6.5);
@@ -211,7 +213,7 @@ void AliITSQADataMakerRec::InitESDs()
 	     6, -0.5, 5.5);
   hESDClusterMapMI->Sumw2();
   hESDClusterMapMI->SetMinimum(0);
-  Add2ESDsList(hESDClusterMapMI, 1);
+  Add2ESDsList(hESDClusterMapMI, 1, expertHistogram);
 
   TH1F *hESDClustersSA = 
     new TH1F("hESDClustersSA", "N ITS clusters per track (SA); N clusters; Counts",
@@ -225,7 +227,7 @@ void AliITSQADataMakerRec::InitESDs()
 	     6, -0.5, 5.5);
   hESDClusterMapSA->Sumw2();
   hESDClusterMapSA->SetMinimum(0);
-  Add2ESDsList(hESDClusterMapSA, 3);
+  Add2ESDsList(hESDClusterMapSA, 3, expertHistogram);
 
   TH1F *hSPDVertexX = 
     new TH1F("hSPDVertexX","SPD Vertex x; x [cm]; N events",
@@ -249,43 +251,43 @@ void AliITSQADataMakerRec::InitESDs()
     new TH1F("hSPDVertexContrOverMult","SPD Vertex: contributors / multiplicity; N contributors / SPD multiplicity; N events",
 	     100,-4,20);
   hSPDVertexContrOverMult->Sumw2();
-  Add2ESDsList(hSPDVertexContrOverMult, 7);
+  Add2ESDsList(hSPDVertexContrOverMult, 7, expertHistogram);
 
   TH1F *hTrkVertexX = 
     new TH1F("hTrkVertexX","ITS+TPC Trk Vertex x; x [cm]; N events",
 	     10000,-2,2);
   hTrkVertexX->Sumw2();
-  Add2ESDsList(hTrkVertexX, 8);
+  Add2ESDsList(hTrkVertexX, 8, expertHistogram);
 
   TH1F *hTrkVertexY = 
     new TH1F("hTrkVertexY","ITS+TPC Trk Vertex y; y [cm]; N events",
 	     10000,-2,2);
   hTrkVertexY->Sumw2();
-  Add2ESDsList(hTrkVertexY, 9);
+  Add2ESDsList(hTrkVertexY, 9, expertHistogram);
 
   TH1F *hTrkVertexZ = 
     new TH1F("hTrkVertexZ","ITS+TPC Trk Vertex Z; z [cm]; N events",
 	     10000,-20,20);
   hTrkVertexZ->Sumw2();
-  Add2ESDsList(hTrkVertexZ, 10);
+  Add2ESDsList(hTrkVertexZ, 10, expertHistogram);
 
   TH1F *hTrkVertexContrOverITSrefit5 =
     new TH1F("hTrkVertexContrOverITSrefit5","ITS+TPC Trk Vertex: contributors / tracks; N contributors / N trks kITSrefit with 5 or 6 clusters; N events",
 	     100,-4,2);
   hTrkVertexContrOverITSrefit5->Sumw2();
-  Add2ESDsList(hTrkVertexContrOverITSrefit5, 11);
+  Add2ESDsList(hTrkVertexContrOverITSrefit5, 11, expertHistogram);
 
   TH1F *hSPDTrkVertexDeltaX =
     new TH1F("hSPDTrkVertexDeltaX","Comparison of SPD and Trk vertices: x; xSPD-xTrk [cm]; N events",
 	     1000,-1,1);
   hSPDTrkVertexDeltaX->Sumw2();
-  Add2ESDsList(hSPDTrkVertexDeltaX, 12);
+  Add2ESDsList(hSPDTrkVertexDeltaX, 12, expertHistogram);
     
   TH1F *hSPDTrkVertexDeltaY =
     new TH1F("hSPDTrkVertexDeltaY","Comparison of SPD and Trk vertices: y; ySPD-yTrk [cm]; N events",
 	     1000,-1,1);
   hSPDTrkVertexDeltaY->Sumw2();
-  Add2ESDsList(hSPDTrkVertexDeltaY, 13);
+  Add2ESDsList(hSPDTrkVertexDeltaY, 13, expertHistogram);
     
   TH1F *hSPDTrkVertexDeltaZ =
     new TH1F("hSPDTrkVertexDeltaZ","Comparison of SPD and Trk vertices: z; zSPD-zTrk [cm]; N events",
