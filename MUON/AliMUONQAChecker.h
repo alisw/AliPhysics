@@ -14,6 +14,9 @@
 // --- AliRoot header files ---
 #include "AliQACheckerBase.h"
 
+class TH1;
+class TObjArray;
+
 class AliMUONQAChecker: public AliQACheckerBase {
 
 public:
@@ -30,6 +33,9 @@ protected:
   virtual void SetQA(AliQA::ALITASK_t index, const Double_t value) const ;	
 	
   const Double_t CheckRaws(TObjArray* list);
+  const Double_t CheckRecPoints(TObjArray* list);
+  const Double_t CheckESD(TObjArray* list);
+  TH1* GetHisto(TObjArray* list, const char* hname) const;
   
 private:
   

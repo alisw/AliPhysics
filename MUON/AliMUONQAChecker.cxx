@@ -29,10 +29,12 @@
 ///
 /// \author Laurent Aphecetche, Subatech
 
-#include "AliQA.h"
+#include "AliLog.h"
 #include "AliMUONVTrackerData.h"
 #include "AliMpManuIterator.h"
+#include "AliQA.h"
 #include <TDirectory.h>
+#include <TH1.h>
 
 /// \cond CLASSIMP
 ClassImp(AliMUONQAChecker)
@@ -80,8 +82,68 @@ AliMUONQAChecker::Check(AliQA::ALITASK_t index, TObjArray * list)
     return CheckRaws(list);
   }
   
+  if ( index == AliQA::kREC)
+  {
+    return CheckRecPoints(list);
+  }
+  
+  if ( index = AliQA::kESD )
+  {
+    return CheckESD(list);
+  }
+  
   AliWarning(Form("Checker for task %d not implement for the moment",index));
   return 0.0;
+}
+
+//______________________________________________________________________________
+TH1* 
+AliMUONQAChecker::GetHisto(TObjArray* list, const char* hname) const
+{
+  /// Get a given histo from the list
+  TH1* h = static_cast<TH1*>(list->FindObject(hname));
+  if (!h)
+  {
+    AliError(Form("Did not find expected histo %s",hname));
+  }
+  return h;
+}
+
+//______________________________________________________________________________
+const Double_t 
+AliMUONQAChecker::CheckRecPoints(TObjArray * list)
+{
+  /// Check rec points
+  /// Very binary check for the moment. 
+  
+  TH1* h = GetHisto(list,"hTrackerNumberOfClustersPerDE");
+  
+  if ( !h ) return 0.75; // only a warning if histo not found, in order not to kill anything because QA failed...
+  
+  if ( h->GetMean() == 0.0 ) return 0.0;
+  
+  return 1.0;
+}
+
+//______________________________________________________________________________
+const Double_t 
+AliMUONQAChecker::CheckESD(TObjArray * list)
+{
+  /// Check ESD
+  
+  TH1* h = GetHisto(list,"hESDnTracks");
+  
+  if (!h) return 0.75;
+  
+  if ( h->GetMean() == 0.0 ) return 0.0; // no track -> fatal
+  
+  h = GetHisto(list,"hESDMatchTrig");
+  
+  if (!h) return 0.75;
+  
+  if (h->GetMean() == 0.0 ) return 0.25; // no trigger matching -> error
+  
+  return 1.0;
 }
 
 //______________________________________________________________________________
