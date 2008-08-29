@@ -15,14 +15,9 @@
 
 #include "AliQA.h"
 #include "AliITSQADataMakerRec.h"
-class TObjArray;
-class TH1D;
-class TProfile2D;
-class AliRawReader;
-class AliITSgeomTGeo;
-class AliITSDDLModuleMapSDD;
 
-class AliITSQADataMakerRec;
+class TObjArray;
+class AliITSDDLModuleMapSDD;
 
 class AliITSQASDDDataMakerRec: public TObject {
 
@@ -68,5 +63,4 @@ private:
 };
 
 #endif
-
 
