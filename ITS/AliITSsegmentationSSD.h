@@ -35,7 +35,8 @@ public AliITSsegmentation {
     // Transform from real coordinates to strips
     virtual void    GetPadIxz(Float_t x ,Float_t z ,Int_t   &iP,Int_t  &iN) const;
     // Transform from strips to real coordinates
-    virtual void    GetPadCxz(Int_t iP, Int_t iN, Float_t &x , Float_t &z) const;
+            void    GetPadCxz(Float_t iP, Float_t iN, Float_t &x , Float_t &z) const;
+    virtual void    GetPadCxz(Int_t iP, Int_t iN, Float_t &x , Float_t &z) const { GetPadCxz((Float_t) iP, (Float_t) iN, x, z); }
     virtual void    GetPadTxz(Float_t &x , Float_t &z) const;
     // Transformation from Geant cm detector center local coordinates
     // to detector P and N side strip numbers..
@@ -44,12 +45,6 @@ public AliITSsegmentation {
     // from 0. iPN=0 for P side and 1 for N side strip. Returned is z=0.0
     // and the corresponding x value..
     virtual void    DetToLocal(Int_t ix,Int_t iPN,Float_t &x,Float_t &z) const;
-    // Given one P side strip and one N side strip, Returns kTRUE if they
-    // cross each other and the location of the two crossing strips and
-    // their correxlation matrix c[2][2].
-    virtual Bool_t  GetCrossing(Int_t iP,Int_t iN,Float_t &x,Float_t &z,
-				Float_t c[2][2]);
-
 
     virtual Int_t    GetNumberOfChips() const {
       return fgkNchipsPerSide;

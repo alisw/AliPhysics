@@ -14,7 +14,6 @@ class AliITSpackageSSD;
 class AliITSsegmentation;
 class AliITSsegmentationSSD;
 class AliITSresponse;
-class AliITSresponseSSD;
 class AliITSCalibration;
 class AliITSCalibrationSSD;
 

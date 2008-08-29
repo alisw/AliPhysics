@@ -87,12 +87,10 @@ class AliITSSimuParam : public TObject {
   void    SetSDDChargeLoss(Double_t p1) {fSDDChargeLoss=p1;}
   Float_t GetSDDChargeLoss() const {return fSDDChargeLoss;}
 
-
-  void SetSSDADCpereV(Double_t a=120./24888.9){fSSDADCpereV = a;}
-  Double_t GetSSDDEvToADC(Double_t eV) const {return eV*fSSDADCpereV;}
-  Int_t GetSSDIEvToADC(Double_t eV) const { 
-      return ((Int_t) GetSSDDEvToADC(eV)); }
-
+  Int_t GetSSDZSThreshold() const { // ZS threshold
+    return fSSDZSThreshold; }
+  virtual void SetSSDZSThreshold(Int_t zsth) { fSSDZSThreshold = zsth; }
+  
   void SetSSDCouplings(Double_t pr, Double_t pl, Double_t nr, Double_t nl) {
       fSSDCouplingPR=pr; fSSDCouplingPL=pl; fSSDCouplingNR=nr; fSSDCouplingNL=nl; }
   Double_t  GetSSDCouplingPR() const {return fSSDCouplingPR;}
@@ -217,7 +215,6 @@ class AliITSSimuParam : public TObject {
   Float_t  fSDDMaxAdc;       // SDD ADC saturation value
   Float_t  fSDDChargeLoss;   // Set Linear Coefficient for Charge Loss 
   
-  Double_t fSSDADCpereV;    // Constant to convert eV to ADC for SSD.
   Double_t fSSDCouplingPR;  // SSD couplings
   Double_t fSSDCouplingPL;  // SSD couplings
   Double_t fSSDCouplingNR;  // SSD couplings

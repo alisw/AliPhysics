@@ -69,7 +69,6 @@ fSDDJitterError(fgkSDDJitterErrorDefault),
 fSDDDynamicRange(fgkSDDDynamicRangeDefault),
 fSDDMaxAdc(0.),
 fSDDChargeLoss(fgkSDDChargeLossDefault),
-fSSDADCpereV(0.),
 fSSDCouplingPR(0),
 fSSDCouplingPL(0),
 fSSDCouplingNR(0),
@@ -92,7 +91,6 @@ fT(300.)
   SetSDDElectronics();
   SetSDDDiffCoeff(fgkSDDDiffCoeffDefault,fgkSDDDiffCoeff1Default);
   SetSDDMaxAdc((Double_t)fgkSDDMaxAdcDefault);
-  SetSSDADCpereV();
   SetSSDCouplings(fgkSSDCouplingPRDefault,fgkSSDCouplingPLDefault,fgkSSDCouplingNRDefault,fgkSSDCouplingNLDefault);
 }
 //______________________________________________________________________
@@ -114,7 +112,6 @@ fSDDJitterError(simpar.fSDDJitterError),
 fSDDDynamicRange(simpar.fSDDDynamicRange),
 fSDDMaxAdc(simpar.fSDDMaxAdc),
 fSDDChargeLoss(simpar.fSDDChargeLoss),
-fSSDADCpereV(simpar.fSSDADCpereV),
 fSSDCouplingPR(simpar.fSSDCouplingPR),
 fSSDCouplingPL(simpar.fSSDCouplingPL),
 fSSDCouplingNR(simpar.fSSDCouplingNR),
@@ -183,7 +180,6 @@ void AliITSSimuParam::PrintParameters() const{
   printf("Charge Loss               = %f\n",fSDDChargeLoss);  
   printf("\n");
   printf("=====  SSD parameters  =====\n");
-  printf("ADC per eV                = %f\n",fSSDADCpereV);
   printf("Coupling PR               = %f\n",fSSDCouplingPR);
   printf("Coupling PL               = %f\n",fSSDCouplingPL);
   printf("Coupling NR               = %f\n",fSSDCouplingNR);

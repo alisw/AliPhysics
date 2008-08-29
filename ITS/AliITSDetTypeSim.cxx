@@ -447,10 +447,9 @@ Bool_t AliITSDetTypeSim::GetCalibration() {
   AliCDBEntry *entryBadChannelsSSD = AliCDBManager::Instance()->Get("ITS/Calib/BadChannelsSSD");
 
   AliCDBEntry *entry2SPD = AliCDBManager::Instance()->Get("ITS/Calib/RespSPD", run);
-  AliCDBEntry *entry2SSD = AliCDBManager::Instance()->Get("ITS/Calib/RespSSD", run);
 
   if(!entrySPD || !entrySDD || !entryNoiseSSD || !entryGainSSD || !entryBadChannelsSSD || 
-     !entry2SPD || !entry2SSD || !drSpSDD || !ddlMapSDD || !mapTSDD){
+     !entry2SPD || !drSpSDD || !ddlMapSDD || !mapTSDD){
     AliFatal("Calibration object retrieval failed! ");
     return kFALSE;
   }  	
@@ -545,10 +544,6 @@ Bool_t AliITSDetTypeSim::GetCalibration() {
   if(!isCacheActive)entryBadChannelsSSD->SetObject(NULL);
   entryBadChannelsSSD->SetOwner(kTRUE);*/
 
-  AliITSresponseSSD *pSSD = (AliITSresponseSSD*)entry2SSD->GetObject();
-  if(!isCacheActive)entry2SSD->SetObject(NULL);
-  entry2SSD->SetOwner(kTRUE);
-  
   // DB entries are deleted. In this way metadeta objects are deleted as well
   if(!isCacheActive){
     delete entrySPD;
@@ -557,7 +552,6 @@ Bool_t AliITSDetTypeSim::GetCalibration() {
     delete entryGainSSD;
     delete entryBadChannelsSSD;
     delete entry2SPD;
-    delete entry2SSD;
 //    delete mapASDD;   
     delete mapTSDD;
     delete drSpSDD;
@@ -566,7 +560,7 @@ Bool_t AliITSDetTypeSim::GetCalibration() {
   
   AliCDBManager::Instance()->SetCacheFlag(origCacheStatus);
 
-  if ((!pSPD)||(!pSSD) || (!calSPD) || (!calSDD) || (!drSp) || (!ddlsdd)
+  if ((!pSPD)|| (!calSPD) || (!calSDD) || (!drSp) || (!ddlsdd)
       || (!mapT) || (!noiseSSD)|| (!gainSSD)|| (!badChannelsSSD)) {
     AliWarning("Can not get calibration from calibration database !");
     return kFALSE;
@@ -620,7 +614,6 @@ Bool_t AliITSDetTypeSim::GetCalibration() {
     }
   }
 
-  fSSDCalibration->SetResponse((AliITSresponse*)pSSD);
   fSSDCalibration->SetNoise(noiseSSD);
   fSSDCalibration->SetGain(gainSSD);
   fSSDCalibration->SetBadChannels(badChannelsSSD);

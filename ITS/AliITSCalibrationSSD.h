@@ -7,13 +7,12 @@
 #include "AliITSPedestalSSDv2.h"
 #include "AliITSGainSSDv2.h"
 #include "AliITSBadChannelsSSDv2.h"
-#include "AliITSresponseSSD.h"
 #include "TArrayF.h"
 #include "TArrayI.h"
 
 /* $Id$ */
 //////////////////////////////////////////////
-// Response class for SSD                   //
+// Calibration class for SSD                   //
 //                                          //
 //////////////////////////////////////////////
 class AliITSCalibrationSSD : public AliITSCalibration {
@@ -95,27 +94,18 @@ class AliITSCalibrationSSD : public AliITSCalibration {
     virtual void   Thresholds(Double_t & /* a */, Double_t & /* b */) const 
       {NotImplemented("Thresholds");}
   
-    virtual void SetADCpereV(Double_t a=120./24888.9) {((AliITSresponseSSD*)fResponse)->SetADCpereV(a);}
-    virtual Double_t GetDEvToADC(Double_t eV) const {return ((AliITSresponseSSD*)fResponse)->DEvToADC(eV);}
-    virtual Int_t IEvToADC(Double_t eV) const {return ((AliITSresponseSSD*)fResponse)->IEvToADC(eV);} 
-
-    virtual void SetKeVperADC(Double_t a=86.4/120.0) {((AliITSresponseSSD*)fResponse)->SetKeVperADC(a);}
-    virtual Double_t ADCToKeV(Double_t adc) const {return ((AliITSresponseSSD*)fResponse)->ADCToKeV(adc);}
-
-  virtual Double_t GetCouplingPR() const {return ((AliITSresponseSSD*)fResponse)->GetCouplingPR();}
-  virtual Double_t GetCouplingPL() const {return ((AliITSresponseSSD*)fResponse)->GetCouplingPL();}
-  virtual Double_t GetCouplingNR() const {return ((AliITSresponseSSD*)fResponse)->GetCouplingNR();}
-  virtual Double_t GetCouplingNL() const {return ((AliITSresponseSSD*)fResponse)->GetCouplingNL();}
-  virtual void SetCouplings(Double_t pr, Double_t pl, Double_t nr, Double_t nl) 
-    { ((AliITSresponseSSD*)fResponse)->SetCouplings(pr,pl,nr,nl);}
-
-  virtual Int_t GetZSThreshold() const {return ((AliITSresponseSSD*)fResponse)->GetZSThreshold();}
-  virtual void SetZSThreshold(Int_t zsth) 
-    { ((AliITSresponseSSD*)fResponse)->SetZSThreshold(zsth);}
-
  void SetModule(Int_t mod){fModule = mod;}
 
-protected:
+  void SetKeVperADC(Double_t a=86.4/120.){fKeVperADC = a;}
+  Double_t ADCToKeV(Double_t adc) const {return adc*fKeVperADC;}
+
+  void SetSSDADCpereV(Double_t a=120./24888.9){fSSDADCpereV = a;}
+  Double_t GetSSDDEvToADC(Double_t eV) const {return eV*fSSDADCpereV;}
+  Int_t GetSSDIEvToADC(Double_t eV) const { 
+      return ((Int_t) GetSSDDEvToADC(eV)); }
+
+
+ protected:
 
     static const Int_t fgkChipsPerModule  = 12;    // Number of chips/module
     static const Int_t fgkChannelsPerChip = 128;   // Number of channels/chip
@@ -135,10 +125,13 @@ protected:
     Bool_t   fIsBad;                         // module is dead or alive ?
     Bool_t   fIsChipBad[fgkChipsPerModule];  // chip is dead or alive ?
 
+    Double_t fSSDADCpereV;    // Constant to convert eV to ADC for SSD.
+    Double_t fKeVperADC;       // Constant to convert ADC to keV
+
  private:
     AliITSCalibrationSSD(const AliITSCalibrationSSD &source); // copy constructor
     AliITSCalibrationSSD& operator=(const AliITSCalibrationSSD &source); // ass. op.
 
-    ClassDef(AliITSCalibrationSSD,4) //Response class for SSD
+    ClassDef(AliITSCalibrationSSD,5) //Response class for SSD
       };
 #endif

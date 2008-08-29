@@ -34,7 +34,6 @@
 #include "AliITSgeom.h"
 #include "AliITSsimulationSSD.h"
 #include "AliITSTableSSD.h"
-//#include "AliITSresponseSSD.h"
 
 ClassImp(AliITSsimulationSSD)
 ////////////////////////////////////////////////////////////////////////
@@ -397,7 +396,7 @@ void AliITSsimulationSSD::ApplyNoise(AliITSpList *pList,Int_t module){
   Int_t ix;
   Double_t signal,noise;
   AliITSCalibrationSSD* res =(AliITSCalibrationSSD*)GetCalibrationModel(module);
-  
+   
   // Pside
   for(ix=0;ix<GetNStrips();ix++){      // loop over strips
     
@@ -412,7 +411,7 @@ void AliITSsimulationSSD::ApplyNoise(AliITSpList *pList,Int_t module){
     
     // noise comes in ADC channels from the calibration database
     // It needs to be converted back to electronVolts
-    noise /= res->GetDEvToADC(1.);
+    noise /= res->GetSSDDEvToADC(1.);
     
     // Finally, noise is added to the signal
     signal = noise + fMapA2->GetSignal(0,ix);//get signal from map
@@ -424,7 +423,7 @@ void AliITSsimulationSSD::ApplyNoise(AliITSpList *pList,Int_t module){
   for(ix=0;ix<GetNStrips();ix++){      // loop over strips
     noise  = (Double_t) gRandom->Gaus(0,res->GetNoiseN(ix));// give noise to signal
     noise *= (Double_t) res->GetGainN(ix); 
-    noise /= res->GetDEvToADC(1.);
+    noise /= res->GetSSDDEvToADC(1.);
     signal = noise + fMapA2->GetSignal(1,ix);//get signal from map
     fMapA2->SetHit(1,ix,signal); // give back signal to map
     if(signal>0.0) pList->AddNoise(1,ix,module,noise);
@@ -436,37 +435,38 @@ void AliITSsimulationSSD::ApplyCoupling(AliITSpList *pList,Int_t module) {
   // Apply the effect of electronic coupling between channels
   Int_t ix;
   Double_t signal=0;
-  AliITSCalibrationSSD* res =(AliITSCalibrationSSD*)GetCalibrationModel(module);
-  
+  //AliITSCalibrationSSD* res =(AliITSCalibrationSSD*)GetCalibrationModel(module);
+  AliITSSimuParam* res = fDetType->GetSimuParam();
+    
   Double_t *contrLeft  = new Double_t[GetNStrips()];
   Double_t *contrRight = new Double_t[GetNStrips()];
   
   // P side coupling
   for(ix=0;ix<GetNStrips();ix++){
-    if(ix>0) contrLeft[ix] = fMapA2->GetSignal(0,ix-1)*res->GetCouplingPL();
+    if(ix>0) contrLeft[ix] = fMapA2->GetSignal(0,ix-1)*res->GetSSDCouplingPL();
     else contrLeft[ix] = 0.0;
-    if(ix<(GetNStrips()-1)) contrRight[ix] = fMapA2->GetSignal(0,ix+1)*res->GetCouplingPR();
+    if(ix<(GetNStrips()-1)) contrRight[ix] = fMapA2->GetSignal(0,ix+1)*res->GetSSDCouplingPR();
     else contrRight[ix] = 0.0;
   } // loop over strips 
   
   for(ix=0;ix<GetNStrips();ix++){
-    signal = contrLeft[ix] + contrRight[ix] - res->GetCouplingPL() * fMapA2->GetSignal(0,ix)
-      - res->GetCouplingPR() * fMapA2->GetSignal(0,ix);
+    signal = contrLeft[ix] + contrRight[ix] - res->GetSSDCouplingPL() * fMapA2->GetSignal(0,ix)
+      - res->GetSSDCouplingPR() * fMapA2->GetSignal(0,ix);
     fMapA2->AddSignal(0,ix,signal);
     if(signal>0.0) pList->AddNoise(0,ix,module,signal);
   } // loop over strips 
   
   // N side coupling
   for(ix=0;ix<GetNStrips();ix++){
-    if(ix>0) contrLeft[ix] = fMapA2->GetSignal(1,ix-1)*res->GetCouplingNL();
+    if(ix>0) contrLeft[ix] = fMapA2->GetSignal(1,ix-1)*res->GetSSDCouplingNL();
     else contrLeft[ix] = 0.0;
-    if(ix<(GetNStrips()-1)) contrRight[ix] = fMapA2->GetSignal(1,ix+1)*res->GetCouplingNR();
+    if(ix<(GetNStrips()-1)) contrRight[ix] = fMapA2->GetSignal(1,ix+1)*res->GetSSDCouplingNR();
     else contrRight[ix] = 0.0;
   } // loop over strips 
   
   for(ix=0;ix<GetNStrips();ix++){
-    signal = contrLeft[ix] + contrRight[ix] - res->GetCouplingNL() * fMapA2->GetSignal(0,ix)
-      - res->GetCouplingNR() * fMapA2->GetSignal(0,ix);
+    signal = contrLeft[ix] + contrRight[ix] - res->GetSSDCouplingNL() * fMapA2->GetSignal(0,ix)
+      - res->GetSSDCouplingNR() * fMapA2->GetSignal(0,ix);
     fMapA2->AddSignal(1,ix,signal);
     if(signal>0.0) pList->AddNoise(1,ix,module,signal);
   } // loop over strips 
@@ -640,6 +640,7 @@ void AliITSsimulationSSD::ChargeToSignal(Int_t module,AliITSpList *pList) {
     Float_t charges[3] = {0.0,0.0,0.0};
     Float_t signal;
     AliITSCalibrationSSD* res =(AliITSCalibrationSSD*)GetCalibrationModel(module);
+    AliITSSimuParam* simpar = fDetType->GetSimuParam();
 
     for(Int_t k=0;k<2;k++){         // both sides (0=Pside, 1=Nside)
       for(Int_t ix=0;ix<GetNStrips();ix++){     // loop over strips
@@ -656,7 +657,7 @@ void AliITSsimulationSSD::ChargeToSignal(Int_t module,AliITSpList *pList) {
 	else signal /= res->GetGainN(ix);
 
 	// signal is converted in unit of ADC
-	signal = res->GetDEvToADC(signal);
+	signal = res->GetSSDDEvToADC(signal);
 	if(signal>4096.) signal = 4096.;//if exceeding, accumulate last one
 
 	// threshold for zero suppression is set on the basis of the noise
@@ -664,7 +665,7 @@ void AliITSsimulationSSD::ChargeToSignal(Int_t module,AliITSpList *pList) {
 	if(k==0) threshold = res->GetNoiseP(ix);
 	else threshold = res->GetNoiseN(ix);
 
-	threshold *= res->GetZSThreshold(); // threshold at 3 sigma noise
+	threshold *= simpar->GetSSDZSThreshold(); // threshold at 3 sigma noise
 
 	if(signal < threshold) continue;
 	//cout<<signal<<" "<<threshold<<endl;

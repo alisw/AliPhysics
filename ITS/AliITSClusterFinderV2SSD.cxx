@@ -37,6 +37,7 @@
 #include "AliITSdigitSSD.h"
 #include "AliITSReconstructor.h"
 #include "AliITSCalibrationSSD.h"
+#include "AliITSsegmentationSSD.h"
 
 Short_t *AliITSClusterFinderV2SSD::fgPairs = 0x0;
 Int_t    AliITSClusterFinderV2SSD::fgPairsSize = 0;
@@ -45,25 +46,14 @@ ClassImp(AliITSClusterFinderV2SSD)
 
 
 AliITSClusterFinderV2SSD::AliITSClusterFinderV2SSD(AliITSDetTypeRec* dettyp):AliITSClusterFinderV2(dettyp),
-fLastSSD1(AliITSgeomTGeo::GetModuleIndex(6,1,1)-1),
-fYpitchSSD(0.0095),
-fHwSSD(3.65),
-fHlSSD(2.00),
-fTanP(0.0275),
-fTanN(0.0075)
+fLastSSD1(AliITSgeomTGeo::GetModuleIndex(6,1,1)-1)
 {
-
-  //Default constructor
+//Default constructor
 
 }
  
 //______________________________________________________________________
-AliITSClusterFinderV2SSD::AliITSClusterFinderV2SSD(const AliITSClusterFinderV2SSD &cf) : AliITSClusterFinderV2(cf),						fLastSSD1(cf.fLastSSD1),
-fYpitchSSD(cf.fYpitchSSD),
-fHwSSD(cf.fHwSSD),
-fHlSSD(cf.fHlSSD),
-fTanP(cf.fTanP),
-fTanN(cf.fTanN)
+AliITSClusterFinderV2SSD::AliITSClusterFinderV2SSD(const AliITSClusterFinderV2SSD &cf) : AliITSClusterFinderV2(cf),						fLastSSD1(cf.fLastSSD1)
 {
   // Copy constructor
 }
@@ -117,7 +107,6 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(TClonesArray *alldigits) {
 
     Float_t q=gain*d->GetSignal(); // calibration brings mip peaks around 120 (in ADC units)
     q=cal->ADCToKeV(q); // converts the charge in KeV from ADC units
-    //Float_t q=d->GetSignal()/4.29;// temp. fix (for PID purposed - normalis. to be checked)
     d->SetSignal(Int_t(q));
 
     if (d->GetSignal()<3) continue;
@@ -614,28 +603,30 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
   const TGeoHMatrix *mT2L=AliITSgeomTGeo::GetTracking2LocalMatrix(fModule);
 
   TClonesArray &cl=*clusters;
-  //
-  //  Float_t tanp=fTanP, tann=fTanN;
-  const Float_t kStartXzero=3.64325;
-  const Float_t kDeltaXzero5or6=0.02239;
-  const Float_t kDeltaZ5to6=7.6/7.0;
   
-  Int_t is6=-1;
-  
-  if (fModule>fLastSSD1) is6=1;
+  AliITSsegmentationSSD *seg = dynamic_cast<AliITSsegmentationSSD*>(fDetTypeRec->GetSegmentationModel(2));
+  if (fModule>fLastSSD1) 
+    seg->SetLayer(6);
+  else 
+    seg->SetLayer(5);
+
+  Float_t hwSSD = seg->Dx()*1e-4/2;
+  Float_t hlSSD = seg->Dz()*1e-4/2;
+
   Int_t idet=fNdet[fModule];
   Int_t ncl=0;
 
   //
-  Int_t negativepair[30000];
-  Int_t cnegative[3000];  
-  Int_t cused1[3000];
-  Int_t positivepair[30000];
-  Int_t cpositive[3000];
-  Int_t cused2[3000];
-  for (Int_t i=0;i<3000;i++) {cnegative[i]=0; cused1[i]=0;}
-  for (Int_t i=0;i<3000;i++) {cpositive[i]=0; cused2[i]=0;}
-  for (Int_t i=0;i<30000;i++) {negativepair[i]=0; positivepair[i]=0;}
+  Int_t *cnegative = new Int_t[np];  
+  Int_t *cused1 = new Int_t[np];
+  Int_t *negativepair = new Int_t[10*np];
+  Int_t *cpositive = new Int_t[nn];  
+  Int_t *cused2 = new Int_t[nn];  
+  Int_t *positivepair = new Int_t[10*nn];  
+  for (Int_t i=0;i<np;i++) {cnegative[i]=0; cused1[i]=0;}
+  for (Int_t i=0;i<nn;i++) {cpositive[i]=0; cused2[i]=0;}
+  for (Int_t i=0;i<10*np;i++) {negativepair[i]=0;}
+  for (Int_t i=0;i<10*nn;i++) {positivepair[i]=0;}
 
   if ((np*nn) > fgPairsSize) {
 
@@ -655,11 +646,11 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
       if ( (neg[j].GetQ()>0) && (neg[j].GetQ()<3) ) continue;
       Float_t yn=neg[j].GetY();
 
-      Float_t zt=1.9*(yp-yn)/7.0-is6*kDeltaZ5to6;
-      Float_t yt=is6*(kStartXzero-(285*yp + 1045*yn)/140000.0) + kDeltaXzero5or6;
+      Float_t xt, zt;
+      seg->GetPadCxz(yn, yp, xt, zt);
       
-      if (TMath::Abs(yt)<fHwSSD+0.01)
-      if (TMath::Abs(zt)<fHlSSD+0.01*(neg[j].GetNd()+pos[i].GetNd())) {
+      if (TMath::Abs(xt)<hwSSD+0.01)
+      if (TMath::Abs(zt)<hlSSD+0.01*(neg[j].GetNd()+pos[i].GetNd())) {
 	negativepair[i*10+cnegative[i]] =j;  //index
 	positivepair[j*10+cpositive[j]] =i;
 	cnegative[i]++;  //counters
@@ -679,13 +670,13 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
       if ( (neg[j].GetQ()>0) && (neg[j].GetQ()<3) ) continue;
       // if both 1Dclusters have an other cross continue
       if (cpositive[j]&&cnegative[i]) continue;
-     Float_t yn=neg[j].GetY();
+      Float_t yn=neg[j].GetY();
       
-      Float_t zt=1.9*(yp-yn)/7.0-is6*kDeltaZ5to6;
-      Float_t yt=is6*(kStartXzero-(285*yp + 1045*yn)/140000.0) + kDeltaXzero5or6;
+      Float_t xt, zt;
+      seg->GetPadCxz(yn, yp, xt, zt);
       
-      if (TMath::Abs(yt)<fHwSSD+0.1)
-      if (TMath::Abs(zt)<fHlSSD+0.15) {
+      if (TMath::Abs(xt)<hwSSD+0.1)
+      if (TMath::Abs(zt)<hlSSD+0.15) {
 	// tag 1Dcluster (eventually will produce low quality recpoint)
 	if (cnegative[i]==0) pos[i].SetNd(100);  // not available pair
 	if (cpositive[j]==0) neg[j].SetNd(100);  // not available pair
@@ -720,7 +711,7 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
     // sign gold tracks
     //
     for (Int_t ip=0;ip<np;ip++){
-      Float_t ybest=1000,zbest=1000,qbest=0;
+      Float_t xbest=1000,zbest=1000,qbest=0;
       //
       // select gold clusters
       if ( (cnegative[ip]==1) && cpositive[negativepair[10*ip]]==1){ 
@@ -741,19 +732,19 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 	if (TMath::Abs(ratio)>0.2) continue; // note: 0.2=3xsigma_ratio calculated in cosmics tests
 
 	//
-	      Float_t yn=neg[j].GetY();
-      
-      Float_t zt=1.9*(yp-yn)/7.0-is6*kDeltaZ5to6;
-      Float_t yt=is6*(kStartXzero-(285*yp + 1045*yn)/140000.0) + kDeltaXzero5or6;
-      
-	ybest=yt; zbest=zt; 
+	Float_t yn=neg[j].GetY();
+	
+	Float_t xt, zt;
+	seg->GetPadCxz(yn, yp, xt, zt);
+	
+	xbest=xt; zbest=zt; 
 
 	
 	qbest=0.5*(pos[ip].GetQ()+neg[j].GetQ());
 	if( (pos[ip].GetQ()==0)||(neg[ip].GetQ()==0)) qbest*=2; // in case of bad strips on one side keep all charge from the other one
 	
 	{
-	  Double_t loc[3]={ybest,0.,zbest},trk[3]={0.,0.,0.};
+	  Double_t loc[3]={xbest,0.,zbest},trk[3]={0.,0.,0.};
 	  mT2L->MasterToLocal(loc,trk);
 	  lp[0]=trk[1];
 	  lp[1]=trk[2];
@@ -820,7 +811,7 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
     }
     
     for (Int_t ip=0;ip<np;ip++){
-      Float_t ybest=1000,zbest=1000,qbest=0;
+      Float_t xbest=1000,zbest=1000,qbest=0;
       //
       //
       // select "silber" cluster
@@ -837,15 +828,15 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 	  if ( (fgPairs[ip*nn+in]==100)&&(pos[ip].GetQ() ) ) {  //
 	    
 	    Float_t yp=pos[ip].GetY(); 
-	     Float_t yn=neg[in].GetY();
-      
-      Float_t zt=1.9*(yp-yn)/7.0-is6*kDeltaZ5to6;
-      Float_t yt=is6*(kStartXzero-(285*yp + 1045*yn)/140000.0) + kDeltaXzero5or6;
-	    ybest =yt;  zbest=zt; 
-
+	    Float_t yn=neg[in].GetY();
+	    
+	    Float_t xt, zt;
+	    seg->GetPadCxz(yn, yp, xt, zt);
+	    
+	    xbest=xt; zbest=zt; 
 
 	    qbest =pos[ip].GetQ();
-	    Double_t loc[3]={ybest,0.,zbest},trk[3]={0.,0.,0.};
+	    Double_t loc[3]={xbest,0.,zbest},trk[3]={0.,0.,0.};
 	    mT2L->MasterToLocal(loc,trk);
 	    lp[0]=trk[1];
 	    lp[1]=trk[2];
@@ -900,15 +891,16 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 	  if ( (fgPairs[ip2*nn+in]==100) && (pos[ip2].GetQ()) ) {
 	    
 	    Float_t yp=pos[ip2].GetY();
-	     Float_t yn=neg[in].GetY();
-      
-      Float_t zt=1.9*(yp-yn)/7.0-is6*kDeltaZ5to6;
-      Float_t yt=is6*(kStartXzero-(285*yp + 1045*yn)/140000.0) + kDeltaXzero5or6;
-	    ybest =yt;  zbest=zt; 
+	    Float_t yn=neg[in].GetY();
+	    
+	    Float_t xt, zt;
+	    seg->GetPadCxz(yn, yp, xt, zt);
+	    
+	    xbest=xt; zbest=zt; 
 
 	    qbest =pos[ip2].GetQ();
 	    
-	    Double_t loc[3]={ybest,0.,zbest},trk[3]={0.,0.,0.};
+	    Double_t loc[3]={xbest,0.,zbest},trk[3]={0.,0.,0.};
 	    mT2L->MasterToLocal(loc,trk);
 	    lp[0]=trk[1];
 	    lp[1]=trk[2];
@@ -969,7 +961,7 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
       //  
     for (Int_t jn=0;jn<nn;jn++){
       if (cused2[jn]) continue;
-      Float_t ybest=1000,zbest=1000,qbest=0;
+      Float_t xbest=1000,zbest=1000,qbest=0;
       // select "silber" cluster
       if ( cpositive[jn]==1 && cnegative[positivepair[10*jn]]==2){
 	Int_t ip  = positivepair[10*jn];
@@ -987,18 +979,17 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 	  if ( (fgPairs[ip*nn+jn]==100) && (neg[jn].GetQ()) ) {  //
 	    
 	    Float_t yn=neg[jn].GetY(); 
-	     Float_t yp=pos[ip].GetY();
-      
-      Float_t zt=1.9*(yp-yn)/7.0-is6*kDeltaZ5to6;
-      Float_t yt=is6*(kStartXzero-(285*yp + 1045*yn)/140000.0) + kDeltaXzero5or6;
-      
-	    ybest =yt;  zbest=zt; 
+	    Float_t yp=pos[ip].GetY();
 
+	    Float_t xt, zt;
+	    seg->GetPadCxz(yn, yp, xt, zt);
+	    
+	    xbest=xt; zbest=zt; 
 
 	    qbest =neg[jn].GetQ();
 
 	    {
-	      Double_t loc[3]={ybest,0.,zbest},trk[3]={0.,0.,0.};
+	      Double_t loc[3]={xbest,0.,zbest},trk[3]={0.,0.,0.};
 	      mT2L->MasterToLocal(loc,trk);
 	      lp[0]=trk[1];
 	      lp[1]=trk[2];
@@ -1052,16 +1043,16 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 
 	  Float_t yn=neg[jn2].GetY(); 
 	  Double_t yp=pos[ip].GetY(); 
-	  Double_t zt=1.9*(yp-yn)/7.0-is6*kDeltaZ5to6;
-	  Double_t yt=is6*(kStartXzero-(285*yp + 1045*yn)/140000.0) + kDeltaXzero5or6;
-	  
-	  ybest =yt;  zbest=zt; 
 
+	  Float_t xt, zt;
+	  seg->GetPadCxz(yn, yp, xt, zt);
+	  
+	  xbest=xt; zbest=zt; 
 
 	  qbest =neg[jn2].GetQ();
 
           {
-          Double_t loc[3]={ybest,0.,zbest},trk[3]={0.,0.,0.};
+          Double_t loc[3]={xbest,0.,zbest},trk[3]={0.,0.,0.};
           mT2L->MasterToLocal(loc,trk);
           lp[0]=trk[1];
           lp[1]=trk[2];
@@ -1121,7 +1112,7 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
   
     
     for (Int_t ip=0;ip<np;ip++){
-      Float_t ybest=1000,zbest=1000,qbest=0;
+      Float_t xbest=1000,zbest=1000,qbest=0;
       //
       // 2x2 clusters
       //
@@ -1171,14 +1162,16 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 	Float_t yp=pos[ip].GetY(); 
 	Float_t yn=neg[j].GetY();
       
-      Float_t zt=1.9*(yp-yn)/7.0-is6*kDeltaZ5to6;
-      Float_t yt=is6*(kStartXzero-(285*yp + 1045*yn)/140000.0) + kDeltaXzero5or6;
-      
-	ybest=yt; zbest=zt; 
+
+	Float_t xt, zt;
+	seg->GetPadCxz(yn, yp, xt, zt);
+	
+	xbest=xt; zbest=zt; 
+
 	qbest=0.5*(pos[ip].GetQ()+neg[j].GetQ());
 
 	{
-	  Double_t loc[3]={ybest,0.,zbest},trk[3]={0.,0.,0.};
+	  Double_t loc[3]={xbest,0.,zbest},trk[3]={0.,0.,0.};
 	  mT2L->MasterToLocal(loc,trk);
 	  lp[0]=trk[1];
 	  lp[1]=trk[2];
@@ -1237,7 +1230,7 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
   // recover all the other crosses
   //  
   for (Int_t i=0; i<np; i++) {
-    Float_t ybest=1000,zbest=1000,qbest=0;
+    Float_t xbest=1000,zbest=1000,qbest=0;
     Float_t yp=pos[i].GetY(); 
     if ((pos[i].GetQ()>0)&&(pos[i].GetQ()<3)) continue;
     for (Int_t j=0; j<nn; j++) {
@@ -1252,16 +1245,17 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
       ratio = (pos[i].GetQ()-neg[j].GetQ())/(pos[i].GetQ()+neg[j].GetQ());      
       Float_t yn=neg[j].GetY();
       
-      Float_t zt=1.9*(yp-yn)/7.0-is6*kDeltaZ5to6;
-      Float_t yt=is6*(kStartXzero-(285*yp + 1045*yn)/140000.0) + kDeltaXzero5or6;
+      Float_t xt, zt;
+      seg->GetPadCxz(yn, yp, xt, zt);
       
-      if (TMath::Abs(yt)<fHwSSD+0.01)
-      if (TMath::Abs(zt)<fHlSSD+0.01*(neg[j].GetNd()+pos[i].GetNd())) {
-        ybest=yt; zbest=zt; 
+      if (TMath::Abs(xt)<hwSSD+0.01)
+      if (TMath::Abs(zt)<hlSSD+0.01*(neg[j].GetNd()+pos[i].GetNd())) {
+	xbest=xt; zbest=zt; 
+
         qbest=0.5*(pos[i].GetQ()+neg[j].GetQ());
 
         {
-        Double_t loc[3]={ybest,0.,zbest},trk[3]={0.,0.,0.};
+        Double_t loc[3]={xbest,0.,zbest},trk[3]={0.,0.,0.};
         mT2L->MasterToLocal(loc,trk);
         lp[0]=trk[1];
         lp[1]=trk[2];
@@ -1304,5 +1298,11 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
       }
     }
   }
+  delete [] cnegative;
+  delete [] cused1;
+  delete [] negativepair;
+  delete [] cpositive;
+  delete [] cused2;
+  delete [] positivepair;
 
 }

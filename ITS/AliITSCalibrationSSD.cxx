@@ -36,12 +36,17 @@ fNoise(0),
 fPedestal(),
 fGain(0),
 fBadChannels(0),
-fIsBad(kFALSE){
+  fIsBad(kFALSE),
+fSSDADCpereV(0.),
+  fKeVperADC(0)
+{
     // Default Constructor
 
     for(Int_t i=0;i<fgkChipsPerModule;i++){
       fIsChipBad[i]=kFALSE;
     }
+  SetSSDADCpereV();
+    SetKeVperADC();
 }
 //______________________________________________________________________
 AliITSCalibrationSSD::AliITSCalibrationSSD(const char *dataType):
@@ -52,7 +57,9 @@ fNoise(0),
 fPedestal(0),
 fGain(0),
 fBadChannels(0),
-fIsBad(kFALSE){
+fIsBad(kFALSE) ,
+fSSDADCpereV(0.),
+fKeVperADC(0){
     // constructor
 
     SetDataType(dataType);
@@ -69,6 +76,8 @@ fIsBad(kFALSE){
     for(Int_t i=0;i<fgkChipsPerModule;i++){
       fIsChipBad[i]=kFALSE;
     }
+    SetSSDADCpereV();
+    SetKeVperADC();
 }
 //______________________________________________________________________
 AliITSCalibrationSSD::~AliITSCalibrationSSD(){

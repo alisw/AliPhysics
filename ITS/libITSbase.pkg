@@ -28,7 +28,6 @@ SRCS = 	AliITSgeom.cxx \
 		AliITSCalibration.cxx \
 		AliITSresponseSPD.cxx \
 		AliITSresponseSDD.cxx \
-		AliITSresponseSSD.cxx \
 		AliITSCalibrationSPD.cxx \
 		AliITSCalibrationSDD.cxx \
 		AliITSCalibrationSSD.cxx \

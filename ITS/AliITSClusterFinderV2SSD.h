@@ -37,16 +37,10 @@ public:
     return (AliITSCalibrationSSD*) fDetTypeRec->GetCalibrationModel(mod);}
 
   Int_t fLastSSD1;        //index of the last SSD1 detector   
-  Float_t fYpitchSSD;     //strip pitch (cm)
-  Float_t fHwSSD;         //half-width of an SSD detector (cm)
-  Float_t fHlSSD;         //half-length of an SSD detector (cm)
-  Float_t fTanP;          //tangent of the stereo angle on the P side
-  Float_t fTanN;          //tangent of the stereo angle on the N side
-
   static Short_t* fgPairs;       //array used to build positive-negative pairs
   static Int_t    fgPairsSize;    //actual size of pairs array
 
-  ClassDef(AliITSClusterFinderV2SSD,1)  // ITS cluster finder V2 for SDD
+  ClassDef(AliITSClusterFinderV2SSD,2)  // ITS cluster finder V2 for SDD
 };
 
 #endif

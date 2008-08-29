@@ -143,7 +143,7 @@ void AliITSsegmentationSSD::GetPadTxz(Float_t &x,Float_t &z) const{
 	Dead region: |000/
                      |00/
                      |0/
-    // expects x, z in microns
+    // expects x, z in cm
     */
 
   /*
@@ -162,12 +162,12 @@ void AliITSsegmentationSSD::GetPadTxz(Float_t &x,Float_t &z) const{
   Float_t P=0;
   Float_t N=0;
   if(fLayer==5) {
-    P = 105.26*x - 0.79*z + 381.89;
-    N = P + 3.68*z - 4; 
+    P = 105.26*x - 0.7895*z + 382.000; //- 0.79*z + 381.89;
+    N = P + 3.684*z - 4; 
   }
   else if(fLayer==6) {
-    P = -105.26*x - 0.79*z + 384.66;
-    N = P + 3.68*z + 4;
+    P = -105.26*x - 0.7895*z + 385.000; //- 0.79*z + 384.66;
+    N = P + 3.684*z + 4;
   }
   else AliError("Layer can be 5 or 6");
 
@@ -178,71 +178,36 @@ void AliITSsegmentationSSD::GetPadTxz(Float_t &x,Float_t &z) const{
 //----------------------------------------------------------------------
 void AliITSsegmentationSSD::GetPadIxz(Float_t x,Float_t z,Int_t &iP,Int_t &iN) const {
   // returns P and N sided strip numbers for a given location.
-    /*                       _-  Z
-                    + angle /    ^
-        fNstrips           v     |   N-Side        ...0
-            \-------/------------|-----------\--------\
-            |\\\\\\/////////////.|\\\\\\\\\\\\\\\\\\\\|
-            |0\\\\/////////////..|.\\\\\\\\\\\\\\\\\\\|
-            |00\\/////////////...|..\\\\\\\\\\\\\\\\\\|
-       X <--|000/////////////... |...\\\\\\\\\\\\\\\\\|
-            |00/////////////...  | ...\\\\\\\\\\\\\\\\|
-            |0/////////////...   |  ...\\\\\\\\\\\\\\\|
-            |//////////////...   |  ...\\\\\\\\\\\\\\\|
-            /-----\--------------|--------------------/
-        fNstrips-1             P-Side              ...0
-                     |0\
-                     |00\
-	Dead region: |000/
-                     |00/
-                     |0/
+  // expects x, z in cm
 
-    // expects x, z in microns
-  */ 
-
-    Float_t stereoP, stereoN;
-    Angles(stereoP,stereoN);
-    Float_t tanP=TMath::Tan(stereoP);
-    Float_t tanN=TMath::Tan(stereoN);
-    Float_t x1=x,z1=z;
-    x1 += fDx/2;
-    z1 += fDz/2;
-    Float_t  ldX = x1 - z1*tanP;          // distance from left-down edge 
-    iP = (Int_t)(ldX/fPitch);
-    iP = (iP<0)? -1: iP;      
-    iP = (iP>fNstrips)? -1: iP;
-
-    ldX = x1 - tanN*(fDz - z1);
-    iN = (Int_t)(ldX/fPitch);
-    iN = (iN<0)? -1: iN;
-    iN = (iN>fNstrips)? -1: iN;
-
+  GetPadTxz(x,z);
+  iP = Int_t(x+0.5);
+  iN = Int_t(z+0.5);
 }
 //-------------------------------------------------------
-void AliITSsegmentationSSD::GetPadCxz(Int_t iP,Int_t iN,Float_t &x,Float_t &z) const {
+void AliITSsegmentationSSD::GetPadCxz(Float_t iP,Float_t iN,Float_t &x,Float_t &z) const {
     // actually this is the GetCrossing(Float_t &,Float_t &)
-    // returns local x, z  in microns !
+    // returns local x, z  in cm 
+  const Float_t kStartXzero=3.64325;
+  const Float_t kDeltaXzero5or6=0.02239;
+  const Float_t kDeltaZ5to6=7.6/7.0;
 
-    Float_t lDx = fDx; // detector size in x direction, microns
-    Float_t lDz = fDz; // detector size in z direction, microns
-    Float_t xP; // x coordinate in the P side from the first P strip
-    Float_t xN; // x coordinate in the N side from the first N strip
-    Float_t stereoP, stereoN;
-    Angles(stereoP,stereoN);
-    Float_t kP=TMath::Tan(stereoP);
-    Float_t kN=TMath::Tan(stereoN);
+  z = 1.9*(iN-iP)/7.0;
+  x = kStartXzero-(285*iN + 1045*iP)/140000.0;
 
-    xP=iP*fPitch;
-    xN=iN*fPitch; 
-    x = xP + kP*(lDz*kN-xP+xN)/(kP+kN);
-    z = (lDz*kN-xP+xN)/(kP+kN); 
-    x -= lDx/2;
-    z -= lDz/2;
-    //if(TMath::Abs(z) > Dz/2) cout<<"Warning, wrong z local ="<<z<<endl; 
-    // Check that zL is inside the detector for the 
-    // correspondent xP and xN coordinates
-
-    return;   
+  if (fLayer==5){
+    z += kDeltaZ5to6;
+    x = -x + kDeltaXzero5or6;
+  }
+  else if (fLayer==6) {
+    z -= kDeltaZ5to6;
+    x += kDeltaXzero5or6;
+  }
+  else {
+    AliWarning("Layer shoudl be 5 or 6");
+    x = -99999;
+    z = -99999;
+  }
 }
 //______________________________________________________________________
 Bool_t AliITSsegmentationSSD::LocalToDet(Float_t x,Float_t z,
@@ -324,6 +289,7 @@ void AliITSsegmentationSSD::DetToLocal(Int_t ix,Int_t iPN,
     // x = a + b + z*tan(fStereoP); a = Dpx(iP)*(iP+0.5)-dx; b = dz*th;
     // for strips n-side
     // x = a + b + z*tan(fStereoP); a = Dpx(iN)*(iN+0.5)-dx; b = -dz*th;
+    AliWarning("This function has not been verified. Should probably use GetPadCxz");
     const Double_t kconst = 1.0E-04; // convert microns to cm.
     Float_t flag=kconst*Dx(); // error value
     Double_t th=0.0,dx,dz,i,a,b=0.0,xb[4],zb[4];
@@ -366,69 +332,6 @@ void AliITSsegmentationSSD::DetToLocal(Int_t ix,Int_t iPN,
     z *= 0.5;
     return;
 }
-//----------------------------------------------------------------------
-Bool_t AliITSsegmentationSSD::GetCrossing(Int_t iP,Int_t iN,
-					  Float_t &x,Float_t &z,
-					  Float_t c[2][2]){
-    // Given one P side strip and one N side strip, Returns kTRUE if they
-    // cross each other and the location of the two crossing strips and
-    // their correxlation matrix c[2][2].
-    /*                       _-  Z
-                    + angle /    ^
-        fNstrips           v     |   N-Side        ...0
-            \-------/------------|-----------\--------\
-            |\\\\\\/////////////.|\\\\\\\\\\\\\\\\\\\\|
-            |0\\\\/////////////..|.\\\\\\\\\\\\\\\\\\\|
-            |00\\/////////////...|..\\\\\\\\\\\\\\\\\\|
-       X <--|000/////////////... |...\\\\\\\\\\\\\\\\\|
-            |00/////////////...  | ...\\\\\\\\\\\\\\\\|
-            |0/////////////...   |  ...\\\\\\\\\\\\\\\|
-            |//////////////...   |  ...\\\\\\\\\\\\\\\|
-            /-----\--------------|--------------------/
-        fNstrips-1             P-Side              ...0
-                     |0\
-                     |00\
-	Dead region: |000/
-                     |00/
-                     |0/
-       c[2][2] is defined as follows
-       /c[0][0]  c[0][1]\ /delta iP\ = /delta x\
-       \c[1][0]  c[1][1]/ \delta iN/ = \delta z/
-    */
-    const Double_t kconst = 1.0E-04; // convert microns to cm.
-    Double_t thp,thn,th,dx,dz,p,ip,in;
-    Float_t stereoP, stereoN;
-    Angles(stereoP,stereoN);
-    
-    thp = TMath::Tan(stereoP);
-    thn = TMath::Tan(-stereoN);
-    th  = thp-thn;
-    if(th==0.0) { // parall strips then never cross.
-	x = 0.0;
-	z = 0.0;
-	c[0][0] = c[1][0] = c[0][1] = c[1][1] = 0.0;
-	return kFALSE;
-    } // end if
-    // The strips must cross some place in space.
-    ip = (Double_t) iP;       // convert to double now for speed
-    in = (Double_t) iN;       // convert to double now for speed
-    dx = 0.5*kconst*Dx();     // half distance in x in cm
-    dz = 0.5*kconst*Dz();     // half distance in z in cm
-    p  = kconst*Dpx(iP);      // Get strip spacing/pitch now
-    x  = 0.5*p+dx + (p*(in*thp-ip*thn)-2.0*dz*thp*thn)/th;
-    z  =(p*(in-ip)-dz*(thp+thn))/th;
-    // compute correlations.
-    c[0][0] = -thn*p/th; // dx/diP
-    c[1][1] = p/th;      // dz/diN
-    c[0][1] = p*thp/th;  // dx/diN
-    c[1][0] = -p/th;     // dz/diP
-    if(x<-dx || x>dx || z<-dz || z>dz) return kFALSE; // crossing is outside
-                                                      // of the detector so
-                                                      // these strips don't
-                                                      // cross.
-    return kTRUE;
-}
-
 //----------------------------------------------------------------------
 Int_t AliITSsegmentationSSD::GetChipFromChannel(Int_t ix, Int_t iz) const {
   // returns chip number (in range 0-11) starting from channel number

@@ -461,7 +461,6 @@ Bool_t AliITSDetTypeRec::GetCalibration() {
   AliCDBEntry *entryBadChannelsSSD = AliCDBManager::Instance()->Get("ITS/Calib/BadChannelsSSD");
   AliCDBEntry *entry2SPD = AliCDBManager::Instance()->Get("ITS/Calib/RespSPD");
   AliCDBEntry *entry2SDD = AliCDBManager::Instance()->Get("ITS/Calib/RespSDD");
-  AliCDBEntry *entry2SSD = AliCDBManager::Instance()->Get("ITS/Calib/RespSSD");
   AliCDBEntry *drSpSDD = AliCDBManager::Instance()->Get("ITS/Calib/DriftSpeedSDD");
   AliCDBEntry *ddlMapSDD = AliCDBManager::Instance()->Get("ITS/Calib/DDLMapSDD");
 //   AliCDBEntry *mapASDD = AliCDBManager::Instance()->Get("ITS/Calib/MapsAnodeSDD");
@@ -469,7 +468,7 @@ Bool_t AliITSDetTypeRec::GetCalibration() {
 
   if(!entrySPD || !deadSPD || !entrySDD || !entryNoiseSSD || !entryGainSSD || 
      !entryBadChannelsSSD || 
-     !entry2SPD || !entry2SDD || !entry2SSD || !drSpSDD || !ddlMapSDD || !mapTSDD ){
+     !entry2SPD || !entry2SDD || !drSpSDD || !ddlMapSDD || !mapTSDD ){
     AliFatal("Calibration object retrieval failed! ");
     return kFALSE;
   }  	
@@ -547,10 +546,6 @@ Bool_t AliITSDetTypeRec::GetCalibration() {
   if(!cacheStatus)entryBadChannelsSSD->SetObject(NULL);
   entryBadChannelsSSD->SetOwner(kTRUE);
 
-  AliITSresponseSSD *pSSD = (AliITSresponseSSD*)entry2SSD->GetObject();
-  if(!cacheStatus)entry2SSD->SetObject(NULL);
-  entry2SSD->SetOwner(kTRUE);
-
   // DB entries are deleted. In this way metadeta objects are deleted as well
   if(!cacheStatus){
     delete entrySPD;
@@ -561,14 +556,13 @@ Bool_t AliITSDetTypeRec::GetCalibration() {
     delete entryBadChannelsSSD;
     delete entry2SPD;
     delete entry2SDD;
-    delete entry2SSD;
     //delete mapASDD;
     delete mapTSDD;
     delete drSpSDD;
     delete ddlMapSDD;
   }
 
-  if ((!pSPD)||(!pSDD)||(!pSSD) || (!calSPD) || (!caldeadSPD) ||(!calSDD) || (!drSp) || (!ddlsdd)
+  if ((!pSPD)||(!pSDD)|| (!calSPD) || (!caldeadSPD) ||(!calSDD) || (!drSp) || (!ddlsdd)
       || (!mapT) || (!noiseSSD)|| (!gainSSD)|| (!badChannelsSSD)) {
     AliWarning("Can not get calibration from calibration database !");
     return kFALSE;
@@ -614,7 +608,6 @@ Bool_t AliITSDetTypeRec::GetCalibration() {
     }
   }
 
-  fSSDCalibration->SetResponse((AliITSresponse*)pSSD);
   fSSDCalibration->SetNoise(noiseSSD);
   fSSDCalibration->SetGain(gainSSD);
   fSSDCalibration->SetBadChannels(badChannelsSSD);
