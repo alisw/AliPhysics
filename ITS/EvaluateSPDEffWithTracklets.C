@@ -17,7 +17,7 @@
 #include "AliRunLoader.h"
 
 #include "AliCDBManager.h"
-#include "AliGeomManager.h"                                                                                 
+#include "AliGeomManager.h"
 #include "AliITS.h"
 #include "AliITSgeom.h"
 #include "AliITSLoader.h"
@@ -32,7 +32,8 @@
 
 #endif
 
-void EvaluateSPDEffWithTracklets(Char_t* dir=".", Bool_t mc=kTRUE, Bool_t bckg=kFALSE) {
+void EvaluateSPDEffWithTracklets(Char_t* dir=".", Bool_t mc=kTRUE, Bool_t bckg=kFALSE,
+                                 TString cdburi="") {
 
   Char_t str[256];
 
@@ -58,6 +59,8 @@ void EvaluateSPDEffWithTracklets(Char_t* dir=".", Bool_t mc=kTRUE, Bool_t bckg=k
 //
   const Int_t minCont=3;
   const Bool_t VtxMC=kFALSE;
+//
+  const Bool_t misalign=kTRUE;
 //
   // Defining pointers
   AliRunLoader* runLoader;
@@ -91,19 +94,24 @@ void EvaluateSPDEffWithTracklets(Char_t* dir=".", Bool_t mc=kTRUE, Bool_t bckg=k
 
     // Set OfflineConditionsDataBase if needed
     AliCDBManager* man = AliCDBManager::Instance();
-    if (!man->IsDefaultStorageSet()) {
-      printf("Setting a local default storage and run number 0\n");
-      man->SetDefaultStorage("local://$ALICE_ROOT");
+    if (cdburi.Length() > 0) {
+      printf("Default CDB storage is set to: %s\n", cdburi.Data());
+      man->SetDefaultStorage(cdburi);
       man->SetRun(0);
     }
-    else {
-      printf("Using deafult storage \n");
+    if (!man->IsDefaultStorageSet()) {
+      printf("Setting a local default CDB storage and run number 0\n");
+      man->SetDefaultStorage("local://$ALICE_ROOT");
+      man->SetRun(0);
     }
     // retrives geometry
     if (!gGeoManager) {
       sprintf(str,"%s/geometry.root",dir);
       AliGeomManager::LoadGeometry(str);
     }
+    // apply misalignement
+    if (misalign) AliGeomManager::ApplyAlignObjsFromCDB("ITS"); 
+
     AliITSLoader* ITSloader =  (AliITSLoader*) runLoader->GetLoader("ITSLoader");
     if (!ITSloader){
       cerr<<"ITS loader not found"<<endl;
@@ -116,43 +124,43 @@ void EvaluateSPDEffWithTracklets(Char_t* dir=".", Bool_t mc=kTRUE, Bool_t bckg=k
 
     // loop over events
     for (Int_t iev=0; iev<nEvents; iev++) {
-    
+
       runLoader->GetEvent(iev);
       // read events
       esdTree->GetEvent(iev);
-                                                                                
+
       // get the ESD vertex
       const AliESDVertex* vtxESD = esd->GetVertex();
       Double_t esdvtx[3];
       vtxESD->GetXYZ(esdvtx);
       Int_t ncont=vtxESD->GetNContributors();
-      if(ncont <= minCont) continue;  
+      if(ncont <= minCont) continue;
       Float_t ESDvtx[3];
       ESDvtx[0]=esdvtx[0];
       ESDvtx[1]=esdvtx[1];
       ESDvtx[2]=esdvtx[2];
 
-      // get the MC vertex 
+      // get the MC vertex
       TArrayF vertex(3);
       runLoader->GetHeader()->GenEventHeader()->PrimaryVertex(vertex);
-     
+
      // Read the generated particles
-     AliStack *pStack=0x0; TTree *tRefTree=0x0; 
-     if (trackleterSPDEff->GetMC()) { 
-       pStack= runLoader->Stack(); 
+     AliStack *pStack=0x0; TTree *tRefTree=0x0;
+     if (trackleterSPDEff->GetMC()) {
+       pStack= runLoader->Stack();
        tRefTree= runLoader->TreeTR();
      }
 
      TTree *itsClusterTree = ITSloader->TreeR();
-      
+
      if(!VtxMC) {
       if (ESDvtx[2]!=0.) {
-        if(trackleterSPDEff->GetMC()) trackleterSPDEff->Reconstruct(itsClusterTree, ESDvtx, ESDvtx, pStack,tRefTree); 
+        if(trackleterSPDEff->GetMC()) trackleterSPDEff->Reconstruct(itsClusterTree, ESDvtx, ESDvtx, pStack,t RefTree);
         else trackleterSPDEff->Reconstruct(itsClusterTree, ESDvtx, ESDvtx); }
-     } 
+     }
      else {
-       Float_t vtx[3]={0.,0.,vertex[2]}; 
-       if(trackleterSPDEff->GetMC()) trackleterSPDEff->Reconstruct(itsClusterTree, vtx, vtx, pStack,tRefTree);
+       Float_t vtx[3]={0.,0.,vertex[2]};
+       if(trackleterSPDEff->GetMC()) trackleterSPDEff->Reconstruct(itsClusterTree, vtx, vtx, pStack,tRefTree );
      }
 
    } // end loop over events
@@ -161,7 +169,7 @@ void EvaluateSPDEffWithTracklets(Char_t* dir=".", Bool_t mc=kTRUE, Bool_t bckg=k
    delete runLoader;
 
 if(trackleterSPDEff->GetMC()) trackleterSPDEff->SavePredictionMC("TrackletsMCpred.root");
-if(!trackleterSPDEff->WriteHistosToFile()) printf("cannot write histos to file \n");
+if(!bckg && !trackleterSPDEff->WriteHistosToFile()) printf("cannot write histos to file \n");
 //trackleterSPDEff->GetPlaneEff()->WriteIntoCDB();
 const char* name="AliITSPlaneEffSPDtracklet.root";
 TFile* pefile = TFile::Open(name, "RECREATE");
