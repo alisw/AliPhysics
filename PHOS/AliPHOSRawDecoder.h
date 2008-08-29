@@ -31,6 +31,7 @@ public:
   const Double_t GetEnergy() const { return fEnergy; }
   const Double_t GetTime() const { return fTime; }
   const Double_t GetSampleQuality() const {return fQuality ;}
+  const Double_t GetPedestalRMS() const {return fPedestalRMS ;}
   const Int_t GetModule() const { return fModule; }
   const Int_t GetColumn() const { return fColumn; }
   const Int_t GetRow() const { return fRow; }
@@ -49,6 +50,7 @@ protected:
   Double_t fEnergy; // "digit" energy
   Double_t fTime;   // "digit" time
   Double_t fQuality ; //Sample quality
+  Double_t fPedestalRMS; //calciulated RMS of pedestal (non-ZS runs)
   Int_t fModule;    // PHOS module number (1-5)
   Int_t fColumn;    // column in the module
   Int_t fRow;       // row

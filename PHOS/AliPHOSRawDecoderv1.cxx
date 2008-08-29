@@ -166,6 +166,7 @@ Bool_t AliPHOSRawDecoderv1::NextDigit()
   Int_t    tLength  = 0;
   fEnergy = -111;
   Float_t pedMean = 0;
+  Float_t pedRMS = 0;
   Int_t   nPed = 0;
   Float_t baseLine = 1.0;
   const Float_t nPreSamples = 10;
@@ -202,11 +203,15 @@ Bool_t AliPHOSRawDecoderv1::NextDigit()
       fNewAmp = in->GetSignal() ;
       fNewTime=in->GetTime() ;  
   
-      //new handle already collected 
+      //now handle already collected 
       Double_t pedestal =0. ;
+      fPedestalRMS=0. ;
       if(fPedSubtract){ 
-	if (nPed > 0)
+	if (nPed > 0){
 	  pedestal = (Double_t)(pedMean/nPed); 
+          fPedestalRMS=pedRMS/nPed-pedestal*pedestal ;
+          if(fPedestalRMS>0.) fPedestalRMS=TMath::Sqrt(fPedestalRMS) ;
+        }
 	else
 	  return kFALSE;
       }
@@ -461,6 +466,7 @@ Bool_t AliPHOSRawDecoderv1::NextDigit()
        iBin--;                                                                                                                                
        if(fPedSubtract && fNewTime < nPreSamples) {                                                                                    
          pedMean += in->GetSignal();                                                                                                          
+         pedRMS += in->GetSignal()*in->GetSignal() ;
          nPed++;                                                                                                                              
        }                                                                                                                                      
        fSamples->AddAt(fNewAmp,iBin);                                                                                                 
@@ -474,6 +480,7 @@ Bool_t AliPHOSRawDecoderv1::NextDigit()
     iBin--;
     if(fPedSubtract && (in->GetTime() < nPreSamples)) {
       pedMean += in->GetSignal();
+      pedRMS += in->GetSignal()*in->GetSignal() ;
       nPed++;
     }
     fSamples->AddAt(in->GetSignal(),iBin);
