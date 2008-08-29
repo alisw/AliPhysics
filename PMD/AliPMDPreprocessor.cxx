@@ -90,14 +90,14 @@ UInt_t AliPMDPreprocessor::Process(TMap* pdaqAliasMap)
     if(runType == "PEDESTAL"){
 	AliPMDPedestal *pedestal = new AliPMDPedestal();
 	
-        TList* filesources = GetFileSources(kDAQ, "PMD_PED");
+        TList* filesources = GetFileSources(kDAQ, "PMD_PED.root");
 	
         if(!filesources) {
-	    Log(Form("No sources found for PMD_PED!"));
+	    Log(Form("No sources found for PMD_PED.root!"));
 	    return 1;
 	}
 	
-        AliInfo("Here's the list of sources for PMD_PED");
+        AliInfo("Here's the list of sources for PMD_PED.root");
         filesources->Print();
 	
         TIter iter(filesources);
@@ -105,14 +105,14 @@ UInt_t AliPMDPreprocessor::Process(TMap* pdaqAliasMap)
         UInt_t result = 0;
 	TString filename;
         while((source=dynamic_cast<TObjString*> (iter.Next()))){
-	    filename = GetFile(kDAQ, "PMD_PED", source->GetName());
+	    filename = GetFile(kDAQ, "PMD_PED.root", source->GetName());
 	    if(filename.Length() == 0) {
 		Log(Form("Error retrieving file from source %s failed!", source->GetName()));
 		delete filesources;
 		return 1;
 	    }
 	    
-	    Log(Form("File with id PMD_PED got from %s", source->GetName()));
+	    Log(Form("File with id PMD_PED.root got from %s", source->GetName()));
 
 	    Int_t det, sm, row, col;
 	    Float_t mean, rms;
@@ -120,7 +120,7 @@ UInt_t AliPMDPreprocessor::Process(TMap* pdaqAliasMap)
 	    TFile *f= new TFile(filename.Data());
 	    if(!f || !f->IsOpen()) 
 	    {
-		Log(Form("Error opening file with Id PMD_PED from source %s!", source->GetName()));
+		Log(Form("Error opening file with Id PMD_PED.root from source %s!", source->GetName()));
 		return 1;
 	    } 
 	    TTree *tree = dynamic_cast<TTree *> (f->Get("ped"));
@@ -166,14 +166,14 @@ UInt_t AliPMDPreprocessor::Process(TMap* pdaqAliasMap)
 	
 	AliPMDCalibData *calibda = new AliPMDCalibData();
 	
-        TList* filesources = GetFileSources(kDAQ, "PMDGAINS");
+        TList* filesources = GetFileSources(kDAQ, "PMDGAINS.root");
 	
         if(!filesources) {
-	    Log(Form("No sources found for PMDGAINS!"));
+	    Log(Form("No sources found for PMDGAINS.root!"));
 	    return 1;
 	}
 	
-        AliInfo("Here's the list of sources for PMDGAINS");
+        AliInfo("Here's the list of sources for PMDGAINS.root");
         filesources->Print();
 	
         TIter iter(filesources);
@@ -181,14 +181,14 @@ UInt_t AliPMDPreprocessor::Process(TMap* pdaqAliasMap)
         UInt_t result = 0;
 	TString filename;
         while((source=dynamic_cast<TObjString*> (iter.Next()))){
-	    filename = GetFile(kDAQ, "PMDGAINS", source->GetName());
+	    filename = GetFile(kDAQ, "PMDGAINS.root", source->GetName());
 	    if(filename.Length() == 0) {
 		Log(Form("Error retrieving file from source %s failed!", source->GetName()));
 		delete filesources;
 		return 1;
 	    }
 	    
-	    Log(Form("File with id PMDGAINS got from %s", source->GetName()));
+	    Log(Form("File with id PMDGAINS.root got from %s", source->GetName()));
 
 	    Int_t det, sm, row, col;
 	    Float_t gain;
@@ -196,7 +196,7 @@ UInt_t AliPMDPreprocessor::Process(TMap* pdaqAliasMap)
 	    TFile *f1= new TFile(filename.Data());
 	    if(!f1 || !f1->IsOpen()) 
 	    {
-		Log(Form("Error opening file with Id PMDGAINS from source %s!", source->GetName()));
+		Log(Form("Error opening file with Id PMDGAINS.root from source %s!", source->GetName()));
 		return 1;
 	    } 
 	    TTree *tree = dynamic_cast<TTree *> (f1->Get("ic"));
