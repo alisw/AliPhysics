@@ -106,15 +106,15 @@ void AliITSQASPDDataMakerSim::InitDigits()
   Char_t name[50];
   Char_t title[50];
 
-  TH1F *hlayer = new TH1F("LayPattern_SPD","Layer map - SPD",6,0.,6.);
+  TH1F *hlayer = new TH1F("SPD/LayPattern_SPD","Layer map - SPD",6,0.,6.);
   hlayer->GetXaxis()->SetTitle("Layer number");
   hlayer->GetYaxis()->SetTitle("Entries");
-  fAliITSQADataMakerSim->Add2DigitsList(hlayer,fGenOffsetD);
+  fAliITSQADataMakerSim->Add2DigitsList(hlayer,fGenOffsetD,kTRUE);
   fSPDhTask++;
   
   TH1F **hmod = new TH1F*[2];
   for (Int_t iLay=0; iLay<2; iLay++) {
-    sprintf(name,"ModPattern_SPD%d",iLay+1);
+    sprintf(name,"SPD/ModPattern_SPD%d",iLay+1);
     sprintf(title,"Module map - SPD Layer %d",iLay+1);
     hmod[iLay]=new TH1F(name,title,240,0,240);
     hmod[iLay]->GetXaxis()->SetTitle("Module number");
@@ -123,21 +123,21 @@ void AliITSQASPDDataMakerSim::InitDigits()
     fSPDhTask++;
   }
   
-  TH1F *hcolumns = new TH1F("Columns_SPD","Columns - SPD",160,0.,160.);
+  TH1F *hcolumns = new TH1F("SPD/Columns_SPD","Columns - SPD",160,0.,160.);
   hcolumns->GetXaxis()->SetTitle("Column number");
   hcolumns->GetYaxis()->SetTitle("Entries");
-  fAliITSQADataMakerSim->Add2DigitsList(hcolumns,3+fGenOffsetD);
+  fAliITSQADataMakerSim->Add2DigitsList(hcolumns,3+fGenOffsetD,kTRUE);
   fSPDhTask++;
 
-  TH1F *hrows = new TH1F("Rows_SPD","Rows - SPD",256,0.,256.);
+  TH1F *hrows = new TH1F("SPD/Rows_SPD","Rows - SPD",256,0.,256.);
   hrows->GetXaxis()->SetTitle("Row number");
   hrows->GetYaxis()->SetTitle("Entries");
-  fAliITSQADataMakerSim->Add2DigitsList(hrows,4+fGenOffsetD);
+  fAliITSQADataMakerSim->Add2DigitsList(hrows,4+fGenOffsetD,kTRUE);
   fSPDhTask++;
 
   TH1F** hMultSPDdigits = new TH1F*[2];
   for (Int_t iLay=0; iLay<2; ++iLay) {
-    sprintf(name,"DigitMultiplicity_SPD%d",iLay+1);
+    sprintf(name,"SPD/DigitMultiplicity_SPD%d",iLay+1);
     sprintf(title,"Digit multiplicity - SPD Layer %d",iLay+1);
     hMultSPDdigits[iLay]=new TH1F(name,title,200,0.,200.);
     hMultSPDdigits[iLay]->GetXaxis()->SetTitle("Digit multiplicity");
@@ -146,7 +146,8 @@ void AliITSQASPDDataMakerSim::InitDigits()
     fSPDhTask++;
   }
 
-  TH2F *hMultSPDdig2MultSPDdig1 = new TH2F("DigitMultCorrelation_SPD","Digit multiplicity correlation - SPD",200,0.,200.,200,0.,200.);
+  TH2F *hMultSPDdig2MultSPDdig1 
+       = new TH2F("SPD/DigitMultCorrelation_SPD","Digit multiplicity correlation - SPD",200,0.,200.,200,0.,200.);
   hMultSPDdig2MultSPDdig1->GetXaxis()->SetTitle("Digit multiplicity (Layer 1)");
   hMultSPDdig2MultSPDdig1->GetYaxis()->SetTitle("Digit multiplicity (Layer 2)");
   fAliITSQADataMakerSim->Add2DigitsList(hMultSPDdig2MultSPDdig1,7+fGenOffsetD);
@@ -204,15 +205,15 @@ void AliITSQASPDDataMakerSim::InitSDigits()
   Char_t name[50];
   Char_t title[50];
 
-  TH1F *hlayer = new TH1F("LayPattern_SPD","Layer map - SPD",6,0.,6.);
+  TH1F *hlayer = new TH1F("SPD/LayPattern_SPD","Layer map - SPD",6,0.,6.);
   hlayer->GetXaxis()->SetTitle("Layer number");
   hlayer->GetYaxis()->SetTitle("Entries");
-  fAliITSQADataMakerSim->Add2SDigitsList(hlayer,fGenOffsetS);
+  fAliITSQADataMakerSim->Add2SDigitsList(hlayer,fGenOffsetS,kTRUE);
   fSPDhTask++;
 
   TH1F **hmod = new TH1F*[2];
   for (Int_t iLay=0; iLay<2; ++iLay) {
-    sprintf(name,"ModPattern_SPD%d",iLay+1);
+    sprintf(name,"SPD/ModPattern_SPD%d",iLay+1);
     sprintf(title,"Module map - SPD Layer %d",iLay+1);
     hmod[iLay]=new TH1F(name,title,240,0,240);
     hmod[iLay]->GetXaxis()->SetTitle("Module number");
@@ -220,7 +221,6 @@ void AliITSQASPDDataMakerSim::InitSDigits()
     fAliITSQADataMakerSim->Add2SDigitsList(hmod[iLay],1+iLay+fGenOffsetS);
     fSPDhTask++;
   }
-  
 
   AliDebug(1,Form("%d SPD SDigits histograms booked\n",fSPDhTask));
 
@@ -259,15 +259,15 @@ void AliITSQASPDDataMakerSim::InitHits()
   Char_t name[50];
   Char_t title[50];
 
-  TH1F *hlayer = new TH1F("LayPattern_SPD","Layer map - SPD",6,0.,6.);
+  TH1F *hlayer = new TH1F("SPD/LayPattern_SPD","Layer map - SPD",6,0.,6.);
   hlayer->GetXaxis()->SetTitle("Layer number");
   hlayer->GetYaxis()->SetTitle("Entries");
-  fAliITSQADataMakerSim->Add2HitsList(hlayer,fGenOffsetH);
+  fAliITSQADataMakerSim->Add2HitsList(hlayer,fGenOffsetH,kTRUE);
   fSPDhTask++;
 
   TH1F **hmod = new TH1F*[2];
   for (Int_t iLay=0; iLay<2; ++iLay) {
-    sprintf(name,"ModPattern_SPD%d",iLay+1);
+    sprintf(name,"SPD/ModPattern_SPD%d",iLay+1);
     sprintf(title,"Module map - SPD Layer %d",iLay+1);
     hmod[iLay]=new TH1F(name,title,240,0,240);
     hmod[iLay]->GetXaxis()->SetTitle("Module number");
@@ -276,13 +276,13 @@ void AliITSQASPDDataMakerSim::InitHits()
     fSPDhTask++;
   }
 
-  TH1F *hhitlenght = new TH1F("Lenght_SPD","Hit lenght along y_{loc} coord",210,0.,210.);
+  TH1F *hhitlenght = new TH1F("SPD/Lenght_SPD","Hit lenght along y_{loc} coord",210,0.,210.);
   hhitlenght->GetXaxis()->SetTitle("Hit lenght [#mum]");
   hhitlenght->GetYaxis()->SetTitle("# hits");
   fAliITSQADataMakerSim->Add2HitsList(hhitlenght,3+fGenOffsetH);
   fSPDhTask++;
 
-  TH1F *hEdepos = new TH1F("EnergyDeposit_SPD","Deposited energy distribution (y_{loc}>180 #mum)",150,0.,300.); 
+  TH1F *hEdepos = new TH1F("SPD/EnergyDeposit_SPD","Deposited energy distribution (y_{loc}>180 #mum)",150,0.,300.); 
   hEdepos->GetXaxis()->SetTitle("Deposited energy [keV]"); 
   hEdepos->GetYaxis()->SetTitle("# hits");
   fAliITSQADataMakerSim->Add2HitsList(hEdepos,4+fGenOffsetH);
