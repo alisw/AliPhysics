@@ -16,6 +16,7 @@
 #pragma link C++ class AliTRDqaGuiBlackChamber+;
 #pragma link C++ class AliTRDqaGuiBlackError+;
 #pragma link C++ class AliTRDqaGuiBlackGlobal+;
+#pragma link C++ class AliTRDqaGuiBlackGTU+;
 
 #pragma link C++ class AliTRDqaGuiMainAnalysis+;
 #pragma link C++ class AliTRDqaGuiJPsi+;
