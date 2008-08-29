@@ -61,6 +61,7 @@ AliTRDtrackingResolution::AliTRDtrackingResolution(const char * name):
   ,fTracks(0x0)
   ,fHistos(0x0)
   ,fReconstructor(0x0)
+  ,fHasMCdata(kTRUE)
   ,fDebugLevel(0)
   ,fDebugStream(0x0)
 {
@@ -90,14 +91,16 @@ void AliTRDtrackingResolution::CreateOutputObjects()
   fHistos = new TList();
 
   // Resolution histos
-  // tracklet resolution [0]
-  fHistos->AddAt(new TH2I("fY", "", 21, -21., 21., 100, -.5, .5), 0);
-  // tracklet angular resolution [1]
-  fHistos->AddAt(new TH2I("fPhi", "", 21, -21., 21., 100, -10., 10.), 1);
-
+  if(HasMCdata()){
+	  // tracklet resolution [0]
+  	fHistos->AddAt(new TH2I("fY", "", 21, -21., 21., 100, -.5, .5), 0);
+	  // tracklet angular resolution [1]
+  	fHistos->AddAt(new TH2I("fPhi", "", 21, -21., 21., 100, -10., 10.), 1);
+	}
   // Residual histos
   // cluster to tracklet residuals [2]
-  fHistos->AddAt(new TH2I("fYClRes", "", 21, -21., 21., 100, -.5, .5), 2);
+  Int_t position = HasMCdata() ? 2 : 0;
+  fHistos->AddAt(new TH2I("fYClRes", "", 21, -21., 21., 100, -.5, .5), position);
 }
 
 //________________________________________________________
@@ -137,20 +140,23 @@ void AliTRDtrackingResolution::Exec(Option_t *)
       Float_t phi = TMath::ATan(fTracklet->GetYref(1));
 
       // RESOLUTION (compare to MC)
-      if(fInfo->GetNTrackRefs() >= 2){ 
-        Float_t phiMC;
-        if(Resolution(fTracklet, fInfo, phiMC)) phi = phiMC;
-      }
+      if(HasMCdata()){
+	      if(fInfo->GetNTrackRefs() >= 2){ 
+   	     Float_t phiMC;
+   	     if(Resolution(fTracklet, fInfo, phiMC)) phi = phiMC;
+   	   	}
+   	  }
 
       // Do clusters residuals
       fTracklet->SetZref(1, 1.);
       fTracklet->Fit();
+      Int_t histpos = HasMCdata() ? 2 : 0;
       AliTRDcluster *c = 0x0;
       for(Int_t ic=AliTRDseed::knTimebins-1; ic>=0; ic--){
         if(!(c = fTracklet->GetClusters(ic))) continue;
         
         dy = fTracklet->GetYat(c->GetX()) - c->GetY();
-        ((TH2I*)fHistos->At(2))->Fill(phi*TMath::RadToDeg(), dy);
+        ((TH2I*)fHistos->At(histpos))->Fill(phi*TMath::RadToDeg(), dy);
         if(fDebugLevel>=1){
           Float_t q = c->GetQ();
           (*fDebugStream) << "ClsTrkltResidual"
@@ -281,58 +287,60 @@ void AliTRDtrackingResolution::Terminate(Option_t *)
 {
   if(fDebugStream) delete fDebugStream;
 
-  //process distributions
-  fHistos = dynamic_cast<TList*>(GetOutputData(0));
-  if (!fHistos) {
-    Printf("ERROR: list not available");
-    return;
+	if(HasMCdata()){
+	  //process distributions
+  	fHistos = dynamic_cast<TList*>(GetOutputData(0));
+	  if (!fHistos) {
+  	  Printf("ERROR: list not available");
+  	  return;
+  	}
+	  TH2I *h2 = 0x0;
+  	TH1D *h = 0x0;
+
+ 	 // y resolution
+	  TF1 *f = new TF1("f1", "gaus", -.5, .5);  
+	  h2 = (TH2I*)fHistos->At(0);
+	  TGraphErrors *gm = new TGraphErrors(h2->GetNbinsX());
+	  gm->SetNameTitle("meany", "Mean dy");
+	  TGraphErrors *gs = new TGraphErrors(h2->GetNbinsX());
+	  gs->SetNameTitle("sigmy", "Sigma y");
+	  for(Int_t iphi=1; iphi<=h2->GetNbinsX(); iphi++){
+	    Double_t phi = h2->GetXaxis()->GetBinCenter(iphi);
+	    f->SetParameter(1, 0.);f->SetParameter(2, 2.e-2);
+	    h = h2->ProjectionY("py", iphi, iphi);
+	    h->Fit(f, "q", "goff", -.5, .5);
+	    Int_t jphi = iphi -1;
+	    gm->SetPoint(jphi, phi, f->GetParameter(1));
+	    gm->SetPointError(jphi, 0., f->GetParError(1));
+	    gs->SetPoint(jphi, phi, f->GetParameter(2));
+	    gs->SetPointError(jphi, 0., f->GetParError(2));
+	  }
+	  fHistos->Add(gm);
+	  fHistos->Add(gs);
+	
+	  // phi resolution
+	  h2 = (TH2I*)fHistos->At(1);
+	  gm = new TGraphErrors(h2->GetNbinsX());
+	  gm->SetNameTitle("meanphi", "Mean Phi");
+	  gs = new TGraphErrors(h2->GetNbinsX());
+	  gs->SetNameTitle("sigmphi", "Sigma Phi");
+	  for(Int_t iphi=1; iphi<=h2->GetNbinsX(); iphi++){
+	    Double_t phi = h2->GetXaxis()->GetBinCenter(iphi);
+	    f->SetParameter(1, 0.);f->SetParameter(2, 2.e-2);
+	    h = h2->ProjectionY("py", iphi, iphi);
+	    h->Fit(f, "q", "goff", -.5, .5);
+	    Int_t jphi = iphi -1;
+	    gm->SetPoint(jphi, phi, f->GetParameter(1));
+	    gm->SetPointError(jphi, 0., f->GetParError(1));
+	    gs->SetPoint(jphi, phi, f->GetParameter(2));
+	    gs->SetPointError(jphi, 0., f->GetParError(2));
+	  }
+	  fHistos->Add(gm);
+	  fHistos->Add(gs);
+	
+	
+	  delete f;
   }
-  TH2I *h2 = 0x0;
-  TH1D *h = 0x0;
-
-  // y resolution
-  TF1 *f = new TF1("f1", "gaus", -.5, .5);  
-  h2 = (TH2I*)fHistos->At(0);
-  TGraphErrors *gm = new TGraphErrors(h2->GetNbinsX());
-  gm->SetNameTitle("meany", "Mean dy");
-  TGraphErrors *gs = new TGraphErrors(h2->GetNbinsX());
-  gs->SetNameTitle("sigmy", "Sigma y");
-  for(Int_t iphi=1; iphi<=h2->GetNbinsX(); iphi++){
-    Double_t phi = h2->GetXaxis()->GetBinCenter(iphi);
-    f->SetParameter(1, 0.);f->SetParameter(2, 2.e-2);
-    h = h2->ProjectionY("py", iphi, iphi);
-    h->Fit(f, "q", "goff", -.5, .5);
-    Int_t jphi = iphi -1;
-    gm->SetPoint(jphi, phi, f->GetParameter(1));
-    gm->SetPointError(jphi, 0., f->GetParError(1));
-    gs->SetPoint(jphi, phi, f->GetParameter(2));
-    gs->SetPointError(jphi, 0., f->GetParError(2));
-  }
-  fHistos->Add(gm);
-  fHistos->Add(gs);
-
-  // phi resolution
-  h2 = (TH2I*)fHistos->At(1);
-  gm = new TGraphErrors(h2->GetNbinsX());
-  gm->SetNameTitle("meanphi", "Mean Phi");
-  gs = new TGraphErrors(h2->GetNbinsX());
-  gs->SetNameTitle("sigmphi", "Sigma Phi");
-  for(Int_t iphi=1; iphi<=h2->GetNbinsX(); iphi++){
-    Double_t phi = h2->GetXaxis()->GetBinCenter(iphi);
-    f->SetParameter(1, 0.);f->SetParameter(2, 2.e-2);
-    h = h2->ProjectionY("py", iphi, iphi);
-    h->Fit(f, "q", "goff", -.5, .5);
-    Int_t jphi = iphi -1;
-    gm->SetPoint(jphi, phi, f->GetParameter(1));
-    gm->SetPointError(jphi, 0., f->GetParError(1));
-    gs->SetPoint(jphi, phi, f->GetParameter(2));
-    gs->SetPointError(jphi, 0., f->GetParError(2));
-  }
-  fHistos->Add(gm);
-  fHistos->Add(gs);
-
-
-  delete f;
 }
 
 //________________________________________________________

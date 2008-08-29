@@ -29,8 +29,10 @@ public:
   void  ConnectInputData(Option_t *);
   void  CreateOutputObjects();
   Int_t GetDebugLevel() const {return fDebugLevel;} 
+  Bool_t HasMCdata() const { return fHasMCdata; }
   void  Exec(Option_t *);
   void  SetDebugLevel(Int_t level);
+  void  SetHasMCdata(Bool_t mcdata) { fHasMCdata = mcdata; };
   void  Terminate(Option_t *);
 
 private:
@@ -46,6 +48,7 @@ private:
   AliTRDtrackInfo  *fTrackInfo;            // Track info
   TObjArray        *fObjectContainer;      // Object container
 
+	Bool_t           fHasMCdata;             // Contains MC information
   Int_t            fDebugLevel;            // Debug level
   TTreeSRedirector *fDebugStream;          // Debug stream
 

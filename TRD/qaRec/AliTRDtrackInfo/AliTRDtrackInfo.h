@@ -49,6 +49,7 @@ public:
   Bool_t             IsCurved() const {return TestBit(kCurv);}
   Bool_t			 			 IsPrimary() const {return TestBit(kPrim);}
 	Bool_t						 HasESDtrack() const{return ((fTRDtrack != 0x0) ||(fOP != 0));}
+	Bool_t             HasMCinfo() const { return fNTrackRefs > 0; }
 
   void               SetCurved(Bool_t curv = kTRUE) {SetBit(kCurv, curv);}
   void               SetLabel(Int_t lab) { fLabel = lab; }
@@ -62,8 +63,8 @@ public:
   
 private:
   	enum{
-  		kCurv = 1,
-  		kPrim = 2
+  		kCurv = 14,
+  		kPrim = 15
 	};
   Int_t              fPDG;           	// particle code
   ULong_t            fStatus;        	// ESD track status

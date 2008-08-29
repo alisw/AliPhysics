@@ -8,14 +8,17 @@
 //     "RES"  : TRD tracking Resolution
 //     "PID"  : TRD PID - pion efficiency 
 //     "PIDR" : TRD PID - reference data
+//     "NOMC" : Data set does not have Monte Carlo Informations (real data), so all tasks which rely
+//              on MC information are switched off
 // 
 // Authors:
 //   Alex Bercuci (A.Bercuci@gsi.de) 
 //   Markus Fasel (m.Fasel@gsi.de) 
 
-#define BIT(n)       (1 << (n))
-#define SETBIT(n,i)  ((n) |= BIT(i))
-#define TESTBIT(n,i) ((Bool_t)(((n) & BIT(i)) != 0))
+#define BIT(n)        (1 << (n))
+#define SETBIT(n,i)   ((n) |= BIT(i))
+#define TESTBIT(n,i)  ((Bool_t)(((n) & BIT(i)) != 0))
+#define CLEARBIT(n,i) ((n) &= ~BIT(i))
 
 const Int_t fknTasks = 3;
 Char_t *fTaskName[fknTasks] = {"Barrel Tracking Effiency", "Combined Tracking Efficiency", "Tracking Resolution"};
@@ -24,7 +27,7 @@ enum AliTRDrecoTasks{
   ,kTrackingCombinedEfficiency = 1
   ,kTrackingResolution = 2
 };
-void run(Char_t *tasks="ALL", const Char_t *files=0x0, Int_t nmax=-1)
+void run(const Char_t *files=0x0, Char_t *tasks="ALL", Int_t nmax=-1)
 {
 
 
@@ -35,6 +38,7 @@ void run(Char_t *tasks="ALL", const Char_t *files=0x0, Int_t nmax=-1)
   gSystem->Load("libTRDqaRec.so");
   
   Int_t fSteerTask = 0; 
+  Bool_t fHasMCdata = kTRUE;
   TObjArray *task = TString(tasks).Tokenize(" ");
   for(Int_t isel = 0; isel < task->GetEntriesFast(); isel++){
     TString s = (dynamic_cast<TObjString *>(task->UncheckedAt(isel)))->String();
@@ -47,9 +51,12 @@ void run(Char_t *tasks="ALL", const Char_t *files=0x0, Int_t nmax=-1)
     } else if(s.CompareTo("EFFC") == 0){
       SETBIT(fSteerTask, kTrackingCombinedEfficiency);
       continue;
-    } else if(s.CompareTo("RES" ) == 0){
+    } else if(s.CompareTo("RES") == 0){
       SETBIT(fSteerTask, kTrackingResolution);
       continue;
+    } else if(s.CompareTo("NOMC") == 0){
+    	CLEARBIT(fSteerTask, kTrackingEfficiency);
+    	CLEARBIT(fSteerTask, kTrackingEfficiencyCombined);
     } else{
       Info("run.C", Form("Task %s not implemented (yet).", s.Data()));
       continue;
@@ -88,6 +95,7 @@ void run(Char_t *tasks="ALL", const Char_t *files=0x0, Int_t nmax=-1)
   // TRD track summary generator
   AliTRDtrackInfoGen *task1 = new AliTRDtrackInfoGen();
   task1->SetDebugLevel(1);
+  if(!fHasMCdata) task1->SetHasMCdata(kFALSE);
   mgr->AddTask(task1);
   // Create containers for input/output
   AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("data", TChain::Class(), AliAnalysisManager::kInputContainer);
@@ -123,6 +131,7 @@ void run(Char_t *tasks="ALL", const Char_t *files=0x0, Int_t nmax=-1)
   // TRD tracking resolution
   if(TESTBIT(fSteerTask, kTrackingResolution)){
     AliTRDtrackingResolution *task4 = new AliTRDtrackingResolution();
+    if(!fHasMCdata) task4->SetHasMCdata(kFALSE);
     task4->SetDebugLevel(1);
     mgr->AddTask(task4);
     // Create containers for input/output

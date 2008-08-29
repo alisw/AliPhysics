@@ -68,6 +68,7 @@ AliTRDtrackInfoGen::AliTRDtrackInfoGen(const Char_t *name):
   ,fESDfriend(0x0)
   ,fTrackInfo(0x0)
   ,fObjectContainer(0x0)
+  ,fHasMCdata(kTRUE)
   ,fDebugLevel(0)
   ,fDebugStream(0x0)
   //,fTree(0x0) // temporary
@@ -108,11 +109,13 @@ void AliTRDtrackInfoGen::ConnectInputData(Option_t *)
       printf("fESDfriend = %p\n", (void*)fESDfriend);
     }
   }
-  AliMCEventHandler *mcH = dynamic_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-  if(!mcH){ 
-    AliError("MC input handler not found");
-  } else {
-    fMC = mcH->MCEvent();
+  if(HasMCdata()){
+  	AliMCEventHandler *mcH = dynamic_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+  	if(!mcH){ 
+    	AliError("MC input handler not found");
+  	} else {
+    	fMC = mcH->MCEvent();
+  	}
   }
 }
 
@@ -144,21 +147,25 @@ void AliTRDtrackInfoGen::Exec(Option_t *){
 		puts("Error: ESD friend not found");
 		return;
 	}
-	if(!fMC){
+	if(HasMCdata() && !fMC){
 		puts("Error: Monte Carlo Event not available");
 		return;
 	}
 	fObjectContainer->Delete();
 	fESD->SetESDfriend(fESDfriend);
-
-	AliStack *mStack = fMC->Stack();
-	if(!mStack){
-		puts("Error: Cannot get the Monte Carlo Stack");
-		return;
+	
+	Bool_t *trackMap = 0x0;
+	AliStack * mStack = 0x0;
+	if(HasMCdata()){
+		mStack = fMC->Stack();
+		if(!mStack){
+			puts("Error: Cannot get the Monte Carlo Stack");
+			return;
+		}
+		trackMap = new Bool_t[fMC->GetNumberOfTracks()];
+		memset(trackMap, 0, sizeof(Bool_t) * fMC->GetNumberOfTracks());
 	}
-	Bool_t *trackMap = new Bool_t[fMC->GetNumberOfTracks()];
-	memset(trackMap, 0, sizeof(Bool_t) * fMC->GetNumberOfTracks());
-
+	
 	Int_t nTRD = 0, nTPC = 0, nclsTrklt;
 	Int_t nTracks = fESD->GetNumberOfTracks();
 	if(fDebugLevel>=1) printf("%3d Tracks: ESD[%d] MC[%d]\n", (Int_t)AliAnalysisManager::GetAnalysisManager()->GetCurrentEntry(), nTracks, mStack->GetNtrack());
@@ -190,53 +197,59 @@ void AliTRDtrackInfoGen::Exec(Option_t *){
 //    	}
 
 		// read MC info
-		Int_t label = esdTrack->GetLabel();
-		if(label < fMC->GetNumberOfTracks()) trackMap[TMath::Abs(label)] = kTRUE; // register the track
-		//if (TMath::Abs(label) > mStack->GetNtrack()) continue; 
-		AliMCParticle *mcParticle = fMC->GetTrack(TMath::Abs(label));
-		Int_t fPdg = mcParticle->Particle()->GetPdgCode();
-		Int_t nRefs = mcParticle->GetNumberOfTrackReferences();
-		Int_t iref = 0; AliTrackReference *ref = 0x0; 
-		while(iref<nRefs){
-			ref = mcParticle->GetTrackReference(iref);
-			if(ref->LocalX() > 250.) break;
-			//printf("\ttrackRef[%2d] @ %7.3f\n", iref, ref->LocalX());
-			iref++;
-		}
-		if(iref == nRefs){
+		Int_t fPdg = -1;
+		Int_t label = -1;
+		if(HasMCdata()){
+			label = esdTrack->GetLabel();
+			if(label < fMC->GetNumberOfTracks()) trackMap[TMath::Abs(label)] = kTRUE; // register the track
+			//if (TMath::Abs(label) > mStack->GetNtrack()) continue; 
+			AliMCParticle *mcParticle = fMC->GetTrack(TMath::Abs(label));
+			fPdg = mcParticle->Particle()->GetPdgCode();
+			Int_t nRefs = mcParticle->GetNumberOfTrackReferences();
+			Int_t iref = 0; AliTrackReference *ref = 0x0; 
+			while(iref<nRefs){
+				ref = mcParticle->GetTrackReference(iref);
+				if(ref->LocalX() > 250.) break;
+				//printf("\ttrackRef[%2d] @ %7.3f\n", iref, ref->LocalX());
+				iref++;
+			}
+			if(iref == nRefs){
 // 			if(!esdTrack->GetNcls(2)) continue;
 /*			printf("No TRD Track References in the Track [%d] I\n", itrk);
-			printf("Label = %d ITS[%d] TPC[%d] TRD[%d]\n", label, esdTrack->GetITSLabel(), esdTrack->GetTPCLabel(), esdTrack->GetTRDLabel());
-			Int_t kref = 0;
-			while(kref<nRefs){
-				ref = mcParticle->GetTrackReference(kref);
-				printf("\ttrackRef[%2d] @ %7.3f\n", kref, ref->LocalX());
-				kref++;
-			}*/
-		}
+				printf("Label = %d ITS[%d] TPC[%d] TRD[%d]\n", label, esdTrack->GetITSLabel(), esdTrack->GetTPCLabel(), esdTrack->GetTRDLabel());
+				Int_t kref = 0;
+				while(kref<nRefs){
+					ref = mcParticle->GetTrackReference(kref);
+					printf("\ttrackRef[%2d] @ %7.3f\n", kref, ref->LocalX());
+					kref++;
+				}*/
+			}
 
-		new(fTrackInfo) AliTRDtrackInfo(fPdg);
-		fTrackInfo->SetPrimary(mcParticle->Particle()->IsPrimary());
-		Int_t jref = iref;//, kref = 0;
-		while(jref<nRefs){
-			ref = mcParticle->GetTrackReference(jref);
-			if(ref->LocalX() > 370.) break;
-			if(fDebugLevel>=3) printf("\ttrackRef[%2d (%2d)] @ %7.3f OK\n", jref-iref, jref, ref->LocalX());
-			fTrackInfo->AddTrackRef(ref);
-			jref++;
+			new(fTrackInfo) AliTRDtrackInfo(fPdg);
+			fTrackInfo->SetPrimary(mcParticle->Particle()->IsPrimary());
+			Int_t jref = iref;//, kref = 0;
+			while(jref<nRefs){
+				ref = mcParticle->GetTrackReference(jref);
+				if(ref->LocalX() > 370.) break;
+				if(fDebugLevel>=3) printf("\ttrackRef[%2d (%2d)] @ %7.3f OK\n", jref-iref, jref, ref->LocalX());
+				fTrackInfo->AddTrackRef(ref);
+				jref++;
+			}
+			if(!fTrackInfo->GetNTrackRefs()){ 
+					//if(!esdTrack->GetNcls(2)) continue;
+	/*      	printf("No TRD Track References in the Track [%d] II\n", itrk);
+	      		printf("Label = %d ITS[%d] TPC[%d] TRD[%d]\n", label, esdTrack->GetITSLabel(), esdTrack->GetTPCLabel(), esdTrack-	>GetTRDLabel());
+	      		Int_t kref = 0;
+	      		while(kref<nRefs){
+	        		ref = mcParticle->GetTrackReference(kref);
+	        		printf("\ttrackRef[%2d] @ %7.3f\n", kref, ref->LocalX());
+	        		kref++;
+	      		}*/
+			}
+			if(fDebugLevel>=2) printf("NtrackRefs[%d(%d)]\n", fTrackInfo->GetNTrackRefs(), nRefs);
+		} else {
+			new (fTrackInfo) AliTRDtrackInfo(fPdg);
 		}
-		if(!fTrackInfo->GetNTrackRefs()){ 
-				//if(!esdTrack->GetNcls(2)) continue;
-/*      	printf("No TRD Track References in the Track [%d] II\n", itrk);
-      		printf("Label = %d ITS[%d] TPC[%d] TRD[%d]\n", label, esdTrack->GetITSLabel(), esdTrack->GetTPCLabel(), esdTrack->GetTRDLabel());
-      		Int_t kref = 0;
-      		while(kref<nRefs){
-        		ref = mcParticle->GetTrackReference(kref);
-        		printf("\ttrackRef[%2d] @ %7.3f\n", kref, ref->LocalX());
-        		kref++;
-      		}*/
-		}
-		if(fDebugLevel>=2) printf("NtrackRefs[%d(%d)]\n", fTrackInfo->GetNTrackRefs(), nRefs);
 
 		// copy some relevant info to TRD track info
 		fTrackInfo->SetStatus(esdTrack->GetStatus());
@@ -280,56 +293,58 @@ void AliTRDtrackInfoGen::Exec(Option_t *){
 		fObjectContainer->Add(new AliTRDtrackInfo(*fTrackInfo));
 		fTrackInfo->Delete("");
 	}
-	
-	// Insert also MC tracks which are passing TRD where the track is not reconstructed
 	if(fDebugLevel>=1) printf("%3d Tracks: TPC[%d] TRD[%d]\n", (Int_t)AliAnalysisManager::GetAnalysisManager()->GetCurrentEntry(), nTPC, nTRD);
-	if(fDebugLevel > 10){
-		printf("Output of the MC track map:\n");
-		for(Int_t itk = 0; itk < fMC->GetNumberOfTracks();  itk++)
-			printf("trackMap[%d] = %s\n", itk, trackMap[itk] == kTRUE ? "TRUE" : "kFALSE");
-  }
+
+	// Insert also MC tracks which are passing TRD where the track is not reconstructed
+	if(HasMCdata()){
+		if(fDebugLevel > 10){
+			printf("Output of the MC track map:\n");
+			for(Int_t itk = 0; itk < fMC->GetNumberOfTracks();  itk++)
+				printf("trackMap[%d] = %s\n", itk, trackMap[itk] == kTRUE ? "TRUE" : "kFALSE");
+	  }
 	
-	for(Int_t itk = 0; itk < fMC->GetNumberOfTracks(); itk++){
-		if(fDebugLevel >=2 ) printf("Number of MC tracks: %d\n", fMC->GetNumberOfTracks());
-		if(trackMap[itk]) continue;
-		AliMCParticle *mcParticle = fMC->GetTrack(TMath::Abs(itk));
- 		Int_t fPdg = mcParticle->Particle()->GetPdgCode();
-		Int_t nRefs = mcParticle->GetNumberOfTrackReferences();
-		Int_t iref = 0; AliTrackReference *ref = 0x0; 
-		Int_t nRefsTRD = 0;
-		new(fTrackInfo) AliTRDtrackInfo(fPdg);
-		while(iref<nRefs){
-			ref = mcParticle->GetTrackReference(iref);
-			if(fDebugLevel > 3) printf("\ttrackRef[%2d] @ %7.3f", iref, ref->LocalX());
-			if(ref->LocalX() > 250. && ref->LocalX() < 370.){
-				if(fDebugLevel > 3) printf(" OK\n");
-				fTrackInfo->AddTrackRef(ref);
-				nRefsTRD++;
+		for(Int_t itk = 0; itk < fMC->GetNumberOfTracks(); itk++){
+			if(fDebugLevel >=2 ) printf("Number of MC tracks: %d\n", fMC->GetNumberOfTracks());
+			if(trackMap[itk]) continue;
+			AliMCParticle *mcParticle = fMC->GetTrack(TMath::Abs(itk));
+ 			Int_t fPdg = mcParticle->Particle()->GetPdgCode();
+			Int_t nRefs = mcParticle->GetNumberOfTrackReferences();
+			Int_t iref = 0; AliTrackReference *ref = 0x0; 
+			Int_t nRefsTRD = 0;
+			new(fTrackInfo) AliTRDtrackInfo(fPdg);
+			while(iref<nRefs){
+				ref = mcParticle->GetTrackReference(iref);
+				if(fDebugLevel > 3) printf("\ttrackRef[%2d] @ %7.3f", iref, ref->LocalX());
+				if(ref->LocalX() > 250. && ref->LocalX() < 370.){
+					if(fDebugLevel > 3) printf(" OK\n");
+					fTrackInfo->AddTrackRef(ref);
+					nRefsTRD++;
+				}
+				else
+					if(fDebugLevel > 3) printf("\n");
+				iref++;
 			}
-			else
-				if(fDebugLevel > 3) printf("\n");
-			iref++;
-		}
-		if(!nRefsTRD){
-			// In this stage we at least require 1 hit inside TRD. What will be done with this tracks is a task for the 
-			// analysis job
+			if(!nRefsTRD){
+				// In this stage we at least require 1 hit inside TRD. What will be done with this tracks is a task for the 
+				// analysis job
+				fTrackInfo->Delete("");
+				continue;
+			}
+			fTrackInfo->SetPrimary(mcParticle->Particle()->IsPrimary());
+			fTrackInfo->SetLabel(itk);
+ 		 	if(fDebugLevel >= 1){
+				Int_t ncls = esdTrack->GetNcls(2);
+				(*fDebugStream) << "trackInfo"
+				<< "ntrackRefs=" << ncls
+				<< "TrackInfo.=" << fTrackInfo
+				<< "\n";
+			}
+			if(fDebugLevel > 2)printf("Registering rejected MC track with label %d\n", itk);
+			fObjectContainer->Add(new AliTRDtrackInfo(*fTrackInfo));
 			fTrackInfo->Delete("");
-			continue;
 		}
-		fTrackInfo->SetPrimary(mcParticle->Particle()->IsPrimary());
-		fTrackInfo->SetLabel(itk);
- 	 	if(fDebugLevel >= 1){
-			Int_t ncls = esdTrack->GetNcls(2);
-			(*fDebugStream) << "trackInfo"
-			<< "ntrackRefs=" << ncls
-			<< "TrackInfo.=" << fTrackInfo
-			<< "\n";
-		}
-		if(fDebugLevel > 2)printf("Registering rejected MC track with label %d\n", itk);
-		fObjectContainer->Add(new AliTRDtrackInfo(*fTrackInfo));
-		fTrackInfo->Delete("");
+		delete[] trackMap;
 	}
-	delete[] trackMap;
 	PostData(0, fObjectContainer);
 }
 
