@@ -78,6 +78,16 @@ AliPHOSQADataMakerRec& AliPHOSQADataMakerRec::operator = (const AliPHOSQADataMak
 void AliPHOSQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray * list)
 {
   //Detector specific actions at end of cycle
+  if(GetRawsData(kHGqualMod1) && GetRawsData(kHGmod1))
+    GetRawsData(kHGqualMod1)->Divide( GetRawsData(kHGmod1) ) ;
+  if(GetRawsData(kHGqualMod2) && GetRawsData(kHGmod2))
+    GetRawsData(kHGqualMod2)->Divide( GetRawsData(kHGmod2) ) ;
+  if(GetRawsData(kHGqualMod3) && GetRawsData(kHGmod3))
+    GetRawsData(kHGqualMod3)->Divide( GetRawsData(kHGmod3) ) ;
+  if(GetRawsData(kHGqualMod4) && GetRawsData(kHGmod4))
+    GetRawsData(kHGqualMod4)->Divide( GetRawsData(kHGmod4) ) ;
+  if(GetRawsData(kHGqualMod5) && GetRawsData(kHGmod5))
+    GetRawsData(kHGqualMod5)->Divide( GetRawsData(kHGmod5) ) ;
   // do the QA checking
   AliQAChecker::Instance()->Run(AliQA::kPHOS, task, list) ;  
 }
@@ -97,11 +107,11 @@ void AliPHOSQADataMakerRec::InitESDs()
  
   TH1F * h3 = new TH1F("hESDPhosEtot",      "ESDs total energy"                     , 100, 0,  1000.) ; 
   h3->Sumw2() ;
-  Add2ESDsList(h3, kESDEtot) ;
+  Add2ESDsList(h3, kESDEtot,1) ;  //Expert histo
  
   TH1F * h4 = new TH1F("hESDpid",           "ESDs PID distribution in PHOS"         , 100, 0.,    1.) ;
   h4->Sumw2() ;
-  Add2ESDsList(h4, kESDpid) ;
+  Add2ESDsList(h4, kESDpid,1) ; //Expert histo
 	
 }
 
@@ -110,15 +120,15 @@ void AliPHOSQADataMakerRec::InitRecPoints()
 {
   // create Reconstructed Points histograms in RecPoints subdir
   TH2I * h0 = new TH2I("hRpPHOSxyMod1","RecPoints Rows x Columns for PHOS module 1", 64, -72., 72., 56, -63., 63.) ;                             
-  Add2RecPointsList(h0,kRPmod1) ;
+  Add2RecPointsList(h0,kRPmod1,1) ;
   TH2I * h1 = new TH2I("hRpPHOSxyMod2","RecPoints Rows x Columns for PHOS module 2", 64, -72., 72., 56, -63., 63.) ;                             
-  Add2RecPointsList(h1,kRPmod2) ;
+  Add2RecPointsList(h1,kRPmod2,1) ;
   TH2I * h2 = new TH2I("hRpPHOSxyMod3","RecPoints Rows x Columns for PHOS module 3", 64, -72., 72., 56, -63., 63.) ;                             
   Add2RecPointsList(h2,kRPmod3) ;
   TH2I * h3 = new TH2I("hRpPHOSxyMod4","RecPoints Rows x Columns for PHOS module 4", 64, -72., 72., 56, -63., 63.) ;                             
-  Add2RecPointsList(h3,kRPmod4) ;
+  Add2RecPointsList(h3,kRPmod4,1) ;
   TH2I * h4 = new TH2I("hRpPHOSxyMod5","RecPoints Rows x Columns for PHOS module 5", 64, -72., 72., 56, -63., 63.) ;                             
-  Add2RecPointsList(h4,kRPmod5) ;
+  Add2RecPointsList(h4,kRPmod5,1) ;
  
   TH1F * h5 = new TH1F("hEmcPhosRecPointsSpectrum",  "EMC RecPoints spectrum in PHOS",   2000, 0., 20.) ; 
   h5->Sumw2() ;
@@ -130,11 +140,11 @@ void AliPHOSQADataMakerRec::InitRecPoints()
 
   TH1I * h7 = new TH1I("hEmcPhosRecPointsEtot", "EMC RecPoints Etot", 200, 0,  200.) ; 
   h7->Sumw2() ;
-  Add2RecPointsList(h7, kRPEtot) ;
+  Add2RecPointsList(h7, kRPEtot,1) ;
 
   TH1I * h8 = new TH1I("hCpvPhosRecPointsMul", "CPV RecPoints multiplicity distribution in PHOS", 100, 0,  100) ; 
   h8->Sumw2() ;
-  Add2RecPointsList(h8, kRPNcpv) ;
+  Add2RecPointsList(h8, kRPNcpv,1) ;
 }
 
 //____________________________________________________________________________ 
@@ -142,47 +152,47 @@ void AliPHOSQADataMakerRec::InitRaws()
 {
   // create Raws histograms in Raws subdir
   TH2I * h0 = new TH2I("hHighPHOSxyMod1","High Gain Rows x Columns for PHOS module 1", 64, 0, 64, 56, 0, 56) ;
-  Add2RawsList(h0,kHGmod1) ;
+  Add2RawsList(h0,kHGmod1,1) ;
   TH2I * h1 = new TH2I("hHighPHOSxyMod2","High Gain Rows x Columns for PHOS module 2", 64, 0, 64, 56, 0, 56) ;
-  Add2RawsList(h1,kHGmod2) ;
+  Add2RawsList(h1,kHGmod2,1) ;
   TH2I * h2 = new TH2I("hHighPHOSxyMod3","High Gain Rows x Columns for PHOS module 3", 64, 0, 64, 56, 0, 56) ;
   Add2RawsList(h2,kHGmod3) ;
   TH2I * h3 = new TH2I("hHighPHOSxyMod4","High Gain Rows x Columns for PHOS module 4", 64, 0, 64, 56, 0, 56) ;
-  Add2RawsList(h3,kHGmod4) ;
+  Add2RawsList(h3,kHGmod4,1) ;
   TH2I * h4 = new TH2I("hHighPHOSxyMod5","High Gain Rows x Columns for PHOS module 5", 64, 0, 64, 56, 0, 56) ;
-  Add2RawsList(h4,kHGmod5) ;
+  Add2RawsList(h4,kHGmod5,1) ;
   TH2I * h5 = new TH2I("hLowPHOSxyMod1","Low Gain Rows x Columns for PHOS module 1", 64, 0, 64, 56, 0, 56) ;
-  Add2RawsList(h5,kLGmod1) ;
+  Add2RawsList(h5,kLGmod1,1) ;
   TH2I * h6 = new TH2I("hLowPHOSxyMod2","Low Gain Rows x Columns for PHOS module 2", 64, 0, 64, 56, 0, 56) ;
-  Add2RawsList(h6,kLGmod2) ;
+  Add2RawsList(h6,kLGmod2,1) ;
   TH2I * h7 = new TH2I("hLowPHOSxyMod3","Low Gain Rows x Columns for PHOS module 3", 64, 0, 64, 56, 0, 56) ;
   Add2RawsList(h7,kLGmod3) ;
   TH2I * h8 = new TH2I("hLowPHOSxyMod4","Low Gain Rows x Columns for PHOS module 4", 64, 0, 64, 56, 0, 56) ;
-  Add2RawsList(h8,kLGmod4) ;                                                                                                               
+  Add2RawsList(h8,kLGmod4,1) ;                                                                                                               
   TH2I * h9 = new TH2I("hLowPHOSxyMod5","Low Gain Rows x Columns for PHOS module 5", 64, 0, 64, 56, 0, 56) ;                               
-  Add2RawsList(h9,kLGmod5) ;                                                                                                               
+  Add2RawsList(h9,kLGmod5,1) ;                                                                                                               
                                                                                                                                            
                                                                                                                                            
   TH1I * h10 = new TH1I("hLowPhosModules",    "Low Gain Hits in EMCA PHOS modules",       6, 0, 6) ;                                       
   h10->Sumw2() ;                                                                                                                           
-  Add2RawsList(h10, kNmodLG) ;                                                                                                             
+  Add2RawsList(h10, kNmodLG,1) ;                                                                                                             
   TH1I * h11 = new TH1I("hHighPhosModules",   "High Gain Hits in EMCA PHOS modules",       6, 0, 6) ;                                      
   h11->Sumw2() ;                                                                                                                           
-  Add2RawsList(h11, kNmodHG) ;                                                                                                             
+  Add2RawsList(h11, kNmodHG,1) ;                                                                                                             
                                                                                                                                            
   TH1F * h12 = new TH1F("hLowPhosRawtime", "Low Gain Time of raw hits in PHOS", 500, -50., 200.) ;                                            
   h12->Sumw2() ;                                                                                                                           
-  Add2RawsList(h12, kLGtime) ;                                                                                                             
+  Add2RawsList(h12, kLGtime,1) ;                                                                                                             
   TH1F * h13 = new TH1F("hHighPhosRawtime", "High Gain Time of raw hits in PHOS", 500, -50., 200.) ;                                          
   h13->Sumw2() ;                                                                                                                           
-  Add2RawsList(h13, kHGtime) ;                                                                                                             
+  Add2RawsList(h13, kHGtime,1) ;                                                                                                             
                                                                                                                                            
   TH1F * h14 = new TH1F("hLowPhosRawEnergy", "Low Gain Energy of raw hits in PHOS", 500, 0., 1000.) ;                                      
   h14->Sumw2() ;                                                                                                                           
-  Add2RawsList(h14, kSpecLG) ;                                                                                                             
+  Add2RawsList(h14, kSpecLG,1) ;                                                                                                             
   TH1F * h15 = new TH1F("hHighPhosRawEnergy", "High Gain Energy of raw hits in PHOS",500,0., 1000.) ;                                      
   h15->Sumw2() ;                                                                                                                           
-  Add2RawsList(h15, kSpecHG) ;                                                                                                             
+  Add2RawsList(h15, kSpecHG,1) ;                                                                                                             
                                                                                                                                            
   TH1F * h16 = new TH1F("hLowNtot", "Low Gain Total Number of raw hits in PHOS", 500, 0., 5000.) ;                                         
   h16->Sumw2() ;                                                                                                                           
@@ -198,6 +208,19 @@ void AliPHOSQADataMakerRec::InitRaws()
   h19->Sumw2() ;                                                                                                                           
   Add2RawsList(h19, kEtotHG, kTRUE) ;                                                                                                             
   
+  TH2F * h20 = new TH2F("hQualHGxyMod1","High Gain signal quality Rows x Columns module 1", 64, 0, 64, 56, 0, 56) ;
+  Add2RawsList(h20,kHGqualMod1,1) ;
+  TH2F * h21 = new TH2F("hQualHGxyMod2","High Gain signal quality Rows x Columns module 2", 64, 0, 64, 56, 0, 56) ;
+  Add2RawsList(h21,kHGqualMod2,1) ;
+  TH2F * h22 = new TH2F("hQualHGxyMod3","High Gain signal quality Rows x Columns module 3", 64, 0, 64, 56, 0, 56) ;
+  Add2RawsList(h22,kHGqualMod3) ;
+  TH2F * h23 = new TH2F("hQualHGxyMod4","High Gain signal quality Rows x Columns module 4", 64, 0, 64, 56, 0, 56) ;
+  Add2RawsList(h23,kHGqualMod4,1) ;
+  TH2F * h24 = new TH2F("hQualHGxyMod5","High Gain signal quality Rows x Columns module 5", 64, 0, 64, 56, 0, 56) ;
+  Add2RawsList(h24,kHGqualMod5,1) ;
+ 
+  TH1F * h25 = new TH1F("hHGpedRMS","High Gain pedestal RMS",200,0.,20.) ;
+  Add2RawsList(h25,kHGpedRMS) ;
 }
 
 //____________________________________________________________________________
@@ -263,6 +286,9 @@ void AliPHOSQADataMakerRec::MakeRaws(AliRawReader* rawReader)
      lgEtot+=energy ;
      lgNtot++ ;   
    } else {        
+     //if this isnon-ZS run - fill pedestal RMS
+     if(GetRecoParam()->EMCSubtractPedestals())
+       GetRawsData(kHGpedRMS)->Fill(decoder->GetPedestalRMS()) ;
      if(energy<8.)
        continue ;
      switch (module){
@@ -272,6 +298,16 @@ void AliPHOSQADataMakerRec::MakeRaws(AliRawReader* rawReader)
          case 4: GetRawsData(kHGmod4)->Fill(row-0.5,col-0.5) ; break ;
          case 5: GetRawsData(kHGmod5)->Fill(row-0.5,col-0.5) ; break ;
      }              
+     //if quality was evaluated, fill histo
+     if(strcmp(GetRecoParam()->EMCDecoderVersion(),"v1")==0){
+       switch (module){
+         case 1: ((TH2F*)GetRawsData(kHGqualMod1))->Fill(row-0.5,col-0.5,decoder->GetSampleQuality()) ; break ;
+         case 2: ((TH2F*)GetRawsData(kHGqualMod2))->Fill(row-0.5,col-0.5,decoder->GetSampleQuality()) ; break ;
+         case 3: ((TH2F*)GetRawsData(kHGqualMod3))->Fill(row-0.5,col-0.5,decoder->GetSampleQuality()) ; break ;
+         case 4: ((TH2F*)GetRawsData(kHGqualMod4))->Fill(row-0.5,col-0.5,decoder->GetSampleQuality()) ; break ;
+         case 5: ((TH2F*)GetRawsData(kHGqualMod5))->Fill(row-0.5,col-0.5,decoder->GetSampleQuality()) ; break ;
+       }
+     }
      GetRawsData(kNmodHG)->Fill(module) ; 
      GetRawsData(kHGtime)->Fill(time) ;  
      GetRawsData(kSpecHG)->Fill(energy) ;
