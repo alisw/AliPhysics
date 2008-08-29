@@ -30,12 +30,134 @@ ClassImp(AliZDCQAChecker)
 //____________________________________________________________________________
 const Double_t AliZDCQAChecker::Check(AliQA::ALITASK_t index, TObjArray * list) 
 {
-  // Checks the QA histograms on the input list: 
-  //
-  Double_t test=0.;
-  Int_t count=0, ntests=0; 
-  const char* taskName = AliQA::GetAliTaskName(index);
+ // Checks the QA histograms on the input list: 
+ //
+ Double_t test=0.;
+ Int_t ntests=0; 
+ const char* taskName = AliQA::GetAliTaskName(index);
+ //
+ Int_t beamType=0; // 0 -> protons, 1 -> ions
+ 
+ // ====================================================================
+ // 	Checks for p-p events
+ // ====================================================================
+ if (beamType==0){
+   // -------------------------------------------------------------------
+  if(index == AliQA::kSIM){
   
+    if(list->GetEntries()==0){  
+      AliWarning("\tAliZDCQAChecker->The list to be checked is empty!");
+      test = 1.; // nothing to check
+      return test;
+    }
+    //printf("\n\tAliZDCQAChecker-> checking QA histograms for task %s\n\n",taskName);
+    
+    TIter next(list); 
+    TH1 * hdata;	  
+    //
+    ntests = 0; 
+    //
+    while((hdata = dynamic_cast<TH1 *>(next()))){
+      if(hdata){ 
+        //printf("\tAliZDCQAChecker-> checking histo %s",hdata->GetName());
+	// Check DIGITS histos
+        if(!(strncmp(hdata->GetName(),"hDig",4))){
+          if(hdata->GetEntries()>0){
+	    test += 1.; ntests++;
+	  }
+        }
+	// Check HITS histos
+        else{ 
+          if(hdata->GetEntries()>0){
+	    test += 1.; ntests++;
+	  }
+
+        }
+      }
+      else{
+        AliError("AliZDCQAChecker-> No histos!!!\n");
+      }
+    }
+    if(ntests!=0) test = test/ntests;
+    //printf("\n\tAliZDCQAChecker-> QA check result = %1.2f\n",test);
+  }
+  
+  // -------------------------------------------------------------------
+  else if(index == AliQA::kRAW){
+  
+    if(list->GetEntries()==0){  
+      AliWarning("\tAliZDCQAChecker->The list to be checked is empty!");
+      test = 1.; // nothing to check
+      return test;
+    }
+    printf("\n\tAliZDCQAChecker-> checking QA histograms for task %s\n\n",taskName);
+    
+    TIter next(list); 
+    TH1 * hdata;
+    ntests = 0; 
+    //
+    while((hdata = dynamic_cast<TH1 *>(next()))){
+      if(hdata){
+        if(hdata->GetEntries()!=0){
+	  if(hdata->GetMean()>10.) test += 1.; 
+	  else test = 0.5; 
+	  ntests++;
+	}
+      }
+      // 
+      //printf("\t %d performed tests, results %1.2f\n",ntests,test/ntests);
+      else{
+        AliError("\t AliZDCQAChecker->No histos!!!\n");
+      }
+    }
+    if(ntests!=0) test = test/ntests;
+    //printf("\n\tAliZDCQAChecker-> QA check result = %1.2f\n",test);
+  }
+
+  // -------------------------------------------------------------------
+  else if(index == AliQA::kESD){
+  
+    if(list->GetEntries()==0){  
+      AliWarning("\tAliZDCQAChecker->The list to be checked is empty!");
+      test = 1.; // nothing to check
+      return test;
+    }
+    printf("\n\tAliZDCQAChecker-> checking QA histograms for task %s\n\n",taskName);
+    
+    TIter next(list); 
+    TH1 * hdata;
+    Int_t    esdInd=0;
+    //
+    ntests = 0; 
+    //
+    while((hdata = dynamic_cast<TH1 *>(next()))){
+      if(hdata){ 
+         if(hdata->GetEntries()!=0){
+	   if(esdInd>1){
+	     if(hdata->GetMean()>10.) test += 1.; 
+	     else test = 0.5; 
+	     ntests++;
+	   }
+	 }
+         //
+         esdInd++;
+      }
+      else{
+        AliError("AliZDCQAChecker-> No histos!!!\n");
+      }
+    }
+    if(ntests!=0) test = test/ntests;
+    //printf("\n\tAliZDCQAChecker-> QA check result = %1.2f\n\n",test);
+  }
+  else{
+    AliWarning(Form("\n\t No ZDC QA for %s task\n",taskName)); 
+    return 1.;
+  }
+ }
+ // ====================================================================
+ // 	Checks for A-A events
+ // ====================================================================
+ else if (beamType==1){ 
   // -------------------------------------------------------------------
   if(index == AliQA::kSIM){
   
@@ -44,7 +166,7 @@ const Double_t AliZDCQAChecker::Check(AliQA::ALITASK_t index, TObjArray * list)
       test = 1.; // nothing to check
       return test;
     }
-    printf("\n\tAliZDCQAChecker-> checking QA histograms for task %s\n\n",taskName);
+    //printf("\n\tAliZDCQAChecker-> checking QA histograms for task %s\n\n",taskName);
     
     TIter next(list); 
     TH1 * hdata;	  
@@ -56,26 +178,13 @@ const Double_t AliZDCQAChecker::Check(AliQA::ALITASK_t index, TObjArray * list)
     Float_t  res=0.;
     Int_t    digInd=0, testgood=0;
     //
-    count = ntests = 0; 
+    ntests = 0; 
     //
     while((hdata = dynamic_cast<TH1 *>(next()))){
       if(hdata){ 
         //printf("\tAliZDCQAChecker-> checking histo %s",hdata->GetName());
-	// Check HITS histos
-        if(!(strncmp(hdata->GetName(),"hZNCh",5))){ 
-          // hits histos
-          meanX = hdata->GetMean(1);
-          meanY = hdata->GetMean(2);
-          // check if the spot is centered
-          if((TMath::Abs(meanX)<0.2) && (TMath::Abs(meanY)<0.2)) res=1.;
-          else res=0.5;
-          test += res;
-          ntests++;
-          // 
-          //printf("\t %d performed tests, results %1.2f\n",ntests,test/ntests);
-        }
-        // Check DIGITS histos
-        else{
+	// Check DIGITS histos
+        if (!(strncmp(hdata->GetName(),"hDig",4))){
           // [1] check response of ZNC vs. ZNA
           if(digInd==0 || digInd==1){
              if(digInd==0){
@@ -177,8 +286,19 @@ const Double_t AliZDCQAChecker::Check(AliQA::ALITASK_t index, TObjArray * list)
           //
           digInd++;
         }
-        //
-        count++;
+	// Check HITS histos
+        else{ 
+          // hits histos
+          meanX = hdata->GetMean(1);
+          meanY = hdata->GetMean(2);
+          // check if the spot is centered
+          if((TMath::Abs(meanX)<0.2) && (TMath::Abs(meanY)<0.2)) res=1.;
+          else res=0.5;
+          test += res;
+          ntests++;
+          // 
+          //printf("\t %d performed tests, results %1.2f\n",ntests,test/ntests);
+        }
       }
       else{
         AliError("AliZDCQAChecker-> No histos!!!\n");
@@ -206,7 +326,7 @@ const Double_t AliZDCQAChecker::Check(AliQA::ALITASK_t index, TObjArray * list)
     Double_t pmQZNA=0., pmQZNC=0., pmQZPA=0., pmQZPC=0.;
     Float_t  res=0.;
     Int_t    rawInd=0, testgood=0;
-    count = ntests = 0; 
+    ntests = 0; 
     //
     while((hdata = dynamic_cast<TH1 *>(next()))){
       if(hdata){
@@ -298,7 +418,6 @@ const Double_t AliZDCQAChecker::Check(AliQA::ALITASK_t index, TObjArray * list)
           }
           //
           rawInd++;
-          count++;
       }
       // 
       //printf("\t %d performed tests, results %1.2f\n",ntests,test/ntests);
@@ -330,7 +449,7 @@ const Double_t AliZDCQAChecker::Check(AliQA::ALITASK_t index, TObjArray * list)
     Float_t  res=0.;
     Int_t    esdInd=0, testgood=0;
     //
-    count = ntests = 0; 
+    ntests = 0; 
     //
     while((hdata = dynamic_cast<TH1 *>(next()))){
       if(hdata){ 
@@ -438,8 +557,6 @@ const Double_t AliZDCQAChecker::Check(AliQA::ALITASK_t index, TObjArray * list)
         }
         // 
         //printf("\t %d performed tests, results %1.2f\n",ntests,test/ntests);
-        //
-        count++;
       }
       else{
         AliError("AliZDCQAChecker-> No histos!!!\n");
@@ -452,7 +569,8 @@ const Double_t AliZDCQAChecker::Check(AliQA::ALITASK_t index, TObjArray * list)
     AliWarning(Form("\n\t No ZDC QA for %s task\n",taskName)); 
     return 1.;
   }
+ }
   
-  AliInfo(Form("Test Result = %f", test)); 
-  return test; 
+ AliInfo(Form("Test Result = %f", test)); 
+ return test; 
 }  
