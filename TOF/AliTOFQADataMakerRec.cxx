@@ -78,20 +78,23 @@ void AliTOFQADataMakerRec::InitRaws()
   //
   // create Raws histograms in Raws subdir
   //
+
+  Bool_t expert = kFALSE;
+
   TH1F * h0 = new TH1F("hTOFRaws",    "Number of TOF Raws ",301, -1.02, 5.) ;   h0->Sumw2() ;
-  Add2RawsList(h0, 0) ;
+  Add2RawsList(h0, 0, expert) ;
 
   TH1F * h1  = new TH1F("hTOFRawsTime", "Raws Time Spectrum in TOF (ns)", 2000, 0., 200) ; 
   h1->Sumw2() ;
-  Add2RawsList(h1, 1) ;
+  Add2RawsList(h1, 1, expert) ;
 
   TH1F * h2  = new TH1F("hTOFRawsToT", "Raws ToT Spectrum in TOF (ns)", 500, 0., 50) ; 
   h2->Sumw2() ;
-  Add2RawsList(h2, 2) ;
+  Add2RawsList(h2, 2, expert) ;
 
   TH2F * h3  = new TH2F("hTOFRawsClusMap","Raws vs TOF eta-phi",183, -0.5, 182.5,865,-0.5,864.5) ; 
   h3->Sumw2() ;
-  Add2RawsList(h3, 3) ;
+  Add2RawsList(h3, 3, expert) ;
 
 }
 
@@ -101,24 +104,27 @@ void AliTOFQADataMakerRec::InitRecPoints()
   //
   // create RecPoints histograms in RecPoints subdir
   //
+
+  Bool_t expert = kFALSE;
+
   TH1F * h0 = new TH1F("hTOFRecPoints",    "Number of TOF RecPoints ",301, -1.02, 5.) ;   h0->Sumw2() ;
-  Add2RecPointsList(h0, 0) ;
+  Add2RecPointsList(h0, 0, expert) ;
 
   TH1F * h1  = new TH1F("hTOFRecPointsTime", "RecPoints Time Spectrum in TOF (ns)", 2000, 0., 200) ; 
   h1->Sumw2() ;
-  Add2RecPointsList(h1, 1) ;
+  Add2RecPointsList(h1, 1, expert) ;
 
   TH1F * h2  = new TH1F("hTOFRecPointsRawTime", "RecPoints raw Time Spectrum in TOF (ns)", 2000, 0., 200) ; 
   h2->Sumw2() ;
-  Add2RecPointsList(h2, 2) ;
+  Add2RecPointsList(h2, 2, expert) ;
 
   TH1F * h3  = new TH1F("hTOFRecPointsToT", "RecPoints ToT Spectrum in TOF (ns)", 500, 0., 50) ; 
   h3->Sumw2() ;
-  Add2RecPointsList(h3, 3) ;
+  Add2RecPointsList(h3, 3, expert) ;
 
   TH2F * h4  = new TH2F("hTOFRecPointsClusMap","RecPoints vs TOF eta-phi",183, -0.5, 182.5,865,-0.5,864.5) ; 
   h4->Sumw2() ;
-  Add2RecPointsList(h4, 4) ;
+  Add2RecPointsList(h4, 4, expert) ;
 
 }
 
@@ -128,25 +134,28 @@ void AliTOFQADataMakerRec::InitESDs()
   //
   //create ESDs histograms in ESDs subdir
   //
+
+  Bool_t expert = kFALSE;
+
   TH1F * h0 = new TH1F("hTOFESDs",    "Number of matched TOF tracks over ESDs",       250, -1., 4.) ;  
   h0->Sumw2() ; 
-  Add2ESDsList(h0, 0) ;
+  Add2ESDsList(h0, 0, expert) ;
 
   TH1F * h1  = new TH1F("hTOFESDsTime", "Time Spectrum in TOF (ns)", 2000, 0., 200) ; 
   h1->Sumw2() ;
-  Add2ESDsList(h1, 1) ;
+  Add2ESDsList(h1, 1, expert) ;
 
   TH1F * h2  = new TH1F("hTOFESDsRawTime", "raw Time Spectrum in TOF (ns)", 2000, 0., 200) ; 
   h2->Sumw2() ;
-  Add2ESDsList(h2, 2) ;
+  Add2ESDsList(h2, 2, expert) ;
 
   TH1F * h3  = new TH1F("hTOFESDsToT", "ToT Spectrum in TOF (ns)", 500, 0., 50) ; 
   h3->Sumw2() ;
-  Add2ESDsList(h3, 3) ;
+  Add2ESDsList(h3, 3, expert) ;
 
   TH1F * h4 = new TH1F("hTOFESDsPID",    "Fraction of matched TOF tracks with good PID glag", 100, 0., 1.) ;  
   h4->Sumw2() ; 
-  Add2ESDsList(h4, 4) ;
+  Add2ESDsList(h4, 4, expert) ;
 }
 
 //____________________________________________________________________________
