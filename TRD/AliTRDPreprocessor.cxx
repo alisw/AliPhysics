@@ -69,10 +69,11 @@ AliTRDPreprocessor::AliTRDPreprocessor(AliShuttleInterface *shuttle)
   // Constructor
   //
 
- AddRunType("PHYSICS");
- AddRunType("STANDALONE");
- AddRunType("PEDESTAL");
-
+  AddRunType("PHYSICS");
+  AddRunType("STANDALONE");
+  AddRunType("PEDESTAL");
+  AddRunType("DAQ");
+  
 }
 
 //______________________________________________________________________________________________
@@ -106,34 +107,33 @@ UInt_t AliTRDPreprocessor::Process(TMap* dcsAliasMap)
   Log(Form("runtype %s\n",runType.Data()));
   
   // always process the configuration data
-/*  Int_t resultDCSC = */ProcessDCSConfigData(); // for testing!
-  // if there was an error, return with its code
-//  if (resultDCSC != 0) return resultDCSC; // for testing!
-
+  /*  Int_t resultDCSC = */ProcessDCSConfigData(); // for testing!
+  
   if (runType=="PEDESTAL"){
     if(ExtractPedestals()) return 1;
     return 0;
   } 
 
-  if ((runType=="PHYSICS") || (runType=="STANDALONE")){
-    // HLT if On
-    //TString runPar = GetRunParameter("HLTStatus");
-    //if(runPar=="1") {
-    if(GetHLTStatus()) {
-      /*if(*/ExtractHLT()/*) return 1*/; // for testing!
-    } 
-    // DAQ if HLT failed
-    if(!fVdriftHLT) {
-      /*if(*/ExtractDriftVelocityDAQ()/*) return 1*/; // for testing!
-    }
+  if ((runType=="PHYSICS") || (runType=="STANDALONE") || (runType=="DAQ")){
     // DCS
-    if(ProcessDCS(dcsAliasMap)) return 1;
+    /*if(*/ProcessDCS(dcsAliasMap)/*) return 1*/; // for testing!
+    if(runType=="PHYSICS"){
+      // HLT if On
+      //TString runPar = GetRunParameter("HLTStatus");
+      //if(runPar=="1") {
+      if(GetHLTStatus()) {
+	/*if(*/ExtractHLT()/*) return 1*/; // for testing!
+      } 
+      // DAQ if HLT failed
+      if(!fVdriftHLT) {
+	/*if(*/ExtractDriftVelocityDAQ()/*) return 1*/; // for testing!
+      }
+    }
   }
   
   return 0;  
   
 }
-
 //______________________________________________________________________________
 Bool_t AliTRDPreprocessor::ProcessDCS()
 {
