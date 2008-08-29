@@ -1688,6 +1688,7 @@ Int_t AliShuttle::ProcessCurrentDetector()
 
 			if (fConfig->GetDCSAliases(fCurrentDetector, iServ)->GetEntries() > 0)
 			{
+				Log(fCurrentDetector, Form("Querying %d DCS aliases", fConfig->GetDCSAliases(fCurrentDetector, iServ)->GetEntries()));
 				aliasMap = GetValueSet(host, port, 
 						fConfig->GetDCSAliases(fCurrentDetector, iServ), 
 						kAlias, multiSplit);
@@ -1710,6 +1711,7 @@ Int_t AliShuttle::ProcessCurrentDetector()
 			
 			if (fConfig->GetDCSDataPoints(fCurrentDetector, iServ)->GetEntries() > 0)
 			{
+				Log(fCurrentDetector, Form("Querying %d DCS data points", fConfig->GetDCSDataPoints(fCurrentDetector, iServ)->GetEntries()));
 				dpMap = GetValueSet(host, port, 
 						fConfig->GetDCSDataPoints(fCurrentDetector, iServ), 
 						kDP, multiSplit);
