@@ -633,9 +633,9 @@ Bool_t AliQADataMakerSteer::MergeData(const Int_t runNumber) const
 	// Merge all the cycles from all detectors in one single file per run
 	TString cmd ;
 	if (runNumber == -1) 
-		cmd = Form(".! ls *%s*.%d.*.root > tempo.txt", AliQA::GetQADataFileName(), runNumber) ; 
+		cmd = Form(".! ls *%s*.%d.root > tempo.txt", AliQA::GetQADataFileName(), runNumber) ; 
 	else 
-		cmd = Form(".! ls *%s*.*.*.root > tempo.txt", AliQA::GetQADataFileName()) ; 
+		cmd = Form(".! ls *%s*.*.root > tempo.txt", AliQA::GetQADataFileName()) ; 
 	gROOT->ProcessLine(cmd.Data()) ;
 	ifstream in("tempo.txt") ; 
 	const Int_t runMax = 10 ;  
@@ -655,42 +655,18 @@ Bool_t AliQADataMakerSteer::MergeData(const Int_t runNumber) const
 		AliError(Form("run number %d not found", runNumber)) ; 
 		return kFALSE ; 
 	}
-	
-	Int_t runIndex    = 0 ;  
-	Int_t runIndexMax = 0 ; 
-	TString stmp(Form(".%s.", AliQA::GetQADataFileName())) ; 
-	for (Int_t ifile = 0 ; ifile < index ; ifile++) {
-		TString tmp(file[ifile]) ; 
-		tmp.ReplaceAll(".root", "") ; 
-		TString det = tmp(0, tmp.Index(".")) ; 
-		tmp.Remove(0, tmp.Index(stmp)+4) ; 
-		TString ttmp = tmp(0, tmp.Index(".")) ; 
-		Int_t newRun = ttmp.Atoi() ;
-		for (Int_t irun = 0; irun <= runIndexMax; irun++) {
-			if (newRun == run[irun]) 
-				break ; 
-			run[runIndex] = newRun ; 
-			runIndex++ ; 
-		}
-		runIndexMax = runIndex ; 
-		ttmp = tmp(tmp.Index(".")+1, tmp.Length()) ; 
-		Int_t cycle = ttmp.Atoi() ;  
-		AliDebug(1, Form("%s : det = %s run = %d cycle = %d \n", file[ifile].Data(), det.Data(), newRun, cycle)) ; 
+
+  TFileMerger merger ; 
+  TString outFileName(Form("Merged.%s.Data.%d.root",AliQA::GetQADataFileName(),runNumber)); 
+  merger.OutputFile(outFileName.Data()) ; 
+  for (Int_t ifile = 0 ; ifile < index-1 ; ifile++) {
+    TString pattern(Form("%s.%d.", AliQA::GetQADataFileName(), runNumber)); 
+    TString tmp(file[ifile]) ; 
+    if (tmp.Contains(pattern)) {
+      merger.AddFile(tmp) ; 
+    }
 	}
-	for (Int_t irun = 0 ; irun < runIndexMax ; irun++) {
-		TFileMerger merger ; 
-		TString outFileName(Form("Merged.%s.Data.%d.root",AliQA::GetQADataFileName(),run[irun]));		
-		merger.OutputFile(outFileName.Data()) ; 
-		for (Int_t ifile = 0 ; ifile < index-1 ; ifile++) {
-			TString pattern(Form("%s.%d.", AliQA::GetQADataFileName(), run[irun])) ; 
-			TString tmp(file[ifile]) ; 
-			if (tmp.Contains(pattern)) {
-				merger.AddFile(tmp) ; 
-			}
-		}
-		merger.Merge() ; 
-	}
-	
+  merger.Merge() ; 
 	return kTRUE ; 
 }
 
@@ -927,7 +903,7 @@ void AliQADataMakerSteer::RunOneEventInOneDetector(Int_t det, TTree * tree)
 }
 
 //_____________________________________________________________________________
-Bool_t AliQADataMakerSteer::Save2OCDB(const Int_t runNumber, const char * year, const Int_t cycleNumber, const char * detectors) const
+Bool_t AliQADataMakerSteer::Save2OCDB(const Int_t runNumber, const char * year, const char * detectors) const
 {
 	// take the locasl QA data merge into a single file and save in OCDB 
 	Bool_t rv = kTRUE ; 
@@ -947,13 +923,13 @@ Bool_t AliQADataMakerSteer::Save2OCDB(const Int_t runNumber, const char * year, 
 		rv = Merge(runNumber) ; 
 		if ( ! rv )
 			return kFALSE ; 
-		TString inputFileName(Form("Merged.%s.%d.root", AliQA::GetQADataFileName(), runNumber)) ; 
+		TString inputFileName(Form("Merged.%s.Data.%d.root", AliQA::GetQADataFileName(), runNumber)) ; 
 		inputFile = TFile::Open(inputFileName.Data()) ; 
 		rv = SaveIt2OCDB(runNumber, inputFile, year) ; 
 	} else {
 		for (Int_t index = 0; index < AliQA::kNDET; index++) {
 			if (sdet.Contains(AliQA::GetDetName(index))) {
-				TString inputFileName(Form("%s.%s.%d.%d.root", AliQA::GetDetName(index), AliQA::GetQADataFileName(), runNumber, cycleNumber)) ; 
+				TString inputFileName(Form("%s.%s.%d.root", AliQA::GetDetName(index), AliQA::GetQADataFileName(), runNumber)) ; 
 				inputFile = TFile::Open(inputFileName.Data()) ; 			
 				rv *= SaveIt2OCDB(runNumber, inputFile, year) ; 
 			}
@@ -992,6 +968,7 @@ Bool_t AliQADataMakerSteer::SaveIt2OCDB(const Int_t runNumber, TFile * inputFile
 		if ( detDir ) {
 			AliInfo(Form("Entering %s", detDir->GetName())) ;
 			TString detOCDBDir(Form("%s/%s/%s", AliQA::GetDetName(detIndex), AliQA::GetRefOCDBDirName(), AliQA::GetRefDataDirName())) ; 
+      printf("SSSSSSSSSSSSSSSSSSSSS %s\n", detOCDBDir.Data()) ; 
 			AliCDBId idr(detOCDBDir.Data(), runNumber, AliCDBRunRange::Infinity())  ;
 			TList * listDetQAD = new TList() ;
 			TString listName(Form("%s QA data Reference", AliQA::GetDetName(detIndex))) ; 

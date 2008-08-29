@@ -50,7 +50,7 @@ AliQA    * AliQA::fgQA                   = 0x0 ;
 TFile    * AliQA::fgQADataFile           = 0x0 ;   
 TString    AliQA::fgQADataFileName       = "QA" ;  // will transform into Det.QA.run.cycle.root  
 TFile    * AliQA::fgQARefFile            = 0x0 ;   
-TString    AliQA::fgQARefDirName	     = "" ; 
+TString    AliQA::fgQARefDirName	       = "" ; 
 TString    AliQA::fgQARefFileName        = "QA.root" ;
 TFile    * AliQA::fgQAResultFile         = 0x0 ;  
 TString    AliQA::fgQAResultDirName      = "" ;  
@@ -74,9 +74,9 @@ const TString AliQA::fkgRefFileName      = "QA.root" ;
 const TString AliQA::fkgQAName           = "QA"  ; 
 const TString AliQA::fkgQACorrNtName     = "CorrQA" ;  
 const TString AliQA::fkgRefOCDBDirName   = "Ref"  ; 
-TString AliQA::fkgRefDataDirName	 = ""  ; 
+TString AliQA::fkgRefDataDirName	       = ""  ; 
 const TString AliQA::fkgQARefOCDBDefault = "alien://folder=/alice/QA/20"  ; 
-const TString AliQA::fkgExpert                  = "QAExpErT" ; 
+const TString AliQA::fkgExpert           = "QAExpErT" ; 
 
 //____________________________________________________________________________
 AliQA::AliQA() : 

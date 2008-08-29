@@ -54,7 +54,7 @@ public:
 	void        RunOneEvent(AliRawReader * rawReader) ; 
 	void        RunOneEventInOneDetector(Int_t det, TTree * tree) ; 
 	void        RunOneEvent(AliESDEvent *& esd)  ;
-	Bool_t      Save2OCDB(const Int_t runNumber, const char * year = "08", const Int_t cycleNumber=0, const char * detectors = "ALL") const ; 
+	Bool_t      Save2OCDB(const Int_t runNumber, const char * year = "08", const char * detectors = "ALL") const ; 
 	void        SetActiveDetectors(TString aDet) { fDetectors = aDet ;  }
 	void        SetCycleLength(const AliQA::DETECTORINDEX_t det, const Int_t cycle) { fQACycles[det] = cycle ; }
 	void        SetWriteExpert(const AliQA::DETECTORINDEX_t det) { fQAWriteExpert[det] = kTRUE ; }
