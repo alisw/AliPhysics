@@ -23,6 +23,7 @@ class TH3F;
 class TGraph;
 class TObjArray;
 class AliTRDrawStreamTB;
+class AliRawReader;
 
 class AliTRDqaBlackEvents : public TObject {
 
@@ -35,7 +36,12 @@ class AliTRDqaBlackEvents : public TObject {
 
   void Init();
   void Reset();
-  Int_t AddEvent(AliTRDrawStreamTB *data);
+  //Int_t AddEvent(AliTRDrawStreamTB *data, AliRawReader *reader);
+
+  void StartEvent();
+  void AddBuffer(AliTRDrawStreamTB *data, AliRawReader *reader);
+  void FinishEvent();
+
   void Process(const char* filename);
   
   //TH2D *GetChamberPedestal(Int_t sm, Int_t layer, Int_t stack) {return 0;}
@@ -66,6 +72,8 @@ class AliTRDqaBlackEvents : public TObject {
   Int_t fThresh;          // threshold to analyze MCM data
   Int_t fCount;           // minimum number of entries above threshold
   
+  Int_t fRefEv;           // reference event number
+
   Char_t fRefFileName[256];  // name of the file with reference distributions
 
 
@@ -76,9 +84,10 @@ class AliTRDqaBlackEvents : public TObject {
     kMCM = 16,
     kADC = 21,
     kTB  = 30,
-    kCOL = 16,
+    kROW = 16,
     kPAD = 144,
-    kSM  = 18
+    kSM  = 18,
+    kCH  = 50
   };
 
   // histograms per detector
@@ -99,6 +108,10 @@ class AliTRDqaBlackEvents : public TObject {
   TH1D *fSignal[kDET];     // Some histograms
   TH2D *fnEntriesRM[kDET];     // number of entries for ROB - MCM
   TH1D *fnEntriesRMDist[kDET]; // distribtion of number of entries per ROB-MCM
+
+  // direct access to data
+  Float_t  fDataDirect[kDET][kROW][kPAD][kCH];
+  Double_t fSignalDirect[kDET][kCH]; 
 
   // after reference subtraction
   TH2D *fChPedRes[kDET];    // histograms after reference subtraction
@@ -131,6 +144,8 @@ class AliTRDqaBlackEvents : public TObject {
   TGraph *fErrorGraphADC;
 
   TGraph *fGraphMCM;         // number of strange MCMs detected 
+  TGraph *fGraphPP[3];
+  
 
   // mcm trackles
   TObjArray *fMcmTracks;
@@ -142,7 +157,12 @@ class AliTRDqaBlackEvents : public TObject {
   // full detector view
   TH2D *fSMHCped;
   TH2D *fSMHCerr;
-
+  TH2D *fSMLink[3];
+  TGraph *fGrLink[3];
+  
+  //TH1D *fZSsize;
+  
+  
   // number of fired ADC channels in total and per SM
   TGraph *fNumberADC[kSM+1];
   
@@ -155,15 +175,33 @@ class AliTRDqaBlackEvents : public TObject {
   TH1D *fSmNoiseFit[kSM];
   TH1D *fSmPP[kSM];    
 
+
+  TH1D *fEvNoDist[1000];
+
   //
   Double_t fMinNoise;   // Minimum noise
   Double_t fMaxNoise;   // Maximum noise
   Int_t fFitType;
   
+  // variables keeping info in one event
+  Int_t fnErrorHC[2];  // 0 good, 1 error
+  Int_t fnErrorMCM[2]; //
+  Int_t fnErrorADC[2]; // 
+    
+  Int_t fppThresh[3];      // thersholds for storing pp
+  Int_t fnPP[3];           // number of entries above the thershold
+  Int_t fnLink[3];         // links present, beaf-beaf, good
+  Int_t fnADCinSM[kSM+1];  // number of ADC channels in a SuperModule
+  //
+
+
+
   // private function
   void  ReadRefHists(Int_t det);
   Int_t CheckMCM(Int_t index);
   
+  Int_t FillBits(TH1D *hist, Int_t code, Int_t offset);
+
 
   ClassDef(AliTRDqaBlackEvents,0) // QA for black events  
 

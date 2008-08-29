@@ -6,7 +6,7 @@
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
  * documentation strictly for non-commercial purposes is hereby granted   *
- * withount fee, provided that the abov copyright notice appears in all   *
+ * withount fee, provided thats the abov copyright notice appears in all   *
  * copies and that both the copyright notice and this permission notice   *
  * appear in the supporting documentation. The authors make no claims     *
  * about the suitability of this software for any purpose. It is          *
@@ -42,6 +42,9 @@
 #include "AliTRDrawStreamTB.h"
 #include "AliTRDqaBlackEvents.h"
 
+#include "AliRawReader.h"
+
+
 ClassImp(AliTRDqaBlackEvents)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -52,6 +55,7 @@ AliTRDqaBlackEvents::AliTRDqaBlackEvents()
   ,fCreateFull(0)
   ,fThresh(0)
   ,fCount(0)
+  ,fRefEv(0)
   ,fOccupancy(0)
   ,fDetRob(0)
   ,fTBEvent(0)
@@ -95,6 +99,7 @@ AliTRDqaBlackEvents::AliTRDqaBlackEvents(const AliTRDqaBlackEvents &qa)
   ,fCreateFull(0)
   ,fThresh(0)
   ,fCount(0)
+  ,fRefEv(0)
   ,fOccupancy(0)
   ,fDetRob(0)
   ,fTBEvent(0)
@@ -147,7 +152,7 @@ void AliTRDqaBlackEvents::Init()
   for(Int_t det=0; det<kDET; det++) {
 
     fNPoint[det]  = new TH2D(Form("entries_%d", det), "",  16, -0.5, 15.5, 144, -0.5, 143.5);
-    fData[det]    = new TH3F(Form("data_%d", det), "", 16, -0.5, 15.5, 144, -0.5, 143.5, 50, -0.5, 49.5);
+    //fData[det]    = new TH3F(Form("data_%d", det), "", 16, -0.5, 15.5, 144, -0.5, 143.5, 50, -0.5, 49.5);
 
     // pedestal noise maps using RMS and Fit
     fChPed[det]   = new TH2D(Form("ped_%d", det), "", 16, -0.5, 15.5, 144, -0.5, 143.5);
@@ -185,9 +190,9 @@ void AliTRDqaBlackEvents::Init()
   fTBEvent   = new TH2D("tbEvent", ";event ID;time bin", 100, -0.5, 99.5, 30, -0.5, 29.5);
 
   // errors statistics and location
-  fErrorHC  = new TH1D("errorHC", ";error ID;", 7, -0.5, 6.5);
-  fErrorMCM = new TH1D("errorMCM", ";error ID;", 7, -0.5, 6.5);
-  fErrorADC = new TH1D("errorADC", ";error ID;", 7, -0.5, 6.5);
+  fErrorHC  = new TH1D("errorHC", ";error ID;", 18, -3.5, 14.5);
+  fErrorMCM = new TH1D("errorMCM", ";error ID;", 18, -3.5, 14.5);
+  fErrorADC = new TH1D("errorADC", ";error ID;", 18, -3.5, 14.5);
   
   fErrorSMHC  = new TH1D("errorSM_HC", ";SM id", 18, -0.5, 17.5);
   fErrorSMMCM = new TH1D("errorSM_MCM", ";SM id", 18, -0.5, 17.5);
@@ -199,18 +204,34 @@ void AliTRDqaBlackEvents::Init()
   fErrorGraphADC = new TGraph();
 
   fGraphMCM = new TGraph();
-  
+
+  for(Int_t i=0; i<3; i++) {
+    fGraphPP[i] = new TGraph();
+  }
+
+
   fMapMCM = new TH2D("mapMCM", ";det;mcm", 540, -0.5, 539.5, kROB*kMCM, -0.5, kROB*kMCM-0.5);
   fFracMCM = new TH1D("fracMCM", ";frequency", 100, 0, 1);
   
 
-  fErrorGraphHC->GetHistogram()->SetTitle("Error HC;event number;fraction with error (%)");
-  fErrorGraphMCM->GetHistogram()->SetTitle("Error MCM;event number;fraction with error (%)");
-  fErrorGraphADC->GetHistogram()->SetTitle("Error ADC;event number;fraction with error (%)"); 
+  fErrorGraphHC->GetHistogram()->SetTitle("fraction of events with HC error;event number");
+  fErrorGraphMCM->GetHistogram()->SetTitle("fraction of events with MCM error;event number;");
+  fErrorGraphADC->GetHistogram()->SetTitle("fraction of events with ADC error;event number;"); 
 
 
   fSMHCped = new TH2D("smHcPed", ";super module;half chamber", 18, -0.5, 17.5, 60, -0.5, 59.5);
-  //fSMHCerr = 0;
+  
+  // link monitor
+  const char *linkName[3] = {"smLink", "smBeaf", "smData"};
+  const char *linkGrName[3] = {"grSmLink", "grSmBeaf", "grSmData"};
+  for(Int_t i=0; i<3; i++) {
+    fSMLink[i] = new TH2D(linkName[i], ";super module;link", 18, -0.5, 17.5, 60, -0.5, 59.5);
+    fGrLink[i] = new TGraph();
+    fGrLink[i]->SetName(linkGrName[i]);
+  }
+
+  //fZSsize = new TH1D("zssizeSingle", ";threshold;nADC", 40, -0.5, 39.5);
+  
 
   //Info("Init", "Done");
 
@@ -228,7 +249,22 @@ void AliTRDqaBlackEvents::Init()
     fSmPP[sm] = new TH1D(Form("peakPeak_sm%d", sm), ";peak-peak (ADC)", 200, -0.5, 199.5); 
   }
 
+  // event number consistancy
+  for(Int_t i=0; i<1000; i++) {
+    fEvNoDist[i] = new TH1D(Form("mcmEvDist_%d", i), ";#Delta Events", 201, -100.5, 100.5);
+  }
+  fRefEv = -1;
+
   fMcmTracks = new TObjArray();
+
+  // clean data direct
+  for(Int_t det=0; det<kDET; det++) 
+    for(Int_t row=0; row<kROW; row++)
+      for(Int_t pad=0; pad<kPAD; pad++)
+	for(Int_t ch=0; ch<kCH; ch++) {
+	  fDataDirect[det][row][pad][ch] = 0;
+	  fSignalDirect[det][ch] = 0;  // overdone
+	}
 }
 
 
@@ -241,7 +277,7 @@ void AliTRDqaBlackEvents::Reset()
   //
 
   for(Int_t i=0; i<kDET; i++) {
-    fData[i]->Reset();
+    //fData[i]->Reset();
     fChPed[i]->Reset();
     fChNoise[i]->Reset();
   }
@@ -274,19 +310,11 @@ void AliTRDqaBlackEvents::ReadRefHists(Int_t det) {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-Int_t AliTRDqaBlackEvents::AddEvent(AliTRDrawStreamTB *data) 
+void AliTRDqaBlackEvents::StartEvent()
 {
   //
-  // Add an event
+  // start an event
   //
-
-  // structure to keep track if particular chanel is used
-  Char_t isUsed[kDET][kCOL][kPAD]; 
-  for(Int_t i=0; i<kDET; i++)
-    for(Int_t j=0; j<kCOL; j++)
-      for(Int_t k=0; k<kPAD; k++)
-   	isUsed[i][j][k] = 0;
-  
 
   // clear the mcm data
   for(Int_t i=0; i < kDET * kROB * kMCM; i++) {
@@ -294,182 +322,306 @@ Int_t AliTRDqaBlackEvents::AddEvent(AliTRDrawStreamTB *data)
     fFullCounter[i] = 0;
   }
 
-  Int_t nb = 0;
-  
-  Int_t lastdet  = -1;
-  Int_t lastside = -1;
-  Int_t lastmcm  = -1;
-
-  Int_t rob_last  = -1;
-  Int_t mcm_last  = -1;
-
-  Int_t nGoodHC  = 0;
-  Int_t nGoodMCM = 0;
-  Int_t nGoodADC = 0;
-
-  Int_t nErrorHC  = 0;
-  Int_t nErrorMCM = 0;
-  Int_t nErrorADC = 0;
-  
-
-  //Int_t adc_last  = -1;
-  // Int_t sm_01  = -1;
-  
-  // number of ADCs per SM
-  Int_t nADCinSM[kSM+1];
-  for(Int_t sm=0; sm<kSM+1; sm++) nADCinSM[sm] = 0;
-
-
-
-  while (data->Next()) {
-
-    Int_t sm  = data->GetSM();
-    Int_t layer = data->GetLayer();
-    Int_t stack = data->GetStack();
-
-    Int_t det = data->GetDet();
-    Int_t side = data->GetSide();
-
-    Int_t row = data->GetRow();
-    Int_t col = data->GetCol();
-
-    Int_t rob = data->GetROB();
-    Int_t mcm = data->GetMCM();
-    Int_t adc = data->GetADC();
+  for(Int_t i=0; i<2; i++) {
+    fnErrorHC[i] = 0;
+    fnErrorMCM[i] = 0;
+    fnErrorADC[i] = 0;
+  }
 
  
-    Int_t *sig = data->GetSignals();
-    nb++;
-
-    nADCinSM[sm]++;
-    nADCinSM[kSM]++;
-    
-    // memory coruption protection
-    if (det<0 || det>=kDET) continue;
-    
-    // check errors
-   
-    // tests
-    //fErrorHC->Fill(data->GetHCErrorCode());
-    if (data->GetMCMErrorCode() > 0) fErrorLocMCM[det]->Fill(row, col);
-    if (data->GetADCErrorCode() > 0) fErrorLocADC[det]->Fill(row, col);    
-
-    // new HC found
-    if ((det + side*kDET) != (lastdet + lastside*kDET)) {
-      Int_t code = data->GetHCErrorCode();
-      // if (code) { 
-      fErrorHC->Fill(code);
-      
-      if (code) fErrorSMHC->Fill(sm);
-      if (code) nErrorHC++;
-      nGoodHC++;
-
-      //Int_t mask = 1;
-      //for(Int_t cc = 0; cc < 3; cc++) {
-      //  if (code & mask) fErrorHC->Fill(cc);
-      //  cc *= 2;
-      //	}
-      //}
-    }
-    lastdet  = det;
-    lastside = side;
-    
-    // new MCM found  
-    if (mcm != lastmcm){
-      Int_t code = data->GetMCMErrorCode();
-      fErrorMCM->Fill(code);
-
-      if (code) fErrorSMMCM->Fill(sm);
-      if (code) nErrorMCM++;
-      nGoodMCM++;
-    }
-    lastmcm = mcm;
-    
-    // new ADC channel found
-    Int_t code = data->GetADCErrorCode();
-    fErrorADC->Fill(code);
-    if (code) fErrorSMADC->Fill(sm);
-    if (code) nErrorADC++;
-    nGoodADC++;
-
-    // end of error checking
-    
-    // check the ROBs
-    fDetRob->Fill(det, rob, 1./(kMCM*18));
-    isUsed[det][row][col]++;
-
-    // check if mcm signal is continuus
-    if ((rob_last != rob) || (mcm_last != mcm)) {
-      rob_last = rob;
-      mcm_last = mcm;
-      fnEntriesRM[det]->Fill(rob,mcm);
-    }
-    
-    // number of entries for each channels
-    fNPoint[det]->Fill(row, col);
-    
-
-    // create a structure for an MCM if needed
-    Int_t mcmIndex = det * (kMCM * kROB) + rob * kMCM + mcm;
-    if (fCreateFull && !fFullSignal[mcmIndex])
-      fFullSignal[mcmIndex] = new TH2S(Form("mcm_%d_%d_%d_%d_%d", sm, stack, layer, rob, mcm), 
-				       Form("mcm-%d-%d-%d-%d-%d;ADC;time bin", sm, stack, layer, rob, mcm),
-				       21, -0.5, 20.5, 30, -0.5, 29.5);
-    
-
-    // loop over Time Bins and fill histograms
-    Int_t minV = 1024;
-    Int_t maxV = 0;
-
-    for(Int_t k=0; k<kTB; k++) { /// to be corrected
-
-      //if (data->GetADCErrorCode() > 0) continue;
-
-      //if (col == 0 || col == 143)
-      //AliInfo(Form("TB: %d %d %d\n", row, col, sig[k]));
-
-      //if (sig[k] < 1) 
-      //AliInfo(Form("det = %d rob = %d mcm = %d adc = %d k = %d S = %d\n", det, rob, mcm, adc, k, sig[k]));
-      
-      fSignal[det]->Fill(sig[k]);
-      fData[det]->Fill(row, col, sig[k]);
-      
-      minV = (minV < sig[k]) ? minV : sig[k];
-      maxV = (maxV > sig[k]) ? maxV : sig[k];
-
-
-      // check if data strange enought
-      if (fCreateFull && fFullSignal[mcmIndex]) {
-	//if (sm == 17 && )
-	//if (det != 29) {
-	if (sig[k] > fThresh || sig[k] < 1) fFullCounter[mcmIndex]++;
-	//if (sig[k] < 1) fFullCounter[mcmIndex] = 0; // remove austrian flag 
-	//}
-	fFullSignal[mcmIndex]->Fill(adc, k, sig[k]);
-      }
-      
-      // noisy chamber
-      if (det == 29 && col > 7) {
-	fTBEvent->Fill(fnEvents, k, sig[k]);
-      }
-    }
-    
-    fPP->Fill(maxV-minV);
-    fChPP[det]->Fill(maxV-minV);
-    fSmPP[sm]->Fill(maxV-minV);
+  Int_t ppThresh[3] = {10, 20, 40};
+  for(Int_t i=0; i<3; i++) {
+    fppThresh[i] = ppThresh[i];
+    fnPP[i] = 0;
+    fnLink[i] = 0;
   }
+
+  for(Int_t sm=0; sm<kSM+1; sm++) fnADCinSM[sm] = 0;
+
+  if (fRefEv > 0) fRefEv++;
+  fEvNoDist[999]->Reset();  // keep only the last event
+
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+void AliTRDqaBlackEvents::AddBuffer(AliTRDrawStreamTB *data, AliRawReader *reader) 
+{
   
-  // is the dead-alive status changing during the run
-  for(Int_t i=0; i<kDET; i++) {
-    for(Int_t j=0; j<kCOL; j++)
-      for(Int_t k=0; k<kPAD; k++)
-  	fOccupancy->Fill(isUsed[i][j][k]);
+  //printf ("try to read data\n");
+  Int_t nextBuff  = data->NextBuffer();
+  //printf("done ...\n");
+
+  if (nextBuff == 0) return;
+ 
+  Int_t sm = reader->GetEquipmentId() - 1024;
+  //printf("reading SM %d\n", sm);
+  AliInfo(Form("reading SM %d", sm));
+  
+  if (sm < 0 || sm > 18) return;
+
+  // lopp over stacks, links ...
+
+  for (Int_t istack = 0; istack < 5; istack++) {	
+    for (Int_t ilink = 0; ilink < 12; ilink++) {
+      
+      //printf("HC = %d %d\n", istack, ilink);
+
+      Int_t det = sm * 30 + istack * 6 + ilink/2;	
+      
+      // check if data delivered
+      if (!(data->IsLinkActiveInStack(istack, ilink))) continue;
+      fSMLink[0]->Fill(sm, istack * 12 + ilink);
+      fnLink[0]++;
+
+      // check if beaf-beaf
+      if (data->GetLinkMonitorError(istack, ilink)) {
+	fSMLink[1]->Fill(sm, istack * 12 + ilink);
+	fnLink[1]++;
+	continue;
+      }
+	
+      // fill histogram with HC header errors
+      Int_t nErrHc = 0;
+      Int_t nErrHcTot = 0;
+      
+      nErrHc = FillBits(fErrorHC, data->GetH0ErrorCode(istack, ilink), 0);
+      if (!nErrHc) fErrorHC->Fill(-3);
+      nErrHcTot += nErrHc;
+      
+      nErrHc = FillBits(fErrorHC, data->GetH1ErrorCode(istack, ilink), 2);
+      if (!nErrHc) fErrorHC->Fill(-2);
+      nErrHcTot += nErrHc;
+      
+      nErrHc = FillBits(fErrorHC, data->GetHCErrorCode(istack, ilink), 4);
+      if (!nErrHc) fErrorHC->Fill(-1);
+      nErrHcTot += nErrHc;
+      
+      // trending
+      fnErrorHC[0]++;
+      if (nErrHcTot > 0) { 
+	fnErrorHC[1]++;
+	fErrorSMHC->Fill(sm);
+      }
+      
+      // data integrity protection 
+
+      //if (data->GetHCErrorCode(istack, ilink) > 0) continue;
+      if (data->GetH0ErrorCode(istack, ilink) > 0) continue;
+      if (data->GetH1ErrorCode(istack, ilink) > 0) continue;
+      
+      fSMLink[2]->Fill(sm, istack * 12 + ilink);	
+      fnLink[2]++;
+             
+      
+      for (Int_t imcm = 0; imcm < data->GetHCMCMmax(istack, ilink); imcm++ ){
+	  
+	//printf("mcm = %d %d %d\n", istack, ilink, imcm);
+	
+	// fill MCM error code
+	
+	Int_t nErrMcm = 0;
+	Int_t nErrMcmTot = 0;
+	
+	nErrMcm = FillBits(fErrorMCM, data->GetMCMhdErrorCode(istack, ilink, imcm), 0);
+	if (!nErrMcm) fErrorMCM->Fill(-3);
+	nErrMcmTot += nErrMcm;
+	
+	nErrMcm = FillBits(fErrorMCM, data->GetMCMADCMaskErrorCode(istack, ilink, imcm), 5);
+	if (!nErrMcm) fErrorMCM->Fill(-2);
+	nErrMcmTot += nErrMcm;
+	
+	nErrMcm = FillBits(fErrorMCM, data->GetMCMErrorCode(istack, ilink, imcm), 10);
+	if (!nErrMcm) fErrorMCM->Fill(-1);
+	nErrMcmTot += nErrMcm;			  
+	
+	// trending
+	fnErrorMCM[0]++;
+	if (nErrMcmTot > 0) { 
+	  fnErrorMCM[1]++;
+	  fErrorSMMCM->Fill(sm);
+	}
+	
+	// MCM protection
+	if ( (data->GetMCMhdErrorCode(istack,ilink,imcm)) & 2 ) continue;
+	//if ((data->GetMCMADCMaskErrorCode(istack,ilink,imcm))) continue;
+	//if ((data->GetMCMErrorCode(istack,ilink,imcm))) continue;
+	
+	Int_t mcmEvent = data->GetEventNumber(istack, ilink, imcm);
+	
+	// set the reference event number 
+	if (fRefEv < 0) {
+	  fRefEv = mcmEvent;
+	  printf("Reference Event Number = %d (%d %d %d)\n", fRefEv, istack, ilink, imcm);
+	}
+	
+	// fill event distribution
+	if (!(fnEvents%10)) {
+	  fEvNoDist[fnEvents/10]->Fill(mcmEvent - fRefEv);
+	}
+	
+	fEvNoDist[999]->Fill(mcmEvent - fRefEv);
+	
+	Int_t mcm = data->GetMCM(istack, ilink, imcm);
+	Int_t rob = data->GetROB(istack, ilink, imcm);
+
+	// create a structure for an MCM if needed
+	Int_t mcmIndex = det * (kMCM * kROB) + rob * kMCM + mcm;
+	if (fCreateFull && !fFullSignal[mcmIndex])
+	  fFullSignal[mcmIndex] = 
+	    new TH2S(Form("mcm_%d_%d_%d_%d_%d", sm, istack, ilink/2, rob, mcm), 
+		     Form("mcm-%d-%d-%d-%d-%d;ADC;time bin", sm, istack, ilink/2, rob, mcm),
+		     21, -0.5, 20.5, 30, -0.5, 29.5);
+	
+	
+	//Int_t zsADC[21][40];
+	/*
+	  for(Int_t ina=0; ina<21; ina++) 
+	  for(Int_t th=0; th<40; th++)
+	  zsADC[ina][th] = 0;
+	*/
+	
+	// first loop over ADC chanels 
+	
+	for (Int_t iadc=0; iadc < data->GetADCcount(istack, ilink, imcm); iadc++) {
+	  
+	  //printf("ADC = %d\n", iadc);
+	  
+
+	  // fill ADC error bits
+	  Int_t nErrAdc = FillBits(fErrorADC, data->GetADCErrorCode(), 0);
+	  if (!nErrAdc) fErrorADC->Fill(-1);
+	  
+	  fnErrorADC[0]++;
+	  if (nErrAdc > 0) {
+	    fnErrorADC[1]++;
+	    fErrorSMADC->Fill(sm);
+	  }
+	  
+	  // ADC protection
+	  if ((data->GetADCErrorCode(istack,ilink,imcm,iadc))) continue;
+
+	  Int_t minV = 1024;
+	  Int_t maxV = 0;
+	    
+	  Int_t *sig = data->GetSignalDirect(istack, ilink, imcm, iadc);
+
+	  //Int_t adc = data->GetADCnumber(istack, ilink, imcm, iadc);
+	  Int_t row = data->GetRow(istack, ilink, imcm);
+	  Int_t col = data->GetCol(istack, ilink, imcm, iadc);	    	    
+	    
+	  // loop over Time Bins and fill histograms
+	  for(Int_t k=0; k < data->GetNumberOfTimeBins(istack, ilink); k++) { 
+	      	      
+	    //fSignal[det]->Fill(sig[k]);
+	    //fData[det]->Fill(row, col, sig[k]); // slow
+
+	    if (sig[k] < kCH) {
+	      fSignalDirect[det][sig[k]]++;
+	      fDataDirect[det][row][col][sig[k]]++; // direct data
+	    }
+
+	    // peak-peak
+	    minV = (minV < sig[k]) ? minV : sig[k];
+	    maxV = (maxV > sig[k]) ? maxV : sig[k];
+	    
+	    // check for active MCMs
+	    if (fCreateFull && fFullSignal[mcmIndex]) {
+	      if (sig[k] > fThresh || sig[k] < 0) fFullCounter[mcmIndex]++;
+	      //if (sm == 0 && istack == 0 && ilink/2 == 1 && rob == 1 && mcm == 15) fFullCounter[mcmIndex]++; // special
+	      //fFullSignal[mcmIndex]->Fill(adc, k, sig[k]); // slow
+	    }
+	    
+	    // zero suppresion tests
+	    /*
+	      for(Int_t th=0; th<40; th++) {
+	      if (sig[k] > th) {
+	      zsADC[iadc][th] = 1;
+	      if (iadc > 0) zsADC[iadc-1][th] = 1;
+	      if (iadc < 10) zsADC[iadc+1][th] = 1;
+	      }
+	      }
+	    */
+	    
+	  } // tb
+	  
+	  if (maxV > 0) { 
+	    fnADCinSM[sm]++;
+	    fnADCinSM[kSM]++;
+	  }
+	  
+	  Int_t adcPP = maxV - minV;
+	  //if (adcPP == 100) fFullCounter[mcmIndex] += 10;
+
+	  fPP->Fill(adcPP);
+	  fChPP[det]->Fill(adcPP);
+	  fSmPP[sm]->Fill(adcPP);
+	  
+	  for(Int_t i=0; i<3; i++) {
+	    if ((adcPP) > fppThresh[i]) fnPP[i]++;
+	  }
+	  
+	    
+	} // adc
+
+	  // fill ZS histos
+	  /*
+	    for(Int_t th=0; th<40; th++) {
+	    Int_t nnADC = 0;
+	    for(Int_t ins=0; ins<21; ins++) 
+	    nnADC += zsADC[ins][th];
+	    fZSsize->Fill(th, nnADC);
+	    }
+	  */
+
+	// fill active MCMs
+
+	if (fCreateFull && fFullSignal[mcmIndex] && (fFullCounter[mcmIndex] > fCount)) {
+	  
+	  for (Int_t iadc=0; iadc < data->GetADCcount(istack, ilink, imcm); iadc++) {
+	    
+	    // ADC protection
+	    if ((data->GetADCErrorCode(istack,ilink,imcm,iadc))) continue;	  
+	    
+	    //Int_t row = data->GetRow(istack, ilink, imcm);
+	    //Int_t col = data->GetCol(istack, ilink, imcm, iadc);	    	    
+	    Int_t adc = data->GetADCnumber(istack, ilink, imcm, iadc);
+	    
+	    Int_t *sig = data->GetSignalDirect(istack, ilink, imcm, iadc);
+	    
+	    // loop over Time Bins and fill histograms
+	    for(Int_t k=0; k < data->GetNumberOfTimeBins(istack, ilink); k++) { 
+	      fFullSignal[mcmIndex]->Fill(adc, k, sig[k]); // slow
+	    }
+	  } // tb
+	}
+	
+      } // mcm 
+    } // link
+  } // stack  
+  
+  // printf("end of loops\n");
+} 
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+void AliTRDqaBlackEvents::FinishEvent()
+{
+
+  for(Int_t i=0; i<3; i++) {
+    fGraphPP[i]->SetPoint(fnEvents, fnEvents, fnPP[i]);
+  }
+
+  // trend of the number of links
+  for(Int_t i=0; i<3; i++) {
+    fGrLink[i]->SetPoint(fnEvents, fnEvents, fnLink[i]);
   }
 
   // save interesting histos
   Int_t mcmTrackCandidate = 0;
   for(Int_t i = 0; i < kDET * kROB * kMCM; i++) { 
-    if (fFullCounter[i] && fFullSignal[i] && CheckMCM(i) )  {
+    if ((fFullCounter[i] > fCount) && fFullSignal[i] && CheckMCM(i) )  {
       
       fMcmTracks->AddLast(fFullSignal[i]->Clone(Form("event_%d_%s", fnEvents, fFullSignal[i]->GetName())));
       mcmTrackCandidate++;
@@ -483,26 +635,24 @@ Int_t AliTRDqaBlackEvents::AddEvent(AliTRDrawStreamTB *data)
   fGraphMCM->SetPoint(fnEvents, fnEvents, mcmTrackCandidate);
   AliInfo(Form("Number of MCM track candidates = %d\n", mcmTrackCandidate));
   
-
+  
   // update fraction of error graphs
   Double_t err;
-
-  err = (nGoodHC > 0)? 100.*nErrorHC/nGoodHC : -1;
+  
+  err = (fnErrorHC[0] > 0)? 100.*fnErrorHC[1]/fnErrorHC[0] : -1;
   fErrorGraphHC->SetPoint(fnEvents, fnEvents, err);
   
-  err = (nGoodMCM > 0)? 100.*nErrorMCM/nGoodMCM : -1;
+  err = (fnErrorMCM[0] > 0)? 100.*fnErrorMCM[1]/fnErrorMCM[0] : -1;
   fErrorGraphMCM->SetPoint(fnEvents, fnEvents, err);
   
-  err = (nGoodADC > 0)? 100.*nErrorADC/nGoodADC : -1;
+  err = (fnErrorADC[0] > 0)? 100.*fnErrorADC[1]/fnErrorADC[0] : -1;
   fErrorGraphADC->SetPoint(fnEvents, fnEvents, err);
 
   // number of fired ADC per SM
   for(Int_t sm=0; sm<kSM+1; sm++) 
-    fNumberADC[sm]->SetPoint(fnEvents, fnEvents, nADCinSM[sm]);
-
+    fNumberADC[sm]->SetPoint(fnEvents, fnEvents, fnADCinSM[sm]);
 
   fnEvents++;
-  return nb;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -529,27 +679,39 @@ void AliTRDqaBlackEvents::Process(const char *filename)
     //AliInfo(Form("processing chamber %d\n", det));   
 
     map[det] = 0;
-    if (fData[det]->GetSum() < 10) continue;
-    map[det] = 1;
+    //if (fData[det]->GetSum() < 10) continue;
+    //if (fDataDirect[det][10][10][10] < 20) continue;
+    //map[det] = 1;
+
+
+    // rewrite signal-direct
+    for(Int_t ch=0; ch<kCH; ch++) {
+      fSignal[det]->Fill(ch, fSignalDirect[det][ch]);
+    }
 
     // read reference distributions
     ReadRefHists(det);
 
-    for(Int_t row=0; row<fData[det]->GetXaxis()->GetNbins(); row++) {
-      for(Int_t pad=0; pad<fData[det]->GetYaxis()->GetNbins(); pad++) {
+    //for(Int_t row=0; row<fData[det]->GetXaxis()->GetNbins(); row++) {
+    //for(Int_t pad=0; pad<fData[det]->GetYaxis()->GetNbins(); pad++) {
 	
+    for(Int_t row=0; row<kROW; row++) {
+      for(Int_t pad=0; pad<kPAD; pad++) {
+
 	// project the histogramm
 	hist->Reset();
-	for(Int_t bb=0; bb<50; bb++) {
-	  Int_t dataBin = fData[det]->FindBin(row, pad, bb);
-	  Double_t v = fData[det]->GetBinContent(dataBin);
-	  hist->SetBinContent(bb+1, v);
+	//for(Int_t bb=0; bb<50; bb++) {
+	for(Int_t bb=0; bb<kCH; bb++) {
+	  //Int_t dataBin = fData[det]->FindBin(row, pad, bb);
+	  //Double_t v = fData[det]->GetBinContent(dataBin);
+	  hist->SetBinContent(bb+1, fDataDirect[det][row][pad][bb]);
 	}
 
 	Int_t bin = fChPed[det]->FindBin(row, pad);
 
 	if (hist->GetSum() > 1) {
 	  
+	  map[det] = 1;
 	  Double_t ped = 0, noise = 0;
 
 	  if (fFitType == 0) {
@@ -712,7 +874,6 @@ void AliTRDqaBlackEvents::Process(const char *filename)
   }
 
 
-
   fOccupancy->Write();
   fDetRob->Write();
   fTBEvent->Write();
@@ -732,12 +893,24 @@ void AliTRDqaBlackEvents::Process(const char *filename)
   fErrorGraphADC->Write("trendErrorADC");
   
   fGraphMCM->Write("trendMCM");
+  
+  for(Int_t i=0; i<3; i++) {
+    fGraphPP[i]->Write(Form("fracPP_%d", i));
+  }
+  
+  //fZSsize->Scale(1./fnEvents);
+  //fZSsize->Write();
 
   fMapMCM->SetMaximum(fnEvents);
   fMapMCM->Write();
   fFracMCM->Write();
   
   fSMHCped->Write();
+
+  for(Int_t i=0; i<3; i++ ) {
+    fSMLink[i]->Write();
+    fGrLink[i]->Write();
+  }
 
   for(Int_t sm=0; sm<kSM; sm++)
     fNumberADC[sm]->Write(Form("nADCinSM%d",sm));
@@ -746,6 +919,11 @@ void AliTRDqaBlackEvents::Process(const char *filename)
 
   fNoiseTotal->Write();
   fPP->Write();
+
+  for(Int_t i=0; i<1000; i++) {
+    if (fEvNoDist[i]->GetSum() > 0) fEvNoDist[i]->Write();
+  }
+
 
   file->Close();
   delete file;
@@ -896,6 +1074,23 @@ void AliTRDqaBlackEvents::DrawSm(const char *filename, Int_t sm, Int_t w, Int_t 
 
     h2->Draw("col");
   }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+Int_t AliTRDqaBlackEvents::FillBits(TH1D *hist, Int_t code, Int_t offset) {
+
+  Int_t nb = 0;
+  UInt_t test = 1;
+  for(Int_t i=0; i<8; i++) {
+    if (code & test) {
+      hist->Fill(i+offset);
+      nb++;
+    }
+    test *= 2;       
+  }
+  
+  return nb;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
