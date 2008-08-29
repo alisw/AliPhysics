@@ -41,6 +41,10 @@ public:
     kXe = 0,
     kAr = 1
   };
+  enum{
+    kNNslices = 8
+   ,kLQslices = 3
+  };
 
   AliTRDReconstructor();
   AliTRDReconstructor(const AliTRDReconstructor &r);
@@ -76,10 +80,6 @@ public:
   void                SetStreamLevel(Int_t level, AliTRDReconstructorTask task= kTracker);
 
 private:
-  enum{
-    kNNslices = 8
-   ,kLQslices = 3
-  };
   UChar_t       fStreamLevel[5];      // stream level for each reconstruction task         
   UInt_t        fSteerParam;          // steering flags
   Double_t      fTCParams[8];         // Tail Cancellation parameters for drift gases 

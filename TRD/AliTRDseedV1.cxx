@@ -226,7 +226,8 @@ void AliTRDseedV1::CookdEdx(Int_t nslices)
     nclusters[slice]++;
   } // End of loop over clusters
 
-  if(fReconstructor->GetPIDMethod() == AliTRDReconstructor::kLQPID){
+  //if(fReconstructor->GetPIDMethod() == AliTRDReconstructor::kLQPID){
+  if(nslices == AliTRDReconstructor::kLQslices){
   // calculate mean charge per slice (only LQ PID)
     for(int is=0; is<nslices; is++){ 
       if(nclusters[is]) fdEdx[is] /= nclusters[is];
