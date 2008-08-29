@@ -14,8 +14,10 @@ class TEveUtil;
 R__EXTERN TEveProjectionManager *gRPhiMgr;
 R__EXTERN TEveProjectionManager *gRhoZMgr;
 
-TEveGeoShape *gGeomGentle    = 0;
-TEveGeoShape *gGeomGentleTRD = 0;
+TEveGeoShape *gGeomGentle     = 0;
+TEveGeoShape *gGeomGentleRPhi = 0;
+TEveGeoShape *gGeomGentleRhoZ = 0;
+TEveGeoShape *gGeomGentleTRD  = 0;
 
 Bool_t gShowTRD = kFALSE;
 
@@ -55,7 +57,9 @@ void visscan_init()
 
   // geometry
   TEveUtil::LoadMacro("geom_gentle.C");
-  gGeomGentle = geom_gentle();
+  gGeomGentle     = geom_gentle();
+  gGeomGentleRPhi = geom_gentle_rphi(); gGeomGentleRPhi->IncDenyDestroy();
+  gGeomGentleRhoZ = geom_gentle_rhoz(); gGeomGentleRhoZ->IncDenyDestroy();
   if (gShowTRD) {
     TEveUtil::LoadMacro("geom_gentle_trd.C");
     gGeomGentleTRD = geom_gentle_trd();
@@ -162,14 +166,14 @@ void on_new_event()
   if (gRPhiMgr && top) {
     gRPhiMgr->DestroyElements();
     gRPhiMgr->SetCenter(x[0], x[1], x[2]);
-    gRPhiMgr->ImportElements(gGeomGentle);
+    gRPhiMgr->ImportElements(gGeomGentleRPhi);
     if (gShowTRD) gRPhiMgr->ImportElements(gGeomGentleTRD);
     gRPhiMgr->ImportElements(top);
   }
   if (gRhoZMgr && top) {
     gRhoZMgr->DestroyElements();
     gRhoZMgr->SetCenter(x[0], x[1], x[2]);
-    gRhoZMgr->ImportElements(gGeomGentle);
+    gRhoZMgr->ImportElements(gGeomGentleRhoZ);
     if (gShowTRD) gRhoZMgr->ImportElements(gGeomGentleTRD);
     gRhoZMgr->ImportElements(top);
   }

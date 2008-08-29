@@ -17,3 +17,27 @@ TEveGeoShape* geom_gentle()
 
   return gsre;
 }
+
+TEveGeoShape* geom_gentle_rphi()
+{
+  // The resulting geometry is NOT added into the global scene!
+
+  TFile f("$ALICE_ROOT/EVE/alice-data/gentle_rphi_geo.root");
+  TEveGeoShapeExtract* gse = (TEveGeoShapeExtract*) f.Get("Gentle");
+  TEveGeoShape* gsre = TEveGeoShape::ImportShapeExtract(gse);
+  f.Close();
+
+  return gsre;
+}
+
+TEveGeoShape* geom_gentle_rhoz()
+{
+  // The resulting geometry is NOT added into the global scene!
+
+  TFile f("$ALICE_ROOT/EVE/alice-data/gentle_rhoz_geo.root");
+  TEveGeoShapeExtract* gse = (TEveGeoShapeExtract*) f.Get("Gentle");
+  TEveGeoShape* gsre = TEveGeoShape::ImportShapeExtract(gse);
+  f.Close();
+
+  return gsre;
+}
