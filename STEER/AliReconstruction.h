@@ -265,7 +265,7 @@ private:
   Bool_t 	 fSetRunNumberFromDataCalled;  //! flag to check if run number is already loaded from run loader
 
   //Quality Assurance
-  Int_t fQACycles[      fgkNDetectors]; // # events over which QA data are accumulated
+  Int_t fQACycles[      AliQA::kNDET];  // # events over which QA data are accumulated
   TString               fQADetectors ;  // list of detectors to be QA'ed 	
   AliQADataMakerSteer * fQASteer    ;   //! steering class to run QA
   TString               fQATasks ;      // list of QA tasks to be performed	

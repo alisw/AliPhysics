@@ -51,6 +51,7 @@ AliQADataMaker::AliQADataMaker(const char * name, const char * title) :
   fCurrentCycle(0), 
   fCycle(9999999), 
   fCycleCounter(0), 
+  fWriteExpert(kFALSE),
   fParameterList(0x0), 
   fRun(0)
 {
@@ -67,6 +68,7 @@ AliQADataMaker::AliQADataMaker(const AliQADataMaker& qadm) :
   fCurrentCycle(qadm.fCurrentCycle), 
   fCycle(qadm.fCycle), 
   fCycleCounter(qadm.fCycleCounter), 
+  fWriteExpert(qadm.fWriteExpert),
   fParameterList(qadm.fParameterList),  
   fRun(qadm.fRun)
 {

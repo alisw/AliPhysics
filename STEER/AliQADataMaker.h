@@ -64,8 +64,11 @@ public:
 	const Bool_t        IsCycleDone() const { return fCycleCounter > fCycle ? kTRUE : kFALSE ; }
 	void                Reset() { fCycleCounter = 0 ; }
 	void                SetCycle(Int_t nevts) { fCycle = nevts ; } 
+  void                SetWriteExpert() { fWriteExpert = kTRUE ; }
 	virtual void        StartOfCycle(Int_t run = -1)                                                      = 0 ;
 	virtual void        StartOfCycle(AliQA::TASKINDEX_t, Int_t run, const Bool_t sameCycle = kFALSE) = 0 ;
+  void                UnSetWriteExpert() { fWriteExpert = kFALSE ; }
+  Bool_t              WriteExpert() { return fWriteExpert ; }
 
 	virtual void        SetRecoParam(const AliDetectorRecoParam */*param*/) { return; }
 	  
@@ -103,6 +106,7 @@ protected:
 	Int_t          fCurrentCycle ;    //! current cycle number
 	Int_t          fCycle ;           //! length (# events) of the QA data acquisition cycle  
 	Int_t          fCycleCounter ;    //! cycle counter
+  Bool_t         fWriteExpert ;     //! flag to write or not the expert QA data
   TList *        fParameterList ;   //! list of QA data parameters
 	Int_t          fRun ;             //! run number
 

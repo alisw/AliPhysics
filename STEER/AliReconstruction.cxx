@@ -374,8 +374,11 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
     fReconstructor[iDet] = NULL;
     fLoader[iDet] = NULL;
     fTracker[iDet] = NULL;
-    fQACycles[iDet] = rec.fQACycles[iDet];	
-  }
+  }  
+  
+  for (Int_t iDet = 0; iDet < AliQA::kNDET; iDet++) 
+    fQACycles[iDet] = rec.fQACycles[iDet];
+
   for (Int_t i = 0; i < rec.fSpecCDBUri.GetEntriesFast(); i++) {
     if (rec.fSpecCDBUri[i]) fSpecCDBUri.Add(rec.fSpecCDBUri[i]->Clone());
   }
@@ -448,9 +451,11 @@ AliReconstruction& AliReconstruction::operator = (const AliReconstruction& rec)
     delete fReconstructor[iDet]; fReconstructor[iDet] = NULL;
     delete fLoader[iDet]; fLoader[iDet] = NULL;
     delete fTracker[iDet]; fTracker[iDet] = NULL;
-    fQACycles[iDet] = rec.fQACycles[iDet];	
   }
-
+  
+  for (Int_t iDet = 0; iDet < AliQA::kNDET; iDet++) 
+    fQACycles[iDet] = rec.fQACycles[iDet];
+  
   fVertexer             = NULL;
   delete fDiamondProfile; fDiamondProfile = NULL;
   if (rec.fDiamondProfile) fDiamondProfile = new AliESDVertex(*rec.fDiamondProfile);
@@ -1286,7 +1291,7 @@ void AliReconstruction::SlaveBegin(TTree*)
   if (fRunQA) {
     fQASteer = new AliQADataMakerSteer("rec") ; 
     fQASteer->SetActiveDetectors(fQADetectors) ; 
-    for (Int_t det = 0 ; det < fgkNDetectors ; det++)
+    for (Int_t det = 0 ; det < AliQA::kNDET ; det++)
       fQASteer->SetCycleLength(AliQA::DETECTORINDEX_t(det), fQACycles[det]) ;  
     if (!fRawReader && fQATasks.Contains(AliQA::kRAWS))
       fQATasks.ReplaceAll(Form("%d",AliQA::kRAWS), "") ;
