@@ -89,6 +89,7 @@ AliQADataMakerSteer::AliQADataMakerSteer(char * mode, const char* gAliceFilename
 			fLoader[iDet]      = NULL ;
 			fQADataMaker[iDet] = NULL ;
 			fQACycles[iDet]    = 999999 ;
+      fQAWriteExpert[iDet] = kFALSE ;
 		}
 	}	
 }
@@ -116,9 +117,10 @@ AliQADataMakerSteer::AliQADataMakerSteer(const AliQADataMakerSteer & qas) :
 {
 	// cpy ctor
 	for (UInt_t iDet = 0; iDet < fgkNDetectors; iDet++) {
-		fLoader[iDet]      = qas.fLoader[iDet] ;
-		fQADataMaker[iDet] = qas.fQADataMaker[iDet] ;
-		fQACycles[iDet]    = qas.fQACycles[iDet] ;	
+		fLoader[iDet]         = qas.fLoader[iDet] ;
+		fQADataMaker[iDet]    = qas.fQADataMaker[iDet] ;
+		fQACycles[iDet]       = qas.fQACycles[iDet] ;	
+    fQAWriteExpert[iDet] = qas.fQAWriteExpert[iDet] ;
 	}
 }
 
@@ -511,6 +513,8 @@ void  AliQADataMakerSteer::InitQADataMaker(UInt_t run, const AliRecoParam & par,
 	for (UInt_t iDet = 0; iDet < fgkNDetectors ; iDet++) {
 		if (IsSelected(AliQA::GetDetName(iDet))) {
 			AliQADataMaker * qadm = GetQADataMaker(iDet) ;
+      if (fQAWriteExpert[iDet])
+        qadm->SetWriteExpert() ; 
 			if (!qadm) {
 				AliError(Form("AliQADataMaker not found for %s", AliQA::GetDetName(iDet))) ; 
 				fDetectorsW.ReplaceAll(AliQA::GetDetName(iDet), "") ; 

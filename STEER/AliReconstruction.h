@@ -140,7 +140,8 @@ public:
   void        ImportRunLoader(AliRunLoader* rl) { fRunLoader = rl; }
 
   // Quality Assurance 
-  void    SetQACycles(AliQA::DETECTORINDEX_t det, const Int_t cycles) { fQACycles[det] = cycles ; }
+  void    SetQACycles(AliQA::DETECTORINDEX_t det, Int_t cycles) { fQACycles[det] = cycles ; }
+  void    SetQAWriteExpert(AliQA::DETECTORINDEX_t det) { fQAWriteExpert[det] = kTRUE ; }
   Bool_t  SetRunQA(TString detAndAction="ALL:ALL") ; 
   void    SetRunGlobalQA(Bool_t flag=kTRUE){fRunGlobalQA = flag;}
 
@@ -265,7 +266,8 @@ private:
   Bool_t 	 fSetRunNumberFromDataCalled;  //! flag to check if run number is already loaded from run loader
 
   //Quality Assurance
-  Int_t fQACycles[      AliQA::kNDET];  // # events over which QA data are accumulated
+  Int_t  fQACycles[     AliQA::kNDET];  // # events over which QA data are accumulated
+  Bool_t fQAWriteExpert[AliQA::kNDET];  // Flag to save or not expert QA data
   TString               fQADetectors ;  // list of detectors to be QA'ed 	
   AliQADataMakerSteer * fQASteer    ;   //! steering class to run QA
   TString               fQATasks ;      // list of QA tasks to be performed	

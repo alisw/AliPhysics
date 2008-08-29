@@ -57,6 +57,7 @@ public:
 	Bool_t      Save2OCDB(const Int_t runNumber, const char * year = "08", const Int_t cycleNumber=0, const char * detectors = "ALL") const ; 
 	void        SetActiveDetectors(TString aDet) { fDetectors = aDet ;  }
 	void        SetCycleLength(const AliQA::DETECTORINDEX_t det, const Int_t cycle) { fQACycles[det] = cycle ; }
+	void        SetWriteExpert(const AliQA::DETECTORINDEX_t det) { fQAWriteExpert[det] = kTRUE ; }
 	void        SetEventRange(UInt_t first, UInt_t last) { fFirstEvent = first ; fMaxEvents = last - first + 1 ; }      
 	void        SetFirsEvent(UInt_t first) { fFirstEvent = first ; }      
 	void        SetMaxEvents(UInt_t max) { fMaxEvents = max ; }      
@@ -99,6 +100,7 @@ private:
 	AliLoader      *        fLoader[fgkNDetectors];         //! array of detectors loader
 	AliQADataMaker *        fQADataMaker[fgkNDetectors];    //! array of QA data maker objects
 	Int_t                   fQACycles[fgkNDetectors];       //! array of QA cycle length
+	Bool_t                  fQAWriteExpert[fgkNDetectors];  //! array of QA cycle length
 	
   ClassDef(AliQADataMakerSteer, 0)      // class for running the QA makers
 };
