@@ -325,7 +325,6 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
 		  statusOld   = -1;
 		}
 	      Int_t igstatus = 0;
-	      Int_t trnotemp = trackno;
 	      //------------------modified by Mriganka ----------------------
 	      if(ks==1||(imo = mparticle->GetFirstMother())<0 ){
 		vx = mparticle->Vx();
@@ -339,31 +338,24 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
 	      
 	      while(((imo = mparticle->GetFirstMother()) >= 0)&& 
 		    (ks = mparticle->GetStatusCode() <1) )
-	      {
+		{
 		  mparticle =  gAlice->GetMCApp()->Particle(imo);
 		  trackpid = mparticle->GetPdgCode();
 		  ks = mparticle->GetStatusCode();
 		  vx = mparticle->Vx();
 		  vy = mparticle->Vy();
 		  vz = mparticle->Vz();
-		  trnotemp = trackno;
-                  if(trackpid == 111)
-		  {
-		      trackno = trnotemp;
-		  }
-                  if(trackpid != 111)
-		  {
-		      trackno = imo;
-		  }
 		  
-	      }
+		  trackno=imo;
+		  		
+		    }
 	 
-	      if(trackpid == kGamma || trackpid == 11 ||
-		 trackpid == -11 || trackpid == kPi0) igstatus = 1;
-	      mtrackpid = trackpid;
-	      mtrackno  = trackno;
-	      trackpid  = trackpidOld;
-	      trackno   = tracknoOld;
+	      if(trackpid==kGamma||trackpid==11||trackpid==-11||
+		 trackpid==kPi0)igstatus=1;
+	      mtrackpid=trackpid;
+	      mtrackno=trackno;
+	      trackpid=trackpidOld;
+	      trackno=tracknoOld;
 	      
 	      //-----------------end of modification----------------
 	      xPos = fPMDHit->X();
@@ -401,7 +393,7 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
 		}
 
 	      AliDebug(2,Form("Zposition = %f Edeposition = %f",zPos,edep));
-
+	      //Float_t zposition = TMath::Abs(zPos);
 	      if (zPos < fZPos)
 		{
 		  // CPV
@@ -1389,10 +1381,15 @@ void AliPMDDigitizer::MeV2ADC(Float_t mev, Float_t & adc) const
   //PS Test in September 2003 and 2006
   // KeV - ADC conversion for 12bit ADC
   // Modified by Ajay
-  const Float_t kConstant   = 9.0809;
-  const Float_t kErConstant = 1.6763;
-  const Float_t kSlope      = 128.348;
-  const Float_t kErSlope    = 0.4703;
+  //const Float_t kConstant   = 9.0809;
+  //const Float_t kErConstant = 1.6763;
+  //const Float_t kSlope      = 128.348;
+  //const Float_t kErSlope    = 0.4703;
+
+  const Float_t kConstant   = -4.5;
+  const Float_t kErConstant = 14.3;
+  const Float_t kSlope      = 68.2;
+  const Float_t kErSlope    = 5.21;
   
   Float_t cons   = gRandom->Gaus(kConstant,kErConstant);
   Float_t slop   = gRandom->Gaus(kSlope,kErSlope);

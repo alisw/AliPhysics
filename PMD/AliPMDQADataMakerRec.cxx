@@ -40,8 +40,6 @@
 #include "AliPMDddldata.h"
 #include "AliPMDUtility.h"
 #include "AliESDPmdTrack.h"
-#include "AliRawReader.h"
-
 //#include "AliPMDRecoParam.h"
 
 ClassImp(AliPMDQADataMakerRec)
@@ -77,7 +75,7 @@ void AliPMDQADataMakerRec::InitRaws()
 {
   // create Raws histograms in Raws subdir
 
-
+  const Bool_t saveForCorr = kTRUE;
     // Preshower plane
 
     TH1I * h0 = new TH1I("hPreEdepM0","ADC Distribution PRE - Module 0", 100, 0, 2000);
@@ -278,9 +276,11 @@ void AliPMDQADataMakerRec::InitRaws()
     // Y vs. X for PRE and CPV planes
 
     TH2F * h48 = new TH2F("hPreXY","PRE plane",200,-100.,100.,200,-100.,100.);
-    Add2RawsList(h48, 48);
+    Add2RawsList(h48, 48,saveForCorr);//Ajay
+    //Add2RawsList(h48, 48);//Ajay
     TH2F * h49 = new TH2F("hCpvXY","CPV plane",200,-100.,100.,200,-100.,100.);
-    Add2RawsList(h49, 49);
+    Add2RawsList(h49, 49,saveForCorr);//Ajay
+    //Add2RawsList(h49, 49);//Ajay
 
 }
 //____________________________________________________________________________ 
@@ -375,8 +375,7 @@ void AliPMDQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 {
     //Fill prepared histograms with Raw digit properties
 
-	  rawReader->Reset() ;
-	  TObjArray *pmdddlcont = 0x0;
+    TObjArray *pmdddlcont = 0x0;
     pmdddlcont = new TObjArray();
     AliPMDRawStream stream(rawReader);
     
