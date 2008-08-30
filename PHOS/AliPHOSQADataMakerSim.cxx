@@ -83,36 +83,39 @@ void AliPHOSQADataMakerSim::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArra
 void AliPHOSQADataMakerSim::InitHits()
 {
   // create Hits histograms in Hits subdir
+  Bool_t expert   = kTRUE ; 
   TH1F * h0 = new TH1F("hPhosHits",    "Hits energy distribution in PHOS",       100, 0., 100.) ; 
   h0->Sumw2() ;
-  Add2HitsList(h0, 0) ;
+  Add2HitsList(h0, 0, !expert) ;
   TH1I * h1 = new TH1I("hPhosHitsMul", "Hits multiplicity distribution in PHOS", 500, 0., 10000) ; 
   h1->Sumw2() ;
-  Add2HitsList(h1, 1) ;
+  Add2HitsList(h1, 1, !expert) ;
 }
 
 //____________________________________________________________________________ 
 void AliPHOSQADataMakerSim::InitDigits()
 {
   // create Digits histograms in Digits subdir
+  Bool_t expert   = kTRUE ; 
   TH1I * h0 = new TH1I("hPhosDigits",    "Digits amplitude distribution in PHOS",    500, 0, 5000) ; 
   h0->Sumw2() ;
-  Add2DigitsList(h0, 0) ;
+  Add2DigitsList(h0, 0, !expert) ;
   TH1I * h1 = new TH1I("hPhosDigitsMul", "Digits multiplicity distribution in PHOS", 500, 0, 1000) ; 
   h1->Sumw2() ;
-  Add2DigitsList(h1, 1) ;
+  Add2DigitsList(h1, 1, !expert) ;
 }
 
 //____________________________________________________________________________ 
 void AliPHOSQADataMakerSim::InitSDigits()
 {
   // create SDigits histograms in SDigits subdir
+  Bool_t expert   = kTRUE ; 
   TH1F * h0 = new TH1F("hPhosSDigits",    "SDigits energy distribution in PHOS",       100, 0., 100.) ; 
   h0->Sumw2() ;
-  Add2SDigitsList(h0, 0) ;
+  Add2SDigitsList(h0, 0, !expert) ;
   TH1I * h1 = new TH1I("hPhosSDigitsMul", "SDigits multiplicity distribution in PHOS", 500, 0,  10000) ; 
   h1->Sumw2() ;
-  Add2SDigitsList(h1, 1) ;
+  Add2SDigitsList(h1, 1, !expert) ;
 }
 
 //____________________________________________________________________________

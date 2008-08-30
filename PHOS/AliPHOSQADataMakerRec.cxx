@@ -97,21 +97,23 @@ void AliPHOSQADataMakerRec::InitESDs()
 {
   //Create histograms to controll ESD
  
+  Bool_t expert   = kTRUE ; 
+
   TH1F * h1 = new TH1F("hESDPhosSpectrum",  "ESDs spectrum in PHOS"                ,  200, 0.,   20.) ;
   h1->Sumw2() ;
-  Add2ESDsList(h1, kESDSpec)  ;
+  Add2ESDsList(h1, kESDSpec, !expert)  ;
 
   TH1I * h2 = new TH1I("hESDPhosMul",       "ESDs multiplicity distribution in PHOS", 100, 0,   100 ) ; 
   h2->Sumw2() ;
-  Add2ESDsList(h2, kESDNtot) ;
+  Add2ESDsList(h2, kESDNtot, !expert) ;
  
   TH1F * h3 = new TH1F("hESDPhosEtot",      "ESDs total energy"                     , 100, 0,  1000.) ; 
   h3->Sumw2() ;
-  Add2ESDsList(h3, kESDEtot,1) ;  //Expert histo
+  Add2ESDsList(h3, kESDEtot, !expert) ;  //Expert histo
  
   TH1F * h4 = new TH1F("hESDpid",           "ESDs PID distribution in PHOS"         , 100, 0.,    1.) ;
   h4->Sumw2() ;
-  Add2ESDsList(h4, kESDpid,1) ; //Expert histo
+  Add2ESDsList(h4, kESDpid, !expert) ; //Expert histo
 	
 }
 
@@ -119,105 +121,110 @@ void AliPHOSQADataMakerRec::InitESDs()
 void AliPHOSQADataMakerRec::InitRecPoints()
 {
   // create Reconstructed Points histograms in RecPoints subdir
+  Bool_t expert   = kTRUE ; 
+  
   TH2I * h0 = new TH2I("hRpPHOSxyMod1","RecPoints Rows x Columns for PHOS module 1", 64, -72., 72., 56, -63., 63.) ;                             
-  Add2RecPointsList(h0,kRPmod1,1) ;
+  Add2RecPointsList(h0,kRPmod1, expert) ;
   TH2I * h1 = new TH2I("hRpPHOSxyMod2","RecPoints Rows x Columns for PHOS module 2", 64, -72., 72., 56, -63., 63.) ;                             
-  Add2RecPointsList(h1,kRPmod2,1) ;
+  Add2RecPointsList(h1,kRPmod2, expert) ;
   TH2I * h2 = new TH2I("hRpPHOSxyMod3","RecPoints Rows x Columns for PHOS module 3", 64, -72., 72., 56, -63., 63.) ;                             
-  Add2RecPointsList(h2,kRPmod3) ;
+  Add2RecPointsList(h2,kRPmod3, expert) ;
   TH2I * h3 = new TH2I("hRpPHOSxyMod4","RecPoints Rows x Columns for PHOS module 4", 64, -72., 72., 56, -63., 63.) ;                             
-  Add2RecPointsList(h3,kRPmod4,1) ;
+  Add2RecPointsList(h3,kRPmod4, expert) ;
   TH2I * h4 = new TH2I("hRpPHOSxyMod5","RecPoints Rows x Columns for PHOS module 5", 64, -72., 72., 56, -63., 63.) ;                             
-  Add2RecPointsList(h4,kRPmod5,1) ;
+  Add2RecPointsList(h4,kRPmod5, expert) ;
  
   TH1F * h5 = new TH1F("hEmcPhosRecPointsSpectrum",  "EMC RecPoints spectrum in PHOS",   2000, 0., 20.) ; 
   h5->Sumw2() ;
-  Add2RecPointsList(h5, kRPSpec)  ;
+  Add2RecPointsList(h5, kRPSpec, !expert)  ;
 
   TH1I * h6 = new TH1I("hEmcPhosRecPointsMul", "EMCA RecPoints multiplicity distribution in PHOS", 100, 0,  100) ; 
   h6->Sumw2() ;
-  Add2RecPointsList(h6, kRPNtot) ;
+  Add2RecPointsList(h6, kRPNtot, !expert) ;
 
   TH1I * h7 = new TH1I("hEmcPhosRecPointsEtot", "EMC RecPoints Etot", 200, 0,  200.) ; 
   h7->Sumw2() ;
-  Add2RecPointsList(h7, kRPEtot,1) ;
+  Add2RecPointsList(h7, kRPEtot, !expert) ;
 
   TH1I * h8 = new TH1I("hCpvPhosRecPointsMul", "CPV RecPoints multiplicity distribution in PHOS", 100, 0,  100) ; 
   h8->Sumw2() ;
-  Add2RecPointsList(h8, kRPNcpv,1) ;
+  Add2RecPointsList(h8, kRPNcpv, !expert) ;
 }
 
 //____________________________________________________________________________ 
 void AliPHOSQADataMakerRec::InitRaws()
 {
   // create Raws histograms in Raws subdir
+  Bool_t expert   = kTRUE ; 
+  Bool_t saveCorr = kTRUE ; 
+  
   TH2I * h0 = new TH2I("hHighPHOSxyMod1","High Gain Rows x Columns for PHOS module 1", 64, 0, 64, 56, 0, 56) ;
-  Add2RawsList(h0,kHGmod1,1) ;
+  Add2RawsList(h0,kHGmod1, expert, !saveCorr) ;
   TH2I * h1 = new TH2I("hHighPHOSxyMod2","High Gain Rows x Columns for PHOS module 2", 64, 0, 64, 56, 0, 56) ;
-  Add2RawsList(h1,kHGmod2,1) ;
+  Add2RawsList(h1,kHGmod2, expert, !saveCorr) ;
   TH2I * h2 = new TH2I("hHighPHOSxyMod3","High Gain Rows x Columns for PHOS module 3", 64, 0, 64, 56, 0, 56) ;
-  Add2RawsList(h2,kHGmod3) ;
+  Add2RawsList(h2,kHGmod3, expert, !saveCorr) ;
   TH2I * h3 = new TH2I("hHighPHOSxyMod4","High Gain Rows x Columns for PHOS module 4", 64, 0, 64, 56, 0, 56) ;
-  Add2RawsList(h3,kHGmod4,1) ;
+  Add2RawsList(h3,kHGmod4, expert, !saveCorr) ;
   TH2I * h4 = new TH2I("hHighPHOSxyMod5","High Gain Rows x Columns for PHOS module 5", 64, 0, 64, 56, 0, 56) ;
-  Add2RawsList(h4,kHGmod5,1) ;
+  Add2RawsList(h4,kHGmod5, expert, !saveCorr) ;
   TH2I * h5 = new TH2I("hLowPHOSxyMod1","Low Gain Rows x Columns for PHOS module 1", 64, 0, 64, 56, 0, 56) ;
-  Add2RawsList(h5,kLGmod1,1) ;
+  Add2RawsList(h5,kLGmod1, expert, !saveCorr) ;
   TH2I * h6 = new TH2I("hLowPHOSxyMod2","Low Gain Rows x Columns for PHOS module 2", 64, 0, 64, 56, 0, 56) ;
-  Add2RawsList(h6,kLGmod2,1) ;
+  Add2RawsList(h6,kLGmod2, expert, !saveCorr) ;
   TH2I * h7 = new TH2I("hLowPHOSxyMod3","Low Gain Rows x Columns for PHOS module 3", 64, 0, 64, 56, 0, 56) ;
-  Add2RawsList(h7,kLGmod3) ;
+  Add2RawsList(h7,kLGmod3, expert, !saveCorr) ;
   TH2I * h8 = new TH2I("hLowPHOSxyMod4","Low Gain Rows x Columns for PHOS module 4", 64, 0, 64, 56, 0, 56) ;
-  Add2RawsList(h8,kLGmod4,1) ;                                                                                                               
+  Add2RawsList(h8,kLGmod4, expert, !saveCorr) ;                                                                                                               
   TH2I * h9 = new TH2I("hLowPHOSxyMod5","Low Gain Rows x Columns for PHOS module 5", 64, 0, 64, 56, 0, 56) ;                               
-  Add2RawsList(h9,kLGmod5,1) ;                                                                                                               
+  Add2RawsList(h9,kLGmod5, expert, !saveCorr) ;                                                                                                               
                                                                                                                                            
                                                                                                                                            
   TH1I * h10 = new TH1I("hLowPhosModules",    "Low Gain Hits in EMCA PHOS modules",       6, 0, 6) ;                                       
   h10->Sumw2() ;                                                                                                                           
-  Add2RawsList(h10, kNmodLG,1) ;                                                                                                             
+  Add2RawsList(h10, kNmodLG, !expert, !saveCorr) ;                                                                                                             
   TH1I * h11 = new TH1I("hHighPhosModules",   "High Gain Hits in EMCA PHOS modules",       6, 0, 6) ;                                      
   h11->Sumw2() ;                                                                                                                           
-  Add2RawsList(h11, kNmodHG,1) ;                                                                                                             
+  Add2RawsList(h11, kNmodHG, !expert, !saveCorr) ;                                                                                                             
                                                                                                                                            
   TH1F * h12 = new TH1F("hLowPhosRawtime", "Low Gain Time of raw hits in PHOS", 500, -50., 200.) ;                                            
   h12->Sumw2() ;                                                                                                                           
-  Add2RawsList(h12, kLGtime,1) ;                                                                                                             
+  Add2RawsList(h12, kLGtime, !expert, !saveCorr) ;                                                                                                             
   TH1F * h13 = new TH1F("hHighPhosRawtime", "High Gain Time of raw hits in PHOS", 500, -50., 200.) ;                                          
   h13->Sumw2() ;                                                                                                                           
-  Add2RawsList(h13, kHGtime,1) ;                                                                                                             
+  Add2RawsList(h13, kHGtime, !expert, !saveCorr) ;                                                                                                             
                                                                                                                                            
   TH1F * h14 = new TH1F("hLowPhosRawEnergy", "Low Gain Energy of raw hits in PHOS", 500, 0., 1000.) ;                                      
   h14->Sumw2() ;                                                                                                                           
-  Add2RawsList(h14, kSpecLG,1) ;                                                                                                             
+  Add2RawsList(h14, kSpecLG, !expert, !saveCorr) ;                                                                                                             
   TH1F * h15 = new TH1F("hHighPhosRawEnergy", "High Gain Energy of raw hits in PHOS",500,0., 1000.) ;                                      
   h15->Sumw2() ;                                                                                                                           
-  Add2RawsList(h15, kSpecHG,1) ;                                                                                                             
+  Add2RawsList(h15, kSpecHG, !expert, !saveCorr) ;                                                                                                             
                                                                                                                                            
   TH1F * h16 = new TH1F("hLowNtot", "Low Gain Total Number of raw hits in PHOS", 500, 0., 5000.) ;                                         
   h16->Sumw2() ;                                                                                                                           
-  Add2RawsList(h16, kNtotLG, kTRUE) ;                                                                                                             
+  Add2RawsList(h16, kNtotLG, !expert, saveCorr) ;                                                                                                             
   TH1F * h17 = new TH1F("hHighNtot", "High Gain Total Number of raw hits in PHOS",500,0., 5000.) ;                                         
   h17->Sumw2() ;                                                                                                                           
-  Add2RawsList(h17, kNtotHG, kTRUE) ;                                                                                                             
+  Add2RawsList(h17, kNtotHG, !expert, saveCorr) ;                                                                                                             
                                                                                                                                            
   TH1F * h18 = new TH1F("hLowEtot", "Low Gain Total Energy of raw hits in PHOS", 500, 0., 5000.) ;                                       
   h18->Sumw2() ;                                                                                                                           
-  Add2RawsList(h18, kEtotLG, kTRUE) ;                                                                                                             
+  Add2RawsList(h18, kEtotLG, !expert, saveCorr) ;                                                                                                             
   TH1F * h19 = new TH1F("hHighEtot", "High Gain Total Energy of raw hits in PHOS",500,0., 100000.) ;                                       
   h19->Sumw2() ;                                                                                                                           
-  Add2RawsList(h19, kEtotHG, kTRUE) ;                                                                                                             
+  Add2RawsList(h19, kEtotHG, !expert, saveCorr) ;                                                                                                             
   
   TH2F * h20 = new TH2F("hQualHGxyMod1","High Gain signal quality Rows x Columns module 1", 64, 0, 64, 56, 0, 56) ;
-  Add2RawsList(h20,kHGqualMod1,1) ;
+  Add2RawsList(h20,kHGqualMod1, !expert, !saveCorr) ;
   TH2F * h21 = new TH2F("hQualHGxyMod2","High Gain signal quality Rows x Columns module 2", 64, 0, 64, 56, 0, 56) ;
-  Add2RawsList(h21,kHGqualMod2,1) ;
+  Add2RawsList(h21,kHGqualMod2, !expert, !saveCorr) ;
   TH2F * h22 = new TH2F("hQualHGxyMod3","High Gain signal quality Rows x Columns module 3", 64, 0, 64, 56, 0, 56) ;
   Add2RawsList(h22,kHGqualMod3) ;
   TH2F * h23 = new TH2F("hQualHGxyMod4","High Gain signal quality Rows x Columns module 4", 64, 0, 64, 56, 0, 56) ;
-  Add2RawsList(h23,kHGqualMod4,1) ;
+  Add2RawsList(h23,kHGqualMod4, !expert, !saveCorr) ;
   TH2F * h24 = new TH2F("hQualHGxyMod5","High Gain signal quality Rows x Columns module 5", 64, 0, 64, 56, 0, 56) ;
-  Add2RawsList(h24,kHGqualMod5,1) ;
+  Add2RawsList(h24,kHGqualMod5, !expert, !saveCorr) ;
  
   TH1F * h25 = new TH1F("hHGpedRMS","High Gain pedestal RMS",200,0.,20.) ;
   Add2RawsList(h25,kHGpedRMS) ;
