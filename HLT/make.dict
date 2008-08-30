@@ -27,7 +27,7 @@
 DICTAUTODEF			=  $(MODULE)-LinkDef.h
 DICTDEF				=  $(shell if test "x$(MODULE_DHDR)" = "x"; then echo $(DICTAUTODEF); else echo $(MODULE_DHDR); fi)
 DICTFILES			=  $(DICTCPP) $(DICTCPP:.cxx=.h) $(DICTAUTODEF)
-DICTHEADERS			=  $(CLASS_HDRS)
+DICTHEADERS			=  $(MODULE_HDRS)
 
 CLEANFILES			+= $(DICTFILES)
 

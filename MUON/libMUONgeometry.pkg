@@ -30,5 +30,5 @@ DHDR:= MUONgeometryLinkDef.h
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
                          -lSTEER -lMUONmapping  -lMUONcore -lSTEERBase \
-                         -L$(shell root-config --libdir) -lVMC -lGeom
+                         -L$(shell root-config --libdir) -lVMC -lGeom -lMinuit
 endif

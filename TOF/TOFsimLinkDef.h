@@ -19,7 +19,6 @@
 #pragma link C++ class  AliTOFSDigitizer+;
 #pragma link C++ class  AliTOFDigitizer+;
 
-#pragma link C++ class  AliTOFDigitMap+;
 #pragma link C++ class  AliTOFDDLRawData+;
 
 #pragma link C++ class  AliTOFT0+;

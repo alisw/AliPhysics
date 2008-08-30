@@ -57,7 +57,7 @@ EINCLUDE := 	HLT/BASE HLT/MUON HLT/MUON/utils HLT/MUON/OnlineAnalysis \
 		HLT/MUON/OfflineInterface MUON MUON/mapping STEER RAW
 
 LIBRARY_DEP := -lHLTbase -lMUONmapping -lMUONbase -lMUONevaluation \
-               -lMUONsim -lMUONcore -lMUONcalib -lMUONgeometry -lMUONraw -lMUONtrigger \
+               -lMUONsim -lMUONcore -lMUONcalib -lMUONgeometry -lMUONraw -lMUONtrigger -lMUONrec \
                -lCDB -lESD -lSTEER -lSTEERBase -lRAWDatarec -lRAWDatasim \
                -L$(shell root-config --libdir) -lMinuit
 

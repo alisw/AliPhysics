@@ -22,7 +22,7 @@ MODULE_DHDR:=
 
 EINCLUDE := HLT/pendolino HLT/BASE STEER
 
-LIBRARY_DEP := -lHLTbase
+LIBRARY_DEP := -lHLTbase -lCDB
 
 include $(MODDIR)/hlt.conf
 

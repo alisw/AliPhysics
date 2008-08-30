@@ -16,7 +16,7 @@ MODULE_DHDR:=
 
 EINCLUDE := HLT/BASE HLT/ITS HLT/MUON/src TPC ITS MUON STEER RAW
 
-LIBRARY_DEP := -lHLTbase -lAliHLTUtil -lRAWDatarec -lRAWDatabase -lITSrec -lITSbase -lESD -lSTEER -lSTEERBase $(shell root-config --libdir) -lEG
+LIBRARY_DEP := -lHLTbase -lAliHLTUtil -lRAWDatarec -lRAWDatabase -lITSrec -lITSbase -lESD -lSTEER -lSTEERBase -L$(shell root-config --libdir) -lEG
 
 ###############################################################################
 #

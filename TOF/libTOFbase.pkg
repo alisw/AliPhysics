@@ -3,6 +3,7 @@
 
 SRCS  = AliTOFGeometry.cxx  \
         AliTOFdigit.cxx  \
+	AliTOFDigitMap.cxx  \
         AliTOFRawMap.cxx\
         AliTOFrawData.cxx\
         AliTOFRawStream.cxx\

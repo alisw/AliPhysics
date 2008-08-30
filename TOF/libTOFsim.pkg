@@ -6,7 +6,6 @@ SRCS  = AliTOF.cxx  AliTOFv6T0.cxx  AliTOFv5T0.cxx  \
 	AliTOFHitMap.cxx  \
 	AliTOFSDigit.cxx  AliTOFSDigitizer.cxx  \
 	AliTOFDigitizer.cxx  \
-	AliTOFDigitMap.cxx  \
 	AliTOFDDLRawData.cxx  \
         AliTOFT0.cxx AliTOFTrigger.cxx \
         AliTOFQADataMakerSim.cxx \
