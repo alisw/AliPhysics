@@ -165,7 +165,7 @@ AliFMDDisplay::MakeCanvas(const char** which)
   Int_t        n  = 0;
   Int_t        j  = 0;
   while (*(p++)) n++;
-  AliInfo(Form("Got %d buttons", n));
+  AliFMDDebug(1, ("Got %d buttons", n));
   if (n <= 0) return;
 
   Double_t yb = 0;
@@ -209,7 +209,7 @@ AliFMDDisplay::MakeCanvas(const char** which)
   p               = which;
   while ((m = *(p++))) {
     fCanvas->cd();
-    AliInfo(Form("Adding button %s", m));
+    AliFMDDebug(1, ("Adding button %s", m));
     TButton* b = new TButton(m, Form("AliFMDDisplay::Instance()->%s()", m),
 			     x0, yb, TMath::Min(x0 + dx,.999F), y1);
     b->Draw();
@@ -239,17 +239,17 @@ AliFMDDisplay::ShowOnlyFMD()
   Bool_t hasFMD1 = kFALSE;
   Bool_t hasFMD2 = kFALSE;
   Bool_t hasFMD3 = kFALSE;
-  AliInfo("Getting material FMD_Si$");
+  AliFMDDebug(1, ("Getting material FMD_Si$"));
   TGeoMaterial* si   = gGeoManager->GetMaterial("FMD_Si$");      // kRed 
-  AliInfo("Getting material FMD_Carbon$");
+  AliFMDDebug(1, ("Getting material FMD_Carbon$"));
   TGeoMaterial* c    = gGeoManager->GetMaterial("FMD_Carbon$");  // kGray
-  AliInfo("Getting material FMD_Aluminum$");
+  AliFMDDebug(1, ("Getting material FMD_Aluminum$"));
   TGeoMaterial* al   = gGeoManager->GetMaterial("FMD_Aluminum$");// kGray-2
-  AliInfo("Getting material FMD_Copper$");
+  AliFMDDebug(1, ("Getting material FMD_Copper$"));
   TGeoMaterial* cu   = gGeoManager->GetMaterial("FMD_Copper$");	// kGreen-2
-  AliInfo("Getting material FMD_PCB$");
+  AliFMDDebug(1, ("Getting material FMD_PCB$"));
   TGeoMaterial* pcb  = gGeoManager->GetMaterial("FMD_PCB$");	// kGreen+2
-  AliInfo("Getting material FMD_PCB$");
+  AliFMDDebug(1, ("Getting material FMD_PCB$"));
   TGeoMaterial* chip = gGeoManager->GetMaterial("FMD_Si Chip$");// kGreen+2
   TObjArray     toshow;
   while ((node = static_cast<TGeoNode*>(next()))) {
@@ -463,11 +463,11 @@ AliFMDDisplay::Begin(Int_t event)
     Warning("End", "No geometry manager");
     return kFALSE;
   }
-  AliInfo("Drawing geometry");
+  AliFMDDebug(1, ("Drawing geometry"));
   fPad->cd();
   fGeoManager->GetTopVolume()->Draw();
   if (fOnlyFMD) ShowOnlyFMD();
-  AliInfo("Adjusting view");
+  AliFMDDebug(1, ("Adjusting view"));
   Int_t irep;
   if (fPad->GetView()) {
     fPad->GetView()->SetView(-200, -40, 80, irep);
@@ -506,10 +506,10 @@ AliFMDDisplay::Idle()
     gSystem->InnerLoop();
     gApplication->StopIdleing();
   }
-  AliInfo("After idle loop");
+  AliFMDDebug(1, ("After idle loop"));
   if (fMarkers) fMarkers->Delete();
   if (fHits)    fHits->Clear();
-  AliInfo("After clearing caches");
+  AliFMDDebug(1, ("After clearing caches"));
 }
 
 //____________________________________________________________________

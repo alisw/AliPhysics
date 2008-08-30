@@ -728,12 +728,59 @@ AliFMDParameters::GetAltroMap() const
 }
 
 
+//____________________________________________________________________
+Bool_t 
+AliFMDParameters::Hardware2Detector(UInt_t    ddl,       UInt_t   addr,
+				    UShort_t  timebin,   
+				    UShort_t& det,       Char_t&   ring, 
+				    UShort_t& sec,       Short_t& str,
+				    UShort_t& sam) const
+{
+  // Translate a hardware address to detector coordinates. 
+  // 
+  // See also Hardware2Detector that accepts 4 inputs 
+  if (!Hardware2Detector(ddl, addr, det, ring, sec, str)) return kFALSE;
+  UShort_t preSamples = GetPreSamples(det, ring, sec, str);
+  UShort_t sampleRate = GetSampleRate(det, ring, sec, str);
+  if (!fAltroMap->Hardware2Detector(ddl, addr, timebin, 
+				    preSamples, sampleRate,
+				    det, ring, sec, str, sam)) return kFALSE;
+  AliFMDDebug(50, ("%d/0x%02x/0x%x/0x%x/%04d -> FMD%d%c[%02d,%03d]-%d"
+		  " (pre=%2d, rate=%d)", 
+		  ddl, ((addr >> 7) & 0x1F), ((addr >> 4) & 0x7), addr & 0xF,
+		  timebin, det, ring, sec, str, sam, preSamples, sampleRate));
+  // str += GetMinStrip(det,ring,sec,str);
+  return kTRUE;
+  
+}
+//____________________________________________________________________
+Bool_t 
+AliFMDParameters::Hardware2Detector(UInt_t    ddl,       UInt_t   board,
+				    UInt_t    chip,      UInt_t   chan,
+				    UShort_t  timebin,   
+				    UShort_t& det,       Char_t&   ring, 
+				    UShort_t& sec,       Short_t& str,
+				    UShort_t& sam) const
+{
+  // Translate a hardware address to detector coordinates. 
+  // 
+  // See also Hardware2Detector that accepts 4 inputs 
+  if (!Hardware2Detector(ddl,board,chip,chan,det,ring,sec,str)) return kFALSE;
+  UShort_t preSamples = GetPreSamples(det, ring, sec, str);
+  UShort_t sampleRate = GetSampleRate(det, ring, sec, str);
+  if (!fAltroMap->Hardware2Detector(ddl, board, chip, chan, timebin,
+				    preSamples, sampleRate,
+				    det, ring, sec, str, sam)) return kFALSE;
+  // str += GetMinStrip(det,ring,sec,str);
+  return kTRUE;
+}
+
 //__________________________________________________________________
 Bool_t
 AliFMDParameters::Hardware2Detector(UInt_t    ddl,  UInt_t    board, 
 				    UInt_t    chip, UInt_t    chan,
 				    UShort_t& det,  Char_t&   ring, 
-				    UShort_t& sec,  UShort_t& str) const
+				    UShort_t& sec,  Short_t& str) const
 {
   // Map hardware address to detector index
   if (!fAltroMap) return kFALSE;
@@ -743,12 +790,32 @@ AliFMDParameters::Hardware2Detector(UInt_t    ddl,  UInt_t    board,
 Bool_t
 AliFMDParameters::Hardware2Detector(UInt_t    ddl,  UInt_t    addr, 
 				    UShort_t& det,  Char_t&   ring, 
-				    UShort_t& sec,  UShort_t& str) const
+				    UShort_t& sec,  Short_t& str) const
 {
   // Map hardware address to detector index
   if (!fAltroMap) return kFALSE;
   return fAltroMap->Hardware2Detector(ddl, addr, det, ring, sec, str);
 }
+
+//____________________________________________________________________
+Bool_t 
+AliFMDParameters::Detector2Hardware(UShort_t  det,        Char_t    ring, 
+				    UShort_t  sec,        UShort_t  str,
+				    UShort_t  sam, 
+				    UInt_t&   ddl,        UInt_t&   board, 
+				    UInt_t&   altro,      UInt_t&   channel, 
+				    UShort_t& timebin) const
+{
+  if (!fAltroMap) return kFALSE;
+  UShort_t preSamples = GetPreSamples(det, ring, sec, str);
+  UShort_t sampleRate = GetSampleRate(det, ring, sec, str);
+  UShort_t strip      = str - GetMinStrip(det,ring,sec,str);
+  return fAltroMap->Detector2Hardware(det, ring, sec, strip, sam,
+				      preSamples, sampleRate,
+				      ddl, board, altro, channel, timebin);
+}
+
+  
 
 //__________________________________________________________________
 Bool_t
@@ -760,6 +827,23 @@ AliFMDParameters::Detector2Hardware(UShort_t det,  Char_t   ring,
   // Map detector index to hardware address
   if (!fAltroMap) return kFALSE;
   return fAltroMap->Detector2Hardware(det,ring,sec,str, ddl,board,chip,chan);
+}
+
+//____________________________________________________________________
+Bool_t 
+AliFMDParameters::Detector2Hardware(UShort_t  det,        Char_t    ring, 
+				    UShort_t  sec,        UShort_t  str,
+				    UShort_t  sam, 
+				    UInt_t&   ddl,        UInt_t&   addr,
+				    UShort_t& timebin) const
+{
+  if (!fAltroMap) return kFALSE;
+  UShort_t preSamples = GetPreSamples(det, ring, sec, str);
+  UShort_t sampleRate = GetSampleRate(det, ring, sec, str);
+  UShort_t strip      = str - GetMinStrip(det,ring,sec,str);
+  return fAltroMap->Detector2Hardware(det, ring, sec, strip, sam,
+				      preSamples, sampleRate,
+				      ddl, addr, timebin);
 }
 
 //__________________________________________________________________

@@ -23,6 +23,7 @@
 #ifndef ROOT_TTask
 # include <TTask.h>
 #endif
+#include "AliFMDUShortMap.h"
 
 //____________________________________________________________________
 class AliRawReader;
@@ -73,17 +74,19 @@ protected:
       fReader(0), 
       fSampleRate(0),
       fData(0),
-      fNbytes(0)
+      fNbytes(0), 
+      fSeen()
   {}
   AliFMDRawReader& operator=(const AliFMDRawReader&) { return *this; }
   ULong_t GetNwords() const {return fNbytes / 4;}
   UInt_t Get32bitWord(Int_t idx);
   Int_t GetHalfringIndex(UShort_t det, Char_t ring, UShort_t board);
-  TTree*        fTree;       //! Pointer to tree to read into 
-  AliRawReader* fReader;     //! Pointer to raw reader 
-  UShort_t      fSampleRate; // The sample rate (if 0, inferred from data)
-  UChar_t* fData; 
-  ULong_t  fNbytes; 
+  TTree*          fTree;       //! Pointer to tree to read into 
+  AliRawReader*   fReader;     //! Pointer to raw reader 
+  UShort_t        fSampleRate; // The sample rate (if 0, inferred from data)
+  UChar_t*        fData; 
+  ULong_t  	  fNbytes; 
+  AliFMDUShortMap fSeen;
   
   ClassDef(AliFMDRawReader, 0) // Read FMD raw data into a cache 
 };

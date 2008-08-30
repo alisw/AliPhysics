@@ -83,7 +83,12 @@ public:
     /** Assignement operator 
 	-- Not implemented */
     AliFMDPatternDetector& operator=(const AliFMDPatternDetector&);
-
+    void CopyShapes(TObjArray& input, TObjArray& own, 
+		    Double_t ang=0, Double_t fx=1, Double_t fy=1);
+    /** Our own cache of shapes */
+    TObjArray fInners;
+    /** Our own cache of shapes */
+    TObjArray fOuters;
   };
   
   

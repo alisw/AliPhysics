@@ -65,7 +65,8 @@ AliFMDPattern::AliFMDPatternDetector::AliFMDPatternDetector(UShort_t id)
   : fId(id),
     fCounts(0), 
     fGraphs(0), 
-    fFrame(0)
+    fFrame(0), 
+    fInners(id == 1 ? 10 : 0)
 {
   // CTOR 
   // 
@@ -103,6 +104,44 @@ AliFMDPattern::AliFMDPatternDetector::DrawShape(TObjArray& a)
 
 //____________________________________________________________________
 void
+AliFMDPattern::AliFMDPatternDetector::CopyShapes(TObjArray& src, 
+						 TObjArray& dest, 
+						 Double_t ang, 
+						 Double_t fx, 
+						 Double_t fy)
+{
+  TIter     next(&src);
+  TGraph*   g = 0;
+  while ((g = static_cast<TGraph*>(next()))) { 
+    TGraph* gg = new TGraph(*g);
+    Double_t* x  = gg->GetX();
+    Double_t* y  = gg->GetY();
+    for (Int_t i = 0; i < gg->GetN(); i++) { 
+      Float_t xx = x[i] * TMath::Cos(ang) - y[i] * TMath::Sin(ang);
+      Float_t yy = x[i] * TMath::Sin(ang) + y[i] * TMath::Cos(ang);
+      gg->SetPoint(i, fx * xx, fy * yy);
+    }
+    gg->SetFillStyle(g->GetFillStyle());
+    gg->SetFillColor(g->GetFillColor());
+    gg->SetLineStyle(g->GetLineStyle());
+    gg->SetLineColor(g->GetLineColor());
+    gg->SetLineWidth(g->GetLineWidth());
+    gg->SetMarkerStyle(g->GetMarkerStyle());
+    gg->SetMarkerColor(g->GetMarkerColor());
+    gg->SetMarkerSize(g->GetMarkerSize());
+    TString name(g->GetName());
+    name.ReplaceAll("X", Form("%d",fId));
+    gg->SetName(name.Data());
+    TString title(g->GetTitle());
+    title.ReplaceAll("X", Form("%d",fId));
+    gg->SetTitle(title.Data());
+    dest.Add(gg);
+  }
+  dest.SetOwner();
+}
+
+//____________________________________________________________________
+void
 AliFMDPattern::AliFMDPatternDetector::Begin(Int_t      nlevel, 
 					    Double_t   r, 
 					    TObjArray& inners, 
@@ -130,8 +169,17 @@ AliFMDPattern::AliFMDPatternDetector::Begin(Int_t      nlevel,
     fFrame->SetStats(kFALSE);
     fFrame->Draw();
   }
-  DrawShape(inners);
-  if (fId != 1) DrawShape(outers);
+  Double_t ang = (fId == 1 ? -TMath::Pi() / 2 : 0);
+  Double_t fx  = (fId == 3 ? -1               : 1); // Flip around Y
+  Double_t fy  = (fId == 1 ?  1               : 1); // Flip around X
+  
+  CopyShapes(inners, fInners, ang, fx, fy);
+  DrawShape(fInners);
+  if (fId != 1) { 
+    CopyShapes(outers, fOuters, ang, fx, fy);
+    DrawShape(fOuters);
+  }
+
   for (Int_t i = 0; i < nlevel; i++) { 
     TGraph* g = new TGraph;
     Int_t idx = Int_t(Float_t(i) / nlevel * style->GetNumberOfColors());
@@ -268,7 +316,7 @@ AliFMDPattern::Init()
     TObjArray&       gs = (*r == 'I' ? fInners   : fOuters);
     Float_t&         mr = (*r == 'I' ? fInnerMax : fOuterMax);
     Int_t            nm = ring->GetNModules();
-    AliInfo(Form("Making %d modules for %c", nm, *r));
+    AliFMDDebug(1, ("Making %d modules for %c", nm, *r));
     for (Int_t m = 0; m < nm; m++) {
       Int_t          nv = vs.GetEntries();
       Double_t       a  = TMath::Pi() / 180 * (m * 2 + 1) * ring->GetTheta();
@@ -282,7 +330,8 @@ AliFMDPattern::Init()
 	if (c == 0) { x0 = w.X(); y0 = w.Y(); }
 	g->SetPoint(c, w.X(), w.Y());
       }
-      g->SetName(Form("FMDX%c_%02d", *r, m));
+      g->SetName(Form("FMDX%c_%02d%02d", *r, 2*m,2*m+1));
+      g->SetTitle(Form("FMDX%c, sectors %d and %d", *r, 2*m,2*m+1));
       g->SetPoint(nv, x0, y0);
       g->SetFillColor((*rs == 'I' ? 
 		       (m % 2 == 0 ? 18 : 17) :
@@ -459,7 +508,7 @@ AliFMDPattern::AddMarker(UShort_t det, Char_t rng,
   geom->Detector2XYZ(det, rng, sec, str, x, y, z);
   // Make code-checker shut the f**k up 
   TRandom* rand = gRandom;
-  if (true) {
+  if (false) {
     AliFMDRing* r  = geom->GetRing(rng);
     Double_t    t  = .9 * r->GetTheta() / 2;
     Double_t    a  = rand->Uniform(-t,t) * TMath::Pi() / 180;

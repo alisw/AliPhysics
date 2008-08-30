@@ -521,9 +521,16 @@ AliFMDDetector::Detector2XYZ(Char_t   ring,
   // Translate detector coordinates (this,ring,sector,strip) into
   // (x,y,z) coordinates (in global reference frame)
   AliFMDRing* r = GetRing(ring);
-  if (!r) return;
+  if (!r) { 
+    AliWarning(Form("No such ring FMD%d%c ", fId, ring));
+    return;
+  }
   TGeoMatrix* m = FindTransform(ring, sector);
-  if (!m) return;
+  if (!m) { 
+    AliWarning(Form("No transfrmation found for FMD%d%c[%02d]", 
+		    fId, ring, sector));
+    return;
+  }
   Double_t rho      = r->GetStripRadius(strip);
   Double_t phi      = ((sector % 2) - .5) * r->GetTheta();
   Double_t siThick  = r->GetSiThickness();

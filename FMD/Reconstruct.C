@@ -36,6 +36,8 @@ Reconstruct()
   AliMagF* mag = static_cast<AliMagF*>(magF->Get("mag"));
   if (!mag) return;
   AliTracker::SetFieldMap(mag, true);
+  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+  AliCDBManager::Instance()->SetRun(0);
 
   AliReconstruction rec;   
   rec.SetRunLocalReconstruction("FMD");
@@ -43,7 +45,8 @@ Reconstruct()
   rec.SetRunReconstruction("FMD");
   rec.SetRunTracking(""); 
   rec.SetFillESD("FMD"); 
-  rec.SetInput("./");
+  rec.SetRunQA("");
+  rec.SetInput(".");
   // rec.SetRecoParam("TOF", new AliTOFRecoParam());
   
   rec.Run(); 

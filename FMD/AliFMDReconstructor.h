@@ -24,7 +24,6 @@
 #ifndef ALIRECONSTRUCTOR_H
 # include <AliReconstructor.h>
 #endif
-
 #include "AliLog.h"
 
 //____________________________________________________________________

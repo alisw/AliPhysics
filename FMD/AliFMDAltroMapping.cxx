@@ -73,7 +73,7 @@ AliFMDAltroMapping::CreateInvMapping()
 Bool_t 
 AliFMDAltroMapping::Hardware2Detector(UInt_t    ddl, UInt_t    addr, 
 				      UShort_t& det, Char_t&   ring, 
-				      UShort_t& sec, UShort_t& str) const
+				      UShort_t& sec, Short_t&  str) const
 {
   // Translate a hardware address to detector coordinates. 
   // 
@@ -89,7 +89,7 @@ Bool_t
 AliFMDAltroMapping::Hardware2Detector(UInt_t    ddl,   UInt_t    board, 
 				      UInt_t    altro, UInt_t    chan,
 				      UShort_t& det,   Char_t&   ring, 
-				      UShort_t& sec,   UShort_t& str) const
+				      UShort_t& sec,   Short_t&  str) const
 {
   // Translate a hardware address to detector coordinates. 
   // The detector is simply 
@@ -110,7 +110,7 @@ AliFMDAltroMapping::Hardware2Detector(UInt_t    ddl,   UInt_t    board,
   // the outer rings. 
   // 
   // The board number and ALTRO number together identifies the sensor,
-  // and hence.  The lower board number (0 or 2) are the first N / 2
+  // and hence.  The lower board number (0 or 16) are the first N / 2
   // sensors (where N is the number of sensors in the ring).  
   // 
   // There are 3 ALTRO's per card, and each ALTRO serves up to 4
@@ -140,25 +140,26 @@ AliFMDAltroMapping::Hardware2Detector(UInt_t    ddl,   UInt_t    board,
   // number only.  For the inner rings, the map is 
   // 
   //    Channel 0                   -> Sector 0, strips   0-127
-  //    Channel 1                   -> Sector 1, strips   0-127
+  //    Channel 1                   -> Sector 1, strips 127-0
   //    Channel 3                   -> Sector 0, strips 128-255
-  //    Channel 4                   -> Sector 1, strips 128-255
+  //    Channel 4                   -> Sector 1, strips 255-128
   //    Channel 5                   -> Sector 0, strips 256-383
-  //    Channel 6                   -> Sector 1, strips 256-383
+  //    Channel 6                   -> Sector 1, strips 383-256
   //    Channel 7                   -> Sector 0, strips 384-511
-  //    Channel 8                   -> Sector 1, strips 384-511 
+  //    Channel 8                   -> Sector 1, strips 511-384
   // 
   // There are only half as many strips in the outer sensors, so there
   // only 4 channels are used for a full sensor.  The map is 
   // 
   //    Channel 0                   -> Sector 0, strips   0-127
-  //    Channel 1                   -> Sector 1, strips   0-127
+  //    Channel 1                   -> Sector 1, strips 127-0
   //    Channel 3                   -> Sector 0, strips 128-255
-  //    Channel 4                   -> Sector 1, strips 128-255
+  //    Channel 4                   -> Sector 1, strips 255-128
   // 
   // With this information, we can decode the hardware address to give
   // us detector coordinates, unique at least up a 128 strips.  We
-  // return the first strip in the given range. 
+  // return the first strip, as seen by the ALTRO channel, in the
+  // given range.  
   //
   det          =  ddl + 1;
   ring         =  (board % 2) == 0 ? 'I' : 'O';
@@ -176,8 +177,60 @@ AliFMDAltroMapping::Hardware2Detector(UInt_t    ddl,   UInt_t    board,
     str = ((chan % 4) / 2) * 128;
     break;
   }
+  if (sec % 2) str += 127;
   return kTRUE;
 }
+
+//____________________________________________________________________
+Bool_t 
+AliFMDAltroMapping::Hardware2Detector(UInt_t    ddl,       UInt_t   addr,
+				      UShort_t  timebin,   UShort_t preSamples, 
+				      UShort_t  sampleRate,
+				      UShort_t& det,       Char_t&   ring, 
+				      UShort_t& sec,       Short_t&  str,
+				      UShort_t& sam) const
+{
+  // Translate a hardware address to detector coordinates. 
+  // 
+  // See also Hardware2Detector that accepts 4 inputs 
+  UInt_t board =  (addr >> 7) & 0x1F;
+  UInt_t altro =  (addr >> 4) & 0x7;
+  UInt_t chan  =  (addr & 0xf);
+  return Hardware2Detector(ddl, board, altro, chan, 
+			   timebin, preSamples, sampleRate, 
+			   det, ring, sec, str, sam);
+}
+
+//____________________________________________________________________
+Bool_t 
+AliFMDAltroMapping::Hardware2Detector(UInt_t    ddl,     UInt_t    board, 
+				      UInt_t    altro,   UInt_t    chan,
+				      UInt_t    timebin, UInt_t    preSamples,
+				      UInt_t    sampleRate,
+				      UShort_t& det,     Char_t&   ring, 
+				      UShort_t& sec,     Short_t&  str,
+				      UShort_t& sam) const
+{
+  // Full conversion from hardware address, including timebin number,
+  // to detector coordinates and sample number.  Note, that this
+  // conversion depends on the oversampling rate and the number of
+  // pre-samples 
+  if (!Hardware2Detector(ddl, board, altro, chan, det, ring, sec, str))
+    return kFALSE;
+  UShort_t t =  (timebin - preSamples);
+  sam        =  (t % sampleRate);
+  t          -= sam;
+  str        += (sec % 2 ? -1 : 1) * t / sampleRate;
+  // if (sec % 2) sam = sampleRate - 1 - sam;
+#if 0
+  AliFMDDebug(3, ("%d/0x%02x/0x%x/0x%x/%04d -> FMD%d%c[%02d,%03d]-%d"
+		  " (pre=%2d, rate=%d)", 
+		  ddl, board, altro, chan, timebin, 
+		  det, ring, sec, str, sam, preSamples, sampleRate));
+#endif
+  return kTRUE;
+}
+
 
 //____________________________________________________________________
 Bool_t 
@@ -229,37 +282,37 @@ AliFMDAltroMapping::Detector2Hardware(UShort_t  det,   Char_t    ring,
   //    Sector  0, strips 128-255  ->   Channel  2
   //    Sector  0, strips 256-383  ->   Channel  4
   //    Sector  0, strips 384-511  ->   Channel  6
-  //    Sector  1, strips   0-127  ->   Channel  1
-  //    Sector  1, strips 128-255  ->   Channel  3
-  //    Sector  1, strips 256-383  ->   Channel  5
-  //    Sector  1, strips 384-511  ->   Channel  7
+  //    Sector  1, strips 127-  0  ->   Channel  1
+  //    Sector  1, strips 255-128  ->   Channel  3
+  //    Sector  1, strips 383-256  ->   Channel  5
+  //    Sector  1, strips 511-384  ->   Channel  7
   //    Sector  2, strips   0-127  ->   Channel  8
   //    Sector  2, strips 128-255  ->   Channel 10
   //    Sector  2, strips 256-383  ->   Channel 12
   //    Sector  2, strips 384-511  ->   Channel 14
-  //    Sector  3, strips   0-127  ->   Channel  9
-  //    Sector  3, strips 128-255  ->   Channel 11
-  //    Sector  3, strips 256-383  ->   Channel 13
-  //    Sector  3, strips 384-511  ->   Channel 15
+  //    Sector  3, strips 127-  0  ->   Channel  9
+  //    Sector  3, strips 255-128  ->   Channel 11
+  //    Sector  3, strips 383-256  ->   Channel 13
+  //    Sector  3, strips 511-384  ->   Channel 15
   // 
   // and so on, up to sector 19.  For the outer, the map is 
   // 
   //    Sector  0, strips   0-127  ->   Channel  0
   //    Sector  0, strips 128-255  ->   Channel  2
-  //    Sector  1, strips   0-127  ->   Channel  1
-  //    Sector  1, strips 128-255  ->   Channel  3
+  //    Sector  1, strips 127-  0  ->   Channel  1
+  //    Sector  1, strips 255-128  ->   Channel  3
   //    Sector  2, strips   0-127  ->   Channel  4
   //    Sector  2, strips 128-255  ->   Channel  6
-  //    Sector  3, strips   0-127  ->   Channel  5
-  //    Sector  3, strips 128-255  ->   Channel  7
+  //    Sector  3, strips 127-  0  ->   Channel  5
+  //    Sector  3, strips 255-128  ->   Channel  7
   //    Sector  4, strips   0-127  ->   Channel  8
   //    Sector  4, strips 128-255  ->   Channel 10
-  //    Sector  5, strips   0-127  ->   Channel  9
-  //    Sector  5, strips 128-255  ->   Channel 11
+  //    Sector  5, strips 127-  0  ->   Channel  9
+  //    Sector  5, strips 255-128  ->   Channel 11
   //    Sector  6, strips   0-127  ->   Channel 12
   //    Sector  6, strips 128-255  ->   Channel 14
-  //    Sector  7, strips   0-127  ->   Channel 13
-  //    Sector  7, strips 128-255  ->   Channel 15
+  //    Sector  7, strips 127-  0  ->   Channel 13
+  //    Sector  7, strips 255-128  ->   Channel 15
   // 
   // and so on upto sector 40. 
   // 
@@ -305,6 +358,49 @@ AliFMDAltroMapping::Detector2Hardware(UShort_t  det, Char_t    ring,
 }
 
 //____________________________________________________________________
+Bool_t 
+AliFMDAltroMapping::Detector2Hardware(UShort_t  det,        Char_t    ring, 
+				      UShort_t  sec,        UShort_t  str,
+				      UShort_t  sam, 
+				      UShort_t  preSamples, UShort_t sampleRate,
+				      UInt_t&   ddl,        UInt_t&   board, 
+				      UInt_t&   altro,      UInt_t&   channel, 
+				      UShort_t& timebin) const
+{
+  if (!Detector2Hardware(det,ring,sec,str,ddl,board,altro,channel)) 
+    return kFALSE;
+  timebin = preSamples;
+  if (sec % 2) 
+    timebin += (127 - (str % 128)) * sampleRate;
+  else 
+    timebin += (str % 128) * sampleRate;
+  timebin += sam;
+  return kTRUE;
+}
+
+
+//____________________________________________________________________
+Bool_t 
+AliFMDAltroMapping::Detector2Hardware(UShort_t  det,        Char_t   ring, 
+				      UShort_t  sec,        UShort_t str,
+				      UShort_t  sam, 
+				      UShort_t  preSamples, UShort_t sampleRate,
+				      UInt_t&   ddl,        UInt_t&  hwaddr, 
+				      UShort_t& timebin) const
+{
+  UInt_t board = 0;
+  UInt_t altro = 0;
+  UInt_t chan  = 0;
+  if (!Detector2Hardware(det, ring, sec, str, sam, 
+			 preSamples, sampleRate, 
+			 ddl, board, altro, chan, timebin)) return kFALSE;
+  hwaddr =  chan + (altro << 4) + (board << 7);
+  return kTRUE;
+}
+
+      
+
+//____________________________________________________________________
 Int_t
 AliFMDAltroMapping::GetHWAddress(Int_t sec, Int_t str, Int_t ring)
 {
@@ -340,7 +436,7 @@ AliFMDAltroMapping::GetPadRow(Int_t hwaddr) const
   UShort_t det;
   Char_t   ring;
   UShort_t sec;
-  UShort_t str;
+  Short_t  str;
   Int_t    ddl = 0;
   if (!Hardware2Detector(ddl, hwaddr, det, ring, sec, str)) return -1;
   return Int_t(sec);
@@ -362,7 +458,7 @@ AliFMDAltroMapping::GetPad(Int_t hwaddr) const
   UShort_t det;
   Char_t   ring;
   UShort_t sec;
-  UShort_t str;
+  Short_t  str;
   Int_t    ddl = 0;
   if (!Hardware2Detector(ddl, hwaddr, det, ring, sec, str)) return -1;
   return Int_t(str);
@@ -384,7 +480,7 @@ AliFMDAltroMapping::GetSector(Int_t hwaddr) const
   UShort_t det;
   Char_t   ring;
   UShort_t sec;
-  UShort_t str;
+  Short_t  str;
   Int_t    ddl = 0;
   if (!Hardware2Detector(ddl, hwaddr, det, ring, sec, str)) return -1;
   return Int_t(ring);
@@ -397,7 +493,8 @@ AliFMDAltroMapping::Print(Option_t* option) const
   TString opt(option);
   opt.ToLower();
   UInt_t ddl, board, chip, chan, addr;
-  UShort_t det, sec, str;
+  UShort_t det, sec;
+  Short_t str;
   Char_t   rng;
   
   if (opt.Contains("hw") || opt.Contains("hardware")) { 

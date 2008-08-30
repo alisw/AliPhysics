@@ -10,7 +10,7 @@
 void
 PatternRaw(const char* file="raw.root")
 {
-  AliLog::SetModuleDebugLevel("FMD", 3);
+  AliLog::SetModuleDebugLevel("FMD", 0);
   AliCDBManager* cdb = AliCDBManager::Instance();
   cdb->SetDefaultStorage("local://$ALICE_ROOT");
   cdb->SetRun(0);

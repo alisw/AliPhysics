@@ -62,6 +62,10 @@ public:
   void     Print(Option_t* opt="") const;
   /** @return Title */
   const char* GetTitle() const;
+  /** Set the count value 
+      @param s Sample number 
+      @param c Counts */
+  void SetCount(UShort_t s, Short_t c);
 protected:
   UShort_t fCount1;     // Digital signal 
   Short_t  fCount2;     // Digital signal (-1 if not used)
@@ -89,6 +93,16 @@ AliFMDDigit::Count(UShort_t i) const
   case 3: return fCount4;
   }
   return -1;
+}
+inline void
+AliFMDDigit::SetCount(UShort_t i, Short_t c)
+{
+  switch (i) {
+  case 0: fCount1 = c; break;
+  case 1: fCount2 = c; break;
+  case 2: fCount3 = c; break;
+  case 3: fCount4 = c; break;
+  }
 }
 
 #endif

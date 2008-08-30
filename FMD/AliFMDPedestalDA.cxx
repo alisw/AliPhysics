@@ -127,7 +127,8 @@ void AliFMDPedestalDA::FillChannels(AliFMDDigit* digit)
 void AliFMDPedestalDA::Analyse(UShort_t det, 
 			       Char_t   ring, 
 			       UShort_t sec, 
-			       UShort_t strip) {
+			       UShort_t strip) 
+{
 
   TH1S* hChannel       = GetChannel(det, ring, sec, strip);
   if(hChannel->GetEntries() == 0) {
