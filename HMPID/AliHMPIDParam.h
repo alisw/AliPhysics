@@ -245,7 +245,8 @@ Double_t AliHMPIDParam::FindTemp(Double_t tLow,Double_t tHigh,Double_t y)
 //  return gradT*y+t1;
   Double_t halfPadSize = 0.5*SizePadY();
   Double_t gradT = (TMath::Log(SizePcY()) - TMath::Log(halfPadSize))/(TMath::Log(tHigh)-TMath::Log(tLow));
-  return tLow*TMath::Power(y/halfPadSize,1./gradT);  
+  if(y<0) y = 0;
+  return tLow + TMath::Power(y/halfPadSize,1./gradT);  
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #endif
