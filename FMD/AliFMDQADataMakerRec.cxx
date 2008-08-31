@@ -141,21 +141,29 @@ void AliFMDQADataMakerRec::InitRaws()
   for(Int_t det = 1; det<=3; det++) {
     Int_t firstring = (det==1 ? 1 : 0);
     for(Int_t iring = firstring;iring<=1;iring++) {
+      Char_t ring = (iring == 1 ? 'I' : 'O');
+      hADCCounts      = new TH1I(Form("hADCCounts_FMD%d%c",
+				      det, ring), "ADC counts",
+				 1024,0,1023);
+      
+      Int_t index1 = GetHalfringIndex(det, ring, 0,1);
+      Add2RawsList(hADCCounts, index1,kTRUE);
+      
       for(Int_t b = 0; b<=1;b++) {
 	
-	//Hexadecimal board numbers 0x0, 0x1, 0x10, 0x10;
+	//Hexadecimal board numbers 0x0, 0x1, 0x10, 0x11;
 	UInt_t board = (iring == 1 ? 0 : 1);
 	board = board + b*16;
-	Char_t ring = (iring == 1 ? 'I' : 'O');
+	
 	
 	hADCCounts      = new TH1I(Form("hADCCounts_FMD%d%c_board%d",
 					det, ring, board), "ADC counts",
 				   1024,0,1023);
 	hADCCounts->SetXTitle("ADC counts");
 	hADCCounts->SetYTitle("");
-	Int_t index = GetHalfringIndex(det, ring, board/16);
-	Add2RawsList(hADCCounts, index);
-	
+	Int_t index2 = GetHalfringIndex(det, ring, board/16,0);
+	Add2RawsList(hADCCounts, index2);
+
       }
     }
   }
@@ -229,23 +237,25 @@ void AliFMDQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   
   rawReader->Reset();
 		
-	digitsAddress->Clear();
-	fmdReader.ReadAdcs(digitsAddress);
-	for(Int_t i=0;i<digitsAddress->GetEntriesFast();i++) {
-	  //Raw ADC counts
-	  AliFMDDigit* digit = static_cast<AliFMDDigit*>(digitsAddress->At(i));
-	  UShort_t det = digit->Detector();
-	  Char_t ring  = digit->Ring();
-	  UShort_t sec = digit->Sector();
-	  UShort_t strip = digit->Strip();
-	  UInt_t ddl, board, chip, channel;
-	  AliFMDParameters* pars = AliFMDParameters::Instance();
-	  pars->Detector2Hardware(det,ring,sec,strip,ddl,board,chip,channel);
-	  Int_t index = GetHalfringIndex(det, ring, board/16);
-	  
-	  GetRawsData(index)->Fill(digit->Counts());
-	  
-	}
+  digitsAddress->Clear();
+  fmdReader.ReadAdcs(digitsAddress);
+  for(Int_t i=0;i<digitsAddress->GetEntriesFast();i++) {
+    //Raw ADC counts
+    AliFMDDigit* digit = static_cast<AliFMDDigit*>(digitsAddress->At(i));
+    UShort_t det = digit->Detector();
+    Char_t ring  = digit->Ring();
+    UShort_t sec = digit->Sector();
+    UShort_t strip = digit->Strip();
+    UInt_t ddl, board, chip, channel;
+    AliFMDParameters* pars = AliFMDParameters::Instance();
+    pars->Detector2Hardware(det,ring,sec,strip,ddl,board,chip,channel);
+    
+    Int_t index1 = GetHalfringIndex(det, ring, 0, 1);
+    GetRawsData(index1)->Fill(digit->Counts());
+    Int_t index2 = GetHalfringIndex(det, ring, board/16,0);
+    GetRawsData(index2)->Fill(digit->Counts());
+    
+  }
 }
 
 //_____________________________________________________________________
@@ -284,11 +294,12 @@ void AliFMDQADataMakerRec::StartOfDetectorCycle()
 //_____________________________________________________________________ 
 Int_t AliFMDQADataMakerRec::GetHalfringIndex(UShort_t det, 
 					     Char_t ring, 
-					     UShort_t board) {
+					     UShort_t board, 
+					     UShort_t monitor) {
   
   UShort_t iring  =  (ring == 'I' ? 1 : 0);
   
-  Int_t index = (((det-1) << 2) | (iring << 1) | (board << 0));
+  Int_t index = ( ((det-1) << 3) | (iring << 2) | (board << 1) | (monitor << 0));
   
   return index-2;
   
