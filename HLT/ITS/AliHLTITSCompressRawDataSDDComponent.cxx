@@ -82,7 +82,7 @@ void AliHLTITSCompressRawDataSDDComponent::GetOutputDataSize( unsigned long& con
   // see header file for class documentation
 
   constBase = 0;
-  inputMultiplier = 0.05;
+  inputMultiplier = 0.3;
 }
 
 AliHLTComponent* AliHLTITSCompressRawDataSDDComponent::Spawn() {
@@ -155,15 +155,13 @@ Int_t AliHLTITSCompressRawDataSDDComponent::DoEvent( const AliHLTComponentEventD
 
     // -- Debug output of datatype --
     HLTDebug("Event 0x%08LX (%Lu) received datatype: %s - required datatype: %s",
-	     evtData.fEventID, evtData.fEventID, 
-	     DataType2Text(iter->fDataType).c_str(), 
-	     DataType2Text(kAliHLTDataTypeDDLRaw | kAliHLTDataOriginITS).c_str());
+	       evtData.fEventID, evtData.fEventID, 
+	       DataType2Text(iter->fDataType).c_str(), 
+	       DataType2Text(kAliHLTDataTypeDDLRaw | kAliHLTDataOriginITSSDD).c_str());
     
     // -- Check for the correct data type
-    if ( iter->fDataType != (kAliHLTDataTypeDDLRaw | kAliHLTDataOriginITS) ) { 
-      HLTError("WRONG FORMAT");
+    if ( iter->fDataType != (kAliHLTDataTypeDDLRaw | kAliHLTDataOriginITSSDD) )
       continue;
-    }
     
     // -- Set RawReader
     fRawReader->SetMemory( (UChar_t*) iter->fPtr, iter->fSize );
@@ -209,10 +207,10 @@ Int_t AliHLTITSCompressRawDataSDDComponent::DoEvent( const AliHLTComponentEventD
 
     // -- Increase output shm ptr
     outShmPtr += mySize;
-    
+
     // -- Check if data was written over allowed buffer
     if ( totalSize > size ) {
-      HLTFatal( "Data written over allowed buffer. Amount written: %lu, allowed amount: %lu.",  totalSize, size );
+      HLTError( "Data written over allowed buffer. Amount written: %lu, allowed amount: %lu.",  totalSize, size );
       return EMSGSIZE;
     }
     

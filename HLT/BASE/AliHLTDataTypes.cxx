@@ -161,28 +161,37 @@ const AliHLTComponentDataType kAliHLTDataTypeExternalTrackParam = AliHLTComponen
 //////////////////////////////////////////////////////////////////////////
 
 /** HLT out */
-const char kAliHLTDataOriginOut[kAliHLTComponentDataTypefOriginSize]    = {'H','L','T',' '};
+const char kAliHLTDataOriginOut[kAliHLTComponentDataTypefOriginSize]     = {'H','L','T',' '};
 
 /** HLT/PubSub private internal */
-const char kAliHLTDataOriginPrivate[kAliHLTComponentDataTypefOriginSize]= {'P','R','I','V'};
+const char kAliHLTDataOriginPrivate[kAliHLTComponentDataTypefOriginSize] = {'P','R','I','V'};
 
 /** TPC */
-const char kAliHLTDataOriginTPC[kAliHLTComponentDataTypefOriginSize]    = {'T','P','C',' '};
+const char kAliHLTDataOriginTPC[kAliHLTComponentDataTypefOriginSize]     = {'T','P','C',' '};
 
 /** PHOS */
-const char kAliHLTDataOriginPHOS[kAliHLTComponentDataTypefOriginSize]   = {'P','H','O','S'};
+const char kAliHLTDataOriginPHOS[kAliHLTComponentDataTypefOriginSize]    = {'P','H','O','S'};
 
 /** MUON */
-const char kAliHLTDataOriginMUON[kAliHLTComponentDataTypefOriginSize]   = {'M','U','O','N'};
+const char kAliHLTDataOriginMUON[kAliHLTComponentDataTypefOriginSize]    = {'M','U','O','N'};
 
 /** TRD */
-const char kAliHLTDataOriginTRD[kAliHLTComponentDataTypefOriginSize]    = {'T','R','D',' '};
+const char kAliHLTDataOriginTRD[kAliHLTComponentDataTypefOriginSize]     = {'T','R','D',' '};
 
 /** ITS */
-const char kAliHLTDataOriginITS[kAliHLTComponentDataTypefOriginSize]    = {'I','T','S',' '};
+const char kAliHLTDataOriginITS[kAliHLTComponentDataTypefOriginSize]     = {'I','T','S',' '};
+
+/** ITS-SPD */
+const char kAliHLTDataOriginITSSPD[kAliHLTComponentDataTypefOriginSize]  = {'I','S','P','D'};
+
+/** ITS-SDD */
+const char kAliHLTDataOriginITSSDD[kAliHLTComponentDataTypefOriginSize]  = {'I','S','D','D'};
+
+/** ITS-SSD */
+const char kAliHLTDataOriginITSSSD[kAliHLTComponentDataTypefOriginSize]  = {'I','S','S','D'};
 
 /** Sample */
-const char kAliHLTDataOriginSample[kAliHLTComponentDataTypefOriginSize] = {'S','M','P','L'};
+const char kAliHLTDataOriginSample[kAliHLTComponentDataTypefOriginSize]  = {'S','M','P','L'};
 
 /** EMCAL */
-const char kAliHLTDataOriginEMCAL[kAliHLTComponentDataTypefOriginSize]  = {'E','M','C','L'};
+const char kAliHLTDataOriginEMCAL[kAliHLTComponentDataTypefOriginSize]   = {'E','M','C','L'};

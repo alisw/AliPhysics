@@ -114,6 +114,21 @@ extern const char kAliHLTDataOriginTRD[kAliHLTComponentDataTypefOriginSize];
  */
 extern const char kAliHLTDataOriginITS[kAliHLTComponentDataTypefOriginSize];
 
+/** Data origin ITS SPD
+ * @ingroup alihlt_component_datatypes
+ */
+extern const char kAliHLTDataOriginITSSPD[kAliHLTComponentDataTypefOriginSize];
+
+/** Data origin ITS SDD
+ * @ingroup alihlt_component_datatypes
+ */
+extern const char kAliHLTDataOriginITSSDD[kAliHLTComponentDataTypefOriginSize];
+
+/** Data origin ITS SSD
+ * @ingroup alihlt_component_datatypes
+ */
+extern const char kAliHLTDataOriginITSSSD[kAliHLTComponentDataTypefOriginSize];
+
 /** Data origin for examples 
  * @ingroup alihlt_component_datatypes
  */
