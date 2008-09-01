@@ -48,7 +48,7 @@ public:
       @param data On return, the read ADC channels.
       @return @c true on success */
   virtual Bool_t ReadChannel(UInt_t& ddl, UInt_t& addr, 
-			     UInt_t& len, UShort_t* data);
+			     UInt_t& len, volatile UShort_t* data);
 protected:
   
   ClassDef(AliFMDRawStream, 0) // Read raw FMD Altro data 

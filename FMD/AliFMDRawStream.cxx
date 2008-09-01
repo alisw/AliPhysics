@@ -54,7 +54,7 @@ AliFMDRawStream::AliFMDRawStream(AliRawReader* reader)
 //_____________________________________________________________________________
 Bool_t 
 AliFMDRawStream::ReadChannel(UInt_t& ddl, UInt_t& addr, 
-			     UInt_t& len, UShort_t* data)
+			     UInt_t& len, volatile UShort_t* data)
 {
   // Read one channel and return.   Returns 0 when there's no more
   // data. 
@@ -89,6 +89,10 @@ AliFMDRawStream::ReadChannel(UInt_t& ddl, UInt_t& addr,
     l        = TMath::Max(l, t);
     data[t]  = signal;
     last     = 0xFFFF;
+#if 0
+    AliFMDDebug(signal > 512 ? 1 : 0, ("Signal @ %d (%d) is %d", 
+				       time, t, data[t]));
+#endif
   } while (next);
   return next;
 }

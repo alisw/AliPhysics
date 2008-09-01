@@ -27,6 +27,7 @@
 class AliFMD;
 class AliAltroBuffer;
 class TArrayI;
+class TArrayF;
 class TClonesArray;
 
 //____________________________________________________________________
@@ -56,20 +57,29 @@ public:
       @param digits Array of AliFMDDigit objects to convert to raw
       ALTRO data. */
   virtual void WriteDigits(TClonesArray* digits);
+  /** Do zero-suppression of channel data. 
+      @param data      Contain @a nWords of valid data.  On input, it 
+                       contains the full channel data.  On output it
+                       will contain the zero-suppresed data. 
+      @param peds      Contain @a nWords pedestals 
+      @param noise     Contain @a nWords pedestal widths 
+      @param threshold Zero suppression threshold. */
+  void ZeroSuppress(Int_t*& data, Int_t nWords, const Float_t* peds, 
+		    const Float_t* noise, UShort_t threshold) const;
 protected:
   AliFMDRawWriter(const AliFMDRawWriter& o) 
     : TTask(o), 
-      fFMD(0), 
-      fSampleRate(0), 
-      fChannelsPerAltro(0), 
-      fThreshold(0)
+      fFMD(o.fFMD), 
+      fSampleRate(o.fSampleRate), 
+      fChannelsPerAltro(o.fChannelsPerAltro), 
+      fThreshold(o.fThreshold)
   {}
   AliFMDRawWriter& operator=(const AliFMDRawWriter&) { return *this; }
   AliFMD*       fFMD;              //! Pointer to detector description 
   UShort_t      fSampleRate;       // The sample rate (0 -> inferred from data)
   UShort_t      fChannelsPerAltro; // Number of pre-amp. channels/adc channel 
   UShort_t      fThreshold;        // Threshold for zero-suppression
-  
+
   ClassDef(AliFMDRawWriter, 0) // Write FMD raw data to a DDL file
 };
 

@@ -146,6 +146,15 @@ public:
   void SetChannelsPerAltro(UShort_t size=128) { fChannelsPerAltro = size; }
   /** @param f Factor to use for accepting a signal. */
   void SetPedestalFactor(Float_t f=3)         { fPedestalFactor = f; }
+  /** @param n Number of pre-samples to keep during zero-suppression -
+      only used in simulation. */
+  void SetZSPreSamples(UShort_t n=1) { fZSPre = (n & 0x3); }
+  /** @param n Number of post-samples to keep during zero-suppression -
+      only used in simulation. */
+  void SetZSPostSamples(UShort_t n=1) { fZSPost = (n & 0x3); }
+  /** @param use If true, do pedestal subtraction before zero
+      suppression - only used in simulation */
+  void SetZSPedSubtract(Bool_t use=kTRUE) { fZSPedSubtract = use; }
   /** @} */
 
   /** @{ */
@@ -184,6 +193,15 @@ public:
   Float_t  GetEdepMip()              const;
   /** @return The factor used of signal acceptance */
   Float_t  GetPedestalFactor()	     const { return fPedestalFactor; }
+  /** @param n Number of pre-samples to keep during zero-suppression -
+      only used in simulation. */
+  UShort_t GetZSPreSamples() const { return fZSPre; }
+  /** @param n Number of post-samples to keep during zero-suppression -
+      only used in simulation. */
+  UShort_t GetZSPostSamples() const { return fZSPost; }
+  /** @param use If true, do pedestal subtraction before zero
+      suppression - only used in simulation */
+  Bool_t IsZSPedSubtract() const { return fZSPedSubtract; }
   /** @} */
 
   /** @{ */
@@ -432,6 +450,9 @@ protected:
       fAltroChannelSize(o.fAltroChannelSize),
       fChannelsPerAltro(o.fChannelsPerAltro),
       fPedestalFactor(o.fPedestalFactor),
+      fZSPre(o.fZSPre),
+      fZSPost(o.fZSPost),
+      fZSPedSubtract(o.fZSPedSubtract),
       fFixedPedestal(o.fFixedPedestal),
       fFixedPedestalWidth(o.fFixedPedestalWidth),
       fFixedZeroSuppression(o.fFixedZeroSuppression),
@@ -494,6 +515,9 @@ protected:
   UShort_t        fAltroChannelSize;         // Largest # to store in 1 ADC ch.
   UShort_t        fChannelsPerAltro;         // Number of pre-amp. chan/adc chan.
   Float_t         fPedestalFactor;           // Number of pedestal widths
+  UShort_t        fZSPre;                    // Number of pre-samples in ZS
+  UShort_t        fZSPost;                   // Number of post-samples in ZS
+  Bool_t          fZSPedSubtract;            // Pedestal subtraction before ZS
 
   Float_t         fFixedPedestal;            // Pedestal to subtract
   Float_t         fFixedPedestalWidth;       // Width of pedestal

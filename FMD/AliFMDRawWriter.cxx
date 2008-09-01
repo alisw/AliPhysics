@@ -47,6 +47,8 @@
 #include "AliFMDAltroMapping.h" // ALIFMDALTROMAPPING_H
 // #include "AliFMDAltroIO.h"   // ALIFMDALTROWRITER_H
 #include <TArrayI.h>		// ROOT_TArrayI
+#include <TArrayF.h>		// ROOT_TArrayI
+#include <TArrayC.h>		// ROOT_TArrayI
 #include <TClonesArray.h>	// ROOT_TClonesArray
 // #include <fstream>
 #include "AliDAQ.h"
@@ -183,6 +185,8 @@ AliFMDRawWriter::WriteDigits(TClonesArray* digits)
   // A buffer to hold 1 ALTRO channel - Normally, one ALTRO channel
   // holds 128 VA1_ALICE channels, sampled at a rate of `sampleRate' 
   TArrayI data(pars->GetChannelsPerAltro() * 8);
+  TArrayF peds(pars->GetChannelsPerAltro() * 8);
+  TArrayF noise(pars->GetChannelsPerAltro() * 8);
 
   // The Altro buffer 
   AliAltroBuffer* altro = 0;
@@ -206,7 +210,7 @@ AliFMDRawWriter::WriteDigits(TClonesArray* digits)
     UInt_t   addr;  
     UShort_t time;
 
-    AliFMDDebug(10, ("Processing digit # %5d FMD%d%c[%2d,%3d]", 
+    AliFMDDebug(15, ("Processing digit # %5d FMD%d%c[%2d,%3d]", 
 		    i, det, ring, sector, strip));
     threshold  = pars->GetZeroSuppression(det, ring, sector, strip);
     sampleRate = pars->GetSampleRate(det, ring, sector, strip);
@@ -216,7 +220,7 @@ AliFMDRawWriter::WriteDigits(TClonesArray* digits)
       AliFMDDebug(5, ("Got new detector: %d (was %d)", det, oldDet));
       oldDet = det;
     }
-    AliFMDDebug(10, ("Sample rate is %d", sampleRate));
+    AliFMDDebug(15, ("Sample rate is %d", sampleRate));
     
     for (UShort_t j = 0; j < sampleRate; j++) { 
       if (!pars->Detector2Hardware(det,ring,sector,strip,j,ddl,addr,time)){
@@ -236,7 +240,11 @@ AliFMDRawWriter::WriteDigits(TClonesArray* digits)
 			 (addr >> 7), (addr >> 4) & 0x7, addr & 0xf, 
 			 time, prevaddr, nWords));
 	totalWords += nWords;
+	ZeroSuppress(data.fArray, nWords, peds.fArray, noise.fArray, threshold);
 	if (altro) altro->WriteChannel(prevaddr,nWords,data.fArray,threshold);
+	data.Reset(-1);
+	peds.Reset(0);
+	noise.Reset(0);
 	nWords   = 0;
 	prevaddr = addr;
       }
@@ -267,16 +275,24 @@ AliFMDRawWriter::WriteDigits(TClonesArray* digits)
 	altro->WriteDataHeader(kTRUE, kFALSE);
       }
     
+      // Get the pedestal value 
+      peds[time]  = pars->GetPedestal(det, ring, sector, strip);
+      noise[time] = pars->GetPedestalWidth(det, ring, sector, strip);
+
       // Store the counts of the ADC in the channel buffer 
-      AliFMDDebug(6, ("Storing FMD%d%c[%02d,%03d]-%d in timebin %d (%d)",
+      AliFMDDebug(15, ("Storing FMD%d%c[%02d,%03d]-%d in timebin %d (%d)",
 		      det, ring, sector, strip, j, time, preSamples));
-      UShort_t count = digit->Count(j);
-      data[time] = count;
+      data[time] = digit->Count(j);
       nWords++;
       nCounts++;
       if (time == preSamples) {
-	AliFMDDebug(5, ("Filling in %4d for %d presamples", count, preSamples));
-	for (int k = 0; k < preSamples; k++) data[k] = count;
+	AliFMDDebug(15, ("Filling in %4d for %d presamples", 
+			data[time], preSamples));
+	for (int k = 0; k < preSamples; k++) { 
+	  peds[k]  = peds[time];
+	  noise[k] = noise[time];
+	  data[k]  = data[time];
+	}
 	nWords += preSamples;
       }
     }
@@ -284,6 +300,7 @@ AliFMDRawWriter::WriteDigits(TClonesArray* digits)
   // Finally, we need to close the final ALTRO buffer if it wasn't
   // already 
   if (altro) {
+    ZeroSuppress(data.fArray, nWords, peds.fArray, noise.fArray, threshold);
     if (nWords > 0) altro->WriteChannel(prevaddr,nWords,data.fArray,threshold);
     altro->Flush();
     altro->WriteDataHeader(kFALSE, kFALSE);
@@ -292,6 +309,69 @@ AliFMDRawWriter::WriteDigits(TClonesArray* digits)
   AliFMDDebug(5, ("Wrote a total of %d words for %d counts", 
 		  nWords, nCounts));
 }
+//____________________________________________________________________
+void
+AliFMDRawWriter::ZeroSuppress(Int_t*& data, Int_t nWords, 
+			      const Float_t* peds, 
+			      const Float_t* noise, UShort_t threshold) const
+{
+  // Simulate the ALTRO zero-suppression filter.  The data passed in
+  // the first array is modified, such that all suppressed channels
+  // are set to some value below threshold.  
+  // 
+  // If threshold == 0 zero suppression is considered disabled, and no
+  // action is taken. 
+  if (threshold <= 0) return;
+
+  // const Short_t width  = 3;
+  // If fPedSubtract is false, compare data-(ped+f*noise), if true
+  // always modify data by -(ped+f*noise), and force negative values
+  // to zero.
+  Bool_t   pedSubtract = AliFMDParameters::Instance()->IsZSPedSubtract();
+  UShort_t pre         = AliFMDParameters::Instance()->GetZSPreSamples();
+  UShort_t post        = AliFMDParameters::Instance()->GetZSPostSamples();
+  Float_t  factor      = AliFMDParameters::Instance()->GetPedestalFactor();
+  
+  TArrayC mask(nWords+1);
+  for (Short_t i = 0; i < nWords; i++) { 
+    Float_t            val     = data[i] - peds[i] - factor * noise[i];
+    if (val < 0.5)     val     = 0;
+    if (pedSubtract)   data[i] = Int_t(val) & 0x3FF;
+
+    mask[i] = (val > threshold ? 1 : 0);
+    AliFMDDebug(10, ("Comparing sample %d %d-%f-%f*%f=%f to %d -> %s", 
+		     i, data[i], peds[i], factor, noise[i], val, threshold, 
+		    (mask[i] ? "above" : "below")));
+  }
+  
+  for (Short_t i = 0; i < nWords; i++) { 
+    if (mask[i]) { // Signal above, so do nothing 
+      AliFMDDebug(10, ("Sample %d, above", i));
+      if (i < nWords-1 && !mask[i+1]) { 
+	// After a valid sample.  Increase the pointer to the next
+	// possible data, thereby skipping over the post-samples 
+	AliFMDDebug(10, ("At sample %d, next is below, skipping %d to %d", 
+			i, post, i+post));
+	i += post;
+      }
+      continue;
+    }
+    
+    Short_t lookahead = TMath::Min(Short_t(nWords), Short_t(i+pre));
+    AliFMDDebug(10, ("Sample %d, below, look to %d", i, lookahead));
+    if (mask[lookahead] && pre > 0) { 
+      AliFMDDebug(10, ("Sample %d is a pre-sample to %d", i, lookahead));
+      // We're in a presample, so don't modify the data, and increase
+      // counter by the number of pre-samples 
+      i += pre-1;
+      continue;
+    }
+    
+    // This sample must be surpressed 
+    data[i] = threshold - 1;
+  }
+}
+
 #else
 //____________________________________________________________________
 void

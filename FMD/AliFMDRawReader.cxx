@@ -141,6 +141,9 @@ AliFMDRawReader::ReadAdcs(TClonesArray* array)
 
   Bool_t isGood = kTRUE;
   while (isGood) {
+    // Set data cache to all zero.
+    for (size_t i = 0; i < 2048; i++) data[i] = 0;
+
     isGood = input.ReadChannel(ddl, hwaddr, last, data);
     // if (!isGood) break;
     if (ddl >= UInt_t(-1)) { 
@@ -165,8 +168,8 @@ AliFMDRawReader::ReadAdcs(TClonesArray* array)
 		      "hardware address 0x%03x, timebin %d", ddl, hwaddr, i));
 	continue;
       }
-      AliFMDDebug(10, ("0x%04x/0x%03x/%04d maps to FMD%d%c[%2d,%3d]-%d", 
-		      ddl, hwaddr, i, det, ring, sec, str, samp));
+      AliFMDDebug(8, ("0x%04x/0x%03x/%04d maps to FMD%d%c[%2d,%3d]-%d = %d", 
+		       ddl, hwaddr, i, det, ring, sec, str, samp, data[i]));
       if (str < 0) { 
 	AliFMDDebug(8, ("Got presamples at timebin %d", i));
 	continue;
