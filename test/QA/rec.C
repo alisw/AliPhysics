@@ -24,6 +24,7 @@
   
   for (Int_t det = 0 ; det < AliQA::kNDET ; det++) {
     reco.SetQACycles(det, 2) ;
+    reco.SetQAWriteExpert(det) ; 
   }
   
 // **** The field map settings must be the same as in Config.C !
