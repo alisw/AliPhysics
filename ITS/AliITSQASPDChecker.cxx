@@ -62,9 +62,13 @@ const Double_t AliITSQASPDChecker::Check(AliQA::ALITASK_t /*index*/, TObjArray *
         Double_t rv = 0.;
         if (hdata->GetEntries()>0) rv = 1;
         if (histName.Contains("LayPattern")) {
+         if (hdata->GetBinContent(1)) {
            Double_t ratio=hdata->GetBinContent(2)/hdata->GetBinContent(1);
            AliInfo(Form("%s: ratio RecPoints lay2 / lay1 = %f", hdata->GetName(), ratio));
-        }
+         }
+         else
+           AliInfo("No RecPoints in lay1");
+       }
         else if(histName.Contains("ModPattern")) {
            Int_t ndead=0;
            for(Int_t ibin=0;ibin<hdata->GetNbinsX();ibin++) {
