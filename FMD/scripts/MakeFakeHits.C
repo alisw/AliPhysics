@@ -76,16 +76,16 @@ MakeFakeHits()
 	  map.Detector2Hardware(d, r, s, t, 0, 0, 1, 
 				ddl, board, altro, channel, timebin);
 	  Float_t e = Float_t(s) / nsec + Float_t(t)/(100*nstr);
-	  e = Float_t(timebin) / 1024 * 4;
+	  e = Float_t(timebin % 64) / 64 * 1.5;
 
 	  std::cout << "FMD" << d << r << "[" << std::setfill('0') 
 		    << std::setw(2) << s << "," << std::setw(3) << t 
 		    << "] " << std::setfill(' ')
 		    << std::setw(4) << timebin << " ("
-		    << std::setw(8) << x << "," 
-		    << std::setw(8) << y << "," 
-		    << std::setw(8) << z << ") -> " 
-		    << std::setw(10) << e << "\r"
+		    << std::setw(10) << x << "," 
+		    << std::setw(10) << y << "," 
+		    << std::setw(10) << z << ") -> " 
+		    << std::setw(10) << e << "\t\r"
 		    << std::flush;
 	  fmd->AddHitByFields(ntr,     // Int_t    track, 		
 			      d,       // UShort_t detector, 	

@@ -1,7 +1,8 @@
 void
 Digits2Raw()
 {
-  AliLog::SetModuleDebugLevel("FMD", 4);
+  // AliLog::SetModuleDebugLevel("FMD", 10);
+  AliLog::SetModuleDebugLevel("RAW", 1);
   AliRunLoader* runLoader = AliRunLoader::Open("galice.root", "Alice", "read");
   if (!runLoader) {
     AliError("Coulnd't read the file galice.root");
@@ -33,7 +34,18 @@ Digits2Raw()
   AliCDBManager::Instance()->SetRun(0);
   AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
   
-  AliFMDParameters::Instance()->Init();
+  AliFMDParameters::Instance()->Init(kFALSE,
+				     (AliFMDParameters::kPulseGain|
+				     (AliFMDParameters::kPedestal|
+				      AliFMDParameters::kDeadMap|
+				      AliFMDParameters::kSampleRate|
+				      AliFMDParameters::kAltroMap|
+				      AliFMDParameters::kStripRange)));
+  AliFMDParameters::Instance()->SetZeroSuppression(1);
+  // AliFMDParameters::Instance()->SetPedestal(100);
+  // AliFMDParameters::Instance()->SetPedestalWidth(0);
+  // AliFMDParameters::Instance()->SetZSPreSamples(0);
+  // AliFMDParameters::Instance()->SetZSPostSamples(0);
   
   fmd->Digits2Raw();
 }
