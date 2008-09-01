@@ -279,7 +279,7 @@ void AliMUONRecoParam::Print(Option_t *option) const
   /// print reconstruction parameters
   /// if option = FULL then print also unused parameters
   
-  cout<<endl<<"\t------Reconstruction parameters ("<<GetName()<<")------"<<endl;
+  cout<<endl<<"\t------MUON Reconstruction parameters ("<<GetName()<<")------"<<endl;
   
   if (IsDefault()) cout<<"\t\t*** Parameters used by default ***"<<endl;
   
@@ -427,7 +427,7 @@ void AliMUONRecoParam::Print(Option_t *option) const
   for (Int_t iCh = 0; iCh < 10; iCh++) cout << Form(" %6.3f |",fDefaultBendingReso[iCh]);
   cout << endl;
   
-  cout<<"\t----------------------------------------------"<<endl<<endl;
+  cout<<"\t-----------------------------------------------------"<<endl<<endl;
   
 }
 
