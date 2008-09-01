@@ -6,6 +6,7 @@
 //     "EFF"  : TRD Tracking Efficiency 
 //     "EFFC" : TRD Tracking Efficiency Combined (barrel + stand alone) - only in case of simulations
 //     "RES"  : TRD tracking Resolution
+//     "CAL"  : TRD calibration
 //     "PID"  : TRD PID - pion efficiency 
 //     "PIDR" : TRD PID - reference data
 //     "NOMC" : Data set does not have Monte Carlo Informations (real data), so all tasks which rely
@@ -20,12 +21,13 @@
 #define TESTBIT(n,i)  ((Bool_t)(((n) & BIT(i)) != 0))
 #define CLEARBIT(n,i) ((n) &= ~BIT(i))
 
-const Int_t fknTasks = 3;
-Char_t *fTaskName[fknTasks] = {"Barrel Tracking Effiency", "Combined Tracking Efficiency", "Tracking Resolution"};
+const Int_t fknTasks = 4;
+Char_t *fTaskName[fknTasks] = {"Barrel Tracking Effiency", "Combined Tracking Efficiency", "Tracking Resolution", "Calibration"};
 enum AliTRDrecoTasks{
   kTrackingEfficiency = 0
   ,kTrackingCombinedEfficiency = 1
   ,kTrackingResolution = 2
+  ,kCalibration = 3
 };
 void run(const Char_t *files=0x0, Char_t *tasks="ALL", Int_t nmax=-1)
 {
@@ -38,7 +40,7 @@ void run(const Char_t *files=0x0, Char_t *tasks="ALL", Int_t nmax=-1)
   gSystem->Load("libTRDqaRec.so");
   
   Int_t fSteerTask = 0; 
-  Bool_t fHasMCdata = kTRUE;
+  Bool_t fHasMCdata = kFALSE;
   TObjArray *task = TString(tasks).Tokenize(" ");
   for(Int_t isel = 0; isel < task->GetEntriesFast(); isel++){
     TString s = (dynamic_cast<TObjString *>(task->UncheckedAt(isel)))->String();
@@ -54,9 +56,12 @@ void run(const Char_t *files=0x0, Char_t *tasks="ALL", Int_t nmax=-1)
     } else if(s.CompareTo("RES") == 0){
       SETBIT(fSteerTask, kTrackingResolution);
       continue;
+    } else if(s.CompareTo("CAL" ) == 0){
+      SETBIT(fSteerTask, kCalibration);
+      continue;
     } else if(s.CompareTo("NOMC") == 0){
     	CLEARBIT(fSteerTask, kTrackingEfficiency);
-    	CLEARBIT(fSteerTask, kTrackingEfficiencyCombined);
+    	CLEARBIT(fSteerTask, kTrackingCombinedEfficiency);
     } else{
       Info("run.C", Form("Task %s not implemented (yet).", s.Data()));
       continue;
@@ -140,6 +145,21 @@ void run(const Char_t *files=0x0, Char_t *tasks="ALL", Int_t nmax=-1)
     mgr->ConnectOutput(task4, 0, coutput4);
   }
 
+  //____________________________________________
+  // TRD calibration
+  if(TESTBIT(fSteerTask, kCalibration)){
+    AliTRDcalib *task5 = new AliTRDcalib();
+    task5->SetLow(0);
+    task5->SetHigh(30);
+    task5->SetDebugLevel(0);
+    task5->SetFillZero(kFALSE);
+    mgr->AddTask(task5);
+    // Create containers for input/output
+    AliAnalysisDataContainer *coutput5 = mgr->CreateContainer("Calibration", TList::Class(), AliAnalysisManager::kOutputContainer, "TRD.Calibration.root");
+    mgr->ConnectInput(task5,0,cinput1);
+    mgr->ConnectOutput(task5,0,coutput5);
+  }
+  
   if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
   mgr->StartAnalysis("local",chain);
