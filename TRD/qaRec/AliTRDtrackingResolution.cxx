@@ -148,8 +148,7 @@ void AliTRDtrackingResolution::Exec(Option_t *)
    	  }
 
       // Do clusters residuals
-      fTracklet->SetZref(1, 1.);
-      fTracklet->Fit();
+      fTracklet->Fit(kFALSE);
       Int_t histpos = HasMCdata() ? 2 : 0;
       AliTRDcluster *c = 0x0;
       for(Int_t ic=AliTRDseed::knTimebins-1; ic>=0; ic--){

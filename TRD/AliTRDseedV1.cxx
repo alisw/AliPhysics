@@ -631,7 +631,7 @@ Bool_t	AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *chamber
 }
 
 //____________________________________________________________________
-Bool_t AliTRDseedV1::Fit()
+Bool_t AliTRDseedV1::Fit(Bool_t tilt)
 {
   //
   // Linear fit of the tracklet
@@ -672,7 +672,7 @@ Bool_t AliTRDseedV1::Fit()
     if(c->GetNPads()>4) w = .5;
     if(c->GetNPads()>5) w = .2;
     zRow[nc] = c->GetPadRow();
-    xc[nc]   = fX0 - c->GetX();
+    xc[nc]   = c->GetX() - fX0;
     yc[nc]   = c->GetY();
     zc[nc]   = c->GetZ();
     sy[nc]   = w; // all clusters have the same sigma
@@ -742,12 +742,14 @@ Bool_t AliTRDseedV1::Fit()
   // estimate deviation from reference direction
   dzdx *= fTilt;
   for (Int_t ic=0; ic<nc; ic++) {
-    yc[ic] -= y0 + xc[ic]*(dydx + dzdx) + fTilt * (zc[ic] - zc[nc]);
+    yc[ic] -= (y0 + xc[ic]*dydx);
+    if(tilt) yc[ic] -= (xc[ic]*dzdx + fTilt * (zc[ic] - zc[nc])); 
     fitterY.AddPoint(&xc[ic], yc[ic], sy[ic]);
   }
   fitterY.Eval();
   fYfit[0] = y0+fitterY.GetFunctionParameter(0);
   fYfit[1] = dydx+fitterY.GetFunctionParameter(1);
+
   if(nchanges) fCross[1] = fYfit[0] + fCross[0] * fYfit[1];
 
 // 	printf("\nnz = %d\n", nz);

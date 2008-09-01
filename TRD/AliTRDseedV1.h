@@ -55,7 +55,7 @@ class AliTRDseedV1 : public AliTRDseed
   Bool_t	AttachClusters(AliTRDtrackingChamber *chamber, Bool_t kZcorr = kFALSE);
   void    CookdEdx(Int_t nslices);
   void    Draw(Option_t* o = "");
-  Bool_t  Fit();
+  Bool_t  Fit(Bool_t tilt=kTRUE);
 
   Bool_t  Init(AliTRDtrackV1 *track);
   inline void      Init(const AliRieman *fit);
@@ -76,8 +76,8 @@ class AliTRDseedV1 : public AliTRDseed
   Double_t* GetProbability();
   Double_t  GetSnp() const           { return fSnp;}
   Double_t  GetTgl() const           { return fTgl;}
-  Double_t  GetYat(Double_t x) const { return fYfitR[0] + fYfitR[1] * (x - fX0);}
-  Double_t  GetZat(Double_t x) const { return fZfitR[0] + fZfitR[1] * (x - fX0);}
+  Double_t  GetYat(Double_t x) const { return fYfit[0] + fYfit[1] * (x-fX0);}
+  Double_t  GetZat(Double_t x) const { return fZfit[0] + fZfit[1] * (x-fX0);}
   
   void      Print(Option_t *o = "") const;
   
