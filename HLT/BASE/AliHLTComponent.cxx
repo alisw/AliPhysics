@@ -39,6 +39,7 @@ using namespace std;
 #include "AliHLTMemoryFile.h"
 #include "AliHLTMisc.h"
 #include <cassert>
+#include <stdint.h>
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTComponent);
