@@ -152,6 +152,12 @@ class AliHLTTPCZeroSuppressionComponent : public AliHLTProcessor
       /** Flag to switch on active pads selection */
       Bool_t fGetActivePads;                                           //! transient
 
+      /** Flag to switch off data being sent to output */
+      Bool_t fSkipSendingZSData;
+
+      /** Flag to switch off hw list being sent to output */
+      Bool_t fSendHWList;
+
       /** Vector of active pad hardware addresses */
       vector<AliHLTUInt16_t> fHwAddressList;                  //! transient
 

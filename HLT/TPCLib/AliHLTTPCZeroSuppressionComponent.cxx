@@ -68,6 +68,8 @@ AliHLTTPCZeroSuppressionComponent::AliHLTTPCZeroSuppressionComponent()
     fLeftTimeBin(5),
     fRightTimeBin(5),
     fGetActivePads(kFALSE),
+    fSkipSendingZSData(kFALSE),
+    fSendHWList(kFALSE),
     fHwAddressList()
 {
   // see header file for class documentation
@@ -149,7 +151,7 @@ int AliHLTTPCZeroSuppressionComponent::DoInit( int argc, const char** argv )
   while ( i < argc ) {      
 
     // -- zero suppression threshold
-    if ( !strcmp( argv[i], "signal-threshold" ) ) {
+    if ( !strcmp( argv[i], "-signal-threshold" ) || !strcmp( argv[i], "signal-threshold" ) ) {
       fSignalThreshold = strtoul( argv[i+1], &cpErr ,0);
       if ( *cpErr ) {
 	HLTError("Cannot convert signal-threshold specifier '%s'.", argv[i+1]);
@@ -160,7 +162,7 @@ int AliHLTTPCZeroSuppressionComponent::DoInit( int argc, const char** argv )
     }
 
     // -- checking for nsigma-threshold, used in 2007 December run in ZeroSuppression
-    if ( !strcmp( argv[i], "rms-threshold" ) ) {
+    if ( !strcmp( argv[i], "-rms-threshold" ) ||  !strcmp( argv[i], "rms-threshold" ) ) {
       fNRMSThreshold = strtoul( argv[i+1], &cpErr ,0);
       if ( *cpErr ){
 	HLTError("Cannot convert rms-threshold specifier '%s'. Must be integer", argv[i+1]);
@@ -171,7 +173,7 @@ int AliHLTTPCZeroSuppressionComponent::DoInit( int argc, const char** argv )
     }
 
     // -- number of timebins
-    if ( !strcmp( argv[i], "ntimebins" ) ) {
+    if ( !strcmp( argv[i], "-ntimebins" ) || !strcmp( argv[i], "ntimebins" ) ) {
       fNTimeBins = strtoul( argv[i+1], &cpErr ,0);
       if ( *cpErr ) {
 	HLTError("Cannot convert ntimebins specifier '%s'.", argv[i+1]);
@@ -182,7 +184,7 @@ int AliHLTTPCZeroSuppressionComponent::DoInit( int argc, const char** argv )
     }
 
     // -- first timebin
-    if ( !strcmp( argv[i], "start-timebin" ) ) {
+    if ( !strcmp( argv[i], "-start-timebin" ) || !strcmp( argv[i], "start-timebin" ) ) {
       fStartTimeBin = strtoul( argv[i+1], &cpErr ,0);
       if ( *cpErr ) {
 	HLTError("Cannot convert start-timebin specifier '%s'.", argv[i+1]);
@@ -193,7 +195,7 @@ int AliHLTTPCZeroSuppressionComponent::DoInit( int argc, const char** argv )
     }
 
     // -- last timebin
-    if ( !strcmp( argv[i], "end-timebin" ) ) {
+    if ( !strcmp( argv[i], "-end-timebin" ) || !strcmp( argv[i], "end-timebin" ) ) {
       if(strtoul( argv[i+1], &cpErr ,0)<=(UInt_t)AliHLTTPCTransform::GetNTimeBins()){
 	fEndTimeBin = strtoul( argv[i+1], &cpErr ,0);
       }
@@ -206,7 +208,7 @@ int AliHLTTPCZeroSuppressionComponent::DoInit( int argc, const char** argv )
     }
 
     // -- timebins to keep left of signal
-    if ( !strcmp( argv[i], "timebin-left" ) ) {
+    if ( !strcmp( argv[i], "-timebin-left" ) || !strcmp( argv[i], "timebin-left" ) ) {
       fLeftTimeBin = strtoul( argv[i+1], &cpErr ,0);
       if ( *cpErr ) {
 	HLTError("Cannot convert timebin-left specifier '%s'.", argv[i+1]);
@@ -217,7 +219,7 @@ int AliHLTTPCZeroSuppressionComponent::DoInit( int argc, const char** argv )
     }
 
     // -- timebin to keep right of signal
-    if ( !strcmp( argv[i], "timebin-right" ) ) {
+    if ( !strcmp( argv[i], "-timebin-right" ) || !strcmp( argv[i], "timebin-right" ) ) {
       fRightTimeBin = strtoul( argv[i+1], &cpErr ,0);
       if ( *cpErr ) {
 	HLTError("Cannot convert timebin-right specifier '%s'.", argv[i+1]);
@@ -228,7 +230,7 @@ int AliHLTTPCZeroSuppressionComponent::DoInit( int argc, const char** argv )
     }
 
     // -- value below average to subtract
-    if ( !strcmp( argv[i], "value-below-average" ) ) {
+    if ( !strcmp( argv[i], "-value-below-average" ) || !strcmp( argv[i], "value-below-average" ) ) {
       fValueBelowAverage = strtoul( argv[i+1], &cpErr ,0);
       if ( *cpErr ) {
 	HLTError("Cannot convert value-below-average specifier '%s'.", argv[i+1]);
@@ -239,7 +241,7 @@ int AliHLTTPCZeroSuppressionComponent::DoInit( int argc, const char** argv )
     }
 
     // -- pad occupancy limit
-    if ( !strcmp( argv[i], "occupancy-limit" ) ) {
+    if ( !strcmp( argv[i], "-occupancy-limit" ) || !strcmp( argv[i], "occupancy-limit" ) ) {
       fMinimumNumberOfSignals = strtoul( argv[i+1], &cpErr ,0);
       if ( *cpErr ) {
 	HLTError("Cannot convert occupancy-limit specifier '%s'.", argv[i+1]);
@@ -260,8 +262,8 @@ int AliHLTTPCZeroSuppressionComponent::DoInit( int argc, const char** argv )
       continue;
     }
 
-    // -- checking for rcu format
-    if ( !strcmp( argv[i], "sort-pads" ) ) {
+    // -- checking for pad sorting
+    if ( !strcmp( argv[i], "-sort-pads" ) || !strcmp( argv[i], "sort-pads" ) ) {
       fSortPads = strtoul( argv[i+1], &cpErr ,0);
       if ( *cpErr ){
 	HLTError("Cannot convert sort-pads specifier '%s'. Should  be 0(off) or 1(on), must be integer", argv[i+1]);
@@ -270,10 +272,24 @@ int AliHLTTPCZeroSuppressionComponent::DoInit( int argc, const char** argv )
       i+=2;
       continue;
     }
+
+    // -- checking for skipZSdatashipping
+    if ( !strcmp( argv[i], "-skip-sending-data" ) ) {
+      fSkipSendingZSData = kTRUE;
+    }
+
+    // -- checking for hw address shipping
+    if ( !strcmp( argv[i], "-send-hw-list" ) ) {
+      fSendHWList = kTRUE;
+    }
       
     Logging(kHLTLogError, "HLT::TPCClusterFinder::DoInit", "Unknown Option", "Unknown option '%s'", argv[i] );
     return EINVAL;
 
+  }
+
+  if(fSkipSendingZSData == kTRUE && fSendHWList == kFALSE){
+    HLTError("Component will have no output, check your configuration.");
   }
 
   HLTDebug("using AliHLTTPCDigitReaderDecoder");
@@ -464,40 +480,50 @@ int AliHLTTPCZeroSuppressionComponent::DoEvent( const AliHLTComponentEventData& 
       return -ENOSPC;
     }
 
+
+    AliHLTUInt32_t dataOffsetBeforeHW=0;
+
+
     //Push back the zerosuppressed altro data to the output
-    AliHLTComponentBlockData bd;
-    FillBlockData( bd );
-    bd.fOffset = 0;
-    bd.fSize = sizeOfData;
-    bd.fDataType = kAliHLTDataTypeDDLRaw;
-    bd.fSpecification = iter->fSpecification;
-    Logging( kHLTLogDebug, "HLT::TPCZeroSuppressionComponent::DoEvent", "Event received", 
-	     "Event 0x%08LX (%Lu) output data block %lu of %lu bytes at offset %lu",
-	     evtData.fEventID, evtData.fEventID, ndx,size ,0);
-    outputBlocks.push_back( bd );
-
-    //Push back the list of hardware addresses to the output
-    AliHLTUInt32_t dataOffsetBeforeHW=sizeOfData;
-    AliHLTUInt32_t sizeOfHWArray=fHwAddressList.size()*sizeof(AliHLTUInt16_t);
-
-    if(dataOffsetBeforeHW+sizeOfHWArray>size){
-      HLTWarning("Buffer too small too add the active channels: %d of %d byte(s) already used", dataOffsetBeforeHW + sizeOfHWArray, size);
-      return -ENOSPC;
+    if(fSkipSendingZSData == kFALSE){
+      AliHLTComponentBlockData bd;
+      FillBlockData( bd );
+      bd.fOffset = 0;
+      bd.fSize = sizeOfData;
+      bd.fDataType = kAliHLTDataTypeDDLRaw;
+      bd.fSpecification = iter->fSpecification;
+      Logging( kHLTLogDebug, "HLT::TPCZeroSuppressionComponent::DoEvent", "Event received", 
+	       "Event 0x%08LX (%Lu) output data block %lu of %lu bytes at offset %lu",
+	       evtData.fEventID, evtData.fEventID, ndx,size ,0);
+      outputBlocks.push_back( bd );
+    
+      //Push back the list of hardware addresses to the output
+      dataOffsetBeforeHW=sizeOfData;
     }
 
-    AliHLTUInt16_t*outputHWPtr=(AliHLTUInt16_t*)(outputPtr+dataOffsetBeforeHW);
-    outputHWPtr = &fHwAddressList[0];
-    AliHLTComponentBlockData bdHW;
-    FillBlockData( bdHW );
-    bdHW.fOffset = dataOffsetBeforeHW;
-    bdHW.fSize = sizeOfHWArray;
-    bdHW.fDataType = kAliHLTDataTypeHwAddr16;
-    bdHW.fSpecification = iter->fSpecification;
-    Logging( kHLTLogDebug, "HLT::TPCZeroSuppressionComponent::DoEvent", "Event received", 
+    AliHLTUInt32_t sizeOfHWArray = 0;
+
+    if(fSendHWList == kTRUE){
+      sizeOfHWArray = fHwAddressList.size()*sizeof(AliHLTUInt16_t);
+      
+      if(dataOffsetBeforeHW+sizeOfHWArray>size){
+	HLTWarning("Buffer too small too add the active channels: %d of %d byte(s) already used", dataOffsetBeforeHW + sizeOfHWArray, size);
+	return -ENOSPC;
+      }
+      
+      AliHLTUInt16_t*outputHWPtr=(AliHLTUInt16_t*)(outputPtr+dataOffsetBeforeHW);
+      outputHWPtr = &fHwAddressList[0];
+      AliHLTComponentBlockData bdHW;
+      FillBlockData( bdHW );
+      bdHW.fOffset = dataOffsetBeforeHW;
+      bdHW.fSize = sizeOfHWArray;
+      bdHW.fDataType = kAliHLTDataTypeHwAddr16;
+      bdHW.fSpecification = iter->fSpecification;
+      Logging( kHLTLogDebug, "HLT::TPCZeroSuppressionComponent::DoEvent", "Event received", 
 	     "Event 0x%08LX (%Lu) output data block %lu of %lu bytes at offset %lu",
-	     evtData.fEventID, evtData.fEventID, ndx,size ,0);
-    outputBlocks.push_back( bdHW );
-    
+	       evtData.fEventID, evtData.fEventID, ndx,size ,0);
+      outputBlocks.push_back( bdHW );
+    }
     size = dataOffsetBeforeHW+sizeOfHWArray;
 
   } else {

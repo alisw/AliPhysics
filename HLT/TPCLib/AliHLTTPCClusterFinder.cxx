@@ -699,6 +699,15 @@ void AliHLTTPCClusterFinder::ReadDataUnsorted(void* ptr,unsigned long size)
     UInt_t row=fDigitReader->GetRow();
     UInt_t pad=fDigitReader->GetPad();
 
+    if(row>=fRowPadVector.size()){
+      HLTError("Row number is to large: %d, max is %d",row,fRowPadVector.size()-1);
+      continue;
+    }
+    if(pad>=fRowPadVector[row].size()){
+      HLTError("Pad number is to large: %d, max is %d",pad,fRowPadVector[row].size());
+      continue;
+    }
+
     while(fDigitReader->NextBunch()){
       if(fDigitReader->GetBunchSize()>1){//to remove single timebin values, this will have to change at some point
 	UInt_t time = fDigitReader->GetTime();
@@ -721,7 +730,9 @@ void AliHLTTPCClusterFinder::ReadDataUnsorted(void* ptr,unsigned long size)
 	    candidate.fLastMergedPad=pad;
 	    candidate.fRowNumber=row+fDigitReader->GetRowOffset();
 	  }
-	  fRowPadVector[row][pad]->AddClusterCandidate(candidate);
+	  if(fRowPadVector[row][pad] != NULL){
+	    fRowPadVector[row][pad]->AddClusterCandidate(candidate);
+	  }
 	}
       }
     }
