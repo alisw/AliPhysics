@@ -49,6 +49,7 @@ using namespace std;
 #include "TObjString.h"
 #include <sys/time.h>
 #include "TH2.h"
+#include "TH3.h"
 
 ClassImp(AliHLTTPCNoiseMapComponent) //ROOT macro for the implementation of ROOT specific class methods
 
@@ -236,6 +237,7 @@ int AliHLTTPCNoiseMapComponent::DoInit( int argc, const char** argv ) {
   fHistMaxSignal = new TH2F("fHistMaxSignal","maximum signal",   250,-250,250,250,-250,250);
   fHistTotSignal = new TH2F("fHistTotSignal","total signal",     250,-250,250,250,-250,250);
   fHistPadRMS    = new TH2F("fHistPadRMS",   "RMS",              250,-250,250,250,-250,250);
+  //fHistSignal    = new TH1F("fHistSignal", "signal distribution per pad",1024,0,1024);
  
 //   HLTDebug("using AliHLTTPCDigitReaderDecoder");
 //   pDigitReader = new AliHLTTPCDigitReaderDecoder(); // double-loop
@@ -268,9 +270,7 @@ int AliHLTTPCNoiseMapComponent::DoEvent(const AliHLTComponentEventData& evtData,
 
   Float_t xyz[3]; 
   Int_t thissector, thisrow;
-  
-  ResetHistograms();
-  
+    
   for(iter = GetFirstInputBlock(kAliHLTDataTypeDDLRaw|kAliHLTDataOriginTPC); iter != NULL; iter = GetNextInputBlock()){
       
      HLTInfo("Event 0x%08LX (%Lu) received datatype: %s - required datatype: %s", 
@@ -325,27 +325,34 @@ int AliHLTTPCNoiseMapComponent::DoEvent(const AliHLTComponentEventData& evtData,
       //while( pDigitReader->NextBunch()) {
     
       const UInt_t *bunchData = pDigitReader->GetSignals();
-      Float_t maxSignal   = 0.;
-      Float_t totalSignal = 0.;
+      Float_t maxSignal     = 0.;
+      Float_t totalSignal   = 0.;
+      Float_t squaredSignal = 0.;
+      Float_t rms = 0.; 
       
-      fHistSignal = new TH1F("fHistSignal", "signal distribution per pad",1024,0,1024);
-
+      //fHistSignal = new TH1F("fHistSignal", "signal distribution per pad",1024,0,1024);
+      
+      //fHistSignal->Reset();
+      Int_t time = pDigitReader->GetTime();
+     
       for(Int_t i=0;i<pDigitReader->GetBunchSize();i++){
           
 	  if((Float_t)(bunchData[i])>maxSignal){ maxSignal = (Float_t)(bunchData[i]); }
-	  totalSignal += bunchData[i];	  
-	  fHistSignal->Fill(bunchData[i]);
+	  totalSignal += (Float_t)bunchData[i];
+	  squaredSignal += (Float_t)bunchData[i]*(Float_t)bunchData[i];
+	  //fHistSignal->Fill(time+i, bunchData[i]);
       } // end for loop over bunches
-      
-      //cout << "total signal: " << totalSignal << endl;
-      //cout << " integral:    " << fHistSignal->Integral() << endl;
-      
+      rms = TMath::Sqrt(squaredSignal/pDigitReader->GetBunchSize());
+            
       //} // end of inner while loop
            
       fHistMaxSignal->Fill(xyz[0],xyz[1],maxSignal);
       fHistTotSignal->Fill(xyz[0],xyz[1],totalSignal);
-      fHistPadRMS->Fill(xyz[0],xyz[1],fHistSignal->GetRMS());
-      delete fHistSignal; fHistSignal = NULL;
+            
+      fHistPadRMS->Fill(xyz[0],xyz[1],rms);
+     
+      //fHistPadRMS->Fill(xyz[0],xyz[1],fHistSignal->GetRMS());
+      //delete fHistSignal; fHistSignal = NULL;
             
       if(fPlotSideA || fPlotSideC){
          if(slice<18) fHistSideA->Fill(xyz[0],xyz[1],maxSignal);
@@ -376,6 +383,7 @@ void AliHLTTPCNoiseMapComponent::MakeHistosPublic() {
   histos.Add(fHistTotSignal);
   histos.Add(fHistPadRMS);
   histos.Add(fHistCDBMap);
+  //histos.Add(fHistSignal);
   if(fPlotSideA) histos.Add(fHistSideA);
   if(fPlotSideC) histos.Add(fHistSideC);
   
