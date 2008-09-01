@@ -228,13 +228,19 @@ AliFMDInput::Init()
   if (TESTBIT(fTreeMask, kRaw)) {
     AliInfo("Getting FMD raw data digits");
     fArrayA = new TClonesArray("AliFMDDigit");
-    if (!fRawFile.IsNull() && fRawFile.EndsWith(".root")) 
+#if 0
+    if (!fRawFile.IsNull() && fRawFile.EndsWith(".root"))
       fReader = new AliRawReaderRoot(fRawFile.Data());
     else if (!fRawFile.IsNull() && fRawFile.EndsWith(".raw"))
       fReader = new AliRawReaderDate(fRawFile.Data());
     else
       fReader = new AliRawReaderFile(-1);
-    
+#else
+    if(!fRawFile.IsNull()) 
+      fReader = AliRawReader::Create(fRawFile.Data());
+    else 
+      fReader = new AliRawReaderFile(-1);
+#endif
   }
   
   // Optionally, get the geometry 
