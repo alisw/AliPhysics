@@ -15,7 +15,7 @@ root -b -q $ALICE_ROOT/test/QA/simrun.C --run $1
 cd $WORK/QATest/data
 rm -f *.root
 rm -f DB.tgz
-ln -s ../geometry.root
+#ln -s ../geometry.root
 ln -s ../raw.root
 ln -s ../DB 
 ln -si $ALICE_ROOT/test/QA/recraw.C recraw.C
