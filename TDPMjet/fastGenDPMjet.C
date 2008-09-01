@@ -3,12 +3,14 @@ AliGenerator*  CreateGenerator();
 void fastGenDPMjet(Int_t nev = 1, char* filename = "galice.root")
 {
 //  Runloader
-
+    gSystem->Load("liblhapdf"); 
+    gSystem->Load("libpythia6");     
     gSystem->Load("libdpmjet.so");
     gSystem->Load("libTDPMjet.so");
     
     AliRunLoader* rl = AliRunLoader::Open("galice.root","FASTRUN","recreate");
-    
+    AliPythiaRndm::SetPythiaRandom(new TRandom());
+
     rl->SetCompressionLevel(2);
     rl->SetNumberOfEventsPerFile(nev);
     rl->LoadKinematics("RECREATE");
@@ -87,6 +89,8 @@ AliGenerator*  CreateGenerator()
     //  kDpmDoubleDiffr
     gener = new AliGenDPMjet(1);
     gener->SetProcess(kDpmMb);
+    gener->SetProjectile("P", 1, 1);
+    gener->SetTarget("P", 1, 1);
     gener->SetEnergyCMS(14000.);
     return gener;
 }
