@@ -244,7 +244,11 @@ Bool_t AliMUONTriggerDisplay::InitOrDisplayTriggerInfo(TH1* inputHisto, TH2* dis
       // loop over strips
       for (Int_t iStrip = 0; iStrip < 16; ++iStrip) {
 	// get pad from electronics
-	AliMpPad pad = seg[cath]->PadByLocation(AliMpIntPair(iBoard,iStrip),kFALSE);
+
+	Int_t offset = 0;
+	if (cath && localBoard->GetSwitch(6)) offset = -8;
+
+	AliMpPad pad = seg[cath]->PadByLocation(AliMpIntPair(iBoard,iStrip+offset),kFALSE);
 
 	if (!pad.IsValid()) continue;
 
@@ -272,7 +276,7 @@ Bool_t AliMUONTriggerDisplay::InitOrDisplayTriggerInfo(TH1* inputHisto, TH2* dis
 	}
 
 	if(cath==0){
-	  if(iStrip==0) {
+	  if(iStrip+offset==0) {
 	    x1b = xcPad - xWidth + kShiftEl;
 	    y1b = ycPad - yWidth + kShiftEl;
 	  }
