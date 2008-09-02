@@ -232,7 +232,7 @@ void AliAnalysisTaskMuonTrackingEff::Exec(Option_t */*option*/)
 							     (TH2F*) fDetEltEffHistList->UncheckedAt(157), 1., 0.); 
 
 
-    ((TH2F*) fDetEltEffHistList->UncheckedAt(158))-> Fill(0., 0., ((double_t)fESD -> GetNumberOfMuonTracks()));
+    ((TH2F*) fDetEltEffHistList->UncheckedAt(158))-> Fill(0., 0., ((Double_t)fESD -> GetNumberOfMuonTracks()));
 
 
 //Post the output data:
