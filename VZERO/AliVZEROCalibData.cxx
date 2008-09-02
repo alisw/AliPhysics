@@ -59,15 +59,15 @@ AliVZEROCalibData::AliVZEROCalibData(const AliVZEROCalibData& calibda) :
   for(int t=0; t<128; t++) { 
       fPedestal[t] = calibda.GetPedestal(t);
       fSigma[t]    = calibda.GetSigma(t);
-      fGain[t]     = calibda.GetGain(t); 
-      fADCsigma[t] = calibda.GetADCsigma(t); 
-      }
+      fADCmean[t]  = calibda.GetADCmean(t);
+      fADCsigma[t] = calibda.GetADCsigma(t);
+      fGain[t]     = calibda.GetGain(t); }
       
   for(int t=0; t<64; t++) { 
-      fTimeOffset[t]   = calibda.GetTimeOffset(t);
-      fTimeGain[t]     = calibda.GetTimeGain(t); 
       fMeanHV[t]       = calibda.GetMeanHV(t);
-      fWidthHV[t]      = calibda.GetWidthHV(t); }   
+      fWidthHV[t]      = calibda.GetWidthHV(t);        
+      fTimeOffset[t]   = calibda.GetTimeOffset(t);
+      fTimeGain[t]     = calibda.GetTimeGain(t); }  
   
 }
 
@@ -82,16 +82,16 @@ AliVZEROCalibData &AliVZEROCalibData::operator =(const AliVZEROCalibData& calibd
   for(int t=0; t<128; t++) {
       fPedestal[t] = calibda.GetPedestal(t);
       fSigma[t]    = calibda.GetSigma(t);
-      fGain[t]     = calibda.GetGain(t); 
+      fADCmean[t]  = calibda.GetADCmean(t);
       fADCsigma[t] = calibda.GetADCsigma(t);
-      }
+      fGain[t]     = calibda.GetGain(t); }
       
-  for(int t=0; t<64; t++) { 
-      fTimeOffset[t]   = calibda.GetTimeOffset(t);
-      fTimeGain[t]     = calibda.GetTimeGain(t); 
+  for(int t=0; t<64; t++) {
       fMeanHV[t]       = calibda.GetMeanHV(t);
-      fWidthHV[t]      = calibda.GetWidthHV(t); }     
-  
+      fWidthHV[t]      = calibda.GetWidthHV(t);        
+      fTimeOffset[t]   = calibda.GetTimeOffset(t);
+      fTimeGain[t]     = calibda.GetTimeGain(t); }   
+   
   return *this;
   
 }
@@ -117,10 +117,10 @@ void AliVZEROCalibData::SetSigma(Float_t* Sigma)
 }
 
 //________________________________________________________________
-void AliVZEROCalibData::SetGain(Float_t* Gain) 
+void AliVZEROCalibData::SetADCmean(Float_t* ADCmean) 
 {
-  if(Gain) for(int t=0; t<128; t++) fGain[t] = Gain[t];
-  else for(int t=0; t<128; t++) fGain[t] = 0.0;
+  if(ADCmean) for(int t=0; t<128; t++) fADCmean[t] = ADCmean[t];
+  else for(int t=0; t<128; t++) fADCmean[t] = 0.0;
 }
 
 //________________________________________________________________
@@ -128,6 +128,27 @@ void AliVZEROCalibData::SetADCsigma(Float_t* ADCsigma)
 {
   if(ADCsigma) for(int t=0; t<128; t++) fADCsigma[t] = ADCsigma[t];
   else for(int t=0; t<128; t++) fADCsigma[t] = 0.0;
+}
+
+//________________________________________________________________
+void AliVZEROCalibData::SetMeanHV(Float_t* MeanHV) 
+{
+  if(MeanHV) for(int t=0; t<64; t++) fMeanHV[t] = MeanHV[t];
+  else for(int t=0; t<64; t++) fMeanHV[t] = 0.0;
+}
+
+//________________________________________________________________
+void AliVZEROCalibData::SetWidthHV(Float_t* WidthHV) 
+{
+  if(WidthHV) for(int t=0; t<64; t++) fWidthHV[t] = WidthHV[t];
+  else for(int t=0; t<64; t++) fWidthHV[t] = 0.0;
+}
+
+//________________________________________________________________
+void AliVZEROCalibData::SetGain(Float_t* Gain) 
+{
+  if(Gain) for(int t=0; t<128; t++) fGain[t] = Gain[t];
+  else for(int t=0; t<128; t++) fGain[t] = 0.0;
 }
 
 //________________________________________________________________
@@ -144,16 +165,3 @@ void AliVZEROCalibData::SetTimeGain(Float_t* TimeGain)
   else for(int t=0; t<64; t++) fTimeGain[t] = 0.0;
 }
 
-//________________________________________________________________
-void AliVZEROCalibData::SetMeanHV(Float_t* MeanHVs) 
-{
-  if(MeanHVs) for(int t=0; t<64; t++) fMeanHV[t] = MeanHVs[t];
-  else for(int t=0; t<64; t++) fMeanHV[t] = 0.0;
-}
-
-//________________________________________________________________
-void AliVZEROCalibData::SetWidthHV(Float_t* WidthHVs) 
-{
-  if(WidthHVs) for(int t=0; t<64; t++) fWidthHV[t] = WidthHVs[t];
-  else for(int t=0; t<64; t++) fWidthHV[t] = 0.0;
-}
