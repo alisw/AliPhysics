@@ -81,7 +81,7 @@ Float_t  AliMUONConstants::fgPitchSt1  = 0.21;
 // EDMS Id 335328 for "search in EDMS 
 // These are the diameter (Dmin == innner and Dmax - outner) values of the active surface
 // In the case of Dmax, the value corresponds to the maximum diameter of the active surface with 2pi coverture in phi
-Float_t  AliMUONConstants::fgDmin[7]  = {   36.4,  46.2,  63.0,   79.0,   79.0,  99.0,  100.0};  // cm
+Float_t  AliMUONConstants::fgDmin[7]  = {   36.4,  46.2,  63.0,   79.0,   79.0,  98.8,  100.0};  // cm
 Float_t  AliMUONConstants::fgDmax[7]  = {  176.6, 229.0, 308.84, 418.2,  522.0, 850.0, 900.0};   // cm
  
 Int_t    AliMUONConstants::fgMaxZoom = 20;
