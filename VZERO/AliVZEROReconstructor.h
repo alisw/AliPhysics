@@ -29,7 +29,7 @@ public:
   
   virtual void   Reconstruct(AliRawReader* /*rawReader*/, 
 		             TTree* /*clustersTree*/) const {
-    AliError("Method not implemented"); return;};
+                 AliError("Method not implemented"); return;};
   virtual void   Reconstruct(TTree*, TTree*) const {return;};
   
   virtual void   FillESD(TTree* digitsTree, TTree* /*clustersTree*/, 
@@ -37,26 +37,26 @@ public:
 
   virtual void   FillESD(AliRawReader* /*rawReader*/, TTree* /*clustersTree*/, 
 			 AliESDEvent* /*esd*/) const {
-    AliError("Method not implemented"); return;};
+                 AliError("Method not implemented"); return;};
   
   virtual Bool_t HasDigitConversion() const { return kTRUE; }
   virtual void   ConvertDigits(AliRawReader* rawReader,
 			       TTree* digitsTree) const;
-
+  Float_t        GetMIP(Int_t channel) const;
+                 		 
   AliCDBStorage     *SetStorage(const char* uri);
   AliVZEROCalibData *GetCalibData() const; 
 
 protected:
   AliESDVZERO*        fESDVZERO;      // ESD output object  
-  AliESDEvent*                  fESD;      // ESD object
+  AliESDEvent*             fESD;      // ESD object
   
 private:
   AliVZEROReconstructor(const AliVZEROReconstructor& reconstructor);
   AliVZEROReconstructor& operator = (const AliVZEROReconstructor& reconstructor);
   
-private:
   AliVZEROCalibData* fCalibData;      //! calibration data
- 
+  
   ClassDef(AliVZEROReconstructor, 0)  // class for the VZERO reconstruction
 };
 
