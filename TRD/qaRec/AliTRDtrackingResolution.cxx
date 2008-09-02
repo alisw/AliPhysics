@@ -142,7 +142,7 @@ void AliTRDtrackingResolution::Exec(Option_t *)
       // RESOLUTION (compare to MC)
       if(HasMCdata()){
         if(fInfo->GetNTrackRefs() >= 2){ 
-        Float_t phiMC;
+        Double_t phiMC;
         if(Resolution(fTracklet, fInfo, phiMC)) phi = phiMC;
         }
       }
@@ -209,7 +209,7 @@ void AliTRDtrackingResolution::Exec(Option_t *)
 
 
 //________________________________________________________
-Bool_t AliTRDtrackingResolution::Resolution(AliTRDseedV1 *tracklet, AliTRDtrackInfo *fInfo, Float_t &phi)
+Bool_t AliTRDtrackingResolution::Resolution(AliTRDseedV1 *tracklet, AliTRDtrackInfo *fInfo, Double_t &phi)
 {
 
   AliTrackReference *fTrackRefs[2] = {0x0, 0x0},   *tempTrackRef = 0x0;
@@ -243,8 +243,8 @@ Bool_t AliTRDtrackingResolution::Resolution(AliTRDseedV1 *tracklet, AliTRDtrackI
   Double_t zmc =  fTrackRefs[1]->Z() - dzdx*dx0;
   
   // recalculate tracklet based on the MC info
-  tracklet->SetYref(0, zmc);
-  tracklet->SetYref(1, dzdx);
+  tracklet->SetZref(0, zmc);
+  tracklet->SetZref(1, dzdx);
   tracklet->Fit();
   Double_t dy = tracklet->GetYfit(0) - ymc;
   Double_t dz = tracklet->GetZfit(0) - zmc;
@@ -274,6 +274,9 @@ Bool_t AliTRDtrackingResolution::Resolution(AliTRDseedV1 *tracklet, AliTRDtrackI
       << "phi="			<< phi
       << "theta="		<< theta
       << "dphi="		<< dphi
+      << "ymc="     << ymc
+      << "zmc="     << zmc
+      << "tracklet.="<<tracklet 
       << "\n";
   }
 
