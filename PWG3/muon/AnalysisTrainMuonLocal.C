@@ -1,4 +1,4 @@
-void AnalysisTrainMuonLocal(char* filein = "AliESDs.root", char* fileout = "AliAOD.root")
+void AnalysisTrainMuonLocal(char* filein = "AliESDs.root", char* fileout = "AliAODs.root")
 
 // Macro to produce a generic AOD starting from an ESD file. 
 // The AOD is filled with two tasks: 

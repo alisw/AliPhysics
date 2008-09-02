@@ -1,9 +1,9 @@
 ===================================================
-  ESDMuonFilter task for filling the muon iformation in the AOD from the ESD
+  ESDMuonFilter task for filling the muon information in the AOD from the ESD
   Roberta ARNALDI, Torino
 ---------------------------------------------------------------
 
-1)  RunESDMuonFilter.C --> macro to run locally the AliAnalysisTaskESDMuonFilter
+1) AnalysisTrainMuonLocal.C --> macro to run locally the AliAnalysisTaskESDMuonFilter
 2) AliAnalysisTaskESDMuonFilter.h  --> analysis task to produce the Muon AOD from ESD
 3) AliAnalysisTaskESDMuonFilter.cxx --> analysis task to produce the Muon AOD from ESD
 4) libPWG3muon.pkg
