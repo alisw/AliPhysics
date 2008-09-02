@@ -54,7 +54,7 @@ AliTOFChannelOffline::AliTOFChannelOffline(Float_t* slewingPar)
 AliTOFChannelOffline::~AliTOFChannelOffline()
 {
   //dtor
-  AliInfo("I'm in the dtor of the channel offline");
+  
 }
 
 //________________________________________________________________
