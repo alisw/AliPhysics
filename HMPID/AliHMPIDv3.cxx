@@ -60,7 +60,7 @@ void AliHMPIDv3::AddAlignableVolumes()const
   for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++) {
     modUID = AliGeomManager::LayerToVolUID(idHMPID,modnum++);
     if(!gGeoManager->SetAlignableEntry(Form("/HMPID/Chamber%i",iCh),Form("ALIC_1/Hmp%i_0",iCh),modUID))
-	    AliFatal("AliHMPIDv3::Unable to set alignable entry!!");  //aligment without AliCluster3D
+	    AliError("AliHMPIDv3::Unable to set alignable entry!!");  //aligment without AliCluster3D
     //Get Tracking To Local matricies for alignment with AliCluster3D
     TGeoPNEntry *eCh = gGeoManager->GetAlignableEntryByUID(modUID);
     TGeoHMatrix *globMatrix = eCh->GetGlobalOrig();
