@@ -53,7 +53,7 @@ public :
                                 {fPc.Set(xPc,yPc);}                                                //set track impact to PC 
   void     SetMip       (Double_t xmip,Double_t ymip                                        )
                                 {fMipPos.Set(xmip,ymip);}                                          //set track impact to PC
-  enum ETrackingFlags {kNotPerformed=-20,kMipDistCut=-9,kMipQdcCut=-5,kNoPhotAccept=-11};
+  enum ETrackingFlags {kNotPerformed=-20,kMipDistCut=-9,kMipQdcCut=-5,kNoPhotAccept=-11,kNoRad = -22};
 //
 protected:
   Int_t     fPhotCnt;                           // counter of photons candidate

@@ -124,7 +124,13 @@ void AliHMPIDRecon::CkovAngle(AliESDtrack *pTrk,TClonesArray *pCluLst,Double_t n
   }//clusters loop
 
   pTrk->SetHMPIDmip(mipX,mipY,mipQ,fPhotCnt);                                                //store mip info in any case 
-     
+  
+  if(nmean < 0){                                                                             //track didn' t pass through the radiator
+    pTrk->SetHMPIDsignal(kNoRad);                                                            //set the appropriate flag
+    pTrk->SetHMPIDcluIdx(chId,mipId+1000*sizeClu);                                           //set index of cluster
+    return;
+  }
+   
   if(fPhotCnt<=nMinPhotAcc) {                                                                 //no reconstruction with <=3 photon candidates
     pTrk->SetHMPIDsignal(kNoPhotAccept);                                                      //set the appropriate flag
     pTrk->SetHMPIDcluIdx(chId,mipId+1000*sizeClu);                                            //set index of cluster
