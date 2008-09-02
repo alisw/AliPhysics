@@ -33,13 +33,13 @@ public:
   void    Exec(Option_t *);
   void    SetDebugLevel(Int_t level);
   void    SetRecoParam(AliTRDrecoParam *r);
-  void    SetHasMCdata(Bool_t mcdata){fHasMCdata = mcdata;};
+  void    SetMCdata(Bool_t mcdata){fHasMCdata = mcdata;};
   void    Terminate(Option_t *);
   
 private:
   AliTRDtrackingResolution(const AliTRDtrackingResolution&);
   AliTRDtrackingResolution& operator=(const AliTRDtrackingResolution&);
-  Bool_t  Resolution(AliTRDseedV1 *tracklet, AliTRDtrackInfo *info, Float_t &phi);
+  Bool_t  Resolution(AliTRDseedV1 *tracklet, AliTRDtrackInfo *info, Double_t &phi);
 
 private:
   enum{
