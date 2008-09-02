@@ -31,6 +31,8 @@ public:
   AliCorrQAChecker(const AliCorrQAChecker& qac) : AliQACheckerBase(qac.GetName(), qac.GetTitle()) {;} // cpy ctor   
   virtual ~AliCorrQAChecker() {;} // dtor
 
+  virtual const Double_t Check(AliQA::ALITASK_t index) { return AliQACheckerBase::Check(index) ;}
+  virtual const Double_t Check(AliQA::ALITASK_t index, TObjArray * obj) { return AliQACheckerBase::Check(index, obj) ;}
   virtual const Double_t Check(AliQA::ALITASK_t index, TNtupleD * nData) ; 
 
 private:
