@@ -1526,7 +1526,7 @@ void AliITSv11GeometrySupport::SSDCone(TGeoVolume *moth,TGeoManager *mgr)
   const Double_t kConeRCurv1           =       10.0 *fgkmm;
   const Double_t kConeRCurv2           =       25.0 *fgkmm;
   const Double_t kConeCent1RCurv2      = ( 578.0/2) *fgkmm;
-  const Double_t kConeCent2RCurv2      = ( 593.0/2) *fgkmm;
+  const Double_t kConeCent2RCurv2      = ( 592.0/2) *fgkmm;
 //  const Double_t kConeZOuterRing       =       47.0 *fgkmm;
 //  const Double_t kConeZOuterRingInside =       30.25*fgkmm;
 //  const Double_t kConeZInnerRing       =      161.5 *fgkmm;
