@@ -2,7 +2,7 @@
 
 include $(ROOTSYS)/test/Makefile.arch
 
-default-target: libPWG3base.so libPWG3muon libPWG3vertexingHF.so libPWG3vertexingOld.so 
+default-target: libPWG3base.so libPWG3muon.so libPWG3muondep.so libPWG3vertexingHF.so libPWG3vertexingOld.so 
 
 ALICEINC      = -I.
 
@@ -140,6 +140,29 @@ endif
 	@echo "done"
 
 G__PWG3muon.cxx G__PWG3muon.h: $(HDRS_PWG3muon) $(DHDR_PWG3muon)
+	@echo "Generating dictionary ..."
+	rootcint -f $@ -c $(ALICEINC) $^
+
+## libPWG3muondep part
+##include libPWG3muondep.pkg
+
+DHDR_PWG3muondep := $(DHDR)
+HDRS_PWG3muondep := $(HDRS)
+SRCS_PWG3muondep := $(SRCS) G__PWG3muondep.cxx
+OBJS_PWG3muondep := $(SRCS_PWG3muondep:.cxx=.o)
+
+libPWG3muondep.so: $(OBJS_PWG3muondep)
+	@echo "Linking" $@ ...
+	@/bin/rm -f $@
+ifeq ($(ARCH),macosx)
+	@$(LD) -bundle -undefined $(UNDEFOPT) $(LDFLAGS) $^ -o $@
+else
+	@$(LD) $(SOFLAGS) $(LDFLAGS) $^ -o $@
+endif
+	@chmod a+x $@
+	@echo "done"
+
+G__PWG3muondep.cxx G__PWG3muondep.h: $(HDRS_PWG3muondep) $(DHDR_PWG3muondep)
 	@echo "Generating dictionary ..."
 	rootcint -f $@ -c $(ALICEINC) $^
 
