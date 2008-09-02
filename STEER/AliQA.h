@@ -51,6 +51,7 @@ public:
 	static void            Close() ; 
 	static const char *    GetAliTaskName(ALITASK_t tsk) ;
   static const TString   GetExpert() { return fkgExpert ; }
+  static const UInt_t    GetExpertBit() { return fkgExpertBit ; }
 	static const TString   GetLabLocalFile() { return fkgLabLocalFile ; } 
 	static const TString   GetLabLocalOCDB() { return fkgLabLocalOCDB ; } 
 	static const TString   GetLabAliEnOCDB() { return fkgLabAliEnOCDB ; } 
@@ -125,6 +126,7 @@ private:
 	static TString       fgRTNames[]	          ; //! list of Run Type names   
 	static TString       fgTaskNames[]	        ; //! list of tasks names   
   static const TString fkgExpert              ; //! name for the expert directory
+  static const UInt_t  fkgExpertBit           ; //! TObject bit identifing the object as "expert"
 	static const TString fkgLabLocalFile        ; //! label to identify a file as local 
 	static const TString fkgLabLocalOCDB        ; //! label to identify a file as local OCDB 
 	static const TString fkgLabAliEnOCDB        ; //! label to identify a file as AliEn OCDB 

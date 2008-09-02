@@ -640,7 +640,6 @@ Bool_t AliQADataMakerSteer::MergeData(const Int_t runNumber) const
 	ifstream in("tempo.txt") ; 
 	const Int_t runMax = 10 ;  
 	TString file[AliQA::kNDET*runMax] ;
-	Int_t run[AliQA::kNDET*runMax] = {-1} ;
 	
 	Int_t index = 0 ; 
 	while ( 1 ) {

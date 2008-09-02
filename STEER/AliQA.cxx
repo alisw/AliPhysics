@@ -76,7 +76,8 @@ const TString AliQA::fkgQACorrNtName     = "CorrQA" ;
 const TString AliQA::fkgRefOCDBDirName   = "Ref"  ; 
 TString AliQA::fkgRefDataDirName	       = ""  ; 
 const TString AliQA::fkgQARefOCDBDefault = "alien://folder=/alice/QA/20"  ; 
-const TString AliQA::fkgExpert           = "QAExpErT" ; 
+const TString AliQA::fkgExpert           = "Expert" ; 
+const UInt_t  AliQA::fkgExpertBit        = 16 ; 
 
 //____________________________________________________________________________
 AliQA::AliQA() : 
@@ -395,7 +396,7 @@ const AliQA::TASKINDEX_t AliQA::GetTaskIndex(const char * name)
 {
 	// returns the detector index corresponding to a given name
 	TString sname(name) ; 
-	TASKINDEX_t rv ; 
+	TASKINDEX_t rv = kNULLTASKINDEX ; 
 	for (Int_t tsk = 0; tsk < kNTASKINDEX ; tsk++) {
 		if ( GetTaskName(tsk) == sname ) {
 			rv = TASKINDEX_t(tsk) ; 
@@ -718,7 +719,7 @@ void AliQA::ShowASCIIStatus(DETECTORINDEX_t det, ALITASK_t tsk, const ULong_t st
 		}
 	}
 	if (! text.IsNull())
-		printf("           %8s %4s 0x%4x, Problem signalled: %8s \n", GetDetName(det).Data(), GetAliTaskName(tsk), status, text.Data()) ; 
+		printf("           %8s %4s 0x%4lx, Problem signalled: %8s \n", GetDetName(det).Data(), GetAliTaskName(tsk), status, text.Data()) ; 
 }
 
 //_______________________________________________________________

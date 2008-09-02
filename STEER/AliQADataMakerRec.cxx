@@ -131,25 +131,20 @@ void AliQADataMakerRec::EndOfCycle(AliQA::TASKINDEX_t task)
 		subDir->cd() ; 
 		if (list) {
       TIter next(list) ; 
-      TH1 * obj ; 
-      while ( (obj = dynamic_cast<TH1 *>(next())) ) {
-        TString name(obj->GetTitle()) ;
-        if (!name.Contains(AliQA::GetExpert())) {
+      TObject * obj ; 
+      while( (obj = next()) ) {
+        if (!obj->TestBit(AliQA::GetExpertBit()))
           obj->Write() ;
-        }
       }
       if (WriteExpert()) {
         TDirectory * expertDir = subDir->GetDirectory(AliQA::GetExpert()) ; 
         if ( expertDir ) { // Write only if requested
           expertDir->cd() ;
           next.Reset() ; 
-          while ( (obj = dynamic_cast<TH1 *>(next())) ) {
-            TString name(obj->GetTitle()) ;
-            if (!name.Contains(AliQA::GetExpert())) 
+          while( (obj = next()) ) {
+            if (!obj->TestBit(AliQA::GetExpertBit()))
               continue ; 
-            name.ReplaceAll(AliQA::GetExpert(), "") ;
-            obj->SetTitle(name) ; 
-          obj->Write() ;
+            obj->Write() ;
           }      
         }
       }

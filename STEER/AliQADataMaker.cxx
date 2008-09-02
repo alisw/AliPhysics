@@ -91,12 +91,11 @@ Int_t AliQADataMaker::Add2List(TH1 * hist, const Int_t index, TObjArray * list, 
 		return -1 ; 
 	} else {
 		hist->SetDirectory(0) ; 
-    if (expert) {
-      TString name(hist->GetTitle()) ; 
-      name.Append(AliQA::GetExpert()) ; 
-      hist->SetTitle(name) ;
-    }
-		list->AddAtAndExpand(hist, index) ; 
+    
+    if (expert) 
+      hist->SetBit(AliQA::GetExpertBit()) ; 
+		
+    list->AddAtAndExpand(hist, index) ; 
     char * name = Form("%s_%s", list->GetName(), hist->GetName()) ;  
     TParameter<double> * p = new TParameter<double>(name, 9999.9999) ;
     if(saveForCorr) {  
