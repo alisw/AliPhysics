@@ -180,7 +180,7 @@ int AliHLTAltroChannelSelectorComponent::DoEvent(const AliHLTComponentEventData&
     }
 
     int rcuTrailerLength=decoder->GetRCUTrailerSize();
-    if (rcuTrailerLength*sizeof(AliHLTUInt32_t)>pDesc->fSize-cdhSize) {
+    if (rcuTrailerLength>pDesc->fSize-cdhSize) {
       HLTWarning("corrupted data block: RCU trailer length exceeds buffer size");
       iResult=-EFAULT;
     }
