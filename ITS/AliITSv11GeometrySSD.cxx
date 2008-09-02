@@ -4365,7 +4365,7 @@ void AliITSv11GeometrySSD::SetLadder(){
 	xcentersensorvertex[1][6] = xcentersensorvertex[0][6];
 	xcentersensorvertex[1][7] = xcentersensorvertex[0][7];
 
-	ycentersensorvertex[0][0] -= fgkSSDModuleSideDisalignment;	
+	ycentersensorvertex[0][0] -= fgkSSDModuleVerticalDisalignment;	
 	ycentersensorvertex[0][7] = ycentersensorvertex[0][0];
 
 	ycentersensorvertex[1][0] = ycentersensorvertex[0][0];	
