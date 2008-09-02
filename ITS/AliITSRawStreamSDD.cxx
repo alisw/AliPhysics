@@ -128,11 +128,7 @@ Bool_t AliITSRawStreamSDD::Next()
     if(fResetSkip==0){
       Bool_t kSkip = SkipHeaderWord();
       fResetSkip=1;
-      if(!kSkip){
-	fRawReader->AddMajorErrorLog(kDataError,"Bad CarlosRX header");
-	AliWarning(Form("Invalid data: bad CarlosRX header %08x\n", fData));
-	return kFALSE;
-      }
+      if(!kSkip) return kSkip;
     }
   
     if ((fChannel < 0) || (fCarlosId < 0) || (fChannel >= 2) || (fCarlosId >= kModulesPerDDL) || (fLastBit[fCarlosId][fChannel] < fReadBits[fCarlosId][fChannel]) ) {
