@@ -1166,7 +1166,7 @@ void AliTRDcalibDB::SamplePRF()
 
 //_____________________________________________________________________________
 Int_t AliTRDcalibDB::PadResponse(Double_t signal, Double_t dist
-                                , Int_t layer, Double_t *pad) const
+                               , Int_t layer, Double_t *pad) const
 {
   //
   // Applies the pad response
@@ -1174,7 +1174,7 @@ Int_t AliTRDcalibDB::PadResponse(Double_t signal, Double_t dist
   // something dependent on calibration values
   //
 
-  Int_t iBin  = ((Int_t) ((dist - fPRFlo) / fPRFwid));
+  Int_t iBin  = ((Int_t) ((-dist - fPRFlo) / fPRFwid));
   Int_t iOff  = layer * fPRFbin;
 
   Int_t iBin0 = iBin - fPRFpad + iOff;

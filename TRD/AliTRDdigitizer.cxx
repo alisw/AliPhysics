@@ -1101,7 +1101,7 @@ Bool_t AliTRDdigitizer::ConvertHits(Int_t det, Float_t *hits, Int_t nhit
       colE       = padPlane->GetPadColNumber(locC+offsetTilt);
       if (colE < 0) continue;         
       colOffset  = padPlane->GetPadColOffset(colE,locC+offsetTilt);
-	  
+ 
       // Also re-retrieve drift velocity because col and row may have changed
       driftvelocity = calVdriftDetValue * calVdriftROC->GetValue(colE,rowE);
       Float_t t0    = calT0DetValue     + calT0ROC->GetValue(colE,rowE);
@@ -1132,7 +1132,7 @@ Bool_t AliTRDdigitizer::ConvertHits(Int_t det, Float_t *hits, Int_t nhit
       do {
         ggRndm = gRandom->Rndm();
       } while (ggRndm <= 0);
-      Int_t signal = (Int_t) (-(simParam->GetGasGain()) * TMath::Log(ggRndm));
+      Double_t signal = -(simParam->GetGasGain()) * TMath::Log(ggRndm);
 
       // Apply the pad response 
       if (simParam->PRFOn()) {
@@ -2696,8 +2696,6 @@ void AliTRDdigitizer::RecalcDiffusion(Float_t vdrift)
 
     // OmegaTau
     fOmegaTau = calibration->GetOmegaTau(vdrift,field);
-
-    // Lorentzfactor
     if (commonParam->ExBOn()) {
       fLorentzFactor = 1.0 / (1.0 + fOmegaTau*fOmegaTau);
     }
