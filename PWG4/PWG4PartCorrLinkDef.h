@@ -16,6 +16,8 @@
 #pragma link C++ class AliAnaPartCorrMaker+;
 #pragma link C++ class AliAnaPartCorrBaseClass+;
 #pragma link C++ class AliAnaExample+;
+#pragma link C++ class AliAnaPi0+;
+#pragma link C++ class AliCaloPhoton+;
 #pragma link C++ class AliAnaGammaDirect+;
 #pragma link C++ class AliAnaParticlePartonCorrelation+;
 #pragma link C++ class AliAnaParticleHadronCorrelation+;

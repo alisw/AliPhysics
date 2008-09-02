@@ -8,7 +8,7 @@ SRCS = AliAnaCaloTrigger.cxx AliAnaCaloTriggerMC.cxx \
        AliAnaParticlePartonCorrelation.cxx AliAnaParticleHadronCorrelation.cxx \
        AliAnaParticleJetLeadingConeCorrelation.cxx AliAnalysisTaskParticleCorrelation.cxx \
        AliCaloTrackReader.cxx AliCaloTrackESDReader.cxx \
-       AliCaloTrackAODReader.cxx AliCaloTrackMCReader.cxx  
+       AliCaloTrackAODReader.cxx AliCaloTrackMCReader.cxx   AliAnaPi0.cxx AliCaloPhoton.cxx
 
        #AliAnaParticleJetFinderCorrelation.cxx \
 
