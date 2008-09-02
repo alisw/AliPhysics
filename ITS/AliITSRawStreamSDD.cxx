@@ -130,7 +130,7 @@ Bool_t AliITSRawStreamSDD::Next()
       fResetSkip=1;
       if(!kSkip){
 	fRawReader->AddMajorErrorLog(kDataError,"Bad CarlosRX header");
-	AliWarning(Form("Invalid data: bad CarlosRX header\n", fData));
+	AliWarning(Form("Invalid data: bad CarlosRX header %08x\n", fData));
 	return kFALSE;
       }
     }
@@ -174,7 +174,7 @@ Bool_t AliITSRawStreamSDD::Next()
 	  // CARLOSRX footer -- do nothing
 	}else{
 	  fRawReader->AddMajorErrorLog(kDataError,"Bad footer");
-	  AliWarning(Form("Invalid data: bad footer\n", fData));
+	  AliWarning(Form("Invalid data: bad footer %08X\n", fData));
 	  return kFALSE;	    
 	}
       } else if (nData30 == 0x02 || nData30 == 0x03) {
