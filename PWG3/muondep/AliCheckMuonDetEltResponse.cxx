@@ -336,7 +336,7 @@ void AliCheckMuonDetEltResponse::FillDetEltTTHisto(Int_t chamber,
       iDet = FromDetElt2iDet(chamber, detElt);
       ((TH2F*) fDetEltTTHistList->UncheckedAt(iDet)) -> Fill(posXL, posYL);
       
-      if(abs(posYL) > fOverlapSize) //!<It is an overlap area. It can have two clusters for this track in this chamber.
+      if(TMath::Abs(posYL) > fOverlapSize) //!<It is an overlap area. It can have two clusters for this track in this chamber.
       {
 	GetDetEltFromPosition(chamber, posXG, posYG, posZG);
 	if(fGetDetElt[1] != 0) //<!There is a second detection element for the same (X,Y) in this chamber (overlap).
@@ -445,7 +445,7 @@ void AliCheckMuonDetEltResponse::GetDetEltFromPosition(Int_t chamber,
 
 	fTransformer->Global2Local(detElt, posX, posY, posZ, posXL, posYL, posZL);  //!<Transfomation from global to local positions.
 
-	if(abs(posYL)< fYSlatSize) //!<If |posYL|<20 => the cluster is in the detection element (-20<Ylocal<20 for each slat). 	
+	if(TMath::Abs(posYL)< fYSlatSize) //!<If |posYL|<20 => the cluster is in the detection element (-20<Ylocal<20 for each slat). 	
 	{
 	  fGetDetElt[nbr] = detElt;  
 	  ++nbr;

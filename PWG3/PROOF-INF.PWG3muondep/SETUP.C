@@ -4,19 +4,34 @@ void SETUP()
     CheckLoadLibrary("libTree");
     CheckLoadLibrary("libGeom");
     CheckLoadLibrary("libVMC");
-
-    // Load the MUON libraries
+    CheckLoadLibrary("libMinuit");
+    CheckLoadLibrary("libProofPlayer");
 
     // Load the ESD libraries
     CheckLoadLibrary("libANALYSIS");
     CheckLoadLibrary("libSTEERBase");
     CheckLoadLibrary("libESD");
     CheckLoadLibrary("libAOD");
+
+  // Load the STEER libraries
+    CheckLoadLibrary("libRAWDatabase");
+    CheckLoadLibrary("libRAWDatarec");
+    CheckLoadLibrary("libCDB");
+    CheckLoadLibrary("libSTEER");
+    CheckLoadLibrary("libPhysics");
     CheckLoadLibrary("libANALYSISalice");
+
+    // Load the MUON libraries
+    CheckLoadLibrary("libMUONcore");
+    CheckLoadLibrary("libMUONmapping");
+    CheckLoadLibrary("libMUONraw");
+    CheckLoadLibrary("libMUONcalib");
+    CheckLoadLibrary("libMUONgeometry");
+    CheckLoadLibrary("libMUONtrigger");
+    CheckLoadLibrary("libMUONbase");
+    CheckLoadLibrary("libMUONrec");
+
     CheckLoadLibrary("libPWG3muondep");
-
-
-
 
    // Set the include paths
    gROOT->ProcessLine(".include PWG3muondep");
