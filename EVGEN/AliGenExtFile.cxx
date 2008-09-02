@@ -34,6 +34,7 @@
 #include "AliGenExtFile.h"
 #include "AliRunLoader.h"
 #include "AliHeader.h"
+#include "AliStack.h"
 #include "AliGenEventHeader.h"
 
 #include <TParticle.h>
@@ -157,7 +158,7 @@ void AliGenExtFile::Generate()
 	}
 	
 	Int_t decayed    = jparticle->GetFirstDaughter();
-	Int_t doTracking = fTrackIt && (decayed < 0) && (TMath::Abs(idpart) > 10) && selected;
+	Int_t doTracking = fTrackIt && selected && !(jparticle->TestBit(kDoneBit));
 	Int_t parent     = jparticle->GetFirstMother();
 	
 	PushTrack(doTracking, parent, idpart, p, origin, polar, 0, kPPrimary, nt);
