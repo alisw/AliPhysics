@@ -15,7 +15,7 @@
 
 // Add the muon tracks to the generic AOD track branch during the 
 // filtering of the ESD - R. Arnaldi 5/5/08
- 
+
 #include <TChain.h>
 #include <TFile.h>
 
@@ -37,15 +37,15 @@ ClassImp(AliAnalysisTaskESDMuonFilter)
 ////////////////////////////////////////////////////////////////////////
 
 AliAnalysisTaskESDMuonFilter::AliAnalysisTaskESDMuonFilter():
-    AliAnalysisTaskSE(),
-    fTrackFilter(0x0)
+  AliAnalysisTaskSE(),
+  fTrackFilter(0x0)
 {
   // Default constructor
 }
 
 AliAnalysisTaskESDMuonFilter::AliAnalysisTaskESDMuonFilter(const char* name):
-    AliAnalysisTaskSE(name),
-    fTrackFilter(0x0)
+  AliAnalysisTaskSE(name),
+  fTrackFilter(0x0)
 {
   // Constructor
 }
@@ -53,13 +53,13 @@ AliAnalysisTaskESDMuonFilter::AliAnalysisTaskESDMuonFilter(const char* name):
 void AliAnalysisTaskESDMuonFilter::UserCreateOutputObjects()
 {
   // Create the output container
-    if (fTrackFilter) OutputTree()->GetUserInfo()->Add(fTrackFilter);
+  if (fTrackFilter) OutputTree()->GetUserInfo()->Add(fTrackFilter);
 }
 
 void AliAnalysisTaskESDMuonFilter::Init()
 {
   // Initialization
-    if (fDebug > 1) AliInfo("Init() \n");
+  if (fDebug > 1) AliInfo("Init() \n");
 }
 
 
@@ -68,7 +68,7 @@ void AliAnalysisTaskESDMuonFilter::UserExec(Option_t */*option*/)
   // Execute analysis for current event					    
   Long64_t ientry = Entry();
   printf("Muon Filter: Analysing event # %5d\n", (Int_t) ientry);
-
+  
   ConvertESDtoAOD();
 }
 
@@ -76,93 +76,98 @@ void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD()
 {
   // ESD Muon Filter analysis task executed for each event
   AliESDEvent* esd = dynamic_cast<AliESDEvent*>(InputEvent());
- 
+  
   // Define arrays for muons
   Double_t pos[3];
   Double_t p[3];
   Double_t pid[10];
- 
+  
+  // has to be changed once the muon pid is provided by the ESD
+  for (Int_t i = 0; i < 10; pid[i++] = 0.);
+  pid[AliAODTrack::kMuon]=1.;
+  
   AliAODHeader* header = AODEvent()->GetHeader();
   AliAODTrack *aodTrack = 0x0;
- 
+  AliESDMuonTrack *esdMuTrack = 0x0;
+  
   // Access to the AOD container of tracks
   TClonesArray &tracks = *(AODEvent()->GetTracks());
   Int_t jTracks = header->GetRefMultiplicity();
   
   // Read primary vertex from AOD event 
-  AliAODVertex * primary = AODEvent()->GetPrimaryVertex();
+  AliAODVertex *primary = AODEvent()->GetPrimaryVertex();
   primary->Print();
- 
+  
   // Loop on muon tracks to fill the AOD track branch
   Int_t nMuTracks = esd->GetNumberOfMuonTracks();
   printf("Number of Muon Tracks=%d\n",nMuTracks);
-   
-   // Update number of positive and negative tracks from AOD event (M.G.)
+  
+  // Update number of positive and negative tracks from AOD event (M.G.)
   Int_t nPosTracks = header->GetRefMultiplicityPos();
   Int_t nNegTracks = header->GetRefMultiplicityNeg();
-   
+  
   for (Int_t nMuTrack = 0; nMuTrack < nMuTracks; ++nMuTrack) {
+    esdMuTrack = esd->GetMuonTrack(nMuTrack);
+    
+    if (!esdMuTrack->ContainTrackerData()) continue;
+           
+    UInt_t selectInfo = 0;
+    // Track selection
+    if (fTrackFilter) {
+     	selectInfo = fTrackFilter->IsSelected(esdMuTrack);
+     	if (!selectInfo) {
+     	  continue;
+     	}  
+     }
 
-       AliESDMuonTrack *esdMuTrack = esd->GetMuonTrack(nMuTrack); 
-       
-       UInt_t selectInfo = 0;
-       // Track selection
-       if (fTrackFilter) {
-	   selectInfo = fTrackFilter->IsSelected(esdMuTrack);
-	   if (!selectInfo) {
-	     continue;
-	   }  
-	}
-       p[0] = esdMuTrack->Px(); 
-       p[1] = esdMuTrack->Py(); 
-       p[2] = esdMuTrack->Pz();
-       pos[0] = primary->GetX(); 
-       pos[1] = primary->GetY(); 
-       pos[2] = primary->GetZ();
-        
-       // has to be changed once the muon pid is provided by the ESD
-       for (Int_t i = 0; i < 10; pid[i++] = 0.); pid[AliAODTrack::kMuon]=1.;
-       primary->AddDaughter(aodTrack =
-     	  new(tracks[jTracks++]) AliAODTrack(0 , // no ID provided
-     					     0, // no label provided
-     					     p,
-     					     kTRUE,
-     					     pos,
-     					     kFALSE,
-     					     NULL, // no covariance matrix provided
-     					     esdMuTrack->Charge(), 
-     					     0, // no ITSClusterMap
-     					     pid,
-     					     primary,
-     					     kTRUE,  // check if this is right
-     					     kTRUE,  // not used for vertex fit
-     					     AliAODTrack::kPrimary,
-					     selectInfo)
-     	 );
- 	 
-     if (esdMuTrack->Charge() > 0) nPosTracks++;
-     else nNegTracks++;
-
-     aodTrack->ConvertAliPIDtoAODPID();  
-     aodTrack->SetHitsPatternInTrigCh(esdMuTrack->GetHitsPatternInTrigCh());
-     Int_t track2Trigger = esdMuTrack->GetMatchTrigger();
-     aodTrack->SetMatchTrigger(track2Trigger);
-     if (track2Trigger) 
-       aodTrack->SetChi2MatchTrigger(esdMuTrack->GetChi2MatchTrigger());
-     else 
-       aodTrack->SetChi2MatchTrigger(0.);
- }
-
+    p[0] = esdMuTrack->Px(); 
+    p[1] = esdMuTrack->Py(); 
+    p[2] = esdMuTrack->Pz();
+    
+    pos[0] = esdMuTrack->GetNonBendingCoor(); 
+    pos[1] = esdMuTrack->GetBendingCoor(); 
+    pos[2] = esdMuTrack->GetZ();
+    
+    aodTrack = new(tracks[jTracks++]) AliAODTrack(esdMuTrack->GetUniqueID(), // ID
+						  0, // label
+						  p, // momentum
+						  kTRUE, // cartesian coordinate system
+						  pos, // position
+						  kFALSE, // isDCA
+						  0x0, // covariance matrix
+						  esdMuTrack->Charge(), // charge
+						  0, // ITSClusterMap
+						  pid, // pid
+						  primary, // primary vertex
+						  kFALSE, // used for vertex fit?
+						  kFALSE, // used for primary vertex fit?
+						  AliAODTrack::kPrimary,// track type
+						  selectInfo); 
+    
+    aodTrack->SetXYAtDCA(esdMuTrack->GetNonBendingCoorAtDCA(), esdMuTrack->GetBendingCoorAtDCA());
+    aodTrack->SetPxPyPzAtDCA(esdMuTrack->PxAtDCA(), esdMuTrack->PyAtDCA(), esdMuTrack->PzAtDCA());
+    aodTrack->ConvertAliPIDtoAODPID();
+    aodTrack->SetChi2perNDF(esdMuTrack->GetChi2() / (2.*esdMuTrack->GetNHit() - 5.));
+    aodTrack->SetChi2MatchTrigger(esdMuTrack->GetChi2MatchTrigger());
+    aodTrack->SetHitsPatternInTrigCh(esdMuTrack->GetHitsPatternInTrigCh());
+    aodTrack->SetMuonClusterMap(esdMuTrack->GetMuonClusterMap());
+    aodTrack->SetMatchTrigger(esdMuTrack->GetMatchTrigger());
+    
+    primary->AddDaughter(aodTrack);
+    
+    if (esdMuTrack->Charge() > 0) nPosTracks++;
+    else nNegTracks++;
+  }
+  
   header->SetRefMultiplicity(jTracks); 
   header->SetRefMultiplicityPos(nPosTracks);
   header->SetRefMultiplicityNeg(nNegTracks);
-  
-  return;
 }
 
 void AliAnalysisTaskESDMuonFilter::Terminate(Option_t */*option*/)
 {
-// Terminate analysis
-//
-    if (fDebug > 1) printf("AnalysisESDfilter: Terminate() \n");
+  // Terminate analysis
+  //
+  if (fDebug > 1) printf("AnalysisESDfilter: Terminate() \n");
 }
+
