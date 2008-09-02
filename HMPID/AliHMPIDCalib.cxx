@@ -295,8 +295,10 @@ void AliHMPIDCalib::FillPedestal(Int_t abspad,Int_t q)
   //Arguments: absolute pad number as from AliHMPIDParam and q-charge
   //Returns: none
   //
-  if(q<0) AliFatal("Negative charge is read!!!!!!");
-  
+  if(q<0) {
+   AliError("Negative charge is read!!!!!!");
+   return;
+  }
   UInt_t w32;
   Int_t nDDL=0, row=0, dil=0, adr=0;
   //The decoding (abs. pad -> ddl,dil,...) is the same as in AliHMPIDDigit::Raw
