@@ -1,0 +1,15 @@
+#-*- Mode: Makefile -*-
+
+SRCS:=	 muondep/AliAnalysisTaskMuonTrackingEff.cxx \
+                 muondep/AliCheckMuonDetEltResponse.cxx 
+
+HDRS:= $(SRCS:.cxx=.h)
+
+DHDR:= PWG3muondepLinkDef.h
+
+EINCLUDE:= MUON MUON/mapping PWG3/base
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) -lSTEERBase \
+                         -lESD -lAOD -lANALYSIS -lANALYSISalice
+endif
