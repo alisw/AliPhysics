@@ -40,7 +40,7 @@ void run(const Char_t *files=0x0, Char_t *tasks="ALL", Int_t nmax=-1)
   gSystem->Load("libTRDqaRec.so");
   
   Int_t fSteerTask = 0; 
-  Bool_t fHasMCdata = kFALSE;
+  Bool_t fHasMCdata = kTRUE;
   TObjArray *task = TString(tasks).Tokenize(" ");
   for(Int_t isel = 0; isel < task->GetEntriesFast(); isel++){
     TString s = (dynamic_cast<TObjString *>(task->UncheckedAt(isel)))->String();
@@ -62,6 +62,7 @@ void run(const Char_t *files=0x0, Char_t *tasks="ALL", Int_t nmax=-1)
     } else if(s.CompareTo("NOMC") == 0){
     	CLEARBIT(fSteerTask, kTrackingEfficiency);
     	CLEARBIT(fSteerTask, kTrackingCombinedEfficiency);
+      fHasMCdata = kFALSE;
     } else{
       Info("run.C", Form("Task %s not implemented (yet).", s.Data()));
       continue;
@@ -92,15 +93,14 @@ void run(const Char_t *files=0x0, Char_t *tasks="ALL", Int_t nmax=-1)
   //mgr->SetSpecialOutputLocation(source); // To Be Changed
   AliVEventHandler* esdH = new AliESDInputHandler;
   mgr->SetInputEventHandler(esdH);  
-  AliMCEventHandler *mc = new AliMCEventHandler();
-  mgr->SetMCtruthEventHandler(mc);
+  if(fHasMCdata) mgr->SetMCtruthEventHandler(new AliMCEventHandler());
   //mgr->SetDebugLevel(10);
 
   //____________________________________________
   // TRD track summary generator
   AliTRDtrackInfoGen *task1 = new AliTRDtrackInfoGen();
   task1->SetDebugLevel(1);
-  if(!fHasMCdata) task1->SetHasMCdata(kFALSE);
+  task1->SetMCdata(fHasMCdata);
   mgr->AddTask(task1);
   // Create containers for input/output
   AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("data", TChain::Class(), AliAnalysisManager::kInputContainer);
@@ -136,7 +136,7 @@ void run(const Char_t *files=0x0, Char_t *tasks="ALL", Int_t nmax=-1)
   // TRD tracking resolution
   if(TESTBIT(fSteerTask, kTrackingResolution)){
     AliTRDtrackingResolution *task4 = new AliTRDtrackingResolution();
-    if(!fHasMCdata) task4->SetHasMCdata(kFALSE);
+    task4->SetMCdata(fHasMCdata);
     task4->SetDebugLevel(1);
     mgr->AddTask(task4);
     // Create containers for input/output
@@ -162,6 +162,9 @@ void run(const Char_t *files=0x0, Char_t *tasks="ALL", Int_t nmax=-1)
   
   if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
+  
+  // initialize TRD settings
+  AliTRDtrackerV1::SetNTimeBins(24);
   mgr->StartAnalysis("local",chain);
 
   timer.Stop();

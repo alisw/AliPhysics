@@ -1,17 +1,17 @@
 /**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Author: The ALICE Off-line Project.                                    *
- * Contributors are mentioned in the code where appropriate.              *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercialf purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+*                                                                        *
+* Author: The ALICE Off-line Project.                                    *
+* Contributors are mentioned in the code where appropriate.              *
+*                                                                        *
+* Permission to use, copy, modify and distribute this software and its   *
+* documentation strictly for non-commercialf purposes is hereby granted   *
+* without fee, provided that the above copyright notice appears in all   *
+* copies and that both the copyright notice and this permission notice   *
+* appear in the supporting documentation. The authors make no claims     *
+* about the suitability of this software for any purpose. It is          *
+* provided "as is" without express or implied warranty.                  *
+**************************************************************************/
 
 /* $Id: AliTRDtrackingResolution.cxx 27496 2008-07-22 08:35:45Z cblume $ */
 
@@ -92,11 +92,11 @@ void AliTRDtrackingResolution::CreateOutputObjects()
 
   // Resolution histos
   if(HasMCdata()){
-	  // tracklet resolution [0]
-  	fHistos->AddAt(new TH2I("fY", "", 21, -21., 21., 100, -.5, .5), 0);
-	  // tracklet angular resolution [1]
-  	fHistos->AddAt(new TH2I("fPhi", "", 21, -21., 21., 100, -10., 10.), 1);
-	}
+    // tracklet resolution [0]
+    fHistos->AddAt(new TH2I("fY", "", 21, -21., 21., 100, -.5, .5), 0);
+    // tracklet angular resolution [1]
+    fHistos->AddAt(new TH2I("fPhi", "", 21, -21., 21., 100, -10., 10.), 1);
+  }
   // Residual histos
   // cluster to tracklet residuals [2]
   Int_t position = HasMCdata() ? 2 : 0;
@@ -141,14 +141,14 @@ void AliTRDtrackingResolution::Exec(Option_t *)
 
       // RESOLUTION (compare to MC)
       if(HasMCdata()){
-	      if(fInfo->GetNTrackRefs() >= 2){ 
-   	     Float_t phiMC;
-   	     if(Resolution(fTracklet, fInfo, phiMC)) phi = phiMC;
-   	   	}
-   	  }
+        if(fInfo->GetNTrackRefs() >= 2){ 
+        Float_t phiMC;
+        if(Resolution(fTracklet, fInfo, phiMC)) phi = phiMC;
+        }
+      }
 
       // Do clusters residuals
-      fTracklet->Fit(kFALSE);
+      if(!fTracklet->Fit(kFALSE)) continue;
       Int_t histpos = HasMCdata() ? 2 : 0;
       AliTRDcluster *c = 0x0;
       for(Int_t ic=AliTRDseed::knTimebins-1; ic>=0; ic--){
@@ -168,7 +168,7 @@ void AliTRDtrackingResolution::Exec(Option_t *)
       }
     }
 
- 
+
     // this protection we might drop TODO
     if(fTrack->GetNumberOfTracklets() < 6) continue;
 
@@ -286,60 +286,83 @@ void AliTRDtrackingResolution::Terminate(Option_t *)
 {
   if(fDebugStream) delete fDebugStream;
 
-	if(HasMCdata()){
-	  //process distributions
-  	fHistos = dynamic_cast<TList*>(GetOutputData(0));
-	  if (!fHistos) {
-  	  Printf("ERROR: list not available");
-  	  return;
-  	}
-	  TH2I *h2 = 0x0;
-  	TH1D *h = 0x0;
+  TH2I *h2 = 0x0;
+  TH1D *h = 0x0;
+  TF1 f("f1", "gaus", -.5, .5);  
+  if(HasMCdata()){
+    //process distributions
+    fHistos = dynamic_cast<TList*>(GetOutputData(0));
+    if (!fHistos) {
+      Printf("ERROR: list not available");
+      return;
+    }
 
- 	 // y resolution
-	  TF1 *f = new TF1("f1", "gaus", -.5, .5);  
-	  h2 = (TH2I*)fHistos->At(0);
-	  TGraphErrors *gm = new TGraphErrors(h2->GetNbinsX());
-	  gm->SetNameTitle("meany", "Mean dy");
-	  TGraphErrors *gs = new TGraphErrors(h2->GetNbinsX());
-	  gs->SetNameTitle("sigmy", "Sigma y");
-	  for(Int_t iphi=1; iphi<=h2->GetNbinsX(); iphi++){
-	    Double_t phi = h2->GetXaxis()->GetBinCenter(iphi);
-	    f->SetParameter(1, 0.);f->SetParameter(2, 2.e-2);
-	    h = h2->ProjectionY("py", iphi, iphi);
-	    h->Fit(f, "q", "goff", -.5, .5);
-	    Int_t jphi = iphi -1;
-	    gm->SetPoint(jphi, phi, f->GetParameter(1));
-	    gm->SetPointError(jphi, 0., f->GetParError(1));
-	    gs->SetPoint(jphi, phi, f->GetParameter(2));
-	    gs->SetPointError(jphi, 0., f->GetParError(2));
-	  }
-	  fHistos->Add(gm);
-	  fHistos->Add(gs);
-	
-	  // phi resolution
-	  h2 = (TH2I*)fHistos->At(1);
-	  gm = new TGraphErrors(h2->GetNbinsX());
-	  gm->SetNameTitle("meanphi", "Mean Phi");
-	  gs = new TGraphErrors(h2->GetNbinsX());
-	  gs->SetNameTitle("sigmphi", "Sigma Phi");
-	  for(Int_t iphi=1; iphi<=h2->GetNbinsX(); iphi++){
-	    Double_t phi = h2->GetXaxis()->GetBinCenter(iphi);
-	    f->SetParameter(1, 0.);f->SetParameter(2, 2.e-2);
-	    h = h2->ProjectionY("py", iphi, iphi);
-	    h->Fit(f, "q", "goff", -.5, .5);
-	    Int_t jphi = iphi -1;
-	    gm->SetPoint(jphi, phi, f->GetParameter(1));
-	    gm->SetPointError(jphi, 0., f->GetParError(1));
-	    gs->SetPoint(jphi, phi, f->GetParameter(2));
-	    gs->SetPointError(jphi, 0., f->GetParError(2));
-	  }
-	  fHistos->Add(gm);
-	  fHistos->Add(gs);
-	
-	
-	  delete f;
+  // y resolution
+    h2 = (TH2I*)fHistos->At(0);
+    TGraphErrors *gm = new TGraphErrors(h2->GetNbinsX());
+    gm->SetNameTitle("meany", "Mean dy");
+    TGraphErrors *gs = new TGraphErrors(h2->GetNbinsX());
+    gs->SetNameTitle("sigmy", "Sigma y");
+    for(Int_t iphi=1; iphi<=h2->GetNbinsX(); iphi++){
+      Double_t phi = h2->GetXaxis()->GetBinCenter(iphi);
+      f.SetParameter(1, 0.);f.SetParameter(2, 2.e-2);
+      h = h2->ProjectionY("py", iphi, iphi);
+      h->Fit(&f, "QN", "", -.5, .5);
+      Int_t jphi = iphi -1;
+      gm->SetPoint(jphi, phi, f.GetParameter(1));
+      gm->SetPointError(jphi, 0., f.GetParError(1));
+      gs->SetPoint(jphi, phi, f.GetParameter(2));
+      gs->SetPointError(jphi, 0., f.GetParError(2));
+    }
+    fHistos->Add(gm);
+    fHistos->Add(gs);
+  
+    // phi resolution
+    h2 = (TH2I*)fHistos->At(1);
+    gm = new TGraphErrors(h2->GetNbinsX());
+    gm->SetNameTitle("meanphi", "Mean Phi");
+    gs = new TGraphErrors(h2->GetNbinsX());
+    gs->SetNameTitle("sigmphi", "Sigma Phi");
+    for(Int_t iphi=1; iphi<=h2->GetNbinsX(); iphi++){
+      Double_t phi = h2->GetXaxis()->GetBinCenter(iphi);
+      f.SetParameter(1, 0.);f.SetParameter(2, 2.e-2);
+      h = h2->ProjectionY("py", iphi, iphi);
+      h->Fit(&f, "QN", "", -.5, .5);
+      Int_t jphi = iphi -1;
+      gm->SetPoint(jphi, phi, f.GetParameter(1));
+      gm->SetPointError(jphi, 0., f.GetParError(1));
+      gs->SetPoint(jphi, phi, f.GetParameter(2));
+      gs->SetPointError(jphi, 0., f.GetParError(2));
+    }
+    fHistos->Add(gm);
+    fHistos->Add(gs);
   }
+
+  // Fit clusters residuals
+  Int_t position_residuals = fHasMCdata ? 2 : 0;
+  h2 = (TH2I *)(fHistos->At(position_residuals));
+  TGraphErrors *residuals_mean = new TGraphErrors(h2->GetNbinsX());
+  residuals_mean->SetLineColor(kGreen);
+  residuals_mean->SetMarkerStyle(22);
+  residuals_mean->SetMarkerColor(kGreen);
+  TGraphErrors *residuals_sigma = new TGraphErrors(h2->GetNbinsX());
+  residuals_mean->SetNameTitle("residuals_mean", "Residuals Mean Phi");
+  residuals_sigma->SetNameTitle("residuals_sigma", "Residuals Sigma Phi");
+  residuals_sigma->SetLineColor(kRed);
+  residuals_sigma->SetMarkerStyle(23);
+  residuals_sigma->SetMarkerColor(kRed);
+  for(Int_t ibin = 1; ibin <= h2->GetNbinsX(); ibin++){
+    Double_t phi = h2->GetXaxis()->GetBinCenter(ibin);
+    Double_t dphi = h2->GetXaxis()->GetBinWidth(ibin)/2;
+    h = h2->ProjectionY("py", ibin, ibin);
+    h->Fit(&f, "QN", "", -0.5, 0.5);
+    residuals_mean->SetPoint(ibin - 1, phi, f.GetParameter(1));
+    residuals_mean->SetPointError(ibin - 1, dphi, f.GetParError(1));
+    residuals_sigma->SetPoint(ibin - 1, phi, f.GetParameter(2));
+    residuals_sigma->SetPointError(ibin - 1, dphi, f.GetParError(2));
+  }
+  fHistos->Add(residuals_mean);
+  fHistos->Add(residuals_sigma);
 }
 
 //________________________________________________________
