@@ -32,7 +32,7 @@ public:
   Bool_t HasMCdata() const { return fHasMCdata; }
   void  Exec(Option_t *);
   void  SetDebugLevel(Int_t level);
-  void  SetHasMCdata(Bool_t mcdata) { fHasMCdata = mcdata; };
+  void  SetMCdata(Bool_t mcdata) { fHasMCdata = mcdata; };
   void  Terminate(Option_t *);
 
 private:
