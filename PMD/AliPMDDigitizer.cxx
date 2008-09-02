@@ -778,14 +778,13 @@ void AliPMDDigitizer::SDigits2Digits(Int_t ievt)
 
 	  MeV2ADC(edep,adc);
 
-	  
 	  // To decalibrte the adc values
 	  //
 	  Float_t gain1 = Gain(det,smn,irow,icol);
 	  if (gain1 != 0.)
 	  {
-	      Int_t adcDecalib = (Int_t)(adc/gain1);
-	      adc = (Float_t) adcDecalib;
+	    Int_t adcDecalib = (Int_t)(adc/gain1);
+	    adc = (Float_t) adcDecalib;
 	  }
 	  else if(gain1 == 0.)
 	  {
@@ -797,6 +796,7 @@ void AliPMDDigitizer::SDigits2Digits(Int_t ievt)
 	  Float_t pedrms     = (Float_t)pedrms1/10.;
 	  Float_t pedmean    = (Float_t) (pedmeanrms - pedrms1)/1000.0;
 	  //printf("%f %f\n",pedmean, pedrms);
+	  
 	  if(adc > 0.)
 	  {
 	      adc += (pedmean + 3.0*pedrms);
@@ -1381,21 +1381,18 @@ void AliPMDDigitizer::MeV2ADC(Float_t mev, Float_t & adc) const
   //PS Test in September 2003 and 2006
   // KeV - ADC conversion for 12bit ADC
   // Modified by Ajay
-  //const Float_t kConstant   = 9.0809;
-  //const Float_t kErConstant = 1.6763;
-  //const Float_t kSlope      = 128.348;
-  //const Float_t kErSlope    = 0.4703;
-
-  const Float_t kConstant   = -4.5;
-  const Float_t kErConstant = 14.3;
-  const Float_t kSlope      = 68.2;
-  const Float_t kErSlope    = 5.21;
+ 
+  const Float_t kConstant   =  0.07;
+  const Float_t kErConstant =  0.1;
+  const Float_t kSlope      = 76.0;
+  const Float_t kErSlope    =  5.0;
   
   Float_t cons   = gRandom->Gaus(kConstant,kErConstant);
   Float_t slop   = gRandom->Gaus(kSlope,kErSlope);
   
   Float_t adc12bit = slop*mev*0.001 + cons;
   
+			   
   if(adc12bit < 1600.0)
     {
       adc = (Float_t) adc12bit;
