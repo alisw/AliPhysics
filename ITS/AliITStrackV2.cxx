@@ -26,6 +26,7 @@
 #include "AliCluster.h"
 #include "AliTracker.h"
 #include "AliESDtrack.h"
+#include "AliITSReconstructor.h"
 #include "AliITStrackV2.h"
 
 const Int_t AliITStrackV2::fgkWARN = 5;
@@ -261,18 +262,31 @@ Bool_t AliITStrackV2::Invariant() const {
   //------------------------------------------------------------------
   Int_t n=GetNumberOfClusters();
 
+  // take into account the misalignment error
+  Float_t maxMisalErrY2=0,maxMisalErrZ2=0;
+  for (Int_t lay=0; lay<AliITSgeomTGeo::kNLayers; lay++) {
+    maxMisalErrY2 = TMath::Max(maxMisalErrY2,AliITSReconstructor::GetRecoParam()->GetClusterMisalErrorY(lay));
+    maxMisalErrZ2 = TMath::Max(maxMisalErrZ2,AliITSReconstructor::GetRecoParam()->GetClusterMisalErrorZ(lay));
+  }
+  maxMisalErrY2 *= maxMisalErrY2;
+  maxMisalErrZ2 *= maxMisalErrZ2;
+  // this is because when we reset before refitting, we multiply the
+  // matrix by 10
+  maxMisalErrY2 *= 10.; 
+  maxMisalErrZ2 *= 10.;
+
   Double_t sP2=GetParameter()[2];
   if (TMath::Abs(sP2) >= kAlmost1){
      if (n>fgkWARN) Warning("Invariant","fP2=%f\n",sP2);
      return kFALSE;
   }
   Double_t sC00=GetCovariance()[0];
-  if (sC00<=0 || sC00>9.) {
+  if (sC00<=0 || sC00>(9.+maxMisalErrY2)) {
      if (n>fgkWARN) Warning("Invariant","fC00=%f\n",sC00); 
      return kFALSE;
   }
   Double_t sC11=GetCovariance()[2];
-  if (sC11<=0 || sC11>9.) {
+  if (sC11<=0 || sC11>(9.+maxMisalErrZ2)) {
      if (n>fgkWARN) Warning("Invariant","fC11=%f\n",sC11); 
      return kFALSE;
   }
@@ -304,8 +318,9 @@ Bool_t AliITStrackV2::Propagate(Double_t alp,Double_t xk) {
   if (!AliExternalTrackParam::Propagate(alp,xk,bz)) return kFALSE;
 
   if (!Invariant()) {
-     AliWarning("Wrong invariant !");
-     return kFALSE;
+    Int_t n=GetNumberOfClusters();
+    if (n>fgkWARN) AliWarning("Wrong invariant !");
+    return kFALSE;
   }
 
   return kTRUE;
