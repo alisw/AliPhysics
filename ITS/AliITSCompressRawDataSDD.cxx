@@ -121,19 +121,14 @@ void AliITSCompressRawDataSDD::Compress(){
     rd->Reset();
 
     AliITSRawStreamSDD s(rd);
+    s.SetDecompressAmbra(kFALSE);
     while(s.Next()){
-      if(rd->GetDDLID()!=oldddl){
-	word=8<<28;
-	word+=rd->GetDDLID();
-	fprintf(outtxt,"%08X\n",word);
-	oldddl=rd->GetDDLID();
-      }
       if(s.IsCompletedModule()==kFALSE){
 	word=s.GetCarlosId()<<27;
 	word+=s.GetChannel()<<26;
 	word+=s.GetCoord1()<<18;
 	word+=s.GetCoord2()<<10;
-	word+=s.GetSignal();
+	word+=s.GetEightBitSignal();
 	fprintf(outtxt,"%08X\n",word);
       }
       if(s.IsCompletedModule()==kTRUE){
@@ -156,6 +151,7 @@ UInt_t AliITSCompressRawDataSDD::CompressEvent(UChar_t* inputPtr){
   siz+=32;
   UInt_t word=0;
   AliITSRawStreamSDD s(fRawReader);
+  s.SetDecompressAmbra(kFALSE);
   Int_t mask1=0xFF000000;
   Int_t mask2=0x00FF0000;
   Int_t mask3=0x0000FF00;
@@ -166,7 +162,7 @@ UInt_t AliITSCompressRawDataSDD::CompressEvent(UChar_t* inputPtr){
       word+=s.GetChannel()<<26;
       word+=s.GetCoord1()<<18;
       word+=s.GetCoord2()<<10;
-      word+=s.GetSignal();
+      word+=s.GetEightBitSignal();
       if(siz+4<fSizeInMemory){
 	*(fPointerToData)=(word&mask1)>>24;
 	++fPointerToData;

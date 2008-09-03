@@ -329,8 +329,8 @@ void AliITSClusterFinderV2SDD::FindClustersSDD(AliITSRawStream* input,
       continue;
     }
 
-    Int_t iCarlos =((AliITSRawStreamSDD*)input)->GetCarlosId();
-    Int_t iSide = ((AliITSRawStreamSDD*)input)->GetChannel();
+    Int_t iCarlos =input->GetCarlosId();
+    Int_t iSide = input->GetChannel();
     Int_t iHybrid=iCarlos*2+iSide;
     if (input->IsCompletedModule()) {
       // when all data from a module was read, search for clusters

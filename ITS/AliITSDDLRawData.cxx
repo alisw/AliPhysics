@@ -140,7 +140,7 @@ void AliITSDDLRawData::GetDigitsSDDCompressed(TClonesArray *ITSdigits, Int_t mod
       digs = (AliITSdigit*)ITSdigits->UncheckedAt(digit);
       Int_t iz=digs->GetCoord1();  // Anode
       Int_t ix=digs->GetCoord2();  // Time
-      Int_t is=digs->GetSignal();  // ADC Signal - 10 bit
+      Int_t is=digs->GetCompressedSignal();  // ADC Signal - 8 bit
       dataWord=mod<<27;
       Int_t sid=0;
       if(iz>=256){

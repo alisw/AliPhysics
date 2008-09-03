@@ -29,10 +29,14 @@ class AliITSRawStreamSDD: public AliITSRawStream {
     virtual Int_t    GetAnode() const {return fCoord1;}
     virtual Int_t    GetTime() const {return fCoord2;}
     virtual Int_t    GetChannel() const {return fChannel;}
+    virtual Int_t    GetEightBitSignal() const {return fEightBitSignal;}
     virtual Int_t    ReadJitter() const {return 0;}
     virtual Int_t    GetCarlosId() const {return fCarlosId;}
     virtual Int_t    GetEventId() const {return fEventId;}
 
+    virtual void     SetDecompressAmbra(Bool_t deco=kTRUE){
+      fDecompressAmbra=deco;
+    }
     virtual void SetDDLModuleMap(AliITSDDLModuleMapSDD* ddlsdd){fDDLModuleMap->SetDDLMap(ddlsdd);}
     virtual void     SetLowCarlosThreshold(Int_t th, Int_t i)
       {fLowThreshold[i]=th;}
@@ -81,7 +85,10 @@ class AliITSRawStreamSDD: public AliITSRawStream {
     UInt_t           fIFifoWord[kFifoWords];     // FIFO words
     Int_t            fICountFoot[kModulesPerDDL]; // counter for carlos footer words
     Int_t            fResetSkip;     //if it is 0, the ResetSkip Funcion is called
-    ClassDef(AliITSRawStreamSDD, 11) // class for reading ITS SDD raw digits
+    Int_t            fEightBitSignal;    // signal at 8 bit
+    Bool_t           fDecompressAmbra; //flag to switch off decompression
+
+    ClassDef(AliITSRawStreamSDD, 12) // class for reading ITS SDD raw digits
 };
 
 #endif

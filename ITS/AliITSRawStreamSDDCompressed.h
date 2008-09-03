@@ -52,7 +52,7 @@ class AliITSRawStreamSDDCompressed: public AliITSRawStream {
     };
   protected:
 
-
+    virtual Int_t    DecompAmbra(Int_t value) const;
     AliITSDDLModuleMapSDD* fDDLModuleMap; // mapping DDL/module -> module number 
     UInt_t           fData;         // data read for file
     Int_t            fCarlosId;     // carlos ID

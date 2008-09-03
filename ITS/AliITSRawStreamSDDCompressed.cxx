@@ -121,6 +121,22 @@ AliITSRawStreamSDDCompressed::~AliITSRawStreamSDDCompressed(){
 
 
 //______________________________________________________________________
+Int_t AliITSRawStreamSDDCompressed::DecompAmbra(Int_t value) const
+{
+  // AMBRA decompression (from 8 to 10 bit)
+  
+  if ((value & 0x80) == 0) {
+    return value & 0x7f;
+  } else if ((value & 0x40) == 0) {
+    return 0x081 + ((value & 0x3f) << 1);
+  } else if ((value & 0x20) == 0) {
+    return 0x104 + ((value & 0x1f) << 3);
+  } else {
+    return 0x208 + ((value & 0x1f) << 4);
+  }
+  
+}
+//______________________________________________________________________
 Bool_t AliITSRawStreamSDDCompressed::Next()
 {
 // read the next raw digit
@@ -156,8 +172,9 @@ Bool_t AliITSRawStreamSDDCompressed::Next()
       fChannel=(fData&maskSide)>>26;
       fCoord1=(fData&maskAnode)>>18;
       fCoord2=(fData&maskTb)>>10;
-      fSignal=fData&maskADC;
-      fSignal+=fLowThresholdArray[fModuleID-kSPDModules][fChannel];
+      Int_t sig8bit=fData&maskADC;
+      sig8bit+=fLowThresholdArray[fModuleID-kSPDModules][fChannel];
+      fSignal=DecompAmbra(sig8bit);
       fCompletedModule=kFALSE;
       return kTRUE;
     }

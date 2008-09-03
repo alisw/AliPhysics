@@ -38,7 +38,9 @@ fEventId(0),
 fCarlosId(-1),
 fChannel(0),
 fJitter(0),
-fResetSkip(0)
+fResetSkip(0),
+fEightBitSignal(0),
+fDecompressAmbra(kTRUE)
 {
 // create an object to read ITS SDD raw digits
   fDDLModuleMap=new AliITSDDLModuleMapSDD();
@@ -66,7 +68,9 @@ fEventId(0),
 fCarlosId(-1),
 fChannel(0),
 fJitter(0),
-fResetSkip(0)
+fResetSkip(0),
+fEightBitSignal(0),
+fDecompressAmbra(kTRUE)
 {
   // copy constructor
   AliError("Copy constructor should not be used.");
@@ -197,7 +201,8 @@ Bool_t AliITSRawStreamSDD::Next()
 	  fTimeBin[fCarlosId][fChannel] = 0;
 	  fAnode[fCarlosId][fChannel]++;
 	} else {                                   // ADC signal data
-	  fSignal = DecompAmbra(data + (1 << fChannelCode[fCarlosId][fChannel]) + fLowThresholdArray[fModuleID-kSPDModules][fChannel]);
+	  fEightBitSignal=data + (1 << fChannelCode[fCarlosId][fChannel]);
+	  if(fDecompressAmbra) fSignal = DecompAmbra(fEightBitSignal + fLowThresholdArray[fModuleID-kSPDModules][fChannel]);
 	  fCoord1 = fAnode[fCarlosId][fChannel];
 	  fCoord2 = fTimeBin[fCarlosId][fChannel];
 	  fTimeBin[fCarlosId][fChannel]++;
