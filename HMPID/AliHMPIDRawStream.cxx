@@ -546,7 +546,7 @@ Bool_t AliHMPIDRawStream::GetWord(Int_t n,EDirection dir)
   
   fWord = 0;
   if (fPosition < 0) {
-    AliWarning("fPosition<0");
+    AliError("fPosition < 0 !!! Event skipped.");
     fRawReader->AddMajorErrorLog(kRawDataSizeErr,"fPosition<0");
     return kFALSE;
   }
@@ -557,7 +557,7 @@ Bool_t AliHMPIDRawStream::GetWord(Int_t n,EDirection dir)
   if(fPosition==-4) return kTRUE;
   
   if(fPosition<0 || fPosition > fRawReader->GetDataSize()) {
-    AliDebug(1,Form("fPosition out of boundaries %i",fPosition));
+    AliWarning(Form("fPosition out of boundaries %i",fPosition));
     return kFALSE;
   }
     
