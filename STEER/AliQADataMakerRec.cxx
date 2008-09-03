@@ -149,7 +149,7 @@ void AliQADataMakerRec::EndOfCycle(AliQA::TASKINDEX_t task)
         }
       }
     }
-    if (fObject && GetName() == AliQA::kCORR) {
+    if (fObject && AliQA::GetDetIndex(GetName()) == AliQA::kCORR) {
       subDir->cd() ; 
       fObject->Write() ; 
     }
