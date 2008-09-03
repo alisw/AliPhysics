@@ -72,8 +72,8 @@ void TestPreprocessor()
     // Note that the test preprocessor name is TPC. The name of the detector's preprocessor must follow
     // the "online" naming convention ALICE-INT-2003-039.
     
-    shuttle->AddInputFile(AliShuttleInterface::kDAQ, "PMD", "PMD_PED", "GDC0", "PMD_PED.root");
-    shuttle->AddInputFile(AliShuttleInterface::kDAQ, "PMD", "PMDGAINS", "GDC0", "xy.root");
+    shuttle->AddInputFile(AliShuttleInterface::kDAQ, "PMD", "PMD_PED.root", "GDC0", "PMD_PED.root");
+    shuttle->AddInputFile(AliShuttleInterface::kDAQ, "PMD", "PMDGAINS.root", "GDC0", "xy.root");
     
     // TODO(3)
     //
