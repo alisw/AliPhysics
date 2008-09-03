@@ -61,6 +61,7 @@ class AliITSDetTypeRec : public TObject {
     virtual AliITSDDLModuleMapSDD* GetDDLModuleMapSDD() const { return fDDLMapSDD;}
     virtual AliITSresponseSDD* GetResponseSDD() const { return fRespSDD;}
     virtual Bool_t IsHLTmodeC() const {return fIsHLTmodeC;}
+    virtual void SetHLTmodeC(Bool_t ishltc){fIsHLTmodeC=ishltc;}
 
     virtual void SetDigitClassName(Int_t i,Char_t *digit) 
       {fDigClassName[i]=digit;}
