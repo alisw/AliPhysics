@@ -38,7 +38,6 @@ fEventId(0),
 fCarlosId(-1),
 fChannel(0),
 fJitter(0),
-fDDL(0),
 fResetSkip(0)
 {
 // create an object to read ITS SDD raw digits
@@ -67,7 +66,6 @@ fEventId(0),
 fCarlosId(-1),
 fChannel(0),
 fJitter(0),
-fDDL(0),
 fResetSkip(0)
 {
   // copy constructor
@@ -121,7 +119,6 @@ Bool_t AliITSRawStreamSDD::Next()
 // returns kTRUE and fCompletedModule=kTRUE  when a module is completed (=3x3FFFFFFF footer words)
 
   fPrevModuleID = fModuleID;
-  fDDL=fRawReader->GetDDLID();
   fCompletedModule=kFALSE;
 
   while (kTRUE) {
@@ -134,15 +131,11 @@ Bool_t AliITSRawStreamSDD::Next()
     if ((fChannel < 0) || (fCarlosId < 0) || (fChannel >= 2) || (fCarlosId >= kModulesPerDDL) || (fLastBit[fCarlosId][fChannel] < fReadBits[fCarlosId][fChannel]) ) {
       if (!fRawReader->ReadNextInt(fData)) return kFALSE;  // read next word
 
-      Int_t ddln = fRawReader->GetDDLID();
-      if(ddln!=fDDL) {
-	Reset();
-	fDDL=fRawReader->GetDDLID();
-      }
 
       fChannel = -1;
       if((fData >> 16) == 0x7F00){ // jitter word
 	fResetSkip=0;
+	Reset();
 	continue;
       }
 
@@ -163,7 +156,6 @@ Bool_t AliITSRawStreamSDD::Next()
 	  fICountFoot[fCarlosId]++; // stop before the last word (last word=jitter)
 	  if(fICountFoot[fCarlosId]==3){
 	    fCompletedModule=kTRUE;
-	    //	      printf("Completed module %d DDL %d\n",fCarlosId,fDDL);
 	    return kTRUE;
 	  }
 	} else if(fData==0x3F1F1F1F){ // CarlosRX footer
@@ -187,7 +179,8 @@ Bool_t AliITSRawStreamSDD::Next()
       }
       
       if(fCarlosId>=0 && fCarlosId <kModulesPerDDL){
-	 fModuleID = GetModuleNumber(fDDL,fCarlosId);
+	Int_t nDDL=fRawReader->GetDDLID();
+	 fModuleID = GetModuleNumber(nDDL,fCarlosId);
       }
     } else {  // decode data
       if (fReadCode[fCarlosId][fChannel]) {// read the next code word
