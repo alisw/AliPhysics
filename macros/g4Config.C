@@ -42,7 +42,8 @@ void Config()
     TG4RunConfiguration* runConfiguration 
       = new TG4RunConfiguration("geomRoot", 
                                 "emStandard+optical", 
-                                "specialCuts+specialControls+stackPopper");
+                                "specialCuts+specialControls+stackPopper",
+                                 true);
 //      = new TG4RunConfiguration("geomRootToGeant4",
 //                                "emStandard+optical", 
 //                                "specialCuts+specialControls+stackPopper",
