@@ -220,7 +220,7 @@ Bool_t AliEveTRDLoader::LoadClusters(TTree *tC)
   // Load clusters.
 
   AliInfo("Loading ...");
-  if(!fChildren.size()) return kTRUE;
+  if(!fChildren.size()) return kFALSE;
 
   TObjArray *clusters = new TObjArray();
   tC->SetBranchAddress("TRDcluster", &clusters);
@@ -245,7 +245,7 @@ Bool_t AliEveTRDLoader::LoadDigits(TTree *tD)
 
   AliInfo("Loading ...");
 
-  if(!fChildren.size()) return kTRUE;
+  if(!fChildren.size()) return kFALSE;
 
   AliEveTRDChamber *chmb;
   AliTRDdigitsManager dm;
@@ -267,7 +267,7 @@ Bool_t AliEveTRDLoader::LoadTracklets(TTree *tT)
   // Load tracklets.
 
   AliInfo("Loading ...");
-  if(!fChildren.size()) return kTRUE;
+  if(!fChildren.size()) return kFALSE;
 
   TObjArray *tracks = new TObjArray();
   tT->SetBranchAddress("TRDmcmTracklet",&tracks);

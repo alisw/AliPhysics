@@ -8,10 +8,13 @@
 #include <TGTextView.h>
 #include <TGListBox.h>
 #include <TGMsgBox.h>
-//#include <TEveMacro.h>
+#include <TGLabel.h>
+#include <TG3DLine.h>
+#include <TEveMacro.h>
 #include <TObjString.h>
 #include <TSystem.h>
 #include <TROOT.h>
+#include <AliTRDtrackV1.h>
 #include <EveDet/AliEveTRDTrackList.h>
 
 class AliEveTRDTrackListEditor: public TGedFrame
@@ -23,37 +26,45 @@ public:
 
   virtual void SetModel(TObject* obj);
 
-  void ApplyMacros();         // Apply macros
-  void BrowseMacros();        // Browse macros
-  void HandleMacroPathSet();  // Handle "macro path set"-event 
-  void RemoveMacros();        // Remove macros
+  void ApplyMacros();               // Apply macros
+  void BrowseMacros();              // Browse macros
+  void HandleMacroPathSet();        // Handle "macro path set"-event 
+  void RemoveMacros();              // Remove macros
 
 protected:
-  AliEveTRDTrackList* fM;     // Model object.
+  AliEveTRDTrackList* fM;           // Model object.
 
 private:
   AliEveTRDTrackListEditor(const AliEveTRDTrackListEditor&);            // Not implemented
   AliEveTRDTrackListEditor& operator=(const AliEveTRDTrackListEditor&); // Not implemented 
 
-  void AddMacro(const Char_t* pathname);   // Add macro to the macro list
-  void UpdateMacroList();                  // Updates the macro list
+  void AddMacro(const Char_t* Entryame, const Char_t* name,     // Add macro to the macro list
+                const Char_t* pathname);
+  void UpdateMacroList();                                       // Updates the macro list
 
 
-  TGVerticalFrame*  fMainFrame; // Top frame for macro functionality.
-  TGVerticalFrame*  fMemberFrame; // Top frame for member list
-  TGHorizontalFrame* fBrowseFrame; // For searching macros
+  TGVerticalFrame*  fMainFrame;             // Top frame for macro functionality.
+  TGVerticalFrame*  fMemberFrame;           // Top frame for member list
+  TGHorizontalFrame* fBrowseFrame;          // For searching macros
 
-  TGTextButton*   bBrowse; // Browse button
-  TGTextButton*   bApplyMacros; // Apply macros button
-  TGTextButton*   bRemoveMacros; // Remove macros button
-  TGTextEntry*    teField; // Text field to insert macro path manually
-  TGTextView*     tvMemberList; // To display the list of members
-  TGListBox*      tlMacroList; // To display the list of macros
+  TGTextButton*   bBrowse;                  // Browse button
+  TGTextButton*   bApplyMacros;             // Apply macros button
+  TGTextButton*   bRemoveMacros;            // Remove macros button
+  TGTextEntry*    teField;                  // Text field to insert macro path manually
+  TGTextView*     tvMemberList;             // To display the list of members
+  TGListBox*      tlMacroList;              // To display the list of (process) macros
+  TGListBox*      tlMacroSelList;           // To display the list of (selection) macros
 
-  TGFileInfo*     fileInfo; // Holds data about opening macros
-  Char_t**    fileTypes; // File types (for macros)
+  TGFileInfo*     fileInfo;                 // Holds data about opening macros
+  Char_t**    fileTypes;                    // File types (for macros)
 
-  ClassDef(AliEveTRDTrackListEditor, 0); // Editor for AliEveTRDTrackList.
+  // Some labels
+  TGLabel *fLabel1, *fLabel2, *fLabel3;
+  
+  // Some lines
+  TGHorizontal3DLine *fLine1, *fLine2, *fLine3;
+
+  ClassDef(AliEveTRDTrackListEditor, 0)    // Editor for AliEveTRDTrackList.
 };
 
 #endif

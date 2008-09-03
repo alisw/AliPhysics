@@ -14,13 +14,14 @@ public:
   AliEveTRDTrackList(const Text_t* n = "AliEveTRDTrackList", const Text_t* t = "", Bool_t doColor = kFALSE);
  
 protected:
-  TList* macroList; // List of macros
+  TList* macroList;                 // List of (process) macros
+  TList* macroSelList;              // List of (selection) macros
 
 private:
   AliEveTRDTrackList(const AliEveTRDTrackList&);            // Not implemented
   AliEveTRDTrackList& operator=(const AliEveTRDTrackList&); // Not implemented
 
-  ClassDef(AliEveTRDTrackList, 0); // Class containing a list of tracks
+  ClassDef(AliEveTRDTrackList, 0);  // Class containing a list of tracks
 };
 
 #endif
