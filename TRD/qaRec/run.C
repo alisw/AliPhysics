@@ -17,21 +17,33 @@
 //   Markus Fasel (m.Fasel@gsi.de) 
 
 #ifndef __CINT__
+#include <Riostream.h>
+
 #include "TStopwatch.h"
 #include "TMemStat.h"
 #include "TMemStatViewerGUI.h"
 
 #include "TROOT.h"
 #include "TSystem.h"
+#include "TError.h"
 #include "TChain.h"
 
+#include "AliMagFMaps.h"
+#include "AliTracker.h"
 #include "AliLog.h"
 #include "AliCDBManager.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisDataContainer.h"
-//#include "AliESDInputHandler.h"
+#include "AliMCEventHandler.h"
+#include "AliESDInputHandler.h"
 
+#include "TRD/AliTRDtrackerV1.h"
+#include "TRD/AliTRDcalibDB.h"
 #include "TRD/qaRec/AliTRDtrackInfoGen.h"
+#include "TRD/qaRec/AliTRDtrackingEfficiency.h"
+#include "TRD/qaRec/AliTRDtrackingEfficiencyCombined.h"
+#include "TRD/qaRec/AliTRDtrackingResolution.h"
+#include "TRD/qaRec/AliTRDcalibration.h"
 #endif
 
 #define BIT(n)        (1 << (n))
@@ -48,12 +60,17 @@ enum AliTRDrecoTasks{
   ,kTrackingResolution = 2
   ,kCalibration = 3
 };
+
+TChain* CreateESDChain(const char* filename = 0x0, Int_t nfiles=-1 );
 void run(const Char_t *files=0x0, Char_t *tasks="ALL", Int_t nmax=-1)
 {
   TMemStat *mem = 0x0;
-  if(MEM) mem = new TMemStat("new, gnubuildin");
-  if(MEM) mem->AddStamp("Start");
-
+  if(MEM){ 
+    gSystem->Load("libMemStat.so");
+    gSystem->Load("libMemStatGui.so");
+    mem = new TMemStat("new, gnubuildin");
+    mem->AddStamp("Start");
+  }
 
   TStopwatch timer;
   timer.Start();
@@ -91,12 +108,17 @@ void run(const Char_t *files=0x0, Char_t *tasks="ALL", Int_t nmax=-1)
     }
   }
   printf("\n\tRUNNING TRAIN FOR TASKS:\n");
-  for(itask = 0; itask < fknTasks; itask++){
+  for(Int_t itask = 0; itask < fknTasks; itask++){
     if(TESTBIT(fSteerTask, itask)) printf("\t%s\n", fTaskName[itask]);
   }
 
+  // define task list pointers;
+  AliAnalysisTask *taskPtr[fknTasks];
+  memset(taskPtr, 0, fknTasks*sizeof(AliAnalysisTask*));
+  Int_t jtask = 0;
+
   //____________________________________________//
-  gROOT->LoadMacro(Form("%s/TRD/qaRec/CreateESDChain.C", gSystem->ExpandPathName("$ALICE_ROOT")));
+  //gROOT->LoadMacro(Form("%s/TRD/qaRec/CreateESDChain.C", gSystem->ExpandPathName("$ALICE_ROOT")));
   TChain *chain = CreateESDChain(files, nmax);
   //chain->SetBranchStatus("*", 0);
   chain->SetBranchStatus("*FMD*",0);
@@ -113,9 +135,9 @@ void run(const Char_t *files=0x0, Char_t *tasks="ALL", Int_t nmax=-1)
   // Make the analysis manager
   AliAnalysisManager *mgr = new AliAnalysisManager("TRD Track Info Manager");
   //mgr->SetSpecialOutputLocation(source); // To Be Changed
-  AliVEventHandler* esdH = new AliESDInputHandler;
-  mgr->SetInputEventHandler(esdH);  
-  if(fHasMCdata) mgr->SetMCtruthEventHandler(new AliMCEventHandler());
+  AliVEventHandler *esdH = 0x0, *mcH = 0x0;
+  mgr->SetInputEventHandler(esdH = new AliESDInputHandler);
+  if(fHasMCdata) mgr->SetMCtruthEventHandler(mcH = new AliMCEventHandler());
   //mgr->SetDebugLevel(10);
 
   //____________________________________________
@@ -140,6 +162,7 @@ void run(const Char_t *files=0x0, Char_t *tasks="ALL", Int_t nmax=-1)
     AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("TrackingEff", TList::Class(), AliAnalysisManager::kOutputContainer, "TRD.TaskTrackingEff.root");
     mgr->ConnectInput( task2, 0, coutput1);
     mgr->ConnectOutput(task2, 0, coutput2);
+    taskPtr[jtask++] = task2;
   }
 
   //____________________________________________
@@ -152,6 +175,7 @@ void run(const Char_t *files=0x0, Char_t *tasks="ALL", Int_t nmax=-1)
     AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("TrackingEffMC", TObjArray::Class(), AliAnalysisManager::kOutputContainer, "TRD.TaskTrackingEffMC.root");
     mgr->ConnectInput( task3, 0, coutput1);
     mgr->ConnectOutput(task3, 0, coutput3);
+    taskPtr[jtask++] = task3;
   }
 
   //____________________________________________
@@ -165,6 +189,7 @@ void run(const Char_t *files=0x0, Char_t *tasks="ALL", Int_t nmax=-1)
     AliAnalysisDataContainer *coutput4 = mgr->CreateContainer("Resolution", TList::Class(), AliAnalysisManager::kOutputContainer, "TRD.TaskResolution.root");
     mgr->ConnectInput( task4, 0, coutput1);
     mgr->ConnectOutput(task4, 0, coutput4);
+    taskPtr[jtask++] = task4;
   }
 
   //____________________________________________
@@ -178,8 +203,9 @@ void run(const Char_t *files=0x0, Char_t *tasks="ALL", Int_t nmax=-1)
     mgr->AddTask(task5);
     // Create containers for input/output
     AliAnalysisDataContainer *coutput5 = mgr->CreateContainer("Calibration", TList::Class(), AliAnalysisManager::kOutputContainer, "TRD.TaskCalibration.root");
-    mgr->ConnectInput(task5,0,coutput1);
-    mgr->ConnectOutput(task5,0,coutput5);
+    mgr->ConnectInput(task5, 0, coutput1);
+    mgr->ConnectOutput(task5, 0, coutput5);
+    taskPtr[jtask++] = task5;
   }
   
   if (!mgr->InitAnalysis()) return;
@@ -193,12 +219,51 @@ void run(const Char_t *files=0x0, Char_t *tasks="ALL", Int_t nmax=-1)
 
  
   // initialize TRD settings
+  AliMagFMaps *field = new AliMagFMaps("Maps","Maps", 2, 1., 10., AliMagFMaps::k5kG);
+  AliTracker::SetFieldMap(field, kTRUE);
   AliTRDtrackerV1::SetNTimeBins(AliTRDcalibDB::Instance()->GetNumberOfTimeBins());
+
+
   mgr->StartAnalysis("local",chain);
 
   timer.Stop();
   timer.Print();  
 
+  delete field;
+  delete cdbManager;
+  for(Int_t it=jtask-1; it>=0; it--) delete taskPtr[it];
+  delete task1;
+  if(mcH) delete mcH;
+  delete esdH;
+  delete mgr;
+  delete chain;
   if(MEM) delete mem;
   if(MEM) TMemStatViewerGUI::ShowGUI();
+}
+
+
+TChain* CreateESDChain(const char* filename, Int_t nfiles)
+{
+  // Create the chain
+  TChain* chain = new TChain("esdTree");
+
+  if(!filename){
+    chain->Add(Form("%s/AliESDs.root", gSystem->pwd()));
+    return chain;
+  }
+
+
+  // read ESD files from the input list.
+  ifstream in;
+  in.open(filename);
+  TString esdfile;
+  while(in.good() && (nfiles--) ) {
+    in >> esdfile;
+    if (!esdfile.Contains("root")) continue; // protection
+    chain->Add(esdfile.Data());
+  }
+
+  in.close();
+
+  return chain;
 }
