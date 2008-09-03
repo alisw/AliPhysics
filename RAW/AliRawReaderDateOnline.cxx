@@ -52,7 +52,10 @@ AliRawReaderDateOnline::AliRawReaderDateOnline(
 
 #ifdef ALI_DATE
 
-  fSelectEventType = PHYSICS_EVENT;
+
+  //  Removal of the selection of physics events
+  //  Requested by Filimon and FMD experts
+  //  fSelectEventType = PHYSICS_EVENT;
 
   int status;
 
