@@ -163,56 +163,63 @@ void AliAnalysisTaskSE::CreateOutputObjects()
 	if (!(handler->IsStandard())) {
 	    if ((handler->NeedsHeaderReplication()) && !(fgAODHeader)) 
 		{
-		    if (fDebug > 1) AliInfo("Replicating header");
-		    fgAODHeader = new AliAODHeader;
-		    handler->AddBranch("AliAODHeader", &fgAODHeader);
+		 if (fDebug > 1) AliInfo("Replicating header");
+		 fgAODHeader = new AliAODHeader;
+		 handler->AddBranch("AliAODHeader", &fgAODHeader);
 		}
 	    if ((handler->NeedsTracksBranchReplication()) && !(fgAODTracks))      
 	    {   
 		if (fDebug > 1) AliInfo("Replicating track branch\n");
 		fgAODTracks = new TClonesArray("AliAODTrack",500);
+		fgAODTracks->SetName("tracks");
 		handler->AddBranch("TClonesArray", &fgAODTracks);
 	    }    
 	    if ((handler->NeedsVerticesBranchReplication()) && !(fgAODVertices))
 	    {
 		if (fDebug > 1) AliInfo("Replicating vertices branch\n");
 		fgAODVertices = new TClonesArray("AliAODVertex",500);
+		fgAODVertices->SetName("vertices");
 		handler->AddBranch("TClonesArray", &fgAODVertices);
 	    }	
 	    if ((handler->NeedsV0sBranchReplication()) && !(fgAODV0s))	  
 	    {   
 		if (fDebug > 1) AliInfo("Replicating V0s branch\n");
 		fgAODV0s = new TClonesArray("AliAODv0",500);
+		fgAODV0s->SetName("v0s");
 		handler->AddBranch("TClonesArray", &fgAODV0s);
 	    }
 	    if ((handler->NeedsTrackletsBranchReplication()) && !(fgAODTracklets))	  
 	    {   
 		if (fDebug > 1) AliInfo("Replicating Tracklets branch\n");
-		fgAODTracklets = new AliAODTracklets("AliAODTracklets","AliAODTracklets");
+		fgAODTracklets = new AliAODTracklets("tracklets","tracklets");
 		handler->AddBranch("AliAODTracklets", &fgAODTracklets);
 	    }
 	    if ((handler->NeedsPMDClustersBranchReplication()) && !(fgAODPMDClusters))	  
 	    {   
 		if (fDebug > 1) AliInfo("Replicating PMDClusters branch\n");
 		fgAODPMDClusters = new TClonesArray("AliAODPmdCluster",500);
+		fgAODPMDClusters->SetName("pmdClusters");
 		handler->AddBranch("TClonesArray", &fgAODPMDClusters);
 	    }
 	    if ((handler->NeedsJetsBranchReplication()) && !(fgAODJets))	  
 	    {   
 		if (fDebug > 1) AliInfo("Replicating Jets branch\n");
 		fgAODJets = new TClonesArray("AliAODJet",500);
+		fgAODJets->SetName("jets");
 		handler->AddBranch("TClonesArray", &fgAODJets);
 	    }
 	    if ((handler->NeedsFMDClustersBranchReplication()) && !(fgAODFMDClusters))	  
 	    {   
 		AliInfo("Replicating FMDClusters branch\n");
 		fgAODFMDClusters = new TClonesArray("AliAODFmdCluster",500);
+		fgAODFMDClusters->SetName("fmdClusters");
 		handler->AddBranch("TClonesArray", &fgAODFMDClusters);
 	    }
 	    if ((handler->NeedsCaloClustersBranchReplication()) && !(fgAODCaloClusters))	  
 	    {   
 		if (fDebug > 1) AliInfo("Replicating CaloClusters branch\n");
 		fgAODCaloClusters = new TClonesArray("AliAODCaloCluster",500);
+		fgAODCaloClusters->SetName("caloClusters");
 		handler->AddBranch("TClonesArray", &fgAODCaloClusters);
 	    }
 	}
