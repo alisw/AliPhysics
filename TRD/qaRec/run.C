@@ -16,11 +16,30 @@
 //   Alex Bercuci (A.Bercuci@gsi.de) 
 //   Markus Fasel (m.Fasel@gsi.de) 
 
+#ifndef __CINT__
+#include "TStopwatch.h"
+#include "TMemStat.h"
+#include "TMemStatViewerGUI.h"
+
+#include "TROOT.h"
+#include "TSystem.h"
+#include "TChain.h"
+
+#include "AliLog.h"
+#include "AliCDBManager.h"
+#include "AliAnalysisManager.h"
+#include "AliAnalysisDataContainer.h"
+//#include "AliESDInputHandler.h"
+
+#include "TRD/qaRec/AliTRDtrackInfoGen.h"
+#endif
+
 #define BIT(n)        (1 << (n))
 #define SETBIT(n,i)   ((n) |= BIT(i))
 #define TESTBIT(n,i)  ((Bool_t)(((n) & BIT(i)) != 0))
 #define CLEARBIT(n,i) ((n) &= ~BIT(i))
 
+Bool_t MEM = kFALSE;
 const Int_t fknTasks = 4;
 Char_t *fTaskName[fknTasks] = {"Barrel Tracking Effiency", "Combined Tracking Efficiency", "Tracking Resolution", "Calibration"};
 enum AliTRDrecoTasks{
@@ -31,6 +50,9 @@ enum AliTRDrecoTasks{
 };
 void run(const Char_t *files=0x0, Char_t *tasks="ALL", Int_t nmax=-1)
 {
+  TMemStat *mem = 0x0;
+  if(MEM) mem = new TMemStat("new, gnubuildin");
+  if(MEM) mem->AddStamp("Start");
 
 
   TStopwatch timer;
@@ -115,7 +137,7 @@ void run(const Char_t *files=0x0, Char_t *tasks="ALL", Int_t nmax=-1)
     task2->SetDebugLevel(1);
     mgr->AddTask(task2);
     //Create containers for input/output
-    AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("Efficiency", TList::Class(), AliAnalysisManager::kOutputContainer, "TRD.TrackingEfficiency.root");
+    AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("TrackingEff", TList::Class(), AliAnalysisManager::kOutputContainer, "TRD.TaskTrackingEff.root");
     mgr->ConnectInput( task2, 0, coutput1);
     mgr->ConnectOutput(task2, 0, coutput2);
   }
@@ -127,7 +149,7 @@ void run(const Char_t *files=0x0, Char_t *tasks="ALL", Int_t nmax=-1)
     task3->SetDebugLevel(0);
     mgr->AddTask(task3);
     // Create containers for input/output
-    AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("Efficiency2", TObjArray::Class(), AliAnalysisManager::kOutputContainer, "TRD.TrackingEfficiencyCombined.root");
+    AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("TrackingEffMC", TObjArray::Class(), AliAnalysisManager::kOutputContainer, "TRD.TaskTrackingEffMC.root");
     mgr->ConnectInput( task3, 0, coutput1);
     mgr->ConnectOutput(task3, 0, coutput3);
   }
@@ -140,7 +162,7 @@ void run(const Char_t *files=0x0, Char_t *tasks="ALL", Int_t nmax=-1)
     task4->SetDebugLevel(1);
     mgr->AddTask(task4);
     // Create containers for input/output
-    AliAnalysisDataContainer *coutput4 = mgr->CreateContainer("Resolution", TList::Class(), AliAnalysisManager::kOutputContainer, "TRD.TrackingResolution.root");
+    AliAnalysisDataContainer *coutput4 = mgr->CreateContainer("Resolution", TList::Class(), AliAnalysisManager::kOutputContainer, "TRD.TaskResolution.root");
     mgr->ConnectInput( task4, 0, coutput1);
     mgr->ConnectOutput(task4, 0, coutput4);
   }
@@ -148,25 +170,35 @@ void run(const Char_t *files=0x0, Char_t *tasks="ALL", Int_t nmax=-1)
   //____________________________________________
   // TRD calibration
   if(TESTBIT(fSteerTask, kCalibration)){
-    AliTRDcalib *task5 = new AliTRDcalib();
+    AliTRDcalibration *task5 = new AliTRDcalibration();
     task5->SetLow(0);
     task5->SetHigh(30);
     task5->SetDebugLevel(0);
     task5->SetFillZero(kFALSE);
     mgr->AddTask(task5);
     // Create containers for input/output
-    AliAnalysisDataContainer *coutput5 = mgr->CreateContainer("Calibration", TList::Class(), AliAnalysisManager::kOutputContainer, "TRD.Calibration.root");
-    mgr->ConnectInput(task5,0,cinput1);
+    AliAnalysisDataContainer *coutput5 = mgr->CreateContainer("Calibration", TList::Class(), AliAnalysisManager::kOutputContainer, "TRD.TaskCalibration.root");
+    mgr->ConnectInput(task5,0,coutput1);
     mgr->ConnectOutput(task5,0,coutput5);
   }
   
   if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
-  
+
+
+  AliCDBManager *cdbManager = AliCDBManager::Instance();
+  cdbManager->SetDefaultStorage("local://$ALICE_ROOT");
+  //cdbManager->SetSpecificStorage("TRD/Calib/FEE","local:///u/bailhach/aliroot/database30head/database");
+  cdbManager->SetRun(0);
+
+ 
   // initialize TRD settings
-  AliTRDtrackerV1::SetNTimeBins(24);
+  AliTRDtrackerV1::SetNTimeBins(AliTRDcalibDB::Instance()->GetNumberOfTimeBins());
   mgr->StartAnalysis("local",chain);
 
   timer.Stop();
-  timer.Print();
+  timer.Print();  
+
+  if(MEM) delete mem;
+  if(MEM) TMemStatViewerGUI::ShowGUI();
 }
