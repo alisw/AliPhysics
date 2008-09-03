@@ -24,7 +24,7 @@ class AliTRDtrackInfoGen : public AliAnalysisTask{
 public:
 
   AliTRDtrackInfoGen(const Char_t *name = "TRD Track Info");
-  ~AliTRDtrackInfoGen(){};
+  virtual ~AliTRDtrackInfoGen();
   
   void  ConnectInputData(Option_t *);
   void  CreateOutputObjects();

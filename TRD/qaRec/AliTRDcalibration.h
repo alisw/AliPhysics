@@ -23,7 +23,7 @@ class AliTRDcalibration : public AliAnalysisTask
 {
 public:
   AliTRDcalibration(const char *name = "AliTRDcalibration");
-  virtual ~AliTRDcalibration() {}
+  virtual ~AliTRDcalibration();
   
   virtual void   ConnectInputData(Option_t *);
   virtual void   CreateOutputObjects();

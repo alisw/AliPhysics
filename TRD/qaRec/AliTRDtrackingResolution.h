@@ -24,7 +24,7 @@ class AliTRDtrackInfo;
 class AliTRDtrackingResolution : public AliAnalysisTask{
 public:
   AliTRDtrackingResolution(const char *name = "TRD Tracking Resolution");
-  ~AliTRDtrackingResolution(){};
+  virtual ~AliTRDtrackingResolution();
   
   void    ConnectInputData(Option_t *);
   void    CreateOutputObjects();

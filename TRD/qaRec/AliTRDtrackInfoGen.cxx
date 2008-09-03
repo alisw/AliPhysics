@@ -83,6 +83,16 @@ AliTRDtrackInfoGen::AliTRDtrackInfoGen(const Char_t *name):
 }
 
 //____________________________________________________________________
+AliTRDtrackInfoGen::~AliTRDtrackInfoGen()
+{
+  if(fTrackInfo) delete fTrackInfo;
+  if(fObjectContainer){
+    fObjectContainer->Delete();
+    delete fObjectContainer;
+  }
+}
+
+//____________________________________________________________________
 void AliTRDtrackInfoGen::ConnectInputData(Option_t *)
 {
   //

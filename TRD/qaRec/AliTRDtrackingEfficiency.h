@@ -21,7 +21,7 @@ class AliTRDtrackingEfficiency : public AliAnalysisTask
 {
 public:
   AliTRDtrackingEfficiency(const Char_t *name = "TRD Tracking efficiency");
-  ~AliTRDtrackingEfficiency(){};
+  virtual ~AliTRDtrackingEfficiency();
   void  ConnectInputData(Option_t *);
   void  CreateOutputObjects();
   Int_t GetDebugLevel() const {return fDebugLevel;} 

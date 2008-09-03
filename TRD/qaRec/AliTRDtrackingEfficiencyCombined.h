@@ -17,28 +17,28 @@ class TObjArray;
 class TTreeSRedirector;
 
 class AliTRDtrackingEfficiencyCombined : public AliAnalysisTask{
-	public:
-		AliTRDtrackingEfficiencyCombined(const char *name = "combined tracking efficiency");
-		~AliTRDtrackingEfficiencyCombined(){};
-		
-		virtual void ConnectInputData(Option_t *);
-		virtual void CreateOutputObjects();
-		virtual void Exec(Option_t *);
-		virtual void Terminate(Option_t *);
-		
-		void SetDebugLevel(Int_t debugLevel) { fDebugLevel = debugLevel;}
-		int GetDebugLevel() const { return fDebugLevel; }
-		
-	private:
-		AliTRDtrackingEfficiencyCombined(const AliTRDtrackingEfficiencyCombined &);
-		AliTRDtrackingEfficiencyCombined& operator=(const AliTRDtrackingEfficiencyCombined &);
-		
-		TObjArray *fObjectContainer;	  	       //! Container for output histograms
-		TObjArray *fTrackInfos;			       //! Input Container
-		Int_t fDebugLevel;                             // Debug level
-		TTreeSRedirector *fDebugStream;	 	       // Debug streamer
-		
-		ClassDef(AliTRDtrackingEfficiencyCombined, 1); // Combined tracking efficiency
+public:
+  AliTRDtrackingEfficiencyCombined(const char *name = "combined tracking efficiency");
+  virtual ~AliTRDtrackingEfficiencyCombined();
+  
+  virtual void ConnectInputData(Option_t *);
+  virtual void CreateOutputObjects();
+  virtual void Exec(Option_t *);
+  virtual void Terminate(Option_t *);
+  
+  void SetDebugLevel(Int_t debugLevel) { fDebugLevel = debugLevel;}
+  int GetDebugLevel() const { return fDebugLevel; }
+  
+private:
+  AliTRDtrackingEfficiencyCombined(const AliTRDtrackingEfficiencyCombined &);
+  AliTRDtrackingEfficiencyCombined& operator=(const AliTRDtrackingEfficiencyCombined &);
+  
+  TObjArray *fObjectContainer;	  	       //! Container for output histograms
+  TObjArray *fTrackInfos;			       //! Input Container
+  Int_t fDebugLevel;                             // Debug level
+  TTreeSRedirector *fDebugStream;	 	       // Debug streamer
+  
+  ClassDef(AliTRDtrackingEfficiencyCombined, 1); // Combined tracking efficiency
 };
 		
 #endif

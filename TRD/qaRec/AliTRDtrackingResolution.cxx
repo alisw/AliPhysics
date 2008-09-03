@@ -65,16 +65,19 @@ AliTRDtrackingResolution::AliTRDtrackingResolution(const char * name):
   ,fDebugLevel(0)
   ,fDebugStream(0x0)
 {
-  AliCDBManager *cdb = AliCDBManager::Instance();
-  cdb->SetDefaultStorage("local://$ALICE_ROOT");
-  cdb->SetRun(0);
   TGeoManager::Import("geometry.root");
   fReconstructor = new AliTRDReconstructor();
   fReconstructor->SetRecoParam(AliTRDrecoParam::GetLowFluxParam());
-  AliTRDtrackerV1::SetNTimeBins(24);
 
   DefineInput(0, TObjArray::Class());
   DefineOutput(0, TList::Class());
+}
+
+//________________________________________________________
+AliTRDtrackingResolution::~AliTRDtrackingResolution()
+{
+  fHistos->Delete(); delete fHistos;
+  delete fReconstructor;
 }
 
 //________________________________________________________

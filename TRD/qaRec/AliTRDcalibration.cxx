@@ -80,12 +80,23 @@ AliTRDcalibration::AliTRDcalibration(const char *name)
   DefineOutput(0, TList::Class());
   
   
+}  
+
+
+//________________________________________________________________________
+AliTRDcalibration::~AliTRDcalibration()
+{
+  
+  //delete AliTRDCalibraFillHisto::Instance();
+
+  fListHist->Delete();
+  delete fListHist;
 }
+
 //________________________________________________________________________
 void AliTRDcalibration::ConnectInputData(Option_t *) 
 {
   fTracks = dynamic_cast<TObjArray*>(GetInputData(0));
-  
 }
 //________________________________________________________________________
 void AliTRDcalibration::CreateOutputObjects() 

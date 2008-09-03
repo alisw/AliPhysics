@@ -28,6 +28,7 @@
 #include <TObjArray.h>
 #include <TList.h>
 #include <TProfile.h>
+#include "TTreeStream.h"
 
 #include "AliESDtrack.h"
 #include "AliTrackReference.h"
@@ -56,6 +57,19 @@ AliTRDtrackingEfficiency::AliTRDtrackingEfficiency(const Char_t *name):
 
   DefineInput(0, TObjArray::Class());
   DefineOutput(0, TList::Class());
+}
+
+//____________________________________________________________________
+AliTRDtrackingEfficiency::~AliTRDtrackingEfficiency()
+{
+  if(fObjectContainer){
+    fObjectContainer->Delete();
+    delete fObjectContainer;
+  }
+  if(fMissed){
+    fMissed->Delete();
+    delete fMissed;
+  }
 }
 
 //____________________________________________________________________
@@ -242,7 +256,7 @@ void AliTRDtrackingEfficiency::Exec(Option_t *)
   }
 
   //if(fDebugLevel>=1)
-  printf("%3d Tracks: ESD[%3d] TPC[%3d] TRD[%3d | %5.2f%%] Off[%d]\n", (Int_t)AliAnalysisManager::GetAnalysisManager()->GetCurrentEntry(), fTracks->GetEntriesFast(), nTPC, nTRD, 1.E2*nTRD/float(nTPC), fMissed->GetEntriesFast());
+  printf("%3d Tracks: ESD[%3d] TPC[%3d] TRD[%3d | %5.2f%%] Off[%d]\n", (Int_t)AliAnalysisManager::GetAnalysisManager()->GetCurrentEntry(), fTracks->GetEntriesFast(), nTPC, nTRD, nTPC ? 1.E2*nTRD/float(nTPC) : 0., fMissed->GetEntriesFast());
 
   //fMissed->Delete();
 	// check for double countings
@@ -261,6 +275,8 @@ void AliTRDtrackingEfficiency::Terminate(Option_t *)
   //
   // Terminate
   //
+
+  if(fDebugStream) delete fDebugStream;
 
   fObjectContainer = dynamic_cast<TList*>(GetOutputData(0));
   if (!fObjectContainer) {

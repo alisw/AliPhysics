@@ -58,6 +58,16 @@ AliTRDtrackingEfficiencyCombined::AliTRDtrackingEfficiencyCombined(const char *n
   DefineOutput(0, TObjArray::Class());
 }
 
+
+//_____________________________________________________________________________
+AliTRDtrackingEfficiencyCombined::~AliTRDtrackingEfficiencyCombined()
+{
+  if(fObjectContainer){
+    //fObjectContainer->Delete();
+    delete fObjectContainer;
+  }
+}
+
 //_____________________________________________________________________________
 void AliTRDtrackingEfficiencyCombined::ConnectInputData(Option_t *){
   //
