@@ -589,8 +589,8 @@ void AliMUONClusterFinderMLEM::BuildPixArrayOneCathode(AliMUONCluster& cluster)
 //  AliDebug(2,Form("cluster.Multiplicity=%d",cluster.Multiplicity()));
 
   TVector2 dim = cluster.MinPadDimensions (-1, kFALSE);
-  Double_t width[2] = {dim.X(), dim.Y()}, xy0[2];
-  Int_t found[2] = {0}, mult = cluster.Multiplicity();
+  Double_t width[2] = {dim.X(), dim.Y()}, xy0[2]={99999,99999};
+  Int_t found[2] = {0,0}, mult = cluster.Multiplicity();
 
   for ( Int_t i = 0; i < mult; ++i) {
     AliMUONPad* pad = cluster.Pad(i);
@@ -625,7 +625,7 @@ void AliMUONClusterFinderMLEM::BuildPixArrayOneCathode(AliMUONCluster& cluster)
 
   // Adjust limits
   //width[0] /= 2; width[1] /= 2; // just for check
-  Int_t nbins[2];
+  Int_t nbins[2]={0,0};
   for (Int_t i = 0; i < 2; ++i) {
     Double_t dist = (min[i] - xy0[i]) / width[i] / 2;
     if (TMath::Abs(dist) < 1.e-6) dist = -1.e-6;
@@ -758,9 +758,11 @@ AliMUONClusterFinderMLEM::ComputeCoefficients(AliMUONCluster& cluster,
 {
   /// Compute coefficients needed for MLEM algorithm
   
+  Int_t npadTot = cluster.Multiplicity();
   Int_t nPix = fPixArray->GetLast()+1;
   
   //memset(probi,0,nPix*sizeof(Double_t));
+  for (Int_t j = 0; j < npadTot*nPix; ++j) coef[j] = 0.;
   for (Int_t j = 0; j < nPix; ++j) probi[j] = 0.;
 
   Int_t mult = cluster.Multiplicity();
@@ -1142,6 +1144,7 @@ void AliMUONClusterFinderMLEM::Mlem(AliMUONCluster& cluster,
     {
       Pixel(ipix)->SetChargeBackup(0);
       // Correct each pixel
+      probi1[ipix] = 0;
       if (probi[ipix] < 0.01) continue; // skip "invisible" pixel
       Double_t sum = 0;
       probi1[ipix] = probMax;
