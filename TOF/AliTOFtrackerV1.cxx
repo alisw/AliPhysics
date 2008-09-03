@@ -15,7 +15,7 @@
 
 //--------------------------------------------------------------------//
 //                                                                    //
-// AliTOFtrackerV1 Class                                                //
+// AliTOFtrackerV1 Class                                              //
 // Task: Perform association of the ESD tracks to TOF Clusters        //
 // and Update ESD track with associated TOF Cluster parameters        //
 //                                                                    //
@@ -43,8 +43,8 @@
 #include "AliGeomManager.h"
 #include "AliCDBManager.h"
 
-#include "AliTOFcalib.h"
 #include "AliTOFRecoParam.h"
+#include "AliTOFReconstructor.h"
 #include "AliTOFcluster.h"
 #include "AliTOFGeometry.h"
 #include "AliTOFtrackerV1.h"
@@ -81,17 +81,8 @@ AliTOFtrackerV1::AliTOFtrackerV1():
   fHRecSigZVsPWin(0x0)
  { 
   //AliTOFtrackerV1 main Ctor
-   
-   // Read the reconstruction parameters from the OCDB
-   AliTOFcalib *calib = new AliTOFcalib();
-   fRecoParam = (AliTOFRecoParam*)calib->ReadRecParFromCDB("TOF/Calib",-1);
-   if(fRecoParam->GetApplyPbPbCuts())fRecoParam=fRecoParam->GetPbPbparam();
-   Double_t parPID[2];   
-   parPID[0]=fRecoParam->GetTimeResolution();
-   parPID[1]=fRecoParam->GetTimeNSigma();
-   fPid=new AliTOFpidESD(parPID);
+
    InitCheckHists();
-   delete calib;
 
 }
 //_____________________________________________________________________________
@@ -195,6 +186,20 @@ Int_t AliTOFtrackerV1::PropagateBack(AliESDEvent* event) {
   // Gets seeds from ESD event and Match with TOF Clusters
   //
 
+  // initialize RecoParam for current event
+
+  AliInfo("Initializing params for TOF... ");
+
+  fRecoParam = AliTOFReconstructor::GetRecoParam();  // instantiate reco param from STEER...
+  if (fRecoParam == 0x0) { 
+    AliFatal("No Reco Param found for TOF!!!");
+  }
+  //fRecoParam->Dump();
+  if(fRecoParam->GetApplyPbPbCuts())fRecoParam=fRecoParam->GetPbPbparam();
+  Double_t parPID[2];   
+  parPID[0]=fRecoParam->GetTimeResolution();
+  parPID[1]=fRecoParam->GetTimeNSigma();
+  fPid=new AliTOFpidESD(parPID);
 
   //Initialise some counters
 
@@ -367,7 +372,7 @@ void AliTOFtrackerV1::MatchTracks( ){
     Double_t cov[15]; trackTOFin->GetExternalCovariance(cov);
 
     Double_t z    = par[1];   
-    Double_t dz   =  scaleFact*3.*TMath::Sqrt(cov[2]+dZ*dZ/12);
+    Double_t dz   =  scaleFact*3.*TMath::Sqrt(cov[2]+dZ*dZ/12.);
     Double_t dphi =  scaleFact*3.*TMath::Sqrt(cov[0]+dY*dY/12.)/sensRadius; 
 
     Double_t phi=TMath::ATan2(par[0],x) + trackTOFin->GetAlpha();
@@ -443,13 +448,14 @@ void AliTOFtrackerV1::MatchTracks( ){
 
     fnmatch++;
 
-    AliDebug(2, Form("%7i     %7i     %10i     %10i  %10i  %10i",
+    AliDebug(2, Form("%7i     %7i     %10i     %10i  %10i  %10i      %7i",
 		     iseed,
-		     fnmatch,
+		     fnmatch-1,
 		     TMath::Abs(trackTOFin->GetLabel()),
 		     bestCluster->GetLabel(0), 
 		     bestCluster->GetLabel(1), 
-		     bestCluster->GetLabel(2))); // AdC
+		     bestCluster->GetLabel(2),
+		     idclus)); // AdC
 
     bestCluster->Use(); 
     if (
@@ -708,6 +714,23 @@ void AliTOFtrackerV1::InitCheckHists() {
 
   //Init histos for Digits/Reco QA and Calibration
 
+  TDirectory *dir = gDirectory;
+  TFile *logFileTOF = 0;
+
+  TSeqCollection *list = gROOT->GetListOfFiles();
+  int n = list->GetEntries();
+  Bool_t isThere=kFALSE;
+  for(int i=0; i<n; i++) {
+    logFileTOF = (TFile*)list->At(i);
+    if (strstr(logFileTOF->GetName(), "TOFQA.root")){
+      isThere=kTRUE;
+      break;
+    } 
+  }
+
+  if(!isThere)logFileTOF = new TFile( "TOFQA.root","RECREATE");
+  logFileTOF->cd(); 
+
   //Digits "QA" 
   fHDigClusMap = new TH2F("TOFDig_ClusMap", "",182,0.5,182.5,864, 0.5,864.5);  
   fHDigNClus = new TH1F("TOFDig_NClus", "",200,0.5,200.5);  
@@ -722,6 +745,9 @@ void AliTOFtrackerV1::InitCheckHists() {
   fHRecSigZVsP=new TH2F("TOFDig_SigZVsP", "",40,0.,4.,100, 0.,5.);
   fHRecSigYVsPWin=new TH2F("TOFDig_SigYVsPWin", "",40,0.,4.,100, 0.,50.);
   fHRecSigZVsPWin=new TH2F("TOFDig_SigZVsPWin", "",40,0.,4.,100, 0.,50.);
+
+  dir->cd();
+
 }
 
 //_________________________________________________________________________
@@ -749,6 +775,10 @@ void AliTOFtrackerV1::SaveCheckHists() {
     } 
   }
    
+  if(!isThere) {
+	  AliError(Form("File TOFQA.root not found!! not wring histograms...."));
+	  return;
+  }
   logFile->cd();
   fHDigClusMap->Write(fHDigClusMap->GetName(), TObject::kOverwrite);
   fHDigNClus->Write(fHDigNClus->GetName(), TObject::kOverwrite);
@@ -763,22 +793,8 @@ void AliTOFtrackerV1::SaveCheckHists() {
   fHRecSigZVsPWin->Write(fHRecSigZVsPWin->GetName(), TObject::kOverwrite);
   logFile->Flush();  
 
-  if(!isThere)logFileTOF = new TFile( "TOFQA.root","RECREATE");
-  logFileTOF->cd(); 
-  fHDigClusMap->Write(fHDigClusMap->GetName(), TObject::kOverwrite);
-  fHDigNClus->Write(fHDigNClus->GetName(), TObject::kOverwrite);
-  fHDigClusTime->Write(fHDigClusTime->GetName(), TObject::kOverwrite);
-  fHDigClusToT->Write(fHDigClusToT->GetName(), TObject::kOverwrite);
-  fHRecNClus->Write(fHRecNClus->GetName(), TObject::kOverwrite);
-  fHRecChi2->Write(fHRecChi2->GetName(), TObject::kOverwrite);
-  fHRecDistZ->Write(fHRecDistZ->GetName(), TObject::kOverwrite);
-  fHRecSigYVsP->Write(fHRecSigYVsP->GetName(), TObject::kOverwrite);
-  fHRecSigZVsP->Write(fHRecSigZVsP->GetName(), TObject::kOverwrite);
-  fHRecSigYVsPWin->Write(fHRecSigYVsPWin->GetName(), TObject::kOverwrite);
-  fHRecSigZVsPWin->Write(fHRecSigZVsPWin->GetName(), TObject::kOverwrite);
-  logFileTOF->Flush();  
-
   dir->cd();
+
   }
 //_________________________________________________________________________
 Float_t AliTOFtrackerV1::CorrectTimeWalk( Float_t dist, Float_t tof) {

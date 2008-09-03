@@ -59,10 +59,11 @@ private:
  void  CollectESD(); // Select starting Set for Matching 
  //void  Init();
  Float_t GetLinearDistances(AliTOFtrack * track, AliTOFcluster *cluster, Float_t distances[5]);
- AliTOFRecoParam*  fRecoParam;           // Pointer to TOF Recontr. Params
- AliTOFGeometry*  fGeom;                 // Pointer to TOF geometry
- AliTOFpidESD*    fPid;               // Pointer to TOF PID
- AliTOFcluster *fClusters[kMaxCluster];  // pointers to the TOF clusters
+
+ const AliTOFRecoParam* fRecoParam;     // Pointer to TOF Recon. Pars
+ AliTOFGeometry*  fGeom;                // Pointer to TOF geometry
+ AliTOFpidESD*    fPid;                 // Pointer to TOF PID
+ AliTOFcluster *fClusters[kMaxCluster]; // pointers to the TOF clusters
 
  Int_t fN;              // Number of Clusters
  Int_t fNseeds;         // Number of track seeds  

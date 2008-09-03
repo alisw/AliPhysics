@@ -13,12 +13,12 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "AliReconstructor.h"
+#include "AliTOFRecoParam.h"
 
 class TTree;
 
 class AliESDEvent;
 class AliRawReader;
-
 class AliTOFcalib;
 
 class AliTOFReconstructor: public AliReconstructor {
@@ -39,6 +39,8 @@ public:
   virtual void         FillESD(AliRawReader*, TTree*clustersTree, AliESDEvent*esd) const
   {FillESD((TTree*)NULL,clustersTree,esd);}
   virtual void         FillESD(TTree*, TTree*, AliESDEvent*) const {}
+
+  static const AliTOFRecoParam* GetRecoParam() { return dynamic_cast<const AliTOFRecoParam*>(AliReconstructor::GetRecoParam(3)); } // getting RecoParam obj
 
 private:
   AliTOFcalib    *fTOFcalib;    // pointer to TOF calib class

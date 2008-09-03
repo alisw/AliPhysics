@@ -66,10 +66,10 @@ private:
  Float_t  GetTimeZerofromT0(AliESDEvent* event) const; // T0 from T0
  Float_t  CorrectTimeWalk(Float_t dist,Float_t tof); // Time Walk correction
 
- AliTOFRecoParam* fRecoParam;           // Pointer to TOF Recon. Pars
- AliTOFGeometry*  fGeom;                 // Pointer to TOF geometry
- AliTOFpidESD*    fPid;               // Pointer to TOF PID
- AliTOFcluster *fClusters[kMaxCluster];  // pointers to the TOF clusters
+ const AliTOFRecoParam* fRecoParam;     // Pointer to TOF Recon. Pars
+ AliTOFGeometry*  fGeom;                // Pointer to TOF geometry
+ AliTOFpidESD*    fPid;                 // Pointer to TOF PID
+ AliTOFcluster *fClusters[kMaxCluster]; // pointers to the TOF clusters
 
  Int_t fN;              // Number of Clusters
  Int_t fNseeds;         // Number of track seeds  

@@ -31,7 +31,7 @@
 #include "AliESDtrack.h"
 
 #include "AliTOFRecoParam.h"
-#include "AliTOFcalib.h"
+#include "AliTOFReconstructor.h"
 #include "AliTOFcluster.h"
 #include "AliTOFGeometry.h"
 #include "AliTOFtrackerMI.h"
@@ -68,12 +68,6 @@ AliTOFtrackerMI::AliTOFtrackerMI():
  { 
   //AliTOFtrackerMI main Ctor
 
-   fRecoParam=new AliTOFRecoParam();
-   fGeom=new AliTOFGeometry();
-   Double_t parPID[2];   
-   parPID[0]=fRecoParam->GetTimeResolution();
-   parPID[1]=fRecoParam->GetTimeNSigma();
-   fPid=new AliTOFpidESD(parPID);
    fDy=AliTOFGeometry::XPad(); 
    fDz=AliTOFGeometry::ZPad(); 
    fDebugStreamer = new TTreeSRedirector("TOFdebug.root");   
@@ -180,6 +174,20 @@ Int_t AliTOFtrackerMI::PropagateBack(AliESDEvent* event) {
   // Gets seeds from ESD event and Match with TOF Clusters
   //
 
+  // initialize RecoParam for current event
+
+  AliInfo("Initializing params for TOF... ");
+
+  fRecoParam = AliTOFReconstructor::GetRecoParam();  // instantiate reco param from STEER...
+  if (fRecoParam == 0x0) { 
+    AliFatal("No Reco Param found for TOF!!!");
+  }
+  //fRecoParam->Dump();
+  if(fRecoParam->GetApplyPbPbCuts())fRecoParam=fRecoParam->GetPbPbparam();
+  Double_t parPID[2];   
+  parPID[0]=fRecoParam->GetTimeResolution();
+  parPID[1]=fRecoParam->GetTimeNSigma();
+  fPid=new AliTOFpidESD(parPID);
 
   //Initialise some counters
 
@@ -331,7 +339,7 @@ void AliTOFtrackerMI::MatchTracksMI(Bool_t mLastStep){
   
   Int_t nSteps=(Int_t)(fTOFHeigth/0.1);
 
-  AliTOFcalib *calib = new AliTOFcalib();
+  //AliTOFcalib *calib = new AliTOFcalib(); // AdC
 
   //PH Arrays (moved outside of the loop)
   Float_t * trackPos[4];
@@ -580,7 +588,7 @@ void AliTOFtrackerMI::MatchTracksMI(Bool_t mLastStep){
 
     AliDebug(2, Form("%7i     %7i     %10i     %10i  %10i  %10i      %7i",
 		     i,
-		     fnmatch,
+		     fnmatch-1,
 		     TMath::Abs(trackTOFin->GetLabel()),
 		     tlab[0], tlab[1], tlab[2],
 		     igold)); // AdC
@@ -601,7 +609,7 @@ void AliTOFtrackerMI::MatchTracksMI(Bool_t mLastStep){
   //
   for (Int_t ii=0; ii<4; ii++) delete [] trackPos[ii];
   delete [] clind;
-  delete calib;
+  //delete calib; // AdC
 }
 //_________________________________________________________________________
 

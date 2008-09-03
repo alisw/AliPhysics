@@ -156,12 +156,26 @@ void AliTOFReconstructor::Reconstruct(TTree *digitsTree,
 //_____________________________________________________________________________
 AliTracker* AliTOFReconstructor::CreateTracker() const
 {
-// create a TOF tracker
+
+  // 
+  // create a TOF tracker using 
+  // TOF Reco Param collected by STEER
+  //
 
   TString selectedTracker = GetOption();
+ 
+  AliTracker *tracker;
   // use MI tracker if selected
-  if (selectedTracker.Contains("MI")) return new AliTOFtrackerMI();
-  if (selectedTracker.Contains("V1")) return new AliTOFtrackerV1();
-  return new AliTOFtracker();
+  if (selectedTracker.Contains("MI")) {
+    tracker = new AliTOFtrackerMI();
+  }
+  // use V1 tracker if selected
+  if (selectedTracker.Contains("V1")) {
+    tracker =  new AliTOFtrackerV1();
+  }
+  else {
+    tracker = new AliTOFtracker();
+  }
+  return tracker;
 
 }

@@ -43,9 +43,9 @@
 #include "AliTrackPointArray.h"
 #include "AliCDBManager.h"
 
-#include "AliTOFcalib.h"
 #include "AliTOFpidESD.h"
 #include "AliTOFRecoParam.h"
+#include "AliTOFReconstructor.h"
 #include "AliTOFcluster.h"
 #include "AliTOFGeometry.h"
 #include "AliTOFtracker.h"
@@ -92,16 +92,9 @@ AliTOFtracker::AliTOFtracker():
    
    // Gettimg the geometry 
    fGeom= new AliTOFGeometry();
-   // Read the reconstruction parameters from the OCDB
-   AliTOFcalib* calib=new AliTOFcalib();
-   fRecoParam = (AliTOFRecoParam*)calib->ReadRecParFromCDB("TOF/Calib",-1);
-   if(fRecoParam->GetApplyPbPbCuts())fRecoParam=fRecoParam->GetPbPbparam();
-   Double_t parPID[2];   
-   parPID[0]=fRecoParam->GetTimeResolution();
-   parPID[1]=fRecoParam->GetTimeNSigma();
-   fPid=new AliTOFpidESD(parPID);
+
    InitCheckHists();
-   delete calib;
+
 }
 //_____________________________________________________________________________
 AliTOFtracker::AliTOFtracker(const AliTOFtracker &t):
@@ -214,6 +207,20 @@ Int_t AliTOFtracker::PropagateBack(AliESDEvent* event) {
   // Gets seeds from ESD event and Match with TOF Clusters
   //
 
+  // initialize RecoParam for current event
+
+  AliInfo("Initializing params for TOF... ");
+
+  fRecoParam = AliTOFReconstructor::GetRecoParam();  // instantiate reco param from STEER...
+  if (fRecoParam == 0x0) { 
+    AliFatal("No Reco Param found for TOF!!!");
+  }
+  //fRecoParam->Dump();
+  if(fRecoParam->GetApplyPbPbCuts())fRecoParam=fRecoParam->GetPbPbparam();
+  Double_t parPID[2];   
+  parPID[0]=fRecoParam->GetTimeResolution();
+  parPID[1]=fRecoParam->GetTimeNSigma();
+  fPid=new AliTOFpidESD(parPID);
 
   //Initialise some counters
 
@@ -580,7 +587,7 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
 
     AliDebug(2, Form("%7i     %7i     %10i     %10i  %10i  %10i      %7i",
 		     iseed,
-		     fnmatch,
+		     fnmatch-1,
 		     TMath::Abs(trackTOFin->GetLabel()),
 		     c->GetLabel(0), c->GetLabel(1), c->GetLabel(2),
 		     idclus)); // AdC
