@@ -141,16 +141,17 @@ Bool_t AliITSRawStreamSDDCompressed::Next()
   UInt_t maskADC=1023;      // 10 bits (0-9)   for ADC      in data word
     
   while(kTRUE){
-    fDDL=fRawReader->GetDDLID();
     if (!fRawReader->ReadNextInt(fData)) return kFALSE;  // read next word
     UInt_t mostsigbits=fData>>28; 
     if(mostsigbits==maskeom){
       fCarlosId=fData&maskmod;
+      fDDL=fRawReader->GetDDLID();
       fModuleID = GetModuleNumber(fDDL,fCarlosId);
       fCompletedModule=kTRUE;
       return kTRUE;
     }else{
       fCarlosId=(fData&maskCarlos)>>27;
+      fDDL=fRawReader->GetDDLID();
       fModuleID = GetModuleNumber(fDDL,fCarlosId);
       fChannel=(fData&maskSide)>>26;
       fCoord1=(fData&maskAnode)>>18;
