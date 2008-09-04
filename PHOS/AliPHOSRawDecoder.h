@@ -27,6 +27,7 @@ public:
   virtual Bool_t NextDigit();
 
   void SubtractPedestals(Bool_t subtract) {fPedSubtract=subtract;}
+  void SetAmpOffset(Int_t extPed=5){fAmpOffset=extPed ;}
 
   const Double_t GetEnergy() const { return fEnergy; }
   const Double_t GetTime() const { return fTime; }
@@ -51,6 +52,7 @@ protected:
   Double_t fTime;   // "digit" time
   Double_t fQuality ; //Sample quality
   Double_t fPedestalRMS; //calciulated RMS of pedestal (non-ZS runs)
+  Int_t fAmpOffset ; //Pedestal offset from ALTRO chips
   Int_t fModule;    // PHOS module number (1-5)
   Int_t fColumn;    // column in the module
   Int_t fRow;       // row

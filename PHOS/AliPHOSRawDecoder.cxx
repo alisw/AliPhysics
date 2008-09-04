@@ -49,7 +49,7 @@ ClassImp(AliPHOSRawDecoder)
 //-----------------------------------------------------------------------------
 AliPHOSRawDecoder::AliPHOSRawDecoder():
   fRawReader(0),fCaloStream(0),fPedSubtract(kFALSE),fEnergy(-111),fTime(-111),fQuality(0.),fPedestalRMS(0.),
-  fModule(-1),fColumn(-1),fRow(-1),fNewModule(-1),fNewColumn(-1),fNewRow(-1),fNewAmp(0),fNewTime(0), 
+  fAmpOffset(0),fModule(-1),fColumn(-1),fRow(-1),fNewModule(-1),fNewColumn(-1),fNewRow(-1),fNewAmp(0),fNewTime(0), 
   fLowGainFlag(kFALSE),fNewLowGainFlag(kFALSE),fOverflow(kFALSE),fSamples(0),fTimes(0)
 {
   //Default constructor.
@@ -58,7 +58,7 @@ AliPHOSRawDecoder::AliPHOSRawDecoder():
 //-----------------------------------------------------------------------------
 AliPHOSRawDecoder::AliPHOSRawDecoder(AliRawReader* rawReader,  AliAltroMapping **mapping):
   fRawReader(0),fCaloStream(0),fPedSubtract(kFALSE),fEnergy(-111),fTime(-111),fQuality(0.),fPedestalRMS(0.),
-  fModule(-1),fColumn(-1),fRow(-1),fNewModule(-1),fNewColumn(-1),fNewRow(-1),fNewAmp(0),fNewTime(0),
+  fAmpOffset(0),fModule(-1),fColumn(-1),fRow(-1),fNewModule(-1),fNewColumn(-1),fNewRow(-1),fNewAmp(0),fNewTime(0),
   fLowGainFlag(kFALSE),fNewLowGainFlag(kFALSE),fOverflow(kFALSE),fSamples(0),fTimes(0)
 {
   //Construct a decoder object.
@@ -86,7 +86,7 @@ AliPHOSRawDecoder::AliPHOSRawDecoder(const AliPHOSRawDecoder &phosDecoder ):
   fRawReader(phosDecoder.fRawReader),fCaloStream(phosDecoder.fCaloStream),
   fPedSubtract(phosDecoder.fPedSubtract),
   fEnergy(phosDecoder.fEnergy),fTime(phosDecoder.fTime),fQuality(phosDecoder.fQuality),fPedestalRMS(phosDecoder.fPedestalRMS),
-  fModule(phosDecoder.fModule),fColumn(phosDecoder.fColumn),
+  fAmpOffset(phosDecoder.fAmpOffset),fModule(phosDecoder.fModule),fColumn(phosDecoder.fColumn),
   fRow(phosDecoder.fRow),fNewModule(phosDecoder.fNewModule),fNewColumn(phosDecoder.fNewColumn),
   fNewRow(phosDecoder.fNewRow),fNewAmp(phosDecoder.fNewAmp),fNewTime(phosDecoder.fNewTime),
   fLowGainFlag(phosDecoder.fLowGainFlag),fNewLowGainFlag(phosDecoder.fNewLowGainFlag),
@@ -110,6 +110,8 @@ AliPHOSRawDecoder& AliPHOSRawDecoder::operator = (const AliPHOSRawDecoder &phosD
     fEnergy = phosDecode.fEnergy;
     fTime = phosDecode.fTime;
     fQuality = phosDecode.fQuality ;
+    fPedestalRMS = phosDecode.fPedestalRMS ;
+    fAmpOffset = phosDecode.fAmpOffset ;
     fModule = phosDecode.fModule;
     fColumn = phosDecode.fColumn;
     fRow = phosDecode.fRow;
@@ -179,7 +181,7 @@ Bool_t AliPHOSRawDecoder::NextDigit()
        // Time is not evaluated for the moment (12.01.2007). 
        // Take is as a first time bin multiplied by the sample tick time
        
-       if(fPedSubtract) 
+       if(fPedSubtract) {
 	 if (nPed > 0){
            fPedestalRMS=(pedRMS-pedMean*pedMean/nPed)/nPed ;
            if(fPedestalRMS > 0.) 
@@ -188,6 +190,10 @@ Bool_t AliPHOSRawDecoder::NextDigit()
          }
 	 else
 	   return kFALSE;
+       }
+       else{
+         fEnergy-=fAmpOffset ;
+       }
        if (fEnergy < baseLine) fEnergy = 0;
 
        return kTRUE;
