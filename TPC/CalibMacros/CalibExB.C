@@ -217,18 +217,23 @@ void CalibExB(){
 
 
 
- TString fstringeb="";
- treeT->SetAlias("rr","sqrt(lx0^2+(lx1+0)^2)/250.");
- //
- fstringeb+="((dr)^3-1)*bz*rr++";        //9
- fstringeb+="((dr)^1-1)*bz*rr++";        //9
- fstringeb+="side*((dr)^3-1)*bz*rr++";        //9
- fstringeb+="side*((dr)^1-1)*bz*rr++";        //9
- //
- fstringeb+="((dr)^3-1)*bz*sa++";        //9
- fstringeb+="((dr)^1-1)*bz*sa++";        //9
- fstringeb+="side*((dr)^3-1)*bz*sa++";        //9
- fstringeb+="side*((dr)^1-1)*bz*sa++";        //9
+  TString fstringeb="";
+  //
+  fstringeb+="AliTPCExB::GetDrphi(254,atan2(lx1,lx0),LTr.fP[1],bz*10)++";        //1
+  fstringeb+="AliTPCExB::GetDr(254,atan2(lx1,lx0),LTr.fP[1],-bz*10)*ta++";        //2
+  //
+  fstringeb+="side*((dr)^1-1)*bz++";        //9
+  fstringeb+="side*((dr)^1-1)*bz*sa++";        //9
+  //
+  fstringeb+="side*((dr)^1-1)*bz*ta++";        //9
+  fstringeb+="side*((dr)^1-1)*bz*sa*ta++";        //9
+  fstringeb+="side*((dr)^1-1)*bz*ca*ta++";        //9
+
+  TString *strExB = toolkit.FitPlane(treeT,"fit",fstringeb->Data(), "abs(gphi1-pphi0-fit)<0.06&&abs(bz)>0.1"+cutA, chi2,npoints,fitParam,covMatrix);
+  strExB->Tokenize("+")->Print();
+  printf("Chi2/npoints = %f\n",TMath::Sqrt(chi2/npoints));
+  treeT->SetAlias("fitEB",strExB->Data());
+
 
 
  
