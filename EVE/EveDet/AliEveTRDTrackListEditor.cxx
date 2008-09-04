@@ -22,7 +22,7 @@ AliEveTRDTrackListEditor::AliEveTRDTrackListEditor(const TGWindow* p, Int_t widt
   fileInfo(0),
   fileTypes(0),
   fLabel1(0), fLabel2(0), fLabel3(0),
-  fLine1(0), fLine2(0), fLine3(0)
+  fLine1(0), fLine2(0), fLine3(0)  
 {
   // Constructor.
   fMainFrame = CreateEditorTabSubFrame("Apply macros");
@@ -84,21 +84,19 @@ AliEveTRDTrackListEditor::AliEveTRDTrackListEditor(const TGWindow* p, Int_t widt
   fileInfo->SetMultipleSelection(kTRUE);
 
   fileTypes = new Char_t*[6];
-  fileTypes[0] = "All files"; fileTypes[1] = "*";
-  fileTypes[2] = "ROOT macros"; fileTypes[3] = "*.C";
+  fileTypes[0] = (Char_t*)"All files"; fileTypes[1] = (Char_t*)"*";
+  fileTypes[2] = (Char_t*)"ROOT macros"; fileTypes[3] = (Char_t*)"*.C";
   fileTypes[4] = 0; fileTypes[5] = 0;
   fileInfo->fFileTypes = (const Char_t**)fileTypes;
   fileInfo->fFileTypeIdx = 2;
   fileInfo->fMultipleSelection = kTRUE;
 }
 
-
-//________________________________________________________
 void AliEveTRDTrackListEditor::AddMacro(const Char_t* entryName, const Char_t* nameC, const Char_t* pathname)
 {
   // First check the type of the macro:
   // If it has the signature of a selection macro:
-  // Bool_t MacroName(AliEveTRDTrack
+  // Bool_t MacroName(AliTRDtrackV1
   // it is assumed to be a selection macro. In all other cases: Process macro
   TEveMacro* macro = NULL;
   Bool_t isSelectionMacro = kFALSE;
@@ -111,10 +109,11 @@ void AliEveTRDTrackListEditor::AddMacro(const Char_t* entryName, const Char_t* n
   strncpy(name, nameC, strlen(nameC) - 2);
   
   // Create signature
-  sprintf(signature, "Bool_t %s(AliEveTRDTrack", name);
+  sprintf(signature, "Bool_t %s(AliTRDtrackV1", name);
   
   macro = new TEveMacro(pathname);
-  if (!macro) {
+  if (!macro)
+  {
     new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Error", 
                  "Cannot access file!", kMBIconExclamation, kMBOk);
     return;
@@ -125,71 +124,94 @@ void AliEveTRDTrackListEditor::AddMacro(const Char_t* entryName, const Char_t* n
   macro = 0;
   
   // Only add macro, if it is not already in the list
-  if (!isSelectionMacro && fM->macroList->FindObject(entryName) == 0){
+  if (!isSelectionMacro && fM->macroList->FindObject(entryName) == 0)
+  {
     fM->macroList->Add(new TObjString(entryName));
     fM->macroList->Sort();
 
     UpdateMacroList();
-  } else if (isSelectionMacro && fM->macroSelList->FindObject(entryName) == 0) {
+  }
+  else if (isSelectionMacro && fM->macroSelList->FindObject(entryName) == 0)
+  {
     fM->macroSelList->Add(new TObjString(entryName));
     fM->macroSelList->Sort();
-
+    
     UpdateMacroList();
-  } else {
-    new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Warning", "Macro is already in list (won't be added again)!", kMBIconExclamation, kMBOk);
+  }
+  else
+  {
+    new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Warning", "Macro is already in list (won't be added again)!",
+                 kMBIconExclamation, kMBOk);
   }
 }
 
-//________________________________________________________
 void AliEveTRDTrackListEditor::ApplyMacros()
 {
   TList* iterator = new TList();
-  TEveMacro* macro = NULL;
+  //TEveMacro* macro = 0;
   Char_t name[100];
   Char_t path[300];
   Char_t pathname[400];
-  //Char_t cmd[430];
+  Char_t cmd[430];
 
   // First apply the selection macros
   tlMacroSelList->GetSelectedEntries(iterator);
   AliEveTRDTrack* track = 0;
-  //AliTRDtrackV1 *trackv1 = 0;
+  AliTRDtrackV1 *trackv1 = 0;
   Bool_t selectedByMacro = kFALSE;
 
-  for (Int_t i = 0; i < iterator->GetEntries(); i++){
+  for (Int_t i = 0; i < iterator->GetEntries(); i++)
+  {
     memset(name, '\0', sizeof(Char_t) * 100);
     memset(path, '\0', sizeof(Char_t) * 300);
     memset(pathname, '\0', sizeof(Char_t) * 400);
-    
+    memset(cmd, '\0', sizeof(Char_t) * 430);
+      
     // Extract path and name -> Make pathname
     sscanf(iterator->At(i)->GetTitle(), "%s (Path: %s)", name, path);
-    // Delete ")" at the end of path
+    // Delete ")" at the end of path.
+    path[strlen(path)] = '\0';
     path[strlen(path) - 1] = '\0';
-    sprintf(pathname, "%s/%s", path, name);
     
-    TString sPathname(pathname);
-    gSystem->ExpandPathName(sPathname);
-
+    sprintf(pathname, "%s/%s", path, name);
+    sprintf(cmd, ".x %s(automaticTrack)", pathname);
+      
+    //TString sPathname(pathname);
+    //gSystem->ExpandPathName(sPathname);
+      
     // Load and execute macro
-    macro = new TEveMacro(sPathname);
+    //macro = new TEveMacro(sPathname);
 
     // Walk through the list of tracks
-    for (TEveElement::List_i iter = fM->BeginChildren(); iter != fM->EndChildren(); ++iter){
+    for (TEveElement::List_i iter = fM->BeginChildren(); iter != fM->EndChildren(); ++iter)
+    {
       track = dynamic_cast<AliEveTRDTrack*>(*iter);
 
       if (!track) continue;
-  
-      //trackv1 = (AliTRDtrackV1*)track->GetUserData();
       
+      trackv1 = (AliTRDtrackV1*)track->GetUserData();
+         
       // Make this track available
-      track->ExportToCINT("automaticTrack");
-      selectedByMacro = (Bool_t)macro->Exec("automaticTrack");
-      track->SetRnrState(selectedByMacro);         
+      //selectedByMacro = gROOT->ProcessLine(cmd);
 
-      if (macro != NULL)    delete macro;
-      return;
+   
+  /////  gROOT->LoadMacro("$path/selection.C");
+  /////... use selection()
+    
+
+      //gROOT->Reset();
+      track->ExportToCINT((Text_t*)"automaticTrack");
+      //selectedByMacro = (Bool_t)macro->Exec("automaticTrack");
+      selectedByMacro = (Bool_t)gROOT->ProcessLine(cmd);
+      track->SetRnrState(selectedByMacro);         
     }
+
+    //if (macro != NULL)    delete macro;
   }  
+
+  // Update view
+  gEve->Redraw3D();
+  //return; /////////////////// FOR TESTING
 
   if (iterator != NULL) delete iterator;  
 
@@ -198,36 +220,36 @@ void AliEveTRDTrackListEditor::ApplyMacros()
   tlMacroList->GetSelectedEntries(iterator);
 
   // Make tracklist availabe
-  fM->ExportToCINT("trackList");
-  for (Int_t i = 0; i < iterator->GetEntries(); i++){
+  fM->ExportToCINT((Text_t*)"trackList");
+  for (Int_t i = 0; i < iterator->GetEntries(); i++)
+  {
     memset(name, '\0', sizeof(Char_t) * 100);
     memset(path, '\0', sizeof(Char_t) * 300);
     memset(pathname, '\0', sizeof(Char_t) * 400);
-    //memset(cmd, '\0', sizeof(Char_t) * 430);
+    memset(cmd, '\0', sizeof(Char_t) * 430);
 
     // Extract path and name -> Make pathname
     sscanf(iterator->At(i)->GetTitle(), "%s (Path: %s)", name, path);
     // Delete ")" at the end of path
+    path[strlen(path)] = '\0';
     path[strlen(path) - 1] = '\0';
     sprintf(pathname, "%s/%s", path, name);
 
-    TString sPathname(pathname);
-    gSystem->ExpandPathName(sPathname);
-
-    //sprintf(cmd, ".x %s(trackList)", pathname);
-    //gROOT->ProcessLine(cmd);
+    //TString sPathname(pathname);
+    //gSystem->ExpandPathName(sPathname);
+ 
+    sprintf(cmd, ".x %s(trackList)", pathname);
+    gROOT->ProcessLine(cmd);
     // Load and execute macro
-    macro = new TEveMacro(sPathname);
+    //macro = new TEveMacro(sPathname);
 
-    macro->Exec("trackList");
-    if (macro != NULL)    delete macro;
+    //macro->Exec("trackList");
+    //if (macro != NULL)    delete macro;
   }
 
   if (iterator != NULL) delete iterator;    
 }
 
-
-//________________________________________________________
 void AliEveTRDTrackListEditor::BrowseMacros()
 {
   new TGFileDialog(gClient->GetRoot(), GetMainFrame(), kFDOpen, fileInfo);
@@ -259,25 +281,26 @@ void AliEveTRDTrackListEditor::BrowseMacros()
   if (fileInfo->fFileNamesList == 0)  fileInfo->fFileNamesList = new TList();
 }
 
-
-//________________________________________________________
 void AliEveTRDTrackListEditor::HandleMacroPathSet()
 {
-  if (strlen(teField->GetText()) != 0){         			
+  if (strlen(teField->GetText()) != 0)
+  {         			
     // Check if file exists
     FILE* fp = NULL;
 
     fp = fopen(teField->GetText(), "rb");
-    if (fp != NULL){
+    if (fp != NULL)
+    {
       fclose(fp);
       Char_t entryName[300];
       memset(entryName, '\0', sizeof(Char_t) * 300);
-  
+    
       // Extract filename
       Char_t* name = strrchr(teField->GetText(), '/');
 
       // Current path
-      if (name == NULL){
+      if (name == NULL)
+      {
         sprintf(entryName, "%s (Path: .)", teField->GetText());
         sprintf(name, "%s", teField->GetText());
 
@@ -286,7 +309,10 @@ void AliEveTRDTrackListEditor::HandleMacroPathSet()
         memset(pathname, '\0', sizeof(Char_t) * 100);
         sprintf(pathname, "./%s", teField->GetText());
         teField->SetText(pathname);
-      } else {// Different path
+      }
+      // Different path
+      else
+      {
         // Extract path
         Char_t* path = new Char_t[240];
         memset(path, '\0', sizeof(Char_t) * 240);
@@ -296,33 +322,35 @@ void AliEveTRDTrackListEditor::HandleMacroPathSet()
         if (path != NULL)  delete path;
 
         // Ignore the slash "/" in the following
-        name++;
+            name++;
       }
+
       AddMacro(entryName, name, teField->GetText());   
-    } else {
+    }
+    else
+    {
       new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Error", 
-      "File does not exist or you do not have read permission!", kMBIconExclamation, kMBOk);
+                   "File does not exist or you do not have read permission!", kMBIconExclamation, kMBOk);
     }
   }
 }
 
-
-//________________________________________________________
 void AliEveTRDTrackListEditor::RemoveMacros()
 {
   TList* iterator = new TList();
   
   tlMacroList->GetSelectedEntries(iterator);
 
-  for (Int_t i = 0; i < iterator->GetEntries(); i++){
-      fM->macroList->Remove(fM->macroList->FindObject(iterator->At(i)->GetTitle()));
+  for (Int_t i = 0; i < iterator->GetEntries(); i++)
+  {
+    fM->macroList->Remove(fM->macroList->FindObject(iterator->At(i)->GetTitle()));
   }
 
   tlMacroSelList->GetSelectedEntries(iterator);
 
   for (Int_t i = 0; i < iterator->GetEntries(); i++)
   {
-      fM->macroSelList->Remove(fM->macroSelList->FindObject(iterator->At(i)->GetTitle()));
+    fM->macroSelList->Remove(fM->macroSelList->FindObject(iterator->At(i)->GetTitle()));
   }
 
   UpdateMacroList();

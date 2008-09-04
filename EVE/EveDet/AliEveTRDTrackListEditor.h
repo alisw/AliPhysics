@@ -11,6 +11,7 @@
 #include <TGLabel.h>
 #include <TG3DLine.h>
 #include <TEveMacro.h>
+#include <TEveManager.h>
 #include <TObjString.h>
 #include <TSystem.h>
 #include <TROOT.h>
@@ -59,12 +60,16 @@ private:
   Char_t**    fileTypes;                    // File types (for macros)
 
   // Some labels
-  TGLabel *fLabel1, *fLabel2, *fLabel3;
-  
+  TGLabel* fLabel1;
+  TGLabel* fLabel2;
+  TGLabel* fLabel3;
+     
   // Some lines
-  TGHorizontal3DLine *fLine1, *fLine2, *fLine3;
+  TGHorizontal3DLine *fLine1;
+  TGHorizontal3DLine *fLine2;
+  TGHorizontal3DLine *fLine3;
 
-  ClassDef(AliEveTRDTrackListEditor, 0)    // Editor for AliEveTRDTrackList.
+  ClassDef(AliEveTRDTrackListEditor, 0);    // Editor for AliEveTRDTrackList.
 };
 
 #endif
