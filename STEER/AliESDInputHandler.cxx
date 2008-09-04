@@ -21,6 +21,11 @@
 //-------------------------------------------------------------------------
 
 #include <TTree.h>
+#include <TChain.h>
+#include <TFile.h>
+#include <TArchiveFile.h>
+#include <TObjArray.h>
+#include <TSystem.h>
 #include <TString.h>
 #include <TObjString.h>
 #include <TProcessID.h>
@@ -28,6 +33,8 @@
 #include "AliESDInputHandler.h"
 #include "AliESDEvent.h"
 #include "AliESD.h"
+#include "AliRunTag.h"
+#include "AliEventTag.h"
 #include "AliLog.h"
 
 ClassImp(AliESDInputHandler)
@@ -37,7 +44,12 @@ AliESDInputHandler::AliESDInputHandler() :
   AliInputEventHandler(),
   fEvent(0x0),
   fBranches(""),
-  fBranchesOn("")
+  fBranchesOn(""),
+  fAnalysisType(0),
+  fUseTags(kFALSE),
+  fChainT(0),
+  fTreeT(0),
+  fRunTag(0)
 {
   // default constructor
 }
@@ -45,21 +57,23 @@ AliESDInputHandler::AliESDInputHandler() :
 //______________________________________________________________________________
 AliESDInputHandler::~AliESDInputHandler() 
 {
-  // destructor
+  //  destructor
   //  delete fEvent;
 }
 
 //______________________________________________________________________________
 AliESDInputHandler::AliESDInputHandler(const char* name, const char* title):
-  AliInputEventHandler(name, title), fEvent(0x0), fBranches(""), fBranchesOn("")
+    AliInputEventHandler(name, title), fEvent(0x0), fBranches(""), fBranchesOn(""), fAnalysisType(0),
+     fUseTags(kFALSE), fChainT(0), fTreeT(0), fRunTag(0)
 {
     // Constructor
 }
 
-Bool_t AliESDInputHandler::Init(TTree* tree,  Option_t* /*opt*/)
+Bool_t AliESDInputHandler::Init(TTree* tree,  Option_t* opt)
 {
     // Initialisation necessary for each new tree 
-    fTree = tree;
+    fAnalysisType = opt;
+    fTree         = tree;
     
     if (!fTree) return kFALSE;
     // Get pointer to ESD event
@@ -93,6 +107,102 @@ Bool_t  AliESDInputHandler::FinishEvent()
     if(fEvent)fEvent->Reset();
     return kTRUE;
 } 
+
+Bool_t AliESDInputHandler::Notify(const char* path)
+{
+    // Notify a directory change
+    if (!fUseTags) return (kTRUE);
+    
+    Bool_t zip = kFALSE;
+    
+    TString fileName(path);
+    if(fileName.Contains("#AliESDs.root")){
+	fileName.ReplaceAll("#AliESDs.root", "");
+	zip = kTRUE;
+    } 
+    else if (fileName.Contains("AliESDs.root")){
+	fileName.ReplaceAll("AliESDs.root", "");
+    }
+    else if(fileName.Contains("#AliAOD.root")){
+	fileName.ReplaceAll("#AliAOD.root", "");
+	zip = kTRUE;
+    }
+    else if(fileName.Contains("AliAOD.root")){
+	fileName.ReplaceAll("AliAOD.root", "");
+    }
+    else if(fileName.Contains("#galice.root")){
+	// For running with galice and kinematics alone...
+	fileName.ReplaceAll("#galice.root", "");
+	zip = kTRUE;
+    }
+    else if(fileName.Contains("galice.root")){
+	// For running with galice and kinematics alone...
+	fileName.ReplaceAll("galice.root", "");
+    }
+
+
+    
+
+    
+    TString* pathName = new TString("./");
+    *pathName = fileName;
+    printf("AliESDInputHandler::Notify() Path: %s\n", pathName->Data());
+    
+    if (fRunTag) {
+	fRunTag->Clear();
+    } else {
+	fRunTag = new AliRunTag();
+    }
+    
+    delete fTreeT; fTreeT = 0;
+
+    if (fChainT) {
+	delete fChainT;
+	fChainT = 0;
+    }
+    
+    if (!fChainT) {
+	fChainT = new TChain("T");
+    }
+    
+
+
+    const char* tagPattern = "ESD.tag.root";
+    const char* name = 0x0;
+    TString tagFilename;
+    if (zip) {
+	TFile* file = TFile::Open(fileName.Data());
+	TArchiveFile* arch = file->GetArchive();
+	TObjArray* arr = arch->GetMembers();
+	TIter next(arr);
+	
+	while (file = (TFile*) next()){
+	    name = file->GetName();
+	    if (strstr(name,tagPattern)) { 
+		tagFilename = pathName->Data();
+		tagFilename += "#";
+		tagFilename += name;
+		fChainT->Add(tagFilename);  
+		AliInfo(Form("Adding %s to tag chain \n", tagFilename.Data()));
+	    }//pattern check
+	} // archive file loop
+    } else {
+	void * dirp = gSystem->OpenDirectory(pathName->Data());
+	while((name = gSystem->GetDirEntry(dirp))) {
+	    if (strstr(name,tagPattern)) { 
+		tagFilename = pathName->Data();
+		tagFilename += "/";
+		tagFilename += name;
+		fChainT->Add(tagFilename);  
+		AliInfo(Form("Adding %s to tag chain \n", tagFilename.Data()));
+	    }//pattern check
+	}//directory loop
+    }
+    fChainT->SetBranchAddress("AliTAG",&fRunTag);
+    fChainT->GetEntry(0);
+    return kTRUE;
+}
+
 
 void AliESDInputHandler::SwitchOffBranches() const {
   //

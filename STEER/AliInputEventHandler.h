@@ -15,6 +15,7 @@
 
 
 class AliVEvent;
+class AliRunTag;
 
 class AliInputEventHandler : public AliVEventHandler {
 
@@ -35,9 +36,11 @@ class AliInputEventHandler : public AliVEventHandler {
     // Setters
     virtual void         SetInputTree(TTree* tree)                    {fTree = tree;}
      // Getters
-    virtual AliVEvent   *GetEvent() const                             {return 0;}
-    virtual TTree       *GetTree( ) const                             {return fTree;}
-    virtual Long64_t     GetReadEntry() const                         {return fTree->GetReadEntry();}
+    virtual AliVEvent   *GetEvent()        const                      {return 0;}
+    virtual AliRunTag   *GetRunTag()       const                      {return 0;}
+    virtual Option_t    *GetAnalysisType() const                      {return 0;}
+    virtual TTree       *GetTree( )        const                      {return fTree;}
+    virtual Long64_t     GetReadEntry()    const                      {return fTree->GetReadEntry();}
  private:
     AliInputEventHandler(const AliInputEventHandler& handler);             
     AliInputEventHandler& operator=(const AliInputEventHandler& handler);  
