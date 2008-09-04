@@ -25,6 +25,7 @@
 #include <TH1F.h> 
 #include <TH1I.h> 
 #include <TH2I.h> 
+#include <TParameter.h>
 
 // --- Standard library ---
 
@@ -112,7 +113,7 @@ void AliVZEROQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArr
 //____________________________________________________________________________ 
 void AliVZEROQADataMakerRec::InitESDs()
 {
-  //Create histograms to controll ESD
+  //Create histograms to control ESD
  
   TH1I * h1 = new TH1I("hVZERONbPMA", "Number of PMs fired in V0A", 80, 0, 80); 
   h1->Sumw2() ;
@@ -172,32 +173,40 @@ void AliVZEROQADataMakerRec::InitESDs()
 
   char ADCname[12]; 
   char texte[40]; 
-  TH1I *fhRawADC0[64]; 
-  TH1I *fhRawADC1[64];
+  TH1I *hRawADC0[64]; 
+  TH1I *hRawADC1[64];
   
+  Bool_t expert   = kTRUE ; 
+  Bool_t saveCorr = kTRUE ; 
+    
   TH2I *h0 = new TH2I("hCellADCMap0","ADC vs Cell for EVEN Integrator", 70, 0, 70, 512, 0, 1024);
   h0->Sumw2(); 
-  Add2RawsList(h0,0) ;
+  Add2RawsList(h0,0, !expert, !saveCorr) ;
   TH2I *h1 = new TH2I("hCellADCMap1","ADC vs Cell for ODD Integrator", 70, 0, 70, 512, 0, 1024);
   h1->Sumw2();
-  Add2RawsList(h1,1) ;
+  Add2RawsList(h1,1, !expert, !saveCorr) ;
 
-  TH2F *fhMeanADC0 = new TH2F("hCellMeanADCMap0","Mean ADC vs cell for EVEN integrator",70,-0.5,69.5,512,-0.5,511.5);       
-  Add2RawsList(fhMeanADC0,2); 
-  TH2F *fhMeanADC1 = new TH2F("hCellMeanADCMap1","Mean ADC vs cell for ODD integrator",70,-0.5,69.5,512,-0.5,511.5);       
-  Add2RawsList(fhMeanADC1,3);  
-                           
+  TH2F *hMeanADC0 = new TH2F("hCellMeanADCMap0","Mean ADC vs cell for EVEN integrator",70,-0.5,69.5,512,-0.5,511.5);       
+  Add2RawsList(hMeanADC0,2, !expert, !saveCorr); 
+  TH2F *hMeanADC1 = new TH2F("hCellMeanADCMap1","Mean ADC vs cell for ODD integrator",70,-0.5,69.5,512,-0.5,511.5);       
+  Add2RawsList(hMeanADC1,3, !expert, !saveCorr);  
+    
+  TH1I *hMulV0A = new TH1I("hMulV0A", "Multiplicity in V0A", 40, 0, 40) ;  
+  Add2RawsList(hMulV0A,4, !expert, saveCorr);  
+  TH1I *hMulV0C = new TH1I("hMulV0C", "Multiplicity in V0C", 40, 0, 40) ;  
+  Add2RawsList(hMulV0C,5, !expert, saveCorr);  
+                          
   for (Int_t i=0; i<64; i++)
     {
        sprintf(ADCname,"hRaw0ADC%d",i);
        sprintf(texte,"Raw ADC in cell %d for even integrator",i);
-       fhRawADC0[i]= new TH1I(ADCname,texte,1024,0,1024);       
-       Add2RawsList(fhRawADC0[i],i+4);
+       hRawADC0[i]= new TH1I(ADCname,texte,1024,0,1024);       
+       Add2RawsList(hRawADC0[i],i+6, expert, !saveCorr);
                     
        sprintf(ADCname,"hRaw1ADC%d",i);
        sprintf(texte,"Raw ADC in cell %d for odd integrator",i);
-       fhRawADC1[i]= new TH1I(ADCname,texte,1024,0,1024);       
-       Add2RawsList(fhRawADC1[i],i+4+64);                     
+       hRawADC1[i]= new TH1I(ADCname,texte,1024,0,1024);       
+       Add2RawsList(hRawADC1[i],i+6+64, expert, !saveCorr);                     
      }  
  }
 
@@ -214,19 +223,19 @@ void AliVZEROQADataMakerRec::MakeESDs(AliESDEvent * esd)
       GetESDsData(2)->Fill(esdVZERO->GetMTotV0A());
       GetESDsData(3)->Fill(esdVZERO->GetMTotV0C());  
       for(Int_t i=0;i<64;i++) {
-	GetESDsData(4)->Fill((Float_t) i,(Float_t) esdVZERO->GetMultiplicity(i));
-	GetESDsData(9)->Fill((Float_t) i,(Float_t) esdVZERO->GetAdc(i));
-	GetESDsData(10)->Fill((Float_t) i,(Float_t) esdVZERO->GetTime(i));
+	 GetESDsData(4)->Fill((Float_t) i,(Float_t) esdVZERO->GetMultiplicity(i));
+	 GetESDsData(9)->Fill((Float_t) i,(Float_t) esdVZERO->GetAdc(i));
+	 GetESDsData(10)->Fill((Float_t) i,(Float_t) esdVZERO->GetTime(i));
       }
       for(Int_t i=0;i<32;i++) { 
-	if (esdVZERO->BBTriggerV0A(i)) 
-	  GetESDsData(5)->Fill((Float_t) i);
-	if (esdVZERO->BGTriggerV0A(i)) 
-	  GetESDsData(6)->Fill((Float_t) i);
-	if (esdVZERO->BBTriggerV0C(i)) 
-	  GetESDsData(7)->Fill((Float_t) i);
-	if (esdVZERO->BGTriggerV0C(i)) 
-	  GetESDsData(8)->Fill((Float_t) i);
+	if(esdVZERO->BBTriggerV0A(i)) 
+	   GetESDsData(5)->Fill((Float_t) i);
+	if(esdVZERO->BGTriggerV0A(i)) 
+	   GetESDsData(6)->Fill((Float_t) i);
+	if(esdVZERO->BBTriggerV0C(i)) 
+	   GetESDsData(7)->Fill((Float_t) i);
+	if(esdVZERO->BGTriggerV0C(i)) 
+	   GetESDsData(8)->Fill((Float_t) i);
       }
   }
   
@@ -237,8 +246,8 @@ void AliVZEROQADataMakerRec::MakeESDs(AliESDEvent * esd)
  {
   //Fill histograms with Raws, computes average ADC values dynamically (pedestal subtracted)
                   
-	rawReader->Reset() ; 
-	AliVZERORawStream* rawStream  = new AliVZERORawStream(rawReader); 
+  rawReader->Reset() ; 
+  AliVZERORawStream* rawStream  = new AliVZERORawStream(rawReader); 
   rawStream->Next();
   
   Float_t ChargeEoI, Threshold;  // for pedestal subtraction 
@@ -249,12 +258,19 @@ void AliVZEROQADataMakerRec::MakeESDs(AliESDEvent * esd)
   GetRawsData(2)->Reset();      // to keep only the last value of the ADC average
   GetRawsData(3)->Reset();
 
-  for(Int_t i=0; i<64; i++) {
+  Int_t mulV0A = 0 ; 
+  Int_t mulV0C = 0 ; 
+   
+  Int_t thresholV0A = 50 ; 
+  Int_t thresholV0C = 50 ; 
+   
+  for(Int_t j=0; j<64; j++) {
+      Int_t i =  rawStream->GetOfflineChannel(j);  // Convert Online to Offline channel number 
       if(!rawStream->GetIntegratorFlag(i,10)) 
            { 
-	    // even integrator - fills index 4 to 67 
+	    // even integrator - fills index6 to 69 
 	    GetRawsData(0)->Fill(i,rawStream->GetADC(i)) ; 
-            GetRawsData(i+4)->Fill(rawStream->GetADC(i)) ; 
+      GetRawsData(i+6)->Fill(rawStream->GetADC(i)) ; 
 	    ChargeEoI  = (float)rawStream->GetADC(i) - fCalibData->GetPedestal(i); 
 	    Threshold  = 3.0 * fCalibData->GetSigma(i);   
 	    if(rawStream->GetADC(i)<1023 && ChargeEoI > Threshold) {
@@ -264,9 +280,9 @@ void AliVZEROQADataMakerRec::MakeESDs(AliESDEvent * esd)
 	   }
       else if(rawStream->GetIntegratorFlag(i,10)) 
            { 
-	    // odd integrator  - fills index 68 to 131	
-            GetRawsData(1)->Fill(i,rawStream->GetADC(i)) ; 
-            GetRawsData(i+4+64)->Fill(rawStream->GetADC(i)) ;
+	    // odd integrator  - fills index 70 to 133	
+      GetRawsData(1)->Fill(i,rawStream->GetADC(i)) ; 
+      GetRawsData(i+6+64)->Fill(rawStream->GetADC(i)) ;
 	    ChargeEoI  = (float)rawStream->GetADC(i) - fCalibData->GetPedestal(i+64) ; 
 	    Threshold  = 3.0 * fCalibData->GetSigma(i+64);  
 	    if(rawStream->GetADC(i)<1023 && ChargeEoI > Threshold) { 
@@ -274,8 +290,22 @@ void AliVZEROQADataMakerRec::MakeESDs(AliESDEvent * esd)
 	       GetRawsData(3)->Fill((Float_t) i, fADC_Mean[i+64]);
 	       fOdd[i]+=1; }
 	   } 	
-  }    
-    fEvent++;                     
+     if( i < 32 ){
+       if (rawStream->GetADC(i) > thresholV0C) 
+           mulV0C++ ;     
+     }else{
+       if (rawStream->GetADC(i) > thresholV0A) 
+           mulV0A++ ; 
+     }
+  }   
+   
+  fEvent++; 
+  GetRawsData(4)->Fill(mulV0A) ; 
+  TParameter<double> * p = dynamic_cast<TParameter<double>*>(GetParameterList()->FindObject(Form("%s_%s_%s", GetName(), AliQA::GetTaskName(AliQA::kRAWS).Data(), GetRawsData(4)->GetName()))) ; 
+  p->SetVal(mulV0A) ; 
+  GetRawsData(5)->Fill(mulV0C) ; 
+  p = dynamic_cast<TParameter<double>*>(GetParameterList()->FindObject(Form("%s_%s_%s", GetName(), AliQA::GetTaskName(AliQA::kRAWS).Data(), GetRawsData(5)->GetName()))) ; 
+  p->SetVal(mulV0C) ;                     
  }
 
 //____________________________________________________________________________ 
