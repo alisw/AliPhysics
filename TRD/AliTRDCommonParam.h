@@ -36,11 +36,9 @@ class AliTRDCommonParam : public TObject
     
     void            SetExB(Int_t exbOn = 1)                        { fExBOn             = exbOn;  }
     void            SetSamplingFrequency(Float_t freq)             { fSamplingFrequency = freq;   }
-    void            SetSMstatus(Int_t sm, Char_t status)           { fSMstatus[sm]      = status; }
 
     Bool_t          ExBOn() const                                  { return fExBOn;               }
     Float_t         GetSamplingFrequency() const                   { return fSamplingFrequency;   }
-    Char_t          GetSMstatus(Int_t sm) const                    { return fSMstatus[sm];        }
 
   protected:
 
@@ -50,14 +48,13 @@ class AliTRDCommonParam : public TObject
     static Bool_t             fgTerminated;        //  Defines if this class has already been terminated    
     Int_t                     fExBOn;              //  Switch for the ExB effects
     Float_t                   fSamplingFrequency;  //  Sampling Frequency in MHz
-    Char_t                    fSMstatus[kNsector]; //  Super module status byte
   
   private:
 
     // This is a singleton, constructor is private!  
     AliTRDCommonParam();
   
-    ClassDef(AliTRDCommonParam,5)                  // The constant parameters common to simulation and reconstruction
+    ClassDef(AliTRDCommonParam,6)                  // The constant parameters common to simulation and reconstruction
 
 };
 

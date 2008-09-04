@@ -273,27 +273,10 @@ void AliTRDgeometry::Init()
     fRotB22[isector] = TMath::Cos(phi);
   }
  
-}
-
-//_____________________________________________________________________________
-void AliTRDgeometry::SetSMstatus(Int_t sm, Char_t status)
-{
-  //
-  // Switch on/off supermodules in the geometry
-  //
-
-  AliTRDCommonParam::Instance()->SetSMstatus(sm,status);
-
-}
-
-//_____________________________________________________________________________
-Char_t AliTRDgeometry::GetSMstatus(Int_t sm) const
-{
-  //
-  // Get the supermodule status
-  //
-
-  return AliTRDCommonParam::Instance()->GetSMstatus(sm);
+  // SM status
+  for (Int_t i = 0; i < kNsector; i++) {
+    fSMstatus[i] = 1;
+  }
 
 }
 
@@ -2766,6 +2749,14 @@ Bool_t AliTRDgeometry::CreateClusterMatrixArray()
     return kFALSE;
   }
 
+  TString volPath;
+  TString vpStr   = "ALIC_1/B077_1/BSEGMO";
+  TString vpApp1  = "_1/BTRD";
+  TString vpApp2  = "_1";
+  TString vpApp3a = "/UTR1_1/UTS1_1/UTI1_1";
+  TString vpApp3b = "/UTR2_1/UTS2_1/UTI2_1";
+  TString vpApp3c = "/UTR3_1/UTS3_1/UTI3_1";
+
   fClusterMatrixArray = new TObjArray(kNdet);
   AliAlignObjParams o;
 
@@ -2777,12 +2768,37 @@ Bool_t AliTRDgeometry::CreateClusterMatrixArray()
       Int_t        iLayerTRD = iLayer - AliGeomManager::kTRD1;
       Int_t        lid       = GetDetector(iLayerTRD,istack,isector);    
 
-      // Taking holes into account
-      if (((isector == 13) || (isector == 14) || (isector == 15)) && 
-          (istack == 2)) continue; 
+      // Check for disabled supermodules
+      volPath  = vpStr;
+      volPath += isector;
+      volPath += vpApp1;
+      volPath += isector;
+      volPath += vpApp2;
+      switch (isector) {
+      case 13:
+      case 14:
+      case 15:
+        if (istack == 2) {
+          continue;
+	}
+        volPath += vpApp3c;
+        break;
+      case 11:
+      case 12:
+        volPath += vpApp3b;
+        break;
+      default:
+        volPath += vpApp3a;
+      };
+      if (!gGeoManager->CheckPath(volPath)) {
+	continue;
+      }
 
-      // Taking disabled supermodules into account
-      if (!GetSMstatus(isector)) continue;
+      // Check for holes in from of PHOS
+      if (((isector == 13) || (isector == 14) || (isector == 15)) && 
+          (istack == 2)) {
+        continue; 
+      }
 
       UShort_t     volid   = AliGeomManager::LayerToVolUID(iLayer,iModule);
       const char  *symname = AliGeomManager::SymName(volid);

@@ -54,7 +54,7 @@ class AliTRDgeometry : public AliGeometry {
   TGeoHMatrix     *GetClusterMatrix(Int_t det)                           { return (TGeoHMatrix *) 
                                                                              fClusterMatrixArray->At(det); }
 
-          void     SetSMstatus(Int_t sm, Char_t status);
+          void     SetSMstatus(Int_t sm, Char_t status)                  { fSMstatus[sm] = status;         }
 
   static  Int_t    GetDetectorSec(Int_t layer, Int_t stack);
   static  Int_t    GetDetector(Int_t layer, Int_t stack, Int_t sector);
@@ -75,7 +75,7 @@ class AliTRDgeometry : public AliGeometry {
 
   static  Float_t  GetTime0(Int_t layer)                                 { return fgkTime0[layer];        }
 
-          Char_t   GetSMstatus(Int_t sm) const;
+          Char_t   GetSMstatus(Int_t sm) const                           { return fSMstatus[sm];          }
           Float_t  GetChamberWidth(Int_t layer) const                    { return fCwidth[layer]      ;   }
           Float_t  GetChamberLength(Int_t layer, Int_t stack) const      { return fClength[layer][stack]; }
 
@@ -219,7 +219,9 @@ class AliTRDgeometry : public AliGeometry {
   TObjArray            *fClusterMatrixArray;                 //! Transformation matrices loc. cluster to tracking cs
   TObjArray            *fPadPlaneArray;                      //! Array of pad plane objects
 
-  ClassDef(AliTRDgeometry,18)                                //  TRD geometry class
+  Char_t                fSMstatus[kNsector];                 //  Super module status byte
+
+  ClassDef(AliTRDgeometry,19)                                //  TRD geometry class
 
 };
 

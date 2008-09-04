@@ -50,6 +50,10 @@ AliTRDReconstructor::AliTRDReconstructor()
   :AliReconstructor()
   ,fSteerParam(0x00000007)
 {
+  //
+  // Default constructor
+  //
+
   memset(fStreamLevel, 0, 5*sizeof(UChar_t));
   // Xe tail cancellation parameters
   fTCParams[0] = 1.156; // r1
@@ -61,6 +65,7 @@ AliTRDReconstructor::AliTRDReconstructor()
   fTCParams[5] = 0.62;  // r2
   fTCParams[6] = 0.0087;// c1
   fTCParams[7] = 0.07;  // c2
+
 }
 
 //_____________________________________________________________________________
@@ -68,25 +73,36 @@ AliTRDReconstructor::AliTRDReconstructor(const AliTRDReconstructor &r)
   :AliReconstructor(r)
   ,fSteerParam(r.fSteerParam)
 {
-  memcpy(fStreamLevel, r.fStreamLevel, 5*sizeof(UChar_t));
-  memcpy(fTCParams, r.fTCParams, 8*sizeof(Double_t));
+  //
+  // Copy constructor
+  //
+
+  memcpy(fStreamLevel,r.fStreamLevel, 5*sizeof(UChar_t));
+  memcpy(fTCParams   ,r.fTCParams   , 8*sizeof(Double_t));
+
 }
 
 //_____________________________________________________________________________
 AliTRDReconstructor::~AliTRDReconstructor()
 {
+  //
+  // Destructor
+  //
+
   if(fgClusters) {
     fgClusters->Delete(); delete fgClusters;
   }
+
 }
 
-
 //_____________________________________________________________________________
-void AliTRDReconstructor::Init(){
-	//
-	// Init Options
-	//
-	SetOption(GetOption());
+void AliTRDReconstructor::Init()
+{
+  //
+  // Init Options
+  //
+
+  SetOption(GetOption());
 
   AliInfo("TRD reconstruction will use the following settings:");
   printf("\tWrite Clusters         [cw] : %s\n", fSteerParam&kWriteClusters?"yes":"no");
@@ -95,7 +111,11 @@ void AliTRDReconstructor::Init(){
   printf("\tStand Alone Tracking   [sa] : %s\n", fSteerParam&kSeeding?"yes":"no");
   printf("\tHLT         Tracking  [hlt] : %s\n", fSteerParam&kHLT?"yes":"no");
   printf("\tNN PID                 [nn] : %s\n", fSteerParam&kSteerPID?"yes":"no");
-  printf("\tStreaming Levels            : Clusterizer[%d] Tracker[%d] PID[%d]\n", fStreamLevel[kClusterizer], fStreamLevel[kTracker], fStreamLevel[kPID]);
+  printf("\tStreaming Levels            : Clusterizer[%d] Tracker[%d] PID[%d]\n"
+        ,fStreamLevel[kClusterizer]
+        ,fStreamLevel[kTracker]
+        ,fStreamLevel[kPID]);
+
 }
 
 //_____________________________________________________________________________
@@ -105,8 +125,6 @@ void AliTRDReconstructor::ConvertDigits(AliRawReader *rawReader
   //
   // Convert raw data digits into digit objects in a root tree
   //
-
-  AliInfo("Convert raw data digits into digit objects [RawReader -> Digit TTree]");
 
   AliTRDrawData rawData;
   rawReader->Reset();
@@ -126,9 +144,6 @@ void AliTRDReconstructor::Reconstruct(AliRawReader *rawReader
   // Reconstruct clusters
   //
 
-  //AliInfo("Reconstruct TRD clusters from RAW data [RawReader -> Cluster TTree]");
-
-
   rawReader->Reset();
   rawReader->Select("TRD");
 
@@ -144,6 +159,7 @@ void AliTRDReconstructor::Reconstruct(AliRawReader *rawReader
   // take over ownership of clusters
   fgClusters = clusterer.RecPoints();
   clusterer.SetClustersOwner(kFALSE);
+
 }
 
 //_____________________________________________________________________________
@@ -153,8 +169,6 @@ void AliTRDReconstructor::Reconstruct(TTree *digitsTree
   //
   // Reconstruct clusters
   //
-
-  //AliInfo("Reconstruct TRD clusters from Digits [Digit TTree -> Cluster TTree]");
 
   AliTRDclusterizer clusterer("clusterer","TRD clusterizer");
   clusterer.SetReconstructor(this);
@@ -167,6 +181,7 @@ void AliTRDReconstructor::Reconstruct(TTree *digitsTree
   // take over ownership of clusters
   fgClusters = clusterer.RecPoints();
   clusterer.SetClustersOwner(kFALSE);
+
 }
 
 //_____________________________________________________________________________
@@ -194,21 +209,22 @@ void AliTRDReconstructor::FillESD(TTree* /*digitsTree*/
 
 }
 
-
 //_____________________________________________________________________________
 void AliTRDReconstructor::SetOption(Option_t *opt)
 {
-// Read option string into the steer param.
-//
-// Default steer param values
-//
-// write clusters [cw] = true
-// track seeding (stand alone tracking) [sa] = true
-// PID method in reconstruction (NN) [nn] = true
-// write online tracklets [tw] = false
-// drift gas [ar] = false
-// HLT tracking [hlt] = false
-//
+  //
+  // Read option string into the steer param.
+  //
+  // Default steer param values
+  //
+  // write clusters [cw] = true
+  // track seeding (stand alone tracking) [sa] = true
+  // PID method in reconstruction (NN) [nn] = true
+  // write online tracklets [tw] = false
+  // drift gas [ar] = false
+  // HLT tracking [hlt] = false
+  //
+
   fSteerParam = 0x00000007;
 
   TString s(opt);
@@ -248,22 +264,29 @@ void AliTRDReconstructor::SetOption(Option_t *opt)
     	continue;
 		}
   }
+
 }
 
 //_____________________________________________________________________________
-void AliTRDReconstructor::SetStreamLevel(Int_t level, AliTRDReconstructorTask task){
-	//
-	// Set the Stream Level for one of the tasks Clusterizer, Tracker or PID
-	//
-	TString taskname;
-	switch(task){
-		case kClusterizer: taskname = "Clusterizer";
-											 break;
-		case kTracker: taskname = "Tracker";
-									 break;
-		case kPID: taskname = "PID";
-							 break;
-	}
- 	//AliInfo(Form("Setting Stream Level for Task %s to %d", taskname.Data(),level));
-	fStreamLevel[(Int_t)task] = level;
+void AliTRDReconstructor::SetStreamLevel(Int_t level, AliTRDReconstructorTask task)
+{
+  //
+  // Set the Stream Level for one of the tasks Clusterizer, Tracker or PID
+  //
+
+  TString taskname;
+  switch(task) {
+    case kClusterizer: 
+      taskname = "Clusterizer";
+      break;
+    case kTracker: 
+      taskname = "Tracker";
+      break;
+    case kPID: 
+      taskname = "PID";
+      break;
+  }
+
+  fStreamLevel[(Int_t)task] = level;
+
 }

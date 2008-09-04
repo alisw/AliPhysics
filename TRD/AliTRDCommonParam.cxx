@@ -114,10 +114,6 @@ void AliTRDCommonParam::Init()
   // Sampling Frequency in MHz
   fSamplingFrequency = 10.0;
 
-  for (Int_t i = 0; i < kNsector; i++) {
-    fSMstatus[i] = 1;
-  }
-
 }
 
 //_____________________________________________________________________________
