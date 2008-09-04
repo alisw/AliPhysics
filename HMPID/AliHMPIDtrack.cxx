@@ -119,7 +119,7 @@ Int_t AliHMPIDtrack::GetProlongation(Double_t xk, Double_t &y, Double_t &z)
 }
  
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Int_t   AliHMPIDtrack::PropagateToR(Double_t r,Double_t step)
+Bool_t   AliHMPIDtrack::PropagateToR(Double_t r,Double_t step)
 {
   //
   // Propagate track to the radial position
@@ -168,10 +168,8 @@ Int_t   AliHMPIDtrack::PropagateToR(Double_t r,Double_t step)
   if (param[1] <= 0) {
     param[1] = 100000000;
   }
-  PropagateTo(r,param[1],param[0]*param[4]);
-
-  return 0;
-
+ 
+  return PropagateTo(r,param[1],param[0]*param[4]);
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Double_t AliHMPIDtrack::GetPredictedChi2(const AliCluster3D *c) const {
@@ -224,7 +222,6 @@ Bool_t AliHMPIDtrack::Intersect(Double_t pnt[3], Double_t norm[3], Double_t bz) 
   // Returns: kTrue if helix intersects the plane, kFALSE otherwise.
   //+++++++++++++++++++++++++++++++++++++++++    
   Double_t x0[3]; GetXYZ(x0); //get track position in MARS
-  //Printf("xxx Intersect OLD: bz: %lf xxx",bz);
   
   //estimates initial helix length up to plane
   Double_t s=(pnt[0]-x0[0])*norm[0] + (pnt[1]-x0[1])*norm[1] + (pnt[2]-x0[2])*norm[2];
@@ -251,43 +248,25 @@ Bool_t AliHMPIDtrack::Intersect(AliHMPIDtrack *pTrk,Double_t pnt[3], Double_t no
   // Arguments: planePoint,planeNorm - the plane defined by any plane's point 
   // and vector, normal to the plane
   // Returns: kTrue if helix intersects the plane, kFALSE otherwise.
-  
-  //Printf(":::::: 111 :::::: pnt0: %lf pnt1: %lf pnt2: %lf norm0: %lf norm1: %lf norm2: %lf",pnt[0],pnt[1],pnt[2],norm[0],norm[1],norm[2]);
-  
-  Double_t bz=-1.0*GetBz();  
+ 
   Double_t x0[3]; pTrk->GetXYZ(x0); //get track position in MARS
-  //Printf(":::::: 222 :::::: x0: %lf x1: %lf x2: %lf",x0[0],x0[1],x0[2]);
-
-  Double_t rad;
-  //estimates initial helix length up to plane
-  Double_t s=(pnt[0]-x0[0])*norm[0] + (pnt[1]-x0[1])*norm[1] + (pnt[2]-x0[2])*norm[2];
   Double_t dist=99999,distPrev=dist;
-  Double_t x[3],p[3]; 
-  while(TMath::Abs(dist)>0.00001){
+  Double_t x[3],p[3],
+  pntrad= TMath::Sqrt(pnt[0]*pnt[0]+pnt[1]*pnt[1]);
+  while(TMath::Abs(dist)> 0.000001){//0.00001){
     //calculates helix at the distance s from x0 ALONG the helix
-    Propagate(s,x,p,bz);
-    
+    pTrk->PropagateTo(pntrad);pTrk->GetXYZ(x);pTrk->GetPxPyPz(p); 
     //distance between current helix position and plane
     dist=(x[0]-pnt[0])*norm[0]+(x[1]-pnt[1])*norm[1]+(x[2]-pnt[2])*norm[2];
-    if(TMath::Abs(dist) >= TMath::Abs(distPrev)) {return kFALSE;}
+    pntrad=pntrad-dist*0.7;
+    //Printf("--- 111 --- dist %lf",dist);
+    if(TMath::Abs(2.0*dist) >= TMath::Abs(distPrev)) {return kFALSE;}
     distPrev=dist;
-    s-=dist;
   }
-   // Printf(":::::: 333 :::::: pnt0: %lf pnt1: %lf pnt2: %lf norm0: %lf norm1: %lf norm2: %lf",pnt[0],pnt[1],pnt[2],norm[0],norm[1],norm[2]);
   //on exit pnt is intersection point,norm is track vector at that point, 
-  //all in MARS
-  rad=TMath::Sqrt(x[0]*x[0]+x[1]*x[1]); 
-  PropagateTo(rad);       //propagate with the average dens. rad. lenght
-  GetXYZAt(rad,bz,x); 
-  GetPxPyPz(p);                                                       //propagate to the radial distance of the PC or the Radiator    
+  //Printf("--- 222 --- dist %lf",dist);
+  Printf("");
   for (Int_t i=0; i<3; i++) {pnt[i]=x[i]; norm[i]=p[i];}
- // Printf(":::::: 444 :::::: pnt0: %lf pnt1: %lf pnt2: %lf norm0: %lf norm1: %lf norm2: %lf",pnt[0],pnt[1],pnt[2],norm[0],norm[1],norm[2]);
- /*
-   pEsdTrk->SetHMPIDpx(p[0]);
-  pEsdTrk->SetHMPIDpy(p[1]);
-  pEsdTrk->SetHMPIDpz(p[2]);
-  */
-  
   return kTRUE;
 }//Intersect()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -323,4 +302,25 @@ void AliHMPIDtrack::Propagate(Double_t len, Double_t x[3],Double_t p[3], Double_
      p[1] = p[1]*TMath::Cos(rho*len) + p0  *TMath::Sin(rho*len);
   }
 }//Propagate()
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Bool_t AliHMPIDtrack::Update(const AliHMPIDCluster *pClu, Double_t chisq, Int_t index)
+{
+  //
+  // Arguments: AliCluster3D, chi sq, and clu index
+  // Returns: kTRUE if the track parameters are successfully updated
+  Double_t p[2]={pClu->GetY(), pClu->GetZ()};
+  Double_t cov[3]={pClu->GetSigmaY2(), 0., pClu->GetSigmaZ2()};
+  if (!AliExternalTrackParam::Update(p,cov)) return kFALSE;
+
+  /*
+  AliTracker::FillResiduals(this,p,cov,pClu->GetVolumeId());
+
+  Int_t n=GetNumberOfClusters();
+  fIndex[n]=index;
+  SetNumberOfClusters(n+1);
+  SetChi2(GetChi2()+chisq);
+*/
+  return kTRUE;
+
+}//Update()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

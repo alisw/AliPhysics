@@ -1,4 +1,5 @@
 #include "AliHMPIDTracker.h"     //class header
+#include "AliHMPIDtrack.h"     //class header
 #include "AliHMPIDCluster.h"     //GetTrackPoint(),PropagateBack() 
 #include "AliHMPIDParam.h"       //GetTrackPoint(),PropagateBack()
 #include "AliHMPIDRecon.h"       //Recon()
@@ -65,6 +66,27 @@ Int_t AliHMPIDTracker::IntTrkCha(AliESDtrack *pTrk,Float_t &xPc,Float_t &yPc,Flo
   return -1;                                                                                    //no intersection with HMPID chambers
 }//IntTrkCha()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Int_t AliHMPIDTracker::IntTrkCha(Int_t ch,AliHMPIDtrack *pTrk,Float_t &xPc,Float_t &yPc,Float_t &xRa,Float_t &yRa,Float_t &theta,Float_t &phi)
+{
+// Static method to find intersection in between given track and HMPID chambers
+// Arguments: pTrk- HMPID track; xPc,yPc- track intersection with PC in LORS [cm]
+//   Returns: intersected chamber ID or -1
+    AliHMPIDParam *pParam=AliHMPIDParam::Instance();
+    Double_t p1[3],n1[3]; 
+    pParam->Norm(ch,n1); 
+    pParam->Point(ch,p1,AliHMPIDParam::kRad);                                                    //point & norm  for middle of radiator plane
+    Double_t p2[3],n2[3]; 
+    pParam->Norm(ch,n2); 
+    pParam->Point(ch,p2,AliHMPIDParam::kPc);                                                     //point & norm  for entrance to PC plane
+    if(pTrk->Intersect(pTrk,p1,n1)==kFALSE) return -1;                                           //try to intersect track with the middle of radiator
+    if(pTrk->Intersect(pTrk,p2,n2)==kFALSE) return -1;   
+    pParam->Mars2LorsVec(ch,n1,theta,phi);                                                       //track angles at RAD
+    pParam->Mars2Lors   (ch,p1,xRa,yRa);                                                         //TRKxRAD position
+    pParam->Mars2Lors   (ch,p2,xPc,yPc);                                                         //TRKxPC position
+    if(AliHMPIDParam::IsInside(xPc,yPc,pParam->DistCut())==kTRUE) return ch;                     //return intersected chamber  
+  return -1;                                                                                     //no intersection with HMPID chambers
+}//IntTrkCha()
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Int_t AliHMPIDTracker::LoadClusters(TTree *pCluTree)
 {
 // Interface callback methode invoked from AliReconstruction::RunTracking() to load HMPID clusters before PropagateBack() gets control. Done once per event.
@@ -82,8 +104,8 @@ Int_t AliHMPIDTracker::PropagateBack(AliESDEvent *pEsd)
 //   Returns: error code    
   AliCDBEntry *pNmeanEnt =AliCDBManager::Instance()->Get("HMPID/Calib/Nmean"); //contains TObjArray of 42 TF1 + 1 EPhotMean
   AliCDBEntry *pQthreEnt =AliCDBManager::Instance()->Get("HMPID/Calib/Qthre"); //contains TObjArray of 42 (7ch * 6sec) TF1
-  if(!pNmeanEnt) AliError("No Nmean C6F14 ");
-  if(!pQthreEnt) AliError("No Qthre");
+  if(!pNmeanEnt) AliFatal("No Nmean C6F14 ");
+  if(!pQthreEnt) AliFatal("No Qthre");
     
   return Recon(pEsd,fClu,(TObjArray*)pNmeanEnt->GetObject(),(TObjArray*)pQthreEnt->GetObject());  
 }//PropagateBack()
@@ -93,45 +115,143 @@ Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmea
 // Static method to reconstruct Theta Ckov for all valid tracks of a given event.
 // Arguments: pEsd- pointer ESD; pClu- pointer to clusters for all chambers; pNmean - pointer to all function Nmean=f(time)
 //   Returns: error code, 0 if no errors   
-  AliHMPIDRecon recon;                                                                       //instance of reconstruction class, nothing important in ctor
+  
+  AliHMPIDRecon recon;                                                                           //instance of reconstruction class, nothing important in ctor
   Float_t xPc,yPc,xRa,yRa,theta,phi;
-  for(Int_t iTrk=0;iTrk<pEsd->GetNumberOfTracks();iTrk++){                                       //ESD tracks loop
-    AliESDtrack *pTrk = pEsd->GetTrack(iTrk);                                                    //get reconstructed track    
-    Int_t cham=IntTrkCha(pTrk,xPc,yPc,xRa,yRa,theta,phi);                                        //get chamber intersected by this track 
-    if(cham<0) {                                                                                 //no intersection at all, go after next track
+  Double_t cluLORS[2]={0},cluMARS[3]={0},trkMARS[3]={0};
+//  Double_t bestcluMARS[3]={0,0,0};
+  Double_t radClu,radInitTrk;   
+  Int_t nMipClusTot=0;
+  Double_t d3d=0,dmin=999999,bz=0;
+  Bool_t isMatched=kFALSE;
+  Int_t bestCluCh=-1;
+  Int_t cluSiz=0;
+  Double_t qthre = 0;   Double_t nmean=0; Int_t cham=0; Int_t hvsec=0;
+  Int_t index=0;                                                                                //index of the "best" matching cluster
+  Double_t bestChi2=-1;                                                                         //Chi2 of the "best" matching cluster
+  Double_t chi2=0;   
+  Int_t nClusCh[AliHMPIDParam::kMaxCh+1];
+  Bool_t isOkQcut=kFALSE;
+  Bool_t isOkDcut=kFALSE;
+  
+  AliHMPIDParam *pParam = AliHMPIDParam::Instance();                                             //Instance of AliHMPIDParam
+  
+  for(Int_t iTrk=0;iTrk<pEsd->GetNumberOfTracks();iTrk++){                                        //loop on the ESD tracks in the event
+    isMatched=kFALSE;bestCluCh=-1;dmin=999999;bestChi2=99999;chi2=99999;cluSiz=0;                 //init. track matching params
+    isOkQcut = kFALSE;
+    AliHMPIDCluster *bestHmpCluster=0x0;                                                          //the best matching cluster
+    AliESDtrack *pTrk = pEsd->GetTrack(iTrk);                                                     //get reconstructed track    
+    AliHMPIDtrack *hmpTrk = new AliHMPIDtrack(*pTrk);                                             //create a hmpid track to be used for propagation and matching 
+    bz=AliTracker::GetBz();  
+    
+    Int_t ipCh=IntTrkCha(pTrk,xPc,yPc,xRa,yRa,theta,phi);
+    if(ipCh<0) {                                                                                 //no intersection at all, go after next track
       pTrk->SetHMPIDtrk(0,0,0,0);                                                                //no intersection found
       pTrk->SetHMPIDcluIdx   (99,99999);                                                         //chamber not found, mip not yet considered
       pTrk->SetHMPIDsignal(AliHMPIDRecon::kNotPerformed);                                        //ring reconstruction not yet performed
       continue;                                                                         
     }
+    
+// track intersects the chamber ipCh: find the MIP          
+    
+    TClonesArray *pMipCluLst=(TClonesArray *)pClus->At(ipCh);                                   //get the list of clusters
+    nMipClusTot = pMipCluLst->GetEntries();                                                     //total number of clusters in the given chamber
+    nClusCh[ipCh] = nMipClusTot;
+    
+    for (Int_t iClu=0; iClu<nMipClusTot;iClu++) {                                               //clusters loop
+      
+      AliHMPIDCluster *pClu=(AliHMPIDCluster*)pMipCluLst->UncheckedAt(iClu);                    //get the cluster
+// evaluate qThre
+      if(pQthre->GetEntriesFast()==pParam->kMaxCh+1) {                                             // just for backward compatibility
+        qthre=((TF1*)pQthre->At(pClu->Ch()))->Eval(pEsd->GetTimeStamp());                          //
+      } else {                                                                                     // in the past just 1 qthre
+        hvsec = pParam->InHVSector(pClu->Y());                                              //  per chamber
+        if(hvsec>=0)
+	  qthre=((TF1*)pQthre->At(6*cham+hvsec))->Eval(pEsd->GetTimeStamp());                      //
+      }                                                                                            //
+//
+      if(pClu->Q()<qthre) continue;                                                                      //charge compartible with MIP clusters      
+      isOkQcut = kTRUE;
+
+      cluLORS[0]=pClu->X(); cluLORS[1]=pClu->Y();                                            //get the LORS coordinates of the cluster
+      pParam->Lors2Mars(ipCh,cluLORS[0],cluLORS[1],cluMARS);              //convert cluster coors. from LORS to MARS
+      radClu=TMath::Sqrt(cluMARS[0]*cluMARS[0]+cluMARS[1]*cluMARS[1]);                       //radial distance of candidate cluster in MARS                                          
+      Double_t trkx0[3]; 
+      hmpTrk->GetXYZ(trkx0);                                                                 //get track position in MARS
+      radInitTrk=TMath::Sqrt(trkx0[0]*trkx0[0]+trkx0[1]*trkx0[1]);
+      hmpTrk->PropagateToR(radClu,10);
+      hmpTrk->GetXYZ(trkx0);                                                                   //get track position in MARS
+      hmpTrk->GetXYZAt(radClu,bz,trkMARS);                                                     //get the track coordinates at the rad distance after prop. 
+      d3d=TMath::Sqrt((cluMARS[0]-trkMARS[0])*(cluMARS[0]-trkMARS[0])+(cluMARS[1]-trkMARS[1])*(cluMARS[1]-trkMARS[1])+(cluMARS[2]-trkMARS[2])*(cluMARS[2]-trkMARS[2]));
+      chi2=hmpTrk->GetPredictedChi2(pClu);
+      if(dmin > d3d ) {                                                                         //to be saved for the moment...
+        cluSiz = pClu->Size();
+        dmin=d3d;
+        bestCluCh=ipCh;
+        bestHmpCluster=pClu;
+        index=iClu;
+        bestChi2=chi2;
+        cluLORS[0]=pClu->X(); cluLORS[1]=pClu->Y();
+//        pParam->Lors2Mars(ipCh,cluLORS[0],cluLORS[1],bestcluMARS); 
+      }//global dmin cut 
+    }//clus loop
+
+    if(!isOkQcut) {
+      pTrk->SetHMPIDcluIdx(ipCh,9999);                                                          
+      pTrk->SetHMPIDsignal(pParam->kMipQdcCut);
+      continue;                                                                     
+    }
+    
+    if(dmin < pParam->DistCut()) {
+      isOkDcut = kTRUE;
+    }
+
+    if(!isOkDcut) {
+      pTrk->SetHMPIDcluIdx(ipCh,index+1000*cluSiz);                                             //set chamber, index of cluster + cluster size
+      pTrk->SetHMPIDsignal(pParam->kMipDistCut);                                                //closest cluster with enough charge is still too far from intersection
+    }
+    
+    if(isOkQcut*isOkDcut) isMatched = kTRUE;                                                    // MIP-Track matched !!    
+    
+    if(!isMatched) continue;                                                                    // If matched continue...
+    
+    Int_t indexAll = 0;
+    for(Int_t iC=0;iC<bestCluCh;iC++) indexAll+=nClusCh[iC]; indexAll+=index;                    //to be verified...
+
+    Bool_t isOk = hmpTrk->Update(bestHmpCluster,bestChi2,indexAll);
+    if(!isOk) continue;
+    pTrk->SetOuterParam((AliExternalTrackParam*)&hmpTrk,AliESDtrack::kHMPIDout);                 
+
+//    cham=IntTrkCha(bestCluCh,hmpTrk,xPc,yPc,xRa,yRa,theta,phi);
+    cham=IntTrkCha(pTrk,xPc,yPc,xRa,yRa,theta,phi);
+    if(cham<0) {                                                                                  //no intersection at all, go after next track
+      pTrk->SetHMPIDtrk(0,0,0,0);                                                                //no intersection found
+      pTrk->SetHMPIDcluIdx   (99,99999);                                                         //chamber not found, mip not yet considered
+      pTrk->SetHMPIDsignal(AliHMPIDRecon::kNotPerformed);                                        //ring reconstruction not yet performed
+      continue;                                                                         
+    }
+
     pTrk->SetHMPIDtrk(xRa,yRa,theta,phi);                                                        //store initial infos
-    Double_t nmean;
-    if(pNmean->GetEntries()==21) {                                                               //for backward compatibility
-       nmean=((TF1*)pNmean->At(3*cham))->Eval(pEsd->GetTimeStamp());                             //C6F14 Nmean for this chamber
-     } else {
-       Int_t iRad     = AliHMPIDParam::Radiator(yRa);                                            //evaluate the radiator involved
-       if(iRad < 0) {
-        nmean = -1;
-       } else {
-        //AliDebug(1,"\n track didn' t pass through the radiator \n");                           //check track passage through the radiators
-       Double_t tLow  = ((TF1*)pNmean->At(6*cham+2*iRad  ))->Eval(pEsd->GetTimeStamp());         //C6F14 low  temp for this chamber
-       Double_t tHigh = ((TF1*)pNmean->At(6*cham+2*iRad+1))->Eval(pEsd->GetTimeStamp());         //C6F14 high temp for this chamber
-       Double_t tExp  = AliHMPIDParam::FindTemp(tLow,tHigh,yRa);                                 //estimated temp for that chamber at that y
-       nmean = AliHMPIDParam::NIdxRad(AliHMPIDParam::Instance()->GetEPhotMean(),tExp);           //mean ref idx @ a given temp
-       }
-     }
-    Double_t qthre = 0; 
-    if(pQthre->GetEntriesFast()==AliHMPIDParam::kMaxCh+1)                                        // just for backward compatibility
-      qthre=((TF1*)pQthre->At(cham))->Eval(pEsd->GetTimeStamp());                                //
-    else {                                                                                       // in the past just 1 qthre
-      Int_t hvsec = AliHMPIDParam::InHVSector(yPc);                                              //  per chamber
-      if (hvsec>=0)
-	qthre=((TF1*)pQthre->At(6*cham+hvsec))->Eval(pEsd->GetTimeStamp());                      //
-    }                                                                                            //
+    //evaluate nMean
+    if(pNmean->GetEntries()==21) {                                                              //for backward compatibility
+      nmean=((TF1*)pNmean->At(3*cham))->Eval(pEsd->GetTimeStamp());                             //C6F14 Nmean for this chamber
+    } else {
+      Int_t iRad     = pParam->Radiator(yRa);                                                   //evaluate the radiator involved
+      Double_t tLow  = ((TF1*)pNmean->At(6*cham+2*iRad  ))->Eval(pEsd->GetTimeStamp());         //C6F14 low  temp for this chamber
+      Double_t tHigh = ((TF1*)pNmean->At(6*cham+2*iRad+1))->Eval(pEsd->GetTimeStamp());         //C6F14 high temp for this chamber
+      Double_t tExp  = pParam->FindTemp(tLow,tHigh,yRa);                                        //estimated temp for that chamber at that y
+      nmean = pParam->NIdxRad(AliHMPIDParam::Instance()->GetEPhotMean(),tExp);                  //mean ref idx @ a given temp
+      if(nmean < 0){                                                                            //track didn' t pass through the radiator
+         pTrk->SetHMPIDsignal(AliHMPIDRecon::kNoRad);                                           //set the appropriate flag
+         pTrk->SetHMPIDcluIdx(ipCh,index+1000*cluSiz);                                          //set index of cluster
+         continue;
+      }
+    }
+    //
     recon.SetImpPC(xPc,yPc);                                                                     //store track impact to PC
-    recon.CkovAngle(pTrk,(TClonesArray *)pClus->At(cham),nmean,qthre);                           //search for Cerenkov angle of this track
-//    Printf("AliHMPIDTracker::Recon: nmean %f, qthre %f",nmean,qthre);
-  }                                                                                              //ESD tracks loop
+    recon.CkovAngle(pTrk,(TClonesArray *)pClus->At(cham),index,nmean);                           //search for Cerenkov angle of this track
+  }//iTrk
+
   return 0; // error code: 0=no error;
 }//Recon()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

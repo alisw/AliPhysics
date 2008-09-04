@@ -27,8 +27,8 @@ public :
     virtual ~AliHMPIDRecon() {;} //dtor
 
   void     InitVars     (Int_t n);                                                                 //init space for variables
-  void     DeleteVars   ()const;                                                                        //delete variables
-  void     CkovAngle    (AliESDtrack *pTrk,TClonesArray *pCluLst,Double_t nmean, Double_t qthre);  //reconstructed Theta Cerenkov
+  void     DeleteVars   ()const;                                                                   //delete variables
+  void     CkovAngle    (AliESDtrack *pTrk,TClonesArray *pCluLst,Int_t index,Double_t nmean );     //reconstructed Theta Cerenkov
   Bool_t   FindPhotCkov (Double_t cluX,Double_t cluY,Double_t &thetaCer,Double_t &phiCer    );     //find ckov angle for single photon candidate
   Double_t FindRingCkov (Int_t iNclus                                                       );     //best ckov for ring formed by found photon candidates
   void     FindRingGeom (Double_t ckovAng,Int_t level=1                                     );     //estimated area of ring in cm^2 and portion accepted by geometry

@@ -79,7 +79,7 @@ void AliHMPIDRecon::DeleteVars()const
   delete fPhotWei;
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliHMPIDRecon::CkovAngle(AliESDtrack *pTrk,TClonesArray *pCluLst,Double_t nmean,Double_t qthre)
+void AliHMPIDRecon::CkovAngle(AliESDtrack *pTrk,TClonesArray *pCluLst,Int_t index,Double_t nmean)
 {
 // Pattern recognition method based on Hough transform
 // Arguments:   pTrk     - track for which Ckov angle is to be found
@@ -88,7 +88,6 @@ void AliHMPIDRecon::CkovAngle(AliESDtrack *pTrk,TClonesArray *pCluLst,Double_t n
     
 
   const Int_t nMinPhotAcc = 3;                      // Minimum number of photons required to perform the pattern recognition
-  
   
   Int_t nClusTot = pCluLst->GetEntries();
   if(nClusTot>fParam->MultCut()) fIsWEIGHT = kTRUE; // offset to take into account bkg in reconstruction
@@ -102,48 +101,37 @@ void AliHMPIDRecon::CkovAngle(AliESDtrack *pTrk,TClonesArray *pCluLst,Double_t n
 
   fParam->SetRefIdx(nmean);
 
-  Float_t dMin=999,mipX=-1,mipY=-1;Int_t chId=-1,mipId=-1,mipQ=-1;
-  Int_t sizeClu = -1;
+  Float_t mipX=-1,mipY=-1;
+  Int_t chId=-1,mipQ=-1,sizeClu = -1;
+  
   fPhotCnt=0;
+  
   for (Int_t iClu=0; iClu<pCluLst->GetEntriesFast();iClu++){//clusters loop
-    AliHMPIDCluster *pClu=(AliHMPIDCluster*)pCluLst->UncheckedAt(iClu);                       //get pointer to current cluster    
+    AliHMPIDCluster *pClu=(AliHMPIDCluster*)pCluLst->UncheckedAt(iClu);                     //get pointer to current cluster    
+    if(iClu == index) {                                                                     // this is the MIP! not a photon candidate: just store mip info
+      mipX = pClu->X();
+      mipY = pClu->Y();
+      mipQ=(Int_t)pClu->Q();
+      sizeClu=pClu->Size();
+      continue;                                                             
+    }
     chId=pClu->Ch();
-    if(pClu->Q()>qthre){                                                                      //charge compartible with MIP clusters      
-      Float_t dX=fPc.X()-pClu->X(),dY=fPc.Y()-pClu->Y(),d =TMath::Sqrt(dX*dX+dY*dY);          //distance between current cluster and intersection point
-      if( d < dMin) {mipId=iClu; dMin=d;mipX=pClu->X();
-                     mipY=pClu->Y();mipQ=(Int_t)pClu->Q();sizeClu=pClu->Size();}              //current cluster is closer, overwrite data for min cluster
-    }else{                                                                                    //charge compatible with photon cluster
-      Double_t thetaCer,phiCer;
-      if(FindPhotCkov(pClu->X(),pClu->Y(),thetaCer,phiCer)){                                  //find ckov angle for this  photon candidate
-        fPhotCkov[fPhotCnt]=thetaCer;                                                         //actual theta Cerenkov (in TRS)
-        fPhotPhi [fPhotCnt]=phiCer;                                                           //actual phi   Cerenkov (in TRS): -pi to come back to "unusual" ref system (X,Y,-Z)
-	//PH        Printf("photon n. %i reconstructed theta = %f",fPhotCnt,fPhotCkov[fPhotCnt]);
-        fPhotCnt++;                                                                           //increment counter of photon candidates
-      }
+    Double_t thetaCer,phiCer;
+    if(FindPhotCkov(pClu->X(),pClu->Y(),thetaCer,phiCer)){                                  //find ckov angle for this  photon candidate
+      fPhotCkov[fPhotCnt]=thetaCer;                                                         //actual theta Cerenkov (in TRS)
+      fPhotPhi [fPhotCnt]=phiCer;                                                           //actual phi   Cerenkov (in TRS): -pi to come back to "unusual" ref system (X,Y,-Z)
+      fPhotCnt++;                                                                           //increment counter of photon candidates
     }
   }//clusters loop
 
   pTrk->SetHMPIDmip(mipX,mipY,mipQ,fPhotCnt);                                                //store mip info in any case 
   
-  if(nmean < 0){                                                                             //track didn' t pass through the radiator
-    pTrk->SetHMPIDsignal(kNoRad);                                                            //set the appropriate flag
-    pTrk->SetHMPIDcluIdx(chId,mipId+1000*sizeClu);                                           //set index of cluster
-    return;
-  }
-   
   if(fPhotCnt<=nMinPhotAcc) {                                                                 //no reconstruction with <=3 photon candidates
     pTrk->SetHMPIDsignal(kNoPhotAccept);                                                      //set the appropriate flag
-    pTrk->SetHMPIDcluIdx(chId,mipId+1000*sizeClu);                                            //set index of cluster
+    pTrk->SetHMPIDcluIdx(chId,index+1000*sizeClu);                                            //set index of cluster
     return;
   }
   
-  if(mipId==-1) {
-    pTrk->SetHMPIDcluIdx(chId,9999);                                                          //set index of cluster
-    pTrk->SetHMPIDsignal(kMipQdcCut);
-    return;
-  }                                                                                           //no clusters with QDC more the threshold at all
-    pTrk->SetHMPIDcluIdx(chId,mipId+1000*sizeClu);                                            //set chamber, index of cluster + cluster size
-    if(dMin>fParam->DistCut()) {pTrk->SetHMPIDsignal(kMipDistCut); return;}                   //closest cluster with enough charge is still too far from intersection
   
   fMipPos.Set(mipX,mipY);
   
