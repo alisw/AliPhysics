@@ -108,6 +108,7 @@ public:
   void        SetQACycles(AliQA::DETECTORINDEX_t det, const Int_t cycles) {  fQASteer->SetCycleLength(det, cycles) ; }
   Bool_t      RunQA() ;
   Bool_t      SetRunQA(TString detAndAction="ALL:ALL") ; 
+  void        SetQAWriteExpert(AliQA::DETECTORINDEX_t det) { fQASteer->SetWriteExpert(det) ; }
 
   void SetWriteGRPEntry(Bool_t flag = kTRUE) { fWriteGRPEntry = flag; }
   void WriteGRPEntry();
