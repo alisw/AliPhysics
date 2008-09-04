@@ -77,11 +77,13 @@ void AliHMPIDQADataMakerRec::InitRecPoints()
 {
   // create cluster histograms in RecPoint subdir
 
+  Bool_t expert = kTRUE;
+ 
   TProfile *hCluMult          = new TProfile("CluMult"   ,"Cluster multiplicity per chamber"    , 16, -1 , 7  , 0, 500);
-  Add2RecPointsList(hCluMult    , 0);
+  Add2RecPointsList(hCluMult    , 0,expert);
   
   TH2F *hCluFlg          = new TH2F("CluFlg"      ,"Cluster flag  "                              ,  56  ,-1.5, 12.5, 70, -0.5, 6.5);
-  Add2RecPointsList(hCluFlg    , 1);
+  Add2RecPointsList(hCluFlg    , 1,expert);
   
   TH1F *hCluSizeMip[7], *hCluSizePho[7];
   
@@ -89,14 +91,14 @@ void AliHMPIDQADataMakerRec::InitRecPoints()
   
   for(Int_t iCh =0; iCh <7; iCh++){
    hCluSizeMip[iCh] = new TH1F(Form("CluSizeMipCh%i",iCh),Form("Cluster size  MIP  (cluster Q > 100 ADC) in Chamber %i",iCh),  50  , 0  , 50  );
-  Add2RecPointsList(hCluSizeMip[iCh], iCh+2);
+  Add2RecPointsList(hCluSizeMip[iCh], iCh+2,expert);
 
    hCluSizePho[iCh]  = new TH1F(Form("CluSizePho%i",iCh ),Form("Cluster size  Phots(cluster Q < 100 ADC) in Chamber %i",iCh),  50  , 0  , 50  );
-  Add2RecPointsList(hCluSizePho[iCh], iCh+7+2);
+  Add2RecPointsList(hCluSizePho[iCh], iCh+7+2,expert);
 
     for(Int_t iSect =0; iSect < 6; iSect++){
       hCluQSectZoom[iCh*6+iSect] = new TH1F(Form("QClusCh%iSect%iZoom",iCh,iSect) ,Form("Zoom on Cluster charge (ADC) in Chamber %i and sector %i",iCh,iSect),100,0,100);
-      Add2RecPointsList(hCluQSectZoom[iCh*6+iSect],2+14+iCh*6+iSect);
+      Add2RecPointsList(hCluQSectZoom[iCh*6+iSect],2+14+iCh*6+iSect,expert);
 
       hCluQSect[iCh*6+iSect] = new TH1F(Form("QClusCh%iSect%i",iCh,iSect) ,Form("Cluster charge (ADC) in Chamber %i and sector %i",iCh,iSect),250,0,5000);
       Add2RecPointsList(hCluQSect[iCh*6+iSect],2+14+42+iCh*6+iSect);
@@ -113,6 +115,7 @@ void AliHMPIDQADataMakerRec::InitRaws()
 // All histograms implemented in InitRaws are used in AMORE. Any change here should be propagated to the amoreHMP-QA as well!!! (clm)
 //  
   
+  Bool_t expert = kTRUE;
   const Int_t kNerr = (Int_t)AliHMPIDRawStream::kSumErr+1;
   TH1F *hSumErr[14];
   TH2F *hDilo[14];
@@ -126,19 +129,23 @@ void AliHMPIDQADataMakerRec::InitRaws()
       hSumErr[iddl]->GetXaxis()->SetBinLabel((2*ilabel+1),Form("%i  %s",ilabel+1,AliHMPIDRawStream::GetErrName(ilabel)));
       }
       
-    Add2RawsList(hSumErr[iddl],iddl);
+    Add2RawsList(hSumErr[iddl],iddl,expert);
     
     hDilo[iddl] = new TH2F(Form("hDiloDDL%i",iddl),Form("Dilogic response at DDL;Row # ;Dilogic #",iddl),24,1,25,10,1,11);
-    Add2RawsList(hDilo[iddl],14+iddl);
+    Add2RawsList(hDilo[iddl],14+iddl,expert);
   }//DDL loop
  for(Int_t iCh = AliHMPIDParam::kMinCh; iCh <=AliHMPIDParam::kMaxCh ;iCh++) {
    for(Int_t iPc = AliHMPIDParam::kMinPc; iPc <= AliHMPIDParam::kMaxPc ;iPc++) {
       hPadMap[iPc+6*iCh] = new TH2I(Form("hPadMap_Ch_%i_Pc%i",iCh,iPc),Form("Pad Map of Ch: %i Pc: %i;Pad X;Pad Y;",iCh,iPc),80,0,80,48,0,48);
-      Add2RawsList(hPadMap[iPc+6*iCh],28+iPc+6*iCh); 
+      Add2RawsList(hPadMap[iPc+6*iCh],28+iPc+6*iCh,expert); 
       hPadQ[iPc+6*iCh]   = new TH1I(Form("hPadQ_Ch_%i_Pc%i",iCh,iPc),Form("Pad Charge of Ch: %i Pc: %i;Pad Q;Entries;",iCh,iPc),4100,0,4100);
-      Add2RawsList(hPadQ[iPc+6*iCh],70+iPc+6*iCh); 
+      Add2RawsList(hPadQ[iPc+6*iCh],70+iPc+6*iCh,expert); 
     }//PC loop
   }//Ch loop  
+
+    TH2I *hGeneralErrorSummary = new TH2I("GeneralErrorSummary"," DDL index vs Error type plot", 2*kNerr, 0, 2*kNerr, 2*AliHMPIDRawStream::kNDDL,0,2*AliHMPIDRawStream::kNDDL);
+  for(Int_t igenlabel =0 ; igenlabel< kNerr; igenlabel++) hGeneralErrorSummary->GetXaxis()->SetBinLabel((2*igenlabel+1),Form("%i  %s",igenlabel+1,AliHMPIDRawStream::GetErrName(igenlabel)));
+   Add2RawsList(hGeneralErrorSummary,14+14+42+42);
   
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -158,11 +165,10 @@ void AliHMPIDQADataMakerRec::InitESDs()
    hPid[4] = new TH1F("PidP" ,"p response"                     , 101, -0.005,1.005)             ;
 
    Add2ESDsList(hCkovP,0);
-   Add2ESDsList(hSigP ,1);
+   Add2ESDsList(hSigP ,1,kTRUE);
    Add2ESDsList(hDifXY,2);
-   Add2ESDsList(hMvsP,3);
-   for(Int_t i=0; i< 5; i++) Add2ESDsList(hPid[i],i+4);
-
+   Add2ESDsList(hMvsP,3,kTRUE);
+   for(Int_t i=0; i< 5; i++) Add2ESDsList(hPid[i],i+4,kTRUE);
 
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -183,6 +189,8 @@ void AliHMPIDQADataMakerRec::MakeRaws(AliRawReader *rawReader)
        for(Int_t iErr =1; iErr<(Int_t)AliHMPIDRawStream::kSumErr; iErr++){
          Int_t numOfErr = stream.GetErrors(ddl,iErr);
          GetRawsData(ddl)->Fill(iErr,numOfErr);
+         //Printf("err type %i   ddl number %i  Num of errors %i",iErr,ddl,numOfErr);
+        ((TH2I*)GetRawsData(14+14+42+42))->Fill(iErr,ddl,iErr); //
        }
        UInt_t word; Int_t Nddl, r, d, a;//pc,pcX,pcY;      
        for(Int_t iPad=0;iPad<stream.GetNPads();iPad++) {
@@ -192,6 +200,7 @@ void AliHMPIDQADataMakerRec::MakeRaws(AliRawReader *rawReader)
        GetRawsData(70+stream.Pc(Nddl,r,d,a)+6*AliHMPIDParam::DDL2C(ddl))->Fill(stream.GetChargeArray()[iPad]);
        }      
      }
+
    stream.Delete();
    
 }

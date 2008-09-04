@@ -74,12 +74,14 @@ AliHMPIDQADataMakerSim& AliHMPIDQADataMakerSim::operator = (const AliHMPIDQAData
 void AliHMPIDQADataMakerSim::InitHits()
 {
   // create Hits histograms in Hits subdir
+  Bool_t expert = kTRUE;
+
      TH1F *hHitQdc=new TH1F("HitQdc","HMPID Hit Qdc all chamber;QDC",500,0,4000);
      Add2HitsList(hHitQdc,0);
      TH2F *hHitMap[7];
      for(Int_t iCh=0;iCh<7;iCh++) {
      hHitMap[iCh]=new TH2F(Form("HMPID HitMap%i",iCh),Form("Ch%i;x_{Hit};y_{Hit}",iCh),162,-1,161,146,-1,145);   
-    Add2HitsList(hHitMap[iCh],iCh+1);
+    Add2HitsList(hHitMap[iCh],iCh+1,expert);
     }
 
 }
@@ -88,6 +90,9 @@ void AliHMPIDQADataMakerSim::InitHits()
 void AliHMPIDQADataMakerSim::InitDigits()
 {
   // create Digits histograms in Digits subdir
+
+  Bool_t expert = kTRUE;
+
       TH1F *hDigChEvt = new TH1F("hDigChEvt","Chamber occupancy per event",AliHMPIDParam::kMaxCh+1,AliHMPIDParam::kMinCh,AliHMPIDParam::kMaxCh+1);
       TH1F *hDigPcEvt = new TH1F("hDigPcEvt","PC occupancy",156,-1,77);
       TH2F *hDigMap[7];
@@ -100,9 +105,9 @@ void AliHMPIDQADataMakerSim::InitDigits()
      }
 
    Add2DigitsList(hDigChEvt,0);
-   Add2DigitsList(hDigPcEvt,1);
-   for(Int_t iMap=0; iMap < 7; iMap++) Add2DigitsList(hDigMap[iMap],2+iMap);
-   for(Int_t iH =0; iH < 42 ; iH++) Add2DigitsList(hDigQ[iH]    ,9+iH);
+   Add2DigitsList(hDigPcEvt,1,expert);
+   for(Int_t iMap=0; iMap < 7; iMap++) Add2DigitsList(hDigMap[iMap],2+iMap,expert);
+   for(Int_t iH =0; iH < 42 ; iH++) Add2DigitsList(hDigQ[iH]    ,9+iH,expert);
 }
 
 //____________________________________________________________________________ 
