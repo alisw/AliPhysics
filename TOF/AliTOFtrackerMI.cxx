@@ -179,11 +179,14 @@ Int_t AliTOFtrackerMI::PropagateBack(AliESDEvent* event) {
   AliInfo("Initializing params for TOF... ");
 
   fRecoParam = AliTOFReconstructor::GetRecoParam();  // instantiate reco param from STEER...
+
   if (fRecoParam == 0x0) { 
     AliFatal("No Reco Param found for TOF!!!");
   }
   //fRecoParam->Dump();
   if(fRecoParam->GetApplyPbPbCuts())fRecoParam=fRecoParam->GetPbPbparam();
+  //fRecoParam->PrintParameters();
+
   Double_t parPID[2];   
   parPID[0]=fRecoParam->GetTimeResolution();
   parPID[1]=fRecoParam->GetTimeNSigma();

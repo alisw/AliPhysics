@@ -19,6 +19,9 @@ class AliTOFRecoParam : public AliDetectorRecoParam
   AliTOFRecoParam(const AliTOFRecoParam &p); //Copy Ctor 
   AliTOFRecoParam& operator=(const AliTOFRecoParam &p); // ass. op.
   virtual ~AliTOFRecoParam();
+
+  virtual void PrintParameters() const;
+
   //Getters
   Bool_t   UseTimeZero()           const  { return fTimeZero;}
   Bool_t   GetTimeZerofromT0()     const  { return fTimeZerofromT0;}
@@ -56,8 +59,9 @@ class AliTOFRecoParam : public AliDetectorRecoParam
   void  SetTimeResolution(Double_t in)  {fTimeResolution=in;}
   void  SetTimeNSigma(Double_t in)  {fTimeNSigma=in;}
 
-  static   AliTOFRecoParam *GetPbPbparam();      // reco param for PbPb.
-  static   AliTOFRecoParam *GetPPparam();       // reco param for PP
+  static   AliTOFRecoParam *GetPbPbparam();       // reco param for PbPb.
+  static   AliTOFRecoParam *GetPPparam();         // reco param for PP
+  static   AliTOFRecoParam *GetCosmicMuonParam(); // reco param for cosmic muons
  private:
 
   Bool_t fTimeZero; //use Time Zero info in Pid
@@ -73,11 +77,11 @@ class AliTOFRecoParam : public AliDetectorRecoParam
   Float_t fSensRadius;  // Average radius of sensitive volumes (cm)
   Float_t fStepSize;  // Propagation step size (cm)
   Double_t fMaxChi2;  // maximum X2 track-tof clusters
-  Double_t fMaxChi2TRD;  // maximum X2 track-tof clusters
+  Double_t fMaxChi2TRD;  // maximum X2 track-tof clusters (TRD)
   Double_t fTimeResolution;  // Time resolution for resp. function in PID (ps)
   Double_t fTimeNSigma;  // N-Sigma Range used for resp. function in PID 
 
-  ClassDef(AliTOFRecoParam, 2)
+  ClassDef(AliTOFRecoParam, 3)
 };
 
 #endif

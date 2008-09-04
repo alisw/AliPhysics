@@ -17,10 +17,12 @@
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
 // Class with TOF reconstruction parameters                                  //
-//                                                                           //  
+//                                                                           //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+
+#include "AliLog.h"
 
 #include "AliTOFRecoParam.h"
 
@@ -143,4 +145,48 @@ AliTOFRecoParam *AliTOFRecoParam::GetPPparam(){
   param->fWindowScaleFact = 5.;
   param->fDistanceCut = 10.;
   return param;
+}
+
+//_____________________________________________________________________________
+AliTOFRecoParam *AliTOFRecoParam::GetCosmicMuonParam(){
+  //
+  // set default reconstruction parameters for cosmic muon run
+  //
+  AliTOFRecoParam *param = new AliTOFRecoParam();
+  param->fApplyPbPbCuts = kFALSE;
+  param->fWindowScaleFact = 5.;
+  param->fDistanceCut = 10.;
+  return param;
+}
+
+//_____________________________________________________________________________
+void AliTOFRecoParam::PrintParameters() const
+{
+  //
+  // Printing of the used TOF reconstruction parameters
+  //
+
+  AliInfo(Form(" Use Time Zero info in Pid: %i", fTimeZero));
+  AliInfo(Form(" Use Time Zero as determined by T0: %i", fTimeZerofromT0));
+  AliInfo(Form(" Use Time Zero as determined from TOF: %i",
+	       fTimeZerofromTOF));
+  AliInfo(Form(" Correct for signal time walk in z: %i", fTimeWalkCorr));
+  AliInfo(Form(" Apply high flux cuts: %i", fApplyPbPbCuts));
+
+  AliInfo(Form(" Cluster search window - size, Y: %f cm", fWindowSizeMaxY));
+  AliInfo(Form(" Cluster search window - size, Z: %f cm", fWindowSizeMaxZ));
+  AliInfo(Form(" Cluster search window - scale factor: %f",
+	       fWindowScaleFact));
+
+  AliInfo(Form(" Cut on the closest approach distance: %f", fDistanceCut));
+  AliInfo(Form(" Average radius of sensitive volumes: %f cm", fSensRadius));
+  AliInfo(Form(" Propagation step size: %f cm", fStepSize));
+  AliInfo(Form(" Maximum X2 track-tof clusters: %f", fMaxChi2));
+
+  AliInfo(Form(" Maximum X2 track-tof clusters (TRD): %f", fMaxChi2TRD));
+  AliInfo(Form(" Time resolution for responce function in PID: %f ps",
+	       fTimeResolution));
+  AliInfo(Form("  N-Sigma Range used for responce function in PID: %f",
+	       fTimeNSigma));
+
 }

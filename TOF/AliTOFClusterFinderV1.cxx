@@ -233,7 +233,7 @@ void AliTOFClusterFinderV1::Digits2RecPoints(TTree* digitsTree, TTree* clusterTr
     info[0] = tdcCorr;//tofDigit->GetTdc();
     info[1] = tofDigit->GetAdc();
     info[2] = tofDigit->GetToT();
-    info[3] = tofDigit->GetTdc();//tofDigit->GetTdcND();
+    info[3] = tofDigit->GetTdcND();//tofDigit->GetTdc();//
     tracks  = tofDigit->GetTracks();
 
     dummy = detectorIndex[3];
@@ -3402,10 +3402,6 @@ void AliTOFClusterFinderV1::AverageCalculations(Int_t number, Float_t *interesti
   //
   //
 
-  Double_t posX = 0.;
-  Double_t posY = 0.;
-  Double_t posZ = 0.;
- 
   Double_t tofAverage = 0.;
   Double_t totAverage = 0.;
   Double_t adcAverage = 0.;
@@ -3440,10 +3436,5 @@ void AliTOFClusterFinderV1::AverageCalculations(Int_t number, Float_t *interesti
   parTOF[2] = Int_t(totAverage);
   parTOF[3] = Int_t(tofAverage);
   parTOF[4] = Int_t(tofAverage);
-
-  //insert cluster
-  posClus[0] = posX;
-  posClus[1] = posY;
-  posClus[2] = posZ;
 
 }
