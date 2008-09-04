@@ -296,7 +296,9 @@ AliTRDCalibraFit::~AliTRDCalibraFit()
   if ( fCalDet )  delete fCalDet;
   if ( fCalDet2 ) delete fCalDet2;
   if ( fCalROC )  delete fCalROC;
-  if ( fCalROC2 ) delete fCalROC2; 
+  if ( fCalROC2 ) delete fCalROC2;
+  if( fCurrentCoefDetector ) delete [] fCurrentCoefDetector;
+  if( fCurrentCoefDetector2 ) delete [] fCurrentCoefDetector2; 
   fVectorFit.Delete();
   fVectorFit2.Delete();
   if (fGeo) {
@@ -3682,11 +3684,16 @@ void AliTRDCalibraFit::FitLagrangePoly(TH1* projPH)
     pente->Draw();
   }
   else {
-    delete pentea;
-    delete pente;
-    delete polynome;
-    delete polynomea;
-    delete polynomeb;
+    if(pentea) delete pentea;
+    if(pente) delete pente;
+    if(polynome) delete polynome;
+    if(polynomea) delete polynomea;
+    if(polynomeb) delete polynomeb;
+    if(x) delete [] x;
+    if(y) delete [] y;
+    if(c) delete [] c;
+    if(line) delete line;
+
   }
   
   projPH->SetDirectory(0);

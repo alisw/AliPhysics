@@ -227,9 +227,9 @@ class AliTRDCalibraFit : public TObject {
 	   ,fCoef(0x0)
 	   ,fDetector(-1)                                   { }
 	 AliTRDFitInfo &operator=(const AliTRDFitInfo&)     { return *this;            }
-	 virtual ~AliTRDFitInfo()                           { }
+	 virtual ~AliTRDFitInfo()                           { if(fCoef) { delete [] fCoef;} }
 	 
-	 void      SetCoef(Float_t *coef)                   { fCoef     = coef;        }
+	 void      SetCoef(Float_t *coef)                   { fCoef = coef;            }
 	 void      SetDetector(Int_t detector)              { fDetector = detector;    }
 	 
 	 Float_t  *GetCoef() const                          { return fCoef;            }

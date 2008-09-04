@@ -213,6 +213,7 @@ AliTRDCalibraVector *GetCalibraVector() const                                { r
           Short_t       *fPHPlace;                   // Calibration group of PH
           Float_t       *fPHValue;                   // PH
 	  Bool_t         fGoodTracklet;              // Good tracklet
+	  TLinearFitter *fLinearFitterTracklet;      // linear fitter tracklet  
   //Statistics
 	  Int_t         *fEntriesCH;                 // Number of entries CH
 	  Int_t         *fEntriesLinearFitter;       // Number of entries LinearFitter

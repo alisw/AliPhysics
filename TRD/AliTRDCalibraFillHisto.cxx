@@ -153,6 +153,7 @@ AliTRDCalibraFillHisto::AliTRDCalibraFillHisto()
   ,fPHPlace(0x0)
   ,fPHValue(0x0)
   ,fGoodTracklet(kTRUE)
+  ,fLinearFitterTracklet(0x0)
   ,fEntriesCH(0x0)
   ,fEntriesLinearFitter(0x0)
   ,fCalibraVector(0x0)
@@ -217,6 +218,7 @@ AliTRDCalibraFillHisto::AliTRDCalibraFillHisto(const AliTRDCalibraFillHisto &c)
   ,fPHPlace(0x0)
   ,fPHValue(0x0)
   ,fGoodTracklet(c.fGoodTracklet)
+  ,fLinearFitterTracklet(0x0)
   ,fEntriesCH(0x0)
   ,fEntriesLinearFitter(0x0)
   ,fCalibraVector(0x0)
@@ -271,6 +273,18 @@ AliTRDCalibraFillHisto::~AliTRDCalibraFillHisto()
   if ( fCalDetGain )  delete fCalDetGain;
   if ( fCalROCGain )  delete fCalROCGain;
 
+  if( fLinearFitterTracklet ) { delete fLinearFitterTracklet; }
+  
+  delete [] fPHPlace;
+  delete [] fPHValue;
+  delete [] fEntriesCH;
+  delete [] fEntriesLinearFitter;
+  delete [] fAmpTotal;
+  
+  for(Int_t idet=0; idet<AliTRDgeometry::kNdet; idet++){ 
+    TLinearFitter *f = (TLinearFitter*)fLinearFitterArray.At(idet);
+    if(f) { delete f;}
+  }
   if (fGeo) {
     delete fGeo;
   }
@@ -349,10 +363,18 @@ Bool_t AliTRDCalibraFillHisto::Init2Dhistos()
   fNumberClustersf    = fTimeMax;
   fNumberClusters     = (Int_t)(0.5*fTimeMax);
  
-  //calib object from database used for reconstruction
-  if(fCalDetGain) delete fCalDetGain;
-  fCalDetGain  = new AliTRDCalDet(*(cal->GetGainFactorDet()));
+  // Init linear fitter
+  if(!fLinearFitterTracklet) {
+    fLinearFitterTracklet = new TLinearFitter(2,"pol1");
+    fLinearFitterTracklet->StoreData(kFALSE);
+  }
 
+  //calib object from database used for reconstruction
+  if( fCalDetGain ){ 
+    fCalDetGain->~AliTRDCalDet();
+    new(fCalDetGain) AliTRDCalDet(*(cal->GetGainFactorDet()));
+  }else fCalDetGain = new AliTRDCalDet(*(cal->GetGainFactorDet()));
+  
   // Calcul Xbins Chambd0, Chamb2
   Int_t ntotal0 = CalculateTotalNumberOfBins(0);
   Int_t ntotal1 = CalculateTotalNumberOfBins(1);
@@ -537,9 +559,11 @@ Bool_t AliTRDCalibraFillHisto::UpdateHistograms(AliTRDtrack *t)
       }
       
       // Get calib objects
-      if( fCalROCGain ) delete fCalROCGain;
-      fCalROCGain = new AliTRDCalROC(*(cal->GetGainFactorROC(detector)));
-       
+      if( fCalROCGain ){ 
+        fCalROCGain->~AliTRDCalROC();
+        new(fCalROCGain) AliTRDCalROC(*(cal->GetGainFactorROC(detector)));
+      }else fCalROCGain = new AliTRDCalROC(*(cal->GetGainFactorROC(detector)));
+      
     }
     
     // Reset the detectbjobsor
@@ -606,6 +630,12 @@ Bool_t AliTRDCalibraFillHisto::UpdateHistogramsV1(AliTRDtrackV1 *t)
   AliTRDcluster *cl      = 0x0;                // cluster attached now to the tracklet
   Bool_t         newtr   = kTRUE;              // new track
   
+  // Get cal
+  AliTRDcalibDB *cal = AliTRDcalibDB::Instance();
+  if (!cal) {
+    AliInfo("Could not get calibDB");
+    return kFALSE;
+  }
   
   ///////////////////////////
   // loop over the tracklet
@@ -635,15 +665,12 @@ Bool_t AliTRDCalibraFillHisto::UpdateHistogramsV1(AliTRDtrackV1 *t)
       }
       //Localise the detector bin
       LocalisationDetectorXbins(detector);
-      // Get cal
-      AliTRDcalibDB *cal = AliTRDcalibDB::Instance();
-      if (!cal) {
-	AliInfo("Could not get calibDB");
-	return kFALSE;
-      }
       // Get calib objects
-      if( fCalROCGain ) delete fCalROCGain;
-      fCalROCGain = new AliTRDCalROC(*(cal->GetGainFactorROC(detector)));
+      if( fCalROCGain ){ 
+        fCalROCGain->~AliTRDCalROC();
+        new(fCalROCGain) AliTRDCalROC(*(cal->GetGainFactorROC(detector)));
+      }else fCalROCGain = new AliTRDCalROC(*(cal->GetGainFactorROC(detector)));
+      
       // reset
       fDetectorPreviousTrack = detector;
     }
@@ -728,13 +755,11 @@ Bool_t AliTRDCalibraFillHisto::FindP1TrackPHtracklet(AliTRDtrack *t, Int_t index
   Double_t tiltingangle               = padplane->GetTiltingAngle();        // tiltingangle of the pad      
   Float_t  tnt                        = TMath::Tan(tiltingangle/180.*TMath::Pi()); // tan tiltingangle
   // linear fit
-  TLinearFitter linearFitterTracklet  = TLinearFitter(2,"pol1");            // TLinearFitter per tracklet
+  fLinearFitterTracklet->ClearPoints();  
   Double_t dydt                       = 0.0;                                // dydt tracklet after straight line fit
   Double_t errorpar                   = 0.0;                                // error after straight line fit on dy/dt
   Double_t pointError                 = 0.0;                                // error after straight line fit 
   Int_t     nbli                      = 0;                                  // number linear fitter points
-  linearFitterTracklet.StoreData(kFALSE);
-  linearFitterTracklet.ClearPoints();
   
   //////////////////////////////
   // loop over clusters
@@ -752,7 +777,7 @@ Bool_t AliTRDCalibraFillHisto::FindP1TrackPHtracklet(AliTRDtrack *t, Int_t index
     if(k==0) rowp                     = row;
     if(row != rowp) crossrow          = 1;
 
-    linearFitterTracklet.AddPoint(&timeis,ycluster,1);
+    fLinearFitterTracklet->AddPoint(&timeis,ycluster,1);
     nbli++;
 
   }
@@ -760,14 +785,18 @@ Bool_t AliTRDCalibraFillHisto::FindP1TrackPHtracklet(AliTRDtrack *t, Int_t index
   //////////////////////////////
   // linear fit
   //////////////////////////////
-  if(nbli <= 2) return kFALSE; 
+  if(nbli <= 2){ 
+    fLinearFitterTracklet->ClearPoints();  
+    return kFALSE; 
+  }
   TVectorD pars;
-  linearFitterTracklet.Eval();
-  linearFitterTracklet.GetParameters(pars);
-  pointError  =  TMath::Sqrt(linearFitterTracklet.GetChisquare()/(nbli-2));
-  errorpar    =  linearFitterTracklet.GetParError(1)*pointError;
+  fLinearFitterTracklet->Eval();
+  fLinearFitterTracklet->GetParameters(pars);
+  pointError  =  TMath::Sqrt(fLinearFitterTracklet->GetChisquare()/(nbli-2));
+  errorpar    =  fLinearFitterTracklet->GetParError(1)*pointError;
   dydt        = pars[1]; 
-
+  fLinearFitterTracklet->ClearPoints();  
+    
   /////////////////////////////
   // debug
   ////////////////////////////
@@ -851,7 +880,6 @@ Bool_t AliTRDCalibraFillHisto::FindP1TrackPHtrackletV1(const AliTRDseedV1 *track
   ////////////
   //Variables
   ////////////
-  TLinearFitter linearFitterTracklet  = TLinearFitter(2,"pol1");            // TLinearFitter per tracklet
   // results of the linear fit
   Double_t dydt                       = 0.0;                                // dydt tracklet after straight line fit
   Double_t errorpar                   = 0.0;                                // error after straight line fit on dy/dt
@@ -860,9 +888,8 @@ Bool_t AliTRDCalibraFillHisto::FindP1TrackPHtrackletV1(const AliTRDseedV1 *track
   Int_t    crossrow                   = 0;                                  // if it crosses a pad row
   Int_t    rowp                       = -1;                                 // if it crosses a pad row
   Float_t  tnt                        = tracklet->GetTilt();                // tan tiltingangle
-
-  linearFitterTracklet.StoreData(kFALSE);
-  linearFitterTracklet.ClearPoints();
+  fLinearFitterTracklet->ClearPoints();  
+ 
   
   ///////////////////////////////////////////
   // Take the parameters of the track
@@ -901,7 +928,7 @@ Bool_t AliTRDCalibraFillHisto::FindP1TrackPHtrackletV1(const AliTRDseedV1 *track
     if(rowp==-1) rowp                 = row;
     if(row != rowp) crossrow          = 1;
 
-    linearFitterTracklet.AddPoint(&timeis,ycluster,1);
+    fLinearFitterTracklet->AddPoint(&timeis,ycluster,1);
     nbli++;  
 
   }
@@ -909,13 +936,17 @@ Bool_t AliTRDCalibraFillHisto::FindP1TrackPHtrackletV1(const AliTRDseedV1 *track
   ////////////////////////////////////
   // Do the straight line fit now
   ///////////////////////////////////
-  if(nbli <= 2) return kFALSE; 
+  if(nbli <= 2){ 
+    fLinearFitterTracklet->ClearPoints();  
+    return kFALSE; 
+  }
   TVectorD pars;
-  linearFitterTracklet.Eval();
-  linearFitterTracklet.GetParameters(pars);
-  pointError  =  TMath::Sqrt(linearFitterTracklet.GetChisquare()/(nbli-2));
-  errorpar    =  linearFitterTracklet.GetParError(1)*pointError;
+  fLinearFitterTracklet->Eval();
+  fLinearFitterTracklet->GetParameters(pars);
+  pointError  =  TMath::Sqrt(fLinearFitterTracklet->GetChisquare()/(nbli-2));
+  errorpar    =  fLinearFitterTracklet->GetParError(1)*pointError;
   dydt        = pars[1]; 
+  fLinearFitterTracklet->ClearPoints();  
  
   ////////////////////////////////
   // Debug stuff
@@ -1013,10 +1044,7 @@ Bool_t AliTRDCalibraFillHisto::HandlePRFtracklet(AliTRDtrack *t, Int_t index0, I
     dzdx = tgl*TMath::Sqrt(1+tnp*tnp);
   }
   // linear fitter
-  TLinearFitter fitter(2,"pol1");
-  fitter.StoreData(kFALSE);
-  fitter.ClearPoints();
-
+  fLinearFitterTracklet->ClearPoints();
 
   ///////////////////////////
   // calcul the tnp group
@@ -1035,8 +1063,10 @@ Bool_t AliTRDCalibraFillHisto::HandlePRFtracklet(AliTRDtrack *t, Int_t index0, I
       }
     }
   }
-  if(echec) return kFALSE;
-  
+  if(echec) {
+    delete [] padPositions;
+    return kFALSE;
+  }
 
   //////////////////////
   // loop clusters
@@ -1073,21 +1103,26 @@ Bool_t AliTRDCalibraFillHisto::HandlePRFtracklet(AliTRDtrack *t, Int_t index0, I
     Double_t       padPosition = xcenter +  cl->GetPadCol();
     padPositions[k]            = padPosition;
     nb3pc++;
-    fitter.AddPoint(&time, padPosition,1);
+    fLinearFitterTracklet->AddPoint(&time, padPosition,1);
   }//clusters loop
 
 
   /////////////////////////////
   // fit
   ////////////////////////////
-  if(nb3pc < 3) return kFALSE;
-  fitter.Eval();
-  TVectorD line(2);
-  fitter.GetParameters(line);
-  Float_t  pointError  = -1.0;
-  if(fitter.GetChisquare()>=0.0) {
-    pointError  =  TMath::Sqrt(fitter.GetChisquare()/(nb3pc-2));
+  if(nb3pc < 3) {
+    delete [] padPositions;
+    fLinearFitterTracklet->ClearPoints();  
+    return kFALSE;
   }
+  fLinearFitterTracklet->Eval();
+  TVectorD line(2);
+  fLinearFitterTracklet->GetParameters(line);
+  Float_t  pointError  = -1.0;
+  if( fLinearFitterTracklet->GetChisquare()>=0.0) {
+    pointError  =  TMath::Sqrt( fLinearFitterTracklet->GetChisquare()/(nb3pc-2));
+  }
+  fLinearFitterTracklet->ClearPoints();  
   
   /////////////////////////////////////////////////////
   // Now fill the PRF: second loop over clusters
@@ -1278,6 +1313,7 @@ Bool_t AliTRDCalibraFillHisto::HandlePRFtracklet(AliTRDtrack *t, Int_t index0, I
       }
     }
   }
+  delete [] padPositions;
   return kTRUE;
   
 }
@@ -1344,10 +1380,8 @@ Bool_t AliTRDCalibraFillHisto::HandlePRFtrackletV1(const AliTRDseedV1 *tracklet,
   for(Int_t k = 0; k < AliTRDseed::knTimebins; k++){
     padPositions[k] = 0.0;
   } 
-  TLinearFitter fitter(2,"pol1");  // TLinearFitter for the linear fit in the drift region
-  fitter.StoreData(kFALSE);
-  fitter.ClearPoints();
-
+  fLinearFitterTracklet->ClearPoints();  
+  
   //printf("loop clusters \n");
   ////////////////////////////
   // loop over the clusters
@@ -1391,7 +1425,7 @@ Bool_t AliTRDCalibraFillHisto::HandlePRFtrackletV1(const AliTRDseedV1 *tracklet,
     Double_t       padPosition = xcenter +  cl->GetPadCol();
     padPositions[ic]            = padPosition;
     nb3pc++;
-    fitter.AddPoint(&time, padPosition,1);
+    fLinearFitterTracklet->AddPoint(&time, padPosition,1);
 
 
   }//clusters loop
@@ -1400,15 +1434,21 @@ Bool_t AliTRDCalibraFillHisto::HandlePRFtrackletV1(const AliTRDseedV1 *tracklet,
   //////////////////////////////
   // fit with a straight line
   /////////////////////////////
-  if(nb3pc < 3) return kFALSE;
-  fitter.Eval();
-  TVectorD line(2);
-  fitter.GetParameters(line);
-  Float_t  pointError  = -1.0;
-  if(fitter.GetChisquare()>=0.0) {
-  pointError  =  TMath::Sqrt(fitter.GetChisquare()/(nb3pc-2));
+  if(nb3pc < 3){ 
+    delete [] padPositions;
+    fLinearFitterTracklet->ClearPoints();  
+    delete [] padPositions;
+    return kFALSE;
   }
-
+  fLinearFitterTracklet->Eval();
+  TVectorD line(2);
+  fLinearFitterTracklet->GetParameters(line);
+  Float_t  pointError  = -1.0;
+  if( fLinearFitterTracklet->GetChisquare()>=0.0) {
+  pointError  =  TMath::Sqrt( fLinearFitterTracklet->GetChisquare()/(nb3pc-2));
+  }
+  fLinearFitterTracklet->ClearPoints();  
+ 
   //printf("PRF second loop \n");
   ////////////////////////////////////////////////
   // Fill the PRF: Second loop over clusters
@@ -1456,6 +1496,8 @@ Bool_t AliTRDCalibraFillHisto::HandlePRFtrackletV1(const AliTRDseedV1 *tracklet,
     Float_t   signal4      = (Float_t)signals[4];                       // signal
     Float_t   signal5      = (Float_t)signals[5];                       // signal at the border
    
+
+
     /////////////////////
     // Debug stuff
     ////////////////////
@@ -1608,6 +1650,7 @@ Bool_t AliTRDCalibraFillHisto::HandlePRFtrackletV1(const AliTRDseedV1 *tracklet,
   } // second loop over clusters
 
 
+  delete [] padPositions;
   return kTRUE;
   
 }

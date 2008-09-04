@@ -158,6 +158,21 @@ AliTRDCalibraVector::~AliTRDCalibraVector()
   //
   // AliTRDCalibraVector destructor
   //
+  fVectorPHMean.Delete();
+  fVectorPHSquares.Delete();
+  fVectorPHEntries.Delete();
+  fVectorCHEntries.Delete();
+  fVectorPRFMean.Delete();
+  fVectorPRFSquares.Delete();
+  fVectorPRFEntries.Delete();
+
+  if(fPHEntries) delete fPHEntries;
+  if(fPHMean) delete fPHMean;
+  if(fPHSquares) delete fPHSquares;
+  if(fPRFEntries) delete fPRFEntries;
+  if(fPRFMean) delete fPRFMean;
+  if(fPRFSquares) delete fPRFSquares;
+  if(fCHEntries) delete fCHEntries;
 
 }
 //_____________________________________________________________________________

@@ -116,6 +116,10 @@ AliTRDCalibraVdriftLinearFit::~AliTRDCalibraVdriftLinearFit() /*FOLD00*/
   //
   // destructor
   //
+  fLinearFitterHistoArray.Delete();
+  fLinearFitterPArray.Delete();
+  fLinearFitterEArray.Delete();
+
 }
 //_____________________________________________________________________
 void AliTRDCalibraVdriftLinearFit::Add(AliTRDCalibraVdriftLinearFit *ped)

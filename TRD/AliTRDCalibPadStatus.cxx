@@ -173,6 +173,11 @@ AliTRDCalibPadStatus::~AliTRDCalibPadStatus() /*FOLD00*/
   //
   // destructor
   //
+  fCalRocArrayMean.Delete();
+  fCalRocArrayRMS.Delete();
+  fCalRocArrayMeand.Delete();
+  fCalRocArrayRMSd.Delete();
+  fHistoArray.Delete();
   if (fGeo) {
     delete fGeo;
   }
