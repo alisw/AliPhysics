@@ -65,7 +65,6 @@ AliTRDtrackingResolution::AliTRDtrackingResolution(const char * name):
   ,fDebugLevel(0)
   ,fDebugStream(0x0)
 {
-  TGeoManager::Import("geometry.root");
   fReconstructor = new AliTRDReconstructor();
   fReconstructor->SetRecoParam(AliTRDrecoParam::GetLowFluxParam());
 
@@ -78,6 +77,7 @@ AliTRDtrackingResolution::~AliTRDtrackingResolution()
 {
   fHistos->Delete(); delete fHistos;
   delete fReconstructor;
+  if(gGeoManager) delete gGeoManager;
 }
 
 //________________________________________________________
@@ -190,6 +190,7 @@ void AliTRDtrackingResolution::Exec(Option_t *)
       }
     }
 
+//  if(!gGeoManager) TGeoManager::Import("geometry.root");
 //     AliTRDtrackerV1::FitKalman(fTrack, 0x0, kFALSE, nc, tr);
 //     for(Int_t ip=0; ip<nc; ip++){
 //       dy = cl[ip].GetY() - tr[ip].GetY();

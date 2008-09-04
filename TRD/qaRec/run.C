@@ -11,7 +11,14 @@
 //     "PIDR" : TRD PID - reference data
 //     "NOMC" : Data set does not have Monte Carlo Informations (real data), so all tasks which rely
 //              on MC information are switched off
-// 
+//
+// In compiled mode : 
+// Don't forget to load first the libraries
+// gSystem->Load("libMemStat.so")
+// gSystem->Load("libMemStatGui.so")
+// gSystem->Load("libANALYSIS.so")
+// gSystem->Load("libTRDqaRec.so")
+//
 // Authors:
 //   Alex Bercuci (A.Bercuci@gsi.de) 
 //   Markus Fasel (m.Fasel@gsi.de) 
@@ -216,12 +223,13 @@ void run(const Char_t *files=0x0, Char_t *tasks="ALL", Int_t nmax=-1)
   cdbManager->SetDefaultStorage("local://$ALICE_ROOT");
   //cdbManager->SetSpecificStorage("TRD/Calib/FEE","local:///u/bailhach/aliroot/database30head/database");
   cdbManager->SetRun(0);
-
+  cdbManager->SetCacheFlag(kFALSE);
  
   // initialize TRD settings
   AliMagFMaps *field = new AliMagFMaps("Maps","Maps", 2, 1., 10., AliMagFMaps::k5kG);
   AliTracker::SetFieldMap(field, kTRUE);
-  AliTRDtrackerV1::SetNTimeBins(AliTRDcalibDB::Instance()->GetNumberOfTimeBins());
+  AliTRDcalibDB *cal = AliTRDcalibDB::Instance();
+  AliTRDtrackerV1::SetNTimeBins(cal->GetNumberOfTimeBins());
 
 
   mgr->StartAnalysis("local",chain);
@@ -229,6 +237,7 @@ void run(const Char_t *files=0x0, Char_t *tasks="ALL", Int_t nmax=-1)
   timer.Stop();
   timer.Print();  
 
+  cal->Terminate();
   delete field;
   delete cdbManager;
   for(Int_t it=jtask-1; it>=0; it--) delete taskPtr[it];
