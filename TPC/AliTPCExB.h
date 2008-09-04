@@ -19,10 +19,10 @@ public:
   // Test and visualization
   //
   void TestExB(const char* fileName);
-  static Double_t GetDr(Double_t r, Double_t phi, Double_t z);
-  static Double_t GetDrphi(Double_t r, Double_t phi, Double_t z);
-  static Double_t GetDphi(Double_t r, Double_t phi, Double_t z);
-  static Double_t GetDz(Double_t r, Double_t phi, Double_t z);
+  static Double_t GetDr(Double_t r, Double_t phi, Double_t z, Double_t bz=5);
+  static Double_t GetDrphi(Double_t r, Double_t phi, Double_t z, Double_t bz=5);
+  static Double_t GetDphi(Double_t r, Double_t phi, Double_t z, Double_t bz=5);
+  static Double_t GetDz(Double_t r, Double_t phi, Double_t z, Double_t bz=5);
   static AliTPCExB*  Instance(){return fgInstance;}
   static void SetInstance(AliTPCExB*param){fgInstance = param;}
   //

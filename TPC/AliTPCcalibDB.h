@@ -32,7 +32,9 @@ class AliTPCcalibDB : public TObject
   void   SetRun(Long64_t run);   
   //
   AliTPCTransform* GetTransform() {return fTransform;}
-  AliTPCExB* GetExB() {return fExB;}
+  AliTPCExB*    GetExB() {return fExB;}
+  static SetExBField(Float_t bz);
+  static AliTPCExB*    GetExB(Float_t bz,Bool_t bdelete);
   AliTPCCalPad* GetPadGainFactor() {return fPadGainFactor;}
   AliTPCCalPad* GetDedxGainFactor() {return fDedxGainFactor;}
   AliTPCCalPad* GetPadTime0() {return fPadTime0;}
@@ -45,7 +47,7 @@ class AliTPCcalibDB : public TObject
   //
   static void     CreateObjectList(const Char_t *filename, TObjArray *calibObjects);
   static void MakeTree(const char * fileName, TObjArray * array, const char * mapFileName = 0, AliTPCCalPad* outlierPad = 0, Float_t ltmFraction = 0.9);
-  
+  static void RegisterExB(Int_t index, Float_t bz, Bool_t bdelete);
   //
 protected:
   void         Update();  //update entries
@@ -71,6 +73,7 @@ protected:
   //
   static AliTPCcalibDB* fgInstance;  // singleton control
   static Bool_t       fgTerminated;  // termination control 
+  static TObjArray    fgExBArray;    // array of ExB corrections
   ClassDef(AliTPCcalibDB, 0)
  private:
    AliTPCcalibDB (const AliTPCcalibDB& );

@@ -3,6 +3,7 @@
 #include "TTreeStream.h"
 #include "AliMagF.h"
 #include "TLinearFitter.h"
+#include "AliTPCcalibDB.h"
 
 
 //
@@ -126,58 +127,64 @@ void AliTPCExB::TestExB(const char* fileName) {
 
 
 
-Double_t AliTPCExB::GetDr(Double_t r, Double_t phi, Double_t z){
+Double_t AliTPCExB::GetDr(Double_t r, Double_t phi, Double_t z, Double_t bz){
   //
   // Static function
   // Posibble to us it for visualization 
   // 
   //
-  if (!fgInstance) return 0;
+  AliTPCExB *exb = AliTPCcalibDB::GetExB(bz,kFALSE);
+  if (!exb) return 0;
   Double_t pos0[3] = {r*TMath::Cos(phi), r*TMath::Sin(phi),z};
   Double_t pos1[3];
-  fgInstance->Correct(pos0,pos1);
+  exb->Correct(pos0,pos1);
   Double_t dx=pos1[0]-pos0[0];
   Double_t dy=pos1[1]-pos0[1];
   //  Double_t dz=pos1[2]-pos0[2];
-  return TMath::Sqrt(dx*dx+dy*dy);  
+  // return TMath::Sqrt(dx*dx+dy*dy);  
+  Float_t dr = (dx*pos0[0]+dy*pos0[1])/r;
+  return dr;
 }
 
 
-Double_t AliTPCExB::GetDrphi(Double_t r, Double_t phi, Double_t z){
+Double_t AliTPCExB::GetDrphi(Double_t r, Double_t phi, Double_t z, Double_t bz){
   //
   //
   //
-  if (!fgInstance) return 0;
+  AliTPCExB *exb = AliTPCcalibDB::GetExB(bz,kFALSE);
+  if (!exb) return 0;
   Double_t pos0[3] = {r*TMath::Cos(phi), r*TMath::Sin(phi),z};
   Double_t pos1[3];
-  fgInstance->Correct(pos0,pos1);
+  exb->Correct(pos0,pos1);
   Double_t dphi=TMath::ATan2(pos1[1],pos1[0])-TMath::ATan2(pos0[1],pos0[0]);
   return r*dphi;  
 
 }
 
 
-Double_t AliTPCExB::GetDphi(Double_t r, Double_t phi, Double_t z){
+Double_t AliTPCExB::GetDphi(Double_t r, Double_t phi, Double_t z, Double_t bz){
   //
   //
-  //
-  if (!fgInstance) return 0;
+  // 
+  AliTPCExB *exb = AliTPCcalibDB::GetExB(bz,kFALSE);
+  if (!exb) return 0;
   Double_t pos0[3] = {r*TMath::Cos(phi), r*TMath::Sin(phi),z};
   Double_t pos1[3];
-  fgInstance->Correct(pos0,pos1);
+  exb->Correct(pos0,pos1);
   Double_t dphi=TMath::ATan2(pos1[1],pos1[0])-TMath::ATan2(pos0[1],pos0[0]);
   return dphi;  
 
 }
 
-Double_t AliTPCExB::GetDz(Double_t r, Double_t phi, Double_t z){
+Double_t AliTPCExB::GetDz(Double_t r, Double_t phi, Double_t z, Double_t bz){
   //
   //
   //
-  if (!fgInstance) return 0;
+  AliTPCExB *exb = AliTPCcalibDB::GetExB(bz,kFALSE);
+  if (!exb) return 0;
   Double_t pos0[3] = {r*TMath::Cos(phi), r*TMath::Sin(phi),z};
   Double_t pos1[3];
-  fgInstance->Correct(pos0,pos1);
+  exb->Correct(pos0,pos1);
   Double_t dz=pos1[2]-pos0[2];
   return dz;  
 }

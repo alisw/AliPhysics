@@ -83,6 +83,8 @@
 #include <AliCDBManager.h>
 #include <AliCDBEntry.h>
 #include <AliLog.h>
+#include <AliMagF.h>
+#include <AliMagWrapCheb.h>
 
 #include "AliTPCcalibDB.h"
 #include "AliTPCAltroMapping.h"
@@ -108,6 +110,7 @@ class AliTPCCalDet;
 #include "AliTPCCalibPulser.h"
 #include "AliTPCCalibPedestal.h"
 #include "AliTPCCalibCE.h"
+#include "AliTPCExBFirst.h"
 
 
 
@@ -117,6 +120,7 @@ ClassImp(AliTPCcalibDB)
 
 AliTPCcalibDB* AliTPCcalibDB::fgInstance = 0;
 Bool_t AliTPCcalibDB::fgTerminated = kFALSE;
+TObjArray    AliTPCcalibDB::fgExBArray;    // array of ExB corrections
 
 
 //_ singleton implementation __________________________________________________
@@ -335,12 +339,16 @@ void AliTPCcalibDB::Update(){
 
 
 
-  entry          = GetCDBEntry("TPC/Calib/ExB");
-  if (entry) {
-    entry->SetOwner(kTRUE);
-    fExB=dynamic_cast<AliTPCExB*>(entry->GetObject()->Clone());
-  }
-
+  //entry          = GetCDBEntry("TPC/Calib/ExB");
+  //if (entry) {
+  //  entry->SetOwner(kTRUE);
+  //  fExB=dynamic_cast<AliTPCExB*>(entry->GetObject()->Clone());
+  //}
+  //
+  // ExB  - calculate during initialization 
+  //      - 
+  fExB = SetExBField(-5, kTRUE); // field shoud be read from GRP 
+  //
   if (!fTransform) {
     fTransform=new AliTPCTransform(); 
   }
@@ -652,4 +660,49 @@ void AliTPCcalibDB::MakeTree(const char * fileName, TObjArray * array, const cha
       delete[] mapOROCArray;
       delete[] mapNames;
    }
+}
+
+
+
+void AliTPCcalibDB::RegisterExB(Int_t index, Float_t bz, Bool_t bdelete){
+  //
+  // Register static ExB correction map
+  // index - registration index - used for visualization
+  // bz    - bz field in kGaus
+
+  Float_t factor =  bz/(-5.);  // default b filed in Cheb with minus sign
+  
+  AliMagF*   bmap = new AliMagWrapCheb("Maps","Maps", 2, factor, 10., AliMagWrapCheb::k5kG,kTRUE,"$(ALICE_ROOT)/data/maps/mfchebKGI_sym.root");
+  
+  AliTPCExBFirst *exb  = new  AliTPCExBFirst(bmap,0.88*2.6400e+04,50,50,50);
+  AliTPCExB::SetInstance(exb);
+  
+  if (bdelete){
+    delete bmap;
+  }else{
+    AliTPCExB::RegisterField(index,bmap);
+  }
+  if (index>=fgExBArray.GetEntries()) fgExBArray.Expand((index+1)*2+11);
+  fgExBArray.AddAt(exb,index);
+}
+
+
+AliTPCExB*    AliTPCcalibDB::GetExB(Float_t bz, Bool_t deleteB) {
+  //
+  // bz filed in KGaus not in tesla
+  // Get ExB correction map
+  // if doesn't exist - create it
+  //
+  Int_t index = TMath::Nint(5+bz);
+  if (index>fgExBArray.GetEntries()) fgExBArray.Expand((index+1)*2+11);
+  if (!fgExBArray.At(index)) AliTPCcalibDB::RegisterExB(index,bz,deleteB);
+  return (AliTPCExB*)fgExBArray.At(index);
+}
+
+
+void  AliTPCcalibDB::SetExBField(Float_t bz){
+  //
+  // Set magnetic filed for ExB correction
+  //
+  fExB = GetExB(bz,kFALSE);
 }
