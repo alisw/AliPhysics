@@ -33,7 +33,7 @@ class AliTPCcalibDB : public TObject
   //
   AliTPCTransform* GetTransform() {return fTransform;}
   AliTPCExB*    GetExB() {return fExB;}
-  static SetExBField(Float_t bz);
+  void          SetExBField(Float_t bz);
   static AliTPCExB*    GetExB(Float_t bz,Bool_t bdelete);
   AliTPCCalPad* GetPadGainFactor() {return fPadGainFactor;}
   AliTPCCalPad* GetDedxGainFactor() {return fDedxGainFactor;}

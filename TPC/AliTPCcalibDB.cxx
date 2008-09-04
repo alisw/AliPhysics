@@ -347,8 +347,8 @@ void AliTPCcalibDB::Update(){
   //
   // ExB  - calculate during initialization 
   //      - 
-  fExB = SetExBField(-5, kTRUE); // field shoud be read from GRP 
-  //
+  fExB =  GetExB(-5,kTRUE);
+     //
   if (!fTransform) {
     fTransform=new AliTPCTransform(); 
   }
