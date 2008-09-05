@@ -38,7 +38,6 @@ fEventId(0),
 fCarlosId(-1),
 fChannel(0),
 fJitter(0),
-fResetSkip(0),
 fEightBitSignal(0),
 fDecompressAmbra(kTRUE)
 {
@@ -68,7 +67,6 @@ fEventId(0),
 fCarlosId(-1),
 fChannel(0),
 fJitter(0),
-fResetSkip(0),
 fEightBitSignal(0),
 fDecompressAmbra(kTRUE)
 {
@@ -126,20 +124,15 @@ Bool_t AliITSRawStreamSDD::Next()
   fCompletedModule=kFALSE;
 
   while (kTRUE) {
-    if(fResetSkip==0){
-      Bool_t kSkip = SkipHeaderWord();
-      fResetSkip=1;
-      if(!kSkip) return kSkip;
-    }
   
     if ((fChannel < 0) || (fCarlosId < 0) || (fChannel >= 2) || (fCarlosId >= kModulesPerDDL) || (fLastBit[fCarlosId][fChannel] < fReadBits[fCarlosId][fChannel]) ) {
       if (!fRawReader->ReadNextInt(fData)) return kFALSE;  // read next word
 
 
-      fChannel = -1;
       if((fData >> 16) == 0x7F00){ // jitter word
-	fResetSkip=0;
 	Reset();
+	Bool_t kSkip = SkipHeaderWord();
+	if(!kSkip) return kSkip;	
 	continue;
       }
 
@@ -178,13 +171,13 @@ Bool_t AliITSRawStreamSDD::Next()
 	// JTAG word -- do nothing
       } else {                               // unknown data format
 	fRawReader->AddMajorErrorLog(kDataFormatErr,Form("Invalid data %8.8x",fData));
-	AliWarning(Form("Invalid data: %8.8x\n", fData));
+	AliWarning(Form("Invalid data: %08X\n", fData));
 	return kFALSE;
       }
       
       if(fCarlosId>=0 && fCarlosId <kModulesPerDDL){
 	Int_t nDDL=fRawReader->GetDDLID();
-	 fModuleID = GetModuleNumber(nDDL,fCarlosId);
+	fModuleID = GetModuleNumber(nDDL,fCarlosId);
       }
     } else {  // decode data
       if (fReadCode[fCarlosId][fChannel]) {// read the next code word
@@ -228,9 +221,9 @@ void AliITSRawStreamSDD::Reset(){
       fReadBits[ic][i]=3;
       fTimeBin[ic][i]=0;
       fAnode[ic][i]=0;     
+      fICountFoot[ic]=0;
     }
   }
-  for(Int_t i=0;i<kModulesPerDDL;i++) fICountFoot[i]=0;
 }
 
 //______________________________________________________________________

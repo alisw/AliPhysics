@@ -84,11 +84,10 @@ class AliITSRawStreamSDD: public AliITSRawStream {
     UInt_t           fICarlosWord[kCarlosWords]; // Carlos words
     UInt_t           fIFifoWord[kFifoWords];     // FIFO words
     Int_t            fICountFoot[kModulesPerDDL]; // counter for carlos footer words
-    Int_t            fResetSkip;     //if it is 0, the ResetSkip Funcion is called
     Int_t            fEightBitSignal;    // signal at 8 bit
     Bool_t           fDecompressAmbra; //flag to switch off decompression
 
-    ClassDef(AliITSRawStreamSDD, 12) // class for reading ITS SDD raw digits
+    ClassDef(AliITSRawStreamSDD, 13) // class for reading ITS SDD raw digits
 };
 
 #endif
