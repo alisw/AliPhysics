@@ -13,6 +13,7 @@
 
 class TArrayI;
 class AliRawReader;
+class AliPHOSCalibData ;
 
 class AliPHOSRawDecoder {
 
@@ -40,6 +41,7 @@ public:
   const Bool_t IsOverflow() const { return fOverflow ;}
 
   const AliRawReader* GetRawReader() const { return fRawReader; }
+  void SetCalibData(AliPHOSCalibData * cdata){ fCalibData=cdata ;}
 
 protected:   
   
@@ -66,6 +68,8 @@ protected:
   Bool_t fOverflow ;   //Wether there was overflow
   TArrayI* fSamples;   // array of samples
   TArrayI* fTimes ;    // array of times corresponding to samples
+  AliPHOSCalibData * fCalibData ;   //! Calibration database if avalable
+
 
   ClassDef(AliPHOSRawDecoder,1)
 };

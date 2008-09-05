@@ -343,6 +343,33 @@ void AliPHOSCalibData::SetTimeShiftEmc(Int_t module, Int_t column, Int_t row, Fl
  
   fCalibDataEmc->SetTimeShiftEmc(module,column,row,value);
 }
+//________________________________________________________________
+Int_t AliPHOSCalibData::GetAltroOffsetEmc(Int_t module, Int_t column, Int_t row) const
+{
+  // Return ALTRO pedestal coefficient
+  // for channel defined by (module,column,row)
+  // module, column,raw should follow the internal PHOS convention:
+  // module 1:5, column 1:56, row 1:64
+  // if CBD instance exists, the value is taken from CDB.
+  // Otherwise it is an ideal one
+ 
+  if(fCalibDataEmc)
+    return fCalibDataEmc->GetAltroOffsetEmc(module,column,row);
+  else
+    return 0; // default width of one EMC ADC channel in GeV
+}
+ 
+//________________________________________________________________
+void AliPHOSCalibData::SetAltroOffsetEmc(Int_t module, Int_t column, Int_t row, Int_t value)
+{
+  // Set altro offset for (module,column,row)
+ 
+  if(!fCalibDataEmc)
+    fCalibDataEmc = new AliPHOSEmcCalibData("PHOS-EMC");
+ 
+  fCalibDataEmc->SetAltroOffsetEmc(module,column,row,value);
+}
+
  
 //________________________________________________________________
 Float_t AliPHOSCalibData::GetADCchannelCpv(Int_t module, Int_t column, Int_t row) const

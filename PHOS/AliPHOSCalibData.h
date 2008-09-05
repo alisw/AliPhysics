@@ -51,6 +51,9 @@ class AliPHOSCalibData: public TNamed {
   Float_t GetTimeShiftEmc(Int_t module, Int_t column, Int_t row) const;
   void    SetTimeShiftEmc(Int_t module, Int_t column, Int_t row, Float_t value) ;
 
+  Int_t  GetAltroOffsetEmc(Int_t module, Int_t column, Int_t row) const;
+  void   SetAltroOffsetEmc(Int_t module, Int_t column, Int_t row, Int_t value) ;
+
   //----Now CPV parameters-----------
   Float_t GetADCchannelCpv(Int_t module, Int_t column, Int_t row) const;
   void    SetADCchannelCpv(Int_t module, Int_t column, Int_t row, Float_t value);

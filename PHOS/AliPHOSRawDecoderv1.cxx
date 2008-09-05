@@ -41,6 +41,7 @@
 #include "TList.h"
 #include "TMath.h"
 #include "TMinuit.h"
+#include "AliPHOSCalibData.h"
 
 #include "TCanvas.h"
 #include "TH1.h"
@@ -216,7 +217,16 @@ Bool_t AliPHOSRawDecoderv1::NextDigit()
 	  return kFALSE;
       }
       else{
+        //take pedestals from DB
         pedestal = fAmpOffset ;
+        if(fCalibData){
+           Float_t truePed = fCalibData->GetADCpedestalEmc(fModule, fColumn, fRow) ;
+           Int_t   altroSettings = fCalibData->GetAltroOffsetEmc(fModule, fColumn, fRow) ;
+           pedestal += truePed - altroSettings ;
+         }
+         else{
+//           printf("AliPHOSRawDecoderv1::NextDigit(): Can not read data from OCDB \n") ;
+         }
       }
 
       //calculate time and energy

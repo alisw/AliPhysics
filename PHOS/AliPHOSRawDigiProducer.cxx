@@ -52,6 +52,7 @@ AliPHOSRawDigiProducer::AliPHOSRawDigiProducer():
   fEmcMinE(0.),
   fCpvMinE(0.),
   fSampleQualityCut(1.),
+  fGlobalAltroOffset(0),
   fEmcCrystals(0),
   fGeom(0),
   fPulseGenerator(0)
@@ -64,6 +65,7 @@ AliPHOSRawDigiProducer::AliPHOSRawDigiProducer(const AliPHOSRecoParam* recoParam
   fEmcMinE(0.),
   fCpvMinE(0.),
   fSampleQualityCut(1.),
+  fGlobalAltroOffset(0),
   fEmcCrystals(0),
   fGeom(0),
   fPulseGenerator(0)
@@ -74,8 +76,8 @@ AliPHOSRawDigiProducer::AliPHOSRawDigiProducer(const AliPHOSRecoParam* recoParam
 
   fEmcMinE = recoParam->GetEMCMinE();
   fCpvMinE = recoParam->GetCPVMinE();
-
   fSampleQualityCut = recoParam->GetEMCSampleQualityCut() ;
+  fGlobalAltroOffset = recoParam->GetGlobalAltroOffset() ;
 
   fGeom=AliPHOSGeometry::GetInstance() ;
   if(!fGeom) fGeom = AliPHOSGeometry::GetInstance("IHEP");
@@ -92,6 +94,7 @@ AliPHOSRawDigiProducer::AliPHOSRawDigiProducer(const AliPHOSRawDigiProducer &dp)
   fEmcMinE(0.),
   fCpvMinE(0.),
   fSampleQualityCut(1.),
+  fGlobalAltroOffset(0),
   fEmcCrystals(0),
   fGeom(0),
   fPulseGenerator(0)
@@ -114,6 +117,7 @@ AliPHOSRawDigiProducer& AliPHOSRawDigiProducer::operator= (const AliPHOSRawDigiP
   fEmcMinE = dp.fEmcMinE ;
   fCpvMinE = dp.fCpvMinE ;
   fSampleQualityCut = dp.fSampleQualityCut ;
+  fGlobalAltroOffset = dp.fGlobalAltroOffset ;
   fEmcCrystals = dp.fEmcCrystals ;
   fGeom = dp.fGeom ;
   if(fPulseGenerator) delete fPulseGenerator ;
@@ -144,6 +148,13 @@ void AliPHOSRawDigiProducer::MakeDigits(TClonesArray *digits, AliPHOSRawDecoder*
   //Temporary array for LowGain digits
   TClonesArray tmpLG("AliPHOSDigit",10000) ;
   Int_t ilgDigit=0 ;
+
+
+  //Read current altro offcet from RCU
+  decoder->SetAmpOffset(fGlobalAltroOffset) ;
+
+  //Let decoder subtract pedestals in case of ZS
+  decoder->SetCalibData(fgCalibData) ;
   
   while (decoder->NextDigit()) {
 

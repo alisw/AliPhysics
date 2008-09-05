@@ -56,6 +56,7 @@ AliPHOSEmcCalibData::AliPHOSEmcCalibData(const AliPHOSEmcCalibData& calibda) :
 	fADCpedestalEmc[module][column][row] = calibda.fADCpedestalEmc[module][column][row];
 	fHighLowRatioEmc[module][column][row] = calibda.fHighLowRatioEmc[module][column][row];
 	fTimeShiftEmc[module][column][row] = calibda.fTimeShiftEmc[module][column][row];
+        fAltroOffsets[module][column][row] = calibda.fAltroOffsets[module][column][row];
       }
     }
   }
@@ -78,6 +79,7 @@ AliPHOSEmcCalibData &AliPHOSEmcCalibData::operator =(const AliPHOSEmcCalibData& 
 	  fADCpedestalEmc[module][column][row] = calibda.fADCpedestalEmc[module][column][row];
 	  fHighLowRatioEmc[module][column][row] = calibda.fHighLowRatioEmc[module][column][row];
 	  fTimeShiftEmc[module][column][row] = calibda.fTimeShiftEmc[module][column][row];
+          fAltroOffsets[module][column][row] = calibda.fAltroOffsets[module][column][row]; 
 	}
       }
     }
@@ -104,6 +106,7 @@ void AliPHOSEmcCalibData::Reset()
 	fADCchannelEmc[module][column][row]  = 0.005;
 	fHighLowRatioEmc[module][column][row] = 16. ;
 	fTimeShiftEmc[module][column][row] = 0. ;
+        fAltroOffsets[module][column][row] = 0 ;
       }
     }
   }
@@ -165,6 +168,18 @@ void  AliPHOSEmcCalibData::Print(Option_t *option) const
       }
     }
   }
+  if (strstr(option,"altro")) {
+    printf("\n  ----    EMC altro offsets   ----\n\n");
+    for (Int_t module=0; module<5; module++){
+      printf("============== Module %d\n",module+1);
+      for (Int_t column=0; column<56; column++){
+        for (Int_t row=0; row<64; row++){
+          printf("%5d",fAltroOffsets[module][column][row]);
+        }
+        printf("\n");
+      }
+    }
+  }
 }
 
 //________________________________________________________________
@@ -206,7 +221,15 @@ Float_t AliPHOSEmcCalibData::GetTimeShiftEmc(Int_t module, Int_t column, Int_t r
 
   return fTimeShiftEmc[module-1][column-1][row-1];
 }
-
+//________________________________________________________________
+Int_t AliPHOSEmcCalibData::GetAltroOffsetEmc(Int_t module, Int_t column, Int_t row) const
+{
+  //Return EMC altro offsets
+  //module, column,raw should follow the internal PHOS convention:
+  //module 1:5, column 1:56, row 1:64
+ 
+  return fAltroOffsets[module-1][column-1][row-1];
+}
 //________________________________________________________________
 void AliPHOSEmcCalibData::SetADCchannelEmc(Int_t module, Int_t column, Int_t row, Float_t value)
 {
@@ -241,4 +264,12 @@ void AliPHOSEmcCalibData::SetTimeShiftEmc(Int_t module, Int_t column, Int_t row,
   //module, column,raw should follow the internal PHOS convention:
   //module 1:5, column 1:56, row 1:64
   fTimeShiftEmc[module-1][column-1][row-1] = value;
+}
+//________________________________________________________________
+void AliPHOSEmcCalibData::SetAltroOffsetEmc(Int_t module, Int_t column, Int_t row, Int_t value)
+{
+  //Set EMC pedestal
+  //module, column,raw should follow the internal PHOS convention:
+  //module 1:5, column 1:56, row 1:64
+  fAltroOffsets[module-1][column-1][row-1] = value;
 }
