@@ -194,6 +194,8 @@ Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmea
       }//global dmin cut 
     }//clus loop
 
+    pTrk->SetHMPIDmip(0,0,0,0);                                                                //store mip info in any case 
+   
     if(!isOkQcut) {
       pTrk->SetHMPIDcluIdx(ipCh,9999);                                                          
       pTrk->SetHMPIDsignal(pParam->kMipQdcCut);
@@ -205,6 +207,7 @@ Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmea
     }
 
     if(!isOkDcut) {
+      pTrk->SetHMPIDmip(bestHmpCluster->X(),bestHmpCluster->Y(),(Int_t)bestHmpCluster->Q(),0);  //store mip info in any case 
       pTrk->SetHMPIDcluIdx(ipCh,index+1000*cluSiz);                                             //set chamber, index of cluster + cluster size
       pTrk->SetHMPIDsignal(pParam->kMipDistCut);                                                //closest cluster with enough charge is still too far from intersection
     }
