@@ -101,8 +101,16 @@ void AliAnalysisTaskME::ConnectInputData(Option_t* /*option*/)
 //
     fInputHandler = dynamic_cast<AliMultiAODInputHandler*> 
 	((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
-    if (fInputHandler == 0) 
-	AliFatal("Event Handler has to be MultiAODHandler !");
+    if (fInputHandler == 0) {
+	AliFatal("Event Handler has to be MultiAODInputHandler !");
+    } else {
+	// Check that we have an event pool
+	if (!fInputHandler->GetEventPool()) {
+	    fInputHandler->SetEventPool(AliAnalysisManager::GetAnalysisManager()->GetEventPool());
+	    if (!fInputHandler->GetEventPool()) 
+		AliFatal("MultiAODInputHandler has no EventPool connected !");
+	}
+    }
 }
 
 void AliAnalysisTaskME::CreateOutputObjects()
