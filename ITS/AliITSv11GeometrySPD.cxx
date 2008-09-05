@@ -3028,7 +3028,7 @@ TGeoVolumeAssembly* AliITSv11GeometrySPD::CreateConeModule(TGeoManager *mgr) con
     TGeoVolume *volCable = new TGeoVolume("ITSSPDExtender", shCable, medExt);
     volCable->SetLineColor(kGreen);
     
-    TGeoVolume *volTube = gGeoManager->MakeTube("ITSSPDCoolingTubeCone", medInox, 5.*fgkmm, 6.*fgkmm, 0.5*(x[5] - x[0]));
+    TGeoVolume *volTube = gGeoManager->MakeTube("ITSSPDCoolingTubeCone", medInox, 4.*fgkmm, 5.*fgkmm, 0.5*(x[5] - x[0]));
     volTube->SetLineColor(kGray);
     
     Double_t thickness = cableThickness + mcmThickness;
@@ -3052,7 +3052,7 @@ TGeoVolumeAssembly* AliITSv11GeometrySPD::CreateConeModule(TGeoManager *mgr) con
     container->AddNode(volMCMExt, 0, combi);
     
     TGeoRotation *rot1 = new TGeoRotation(*gGeoIdentity);
-    rot1->RotateX(88.5);
+    rot1->RotateX(87.5);
     TGeoCombiTrans *tr = new TGeoCombiTrans(1.0, x[0] + 0.5*(x[5] - x[0]), -2.95, rot1);
     container->AddNode(volTube, 0, tr);
     
@@ -3074,15 +3074,17 @@ void AliITSv11GeometrySPD::CreateCones(TGeoVolume *moth) const
     for (Int_t i = 0; i < 10; i++) {
         TGeoRotation *rot1 = new TGeoRotation(*gGeoIdentity);
         rot1->RotateY(-90.0);
-        rot1->RotateX(44.7);
+        rot1->RotateX(43.7);
+	angle1[i] -= 1.5;
         rot1->RotateZ(90.0 - angle1[i]);
-        TGeoCombiTrans *tr1 = new TGeoCombiTrans(0.0, 0.0, 40.5, rot1);
+        TGeoCombiTrans *tr1 = new TGeoCombiTrans(0.0, 0.0, 40.4, rot1);
         moth->AddNode(module, 2*i, tr1);
         TGeoRotation *rot2 = new TGeoRotation(*gGeoIdentity);
         rot2->RotateY(90.0);
-        rot2->RotateX(-44.7);
+        rot2->RotateX(-43.7);
+	angle2[i] -= 1.5;
         rot2->RotateZ(90.0 - angle2[i]);
-        TGeoCombiTrans *tr2 = new TGeoCombiTrans(0.0, 0.0, -40.5, rot2);
+        TGeoCombiTrans *tr2 = new TGeoCombiTrans(0.0, 0.0, -40.4, rot2);
         moth->AddNode(module, 2*i+1, tr2);
     }
 }
