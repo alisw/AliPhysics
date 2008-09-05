@@ -46,6 +46,8 @@
 #pragma link C++ class  AliITSsegmentationSDD+;
 #pragma link C++ class  AliITSsegmentationSSD+;
 #pragma link C++ class  AliITSCalibration+;
+#pragma link C++ class  AliITSresponse+;
+#pragma link C++ class  AliITSresponseSPD+;
 #pragma link C++ class  AliITSresponseSDD+;
 #pragma link C++ class  AliITSCalibrationSPD-;
 #pragma link C++ class  AliITSCalibrationSDD+;
