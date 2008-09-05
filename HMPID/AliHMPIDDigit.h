@@ -14,6 +14,7 @@
 #include "TMath.h"         //Mathieson()
 #include <AliBitPacking.h> //Raw()
 #include "AliHMPIDParam.h"
+//#include "AliHMPIDRawStream.h"
 
 class TClonesArray;        //Hit2Sdi()
   
@@ -167,6 +168,8 @@ void AliHMPIDDigit::Raw(UInt_t &w32,Int_t &ddl,Int_t &r,Int_t &d,Int_t &a)const
   ddl=2*Ch()+Pc()%2;                    //DDL# 0..13
   Int_t tmp=1+Pc()/2*8+PadPcY()/6;  r=(Pc()%2)? tmp:25-tmp;               //row r=1..24
   d=1+PadPcX()/8;                       //DILOGIC# 1..10
+//  d=AliHMPIDRawStream::kNDILOGICAdd+1-d;                   ////flip according to Paolo (2-9-2008)
+  d=10+1-d;                                                  ////flip according to Paolo (2-9-2008)
   a=y2a[PadPcY()%6]+6*(7-PadPcX()%8);   //ADDRESS 0..47        
     
   w32=0;   
