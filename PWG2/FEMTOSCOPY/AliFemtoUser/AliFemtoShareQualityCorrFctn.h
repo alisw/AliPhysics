@@ -37,6 +37,9 @@ private:
   TH2D *fQualityNumerator;      // quality for real pairs
   TH2D *fQualityDenominator;    // quality for mixed pairs 
 
+  TH2D *fTPCSepNumerator;       // TPCSep for real pairs
+  TH2D *fTPCSepDenominator;     // TPCSep for mixed pairs 
+
 #ifdef __ROOT__
   ClassDef(AliFemtoShareQualityCorrFctn, 1)
 #endif
