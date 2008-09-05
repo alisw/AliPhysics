@@ -29,6 +29,7 @@ public:
   Bool_t  EMCSubtractPedestals()      const { return fEMCSubtractPedestals;    }
   Bool_t  EMCToUnfold()               const { return fEMCUnfold;               }
   const char* EMCDecoderVersion()     const { return fEMCDecoderVersion.Data();}
+  Int_t   GetGlobalAltroOffset()      const { return fGlobalAltroOffset ;      }
 
   Float_t GetCPVClusteringThreshold() const { return fCPVClusteringThreshold;  }
   Float_t GetCPVLocalMaxCut()         const { return fCPVLocMaxCut;            }
@@ -46,6 +47,7 @@ public:
   void SetEMCSubtractPedestals(Bool_t subtract)      { fEMCSubtractPedestals  =subtract;} 
   void SetEMCDecoderVersion(const char* version="v1"){ fEMCDecoderVersion     =version ;}
   void SetEMCUnfolding(Bool_t toUnfold=kFALSE)       { fEMCUnfold            =toUnfold;}
+  void SetGlobalAltroOffset(Int_t offset=5)          {fGlobalAltroOffset     = offset ; }
 
   void SetCPVClusteringThreshold(Float_t cluth)      { fCPVClusteringThreshold=cluth;   }
   void SetCPVLocalMaxCut(Float_t cut)                { fCPVLocMaxCut          =cut;     }
@@ -68,6 +70,7 @@ protected:
   Bool_t  fEMCSubtractPedestals;   // EMC: true if pedestal should be subtracted (in non-ZS)
   Bool_t  fEMCUnfold;              // EMC: true if overlapped clusters should be unfolded
   TString fEMCDecoderVersion ;     // EMC: AliPHOSRawDecoder version
+  Int_t   fGlobalAltroOffset ;     // Offset used in ALTRO chips in SZ runs
 
   Float_t fCPVClusteringThreshold; // CPV: Min.digit energy to start a new cluster, in GeV
   Float_t fCPVLocMaxCut;           // CPV: Min.energy difference between two local maxima, in GeV
