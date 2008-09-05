@@ -24,7 +24,7 @@ class AliITSOnlineSDDBase : public AliITSOnlineSDD {
 
   void SetMinBaseline(Float_t bas=10.){fMinBaseline=bas;}
   void SetMaxBaseline(Float_t bas=150.){fMaxBaseline=bas;}
-  void SetMinRawNoise(Float_t ns=0.001){fMinRawNoise=ns;}
+  void SetMinRawNoise(Float_t ns=0.5){fMinRawNoise=ns;}
   void SetMaxRawNoise(Float_t ns=9.){fMaxRawNoise=ns;}
   void SetNSigmaNoise(Float_t ns=4.){fNSigmaNoise=ns;}
   void SetGoldenBaselineValue(Float_t val=20.){fGoldenBaseline=val;}
