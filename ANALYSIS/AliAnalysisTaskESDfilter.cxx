@@ -16,7 +16,9 @@
 /* $Id: AliAnalysisTaskESDfilter.cxx 24535 2008-03-16 22:43:30Z fca $ */
  
 #include <TChain.h>
+#include <TTree.h>
 #include <TList.h>
+#include <TString.h>
 #include <TFile.h>
 #include <TArrayI.h>
 #include <TRandom.h>
@@ -37,6 +39,9 @@
 #include "AliESDCaloCluster.h"
 #include "AliESDCaloCells.h"
 #include "AliMultiplicity.h"
+#include "AliRunTag.h"
+#include "AliEventTag.h"
+#include "AliAODTagCreator.h"
 #include "AliLog.h"
 
 ClassImp(AliAnalysisTaskESDfilter)
@@ -49,26 +54,50 @@ AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter():
     fKinkFilter(0x0),
     fV0Filter(0x0),
     fHighPthreshold(0),
-    fPtshape(0x0)     
+    fPtshape(0x0),
+    fCreateTags(kFALSE),
+    fFirstFile(kTRUE),
+    fRunTag(0), 
+    fTreeT(0),
+    fTagCreator(0)
 {
   // Default constructor
 }
 
-AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter(const char* name):
+AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter(const char* name, Bool_t tags):
     AliAnalysisTaskSE(name),
     fTrackFilter(0x0),
     fKinkFilter(0x0),
     fV0Filter(0x0),
     fHighPthreshold(0),
-    fPtshape(0x0)
+    fPtshape(0x0),
+    fCreateTags(tags),
+    fFirstFile(kTRUE),
+    fRunTag(0), 
+    fTreeT(0),
+    fTagCreator(0)
 {
   // Constructor
+    if (fCreateTags) {
+	DefineOutput(1, TTree::Class()); 	
+    }
 }
 
 void AliAnalysisTaskESDfilter::UserCreateOutputObjects()
 {
 // Create the output container
     OutputTree()->GetUserInfo()->Add(fTrackFilter);
+
+// In case tag creation has been requested
+    if (fCreateTags) {
+	OpenFile(1);
+	fTreeT  = new TTree("T", "AOD Tags");
+	fRunTag = new AliRunTag();
+	TBranch * btag = fTreeT->Branch("AliTag", "AliRunTag", &fRunTag);
+	btag->SetCompressionLevel(9);
+	
+	fTagCreator = new AliAODTagCreator();
+    }
 }
 
 void AliAnalysisTaskESDfilter::Init()
@@ -89,6 +118,8 @@ void AliAnalysisTaskESDfilter::UserExec(Option_t */*option*/)
   if (fHighPthreshold == 0) AliInfo("detector PID signals are stored in each track");
   if (!fPtshape) AliInfo("detector PID signals are not stored below the pt threshold");
   ConvertESDtoAOD();
+
+  if (fCreateTags) CreateTags();
 }
 
 void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
@@ -961,6 +992,39 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
     return;
 }
 
+void AliAnalysisTaskESDfilter::CreateTags()
+{
+    // Create Tags for the current event
+    AliEventTag* evtTag = new AliEventTag();
+    fTagCreator->FillEventTag(AODEvent(), evtTag);
+    // Reference to the input file
+    TString fturl, fturltemp, fguid;
+    
+    TString opt(fInputHandler->GetAnalysisType());
+    opt.ToLower();
+    TFile *file =  fInputHandler->GetTree()->GetCurrentFile();
+    const TUrl *url = file->GetEndpointUrl();
+    fguid = file->GetUUID().AsString();
+    if (opt.Contains("grid")) {
+	fturltemp = "alien://"; fturltemp += url->GetFile();
+	fturl = fturltemp(0,fturltemp.Index(".root",5,0,TString::kExact)+5);
+    } else {
+	fturl = url->GetFile();
+    }
+    evtTag->SetEventId(fInputHandler->GetReadEntry() + 1);
+    evtTag->SetGUID(fguid);
+    if(opt.Contains("grid")) {
+	evtTag->SetMD5(0);
+	evtTag->SetTURL(fturl);
+	evtTag->SetSize(0);
+    }
+    else evtTag->SetPath(fturl);
+    //
+    // Add the event tag
+    fRunTag->AddEventTag(*evtTag);
+    PostData(1, fTreeT);
+}
+
 void AliAnalysisTaskESDfilter::SetAODPID(AliESDtrack *esdtrack, AliAODTrack *aodtrack, AliAODPid *detpid, Double_t timezero)
 {
   //
@@ -1014,6 +1078,37 @@ void AliAnalysisTaskESDfilter::SetDetectorRawSignals(AliAODPid *aodpid, AliESDtr
  aodpid->SetHMPIDsignal(track->GetHMPIDsignal());
 
 }
+
+
+void AliAnalysisTaskESDfilter::FinishTaskOutput()
+{
+// Terminate analysis
+//
+    if (fCreateTags) {
+	fRunTag->CopyStandardContent(fInputHandler->GetRunTag());	    
+	fTreeT->Fill();
+//	fTreeT->Write();
+    }
+}
+
+Bool_t AliAnalysisTaskESDfilter::Notify()
+{
+    // Notify file change
+    if (fCreateTags) {
+	if (!fFirstFile) {
+	    printf("Filling Tags %p \n", fInputHandler->GetRunTag());
+	    fRunTag->CopyStandardContent(fInputHandler->GetRunTag());	    
+	    fTreeT->Fill();
+	    fRunTag->Clear();
+	} else {
+	    fFirstFile = kFALSE;
+	}
+    }
+    
+    return kTRUE;
+}
+
+
 void AliAnalysisTaskESDfilter::Terminate(Option_t */*option*/)
 {
 // Terminate analysis
