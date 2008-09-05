@@ -153,6 +153,7 @@ void AliQADataMakerRec::EndOfCycle(AliQA::TASKINDEX_t task)
       subDir->cd() ; 
       fObject->Write() ; 
     }
+    fOutput->Save() ; 
 	}
 }
  

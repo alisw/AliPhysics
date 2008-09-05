@@ -143,6 +143,7 @@ void AliQADataMakerSim::EndOfCycle(AliQA::TASKINDEX_t task)
       }
     }
   }
+  fOutput->Save() ; 
   ResetCycle() ; 
 }
  
