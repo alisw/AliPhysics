@@ -21,6 +21,7 @@
 //  contained in a DB
 //  -------------------------------------------------------------
 //  W. Ferrarese + P. Cerello Feb 2008
+//  M.Siciliano Aug 2008 QA RecPoints and HLT mode
 //  INFN Torino
 
 // --- ROOT system ---
@@ -31,6 +32,7 @@
 #include <TGaxis.h>
 #include <TMath.h>
 #include <TDirectory.h>
+#include <TSystem.h>
 // --- Standard library ---
 
 // --- AliRoot header files ---
@@ -39,10 +41,13 @@
 #include "AliQA.h"
 #include "AliQAChecker.h"
 #include "AliRawReader.h"
+#include "AliITSRawStream.h"
 #include "AliITSRawStreamSDD.h"
+#include "AliITSRawStreamSDDCompressed.h"
+#include "AliITSDetTypeRec.h"
 #include "AliITSRecPoint.h"
 #include "AliITSgeomTGeo.h"
-
+#include "AliITSHLTforSDD.h"
 #include "AliCDBManager.h"
 #include "AliCDBStorage.h"
 #include "AliCDBEntry.h"
@@ -59,12 +64,20 @@ fLDC(ldc),
 fSDDhTask(0),
 fGenOffset(0),
 fTimeBinSize(1),
-fDDLModuleMap(0)
+fDDLModuleMap(0),
+fHLTMode(0),
+fHLTSDD(0)
 {
   //ctor used to discriminate OnLine-Offline analysis
   if(fLDC < 0 || fLDC > 4) {
 	AliError("Error: LDC number out of range; return\n");
   }
+  if(!fkOnline){AliInfo("Offline mode: HLT set from AliITSDetTypeRec for SDD\n");}
+  else
+    if(fkOnline){
+      AliInfo("Online mode: HLT set from environment for SDD\n");
+      SetHLTModeFromEnvironment();
+    }
   //fDDLModuleMap=NULL;
 }
 
@@ -77,7 +90,9 @@ fLDC(qadm.fLDC),
 fSDDhTask(qadm.fSDDhTask),
 fGenOffset(qadm.fGenOffset),
 fTimeBinSize(1),
-fDDLModuleMap(0)
+fDDLModuleMap(0),
+fHLTMode(qadm.fHLTMode),
+fHLTSDD( qadm.fHLTSDD)
 {
   //copy ctor 
   fAliITSQADataMakerRec->SetName((const char*)qadm.fAliITSQADataMakerRec->GetName()) ; 
@@ -121,17 +136,36 @@ void AliITSQASDDDataMakerRec::InitRaws()
 
   AliCDBEntry *ddlMapSDD = AliCDBManager::Instance()->Get("ITS/Calib/DDLMapSDD");
   Bool_t cacheStatus = AliCDBManager::Instance()->GetCacheFlag();
-
-  if( !ddlMapSDD){
-    AliError("Calibration object retrieval failed! SDD will not be processed");
-    fDDLModuleMap = NULL;
-    return;
-  }  
+  if(!ddlMapSDD)
+    {
+      AliError("Calibration object retrieval failed! SDD will not be processed");
+      fDDLModuleMap = NULL;
+      return;
+    }
   fDDLModuleMap = (AliITSDDLModuleMapSDD*)ddlMapSDD->GetObject();
   if(!cacheStatus)ddlMapSDD->SetObject(NULL);
   ddlMapSDD->SetOwner(kTRUE);
-  if(!cacheStatus)delete ddlMapSDD;
- 
+  if(!cacheStatus)
+    {
+      delete ddlMapSDD;
+    }
+
+  if(fkOnline==kFALSE){
+    AliInfo("Offline mode: HLTforSDDobject used \n");
+    AliCDBEntry *hltforSDD = AliCDBManager::Instance()->Get("ITS/Calib/HLTforSDD");
+    if(!hltforSDD){
+      AliError("Calibration object retrieval failed! SDD will not be processed");    
+      fHLTSDD=NULL;
+      return;
+    }  
+    fHLTSDD = (AliITSHLTforSDD*)hltforSDD->GetObject();
+    if(!cacheStatus)hltforSDD->SetObject(NULL);
+    hltforSDD->SetOwner(kTRUE);
+    if(!cacheStatus)
+      {
+	delete hltforSDD;
+      }
+  }
   Int_t lay, lad, det;
   Int_t LAY = -1;  //, LAD = -1;
   char hname0[50];
@@ -147,7 +181,7 @@ void AliITSQASDDDataMakerRec::InitRaws()
   else {
     AliInfo("Book Offline Histograms for SDD\n ");
   }
-  TH1D *h0 = new TH1D("SDDModPattern","HW Modules pattern",fgknSDDmodules,fgkmodoffset,Float_t(fgkmodoffset+fgknSDDmodules)-0.5);
+  TH1D *h0 = new TH1D("SDDModPattern","HW Modules pattern",fgknSDDmodules,239.5,499.5);
   h0->GetXaxis()->SetTitle("Module Number");
   h0->GetYaxis()->SetTitle("Counts");
   fAliITSQADataMakerRec->Add2RawsList((new TH1D(*h0)),0+fGenOffset,kTRUE,kFALSE);
@@ -215,7 +249,8 @@ void AliITSQASDDDataMakerRec::InitRaws()
 	fTimeBinSize = 4;
     indexlast = 0;
     index1 = 0;
-	indexlast1 = fSDDhTask;
+    indexlast1 = fSDDhTask;
+    //   cout<<"Last of the offline "<<fSDDhTask<<endl;
     indexlast2 = 0;
     char *hname[3];
     for(Int_t i=0; i<3; i++) hname[i]= new char[50];
@@ -228,7 +263,7 @@ void AliITSQASDDDataMakerRec::InitRaws()
 			TProfile2D *fModuleChargeMapFSE = new TProfile2D(hname[0],hname[1],256/fTimeBinSize,-0.5,255.5,256,-0.5,255.5);
 			fModuleChargeMapFSE->GetXaxis()->SetTitle("Time Bin");
 			fModuleChargeMapFSE->GetYaxis()->SetTitle("Anode");
-			fAliITSQADataMakerRec->Add2RawsList((new TProfile2D(*fModuleChargeMapFSE)),indexlast1 + index1 + fGenOffset,kTRUE,kTRUE);
+			fAliITSQADataMakerRec->Add2RawsList((new TProfile2D(*fModuleChargeMapFSE)),indexlast1 + index1 + fGenOffset,kTRUE,kFALSE);
 			delete fModuleChargeMapFSE;
 			
 			fSDDhTask++;
@@ -245,7 +280,7 @@ void AliITSQASDDDataMakerRec::InitRaws()
 			TProfile2D *fModuleChargeMap = new TProfile2D(hname[0],hname[1],256/fTimeBinSize,-0.5,255.5,256,-0.5,255.5);
 			fModuleChargeMap->GetXaxis()->SetTitle("Time Bin");
 			fModuleChargeMap->GetYaxis()->SetTitle("Anode");
-			fAliITSQADataMakerRec->Add2RawsList((new TProfile2D(*fModuleChargeMap)),indexlast1 + index1 + fGenOffset,kTRUE,kTRUE);
+			fAliITSQADataMakerRec->Add2RawsList((new TProfile2D(*fModuleChargeMap)),indexlast1 + index1 + fGenOffset,kTRUE,kFALSE);
 			delete fModuleChargeMap;
 
 			fSDDhTask++;
@@ -272,48 +307,82 @@ void AliITSQASDDDataMakerRec::MakeRaws(AliRawReader* rawReader)
   AliDebug(1,"entering MakeRaws\n");                 
   rawReader->SelectEquipment(17,fgkeqOffset,fgkeqOffset + fgkDDLidRange); 
 
-  rawReader->Reset();                         
-  AliITSRawStreamSDD s(rawReader); 
-  s.SetDDLModuleMap(fDDLModuleMap);
+  rawReader->Reset();       
+  AliITSRawStream *stream;
+  
+  if(fkOnline==kTRUE)
+    {
+      if(GetHLTMode()==kTRUE)
+	{
+	  AliInfo("Online  mode: HLT C compressed mode used for SDD\n");
+	  stream = new AliITSRawStreamSDDCompressed(rawReader); }
+      else{ 
+	AliInfo("Online  mode: HLT A mode used for SDD\n");
+	stream = new AliITSRawStreamSDD(rawReader);}     
+    }
+  else 
+    {
+      if(fHLTSDD->IsHLTmodeC()==kTRUE){
+	  AliInfo("Offline  mode: HLT C compressed mode used for SDD\n");
+	stream = new AliITSRawStreamSDDCompressed(rawReader);
+      }else 
+	{
+	AliInfo("Offline  mode: HLT A mode used for SDD\n");
+	stream = new AliITSRawStreamSDD(rawReader);
+      }
+    }
+  
+  //ckeck on HLT mode
+                  
+
+  
+  //  AliITSRawStreamSDD s(rawReader); 
+  stream->SetDDLModuleMap(fDDLModuleMap);
+  
   Int_t lay, lad, det; 
 
   Int_t index=0;
   if(fkOnline) {
     for(Int_t moduleSDD =0; moduleSDD<fgknSDDmodules; moduleSDD++){
         for(Int_t iside=0;iside<fgknSide;iside++) {
-          if(fSDDhTask > 40 + index) fAliITSQADataMakerRec->GetRawsData(40 + index +fGenOffset)->Reset();
+          if(fSDDhTask > 41 + index) fAliITSQADataMakerRec->GetRawsData(41 + index +fGenOffset)->Reset();
           index++;
         }
     }
   }
+  
   Int_t cnt = 0;
   Int_t ildcID = -1;
   Int_t iddl = -1;
   Int_t isddmod = -1;
   Int_t coord1, coord2, signal, moduleSDD, ioffset, iorder, activeModule, index1;
-  while(s.Next()) {
+  
+  while(stream->Next()) {
     ildcID = rawReader->GetLDCId();
     iddl = rawReader->GetDDLID() - fgkDDLIDshift;
-    isddmod = s.GetModuleNumber(iddl,s.GetCarlosId());
+    isddmod = fDDLModuleMap->GetModuleNumber(iddl,stream->GetCarlosId());
+    //  cout<<"isddmod "<<isddmod<<endl;
     if(isddmod==-1){
-      AliDebug(1,Form("Found module with iddl: %d, s.GetCarlosId: %d \n",iddl,s.GetCarlosId() ));
+      AliDebug(1,Form("Found module with iddl: %d, stream->GetCarlosId: %d \n",iddl,stream->GetCarlosId() ));
       continue;
     }
-    if(s.IsCompletedModule()) {
+    if(stream->IsCompletedModule()) {
       AliDebug(1,Form("IsCompletedModule == KTRUE\n"));
       continue;
     } 
     
-    coord1 = s.GetCoord1();
-    coord2 = s.GetCoord2();
-    signal = s.GetSignal();
+    coord1 = stream->GetCoord1();
+    coord2 = stream->GetCoord2();
+    signal = stream->GetSignal();
     
-    moduleSDD = isddmod;
-    if(moduleSDD < 0 || moduleSDD>fgknSDDmodules) {
-      AliDebug(1,Form( "Module SDD = %d, resetting it to 1 \n",moduleSDD));
+     moduleSDD = isddmod - fgkmodoffset;
+
+    if(moduleSDD <fgkmodoffset|| moduleSDD>fgknSDDmodules+fgkmodoffset-1) {
+      AliDebug(1,Form( "Module SDD = %d, resetting it to 1 \n",isddmod));
       moduleSDD = 1;
     }
-    fAliITSQADataMakerRec->GetRawsData(0 +fGenOffset)->Fill(moduleSDD); 
+
+    fAliITSQADataMakerRec->GetRawsData(0 +fGenOffset)->Fill(isddmod); 
     
     AliITSgeomTGeo::GetModuleId(isddmod, lay, lad, det);
     ioffset = 3;
@@ -329,7 +398,7 @@ void AliITSQASDDDataMakerRec::MakeRaws(AliRawReader* rawReader)
     if(lay==4) { 
       fAliITSQADataMakerRec->GetRawsData(40+fGenOffset)->Fill(det,lad);}
 
-    Short_t iside = s.GetChannel();
+    Short_t iside = stream->GetChannel();
     activeModule = moduleSDD;
     index1 = activeModule * 2 + iside;
     
@@ -340,14 +409,16 @@ void AliITSQASDDDataMakerRec::MakeRaws(AliRawReader* rawReader)
     
     if(fkOnline) {
       if(fSDDhTask > 40 + index1) {
-        ((TProfile2D *)(fAliITSQADataMakerRec->GetRawsData(40 + index1 +fGenOffset)))->Fill(coord2, coord1, signal);
-        ((TProfile2D *)(fAliITSQADataMakerRec->GetRawsData(40 + index1 + 260*2 +fGenOffset)))->Fill(coord2, coord1, signal);
+        ((TProfile2D *)(fAliITSQADataMakerRec->GetRawsData(41 + index1 +fGenOffset)))->Fill(coord2, coord1, signal);
+        ((TProfile2D *)(fAliITSQADataMakerRec->GetRawsData(41 + index1 + 260*2 +fGenOffset)))->Fill(coord2, coord1, signal);
       }
     }
     cnt++;
     if(!(cnt%10000)) AliDebug(1,Form(" %d raw digits read",cnt));
   }
   AliDebug(1,Form("Event completed, %d raw digits read",cnt)); 
+  delete stream;
+  stream = NULL; 
  }
 
 //____________________________________________________________________________ 
@@ -481,7 +552,6 @@ void AliITSQASDDDataMakerRec::InitRecPoints()
       delete h15;
       fSDDhTask++;
       
-      cout<<"Online recpoints histograms booked"<<endl;
     }//online
 
 
@@ -554,3 +624,22 @@ void AliITSQASDDDataMakerRec::MakeRecPoints(TTree * clustersTree)
 
 }
 
+//_______________________________________________________________
+
+void AliITSQASDDDataMakerRec::SetHLTModeFromEnvironment()
+{
+
+   Int_t  hltmode= ::atoi(gSystem->Getenv("HLT_MODE"));
+
+   if(hltmode==1)
+     {
+       AliInfo("Online mode: HLT mode A selected from environment for SDD\n");
+       SetHLTMode(kFALSE);
+     }
+   else
+     if(hltmode==2)
+       {
+       AliInfo("Online mode: HLT mode C compressed selected from environment for SDD\n");
+       SetHLTMode(kTRUE);
+       }
+}

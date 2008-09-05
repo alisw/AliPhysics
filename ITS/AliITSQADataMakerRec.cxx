@@ -48,6 +48,7 @@ ClassImp(AliITSQADataMakerRec)
 AliITSQADataMakerRec::AliITSQADataMakerRec(Bool_t kMode, Short_t subDet, Short_t ldc) :
 AliQADataMakerRec(AliQA::GetDetName(AliQA::kITS), "ITS Quality Assurance Data Maker"),
 fkOnline(kMode),
+fHLTMode(0),
 fSubDetector(subDet),
 fLDC(ldc),
 fSPDDataMaker(NULL),
@@ -67,6 +68,7 @@ fSSDDataMaker(NULL)
   if(fSubDetector == 0 || fSubDetector == 2) {
 	AliDebug(1,"AliITSQADM::Create SDD DataMakerRec\n");
 	fSDDDataMaker = new AliITSQASDDDataMakerRec(this,fkOnline);
+	if(fkOnline){SetHLTMode(fSDDDataMaker->GetHLTMode()); }
   }
   if(fSubDetector == 0 || fSubDetector == 3) {
 	AliDebug(1,"AliITSQADM::Create SSD DataMakerRec\n");
@@ -86,6 +88,7 @@ AliITSQADataMakerRec::~AliITSQADataMakerRec(){
 AliITSQADataMakerRec::AliITSQADataMakerRec(const AliITSQADataMakerRec& qadm) :
 AliQADataMakerRec(),
 fkOnline(qadm.fkOnline),
+fHLTMode(qadm.fHLTMode),
 fSubDetector(qadm.fSubDetector),
 fLDC(qadm.fLDC),
 fSPDDataMaker(NULL),

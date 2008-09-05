@@ -44,11 +44,15 @@ public:
   virtual void MakeRaws(AliRawReader *rawReader);
   virtual void MakeRecPoints(TTree *clustersTree);
   virtual void MakeESDs(AliESDEvent *esd);
+
+  void SetHLTMode(Bool_t khltmode=kFALSE){fHLTMode=khltmode;};
+  Bool_t GetHLTMode(){return fHLTMode;};
   virtual ~AliITSQADataMakerRec(); // dtor
 
 private:
 
   Bool_t  fkOnline;                        //online (1) or offline (0) use
+  Bool_t  fHLTMode;                        // HLT MODE kTRUE mode C kFALSE mode A
   Short_t fSubDetector;                    // subDetector: 0 (ALL), 1 (SPD), 2 (SDD), 3 (SSD)
   Short_t fLDC;				   // number of LDC: 0 (one LDC for the whole subdetector)
 
@@ -56,7 +60,7 @@ private:
   AliITSQASDDDataMakerRec *fSDDDataMaker;  // SDD Data Maker 
   AliITSQASSDDataMakerRec *fSSDDataMaker;  // SSD Data Maker 
 
-  ClassDef(AliITSQADataMakerRec,3)         // description 
+  ClassDef(AliITSQADataMakerRec,4)         // description 
 
 };
 

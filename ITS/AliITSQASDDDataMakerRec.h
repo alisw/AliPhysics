@@ -10,6 +10,7 @@
 //
 //
 //  W. Ferrarese + P. Cerello Feb 2008
+//  M.Siciliano Aug 2008 QA RecPoints and HLT mode
 
 /* $Id$ */
 
@@ -18,7 +19,7 @@
 
 class TObjArray;
 class AliITSDDLModuleMapSDD;
-
+class AliITSHLTforSDD;
 class AliITSQASDDDataMakerRec: public TObject {
 
 public:
@@ -31,34 +32,39 @@ public:
   virtual void MakeRecPoints(TTree *clustersTree);
   virtual void StartOfDetectorCycle();
   virtual void EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray * list);
+
+
   virtual ~AliITSQASDDDataMakerRec(); // dtor
   Int_t GetOffset() { return fGenOffset; }
   Int_t GetTaskHisto() { return fSDDhTask; }
 
+  void SetHLTMode(Bool_t khltmode=kFALSE){fHLTMode=khltmode;};
+  Bool_t GetHLTMode(){return fHLTMode;};
+  void SetHLTModeFromEnvironment();
+
 private:
 
-  static const Int_t fgknSDDmodules = 260; //number of SDD modules
-  static const Int_t fgkmodoffset = 240;   //number of SPD modules
-  static const Int_t fgknAnode = 256;      //anode per half-module
-  static const Int_t fgknSide =2;          //side per module
-  static const Int_t fgkeqOffset = 256;    //DDL offset
-  static const Int_t fgkDDLidRange = 24;   //number of DDL:so DDL range is 257-280
-  static const Int_t fgkDDLIDshift = 0;    //necessary option until RawStream Table is complete
-  static const Int_t fgkLADDonLAY3 = 14;   //number of ladder on layer 3
-  static const Int_t fgkLADDonLAY4 = 22;   //number of ladder on layer 4
+  static const Int_t fgknSDDmodules = 260; // number of SDD modules
+  static const Int_t fgkmodoffset = 240;   // number of SPD modules
+  static const Int_t fgknAnode = 256;      // anode per half-module
+  static const Int_t fgknSide =2;          // side per module
+  static const Int_t fgkeqOffset = 256;    // DDL offset
+  static const Int_t fgkDDLidRange = 24;   // number of DDL:so DDL range is 257-280
+  static const Int_t fgkDDLIDshift = 0;    // necessary option until RawStream Table is complete
+  static const Int_t fgkLADDonLAY3 = 14;   // number of ladder on layer 3
+  static const Int_t fgkLADDonLAY4 = 22;   // number of ladder on layer 4
 
-  AliITSQADataMakerRec *fAliITSQADataMakerRec;//pointer to the main ctor
-  Bool_t  fkOnline;                        //online (1) or offline (0) use
-  Int_t   fLDC;                            //LDC number (0 for offline, 1 to 4 for online) 
-  Int_t   fSDDhTask;                       // number of histo booked for each Task SDD
-  Int_t   fGenOffset;                         // qachecking offset       
-  Int_t   fTimeBinSize;						// time bin width in number of clocks
-  AliITSDDLModuleMapSDD  *fDDLModuleMap;// SDD Detector configuration for the decoding
-/*
-  TProfile2D *fModuleChargeMap[2*fgknSDDmodules];//module map
-  TProfile2D *fModuleChargeMapFSE[2*fgknSDDmodules];//module map for one event 
-*/ 
-  ClassDef(AliITSQASDDDataMakerRec,4)      // description 
+  AliITSQADataMakerRec *fAliITSQADataMakerRec;// pointer to the main ctor
+  Bool_t  fkOnline;                           // online (1) or offline (0) use
+  Int_t   fLDC;                               // LDC number (0 for offline, 1 to 4 for online) 
+  Int_t   fSDDhTask;                          // number of histo booked for each Task SDD
+  Int_t   fGenOffset;                         // QAchecking offset       
+  Int_t   fTimeBinSize;			      // time bin width in number of clocks
+  AliITSDDLModuleMapSDD  *fDDLModuleMap;      // SDD Detector configuration for the decoding
+  Bool_t fHLTMode;                            // kTRUE mode C kFALSE mode A 
+                                              // Used in online mode only
+  AliITSHLTforSDD *fHLTSDD;                   // used for offline QA as the HLT mode flag
+  ClassDef(AliITSQASDDDataMakerRec,5)         // description 
 
 };
 
