@@ -107,8 +107,8 @@ void AliHMPIDRecon::CkovAngle(AliESDtrack *pTrk,TClonesArray *pCluLst,Int_t inde
   fPhotCnt=0;
   
   for (Int_t iClu=0; iClu<pCluLst->GetEntriesFast();iClu++){//clusters loop
-    AliHMPIDCluster *pClu=(AliHMPIDCluster*)pCluLst->UncheckedAt(iClu);                     //get pointer to current cluster    
-    if(iClu == index) {                                                                     // this is the MIP! not a photon candidate: just store mip info
+    AliHMPIDCluster *pClu=(AliHMPIDCluster*)pCluLst->UncheckedAt(iClu);                       //get pointer to current cluster    
+    if(iClu == index) {                                                                       // this is the MIP! not a photon candidate: just store mip info
       mipX = pClu->X();
       mipY = pClu->Y();
       mipQ=(Int_t)pClu->Q();
@@ -117,18 +117,18 @@ void AliHMPIDRecon::CkovAngle(AliESDtrack *pTrk,TClonesArray *pCluLst,Int_t inde
     }
     chId=pClu->Ch();
     Double_t thetaCer,phiCer;
-    if(FindPhotCkov(pClu->X(),pClu->Y(),thetaCer,phiCer)){                                  //find ckov angle for this  photon candidate
-      fPhotCkov[fPhotCnt]=thetaCer;                                                         //actual theta Cerenkov (in TRS)
-      fPhotPhi [fPhotCnt]=phiCer;                                                           //actual phi   Cerenkov (in TRS): -pi to come back to "unusual" ref system (X,Y,-Z)
-      fPhotCnt++;                                                                           //increment counter of photon candidates
+    if(FindPhotCkov(pClu->X(),pClu->Y(),thetaCer,phiCer)){                                    //find ckov angle for this  photon candidate
+      fPhotCkov[fPhotCnt]=thetaCer;                                                           //actual theta Cerenkov (in TRS)
+      fPhotPhi [fPhotCnt]=phiCer;                                                             //actual phi   Cerenkov (in TRS): -pi to come back to "unusual" ref system (X,Y,-Z)
+      fPhotCnt++;                                                                             //increment counter of photon candidates
     }
   }//clusters loop
 
-  pTrk->SetHMPIDmip(mipX,mipY,mipQ,fPhotCnt);                                                //store mip info in any case 
+  pTrk->SetHMPIDmip(mipX,mipY,mipQ,fPhotCnt);                                                 //store mip info in any case 
+  pTrk->SetHMPIDcluIdx(chId,index+1000*sizeClu);                                              //set index of cluster
   
   if(fPhotCnt<=nMinPhotAcc) {                                                                 //no reconstruction with <=3 photon candidates
     pTrk->SetHMPIDsignal(kNoPhotAccept);                                                      //set the appropriate flag
-    pTrk->SetHMPIDcluIdx(chId,index+1000*sizeClu);                                            //set index of cluster
     return;
   }
   

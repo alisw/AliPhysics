@@ -124,7 +124,6 @@ Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmea
   Int_t nMipClusTot=0;
   Double_t d3d=0,dmin=999999,bz=0;
   Bool_t isMatched=kFALSE;
-  Int_t bestCluCh=-1;
   Int_t cluSiz=0;
   Double_t qthre = 0;   Double_t nmean=0; Int_t cham=0; Int_t hvsec=0;
   Int_t index=0;                                                                                //index of the "best" matching cluster
@@ -137,14 +136,14 @@ Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmea
   AliHMPIDParam *pParam = AliHMPIDParam::Instance();                                             //Instance of AliHMPIDParam
   
   for(Int_t iTrk=0;iTrk<pEsd->GetNumberOfTracks();iTrk++){                                        //loop on the ESD tracks in the event
-    isMatched=kFALSE;bestCluCh=-1;dmin=999999;bestChi2=99999;chi2=99999;cluSiz=0;                 //init. track matching params
+    isMatched=kFALSE;dmin=999999;bestChi2=99999;chi2=99999;cluSiz=0;                              //init. track matching params
     isOkQcut = kFALSE;
     AliHMPIDCluster *bestHmpCluster=0x0;                                                          //the best matching cluster
     AliESDtrack *pTrk = pEsd->GetTrack(iTrk);                                                     //get reconstructed track    
     AliHMPIDtrack *hmpTrk = new AliHMPIDtrack(*pTrk);                                             //create a hmpid track to be used for propagation and matching 
     bz=AliTracker::GetBz();  
     
-    Int_t ipCh=IntTrkCha(pTrk,xPc,yPc,xRa,yRa,theta,phi);
+    Int_t ipCh=IntTrkCha(pTrk,xPc,yPc,xRa,yRa,theta,phi);                                        //find the intersected chamber for this track 
     if(ipCh<0) {                                                                                 //no intersection at all, go after next track
       pTrk->SetHMPIDtrk(0,0,0,0);                                                                //no intersection found
       pTrk->SetHMPIDcluIdx   (99,99999);                                                         //chamber not found, mip not yet considered
@@ -187,7 +186,6 @@ Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmea
       if(dmin > d3d ) {                                                                         //to be saved for the moment...
         cluSiz = pClu->Size();
         dmin=d3d;
-        bestCluCh=ipCh;
         bestHmpCluster=pClu;
         index=iClu;
         bestChi2=chi2;
@@ -216,13 +214,13 @@ Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmea
     if(!isMatched) continue;                                                                    // If matched continue...
     
     Int_t indexAll = 0;
-    for(Int_t iC=0;iC<bestCluCh;iC++) indexAll+=nClusCh[iC]; indexAll+=index;                    //to be verified...
+    for(Int_t iC=0;iC<ipCh;iC++) indexAll+=nClusCh[iC]; indexAll+=index;                        //to be verified...
 
     Bool_t isOk = hmpTrk->Update(bestHmpCluster,bestChi2,indexAll);
     if(!isOk) continue;
     pTrk->SetOuterParam((AliExternalTrackParam*)&hmpTrk,AliESDtrack::kHMPIDout);                 
 
-//    cham=IntTrkCha(bestCluCh,hmpTrk,xPc,yPc,xRa,yRa,theta,phi);
+//    cham=IntTrkCha(ipCh,hmpTrk,xPc,yPc,xRa,yRa,theta,phi);
     cham=IntTrkCha(pTrk,xPc,yPc,xRa,yRa,theta,phi);
     if(cham<0) {                                                                                  //no intersection at all, go after next track
       pTrk->SetHMPIDtrk(0,0,0,0);                                                                //no intersection found
