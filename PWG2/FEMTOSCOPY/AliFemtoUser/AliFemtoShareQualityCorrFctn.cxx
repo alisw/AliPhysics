@@ -20,7 +20,9 @@ AliFemtoShareQualityCorrFctn::AliFemtoShareQualityCorrFctn(char* title, const in
   fShareNumerator(0),
   fShareDenominator(0),
   fQualityNumerator(0),
-  fQualityDenominator(0)
+  fQualityDenominator(0),
+  fTPCSepNumerator(0),
+  fTPCSepDenominator(0)
 {
   // set up numerator
   //  title = "Num Qinv (MeV/c)";
@@ -49,12 +51,24 @@ AliFemtoShareQualityCorrFctn::AliFemtoShareQualityCorrFctn(char* title, const in
   //mShareDenominator->SetDirectory(0);
   //mRatio->SetDirectory(0);
 
+  char tTit3Num[100] = "NumTPCSep";
+  strcat(tTit3Num,title);
+  fTPCSepNumerator = new TH2D(tTit3Num,title,nbins,QinvLo,QinvHi,150,0.0,100.0);
+  // set up denominator
+  //title = "Den Qinv (MeV/c)";
+  char tTit3Den[100] = "DenTPCSep";
+  strcat(tTit3Den,title);
+  fTPCSepDenominator = new TH2D(tTit3Den,title,nbins,QinvLo,QinvHi,150,0.0,100.0);
+
   // to enable error bar calculation...
   fShareNumerator->Sumw2();
   fShareDenominator->Sumw2();
 
   fQualityNumerator->Sumw2();
   fQualityDenominator->Sumw2();
+  
+  fTPCSepNumerator->Sumw2();
+  fTPCSepDenominator->Sumw2();
 }
 
 //____________________________
@@ -74,6 +88,10 @@ AliFemtoShareQualityCorrFctn::AliFemtoShareQualityCorrFctn(const AliFemtoShareQu
     fQualityNumerator = new TH2D(*aCorrFctn.fQualityNumerator);
   if (aCorrFctn.fQualityDenominator)
     fQualityDenominator = new TH2D(*aCorrFctn.fQualityDenominator);
+  if (aCorrFctn.fTPCSepNumerator)
+    fTPCSepNumerator = new TH2D(*aCorrFctn.fTPCSepNumerator);
+  if (aCorrFctn.fTPCSepDenominator)
+    fTPCSepDenominator = new TH2D(*aCorrFctn.fTPCSepDenominator);
 }
 //____________________________
 AliFemtoShareQualityCorrFctn::~AliFemtoShareQualityCorrFctn(){
@@ -82,6 +100,8 @@ AliFemtoShareQualityCorrFctn::~AliFemtoShareQualityCorrFctn(){
   delete fShareDenominator;
   delete fQualityNumerator;
   delete fQualityDenominator;
+  delete fTPCSepNumerator;
+  delete fTPCSepDenominator;
 }
 //_________________________
 AliFemtoShareQualityCorrFctn& AliFemtoShareQualityCorrFctn::operator=(const AliFemtoShareQualityCorrFctn& aCorrFctn)
@@ -106,6 +126,14 @@ AliFemtoShareQualityCorrFctn& AliFemtoShareQualityCorrFctn::operator=(const AliF
     fQualityDenominator = new TH2D(*aCorrFctn.fQualityDenominator);
   else
     fQualityDenominator = 0;
+  if (aCorrFctn.fTPCSepNumerator)
+    fTPCSepNumerator = new TH2D(*aCorrFctn.fTPCSepNumerator);
+  else
+    fTPCSepNumerator = 0;
+  if (aCorrFctn.fTPCSepDenominator)
+    fTPCSepDenominator = new TH2D(*aCorrFctn.fTPCSepDenominator);
+  else
+    fTPCSepDenominator = 0;
 
   return *this;
 }
@@ -246,8 +274,15 @@ void AliFemtoShareQualityCorrFctn::AddRealPair( AliFemtoPair* pair){
 // 	 << endl;
 //   }
 
+  double distx = pair->Track1()->Track()->NominalTpcEntrancePoint().x() - pair->Track2()->Track()->NominalTpcEntrancePoint().x();
+  double disty = pair->Track1()->Track()->NominalTpcEntrancePoint().y() - pair->Track2()->Track()->NominalTpcEntrancePoint().y();
+  double distz = pair->Track1()->Track()->NominalTpcEntrancePoint().z() - pair->Track2()->Track()->NominalTpcEntrancePoint().z();
+  double dist = sqrt(distx*distx + disty*disty + distz*distz);
+
   fShareNumerator->Fill(tQinv, hsfval);
   fQualityNumerator->Fill(tQinv, hsmval);
+  fTPCSepNumerator->Fill(tQinv, dist);
+
   //  cout << "AliFemtoShareQualityCorrFctn::AddRealPair : " << pair->qInv() << " " << tQinv <<
   //" " << pair->Track1().FourMomentum() << " " << pair->Track2().FourMomentum() << endl;
 }
@@ -299,8 +334,15 @@ void AliFemtoShareQualityCorrFctn::AddMixedPair( AliFemtoPair* pair){
     hsfval = ns*1.0/nh;
   }
 
+  double distx = pair->Track1()->Track()->NominalTpcEntrancePoint().x() - pair->Track2()->Track()->NominalTpcEntrancePoint().x();
+  double disty = pair->Track1()->Track()->NominalTpcEntrancePoint().y() - pair->Track2()->Track()->NominalTpcEntrancePoint().y();
+  double distz = pair->Track1()->Track()->NominalTpcEntrancePoint().z() - pair->Track2()->Track()->NominalTpcEntrancePoint().z();
+  double dist = sqrt(distx*distx + disty*disty + distz*distz);
+
   fShareDenominator->Fill(tQinv,hsfval,weight);
   fQualityDenominator->Fill(tQinv,hsmval,weight);
+  fTPCSepDenominator->Fill(tQinv, dist, weight);
+
 }
 
 
@@ -311,6 +353,8 @@ void AliFemtoShareQualityCorrFctn::WriteHistos()
   fShareDenominator->Write();
   fQualityNumerator->Write();
   fQualityDenominator->Write();
+  fTPCSepNumerator->Write();
+  fTPCSepDenominator->Write();
   
 }
 //______________________________
@@ -323,6 +367,8 @@ TList* AliFemtoShareQualityCorrFctn::GetOutputList()
   tOutputList->Add(fShareDenominator);  
   tOutputList->Add(fQualityNumerator);  
   tOutputList->Add(fQualityDenominator);  
+  tOutputList->Add(fTPCSepNumerator);  
+  tOutputList->Add(fTPCSepDenominator);  
 
   return tOutputList;
 }
