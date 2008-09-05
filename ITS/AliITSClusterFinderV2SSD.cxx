@@ -285,7 +285,7 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input,
     // reset signal matrix
     for(Int_t i=0; i<12; i++) { for(Int_t j=0; j<1536; j++) { matrix[i][j] = 65535;} }
     
-    if(osignal!=65535) { 
+    if((osignal!=65535)&&(ostrip>0)&&(ostrip<1536)) { 
       n++;
       matrix[oadc][ostrip] = osignal; // recover data from previous occurence of input->Next() 
     }
@@ -302,7 +302,7 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input,
       if(input->GetSideFlag()) strip=1535-strip;
       Int_t signal = input->GetSignal();
 
-      if((ddl==iddl)&&(ad==iad)) {n++; matrix[adc][strip] = signal;}
+      if((ddl==iddl)&&(ad==iad)&&(strip>0)&&(strip<1536)) {n++; matrix[adc][strip] = signal;}
       else {oddl=iddl; oad=iad; oadc = adc; ostrip = strip; osignal=signal; iddl=ddl; iad=ad; break;}
       
       if(!next)  {oddl=iddl; oad=iad; oadc = adc; ostrip = strip; osignal=signal; iddl=ddl; iad=ad; break;}
