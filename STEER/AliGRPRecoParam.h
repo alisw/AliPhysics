@@ -24,6 +24,9 @@ class AliGRPRecoParam : public AliDetectorRecoParam
   static AliGRPRecoParam *GetLowFluxParam();// make reco parameters for low flux env.
   static AliGRPRecoParam *GetHighFluxParam();// make reco parameters for high flux env. 
 
+  void  SetMostProbablePt(Double_t pt=0.350) { fMostProbablePt=pt; return; }
+  Double_t GetMostProbablePt() const { return fMostProbablePt; }
+
   void  SetVertexerTracksCuts(Int_t mode,Int_t ncuts,Double_t cuts[10]);
   void  SetVertexerTracksCutsITS(Int_t ncuts,Double_t cuts[10])
     { SetVertexerTracksCuts(0,ncuts,cuts); return; }
@@ -42,6 +45,7 @@ class AliGRPRecoParam : public AliDetectorRecoParam
  protected:
   //
 
+  Double_t fMostProbablePt; // to be used for B=0 tracking
   Int_t    fVertexerTracksNCuts; // number of cuts for AliVertexerTracks
   // cuts for AliVertexerTracks: ITS mode
   Double_t fVertexerTracksITSdcacut; // general dca
@@ -67,7 +71,7 @@ class AliGRPRecoParam : public AliDetectorRecoParam
   Double_t fVertexerTracksTPCfidR; // fiducial radius
   Double_t fVertexerTracksTPCfidZ; // fiducial z
 
-  ClassDef(AliGRPRecoParam,1) // global reco parameters
+  ClassDef(AliGRPRecoParam,2) // global reco parameters
 };
 
 #endif

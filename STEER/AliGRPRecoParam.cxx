@@ -28,6 +28,7 @@ ClassImp(AliGRPRecoParam)
 
 //_____________________________________________________________________________
 AliGRPRecoParam::AliGRPRecoParam() : AliDetectorRecoParam(),
+fMostProbablePt(0.350),
 fVertexerTracksNCuts(10),
 fVertexerTracksITSdcacut(0.1),
 fVertexerTracksITSdcacutIter0(0.1),
@@ -67,6 +68,7 @@ AliGRPRecoParam::~AliGRPRecoParam()
 
 AliGRPRecoParam::AliGRPRecoParam(const AliGRPRecoParam& par) :
   AliDetectorRecoParam(par),
+  fMostProbablePt(par.fMostProbablePt),
   fVertexerTracksNCuts(par.fVertexerTracksNCuts),
   fVertexerTracksITSdcacut(par.fVertexerTracksITSdcacut),
   fVertexerTracksITSdcacutIter0(par.fVertexerTracksITSdcacutIter0),

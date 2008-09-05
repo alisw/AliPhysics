@@ -1450,7 +1450,9 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
     fesd->SetMagneticField(AliTracker::GetBz());
     fhltesd->SetMagneticField(AliTracker::GetBz());
 
-    
+    // Set most probable pt, for B=0 tracking
+    const AliGRPRecoParam *grpRecoParam = dynamic_cast<const AliGRPRecoParam*>(fRecoParam.GetDetRecoParam(fgkNDetectors));
+    if (grpRecoParam) AliExternalTrackParam::SetMostProbablePt(grpRecoParam->GetMostProbablePt());
     
     // Fill raw-data error log into the ESD
     if (fRawReader) FillRawDataErrorLog(iEvent,fesd);
