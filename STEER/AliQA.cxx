@@ -110,10 +110,12 @@ AliQA::AliQA(const AliQA& qa) :
 AliQA& AliQA::operator = (const AliQA& qa)
 {
 // assignment operator
-
-  this->~AliQA();
-  new(this) AliQA(qa);
-  return *this;
+    if(&qa == this) return *this;
+    
+    fNdet = qa.fNdet;
+    for (Int_t index = 0 ; index < fNdet ; index++) 
+	fQA[index] = qa.fQA[index]; 
+    return *this;
 }
 
 //_______________________________________________________________
