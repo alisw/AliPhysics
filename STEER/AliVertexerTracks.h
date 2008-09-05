@@ -48,26 +48,27 @@ class AliVertexerTracks : public TObject {
   AliESDVertex* RemoveTracksFromVertex(AliESDVertex *inVtx,
 				       TObjArray *trkArray,UShort_t *id,
 				       Float_t *diamondxy); 
-  void SetITSMode(Double_t dcacut=0.1,
-		  Double_t dcacutIter0=0.1,
-		  Double_t maxd0z0=0.5,
-		  Int_t minCls=5,
-		  Int_t mintrks=1,
-		  Double_t nsigma=3.,
-		  Double_t mindetfitter=100.,
-		  Double_t maxtgl=1000.,
-		  Double_t fidR=3.,
-		  Double_t fidZ=30.); 
-  void SetTPCMode(Double_t dcacut=0.1,
-		  Double_t dcacutIter0=1.0,
-		  Double_t maxd0z0=5.0,
-		  Int_t minCls=10,
-		  Int_t mintrks=1,
-		  Double_t nsigma=3.,
-		  Double_t mindetfitter=0.1,
-		  Double_t maxtgl=1.5, 
-		  Double_t fidR=3.,
-		  Double_t fidZ=30.); 
+  void  SetITSMode(Double_t dcacut=0.1,
+		   Double_t dcacutIter0=0.1,
+		   Double_t maxd0z0=0.5,
+		   Int_t minCls=5,
+		   Int_t mintrks=1,
+		   Double_t nsigma=3.,
+		   Double_t mindetfitter=100.,
+		   Double_t maxtgl=1000.,
+		   Double_t fidR=3.,
+		   Double_t fidZ=30.); 
+  void  SetTPCMode(Double_t dcacut=0.1,
+		   Double_t dcacutIter0=1.0,
+		   Double_t maxd0z0=5.0,
+		   Int_t minCls=10,
+		   Int_t mintrks=1,
+		   Double_t nsigma=3.,
+		   Double_t mindetfitter=0.1,
+		   Double_t maxtgl=1.5, 
+		   Double_t fidR=3.,
+		   Double_t fidZ=30.);
+  void  SetCuts(Double_t *cuts);
   void  SetConstraintOff() { fConstraint=kFALSE; return; }
   void  SetConstraintOn() { fConstraint=kTRUE; return; }
   void  SetDebug(Int_t optdebug=0) { fDebug=optdebug; return; }

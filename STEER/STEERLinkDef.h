@@ -147,6 +147,7 @@
 
 #pragma link C++ class AliTriggerRunScalers+;
 #pragma link C++ class AliGRPPreprocessor+;
+#pragma link C++ class AliGRPRecoParam+;
 
 #pragma link C++ class AliRunInfo+;
 #pragma link C++ class AliEventInfo+;

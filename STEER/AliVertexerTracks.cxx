@@ -791,6 +791,24 @@ AliESDVertex* AliVertexerTracks::RemoveTracksFromVertex(AliESDVertex *inVtx,
   return outVtx;
 }
 //---------------------------------------------------------------------------
+void AliVertexerTracks::SetCuts(Double_t *cuts) 
+{
+//
+//  Cut values
+//
+  SetDCAcut(cuts[0]);
+  SetDCAcutIter0(cuts[1]);
+  SetMaxd0z0(cuts[2]);
+  SetMinClusters((Int_t)(cuts[3]));
+  SetMinTracks((Int_t)(cuts[4]));
+  SetNSigmad0(cuts[5]);
+  SetMinDetFitter(cuts[6]);
+  SetMaxTgl(cuts[7]);
+  SetFiducialRZ(cuts[8],cuts[9]);
+
+  return;
+}
+//---------------------------------------------------------------------------
 void AliVertexerTracks::SetITSMode(Double_t dcacut,
 				   Double_t dcacutIter0,
 				   Double_t maxd0z0,

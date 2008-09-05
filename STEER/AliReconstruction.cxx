@@ -186,6 +186,7 @@
 #include "AliMagWrapCheb.h"
 
 #include "AliDetectorRecoParam.h"
+#include "AliGRPRecoParam.h"
 #include "AliRunInfo.h"
 #include "AliEventInfo.h"
 
@@ -772,6 +773,14 @@ void AliReconstruction::SetRecoParam(const char* detector, AliDetectorRecoParam 
 {
   // Set custom reconstruction parameters for a given detector
   // Single set of parameters for all the events
+
+  // First check if the reco-params are global
+  if(!strcmp(detector, "GRP")) {
+    par->SetAsDefault();
+    fRecoParam.AddDetRecoParam(fgkNDetectors,par);
+    return;
+  }
+
   for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
     if(!strcmp(detector, fgkDetectorName[iDet])) {
       par->SetAsDefault();
@@ -1397,6 +1406,19 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
   GetEventInfo();
   fRecoParam.SetEventSpecie(fRunInfo,fEventInfo);
 
+  // Set the reco-params
+  {
+    TString detStr = fLoadCDB;
+    for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
+      if (!IsSelected(fgkDetectorName[iDet], detStr)) continue;
+      AliReconstructor *reconstructor = GetReconstructor(iDet);
+      if (reconstructor && fRecoParam.GetDetRecoParamArray(iDet)) {
+	const AliDetectorRecoParam *par = fRecoParam.GetDetRecoParam(iDet);
+	reconstructor->SetRecoParam(par);
+      }
+    }
+  }
+
   fRunLoader->GetEvent(iEvent);
 
     // QA on single raw 
@@ -1543,9 +1565,21 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
 	runVertexFinderTracks=kFALSE;
       }
     }
-    if (runVertexFinderTracks) { 
+
+    if (runVertexFinderTracks) {
+      // Get the global reco-params. They are atposition 16 inside the array of detectors in fRecoParam
+      const AliGRPRecoParam *grpRecoParam = dynamic_cast<const AliGRPRecoParam*>(fRecoParam.GetDetRecoParam(fgkNDetectors));
+
        // TPC + ITS primary vertex
        ftVertexer->SetITSMode();
+       // get cuts for vertexer from AliGRPRecoParam
+       if (grpRecoParam) {
+	 Int_t nCutsVertexer = grpRecoParam->GetVertexerTracksNCuts();
+	 Double_t *cutsVertexer = new Double_t[nCutsVertexer];
+	 grpRecoParam->GetVertexerTracksCutsITS(cutsVertexer);
+	 ftVertexer->SetCuts(cutsVertexer);
+	 delete [] cutsVertexer; cutsVertexer = NULL; 
+       }
        if(fDiamondProfile && fMeanVertexConstraint) {
 	 ftVertexer->SetVtxStart(fDiamondProfile);
        } else {
@@ -1564,6 +1598,14 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
 
        // TPC-only primary vertex
        ftVertexer->SetTPCMode();
+       // get cuts for vertexer from AliGRPRecoParam
+       if (grpRecoParam) {
+	 Int_t nCutsVertexer = grpRecoParam->GetVertexerTracksNCuts();
+	 Double_t *cutsVertexer = new Double_t[nCutsVertexer];
+	 grpRecoParam->GetVertexerTracksCutsTPC(cutsVertexer);
+	 ftVertexer->SetCuts(cutsVertexer);
+	 delete [] cutsVertexer; cutsVertexer = NULL; 
+       }
        if(fDiamondProfileTPC && fMeanVertexConstraint) {
 	 ftVertexer->SetVtxStart(fDiamondProfileTPC);
        } else {
@@ -1644,7 +1686,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
     fEventInfo.Reset();
     for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
       if (fReconstructor[iDet])
-				fReconstructor[iDet]->SetRecoParam(NULL);
+	fReconstructor[iDet]->SetRecoParam(NULL);
     }
 	
     fQASteer->Increment() ; 
@@ -1821,8 +1863,8 @@ Bool_t AliReconstruction::RunLocalEventReconstruction(const TString& detectors)
 	loader->WriteRecPoints("OVERWRITE");
 	loader->UnloadRecPoints();
 	AliSysInfo::AddStamp(Form("LRec%s_%d",fgkDetectorName[iDet],eventNr), iDet,1,eventNr);
-	}
-	if ((detStr.CompareTo("ALL") != 0) && !detStr.IsNull()) {
+  }
+  if ((detStr.CompareTo("ALL") != 0) && !detStr.IsNull()) {
     AliError(Form("the following detectors were not found: %s",
                   detStr.Data()));
     if (fStopOnError) return kFALSE;

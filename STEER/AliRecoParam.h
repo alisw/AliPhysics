@@ -28,7 +28,7 @@ class AliRecoParam : public TObject
   //
   enum {
     kNSpecies = 5,   // number of event species
-    kNDetectors = 15 // number of detectors
+    kNDetectors = 16 // number of detectors (last one is GRP!)
   };
   enum EventSpecie_t {kDefault = 1,
 		      kLowMult = 2,
@@ -53,7 +53,7 @@ private:
   TObjArray *fDetRecoParams[kNDetectors];   // array with reconstruction-parameter objects for all detectors
   EventSpecie_t fEventSpecie;               // current event specie
 
-  ClassDef(AliRecoParam, 4)
+  ClassDef(AliRecoParam, 5)
 };
 
 

@@ -121,7 +121,7 @@ const AliDetectorRecoParam *AliRecoParam::GetDetRecoParam(Int_t iDet) const
 {
   // Return AliDetectorRecoParam object for a given detector
   // according to the event specie provided as an argument
-  if ( iDet > kNDetectors) return NULL;
+  if ( iDet >= kNDetectors) return NULL;
   if (!fDetRecoParams[iDet]) return NULL;
   if (fDetRecoParams[iDet]->GetEntries() == 0) return NULL;
 
