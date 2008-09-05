@@ -261,18 +261,18 @@ void AliTRDSaxHandler::OnEndElement(const char *name)
     if (strName.Contains("STACK-ID")) fDCSFEEObj->SetStack(fContent.Atoi());
     if (strName.Contains("LAYER-ID")) fDCSFEEObj->SetLayer(fContent.Atoi());
     if (strName.Contains("SINGLEHITTHRES")) fDCSFEEObj->SetSingleHitThres(fContent.Atoi());
-    if (strName.Contains("THRPDCLSTHRS")) fDCSFEEObj->SetThreePadClustThres(fContent.Atoi());
+    if (strName.Contains("THRPADCLSTHRS")) fDCSFEEObj->SetThreePadClustThres(fContent.Atoi());
     if (strName.Contains("SELNOZS")) fDCSFEEObj->SetSelectiveNoZS(fContent.Atoi());
     if (strName.Contains("FASTSTATNOISE")) fDCSFEEObj->SetFastStatNoise(fContent.Atoi());
     if (strName.Contains("FILTWEIGHT")) fDCSFEEObj->SetTCFilterWeight(fContent.Atoi());
     if (strName.Contains("FILTSHRTDCYPRM")) fDCSFEEObj->SetTCFilterShortDecPar(fContent.Atoi());
     if (strName.Contains("FILTLNGDCYPRM")) fDCSFEEObj->SetTCFilterLongDecPar(fContent.Atoi());
     if (strName.Contains("FLTR")) fDCSFEEObj->SetFilterType(fContent);
-    if (strName.Contains("READOURPAR")) fDCSFEEObj->SetReadoutParam(fContent);
+    if (strName.Contains("READOUTPAR")) fDCSFEEObj->SetReadoutParam(fContent);
     if (strName.Contains("TESTPATTERN")) fDCSFEEObj->SetTestPattern(fContent);
     if (strName.Contains("TRCKLTMODE")) fDCSFEEObj->SetTrackletMode(fContent);
     if (strName.Contains("TRCKLTDEF")) fDCSFEEObj->SetTrackletDef(fContent);
-    if (strName.Contains("TRGGRSTP")) fDCSFEEObj->SetTriggerSetup(fContent);
+    if (strName.Contains("TRIGGERSETUP")) fDCSFEEObj->SetTriggerSetup(fContent);
     if (strName.Contains("ADDOPTIONS")) fDCSFEEObj->SetAddOptions(fContent);
   }
 
