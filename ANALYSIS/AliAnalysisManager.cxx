@@ -29,6 +29,7 @@
 
 #include <TClass.h>
 #include <TFile.h>
+#include <TKey.h>
 #include <TMethodCall.h>
 #include <TChain.h>
 #include <TSystem.h>
@@ -544,28 +545,53 @@ void AliAnalysisManager::ImportWrappers(TList *source)
          if (strlen(fSpecialOutputLocation.Data()) && !isManagedByHandler) continue;
          // Copy merged file from PROOF scratch space
          char full_path[512];
+         char ch_url[512];
          TObject *pof =  source->FindObject(filename);
          if (!pof || !pof->InheritsFrom("TProofOutputFile")) {
             Error("ImportWrappers", "TProofOutputFile object not found in output list for container %s", cont->GetName());
             continue;
          }
          gROOT->ProcessLine(Form("sprintf((char*)0x%lx, \"%%s\", ((TProofOutputFile*)0x%lx)->GetOutputFileName();)", full_path, pof));
+         gROOT->ProcessLine(Form("sprintf((char*)0x%lx, \"%%s\", gProof->GetUrl();)", ch_url));
+         TString clientUrl(ch_url);
+         TString full_path_str(full_path);
+         if (clientUrl.Contains("localhost")){
+            TObjArray* array = full_path_str.Tokenize ( "//" );
+            TObjString *strobj = ( TObjString *)array->At(1);
+            full_path_str.ReplaceAll(strobj->GetString().Data(),"localhost:11094");
+            if (fDebug > 1) Info("ImportWrappers","Using tunnel from %s to %s",full_path_str.Data(),filename);
+         }
          if (fDebug > 1) 
-            printf("   Copying file %s from PROOF scratch space\n", full_path);
-         Bool_t gotit = TFile::Cp(full_path, filename); 
+            printf("   Copying file %s from PROOF scratch space\n", full_path_str.Data());
+         Bool_t gotit = TFile::Cp(full_path_str.Data(), filename); 
          if (!gotit) {
             Error("ImportWrappers", "Could not get file %s from proof scratch space", cont->GetFileName());
+            continue;
          }
          // Normally we should connect data from the copied file to the
          // corresponding output container, but it is not obvious how to do this
          // automatically if several objects in file...
-         TFile *f = new TFile(filename, "READ");
-         TObject *obj = 0;
-         if (!isManagedByHandler) obj = f->Get(cont->GetName());
-         if (!obj && !isManagedByHandler) {
-            Error("ImportWrappers", "Could not find object %s in file %s", cont->GetName(), filename);
+         TFile *f = TFile::Open(filename, "READ");
+         if (!f) {
+            Error("ImportWrappers", "Cannot open file %s in read-only mode", filename);
             continue;
+         }   
+         TObject *obj = 0;
+         // Try to fetch first a list object having the container name.
+         obj = f->Get(cont->GetName());
+         if (!obj) {
+         // Fetch first object from file having the container type.
+            TIter nextkey(f->GetListOfKeys());
+            TKey *key;
+            while ((key=(TKey*)nextkey())) {
+               obj = f->Get(key->GetName());
+               if (obj && obj->IsA()->InheritsFrom(cont->GetType())) break;
+            }                     
          }
+         if (!obj) {
+            Error("ImportWrappers", "Could not find object for container %s in file %s", cont->GetName(), filename);
+            continue;
+         }  
          wrap = new AliAnalysisDataWrapper(obj);
          wrap->SetDeleteData(kFALSE);
       }   
@@ -577,7 +603,7 @@ void AliAnalysisManager::ImportWrappers(TList *source)
       icont++;
       if (fDebug > 1) {
          printf("   Importing data for container %s", cont->GetName());
-         if (strlen(filename)) printf("    -> file %s\n", cont->GetFileName());
+         if (strlen(filename)) printf("    -> file %s\n", filename);
          else printf("\n");
       }   
       cont->ImportData(wrap);
