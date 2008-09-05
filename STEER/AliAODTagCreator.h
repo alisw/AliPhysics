@@ -29,8 +29,13 @@
 #include <AliTagCreator.h>
 
 class TChain;
+class TTree;
 class TFile;
 class TGridResult;
+
+class AliAODEvent;
+class AliRunTag;
+class AliEventTag;
 
 
 //___________________________________________________________________________
@@ -45,17 +50,23 @@ class AliAODTagCreator : public AliTagCreator {
   Bool_t ReadGridCollection(TGridResult *result);
   Bool_t ReadLocalCollection(const char *localpath);
   Bool_t ReadCAFCollection(const char *filename);
-  
+  void FillEventTag(AliAODEvent* aod, AliEventTag* evtTag);  
  protected:  
   void CreateTag(TChain *chain, const char* type);
-  void CreateTag(TFile* file, const char *guid, const char *md5, const char *turl, Long64_t size, Int_t Counter);
-  void CreateTag(TFile* file, const char *filepath, Int_t Counter);
+  void CreateTags(const char* type = "");
+
+  
  private:
   AliAODTagCreator(const AliAODTagCreator& creator);             
   AliAODTagCreator& operator=(const AliAODTagCreator& creator);    
  private:
-  TChain *fChain; //chain of esd files
-
+  TChain       *fChain;     //! Chain of esd files
+  AliAODEvent  *fAODEvent;  //! AOD Event 
+  TTree        *fTreeT;     //! Tag Tree
+  AliRunTag    *fRunTag;    //! Run tag
+  TChain       *fTreeTEsd;  //! ESD tag Tree
+  AliRunTag    *fRunTagEsd; //! ESD run tag
+  
   ClassDef(AliAODTagCreator,0)  
 };
 
