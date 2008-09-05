@@ -134,7 +134,7 @@ AliTRDSaxHandler::~AliTRDSaxHandler()
 AliTRDCalDCS* AliTRDSaxHandler::GetCalDCSObj()
 {
   // put the arrays in the global calibration object and return this
-  fCalDCSObj->SetNumberOfTimeBins(22); //test test test
+  fCalDCSObj->SetNumberOfTimeBins(0); //test test test
   fCalDCSObj->SetFEEArr(fFEEArr);
   fCalDCSObj->SetPTRArr(fPTRArr);
   fCalDCSObj->SetGTUArr(fGTUArr);
@@ -178,11 +178,15 @@ void AliTRDSaxHandler::OnStartElement(const char *name, const TList *attributes)
       dcsTitle = name;
       dcsId = atoi(attr->GetValue());
     }
+    if (attribName.Contains("roc") && strName.Contains("ack")) {
+      if (atoi(attr->GetValue()) != fDCSFEEObj->GetDCSid())
+	fDCSFEEObj->SetStatusBit(3); // consistence check
+    }
     if (attribName.Contains("sm") && strName.Contains("DCS")) {
-      fCurrentSM = atoi(attr->GetValue());
+      fCurrentSM = atoi(attr->GetValue()); // only for GTU/PTR
     }
     if (attribName.Contains("id") && strName.Contains("STACK")) {
-      fCurrentStack = atoi(attr->GetValue());
+      fCurrentStack = atoi(attr->GetValue()); // only for GTU/PTR
     }
   }
 
@@ -210,12 +214,22 @@ void AliTRDSaxHandler::OnEndElement(const char *name)
   TString strName = name;
   
   // if done with this DCS board, put it in the correct array
+  // no check for </ack> necessary since this check is done during XML validation
   if (strName.Contains("DCS")) {
     if (fSystem == kInsideFEE) {
-      AliTRDgeometry aliGeo;
-      Int_t detID = aliGeo.GetDetector(fDCSFEEObj->GetLayer(),
-	  				fDCSFEEObj->GetStack(),
-					fDCSFEEObj->GetSM());
+      Int_t detID = 0;
+      if (fDCSFEEObj->GetStatusBit() == 0) {
+	// if there were no errors (StatusBit==0) the following should match
+        detID = fDCSFEEObj->GetDCSid();
+        AliTRDgeometry aliGeo;
+        Int_t calDetID = aliGeo.GetDetector(fDCSFEEObj->GetLayer(),
+	  				    fDCSFEEObj->GetStack(),
+					    fDCSFEEObj->GetSM());
+	if (detID != calDetID) fDCSFEEObj->SetStatusBit(4);
+      } else {
+	// if the dcs board didn't properly respond, don't compare
+        detID = fDCSFEEObj->GetDCSid();
+      }
       fFEEArr->AddAt(fDCSFEEObj,detID);
     }
     if (fSystem == kInsidePTR) {
@@ -238,18 +252,31 @@ void AliTRDSaxHandler::OnEndElement(const char *name)
 
   // store informations of the FEE DCS-Board
   if (fSystem == kInsideFEE) {
-    if (strName.Contains("CONFIG-ID"))
-      fDCSFEEObj->SetConfigID(fContent);
-    if (strName.Contains("NTBIN"))
-      fDCSFEEObj->SetNumberOfTimeBins(fContent.Atoi());
-    if (strName.Contains("SM-ID"))
-      fDCSFEEObj->SetSM(fContent.Atoi());
-    if (strName.Contains("STACK-ID"))
-      fDCSFEEObj->SetStack(fContent.Atoi());
-    if (strName.Contains("LAYER-ID"))
-      fDCSFEEObj->SetLayer(fContent.Atoi());
+    if (strName.Contains("DNR")) fDCSFEEObj->SetStatusBit(fContent.Atoi());
+    if (strName.Contains("CFGNME")) fDCSFEEObj->SetConfigName(fContent);
+    if (strName.Contains("CFGTAG")) fDCSFEEObj->SetConfigTag(fContent.Atoi());
+    if (strName.Contains("CFGVRSN")) fDCSFEEObj->SetConfigVersion(fContent);
+    if (strName.Contains("NTB")) fDCSFEEObj->SetNumberOfTimeBins(fContent.Atoi());
+    if (strName.Contains("SM-ID")) fDCSFEEObj->SetSM(fContent.Atoi());
+    if (strName.Contains("STACK-ID")) fDCSFEEObj->SetStack(fContent.Atoi());
+    if (strName.Contains("LAYER-ID")) fDCSFEEObj->SetLayer(fContent.Atoi());
+    if (strName.Contains("SINGLEHITTHRES")) fDCSFEEObj->SetSingleHitThres(fContent.Atoi());
+    if (strName.Contains("THRPDCLSTHRS")) fDCSFEEObj->SetThreePadClustThres(fContent.Atoi());
+    if (strName.Contains("SELNOZS")) fDCSFEEObj->SetSelectiveNoZS(fContent.Atoi());
+    if (strName.Contains("FASTSTATNOISE")) fDCSFEEObj->SetFastStatNoise(fContent.Atoi());
+    if (strName.Contains("FILTWEIGHT")) fDCSFEEObj->SetTCFilterWeight(fContent.Atoi());
+    if (strName.Contains("FILTSHRTDCYPRM")) fDCSFEEObj->SetTCFilterShortDecPar(fContent.Atoi());
+    if (strName.Contains("FILTLNGDCYPRM")) fDCSFEEObj->SetTCFilterLongDecPar(fContent.Atoi());
+    if (strName.Contains("FLTR")) fDCSFEEObj->SetFilterType(fContent);
+    if (strName.Contains("READOURPAR")) fDCSFEEObj->SetReadoutParam(fContent);
+    if (strName.Contains("TESTPATTERN")) fDCSFEEObj->SetTestPattern(fContent);
+    if (strName.Contains("TRCKLTMODE")) fDCSFEEObj->SetTrackletMode(fContent);
+    if (strName.Contains("TRCKLTDEF")) fDCSFEEObj->SetTrackletDef(fContent);
+    if (strName.Contains("TRGGRSTP")) fDCSFEEObj->SetTriggerSetup(fContent);
+    if (strName.Contains("ADDOPTIONS")) fDCSFEEObj->SetAddOptions(fContent);
   }
 
+  
   // store pretrigger informations
   if (fSystem == kInsidePTR) {
     // no informations available yet
@@ -263,8 +290,6 @@ void AliTRDSaxHandler::OnEndElement(const char *name)
     if (strName.Contains("STMASK"))
       fDCSGTUObj->SetStackMaskBit(fCurrentSM, fCurrentStack, fContent.Atoi());
   }
-
-
 }
 
 //_____________________________________________________________________________

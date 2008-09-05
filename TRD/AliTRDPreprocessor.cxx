@@ -40,6 +40,7 @@
 #include <TList.h>
 #include <TCollection.h>
 #include <TSAXParser.h>
+#include <fstream>
 
 #include "AliCDBMetaData.h"
 #include "AliLog.h"
@@ -887,8 +888,8 @@ UInt_t AliTRDPreprocessor::ProcessDCSConfigData()
   // reteive XML file from the DCS FXS
   // parse it and store TObjArrays in the CDB
   // return 0 for success, otherwise:
-  // 5: could not get the file from the FXS
-  // 6: ERROR in XML validation: something wrong with the file
+  // 5: could not get the file from the FXS/something wrong with the file
+  // 6: ERROR in XML validation: something wrong with the content
   // 7: ERROR while creating calibration objects in the handler
   // 8: error while storing data in the CDB
   // > 100: SaxHandler error code
@@ -897,12 +898,36 @@ UInt_t AliTRDPreprocessor::ProcessDCSConfigData()
   Log("Processing the DCS config summary file.");
 
   // get the XML file
+  Log("Requesting the summaryfile from the FXS..");
   const char * xmlFile = GetFile(kDCS,"CONFIGSUMMARY","");
   if (xmlFile == NULL) {
+    Log(Form("ERROR: File %s not found!",xmlFile));
     return 5;
-    Log(Form("File %s not found!",xmlFile));
+  } else {
+    Log(Form("File %s found.",xmlFile));
   }
+  // test the file
+  std::ifstream fileTest;
+  fileTest.open(xmlFile, std::ios_base::binary | std::ios_base::in);
+  if (!fileTest.good() || fileTest.eof() || !fileTest.is_open()) {
+    Log(Form("ERROR: File %s not valid!",xmlFile));
+    return 5;
+  }
+  fileTest.seekg(0, std::ios_base::end);
+  if (static_cast<int>(fileTest.tellg()) < 2) {
+    Log(Form("ERROR: File %s is empty!",xmlFile));
+    return 5;
+  }
+  Log("File is tested valid.");   
 
+  // make a robust XML validation
+  TSAXParser testParser;
+  if (testParser.ParseFile(xmlFile) < 0 ) {
+    Log("ERROR: XML content is not well-formed.");
+    return 6;
+  } else {
+    Log("XML content is well-formed");   
+  }
   // create parser and parse
   TSAXParser saxParser;
   AliTRDSaxHandler saxHandler;
@@ -916,7 +941,9 @@ UInt_t AliTRDPreprocessor::ProcessDCSConfigData()
     Log(Form("ERROR in XML file validation. Parsecode: %s", saxParser.GetParseCode()));
     return 6;
   }
-  if (saxHandler.GetHandlerStatus() != 0) {
+  if (saxHandler.GetHandlerStatus() == 0) {
+    Log("SAX handler reports no errors.");
+  } else  {
     Log(Form("ERROR while creating calibration objects. Error code: %s", saxHandler.GetHandlerStatus()));
     return 7;
   }
@@ -929,10 +956,14 @@ UInt_t AliTRDPreprocessor::ProcessDCSConfigData()
   metaData1.SetBeamPeriod(0);
   metaData1.SetResponsible("Frederick Kramer");
   metaData1.SetComment("DCS configuration data in one AliTRDCalDCS object.");
-  if (!Store("Calib", "DCSCONFIG", fCalDCSObj, &metaData1, 0, kTRUE)) {
+  if (!Store("Calib", "DCS", fCalDCSObj, &metaData1, 0, kTRUE)) {
     Log("problems while storing DCS config data object");
     return 8;
+  } else {
+    Log("DCS config data object stored.");
   }
+
+  Log("Processing of the DCS config summary file DONE.");
 
   return 0;
 }
