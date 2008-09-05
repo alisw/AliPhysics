@@ -89,6 +89,121 @@ const Double_t AliITSQAChecker::Check(AliQA::ALITASK_t index, TObjArray * list)
   
   // Super-basic check on the QA histograms on the input list:
   // look whether they are empty!
+  if(index == AliQA::kESD){
+    AliDebug(1,"Checker for ESD");
+    Int_t tested = 0;
+    Int_t empty = 0;
+    Double_t rv = 0.;
+    // The following flags are set to kTRUE if the corresponding
+    // QA histograms exceed a given quality threshold
+    Bool_t cluMapSA = kFALSE;
+    Bool_t cluMapMI = kFALSE;
+    Bool_t cluMI = kFALSE;
+    Bool_t cluSA = kFALSE;
+    Bool_t verSPDZ = kFALSE;
+    if (list->GetEntries() == 0) {
+      rv = 0.; // nothing to check
+    }
+    else {
+      TIter next(list);
+      TH1 * hdata;
+      while ( (hdata = dynamic_cast<TH1 *>(next())) ) {
+	if(hdata){
+	  TString hname = hdata->GetName();
+	  Double_t entries = hdata->GetEntries();
+	  ++tested;
+	  if(!(entries>0.))++empty;
+	  AliDebug(1,Form("ESD hist name %s - entries %12.1g",hname.Data(),entries));
+
+	  if(hname.Contains("hESDClusterMapSA") && entries>0.){
+	    cluMapSA = kTRUE;
+	    AliDebug(1,Form("Processing histogram %s",hname.Data()));
+	    // Check if there are layers with anomalously low 
+	    // contributing points to SA reconstructed tracks
+	    for(Int_t k=1;k<7;k++){
+	      if(hdata->GetBinContent(k)<0.5*(entries/6.)){
+		cluMapSA = kFALSE;
+		AliInfo(Form("SA tracks have few points on layer %d - look at histogram hESDClustersSA",k));
+	      }
+	    }  
+	  }
+
+	  else if(hname.Contains("hESDClusterMapMI") && entries>0.){
+	    // Check if there are layers with anomalously low 
+	    // contributing points to MI reconstructed tracks
+	    AliDebug(1,Form("Processing histogram %s",hname.Data()));
+	    cluMapMI = kTRUE;
+	    for(Int_t k=1;k<7;k++){
+	      if(hdata->GetBinContent(k)<0.5*(entries/6.)){
+		cluMapMI = kFALSE;
+		AliInfo(Form("MI tracks have few points on layer %d - look at histogram hESDClustersMI",k));
+	      }
+	    }  
+	  }
+
+	  else if(hname.Contains("hESDClustersMI") && entries>0.){
+	    // Check if 6 clusters MI tracks are the majority
+	    AliDebug(1,Form("Processing histogram %s",hname.Data()));
+	    cluMI = kTRUE;
+	    Double_t sixlaytracks = hdata->GetBinContent(7);
+	    for(Int_t k=2; k<7; k++){
+	      if(hdata->GetBinContent(k)>sixlaytracks){
+		cluMI = kFALSE;
+		AliInfo(Form("MI Tracks with %d clusters are more than tracks with 6 clusters. Look at histogram hESDClustersMI",k-1));
+	      }
+	    }
+	  }
+
+	  else if(hname.Contains("hESDClustersSA") && entries>0.){
+	    // Check if 6 clusters SA tracks are the majority
+	    AliDebug(1,Form("Processing histogram %s",hname.Data()));
+	    cluSA = kTRUE;
+	    Double_t sixlaytracks = hdata->GetBinContent(7);
+	    for(Int_t k=2; k<7; k++){
+	      if(hdata->GetBinContent(k)>sixlaytracks){
+		cluSA = kFALSE;
+		AliInfo(Form("SA Tracks with %d clusters are more than tracks with 6 clusters. Look at histogram hESDClustersSA",k-1));
+	      }
+	    }
+	  }
+
+	  else if(hname.Contains("hSPDVertexZ") && entries>0.){
+	    // Check if average Z vertex coordinate is -5 < z < 5 cm
+	    AliDebug(1,Form("Processing histogram %s",hname.Data()));
+	    verSPDZ = kTRUE;
+	    if(hdata->GetMean()<-5. && hdata->GetMean()>5.){
+	      verSPDZ = kFALSE;
+	      AliInfo(Form("Average z vertex coordinate is at z= %10.4g cm",hdata->GetMean()));
+	    }
+	  }
+
+	}
+	else{
+	  AliError("ESD Checker - invalid data type");
+	}
+	  
+	rv = 0.;
+	if(tested>0){
+	  if(tested == empty){
+	    rv = 0.1;
+	    AliWarning("All ESD histograms are empty");
+	  }
+	  else {
+	    rv = 0.1+0.4*(static_cast<Double_t>(tested-empty)/static_cast<Double_t>(tested));
+	    if(cluMapSA)rv+=0.1;
+	    if(cluMapMI)rv+=0.1;
+	    if(cluMI)rv+=0.1;
+	    if(cluSA)rv+=0.1;
+	    if(verSPDZ)rv+=0.1;
+	  }
+	}
+  
+      }
+    }  
+      AliInfo(Form("ESD - Tested %d histograms, Return value %f \n",tested,rv));
+      return rv;
+  }  // end of ESD QA
+
   Double_t spdCheck, sddCheck, ssdCheck;
   Double_t retval = 1.;
   if(fDet == 0 || fDet == 1) {
