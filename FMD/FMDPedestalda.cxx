@@ -54,7 +54,7 @@ int main(int argc, char **argv)
   }
   Bool_t old = kTRUE;
 
-  AliLog::SetModuleDebugLevel("FMD", 1);
+  AliLog::EnableDebug(kFALSE);
   AliFMDParameters::Instance()->Init(kFALSE,0);
   AliFMDParameters::Instance()->UseCompleteHeader(old);
 

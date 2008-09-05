@@ -141,9 +141,6 @@ AliFMDRawReader::ReadAdcs(TClonesArray* array)
 
   Bool_t isGood = kTRUE;
   while (isGood) {
-    // Set data cache to all zero.
-    for (size_t i = 0; i < 2048; i++) data[i] = 0;
-
     isGood = input.ReadChannel(ddl, hwaddr, last, data);
     // if (!isGood) break;
     if (ddl >= UInt_t(-1)) { 
@@ -154,31 +151,39 @@ AliFMDRawReader::ReadAdcs(TClonesArray* array)
 
     AliFMDDebug(5, ("Read channel 0x%x of size %d", hwaddr, last));
 
+    UShort_t det, sec, samp;
+    Short_t strbase;
+    Char_t   ring;
     
+    if (!pars->Hardware2Detector(ddl, hwaddr, det, ring, sec, strbase)) {
+      AliError(Form("Failed to get detector id from DDL %d, "
+		    "hardware address 0x%03x", ddl, hwaddr));
+      continue;
+    }
+
+    stripMin = pars->GetMinStrip(det, ring, sec, strbase);
+    stripMax = pars->GetMaxStrip(det, ring, sec, strbase);
+    preSamp  = pars->GetPreSamples(det, ring, sec, strbase);
+    rate     = pars->GetSampleRate(det, ring, sec, strbase);
     
     // Loop over the `timebins', and make the digits
     for (size_t i = 0; i < last; i++) {
       // if (i < preSamp) continue;
 
-      UShort_t det, sec, samp;
-      Short_t str;
-      Char_t   ring;
-      if (!pars->Hardware2Detector(ddl, hwaddr, i, det, ring, sec, str, samp)) {
-	AliError(Form("Failed to get detector id from DDL %d, "
-		      "hardware address 0x%03x, timebin %d", ddl, hwaddr, i));
-	continue;
-      }
-      AliFMDDebug(8, ("0x%04x/0x%03x/%04d maps to FMD%d%c[%2d,%3d]-%d = %d", 
-		       ddl, hwaddr, i, det, ring, sec, str, samp, data[i]));
+      Short_t  str = strbase;
+            
+      UShort_t t  =  (i - preSamp);
+      samp        =  (t % rate);
+      t          -= samp;
+      str        += (sec % 2 ? -1 : 1) * t / rate;
+      
+      AliFMDDebug(10, ("0x%04x/0x%03x/%04d maps to FMD%d%c[%2d,%3d]-%d", 
+		      ddl, hwaddr, i, det, ring, sec, str, samp));
       if (str < 0) { 
 	AliFMDDebug(8, ("Got presamples at timebin %d", i));
 	continue;
       }
       
-      stripMin = pars->GetMinStrip(det, ring, sec, str);
-      stripMax = pars->GetMaxStrip(det, ring, sec, str);
-      preSamp  = pars->GetPreSamples(det, ring, sec, str);
-      rate     = pars->GetSampleRate(det, ring, sec, str);
       Short_t lstrip = (i - preSamp) / rate + stripMin;
       
       AliFMDDebug(15, ("Checking if strip %d (%d) in range [%d,%d]", 

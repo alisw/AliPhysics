@@ -59,7 +59,7 @@ int main(int argc, char **argv)
   //This will only work for FDR 1 data. When newer data becomes available the ! must be removed!
   AliFMDParameters::Instance()->UseCompleteHeader(old);
   
-  AliLog::SetModuleDebugLevel("FMD", 1);
+  AliLog::EnableDebug(kFALSE);
   
   AliRawReader *reader = 0;
   TString fileNam(fileName);
