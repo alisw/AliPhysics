@@ -13,6 +13,7 @@
 # include <FMD/AliFMDAltroMapping.h>
 // # include <FMD/AliFMDUShortMap.h>
 // # include <FMD/AliFMDBoolMap.h>
+# include <AliLog.h>
 # include <TError.h>
 # include <iostream>
 #endif
@@ -124,13 +125,14 @@ CheckTrans(UShort_t det, Char_t ring, UShort_t sec, UShort_t str, UShort_t sam,
 /** @ingroup ALTRO_test
  */
 void
-TestAltroMapping(Int_t min=2, Int_t max=0)
+TestAltroMapping(Int_t min=1, Int_t max=3)
 {
+  // AliLog::SetModuleDebugLevel("FMD", 1);
   // if (min < 1 || min > 3) min = 1;
   if (max < min)          max = min;
   // AliFMDParameters* param = AliFMDParameters::Instance();
   AliFMDAltroMapping m;
-  UShort_t presamp  = 0;
+  UShort_t presamp  = 19;
   UShort_t oversamp = 4;
 
   for (UShort_t det = min; det <= max; det++) {
@@ -141,7 +143,7 @@ TestAltroMapping(Int_t min=2, Int_t max=0)
       for (UShort_t sec = 0; sec < nsec; sec++) {
 	for (Short_t str = 0; str < nstr; str ++ /*= 128*/) {
 	  for(UShort_t sam = 0; sam < oversamp; sam++) {
-	    UInt_t ddl, hwaddr;
+	    UShort_t ddl, hwaddr;
 	    UShort_t timebin;
 	    if (!m.Detector2Hardware(det, ring, sec, str, sam, 
 				     presamp, oversamp, 

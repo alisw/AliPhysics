@@ -206,9 +206,7 @@ AliFMDRawWriter::WriteDigits(TClonesArray* digits)
     Char_t   ring   = digit->Ring();
     UShort_t sector = digit->Sector();
     UShort_t strip  = digit->Strip();
-    UInt_t   ddl;
-    UInt_t   addr;  
-    UShort_t time;
+    UShort_t ddl, addr, time;
 
     AliFMDDebug(15, ("Processing digit # %5d FMD%d%c[%2d,%3d]", 
 		    i, det, ring, sector, strip));

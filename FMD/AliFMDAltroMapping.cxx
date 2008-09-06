@@ -37,6 +37,7 @@
 #include "AliFMDAltroMapping.h"		// ALIFMDALTROMAPPING_H
 #include "AliFMDParameters.h"
 #include "AliLog.h"
+#include "AliFMDDebug.h"
 #include <iostream>
 #include <iomanip>
 
@@ -69,26 +70,11 @@ AliFMDAltroMapping::CreateInvMapping()
   return kTRUE;
 }
 
-//____________________________________________________________________
-Bool_t 
-AliFMDAltroMapping::Hardware2Detector(UInt_t    ddl, UInt_t    addr, 
-				      UShort_t& det, Char_t&   ring, 
-				      UShort_t& sec, Short_t&  str) const
-{
-  // Translate a hardware address to detector coordinates. 
-  // 
-  // See also Hardware2Detector that accepts 4 inputs 
-  UInt_t board =  (addr >> 7) & 0x1F;
-  UInt_t altro =  (addr >> 4) & 0x7;
-  UInt_t chan  =  (addr & 0xf);
-  return Hardware2Detector(ddl, board, altro, chan, det, ring, sec, str);
-}
 
 //____________________________________________________________________
 Bool_t 
-AliFMDAltroMapping::Hardware2Detector(UInt_t    ddl,   UInt_t    board, 
-				      UInt_t    altro, UInt_t    chan,
-				      UShort_t& det,   Char_t&   ring, 
+AliFMDAltroMapping::Channel2StripBase(UShort_t  board, UShort_t  altro, 
+				      UShort_t  chan,  Char_t&   ring, 
 				      UShort_t& sec,   Short_t&  str) const
 {
   // Translate a hardware address to detector coordinates. 
@@ -161,8 +147,7 @@ AliFMDAltroMapping::Hardware2Detector(UInt_t    ddl,   UInt_t    board,
   // return the first strip, as seen by the ALTRO channel, in the
   // given range.  
   //
-  det          =  ddl + 1;
-  ring         =  (board % 2) == 0 ? 'I' : 'O';
+  ring         =  Board2Ring(board);
   switch (ring) {
   case 'i':
   case 'I':
@@ -178,12 +163,102 @@ AliFMDAltroMapping::Hardware2Detector(UInt_t    ddl,   UInt_t    board,
     break;
   }
   if (sec % 2) str += 127;
+  // AliFMDDebug(1, ("%02x/%x/%x Base strip = %d", board, altro, chan, str));
+  return kTRUE;
+}
+
+//____________________________________________________________________
+void
+AliFMDAltroMapping::Timebin2Strip(UShort_t  sec,         
+				  UShort_t  timebin,
+				  UShort_t  preSamples, 
+				  UShort_t  sampleRate, 
+				  Short_t&  stripOff,      
+				  UShort_t& sample) const
+{
+  // Compute the strip off-set in the current channel from the sector
+  // and timebin.   Also needed for this computation is the basic
+  // offset in timebins, as well as the sample rat. 
+  UShort_t t =  (timebin - preSamples);
+  sample     =  (t % sampleRate);
+  t          -= sample;
+  stripOff   =  (sec % 2 ? -1 : 1) * t / sampleRate;
+}
+
+#if 0
+//____________________________________________________________________
+Bool_t 
+AliFMDAltroMapping::Hardware2Detector(UInt_t    ddl,   UInt_t    board, 
+				      UInt_t    altro, UInt_t    chan,
+				      UShort_t& det,   Char_t&   ring, 
+				      UShort_t& sec,   Short_t&  str) const
+{
+  // See also Hardware2Detector that requires 3 inputs 
+  det = DDL2Detector(ddl);
+  return Channel2StripBase(board, altro, chan, ring, sec, str);
+}
+
+
+//____________________________________________________________________
+Bool_t 
+AliFMDAltroMapping::Hardware2Detector(UInt_t    ddl, UInt_t    addr, 
+				      UShort_t& det, Char_t&   ring, 
+				      UShort_t& sec, Short_t&  str) const
+{
+  // Translate a hardware address to detector coordinates. 
+  // 
+  // See also Hardware2Detector that accepts 4 inputs 
+  UShort_t board, altro, chan;
+  ChannelAddress(addr, board, altro, chan);
+  return Hardware2Detector(ddl,board, altro, chan, det,ring, sec, str);
+}
+#endif 
+
+//____________________________________________________________________
+Bool_t 
+AliFMDAltroMapping::Hardware2Detector(UShort_t  ddl,     UShort_t    board, 
+				      UShort_t  altro,   UShort_t    chan,
+				      UShort_t  timebin, UShort_t    preSamples,
+				      UShort_t  sampleRate,
+				      UShort_t& det,     Char_t&   ring, 
+				      UShort_t& sec,     Short_t&  str,
+				      UShort_t& sam) const
+{
+  // Full conversion from hardware address, including timebin number,
+  // to detector coordinates and sample number.  Note, that this
+  // conversion depends on the oversampling rate and the number of
+  // pre-samples 
+  Short_t  baseStrip, stripOffset, tdet  = DDL2Detector(ddl);
+  if (tdet < 0) return kFALSE;
+  det = tdet;
+  if (!Channel2StripBase(board, altro, chan, ring, sec, baseStrip)) 
+    return kFALSE;
+  Timebin2Strip(sec, timebin, preSamples, sampleRate, stripOffset, sam);
+#if 0
+  AliFMDDebug(1, ("0x%x/0x%02x/0x%x/0x%x/%04d -> FMD%d%c[%2d,%3d]-%d "
+		  "(pre=%d,rate=%d,base=%3d,off=%3d)", 
+		  ddl, 
+		  board, 
+		  altro, 
+		  chan, 
+		  timebin, 
+		  det, 
+		  ring, 
+		  sec, 
+		  str, 
+		  sam,
+		  preSamples, 
+		  sampleRate,
+		  baseStrip, 
+		  stripOffset));
+#endif
+  str = baseStrip + stripOffset;
   return kTRUE;
 }
 
 //____________________________________________________________________
 Bool_t 
-AliFMDAltroMapping::Hardware2Detector(UInt_t    ddl,       UInt_t   addr,
+AliFMDAltroMapping::Hardware2Detector(UShort_t  ddl,       UShort_t addr,
 				      UShort_t  timebin,   UShort_t preSamples, 
 				      UShort_t  sampleRate,
 				      UShort_t& det,       Char_t&   ring, 
@@ -193,51 +268,34 @@ AliFMDAltroMapping::Hardware2Detector(UInt_t    ddl,       UInt_t   addr,
   // Translate a hardware address to detector coordinates. 
   // 
   // See also Hardware2Detector that accepts 4 inputs 
-  UInt_t board =  (addr >> 7) & 0x1F;
-  UInt_t altro =  (addr >> 4) & 0x7;
-  UInt_t chan  =  (addr & 0xf);
+  UShort_t board, altro, chan;
+  ChannelAddress(addr, board, altro, chan);
   return Hardware2Detector(ddl, board, altro, chan, 
 			   timebin, preSamples, sampleRate, 
 			   det, ring, sec, str, sam);
 }
 
+
 //____________________________________________________________________
-Bool_t 
-AliFMDAltroMapping::Hardware2Detector(UInt_t    ddl,     UInt_t    board, 
-				      UInt_t    altro,   UInt_t    chan,
-				      UInt_t    timebin, UInt_t    preSamples,
-				      UInt_t    sampleRate,
-				      UShort_t& det,     Char_t&   ring, 
-				      UShort_t& sec,     Short_t&  str,
-				      UShort_t& sam) const
+Short_t
+AliFMDAltroMapping::Sector2Board(Char_t ring, UShort_t sec) const
 {
-  // Full conversion from hardware address, including timebin number,
-  // to detector coordinates and sample number.  Note, that this
-  // conversion depends on the oversampling rate and the number of
-  // pre-samples 
-  if (!Hardware2Detector(ddl, board, altro, chan, det, ring, sec, str))
-    return kFALSE;
-  UShort_t t =  (timebin - preSamples);
-  sam        =  (t % sampleRate);
-  t          -= sam;
-  str        += (sec % 2 ? -1 : 1) * t / sampleRate;
-  // if (sec % 2) sam = sampleRate - 1 - sam;
-#if 0
-  AliFMDDebug(3, ("%d/0x%02x/0x%x/0x%x/%04d -> FMD%d%c[%02d,%03d]-%d"
-		  " (pre=%2d, rate=%d)", 
-		  ddl, board, altro, chan, timebin, 
-		  det, ring, sec, str, sam, preSamples, sampleRate));
-#endif
-  return kTRUE;
+  switch (ring) { 
+  case 'I': 
+  case 'i':
+    return (sec / 10) * 16;
+  case 'O': 
+  case 'o': 
+    return (sec / 20) * 16 + 1;
+  }
+  return -1;
 }
 
-
-//____________________________________________________________________
-Bool_t 
-AliFMDAltroMapping::Detector2Hardware(UShort_t  det,   Char_t    ring, 
-				      UShort_t  sec,   UShort_t  str,
-				      UInt_t&   ddl,   UInt_t&   board,
-				      UInt_t&   altro, UInt_t&   chan) const
+//_____________________________________________ _______________________
+Bool_t
+AliFMDAltroMapping::Strip2Channel(Char_t    ring,  UShort_t  sec,   
+				  UShort_t  str,   UShort_t& board,
+				  UShort_t& altro, UShort_t& chan) const
 {
   // Translate detector coordinates to a hardware address.
   // The ddl is simply 
@@ -319,7 +377,6 @@ AliFMDAltroMapping::Detector2Hardware(UShort_t  det,   Char_t    ring,
   // With this information, we can decode the detector coordinates to
   // give us a unique hardware address 
   //
-  ddl          =  (det - 1);
   UInt_t tmp   = 0;
   switch (ring) {
   case 'I':
@@ -340,41 +397,64 @@ AliFMDAltroMapping::Detector2Hardware(UShort_t  det,   Char_t    ring,
   return kTRUE;
 }
 
+//_____________________________________________ _______________________
+UShort_t
+AliFMDAltroMapping::Strip2Timebin(UShort_t sec, UShort_t strip, 
+				  UShort_t sam, UShort_t preSamples, 
+				  UShort_t sampleRate) const
+{
+  UShort_t timebin = preSamples;
+  if (sec % 2)  timebin += (127 - (strip % 128)) * sampleRate;
+  else          timebin += (strip % 128) * sampleRate;
+  timebin += sam;
+  return timebin;
+}
+
+#if 0
+//_____________________________________________ _______________________
+Bool_t 
+AliFMDAltroMapping::Detector2Hardware(UShort_t  det,   Char_t    ring, 
+				      UShort_t  sec,   UShort_t  str,
+				      UShort_t& ddl,   UShort_t& board,
+				      UShort_t& altro, UShort_t& chan) const
+{
+  ddl =  Detector2DDL(det);
+  return Strip2Channel(ring, sec, str, board, altro, chan);
+}
+
+
 //____________________________________________________________________
 Bool_t 
 AliFMDAltroMapping::Detector2Hardware(UShort_t  det, Char_t    ring, 
 				      UShort_t  sec, UShort_t  str,
-				      UInt_t&   ddl, UInt_t&   addr) const
+				      UShort_t& ddl, UShort_t& addr) const
 {
   // Translate detector coordinates to a hardware address.  
   // 
   // See also Detector2Hardware that returns 4 parameters.  
-  UInt_t board = 0;
-  UInt_t altro = 0;
-  UInt_t chan  = 0;
+  UShort_t board = 0;
+  UShort_t altro = 0;
+  UShort_t chan  = 0;
   if (!Detector2Hardware(det,ring,sec,str,ddl,board,altro,chan)) return kFALSE;
-  addr =  chan + (altro << 4) + (board << 7);
+  addr =  ChannelAddress(board, altro, chan);
   return kTRUE;
 }
+#endif
 
 //____________________________________________________________________
 Bool_t 
 AliFMDAltroMapping::Detector2Hardware(UShort_t  det,        Char_t    ring, 
 				      UShort_t  sec,        UShort_t  str,
 				      UShort_t  sam, 
-				      UShort_t  preSamples, UShort_t sampleRate,
-				      UInt_t&   ddl,        UInt_t&   board, 
-				      UInt_t&   altro,      UInt_t&   channel, 
+				      UShort_t  preSamples, 
+				      UShort_t  sampleRate,
+				      UShort_t& ddl,        UShort_t& board, 
+				      UShort_t& altro,      UShort_t& channel, 
 				      UShort_t& timebin) const
 {
-  if (!Detector2Hardware(det,ring,sec,str,ddl,board,altro,channel)) 
-    return kFALSE;
-  timebin = preSamples;
-  if (sec % 2) 
-    timebin += (127 - (str % 128)) * sampleRate;
-  else 
-    timebin += (str % 128) * sampleRate;
-  timebin += sam;
+  ddl = Detector2DDL(det);
+  if (!Strip2Channel(ring,sec,str,board,altro,channel)) return kFALSE;
+  timebin = Strip2Timebin(sec, str, sam, preSamples, sampleRate);
   return kTRUE;
 }
 
@@ -385,20 +465,37 @@ AliFMDAltroMapping::Detector2Hardware(UShort_t  det,        Char_t   ring,
 				      UShort_t  sec,        UShort_t str,
 				      UShort_t  sam, 
 				      UShort_t  preSamples, UShort_t sampleRate,
-				      UInt_t&   ddl,        UInt_t&  hwaddr, 
+				      UShort_t& ddl,        UShort_t&  hwaddr, 
 				      UShort_t& timebin) const
 {
-  UInt_t board = 0;
-  UInt_t altro = 0;
-  UInt_t chan  = 0;
+  UShort_t board = 0;
+  UShort_t altro = 0;
+  UShort_t chan  = 0;
   if (!Detector2Hardware(det, ring, sec, str, sam, 
 			 preSamples, sampleRate, 
 			 ddl, board, altro, chan, timebin)) return kFALSE;
-  hwaddr =  chan + (altro << 4) + (board << 7);
+  hwaddr =  ChannelAddress(board, altro, chan);
   return kTRUE;
 }
 
       
+//____________________________________________________________________
+UInt_t 
+AliFMDAltroMapping::ChannelAddress(UShort_t board, UShort_t altro, 
+				   UShort_t channel) const
+{
+  return (((board & 0x1F) << 7) | ((altro & 0x7) << 4) | (channel & 0xF));
+}
+
+//____________________________________________________________________
+void 
+AliFMDAltroMapping::ChannelAddress(UShort_t hwaddr, UShort_t& board, 
+				   UShort_t& altro, UShort_t& channel) const
+{
+  board   = ((hwaddr >> 7) & 0x1F);
+  altro   = ((hwaddr >> 4) & 0x07);
+  channel = ((hwaddr >> 0) & 0x0F);
+}
 
 //____________________________________________________________________
 Int_t
@@ -413,11 +510,10 @@ AliFMDAltroMapping::GetHWAddress(Int_t sec, Int_t str, Int_t ring)
   //   pad     | strip
   //   sector  | ring 
   //
-  UInt_t ddl, hwaddr;
   Char_t r = Char_t(ring);
-  if (!Detector2Hardware(1, r, sec, str, ddl, hwaddr)) 
-    return -1;
-  return hwaddr;
+  UShort_t board, altro, channel;
+  Strip2Channel(r, sec, str, board, altro, channel);
+  return ChannelAddress(board, altro, channel);
 }
 
 //____________________________________________________________________
@@ -433,13 +529,13 @@ AliFMDAltroMapping::GetPadRow(Int_t hwaddr) const
   //   pad     | strip
   //   sector  | ring 
   //
-  UShort_t det;
   Char_t   ring;
-  UShort_t sec;
-  Short_t  str;
-  Int_t    ddl = 0;
-  if (!Hardware2Detector(ddl, hwaddr, det, ring, sec, str)) return -1;
-  return Int_t(sec);
+  UShort_t board, altro, channel, sector;
+  Short_t  baseStrip;
+  ChannelAddress(hwaddr, board, altro, channel);
+  if (!Channel2StripBase(board, altro, channel, ring, sector, baseStrip))
+    return -1;
+  return Int_t(sector);
 }
 
 //____________________________________________________________________
@@ -455,13 +551,13 @@ AliFMDAltroMapping::GetPad(Int_t hwaddr) const
   //   pad     | strip
   //   sector  | ring 
   //
-  UShort_t det;
   Char_t   ring;
-  UShort_t sec;
-  Short_t  str;
-  Int_t    ddl = 0;
-  if (!Hardware2Detector(ddl, hwaddr, det, ring, sec, str)) return -1;
-  return Int_t(str);
+  UShort_t board, altro, channel, sector;
+  Short_t  baseStrip;
+  ChannelAddress(hwaddr, board, altro, channel);
+  if (!Channel2StripBase(board, altro, channel, ring, sector, baseStrip))
+    return -1;
+  return Int_t(baseStrip);
 }
   
 //____________________________________________________________________
@@ -477,12 +573,12 @@ AliFMDAltroMapping::GetSector(Int_t hwaddr) const
   //   pad     | strip
   //   sector  | ring 
   //
-  UShort_t det;
   Char_t   ring;
-  UShort_t sec;
-  Short_t  str;
-  Int_t    ddl = 0;
-  if (!Hardware2Detector(ddl, hwaddr, det, ring, sec, str)) return -1;
+  UShort_t board, altro, channel, sector;
+  Short_t  baseStrip;
+  ChannelAddress(hwaddr, board, altro, channel);
+  if (!Channel2StripBase(board, altro, channel, ring, sector, baseStrip))
+    return -1;
   return Int_t(ring);
 }
 
@@ -492,9 +588,9 @@ AliFMDAltroMapping::Print(Option_t* option) const
 {
   TString opt(option);
   opt.ToLower();
-  UInt_t ddl, board, chip, chan, addr;
+  UShort_t ddl, board, chip, chan, addr;
   UShort_t det, sec;
-  Short_t str;
+  Short_t  strBase;
   Char_t   rng;
   
   if (opt.Contains("hw") || opt.Contains("hardware")) { 
@@ -504,23 +600,24 @@ AliFMDAltroMapping::Print(Option_t* option) const
     for (ddl = 0; ddl <= 2; ddl++) { 
       Int_t  boards[] = { 0, 16, (ddl == 0 ? 32 : 1), 17, 32};
       Int_t* ptr      = boards;
+      det             = DDL2Detector(ddl);
       while ((board = *(ptr++)) < 32) { 
 	for (chip = 0; chip <= 2; chip++) { 
-	  UInt_t nchan = (chip == 1 ? 8 : 16);
+	  UShort_t nchan = (chip == 1 ? 8 : 16);
 	  for (chan = 0; chan < nchan; chan++) { 
-	    Hardware2Detector(ddl, board, chip, chan, det, rng, sec, str);
-	    addr = ((board & 0x1f) << 7) | ((chip & 0x7) << 4) | (chan & 0xf);
+	    Channel2StripBase(board, chip, chan, rng, sec, strBase);
+	    addr = ChannelAddress(board, chip, chan);
 	    std::cout << " "  
-		      << std::setw(3) << ddl   << " | " 
-		      << std::setfill('0')     << std::hex << " 0x"
-		      << std::setw(2) << board << " |  0x"
-		      << std::setw(1) << chip  << " |  0x"
-		      << std::setw(1) << chan  << " |   0x" 
-		      << std::setw(3) << addr  << " | " 
-		      << std::setfill(' ')     << std::dec << " FMD" 
-		      << std::setw(1) << det << rng << "[" 
-		      << std::setw(2) << sec << "," << std::setw(3) << str
-		      << "]" << std::endl;
+		      << std::setw(3) << ddl     << " | " 
+		      << std::setfill('0')       << std::hex << " 0x"
+		      << std::setw(2) << board   << " |  0x"
+		      << std::setw(1) << chip    << " |  0x"
+		      << std::setw(1) << chan    << " |   0x" 
+		      << std::setw(3) << addr    << " | " 
+		      << std::setfill(' ')       << std::dec << " FMD" 
+		      << std::setw(1) << det     << rng << "[" 
+		      << std::setw(2) << sec     << "," 
+		      << std::setw(3) << strBase << "]" << std::endl;
 	  } // for chan ...
 	  if (chip == 2 && *ptr >= 32) continue;
 	  std::cout << "     +       +      +      +         +              " 
@@ -538,24 +635,24 @@ AliFMDAltroMapping::Print(Option_t* option) const
     for (det = 1; det <= 3; det++) { 
       Char_t  rings[] = { 'I', (det == 1 ? '\0' : 'O'),'\0' };
       Char_t* ptr     = rings;
+      ddl             = Detector2DDL(det);
       while ((rng = *(ptr++)) != '\0') { 
 	UShort_t nsec = (rng == 'I' ?  20 :  40);
 	UShort_t nstr = (rng == 'I' ? 512 : 256);
 	for (sec = 0; sec < nsec; sec++) { 
-	  for (str = 0; str < nstr; str += 128) {
-	    ddl = board = chip = chan;
-	    Detector2Hardware(det,rng,sec,str,ddl,board,chip,chan);
-	    addr = ((board & 0x1f) << 7) | ((chip & 0x7) << 4) | (chan & 0xf);
-	    std::cout << std::setfill(' ')     << std::dec << " FMD" 
-		      << std::setw(1) << det   << rng      << "[" 
-		      << std::setw(2) << sec   << "," 
-		      << std::setw(3) << str   << "] | " 
-		      << std::setw(3) << ddl   << " |  0x"
-		      << std::setfill('0')     << std::hex  
-		      << std::setw(2) << board << " |  0x"
-		      << std::setw(1) << chip  << " |  0x"
-		      << std::setw(1) << chan  << " |   0x" 
-		      << std::setw(3) << addr  << std::endl;
+	  for (strBase = 0; strBase < nstr; strBase += 128) {
+	    Strip2Channel(rng, sec, strBase, board, chip, chan);
+	    addr = ChannelAddress(board, chip, chan);
+	    std::cout << std::setfill(' ')         << std::dec << " FMD" 
+		      << std::setw(1) << det       << rng      << "[" 
+		      << std::setw(2) << sec       << "," 
+		      << std::setw(3) << strBase   << "] | " 
+		      << std::setw(3) << ddl       << " |  0x"
+		      << std::setfill('0')         << std::hex  
+		      << std::setw(2) << board     << " |  0x"
+		      << std::setw(1) << chip      << " |  0x"
+		      << std::setw(1) << chan      << " |   0x" 
+		      << std::setw(3) << addr      << std::endl;
 	  } // for str ...
 	} // for sec ... 
 	if (*ptr == '\0') continue;

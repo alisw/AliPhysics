@@ -30,6 +30,7 @@
 #include "AliFMDParameters.h"
 #include "AliFMDRawReader.h"
 #include "AliRawReader.h"
+#include "AliFMDAltroMapping.h"
 
 //_____________________________________________________________________
 // This is the class that collects the QA data for the FMD during
@@ -241,14 +242,13 @@ void AliFMDQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   fmdReader.ReadAdcs(digitsAddress);
   for(Int_t i=0;i<digitsAddress->GetEntriesFast();i++) {
     //Raw ADC counts
-    AliFMDDigit* digit = static_cast<AliFMDDigit*>(digitsAddress->At(i));
-    UShort_t det = digit->Detector();
-    Char_t ring  = digit->Ring();
-    UShort_t sec = digit->Sector();
-    UShort_t strip = digit->Strip();
-    UInt_t ddl, board, chip, channel;
-    AliFMDParameters* pars = AliFMDParameters::Instance();
-    pars->Detector2Hardware(det,ring,sec,strip,ddl,board,chip,channel);
+    AliFMDDigit*      digit = static_cast<AliFMDDigit*>(digitsAddress->At(i));
+    UShort_t          det   = digit->Detector();
+    Char_t            ring  = digit->Ring();
+    UShort_t          sec   = digit->Sector();
+    // UShort_t strip = digit->Strip();
+    AliFMDParameters* pars  = AliFMDParameters::Instance();
+    Short_t           board = pars->GetAltroMap()->Sector2Board(ring, sec);
     
     Int_t index1 = GetHalfringIndex(det, ring, 0, 1);
     GetRawsData(index1)->Fill(digit->Counts());

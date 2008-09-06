@@ -314,26 +314,12 @@ public:
       @param str        On return, the base of strip #
       @param sam        On return, the sample number for this strip
       @return @c true on success, false otherwise */
-  Bool_t Hardware2Detector(UInt_t    ddl,        UInt_t    board, 
-			   UInt_t    altro,      UInt_t    chan,
+  Bool_t Hardware2Detector(UShort_t    ddl,        UShort_t    board, 
+			   UShort_t    altro,      UShort_t    chan,
 			   UShort_t  timebin,   
 			   UShort_t& det,        Char_t&   ring, 
 			   UShort_t& sec,        Short_t& str,
 			   UShort_t& sam) const;
-  /** Translate hardware address to detector coordinates 
-      @param ddl      DDL number 
-      @param board    Board address
-      @param chip     Chip #
-      @param channel  Channel #
-      @param det      On return, Detector # (1-3)
-      @param ring     On return, Ring ID ('I' or 'O')
-      @param sec      On return, Sector number (0-39)
-      @param str      On return, Strip number (0-511)
-      @return @c true on success. */
-  Bool_t   Hardware2Detector(UInt_t ddl,    UInt_t    board, 
-			     UInt_t chip,   UInt_t    channel, 
-			     UShort_t& det, Char_t&   ring, 
-			     UShort_t& sec, Short_t& str) const;
   /** Map a hardware address into a detector index. 
       @param ddl        Hardware DDL number 
       @param hwaddr     Hardware address.  
@@ -344,11 +330,26 @@ public:
       @param str        On return, the base of strip #
       @param sam        On return, the sample number for this strip
       @return @c true on success, false otherwise */
-  Bool_t Hardware2Detector(UInt_t    ddl,        UInt_t    hwaddr, 
+  Bool_t Hardware2Detector(UShort_t    ddl,        UShort_t    hwaddr, 
 			   UShort_t  timebin,    
 			   UShort_t& det,        Char_t&   ring, 
 			   UShort_t& sec,        Short_t& str,
 			   UShort_t& sam) const;
+#if 0
+  /** Translate hardware address to detector coordinates 
+      @param ddl      DDL number 
+      @param board    Board address
+      @param chip     Chip #
+      @param channel  Channel #
+      @param det      On return, Detector # (1-3)
+      @param ring     On return, Ring ID ('I' or 'O')
+      @param sec      On return, Sector number (0-39)
+      @param str      On return, Strip number (0-511)
+      @return @c true on success. */
+  Bool_t   Hardware2Detector(UShort_t ddl,    UShort_t    board, 
+			     UShort_t chip,   UShort_t    channel, 
+			     UShort_t& det, Char_t&   ring, 
+			     UShort_t& sec, Short_t& str) const;
   /** Translate hardware address to detector coordinates 
       @param ddl      DDL number 
       @param addr     Hardware address
@@ -357,8 +358,9 @@ public:
       @param sec      On return, Sector number (0-39)
       @param str      On return, Strip number (0-511)
       @return @c true on success. */
-  Bool_t   Hardware2Detector(UInt_t ddl, UInt_t addr, UShort_t& det,
+  Bool_t   Hardware2Detector(UShort_t ddl, UShort_t addr, UShort_t& det,
 			     Char_t& ring, UShort_t& sec, Short_t& str) const;
+#endif
 
   /** Map a detector index into a hardware address. 
       @param det         The detector #
@@ -375,23 +377,9 @@ public:
   Bool_t Detector2Hardware(UShort_t  det,        Char_t    ring, 
 			   UShort_t  sec,        UShort_t  str,
 			   UShort_t  sam, 
-			   UInt_t&   ddl,        UInt_t&   board, 
-			   UInt_t&   altro,      UInt_t&   channel, 
+			   UShort_t&   ddl,        UShort_t&   board, 
+			   UShort_t&   altro,      UShort_t&   channel, 
 			   UShort_t& timebin) const;
-  /** Translate detector coordinates to hardware address 
-      @param det      Detector # (1-3)
-      @param ring     Ring ID ('I' or 'O')
-      @param sec      Sector number (0-39)
-      @param str      Strip number (0-511)
-      @param ddl      On return, DDL number 
-      @param board    On return, Board address
-      @param chip     On return, Chip #
-      @param channel  On return, Channel #
-      @return @c true on success. */
-  Bool_t   Detector2Hardware(UShort_t det, Char_t ring, 
-			     UShort_t sec, UShort_t str, 
-			     UInt_t& ddl,  UInt_t& board,
-			     UInt_t& chip, UInt_t& channel) const;
   /** Map a detector index into a hardware address. 
       @param det         The detector #
       @param ring        The ring ID
@@ -405,8 +393,23 @@ public:
   Bool_t Detector2Hardware(UShort_t  det,        Char_t    ring, 
 			   UShort_t  sec,        UShort_t  str,
 			   UShort_t  sam, 
-			   UInt_t&   ddl,        UInt_t&   hwaddr, 
+			   UShort_t&   ddl,        UShort_t&   hwaddr, 
 			   UShort_t& timebin) const;
+#if 0
+  /** Translate detector coordinates to hardware address 
+      @param det      Detector # (1-3)
+      @param ring     Ring ID ('I' or 'O')
+      @param sec      Sector number (0-39)
+      @param str      Strip number (0-511)
+      @param ddl      On return, DDL number 
+      @param board    On return, Board address
+      @param chip     On return, Chip #
+      @param channel  On return, Channel #
+      @return @c true on success. */
+  Bool_t   Detector2Hardware(UShort_t det, Char_t ring, 
+			     UShort_t sec, UShort_t str, 
+			     UShort_t& ddl,  UShort_t& board,
+			     UShort_t& chip, UShort_t& channel) const;
   /** Translate detector coordinates to hardware address 
       @param det      Detector # (1-3)
       @param ring     Ring ID ('I' or 'O')
@@ -416,7 +419,8 @@ public:
       @param addr     On return, Hardware address
       @return @c true on success. */
   Bool_t   Detector2Hardware(UShort_t det, Char_t ring, UShort_t sec, 
-			     UShort_t str, UInt_t& ddl, UInt_t& addr) const;
+			     UShort_t str, UShort_t& ddl, UShort_t& addr) const;
+#endif
   /** Get the map that translates hardware to detector coordinates 
       @return Get the map that translates hardware to detector
       coordinates */ 
