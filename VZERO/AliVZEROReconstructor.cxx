@@ -86,24 +86,30 @@ void AliVZEROReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
   rawReader->Reset();
   AliVZERORawStream rawStream(rawReader);
   if (rawStream.Next()) {  
-     Int_t ADC_max[64], adc[64], time[64];   
+     Int_t ADC_max[64], adc[64], time[64], width[64], BBFlag[64], BGFlag[64];   
      for(Int_t i=0; i<64; i++) {
          // Search for the maximum charge in the train of 21 LHC clocks 
          // regardless of the integrator which has been operated:
          ADC_max[i] = 0;
+	 Int_t imax = 0;
          for(Int_t iClock=0; iClock<21; iClock++){
              if((Int_t)rawStream.GetPedestal(i,iClock) > ADC_max[i])  
-	        {ADC_max[i]=(Int_t)rawStream.GetPedestal(i,iClock);}
+	        {ADC_max[i]=(Int_t)rawStream.GetPedestal(i,iClock);
+		 imax      = iClock;}
          }
 	 // Convert i (FEE channel numbering) to j (aliroot channel numbering)
-	 Int_t j =  rawStream.GetOfflineChannel(i);
-	 adc[j]  =  ADC_max[i];
-	 time[j] =  rawStream.GetTime(i); 
+	 Int_t j   =  rawStream.GetOfflineChannel(i);
+	 adc[j]    =  ADC_max[i];
+	 time[j]   =  rawStream.GetTime(i);
+	 width[j]  =  rawStream.GetWidth(i);
+	 BBFlag[j] =  rawStream.GetBBFlag(i,imax);
+	 BGFlag[j] =  rawStream.GetBGFlag(i,imax); 
      }  
      // Channels(aliroot numbering) will be ordered in the tree
      for(Int_t iChannel = 0; iChannel < 64; iChannel++) {
          new ((*digitsArray)[digitsArray->GetEntriesFast()])
-             AliVZEROdigit(iChannel,adc[iChannel],time[iChannel]);
+             AliVZEROdigit(iChannel, adc[iChannel], time[iChannel],
+	                   width[iChannel], BBFlag[iChannel], BGFlag[iChannel]);
      }
   }
 
@@ -129,9 +135,17 @@ void AliVZEROReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,
   Float_t   mult[64];  
   Short_t    adc[64]; 
   Short_t   time[64]; 
+  Short_t  width[64];
+  Bool_t  BBFlag[64];
+  Bool_t  BGFlag[64];
+   
   for (Int_t i=0; i<64; i++){
-       adc[i] = 0;
-       mult[i]= 0.0;
+       adc[i]    = 0;
+       mult[i]   = 0.0;
+       time[i]   = 0;
+       width[i]  = 0;
+       BBFlag[i] = kFALSE;
+       BGFlag[i] = kFALSE;
   }
      
   // loop over VZERO entries to get multiplicity
@@ -146,8 +160,11 @@ void AliVZEROReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,
         Int_t  pmNumber      = digit->PMNumber(); 
         // Pedestal retrieval and suppression: 
         Int_t  pedestal      = int(fCalibData->GetPedestal(d));
-        adc[pmNumber]  = (Short_t) digit->ADC() - pedestal; 
-        time[pmNumber] = (Short_t) digit->Time();
+        adc[pmNumber]   = (Short_t) digit->ADC() - pedestal; 
+        time[pmNumber]  = (Short_t) digit->Time();
+	width[pmNumber] = (Short_t) digit->Width();
+	BBFlag[pmNumber]= digit->BBFlag();
+	BGFlag[pmNumber]= digit->BGFlag();
         // printf("PM = %d,  MIP per ADC channel = %f \n",pmNumber, GetMIP(pmNumber));
         // cut of ADC at 1MIP/2 
         if (adc[pmNumber] > (int(1.0/GetMIP(pmNumber)) /2) ) 
@@ -155,10 +172,14 @@ void AliVZEROReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,
     } // end of loop over digits
   } // end of loop over events in digits tree
   
-  for (Int_t j=0; j<64; j++) Multiplicity[j] = short(mult[j]+0.5);       
+  for (Int_t j=0; j<64; j++) Multiplicity[j] = short(mult[j]+0.5); 
+        
   fESDVZERO->SetMultiplicity(Multiplicity);
   fESDVZERO->SetADC(adc);
   fESDVZERO->SetTime(time);
+  fESDVZERO->SetWidth(width);
+  fESDVZERO->SetBBFlag(BBFlag);
+  fESDVZERO->SetBGFlag(BGFlag);
 
   // now get the trigger mask
 

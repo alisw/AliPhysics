@@ -17,6 +17,7 @@
 
 ClassImp(AliVZEROdigit)
 
+//__________________________________________________________________________
 AliVZEROdigit::AliVZEROdigit()
    :AliDigit(),
     fTrack(0),
@@ -29,6 +30,7 @@ AliVZEROdigit::AliVZEROdigit()
   // Standard default constructor 
 }
 
+//__________________________________________________________________________
 AliVZEROdigit::AliVZEROdigit(Int_t* tracks, Int_t *digits):
    AliDigit(tracks),
    fTrack(0),
@@ -38,7 +40,6 @@ AliVZEROdigit::AliVZEROdigit(Int_t* tracks, Int_t *digits):
    fTime(0)
   
 {
-  
   // Creates VZERO digits  
   // Fills the AliVZEROdigit data members from the array digits. 
     
@@ -46,6 +47,7 @@ AliVZEROdigit::AliVZEROdigit(Int_t* tracks, Int_t *digits):
   fEvent      =  digits[0];  
 }
 
+//__________________________________________________________________________
 AliVZEROdigit::AliVZEROdigit(Int_t PMnumber, Int_t adc, Int_t time)
    :AliDigit(),
    fTrack(0),
@@ -59,8 +61,33 @@ AliVZEROdigit::AliVZEROdigit(Int_t PMnumber, Int_t adc, Int_t time)
    fTime       = time;
 }
 
+//__________________________________________________________________________
+AliVZEROdigit::AliVZEROdigit(Int_t PMnumber, Int_t adc, Int_t time, 
+                             Int_t width, Bool_t BBFlag, Bool_t BGFlag)
+   :AliDigit(),
+   fTrack(0),
+   fEvent(0),
+   fPMNumber(0),
+   fTime(0),
+   fWidth(0),
+   fBBFlag(0),
+   fBGFlag(0)
+{  
+
+   fPMNumber   = PMnumber;    // PM number
+   fADC        = adc;         // ADC value
+   fTime       = time;        // Leading time 
+   fWidth      = width;       // Time Width
+   fBBFlag     = BBFlag;      // Beam Beam Flag
+   fBGFlag     = BGFlag;      // Beam Gas  Flag
+
+}
+
+//__________________________________________________________________________
 void AliVZEROdigit::Print(const Option_t*) const
 {
+    // Dumps digit object
+    
     Dump();
 }
 
