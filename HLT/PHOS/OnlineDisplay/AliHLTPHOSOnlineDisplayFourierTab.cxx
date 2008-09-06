@@ -14,6 +14,8 @@
 #include "AliHLTPHOSSharedMemoryInterface.h"
 #include "AliHLTPHOSFourier.h"
 
+
+
 #include "AliHLTPHOSRcuFFTDataStruct.h"
 #include "TStyle.h"
 
@@ -96,56 +98,65 @@ AliHLTPHOSOnlineDisplayFourierTab::GetNextEvent()
 void 
 AliHLTPHOSOnlineDisplayFourierTab::ReadBlockData(AliHLTHOMERReader *homeReaderPtr)
 {  
-  cout << "  PTH!!!!!!!!!!!!!!!!!!!!!!!!"<< endl;
+
   AliHLTPHOSValidCellDataStruct *currentChannel =0;
   cout << "AliHLTPHOSOnlineDisplayFourierTab::ReadBlockDat, Reading block data, therere are " <<  homeReaderPtr->GetBlockCnt() << " blocks " <<endl;
-  unsigned long blk = homeReaderPtr->FindBlockNdx("RENELLEC","SOHP", 0xFFFFFFFF );
+  //  unsigned long blk = homeReaderPtr->FindBlockNdx("RENELLEC","SOHP", 0xFFFFFFFF );
 
-  while ( blk != ~(unsigned long)0 ) 
-    {
-      Int_t moduleID;
-      Int_t rcuX = 0;
-      Int_t rcuZ = 0;
-      AliHLTPHOSRcuCellEnergyDataStruct* cellEnergiesPtr = (AliHLTPHOSRcuCellEnergyDataStruct*)homeReaderPtr->GetBlockData( blk ); 
+//   while ( blk != ~(unsigned long)0 ) 
+//     {
+//       Int_t moduleID;
+//       Int_t rcuX = 0;
+//       Int_t rcuZ = 0;
+//       AliHLTPHOSRcuCellEnergyDataStruct* cellEnergiesPtr = (AliHLTPHOSRcuCellEnergyDataStruct*)homeReaderPtr->GetBlockData( blk ); 
       
-      unsigned int *t = (unsigned int*)cellEnergiesPtr;
+//       unsigned int *t = (unsigned int*)cellEnergiesPtr;
       
-      moduleID = cellEnergiesPtr->fModuleID ;
-      rcuX = cellEnergiesPtr->fRcuX;
-      rcuZ = cellEnergiesPtr->fRcuZ;
+//       moduleID = cellEnergiesPtr->fModuleID ;
+//       rcuX = cellEnergiesPtr->fRcuX;
+//       rcuZ = cellEnergiesPtr->fRcuZ;
 
-      cout << "AliHLTPHOSOnlineDisplayFourierTab::ReadBlockData,  fModuleID =" <<moduleID << endl; 
+//       cout << "AliHLTPHOSOnlineDisplayFourierTab::ReadBlockData,  fModuleID =" <<moduleID << endl; 
 
-      Int_t tmpZ;
-      Int_t tmpX;
-      Int_t tmpGain;
-      int cnt = 0;
-      Int_t* tmpPtr = 0;
+//       Int_t tmpZ;
+//       Int_t tmpX;
+//       Int_t tmpGain;
+//       int cnt = 0;
+//       Int_t* tmpPtr = 0;
 
-      fShmPtr->SetMemory(cellEnergiesPtr);
-      currentChannel = fShmPtr->NextChannel();
+//       fShmPtr->SetMemory(cellEnergiesPtr);
+//       currentChannel = fShmPtr->NextChannel();
 
-      while(currentChannel != 0)
-	{
-	  cnt ++;
-	  tmpZ = currentChannel->fZ;
-	  tmpX = currentChannel->fX;
-	  tmpGain =  currentChannel->fGain;
+//       while(currentChannel != 0)
+// 	{
+// 	  cnt ++;
+// 	  tmpZ = currentChannel->fZ;
+// 	  tmpX = currentChannel->fX;
+// 	  tmpGain =  currentChannel->fGain;
 
-	  if(cellEnergiesPtr->fHasRawData == true)
-	    {
-	      Int_t nSamples = 0;
-	      Int_t* rawPtr = 0;
-	      rawPtr = fShmPtr->GetRawData(nSamples);
-	      fFourierPtr->ProcessFourier(rawPtr, nSamples, tmpZ, tmpX, tmpGain, fEvtCnt);
-	    }
+// 	  if(cellEnergiesPtr->fHasRawData == true)
+// 	    {
+// 	      Int_t nSamples = 0;
+// 	      Int_t* rawPtr = 0;
+// 	      rawPtr = fShmPtr->GetRawData(nSamples);
+// 	      fFourierPtr->ProcessFourier(rawPtr, nSamples, tmpZ, tmpX, tmpGain, fEvtCnt);
+// 	    }
 	  
-	  currentChannel = fShmPtr->NextChannel();
-	}
-      blk = homeReaderPtr->FindBlockNdx("RENELLEC","SOHP", 0xFFFFFFFF, blk+1);
+// 	  currentChannel = fShmPtr->NextChannel();
+// 	}
+//       blk = homeReaderPtr->FindBlockNdx("RENELLEC","SOHP", 0xFFFFFFFF, blk+1);
+//     }
+
+//  FillHistograms(fFourierPtr->GetPSD(), fFourierPtr->GetDataSize());
+
+  unsigned long blk = homeReaderPtr->FindBlockNdx("TREIRUOF","SOHP", 0x0);
+  while ( blk != ~(unsigned long)0 ) 
+    {  
+      AliHLTPHOSRcuFFTDataStruct* fftDataPtr = (AliHLTPHOSRcuFFTDataStruct*)homeReaderPtr->GetBlockData( blk );
+      FillHistograms(*fftDataPtr, fftDataPtr->fDataLength);
+
+      blk = homeReaderPtr->FindBlockNdx("TREIRUOF","SOHP", blk+1);
     }
-  
-  FillHistograms(fFourierPtr->GetPSD(), fFourierPtr->GetDataSize());
 }
 
 
@@ -195,6 +206,10 @@ AliHLTPHOSOnlineDisplayFourierTab::FillHistograms(const AliHLTPHOSRcuFFTDataStru
 
 	}
 
+//       fFourierHistoNew[gain]->Reset();
+//       fFourierHistoOld[gain]->Reset();
+//       fFourierHistoAccumulated[gain]->Reset();
+      
       for(int i = 0; i <size/2; i++)
 	{
 	  fFourierHistoOld[gain]->SetBinContent(i+1,  fFourierHistoNew[gain]->GetBinContent(i+1));
@@ -272,52 +287,64 @@ AliHLTPHOSOnlineDisplayFourierTab::InitDisplay(TGTab  *tabPtr)
 void
 AliHLTPHOSOnlineDisplayFourierTab::UpdateDisplay()
 {
- 
-  fgCanvasPtr[HIGH_GAIN] =  fEc1->GetCanvas();
-  fgCanvasPtr[HIGH_GAIN]->cd();
-  gPad->SetLogy();
- //  fgLegoPlotPtr[HIGH_GAIN]->Draw("LGZ");
-  fFourierHistoNew[HIGH_GAIN]->Draw();
-  fgCanvasPtr[HIGH_GAIN]->Update();
+  if( fFourierHistoNew[HIGH_GAIN])
+    {
+      fgCanvasPtr[HIGH_GAIN] =  fEc1->GetCanvas();
+      fgCanvasPtr[HIGH_GAIN]->cd();
+      gPad->SetLogy();
+      //  fgLegoPlotPtr[HIGH_GAIN]->Draw("LGZ");
+      fFourierHistoNew[HIGH_GAIN]->Draw();
+      fgCanvasPtr[HIGH_GAIN]->Update();
+    }
 
+  if( fFourierHistoNew[LOW_GAIN])
+    {
+      fgCanvasPtr[LOW_GAIN] = fEc2->GetCanvas();
+      fgCanvasPtr[LOW_GAIN]->cd();
+      gPad->SetLogy();
+      //  fgLegoPlotPtr[LOW_GAIN]->Draw("HGZ");
+      fFourierHistoNew[LOW_GAIN]->Draw();
+      fgCanvasPtr[LOW_GAIN]->Update();
+    }
+  if( fFourierHistoOld[HIGH_GAIN])
+    {
+      fgCanvasPtr[HIGH_GAIN] =  fEc3->GetCanvas();
+      fgCanvasPtr[HIGH_GAIN]->cd();
+      gPad->SetLogy();
+      // fgLegoPlotPtr[HIGH_GAIN]->Draw("Low gain");
+      fFourierHistoOld[HIGH_GAIN]->Draw();
+      fgCanvasPtr[HIGH_GAIN]->Update();
+    }
 
-  fgCanvasPtr[LOW_GAIN] = fEc2->GetCanvas();
-  fgCanvasPtr[LOW_GAIN]->cd();
-  gPad->SetLogy();
- //  fgLegoPlotPtr[LOW_GAIN]->Draw("HGZ");
-  fFourierHistoNew[LOW_GAIN]->Draw();
-  fgCanvasPtr[LOW_GAIN]->Update();
+  if( fFourierHistoOld[LOW_GAIN])
+    {
+      fgCanvasPtr[LOW_GAIN] = fEc4->GetCanvas();
+      fgCanvasPtr[LOW_GAIN]->cd();
+      //fgLegoPlotPtr[LOW_GAIN]->Draw("High gain");
+      gPad->SetLogy();
+      fFourierHistoOld[LOW_GAIN]->Draw();
+      fgCanvasPtr[LOW_GAIN]->Update();
+    }
 
+  if( fFourierHistoAccumulated[HIGH_GAIN])
+    {
+      fgCanvasPtr[HIGH_GAIN] =  fEc5->GetCanvas();
+      fgCanvasPtr[HIGH_GAIN]->cd();
+      gPad->SetLogy();
+      fFourierHistoAccumulated[HIGH_GAIN]->Draw();
+      //  fgLegoPlotPtr[HIGH_GAIN]->Draw("CONTZ");
+      fgCanvasPtr[HIGH_GAIN]->Update();
+    }
 
-  fgCanvasPtr[HIGH_GAIN] =  fEc3->GetCanvas();
-  fgCanvasPtr[HIGH_GAIN]->cd();
-  gPad->SetLogy();
-  // fgLegoPlotPtr[HIGH_GAIN]->Draw("Low gain");
-  fFourierHistoOld[HIGH_GAIN]->Draw();
-  fgCanvasPtr[HIGH_GAIN]->Update();
-
-
-  fgCanvasPtr[LOW_GAIN] = fEc4->GetCanvas();
-  fgCanvasPtr[LOW_GAIN]->cd();
-  //fgLegoPlotPtr[LOW_GAIN]->Draw("High gain");
-  gPad->SetLogy();
-  fFourierHistoOld[LOW_GAIN]->Draw();
-  fgCanvasPtr[LOW_GAIN]->Update();
-  
-  fgCanvasPtr[HIGH_GAIN] =  fEc5->GetCanvas();
-  fgCanvasPtr[HIGH_GAIN]->cd();
-  gPad->SetLogy();
-  fFourierHistoAccumulated[HIGH_GAIN]->Draw();
-  //  fgLegoPlotPtr[HIGH_GAIN]->Draw("CONTZ");
-  fgCanvasPtr[HIGH_GAIN]->Update();
-
-
-  fgCanvasPtr[LOW_GAIN] = fEc6->GetCanvas();
-  fgCanvasPtr[LOW_GAIN]->cd();
-  gPad->SetLogy();
-  //  fgLegoPlotPtr[LOW_GAIN]->Draw("CONTZ");
-  fFourierHistoAccumulated[LOW_GAIN]->Draw();
-  fgCanvasPtr[LOW_GAIN]->Update();
+  if( fFourierHistoAccumulated[LOW_GAIN])
+    {
+      fgCanvasPtr[LOW_GAIN] = fEc6->GetCanvas();
+      fgCanvasPtr[LOW_GAIN]->cd();
+      gPad->SetLogy();
+      //  fgLegoPlotPtr[LOW_GAIN]->Draw("CONTZ");
+      fFourierHistoAccumulated[LOW_GAIN]->Draw();
+      fgCanvasPtr[LOW_GAIN]->Update();
+    }
   
 }
 

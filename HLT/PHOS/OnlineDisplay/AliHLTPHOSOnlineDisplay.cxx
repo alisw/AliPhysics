@@ -24,6 +24,7 @@
 #endif
 
 
+
 #include  "AliHLTPHOSOnlineDisplay.h"
 #include  "AliHLTDataTypes.h"
 #include  "AliHLTPHOSRcuCellEnergyDataStruct.h"
@@ -59,6 +60,8 @@ TGTab*                               AliHLTPHOSOnlineDisplay::fTab              
 
 using namespace std;
 
+//gStyle->SetOptStat(false);
+
 
 AliHLTPHOSOnlineDisplay*
 AliHLTPHOSOnlineDisplay::Instance(int argc, char** argv) 
@@ -68,7 +71,7 @@ AliHLTPHOSOnlineDisplay::Instance(int argc, char** argv)
 }
 
 
-AliHLTPHOSOnlineDisplay::AliHLTPHOSOnlineDisplay() : AliHLTPHOSBase()
+AliHLTPHOSOnlineDisplay::AliHLTPHOSOnlineDisplay() : AliHLTPHOSBase(), fRunNumber(-1)
 {
   cout << "ERROR ! level: FATAL, you cannot invoke the onlinedisplay without arguments" << endl;
 }
@@ -76,6 +79,8 @@ AliHLTPHOSOnlineDisplay::AliHLTPHOSOnlineDisplay() : AliHLTPHOSBase()
 
 AliHLTPHOSOnlineDisplay::AliHLTPHOSOnlineDisplay(int argc, char** argv) : AliHLTPHOSBase()
 {
+  gStyle->SetOptStat(false);
+  
   ScanArguments(argc, argv);
   char **tmp;
   cout << "creating new PHOS Onlinedisplay" << endl;
@@ -96,6 +101,7 @@ AliHLTPHOSOnlineDisplay::~AliHLTPHOSOnlineDisplay()
 }
 
 
+
 void
 AliHLTPHOSOnlineDisplay::InitDisplay()
 {
@@ -106,12 +112,13 @@ AliHLTPHOSOnlineDisplay::InitDisplay()
   fTab = new TGTab(this, 100, 100);
   TGLayoutHints *fL1 = new TGLayoutHints(kLHintsBottom | kLHintsExpandX |
 					 kLHintsExpandY, 2, 2, 15, 1);
-  fgEventTabPtr = new  AliHLTPHOSOnlineDisplayEventTab(this, fTab, fgHomerReaderPtr, fgHomerReadersPtr, fgNHosts);
-  fgFourierTabPtr = new  AliHLTPHOSOnlineDisplayFourierTab(this, fTab, fgHomerReaderPtr, fgHomerReadersPtr, fgNHosts); 
-  // fgEventTabPtr = new  AliHLTPHOSOnlineDisplayEventTab(this, fTab, fgHomerReaderPtr, fgHomerReadersPtr, fgNHosts);
- 
- fgCalibTabPtr = new  AliHLTPHOSOnlineDisplayCalibTab(fTab, fgHomerReaderPtr, fgHomerReadersPtr, fgNHosts);
+  fgEventTabPtr =    new  AliHLTPHOSOnlineDisplayEventTab(this, fTab, fgHomerReaderPtr, fgHomerReadersPtr, fgNHosts, fRunNumber);
+  fgFourierTabPtr =  new  AliHLTPHOSOnlineDisplayFourierTab(this, fTab, fgHomerReaderPtr, fgHomerReadersPtr, fgNHosts); 
+  fgCalibTabPtr =    new  AliHLTPHOSOnlineDisplayCalibTab(fTab, fgHomerReaderPtr, fgHomerReadersPtr, fgNHosts);
   
+  //  fgEventTabPtr->SetRunNumber(fRunNumber);
+  // fgFourierTabPtr->SetRunNumber(fRunNumber);
+  // fgCalibTabPtr->SetRunNumber(fRunNumber);
 
   AddFrame(fTab, fL1);
   MapSubwindows();
@@ -178,6 +185,19 @@ AliHLTPHOSOnlineDisplay::ScanArguments(int argc, char** argv)
 	  fgAccumulate = kTRUE;
 	}  
       
+      if (argument.CompareTo("-run")==0) 
+	{
+	  if(i+1 <= argc)
+	    {
+	      i++;
+	      fRunNumber =  atoi(argv[i]);
+	      cout << __FILE__ <<":" <<__LINE__ << ", !!!!!!!!!!!!! setting runnumber too   " <<  fRunNumber   <<endl;;
+	      //	      fIsSetRunNumber = true;
+	    }
+
+	}
+
+
       if (argument.CompareTo("-host")==0) 
 	{
 	  if(i+1 <= argc)

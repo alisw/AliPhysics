@@ -15,17 +15,38 @@
 
 using namespace PhosHLTConst;
 
- class AliHLTPHOSGetEventButton;
+class AliHLTPHOSGetEventButton;
 class AliHLTHOMERReader;
 class AliHLTPHOSRcuCellEnergyDataStruct;
 class AliHLTPHOSOnlineDisplay;
 class AliHLTPHOSSharedMemoryInterface;
 
+
 class AliHLTPHOSOnlineDisplayEventTab : public AliHLTPHOSOnlineDisplayTab
 {
  public:
+ 
   virtual ~AliHLTPHOSOnlineDisplayEventTab();
-  AliHLTPHOSOnlineDisplayEventTab(AliHLTPHOSOnlineDisplay *onlineDisplayPtr, TGTab *tabPtr, AliHLTHOMERReader *fgHomerReaderPtr, AliHLTHOMERReader *fgHomerReadersPtr[MAX_HOSTS], int nHosts);
+ 
+  AliHLTPHOSOnlineDisplayEventTab(AliHLTPHOSOnlineDisplay *onlineDisplayPtr, TGTab *tabPtr, 
+				  AliHLTHOMERReader *fgHomerReaderPtr, 
+				  AliHLTHOMERReader *fgHomerReadersPtr[MAX_HOSTS], 
+				  int nHosts, const int runnumber = -1);
+    //    {
+
+ 
+  
+ 
+
+/* 
+  void SetRunNumber(const int runnumber) 
+  {
+    
+    fRunNumber = runnumber ;
+    cout << __FILE__ <<":"<< __LINE__ << "RunNumber was set to "<< fRunNumber  <<endl; ;
+  };
+  */
+
   Int_t GetRawData(TH1D *histPtr, int x, int z, int gain);
   void UpdateDisplay();
   int GetNextEvent();
@@ -49,9 +70,14 @@ class AliHLTPHOSOnlineDisplayEventTab : public AliHLTPHOSOnlineDisplayTab
  private:
   AliHLTPHOSOnlineDisplayEventTab();
   AliHLTPHOSGetEventButton* fgEventButtPtr; 
-  void InitDisplay(TGTab *tabPtr);
+  void InitDisplay(TGTab *tabPtr) {};
+  void InitDisplay(TGTab *tabPtr, const int runnumber);
+
   AliHLTPHOSOnlineDisplay *fOnlineDisplayPtr;
   AliHLTPHOSSharedMemoryInterface *fShmPtr;   
+
+  ///int fEvent
+
 };
 
 

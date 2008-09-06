@@ -8,14 +8,18 @@ using namespace std;
 
 
 AliHLTPHOSOnlineDisplayTab::AliHLTPHOSOnlineDisplayTab():AliHLTPHOSBase(),
-							 fgSyncronize(kFALSE)
+							 fgSyncronize(kFALSE), 
+							 fRunNumber(-1)
 {
-
+  
+  
 }
+
 
 AliHLTPHOSOnlineDisplayTab::~AliHLTPHOSOnlineDisplayTab()
 {
-
+  
+  
 }
 
 

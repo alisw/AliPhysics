@@ -25,6 +25,9 @@
 #include "AliHLTPHOSOnlineDisplayFourierTab.h"
 #include "AliHLTPHOSBase.h"
 
+#include "TSystem.h"
+#include "TStyle.h"
+
 using namespace PhosHLTConst;
 
 //#define N_SAMPLES 70
@@ -51,6 +54,11 @@ class AliHLTPHOSOnlineDisplay : public  TGMainFrame, public AliHLTPHOSBase
   static AliHLTPHOSOnlineDisplayFourierTab  *fgFourierTabPtr;
   void Gain2Text(const int gain,  char *txt) const;
 
+ protected:
+    
+  int fRunNumber;
+  //  bool fIsSetRunNumber;
+
 
  private:
   AliHLTPHOSOnlineDisplay();
@@ -68,6 +76,11 @@ class AliHLTPHOSOnlineDisplay : public  TGMainFrame, public AliHLTPHOSBase
   static Bool_t fgSyncronize;
   TCanvas  *fgRawDataCanvas;
   TH1D     *fgRawDataPlotsPtr[MAX_HISTOGRAMS];
+  
+  // int fRunNumber;
+  //  bool fIsSetRunNumber;
+
+
 };
 
 

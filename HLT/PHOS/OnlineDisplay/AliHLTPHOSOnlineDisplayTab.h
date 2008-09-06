@@ -1,3 +1,4 @@
+
 #ifndef ALIHLTPHOSONLINEDISPLAYTAB_H
 #define ALIHLTPHOSONLINEDISPLAYTAB_H
 
@@ -30,6 +31,16 @@ class AliHLTPHOSOnlineDisplayTab : public TGTab, public AliHLTPHOSBase
   void PrintBlockInfo(AliHLTHOMERReader *homeReaderPtr, int i);
   int GetEventInfo(AliHLTHOMERReader *homeReaderPtr, int i);
   virtual void ReadBlockData(AliHLTHOMERReader *homeReaderPtr) = 0;
+ 
+  
+  void SetRunNumber(const int runnumber) 
+  {
+    
+   fRunNumber = runnumber ;
+   cout << __FILE__ <<":"<< __LINE__ << "RunNumber was set to "<< fRunNumber  <<endl; ;
+  };
+  
+
 
  protected:
   Bool_t fgAccumulate;
@@ -39,6 +50,8 @@ class AliHLTPHOSOnlineDisplayTab : public TGTab, public AliHLTPHOSBase
   int DoGetNextEvent();
   int fgEvntCnt;
   int fgNHosts;
+
+  int fRunNumber;
 };
 
 

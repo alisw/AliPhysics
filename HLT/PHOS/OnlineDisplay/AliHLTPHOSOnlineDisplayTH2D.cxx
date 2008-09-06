@@ -43,15 +43,13 @@ AliHLTPHOSOnlineDisplayTH2D::AliHLTPHOSOnlineDisplayTH2D()
 AliHLTPHOSOnlineDisplayTH2D::AliHLTPHOSOnlineDisplayTH2D(AliHLTPHOSOnlineDisplay *onlineDisplayPtr, const char* name, 
 							 const char* title, Int_t nbinsx, 
 							 Double_t xlow, Double_t xup, Int_t nbinsy, 
-							 Double_t ylow, Double_t yup) : // AliHLTPHOSBase(),
-											 TH2D(name, title, nbinsx, 
-											      xlow, xup, nbinsy, 
-											      ylow, yup)
-
-
+							 Double_t ylow, Double_t yup) : TH2D(name, title, nbinsx, 
+											     xlow, xup, nbinsy, 
+											     ylow, yup),
+											fRunNumber(0) 
+											//		fIsSetRunNumber(false)
 {
   fOnlineDisplayPtr = onlineDisplayPtr;
-
 }
 
 
@@ -60,24 +58,38 @@ AliHLTPHOSOnlineDisplayTH2D::~AliHLTPHOSOnlineDisplayTH2D()
   
 }
 
+
 /*
-void
-AliHLTPHOSOnlineDisplayTH2D::SetGain(int gain)
-{
-  fGain = gain;
+  void
+  AliHLTPHOS2DHistogram::ExecuteEvent(Int_t event, Int_t px, Int_t pz)
+  {
+  if(event == 61) // CRAP PTH, use root enumerator instead 
+  {
+  int zbin;
+  int xbin;
+  EvaluateBinPosition( GetObjectInfo(px, pz),  &zbin, &xbin);
+  printf("\nThe bin that was double clicked was z = %d, x = %d\n", zbin, xbin);
+ 
+  HandleDoubleClick(zbin, xbin);
+  }
 }
 */
 
 void
+AliHLTPHOSOnlineDisplayTH2D::EvaluateBinPosition(const char *info, int *z, int *x)
+{
+  float zpos;
+  float xpos;
+  float bincnt;
+  sscanf(info,"(x=%f, y=%f, binx=%d, biny=%d, binc=%2.4f)\n", &zpos, &xpos, z, x, &bincnt);
+}
+
+
+void
 AliHLTPHOSOnlineDisplayTH2D::ExecuteEvent(Int_t event, Int_t px, Int_t pz)
 {
-  //  char tmpName[256];
   int tmpZBin = 0;
   int tmpXBin = 0;
-
-
-  // cout <<"px = "<< px<<" pz =" <<  pz <<endl;
-
 
   for(int gain = 0; gain < N_GAINS; gain++)
     {
@@ -87,66 +99,75 @@ AliHLTPHOSOnlineDisplayTH2D::ExecuteEvent(Int_t event, Int_t px, Int_t pz)
 	  char label[256];
 	  fOnlineDisplayPtr->Gain2Text(gain,gainLabel);
 	  sprintf(label, "%s_PHOS_HLT_Online_rawdatadisplay",gainLabel);
-
-	  //	  fgRawDataCanvas = new TCanvas("TEST3", "PHOS HLT Raw Data Display", 1200, 1000); ;
 	  fgRawDataCanvasPtr[gain] = new TCanvas(label, label, 1200, 1000); ;
-
+	  
+	  
 	  tmpZBin =  GetZBin(pz);
 	  tmpXBin =  GetXBin(px);
+	  
 	  if(tmpZBin > 54) {tmpZBin = 54;}
 	  if(tmpZBin < 1) {tmpZBin = 1;}
 	  
-	  //sprintf(tmpName, "Z_%d_X_%d", tmpZBin, tmpXBin);
-	
+	  // int tmpZBin = 0;
+	  // int tmpXBin = 0;
+
+	  /*
+	  EvaluateBinPosition( GetObjectInfo(px, pz),  &tmpZBin, &tmpXBin);
+	  */
+	  cout << "px = " << px << "pz =" << pz << endl;
+	  cout << __FILE__ << ":" <<__LINE__ << " ObjectInfo IS !!" <<  GetObjectInfo(px, pz)  << endl;
+
 	  fgRawDataCanvasPtr[gain]->Divide(Z_ROWS, X_COLS); 
 	  int cnt = 0;
     
-	  //	  sprintf(label, "Z_%d_X_%d_%s",  tmpZBin, tmpXBin, gainLabel);
-  
 	  for(int z= 1; z > -2; z--)
 	    {
 	      for(int x=-1; x < X_COLS -1; x ++)
 		{
 		  fOnlineDisplayPtr->Gain2Text(gain,gainLabel);
-		  sprintf(label, "Z_%d_X_%d_%s",  tmpZBin + z, tmpXBin + x, gainLabel);
 
-		  cnt ++;
-		  //  sprintf(tmpName, "Z_%d_X_%d_gain%d", tmpZBin + z, tmpXBin + x, gain);   
-
-		  fgRawDataPlotsPtr[cnt][gain] = new TH1D(label, label, ALTRO_MAX_SAMPLES, 0, ALTRO_MAX_SAMPLES -1);
-		  fgRawDataCanvasPtr[gain]->cd(cnt);	 
-		  fgRawDataPlotsPtr[cnt][gain]->SetFillColor(1);
-		  //fgRawDataPlotsPtr[cnt]->SetMaximum(1023); 
-		  fgRawDataPlotsPtr[cnt][gain]->Reset();   
-		  Int_t nSamples = fOnlineDisplayPtr->fgEventTabPtr->GetRawData( fgRawDataPlotsPtr[cnt][gain], tmpXBin +x, tmpZBin +z, gain); 
-		  
-		  //		  cout << "nAliHLTPHOSOnlineDisplayTH2D::ExecuteEvent Samples = " << nSamples  <<endl;
-		  
-		  if(nSamples == 0)
+		  if( fRunNumber >= 0)
 		    {
-		      //      fgRawDataPlotsPtr[cnt][gain]->();
+		      sprintf(label, "(z = %d, x = %d) %s , run %d",  tmpZBin + z, (tmpXBin + x)%64 , gainLabel, fRunNumber);
+
+		    }
+		  else
+		    {
+		      sprintf(label, "(z = %d, x = %d) %s, unknow run number",  tmpZBin + z, (tmpXBin + x)%64,  gainLabel); 
 		    }
 
 
-
-
-		  //	  fgRawDataPlotsPtr[cnt][gain]->GetXaxis()->SetRangeUser(0, nSamples - 1);
+		  cnt ++;
+		  fgRawDataPlotsPtr[cnt][gain] = new TH1D(label, label, ALTRO_MAX_SAMPLES, 0, ALTRO_MAX_SAMPLES -1);
+		  fgRawDataCanvasPtr[gain]->cd(cnt);	 
+		  fgRawDataPlotsPtr[cnt][gain]->SetFillColor(1);
+		  fgRawDataPlotsPtr[cnt][gain]->Reset();   
+		  Int_t nSamples = fOnlineDisplayPtr->fgEventTabPtr->GetRawData( fgRawDataPlotsPtr[cnt][gain], tmpXBin +x, tmpZBin +z, gain); 
 		  fgRawDataPlotsPtr[cnt][gain]->GetXaxis()->SetRangeUser(0, nSamples);
-
 		  fgRawDataPlotsPtr[cnt][gain]->GetYaxis()->SetRangeUser(fgRawDataPlotsPtr[cnt][gain]->GetMinimum() - fgRawDataPlotsPtr[cnt][gain]->GetMinimum()*0.1, fgRawDataPlotsPtr[cnt][gain]->GetMaximum() + fgRawDataPlotsPtr[cnt][gain]->GetMaximum()*0.1 + 5); 
-		  fgRawDataPlotsPtr[cnt][gain]->SetXTitle("Time/samples");
-		  fgRawDataPlotsPtr[cnt][gain]->SetYTitle("Amplitude/ADC counts");
-
-		  //	      fgRawDataPlotsPtr[cnt]->GetYaxis()->SetRangeUser(-30, fgRawDataPlotsPtr[cnt]->GetMaximum() + fgRawDataPlotsPtr[cnt]->GetMaximum()*0.1 + 5); 
+		  fgRawDataPlotsPtr[cnt][gain]->SetXTitle("Time / samples");
+		  fgRawDataPlotsPtr[cnt][gain]->SetYTitle("Amplitude / ADC counts");
 		  fgRawDataPlotsPtr[cnt][gain]->Draw();
 		}
 	    }
 
-
 	  sprintf(label, "%s_PHOS_HLT__Online_rawdatadisplay",gainLabel);
 	  fgRawDataCanvasSinglePtr[gain] = new TCanvas(label, label, 1200, 1000); ;  
 	  fgRawDataCanvasSinglePtr[gain]->cd();
-	  sprintf(label, "Z_%d_X_%d__%s",  tmpZBin, tmpXBin, gainLabel);
+	  //	  sprintf(label, "Z_%d_X_%d__%s",  tmpZBin, tmpXBin, gainLabel);
+
+	  
+	  if( fRunNumber >= 0)
+	    {
+	      sprintf(label, "(z = %d, x = %d) %s , run %d",  tmpZBin, tmpXBin%64, gainLabel, fRunNumber);
+	    }
+	  else
+	    {
+	      sprintf(label, "(z = %d, x = %d) %s, unknow run number",  tmpZBin, tmpXBin%64, gainLabel); 
+	    }
+
+
+
 	  fgRawDataPlotsSinglePtr[gain] = new TH1D(label, label, ALTRO_MAX_SAMPLES, 0, ALTRO_MAX_SAMPLES -1);
 	  fgRawDataPlotsSinglePtr[gain]->SetFillColor(1);
 	  fgRawDataPlotsSinglePtr[gain]->Reset();   

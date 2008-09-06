@@ -5,9 +5,9 @@ HeadSuf		= h
 
 ROOTLIBS	= `root-config --libs --glibs` -lGed -lFTGL -lRGL -lEve -lEG -lGeom -lTreePlayer -lProofPlayer -lProof
 
-ALIROOTLIBS	= -L$(ALICE_ROOT)/lib/tgt_linux  -lHLTbase -lAliHLTHOMER  -lAliHLTPHOS  -lRAWDatarec -lRAWDatabase -lESD -lSTEER -lSTEERBase -lCDB -lMinuit -lVMC -lPHOSbase -lPHOSshuttle
+ALIROOTLIBS	= -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)  -lHLTbase -lAliHLTHOMER  -lAliHLTPHOS  -lRAWDatarec -lRAWDatabase -lESD -lSTEER -lSTEERBase -lCDB -lMinuit -lVMC -lPHOSbase -lPHOSshuttle
 
-ALIHLTLIBS	= -L$(ALIHLT_TOPDIR)/build/lib -lHLTbase -lAliHLTHOMER -lAliHLTPHOS
+ALIHLTLIBS	= -L$(ALIHLT_LIBDIR) -lHLTbase -lAliHLTHOMER -lAliHLTPHOS
 
 ALIROOTHLTPHOSINCLUDE	=-I$(ALICE_ROOT)/HLT/PHOS
 ALIROOTHLTINCLUDE	= -I$(ALICE_ROOT)/HLT/BASE/HOMER  -I$(ALICE_ROOT)/HLT/BASE

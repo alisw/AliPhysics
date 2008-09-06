@@ -31,8 +31,21 @@ AliHLTPHOSOnlineDisplayEventTab::AliHLTPHOSOnlineDisplayEventTab()
 
 
 AliHLTPHOSOnlineDisplayEventTab::AliHLTPHOSOnlineDisplayEventTab(AliHLTPHOSOnlineDisplay *onlineDisplayPtr, TGTab  *tabPtr, 
-								 AliHLTHOMERReader *homerSyncPtr, AliHLTHOMERReader *homerPtrs[MAX_HOSTS], int nHosts) :  AliHLTPHOSOnlineDisplayTab()
+								 AliHLTHOMERReader *homerSyncPtr, AliHLTHOMERReader *homerPtrs[MAX_HOSTS], 
+								 int nHosts,  const int runnumber) :  AliHLTPHOSOnlineDisplayTab()
 {
+
+  /*
+  if(fIsSetRunNumber == true)
+    {
+      for(int i=0; i < N_GAINS; i++)
+	{
+	  fgLegoPlotPtr[gain]
+	}
+   }
+  */
+
+
   fShmPtr = new AliHLTPHOSSharedMemoryInterface();
   fOnlineDisplayPtr =  onlineDisplayPtr;
 
@@ -76,7 +89,7 @@ AliHLTPHOSOnlineDisplayEventTab::AliHLTPHOSOnlineDisplayEventTab(AliHLTPHOSOnlin
     }
 
   fgNHosts = nHosts;
-  InitDisplay(tabPtr);
+  InitDisplay(tabPtr, runnumber);
 }
 
 
@@ -157,6 +170,8 @@ AliHLTPHOSOnlineDisplayEventTab::ReadBlockData(AliHLTHOMERReader *homeReaderPtr)
 
   unsigned long blk = homeReaderPtr->FindBlockNdx("RENELLEC","SOHP", 0xFFFFFFFF );
 
+  int cnt = 0;
+
   //CRAP PT
   //  FindFourierBlocks(homeReaderPtr);
 
@@ -206,15 +221,30 @@ AliHLTPHOSOnlineDisplayEventTab::ReadBlockData(AliHLTHOMERReader *homeReaderPtr)
 	    }
  
 	  if(cellEnergiesPtr->fHasRawData == true)
+	    //if(0)
 	    {
 	      Int_t nSamples = 0;
 	      Int_t* rawPtr = 0;
 	      rawPtr = fShmPtr->GetRawData(nSamples);
 	      fNChannelSamples[moduleID][rcuX][rcuZ][tmpX][tmpZ][tmpGain] = nSamples;
 
-	      for(int j= 0; j< nSamples; j++)
+	      //	      cout << __FILE__ << ":" <<  __LINE__  <<" gain = " << tmpGain << " z = "<< tmpZ << " x = " << tmpX;
+	      //	      cout << " nsamples = " << nSamples;
+	      //	      cout << __FILE__ << ":" << __LINE__ << " the address of raw ptr = " << rawPtr  << endl;
+	      
+	      
+	      if(nSamples > ALTRO_MAX_SAMPLES || nSamples < 0 )
 		{
-		  fChannelData[moduleID][cellEnergiesPtr->fRcuX][cellEnergiesPtr->fRcuZ][tmpX][tmpZ][tmpGain][j] = rawPtr[j];  
+		  cout << __FILE__<< ":" <<__LINE__ <<"ERROR, nsamples = "<< nSamples <<" exeeds allowd range, max number of samples is  "<< ALTRO_MAX_SAMPLES << endl;
+		}
+	      else
+		{
+		  for(int j= 0; j< nSamples; j++)
+		    {
+		      //		      cout << __FILE__ << ":" << __LINE__ << " nsamples = " << nSamples << "  j =" << j << endl;
+		      fChannelData[moduleID][cellEnergiesPtr->fRcuX][cellEnergiesPtr->fRcuZ][tmpX][tmpZ][tmpGain][j] = rawPtr[j];  
+		    }
+	      
 		}
 	    }
 	
@@ -246,7 +276,7 @@ AliHLTPHOSOnlineDisplayEventTab::ResetDisplay()
 
 
 void
-AliHLTPHOSOnlineDisplayEventTab::InitDisplay(TGTab  *tabPtr)
+AliHLTPHOSOnlineDisplayEventTab::InitDisplay(TGTab  *tabPtr, const int runnumber)
 {
   //  gStyle->SetOptLogy();
   ///  gStyle->SetOptStat(true);
@@ -262,7 +292,10 @@ AliHLTPHOSOnlineDisplayEventTab::InitDisplay(TGTab  *tabPtr)
       fgLegoPlotPtr[gain] = new AliHLTPHOSOnlineDisplayTH2D(fOnlineDisplayPtr, label, label, 
 							    N_XCOLUMNS_MOD*N_MODULES , 0, N_XCOLUMNS_MOD*N_MODULES,  
 							    N_ZROWS_MOD,   0, N_ZROWS_MOD);   
-      //   fgLegoPlotPtr[gain]->SetGain(HIGH_GAIN);
+      
+      //      cout << __FILE__ << ":" << __LINE__ << " Runnumber = "  << runnumber <<endl;
+   
+      fgLegoPlotPtr[gain]->SetRunNumber(runnumber);
       fgLegoPlotPtr[gain]->SetMaximum(1023);
       fgLegoPlotPtr[gain]->Reset();
       fgLegoPlotPtr[gain]->GetXaxis()->SetRange(X_RANGE_START, X_RANGE_END);
@@ -329,7 +362,8 @@ AliHLTPHOSOnlineDisplayEventTab::UpdateDisplay()
   fgLegoPlotPtr[LOW_GAIN]->Draw("SCAT");
   fgCanvasPtr[LOW_GAIN]->Update();
 
-  fgCanvasPtr[HIGH_GAIN] =  fEc5->GetCanvas();
+  /* 
+ fgCanvasPtr[HIGH_GAIN] =  fEc5->GetCanvas();
   fgCanvasPtr[HIGH_GAIN]->cd();
   fgLegoPlotPtr[HIGH_GAIN]->Draw("CONTZ");
   fgCanvasPtr[HIGH_GAIN]->Update();
@@ -337,4 +371,16 @@ AliHLTPHOSOnlineDisplayEventTab::UpdateDisplay()
   fgCanvasPtr[LOW_GAIN]->cd();
   fgLegoPlotPtr[LOW_GAIN]->Draw("CONTZ");
   fgCanvasPtr[LOW_GAIN]->Update();
+  */
+
+  fgCanvasPtr[HIGH_GAIN] =  fEc5->GetCanvas();
+  fgCanvasPtr[HIGH_GAIN]->cd();
+  fgLegoPlotPtr[HIGH_GAIN]->Draw("COLZ");
+  fgCanvasPtr[HIGH_GAIN]->Update();
+  fgCanvasPtr[LOW_GAIN] = fEc6->GetCanvas();
+  fgCanvasPtr[LOW_GAIN]->cd();
+  fgLegoPlotPtr[LOW_GAIN]->Draw("COLZ");
+  fgCanvasPtr[LOW_GAIN]->Update();
+
+
 }

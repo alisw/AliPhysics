@@ -25,12 +25,15 @@
 
 #include <TH2D.h>
 #include <TCanvas.h>
+
+#include <iostream>
+
 //#include "AliHLTPHOSBase.h"
 
 #include "AliHLTPHOSConstants.h" 
 
 using namespace PhosHLTConst;
-
+using namespace std;
 
 class AliHLTPHOSOnlineDisplay;
 
@@ -38,11 +41,24 @@ class AliHLTPHOSOnlineDisplay;
 class  AliHLTPHOSOnlineDisplayTH2D : public TH2D
 {
 public:
-  AliHLTPHOSOnlineDisplayTH2D(AliHLTPHOSOnlineDisplay  *onlineDisplayPtr, const char* name, const char* title, Int_t nbinsx, Double_t xlow, Double_t xup, Int_t nbinsy, Double_t ylow, Double_t yup);
+  AliHLTPHOSOnlineDisplayTH2D(AliHLTPHOSOnlineDisplay  *onlineDisplayPtr, const char* name, const char* title, Int_t nbinsx, Double_t xlow, Double_t xup, 
+			      Int_t nbinsy, Double_t ylow, Double_t yup);
+
   virtual ~AliHLTPHOSOnlineDisplayTH2D();
   virtual void ExecuteEvent(Int_t event, Int_t pz, Int_t px);
+  
+  void SetRunNumber(const int runnumber) 
+  { 
+    fRunNumber = runnumber;  
+    cout << __FILE__ <<":"<< __LINE__ << "RunNumber was set to "<< fRunNumber  <<endl; ;
+  };
+
   int GetZBin(Int_t pz);
   int GetXBin(Int_t px);
+
+  void EvaluateBinPosition(const char *info, int *z, int *x);
+
+
 private:
   AliHLTPHOSOnlineDisplayTH2D(); 
   AliHLTPHOSOnlineDisplay *fOnlineDisplayPtr;
@@ -50,6 +66,10 @@ private:
   TH1D     *fgRawDataPlotsPtr[N_HISTOGRAMS][N_GAINS]; 
   TCanvas  *fgRawDataCanvasSinglePtr[N_GAINS];
   TH1D     *fgRawDataPlotsSinglePtr[N_GAINS]; 
+  
+  int fRunNumber;
+  //  bool fIsSetRunNumber;
+
 };
 
 #endif
