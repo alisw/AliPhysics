@@ -40,7 +40,11 @@
 #include "AliHLTPHOSOnlineDisplayEventTab.h"
 #include "AliHLTPHOSOnlineDisplayCalibTab.h"
 
+//#include "AliHLTPHOSFourier.h"
+
+
 AliHLTPHOSOnlineDisplayEventTab*     AliHLTPHOSOnlineDisplay::fgEventTabPtr       = 0;
+AliHLTPHOSOnlineDisplayFourierTab*   AliHLTPHOSOnlineDisplay::fgFourierTabPtr     = 0;
 AliHLTPHOSOnlineDisplayCalibTab*     AliHLTPHOSOnlineDisplay::fgCalibTabPtr       = 0;
 AliHLTPHOSOnlineDisplay*             AliHLTPHOSOnlineDisplay::fgInstancePtr       = 0;          /**<The one an only instance of PhosOnlineDisplay*/
 HOMERReader*                         AliHLTPHOSOnlineDisplay::fgHomerReaderPtr    = 0;          /**<Homer reader that fetches events from the HLT online stream*/
@@ -103,7 +107,11 @@ AliHLTPHOSOnlineDisplay::InitDisplay()
   TGLayoutHints *fL1 = new TGLayoutHints(kLHintsBottom | kLHintsExpandX |
 					 kLHintsExpandY, 2, 2, 15, 1);
   fgEventTabPtr = new  AliHLTPHOSOnlineDisplayEventTab(this, fTab, fgHomerReaderPtr, fgHomerReadersPtr, fgNHosts);
-  fgCalibTabPtr = new  AliHLTPHOSOnlineDisplayCalibTab(fTab, fgHomerReaderPtr, fgHomerReadersPtr, fgNHosts);
+  fgFourierTabPtr = new  AliHLTPHOSOnlineDisplayFourierTab(this, fTab, fgHomerReaderPtr, fgHomerReadersPtr, fgNHosts); 
+  // fgEventTabPtr = new  AliHLTPHOSOnlineDisplayEventTab(this, fTab, fgHomerReaderPtr, fgHomerReadersPtr, fgNHosts);
+ 
+ fgCalibTabPtr = new  AliHLTPHOSOnlineDisplayCalibTab(fTab, fgHomerReaderPtr, fgHomerReadersPtr, fgNHosts);
+  
 
   AddFrame(fTab, fL1);
   MapSubwindows();
@@ -121,9 +129,10 @@ AliHLTPHOSOnlineDisplay::InitDisplay()
 int
 AliHLTPHOSOnlineDisplay::GetNextEvent()
 {
+  cout << "AliHLTPHOSOnlineDisplay::GetNextEvent()" << endl;
   fgEventTabPtr->GetNextEvent();
+  fgFourierTabPtr->GetNextEvent();
 }
-
 
 
 int
@@ -131,6 +140,7 @@ AliHLTPHOSOnlineDisplay::GetHistogram()
 {
   fgCalibTabPtr->GetNextEvent(); 
 }
+
 
 
 int

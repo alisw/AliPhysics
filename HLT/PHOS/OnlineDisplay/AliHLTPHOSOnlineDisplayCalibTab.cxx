@@ -3,6 +3,8 @@
 #include "AliHLTPHOSRcuCellAccumulatedEnergyDataStruct.h"
 #include "AliHLTPHOSGetEventButton.h"
 
+//#include "TStyle.h"
+
 using namespace std;
 
 
@@ -40,6 +42,9 @@ AliHLTPHOSOnlineDisplayCalibTab::~AliHLTPHOSOnlineDisplayCalibTab()
 void
 AliHLTPHOSOnlineDisplayCalibTab::ReadBlockData(HOMERReader *homerReaderPtr)
 {
+  //  gStyle->SetOptLogy();
+  //  gStyle->SetOptStat(true);
+
   unsigned long blk = homerReaderPtr->FindBlockNdx("UCCARENE","SOHP", 0xFFFFFFFF );
 
   while ( blk != ~(unsigned long)0 ) 
@@ -116,6 +121,9 @@ AliHLTPHOSOnlineDisplayCalibTab::ResetDisplay()
 void 
 AliHLTPHOSOnlineDisplayCalibTab::InitDisplay(TGTab *tabPtr)
 {
+  //  gStyle->SetOptLogy();
+  //  gStyle->SetOptStat(true); 
+
   char tmpHistoName[256]; 
 
   // fgLegoPlotHGPtr = new TH2D("a Homer","HLT: #pi^{0} 5 - 30Gev HG, High gain",  
@@ -248,14 +256,16 @@ AliHLTPHOSOnlineDisplayCalibTab::InitDisplay(TGTab *tabPtr)
 	   fSubTab2->Resize();
 	   tf->AddFrame(fSubTab2, fL1);
 
-  fgEventButtPtr = new  AliHLTPHOSGetEventButton(fSubF4, "update histograms z", 'h');
+	   fgEventButtPtr = new  AliHLTPHOSGetEventButton(fSubF4, "update histograms z", 'h');
 }
 
 
 void 
 AliHLTPHOSOnlineDisplayCalibTab::UpdateDisplay()
 {
-
+  // gStyle->SetOptLogy();
+  //  gStyle->SetOptStat(true);
+ 
   fgCanvasHGPtr =  fEc7->GetCanvas();
   fgCanvasHGPtr->cd();
 

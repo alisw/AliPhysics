@@ -13,6 +13,8 @@
 #include "AliHLTPHOSOnlineDisplay.h"
 #include "AliHLTPHOSSharedMemoryInterface.h"
 
+//#include "TStyle.h"
+
 using namespace std;
 
 // MT Crap
@@ -246,6 +248,9 @@ AliHLTPHOSOnlineDisplayEventTab::ResetDisplay()
 void
 AliHLTPHOSOnlineDisplayEventTab::InitDisplay(TGTab  *tabPtr)
 {
+  //  gStyle->SetOptLogy();
+  ///  gStyle->SetOptStat(true);
+
   for(int gain=0; gain < N_GAINS; gain++)
     {
       char gainLabel[100];
@@ -303,6 +308,9 @@ AliHLTPHOSOnlineDisplayEventTab::InitDisplay(TGTab  *tabPtr)
 void
 AliHLTPHOSOnlineDisplayEventTab::UpdateDisplay()
 {
+  // gStyle->SetOptLogy();
+  //  gStyle->SetOptStat(true);
+
   fgCanvasPtr[HIGH_GAIN] =  fEc1->GetCanvas();
   fgCanvasPtr[HIGH_GAIN]->cd();
   fgLegoPlotPtr[HIGH_GAIN]->Draw("LEGO2Z");

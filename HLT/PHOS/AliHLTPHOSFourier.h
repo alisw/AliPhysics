@@ -38,8 +38,9 @@ class  AliHLTPHOSFourier
   AliHLTPHOSFourier();
   virtual ~AliHLTPHOSFourier();
   AliHLTPHOSRcuFFTDataStruct GetPSD();
-  void ProcessFourier(const Int_t *data, const int length, const int z, const int x, const int gain);
+  void ProcessFourier(const Int_t *data, const int length, const int z, const int x, const int gain, const int event =-1);
 
+  int GetDataSize() {return fFixedDataSize;};
 private:
   void Init();
   void Int2Double(const Int_t *inputarray, double *outputarray, const int size);
@@ -52,6 +53,7 @@ private:
   // double *fAccumulateFFTs [N_ZROWS_MOD][N_XCOLUMNS_MOD][N_GAINS];
   // int fNFFTs[N_ZROWS_MOD][N_XCOLUMNS_MOD][N_GAINS];
  
+  void ResetEventPSD(const int gain);
   TVirtualFFT *fFFT_own;
 
   double *fFFTInputArray;
@@ -61,6 +63,8 @@ private:
   
   // AliHLTPHOSRcuFFTDataStruct fFFTOupuStruct[N_GAINS];
   AliHLTPHOSRcuFFTDataStruct fFFTOupuStruct;
+
+  int fCurrentEvent;
 
   template<typename T> 
     T  Max(T *array, int N) const

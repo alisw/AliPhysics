@@ -24,7 +24,8 @@ AliHLTPHOSFourier::AliHLTPHOSFourier() :  fFFT_own(0),
 					  fFFTOutputArray(0),
 					  fIsFirstChannel(true),
 					  fFixedDataSize(0), 
-					  fFFTOupuStruct()
+					  fFFTOupuStruct(),
+					  fCurrentEvent(0)
 {
   
 
@@ -36,7 +37,8 @@ AliHLTPHOSFourier::AliHLTPHOSFourier(const AliHLTPHOSFourier&) : fFFT_own(0),
 								 fFFTOutputArray(0),
 								 fIsFirstChannel(true),
 								 fFixedDataSize(0),
-								 fFFTOupuStruct()
+								 fFFTOupuStruct(), 
+								 fCurrentEvent(0)
 
 {
   
@@ -48,6 +50,7 @@ AliHLTPHOSFourier::~AliHLTPHOSFourier()
 
 }
 
+
  
 AliHLTPHOSRcuFFTDataStruct 
 AliHLTPHOSFourier::GetPSD()
@@ -56,14 +59,22 @@ AliHLTPHOSFourier::GetPSD()
 }
 
 
+
 void 
-AliHLTPHOSFourier::ProcessFourier(const Int_t *data, const int length, const int z, const int x, const int gain)
+AliHLTPHOSFourier::ProcessFourier(const Int_t *data, const int length, const int z, const int x, const int gain, const int event)
 {
   Double_t  re = 0;
   Double_t  im = 0;
 
+  if( (event > 0 ) && (event != fCurrentEvent ))
+    {
+      fCurrentEvent = event;
+      ResetEventPSD(gain);
+    }
+
   if(fIsFirstChannel == true)
     {
+      fCurrentEvent = event;
       fIsFirstChannel = false;
       fFixedDataSize = length;
       Int_t n_size = fFixedDataSize +1;
@@ -81,11 +92,21 @@ AliHLTPHOSFourier::ProcessFourier(const Int_t *data, const int length, const int
 	{
 	  fFFT_own->GetPointComplex(j,  re,  im);
 	  fFFTOupuStruct.fGlobalAccumulatedPSD[gain][j] +=  EvaluateMagnitude(re, im);
-	  fFFTOupuStruct.fGlobalLastPSD[gain][j] =  EvaluateMagnitude(re, im);
+	  fFFTOupuStruct.fGlobalLastPSD[gain][j] +=  EvaluateMagnitude(re, im);
 
 	}
     }
   //  printf("AliHLTPHOSFourier::ProcessFourier;  (z, x, gain)  =  (%d, %d, %d),  length = %d",  z,  x,  gain, length);
+}
+
+void 
+AliHLTPHOSFourier::ResetEventPSD(const int gain)
+{
+  cout << " AliHLTPHOSFourier::ResetEventPS, resetting event PSD "<< endl;
+  for(int i = 0;  i < fFixedDataSize; i++ )
+    {
+      fFFTOupuStruct.fGlobalLastPSD[gain][i] = 0;
+    }
 }
 
 

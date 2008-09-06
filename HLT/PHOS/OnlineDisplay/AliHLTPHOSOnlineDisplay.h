@@ -22,6 +22,7 @@
 #include "AliHLTPHOSConstants.h"
 
 #include "AliHLTPHOSOnlineDisplayEventTab.h"
+#include "AliHLTPHOSOnlineDisplayFourierTab.h"
 #include "AliHLTPHOSBase.h"
 
 using namespace PhosHLTConst;
@@ -37,13 +38,17 @@ class AliHLTPHOSOnlineDisplay : public  TGMainFrame, public AliHLTPHOSBase
 {
  public:
   ~AliHLTPHOSOnlineDisplay();
+
+  
   int GetNextEvent();
   int GetHistogram();
+  
   void InitDisplay();
   void EvaluateAverage();
   int ScanArguments(int argc, char** argv);
   static AliHLTPHOSOnlineDisplay* Instance(int argc, char** argv);  
   static AliHLTPHOSOnlineDisplayEventTab  *fgEventTabPtr;
+  static AliHLTPHOSOnlineDisplayFourierTab  *fgFourierTabPtr;
   void Gain2Text(const int gain,  char *txt) const;
 
 
