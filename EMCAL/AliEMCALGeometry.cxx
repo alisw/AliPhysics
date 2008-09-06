@@ -396,6 +396,7 @@ void AliEMCALGeometry::Init(void){
   fgInit = kTRUE; 
 }
 
+//___________________________________________________________________
 void AliEMCALGeometry::PrintGeometry()
 {
   // Separate routine is callable from broswer; Nov 7,2006
@@ -539,6 +540,7 @@ void AliEMCALGeometry::CheckAdditionalOptions()
   }
 }
 
+//__________________________________________________________________
 void AliEMCALGeometry::DefineSamplingFraction()
 {
   // Jun 05,2006
