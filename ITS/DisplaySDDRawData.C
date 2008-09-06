@@ -118,10 +118,10 @@ void DisplaySDDRawData(Char_t *datafil, Int_t firstEv=0, Int_t lastEv=5){
 
 }
 
-void DisplaySDDRawData(Int_t nrun, Int_t n2, Int_t firstEv=10, Int_t lastEv=15){  
+void DisplaySDDRawData(Int_t nrun, Int_t n2, Int_t nchunk=10, Int_t firstEv=1, Int_t lastEv=20){  
   TGrid::Connect("alien:",0,0,"t");
   Char_t filnam[200];
-  sprintf(filnam,"alien:///alice/data/2008/LHC08c/%09d/raw/08%09d%03d.10.root",nrun,nrun,n2);
+  sprintf(filnam,"alien:///alice/data/2008/LHC08c/%09d/raw/08%09d%03d.%02d.root",nrun,nrun,n2,nchunk);
   printf("Open file %s\n",filnam);
   DisplaySDDRawData(filnam,firstEv,lastEv);
 }
