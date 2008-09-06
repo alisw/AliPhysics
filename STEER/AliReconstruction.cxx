@@ -923,6 +923,7 @@ Bool_t AliReconstruction::InitGRP() {
     fFillESD = MatchDetectorList(fFillESD,detMask);
     fQADetectors = MatchDetectorList(fQADetectors,detMask);
     fLoadCDB = MatchDetectorList(fLoadCDB,detMask);
+    fLoadAlignData = MatchDetectorList(fLoadAlignData,detMask);
   }
 
   AliInfo("===================================================================================");
@@ -1164,18 +1165,18 @@ void AliReconstruction::Begin(TTree *)
     AliSysInfo::AddStamp("CheckGeom");
   }
 
+  if (!InitGRP()) {
+    Abort("InitGRP", TSelector::kAbortProcess);
+    return;
+  }
+  AliSysInfo::AddStamp("InitGRP");
+
   if (!MisalignGeometry(fLoadAlignData)) {
     Abort("MisalignGeometry", TSelector::kAbortProcess);
     return;
   }
   AliCDBManager::Instance()->UnloadFromCache("GRP/Geometry/Data");
   AliSysInfo::AddStamp("MisalignGeom");
-
-  if (!InitGRP()) {
-    Abort("InitGRP", TSelector::kAbortProcess);
-    return;
-  }
-  AliSysInfo::AddStamp("InitGRP");
 
   if (!LoadCDB()) {
     Abort("LoadCDB", TSelector::kAbortProcess);

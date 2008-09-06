@@ -1597,7 +1597,7 @@ Bool_t AliGeomManager::ApplyAlignObjsToGeom(TObjArray& alignObjArray, Bool_t ovl
     flag = alobj->ApplyToGeometry(ovlpcheck);
     if(!flag)
     {
-      AliErrorClass(Form("Error applying alignment object for volume %s !",alobj->GetSymName()));
+      AliWarningClass(Form("Error applying alignment object for volume %s !",alobj->GetSymName()));
     }else{
       AliDebugClass(5,Form("Alignment object for volume %s applied successfully",alobj->GetSymName()));
     }
