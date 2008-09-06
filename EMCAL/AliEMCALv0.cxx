@@ -57,6 +57,7 @@
 #include "AliRun.h"
 #include "AliLog.h"
 #include "AliGeomManager.h"
+#include "AliEMCALSpaceFrame.h"
 
 ClassImp(AliEMCALv0)
 
@@ -74,7 +75,7 @@ enum
 AliEMCALv0::AliEMCALv0()
   : AliEMCAL(),
     fShishKebabModules(),fEnvelop1(0),fIdRotm(0),fIdTmedArr(0),
-    fSampleWidth(0),fSmodPar0(0),fSmodPar1(0),fSmodPar2(0)
+    fSampleWidth(0),fSmodPar0(0),fSmodPar1(0),fSmodPar2(0),fCalFrame(0)
 {
   //default ctor
 }
@@ -83,7 +84,7 @@ AliEMCALv0::AliEMCALv0()
 AliEMCALv0::AliEMCALv0(const char *name, const char *title)
   : AliEMCAL(name,title),
     fShishKebabModules(),fEnvelop1(0),fIdRotm(0),fIdTmedArr(0),
-    fSampleWidth(0),fSmodPar0(0),fSmodPar1(0),fSmodPar2(0)
+    fSampleWidth(0),fSmodPar0(0),fSmodPar1(0),fSmodPar2(0),fCalFrame(0)
 {
   // ctor : title is used to identify the layout
   // Apr 25, 2006
@@ -316,6 +317,11 @@ void AliEMCALv0::CreateGeometry()
   // COMPACT, TRD1
   AliDebug(2,Form("Shish-Kebab geometry : %s", GetTitle())); 
   CreateShishKebabGeometry();
+
+  //Space Frame
+  AliDebug(2,"Creating EMCAL Space Frame");
+  fCalFrame = new AliEMCALSpaceFrame();
+  fCalFrame->CreateGeometry();
 
 }
 

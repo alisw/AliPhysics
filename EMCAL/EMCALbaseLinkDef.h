@@ -26,5 +26,6 @@
 #pragma link C++ class AliEMCALSurvey+;
 #pragma link C++ class AliEMCALRecParam+;
 #pragma link C++ class AliEMCALQAChecker+;
+#pragma link C++ class AliEMCALSpaceFrame+;
 
 #endif

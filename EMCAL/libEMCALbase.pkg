@@ -22,7 +22,9 @@ AliCaloCalibPedestal.cxx \
 AliCaloCalibSignal.cxx \
 AliEMCALSurvey.cxx \
 AliEMCALRecParam.cxx \
-AliEMCALQAChecker.cxx
+AliEMCALQAChecker.cxx \
+AliEMCALSpaceFrame.cxx
+
 
 HDRS= $(SRCS:.cxx=.h) 
 

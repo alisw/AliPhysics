@@ -18,12 +18,12 @@ class TFile;
 class TList;
 class TNode;
 class AliEMCALShishKebabTrd1Module;
+class AliEMCALSpaceFrame;
 
 // --- AliRoot header files ---
 #include "AliEMCAL.h"
 #include "TGeoManager.h"
 #include <TArrayF.h>
-//class AliEMCALGeometry ; 
 
 class AliEMCALv0 : public AliEMCAL {
 
@@ -85,11 +85,12 @@ class AliEMCALv0 : public AliEMCAL {
   Double_t fSmodPar1;          //! y size of super module  
   Double_t fSmodPar2;          //! z size of super module  
   Double_t fParEMOD[5];        //! parameters of EMCAL module (TRD1,2)
+  AliEMCALSpaceFrame* fCalFrame; //EMCAL Space frame object
 
   AliEMCALv0(const AliEMCALv0 & emcal);
   AliEMCALv0 & operator = (const AliEMCALv0  & /*rvalue*/);
  
-  ClassDef(AliEMCALv0,3) // Implementation of EMCAL manager class for midrapidity barrel layout between 80 and 180(190) degrees 
+  ClassDef(AliEMCALv0,4) // Implementation of EMCAL manager class for midrapidity barrel layout between 80 and 180(190) degrees 
     
     };
     
