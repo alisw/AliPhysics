@@ -1,7 +1,3 @@
-////THIS IS A TEST, PTH
-
-
-
 /**************************************************************************
  * This file is property of and copyright by the Experimental Nuclear     *
  * Physics Group, Dep. of Physics                                         *
@@ -30,9 +26,9 @@
 #include "TTree.h"
 #include "TClonesArray.h"
 #include "TH2F.h"
-#include  "AliAltroDecoder.h"    // decoder for altro payload
-#include  "AliAltroData.h"       // container for altro payload
-#include  "AliAltroBunch.h"      // container for altro bunches
+#include "AliAltroDecoder.h"    // decoder for altro payload
+#include "AliAltroData.h"       // container for altro payload
+#include "AliAltroBunch.h"      // container for altro bunches
 
 
 AliHLTPHOSRawAnalyzerComponent::AliHLTPHOSRawAnalyzerComponent():AliHLTPHOSRcuProcessor(), 
@@ -112,11 +108,8 @@ void
 AliHLTPHOSRawAnalyzerComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
 {
   //comment
-  const AliHLTComponentDataType* pType=fgkInputDataTypes;
-  while (pType->fID!=0) {
-    list.push_back(*pType);
-    pType++;
-  }
+  list.clear();
+  list.push_back( AliHLTPHOSDefinitions::fgkDDLPackedRawDataType | kAliHLTDataOriginPHOS);
 }
 
 AliHLTComponentDataType 
@@ -127,42 +120,87 @@ AliHLTPHOSRawAnalyzerComponent::GetOutputDataType()
   //  return AliHLTPHOSDefinitions::fgkDigitDataType;
 }
 
-
 int 
 AliHLTPHOSRawAnalyzerComponent::GetOutputDataTypes(AliHLTComponentDataTypeList& tgtList)
 {
   // Added by OD
   // see header file for class documentation
-  
   tgtList.clear();
   tgtList.push_back(AliHLTPHOSDefinitions::fgkCellEnergyDataType);
-  tgtList.push_back(kAliHLTDataTypeHwAddr16);
+   tgtList.push_back(kAliHLTDataTypeHwAddr16);
   return tgtList.size();
-
 }
-
-
 
 void
 AliHLTPHOSRawAnalyzerComponent::GetOutputDataSize(unsigned long& constBase, double& inputMultiplier )
 {
   //comment
   constBase = 30;
-  inputMultiplier = 1.2;
+  inputMultiplier = 4;
 }
 
+
+
+
+void 
+AliHLTPHOSRawAnalyzerComponent::FillDataArray(UInt_t *data, const AliAltroData *altrodataptr, const int channel)
+{
+  ResetDataPtr(0, ALTRO_MAX_SAMPLES);
+  bool islastbunch = true;
+
+  while( fAltroDataPtr->NextBunch(fAltroBunchPtr) == true)
+    {
+      const UInt_t *tmpdata  = fAltroBunchPtr->GetData();
+   
+      if(islastbunch == true)
+	{
+	  data[0] = fAltroBunchPtr->GetEndTimeBin();
+	  islastbunch = false;
+	}
+
+      int tmpstartbin =  fAltroBunchPtr->GetStartTimeBin();
+      int tmpendbin =  fAltroBunchPtr->GetEndTimeBin();
+      int tmplength = tmpendbin -  tmpstartbin;
+
+      for(int i = 0; i < tmplength ; i++)
+	{ 
+	  data[i+tmpstartbin] = tmpdata[i];
+	}
+    }
+
+
+  /*
+  cout <<__FILE__ <<" : " <<__LINE__  << "the resulting array is"<<endl;
+  
+  for(int i=0; i<  data[0]; i++)
+    {
+      if(i != 0 && i %16 == 0)
+	{
+	  cout << endl;
+	}
+      cout <<data[i] << "\t" ;
+    }
+  cout << endl;
+  */
+}
+
+
+void 
+AliHLTPHOSRawAnalyzerComponent::GetFirstBunch(AliAltroData *altrodata,  AliAltroBunch *altrobunch)
+{
+  while( fAltroDataPtr->NextBunch(fAltroBunchPtr) == true)
+    {
+      
+    }
+}
 
 
 int 
 AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, AliHLTComponentTriggerData& /*trigData*/, 
 					 AliHLTUInt8_t* outputPtr, AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks )
 {
-  //comment
+  //  cout << "Event" << fPhosEventCount  << endl;
 
-
-  //  cout << "AliHLTPHOSRawAnalyzerComponent::DoEven. fPhosEventCount = " <<  fPhosEventCount <<endl;
-
-  //  cout << "AliHLTPHOSRawAnalyzerComponent::DoEvent TP0" << endl;
 
   UInt_t offset            = 0; 
   UInt_t mysize            = 0;
@@ -173,136 +211,98 @@ AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData
   const AliHLTComponentBlockData* iter = NULL; 
   unsigned long ndx;
   Int_t *rawDataBufferPos = (Int_t *)outputPtr; 
-  AliHLTPHOSValidCellDataStruct *validCellPtr = 0;
   Int_t nSamples = 0;
-  UInt_t nSelected = 0;
   UInt_t specification = 0;
-
-  //  cout << "AliHLTPHOSRawAnalyzerComponent::DoEvent TP1" << endl;
-
-
-
-
-
-
+  bool droppedRaw = true;
+  if(fDoPushRawData) {droppedRaw = false;}
+  
   for( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
     {
-      //    cout << "AliHLTPHOSRawAnalyzerComponent::DoEvent TP2" << endl;     
-
-      Int_t tmpChannelCnt     = 0;
       iter = blocks+ndx;
-      mysize = 0;
-      offset = tSize;
-      Int_t crazyness = 0;
-      UInt_t tmpSize = 0;
-      mysize += sizeof(AliHLTPHOSRcuCellEnergyDataStruct);
-      //     cout << "AliHLTPHOSRawAnalyzerComponent::DoEvent TP3" << endl;     
-  
       if ( iter->fDataType != AliHLTPHOSDefinitions::fgkDDLPackedRawDataType )
 	{
-	  //	  cout << "AliHLTPHOSRawAnalyzerComponent::DoEvent TP4" << endl;     
 	  continue; 
 	}
 
-      //     cout << "AliHLTPHOSRawAnalyzerComponent::DoEvent TP5" << endl;     
-      
-      specification = specification|iter->fSpecification;
+      Int_t tmpChannelCnt     = 0;
+      mysize = 0;
+      offset = tSize;
+      Int_t crazyness = 0;
+      mysize += sizeof(AliHLTPHOSRcuCellEnergyDataStruct);
+      tSize += mysize;
 
+      if(tSize > size)
+	{
+	  HLTError("Buffer overflow: Trying to write data of size: %d bytes. Output buffer available: %d bytes.", tSize, size);
+	  return -ENOBUFS;
+	}  
+
+      specification = specification|iter->fSpecification;
       fDecoderPtr->SetMemory(reinterpret_cast<UChar_t*>( iter->fPtr ), iter->fSize);
       fDecoderPtr->Decode();
       fOutPtr =  (AliHLTPHOSRcuCellEnergyDataStruct*)outBPtr;
-
       fOutPtr->fRcuX = fRcuX;
       fOutPtr->fRcuZ = fRcuZ;
       fOutPtr->fModuleID =fModuleID;
-
-      rawDataBufferPos += (mysize)/sizeof(Int_t); 
-            
+      
+      rawDataBufferPos += (tSize)/sizeof(Int_t); 
+           
       while( fDecoderPtr->NextChannel(fAltroDataPtr) == true )
-	{
+	{          
+	  FillDataArray(fTmpChannelData, fAltroDataPtr, tmpChannelCnt); 
 
-	  nSamples = fAltroDataPtr->GetDataSize() - 2;
-
-	  if(fDoCheckDataSize)
-	    {
-	      if(nSamples != fNTotalSamples)
+	  if(  fAltroDataPtr->GetDataSize() != 0 )
+            {
+	      GetFirstBunch(fAltroDataPtr, fAltroBunchPtr);
+	      nSamples = fAltroBunchPtr->GetBunchSize();
+	      //	      cout <<__FILE__ <<" : " <<__LINE__  << ",  the size of the first bunch is " << nSamples <<endl;
+	      crazyness = fSanityInspectorPtr->CheckInsanity((const UInt_t*)fAltroBunchPtr->GetData(), (const Int_t)(fAltroBunchPtr->GetBunchSize()));
+	      fAnalyzerPtr->SetData(fAltroBunchPtr->GetData(), fAltroBunchPtr->GetBunchSize());   
+	      fAnalyzerPtr->Evaluate(0, fAltroBunchPtr->GetBunchSize());  
+	      fOutPtr->fValidData[tmpChannelCnt].fZ  = fMapperPtr->fHw2geomapPtr[fAltroDataPtr->GetHadd()].fZRow;
+	      fOutPtr->fValidData[tmpChannelCnt].fX  = fMapperPtr->fHw2geomapPtr[fAltroDataPtr->GetHadd()].fXCol; 
+	      fOutPtr->fValidData[tmpChannelCnt].fGain  = fMapperPtr->fHw2geomapPtr[fAltroDataPtr->GetHadd()].fGain; 
+		      
+	      if(fUseBaselineSubtraction)
 		{
-		  //		  cout <<"processing event " << fPhosEventCount << endl;;  
-		  //		  cout << "Wrong number of samples Expected  "<< fNTotalSamples << " samples (assuming non zero supressed data) but recieved  " << nSamples << endl;
-		  Logging( kHLTLogError, __FILE__ , "Wrong number of samples", "Expected  %lu samples (assuming non zero supressed data) but recieved %lu", fNTotalSamples,  nSamples); 
-		  fNCorruptedBlocks ++;	  
-		  continue;  
+		  baseline = fBaselines[fOutPtr->fValidData[tmpChannelCnt].fX][fOutPtr->fValidData[tmpChannelCnt].fZ][ fOutPtr->fValidData[tmpChannelCnt].fGain];
 		}
-	      else
+		      
+	      fOutPtr->fValidData[tmpChannelCnt].fEnergy  = (float)fAnalyzerPtr->GetEnergy() - baseline;
+	      fOutPtr->fValidData[tmpChannelCnt].fTime    = (float)fAnalyzerPtr->GetTiming();
+	      fOutPtr->fValidData[tmpChannelCnt].fCrazyness = (int)crazyness;
+
+	      if(fDoPushRawData == true && droppedRaw == false)
 		{
-		  //	  cout <<"The number of samples is " << fNTotalSamples << endl;
+		  int tmpsize = fTmpChannelData[0];
+		  //	  cout << __FILE__ << ":" << __LINE__ << "channel = " << tmpChannelCnt <<  " size  ="<< tmpsize << endl;
+		  mysize += (tmpsize + 1)*sizeof(Int_t);
+		  tSize += (tmpsize  + 1)*sizeof(Int_t);;
+
+		  if(tSize > size)
+		    {
+		      HLTError("Buffer overflow: Trying to write data of size: %d bytes. Output buffer available: %d bytes. Dropping raw data.", tSize, size);
+		      droppedRaw = true;
+		      tSize -= mysize;
+		    }
+		  else
+		    {
+		      *rawDataBufferPos = tmpsize;
+		      
+		      for(int sample = 0; sample < tmpsize; sample++)
+			{
+			  rawDataBufferPos++;
+			  *(rawDataBufferPos) = fTmpChannelData[sample]; 
+			}
+		      rawDataBufferPos++;
+			      
+		    }
 		}
-
+	      tmpChannelCnt ++;
 	    }
-
-	  fNOKBlocks ++;
-	  
-	  if((fPhosEventCount%10 ==0) && fPhosEventCount !=0)
-	    {
-	      //	      float percent = ((float)(100*fNCorruptedBlocks))/((float)(fNOKBlocks + fNCorruptedBlocks) );
-	    }
-	  
-	  crazyness = fSanityInspectorPtr->CheckInsanity((const UInt_t*)fAltroDataPtr->GetData(), (const Int_t)(fAltroDataPtr->GetDataSize() - 2));
-
-	  fAnalyzerPtr->SetData(fAltroDataPtr->GetData(), fAltroDataPtr->GetDataSize() -2);   
-	  fAnalyzerPtr->Evaluate(0, fAltroDataPtr->GetDataSize() -2);  
-
-	  fOutPtr->fValidData[tmpChannelCnt].fZ  = fMapperPtr->fHw2geomapPtr[fAltroDataPtr->GetHadd()].fZRow;
-	  fOutPtr->fValidData[tmpChannelCnt].fX  = fMapperPtr->fHw2geomapPtr[fAltroDataPtr->GetHadd()].fXCol; 
-	  fOutPtr->fValidData[tmpChannelCnt].fGain  = fMapperPtr->fHw2geomapPtr[fAltroDataPtr->GetHadd()].fGain; 
-
-	  if(fUseBaselineSubtraction)
-	    {
-	      baseline = fBaselines[fOutPtr->fValidData[tmpChannelCnt].fX][fOutPtr->fValidData[tmpChannelCnt].fZ][ fOutPtr->fValidData[tmpChannelCnt].fGain];
-	    }
-
-	  fOutPtr->fValidData[tmpChannelCnt].fEnergy  = (float)fAnalyzerPtr->GetEnergy() - baseline;
-	  fOutPtr->fValidData[tmpChannelCnt].fTime    = (float)fAnalyzerPtr->GetTiming();
-	  fOutPtr->fValidData[tmpChannelCnt].fCrazyness = (int)crazyness;
-	  
-	  const UInt_t *tmpData =  fAltroDataPtr->GetData();
-
-	  if(fDoPushRawData)
-	    {
-	      tmpSize += nSamples + 1;
-	      *rawDataBufferPos = nSamples;
-	      //	      cout << "# samples: " << *rawDataBufferPos << endl;
-
-	      for(int sample = 0; sample < nSamples; sample++)
-		{
-		  rawDataBufferPos++;
-		  *(rawDataBufferPos) = tmpData[sample] - (Int_t)baseline;
-		}
-
-	      rawDataBufferPos++;
-	    }
-	  if(fDoSelectiveReadOut)
-	    {
-	      if(validCellPtr->fEnergy > fSelectiveReadOutThresholds[fOutPtr->fValidData[tmpChannelCnt].fX][fOutPtr->fValidData[tmpChannelCnt].fZ][fOutPtr->fValidData[tmpChannelCnt].fGain])
-		{
-		  fSelectedChannelsList[nSelected] = (AliHLTUInt16_t)(fAltroDataPtr->GetHadd());
-		  nSelected++;
-		}
-	    }
-
-	  //	  UInt_t tmpSize =  sizeof(Int_t)*(fOutPtr->fValidData[tmpChannelCnt].fNSamples);
-	  //	  mysize += sizeof(Int_t)*(fOutPtr->fValidData[tmpChannelCnt].fNSamples);
-	  //mysize += tmpSize;
-	  //rawDataBufferPos += tmpSize/sizeof(Int_t);
-	  
-	  
-	  tmpChannelCnt ++;
 	}
 
-      mysize += tmpSize*4;
-      //      cout << "mysize: " << mysize << " - tmpSize: " << 
-
-      if(fDoPushRawData)
+      if(fDoPushRawData && droppedRaw == false)
 	{
 	  fOutPtr->fHasRawData = true;
 	}
@@ -310,77 +310,34 @@ AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData
 	{
 	  fOutPtr->fHasRawData = false;
 	}
-      
+
+
       fOutPtr->fCnt  = tmpChannelCnt;
       fOutPtr->fSize = mysize;
-
       AliHLTComponentBlockData bdCellEnergy;
       FillBlockData( bdCellEnergy );
       bdCellEnergy.fOffset = offset;
       bdCellEnergy.fSize = mysize;
       bdCellEnergy.fDataType = AliHLTPHOSDefinitions::fgkCellEnergyDataType;
       bdCellEnergy.fSpecification = specification;
-      //    cout << "Pushing cell energies" << endl;
-
-
-      cout << "nRawAanalyzer: offset ="<< offset << "mysize =" << mysize << "specification =" << specification <<endl;
-
-
       outputBlocks.push_back( bdCellEnergy );
-      
-      tSize += mysize;
       outBPtr += mysize;
-                  
-      //Pushing selected channel addresses
-      if(fDoSelectiveReadOut)
-	{
-	  UInt_t hwAddSize = sizeof(AliHLTUInt16_t);
-	  offset = tSize;
-	  for(UInt_t n = 0; n < nSelected; n++)
-	    {
-	      ((AliHLTUInt16_t*)outBPtr)[n] = fSelectedChannelsList[n];
-	    }
-	  mysize = nSelected*hwAddSize;
-	  AliHLTComponentBlockData bdHwAdd;
-	  FillBlockData(bdHwAdd);
-	  bdHwAdd.fOffset = offset;
-	  bdHwAdd.fSize = mysize;
-	  bdHwAdd.fDataType = kAliHLTDataTypeHwAddr16;
-	  bdHwAdd.fSpecification = specification;
-	  outputBlocks.push_back( bdHwAdd );
 
-	  
-	  tSize += mysize;
-	  outBPtr += mysize;
-	}
-   
-   
       if( tSize > size )
-      	{
-      	  Logging( kHLTLogFatal, "HLT::AliHLTPHOSRawAnalyzerComponent::DoEvent", "Too much data",
-      		   "Data written over allowed buffer. Amount written: %lu, allowed amount: %lu."
-      		   , tSize, size );
-      	  return EMSGSIZE;
-      	}
+	{
+	  Logging( kHLTLogFatal, "HLT::AliHLTPHOSRawAnalyzerComponent::DoEvent", "Too much data",
+		   "Data written over allowed buffer. Amount written: %lu, allowed amount: %lu."
+		   , tSize, size );
+	  return EMSGSIZE;
+	}
       
     }
-
+  
+  //  *rawDataBufferPos = 0;  
   fPhosEventCount++; 
-
-
-
-  if(fPrintInfo == kTRUE)
-    {
-
-      if(fPhosEventCount%fPrintInfoFrequncy == 0)
-      	{
-	  Logging(kHLTLogBenchmark, __FILE__ , IntToChar(  __LINE__ ) , "Analyzing event %lu", fPhosEventCount);
-	}  
- 
-    }
-
   return 0;
 }//end DoEvent
+
 
 
 
@@ -419,12 +376,9 @@ AliHLTPHOSRawAnalyzerComponent::DoInit( int argc, const char** argv )
       SetSelectiveReadOutThresholds(tmpSelectiveThresholdfile, nSigmas);
     }
 
-
   //fDoSelectiveReadOut = fUtilitiesPtr->ScanSingleNameArgument(argc, argv, "-selectivereadout");
 
   fDoPushRawData = fUtilitiesPtr->ScanSingleArgument(argc, argv, "-pushrawdata");
-
-  fDoPushRawData = true; //CRAP
 
   fDoCheckDataSize = fUtilitiesPtr->ScanSingleArgument(argc, argv, "-checkdatasize");
  
@@ -436,26 +390,7 @@ AliHLTPHOSRawAnalyzerComponent::DoInit( int argc, const char** argv )
 void
 AliHLTPHOSRawAnalyzerComponent::Reset(AliHLTPHOSRcuCellEnergyDataStruct* cellDataPtr)
 {
-  //comment
-  //  for(unsigned int mod = 0; mod < N_MODULES; mod ++)
-  //{
-  /*
-  for(int x = 0; x < N_XCOLUMNS_RCU; x ++)
-    {
-
-      for(int z = 0; z < N_ZROWS_RCU; z ++)
-	{
-	  for(int gain = 0; gain < N_GAINS; gain ++ )
-	    {
-	      //fMaxValues[mod][row][col][gain] = 0;
-	      cellDataPtr->fValidData[x][z][gain].fEnergy = 0;
-	      cellDataPtr->fValidData[x][z][gain].fID = -1;
-	    }
-	}
-    }
-  */
   ResetDataPtr(0, ALTRO_MAX_SAMPLES);
-
 } // end Reset
 
 

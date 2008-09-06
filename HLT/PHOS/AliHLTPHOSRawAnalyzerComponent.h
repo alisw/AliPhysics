@@ -41,13 +41,23 @@ class AliHLTPHOSRawAnalyzerComponent: public AliHLTPHOSRcuProcessor
  private:
   AliHLTPHOSRawAnalyzerComponent(const AliHLTPHOSRawAnalyzerComponent & );
   AliHLTPHOSRawAnalyzerComponent & operator = (const AliHLTPHOSRawAnalyzerComponent &);
+  
+  //AliAltroBunch* GetFirstBunch();
+  void GetFirstBunch(AliAltroData *altrodata,  AliAltroBunch *altrobunch);
+  void FillDataArray(UInt_t *data, const AliAltroData *altrodataptr, const int channel = -1);
+  //  bool CheckBuffer();
 
   void Reset(AliHLTPHOSRcuCellEnergyDataStruct* cellDataPtr);
   void ResetDataPtr(int startindex = 0, int sampleCnt = 0);
   void SetBaselines(const char* baselineFile); 
   void SetSelectiveReadOutThresholds(const char* filepath, Int_t nSignams);
+  
   Bool_t fSendChannelData;       /**<wether or not to send raw data from the component into shared memory*/
-  Double_t fTmpChannelData[ALTRO_MAX_SAMPLES];                        /**<temporary variable to store raw samples from a single altro channel*/
+
+
+  //  Double_t fTmpChannelData[ALTRO_MAX_SAMPLES];                        /**<temporary variable to store raw samples from a single altro channel*/
+  UInt_t fTmpChannelData[ALTRO_MAX_SAMPLES];                        /**<temporary variable to store raw samples from a single altro channel*/
+
   Double_t fMaxValues[N_MODULES][N_ZROWS_MOD][N_XCOLUMNS_MOD][N_GAINS]; /**<array to store cell energies*/
 
   AliHLTPHOSRcuCellEnergyDataStruct* fOutPtr;  //comment

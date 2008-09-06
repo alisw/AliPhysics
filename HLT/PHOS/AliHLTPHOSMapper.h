@@ -23,32 +23,48 @@
 //#include "AliHLTPHOSBase.h"
 
 //using namespace PhosHLTConst;
-
-//class AliHLTPHOSMapper : public AliHLTPHOSBase
-class AliHLTPHOSMapper 
+#include "Rtypes.h"
+#include "AliHLTLogging.h"
+class AliHLTPHOSMapper : public AliHLTLogging
+//class AliHLTPHOSMapper 
 {
  public:
   AliHLTPHOSMapper();
   virtual ~AliHLTPHOSMapper();
   void InitAltroMapping(); 
+  void InitDDLSpecificationMapping();
   bool GetIsInitializedMapping();
   char* GetFilePath();
+
+  UShort_t GetChannelID(Int_t specification, Int_t hwAddress);
+  static void GetChannelCoord(UShort_t channelId, UShort_t* channelCoord);
 
   struct fAltromap{ 
     int fZRow; // Coordinate in Z direction (beam direction) relatve too one RCU
     int fXCol; // Coordinate in X direction (perpendicular too beam direction an parallell to ground) relatve too one RCU
     int fGain; // Gain (high gain = 1, low gain = 0)
   };
+  
+  struct fDDLSpecificationMap{ 
+    UInt_t fRcuX; // Coordinate in Z direction (beam direction) relatve too one RCU
+    UInt_t fRcuZ; // Coordinate in X direction (perpendicular too beam direction an parallell to ground) relatve too one RCU
+    UInt_t fRcuXOffset;
+    UInt_t fRcuZOffset;
+    int fModId; 
+  };
 
   fAltromap *fHw2geomapPtr; //pointer to structure holding information about geometrical address 
-  
+
+
   char fFilepath[1024];
 
  private:
   bool fIsInitializedMapping;
   AliHLTPHOSMapper(const AliHLTPHOSMapper & );
   AliHLTPHOSMapper & operator = (const AliHLTPHOSMapper &);
-
+  
+  fDDLSpecificationMap* fSpecificationMapPtr;
+  
 };
 
 #endif

@@ -34,7 +34,7 @@ AliHLTPHOSUtilities::~AliHLTPHOSUtilities()
 bool 
 AliHLTPHOSUtilities::ScanSingleIntArgument(int argc, const char** argv, const char *name, int *value)
 {
-  cout << "AliHLTPHOSUtilities::ScanSingleIntArgument " << name <<" =  " << DoExistArgument(argc, argv, name) <<endl;  
+  //  cout << "AliHLTPHOSUtilities::ScanSingleIntArgument " << name <<" =  " << DoExistArgument(argc, argv, name) <<endl;  
   int tmpIndex =  DoExistArgument(argc, argv, name);
 
   if( tmpIndex  >= 0)
@@ -63,7 +63,7 @@ AliHLTPHOSUtilities::ScanSingleIntArgument(int argc, const char** argv, const ch
 bool 
 AliHLTPHOSUtilities::ScanSingleFloatArgument(int argc, const char** argv, const char *name, float *value)
 {
-  cout << "AliHLTPHOSUtilities::ScanSingleFloatArgument " << name <<" =  " << DoExistArgument(argc, argv, name) <<endl; 
+  //  cout << "AliHLTPHOSUtilities::ScanSingleFloatArgument " << name <<" =  " << DoExistArgument(argc, argv, name) <<endl; 
 
   int tmpIndex =  DoExistArgument(argc, argv, name);
 
@@ -94,7 +94,7 @@ AliHLTPHOSUtilities::ScanSingleFloatArgument(int argc, const char** argv, const 
 bool 
 AliHLTPHOSUtilities::ScanSingleNameArgument(int argc, const char** argv, const char *name, char *outname)
 {
-  cout << "AliHLTPHOSUtilities::ScanSingleNameArgument " << name <<" =  " << DoExistArgument(argc, argv, name) <<endl; 
+  //  cout << "AliHLTPHOSUtilities::ScanSingleNameArgument " << name <<" =  " << DoExistArgument(argc, argv, name) <<endl; 
 
   int tmpIndex =  DoExistArgument(argc, argv, name);
 
@@ -122,12 +122,13 @@ AliHLTPHOSUtilities::ScanSingleNameArgument(int argc, const char** argv, const c
     }
 }
 
+
 bool 
 AliHLTPHOSUtilities::ScanSingleArgument(int argc, const char** argv, const char *name)
 {
-  cout << "AliHLTPHOSUtilities::ScanSingleArgument " << name <<" =  " << DoExistArgument(argc, argv, name) <<endl; 
+  //  cout << "AliHLTPHOSUtilities::ScanSingleArgument " << name <<" =  " << DoExistArgument(argc, argv, name) <<endl; 
 
-  if( DoExistArgument(argc, argv, name) >0)
+  if( DoExistArgument(argc, argv, name) >=0)
     {
       //     cout << "AliHLTPHOSUtilities::ScanSingleArgument " << name <<" > 0" <<endl;
       return true;

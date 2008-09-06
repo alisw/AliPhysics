@@ -131,22 +131,23 @@ Int_t
 AliHLTPHOSESDMaker::FillESDEvent(AliHLTPHOSCaloClusterContainerStruct* caloClusterContainerPtr)
 {
   //See header file for documentation
-
-  caloClusterContainerPtr--;
-  caloClusterContainerPtr++;
   
-  //  AliESDCaloCluster *caloCluster = 0;
-  //  AliHLTPHOSCaloClusterDataStruct* caloClusterStruct = 0;
+  AliESDCaloCluster *caloCluster = 0;
+  AliHLTPHOSCaloClusterDataStruct* caloClusterStruct = 0;
   
-  for(UInt_t i = 0; i < 1/*caloClusterContainerPtr->fNCaloClusters*/; i++)
+  //cout << "ESD: # of clusters: " << caloClusterContainerPtr->fNCaloClusters << endl; 
+  for(UInt_t i = 0; i < caloClusterContainerPtr->fNCaloClusters; i++)
     {
-      //      caloCluster = (AliESDCaloCluster*)fCaloClustersPtr->New(i + fNCaloClusters);
-      //caloCluster = (AliESDCaloCluster*)fCaloClustersPtr->New(i + fNCaloClusters);
-      /*      caloClusterStruct = &(caloClusterContainerPtr->fCaloClusterArray[i]);
+      caloCluster = (AliESDCaloCluster*)fCaloClustersPtr->New(i + fNCaloClusters);
+      caloCluster = (AliESDCaloCluster*)fCaloClustersPtr->New(i + fNCaloClusters);
+      caloClusterStruct = &(caloClusterContainerPtr->fCaloClusterArray[i]);
       caloCluster->SetID(caloClusterStruct->fID);
       caloCluster->SetClusterType(caloClusterStruct->fClusterType);
-      caloCluster->SetPosition((Float_t*)&caloClusterStruct->fGlobalPos[0]);
+      //      caloCluster->SetPosition((Float_t*)&caloClusterStruct->fGlobalPos[0]);
+      caloCluster->SetPosition((Float_t*)caloClusterStruct->fGlobalPos);
       caloCluster->SetE(caloClusterStruct->fEnergy);
+      // cout << "\t\t ESD: Cluster energy: " << caloClusterStruct->fEnergy << endl;
+//       cout << "\t\t ESD: Position: x = " << caloClusterStruct->fGlobalPos[0] << " - y = " << caloClusterStruct->fGlobalPos[1] << " - z = " << caloClusterStruct->fGlobalPos[2] << endl;
       caloCluster->SetClusterDisp(caloClusterStruct->fDispersion);
       caloCluster->SetClusterChi2(caloClusterStruct->fFitQuality);
       caloCluster->SetPid((Float_t*)&caloClusterStruct->fPID[0]);
@@ -159,7 +160,7 @@ AliHLTPHOSESDMaker::FillESDEvent(AliHLTPHOSCaloClusterContainerStruct* caloClust
       caloCluster->SetCellsAbsId(caloClusterStruct->fCellsAbsId);
       caloCluster->SetCellsAmplitudeFraction(caloClusterStruct->fCellsAmpFraction);
       fESDEventPtr->AddCaloCluster(caloCluster);
-       */
+      
       fNCaloClusters++;  
     }
   

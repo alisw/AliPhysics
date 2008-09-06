@@ -85,13 +85,14 @@ void
 AliHLTPHOSClusterAnalyserComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
 {
   //See headerfile for documentation
-
-  const AliHLTComponentDataType* pType=fgkInputDataTypes;
-  while (pType->fID!=0)
-    {
-      list.push_back(*pType);
-      pType++;
-    }
+  list.clear();
+  list.push_back(AliHLTPHOSDefinitions::fgkClusterDataType);
+//   const AliHLTComponentDataType* pType=fgkInputDataTypes;
+//   while (pType->fID!=0)
+//     {
+//       list.push_back(*pType);
+//       pType++;
+//     }
 }
 
 AliHLTComponentDataType

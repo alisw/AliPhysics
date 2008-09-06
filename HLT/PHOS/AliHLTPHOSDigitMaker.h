@@ -49,7 +49,8 @@ class AliHLTPHOSValidCellDataStruct;
 class AliHLTPHOSRcuCellEnergyDataStruct;
 class AliHLTPHOSDigitContainerDataStruct;
 class AliHLTPHOSDigitDataStruct;
-class AliHLTPHOSSharedMemoryInterface; // added by PTH
+class AliHLTPHOSSharedMemoryInterfacev2; // added by PTH
+class AliHLTPHOSChannelDataHeaderStruct;
        
 using namespace PhosHLTConst;
 
@@ -71,7 +72,8 @@ public:
     fDigitContainerStructPtr(0),
     fDigitArrayPtr(0),
     fDigitStructPtr(0),
-    fDigitCount(0)
+    fDigitCount(0),
+    fOrdered(true)
   {
     //Copy constructor not implemented
   }
@@ -108,6 +110,13 @@ public:
    * @param nSigmas is the number of sigmas to put the threshold
    */
   void SetDigitThresholds(const char* filepath, Int_t nSigmas);
+
+  /** 
+   * Sets the digit thresholds
+   * @param thresholdHG is the high gain threshold for digitisation
+   * @param thresholdLG is the low gain threshold for digitisation
+   */
+  void SetDigitThresholds(const float thresholdHG, float thresholdLG);
   
 
   /**
@@ -130,10 +139,10 @@ public:
 
   /**
    * Make the digits for one event.
-   * @param rcuCellEnergies is the data from the AliHLTPHOSRawAnalyzer
+   * @param channelDataHeader is the data header from the AliHLTPHOSRawAnalyzer
    * @return the number of digits found
    */
-  Int_t MakeDigits(AliHLTPHOSRcuCellEnergyDataStruct* rcuCellEnergies);
+  Int_t MakeDigits(AliHLTPHOSChannelDataHeaderStruct* channelDataHeader);
 
   /**
    * Set the mask for dead channels
@@ -142,6 +151,11 @@ public:
    * @param qCut is the cut 
    */
   void SetBadChannelMask(TH2F* badChannelHGHist, TH2F* badChannelLGHist, Float_t qCut);
+
+  /**
+   * Set ordering of gains or not
+   */
+  void SetOrdered(bool val) { fOrdered = val; }
 
   /** Reset the digit maker */
   void Reset();
@@ -152,7 +166,7 @@ private:
   AliHLTPHOSValidCellDataStruct *fCellDataPtr;                   //! transient
 
   /** Pointer to shared memory interface */
-  AliHLTPHOSSharedMemoryInterface* fShmPtr;                      //! transient
+  AliHLTPHOSSharedMemoryInterfacev2* fShmPtr;                    //! transient
 
   /** Pointer to the digit container */
   AliHLTPHOSDigitContainerDataStruct *fDigitContainerStructPtr;  //! transient
@@ -165,6 +179,9 @@ private:
 
   /** Digit count */
   Int_t fDigitCount;                                             //COMMENT
+
+  /** Is the gains ordered? */
+  bool fOrdered;                                                 //COMMENT
 
   /** Array containing the energies of all RCU channels */
   Float_t fEnergyArray[N_XCOLUMNS_RCU][N_ZROWS_RCU][N_GAINS];    //COMMENT

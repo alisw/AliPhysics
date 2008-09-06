@@ -77,12 +77,12 @@ AliHLTPHOSBaselineAnalyzerComponent::Deinit()
   sprintf(filename, "%s/run%d_baselineTree_%d.root", fDirectory, fRunNb,fEvCnt/fWriteInterval);
   
   if( CheckFileLog( __FILE__ ,  filename,  "w") == true)
-    {
-      fBaselineAnalyzerPtr->WriteAccumulatedBaselines(filename);
-      DoneWritingLog( __FILE__  , filename);
-    }
+  {
+  fBaselineAnalyzerPtr->WriteAccumulatedBaselines(filename);
+       DoneWritingLog( __FILE__  , filename);
+      }
 
-  sprintf(filename, "%s/run%d_channelHistograms.root", fHistPath, fRunNb);
+  sprintf(filename, "%s/run%d_channelHistograms", fHistPath, fRunNb);
   
   if( CheckFileLog( __FILE__ ,  filename,  "w") == true)
     {
@@ -92,30 +92,30 @@ AliHLTPHOSBaselineAnalyzerComponent::Deinit()
 
   sprintf(filename, "%s/run%d_RMSHistogram.root", fHistPath, fRunNb);
 
-  if( CheckFileLog( __FILE__ ,  filename,  "w") == true)
-    {
-      fBaselineAnalyzerPtr->WriteRMSHistogram(filename);
-      DoneWritingLog( __FILE__  , filename);
-    }
+   if( CheckFileLog( __FILE__ ,  filename,  "w") == true)
+     {
+       fBaselineAnalyzerPtr->WriteRMSHistogram(filename);
+       DoneWritingLog( __FILE__  , filename);
+     }
 
-  if(fCalculateAll)
-    {
-      CalculateAll(); 
-    }
-  if(fBaselineAnalyzerPtr)
-    {
-      delete fBaselineAnalyzerPtr;
-      fBaselineAnalyzerPtr = 0;
-    }
-  if(fTreePtr)
-    {
-      fTreePtr = 0;
-    }
-  if(fFilename)
-    {
-      delete fFilename;
-      fFilename = 0;
-    }
+   if(fCalculateAll)
+     {
+       CalculateAll(); 
+     }
+   if(fBaselineAnalyzerPtr)
+     {
+       delete fBaselineAnalyzerPtr;
+       fBaselineAnalyzerPtr = 0;
+     }
+   if(fTreePtr)
+     {
+       fTreePtr = 0;
+     }
+   if(fFilename)
+     {
+       delete fFilename;
+       fFilename = 0;
+     }
   return 0;
 }
 
@@ -130,11 +130,15 @@ void
 AliHLTPHOSBaselineAnalyzerComponent::GetInputDataTypes(vector<AliHLTComponentDataType>& list)
 { 
  //Get datatypes for input
-  const AliHLTComponentDataType* pType=fgkInputDataTypes;
-  while (pType->fID!=0) {
-    list.push_back(*pType); 
-    pType++;
-  }
+//   const AliHLTComponentDataType* pType=fgkInputDataTypes;
+//   while (pType->fID!=0) {
+//     list.push_back(*pType); 
+//     pType++;
+//   }
+  
+  list.clear();
+  list.push_back(AliHLTPHOSDefinitions::fgkCellEnergyDataType);
+
 }
 
 AliHLTComponentDataType 
@@ -169,11 +173,12 @@ AliHLTPHOSBaselineAnalyzerComponent::DoEvent(const AliHLTComponentEventData& evt
       
       if(iter->fDataType != AliHLTPHOSDefinitions::fgkCellEnergyDataType)
 	{
-	  Logging(kHLTLogWarning, __FILE__ , "wrong datatype" , "dat is not of type fgkCellEnergyDataType");
+	  Logging(kHLTLogDebug, __FILE__ , "wrong datatype" , "dat is not of type fgkCellEnergyDataType");
 	  continue;
 
 	}
       fBaselineAnalyzerPtr->CalculateRcuBaselines(reinterpret_cast<AliHLTPHOSRcuCellEnergyDataStruct*>(iter->fPtr));
+      //      fBaselineAnalyzerPtr->CalculateRcuBaselines(reinterpret_cast<AliHLTPHOSValidCellDataStruct);
     }
   
   fEvCnt++;

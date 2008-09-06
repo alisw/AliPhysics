@@ -45,6 +45,7 @@
 
 class TClonesArray;
 class AliPHOSDigit;
+class AliPHOSRecoParamEmc;
 class AliPHOSRecoParam;
 
 /** 
@@ -120,7 +121,7 @@ public:
    * Set offline mode
    * @param getter pointer to an instance of AliPHOSGetter
    */
-  void SetOfflineMode(AliPHOSLoader* getter); 
+  //  void SetOfflineMode(AliPHOSLoader* getter); 
   
   /** Starts clusterization of the event */ 
   virtual Int_t ClusterizeEvent();
@@ -129,10 +130,10 @@ public:
    * Gets an event, for offline mode
    * @param evtNr event number to get
    */
-  virtual Int_t GetEvent(Int_t evtNr);
+  //virtual Int_t GetEvent(Int_t evtNr);
   
   /** Get number of events */
-  Int_t GetNEvents();
+  //Int_t GetNEvents();
 
   /**
    * For a given digit this digit scans for neighbouring digits which 
@@ -150,10 +151,8 @@ public:
    */
   virtual Int_t AreNeighbours(AliHLTPHOSDigitDataStruct* d1, AliHLTPHOSDigitDataStruct* d2);
 
-  /** Calculates the center of gravity of a rec point */
-  virtual void CalculateCenterOfGravity();
 
-private:
+protected:
   /** Energy threshold for starting a cluster for the calorimeter */
   Float_t fEmcClusteringThreshold;                             //COMMENT
 
@@ -192,7 +191,10 @@ private:
   
   /** Instance of the PHOS getter, used in offline mode */    
   AliPHOSLoader *fGetterPtr;                                   //! transient
-  
+
+  /** Maximum difference in index to be a neighbour */
+  Int_t fMaxDigitIndexDiff;                                   //COMMENT
+
   ClassDef(AliHLTPHOSClusterizer, 1);
 };
 

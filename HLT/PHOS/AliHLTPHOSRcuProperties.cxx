@@ -40,6 +40,7 @@ AliHLTPHOSRcuProperties::AliHLTPHOSRcuProperties() :fkEquippmentID(0),
 
 }
 
+
 AliHLTPHOSRcuProperties::~AliHLTPHOSRcuProperties()
 {
 
@@ -69,11 +70,11 @@ AliHLTPHOSRcuProperties::ScanArguments(int argc, const char** argv)
 
   if(fIsSetEquippmentID == true)
     {
-      cout << "AliHLTPHOSRcuProperties::ScanArguments fIsSetEquippmentID  == true" << endl;
+      //     cout << "AliHLTPHOSRcuProperties::ScanArguments fIsSetEquippmentID  == true" << endl;
     }
   else
     {
-      cout << "AliHLTPHOSRcuProperties::ScanArguments  fIsSetEquippmentID  == false" << endl;
+      //     cout << "AliHLTPHOSRcuProperties::ScanArguments  fIsSetEquippmentID  == false" << endl;
     }
   
 

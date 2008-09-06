@@ -19,6 +19,7 @@
 #include "AliHLTPHOSProcessor.h"
 #include "AliHLTPHOSRcuCellEnergyDataStruct.h"
 #include "AliHLTPHOSDigitContainerDataStruct.h"
+#include "AliHLTPHOSChannelDataHeaderStruct.h"
 #include "TClonesArray.h"
 #include "TFile.h"
 #include <sys/stat.h>
@@ -81,11 +82,14 @@ void
 AliHLTPHOSDigitMakerComponent::GetInputDataTypes(vector<AliHLTComponentDataType>& list)
 { 
   //see header file for documentation
-  const AliHLTComponentDataType* pType=fgkInputDataTypes;
-  while (pType->fID!=0) {
-    list.push_back(*pType); 
-    pType++;
-  }
+  list.clear();
+  list.push_back(AliHLTPHOSDefinitions::fgkChannelDataType);
+
+//   const AliHLTComponentDataType* pType=fgkInputDataTypes;
+//   while (pType->fID!=0) {
+//     list.push_back(*pType); 
+//     pType++;
+//   }
 }
 
 AliHLTComponentDataType 
@@ -101,7 +105,7 @@ AliHLTPHOSDigitMakerComponent::GetOutputDataSize(unsigned long& constBase, doubl
 {
   //see header file for documentation
   constBase = 30;
-  inputMultiplier = 1;
+  inputMultiplier = 3;
 }
 
 int 
@@ -121,54 +125,50 @@ AliHLTPHOSDigitMakerComponent::DoEvent(const AliHLTComponentEventData& evtData, 
   unsigned long ndx; 
 
   UInt_t specification = 0;
+  AliHLTPHOSChannelDataHeaderStruct* tmpChannelData = 0;
   
-  fDigitMakerPtr->SetDigitContainerStruct((AliHLTPHOSDigitContainerDataStruct*)outBPtr);
+  fDigitMakerPtr->SetDigitContainerStruct(reinterpret_cast<AliHLTPHOSDigitContainerDataStruct*>(outputPtr));
 
   for( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
     {
       iter = blocks+ndx;
       
-      if(iter->fDataType != AliHLTPHOSDefinitions::fgkCellEnergyDataType)
+      if(iter->fDataType != AliHLTPHOSDefinitions::fgkChannelDataType)
 	{
-	  Logging(kHLTLogWarning, __FILE__ , "wrong datatype" , "data is not of type fgkCellEnergyDataType as expected");
+	  HLTDebug("Data block is not of type fgkChannelDataType");
 	  continue;
-
 	}
+      if(iter == 0) continue;
+      if((reinterpret_cast<AliHLTPHOSChannelDataHeaderStruct*>(iter->fPtr))->fNChannels == 0) continue;
       specification = specification|iter->fSpecification;
-      digitCount = fDigitMakerPtr->MakeDigits(reinterpret_cast<AliHLTPHOSRcuCellEnergyDataStruct*>(iter->fPtr));
+      tmpChannelData = reinterpret_cast<AliHLTPHOSChannelDataHeaderStruct*>(iter->fPtr);
+    
+      digitCount += fDigitMakerPtr->MakeDigits(tmpChannelData);
     }
-
-  fPhosEventCount++;
   
-  mysize = 0;
-  offset = tSize;
+  //  mysize = 0;
+  //offset = tSize;
       
   mysize += sizeof(AliHLTPHOSDigitContainerDataStruct);
-  ((AliHLTPHOSDigitContainerDataStruct*)outBPtr)->fNDigits = digitCount;
+  (reinterpret_cast<AliHLTPHOSDigitContainerDataStruct*>(outputPtr))->fNDigits = digitCount;
   AliHLTComponentBlockData bd;
   FillBlockData( bd );
   bd.fOffset = offset;
   bd.fSize = mysize;
   bd.fDataType = AliHLTPHOSDefinitions::fgkDigitDataType;
   bd.fSpecification = specification;
-  outputBlocks.push_back( bd );
+  outputBlocks.push_back(bd);
        
-  tSize += mysize;
-  outBPtr += mysize;
-
+//   tSize += mysize;
+//   outputPtr += mysize;
 
   if( tSize > size )
     {
       Logging( kHLTLogFatal, "HLT::AliHLTPHOSDigitMakerComponent::DoEvent", "Too much data", "Data written over allowed buffer. Amount written: %lu, allowed amount: %lu.", tSize, size );
       return EMSGSIZE;
     }
-      
-  fDigitMakerPtr->Reset();
 
-  if(fPhosEventCount % 500 == 0)
-    {
-      Logging(kHLTLogInfo, __FILE__ , "evens analyzed" , "Event #: %d -number of digits found %d", fPhosEventCount, digitCount); 
-    }
+  fDigitMakerPtr->Reset();
   
   return 0;
 }
@@ -194,6 +194,10 @@ AliHLTPHOSDigitMakerComponent::DoInit(int argc, const char** argv )
       if(!strcmp("-highgainfactor", argv[i]))
 	{
 	  fDigitMakerPtr->SetGlobalHighGainFactor(atof(argv[i+1]));
+	}
+      if(!strcmp("-digitthresholds", argv[i]))
+	{
+	  fDigitMakerPtr->SetDigitThresholds(atof(argv[i+1]), atof(argv[i+2]));
 	}
     }
  

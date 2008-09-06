@@ -22,18 +22,22 @@
  * @date
  * @brief  Baseline analyzer for PHOS HLT
  */
-
+#include <fstream>
 #include "AliHLTPHOSBaselineAnalyzer.h"
 #include "AliHLTPHOSBase.h"
 #include "AliHLTPHOSBaseline.h"
 #include "AliHLTPHOSValidCellDataStruct.h"
 #include "AliHLTPHOSSanityInspector.h"
 #include "AliHLTPHOSConstants.h"
+#include "AliHLTPHOSMapper.h"
 
 #include "AliHLTPHOSRcuCellEnergyDataStruct.h"
+#include "AliHLTPHOSSharedMemoryInterface.h"
+#include "AliHLTPHOSValidCellDataStruct.h"
 #include "TTree.h"
 #include "TClonesArray.h"
 #include "TFile.h"
+#include "TF1.h"
 #include "TH1F.h"
 #include "TH2F.h"
 
@@ -99,25 +103,42 @@ AliHLTPHOSBaselineAnalyzer::~AliHLTPHOSBaselineAnalyzer()
 void
 AliHLTPHOSBaselineAnalyzer::CalculateRcuBaselines(AliHLTPHOSRcuCellEnergyDataStruct* rcuData)
 {
-  rcuData ++;
-  rcuData --; //shutting up rule checker
+
   //see headerfile for documentation
-  //Int_t xOff = rcuData->fRcuX * N_XCOLUMNS_RCU;
-  //Int_t zOff = rcuData->fRcuZ * N_ZROWS_RCU;
-  //Float_t baseline = 0;
+  Int_t xOff = rcuData->fRcuX * N_XCOLUMNS_RCU;
+  Int_t zOff = rcuData->fRcuZ * N_ZROWS_RCU;
+  Float_t baseline = 0;
+  AliHLTPHOSValidCellDataStruct *currentChannel =0;
 
-  //TODO: fix this to comply with new format
-  /*
-  AliHLTPHOSValidCellDataStruct *data = rcuData->fValidData;
-
-  for(Int_t i = 0; i < rcuData->fCnt; i++)
+  AliHLTPHOSSharedMemoryInterface* shmPtr = new AliHLTPHOSSharedMemoryInterface();
+  shmPtr->SetMemory(rcuData);
+  currentChannel = shmPtr->NextChannel();
+  
+  while(currentChannel != 0)
     {
-      baseline = CalculateChannelBaseline(&(data[i]), xOff, zOff);
-      if(!(baseline < 0))
-      {
-	CalculateAccumulatedChannelBaseline(data[i].fX + xOff, data[i].fZ + zOff, data[i].fGain, baseline);
-      }
-      }*/
+      if(rcuData->fHasRawData == true)
+	{
+	  Int_t* rawPtr = 0;
+	  Int_t dummysamples = 0;
+	  rawPtr = shmPtr->GetRawData(dummysamples);
+	  baseline = CalculateChannelBaseline(currentChannel, rawPtr, xOff, zOff);
+	  if(!(baseline < 0))
+	    {
+	      CalculateAccumulatedChannelBaseline(currentChannel->fX + xOff, currentChannel->fZ + zOff, currentChannel->fGain, baseline);
+	    }
+	}
+      currentChannel = shmPtr->NextChannel();
+    }    
+      
+//   AliHLTPHOSValidCellDataStruct *data = rcuData->fValidData;
+
+//   for(Int_t i = 0; i < rcuData->fCnt; i++)
+//     {
+//       baseline = CalculateChannelBaseline(&(data[i]), xOff, zOff);
+//       if(!(baseline < 0))
+//       {
+// 	CalculateAccumulatedChannelBaseline(data[i].fX + xOff, data[i].fZ + zOff, data[i].fGain, baseline);
+//       }
 }
   
 
@@ -142,15 +163,19 @@ AliHLTPHOSBaselineAnalyzer::CalculateChannelBaseline(AliHLTPHOSValidCellDataStru
     }
     */
     fChannelHistogramsPtr[cellData->fX + xOff][cellData->fZ + zOff][cellData->fGain]->Fill(data[i]);
+    total += data[i];
   }
-  
-  if(cellData->fCrazyness == 0)
-  {
-       crazyness = fSanityInspector->CheckAndHealInsanity(data, fNSamples);
-  }
+  fBaselines[cellData->fX + xOff][cellData->fZ + zOff][cellData->fGain] = (float)total / (fNSamples - fSampleStart);
+
+  //if(cellData->fCrazyness == 0)
+  // {
+    //       crazyness = fSanityInspector->CheckAndHealInsanity(data, fNSamples);
+  // }
   if(crazyness < 0)
     return crazyness;
-  
+
+  total = 0;
+
   for(Int_t j = fSampleStart; j < fNSamples; j++)
     {
       if(data[j] > fMaxSignal)
@@ -159,7 +184,7 @@ AliHLTPHOSBaselineAnalyzer::CalculateChannelBaseline(AliHLTPHOSValidCellDataStru
       fFixedChannelHistogramsPtr[cellData->fX + xOff][cellData->fZ + zOff][cellData->fGain]->Fill(data[j]);
       total += data[j];
     }
-  fBaselines[cellData->fX + xOff][cellData->fZ + zOff][cellData->fGain] = (float)total / (fNSamples - fSampleStart);
+  //  fBaselines[cellData->fX + xOff][cellData->fZ + zOff][cellData->fGain] = (float)total / (fNSamples - fSampleStart);
     
   return (float)total/(fNSamples - fSampleStart);
 }
@@ -256,7 +281,10 @@ void
 AliHLTPHOSBaselineAnalyzer::WriteChannelHistograms(const Char_t* filename)
 {
   //see headerfile for documentation
-  TFile *file = TFile::Open(filename, "recreate");
+  TH1F* tmpRMSHistPtr = new TH1F("tmp", "tmp", 100, 0, 20);
+  char fullfilename[128];
+  sprintf(fullfilename, "%s.root", filename);
+  TFile *file = TFile::Open(fullfilename, "recreate");
   
   for(int x = 0; x < N_XCOLUMNS_MOD; x++)
   {
@@ -269,6 +297,68 @@ AliHLTPHOSBaselineAnalyzer::WriteChannelHistograms(const Char_t* filename)
     }
   }
   file->Close();
+
+  //  char fullfilename[128];
+  char header[128];
+  int x = -1;
+  int z = -1;
+  int gain = -1;
+  float maxSigma = 0;
+  sprintf(fullfilename, "%s.txt", filename);
+  ofstream asciifile(fullfilename);
+  AliHLTPHOSMapper* fMapperPtr = new AliHLTPHOSMapper();
+  //CRAP need to find module number
+  for(int module = 0; module < N_MODULES; module++)
+    {
+      for(int rcu = 0; rcu < N_RCUS; rcu++)
+	{
+	  for(int branch = 0; branch < N_BRANCHES; branch++)
+	    {
+	      for(int card = 0; card < N_FEECS; card++)
+		{
+		  for(int chip = 0; chip < N_ALTROS+1; chip++)
+		    {
+		      if(chip==1)continue;
+		      //		      sprintf(header, "Module:%d RCU:%d Branch:%d Card:%d Chip:%d", module-1, rcu, branch, card, chip);
+		      if(module == 2)
+			{
+			  sprintf(header, "Module:%d RCU:%d Branch:%d Card:%d Chip:%d", module-1, rcu, branch, card+1, chip);
+			  asciifile << header << endl;
+			  for(int channel = 0; channel < N_ALTROCHANNELS; channel++)
+			    {
+			      
+			      int hwAddress = ((branch << 11) | (card << 7) | (chip << 4) | channel);
+			      int xoff = 0;
+			      int zoff = 0;
+			      if(rcu == 1 || rcu == 3) xoff = 1;
+			      if(rcu == 2 || rcu == 3) zoff = 1;
+			      z  = fMapperPtr->fHw2geomapPtr[hwAddress].fZRow + zoff*N_ZROWS_RCU;
+			      x  = fMapperPtr->fHw2geomapPtr[hwAddress].fXCol + xoff*N_XCOLUMNS_RCU; 
+			      gain = fMapperPtr->fHw2geomapPtr[hwAddress].fGain; 
+			      if(x >63 || x < 0 || z > 55 ||  z < 0 || gain < 0 ||  gain >1) 
+				{
+				  //				  cout << "index out of range!" << " x = " << x << " z = " << z << " gain = " << gain << " xoff = " << xoff << " zoff = " << zoff << endl;
+				  continue;
+				}
+			      //fChannelHistogramsPtr[x][z][gain]->Fit("gaus", "0");
+			      //			      asciifile << (fChannelHistogramsPtr[x][z][gain]->GetFunction("gaus"))->GetParameter(1) << endl;
+			      asciifile << (int)fChannelHistogramsPtr[x][z][gain]->GetMean()<< endl;
+			      //asciifile << (int)(fAccumulatedBaselines[x][z][gain][0]) << endl;
+			      if(fChannelHistogramsPtr[x][z][gain]->GetRMS() > maxSigma) maxSigma = fChannelHistogramsPtr[x][z][gain]->GetRMS();
+			      tmpRMSHistPtr->Fill(fChannelHistogramsPtr[x][z][gain]->GetRMS());
+			    }
+			}
+		      else
+			{
+			  //			      asciifile << 0 << endl;
+			  maxSigma = 0;
+			}
+		    }
+		}
+	    }
+	}
+    }
+  asciifile << tmpRMSHistPtr->GetMean()*3;
 }
 
 

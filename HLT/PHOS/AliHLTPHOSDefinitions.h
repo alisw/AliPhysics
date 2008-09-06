@@ -16,7 +16,7 @@ class AliHLTPHOSDefinitions
 {
 public:
   static const AliHLTComponentDataType fgkFourierTransform;    /**Fourier transform of time dependent signals*/
-
+  static const AliHLTComponentDataType fgkChannelDataType;    /**<Reconstructed channels*/
   static const AliHLTComponentDataType fgkCellEnergyDataType;    /**<Reconstructed cell/crystal energies*/
   static const AliHLTComponentDataType fgkDDLPackedRawDataType;  /**<DDL raw data on the RCU data format*/
   static const AliHLTComponentDataType fgkCellEnergyHistogramDataType;  /**<Histogram for per cell/gain energy distribution*/

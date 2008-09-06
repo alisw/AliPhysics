@@ -182,6 +182,7 @@ AliHLTPHOSClusterizerComponent::DoEvent(const AliHLTComponentEventData& evtData,
 		  fAllDigitsPtr->fDigitDataStruct[j].fX = digitContainerPtr->fDigitDataStruct[i].fX;
 		  fAllDigitsPtr->fDigitDataStruct[j].fZ = digitContainerPtr->fDigitDataStruct[i].fZ;
 		  fAllDigitsPtr->fDigitDataStruct[j].fAmplitude = digitContainerPtr->fDigitDataStruct[i].fAmplitude;
+		  fAllDigitsPtr->fDigitDataStruct[j].fEnergy = digitContainerPtr->fDigitDataStruct[i].fEnergy;
 		  fAllDigitsPtr->fDigitDataStruct[j].fTime = digitContainerPtr->fDigitDataStruct[i].fTime;
 		  fAllDigitsPtr->fDigitDataStruct[j].fCrazyness = digitContainerPtr->fDigitDataStruct[i].fCrazyness;
 		  j++;
@@ -190,6 +191,7 @@ AliHLTPHOSClusterizerComponent::DoEvent(const AliHLTComponentEventData& evtData,
 	    }
 	}
     }
+  fAllDigitsPtr->fNDigits = j;
   if(fModuleClusterizationMode && fAllDigitsPtr != 0)
     {
       fClusterizerPtr->SetDigitContainer(fAllDigitsPtr);
@@ -201,7 +203,6 @@ AliHLTPHOSClusterizerComponent::DoEvent(const AliHLTComponentEventData& evtData,
   if(digitContainerPtr != 0)
     {
       nRecPoints = fClusterizerPtr->ClusterizeEvent();
-      
       mysize = 0;
       offset = tSize;
 
