@@ -2006,7 +2006,13 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
 	Float_t correction =0;
 	if (calib->GetPadTime0()){
 	  if (!calib->GetPadTime0()->GetCalROC(isec)) continue;
-	  correction = calib->GetPadTime0()->GetCalROC(isec)->GetValue(TMath::Nint(xyz[0]),TMath::Nint(xyz[1]));
+	  Int_t npads = fTPCParam->GetNPads(isec,TMath::Nint(xyz[0]));
+	  //	  Int_t pad  = TMath::Nint(xyz[1]+fTPCParam->GetNPads(isec,TMath::Nint(xyz[0]))*0.5);
+	  Int_t pad  = TMath::Nint(xyz[1]);
+	  if (pad<0) pad=0;
+	  if (pad>=npads) pad=npads-1;
+	  correction = calib->GetPadTime0()->GetCalROC(isec)->GetValue(TMath::Nint(xyz[0]),pad);
+	  
 	}
 	xyz[2]+=correction;
 	//
