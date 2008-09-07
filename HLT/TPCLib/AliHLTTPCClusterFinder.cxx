@@ -554,7 +554,8 @@ void AliHLTTPCClusterFinder::WriteClusters(Int_t nclusters,AliClusterData *list)
       if(fCalcerr) { //calc the errors, otherwice take the fixed error 
 	Int_t patch = AliHLTTPCTransform::GetPatch(fCurrentRow);
 	UInt_t q2=list[j].fTotalCharge*list[j].fTotalCharge;
-	Float_t sy2=list[j].fPad2 * list[j].fTotalCharge - list[j].fPad * list[j].fPad;
+	//	Float_t sy2=list[j].fPad2 * list[j].fTotalCharge - list[j].fPad * list[j].fPad;
+	Float_t sy2=(Float_t)list[j].fPad2 * list[j].fTotalCharge - (Float_t)list[j].fPad * list[j].fPad;
 	sy2/=q2;
 	if(sy2 < 0) {
 	    LOG(AliHLTTPCLog::kError,"AliHLTTPCClusterFinder::WriteClusters","Cluster width")
@@ -570,7 +571,8 @@ void AliHLTTPCClusterFinder::WriteClusters(Int_t nclusters,AliClusterData *list)
 	    }
 	  } else fpad2=sy2; //take the width not the error
 	}
-	Float_t sz2=list[j].fTime2*list[j].fTotalCharge - list[j].fTime*list[j].fTime;
+	//	Float_t sz2=list[j].fTime2*list[j].fTotalCharge - list[j].fTime*list[j].fTime;
+	Float_t sz2=(Float_t)list[j].fTime2*list[j].fTotalCharge - (Float_t)list[j].fTime*list[j].fTime;
 	sz2/=q2;
 	if(sz2 < 0){
 	  LOG(AliHLTTPCLog::kError,"AliHLTTPCClusterFinder::WriteClusters","Cluster width")
@@ -833,7 +835,7 @@ Bool_t AliHLTTPCClusterFinder::ComparePads(AliHLTTPCPad *nextPad,AliHLTTPCCluste
       cluster->fTime += candidate->fTime;
       cluster->fTime2 += candidate->fTime2;
       cluster->fPad+=candidate->fPad;
-      cluster->fPad2=candidate->fPad2;
+      cluster->fPad2+=candidate->fPad2;
       cluster->fLastMergedPad=candidate->fPad;
       if(candidate->fQMax>cluster->fQMax){
 	cluster->fQMax=candidate->fQMax;
