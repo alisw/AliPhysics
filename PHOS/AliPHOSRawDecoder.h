@@ -71,7 +71,7 @@ protected:
   AliPHOSCalibData * fCalibData ;   //! Calibration database if avalable
 
 
-  ClassDef(AliPHOSRawDecoder,1)
+  ClassDef(AliPHOSRawDecoder,2)
 };
 
 #endif

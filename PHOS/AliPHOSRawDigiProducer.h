@@ -51,7 +51,7 @@ private:
   static AliPHOSCalibData * fgCalibData ;   //! Calibration database if avalable
   AliPHOSPulseGenerator * fPulseGenerator ; //! Class with pulse shape parameters
 
-  ClassDef(AliPHOSRawDigiProducer,2)
+  ClassDef(AliPHOSRawDigiProducer,3)
 };
 
 #endif

@@ -40,7 +40,7 @@ class AliPHOSEmcCalibData: public TNamed {
   Float_t  fTimeShiftEmc[5][56][64] ;   // channel-by-channel t0 shift ([mod][col][row])
   UInt_t   fAltroOffsets[5][56][64] ;   // channel-by-channel offsets udes in ZS
   //
-  ClassDef(AliPHOSEmcCalibData,2)    // PHOS EMC calibration data
+  ClassDef(AliPHOSEmcCalibData,3)    // PHOS EMC calibration data
 };
 
 #endif
