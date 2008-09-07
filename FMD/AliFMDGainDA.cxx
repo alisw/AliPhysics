@@ -245,8 +245,10 @@ void AliFMDGainDA::Analyse(UShort_t det,
 //_____________________________________________________________________
 void AliFMDGainDA::Terminate(TFile* diagFile)
 {
-  diagFile->cd();
-  fSummaryGains.Write();
+  if(diagFile) {
+    diagFile->cd();
+    fSummaryGains.Write();
+  }
 }
 
 //_____________________________________________________________________

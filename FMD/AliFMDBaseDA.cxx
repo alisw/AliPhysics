@@ -28,7 +28,6 @@
 
 #include "AliFMDBaseDA.h"
 #include "iostream"
-
 #include "AliFMDRawReader.h"
 #include "AliFMDCalibSampleRate.h"
 #include "AliFMDCalibStripRange.h"
@@ -134,10 +133,7 @@ void AliFMDBaseDA::Run(AliRawReader* reader)
   
   
   
-  InitContainer(diagFile);
-  //Init();
-
-
+  
   reader->Reset();
   
   AliFMDRawReader* fmdReader  = new AliFMDRawReader(reader,0);
@@ -159,17 +155,21 @@ void AliFMDBaseDA::Run(AliRawReader* reader)
     }
   }
   
+  InitContainer(diagFile);
+  
   if(!SOD_read) 
     AliWarning("No SOD event detected!");
   
   int lastProgress = 0;
   
+  
+  
   for(Int_t n =1;n <= GetRequiredEvents(); n++) {
     if(!reader->NextEvent()) continue;
-    
     SetCurrentEvent(n);
     digitArray->Clear();
     fmdReader->ReadAdcs(digitArray);
+    
     //std::cout<<"in event "<<*(reader->GetEventId())<<"   "<<n<<std::endl;
     //AliDebug(5, Form("In event # %d with %d entries", 
     //		     *(reader->GetEventId()), digitArray->GetEntriesFast()));
@@ -179,13 +179,16 @@ void AliFMDBaseDA::Run(AliRawReader* reader)
       FillChannels(digit);
     }
     
+   
     FinishEvent();
+    
     int progress = int((n *100)/ GetRequiredEvents()) ;
     if (progress <= lastProgress) continue;
     lastProgress = progress;
     std::cout << "Progress: " << lastProgress << " / 100 " << std::endl;
+    
   }
-
+  
   AliInfo(Form("Looped over %d events",GetCurrentEvent()));
   WriteHeaderToFile();
   
@@ -204,24 +207,25 @@ void AliFMDBaseDA::Run(AliRawReader* reader)
 	std::cout << '.' << std::flush;
       }
       if(fSaveHistograms)
-	diagFile->Flush();
+      	diagFile->Flush();
       std::cout << "done" << std::endl;
     }
   }
-
+  
   if(fOutputFile.is_open()) {
     fOutputFile.write("# EOF\n",6);
     fOutputFile.close();
   }
   
+  Terminate(diagFile);
+    
   if(fSaveHistograms ) {
     
-    Terminate(diagFile);
-  
     AliInfo("Closing diagnostics file - please wait ...");
     // diagFile->Write();
     diagFile->Close();
     AliInfo("done");
+    
   }
 }
 //_____________________________________________________________________

@@ -34,11 +34,15 @@ class AliFMDPedestalDA: public AliFMDBaseDA {
   void FinishEvent() {}
   void Terminate(TFile* );
  private:
-  TH1S* GetChannel(UShort_t det, Char_t ring, UShort_t sec, UShort_t strip);
+  TH1S* GetChannel(UShort_t det, Char_t ring, UShort_t sec, UShort_t strip, UInt_t sample);
  
   Int_t fCurrentChannel;
   TH1F  fPedSummary;
   TH1F  fNoiseSummary;
+  std::ofstream fZSfileFMD1;
+  std::ofstream fZSfileFMD2;
+  std::ofstream fZSfileFMD3;
+  
   ClassDef(AliFMDPedestalDA,0)
     
 };
