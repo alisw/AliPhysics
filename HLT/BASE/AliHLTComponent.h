@@ -792,6 +792,35 @@ class AliHLTComponent : public AliHLTLogging {
   int GetEventDoneData( unsigned long size, AliHLTComponentEventDoneData** edd );
 
   /**
+   * Allocate an EventDoneData structure for the current event .
+   * The method allocates the memory internally and does not interact with the current Framework.
+   * The allocated data structure is empty initially and can be filled by calls to the 
+   * @ref PushEventDoneData method. The memory will be automatically released after the event has been processed.
+   * 
+   */
+  int ReserveEventDoneData( unsigned long size );
+
+  /**
+   * Push a 32 bit word of data into event done data for the current event which
+   * has previously been allocated by the @ref ReserveEventDoneData method.
+   */
+  int PushEventDoneData( AliHLTUInt32_t eddDataWord );
+
+  /**
+   * Release event done data previously reserved by @ref ReserveEventDoneData
+   */
+   void ReleaseEventDoneData();
+
+  /**
+   * Get the pointer to the event done data available/built so far for the current event via
+   * @ref ReserveEventDoneData and @ref PushEventDoneData
+   */
+  AliHLTComponentEventDoneData* GetCurrentEventDoneData()
+    {
+    return fEventDoneData;
+    }
+
+  /**
    * Helper function to convert the data type to a string.
    */
   void DataType2Text(const AliHLTComponentDataType& type, char output[kAliHLTComponentDataTypefIDsize+kAliHLTComponentDataTypefOriginSize+2]) const;
@@ -1411,6 +1440,13 @@ class AliHLTComponent : public AliHLTLogging {
 
   /** component arguments */
   string fComponentArgs;                                           //! transient
+
+
+  /** event done data */
+  AliHLTComponentEventDoneData* fEventDoneData;                    //! transient
+
+  /** Reserved size of the memory stored at fEventDoneData */
+  unsigned long fEventDoneDataSize;                                //! transient
 
   ClassDef(AliHLTComponent, 8)
 };

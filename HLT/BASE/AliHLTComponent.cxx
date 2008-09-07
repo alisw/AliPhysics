@@ -79,7 +79,9 @@ AliHLTComponent::AliHLTComponent()
   fpBenchmark(NULL),
   fRequireSteeringBlocks(false),
   fEventType(gkAliEventTypeUnknown),
-  fComponentArgs()
+  fComponentArgs(),
+  fEventDoneData(NULL),
+  fEventDoneDataSize(0)
 {
   // see header file for class documentation
   // or
@@ -118,6 +120,8 @@ AliHLTComponent::~AliHLTComponent()
     delete fpRunDesc;
     fpRunDesc=NULL;
   }
+  if (fEventDoneData)
+    delete [] reinterpret_cast<AliHLTUInt8_t*>( fEventDoneData );
 }
 
 AliHLTComponentHandler* AliHLTComponent::fgpComponentHandler=NULL;
@@ -514,6 +518,51 @@ int AliHLTComponent::GetEventDoneData( unsigned long size, AliHLTComponentEventD
     return (*fEnvironment.fGetEventDoneDataFunc)(fEnvironment.fParam, fCurrentEvent, size, edd );
   return -ENOSYS;
 }
+
+int AliHLTComponent::ReserveEventDoneData( unsigned long size )
+{
+  // see header file for function documentation
+  int iResult=0;
+
+  
+  if (size>fEventDoneDataSize) {
+    AliHLTComponentEventDoneData* newEDD = reinterpret_cast<AliHLTComponentEventDoneData*>( new AliHLTUInt8_t[ sizeof(AliHLTComponentEventDoneData)+size ] );
+    if (!newEDD)
+      return -ENOMEM;
+    newEDD->fStructSize = sizeof(AliHLTComponentEventDoneData);
+    newEDD->fDataSize = 0;
+    newEDD->fData = reinterpret_cast<AliHLTUInt8_t*>(newEDD)+newEDD->fStructSize;
+    if (fEventDoneData) {
+      memcpy( newEDD->fData, fEventDoneData->fData, fEventDoneData->fDataSize );
+      newEDD->fDataSize = fEventDoneData->fDataSize;
+      delete [] reinterpret_cast<AliHLTUInt8_t*>( fEventDoneData );
+    }
+    fEventDoneData = newEDD;
+    fEventDoneDataSize = size;
+  }
+  return iResult;
+
+}
+
+int AliHLTComponent::PushEventDoneData( AliHLTUInt32_t eddDataWord )
+{
+  if (!fEventDoneData)
+    return -ENOMEM;
+  if (fEventDoneData->fDataSize+sizeof(AliHLTUInt32_t)>fEventDoneDataSize)
+    return -ENOSPC;
+  *reinterpret_cast<AliHLTUInt32_t*>((reinterpret_cast<AliHLTUInt8_t*>(fEventDoneData->fData)+fEventDoneData->fDataSize)) = eddDataWord;
+  fEventDoneData->fDataSize += sizeof(AliHLTUInt32_t);
+  return 0;
+}
+
+void AliHLTComponent::ReleaseEventDoneData()
+{
+  if (fEventDoneData)
+    delete [] reinterpret_cast<AliHLTUInt8_t*>( fEventDoneData );
+  fEventDoneData = NULL;
+  fEventDoneDataSize = 0;
+}
+
 
 int AliHLTComponent::FindMatchingDataTypes(AliHLTComponent* pConsumer, AliHLTComponentDataTypeList* tgtList) 
 {
@@ -1235,12 +1284,39 @@ int AliHLTComponent::CloseMemoryFile(AliHLTMemoryFile* pFile)
   return iResult;
 }
 
-int AliHLTComponent::CreateEventDoneData(AliHLTComponentEventDoneData /*edd*/)
+int AliHLTComponent::CreateEventDoneData(AliHLTComponentEventDoneData edd)
 {
   // see header file for function documentation
-  int iResult=-ENOSYS;
-  //#warning  function not yet implemented
-  HLTWarning("function not yet implemented");
+  int iResult=0;
+
+  AliHLTComponentEventDoneData* newEDD = NULL;
+  
+  unsigned long newSize=edd.fDataSize;
+  if (fEventDoneData)
+    newSize += fEventDoneData->fDataSize;
+
+  if (newSize>fEventDoneDataSize) {
+    newEDD = reinterpret_cast<AliHLTComponentEventDoneData*>( new AliHLTUInt8_t[ sizeof(AliHLTComponentEventDoneData)+newSize ] );
+    if (!newEDD)
+      return -ENOMEM;
+    newEDD->fStructSize = sizeof(AliHLTComponentEventDoneData);
+    newEDD->fDataSize = newSize;
+    newEDD->fData = reinterpret_cast<AliHLTUInt8_t*>(newEDD)+newEDD->fStructSize;
+    unsigned long long offset = 0;
+    if (fEventDoneData) {
+      memcpy( newEDD->fData, fEventDoneData->fData, fEventDoneData->fDataSize );
+      offset += fEventDoneData->fDataSize;
+    }
+    memcpy( reinterpret_cast<AliHLTUInt8_t*>(newEDD->fData)+offset, edd.fData, edd.fDataSize );
+    if (fEventDoneData)
+      delete [] reinterpret_cast<AliHLTUInt8_t*>( fEventDoneData );
+    fEventDoneData = newEDD;
+    fEventDoneDataSize = newSize;
+  }
+  else {
+    memcpy( reinterpret_cast<AliHLTUInt8_t*>(fEventDoneData->fData)+fEventDoneData->fDataSize, edd.fData, edd.fDataSize );
+    fEventDoneData->fDataSize += edd.fDataSize;
+  }
   return iResult;
 }
 

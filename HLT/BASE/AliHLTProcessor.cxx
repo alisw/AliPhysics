@@ -54,8 +54,24 @@ int AliHLTProcessor::DoProcessing( const AliHLTComponentEventData& evtData, cons
 {
   // see header file for class documentation
   int iResult=0;
+  ReleaseEventDoneData();
+
   iResult=DoEvent(evtData, blocks, trigData, outputPtr, size, outputBlocks);
+
   edd = NULL;
+  AliHLTComponentEventDoneData* eddTmp = GetCurrentEventDoneData();
+  if (eddTmp) {
+    int ret = GetEventDoneData(eddTmp->fDataSize, &edd);
+    if (ret) {
+      HLTError( "Cannot get event done data of %u bytes for event %lu: %s (%d)", 
+		eddTmp->fDataSize, evtData.fEventID, strerror(ret), ret );
+      return -ENOMEM;
+    }
+    edd->fStructSize = sizeof(AliHLTComponentEventDoneData);
+    edd->fDataSize = eddTmp->fDataSize;
+    edd->fData = reinterpret_cast<AliHLTUInt8_t*>(edd)+edd->fStructSize;
+    memcpy( edd->fData, eddTmp->fData, eddTmp->fDataSize );
+  }
   return iResult;
 }
 
