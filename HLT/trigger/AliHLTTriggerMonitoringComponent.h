@@ -1,47 +1,53 @@
 //-*- Mode: C++ -*-
-// @(#) $Id: AliHLTITSCompressRawDataSDDComponent.h 27006 2008-07-01 09:21:45Z richterm $
+// $Id: AliHLTTriggerMonitoringComponent.h 24328 2008-03-06 13:26:00Z richterm $
+#ifndef ALIHLTTRIGGERMONITORINGCOMPONENT_H
+#define ALIHLTTRIGGERMONITORINGCOMPONENT_H
 
-#ifndef ALIHLTITSCOMPRESSRAWDATASDDCOMPONENT_H
-#define ALIHLTITSCOMPRESSRAWDATASDDCOMPONENT_H
+/* This file is property of and copyright by the ALICE HLT Project        * 
+ * ALICE Experiment at CERN, All rights reserved.                         *
+ * See cxx source for full Copyright notice                               */
 
-//* This file is property of and copyright by the ALICE HLT Project        * 
-//* ALICE Experiment at CERN, All rights reserved.                         *
-//* See cxx source for full Copyright notice                               *
-
-/** @file   AliHLTITSCompressRawDataSDDComponent.cxx
-    @author Jochen Thaeder <thaeder@kip.uni-heidelberg.de>
+/** @file   AliHLTTriggerMonitoringComponent.h
+    @author Jochen Thaeder
     @date   
-    @brief  Component to run data compression for SDD
+    @brief  Produces a monitoring Trigger for AliEve
 */
 
+// see below for class documentation
+// or
+// refer to README to build package
+// or
+// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt   
+
 #include "AliHLTProcessor.h"
-
-#include "AliRawReaderMemory.h"
-
-#include "AliITSCompressRawDataSDD.h"
+#include "AliHLTEventSummary.h"
 
 /**
- * @class AliHLTITSCompressRawDataSDDComponent
- * Component to run data compression for SDD
+ * @class  AliHLTTriggerMonitoringComponent
+ * @brief  Produces a monitoring Trigger for AliEve
  *
- * @ingroup alihlt_its_components
+ * This class produces a trigger accoring to events with more than x tracks, 
+ * with associated clusters more the y and sends it out for every event.
+ * x and y can be set as option
+ *
+ * @ingroup alihlt_trigger
  */
 
-class AliHLTITSCompressRawDataSDDComponent : public AliHLTProcessor
-{
- public:
-
+class AliHLTTriggerMonitoringComponent : public AliHLTProcessor {
+  
+public:
+  
   /*
    * ---------------------------------------------------------------------------------
    *                            Constructor / Destructor
    * ---------------------------------------------------------------------------------
    */
-  
+
   /** constructor */
-  AliHLTITSCompressRawDataSDDComponent();
+  AliHLTTriggerMonitoringComponent();
 
   /** destructor */
-  virtual ~AliHLTITSCompressRawDataSDDComponent();
+  virtual ~AliHLTTriggerMonitoringComponent();
 
   /*
    * ---------------------------------------------------------------------------------
@@ -49,12 +55,12 @@ class AliHLTITSCompressRawDataSDDComponent : public AliHLTProcessor
    * These functions are required for the registration process
    * ---------------------------------------------------------------------------------
    */
-
+  
   /** interface function, see @ref AliHLTComponent for description */
   const char* GetComponentID();
 
   /** interface function, see @ref AliHLTComponent for description */
-   void GetInputDataTypes( vector<AliHLTComponentDataType>& list);
+  void GetInputDataTypes( AliHLTComponentDataTypeList& list );
 
   /** interface function, see @ref AliHLTComponent for description */
   AliHLTComponentDataType GetOutputDataType();
@@ -66,7 +72,9 @@ class AliHLTITSCompressRawDataSDDComponent : public AliHLTProcessor
   AliHLTComponent* Spawn();
 
  protected:
-	
+
+  using AliHLTProcessor::DoEvent;
+
   /*
    * ---------------------------------------------------------------------------------
    * Protected functions to implement AliHLTComponent's interface.
@@ -74,7 +82,7 @@ class AliHLTITSCompressRawDataSDDComponent : public AliHLTProcessor
    * capabilities of the component. 
    * ---------------------------------------------------------------------------------
    */
-	
+  
   /** Initialization */
   Int_t DoInit( int argc, const char** argv );
 
@@ -82,20 +90,22 @@ class AliHLTITSCompressRawDataSDDComponent : public AliHLTProcessor
   Int_t DoDeinit();
   
   /** EventLoop */
-  Int_t DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
-		 AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
-		 AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks );
+  Int_t DoEvent( const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData);
 
-  using AliHLTProcessor::DoEvent;
-  
   ///////////////////////////////////////////////////////////////////////////////////
-    
-    private:
-  
+
+private:
+ 
   /** copy constructor prohibited */
-  AliHLTITSCompressRawDataSDDComponent(const AliHLTITSCompressRawDataSDDComponent&);
+  AliHLTTriggerMonitoringComponent (const AliHLTTriggerMonitoringComponent&);
+
   /** assignment operator prohibited */
-  AliHLTITSCompressRawDataSDDComponent& operator=(const AliHLTITSCompressRawDataSDDComponent&);
+  AliHLTTriggerMonitoringComponent& operator= (const AliHLTTriggerMonitoringComponent&);
+
+  // ------------------------------------------------------------------------------------------
+
+  /** Process trigger */
+  void Trigger();
 
   /*
    * ---------------------------------------------------------------------------------
@@ -103,13 +113,17 @@ class AliHLTITSCompressRawDataSDDComponent : public AliHLTProcessor
    * ---------------------------------------------------------------------------------
    */
 
-  /** the cluster finder object */
-  AliITSCompressRawDataSDD* fDataCompressor;                 //!transient
+  /** Cut on total number of tracks */
+  Int_t fTotalTrackCut;
 
-  /** the reader object for data decoding */
-  AliRawReaderMemory* fRawReader;                            //!transient
+  /** Cut on number of long tracks */
+  Int_t fLongTrackCut;
   
-  ClassDef(AliHLTITSCompressRawDataSDDComponent, 0)
-    
-    };
+  /** Event summary class*/
+  AliHLTEventSummary* fEventSummary;       //! transient
+  
+  ClassDef(AliHLTTriggerMonitoringComponent, 0);
+
+};
 #endif
+

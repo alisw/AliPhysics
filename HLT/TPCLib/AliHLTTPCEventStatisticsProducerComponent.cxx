@@ -239,13 +239,25 @@ Int_t AliHLTTPCEventStatisticsProducerComponent::DoEvent( const AliHLTComponentE
 
   // ** Loop over all input blocks and specify which data format should be read
   for ( iter = GetFirstInputBlock(AliHLTTPCDefinitions::fgkTracksDataType); iter != NULL; iter = GetNextInputBlock() ) {
-    
+
     HLTDebug ( "Input Data - TPC track segments." );
 
     AddTracks( iter->fPtr );
   } //   for ( iter = GetFirstInputBlock(AliHLTTPCDefinitions::fgkTracksDataType); iter != NULL; iter = GetNextInputBlock() ) {
   
 
+  TObject* iterObject = NULL;
+
+  // ** GetESDs
+  iterObject = (TObject* )GetFirstInputObject(kAliHLTDataTypeESDTree|kAliHLTDataOriginTPC);
+
+  if ( iterObject ) {
+
+    HLTDebug ( "Input Data - TPC ESD." );
+
+    AddESD( (TTree*) iterObject );
+  } 
+  
   //
   // ** Produce event statistics
   //
@@ -336,6 +348,21 @@ void AliHLTTPCEventStatisticsProducerComponent::AddTracks( void* ptr, Int_t slic
   }
   
   fTracks->FillTracksChecked( segmentData, nTracks, 0, slice, bTransform );
+
+}
+
+// -- **********************************************************************************************
+void AliHLTTPCEventStatisticsProducerComponent::AddESD( TTree* esdTree ) {
+  // see header file for class documentation
+
+  AliESDEvent* esd = new AliESDEvent();
+  esd->ReadFromTree(esdTree);
+  esdTree->GetEntry(0);
+
+  HLTWarning("Number of tracks found : %d", esd->GetNumberOfTracks() );
+  
+  if ( esd )
+    delete esd;
 
 }
 

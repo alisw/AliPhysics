@@ -23,6 +23,8 @@
 
 #include "AliHLTTPCEventStatistics.h"
 #include "AliHLTTPCTrackArray.h"
+#include "AliESDEvent.h"
+#include "TTree.h"
 
 /**
  * @class  AliHLTTPCEventStatisticsProducerComponent
@@ -88,6 +90,11 @@ public:
    * @param slice Slice, default is -1 for GlobalMerger tracks
    */
   void AddTracks( void* ptr, Int_t slice=-1 );     
+
+  /** Add ESD
+   * @param esdEvent Pointer to AliESDEvent
+   */
+  void AddESD( TTree* esdTree );     
 
   /** Process even -> get process statistics */
   void ProcessEvent();                          
