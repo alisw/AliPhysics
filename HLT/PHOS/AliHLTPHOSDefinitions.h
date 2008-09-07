@@ -15,6 +15,7 @@
 class AliHLTPHOSDefinitions
 {
 public:
+  static const AliHLTComponentDataType fgkPhosHistDataType;    /**Fourier transform of time dependent signals*/
   static const AliHLTComponentDataType fgkFourierTransform;    /**Fourier transform of time dependent signals*/
   static const AliHLTComponentDataType fgkChannelDataType;    /**<Reconstructed channels*/
   static const AliHLTComponentDataType fgkCellEnergyDataType;    /**<Reconstructed cell/crystal energies*/

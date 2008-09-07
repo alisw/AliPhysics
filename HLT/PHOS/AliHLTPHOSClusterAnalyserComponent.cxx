@@ -109,7 +109,7 @@ AliHLTPHOSClusterAnalyserComponent::GetOutputDataSize(unsigned long& constBase, 
 {
   //See headerfile for documentation
 
-  constBase = 0;
+  constBase = sizeof(AliHLTPHOSCaloClusterContainerStruct);
   inputMultiplier = 1;
 }
 
@@ -193,7 +193,8 @@ AliHLTPHOSClusterAnalyserComponent::DoEvent(const AliHLTComponentEventData& evtD
 	  Logging( kHLTLogInfo, __FILE__ , "Clusters analyzed",  "Has analyzed  %lu  for this event",  nClusters);
 	}  
     }
-  
+
+  size = mysize;  
   return 0;
 
 }

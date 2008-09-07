@@ -42,7 +42,7 @@ struct AliHLTPHOSCaloClusterContainerStruct
   UInt_t fNCaloClusters; 
 
   /** Array of rec points in the container */
-  AliHLTPHOSCaloClusterDataStruct fCaloClusterArray[100];
+  AliHLTPHOSCaloClusterDataStruct fCaloClusterArray[400];
 
 };
 

@@ -56,6 +56,8 @@ class AliHLTPHOSRawAnalyzerComponentv2 : public AliHLTPHOSRcuProcessor
 
   Short_t fAlgorithm;
 
+  Int_t fOffset;
+
 };
 #endif
 

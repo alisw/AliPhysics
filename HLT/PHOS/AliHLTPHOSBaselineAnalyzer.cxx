@@ -330,7 +330,7 @@ AliHLTPHOSBaselineAnalyzer::WriteChannelHistograms(const Char_t* filename)
 			      int hwAddress = ((branch << 11) | (card << 7) | (chip << 4) | channel);
 			      int xoff = 0;
 			      int zoff = 0;
-			      if(rcu == 1 || rcu == 3) xoff = 1;
+			      if(rcu == 0 || rcu == 2) xoff = 1;
 			      if(rcu == 2 || rcu == 3) zoff = 1;
 			      z  = fMapperPtr->fHw2geomapPtr[hwAddress].fZRow + zoff*N_ZROWS_RCU;
 			      x  = fMapperPtr->fHw2geomapPtr[hwAddress].fXCol + xoff*N_XCOLUMNS_RCU; 

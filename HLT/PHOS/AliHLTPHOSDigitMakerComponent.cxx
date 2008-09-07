@@ -104,8 +104,8 @@ void
 AliHLTPHOSDigitMakerComponent::GetOutputDataSize(unsigned long& constBase, double& inputMultiplier)
 {
   //see header file for documentation
-  constBase = 30;
-  inputMultiplier = 3;
+  constBase = sizeof(AliHLTPHOSDigitContainerDataStruct);
+  inputMultiplier = 1;
 }
 
 int 
@@ -169,7 +169,9 @@ AliHLTPHOSDigitMakerComponent::DoEvent(const AliHLTComponentEventData& evtData, 
     }
 
   fDigitMakerPtr->Reset();
-  
+
+  size = mysize; 
+
   return 0;
 }
 

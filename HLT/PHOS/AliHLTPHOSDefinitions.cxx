@@ -30,6 +30,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "AliHLTPHOSDefinitions.h"
+const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkPhosHistDataType              = { sizeof(AliHLTComponentDataType),       {'H','I','S','T','O','G','R','A'},{'P','H','O','S'}};;
 //CRAP PTH
 const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkFourierTransform              = { sizeof(AliHLTComponentDataType),       {'F','O','U','R','I','E','R','T'},{'P','H','O','S'}};;
 const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkChannelDataType               = { sizeof(AliHLTComponentDataType),       {'C','H','A','N','N','E','L','T'},{'P','H','O','S'}};;

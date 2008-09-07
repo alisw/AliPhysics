@@ -129,7 +129,7 @@ AliHLTPHOSESDMakerComponent::GetOutputDataSize(unsigned long& constBase, double&
   //See headerfile for documentation
 
   constBase = 30;
-  inputMultiplier = 2;
+  inputMultiplier = 4;
 }
  
 Int_t 

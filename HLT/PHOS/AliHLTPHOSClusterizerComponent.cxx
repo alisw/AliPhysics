@@ -138,7 +138,7 @@ AliHLTPHOSClusterizerComponent::GetOutputDataSize(unsigned long& constBase, doub
 
 {
   //See headerfile for documentation
-  constBase = 30;
+  constBase = sizeof(AliHLTPHOSRecPointContainerStruct);
   inputMultiplier = 1;
 }
 
@@ -227,6 +227,8 @@ AliHLTPHOSClusterizerComponent::DoEvent(const AliHLTComponentEventData& evtData,
                , tSize, size );
       return EMSGSIZE;
     }
+
+  size = mysize;
   
   return 0;
 

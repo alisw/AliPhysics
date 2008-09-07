@@ -29,14 +29,16 @@
 
 
 AliHLTPHOSRawAnalyzerComponentv2::AliHLTPHOSRawAnalyzerComponentv2():AliHLTPHOSRcuProcessor(), 
-                                                                 fAnalyzerPtr(0), 
-                                                                 fMapperPtr(0), 
-                                                                 fSanityInspectorPtr(0),
-                                                                 fDecoderPtr(0),  
-                                                                 fAltroDataPtr(0),
-                                                                 fAltroBunchPtr(0),
-								 fNOKBlocks(0),
-								 fAlgorithm(0)
+								     fAnalyzerPtr(0), 
+								     fMapperPtr(0), 
+								     fSanityInspectorPtr(0),
+								     fDecoderPtr(0),  
+								     fAltroDataPtr(0),
+								     fAltroBunchPtr(0),
+								     fNOKBlocks(0),
+								     fAlgorithm(0),
+								     fOffset(0)
+								     
 {
   //comment
   fMapperPtr = new AliHLTPHOSMapper();
@@ -154,7 +156,8 @@ AliHLTPHOSRawAnalyzerComponentv2::DoEvent( const AliHLTComponentEventData& evtDa
     }
 
   fPhosEventCount++; 
-
+  size = blockSize;
+  
   return 0;
 }//end DoEvent
 
@@ -205,7 +208,7 @@ AliHLTPHOSRawAnalyzerComponentv2::DoIt(const AliHLTComponentBlockData* iter, Ali
 	      fAnalyzerPtr->Evaluate(0, fAltroBunchPtr->GetBunchSize());  
 	      
 	      channelDataPtr->fChannelID = fMapperPtr->GetChannelID(iter->fSpecification, fAltroDataPtr->GetHadd());
-	      channelDataPtr->fEnergy = static_cast<Float_t>(fAnalyzerPtr->GetEnergy());
+	      channelDataPtr->fEnergy = static_cast<Float_t>(fAnalyzerPtr->GetEnergy()) - fOffset;
 	      channelDataPtr->fTime = static_cast<Float_t>(fAnalyzerPtr->GetTiming());
 	      channelDataPtr->fCrazyness = static_cast<Short_t>(crazyness);
 	      channelCount++;
@@ -233,6 +236,14 @@ AliHLTPHOSRawAnalyzerComponentv2::DoInit( int argc, const char** argv )
   fPrintInfo = kFALSE;
   int iResult=0;
   fMapperPtr = new AliHLTPHOSMapper();
+
+  for(int i = 0; i < argc; i++)
+    {
+      if(!strcmp("-offset", argv[i]))
+	{
+	  fOffset = atoi(argv[i+1]);
+	}
+    }
  
   if(fMapperPtr->GetIsInitializedMapping() == false)
     {
