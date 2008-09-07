@@ -115,7 +115,7 @@ void AliITSCompressRawDataSDD::Compress(){
   }
   
   FILE *outtxt=fopen("data.txt","w");
-  Int_t oldddl=-1;
+
   UInt_t word=0;
   do{
     rd->Reset();
