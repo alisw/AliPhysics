@@ -1,5 +1,5 @@
-//-*- Mode: C++ -*-
-// @(#) $Id: AliHLTITSCompressRawDataSDDComponent.h 27006 2008-07-01 09:21:45Z richterm $
+//-*- Mode: 
+// $Id$
 
 #ifndef ALIHLTITSCOMPRESSRAWDATASDDCOMPONENT_H
 #define ALIHLTITSCOMPRESSRAWDATASDDCOMPONENT_H

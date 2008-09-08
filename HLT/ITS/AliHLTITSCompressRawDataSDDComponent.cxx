@@ -1,4 +1,4 @@
-// $Id: AliHLTTPCClusterFinderComponent.cxx 27006 2008-07-01 09:21:45Z richterm $
+// $Id$
 
 //**************************************************************************
 //* This file is property of and copyright by the ALICE HLT Project        * 
