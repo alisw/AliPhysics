@@ -13,7 +13,7 @@ CCMINORV      = $(shell $(CC) -dumpversion | cut -d. -f2)
 F77	      = $(shell root-config --f77)
 
 # Global optimisation
-OPT           = -O0 -g
+OPT           = -O -g
 NOOPT         = -g
 
 CXXOPT        = $(OPT)
