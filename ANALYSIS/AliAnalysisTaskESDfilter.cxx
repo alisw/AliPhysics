@@ -1002,7 +1002,8 @@ void AliAnalysisTaskESDfilter::CreateTags()
     
     TString opt(fInputHandler->GetAnalysisType());
     opt.ToLower();
-    TFile *file =  fInputHandler->GetTree()->GetCurrentFile();
+
+    TFile *file = OutputTree()->GetCurrentFile();
     const TUrl *url = file->GetEndpointUrl();
     fguid = file->GetUUID().AsString();
     if (opt.Contains("grid")) {
@@ -1085,9 +1086,8 @@ void AliAnalysisTaskESDfilter::FinishTaskOutput()
 // Terminate analysis
 //
     if (fCreateTags) {
-	fRunTag->CopyStandardContent(fInputHandler->GetRunTag());	    
+	if (fInputHandler->GetRunTag()) fRunTag->CopyStandardContent(fInputHandler->GetRunTag());	    
 	fTreeT->Fill();
-//	fTreeT->Write();
     }
 }
 
@@ -1096,8 +1096,7 @@ Bool_t AliAnalysisTaskESDfilter::Notify()
     // Notify file change
     if (fCreateTags) {
 	if (!fFirstFile) {
-	    printf("Filling Tags %p \n", fInputHandler->GetRunTag());
-	    fRunTag->CopyStandardContent(fInputHandler->GetRunTag());	    
+	    if (fInputHandler->GetRunTag()) fRunTag->CopyStandardContent(fInputHandler->GetRunTag());	    
 	    fTreeT->Fill();
 	    fRunTag->Clear();
 	} else {
