@@ -945,9 +945,9 @@ void AliPHOSv0::AddAlignableVolumes() const
   char im[5] ;
   for(Int_t iModule=1; iModule<=nModules; iModule++){
     sprintf(im,"%d",iModule) ;
+    modUID = AliGeomManager::LayerToVolUID(idPHOS1,modnum++);
     if(strstr(GetTitle(),im)==0 && strcmp(GetTitle(),"IHEP")!=0 && strcmp(GetTitle(),"noCPV")!=0)
       continue ;
-    modUID = AliGeomManager::LayerToVolUID(idPHOS1,modnum++);
     volpath = physModulePath;
     volpath += iModule;
     //    volpath += "/PEMC_1/PCOL_1/PTIO_1/PCOR_1/PAGA_1/PTII_1";
@@ -983,9 +983,9 @@ void AliPHOSv0::AddAlignableVolumes() const
     if(strstr(GetTitle(),"noCPV"))
       continue ;
     sprintf(im,"%d",iModule) ;
+    modUID = AliGeomManager::LayerToVolUID(idPHOS2,modnum++);
     if(strstr(GetTitle(),im)==0 && strcmp(GetTitle(),"IHEP")!=0)
       continue ;
-    modUID = AliGeomManager::LayerToVolUID(idPHOS2,modnum++);
     volpath = physModulePath;
     volpath += iModule;
     volpath += "/PCPV_1";
