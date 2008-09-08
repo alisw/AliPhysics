@@ -96,6 +96,7 @@ public:
   static Bool_t         ApplyAlignObjsFromCDB(const char* AlDetsList);
   static Bool_t         LoadAlignObjsFromCDBSingleDet(const char* detName, TObjArray& alignObjArray);
   static Bool_t         CheckSymNamesLUT(const char* detsToBeChecked);
+  static Bool_t         IsModuleInGeom(const char* module);
 
   ~AliGeomManager();
 

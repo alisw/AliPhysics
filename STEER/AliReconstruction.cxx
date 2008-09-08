@@ -704,11 +704,16 @@ Bool_t AliReconstruction::MisalignGeometry(const TString& detectors)
     TString loadAlObjsListOfDets = "";
     
     for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
-      if (!IsSelected(fgkDetectorName[iDet], detStr)) continue;
-      loadAlObjsListOfDets += fgkDetectorName[iDet];
-      loadAlObjsListOfDets += " ";
+      if(!IsSelected(fgkDetectorName[iDet], detStr)) continue;
+      if(fgkDetectorName[iDet]=="HLT") continue;
+      if(AliGeomManager::IsModuleInGeom(fgkDetectorName[iDet]))
+      {
+	loadAlObjsListOfDets += fgkDetectorName[iDet];
+	loadAlObjsListOfDets += " ";
+      }
     } // end loop over detectors
-    loadAlObjsListOfDets.Prepend("GRP "); //add alignment objects for non-sensitive modules
+    if(AliGeomManager::IsModuleInGeom("FRAME"))
+      loadAlObjsListOfDets.Prepend("GRP "); //add alignment objects for non-sensitive modules
     AliGeomManager::ApplyAlignObjsFromCDB(loadAlObjsListOfDets.Data());
     AliCDBManager::Instance()->UnloadFromCache("*/Align/*");
   }else{
@@ -923,7 +928,6 @@ Bool_t AliReconstruction::InitGRP() {
     fFillESD = MatchDetectorList(fFillESD,detMask);
     fQADetectors = MatchDetectorList(fQADetectors,detMask);
     fLoadCDB = MatchDetectorList(fLoadCDB,detMask);
-    fLoadAlignData = MatchDetectorList(fLoadAlignData,detMask);
   }
 
   AliInfo("===================================================================================");
@@ -1165,18 +1169,18 @@ void AliReconstruction::Begin(TTree *)
     AliSysInfo::AddStamp("CheckGeom");
   }
 
-  if (!InitGRP()) {
-    Abort("InitGRP", TSelector::kAbortProcess);
-    return;
-  }
-  AliSysInfo::AddStamp("InitGRP");
-
   if (!MisalignGeometry(fLoadAlignData)) {
     Abort("MisalignGeometry", TSelector::kAbortProcess);
     return;
   }
   AliCDBManager::Instance()->UnloadFromCache("GRP/Geometry/Data");
   AliSysInfo::AddStamp("MisalignGeom");
+
+  if (!InitGRP()) {
+    Abort("InitGRP", TSelector::kAbortProcess);
+    return;
+  }
+  AliSysInfo::AddStamp("InitGRP");
 
   if (!LoadCDB()) {
     Abort("LoadCDB", TSelector::kAbortProcess);

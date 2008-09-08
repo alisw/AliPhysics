@@ -1492,6 +1492,65 @@ void AliGeomManager::CheckOverlapsOverPNs(Double_t threshold)
 }
 
 //_____________________________________________________________________________
+Bool_t AliGeomManager::IsModuleInGeom(const char* module)
+{
+  // Return true if the module passed as argument is present in the current geometry
+  //
+  
+  TString subdet(module);
+
+  if(subdet==TString("ACORDE"))
+  {
+      if(fgGeometry->GetAlignableEntry("ACORDE/Array1")) return kTRUE;
+  }else if(subdet==TString("EMCAL"))
+  {
+      if(fgGeometry->GetAlignableEntry("EMCAL/FullSupermodule0") || fgGeometry->GetAlignableEntry("EMCAL/CosmicTestSupermodule0")) return kTRUE;
+  }else if(subdet==TString("FMD"))
+  {
+      if(fgGeometry->GetAlignableEntry("FMD/FMD1_T")) return kTRUE;
+  }else if(subdet==TString("HMPID"))
+  {
+      if(fgGeometry->GetAlignableEntry("/HMPID/Chamber0")) return kTRUE;
+  }else if(subdet==TString("ITS"))
+  {
+      if(fgGeometry->GetAlignableEntry("ITS")) return kTRUE;
+  }else if(subdet==TString("MUON"))
+  {
+      if(fgGeometry->GetAlignableEntry("/MUON/GM0")) return kTRUE;
+  }else if(subdet==TString("PMD"))
+  {
+      if(fgGeometry->GetAlignableEntry("PMD/Sector1")) return kTRUE;
+  }else if(subdet==TString("PHOS"))
+  {
+      if(fgGeometry->GetAlignableEntry("PHOS/Cradle0")) return kTRUE;
+  }else if(subdet==TString("T0"))
+  {
+      if(fgGeometry->GetAlignableEntry("/ALIC_1/0STR_1")) return kTRUE;
+  }else if(subdet==TString("TRD"))
+  {
+      if(fgGeometry->GetAlignableEntry("TRD/sm00")) return kTRUE;
+  }else if(subdet==TString("TPC"))
+  {
+      if(fgGeometry->GetAlignableEntry("TPC/EndcapA/Sector1/InnerChamber")) return kTRUE;
+  }else if(subdet==TString("TOF"))
+  {
+      if(fgGeometry->GetAlignableEntry("TOF/sm00/strip01")) return kTRUE;
+  }else if(subdet==TString("VZERO"))
+  {
+      if(fgGeometry->GetAlignableEntry("VZERO/V0C")) return kTRUE;
+  }else if(subdet==TString("ZDC"))
+  {
+      if(fgGeometry->GetAlignableEntry("ZDC/NeutronZDC_C")) return kTRUE;
+  }else if(subdet==TString("FRAME"))
+  {
+      if(fgGeometry->GetAlignableEntry("FRAME/Sector0")) return kTRUE;
+  }else
+      AliErrorClass(Form("%s is not a valid ALICE module name",module));
+
+  return kFALSE;
+}
+
+//_____________________________________________________________________________
 Bool_t AliGeomManager::ApplyAlignObjsFromCDB(const char* AlignDetsList)
 {
   // Calls AddAlignObjsFromCDBSingleDet for the detectors appearing in
