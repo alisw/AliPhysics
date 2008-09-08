@@ -197,14 +197,7 @@ AliTOFRawStream::AliTOFRawStream(AliRawReader* rawReader):
 
   fCableLengthMap = new AliTOFCableLengthMap();
 
-  const AliRawEventHeaderBase * eventHeader = fRawReader->GetEventHeader();
-  //UInt_t run = rawReader->GetRunNumber();
-  const UInt_t *id = eventHeader->GetP("Id");
-  fEventID = ((id)[1]&0x00000fff); //bunch crossing
-  //UInt_t orbit=((((id)[0]<<20)&0xf00000)|(((id)[1]>>12)&0xfffff)); //orbit number
-  //UInt_t period=(((id)[0]>>4)&0x0fffffff); //period number
-  //UInt_t type=eventHeader->Get("Type"); //this is 7 in physics events
-
+  fEventID = fRawReader->GetBCID(); //bunch crossing
 }
 
 //_____________________________________________________________________________
