@@ -377,9 +377,9 @@ void AliITSQASDDDataMakerRec::MakeRaws(AliRawReader* rawReader)
     
      moduleSDD = isddmod - fgkmodoffset;
 
-    if(moduleSDD <fgkmodoffset|| moduleSDD>fgknSDDmodules+fgkmodoffset-1) {
+    if(isddmod <fgkmodoffset|| isddmod>fgknSDDmodules+fgkmodoffset-1) {
       AliDebug(1,Form( "Module SDD = %d, resetting it to 1 \n",isddmod));
-      moduleSDD = 1;
+      isddmod = 1;
     }
 
     fAliITSQADataMakerRec->GetRawsData(0 +fGenOffset)->Fill(isddmod); 
@@ -407,8 +407,11 @@ void AliITSQASDDDataMakerRec::MakeRaws(AliRawReader* rawReader)
       index1 = 0;
     }
     
+    //    cout<< fSDDhTask<<endl;
     if(fkOnline) {
       if(fSDDhTask > 41 + index1) {
+	//	cout<<index1<<endl;
+	//cout<<"Fill"<< fAliITSQADataMakerRec->GetRawsData(41 + index1 +fGenOffset)->GetName()<<endl;
         ((TProfile2D *)(fAliITSQADataMakerRec->GetRawsData(41 + index1 +fGenOffset)))->Fill(coord2, coord1, signal);
         ((TProfile2D *)(fAliITSQADataMakerRec->GetRawsData(41 + index1 + 260*2 +fGenOffset)))->Fill(coord2, coord1, signal);
       }
@@ -516,7 +519,7 @@ void AliITSQASDDDataMakerRec::InitRecPoints()
     h10->GetYaxis()->SetTitle("Entries");
     fAliITSQADataMakerRec->Add2RecPointsList((new TH1F(*h10)),10 +fGenOffset,kTRUE);
     delete h10;
-
+    fSDDhTask++;
 
     TH1F *h11 = new TH1F("SDDrdistrib_Layer4" ,"SDD r distribution Layer4" ,100,22.,26.);// and position number 11 (L4)
     h11->GetXaxis()->SetTitle("r[cm]");
@@ -524,6 +527,7 @@ void AliITSQASDDDataMakerRec::InitRecPoints()
     h11->GetYaxis()->SetTitle("Entries");
     fAliITSQADataMakerRec->Add2RecPointsList((new TH1F(*h11)),11 +fGenOffset,kTRUE);
     delete h11;
+    fSDDhTask++;
 
   for(Int_t iLay=0; iLay<=1; iLay++){
     sprintf(hisnam,"SDDphidistrib_Layer%d",iLay+3);
