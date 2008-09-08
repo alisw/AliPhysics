@@ -46,7 +46,8 @@ ClassImp(AliCaloCalibSignal)
 using namespace std;
 
 // variables for TTree filling; not sure if they should be static or not
-static int fChannelNum;
+static int fChannelNum; // for regular towers
+static int fRefNum; // for LED
 static double fAmp;
 static double fAvgAmp;
 static double fRMS;
@@ -58,6 +59,7 @@ AliCaloCalibSignal::AliCaloCalibSignal(kDetType detectorType) :
   fDetType(kNone),
   fColumns(0),
   fRows(0),
+  fLEDRefs(0),
   fModules(0),
   fCaloString(),
   fMapping(NULL),
@@ -73,12 +75,15 @@ AliCaloCalibSignal::AliCaloCalibSignal(kDetType detectorType) :
   fNEvents(0),
   fNAcceptedEvents(0),
   fTreeAmpVsTime(NULL),
-  fTreeAvgAmpVsTime(NULL)
+  fTreeAvgAmpVsTime(NULL),
+  fTreeLEDAmpVsTime(NULL),
+  fTreeLEDAvgAmpVsTime(NULL)
 {
   //Default constructor. First we set the detector-type related constants.
   if (detectorType == kPhos) {
     fColumns = fgkPhosCols;
     fRows = fgkPhosRows;
+    fLEDRefs = fgkPhosLEDRefs;
     fModules = fgkPhosModules;
     fCaloString = "PHOS";
   } 
@@ -88,6 +93,7 @@ AliCaloCalibSignal::AliCaloCalibSignal(kDetType detectorType) :
     //case, if someone intentionally gives another number
     fColumns = fgkEmCalCols;
     fRows = fgkEmCalRows;
+    fLEDRefs = fgkEmCalLEDRefs;
     fModules = fgkEmCalModules;
     fCaloString = "EMCAL";
   }
@@ -110,9 +116,13 @@ void AliCaloCalibSignal::DeleteTrees()
   // delete what was created in the ctor (TTrees)
   if (fTreeAmpVsTime) delete fTreeAmpVsTime;
   if (fTreeAvgAmpVsTime) delete fTreeAvgAmpVsTime;
+  if (fTreeLEDAmpVsTime) delete fTreeLEDAmpVsTime;
+  if (fTreeLEDAvgAmpVsTime) delete fTreeLEDAvgAmpVsTime;
   // and reset pointers
   fTreeAmpVsTime = NULL;
   fTreeAvgAmpVsTime = NULL;
+  fTreeLEDAmpVsTime = NULL;
+  fTreeLEDAvgAmpVsTime = NULL;
 
   return;
 }
@@ -124,6 +134,7 @@ AliCaloCalibSignal::AliCaloCalibSignal(const AliCaloCalibSignal &sig) :
   fDetType(sig.GetDetectorType()),
   fColumns(sig.GetColumns()),
   fRows(sig.GetRows()),
+  fLEDRefs(sig.GetLEDRefs()),
   fModules(sig.GetModules()),
   fCaloString(sig.GetCaloString()),
   fMapping(NULL), //! note that we are not copying the map info
@@ -139,7 +150,9 @@ AliCaloCalibSignal::AliCaloCalibSignal(const AliCaloCalibSignal &sig) :
   fNEvents(sig.GetNEvents()),
   fNAcceptedEvents(sig.GetNAcceptedEvents()),
   fTreeAmpVsTime(NULL),
-  fTreeAvgAmpVsTime(NULL)
+  fTreeAvgAmpVsTime(NULL),
+  fTreeLEDAmpVsTime(NULL),
+  fTreeLEDAvgAmpVsTime(NULL)
 {
   // also the TTree contents
   AddInfo(&sig);
@@ -175,6 +188,18 @@ void AliCaloCalibSignal::CreateTrees()
   fTreeAvgAmpVsTime->Branch("fAvgAmp", &fAvgAmp, "fAvgAmp/D");
   fTreeAvgAmpVsTime->Branch("fRMS", &fRMS, "fRMS/D");
 
+  // then same for LED..
+  fTreeLEDAmpVsTime = new TTree("fTreeLEDAmpVsTime","LED Amplitude vs. Time Tree Variables");
+  fTreeLEDAmpVsTime->Branch("fRefNum", &fRefNum, "fRefNum/I");
+  fTreeLEDAmpVsTime->Branch("fHour", &fHour, "fHour/D");
+  fTreeLEDAmpVsTime->Branch("fAmp", &fAmp, "fAmp/D");
+
+  fTreeLEDAvgAmpVsTime = new TTree("fTreeLEDAvgAmpVsTime","Average LED Amplitude vs. Time Tree Variables");
+  fTreeLEDAvgAmpVsTime->Branch("fRefNum", &fRefNum, "fRefNum/I");
+  fTreeLEDAvgAmpVsTime->Branch("fHour", &fHour, "fHour/D");
+  fTreeLEDAvgAmpVsTime->Branch("fAvgAmp", &fAvgAmp, "fAvgAmp/D");
+  fTreeLEDAvgAmpVsTime->Branch("fRMS", &fRMS, "fRMS/D");
+
   return;
 }
 
@@ -196,9 +221,11 @@ void AliCaloCalibSignal::Zero()
   fNEvents = 0;
   fNAcceptedEvents = 0;
 
-  // Set the number of points for each Amp vs. Time graph to 0
+  // Set the number of points for each tower: Amp vs. Time 
   memset(fNHighGain, 0, sizeof(fNHighGain));
   memset(fNLowGain, 0, sizeof(fNLowGain));
+  // and LED reference
+  memset(fNRef, 0, sizeof(fNRef));
 
   return;
 }
@@ -231,6 +258,8 @@ Bool_t AliCaloCalibSignal::CheckFractionAboveAmp(int *AmpVal, int nTotChan)
 //_____________________________________________________________________
 Bool_t AliCaloCalibSignal::AddInfo(const AliCaloCalibSignal *sig)
 {
+  // note/FIXME: we are not yet adding correctly the info for fN{HighGain,LowGain,Ref} here - but consider this a feature for now (20080905): we'll do Analyze() unless entries were found for a tower in this original object.
+
   // add info from sig's TTrees to ours..
   TTree *sigAmp = sig->GetTreeAmpVsTime();
   TTree *sigAvgAmp = sig->GetTreeAvgAmpVsTime();
@@ -261,6 +290,33 @@ Bool_t AliCaloCalibSignal::AddInfo(const AliCaloCalibSignal *sig)
     fTreeAvgAmpVsTime->Fill();
   }
 
+  // also LED.. 
+  TTree *sigLEDAmp = sig->GetTreeLEDAmpVsTime();
+  TTree *sigLEDAvgAmp = sig->GetTreeLEDAvgAmpVsTime();
+
+  // associate variables for sigAmp and sigAvgAmp:
+  sigLEDAmp->SetBranchAddress("fRefNum",&fRefNum);
+  sigLEDAmp->SetBranchAddress("fHour",&fHour);
+  sigLEDAmp->SetBranchAddress("fAmp",&fAmp);
+
+  // loop over the trees.. note that since we use the same variables we should not need
+  // to do any assignments between the getting and filling
+  for (int i=0; i<sigLEDAmp->GetEntries(); i++) {
+    sigLEDAmp->GetEntry(i);
+    fTreeLEDAmpVsTime->Fill();
+  }
+
+  sigLEDAvgAmp->SetBranchAddress("fRefNum",&fRefNum);
+  sigLEDAvgAmp->SetBranchAddress("fHour",&fHour);
+  sigLEDAvgAmp->SetBranchAddress("fAvgAmp",&fAvgAmp);
+  sigLEDAvgAmp->SetBranchAddress("fRMS",&fRMS);
+
+  for (int i=0; i<sigLEDAvgAmp->GetEntries(); i++) {
+    sigLEDAvgAmp->GetEntry(i);
+    fTreeLEDAvgAmpVsTime->Fill();
+  }
+
+
   return kTRUE;//We hopefully succesfully added info from the supplied object
 }
 
@@ -281,22 +337,26 @@ Bool_t AliCaloCalibSignal::ProcessEvent(AliCaloRawStream *in, AliRawEventHeaderB
   
   fNEvents++; // one more event
 
-  // PHOS has more towers than EMCAL, so use PHOS numbers to set array sizes
+  // use maximum numbers to set array sizes
   int AmpValHighGain[fgkMaxTowers];
   int AmpValLowGain[fgkMaxTowers];
-
   memset(AmpValHighGain, 0, sizeof(AmpValHighGain));
   memset(AmpValLowGain, 0, sizeof(AmpValLowGain));
 
+  // also for LED reference
+  int LEDAmpVal[fgkMaxRefs * 2]; // factor 2 is for the two gain values
+  memset(LEDAmpVal, 0, sizeof(LEDAmpVal));
+
   int sample, isample = 0; //The sample temp, and the sample number in current event.
   int max = fgkSampleMin, min = fgkSampleMax;//Use these for picking the signal
-  int gain = 0;
+  int gain = 0; // high or low gain
   
   // Number of Low and High gain channels for this event:
   int nLowChan = 0; 
   int nHighChan = 0; 
 
-  int TowerNum = 0; // array index for TGraphs etc.
+  int TowerNum = 0; // array index for regular towers
+  int RefNum = 0; // array index for LED references
 
   // loop first to get the fraction of channels with amplitudes above cut
   while (in->Next()) {
@@ -306,33 +366,42 @@ Bool_t AliCaloCalibSignal::ProcessEvent(AliCaloRawStream *in, AliRawEventHeaderB
     isample++;
     if ( isample >= in->GetTimeLength()) {
       //If we're here then we're done with this tower
-      gain = 1 - in->IsLowGain();
-      
+      if ( in->IsLowGain() ) {
+	gain = 0;
+      }
+      else if ( in->IsHighGain() ) {
+	gain = 1;
+      }
+      else if ( in->IsLEDMonData() ) {
+	gain = in->GetRow(); // gain coded in (in RCU/Altro mapping) as Row info for LED refs..
+      }
+
       int arrayPos = in->GetModule(); //The modules are numbered starting from 0
-      if (arrayPos >= fModules) {
-	//TODO: return an error message, if appopriate (perhaps if debug>0?)
-	return kFALSE;
-      } 
-      
       //Debug
       if (arrayPos < 0 || arrayPos >= fModules) {
 	printf("AliCaloCalibSignal::ProcessEvent = Oh no: arrayPos = %i.\n", arrayPos); 
+	return kFALSE;
       }
 
-      // get tower number for AmpVal array
-      TowerNum = GetTowerNum(arrayPos, in->GetColumn(), in->GetRow()); 
+      if ( in->IsHighGain() || in->IsLowGain() ) { // regular tower
+	// get tower number for AmpVal array
+	TowerNum = GetTowerNum(arrayPos, in->GetColumn(), in->GetRow()); 
 
-      if (gain == 0) {
-	// fill amplitude into the array	   
-        AmpValLowGain[TowerNum] = max - min;
-	nLowChan++;
-      } 
-      else if (gain==1) {//fill the high gain ones
-	// fill amplitude into the array
-	AmpValHighGain[TowerNum] = max - min;
-	nHighChan++;
-      }//end if gain
-
+	if (gain == 0) {
+	  // fill amplitude into the array	   
+	  AmpValLowGain[TowerNum] = max - min;
+	  nLowChan++;
+	} 
+	else if (gain==1) {//fill the high gain ones
+	  // fill amplitude into the array
+	  AmpValHighGain[TowerNum] = max - min;
+	  nHighChan++;
+	}//end if gain
+      } // regular tower
+      else if ( in->IsLEDMonData() ) { // LED ref.
+	RefNum = GetRefNum(arrayPos, in->GetColumn(), gain); 
+	LEDAmpVal[RefNum] = max - min;
+      } // end of LED ref
       
       max = fgkSampleMin; min = fgkSampleMax;
       isample = 0;
@@ -380,9 +449,22 @@ Bool_t AliCaloCalibSignal::ProcessEvent(AliCaloRawStream *in, AliRawEventHeaderB
 	  fTreeAmpVsTime->Fill();//fChannelNum,fHour,AmpValLowGain[TowerNum]);
 	  fNLowGain[TowerNum]++;
 	}
+      } // rows
+    } // columns
+
+    // also LED refs
+    for(int j=0; j<fLEDRefs; j++){
+      for (gain=0; gain<2; gain++) {
+	fRefNum = GetRefNum(i, j, gain); 
+	if (LEDAmpVal[RefNum]) {
+	  fAmp = LEDAmpVal[RefNum];
+	  fTreeLEDAmpVsTime->Fill();//fRefNum,fHour,fAmp);
+	  fNRef[fRefNum]++;
+	}
       }
     }
-  }
+
+  } // modules
   
   return kTRUE;
 }
@@ -501,6 +583,63 @@ Bool_t AliCaloCalibSignal::Analyze()
       } // some entries for this profile
     } // profile exists  
   } // loop over all possible channels
+
+
+  // and finally, go through same exercise for LED also.. 
+
+  //1: set up TProfiles for the towers that had data
+  TProfile * profileLED[fgkMaxRefs*2]; // *2 is since we include both high and low gains
+  memset(profileLED, 0, sizeof(profileLED));
+
+  for (int i = 0; i<fModules; i++) {
+    for(int j=0; j<fLEDRefs; j++){
+      for (int gain=0; gain<2; gain++) {
+	fRefNum = GetRefNum(i, j, gain);
+	if (fNRef[fRefNum] > 0) { 
+	  sprintf(name, "profileLEDRef%d", fRefNum);
+	  profileLED[fRefNum] = new TProfile(name, name, numProfBins, timeMin, timeMax, "s");
+	} 
+      }// gain
+    } 
+  } // modules
+
+  //2: fill profiles by looping over tree
+  // Set addresses for tree-readback also
+  fTreeLEDAmpVsTime->SetBranchAddress("fRefNum", &fRefNum);
+  fTreeLEDAmpVsTime->SetBranchAddress("fHour", &fHour);
+  fTreeLEDAmpVsTime->SetBranchAddress("fAmp", &fAmp);
+
+  for (int ient=0; ient<fTreeLEDAmpVsTime->GetEntries(); ient++) {
+    fTreeLEDAmpVsTime->GetEntry(ient);
+    if (profileLED[fRefNum]) { 
+      // profile should always have been created above, for active channels
+      profileLED[fRefNum]->Fill(fHour, fAmp);
+    }
+  }
+
+  // re-associating the branch addresses here seems to be needed for OK 'average' storage	    
+  fTreeLEDAvgAmpVsTime->SetBranchAddress("fRefNum", &fRefNum);
+  fTreeLEDAvgAmpVsTime->SetBranchAddress("fHour", &fHour);
+  fTreeLEDAvgAmpVsTime->SetBranchAddress("fAvgAmp", &fAvgAmp);
+  fTreeLEDAvgAmpVsTime->SetBranchAddress("fRMS", &fRMS);
+
+  //3: fill avg tree by looping over the profiles
+  for (fRefNum = 0; fRefNum<(fgkMaxRefs*2); fRefNum++) {
+    if (profileLED[fRefNum]) { // profile was created
+      if (profileLED[fRefNum]->GetEntries() > 0) { // profile had some entries
+	for(int it=0; it<numProfBins; it++) {
+	  if (profileLED[fRefNum]->GetBinEntries(it+1) > 0) {
+	    fAvgAmp = profileLED[fRefNum]->GetBinContent(it+1);
+	    fHour = profileLED[fRefNum]->GetBinCenter(it+1);
+	    fRMS = profileLED[fRefNum]->GetBinError(it+1);
+	    fTreeLEDAvgAmpVsTime->Fill();
+	  } // some entries for this bin
+	} // loop over bins
+      } // some entries for this profile
+    } // profile exists  
+  } // loop over all possible channels
+
+  // OK, we're done..
 
   return kTRUE;
 }

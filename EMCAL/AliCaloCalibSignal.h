@@ -57,6 +57,8 @@ class AliCaloCalibSignal : public TObject {
   // for TTree
   TTree * GetTreeAmpVsTime() const { return fTreeAmpVsTime; } //!
   TTree * GetTreeAvgAmpVsTime() const {return fTreeAvgAmpVsTime; } //!
+  TTree * GetTreeLEDAmpVsTime() const {return fTreeLEDAmpVsTime; } //!
+  TTree * GetTreeLEDAvgAmpVsTime() const {return fTreeLEDAvgAmpVsTime; } //!
 
   // how many points do we have for each tower&gain
   int GetNHighGain(int imod, int icol, int irow) const //!
@@ -66,12 +68,18 @@ class AliCaloCalibSignal : public TObject {
   int GetNHighGain(int towId) const { return fNHighGain[towId];};	//!
   int GetNLowGain(int towId) const { return fNLowGain[towId];};	//!
 
+  // also for LED reference
+  int GetNRef(int imod, int istripMod, int igain) const //!
+    { int refId = GetRefNum(imod, istripMod, igain); return fNRef[refId];}; //!
+  int GetNRef(int refId) const { return fNRef[refId];}; //!
+
   // Basic info: getters  
   kDetType GetDetectorType() const {return fDetType;};//Returns if this is a PHOS or EMCAL object
   TString GetCaloString() const {return fCaloString;}; //Returns if this is a PHOS or EMCAL object  
 
   int GetColumns() const {return fColumns;}; //The number of columns per module
   int GetRows() const {return fRows;}; //The number of rows per module
+  int GetLEDRefs() const {return fLEDRefs;}; //The number of LED references/monitors per module
   int GetModules() const {return fModules;}; //The number of modules
   int GetTowerNum(int imod, int icol, int irow) const { return (imod*fColumns*fRows + icol*fRows + irow);}; // help index
 
@@ -82,9 +90,18 @@ class AliCaloCalibSignal : public TObject {
     *imod = (chanId/(fColumns*fRows)) % fModules;
     *icol = (chanId/fRows) % fColumns;
     *irow = chanId % fRows;
-    
     return kTRUE;
   }; // return the module, column, row, and gain for a given channel number
+
+  // LED reference indexing
+  int GetRefNum(int imod, int istripMod, int igain) const { return (igain*fModules*fLEDRefs + imod*fLEDRefs + istripMod);}; // channel number with gain included
+
+  Bool_t DecodeRefNum(int refId, int *imod, int *istripMod, int *igain) const {
+    *igain = refId/(fModules*fLEDRefs);
+    *imod = (refId/(fLEDRefs)) % fModules;
+    *istripMod = refId % fLEDRefs;
+    return kTRUE;
+  }; // return the module, stripModule, and gain for a given reference number
 
   // Basic Counters
   int GetNEvents() const {return fNEvents;};
@@ -141,6 +158,7 @@ class AliCaloCalibSignal : public TObject {
   kDetType fDetType; //The detector type for this object
   int fColumns;	//The number of columns per module
   int fRows;	//The number of rows per module
+  int fLEDRefs;	//The number of LED references/monitors per module
   int fModules;	//The number of modules
   TString fCaloString; // id for which detector type we have 
   AliCaloAltroMapping **fMapping;    //! Altro Mapping object
@@ -166,27 +184,34 @@ class AliCaloCalibSignal : public TObject {
   
   static const int fgkPhosRows = 64; // number of rows per module for PHOS
   static const int fgkPhosCols = 56; // number of columns per module for PHOS
+  static const int fgkPhosLEDRefs = 0; // no LED monitor channels for PHOS
   static const int fgkPhosModules = 5; // number of modules for PHOS
   
   static const int fgkEmCalRows = 24; // number of rows per module for EMCAL
   static const int fgkEmCalCols = 48; // number of columns per module for EMCAL
+  static const int fgkEmCalLEDRefs = 24; // number of LEDs (reference/monitors) per module for EMCAL; one per StripModule
   static const int fgkEmCalModules = 12; // number of modules for EMCAL
 
   // From numbers above: PHOS has more possible towers (17920) than EMCAL (13824) 
   // so use PHOS numbers to set max. array sizes
   static const int fgkMaxTowers = 17920; // fgkPhosModules * fgkPhosCols * fgkPhosRows; 
-  
+  // for LED references; maximum from EMCAL
+  static const int fgkMaxRefs = 288; // fgkEmCalModules * fgkEmCalLEDRefs
+
   static const int fgkNumSecInHr = 3600;  // number of seconds in an hour, for the fractional hour conversion on the time graph
   
   // trees
   TTree *fTreeAmpVsTime; // stores channel, gain, amp, and time info
-  TTree *fTreeAvgAmpVsTime; // stores channel, gain, avg amp., and time info
+  TTree *fTreeAvgAmpVsTime; // same, for averages
+  TTree *fTreeLEDAmpVsTime; // same, for LED reference
+  TTree *fTreeLEDAvgAmpVsTime; // same, for LED reference - averages
 
   // counters
-  int fNHighGain[fgkMaxTowers]; // Number of points for each Amp. vs. Time graph
-  int fNLowGain[fgkMaxTowers]; // Number of points for each Amp. vs. Time graph
+  int fNHighGain[fgkMaxTowers]; // Number of Amp. vs. Time readings per tower
+  int fNLowGain[fgkMaxTowers]; // same, for low gain
+  int fNRef[fgkMaxRefs * 2]; // same, for LED refs; *2 for both gains
   
-  ClassDef(AliCaloCalibSignal, 2) // don't forget to change version if you change class member list..
+  ClassDef(AliCaloCalibSignal, 3) // don't forget to change version if you change class member list..
     
 };
     
