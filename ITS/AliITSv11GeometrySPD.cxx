@@ -3085,6 +3085,7 @@ void AliITSv11GeometrySPD::CreateCones(TGeoVolume *moth) const
 	angle2[i] -= 1.5;
         rot2->RotateZ(90.0 - angle2[i]);
         TGeoCombiTrans *tr2 = new TGeoCombiTrans(0.0, 0.0, -40.4, rot2);
+        if (i != 1 && i != 6)
         moth->AddNode(module, 2*i+1, tr2);
     }
 }
