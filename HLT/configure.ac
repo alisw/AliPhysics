@@ -734,10 +734,11 @@ else
     # AliTRDclusterizer::SetRawVersion() requires >v4-07-Release
     # changed to AliTRDrecoParam::SetSeedingOn() due to revision 26327, Mon Jun 2 2008
     # changed to AliTRDReconstructor::SetStreamLevel() due to revision 27797, Tue Aug 5 2008
+    # changed to AliTRDReconstructor::SetClusters() according to revision 28069, Mon Aug 18 2008
     AC_MSG_CHECKING([for required functions in AliTRDReconstructor])
     AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <AliTRDReconstructor.h>], 
                                        [AliTRDReconstructor r;
-				       r.SetStreamLevel(0)])],
+				       r.SetClusters(0)])],
                                        [], 
   				       [enable_trd="no...requires.AliRoot>v4-14-Release"])
     AC_MSG_RESULT([$enable_trd])       
@@ -841,7 +842,7 @@ AH_TEMPLATE([HLT_ITS],[hlt its library])
 
 ALIITS_LIBS=
 CHECK_HLTMODULE([its],
-		[], [$ALIROOT_CPPFLAGS],
+		[AliITSCompressRawDataSDD.h], [$ALIROOT_CPPFLAGS -I$ALICE_ROOT/ITS],
 		[Gui RAWDatasim], [-L$ROOTLIBDIR], [$ROOTLIBS $ADD_ROOTLIBS],
 		[ITSbase ITSrec], [-L$ROOTLIBDIR $ALIROOT_LDFLAGS], 
 		[$ROOTLIBS $ADD_ROOTLIBS $ALIROOT_LIBS])
