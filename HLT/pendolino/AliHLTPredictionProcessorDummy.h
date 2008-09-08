@@ -136,25 +136,25 @@ class AliHLTPredictionProcessorDummy : public AliHLTPredictionProcessorInterface
 		/**
 		 * Stores if prediction shall be made
 		 */
-		Bool_t mPredict;  // Stores if prediction shall be made
+		Bool_t fPredict;  // Stores if prediction shall be made
 
 		/**
 		 * Stores the run number
 		 */
-		Int_t mRun;  // Stores the run number
+		Int_t fRun;  // Stores the run number
 	
 	 	/**
 		 * Stores the start time of the to process DCS data
 		 */	
-		UInt_t mStartTime; // Stores the start time of the to process DCS data
+		UInt_t fStartTime; // Stores the start time of the to process DCS data
 	
 	 	/**
 		 * Stores the end time of the to process DCS data
 		 */	
-		UInt_t mEndTime;  // Stores the end time of the to process DCS data
+		UInt_t fEndTime;  // Stores the end time of the to process DCS data
 
 		
-		ClassDef(AliHLTPredictionProcessorDummy, 0);
+		ClassDef(AliHLTPredictionProcessorDummy, 1);
 	
 };
 

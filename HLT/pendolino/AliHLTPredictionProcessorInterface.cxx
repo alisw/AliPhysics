@@ -32,10 +32,7 @@ ClassImp(AliHLTPredictionProcessorInterface)
 AliHLTPredictionProcessorInterface::AliHLTPredictionProcessorInterface(
 			const char* detector, AliHLTPendolino* pendolino) : 
 			AliPreprocessor(detector, reinterpret_cast<AliShuttleInterface*>
-					(pendolino)),
-			mPend(pendolino)
-
-{
+					(pendolino)), fpPend(pendolino) {
 }
 
 
@@ -44,14 +41,14 @@ AliHLTPredictionProcessorInterface::~AliHLTPredictionProcessorInterface() {
 }
 
 Int_t AliHLTPredictionProcessorInterface::GetRunNumber() {
-	return mPend->GetRunNumber();
+	return fpPend->GetRunNumber();
 }
 
 
 Bool_t AliHLTPredictionProcessorInterface::includeAliCDBEntryInList(
             const TString& entryPath) {
 
-    return mPend->includeAliCDBEntryInList(entryPath);
+    return fpPend->includeAliCDBEntryInList(entryPath);
 }
 
 

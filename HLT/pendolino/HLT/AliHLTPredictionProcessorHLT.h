@@ -133,31 +133,30 @@ class AliHLTPredictionProcessorHLT : public AliHLTPredictionProcessorInterface {
 		AliHLTPredictionProcessorHLT& operator=(
 						const AliHLTPredictionProcessorHLT& rhs);
 
-
-		/**
-		 * TObjstring which stores the B-field value
-		 */
-		TObjString mBField;  // TObjstring which stores the B-field value
-
 		/**
 		 * Stores if prediction shall be made
 		 */
-		Bool_t mPredict;  // flag for prediction making
+		Bool_t fPredict;  // flag for prediction making
 
 		/**
 		 * Stores the run number
 		 */
-		Int_t mRun;  // Stores the run number
+		Int_t fRun;  // Stores the run number
 	
 	 	/**
 		 * Stores the start time of the to process DCS data
 		 */	
-		UInt_t mStartTime;  // Stores the start time of the to process DCS data
+		UInt_t fStartTime;  // Stores the start time of the to process DCS data
 	
 	 	/**
 		 * Stores the end time of the to process DCS data
 		 */	
-		UInt_t mEndTime;  // Stores the end time of the to process DCS data
+		UInt_t fEndTime;  // Stores the end time of the to process DCS data
+
+        /**
+		 * TObjstring which stores the B-field value
+		 */
+		TObjString fBField;  // TObjstring which stores the B-field value
 
 		/**
 		 * Function to extract the B-field from the DCS value map
@@ -179,7 +178,7 @@ class AliHLTPredictionProcessorHLT : public AliHLTPredictionProcessorInterface {
 		 */
 		Bool_t GetSensorValue(TMap* dcsAliasMap,const char* stringId, Float_t * value);
 		
-		ClassDef(AliHLTPredictionProcessorHLT, 0);
+		ClassDef(AliHLTPredictionProcessorHLT, 1);
 	
 };
 

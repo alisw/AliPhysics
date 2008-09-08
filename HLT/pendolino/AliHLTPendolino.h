@@ -426,52 +426,52 @@ class AliHLTPendolino : public AliShuttleInterface {
 		/**
 		 * Stores the current run type
 		 */
-		TString mRunType;  // Stores the current run type
+		TString fRunType;  // Stores the current run type
+
+		/**
+ 		 * Stores the current run number
+ 		 */
+		Int_t fRunNumber;  // Stores the current run number
+
+		/**
+ 		 * Stores the HCDBpath
+ 		 */
+		TString fHCDBPath;	 // Stores the HCDBpath
 
 		/**
 		 * Map that stores the all PredictionProcessors with their name
 		 * (detector)
 		 */
-		TMap mPredictionProcessorMap;  // stores the all PredictionProcessors
+		TMap fPredictionProcessorMap;  // stores the all PredictionProcessors
 
 		/**
 		 * Pointer to the used Pendolino logger
 		 */
-		AliHLTPendolinoLogger* mpLogger; // Pointer to the used Pendolino logger
-
-		/**
- 		 * Stores the current run number
- 		 */
-		Int_t mRunNumber;  // Stores the current run number
-
-		/**
- 		 * Stores the HCDBpath
- 		 */
-		TString mHCDBPath;	 // Stores the HCDBpath
+		AliHLTPendolinoLogger* fpLogger; // Pointer to the used Pendolino logger
 
 		/**
 		 * Indicates, if Logger is owned by Pendolino
 		 */
-		Bool_t mOwnLogger;  //  Indicates, if Logger is owned by Pendolino
+		Bool_t fOwnLogger;  //  Indicates, if Logger is owned by Pendolino
 		
-		ClassDef(AliHLTPendolino, 4);
+		ClassDef(AliHLTPendolino, 5);
 
 };
 
 
 inline const char* AliHLTPendolino::GetRunType() {
 	// getter for run type
-	return mRunType.Data();
+	return fRunType.Data();
 }
 
 inline Int_t AliHLTPendolino::GetRunNumber() {
 	// getter for run number
-	return mRunNumber;
+	return fRunNumber;
 }
 
 inline Int_t AliHLTPendolino::getNumberOfPredictProc() {
 	// getter for number of registered PredictionProcessors
-	return mPredictionProcessorMap.GetSize();
+	return fPredictionProcessorMap.GetSize();
 }
 
 

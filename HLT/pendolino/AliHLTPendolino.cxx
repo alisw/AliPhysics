@@ -78,17 +78,18 @@ const Int_t AliHLTPendolino::kHLTPendolinoNoDCS = -6;
 
 
 AliHLTPendolino::AliHLTPendolino(Int_t run, TString HCDBbase, 
-			TString runType, AliHLTPendolinoLogger* logger) {
+			TString runType, AliHLTPendolinoLogger* logger) :
+			fRunType(runType), fRunNumber(run), 
+			fHCDBPath(""), fPredictionProcessorMap(),
+			fpLogger(0), fOwnLogger(kFALSE) {
 	// C-tor of AliHLTPendolino
-	mRunType = runType;
-	mRunNumber = run;
-	mHCDBPath = kLOCAL_STORAGE_DEFINE + HCDBbase;
+	fHCDBPath = kLOCAL_STORAGE_DEFINE + HCDBbase;
 	if (logger == 0) {
-		mpLogger = new AliHLTPendolinoLoggerOStream();
-		mOwnLogger = kTRUE;
+		fpLogger = new AliHLTPendolinoLoggerOStream();
+		fOwnLogger = kTRUE;
 	} else {
-		mpLogger = logger;
-		mOwnLogger = kFALSE;
+		fpLogger = logger;
+		fOwnLogger = kFALSE;
 	}
 }
 
@@ -96,7 +97,7 @@ AliHLTPendolino::AliHLTPendolino(Int_t run, TString HCDBbase,
 AliHLTPendolino::~AliHLTPendolino() {
 	// D-tor of AliHLTPendolino
 	// clean up registered PredicitonProcs
-    TMapIter iter(&mPredictionProcessorMap, kIterForward);
+    TMapIter iter(&fPredictionProcessorMap, kIterForward);
     AliHLTPredictionProcessorInterface* aPredict;
     TObject* key = 0;
 
@@ -107,7 +108,7 @@ AliHLTPendolino::~AliHLTPendolino() {
         try {
             // get value for the key
             aPredict = dynamic_cast<AliHLTPredictionProcessorInterface*>
-                    (mPredictionProcessorMap.GetValue(key));
+                    (fPredictionProcessorMap.GetValue(key));
 
             if (aPredict == 0) {
                 Log(kHLTInterfaceModule, 
@@ -132,10 +133,11 @@ AliHLTPendolino::~AliHLTPendolino() {
             continue;
         }
     }
+	Log(kHLTInterfaceModule, " ### [DEBUG] Deleting of PredictionProcessors finished.");
 
 	// clean up logger
-	if ((mOwnLogger) && (mpLogger != 0)) {
-		delete mpLogger;
+	if ((fOwnLogger) && (fpLogger != 0)) {
+		delete fpLogger;
 	}
 	
 }
@@ -152,8 +154,8 @@ Bool_t AliHLTPendolino::Store(const AliCDBPath& path, TObject* object,
 	AliCDBManager* man = 0; 
 	AliCDBStorage* local_hcdb = 0;	
 
-	startNumber = ((mRunNumber - validityStart) <= 0) ? 0 : (mRunNumber - validityStart);
-	endNumber = (validityInfinite) ? AliCDBRunRange::Infinity() : mRunNumber;
+	startNumber = ((fRunNumber - validityStart) <= 0) ? 0 : (fRunNumber - validityStart);
+	endNumber = (validityInfinite) ? AliCDBRunRange::Infinity() : fRunNumber;
 
 	man = AliCDBManager::Instance();
     if (man == 0) {
@@ -162,10 +164,10 @@ Bool_t AliHLTPendolino::Store(const AliCDBPath& path, TObject* object,
 	}
 
     // contact local storage (HCDB)
-    local_hcdb = man->GetStorage(mHCDBPath.Data());
+    local_hcdb = man->GetStorage(fHCDBPath.Data());
     if (local_hcdb == 0) {
 		TString msg(" *** ERROR in initiating HCDB: ");
-		msg += mHCDBPath;
+		msg += fHCDBPath;
         Log(kHLTInterfaceModule, msg.Data());
         man->DestroyActiveStorages();
         return kFALSE;
@@ -173,14 +175,14 @@ Bool_t AliHLTPendolino::Store(const AliCDBPath& path, TObject* object,
 
 	// taken from AliShuttle
 	if (! dynamic_cast<TObjString*> (metaData->GetProperty("RunUsed(TObjString)"))) {
-        TObjString runUsed = Form("%d", mRunNumber);
+        TObjString runUsed = Form("%d", fRunNumber);
         metaData->SetProperty("RunUsed(TObjString)", runUsed.Clone());
     }
 
 
     // Version is set to current run, it will be used later to transfer data to Grid
     // Why using current run number as version number ???
-	AliCDBId entryID(path, startNumber, endNumber, mRunNumber, -1);
+	AliCDBId entryID(path, startNumber, endNumber, fRunNumber, -1);
 	
 	if (local_hcdb->Put(object, entryID, metaData)) {
 		retVal = kTRUE;
@@ -197,7 +199,7 @@ Bool_t AliHLTPendolino::Store(const AliCDBPath& path, TObject* object,
 
 
 Bool_t AliHLTPendolino::StoreReferenceData(const AliCDBPath& path,
-			TObject* object, AliCDBMetaData* metaData) {
+					   TObject* /*object*/, AliCDBMetaData* /*metaData*/) {
 	// Disabled Function inherited from interface
 	TString msg(" ~~~ PredictProc tries to store reference data to '" 
 			+ path.GetPath() + "'. Discarding call in Pendolino.");
@@ -293,7 +295,7 @@ TList* AliHLTPendolino::GetFileIDs(Int_t system, const char* detector,
 }
 
 
-const char* AliHLTPendolino::GetRunParameter(const char* lbEntry) {
+const char* AliHLTPendolino::GetRunParameter(const char* /*lbEntry*/) {
 	// getter for run parameter
 		
 // TODO
@@ -326,20 +328,20 @@ AliCDBEntry* AliHLTPendolino::GetFromOCDB(const char* detector,
 		return NULL;
 	}
 
-	AliCDBStorage *hcdb = man->GetStorage(mHCDBPath.Data());
+	AliCDBStorage *hcdb = man->GetStorage(fHCDBPath.Data());
 	if (hcdb == 0) {
 		TString msg(" *** ERROR, cannot acquire HCDB storage (");
-		msg += mHCDBPath + ") for fetching data for Pendolino.";
+		msg += fHCDBPath + ") for fetching data for Pendolino.";
 		Log(kHLTInterfaceModule, msg.Data());
 		return NULL;
 	}
 	
-	entry = hcdb->Get(path, mRunNumber);
+	entry = hcdb->Get(path, fRunNumber);
 
 	if (entry == 0) {
 		TString msg(" ~~~ WARNING: no valid entry for '");
 		msg += path.GetPath() + "' in HCDB for run number ";
-		msg += mRunNumber;
+		msg += fRunNumber;
 		Log(kHLTInterfaceModule, msg.Data());
 	}
 
@@ -348,7 +350,7 @@ AliCDBEntry* AliHLTPendolino::GetFromOCDB(const char* detector,
 /*
 	AliCDBEntry* entry = 0;
 	try {
-		entry = dynamic_cast<AliCDBEntry*> (hcdb->Get(path, mRunNumber));
+		entry = dynamic_cast<AliCDBEntry*> (hcdb->Get(path, fRunNumber));
 	} catch (std::bad_cast) {
 		TString msg(" *** ERROR, bad cast of HCDB entry (");
 		msg += path.GetPath() + ") after fetching from HCDB.";
@@ -400,7 +402,7 @@ Bool_t AliHLTPendolino::includeAliCDBEntryInList(const TString& entryPath) {
 		}
 //		outfile.seekp(-1, ios::end);
 		outfile << endl;
-		outfile << "#HLT (Pendolino) - Run: " << mRunNumber << ", Time: " <<
+		outfile << "#HLT (Pendolino) - Run: " << fRunNumber << ", Time: " <<
 				ts.AsString() << endl;
 		outfile << entryPath.Data() << endl;
 		outfile.close();
@@ -422,14 +424,14 @@ Bool_t AliHLTPendolino::includeAliCDBEntryInList(const TString& entryPath) {
 					<< endl << "#" << endl;
 			outfile << "#    !!! DON'T EDIT THIS FILE (if you don't know what you are doing) !!!"
 					<< endl << endl;
-			outfile << "#HLT (Pendolino) - Run: " << mRunNumber << ", Time: " << 
+			outfile << "#HLT (Pendolino) - Run: " << fRunNumber << ", Time: " << 
 					ts.AsString() << endl;
 			outfile << entryPath.Data() << endl;
 			outfile.close();
 			bRet = kTRUE;
 		
 		} else {
-			TString msg(" *** Unable to create Pendolino list file '");
+			msg=" *** Unable to create Pendolino list file '";
 			msg += filename + "' for Taxi. Continueing without list update...";
 			Log(kHLTInterfaceModule, msg.Data());
 		}	
@@ -441,7 +443,7 @@ Bool_t AliHLTPendolino::includeAliCDBEntryInList(const TString& entryPath) {
 
 void AliHLTPendolino::Log(const char* detector, const char* message) {
 	// logging function
-	mpLogger->log(detector, message);
+	fpLogger->log(detector, message);
 	// refer data to a Pendolino Logger, which can take care of it
 }
 
@@ -456,14 +458,14 @@ void AliHLTPendolino::RegisterPreprocessor(AliPreprocessor* preprocessor) {
 
     TString detector(preprocessor->GetName());
 
-    if (mPredictionProcessorMap.GetValue(detector.Data())) {
+    if (fPredictionProcessorMap.GetValue(detector.Data())) {
         Log(kHLTInterfaceModule, " ~~~ Already registered PredictionProcessor '" +
                 detector + "'. Ignoring call.");
         return;
     }
 	// store as AliPreprocessor* and make cast to AliHLTPredictionProcessorInterface*
 	// later, when accesing them.
-    mPredictionProcessorMap.Add(new TObjString(detector), preprocessor);
+    fPredictionProcessorMap.Add(new TObjString(detector), preprocessor);
 
 /*	
 	TString detector(preprocessor->GetName());
@@ -511,13 +513,13 @@ void AliHLTPendolino::RegisterPreprocessor(AliPreprocessor* preprocessor) {
 		Log(kHLTInterfaceModule, " *** Exception in the registering of the PredictProc.");		
 	}
 
-	if (mPredictionProcessorMap.GetValue(detector.Data())) {
+	if (fPredictionProcessorMap.GetValue(detector.Data())) {
 		Log(kHLTInterfaceModule, " ~~~ Already registered PredictionProcessor '" +
 				detector + "'. Ignoring call.");
 		return;
 	}
 
-	mPredictionProcessorMap.Add(new TObjString(detector), predictProc);
+	fPredictionProcessorMap.Add(new TObjString(detector), predictProc);
 */
 }
 
@@ -527,7 +529,7 @@ UInt_t AliHLTPendolino::setToPredictMaking() {
 	UInt_t retVal = 0;
 
 	// get an iterator for the map
-	TMapIter iter(&mPredictionProcessorMap, kIterForward);
+	TMapIter iter(&fPredictionProcessorMap, kIterForward);
 	AliHLTPredictionProcessorInterface* aPredict;
 	TObject* key = 0;	
 	
@@ -538,7 +540,7 @@ UInt_t AliHLTPendolino::setToPredictMaking() {
 		try {
 			// get value for the key
 			aPredict = dynamic_cast<AliHLTPredictionProcessorInterface*>
-					(mPredictionProcessorMap.GetValue(key));
+					(fPredictionProcessorMap.GetValue(key));
 		
 			if (aPredict == 0) {
 				Log(kHLTInterfaceModule, " *** Cannot use PredictionProcessor '"
@@ -579,7 +581,7 @@ Int_t AliHLTPendolino::setToPredictMaking(TString detector) {
 	
 	try {
 		// get the value for the key
-		TObject* object = mPredictionProcessorMap.GetValue(detector.Data());
+		TObject* object = fPredictionProcessorMap.GetValue(detector.Data());
 
 		if (object == 0) {
 			Log(kHLTInterfaceModule, " *** No PredictionProcessor for '" +
@@ -628,7 +630,7 @@ Int_t AliHLTPendolino::prepareDCSValues(TString detector, TMap* DCSValues) {
 
 	try {
 		// get the value for the key
-		TObject* object = mPredictionProcessorMap.GetValue(detector.Data());
+		TObject* object = fPredictionProcessorMap.GetValue(detector.Data());
 		
 		if (object == 0) {
 			Log(kHLTInterfaceModule, " *** No PredictionProcessor for '" +
@@ -672,7 +674,7 @@ TMap* AliHLTPendolino::emulateDCSMap(TString detector, TString aliasName) {
 
     try {
         // get the value for the key
-        TObject* object = mPredictionProcessorMap.GetValue(detector.Data());
+        TObject* object = fPredictionProcessorMap.GetValue(detector.Data());
 
         if (object == 0) {
             Log(kHLTInterfaceModule, " *** No PredictionProcessor for '" +
@@ -715,7 +717,7 @@ Int_t AliHLTPendolino::initPredictProc(TString detector, Int_t run,
 
     try {
         // get the value for the key
-        TObject* object = mPredictionProcessorMap.GetValue(detector.Data());
+        TObject* object = fPredictionProcessorMap.GetValue(detector.Data());
 
         if (object == 0) {
             Log(kHLTInterfaceModule, " *** No PredictionProcessor for '" +

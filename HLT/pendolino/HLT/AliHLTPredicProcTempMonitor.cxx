@@ -55,12 +55,13 @@ const UInt_t AliHLTPredicProcTempMonitor::kUnableToStoreObject = 7;
 		
 AliHLTPredicProcTempMonitor::AliHLTPredicProcTempMonitor(
 			const char* detector, AliHLTPendolino* pendolino) :
-				AliHLTPredictionProcessorInterface(detector, pendolino) {
+				AliHLTPredictionProcessorInterface(detector, pendolino),
+				fPredict(true), fRun(0), fStartTime(0), fEndTime(0), fBField("") {
 	// C-tor for AliHLTPredicProcTempMonitor
-	mPredict = true;
-	mRun = 0;
-	mStartTime = 0;
-	mEndTime = 0;
+//	fPredict = true;
+//	fRun = 0;
+//	fStartTime = 0;
+//	fEndTime = 0;
 }
 
 
@@ -73,7 +74,7 @@ AliHLTPredicProcTempMonitor::~AliHLTPredicProcTempMonitor() {
 UInt_t AliHLTPredicProcTempMonitor::makePrediction(Bool_t doPrediction) {
 	// switch for prediction making in AliHLTPredicProcTempMonitor
 	Log("AliHLTPredicProcTempMonitor + B-Field extractor: prediction switched on");
-	mPredict = doPrediction;
+	fPredict = doPrediction;
 	return 0;
 }
 
@@ -81,16 +82,16 @@ UInt_t AliHLTPredicProcTempMonitor::makePrediction(Bool_t doPrediction) {
 void AliHLTPredicProcTempMonitor::Initialize(Int_t run, UInt_t startTime, 
 			UInt_t endTime) {
 	// initializes AliHLTPredicProcTempMonitor
-	mRun = run;
-	mStartTime = startTime;
-	mEndTime = endTime;
+	fRun = run;
+	fStartTime = startTime;
+	fEndTime = endTime;
 
 	TString msg("Initialized HLT PredictionProcessor; Run: ");
-	msg += mRun;
+	msg += fRun;
 	msg += ", start time: ";
-	msg += mStartTime;
+	msg += fStartTime;
 	msg += ", end time: ";
-	msg += mEndTime;
+	msg += fEndTime;
 	msg += ".";	
 	Log(msg.Data());
 }
@@ -160,18 +161,18 @@ UInt_t AliHLTPredicProcTempMonitor::Process(TMap* dcsAliasMap) {
 UInt_t AliHLTPredicProcTempMonitor::ExtractBField(TMap* dcsAliasMap) {
 	// extracts the B-field value from DCS value map
   
-	TString stringId = "dcs_magnet:Magnet/ALICESolenoid.Current";
+	TString stringId = "L3Current"; // "dcs_magnet:Magnet/ALICESolenoid.Current";
   
 	Float_t BField = 0; 
 	Bool_t bRet = GetSensorValue(dcsAliasMap,stringId.Data(),&BField);
 
 	if (bRet) {
 		BField = BField / 60000; // If we get field, take this away and change SensorValue
-		TString dummy("-bfield ");
+		TString dummy("-solenoidBZ ");
 		dummy += BField;
 		TObjString dummy2(dummy.Data());
-		mBField = dummy2; 
-		Log(Form("BField set to %s", mBField.String().Data())); 
+		fBField = dummy2; 
+		Log(Form("BField set to %s", fBField.String().Data())); 
 	} else {
 		return 1;
 	}
@@ -183,7 +184,7 @@ UInt_t AliHLTPredicProcTempMonitor::ExtractBField(TMap* dcsAliasMap) {
 	TString comment("BField");
 	AliCDBMetaData meta(this->GetName(), 0, "unknownAliRoot", comment.Data());
   
-	if (Store(path2.Data(), path3.Data(), (TObject*) (&mBField), &meta, start, 
+	if (Store(path2.Data(), path3.Data(), (TObject*) (&fBField), &meta, start, 
 			kTRUE)) {
 		Log(" +++ Successfully stored object ;-)");
 	} else {
@@ -225,7 +226,7 @@ TMap* AliHLTPredicProcTempMonitor::produceTestData(TString aliasName) {
     resultMap = new TMap();
     TTimeStamp tt;
 	Float_t fval = 33.3;
-    TObjString* name = new TObjString("DummyData");
+    TObjString* name = new TObjString("L3Current");
     AliDCSValue* val = new AliDCSValue(fval, tt.GetTime());
     TObjArray* arr = new TObjArray();
     arr->Add(val);

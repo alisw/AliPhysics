@@ -36,12 +36,9 @@ ClassImp(AliHLTPredictionProcessorDummy)
 
 AliHLTPredictionProcessorDummy::AliHLTPredictionProcessorDummy(
 			const char* detector, AliHLTPendolino* pendolino) :
-				AliHLTPredictionProcessorInterface(detector, pendolino) {
+				AliHLTPredictionProcessorInterface(detector, pendolino),
+				 fPredict(false), fRun(0), fStartTime(0), fEndTime(0) {
 	// C-tor of AliHLTPredictionProcessorDummy
-	mPredict = false;
-	mRun = 0;
-	mStartTime = 0;
-	mEndTime = 0;
 }
 
 
@@ -54,7 +51,7 @@ AliHLTPredictionProcessorDummy::~AliHLTPredictionProcessorDummy() {
 UInt_t AliHLTPredictionProcessorDummy::makePrediction(Bool_t doPrediction) {
 	// switches prediction making on or off
 	Log("Prediction switched on");
-	mPredict = doPrediction;
+	fPredict = doPrediction;
 	return 0;
 }
 
@@ -62,20 +59,20 @@ UInt_t AliHLTPredictionProcessorDummy::makePrediction(Bool_t doPrediction) {
 void AliHLTPredictionProcessorDummy::Initialize(Int_t run, UInt_t startTime, 
 			UInt_t endTime) {
 	// initializes AliHLTPredictionProcessorDummy
-	mRun = run;
-	mStartTime = startTime;
-	mEndTime = endTime;
+	fRun = run;
+	fStartTime = startTime;
+	fEndTime = endTime;
 
 	TString msg("Initialized Dummy PredictProc. Run: ");
-	msg += mRun;
+	msg += fRun;
 	msg += ", start time: ";
-	msg += mStartTime;
+	msg += fStartTime;
 	msg += ", end time: ";
-	msg += mEndTime;
+	msg += fEndTime;
 	msg += ".";	
 	Log(msg.Data());
 
-	if (mPredict) {
+	if (fPredict) {
 		Log("Dummy PredictProc has prediction switched ON.");
 	} else {
 		Log("Prediction is switched OFF.");
@@ -141,10 +138,10 @@ UInt_t AliHLTPredictionProcessorDummy::Process(TMap* dcsAliasMap) {
 
 	//transform dcsAliasMap to ROOT object 
 	TString comment("Beam it up");
-	if (mPredict) {
+	if (fPredict) {
 		comment += " with PREDICTION!";
 	}
-	if (mRun > 3) {
+	if (fRun > 3) {
 		start = 3;
 	}
 	AliCDBMetaData meta(this->GetName(), 666, "unknownAliRoot", 

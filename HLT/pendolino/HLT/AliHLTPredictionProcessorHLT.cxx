@@ -39,13 +39,14 @@ ClassImp(AliHLTPredictionProcessorHLT)
 
 AliHLTPredictionProcessorHLT::AliHLTPredictionProcessorHLT(
 			const char* detector, AliHLTPendolino* pendolino) :
-				AliHLTPredictionProcessorInterface(detector, pendolino) {
+				AliHLTPredictionProcessorInterface(detector, pendolino),
+				fPredict(true), fRun(0), fStartTime(0), fEndTime(0), fBField("") {
 	// C-tor for AliHLTPredictionProcessorHLT
-	mPredict = false;
-	mRun = 0;
-	mStartTime = 0;
-	mEndTime = 0;
-	mBField = 0;
+//	fPredict = false;
+//	fRun = 0;
+//	fStartTime = 0;
+//	fEndTime = 0;
+//	fBField = 0;
 }
 
 
@@ -57,7 +58,7 @@ AliHLTPredictionProcessorHLT::~AliHLTPredictionProcessorHLT() {
 UInt_t AliHLTPredictionProcessorHLT::makePrediction(Bool_t doPrediction) {
 	// switch for prediction making
 	Log("Prediction switched on");
-	mPredict = doPrediction;
+	fPredict = doPrediction;
 	return 0;
 }
 
@@ -65,20 +66,20 @@ UInt_t AliHLTPredictionProcessorHLT::makePrediction(Bool_t doPrediction) {
 void AliHLTPredictionProcessorHLT::Initialize(Int_t run, UInt_t startTime, 
 			UInt_t endTime) {
 	// initializes AliHLTPredictionProcessorHLT
-	mRun = run;
-	mStartTime = startTime;
-	mEndTime = endTime;
+	fRun = run;
+	fStartTime = startTime;
+	fEndTime = endTime;
 
 	TString msg("Initialized HLT PredictProc. Run: ");
-	msg += mRun;
+	msg += fRun;
 	msg += ", start time: ";
-	msg += mStartTime;
+	msg += fStartTime;
 	msg += ", end time: ";
-	msg += mEndTime;
+	msg += fEndTime;
 	msg += ".";	
 	Log(msg.Data());
 
-	if (mPredict) {
+	if (fPredict) {
 		Log("HLT PredictProc has prediction switched ON.");
 	} else {
 		Log("Prediction is switched OFF.");
@@ -109,7 +110,7 @@ UInt_t AliHLTPredictionProcessorHLT::Process(TMap* dcsAliasMap) {
   TString comment("BField");
   AliCDBMetaData meta(this->GetName(), 0, "unknownAliRoot",comment.Data());
   
-  if (Store(path2.Data(),path3.Data(),(TObject*) &mBField,&meta,start,kTRUE)) {
+  if (Store(path2.Data(),path3.Data(),(TObject*) &fBField,&meta,start,kTRUE)) {
     Log(" +++ Successfully stored object ;-)");
   } else {
     Log(" *** Storing of OBJECT failed!!");
@@ -130,12 +131,12 @@ UInt_t AliHLTPredictionProcessorHLT::ExtractBField(TMap* dcsAliasMap){
   if(bRet){
 	// new	 
     BField = BField/60000; // If we get field, take this away and change SensorValue
-    TString dummy("-solenoidBz");
+    TString dummy("-solenoidBz ");
     dummy += BField;
     TObjString dummy2(dummy.Data());
-    mBField = dummy2;
+    fBField = dummy2;
 	
-    Log(Form("BField set to %s",mBField.String().Data()));
+    Log(Form("BField set to %s",fBField.String().Data()));
     return 0; 
   }
   
@@ -172,7 +173,7 @@ TMap* AliHLTPredictionProcessorHLT::produceTestData(TString aliasName) {
     resultMap = new TMap();
     TTimeStamp tt;
 	Float_t fval = 33.3;
-    TObjString* name = new TObjString("DummyData");
+    TObjString* name = new TObjString("L3Current");
     AliDCSValue* val = new AliDCSValue(fval, tt.GetTime());
     TObjArray* arr = new TObjArray();
     arr->Add(val);

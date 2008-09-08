@@ -186,30 +186,30 @@ class AliHLTPredicProcTempMonitor : public AliHLTPredictionProcessorInterface {
 		/**
 		 * Stores if prediction shall be made
 		 */
-		Bool_t mPredict;  // flag for prediction making
+		Bool_t fPredict;  // flag for prediction making
 
 		/**
 		 * Stores the run number
 		 */
-		Int_t mRun;  //  Stores the run number
+		Int_t fRun;  //  Stores the run number
 	
 	 	/**
 		 * Stores the start time of the to process DCS data
 		 */	
-		UInt_t mStartTime; // Stores the start time of the to process DCS data
+		UInt_t fStartTime; // Stores the start time of the to process DCS data
 	
 	 	/**
 		 * Stores the end time of the to process DCS data
 		 */	
-		UInt_t mEndTime;  // Stores the end time of the to process DCS data
+		UInt_t fEndTime;  // Stores the end time of the to process DCS data
 
 		/**
 		 * Stores the extracted B-Field in a TObjString
 		 */
-		TObjString mBField;  // Stores the extracted B-Field in a TObjString
+		TObjString fBField;  // Stores the extracted B-Field in a TObjString
 
 		/** ClassDef of AliHLTPredicProcTempMonitor for AliRoot */
-		ClassDef(AliHLTPredicProcTempMonitor, 2);
+		ClassDef(AliHLTPredicProcTempMonitor, 4);
 	
 };
 

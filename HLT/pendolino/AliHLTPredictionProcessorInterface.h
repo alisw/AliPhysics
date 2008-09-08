@@ -164,10 +164,10 @@ class AliHLTPredictionProcessorInterface : public AliPreprocessor {
 		/**
 		 * Stores pointer to Pendolino
 		 */
-		AliHLTPendolino* mPend;  //  Stores pointer to Pendolino
+		AliHLTPendolino* fpPend;  //  Stores pointer to Pendolino
 
 		
-		ClassDef(AliHLTPredictionProcessorInterface, 5);
+		ClassDef(AliHLTPredictionProcessorInterface, 6);
 	
 };
 
