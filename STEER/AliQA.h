@@ -59,6 +59,7 @@ public:
 	static const TString   GetDetName(DETECTORINDEX_t det) { return fgDetNames[det] ; }
 	static const char *    GetDetName(Int_t det) ;
 	static const TString   GetGRPPath() { return fgGRPPath ; }  
+  static const UInt_t    GetQABit() { return fkgQABit ; }
 	static TFile *         GetQADataFile(const char * name, const Int_t run) ; 
 	static TFile *	       GetQADataFile(const char * fileName) ;
 	static const char *    GetQADataFileName(const char * name, const Int_t run) 
@@ -109,7 +110,7 @@ private:
 	void                 UnSetStatusBit(DETECTORINDEX_t det, ALITASK_t tsk, QABIT_t bit) ;
 
 	static AliQA *       fgQA		                ; // pointer to the instance of the singleton
-	Int_t          fNdet     	                  ; // number of detectors
+	Int_t                fNdet     	            ; // number of detectors
 	ULong_t    *         fQA		                ; //[fNdet] the status word 4 bits for SIM, REC, ESD, ANA each
 	DETECTORINDEX_t      fDet		                ; //!  the current detector (ITS, TPC, ....)
 	ALITASK_t            fTask	                ; //!  the current environment (SIM, REC, ESD, ANA)
@@ -131,6 +132,7 @@ private:
 	static const TString fkgLabLocalOCDB        ; //! label to identify a file as local OCDB 
 	static const TString fkgLabAliEnOCDB        ; //! label to identify a file as AliEn OCDB 
 	static const TString fkgRefFileName         ; //! name of Reference File Name 
+	static const UInt_t  fkgQABit               ; //! bit in the QA data object which is set when Checker does not return 0
 	static const TString fkgQAName              ; //! name of QA object 
 	static const TString fkgQACorrNtName        ; //! name of QA Correlation Ntuple
 	static const TString fkgRefOCDBDirName      ; //! name of Reference directory name in OCDB  	
