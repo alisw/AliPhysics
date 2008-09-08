@@ -22,22 +22,30 @@ class AliEveHOMERManager;
 class AliEveHOMERManagerEditor : public TGedFrame
 {
 public:
-  AliEveHOMERManagerEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30, UInt_t options = kChildFrame, Pixel_t back=GetDefaultFrameBackground());
+  AliEveHOMERManagerEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30, 
+			   UInt_t options = kChildFrame, Pixel_t back=GetDefaultFrameBackground());
   virtual ~AliEveHOMERManagerEditor() {}
 
   virtual void SetModel(TObject* obj);
 
   // Declare callback/slot methods
-  void DoButt();
+  void ConnectToHLT();
+  void NextEvent();
+  void EventLoop();
+
 
 protected:
   AliEveHOMERManager  *fM; // Model object.
 
-  TGTextButton     *fButt; // Button to connect to HOMER.
+  TGTextButton     *fButtonConnect;   // Button to connect to HOMER.
+  TGTextButton     *fButtonNextEvent; // Button to call next Event
+  TGTextButton     *fButtonEventLoop; // Button to start/stop event loop
 
 private:
   AliEveHOMERManagerEditor(const AliEveHOMERManagerEditor&);            // Not implemented
   AliEveHOMERManagerEditor& operator=(const AliEveHOMERManagerEditor&); // Not implemented
+
+  Bool_t fEventLoopStarted;
 
   ClassDef(AliEveHOMERManagerEditor, 0); // Editor for AliEveHOMERManager
 };

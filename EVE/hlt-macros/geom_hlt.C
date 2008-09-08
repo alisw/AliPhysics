@@ -10,6 +10,7 @@
 
 #include "AliEveMUONData.h"
 #include "AliEveMUONChamber.h"
+#include "AliCDBManager.h"
 
 #include "TEveGeoShapeExtract.h"
 #include "TEveGeoNode.h"
@@ -25,6 +26,7 @@ TEveGeoShape* geom_hlt()
   TFile f("$ALICE_ROOT/EVE/alice-data/gentle_geo.root");
   TEveGeoShapeExtract* gse = (TEveGeoShapeExtract*) f.Get("Gentle");
   TEveGeoShape* gsre = TEveGeoShape::ImportShapeExtract(gse, 0);
+  gEve->AddGlobalElement(gsre);
   f.Close();
 
   TEveElement* elTRD = gsre->FindChild("TRD+TOF");
@@ -42,41 +44,43 @@ TEveGeoShape* geom_hlt()
   return gsre;
 }
 
+//#if 0
+
 Int_t MUON_geom()
 {
-
-  AliEveMUONChamber*   mucha[14];
-
-
-  AliEveMUONData * g_muon_data = new AliEveMUONData;
-
   gStyle->SetPalette(1, 0);
-
   gEve->DisableRedraw();
 
-  TEveElementList* mul = new TEveElementList("MUONChambers");
-  TEveElementList* muChData = new TEveElementList("MUONChamberData");
-  mul->SetTitle("MUON chambers");
-  mul->SetMainColor(3);
-  gEve->AddGlobalElement(mul);
-  gEve->AddElement(muChData);
-  
-  for (Int_t ic = 0; ic < 14; ic++){
-    
-    mucha[ic] = new AliEveMUONChamber(ic);
-    
-    mucha[ic]->SetFrameColor(3);
-    mucha[ic]->SetChamberID(ic);
+  AliCDBManager *cdb = AliCDBManager::Instance();
+  cdb->SetDefaultStorage("local://$ALICE_ROOT");
+  cdb->SetRun(0);
 
-    mucha[ic]->SetDataSource(g_muon_data);
-    
-    gEve->AddElement(mucha[ic], mul);
-    
+  AliEveMUONData *g_muon_data = new AliEveMUONData;
+
+  TEveElementList* l = new TEveElementList("MUONChambers");
+  l->SetTitle("MUON chambers");
+  l->SetMainColor(2);
+  gEve->AddGlobalElement(l);
+
+  for (Int_t ic = 0; ic < 14; ic++)
+  {
+    AliEveMUONChamber* mucha = new AliEveMUONChamber(ic);
+
+    mucha->SetFrameColor(2);
+    mucha->SetChamberID(ic);
+
+    mucha->SetDataSource(g_muon_data);
+
+    gEve->AddElement(mucha, l);
   }
 
   gEve->Redraw3D(kTRUE);
   gEve->EnableRedraw();
 
+
+
   
   return true;
 }
+
+//#endif

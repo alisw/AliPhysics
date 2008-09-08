@@ -15,5 +15,9 @@
 #pragma link C++ class AliEveHOMERManagerEditor+;
 #pragma link C++ class AliEveHOMERSource+;
 #pragma link C++ class AliEveHOMERSourceList+;
-
 #pragma link C++ class AliEveHOMERSourceMap+;
+
+#pragma link C++ class AliEveHOMERSrcTranslator+;
+#pragma link C++ class AliEveHOMERSrcObject+;
+
+#pragma link C++ class AliEveHOMERXMLHandler+;

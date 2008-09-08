@@ -8,6 +8,13 @@
  **************************************************************************/
 
 {
+  cout<<"Loading HLT libraries..."<<endl;
+  gSystem->Load("libHLTbase");
+  gSystem->Load("libAliHLTUtil");
+  gSystem->Load("libHLTinterface");
+  gSystem->Load("libAliHLTMUON");
+   gSystem->Load("libAliHLTTPC");
+ 
   cout << "Setting include path ..." << endl;
   TString includePath = "-I${ALICE_ROOT}/include ";
   includePath        += "-I${ALICE_ROOT}/EVE ";
@@ -21,5 +28,7 @@
   includePath        += "-I${ALICE_ROOT}/RAW ";
   includePath        += "-I${ALICE_ROOT}/MUON ";
   includePath        += "-I${ALICE_ROOT}/MUON/mapping ";
+  includePath        += "-I${ALICE_ROOT}/HLT/MUON ";
+  includePath        += "-I${ALICE_ROOT}/HLT/TPCLib/tracking-ca";
   gSystem->SetIncludePath(includePath.Data());
 }

@@ -12,6 +12,7 @@
 
 #include <TVirtualPad.h>
 #include <TColor.h>
+#include <TROOT.h>
 
 #include <TGLabel.h>
 #include <TGButton.h>
@@ -29,9 +30,11 @@ AliEveHOMERManagerEditor::AliEveHOMERManagerEditor(const TGWindow *p, Int_t widt
 	     UInt_t options, Pixel_t back) :
   TGedFrame(p, width, height, options | kVerticalFrame, back),
   fM(0),
-  fButt(0)
-  // Initialize widget pointers to 0
-{
+  fButtonConnect(0),
+  fButtonNextEvent(0),
+  fButtonEventLoop(0),
+  fEventLoopStarted(kFALSE) {
+
   MakeTitle("AliEveHOMERManager");
 
   // Create widgets
@@ -39,9 +42,17 @@ AliEveHOMERManagerEditor::AliEveHOMERManagerEditor(const TGWindow *p, Int_t widt
   // AddFrame(fXYZZ, new TGLayoutHints(...));
   // fXYZZ->Connect("SignalName()", "AliEveHOMERManagerEditor", this, "DoXYZZ()");
 
-  fButt = new TGTextButton(this, "  Connect to HLT  ");
-  AddFrame(fButt); //, new TGLayoutHints(...));
-  fButt->Connect("Clicked()", "AliEveHOMERManagerEditor", this, "DoButt()");
+  fButtonConnect = new TGTextButton(this, "  Connect to HLT  ");
+  AddFrame(fButtonConnect); //, new TGLayoutHints(...));
+  fButtonConnect->Connect("Clicked()", "AliEveHOMERManagerEditor", this, "ConnectToHLT()");
+
+  fButtonNextEvent = new TGTextButton(this, "  NextEvent  ");
+  AddFrame(fButtonNextEvent); //, new TGLayoutHints(...));
+  fButtonNextEvent->Connect("Clicked()", "AliEveHOMERManagerEditor", this, "NextEvent()");
+
+  fButtonEventLoop = new TGTextButton(this, "  not yet used  ");
+  AddFrame(fButtonEventLoop); //, new TGLayoutHints(...));
+  fButtonEventLoop->Connect("Clicked()", "AliEveHOMERManagerEditor", this, "EventLoop()");
 
 }
 
@@ -65,9 +76,23 @@ void AliEveHOMERManagerEditor::SetModel(TObject* obj)
 //   Update();
 // }
 
-void AliEveHOMERManagerEditor::DoButt()
+void AliEveHOMERManagerEditor::ConnectToHLT()
 {
   // Connects to HOMER sources -> to HLT.
+
+  fM->ConnectHOMER();
+}
+
+void AliEveHOMERManagerEditor::NextEvent()
+{
+  // call next event from macro
+  gROOT->ProcessLineFast("nextEvent();");
+
+}
+
+void AliEveHOMERManagerEditor::EventLoop()
+{
+  // Start/stop event loop
 
   fM->ConnectHOMER();
 }

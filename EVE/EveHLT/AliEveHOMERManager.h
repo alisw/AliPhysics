@@ -31,6 +31,7 @@
 #include "AliHLTHOMERSourceDesc.h"
 #include "AliHLTHOMERBlockDesc.h"
 #include "AliHLTHOMERReader.h"
+#include "AliEveHOMERXMLHandler.h"
 
 #include "AliTPCPreprocessorOnline.h"
 
@@ -122,33 +123,18 @@ private:
 
   /*
    * ---------------------------------------------------------------------------------
-   *                            Source Handling - private
-   * ---------------------------------------------------------------------------------
-   */
-
-  /** Get Information out of a TDS process in XML file */
-  Int_t GetTDSAttributes( TXMLNode * xmlNode );
-
-  /** Resolve Information of hostname and port for source which has to be used by HOMER */
-  Int_t ResolveHostPortInformation( TString xmlHostname, TString xmlPort, TString &hostname, Int_t &port );
-
-  /** Resolve information of source */
-  Int_t ResolveSourceInformation( TString xmlParent, AliHLTHOMERSourceDesc * source );
-
-  /*
-   * ---------------------------------------------------------------------------------
    *                            Connection Handling - private
    * ---------------------------------------------------------------------------------
    */
 
   /** Create a readout list for Hostname and ports */
-  void CreateReadoutList( const char** socurceHostnames, UShort_t* sourcePorts, UInt_t &sourceCount);
+  void CreateReadoutList( const char** sourceHostnames, UShort_t* sourcePorts, UInt_t &sourceCount);
 
   /** Checks if already connected to HOMER sources */
   Bool_t IsConnected() { return fConnected; }  // Checks if already connected to HOMER sources
 
-  /** Sets realm ( which can be ACR, GPN, HLT ) */ 
-  void SetRealm( TString s ) { fRealm = s; }   // Sets realm ( which can be ACR, GPN, HLT
+  /** Sets realm ( which can be ACR, GPN, HLT, KIP ) */ 
+  void SetRealm( TString s ) { fXMLHandler->SetRealm(s); } // Sets realm ( which can be ACR, GPN, HLT, KIP )
 
   /* ---------------------------------------------------------------------------------
    *                            Event Handling - private
@@ -212,17 +198,14 @@ private:
    * ---------------------------------------------------------------------------------
    */
 
-  // == XML parser ==
-  TString     fXMLFile;                           // XML input file
-  TDOMParser* fXMLParser;                         //! XML parser into DOM model
-  TXMLNode *  fRootNode;                          //! Root node of parsed config file
+  // == XML handler ==
+  AliEveHOMERXMLHandler* fXMLHandler;             //! Handles HLT XML Config Files
 
   // == sources ==
   TList * fSourceList;                            //! List to HOMER sources
 
   // == connection ==
   AliHLTHOMERReader* fReader;                     //! Pointer to HOMER reader
-  TString            fRealm;                      // Indicates the realm where AliEve can connect to ( HLT, GPN, ACR );
 
   // == blocks ==
   TList * fBlockList;                             //! List to HOMER blocks

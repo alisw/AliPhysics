@@ -6,6 +6,7 @@
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
+
 #include <Rtypes.h>
 #include "TEveElement.h"
 #include "TPolyMarker3D.h"
@@ -20,6 +21,7 @@ struct AliHLTTPCSpacePointData
   Float_t fSigmaY2; //error (former width) of the clusters
   Float_t fSigmaZ2; //error (former width) of the clusters
   UInt_t fCharge;
+  UInt_t fMaxQ;     // QMax of cluster
   Bool_t fUsed;     // only used in AliHLTTPCDisplay
   Int_t fTrackN;    // only used in AliHLTTPCDisplay
 };
