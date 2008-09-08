@@ -93,7 +93,7 @@ void AliAnalysisTaskESDfilter::UserCreateOutputObjects()
 	OpenFile(1);
 	fTreeT  = new TTree("T", "AOD Tags");
 	fRunTag = new AliRunTag();
-	TBranch * btag = fTreeT->Branch("AliTag", "AliRunTag", &fRunTag);
+	TBranch * btag = fTreeT->Branch("AliTAG", "AliRunTag", &fRunTag);
 	btag->SetCompressionLevel(9);
 	
 	fTagCreator = new AliAODTagCreator();
