@@ -7,11 +7,13 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-#ifndef AliEveEventManaget_H
+#ifndef AliEveEventManager_H
 #define AliEveEventManager_H
 
 #include <TEveEventManager.h>
 #include <TQObject.h>
+#include <TObjArray.h>
+#include <AliESDEvent.h>
 
 class AliEveMacroExecutor;
 
@@ -56,6 +58,8 @@ public:
   virtual void  NextEvent();
   virtual void  PrevEvent();
   virtual void  Close();
+  Bool_t        FindNextByTrigger(Int_t& i);
+  Bool_t        FindPrevByTrigger(Int_t& i);
 
 
   Int_t         GetEventId()   const { return fEventId; }
@@ -88,6 +92,11 @@ public:
   void          SetAutoLoad(Bool_t autoLoad);
   void          AutoLoadNextEvent();
 
+  Bool_t        GetSelectOnTriggerType()     const { return fSelectOnTriggerType; }
+  TString       GetTriggerType()             const { return fTriggerType; }
+  void          SetTriggerType(const TString& triggertype) { fTriggerType = triggertype; }
+  void          SetSelectOnTriggerType(Bool_t sel)         { fSelectOnTriggerType = sel; }
+
   Bool_t        AreEventFilesOpened()    const { return fIsOpen;       }
   Bool_t        IsEventAvailable()       const { return fHasEvent;     }
   Bool_t        IsUnderExternalControl() const { return fExternalCtrl; }
@@ -119,6 +128,8 @@ protected:
   Bool_t        fHasEvent;              // Is an event available.
   Bool_t        fExternalCtrl;          // Are we under external event-loop.
 
+  Bool_t        fSelectOnTriggerType;   //whether to select on triggertype
+  TString       fTriggerType;           //triggertype to select on
 
   AliEveMacroExecutor *fExecutor;       // Executor for std macros
 

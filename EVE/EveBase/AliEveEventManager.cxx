@@ -82,6 +82,7 @@ AliEveEventManager::AliEveEventManager() :
   fRawReader (0),
   fAutoLoad  (kFALSE), fAutoLoadTime (5.),     fAutoLoadTimer(0),
   fIsOpen    (kFALSE), fHasEvent     (kFALSE), fExternalCtrl (kFALSE),
+  fSelectOnTriggerType(kFALSE), fTriggerType(""),
   fExecutor  (0),
   fAutoLoadTimerRunning(kFALSE)
 {
@@ -100,6 +101,7 @@ AliEveEventManager::AliEveEventManager(TString path, Int_t ev) :
   fRawReader (0),
   fAutoLoad  (kFALSE), fAutoLoadTime (5),      fAutoLoadTimer(0),
   fIsOpen    (kFALSE), fHasEvent     (kFALSE), fExternalCtrl (kFALSE),
+  fSelectOnTriggerType(kFALSE), fTriggerType(""),
   fExecutor  (0),
   fAutoLoadTimerRunning(kFALSE)
 {
@@ -321,15 +323,15 @@ void AliEveEventManager::Open()
   // Open raw-data file
 
   TString rawPath(Form("%s/%s", fPath.Data(), fgRawFileName.Data()));
-  // If i use open directly, raw-reader reports an error but i have 	 
-  // no way to detect it. 	 
-  // Is this (AccessPathName check) ok for xrootd / alien? Yes, not for http. 	 
+  // If i use open directly, raw-reader reports an error but i have
+  // no way to detect it.
+  // Is this (AccessPathName check) ok for xrootd / alien? Yes, not for http.
   AliLog::EType_t oldLogLevel = (AliLog::EType_t) AliLog::GetGlobalLogLevel();
   if (fgAssertRaw == kFALSE)
   {
     AliLog::SetGlobalLogLevel(AliLog::kFatal);
   }
-  if (gSystem->AccessPathName(rawPath, kReadPermission) == kFALSE) 	 
+  if (gSystem->AccessPathName(rawPath, kReadPermission) == kFALSE)
   {
     fRawReader = AliRawReader::Create(rawPath);
   }
@@ -405,7 +407,7 @@ void AliEveEventManager::SetEvent(AliRunLoader *runLoader, AliRawReader *rawRead
   ElementChanged();
   AfterNewEventLoaded();
 
-  if (fAutoLoad) StartAutoLoadTimer(); 
+  if (fAutoLoad) StartAutoLoadTimer();
 }
 
 Int_t AliEveEventManager::GetMaxEventId(Bool_t /*refreshESD*/) const
@@ -585,7 +587,7 @@ void AliEveEventManager::NextEvent()
 {
   // Loads next event.
   // Does magick needed for online display when under external event control.
-  
+
   static const TEveException kEH("AliEveEventManager::NextEvent ");
 
   if (fAutoLoadTimerRunning)
@@ -603,7 +605,13 @@ void AliEveEventManager::NextEvent()
   }
   else
   {
-    if (fEventId < GetMaxEventId(kTRUE))
+    Int_t nexteventbytrigger=0;
+    if (fSelectOnTriggerType)
+    {
+      if (FindNextByTrigger(nexteventbytrigger)) //if not found do nothing
+        GotoEvent(nexteventbytrigger);
+    }
+    else if (fEventId < GetMaxEventId(kTRUE))
       GotoEvent(fEventId + 1);
     else
       GotoEvent(0);
@@ -624,8 +632,14 @@ void AliEveEventManager::PrevEvent()
   {
     throw (kEH + "Event-loop is under external control.");
   }
-
-  GotoEvent(fEventId - 1);
+  Int_t nexteventbytrigger=0;
+  if (fSelectOnTriggerType)
+  {
+    if (FindPrevByTrigger(nexteventbytrigger))
+      GotoEvent(nexteventbytrigger);
+  }
+  else
+    GotoEvent(fEventId - 1);
 }
 
 void AliEveEventManager::Close()
@@ -885,6 +899,79 @@ void AliEveEventManager::AutoLoadNextEvent()
 
 
 //------------------------------------------------------------------------------
+// Event selection by trigger
+//------------------------------------------------------------------------------
+
+Bool_t AliEveEventManager::FindNextByTrigger(Int_t& event)
+{
+  // Find next event that matches the trigger.
+  // If a matching event is not found, we loop around and eventually
+  // end up at the same event.
+
+  static const TEveException kEH("AliEveEventManager::FindNextByTrigger ");
+
+  if (!fESDTree) return kFALSE;
+  TString firedtrclasses;
+  for (Int_t i = fEventId+1; i<GetMaxEventId(kTRUE)+1; i++)
+  {
+    if (fESDTree->GetEntry(i) <= 0)
+      throw (kEH + "failed getting required event from ESD.");
+    firedtrclasses = fESD->GetFiredTriggerClasses();
+    if (firedtrclasses.Contains(fTriggerType))
+    {
+      event=i;
+      return kTRUE;
+    }
+  }
+  for (Int_t i = 0; i<fEventId+1; i++)
+  {
+    if (fESDTree->GetEntry(i) <= 0)
+      throw (kEH + "failed getting required event from ESD.");
+    firedtrclasses = fESD->GetFiredTriggerClasses();
+    if (firedtrclasses.Contains(fTriggerType))
+    {
+      event=i;
+      return kTRUE;
+    }
+  }
+  return kFALSE;
+}
+
+Bool_t AliEveEventManager::FindPrevByTrigger(Int_t& event)
+{
+  // Find previous event that matches the trigger.
+
+  static const TEveException kEH("AliEveEventManager::FindPrevByTrigger ");
+
+  if (!fESDTree) return kFALSE;
+  TString firedtrclasses;
+  for (Int_t i = fEventId-1; i>=0; i--)
+  {
+    if (fESDTree->GetEntry(i) <= 0)
+      throw (kEH + "failed getting required event from ESD.");
+    firedtrclasses = fESD->GetFiredTriggerClasses();
+    if (firedtrclasses.Contains(fTriggerType))
+    {
+      event=i;
+      return kTRUE;
+    }
+  }
+  for (Int_t i = GetMaxEventId(kTRUE); i>fEventId-1; i--)
+  {
+    if (fESDTree->GetEntry(i) <= 0)
+      throw (kEH + "failed getting required event from ESD.");
+    firedtrclasses = fESD->GetFiredTriggerClasses();
+    if (firedtrclasses.Contains(fTriggerType))
+    {
+      event=i;
+      return kTRUE;
+    }
+  }
+  return kFALSE;
+}
+
+
+//------------------------------------------------------------------------------
 // Post event-loading functions
 //------------------------------------------------------------------------------
 
@@ -948,13 +1035,13 @@ TString AliEveEventManager::GetEventInfoHorizontal() const
     TString firedtrclasses = fESD->GetFiredTriggerClasses();
     TTimeStamp ts(fESD->GetTimeStamp());
     esdInfo.Form("ESD event info: Run#: %d  Event type: %d (%s)  Period: %x  Orbit: %x  BC: %x\n"
-		 "Active trigger classes: %s\nTrigger: %llx (%s)\nEvent# in file: %d  Timestamp: %s",
+		 "Active trigger classes: %s\nTrigger: %llx (%s)\nEvent# in file: %d  Timestamp: %s, MagField: %.2e",
 		 fESD->GetRunNumber(),
 		 fESD->GetEventType(),AliRawEventHeaderBase::GetTypeName(fESD->GetEventType()),
 		 fESD->GetPeriodNumber(),fESD->GetOrbitNumber(),fESD->GetBunchCrossNumber(),
 		 acttrclasses.Data(),
 		 fESD->GetTriggerMask(),firedtrclasses.Data(),
-		 fESD->GetEventNumberInFile(), ts.AsString("s"));
+		 fESD->GetEventNumberInFile(), ts.AsString("s"), fESD->GetMagneticField());
   }
 
   return rawInfo + esdInfo;
@@ -1002,4 +1089,3 @@ TString AliEveEventManager::GetEventInfoVertical() const
 
   return rawInfo + "\n" + esdInfo;
 }
-  
