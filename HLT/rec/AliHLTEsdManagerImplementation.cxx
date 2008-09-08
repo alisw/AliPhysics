@@ -27,6 +27,7 @@
 #include "AliESDEvent.h"
 #include "AliHLTMessage.h"
 #include "AliESDEvent.h"
+#include "AliESDtrack.h"
 #include "TFile.h"
 #include "TTree.h"
 #include "TClass.h"
@@ -117,7 +118,15 @@ int AliHLTEsdManagerImplementation::WriteESD(const AliHLTUInt8_t* pBuffer, AliHL
 	  fESDs.push_back(newEntry);
 	}
 	if (tgtesd) {
-#ifndef HAVE_NOT_ESD_COPY
+#if 0 // later extension !defined(HAVE_NOT_ESD_NONSTD)
+	  entry=Find(dt);
+	  if (entry) {
+	    entry->CopyNonEmptyObjects(tgtesd, pESD);
+	  } else {
+	    HLTError("internal mismatch, can not create list entry");
+	    iResult=-ENOMEM;
+	  }
+#elif !defined(HAVE_NOT_ESD_COPY)
 	  *tgtesd=*pESD;
 #else //HAVE_NOT_ESD_COPY
 	  static bool warningPrinted=false;
@@ -217,7 +226,8 @@ AliHLTEsdManagerImplementation::AliHLTEsdListEntry::AliHLTEsdListEntry(AliHLTCom
   fDt(dt),
   fpFile(NULL),
   fpTree(NULL),
-  fpEsd(NULL)
+  fpEsd(NULL),
+  fPrefix()
 {
   // see header file for class documentation
 }
@@ -251,15 +261,11 @@ int AliHLTEsdManagerImplementation::AliHLTEsdListEntry::WriteESD(AliESDEvent* pS
 #ifndef HAVE_NOT_ESD_COPY
   if (fName.IsNull()) {
     // this is the first event, create the file name
-    TString origin;
-    origin.Insert(0, fDt.fOrigin, kAliHLTComponentDataTypefOriginSize);
-    origin.Remove(TString::kTrailing, ' ');
-    origin.ToUpper();
     fName="";
     if (!fDirectory.IsNull()) {
       fName+=fDirectory; fName+="/";
     }
-    fName+="AliHLT"; fName+=origin;
+    fName+="Ali"; fName+=GetPrefix();
     if (fDt!=kAliHLTDataTypeESDObject &&
 	fDt!=kAliHLTDataTypeESDTree) {
 
@@ -585,4 +591,100 @@ const char* AliHLTEsdManagerImplementation::AliHLTEsdListEntry::GetFileName() co
 {
   // see header file for class documentation
   return fName.Data();
+}
+
+const char* AliHLTEsdManagerImplementation::AliHLTEsdListEntry::GetPrefix()
+{
+  // see header file for class documentation
+  if (fPrefix.IsNull()) {
+    fPrefix.Insert(0, fDt.fOrigin, kAliHLTComponentDataTypefOriginSize);
+    fPrefix.Remove(TString::kTrailing, ' ');
+    fPrefix.ToUpper();
+    if (!fPrefix.Contains("HLT")) {
+      fPrefix.Insert(0, "HLT");
+    }
+  }
+  return fPrefix.Data();
+}
+
+int AliHLTEsdManagerImplementation::AliHLTEsdListEntry::CopyNonEmptyObjects(AliESDEvent* pTgt, AliESDEvent* pSrc)
+{
+  // see header file for class documentation
+  int iResult=0;
+  if (!pTgt || !pSrc) return -EINVAL;
+
+  const char* defaultPrefix="HLT";
+  TIter next(pSrc->GetList());
+  TObject* pSrcObject=NULL;
+  TString name;
+  while ((pSrcObject=next())) {
+    if(!pSrcObject->InheritsFrom("TCollection")){
+      // simple objects
+    } else if(pSrcObject->InheritsFrom("TClonesArray")){
+      TClonesArray* pTClA=dynamic_cast<TClonesArray*>(pSrcObject);
+      if (pTClA!=NULL && pTClA->GetEntriesFast()>0) {
+	bool bMakeNewName=true;
+	name=defaultPrefix;
+	name+=pTClA->GetName();
+	TObject* pTgtObject=pTgt->GetList()->FindObject(name);
+	TClonesArray* pTgtArray=NULL;
+	if (bMakeNewName=(pTgtObject!=NULL) && pTgtObject->InheritsFrom("TClonesArray")){
+	  pTgtArray=dynamic_cast<TClonesArray*>(pTgtObject);
+	  if (pTgtArray) {
+	    TString classType=pTClA->Class()->GetName();
+	    if (classType.CompareTo(pTgtArray->Class()->GetName())==0) {
+	      if (pTgtArray->GetEntries()==0) {
+		bMakeNewName=false;
+	      } else {
+		HLTWarning("TClonesArray \"%s\"  in target ESD %p is already filled with %d entries",
+			   name.Data(), pTgt, pTgtArray->GetEntries());
+	      }
+	    } else {
+	      HLTWarning("TClonesArray \"%s\" exists in target ESD %p, but describes incompatible class type %s instead of %s",
+			 name.Data(), pTgt, pTgtArray->GetClass()->GetName(), pTClA->GetClass()->GetName());
+	    }
+	  } else {
+	    HLTError("internal error: dynamic cast failed for object %s %p", pTgtObject->GetName(), pTgtObject);
+	  }
+	} else if (pTgtObject) {
+	  HLTWarning("object \"%s\" does already exist in target ESD %p, but is %s rather than TClonesArray",
+		     name.Data(), pTgt, pTgtObject->Class()->GetName());
+	  // TODO: temporary solution, think about a general naming scheme and add
+	  // the name as property of AliHLTEsdListEntry
+	}
+
+	if (bMakeNewName) {
+	  pTgtArray=NULL;
+	  int count=1;
+	  while (pTgt->GetList()->FindObject(name)) {
+	    name.Form("%sESD_%s", GetPrefix(), pTClA->GetName());
+	    if (count++>1) {
+	      name+=Form("%d", count);
+	    }
+	  }
+	  HLTWarning("adding new TClonesArray \"%s\" because of conflicts", name.Data());
+	}
+
+	if (pTgtArray) {
+	  pTgtArray->ExpandCreate(pTClA->GetEntries());
+	  HLTInfo("Expanding TClonesArray \"%s\" to %d elements", pTgtArray->GetClass()->GetName(), pTClA->GetEntries());
+	} else {
+	  pTgtArray=new TClonesArray(pTClA->GetClass(), pTClA->GetEntries());
+	  pTgtArray->ExpandCreate(pTClA->GetEntries());
+	  pTgtArray->SetName(name);
+	  pTgt->AddObject(pTgtArray);
+	  HLTInfo("Adding TClonesArray \"%s\" with %d elements to ESD %p", name.Data(), pTClA->GetEntries(), pTgt);
+	}
+
+	if (pTgtArray) {
+	  for(int i=0; i<pTClA->GetEntriesFast(); ++i){
+	    (*pTClA)[i]->Copy(*((*pTgtArray)[i]));
+	  }
+	} else {
+	  iResult=-ENOMEM;
+	}
+      }
+    }
+  }
+  return iResult;
 }

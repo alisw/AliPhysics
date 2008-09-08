@@ -108,6 +108,13 @@ class AliHLTEsdManagerImplementation : public AliHLTEsdManager {
     int WriteESD(AliESDEvent* pESD, int eventno=-1);
 
     /**
+     * Copy non-empty objects of the source ESD to the target ESD.
+     * The first implementation just copies the entries of type TClonesArray which
+     * are not empty.
+     */
+    int CopyNonEmptyObjects(AliESDEvent* pTgt, AliESDEvent* pSrc);
+
+    /**
      * Set the target directory for the ESD file.
      */
     void SetDirectory(const char* directory);
@@ -121,6 +128,13 @@ class AliHLTEsdManagerImplementation : public AliHLTEsdManager {
      * Get name of the ESD file.
      */
     const char* GetFileName() const;
+
+    /**
+     * Get the object name prefix generated from the data origin
+     * The prefix is added to the names of the ESD objects when copied to the
+     * master ESD.
+     */
+    const char* GetPrefix();
 
     bool operator==(AliHLTComponentDataType dt) const;
 
@@ -151,6 +165,8 @@ class AliHLTEsdManagerImplementation : public AliHLTEsdManager {
     TTree* fpTree; //!transient
     /** the esd to fill into the tree */
     AliESDEvent* fpEsd; //!transient
+    /** Prefix for generated ESD objects in the master ESD */
+    TString fPrefix; //!transient
   };
 
   typedef vector<AliHLTEsdListEntry*> AliHLTEsdPList;

@@ -253,8 +253,31 @@ if test ! "x$have_aliroot" = "xno" ; then
   fi
 
   dnl
+  dnl ESD supports non-std content
+  dnl
+  have_esd_nonstd=no
+  AC_RUN_IFELSE([AC_LANG_PROGRAM([#include <AliESDEvent.h>
+				   #include <AliExternalTrackParam.h>
+				   #include <TTree.h>
+				   #include <TClonesArray.h>],
+				  [AliESDEvent esd;
+				   esd.CreateStdContent();
+				   TTree* tree=new TTree("esdTree", "Tree with HLT ESD objects");
+				   esd.WriteToTree(tree);
+				   TClonesArray* a=new TClonesArray("AliExternalTrackParam");
+				   a->SetName("SomeObject");
+				   esd.AddObject(a);
+				   if (!tree->FindBranch("SomeObject")) return 1;
+				   return 0;])],
+                 [have_esd_nonstd=yes], 
+  		 [AC_DEFINE(HAVE_NOT_ESD_NONSTD)])
+  AC_MSG_CHECKING(whether ESD supports non standard content)
+  AC_MSG_RESULT([$have_esd_nonstd])
+
+  dnl
   dnl ESD copy function added May 9 2008 rev 25667
   dnl
+  if test "x$have_esd_nonstd" != "xyes"; then
   have_esd_copy=no
   AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <AliESDEvent.h>],
 				  [AliESDEvent esd1;
@@ -264,6 +287,7 @@ if test ! "x$have_aliroot" = "xno" ; then
   		 [AC_DEFINE(HAVE_NOT_ESD_COPY)])
   AC_MSG_CHECKING(for ESD assignment operator)
   AC_MSG_RESULT([$have_esd_copy])
+  fi
 
   dnl
   dnl AliRawReaderMemory support for multiple buffers added
