@@ -128,7 +128,9 @@ AliFMDDisplay::AliFMDDisplay(Bool_t onlyFMD, const char* gAliceFile)
     fSpec(0), 
     fSpecCut(0),
     fAux(0), 
-    fReturn(kFALSE)
+    fReturn(kFALSE), 
+    fContinous(kFALSE),
+    fTimeout("gApplication->StopIdleing()", 10)
 {
   // Constructor of an FMD display object. 
   // Must be called 
@@ -501,10 +503,12 @@ AliFMDDisplay::Idle()
   // Sends the ROOT loop into the idle loop,
   // so that we can go on. 
   fWait = kTRUE;
+  if (fContinous) fTimeout.Start(10, kTRUE);
   while (fWait) {
     gApplication->StartIdleing();
     gSystem->InnerLoop();
     gApplication->StopIdleing();
+    if (fContinous) break;
   }
   AliFMDDebug(1, ("After idle loop"));
   if (fMarkers) fMarkers->Delete();

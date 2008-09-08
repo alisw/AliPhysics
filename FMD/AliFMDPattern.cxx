@@ -358,7 +358,7 @@ AliFMDPattern::Begin(Int_t event)
   // 
   MakeAux();
   if (!fCanvas) {
-    const char* which[] = { "Continue", "Redisplay", 0 };
+    const char* which[] = { "Continue", "Start", "Pause", "Redisplay", 0 };
     MakeCanvas(which);
     
     AliFMDGeometry* geom = AliFMDGeometry::Instance();

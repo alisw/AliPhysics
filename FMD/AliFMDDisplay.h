@@ -20,6 +20,7 @@
 //
 #include "AliFMDInput.h"
 #include <TObjArray.h>
+#include <TTimer.h>
 class TCanvas;
 class TPad;
 class TButton;
@@ -46,6 +47,10 @@ public:
 
   /** Continue to next event */
   void  Continue() { fWait = kFALSE; }
+  /** Run throug events as fast as possible */ 
+  void Start() { fContinous = kTRUE; fWait = kFALSE; }
+  /** Pause the processing */ 
+  void Pause() { fContinous = kFALSE; fWait = kTRUE; }
   /** Zoom mode */
   void  Zoom() { fZoomMode = kTRUE; }
   /** Pick mode */
@@ -153,7 +158,9 @@ protected:
       fSpec(0), 
       fSpecCut(0),
       fAux(0),
-      fReturn(kFALSE)
+      fReturn(kFALSE),
+      fContinous(kFALSE), 
+      fTimeout()
   { } 
   /** Assignment operator 
       @return Reference to this object */
@@ -213,7 +220,9 @@ protected:
   TH1*                  fSpecCut;   // Cut spectra
   TCanvas*              fAux;       // Aux canvas.
   Bool_t                fReturn;    // Stop 
-
+  Bool_t                fContinous;
+  TTimer                fTimeout;
+  
 
   struct Range_t { 
     UInt_t  fNbins;
