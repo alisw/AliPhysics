@@ -408,7 +408,7 @@ void AliITSQASDDDataMakerRec::MakeRaws(AliRawReader* rawReader)
     }
     
     if(fkOnline) {
-      if(fSDDhTask > 40 + index1) {
+      if(fSDDhTask > 41 + index1) {
         ((TProfile2D *)(fAliITSQADataMakerRec->GetRawsData(41 + index1 +fGenOffset)))->Fill(coord2, coord1, signal);
         ((TProfile2D *)(fAliITSQADataMakerRec->GetRawsData(41 + index1 + 260*2 +fGenOffset)))->Fill(coord2, coord1, signal);
       }
