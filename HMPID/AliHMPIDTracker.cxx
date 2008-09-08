@@ -221,7 +221,7 @@ Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmea
 
     Bool_t isOk = hmpTrk->Update(bestHmpCluster,bestChi2,indexAll);
     if(!isOk) continue;
-    pTrk->SetOuterParam((AliExternalTrackParam*)&hmpTrk,AliESDtrack::kHMPIDout);                 
+    pTrk->SetOuterParam(hmpTrk,AliESDtrack::kHMPIDout);                 
 
 //    cham=IntTrkCha(ipCh,hmpTrk,xPc,yPc,xRa,yRa,theta,phi);
     cham=IntTrkCha(pTrk,xPc,yPc,xRa,yRa,theta,phi);
