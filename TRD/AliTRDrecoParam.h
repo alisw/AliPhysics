@@ -24,6 +24,11 @@ public:
 
   Double_t GetChi2Y() const                 { return fkChi2Y;    }
   Double_t GetChi2Z() const                 { return fkChi2Z;    }
+  Double_t GetChi2YCut() const              { return fkChi2YCut; }
+  Double_t GetChi2ZCut() const              { return fkChi2ZCut; }
+  Double_t GetPhiCut() const                { return fkPhiCut;   }
+  Double_t GetMeanNclusters() const         { return fkMeanNclusters; }
+  Double_t GetSigmaNclusters() const        { return fkSigmaNclusters; }
   Double_t GetFindableClusters() const      { return fkFindable; }
   Double_t GetMaxTheta() const              { return fkMaxTheta; }
   Double_t GetMaxPhi() const                { return fkMaxPhi;   }
@@ -55,10 +60,16 @@ public:
   Bool_t   IsVertexConstrained() const      { return TestBit(kVertexConstrained); }
   Bool_t   HasImproveTracklets() const       { return TestBit(kImproveTracklet); }
 
-
+  void     SetMaxTheta(Double_t maxTheta) {fkMaxTheta = maxTheta;}
+  void     SetMaxPhi(Double_t maxPhi) {fkMaxPhi = maxPhi;}
   void     SetFindableClusters(Double_t r) {fkFindable = r;}
   void     SetChi2Y(Double_t chi2) {fkChi2Y = chi2;}
   void     SetChi2Z(Double_t chi2) {fkChi2Z = chi2;}
+  void     SetChi2YCut(Double_t chi2YCut) {fkChi2YCut = chi2YCut;}
+  void     SetChi2ZCut(Double_t chi2ZCut) {fkChi2ZCut = chi2ZCut;}
+  void     SetPhiCut(Double_t phiCut) {fkPhiCut = phiCut;}
+  void     SetMeanNclusters(Double_t meanNclusters) {fkMeanNclusters = meanNclusters;}
+  void     SetSigmaNclusters(Double_t sigmaNclusters) {fkSigmaNclusters = sigmaNclusters;} 
   void     SetClusterSharing(Bool_t share = kTRUE)            { SetBit(kClusterSharing, share);}
   void     SetImproveTracklets(Bool_t improve = kTRUE)         { SetBit(kImproveTracklet, improve);}
   void     SetVertexConstrained(Bool_t vc = kTRUE)            { SetBit(kVertexConstrained, vc); }
@@ -98,6 +109,11 @@ private:
   Double_t  fkFindable;              // Ratio of clusters from a track in one chamber which are at minimum supposed to be found.
   Double_t  fkChi2Z;                 // Max chi2 on the z direction for seeding clusters fit
   Double_t  fkChi2Y;                 // Max chi2 on the y direction for seeding clusters Rieman fit
+  Double_t  fkChi2YCut;              // Cut on the Chi2 in y-direction in the likelihood filter
+  Double_t  fkChi2ZCut;              // Cut on the Chi2 in z-direction in the likelihood filter
+  Double_t  fkPhiCut;                // Cut on the deviation of the phi angles between tracklet and track fit (lik. filter)
+  Double_t  fkMeanNclusters;         // Mean of the distribution of the number of clusters per tracklet
+  Double_t  fkSigmaNclusters;        // Sigma of the distribution of the number of clusters per tracklet
   Double_t  fkTrackLikelihood;       // Track likelihood for tracklets Rieman fit
   
   Double_t  fSysCovMatrix[5];        // Systematic uncertainty from calibration and alignment for each tracklet

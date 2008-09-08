@@ -33,8 +33,8 @@ ClassImp(AliTRDrecoParam)
 //______________________________________________________________
 AliTRDrecoParam::AliTRDrecoParam()
   :AliDetectorRecoParam()
-  ,fkMaxTheta(1.0)
-  ,fkMaxPhi(2.0)
+  ,fkMaxTheta(1.0)	
+  ,fkMaxPhi(2.0) 
   ,fkRoad0y(6.0)
   ,fkRoad0z(8.5) 
   ,fkRoad1y(2.0)
@@ -45,6 +45,11 @@ AliTRDrecoParam::AliTRDrecoParam()
   ,fkFindable(.333)
   ,fkChi2Z(30./*14.*//*12.5*/)
   ,fkChi2Y(.25)
+  ,fkChi2YCut(7.73)
+  ,fkChi2ZCut(0.069)
+  ,fkPhiCut(10.6)
+  ,fkMeanNclusters(72)
+  ,fkSigmaNclusters(5.2632)
   ,fkTrackLikelihood(-15.)
   ,fMinMaxCutSigma(4.)
   ,fMinLeftRightCutSigma(8.)
@@ -85,6 +90,10 @@ AliTRDrecoParam::AliTRDrecoParam(const AliTRDrecoParam &ref)
   ,fkFindable(ref.fkFindable)
   ,fkChi2Z(ref.fkChi2Z)
   ,fkChi2Y(ref.fkChi2Y)
+  ,fkChi2YCut(ref.fkChi2YCut)
+  ,fkPhiCut(ref.fkPhiCut)
+  ,fkMeanNclusters(ref.fkMeanNclusters)
+  ,fkSigmaNclusters(ref.fkSigmaNclusters)
   ,fkTrackLikelihood(ref.fkTrackLikelihood)
   ,fMinMaxCutSigma(ref.fMinMaxCutSigma)
   ,fMinLeftRightCutSigma(ref.fMinLeftRightCutSigma)
@@ -139,7 +148,13 @@ AliTRDrecoParam *AliTRDrecoParam::GetCosmicTestParam()
 
   AliTRDrawStreamBase::SetRawStreamVersion("TB");
   AliTRDrecoParam *par = new AliTRDrecoParam();
-  par->SetVertexConstrained();
+  par->SetVertexConstrained(kFALSE);
+  par->SetChi2YCut(1.136);
+  par->SetChi2ZCut(0.069);
+  par->SetMaxTheta(2.1445);
+  par->SetMaxPhi(2.7475);
+  par->SetMeanNclusters(48.1197);
+  par->SetSigmaNclusters(8.59347);
   return par;
 
 }

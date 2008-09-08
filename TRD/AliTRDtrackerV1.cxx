@@ -2385,14 +2385,13 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *ss
               <<"RiemanFitter.="		<< rim
               <<"\n";
         }
-      
         if(chi2[0] > fReconstructor->GetRecoParam() ->GetChi2Z()/*7./(3. - sLayer)*//*iter*/){
-          //AliInfo(Form("Failed chi2 filter on chi2Z [%f].", chi2[0]));
+//          //AliInfo(Form("Failed chi2 filter on chi2Z [%f].", chi2[0]));
           AliTRDtrackerDebug::SetCandidateNumber(AliTRDtrackerDebug::GetCandidateNumber() + 1);
           continue;
         }
         if(chi2[1] > fReconstructor->GetRecoParam() ->GetChi2Y()/*1./(3. - sLayer)*//*iter*/){
-          //AliInfo(Form("Failed chi2 filter on chi2Y [%f].", chi2[1]));
+//          //AliInfo(Form("Failed chi2 filter on chi2Y [%f].", chi2[1]));
           AliTRDtrackerDebug::SetCandidateNumber(AliTRDtrackerDebug::GetCandidateNumber() + 1);
           continue;
         }
@@ -2436,12 +2435,7 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *ss
 
         // fit tracklets and cook likelihood
         FitTiltedRieman(&cseed[0], kTRUE);// Update Seeds and calculate Likelihood
-        chi2[0] = GetChi2Y(&cseed[0]);
-        chi2[1] = GetChi2Z(&cseed[0]);
-        //Chi2 definitions in testing stage
-        //chi2[0] = GetChi2YTest(&cseed[0]);
-        //chi2[1] = GetChi2ZTest(&cseed[0]);
-        Double_t like = CookLikelihood(&cseed[0], planes, chi2); // to be checked
+        Double_t like = CookLikelihood(&cseed[0], planes); // to be checked
       
         if (TMath::Log(1.E-9 + like) < fReconstructor->GetRecoParam() ->GetTrackLikelihood()){
           //AliInfo(Form("Failed likelihood %f[%e].", TMath::Log(1.E-9 + like), like));
@@ -2504,7 +2498,7 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *ss
         // do the final track fitting (Once with vertex constraint and once without vertex constraint)
         Double_t chi2Vals[3];
         chi2Vals[0] = FitTiltedRieman(&cseed[0], kFALSE);
-        if(fReconstructor->GetRecoParam() ->IsVertexConstrained())
+        if(fReconstructor->GetRecoParam()->IsVertexConstrained())
           chi2Vals[1] = FitTiltedRiemanConstraint(&cseed[0], GetZ()); // Do Vertex Constrained fit if desired
         else
           chi2Vals[1] = 1.;
@@ -2545,12 +2539,17 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *ss
           Int_t candidateNumber = AliTRDtrackerDebug::GetCandidateNumber();
           TLinearFitter *fitterTC = GetTiltedRiemanFitterConstraint();
           TLinearFitter *fitterT = GetTiltedRiemanFitter();
+          Int_t ncls = 0; 
+          for(Int_t iseed = 0; iseed < kNPlanes; iseed++){
+          	ncls += cseed[iseed].IsOK() ? cseed[iseed].GetN2() : 0;
+          }
           cstreamer << "MakeSeeds2"
               << "EventNumber=" 		<< eventNumber
               << "CandidateNumber="	<< candidateNumber
               << "Chi2TR="			<< chi2Vals[0]
               << "Chi2TC="			<< chi2Vals[1]
               << "Nlayers="			<< mlayers
+              << "NClusters="   << ncls
               << "NUsedS="			<< nUsedCl
               << "NUsed="				<< nusedf
               << "Like="				<< like
@@ -2612,7 +2611,15 @@ AliTRDtrackV1* AliTRDtrackerV1::MakeTrack(AliTRDseedV1 *seeds, Double_t *params)
 
   AliTRDtrackV1 track(seeds, &params[1], c, params[0], params[6]*alpha+shift);
   track.PropagateTo(params[0]-5.0);
-  if(fReconstructor->IsHLT()) return SetTrack(&track);
+  if(fReconstructor->IsHLT()){ 
+    AliTRDseedV1 *ptrTracklet = 0x0;
+    for(Int_t ip=0; ip<kNPlanes; ip++){
+      track.UnsetTracklet(ip);
+      ptrTracklet = SetTracklet(&seeds[ip]);
+      track.SetTracklet(ptrTracklet, fTracklets->GetEntriesFast()-1);
+    }
+    return SetTrack(&track);
+  }
 
   track.ResetCovariance(1);
   Int_t nc = TMath::Abs(FollowBackProlongation(track));
@@ -2792,8 +2799,7 @@ Double_t AliTRDtrackerV1::CalculateTrackLikelihood(AliTRDseedV1 *tracklets, Doub
 }
 
 //____________________________________________________________________
-Double_t AliTRDtrackerV1::CookLikelihood(AliTRDseedV1 *cseed, Int_t planes[4]
-          , Double_t *chi2)
+Double_t AliTRDtrackerV1::CookLikelihood(AliTRDseedV1 *cseed, Int_t planes[4])
 {
   //
   // Calculate the probability of this track candidate.
@@ -2820,9 +2826,11 @@ Double_t AliTRDtrackerV1::CookLikelihood(AliTRDseedV1 *cseed, Int_t planes[4]
   //
 
   // ratio of the total number of clusters/track which are expected to be found by the tracker.
-  Float_t fgFindable = fReconstructor->GetRecoParam() ->GetFindableClusters();
-
+  const AliTRDrecoParam *fRecoPars = fReconstructor->GetRecoParam();
   
+ 	Double_t chi2y = GetChi2Y(&cseed[0]);
+  Double_t chi2z = GetChi2Z(&cseed[0]);
+
   Int_t nclusters = 0;
   Double_t sumda = 0.;
   for(UChar_t ilayer = 0; ilayer < 4; ilayer++){
@@ -2830,19 +2838,24 @@ Double_t AliTRDtrackerV1::CookLikelihood(AliTRDseedV1 *cseed, Int_t planes[4]
     nclusters += cseed[jlayer].GetN2();
     sumda += TMath::Abs(cseed[jlayer].GetYfitR(1) - cseed[jlayer].GetYref(1));
   }
-  Double_t likea     = TMath::Exp(-sumda*10.6);
+  Double_t likea     = TMath::Exp(-sumda * fRecoPars->GetPhiCut());
   Double_t likechi2y  = 0.0000000001;
-  if (chi2[0] < 0.5) likechi2y += TMath::Exp(-TMath::Sqrt(chi2[0]) * 7.73);
-  Double_t likechi2z = TMath::Exp(-chi2[1] * 0.088) / TMath::Exp(-chi2[1] * 0.019);
-  Int_t enc = Int_t(fgFindable*4.*fgNTimeBins); 	// Expected Number Of Clusters, normally 72
-  Double_t likeN     = TMath::Exp(-(enc - nclusters) * 0.19);
-  
+  if (fReconstructor->IsCosmic() || chi2y < 0.5) likechi2y += TMath::Exp(-TMath::Sqrt(chi2y) * fRecoPars->GetChi2YCut());
+  Double_t likechi2z = TMath::Exp(-chi2z * fRecoPars->GetChi2ZCut());
+  Double_t likeN     = TMath::Exp(-(fRecoPars->GetMeanNclusters() - nclusters) / fRecoPars->GetSigmaNclusters());
   Double_t like      = likea * likechi2y * likechi2z * likeN;
 
   //	AliInfo(Form("sumda(%f) chi2[0](%f) chi2[1](%f) likea(%f) likechi2y(%f) likechi2z(%f) nclusters(%d) likeN(%f)", sumda, chi2[0], chi2[1], likea, likechi2y, likechi2z, nclusters, likeN));
   if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker) >= 2){
     Int_t eventNumber = AliTRDtrackerDebug::GetEventNumber();
     Int_t candidateNumber = AliTRDtrackerDebug::GetCandidateNumber();
+    Int_t nTracklets = 0; Float_t mean_ncls = 0;
+    for(Int_t iseed=0; iseed < kNPlanes; iseed++){
+    	if(!cseed[iseed].IsOK()) continue;
+    	nTracklets++;
+    	mean_ncls += cseed[iseed].GetN2();
+    }
+    if(nTracklets) mean_ncls /= nTracklets;
     // The Debug Stream contains the seed 
     TTreeSRedirector &cstreamer = *fgDebugStreamer;
     cstreamer << "CookLikelihood"
@@ -2855,14 +2868,15 @@ Double_t AliTRDtrackerV1::CookLikelihood(AliTRDseedV1 *cseed, Int_t planes[4]
         << "tracklet4.="			<< &cseed[4]
         << "tracklet5.="			<< &cseed[5]
         << "sumda="						<< sumda
-        << "chi0="						<< chi2[0]
-        << "chi1="						<< chi2[1]
+        << "chi2y="						<< chi2y
+        << "chi2z="						<< chi2z
         << "likea="						<< likea
         << "likechi2y="				<< likechi2y
         << "likechi2z="				<< likechi2z
         << "nclusters="				<< nclusters
         << "likeN="						<< likeN
         << "like="						<< like
+        << "meanncls="        << mean_ncls
         << "\n";
   }
 
@@ -3247,7 +3261,7 @@ Float_t AliTRDtrackerV1::GetChi2Y(AliTRDseedV1 *tracklets) const
   Float_t chi2 = 0;
   for(Int_t ipl = 0; ipl < kNPlanes; ipl++){
     if(!tracklets[ipl].IsOK()) continue;
-    Double_t distLayer = tracklets[ipl].GetYfit(0) - tracklets[ipl].GetYref(0); 
+    Double_t distLayer = (tracklets[ipl].GetYfit(0) - tracklets[ipl].GetYref(0));// /tracklets[ipl].GetSigmaY(); 
     chi2 += distLayer * distLayer;
   }
   return chi2;
@@ -3268,12 +3282,14 @@ void AliTRDtrackerV1::ResetSeedTB()
 //_____________________________________________________________________________
 Float_t AliTRDtrackerV1::GetChi2Z(AliTRDseedV1 *tracklets) const 
 {
-  //	Chi2 definition on z-direction
+  //	Calculates normalized chi2 in z-direction
 
   Float_t chi2 = 0;
+  // chi2 = Sum ((z - zmu)/sigma)^2
+  // Sigma for the z direction is defined as half of the padlength
   for(Int_t ipl = 0; ipl < kNPlanes; ipl++){
     if(!tracklets[ipl].IsOK()) continue;
-    Double_t distLayer = tracklets[ipl].GetMeanz() - tracklets[ipl].GetZref(0); 
+    Double_t distLayer = (tracklets[ipl].GetMeanz() - tracklets[ipl].GetZref(0)); // /(tracklets[ipl].GetPadLength()/2); 
     chi2 += distLayer * distLayer;
   }
   return chi2;
