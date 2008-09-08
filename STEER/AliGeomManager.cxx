@@ -550,17 +550,6 @@ Bool_t AliGeomManager::CheckSymNamesLUT(const char* detsToBeChecked)
 
   if(fgGeometry->CheckPath("ALIC_1/XEN1_1")) detsString+="EMCAL";
 
-  Printf("\n\n\n  %s  \n\n\n",detsString.Data());
-  for(Int_t pmod=0; pmod<5; pmod++)
-  {
-    if(phosMods[pmod]){
-      Printf("PHOS module %d is active",pmod+1);
-    }else{
-      Printf("PHOS module %d is NOT active",pmod+1);
-    }
-  }
-  
-  
   TString symname;
   const char* sname;
   TGeoPNEntry* pne = 0x0;
@@ -1051,7 +1040,6 @@ Bool_t AliGeomManager::CheckSymNamesLUT(const char* detsToBeChecked)
 		"Expected was %s, found was %s!", uid, symname.Data(), sname));
 	  return kFALSE;
 	}
-	Printf(" %s ",sname);
 	/*********************      PHOS CPV layer   ***********************/
 	if(!cpvActive) continue;
 	symname += "/CPV";
@@ -1069,7 +1057,6 @@ Bool_t AliGeomManager::CheckSymNamesLUT(const char* detsToBeChecked)
 		"Expected was %s, found was %s!", uid, symname.Data(), sname));
 	  return kFALSE;
 	}
-	Printf(" %s ",sname);
       }
     AliDebugClass(2,"Consistency check for PHOS symbolic names finished successfully.");
   }
