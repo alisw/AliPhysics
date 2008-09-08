@@ -22,6 +22,8 @@ Trigger Types Used: Standalone Trigger
 
 */
 #define PEDDATA_FILE  "ZDCPedestal.dat"
+#define MAPDATA_FILE  "ZDCChMapping.dat"
+#define EMDDATA_FILE  "ZDCEMDCalib.dat"
 
 #include <stdio.h>
 #include <Riostream.h>
@@ -104,11 +106,11 @@ int main(int argc, char **argv) {
   }
   
   FILE *mapFile4Shuttle;
-  const char *mapfName = "ZDCChMapping.dat";
+
   // *** To analyze LASER events you MUST have a pedestal data file!!!
   // *** -> check if a pedestal run has been analyzied
   int read = 0;
-  read = daqDA_FES_storeFile(PEDDATA_FILE,"ZDCPEDESTAL_data");
+  read = daqDA_DB_getFile(PEDDATA_FILE,PEDDATA_FILE);
   if(read){
     printf("\t ERROR!!! ZDCPedestal.dat file NOT FOUND in DAQ db!!!\n");
     return -1;
@@ -223,7 +225,7 @@ int main(int argc, char **argv) {
 	}
 	// --------------------------------------------------------
 	// --- Writing ascii data file for the Shuttle preprocessor
-        mapFile4Shuttle = fopen(mapfName,"w");
+        mapFile4Shuttle = fopen(MAPDATA_FILE,"w");
         for(Int_t i=0; i<ich; i++){
 	   fprintf(mapFile4Shuttle,"\t%d\t%d\t%d\t%d\t%d\t%d\n",i,
 	     adcMod[i],adcCh[i],sigCode[i],det[i],sec[i]);
@@ -330,8 +332,7 @@ int main(int argc, char **argv) {
   /* Analysis of the histograms */
   //
   FILE *fileShuttle;
-  const char *fName = "ZDCPedestal.dat";
-  fileShuttle = fopen(fName,"w");
+  fileShuttle = fopen(EMDDATA_FILE,"w");
   //
   Int_t BinMax[4];
   Float_t YMax[4];
@@ -349,19 +350,28 @@ int main(int argc, char **argv) {
      //printf("\n\t Mean Value from gaussian fit = %f\n", MeanFitVal[k]);
   }
   //
-   Float_t CalibCoeff[6];
-  /*for(Int_t j=0; j<6; j++){
-     if(j<4) CalibCoeff[j] = MeanFitVal[j];
-     else  CalibCoeff[j] = 1.;
-     fprintf(fileShuttle,"\t%f\n",CalibCoeff[j]);
-  }
-  */
-  // --- For the moment we have sim data only for ZN1!!!
-  for(Int_t j=0; j<6; j++){
-     if(j==0) CalibCoeff[j] = MeanFitVal[j];
-     else if(j>0 && j<4) CalibCoeff[j] = CalibCoeff[0];
-     else  CalibCoeff[j] = 1.;
-     fprintf(fileShuttle,"\t%f\n",CalibCoeff[j]);
+  Float_t CalibCoeff[6];     
+  Float_t icoeff[5];
+  //
+  for(Int_t j=0; j<10; j++){
+     if(j<4){
+       CalibCoeff[j] = MeanFitVal[j];
+       fprintf(fileShuttle,"\t%f\n",CalibCoeff[j]);
+     }
+     // ZEM calib. coeff. = 1
+     else if(j==4 || j==5){
+       CalibCoeff[j] = 1.; 
+       fprintf(fileShuttle,"\t%f\n",CalibCoeff[j]);
+     }
+     // Note -> For the moment the inter-calibration
+     //	     coefficients are set to 1 
+     else if(j>5){
+       for(Int_t k=0; k<5; k++){  
+         icoeff[k] = 1.;
+         fprintf(fileShuttle,"\t%f",icoeff[k]);
+         if(k==4) fprintf(fileShuttle,"\n");
+       }
+     }
   }
   //						       
   fclose(fileShuttle);
@@ -384,13 +394,13 @@ int main(int argc, char **argv) {
   daqDA_progressReport(90);
 
   /* store the result file on FES */
-  status = daqDA_FES_storeFile(mapfName,"ZDCCHMAPPING_data");
+  status = daqDA_FES_storeFile(MAPDATA_FILE, MAPDATA_FILE);
   if(status){
     printf("Failed to export file : %d\n",status);
     return -1;
   }
   //
-  status = daqDA_FES_storeFile(fName,"ZDCEMD_data");
+  status = daqDA_FES_storeFile(EMDDATA_FILE, EMDDATA_FILE);
   if(status){
     printf("Failed to export file : %d\n",status);
     return -1;

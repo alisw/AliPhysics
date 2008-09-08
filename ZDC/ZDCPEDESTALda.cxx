@@ -21,6 +21,8 @@ Output Files: ZDCPedestal.dat, ZDCChMapping.dat
 Trigger Types Used: Standalone Trigger
 
 */
+#define PEDDATA_FILE  "ZDCPedestal.dat"
+#define MAPDATA_FILE  "ZDCChMapping.dat"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -152,8 +154,6 @@ int main(int argc, char **argv) {
   }
   
   FILE *mapFile4Shuttle;
-  const char *mapfName = "ZDCChMapping.dat";
-  
 
   /* report progress */
   daqDA_progressReport(10);
@@ -227,7 +227,7 @@ int main(int argc, char **argv) {
 	}
 	// --------------------------------------------------------
 	// --- Writing ascii data file for the Shuttle preprocessor
-        mapFile4Shuttle = fopen(mapfName,"w");
+        mapFile4Shuttle = fopen(MAPDATA_FILE,"w");
         for(Int_t i=0; i<ich; i++){
 	   fprintf(mapFile4Shuttle,"\t%d\t%d\t%d\t%d\t%d\t%d\n",i,
 	     adcMod[i],adcCh[i],sigCode[i],det[i],sec[i]);
@@ -358,8 +358,7 @@ int main(int argc, char **argv) {
   /* Analysis of the histograms */
   //
   FILE *fileShuttle;
-  const char *fName = "ZDCPedestal.dat";
-  fileShuttle = fopen(fName,"w");
+  fileShuttle = fopen(PEDDATA_FILE,"w");
   //
   Float_t MeanPed[2*kNChannels], MeanPedWidth[2*kNChannels], 
    	MeanPedOOT[2*kNChannels], MeanPedWidthOOT[2*kNChannels];
@@ -370,7 +369,7 @@ int main(int argc, char **argv) {
      ADCfunchg[i] = hPedhg[i]->GetFunction("gaus");
      MeanPed[i] = (Double_t) ADCfunchg[i]->GetParameter(1);
      MeanPedWidth[i] = (Double_t)  ADCfunchg[i]->GetParameter(2);
-     fprintf(fileShuttle,"\t%d\t%f\t%f\n",i,MeanPed[i],MeanPedWidth[i]);
+     fprintf(fileShuttle,"\t%f\t%f\n",MeanPed[i],MeanPedWidth[i]);
      //printf("\t MeanPed[%d] = %f\n",i, MeanPed[i]);
   }
   TF1 *ADCfunclg[kNChannels];
@@ -379,7 +378,7 @@ int main(int argc, char **argv) {
      ADCfunclg[i] = hPedlg[i]->GetFunction("gaus");
      MeanPed[i+kNChannels] = (Double_t)  ADCfunclg[i]->GetParameter(1);
      MeanPedWidth[i+kNChannels] = (Double_t)  ADCfunclg[i]->GetParameter(2);
-     fprintf(fileShuttle,"\t%d\t%f\t%f\n",i+kNChannels,MeanPed[i+kNChannels],MeanPedWidth[i+kNChannels]);
+     fprintf(fileShuttle,"\t%f\t%f\n",MeanPed[i+kNChannels],MeanPedWidth[i+kNChannels]);
      //printf("\t MeanPed[%d] = %f\n",i+kNChannels, MeanPed[i+kNChannels]);
   }
   // --- Out-of-time pedestals
@@ -389,7 +388,7 @@ int main(int argc, char **argv) {
      ADCootfunchg[i] = hPedOutOfTimehg[i]->GetFunction("gaus");
      MeanPedOOT[i] = (Double_t)  ADCootfunchg[i]->GetParameter(1);
      MeanPedWidthOOT[i] = (Double_t)  ADCootfunchg[i]->GetParameter(2);
-     fprintf(fileShuttle,"\t%d\t%f\t%f\n",i,MeanPedOOT[i],MeanPedWidthOOT[i]);
+     fprintf(fileShuttle,"\t%f\t%f\n",MeanPedOOT[i],MeanPedWidthOOT[i]);
      //printf("\t MeanPedOOT[%d] = %f\n",i, MeanPedOOT[i]);
   }
   TF1 *ADCootfunclg[kNChannels];
@@ -398,7 +397,7 @@ int main(int argc, char **argv) {
      ADCootfunclg[i] = hPedOutOfTimelg[i]->GetFunction("gaus");
      MeanPedOOT[i+kNChannels] = (Double_t)  ADCootfunclg[i]->GetParameter(1);
      MeanPedWidthOOT[i+kNChannels] = (Double_t)  ADCootfunclg[i]->GetParameter(2);
-     fprintf(fileShuttle,"\t%d\t%f\t%f\n",i+kNChannels,MeanPedOOT[i+kNChannels],MeanPedWidthOOT[i+kNChannels]);
+     fprintf(fileShuttle,"\t%f\t%f\n",MeanPedOOT[i+kNChannels],MeanPedWidthOOT[i+kNChannels]);
      //printf("\t MeanPedOOT[%d] = %f\n",i+kNChannels, MeanPedOOT[i+kNChannels]);
   }
   
@@ -463,20 +462,20 @@ int main(int argc, char **argv) {
 
   /* store the result files on FES */
   // [1] File with mapping
-  status = daqDA_FES_storeFile(mapfName,"ZDCCHMAPPING_data");
+  status = daqDA_FES_storeFile(MAPDATA_FILE,MAPDATA_FILE);
   if(status){
     printf("Failed to export file %d to DAQ FES\n",status);
     return -1;
   }
   // [2] File with pedestal data
-  status = daqDA_FES_storeFile(fName,"ZDCPEDESTAL_data");
+  status = daqDA_FES_storeFile(PEDDATA_FILE,PEDDATA_FILE);
   if(status){
     printf("Failed to export file %d to DAQ FES\n",status);
     return -1;
   }
   
   /* store the result files on DB */
-  status = daqDA_DB_storeFile(fName,"ZDCPEDESTAL_data");  
+  status = daqDA_DB_storeFile(PEDDATA_FILE,PEDDATA_FILE);  
   if(status){
     printf("Failed to export file %d to DAQ DB\n",status);
     return -1;

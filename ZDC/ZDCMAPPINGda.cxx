@@ -22,6 +22,7 @@ Output Files: ZDCChMapping.dat
 Trigger Types Used: 
 
 */
+#define MAPDATA_FILE  "ZDCChMapping.dat"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -66,9 +67,7 @@ int main(int argc, char **argv) {
   }
   
   FILE *mapFile4Shuttle;
-  const char *mapfName = "ZDCChMapping.dat";
   
-
   /* report progress */
   daqDA_progressReport(10);
 
@@ -141,7 +140,7 @@ int main(int argc, char **argv) {
 	}
 	// --------------------------------------------------------
 	// --- Writing ascii data file for the Shuttle preprocessor
-        mapFile4Shuttle = fopen(mapfName,"w");
+        mapFile4Shuttle = fopen(MAPDATA_FILE,"w");
         for(Int_t i=0; i<ich; i++){
 	   fprintf(mapFile4Shuttle,"\t%d\t%d\t%d\t%d\t%d\t%d\n",i,
 	     adcMod[i],adcCh[i],sigCode[i],det[i],sec[i]);
@@ -170,7 +169,7 @@ int main(int argc, char **argv) {
   daqDA_progressReport(90);
 
   /* store the result files on FES */
-  status = daqDA_FES_storeFile(mapfName,"ZDCCHMAPPING_data");
+  status = daqDA_FES_storeFile(MAPDATA_FILE, MAPDATA_FILE);
   if(status){
     printf("Failed to export file : %d\n",status);
     return -1;

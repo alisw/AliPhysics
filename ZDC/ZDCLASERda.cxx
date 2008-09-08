@@ -22,6 +22,8 @@ Trigger Types Used: Standalone Trigger
 
 */
 #define PEDDATA_FILE  "ZDCPedestal.dat"
+#define MAPDATA_FILE  "ZDCChMapping.dat"
+#define LASDATA_FILE  "ZDCLaserCalib.dat"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -85,12 +87,11 @@ int main(int argc, char **argv) {
   }
   
   FILE *mapFile4Shuttle;
-  const char *mapfName = "ZDCChMapping.dat";  
         
   // *** To analyze LASER events you MUST have a pedestal data file!!!
   // *** -> check if a pedestal run has been analyzied
   int read = 0;
-  read = daqDA_FES_storeFile(PEDDATA_FILE,"ZDCPEDESTAL_data");
+  read = daqDA_DB_getFile(PEDDATA_FILE,PEDDATA_FILE);
   if(read){
     printf("\t ERROR!!! ZDCPedestal.dat file NOT FOUND in DAQ db!!!\n");
     return -1;
@@ -205,7 +206,7 @@ int main(int argc, char **argv) {
 	}
 	// --------------------------------------------------------
 	// --- Writing ascii data file for the Shuttle preprocessor
-        mapFile4Shuttle = fopen(mapfName,"w");
+        mapFile4Shuttle = fopen(MAPDATA_FILE,"w");
         for(Int_t i=0; i<ich; i++){
 	   fprintf(mapFile4Shuttle,"\t%d\t%d\t%d\t%d\t%d\t%d\n",i,
 	     adcMod[i],adcCh[i],sigCode[i],det[i],sec[i]);
@@ -351,8 +352,7 @@ int main(int argc, char **argv) {
   sigmaRef[3] = (Float_t) (funRef[3]->GetParameter(2));
   //
   FILE *fileShuttle;
-  const char *fName = "ZDCLaser.dat";
-  fileShuttle = fopen(fName,"w");
+  fileShuttle = fopen(LASDATA_FILE,"w");
   for(Int_t i=0; i<4; i++)  fprintf(fileShuttle,"\t%f\t%f\n",meanRef[i], sigmaRef[i]); 
   //						       
   fclose(fileShuttle);
@@ -375,13 +375,13 @@ int main(int argc, char **argv) {
   daqDA_progressReport(90);
 
   /* store the result file on FES */
-  status = daqDA_FES_storeFile(mapfName,"ZDCCHMAPPING_data");
+  status = daqDA_FES_storeFile(MAPDATA_FILE,MAPDATA_FILE);
   if(status){
     printf("Failed to export file : %d\n",status);
     return -1;
   }
   //
-  status = daqDA_FES_storeFile(fName,"ZDCLASER_data");
+  status = daqDA_FES_storeFile(LASDATA_FILE,LASDATA_FILE);
   if(status){
     printf("Failed to export file : %d\n",status);
     return -1;
