@@ -191,6 +191,8 @@ public:
   UShort_t GetChannelsPerAltro()     const { return fChannelsPerAltro; }
   /** @return The average energy deposited by one MIP */
   Float_t  GetEdepMip()              const;
+  /** @return The conversion factor from DAC to ADC */
+  Float_t  GetDACPerMIP()              const;
   /** @return The factor used of signal acceptance */
   Float_t  GetPedestalFactor()	     const { return fPedestalFactor; }
   /** @param n Number of pre-samples to keep during zero-suppression -

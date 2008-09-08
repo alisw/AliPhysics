@@ -15,7 +15,7 @@
 Float_t
 AdcPerMip2Gain(Int_t adc) 
 {
-  return 1. / adc * AliFMDParameters::Instance()->GetEdepMip();
+  return 2.9;// / adc * AliFMDParameters::Instance()->GetEdepMip();
 }
 
 void

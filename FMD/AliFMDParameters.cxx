@@ -875,11 +875,18 @@ AliFMDParameters::GetEdepMip() const
   }
   return fEdepMip;
 }
-
-
+//____________________________________________________________________
+Float_t  
+AliFMDParameters::GetDACPerMIP() const
+{
+  //This is the conversion from the Digital-to-Analog-Converter setting
+  // to the number of MIPs. The number was measured in the NBI lab during
+  // August 2008.
   
+  return 29.67;
   
-  
+}
+ 
 //____________________________________________________________________
 //
 // EOF

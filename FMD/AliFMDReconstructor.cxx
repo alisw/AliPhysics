@@ -48,6 +48,8 @@
 #include <TH1.h>
 #include <TH2.h>
 #include <TFile.h>
+#include <climits>
+
 class AliRawReader;
 
 //____________________________________________________________________
@@ -68,7 +70,7 @@ AliFMDReconstructor::AliFMDReconstructor()
     fAngleCorrect(kTRUE),
     fVertexType(kNoVertex),
     fESD(0x0),
-    fDiagnostics(kFALSE),
+    fDiagnostics(kTRUE),
     fDiagStep1(0), 
     fDiagStep2(0),
     fDiagStep3(0),
@@ -313,14 +315,18 @@ AliFMDReconstructor::ProcessDigits(TClonesArray* digits) const
     
     // Substract pedestal. 
     UShort_t counts   = SubtractPedestal(digit);
+    if(counts == USHRT_MAX) continue;
     
     // Gain match digits. 
     Double_t edep     = Adc2Energy(digit, eta, counts);
-    
+    // Get rid of nonsense energy
+    if(edep < 0)  continue;
+        
     // Make rough multiplicity 
     Double_t mult     = Energy2Multiplicity(digit, edep);
-    
-    AliFMDDebug(10, ("FMD%d%c[%2d,%3d]: "
+    // Get rid of nonsense mult
+    if(mult < 0)  continue; 
+    AliFMDDebug(5, ("FMD%d%c[%2d,%3d]: "
 		      "ADC: %d, Counts: %d, Energy: %f, Mult: %f", 
 		      digit->Detector(), digit->Ring(), digit->Sector(),
 		      digit->Strip(), digit->Counts(), counts, edep, mult));
@@ -365,8 +371,14 @@ AliFMDReconstructor::SubtractPedestal(AliFMDDigit* digit) const
 						     digit->Ring(), 
 						     digit->Sector(), 
 						     digit->Strip());
-  AliFMDDebug(15, ("Subtracting pedestal %f from signal %d", 
-		   ped, digit->Counts()));
+  if(ped < 0 || noise < 0) { 
+    AliWarning(Form("Invalid pedestal (%f) or noise (%f) for %s", 
+		    ped, noise, digit->GetName()));
+    return USHRT_MAX;
+  }
+
+  AliFMDDebug(5, ("Subtracting pedestal %f from signal %d", 
+		  ped, digit->Counts()));
   // if (digit->Count3() > 0)      adc = digit->Count3();
   // else if (digit->Count2() > 0) adc = digit->Count2();
   // else                          adc = digit->Count1();
@@ -390,7 +402,7 @@ AliFMDReconstructor::Adc2Energy(AliFMDDigit* digit,
   // classes to do strip-specific look-ups in databases or the like,
   // to find the proper gain for a strip. 
   // 
-  // In this simple version, we calculate the energy deposited as 
+  // In the first simple version, we calculate the energy deposited as 
   // 
   //    EnergyDeposited = cos(theta) * gain * count
   // 
@@ -401,16 +413,28 @@ AliFMDReconstructor::Adc2Energy(AliFMDDigit* digit,
   //           ADC_channel_size    
   // 
   // is constant and the same for all strips.
+  //
+  // For the production we use the conversion measured in the NBI lab.
+  // The total conversion is then:
+  // gain = ADC / DAC
+  // => energy = EdepMip*count / gain*DACPerADC
+  //
+  //
   if (count <= 0) return 0;
   AliFMDParameters* param = AliFMDParameters::Instance();
   Float_t           gain  = param->GetPulseGain(digit->Detector(), 
 						digit->Ring(), 
 						digit->Sector(), 
 						digit->Strip());
-  AliFMDDebug(15, ("Converting counts %d to energy via factor %f", 
-		    count, gain));
+  // 'Tagging' bad gains as bad energy
+  if (gain < 0) { 
+    AliWarning(Form("Invalid gain (%f) for %s", gain, digit->GetName()));
+    return -1;
+  }
+  AliFMDDebug(5, ("Converting counts %d to energy via factor %f and DAC2MIP %f", 
+		  count, gain,param->GetDACPerMIP()));
 
-  Double_t edep  = count * gain;
+  Double_t edep  = (count * param->GetEdepMip()) / (gain * param->GetDACPerMIP());
   if (fDiagStep2) fDiagStep2->Fill(count, edep);  
   if (fAngleCorrect) {
     Double_t theta = 2 * TMath::ATan(TMath::Exp(-eta));
@@ -446,9 +470,11 @@ AliFMDReconstructor::Energy2Multiplicity(AliFMDDigit* /* digit */,
   AliFMDParameters* param   = AliFMDParameters::Instance();
   Double_t          edepMIP = param->GetEdepMip();
   Float_t           mult    = edep / edepMIP;
+#if 0
   if (edep > 0) 
     AliFMDDebug(15, ("Translating energy %f to multiplicity via "
 		     "divider %f->%f", edep, edepMIP, mult));
+#endif
   if (fDiagStep4) fDiagStep4->Fill(edep, mult);  
   return mult;
 }
