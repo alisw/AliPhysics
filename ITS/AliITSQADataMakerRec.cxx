@@ -320,6 +320,15 @@ void AliITSQADataMakerRec::InitESDs()
   hSPDTrackletsTheta->Sumw2();
   Add2ESDsList(hSPDTrackletsTheta, 18); 
 
+  // map of layers skipped by tracking (set in AliITSRecoParam)
+  TH1F *hESDSkippedLayers = 
+    new TH1F("hESDSkippedLayers", "Map of layers skipped by tracking; Layer; Skipped",
+	     6, -0.5, 5.5);
+  hESDSkippedLayers->Sumw2();
+  hESDSkippedLayers->SetMinimum(0);
+  Add2ESDsList(hESDSkippedLayers, 19, expertHistogram);
+
+
   return;
 }
 
@@ -330,6 +339,9 @@ void AliITSQADataMakerRec::MakeESDs(AliESDEvent *esd)
   
   const Int_t nESDTracks = esd->GetNumberOfTracks();
   Int_t nITSrefit5 = 0; 
+
+  Int_t idet,status;
+  Float_t xloc,zloc;
 
   // loop on tracks
   for(Int_t i = 0; i < nESDTracks; i++) {
@@ -358,7 +370,8 @@ void AliITSQADataMakerRec::MakeESDs(AliESDEvent *esd)
 	  GetESDsData(3)->Fill(layer);
 	}
       }
-
+      track->GetITSModuleIndexInfo(layer,idet,status,xloc,zloc);
+      if(status==3) GetESDsData(19)->SetBinContent(layer,1);
     }     
 
   } // end loop on tracks

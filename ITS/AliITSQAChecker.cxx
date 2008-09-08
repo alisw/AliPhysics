@@ -105,8 +105,23 @@ const Double_t AliITSQAChecker::Check(AliQA::ALITASK_t index, TObjArray * list)
       rv = 0.; // nothing to check
     }
     else {
-      TIter next(list);
+      TIter next1(list);
       TH1 * hdata;
+      Int_t nskipped=0;
+      Bool_t skipped[6]={kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE};
+      // look for layers that we wanted to skip
+      while ( (hdata = dynamic_cast<TH1 *>(next1())) ) {
+	if(!hdata) continue;
+	TString hname = hdata->GetName();
+	if(!hname.Contains("hESDSkippedLayers")) continue;
+	for(Int_t k=1; k<7; k++) {
+	  if(hdata->GetBinContent(k)>0) { 
+	    nskipped++; 
+	    skipped[k-1]=kTRUE; 
+	  } 
+	} 
+      }
+      TIter next(list);
       while ( (hdata = dynamic_cast<TH1 *>(next())) ) {
 	if(hdata){
 	  TString hname = hdata->GetName();
@@ -121,6 +136,8 @@ const Double_t AliITSQAChecker::Check(AliQA::ALITASK_t index, TObjArray * list)
 	    // Check if there are layers with anomalously low 
 	    // contributing points to SA reconstructed tracks
 	    for(Int_t k=1;k<7;k++){
+	      // check if the layer was skipped
+	      if(skipped[k-1]) continue;
 	      if(hdata->GetBinContent(k)<0.5*(entries/6.)){
 		cluMapSA = kFALSE;
 		AliInfo(Form("SA tracks have few points on layer %d - look at histogram hESDClustersSA",k));
@@ -134,6 +151,8 @@ const Double_t AliITSQAChecker::Check(AliQA::ALITASK_t index, TObjArray * list)
 	    AliDebug(1,Form("Processing histogram %s",hname.Data()));
 	    cluMapMI = kTRUE;
 	    for(Int_t k=1;k<7;k++){
+	      // check if the layer was skipped
+	      if(skipped[k-1]) continue;
 	      if(hdata->GetBinContent(k)<0.5*(entries/6.)){
 		cluMapMI = kFALSE;
 		AliInfo(Form("MI tracks have few points on layer %d - look at histogram hESDClustersMI",k));
@@ -145,11 +164,11 @@ const Double_t AliITSQAChecker::Check(AliQA::ALITASK_t index, TObjArray * list)
 	    // Check if 6 clusters MI tracks are the majority
 	    AliDebug(1,Form("Processing histogram %s",hname.Data()));
 	    cluMI = kTRUE;
-	    Double_t sixlaytracks = hdata->GetBinContent(7);
-	    for(Int_t k=2; k<7; k++){
-	      if(hdata->GetBinContent(k)>sixlaytracks){
+	    Double_t maxlaytracks = hdata->GetBinContent(7-nskipped);
+	    for(Int_t k=2; k<7-nskipped; k++){
+	      if(hdata->GetBinContent(k)>maxlaytracks){
 		cluMI = kFALSE;
-		AliInfo(Form("MI Tracks with %d clusters are more than tracks with 6 clusters. Look at histogram hESDClustersMI",k-1));
+		AliInfo(Form("MI Tracks with %d clusters are more than tracks with %d clusters. Look at histogram hESDClustersMI",k-1,6-nskipped));
 	      }
 	    }
 	  }
@@ -158,11 +177,11 @@ const Double_t AliITSQAChecker::Check(AliQA::ALITASK_t index, TObjArray * list)
 	    // Check if 6 clusters SA tracks are the majority
 	    AliDebug(1,Form("Processing histogram %s",hname.Data()));
 	    cluSA = kTRUE;
-	    Double_t sixlaytracks = hdata->GetBinContent(7);
-	    for(Int_t k=2; k<7; k++){
-	      if(hdata->GetBinContent(k)>sixlaytracks){
+	    Double_t maxlaytracks = hdata->GetBinContent(7-nskipped);
+	    for(Int_t k=2; k<7-nskipped; k++){
+	      if(hdata->GetBinContent(k)>maxlaytracks){
 		cluSA = kFALSE;
-		AliInfo(Form("SA Tracks with %d clusters are more than tracks with 6 clusters. Look at histogram hESDClustersSA",k-1));
+		AliInfo(Form("SA Tracks with %d clusters are more than tracks with %d clusters. Look at histogram hESDClustersSA",k-1,6-nskipped));
 	      }
 	    }
 	  }
@@ -200,8 +219,8 @@ const Double_t AliITSQAChecker::Check(AliQA::ALITASK_t index, TObjArray * list)
   
       }
     }  
-      AliInfo(Form("ESD - Tested %d histograms, Return value %f \n",tested,rv));
-      return rv;
+    AliInfo(Form("ESD - Tested %d histograms, Return value %f \n",tested,rv));
+    return rv;
   }  // end of ESD QA
 
   Double_t spdCheck, sddCheck, ssdCheck;
@@ -223,7 +242,7 @@ const Double_t AliITSQAChecker::Check(AliQA::ALITASK_t index, TObjArray * list)
     fSDDChecker->SetTaskOffset(fSDDOffset);
     sddCheck = fSDDChecker->Check(index, list);
     if(sddCheck<retval)retval = sddCheck;
- }
+  }
   if(fDet == 0 || fDet == 3) {
     AliDebug(1,"AliITSQAChecker::Create SSD Checker\n");
     if(!fSSDChecker) {
