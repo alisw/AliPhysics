@@ -12,7 +12,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-#include <TH3F.h>
 #include <TTree.h>
 #include "AliESDVertex.h"
 #include "AliLog.h"
@@ -354,12 +353,14 @@ Int_t  AliITSVertexer3D::Prepare3DVertex(Int_t optCuts){
   Float_t binsizer=(rh-rl)/nbr;
   Float_t binsizez=(zh-zl)/nbz;
   TH3F *h3d = new TH3F("h3d","xyz distribution",nbr,rl,rh,nbr,rl,rh,nbz,zl,zh);
+  Int_t nbrcs=25;
+  Int_t nbzcs=50;
+  TH3F *h3dcs = new TH3F("h3dcs","xyz distribution",nbrcs,rl,rh,nbrcs,rl,rh,nbzcs,zl,zh);
 
   // cleanup of the TCLonesArray of tracklets (i.e. fakes are removed)
   Int_t *validate = new Int_t [fLines.GetEntriesFast()];
   for(Int_t i=0; i<fLines.GetEntriesFast();i++)validate[i]=0;
   for(Int_t i=0; i<fLines.GetEntriesFast()-1;i++){
-    if(validate[i]==1)continue;
     AliStrLine *l1 = (AliStrLine*)fLines.At(i);
     for(Int_t j=i+1;j<fLines.GetEntriesFast();j++){
       AliStrLine *l2 = (AliStrLine*)fLines.At(j);
@@ -379,6 +380,7 @@ Int_t  AliITSVertexer3D::Prepare3DVertex(Int_t optCuts){
       validate[i]=1;
       validate[j]=1;
       h3d->Fill(point[0],point[1],point[2]);
+      h3dcs->Fill(point[0],point[1],point[2]);
     }
   }
 
@@ -395,32 +397,25 @@ Int_t  AliITSVertexer3D::Prepare3DVertex(Int_t optCuts){
   AliDebug(1,Form("Number of tracklets (after compress)%d ",fLines.GetEntriesFast()));
   delete [] validate;
 
+  //        Find peaks in histos
 
-  // finds peak in histo
-  TAxis *xax = h3d->GetXaxis();  
-  TAxis *yax = h3d->GetYaxis();
-  TAxis *zax = h3d->GetZaxis();
   Double_t peak[3]={0.,0.,0.};
-  Float_t contref = 0.;
-  for(Int_t i=xax->GetFirst();i<=xax->GetLast();i++){
-    Float_t xval = xax->GetBinCenter(i);
-    for(Int_t j=yax->GetFirst();j<=yax->GetLast();j++){
-      Float_t yval = yax->GetBinCenter(j);
-      for(Int_t k=zax->GetFirst();k<=zax->GetLast();k++){
-	Float_t bc = h3d->GetBinContent(i,j,k);
-	Float_t zval = zax->GetBinCenter(k);
-	if(bc>contref){
-	  contref = bc;
-	  peak[2] = zval;
-	  peak[1] = yval;
-	  peak[0] = xval;
-	}
-      }
-    }
-  }
+  Int_t ntrkl,ntimes;
+  FindPeaks(h3d,peak,ntrkl,ntimes);  
   delete h3d;
 
+  if(optCuts==0 && ntrkl<=2){
+    ntrkl=0;
+    ntimes=0;
+    FindPeaks(h3dcs,peak,ntrkl,ntimes);  
+    binsizer=(rh-rl)/nbrcs;
+    binsizez=(zh-zl)/nbzcs;
+    if(ntrkl==1 || ntimes>1){delete h3dcs; return retcode;}
+  }
+  delete h3dcs;
+
   //         Second selection loop
+
   Float_t bs=(binsizer+binsizez)/2.;
   for(Int_t i=0; i<fLines.GetEntriesFast();i++){
     AliStrLine *l1 = (AliStrLine*)fLines.At(i);
@@ -471,6 +466,39 @@ void AliITSVertexer3D::SetMeanPPtSelTracks(Float_t fieldTesla){
   }
 }
 
+//________________________________________________________
+void AliITSVertexer3D::FindPeaks(TH3F* histo, Double_t *peak, Int_t &nOfTracklets, Int_t &nOfTimes){
+  // Finds bin with max contents in 3D histo of tracket intersections
+  TAxis *xax = histo->GetXaxis();  
+  TAxis *yax = histo->GetYaxis();
+  TAxis *zax = histo->GetZaxis();
+  peak[0]=0.;
+  peak[1]=0.;
+  peak[2]=0.;
+  nOfTracklets = 0;
+  nOfTimes=0;
+  for(Int_t i=xax->GetFirst();i<=xax->GetLast();i++){
+    Float_t xval = xax->GetBinCenter(i);
+    for(Int_t j=yax->GetFirst();j<=yax->GetLast();j++){
+      Float_t yval = yax->GetBinCenter(j);
+      for(Int_t k=zax->GetFirst();k<=zax->GetLast();k++){
+	Float_t zval = zax->GetBinCenter(k);
+	Int_t bc =(Int_t)histo->GetBinContent(i,j,k);
+	if(bc>nOfTracklets){
+	  nOfTracklets = bc;
+	  peak[2] = zval;
+	  peak[1] = yval;
+	  peak[0] = xval;
+	  nOfTimes = 1;
+	}
+	if(bc==nOfTracklets){
+	  nOfTimes++;
+	}
+      }
+    }
+  }
+  
+}
 
 //________________________________________________________
 void AliITSVertexer3D::PrintStatus() const {

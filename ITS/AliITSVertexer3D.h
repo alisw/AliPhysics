@@ -13,6 +13,7 @@
 
 #include <TClonesArray.h>
 #include <AliESDVertex.h>
+#include <TH3F.h>
 
 class AliITSVertexer3D : public AliITSVertexer {
 
@@ -52,6 +53,7 @@ protected:
   Int_t FindTracklets(TTree *itsClusterTree, Int_t optCuts);
   Int_t Prepare3DVertex(Int_t optCuts);
   void ResetVert3D();
+  void FindPeaks(TH3F* histo, Double_t *peak, Int_t &nOfTracklets, Int_t &nOfTimes);
 
 
   TClonesArray fLines;      //! array of tracklets
