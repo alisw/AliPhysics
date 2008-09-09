@@ -24,7 +24,7 @@ class AliITSVertexer3D : public AliITSVertexer {
   virtual AliESDVertex* FindVertexForCurrentEvent(TTree *itsClusterTree);
   AliESDVertex GetVertex3D() const {return fVert3D;}
   virtual void PrintStatus() const;
-  void SetWideFiducialRegion(Float_t dz = 14.0, Float_t dr=2.5){
+  void SetWideFiducialRegion(Float_t dz = 20.0, Float_t dr=2.5){
     SetCoarseMaxRCut(dr);
     SetZCutDiamond(dz);
   }
@@ -39,7 +39,7 @@ class AliITSVertexer3D : public AliITSVertexer {
   void SetCoarseDiffPhiCut(Float_t dphi = 0.5){fCoarseDiffPhiCut=dphi;}
   void SetCoarseMaxRCut(Float_t rad = 2.5){fCoarseMaxRCut=rad;}
   void SetMaxRCut(Float_t rad = 0.5){fMaxRCut=rad;}
-  void SetZCutDiamond(Float_t zcut = 14.0){fZCutDiamond=zcut;}
+  void SetZCutDiamond(Float_t zcut = 20.0){fZCutDiamond=zcut;}
   void SetMaxZCut(Float_t dz = 0.5){fMaxZCut=dz;}
   void SetDCACut(Float_t dca=0.1){fDCAcut=dca;} 
   void SetDiffPhiMax(Float_t pm = 0.01){fDiffPhiMax = pm;}

@@ -90,11 +90,11 @@ class AliITSRecoParam : public AliDetectorRecoParam
   void     SetLandauFitPID() {SetPID(1);}
   Int_t    GetPID() const {return fPID;}
 
-  void     SetVertexer3DFiducialRegions(Float_t dzwid=14.0, Float_t drwid=2.5, Float_t dznar=0.5, Float_t drnar=0.5){
+  void     SetVertexer3DFiducialRegions(Float_t dzwid=20.0, Float_t drwid=2.5, Float_t dznar=0.5, Float_t drnar=0.5){
     SetVertexer3DWideFiducialRegion(dzwid,drwid);
     SetVertexer3DNarrowFiducialRegion(dznar,drnar);
   }
-  void     SetVertexer3DWideFiducialRegion(Float_t dz=14.0, Float_t dr=2.5){
+  void     SetVertexer3DWideFiducialRegion(Float_t dz=20.0, Float_t dr=2.5){
     fVtxr3DZCutWide=dz; fVtxr3DRCutWide=dr;
   }
   void     SetVertexer3DNarrowFiducialRegion(Float_t dz=0.5, Float_t dr=0.5){
