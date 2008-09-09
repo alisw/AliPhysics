@@ -168,11 +168,14 @@ void AliFMDGainDA::FillChannels(AliFMDDigit* digit) {
   UShort_t sec   = digit->Sector();
   UShort_t strip = digit->Strip();
   
-  //Strip is always seen as the first in a VA chip. All other strips are junk
-  if(strip % fNumberOfStripsPerChip) return;
+  //Strip is always seen as the first in a VA chip. All other strips are junk.
+  //Strips are counted from zero on even sectors and from 511 on odd sectors...
+   
+  if((sec%2)     && ((strip+1) % fNumberOfStripsPerChip)) return;
+  if(((sec+1)%2) && (strip % fNumberOfStripsPerChip)) return;
+  
   Int_t vaChip   = strip / fNumberOfStripsPerChip; 
   TH1S* hChannel = GetChannelHistogram(det, ring, sec, vaChip);
-  
   hChannel->Fill(digit->Counts());
   UpdatePulseAndADC(det,ring,sec,strip);
 }
@@ -184,8 +187,8 @@ void AliFMDGainDA::Analyse(UShort_t det,
 			   UShort_t strip) {
   TGraphErrors* grChannel = GetChannel(det,ring,sec,strip);
   if(!grChannel->GetN()) {
-    // AliWarning(Form("No entries for FMD%d%c, sector %d, strip %d",
-    //                 det, ring , sec, strip));
+    AliWarning(Form("No entries for FMD%d%c, sector %d, strip %d",
+                     det, ring , sec, strip));
     return;
   }
   TF1 fitFunc("fitFunc","pol1",-10,280); 
@@ -317,7 +320,11 @@ void AliFMDGainDA::UpdatePulseAndADC(UShort_t det,
   
   if(GetCurrentEvent()> (fNumberOfStripsPerChip*fEventsPerChannel.At(halfring)))
     return;
-  if(strip % fNumberOfStripsPerChip) return;
+  
+  if((sec%2)     && ((strip+1) % fNumberOfStripsPerChip)) return;
+  
+  if(((sec+1)%2) && (strip % fNumberOfStripsPerChip)) return;
+  
   if(((GetCurrentEvent()) % fPulseLength.At(halfring)) 
      && GetCurrentEvent() > 0) return;
      
@@ -342,10 +349,15 @@ void AliFMDGainDA::UpdatePulseAndADC(UShort_t det,
   
   hChannel->GetXaxis()->SetRange(firstBin,lastBin);
   
-  Int_t channelNumber = (strip + 
-			 (GetCurrentEvent()-1)
-			 / ((fPulseLength.At(halfring)*fHighPulse)
-			    / fPulseSize.At(halfring))); 
+  Int_t    channelNumber      = (strip + 
+				 (GetCurrentEvent()-1)
+				 / ((fPulseLength.At(halfring)*fHighPulse)
+				    / fPulseSize.At(halfring))); 
+  if(sec%2)
+    channelNumber      = (strip - 
+			  (GetCurrentEvent()-1)
+			  / ((fPulseLength.At(halfring)*fHighPulse)
+			     / fPulseSize.At(halfring))); 
   
   TGraphErrors* channel = GetChannel(det,ring,sec,channelNumber);
   
