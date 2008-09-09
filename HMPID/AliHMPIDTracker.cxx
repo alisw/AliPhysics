@@ -104,8 +104,8 @@ Int_t AliHMPIDTracker::PropagateBack(AliESDEvent *pEsd)
 //   Returns: error code    
   AliCDBEntry *pNmeanEnt =AliCDBManager::Instance()->Get("HMPID/Calib/Nmean"); //contains TObjArray of 42 TF1 + 1 EPhotMean
   AliCDBEntry *pQthreEnt =AliCDBManager::Instance()->Get("HMPID/Calib/Qthre"); //contains TObjArray of 42 (7ch * 6sec) TF1
-  if(!pNmeanEnt) AliFatal("No Nmean C6F14 ");
-  if(!pQthreEnt) AliFatal("No Qthre");
+  if(!pNmeanEnt) AliError("No Nmean C6F14 ");
+  if(!pQthreEnt) AliError("No Qthre");
     
   return Recon(pEsd,fClu,(TObjArray*)pNmeanEnt->GetObject(),(TObjArray*)pQthreEnt->GetObject());  
 }//PropagateBack()
@@ -238,10 +238,14 @@ Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmea
       nmean=((TF1*)pNmean->At(3*cham))->Eval(pEsd->GetTimeStamp());                             //C6F14 Nmean for this chamber
     } else {
       Int_t iRad     = pParam->Radiator(yRa);                                                   //evaluate the radiator involved
+      if(iRad < 0) {
+	nmean = -1;
+      } else {
       Double_t tLow  = ((TF1*)pNmean->At(6*cham+2*iRad  ))->Eval(pEsd->GetTimeStamp());         //C6F14 low  temp for this chamber
       Double_t tHigh = ((TF1*)pNmean->At(6*cham+2*iRad+1))->Eval(pEsd->GetTimeStamp());         //C6F14 high temp for this chamber
       Double_t tExp  = pParam->FindTemp(tLow,tHigh,yRa);                                        //estimated temp for that chamber at that y
       nmean = pParam->NIdxRad(AliHMPIDParam::Instance()->GetEPhotMean(),tExp);                  //mean ref idx @ a given temp
+      }
       if(nmean < 0){                                                                            //track didn' t pass through the radiator
          pTrk->SetHMPIDsignal(AliHMPIDRecon::kNoRad);                                           //set the appropriate flag
          pTrk->SetHMPIDcluIdx(ipCh,index+1000*cluSiz);                                          //set index of cluster
