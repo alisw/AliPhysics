@@ -19,6 +19,7 @@ public:
   virtual       ~AliFRAMEv2() {}
   virtual void   CreateGeometry();
   virtual void   CreateMaterials();
+  virtual void   AddAlignableVolumes() const;
   virtual void   Init();
   virtual void   StepManager();
   virtual Int_t  IsVersion() const;

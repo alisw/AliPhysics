@@ -1240,7 +1240,27 @@ void AliFRAMEv2::CreateGeometry()
 
 }
 
- 
+//___________________________________________
+void AliFRAMEv2::AddAlignableVolumes() const
+{
+  // Add the 18 spaceframe sectors as alignable volumes
+  TString basesymname("FRAME/Sector");
+  TString basevolpath("ALIC_1/B077_1/BSEGMO");
+  TString symname;
+  TString volpath;
+  
+  for(Int_t sec=0; sec<18; sec++)
+  {
+      symname = basesymname;
+      symname += sec;
+      volpath = basevolpath;
+      volpath += sec;
+      volpath += "_1";
+      if(!gGeoManager->SetAlignableEntry(symname.Data(),volpath.Data()))
+	AliFatal(Form("Alignable entry %s not created. Volume path %s not valid",
+	      symname.Data(),volpath.Data()));
+  }
+}
 
 //___________________________________________
 void AliFRAMEv2::CreateMaterials()
