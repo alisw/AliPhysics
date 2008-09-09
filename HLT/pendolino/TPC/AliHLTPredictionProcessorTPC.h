@@ -15,8 +15,9 @@
 
 #include "AliHLTPredictionProcessorInterface.h"
 #include "TTree.h"
+#include "AliTPCSensorTempArray.h"
+
 class TMap;
-class AliHLTDCSArray;
 
 class TObjArray;
 
@@ -31,15 +32,13 @@ class AliHLTPredictionProcessorTPC : public AliHLTPredictionProcessorInterface
    void Initialize(Int_t run, UInt_t startTime, UInt_t endTime);
    UInt_t Process (TMap* dcsAliasMap);
    UInt_t ExtractTemperature(TMap* dcsAliasMap);
-   UInt_t GetCurrentTime(TMap* dcsAliasMap, const char* stringId);
-   Float_t GetSensorValue(TMap* dcsAliasMap, const char* stringId);
+   TMap* produceTestData(TString aliasName);
    virtual Bool_t ProcessDCS();
-   virtual TMap* produceTestData(TString aliasName = "");
    
   private: 
     Bool_t                 fConfigOK;     // Identify succesful reading of OCDB Config
     TTree*                 fConfTreeTemp; // TTree holding temperature configuration  
-    TObjArray*             fTemp;         // Array holding temperature readings
+    AliTPCSensorTempArray* fTemp;         // Array holding temperature readings
     Bool_t                 fPredict;      // Indicates whether predictions should be made
     Int_t                  fRun;          // run number
     UInt_t                 fStartTime;    // start time

@@ -24,23 +24,23 @@
 
 #include "AliHLTPredictionProcessorTPC.h"
 
-#include "AliHLTDCSArray.h"
 #include "TROOT.h"
 #include "TArrayF.h"
 #include "TObjArray.h"
 #include "TTree.h"
 #include "TString.h"
+#include "TMap.h"
+#include "TRandom2.h"
 #include "AliCDBEntry.h"
 #include "AliCDBMetaData.h"
 #include "AliDCSValue.h"
-
-#include <TTimeStamp.h>
-#include <TObjString.h>
-
+#include "AliTPCSensorTempArray.h"
 
 ClassImp(AliHLTPredictionProcessorTPC)
 
-const TString kAmandaString = "TPC_PT_%d_TEMPERATURE";
+const TString kAmandaTemp = "TPC_PT_%d_TEMPERATURE";
+const Int_t kValCutTemp = 100;               // discard temperatures > 100 degrees
+const Int_t kDiffCutTemp = 5;	             // discard temperature differences > 5 degrees
 
 //______________________________________________________________________________________________
 
@@ -62,16 +62,9 @@ AliHLTPredictionProcessorTPC::AliHLTPredictionProcessorTPC(
 
 AliHLTPredictionProcessorTPC::~AliHLTPredictionProcessorTPC()
 {
-
   // destructor
-	if (fConfTreeTemp) {
-		delete fConfTreeTemp;
-	}
-	if (fTemp) {
-		fTemp->Delete();
-		delete fTemp;
-	}
-
+  if (fConfTreeTemp) delete fConfTreeTemp;
+  if (fTemp) delete fTemp; 
 }
 
 //______________________________________________________________________________________________
@@ -114,9 +107,9 @@ UInt_t AliHLTPredictionProcessorTPC::Process(TMap* dcsAliasMap) {
 
 // test if configuration available and DCS map valid
 
-  if (!dcsAliasMap) return 91;
-  if (dcsAliasMap->GetEntries() == 0 ) return 92;
-  if (!fConfigOK) return 93;
+  if (!dcsAliasMap) return 9;
+  if (dcsAliasMap->GetEntries() == 0 ) return 9;
+  if (!fConfigOK) return 9;
 
 //
 // Extract values from DCS maps. Store updated entry to HCDB
@@ -130,10 +123,15 @@ UInt_t AliHLTPredictionProcessorTPC::Process(TMap* dcsAliasMap) {
    AliCDBEntry* entry = GetFromOCDB(path2.Data(), path3.Data());
    if (entry != 0) {
        entry->PrintMetaData();  // use the AliCDBEntry
-       fTemp = (TObjArray*)entry->GetObject();
+       fTemp = (AliTPCSensorTempArray*)entry->GetObject();
    } else {
-       Log("Cannot retrieve HCDB entry. New TObjArray generated");
-       fTemp = new TObjArray();
+       Log("Cannot retrieve HCDB entry. New AliTPCSensorTempArray generated");
+       UInt_t startTimeLocal = fStartTime-3600;
+       UInt_t endTimeLocal = fEndTime+1800;
+       fTemp = new AliTPCSensorTempArray(startTimeLocal, endTimeLocal, fConfTreeTemp, kAmandaTemp);
+       fTemp->SetValCut(kValCutTemp);
+       fTemp->SetDiffCut(kDiffCutTemp);     
+       fTemp->ExtractDCS(dcsAliasMap);
    }
 
    // process temperatures
@@ -143,20 +141,20 @@ UInt_t AliHLTPredictionProcessorTPC::Process(TMap* dcsAliasMap) {
    //process dcsAliasMap to ROOT object
    // and create AliCDBEntry 
 
-   if (tempResult == 0) {
-		// create meta data entry for HCDB
-     	TString comment("HLT temperatures");
-     	AliCDBMetaData meta(this->GetName(), 0, "unknownAliRoot", comment.Data());
+   if (tempResult==0) {
+     // create meta data entry for HCDB
+     TString comment("HLT temperatures");
+     AliCDBMetaData meta(this->GetName(), 666, "unknownAliRoot", comment.Data());
 
-     	// store AliCDBEntry in HCDB
-     	if (Store(path2.Data(), path3.Data(), fTemp, &meta, start, kTRUE)) {
-         	Log(" +++ Successfully stored object ;-)");
-     	} else {
-         	Log(" *** Storing of OBJECT failed!!");
-         	retVal = 7;
-     	}
+     // store AliCDBEntry in HCDB
+     if (Store(path2.Data(), path3.Data(), fTemp, &meta, start, kTRUE)) {
+         Log(" +++ Successfully stored object ;-)");
+     } else {
+         Log(" *** Storing of OBJECT failed!!");
+         retVal = 7;
+     }
     } else {
-      	retVal = 94;
+      retVal = 9;
     }
    
    return retVal;
@@ -171,88 +169,65 @@ UInt_t AliHLTPredictionProcessorTPC::ExtractTemperature(TMap* dcsAliasMap)
   const Int_t error = 9; 
   Int_t nentries = fConfTreeTemp->GetEntries();
   if (nentries<1) return error;
-    
-  TString stringId;
-  Int_t echa=0;
-  fConfTreeTemp->SetBranchAddress("ECha",&echa);
-  fConfTreeTemp->GetEntry(0);
-  stringId = Form(kAmandaString.Data(),echa);
-  UInt_t time = GetCurrentTime(dcsAliasMap,stringId.Data());   
-  AliHLTDCSArray* temperatures = new AliHLTDCSArray(nentries);
-  temperatures->SetTime(time);
-  
-  for (Int_t isensor=0; isensor<nentries; isensor++ ){
-     fConfTreeTemp->GetEntry(isensor);
-     stringId = Form(kAmandaString.Data(),echa);
-     Float_t temp = GetSensorValue(dcsAliasMap,stringId.Data());
-     temperatures->SetValue(isensor,temp);
+
+  TMap *map = fTemp->ExtractDCS(dcsAliasMap,kTRUE);
+  if (map) {
+    fTemp->MakeSplineFitAddPoints(map);
+  } else {
+    Log("No temperature map extracted.\n");
+    return error;
   }
-  
-  fTemp->Add(temperatures);
-  return 0;  
+  return 0;
 }
 
-  
 //______________________________________________________________________________________________
-
-Float_t AliHLTPredictionProcessorTPC::GetSensorValue(TMap* dcsAliasMap,
-                                     const char* stringId)
-{
-  // return last value read from sensor specified by stringId
-  Float_t sensorValue=0;
-  TObjArray* valueSet;
-  TPair* pair = (TPair*)dcsAliasMap->FindObject(stringId);
-  if (pair) {
-     valueSet = (TObjArray*)pair->Value();
-	 if (valueSet) {
-     	Int_t nentriesDCS = valueSet->GetEntriesFast();
-     	AliDCSValue *val = (AliDCSValue *)valueSet->At(nentriesDCS - 1);
-     	if (val) {
-			sensorValue=val->GetFloat();
-		}
-	 }
-  }
-  return sensorValue;
-}
-    	
-//______________________________________________________________________________________________
-
-UInt_t AliHLTPredictionProcessorTPC::GetCurrentTime(TMap* dcsAliasMap,
-                                     const char* stringId)
-{
-  // return last time value read from sensor specified by stringId
   
-  UInt_t time=0;
-  TObjArray* valueSet;
-  TPair* pair = (TPair*) (dcsAliasMap->FindObject(stringId));
-  if (pair) {
-     valueSet = (TObjArray*) (pair->Value());
-	 if (valueSet) {
-     	Int_t nentriesDCS = valueSet->GetEntriesFast();
-     	AliDCSValue *val = (AliDCSValue *) (valueSet->At(nentriesDCS - 1));
-	 	if (val) {
-     		time = val->GetTimeStamp();
-		}
-	 }
-  }
-  return time;
+TMap* AliHLTPredictionProcessorTPC::produceTestData(TString aliasName) 
+{
+   // produce dummy values for TPC temperature sensors
+
+   const Float_t defTemp = 22.0;
+   const Float_t tempVar = 2.0;
+   TMap* resultMap = 0;
+   TRandom2 random;
+   Float_t temp=0;
+   Float_t tempDelta=0;
+   TObjArray* arr = new TObjArray();
+
+   resultMap = new TMap();
+   TTimeStamp tt;
+
+   // loop through all sensors (extracted from OCDB config entry) if no input parameter is given
+   
+   if (aliasName.Length() == 0 ) {
+    if (!fConfTreeTemp) return 0;
+    Int_t nentries = fConfTreeTemp->GetEntries();
+    if (nentries<1) return 0;
+
+    TString stringId;
+    Int_t echa=0;
+    fConfTreeTemp->SetBranchAddress("ECha",&echa);
+
+    for (Int_t isensor=0; isensor<nentries; isensor++ ){
+      fConfTreeTemp->GetEntry(isensor);
+      stringId = Form(kAmandaString.Data(),echa);
+      tempDelta = (random.Rndm()-0.5)*tempVar;
+      temp = defTemp + tempDelta;
+      AliDCSValue* val = new AliDCSValue(temp, tt.GetTime());
+      TObjString* name = new TObjString(stringId);   
+      arr->Add(val);
+      resultMap->Add(name, arr);
+    }
+   } else {
+
+      // simulate value for given sensor if specified as parameter
+ 
+      tempDelta = (random.Rndm()-0.5)*tempVar;
+      temp = defTemp + tempDelta;
+      AliDCSValue* val = new AliDCSValue(temp, tt.GetTime());
+      TObjString* name = new TObjString(aliasName.Data());   
+      arr->Add(val);
+      resultMap->Add(name, arr);
+   }
+   return resultMap;
 }
-
-TMap* AliHLTPredictionProcessorTPC::produceTestData(TString aliasName) {
-    TMap* resultMap = 0;
-
-    // here has to come real dummy data :-)
-    resultMap = new TMap();
-    TTimeStamp tt;
-    TObjString* name = new TObjString("DummyData");
-	Float_t fval = 33.3;
-    AliDCSValue* val = new AliDCSValue(fval, tt.GetTime());
-    TObjArray* arr = new TObjArray();
-    arr->Add(val);
-    resultMap->Add(name, arr);
-
-    return resultMap;
-}
-
-			     
-
