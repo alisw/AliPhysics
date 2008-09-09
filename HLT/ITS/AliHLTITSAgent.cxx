@@ -25,14 +25,13 @@
 #include <cassert>
 #include "AliHLTITSAgent.h"
 #include "AliHLTConfiguration.h"
+#include "AliHLTOUT.h"
+//#include "AliDAQ.h"
 
 // header files of library components
 
 // header file of the module preprocessor
 #include "AliHLTITSCompressRawDataSDDComponent.h"
-
-// raw data handler of HLTOUT data
-#include "AliHLTOUTHandlerEquId.h"
 
 /** global instance for agent registration */
 AliHLTITSAgent gAliHLTITSAgent;
@@ -104,9 +103,13 @@ int AliHLTITSAgent::GetHandlerDescription(AliHLTComponentDataType dt,
   // Handlers for ITS raw data. Even though there are 3 detectors
   // everything is handled in one module library and one HLTOUT handler.
   // This assumes that the data blocks are sent with data type
-  // {DDL_RAW :ITS } and the equipment id as specification
-  // The default behavior of AliHLTOUTHandlerEquId is used.
-  if (dt==(kAliHLTDataTypeDDLRaw|kAliHLTDataOriginITS)) {
+  // {DDL_RAW :ISDD} and the bit set in the specification corresponding.
+  // to detector DDL id.
+  // An HLTOUT handler is implemented to extract the equipment id from
+  // the specification.
+  // Note: Future versions of the framework will provide a default handler
+  // class with that functionality.
+  if (dt==(kAliHLTDataTypeDDLRaw|kAliHLTDataOriginITSSDD)) {
       desc=AliHLTOUTHandlerDesc(kRawReader, dt, GetModuleId());
       HLTInfo("module %s handles data block type %s specification %d (0x%x)", 
 	      GetModuleId(), AliHLTComponent::DataType2Text(dt).c_str(), spec, spec);
@@ -119,10 +122,10 @@ AliHLTOUTHandler* AliHLTITSAgent::GetOutputHandler(AliHLTComponentDataType dt,
 						   AliHLTUInt32_t /*spec*/)
 {
   // see header file for class documentation
-  if (dt==(kAliHLTDataTypeDDLRaw|kAliHLTDataOriginITS)) {
+  if (dt==(kAliHLTDataTypeDDLRaw|kAliHLTDataOriginITSSDD)) {
     // use the default handler
     if (!fRawDataHandler) {
-      fRawDataHandler=new AliHLTOUTHandlerEquId;
+      fRawDataHandler=new AliHLTOUTSDDRawDataHandler;
     }
     return fRawDataHandler;
   }
@@ -142,4 +145,43 @@ int AliHLTITSAgent::DeleteOutputHandler(AliHLTOUTHandler* pInstance)
 
   delete pInstance;
   return 0;
+}
+
+int AliHLTITSAgent::AliHLTOUTSDDRawDataHandler::ProcessData(AliHLTOUT* pData)
+{
+  // see header file for class documentation
+  if (!pData) return -EINVAL;
+  static int errorCount=0;
+  const int maxErrorCount=10;
+  AliHLTComponentDataType dt=kAliHLTVoidDataType;
+  AliHLTUInt32_t spec=kAliHLTVoidDataSpec;
+  int iResult=pData->GetDataBlockDescription(dt, spec);
+  if (iResult>=0) {
+    if (dt==(kAliHLTDataTypeDDLRaw|kAliHLTDataOriginITSSDD)) {
+      int ddlOffset=256;//AliDAQ::DdlIDOffset("ITSSDD");
+      int numberOfDDLs=24;//AliDAQ::NumberOfDdls("ITSSDD");
+      int ddlNo=0;
+      for (;ddlNo<32 && ddlNo<numberOfDDLs; ddlNo++) {
+	if (spec&(0x1<<ddlNo)) break;
+      }
+      if (ddlNo>=32 || ddlNo>=numberOfDDLs) {
+	HLTError("invalid specification 0x%08x: can not extract DDL id for data block %s", spec, AliHLTComponent::DataType2Text(dt).c_str());
+	iResult=-ENODEV;
+      } else if (spec^(0x1<<ddlNo)) {
+	iResult=-EEXIST;
+	HLTError("multiple links set in specification 0x%08x: can not extract DDL id for data block %s", spec, AliHLTComponent::DataType2Text(dt).c_str());
+      } else {
+	iResult=ddlOffset+ddlNo;
+      }
+    } else {
+      if (errorCount++<10) {
+	HLTError("wrong data type: expecting %s, got %s; %s",
+		 AliHLTComponent::DataType2Text(kAliHLTDataTypeDDLRaw|kAliHLTDataOriginITSSDD).c_str(),
+		 AliHLTComponent::DataType2Text(dt).c_str(),
+		   errorCount==maxErrorCount?"suppressing further error messages":"");
+      }
+      iResult=-EFAULT;
+    }
+  }
+  return iResult;
 }

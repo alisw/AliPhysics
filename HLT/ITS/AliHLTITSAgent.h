@@ -14,17 +14,20 @@
 
 #include "AliHLTModuleAgent.h"
 
-class AliHLTOUTHandlerEquId;
+// raw data handler of HLTOUT data
+#include "AliHLTOUTHandlerEquId.h"
 
 /**
  * @class AliHLTITSAgent
  * This is the agent for the AliHLTSample library.<br>
  *
- * The egent implements the HLTOUT handling of raw data blocks from the
- * ITS (all of the 3 detectors). This assumes that the data blocks are sent
- * with data type {DDL_RAW :ITS } and the equipment id as specification.
- * The agent indicates that such a block is handled by the
- * AliHLTOUTHandlerEquId and its default behavior.
+ * The agent implements the HLTOUT handling of raw data blocks from the
+ * ITS SDD.
+ * This assumes that the data blocks are sent with data type
+ * {DDL_RAW :ISDD} and the bit set in the specification corresponding.
+ * to detector DDL id.
+ * An HLTOUT handler is implemented to extract the equipment id from
+ * the specification.
  *
  * @ingroup alihlt_its
  */
@@ -85,6 +88,15 @@ class AliHLTITSAgent : public AliHLTModuleAgent {
   int DeleteOutputHandler(AliHLTOUTHandler* pInstance);
 
   AliHLTModulePreprocessor* GetPreprocessor();
+
+  class AliHLTOUTSDDRawDataHandler: public AliHLTOUTHandlerEquId {
+  public:
+    AliHLTOUTSDDRawDataHandler() {}
+    ~AliHLTOUTSDDRawDataHandler() {}
+    int ProcessData(AliHLTOUT* pData);
+  private:
+  };
+
  protected:
 
  private:
