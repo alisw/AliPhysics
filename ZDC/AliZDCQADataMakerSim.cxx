@@ -97,19 +97,19 @@ void AliZDCQADataMakerSim::InitDigits()
   TH1F * hDigSumQZNA = new TH1F("hDigSumQZNA", "Signal in 4 ZNA PMQ",100, 0., 4000.);
   TH1F * hDigSumQZPC = new TH1F("hDigSumQZPC", "Signal in 4 ZPC PMQ",100, 0., 4000.);
   TH1F * hDigSumQZPA = new TH1F("hDigSumQZPA", "Signal in 4 ZPA PMQ",100, 0., 4000.);
-  Add2DigitsList(hDigSumQZNC, 4);
-  Add2DigitsList(hDigSumQZNA, 5);
-  Add2DigitsList(hDigSumQZPC, 6);
-  Add2DigitsList(hDigSumQZPA, 7);
+  Add2DigitsList(hDigSumQZNC, 4, kTRUE);
+  Add2DigitsList(hDigSumQZNA, 5, kTRUE);
+  Add2DigitsList(hDigSumQZPC, 6, kTRUE);
+  Add2DigitsList(hDigSumQZPA, 7, kTRUE);
   //
   TH1F * hDigPMCZNC = new TH1F("hDigPMCZNC", "Signal in ZNC PMC",100, 0., 4000.);
   TH1F * hDigPMCZNA = new TH1F("hDigPMCZNA", "Signal in ZNA PMC",100, 0., 4000.);
   TH1F * hDigPMCZPC = new TH1F("hDigPMCZPC", "Signal in ZPC PMC",100, 0., 4000.);
   TH1F * hDigPMCZPA = new TH1F("hDigPMCZPA", "Signal in ZPA PMC",100, 0., 4000.);
-  Add2DigitsList(hDigPMCZNC, 8);
-  Add2DigitsList(hDigPMCZNA, 9);
-  Add2DigitsList(hDigPMCZPC, 10);
-  Add2DigitsList(hDigPMCZPA, 11);
+  Add2DigitsList(hDigPMCZNC, 8, kTRUE);
+  Add2DigitsList(hDigPMCZNA, 9, kTRUE);
+  Add2DigitsList(hDigPMCZPC, 10, kTRUE);
+  Add2DigitsList(hDigPMCZPA, 11, kTRUE);
   // 
   // ------------------- LOW GAIN CHAIN ---------------------------
 /*  TH1F * hDigZNCTotlg = new TH1F("hDigZNCTotlg", "Digit lg signal in ZNC", 100, 0., 6000.);
@@ -125,19 +125,19 @@ void AliZDCQADataMakerSim::InitDigits()
   TH1F * hDigSumQZNAlg = new TH1F("hDigSumQZNAlg", "Signal in 4 ZNA PMQlg",100, 0., 4000.);
   TH1F * hDigSumQZPClg = new TH1F("hDigSumQZPClg", "Signal in 4 ZPC PMQlg",100, 0., 4000.);
   TH1F * hDigSumQZPAlg = new TH1F("hDigSumQZPAlg", "Signal in 4 ZPA PMQlg",100, 0., 4000.);
-  Add2DigitsList(hDigSumQZNClg, 16);
-  Add2DigitsList(hDigSumQZNAlg, 17);
-  Add2DigitsList(hDigSumQZPClg, 18);
-  Add2DigitsList(hDigSumQZPAlg, 19);
+  Add2DigitsList(hDigSumQZNClg, 16, kTRUE);
+  Add2DigitsList(hDigSumQZNAlg, 17, kTRUE);
+  Add2DigitsList(hDigSumQZPClg, 18, kTRUE);
+  Add2DigitsList(hDigSumQZPAlg, 19, kTRUE);
   //
   TH1F * hDigPMCZNClg = new TH1F("hDigPMCZNClg", "Signal in ZNC PMClg",100, 0., 4000.);
   TH1F * hDigPMCZNAlg = new TH1F("hDigPMCZNAlg", "Signal in ZNA PMClg",100, 0., 4000.);
   TH1F * hDigPMCZPClg = new TH1F("hDigPMCZPClg", "Signal in ZPC PMClg",100, 0., 4000.);
   TH1F * hDigPMCZPAlg = new TH1F("hDigPMCZPAlg", "Signal in ZPA PMClg",100, 0., 4000.);
-  Add2DigitsList(hDigPMCZNClg, 20);
-  Add2DigitsList(hDigPMCZNAlg, 21);
-  Add2DigitsList(hDigPMCZPClg, 22);
-  Add2DigitsList(hDigPMCZPAlg, 23);
+  Add2DigitsList(hDigPMCZNClg, 20, kTRUE);
+  Add2DigitsList(hDigPMCZNAlg, 21, kTRUE);
+  Add2DigitsList(hDigPMCZPClg, 22, kTRUE);
+  Add2DigitsList(hDigPMCZPAlg, 23, kTRUE);
 */
 }
 
