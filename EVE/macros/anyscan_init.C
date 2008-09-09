@@ -74,6 +74,10 @@ void anyscan_init()
   exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "SIM Track",   "kine_tracks.C", "kine_tracks", "", kFALSE));
   exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "SIM Hit ITS", "its_hits.C",    "its_hits",    "", kFALSE));
   exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "SIM Hit TPC", "tpc_hits.C",    "tpc_hits",    "", kFALSE));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "TPC RAW",     "tpc_raw.C",     "tpc_raw",     "", kFALSE));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "FMD RAW",     "fmd_raw.C",     "fmd_raw",     "", kFALSE));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "FMD DIGITS",  "fmd_digits.C",  "fmd_digits",  "", kFALSE));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "FMD Hits",    "fmd_hits.C",    "fmd_hits",    "", kFALSE));
 
   exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX", "primary_vertex.C", "primary_vertex"));
   exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC V0",   "esd_V0_points.C",  "esd_V0_points"));
