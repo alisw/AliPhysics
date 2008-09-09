@@ -26,6 +26,7 @@
 
 #include <TSystem.h>
 #include <TTimeStamp.h>
+#include <TBranch.h>
 
 #include "AliESD.h"
 
@@ -53,6 +54,18 @@ AliTagDB::AliTagDB(AliRawEventTag *eventTag, const char* fileName) :
       if (!Create(fileName))
          MakeZombie();
    }
+}
+
+static void BranchResetBit(TBranch *b) 
+{
+  // Reset MapObject on this branch and all the sub-branches
+
+  b->ResetBit( kBranchObject | kBranchAny ); // Or in newer ROOT: b->ResetBit( kMapObject )
+  TIter next( b->GetListOfBranches() );
+  TBranch *sub = 0;
+  while ( (sub = (TBranch*)next() ) ) {
+    BranchResetBit( sub );
+  }
 }
 
 //______________________________________________________________________________
@@ -83,7 +96,8 @@ Bool_t AliTagDB::Create(const char* fileName)
    Int_t bufsize = 32000;
    Int_t split   = 1;
    const char *tagname = fEventTag->GetName();
-   fTree->Branch("TAG", tagname, &fEventTag, bufsize, split);
+   TBranch * b = fTree->Branch("TAG", tagname, &fEventTag, bufsize, split);
+   BranchResetBit(b);
 
    return kTRUE;
 }

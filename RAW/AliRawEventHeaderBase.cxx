@@ -49,7 +49,8 @@ fVersion(0),
 fExtendedDataSize(0),
 fExtendedAllocSize(0),
 fExtendedData(NULL),
-fIsSwapped(kFALSE)
+fIsSwapped(kFALSE),
+fHeaderSize(0)
 {
   // Default constructor
 }
@@ -76,6 +77,8 @@ Int_t AliRawEventHeaderBase::HeaderSize() const
   // Returns the size of the data members list
   // beyond the base class data members
 
+  if (fHeaderSize) return fHeaderSize;
+
   Int_t size = 0;
 
   TList *datalist = IsA()->GetListOfDataMembers();
@@ -90,6 +93,8 @@ Int_t AliRawEventHeaderBase::HeaderSize() const
     else
       for(UInt_t i=0;i<ndim;i++) size += member->GetMaxIndex(i)*unitsize;
   }
+
+  const_cast<AliRawEventHeaderBase*>(this)->fHeaderSize = size;
 
   return size;
 }

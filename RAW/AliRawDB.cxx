@@ -36,6 +36,8 @@
 
 #include <TObjString.h>
 
+#include <TBranch.h>
+
 #include "AliESDEvent.h"
 #include "AliRawEvent.h"
 #include "AliRawDataArray.h"
@@ -263,6 +265,18 @@ again:
    return kTRUE;
 }
 
+static void BranchResetBit(TBranch *b) 
+{
+  // Reset MapObject on this branch and all the sub-branches
+
+  b->ResetBit( kBranchObject | kBranchAny ); // Or in newer ROOT: b->ResetBit( kMapObject )
+  TIter next( b->GetListOfBranches() );
+  TBranch *sub = 0;
+  while ( (sub = (TBranch*)next() ) ) {
+    BranchResetBit( sub );
+  }
+}
+
 //______________________________________________________________________________
 void AliRawDB::MakeTree()
 {
@@ -276,18 +290,23 @@ void AliRawDB::MakeTree()
    // splitting 29.6 MB/s, no splitting 35.3 MB/s on P4 2GHz 15k SCSI
    //Int_t split   = 1;
    Int_t split   = 0;
-   fTree->Branch("rawevent", "AliRawEvent", &fEvent, fBasketSize, split);
+   TBranch *b = fTree->Branch("rawevent", "AliRawEvent", &fEvent, fBasketSize, split);
+   BranchResetBit(b);
 
    // Make brach for each sub-detector
    for (Int_t iDet = 0; iDet < AliDAQ::kNDetectors; iDet++) {
-     for (Int_t iBranch = 0; iBranch < fgkDetBranches[iDet]; iBranch++)
-       fTree->Branch(Form("%s%d",AliDAQ::DetectorName(iDet),iBranch),"AliRawDataArray",
-		     &fDetRawData[iDet][iBranch],fBasketSize,split);
+     for (Int_t iBranch = 0; iBranch < fgkDetBranches[iDet]; iBranch++) {
+       b = fTree->Branch(Form("%s%d",AliDAQ::DetectorName(iDet),iBranch),"AliRawDataArray",
+			 &fDetRawData[iDet][iBranch],fBasketSize,split);
+       BranchResetBit(b);
+     }
    }
    // Make special branch for unrecognized raw-data payloads
-   for (Int_t iBranch = 0; iBranch < fgkDetBranches[AliDAQ::kNDetectors]; iBranch++)
-     fTree->Branch(Form("Common%d",iBranch),"AliRawDataArray",
-		   &fDetRawData[AliDAQ::kNDetectors][iBranch],fBasketSize,split);
+   for (Int_t iBranch = 0; iBranch < fgkDetBranches[AliDAQ::kNDetectors]; iBranch++) {
+     b = fTree->Branch(Form("Common%d",iBranch),"AliRawDataArray",
+		       &fDetRawData[AliDAQ::kNDetectors][iBranch],fBasketSize,split);
+     BranchResetBit(b);
+   }
 
    // Create tree which will contain the HLT ESD information
 

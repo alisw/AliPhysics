@@ -50,6 +50,7 @@
 #include <TROOT.h>
 #include <TStopwatch.h>
 #include <TPluginManager.h>
+#include <TBufferFile.h>
 
 #include <sys/uio.h>
 #ifdef USE_EB
@@ -125,6 +126,8 @@ AliMDC::AliMDC(Int_t compress, Bool_t deleteFiles, EFilterMode filterMode,
   // Set the maximum tree size to 19GB
   // in order to allow big raw data files
   TTree::SetMaxTreeSize(20000000000LL);
+
+  TBufferFile::SetGlobalReadParam(5);
  
   // This line is needed in case of a stand-alone application w/o
   // $ROOTSYS/etc/system.rootrc file

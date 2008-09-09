@@ -86,11 +86,12 @@ private:
    char  *fExtendedData;  //[fExtendedDataSize] pointer to header extension data 
 
    Bool_t fIsSwapped;     // is data swapped
+   Int_t  fHeaderSize;    //! cache for the header size estimate
 
    static const UInt_t fgkEventMagicNumber        = 0xDA1E5AFE; // magic word
    static const UInt_t fgkEventMagicNumberSwapped = 0xFE5A1EDA; // swapped magic word
 
-   ClassDef(AliRawEventHeaderBase,2)  // Alice raw event header base class
+   ClassDef(AliRawEventHeaderBase,3)  // Alice raw event header base class
 };
 
 #define EVENT_HEADER_VERSION(AA,BB) AliRawEventHeaderV##AA##_##BB
