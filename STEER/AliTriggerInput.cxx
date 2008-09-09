@@ -44,7 +44,7 @@
 
 ClassImp( AliTriggerInput )
 
-Bool_t AliTriggerInput::fgkIsTriggerDetector[AliDAQ::kNDetectors] = {1,0,0,0,1,1,0,1,0,0,0,1,0,1,1,1,1,1,1,0,0};
+Bool_t AliTriggerInput::fgkIsTriggerDetector[AliDAQ::kNDetectors] = {1,0,0,0,1,1,0,1,0,0,0,1,0,1,1,1,1,1,1,1,0};
 const char* AliTriggerInput::fgkCTPDetectorName[AliDAQ::kNDetectors] = {
   "SPD",
   "SDD",
