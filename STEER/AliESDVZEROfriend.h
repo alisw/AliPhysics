@@ -1,33 +1,26 @@
-#ifndef ALIVZERORAWSTREAM_H
-#define ALIVZERORAWSTREAM_H
+#ifndef ALIESDVZEROFRIEND_H
+#define ALIESDVZEROFRIEND_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
 ///////////////////////////////////////////////////////////////////////////////
 ///
-/// This is a class for reading the VZERO DDL raw data
-/// The format of the raw data corresponds to the one
-/// implemented in AliVZEROBuffer class.
-///
-/// PLEASE NOTE that Int_t channel is here the FEE channel from 0 to 63 in the 
-/// order defined by Yannick Zoccarato which is not the same order as the order 
-/// defined in aliroot by the naming and numbering conventions.
-/// Therefore one has to go from FEE_Channel to AliRoot_Channel using 
-/// GetOfflineChannel(Int_t channel)  when going from Online to Offline !!!
+/// This is a class for containing all the VZERO DDL raw data
+/// It is written to the ESD-friend file
 ///
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <TObject.h>
 
-class AliRawReader;
-
-class AliVZERORawStream: public TObject {
+class AliESDVZEROfriend: public TObject {
   public :
-    AliVZERORawStream(AliRawReader* rawReader);
-    virtual ~AliVZERORawStream();
+    AliESDVZEROfriend();
+    virtual ~AliESDVZEROfriend();
 
-    virtual void      Reset();
-    virtual Bool_t    Next();
+    AliESDVZEROfriend(const AliESDVZEROfriend& vzerofriend);
+    AliESDVZEROfriend& operator = (const AliESDVZEROfriend& vzerofriend);
+
+    void Reset();
 
 // Getters of various scalers and Minimum Bias flags :
 
@@ -65,44 +58,54 @@ class AliVZERORawStream: public TObject {
     UInt_t            GetWidth(Int_t channel) const
       { return fWidth[channel]; }
 
+    // Setters
+    void              SetBBScalers(Int_t channel, ULong64_t scalers)
+      { fBBScalers[channel] = scalers; }
+    void              SetBGScalers(Int_t channel, ULong64_t scalers)
+      { fBGScalers[channel] = scalers; }
+    void              SetTriggerScalers(Int_t num_scaler, UInt_t scaler)
+      { fScalers[num_scaler] = scaler; }
+    void              SetBunchNumbersMB(Int_t num_bunch, UInt_t bunch)
+      { fBunchNumbers[num_bunch] = bunch; }
+    void              SetChargeMB(Int_t channel,Int_t num_bunch, UShort_t charge)
+      { fChargeMB[channel][num_bunch] = charge; }
+    void              SetIntMBFlag(Int_t channel,Int_t num_bunch, Bool_t flag)
+      { fIsIntMB[channel][num_bunch] = flag; }
+    void              SetBBMBFlag(Int_t channel,Int_t num_bunch, Bool_t flag)
+      { fIsBBMB[channel][num_bunch] = flag; }
+    void              SetBGMBFlag(Int_t channel,Int_t num_bunch, Bool_t flag)
+      { fIsBGMB[channel][num_bunch] = flag; }
+
+    void              SetPedestal(Int_t channel, Int_t event, UShort_t adc)
+      { fADC[channel][event] = adc; }
+    void              SetIntegratorFlag(Int_t channel, Int_t event, Bool_t flag)
+      { fIsInt[channel][event] = flag; }
+    void              SetBBFlag(Int_t channel, Int_t event, Bool_t flag)
+      { fIsBB[channel][event] = flag; }
+    void              SetBGFlag(Int_t channel, Int_t event, Bool_t flag)
+      { fIsBB[channel][event] = flag; }
+    void              SetTime(Int_t channel, UInt_t time)
+      { fTime[channel] = time; }
+    void              SetWidth(Int_t channel, UInt_t width)
+      { fWidth[channel] = width; }
+
     UShort_t          GetTriggerInputs() const
       { return fTrigger; }
     UShort_t          GetTriggerInputsMask() const
       { return fTriggerMask; }
+    void              SetTriggerInputs(UShort_t inputs)
+      { fTrigger = inputs; }
+    void              SetTriggerInputsMask(UShort_t mask)
+      { fTriggerMask = mask; }
 
-// Getter of Offline Channel number as used in aliroot (defined by aliroot 
-// numbering convention) from FEE channel (electronic channel number given 
-// by the V0 electronics readout) - See comment above - 
-
-    Int_t              GetOfflineChannel(Int_t channel)  const
-      { Int_t  fOfflineChannel[64] = {39, 38, 37, 36, 35, 34, 33, 32, 
-                                      47, 46, 45, 44, 43, 42, 41, 40, 
-			              55, 54, 53, 52, 51, 50, 49, 48, 
-			              63, 62, 61, 60, 59, 58, 57, 56,
-			               7,  6,  5,  4,  3,  2,  1,  0, 
-			              15, 14, 13, 12, 11, 10,  9,  8,
-			              23, 22, 21, 20, 19, 18, 17, 16, 
-			              31, 30, 29, 28, 27, 26, 25, 24};
-               return fOfflineChannel[channel]; }	
-
-    enum EVZERORawDataParams {
+    enum EESDVZEROfriendParams {
       kNChannels = 64, // number of electronic channels in V0 (FEE numbering)
       kNEvOfInt  = 21, // number of events of interest
       kNScalers  = 16, // number of scalers
       kNBunches  = 10  // number of bunches used in Minimum Bias information 
     };
 
-    enum EVZERORawStreamError {
-      kRawDataSizeErr = 1
-    };
-
   private:
-
-    AliVZERORawStream(const AliVZERORawStream& stream);
-    AliVZERORawStream& operator = (const AliVZERORawStream& stream);
-
-    UInt_t GetNextWord();
-    UShort_t GetNextShort();
 
     ULong64_t     fBBScalers[kNChannels];        // 'Beam-Beam' scalers for all channels
     ULong64_t     fBGScalers[kNChannels];        // 'Beam-Gas' scalers for all channels
@@ -123,14 +126,7 @@ class AliVZERORawStream: public TObject {
     UShort_t      fTrigger;        // VZERO trigger inputs
     UShort_t      fTriggerMask;    // VZERO trigger inputs mask
 
-    Int_t         fPosition;       // current position in the raw-data payload
-    
-
-    AliRawReader* fRawReader;      // object for reading the raw data
-
-    UChar_t*      fData;           // pointer to raw data payload
-
-    ClassDef(AliVZERORawStream, 0) // class for reading VZERO DDL raw data
+    ClassDef(AliESDVZEROfriend, 1) // container class for VZERO DDL raw data
 };
 
 #endif

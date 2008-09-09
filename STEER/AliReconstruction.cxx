@@ -1660,8 +1660,8 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
     }
 
     if (fWriteESDfriend) {
-      fesdf->~AliESDfriend();
-      new (fesdf) AliESDfriend(); // Reset...
+      //      fesdf->~AliESDfriend();
+      //  new (fesdf) AliESDfriend(); // Reset...
       fesd->GetESDfriend(fesdf);
     }
     ftree->Fill();

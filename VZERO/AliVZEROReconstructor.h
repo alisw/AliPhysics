@@ -20,6 +20,7 @@
 #include "AliESDVZERO.h"
 
 class AliESDEvent;
+class AliESDVZEROfriend;
 
 class AliVZEROReconstructor: public AliReconstructor {
 public:
@@ -50,6 +51,7 @@ public:
 protected:
   AliESDVZERO*        fESDVZERO;      // ESD output object  
   AliESDEvent*             fESD;      // ESD object
+  AliESDVZEROfriend*  fESDVZEROfriend; // ESD friend object (complete raw data)
   
 private:
   AliVZEROReconstructor(const AliVZEROReconstructor& reconstructor);

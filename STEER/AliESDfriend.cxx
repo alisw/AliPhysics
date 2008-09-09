@@ -24,14 +24,16 @@
 
 ClassImp(AliESDfriend)
 
-AliESDfriend::AliESDfriend(): TObject(), fTracks("AliESDfriendTrack",15000)
+AliESDfriend::AliESDfriend(): TObject(), fTracks("AliESDfriendTrack",15000),
+			      fESDVZEROfriend(NULL)
 {
  //
  // Default constructor
  //
 }
 
-AliESDfriend::AliESDfriend(const AliESDfriend &f):TObject(f),fTracks(f.fTracks)
+AliESDfriend::AliESDfriend(const AliESDfriend &f):TObject(f),fTracks(f.fTracks),
+						  fESDVZEROfriend(f.fESDVZEROfriend)
 {
  //
  // Copy constructor
@@ -43,4 +45,14 @@ AliESDfriend::~AliESDfriend() {
   // Destructor
   //
   fTracks.Delete();
+  delete fESDVZEROfriend;
+}
+
+void AliESDfriend::SetVZEROfriend(AliESDVZEROfriend * obj)
+{
+  //
+  // Set the VZERO friend data object
+  // (complete raw data)
+  if (!fESDVZEROfriend) fESDVZEROfriend = new AliESDVZEROfriend();
+  if (obj) *fESDVZEROfriend = *obj;
 }

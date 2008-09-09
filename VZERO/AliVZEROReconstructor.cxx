@@ -27,6 +27,8 @@
 #include "AliVZERORawStream.h"
 #include "AliESDEvent.h"
 #include "AliVZEROTriggerMask.h"
+#include "AliESDfriend.h"
+#include "AliESDVZEROfriend.h"
 
 ClassImp(AliVZEROReconstructor)
 
@@ -34,6 +36,7 @@ ClassImp(AliVZEROReconstructor)
 AliVZEROReconstructor:: AliVZEROReconstructor(): AliReconstructor(),
    fESDVZERO(0x0),
    fESD(0x0),
+   fESDVZEROfriend(0x0),
    fCalibData(GetCalibData())
 {
   // Default constructor  
@@ -59,7 +62,8 @@ AliVZEROReconstructor::~AliVZEROReconstructor()
 {
 // destructor
 
-   delete fESDVZERO;    
+   delete fESDVZERO;
+   delete fESDVZEROfriend;
 }
 
 //_____________________________________________________________________________
@@ -68,6 +72,7 @@ void AliVZEROReconstructor::Init()
 // initializer
 
   fESDVZERO  = new AliESDVZERO;
+  fESDVZEROfriend = new AliESDVZEROfriend;
 }
 
 //______________________________________________________________________
@@ -82,6 +87,8 @@ void AliVZEROReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
 
   TClonesArray* digitsArray = new TClonesArray("AliVZEROdigit");
   digitsTree->Branch("VZERODigit", &digitsArray);
+
+  fESDVZEROfriend->Reset();
 
   rawReader->Reset();
   AliVZERORawStream rawStream(rawReader);
@@ -104,7 +111,37 @@ void AliVZEROReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
 	 width[j]  =  rawStream.GetWidth(i);
 	 BBFlag[j] =  rawStream.GetBBFlag(i,imax);
 	 BGFlag[j] =  rawStream.GetBGFlag(i,imax); 
+
+	 // Filling the esd friend object
+	 fESDVZEROfriend->SetBBScalers(j,rawStream.GetBBScalers(i));
+	 fESDVZEROfriend->SetBGScalers(j,rawStream.GetBGScalers(i));
+	 for (Int_t iBunch = 0; iBunch < AliESDVZEROfriend::kNBunches; iBunch++) {
+	   fESDVZEROfriend->SetChargeMB(j,iBunch,rawStream.GetChargeMB(i,iBunch));
+	   fESDVZEROfriend->SetIntMBFlag(j,iBunch,rawStream.GetIntMBFlag(i,iBunch));
+	   fESDVZEROfriend->SetBBMBFlag(j,iBunch,rawStream.GetBBMBFlag(i,iBunch));
+	   fESDVZEROfriend->SetBGMBFlag(j,iBunch,rawStream.GetBGMBFlag(i,iBunch));
+	 }
+	 for (Int_t iEv = 0; iEv < AliESDVZEROfriend::kNEvOfInt; iEv++) {
+	   fESDVZEROfriend->SetPedestal(j,iEv,rawStream.GetPedestal(i,iEv));
+	   fESDVZEROfriend->SetIntegratorFlag(j,iEv,rawStream.GetIntegratorFlag(i,iEv));
+	   fESDVZEROfriend->SetBBFlag(j,iEv,rawStream.GetBBFlag(i,iEv));
+	   fESDVZEROfriend->SetBGFlag(j,iEv,rawStream.GetBGFlag(i,iEv));
+	 }
+	 fESDVZEROfriend->SetTime(j,rawStream.GetTime(i));
+	 fESDVZEROfriend->SetWidth(j,rawStream.GetWidth(i));
      }  
+
+     // Filling the esd friend object
+     fESDVZEROfriend->SetTriggerInputs(rawStream.GetTriggerInputs());
+     fESDVZEROfriend->SetTriggerInputsMask(rawStream.GetTriggerInputsMask());
+
+     for(Int_t iScaler = 0; iScaler < AliESDVZEROfriend::kNScalers; iScaler++)
+       fESDVZEROfriend->SetTriggerScalers(iScaler,rawStream.GetTriggerScalers(iScaler));
+
+     for (Int_t iBunch = 0; iBunch < AliESDVZEROfriend::kNBunches; iBunch++)
+       fESDVZEROfriend->SetBunchNumbersMB(iBunch,rawStream.GetBunchNumbersMB(iBunch));
+     
+
      // Channels(aliroot numbering) will be ordered in the tree
      for(Int_t iChannel = 0; iChannel < 64; iChannel++) {
          new ((*digitsArray)[digitsArray->GetEntriesFast()])
@@ -199,6 +236,14 @@ void AliVZEROReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,
   if (esd) { 
      AliDebug(1, Form("Writing VZERO data to ESD tree"));
      esd->SetVZEROData(fESDVZERO);
+  }
+
+  if (esd) {
+    AliESDfriend *fr = (AliESDfriend*)esd->FindListObject("AliESDfriend");
+    if (fr) {
+      AliDebug(1, Form("Writing VZERO friend data to ESD tree"));
+      fr->SetVZEROfriend(fESDVZEROfriend);
+    }
   }
 }
 

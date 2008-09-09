@@ -74,6 +74,8 @@
 
 #pragma link C++ class  AliTriggerIR+;
 
+#pragma link C++ class  AliESDVZEROfriend+;
+
 #endif
 
 

@@ -894,8 +894,10 @@ void AliESDEvent::GetESDfriend(AliESDfriend *ev) const
     t->ReleaseESDfriendTrack();// Not to have two copies of "friendTrack"
 
   }
-}
 
+  AliESDfriend *fr = (AliESDfriend*)(const_cast<AliESDEvent*>(this)->FindListObject("AliESDfriend"));
+  if (fr) ev->SetVZEROfriend(fr->GetVZEROfriend());
+}
 
 void AliESDEvent::AddObject(TObject* obj) 
 {

@@ -11,6 +11,7 @@
 #include <TClonesArray.h>
 
 #include "AliESDfriendTrack.h"
+#include "AliESDVZEROfriend.h"
 
 //_____________________________________________________________________________
 class AliESDfriend : public TObject {
@@ -27,9 +28,14 @@ public:
      new(fTracks[fTracks.GetEntriesFast()]) AliESDfriendTrack(*t);
   }
 
+  void SetVZEROfriend(AliESDVZEROfriend * obj);
+  AliESDVZEROfriend *GetVZEROfriend(){ return fESDVZEROfriend; }
+
 protected:
   TClonesArray fTracks;    // ESD friend tracks
-  ClassDef(AliESDfriend,1) // ESD friend
+  AliESDVZEROfriend *fESDVZEROfriend; // VZERO object containing complete raw data
+
+  ClassDef(AliESDfriend,2) // ESD friend
 };
 
 #endif
