@@ -364,14 +364,13 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	     
 	     Double_t sl = timeLED[ipmt] - timeCFD[ipmt];
 	     time[ipmt] = fCalib-> WalkCorrection( ipmt, Int_t(sl), timeCFD[ipmt],"cosmic" ) ;
-	     time[ipmt] = time[ipmt] - allData[0][0] + 5000;
 	     AliDebug(10,Form(" ipmt %i QTC %i , time in chann %i (led-cfd) %i ",
 			      ipmt, Int_t(adc[ipmt]) ,Int_t(time[ipmt]),Int_t( sl)));
 	     Double_t ampMip =( (TGraph*)fAmpLED.At(ipmt))->Eval(sl);
 	     Double_t qtMip = ((TGraph*)fQTC.At(ipmt))->Eval(adc[ipmt]);
 	     AliDebug(10,Form("  Amlitude in MIPS LED %f ,  QTC %f \n ",ampMip,qtMip));
 	     
-	     frecpoints->SetTime(ipmt, Float_t(time[ipmt]) );
+	     frecpoints->SetTime(ipmt, Float_t(time[ipmt] - allData[0][0] + 5000) );
 	     frecpoints->SetAmp(ipmt, Float_t( ampMip)); //for cosmic &pp beam 
 	     frecpoints->SetAmpLED(ipmt, Float_t(qtMip));
 	   } //if physic data end
