@@ -558,19 +558,25 @@ Int_t AliVertexerTracks::PrepareTracks(TObjArray &trkArrayOrig,
       delete track; continue;
     }
 
+    Bool_t propagateOK = kFALSE;
     // propagate track to vertex
     if(optImpParCut<2 || fOnlyFitter) { // optImpParCut==1 or 0
-      track->PropagateToDCA(initVertex,GetFieldkG(),100.,d0z0,covd0z0);
+      propagateOK = track->PropagateToDCA(initVertex,GetFieldkG(),100.,d0z0,covd0z0);
     } else {              // optImpParCut==2
       fCurrentVertex->GetSigmaXYZ(sigmaCurr);
       normdistx = TMath::Abs(fCurrentVertex->GetXv()-fNominalPos[0])/TMath::Sqrt(sigmaCurr[0]*sigmaCurr[0]+fNominalCov[0]);
       normdisty = TMath::Abs(fCurrentVertex->GetYv()-fNominalPos[1])/TMath::Sqrt(sigmaCurr[1]*sigmaCurr[1]+fNominalCov[2]);
       if(normdistx < 3. && normdisty < 3. &&
 	 (sigmaCurr[0]+sigmaCurr[1])<(TMath::Sqrt(fNominalCov[0])+TMath::Sqrt(fNominalCov[2]))) {
-	track->PropagateToDCA(fCurrentVertex,GetFieldkG(),100.,d0z0,covd0z0);
+	propagateOK = track->PropagateToDCA(fCurrentVertex,GetFieldkG(),100.,d0z0,covd0z0);
       } else {
-	track->PropagateToDCA(initVertex,GetFieldkG(),100.,d0z0,covd0z0);
+	propagateOK = track->PropagateToDCA(initVertex,GetFieldkG(),100.,d0z0,covd0z0);
       }
+    }
+
+    if(!propagateOK) { 
+      if(fDebug) printf("     rejected\n");
+      delete track; continue; 
     }
 
     sigmad0 = TMath::Sqrt(covd0z0[0]);
