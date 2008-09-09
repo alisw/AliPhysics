@@ -69,7 +69,7 @@ int AliHLTOUTHomerCollection::GenerateIndex()
     // and from v4-10-Release (Rev-02). For the moment we select directly
     // to support older AliRoot versions
     //Select("HLT");
-    SelectEquipment(0,7680, 7689);
+    SelectEquipment(-1,7680, 7689);
     UChar_t* pSrc=NULL;
     while (ReadNextData(pSrc) && pSrc!=NULL && iResult>=0) {
       AliHLTUInt32_t id=(GetEquipmentId());
