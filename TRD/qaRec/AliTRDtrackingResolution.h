@@ -21,8 +21,26 @@ class AliTRDReconstructor;
 class AliTRDrecoParam;
 class AliTRDseedV1;
 class AliTRDtrackInfo;
-class AliTRDtrackingResolution : public AliAnalysisTask{
+class AliTRDtrackingResolution : public AliAnalysisTask
+{
 public:
+  enum{
+    kClusterYResidual         = 0
+    ,kTrackletRiemanYResidual = 1 // Riemann track model
+    ,kTrackletRiemanAngleResidual = 2
+    ,kTrackletKalmanYResidual = 3 // Kalman track model
+    ,kTrackletKalmanAngleResidual = 4
+    ,kTrackletYResolution     = 5
+    ,kTrackletAngleResolution = 6
+    ,kTrackRYResolution       = 7 // Riemann track model
+    ,kTrackRZResolution       = 8
+    ,kTrackRAngleResolution   = 9
+    ,kTrackKYResolution       = 10 // Kalman track model
+    ,kTrackKZResolution       = 11
+    ,kTrackKAngleResolution   = 12
+    ,kGraphStart              = 13 // First graph
+  };
+
   AliTRDtrackingResolution(const char *name = "TRD Tracking Resolution");
   virtual ~AliTRDtrackingResolution();
   
@@ -31,6 +49,7 @@ public:
   Int_t   GetDebugLevel() const { return fDebugLevel;}
   Bool_t  HasMCdata() const {return fHasMCdata;};
   void    Exec(Option_t *);
+
   void    SetDebugLevel(Int_t level);
   void    SetRecoParam(AliTRDrecoParam *r);
   void    SetMCdata(Bool_t mcdata){fHasMCdata = mcdata;};
@@ -39,6 +58,7 @@ public:
 private:
   AliTRDtrackingResolution(const AliTRDtrackingResolution&);
   AliTRDtrackingResolution& operator=(const AliTRDtrackingResolution&);
+  TList*  Histos(); 
   Bool_t  Resolution(AliTRDseedV1 *tracklet, AliTRDtrackInfo *info, Double_t &phi);
 
 private:

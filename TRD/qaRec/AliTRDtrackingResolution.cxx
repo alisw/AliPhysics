@@ -91,19 +91,31 @@ void AliTRDtrackingResolution::CreateOutputObjects()
   // spatial resolution
   OpenFile(0, "RECREATE");
 
-  fHistos = new TList();
+  fHistos = Histos();
+
+  // cluster to tracklet residuals [2]
+  fHistos->AddAt(new TH2I("fYClRes", "", 21, -21., 21., 100, -.5, .5), kClusterYResidual);
+  // tracklet to Riemann fit residuals [2]
+  fHistos->AddAt(new TH2I("fYTrkltRRes", "", 21, -21., 21., 100, -.5, .5), kTrackletRiemanYResidual);
+  fHistos->AddAt(new TH2I("fYTrkltKRes", "", 21, -21., 21., 100, -.5, .5), kTrackletKalmanYResidual);
 
   // Resolution histos
   if(HasMCdata()){
     // tracklet resolution [0]
-    fHistos->AddAt(new TH2I("fY", "", 21, -21., 21., 100, -.5, .5), 0);
+    fHistos->AddAt(new TH2I("fY", "", 21, -21., 21., 100, -.5, .5), kTrackletYResolution);
     // tracklet angular resolution [1]
-    fHistos->AddAt(new TH2I("fPhi", "", 21, -21., 21., 100, -10., 10.), 1);
+    fHistos->AddAt(new TH2I("fPhi", "", 21, -21., 21., 100, -10., 10.), kTrackletAngleResolution);
+
+    // Riemann track resolution [y, z, angular]
+    fHistos->AddAt(new TH2I("fYRT", "", 21, -21., 21., 100, -.5, .5), kTrackRYResolution);
+    fHistos->AddAt(new TH2I("fZRT", "", 21, -21., 21., 100, -.5, .5), kTrackRZResolution);
+    fHistos->AddAt(new TH2I("fPhiRT", "", 21, -21., 21., 100, -10., 10.), kTrackRAngleResolution);
+
+    // Kalman track resolution [y, z, angular]
+    fHistos->AddAt(new TH2I("fYKT", "", 21, -21., 21., 100, -.5, .5), kTrackKYResolution);
+    fHistos->AddAt(new TH2I("fZKT", "", 21, -21., 21., 100, -.5, .5), kTrackKZResolution);
+    fHistos->AddAt(new TH2I("fPhiKT", "", 21, -21., 21., 100, -10., 10.), kTrackKAngleResolution);
   }
-  // Residual histos
-  // cluster to tracklet residuals [2]
-  Int_t position = HasMCdata() ? 2 : 0;
-  fHistos->AddAt(new TH2I("fYClRes", "", 21, -21., 21., 100, -.5, .5), position);
 }
 
 //________________________________________________________
@@ -113,7 +125,7 @@ void AliTRDtrackingResolution::Exec(Option_t *)
   // angular Resolution: res = Tracklet angle - TrackRef Angle
 
   Int_t nTrackInfos = fTracks->GetEntriesFast();
-  if(fDebugLevel>=2) printf("Number of Histograms: %d\n", fHistos->GetEntries());
+  if(fDebugLevel>=2) printf("Number of Histograms: %d\n", Histos()->GetEntries());
 
   Double_t dy, dz;
   AliTrackPoint tr[kNLayers], tk[kNLayers];
@@ -152,13 +164,12 @@ void AliTRDtrackingResolution::Exec(Option_t *)
 
       // Do clusters residuals
       if(!fTracklet->Fit(kFALSE)) continue;
-      Int_t histpos = HasMCdata() ? 2 : 0;
       AliTRDcluster *c = 0x0;
       for(Int_t ic=AliTRDseed::knTimebins-1; ic>=0; ic--){
         if(!(c = fTracklet->GetClusters(ic))) continue;
         
         dy = fTracklet->GetYat(c->GetX()) - c->GetY();
-        ((TH2I*)fHistos->At(histpos))->Fill(phi*TMath::RadToDeg(), dy);
+        ((TH2I*)fHistos->At(kClusterYResidual))->Fill(phi*TMath::RadToDeg(), dy);
         if(fDebugLevel>=1){
           Float_t q = c->GetQ();
           (*fDebugStream) << "ClsTrkltResidual"
@@ -178,7 +189,13 @@ void AliTRDtrackingResolution::Exec(Option_t *)
     AliTRDtrackerV1::FitRiemanTilt(fTrack, 0x0, kTRUE, npts, tr);
     for(Int_t ip=0; ip<npts; ip++){
       dy = tk[ip].GetY() - tr[ip].GetY();
+      //((TH2I*)fHistos->At(kTrackletRiemanYResidual))->Fill(phi*TMath::RadToDeg(), dy);
+
       dz = tk[ip].GetZ() - tr[ip].GetZ();
+
+//      dphi = 
+//      ((TH2I*)fHistos->At(kTrackletRiemanAngleResidual))->Fill(phi*TMath::RadToDeg(), dphi);
+
       if(fDebugLevel>=1){
         (*fDebugStream) << "ResidualsRT"
           << "dy="		  << dy
@@ -194,6 +211,7 @@ void AliTRDtrackingResolution::Exec(Option_t *)
 //     AliTRDtrackerV1::FitKalman(fTrack, 0x0, kFALSE, nc, tr);
 //     for(Int_t ip=0; ip<nc; ip++){
 //       dy = cl[ip].GetY() - tr[ip].GetY();
+//      ((TH2I*)fHistos->At(kTrackletKalmanYResidual))->Fill(phi*TMath::RadToDeg(), dy);
 //       dz = cl[ip].GetZ() - tr[ip].GetZ();
 //       if(fDebugLevel>=1){
 //         (*fDebugStream) << "ResidualsKF"
@@ -263,8 +281,8 @@ Bool_t AliTRDtrackingResolution::Resolution(AliTRDseedV1 *tracklet, AliTRDtrackI
   
   // Fill Histograms
   if(TMath::Abs(dx-3.7)<1.E-3){
-    ((TH2I*)fHistos->At(0))->Fill(phi*TMath::RadToDeg(), dy);
-    ((TH2I*)fHistos->At(1))->Fill(phi*TMath::RadToDeg(), dphi*TMath::RadToDeg());
+    ((TH2I*)fHistos->At(kTrackletYResolution))->Fill(phi*TMath::RadToDeg(), dy);
+    ((TH2I*)fHistos->At(kTrackletAngleResolution))->Fill(phi*TMath::RadToDeg(), dphi*TMath::RadToDeg());
   }        
   // Fill Debug Tree
   if(fDebugLevel>=1){
@@ -296,58 +314,18 @@ void AliTRDtrackingResolution::Terminate(Option_t *)
   TH2I *h2 = 0x0;
   TH1D *h = 0x0;
   TF1 f("f1", "gaus", -.5, .5);  
-  if(HasMCdata()){
-    //process distributions
-    fHistos = dynamic_cast<TList*>(GetOutputData(0));
-    if (!fHistos) {
-      Printf("ERROR: list not available");
-      return;
-    }
-
-  // y resolution
-    h2 = (TH2I*)fHistos->At(0);
-    TGraphErrors *gm = new TGraphErrors(h2->GetNbinsX());
-    gm->SetNameTitle("meany", "Mean dy");
-    TGraphErrors *gs = new TGraphErrors(h2->GetNbinsX());
-    gs->SetNameTitle("sigmy", "Sigma y");
-    for(Int_t iphi=1; iphi<=h2->GetNbinsX(); iphi++){
-      Double_t phi = h2->GetXaxis()->GetBinCenter(iphi);
-      f.SetParameter(1, 0.);f.SetParameter(2, 2.e-2);
-      h = h2->ProjectionY("py", iphi, iphi);
-      h->Fit(&f, "QN", "", -.5, .5);
-      Int_t jphi = iphi -1;
-      gm->SetPoint(jphi, phi, f.GetParameter(1));
-      gm->SetPointError(jphi, 0., f.GetParError(1));
-      gs->SetPoint(jphi, phi, f.GetParameter(2));
-      gs->SetPointError(jphi, 0., f.GetParError(2));
-    }
-    fHistos->Add(gm);
-    fHistos->Add(gs);
-  
-    // phi resolution
-    h2 = (TH2I*)fHistos->At(1);
-    gm = new TGraphErrors(h2->GetNbinsX());
-    gm->SetNameTitle("meanphi", "Mean Phi");
-    gs = new TGraphErrors(h2->GetNbinsX());
-    gs->SetNameTitle("sigmphi", "Sigma Phi");
-    for(Int_t iphi=1; iphi<=h2->GetNbinsX(); iphi++){
-      Double_t phi = h2->GetXaxis()->GetBinCenter(iphi);
-      f.SetParameter(1, 0.);f.SetParameter(2, 2.e-2);
-      h = h2->ProjectionY("py", iphi, iphi);
-      h->Fit(&f, "QN", "", -.5, .5);
-      Int_t jphi = iphi -1;
-      gm->SetPoint(jphi, phi, f.GetParameter(1));
-      gm->SetPointError(jphi, 0., f.GetParError(1));
-      gs->SetPoint(jphi, phi, f.GetParameter(2));
-      gs->SetPointError(jphi, 0., f.GetParError(2));
-    }
-    fHistos->Add(gm);
-    fHistos->Add(gs);
+  fHistos = dynamic_cast<TList*>(GetOutputData(0));
+  if (!fHistos) {
+    Printf("ERROR: list not available");
+    return;
   }
+  // define iterator over graphs
+  Int_t jgraph = (Int_t)kGraphStart;
 
-  // Fit clusters residuals
-  Int_t position_residuals = fHasMCdata ? 2 : 0;
-  h2 = (TH2I *)(fHistos->At(position_residuals));
+  //PROCESS RESIDUAL DISTRIBUTIONS
+
+  // Clusters residuals
+  h2 = (TH2I *)(fHistos->At(kClusterYResidual));
   TGraphErrors *residuals_mean = new TGraphErrors(h2->GetNbinsX());
   residuals_mean->SetLineColor(kGreen);
   residuals_mean->SetMarkerStyle(22);
@@ -368,8 +346,59 @@ void AliTRDtrackingResolution::Terminate(Option_t *)
     residuals_sigma->SetPoint(ibin - 1, phi, f.GetParameter(2));
     residuals_sigma->SetPointError(ibin - 1, dphi, f.GetParError(2));
   }
-  fHistos->Add(residuals_mean);
-  fHistos->Add(residuals_sigma);
+  fHistos->AddAt(residuals_mean, jgraph++);
+  fHistos->AddAt(residuals_sigma, jgraph++);
+
+
+  //PROCESS RESOLUTION DISTRIBUTIONS
+  if(HasMCdata()){
+    // tracklet y resolution
+    h2 = (TH2I*)fHistos->At(kTrackletYResolution);
+    TGraphErrors *gm = new TGraphErrors(h2->GetNbinsX());
+    gm->SetNameTitle("meany", "Mean dy");
+    TGraphErrors *gs = new TGraphErrors(h2->GetNbinsX());
+    gs->SetNameTitle("sigmy", "Sigma y");
+    for(Int_t iphi=1; iphi<=h2->GetNbinsX(); iphi++){
+      Double_t phi = h2->GetXaxis()->GetBinCenter(iphi);
+      f.SetParameter(1, 0.);f.SetParameter(2, 2.e-2);
+      h = h2->ProjectionY("py", iphi, iphi);
+      h->Fit(&f, "QN", "", -.5, .5);
+      Int_t jphi = iphi -1;
+      gm->SetPoint(jphi, phi, f.GetParameter(1));
+      gm->SetPointError(jphi, 0., f.GetParError(1));
+      gs->SetPoint(jphi, phi, f.GetParameter(2));
+      gs->SetPointError(jphi, 0., f.GetParError(2));
+    }
+    fHistos->AddAt(gm, jgraph++);
+    fHistos->AddAt(gs, jgraph++);
+  
+    // tracklet phi resolution
+    h2 = (TH2I*)fHistos->At(kTrackletAngleResolution);
+    gm = new TGraphErrors(h2->GetNbinsX());
+    gm->SetNameTitle("meanphi", "Mean Phi");
+    gs = new TGraphErrors(h2->GetNbinsX());
+    gs->SetNameTitle("sigmphi", "Sigma Phi");
+    for(Int_t iphi=1; iphi<=h2->GetNbinsX(); iphi++){
+      Double_t phi = h2->GetXaxis()->GetBinCenter(iphi);
+      f.SetParameter(1, 0.);f.SetParameter(2, 2.e-2);
+      h = h2->ProjectionY("py", iphi, iphi);
+      h->Fit(&f, "QN", "", -.5, .5);
+      Int_t jphi = iphi -1;
+      gm->SetPoint(jphi, phi, f.GetParameter(1));
+      gm->SetPointError(jphi, 0., f.GetParError(1));
+      gs->SetPoint(jphi, phi, f.GetParameter(2));
+      gs->SetPointError(jphi, 0., f.GetParError(2));
+    }
+    fHistos->AddAt(gm, jgraph++);
+    fHistos->AddAt(gs, jgraph++);
+  }
+}
+
+//________________________________________________________
+TList* AliTRDtrackingResolution::Histos()
+{
+  if(!fHistos) fHistos  = new TList();
+  return fHistos;
 }
 
 //________________________________________________________
