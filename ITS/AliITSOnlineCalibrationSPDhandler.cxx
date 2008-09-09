@@ -28,6 +28,7 @@
 #endif
 
 /* $Id$ */
+
 //____________________________________________________________________________________________
 AliITSOnlineCalibrationSPDhandler::AliITSOnlineCalibrationSPDhandler():
   fFileLocation(".")
@@ -725,6 +726,46 @@ Bool_t AliITSOnlineCalibrationSPDhandler::WriteDeadToDB(Int_t runNrStart, Int_t 
   metaData->SetResponsible("Henrik Tydesjo");
   metaData->SetComment("Created by AliITSOnlineCalibrationSPDhandler.");
   AliCDBId idCalSPD("ITS/Calib/SPDDead",runNrStart,runNrEnd);
+  TObjArray* spdEntry = new TObjArray(240);
+  spdEntry->SetOwner(kTRUE);
+  for(UInt_t module=0; module<240; module++){
+    AliITSCalibrationSPD* calibSPD = new AliITSCalibrationSPD();
+    spdEntry->Add(calibSPD);
+  }
+  for(UInt_t module=0; module<240; module++){
+    AliITSCalibrationSPD* calibSPD = (AliITSCalibrationSPD*) spdEntry->At(module);
+    calibSPD->SetNrBadSingle( GetNrDeadSingle(module) );
+    calibSPD->SetBadList( GetDeadArray(module) );
+    for (UInt_t chipIndex=0; chipIndex<5; chipIndex++) {
+      UInt_t eq,hs,chip,col,row;
+      AliITSRawStreamSPD::OfflineToOnline(module, chipIndex*32, 0, eq, hs, chip, col, row);
+      if (IsSilentChip(eq,hs,chip)) {
+	calibSPD->SetChipBad(chipIndex);
+      }
+      else {
+	calibSPD->UnSetChipBad(chipIndex);
+      }
+    }
+  }
+  AliCDBEntry* cdbEntry = new AliCDBEntry((TObject*)spdEntry,idCalSPD,metaData);
+  man->Put(cdbEntry);
+  delete spdEntry;
+  delete cdbEntry;
+  delete metaData;
+  return kTRUE;
+}
+//____________________________________________________________________________________________
+Bool_t AliITSOnlineCalibrationSPDhandler::WriteDeadToDBasNoisy(Int_t runNrStart, Int_t runNrEnd) {
+  // writes dead pixels to DB for given runNrs
+  // overwrites any previous entries
+  AliCDBManager* man = AliCDBManager::Instance();
+  if(!man->IsDefaultStorageSet()) {
+    man->SetDefaultStorage("local://$ALICE_ROOT");
+  }
+  AliCDBMetaData* metaData = new AliCDBMetaData();
+  metaData->SetResponsible("Henrik Tydesjo");
+  metaData->SetComment("Created by AliITSOnlineCalibrationSPDhandler.");
+  AliCDBId idCalSPD("ITS/Calib/SPDNoisy",runNrStart,runNrEnd);
   TObjArray* spdEntry = new TObjArray(240);
   spdEntry->SetOwner(kTRUE);
   for(UInt_t module=0; module<240; module++){

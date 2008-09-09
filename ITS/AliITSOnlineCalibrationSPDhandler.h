@@ -73,6 +73,7 @@ class AliITSOnlineCalibrationSPDhandler {
   Bool_t  ReadNoisyFromCalibObj(TObjArray* calObj);
   Bool_t  WriteToDB(Int_t runNrStart, Int_t runNrEnd);
   Bool_t  WriteDeadToDB(Int_t runNrStart, Int_t runNrEnd);
+  Bool_t  WriteDeadToDBasNoisy(Int_t runNrStart, Int_t runNrEnd);
   Bool_t  WriteNoisyToDB(Int_t runNrStart, Int_t runNrEnd);
 #endif
 
