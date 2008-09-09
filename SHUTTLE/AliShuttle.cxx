@@ -1804,6 +1804,8 @@ void AliShuttle::CountOpenRuns()
 {
 	// Query DAQ's Shuttle logbook and sends the number of open runs to ML
 	
+	SendAlive();
+	
 	// check connection, in case connect
 	if (!Connect(3)) 
 		return;
@@ -2873,7 +2875,6 @@ Bool_t AliShuttle::Collect(Int_t run)
 	if (!fMonaLisa)
 		fMonaLisa = new TMonaLisaWriter(fConfig->GetMonitorHost(), fConfig->GetMonitorTable());
 		
-	SendAlive();
 	CountOpenRuns();
 
 	TString whereClause("where shuttle_done=0");
