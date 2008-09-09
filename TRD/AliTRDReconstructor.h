@@ -21,13 +21,14 @@ class AliTRDReconstructor: public AliReconstructor
 {
 public:
   enum AliTRDsteerParam {
-    kWriteClusters   = BIT(0)
-    ,kSeeding        = BIT(1)
-    ,kSteerPID       = BIT(2)
-    ,kWriteTracklets = BIT(3)
-    ,kDriftGas       = BIT(4)
-    ,kHLT            = BIT(5)
-    ,kCosmic         = BIT(6)
+    kDigitsConversion= BIT(0)
+    ,kWriteClusters  = BIT(1)
+    ,kSeeding        = BIT(2)
+    ,kSteerPID       = BIT(3)
+    ,kWriteTracklets = BIT(4)
+    ,kDriftGas       = BIT(5)
+    ,kHLT            = BIT(6)
+    ,kCosmic         = BIT(7)
   };
   enum AliTRDReconstructorTask {
     kClusterizer = 0
@@ -66,7 +67,7 @@ public:
   static const AliTRDrecoParam* GetRecoParam() { return dynamic_cast<const AliTRDrecoParam*>(AliReconstructor::GetRecoParam(2)); }
   Int_t               GetStreamLevel(AliTRDReconstructorTask task) const    { return fStreamLevel[task];} 
   inline void         GetTCParams(Double_t *par) const;
-  virtual Bool_t      HasDigitConversion() const                   { return kFALSE;           };
+  virtual Bool_t      HasDigitConversion() const                   { return fSteerParam&kDigitsConversion;  };
   Bool_t              IsWritingClusters() const  { return fSteerParam&kWriteClusters;}
   Bool_t              IsWritingTracklets() const { return fSteerParam&kWriteTracklets;}
   Bool_t              IsHLT() const              { return fSteerParam&kHLT;}

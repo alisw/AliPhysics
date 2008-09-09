@@ -89,6 +89,7 @@ void AliTRDReconstructor::Init(){
   SetOption(GetOption());
 
   AliInfo("TRD reconstruction will use the following settings:");
+  printf("\tDigitsConversion       [dc] : %s\n", fSteerParam&kDigitsConversion?"yes":"no");
   printf("\tWrite Clusters         [cw] : %s\n", fSteerParam&kWriteClusters?"yes":"no");
   printf("\tWrite Online Tracklets [tw] : %s\n", fSteerParam&kWriteTracklets?"yes":"no");
   printf("\tDrift Gas Argon        [ar] : %s\n", fSteerParam&kDriftGas?"yes":"no");
@@ -220,6 +221,9 @@ void AliTRDReconstructor::SetOption(Option_t *opt)
     if(sopt.Contains("!cw")){ 
       fSteerParam &= ~kWriteClusters;
       continue;
+    } else if(sopt.Contains("dc")){
+      if(!sopt.Contains("!")) fSteerParam |= kDigitsConversion;
+      continue;	
     } else if(sopt.Contains("!sa")){
       fSteerParam &= ~kSeeding;
       continue;
