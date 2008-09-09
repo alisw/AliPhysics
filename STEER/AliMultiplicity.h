@@ -41,7 +41,7 @@ class AliMultiplicity : public TObject {
   Double_t GetPhiSingle(Int_t i) const { if(i>=0 && i<fNsingle) {return fPhisingle[i];}
   else {Error("GetPhisingle","Invalid cluster number %d",i); return -9999.;}}
 
-  Short_t GetNumberOfFiredChips(Int_t layer) { return fFiredChips[layer]; }
+  Short_t GetNumberOfFiredChips(Int_t layer) const { return fFiredChips[layer]; }
   void SetFiredChips(Int_t layer, Short_t firedChips) { fFiredChips[layer] = firedChips; }
 
   protected:
