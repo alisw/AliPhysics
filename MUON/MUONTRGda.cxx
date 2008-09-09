@@ -608,11 +608,10 @@ void MakePatternStore(Bool_t pedestal = true)
 
       TString tmp(gLocalMaskFileName);
       Int_t pos = tmp.First("-");
-      TString sNumber = tmp(pos+1,1);
-      Int_t currentFileNumber =  sNumber.Atoi()+1;
 
-      gLocalMaskFileName = tmp(0,pos+1) + Form("%d",currentFileNumber) + ".dat"; 
-      gTriggerIO.WriteConfig(gLocalMaskFileName, gRegionalFileName, gGlobalFileName, gLocalMasks, gRegionalMasks, gGlobalMasks);
+      gLocalMaskFileName = tmp(0,pos+1) + Form("%d",gLocalMaskFileVersion) + ".dat"; 
+      gTriggerIO.WriteConfig(gLocalMaskFileName, gRegionalFileName, 
+                           gGlobalFileName, gLocalMasks, gRegionalMasks, gGlobalMasks);
 
       WriteLastCurrentFile(gCurrentFileName);
 
