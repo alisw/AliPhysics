@@ -162,7 +162,8 @@ Int_t AliITSVertexer3D::FindTracklets(TTree *itsClusterTree, Int_t optCuts){
   branch = tR->GetBranch("ITSRecPoints");
 
   // Set values for cuts
-  Float_t xbeam=0., ybeam=0.;
+  Float_t xbeam=GetNominalPos()[0]; 
+  Float_t ybeam=GetNominalPos()[1];
   Float_t zvert=0.;
   Float_t deltaPhi=fCoarseDiffPhiCut;
   Float_t deltaR=fCoarseMaxRCut;
@@ -331,8 +332,8 @@ Int_t  AliITSVertexer3D::Prepare3DVertex(Int_t optCuts){
   // Finds the 3D vertex information using tracklets
   Int_t retcode = -1;
 
-  Float_t xbeam=0.;
-  Float_t ybeam=0.;
+  Float_t xbeam=GetNominalPos()[0];
+  Float_t ybeam=GetNominalPos()[1];
   Float_t zvert=0.;
   Float_t deltaR=fCoarseMaxRCut;
   Float_t dZmax=fZCutDiamond;

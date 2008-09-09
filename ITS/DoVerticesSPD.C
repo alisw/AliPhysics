@@ -74,26 +74,20 @@ Bool_t DoVerticesSPD(Int_t optdebug=1){
   if(optdebug)  printf("Number of events= %d\n",totev);
 
   
-//   TFile* esdFile = TFile::Open("AliESDs.root");
-//   if (!esdFile || !esdFile->IsOpen()) {
-//     Error("DoVertices", "opening ESD file %s failed", "AliESDs.root");
-//     return kFALSE;
-//   }
-//   AliESD* esd = new AliESD;
-//   TTree* tree = (TTree*) esdFile->Get("esdTree");
-//   if (!tree) {
-//     Error("DoVertices", "no ESD tree found");
-//     return kFALSE;
-//   }
-//   tree->SetBranchAddress("ESD", &esd);
-
   Double_t xnom=0.,ynom=0.;
+  
   AliITSVertexerZ *vertz = new AliITSVertexerZ(xnom,ynom);
   vertz->Init("default");
   AliITSVertexer3D *vert3d = new AliITSVertexer3D();
   vert3d->Init("default");
-  //  vert3d->SetDebug(10);
-  //  vertz->ConfigIterations(5);
+
+  /* uncomment these lines to use diamond constrain */
+//   Double_t posdiam[3]={0.03,0.1,0.};
+//   Double_t sigdiam[3]={0.01,0.01,10.0};
+//   AliESDVertex* diam=new AliESDVertex(posdiam,sigdiam);
+//   vertz->SetVtxStart(diam);
+//   vert3d->SetVtxStart(diam);
+  /* end lines to be uncommented to use diamond constrain */
 
   Int_t goodz=0,good3d=0;
 
@@ -115,27 +109,23 @@ Bool_t DoVerticesSPD(Int_t optdebug=1){
 
     Double_t dNchdy = 0.;
 
-   // loop on particles
-    for(Int_t pa=0; pa<npart; pa++) {
-      TParticle* part = (TParticle*)stack->Particle(pa);
-      Int_t pdg = part->GetPdgCode();
-      Int_t apdg = TMath::Abs(pdg);
-      Double_t energy  = part->Energy();
-      if(energy>6900.) continue; // reject incoming protons
-      Double_t pz = part->Pz();
-      Double_t y = 0.5*TMath::Log((energy+pz+1.e-13)/(energy-pz+1.e-13));
+   // loop on particles to get generated dN/dy
+    for(Int_t iPart=0; iPart<npart; iPart++) {
+      if(!stack->IsPhysicalPrimary(iPart)) continue;
+      TParticle* part = (TParticle*)stack->Particle(iPart);
+      if(part->GetPDG()->Charge() == 0) continue;
+      Double_t eta=part->Eta();
 
-
-      if(apdg!=11 && apdg!=13 && apdg!=211 && apdg!=321 && apdg!=2212) continue;      // reject secondaries
-      if(TMath::Sqrt((part->Vx()-mcVertex[0])*(part->Vx()-mcVertex[0])+(part->Vy()-mcVertex[1])*(part->Vy()-mcVertex[1]))>0.0010) continue;
-      if(TMath::Abs(y)<1.0) dNchdy += 0.5; // count 1/2 of particles in |y|<1
+      if(TMath::Abs(eta)<1.5) dNchdy+=1.; 
     }
     if(optdebug) printf(" dNch/dy = %f\n",dNchdy);
  
     TTree* cltree = ITSloader->TreeR();
 
     AliESDVertex* vtxz = vertz->FindVertexForCurrentEvent(cltree);
-    AliMultiplicity *alimult = vertz->GetMultiplicity();
+    AliESDVertex* vtx3d = vert3d->FindVertexForCurrentEvent(cltree);
+
+    AliMultiplicity *alimult = vert3d->GetMultiplicity();
     Int_t ntrklets=0,nrecp1=0;
     if(alimult) {
       nrecp1=alimult->GetNumberOfTracklets() ;
@@ -145,7 +135,8 @@ Bool_t DoVerticesSPD(Int_t optdebug=1){
       }
     }
 
-    AliESDVertex* vtx3d = vert3d->FindVertexForCurrentEvent(cltree);
+    
+
 
     TDirectory *current = gDirectory;
     fint->cd();
