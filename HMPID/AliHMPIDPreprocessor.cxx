@@ -98,20 +98,24 @@ Bool_t AliHMPIDPreprocessor::ProcDcs(TMap* pMap)
 // evaluate Environment Pressure
   
   TObjArray *pPenv=(TObjArray*)pMap->GetValue("HMP_DET/HMP_ENV/HMP_ENV_PENV.actual.value");
-  Log(Form(" Environment Pressure data              ---> %3i entries",pPenv->GetEntries()));
-  if(pPenv->GetEntries()) {
-    TIter nextPenv(pPenv);
-    TGraph *pGrPenv=new TGraph; cnt=0;
-    while((pVal=(AliDCSValue*)nextPenv())) pGrPenv->SetPoint(cnt++,pVal->GetTimeStamp(),pVal->GetFloat());        //P env
-    if( cnt==1) {
-      pGrPenv->GetPoint(0,xP,yP);
-      new TF1("Penv",Form("%f",yP),fStartTime,fEndTime);
-    } else {
-      pGrPenv->Fit(new TF1("Penv","1000+x*[0]",fStartTime,fEndTime),"Q");
-    }
-    delete pGrPenv;
-  } else {AliWarning(" No Data Points from HMP_ENV_PENV.actual.value!");return kFALSE;}
-    
+  if(!pPenv) {
+    AliWarning(" No Data Points from HMP_ENV_PENV.actual.value!");
+    return kFALSE;
+  } else {
+    Log(Form(" Environment Pressure data              ---> %3i entries",pPenv->GetEntries()));
+    if(pPenv->GetEntries()) {
+      TIter nextPenv(pPenv);
+      TGraph *pGrPenv=new TGraph; cnt=0;
+      while((pVal=(AliDCSValue*)nextPenv())) pGrPenv->SetPoint(cnt++,pVal->GetTimeStamp(),pVal->GetFloat());        //P env
+      if( cnt==1) {
+        pGrPenv->GetPoint(0,xP,yP);
+        new TF1("Penv",Form("%f",yP),fStartTime,fEndTime);
+      } else {
+        pGrPenv->Fit(new TF1("Penv","1000+x*[0]",fStartTime,fEndTime),"Q");
+      }
+      delete pGrPenv;
+    } else {AliWarning(" No Data Points from HMP_ENV_PENV.actual.value!");return kFALSE;}
+  }  
 // evaluate Pressure
   
   for(Int_t iCh=0;iCh<7;iCh++){                   
