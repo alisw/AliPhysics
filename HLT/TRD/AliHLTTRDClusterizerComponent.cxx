@@ -118,7 +118,7 @@ int AliHLTTRDClusterizerComponent::DoInit( int argc, const char** argv )
   Int_t iRawDataVersion = 2;
   int i = 0;
   char* cpErr;
-  Bool_t bWriteClusters = kTRUE;
+  Bool_t bWriteClusters = kFALSE;
   
 
   Int_t iRecoParamType = -1; // default will be the low flux
@@ -223,6 +223,11 @@ int AliHLTTRDClusterizerComponent::DoInit( int argc, const char** argv )
 	  i += 2;
 	  
 	}      
+      else if ( strcmp( argv[i], "-writeClusters" ) == 0)
+	{
+	  bWriteClusters = kTRUE;
+	  i++;
+	}
       else{
 	HLTError("Unknown option '%s'", argv[i] );
 	return EINVAL;
@@ -264,9 +269,19 @@ int AliHLTTRDClusterizerComponent::DoInit( int argc, const char** argv )
 
   fReconstructor = new AliTRDReconstructor();
   fReconstructor->SetRecoParam(fRecoParam);
-  //fReconstructor->SetStreamLevel(0, AliTRDReconstructor::kClusterizer); // default value
-  fReconstructor->SetOption("!cw,sl_cf_0");
-
+  fReconstructor->SetStreamLevel(0, AliTRDReconstructor::kClusterizer); // default value
+  if (bWriteClusters)
+    {
+    HLTInfo("Writing clusters. I.e. output is a TTree with clusters");
+  fReconstructor->SetOption("cw,sl_cf_0");
+    }
+  else
+    {
+      HLTInfo("Not witing clusters. I.e. output is a TClonesArray of clusters");
+      fReconstructor->SetOption("!cw,sl_cf_0");
+    }
+  
+  
   // init the raw data type to be used...
   // the switch here will become obsolete as soon as the data structures is fixed 
   // both: in sim and reality
@@ -367,6 +382,7 @@ int AliHLTTRDClusterizerComponent::DoEvent( const AliHLTComponentEventData& evtD
   // Process an event
   HLTDebug( "NofBlocks %lu", evtData.fBlockCnt );
   // Process an event
+  Bool_t bWriteClusters = fReconstructor->IsWritingClusters();
 
   //implement a usage of the following
   //   AliHLTUInt32_t triggerDataStructSize = trigData.fStructSize;
@@ -427,20 +443,34 @@ int AliHLTTRDClusterizerComponent::DoEvent( const AliHLTComponentEventData& evtD
 
       // put the tree into output blocks
       //fcTree->Print();
-      TClonesArray *clusterArray = fClusterizer->RecPoints();
-      fClusterizer->SetClustersOwner(kFALSE);
+      if (bWriteClusters)
+	{
+	  TTree *fcTree = fClusterizer->GetClusterTree();
+	  if (fcTree)
+	    {
+	      HLTDebug("fcTree: Entries - %i; Size - %i",fcTree->GetEntriesFast(),sizeof(fcTree));
+	      PushBack(fcTree, AliHLTTRDDefinitions::fgkClusterDataType, blocks[i].fSpecification);
+	    }
+	  fClusterizer->RecPoints()->Delete();
+	  
+	}
+      else
+	{
+	  TClonesArray *clustersArray = fClusterizer->RecPoints();
+	  fClusterizer->SetClustersOwner(kFALSE);
+
+	  if (clustersArray){
+	    clustersArray->BypassStreamer(kFALSE);
+	    HLTDebug("clustersArray: Entries - %i; Size - %i",clustersArray->GetEntriesFast(),sizeof(clustersArray));
+	    PushBack(clustersArray, AliHLTTRDDefinitions::fgkClusterDataType, blocks[i].fSpecification);
+	    clustersArray->Delete();
+	    delete clustersArray;
+	  }
+	  else 
+	    HLTWarning("Array of clusters is empty!");
+	}
+      
 	
-      if (clusterArray){
-	HLTDebug("clusterArray: Entries - %i; Size - %i",clusterArray->GetEntriesFast(),sizeof(clusterArray));
-	PushBack(clusterArray, AliHLTTRDDefinitions::fgkClusterDataType, blocks[i].fSpecification);
-      }
-      else 
-	HLTWarning("Array of clusters is empty!");
-	
-      if (clusterArray){
-	clusterArray->Delete();
-	delete clusterArray;
-      }
       
 
     }//  for ( unsigned long i = 0; i < evtData.fBlockCnt; i++ )

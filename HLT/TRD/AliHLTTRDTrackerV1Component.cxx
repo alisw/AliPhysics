@@ -40,7 +40,6 @@ using namespace std;
 #include "AliTRDcalibDB.h"
 #include "AliTRDReconstructor.h"
 #include "AliTRDtrackerV1.h"
-#include "AliTRDcluster.h"
 #include "AliTRDrecoParam.h"
 
 #include <cstdlib>
@@ -117,7 +116,7 @@ int AliHLTTRDTrackerV1Component::DoInit( int argc, const char** argv )
   Int_t iRecoParamType = -1; // default will be the low flux
   Int_t iNtimeBins = -1;     // number of time bins for the tracker to use
   Int_t iMagneticField = -1; // magnetic field: 0==OFF and 1==ON
-  Bool_t bHLTMode = kFALSE;
+  Bool_t bHLTMode = kTRUE, bWriteClusters = kFALSE;
   
   while ( i < argc )
     {
@@ -214,10 +213,21 @@ int AliHLTTRDTrackerV1Component::DoInit( int argc, const char** argv )
 	  iMagneticField = 1;
 	  i++;
 	}
-
       else if ( strcmp( argv[i], "-magnetic_field_OFF" ) == 0)
 	{
 	  iMagneticField = 0;
+	  i++;
+	}
+      else if ( strcmp( argv[i], "-writeClusters" ) == 0)
+	{
+	  bWriteClusters = kTRUE;
+	  HLTDebug("input clusters are expected to be in a TTree.");
+	  i++;
+	}
+      else if ( strcmp( argv[i], "-offlineMode" ) == 0)
+	{
+	  bHLTMode=kFALSE;
+	  HLTDebug("Using standard offline tracking.");
 	  i++;
 	}
       else {
@@ -321,17 +331,32 @@ int AliHLTTRDTrackerV1Component::DoInit( int argc, const char** argv )
     }
 
   fReconstructor = new AliTRDReconstructor();
-  // no debug stream -> no debug files! on HLT
+//   fRecoParam->SetChi2Y(.1);
+//   fRecoParam->SetChi2Z(5.);
   fReconstructor->SetRecoParam(fRecoParam);
   // write clusters [cw] = true
   // track seeding (stand alone tracking) [sa] = true
   // PID method in reconstruction (NN) [nn] = true
   // write online tracklets [tw] = false
   // drift gas [ar] = false
-  // sl_tr_0 = StreamLevel_Tracker_Level
-  fReconstructor->SetOption("sa,!cw,hlt,sl_tr_0");
+  // sl_tr_0 = StreamLevel_task_Level
+  //  fReconstructor->SetOption("sa,!cw,hlt,sl_tr_0");
+  TString recoOptions="sa,sl_cf_0";
   
-    
+  if (bWriteClusters)
+    {
+      recoOptions += ",cw";
+    } 
+  else
+    {
+      recoOptions += ",!cw";
+    }
+  if (bHLTMode)
+    recoOptions += ",hlt";
+  
+  fReconstructor->SetOption(recoOptions.Data());
+  HLTDebug("Reconstructor options are: %s",recoOptions.Data());
+  
   fGeometryFile = 0;
   fGeometryFile = TFile::Open(fGeometryFileName.c_str());
   if (fGeometryFile)
@@ -391,7 +416,8 @@ int AliHLTTRDTrackerV1Component::DoEvent( const AliHLTComponentEventData & evtDa
 					  AliHLTComponentTriggerData & trigData )
 {
   // Process an event
-  
+  Bool_t bWriteClusters = fReconstructor->IsWritingClusters();
+
   HLTDebug("Output percentage set to %lu %%", fOutputPercentage );
   HLTDebug("NofBlocks %lu", evtData.fBlockCnt );
   
@@ -425,27 +451,46 @@ int AliHLTTRDTrackerV1Component::DoEvent( const AliHLTComponentEventData & evtDa
 
   TTree *clusterTree = 0x0;
   TClonesArray *clusterArray = 0x0;
-  tobjin = (TObject *)GetFirstInputObject( AliHLTTRDDefinitions::fgkClusterDataType, "TClonesArray", ibForce);
-  HLTDebug("1stBLOCK; Pointer = 0x%x", tobjin);
-  clusterArray = (TClonesArray*)tobjin;
-
-//     while (tobjin != 0)
-//         {
-  if (clusterArray)
-    {
-      HLTDebug("CLUSTERS; Pointer to TClonesArray = 0x%x Name = %s", clusterArray, clusterArray->GetName());
-      HLTDebug("TClonesArray of clusters: nbEntries = %i", clusterArray->GetEntriesFast());
-      fTracker->LoadClusters(clusterArray);
-    }
-  else
-    {
-      HLTError("First Input Block not a TClonesArray 0x%x", tobjin);
-    }
-//      	tobjin = (TObject *)GetNextInputObject( ibForce );
-//      	HLTInfo("nextBLOCK; Pointer = 0x%x", tobjin);
-//      	clusterArray = (TClonesArray*)tobjin;
-//           }
-
+  if (bWriteClusters){
+    tobjin = (TObject *)GetFirstInputObject( AliHLTTRDDefinitions::fgkClusterDataType, "TTree", ibForce);
+    HLTDebug("1stBLOCK; Pointer = 0x%x", tobjin);
+    clusterTree = (TTree*)tobjin;
+  
+    //     while (tobjin != 0)
+    //         {
+    if (clusterTree)
+      {
+	HLTDebug("CLUSTERS; Pointer to TTree = 0x%x Name = %s", clusterTree, clusterTree->GetName());
+	HLTDebug("TTree of clusters: nbEntries = %i", clusterTree->GetEntriesFast());
+	fTracker->LoadClusters(clusterTree);
+      }
+    else
+      {
+	HLTError("First Input Block not a TTree 0x%x", tobjin);
+      }
+  }
+  else{
+    tobjin = (TObject *)GetFirstInputObject( AliHLTTRDDefinitions::fgkClusterDataType, "TClonesArray", ibForce);
+    HLTDebug("1stBLOCK; Pointer = 0x%x", tobjin);
+    clusterArray = (TClonesArray*)tobjin;
+    if (clusterArray)
+      {
+	HLTDebug("CLUSTERS; Pointer to TClonesArray = 0x%x Name = %s", clusterArray, clusterArray->GetName());
+	HLTDebug("TClonesArray of clusters: nbEntries = %i", clusterArray->GetEntriesFast());
+	Int_t nb = clusterArray->GetEntriesFast();
+	for (Int_t i=0; i<nb; i++){
+	  AliTRDcluster * cluster = (AliTRDcluster* ) clusterArray->At(i);
+	  //HLTDebug("Cluster[%i]: detector %i", i, cluster->GetDetector());
+	}
+  
+	fTracker->LoadClusters(clusterArray);
+      }
+    else
+      {
+	HLTError("First Input Block not a TClonesArray 0x%x", tobjin);
+      }
+  }
+  
   // maybe it is not so smart to create it each event? clear is enough ?
   AliESDEvent *esd = new AliESDEvent();
   esd->CreateStdContent();
@@ -464,22 +509,34 @@ int AliHLTTRDTrackerV1Component::DoEvent( const AliHLTComponentEventData & evtDa
   //   PushBack(esdFriend, AliHLTTRDDefinitions::fgkTRDSAEsdDataType);
   //   delete esdFriend;
 
-  TClonesArray* trdTracks = fTracker->GetListOfTracks();
-  
-  if (trdTracks)
+   TClonesArray* trdTracks = fTracker->GetListOfTracks();
+   
+   if (trdTracks)
     {
-      HLTDebug("Pointer to trdTracks = 0x%x, nbEntries = %i", trdTracks, trdTracks->GetEntries());
+      nTracks=trdTracks->GetEntriesFast();
+      if (nTracks>0)
+	{
+	  HLTDebug("We have an output array: pointer to trdTracks = 0x%x, nbEntries = %i", trdTracks, nTracks);
+      HLTDebug("We have an output array: pointer to trdTracks = 0x%x, nbEntries = %i", trdTracks, nTracks);
+      
+      trdTracks->BypassStreamer(kFALSE);
       PushBack(trdTracks, AliHLTTRDDefinitions::fgkTRDSATracksDataType);
+      //trdTracks->Delete();
+      //delete trdTracks;
+	}
     }
   else 
-    HLTWarning("Bad array trdTracks = 0x%x", trdTracks);
+    HLTDebug("Bad array trdTracks = 0x%x", trdTracks);
 
 
-  delete esd;
   
   //here we are deleting clusters (but not the TClonesArray itself)
   fTracker->UnloadClusters();
-  delete clusterArray;
+  delete esd;
+  if (bWriteClusters)
+    delete clusterTree;
+  else
+    delete clusterArray;
 
   HLTDebug("Event done.");
   return 0;
