@@ -88,7 +88,7 @@ UInt_t AliVZEROPreprocessor::Process(TMap* dcsAliasMap)
     
    // *************** From DAQ ******************
    
-	TString SourcesId = "CALIB";
+	TString SourcesId = "V00da_results";
 
 	TList* sourceList = GetFileSources(kDAQ, SourcesId.Data());
   	if (!sourceList)  {
