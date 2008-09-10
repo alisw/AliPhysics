@@ -3,7 +3,7 @@
 Macro to perform fits of the Laser Central electrode data
 Several fit methods implemented
 
-1. RebuildData() - transform arbitrary layeut of the Input data to the internal format
+1. RebuildData() - transform arbitrary layout of the Input data to the internal format
    StoreData();  - The data tree expected in file inname (see variable bellow)
    StoreTree();  - Modify inname and xxside and tcor in order to transform data
 
@@ -24,6 +24,41 @@ gSystem->Load("libSTAT.so");
 .L $ALICE_ROOT/TPC/CalibMacros/AnalyzeLaser.C+
 
 
+Calibration viewer variables:
+
+Result  -  resulting correction
+
+
+timeIn  -  input times
+qIn     -  input charge
+out     -  outlyers not used for fit
+tcor    -  offset specified by user before fitting
+timeF1  -  sector time local fit - plane
+timeF2  -  sector time local fit - parabola
+qF1     -  sector q local fit    - plane
+qF2     -  sector q local fit    - parabola
+// fitted values
+//
+ffit0   - base fit
+ffit1   - adding common shifts    - alpha dependendent
+ffit2   - adding opposite shifts  - alpha dependent
+//
+fGXY    -  global fit parameter - XY
+fInOut  -  global fit parameter - inner-outer sector matching
+fLX     -  global LX  dependence
+//
+
+
+//
+// Control variable - check results
+//
+//
+ffit2~-(timeIn~+tcor~):lx~  - fit value minus input time 
+
+result cosntruction:
+(timeF2~-ffit2~+fTL~+fInOut~+tcor~):Result~+tcor~
+//
+timeF2~-Result~:ffit2~-fTL~-fInOut~
 
 
 */
@@ -136,8 +171,8 @@ void MakeFit(){
   //Basic  correction
   //
   fstring+="side++";        // offset on 2 different sides              //1
-  fstring+="(1/qp)++";      // Q -threshold effect correction           //2
-  fstring+="(qp)++";        // Q -threshold effect correction           //3
+  //fstring+="(1/qp)++";      // Q -threshold effect correction           //2
+  //fstring+="(qp)++";        // Q -threshold effect correction           //3
   fstring+="(inn)++";       //  inner outer misalign   - common         //4 
   fstring+="(side*inn)++";  //                         - opposite       //5
   //
@@ -155,7 +190,7 @@ void MakeFit(){
   fstring+="(lxr^2)++";       // zr          second     - common        //15
   fstring+="(side*lxr^2)++";  //                        - opposite      //16
   //
-  TString *fit0 =stat.FitPlane(tree,"dt",fstring.Data(),"cutF&&cutCE",chi2,npoints,vec0,mat,0.90);
+  TString *fit0 =stat.FitPlane(tree,"dt",fstring.Data(),"cutF&&cutCE",chi2,npoints,vec0,mat);
   tree->SetAlias("f0",fit0->Data());
   //
   // Common "deformation" tendencies
@@ -174,7 +209,7 @@ void MakeFit(){
   fstring+="(cos(atan2(gy.fElements,gx.fElements)*3))*lxr++";
   //
 
-  TString *fit1 =stat.FitPlane(tree,"dt",fstring.Data(),"cutF&&cutCE",chi2,npoints,vec1,mat,0.95);
+  TString *fit1 =stat.FitPlane(tree,"dt",fstring.Data(),"cutF&&cutCE",chi2,npoints,vec1,mat);
   tree->SetAlias("f1",fit1->Data());
   //
   // Central electrode "deformation"
@@ -186,13 +221,13 @@ void MakeFit(){
   fstring+="(side*cos(atan2(gy.fElements,gx.fElements)*2))++";
   fstring+="(side*sin(atan2(gy.fElements,gx.fElements)*3))++";
   fstring+="(side*cos(atan2(gy.fElements,gx.fElements)*3))++";
-  //
+  // 
   fstring+="(side*sin(atan2(gy.fElements,gx.fElements)*2))*lxr++";
   fstring+="(side*cos(atan2(gy.fElements,gx.fElements)*2))*lxr++";
   fstring+="(side*sin(atan2(gy.fElements,gx.fElements)*3))*lxr++";
   fstring+="(side*cos(atan2(gy.fElements,gx.fElements)*3))*lxr++";
   
-  TString *fit2 =stat.FitPlane(tree,"dt",fstring.Data(),"cutF&&abs(dt-f0)<0.7&&cutCE",chi2,npoints,vec2,mat,0.90);
+  TString *fit2 =stat.FitPlane(tree,"dt",fstring.Data(),"cutF&&abs(dt-f0)<0.7&&cutCE",chi2,npoints,vec2,mat);
   tree->SetAlias("f2",fit2->Data());
   //
   // Extract variables
@@ -215,7 +250,7 @@ void MakeFit(){
     if (!arr->At(i)) continue;
     TString *fitstr = new TString(arr->At(i)->GetName());
     //
-    Bool_t isQ      = fitstr->Contains("qp)");
+    //Bool_t isQ      = fitstr->Contains("qp)");
     Bool_t isRot    = fitstr->Contains("sin(")+fitstr->Contains("cos(");
     Bool_t isLX     = fitstr->Contains("lxr");
     Bool_t isIn     = fitstr->Contains("inn");
@@ -230,12 +265,12 @@ void MakeFit(){
       fitGXY+=(*fitstr)+"*";
       fitGXY+=vec2[i+1];
     }
-    if (isQ){
-      //
-      fitQ+="+";
-      fitQ+=(*fitstr)+"*";
-      fitQ+=vec2[i+1];
-    }
+    //if (isQ){
+    //  //
+    //  fitQ+="+";
+    //  fitQ+=(*fitstr)+"*";
+    //  fitQ+=vec2[i+1];
+    //}
     //
     if (isLX&&!isRot&&!isIn){
       fitLX+="+";
@@ -255,7 +290,7 @@ void MakeFit(){
   tree->SetAlias("fLX",fitLX.Data());
   tree->SetAlias("fGXY",fitGXY.Data());
   tree->SetAlias("fOff",fitOff.Data());
-  tree->SetAlias("fQ",fitQ.Data());
+  //tree->SetAlias("fQ",fitQ.Data());
   tree->SetAlias("fTL",fitTL.Data());
   //
   //
@@ -267,7 +302,7 @@ void MakeFit(){
   calPadInOut  = makePad->GetCalPad("fInOut","1", "fInOut");
   calPadLX     = makePad->GetCalPad("fLX","1", "fLX");
   calPadTL     = makePad->GetCalPad("fTL","1", "fTL");
-  calPadQ      = makePad->GetCalPad("fQ","1", "fQ");
+  //calPadQ      = makePad->GetCalPad("fQ","1", "fQ");
   calPadGXY    = makePad->GetCalPad("fGXY","1", "fGXY");
   calPadOff    = makePad->GetCalPad("fOff","1", "fOff");  
 }
