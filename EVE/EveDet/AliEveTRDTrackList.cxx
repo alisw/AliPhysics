@@ -125,24 +125,25 @@ Int_t AliEveTRDTrackList::AddMacro(const Char_t* path, const Char_t* nameC)
 
   // Selection macro?
   TFunction* f = gROOT->GetGlobalFunctionWithPrototype(name, "AliTRDtrackV1*", kTRUE);
-  if (f != 0x0)
-  {
-    if (!strcmp(f->GetReturnTypeName(), "Bool_t")) 
-    {
-      hasCorrectSignature = kTRUE;
-      isSelectionMacro = kTRUE;
-    }
-  }
-  // Process macro?
-  else
-  {
-    f = gROOT->GetGlobalFunctionWithPrototype(name, "AliTRDtrackV1*, Double_t*&, Int_t&", kTRUE);
-    if (f != 0x0)
-    {
-      if (!strcmp(f->GetReturnTypeName(), "void"))
-      {
+  if (f != 0x0){
+    if (!strcmp(f->GetReturnTypeName(), "Bool_t")){
+      // Some additional check (is the parameter EXACTLY of the desired type?)
+      if (strstr(f->GetMangledName(), "AliTRDtrackV1mUsP") != 0x0) {
         hasCorrectSignature = kTRUE;
-        isSelectionMacro = kFALSE;
+        isSelectionMacro = kTRUE;
+      }
+    }
+  } else {  // Process macro?
+    f = gROOT->GetGlobalFunctionWithPrototype(name, "AliTRDtrackV1*, Double_t*&, Int_t&", kTRUE);
+    if (f != 0x0) {
+      if (!strcmp(f->GetReturnTypeName(), "void")) {
+        // Some additional check (are the parameters EXACTLY of the desired type?)
+        if (strstr(f->GetMangledName(), "AliTRDtrackV1mUsP") != 0x0 &&
+            strstr(f->GetMangledName(), "Double_tmUaNsP") != 0x0 &&
+            strstr(f->GetMangledName(), "Int_taNsP") != 0x0){
+          hasCorrectSignature = kTRUE;
+          isSelectionMacro = kFALSE;
+        }
       }
     }
   }

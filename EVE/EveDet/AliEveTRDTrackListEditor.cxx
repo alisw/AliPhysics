@@ -5,6 +5,7 @@
 #include <TGFileDialog.h>
 #include <TFile.h>
 #include <TGButton.h>
+#include <TGedEditor.h>     ////// MAYBE THIS CAN BE REMOVED
 #include <TGTextEntry.h>
 #include <TGTextView.h>
 #include <TGListBox.h>
@@ -124,11 +125,11 @@ AliEveTRDTrackListEditor::AliEveTRDTrackListEditor(const TGWindow* p, Int_t widt
   fFileInfo->fMultipleSelection = kTRUE;
 
   // Set focus on "Apply macros" tab
-  //this->TGCompositeFrame::ShowFrame((TGFrame*)fMainFrame);
   //fMainFrame->TGWindow::RequestFocus();
   //Update();
 }
 
+//______________________________________________________
 AliEveTRDTrackListEditor::~AliEveTRDTrackListEditor()
 {
   if (fFileTypes != 0)
@@ -144,6 +145,7 @@ AliEveTRDTrackListEditor::~AliEveTRDTrackListEditor()
   }
 }
 
+//______________________________________________________
 void AliEveTRDTrackListEditor::AddMacro(const Char_t* path, const Char_t* name)
 {
   Int_t result = fM->AddMacro(path, name);
@@ -174,6 +176,7 @@ void AliEveTRDTrackListEditor::AddMacro(const Char_t* path, const Char_t* name)
   }
 }
 
+//______________________________________________________
 void AliEveTRDTrackListEditor::ApplyMacros()
 {
   // First apply the selection macros
@@ -206,19 +209,18 @@ void AliEveTRDTrackListEditor::ApplyMacros()
   }
     
   TTree* t = 0;
-  for (Int_t i = 0; i < iterator->GetEntries(); i++)
-  {
+  for (Int_t i = 0; i < iterator->GetEntries(); i++) {
     t = (TTree*)file->Get(Form("TrackData%d", i));
-    if (t != 0)
-    {
+    if (t != 0) {
       gEve->AddCanvasTab(Form("Macro%d", i));
       t->Draw(Form("Macro%d", i), "1");
  
       delete t;
       t = 0;
-    }
-    else
-    {
+
+      // ONLY DISPLAY ONE MACRO (the first one possible) -> Remove the next line to display all
+      break;
+    } else {
       Error("Apply macros", Form("No data for macro%d found!", i));
       new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Error - Apply macros", 
                    Form("No data for macro%d found!", i), kMBIconExclamation, kMBOk);  
@@ -232,10 +234,14 @@ void AliEveTRDTrackListEditor::ApplyMacros()
   iterator = 0;  
 
   // Update histogram tab (data has to be reloaded)
+  //fHistoFrame->TGWindow::RequestFocus();
+  //fGedEditor->TGCompositeFrame::ShowFrame(fHistoFrame);
   SetModel(fM);
   Update();
 }
 
+
+//______________________________________________________
 void AliEveTRDTrackListEditor::BrowseMacros()
 {
   new TGFileDialog(gClient->GetRoot(), GetMainFrame(), kFDOpen, fFileInfo);
@@ -265,6 +271,7 @@ void AliEveTRDTrackListEditor::BrowseMacros()
   //if (fileInfo->fFileNamesList == 0)  fileInfo->fFileNamesList = new TList();
 }
 
+//______________________________________________________
 void AliEveTRDTrackListEditor::DrawHistos()
 {
   Int_t nHistograms = GetNSelectedHistograms();
@@ -379,6 +386,7 @@ void AliEveTRDTrackListEditor::DrawHistos()
   file = 0;
 }
 
+//______________________________________________________
 Int_t AliEveTRDTrackListEditor::GetNSelectedHistograms()
 {
   Int_t count = 0;
@@ -391,6 +399,7 @@ Int_t AliEveTRDTrackListEditor::GetNSelectedHistograms()
   return count;
 }
 
+//______________________________________________________
 void AliEveTRDTrackListEditor::HandleMacroPathSet()
 {
   if (strlen(fteField->GetText()) != 0)
@@ -446,6 +455,7 @@ void AliEveTRDTrackListEditor::HandleMacroPathSet()
   }
 }
 
+//______________________________________________________
 void AliEveTRDTrackListEditor::RemoveMacros()
 {
   TList* iterator = new TList();
@@ -465,6 +475,8 @@ void AliEveTRDTrackListEditor::RemoveMacros()
   iterator = 0;
 }
 
+
+//______________________________________________________
 void AliEveTRDTrackListEditor::SetModel(TObject* obj)
 {
   // Set model object
@@ -474,6 +486,7 @@ void AliEveTRDTrackListEditor::SetModel(TObject* obj)
   UpdateHistoList();  
 }
 
+//______________________________________________________
 void AliEveTRDTrackListEditor::UpdateHistoList()
 {
   fHistoSubFrame->TGCompositeFrame::RemoveAll();
@@ -495,6 +508,8 @@ void AliEveTRDTrackListEditor::UpdateHistoList()
   }  
 }
 
+
+//______________________________________________________
 void AliEveTRDTrackListEditor::UpdateMacroList()
 {
   ftlMacroList->RemoveAll();
