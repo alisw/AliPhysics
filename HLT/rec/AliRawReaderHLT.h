@@ -45,6 +45,14 @@ class AliHLTOUTHandler;
  * part of the HLTOUT data stream. The AliRawReaderHLT provides redirection of
  * those data blocks.
  *
+ * The AliRawReaderHLT needs the original AliRawReader in order to get the
+ * data. Furthermore, a string containing the detector specification defines
+ * which data should be read from the HLT stream and which from the original
+ * reader.
+ *
+ * @note An HLTOUT handler must be available for the HLTOUT data blocks to
+ * be redirected. Please read @ref sec_alirawreaderhlt_module carefully.
+ *
  * @section sec_alirawreaderhlt_usage   Selection of the HLTOUT data stream
  * The input data of a detector can be replaced by the corresponding HLT
  * data by calling the <tt>AliReconstruction::SetUseHLTData("...")</tt>, e.g.
@@ -53,6 +61,31 @@ class AliHLTOUTHandler;
  *    rec.SetUseHLTData("TPC TRD");
  * </pre>
  * will replace the input of TPC and TRD.
+ *
+ * The reader can be used directly. In order to avoid library dependencies
+ * downwards, the methed AliRawHLTManager::CreateRawReaderHLT is available
+ * in the RAW package.
+ * <pre>
+ * {
+ *   AliRawReader* orgReader=AliRawReader::Create("raw.root");
+ *   AliRawReader* rawreader=AliRawHLTManager::CreateRawReaderHLT(orgReader, "ITSSDD");
+ *   rawreader->Select("ITSSDD");
+ *   int count=0;
+ *   while (rawreader->NextEvent()) {
+ *     cout << "scanning event " << count++ << endl;
+ *     UChar_t* pSrc=NULL;
+ *     while (rawreader->ReadNextData(pSrc)) {
+ *       cout << "  equipment: " << rawreader->GetEquipmentId() << endl;
+ *     }
+ *   }
+ * }
+ * </pre>
+ *
+ * @section sec_alirawreaderhlt_detectorids  Detector selection
+ * The constructor gets a detector selection string as parameter and initializes
+ * the redirection according to that. Detector Ids are according to AliDAQ.
+ * Please note the special strings for for ITS and MUON sub-detectors, ITSSPD,
+ * ITSSDD, ITSSSD, and MUONTRK and MUONTRG respectively.
  *
  * @section sec_alirawreaderhlt_module  Module implementation
  * In order to determine the equipment id for the data block, the HLT module
@@ -64,7 +97,9 @@ class AliHLTOUTHandler;
  *  virtual int ProcessData(AliHLTOUT* pData);
  * </pre>
  * which returns the equipment id and eventually decodes data to be retrieved
- * by calling AliHLTOUTHandler::GetProcessedData().
+ * by calling AliHLTOUTHandler::GetProcessedData(). If the equipment id of the
+ * DDL has been sent as data specification of the block, the AliHLTOUTHandlerEquId
+ * can be used directly.
  *
  * Secondly, the AliHLTModuleAgent implementation of the module has to create
  * the handler for the data blocks. Depending on the data type and specification,
@@ -77,6 +112,7 @@ class AliHLTOUTHandler;
  *   AliHLTOUTHandler* AliHLTModuleAgent::GetOutputHandler(AliHLTComponentDataType dt, 
  *                                                         AliHLTUInt32_t spec);
  * </pre>
+ * See section @ref tut_alirawreaderhlt for sample implementation.
  *
  * @ingroup alihlt_aliroot_reconstruction
  */
