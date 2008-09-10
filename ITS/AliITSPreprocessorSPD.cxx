@@ -323,7 +323,7 @@ UInt_t AliITSPreprocessorSPD::Process(TMap* /*dcsAliasMap*/)
     // If new noisy pixels were found: Update calibration objects
     if (nrNewNoisy>0) {
       for (Int_t module=0; module<240; module++) {
-	((AliITSCalibrationSPD*) spdEntryNoisy->At(module)) -> SetNrBad( handOld->GetNrNoisy(module) );
+	((AliITSCalibrationSPD*) spdEntryNoisy->At(module)) -> SetNrBadSingle( handOld->GetNrNoisy(module) );
 	((AliITSCalibrationSPD*) spdEntryNoisy->At(module)) -> SetBadList( handOld->GetNoisyArray(module) );
       }
       // Store the new calibration objects in OCDB
@@ -380,7 +380,7 @@ UInt_t AliITSPreprocessorSPD::Process(TMap* /*dcsAliasMap*/)
     handOld->ReadSilentFromFiles();
     for (UInt_t module=0; module<240; module++) {
       AliITSCalibrationSPD* calibSPD = (AliITSCalibrationSPD*) spdEntryDead->At(module);
-      calibSPD->SetNrBad( handOld->GetNrDead(module) );
+      calibSPD->SetNrBadSingle( handOld->GetNrDead(module) );
       calibSPD->SetBadList( handOld->GetDeadArray(module) );
       for (UInt_t chipIndex=0; chipIndex<5; chipIndex++) {
 	UInt_t eq,hs,chip,col,row;
