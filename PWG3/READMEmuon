@@ -1,40 +1,13 @@
 ===================================================
-  Code to include the muon information in the 
-  creation of the standard AOD from the ESD
-  Roberta ARNALDI, Enrico SCOMPARIN Torino
+  ESDMuonFilter task for filling the muon information in the AOD from the ESD
+  Roberta ARNALDI, Torino
 ---------------------------------------------------------------
 
-Code to copy the muon information from the ESD to the standard AOD. 
-
-1) AnalysisTrainMuonLocal.C --> macro to run locally the AliAnalysisTaskESDMuonFilter. 
-                                It creates a standard AOD from the ESD
-2) AliAnalysisTaskESDMuonFilter.h  --> analysis task to copy the muon information from the ESD to the standard AOD
-3) AliAnalysisTaskESDMuonFilter.cxx --> analysis task to copy the muon information from the ESD to the standard AOD
+1) AnalysisTrainMuonLocal.C --> macro to run locally the AliAnalysisTaskESDMuonFilter
+2) AliAnalysisTaskESDMuonFilter.h  --> analysis task to produce the Muon AOD from ESD
+3) AliAnalysisTaskESDMuonFilter.cxx --> analysis task to produce the Muon AOD from ESD
 4) libPWG3muon.pkg
 5) PWG3muonLinkDef.h 
-
-===================================================
-  Creation of the MUON-AOD from the standard AOD
-  Roberta ARNALDI, Enrico SCOMPARIN Torino
----------------------------------------------------------------
-
-Code to produce a muon-AOD, i.e. a replica of the standard AOD containing only events where 
-at least one muon is present
-
-1) AnalysisTrainFromStandardToMuonAODLocal.C --> macro to produce the MUON-AOD (it runs locally)
-2) AliAnalysisTaskFromStandardToMuonAOD.h  --> analysis task to replicate the AOD content for interesting events
-3) AliAnalysisTaskFromStandardToMuonAOD.cxx --> analysis task to replicate the AOD content for interesting events
-4) libPWG3muon.pkg
-5) PWG3muonLinkDef.h 
-
-- The input files are the ESD (used only for tag creation) and the standard AOD.
-  Tags files are created from all the ESD/AOD files placed in a directory,  
-  given as an argument to the macro, and in its subdirectories.
-- The selection of the muon events is based on the AOD tags.
-- The contents of the MUON-AOD can be defined by the user in the AnalysisTrainFromStandardToMuonAODLocal.C
-  macro with some settings as
-  SetNeedsTracksBranchReplication(), SetNeedsVerticesBranchReplication() 
-  (defined in STEER/AliAODHandler.h)...
 
 ===================================================
   Calculation of the LUT 
@@ -114,3 +87,48 @@ The macro creates the file MUON.TriggerEfficiencyMap.root
 aliroot
 AliMUONTriggerEfficiencyCells effCells("MUON.TriggerEfficiencyMap.root")
 effCells.DisplayEfficiency()
+
+===================================================
+ Analysis task for checking the consistency of ESD and AOD filling and contents.
+ Mercedes LOPEZ NORIEGA, Orsay
+----------------------------------------------------------------
+
+Purpose:check the consistency between the ESDs and the AOD.
+
+The task works locally and on the grid, there are two macros depending where
+you want to run
+
+Files:
+AliAnalysisTaskAODvsESD.cxx   -source files of the analysis task
+AliAnalysisTaskAODvsESD.h
+
+AnalysisTrainMuonComp.C       - macro for analysis on the grid
+AnalysisTrainMuonCompLocal.C  - macro for local analysis
+
+To run the check:
+1. Copy the following packages in the current working directory
+  - STEERBase.par
+  - ESD.par
+  - AOD.par
+  - ANALYSIS.par
+  - ANALYSISalice.par
+  - PWG3muon.par
+
+2. To run locally:
+  root
+  .x AnalysisTrainMuonCompLocal.C
+
+  by default the macro searches for a tag file of ESDs in the 
+  working directory
+
+3. To run on the grid:
+  root
+  .x AnalysisTrainMuonComp.C
+
+  by default the macro searches for a wn.xml in the current directory, with the list
+  of grid files to analyse.
+
+4. Display results:
+The macro creates the file AODvsESDoutput.root
+It contains an Ntuple from the ESDs and Ntuple from the AODs and an inv. mass histo 
+for each case
