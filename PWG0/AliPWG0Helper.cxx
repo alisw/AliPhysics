@@ -79,6 +79,31 @@ Bool_t AliPWG0Helper::IsEventTriggered(ULong64_t triggerMask, Trigger trigger)
 }
 
 //____________________________________________________________________
+const Bool_t AliPWG0Helper::TestVertex(const AliESDVertex* vertex, AnalysisMode analysisMode, Bool_t debug)
+{
+    // Checks if a vertex meets the needed quality criteria
+
+  Float_t requiredZResolution = -1;
+  if (analysisMode == kSPD || analysisMode == kTPCITS)
+  {
+    requiredZResolution = 0.1;
+  }
+  else if (analysisMode == kTPC)
+    requiredZResolution = 10.;
+
+  // check resolution
+  Double_t zRes = vertex->GetZRes();
+
+  if (zRes > requiredZResolution) {
+    if (debug)
+      Printf("AliPWG0Helper::TestVertex: Resolution too poor %f (required: %f", zRes, requiredZResolution);
+    return kFALSE;
+  }
+
+  return kTRUE;
+}
+
+//____________________________________________________________________
 const AliESDVertex* AliPWG0Helper::GetVertex(AliESDEvent* aEsd, AnalysisMode analysisMode, Bool_t debug,Bool_t bRedoTPC)
 {
   // Get the vertex from the ESD and returns it if the vertex is valid
@@ -87,31 +112,28 @@ const AliESDVertex* AliPWG0Helper::GetVertex(AliESDEvent* aEsd, AnalysisMode ana
   // also the quality criteria that are applied)
 
   const AliESDVertex* vertex = 0;
-  Float_t requiredZResolution = -1;
   if (analysisMode == kSPD || analysisMode == kTPCITS)
   {
     vertex = aEsd->GetPrimaryVertexSPD();
-    requiredZResolution = 0.1;
     if (debug)
       Printf("AliPWG0Helper::GetVertex: Returning SPD vertex");
   }
-  else if (analysisMode == kTPC) 
+  else if (analysisMode == kTPC)
   {
     if(bRedoTPC){
-      Double_t kBz = aEsd->GetMagneticField(); 
+      Double_t kBz = aEsd->GetMagneticField();
       AliVertexerTracks vertexer(kBz);
-      vertexer.SetTPCMode(); 
+      vertexer.SetTPCMode();
       AliESDVertex *vTPC = vertexer.FindPrimaryVertex(aEsd);
       aEsd->SetPrimaryVertexTPC(vTPC);
       for (Int_t i=0; i<aEsd->GetNumberOfTracks(); i++) {
 	AliESDtrack *t = aEsd->GetTrack(i);
 	t->RelateToVertexTPC(vTPC, kBz, kVeryBig);
-      } 
+      }
       delete vTPC;
     }
 
     vertex = aEsd->GetPrimaryVertexTPC();
-    requiredZResolution = 10.;
     if (debug)
       Printf("AliPWG0Helper::GetVertex: Returning vertex from tracks");
   }
@@ -129,17 +151,15 @@ const AliESDVertex* AliPWG0Helper::GetVertex(AliESDEvent* aEsd, AnalysisMode ana
     if (debug){
       Printf("AliPWG0Helper::GetVertex: NContributors() <= 0: %d",vertex->GetNContributors());
       Printf("AliPWG0Helper::GetVertex: NIndices(): %d",vertex->GetNIndices());
-
+      vertex->Print();
     }
     return 0;
   }
 
   // check resolution
   Double_t zRes = vertex->GetZRes();
-
-  if (zRes == 0 || zRes > requiredZResolution) {
-    if (debug)
-      Printf("AliPWG0Helper::GetVertex: Resolution too poor %f (required: %f", zRes, requiredZResolution);
+  if (zRes == 0) {
+    Printf("AliPWG0Helper::GetVertex: UNEXPECTED: resolution is 0.");
     return 0;
   }
 

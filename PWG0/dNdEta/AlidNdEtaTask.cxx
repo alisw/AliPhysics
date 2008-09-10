@@ -59,8 +59,8 @@ AlidNdEtaTask::AlidNdEtaTask(const char* opt) :
   fdNdEtaAnalysisTr(0),
   fdNdEtaAnalysisTrVtx(0),
   fdNdEtaAnalysisTracks(0),
-  fVertex(0),
   fPartPt(0),
+  fVertex(0),
   fPhi(0),
   fEtaPhi(0),
   fDeltaPhi(0)
@@ -163,7 +163,7 @@ void AlidNdEtaTask::CreateOutputObjects()
     fOutput->Add(fPartEta[i]);
   }
 
-  fEvents = new TH1F("dndeta_check_vertex", "dndeta_check_vertex", 160, -40, 40);
+  fEvents = new TH1F("dndeta_check_vertex", "dndeta_check_vertex", 800, -40, 40);
   fOutput->Add(fEvents);
 
   fVertexResolution = new TH1F("dndeta_vertex_resolution_z", "dndeta_vertex_resolution_z", 1000, 0, 10);
@@ -177,6 +177,9 @@ void AlidNdEtaTask::CreateOutputObjects()
 
   if (fAnalysisMode == AliPWG0Helper::kSPD)
     fDeltaPhi = new TH1F("fDeltaPhi", "fDeltaPhi;#Delta #phi;Entries", 18*50, -3.14, 3.14);
+
+  fVertex = new TH3F("vertex_check", "vertex_check", 100, -1, 1, 100, -1, 1, 100, -30, 30);
+  fOutput->Add(fVertex);
 
   if (fReadMC)
   {
@@ -194,9 +197,6 @@ void AlidNdEtaTask::CreateOutputObjects()
 
     fdNdEtaAnalysisTracks = new dNdEtaAnalysis("dndetaTracks", "dndetaTracks", fAnalysisMode);
     fOutput->Add(fdNdEtaAnalysisTracks);
-
-    fVertex = new TH3F("vertex_check", "vertex_check", 50, -50, 50, 50, -50, 50, 50, -50, 50);
-    fOutput->Add(fVertex);
 
     fPartPt =  new TH1F("dndeta_check_pt", "dndeta_check_pt", 1000, 0, 10);
     fPartPt->Sumw2();
@@ -218,6 +218,9 @@ void AlidNdEtaTask::Exec(Option_t*)
   Bool_t eventTriggered = kFALSE;
   const AliESDVertex* vtxESD = 0;
 
+  // post the data already here
+  PostData(0, fOutput);
+
   // ESD analysis
   if (fESD)
   {
@@ -228,18 +231,20 @@ void AlidNdEtaTask::Exec(Option_t*)
     vtxESD = AliPWG0Helper::GetVertex(fESD, fAnalysisMode);
 
     Double_t vtx[3];
-    if (vtxESD) {
-      vtxESD->GetXYZ(vtx);
-    }
-    else
-      Printf("No vertex");
 
     // fill z vertex resolution
     if (vtxESD)
+    {
       fVertexResolution->Fill(vtxESD->GetZRes());
+      fVertex->Fill(vtxESD->GetXv(), vtxESD->GetYv(), vtxESD->GetZv());
 
-    // post the data already here
-    PostData(0, fOutput);
+      if (AliPWG0Helper::TestVertex(vtxESD, fAnalysisMode))
+      {
+          vtxESD->GetXYZ(vtx);
+      }
+      else
+        vtxESD = 0;
+    }
 
     // needed for syst. studies
     AliStack* stack = 0;
@@ -336,13 +341,29 @@ void AlidNdEtaTask::Exec(Option_t*)
 
         fDeltaPhi->Fill(deltaPhi);
 
-        // TODO implement fUseMCKine here
+        Int_t label = mult->GetLabel(i, 0);
+        Float_t eta = mult->GetEta(i);
 
-        etaArr[inputCount] = mult->GetEta(i);
-        labelArr[inputCount] = mult->GetLabel(i, 0);
+        if (fUseMCKine)
+        {
+          if (label > 0)
+          {
+            TParticle* particle = stack->Particle(label);
+            eta = particle->Eta();
+          }
+          else
+            Printf("WARNING: fUseMCKine set without fOnlyPrimaries and no label found");
+        }
+
+        etaArr[inputCount] = eta;
+        labelArr[inputCount] = label;
         ptArr[inputCount] = 0; // no pt for tracklets
         ++inputCount;
       }
+
+      // fill multiplicity in pt bin
+      for (Int_t i=0; i<inputCount; ++i)
+        ptArr[i] = inputCount;
 
       Printf("Accepted %d tracklets", inputCount);
     }
@@ -465,7 +486,7 @@ void AlidNdEtaTask::Exec(Option_t*)
               continue;
             }
 
-            fdNdEtaAnalysisTracks->FillTrack(vtxMC[2], particle->Eta(), particle->Pt());
+            fdNdEtaAnalysisTracks->FillTrack(vtxMC[2], particle->Eta(), (fAnalysisMode == AliPWG0Helper::kSPD) ? inputCount : particle->Pt());
           } // end of track loop
 
           // for event count per vertex
@@ -530,6 +551,7 @@ void AlidNdEtaTask::Exec(Option_t*)
 
     Int_t nAcceptedParticles = 0;
 
+    // count particles first, then fill
     for (Int_t iMc = 0; iMc < nPrim; ++iMc)
     {
       if (!stack->IsPhysicalPrimary(iMc))
@@ -546,27 +568,43 @@ void AlidNdEtaTask::Exec(Option_t*)
 
       //AliDebug(AliLog::kDebug+1, Form("Accepted primary %d, unique ID: %d", iMc, particle->GetUniqueID()));
       Float_t eta = particle->Eta();
-      Float_t pt = particle->Pt();
 
        // make a rough eta cut (so that nAcceptedParticles is not too far off the true measured value (NB: this histograms are only gathered for comparison))
       if (TMath::Abs(eta) < 1.5) // && pt > 0.3)
         nAcceptedParticles++;
+    }
 
-      fdNdEtaAnalysis->FillTrack(vtxMC[2], eta, pt);
-      fVertex->Fill(particle->Vx(), particle->Vy(), particle->Vz());
+    for (Int_t iMc = 0; iMc < nPrim; ++iMc)
+    {
+      if (!stack->IsPhysicalPrimary(iMc))
+        continue;
+
+      //Printf("Getting particle %d", iMc);
+      TParticle* particle = stack->Particle(iMc);
+
+      if (!particle)
+        continue;
+
+      if (particle->GetPDG()->Charge() == 0)
+        continue;
+
+      Float_t eta = particle->Eta();
+      Float_t thirdDim = (fAnalysisMode == AliPWG0Helper::kSPD) ? nAcceptedParticles : particle->Pt();
+
+      fdNdEtaAnalysis->FillTrack(vtxMC[2], eta, thirdDim);
 
       if (processType != AliPWG0Helper::kSD )
-        fdNdEtaAnalysisNSD->FillTrack(vtxMC[2], eta, pt);
+        fdNdEtaAnalysisNSD->FillTrack(vtxMC[2], eta, thirdDim);
 
       if (eventTriggered)
       {
-        fdNdEtaAnalysisTr->FillTrack(vtxMC[2], eta, pt);
+        fdNdEtaAnalysisTr->FillTrack(vtxMC[2], eta, thirdDim);
         if (vtxESD)
-          fdNdEtaAnalysisTrVtx->FillTrack(vtxMC[2], eta, pt);
+          fdNdEtaAnalysisTrVtx->FillTrack(vtxMC[2], eta, thirdDim);
       }
 
       if (TMath::Abs(eta) < 0.8)
-        fPartPt->Fill(pt);
+        fPartPt->Fill(particle->Pt());
     }
 
     fdNdEtaAnalysis->FillEvent(vtxMC[2], nAcceptedParticles);
@@ -612,85 +650,90 @@ void AlidNdEtaTask::Terminate(Option_t *)
   if (!fdNdEtaAnalysisESD)
   {
     AliDebug(AliLog::kError, "ERROR: fdNdEtaAnalysisESD not available");
-    return;
   }
-
-  if (fMult && fMultVtx)
+  else
   {
-    new TCanvas;
-    fMult->Draw();
-    fMultVtx->SetLineColor(2);
-    fMultVtx->Draw("SAME");
-  }
-
-  if (fPartEta[0])
-  {
-    Int_t events1 = (Int_t) fEvents->Integral(fEvents->GetXaxis()->FindBin(-19.9), fEvents->GetXaxis()->FindBin(-0.001));
-    Int_t events2 = (Int_t) fEvents->Integral(fEvents->GetXaxis()->FindBin(0.001), fEvents->GetXaxis()->FindBin(19.9));
-
-    Printf("%d events with vertex used", events1 + events2);
-
-    if (events1 > 0 && events2 > 0)
+    if (fMult && fMultVtx)
     {
-    fPartEta[0]->Scale(1.0 / (events1 + events2));
-    fPartEta[1]->Scale(1.0 / events1);
-    fPartEta[2]->Scale(1.0 / events2);
+      new TCanvas;
+      fMult->Draw();
+      fMultVtx->SetLineColor(2);
+      fMultVtx->Draw("SAME");
+    }
+
+    if (fPartEta[0])
+    {
+      Int_t events1 = (Int_t) fEvents->Integral(fEvents->GetXaxis()->FindBin(-19.9), fEvents->GetXaxis()->FindBin(-0.001));
+      Int_t events2 = (Int_t) fEvents->Integral(fEvents->GetXaxis()->FindBin(0.001), fEvents->GetXaxis()->FindBin(19.9));
+
+      Printf("%d events with vertex used", events1 + events2);
+
+      if (events1 > 0 && events2 > 0)
+      {
+        fPartEta[0]->Scale(1.0 / (events1 + events2));
+        fPartEta[1]->Scale(1.0 / events1);
+        fPartEta[2]->Scale(1.0 / events2);
+
+        for (Int_t i=0; i<3; ++i)
+          fPartEta[i]->Scale(1.0 / fPartEta[i]->GetBinWidth(1));
+
+        new TCanvas("control", "control", 500, 500);
+        for (Int_t i=0; i<3; ++i)
+        {
+          fPartEta[i]->SetLineColor(i+1);
+          fPartEta[i]->Draw((i==0) ? "" : "SAME");
+        }
+      }
+    }
+
+    if (fEvents)
+    {
+        new TCanvas("control3", "control3", 500, 500);
+        fEvents->Draw();
+    }
+
+    TFile* fout = new TFile("analysis_esd_raw.root", "RECREATE");
+
+    if (fdNdEtaAnalysisESD)
+      fdNdEtaAnalysisESD->SaveHistograms();
+
+    if (fEsdTrackCuts)
+      fEsdTrackCuts->SaveHistograms("esd_tracks_cuts");
+
+    if (fMult)
+      fMult->Write();
+
+    if (fMultVtx)
+      fMultVtx->Write();
 
     for (Int_t i=0; i<3; ++i)
-      fPartEta[i]->Scale(1.0 / fPartEta[i]->GetBinWidth(1));
+      if (fPartEta[i])
+        fPartEta[i]->Write();
 
-    new TCanvas("control", "control", 500, 500);
-    for (Int_t i=0; i<3; ++i)
-    {
-      fPartEta[i]->SetLineColor(i+1);
-      fPartEta[i]->Draw((i==0) ? "" : "SAME");
-    }
-    }
+    if (fEvents)
+      fEvents->Write();
+
+    if (fVertexResolution)
+      fVertexResolution->Write();
+
+    if (fDeltaPhi)
+      fDeltaPhi->Write();
+
+    if (fPhi)
+      fPhi->Write();
+
+    if (fEtaPhi)
+      fEtaPhi->Write();
+
+    fVertex = dynamic_cast<TH3F*> (fOutput->FindObject("vertex_check"));
+    if (fVertex)
+      fVertex->Write();
+
+    fout->Write();
+    fout->Close();
+
+    Printf("Writting result to analysis_esd_raw.root");
   }
-
-  if (fEvents)
-  {
-    new TCanvas("control3", "control3", 500, 500);
-    fEvents->Draw();
-  }
-
-  TFile* fout = new TFile("analysis_esd_raw.root", "RECREATE");
-
-  if (fdNdEtaAnalysisESD)
-    fdNdEtaAnalysisESD->SaveHistograms();
-
-  if (fEsdTrackCuts)
-    fEsdTrackCuts->SaveHistograms("esd_tracks_cuts");
-
-  if (fMult)
-    fMult->Write();
-
-  if (fMultVtx)
-    fMultVtx->Write();
-
-  for (Int_t i=0; i<3; ++i)
-    if (fPartEta[i])
-      fPartEta[i]->Write();
-
-  if (fEvents)
-    fEvents->Write();
-
-  if (fVertexResolution)
-    fVertexResolution->Write();
-
-  if (fDeltaPhi)
-    fDeltaPhi->Write();
-
-  if (fPhi)
-    fPhi->Write();
-
-  if (fEtaPhi)
-    fEtaPhi->Write();
-
-  fout->Write();
-  fout->Close();
-
-  Printf("Writting result to analysis_esd_raw.root");
 
   if (fReadMC)
   {
@@ -702,7 +745,6 @@ void AlidNdEtaTask::Terminate(Option_t *)
       fdNdEtaAnalysisTrVtx = dynamic_cast<dNdEtaAnalysis*> (fOutput->FindObject("dndetaTrVtx"));
       fdNdEtaAnalysisTracks = dynamic_cast<dNdEtaAnalysis*> (fOutput->FindObject("dndetaTracks"));
       fPartPt = dynamic_cast<TH1F*> (fOutput->FindObject("dndeta_check_pt"));
-      fVertex = dynamic_cast<TH3F*> (fOutput->FindObject("vertex_check"));
     }
 
     if (!fdNdEtaAnalysis || !fdNdEtaAnalysisTr || !fdNdEtaAnalysisTrVtx || !fPartPt)
@@ -721,7 +763,7 @@ void AlidNdEtaTask::Terminate(Option_t *)
     fPartPt->Scale(1.0/events);
     fPartPt->Scale(1.0/fPartPt->GetBinWidth(1));
 
-    fout = new TFile("analysis_mc.root","RECREATE");
+    TFile* fout = new TFile("analysis_mc.root","RECREATE");
 
     fdNdEtaAnalysis->SaveHistograms();
     fdNdEtaAnalysisNSD->SaveHistograms();
@@ -731,9 +773,6 @@ void AlidNdEtaTask::Terminate(Option_t *)
 
     if (fPartPt)
       fPartPt->Write();
-
-    if (fVertex)
-      fVertex->Write();
 
     fout->Write();
     fout->Close();

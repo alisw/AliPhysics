@@ -118,6 +118,48 @@ void DrawOverview(const char* fileName = "correction_map.root", const char* dirN
   dNdEtaCorrection->DrawOverview();
 }
 
+void PrintInfo(const char* fileName = "correction_map.root", const char* dirName = "dndeta_correction")
+{
+  loadlibs();
+  if (!TFile::Open(fileName))
+    return;
+
+  AlidNdEtaCorrection* dNdEtaCorrection = new AlidNdEtaCorrection(dirName, dirName);
+  if (!dNdEtaCorrection->LoadHistograms())
+    return;
+
+  dNdEtaCorrection->Finish();
+
+  for (Int_t i=AlidNdEtaCorrection::kTrack2Particle; i<=AlidNdEtaCorrection::kND; i++)
+  {
+    Printf("Correction %d", i);
+    dNdEtaCorrection->GetCorrection(i)->PrintInfo(0.3);
+  }
+}
+
+void PrintAllInfos()
+{
+  PrintInfo();
+
+  Printf("RAW ESD");
+  TFile::Open("analysis_esd_raw.root");
+  dNdEtaAnalysis* fdNdEtaAnalysis = new dNdEtaAnalysis("dndeta", "dndeta");
+  fdNdEtaAnalysis->LoadHistograms("fdNdEtaAnalysisESD");
+  fdNdEtaAnalysis->GetData()->PrintInfo(0.3);
+
+  const Int_t num = 3;
+  const char* results[] = { "dndeta", "dndetaTr", "dndetaTrVtx" };
+
+  TFile::Open("analysis_esd.root");
+  for (Int_t i=0; i<num; i++)
+  {
+    Printf("CORRECTED %s", results[i]);
+    dNdEtaAnalysis* fdNdEtaAnalysis = new dNdEtaAnalysis("dndeta", "dndeta");
+    fdNdEtaAnalysis->LoadHistograms(results[i]);
+    fdNdEtaAnalysis->GetData()->PrintInfo(0.3);
+  }
+}  
+
 void ComparedNdEta(const char* ESDfolder = "dndeta", const char* MCfolder = "dndeta", const char* esdFile = "analysis_esd.root", const char* mcFile = "analysis_mc.root")
 {
   gSystem->Load("libPWG0base");
@@ -455,6 +497,7 @@ void dNdEta(Bool_t onlyESD = kFALSE, Bool_t save = kTRUE)
   DrawdNdEtaRatio(histESD, histMC, "full_inelastic", etaPlotLimit);
   DrawdNdEtaRatio(histESDMB, histMCTr, "triggered", etaPlotLimit);
   DrawdNdEtaRatio(histESDMBVtx, histMCTrVtx, "triggered_vertex", etaPlotLimit);
+  DrawdNdEtaRatio(histESDnsd, histMCnsd, "NSD", etaPlotLimit);
 
   new TCanvas;
   dummy2->DrawCopy();
@@ -480,6 +523,7 @@ void dNdEta(Bool_t onlyESD = kFALSE, Bool_t save = kTRUE)
   Printf("Average deviation in |eta| < 0.8 is %.2f %%", average * 100);
 
   PrintIntegratedDeviation(histMC, histESD, "all events");
+  PrintIntegratedDeviation(histMCnsd, histESDnsd, "all events (NSD)");
   PrintIntegratedDeviation(histMCTr, histESDMB, "triggered");
   PrintIntegratedDeviation(histMCTrVtx, histESDMBVtx, "trigger, vertex");
   PrintIntegratedDeviation(histMCPtCut, histESDNoPt, "all events (no pt corr)");
@@ -1184,6 +1228,44 @@ void CompareTrack2Particle1D(Float_t upperPtLimit = 9.9)
   }
 }
 
+void CompareTrack2Particle1D(const char* file1, const char* file2, Float_t upperPtLimit = 9.9)
+{
+  loadlibs();
+
+  const char* folderName = "dndeta_correction";
+
+  c = new TCanvas("CompareTrack2Particle1D", "CompareTrack2Particle1D", 1200, 400);
+  c->Divide(3, 1);
+
+  for (Int_t fileId = 0; fileId < 2; fileId++)
+  {
+    const char* file = ((fileId == 0) ? file1 : file2);
+    Correction1DCreatePlots(file, folderName, upperPtLimit, 1);
+
+    TH1* corr[3];
+    corr[0] = dynamic_cast<TH1*> (gROOT->FindObject("generated_x_div_measured_x"));
+    corr[1] = dynamic_cast<TH1*> (gROOT->FindObject("generated_y_div_measured_y"));
+    corr[2] = dynamic_cast<TH1*> (gROOT->FindObject("generated_z_div_measured_z"));
+    /*corr[0] = dynamic_cast<TH1*> (gROOT->FindObject("generated_x"))->Clone(Form("hist_x_%d", fileId));
+    corr[1] = dynamic_cast<TH1*> (gROOT->FindObject("generated_y"))->Clone(Form("hist_y_%d", fileId));
+    corr[2] = dynamic_cast<TH1*> (gROOT->FindObject("generated_z"))->Clone(Form("hist_z_%d", fileId));*/
+
+    for (Int_t i=0; i<3; i++)
+    {
+      c->cd(i+1);
+      InitPad();
+      corr[i]->GetYaxis()->SetRangeUser(0.8, 2);
+      corr[i]->SetLineColor(fileId+1);
+      corr[i]->DrawCopy((fileId == 0) ? "" : "SAME");
+    }
+  }
+
+  return;
+
+  c->SaveAs(Form("%s.gif", canvas->GetName()));
+  c->SaveAs(Form("%s.eps", canvas->GetName()));
+}
+
 void Track2Particle2DCreatePlots(const char* fileName = "correction_map.root")
 {
   TFile::Open(fileName);
@@ -1246,8 +1328,8 @@ TCanvas* Track2Particle2D(const char* fileName = "correction_map.root", const ch
   InitPadCOLZ();
   corrZY->Draw("COLZ");
 
-  canvas->SaveAs(Form("spd_corr_track2particle_%d.gif", gMax));
-  canvas->SaveAs(Form("spd_corr_track2particle_%d.eps", gMax));
+  canvas->SaveAs(Form("corr_track2particle_%d.gif", gMax));
+  canvas->SaveAs(Form("corr_track2particle_%d.eps", gMax));
 
   return canvas;
 }
@@ -1975,4 +2057,46 @@ void ShowOnlyAccepted(TH2* input, const char* fileName = "correction_map.root", 
 
 
   input->Multiply(proj);
+}
+
+void MakeGaussianProfile(const char* histName = "fVertexCorrelation", Bool_t subtractMean = kFALSE)
+{
+    TFile::Open("correction_map.root");
+
+    TH2* hist2d = (TH2*) gFile->Get(histName);
+    hist2d->Sumw2();
+
+    TH1* result = hist2d->ProjectionX("result");
+    result->GetYaxis()->SetTitle(hist2d->GetYaxis()->GetTitle());
+    result->Reset();
+
+    for (Int_t x=1; x<hist2d->GetNbinsX(); ++x)
+    {
+        hist = hist2d->ProjectionY(Form("temp_%d", x), x, x);
+        if (hist->GetEntries() == 0)
+            continue;
+        if (hist->Fit("gaus") == 0)
+        {
+            func = hist->GetFunction("gaus");
+            mean = func->GetParameter(1);
+            error = func->GetParError(1);
+
+            if (subtractMean)
+                mean = hist2d->GetXaxis()->GetBinCenter(x) - mean;
+
+            result->SetBinContent(x, mean);
+            result->SetBinError(x, error);
+
+            if (x % 10 == 0)
+            {
+                new TCanvas;
+                ((TH1*) hist->Clone())->DrawCopy();
+            }
+        }
+        //break;
+    }
+
+    new TCanvas;
+    result->GetYaxis()->SetRangeUser(-0.2, 0.2);
+    result->Draw();
 }

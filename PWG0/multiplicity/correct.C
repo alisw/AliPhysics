@@ -133,8 +133,8 @@ void CompareChi2Bayesian(Int_t histID = 2, const char* chi2File = "chi2.root", c
   histB->SetLineColor(2);
   histRAW->SetLineColor(3);
 
-  histC->DrawCopy();
-  histB->DrawCopy("SAME");
+  histC->DrawCopy("HISTE");
+  histB->DrawCopy("HISTE SAME");
   histRAW->DrawCopy("SAME");
 
   legend = new TLegend(0.2, 0.2, 0.4, 0.4);
@@ -144,6 +144,7 @@ void CompareChi2Bayesian(Int_t histID = 2, const char* chi2File = "chi2.root", c
   legend->AddEntry(histB, label2);
   legend->AddEntry(histRAW, "raw ESD");
 
+  histGraph = 0;
   if (simpleCorrect > 0)
   {
     graph = new TGraph;
@@ -189,7 +190,7 @@ void CompareChi2Bayesian(Int_t histID = 2, const char* chi2File = "chi2.root", c
     histMC->Sumw2();
     histMC->Scale(1.0 / histMC->Integral());
 
-    histMC->Draw("SAME");
+    histMC->Draw("HISTE SAME");
     histMC->SetLineColor(4);
     legend->AddEntry(histMC, "MC");
   }
@@ -216,12 +217,18 @@ void CompareChi2Bayesian(Int_t histID = 2, const char* chi2File = "chi2.root", c
     {
       histC->SetBinContent(bin, histC->GetBinContent(bin) / histMC->GetBinContent(bin));
       histB->SetBinContent(bin, histB->GetBinContent(bin) / histMC->GetBinContent(bin));
-      histGraph->SetBinContent(bin, histGraph->GetBinContent(bin) / histMC->GetBinContent(bin));
+
+      /*
+      if (histGraph)
+      {
+        histGraph->SetBinContent(bin, histGraph->GetBinContent(bin) / histMC->GetBinContent(bin));
+        histGraph->SetBinError(bin, 0);
+      }
+      */
 
       // TODO errors?
       histC->SetBinError(bin, 0);
       histB->SetBinError(bin, 0);
-      histGraph->SetBinError(bin, 0);
     }
   }
 
@@ -230,7 +237,10 @@ void CompareChi2Bayesian(Int_t histID = 2, const char* chi2File = "chi2.root", c
 
   histC->Draw("HIST");
   histB->Draw("HIST SAME");
-  histGraph->Draw("HIST SAME");
+  /*
+  if (histGraph)
+    histGraph->Draw("HIST SAME");
+  */
 
   /*
   if (simpleCorrect > 0)

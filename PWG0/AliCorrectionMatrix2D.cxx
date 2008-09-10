@@ -162,10 +162,15 @@ TH1* AliCorrectionMatrix2D::Get1DCorrectionHistogram(Char_t* opt, Float_t min, F
 
   gene1D->SetName(Form("corr_1D_%s",fName.Data()));
   gene1D->SetTitle(Form("corr_1D_%s",fName.Data()));
+ 
+  TH1* divided = (TH1*) gene1D->Clone(Form("corr_1D_%s",fName.Data()));
+  divided->Reset();
+ 
+  divided->Divide(gene1D, meas1D, 1, 1, "B");
 
-  gene1D->Divide(gene1D, meas1D, 1, 1, "B");
+  Printf("%p %p", gene1D, meas1D);
   
-  return (TH1F*)gene1D;   
+  return (TH1F*)divided;   
 }
 
 //____________________________________________________________________

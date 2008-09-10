@@ -30,9 +30,9 @@
 
 #endif
 
-const char* correctionFile = "multiplicityMC_2M.root";
+const char* correctionFile = "multiplicity.root";
 const char* measuredFile   = "multiplicityMC_1M_3.root";
-Int_t etaRange = 3;
+Int_t etaRange = 2;
 Int_t displayRange = 200; // axis range
 Int_t ratioRange = 151;   // range to calculate difference
 Int_t longDisplayRange = 200;

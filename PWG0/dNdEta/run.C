@@ -1,9 +1,9 @@
 void Load(const char* taskName, Bool_t debug)
 {
   TString compileTaskName;
-  compileTaskName.Form("%s.cxx+", taskName);
+  compileTaskName.Form("%s.cxx++", taskName);
   if (debug)
-    compileTaskName += "+g";
+    compileTaskName += "g";
 
   if (gProof) {
     gProof->Load(compileTaskName);
@@ -120,16 +120,17 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
     if (mc)
       task->SetReadMC();
 
+    // syst. error flags
     //task->SetUseMCVertex();
     //task->SetUseMCKine();
     //task->SetOnlyPrimaries();
-  
+
     task->SetTrigger(trigger);
     task->SetAnalysisMode(analysisMode);
     task->SetTrackCuts(esdTrackCuts);
 
     mgr->AddTask(task);
- 
+
     // Attach input
     mgr->ConnectInput(task, 0, cInput);
 
@@ -141,6 +142,8 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
   {
     Load("AlidNdEtaCorrectionTask", aDebug);
     task2 = new AlidNdEtaCorrectionTask(option);
+
+    // syst. error flags
     //task2->SetOnlyPrimaries();
 
     task2->SetTrigger(trigger);
@@ -148,10 +151,10 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
     task2->SetTrackCuts(esdTrackCuts);
 
     mgr->AddTask(task2);
-    
+
     // Attach input
     mgr->ConnectInput(task2, 0, cInput);
-    
+
     // Attach output
     cOutput = mgr->CreateContainer("cOutput2", TList::Class(), AliAnalysisManager::kOutputContainer);
     mgr->ConnectOutput(task2, 0, cOutput);
@@ -183,10 +186,18 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
 
     mgr->StartAnalysis("proof", data, nRuns, offset);
   }
+  else if (aProof == 3)
+  {
+    ROOT->ProcessLine(".L CreateChainFromDataSet.C");
+    ds = gProof->GetDataSet(data);
+    chain = CreateChainFromDataSet(ds);
+    mgr->StartAnalysis("local", chain, nRuns, offset);
+  }
   else
   {
     // Create chain of input files
     gROOT->LoadMacro("../CreateESDChain.C");
+
     chain = CreateESDChain(data, nRuns, offset);
     //chain = CreateChain("TE", data, nRuns, offset);
 
