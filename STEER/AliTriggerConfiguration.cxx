@@ -582,8 +582,16 @@ Bool_t AliTriggerConfiguration::ProcessConfigurationLine(const char* line, Int_t
      case 3:
        // Read logical functions and descriptors
        if (ntokens < 2) {
-	 AliError(Form("Invalid trigger descriptor syntax (%s)!",strLine.Data()));
-	 return kFALSE;
+	 if ((((TObjString*)tokens->At(0))->String().CompareTo("EMPTY") == 0) ||
+	     (((TObjString*)tokens->At(0))->String().CompareTo("DEMPTY") == 0)) {
+	   AddDescriptor(((TObjString*)tokens->At(0))->String(),
+			 strLine.ReplaceAll(((TObjString*)tokens->At(0))->String(),""));
+	   break;
+	 }
+	 else {
+	   AliError(Form("Invalid trigger descriptor syntax (%s)!",strLine.Data()));
+	   return kFALSE;
+	 }
        }
        if (((TObjString*)tokens->At(0))->String().BeginsWith("l0f")) {
 	 // function
