@@ -1,4 +1,4 @@
-TEveElementList* trd_friend_tracks(TEveElement *cont = 0)
+void trd_friend_tracks(TEveElement *cont = 0)
 {
 
   // Link data containers
@@ -15,7 +15,7 @@ TEveElementList* trd_friend_tracks(TEveElement *cont = 0)
   AliTRDReconstructor *reco = new AliTRDReconstructor();
   reco->SetOption("!nn");
 
-  TEveElementList *tracks = new TEveElementList("TRD Tracks");
+  AliEveTRDTrackList *tracks = new AliEveTRDTrackList("TRD Tracks");
   for (Int_t n=0; n<esd->GetNumberOfTracks(); n++){
     AliESDtrack* esdTrack = esd->GetTrack(n);
     AliESDfriendTrack *friendTrack = eventESDfriend->GetTrack(n);
@@ -32,10 +32,9 @@ TEveElementList* trd_friend_tracks(TEveElement *cont = 0)
 	
   tracks->SetTitle(Form("Tracks %d", tracks->NumChildren()));
   tracks->StampObjProps();
-
   gEve->AddElement(tracks, cont);
 
   gEve->Redraw3D();
   
-  return tracks;
+  return;
 }

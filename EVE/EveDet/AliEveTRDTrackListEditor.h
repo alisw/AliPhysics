@@ -2,35 +2,35 @@
 #define AliEveTRDTrackListEditor_H
 
 #include <TGedFrame.h>
-#include <TGFileDialog.h>
-#include <TGButton.h>
-#include <TGTextEntry.h>
-#include <TGTextView.h>
-#include <TGListBox.h>
-#include <TGMsgBox.h>
-#include <TGLabel.h>
-#include <TG3DLine.h>
-#include <TEveMacro.h>
-#include <TEveManager.h>
-#include <TObjString.h>
-#include <TSystem.h>
-#include <TROOT.h>
-#include <AliTRDtrackV1.h>
-#include <EveDet/AliEveTRDTrackList.h>
+
+class AliEveTRDTrack;
+class AliEveTRDTrackList;
+class TFile;
+class TGCheckButton;
+class TGFileInfo;
+class TGHorizontal3DLine;
+class TGHorizontalFrame;
+class TGLabel;
+class TGListBox;
+class TGTextButton;
+class TGTextEntry;
+class TGVerticalFrame;
+class TTree;
 
 class AliEveTRDTrackListEditor: public TGedFrame
 {
 public:
-  AliEveTRDTrackListEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30,
-		           UInt_t options=kChildFrame, Pixel_t back=GetDefaultFrameBackground());
-  virtual ~AliEveTRDTrackListEditor() {};
+  AliEveTRDTrackListEditor(const TGWindow* p = 0, Int_t width = 170, Int_t height = 30,
+		                       UInt_t options = kChildFrame, Pixel_t back = GetDefaultFrameBackground());
+  virtual ~AliEveTRDTrackListEditor();
 
   virtual void SetModel(TObject* obj);
 
   void ApplyMacros();               // Apply macros
   void BrowseMacros();              // Browse macros
-  void HandleMacroPathSet();        // Handle "macro path set"-event 
-  void RemoveMacros();              // Remove macros
+  void DrawHistos();                // Draw histograms
+  void HandleMacroPathSet();        // Handles the "macro path set"-event 
+  void RemoveMacros();              // Removes the selected macros from the lists
 
 protected:
   AliEveTRDTrackList* fM;           // Model object.
@@ -39,35 +39,42 @@ private:
   AliEveTRDTrackListEditor(const AliEveTRDTrackListEditor&);            // Not implemented
   AliEveTRDTrackListEditor& operator=(const AliEveTRDTrackListEditor&); // Not implemented 
 
-  void AddMacro(const Char_t* Entryame, const Char_t* name,     // Add macro to the macro list
-                const Char_t* pathname);
-  void UpdateMacroList();                                       // Updates the macro list
+  void AddMacro(const Char_t* path, const Char_t* name);  // Adds macro to the macro list
+  Int_t GetNSelectedHistograms();                         // Get the number of selected histograms for drawing
+  void UpdateHistoList();                                 // Updates the histogram list
+  void UpdateMacroList();                                 // Updates the macro list
 
 
-  TGVerticalFrame*  fMainFrame;             // Top frame for macro functionality.
-  TGVerticalFrame*  fMemberFrame;           // Top frame for member list
-  TGHorizontalFrame* fBrowseFrame;          // For searching macros
+  TGVerticalFrame*  fMainFrame;              // Top frame for macro functionality.
+  TGVerticalFrame*  fHistoFrame;             // Top frame for the histogram stuff
+  TGVerticalFrame*  fHistoSubFrame;          // Frame for the histogram buttons themselves
+  TGHorizontalFrame* fBrowseFrame;           // For searching macros
 
-  TGTextButton*   bBrowse;                  // Browse button
-  TGTextButton*   bApplyMacros;             // Apply macros button
-  TGTextButton*   bRemoveMacros;            // Remove macros button
-  TGTextEntry*    teField;                  // Text field to insert macro path manually
-  TGTextView*     tvMemberList;             // To display the list of members
-  TGListBox*      tlMacroList;              // To display the list of (process) macros
-  TGListBox*      tlMacroSelList;           // To display the list of (selection) macros
+  TGTextButton*   fbBrowse;                  // "Browse" button
+  TGTextButton*   fbApplyMacros;             // "Apply macros" button
+  TGTextButton*   fbRemoveMacros;            // "Remove macros" button
+  TGTextButton*   fbDrawHisto;               // "Draw histogram" button
+  TGTextEntry*    fteField;                  // Text field to insert macro path manually
+  TGListBox*      ftlMacroList;              // To display the list of (process) macros
+  TGListBox*      ftlMacroSelList;           // To display the list of (selection) macros
 
-  TGFileInfo*     fileInfo;                 // Holds data about opening macros
-  Char_t**    fileTypes;                    // File types (for macros)
+  TGFileInfo*     fFileInfo;                 // Holds data about opening macros
+  Char_t**        fFileTypes;                // File types (for macros)
 
   // Some labels
   TGLabel* fLabel1;
   TGLabel* fLabel2;
   TGLabel* fLabel3;
+  TGLabel* fLabel4;
      
   // Some lines
   TGHorizontal3DLine *fLine1;
   TGHorizontal3DLine *fLine2;
   TGHorizontal3DLine *fLine3;
+  TGHorizontal3DLine *fLine4;
+
+  // Check buttons for histograms
+  TGCheckButton** fCheckButtons;
 
   ClassDef(AliEveTRDTrackListEditor, 0);    // Editor for AliEveTRDTrackList.
 };
