@@ -29,6 +29,8 @@ class AliMultiplicityTask : public AliAnalysisTask {
     void SetPtSpectrum(TH1* hist) { fPtSpectrum = hist; }
 
     void SetAnalysisMode(AliPWG0Helper::AnalysisMode mode) { fAnalysisMode = mode; }
+    void SetTrigger(AliPWG0Helper::Trigger trigger) { fTrigger = trigger; }
+
     void SetReadMC(Bool_t flag = kTRUE) { fReadMC = flag; }
     void SetUseMCVertex(Bool_t flag = kTRUE) { fUseMCVertex = flag; }
 
@@ -37,6 +39,8 @@ class AliMultiplicityTask : public AliAnalysisTask {
 
     TString fOption;      // option string
     AliPWG0Helper::AnalysisMode fAnalysisMode; // detector that is used for analysis
+    AliPWG0Helper::Trigger fTrigger;           // trigger that is used
+
     Bool_t  fReadMC;       // if true reads MC data (to build correlation maps)
     Bool_t  fUseMCVertex;  // the MC vtx is used instead of the ESD vertex (for syst. check)
 
