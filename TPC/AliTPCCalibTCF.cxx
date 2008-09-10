@@ -43,6 +43,9 @@
 
 #include "AliTPCAltroEmulator.h"
 
+#include "AliTPCmapper.h"
+#include <fstream>
+
 ClassImp(AliTPCCalibTCF)
   
 AliTPCCalibTCF::AliTPCCalibTCF() :
@@ -184,27 +187,22 @@ void AliTPCCalibTCF::ProcessRawEvent(AliTPCRawStream *rawStream, const char *nam
       // this pad always gave a useless signal, probably induced by the supply
       // voltage of the gate signal (date:2008-Aug-07) 
       if(sector==51 && row==95 && pad==0) {
-	rawStream->Dump();
 	continue;
       }
 
       // only process pulses of pads with correct address
       if(sector<0 || sector+1 > Int_t(AliTPCROC::Instance()->GetNSector())) {
-	rawStream->Dump();
 	continue;
       }
       if(row<0 || row+1 > Int_t(AliTPCROC::Instance()->GetNRows(sector))) {
-	rawStream->Dump();
 	continue;
       }
       if(pad<0 || pad+1 > Int_t(AliTPCROC::Instance()->GetNPads(sector,row))) {
-	rawStream->Dump();
 	continue;
       }
       
       if (time>prevTime) {
         printf("Wrong time: %d %d\n",rawStream->GetTime(),prevTime);
-        rawStream->Dump();
 	continue;
       } else {
 	// still the same pad, save signal to temporary histogram
@@ -230,6 +228,8 @@ void AliTPCCalibTCF::ProcessRawEvent(AliTPCRawStream *rawStream, const char *nam
       for (Int_t ipos = 0; ipos<6; ipos++) {
 	// before the pulse
 	tempRMSHis->Fill(tempHis->GetBinContent(first+ipos));
+      }
+      for (Int_t ipos = 0; ipos<20; ipos++) {
 	// at the end to get rid of pulses with serious baseline fluctuations
 	tempRMSHis->Fill(tempHis->GetBinContent(last-ipos)); 
       }
@@ -375,6 +375,7 @@ void AliTPCCalibTCF::MergeHistoPerSector(const char *nameFileIn) {
       printf("merging status: \t %d pads out of %d \n",iHist, nHist);
     }
   }
+
   printf("merging done ...\n");
   fileIn.Close();
   fileOut.Close();
@@ -414,12 +415,12 @@ void AliTPCCalibTCF::AnalyzeRootFile(const char *nameFileIn, Int_t minNumPulse, 
   while ((key = (TKey *) next())) { // loop over histograms
     ++iHist;
     if(iHist < histStart || iHist  > histEnd) {continue;}
-    printf("Analyze histogramm %d out of %d\n",iHist,nHist);
+   
     hisIn = (TH1F*)fileIn.Get(key->GetName()); // copy object to memory
 
     Int_t numPulse = (Int_t)hisIn->GetBinContent(1); 
     if ( numPulse >= minNumPulse ) {
-    
+      printf("Analyze histogram %d out of %d\n",iHist,nHist);
       Double_t* coefP = new Double_t[3];
       Double_t* coefZ = new Double_t[3];
       for(Int_t i = 0; i < 3; i++){
@@ -436,8 +437,10 @@ void AliTPCCalibTCF::AnalyzeRootFile(const char *nameFileIn, Int_t minNumPulse, 
       }
       coefP->~Double_t();
       coefZ->~Double_t();
+    } else {
+      printf("Skip histogram %d out of %d | not enough accumulated pulses\n",iHist,nHist);
     }
-
+    
   }
 
   fileIn.Close();
@@ -516,7 +519,7 @@ Int_t AliTPCCalibTCF::AnalyzePulse(TH1F *hisIn, Double_t *coefZ, Double_t *coefP
 
 
 //____________________________________________________________________________
-void AliTPCCalibTCF::TestTCFonRootFile(const char *nameFileIn, const char *nameFileTCF, Int_t plotFlag, Int_t lowKey, Int_t upKey)
+void AliTPCCalibTCF::TestTCFonRootFile(const char *nameFileIn, const char *nameFileTCF,  Int_t minNumPulse, Int_t plotFlag, Int_t lowKey, Int_t upKey)
 {
   //
   // Performs quality parameters evaluation of the calculated TCF parameters in 
@@ -559,7 +562,7 @@ void AliTPCCalibTCF::TestTCFonRootFile(const char *nameFileIn, const char *nameF
 
     // find the correct TCF parameter according to the his infos (first 4 bins)
     Int_t nPulse = FindCorTCFparam(hisIn, nameFileTCF, coefZ, coefP); 
-    if (nPulse) {  // doing the TCF quality analysis 
+    if (nPulse>=minNumPulse) {  // doing the TCF quality analysis 
       Double_t *quVal = GetQualityOfTCF(hisIn,coefZ,coefP, plotFlag);
       Int_t sector = (Int_t)hisIn->GetBinContent(2);
       Int_t row = (Int_t)hisIn->GetBinContent(3);
@@ -586,7 +589,7 @@ void AliTPCCalibTCF::TestTCFonRootFile(const char *nameFileIn, const char *nameF
 
 
 //_____________________________________________________________________________
-void AliTPCCalibTCF::TestTCFonRawFile(const char *nameRawFile, const char *nameFileOut, const char *nameFileTCF, Int_t plotFlag) {
+void AliTPCCalibTCF::TestTCFonRawFile(const char *nameRawFile, const char *nameFileOut, const char *nameFileTCF, Int_t minNumPulse, Int_t plotFlag) {
   //
   // Performs quality parameters evaluation of the calculated TCF parameters in 
   // the file 'nameFileTCF' for every proper pulse (according to given thresholds)
@@ -653,27 +656,22 @@ void AliTPCCalibTCF::TestTCFonRawFile(const char *nameRawFile, const char *nameF
 	// this pad always gave a useless signal, probably induced by the supply
 	// voltage of the gate signal (date:2008-Aug-07)
 	if(sector==51 && row==95 && pad==0) {
-	  rawStream.Dump();
 	  continue;
 	}
 
 	// only process pulses of pads with correct address
 	if(sector<0 || sector+1 > Int_t(AliTPCROC::Instance()->GetNSector())) {
-	  rawStream.Dump();
 	  continue;
 	}
 	if(row<0 || row+1 > Int_t(AliTPCROC::Instance()->GetNRows(sector))) {
-	  rawStream.Dump();
 	  continue;
 	}
 	if(pad<0 || pad+1 > Int_t(AliTPCROC::Instance()->GetNPads(sector,row))) {
-	  rawStream.Dump();
 	  continue;
 	}
 
 	if (time>prevTime) {
 	  printf("Wrong time: %d %d\n",rawStream.GetTime(),prevTime);
-	  rawStream.Dump();
 	  continue;
 	} else {
 	  // still the same pad, save signal to temporary histogram
@@ -696,8 +694,10 @@ void AliTPCCalibTCF::TestTCFonRawFile(const char *nameRawFile, const char *nameF
 	for (Int_t ipos = 0; ipos<6; ipos++) {
 	  // before the pulse
 	  tempRMSHis->Fill(tempHis->GetBinContent(first+ipos));
+	}
+	for (Int_t ipos = 0; ipos<20; ipos++) {
 	  // at the end to get rid of pulses with serious baseline fluctuations
-	  tempRMSHis->Fill(tempHis->GetBinContent(last-ipos));
+	  tempRMSHis->Fill(tempHis->GetBinContent(last-ipos)); 
 	}
 	Double_t baseline = tempRMSHis->GetMean();
 	Double_t rms = tempRMSHis->GetRMS();
@@ -750,7 +750,7 @@ void AliTPCCalibTCF::TestTCFonRawFile(const char *nameRawFile, const char *nameF
 	  // (first 4 bins)
 	  Int_t nPulse = FindCorTCFparam(his, nameFileTCF, coefZ, coefP);
 
-	  if (nPulse) {  // Parameters found - doing the TCF quality analysis
+	  if (nPulse>=minNumPulse) {  // Parameters found - doing the TCF quality analysis
 	    Double_t *quVal = GetQualityOfTCF(his,coefZ,coefP, plotFlag);
 	    qualityTuple->Fill(sector,row,pad,nPulse,quVal[0],quVal[1],quVal[2],quVal[3],quVal[4],quVal[5]);
 	    quVal->~Double_t();
@@ -786,12 +786,83 @@ void AliTPCCalibTCF::TestTCFonRawFile(const char *nameRawFile, const char *nameF
   
 }
 
+//____________________________________________________________________________
+TH2F *AliTPCCalibTCF::PlotOccupSummary2Dhist(const char *nameFileIn, Int_t side) {
+  //
+  // Plots the number of summed pulses per pad on a given TPC side
+  // 'nameFileIn': root-file created with the Process function
+  //
+
+  TFile fileIn(nameFileIn,"READ");
+  TH1F *his;
+  TKey *key;
+  TIter next(fileIn.GetListOfKeys());
+
+  TH2F * his2D = new TH2F("his2D","his2D", 250,-250,250,250,-250,250);
+  AliTPCROC * roc  = AliTPCROC::Instance();
+
+  Int_t nHist=fileIn.GetNkeys();
+  Int_t iHist = 0;
+  Float_t xyz[3];
+
+  Int_t binx = 0;
+  Int_t biny = 0;
+
+  Int_t npulse = 0;
+  Int_t sec = 0;
+  Int_t row = 0;
+  Int_t pad = 0;
+
+  while ((key = (TKey *) next())) { // loop over histograms within the file
+    iHist+=1;
+    his = (TH1F*)fileIn.Get(key->GetName()); // copy object to memory
+
+    npulse = (Int_t)his->GetBinContent(1);
+    sec = (Int_t)his->GetBinContent(2);
+    row = (Int_t)his->GetBinContent(3);
+    pad = (Int_t)his->GetBinContent(4);
+
+    if (side==0 && sec%36>=18) continue;
+    if (side>0 && sec%36<18) continue;
+
+    if (row==-1 & pad==-1) { // summed pulses per sector
+      // fill all pad with this values
+      for (UInt_t row=0; row<roc->GetNRows(sec); row++) {
+        for (UInt_t pad=0; pad<roc->GetNPads(sec,row); pad++) {
+          roc->GetPositionGlobal(sec,row,pad,xyz);
+          binx = 1+TMath::Nint((xyz[0]+250.)*0.5);
+          biny = 1+TMath::Nint((xyz[1]+250.)*0.5);
+          his2D->SetBinContent(binx,biny,npulse);
+        }
+      }
+    } else {
+      roc->GetPositionGlobal(sec,row,pad,xyz);
+      binx = 1+TMath::Nint((xyz[0]+250.)*0.5);
+      biny = 1+TMath::Nint((xyz[1]+250.)*0.5);
+
+      his2D->SetBinContent(binx,biny,npulse);
+    }
+    if (iHist%100==0){ printf("hist %d out of %d\n",iHist,nHist);}
+  }
+  his2D->SetXTitle("x (cm)");
+  his2D->SetYTitle("y (cm)");
+
+  if (!side) {
+    gPad->SetTitle("A side");
+  } else {
+    gPad->SetTitle("C side");
+  }
+
+  his2D->DrawCopy("colz");
+  return his2D;
+}
+
 
 //____________________________________________________________________________
-TNtuple *AliTPCCalibTCF::PlotOccupSummary(const char *nameFile, Int_t nPulseMin) {
+void AliTPCCalibTCF::PlotOccupSummary(const char *nameFile, Int_t side, Int_t nPulseMin) {
   //
   // Plots the number of summed pulses per pad above a given minimum at the 
-  // pad position
+  // pad position at a given TPC side
   // 'nameFile': root-file created with the Process function
   //
 
@@ -801,17 +872,28 @@ TNtuple *AliTPCCalibTCF::PlotOccupSummary(const char *nameFile, Int_t nPulseMin)
   TKey *key;
   TIter next( file->GetListOfKeys() );
 
+
+  char nameFileOut[100];
+  sprintf(nameFileOut,"Occup-%s",nameFile);
+  TFile fileOut(nameFileOut,"RECREATE");
+  fileOut.cd();
+
   TNtuple *ntuple = new TNtuple("ntuple","ntuple","x:y:z:npulse");
+  //  ntuple->SetDirectory(0); // force to be memory resistent
 
-  Int_t nPads = 0;
+  Int_t nHist=file->GetNkeys();
+  Int_t iHist = 0;
   while ((key = (TKey *) next())) { // loop over histograms within the file
-
+    iHist+=1;
     his = (TH1F*)file->Get(key->GetName()); // copy object to memory
 
     Int_t npulse = (Int_t)his->GetBinContent(1);
     Int_t sec = (Int_t)his->GetBinContent(2);
     Int_t row = (Int_t)his->GetBinContent(3);
     Int_t pad = (Int_t)his->GetBinContent(4);
+
+    //    if (side==0 && sec%36>=18) continue;
+    //    if (side>0 && sec%36<18) continue;
 
     if (row==-1 & pad==-1) { // summed pulses per sector
       row = 40; pad = 40;    // set to approx middle row for better plot
@@ -822,38 +904,33 @@ TNtuple *AliTPCCalibTCF::PlotOccupSummary(const char *nameFile, Int_t nPulseMin)
     AliTPCROC::Instance()->GetPositionGlobal(sec,row,pad,pos); 
     if (npulse>=nPulseMin) { 
       ntuple->Fill(pos[0],pos[1],pos[2],npulse);
-      printf("%d collected pulses in sector %d row %d pad %d\n",npulse,sec,row,pad);
+      if (iHist%100==0){ printf("hist %d out of %d\n",iHist,nHist);}
     }
     pos->~Float_t();
-    nPads++;
   }
  
-  TCanvas *c1 = new TCanvas("TCanvas","Number of pulses found",1000,500);
-  c1->Divide(2,1);
-  char cSel[100];
-  gStyle->SetPalette(1);
-  gStyle->SetLabelOffset(-0.03,"Z");
 
-  if (nPads<72) { // pulse per pad
+  if (iHist<72) { // pulse per sector
     ntuple->SetMarkerStyle(8);
     ntuple->SetMarkerSize(4);
-  } else {        // pulse per sector
+  } else {        // pulse per Pad
     ntuple->SetMarkerStyle(7);
   }
 
-  c1->cd(1);
-  sprintf(cSel,"z>0&&npulse>=%d",nPulseMin);
-  ntuple->Draw("y:x:npulse",cSel,"colz");
-  gPad->SetTitle("A side");
+  char cSel[100];
+  if (!side) {
+    sprintf(cSel,"z>0&&npulse>=%d",nPulseMin);
+    ntuple->Draw("y:x:npulse",cSel,"colz");
+    gPad->SetTitle("A side");
+  } else {
+    sprintf(cSel,"z<0&&npulse>=%d",nPulseMin);
+    ntuple->Draw("y:x:npulse",cSel,"colz");
+    gPad->SetTitle("C side");
+  }
 
-  c1->cd(2);
-  sprintf(cSel,"z<0&&npulse>=%d",nPulseMin);
-  ntuple->Draw("y:x:npulse",cSel,"colz");
-  gPad->SetTitle("C side");
-
+  ntuple->Write();
+  fileOut.Close();
   file->Close();
-  return ntuple;
-
 }
 
 //____________________________________________________________________________
@@ -877,7 +954,7 @@ void AliTPCCalibTCF::PlotQualitySummary(const char *nameFileQuality, const char 
 
   TFile file(nameFileQuality,"READ");
   TNtuple *qualityTuple = (TNtuple*)file.Get("TCFquality");
-  gStyle->SetPalette(1);
+  //gStyle->SetPalette(1);
   
   TH2F *his2D = new TH2F(plotSpec,nameFileQuality,11,-10,1,25,1,100);
   char plSpec[100];
@@ -901,66 +978,6 @@ void AliTPCCalibTCF::PlotQualitySummary(const char *nameFileQuality, const char 
   his2D->~TH2F();
   
 }
-
-//____________________________________________________________________________
-void AliTPCCalibTCF::DumpTCFparamToFile(const char *nameFileTCF,const char *nameFileOut)
-{
-  //
-  // Writes the TCF parameters from file 'nameFileTCF' to a output file
-  //
-
-  // Note: currently just TCF parameters per Sector or TCF parameters for pad 
-  //       which were analyzed. There is no method included so far to export
-  //       parameters for not analyzed pad, which means there are eventually
-  //       missing TCF parameters
-  //   TODO: carefull! Fill up missing pads with averaged (sector) values?
-
-
-  // open file with TCF parameters
-  TFile fileTCF(nameFileTCF,"READ");
-  TNtuple *paramTuple = (TNtuple*)fileTCF.Get("TCFparam");
-  
-  // open output txt file ...
-  FILE *output;
-  output=fopen(nameFileOut,"w");      // open outfile.
-
-  // Header line
-  Int_t sectorWise =  paramTuple->GetEntries("row==-1&&pad==-1");
-  if (sectorWise) {
-    fprintf(output,"sector \t  Z0 \t\t Z1 \t\t Z2 \t\t P0 \t\t P1 \t\t P2\n"); 
-  } else {
-    fprintf(output,"sector \t row \t pad  \t Z0 \t\t Z1 \t\t Z2 \t\t P0 \t\t P1 \t\t P2\n");  
-  }
-  
-  for (Int_t i=0; i<paramTuple->GetEntries(); i++) {
-    paramTuple->GetEntry(i);
-    Float_t *p = paramTuple->GetArgs();
-    
-    // _______________________________________________________________
-    // to Tuple to txt file - unsorted printout
-    
-    for (Int_t i=0; i<10; i++){
-      if (sectorWise) {
-	if (i<1)  fprintf(output,"%3.0f \t ",p[i]);    // sector info
-	if (i>3)  fprintf(output,"%1.4f \t ",p[i]);    // TCF param
-      } else {
-	if (i<3)  fprintf(output,"%3.0f \t ",p[i]);    // pad info
-	if (i>3)  fprintf(output,"%1.4f \t ",p[i]);    // TCF param
-      }  	    
-    }
-    fprintf(output,"\n");
-  }
-
-  // close output txt file
-  fprintf(output,"\n");
-  fclose(output);
-  
-  fileTCF.Close();
-
-
-}
-  
-
 
 //_____________________________________________________________________________
 Int_t AliTPCCalibTCF::FitPulse(TNtuple *dataTuple, Double_t *coefZ, Double_t *coefP) {
@@ -1230,14 +1247,15 @@ Int_t AliTPCCalibTCF::Equalization(TNtuple *dataTuple, Double_t *coefZ, Double_t
   s0->~Double_t();
   s1->~Double_t();
   s2->~Double_t();
-
+  
   // if equalization out of range (<0 or >=1) it failed!
-  if (coefP[2]<0 || coefZ[2]<0 || coefP[2]>=1 || coefZ[2]>=1) {
+  // if ratio of amplitudes of fittet to original pulse < 0.9 it failed!
+  if (coefP[2]<0 || coefZ[2]<0 || coefP[2]>=1 || coefZ[2]>=1 || TMath::Abs(s2ampl / s0ampl)<0.9) {
     return 0; 
   } else {
     return 1;
   }
-   
+  
 }
 
 
@@ -1292,8 +1310,8 @@ Int_t AliTPCCalibTCF::FindCorTCFparam(TH1F *hisIn, const char *nameFileTCF, Doub
       
   } else { // no specific TCF parameters found for this pad 
     
-    printf("no specific TCF paramaters found for pad in ...\n");
-    printf("in Sector %d | Row %d | Pad %d |\n", sector, row, pad);
+    printf("  no specific TCF paramaters found for pad in ...\n");
+    printf("  Sector %d | Row %d | Pad %d |\n", sector, row, pad);
     nPulse = 0;
     coefZ[0] = 0;  coefP[0] = 0;
     coefZ[1] = 0;  coefP[1] = 0;
@@ -1494,17 +1512,17 @@ TNtuple *AliTPCCalibTCF::ApplyTCFilter(TH1F *hisIn, Double_t *coefZ, Double_t *c
   }
 
   // transform TCF parameters into ALTRO readable format (Integer)
-  Int_t* valP = new Int_t[3];
-  Int_t* valZ = new Int_t[3];
+  Int_t* valK = new Int_t[3];
+  Int_t* valL = new Int_t[3];
   for (Int_t i=0; i<3; i++) {
-    valP[i] = (Int_t)(coefP[i]*(TMath::Power(2,16)-1));
-    valZ[i] = (Int_t)(coefZ[i]*(TMath::Power(2,16)-1));
+    valK[i] = (Int_t)(coefP[i]*(TMath::Power(2,16)-1));
+    valL[i] = (Int_t)(coefZ[i]*(TMath::Power(2,16)-1));
   }
     
   // discret ALTRO EMULATOR ____________________________
   AliTPCAltroEmulator *altro = new AliTPCAltroEmulator(nbins, signalOutD);
   altro->ConfigAltro(0,1,0,0,0,0); // perform just the TailCancelation
-  altro->ConfigTailCancellationFilter(valP[0],valP[1],valP[2],valZ[0],valZ[1],valZ[2]);
+  altro->ConfigTailCancellationFilter(valK[0],valK[1],valK[2],valL[0],valL[1],valL[2]);
   altro->RunEmulation();
   delete altro;
   
@@ -1545,8 +1563,8 @@ TNtuple *AliTPCCalibTCF::ApplyTCFilter(TH1F *hisIn, Double_t *coefZ, Double_t *c
     // pulseTuple->Draw("sigAfterTCF:timebin","","Lsame");
   }
   
-  valP->~Int_t();
-  valZ->~Int_t();
+  valK->~Int_t();
+  valL->~Int_t();
 
   signalIn->~Double_t();
   signalOut->~Double_t();
@@ -1570,45 +1588,75 @@ void AliTPCCalibTCF::PrintPulseThresholds() {
   printf("   %4.0d [ADC] ... lower pulse height limit \n", fLowPulseLim);
   printf("   %4.0d [ADC] ... upper pulse height limit \n", fUpPulseLim);
   printf("   %4.1f [ADC] ... maximal pulse RMS \n", fRMSLim);
+  printf("   %4.1f [ADC] ... pulse/tail integral ratio \n", fRatioIntLim);
 
 } 
 
 
 //____________________________________________________________________________
-void AliTPCCalibTCF::MergeHistsPerFile(const char *fileNameIn, const char *fileSum)
+void AliTPCCalibTCF::MergeHistoPerFile(const char *fileNameIn, const char *fileNameSum, Int_t mode)
 {
-  // gets histograms from fileNameIn and adds contents to fileSum
-  // if fileSum doesn't exist, fileSum is created
-  // if histogram "hisName" doesn't exist in fileSum, histogram "hisName" is created in fileSum
+  // Gets histograms from fileNameIn and adds contents to fileSum
   //
-  // make sure not to add the same file more than once!
+  // If fileSum doesn't exist, fileSum is created
+  //   mode = 0, just ONE BIG FILE ('fileSum') will be used
+  //   mode = 1, one file per sector ('fileSum-Sec#.root') will be used 
+  // mode=1 is much faster, but the additional function 'MergeToOneFile' has to be used in order to  
+  // get one big and complete collection file again ...
+  //
+  // !Make sure not to add the same file more than once!
   
   TFile fileIn(fileNameIn,"READ");
   TH1F *hisIn;                             
   TKey *key;                                          
   TIter next(fileIn.GetListOfKeys());  
-  TFile fileOut(fileSum,"UPDATE");
+  TFile *fileOut = 0;
   //fileOut.cd();
   
   Int_t nHist=fileIn.GetNkeys();
   Int_t iHist=0;
-  
+
+  Int_t secPrev = -1;
+  char fileNameSumSec[100];
+
+  if (mode==0) {
+    fileOut = new TFile(fileNameSum,"UPDATE");
+  }
   while((key=(TKey*)next())) {
     const char *hisName = key->GetName();
 
     hisIn=(TH1F*)fileIn.Get(hisName);          
     Int_t numPulse=(Int_t)hisIn->GetBinContent(1);
+    Int_t sec=(Int_t)hisIn->GetBinContent(2);
     Int_t pulseLength= hisIn->GetNbinsX()-4;    
 
-    printf("Histogram %d / %d, %s, Action: ",++iHist,nHist,hisName);
+    // in case of mode 1, store histos in files per sector
+    if (sec!=secPrev && mode != 0) {
+      if (secPrev>0) { // closing old file
+        fileOut->Close();
+      }
+      // opening new file 
+      sprintf(fileNameSumSec,"%s-Sec%d.root",fileNameSum,sec);
+      fileOut = new TFile(fileNameSumSec,"UPDATE");
+      secPrev = sec;
+    }
 
-    TH1F *his=(TH1F*)fileOut.Get(hisName);
+    // search for existing histogram
+    TH1F *his=(TH1F*)fileOut->Get(hisName);
+    if (iHist%100==0) {
+      printf("Histogram %d / %d, %s, Action: ",iHist,nHist,hisName);
+      if (!his) {
+	printf("NEW\n"); 
+      } else {
+	printf("ADD\n"); 
+      }
+    }
+    iHist++;
+    
     if (!his) {
-      printf("NEW\n");
       his=hisIn;
       his->Write(hisName);
     } else {
-      printf("ADD\n");
       his->AddBinContent(1,numPulse);
       for (Int_t ii=5; ii<pulseLength+5; ii++) {
 	his->AddBinContent(ii,hisIn->GetBinContent(ii));
@@ -1616,9 +1664,313 @@ void AliTPCCalibTCF::MergeHistsPerFile(const char *fileNameIn, const char *fileS
       his->Write(hisName,TObject::kOverwrite);
     }
   }
+
   printf("closing files (may take a while)...\n");
-  fileOut.Close();
+  fileOut->Close();
+  
+
   fileIn.Close();
   printf("...DONE\n\n");
 }
 
+
+//____________________________________________________________________________
+void AliTPCCalibTCF::MergeToOneFile(const char *nameFileSum) {
+
+  // Merges all Sec-files together ...
+  // this is an additional functionality for the function MergeHistsPerFile
+  // if for example mode=1
+
+  TH1F *hisIn;
+  TKey *key;
+
+  // just delete the file entries ...
+  TFile fileSum(nameFileSum,"RECREATE");
+  fileSum.Close();
+
+  char nameFileSumSec[100];
+
+  for (Int_t sec=0; sec<72; sec++) { // loop over all possible filenames
+
+    sprintf(nameFileSumSec,"%s-Sec%d.root",nameFileSum,sec);
+    TFile *fileSumSec = new TFile(nameFileSumSec,"READ");
+
+    Int_t nHist=fileSumSec->GetNkeys();
+    Int_t iHist=0;
+
+    if (nHist) { // file found \ NKeys not empty
+
+      TFile fileSum(nameFileSum,"UPDATE");
+      fileSum.cd();
+
+      printf("Sector file %s found\n",nameFileSumSec);
+      TIter next(fileSumSec->GetListOfKeys());
+      while(key=(TKey*)next()) {
+        const char *hisName = key->GetName();
+
+        hisIn=(TH1F*)fileSumSec->Get(hisName);
+
+        if (iHist%100==0) {
+          printf("found histogram %d / %d, %s\n",iHist,nHist,hisName);
+        }
+        iHist++;
+
+	//        TH1F *his = (TH1F*)hisIn->Clone(hisName);
+        hisIn->Write(hisName);
+
+      }
+      printf("Saving histograms from sector %d (may take a while) ...",sec);
+      fileSum.Close();
+
+    }
+    fileSumSec->Close();
+  }
+  printf("...DONE\n\n");
+}
+
+
+//____________________________________________________________________________
+Int_t AliTPCCalibTCF::DumpTCFparamToFilePerPad(const char *nameFileTCFPerPad,const char *nameFileTCFPerSec, const char *nameMappingFile) {
+  //
+  // Writes TCF parameters per PAD to .data file
+  //
+  // from now on: "roc" refers to the offline sector numbering
+  //              "sector" refers to the 18 sectors per side
+  //
+  // Gets TCF parameters of single pads from nameFileTCFPerPad and writes them to
+  // the file 'tpcTCFparamPAD.data'
+  //
+  // If there are parameters for a pad missing, then the parameters of the roc,
+  // in which the pad is located, are used as the pad parameters. The parameters for
+  // the roc are retreived from nameFileTCFPerSec. If there are parameters for
+  // a roc missing, then the parameters are set to -1.  
+
+  Float_t K0 = -1, K1 = -1, K2 = -1, L0 = -1, L1 = -1, L2 = -1;
+  Int_t roc, row, pad, side, sector, rcu, hwAddr; 
+  Int_t entryNum = 0;
+  Int_t checksum = 0;
+  Int_t tpcPadNum = 557568;
+  Int_t validFlag = 1; // 1 if parameters for pad exist, 0 if they are only inherited from the roc
+
+  Bool_t *entryID = new Bool_t[7200000]; // helping vector
+  for (Int_t ii = 0; ii<7200000; ii++) {
+    entryID[ii]=0;
+  }
+    
+  // get file/tuple with parameters per pad
+  TFile fileTCFparam(nameFileTCFPerPad);
+  TNtuple *paramTuple = (TNtuple*)fileTCFparam.Get("TCFparam");
+
+  // get mapping file
+  // usual location of mapping file: $ALICE_ROOT/TPC/Calib/tpcMapping.root
+  TFile *fileMapping = new TFile(nameMappingFile, "read");
+  AliTPCmapper *mapping = (AliTPCmapper*) fileMapping->Get("tpcMapping");
+  delete fileMapping;
+
+  if (mapping == 0) {
+    printf("Failed to get mapping object from %s.  ...\n", nameMappingFile);
+    return -1;
+  } else {
+    printf("Got mapping object from %s\n", nameMappingFile);
+  }
+
+  // creating outputfile
+  ofstream fileOut;
+  char nameFileOut[255];
+  sprintf(nameFileOut,"tpcTCFparamPAD.data");
+  fileOut.open(nameFileOut);
+  // following not used:
+  // char headerLine[255];
+  // sprintf(headerLine,"15\tside\tsector\tRCU\tHWadr\tK0\tK1\tK2\tL0\tL1\tL2\tValidFlag");
+  // fileOut << headerLine << std::endl;
+  fileOut << "15" << std::endl;
+ 
+  // loop over nameFileTCFPerPad, write parameters into outputfile
+  // NOTE: NO SPECIFIC ORDER !!!
+  printf("\nstart assigning parameters to pad...\n");  
+  for (Int_t iParam = 0; iParam < paramTuple->GetEntries(); iParam++) {
+    paramTuple->GetEntry(iParam);
+    Float_t *paramArgs = paramTuple->GetArgs();
+    roc = Int_t(paramArgs[0]);
+    row = Int_t(paramArgs[1]);
+    pad = Int_t(paramArgs[2]);
+    side = Int_t(mapping->GetSideFromRoc(roc));
+    sector = Int_t(mapping->GetSectorFromRoc(roc));
+    rcu = Int_t(mapping->GetRcu(roc,row,pad));
+    hwAddr = Int_t(mapping->GetHWAddress(roc,row,pad));
+    K0 = TMath::Nint(paramArgs[7] * (TMath::Power(2,16) - 1));
+    K1 = TMath::Nint(paramArgs[8] * (TMath::Power(2,16) - 1));
+    K2 = TMath::Nint(paramArgs[9] * (TMath::Power(2,16) - 1));
+    L0 = TMath::Nint(paramArgs[4] * (TMath::Power(2,16) - 1));
+    L1 = TMath::Nint(paramArgs[5] * (TMath::Power(2,16) - 1));
+    L2 = TMath::Nint(paramArgs[6] * (TMath::Power(2,16) - 1));
+    if (entryNum%10000==0) {
+      printf("assigned pad %i / %i\n",entryNum,tpcPadNum);
+    }
+    
+    fileOut << entryNum++ << "\t" << side << "\t" << sector << "\t" << rcu << "\t" << hwAddr << "\t";
+    fileOut << K0 << "\t" << K1 << "\t" << K2 << "\t" << L0 << "\t" << L1 << "\t" << L2 << "\t" << validFlag << std::endl;
+    entryID[roc*100000 + row*1000 + pad] = 1;
+  }
+
+  // Wrote all found TCF params per pad into data file
+  // NOW FILLING UP THE REST WITH THE PARAMETERS FROM THE ROC MEAN
+  
+  // get file/tuple with parameters per roc
+  TFile fileSecTCFparam(nameFileTCFPerSec);
+  TNtuple *paramTupleSec = (TNtuple*)fileSecTCFparam.Get("TCFparam");
+
+  // loop over all pads and get/write parameters for pads which don't have
+  // parameters assigned yet
+  validFlag = 0; 
+  for (roc = 0; roc<72; roc++) {
+    side = Int_t(mapping->GetSideFromRoc(roc));
+    sector = Int_t(mapping->GetSectorFromRoc(roc));
+    for (Int_t iParamSec = 0; iParamSec < paramTupleSec->GetEntries(); iParamSec++) {
+      paramTupleSec->GetEntry(iParamSec);
+      Float_t *paramArgsSec = paramTupleSec->GetArgs();
+      if (paramArgsSec[0] == roc) {
+	K0 = TMath::Nint(paramArgsSec[7] * (TMath::Power(2,16) - 1));
+	K1 = TMath::Nint(paramArgsSec[8] * (TMath::Power(2,16) - 1));
+	K2 = TMath::Nint(paramArgsSec[9] * (TMath::Power(2,16) - 1));
+	L0 = TMath::Nint(paramArgsSec[4] * (TMath::Power(2,16) - 1));
+	L1 = TMath::Nint(paramArgsSec[5] * (TMath::Power(2,16) - 1));
+	L2 = TMath::Nint(paramArgsSec[6] * (TMath::Power(2,16) - 1));
+	break;
+      } else {
+	K0 = K1 = K2 = L0 = L1 = L2 = -1;
+      }
+    }
+    for (row = 0; row<mapping->GetNpadrows(roc); row++) {
+      for (pad = 0; pad<mapping->GetNpads(roc,row); pad++) {
+	if (entryID[roc*100000 + row*1000 + pad]==1) {
+	  continue;
+	}
+
+	entryID[roc*100000 + row*1000 + pad] = 1;
+	rcu = Int_t(mapping->GetRcu(roc,row,pad));
+	hwAddr = Int_t(mapping->GetHWAddress(roc,row,pad));
+	if (entryNum%10000==0) {
+	  printf("assigned pad %i / %i\n",entryNum,tpcPadNum);
+	}
+
+	fileOut << entryNum++ << "\t" << side << "\t" << sector << "\t" << rcu << "\t" << hwAddr << "\t";
+	fileOut << K0 << "\t" << K1 << "\t" << K2 << "\t" << L0 << "\t" << L1 << "\t" << L2 << "\t" << validFlag << std::endl;
+      }
+    }
+  }
+
+  printf("assigned pad %i / %i\ndone assigning\n",entryNum,tpcPadNum);
+  
+  // check if correct amount of sets of parameters were written
+  for (Int_t ii = 0; ii<7200000; ii++) {
+    checksum += entryID[ii];
+  }
+  if (checksum == tpcPadNum) {
+    printf("checksum ok, sets of parameters written = %i\n",checksum);
+  } else {
+    printf("\nCHECKSUM WRONG, sets of parameters written = %i, should be %i\n\n",checksum,tpcPadNum);
+  }
+  
+  // closing & destroying
+  fileOut.close();
+  fileTCFparam.Close();
+  fileSecTCFparam.Close();
+  entryID->~Bool_t();
+  printf("output written to file: %s\n",nameFileOut);
+  return 0;
+}
+
+
+
+//____________________________________________________________________________
+Int_t AliTPCCalibTCF::DumpTCFparamToFilePerSector(const char *nameFileTCFPerSec, const char *nameMappingFile) {
+  //
+  // Writes TCF parameters per SECTOR (=ROC) to .data file
+  //
+  // from now on: "roc" refers to the offline sector numbering
+  //              "sector" refers to the 18 sectors per side
+  //
+  // Gets TCF parameters of a roc from nameFileTCFPerSec and writes them to
+  // the file 'tpcTCFparamSector.data'
+  //
+  // If there are parameters for a roc missing, then the parameters are set to -1
+  
+  Float_t K0 = -1, K1 = -1, K2 = -1, L0 = -1, L1 = -1, L2 = -1;
+  Int_t entryNum = 0;
+  Int_t validFlag = 0; // 1 if parameters for roc exist
+  
+  // get file/tuple with parameters per roc
+  TFile fileTCFparam(nameFileTCFPerSec);
+  TNtuple *paramTupleSec = (TNtuple*)fileTCFparam.Get("TCFparam");
+  
+  
+  // get mapping file
+  // usual location of mapping file: $ALICE_ROOT/TPC/Calib/tpcMapping.root
+  TFile *fileMapping = new TFile(nameMappingFile, "read");
+  AliTPCmapper *mapping = (AliTPCmapper*) fileMapping->Get("tpcMapping");
+  delete fileMapping;
+  
+  if (mapping == 0) {
+    printf("Failed to get mapping object from %s.  ...\n", nameMappingFile);
+    return -1;
+  } else {
+    printf("Got mapping object from %s\n", nameMappingFile);
+  }
+  
+  
+  // creating outputfile
+  
+  ofstream fileOut;
+  char nameFileOut[255];
+  sprintf(nameFileOut,"tpcTCFparamSector.data");
+  fileOut.open(nameFileOut);
+  // following not used:   
+  // char headerLine[255];
+  // sprintf(headerLine,"16\tside\tsector\tRCU\tHWadr\tK0\tK1\tK2\tL0\tL1\tL2\tValidFlag");
+  // fileOut << headerLine << std::endl;
+  fileOut << "16" << std::endl;
+  
+  // loop over all rcu's in the TPC (6 per sector)
+  printf("\nstart assigning parameters to rcu's...\n");
+  for (Int_t side = 0; side<2; side++) {
+    for (Int_t sector = 0; sector<18; sector++) {
+      for (Int_t rcu = 0; rcu<6; rcu++) {
+	
+	validFlag = 0;
+	Int_t roc = Int_t(mapping->GetRocFromPatch(side, sector, rcu));
+	
+	// get parameters (through loop search) for rcu from corresponding roc
+	for (Int_t iParam = 0; iParam < paramTupleSec->GetEntries(); iParam++) {
+	  paramTupleSec->GetEntry(iParam);
+	  Float_t *paramArgs = paramTupleSec->GetArgs();
+	  if (paramArgs[0] == roc) {
+	    validFlag = 1; 
+	    K0 = TMath::Nint(paramArgs[7] * (TMath::Power(2,16) - 1));
+	    K1 = TMath::Nint(paramArgs[8] * (TMath::Power(2,16) - 1));
+	    K2 = TMath::Nint(paramArgs[9] * (TMath::Power(2,16) - 1));
+	    L0 = TMath::Nint(paramArgs[4] * (TMath::Power(2,16) - 1));
+	    L1 = TMath::Nint(paramArgs[5] * (TMath::Power(2,16) - 1));
+	    L2 = TMath::Nint(paramArgs[6] * (TMath::Power(2,16) - 1));
+	    break;
+	  }
+	}
+	if (!validFlag) { // No TCF parameters found for this roc 
+	  K0 = K1 = K2 = L0 = L1 = L2 = -1;
+	}
+	
+	fileOut << entryNum++ << "\t" << side << "\t" << sector << "\t" << rcu << "\t" << -1 << "\t";
+	fileOut << K0 << "\t" << K1 << "\t" << K2 << "\t" << L0 << "\t" << L1 << "\t" << L2 << "\t" << validFlag << std::endl;
+      }
+    }
+  }
+
+  printf("done assigning\n");
+  
+  // closing files
+  fileOut.close();
+  fileTCFparam.Close();
+  printf("output written to file: %s\n",nameFileOut);
+  return 0;
+
+}

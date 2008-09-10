@@ -17,6 +17,7 @@ class TGraph;
 class AliTPCRawStream;
 class TNtuple;
 class TH1F;
+class TH2F;
 
 class AliTPCCalibTCF : public TNamed {
 
@@ -38,18 +39,21 @@ public:
   void AnalyzeRootFile(const char *nameFileIn, Int_t minNumPulse=1, Int_t histStart=1, Int_t histEnd=1000000);
   Int_t AnalyzePulse(TH1F *hisIn, Double_t *coefZ, Double_t *coefP); 
 
-  void TestTCFonRootFile(const char *nameFileIn, const char *nameFileTCF, Int_t plotFlag=0, Int_t lowKey=1, Int_t upKey=1000000);
-  void TestTCFonRawFile(const char *nameRawFile, const char *nameFileOut, const char *nameFileTCF, Int_t plotFlag=0);
+  void TestTCFonRootFile(const char *nameFileIn, const char *nameFileTCF, Int_t nPulseMin=0, Int_t plotFlag=0, Int_t lowKey=1, Int_t upKey=1000000);
+  void TestTCFonRawFile(const char *nameRawFile, const char *nameFileOut, const char *nameFileTCF, Int_t nPulseMin=0, Int_t plotFlag=0);
 
-  void DumpTCFparamToFile(const char *nameFileTCF,const char *nameFileOut);
-  
-  TNtuple *PlotOccupSummary(const char *nameFile, Int_t nPulseMin=0); 
+  Int_t DumpTCFparamToFilePerSector(const char *nameFileTCFPerSec, const char *nameMappingFile="$ALICE_ROOT/TPC/Calib/tpcMapping.root");  
+  Int_t DumpTCFparamToFilePerPad(const char *nameFileTCFPerPad,const char *nameFileTCFPerSec, const char *nameMappingFile="$ALICE_ROOT/TPC/Calib/tpcMapping.root");  
+ 
+  TH2F *PlotOccupSummary2Dhist(const char *nameFileIn, Int_t side=0);
+  void PlotOccupSummary(const char *nameFile, Int_t side=0, Int_t nPulseMin=0); 
+
   void PlotQualitySummary(const char *nameFileQuality, const char *plotSpec="widthRed:maxUndershot", const char *cut="maxUndershot<0.1&&maxUndershot>-40&&widthRed>0&&widthRed<100", const char *pOpt="LEGO2Z");
 
   void PrintPulseThresholds();
 
-  void MergeHistsPerFile(const char *fileNameIn, const char *fileSum);
-
+  void MergeHistoPerFile(const char *fileNameIn, const char *fileSum, Int_t mode=0);
+  void MergeToOneFile(const char *nameFileSum);
 
 private:
   
