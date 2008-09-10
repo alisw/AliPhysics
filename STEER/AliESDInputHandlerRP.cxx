@@ -152,6 +152,8 @@ Bool_t AliESDInputHandlerRP::LoadEvent(Int_t iev)
     char folder[20];
     sprintf(folder, "Event%d", iev);
     // Tree R
+    fRTrees->Clear();
+    
     TIter next(fRFiles);
     TFile* file;
     while ((file = (TFile*) next()))
