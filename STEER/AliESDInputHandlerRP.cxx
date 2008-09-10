@@ -166,7 +166,6 @@ Bool_t AliESDInputHandlerRP::LoadEvent(Int_t iev)
 	TTree* tree;
 	fDirR ->GetObject("TreeR", tree);
 	fRTrees->Add(tree);
-	tree->ls();
     }
     return kTRUE;
 }
