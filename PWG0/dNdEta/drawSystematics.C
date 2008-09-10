@@ -728,7 +728,7 @@ void DrawdNdEtaDifferences()
   canvas2->SaveAs("particlecomposition_result.eps");
 }
 
-mergeCorrectionsWithDifferentCrosssections(Char_t* correctionFileName="correction_map.root", const char* analysisFileName = "analysis_esd_raw.root", const Char_t* outputFileName="systematics_vtxtrigger_compositions.root") {
+void mergeCorrectionsWithDifferentCrosssections(Int_t correctionTarget = 3, Char_t* correctionFileName="correction_mapprocess-types.root", const char* analysisFileName = "analysis_esd_raw.root", const Char_t* outputFileName="systematics_vtxtrigger_compositions.root") {
   //
   // Function used to merge standard corrections with vertex
   // reconstruction corrections obtained by a certain mix of ND, DD
@@ -738,26 +738,32 @@ mergeCorrectionsWithDifferentCrosssections(Char_t* correctionFileName="correctio
   // (standard to changed x-section) of the different dN/deta
   // distributions are saved to a file.
   //
+  // correctionTarget is of type AlidNdEtaCorrection::CorrectionType
+  //    kINEL = 3
+  //    kNSD = 4
 
   loadlibs();
 
   const Char_t* typeName[] = { "vertexreco", "trigger", "vtxtrigger" };
 
-  /*
+
+
   const Char_t* changes[]  = { "pythia","ddmore","ddless","sdmore","sdless", "dmore", "dless", "sdmoreddless", "sdlessddmore", "ddmore25","ddless25","sdmore25","sdless25", "dmore25", "dless25", "sdmoreddless25", "sdlessddmore25"};
-  // add scalesND!!!
+  Float_t scalesND[] = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0 };
   Float_t scalesDD[] = {1.0, 1.5, 0.5, 1.0, 1.0, 1.5, 0.5, 1.5, 0.5, 1.25, 0.75, 1.0,  1.0,  1.25, 0.75, 1.25, 0.75};
   Float_t scalesSD[] = {1.0, 1.0, 1.0, 1.5, 0.5, 1.5, 0.5, 0.5, 1.5, 1.0,  1.0,  1.25, 0.75, 1.25, 0.75, 0.75, 1.25};
   Int_t nChanges = 17;
-  */
 
+  /*
   const Char_t* changes[]  = { "pythia", "qgsm", "phojet"};
   Float_t scalesND[] = {1.0, 1.10, 1.11};
   Float_t scalesSD[] = {1.0, 0.69, 0.86};
   Float_t scalesDD[] = {1.0, 0.98, 0.61};
   Int_t nChanges = 3;
-
+  */
+  
   // cross section from Pythia
+  // 14 TeV!
   Float_t sigmaND = 55.2;
   Float_t sigmaDD = 9.78;
   Float_t sigmaSD = 14.30;
@@ -852,8 +858,7 @@ mergeCorrectionsWithDifferentCrosssections(Char_t* correctionFileName="correctio
       dNdEtaAnalysis* fdNdEtaAnalysis = new dNdEtaAnalysis("fdNdEtaAnalysisESD", "fdNdEtaAnalysisESD");
       fdNdEtaAnalysis->LoadHistograms();
 
-      //fdNdEtaAnalysis->Finish(current, 0.3, AlidNdEtaCorrection::kINEL, Form("%d %d", j, i));
-      fdNdEtaAnalysis->Finish(current, 0.3, AlidNdEtaCorrection::kNSD);
+      fdNdEtaAnalysis->Finish(current, 0.3, correctionTarget, Form("%d %d", j, i));
 
       name = "ratio";
       if (j==0) name.Append("_vetexReco_");

@@ -59,6 +59,10 @@ AliCorrection::AliCorrection(const Char_t* name, const Char_t* title, AliPWG0Hel
     return;
   }
 
+  Int_t nBinsN2 = 1;
+  Float_t binLimitsN2[]   = {-0.5, 1000};
+  //Int_t nBinsN2 = 21;
+  //Float_t binLimitsN2[]   = {-0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5, 10.5, 12.5, 14.5, 16.5, 18.5, 20.5, 25.5, 30.5, 40.5, 50.5, 100.5, 1000.5};
   Int_t nBinsN = 22;
   Float_t binLimitsN[]   = {-0.5, 0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5, 10.5, 12.5, 14.5, 16.5, 18.5, 20.5, 25.5, 30.5, 40.5, 50.5, 100.5, 300.5};
   //Int_t nBinsN = 52;
@@ -77,15 +81,25 @@ AliCorrection::AliCorrection(const Char_t* name, const Char_t* title, AliPWG0Hel
 //  Float_t binLimitsEta[] = {-2,-1.9,-1.8,-1.7,-1.6,-1.5,-1.4,-1.3,-1.2,-1.1,-1.0,-0.9,-0.8,-0.7,-0.6,-0.5,-0.4,-0.3,-0.2,-0.1,0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0};
 //  Float_t binLimitsEta[] = { -7.0, -6.9, -6.8, -6.7, -6.6, -6.5, -6.4, -6.3, -6.2, -6.1, -6.0, -5.9, -5.8, -5.7, -5.6, -5.5, -5.4, -5.3, -5.2, -5.1, -5.0, -4.9, -4.8, -4.7, -4.6, -4.5, -4.4, -4.3, -4.2, -4.1, -4.0, -3.9, -3.8, -3.7, -3.6, -3.5, -3.4, -3.3, -3.2, -3.1, -3.0, -2.9, -2.8, -2.7, -2.6, -2.5, -2.4, -2.3, -2.2, -2.1, -2.0, -1.9, -1.8, -1.7, -1.6, -1.5, -1.4, -1.3, -1.2, -1.1, -1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, -0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9, 3.0, 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9, 4.0, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 4.9, 5.0, 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7, 5.8, 5.9, 6.0, 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 6.7, 6.8, 6.9, 7.0 };
 
-  TH3F* dummyBinning = new TH3F("dummyBinning","dummyBinning",18, binLimitsVtx, 30, binLimitsEta , nBinsPt, binLimitsPt);
-
   fEventCorr = new AliCorrectionMatrix2D("EventCorrection", Form("%s EventCorrection", fTitle.Data()), 18, binLimitsVtx, nBinsN, binLimitsN);
-  fTrackCorr = new AliCorrectionMatrix3D("TrackCorrection", Form("%s TrackCorrection", fTitle.Data()), dummyBinning);
 
-  delete dummyBinning;
+  if (analysisMode == AliPWG0Helper::kSPD)
+  {
+    TH3F* dummyBinning = new TH3F("dummyBinning","dummyBinning",18, binLimitsVtx, 30, binLimitsEta, nBinsN2, binLimitsN2);
+    fTrackCorr = new AliCorrectionMatrix3D("TrackCorrection", Form("%s TrackCorrection", fTitle.Data()), dummyBinning);
+    fTrackCorr->SetAxisTitles("vtx z [cm]", "#eta", "Ntracks");
+    delete dummyBinning;
+  }
+  else
+  {
+    TH3F* dummyBinning = new TH3F("dummyBinning","dummyBinning",18, binLimitsVtx, 30, binLimitsEta , nBinsPt, binLimitsPt);
+    fTrackCorr = new AliCorrectionMatrix3D("TrackCorrection", Form("%s TrackCorrection", fTitle.Data()), dummyBinning);
+    fTrackCorr->SetAxisTitles("vtx z [cm]", "#eta", "p_{T} [GeV/c]");
+    delete dummyBinning;
+  }
+
 
   fEventCorr->SetAxisTitles("vtx z [cm]", "Ntracks");
-  fTrackCorr->SetAxisTitles("vtx z [cm]", "#eta", "p_{T} [GeV/c]");
 }
 
 //____________________________________________________________________
@@ -404,7 +418,7 @@ void AliCorrection::PrintStats(Float_t zRange, Float_t etaRange, Float_t ptCut)
     tracksM /= eventsM;
     tracksG /= eventsG;
 
-    Printf("%.2f tracks/event measured, %.2f tracks/event after correction --> effective average correction factor is %.3f (pt cut %.2f GeV/c)", tracksM, tracksG, tracksG / tracksM, ptCut);
+    Printf("%.2f tracks/event measured, %.2f tracks/event after correction --> effective average correction factor is %.3f (pt cut %.2f GeV/c)", tracksM, tracksG, (tracksM > 0) ? (tracksG / tracksM) : -1, ptCut);
   }
 }
 
@@ -422,6 +436,8 @@ void AliCorrection::PrintInfo(Float_t ptCut)
   Printf("AliCorrection::PrintInfo: Whole phasespace:");
 
   Printf("tracks measured: %.1f tracks generated: %.1f, events measured: %.1f, events generated %.1f", measured->Integral(), generated->Integral(), measuredEvents->Integral(), generatedEvents->Integral());
+
+  Printf("Example centered bin: tracks measured: %.1f tracks generated: %.1f, events measured: %.1f, events generated %.1f", measured->GetBinContent(measured->GetNbinsX() / 2, measured->GetNbinsY() / 2, measured->GetNbinsZ() / 2), generated->GetBinContent(measured->GetNbinsX() / 2, measured->GetNbinsY() / 2, measured->GetNbinsZ() / 2), measuredEvents->GetBinContent(measuredEvents->GetNbinsX() / 2, measuredEvents->GetNbinsY() / 2), generatedEvents->GetBinContent(measuredEvents->GetNbinsX() / 2, measuredEvents->GetNbinsY() / 2));
 
   PrintStats(10, 1.0, ptCut);
   PrintStats(10, 1.5, ptCut);

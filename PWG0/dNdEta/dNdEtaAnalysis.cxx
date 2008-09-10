@@ -201,7 +201,7 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
   // the measured result is not used up to a multiplicity of multCut (the bin at multCut is the first that is used!)
   //
 
-  fTag.Form("Correcting dN/deta spectrum >>> %s <<<. Correction type: %d, pt cut: %.2f.", tag, (Int_t) correctionType, ptCut);
+  fTag.Form("Correcting dN/deta spectrum (data: %d) >>> %s <<<. Correction type: %d, pt cut: %.2f.", (Int_t) fAnalysisMode, tag, (Int_t) correctionType, ptCut);
   Printf("\n\n%s", fTag.Data());
 
   // set corrections to 1
@@ -268,6 +268,7 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
 
     TH2* eTrig =    correction->GetVertexRecoCorrection()->GetEventCorrection()->GetGeneratedHistogram();
     TH2* eTrigVtx = correction->GetVertexRecoCorrection()->GetEventCorrection()->GetMeasuredHistogram();
+    //TH1* eTrigVtx_projx = eTrigVtx->ProjectionX("eTrigVtx_projx", 2, rawMeasured->GetNbinsY()+1);
     TH1* eTrigVtx_projx = eTrigVtx->ProjectionX("eTrigVtx_projx", 2, rawMeasured->GetNbinsY()+1);
 
     //new TCanvas; correctedEvents->DrawCopy("TEXT");
@@ -281,6 +282,9 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
 
     Printf("%d triggered events with 0 mult. -- %d triggered events with vertex", triggeredEventsWith0Mult, allEventsWithVertex);
 
+    TH1* kineBias = (TH1*) vertexDist->Clone("kineBias");
+    kineBias->Reset();
+
     for (Int_t i = 1; i <= rawMeasured->GetNbinsX(); i++)
     {
       Double_t alpha = (Double_t) vertexDist->GetBinContent(i) / allEventsWithVertex;
@@ -291,6 +295,7 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
 
       Double_t fZ = eTrigVtx_projx->Integral(0, eTrigVtx_projx->GetNbinsX()+1) / eTrigVtx_projx->GetBinContent(i) *
         eTrig->GetBinContent(i, 1) / eTrig->Integral(0, eTrig->GetNbinsX()+1, 1, 1);
+      kineBias->SetBinContent(i, fZ);
 
       events *= fZ;
 
@@ -303,6 +308,7 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
     }
 
     //new TCanvas; correctedEvents->DrawCopy("TEXT");
+    //new TCanvas; kineBias->Draw();
   }
 
   fData->PrintInfo(ptCut);
@@ -315,6 +321,7 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
   TH1D* vertexHist = (TH1D*) tmp->ProjectionX("_px", 0, tmp->GetNbinsY() + 1, "e");
 
   // create pt hist
+  if (fAnalysisMode == AliPWG0Helper::kTPC || fAnalysisMode == AliPWG0Helper::kTPCITS)
   {
     // reset all ranges
     dataHist->GetXaxis()->SetRange(0, 0);
@@ -353,13 +360,13 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
   dataHist->GetYaxis()->SetRange(0, 0);
   dataHist->GetZaxis()->SetRange(0, 0);
 
-  // integrate over pt (with pt cut)
+  // integrate over pt (with pt cut) (TPC, TPCITS) or multiplicity (SPD)
   Int_t ptLowBin = 1;
-  if (ptCut > 0)
+  if (ptCut > 0 && fAnalysisMode != AliPWG0Helper::kSPD)
     ptLowBin = dataHist->GetZaxis()->FindBin(ptCut);
 
   dataHist->GetZaxis()->SetRange(ptLowBin, dataHist->GetZaxis()->GetNbins()+1);
-  printf("pt range %d %d\n", ptLowBin, dataHist->GetZaxis()->GetNbins()+1);
+  printf("pt/multiplicity range %d %d\n", ptLowBin, dataHist->GetZaxis()->GetNbins()+1);
   TH2D* vtxVsEta = dynamic_cast<TH2D*> (dataHist->Project3D("yx2e"));
 
   dataHist->GetZaxis()->SetRange(0, 0);
@@ -368,9 +375,11 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
 
   if (vtxVsEta == 0)
   {
-    printf("ERROR: pt integration failed\n");
+    printf("ERROR: pt/multiplicity integration failed\n");
     return;
   }
+
+  //new TCanvas(tag, tag, 800, 600);  vtxVsEta->DrawCopy("COLZ");
 
   // clear result histograms
   for (Int_t vertexPos=0; vertexPos<kVertexBinning; ++vertexPos)
@@ -415,8 +424,16 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
         // TODO create map
       }
 
-      Int_t vtxBegin = binBegin[iEta - 1];
-      Int_t vtxEnd   = 18 + 1 - binBegin[30 - iEta];
+      Int_t vtxBegin = 1;
+      Int_t vtxEnd   = 30;
+
+      if (binBegin)
+      {
+        vtxBegin = binBegin[iEta - 1];
+        vtxEnd = 18 + 1 - binBegin[30 - iEta];
+      }
+      else
+        Printf("WARNING: No acceptance applied!");
       
       // eta range not accessible
       if (vtxBegin == -1)
@@ -427,10 +444,10 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
       //vtxEnd = vertexHist->GetXaxis()->FindBin(-GetVtxMin(-eta));
 
       Float_t eta = vtxVsEta->GetYaxis()->GetBinCenter(iEta);
-      printf("Eta bin: %d (%f) Vertex range: %d; before: %d %d (range) %d %d (acceptance)", iEta, eta, vertexPos, vertexBinBegin, vertexBinEnd, vtxBegin, vtxEnd);
+      //printf("Eta bin: %d (%f) Vertex range: %d; before: %d %d (range) %d %d (acceptance)", iEta, eta, vertexPos, vertexBinBegin, vertexBinEnd, vtxBegin, vtxEnd);
       vertexBinBegin = TMath::Max(vertexBinBegin, vtxBegin);
       vertexBinEnd =   TMath::Min(vertexBinEnd, vtxEnd);
-      Printf(" after:  %d %d", vertexBinBegin, vertexBinEnd);
+      //Printf(" after:  %d %d", vertexBinBegin, vertexBinEnd);
 
       // no data for this bin
       if (vertexBinBegin > vertexBinEnd)
@@ -473,13 +490,18 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
       }
 
       Float_t ptCutOffCorrection = 1;
-      if (correction && ptCut > 0)
-        ptCutOffCorrection = correction->GetMeasuredFraction(correctionType, ptCut, vtxVsEta->GetYaxis()->GetBinCenter(iEta), vertexBinBegin, vertexBinEnd);
 
-      if (ptCutOffCorrection <= 0)
+      // find pt cut off correction factor
+      if (fAnalysisMode != AliPWG0Helper::kSPD)
       {
-        printf("UNEXPECTED: ptCutOffCorrection is %f for hist %d %d %d\n", ptCutOffCorrection, vertexPos, vertexBinBegin, vertexBinEnd);
-        continue;
+        if (correction && ptCut > 0)
+            ptCutOffCorrection = correction->GetMeasuredFraction(correctionType, ptCut, vtxVsEta->GetYaxis()->GetBinCenter(iEta), vertexBinBegin, vertexBinEnd);
+
+        if (ptCutOffCorrection <= 0)
+        {
+            printf("UNEXPECTED: ptCutOffCorrection is %f for hist %d %d %d\n", ptCutOffCorrection, vertexPos, vertexBinBegin, vertexBinEnd);
+            continue;
+        }
       }
 
       //printf("Eta: %d Vertex Range: %d %d, Event Count %f, Track Sum: %f, Track Sum corrected: %f\n", iEta, vertexBinBegin, vertexBinEnd, totalEvents, sum, sum / ptCutOffCorrection);
@@ -502,7 +524,7 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
         fdNdEtaPtCutOffCorrected[vertexPos]->SetBinContent(bin, dndeta);
         fdNdEtaPtCutOffCorrected[vertexPos]->SetBinError(bin, error);
 
-        Printf("Bin %d has dN/deta = %f +- %f; %.2f tracks %.2f events (outside acceptance: %.2f tracks, %.2f events)", bin, dndeta, error, sum, totalEvents, unusedTracks, unusedEvents);
+        //Printf("Bin %d has dN/deta = %f +- %f; %.2f tracks %.2f events (outside acceptance: %.2f tracks, %.2f events)", bin, dndeta, error, sum, totalEvents, unusedTracks, unusedEvents);
       }
     }
   }

@@ -51,10 +51,12 @@ AlidNdEtaCorrectionTask::AlidNdEtaCorrectionTask() :
   fPIDParticles(0),
   fPIDTracks(0),
   fVertexCorrelation(0),
+  fVertexCorrelationShift(0),
   fVertexProfile(0),
   fVertexShift(0),
   fVertexShiftNorm(0),
   fEtaCorrelation(0),
+  fEtaCorrelationShift(0),
   fEtaProfile(0),
   fEtaResolution(0),
   fpTResolution(0),
@@ -94,10 +96,12 @@ AlidNdEtaCorrectionTask::AlidNdEtaCorrectionTask(const char* opt) :
   fPIDParticles(0),
   fPIDTracks(0),
   fVertexCorrelation(0),
+  fVertexCorrelationShift(0),
   fVertexProfile(0),
   fVertexShift(0),
   fVertexShiftNorm(0),
   fEtaCorrelation(0),
+  fEtaCorrelationShift(0),
   fEtaProfile(0),
   fEtaResolution(0),
   fpTResolution(0),
@@ -230,6 +234,8 @@ void AlidNdEtaCorrectionTask::CreateOutputObjects()
 
   fVertexCorrelation = new TH2F("fVertexCorrelation", "fVertexCorrelation;MC z-vtx;ESD z-vtx", 120, -30, 30, 120, -30, 30);
   fOutput->Add(fVertexCorrelation);
+  fVertexCorrelationShift = new TH2F("fVertexCorrelationShift", "fVertexCorrelationShift;MC z-vtx;MC z-vtx - ESD z-vtx", 120, -30, 30, 100, -1, 1);
+  fOutput->Add(fVertexCorrelationShift);
   fVertexProfile = new TProfile("fVertexProfile", "fVertexProfile;MC z-vtx;MC z-vtx - ESD z-vtx", 40, -20, 20);
   fOutput->Add(fVertexProfile);
   fVertexShift = new TH1F("fVertexShift", "fVertexShift;(MC z-vtx - ESD z-vtx);Entries", 201, -2, 2);
@@ -239,6 +245,8 @@ void AlidNdEtaCorrectionTask::CreateOutputObjects()
 
   fEtaCorrelation = new TH2F("fEtaCorrelation", "fEtaCorrelation;MC #eta;ESD #eta", 120, -3, 3, 120, -3, 3);
   fOutput->Add(fEtaCorrelation);
+  fEtaCorrelationShift = new TH2F("fEtaCorrelationShift", "fEtaCorrelationShift;MC #eta - ESD #eta;ESD #eta", 120, -3, 3, 100, -0.1, 0.1);
+  fOutput->Add(fEtaCorrelationShift);
   fEtaProfile = new TProfile("fEtaProfile", "fEtaProfile;MC #eta;MC #eta - ESD #eta", 120, -3, 3);
   fOutput->Add(fEtaProfile);
   fEtaResolution = new TH1F("fEtaResolution", "fEtaResolution;MC #eta - ESD #eta", 201, -0.2, 0.2);
@@ -349,21 +357,28 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
   {
     Double_t vtx[3];
     vtxESD->GetXYZ(vtx);
-    eventVertex = kTRUE;
 
     Double_t diff = vtxMC[2] - vtx[2];
     fVertexShift->Fill(diff);
     if (vtxESD->GetZRes() > 0)
-      fVertexShiftNorm->Fill(diff / vtxESD->GetZRes());
+        fVertexShiftNorm->Fill(diff / vtxESD->GetZRes());
 
-    if (eventTriggered)
+    if (!AliPWG0Helper::TestVertex(vtxESD, fAnalysisMode))
     {
-      fVertexCorrelation->Fill(vtxMC[2], vtx[2]);
-      fVertexProfile->Fill(vtxMC[2], vtxMC[2] - vtx[2]);
+        vtxESD = 0;
+    }
+    else
+    {
+      eventVertex = kTRUE;
+
+      if (eventTriggered)
+      {
+        fVertexCorrelation->Fill(vtxMC[2], vtx[2]);
+        fVertexCorrelationShift->Fill(vtxMC[2], vtxMC[2] - vtx[2]);
+        fVertexProfile->Fill(vtxMC[2], vtxMC[2] - vtx[2]);
+      }
     }
   }
-  else
-    Printf("No vertex found");
 
   // fill process type
   Int_t biny = (Int_t) eventTriggered + 2 * (Int_t) eventVertex;
@@ -564,28 +579,28 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
       fPIDParticles->Fill(particle->GetPdgCode());
 
     Float_t eta = particle->Eta();
-    Float_t pt = particle->Pt();
+    Float_t thirdDim = (fAnalysisMode == AliPWG0Helper::kSPD) ? inputCount : particle->Pt();
 
-    fdNdEtaCorrection->FillMCParticle(vtxMC[2], eta, pt, eventTriggered, eventVertex, processType);
+    fdNdEtaCorrection->FillMCParticle(vtxMC[2], eta, thirdDim, eventTriggered, eventVertex, processType);
 
     if (fdNdEtaCorrectionProcessType[0])
     {
       // non diffractive
       if (processType==AliPWG0Helper::kND)
-        fdNdEtaCorrectionProcessType[0]->FillMCParticle(vtxMC[2], eta, pt, eventTriggered, eventVertex, processType);
+        fdNdEtaCorrectionProcessType[0]->FillMCParticle(vtxMC[2], eta, thirdDim, eventTriggered, eventVertex, processType);
 
       // single diffractive
       if (processType==AliPWG0Helper::kSD)
-        fdNdEtaCorrectionProcessType[1]->FillMCParticle(vtxMC[2], eta, pt, eventTriggered, eventVertex, processType);
+        fdNdEtaCorrectionProcessType[1]->FillMCParticle(vtxMC[2], eta, thirdDim, eventTriggered, eventVertex, processType);
 
       // double diffractive
       if (processType==AliPWG0Helper::kDD)
-        fdNdEtaCorrectionProcessType[2]->FillMCParticle(vtxMC[2], eta, pt, eventTriggered, eventVertex, processType);
+        fdNdEtaCorrectionProcessType[2]->FillMCParticle(vtxMC[2], eta, thirdDim, eventTriggered, eventVertex, processType);
     }
 
     if (eventTriggered)
       if (eventVertex)
-        fdNdEtaAnalysisMC->FillTrack(vtxMC[2], eta, pt);
+        fdNdEtaAnalysisMC->FillTrack(vtxMC[2], eta, thirdDim);
 
     // TODO this value might be needed lower for the SPD study (only used for control histograms anyway)
     if (TMath::Abs(eta) < 1.5) // && pt > 0.2)
@@ -658,21 +673,36 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
       fEtaResolution->Fill(particle->Eta() - etaArr[i]);
       fpTResolution->Fill(particle->Pt() - ptArr[i]);
 
+      Float_t eta = -999;
+      Float_t thirdDim = -1;
+
       Bool_t firstIsPrim = stack->IsPhysicalPrimary(label);
       // in case of primary the MC values are filled, otherwise (background) the reconstructed values
       if (label == label2 && firstIsPrim)
       {
-        fdNdEtaCorrection->FillTrackedParticle(vtxMC[2], particle->Eta(), particle->Pt());
+        thirdDim = particle->Pt();
+        eta = particle->Eta();
       }
       else
       {
-        fdNdEtaCorrection->FillTrackedParticle(vtxMC[2], etaArr[i], ptArr[i]);
+        thirdDim = ptArr[i];
+        eta = etaArr[i];
       }
 
-      fEtaProfile->Fill(particle->Eta(), particle->Eta() - etaArr[i]);
-      fdNdEtaAnalysisESD->FillTrack(vtxMC[2], particle->Eta(), particle->Pt());
+      if (fAnalysisMode == AliPWG0Helper::kSPD)
+        thirdDim = inputCount;
 
-      fEtaCorrelation->Fill(etaArr[i], particle->Eta());
+      fdNdEtaCorrection->FillTrackedParticle(vtxMC[2], eta, thirdDim);
+
+      // eta comparison for tracklets with the same label (others are background)
+      if (label == label2)
+      {
+        fEtaProfile->Fill(particle->Eta(), particle->Eta() - etaArr[i]);
+        fEtaCorrelation->Fill(etaArr[i], particle->Eta());
+        fEtaCorrelationShift->Fill(etaArr[i], particle->Eta() - etaArr[i]);
+      }
+
+      fdNdEtaAnalysisESD->FillTrack(vtxMC[2], particle->Eta(), thirdDim);
 
       if (particle->Pt() > 0.1 && particle->Pt() < 0.2)
       {
@@ -683,15 +713,15 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
       {
         // non diffractive
         if (processType == AliPWG0Helper::kND)
-          fdNdEtaCorrectionProcessType[0]->FillTrackedParticle(vtxMC[2], particle->Eta(), particle->Pt());
+          fdNdEtaCorrectionProcessType[0]->FillTrackedParticle(vtxMC[2], eta, thirdDim);
 
         // single diffractive
         if (processType == AliPWG0Helper::kSD)
-          fdNdEtaCorrectionProcessType[1]->FillTrackedParticle(vtxMC[2], particle->Eta(), particle->Pt());
+          fdNdEtaCorrectionProcessType[1]->FillTrackedParticle(vtxMC[2], eta, thirdDim);
 
         // double diffractive
         if (processType == AliPWG0Helper::kDD)
-          fdNdEtaCorrectionProcessType[2]->FillTrackedParticle(vtxMC[2], particle->Eta(), particle->Pt());
+          fdNdEtaCorrectionProcessType[2]->FillTrackedParticle(vtxMC[2], eta, thirdDim);
       }
 
       // control histograms
@@ -845,6 +875,9 @@ void AlidNdEtaCorrectionTask::Terminate(Option_t *)
   fVertexCorrelation = dynamic_cast<TH2F*> (fOutput->FindObject("fVertexCorrelation"));
   if (fVertexCorrelation)
     fVertexCorrelation->Write();
+  fVertexCorrelationShift = dynamic_cast<TH2F*> (fOutput->FindObject("fVertexCorrelationShift"));
+  if (fVertexCorrelationShift)
+    fVertexCorrelationShift->Write();
   fVertexProfile = dynamic_cast<TProfile*> (fOutput->FindObject("fVertexProfile"));
   if (fVertexProfile)
     fVertexProfile->Write();
@@ -858,6 +891,9 @@ void AlidNdEtaCorrectionTask::Terminate(Option_t *)
   fEtaCorrelation = dynamic_cast<TH2F*> (fOutput->FindObject("fEtaCorrelation"));
   if (fEtaCorrelation)
     fEtaCorrelation->Write();
+  fEtaCorrelationShift = dynamic_cast<TH2F*> (fOutput->FindObject("fEtaCorrelationShift"));
+  if (fEtaCorrelationShift)
+    fEtaCorrelationShift->Write();
   fEtaProfile = dynamic_cast<TProfile*> (fOutput->FindObject("fEtaProfile"));
   if (fEtaProfile)
     fEtaProfile->Write();

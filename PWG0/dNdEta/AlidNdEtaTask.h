@@ -67,10 +67,10 @@ class AlidNdEtaTask : public AliAnalysisTask {
     dNdEtaAnalysis* fdNdEtaAnalysisTracks;  //! contains the dndeta from the triggered events with vertex counted from the mc particles associated to the tracks (comparing this to the raw values from the esd shows the effect of the detector resolution)
 
     // control histograms (MC)
-    TH3F* fVertex;                //! vertex of counted particles
     TH1F* fPartPt;                //! counted particles as function of pt
 
     // control histograms (ESD)
+    TH3F* fVertex;                //! 3d vertex distribution
     TH1F* fPhi;                   //! raw phi distribution
     TH2F* fEtaPhi;                //! raw eta - phi distribution
     TH1F* fDeltaPhi;              //! histogram of delta_phi values for tracklets (only for SPD analysis)

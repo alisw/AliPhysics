@@ -888,13 +888,13 @@ void AliHighMultiplicitySelector::Ntrigger(Bool_t relative)
   xSections[0] = dynamic_cast<TH1*> (gFile->Get("xSection2Ex"));
   xSections[1] = dynamic_cast<TH1*> (gFile->Get("xSection15Ex"));
 
-  // 10^28 lum --> 1.2 kHz
-  // 10^31 lum --> 1200 kHz
-  //Float_t rate = 1200e3;
-  Float_t rate = 250e3;
+  // 10^28 lum --> 1.4 kHz
+  // 10^31 lum --> 1400 kHz
+  //Float_t rate = 1400e3;
+  Float_t rate = 1.4e3;
 
   // time in s
-  Float_t lengthRun = 1e6;
+  Float_t lengthRun = 1e5;
 
   Int_t colors[] = { 2, 3, 4, 6, 7, 8 };
   Int_t markers[] = { 7, 2, 4, 5, 6, 27 };
@@ -918,11 +918,14 @@ void AliHighMultiplicitySelector::Ntrigger(Bool_t relative)
     //Float_t ratePerTrigger[] = { 60, 13.3, 13.3, 13.3 };
 
     Int_t nCuts = 3;
-    Int_t cuts[] = { 0, 126, 162 };
-    Float_t ratePerTrigger[] = { 60, 20.0, 20.0 };
+    Int_t cuts[] = { 0, 114, 148 };
+
+    //Int_t nCuts = 3;
+    //Int_t cuts[] = { 0, 126, 162 };
+    //Float_t ratePerTrigger[] = { 60, 20.0, 20.0 };
 
     // desired trigger rate in Hz
-    //Float_t ratePerTrigger[] = { 100, 1, 1, 1, 1, 1 };
+    Float_t ratePerTrigger[] = { 100, 1, 1, 1, 1, 1 };
 
     xSection->SetStats(kFALSE);
     xSection->SetTitle(""); //(i == 0) ? "SPD Layer 1" : "SPD Layer 2");
@@ -979,6 +982,9 @@ void AliHighMultiplicitySelector::Ntrigger(Bool_t relative)
       nTrigger = TMath::Nint(((Float_t) nTrigger) / 1000) * 1000;
 
       Printf("Normal rate is %f, downscale: %f, Simulating %lld triggers", normalRate, downScale, nTrigger);
+      if (nTrigger == 0)
+        continue;
+
       proj2->FillRandom(proj, nTrigger);
 
       Int_t removed = 0;

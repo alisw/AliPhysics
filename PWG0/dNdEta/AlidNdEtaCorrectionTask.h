@@ -59,11 +59,13 @@ class AlidNdEtaCorrectionTask : public AliAnalysisTask {
     TH1F* fPIDTracks;                            //! pid of reconstructed tracks
 
     TH2F* fVertexCorrelation;                    //! ESD z-vtx vs MC z-vtx
+    TH2F* fVertexCorrelationShift;               //! (MC z-vtx - ESD z-vtx) vs MC z-vtx
     TProfile* fVertexProfile;                    //! Profile of MC z-vtx - ESD z-vtx vs. MC z-vtx
     TH1F* fVertexShift;                          //! (MC z-vtx - ESD z-vtx) in +- 10 cm
     TH1F* fVertexShiftNorm;                      //! (MC z-vtx - ESD z-vtx) / (sigma_ESD-z-vtx) histogrammed
 
     TH2F* fEtaCorrelation;                       //! ESD eta vs MC eta
+    TH2F* fEtaCorrelationShift;                  //! (MC eta - ESD eta) vs MC eta
     TProfile* fEtaProfile;                       //! Profile of MC eta - ESD eta vs. MC eta
     TH1F* fEtaResolution;                        //! MC eta - ESD eta in |eta| < 1
 
