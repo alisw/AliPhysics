@@ -49,7 +49,10 @@ void run(Char_t* data, Long64_t nRuns = -1, Long64_t offset = 0, Bool_t aDebug =
   // Create the analysis manager
   mgr = new AliAnalysisManager;
 
-  AliPWG0Helper::AnalysisMode analysisMode = AliPWG0Helper::kTPCITS;
+  AliPWG0Helper::AnalysisMode analysisMode = AliPWG0Helper::kTPC;
+  AliPWG0Helper::Trigger      trigger      = AliPWG0Helper::kMB1;
+
+  AliPWG0Helper::PrintConf(analysisMode, trigger);
 
   TString taskName("AliMultiplicityTask.cxx+");
   if (aDebug)
@@ -78,6 +81,7 @@ void run(Char_t* data, Long64_t nRuns = -1, Long64_t offset = 0, Bool_t aDebug =
   }
 
   task->SetAnalysisMode(analysisMode);
+  task->SetTrigger(trigger);
 
   if (mc)
     task->SetReadMC();

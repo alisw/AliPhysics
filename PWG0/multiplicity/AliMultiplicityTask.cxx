@@ -41,6 +41,7 @@ AliMultiplicityTask::AliMultiplicityTask(const char* opt) :
   fESD(0),
   fOption(opt),
   fAnalysisMode(AliPWG0Helper::kSPD),
+  fTrigger(AliPWG0Helper::kMB1),
   fReadMC(kFALSE),
   fUseMCVertex(kFALSE),
   fMultiplicity(0),
@@ -206,10 +207,7 @@ void AliMultiplicityTask::Exec(Option_t*)
     return;
   }
 
-  //MB1 definition
-  Bool_t eventTriggered = AliPWG0Helper::IsEventTriggered(fESD->GetTriggerMask(), AliPWG0Helper::kMB1);
-  // only FASTOR
-  //Bool_t eventTriggered = fESD->GetTriggerMask() & 32;
+  Bool_t eventTriggered = AliPWG0Helper::IsEventTriggered(fESD->GetTriggerMask(), fTrigger);
 
   const AliESDVertex* vtxESD = AliPWG0Helper::GetVertex(fESD, fAnalysisMode);
   Bool_t eventVertex = (vtxESD != 0);
