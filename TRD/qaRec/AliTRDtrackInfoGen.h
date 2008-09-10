@@ -11,7 +11,9 @@
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 
-#include "AliAnalysisTask.h"
+#ifndef ALITRDRECOTASK_H
+#include "AliTRDrecoTask.h"
+#endif
 
 class AliESDEvent;
 class AliMCEvent;
@@ -20,23 +22,18 @@ class AliTRDtrackInfo;
 class TObjArray;
 class TTreeSRedirector;
 
-class AliTRDtrackInfoGen : public AliAnalysisTask{
+class AliTRDtrackInfoGen : public AliTRDrecoTask{
 public:
 
-  AliTRDtrackInfoGen(const Char_t *name = "TRD Track Info");
+  AliTRDtrackInfoGen();
   virtual ~AliTRDtrackInfoGen();
   
   void  ConnectInputData(Option_t *);
   void  CreateOutputObjects();
-  Int_t GetDebugLevel() const {return fDebugLevel;} 
-  Bool_t HasMCdata() const { return fHasMCdata; }
   void  Exec(Option_t *);
-  void  SetDebugLevel(Int_t level);
-  void  SetMCdata(Bool_t mcdata) { fHasMCdata = mcdata; };
   void  Terminate(Option_t *);
 
 private:
-
   AliTRDtrackInfoGen(const AliTRDtrackInfoGen&);
   AliTRDtrackInfoGen& operator=(const AliTRDtrackInfoGen&);
 
@@ -46,11 +43,6 @@ private:
   AliMCEvent       *fMC;                   // MC event
   AliESDfriend     *fESDfriend;            // ESD friends
   AliTRDtrackInfo  *fTrackInfo;            // Track info
-  TObjArray        *fObjectContainer;      // Object container
-
-	Bool_t           fHasMCdata;             // Contains MC information
-  Int_t            fDebugLevel;            // Debug level
-  TTreeSRedirector *fDebugStream;          // Debug stream
 
   ClassDef(AliTRDtrackInfoGen, 1)          // entry to TRD analysis
 };

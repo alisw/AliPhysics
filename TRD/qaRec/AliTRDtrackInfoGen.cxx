@@ -61,17 +61,12 @@ ClassImp(AliTRDtrackInfoGen)
 
 
 //____________________________________________________________________
-AliTRDtrackInfoGen::AliTRDtrackInfoGen(const Char_t *name):
-  AliAnalysisTask(name, "")
+AliTRDtrackInfoGen::AliTRDtrackInfoGen():
+  AliTRDrecoTask("InfoGen", "Track List Generator")
   ,fESD(0x0)
   ,fMC(0x0)
   ,fESDfriend(0x0)
   ,fTrackInfo(0x0)
-  ,fObjectContainer(0x0)
-  ,fHasMCdata(kTRUE)
-  ,fDebugLevel(0)
-  ,fDebugStream(0x0)
-  //,fTree(0x0) // temporary
 {
   //
   // Default constructor
@@ -86,10 +81,6 @@ AliTRDtrackInfoGen::AliTRDtrackInfoGen(const Char_t *name):
 AliTRDtrackInfoGen::~AliTRDtrackInfoGen()
 {
   if(fTrackInfo) delete fTrackInfo;
-  if(fObjectContainer){
-    fObjectContainer->Delete();
-    delete fObjectContainer;
-  }
 }
 
 //____________________________________________________________________
@@ -136,7 +127,7 @@ void AliTRDtrackInfoGen::CreateOutputObjects()
   // Create Output Containers (TObjectArray containing 1D histograms)
   //
   fTrackInfo = new AliTRDtrackInfo();
-  fObjectContainer = new TObjArray(1000);
+  fContainer = new TObjArray(1000);
 
 /*  OpenFile(1, "RECREATE");
   fTree = new TTree("trd", "extract of the TRD detector");
@@ -161,7 +152,7 @@ void AliTRDtrackInfoGen::Exec(Option_t *){
     puts("Error: Monte Carlo Event not available");
     return;
   }
-  fObjectContainer->Delete();
+  fContainer->Delete();
   fESD->SetESDfriend(fESDfriend);
   
   Bool_t *trackMap = 0x0;
@@ -179,7 +170,7 @@ void AliTRDtrackInfoGen::Exec(Option_t *){
   Int_t nTRD = 0, nTPC = 0, nclsTrklt;
   Int_t nTracks = fESD->GetNumberOfTracks();
   if(fDebugLevel>=1){ 
-    printf("%3d Tracks: ESD[%d] MC[%d]\n", (Int_t)AliAnalysisManager::GetAnalysisManager()->GetCurrentEntry(), nTracks, fHasMCdata ? mStack->GetNtrack() : 0);
+    printf("%3d Tracks: ESD[%d] MC[%d]\n", (Int_t)AliAnalysisManager::GetAnalysisManager()->GetCurrentEntry(), nTracks, HasMCdata() ? mStack->GetNtrack() : 0);
   }
   AliESDtrack *esdTrack = 0x0;
   AliESDfriendTrack *esdFriendTrack = 0x0;
@@ -292,7 +283,7 @@ void AliTRDtrackInfoGen::Exec(Option_t *){
     } else if(fDebugLevel>=2) printf("No ESD friends\n");
     if(op) fTrackInfo->SetOuterParam(op);
 
-    if(fDebugLevel >= 1){
+    if(fDebugLevel >= 2){
       Int_t ncls = esdTrack->GetNcls(2);
       nclsTrklt = fTrackInfo->GetNumberOfClusters();
       (*fDebugStream) << "trackInfo"
@@ -302,7 +293,7 @@ void AliTRDtrackInfoGen::Exec(Option_t *){
       << "\n";
     }
   
-    fObjectContainer->Add(new AliTRDtrackInfo(*fTrackInfo));
+    fContainer->Add(new AliTRDtrackInfo(*fTrackInfo));
     fTrackInfo->Delete("");
   }
   if(fDebugLevel>=1) printf("%3d Tracks: TPC[%d] TRD[%d]\n", (Int_t)AliAnalysisManager::GetAnalysisManager()->GetCurrentEntry(), nTPC, nTRD);
@@ -352,26 +343,14 @@ void AliTRDtrackInfoGen::Exec(Option_t *){
         << "\n";
       }
       if(fDebugLevel > 2)printf("Registering rejected MC track with label %d\n", itk);
-      fObjectContainer->Add(new AliTRDtrackInfo(*fTrackInfo));
+      fContainer->Add(new AliTRDtrackInfo(*fTrackInfo));
       fTrackInfo->Delete("");
     }
     delete[] trackMap;
   }
-  PostData(0, fObjectContainer);
+  PostData(0, fContainer);
 }
 
-//____________________________________________________________________
-void  AliTRDtrackInfoGen::SetDebugLevel(Int_t level) 
-{
-  //
-  // Set the debug level
-  //
-
-  fDebugLevel = level;
-  if(fDebugLevel<=0) return;
-  if(fDebugStream) return;  
-  fDebugStream = new TTreeSRedirector("TRD.TrackInfoDebug.root");
-}
 
 //____________________________________________________________________
 void AliTRDtrackInfoGen::Terminate(Option_t *)
@@ -384,5 +363,8 @@ void AliTRDtrackInfoGen::Terminate(Option_t *)
   //TFile *f =((TFile*)gROOT->FindObject("TRD.TrackInfo.root"));
   //f->cd(); f->Write(); f->Close();
 
-  if(fDebugStream) delete fDebugStream;
+  if(fDebugStream){ 
+    delete fDebugStream;
+    fDebugStream = 0x0;
+  }
 }

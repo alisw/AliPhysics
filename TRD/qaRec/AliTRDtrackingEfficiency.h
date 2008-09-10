@@ -11,22 +11,21 @@
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 
-#include "AliAnalysisTask.h"
+#ifndef ALITRDRECOTASK_H
+#include "AliTRDrecoTask.h"
+#endif
 
 class TObjArray;
 class TList;
 class TClonesArray;
 class TTreeSRedirector;
-class AliTRDtrackingEfficiency : public AliAnalysisTask
+class AliTRDtrackingEfficiency : public AliTRDrecoTask
 {
 public:
-  AliTRDtrackingEfficiency(const Char_t *name = "TRD Tracking efficiency");
+  AliTRDtrackingEfficiency();
   virtual ~AliTRDtrackingEfficiency();
-  void  ConnectInputData(Option_t *);
   void  CreateOutputObjects();
-  Int_t GetDebugLevel() const {return fDebugLevel;} 
   void  Exec(Option_t *);
-  void  SetDebugLevel(Int_t debug){fDebugLevel = debug;}
   void  Terminate(Option_t *);
 
 private:
@@ -34,12 +33,7 @@ private:
   AliTRDtrackingEfficiency& operator=(const AliTRDtrackingEfficiency&);
 
 private:
-  TList        *fObjectContainer;       // Container
-  TObjArray        *fTracks;            // Array of tracks
   TClonesArray     *fMissed;            // Missed ?
-
-  Int_t            fDebugLevel;         // Debug level
-  TTreeSRedirector *fDebugStream;       // Debug stream
 
   ClassDef(AliTRDtrackingEfficiency, 1) // TRD tracking efficiency
 };

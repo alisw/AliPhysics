@@ -26,7 +26,6 @@
 
 #include <TClonesArray.h>
 #include <TObjArray.h>
-#include <TList.h>
 #include <TProfile.h>
 #include "TTreeStream.h"
 
@@ -43,43 +42,22 @@
 ClassImp(AliTRDtrackingEfficiency)
 
 //____________________________________________________________________
-AliTRDtrackingEfficiency::AliTRDtrackingEfficiency(const Char_t *name):
-  AliAnalysisTask(name, "")
-  ,fObjectContainer(0x0)
-  ,fTracks(0x0)
+AliTRDtrackingEfficiency::AliTRDtrackingEfficiency()
+  :AliTRDrecoTask("TrackingEff", "Barrel Tracking Effiency")
   ,fMissed(0x0)
-  ,fDebugLevel(1)
-  ,fDebugStream(0x0)
 {
   //
   // Default constructor
   //
-
-  DefineInput(0, TObjArray::Class());
-  DefineOutput(0, TList::Class());
 }
 
 //____________________________________________________________________
 AliTRDtrackingEfficiency::~AliTRDtrackingEfficiency()
 {
-  if(fObjectContainer){
-    fObjectContainer->Delete();
-    delete fObjectContainer;
-  }
   if(fMissed){
     fMissed->Delete();
     delete fMissed;
   }
-}
-
-//____________________________________________________________________
-void  AliTRDtrackingEfficiency::ConnectInputData(Option_t *)
-{
-  //
-  // Connect input data
-  //
-
-	fTracks = dynamic_cast<TObjArray*>(GetInputData(0));
 }
 
 //____________________________________________________________________
@@ -92,8 +70,8 @@ void  AliTRDtrackingEfficiency::CreateOutputObjects()
   OpenFile(0, "RECREATE");
   const Int_t nbins = 11;
   Float_t xbins[nbins+1] = {.5, .7, .9, 1.3, 1.7, 2.4, 3.5, 4.5, 5.5, 7., 9., 11.};
-  fObjectContainer = new TList();
-  fObjectContainer->Add(new TProfile("h", "", nbins, xbins));
+  fContainer = new TObjArray();
+  fContainer->Add(new TProfile("h", "", nbins, xbins));
 } 
 
 //____________________________________________________________________
@@ -107,7 +85,7 @@ void AliTRDtrackingEfficiency::Exec(Option_t *)
     AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., AliMagFMaps::k5kG);
     AliTracker::SetFieldMap(field, kTRUE);
   }
-  TProfile *h = (TProfile*)fObjectContainer->At(0);	
+  TProfile *h = (TProfile*)fContainer->At(0);	
 	Int_t labelsacc[10000]; memset(labelsacc, 0, sizeof(Int_t) * 10000);
 	
   if(!fMissed){ 
@@ -266,7 +244,7 @@ void AliTRDtrackingEfficiency::Exec(Option_t *)
 	for(Int_t itk = 0; itk < nTRD - 1; itk++)
 		if(labelsacc[indices[itk]] ==labelsacc[indices[itk + 1]]) printf("Double counted MC track: %d\n", labelsacc[indices[itk]]);
 	}
-  PostData(0, fObjectContainer);
+  PostData(0, fContainer);
 }
 
 //____________________________________________________________________
@@ -276,10 +254,14 @@ void AliTRDtrackingEfficiency::Terminate(Option_t *)
   // Terminate
   //
 
-  if(fDebugStream) delete fDebugStream;
+  if(fDebugStream){ 
+    delete fDebugStream;
+    fDebugStream = 0x0;
+    fDebugLevel = 0;
+  }
 
-  fObjectContainer = dynamic_cast<TList*>(GetOutputData(0));
-  if (!fObjectContainer) {
+  fContainer = dynamic_cast<TObjArray*>(GetOutputData(0));
+  if (!fContainer) {
     Printf("ERROR: list not available");
     return;
   }

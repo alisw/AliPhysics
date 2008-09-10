@@ -11,17 +11,15 @@
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 
-#include "AliAnalysisTask.h"
+#ifndef ALITRDRECOTASK_H
+#include "AliTRDrecoTask.h"
+#endif
 
-class TObjArray;
-class TList;
-class TProfile;
-class TTreeSRedirector;
 class AliTRDReconstructor;
 class AliTRDrecoParam;
 class AliTRDseedV1;
 class AliTRDtrackInfo;
-class AliTRDtrackingResolution : public AliAnalysisTask
+class AliTRDtrackingResolution : public AliTRDrecoTask
 {
 public:
   enum{
@@ -41,37 +39,26 @@ public:
     ,kGraphStart              = 13 // First graph
   };
 
-  AliTRDtrackingResolution(const char *name = "TRD Tracking Resolution");
+  AliTRDtrackingResolution();
   virtual ~AliTRDtrackingResolution();
   
-  void    ConnectInputData(Option_t *);
   void    CreateOutputObjects();
-  Int_t   GetDebugLevel() const { return fDebugLevel;}
-  Bool_t  HasMCdata() const {return fHasMCdata;};
   void    Exec(Option_t *);
-
-  void    SetDebugLevel(Int_t level);
   void    SetRecoParam(AliTRDrecoParam *r);
-  void    SetMCdata(Bool_t mcdata){fHasMCdata = mcdata;};
   void    Terminate(Option_t *);
   
 private:
   AliTRDtrackingResolution(const AliTRDtrackingResolution&);
   AliTRDtrackingResolution& operator=(const AliTRDtrackingResolution&);
-  TList*  Histos(); 
-  Bool_t  Resolution(AliTRDseedV1 *tracklet, AliTRDtrackInfo *info, Double_t &phi);
+  TObjArray*  Histos(); 
+  Bool_t      Resolution(AliTRDseedV1 *tracklet, AliTRDtrackInfo *info, Double_t &phi);
 
 private:
   enum{
     kNLayers = 6
   };
-  TObjArray *fTracks;     // Input Track Info container
-  TList     *fHistos;     // Container for the output histograms
   
   AliTRDReconstructor   *fReconstructor;  //! local reconstructor
-  Bool_t                 fHasMCdata;      // Contains MonteCarloInformation
-  Int_t fDebugLevel;											// Debug Level
-  TTreeSRedirector *fDebugStream; 				// Debug stream
   
   ClassDef(AliTRDtrackingResolution, 1) // tracking resolution task
 };

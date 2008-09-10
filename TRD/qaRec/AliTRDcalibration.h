@@ -3,6 +3,11 @@
 
 // macro for extremely simple analysis
 
+
+#ifndef ALITRDRECOTASK_H
+#include "AliTRDrecoTask.h"
+#endif
+
 class TList;
 class TObject;
 class TH1F;
@@ -16,35 +21,27 @@ class AliTRDCalibraVLFDebug;
 class AliTRDCalibraPRFDebug;
 class AliTRDcluster;
 class AliTRDtrackInfo;
-
-#include "AliAnalysisTask.h"
-
-class AliTRDcalibration : public AliAnalysisTask 
+class AliTRDcalibration : public AliTRDrecoTask 
 {
 public:
-  AliTRDcalibration(const char *name = "AliTRDcalibration");
-  virtual ~AliTRDcalibration();
+  AliTRDcalibration();
+  virtual ~AliTRDcalibration(){;}
   
-  virtual void   ConnectInputData(Option_t *);
   virtual void   CreateOutputObjects();
   virtual void   Exec(Option_t *option);
   virtual void   Terminate(Option_t *);
 
   void SetLow(Int_t low)        {flow=low;};
   void SetHigh(Int_t high)      {fhigh=high;};
-  void SetDebugLevel(Bool_t debugLevel) {fDebugLevel = debugLevel;};
   void SetFillZero(Bool_t fillZero)     {ffillZero =  fillZero;   };
 
   
 private:
-  TObjArray        *fTracks;                     // Array of tracks
   AliTRDtrackInfo  *fTrackInfo;                  // track info
 
   AliTRDtrackV1 *ftrdTrack;                      //trdtrack
   AliTRDcluster *fcl;                            //cluster
   
-  TList       *fListHist;                        //! list of histograms
-
   AliTRDCalibraFillHisto *fTRDCalibraFillHisto;  //calibration analyse object
   TH1F        *fNbTRDTrackUsed;                  //nb ESD tracks used for calibration
   TH1F        *fNbTimeBin;                       //nb Time Bin
@@ -54,7 +51,6 @@ private:
   
   Int_t       flow;                              //lower limit
   Int_t       fhigh;                             //higher limit
-  Bool_t      fDebugLevel;                       //debug level
   Int_t       fNbTimeBins;                       //number of timebins 
   Bool_t      ffillZero;                         //fill zero
 

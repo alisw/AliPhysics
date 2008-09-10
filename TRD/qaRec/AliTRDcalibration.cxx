@@ -31,7 +31,7 @@
 #include "TFile.h"
 #include "TObjArray.h"
 
-#include "AliAnalysisTask.h"
+#include "AliTRDrecoTask.h"
 #include "AliAnalysisManager.h"
 
 #include "AliESDInputHandler.h"
@@ -51,53 +51,25 @@
 ClassImp(AliTRDcalibration)
 
 //________________________________________________________________________
-AliTRDcalibration::AliTRDcalibration(const char *name) 
-: AliAnalysisTask(name, "")
-  ,fTracks(0)
+AliTRDcalibration::AliTRDcalibration() 
+  :AliTRDrecoTask("Calibration", "Calibration on tracks")
   ,fTrackInfo(0)
   ,ftrdTrack(0)
   ,fcl(0)
-  ,fListHist(0)
   ,fTRDCalibraFillHisto(0)
   ,fNbTRDTrackUsed(0)
-  ,fNbTimeBin(0)
+  ,fNbTimeBin(0x0)
   ,fNbClusters(0)
   ,fPHSum(0)
   ,fCHSum(0)
   ,flow(0)
   ,fhigh(30)
-  ,fDebugLevel(0)
   ,fNbTimeBins(30)
   ,ffillZero(kFALSE)
 {
   // Constructor
-
-  // Define input and output slots here
-  // Input slot #0 works with a TChain
-  DefineInput(0, TObjArray::Class());
-  
-  // Output slot #0 writes into a TList container
-  DefineOutput(0, TList::Class());
-  
-  
 }  
 
-
-//________________________________________________________________________
-AliTRDcalibration::~AliTRDcalibration()
-{
-  
-  //delete AliTRDCalibraFillHisto::Instance();
-
-  fListHist->Delete();
-  delete fListHist;
-}
-
-//________________________________________________________________________
-void AliTRDcalibration::ConnectInputData(Option_t *) 
-{
-  fTracks = dynamic_cast<TObjArray*>(GetInputData(0));
-}
 //________________________________________________________________________
 void AliTRDcalibration::CreateOutputObjects() 
 {
@@ -120,10 +92,10 @@ void AliTRDcalibration::CreateOutputObjects()
 
   fTRDCalibraFillHisto->SetDebugLevel(fDebugLevel); //debug stuff
 
-  fListHist = new TList();
-  fListHist->Add(fTRDCalibraFillHisto->GetCH2d()); //TH2I
-  fListHist->Add(fTRDCalibraFillHisto->GetPH2d()); //TProfile2D
-  fListHist->Add(fTRDCalibraFillHisto->GetPRF2d()); //TProfile2D
+  fContainer = new TObjArray();
+  fContainer->Add(fTRDCalibraFillHisto->GetCH2d()); //TH2I
+  fContainer->Add(fTRDCalibraFillHisto->GetPH2d()); //TProfile2D
+  fContainer->Add(fTRDCalibraFillHisto->GetPRF2d()); //TProfile2D
 
   //printf("create output objects 1\n");
 
@@ -151,11 +123,11 @@ void AliTRDcalibration::CreateOutputObjects()
   fCHSum->SetStats(0);
   fCHSum->Sumw2();
 
-  fListHist->Add(fNbTRDTrackUsed);
-  fListHist->Add(fNbTimeBin);
-  fListHist->Add(fNbClusters);
-  fListHist->Add(fPHSum);
-  fListHist->Add(fCHSum);
+  fContainer->Add(fNbTRDTrackUsed);
+  fContainer->Add(fNbTimeBin);
+  fContainer->Add(fNbClusters);
+  fContainer->Add(fPHSum);
+  fContainer->Add(fCHSum);
   //printf("create output objects 2\n");
   
 }
@@ -218,7 +190,7 @@ void AliTRDcalibration::Exec(Option_t *)
   
   
   // Post output data
-  PostData(0, fListHist);
+  PostData(0, fContainer);
   
 }      
 //________________________________________________________________________
@@ -232,8 +204,8 @@ void AliTRDcalibration::Terminate(Option_t *)
   if(fTRDCalibraFillHisto) fTRDCalibraFillHisto->DestroyDebugStreamer();
 
   /*
-  fListHist = dynamic_cast<TList*> (GetOutputData(0));
-  if (!fListHist) {
+  fContainer = dynamic_cast<TList*> (GetOutputData(0));
+  if (!fContainer) {
     Printf("ERROR: fList not available");
     return;
   }

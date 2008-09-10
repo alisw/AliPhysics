@@ -9,26 +9,24 @@
 //
 ///////////////////////////////////////////////////////
 
-
-#include "AliAnalysisTask.h"
+#ifndef ALITRDRECOTASK_H
+#include "AliTRDrecoTask.h"
+#endif
 
 class TObjArray;
 class TList;
 class TClonesArray;
 class TTreeSRedirector;
 class AliTRDReconstructor;
-class AliTRDpidChecker : public AliAnalysisTask 
+class AliTRDpidChecker : public AliTRDrecoTask 
 {
 public:
-  AliTRDpidChecker(const char *name = "AliTRDpidChecker");
+  AliTRDpidChecker();
   virtual ~AliTRDpidChecker();
   
-  void   ConnectInputData(Option_t *);
   void   CreateOutputObjects();
   void   Exec(Option_t *option);
   void   Terminate(Option_t *);
-/*   Int_t  GetDebugLevel() const {return fDebugLevel;}  */
-/*   void   SetDebugLevel(Int_t debug){fDebugLevel = debug;} */
 
 private:
   AliTRDpidChecker(const AliTRDpidChecker&); // not implemented
@@ -37,12 +35,8 @@ private:
   Double_t GetPionEfficiency(Int_t Index1, Int_t Index2);  // calculates the pion efficiency
   Double_t GetError(Int_t Index1, Int_t Index2);           // calculates the error
   
-  TObjArray        *fObjectContainer;       // Container
-  TObjArray        *fTracks;                //! Array of tracks
 
   AliTRDReconstructor *fReconstructor;     //! reconstructor needed for recalculation the PID
-/*   Int_t            fDebugLevel;         //! Debug level */
-/*   TTreeSRedirector *fDebugStream;       //! Debug stream */
 
   ClassDef(AliTRDpidChecker, 1); // TRD PID checker
 };

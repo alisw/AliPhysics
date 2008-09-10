@@ -28,54 +28,29 @@
 #include <TProfile.h>
 #include <TMath.h>
 #include <TCanvas.h>
+#include "TTreeStream.h"
 
 #include "AliMagFMaps.h"
 #include "AliTracker.h"
+#include "AliTrackReference.h"
+#include "AliAnalysisManager.h"
+
 #include "AliTRDseedV1.h"
 #include "AliTRDtrackV1.h"
-#include "AliTrackReference.h"
-#include "TTreeStream.h"
-
-#include "AliAnalysisManager.h"
 #include "AliTRDtrackInfo/AliTRDtrackInfo.h"
 #include "AliTRDtrackingEfficiencyCombined.h"
 
 ClassImp(AliTRDtrackingEfficiencyCombined)
 
 //_____________________________________________________________________________
-AliTRDtrackingEfficiencyCombined::AliTRDtrackingEfficiencyCombined(const char *name):
-  AliAnalysisTask(name, " "),
-  fObjectContainer(0x0),
-  fTrackInfos(0x0),
-  fDebugLevel(0),
-  fDebugStream(0x0)
+AliTRDtrackingEfficiencyCombined::AliTRDtrackingEfficiencyCombined()
+  :AliTRDrecoTask("TrackingEffMC", "Combined Tracking Efficiency")
 {
   //
   // Default constructor
   //
-
-  DefineInput(0, TObjArray::Class());
-  DefineOutput(0, TObjArray::Class());
 }
 
-
-//_____________________________________________________________________________
-AliTRDtrackingEfficiencyCombined::~AliTRDtrackingEfficiencyCombined()
-{
-  if(fObjectContainer){
-    //fObjectContainer->Delete();
-    delete fObjectContainer;
-  }
-}
-
-//_____________________________________________________________________________
-void AliTRDtrackingEfficiencyCombined::ConnectInputData(Option_t *){
-  //
-  // Connect input data
-  //
-
-  fTrackInfos = dynamic_cast<TObjArray *>(GetInputData(0));
-}
 
 //_____________________________________________________________________________
 void AliTRDtrackingEfficiencyCombined::CreateOutputObjects(){
@@ -88,10 +63,9 @@ void AliTRDtrackingEfficiencyCombined::CreateOutputObjects(){
   const Int_t nbins = 11;
   Float_t xbins[nbins+1] = {.5, .7, .9, 1.3, 1.7, 2.4, 3.5, 4.5, 5.5, 7., 9., 11.};
   
-  fObjectContainer = new TObjArray();
-  fObjectContainer->Add(new TProfile("trEffComb", "Combined Tracking Efficiency", nbins, xbins));
-  fObjectContainer->Add(new TProfile("trContComb", "Combined Tracking Contamination", nbins, xbins));
-  if(fDebugLevel) fDebugStream = new TTreeSRedirector("TRDeffDebug.root");
+  fContainer = new TObjArray();
+  fContainer->Add(new TProfile("trEffComb", "Combined Tracking Efficiency", nbins, xbins));
+  fContainer->Add(new TProfile("trContComb", "Combined Tracking Contamination", nbins, xbins));
 }
 
 //_____________________________________________________________________________
@@ -110,17 +84,17 @@ void AliTRDtrackingEfficiencyCombined::Exec(Option_t *){
 		AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., AliMagFMaps::k5kG);
 		AliTracker::SetFieldMap(field, kTRUE);
 	}
-	TProfile *efficiency = (TProfile *)fObjectContainer->UncheckedAt(0);
-	TProfile *contamination = (TProfile *)fObjectContainer->UncheckedAt(1);
+	TProfile *efficiency = (TProfile *)fContainer->At(0);
+	TProfile *contamination = (TProfile *)fContainer->At(1);
 	
-	Int_t nTrackInfos = fTrackInfos->GetEntriesFast();
+	Int_t nTrackInfos = fTracks->GetEntriesFast();
 	Double_t mom = 0;
 	AliTRDtrackV1 *TRDtrack = 0x0;
 	AliTRDtrackInfo *trkInf = 0x0;
 	AliTrackReference *trackRef = 0x0;
 	for(Int_t itinf = 0; itinf < nTrackInfos; itinf++){
 		mom = 0.;
-		trkInf = dynamic_cast<AliTRDtrackInfo *>(fTrackInfos->UncheckedAt(itinf));
+		trkInf = dynamic_cast<AliTRDtrackInfo *>(fTracks->UncheckedAt(itinf));
 		if(!trkInf) continue;
 		if((TRDtrack = trkInf->GetTRDtrack()) || trkInf->GetNumberOfClustersRefit()){
 			// check if allready found by the tracker
@@ -244,7 +218,7 @@ void AliTRDtrackingEfficiencyCombined::Exec(Option_t *){
   printf("%3d Tracks: MC[%3d] TRD[%3d | %5.2f%%] \n", (Int_t)AliAnalysisManager::GetAnalysisManager()->GetCurrentEntry(), nall, naccepted, 1.E2*Float_t(naccepted)/Float_t(nall));
   printf("%3d Tracks: ALL[%3d] DoubleCounted[%3d | %5.2f%%] \n", (Int_t)AliAnalysisManager::GetAnalysisManager()->GetCurrentEntry(), nall + ndoublecounted, ndoublecounted, 1.E2*Float_t(ndoublecounted)/Float_t(nall + ndoublecounted));
 
-  PostData(0, fObjectContainer);
+  PostData(0, fContainer);
 }
 
 //_____________________________________________________________________________
@@ -254,14 +228,20 @@ void AliTRDtrackingEfficiencyCombined::Terminate(Option_t *)
   // Termination
   //
 
-/*  fObjectContainer = dynamic_cast<TObjArray*>(GetOutputData(0));
-  if (!fObjectContainer) {
+  if(fDebugStream){ 
+    delete fDebugStream;
+    fDebugStream = 0x0;
+    fDebugLevel = 0;
+  }
+
+  fContainer = dynamic_cast<TObjArray*>(GetOutputData(0));
+  if (!fContainer) {
     Printf("ERROR: list not available");
     return;
   }
 
-  TProfile *hEff = (TProfile*)fObjectContainer->At(0);
-  TProfile *hEffCont = (TProfile*)fObjectContainer->At(1);
+  /*TProfile *hEff = (TProfile*)fContainer->At(0);
+  TProfile *hEffCont = (TProfile*)fContainer->At(1);
   Printf("Eff[%p] EffCont[%p]\n", (void*)hEff, (void*)hEffCont);
 
 
@@ -272,5 +252,4 @@ void AliTRDtrackingEfficiencyCombined::Terminate(Option_t *)
   hEff->DrawCopy("e1");
   c2->cd(2);
   hEffCont->DrawCopy("e1");*/
-  if(fDebugStream) delete fDebugStream;
 }

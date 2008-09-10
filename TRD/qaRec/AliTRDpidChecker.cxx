@@ -14,8 +14,8 @@
 #include "AliESDInputHandler.h"
 #include "AliTrackReference.h"
 
-#include "AliAnalysisTask.h"
-#include "AliAnalysisManager.h"
+#include "AliTRDrecoTask.h"
+//#include "AliAnalysisManager.h"
 
 #include "AliTRDtrackV1.h"
 #include "AliTRDReconstructor.h"
@@ -32,13 +32,9 @@
 ClassImp(AliTRDpidChecker)
 
 //________________________________________________________________________
-AliTRDpidChecker::AliTRDpidChecker(const char *name) 
-  :AliAnalysisTask(name, "")
-  ,fObjectContainer(0x0)
-  ,fTracks(0x0)
+AliTRDpidChecker::AliTRDpidChecker() 
+  :AliTRDrecoTask("PID", "PID Checker")
   ,fReconstructor(0x0)
-//   ,fDebugLevel(1)
-//   ,fDebugStream(0x0)
 {
   //
   // Default constructor
@@ -46,31 +42,13 @@ AliTRDpidChecker::AliTRDpidChecker(const char *name)
 
   fReconstructor = new AliTRDReconstructor();
   fReconstructor->SetRecoParam(AliTRDrecoParam::GetLowFluxParam());
-
-  DefineInput(0, TObjArray::Class());
-  DefineOutput(0, TObjArray::Class());
 }
 
 
 //________________________________________________________________________
 AliTRDpidChecker::~AliTRDpidChecker() 
 {
-  if(fObjectContainer){ 
-    //fObjectContainer->Delete();
-    //delete fObjectContainer;
-  }
-}
-
-
-
-//________________________________________________________________________
-void AliTRDpidChecker::ConnectInputData(Option_t *) 
-{
-  //
-  // Connect input data
-  //
-
-  fTracks = dynamic_cast<TObjArray*>(GetInputData(0));
+  if(fReconstructor) delete fReconstructor;
 }
 
 
@@ -81,15 +59,15 @@ void AliTRDpidChecker::CreateOutputObjects()
   // Called once
 
   OpenFile(0, "RECREATE");
-  fObjectContainer = new TObjArray();
-  fObjectContainer->Add(new TH1F("hMom", "momentum distribution", AliTRDCalPID::kNMom, 0.5, 11.5));
+  fContainer = new TObjArray();
+  fContainer->Add(new TH1F("hMom", "momentum distribution", AliTRDCalPID::kNMom, 0.5, 11.5));
 
 
   // histos of the electron probability of all 5 particle species and 11 momenta for the 2-dim LQ method 
   const Int_t kBins = 12000;         // binning of the histos and eficiency calculation
   for(Int_t iPart = 0; iPart < AliPID::kSPECIES; iPart++){
     for(Int_t iMom = 0; iMom < AliTRDCalPID::kNMom; iMom++){
-      fObjectContainer->Add(new TH1F(Form("PID%d_%d_LQ",iPart,iMom), Form("PID distribution for %d_%d", iPart, iMom), kBins, -0.1, 1.1));
+      fContainer->Add(new TH1F(Form("PID%d_%d_LQ",iPart,iMom), Form("PID distribution for %d_%d", iPart, iMom), kBins, -0.1, 1.1));
     }
   }
 
@@ -97,23 +75,23 @@ void AliTRDpidChecker::CreateOutputObjects()
   const Float_t epsilon = 1.E-3; 
   for(Int_t iPart = 0; iPart < AliPID::kSPECIES; iPart++){
     for(Int_t iMom = 0; iMom < AliTRDCalPID::kNMom; iMom++){
-      fObjectContainer->Add(new TH1F(Form("PID%d_%d_NN",iPart,iMom), Form("PID distribution for %d_%d", iPart, iMom), kBins, 0.-epsilon, 1.+epsilon));
+      fContainer->Add(new TH1F(Form("PID%d_%d_NN",iPart,iMom), Form("PID distribution for %d_%d", iPart, iMom), kBins, 0.-epsilon, 1.+epsilon));
     }
   }
 
   // histos of the dE/dx distribution for all 5 particle species and 11 momenta 
   for(Int_t iPart = 0; iPart < AliPID::kSPECIES; iPart++){
     for(Int_t iMom = 0;  iMom < AliTRDCalPID::kNMom; iMom++){
-      fObjectContainer->Add(new TH1F(Form("dEdx%d_%d",iPart,iMom), Form("dEdx distribution for %d_%d", iPart, iMom), 200, 0, 10000));
+      fContainer->Add(new TH1F(Form("dEdx%d_%d",iPart,iMom), Form("dEdx distribution for %d_%d", iPart, iMom), 200, 0, 10000));
     }
   }
 
   // frame and TGraph of the pion efficiencies
-  //fObjectContainer -> Add(new TH2F("hFrame", "", 10, 0.4, 12., 10, 0.0005, 0.1));
-  fObjectContainer -> Add(new TGraph(AliTRDCalPID::kNMom));
-  fObjectContainer -> Add(new TGraphErrors(AliTRDCalPID::kNMom));
-  fObjectContainer -> Add(new TGraph(AliTRDCalPID::kNMom));
-  fObjectContainer -> Add(new TGraphErrors(AliTRDCalPID::kNMom));
+  //fContainer -> Add(new TH2F("hFrame", "", 10, 0.4, 12., 10, 0.0005, 0.1));
+  fContainer -> Add(new TGraph(AliTRDCalPID::kNMom));
+  fContainer -> Add(new TGraphErrors(AliTRDCalPID::kNMom));
+  fContainer -> Add(new TGraph(AliTRDCalPID::kNMom));
+  fContainer -> Add(new TGraphErrors(AliTRDCalPID::kNMom));
 }
 
 //________________________________________________________________________
@@ -128,16 +106,16 @@ void AliTRDpidChecker::Exec(Option_t *)
 //     AliTracker::SetFieldMap(field, kTRUE);
 //   }
 
-  TH1F *hMom = (TH1F*)fObjectContainer->UncheckedAt(0);	
+  TH1F *hMom = (TH1F*)fContainer->UncheckedAt(0);	
   TH1F *hPIDLQ[AliPID::kSPECIES][AliTRDCalPID::kNMom];
   TH1F *hPIDNN[AliPID::kSPECIES][AliTRDCalPID::kNMom];
   TH1F *hdEdx[AliPID::kSPECIES][AliTRDCalPID::kNMom];
 
   for(Int_t iPart = 0; iPart < AliPID::kSPECIES; iPart++){
     for(Int_t iMom = 0; iMom < AliTRDCalPID::kNMom; iMom++){
-      hPIDLQ[iPart][iMom] = (TH1F*)fObjectContainer->At(iPart*AliTRDCalPID::kNMom+iMom+1);
-      hPIDNN[iPart][iMom] = (TH1F*)fObjectContainer->At(iPart*AliTRDCalPID::kNMom+iMom+1+AliPID::kSPECIES*AliTRDCalPID::kNMom);
-      hdEdx[iPart][iMom]  = (TH1F*)fObjectContainer->At(iPart*AliTRDCalPID::kNMom+iMom+1+AliPID::kSPECIES*AliTRDCalPID::kNMom*2);
+      hPIDLQ[iPart][iMom] = (TH1F*)fContainer->At(iPart*AliTRDCalPID::kNMom+iMom+1);
+      hPIDNN[iPart][iMom] = (TH1F*)fContainer->At(iPart*AliTRDCalPID::kNMom+iMom+1+AliPID::kSPECIES*AliTRDCalPID::kNMom);
+      hdEdx[iPart][iMom]  = (TH1F*)fContainer->At(iPart*AliTRDCalPID::kNMom+iMom+1+AliPID::kSPECIES*AliTRDCalPID::kNMom*2);
     }
   }
 	
@@ -278,7 +256,7 @@ void AliTRDpidChecker::Exec(Option_t *)
     }
   }
 
-  PostData(0, fObjectContainer);
+  PostData(0, fContainer);
 }
 
 //________________________________________________________________________
@@ -287,8 +265,8 @@ void AliTRDpidChecker::Terminate(Option_t *)
   // Draw result to the screen
   // Called once at the end of the query
 
-  fObjectContainer = dynamic_cast<TObjArray*>(GetOutputData(0));
-  if (!fObjectContainer) {
+  fContainer = dynamic_cast<TObjArray*>(GetOutputData(0));
+  if (!fContainer) {
     Printf("ERROR: list not available");
     return;
   }
@@ -298,7 +276,7 @@ void AliTRDpidChecker::Terminate(Option_t *)
   const Int_t kNSpectra = AliPID::kSPECIES*AliTRDCalPID::kNMom; 
   TH1F *hdEdx[kNSpectra];
   for(Int_t iHist = 0; iHist < kNSpectra; iHist++){
-    hdEdx[iHist] = (TH1F*)fObjectContainer->At(111+iHist);
+    hdEdx[iHist] = (TH1F*)fContainer->At(111+iHist);
     if(hdEdx[iHist] -> GetEntries() > 0)
       hdEdx[iHist] -> Scale(1./hdEdx[iHist] -> GetEntries());
     else continue;
@@ -331,10 +309,10 @@ void AliTRDpidChecker::Terminate(Option_t *)
   TGraph *gEffisLQ=0x0, *gEffisNN=0x0;
   TGraphErrors *gEffisErrLQ=0x0, *gEffisErrNN=0x0;
 
-  gEffisLQ = (TGraph*)fObjectContainer->At(167);
-  gEffisErrLQ = (TGraphErrors*)fObjectContainer->At(168);
-  gEffisNN = (TGraph*)fObjectContainer->At(169);
-  gEffisErrNN = (TGraphErrors*)fObjectContainer->At(170);
+  gEffisLQ = (TGraph*)fContainer->At(166);
+  gEffisErrLQ = (TGraphErrors*)fContainer->At(167);
+  gEffisNN = (TGraph*)fContainer->At(168);
+  gEffisErrNN = (TGraphErrors*)fContainer->At(169);
 
   for(Int_t iBin = 0; iBin < AliTRDCalPID::kNMom; iBin++){
     Float_t momentum = AliTRDCalPID::GetMomentum(iBin);
@@ -362,8 +340,8 @@ Double_t  AliTRDpidChecker::GetPionEfficiency(Int_t Index1, Int_t Index2){
   Double_t SumElecs, SumPions;   // integrated sum of elecs and pions in the histos
   Double_t aBinSum, bBinSum;     // content of a single bin in the histos
   
-  TH1F *Histo1 = (TH1F*)fObjectContainer->At(Index1);  // electron histo
-  TH1F *Histo2 = (TH1F*)fObjectContainer->At(Index2);  // pion histo
+  TH1F *Histo1 = (TH1F*)fContainer->At(Index1);  // electron histo
+  TH1F *Histo2 = (TH1F*)fContainer->At(Index2);  // pion histo
 
 
   SumElecs = 0.;
@@ -424,8 +402,8 @@ Double_t  AliTRDpidChecker::GetError(Int_t Index1, Int_t Index2){
   Double_t fError = 0.;                         // error of the pion efficiency
 
 
-  TH1F *Histo1 = (TH1F*)fObjectContainer->At(Index1);  // electron histo
-  TH1F *Histo2 = (TH1F*)fObjectContainer->At(Index2);  // pion histo
+  TH1F *Histo1 = (TH1F*)fContainer->At(Index1);  // electron histo
+  TH1F *Histo2 = (TH1F*)fContainer->At(Index2);  // pion histo
 
   if(Index1 > 10)              // print the correct momentum index for neural networks
     Index1 = Index1 - 55;
