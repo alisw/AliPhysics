@@ -146,7 +146,6 @@ UInt_t AliVZEROPreprocessor::Process(TMap* dcsAliasMap)
   delete calibData;
   delete sourceList; 
 
-  if (!result) return 1;   
-  return 0;
+  return result;
 }
 
