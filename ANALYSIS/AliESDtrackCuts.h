@@ -41,7 +41,7 @@ public:
   Bool_t IsSelected(TList* /*list*/) {return kTRUE;}
 
   Bool_t AcceptTrack(AliESDtrack* esdTrack);
-  TObjArray* GetAcceptedTracks(AliESDEvent* esd,Bool_t bTPC = kFALSE);
+  TObjArray* GetAcceptedTracks(AliESDEvent* esd, Bool_t bTPC = kFALSE);
   Int_t CountAcceptedTracks(AliESDEvent* esd);
 
   static AliESDtrack* GetTPCOnlyTrack(AliESDEvent* esd, Int_t iTrack);
@@ -68,6 +68,7 @@ public:
   void SetRequireSigmaToVertex(Bool_t b=kTRUE )       {fCutSigmaToVertexRequired = b;}
   void SetDCAToVertex(Float_t dist=1e10)              {fCutDCAToVertex = dist;}
   void SetDCAToVertexXY(Float_t dist=1e10)            {fCutDCAToVertexXY = dist;}
+  void SetDCAToVertexZ(Float_t dist=1e10)             {fCutDCAToVertexZ = dist;}
 
   // getters
 
@@ -92,7 +93,7 @@ public:
   void GetPzRange(Float_t& r1, Float_t& r2)  {r1=fPzMin;  r2=fPzMax;}
   void GetEtaRange(Float_t& r1, Float_t& r2) {r1=fEtaMin; r2=fEtaMax;}
   void GetRapRange(Float_t& r1, Float_t& r2) {r1=fRapMin; r2=fRapMax;}
-  
+
   // track kinmatic cut setters
   void SetPRange(Float_t r1=0, Float_t r2=1e10)       {fPMin=r1;   fPMax=r2;}
   void SetPtRange(Float_t r1=0, Float_t r2=1e10)      {fPtMin=r1;  fPtMax=r2;}
@@ -121,7 +122,7 @@ public:
 protected:
   void Init(); // sets everything to 0
 
-  enum { kNCuts = 23 };
+  enum { kNCuts = 24 };
 
   //######################################################
   // esd track quality cuts
@@ -148,6 +149,7 @@ protected:
   Bool_t  fCutSigmaToVertexRequired;  // cut track if sigma from track-to-vertex could not be calculated
   Float_t fCutDCAToVertex;            // track-to-vertex cut in absolute distance
   Float_t fCutDCAToVertexXY;          // track-to-vertex cut in absolute distance in xy-plane
+  Float_t fCutDCAToVertexZ;           // track-to-vertex cut in absolute distance in z-plane
 
   // esd kinematics cuts
   Float_t fPMin,   fPMax;             // definition of the range of the P

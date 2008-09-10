@@ -5,7 +5,7 @@
  * Contributors are mentioned in the code where appropriate.              *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commerciatobjl purposes is hereby granted   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
  * without fee, provided that the above copyright notice appears in all   *
  * copies and that both the copyright notice and this permission notice   *
  * appear in the supporting documentation. The authors make no claims     *
@@ -53,7 +53,8 @@ const Char_t* AliESDtrackCuts::fgkCutNames[kNCuts] = {
  "y",
  "eta",
  "trk-to-vtx dca absolute",
- "trk-to-vtx dca xy absolute"
+ "trk-to-vtx dca xy absolute",
+ "trk-to-vtx dca z absolute"
 };
 
 //____________________________________________________________________
@@ -74,6 +75,7 @@ AliESDtrackCuts::AliESDtrackCuts(const Char_t* name, const Char_t* title) : AliA
   fCutSigmaToVertexRequired(0),
   fCutDCAToVertex(0),
   fCutDCAToVertexXY(0),
+  fCutDCAToVertexZ(0),
   fPMin(0),
   fPMax(0),
   fPtMin(0),
@@ -113,6 +115,7 @@ AliESDtrackCuts::AliESDtrackCuts(const Char_t* name, const Char_t* title) : AliA
   SetRequireSigmaToVertex();
   SetDCAToVertex();
   SetDCAToVertexXY();
+  SetDCAToVertexZ();
   SetPRange();
   SetPtRange();
   SetPxRange();
@@ -142,6 +145,7 @@ AliESDtrackCuts::AliESDtrackCuts(const AliESDtrackCuts &c) : AliAnalysisCuts(c),
   fCutSigmaToVertexRequired(0),
   fCutDCAToVertex(0),
   fCutDCAToVertexXY(0),
+  fCutDCAToVertexZ(0),
   fPMin(0),
   fPMax(0),
   fPtMin(0),
@@ -253,6 +257,7 @@ void AliESDtrackCuts::Init()
   fCutSigmaToVertexRequired = 0;
   fCutDCAToVertex = 0;
   fCutDCAToVertexXY = 0;
+  fCutDCAToVertexZ = 0;
 
   fPMin = 0;
   fPMax = 0;
@@ -346,6 +351,7 @@ void AliESDtrackCuts::Copy(TObject &c) const
   target.fCutSigmaToVertexRequired = fCutSigmaToVertexRequired;
   target.fCutDCAToVertex = fCutDCAToVertex;
   target.fCutDCAToVertexXY = fCutDCAToVertexXY;
+  target.fCutDCAToVertexZ = fCutDCAToVertexZ;
 
   target.fPMin = fPMin;
   target.fPMax = fPMax;
@@ -576,10 +582,12 @@ AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack) {
     AliDebug(1, "Estimated b resolution lower or equal zero!");
     bCov[0]=0; bCov[2]=0;
   }
-  Float_t dcaToVertex   = TMath::Sqrt(b[0]*b[0] + b[1]*b[1]);
- 
+
   Float_t dcaToVertexXY = b[0];
-  
+  Float_t dcaToVertexZ = b[1];
+
+  Float_t dcaToVertex   = TMath::Sqrt(dcaToVertexXY*dcaToVertexXY + dcaToVertexZ*dcaToVertexZ);
+
   // getting the kinematic variables of the track
   // (assuming the mass is known)
   Double_t p[3];
@@ -654,6 +662,8 @@ AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack) {
     cuts[21] = kTRUE;
   if (dcaToVertexXY > fCutDCAToVertexXY)
     cuts[22] = kTRUE;
+  if (dcaToVertexZ > fCutDCAToVertexZ)
+    cuts[23] = kTRUE;
 
   Bool_t cut=kFALSE;
   for (Int_t i=0; i<kNCuts; i++) 
@@ -748,7 +758,6 @@ AliESDtrack* AliESDtrackCuts::GetTPCOnlyTrack(AliESDEvent* esd, Int_t iTrack)
 
   if(!esd->GetPrimaryVertexTPC()->GetStatus())
     return 0; // TPC Vertex is created by default in AliESDEvent, do not use in this case
-  
 
   AliESDtrack* track = esd->GetTrack(iTrack);
   if (!track)
