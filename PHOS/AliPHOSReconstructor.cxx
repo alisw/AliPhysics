@@ -223,7 +223,7 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   // Add to CaloCells only EMC digits with non-zero energy 
   for (Int_t idig = 0 ; idig < nDigits ; idig++) {
     const AliPHOSDigit * dig = (const AliPHOSDigit*)fgDigitsArray->At(idig);
-    if(dig->GetId() <= knEMC && dig->GetEnergy() > 0 ){
+    if(dig->GetId() <= knEMC && dig->GetEnergy() > GetRecoParam()->GetEMCMinE() ){
       //printf("i %d; id %d; amp %f; time %e\n",
       //idignew,dig->GetId(),dig->GetEnergy(), dig->GetTime());
       phsCells.SetCell(idignew,dig->GetId(), dig->GetEnergy(), dig->GetTime());   
@@ -334,7 +334,6 @@ void  AliPHOSReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
   // Converts raw data to
   // PHOS digits
   // Works on a single-event basis
-
   rawReader->Reset() ; 
 
   AliPHOSRawDecoder * dc ;

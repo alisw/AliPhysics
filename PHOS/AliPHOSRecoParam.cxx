@@ -22,6 +22,7 @@
 // --- AliRoot header files ---
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
+#include "AliLog.h"
 #include "AliPHOSRecoParam.h"
 
 ClassImp(AliPHOSRecoParam)
@@ -41,6 +42,7 @@ AliPHOSRecoParam::AliPHOSRecoParam() :
   fEMCSubtractPedestals(kTRUE),
   fEMCUnfold(kTRUE),
   fEMCDecoderVersion(""),
+  fGlobalAltroOffset(0),
   fCPVClusteringThreshold(0.0),
   fCPVLocMaxCut(0.03),
   fCPVMinE(0.0),
@@ -63,6 +65,7 @@ AliPHOSRecoParam::AliPHOSRecoParam(const AliPHOSRecoParam& ):
   fEMCSubtractPedestals(kTRUE),
   fEMCUnfold(kTRUE),
   fEMCDecoderVersion(""),
+  fGlobalAltroOffset(0),
   fCPVClusteringThreshold(0.0),
   fCPVLocMaxCut(0.03),
   fCPVMinE(0.0),
@@ -88,6 +91,7 @@ AliPHOSRecoParam& AliPHOSRecoParam::operator = (const AliPHOSRecoParam& recoPara
     fEMCSubtractPedestals   = recoParam.fEMCSubtractPedestals;
     fEMCUnfold              = recoParam.fEMCUnfold;
     fEMCDecoderVersion      = recoParam.fEMCDecoderVersion;
+    fGlobalAltroOffset      = recoParam.fGlobalAltroOffset;
     fCPVClusteringThreshold = recoParam.fCPVClusteringThreshold;
     fCPVLocMaxCut           = recoParam.fCPVLocMaxCut;
     fCPVMinE                = recoParam.fCPVMinE;
@@ -96,6 +100,35 @@ AliPHOSRecoParam& AliPHOSRecoParam::operator = (const AliPHOSRecoParam& recoPara
   }
 
   return *this;
+}
+
+//-----------------------------------------------------------------------------
+void AliPHOSRecoParam::Print(Option_t *option) const
+{
+  AliDebug(2,Form("PHOS reconstruction parameters:\n"
+		  "\tEMCClusteringThreshold = %f\n"
+		  "\tEMCLocMaxCut           = %f\n"
+		  "\tEMCMinE                = %f\n"
+		  "\tEMCW0                  = %f\n"
+		  "\tEMCSampleQualityCut    = %f\n"
+		  "\tEMCEcoreRadius         = %f\n"
+		  "\tEMCEcore2ESD           = %d\n"
+		  "\tEMCSubtractPedestals   = %d\n"
+		  "\tEMCUnfold              = %d\n"
+		  "\tEMCDecoderVersion      = \"%s\"\n"
+		  "\tGlobalAltroOffset      = %d",
+		  fEMCClusteringThreshold,
+		  fEMCLocMaxCut,
+		  fEMCMinE,
+		  fEMCW0,
+		  fEMCSampleQualityCut,
+		  fEMCEcoreRadius,
+		  fEMCEcore2ESD,
+		  fEMCSubtractPedestals,
+		  fEMCUnfold,
+		  fEMCDecoderVersion.Data(),
+		  fGlobalAltroOffset));
+
 }
 
 //-----------------------------------------------------------------------------

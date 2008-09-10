@@ -384,8 +384,10 @@ void AliPHOSClusterizerv1::InitParameters()
   const AliPHOSRecoParam* recoParam = AliPHOSReconstructor::GetRecoParam();
   if(!recoParam) AliFatal("Reconstruction parameters are not set!");
 
-  fCpvClusteringThreshold  = recoParam->GetEMCClusteringThreshold();
-  fEmcClusteringThreshold  = recoParam->GetCPVClusteringThreshold();
+  recoParam->Print();
+
+  fEmcClusteringThreshold  = recoParam->GetEMCClusteringThreshold();
+  fCpvClusteringThreshold  = recoParam->GetCPVClusteringThreshold();
   
   fEmcLocMaxCut            = recoParam->GetEMCLocalMaxCut();
   fCpvLocMaxCut            = recoParam->GetCPVLocalMaxCut();

@@ -55,6 +55,8 @@ public:
   void SetCPVLogWeight(Float_t w)                    { fCPVW0                 =w;       }
   void SetCPVUnfolding(Bool_t toUnfold=kFALSE)       { fCPVUnfold            =toUnfold;}
 
+  virtual void Print(const Option_t *option="") const;
+
   static AliPHOSRecoParam* GetDefaultParameters();
   static const  TObjArray* GetMappings();
 

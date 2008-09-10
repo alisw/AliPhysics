@@ -19,17 +19,18 @@ void MakePHOSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kDefaul
 
   {
     AliPHOSRecoParam * phosRecoParam = AliPHOSRecoParam::GetDefaultParameters();
-    phosRecoParam->SetEventSpecie(AliRecoParam::kCosmic);
-    phosRecoParam->SetEMCSubtractPedestals(kTRUE);
-    phosRecoParam->SetEMCMinE(0.01);
-    phosRecoParam->SetEMCClusteringThreshold(0.02);
+    phosRecoParam->SetEventSpecie(AliRecoParam::kDefault);
+    phosRecoParam->SetEMCSubtractPedestals(kFALSE);
+    phosRecoParam->SetEMCMinE(0.045);
+    phosRecoParam->SetEMCClusteringThreshold(0.20);
     phosRecoParam->SetEMCDecoderVersion("v1");
     recoParamArray->AddLast(phosRecoParam);
   }
   {
     AliPHOSRecoParam * phosRecoParam = AliPHOSRecoParam::GetDefaultParameters();
     recoParamArray->AddLast(phosRecoParam);
-    phosRecoParam->SetEventSpecie(AliRecoParam::kDefault);
+    phosRecoParam->SetEMCClusteringThreshold(0.02008);
+    phosRecoParam->SetEventSpecie(AliRecoParam::kCosmic);
   }
 
   // Set the default
