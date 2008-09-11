@@ -75,6 +75,7 @@ UInt_t AliZDCPreprocessor::ProcessChMap(TString runType)
 { 
   // Writing channel map in the OCDB
   TList* daqSource=0;
+  
   if(runType.CompareTo("STANDALONE_PEDESTAL"))
     daqSource = GetFileSources(kDAQ, "PEDESTALS");
   else if(runType.CompareTo("STANDALONE_LASER"))
@@ -100,8 +101,8 @@ UInt_t AliZDCPreprocessor::ProcessChMap(TString runType)
   Int_t res=999;
   while((source = dynamic_cast<TObjString*> (iter.Next()))){
      Log(Form("\n\t Getting file #%d\n",++isou));
-     TString fileName;
-     if(runType.CompareTo("STANDALONE_PEDESTAL"))
+     TString fileName = "ZDCChMapping.dat";
+     /*if(runType.CompareTo("STANDALONE_PEDESTAL"))
       fileName = GetFile(kDAQ, "PEDESTALS", source->GetName());
      else if(runType.CompareTo("STANDALONE_LASER"))
       fileName = GetFile(kDAQ, "LASER", source->GetName());
@@ -112,23 +113,23 @@ UInt_t AliZDCPreprocessor::ProcessChMap(TString runType)
      else if(runType.CompareTo("STANDALONE_BC"))
       fileName = GetFile(kDAQ, "BC", source->GetName());
      else if(runType.CompareTo("PHYSICS"))
-      fileName = GetFile(kDAQ, "PHYSICS", source->GetName());
+      fileName = GetFile(kDAQ, "PHYSICS", source->GetName());*/
 
      if(fileName.Length() <= 0){
        Log(Form("No file from source %s!", source->GetName()));
        return 1;
      }
-     // --- Initializing pedestal calibration object
+     // --- Initializing mapping calibration object
      AliZDCChMap *mapCalib = new AliZDCChMap("ZDC");
-     // --- Reading file with pedestal calibration data
-     const char* fname = fileName.Data();
-     if(fname){
+     // --- Reading file with calibration data
+     //const char* fname = fileName.Data();
+     if(fileName){
        FILE *file;
-       if((file = fopen(fname,"r")) == NULL){
-	 printf("Cannot open file %s \n",fname);
+       if((file = fopen(fileName,"r")) == NULL){
+	 printf("Cannot open file %s \n",fileName.Data());
          return 1;
        }
-       Log(Form("File %s connected to process data for ADC mapping", fname));
+       Log(Form("File %s connected to process data for ADC mapping", fileName.Data()));
        //
        Int_t chMap[48][6]; 
        for(Int_t j=0; j<48; j++){	  
@@ -143,7 +144,7 @@ UInt_t AliZDCPreprocessor::ProcessChMap(TString runType)
        fclose(file);
      }
      else{
-       Log(Form("File %s not found", fname));
+       Log(Form("File %s not found", fileName.Data()));
        return 1;
      }
      //mapCalib->Print("");
