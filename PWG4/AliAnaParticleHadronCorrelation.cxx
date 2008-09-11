@@ -199,7 +199,7 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
 
     //Keep neutral meson selection histograms if requiered
     //Setting done in AliNeutralMesonSelection
-    if(GetNeutralMesonSelection()){
+	if(GetNeutralMesonSelection()){
       TList * nmsHistos = GetNeutralMesonSelection()->GetCreateOutputObjects() ;
       cout<<"NMSHistos "<< nmsHistos<<endl;
       if(GetNeutralMesonSelection()->AreNeutralMesonSelectionHistosKept())
@@ -246,10 +246,10 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillAOD()
   //Particle-Hadron Correlation Analysis, fill AODs
   if(GetDebug() > 1){
     printf("Begin hadron correlation analysis, fill AODs \n");
-    printf("In particle branch aod entries %d\n", GetAODBranch()->GetEntries());
-    printf("In CTS aod entries %d\n", GetAODCTS()->GetEntries());
-    printf("In EMCAL aod entries %d\n", GetAODEMCAL()->GetEntries());
-    printf("In PHOS aod entries %d\n", GetAODPHOS()->GetEntries());
+    printf("In particle branch aod entries %d\n", GetAODBranch()->GetEntriesFast());
+    printf("In CTS aod entries %d\n", GetAODCTS()->GetEntriesFast());
+    printf("In EMCAL aod entries %d\n", GetAODEMCAL()->GetEntriesFast());
+    printf("In PHOS aod entries %d\n", GetAODPHOS()->GetEntriesFast());
   }
   
   //Loop on stored AOD particles, trigger
@@ -262,16 +262,16 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillAOD()
   
     //Make correlation with neutral pions
     //Trigger particle in PHOS, correlation with EMCAL
-    if(particle->GetDetector()=="PHOS" && GetReader()->IsEMCALSwitchedOn() && GetAODEMCAL()->GetEntries() > 0)
+    if(particle->GetDetector()=="PHOS" && GetReader()->IsEMCALSwitchedOn() && GetAODEMCAL()->GetEntriesFast() > 0)
       MakeNeutralCorrelation(particle,(TSeqCollection*)GetAODEMCAL(),kFALSE);
     //Trigger particle in EMCAL, correlation with PHOS
-    else if(particle->GetDetector()=="EMCAL" && GetReader()->IsPHOSSwitchedOn() && GetAODPHOS()->GetEntries() > 0)
+    else if(particle->GetDetector()=="EMCAL" && GetReader()->IsPHOSSwitchedOn() && GetAODPHOS()->GetEntriesFast() > 0)
       MakeNeutralCorrelation(particle,(TSeqCollection*)GetAODPHOS(),kFALSE);
     //Trigger particle in CTS, correlation with PHOS, EMCAL and CTS
     else if(particle->GetDetector()=="CTS" ){
-      if(GetReader()->IsPHOSSwitchedOn() && GetAODPHOS()->GetEntries() > 0) 
+      if(GetReader()->IsPHOSSwitchedOn() && GetAODPHOS()->GetEntriesFast() > 0) 
 	MakeNeutralCorrelation(particle,(TSeqCollection*)GetAODPHOS(),kFALSE);
-      if(GetReader()->IsEMCALSwitchedOn() && GetAODEMCAL()->GetEntries() > 0) 
+      if(GetReader()->IsEMCALSwitchedOn() && GetAODEMCAL()->GetEntriesFast() > 0) 
 	MakeNeutralCorrelation(particle,(TSeqCollection*)GetAODEMCAL(),kFALSE);
     }
 
@@ -287,7 +287,7 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
   //Particle-Hadron Correlation Analysis, fill AODs
   if(GetDebug() > 1){
     printf("Begin hadron correlation analysis, fill histograms \n");
-    printf("In particle branch aod entries %d\n", GetAODBranch()->GetEntries());
+    printf("In particle branch aod entries %d\n", GetAODBranch()->GetEntriesFast());
   }
   
   //Loop on stored AOD particles
@@ -296,16 +296,16 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
     AliAODParticleCorrelation* particle =  dynamic_cast<AliAODParticleCorrelation*> (GetAODBranch()->At(iaod));
    
     if(GetDebug() > 1){
-      printf("Particle %d, In Track Refs  entries %d\n", iaod, (particle->GetRefTracks())->GetEntries());
-      printf("Particle %d, In Cluster Refs entries %d\n",iaod, (particle->GetRefClusters())->GetEntries());
+      printf("Particle %d, In Track Refs  entries %d\n", iaod, (particle->GetRefTracks())->GetEntriesFast());
+      printf("Particle %d, In Cluster Refs entries %d\n",iaod, (particle->GetRefClusters())->GetEntriesFast());
     }
 
     //Make correlation with charged hadrons
-    if((particle->GetRefTracks())->GetEntries() > 0)
+    if((particle->GetRefTracks())->GetEntriesFast() > 0)
       MakeChargedCorrelation(particle, (TSeqCollection*) (particle->GetRefTracks()),kTRUE);
     
     //Make correlation with neutral pions
-    if((particle->GetRefClusters())->GetEntries() > 0)
+    if((particle->GetRefClusters())->GetEntriesFast() > 0)
       MakeNeutralCorrelation(particle,  (TSeqCollection*) (particle->GetRefClusters()), kTRUE);
     
   }//Aod branch loop

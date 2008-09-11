@@ -179,9 +179,9 @@ void  AliAnaExample::MakeAnalysisFillAOD()
   
   //Some prints
   if(GetDebug() > 0){
-    if(fDetector == "EMCAL" && GetAODEMCAL())printf("Example : in emcal aod entries %d\n", GetAODEMCAL()->GetEntries());
-    if(fDetector == "CTS" && GetAODCTS())printf("Example : in CTS aod entries %d\n", GetAODCTS()->GetEntries());
-    if(fDetector == "PHOS" && GetAODPHOS())printf("Example : in PHOS aod entries %d\n", GetAODPHOS()->GetEntries());
+    if(fDetector == "EMCAL" && GetAODEMCAL())printf("Example : in emcal aod entries %d\n", GetAODEMCAL()->GetEntriesFast());
+    if(fDetector == "CTS" && GetAODCTS())printf("Example : in CTS aod entries %d\n", GetAODCTS()->GetEntriesFast());
+    if(fDetector == "PHOS" && GetAODPHOS())printf("Example : in PHOS aod entries %d\n", GetAODPHOS()->GetEntriesFast());
   }
   
   //Get List with tracks or clusters  
@@ -190,7 +190,7 @@ void  AliAnaExample::MakeAnalysisFillAOD()
   else if(fDetector == "EMCAL") partList = GetAODEMCAL();
   else if(fDetector == "PHOS") partList = GetAODPHOS();
   
-  if(!partList || partList->GetEntries() == 0) return ;
+  if(!partList || partList->GetEntriesFast() == 0) return ;
   
   //Fill AODCaloClusters and AODParticleCorrelation with PHOS/EMCAL aods
   if(fDetector == "EMCAL" || fDetector == "PHOS"){
@@ -198,14 +198,14 @@ void  AliAnaExample::MakeAnalysisFillAOD()
     //WORK WITH CALOCLUSTERS
     if(GetReader()->GetDataType()!= AliCaloTrackReader::kMC) 
     ConnectAODCaloClusters(); //Do Only when filling AODCaloClusters 
-    if(GetDebug() > 0) printf("Example: in calo clusters aod entries %d\n", GetAODCaloClusters()->GetEntries());
+    if(GetDebug() > 0) printf("Example: in calo clusters aod entries %d\n", GetAODCaloClusters()->GetEntriesFast());
     
     //Get vertex for photon momentum calculation
     Double_t v[3] ; //vertex ;
     GetReader()->GetVertex(v);
     
     TLorentzVector mom ;
-    for(Int_t i = 0; i < partList->GetEntries(); i++){
+    for(Int_t i = 0; i < partList->GetEntriesFast(); i++){
       
       AliAODCaloCluster * calo =  dynamic_cast<AliAODCaloCluster*> (partList->At(i));
       
@@ -279,7 +279,7 @@ void  AliAnaExample::MakeAnalysisFillAOD()
   else if(fDetector == "CTS"){ //Track analysis
     //Fill AODParticleCorrelation with CTS aods
     TVector3 p3;
-    for(Int_t i = 0; i < GetAODCTS()->GetEntries(); i++){
+    for(Int_t i = 0; i < GetAODCTS()->GetEntriesFast(); i++){
       
       AliAODTrack * track =  dynamic_cast<AliAODTrack*> (GetAODCTS()->At(i));
       
@@ -301,8 +301,8 @@ void  AliAnaExample::MakeAnalysisFillAOD()
   }//CTS analysis
   
   if(GetDebug() > 0) {
-    printf("Example: final aod calocluster entries %d\n", GetAODCaloClusters()->GetEntries());
-    printf("Example: final aod branch entries %d\n", GetAODBranch()->GetEntries());
+    printf("Example: final aod calocluster entries %d\n", GetAODCaloClusters()->GetEntriesFast());
+    printf("Example: final aod branch entries %d\n", GetAODBranch()->GetEntriesFast());
     printf("Example: final aod cell  entries %d\n", GetAODCaloCells()->GetNumberOfCells());
   }
 } 

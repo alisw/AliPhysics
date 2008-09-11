@@ -1,56 +1,94 @@
-#ifndef ALIANAGAMMAJETFINDER_H
-#define ALIANAGAMMAJETFINDER_H
+#ifndef AliAnaParticleJetFinderCorrelation_H
+#define AliAnaParticleJetFinderCorrelation_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
-/* $Id: AliAnaGammaJetFinder.h 21839 2007-10-29 13:49:42Z gustavo $ */
+/* $Id: AliAnaParticleJetFinderCorrelation.h 21839 2007-10-29 13:49:42Z gustavo $ */
 
-/* History of cvs commits:
- *
- * $Log$
- * Revision 1.2  2007/08/17 12:40:04  schutz
- * New analysis classes by Gustavo Conesa
- *
- * Revision 1.1.2.1  2007/07/26 10:32:09  schutz
- * new analysis classes in the the new analysis framework
- *
- *
- */
 
 //_________________________________________________________________________
-// Class that contains the algorithm for the analysis of gamma-jet (standard finder) correlation 
+// Class that contains the algorithm for the analysis of particle (direct gamma) - jet 
+// (standard jet found with JETAN) correlation 
+// Particle and jet for correlation found by independent algorithms.
+// For Example direct isolated photon found in AliAnaGammaDirect and the jet with JETAN
+//
 //-- Author: Gustavo Conesa (INFN-LNF)
 
-#include "AliAnaGammaCorrelation.h"
+// --- ROOT system ---
+class TH2F;
+
+//---- Analysis system ----
+class AliLog;
+#include "AliAnaPartCorrBaseClass.h"
      
-class AliAnaGammaJetFinder : public AliAnaGammaCorrelation {
+class AliAnaParticleJetFinderCorrelation : public AliAnaPartCorrBaseClass {
        
-  public: 
+	public: 
        
-       AliAnaGammaJetFinder() ; // default ctor
-       AliAnaGammaJetFinder(const AliAnaGammaJetFinder & g) ; // cpy ctor
-       AliAnaGammaJetFinder & operator = (const AliAnaGammaJetFinder & g) ;//cpy assignment
-       virtual ~AliAnaGammaJetFinder() ; //virtual dtor
+		AliAnaParticleJetFinderCorrelation() ; // default ctor
+		AliAnaParticleJetFinderCorrelation(const AliAnaParticleJetFinderCorrelation & g) ; // cpy ctor
+		AliAnaParticleJetFinderCorrelation & operator = (const AliAnaParticleJetFinderCorrelation & g) ;//cpy assignment
+		virtual ~AliAnaParticleJetFinderCorrelation() {;} //virtual dtor
               
-       TList * GetCreateOutputObjects();
+		TList * GetCreateOutputObjects();
        
-       void InitParameters();
+		void InitParameters();
        
-       void Print(const Option_t * opt) const;
+		void Print(const Option_t * opt) const;
        
-       void MakeGammaCorrelation( TParticle * pGamma, TClonesArray *pl, TClonesArray *)  ;
-       
+		Float_t  GetConeSize() const {return fConeSize ; }
+		Float_t  GetPtThresholdInCone() const {return fPtThresholdInCone ; }	   
+		Double_t GetDeltaPhiMaxCut() const {return fDeltaPhiMaxCut ; }
+		Double_t GetDeltaPhiMinCut() const {return fDeltaPhiMinCut ; }
+		Double_t GetRatioMaxCut() const {return fRatioMaxCut ; }
+		Double_t GetRatioMinCut() const {return fRatioMinCut ; }  	   
+		Bool_t	 AreJetRefTracks() const {return fUseJetRefTracks ; }
+		Bool_t   IsCorrelationMadeInHistoMaker() const {return fMakeCorrelationInHistoMaker ;} 
+		
+		void SetConeSize(Float_t cone) {fConeSize = cone; }
+		void SetPtThresholdInCone(Float_t pt){fPtThresholdInCone = pt; };	   
+		void SetDeltaPhiCutRange(Double_t phimin, Double_t phimax)
+			{fDeltaPhiMaxCut =phimax;  fDeltaPhiMinCut =phimin;}
+		void SetRatioCutRange(Double_t ratiomin, Double_t ratiomax)
+			{fRatioMaxCut =ratiomax;  fRatioMinCut = ratiomin ; }
+		void UseJetRefTracks(Bool_t use) {fUseJetRefTracks = use ; }	
+	    void SetMakeCorrelationInHistoMaker(Bool_t make) {fMakeCorrelationInHistoMaker = make ;}	
+		
+	 private:
+    
+		Int_t SelectJet(AliAODParticleCorrelation * particle) ;
+	
+	    void MakeAnalysisFillAOD() ;
+        void MakeAnalysisFillHistograms() ;
+			
   private:
        
-       TH2F * fhDeltaEtaJet; // Difference of jet eta and prompt gamma eta as function of gamma pT
-       TH2F * fhDeltaPhiJet;  // Difference of jet phi and prompt gamma phi as function of gamma pT
-       TH2F * fhDeltaPtJet; // Difference of jet pT and prompt gamma pT as function of gamma pT
-       TH2F * fhPtRatJet; // Ratio of jet pT and prompt gamma pT as function of gamma pT
-       
-       ClassDef(AliAnaGammaJetFinder,1)
+	//selection parameters  
+	Double_t   fDeltaPhiMaxCut ; //! Minimum Delta Phi Gamma-Leading
+	Double_t   fDeltaPhiMinCut ; //!  Maximum Delta Phi Gamma-Leading
+	Double_t   fRatioMaxCut ; //! Jet/ particle Ratio cut maximum
+	Double_t   fRatioMinCut ; //! Jet/particle Ratio cut minimum
+	   
+	Double_t   fConeSize  ;         //! Jet cone size 
+	Double_t   fPtThresholdInCone ; //! Jet pT threshold in jet cone
+	Bool_t     fUseJetRefTracks ; //! Use track references from JETAN not the AOD tracks
+	Bool_t	   fMakeCorrelationInHistoMaker ; //!Make particle-jet correlation in histogram maker
+	   
+	TH2F * fhDeltaEta; //! Difference of jet eta and trigger particle eta as function of trigger particle pT
+	TH2F * fhDeltaPhi;  //! Difference of jet phi and trigger particle phi as function of trigger particle pT
+	TH2F * fhDeltaPt; //! Difference of jet pT and trigger particle pT as function of trigger particle pT
+	TH2F * fhPtRatio; //! Ratio of jet pT and trigger particle pT as function of trigger particle pT
+	TH2F * fhPt; //! jet pT vs trigger particle pT 
+		
+	TH2F * fhFFz ; //! Accepted reconstructed jet fragmentation function, z=ptjet/pttrig
+	TH2F * fhFFxi; //! Accepted reconstructed jet fragmentation function, xsi = ln(pttrig/ptjet)
+	TH2F * fhFFpt; //! Jet particle pt distribution in cone
+	TH2F * fhNTracksInCone   ; //! jet multiplicity in cone
+	   
+	ClassDef(AliAnaParticleJetFinderCorrelation,1)
  } ;
 
 
-#endif //ALIANAGAMMAJETFINDER_H
+#endif //AliAnaParticleJetFinderCorrelation_H
 
 
 
