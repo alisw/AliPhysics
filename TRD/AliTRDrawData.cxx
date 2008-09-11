@@ -622,6 +622,7 @@ AliTRDdigitsManager *AliTRDrawData::Raw2Digits(AliRawReader *rawReader)
 
   AliTRDrawStreamBase *pinput = AliTRDrawStreamBase::GetRawStream(rawReader);
   AliTRDrawStreamBase &input = *pinput;
+  input.SetRawVersion( fFee->GetRAWversion() ); //<= ADDED by MinJung
 
   AliInfo(Form("Stream version: %s", input.IsA()->GetName()));
 
