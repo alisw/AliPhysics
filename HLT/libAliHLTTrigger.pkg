@@ -10,6 +10,7 @@
 # will be created from the names of the header files
 CLASS_HDRS:= \
                 AliHLTTrigger.h                             \
+                AliHLTTriggerAgent.h                        \
                 AliHLTEventSummary.h                        \
                 AliHLTEventSummaryProducerComponent.h       \
                 AliHLTRunSummary.h                          \
