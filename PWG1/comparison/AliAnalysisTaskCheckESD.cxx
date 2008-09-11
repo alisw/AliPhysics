@@ -191,7 +191,7 @@ void AliAnalysisTaskCheckESD::UserCreateOutputObjects()
   hResTOFWrong->SetLineColor(kRed);
   
   // calorimeters
-  hEPHOS = CreateHisto("hEPHOS", "PHOS", 100, 0, 5, "E [GeV]", "N");
+  hEPHOS = CreateHisto("hEPHOS", "PHOS", 100, 0, 50, "E [GeV]", "N");
   hEEMCAL = CreateHisto("hEEMCAL", "EMCAL", 100, 0, 50, "E [GeV]", "N");
   
   // muons
