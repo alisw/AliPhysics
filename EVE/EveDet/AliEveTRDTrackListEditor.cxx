@@ -1,24 +1,27 @@
-#include "TTreeStream.h"
+#include <EveDet/AliEveTRDData.h>
 #include <EveDet/AliEveTRDTrackList.h>
 #include "AliEveTRDTrackListEditor.h"
 
-#include <TGFileDialog.h>
-#include <TFile.h>
+#include <AliTRDtrackV1.h>
 #include <TGButton.h>
-#include <TGedEditor.h>     ////// MAYBE THIS CAN BE REMOVED
-#include <TGTextEntry.h>
-#include <TGTextView.h>
-#include <TGListBox.h>
-#include <TGMsgBox.h>
-#include <TGLabel.h>
-#include <TG3DLine.h>
+#include <TCanvas.h>     
+#include <TEveGedEditor.h> 
 #include <TEveMacro.h>
 #include <TEveManager.h>
+#include <TFile.h>
+#include <TG3DLine.h>
+#include <TGFileDialog.h>
+#include <TGLabel.h>
+#include <TGListBox.h>
+#include <TGMsgBox.h>
+#include <TGTab.h>
 #include <TObjString.h>
-#include <TSystem.h>
 #include <TROOT.h>
-#include <AliTRDtrackV1.h>
-#include <EveDet/AliEveTRDData.h>
+#include <TSystem.h>
+#include <TGTextEntry.h>
+#include <TGTextView.h>
+#include <TTreeStream.h>
+
 
 ClassImp(AliEveTRDTrackListEditor)
 
@@ -29,6 +32,7 @@ AliEveTRDTrackListEditor::AliEveTRDTrackListEditor(const TGWindow* p, Int_t widt
 				                   UInt_t options, Pixel_t back) :
   TGedFrame(p, width, height, options, back),
   fM(0),
+  fInitState(0),
   fMainFrame(0),
   fHistoFrame(0),
   fHistoSubFrame(0),
@@ -123,10 +127,6 @@ AliEveTRDTrackListEditor::AliEveTRDTrackListEditor(const TGWindow* p, Int_t widt
   fFileInfo->fFileTypes = (const Char_t**)fFileTypes;
   fFileInfo->fFileTypeIdx = 2;
   fFileInfo->fMultipleSelection = kTRUE;
-
-  // Set focus on "Apply macros" tab
-  //fMainFrame->TGWindow::RequestFocus();
-  //Update();
 }
 
 //______________________________________________________
@@ -208,19 +208,34 @@ void AliEveTRDTrackListEditor::ApplyMacros()
     return;  
   }
     
+  Char_t macroName[100];
   TTree* t = 0;
-  for (Int_t i = 0; i < iterator->GetEntries(); i++) {
+  for (Int_t i = 0; i < iterator->GetEntries(); i++)
+  {
     t = (TTree*)file->Get(Form("TrackData%d", i));
-    if (t != 0) {
-      gEve->AddCanvasTab(Form("Macro%d", i));
+    if (t != 0)
+    {
+      memset(macroName, '\0', sizeof(Char_t) * 100);
+      sscanf(iterator->At(i)->GetTitle(), "%s (Path:%*s)", macroName);
+      
+      TCanvas* canvas = (TCanvas*)gROOT->GetListOfCanvases()->TCollection::FindObject(macroName);
+      if (!canvas)
+      {
+        canvas = gEve->AddCanvasTab(macroName);
+        canvas->SetName(macroName);
+      }
+      gPad = canvas;
       t->Draw(Form("Macro%d", i), "1");
+      canvas->Update();
  
       delete t;
       t = 0;
 
       // ONLY DISPLAY ONE MACRO (the first one possible) -> Remove the next line to display all
-      break;
-    } else {
+      //break;
+    }
+    else
+    {
       Error("Apply macros", Form("No data for macro%d found!", i));
       new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Error - Apply macros", 
                    Form("No data for macro%d found!", i), kMBIconExclamation, kMBOk);  
@@ -234,12 +249,12 @@ void AliEveTRDTrackListEditor::ApplyMacros()
   iterator = 0;  
 
   // Update histogram tab (data has to be reloaded)
-  //fHistoFrame->TGWindow::RequestFocus();
-  //fGedEditor->TGCompositeFrame::ShowFrame(fHistoFrame);
   SetModel(fM);
   Update();
-}
 
+  // Set focus on "Histograms" tab
+  GetGedEditor()->GetTab()->SetTab("Histograms");
+}
 
 //______________________________________________________
 void AliEveTRDTrackListEditor::BrowseMacros()
@@ -325,8 +340,16 @@ void AliEveTRDTrackListEditor::DrawHistos()
         // 1d histogram   
         if (nHistograms == 1) 
         {
-          gEve->AddCanvasTab(Form("Macro%d", indexOfMacro1));
+          TCanvas* canvas = (TCanvas*)gROOT->GetListOfCanvases()->TCollection::FindObject(fM->fDataFromMacroList->At(indexOfMacro1)->GetName());
+          if (!canvas)
+          {
+            canvas = gEve->AddCanvasTab(fM->fDataFromMacroList->At(indexOfMacro1)->GetName());
+            canvas->SetName(fM->fDataFromMacroList->At(indexOfMacro1)->GetName());
+          }
+          gPad = canvas;
           t->Draw(Form("Macro%d", indexOfMacro1), "1");
+          gROOT->SetSelectedPad(canvas);
+          canvas->Update();
 
           break;     
         }
@@ -345,9 +368,22 @@ void AliEveTRDTrackListEditor::DrawHistos()
         // 2d histogram
         if (nHistograms == 2) 
         {
-          gEve->AddCanvasTab(Form("Macro%d - Macro%d", indexOfMacro1, indexOfMacro2));
+          TCanvas* canvas = (TCanvas*)gROOT->GetListOfCanvases()->TCollection::FindObject(Form("%s - %s",
+                              fM->fDataFromMacroList->At(indexOfMacro1)->GetName(), 
+                              fM->fDataFromMacroList->At(indexOfMacro2)->GetName()));
+          if (!canvas)
+          {
+            canvas = gEve->AddCanvasTab(Form("%s - %s",
+                                             fM->fDataFromMacroList->At(indexOfMacro1)->GetName(), 
+                                             fM->fDataFromMacroList->At(indexOfMacro2)->GetName()));
+            canvas->SetName(Form("%s - %s",
+                                 fM->fDataFromMacroList->At(indexOfMacro1)->GetName(), 
+                                 fM->fDataFromMacroList->At(indexOfMacro2)->GetName()));
+          }
+          gPad = canvas;
           t->AddFriend(tFriend1);
           t->Draw(Form("Macro%d:Macro%d", indexOfMacro1, indexOfMacro2), "1");
+          canvas->Update();        
  
           break;     
         }
@@ -364,10 +400,26 @@ void AliEveTRDTrackListEditor::DrawHistos()
           break;   
         }
         
-        gEve->AddCanvasTab(Form("Macro%d - Macro%d - Macro%d", indexOfMacro1, indexOfMacro2, indexOfMacro3));
+        TCanvas* canvas = (TCanvas*)gROOT->GetListOfCanvases()->TCollection::FindObject(Form("%s - %s - %s",
+                            fM->fDataFromMacroList->At(indexOfMacro1)->GetName(), 
+                            fM->fDataFromMacroList->At(indexOfMacro2)->GetName(),
+                            fM->fDataFromMacroList->At(indexOfMacro3)->GetName()));
+        if (!canvas)
+        {
+          canvas = gEve->AddCanvasTab(Form("%s - %s - %s",
+                                           fM->fDataFromMacroList->At(indexOfMacro1)->GetName(), 
+                                           fM->fDataFromMacroList->At(indexOfMacro2)->GetName(),
+                                           fM->fDataFromMacroList->At(indexOfMacro3)->GetName()));
+          canvas->SetName(Form("%s - %s - %s",
+                               fM->fDataFromMacroList->At(indexOfMacro1)->GetName(), 
+                               fM->fDataFromMacroList->At(indexOfMacro2)->GetName(),
+                               fM->fDataFromMacroList->At(indexOfMacro3)->GetName()));
+        }
+        gPad = canvas;
         t->AddFriend(tFriend1);
         t->AddFriend(tFriend2);
         t->Draw(Form("Macro%d:Macro%d:Macro%d", indexOfMacro1, indexOfMacro2, indexOfMacro3), "1");
+        canvas->Update();      
  
         break;     
       }
@@ -475,15 +527,36 @@ void AliEveTRDTrackListEditor::RemoveMacros()
   iterator = 0;
 }
 
-
 //______________________________________________________
 void AliEveTRDTrackListEditor::SetModel(TObject* obj)
-{
+{  
   // Set model object
   fM = dynamic_cast<AliEveTRDTrackList*>(obj);
 
+  if (fM == 0) 
+  {
+    Error("SetModel", "Parameter is zero pointer");
+    return;
+  }
+
   UpdateMacroList();
-  UpdateHistoList();  
+  UpdateHistoList(); 
+
+  // Set focus on "Apply macros" tab, if the editor has just been initialized.
+  // To prevent refocusing on "Style" tab, disable "Style" and during the next call
+  // re-enable "Style"
+  if (fInitState == 0)
+  {
+    GetGedEditor()->GetTab()->SetEnabled(0, kFALSE);
+    GetGedEditor()->GetTab()->SetTab("Apply macros"); 
+    
+    fInitState = 1;
+  } 
+  else if (fInitState == 1)
+  {
+    GetGedEditor()->GetTab()->SetEnabled(0, kTRUE);
+    fInitState = 2; 
+  }
 }
 
 //______________________________________________________
@@ -507,7 +580,6 @@ void AliEveTRDTrackListEditor::UpdateHistoList()
     iter = (TObjString*)fM->fDataFromMacroList->After(iter);
   }  
 }
-
 
 //______________________________________________________
 void AliEveTRDTrackListEditor::UpdateMacroList()

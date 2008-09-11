@@ -38,7 +38,7 @@ AliEveTRDTrackList::AliEveTRDTrackList(const Text_t* n, const Text_t* t, Bool_t 
   AddStandardMacros();
 }
 
-//__________________________________________________________
+//______________________________________________________
 AliEveTRDTrackList::~AliEveTRDTrackList()
 {
   if (fMacroList != 0)
@@ -66,7 +66,7 @@ AliEveTRDTrackList::~AliEveTRDTrackList()
   } 
 }
 
-//__________________________________________________________
+//______________________________________________________
 Int_t AliEveTRDTrackList::AddMacro(const Char_t* path, const Char_t* nameC)
 {
   // First check the type of the macro:
@@ -125,22 +125,31 @@ Int_t AliEveTRDTrackList::AddMacro(const Char_t* path, const Char_t* nameC)
 
   // Selection macro?
   TFunction* f = gROOT->GetGlobalFunctionWithPrototype(name, "AliTRDtrackV1*", kTRUE);
-  if (f != 0x0){
-    if (!strcmp(f->GetReturnTypeName(), "Bool_t")){
+  if (f != 0x0)
+  {
+    if (!strcmp(f->GetReturnTypeName(), "Bool_t")) 
+    {
       // Some additional check (is the parameter EXACTLY of the desired type?)
-      if (strstr(f->GetMangledName(), "AliTRDtrackV1mUsP") != 0x0) {
+      if (strstr(f->GetMangledName(), "AliTRDtrackV1mUsP") != 0x0)
+      {
         hasCorrectSignature = kTRUE;
         isSelectionMacro = kTRUE;
       }
     }
-  } else {  // Process macro?
+  }
+  // Process macro?
+  else
+  {
     f = gROOT->GetGlobalFunctionWithPrototype(name, "AliTRDtrackV1*, Double_t*&, Int_t&", kTRUE);
-    if (f != 0x0) {
-      if (!strcmp(f->GetReturnTypeName(), "void")) {
+    if (f != 0x0)
+    {
+      if (!strcmp(f->GetReturnTypeName(), "void"))
+      {
         // Some additional check (are the parameters EXACTLY of the desired type?)
         if (strstr(f->GetMangledName(), "AliTRDtrackV1mUsP") != 0x0 &&
             strstr(f->GetMangledName(), "Double_tmUaNsP") != 0x0 &&
-            strstr(f->GetMangledName(), "Int_taNsP") != 0x0){
+            strstr(f->GetMangledName(), "Int_taNsP") != 0x0)
+        {
           hasCorrectSignature = kTRUE;
           isSelectionMacro = kFALSE;
         }
@@ -190,11 +199,12 @@ Int_t AliEveTRDTrackList::AddMacro(const Char_t* path, const Char_t* nameC)
   return returnValue;
 }
 
-//__________________________________________________________
+//______________________________________________________
 void AliEveTRDTrackList::AddMacroFast(const Char_t* path, const Char_t* name, Bool_t toSelectionList)
 {
   Char_t* entry = MakeMacroEntry(path, name);
-  if (entry != 0) {
+  if (entry != 0)
+  {
     if (toSelectionList)  fMacroSelList->Add(new TObjString(entry));
     else                  fMacroList->Add(new TObjString(entry));
     
@@ -206,14 +216,16 @@ void AliEveTRDTrackList::AddMacroFast(const Char_t* path, const Char_t* name, Bo
     printf("#AliEveTRDTrackList: Standard macros: Added macro %s/%s to %s list\n", path, name, 
            (toSelectionList ? "selection" : "process"));
 #endif
-  } else {
+  }
+  else
+  {
     // Error will always be displayed
     printf("#AliEveTRDTrackList: Standard macros: ERROR: Could not add macro %s/%s to %s list\n", path, name, 
            (toSelectionList ? "selection" : "process"));
   } 
 }
 
-//__________________________________________________________
+//______________________________________________________
 void AliEveTRDTrackList::AddStandardMacros()
 {
   // Add your standard macros here, e.g.: 
@@ -227,13 +239,15 @@ void AliEveTRDTrackList::AddStandardMacros()
   AddMacro("$(ALICE_ROOT)/TRD/qaRec/macros", "chargeDistr.C");
 }
 
-//__________________________________________________________
+//______________________________________________________
 void AliEveTRDTrackList::ApplyProcessMacros(TList* iterator)
 {
+  if (iterator->GetEntries() <= 0)  return;
+
   Char_t name[100];
   Char_t path[300];
   Char_t pathname[400];
-  Char_t cmd[430];
+  Char_t** cmds = new Char_t*[iterator->GetEntries()];
 
   AliEveTRDTrack* track = 0;
   AliTRDtrackV1 *trackv1 = 0;
@@ -246,15 +260,36 @@ void AliEveTRDTrackList::ApplyProcessMacros(TList* iterator)
   fDataFromMacroList = new TList();
 
   if (fDataTree == 0) fDataTree = new TTreeSRedirector("TRD.TrackListMacroData.root");
+
+  // Collect the commands for each macro and add them to "data-from-list"
+  for (Int_t i = 0; i < iterator->GetEntries(); i++)
+  {
+    memset(name, '\0', sizeof(Char_t) * 100);
+    memset(path, '\0', sizeof(Char_t) * 300);
+    memset(pathname, '\0', sizeof(Char_t) * 400);
+
+    cmds[i] = new Char_t[430];
+    memset(cmds[i], '\0', sizeof(Char_t) * 430);
+
+#ifdef ALIEVETRDTRACKLIST_DEBUG
+    printf("AliEveTRDTrackList: Applying process macro: %s\n", iterator->At(i)->GetTitle());
+#endif
+ 
+    // Extract path and name -> Make pathname
+    sscanf(iterator->At(i)->GetTitle(), "%s (Path: %s)", name, path);
+   
+    // Add to "data-from-list"
+    fDataFromMacroList->Add(new TObjString(name));
+
+    // Delete ")" at the end of path
+    path[strlen(path)] = '\0';
+    path[strlen(path) - 1] = '\0';
+    sprintf(pathname, "%s/%s", path, name);
+    sprintf(cmds[i], ".x %s(automaticTrackV1, results, n);", pathname);    
+  }  
   
-  // Walk through the list of tracks
-  Int_t trackNum = 0;
-  
-  //Double_t* results = new Double_t[iterator->GetEntries()];
-  //for (Int_t i = 0; i < iterator->GetEntries(); i++)  results[i] = 0;
-  //Double_t result = 0;
-    
-  for (TEveElement::List_i iter = this->BeginChildren(); iter != this->EndChildren(); ++iter, ++trackNum)
+  // Walk through the list of tracks     
+  for (TEveElement::List_i iter = this->BeginChildren(); iter != this->EndChildren(); ++iter)
   {
     track = dynamic_cast<AliEveTRDTrack*>(*iter);
 
@@ -272,44 +307,16 @@ void AliEveTRDTrackList::ApplyProcessMacros(TList* iterator)
     // Collect data for each macro
     for (Int_t i = 0; i < iterator->GetEntries(); i++)
     {
-      memset(name, '\0', sizeof(Char_t) * 100);
-      memset(path, '\0', sizeof(Char_t) * 300);
-      memset(pathname, '\0', sizeof(Char_t) * 400);
-      memset(cmd, '\0', sizeof(Char_t) * 430);
-
-#ifdef ALIEVETRDTRACKLIST_DEBUG
-      // Display this message only once
-      if (iter == this->BeginChildren()) 
-        printf("AliEveTRDTrackList: Applying process macro: %s\n", iterator->At(i)->GetTitle());
-#endif
-
-      // Extract path and name -> Make pathname
-      sscanf(iterator->At(i)->GetTitle(), "%s (Path: %s)", name, path);
-      // Delete ")" at the end of path
-      path[strlen(path)] = '\0';
-      path[strlen(path) - 1] = '\0';
-      sprintf(pathname, "%s/%s", path, name);
-      sprintf(cmd, ".x %s(automaticTrackV1, results, n);", pathname);
-
-      // Add to "data-from-list", but only once!
-      if (iter == this->BeginChildren())  fDataFromMacroList->Add(new TObjString(name));
-
-      //results[i] += (Double_t)gROOT->ProcessLineSync(cmd); 
-      //result = (Double_t)gROOT->ProcessLineSync(cmd);
-
-      //(*fDataTree) << Form("TrackData%d", i)
-      //  << Form("Macro%d=", i) << result << "\n";   
-      
       // Create data pointers in CINT, execute the macro and get the data
       gROOT->ProcessLineSync("Double_t* results = 0;");
       gROOT->ProcessLineSync("Int_t n = 0;");
-      gROOT->ProcessLineSync(cmd);
+      gROOT->ProcessLineSync(cmds[i]);
       Double_t* results = (Double_t*)gROOT->ProcessLineSync("results;");
       Int_t nResults = (Int_t)gROOT->ProcessLineSync("n;");
       
       if (results == 0)
       {
-        Error("Apply macros", Form("Error reading data from macro \"%s\"", name));
+        Error("Apply macros", Form("Error reading data from macro \"%s\"", iterator->At(i)->GetTitle()));
         continue;
       }
       for (Int_t resInd = 0; resInd < nResults; resInd++)
@@ -321,17 +328,11 @@ void AliEveTRDTrackList::ApplyProcessMacros(TList* iterator)
       results = 0;
     }
   }    
-/*  for (Int_t i = 0; i < iterator->GetEntries(); i++)
-  {
-    (*fDataTree) << Form("TrackData") << Form("Macro%d=", i) << results[i] << "\n";    
-  }
-
-  if (results != 0) delete results;
-  results = 0;
-*/
 
   delete fDataTree;
   fDataTree = 0;
+
+  if (cmds != 0)  delete [] cmds;
 
   // Clear root
   gROOT->Reset();
@@ -340,10 +341,11 @@ void AliEveTRDTrackList::ApplyProcessMacros(TList* iterator)
   // The editor will access this file to display the data
 }
 
-
-//__________________________________________________________
+//______________________________________________________
 void AliEveTRDTrackList::ApplySelectionMacros(TList* iterator)
 {
+  if (iterator->GetEntries() <= 0)  return;
+
   Char_t name[100];
   Char_t path[300];
   Char_t pathname[400];
@@ -397,8 +399,7 @@ void AliEveTRDTrackList::ApplySelectionMacros(TList* iterator)
   gROOT->Reset();  
 }
 
-
-//__________________________________________________________
+//______________________________________________________
 Char_t* AliEveTRDTrackList::MakeMacroEntry(const Char_t* path, const Char_t* name)
 {
   Char_t* entry = new Char_t[400];
@@ -412,8 +413,7 @@ Char_t* AliEveTRDTrackList::MakeMacroEntry(const Char_t* path, const Char_t* nam
   return entry;
 }
 
-
-//__________________________________________________________
+//______________________________________________________
 void AliEveTRDTrackList::RemoveProcessMacros(TList* iterator) 
 {
   for (Int_t i = 0; i < iterator->GetEntries(); i++)
@@ -422,8 +422,7 @@ void AliEveTRDTrackList::RemoveProcessMacros(TList* iterator)
   }
 }
 
-
-//__________________________________________________________
+//______________________________________________________
 void AliEveTRDTrackList::RemoveSelectionMacros(TList* iterator) 
 {
   for (Int_t i = 0; i < iterator->GetEntries(); i++)

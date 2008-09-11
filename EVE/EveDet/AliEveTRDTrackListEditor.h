@@ -5,6 +5,9 @@
 
 class AliEveTRDTrack;
 class AliEveTRDTrackList;
+class TCanvas;                
+class TEveGedEditor;
+class TEveManager;
 class TFile;
 class TGCheckButton;
 class TGFileInfo;
@@ -12,6 +15,7 @@ class TGHorizontal3DLine;
 class TGHorizontalFrame;
 class TGLabel;
 class TGListBox;
+class TGTab;
 class TGTextButton;
 class TGTextEntry;
 class TGVerticalFrame;
@@ -44,7 +48,7 @@ private:
   void UpdateHistoList();                                 // Updates the histogram list
   void UpdateMacroList();                                 // Updates the macro list
 
-
+  Int_t             fInitState;              // Holds the initialization state
   TGVerticalFrame*  fMainFrame;              // Top frame for macro functionality.
   TGVerticalFrame*  fHistoFrame;             // Top frame for the histogram stuff
   TGVerticalFrame*  fHistoSubFrame;          // Frame for the histogram buttons themselves
