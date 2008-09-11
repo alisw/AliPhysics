@@ -26,7 +26,7 @@
  * @author Matthias.Richter@ift.uib.no
  * @ingroup alihlt_its
  */
-void extract_hltout_payload(const char* input="./", const char* selection="")
+void extract_hltout_payload(const char* input="./", const char* selection="", int maxEvent=-1)
 {
   /////////////////////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////////////
@@ -76,5 +76,5 @@ void extract_hltout_payload(const char* input="./", const char* selection="")
   do {
     cout << "processing event " << count++ << endl;
     hltRec.Reconstruct(rawreader, NULL);
-  } while (rawreader->NextEvent() && count<100);
+  } while (rawreader->NextEvent() && (maxEvent<0 || count<maxEvent));
 }
