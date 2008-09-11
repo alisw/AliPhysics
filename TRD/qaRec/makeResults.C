@@ -11,6 +11,7 @@ Char_t *fTaskClass[fknTasks] = {
   ,"AliTRDtrackingResolution"
   ,"AliTRDcalibration"
   ,"AliTRDpidChecker"
+  ,"AliTRDcheckDetector"
 };
 
 const Int_t nlibs = 3;
@@ -23,37 +24,41 @@ void makeResults(Char_t *dir=".")
     return;
   }
 
-  Int_t ndir = 1;
+  Int_t ndir = 3;
 
   // file merger object
-  TFileMerger *fFM = new TFileMerger();
+  TFileMerger *fFM = 0x0;
   TClass *ctask = 0x0;
   TObject *o = 0x0;
   TObjArray *fContainer = 0x0;
   AliTRDrecoTask *task = 0x0;
 
   printf("\n\tPROCESSING DATA FOR TASKS:\n");
-  for(Int_t itask = 3; itask < fknTasks; itask++){
+  for(Int_t itask = 3; itask <4/*fknTasks*/ ; itask++){
     if(!TESTBIT(fSteerTask, itask)) continue;
 
     ctask = new TClass(fTaskClass[itask]);
     task = (AliTRDrecoTask*)ctask->New();
     printf("\t%s\n", task->GetTitle());
 
-    fFM = new(fFM) TFileMerger(kTRUE);
+    fFM = new TFileMerger(kTRUE);
     fFM->OutputFile(Form("merge/TRD.Task%s.root",  task->GetName()));
     
     Int_t idir = 0;
     while(idir<ndir){
-      fFM->AddFile(Form("./TRD.Task%s.root"/*, dir[idir++]*/,  task->GetName()));
+      fFM->AddFile(Form("dir%d/TRD.Task%s.root", idir,  task->GetName()));
       idir++;
     }
     fFM->Merge();
-    fFM->~TFileMerger();
-
-    task->Load(Form("TRD.Task%s.root", task->GetName()));
+    delete fFM;
+    task->Load(Form("merge/TRD.Task%s.root", task->GetName()));
     task->PostProcess();
-    //fContainer = dynamic_cast<TObjArray*>(task->GetOutputData(0));
+    if(!(fContainer = task->Container())) {
+      delete task;
+      delete ctask;
+      continue;
+    } 
+    //printf("NRefs[%d]\n", task->GetNRefFigures());
     for(Int_t ipic=0; ipic<task->GetNRefFigures(); ipic++){
       Int_t ifirst, ilast;
       task->GetRefFigure(ipic, ifirst, ilast);
@@ -71,8 +76,7 @@ void makeResults(Char_t *dir=".")
         continue;
       }
 
-      
-/*      for(Int_t ig=ifirst+1; ig<ilast; ig++){
+      for(Int_t ig=ifirst+1; ig<ilast; ig++){
         if(!(o = fContainer->At(ifirst))) continue;
         if(h){
           h = dynamic_cast<TH1*>(o);
@@ -81,8 +85,8 @@ void makeResults(Char_t *dir=".")
           g = dynamic_cast<TGraph*>(o);
           g->Draw("pl");
         }
-        gPad->SaveAs(Form("%s_fig%d.gif", task->GetName(), ipic));
-      }*/
+      }
+      if(gPad) gPad->SaveAs(Form("%s_fig%d.gif", task->GetName(), ipic));
     }
     delete task;
     delete ctask;

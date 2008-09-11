@@ -260,18 +260,17 @@ void AliTRDpidChecker::Exec(Option_t *)
 }
 
 //________________________________________________________________________
-void AliTRDpidChecker::Terminate(Option_t *) 
+Bool_t AliTRDpidChecker::PostProcess()
 {
-  // Draw result to the screen
-  // Called once at the end of the query
-
-  fContainer = dynamic_cast<TObjArray*>(GetOutputData(0));
+  //fContainer = dynamic_cast<TObjArray*>(GetOutputData(0));
   if (!fContainer) {
     Printf("ERROR: list not available");
-    return;
+    return kFALSE;
   }
+  return kTRUE; // testing protection
 
-  
+  // ON CONSTRUCTION !!
+
   // normalize the dE/dx histos
   const Int_t kNSpectra = AliPID::kSPECIES*AliTRDCalPID::kNMom; 
   TH1F *hdEdx[kNSpectra];
@@ -329,6 +328,21 @@ void AliTRDpidChecker::Terminate(Option_t *)
   gEffisErrLQ -> SetNameTitle("gEffisLQErr", "Efficiencies and Errors of the 2-dim LQ method");
   gEffisNN -> SetNameTitle("gEffisNN", "Efficiencies of the NN method");
   gEffisErrNN -> SetNameTitle("gEffisNNErr", "Efficiencies and Errors of the NN method");
+  
+  return kTRUE;
+}
+
+//________________________________________________________________________
+void AliTRDpidChecker::Terminate(Option_t *) 
+{
+  // Draw result to the screen
+  // Called once at the end of the query
+
+  fContainer = dynamic_cast<TObjArray*>(GetOutputData(0));
+  if (!fContainer) {
+    Printf("ERROR: list not available");
+    return;
+  }
 }
 
 

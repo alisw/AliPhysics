@@ -107,7 +107,6 @@ void AliTRDtrackInfoGen::ConnectInputData(Option_t *)
     } else {
       esdH->SetActiveBranches("ESDfriend*");
       fESDfriend = (AliESDfriend *)fESD->FindListObject("AliESDfriend");
-      printf("fESDfriend = %p\n", (void*)fESDfriend);
     }
   }
   if(HasMCdata()){

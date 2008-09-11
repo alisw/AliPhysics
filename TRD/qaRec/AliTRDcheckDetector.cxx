@@ -25,7 +25,7 @@
 
 //_______________________________________________________
 AliTRDcheckDetector::AliTRDcheckDetector():
-  AliTRDrecoTask("detChecker", "Utility to check TRD detector signal")
+  AliTRDrecoTask("DetChecker", "Basic Detector Checker")
   ,fPHSdetector(0x0)
   ,fPHSsector(0x0)
   ,fQCLdetector(0x0)
@@ -58,7 +58,7 @@ void AliTRDcheckDetector::CreateOutputObjects(){
   //
   fContainer = new TObjArray();
   TH1F *hNtrks = new TH1F("hNtrks", "Number of Tracks per event", 100, 0, 100);
-  TH1F *hNcls = new TH1F("hNcls", "Nr. of clusters per tracklet", 30, 0, 30);
+  TH1F *hNcls = new TH1F("hNcls", "Nr. of clusters per track", 30, 0, 180);
   TH1F *hNtls = new TH1F("hNtls", "Nr. tracklets per track", 10, 0, 10);
   TH1F *hNclTls = new TH1F("hNclTls","Mean Number of clusters per tracklet", 30, 0, 30);
   TH1F *hChi2 = new TH1F("hChi2", "Chi2", 200, 0, 20);
@@ -81,8 +81,11 @@ void AliTRDcheckDetector::CreateOutputObjects(){
 
   // Initialise the PHS, cluster charge and total charge deposit histograms for each detector
   fPHSdetector = new TObjArray();
+  fPHSdetector->SetName("fPHSdetector");
   fQCLdetector = new TObjArray();
+  fQCLdetector->SetName("fQCLdetector");
   fQTdetector = new TObjArray();
+  fQTdetector->SetName("fQTdetector");
   for(Int_t idet = 0; idet < kNDetectors; idet++){
     fPHSdetector->Add(new TProfile(Form("hPHSdet%d", idet), Form("Average Pulse Height in Detector %d", idet), 31, -0.5, 30.5));
     fQCLdetector->Add(new TH1F(Form("hQd%d",idet),Form("Qd%d",idet), 100,0,5000));
@@ -94,8 +97,11 @@ void AliTRDcheckDetector::CreateOutputObjects(){
   
   // Initialise the PHS, cluster charge and total charge deposit histograms for each sector
   fPHSsector = new TObjArray();
+  fPHSsector->SetName("fPHSsector");
   fQCLsector = new TObjArray();
+  fQCLsector->SetName("fQCLsector");
   fQTsector = new TObjArray();
+  fQTsector->SetName("fQTsector");
   for(Int_t isec = 0; isec < kNSectors; isec++){
     fPHSsector->Add(new TProfile(Form("hPHSsec%d", isec), Form("Average Pulse Height in Sector %d", isec), 31, -0.5, 30.5));
     fQCLsector->Add(new TH1F(Form("hQd%d",isec),Form("Qd%d",isec), 100,0,5000));

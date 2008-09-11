@@ -1,3 +1,4 @@
+#include "TFile.h"
 #include "TObjArray.h"
 #include "TDirectory.h"
 #include "TTreeStream.h"
@@ -56,9 +57,12 @@ void AliTRDrecoTask::GetRefFigure(Int_t /*ifig*/, Int_t &first, Int_t &last)
 }
 
 //_______________________________________________________
-Bool_t AliTRDrecoTask::Load(Char_t */*filename*/)
+Bool_t AliTRDrecoTask::Load(Char_t *filename)
 {
-  AliWarning("Loading of reference histograms not implemented.");
+  if(!TFile::Open(filename)) return kFALSE;
+  TObjArray *o = (TObjArray*)gFile->Get(GetName());
+  fContainer = (TObjArray*)o->Clone(GetName());
+  gFile->Close();
   return kFALSE;
 }
 

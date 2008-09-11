@@ -83,7 +83,9 @@ void AliTRDtrackingResolution::CreateOutputObjects()
   fContainer->AddAt(new TH2I("fYClRes", "", 21, -21., 21., 100, -.5, .5), kClusterYResidual);
   // tracklet to Riemann fit residuals [2]
   fContainer->AddAt(new TH2I("fYTrkltRRes", "", 21, -21., 21., 100, -.5, .5), kTrackletRiemanYResidual);
+  fContainer->AddAt(new TH2I("fAngleTrkltRRes", "", 21, -21., 21., 100, -.5, .5), kTrackletRiemanAngleResidual);
   fContainer->AddAt(new TH2I("fYTrkltKRes", "", 21, -21., 21., 100, -.5, .5), kTrackletKalmanYResidual);
+  fContainer->AddAt(new TH2I("fAngleTrkltKRes", "", 21, -21., 21., 100, -.5, .5), kTrackletKalmanAngleResidual);
 
   // Resolution histos
   if(HasMCdata()){
@@ -101,6 +103,59 @@ void AliTRDtrackingResolution::CreateOutputObjects()
     fContainer->AddAt(new TH2I("fYKT", "", 21, -21., 21., 100, -.5, .5), kTrackKYResolution);
     fContainer->AddAt(new TH2I("fZKT", "", 21, -21., 21., 100, -.5, .5), kTrackKZResolution);
     fContainer->AddAt(new TH2I("fPhiKT", "", 21, -21., 21., 100, -10., 10.), kTrackKAngleResolution);
+  }
+
+  // CREATE GRAPHS for DISPLAY
+  
+  // define iterator over graphs
+  Int_t jgraph = (Int_t)kGraphStart;
+  TH2I *h2 = (TH2I *)(fContainer->At(kClusterYResidual));
+  // clusters tracklet residuals (mean-phi)
+  TGraphErrors *g = new TGraphErrors(h2->GetNbinsX());
+  g->SetLineColor(kGreen);
+  g->SetMarkerStyle(22);
+  g->SetMarkerColor(kGreen);
+  g->SetNameTitle("clm", "Residuals Clusters-Tracklet Mean");
+  fContainer->AddAt(g, jgraph++);
+
+  // clusters tracklet residuals (sigma-phi)
+  g = new TGraphErrors(h2->GetNbinsX());
+  g->SetLineColor(kRed);
+  g->SetMarkerStyle(23);
+  g->SetMarkerColor(kRed);
+  g->SetNameTitle("cls", "Residuals Clusters-Tracklet Sigma");
+  fContainer->AddAt(g, jgraph++);
+
+  if(HasMCdata()){
+    // tracklet y resolution
+    h2 = (TH2I*)fContainer->At(kTrackletYResolution);
+    g = new TGraphErrors(h2->GetNbinsX());
+    g->SetLineColor(kGreen);
+    g->SetMarkerStyle(22);
+    g->SetMarkerColor(kGreen);
+    g->SetNameTitle("trkltym", "Resolution Tracklet Y Mean");
+    fContainer->AddAt(g, jgraph++);
+    g = new TGraphErrors(h2->GetNbinsX());
+    g->SetLineColor(kRed);
+    g->SetMarkerStyle(22);
+    g->SetMarkerColor(kRed);
+    g->SetNameTitle("trkltys", "Resolution Tracklet Y Sigma");
+    fContainer->AddAt(g, jgraph++);
+
+    // tracklet phi resolution
+    h2 = (TH2I*)fContainer->At(kTrackletAngleResolution);
+    g = new TGraphErrors(h2->GetNbinsX());
+    g->SetLineColor(kGreen);
+    g->SetMarkerStyle(22);
+    g->SetMarkerColor(kGreen);
+    g->SetNameTitle("trkltam", "Resolution Tracklet Y Mean");
+    fContainer->AddAt(g, jgraph++);
+    g = new TGraphErrors(h2->GetNbinsX());
+    g->SetLineColor(kRed);
+    g->SetMarkerStyle(22);
+    g->SetMarkerColor(kRed);
+    g->SetNameTitle("trkltas", "Angle Resolution Tracklet Sigma");
+    fContainer->AddAt(g, jgraph++);
   }
 }
 
@@ -215,6 +270,25 @@ void AliTRDtrackingResolution::Exec(Option_t *)
   PostData(0, fContainer);
 }
 
+//________________________________________________________
+void AliTRDtrackingResolution::GetRefFigure(Int_t ifig, Int_t &first, Int_t &last)
+{
+  switch(ifig){
+  case 0:
+    first = (Int_t)kGraphStart; last = first+1;
+    break;
+  case 1:
+    first = (Int_t)kGraphStart+2; last = first+1;
+    break;
+  case 2:
+    first = (Int_t)kGraphStart+4; last = first+1;
+    break;
+  default:
+    first = (Int_t)kGraphStart; last = first;
+    break;
+  }
+}
+
 
 //________________________________________________________
 Bool_t AliTRDtrackingResolution::Resolution(AliTRDseedV1 *tracklet, AliTRDtrackInfo *fInfo, Double_t &phi)
@@ -291,6 +365,78 @@ Bool_t AliTRDtrackingResolution::Resolution(AliTRDseedV1 *tracklet, AliTRDtrackI
   return kTRUE;
 }
 
+//________________________________________________________
+Bool_t AliTRDtrackingResolution::PostProcess()
+{
+  //fContainer = dynamic_cast<TObjArray*>(GetOutputData(0));
+  if (!fContainer) {
+    Printf("ERROR: list not available");
+    return kFALSE;
+  }
+
+  TH2I *h2 = 0x0;
+  TH1D *h = 0x0;
+  TGraphErrors *gm = 0x0, *gs = 0x0;
+  TF1 f("f1", "gaus", -.5, .5);  
+  // define iterator over graphs
+  Int_t jgraph = (Int_t)kGraphStart;
+
+  //PROCESS RESIDUAL DISTRIBUTIONS
+
+  // Clusters residuals
+  h2 = (TH2I *)(fContainer->At(kClusterYResidual));
+  gm = (TGraphErrors*)fContainer->At(jgraph++);
+  gs = (TGraphErrors*)fContainer->At(jgraph++);
+  for(Int_t ibin = 1; ibin <= h2->GetNbinsX(); ibin++){
+    Double_t phi = h2->GetXaxis()->GetBinCenter(ibin);
+    Double_t dphi = h2->GetXaxis()->GetBinWidth(ibin)/2;
+    h = h2->ProjectionY("py", ibin, ibin);
+    h->Fit(&f, "QN", "", -0.5, 0.5);
+    gm->SetPoint(ibin - 1, phi, f.GetParameter(1));
+    gm->SetPointError(ibin - 1, dphi, f.GetParError(1));
+    gs->SetPoint(ibin - 1, phi, f.GetParameter(2));
+    gs->SetPointError(ibin - 1, dphi, f.GetParError(2));
+  }
+
+
+  //PROCESS RESOLUTION DISTRIBUTIONS
+  if(HasMCdata()){
+    // tracklet y resolution
+    h2 = (TH2I*)fContainer->At(kTrackletYResolution);
+    gm = (TGraphErrors*)fContainer->At(jgraph++);
+    gs = (TGraphErrors*)fContainer->At(jgraph++);
+    for(Int_t iphi=1; iphi<=h2->GetNbinsX(); iphi++){
+      Double_t phi = h2->GetXaxis()->GetBinCenter(iphi);
+      f.SetParameter(1, 0.);f.SetParameter(2, 2.e-2);
+      h = h2->ProjectionY("py", iphi, iphi);
+      h->Fit(&f, "QN", "", -.5, .5);
+      Int_t jphi = iphi -1;
+      gm->SetPoint(jphi, phi, f.GetParameter(1));
+      gm->SetPointError(jphi, 0., f.GetParError(1));
+      gs->SetPoint(jphi, phi, f.GetParameter(2));
+      gs->SetPointError(jphi, 0., f.GetParError(2));
+    }
+  
+    // tracklet phi resolution
+    h2 = (TH2I*)fContainer->At(kTrackletAngleResolution);
+    gm = (TGraphErrors*)fContainer->At(jgraph++);
+    gs = (TGraphErrors*)fContainer->At(jgraph++);
+    for(Int_t iphi=1; iphi<=h2->GetNbinsX(); iphi++){
+      Double_t phi = h2->GetXaxis()->GetBinCenter(iphi);
+      f.SetParameter(1, 0.);f.SetParameter(2, 2.e-2);
+      h = h2->ProjectionY("py", iphi, iphi);
+      h->Fit(&f, "QN", "", -.5, .5);
+      Int_t jphi = iphi -1;
+      gm->SetPoint(jphi, phi, f.GetParameter(1));
+      gm->SetPointError(jphi, 0., f.GetParError(1));
+      gs->SetPoint(jphi, phi, f.GetParameter(2));
+      gs->SetPointError(jphi, 0., f.GetParError(2));
+    }
+  }
+  fNRefFigures = 3;
+  return kTRUE;
+}
+
 
 //________________________________________________________
 void AliTRDtrackingResolution::Terminate(Option_t *)
@@ -300,94 +446,13 @@ void AliTRDtrackingResolution::Terminate(Option_t *)
     fDebugStream = 0x0;
     fDebugLevel = 0;
   }
-
-  TH2I *h2 = 0x0;
-  TH1D *h = 0x0;
-  TF1 f("f1", "gaus", -.5, .5);  
-  fContainer = dynamic_cast<TObjArray*>(GetOutputData(0));
-  if (!fContainer) {
-    Printf("ERROR: list not available");
-    return;
-  }
-  // define iterator over graphs
-  Int_t jgraph = (Int_t)kGraphStart;
-
-  //PROCESS RESIDUAL DISTRIBUTIONS
-
-  // Clusters residuals
-  h2 = (TH2I *)(fContainer->At(kClusterYResidual));
-  TGraphErrors *residuals_mean = new TGraphErrors(h2->GetNbinsX());
-  residuals_mean->SetLineColor(kGreen);
-  residuals_mean->SetMarkerStyle(22);
-  residuals_mean->SetMarkerColor(kGreen);
-  TGraphErrors *residuals_sigma = new TGraphErrors(h2->GetNbinsX());
-  residuals_mean->SetNameTitle("residuals_mean", "Residuals Mean Phi");
-  residuals_sigma->SetNameTitle("residuals_sigma", "Residuals Sigma Phi");
-  residuals_sigma->SetLineColor(kRed);
-  residuals_sigma->SetMarkerStyle(23);
-  residuals_sigma->SetMarkerColor(kRed);
-  for(Int_t ibin = 1; ibin <= h2->GetNbinsX(); ibin++){
-    Double_t phi = h2->GetXaxis()->GetBinCenter(ibin);
-    Double_t dphi = h2->GetXaxis()->GetBinWidth(ibin)/2;
-    h = h2->ProjectionY("py", ibin, ibin);
-    h->Fit(&f, "QN", "", -0.5, 0.5);
-    residuals_mean->SetPoint(ibin - 1, phi, f.GetParameter(1));
-    residuals_mean->SetPointError(ibin - 1, dphi, f.GetParError(1));
-    residuals_sigma->SetPoint(ibin - 1, phi, f.GetParameter(2));
-    residuals_sigma->SetPointError(ibin - 1, dphi, f.GetParError(2));
-  }
-  fContainer->AddAt(residuals_mean, jgraph++);
-  fContainer->AddAt(residuals_sigma, jgraph++);
-
-
-  //PROCESS RESOLUTION DISTRIBUTIONS
-  if(HasMCdata()){
-    // tracklet y resolution
-    h2 = (TH2I*)fContainer->At(kTrackletYResolution);
-    TGraphErrors *gm = new TGraphErrors(h2->GetNbinsX());
-    gm->SetNameTitle("meany", "Mean dy");
-    TGraphErrors *gs = new TGraphErrors(h2->GetNbinsX());
-    gs->SetNameTitle("sigmy", "Sigma y");
-    for(Int_t iphi=1; iphi<=h2->GetNbinsX(); iphi++){
-      Double_t phi = h2->GetXaxis()->GetBinCenter(iphi);
-      f.SetParameter(1, 0.);f.SetParameter(2, 2.e-2);
-      h = h2->ProjectionY("py", iphi, iphi);
-      h->Fit(&f, "QN", "", -.5, .5);
-      Int_t jphi = iphi -1;
-      gm->SetPoint(jphi, phi, f.GetParameter(1));
-      gm->SetPointError(jphi, 0., f.GetParError(1));
-      gs->SetPoint(jphi, phi, f.GetParameter(2));
-      gs->SetPointError(jphi, 0., f.GetParError(2));
-    }
-    fContainer->AddAt(gm, jgraph++);
-    fContainer->AddAt(gs, jgraph++);
-  
-    // tracklet phi resolution
-    h2 = (TH2I*)fContainer->At(kTrackletAngleResolution);
-    gm = new TGraphErrors(h2->GetNbinsX());
-    gm->SetNameTitle("meanphi", "Mean Phi");
-    gs = new TGraphErrors(h2->GetNbinsX());
-    gs->SetNameTitle("sigmphi", "Sigma Phi");
-    for(Int_t iphi=1; iphi<=h2->GetNbinsX(); iphi++){
-      Double_t phi = h2->GetXaxis()->GetBinCenter(iphi);
-      f.SetParameter(1, 0.);f.SetParameter(2, 2.e-2);
-      h = h2->ProjectionY("py", iphi, iphi);
-      h->Fit(&f, "QN", "", -.5, .5);
-      Int_t jphi = iphi -1;
-      gm->SetPoint(jphi, phi, f.GetParameter(1));
-      gm->SetPointError(jphi, 0., f.GetParError(1));
-      gs->SetPoint(jphi, phi, f.GetParameter(2));
-      gs->SetPointError(jphi, 0., f.GetParError(2));
-    }
-    fContainer->AddAt(gm, jgraph++);
-    fContainer->AddAt(gs, jgraph++);
-  }
+  if(HasPostProcess()) PostProcess();
 }
 
 //________________________________________________________
 TObjArray* AliTRDtrackingResolution::Histos()
 {
-  if(!fContainer) fContainer  = new TObjArray();
+  if(!fContainer) fContainer  = new TObjArray(20);
   return fContainer;
 }
 

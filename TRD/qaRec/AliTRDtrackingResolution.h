@@ -44,7 +44,9 @@ public:
   
   void    CreateOutputObjects();
   void    Exec(Option_t *);
+  void    GetRefFigure(Int_t ifig, Int_t &first, Int_t &last);  
   void    SetRecoParam(AliTRDrecoParam *r);
+  Bool_t  PostProcess();
   void    Terminate(Option_t *);
   
 private:

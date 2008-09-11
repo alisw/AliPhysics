@@ -14,23 +14,33 @@ class AliTRDrecoTask : public AliAnalysisTask
 {
 public:
   enum AliTRDrecoSteeringBits{
-    kHasMCdata = BIT(14)
+    kMCdata       = BIT(20)
+    ,kFriends     = BIT(21)
+    ,kPostProcess = BIT(22)
   };
   AliTRDrecoTask(const char *name, const char *title);
   virtual ~AliTRDrecoTask();
-
+  
+  
   void           ConnectInputData(Option_t *);
+  TObjArray*     Container() const {return fContainer;}
   virtual void   CreateOutputObjects() = 0;
   virtual void   Exec(Option_t *) = 0;
 
   Int_t          GetDebugLevel() const { return fDebugLevel;}
   Int_t          GetNRefFigures() const { return fNRefFigures; } 
   virtual void   GetRefFigure(Int_t ifig, Int_t &first, Int_t &last);
-  Bool_t         HasMCdata() const {return TestBit(kHasMCdata);};
+
+  Bool_t         HasFriends() const {return TestBit(kFriends);};
+  Bool_t         HasMCdata() const {return TestBit(kMCdata);};
+  Bool_t         HasPostProcess() const {return TestBit(kPostProcess);};
+
   virtual Bool_t Load(Char_t *filename);
   virtual Bool_t PostProcess();
   virtual void   SetDebugLevel(Int_t level);
-  void           SetMCdata(Bool_t mcdata) {SetBit(kHasMCdata, mcdata);}
+  virtual void   SetFriends(Bool_t fr = kTRUE) {SetBit(kFriends, fr);}
+  virtual void   SetMCdata(Bool_t mc = kTRUE) {SetBit(kMCdata, mc);}
+  virtual void   SetPostProcess(Bool_t pp = kTRUE) {SetBit(kPostProcess, pp);}
   virtual void   Terminate(Option_t *) = 0;
 
 private:

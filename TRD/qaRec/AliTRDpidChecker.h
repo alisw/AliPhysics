@@ -24,9 +24,10 @@ public:
   AliTRDpidChecker();
   virtual ~AliTRDpidChecker();
   
-  void   CreateOutputObjects();
-  void   Exec(Option_t *option);
-  void   Terminate(Option_t *);
+  void    CreateOutputObjects();
+  void    Exec(Option_t *option);
+  Bool_t  PostProcess();
+  void    Terminate(Option_t *);
 
 private:
   AliTRDpidChecker(const AliTRDpidChecker&); // not implemented

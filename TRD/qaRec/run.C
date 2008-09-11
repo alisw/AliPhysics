@@ -153,7 +153,7 @@ void run(const Char_t *files=0x0, Char_t *tasks="ALL", Int_t nmax=-1)
   task->SetMCdata(fHasMCdata);
   // Create containers for input/output
   AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("data", TChain::Class(), AliAnalysisManager::kInputContainer);
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("TrackInfoList", TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(task->GetName(), TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
   mgr->ConnectInput( task, 0, cinput1);
   mgr->ConnectOutput(task, 0, coutput1);
 
@@ -233,6 +233,7 @@ void run(const Char_t *files=0x0, Char_t *tasks="ALL", Int_t nmax=-1)
     mgr->AddTask(task = new AliTRDcheckDetector());
     taskPtr[(Int_t)kCheckDetector] = task;
     task->SetDebugLevel(0);
+    task->SetMCdata(fHasMCdata);
     
     // Create containers for input/output
     AliAnalysisDataContainer *coutput7 = mgr->CreateContainer(task->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%s.root", task->GetName()));
@@ -246,7 +247,7 @@ void run(const Char_t *files=0x0, Char_t *tasks="ALL", Int_t nmax=-1)
     if(TESTBIT(fSteerTask, itask)) printf("\t   %s [%s]\n", taskPtr[itask]->GetTitle(), taskPtr[itask]->GetName());
   }
   printf("\n\n");
-  mgr->PrintStatus();
+  //mgr->PrintStatus();
 
 
   AliCDBManager *cdbManager = AliCDBManager::Instance();
