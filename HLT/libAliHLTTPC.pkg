@@ -57,11 +57,13 @@ CLASS_HDRS:=  	AliHLTTPCTransform.h \
 		tracking-ca/AliHLTTPCCAHit.h      \
 		tracking-ca/AliHLTTPCCAOutTrack.h  \
 		tracking-ca/AliHLTTPCCATrackParam.h \
+		tracking-ca/AliHLTTPCCATrackConvertor.h \
 		tracking-ca/AliHLTTPCCAParam.h     \
 		tracking-ca/AliHLTTPCCARow.h \
 		tracking-ca/AliHLTTPCCAGrid.h \
 		tracking-ca/AliHLTTPCCAGBHit.h  \
 		tracking-ca/AliHLTTPCCAMCTrack.h  \
+		tracking-ca/AliHLTTPCCAMCPoint.h  \
 		tracking-ca/AliHLTTPCCAGBTrack.h  \
 		tracking-ca/AliHLTTPCCAGBTracker.h \
 		tracking-ca/AliHLTTPCCAPerformance.h \

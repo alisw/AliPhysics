@@ -171,11 +171,11 @@ int AliHLTTPCEsdWriterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* pESD,
 					       int* pMaxSlice)
 {
   // see header file for class documentation
+
   int iResult=0;
   int iAddedDataBlocks=0;
   if (pESD && blocks) {
-      pESD->Reset();
-    
+      pESD->Reset(); 
       pESD->SetMagneticField(fSolenoidBz);
       const AliHLTComponentBlockData* iter = NULL;
       AliHLTTPCTrackletData* inPtr=NULL;
@@ -197,7 +197,7 @@ int AliHLTTPCEsdWriterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* pESD,
 	    if (pMinSlice && (*pMinSlice==-1 || *pMinSlice>minslice)) *pMinSlice=minslice;
 	    if (pMaxSlice && (*pMaxSlice==-1 || *pMaxSlice<maxslice)) *pMaxSlice=maxslice;
 	  }
-	  //HLTDebug("dataspec %#x minslice %d", iter->fSpecification, minslice);
+	  HLTDebug("AliHLTTPCEsdWriterComponent::ProcessBlocks: dataspec %#x minslice %d", iter->fSpecification, minslice);
 	  if (minslice >=-1 && minslice<AliHLTTPCTransform::GetNSlice()) {
 	    if (minslice!=maxslice) {
 	      HLTWarning("data from multiple sectors in one block: "
@@ -217,7 +217,7 @@ int AliHLTTPCEsdWriterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* pESD,
 	  }
 	}
       }
-      if (iAddedDataBlocks>0 && pTree) {
+      if ( iAddedDataBlocks>0 && pTree) {
 	pTree->Fill();
       }
 
@@ -232,8 +232,7 @@ int AliHLTTPCEsdWriterComponent::Tracks2ESD(AliHLTTPCTrackArray* pTracks, AliESD
 {
   // see header file for class documentation
   int iResult=0;
-  if (pTracks && pESD) {
-    HLTDebug("converting %d tracks from track array", pTracks->GetNTracks());
+  if (pTracks && pESD) {    
     for (int i=0; i<pTracks->GetNTracks() && iResult>=0; i++) {
       AliHLTTPCTrack* pTrack=(*pTracks)[i];
       if (pTrack) {
@@ -241,9 +240,22 @@ int AliHLTTPCEsdWriterComponent::Tracks2ESD(AliHLTTPCTrackArray* pTracks, AliESD
 	//pTrack->Print();
 	int iLocal=pTrack->Convert2AliKalmanTrack();
 	if (iLocal>=0) {
+
 	AliESDtrack iotrack;
 	iotrack.UpdateTrackParams(pTrack,AliESDtrack::kTPCin);
-	iotrack.SetTPCPoints(pTrack->GetPoints());
+
+        Float_t points[4] = {pTrack->GetFirstPointX(), pTrack->GetFirstPointY(), pTrack->GetLastPointX(), pTrack->GetLastPointY() };
+
+	if(pTrack->GetSector() == -1){ // Set first and last points for global tracks
+	  Double_t s = TMath::Sin( pTrack->GetAlpha() );
+	  Double_t c = TMath::Cos( pTrack->GetAlpha() );
+	  points[0] =  pTrack->GetFirstPointX()*c + pTrack->GetFirstPointY()*s;
+	  points[1] = -pTrack->GetFirstPointX()*s + pTrack->GetFirstPointY()*c;	  
+	  points[2] =  pTrack->GetLastPointX() *c + pTrack->GetLastPointY() *s;
+	  points[3] = -pTrack->GetLastPointX() *s + pTrack->GetLastPointY() *c;	  
+	}
+        iotrack.SetTPCPoints(points);
+ 	//iotrack.SetTPCPoints(pTrack->GetPoints());
 	pESD->AddTrack(&iotrack);
 	} else {
 	  HLTError("conversion to AliKalmanTrack failed for track %d of %d", i, pTracks->GetNTracks());
@@ -336,8 +348,8 @@ AliHLTTPCEsdWriterComponent::AliConverter::AliConverter()
   // or
   // refer to README to build package
   // or
-  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
-}
+  // visit http://web.ift.uib.no/~kjeks
+ }
 
 AliHLTTPCEsdWriterComponent::AliConverter::~AliConverter()
 {
@@ -387,7 +399,12 @@ int AliHLTTPCEsdWriterComponent::AliConverter::DoInit(int argc, const char** arg
     } else if (argument.CompareTo("-tree")==0) {
       fWriteTree=1;
 
-    } else {
+    }else if (argument.CompareTo("-solenoidBz")==0) {
+      TString tmp="-solenoidBz ";
+      tmp+=argv[++i];
+      fBase->Configure(tmp.Data());
+    }
+    else {
       HLTError("unknown argument %s", argument.Data());
       break;
     }
@@ -399,7 +416,7 @@ int AliHLTTPCEsdWriterComponent::AliConverter::DoInit(int argc, const char** arg
 
   if (iResult>=0) {
     iResult=fBase->Reconfigure(NULL, NULL);
-  }
+  } 
 
   return iResult;
 }
@@ -416,7 +433,7 @@ int AliHLTTPCEsdWriterComponent::AliConverter::DoEvent(const AliHLTComponentEven
 						       AliHLTUInt8_t* /*outputPtr*/, 
 						       AliHLTUInt32_t& size,
 						       AliHLTComponentBlockDataList& /*outputBlocks*/ )
-{
+{  
   // see header file for class documentation
   int iResult=0;
   // no direct writing to the output buffer
@@ -433,20 +450,24 @@ int AliHLTTPCEsdWriterComponent::AliConverter::DoEvent(const AliHLTComponentEven
   }
 
   AliESDEvent* pESD = fESD;
+
   if (pESD && fBase) {
+  
     TTree* pTree = NULL;
     // TODO: Matthias 06.12.2007
     // Tried to write the ESD directly instead to a tree, but this did not work
     // out. Information in the ESD is different, needs investigation.
+    
     if (fWriteTree)
       pTree = new TTree("esdTree", "Tree with HLT ESD objects");
+ 
     if (pTree) {
       pTree->SetDirectory(0);
       pESD->WriteToTree(pTree);
     }
 
     if ((iResult=fBase->ProcessBlocks(pTree, pESD, blocks, (int)evtData.fBlockCnt))>0) {
-	// TODO: set the specification correctly
+      // TODO: set the specification correctly
       if (pTree) {
 	// the esd structure is written to the user info and is
 	// needed in te ReadFromTree method to read all objects correctly
