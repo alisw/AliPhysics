@@ -73,7 +73,7 @@ void AliZDCDataDCS::ProcessData(TMap& aliasMap)
       }
       Introduce(j, aliasArr);
 
-      if(aliasArr->GetEntries()<2){
+      if(aliasArr->GetEntries()<kNAliases){
    	AliError(Form("Alias %s has just %d entries!",
    			fAliasNames[j].Data(),aliasArr->GetEntries()));
    	continue;
@@ -88,12 +88,11 @@ void AliZDCDataDCS::ProcessData(TMap& aliasMap)
       while((aValue = (AliDCSValue*) iterarray.Next())) {
    	val[ne] = aValue->GetFloat();
    	time[ne] = (Double_t) (aValue->GetTimeStamp());
-   	if(j>=4) fCalibData[ne] = val[ne];
+   	fCalibData[ne] = val[ne];
+   	fTimeStamp[ne] = time[ne];
    	ne++;
       }
-      //
       
-      //
 //      if(j>=4) CreateGraph(j, aliasArr->GetEntries(), time, val); // fill graphs 
       //
       delete[] val;
@@ -172,7 +171,6 @@ void AliZDCDataDCS::CreateGraph(int i, int dim, const Double_t *x, const Double_
 
    gr->GetXaxis()->SetTimeDisplay(1);
    gr->SetTitle(fAliasNames[i].Data());
-
 //   AliInfo(Form("Array entries: %d",fGraphs.GetEntriesFast()));
 
 

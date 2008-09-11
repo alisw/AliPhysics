@@ -55,13 +55,14 @@ private:
 	UInt_t fEndTime;	// End of run time
 
 	TString fAliasNames[kNAliases];	// Name of the aliases provided by the DCS
+	Double_t fCalibData[kNAliases];	// Array containing calibration data
+	Double_t fTimeStamp[kNAliases];	// Array containing time stamps
+
 	TClonesArray fGraphs;		// Array containing PTM HV graphics
-	
-	Float_t fCalibData[kNGraphs];	// Array containing calibration data
 
 	Bool_t fIsProcessed;		// Flag set when data are processed
 
-	ClassDef(AliZDCDataDCS, 2);
+	ClassDef(AliZDCDataDCS, 3);
 };
 
 #endif
