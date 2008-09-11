@@ -103,7 +103,7 @@ void AliCaloTrackAODReader::FillInputCTS() {
     }//Pt and Fidutial cut passed. 
     //}// track status
   }// track loop
-  if(fDebug > 1) printf("FillInputCTS():: aod entries %d\n", fAODCTS->GetEntries());
+  if(fDebug > 1) printf("FillInputCTS():: aod entries %d\n", fAODCTS->GetEntriesFast());
 }
 
 //____________________________________________________________________________
@@ -120,7 +120,7 @@ void AliCaloTrackAODReader::FillInputEMCAL() {
 
   //Loop to select clusters in fidutial cut and fill container with aodClusters
   Int_t naod = 0;
-  for (Int_t iclus =  0; iclus <  caloClusters->GetEntries(); iclus++) {
+  for (Int_t iclus =  0; iclus <  caloClusters->GetEntriesFast(); iclus++) {
     AliAODCaloCluster * clus = (AliAODCaloCluster *) caloClusters->At(iclus) ;
     TLorentzVector momentum ;
     clus->GetMomentum(momentum, v);      
@@ -135,7 +135,7 @@ void AliCaloTrackAODReader::FillInputEMCAL() {
     }//Pt and Fidutial cut passed.
   }//esd cluster loop
   
-  if(fDebug > 1) printf("FillInputEMCAL():: aod entries %d\n", fAODEMCAL->GetEntries());
+  if(fDebug > 1) printf("FillInputEMCAL():: aod entries %d\n", fAODEMCAL->GetEntriesFast());
 
 }
 
@@ -154,7 +154,7 @@ void AliCaloTrackAODReader::FillInputPHOS() {
   //Loop to select clusters in fidutial cut and fill container with aodClusters
   Int_t naod = 0;
 
-  for (Int_t iclus =  0; iclus <  caloClusters->GetEntries(); iclus++) {
+  for (Int_t iclus =  0; iclus <  caloClusters->GetEntriesFast(); iclus++) {
     AliAODCaloCluster * clus = (AliAODCaloCluster *) caloClusters->At(iclus) ;
     TLorentzVector momentum ;
     clus->GetMomentum(momentum, v);      
@@ -169,7 +169,7 @@ void AliCaloTrackAODReader::FillInputPHOS() {
     }//Pt and Fidutial cut passed.
   }//esd cluster loop
   
-  if(fDebug > 1) printf("FillInputPHOS():: aod entries %d\n", fAODPHOS->GetEntries());
+  if(fDebug > 1) printf("FillInputPHOS():: aod entries %d\n", fAODPHOS->GetEntriesFast());
 
 
 }

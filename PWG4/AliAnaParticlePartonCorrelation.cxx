@@ -179,7 +179,7 @@ void  AliAnaParticlePartonCorrelation::MakeAnalysisFillAOD()
 
   if(GetDebug() > 1){
     printf("Begin parton correlation analysis, fill AODs \n");
-    printf("In particle branch aod entries %d\n", GetAODBranch()->GetEntries());
+    printf("In particle branch aod entries %d\n", GetAODBranch()->GetEntriesFast());
   }
   
   //Loop on stored AOD particles
@@ -215,7 +215,7 @@ void  AliAnaParticlePartonCorrelation::MakeAnalysisFillHistograms()
   //Particle-Parton Correlation Analysis, fill histograms
   if(GetDebug() > 1){
     printf("Begin parton correlation analysis, fill histograms \n");
-    printf("In particle branch aod entries %d\n", GetAODBranch()->GetEntries());
+    printf("In particle branch aod entries %d\n", GetAODBranch()->GetEntriesFast());
   }
 
   AliStack * stack =  GetMCStack() ;
@@ -235,7 +235,7 @@ void  AliAnaParticlePartonCorrelation::MakeAnalysisFillHistograms()
     Int_t iparent  = 2000;
     Int_t iawayparent = -1;
 
-    if(!(particle->GetRefTracks()) || (particle->GetRefTracks())->GetEntries() < 7) AliFatal("Reference list with partons not filled, STOP analysis");
+    if(!(particle->GetRefTracks()) || (particle->GetRefTracks())->GetEntriesFast() < 7) AliFatal("Reference list with partons not filled, STOP analysis");
 
     //Check and get indeces of mother and parton    
     if(imom < 8 ) iparent = imom ;   //mother is already a parton
@@ -251,7 +251,7 @@ void  AliAnaParticlePartonCorrelation::MakeAnalysisFillHistograms()
       }   
     }
     
-    if(GetDebug() > 1) printf("N reference partons %d; labels:  mother %d, parent %d \n", (particle->GetRefTracks())->GetEntries(), imom, iparent);
+    if(GetDebug() > 1) printf("N reference partons %d; labels:  mother %d, parent %d \n", (particle->GetRefTracks())->GetEntriesFast(), imom, iparent);
 
     
     if(iparent < 0 || iparent > 8) { 

@@ -125,7 +125,7 @@ void AliCaloTrackESDReader::FillInputCTS() {
       }//Pt and Fidutial cut passed. 
     }// track status
   }// track loop
-  if(fDebug > 1) printf("FillInputCTS():: aod entries %d\n", fAODCTS->GetEntries());
+  if(fDebug > 1) printf("FillInputCTS():: aod entries %d\n", fAODCTS->GetEntriesFast());
 }
   
 //____________________________________________________________________________
@@ -146,7 +146,7 @@ void AliCaloTrackESDReader::FillInputEMCAL() {
   Float_t pos[3] ;
 //   Double_t * pid = new Double_t[AliPID::kSPECIESN];
 
-  for (Int_t iclus =  0; iclus <  caloClusters->GetEntries(); iclus++) {
+  for (Int_t iclus =  0; iclus <  caloClusters->GetEntriesFast(); iclus++) {
     AliESDCaloCluster * clus = (AliESDCaloCluster *) caloClusters->At(iclus) ;
     TLorentzVector momentum ;
     clus->GetMomentum(momentum, v);      
@@ -191,7 +191,7 @@ void AliCaloTrackESDReader::FillInputEMCAL() {
     }//Pt and Fidutial cut passed.
   }//esd cluster loop
   
-  if(fDebug > 1) printf("FillInputEMCAL():: aod entries %d\n", fAODEMCAL->GetEntries());
+  if(fDebug > 1) printf("FillInputEMCAL():: aod entries %d\n", fAODEMCAL->GetEntriesFast());
 
 }
 
@@ -212,7 +212,7 @@ void AliCaloTrackESDReader::FillInputPHOS() {
   Float_t pos[3] ;
   Double_t * pid = new Double_t[AliPID::kSPECIESN];
  
-  for (Int_t iclus =  0; iclus <  caloClusters->GetEntries(); iclus++) {
+  for (Int_t iclus =  0; iclus <  caloClusters->GetEntriesFast(); iclus++) {
     AliESDCaloCluster * clus = (AliESDCaloCluster *) caloClusters->At(iclus) ;
     TLorentzVector momentum ;
     clus->GetMomentum(momentum, v);      
@@ -262,7 +262,7 @@ void AliCaloTrackESDReader::FillInputPHOS() {
      
     }//Pt and Fidutial cut passed.
   }//esd cluster loop
-  if(fDebug > 1) printf("FillInputPHOS():: aod entries %d\n", fAODPHOS->GetEntries());
+  if(fDebug > 1) printf("FillInputPHOS():: aod entries %d\n", fAODPHOS->GetEntriesFast());
 
 
 }

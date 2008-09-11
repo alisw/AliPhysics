@@ -5,7 +5,7 @@
  * Contributors are mentioned in the code where appropriate.              *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
+ * documentation strictly for non-commercial purposes iGetEntriesFast(s hereby granted   *
  * without fee, provided that the above copyright notice appears in all   *
  * copies and that both the copyright notice and this permission notice   *
  * appear in the supporting documentation. The authors make no claims     *
@@ -270,7 +270,7 @@ Bool_t AliAnaGammaDirect::CheckInvMass(const Int_t icalo,const TLorentzVector mo
   //Search if there is a companion decay photon to the candidate 
   // and discard it in such case
   TLorentzVector mom2 ;
-  for(Int_t jcalo = 0; jcalo < pl->GetEntries(); jcalo++){
+  for(Int_t jcalo = 0; jcalo < pl->GetEntriesFast(); jcalo++){
     if(icalo==jcalo) continue ;
     AliAODCaloCluster * calo =  dynamic_cast<AliAODCaloCluster*> (pl->At(jcalo));
   
@@ -676,11 +676,11 @@ void  AliAnaGammaDirect::MakeAnalysisFillAOD()
     pl = GetAODPHOS();
   else if (fDetector == "EMCAL")
     pl = GetAODEMCAL();
-  //cout<<"Number of entries "<<pl->GetEntries()<<endl;
+  //cout<<"Number of entries "<<pl->GetEntriesFast()<<endl;
   
   //Fill AODCaloClusters and AODParticleCorrelation with PHOS aods
   TLorentzVector mom ;
-  for(Int_t icalo = 0; icalo < pl->GetEntries(); icalo++){
+  for(Int_t icalo = 0; icalo < pl->GetEntriesFast(); icalo++){
     AliAODCaloCluster * calo =  dynamic_cast<AliAODCaloCluster*> (pl->At(icalo));
   
     //Cluster selection, not charged, with photon id and in fidutial cut

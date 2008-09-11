@@ -104,7 +104,7 @@ class AliAODParticleCorrelation : public AliVParticle {
     virtual void  SetCorrelatedBackground(TLorentzVector bkg) {fCorrBkg = bkg;}
 
     void SetRefJet(AliAODJet* jet)  { fRefJet = jet;}
-    //AliAODJet* GetJet() {return ((AliAODJet*) fRefJet);}
+    AliAODJet* GetJet() {return ((AliAODJet*) fRefJet.GetObject());}
     TRef GetRefJet() {return fRefJet;}
 
  private:

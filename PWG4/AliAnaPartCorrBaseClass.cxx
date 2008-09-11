@@ -4,7 +4,7 @@
  * Author: The ALICE Off-line Project.                                    *
  * Contributors are mentioned in the code where appropriate.              *
  *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
+ * Permission to use, copy, modify and distribute this software and its   *GetEntriesFast(
  * documentation strictly for non-commercial purposes is hereby granted   *
  * without fee, provided that the above copyright notice appears in all   *
  * copies and that both the copyright notice and this permission notice   *
@@ -139,7 +139,7 @@ AliAnaPartCorrBaseClass::~AliAnaPartCorrBaseClass()
 void AliAnaPartCorrBaseClass::AddAODCaloCluster(AliAODCaloCluster calo) {
   //Put AOD calo cluster in the CaloClusters array
 
-  Int_t i = fAODCaloClusters->GetEntries();
+  Int_t i = fAODCaloClusters->GetEntriesFast();
   new((*fAODCaloClusters)[i])  AliAODCaloCluster(calo);
 
 }
@@ -148,7 +148,7 @@ void AliAnaPartCorrBaseClass::AddAODCaloCluster(AliAODCaloCluster calo) {
 void AliAnaPartCorrBaseClass::AddAODParticleCorrelation(AliAODParticleCorrelation pc) {
   //Put AOD calo cluster in the AODParticleCorrelation array
 
-  Int_t i = fAODBranch->GetEntries();
+  Int_t i = fAODBranch->GetEntriesFast();
   new((*fAODBranch)[i])  AliAODParticleCorrelation(pc);
 
 }
