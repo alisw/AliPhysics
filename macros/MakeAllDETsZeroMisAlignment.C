@@ -55,7 +55,7 @@ void MakeAllDETsZeroMisAlignment(Char_t* CDBstorage = "local://$HOME/ZeroMisAlig
   gSystem->Exec("aliroot -b -q $ALICE_ROOT/GRP/MakeSTRUCTZeroMisAlignment.C");
 
   // run macros for sensitive modules
-  TString sModules="EMCAL,FMD,HMPID,ITS,MUON,PMD,PHOS,T0,TRD,TPC,TOF,VZERO,ZDC";
+  TString sModules="ACORDE,EMCAL,FMD,HMPID,ITS,MUON,PMD,PHOS,T0,TRD,TPC,TOF,VZERO,ZDC";
   TObjArray *detArray = sModules.Tokenize(',');
   TIter iter(detArray);
   TObjString *ostr;

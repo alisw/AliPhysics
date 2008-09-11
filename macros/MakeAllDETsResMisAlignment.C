@@ -58,7 +58,7 @@ void MakeAllDETsResMisAlignment(Char_t* CDBstorage = "local://$HOME/ResidualMisA
   gSystem->Exec("aliroot -b -q $ALICE_ROOT/GRP/MakeSTRUCTResMisAlignment.C");
 
   // run macros for sensitive modules
-  TString sModules="EMCAL,FMD,HMPID,ITS,MUON,PMD,PHOS,T0,TRD,TPC,TOF,VZERO,ZDC";
+  TString sModules="ACORDE,EMCAL,FMD,HMPID,ITS,MUON,PMD,PHOS,T0,TRD,TPC,TOF,VZERO,ZDC";
   TObjArray *detArray = sModules.Tokenize(',');
   TIter iter(detArray);
   TObjString *ostr;
