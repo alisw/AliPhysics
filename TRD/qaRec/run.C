@@ -9,6 +9,7 @@
 //     "CAL"  : TRD calibration
 //     "PID"  : TRD PID - pion efficiency 
 //     "PIDR" : TRD PID - reference data
+//     "DET"  : Basic TRD Detector checks
 //     "NOMC" : Data set does not have Monte Carlo Informations (real data), so all tasks which rely
 //              on MC information are switched off
 //
@@ -52,6 +53,7 @@
 #include "TRD/qaRec/AliTRDtrackingResolution.h"
 #include "TRD/qaRec/AliTRDcalibration.h"
 #include "TRD/qaRec/AliTRDpidChecker.h"
+#include "TRD/qaRec/AliTRDcheckDetector.h"
 #endif
 
 #define BIT(n)        (1 << (n))
@@ -103,6 +105,9 @@ void run(const Char_t *files=0x0, Char_t *tasks="ALL", Int_t nmax=-1)
     } else if(s.CompareTo("PID" ) == 0){
       SETBIT(fSteerTask, kCalibration);
       continue;
+    } else if(s.CompareTo("DET" ) == 0){
+    	SETBIT(fSteerTask, kCheckDetector);
+    	continue;
     } else if(s.CompareTo("NOMC") == 0){
     	CLEARBIT(fSteerTask, kTrackingEfficiency);
     	CLEARBIT(fSteerTask, kTrackingCombinedEfficiency);
@@ -184,6 +189,7 @@ void run(const Char_t *files=0x0, Char_t *tasks="ALL", Int_t nmax=-1)
     mgr->AddTask(task = new AliTRDtrackingResolution());
     taskPtr[(Int_t)kTrackingResolution] = task;
     task->SetMCdata(fHasMCdata);
+    task->SetPostProcess(kFALSE);
     task->SetDebugLevel(0);
     
     // Create containers for input/output
@@ -219,6 +225,19 @@ void run(const Char_t *files=0x0, Char_t *tasks="ALL", Int_t nmax=-1)
     AliAnalysisDataContainer *coutput6 = mgr->CreateContainer(task->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%s.root", task->GetName()));
     mgr->ConnectInput( task, 0, coutput1);
     mgr->ConnectOutput(task, 0, coutput6);
+  }
+
+  //____________________________________________
+  // TRD detector checker
+	if(TESTBIT(fSteerTask, kCheckDetector)){
+    mgr->AddTask(task = new AliTRDcheckDetector());
+    taskPtr[(Int_t)kCheckDetector] = task;
+    task->SetDebugLevel(0);
+    
+    // Create containers for input/output
+    AliAnalysisDataContainer *coutput7 = mgr->CreateContainer(task->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%s.root", task->GetName()));
+    mgr->ConnectInput( task, 0, coutput1);
+    mgr->ConnectOutput(task, 0, coutput7);
   }
 
   if (!mgr->InitAnalysis()) return;

@@ -1,7 +1,7 @@
 #ifndef TRDRECONSTRUCTIONTRAIN_H
 #define TRDRECONSTRUCTIONTRAIN_H
 
-const Int_t fknTasks = 6;
+const Int_t fknTasks = 7;
 enum AliTRDrecoTasks{
   kInfoGen = 0
   ,kTrackingEfficiency = 1
@@ -9,6 +9,7 @@ enum AliTRDrecoTasks{
   ,kTrackingResolution = 3
   ,kCalibration = 4
   ,kPIDChecker = 5
+  ,kCheckDetector = 6
 };
 
 
