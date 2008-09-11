@@ -5,7 +5,7 @@ void sim(Int_t nev=4) {
   simu.SetMakeDigits ("TRD TOF PHOS HMPID  EMCAL MUON FMD PMD T0 ZDC VZERO");
   simu.SetMakeDigitsFromHits("ITS TPC");
   simu.SetWriteRawData("ALL","raw.root",kTRUE);
-//  simu.SetDefaultStorage("alien://Folder=/alice/data/2008/LHC08c/OCDB/");
+//  simu.SetDefaultStorage("alien://Folder=/alice/data/2008/LHC08d/OCDB/");
   simu.SetDefaultStorage("local://$ALICE_ROOT");
   simu.SetSpecificStorage("EMCAL/*","local://DB");
 

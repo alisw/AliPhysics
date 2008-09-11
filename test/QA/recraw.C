@@ -12,7 +12,7 @@ void recraw() {
 	// Set the CDB storage location
   AliCDBManager * man = AliCDBManager::Instance();
   man->SetDefaultStorage("local://$ALICE_ROOT");
-  //man->SetDefaultStorage("alien://Folder=/alice/data/2008/LHC08c/OCDB/");
+  //man->SetDefaultStorage("alien://Folder=/alice/data/2008/LHC08d/OCDB/");
 
 	// Example in case a specific CDB storage is needed
 	//man->SetSpecificStorage("EMCAL/*","local://DB");
@@ -53,7 +53,8 @@ void recraw() {
 	//AliQA::SetQARefStorage(Form("%s%s/", AliQA::GetQARefDefaultStorage(), kYear)) ;
   AliQA::SetQARefStorage("local://$ALICE_ROOT") ;
   for (Int_t det = 0 ; det < AliQA::kNDET ; det++) {
-    reco.SetQACycles(det, 2) ;
+    reco.SetQACycles(det, 9999) ;
+    reco.SetQAWriteExpert(det) ; 
   }
   
   AliLog::Flush();

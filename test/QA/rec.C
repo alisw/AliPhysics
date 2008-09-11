@@ -1,7 +1,7 @@
  void rec() {
   const char * kYear = "08" ; 
   AliCDBManager * man = AliCDBManager::Instance();
-  //man->SetDefaultStorage("alien://Folder=/alice/data/2008/LHC08c/OCDB/");
+  //man->SetDefaultStorage("alien://Folder=/alice/data/2008/LHC08d/OCDB/");
   man->SetDefaultStorage("local://$ALICE_ROOT");
   man->SetSpecificStorage("EMCAL/*","local://DB");
   
@@ -23,7 +23,7 @@
   AliQA::SetQARefStorage("local://$ALICE_ROOT") ;
   
   for (Int_t det = 0 ; det < AliQA::kNDET ; det++) {
-    reco.SetQACycles(det, 2) ;
+    reco.SetQACycles(det, 999) ;
     reco.SetQAWriteExpert(det) ; 
   }
   

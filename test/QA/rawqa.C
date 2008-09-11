@@ -25,7 +25,7 @@ TString ClassName() { return "rawqa" ; }
 //________________________________qa______________________________________
 void rawqa(const Int_t runNumber, Int_t maxFiles = 10, const char* year = "08") 
 {	
-	char * kDefaultOCDBStorage = Form("alien://folder=/alice/data/20%s/LHC%sc/OCDB/", year, year) ; 
+	char * kDefaultOCDBStorage = Form("alien://folder=/alice/data/20%s/LHC%sd/OCDB/", year, year) ; 
 	//AliQA::SetQARefStorage(Form("%s%s/", AliQA::GetQARefDefaultStorage(), year)) ;  
 	AliQA::SetQARefStorage("local://$ALICE_ROOT") ;
 	AliQA::SetQARefDataDirName(AliQA::kMONTECARLO) ; //RUN_TYPE
