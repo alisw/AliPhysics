@@ -1,7 +1,7 @@
 // $Id$
 /**
  * @file extract-hltout-payload.C
- * @brief Extraction of SDD data blocks from HLTOUT
+ * @brief Extraction of data blocks from HLTOUT
  *
  * <pre>
  * Usage: aliroot -b -q extract-hltout-payload.C'("raw.root")' | tee extract-hltout-payload.log
@@ -26,7 +26,7 @@
  * @author Matthias.Richter@ift.uib.no
  * @ingroup alihlt_its
  */
-void extract_hltout_payload(const char* input="./", const char* selection="", int maxEvent=-1)
+void extract_hltout_payload(const char* input, const char* selection="", int maxEvent=-1)
 {
   /////////////////////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////////////
@@ -77,4 +77,15 @@ void extract_hltout_payload(const char* input="./", const char* selection="", in
     cout << "processing event " << count++ << endl;
     hltRec.Reconstruct(rawreader, NULL);
   } while (rawreader->NextEvent() && (maxEvent<0 || count<maxEvent));
+}
+
+void extract_hltout_payload()
+{
+  cerr << "==============================================================================" << endl;
+  cerr << "usage: aliroot -b -q -l extract-hltout-payload.C'(input, selection, maxEvent)'" << endl << endl;
+  cerr << "please provide input, e.g. \"raw.root\", or \"./\"" << endl;
+  cerr << "optional data type selection, e.g \"-datatype {DDL_RAW } ISDD\", " << endl;
+  cerr << "                                  \"-origin {TPC }\", \"-typeid {DDL_RAW }\"" << endl;
+  cerr << "optional max event" << endl;
+  cerr << "==============================================================================" << endl;
 }
