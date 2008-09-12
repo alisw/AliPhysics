@@ -28,6 +28,7 @@
 #include "AliTPCCalPad.h"
 #include "AliTPCCalROC.h"
 #include "AliTPCcalibDB.h"
+#include "AliTPCParam.h"
 
 
 
@@ -1101,7 +1102,7 @@ Float_t  AliTPCseed::CookdEdxNorm(Double_t low, Double_t up, Int_t type, Int_t i
       corr  = parcl->Qnorm(ipad,type,dr,ty,tz);
     }
     amp[ncl]=charge/corr;
-    amp[ncl]/gainGG;
+    amp[ncl]/=gainGG;
     if (posNorm){
       //
       //
