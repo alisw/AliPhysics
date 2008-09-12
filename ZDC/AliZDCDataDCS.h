@@ -22,7 +22,7 @@ public:
 	void SetStartTime(Int_t startTime) {fStartTime = startTime;}
 	void SetEndTime(Int_t endTime) {fEndTime = endTime;}
 	void SetCalibData(Float_t *val) 
-	     {for(Int_t i=0; i<kNGraphs; i++) fCalibData[i] = val[i];}
+	     {for(Int_t i=0; i<kNAliases; i++) fCalibData[i] = val[i];}
 	void SetCalibData(Int_t i, Float_t val) {fCalibData[i] = val;} 
 	//
 	Int_t GetRun() {return fRun;}
