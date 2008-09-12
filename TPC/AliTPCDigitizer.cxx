@@ -201,7 +201,7 @@ void AliTPCDigitizer::ExecFast(Option_t* option)
   param->SetZeroSup(2);
 
   Int_t zerosup = param->GetZeroSup(); 
-  AliTPCCalPad * gainTPC = AliTPCcalibDB::Instance()->GetPadGainFactor(); 
+  AliTPCCalPad * gainTPC = AliTPCcalibDB::Instance()->GetDedxGainFactor(); 
   AliTPCCalPad * noiseTPC = AliTPCcalibDB::Instance()->GetPadNoise(); 
   //
   //Loop over segments of the TPC
@@ -404,7 +404,7 @@ void AliTPCDigitizer::ExecSave(Option_t* option)
   Int_t zerosup = param->GetZeroSup();
   //Loop over segments of the TPC
     
-  AliTPCCalPad * gainTPC = AliTPCcalibDB::Instance()->GetPadGainFactor();
+  AliTPCCalPad * gainTPC = AliTPCcalibDB::Instance()->GetDedxGainFactor();
   AliTPCCalPad * noiseTPC = AliTPCcalibDB::Instance()->GetPadNoise();
   for (Int_t n=0; n<nentries; n++) {
     rl = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(0));
