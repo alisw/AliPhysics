@@ -105,6 +105,13 @@ AliHLTMessage::AliHLTMessage(void *buf, Int_t bufsize)
       fBufCompCur = fBuffer + bufsize;
       fBuffer     = 0;
       Uncompress();
+      // Matthias Sep 2008
+      // NOTE: this is not done in TMessage and will lead to the deletion
+      // of the buffer. This is not allowed in case of HLT where the
+      // buffer is handled by the framework. In general, I think this
+      // is a very bad idea to do it like that in TMessage
+      fBufComp    = NULL;
+      fBufCompCur = 0;
    }
 
    if (fWhat == kMESS_OBJECT) {
@@ -121,7 +128,7 @@ AliHLTMessage::AliHLTMessage(void *buf, Int_t bufsize)
 AliHLTMessage::~AliHLTMessage()
 {
    // Clean up compression buffer.
-   delete [] fBufComp;
+  if (fBufComp) delete [] fBufComp;
 }
 
 //______________________________________________________________________________
@@ -167,7 +174,7 @@ void AliHLTMessage::SetLength() const
 
       if (fBufComp) {
          buf = fBufComp;
-	 *((UInt_t*)buf) = (UInt_t)(Length() - sizeof(UInt_t));
+	 *((UInt_t*)buf) = (UInt_t)(CompLength() - sizeof(UInt_t));
       }
    }
 }
