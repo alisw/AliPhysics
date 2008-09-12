@@ -33,10 +33,14 @@ class AliITSRawStreamSDDCompressed: public AliITSRawStream {
     virtual Int_t    ReadJitter() const {return 0;}
     virtual Int_t    GetCarlosId() const {return fCarlosId;}
 
-    virtual void SetDDLModuleMap(AliITSDDLModuleMapSDD* ddlsdd){fDDLModuleMap->SetDDLMap(ddlsdd);}
+    virtual void SetDDLModuleMap(AliITSDDLModuleMapSDD* ddlsdd){
+      if(!fDDLModuleMap) fDDLModuleMap=new AliITSDDLModuleMapSDD();
+      fDDLModuleMap->SetDDLMap(ddlsdd);
+    }
     virtual void     SetZeroSuppLowThreshold(Int_t iMod, Int_t iSid, Int_t th) 
       {fLowThresholdArray[iMod][iSid]=th;}
     Int_t   GetModuleNumber(UInt_t iDDL, UInt_t iModule) const {
+      if(!fDDLModuleMap) return kSPDModules+1; // dummy module number if the DDL map is not set (case of DAs)
       return fDDLModuleMap->GetModuleNumber(iDDL,iModule);
     }
 

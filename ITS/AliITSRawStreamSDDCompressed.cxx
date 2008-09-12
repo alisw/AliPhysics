@@ -81,8 +81,6 @@ fJitter(0),
 fDDL(0)
 {
 // create an object to read ITS SDD raw digits
-  fDDLModuleMap=new AliITSDDLModuleMapSDD();
-  fDDLModuleMap->SetDefaultMap();
   for(Int_t im=0;im<kSDDModules;im++){
     fLowThresholdArray[im][0]=0;
     fLowThresholdArray[im][1]=0;

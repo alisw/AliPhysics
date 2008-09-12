@@ -42,8 +42,6 @@ fEightBitSignal(0),
 fDecompressAmbra(kTRUE)
 {
 // create an object to read ITS SDD raw digits
-  fDDLModuleMap=new AliITSDDLModuleMapSDD();
-  fDDLModuleMap->SetDefaultMap();
   Reset();
   for(Int_t im=0;im<kSDDModules;im++){
     fLowThresholdArray[im][0]=0;
@@ -199,7 +197,6 @@ Bool_t AliITSRawStreamSDD::Next()
 	  fCoord1 = fAnode[fCarlosId][fChannel];
 	  fCoord2 = fTimeBin[fCarlosId][fChannel];
 	  fTimeBin[fCarlosId][fChannel]++;
-	  //printf("Data read, Module=%d , Anode=%d , Time=%d , Charge=%d\n",fModuleID,fCoord1,fCoord2,fSignal);
 	  return kTRUE;
 	}
       }
