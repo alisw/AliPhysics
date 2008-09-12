@@ -144,19 +144,16 @@ AliHLTPHOSClusterizerComponent::GetOutputDataSize(unsigned long& constBase, doub
 
 int
 AliHLTPHOSClusterizerComponent::DoEvent(const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks,
-                                        AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, AliHLTUInt32_t& size,
+                                        AliHLTComponentTriggerData& /*trigData*/, AliHLTUInt8_t* outputPtr, AliHLTUInt32_t& size,
                                         std::vector<AliHLTComponentBlockData>& outputBlocks)
 {
   //See headerfile for documentation
-  AliHLTComponentTriggerData &trDta = trigData;  
-  trDta.fDataSize++;
-  trDta.fDataSize--; //shutting up the compiler, we dont use trigData now but will do in near future 
   
   UInt_t tSize            = 0;
   UInt_t offset           = 0;
   UInt_t mysize           = 0;
   Int_t nRecPoints        = 0;
-  Int_t j =0;
+  Int_t j = 0;
 
   AliHLTUInt8_t* outBPtr;
   outBPtr = outputPtr;
@@ -231,8 +228,6 @@ AliHLTPHOSClusterizerComponent::DoEvent(const AliHLTComponentEventData& evtData,
   size = mysize;
   
   return 0;
-
-
 }
 
 int

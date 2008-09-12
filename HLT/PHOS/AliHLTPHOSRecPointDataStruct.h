@@ -81,7 +81,7 @@ struct AliHLTPHOSRecPointDataStruct
   Float_t fDistanceToBadChannel;              //COMMENT
 
   /** Array of digits in the rec point */
-  AliHLTPHOSDigitDataStruct fDigitsList[128];  //COMMENT
+  AliHLTPHOSDigitDataStruct fDigitsList[256];  //COMMENT
 
 };
 

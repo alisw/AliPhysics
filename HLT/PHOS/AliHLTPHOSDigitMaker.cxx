@@ -152,6 +152,11 @@ AliHLTPHOSDigitMaker::MakeDigits(AliHLTPHOSChannelDataHeaderStruct* channelDataH
 		  fDigitStructPtr->fModule = coord1[3];
 		  j++;	      
 		  currentchannel = fShmPtr->NextChannel();
+		  AliHLTPHOSMapper::GetChannelCoord(currentchannel->fChannelID, coord2);
+		  if(coord1[0] == coord2[0] && coord1[1] == coord2[1])
+		    {
+		      fShmPtr->NextChannel();
+		    }
 		}
 	      else
 		{

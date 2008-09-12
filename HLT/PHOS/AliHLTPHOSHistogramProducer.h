@@ -37,6 +37,7 @@
 class TH1D;
 class TNtuple;
 class AliHLTPHOSCaloClusterContainerStruct;
+
 /** 
  * @class AliHLTPHOSHistogramProducer
  *
@@ -76,5 +77,5 @@ private:
   Int_t fMaxNtupleEntries;
 
 };
-
 #endif
+

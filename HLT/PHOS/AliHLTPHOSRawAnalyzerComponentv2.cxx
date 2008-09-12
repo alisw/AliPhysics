@@ -169,7 +169,7 @@ AliHLTPHOSRawAnalyzerComponentv2::DoIt(const AliHLTComponentBlockData* iter, Ali
   Int_t crazyness          = 0;
   Int_t nSamples           = 0;
   const int bunchsizecut   = 5;
- Short_t channelCount     = 0;
+  Short_t channelCount     = 0;
       
   AliHLTPHOSChannelDataHeaderStruct *channelDataHeaderPtr = reinterpret_cast<AliHLTPHOSChannelDataHeaderStruct*>(outputPtr); 
 

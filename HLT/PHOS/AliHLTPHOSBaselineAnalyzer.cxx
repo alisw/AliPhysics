@@ -338,7 +338,7 @@ AliHLTPHOSBaselineAnalyzer::WriteChannelHistograms(const Char_t* filename)
 			      if(x >63 || x < 0 || z > 55 ||  z < 0 || gain < 0 ||  gain >1) 
 				{
 				  //				  cout << "index out of range!" << " x = " << x << " z = " << z << " gain = " << gain << " xoff = " << xoff << " zoff = " << zoff << endl;
-				  continue;
+ 				  continue;
 				}
 			      //fChannelHistogramsPtr[x][z][gain]->Fit("gaus", "0");
 			      //			      asciifile << (fChannelHistogramsPtr[x][z][gain]->GetFunction("gaus"))->GetParameter(1) << endl;

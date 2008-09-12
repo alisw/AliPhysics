@@ -201,7 +201,6 @@ AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData
 {
   //  cout << "Event" << fPhosEventCount  << endl;
 
-
   UInt_t offset            = 0; 
   UInt_t mysize            = 0;
   UInt_t tSize             = 0;
@@ -311,7 +310,6 @@ AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData
 	  fOutPtr->fHasRawData = false;
 	}
 
-
       fOutPtr->fCnt  = tmpChannelCnt;
       fOutPtr->fSize = mysize;
       AliHLTComponentBlockData bdCellEnergy;
@@ -337,7 +335,6 @@ AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData
   fPhosEventCount++; 
   return 0;
 }//end DoEvent
-
 
 
 

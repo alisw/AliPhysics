@@ -28,6 +28,7 @@
 
 #include "AliHLTPHOSClusterizer.h"
 #include "AliHLTPHOSBase.h"
+#include "AliHLTLogging.h"
 #include "TMath.h"
 #include "AliHLTPHOSRecPointContainerStruct.h"
 #include "AliHLTPHOSRecPointDataStruct.h"
@@ -125,8 +126,14 @@ AliHLTPHOSClusterizer::ClusterizeEvent()
       fDigitContainerPtr->fDigitDataStruct[i].fEnergy = 0;
       fDigitsInCluster++;
       nRecPoints++;
+      if(nRecPoints == 100) 
+	{
+	  //	  HLTWarning("Too many rec points in event. Aborting clusterisation");
+	  break;
+	}
       ScanForNeighbourDigits(i, recPoint);
       recPoint->fMultiplicity = fDigitsInCluster;
+     
     }//end of clusterization
   fRecPointContainerPtr->fNRecPoints = nRecPoints;
   return nRecPoints;
