@@ -409,7 +409,7 @@ Int_t AliITStrackerSA::FindTracks(AliESDEvent* event){
 
   //loop on different minNPoints
   Int_t minMinNPoints=minNPoints;
-  if(AliITSReconstructor::GetRecoParam()->GetSAOnePointTracks()) minMinNPoints=2;
+  if(AliITSReconstructor::GetRecoParam()->GetAllowProlongationWithEmptyRoad()) minMinNPoints=2;
   for(Int_t iMinNPoints=minNPoints; iMinNPoints>=minMinNPoints; iMinNPoints--) {
     //loop on the different windows
     for(Int_t nloop=0;nloop<fNloop;nloop++){
@@ -565,7 +565,7 @@ Int_t AliITStrackerSA::FindTracks(AliESDEvent* event){
 
   // search for tracks starting from SPD2, SDD1, SDD2, SSD2
   // for cosmics (A. Dainese 31.07.07)
-  if(fOuterStartLayer>0 && !AliITSReconstructor::GetRecoParam()->GetSAOnePointTracks()) {
+  if(fOuterStartLayer>0 && !AliITSReconstructor::GetRecoParam()->GetAllowProlongationWithEmptyRoad()) {
     for(Int_t innLay=1; innLay<=fOuterStartLayer; innLay++) {
       //printf("Searching from layer %d outward\n",innLay);
       minNPoints=AliITSgeomTGeo::GetNLayers()-innLay;
