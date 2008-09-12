@@ -191,10 +191,12 @@ UInt_t AliZDCPreprocessor::Process(TMap* dcsAliasMap)
   Double_t dyZP1 = (Double_t) (dcsValues[1]/10.);
   Double_t dyZN2 = (Double_t) (dcsValues[2]/10.);
   Double_t dyZP2 = (Double_t) (dcsValues[3]/10.);
-  const char *n1ZDC="ZDC/NeutronZDC1";
-  const char *p1ZDC="ZDC/ProtonZDC1";
-  const char *n2ZDC="ZDC/NeutronZDC2";
-  const char *p2ZDC="ZDC/ProtonZDC2";
+  //
+  const char *n1ZDC="ZDC/NeutronZDC_C";
+  const char *p1ZDC="ZDC/ProtonZDC_C";
+  const char *n2ZDC="ZDC/NeutronZDC_A";
+  const char *p2ZDC="ZDC/ProtonZDC_A";
+  //
   UShort_t iIndex=0;
   AliGeomManager::ELayerID iLayer = AliGeomManager::kInvalidLayer;
   UShort_t volid = AliGeomManager::LayerToVolUID(iLayer,iIndex);

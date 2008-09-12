@@ -20,8 +20,8 @@ void MakeZDCResMisAlignment(){
 
   new(alobj[0]) AliAlignObjParams(ZDCCn, volid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
   new(alobj[1]) AliAlignObjParams(ZDCCp, volid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
-  new(alobj[0]) AliAlignObjParams(ZDCAn, volid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
-  new(alobj[1]) AliAlignObjParams(ZDCAp, volid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
+  new(alobj[2]) AliAlignObjParams(ZDCAn, volid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
+  new(alobj[3]) AliAlignObjParams(ZDCAp, volid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
 
   if( TString(gSystem->Getenv("TOCDB")) != TString("kTRUE") ){
     // save in file
