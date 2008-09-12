@@ -1,10 +1,19 @@
-void chargeDistr(AliTRDtrackV1* track, Double_t* &results, Int_t& nResults)
+#ifndef __CINT__
+#include <AliTRDcluster.h>
+#include <AliTRDseedV1.h>
+#include <AliTRDtrackV1.h>
+#endif
+
+void chargeDistr(const AliTRDtrackV1* track, Double_t* &results, Int_t& nResults)
 {
   if (track == 0)  return;
   
-  Int_t Nt = track->AliKalmanTrack::GetNumberOfTracklets();;
+
+
+  Int_t Nt = track->GetNumberOfTracklets();
   AliTRDcluster* cls = 0;
-  
+  AliTRDseedV1 *tracklet = 0x0;
+
   // Count cluster
   nResults = 0;
   for (Int_t trackletInd = 0; trackletInd < Nt; trackletInd++)

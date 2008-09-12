@@ -6,8 +6,14 @@
 // B.Hess <Hess@Stud.Uni-Heidelberg.de>
 // A.Bercuci <A.Bercuci@gsi.de>
 //
-Bool_t clusterSelection(AliTRDtrackV1* track)
+
+#ifndef __CINT__
+#include <AliTRDtrackV1.h>
+#endif
+
+Bool_t clusterSelection(const AliTRDtrackV1* track=0x0)
 {
+  if(!track) return kFALSE;
   if (track->GetNumberOfClusters() > 60) return kFALSE;
   return kTRUE;
 }
