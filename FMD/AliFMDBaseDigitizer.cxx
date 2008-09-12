@@ -466,7 +466,7 @@ AliFMDBaseDigitizer::ConvertToCount(Float_t   edep,
   //                  = E + (l - E) * ext(-B * t)
   // 
   AliFMDParameters* param = AliFMDParameters::Instance();
-  Float_t  convF          = param->GetDACPerMIP()*param->GetPulseGain(detector,ring,sector,strip);
+  Float_t  convF          = (param->GetDACPerMIP()*param->GetPulseGain(detector,ring,sector,strip)) / param->GetEdepMip();
   Int_t    ped            = MakePedestal(detector,ring,sector,strip);
   Int_t    maxAdc         = param->GetAltroChannelSize()-1;
   if (maxAdc < 0) {
