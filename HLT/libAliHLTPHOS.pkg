@@ -62,7 +62,8 @@ CLASS_HDRS:=	  AliHLTPHOSBase.h \
 		  AliHLTPHOSFourier.h \
 		  AliHLTPHOSFourierComponent.h \
 		  AliHLTPHOSHistogramProducer.h \
-		  AliHLTPHOSHistogramProducerComponent.h 
+		  AliHLTPHOSHistogramProducerComponent.h \
+		  AliHLTPHOSMonitorTriggerComponent.h 
 #		  AliHLTPHOSTreeMaker.h \
 #  		  AliHLTPHOSTreeMakerComponent.h \
 #		  AliHLTPHOSEmcCalibrationHistogramProducer.h 
