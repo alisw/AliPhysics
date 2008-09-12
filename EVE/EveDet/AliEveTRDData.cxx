@@ -330,9 +330,9 @@ AliEveTRDTrack::AliEveTRDTrack(AliTRDtrackV1 *trk) : TEveLine()
     }
   }
 
-  //AliTRDtrackerV1::FitRiemanTilt(trk, 0x0, kTRUE, nc, points);
+  AliTRDtrackerV1::FitRiemanTilt(trk, 0x0, kTRUE, nc, points);
   //AliTRDtrackerV1::FitKalman(trk, 0x0, kFALSE, nc, points);
-  AliTRDtrackerV1::FitLine(trk, 0x0, kFALSE, nc, points);
+  //AliTRDtrackerV1::FitLine(trk, 0x0, kFALSE, nc, points);
 
   Float_t global[3];
   for(Int_t ip=0; ip<nc; ip++){
@@ -340,8 +340,8 @@ AliEveTRDTrack::AliEveTRDTrack(AliTRDtrackV1 *trk) : TEveLine()
     SetNextPoint(global[0], global[1], global[2]);
   }
 
-  SetMarkerColor(kBlack);
-  SetLineColor(kBlack);
+  SetMarkerColor(kGreen);
+  SetLineColor(kGreen);
   SetSmooth(kTRUE);
 }
 
