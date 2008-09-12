@@ -27,14 +27,10 @@
 
 class TTree;
 class AliESDVertex;
-class AliITSgeom;
 
 class AliITSVertexer3DTapan : public AliITSVertexer {
 public:
-  AliITSVertexer3DTapan(Int_t n=10000):fITSgeom(0),
-    fX1(n),fY1(n),fZ1(n), fPhi1(n), ficlu1(0),
-    fX2(n),fY2(n),fZ2(n), fPhi2(n), ficlu2(0) {;}
-  AliITSVertexer3DTapan(const AliITSgeom *g, Int_t n=10000): fITSgeom(g),
+  AliITSVertexer3DTapan(Int_t n=10000):
     fX1(n),fY1(n),fZ1(n), fPhi1(n), ficlu1(0),
     fX2(n),fY2(n),fZ2(n), fPhi2(n), ficlu2(0) {;}
   virtual ~AliITSVertexer3DTapan(){}
@@ -52,8 +48,6 @@ private:
   AliITSVertexer3DTapan(AliITSVertexer3DTapan &);
   AliITSVertexer3DTapan& operator=(const AliITSVertexer3DTapan &);
 
-  const AliITSgeom *fITSgeom;   //the ITS geometry  
-
   TArrayD fX1;     // X position of cluster on layer 1 of ITS
   TArrayD fY1;     // Y position of cluster on layer 1 of ITS
   TArrayD fZ1;     // Z position of cluster on layer 1 of ITS
@@ -66,7 +60,7 @@ private:
   TArrayD fPhi2;    // Phi position of cluster on layer 2 of ITS
   Int_t   ficlu2;    // Number of clusters on layer 2 of ITS
    
-  ClassDef(AliITSVertexer3DTapan,2);
+  ClassDef(AliITSVertexer3DTapan,3);
 };
 
 #endif

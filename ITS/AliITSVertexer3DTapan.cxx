@@ -25,7 +25,7 @@
 
 #include <AliITSVertexer3DTapan.h>
 #include <AliITSRecPoint.h>
-#include <AliITSgeom.h>
+#include <AliITSgeomTGeo.h>
 #include <AliESDVertex.h>
 
 ClassImp(AliITSVertexer3DTapan)
@@ -49,21 +49,9 @@ void AliITSVertexer3DTapan::LoadClusters(TTree *cTree) {
        //         local cluster X"-axis
        //
 
-       //       Double_t rot[9];   fITSgeom->GetRotMatrix(i,rot);
-       Int_t    lay,lad,det; fITSgeom->GetModuleId(i,lay,lad,det);
+       Int_t    lay,lad,det; AliITSgeomTGeo::GetModuleId(i,lay,lad,det);
 
        if (lay>2) break;  //load the SPD clusters only
-
-       /*
-       Float_t  tx,ty,tz;  fITSgeom->GetTrans(lay,lad,det,tx,ty,tz);
-
-       Double_t alpha=TMath::ATan2(rot[1],rot[0])+TMath::Pi();
-       Double_t phi=TMath::Pi()/2+alpha;
-
-       if (lay==1) phi+=TMath::Pi();
-       Double_t cp=TMath::Cos(phi), sp=TMath::Sin(phi);
-       Double_t r=tx*cp+ty*sp;
-       */
 
        Int_t ncl=clusters->GetEntriesFast();
        Float_t hPhi;

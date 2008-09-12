@@ -1,6 +1,7 @@
 #include <TFile.h>
+#include <TH1.h>
+#include <TH2.h>
 #include "AliGeomManager.h"
-#include "AliHeader.h"
 #include "AliITSDetTypeRec.h"
 #include "AliITSInitGeometry.h"
 #include "AliITSMeanVertexer.h"
@@ -11,12 +12,10 @@
 #include "AliRawReaderRoot.h"
 #include "AliRunLoader.h"
 #include "AliITSVertexer3D.h"
+#include "AliITSVertexer3DTapan.h"
 #include "AliESDVertex.h"
 #include "AliMeanVertex.h"
 #include "AliMultiplicity.h"
-
-const TString AliITSMeanVertexer::fgkMVFileNameDefault = "MeanVertex.root";
-
 
 ClassImp(AliITSMeanVertexer)
 
@@ -40,18 +39,15 @@ ClassImp(AliITSMeanVertexer)
 
 //______________________________________________________________________
 AliITSMeanVertexer::AliITSMeanVertexer():TObject(),
-fLoaderFileName(),
-fGeometryFileName(),
-fMVFileName(),
-fRawReader(),
-fRunLoader(),
+fDetTypeRec(NULL),
+fVertexXY(NULL),
+fVertexZ(NULL),
 fNoEventsContr(0),
 fTotTracklets(0.),
 fAverTracklets(0.),
 fSigmaOnAverTracks(0.), 
 fFilterOnContributors(0),
-fFilterOnTracklets(0),
-fWriteVertices(kFALSE)
+fFilterOnTracklets(0)
 {
   // Default Constructor
   for(Int_t i=0;i<3;i++){
@@ -60,208 +56,93 @@ fWriteVertices(kFALSE)
     fAverPos[i] = 0.;
     for(Int_t j=0; j<3;j++)fAverPosSq[i][j] = 0.;
   }
-  
+
+  // Histograms initialization
+  const Float_t xLimit = 2.0, yLimit = 2.0, zLimit = 50.0;
+  const Float_t xDelta = 0.02, yDelta = 0.02, zDelta = 0.2;
+  fVertexXY = new TH2F("VertexXY","Vertex Diamond (Y vs X)",
+		       2*(Int_t)(xLimit/xDelta),-xLimit,xLimit,
+		       2*(Int_t)(yLimit/yDelta),-yLimit,yLimit);
+  fVertexZ  = new TH1F("VertexZ"," Longitudinal Vertex Profile",
+		       2*(Int_t)(zLimit/zDelta),-zLimit,zLimit);
 }
 
 //______________________________________________________________________
-AliITSMeanVertexer::AliITSMeanVertexer(TString &filename):TObject(),
-fLoaderFileName(),
-fGeometryFileName(),
-fMVFileName(fgkMVFileNameDefault),
-fRawReader(),
-fRunLoader(),
-fNoEventsContr(0),
-fTotTracklets(0.),
-fAverTracklets(0.),
-fSigmaOnAverTracks(0.), 
-fFilterOnContributors(0),
-fFilterOnTracklets(0),
-fWriteVertices(kTRUE)
-{
-  // Standard constructor
-
-  for(Int_t i=0;i<3;i++){
-    fWeighPos[i] = 0.;
-    fWeighSig[i] = 0.;
-    fAverPos[i] = 0.;
-    for(Int_t j=0; j<3;j++)fAverPosSq[i][j] = 0.;
-  }
-  SetLoaderFileName();
-  SetGeometryFileName();
-
-  Init(filename);
-}
-//______________________________________________________________________
-AliITSMeanVertexer::AliITSMeanVertexer(TString &filename, 
-                                       TString &loaderfilename, 
-				       TString &geometryfilename):TObject(),
-fLoaderFileName(),
-fGeometryFileName(),
-fMVFileName(fgkMVFileNameDefault),
-fRawReader(),
-fRunLoader(),
-fNoEventsContr(0), 
-fTotTracklets(0.),
-fAverTracklets(0.),
-fSigmaOnAverTracks(0.), 
-fFilterOnContributors(0),
-fFilterOnTracklets(0),
-fWriteVertices(kTRUE)
-{
-  // Standard constructor with explicit geometry file name assignment
-  for(Int_t i=0;i<3;i++){
-    fWeighPos[i] = 0.;
-    fWeighSig[i] = 0.;
-    fAverPos[i] = 0.;
-    for(Int_t j=0; j<3;j++)fAverPosSq[i][j] = 0.;
-  }
-  SetLoaderFileName(loaderfilename);
-  SetGeometryFileName(geometryfilename);
-  Init(filename);
-}
-
-//______________________________________________________________________
-void AliITSMeanVertexer::Init(TString &filename){
-  // Initialization part common to different constructors
-  if(filename.IsNull()){
-    AliFatal("Please, provide a valid file name for raw data file\n");
-  }
-  // if file name ends with root a raw reader ROOT is assumed
-  if(filename.EndsWith(".root")){
-    fRawReader = new AliRawReaderRoot(filename);
-  }
-  else {  // DATE raw reader is assumed
-    fRawReader = new AliRawReaderDate(filename);
-  }
-  fRunLoader = AliRunLoader::Open(fLoaderFileName.Data(),AliConfig::GetDefaultEventFolderName(),"recreate");
-  fRunLoader->MakeTree("E");
-  Int_t iEvent = 0;
-  while (fRawReader->NextEvent()) {
-    fRunLoader->SetEventNumber(iEvent);
-    fRunLoader->GetHeader()->Reset(fRawReader->GetRunNumber(), 
-				   iEvent, iEvent);
-    fRunLoader->MakeTree("H");
-    fRunLoader->TreeE()->Fill();
-    iEvent++;
-  }
-  fRawReader->RewindEvents();
-  fRunLoader->SetNumberOfEventsPerFile(iEvent);
-  fRunLoader->WriteHeader("OVERWRITE");
- Int_t retval = AliConfig::Instance()->AddDetector(fRunLoader->GetEventFolder(),"ITS","ITS");
- if(retval != 0)AliFatal("Not able to add ITS detector");
-  AliITSLoader *loader = new AliITSLoader("ITS",fRunLoader->GetEventFolder()->GetName());
-  fRunLoader->AddLoader(loader);
-  fRunLoader->CdGAFile();
-  fRunLoader->Write(0, TObject::kOverwrite);
+Bool_t AliITSMeanVertexer::Init() {
+  // Initialize filters
   // Initialize geometry
+  // Initialize ITS classes
  
-  AliGeomManager::LoadGeometry(fGeometryFileName.Data());
+  AliGeomManager::LoadGeometry();
+  if (!AliGeomManager::ApplyAlignObjsFromCDB("ITS")) return kFALSE;
 
   AliITSInitGeometry initgeom;
   AliITSgeom *geom = initgeom.CreateAliITSgeom();
+  if (!geom) return kFALSE;
   printf("Geometry name: %s \n",(initgeom.GetGeometryName()).Data());
-  loader->SetITSgeom(geom);
+
+  AliITSDetTypeRec *fDetTypeRec = new AliITSDetTypeRec();
+  fDetTypeRec->SetITSgeom(geom);
+  fDetTypeRec->SetDefaults();
+  fDetTypeRec->SetDefaultClusterFindersV2(kTRUE);
+
   // Initialize filter values to their defaults
   SetFilterOnContributors();
   SetFilterOnTracklets();
-}
 
-//______________________________________________________________________
-AliITSMeanVertexer::AliITSMeanVertexer(const AliITSMeanVertexer &vtxr) : TObject(vtxr),
-fLoaderFileName(vtxr.fLoaderFileName),
-fGeometryFileName(vtxr.fGeometryFileName),
-fMVFileName(vtxr.fMVFileName),
-fRawReader(vtxr.fRawReader),
-fRunLoader(vtxr.fRunLoader),
-fNoEventsContr(vtxr.fNoEventsContr),
-fTotTracklets(vtxr.fTotTracklets),
-fAverTracklets(vtxr.fAverTracklets),
-fSigmaOnAverTracks(vtxr.fSigmaOnAverTracks),  
-fFilterOnContributors(vtxr.fFilterOnContributors),
-fFilterOnTracklets(vtxr.fFilterOnTracklets),
-fWriteVertices(vtxr.fWriteVertices)
-{
-  // Copy constructor
-  // Copies are not allowed. The method is protected to avoid misuse.
-  AliFatal("Copy constructor not allowed\n");
-
-}
-
-//______________________________________________________________________
-AliITSMeanVertexer& AliITSMeanVertexer::operator=(const AliITSMeanVertexer&  /* vtxr */ ){
-  // Assignment operator
-  AliError("Assignment operator not allowed\n");
-  return *this;
+  return kTRUE;
 }
 
 //______________________________________________________________________
 AliITSMeanVertexer::~AliITSMeanVertexer() {
   // Destructor
-  delete fRawReader;
-  delete fRunLoader;
-
+  delete fDetTypeRec;
+  delete fVertexXY;
+  delete fVertexZ;
 }
 
 //______________________________________________________________________
-void AliITSMeanVertexer::Reconstruct(){
+Bool_t AliITSMeanVertexer::Reconstruct(AliRawReader *rawReader, Bool_t mode){
   // Performs SPD local reconstruction
-  AliITSLoader* loader = static_cast<AliITSLoader*>(fRunLoader->GetLoader("ITSLoader"));
-  if (!loader) {
-    AliFatal("ITS loader not found");
-    return;
+  // and vertex finding
+  // returns true in case a vertex is found
+
+  // Run SPD cluster finder
+  TTree* clustersTree = new TTree("TreeR", "Reconstructed Points Container"); //make a tree
+  fDetTypeRec->DigitsToRecPoints(rawReader,clustersTree,"SPD");
+
+  Bool_t vtxOK = kFALSE;
+  AliESDVertex *vtx = NULL;
+  // Run Tapan's vertex-finder
+  if (!mode) {
+    AliITSVertexer3DTapan *vertexer1 = new AliITSVertexer3DTapan(1000);
+    vtx = vertexer1->FindVertexForCurrentEvent(clustersTree);
+    delete vertexer1;
+    if (TMath::Abs(vtx->GetChi2()) < 0.1) vtxOK = kTRUE;
   }
-  AliITSDetTypeRec* rec = new AliITSDetTypeRec();
-  rec->SetITSgeom(loader->GetITSgeom());
-  rec->SetDefaults();
-
-  rec->SetDefaultClusterFindersV2(kTRUE);
-
-  Int_t nEvents = fRunLoader->GetNumberOfEvents();
-  fRawReader->RewindEvents();
-  for (Int_t iEvent = 0; iEvent < nEvents; iEvent++) {
-    fRawReader->NextEvent();
-    fRunLoader->GetEvent(iEvent);
-    AliDebug(1,Form(">>>>>>>   Processing event number: %d",iEvent));
-    loader->LoadRecPoints("update");
-    loader->CleanRecPoints();
-    loader->MakeRecPointsContainer();
-    TTree *tR = loader->TreeR();
-    if(!tR){
-      AliFatal("Tree R pointer not found - Abort \n");
-      break;
-    }
-    rec->DigitsToRecPoints(fRawReader,tR,"SPD");
-    rec->ResetRecPoints();
-    rec->ResetClusters();    
-    loader->WriteRecPoints("OVERWRITE");
-    loader->UnloadRecPoints();
+  else {
+  // Run standard vertexer3d
+    AliITSVertexer3D *vertexer2 = new AliITSVertexer3D();
+    AliESDVertex *vtx = vertexer2->FindVertexForCurrentEvent(clustersTree);
+    AliMultiplicity *mult = vertexer2->GetMultiplicity();
+    delete vertexer2;
+    if(Filter(vtx,mult)) vtxOK = kTRUE;
   }
+  delete clustersTree;
+  if (vtxOK) AddToMean(vtx);
+  if (vtx) delete vtx;
 
+  return vtxOK;
 }
 
 //______________________________________________________________________
-void AliITSMeanVertexer::DoVertices(){
-  // Loop on all events and compute 3D vertices
-  AliITSLoader* loader = static_cast<AliITSLoader*>(fRunLoader->GetLoader("ITSLoader"));
-  AliITSVertexer3D *dovert = new AliITSVertexer3D();
-  AliESDVertex *vert = 0;
-  Int_t nevents = fRunLoader->TreeE()->GetEntries();
-  for(Int_t i=0; i<nevents; i++){
-    fRunLoader->GetEvent(i);
-    TTree* cltree = loader->TreeR();
-    vert = dovert->FindVertexForCurrentEvent(cltree);
-    AliMultiplicity *mult = dovert->GetMultiplicity();
-    if(Filter(vert,mult)){
-      AddToMean(vert); 
-      if(fWriteVertices){
-	loader->PostVertex(vert);
-	loader->WriteVertices();
-      }
-    }
-    else {
-      if(vert)delete vert;
-    }
-  }
+void AliITSMeanVertexer::WriteVertices(const char *filename){
+  // Compute mean vertex and
+  // store it along with the histograms
+  // in a file
+  
+  TFile fmv(filename,"update");
+
   if(ComputeMean()){
     Double_t cov[6];
     cov[0] =  fAverPosSq[0][0];  // variance x
@@ -270,19 +151,24 @@ void AliITSMeanVertexer::DoVertices(){
     cov[3] =  fAverPosSq[0][2];  // cov xz
     cov[4] =  fAverPosSq[1][2];  // cov yz
     cov[5] =  fAverPosSq[2][2];  // variance z
-    AliMeanVertex mv(fWeighPos,fWeighSig,cov,nevents,fTotTracklets,fAverTracklets,fSigmaOnAverTracks);
+    AliMeanVertex mv(fWeighPos,fWeighSig,cov,fNoEventsContr,fTotTracklets,fAverTracklets,fSigmaOnAverTracks);
     mv.SetTitle("Mean Vertex");
-    mv.SetName("Meanvertex");
+    mv.SetName("MeanVertex");
     AliDebug(1,Form("Contrib av. trk = %10.2f ",mv.GetAverageNumbOfTracklets()));
     AliDebug(1,Form("Sigma %10.4f ",mv.GetSigmaOnAvNumbOfTracks()));
-    TFile fmv(fMVFileName.Data(),"recreate");
-    mv.Write();
-    fmv.Close();
+    // we have to add chi2 here
+    AliESDVertex vtx(fWeighPos,cov,0,fAverTracklets,"MeanVertexPos");
+
+    mv.Write(mv.GetName(),TObject::kOverwrite);
+    vtx.Write(vtx.GetName(),TObject::kOverwrite);
   }
   else {
     AliError(Form("Evaluation of mean vertex not possible. Number of used events = %d",fNoEventsContr));
   }
-  delete dovert;
+
+  fVertexXY->Write(fVertexXY->GetName(),TObject::kOverwrite);
+  fVertexZ->Write(fVertexZ->GetName(),TObject::kOverwrite);
+  fmv.Close();
 }
 
 //______________________________________________________________________
@@ -319,6 +205,10 @@ void AliITSMeanVertexer::AddToMean(AliESDVertex *vert){
       fAverPosSq[i][j] += currentPos[i] * currentPos[j];
     }
   }
+
+  fVertexXY->Fill(currentPos[0],currentPos[1]);
+  fVertexZ->Fill(currentPos[2]);
+
   fNoEventsContr++;
 }
 

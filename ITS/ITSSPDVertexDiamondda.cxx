@@ -9,16 +9,9 @@ Output Files:
 Trigger types used: PHYSICS
 */
 
-#define X_LIMIT 2.0
-#define Y_LIMIT 2.0
-#define Z_LIMIT 50.0
-#define X_DELTA 0.02
-#define Y_DELTA 0.02
-#define Z_DELTA 0.2
 #define OUTPUT_FILE "SPDVertexDiamondDA.root"
 #define CDB_STORAGE "local://$ALICE_ROOT"
 #define N_EVENTS_AUTOSAVE 50
-#define NFITPARAMS 5
 
 extern "C" {
 #include "daqDA.h"
@@ -32,26 +25,11 @@ extern "C" {
 //int amore::da::Updated(char const*) {}
 #endif
 
-#include <TTree.h>
-#include <TH1.h>
-#include <TH2.h>
-#include <TF2.h>
-#include <TFile.h>
 #include <TPluginManager.h>
 #include <TROOT.h>
-#include <TFitter.h>
 
 #include "AliRawReaderDate.h"
-#include "AliGeomManager.h"
 #include "AliCDBManager.h"
-#include "AliESDVertex.h"
-#include "AliITSDetTypeRec.h"
-#include "AliITSInitGeometry.h"
-#include "AliITSVertexer3DTapan.h"
-
-TF2 *fitFcn = 0x0;
-
-AliESDVertex* FitVertexDiamond(TH2F *hXY, TH1F *hZ);
 
 int main(int argc, char **argv) {
 
@@ -60,8 +38,6 @@ int main(int argc, char **argv) {
 					"TStreamerInfo",
 					"RIO",
 					"TStreamerInfo()"); 
-  TFitter *minuitFit = new TFitter(NFITPARAMS);
-  TVirtualFitter::SetFitter(minuitFit);
 
   int status;
   if (argc<2) {
@@ -105,29 +81,17 @@ int main(int argc, char **argv) {
   }
   int runNr = atoi(getenv("DATE_RUN_NUMBER"));
 
-  // Histograms initialization
-  TH2F *hXY = new TH2F("hXY","Vertex Diamond (Y vs X)",
-		       2*(Int_t)(X_LIMIT/X_DELTA),-X_LIMIT,X_LIMIT,
-		       2*(Int_t)(Y_LIMIT/Y_DELTA),-Y_LIMIT,Y_LIMIT);
-  TH1F *hZ  = new TH1F("hZ"," Longitudinal Vertex Profile",
-		       2*(Int_t)(Z_LIMIT/Z_DELTA),-Z_LIMIT,Z_LIMIT);
-
   // Global initializations
   AliCDBManager *man = AliCDBManager::Instance();
   man->SetDefaultStorage(CDB_STORAGE);
   man->SetRun(runNr);
-  AliGeomManager::LoadGeometry("geometry.root");
-  AliGeomManager::ApplyAlignObjsFromCDB("ITS");
 
-  // ITS initializations
-  AliITSInitGeometry initgeom;
-  AliITSgeom *geom = initgeom.CreateAliITSgeom();
-  printf("Geometry name: %s\n",(initgeom.GetGeometryName()).Data());
-
-  AliITSDetTypeRec *detTypeRec = new AliITSDetTypeRec();
-  detTypeRec->SetITSgeom(geom);
-  detTypeRec->SetDefaults();
-  detTypeRec->SetDefaultClusterFindersV2(kTRUE);
+  // Init mean vertexer
+  AliITSMeanVertexer *mv = new AliITSMeanVertexer();
+  if (!mv->Init()) {
+    printf("Initialization of mean vertexer object failed ! Check the log for details");
+    return -1;
+  }
 
   // Initialization of AMORE sender
 #ifdef ALI_AMORE
@@ -173,43 +137,14 @@ int main(int argc, char **argv) {
       nevents_physics++;
       AliRawReader *rawReader = new AliRawReaderDate((void*)event);
 
-      // Run SPD cluster finder
-      TTree* clustersTree = new TTree("TreeR", "Reconstructed Points Container"); //make a tree
-      detTypeRec->DigitsToRecPoints(rawReader,clustersTree,"SPD");
+      // Run mean-vertexer reco
+      if (mv->Reconstruct(rawReader)) nevents_with_vertex++;
 
-      // Run vertex-finder
-      AliITSVertexer3DTapan *vertexer = new AliITSVertexer3DTapan(geom,1000);
-      AliESDVertex *vtx = vertexer->FindVertexForCurrentEvent(clustersTree);
+      // Auto save
+      if ((nevents_physics%N_EVENTS_AUTOSAVE) == 0)
+	mv->WriteVertices(OUTPUT_FILE);
 
-      if (TMath::Abs(vtx->GetChi2()) < 0.1) {
-	// Fill the vertex into the histos
-	nevents_with_vertex++;
-	hXY->Fill(vtx->GetXv(),vtx->GetYv());
-	hZ->Fill(vtx->GetZv());
-
-	// Auto save
-	if ((nevents_with_vertex%N_EVENTS_AUTOSAVE) == 0) {
-	  TFile outFile(OUTPUT_FILE, "update");
-	  AliESDVertex *fitVtx = FitVertexDiamond(hXY,hZ);
-	  if (fitVtx) {
-	    fitVtx->Write(fitVtx->GetName(),TObject::kOverwrite);
-	    TH1 *fithXY = fitFcn->CreateHistogram();
-	    fithXY->Write(fithXY->GetName(),TObject::kOverwrite);
-	    delete fithXY;
-	  }
-	  hXY->Write(hXY->GetName(),TObject::kOverwrite);
-	  hZ->Write(hZ->GetName(),TObject::kOverwrite);
-	  outFile.Close();
-	  delete fitVtx;
-	}
-      }
-
-      delete vtx;
-      delete vertexer;
-
-      delete clustersTree;
       delete rawReader;
-
     }
     
     /* free resources */
@@ -221,33 +156,16 @@ int main(int argc, char **argv) {
       break;
     }
   }
-  
-  if (detTypeRec) delete detTypeRec;
 
-  // Store the final histograms
-  TFile outFile(OUTPUT_FILE, "update");
-  if (nevents_with_vertex > N_EVENTS_AUTOSAVE) { 
-    // Fit XY & Z histograms
-    AliESDVertex *fitVtx = FitVertexDiamond(hXY,hZ);
-    if (fitVtx) {
-      fitVtx->Write(fitVtx->GetName(),TObject::kOverwrite);
-      TH1 *fithXY = fitFcn->CreateHistogram();
-      fithXY->Write(fithXY->GetName(),TObject::kOverwrite);
-      delete fithXY;
-    }
-    delete fitVtx;
-  }
-  hXY->Write(hXY->GetName(),TObject::kOverwrite);
-  hZ->Write(hZ->GetName(),TObject::kOverwrite);
-  outFile.Close();
+  mv->WriteVertices(OUTPUT_FILE);
 
 #ifdef ALI_AMORE
   // send the histos to AMORE pool
-  printf("AMORE send status: %d",vtxAmore.Send(hXY->GetName(),hXY));
+  printf("AMORE send status: %d",vtxAmore.Send(mv->GetVertexXY()->GetName(),mv->GetVertexXY()));
+  printf("AMORE send status: %d",vtxAmore.Send(mv->GetVertexZ()->GetName(),mv->GetVertexZ()));
 #endif
 
-  delete minuitFit;
-  TVirtualFitter::SetFitter(0);
+  delete mv;
 
   /* write report */
   printf("Run #%s, received %d events with vertex, out of %d physics and out of %d total events\n",getenv("DATE_RUN_NUMBER"),nevents_with_vertex,nevents_physics,nevents_total);
@@ -260,43 +178,4 @@ int main(int argc, char **argv) {
   }
   
   return status;
-}
-
-Double_t fitFunction(Double_t *x, Double_t *par) {
-
-  Double_t t1 =   x[0] - par[1];
-  Double_t t2 =   x[1] - par[2];
-
-  return par[0]*TMath::Exp(-0.5*(t1*t1/(par[3]*par[3])+t2*t2/(par[4]*par[4])));
-}
-
-AliESDVertex* FitVertexDiamond(TH2F *hXY, TH1F *hZ)
-{
-
-  if (!fitFcn) {
-    fitFcn = new TF2("fitFcn",fitFunction,
-		     -X_LIMIT,X_LIMIT,
-		     -Y_LIMIT,Y_LIMIT,NFITPARAMS);
-    fitFcn->SetNpx(2*(Int_t)(X_LIMIT/X_DELTA));
-    fitFcn->SetNpy(2*(Int_t)(Y_LIMIT/Y_DELTA));
-    fitFcn->SetParameters(hXY->GetMaximum(),0,0,hXY->GetRMS(1),hXY->GetRMS(2));
-    fitFcn->Update();
-  }
-
-  if (hXY->Fit("fitFcn","L0V+") != 0) {
-    printf("XY fit failed!");
-    return 0x0;
-  }
-  
-  Double_t pos[3],poserr[3];
-  pos[0] = fitFcn->GetParameter(1);
-  pos[1] = fitFcn->GetParameter(2);
-  poserr[0] = fitFcn->GetParameter(3);
-  poserr[1] = fitFcn->GetParameter(4);
-
-  // Could be replaced by something more robust...
-  pos[2] = hZ->GetMean();
-  poserr[2] = hZ->GetRMS();
- 
-  return new AliESDVertex(pos,poserr);
 }
