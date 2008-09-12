@@ -521,7 +521,7 @@ int main(int argc, char **argv) {
     TString fileName = Form("%s/SPD_Dead_%d.root",saveDirDead,eq);
     storePreviousDead_status = daqDA_DB_storeFile(fileName.Data(),idpd.Data());
     //    printf("daqDA_DB_storeFile(%s,%s)\n",fileName.Data(),idpd.Data());
-    if (par_status) {
+    if (storePreviousDead_status) {
       printf("SPD DA ERROR: Failed to store dead file %s in daqDetDB: status=%d.\n",idpd.Data(),storePreviousDead_status);
     }
   }
