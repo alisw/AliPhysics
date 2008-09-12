@@ -90,7 +90,7 @@ class AliAlignmentTracks : public TObject {
   void ResetAlignObjs();
   void DeleteAlignObjs();
 
-  Int_t LoadPoints(const TArrayI *volids, AliTrackPointArray** &points);
+  Int_t LoadPoints(const TArrayI *volids, AliTrackPointArray** &points,Int_t &pointsdim);
   void  UnloadPoints(Int_t n, AliTrackPointArray **points);
 
   AliTrackFitter *CreateFitter();

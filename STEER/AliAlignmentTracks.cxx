@@ -762,15 +762,16 @@ Bool_t AliAlignmentTracks::AlignVolumes(const TArrayI *volids, const TArrayI *vo
     AliError("Volume IDs array is empty!");
     return kFALSE;
   }
-
+ 
   // Load only the tracks with at least one
   // space point in the set of volume (volids)
   BuildIndex();
   AliTrackPointArray **points;
+  Int_t pointsdim;
   // Start the iterations
   Bool_t result = kFALSE;
   while (iterations > 0) {
-    Int_t nArrays = LoadPoints(volids, points);
+    Int_t nArrays = LoadPoints(volids, points,pointsdim);
     if (nArrays == 0) return kFALSE;
 
     AliTrackResiduals *minimizer = CreateMinimizer();
@@ -797,7 +798,7 @@ Bool_t AliAlignmentTracks::AlignVolumes(const TArrayI *volids, const TArrayI *vo
       if(iterations==1)alignObj->Print("");
     }
 
-    UnloadPoints(nArrays, points);
+    UnloadPoints(pointsdim, points);
     
     iterations--;
   }
@@ -805,7 +806,7 @@ Bool_t AliAlignmentTracks::AlignVolumes(const TArrayI *volids, const TArrayI *vo
 }
   
 //______________________________________________________________________________
-Int_t AliAlignmentTracks::LoadPoints(const TArrayI *volids, AliTrackPointArray** &points)
+Int_t AliAlignmentTracks::LoadPoints(const TArrayI *volids, AliTrackPointArray** &points,Int_t &pointsdim)
 {
   // Load track point arrays with at least
   // one space point in a given set of detector
@@ -850,6 +851,7 @@ Int_t AliAlignmentTracks::LoadPoints(const TArrayI *volids, AliTrackPointArray**
   fPointsTree->SetBranchAddress("SP", &array);
 
   // Allocate the pointer to the space-point arrays
+  pointsdim=nArrays;
   points = new AliTrackPointArray*[nArrays];
   for (Int_t i = 0; i < nArrays; i++) points[i] = 0x0;
 
