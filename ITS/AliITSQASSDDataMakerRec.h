@@ -70,6 +70,8 @@ public:
   Int_t   fSSDRawsCommonLevelOffset;            //Raw data QA - top level offset - histos used both online and offline 
   Int_t   fSSDhTask;                            //number of histo booked for each SSD task
   Int_t   fGenOffset;                           //qachecking offset
+  Int_t   fGenRawsOffset;                           //qachecking offset
+  Int_t   fGenRecPointsOffset;                           //qachecking offset
   TH1D   *fHistSSDRawSignalModule[fgkSSDMODULES]; //raw signal vs strip number - SSD                   
   Int_t   fOccupancyMatrix[fgkSSDMODULES][2*fgkNumberOfPSideStrips]; //occupancy values per strip
 
