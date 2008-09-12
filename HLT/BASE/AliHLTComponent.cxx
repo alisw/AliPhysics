@@ -41,6 +41,11 @@ using namespace std;
 #include <cassert>
 #include <stdint.h>
 
+/**
+ * default compression level for ROOT objects
+ */
+#define ALIHLTCOMPONENT_DEFAULT_OBJECT_COMPRESSION 5
+
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTComponent);
 
@@ -81,7 +86,8 @@ AliHLTComponent::AliHLTComponent()
   fEventType(gkAliEventTypeUnknown),
   fComponentArgs(),
   fEventDoneData(NULL),
-  fEventDoneDataSize(0)
+  fEventDoneDataSize(0),
+  fCompressionLevel(ALIHLTCOMPONENT_DEFAULT_OBJECT_COMPRESSION)
 {
   // see header file for class documentation
   // or
@@ -184,6 +190,18 @@ int AliHLTComponent::Init(const AliHLTAnalysisEnvironment* comenv, void* environ
 	  } else {
 	    HLTError("wrong parameter for argument %s, hex number expected", argument.Data());
 	    iResult=-EINVAL;
+	  }
+	  // -object-compression=
+	} else if (argument.BeginsWith("-object-compression=")) {
+	  argument.ReplaceAll("-object-compression=", "");
+	  if (argument.IsDigit()) {
+	    fCompressionLevel=argument.Atoi();
+	    if (fCompressionLevel<0 || fCompressionLevel>9) {
+	      HLTWarning("invalid compression level %d, setting to default %d", fCompressionLevel, ALIHLTCOMPONENT_DEFAULT_OBJECT_COMPRESSION);
+	      fCompressionLevel=ALIHLTCOMPONENT_DEFAULT_OBJECT_COMPRESSION;
+	    }
+	  } else {
+	    HLTError("wrong parameter for argument -object-compression, number expected");
 	  }
 	} else {
 	  pArguments[iNofChildArgs++]=argv[i];
@@ -1044,14 +1062,32 @@ int AliHLTComponent::PushBack(TObject* pObject, const AliHLTComponentDataType& d
   int iResult=0;
   if (pObject) {
     AliHLTMessage msg(kMESS_OBJECT);
+    msg.SetCompressionLevel(fCompressionLevel);
     msg.WriteObject(pObject);
     Int_t iMsgLength=msg.Length();
     if (iMsgLength>0) {
+      // Matthias Sep 2008
+      // NOTE: AliHLTMessage does implement it's own SetLength method
+      // which is not architecture independent. The original SetLength
+      // stores the size always in network byte order.
+      // I'm trying to remember the rational for that, might be that
+      // it was just some lack of knowledge. Want to change this, but
+      // has to be done carefullt to be backward compatible.
       msg.SetLength(); // sets the length to the first (reserved) word
-      assert(msg.Buffer()!=NULL);
-      iResult=InsertOutputBlock(msg.Buffer(), iMsgLength, dt, spec, pHeader, headerSize);
+
+      // does nothing if the level is 0
+      msg.Compress();
+
+      char *mbuf = msg.Buffer();
+      if (msg.CompBuffer()) {
+	msg.SetLength(); // set once more to have to byte order
+	mbuf = msg.CompBuffer();
+	iMsgLength = msg.CompLength();
+      }
+      assert(mbuf!=NULL);
+      iResult=InsertOutputBlock(mbuf, iMsgLength, dt, spec, pHeader, headerSize);
       if (iResult>=0) {
-	HLTDebug("object %s (%p) size %d inserted to output", pObject->ClassName(), pObject, iMsgLength);
+	HLTDebug("object %s (%p) size %d compression %d inserted to output", pObject->ClassName(), pObject, iMsgLength, msg.GetCompressionLevel());
       }
     } else {
       HLTError("object serialization failed for object %p", pObject);

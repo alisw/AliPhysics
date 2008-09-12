@@ -279,6 +279,13 @@ typedef vector<AliHLTMemoryFile*>         AliHLTMemoryFilePList;
  * Further rules:
  * - avoid big static arrays in the component, allocate the memory at runtime
  *
+ * @section alihlt_component_arguments Default arguments
+ * The component base class provides some default arguments:
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
+ * \li -object-compression=level     <br>
+ *      compression level for ROOT objects, default is defined by
+ *      @ref ALIHLTCOMPONENT_DEFAULT_OBJECT_COMPRESSION
+ *
  * @ingroup alihlt_component
  * @section alihltcomponent-members Class members
  */
@@ -1448,6 +1455,9 @@ class AliHLTComponent : public AliHLTLogging {
   /** Reserved size of the memory stored at fEventDoneData */
   unsigned long fEventDoneDataSize;                                //! transient
 
-  ClassDef(AliHLTComponent, 8)
+  /** Comression level for ROOT objects */
+  int fCompressionLevel;                                           //! transient
+
+  ClassDef(AliHLTComponent, 9)
 };
 #endif
