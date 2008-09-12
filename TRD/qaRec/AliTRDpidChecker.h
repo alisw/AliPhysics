@@ -9,6 +9,9 @@
 //
 ///////////////////////////////////////////////////////
 
+#include "AliPID.h"
+#include "../Cal/AliTRDCalPID.h"
+
 #ifndef ALITRDRECOTASK_H
 #include "AliTRDrecoTask.h"
 #endif
@@ -20,6 +23,24 @@ class TTreeSRedirector;
 class AliTRDReconstructor;
 class AliTRDpidChecker : public AliTRDrecoTask 
 {
+
+  enum{
+      kLQlikelihood    = 0                                           // place for 2-dim LQ electron likelihood distributions
+	,kNNlikelihood = 1 * AliTRDCalPID::kNMom * AliPID::kSPECIES  // place for NN electron likelihood distributions
+	,kdEdx         = 2 * AliTRDCalPID::kNMom * AliPID::kSPECIES  // place for the dE/dx spectra
+	,kPH           = 3 * AliTRDCalPID::kNMom * AliPID::kSPECIES  // place for pulse height spectra
+	,kMomentum     = 4 * AliTRDCalPID::kNMom * AliPID::kSPECIES  // place for the momentum distribution
+	,kMomentumBin  = kMomentum +1                                // place for the momentum distribution
+	,kGraphLQ      = kMomentumBin +1                             // place for the 2-dim LQ pion efficiencies
+	,kGraphLQerr   = kGraphLQ +1                                 // place for the 2-dim LQ pion efficiency errors
+	,kGraphNN      = kGraphLQerr +1                              // place for the NN pion efficiencies
+	,kGraphNNerr   = kGraphNN +1                                 // place for the NN pion efficiency errors
+  };
+
+  enum{
+    kGraphStart = kGraphLQ
+      };
+
 public:
   AliTRDpidChecker();
   virtual ~AliTRDpidChecker();
@@ -38,6 +59,10 @@ private:
   
 
   AliTRDReconstructor *fReconstructor;     //! reconstructor needed for recalculation the PID
+
+  enum{
+    kBins = 12001                // binning of the likelihood histograms
+  };
 
   ClassDef(AliTRDpidChecker, 1); // TRD PID checker
 };

@@ -103,7 +103,7 @@ void run(const Char_t *files=0x0, Char_t *tasks="ALL", Int_t nmax=-1)
       SETBIT(fSteerTask, kCalibration);
       continue;
     } else if(s.CompareTo("PID" ) == 0){
-      SETBIT(fSteerTask, kCalibration);
+      SETBIT(fSteerTask, kPIDChecker);
       continue;
     } else if(s.CompareTo("DET" ) == 0){
     	SETBIT(fSteerTask, kCheckDetector);
@@ -220,6 +220,7 @@ void run(const Char_t *files=0x0, Char_t *tasks="ALL", Int_t nmax=-1)
     mgr->AddTask(task = new AliTRDpidChecker());
     taskPtr[(Int_t)kPIDChecker] = task;
     task->SetDebugLevel(0);
+    task->SetMCdata(fHasMCdata);
     
     // Create containers for input/output
     AliAnalysisDataContainer *coutput6 = mgr->CreateContainer(task->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%s.root", task->GetName()));
