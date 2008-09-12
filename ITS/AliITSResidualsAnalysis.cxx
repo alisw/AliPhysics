@@ -381,33 +381,33 @@ void AliITSResidualsAnalysis::InitHistograms(const TArrayI *volIDs)
     fpTrackVolIDs->AddAt(volIDs->At(nhist),nhist);   
     aux=histnameRPHI;
     aux+=volIDs->At(nhist);
-    fVolResHistRPHI[nhist]=new TH1F("histname","histname",4000,-1.0,1.0);   
+    fVolResHistRPHI[nhist]=new TH1F("histname","histname",20000,-5.0,5.0);   
     fVolResHistRPHI[nhist]->SetName(aux.Data()); 
     fVolResHistRPHI[nhist]->SetTitle(aux.Data()); 
     
     aux=histnameZ;
     aux+=volIDs->At(nhist);
-    fResHistZ[nhist]=new TH1F("histname","histname",4000,-1.0,1.0);   
+    fResHistZ[nhist]=new TH1F("histname","histname",20000,-5.0,5.0);   
     fResHistZ[nhist]->SetName(aux.Data()); 
     fResHistZ[nhist]->SetTitle(aux.Data()); 
 
     aux=histnameX;
     aux+=volIDs->At(nhist);
-    fResHistX[nhist]=new TH1F("histname","histname",4000,-1.0,1.0);   
+    fResHistX[nhist]=new TH1F("histname","histname",20000,-5.0,5.0);   
     fResHistX[nhist]->SetName(aux.Data()); 
     fResHistX[nhist]->SetTitle(aux.Data()); 
 
     aux=histnameX;
     aux+=volIDs->At(nhist);
     aux.Append("LocalSDDLeft");
-    fResHistXLocsddL[nhist]=new TH1F("histname","histname",4000,-1.0,1.0);   
+    fResHistXLocsddL[nhist]=new TH1F("histname","histname",20000,-5.0,5.0);   
     fResHistXLocsddL[nhist]->SetName(aux.Data()); 
     fResHistXLocsddL[nhist]->SetTitle(aux.Data()); 
     aux=histnameX;
 
     aux+=volIDs->At(nhist);
     aux.Append("LocalSDDRight");
-    fResHistXLocsddR[nhist]=new TH1F("histname","histname",4000,-1.0,1.0);   
+    fResHistXLocsddR[nhist]=new TH1F("histname","histname",20000,-5.0,5.0);   
     fResHistXLocsddR[nhist]->SetName(aux.Data()); 
     fResHistXLocsddR[nhist]->SetTitle(aux.Data()); 
 
@@ -1002,7 +1002,18 @@ Float_t** AliITSResidualsAnalysis::CheckSingleLayer(const TArrayI *volids)
   default:{
     printf("Wrong Layer Label! \n");    
     fsingleLayer=kFALSE;
-    return 0x0;
+    //////////////////////
+    fnPhi=1;//kPhiSPD1;
+    fnZ=1;//nZSPD1;
+    binningzphi[0]=new Float_t[1];
+    binningzphi[1]=new Float_t[1];
+    fCoordToBinTable=new Double_t**[1];
+    for(Int_t j=0;j<fnPhi;j++){
+      fCoordToBinTable[j]=new Double_t*[1];
+    }
+    return binningzphi;
+    /////////////////////
+    // return 0x0;
   } 
   }
   fsingleLayer=kTRUE;
@@ -1897,7 +1908,8 @@ void AliITSResidualsAnalysis::CalculateResiduals(const TArrayI *volids,
   ListVolUsed(fPointsTree,fArrayIndex,fLastIndex);  
   AliTrackPointArray **points;  
   
-  LoadPoints(volids, points);
+  Int_t pointsDim;
+  LoadPoints(volids, points,pointsDim);
 
   Int_t nArrays = fPointsTree->GetEntries();
 
@@ -1906,25 +1918,19 @@ void AliITSResidualsAnalysis::CalculateResiduals(const TArrayI *volids,
 
   Int_t ecount=0;
   Int_t totcount=0;
- 
-  // nArrays=806; // WAAAAAAAAAARNING!
-
-  Int_t last=0;
 
   for (Int_t iArray = 0; iArray < nArrays; iArray++){
  
-    //cout<<"Investigating "<<iArray<<"/"<<nArrays<<endl;
+    cout<<"Investigating "<<iArray<<"/"<<nArrays<<endl;
     
     if (!points[iArray]){
       cout<<" Skipping: "<<iArray<<endl;
       continue;
     }
-    
-    last++;
-     
+         
     fitter->SetTrackPointArray(points[iArray],kTRUE); // Watch out, problems
                                                       // when few sectors
-                                           
+                               
     totcount++;
 
     // *** FITTING ***
@@ -1944,7 +1950,7 @@ void AliITSResidualsAnalysis::CalculateResiduals(const TArrayI *volids,
   cout<<"   -> nVolIds: "<<nVolIds<<endl;
   cout<<"   -> Non-Fitted tracks: "<<ecount<<"/"<<totcount<<endl; 
   
-  UnloadPoints(last, points);
+  UnloadPoints(pointsDim,points);
 
   SaveHists(3,outname);
   

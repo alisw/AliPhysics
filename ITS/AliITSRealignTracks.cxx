@@ -649,7 +649,7 @@ Bool_t AliITSRealignTracks::FirstAlignmentLayers(Bool_t *layers,Int_t minNtracks
     }
   }
   Int_t found=0;
-  
+  maxntr=minNtracks+1;
   while (maxntr>minNtracks){
     maxntr=minNtracks;
     for (Int_t iLayer = 0; iLayer <= (AliGeomManager::kSSD2 - AliGeomManager::kFirstLayer); iLayer++) {
@@ -686,7 +686,7 @@ Bool_t AliITSRealignTracks::FirstAlignmentLayers(Bool_t *layers,Int_t minNtracks
 	volFit3=IntersectVolArray(volidsSet,volFit2);
       }
       else volFit3=volFit2;  
-      AlignVolumesITS(volIn,volFit3,AliGeomManager::kSPD1,AliGeomManager::kSDD1,2);
+      AlignVolumesITS(volIn,volFit3,AliGeomManager::kSPD1,AliGeomManager::kSSD1,2);
     }
   }
   return kTRUE;
@@ -721,7 +721,7 @@ Bool_t AliITSRealignTracks::FirstAlignmentSPD(Int_t minNtracks,Int_t iterations,
     }
   }
   Int_t found=0;
- 
+  maxntr=minNtracks+1;
   while (maxntr>minNtracks){
     maxntr=minNtracks;
     for (Int_t iLayer = 0; iLayer <= (AliGeomManager::kSPD2 - AliGeomManager::kFirstLayer); iLayer++) {
@@ -821,13 +821,14 @@ Bool_t AliITSRealignTracks::AlignVolumesITS(const TArrayI *volids, const TArrayI
   BuildIndex();
   AliTrackPointArray **points;
   Bool_t failed=kFALSE;
+  Int_t pointsdim=0;
   // Start the iterations
   while (iterations > 0) {
-    Int_t nArrays = LoadPoints(volids, points);
+    Int_t nArrays = LoadPoints(volids, points,pointsdim);
     if (nArrays < fmintracks) {
       failed=kTRUE;
       printf("Not enough tracks to try minimization \n");
-      UnloadPoints(nArrays, points);
+      UnloadPoints(pointsdim, points);
       break;
     }
 
@@ -845,7 +846,7 @@ Bool_t AliITSRealignTracks::AlignVolumesITS(const TArrayI *volids, const TArrayI
     }
     if(minimizer->GetNFilledTracks()<=fmintracks){
       printf("No good tracks found: could not find parameter for volume %d (and following in volids)\n",volids->At(0));
-      UnloadPoints(nArrays, points);
+      UnloadPoints(pointsdim, points);
       failed=kTRUE;
       break;
     }
@@ -880,20 +881,17 @@ Bool_t AliITSRealignTracks::AlignVolumesITS(const TArrayI *volids, const TArrayI
 	  if(fUpdateCov)alignObj->SetCorrMatrix(surveycov);
 	  if(iterations==1){
 	    failed=kTRUE;
-	    UnloadPoints(nArrays, points);
-	    break; 
 	  }
 	}
       }
       else {
 	printf("Minimization failed: cannot update AlignObj for volume: %d \n",volid);
-	UnloadPoints(nArrays, points);
-	break;
       }
       if(iterations==1)alignObj->Print("");
     }
     
-    UnloadPoints(nArrays, points);
+    UnloadPoints(pointsdim,points);
+    if(failed)break;
     iterations--;
   }
   return (!failed);
