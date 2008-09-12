@@ -575,7 +575,7 @@ Float_t AliTPCseed::CookdEdx(Double_t low, Double_t up,Int_t i1, Int_t i2, Bool_
 
   Float_t gainGG = 1;
   if (AliTPCcalibDB::Instance()->GetParameters()){
-    gainGG= 20000./AliTPCcalibDB::Instance()->GetParameters()->GetGasGain();  //relative gas gain
+    gainGG= AliTPCcalibDB::Instance()->GetParameters()->GetGasGain()/20000.;  //relative gas gain
   }
 
 
@@ -697,8 +697,8 @@ Float_t AliTPCseed::CookdEdx(Double_t low, Double_t up,Int_t i1, Int_t i2, Bool_
 	  continue;
 	}
 	if (rsigma>1.5) ampc/=1.3;  // if big backround
-	amp[nc[of]]       /=gainGG;
 	amp[nc[of]]        = ampc;
+	amp[nc[of]]       /=gainGG;
 	angular[nc[of]]    = TMath::Sqrt(1.+angley*angley+anglez*anglez);
 	weight[nc[of]]     = w;
 	nc[of]++;
