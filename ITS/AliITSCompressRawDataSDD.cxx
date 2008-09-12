@@ -164,13 +164,13 @@ UInt_t AliITSCompressRawDataSDD::CompressEvent(UChar_t* inputPtr){
       word+=s.GetCoord2()<<10;
       word+=s.GetEightBitSignal();
       if(siz+4<fSizeInMemory){
-	*(fPointerToData)=(word&mask1)>>24;
-	++fPointerToData;
-	*(fPointerToData)=(word&mask2)>>16;
+	*(fPointerToData)=(word&mask4);
 	++fPointerToData;
 	*(fPointerToData)=(word&mask3)>>8;
 	++fPointerToData;
-	*(fPointerToData)=(word&mask4);
+	*(fPointerToData)=(word&mask2)>>16;
+	++fPointerToData;
+	*(fPointerToData)=(word&mask1)>>24;
 	++fPointerToData;
 	siz+=4;
       }
@@ -179,13 +179,13 @@ UInt_t AliITSCompressRawDataSDD::CompressEvent(UChar_t* inputPtr){
       word=15<<28;
       word+=s.GetCarlosId();
       if(siz+4<fSizeInMemory){
-	*(fPointerToData)=(word&mask1)>>24;
-	++fPointerToData;
-	*(fPointerToData)=(word&mask2)>>16;
+	*(fPointerToData)=(word&mask4);
 	++fPointerToData;
 	*(fPointerToData)=(word&mask3)>>8;
 	++fPointerToData;
-	*(fPointerToData)=(word&mask4);
+	*(fPointerToData)=(word&mask2)>>16;
+	++fPointerToData;
+	*(fPointerToData)=(word&mask1)>>24;
 	++fPointerToData;
 	siz+=4;
       }
