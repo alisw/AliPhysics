@@ -572,6 +572,12 @@ Float_t AliTPCseed::CookdEdx(Double_t low, Double_t up,Int_t i1, Int_t i2, Bool_
   //
   fNShared =0;
 
+  Float_t gainGG = 1;
+  if (AliTPCcalibDB::Instance()->GetParameters()){
+    gainGG= 20000./AliTPCcalibDB::Instance()->GetParameters()->GetGasGain();  //relative gas gain
+  }
+
+
   for (Int_t of =0; of<4; of++){    
     for (Int_t i=of+i1;i<i2;i+=4)
       {
@@ -690,6 +696,7 @@ Float_t AliTPCseed::CookdEdx(Double_t low, Double_t up,Int_t i1, Int_t i2, Bool_
 	  continue;
 	}
 	if (rsigma>1.5) ampc/=1.3;  // if big backround
+	amp[nc[of]]       /=gainGG;
 	amp[nc[of]]        = ampc;
 	angular[nc[of]]    = TMath::Sqrt(1.+angley*angley+anglez*anglez);
 	weight[nc[of]]     = w;
@@ -1053,8 +1060,13 @@ Float_t  AliTPCseed::CookdEdxNorm(Double_t low, Double_t up, Int_t type, Int_t i
   Int_t   ncl=0;
   //
   //
+  Float_t gainGG = 1;
+  if (AliTPCcalibDB::Instance()->GetParameters()){
+    gainGG= 20000./AliTPCcalibDB::Instance()->GetParameters()->GetGasGain();  //relative gas gain
+  }
+
   const Float_t ktany = TMath::Tan(TMath::DegToRad()*10);
-  const Float_t kedgey =4.;
+  const Float_t kedgey =3.;
   //
   //
   for (Int_t irow=i1; irow<i2; irow++){
@@ -1089,6 +1101,7 @@ Float_t  AliTPCseed::CookdEdxNorm(Double_t low, Double_t up, Int_t type, Int_t i
       corr  = parcl->Qnorm(ipad,type,dr,ty,tz);
     }
     amp[ncl]=charge/corr;
+    amp[ncl]/gainGG;
     if (posNorm){
       //
       //
