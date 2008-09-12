@@ -1638,6 +1638,10 @@ Int_t AliShuttle::ProcessCurrentDetector()
 	{
 		UpdateShuttleStatus(AliShuttleStatus::kSkipped);
 		UpdateShuttleLogbook(fCurrentDetector, "DONE");
+		if (!UpdateTableSkippedCase(fCurrentDetector.Data()))
+		{
+			AliError(Form("Could not update FXS tables for run %d !", GetCurrentRun()));
+		}
 		Log(fCurrentDetector, Form("ProcessCurrentDetector - %s preprocessor is not interested in this run type", fCurrentDetector.Data()));
 	
 		return 2;
@@ -2005,6 +2009,10 @@ AliShuttleLogbookEntry* AliShuttle::QueryRunParameters(Int_t run)
 		if (!UpdateShuttleLogbook("shuttle_skipped"))
 		{
 			AliError(Form("Could not update logbook for run %d !", run));
+		}
+		if (!UpdateTableSkippedCase("ALL"))
+		{
+			AliError(Form("Could not update FXS tables for run %d !", run));
 		}
 		fLogbookEntry = 0;
 	}
@@ -2599,6 +2607,59 @@ Bool_t AliShuttle::UpdateTable()
 	return result;
 }
 
+//_______________________________________________________________________________
+Bool_t AliShuttle::UpdateTableSkippedCase(const char* detector)
+{
+	//
+	// Update FXS table filling time_processed field in all rows corresponding to current run and detector
+	// if detector = "ALL" update all detectors
+	//
+
+	Bool_t result = kTRUE;
+
+	for (UInt_t system=0; system<3; system++)
+	{
+
+		// check connection, in case connect
+		if (!Connect(system))
+		{
+			Log(fCurrentDetector, Form("UpdateTableSkippedCase - Couldn't connect to %s FXS database", GetSystemName(system)));
+			result = kFALSE;
+			continue;
+		}
+
+		TTimeStamp now; // now
+
+		// Loop on FXS list entries
+		TIter iter(&fFXSlist[system]);
+			
+		TString whereClause;
+		if (detector == "ALL") whereClause = Form("where run=%d and time_processed IS NULL;",GetCurrentRun());
+		else whereClause = Form("where run=%d and detector=\"%s\" and time_processed IS NULL;",GetCurrentRun(), detector);
+
+		Log("SHUTTLE",Form(" whereClause = %s ",whereClause.Data()));
+
+		TString sqlQuery = Form("update %s set time_processed=%d %s", fConfig->GetFXSdbTable(system),
+					now.GetSec(), whereClause.Data());
+
+		AliDebug(2, Form("SQL query: \n%s",sqlQuery.Data()));
+
+		// Query execution
+		TSQLResult* aResult;
+		aResult = dynamic_cast<TSQLResult*> (fServer[system]->Query(sqlQuery));
+		if (!aResult)
+		{
+			Log("SHUTTLE", Form("UpdateTableSkippedCase - %s db: can't execute SQL query <%s>",
+							GetSystemName(system), sqlQuery.Data()));
+			result = kFALSE;
+			continue;
+		}
+		delete aResult;
+		
+	}
+
+	return result;
+}
 //______________________________________________________________________________________________
 Bool_t AliShuttle::UpdateTableFailCase()
 {

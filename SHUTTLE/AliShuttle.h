@@ -104,6 +104,7 @@ private:
 	Bool_t RetrieveFile(UInt_t system, const char* daqFileName, const char* localFileName);
 
 	Bool_t UpdateTable();
+	Bool_t UpdateTableSkippedCase(const char* detector="ALL");
 	Bool_t UpdateTableFailCase();
 
 	Bool_t StoreLocally(const TString& localUri, const AliCDBPath& path, TObject* object,
