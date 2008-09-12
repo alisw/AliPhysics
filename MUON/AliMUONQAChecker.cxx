@@ -120,9 +120,23 @@ AliMUONQAChecker::CheckRecPoints(TObjArray * list)
   
   if ( !h ) return 0.75; // only a warning if histo not found, in order not to kill anything because QA failed...
   
-  if ( h->GetMean() == 0.0 ) return 0.0;
+  if ( h->GetMean() == 0.0 ) return MarkHisto(*h,0.0);
   
   return 1.0;
+}
+
+//______________________________________________________________________________
+const Double_t 
+AliMUONQAChecker::MarkHisto(TH1& histo, Double_t value) const
+{
+  /// Mark histo as originator of some QA error/warning
+  
+  if ( value != 1.0 )
+  {
+    histo.SetBit(AliQA::GetQABit());
+  }
+  
+  return value;
 }
 
 //______________________________________________________________________________
@@ -135,13 +149,13 @@ AliMUONQAChecker::CheckESD(TObjArray * list)
   
   if (!h) return 0.75;
   
-  if ( h->GetMean() == 0.0 ) return 0.0; // no track -> fatal
+  if ( h->GetMean() == 0.0 ) return MarkHisto(*h,0.0); // no track -> fatal
   
   h = GetHisto(list,"hESDMatchTrig");
   
   if (!h) return 0.75;
   
-  if (h->GetMean() == 0.0 ) return 0.25; // no trigger matching -> error
+  if (h->GetMean() == 0.0 ) return MarkHisto(*h,0.25); // no trigger matching -> error
   
   return 1.0;
 }
