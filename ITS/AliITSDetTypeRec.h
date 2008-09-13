@@ -54,6 +54,7 @@ class AliITSDetTypeRec : public TObject {
     virtual void SetSPDDeadModel(Int_t iMod, AliITSCalibration *cal);
     virtual void SetReconstructionModel(Int_t dettype, AliITSClusterFinder *rec);
     virtual Bool_t GetCalibration();
+    virtual Bool_t GetCalibrationSDDSSD(Bool_t cacheStatus);
     virtual AliITSsegmentation* GetSegmentationModel(Int_t dettype);
     virtual AliITSCalibration* GetCalibrationModel(Int_t iMod);
     virtual AliITSCalibration* GetSPDDeadModel(Int_t iMod);
@@ -70,6 +71,9 @@ class AliITSDetTypeRec : public TObject {
     virtual void SetRecPointClassName(Int_t i,Char_t *recpoint) 
       {fRecPointClassName[i]=recpoint;}
     
+    virtual void SetLoadOnlySPDCalib(Bool_t opt=kFALSE)
+      {fLoadOnlySPDCalib=opt;}
+
     Char_t* GetDigitClassName(Int_t i) const {return fDigClassName[i];}
     Char_t* GetClusterClassName(Int_t i) const {return fClusterClassName[i];}
     Char_t* GetRecPointClassName(Int_t i) const {return fRecPointClassName[i];}
@@ -146,8 +150,9 @@ class AliITSDetTypeRec : public TObject {
 
     TString fSelectedVertexer; // Vertexer selected in CreateVertexer
     Bool_t fFirstcall;         //! flag
+    Bool_t fLoadOnlySPDCalib;  //! flag for loading calibrations only fr SPD
 
-    ClassDef(AliITSDetTypeRec,11) // ITS Reconstruction structure
+    ClassDef(AliITSDetTypeRec,12) // ITS Reconstruction structure
 };
 
 #endif
