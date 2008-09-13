@@ -18,15 +18,16 @@ AliESDtrackCuts* CreateTrackCuts(AliPWG0Helper::AnalysisMode analysisMode, Bool_
   Double_t nSigma = 4;
 
   Bool_t tpcRefit = kTRUE;
+  Bool_t sigmaToVertex = kTRUE;
 
   TString tag("Global tracking");
 
   // TPC-only cuts
   if (analysisMode == AliPWG0Helper::kTPC)
   {
-    // eventually replace by kTPCin?
     tpcRefit = kFALSE;
-    
+    sigmaToVertex = kFALSE;
+
     tag = "TPC-only tracking";
   }
 
@@ -36,12 +37,20 @@ AliESDtrackCuts* CreateTrackCuts(AliPWG0Helper::AnalysisMode analysisMode, Bool_
     cov5 = 1e10;
     tag += " without field";
   }
-  
+
   esdTrackCuts->SetMaxCovDiagonalElements(cov1, cov2, cov3, cov4, cov5);
 
-  esdTrackCuts->SetMinNsigmaToVertex(nSigma);
-  esdTrackCuts->SetRequireSigmaToVertex(kTRUE);
-  
+  esdTrackCuts->SetRequireSigmaToVertex(sigmaToVertex);
+
+  if (sigmaToVertex) {
+    esdTrackCuts->SetMinNsigmaToVertex(nSigma);
+  }
+  else{
+    //    esdTrackCuts->SetDCAToVertex(3.0);
+    esdTrackCuts->SetDCAToVertexZ(3.0);
+    esdTrackCuts->SetDCAToVertexXY(3.0);
+  }
+
   esdTrackCuts->SetRequireTPCRefit(tpcRefit);
   esdTrackCuts->SetAcceptKingDaughters(kFALSE);
 
