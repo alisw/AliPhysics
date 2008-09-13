@@ -242,8 +242,8 @@ void AliTPCTransform::RotatedGlobal2Global(Int_t sector,Double_t *x) const {
   Double_t cos,sin;
   GetCosAndSin(sector,cos,sin);
   Double_t tmp=x[0];
-  x[0]= cos*tmp+sin*x[1];
-  x[1]=-sin*tmp+cos*x[1];
+  x[0]= cos*tmp-sin*x[1];
+  x[1]=+sin*tmp+cos*x[1];
 }
 
 void AliTPCTransform::Global2RotatedGlobal(Int_t sector,Double_t *x) const {
@@ -253,8 +253,8 @@ void AliTPCTransform::Global2RotatedGlobal(Int_t sector,Double_t *x) const {
   Double_t cos,sin;
   GetCosAndSin(sector,cos,sin);
   Double_t tmp=x[0];
-  x[0]= cos*tmp-sin*x[1];
-  x[1]= sin*tmp+cos*x[1];
+  x[0]= cos*tmp+sin*x[1];
+  x[1]= -sin*tmp+cos*x[1];
 }
 
 void AliTPCTransform::GetCosAndSin(Int_t sector,Double_t &cos,
