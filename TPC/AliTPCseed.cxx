@@ -529,6 +529,15 @@ Bool_t AliTPCseed::Update(const AliCluster *c, Double_t chisq, Int_t index)
   Int_t idx=GetClusterIndex(n);    // save the current cluster index
 
   AliCluster cl(*c);  cl.SetSigmaY2(fErrorY2); cl.SetSigmaZ2(fErrorZ2);
+  Float_t dx = ((AliTPCclusterMI*)c)->GetX()-GetX();
+  if (TMath::Abs(dx)>0){
+    Float_t ty = TMath::Tan(TMath::ASin(GetSnp()));
+    Float_t dy = dx*ty;
+    Float_t dz = dx*TMath::Sqrt(1.+ty*ty)*GetTgl();
+    cl.SetY(c->GetY()-dy);  
+    cl.SetZ(c->GetZ()-dz);  
+  }
+
   if (!AliTPCtrack::Update(&cl,chisq,index)) return kFALSE;
   
   if (fCMeanSigmaY2p30<0){
