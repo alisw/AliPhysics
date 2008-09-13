@@ -1849,6 +1849,12 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
   // Origin: Marian Ivanov,  marian.ivanov@cern.ch
   //-----------------------------------------------------------------
   AliTPCcalibDB* const calib=AliTPCcalibDB::Instance();
+  if (gAlice){ // Set correctly the magnetic field in the ExB calculation
+    AliMagF * field = gAlice->Field();
+    if (field) {
+      calib->SetExBField(field->SolenoidField());
+    }
+  }
 
   Float_t gasgain = fTPCParam->GetGasGain();
   gasgain = gasgain/fGainFactor;

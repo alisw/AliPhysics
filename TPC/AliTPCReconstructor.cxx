@@ -32,6 +32,8 @@
 #include "AliTPCParam.h"
 #include "AliTPCParamSR.h"
 #include "AliTPCcalibDB.h"
+#include "AliTracker.h"
+#include "AliMagF.h"
 
 ClassImp(AliTPCReconstructor)
 
@@ -48,7 +50,11 @@ fClusterer(NULL)
   //
   //
   //
- 
+  AliTPCcalibDB * calib = AliTPCcalibDB::Instance();
+  const AliMagF * field = AliTracker::GetFieldMap();
+  if (field) { // Set correctly the magnetic field in the ExB calculation
+    calib->SetExBField(field->SolenoidField());
+  }
   AliTPCParam* param = GetTPCParam();
   if (!param) {
     AliWarning("Loading default TPC parameters !");
