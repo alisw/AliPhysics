@@ -713,6 +713,8 @@ void AliMagFCheb::BuildTableSol()
   const float kSafety=0.001;
   //
   if (fNParamsSol<1) return;
+  fNSegZSol = 0;
+  fMaxRSol = 0;
   fSegRSol   = new Float_t[fNParamsSol];
   float *tmpbufF  = new float[fNParamsSol+1];
   int   *tmpbufI  = new int[fNParamsSol+1];
@@ -727,6 +729,7 @@ void AliMagFCheb::BuildTableSol()
     }
     fSegRSol[ip] = GetParamSol(ip)->GetBoundMax(0);  // upper R
     tmpbufI[fNSegZSol-1]++;
+    if (fMaxRSol<fSegRSol[ip]) fMaxRSol = fSegRSol[ip];
   }
   //
   fSegZSol   = new Float_t[fNSegZSol];
@@ -740,7 +743,6 @@ void AliMagFCheb::BuildTableSol()
   //
   fMinZSol = GetParamSol(0)->GetBoundMin(2);
   fMaxZSol = GetParamSol(fNParamsSol-1)->GetBoundMax(2);
-  fMaxRSol = GetParamSol(fNParamsSol-1)->GetBoundMax(0);
   //
   delete[] tmpbufF;
   delete[] tmpbufI;
@@ -757,6 +759,7 @@ void AliMagFCheb::BuildTableTPCInt()
   const float kSafety=0.001;
   //
   if (fNParamsTPCInt<1) return;
+  fNSegZTPCInt = 0;
   fSegRTPCInt   = new Float_t[fNParamsTPCInt];
   float *tmpbufF  = new float[fNParamsTPCInt+1];
   int   *tmpbufI  = new int[fNParamsTPCInt+1];
