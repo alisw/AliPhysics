@@ -26,7 +26,7 @@ ClassImp(AliMagWrapCheb)
 
 //_______________________________________________________________________
 AliMagWrapCheb::AliMagWrapCheb():
-  AliMagF(),
+  AliMagFC(),
   fMeasuredMap(0),
   fSolenoid(5.)
 {
@@ -38,7 +38,7 @@ AliMagWrapCheb::AliMagWrapCheb():
 AliMagWrapCheb::AliMagWrapCheb(const char *name, const char *title, Int_t integ, 
 			       Float_t factor, Float_t fmax, Int_t map, 
 			       Bool_t dipoleON,const char* path):
-  AliMagF(name, title, integ, factor, fmax),
+  AliMagFC(name, title, integ, factor, fmax),
   fMeasuredMap(0),
   fSolenoid(5.)
 {
@@ -74,7 +74,7 @@ AliMagWrapCheb::AliMagWrapCheb(const char *name, const char *title, Int_t integ,
 
 //_______________________________________________________________________
 AliMagWrapCheb::AliMagWrapCheb(const AliMagWrapCheb &src):
-  AliMagF(src),
+  AliMagFC(src),
   fMeasuredMap(0),
   fSolenoid(src.fSolenoid)
 {
@@ -110,7 +110,12 @@ void AliMagWrapCheb::Field(Float_t *xyz, Float_t *b) const
 {
   // Method to calculate the field at point  xyz
   //
-  if (fMeasuredMap) fMeasuredMap->Field(xyz,b);
+    if (xyz[2] > 919. || xyz[2] < -1972.) {
+	ZDCField(xyz, b);
+    } else {
+	if (fMeasuredMap) fMeasuredMap->Field(xyz,b);
+    }
+    
   for (int i=3;i--;) b[i] *= fFactor;
 }
 

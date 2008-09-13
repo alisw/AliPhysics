@@ -9,11 +9,11 @@
 // Author: ruben.shahoyan@cern.ch
 //
 
-#include "AliMagF.h"
+#include "AliMagFC.h"
 #include "AliMagFCheb.h"
 
 
-class AliMagWrapCheb : public AliMagF
+class AliMagWrapCheb : public AliMagFC
 {
 public:
   enum constants {k2kG, k4kG, k5kG};

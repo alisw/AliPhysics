@@ -17,7 +17,7 @@
 
 // when _BRING_TO_BOUNDARY_ is defined, the point outside of the fitted folume is assumed
 // to be on the surface 
-#define _BRING_TO_BOUNDARY_
+// #define _BRING_TO_BOUNDARY_
 //
 
 
