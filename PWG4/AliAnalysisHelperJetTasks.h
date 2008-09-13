@@ -14,6 +14,7 @@ class AliAnalysisHelperJetTasks : public TObject {
   virtual ~AliAnalysisHelperJetTasks(){;}
   
   static AliGenPythiaEventHeader*  GetPythiaEventHeader(AliMCEvent *mcEvent);
+  static void PrintStack(AliMCEvent *mcEvent,Int_t iFirst = 0,Int_t iLast = 0,Int_t iMaxPrint = 10);
   
 
   private:

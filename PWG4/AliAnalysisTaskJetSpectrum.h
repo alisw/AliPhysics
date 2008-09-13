@@ -5,7 +5,7 @@
  * See cxx source for full Copyright notice                               */
  
 #include "AliAnalysisTaskSE.h"
-class AliJetFinder;
+class AliJetHeader;
 class AliESDEvent;
 class AliAODEvent;
 class AliAODJet;
@@ -32,7 +32,8 @@ class AliAnalysisTaskJetSpectrum : public AliAnalysisTaskSE
     virtual void SetExternalWeight(Float_t f){fExternalWeight = f;}
     virtual void SetUseExternalWeightOnly(Bool_t b){fUseExternalWeightOnly = b;}
     virtual void SetAODInput(Bool_t b){fUseAODInput = b;}
-    virtual void SetAnalysisType(Int_t b){fAnalysisType = b;}
+    virtual void SetLimitGenJetEta(Bool_t b){fLimitGenJetEta = b;}
+    virtual void SetAnalysisType(Int_t i){fAnalysisType = i;}
     virtual void SetBranchGen(char* c){fBranchGen = c;}
     virtual void SetBranchRec(char* c){fBranchRec = c;}
 
@@ -53,8 +54,8 @@ class AliAnalysisTaskJetSpectrum : public AliAnalysisTaskSE
 
     enum {kMaxJets =  5};
 
-    AliJetFinder *fJetFinderRec;
-    AliJetFinder *fJetFinderGen;
+    AliJetHeader *fJetHeaderRec;
+    AliJetHeader *fJetHeaderGen;
     AliAODEvent  *fAOD; // where we take the jets from can be input or output AOD
 
     TString       fBranchRec;  // AOD branch name for reconstructed
@@ -64,13 +65,13 @@ class AliAnalysisTaskJetSpectrum : public AliAnalysisTaskSE
 
     Bool_t        fUseAODInput;
     Bool_t        fUseExternalWeightOnly;
+    Bool_t        fLimitGenJetEta;
     Int_t         fAnalysisType;
     Float_t       fExternalWeight;    
 
     TH1F*         fh1PtHard;  // Pt har of the event...       
     TH1F*         fh1PtHard_NoW;  // Pt har of the event...       
     TH1F*         fh1PtHard_Trials;  // Number of trials 
-    TH1F*         fh1PtHard_Trials_NoW;  // Number of trials 
     TH1F*         fh1NGenJets;
     TH1F*         fh1NRecJets;
     TH1F*         fh1E[kMaxJets];       // Jet Energy       
@@ -89,8 +90,8 @@ class AliAnalysisTaskJetSpectrum : public AliAnalysisTaskSE
     TH3F*         fh3PtRecGenHard_NoW[kMaxJets];  //                  
     TH3F*         fh3RecEtaPhiPt[kMaxJets]; // 
     TH3F*         fh3RecEtaPhiPt_NoGen[kMaxJets]; // 
-    TH3F*         fh3RecEtaPhiPt_NoFound[kMaxJets]; //                    
-    TH3F*         fh3MCEtaPhiPt[kMaxJets]; //                                                                                                        
+    TH3F*         fh3GenEtaPhiPt_NoFound[kMaxJets]; //                    
+    TH3F*         fh3GenEtaPhiPt[kMaxJets]; //                                                                                                        
     // ========= Multiplicity dependence ======
 
     // ==========TODO , flavaor dependence ========                           
