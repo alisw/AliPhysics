@@ -35,6 +35,7 @@
 #include "AliJetReader.h"
 #include "AliJet.h"
 #include "AliAODJet.h"
+#include "AliLog.h"
 
 
 ClassImp(AliUA1JetFinderV1)
@@ -256,21 +257,26 @@ void AliUA1JetFinderV1::RunAlgoritm(Float_t etbgTotal, Double_t dEtTotal, Int_t&
 {
 
    //dump lego
-  // check enough space! *to be done*
   AliUA1JetHeaderV1* header = (AliUA1JetHeaderV1*) fHeader;
-  const Int_t nBinsMax = 70000;
+  const Int_t nBinsMax = 120000; // we use a fixed array not to fragment memory
   
+  const Int_t nBinEta = header->GetLegoNbinEta();
+  const Int_t nBinPhi = header->GetLegoNbinPhi();
+  if((nBinPhi*nBinEta)>nBinsMax){
+    AliError("Too many bins of the ETA-PHI histogram");
+  }
+
   Float_t etCell[nBinsMax];   //! Cell Energy
   Float_t etaCell[nBinsMax];  //! Cell eta
   Float_t phiCell[nBinsMax];  //! Cell phi
-  Int_t   flagCell[nBinsMax]; //! Cell flag
+  Short_t   flagCell[nBinsMax]; //! Cell flag
 
   Int_t nCell = 0;
   TAxis* xaxis = fLego->GetXaxis();
   TAxis* yaxis = fLego->GetYaxis();
   Float_t e = 0.0;
-  for (Int_t i = 1; i <= header->GetLegoNbinEta(); i++) {
-      for (Int_t j = 1; j <= header->GetLegoNbinPhi(); j++) {
+  for (Int_t i = 1; i <= nBinEta; i++) {
+      for (Int_t j = 1; j <= nBinPhi; j++) {
 	       e = fLego->GetBinContent(i,j);
 	       if (e < 0.0) continue; // don't include this cells
 	       Float_t eta  = xaxis->GetBinCenter(i);
