@@ -75,6 +75,8 @@ AliFMDPedestalDA::~AliFMDPedestalDA()
 void AliFMDPedestalDA::Init() 
 { 
   SetRequiredEvents(1000);
+ 
+  
 }
 
 //_____________________________________________________________________
@@ -111,7 +113,7 @@ void AliFMDPedestalDA::FillChannels(AliFMDDigit* digit)
   Char_t   ring  = digit->Ring();
   UShort_t sec   = digit->Sector();
   UShort_t strip = digit->Strip();
-
+  
   AliFMDParameters* pars     = AliFMDParameters::Instance();
   UInt_t             samples  = pars->GetSampleRate(det, ring, sec, strip);
   for (UInt_t sample = 0; sample < samples; sample++) {
@@ -176,10 +178,20 @@ void AliFMDPedestalDA::Analyse(UShort_t det,
     }
     
     Float_t chi2ndf = 0;
+    
+    
     if(fitFunc.GetNDF())
       chi2ndf = fitFunc.GetChisquare() / fitFunc.GetNDF();
     
-    if(sample==samples-1) {
+    Int_t sampleToWrite = 2;
+    
+    if(pars->GetSampleRate(det,ring,sec,strip)==2)
+      sampleToWrite = 1;
+    
+    if(pars->GetSampleRate(det,ring,sec,strip)<2)
+      sampleToWrite = 0;
+    
+    if(sample==sampleToWrite) {
     
       fOutputFile << det                         << ','
 		  << ring                        << ','
