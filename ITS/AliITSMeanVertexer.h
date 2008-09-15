@@ -50,16 +50,21 @@ class AliITSMeanVertexer : public TObject {
     TH2F    *fVertexXY;        //! histogram with transverse vertex distribution (vertex diamond)
     TH1F    *fVertexZ;         //! histogram with longitudinal vertex distribution
 
-    Double_t fWeighPos[3];     //! weighted average position
-    Double_t fWeighSig[3];     //! errors on weighted average position
-    Double_t fAverPos[3];      //! average position
-    Double_t fAverPosSq[3][3];  //! average square position for covariance
-    Int_t fNoEventsContr;      //! number of events used for mean vertex
+    Double_t fWeighPosSum[3];    //! weighted average position sum (transient)
+    Double_t fWeighSigSum[3];    //! weighted average position sum (transient)
+    Double_t fAverPosSum[3];     //! average position sum (transient)
+    Double_t fAverPosSqSum[3][3];//! average square position sum for covariance (transient)
+    Double_t fWeighPos[3];       //! weighted average position
+    Double_t fWeighSig[3];       //! errors on weighted average position
+    Double_t fAverPos[3];        //! average position
+    Double_t fAverPosSq[3][3];   //! average square position for covariance
+    Int_t fNoEventsContr;        //! number of events used for mean vertex
     Float_t fTotTracklets;       //! total number of tracklets used (integrated)
-    Float_t fAverTracklets;    //! average number of tracklets per event
-    Float_t fSigmaOnAverTracks; //! RMS of fAverTracklets
+    Float_t fAverTracklets;      //! average number of tracklets per event
+    Float_t fTotTrackletsSq;     //! total squared number of tracklets (transient)
+    Float_t fSigmaOnAverTracks;  //! RMS of fAverTracklets
     Int_t fFilterOnContributors; //! Numb. of contrib must be > fFilter...
-    Int_t fFilterOnTracklets; //! Numb. of tracklets must be > fFilterOnTr...
+    Int_t fFilterOnTracklets;    //! Numb. of tracklets must be > fFilterOnTr...
 
     ClassDef(AliITSMeanVertexer,0)
 };

@@ -45,16 +45,21 @@ fVertexZ(NULL),
 fNoEventsContr(0),
 fTotTracklets(0.),
 fAverTracklets(0.),
+fTotTrackletsSq(0.),
 fSigmaOnAverTracks(0.), 
 fFilterOnContributors(0),
 fFilterOnTracklets(0)
 {
   // Default Constructor
   for(Int_t i=0;i<3;i++){
+    fWeighPosSum[i] = 0.;
+    fWeighSigSum[i] = 0.;
+    fAverPosSum[i] = 0.;
     fWeighPos[i] = 0.;
     fWeighSig[i] = 0.;
     fAverPos[i] = 0.;
     for(Int_t j=0; j<3;j++)fAverPosSq[i][j] = 0.;
+    for(Int_t j=0; j<3;j++)fAverPosSqSum[i][j] = 0.;
   }
 
   // Histograms initialization
@@ -82,6 +87,7 @@ Bool_t AliITSMeanVertexer::Init() {
   printf("Geometry name: %s \n",(initgeom.GetGeometryName()).Data());
 
   fDetTypeRec = new AliITSDetTypeRec();
+  fDetTypeRec->SetLoadOnlySPDCalib(kTRUE);
   fDetTypeRec->SetITSgeom(geom);
   fDetTypeRec->SetDefaults();
   fDetTypeRec->SetDefaultClusterFindersV2(kTRUE);
@@ -157,7 +163,7 @@ void AliITSMeanVertexer::WriteVertices(const char *filename){
     AliDebug(1,Form("Contrib av. trk = %10.2f ",mv.GetAverageNumbOfTracklets()));
     AliDebug(1,Form("Sigma %10.4f ",mv.GetSigmaOnAvNumbOfTracks()));
     // we have to add chi2 here
-    AliESDVertex vtx(fWeighPos,cov,0,fAverTracklets,"MeanVertexPos");
+    AliESDVertex vtx(fWeighPos,cov,0,TMath::Nint(fAverTracklets),"MeanVertexPos");
 
     mv.Write(mv.GetName(),TObject::kOverwrite);
     vtx.Write(vtx.GetName(),TObject::kOverwrite);
@@ -181,8 +187,8 @@ Bool_t AliITSMeanVertexer::Filter(AliESDVertex *vert,AliMultiplicity *mult){
   AliDebug(1,Form("Number of contributors = %d",ncontr));
   AliDebug(1,Form("Number of tracklets = %d",ntracklets));
   if(ncontr>fFilterOnContributors && ntracklets > fFilterOnTracklets) status = kTRUE;
-  fAverTracklets += ntracklets;
-  fSigmaOnAverTracks += ntracklets*ntracklets;
+  fTotTracklets += ntracklets;
+  fTotTrackletsSq += ntracklets*ntracklets;
   return status;
 }
 
@@ -196,13 +202,13 @@ void AliITSMeanVertexer::AddToMean(AliESDVertex *vert){
   for(Int_t i=0;i<3;i++)if(currentSigma[i] == 0.)goon = kFALSE;
   if(!goon)return;
   for(Int_t i=0;i<3;i++){
-    fWeighPos[i]+=currentPos[i]/currentSigma[i]/currentSigma[i];
-    fWeighSig[i]+=1./currentSigma[i]/currentSigma[i];
-    fAverPos[i]+=currentPos[i];
+    fWeighPosSum[i]+=currentPos[i]/currentSigma[i]/currentSigma[i];
+    fWeighSigSum[i]+=1./currentSigma[i]/currentSigma[i];
+    fAverPosSum[i]+=currentPos[i];
   }
   for(Int_t i=0;i<3;i++){
     for(Int_t j=i;j<3;j++){
-      fAverPosSq[i][j] += currentPos[i] * currentPos[j];
+      fAverPosSqSum[i][j] += currentPos[i] * currentPos[j];
     }
   }
 
@@ -218,21 +224,20 @@ Bool_t AliITSMeanVertexer::ComputeMean(){
   if(fNoEventsContr < 2) return kFALSE;
   Double_t nevents = fNoEventsContr;
   for(Int_t i=0;i<3;i++){
-    fWeighPos[i] /= fWeighSig[i]; 
-    fWeighSig[i] = 1./TMath::Sqrt(fWeighSig[i]);
-    fAverPos[i] /= nevents;
+    fWeighPos[i] = fWeighPosSum[i]/fWeighSigSum[i]; 
+    fWeighSig[i] = 1./TMath::Sqrt(fWeighSigSum[i]);
+    fAverPos[i] = fAverPosSum[i]/nevents;
   } 
   for(Int_t i=0;i<3;i++){
     for(Int_t j=i;j<3;j++){
-      fAverPosSq[i][j] /= (nevents -1.);
+      fAverPosSq[i][j] = fAverPosSqSum[i][j]/(nevents -1.);
       fAverPosSq[i][j] -= nevents/(nevents -1.)*fAverPos[i]*fAverPos[j];
     }
   } 
-  fTotTracklets = fAverTracklets;  //  total number of tracklets used 
-  fAverTracklets /= nevents;
-  fSigmaOnAverTracks /= (nevents - 1);
-  Double_t tmp = nevents/(nevents -1.)*fAverTracklets*fAverTracklets;
-  fSigmaOnAverTracks -= tmp;
+
+  fAverTracklets = fTotTracklets/nevents;
+  fSigmaOnAverTracks = fTotTrackletsSq/(nevents - 1);
+  fSigmaOnAverTracks -= nevents/(nevents -1.)*fAverTracklets*fAverTracklets;
   fSigmaOnAverTracks = TMath::Sqrt(fSigmaOnAverTracks);
   return kTRUE;
 }
