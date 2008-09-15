@@ -42,14 +42,25 @@
 #include "AliTRDtrackerV1.h"
 #include "AliTRDrecoParam.h"
 
+#define SETFLG(n,f) ((n) |= f)
+#define CLRFLG(n,f) ((n) &= ~f)
+
 ClassImp(AliTRDReconstructor)
 
 TClonesArray *AliTRDReconstructor::fgClusters = 0x0;
 //_____________________________________________________________________________
 AliTRDReconstructor::AliTRDReconstructor()
   :AliReconstructor()
-  ,fSteerParam(0x00000007)
+  ,fSteerParam(0)
 {
+  // setting default "ON" steering parameters
+  // write clusters [cw]
+  SETFLG(fSteerParam, kWriteClusters);
+  // track seeding (stand alone tracking) [sa]
+  SETFLG(fSteerParam, kSeeding);
+  // PID method in reconstruction (NN) [nn]
+  SETFLG(fSteerParam, kSteerPID);
+
   memset(fStreamLevel, 0, 5*sizeof(UChar_t));
   // Xe tail cancellation parameters
   fTCParams[0] = 1.156; // r1
@@ -204,6 +215,7 @@ void AliTRDReconstructor::SetOption(Option_t *opt)
 //
 // Default steer param values
 //
+// digits conversion [dc] = false
 // write clusters [cw] = true
 // track seeding (stand alone tracking) [sa] = true
 // PID method in reconstruction (NN) [nn] = true
@@ -212,35 +224,44 @@ void AliTRDReconstructor::SetOption(Option_t *opt)
 // HLT tracking [hlt] = false
 // Cosmic Reconstruction [cos] = false
 //
-  fSteerParam = 0x00000007;
+
+  AliReconstructor::SetOption(opt);
 
   TString s(opt);
   TObjArray *opar = s.Tokenize(",");
   for(Int_t ipar=0; ipar<opar->GetEntriesFast(); ipar++){
     TString sopt(((TObjString*)(*opar)[ipar])->String());
-    if(sopt.Contains("!cw")){ 
-      fSteerParam &= ~kWriteClusters;
-      continue;
-    } else if(sopt.Contains("dc")){
-      if(!sopt.Contains("!")) fSteerParam |= kDigitsConversion;
+    if(sopt.Contains("dc")){
+      SETFLG(fSteerParam, kDigitsConversion);
+      if(sopt.Contains("!")) CLRFLG(fSteerParam, kDigitsConversion);
       continue;	
-    } else if(sopt.Contains("!sa")){
-      fSteerParam &= ~kSeeding;
+    } else if(sopt.Contains("cw")){ 
+      SETFLG(fSteerParam, kWriteClusters);
+      if(sopt.Contains("!")) CLRFLG(fSteerParam, kWriteClusters);
       continue;
-    } else if(sopt.Contains("!nn")){
-      fSteerParam &= ~kSteerPID;
+    } else if(sopt.Contains("sa")){
+      SETFLG(fSteerParam, kSeeding);
+      if(sopt.Contains("!")) CLRFLG(fSteerParam, kSeeding);
+      continue;
+    } else if(sopt.Contains("nn")){
+      SETFLG(fSteerParam, kSteerPID);
+      if(sopt.Contains("!")) CLRFLG(fSteerParam, kSteerPID);
       continue;
     } else if(sopt.Contains("tw")){
-      if(!sopt.Contains("!")) fSteerParam |= kWriteTracklets;
+      SETFLG(fSteerParam, kWriteTracklets);
+      if(sopt.Contains("!")) CLRFLG(fSteerParam, kWriteTracklets);
       continue;	
     } else if(sopt.Contains("ar")){
-      if(!sopt.Contains("!")) fSteerParam |= kDriftGas;
+      SETFLG(fSteerParam, kDriftGas);
+      if(sopt.Contains("!")) CLRFLG(fSteerParam, kDriftGas);
       continue;	
     } else if(sopt.Contains("hlt")){
-      if(!sopt.Contains("!")) fSteerParam |= kHLT;
+      SETFLG(fSteerParam, kHLT);
+      if(sopt.Contains("!")) CLRFLG(fSteerParam, kHLT);
       continue;	
     } else if(sopt.Contains("cos")){
-      if(!sopt.Contains("!")) fSteerParam |= kCosmic;
+      SETFLG(fSteerParam, kCosmic);
+      if(sopt.Contains("!")) CLRFLG(fSteerParam, kCosmic);
     } else if(sopt.Contains("sl")){
       TObjArray *stl = sopt.Tokenize("_");
       if(stl->GetEntriesFast() < 3) continue;
