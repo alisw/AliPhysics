@@ -28,32 +28,44 @@ void HESDfromKin(const char *name="default")
     
   TString ttl=name;
   Bool_t htaCheck=ttl.Contains("HTA");
-  if(!htaCheck) SimEsd(pHL,pEsd); else SimEsdHidden(pHL,pEsd);
+//  if(!htaCheck) SimEsd(pHL,pEsd); else SimEsdHidden(pHL,pEsd);
+  SimEsd(pHL,pEsd,htaCheck);
   
   pEsdFl->cd();
   pEsdFl->Write();pEsdFl->Close();        
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void SimEsd(AliLoader *pHL,AliESDEvent *pEsd)
+void SimEsd(AliLoader *pHL,AliESDEvent *pEsd,Bool_t htaCheck)
 {
-  Printf("-----------------------------------------------");
-  Printf("| SimESD: Utility to embed ESD from kinematics|");
-  Printf("-----------------------------------------------");
+  if(htaCheck) {
+    TFile *fout = new TFile("HTA.root","recreate");
+    TH1F *hdC   = new TH1F("dC"  ,";delta Cerenkov (rad)",100,-0.2,0.2);
+    TH1F *hCer  = new TH1F("Cer" ,"Theta Cerenkov (rad)",250,0.,0.75);
+    TH2F *htvsp = new TH2F("tvsp",";momentum (GeV/c);theta Cerenkov (rad)",100,0.,5.,1000,0.,0.75);
+    TH1F *hdth  = new TH1F("dth" ,";Delta theta Trk (mrad)",100,-250,250);
+    TH1F *hdph  = new TH1F("dph" ,";Delta phi Trk (mrad)",100,-500,500);
+    Double_t rd=TMath::RadToDeg();
+    Printf("----------------------------------------------");
+    Printf("| SimHTA:Utility to embed ESD from kinematics|");
+    Printf("|     with  Hidden Track Algorithm (HTA)     |");
+    Printf("----------------------------------------------");
+  } else {
+    Printf("-----------------------------------------------");
+    Printf("| SimESD: Utility to embed ESD from kinematics|");
+    Printf("-----------------------------------------------");
+}
   AliHMPIDTracker::SetFieldMap(gAL->GetAliRun()->Field(),kTRUE);
   AliHMPID *pH=(AliHMPID*)gAL->GetAliRun()->GetDetector("HMPID");
-  Int_t mtid=-1;
   Int_t iNevt=gAL->GetNumberOfEvents();
   pEsd->SetMagneticField(AliHMPIDTracker::GetBz());
-  Printf("Number of events to process: %i",iNevt);
   for(Int_t iEvt=0;iEvt<iNevt;iEvt++){//events loop
-    if(!(iEvt%50)) Printf("Events processed %i",iEvt);
     gAL->GetEvent(iEvt);    
     pHL->TreeR()->GetEntry(0);
     AliStack *pStack=gAL->Stack();
+    Int_t nTrkHMPID=0;
     for(Int_t i=0;i<pStack->GetNtrack();i++){
+      if(!pStack->IsPhysicalPrimary(i)) continue;
       TParticle *pTrack=pStack->Particle(i); 
-      mtid=pTrack->GetFirstMother();
-      if(mtid>=0) continue; // only primaries
       if(pTrack->GetPDG()->Charge()==0) continue;
       AliESDtrack trk(pTrack); 
       Float_t xPc,yPc,xRa,yRa,thRa,phRa;
@@ -64,17 +76,48 @@ void SimEsd(AliLoader *pHL,AliESDEvent *pEsd)
         trk.SetHMPIDsignal(AliHMPIDRecon::kNotPerformed);                                        //ring reconstruction not yet performed
         continue;                                                           //no intersection at all, go after next track
       }
-//      Printf(" particle analyzed %d with mtid %d is %s hitting chamber %d",i,mtid,pTrack->GetName(),iCh);
+      nTrkHMPID++;
       trk.SetHMPIDcluIdx   (iCh,99999);                                                          //chamber not found, mip not yet considered
       trk.SetHMPIDtrk(xRa,yRa,thRa,phRa);                                                        //store initial infos
       pEsd->AddTrack(&trk);
     }// track loop
     
-    AliHMPIDTracker::Recon(pEsd,pH->CluLst(),pNmean,pQthre);
+    if(!(iEvt%50)) Printf("Number of events processed: %i with tracks %i in HMPID",iEvt,nTrkHMPID);
+    if(!htaCheck) AliHMPIDTracker::Recon(pEsd,pH->CluLst(),pNmean,pQthre);
 // Perform PID
     
+    
     for(Int_t iTrk=0;iTrk<pEsd->GetNumberOfTracks();iTrk++){                                       //ESD tracks loop
+      
       AliESDtrack *pTrk = pEsd->GetTrack(iTrk);                                                    //get reconstructed track    
+      
+      Float_t radX,radY,thetaTrk,phiTrk;
+      pTrk->GetHMPIDtrk(radX,radY,thetaTrk,phiTrk);
+      
+      if(htaCheck) {
+          Int_t iCh = pTrk->GetHMPIDcluIdx();                                                                  //chamber not found, mip not yet considered
+          iCh/=1000000;
+  //      Printf("simulated track theta %f phi %f",thetaTrk*rd,phiTrk*rd);
+        TObjArray *pClus = pH->CluLst();
+
+        if(AliHMPIDTracker::ReconHiddenTrk(pEsd,pClus,pNmean,pQthre)!=0) continue;
+
+        Double_t thetaCerSim = TMath::ACos(pTrack->Energy()/(1.292*pTrack->P()));
+        Printf("-----------------------------------------------------------");
+        Printf(" theta Cerenkov simulated     %f",thetaCerSim);
+        Printf(" theta Cerenkov reconstructed %f",pTrk->GetHMPIDsignal());
+        Float_t thetaFit,phiFit;
+        pTrk->GetHMPIDtrk(radX,radY,thetaFit,phiFit);
+//        Printf("reconstr. track theta %f phi %f",thetaFit*rd,phiFit*rd);
+
+        // fill useful histos
+        hdC->Fill(pTrk->GetHMPIDsignal()-thetaCerSim);
+        hCer->Fill(pTrk->GetHMPIDsignal());
+        htvsp->Fill(pTrk->P(),pTrk->GetHMPIDsignal());
+        hdth->Fill((thetaFit-thetaTrk)*1000);
+        hdph->Fill((phiFit-phiTrk)*1000);
+      }
+      
       AliHMPIDPid pID;
       Double_t prob[5];
       pID.FindPid(pTrk,5,prob);
@@ -105,25 +148,25 @@ void SimEsdHidden(AliLoader *pHL,AliESDEvent *pEsd)
   Printf("----------------------------------------------");
   AliHMPIDTracker::SetFieldMap(gAL->GetAliRun()->Field(),kTRUE);
   AliHMPID *pH=(AliHMPID*)gAL->GetAliRun()->GetDetector("HMPID");
-  Int_t mtid=-1;
   Int_t iNevt=gAL->GetNumberOfEvents();
+  pEsd->SetMagneticField(AliHMPIDTracker::GetBz());
   
   Printf("Number of events to process: %i",iNevt);
   
   for(Int_t iEvt=0;iEvt<iNevt;iEvt++){//events loop
-    if(!(iEvt%50)) Printf("Events processed %i",iEvt);
+    if(!(iEvt%1)) Printf("Events processed %i",iEvt);
     gAL->GetEvent(iEvt);    
     pHL->TreeR()->GetEntry(0);
     AliStack *pStack=gAL->Stack();
     
     for(Int_t i=0;i<pStack->GetNtrack();i++){
       
+      (!pStack->IsPhysicalPrimary(i)) continue;
       TParticle *pTrack=pStack->Particle(i); 
-      mtid=pTrack->GetFirstMother();
       
-      if(mtid>=0) continue; // only primaries
-      
+      if(pTrack->GetPDG()->Charge()==0) continue;
       //find the chamber that intersects HMPID
+      pTrack->Print();
       AliESDtrack trk(pTrack);
       Float_t xPc,yPc,xRa,yRa,thRa,phRa;
       Int_t iCh=AliHMPIDTracker::IntTrkCha(&trk,xPc,yPc,xRa,yRa,thRa,phRa);         //get chamber intersected by this track

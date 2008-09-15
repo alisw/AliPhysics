@@ -14,10 +14,10 @@
 
 
 #include <TTask.h>        //base class
+#include <TH2F.h>         //InitDatabase()
 
 class TClonesArray; //CkovAngle()
 class AliESDtrack;  //CkovAngle()
-class TH2I;         //InitDatabase()
 class AliHMPIDParam;//General pourpose
 
 class AliHMPIDReconHTA : public TTask 
@@ -30,9 +30,9 @@ public :
   void     InitVars         (Int_t n);                                                             //init space for variables
   void     DeleteVars       ()const;                                                               //delete variables
   void     InitDatabase     ();                                                                    //initialization of database
-  TH2I*    DBHTA            ()     {return fgDatabase;}                                            //pointer for HTA database of rings
-  void     FillZeroChan     (TH2I *deconv)const;                                                   //complete the DB
-  Bool_t   CkovHiddenTrk    (AliESDtrack *pTrk,TClonesArray *pCluLst,Double_t nmean,Double_t qthre);//Pattern recognition without trackinf information
+  TH2F*    DBHTA            ()     {return fgDatabase;}                                            //pointer for HTA database of rings
+  void     FillZeroChan     ()const;                                                               //complete the DB
+  Bool_t   CkovHiddenTrk    (AliESDtrack *pTrk,TClonesArray *pClu,Int_t index, Double_t nmean);    //Pattern recognition without trackinf information
   Bool_t   CluPreFilter     (TClonesArray *pClu               );                                   //Pre clustering filter to cut bkg clusters
   Bool_t   DoRecHiddenTrk   (                                 );                                   //Calling to the fitted procedures
   Bool_t   FindShape        (Double_t &thTrkRec,Double_t &phiTrkRec,Double_t &thetaCRec);          //Find shape of the ring
@@ -78,13 +78,13 @@ protected:
   Double_t fCkovSig2;                          //estimated error^2 on ring Cherenkov angle
   
   AliHMPIDParam *fParam;                       //Pointer to AliHMPIDParam
-  static TH2I* fgDatabase;                     //database for ring shapes
+  static TH2F* fgDatabase;                     //database for ring shapes
 //
 private:
   AliHMPIDReconHTA(const AliHMPIDReconHTA& r);              //dummy copy constructor
   AliHMPIDReconHTA &operator=(const AliHMPIDReconHTA& r);   //dummy assignment operator
 //
-  ClassDef(AliHMPIDReconHTA,0)
+  ClassDef(AliHMPIDReconHTA,1)
 };
 
 #endif // #ifdef AliHMPIDReconHTA_cxx

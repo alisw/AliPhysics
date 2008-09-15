@@ -260,20 +260,95 @@ Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmea
   return 0; // error code: 0=no error;
 }//Recon()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Int_t AliHMPIDTracker::ReconHiddenTrk(Int_t iCh,Int_t iHVsec,AliESDtrack *pTrk,TClonesArray *pCluLst,TObjArray *pNmean,TObjArray *pQthre)
+Int_t AliHMPIDTracker::ReconHiddenTrk(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmean, TObjArray *pQthre)
 {
 // Static method to reconstruct Theta Ckov for all valid tracks of a given event.
 // Arguments: pEsd- pointer ESD; pClu- pointer to clusters for all chambers; pNmean - pointer to all function Nmean=f(time), pQthre - pointer to all function Qthre=f(time)
 //   Returns: error code, 0 if no errors
-  AliHMPIDReconHTA reconHTA;                                                                          //instance of reconstruction class, nothing important in ctor
-  Double_t nmean=((TF1*)pNmean->At(3*iCh))->Eval(0);                                            //C6F14 Nmean for this chamber
-  Double_t qthre = 0;
-  if(pQthre->GetEntriesFast()==AliHMPIDParam::kMaxCh+1)                                         //
-    qthre=((TF1*)pQthre->At(iCh))->Eval(0);                                                     //just for backward compatibi
-  else  qthre=((TF1*)pQthre->At(6*iCh+iHVsec))->Eval(0);                                        //
-  if(pCluLst->GetEntriesFast()<4) return 1;                                                     //min 4 clusters (3 + 1 mip) to find a ring! 
-  if(reconHTA.CkovHiddenTrk(pTrk,pCluLst,nmean,qthre)) return 0;                                   //search for track parameters and Cerenkov angle of this track
-  else return 1;                                                                                // error code: 0=no error,1=fit not performed;
+  
+  AliHMPIDReconHTA reconHTA;                                                                     //instance of reconstruction class, nothing important in ctor
+  
+  AliHMPIDParam *pParam = AliHMPIDParam::Instance();                                             //Instance of AliHMPIDParam
+  
+  for(Int_t iTrk=0;iTrk<pEsd->GetNumberOfTracks();iTrk++){                                        //loop on the ESD tracks in the event
+    
+    AliESDtrack *pTrk = pEsd->GetTrack(iTrk);                                                     //here it is simulated or just empty track
+    Int_t ipCh;
+    ipCh = pTrk->GetHMPIDcluIdx();ipCh/=1000000;
+    if(ipCh<0) continue;
+
+    TClonesArray *pMipCluLst=(TClonesArray *)pClus->At(ipCh);                                   //get the list of clusters
+    Int_t nMipClusTot = pMipCluLst->GetEntries();                                               //total number of clusters in the given chamber
+    
+    Double_t qMip=-1;
+    Int_t chMip=-1;    
+    Double_t xMip,yMip;
+    Int_t indMip;
+    Int_t cluMipSiz;
+
+    for (Int_t iClu=0; iClu<nMipClusTot;iClu++) {                                               //clusters loop
+      
+      AliHMPIDCluster *pClu=(AliHMPIDCluster*)pMipCluLst->UncheckedAt(iClu);                    //get the cluster
+      Double_t qClus = pClu->Q();
+      if(qClus>qMip) {
+        qMip  = qClus;
+        chMip = pClu->Ch();
+        xMip = pClu->X();
+        yMip = pClu->Y();
+        indMip = iClu;
+        cluMipSiz = pClu->Size();
+      }
+    }//clus loop
+
+    if(chMip<0) return 1;    
+    
+    Int_t hvsec;
+    Double_t qthre;
+// evaluate qThre
+    if(pQthre->GetEntriesFast()==pParam->kMaxCh+1) {                                              // just for backward compatibility
+      qthre=((TF1*)pQthre->At(chMip))->Eval(pEsd->GetTimeStamp());                                //
+    } else {                                                                                      // in the past just 1 qthre
+      hvsec = pParam->InHVSector(yMip);                                                           //  per chamber
+      if(hvsec>=0) qthre=((TF1*)pQthre->At(6*chMip+hvsec))->Eval(pEsd->GetTimeStamp());           //
+    }
+//
+    if(qMip<qthre) {
+      pTrk->SetHMPIDmip(xMip,yMip,(Int_t)qMip,0);                                                        //store mip info in any case 
+      pTrk->SetHMPIDcluIdx(chMip,indMip+1000*cluMipSiz);                                                          
+      pTrk->SetHMPIDsignal(pParam->kMipQdcCut);
+      return 1;                                                                                   //charge compatible with MIP clusters      
+    }
+      
+    pTrk->SetHMPIDmip(xMip,yMip,(Int_t)qMip,0);                                                   //store mip info in any case 
+    pTrk->SetHMPIDcluIdx(chMip,indMip+1000*cluMipSiz);                                                          
+
+    Double_t yRa = yMip;                                                                        //just an approx...
+    Double_t nmean;
+    //evaluate nMean
+    if(pNmean->GetEntries()==21) {                                                              //for backward compatibility
+      nmean=((TF1*)pNmean->At(3*chMip))->Eval(pEsd->GetTimeStamp());                            //C6F14 Nmean for this chamber
+    } else {
+      Int_t iRad     = pParam->Radiator(yRa);                                                   //evaluate the radiator involved
+      if(iRad < 0) {
+	nmean = -1;
+      } else {
+      Double_t tLow  = ((TF1*)pNmean->At(6*chMip+2*iRad  ))->Eval(pEsd->GetTimeStamp());        //C6F14 low  temp for this chamber
+      Double_t tHigh = ((TF1*)pNmean->At(6*chMip+2*iRad+1))->Eval(pEsd->GetTimeStamp());        //C6F14 high temp for this chamber
+      Double_t tExp  = pParam->FindTemp(tLow,tHigh,yRa);                                        //estimated temp for that chamber at that y
+      nmean = pParam->NIdxRad(AliHMPIDParam::Instance()->GetEPhotMean(),tExp);                  //mean ref idx @ a given temp
+      }
+      if(nmean < 0){                                                                            //track didn' t pass through the radiator
+         pTrk->SetHMPIDsignal(AliHMPIDRecon::kNoRad);                                           //set the appropriate flag
+         return 1;
+      }
+    }
+    //
+//    Printf(" qthre %f nmean %f index %i cham %i",qthre,nmean,indMip,chMip);
+    reconHTA.CkovHiddenTrk(pTrk,(TClonesArray *)pClus->At(ipCh),indMip,nmean);                  //search for track parameters and Cerenkov angle of this track
+  }//iTrk
+
+  return 0; // error code: 0=no error;
+
 }//Recon()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDTracker::FillClusterArray(TObjArray* array) const {

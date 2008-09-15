@@ -24,15 +24,17 @@
 #include "AliHMPIDReconHTA.h"//class header
 #include "AliHMPIDCluster.h" //CkovHiddenTrk()
 #include "AliHMPIDRecon.h"   //FunMinPhot()
+#include <TFile.h>           //Database()
 #include <TMinuit.h>         //FitFree()
 #include <TClonesArray.h>    //CkovHiddenTrk()
 #include <AliESDtrack.h>     //CkovHiddenTrk()
-#include <TH2I.h>            //InitDatabase()
+#include <TH2F.h>            //InitDatabase()
 #include <TGraph.h>          //ShapeModel()
 #include <TSpline.h>         //ShapeModel()
 #include "TStopwatch.h"      //
 
-TH2I* AliHMPIDReconHTA::fgDatabase = 0x0;
+TH2F* AliHMPIDReconHTA::fgDatabase = new TH2F("deconv","database;d1;d2;thC+1000*thTrk",500,0,50,150,0,15);
+
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 AliHMPIDReconHTA::AliHMPIDReconHTA():
@@ -57,7 +59,7 @@ AliHMPIDReconHTA::AliHMPIDReconHTA():
 //hidden algorithm
 //..
   fParam->SetRefIdx(fParam->MeanIdxRad()); // initialization of ref index to a default one
-  if(!fgDatabase) InitDatabase();
+  if(fgDatabase->GetEntries()<1) InitDatabase();
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 AliHMPIDReconHTA::~AliHMPIDReconHTA()
@@ -87,60 +89,61 @@ void AliHMPIDReconHTA::DeleteVars()const
   if(fClCk) delete fClCk;
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Bool_t AliHMPIDReconHTA::CkovHiddenTrk(AliESDtrack *pTrk,TClonesArray *pCluLst,Double_t nmean, Double_t qthre)
+Bool_t AliHMPIDReconHTA::CkovHiddenTrk(AliESDtrack *pTrk,TClonesArray *pCluLst,Int_t index, Double_t nmean)
 {
 // Pattern recognition method without any infos from tracking:HTA (Hidden Track Algorithm)...
 // The method finds in the chmuber the cluster with the highest charge
 // compatibile with a MIP, then the strategy is applied
 // Arguments:  pTrk     - pointer to ESD track
 //             pCluLs   - list of clusters for a given chamber 
-//             nmean    - mean freon ref. index
+//             pNmean   - pointer to ref. index
+//             pQthre   - pointer to qthre
 //   Returns:           - 0=ok,1=not fitted 
   
   AliHMPIDParam *pParam = AliHMPIDParam::Instance(); 
-  pParam->SetRefIdx(nmean);
 
-  if(!CluPreFilter(pCluLst)) {return kFALSE;}
-  
-  Float_t mipX=-1,mipY=-1;Int_t mipId=-1,mipQ=-1;                                                                           
-  Double_t qRef = 0;
+  if(!CluPreFilter(pCluLst)) return kFALSE;
+
   Int_t nCh=0;
   Int_t sizeClu=0;
-  for (Int_t iClu=0;iClu<pCluLst->GetEntriesFast();iClu++){                                   //clusters loop
+  
+  fNClu = pCluLst->GetEntriesFast();
+    
+  for (Int_t iClu=0;iClu<fNClu;iClu++){                                                       //clusters loop
     AliHMPIDCluster *pClu=(AliHMPIDCluster*)pCluLst->UncheckedAt(iClu);                       //get pointer to current cluster    
-    nCh = pClu->Ch();
     fXClu[iClu] = pClu->X();fYClu[iClu] = pClu->Y();                                          //store x,y for fitting procedure
     fClCk[iClu] = kTRUE;                                                                      //all cluster are accepted at this stage to be reconstructed
-    if(pClu->Q()>qthre) fClCk[iClu] = kFALSE;                                                 // not a good photon in any case (multiple MIPs)
-    if(pClu->Q()>qRef){                                                                       //searching the highest charge to select a MIP      
-      qRef = pClu->Q();
-      mipId=iClu; mipX=pClu->X();mipY=pClu->Y();mipQ=(Int_t)pClu->Q();
-      sizeClu=pClu->Size();
-    }                                                                                    
-//    Printf(" n. %d x %f y %f Q %f",iClu,pClu->X(),pClu->Y(),pClu->Q());
-  }//clusters loop
+    
+    if(iClu == index) {
 
-  fNClu = pCluLst->GetEntriesFast();
-  if(qRef>qthre){                                                                     //charge compartible with MIP clusters
-    fIdxMip = mipId;
-    fClCk[mipId] = kFALSE;
-    fMipX = mipX; fMipY=mipY; fMipQ = qRef;
-//    Printf(" mipId %d x %f y %f Q %f",fIdxMip,fMipX,fMipY,fMipQ);
-    if(!DoRecHiddenTrk()) {
-      pTrk->SetHMPIDsignal(pParam->kNoPhotAccept);
-      return kFALSE;
-    }                                                                           //Do track and ring reconstruction,if problems returns 1
-    pTrk->SetHMPIDtrk(fRadX,fRadY,fThTrkFit,fPhTrkFit);                                        //store track intersection info
-    pTrk->SetHMPIDmip(fMipX,fMipY,(Int_t)fMipQ,fNClu);                                         //store mip info 
-    pTrk->SetHMPIDcluIdx(nCh,fIdxMip+1000*sizeClu);                                            //set cham number, index of cluster + cluster size
-    pTrk->SetHMPIDsignal(fCkovFit);                                                            //find best Theta ckov for ring i.e. track
-    pTrk->SetHMPIDchi2(fCkovSig2);                                                             //errors squared
+      fMipX = pClu->X();
+      fMipY = pClu->Y();
+      fMipQ = pClu->Q();
+      sizeClu = pClu->Size();
+      nCh = pClu->Ch();
+      fClCk[index] = kFALSE;
+      fIdxMip = index;
+ //    Printf(" n. %d x %f y %f Q %f",iClu,pClu->X(),pClu->Y(),pClu->Q());
+    }
+  }//clusters loop
+  
+  pParam->SetRefIdx(nmean);
+  
+  if(!DoRecHiddenTrk()) {
+    pTrk->SetHMPIDsignal(pParam->kNoPhotAccept);
+    return kFALSE;
+  }                                                                           //Do track and ring reconstruction,if problems returns 1
+  
+  pTrk->SetHMPIDtrk(fRadX,fRadY,fThTrkFit,fPhTrkFit);                                        //store track intersection info
+  pTrk->SetHMPIDmip(fMipX,fMipY,(Int_t)fMipQ,fNClu);                                         //store mip info 
+  pTrk->SetHMPIDcluIdx(nCh,fIdxMip+1000*sizeClu);                                            //set cham number, index of cluster + cluster size
+  pTrk->SetHMPIDsignal(fCkovFit);                                                            //find best Theta ckov for ring i.e. track
+  pTrk->SetHMPIDchi2(fCkovSig2);                                                             //errors squared
 //    Printf(" n clusters tot %i accepted %i",pCluLst->GetEntriesFast(),fNClu);
 //    Printf("CkovHiddenTrk: thetaC %f th %f ph %f",fCkovFit,fThTrkFit,fPhTrkFit);
-    return kTRUE;
-  }
   
-  return kFALSE;
+  return kTRUE;
+  
 }//CkovHiddenTrk()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Bool_t AliHMPIDReconHTA::DoRecHiddenTrk()
@@ -224,10 +227,17 @@ Bool_t AliHMPIDReconHTA::FindShape(Double_t &thTrkRec,Double_t &phiTrkRec,Double
 
   Bool_t status;
     
-// Sort in phi angle...  
+// Sort in phi angle...
+//  Printf(" mipX %f mipy %f",fMipX,fMipY);
   for(Int_t i=0;i<fNClu;i++) {
+    if(!fClCk[i]) {
+      phiphot[i] = 999.;
+      dist[i] = 999.;
+      continue;
+    }
     phiphot[i] = (TMath::ATan2(fMipY-fYClu[i],fMipX-fXClu[i])+TMath::Pi())*TMath::RadToDeg();
     dist[i]=TMath::Sqrt((fMipX-fXClu[i])*(fMipX-fXClu[i])+(fMipY-fYClu[i])*(fMipY-fYClu[i]));
+//    Printf(" n.%3i  phiphot %f dist %f check %i",i,phiphot[i],dist[i],fClCk[i]);
   }
   
   TMath::Sort(fNClu,phiphot,indphi,kFALSE);
@@ -265,6 +275,7 @@ Bool_t AliHMPIDReconHTA::FindShape(Double_t &thTrkRec,Double_t &phiTrkRec,Double
     if(!fClCk[indphi[i]]) continue;                                                  // Check if a good photon candidate or not
     phiphotP[npeff] = phiphot[indphi[i]];
     distP[npeff]    = dist[indphi[i]];
+//    Printf("n. %2i phi %f dist %f",npeff,phiphotP[npeff],distP[npeff]);
     npeff++;
   }
   
@@ -281,26 +292,26 @@ Bool_t AliHMPIDReconHTA::FindShape(Double_t &thTrkRec,Double_t &phiTrkRec,Double
 //  for(Int_t i=0;i<npeff;i++) {Printf(" n. %d phiphot %f dist %f",i,phiphotP[i],distP[i]);}
   
   Double_t xA,xB;
+  status = kFALSE;
   if(ShapeModel(npeff,phiphotP,distP,xA,xB,phiTrkRec)) {
     
-//    Printf("FindShape: phi start %f",phiTrkRec*TMath::RadToDeg());
+//    Printf("FindShape: phi start %f xA %f yA %f",phiTrkRec*TMath::RadToDeg(),xA,xB);
+    if(xA < 50 && xB < 15) {                     // limits of the Database. See TH2F in InitDatabase()
 
-    Int_t bin = fgDatabase->FindBin(xA,xB);
-    Int_t compact = (Int_t)fgDatabase->GetBinContent(bin);
-    thetaCRec =  (Double_t)(compact%1000);
-    thTrkRec  =  (Double_t)(compact/1000);
+      Int_t bin = fgDatabase->FindBin(xA,xB);
+      if(bin>0) {
+        Int_t compact = (Int_t)fgDatabase->GetBinContent(bin);
+        thetaCRec =  (Double_t)(compact%1000);
+        thTrkRec  =  (Double_t)(compact/1000);
 
-    thTrkRec *= TMath::DegToRad(); 
-    thetaCRec *= TMath::DegToRad();
+        thTrkRec *= TMath::DegToRad(); 
+        thetaCRec *= TMath::DegToRad();
 
-//    Printf("FindShape: xA %f xB %f compact %d thTrk %f thC %f",xA,xB,compact,thTrkRec*TMath::RadToDeg(),thetaCRec*TMath::RadToDeg());
-        
-    status = kTRUE;
-    
-  } else {
-    
-    status = kFALSE;
-    
+    //    Printf("FindShape: xA %f xB %f compact %d thTrk %f thC %f",xA,xB,compact,thTrkRec*TMath::RadToDeg(),thetaCRec*TMath::RadToDeg());
+
+        status = kTRUE;
+      }
+    }
   }
 
   delete [] phiphotP;
@@ -350,8 +361,6 @@ Bool_t AliHMPIDReconHTA::ShapeModel(Int_t np,Double_t *phiphot,Double_t *dist,Do
                              phiphot[locMax+ip[2]],dist[locMax+ip[2]]);
   if(maxXf< phiphot[locMax+ip[0]] || maxXf > phiphot[locMax+ip[2]]) maxXf = maxX;
   
-//  Printf(" phi at mindist %f and found %f",minX,minXf);
-//  Printf(" phi at maxdist %f and found %f",maxX,maxXf);
 //  
   if(TMath::Abs(maxXf-minXf)>30) {
     xA = sphi->Eval(minXf);
@@ -370,6 +379,7 @@ Bool_t AliHMPIDReconHTA::ShapeModel(Int_t np,Double_t *phiphot,Double_t *dist,Do
 //  Printf("ShapeModel: phiStart %f xA %f xB %f",phiStart,xA,xB);
   
   phiStart*=TMath::DegToRad();
+ 
   return kTRUE;
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -510,6 +520,8 @@ void AliHMPIDReconHTA::InitDatabase()
 //        The content is the packed info of track theta and thetaC in degrees
 //                        thetaC+1000*thTrk
 //
+//  TFile *pout = new TFile("./database.root","recreate");
+  
   TStopwatch timer;
   timer.Start();
   
@@ -526,7 +538,7 @@ void AliHMPIDReconHTA::InitDatabase()
   Int_t nstepx = 1000;
   Int_t nstepy = 1000;
 
-  TH2I *deconv = new TH2I("deconv","database;d1;d2;thC+1000*thTrk",500,0,50,150,0,15);
+//  TH2F *fgDatabase = new TH2F("deconv","database;d1;d2;thC+1000*thTrk",500,0,50,150,0,15);
   //
   Double_t xrad = 0;
   Double_t yrad = 0;
@@ -581,31 +593,35 @@ void AliHMPIDReconHTA::InitDatabase()
       Double_t distB   = TMath::Sqrt((x[2]-xmip)*(x[2]-xmip)+(y[2]-ymip)*(y[2]-ymip));
 // compact the infos...      
       Int_t compact = (Int_t)(thetaC*TMath::RadToDeg())+1000*(Int_t)(thTrk*TMath::RadToDeg());
-      Int_t bin = deconv->FindBin(distA,distB);
-      if(deconv->GetBinContent(bin)==0) deconv->Fill(distA,distB,compact);
+      Int_t bin = fgDatabase->FindBin(distA,distB);
+      if(fgDatabase->GetBinContent(bin)==0) fgDatabase->Fill(distA,distB,compact);
     }
   }
 
-  FillZeroChan(deconv);
-  fgDatabase = deconv;
+  FillZeroChan();
+//  fgDatabase = deconv;
 
   timer.Stop();
   Double_t nSecs = timer.CpuTime();  
   AliInfo(Form("database HTA successfully open in %3.1f sec.(CPU). Reconstruction is started.",nSecs));
+  
+//  pout->Write();
+//  pout->Close();
+  
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliHMPIDReconHTA::FillZeroChan(TH2I *deconv)const
+void AliHMPIDReconHTA::FillZeroChan()const
 {
   //If fills eventually channel without entries
   //inthe histo "database" jyst interpolating the neighboring cells
   // Arguments: histogram pointer of the database
   //   Returns: none
   //
-  Int_t nbinx = deconv->GetNbinsX();
-  Int_t nbiny = deconv->GetNbinsY();
+  Int_t nbinx = fgDatabase->GetNbinsX();
+  Int_t nbiny = fgDatabase->GetNbinsY();
   for(Int_t i = 0;i<nbinx;i++) {
     for(Int_t j = 0;j<nbiny;j++) {
-      if(deconv->GetBinContent(i,j) == 0) {
+      if(fgDatabase->GetBinContent(i,j) == 0) {
         Int_t nXmin = i-1; Int_t nXmax=i+1;
         Int_t nYmin = j-1; Int_t nYmax=j+1;
         Int_t nc = 0;
@@ -615,13 +631,13 @@ void AliHMPIDReconHTA::FillZeroChan(TH2I *deconv)const
           if(ix<0||ix>nbinx) continue;
           for(Int_t iy=nYmin;iy<=nYmax;iy++) {
             if(iy<0||iy>nbiny) continue;
-            meanC  +=  (Int_t)deconv->GetBinContent(ix,iy)%1000;
-            meanTrk+=  (Int_t)deconv->GetBinContent(ix,iy)/1000;
+            meanC  +=  (Int_t)fgDatabase->GetBinContent(ix,iy)%1000;
+            meanTrk+=  (Int_t)fgDatabase->GetBinContent(ix,iy)/1000;
             nc++;
           }
           meanC/=nc; meanTrk/=nc;
           Int_t compact = (Int_t)meanC+1000*(Int_t)meanTrk;
-          if(compact>0)deconv->SetCellContent(i,j,compact);
+          if(compact>0)fgDatabase->SetCellContent(i,j,compact);
         }
       }
     }

@@ -32,7 +32,7 @@ public:
   static Int_t       IntTrkCha     (Int_t ch,AliHMPIDtrack *pTrk,Float_t &xPc,Float_t &yPc,Float_t &xRa,Float_t &yRa,Float_t &theta,Float_t &phi);//find track-PC intersection, retuns chamber ID
 
   static Int_t       Recon         (AliESDEvent *pEsd,TObjArray *pCluAll,TObjArray *pNmean=0,TObjArray *pQthre=0);//do actual job, returns status code  
-  static Int_t       ReconHiddenTrk(Int_t iCh,Int_t iHVsec,AliESDtrack *pTrk,TClonesArray *pClus,TObjArray *pNmean, TObjArray *pQthre);//do actual job with Hidden Track Algorithm    
+  static Int_t       ReconHiddenTrk(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmean, TObjArray *pQthre);//do actual job with Hidden Track Algorithm    
   
   
 protected:
