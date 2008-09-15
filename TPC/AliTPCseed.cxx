@@ -1208,3 +1208,121 @@ Float_t  AliTPCseed::CookShape(Int_t type){
   Float_t mean = (meanc>0)? means/meanc:0;
   return mean;
 }
+
+
+
+Int_t  AliTPCseed::RefitTrack(AliTPCseed *seed, AliExternalTrackParam * parin, AliExternalTrackParam * parout){
+  //
+  // Refit the track
+  // return value - number of used clusters
+  // 
+  //
+  const Int_t kMinNcl =10;
+  AliTPCseed *track=new AliTPCseed(*seed);
+  Int_t sector=-1;
+  // reset covariance
+  //
+  Double_t covar[15];
+  for (Int_t i=0;i<15;i++) covar[i]=0;
+  covar[0]=10.*10.;
+  covar[2]=10.*10.;
+  covar[5]=10.*10./(64.*64.);
+  covar[9]=10.*10./(64.*64.);
+  covar[14]=1*1;
+  //
+
+  Float_t xmin=1000, xmax=-10000;
+  Int_t imin=158, imax=0;
+  for (Int_t i=0;i<160;i++) {
+    AliTPCclusterMI *c=track->GetClusterPointer(i);
+    if (!c) continue;
+    if (sector<0) sector = c->GetDetector();
+    if (c->GetX()<xmin) xmin=c->GetX();
+    if (c->GetX()>xmax) xmax=c->GetX();
+    if (i<imin) imin=i;
+    if (i>imax) imax=i;
+  }
+  if(imax-imin<kMinNcl) {
+    delete track;
+    return 0 ;
+  }
+  // Not succes to rotate
+  if (!track->Rotate(TMath::DegToRad()*(sector%18*20.+10.)-track->GetAlpha())) {
+    delete track;
+    return 0;
+  }
+  //
+  //
+  // fit from inner to outer row
+  //
+  AliExternalTrackParam paramIn;
+  AliExternalTrackParam paramOut;
+  Bool_t isOK=kTRUE;
+  //
+  //
+  //
+  for (Int_t i=imin; i<=imax; i++){
+    AliTPCclusterMI *c=track->GetClusterPointer(i);
+    if (!c) continue;
+    //    if (RejectCluster(c,track)) continue;
+    Double_t r[3]={c->GetX(),c->GetY(),c->GetZ()};
+    Double_t cov[3]={0.01,0.,0.01}; //TODO: correct error parametrisation
+    if (!track->PropagateTo(r[0])) {
+      isOK=kFALSE;
+      break;
+    }
+    if ( !((static_cast<AliExternalTrackParam*>(track)->Update(&r[1],cov)))) isOK=kFALSE;
+  }
+  if (!isOK) { delete track; return 0;}
+  track->AddCovariance(covar);
+  //
+  //
+  //
+  for (Int_t i=imax; i>=imin; i--){
+    AliTPCclusterMI *c=track->GetClusterPointer(i);
+    if (!c) continue;
+    //if (RejectCluster(c,track)) continue;
+    Double_t r[3]={c->GetX(),c->GetY(),c->GetZ()};
+    Double_t cov[3]={0.01,0.,0.01}; //TODO: correct error parametrisation
+    if (!track->PropagateTo(r[0])) {
+      isOK=kFALSE;
+      break;
+    }
+    if ( !((static_cast<AliExternalTrackParam*>(track)->Update(&r[1],cov)))) isOK=kFALSE;
+  }
+  if (!isOK) { delete track; return 0;}
+  paramIn = *track;
+  track->AddCovariance(covar);
+  //
+  //
+  for (Int_t i=imin; i<=imax; i++){
+    AliTPCclusterMI *c=track->GetClusterPointer(i);
+    if (!c) continue;
+    //if (RejectCluster(c,track)) continue;
+    Double_t r[3]={c->GetX(),c->GetY(),c->GetZ()};
+    Double_t cov[3]={0.01,0.,0.01}; //TODO: correct error parametrisation
+    if (!track->PropagateTo(r[0])) {
+      isOK=kFALSE;
+      break;
+    }
+    if ( !((static_cast<AliExternalTrackParam*>(track)->Update(&r[1],cov)))) isOK=kFALSE;
+  }
+  if (!isOK) { delete track; return 0;}
+  paramOut=*track;
+
+  //
+  //
+  //
+  if (parin) (*parin)=paramIn;
+  if (parout) (*parout)=paramOut;
+
+}
+
+
+
+Bool_t AliTPCseed::RefitTrack(AliTPCseed* /*seed*/, Bool_t /*out*/){
+  //
+  //
+  //
+  return kFALSE;
+}
