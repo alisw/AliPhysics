@@ -121,6 +121,8 @@ AliESDVertex* AliITSVertexer3D::FindVertexForCurrentEvent(TTree *itsClusterTree)
   if(!fCurrentVertex){
     AliITSVertexerZ vertz(GetNominalPos()[0],GetNominalPos()[1]);
     AliDebug(1,"Call Vertexer Z\n");
+    vertz.SetLowLimit(-fZCutDiamond);
+    vertz.SetHighLimit(fZCutDiamond);
     AliESDVertex* vtxz = vertz.FindVertexForCurrentEvent(itsClusterTree);
     if(vtxz){
       Double_t position[3]={GetNominalPos()[0],GetNominalPos()[1],vtxz->GetZv()};
