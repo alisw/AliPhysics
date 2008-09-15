@@ -38,10 +38,19 @@ using std::endl;
  * either. Backup any reconstructed AliESDs.root files if you want, and then
  * delete all root files in the directory where you will run this macro.
  *
+ * @param dataSource  Indicates where to find the raw data. If this is a path
+ *      then the raw data is expected to be in DDL file format stored in directories
+ *      called raw0, raw1 and so on.
+ *      If a file name is given instead then it is assumed to be a DATE file unless
+ *      it ends in ".root", in which case it is assumed to be rootified raw data.
+ * @param dumpBinary  Indicates if the data should be dumped in raw binary format
+ *      to files with the file name prefix "output-". If set to false then the
+ *      output is rootified and written to a ROOT file "output.root".
+ *
  * @author Artur Szostak <artursz@iafrica.com>
  * @ingroup alihlt_dimuon_macros
  */
-void HLToutputTodHLTRootObjects(bool dumpBinary = false)
+void HLToutputTodHLTRootObjects(const char* dataSource = "./", bool dumpBinary = false)
 {
 	// setup of the HLT system
 	gSystem->Load("libHLTrec.so");
@@ -67,11 +76,12 @@ void HLToutputTodHLTRootObjects(bool dumpBinary = false)
 	
 	// Setup the reconstruction and run.
 	AliReconstruction rec;
-	rec.SetInput("./");
+	rec.SetInput(dataSource);
+	rec.SetLoadAlignData("");
 	rec.SetRunLocalReconstruction("HLT");
 	rec.SetRunTracking("");
 	rec.SetFillESD("");
-	rec.SetRunQA(kFALSE);
+	rec.SetRunQA(":");
 	rec.SetFillTriggerESD(kFALSE);
 	rec.SetRunVertexFinder(kFALSE);
 	rec.SetOption("HLT", "libAliHLTMUON.so loglevel=0x78 chains=dhlt-output-dump");
