@@ -2424,10 +2424,7 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *ss
           }
           fTrackQuality[ntracks] = 1.; // dummy value
           ntracks++;
-          if(ntracks == kMaxTracksStack){
-            AliWarning(Form("Number of seeds reached maximum allowed (%d) in stack.", kMaxTracksStack));
-            return ntracks;
-          }
+          if(ntracks == kMaxTracksStack) return ntracks;
           cseed += 6; 
           continue;
         }
