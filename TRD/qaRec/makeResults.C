@@ -23,8 +23,9 @@ void makeResults(Char_t *dir=".")
     printf("Failed to load %s.\n", libs[ilib]);
     return;
   }
+  gStyle->SetOptStat(0);
 
-  Int_t ndir = 3;
+  Int_t ndir = 1;
 
   // file merger object
   TFileMerger *fFM = 0x0;
@@ -39,14 +40,15 @@ void makeResults(Char_t *dir=".")
 
     ctask = new TClass(fTaskClass[itask]);
     task = (AliTRDrecoTask*)ctask->New();
-    printf("\t%s\n", task->GetTitle());
+    task->SetDebugLevel(2);
+    printf("\t%s [%s]\n", task->GetTitle(), task->GetName());
 
     fFM = new TFileMerger(kTRUE);
     fFM->OutputFile(Form("merge/TRD.Task%s.root",  task->GetName()));
     
     Int_t idir = 0;
     while(idir<ndir){
-      fFM->AddFile(Form("dir%d/TRD.Task%s.root", idir,  task->GetName()));
+      fFM->AddFile(Form("./TRD.Task%s.root",  task->GetName()));
       idir++;
     }
     fFM->Merge();
@@ -58,7 +60,6 @@ void makeResults(Char_t *dir=".")
       delete ctask;
       continue;
     } 
-    //printf("NRefs[%d]\n", task->GetNRefFigures());
     for(Int_t ipic=0; ipic<task->GetNRefFigures(); ipic++){
       Int_t ifirst, ilast;
       task->GetRefFigure(ipic, ifirst, ilast);
@@ -77,11 +78,11 @@ void makeResults(Char_t *dir=".")
       }
 
       for(Int_t ig=ifirst+1; ig<ilast; ig++){
-        if(!(o = fContainer->At(ifirst))) continue;
-        if(h){
+        if(!(o = fContainer->At(ig))) continue;
+        if(o->InheritsFrom("TH1")){
           h = dynamic_cast<TH1*>(o);
           h->Draw("plsame");
-        } else if(g){
+        } else if(o->InheritsFrom("TGraph")){
           g = dynamic_cast<TGraph*>(o);
           g->Draw("pl");
         }

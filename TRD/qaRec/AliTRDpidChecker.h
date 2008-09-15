@@ -47,12 +47,14 @@ public:
   
   void    CreateOutputObjects();
   void    Exec(Option_t *option);
+  void    GetRefFigure(Int_t ifig, Int_t &first, Int_t &last);  
   Bool_t  PostProcess();
   void    Terminate(Option_t *);
 
+
 private:
-  AliTRDpidChecker(const AliTRDpidChecker&); // not implemented
-  AliTRDpidChecker& operator=(const AliTRDpidChecker&); // not implemented
+  AliTRDpidChecker(const AliTRDpidChecker&);               // not implemented
+  AliTRDpidChecker& operator=(const AliTRDpidChecker&);    // not implemented
 
   Double_t GetPionEfficiency(Int_t Index1, Int_t Index2);  // calculates the pion efficiency
   Double_t GetError(Int_t Index1, Int_t Index2);           // calculates the error

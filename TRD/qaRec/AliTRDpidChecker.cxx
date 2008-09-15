@@ -71,6 +71,7 @@ void AliTRDpidChecker::CreateOutputObjects()
   for(Int_t iPart = 0; iPart < AliPID::kSPECIES; iPart++){
     for(Int_t iMom = 0; iMom < AliTRDCalPID::kNMom; iMom++){
       fContainer->AddAt(new TH1F(Form("PID%d_%d_LQ",iPart,iMom), Form("PID distribution for %d_%d", iPart, iMom), kBins, 0.-epsilon, 1.+epsilon), kLQlikelihood + iPart*AliTRDCalPID::kNMom + iMom);
+      if(fDebugLevel>=4) Printf("LQ Particle[%d] Momentum[%d] : [%d]", iPart, iMom, kLQlikelihood + iPart*AliTRDCalPID::kNMom + iMom);
     }
   }
 
@@ -78,6 +79,7 @@ void AliTRDpidChecker::CreateOutputObjects()
   for(Int_t iPart = 0; iPart < AliPID::kSPECIES; iPart++){
     for(Int_t iMom = 0; iMom < AliTRDCalPID::kNMom; iMom++){
       fContainer->AddAt(new TH1F(Form("PID%d_%d_NN",iPart,iMom), Form("PID distribution for %d_%d", iPart, iMom), kBins, 0.-epsilon, 1.+epsilon), kNNlikelihood + iPart*AliTRDCalPID::kNMom + iMom);
+      if(fDebugLevel>=4) Printf("NN Particle[%d] Momentum[%d] : [%d]", iPart, iMom, kNNlikelihood + iPart*AliTRDCalPID::kNMom + iMom);
     }
   }
 
@@ -99,11 +101,34 @@ void AliTRDpidChecker::CreateOutputObjects()
   fContainer->AddAt(new TH1F("hMom", "momentum distribution", 100, 0., 12.),kMomentum);
   fContainer->AddAt(new TH1F("hMomBin", "momentum distribution in momentum bins", AliTRDCalPID::kNMom, 0.5, 11.5),kMomentumBin);
 
-  // frame and TGraph of the pion efficiencies
-  fContainer -> AddAt(new TGraph(AliTRDCalPID::kNMom),kGraphLQ);
-  fContainer -> AddAt(new TGraphErrors(AliTRDCalPID::kNMom),kGraphLQerr);
-  fContainer -> AddAt(new TGraph(AliTRDCalPID::kNMom),kGraphNN);
-  fContainer -> AddAt(new TGraphErrors(AliTRDCalPID::kNMom),kGraphNNerr);
+
+  // TGraph of the pion efficiencies
+
+  TGraph *gEffisLQ = new TGraph(AliTRDCalPID::kNMom);
+  gEffisLQ -> SetLineColor(4);
+  gEffisLQ -> SetMarkerColor(4);
+  gEffisLQ -> SetMarkerStyle(29);
+
+  TGraphErrors *gEffisErrLQ = new TGraphErrors(AliTRDCalPID::kNMom);
+  gEffisErrLQ -> SetLineColor(4);
+  gEffisErrLQ -> SetMarkerColor(4);
+  gEffisErrLQ -> SetMarkerStyle(29);
+
+  TGraph *gEffisNN = new TGraph(AliTRDCalPID::kNMom);
+  gEffisNN -> SetLineColor(2);
+  gEffisNN -> SetMarkerColor(2);
+  gEffisNN -> SetMarkerStyle(29);
+
+  TGraphErrors *gEffisErrNN = new TGraphErrors(AliTRDCalPID::kNMom);
+  gEffisErrNN -> SetLineColor(2);
+  gEffisErrNN -> SetMarkerColor(2);
+  gEffisErrNN -> SetMarkerStyle(29);
+
+
+  fContainer -> AddAt(gEffisLQ,kGraphLQ);
+  fContainer -> AddAt(gEffisErrLQ,kGraphLQerr);
+  fContainer -> AddAt(gEffisNN,kGraphNN);
+  fContainer -> AddAt(gEffisErrNN,kGraphNNerr);  
 }
 
 //________________________________________________________________________
@@ -131,7 +156,7 @@ void AliTRDpidChecker::Exec(Option_t *)
       hPH[iPart][iMom]    = (TProfile*)fContainer->At(kPH + iPart*AliTRDCalPID::kNMom+iMom);
     }
   }
-  
+	
   TH1F *hMom    = (TH1F*)fContainer->At(kMomentum);	
   TH1F *hMomBin = (TH1F*)fContainer->At(kMomentumBin);	
   
@@ -165,7 +190,7 @@ void AliTRDpidChecker::Exec(Option_t *)
 
     // use only tracks that hit 6 chambers
     if(!(TRDtrack->GetNumberOfTracklets() == AliTRDCalPID::kNPlane)) continue;
-    
+     
     ref = track->GetTrackRef(0);
     esd = track->GetOuterParam();
     mom = ref ? ref->P(): esd->P();
@@ -202,15 +227,19 @@ void AliTRDpidChecker::Exec(Option_t *)
       fReconstructor -> SetOption("nn");
       TRDtrack -> CookPID();
       if(TRDtrack -> GetPID(0) > TRDtrack -> GetPID(1) + TRDtrack -> GetPID(2)  + TRDtrack -> GetPID(3) + TRDtrack -> GetPID(4)){
-        track -> SetPDG(kElectron);
-      } else if(TRDtrack -> GetPID(4) > TRDtrack -> GetPID(2)  && TRDtrack -> GetPID(4) > TRDtrack -> GetPID(3)  && TRDtrack -> GetPID(4) > TRDtrack -> GetPID(1)){
-        track -> SetPDG(kProton);
-      } else if(TRDtrack -> GetPID(3) > TRDtrack -> GetPID(1)  && TRDtrack -> GetPID(3) > TRDtrack -> GetPID(2)){
-        track -> SetPDG(kKPlus);
-      } else if(TRDtrack -> GetPID(1) > TRDtrack -> GetPID(2)){
-        track -> SetPDG(kMuonPlus);
-      } else{
-        track -> SetPDG(kPiPlus);
+	track -> SetPDG(kElectron);
+      }
+      else if(TRDtrack -> GetPID(4) > TRDtrack -> GetPID(2)  && TRDtrack -> GetPID(4) > TRDtrack -> GetPID(3)  && TRDtrack -> GetPID(4) > TRDtrack -> GetPID(1)){
+	track -> SetPDG(kProton);
+      }
+      else if(TRDtrack -> GetPID(3) > TRDtrack -> GetPID(1)  && TRDtrack -> GetPID(3) > TRDtrack -> GetPID(2)){
+	track -> SetPDG(kKPlus);
+      }
+      else if(TRDtrack -> GetPID(1) > TRDtrack -> GetPID(2)){
+	track -> SetPDG(kMuonPlus);
+      }
+      else{
+	track -> SetPDG(kPiPlus);
       }
     }
 
@@ -218,6 +247,10 @@ void AliTRDpidChecker::Exec(Option_t *)
     // calculate the probabilities for electron probability using 2-dim LQ, the deposited charge per chamber and the pulse height spectra and fill histograms
     fReconstructor -> SetOption("!nn");
     TRDtrack -> CookPID();
+
+    if(fDebugLevel>=4) Printf("PIDmethod[%d] Slices[%d] PDG[%d] LQLike[%f]", fReconstructor->GetPIDMethod(), fReconstructor->GetNdEdxSlices(), track->GetPDG(), TRDtrack -> GetPID(0));
+
+
     Float_t SumdEdx[AliTRDCalPID::kNPlane];
     for(Int_t iChamb = 0; iChamb < AliTRDCalPID::kNPlane; iChamb++){
       TRDtracklet[iChamb] = TRDtrack -> GetTracklet(iChamb);
@@ -232,11 +265,11 @@ void AliTRDpidChecker::Exec(Option_t *)
       hPIDLQ[AliPID::kElectron][iMomBin] -> Fill(TRDtrack -> GetPID(0));
       for(Int_t iChamb = 0; iChamb < AliTRDCalPID::kNPlane; iChamb++){
         hdEdx[AliPID::kElectron][iMomBin] -> Fill(SumdEdx[iChamb]);
-        for(Int_t iClus = 0; iClus <  AliTRDtrackerV1::GetNTimeBins(); iClus++){
-          if(!(TRDcluster = (AliTRDcluster*)TRDtracklet[iChamb] -> GetClusters(iClus))) continue;
-
-          hPH[AliPID::kElectron][iMomBin] -> Fill(TRDcluster -> GetLocalTimeBin(), TRDtracklet[iChamb] -> GetdQdl(iClus));
-        }
+	for(Int_t iClus = 0; iClus < AliTRDtrackerV1::GetNTimeBins(); iClus++){
+	  if(!(TRDcluster = (AliTRDcluster*)TRDtracklet[iChamb] -> GetClusters(iClus)))
+	    continue;
+	  hPH[AliPID::kElectron][iMomBin] -> Fill(TRDcluster -> GetLocalTimeBin(), TRDtracklet[iChamb] -> GetdQdl(iClus));
+	}
       }
       break;
     case kMuonPlus:
@@ -244,11 +277,11 @@ void AliTRDpidChecker::Exec(Option_t *)
       hPIDLQ[AliPID::kMuon][iMomBin] -> Fill(TRDtrack -> GetPID(0));
       for(Int_t iChamb = 0; iChamb < AliTRDCalPID::kNPlane; iChamb++){
         hdEdx[AliPID::kMuon][iMomBin] -> Fill(SumdEdx[iChamb]);
-        for(Int_t iClus = 0; iClus < AliTRDtrackerV1::GetNTimeBins(); iClus++){
-          if(!(TRDcluster = (AliTRDcluster*)TRDtracklet[iChamb] -> GetClusters(iClus)))continue;
-
-          hPH[AliPID::kMuon][iMomBin] -> Fill(TRDcluster -> GetLocalTimeBin(), TRDtracklet[iChamb] -> GetdQdl(iClus));
-        }
+	for(Int_t iClus = 0; iClus < AliTRDtrackerV1::GetNTimeBins(); iClus++){
+	  if(!(TRDcluster = (AliTRDcluster*)TRDtracklet[iChamb] -> GetClusters(iClus)))
+	    continue;
+	  hPH[AliPID::kMuon][iMomBin] -> Fill(TRDcluster -> GetLocalTimeBin(), TRDtracklet[iChamb] -> GetdQdl(iClus));
+	}
       }
       break;
     case kPiPlus:
@@ -256,11 +289,11 @@ void AliTRDpidChecker::Exec(Option_t *)
       hPIDLQ[AliPID::kPion][iMomBin] -> Fill(TRDtrack -> GetPID(0));
       for(Int_t iChamb = 0; iChamb < AliTRDCalPID::kNPlane; iChamb++){
         hdEdx[AliPID::kPion][iMomBin] -> Fill(SumdEdx[iChamb]);
-        for(Int_t iClus = 0; iClus < AliTRDtrackerV1::GetNTimeBins(); iClus++){
-          if(!(TRDcluster = (AliTRDcluster*)TRDtracklet[iChamb] -> GetClusters(iClus))) continue;
-
-          hPH[AliPID::kPion][iMomBin] -> Fill(TRDcluster -> GetLocalTimeBin(), TRDtracklet[iChamb] -> GetdQdl(iClus));
-        }
+	for(Int_t iClus = 0; iClus < AliTRDtrackerV1::GetNTimeBins(); iClus++){
+	  if(!(TRDcluster = (AliTRDcluster*)TRDtracklet[iChamb] -> GetClusters(iClus)))
+	    continue;
+	  hPH[AliPID::kPion][iMomBin] -> Fill(TRDcluster -> GetLocalTimeBin(), TRDtracklet[iChamb] -> GetdQdl(iClus));
+	}
       }
       break;
     case kKPlus:
@@ -268,10 +301,11 @@ void AliTRDpidChecker::Exec(Option_t *)
       hPIDLQ[AliPID::kKaon][iMomBin] -> Fill(TRDtrack -> GetPID(0));
       for(Int_t iChamb = 0; iChamb < AliTRDCalPID::kNPlane; iChamb++){
         hdEdx[AliPID::kKaon][iMomBin] -> Fill(SumdEdx[iChamb]);
-        for(Int_t iClus = 0; iClus < AliTRDtrackerV1::GetNTimeBins(); iClus++){
-          if(!(TRDcluster = (AliTRDcluster*)TRDtracklet[iChamb] -> GetClusters(iClus))) continue;
-          hPH[AliPID::kKaon][iMomBin] -> Fill(TRDcluster -> GetLocalTimeBin(), TRDtracklet[iChamb] -> GetdQdl(iClus));
-        }
+	for(Int_t iClus = 0; iClus < AliTRDtrackerV1::GetNTimeBins(); iClus++){
+	  if(!(TRDcluster = (AliTRDcluster*)TRDtracklet[iChamb] -> GetClusters(iClus)))
+	    continue;
+	  hPH[AliPID::kKaon][iMomBin] -> Fill(TRDcluster -> GetLocalTimeBin(), TRDtracklet[iChamb] -> GetdQdl(iClus));
+	}
       }
       break;
     case kProton:
@@ -279,11 +313,11 @@ void AliTRDpidChecker::Exec(Option_t *)
       hPIDLQ[AliPID::kProton][iMomBin] -> Fill(TRDtrack -> GetPID(0));
       for(Int_t iChamb = 0; iChamb < AliTRDCalPID::kNPlane; iChamb++){
         hdEdx[AliPID::kProton][iMomBin] -> Fill(SumdEdx[iChamb]);
-        for(Int_t iClus = 0; iClus < AliTRDtrackerV1::GetNTimeBins(); iClus++){
-          if(!(TRDcluster = (AliTRDcluster*)TRDtracklet[iChamb] -> GetClusters(iClus))) continue;
-
-          hPH[AliPID::kProton][iMomBin] -> Fill(TRDcluster -> GetLocalTimeBin(), TRDtracklet[iChamb] -> GetdQdl(iClus));
-        }
+	for(Int_t iClus = 0; iClus < AliTRDtrackerV1::GetNTimeBins(); iClus++){
+	  if(!(TRDcluster = (AliTRDcluster*)TRDtracklet[iChamb] -> GetClusters(iClus)))
+	    continue;
+	  hPH[AliPID::kProton][iMomBin] -> Fill(TRDcluster -> GetLocalTimeBin(), TRDtracklet[iChamb] -> GetdQdl(iClus));
+	}
       }
       break;
     }
@@ -292,6 +326,11 @@ void AliTRDpidChecker::Exec(Option_t *)
     // calculate the probabilities and fill histograms for electrons using NN
     fReconstructor -> SetOption("nn");
     TRDtrack->CookPID();
+
+
+    if(fDebugLevel>=4) Printf("PIDmethod[%d] Slices[%d] PDG[%d] NNLike[%f]", fReconstructor->GetPIDMethod(), fReconstructor->GetNdEdxSlices(), track->GetPDG(), TRDtrack -> GetPID(0));
+
+
     switch(track->GetPDG()){
     case kElectron:
     case kPositron:
@@ -318,6 +357,23 @@ void AliTRDpidChecker::Exec(Option_t *)
 
   PostData(0, fContainer);
 }
+
+//________________________________________________________
+void AliTRDpidChecker::GetRefFigure(Int_t ifig, Int_t &first, Int_t &last)
+{
+  switch(ifig){
+  case 0:
+    first = (Int_t)kGraphStart+1; last = first+1;
+    break;
+  case 1:
+    first = (Int_t)kGraphStart+3; last = first+1;
+    break;
+  default:
+    first = (Int_t)kGraphStart; last = first;
+    break;
+  }
+}
+
 
 //________________________________________________________________________
 Bool_t AliTRDpidChecker::PostProcess()
@@ -389,6 +445,7 @@ Bool_t AliTRDpidChecker::PostProcess()
   gEffisNN -> SetNameTitle("gEffisNN", "Efficiencies of the NN method");
   gEffisErrNN -> SetNameTitle("gEffisNNErr", "Efficiencies and Errors of the NN method");
 
+  fNRefFigures = 2;
   return kTRUE; // testing protection
 }
 
