@@ -1,0 +1,93 @@
+#!/bin/bash
+#################################################################
+# This script sets up and runs the online display.
+#
+# Data gets put in a dir named after the run number in the
+# $DATADIRBASE dir (default in ~/data)
+# Never overwrite existing data, make a new directory if necessary
+# and give it a unique (sequential) number
+#
+# it is possible to override the default rec.C by putting a symlink
+# rec.C in homedir.
+# 
+# origin: Mikolaj Krzewicki, Nikhef, Mikolaj.Krzewicki@cern.ch
+#################################################################
+
+if [ $# -ne 2 ]
+then
+  echo ""
+  echo "  Usage: `basename $0` RunNumber GDCnumber"
+  echo ""
+  exit 999
+fi
+
+DATADIRBASE="/local/home/daq/data/current"
+RECMACRO="$ALICE_ROOT/test/cosmic/rec.C"
+PROMPTOFFLINEMACRO="/local/home/daq/alisoft/macros/RunPromptOffline.C"
+
+#override the default rec.C if ~/rec.C exists and is symlink
+if [ -h $HOME/rec.C ]
+then
+  echo ""
+  echo "~/rec.C will override the default rec.C"
+  read -n 1 -p "Do you want to use the new one? [Y/n]" ans
+  if [[ $ans == "Y" || $ans == "y" || $ans == "" ]]
+  then
+    RECMACRO="$HOME/rec.C"
+    echo ""
+    echo "OK, using $RECMACRO"
+    echo ""
+  else
+    echo ""
+    echo "OK, using $RECMACRO"
+    echo ""
+  fi
+fi
+
+# data gets put in a dir named after the run number
+DATADIR="${DATADIRBASE}/${1}_OnlineDisplay"
+
+# never overwrite existing data, make a new directory if necessary
+# and give it a unique (sequential) number
+BIGGESTNUMBER=0
+DIRNUMBER=0
+if [ -d ${DATADIR} ]
+then
+  for x in ${DATADIR}*;
+  do
+    DIRNUMBER=`echo ${x} | sed -e s%${DATADIR}_*%%`
+    if [[ ${DIRNUMBER} == "" ]]
+    then
+      DIRNUMBER="0"
+    fi
+    if [[ ${DIRNUMBER} -ge ${BIGGESTNUMBER} ]]
+    then
+      BIGGESTNUMBER=$((DIRNUMBER+1))
+    fi
+  done
+  DATADIR=${DATADIR}_${BIGGESTNUMBER}
+fi
+
+#Prepare ang go to the dir
+mkdir ${DATADIR}
+cp ${RECMACRO} ${DATADIR}
+cd ${DATADIR}
+
+xterm -T "Reconstruction run: ${1} GDC: ${2}" -e "cd $DATADIR;aliroot ${PROMPTOFFLINEMACRO}\(${1},${2}\)"&
+
+#wait some time for data to appear
+waitcount=0
+runalieve=1
+while [ ! -f AliESDs.root ]; do
+  waitcount=$((waitcount+1))
+  if [[ $waitcount -ge 20000 ]]; then
+    runalieve=0
+    break
+  fi
+  echo "reconstruction produced no data yet"
+  sleep 2
+done
+
+if [[ $runalieve -eq 1 ]]; then
+  alieve anyscan_init.C > display.log
+fi
