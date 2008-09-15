@@ -1,8 +1,6 @@
 #ifndef ALIITSMEANVERTEXER_H
 #define ALIITSMEANVERTEXER_H
 
-#include <TString.h>
-
 ///////////////////////////////////////////////////////////////////////
 //                                                                   //
 // Class to compute vertex position using SPD local reconstruction   //
@@ -12,12 +10,14 @@
 
 /* $Id$ */
 
-class TObject;
+#include <TObject.h>
+
 class TH1F;
 class TH2F;
 class AliRawReader;
 class AliMultiplicity;
 class AliESDVertex;
+class AliITSDetTypeRec;
 
 class AliITSMeanVertexer : public TObject {
 
@@ -33,6 +33,8 @@ class AliITSMeanVertexer : public TObject {
     Bool_t Reconstruct(AliRawReader *rawReader, Bool_t mode = kTRUE);
     void   WriteVertices(const char *filename);
 
+    const TH2F*GetVertexXY() const { return fVertexXY; }
+    const TH1F*GetVertexZ()  const { return fVertexZ;  }
  
  private:
     // copy constructor (NO copy allowed)
@@ -59,7 +61,7 @@ class AliITSMeanVertexer : public TObject {
     Int_t fFilterOnContributors; //! Numb. of contrib must be > fFilter...
     Int_t fFilterOnTracklets; //! Numb. of tracklets must be > fFilterOnTr...
 
-  ClassDef(AliITSMeanVertexer,0);
+    ClassDef(AliITSMeanVertexer,0)
 };
 
 #endif

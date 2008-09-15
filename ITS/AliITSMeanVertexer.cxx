@@ -81,7 +81,7 @@ Bool_t AliITSMeanVertexer::Init() {
   if (!geom) return kFALSE;
   printf("Geometry name: %s \n",(initgeom.GetGeometryName()).Data());
 
-  AliITSDetTypeRec *fDetTypeRec = new AliITSDetTypeRec();
+  fDetTypeRec = new AliITSDetTypeRec();
   fDetTypeRec->SetITSgeom(geom);
   fDetTypeRec->SetDefaults();
   fDetTypeRec->SetDefaultClusterFindersV2(kTRUE);
@@ -123,7 +123,7 @@ Bool_t AliITSMeanVertexer::Reconstruct(AliRawReader *rawReader, Bool_t mode){
   else {
   // Run standard vertexer3d
     AliITSVertexer3D *vertexer2 = new AliITSVertexer3D();
-    AliESDVertex *vtx = vertexer2->FindVertexForCurrentEvent(clustersTree);
+    vtx = vertexer2->FindVertexForCurrentEvent(clustersTree);
     AliMultiplicity *mult = vertexer2->GetMultiplicity();
     delete vertexer2;
     if(Filter(vtx,mult)) vtxOK = kTRUE;

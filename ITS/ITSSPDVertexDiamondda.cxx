@@ -27,9 +27,12 @@ extern "C" {
 
 #include <TPluginManager.h>
 #include <TROOT.h>
+#include <TH1.h>
+#include <TH2.h>
 
 #include "AliRawReaderDate.h"
 #include "AliCDBManager.h"
+#include "AliITSMeanVertexer.h"
 
 int main(int argc, char **argv) {
 
@@ -161,8 +164,8 @@ int main(int argc, char **argv) {
 
 #ifdef ALI_AMORE
   // send the histos to AMORE pool
-  printf("AMORE send status: %d",vtxAmore.Send(mv->GetVertexXY()->GetName(),mv->GetVertexXY()));
-  printf("AMORE send status: %d",vtxAmore.Send(mv->GetVertexZ()->GetName(),mv->GetVertexZ()));
+  printf("AMORE send status: %d\n",vtxAmore.Send(mv->GetVertexXY()->GetName(),mv->GetVertexXY()));
+  printf("AMORE send status: %d\n",vtxAmore.Send(mv->GetVertexZ()->GetName(),mv->GetVertexZ()));
 #endif
 
   delete mv;
