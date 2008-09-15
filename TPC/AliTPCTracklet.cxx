@@ -182,6 +182,9 @@ AliTPCTracklet::~AliTPCTracklet() {
   delete fPrimary;
 }
 
+
+
+/*
 void AliTPCTracklet::FitKalman(const AliTPCseed *track,Int_t sector) {
   //
   // Fit using Kalman filter
@@ -192,18 +195,29 @@ void AliTPCTracklet::FitKalman(const AliTPCseed *track,Int_t sector) {
     return;
   }
   // fit from inner to outer row
+  Double_t covar[15];
+  for (Int_t i=0;i<15;i++) covar[i]=0;
+  covar[0]=10.*10.;
+  covar[2]=10.*10.;
+  covar[5]=10.*10./(64.*64.);
+  covar[9]=10.*10./(64.*64.);
+  covar[14]=1*1;
+
+  //
   AliTPCseed *outerSeed=new AliTPCseed(*t);
   Int_t n=0;
   for (Int_t i=0;i<160;++i) {
+    
     AliTPCclusterMI *c=t->GetClusterPointer(i);
     if (c && RejectCluster(c,outerSeed)) continue;
     if (c&&c->GetDetector()==sector) {
       if (n==1)	{
 	outerSeed->ResetCovariance(100.);
+	outerSeed->AddCovariance(covar);
       }
       ++n;
       Double_t r[3]={c->GetX(),c->GetY(),c->GetZ()};
-      Double_t cov[3]={0.1,0.,0.1}; //TODO: correct error parametrisation
+      Double_t cov[3]={0.01,0.,0.01}; //TODO: correct error parametrisation
       if (!outerSeed->PropagateTo(r[0]) ||
 	  !static_cast<AliExternalTrackParam*>(outerSeed)->Update(&r[1],cov)) {
 	delete outerSeed;
@@ -214,9 +228,13 @@ void AliTPCTracklet::FitKalman(const AliTPCseed *track,Int_t sector) {
   }
   if (outerSeed)
     fOuter=new AliExternalTrackParam(*outerSeed);
-  delete outerSeed;
   // fit from outer to inner rows
-  AliTPCseed *innerSeed=new AliTPCseed(*t);
+  //  AliTPCseed *innerSeed=new AliTPCseed(*t);
+  AliTPCseed *innerSeed=0;
+  if (fOuter) innerSeed=new AliTPCseed(*outerSeed);
+  if (!innerSeed) innerSeed=new AliTPCseed(*t);
+  delete outerSeed;
+
   n=0;
   for (Int_t i=159;i>=0;--i) {
     AliTPCclusterMI *c=t->GetClusterPointer(i);
@@ -224,10 +242,11 @@ void AliTPCTracklet::FitKalman(const AliTPCseed *track,Int_t sector) {
     if (c&&c->GetDetector()==sector) {
       if (n==1)	{
 	innerSeed->ResetCovariance(100.);
+	innerSeed->AddCovariance(covar);
       }
       ++n;
       Double_t r[3]={c->GetX(),c->GetY(),c->GetZ()};
-      Double_t cov[3]={0.1,0.,0.1};
+      Double_t cov[3]={0.01,0.,0.01};
       if (!innerSeed->PropagateTo(r[0]) ||
 	  !static_cast<AliExternalTrackParam*>(innerSeed)->Update(&r[1],cov)) {
 	delete innerSeed;
@@ -257,6 +276,128 @@ void AliTPCTracklet::FitKalman(const AliTPCseed *track,Int_t sector) {
 
   delete t;
 }
+*/
+
+
+void AliTPCTracklet::FitKalman(const AliTPCseed *seed,Int_t sector) {
+  //
+  // Fit using Kalman filter
+  //
+  AliTPCseed *track=new AliTPCseed(*seed);
+  if (!track->Rotate(TMath::DegToRad()*(sector%18*20.+10.)-track->GetAlpha())) {
+    delete track;
+    return;
+  }
+  // fit from inner to outer row
+  Double_t covar[15];
+  for (Int_t i=0;i<15;i++) covar[i]=0;
+  covar[0]=10.*10.;
+  covar[2]=10.*10.;
+  covar[5]=10.*10./(64.*64.);
+  covar[9]=10.*10./(64.*64.);
+  covar[14]=1*1;
+  Float_t xmin=1000, xmax=-10000;
+  Int_t imin=158, imax=0;
+  for (Int_t i=0;i<160;i++) {
+    AliTPCclusterMI *c=track->GetClusterPointer(i);
+    if (!c) continue;
+    if (c->GetDetector()!=sector)  continue;
+    if (c->GetX()<xmin) xmin=c->GetX();
+    if (c->GetX()>xmax) xmax=c->GetX();
+    if (i<imin) imin=i;
+    if (i>imax) imax=i;
+  }
+  if(imax-imin<10) {
+    delete track;
+    return;
+  }
+
+  for (Float_t x=track->GetX(); x<xmin; x++) track->PropagateTo(x);
+  track->AddCovariance(covar);
+  //
+  AliExternalTrackParam paramIn;
+  AliExternalTrackParam paramOut;
+  Bool_t isOK=kTRUE;
+  //
+  //
+  //
+  for (Int_t i=imin; i<=imax; i++){
+    AliTPCclusterMI *c=track->GetClusterPointer(i);
+    if (!c) continue;
+    if (RejectCluster(c,track)) continue;
+    Double_t r[3]={c->GetX(),c->GetY(),c->GetZ()};
+    Double_t cov[3]={0.01,0.,0.01}; //TODO: correct error parametrisation
+    if (!track->PropagateTo(r[0])) {
+      isOK=kFALSE;
+      break;
+    }
+    if ( !((static_cast<AliExternalTrackParam*>(track)->Update(&r[1],cov)))) isOK=kFALSE;
+  }
+  if (!isOK) { delete track; return;}
+  track->AddCovariance(covar);
+  //
+  //
+  //
+  for (Int_t i=imax; i>=imin; i--){
+    AliTPCclusterMI *c=track->GetClusterPointer(i);
+    if (!c) continue;
+    if (RejectCluster(c,track)) continue;
+    Double_t r[3]={c->GetX(),c->GetY(),c->GetZ()};
+    Double_t cov[3]={0.01,0.,0.01}; //TODO: correct error parametrisation
+    if (!track->PropagateTo(r[0])) {
+      isOK=kFALSE;
+      break;
+    }
+    if ( !((static_cast<AliExternalTrackParam*>(track)->Update(&r[1],cov)))) isOK=kFALSE;
+  }
+  if (!isOK) { delete track; return;}
+  paramIn = *track;
+  track->AddCovariance(covar);
+  //
+  //
+  for (Int_t i=imin; i<=imax; i++){
+    AliTPCclusterMI *c=track->GetClusterPointer(i);
+    if (!c) continue;
+    if (RejectCluster(c,track)) continue;
+    Double_t r[3]={c->GetX(),c->GetY(),c->GetZ()};
+    Double_t cov[3]={0.01,0.,0.01}; //TODO: correct error parametrisation
+    if (!track->PropagateTo(r[0])) {
+      isOK=kFALSE;
+      break;
+    }
+    if ( !((static_cast<AliExternalTrackParam*>(track)->Update(&r[1],cov)))) isOK=kFALSE;
+  }
+  if (!isOK) { delete track; return;}
+  paramOut=*track;
+  //
+  //
+  //
+  fOuter=new AliExternalTrackParam(paramOut);
+  fInner=new AliExternalTrackParam(paramIn);
+  //
+
+
+ //  // propagate to the primary vertex
+//   if (fInner) {
+//     AliExternalTrackParam  *param= new AliExternalTrackParam(*fInner);
+//     Double_t pos[]={0.,0.,0.};
+//     Double_t sigma[]={.1,.1,.1}; //TODO: is this correct?
+//     AliESDVertex vertex(pos,sigma);
+//     if (param->PropagateToVertex(&vertex))
+//       fPrimary=new AliExternalTrackParam(*param);
+//     delete param;
+//     // for better comparison one does not want to have alpha changed...
+//     if (fPrimary) if (!fPrimary->Rotate(fInner->GetAlpha())) {
+//       delete fPrimary;
+//       fPrimary=0;
+//     }
+//   }
+
+  delete track;
+}
+
+
+
 
 void AliTPCTracklet::FitLinear(const AliTPCseed *track,Int_t sector,
 			       TrackType type) {
