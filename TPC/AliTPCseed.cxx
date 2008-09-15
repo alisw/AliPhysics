@@ -1258,6 +1258,7 @@ Int_t  AliTPCseed::RefitTrack(AliTPCseed *seed, AliExternalTrackParam * parin, A
   AliExternalTrackParam paramIn;
   AliExternalTrackParam paramOut;
   Bool_t isOK=kTRUE;
+  Int_t ncl=0;
   //
   //
   //
@@ -1265,11 +1266,14 @@ Int_t  AliTPCseed::RefitTrack(AliTPCseed *seed, AliExternalTrackParam * parin, A
     AliTPCclusterMI *c=track->GetClusterPointer(i);
     if (!c) continue;
     //    if (RejectCluster(c,track)) continue;
+    sector = (c->GetDetector()%18);
+    if (!track->Rotate(TMath::DegToRad()*(sector%18*20.+10.)-track->GetAlpha())) {
+      //continue;
+    }
     Double_t r[3]={c->GetX(),c->GetY(),c->GetZ()};
     Double_t cov[3]={0.01,0.,0.01}; //TODO: correct error parametrisation
     if (!track->PropagateTo(r[0])) {
       isOK=kFALSE;
-      break;
     }
     if ( !((static_cast<AliExternalTrackParam*>(track)->Update(&r[1],cov)))) isOK=kFALSE;
   }
@@ -1282,15 +1286,18 @@ Int_t  AliTPCseed::RefitTrack(AliTPCseed *seed, AliExternalTrackParam * parin, A
     AliTPCclusterMI *c=track->GetClusterPointer(i);
     if (!c) continue;
     //if (RejectCluster(c,track)) continue;
+    sector = (c->GetDetector()%18);
+    if (!track->Rotate(TMath::DegToRad()*(sector%18*20.+10.)-track->GetAlpha())) {
+      //continue;
+    }
     Double_t r[3]={c->GetX(),c->GetY(),c->GetZ()};
     Double_t cov[3]={0.01,0.,0.01}; //TODO: correct error parametrisation
     if (!track->PropagateTo(r[0])) {
       isOK=kFALSE;
-      break;
     }
     if ( !((static_cast<AliExternalTrackParam*>(track)->Update(&r[1],cov)))) isOK=kFALSE;
   }
-  if (!isOK) { delete track; return 0;}
+  //if (!isOK) { delete track; return 0;}
   paramIn = *track;
   track->AddCovariance(covar);
   //
@@ -1298,24 +1305,27 @@ Int_t  AliTPCseed::RefitTrack(AliTPCseed *seed, AliExternalTrackParam * parin, A
   for (Int_t i=imin; i<=imax; i++){
     AliTPCclusterMI *c=track->GetClusterPointer(i);
     if (!c) continue;
+    sector = (c->GetDetector()%18);
+    if (!track->Rotate(TMath::DegToRad()*(sector%18*20.+10.)-track->GetAlpha())) {
+      //continue;
+    }
+    ncl++;
     //if (RejectCluster(c,track)) continue;
     Double_t r[3]={c->GetX(),c->GetY(),c->GetZ()};
     Double_t cov[3]={0.01,0.,0.01}; //TODO: correct error parametrisation
     if (!track->PropagateTo(r[0])) {
       isOK=kFALSE;
-      break;
     }
     if ( !((static_cast<AliExternalTrackParam*>(track)->Update(&r[1],cov)))) isOK=kFALSE;
   }
-  if (!isOK) { delete track; return 0;}
+  //if (!isOK) { delete track; return 0;}
   paramOut=*track;
-
   //
   //
   //
   if (parin) (*parin)=paramIn;
   if (parout) (*parout)=paramOut;
-
+  return ncl;
 }
 
 

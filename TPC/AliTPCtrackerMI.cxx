@@ -2264,8 +2264,11 @@ void AliTPCtrackerMI::RemoveUsed2(TObjArray * arr, Float_t factor1,  Float_t fac
   //          - AliTPCtrackerMI::PropagateBack()
   //          - AliTPCtrackerMI::RefitInward()
   //
-
- 
+  // Arguments:
+  //   factor1 - factor for constrained
+  //   factor2 -        for non constrained tracks 
+  //            if (Float_t(shared+1)/Float_t(found+1)>factor) - DELETE
+  //
   UnsignClusters();
   //
   Int_t nseed = arr->GetEntriesFast();  
@@ -2322,11 +2325,25 @@ void AliTPCtrackerMI::RemoveUsed2(TObjArray * arr, Float_t factor1,  Float_t fac
       //
       if (Float_t(shared+1)/Float_t(found+1)>factor){
 	if (pt->GetKinkIndexes()[0]!=0) continue;  //don't remove tracks  - part of the kinks
+	if( AliTPCReconstructor::StreamLevel()>15){
+	  TTreeSRedirector &cstream = *fDebugStreamer;
+	  cstream<<"RemoveUsed"<<
+	    "iter="<<fIteration<<
+	    "pt.="<<pt<<
+	    "\n";
+	}
 	delete arr->RemoveAt(trackindex);
 	continue;
       }      
       if (pt->GetNumberOfClusters()<50&&(found-0.5*shared)<minimal){  //remove short tracks
 	if (pt->GetKinkIndexes()[0]!=0) continue;  //don't remove tracks  - part of the kinks
+	if( AliTPCReconstructor::StreamLevel()>15){
+	  TTreeSRedirector &cstream = *fDebugStreamer;
+	  cstream<<"RemoveShort"<<
+	    "iter="<<fIteration<<
+	    "pt.="<<pt<<
+	    "\n";
+	}
 	delete arr->RemoveAt(trackindex);
 	continue;
       }
@@ -2639,12 +2656,29 @@ Int_t AliTPCtrackerMI::RefitInward(AliESDEvent *event)
     AliTPCseed * seed = (AliTPCseed*) fSeeds->UncheckedAt(i);
     if (!seed) continue;
     if (seed->GetKinkIndex(0)>0)  UpdateKinkQualityD(seed);  // update quality informations for kinks
+    AliESDtrack *esd=event->GetTrack(i);
+
+    if (seed->GetNumberOfClusters()<60 && seed->GetNumberOfClusters()<(esd->GetTPCclusters(0) -5)*0.8){
+      AliExternalTrackParam paramIn;
+      AliExternalTrackParam paramOut;
+      Int_t ncl = seed->RefitTrack(seed,&paramIn,&paramOut);
+      (*fDebugStreamer)<<"RecoverIn"<<
+	"seed.="<<seed<<
+	"esd.="<<esd<<
+	"pin.="<<&paramIn<<
+	"pout.="<<&paramOut<<
+	"ncl="<<ncl<<
+	"\n";
+      if (ncl>15) {
+	seed->Set(paramIn.GetX(),paramIn.GetAlpha(),paramIn.GetParameter(),paramIn.GetCovariance());
+	seed->SetNumberOfClusters(ncl);
+      }
+    }
 
     seed->PropagateTo(fParam->GetInnerRadiusLow());
     seed->UpdatePoints();
     AddCovariance(seed);
     MakeBitmaps(seed);
-    AliESDtrack *esd=event->GetTrack(i);
     seed->CookdEdx(0.02,0.6);
     CookLabel(seed,0.1); //For comparison only
     esd->SetTPCClusterMap(seed->GetClusterMap());
@@ -2710,6 +2744,22 @@ Int_t AliTPCtrackerMI::PropagateBack(AliESDEvent *event)
     seed->UpdatePoints();
     AddCovariance(seed);
     AliESDtrack *esd=event->GetTrack(i);
+    if (seed->GetNumberOfClusters()<60 && seed->GetNumberOfClusters()<(esd->GetTPCclusters(0) -5)*0.8){
+      AliExternalTrackParam paramIn;
+      AliExternalTrackParam paramOut;
+      Int_t ncl = seed->RefitTrack(seed,&paramIn,&paramOut);
+      (*fDebugStreamer)<<"RecoverBack"<<
+	"seed.="<<seed<<
+	"esd.="<<esd<<
+	"pin.="<<&paramIn<<
+	"pout.="<<&paramOut<<
+	"ncl="<<ncl<<
+	"\n";
+      if (ncl>15) {
+	seed->Set(paramOut.GetX(),paramOut.GetAlpha(),paramOut.GetParameter(),paramOut.GetCovariance());
+	seed->SetNumberOfClusters(ncl);
+      }
+    }
     seed->CookdEdx(0.02,0.6);
     CookLabel(seed,0.1); //For comparison only
     if (seed->GetNumberOfClusters()>15){
@@ -2799,11 +2849,11 @@ void AliTPCtrackerMI::ReadSeeds(AliESDEvent *event, Int_t direction)
     }
     if (((status&AliESDtrack::kITSout)==0)&&(direction==1)) seed->ResetCovariance(10.); 
     if ( direction ==2 &&(status & AliESDtrack::kTRDrefit) == 0 ) seed->ResetCovariance(10.);
-    if ( direction ==2 && ((status & AliESDtrack::kTPCout) == 0) ) {
-      fSeeds->AddAt(0,i);
-      delete seed;
-      continue;    
-    }
+    //if ( direction ==2 && ((status & AliESDtrack::kTPCout) == 0) ) {
+    //  fSeeds->AddAt(0,i);
+    //  delete seed;
+    //  continue;    
+    //}
     if ( direction ==2 &&(status & AliESDtrack::kTRDrefit) > 0 )  {
       Double_t par0[5],par1[5],alpha,x;
       esd->GetInnerExternalParameters(alpha,x,par0);
