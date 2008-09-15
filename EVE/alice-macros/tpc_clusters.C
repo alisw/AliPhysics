@@ -90,15 +90,7 @@ TEvePointSet* tpc_clusters(TEveElement* cont=0, Float_t maxR=270)
   clusters->SetTitle(tip);
 
   const TString viz_tag("TPC Clusters");
-  if (gEve->FindVizDBEntry(viz_tag) == 0)
-  {
-    TEvePointSet* m = new TEvePointSet();
-    m->SetMarkerColor(4);
-    m->SetMarkerSize(0.2);
-    m->SetMarkerStyle(2);
-    gEve->InsertVizDBEntry(viz_tag, m);
-  }
-  // The above can be removed when going to new root - then call:
+  // when going to new root call:
   // clusters->ApplyVizTag(viz_tag, "Clusters");
   clusters->ApplyVizTag(viz_tag);
 

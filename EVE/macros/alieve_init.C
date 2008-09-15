@@ -25,7 +25,8 @@ void alieve_init(const Text_t* path   = ".", Int_t event=0,
   alieve_init_import_macros();
   gSystem->cd(hack);
 
-  alieve_init_basic_vizdb();
+  // Temporarily assert default vizdb
+  TEveUtil::AssertMacro("VizDB_scan.C");
 
   gSystem->ProcessEvents();
 
@@ -95,85 +96,4 @@ void alieve_init_import_macros()
       br->SetTab(0, 0);
     }
   }
-}
-
-void alieve_init_basic_vizdb()
-{
-  // For now this is copy from the VizDB_scan ... this should be
-  // reduced when going to a newer root (remove box/ellipse).
-
-  TEveStraightLineSet *ls = 0;
-
-  //============================================================================
-  // Primary vertex
-  //============================================================================
-
-  // Combined vertex
-
-  ls = new TEveStraightLineSet;
-  ls->SetMarkerStyle(2);
-  ls->SetMarkerColor(7);
-  ls->SetLineColor(7);
-  ls->SetLineWidth(3);
-  gEve->InsertVizDBEntry("PVTX", ls);
-
-  ls = new TEveStraightLineSet;
-  ls->SetMarkerStyle(2);
-  ls->SetMarkerColor(7);
-  ls->SetLineColor(7);
-  ls->SetLineWidth(1);
-  gEve->InsertVizDBEntry("PVTX Ellipse", ls);
-
-  ls = new TEveStraightLineSet;
-  ls->SetMarkerStyle(2);
-  ls->SetMarkerColor(7);
-  ls->SetLineColor(7);
-  ls->SetLineWidth(1);
-  gEve->InsertVizDBEntry("PVTX Box", ls);
-
-  // SPD vertex
-
-  ls = new TEveStraightLineSet;
-  ls->SetMarkerStyle(2);
-  ls->SetMarkerColor(6);
-  ls->SetLineColor(6);
-  ls->SetLineWidth(3);
-  gEve->InsertVizDBEntry("PVTX SPD", ls);
-
-  ls = new TEveStraightLineSet;
-  ls->SetMarkerStyle(2);
-  ls->SetMarkerColor(6);
-  ls->SetLineColor(6);
-  ls->SetLineWidth(1);
-  gEve->InsertVizDBEntry("PVTX Ellipse SPD", ls);
-
-  ls = new TEveStraightLineSet;
-  ls->SetMarkerStyle(2);
-  ls->SetMarkerColor(6);
-  ls->SetLineColor(6);
-  ls->SetLineWidth(1);
-  gEve->InsertVizDBEntry("PVTX Box SPD", ls);
-
-  // TPC vertex
-
-  ls = new TEveStraightLineSet;
-  ls->SetMarkerStyle(2);
-  ls->SetMarkerColor(5);
-  ls->SetLineColor(5);
-  ls->SetLineWidth(3);
-  gEve->InsertVizDBEntry("PVTX TPC", ls);
-
-  ls = new TEveStraightLineSet;
-  ls->SetMarkerStyle(2);
-  ls->SetMarkerColor(5);
-  ls->SetLineColor(5);
-  ls->SetLineWidth(1);
-  gEve->InsertVizDBEntry("PVTX Ellipse TPC", ls);
-
-  ls = new TEveStraightLineSet;
-  ls->SetMarkerStyle(2);
-  ls->SetMarkerColor(5);
-  ls->SetLineColor(5);
-  ls->SetLineWidth(1);
-  gEve->InsertVizDBEntry("PVTX Box TPC", ls);
 }
