@@ -16,8 +16,10 @@ class TEveUtil;
 R__EXTERN TEveProjectionManager *gRPhiMgr;
 R__EXTERN TEveProjectionManager *gRhoZMgr;
 
-TEveGeoShape *gGeomGentle    = 0;
-TEveGeoShape *gGeomGentleTRD = 0;
+TEveGeoShape *gGeomGentle     = 0;
+TEveGeoShape *gGeomGentleRPhi = 0;
+TEveGeoShape *gGeomGentleRhoZ = 0;
+TEveGeoShape *gGeomGentleTRD  = 0;
 
 Bool_t gShowTRD = kFALSE;
 
@@ -63,6 +65,8 @@ void anyscan_init()
   // geometry
   TEveUtil::LoadMacro("geom_gentle.C");
   gGeomGentle = geom_gentle();
+  gGeomGentleRPhi = geom_gentle_rphi(); gGeomGentleRPhi->IncDenyDestroy();
+  gGeomGentleRhoZ = geom_gentle_rhoz(); gGeomGentleRhoZ->IncDenyDestroy();
   if (gShowTRD) {
     TEveUtil::LoadMacro("geom_gentle_trd.C");
     gGeomGentleTRD = geom_gentle_trd();
@@ -79,11 +83,22 @@ void anyscan_init()
   exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "FMD DIGITS",  "fmd_digits.C",  "fmd_digits",  "", kFALSE));
   exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "FMD Hits",    "fmd_hits.C",    "fmd_hits",    "", kFALSE));
 
-  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX", "primary_vertex.C", "primary_vertex"));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX",         "primary_vertex.C", "primary_vertex",             "",                kTRUE));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX Ellipse", "primary_vertex.C", "primary_vertex_ellipse",     "",                kTRUE));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX Box",     "primary_vertex.C", "primary_vertex_box",         "kFALSE, 3, 3, 3", kFALSE));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX",         "primary_vertex.C", "primary_vertex_spd",         "",                kTRUE));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX Ellipse", "primary_vertex.C", "primary_vertex_ellipse_spd", "",                kTRUE));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX Box",     "primary_vertex.C", "primary_vertex_box_spd",     "kFALSE, 3, 3, 3", kFALSE));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX",         "primary_vertex.C", "primary_vertex_tpc",         "",                kFALSE));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX Ellipse", "primary_vertex.C", "primary_vertex_ellipse_tpc", "",                kFALSE));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX Box",     "primary_vertex.C", "primary_vertex_box_tpc",     "kFALSE, 3, 3, 3", kFALSE));
+
   exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC V0",   "esd_V0_points.C",  "esd_V0_points"));
   exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC V0",   "esd_V0.C",         "esd_V0"));
   // exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "esd_tracks.C",     ""));
   TEveUtil::LoadMacro("esd_tracks.C");
+
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Track", "esd_spd_tracklets.C", "esd_spd_tracklets", "", kFALSE));
 
   exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clus ITS", "its_clusters.C+", "its_clusters"));
   exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clus TPC", "tpc_clusters.C+", "tpc_clusters"));
@@ -159,45 +174,17 @@ void on_new_event()
   if (gRPhiMgr && top) {
     gRPhiMgr->DestroyElements();
     gRPhiMgr->SetCenter(x[0], x[1], x[2]);
-    gRPhiMgr->ImportElements(gGeomGentle);
+    gRPhiMgr->ImportElements(gGeomGentleRPhi);
     if (gShowTRD) gRPhiMgr->ImportElements(gGeomGentleTRD);
     gRPhiMgr->ImportElements(top);
   }
   if (gRhoZMgr && top) {
     gRhoZMgr->DestroyElements();
     gRhoZMgr->SetCenter(x[0], x[1], x[2]);
-    gRhoZMgr->ImportElements(gGeomGentle);
+    gRhoZMgr->ImportElements(gGeomGentleRhoZ);
     if (gShowTRD) gRhoZMgr->ImportElements(gGeomGentleTRD);
     gRhoZMgr->ImportElements(top);
   }
 
   gROOT->ProcessLine("SplitGLView::UpdateSummary()");
-}
-
-/******************************************************************************/
-
-TParticle* id(Int_t label=0, Bool_t showParents=kTRUE)
-{
-  AliRunLoader* rl = AliEveEventManager::AssertRunLoader();
-  rl->LoadKinematics();
-  AliStack* stack = rl->Stack();
-
-  printf("Number primaries %d, all particles %d, label %d\n",
-	 stack->GetNprimary(), stack->GetNtrack(), label);
-  if (label < 0 || label >= stack->GetNtrack()) {
-    printf("  Label exceeds available range.\n");
-    return 0;
-  }
-
-  TParticle* part = stack->Particle(label);
-  if (part != 0) {
-    part->Print();
-    if (showParents) {
-      while (part->GetMother(0) >= 0) {
-	part = stack->Particle(part->GetMother(0));
-	part->Print();
-      }
-    }
-  }
-  return stack->Particle(label);
 }

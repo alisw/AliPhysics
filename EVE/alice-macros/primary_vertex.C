@@ -7,88 +7,49 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-TPolyMarker3D* make_vertex_marker(AliESDVertex* v, const Text_t* name )
+
+//==============================================================================
+// Utilities
+//==============================================================================
+
+TEveCompound* assert_vertex_parent(const TString& name, Color_t col)
 {
-  Double_t x[3], e[3];
-  v->GetXYZ(x);
-  v->GetSigmaXYZ(e);
+  // !!! TEveCompound should have viz-db support ... add in root, then fix here,
+  // that is, remove the color var and pass viz-db tag.
 
-  printf("%16s: %f %f %f   -   %f %f %f\n", name,
-	 x[0], x[1], x[2], e[0], e[1], e[2]);
-
-  TPolyMarker3D* m = new TPolyMarker3D(1);
-  m->SetName(name);
-  m->SetPoint(0, x[0], x[1], x[2]);
-
-  return m;
-}
-
-TEveBoxSet* make_vertex_boxes(AliESDVertex* v)
-{
-  Double_t x[3], e[3];
-  v->GetXYZ(x);
-  v->GetSigmaXYZ(e);
-
-  TEveBoxSet* bs;
-
-  bs = new TEveBoxSet("+- 10 x 10 x 20mm");
-  bs->SetRenderMode(TEveBoxSet::RM_TEveLine);
-  bs->AddBox(Box(-1, x[0], x[1], x[2], 1, 1, 2));
-  bs->SetMainColor(2);
-  gEve->AddElement(bs);
-
-  bs = new TEveBoxSet("+- 30 sigma_r x 10 sigma_z");
-  bs->SetRenderMode(TEveBoxSet::RM_TEveLine);
-  bs->AddBox(Box(-1, x[0], x[1], x[2], 30*e[0], 30*e[1], 10*e[2]));
-  bs->SetMainColor(3);
-  gEve->AddElement(bs);
-
-  gEve->Redraw3D();
-}
-
-void register_vertex_marker(TPolyMarker3D* m)
-{
-  Color_t* colp = TEveUtil::FindColorVar(m, "fMarkerColor");
-  TEveElementObjectPtr* rnrEl = new TEveElementObjectPtr(m, *colp);
-  gEve->AddElement(rnrEl);
-  gEve->Redraw3D();
-}
-
-void primary_vertex_primitive(Bool_t showSPD=kTRUE, Bool_t showBoxes=kFALSE)
-{
-  AliESDEvent* esd = AliEveEventManager::AssertESD();
-
-  AliESDVertex*  pv  = esd->GetPrimaryVertex();
-  TPolyMarker3D* pvm = make_vertex_marker(pv, "Primary Vertex");
-  pvm->SetMarkerStyle(5);
-  pvm->SetMarkerColor(5);
-  pvm->SetMarkerSize(1.4);
-  register_vertex_marker(pvm);
-
-  if (showSPD) {
-    AliESDVertex*  spdv  = esd->GetPrimaryVertexSPD();
-    TPolyMarker3D* spdvm = make_vertex_marker(spdv, "SPD Vertex");
-    spdvm->SetMarkerStyle(2);
-    spdvm->SetMarkerColor(6);
-    register_vertex_marker(spdvm);
+  TEveCompound* parent = dynamic_cast<TEveCompound*>(gAliEveEvent->FindChild(name));
+  if (parent == 0)
+  {
+    parent = new TEveCompound(name);
+    parent->OpenCompound();
+    parent->SetMainColor(col);
+    gAliEveEvent->AddElement(parent);
   }
-
-  if (showBoxes)
-    make_vertex_boxes(pv);
+  return parent;
 }
 
-/******************************************************************************/
 
-TEveStraightLineSet* make_vertex_lineset(AliESDVertex* v, const Text_t* name)
+//==============================================================================
+// Functions to make a cross / ellipse / box
+//==============================================================================
+
+TEveStraightLineSet*
+make_vertex_cross(AliESDVertex* v, Bool_t use_sigma, Float_t fx, Float_t fy, Float_t fz)
 {
   Double_t x[3], e[3];
   v->GetXYZ(x); v->GetSigmaXYZ(e);
-  printf("%16s: %f %f %f   -   %f %f %f\n", name,
-	 x[0], x[1], x[2], e[0], e[1], e[2]);
 
-  // dimensions
-  TEveStraightLineSet* ls = new TEveStraightLineSet();
-  ls->SetName(name);
+  TEveStraightLineSet* ls = new TEveStraightLineSet("Cross");
+  if (use_sigma)
+  {
+    e[0] *= fx; e[1] *= fy; e[2] *= fz;
+    ls->SetTitle(Form("+- %.1f*sigma_x, %.1f*sigma_y, %.1f*sigma_z", fx, fy, fz));
+  }
+  else
+  {
+    e[0] = fx; e[1] = fy; e[2] = fz;
+    ls->SetTitle(Form("+- %.1f cm x %.1f cm x %.1f cm", fx, fy, fz));
+  }
   ls->AddLine(e[0], 0,    0,   -e[0], 0,    0);
   ls->AddLine(0,    e[1], 0,    0,   -e[1], 0);
   ls->AddLine(0,    0,    e[2], 0,    0,   -e[2]);
@@ -97,34 +58,28 @@ TEveStraightLineSet* make_vertex_lineset(AliESDVertex* v, const Text_t* name)
   return ls;
 }
 
-void make_vertex_ellipses(TEveStraightLineSet* ls, AliESDVertex* v, Bool_t ellipseUseSigma)
+TEveStraightLineSet*
+make_vertex_ellipse(AliESDVertex* v, Bool_t use_sigma, Float_t fx, Float_t fy, Float_t fz)
 {
   Double_t x[3], e[3];
   v->GetXYZ(x); v->GetSigmaXYZ(e);
 
-  if (ellipseUseSigma)
+  TEveStraightLineSet* ls = new TEveStraightLineSet("Ellipse");
+  if (use_sigma)
   {
-    e[0] *= 30; e[1] *= 30; e[2] *= 10;
-    ls->SetMarkerStyle(5);
-    ls->SetMarkerColor(5);
-    ls->SetMarkerSize(1.4);
-    ls->SetLineColor(7);
-    ls->SetTitle("+- 30 sigma_r x 10 sigma_z");
+    e[0] *= fx; e[1] *= fy; e[2] *= fz;
+    ls->SetTitle(Form("+- %.1f*sigma_x, %.1f*sigma_y, %.1f sigma_z", fx, fy, fz));
   }
   else
   {
-    e[0] = 1; e[1] = 1; e[2] = 2;
-    ls->SetMarkerStyle(2);
-    ls->SetMarkerColor(6);
-    ls->SetLineColor(6);
-    ls->SetTitle("+- 10 x 10 x 20mm");
+    e[0] = fx; e[1] = fy; e[2] = fz;
+    ls->SetTitle(Form("+- %.1f cm x %.1f cm x %.1f cm", fx, fy, fz));
   }
 
-  Int_t N = 32;
-  Float_t S = 2*TMath::Pi()/N;
-  Float_t b, a, phi;
+  const Int_t   N = 32;
+  const Float_t S = 2*TMath::Pi()/N;
 
-  a = e[0]; b = e[1];
+  Float_t a = e[0], b = e[1];
   for (Int_t i = 0; i<N; i++)
     ls->AddLine(a*TMath::Cos(i*S)  , b*TMath::Sin(i*S)  , 0,
 		a*TMath::Cos(i*S+S), b*TMath::Sin(i*S+S), 0);
@@ -138,23 +93,174 @@ void make_vertex_ellipses(TEveStraightLineSet* ls, AliESDVertex* v, Bool_t ellip
   for (Int_t i = 0; i<N; i++)
     ls->AddLine(0, a*TMath::Cos(i*S)  ,  b*TMath::Sin(i*S),
 		0, a*TMath::Cos(i*S+S),  b*TMath::Sin(i*S+S));
+
+  ls->RefMainTrans().SetPos(x);
+  return ls;
 }
 
-void primary_vertex(Bool_t showSPD=kTRUE, Bool_t rnrEllipse=kTRUE)
+TEveStraightLineSet*
+make_vertex_box(AliESDVertex* v, Bool_t use_sigma, Float_t fx, Float_t fy, Float_t fz)
 {
-  AliESDEvent* esd = AliEveEventManager::AssertESD();
-  TEveStraightLineSet* ls;
+  Double_t x[3], e[3];
+  v->GetXYZ(x); v->GetSigmaXYZ(e);
 
-  AliESDVertex* PV  =  esd->GetPrimaryVertex();
-  ls = make_vertex_lineset(PV, "Primary Vertex");
-  if (rnrEllipse) make_vertex_ellipses(ls, PV, kTRUE);
-  gEve->AddElement(ls);
-
-  if (showSPD)
+  TEveStraightLineSet* ls = new TEveStraightLineSet("Box");
+  if (use_sigma)
   {
-    AliESDVertex*  SPDV  = esd->GetPrimaryVertexSPD();
-    ls = make_vertex_lineset(SPDV, "SPD Vertex");
-    if (rnrEllipse) make_vertex_ellipses(ls, SPDV, kFALSE);
-    gEve->AddElement(ls);
+    e[0] *= fx; e[1] *= fy; e[2] *= fz;
+    ls->SetTitle(Form("+- %.1f*sigma_x, %.1f*sigma_y, %.1f*sigma_z", fx, fy, fz));
   }
+  else
+  {
+    e[0] = fx; e[1] = fy; e[2] = fz;
+    ls->SetTitle(Form("+- %.1f cm x %.1f cm x %.1f cm", fx, fy, fz));
+  }
+  // pos z
+  ls->AddLine( e[0],  e[1],  e[2],  e[0], -e[1],  e[2]);
+  ls->AddLine( e[0], -e[1],  e[2], -e[0], -e[1],  e[2]);
+  ls->AddLine(-e[0], -e[1],  e[2], -e[0],  e[1],  e[2]);
+  ls->AddLine(-e[0],  e[1],  e[2],  e[0],  e[1],  e[2]);
+  // lines along z
+  ls->AddLine( e[0],  e[1],  e[2],  e[0],  e[1], -e[2]);
+  ls->AddLine( e[0], -e[1],  e[2],  e[0], -e[1], -e[2]);
+  ls->AddLine(-e[0], -e[1],  e[2], -e[0], -e[1], -e[2]);
+  ls->AddLine(-e[0],  e[1],  e[2], -e[0],  e[1], -e[2]);
+  // neg z
+  ls->AddLine( e[0],  e[1], -e[2],  e[0], -e[1], -e[2]);
+  ls->AddLine( e[0], -e[1], -e[2], -e[0], -e[1], -e[2]);
+  ls->AddLine(-e[0], -e[1], -e[2], -e[0],  e[1], -e[2]);
+  ls->AddLine(-e[0],  e[1], -e[2],  e[0],  e[1], -e[2]);
+
+  ls->RefMainTrans().SetPos(x);
+  return ls;
+}
+
+
+//==============================================================================
+// Element making functions
+//==============================================================================
+
+TEveStraightLineSet*
+primary_vertex(Bool_t use_sigma=kTRUE, Float_t fx=1, Float_t fy=1, Float_t fz=1)
+{
+  AliESDEvent  *esd = AliEveEventManager::AssertESD();
+  AliESDVertex *pv  = esd->GetPrimaryVertex();
+
+  TEveStraightLineSet* ls = make_vertex_cross(pv, use_sigma, fx, fy, fz);
+  ls->ApplyVizTag("PVTX");
+  assert_vertex_parent("Primary Vertex", 7)->AddElement(ls);
+  gEve->Redraw3D();
+  return ls;
+}
+
+TEveStraightLineSet*
+primary_vertex_spd(Bool_t use_sigma=kTRUE, Float_t fx=1, Float_t fy=1, Float_t fz=1)
+{
+  AliESDEvent  *esd  = AliEveEventManager::AssertESD();
+  AliESDVertex *spdv = esd->GetPrimaryVertexSPD();
+
+  TEveStraightLineSet* ls = make_vertex_cross(spdv, use_sigma, fx, fy, fz);
+  ls->ApplyVizTag("PVTX SPD");
+  assert_vertex_parent("Primary Vertex SPD", 6)->AddElement(ls);
+  gEve->Redraw3D();
+  return ls;
+}
+
+TEveStraightLineSet*
+primary_vertex_tpc(Bool_t use_sigma=kTRUE, Float_t fx=1, Float_t fy=1, Float_t fz=1)
+{
+  AliESDEvent  *esd  = AliEveEventManager::AssertESD();
+  AliESDVertex *tpcv = esd->GetPrimaryVertexTPC();
+
+  TEveStraightLineSet* ls = make_vertex_cross(tpcv, use_sigma, fx, fy, fz);
+  ls->ApplyVizTag("PVTX TPC");
+  assert_vertex_parent("Primary Vertex TPC", 5)->AddElement(ls);
+  gEve->Redraw3D();
+  return ls;
+}
+
+//------------------------------------------------------------------------------
+// Ellipse
+//------------------------------------------------------------------------------
+
+TEveStraightLineSet*
+primary_vertex_ellipse(Bool_t use_sigma=kTRUE, Float_t fx=30, Float_t fy=30, Float_t fz=10)
+{
+  AliESDEvent  *esd = AliEveEventManager::AssertESD();
+  AliESDVertex *pv  = esd->GetPrimaryVertex();
+
+  TEveStraightLineSet* ls = make_vertex_ellipse(pv, use_sigma, fx, fy, fz);
+  ls->ApplyVizTag("PVTX Ellipse");
+  assert_vertex_parent("Primary Vertex", 7)->AddElement(ls);
+  gEve->Redraw3D();
+  return ls;
+}
+
+TEveStraightLineSet*
+primary_vertex_ellipse_spd(Bool_t use_sigma=kTRUE, Float_t fx=30, Float_t fy=30, Float_t fz=10)
+{
+  AliESDEvent  *esd  = AliEveEventManager::AssertESD();
+  AliESDVertex *spdv = esd->GetPrimaryVertexSPD();
+
+  TEveStraightLineSet* ls = make_vertex_ellipse(spdv, use_sigma, fx, fy, fz);
+  ls->ApplyVizTag("PVTX Ellipse SPD");
+  assert_vertex_parent("Primary Vertex SPD", 6)->AddElement(ls);
+  gEve->Redraw3D();
+  return ls;
+}
+
+TEveStraightLineSet*
+primary_vertex_ellipse_tpc(Bool_t use_sigma=kTRUE, Float_t fx=30, Float_t fy=30, Float_t fz=10)
+{
+  AliESDEvent  *esd  = AliEveEventManager::AssertESD();
+  AliESDVertex *tpcv = esd->GetPrimaryVertexTPC();
+
+  TEveStraightLineSet* ls = make_vertex_ellipse(tpcv, use_sigma, fx, fy, fz);
+  ls->ApplyVizTag("PVTX Ellipse TPC");
+  assert_vertex_parent("Primary Vertex TPC", 5)->AddElement(ls);
+  gEve->Redraw3D();
+  return ls;
+}
+
+//------------------------------------------------------------------------------
+// Box
+//------------------------------------------------------------------------------
+
+TEveStraightLineSet*
+primary_vertex_box(Bool_t use_sigma=kTRUE, Float_t fx=30, Float_t fy=30, Float_t fz=10)
+{
+  AliESDEvent  *esd = AliEveEventManager::AssertESD();
+  AliESDVertex *pv  = esd->GetPrimaryVertex();
+
+  TEveStraightLineSet* ls = make_vertex_box(pv, use_sigma, fx, fy, fz);
+  ls->ApplyVizTag("PVTX Box");
+  assert_vertex_parent("Primary Vertex", 7)->AddElement(ls);
+  gEve->Redraw3D();
+  return ls;
+}
+
+TEveStraightLineSet*
+primary_vertex_box_spd(Bool_t use_sigma=kTRUE, Float_t fx=30, Float_t fy=30, Float_t fz=10)
+{
+  AliESDEvent  *esd  = AliEveEventManager::AssertESD();
+  AliESDVertex *spdv = esd->GetPrimaryVertexSPD();
+
+  TEveStraightLineSet* ls = make_vertex_box(spdv, use_sigma, fx, fy, fz);
+  ls->ApplyVizTag("PVTX Box SPD");
+  assert_vertex_parent("Primary Vertex SPD", 6)->AddElement(ls);
+  gEve->Redraw3D();
+  return ls;
+}
+
+TEveStraightLineSet*
+primary_vertex_box_tpc(Bool_t use_sigma=kTRUE, Float_t fx=30, Float_t fy=30, Float_t fz=10)
+{
+  AliESDEvent  *esd  = AliEveEventManager::AssertESD();
+  AliESDVertex *tpcv = esd->GetPrimaryVertexTPC();
+
+  TEveStraightLineSet* ls = make_vertex_box(tpcv, use_sigma, fx, fy, fz);
+  ls->ApplyVizTag("PVTX Box TPC");
+  assert_vertex_parent("Primary Vertex TPC", 5)->AddElement(ls);
+  gEve->Redraw3D();
+  return ls;
 }

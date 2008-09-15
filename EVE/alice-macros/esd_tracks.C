@@ -7,6 +7,25 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
+TString esd_track_flags(AliESDtrack* t)
+{
+  TString s;
+  Int_t   o;
+  s += "det(in,out,refit,pid):\n";
+  o  = AliESDtrack::kITSin;
+  s += Form("its(%d,%d,%d,%d) ",  t->IsOn(o), t->IsOn(o<<1), t->IsOn(o<<2), t->IsOn(o<<3));
+  o  = AliESDtrack::kTPCin;
+  s += Form("tpc(%d,%d,%d,%d)\n", t->IsOn(o), t->IsOn(o<<1), t->IsOn(o<<2), t->IsOn(o<<3));
+  o  = AliESDtrack::kTRDin;
+  s += Form("trd(%d,%d,%d,%d) ",  t->IsOn(o), t->IsOn(o<<1), t->IsOn(o<<2), t->IsOn(o<<3));
+  o  = AliESDtrack::kTOFin;
+  s += Form("tof(%d,%d,%d,%d)\n", t->IsOn(o), t->IsOn(o<<1), t->IsOn(o<<2), t->IsOn(o<<3));
+  o  = AliESDtrack::kHMPIDout;
+  s += Form("hmpid(out=%d,pid=%d)\n", t->IsOn(o), t->IsOn(o<<1));
+  s += Form("ESD pid=%d", t->IsOn(AliESDtrack::kESDpid));
+  return s;
+}
+
 TEveTrack* esd_make_track(TEveTrackPropagator*   trkProp,
 			  Int_t                  index,
 			  AliESDtrack*           at,
@@ -41,6 +60,7 @@ TEveTrack* esd_make_track(TEveTrackPropagator*   trkProp,
   sprintf(form,"TEveTrack %d", rt.fIndex);
   track->SetName(form);
   track->SetStdTitle();
+  track->SetElementTitle(Form("%s\n%s", track->GetElementTitle(), esd_track_flags(at).Data()));
   return track;
 }
 

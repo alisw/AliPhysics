@@ -40,6 +40,7 @@ TEveStraightLineSet* esd_spd_tracklets(Float_t rad=8)
 		pvx[0]+dr[0], pvx[1]+dr[1], pvx[2]+dr[2]);
   }
 
+  ls->SetElementTitle(Form("N=%d", mul->GetNumberOfTracklets()));
   gEve->AddElement(ls);
   gEve->Redraw3D();
 

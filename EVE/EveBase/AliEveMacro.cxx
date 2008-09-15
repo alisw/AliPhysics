@@ -42,6 +42,6 @@ TString AliEveMacro::FormForDisplay() const
   // Return string suitable for display.
 
   return TString::Format
-    (" %c %-20s  %-20s  %-30s  %-s", fActive ? 'x' : ' ',
+    (" %c %-22s  %-30s  %-30s  %-s", fActive ? 'x' : ' ',
      fMacro.Data(), fFunc.Data(), fArgs.Data(), fTags.Data());
 }
