@@ -41,8 +41,6 @@ void AnalyzeSDDNoiseAllMod(Char_t *datafil, Int_t nDDL, Int_t firstEv=10, Int_t 
       for(Int_t isid=0;isid<kSides;isid++){
 	Int_t index=kSides*(kModPerDDL*iddl+imod)+isid;
 	base[index]=new AliITSOnlineSDDBase(iddl,imod,isid);
-	base[index]->SetFirstGoodTB(5);
-	base[index]->SetFirstGoodTB(120);
 	sprintf(hisnam,"h%02dc%02ds%d",iddl,imod,isid);
 	histo[index]=new TH2F(hisnam,"",128,-0.5,127.5,256,-0.5,255.5);
       }
