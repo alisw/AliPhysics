@@ -197,8 +197,9 @@ Bool_t AliTRDcheckDetector::PostProcess(){
 	histo->GetXaxis()->SetTitle("Number of Tracks");
 	histo->GetYaxis()->SetTitle("Events");
 	// Calculate percentage of events containing tracks
-	Float_t percTracks = histo->Integral(histo->FindBin(1),histo->GetNbinsX())/histo->Integral(histo->FindBin(0),histo->GetNbinsX());
-	printf("Percentage of Events containing TRD Tracks: %f\n", percTracks);
+	Int_t entries = (Int_t)histo->GetEntries();
+  Float_t percTracks = entries > 0 ? (entries - histo->GetBinContent(1))/Float_t(entries) : 0.;
+	printf("Percentage of Events containing TRD Tracks: %6.3f %%\n", 1.E2*percTracks);
 	histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNclustersHist));
 	histo->GetXaxis()->SetTitle("Number of Clusters");
 	histo->GetYaxis()->SetTitle("Entries");

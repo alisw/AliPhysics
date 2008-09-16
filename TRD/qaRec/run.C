@@ -56,11 +56,6 @@
 #include "TRD/qaRec/AliTRDcheckDetector.h"
 #endif
 
-#define BIT(n)        (1 << (n))
-#define SETBIT(n,i)   ((n) |= BIT(i))
-#define TESTBIT(n,i)  ((Bool_t)(((n) & BIT(i)) != 0))
-#define CLEARBIT(n,i) ((n) &= ~BIT(i))
-
 #include "run.h"
 
 Bool_t MEM = kFALSE;
@@ -190,7 +185,7 @@ void run(const Char_t *files=0x0, Char_t *tasks="ALL", Int_t nmax=-1)
     taskPtr[(Int_t)kTrackingResolution] = task;
     task->SetMCdata(fHasMCdata);
     task->SetPostProcess(kFALSE);
-    task->SetDebugLevel(0);
+    task->SetDebugLevel(2);
     
     // Create containers for input/output
     AliAnalysisDataContainer *coutput4 = mgr->CreateContainer(task->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%s.root", task->GetName()));
