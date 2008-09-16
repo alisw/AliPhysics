@@ -53,7 +53,7 @@ private:
   AliTRDtrackingResolution(const AliTRDtrackingResolution&);
   AliTRDtrackingResolution& operator=(const AliTRDtrackingResolution&);
   TObjArray*  Histos(); 
-  Bool_t      Resolution(AliTRDseedV1 *tracklet, AliTRDtrackInfo *info, Double_t &phi);
+  Bool_t      Resolution(AliTRDseedV1 *tracklet, AliTRDtrackInfo *info, Double_t &p, Double_t &y, Double_t &z, Double_t &phi, Double_t &theta);
 
 private:
   enum{
