@@ -391,7 +391,7 @@ Int_t  AliITSVertexer3D::Prepare3DVertex(Int_t optCuts){
 
   Int_t numbtracklets=0;
   for(Int_t i=0; i<fLines.GetEntriesFast();i++)if(validate[i]>=1)numbtracklets++;
-  if(numbtracklets<2){delete [] validate; delete h3d; return retcode; }
+  if(numbtracklets<2){delete [] validate; delete h3d; delete h3dcs; return retcode; }
 
   for(Int_t i=0; i<fLines.GetEntriesFast();i++){
     if(validate[i]<1)fLines.RemoveAt(i);
