@@ -137,7 +137,13 @@ fFindV0s(kTRUE),
 fUseUnfoldingInClusterFinderSPD(kFALSE),
 fUseUnfoldingInClusterFinderSDD(kTRUE),
 fUseUnfoldingInClusterFinderSSD(kTRUE),
-fUseChargeMatchingInClusterFinderSSD(kTRUE)
+fUseChargeMatchingInClusterFinderSSD(kTRUE),
+fTrackleterOnlyOneTrackletPerC2(kTRUE),
+fTrackleterPhiWindow(0.08),
+fTrackleterZetaWindow(1.00),
+fTrackleterRemoveClustersFromOverlaps(kFALSE),
+fTrackleterPhiOverlapCut(0.005),
+fTrackleterZetaOverlapCut(0.05)
 {
   //
   // constructor

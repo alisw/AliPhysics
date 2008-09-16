@@ -48,6 +48,8 @@
 //     - cluster coordinates taken with GetGlobalXYZ()
 //     - fGeometry removed
 //     - number of fired chips on the two layers
+//     - option to avoid duplicates in the overlaps (fRemoveClustersFromOverlaps)
+//     - options and fiducial cuts via AliITSRecoParam
 //
 //____________________________________________________________________
 
@@ -57,6 +59,7 @@
 #include <TTree.h>
 
 #include "AliITSMultReconstructor.h"
+#include "AliITSReconstructor.h"
 #include "AliITSsegmentationSPD.h"
 #include "AliITSRecPoint.h"
 #include "AliITSgeom.h"
@@ -70,6 +73,10 @@ ClassImp(AliITSMultReconstructor)
 AliITSMultReconstructor::AliITSMultReconstructor():
 fClustersLay1(0),
 fClustersLay2(0),
+fDetectorIndexClustersLay1(0),
+fDetectorIndexClustersLay2(0),
+fOverlapFlagClustersLay1(0),
+fOverlapFlagClustersLay2(0),
 fTracklets(0),
 fSClusters(0),
 fAssociationFlag(0),
@@ -77,9 +84,12 @@ fNClustersLay1(0),
 fNClustersLay2(0),
 fNTracklets(0),
 fNSingleCluster(0),
+fOnlyOneTrackletPerC2(0),
 fPhiWindow(0),
 fZetaWindow(0),
-fOnlyOneTrackletPerC2(0),
+fRemoveClustersFromOverlaps(0),
+fPhiOverlapCut(0),
+fZetaOverlapCut(0),
 fHistOn(0),
 fhClustersDPhiAcc(0),
 fhClustersDThetaAcc(0),
@@ -104,21 +114,41 @@ fhphiClustersLay1(0){
 
 
   SetHistOn();
-  SetPhiWindow();
-  SetZetaWindow();
-  SetOnlyOneTrackletPerC2();
 
-  fClustersLay1       = new Float_t*[300000];
-  fClustersLay2       = new Float_t*[300000];
-  fTracklets          = new Float_t*[300000];
-  fSClusters          = new Float_t*[300000];
-  fAssociationFlag    = new Bool_t[300000];
+  if(AliITSReconstructor::GetRecoParam()) { 
+    SetOnlyOneTrackletPerC2(AliITSReconstructor::GetRecoParam()->GetTrackleterOnlyOneTrackletPerC2());
+    SetPhiWindow(AliITSReconstructor::GetRecoParam()->GetTrackleterPhiWindow());
+    SetZetaWindow(AliITSReconstructor::GetRecoParam()->GetTrackleterZetaWindow());
+    SetRemoveClustersFromOverlaps(AliITSReconstructor::GetRecoParam()->GetTrackleterRemoveClustersFromOverlaps());
+    SetPhiOverlapCut(AliITSReconstructor::GetRecoParam()->GetTrackleterPhiOverlapCut());
+    SetZetaOverlapCut(AliITSReconstructor::GetRecoParam()->GetTrackleterZetaOverlapCut());
+  } else {
+    SetOnlyOneTrackletPerC2();
+    SetPhiWindow();
+    SetZetaWindow();
+    SetRemoveClustersFromOverlaps();
+    SetPhiOverlapCut();
+    SetZetaOverlapCut();
+  } 
+  
+
+  fClustersLay1              = new Float_t*[300000];
+  fClustersLay2              = new Float_t*[300000];
+  fDetectorIndexClustersLay1 = new Int_t[300000];
+  fDetectorIndexClustersLay2 = new Int_t[300000];
+  fOverlapFlagClustersLay1   = new Bool_t[300000];
+  fOverlapFlagClustersLay2   = new Bool_t[300000];
+  fTracklets                 = new Float_t*[300000];
+  fSClusters                 = new Float_t*[300000];
+  fAssociationFlag           = new Bool_t[300000];
 
   for(Int_t i=0; i<300000; i++) {
     fClustersLay1[i]       = new Float_t[6];
     fClustersLay2[i]       = new Float_t[6];
     fTracklets[i]          = new Float_t[5];
     fSClusters[i]           = new Float_t[2];
+    fOverlapFlagClustersLay1[i]   = kFALSE;
+    fOverlapFlagClustersLay2[i]   = kFALSE;
     fAssociationFlag[i]    = kFALSE;
   }
 
@@ -161,6 +191,10 @@ fhphiClustersLay1(0){
 AliITSMultReconstructor::AliITSMultReconstructor(const AliITSMultReconstructor &mr) : TObject(mr),
 fClustersLay1(mr.fClustersLay1),
 fClustersLay2(mr.fClustersLay2),
+fDetectorIndexClustersLay1(mr.fDetectorIndexClustersLay1),
+fDetectorIndexClustersLay2(mr.fDetectorIndexClustersLay2),
+fOverlapFlagClustersLay1(mr.fOverlapFlagClustersLay1),
+fOverlapFlagClustersLay2(mr.fOverlapFlagClustersLay2),
 fTracklets(mr.fTracklets),
 fSClusters(mr.fSClusters),
 fAssociationFlag(mr.fAssociationFlag),
@@ -168,9 +202,12 @@ fNClustersLay1(mr.fNClustersLay1),
 fNClustersLay2(mr.fNClustersLay2),
 fNTracklets(mr.fNTracklets),
 fNSingleCluster(mr.fNSingleCluster),
+fOnlyOneTrackletPerC2(mr.fOnlyOneTrackletPerC2),
 fPhiWindow(mr.fPhiWindow),
 fZetaWindow(mr.fZetaWindow),
-fOnlyOneTrackletPerC2(mr.fOnlyOneTrackletPerC2),
+fRemoveClustersFromOverlaps(mr.fRemoveClustersFromOverlaps),
+fPhiOverlapCut(mr.fPhiOverlapCut),
+fZetaOverlapCut(mr.fZetaOverlapCut),
 fHistOn(mr.fHistOn),
 fhClustersDPhiAcc(mr.fhClustersDPhiAcc),
 fhClustersDThetaAcc(mr.fhClustersDThetaAcc),
@@ -227,6 +264,10 @@ AliITSMultReconstructor::~AliITSMultReconstructor(){
   }
   delete [] fClustersLay1;
   delete [] fClustersLay2;
+  delete [] fDetectorIndexClustersLay1;
+  delete [] fDetectorIndexClustersLay2;
+  delete [] fOverlapFlagClustersLay1;
+  delete [] fOverlapFlagClustersLay2;
   delete [] fTracklets;
   delete [] fSClusters;
 
@@ -308,10 +349,12 @@ AliITSMultReconstructor::Reconstruct(TTree* clusterTree, Float_t* vtx, Float_t* 
     Float_t dPhimin        = 0.;  // Used for histograms only! 
     Float_t dThetamin      = 0.;  // Used for histograms only! 
     Float_t dZetamin       = 0.;  // Used for histograms only! 
-    
+     
+    if (fOverlapFlagClustersLay1[iC1]) continue;
+ 
     // Loop on layer 2 
     for (Int_t iC2=0; iC2<fNClustersLay2; iC2++) {      
-      
+      if (fOverlapFlagClustersLay2[iC2]) continue;
       // The following excludes double associations
       if (!fAssociationFlag[iC2]) {
 	
@@ -418,6 +461,9 @@ AliITSMultReconstructor::Reconstruct(TTree* clusterTree, Float_t* vtx, Float_t* 
       AliDebug(1,Form(" Cl. %d of Layer 1 and %d of Layer 2", iC1, 
 		      iC2WithBestDist));
       fNTracklets++;
+
+      if (fRemoveClustersFromOverlaps) FlagClustersInOverlapRegions (iC1,iC2WithBestDist);
+
     }
 
     // Delete the following else if you do not want to save Clusters! 
@@ -497,6 +543,9 @@ AliITSMultReconstructor::LoadClusterArrays(TTree* itsClusterTree) {
 	fClustersLay1[fNClustersLay1][0] = x;
 	fClustersLay1[fNClustersLay1][1] = y;
 	fClustersLay1[fNClustersLay1][2] = z;
+ 
+        fDetectorIndexClustersLay1[fNClustersLay1]=iIts;  
+
 	for (Int_t i=0; i<3; i++)
 		fClustersLay1[fNClustersLay1][3+i] = cluster->GetLabel(i);
 	fNClustersLay1++;
@@ -505,6 +554,9 @@ AliITSMultReconstructor::LoadClusterArrays(TTree* itsClusterTree) {
 	fClustersLay2[fNClustersLay2][0] = x;
 	fClustersLay2[fNClustersLay2][1] = y;
 	fClustersLay2[fNClustersLay2][2] = z;
+
+        fDetectorIndexClustersLay2[fNClustersLay2]=iIts;
+ 
 	for (Int_t i=0; i<3; i++)
 		fClustersLay2[fNClustersLay2][3+i] = cluster->GetLabel(i);
 	fNClustersLay2++;
@@ -617,4 +669,83 @@ AliITSMultReconstructor::SaveHists() {
   fhphiTracklets->Write();
   fhetaClustersLay1->Write();
   fhphiClustersLay1->Write();
+}
+
+//____________________________________________________________________
+void 
+AliITSMultReconstructor::FlagClustersInOverlapRegions (Int_t iC1, Int_t iC2WithBestDist) {
+
+  Float_t distClSameMod=0.;
+  Float_t distClSameModMin=0.;
+  Int_t   iClOverlap =0;
+  Float_t meanRadiusLay1 = 3.99335; // average radius inner layer
+  Float_t meanRadiusLay2 = 7.37935; // average radius outer layer;
+
+  Float_t zproj1=0.;
+  Float_t zproj2=0.;
+  Float_t deZproj=0.;
+
+  // Loop on inner layer clusters
+  for (Int_t iiC1=0; iiC1<fNClustersLay1; iiC1++) {
+    if (!fOverlapFlagClustersLay1[iiC1]) {
+      // only for adjacent modules
+      if ((TMath::Abs(fDetectorIndexClustersLay1[iC1]-fDetectorIndexClustersLay1[iiC1])==4)||
+         (TMath::Abs(fDetectorIndexClustersLay1[iC1]-fDetectorIndexClustersLay1[iiC1])==76)) {
+        Float_t dePhi=TMath::Abs(fClustersLay1[iiC1][1]-fClustersLay1[iC1][1]);
+        if (dePhi>TMath::Pi()) dePhi=2.*TMath::Pi()-dePhi;
+
+        zproj1=meanRadiusLay1/TMath::Tan(fClustersLay1[iC1][0]);
+        zproj2=meanRadiusLay1/TMath::Tan(fClustersLay1[iiC1][0]);
+
+        deZproj=TMath::Abs(zproj1-zproj2);
+
+        distClSameMod = TMath::Sqrt(TMath::Power(deZproj/fZetaOverlapCut,2)+TMath::Power(dePhi/fPhiOverlapCut,2));
+        if (distClSameMod<=1.) fOverlapFlagClustersLay1[iiC1]=kTRUE;
+
+//        if (distClSameMod<=1.) {
+//          if (distClSameModMin==0. || distClSameMod<distClSameModMin) {
+//            distClSameModMin=distClSameMod;
+//            iClOverlap=iiC1;
+//          } 
+//        }
+
+
+      } // end adjacent modules
+    } 
+  } // end Loop on inner layer clusters
+
+//  if (distClSameModMin!=0.) fOverlapFlagClustersLay1[iClOverlap]=kTRUE;
+
+  distClSameMod=0.;
+  distClSameModMin=0.;
+  iClOverlap =0;
+  // Loop on outer layer clusters
+  for (Int_t iiC2=0; iiC2<fNClustersLay2; iiC2++) {
+    if (!fOverlapFlagClustersLay2[iiC2]) {
+      // only for adjacent modules
+      if ((TMath::Abs(fDetectorIndexClustersLay2[iC2WithBestDist]-fDetectorIndexClustersLay2[iiC2])==4) ||
+         (TMath::Abs(fDetectorIndexClustersLay2[iC2WithBestDist]-fDetectorIndexClustersLay2[iiC2])==156)) {
+        Float_t dePhi=TMath::Abs(fClustersLay2[iiC2][1]-fClustersLay2[iC2WithBestDist][1]);
+        if (dePhi>TMath::Pi()) dePhi=2.*TMath::Pi()-dePhi;
+
+        zproj1=meanRadiusLay2/TMath::Tan(fClustersLay2[iC2WithBestDist][0]);
+        zproj2=meanRadiusLay2/TMath::Tan(fClustersLay2[iiC2][0]);
+
+        deZproj=TMath::Abs(zproj1-zproj2);
+        distClSameMod = TMath::Sqrt(TMath::Power(deZproj/fZetaOverlapCut,2)+TMath::Power(dePhi/fPhiOverlapCut,2));
+        if (distClSameMod<=1.) fOverlapFlagClustersLay2[iiC2]=kTRUE;
+
+//        if (distClSameMod<=1.) {
+//          if (distClSameModMin==0. || distClSameMod<distClSameModMin) {
+//            distClSameModMin=distClSameMod;
+//            iClOverlap=iiC2;
+//          }
+//        }
+
+      } // end adjacent modules
+    }
+  } // end Loop on outer layer clusters
+
+//  if (distClSameModMin!=0.) fOverlapFlagClustersLay2[iClOverlap]=kTRUE;
+
 }

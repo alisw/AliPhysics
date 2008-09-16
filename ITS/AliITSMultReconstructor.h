@@ -38,11 +38,16 @@ public:
 
   void Reconstruct(TTree* tree, Float_t* vtx, Float_t* vtxRes);
   void LoadClusterFiredChips(TTree* tree);
+  void FlagClustersInOverlapRegions(Int_t ic1,Int_t ic2);
 
+  // Following members are set via AliITSRecoParam
+  void SetOnlyOneTrackletPerC2(Bool_t b = kTRUE) {fOnlyOneTrackletPerC2 = b;}
   void SetPhiWindow(Float_t w=0.08) {fPhiWindow=w;}
   void SetZetaWindow(Float_t w=1.) {fZetaWindow=w;}
-  void SetOnlyOneTrackletPerC2(Bool_t b = kTRUE) {fOnlyOneTrackletPerC2 = b;}
-  
+  void SetRemoveClustersFromOverlaps(Bool_t b = kFALSE) {fRemoveClustersFromOverlaps = b;}
+  void SetPhiOverlapCut(Float_t w=0.005) {fPhiOverlapCut=w;}
+  void SetZetaOverlapCut(Float_t w=0.05) {fZetaOverlapCut=w;}
+
   Int_t GetNClustersLayer1() const {return fNClustersLay1;}
   Int_t GetNClustersLayer2() const {return fNClustersLay2;}
   Int_t GetNTracklets() const {return fNTracklets;}
@@ -62,8 +67,14 @@ protected:
   AliITSMultReconstructor& operator=(const AliITSMultReconstructor& mr);
 
   
-  Float_t**     fClustersLay1;         // clusters in the 1st layer of ITS 
-  Float_t**     fClustersLay2;         // clusters in the 2nd layer of ITS 
+  Float_t**     fClustersLay1;               // clusters in the 1st layer of ITS 
+  Float_t**     fClustersLay2;               // clusters in the 2nd layer of ITS 
+  Int_t*        fDetectorIndexClustersLay1;  // module index for clusters 1st ITS layer
+  Int_t*        fDetectorIndexClustersLay2;  // module index for clusters 2nd ITS layer
+  Bool_t*       fOverlapFlagClustersLay1;    // flag for clusters in the overlap regions 1st ITS layer
+  Bool_t*       fOverlapFlagClustersLay2;    // flag for clusters in the overlap regions 2nd ITS layer 
+
+
   Float_t**     fTracklets;            // tracklets 
   Float_t**     fSClusters;            // single clusters (unassociated)
   Bool_t*       fAssociationFlag;      // flag for the associations 
@@ -74,13 +85,15 @@ protected:
   Int_t         fNSingleCluster;       // Number of unassociated clusters
   Short_t       fNFiredChips[2];       // Number of fired chips in the two SPD layers
  
-  Float_t       fPhiWindow;            // Search window in phi
-  Float_t       fZetaWindow;           // SEarch window in eta
+  // Following members are set via AliITSRecoParam
+  Bool_t        fOnlyOneTrackletPerC2;         // Allow only one tracklet per cluster in the outer layer
+  Float_t       fPhiWindow;                    // Search window in phi
+  Float_t       fZetaWindow;                   // Search window in eta
+  Bool_t        fRemoveClustersFromOverlaps;   // Option to skip clusters in the overlaps
+  Float_t       fPhiOverlapCut;                // Fiducial window in phi for overlap cut
+  Float_t       fZetaOverlapCut;               // Fiducial window in eta for overlap cut
 
-  Bool_t        fOnlyOneTrackletPerC2; // only one tracklet per cluster in L. 2
-  
   Bool_t        fHistOn;               // Option to define and fill the histograms 
-
 
   TH1F*         fhClustersDPhiAcc;     // Phi2 - Phi1 for tracklets 
   TH1F*         fhClustersDThetaAcc;   // Theta2 - Theta1 for tracklets 

@@ -268,6 +268,20 @@ class AliITSRecoParam : public AliDetectorRecoParam
   void   SetUseChargeMatchingInClusterFinderSSD(Bool_t use=kTRUE) { fUseChargeMatchingInClusterFinderSSD=use; return; }
   Bool_t GetUseChargeMatchingInClusterFinderSSD() const { return fUseChargeMatchingInClusterFinderSSD; }
 
+  // SPD Tracklets (D. Elia)
+  void    SetTrackleterOnlyOneTrackletPerC2(Bool_t use= kTRUE) {fTrackleterOnlyOneTrackletPerC2=use; return; }
+  Bool_t  GetTrackleterOnlyOneTrackletPerC2() const { return fTrackleterOnlyOneTrackletPerC2; }
+  void    SetTrackleterPhiWindow(Float_t w=0.08) {fTrackleterPhiWindow=w;}
+  void    SetTrackleterZetaWindow(Float_t w=1.) {fTrackleterZetaWindow=w;}
+  Float_t GetTrackleterPhiWindow() const {return fTrackleterPhiWindow;}
+  Float_t GetTrackleterZetaWindow() const {return fTrackleterZetaWindow;}
+  void    SetTrackleterRemoveClustersFromOverlaps(Bool_t use=kTRUE) { fTrackleterRemoveClustersFromOverlaps=use; return; }
+  Bool_t  GetTrackleterRemoveClustersFromOverlaps() const { return fTrackleterRemoveClustersFromOverlaps; }
+  void    SetTrackleterPhiOverlapCut(Float_t w=0.005) {fTrackleterPhiOverlapCut=w;}
+  void    SetTrackleterZetaOverlapCut(Float_t w=0.05) {fTrackleterZetaOverlapCut=w;}
+  Float_t GetTrackleterPhiOverlapCut() const {return fTrackleterPhiOverlapCut;}
+  Float_t GetTrackleterZetaOverlapCut() const {return fTrackleterZetaOverlapCut;}
+
   //
 
   enum {fgkMaxClusterPerLayer=70000}; //7000*10;   // max clusters per layer
@@ -430,6 +444,14 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Bool_t fUseUnfoldingInClusterFinderSSD; // SSD
 
   Bool_t fUseChargeMatchingInClusterFinderSSD; // SSD
+
+  // SPD Tracklets (D. Elia)
+  Bool_t  fTrackleterOnlyOneTrackletPerC2;         // Allow only one tracklet per cluster in the outer layer
+  Float_t fTrackleterPhiWindow;                    // Search window in phi
+  Float_t fTrackleterZetaWindow;                   // Search window in eta
+  Bool_t  fTrackleterRemoveClustersFromOverlaps;   // Option to skip clusters in the overlaps
+  Float_t fTrackleterPhiOverlapCut;                // Fiducial window in phi for overlap cut
+  Float_t fTrackleterZetaOverlapCut;               // Fiducial window in eta for overlap cut
 
   ClassDef(AliITSRecoParam,10) // ITS reco parameters
 };
