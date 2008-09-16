@@ -190,6 +190,8 @@ int main(int argc, char **argv) {
       
       Int_t ich=0, adcMod[48], adcCh[48], sigCode[48], det[48], sec[48];
       if(eventT==START_OF_DATA){
+
+	rawStreamZDC->SetSODReading(kTRUE);
 	  	
 	if(!rawStreamZDC->Next()) printf(" \t No raw data found!! \n");
         else{
@@ -240,6 +242,8 @@ int main(int argc, char **argv) {
   	   printf("\t ATTENTION! No Raw Data Header found!!!\n");
   	   return -1;
   	}
+
+	rawStreamZDC->SetSODReading(kTRUE);
 
   	if (!rawStreamZDC->Next()) printf(" \t No raw data found!! \n");
 	//

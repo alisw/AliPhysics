@@ -80,25 +80,25 @@ int main(int argc, char **argv) {
   char namhist1hg[50], namhist2hg[50], namhist3hg[50];
   char namhist1lg[50], namhist2lg[50], namhist3lg[50];
   for(Int_t j=0; j<kNChannels; j++){
-     if(j<5){ // ZN1
-       sprintf(namhist1hg,"PedZN1hg_%d",j);
-       sprintf(namhist2hg,"PedZN1hgOutOfTime_%d",j);
-       sprintf(namhist3hg,"PedCorrZN1hg_%d",j);
+     if(j<=4){ // ZNC
+       sprintf(namhist1hg,"PedZNChg_%d",j);
+       sprintf(namhist2hg,"PedZNChgOutOfTime_%d",j);
+       sprintf(namhist3hg,"PedCorrZNChg_%d",j);
        //
-       sprintf(namhist1lg,"PedZN1lg_%d",j);
-       sprintf(namhist2lg,"PedZN1lgOutOfTime_%d",j);
-       sprintf(namhist3lg,"PedCorrZN1lg_%d",j);
+       sprintf(namhist1lg,"PedZNClg_%d",j);
+       sprintf(namhist2lg,"PedZNClgOutOfTime_%d",j);
+       sprintf(namhist3lg,"PedCorrZNClg_%d",j);
      }
-     else if(j>=5 && j<10){ // ZP1
-       sprintf(namhist1hg,"PedZP1hg_%d",j-5);
-       sprintf(namhist2hg,"PedZP1hgOutOfTime_%d",j-5);
-       sprintf(namhist3hg,"PedCorrZP1hg_%d",j-5);
+     else if(j>=5 && j<=9){ // ZPC
+       sprintf(namhist1hg,"PedZPChg_%d",j-5);
+       sprintf(namhist2hg,"PedZPChgOutOfTime_%d",j-5);
+       sprintf(namhist3hg,"PedCorrZPChg_%d",j-5);
        //
-       sprintf(namhist1lg,"PedZP1lg_%d",j-5);
-       sprintf(namhist2lg,"PedZP1lgOutOfTime_%d",j-5);
-       sprintf(namhist3lg,"PedCorrZP1lg_%d",j-5);       
+       sprintf(namhist1lg,"PedZPClg_%d",j-5);
+       sprintf(namhist2lg,"PedZPClgOutOfTime_%d",j-5);
+       sprintf(namhist3lg,"PedCorrZPClg_%d",j-5);       
      }
-     else if(j>=10 && j<12){ // ZEM
+     else if(j==10 || j==11){ // ZEM
        sprintf(namhist1hg,"PedZEMhg_%d",j-10);
        sprintf(namhist2hg,"PedZEMhgOutOfTime_%d",j-10);
        sprintf(namhist3hg,"PedCorrZEMhg_%d",j-10);
@@ -107,25 +107,25 @@ int main(int argc, char **argv) {
        sprintf(namhist2lg,"PedZEMlgOutOfTime_%d",j-10);
        sprintf(namhist3lg,"PedCorrZEMlg_%d",j-10);
      }
-     else if(j>=12 && j<17){ // ZN2
-       sprintf(namhist1hg,"PedZN2hg_%d",j-12);
-       sprintf(namhist2hg,"PedZN2hgOutOfTime_%d",j-12);
-       sprintf(namhist3hg,"PedCorrZN2hg_%d",j-12);
+     else if(j>=12 && j<=16){ // ZNA
+       sprintf(namhist1hg,"PedZNAhg_%d",j-12);
+       sprintf(namhist2hg,"PedZNAhgOutOfTime_%d",j-12);
+       sprintf(namhist3hg,"PedCorrZNAhg_%d",j-12);
        //
-       sprintf(namhist1lg,"PedZN2lg_%d",j-12);
-       sprintf(namhist2lg,"PedZN2lgOutOfTime_%d",j-12);
-       sprintf(namhist3lg,"PedCorrZN2lg_%d",j-12);
+       sprintf(namhist1lg,"PedZNAlg_%d",j-12);
+       sprintf(namhist2lg,"PedZNAlgOutOfTime_%d",j-12);
+       sprintf(namhist3lg,"PedCorrZNAlg_%d",j-12);
      }
-     else if(j>=17 && j<22){ // ZP2
-       sprintf(namhist1hg,"PedZP2hg_%d",j-17);
-       sprintf(namhist2hg,"PedZP2hgOutOfTime_%d",j-17);
-       sprintf(namhist3hg,"PedCorrZP2hg_%d",j-17);
+     else if(j>=17 && j<=21){ // ZPA
+       sprintf(namhist1hg,"PedZPAhg_%d",j-17);
+       sprintf(namhist2hg,"PedZPAhgOutOfTime_%d",j-17);
+       sprintf(namhist3hg,"PedCorrZPAhg_%d",j-17);
        //
-       sprintf(namhist1lg,"PedZP2lg_%d",j-17);
-       sprintf(namhist2lg,"PedZP2lgOutOfTime_%d",j-17);
-       sprintf(namhist3lg,"PedCorrZP2lg_%d",j-17);
+       sprintf(namhist1lg,"PedZPAlg_%d",j-17);
+       sprintf(namhist2lg,"PedZPAlgOutOfTime_%d",j-17);
+       sprintf(namhist3lg,"PedCorrZPAlg_%d",j-17);
      }
-     else if(j>=22 && j<24){ //Reference PMs
+     else if(j==22 || j==24){ //Reference PMs
        sprintf(namhist1hg,"PedRefhg_%d",j-22);
        sprintf(namhist2hg,"PedRefhgOutOfTime_%d",j-22);
        sprintf(namhist3hg,"PedCorrRefhg_%d",j-22);
@@ -210,8 +210,11 @@ int main(int argc, char **argv) {
       eventT=event->eventType;
       
       Int_t ich=0, adcMod[48], adcCh[48], sigCode[48], det[48], sec[48];
+      
       if(eventT==START_OF_DATA){
 	  	
+	rawStreamZDC->SetSODReading(kTRUE);
+	
 	if(!rawStreamZDC->Next()) printf(" \t No raw data found!! \n");
         else{
 	  while(rawStreamZDC->Next()){
@@ -263,11 +266,15 @@ int main(int argc, char **argv) {
            printf("\t ATTENTION! No Raw Data Header found!!!\n");
            return -1;
         }
+	
+	rawStreamZDC->SetSODReading(kTRUE);
 
   	if(!rawStreamZDC->Next()) printf(" \t No raw data found!! \n");	
 	//
 	// ----- Setting ch. mapping -----
 	for(Int_t jk=0; jk<48; jk++){
+	  //printf("ZDCPEDESTALDA.cxx ->  ch.%d mod %d, ch %d, code %d det %d, sec %d\n",
+	  //    jk,adcMod[jk],adcCh[jk],sigCode[jk],det[jk],sec[jk]);
 	  rawStreamZDC->SetMapADCMod(jk, adcMod[jk]);
 	  rawStreamZDC->SetMapADCCh(jk, adcCh[jk]);
 	  rawStreamZDC->SetMapADCSig(jk, sigCode[jk]);
@@ -285,22 +292,23 @@ int main(int argc, char **argv) {
 	//
   	while(rawStreamZDC->Next()){
   	 Int_t index=-1;
-  	 if(rawStreamZDC->IsADCDataWord()){
+	 Int_t detector = rawStreamZDC->GetSector(0);
+  	 if(rawStreamZDC->IsADCDataWord() && (detector!=-1)){
 	  if(rawStreamZDC->GetSector(1)!=5){ // Physics signals
-    	    if(rawStreamZDC->GetSector(0)==1) index = rawStreamZDC->GetSector(1); // *** ZNC
-	    else if(rawStreamZDC->GetSector(0)==2) index = rawStreamZDC->GetSector(1)+5; // *** ZPC
-	    else if(rawStreamZDC->GetSector(0)==3) index = rawStreamZDC->GetSector(1)+9; // *** ZEM
-	    else if(rawStreamZDC->GetSector(0)==4) index = rawStreamZDC->GetSector(1)+12; // *** ZNA
-	    else if(rawStreamZDC->GetSector(0)==5) index = rawStreamZDC->GetSector(1)+17; // *** ZPA
+    	    if(detector==1) index = rawStreamZDC->GetSector(1); // *** ZNC
+	    else if(detector==2) index = rawStreamZDC->GetSector(1)+5; // *** ZPC
+	    else if(detector==3) index = rawStreamZDC->GetSector(1)+9; // *** ZEM
+	    else if(detector==4) index = rawStreamZDC->GetSector(1)+12; // *** ZNA
+	    else if(detector==5) index = rawStreamZDC->GetSector(1)+17; // *** ZPA
 	  }
 	  else{ // Reference PMs
-	    index = (rawStreamZDC->GetSector(0)-1)/3+22;
+	    index = (detector-1)/3+22;
 	  }
 	  //
-	  /*printf("\t iraw %d index %d det %d quad %d res %d ADC %d\n", iraw, index,
-	  	rawStreamZDC->GetSector(0), rawStreamZDC->GetSector(1), 
-		rawStreamZDC->GetADCGain(), rawStreamZDC->GetADCValue());
-	  */
+	  if(index==-1) printf("\tERROR!!! iraw %d det %d quad %d res %d index %d ADC %d\n", 
+	    iraw, detector, rawStreamZDC->GetSector(1), 
+	    rawStreamZDC->GetADCGain(), index, rawStreamZDC->GetADCValue());
+	  
 	   //
 	   if(iraw<2*kNChannels){ // --- In-time pedestals (1st 48 raw data)
 	    if(rawStreamZDC->GetADCGain()==0){ 
@@ -370,7 +378,7 @@ int main(int argc, char **argv) {
      MeanPed[i] = (Double_t) ADCfunchg[i]->GetParameter(1);
      MeanPedWidth[i] = (Double_t)  ADCfunchg[i]->GetParameter(2);
      fprintf(fileShuttle,"\t%f\t%f\n",MeanPed[i],MeanPedWidth[i]);
-     //printf("\t MeanPed[%d] = %f\n",i, MeanPed[i]);
+     printf("\t MeanPedhg[%d] = %f\n",i, MeanPed[i]);
   }
   TF1 *ADCfunclg[kNChannels];
   for(Int_t i=0; i<kNChannels; i++){
@@ -379,7 +387,7 @@ int main(int argc, char **argv) {
      MeanPed[i+kNChannels] = (Double_t)  ADCfunclg[i]->GetParameter(1);
      MeanPedWidth[i+kNChannels] = (Double_t)  ADCfunclg[i]->GetParameter(2);
      fprintf(fileShuttle,"\t%f\t%f\n",MeanPed[i+kNChannels],MeanPedWidth[i+kNChannels]);
-     //printf("\t MeanPed[%d] = %f\n",i+kNChannels, MeanPed[i+kNChannels]);
+     printf("\t MeanPedlg[%d] = %f\n",i+kNChannels, MeanPed[i+kNChannels]);
   }
   // --- Out-of-time pedestals
   TF1 *ADCootfunchg[kNChannels];
@@ -389,7 +397,7 @@ int main(int argc, char **argv) {
      MeanPedOOT[i] = (Double_t)  ADCootfunchg[i]->GetParameter(1);
      MeanPedWidthOOT[i] = (Double_t)  ADCootfunchg[i]->GetParameter(2);
      fprintf(fileShuttle,"\t%f\t%f\n",MeanPedOOT[i],MeanPedWidthOOT[i]);
-     //printf("\t MeanPedOOT[%d] = %f\n",i, MeanPedOOT[i]);
+     printf("\t MeanPedOOThg[%d] = %f\n",i, MeanPedOOT[i]);
   }
   TF1 *ADCootfunclg[kNChannels];
   for(Int_t i=0; i<kNChannels; i++){
@@ -398,7 +406,7 @@ int main(int argc, char **argv) {
      MeanPedOOT[i+kNChannels] = (Double_t)  ADCootfunclg[i]->GetParameter(1);
      MeanPedWidthOOT[i+kNChannels] = (Double_t)  ADCootfunclg[i]->GetParameter(2);
      fprintf(fileShuttle,"\t%f\t%f\n",MeanPedOOT[i+kNChannels],MeanPedWidthOOT[i+kNChannels]);
-     //printf("\t MeanPedOOT[%d] = %f\n",i+kNChannels, MeanPedOOT[i+kNChannels]);
+     printf("\t MeanPedOOTlg[%d] = %f\n",i+kNChannels, MeanPedOOT[i+kNChannels]);
   }
   
   // ***************************************************

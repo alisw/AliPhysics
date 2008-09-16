@@ -108,7 +108,7 @@ int main(int argc, char **argv) {
       // Initalize raw-data reading and decoding
       AliRawReader *reader = new AliRawReaderDate((void*)event);
       // --- Reading event header
-      UInt_t evtype = reader->GetType();
+      //UInt_t evtype = reader->GetType();
       //printf("\n\t ZDCPEDESTALda -> ev. type %d\n",evtype);
       //printf("\t ZDCPEDESTALda -> run # %d\n",reader->GetRunNumber());
       //
@@ -122,6 +122,8 @@ int main(int argc, char **argv) {
       
       if(eventT==START_OF_DATA){
 	sodRead = kTRUE;
+	
+	rawStreamZDC->SetSODReading(kTRUE);
 	
 	if(!rawStreamZDC->Next()) printf(" \t No raw data found!! \n");
         else{
@@ -159,8 +161,8 @@ int main(int argc, char **argv) {
       iev++; 
     }    
       
-      /* free resources */
-      free(event);
+    /* free resources */
+    //free(event);
   }
   
   /* store the result files on FES */
