@@ -48,6 +48,8 @@ AliZDCRawStream::AliZDCRawStream(AliRawReader* rawReader) :
   fIsADCDataWord(kFALSE),
   fIsADCHeader(kFALSE),
   fIsADCEOB(kFALSE),
+  fSODReading(kFALSE),
+  fIsMapRead(kFALSE),
   fDARCEvBlockLenght(0),  
   fDARCBlockAttributes(0),
   fDeadfaceOffset(0),
@@ -60,7 +62,7 @@ AliZDCRawStream::AliZDCRawStream(AliRawReader* rawReader) :
   fADCValue(-1),	 
   fADCGain(-1),
   fScNWords(0),	  
-  fScGeo(-1),	  
+  fScGeo(0),	  
   fScTS(0),	  
   fScTriggerNumber(0),
   fIsScEventGood(kFALSE),
@@ -90,6 +92,8 @@ AliZDCRawStream::AliZDCRawStream(const AliZDCRawStream& stream) :
   fIsADCDataWord(stream.fIsADCDataWord), 
   fIsADCHeader(stream.fIsADCHeader), 
   fIsADCEOB(stream.fIsADCEOB), 
+  fSODReading(stream.fSODReading),
+  fIsMapRead(stream.fIsMapRead),
   fDARCEvBlockLenght(stream.fDARCEvBlockLenght),  
   fDARCBlockAttributes(stream.fDARCBlockAttributes),
   fDeadfaceOffset(stream.GetDeadfaceOffset()),
@@ -136,6 +140,16 @@ AliZDCRawStream::~AliZDCRawStream()
 void AliZDCRawStream::ReadChMap()
 {
   // Reading channel map
+  //printf("\n\t Reading map from OCDB\n");
+  AliZDCChMap * chMap = GetChMap();
+  for(Int_t i=0; i<48; i++){
+    fMapADC[i][0] = chMap->GetADCModule(i);
+    fMapADC[i][1] = chMap->GetADCChannel(i);
+    fMapADC[i][2] = -1;
+    fMapADC[i][3] = chMap->GetDetector(i);
+    fMapADC[i][4] = chMap->GetSector(i);
+  }
+  fIsMapRead = kTRUE;
 }
 
 //_____________________________________________________________________________
@@ -146,11 +160,7 @@ void AliZDCRawStream::ReadCDHHeader()
   if(!header) {
       AliError("\t No CDH in raw data streaming\n");
       fRawReader->AddMajorErrorLog(kCDHError);
-      //
-      // For the moment to debug the classe the event is read
-      // also if the CDH is not present in the data buffer
-      // ******* TO BE CHANGED!!! ***************************
-      //return;
+      return;
   }
   else{
     //printf("\t AliZDCRawStream::ReadCDHHeader -> Data Size = %d\n",fRawReader->GetDataSize());
@@ -158,7 +168,7 @@ void AliZDCRawStream::ReadCDHHeader()
     fDARCEvBlockLenght = header->fSize;
     //printf("\t AliZDCRawStream::ReadCDHHeader -> fDARCEvBlockLenght = %d\n",fDARCEvBlockLenght);
     
-    //UChar_t message = header->GetAttributes();
+    UChar_t message = header->GetAttributes();
     //printf("\t AliZDCRawStream::ReadCDHHeader -> Attributes %x\n",message);
     
     /*if(message & 0x10){ // COSMIC RUN
@@ -252,6 +262,8 @@ Bool_t AliZDCRawStream::Next()
   // -------------------------------------------
   // --- DARC header
   // -------------------------------------------
+  // If the CDH has been read then 
+  // the DARC header must follow
   if(fIsDARCHeader){
     //printf("\t ---- DARC header ----\n");
     if(fIsCalib){
@@ -271,7 +283,10 @@ Bool_t AliZDCRawStream::Next()
   // --- Start of data event
   // --- decoding mapping of connected ADC ch.
   // -------------------------------------------
-  if(fEvType==10){
+  // In the SOD event ADC ch. mapping is written
+  if(fEvType==10 && fSODReading){
+    //printf("\n  AliZDCRawStream::Next() - fBuffer[%d] = %x\n",fPosition, fBuffer);
+    
     if(fPosition>fDataOffset){
       if((fBuffer&0xff000000) == 0xff000000){
         if(fPosition==(fDataOffset+1)){ 
@@ -279,24 +294,28 @@ Bool_t AliZDCRawStream::Next()
 	   fNConnCh=0;	
         }
 	else{
-	  //printf("\n\t End of StartOfData event\n\n");
-	  return kTRUE;
+	  printf("\n\t End of ZDC StartOfData event\n\n");
+          //printf("AliZDCRawStream: fSODReading after SOD reading set to %d\n", fSODReading);
+	  return kFALSE;
 	}
       }
       else if((fBuffer&0x80000000)>>31 == 1){
         // Mapping identification
 	fADCModule = ((fBuffer & 0x7f000000)>>24);
-	fModType = ((fBuffer & 0xfff000)>>8);
+	fModType = ((fBuffer & 0xfff00)>>8);
 	fADCNChannels = (fBuffer & 0xff);
 	//
-	//printf("\tGEO %d, mod. type %d, #ch. %d\n",fADCModule,fModType,fADCNChannels);
+	printf("\tGEO %d, mod. type %d, #ch. %d\n",fADCModule,fModType,fADCNChannels);
       }
-      else if(fModType==0 && (fBuffer&0x80000000)>>31 == 0){
+      else if(fModType==1 && (fBuffer&0x80000000)>>31 == 0){
         // Channel signal
 	if((fBuffer&0x40000000)>>30==0){ // high range chain ADC
 	  fIsChMapping = kTRUE;
 	  fADCChannel = ((fBuffer & 0x3fff0000)>>16);
 	  fCabledSignal = (fBuffer&0xffff);
+	  //
+      	  //printf("\tADC ch. %d, signal %d\n",fADCChannel,fCabledSignal);
+	  //
 	  fMapADC[fNConnCh][0] = fADCModule;
 	  fMapADC[fNConnCh][1] = fADCChannel;
 	  fMapADC[fNConnCh][2] = fCabledSignal;
@@ -310,19 +329,19 @@ Bool_t AliZDCRawStream::Next()
 	     || fCabledSignal==24 || fCabledSignal==48){
 	    fMapADC[fNConnCh][3] = 4; //ZNA
 	    //
-	    if(fCabledSignal==2 || fCabledSignal==26) fMapADC[fNConnCh][4]=0;
-	    else if(fCabledSignal==3 || fCabledSignal==27) fMapADC[fNConnCh][4]=1;
-	    else if(fCabledSignal==4 || fCabledSignal==28) fMapADC[fNConnCh][4]=2;
-	    else if(fCabledSignal==5 || fCabledSignal==29) fMapADC[fNConnCh][4]=3;
-	    else if(fCabledSignal==6 || fCabledSignal==30) fMapADC[fNConnCh][4]=4;
+	    if(fCabledSignal==2 || fCabledSignal==26)       fMapADC[fNConnCh][4]=0;
+	    else if(fCabledSignal==3 || fCabledSignal==27)  fMapADC[fNConnCh][4]=1;
+	    else if(fCabledSignal==4 || fCabledSignal==28)  fMapADC[fNConnCh][4]=2;
+	    else if(fCabledSignal==5 || fCabledSignal==29)  fMapADC[fNConnCh][4]=3;
+	    else if(fCabledSignal==6 || fCabledSignal==30)  fMapADC[fNConnCh][4]=4;
 	    else if(fCabledSignal==24 || fCabledSignal==48) fMapADC[fNConnCh][4]=5;
 	  }
 	  else if((fCabledSignal>=7 && fCabledSignal<=11) || (fCabledSignal>=31 && fCabledSignal<=35)){
 	    fMapADC[fNConnCh][3] = 5; //ZPA
 	    //
-	    if(fCabledSignal==7 || fCabledSignal==31) fMapADC[fNConnCh][4]=0;
-	    else if(fCabledSignal==8 || fCabledSignal==32) fMapADC[fNConnCh][4]=1;
-	    else if(fCabledSignal==9 || fCabledSignal==33) fMapADC[fNConnCh][4]=2;
+	    if(fCabledSignal==7 || fCabledSignal==31) 	    fMapADC[fNConnCh][4]=0;
+	    else if(fCabledSignal==8 || fCabledSignal==32)  fMapADC[fNConnCh][4]=1;
+	    else if(fCabledSignal==9 || fCabledSignal==33)  fMapADC[fNConnCh][4]=2;
 	    else if(fCabledSignal==10 || fCabledSignal==34) fMapADC[fNConnCh][4]=3;
 	    else if(fCabledSignal==11 || fCabledSignal==35) fMapADC[fNConnCh][4]=4;
 	  }
@@ -330,7 +349,7 @@ Bool_t AliZDCRawStream::Next()
 	     || fCabledSignal==25 || fCabledSignal==49){
 	    fMapADC[fNConnCh][3] = 1; //ZNC
 	    //
-	    if(fCabledSignal==12 || fCabledSignal==36) fMapADC[fNConnCh][4]=0;
+	    if(fCabledSignal==12 || fCabledSignal==36)      fMapADC[fNConnCh][4]=0;
 	    else if(fCabledSignal==13 || fCabledSignal==37) fMapADC[fNConnCh][4]=1;
 	    else if(fCabledSignal==14 || fCabledSignal==38) fMapADC[fNConnCh][4]=2;
 	    else if(fCabledSignal==15 || fCabledSignal==39) fMapADC[fNConnCh][4]=3;
@@ -340,7 +359,7 @@ Bool_t AliZDCRawStream::Next()
 	  else if((fCabledSignal>=17 && fCabledSignal<=21) || (fCabledSignal>=41 && fCabledSignal<=45)){
 	    fMapADC[fNConnCh][3] = 2; //ZPC
 	    //
-	    if(fCabledSignal==17 || fCabledSignal==41) fMapADC[fNConnCh][4]=0;
+	    if(fCabledSignal==17 || fCabledSignal==41) 	    fMapADC[fNConnCh][4]=0;
 	    else if(fCabledSignal==18 || fCabledSignal==42) fMapADC[fNConnCh][4]=1;
 	    else if(fCabledSignal==19 || fCabledSignal==43) fMapADC[fNConnCh][4]=2;
 	    else if(fCabledSignal==20 || fCabledSignal==44) fMapADC[fNConnCh][4]=3;
@@ -349,7 +368,7 @@ Bool_t AliZDCRawStream::Next()
 	  else if(fCabledSignal==22 || fCabledSignal==23 || fCabledSignal==46 || fCabledSignal==47){
 	    fMapADC[fNConnCh][3] = 3;
 	    //
-	    if(fCabledSignal==22 || fCabledSignal==46) fMapADC[fNConnCh][4]=1;
+	    if(fCabledSignal==22 || fCabledSignal==46)      fMapADC[fNConnCh][4]=1;
 	    else if(fCabledSignal==23 || fCabledSignal==47) fMapADC[fNConnCh][4]=2;
 	  }
 	  //
@@ -362,14 +381,14 @@ Bool_t AliZDCRawStream::Next()
 	    // RawData48 mod. 3 ch. 2048 signal 515
 	    // to be checked with Pietro!!!!!!!!!!!!!!!!!!!!!!!
 	    //AliWarning("\t AliZDCRawStream -> ERROR: no. of cabled channels > 48!!!\n");
-	    return kFALSE;
+	    return kTRUE;
 	  }
 	}
-      }
+      }// ModType=1 (ADC mapping)
     }
     fPosition++;
     return kTRUE;
-  }
+  } // SOD event
   
   // -------------------------------------------
   // --- DARC data
@@ -412,7 +431,10 @@ Bool_t AliZDCRawStream::Next()
   // --- ADC buffer + scaler
   // -------------------------------------------
   else if(fPosition>=fDataOffset){
-  
+    
+    //printf("AliZDCRawStream: fSODReading = %d\n", fSODReading);
+    if(!fSODReading && !fIsMapRead) ReadChMap();
+    
     // Not valid datum before the event 
     // there MUST be a NOT valid datum before the event!!!
     if(fPosition==fDataOffset){
@@ -467,10 +489,11 @@ Bool_t AliZDCRawStream::Next()
 	
 	  // Checking if the channel map for the ADCs has been provided/read
 	  if(fMapADC[0][0]==-1){
+	    printf("\t ATTENTION!!! No ADC mapping has been found/provided!!!\n");
+	    return kFALSE;
 	    // Temporary solution (to be changed!!!!)
-	    //printf("\t ATTENTION!!! No ADC mapping has been found/provided!!!\n");
-	    //return kFALSE;
-	    char * mapFileName=gSystem->ExpandPathName("$ALICE_ROOT/ZDC/ShuttleInput/ZDCChMapping.dat");
+	    // mapping read from ShuttleInput dir
+	    /*char * mapFileName=gSystem->ExpandPathName("$(ALICE_ROOT)/ZDC/ShuttleInput/ZDCChMapping.dat");
 	    FILE *file; 
 	    Int_t ival[48][6];
 	    if((file = fopen(mapFileName,"r")) != NULL){
@@ -488,16 +511,16 @@ Bool_t AliZDCRawStream::Next()
 	    else{
      		printf("File %s not found\n",mapFileName);
      		return kFALSE;
-	    }
-
+	    }*/
 	  }
 	  //
-	  //printf("\n Reading map!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
 	  /*for(Int_t ci=0; ci<48; ci++){
 	    printf("  %d mod. %d ch. %d signal %d\n",ci,fMapADC[ci][0],
             fMapADC[ci][1], fMapADC[ci][2]);
 	  }
 	  */
+	  
+	  // Scan of the map to assign the correct volumes
 	  for(Int_t k=0; k<48; k++){
 	     if(fADCModule==fMapADC[k][0] && fADCChannel==fMapADC[k][1]){
 	       fSector[0] = fMapADC[k][3];
@@ -555,4 +578,30 @@ void AliZDCRawStream::DecodeScaler()
    
   fPosition++;
   
+}
+
+//_____________________________________________________________________________
+AliCDBStorage* AliZDCRawStream::SetStorage(const char *uri) 
+{
+  // Setting the storage
+  
+  AliCDBStorage *storage = AliCDBManager::Instance()->GetStorage(uri); 
+
+  return storage; 
+}
+
+
+//_____________________________________________________________________________
+AliZDCChMap* AliZDCRawStream::GetChMap() const
+{
+
+  // Getting calibration object for ZDC
+
+  AliCDBEntry  *entry = AliCDBManager::Instance()->Get("ZDC/Calib/ChMap");
+  if(!entry) AliFatal("No calibration data loaded!");  
+
+  AliZDCChMap *calibdata = dynamic_cast<AliZDCChMap*> (entry->GetObject());
+  if(!calibdata) AliFatal("Wrong calibration object in calibration  file!");
+
+  return calibdata;
 }

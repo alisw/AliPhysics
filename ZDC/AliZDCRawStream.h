@@ -13,6 +13,9 @@
 //////////////////////////////////////////////////
 
 #include <TObject.h>
+#include "AliCDBManager.h"
+#include "AliCDBStorage.h"
+#include "AliZDCChMap.h"
 
 class AliRawReader;
 class AliRawDataHeader;
@@ -42,8 +45,12 @@ class AliZDCRawStream: public TObject {
     Int_t  GetADCChannel()    const {return fADCChannel;}
     Int_t  GetADCValue()      const {return fADCValue;}
     Int_t  GetADCGain()       const {return fADCGain;}
-
-    Int_t  GetCabledSignal()  const {return fCabledSignal;}
+    
+    // Map from OCDB
+    AliCDBStorage *SetStorage(const char* uri);
+    AliZDCChMap   *GetChMap() const;
+    
+    Int_t  GetCabledSignal()           const {return fCabledSignal;}
     Int_t  GetADCModFromMap(Int_t i)   const {return fMapADC[i][0];}
     Int_t  GetADCChFromMap(Int_t i)    const {return fMapADC[i][1];}
     Int_t  GetADCSignFromMap(Int_t i)  const {return fMapADC[i][2];}
@@ -63,10 +70,12 @@ class AliZDCRawStream: public TObject {
 
     void SetSector(Int_t i, Int_t val) {fSector[i] = val;}
     void SetMapADCMod(Int_t iraw, Int_t imod) {fMapADC[iraw][0]=imod;}
-    void SetMapADCCh(Int_t iraw, Int_t ich) {fMapADC[iraw][1]=ich;}
+    void SetMapADCCh(Int_t iraw, Int_t ich)   {fMapADC[iraw][1]=ich;}
     void SetMapADCSig(Int_t iraw, Int_t isig) {fMapADC[iraw][2]=isig;}
-    void SetMapDet(Int_t iraw, Int_t idet) {fMapADC[iraw][3]=idet;}
-    void SetMapTow(Int_t iraw, Int_t itow) {fMapADC[iraw][4]=itow;}
+    void SetMapDet(Int_t iraw, Int_t idet)    {fMapADC[iraw][3]=idet;}
+    void SetMapTow(Int_t iraw, Int_t itow)    {fMapADC[iraw][4]=itow;}
+    
+    void SetSODReading(Bool_t iset) {fSODReading = iset;}
     
     enum EZDCRawStreamError{
        kCDHError = 1,
@@ -104,6 +113,8 @@ class AliZDCRawStream: public TObject {
     Bool_t fIsADCDataWord;    // True when data word
     Bool_t fIsADCHeader;      // True when ADC header
     Bool_t fIsADCEOB;	      // True when EOB
+    Bool_t fSODReading;	      // True when reading SOD (DA)
+    Bool_t fIsMapRead; 	      // True if map is already read
     
     // From CDH
     UInt_t fDARCEvBlockLenght;  // DARC block length
@@ -134,7 +145,7 @@ class AliZDCRawStream: public TObject {
     Int_t  fCabledSignal;  // physics signal (from enum)
     Int_t  fMapADC[48][5]; // ADC map for the current run
         
-    ClassDef(AliZDCRawStream, 6)    // class for reading ZDC raw digits
+    ClassDef(AliZDCRawStream, 7)    // class for reading ZDC raw digits
 };
 
 #endif
