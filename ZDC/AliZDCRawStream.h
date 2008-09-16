@@ -81,7 +81,8 @@ class AliZDCRawStream: public TObject {
        kCDHError = 1,
        kDARCError = 2,
        kZDCDataError = 3,
-       kInvalidADCModule = 4};
+       kInvalidADCModule = 4,
+       kInvalidSector = 5};
 
     enum ZDCSignal{kNotConnected=0, kVoid=1,
 	 kZNAC=2, kZNA1=3, kZNA2=4, kZNA3=5, kZNA4=6,

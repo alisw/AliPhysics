@@ -168,7 +168,7 @@ void AliZDCRawStream::ReadCDHHeader()
     fDARCEvBlockLenght = header->fSize;
     //printf("\t AliZDCRawStream::ReadCDHHeader -> fDARCEvBlockLenght = %d\n",fDARCEvBlockLenght);
     
-    UChar_t message = header->GetAttributes();
+    //UChar_t message = header->GetAttributes();
     //printf("\t AliZDCRawStream::ReadCDHHeader -> Attributes %x\n",message);
     
     /*if(message & 0x10){ // COSMIC RUN
@@ -399,7 +399,7 @@ Bool_t AliZDCRawStream::Next()
   }
   else if(fPosition==fDeadfaceOffset){
     if(fBuffer != 0xdeadface){
-      AliWarning("AliZDCRawStream -> NO deadface after DARC data\n");
+      AliError("AliZDCRawStream -> NO deadface after DARC data\n");
       fRawReader->AddMajorErrorLog(kDARCError);  
     }
     else{
@@ -417,7 +417,7 @@ Bool_t AliZDCRawStream::Next()
   }
   else if(fPosition==fDeadbeefOffset){
     if(fBuffer != 0xdeadbeef){
-      AliWarning("AliZDCRawStream -> NO deadbeef after DARC global data\n");
+      AliError("AliZDCRawStream -> NO deadbeef after DARC global data\n");
       fRawReader->AddMajorErrorLog(kDARCError);  
     }
     else{
@@ -532,8 +532,19 @@ Bool_t AliZDCRawStream::Next()
 	  //printf("AliZDCRawStream -> ADCmod. %d ADCch %d det %d, sec %d\n",
 	  //  fADCModule,fADCChannel,fSector[0],fSector[1]);
 	  
+	  // Final checks
+	  if(fSector[0]<1 || fSector[0]>5){
+            AliError(Form("	 AliZDCRawStream -> No valid detector assignment: %d\n",fSector[0]));
+            fRawReader->AddMajorErrorLog(kInvalidSector);
+	  }
+	  //
+	  if(fSector[1]<0 || fSector[1]>5){
+            AliError(Form("	 AliZDCRawStream -> No valid sector assignment: %d\n",fSector[1]));
+            fRawReader->AddMajorErrorLog(kInvalidSector);
+	  }
+	  //
 	  if(fADCModule<0 || fADCModule>3){
-            AliWarning(Form("	 AliZDCRawStream -> No valid ADC module: %d\n",fADCModule));
+            AliError(Form("	 AliZDCRawStream -> No valid ADC module: %d\n",fADCModule));
             fRawReader->AddMajorErrorLog(kInvalidADCModule);
           }
 
