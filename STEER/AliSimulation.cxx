@@ -1931,7 +1931,6 @@ void AliSimulation::WriteGRPEntry()
   grpMap->Add(new TObjString("fLHCPeriod"),new TObjString("LHC08c"));
 
   grpMap->Add(new TObjString("fLHCState"),new TObjString("STABLE BEAMS"));
-  grpMap->Add(new TObjString("fLHCCondition"),new TObjString("0"));
   grpMap->Add(new TObjString("fLHCLuminosity"),new TObjString("0"));
   grpMap->Add(new TObjString("fBeamIntensity"),new TObjString("0"));
 
