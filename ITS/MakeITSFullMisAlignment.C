@@ -12,6 +12,11 @@
 #include "AliGeomManager.h"
 #include "AliITSMisalignMaker.h"
 #endif
+
+
+TRandom3 rnd;
+rnd.SetSeed(23457856);
+
 void MakeITSFullMisAlignment() {
 //========================================================================
 //
@@ -66,15 +71,18 @@ void MakeITSFullMisAlignment() {
 
 
   //=****************************************
-  // overall ITS misalignment :              source - 
+  // misalignment of the whole ITS according to survey as reported by Werner Riegler (18/07/2008)
+  // + 100um smearing for translations and 0.1mrad smearing for rotations
   //=****************************************
-  Float_t its_dx     = 0.3000;   // 3 mm
-  Float_t its_dy     = 0.3000;   // 3 mm
-  Float_t its_dz     = 0.3000;   // 3 mm
-  Float_t its_dpsi   = 0.3000/100.*kRadToDeg;   // so as to have 3 mm difference at the two extremes
-  Float_t its_dtheta = 0.3000/100.*kRadToDeg;   // so as to have 3 mm difference at the two extremes
-  Float_t its_dphi   = 0.3000/100.*kRadToDeg;   // so as to have 3 mm difference at the two extremes
-  Bool_t unifits=kTRUE;
+  Double_t sigmatrW = 0.01;
+  Double_t sigmarotW = 0.006;
+  Double_t its_dx     = AliMathBase::TruncatedGaus(-0.12,sigmatrW,3.*sigmatrW);
+  Double_t its_dy     = AliMathBase::TruncatedGaus(-0.07,sigmatrW,3.*sigmatrW);
+  Double_t its_dz     = AliMathBase::TruncatedGaus(0.29,sigmatrW,3.*sigmatrW);
+  Double_t its_dpsi   = AliMathBase::TruncatedGaus(0.,sigmarotW,3.*sigmarotW);
+  Double_t its_dtheta = AliMathBase::TruncatedGaus(0.03,sigmarotW,3.*sigmarotW);
+  Double_t its_dphi   = AliMathBase::TruncatedGaus(0.04,sigmarotW,3.*sigmarotW);
+  const char* unifits="fixed";
 
   //=****************************************
   // misalignment at the level of SPD sectors : source - A.Pepato
@@ -100,12 +108,12 @@ void MakeITSFullMisAlignment() {
   //=****************************************
   // misalignment at the level of SPD barrel : source - A.Pepato
   //=****************************************
-    Float_t spdbarrel_dx     = 0.1000; // 1 mm (very pessimistic)  
-    Float_t spdbarrel_dy     = 0.1000; // 1 mm (very pessimistic)
-    Float_t spdbarrel_dz     = 0.1000; // 1 mm (very pessimistic)
-    Float_t spdbarrel_dpsi   = 0.0500/30.*kRadToDeg; // so as to have 500 micron difference at the two extremes
-    Float_t spdbarrel_dtheta = 0.0500/30.*kRadToDeg; // so as to have 500 micron difference at the two extremes
-    Float_t spdbarrel_dphi   = 0.0500/7.*kRadToDeg; // so as to have 500 micron difference at the two extremes
+  Float_t spdbarrel_dx     = 0.1000; // 1 mm (very pessimistic)  
+  Float_t spdbarrel_dy     = 0.1000; // 1 mm (very pessimistic)
+  Float_t spdbarrel_dz     = 0.1000; // 1 mm (very pessimistic)
+  Float_t spdbarrel_dpsi   = 0.0500/30.*kRadToDeg; // so as to have 500 micron difference at the two extremes
+  Float_t spdbarrel_dtheta = 0.0500/30.*kRadToDeg; // so as to have 500 micron difference at the two extremes
+  Float_t spdbarrel_dphi   = 0.0500/7.*kRadToDeg; // so as to have 500 micron difference at the two extremes
   
 
   //=****************************************
@@ -203,7 +211,6 @@ void MakeITSFullMisAlignment() {
 
   alignMaker.AddAlignObj("ITS",its_dx,its_dy,its_dz,its_dpsi,its_dtheta,its_dphi,unifits);
 
-
   //=****************************************
   // misalignment at the level of SPD barrel, half-barrels, and at the level
   // of SPD sectors
@@ -213,20 +220,20 @@ void MakeITSFullMisAlignment() {
   Double_t vxbarrel,vybarrel,vzbarrel,vpsibarrel,vthetabarrel,vphibarrel;
 
   //   barrel
-  vxbarrel = alignMaker.GaussCut(0,spdbarrel_dx/3,spdbarrel_dx);
-  vybarrel = alignMaker.GaussCut(0,spdbarrel_dy/3,spdbarrel_dy);
-  vzbarrel = alignMaker.GaussCut(0,spdbarrel_dz/3,spdbarrel_dz);
-  vpsibarrel = alignMaker.GaussCut(0,spdbarrel_dpsi/3,spdbarrel_dpsi);
-  vthetabarrel = alignMaker.GaussCut(0,spdbarrel_dtheta/3,spdbarrel_dtheta);
-  vphibarrel = alignMaker.GaussCut(0,spdbarrel_dphi/3,spdbarrel_dphi);
+  vxbarrel = AliMathBase::TruncatedGaus(0,spdbarrel_dx/3,spdbarrel_dx);
+  vybarrel = AliMathBase::TruncatedGaus(0,spdbarrel_dy/3,spdbarrel_dy);
+  vzbarrel = AliMathBase::TruncatedGaus(0,spdbarrel_dz/3,spdbarrel_dz);
+  vpsibarrel = AliMathBase::TruncatedGaus(0,spdbarrel_dpsi/3,spdbarrel_dpsi);
+  vthetabarrel = AliMathBase::TruncatedGaus(0,spdbarrel_dtheta/3,spdbarrel_dtheta);
+  vphibarrel = AliMathBase::TruncatedGaus(0,spdbarrel_dphi/3,spdbarrel_dphi);
 
   //  top half-barrel
-  vx = alignMaker.GaussCut(0,spdhalfbarrel_dx/3,spdhalfbarrel_dx);
-  vy = alignMaker.GaussCut(0,spdhalfbarrel_dy/3,spdhalfbarrel_dy);
-  vz = alignMaker.GaussCut(0,spdhalfbarrel_dz/3,spdhalfbarrel_dz);
-  vpsi = alignMaker.GaussCut(0,spdhalfbarrel_dpsi/3,spdhalfbarrel_dpsi);
-  vtheta = alignMaker.GaussCut(0,spdhalfbarrel_dtheta/3,spdhalfbarrel_dtheta);
-  vphi = alignMaker.GaussCut(0,spdhalfbarrel_dphi/3,spdhalfbarrel_dphi);
+  vx = AliMathBase::TruncatedGaus(0,spdhalfbarrel_dx/3,spdhalfbarrel_dx);
+  vy = AliMathBase::TruncatedGaus(0,spdhalfbarrel_dy/3,spdhalfbarrel_dy);
+  vz = AliMathBase::TruncatedGaus(0,spdhalfbarrel_dz/3,spdhalfbarrel_dz);
+  vpsi = AliMathBase::TruncatedGaus(0,spdhalfbarrel_dpsi/3,spdhalfbarrel_dpsi);
+  vtheta = AliMathBase::TruncatedGaus(0,spdhalfbarrel_dtheta/3,spdhalfbarrel_dtheta);
+  vphi = AliMathBase::TruncatedGaus(0,spdhalfbarrel_dphi/3,spdhalfbarrel_dphi);
 
   vx += vxbarrel;
   vy += vybarrel;
@@ -240,12 +247,12 @@ void MakeITSFullMisAlignment() {
 			       vx,vy,vz,vpsi,vtheta,vphi,unifspdsector);
 
   //  bottom half-barrel
-  vx = alignMaker.GaussCut(0,spdhalfbarrel_dx/3,spdhalfbarrel_dx);
-  vy = alignMaker.GaussCut(0,spdhalfbarrel_dy/3,spdhalfbarrel_dy);
-  vz = alignMaker.GaussCut(0,spdhalfbarrel_dz/3,spdhalfbarrel_dz);
-  vpsi = alignMaker.GaussCut(0,spdhalfbarrel_dpsi/3,spdhalfbarrel_dpsi);
-  vtheta = alignMaker.GaussCut(0,spdhalfbarrel_dtheta/3,spdhalfbarrel_dtheta);
-  vphi = alignMaker.GaussCut(0,spdhalfbarrel_dphi/3,spdhalfbarrel_dphi);
+  vx = AliMathBase::TruncatedGaus(0,spdhalfbarrel_dx/3,spdhalfbarrel_dx);
+  vy = AliMathBase::TruncatedGaus(0,spdhalfbarrel_dy/3,spdhalfbarrel_dy);
+  vz = AliMathBase::TruncatedGaus(0,spdhalfbarrel_dz/3,spdhalfbarrel_dz);
+  vpsi = AliMathBase::TruncatedGaus(0,spdhalfbarrel_dpsi/3,spdhalfbarrel_dpsi);
+  vtheta = AliMathBase::TruncatedGaus(0,spdhalfbarrel_dtheta/3,spdhalfbarrel_dtheta);
+  vphi = AliMathBase::TruncatedGaus(0,spdhalfbarrel_dphi/3,spdhalfbarrel_dphi);
 
   vx += vxbarrel;
   vy += vybarrel;
@@ -394,3 +401,4 @@ void MakeITSFullMisAlignment() {
 
   return;
 }
+

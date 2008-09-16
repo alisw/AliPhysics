@@ -36,7 +36,7 @@ public:
   
   Int_t AddAlignObj(char* name,Double_t dx,Double_t dy,Double_t dz,
 		    Double_t dpsi,Double_t dtheta,Double_t dphi,
-		    Bool_t unif);
+		    const char* distrib);
 
   Int_t AddAlignObj(Int_t lay,Double_t dx,Double_t dy,Double_t dz,
 		    Double_t dpsi,Double_t dtheta,Double_t dphi,

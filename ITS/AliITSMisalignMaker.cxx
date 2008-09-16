@@ -59,30 +59,41 @@ AliITSMisalignMaker::AliITSMisalignMaker():
   //
   // defaul constructor
   //
-  fRnd.SetSeed(23472341);
+  fRnd.SetSeed(38217945);
 }
 //________________________________________________________________________
 Int_t AliITSMisalignMaker::AddAlignObj(char* name,Double_t dx,Double_t dy,Double_t dz,
-				Double_t dpsi,Double_t dtheta,Double_t dphi,Bool_t unif) {
+				Double_t dpsi,Double_t dtheta,Double_t dphi,const char* distrib) {
   //
   // misalignment by symname
   //
-  Double_t vx,vy,vz,vpsi,vtheta,vphi;
+  Double_t vx=0.,vy=0.,vz=0.,vpsi=0.,vtheta=0.,vphi=0.;
 
-  if(!unif) {
+  TString sdistrib(distrib);
+
+  if(sdistrib==TString("gaussian")) {
     vx = GaussCut(0,dx/3.,dx); // mean, sigma, max absolute value 
     vy = GaussCut(0,dy/3.,dy);
     vz = GaussCut(0,dz/3.,dz);
     vpsi   = GaussCut(0,dpsi/3.,  dpsi );
     vtheta = GaussCut(0,dtheta/3.,dtheta);
     vphi   = GaussCut(0,dphi/3.,  dphi);
-  } else {
+  }else if(sdistrib==TString("uniform")){ 
     vx = fRnd.Uniform(-dx,dx);
     vy = fRnd.Uniform(-dy,dy);
     vz = fRnd.Uniform(-dz,dz);
     vpsi = fRnd.Uniform(-dpsi,dpsi);
     vtheta = fRnd.Uniform(-dtheta,dtheta);
     vphi = fRnd.Uniform(-dphi,dphi);
+  }else if(sdistrib==TString("fixed")){
+    vx=dx;
+    vy=dy;
+    vz=dz;
+    vpsi=dpsi;
+    vtheta=dtheta;
+    vphi=dphi;
+  }else{
+    AliFatal(Form("Invalid string \"%s\" specifying the misalignment type for the volume \"%s\""));
   }
 
   new(fAlobj[fInd]) AliAlignObjParams(name,0,vx,vy,vz,vpsi,vtheta,vphi,kFALSE);
