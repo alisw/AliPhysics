@@ -7,11 +7,11 @@
 // A.Bercuci <A.Bercuci@gsi.de>
 //
 
-#ifndef __CINT__
-#include <AliTRDtrackV1.h>
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TRD/AliTRDtrackV1.h>
 #endif
 
-Bool_t clusterSelection(const AliTRDtrackV1* track=0x0)
+Bool_t clusterSelection(const AliTRDtrackV1 *track)
 {
   if(!track) return kFALSE;
   if (track->GetNumberOfClusters() > 60) return kFALSE;

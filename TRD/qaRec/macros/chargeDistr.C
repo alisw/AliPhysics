@@ -1,15 +1,13 @@
-#ifndef __CINT__
-#include <AliTRDcluster.h>
-#include <AliTRDseedV1.h>
-#include <AliTRDtrackV1.h>
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TRD/AliTRDcluster.h>
+#include <TRD/AliTRDseedV1.h>
+#include <TRD/AliTRDtrackV1.h>
 #endif
 
 void chargeDistr(const AliTRDtrackV1* track, Double_t* &results, Int_t& nResults)
 {
-  if (track == 0)  return;
+  if (!track)  return;
   
-
-
   Int_t Nt = track->GetNumberOfTracklets();
   AliTRDcluster* cls = 0;
   AliTRDseedV1 *tracklet = 0x0;
@@ -21,7 +19,7 @@ void chargeDistr(const AliTRDtrackV1* track, Double_t* &results, Int_t& nResults
     if(!(tracklet = track->GetTracklet(trackletInd))) continue;
     if(!tracklet->IsOK()) continue;
     
-    for (Int_t clusterInd = 0; clusterInd < 34; clusterInd++) 
+    for (Int_t clusterInd = 0; clusterInd < AliTRDseed::knTimebins; clusterInd++) 
     {
       if(!(cls = tracklet->GetClusters(clusterInd))) continue;
             
@@ -47,70 +45,3 @@ void chargeDistr(const AliTRDtrackV1* track, Double_t* &results, Int_t& nResults
 	  }
   }
 }
-
-/*
-Double_t chargeDistr(AliTRDtrackV1* track)
-{
-  Double_t returnValue = 0;
-  AliTRDseedV1 *tracklet = 0x0;
-  Int_t Nt = track->AliKalmanTrack::GetNumberOfTracklets();
-
-  for (Int_t trackletInd = 0; trackletInd < Nt; trackletInd++)
-  {
-    if(!(tracklet = track->GetTracklet(trackletInd))) continue;
-    if(!tracklet->IsOK()) continue;
-    
-    for (Int_t clusterInd = 0; clusterInd < 34; clusterInd++) 
-    {
-      if(!(cls = tracklet->GetClusters(clusterInd))) continue;
-            
-	    returnValue += cls->GetQ();
-	  }
-  }
-
-  return returnValue;
-}
-
-void chargeDistr(AliEveTRDTrackList* trackList)
-{
-  if (trackList == 0)  return;
-  
-  // hist
-  TH1D *mQ = new TH1D("Q", ";Charge", 200, 0, 200);
-  
-  Int_t Nt = 0;
-
-  AliTRDcluster* cls = 0;
-  AliEveTRDTrack* track = 0;
-
-  for (TEveElement::List_i iterator = trackList->BeginChildren(); iterator != trackList->EndChildren(); ++iterator)
-  {
-    track = dynamic_cast<AliEveTRDTrack*>(*iterator);
-
-    if (!track) continue;
-    if (!track->GetRnrState()) continue;
-      
-    AliTRDtrackV1 *trackv1 = 0x0;
-    AliTRDseedV1 *tracklet = 0x0;
-    trackv1 = (AliTRDtrackV1*)track->GetUserData();
-
-    Nt = trackv1->AliKalmanTrack::GetNumberOfTracklets();
-
-    for (Int_t trackletInd = 0; trackletInd < Nt; trackletInd++)
-    {
-      if(!(tracklet = trackv1->GetTracklet(trackletInd))) continue;
-      if(!tracklet->IsOK()) continue;
-    
-      for (Int_t clusterInd = 0; clusterInd < 34; clusterInd++) 
-      {
-        if(!(cls = tracklet->GetClusters(clusterInd))) continue;
-            
-	      mQ->Fill(cls->GetQ());
-	    }
-    }
-  }
-  
-  gEve->AddCanvasTab("Charge distribution");
-  mQ->Draw();
-}
-*/
