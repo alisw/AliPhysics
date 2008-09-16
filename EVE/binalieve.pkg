@@ -28,13 +28,12 @@ ELIBS    := EveBase EveDet EveHLT \
 
 PACKBLIBS := $(ROOTCLIBS) $(ROOTPLIBS) -lTreePlayer -lGeomPainter -lGed -lRGL -lEve $(SYSLIBS)
 
-$(BINPATH)/alieve: alieve_clean_compiled_macros
-
-.PHONY: alieve_clean_compiled_macros
+.PHONY default: alieve_clean_compiled_macros
 
 alieve_clean_compiled_macros:
-	rm -f $(ALICE_ROOT)/EVE/alice-macros/*_C.d
-	rm -f $(ALICE_ROOT)/EVE/alice-macros/*_C.$(SOEXT)
+	@echo "***** Removing .d and .$(SOEXT) files from EVE/alice-macros/ *****"
+	$(MUTE)rm -f $(ALICE_ROOT)/EVE/alice-macros/*_C.d
+	$(MUTE)rm -f $(ALICE_ROOT)/EVE/alice-macros/*_C.$(SOEXT)
 
 ifeq (macosx,$(ALICE_TARGET))
 

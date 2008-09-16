@@ -11,17 +11,17 @@ TString esd_track_flags(AliESDtrack* t)
 {
   TString s;
   Int_t   o;
-  s += "det(in,out,refit,pid):\n";
+  s += "Det(in,out,refit,pid):\n";
   o  = AliESDtrack::kITSin;
-  s += Form("its(%d,%d,%d,%d) ",  t->IsOn(o), t->IsOn(o<<1), t->IsOn(o<<2), t->IsOn(o<<3));
+  s += Form("ITS (%d,%d,%d,%d)  ",  t->IsOn(o), t->IsOn(o<<1), t->IsOn(o<<2), t->IsOn(o<<3));
   o  = AliESDtrack::kTPCin;
-  s += Form("tpc(%d,%d,%d,%d)\n", t->IsOn(o), t->IsOn(o<<1), t->IsOn(o<<2), t->IsOn(o<<3));
+  s += Form("TPC(%d,%d,%d,%d)\n",   t->IsOn(o), t->IsOn(o<<1), t->IsOn(o<<2), t->IsOn(o<<3));
   o  = AliESDtrack::kTRDin;
-  s += Form("trd(%d,%d,%d,%d) ",  t->IsOn(o), t->IsOn(o<<1), t->IsOn(o<<2), t->IsOn(o<<3));
+  s += Form("TRD(%d,%d,%d,%d) ",    t->IsOn(o), t->IsOn(o<<1), t->IsOn(o<<2), t->IsOn(o<<3));
   o  = AliESDtrack::kTOFin;
-  s += Form("tof(%d,%d,%d,%d)\n", t->IsOn(o), t->IsOn(o<<1), t->IsOn(o<<2), t->IsOn(o<<3));
+  s += Form("TOF(%d,%d,%d,%d)\n",   t->IsOn(o), t->IsOn(o<<1), t->IsOn(o<<2), t->IsOn(o<<3));
   o  = AliESDtrack::kHMPIDout;
-  s += Form("hmpid(out=%d,pid=%d)\n", t->IsOn(o), t->IsOn(o<<1));
+  s += Form("HMPID(out=%d,pid=%d)\n", t->IsOn(o), t->IsOn(o<<1));
   s += Form("ESD pid=%d", t->IsOn(AliESDtrack::kESDpid));
   return s;
 }
@@ -49,16 +49,7 @@ TEveTrack* esd_make_track(TEveTrackPropagator*   trkProp,
   rt.fBeta = ep/TMath::Sqrt(ep*ep + mc*mc);
 
   TEveTrack* track = new TEveTrack(&rt, trkProp);
-  //PH The line below is replaced waiting for a fix in Root
-  //PH which permits to use variable siza arguments in CINT
-  //PH on some platforms (alphalinuxgcc, solariscc5, etc.)
-  //PH  track->SetName(Form("ESDTrack %d", rt.fLabel));
-  //PH  track->SetTitle(Form("pT=%.3f, pZ=%.3f; V=(%.3f, %.3f, %.3f)",
-  //PH		       rt.fSign*TMath::Hypot(rt.fP.fX, rt.fP.fY), rt.fP.fZ,
-  //PH		       rt.fV.fX, rt.fV.fY, rt.fV.fZ));
-  char form[1000];
-  sprintf(form,"TEveTrack %d", rt.fIndex);
-  track->SetName(form);
+  track->SetName(Form("TEveTrack %d", rt.fIndex));
   track->SetStdTitle();
   track->SetElementTitle(Form("%s\n%s", track->GetElementTitle(), esd_track_flags(at).Data()));
   return track;
@@ -149,14 +140,7 @@ TEveTrackList* esd_tracks(Double_t min_pt=0, Double_t max_pt=10000)
       contLines->AddElement(l);
     }
   }
-
-  //PH The line below is replaced waiting for a fix in Root
-  //PH which permits to use variable siza arguments in CINT
-  //PH on some platforms (alphalinuxgcc, solariscc5, etc.)
-  //PH  const Text_t* tooltip = Form("pT ~ (%.2lf, %.2lf), N=%d", min_pt, max_pt, count);
-  char tooltip[1000];
-  sprintf(tooltip,"pT ~ (%.2lf, %.2lf), N=%d", min_pt, max_pt, count);
-  cont->SetTitle(tooltip); // Not broadcasted automatically ...
+  cont->SetTitle(Form("pT ~ (%.2lf, %.2lf), N=%d", min_pt, max_pt, count));
 
   cont->MakeTracks();
 
@@ -202,14 +186,7 @@ TEveTrackList* esd_tracks_from_array(TCollection* col, AliESDEvent* esd=0)
     track->SetAttLineAttMarker(cont);
     gEve->AddElement(track, cont);
   }
-
-  //PH The line below is replaced waiting for a fix in Root
-  //PH which permits to use variable siza arguments in CINT
-  //PH on some platforms (alphalinuxgcc, solariscc5, etc.)
-  //PH  const Text_t* tooltip = Form("N=%d", count);
-  const tooltip[1000];
-  sprintf(tooltip,"N=%d", count);
-  cont->SetTitle(tooltip); // Not broadcasted automatically ...
+  cont->SetTitle(Form("N=%d", count));
 
   cont->MakeTracks();
 
@@ -283,11 +260,11 @@ TEveElementList* esd_tracks_vertex_cut()
   AliESDEvent* esd = AliEveEventManager::AssertESD();
 
   TEveElementList* cont = new TEveElementList("ESD Tracks");
-
   gEve->AddElement(cont);
-  TEveTrackList *tl[5];
-  Int_t            tc[5];
-  Int_t            count = 0;
+
+  TEveTrackList *tl[6];
+  Int_t          tc[6];
+  Int_t          count = 0;
 
   tl[0] = new TEveTrackList("Sigma < 3");
   tc[0] = 0;
@@ -324,7 +301,14 @@ TEveElementList* esd_tracks_vertex_cut()
   tl[4]->SetMainColor(48);
   gEve->AddElement(tl[4], cont);
 
-  for (Int_t n=0; n<esd->GetNumberOfTracks(); n++)
+  tl[5] = new TEveTrackList("no TPC refit");
+  tc[5] = 0;
+  tl[5]->GetPropagator()->SetMagField( 0.1*esd->GetMagneticField() );
+  tl[5]->GetPropagator()->SetMaxR    ( 520 );
+  tl[5]->SetMainColor(kRed);
+  gEve->AddElement(tl[5], cont);
+
+  for (Int_t n = 0; n < esd->GetNumberOfTracks(); ++n)
   {
     AliESDtrack* at = esd->GetTrack(n);
 
@@ -335,12 +319,13 @@ TEveElementList* esd_tracks_vertex_cut()
     else             ti = 2;
 
     AliExternalTrackParam* tp = at;
-    // If ITS refit failed, optionally take track parameters at inner
-    // TPC radius and put track in a special container.
-    // This ignores state of gkFixFailedITSExtr (used in esd_tracks()).
-    // Use BOTH functions to compare results.
-    if (!at->IsOn(AliESDtrack::kITSrefit)) {
-      // tp = at->GetInnerParam();
+
+    if (!at->IsOn(AliESDtrack::kTPCrefit))
+    {
+      ti = 5;
+    }
+    if (!at->IsOn(AliESDtrack::kITSrefit))
+    {
       ti = (ti == 2) ? 4 : 3;
     }
 
@@ -351,38 +336,22 @@ TEveElementList* esd_tracks_vertex_cut()
     TEveTrack* track = esd_make_track(tlist->GetPropagator(), n, at, tp);
     track->SetAttLineAttMarker(tlist);
 
-    //PH The line below is replaced waiting for a fix in Root
-    //PH which permits to use variable siza arguments in CINT
-    //PH on some platforms (alphalinuxgcc, solariscc5, etc.)
-    //PH    track->SetName(Form("track %d, sigma=%5.3f", at->GetLabel(), s));
-    char form[1000];
-    sprintf(form,"TEveTrack idx=%d, sigma=%5.3f", at->GetID(), s);
-    track->SetName(form);
+    track->SetName(Form("TEveTrack idx=%d, sigma=%5.3f", at->GetID(), s));
     gEve->AddElement(track, tlist);
   }
 
-  for (Int_t ti=0; ti<5; ++ti) {
+  for (Int_t ti = 0; ti < 6; ++ti)
+  {
     TEveTrackList* tlist = tl[ti];
-    //PH The line below is replaced waiting for a fix in Root
-    //PH which permits to use variable siza arguments in CINT
-    //PH on some platforms (alphalinuxgcc, solariscc5, etc.)
-    //PH    const Text_t* tooltip = Form("N tracks=%d", tc[ti]);
-    //MT Modified somewhat.
-    char buff[1000];
-    sprintf(buff, "%s [%d]", tlist->GetName(), tlist->NumChildren());
-    tlist->SetName(buff);
-    sprintf(buff, "N tracks=%d", tc[ti]);
-    tlist->SetTitle(buff); // Not broadcasted automatically ...
+    tlist->SetName(Form("%s [%d]", tlist->GetName(), tlist->NumChildren()));
+    tlist->SetTitle(Form("N tracks=%d", tc[ti]));
 
     tlist->MakeTracks();
   }
-  //PH The line below is replaced waiting for a fix in Root
-  //PH which permits to use variable siza arguments in CINT
-  //PH on some platforms (alphalinuxgcc, solariscc5, etc.)
-  //PH  cont->SetTitle(Form("N all tracks = %d", count));
-  char form[1000];
-  sprintf(form,"N all tracks = %d", count);
-  cont->SetTitle(form);
+  cont->SetTitle(Form("N all tracks = %d", count));
+  // ??? The following does not always work:
+  cont->FindListTreeItem(gEve->GetListTree())->SetOpen(kTRUE);
+
   gEve->Redraw3D();
 
   return cont;
