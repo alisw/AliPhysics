@@ -116,10 +116,11 @@ void AliMagWrapCheb::Field(Float_t *xyz, Float_t *b) const
     if (xyz[2] > 919. || xyz[2] < -1972.) {
 	ZDCField(xyz, b);
     } else {
-	if (fMeasuredMap) fMeasuredMap->Field(xyz,b);
+	if (fMeasuredMap && fFactor !=0.) {
+	    fMeasuredMap->Field(xyz,b);
+	    for (int i=3;i--;) b[i] *= fFactor;
+	}
     }
-    
-  for (int i=3;i--;) b[i] *= fFactor;
 }
 
 //_______________________________________________________________________

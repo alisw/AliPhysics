@@ -229,20 +229,18 @@ void AliMagFMaps::Field(Float_t *x, Float_t *b) const
   }
   
   if(map){
-    map->Field(xm,b);
-    b[0] = - b[0];
-    b[2] = - b[2];
-
+      map->Field(xm,b);
+      b[0] = - b[0];
+      b[2] = - b[2];
+      
+      if(fFactor!=1) {
+	  b[0]*=fFactor;
+	  b[1]*=fFactor;
+	  b[2]*=fFactor;
+      }
   } else {
       //This is the ZDC part
       ZDCField(x, b);
-  }
-
-  
-  if(fFactor!=1) {
-      b[0]*=fFactor;
-      b[1]*=fFactor;
-      b[2]*=fFactor;
   }
 }
 
