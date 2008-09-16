@@ -1974,7 +1974,7 @@ AliShuttleLogbookEntry* AliShuttle::QueryRunParameters(Int_t run)
 	
 	UInt_t now = time(0);
 	// TODO make this a configuration parameter
-	Int_t dcsDelay = 120;
+	Int_t dcsDelay = 120+180;
 	
 	// runs are accepted if they have ecsSuccess set or more than 1 event
 	if (startTime != 0 && endTime != 0 && endTime > startTime && (totEvents > 1 || ecsSuccess) && (endTime < now - dcsDelay))
@@ -2032,17 +2032,18 @@ TMap* AliShuttle::GetValueSet(const char* host, Int_t port, const TSeqCollection
 	// returns TMap of values, 0 when failure
 	
 	AliDCSClient client(host, port, fTimeout, fRetries, multiSplit);
+	Int_t offset = 180;
 
 	TMap* result = 0;
 	if (type == kAlias)
 	{
-		result = client.GetAliasValues(entries, GetCurrentStartTime(), 
-			GetCurrentEndTime());
+		result = client.GetAliasValues(entries, GetCurrentStartTime()-offset, 
+			GetCurrentEndTime()+offset);
 	} 
 	else if (type == kDP)
 	{
-		result = client.GetDPValues(entries, GetCurrentStartTime(), 
-			GetCurrentEndTime());
+		result = client.GetDPValues(entries, GetCurrentStartTime()-offset, 
+			GetCurrentEndTime()+offset);
 	}
 
 	if (result == 0)
