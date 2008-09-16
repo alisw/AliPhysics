@@ -36,6 +36,9 @@ public:
   virtual void Exec(Option_t *);
   virtual void Terminate(Option_t *);
   
+  virtual Bool_t PostProcess();
+  virtual void  GetRefFigure(Int_t ifig, Int_t &first, Int_t &last);
+  
 private:
   AliTRDcheckDetector(const AliTRDcheckDetector &);
   AliTRDcheckDetector& operator=(const AliTRDcheckDetector &);

@@ -1,7 +1,9 @@
+#include <TFile.h>
 #include <TH1F.h>
 #include <TMath.h>
 #include <TObjArray.h>
 #include <TProfile.h>
+#include <TROOT.h>
 
 #include "AliTRDcluster.h"
 #include "AliTRDseedV1.h"
@@ -10,6 +12,8 @@
 
 #include "AliTRDtrackInfo/AliTRDtrackInfo.h"
 #include "AliTRDcheckDetector.h"
+
+#include <cstdio>
 
 ////////////////////////////////////////////////////////////////////////////
 //                                                                        //
@@ -181,5 +185,77 @@ void AliTRDcheckDetector::Terminate(Option_t *){
   //
   // Terminate function
   //
+}
+
+//_______________________________________________________
+Bool_t AliTRDcheckDetector::PostProcess(){
+	//
+	// Do Postprocessing (for the moment set the number of Reference histograms)
+	//
+	
+	TH1 * histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNTracksEventHist));
+	histo->GetXaxis()->SetTitle("Number of Tracks");
+	histo->GetYaxis()->SetTitle("Events");
+	// Calculate percentage of events containing tracks
+	Float_t percTracks = histo->Integral(histo->FindBin(1),histo->GetNbinsX())/histo->Integral(histo->FindBin(0),histo->GetNbinsX());
+	printf("Percentage of Events containing TRD Tracks: %f\n", percTracks);
+	histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNclustersHist));
+	histo->GetXaxis()->SetTitle("Number of Clusters");
+	histo->GetYaxis()->SetTitle("Entries");
+	histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNtrackletsHist));
+	histo->GetXaxis()->SetTitle("Number of Tracklets");
+	histo->GetYaxis()->SetTitle("Entries");
+	histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNclusterTrackletHist));
+	histo->GetXaxis()->SetTitle("Number of Clusters");
+	histo->GetYaxis()->SetTitle("Entries");
+	histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kChi2));
+	histo->GetXaxis()->SetTitle("#chi^2");
+	histo->GetYaxis()->SetTitle("Entries");
+	histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNTracksSectorHist));
+	histo->GetXaxis()->SetTitle("Sector");
+	histo->GetYaxis()->SetTitle("Number of Tracks");
+	histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNTracksSectorHist));
+	histo->GetXaxis()->SetTitle("Sector");
+	histo->GetYaxis()->SetTitle("Number of Tracks");
+	histo = dynamic_cast<TProfile *>(fContainer->UncheckedAt(kPulseHeight));
+	histo->GetXaxis()->SetTitle("Time / 100ns");
+	histo->GetYaxis()->SetTitle("Average Pulse Height (a. u.)");
+	histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kClusterCharge));
+	histo->GetXaxis()->SetTitle("Cluster Charge (a.u.)");
+	histo->GetYaxis()->SetTitle("Entries");
+	histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kChargeDeposit));
+	histo->GetXaxis()->SetTitle("Charge Deposit (a.u.)");
+	histo->GetYaxis()->SetTitle("Entries");
+	fNRefFigures = 9;
+	return kTRUE;
+}
+
+//_______________________________________________________
+void AliTRDcheckDetector::GetRefFigure(Int_t ifig, Int_t &first, Int_t &last){
+	//
+	// Setting Reference Figures
+	//
+	switch(ifig){
+		case 0:	first = last = 0;
+						break;
+		case 1:	first = last = 1;
+						break;
+		case 2:	first = last = 2;
+						break;
+		case 3:	first = last = 3;
+						break;
+		case 4:	first = last = 4;
+						break;
+		case 5:	first = last = 6;
+						break;
+		case 6:	first = last = 7;
+						break;
+		case 7:	first = last = 8;
+						break;
+		case 8:	first = last = 9;
+						break;
+		default: first = last = 0;
+						break;
+	};
 }
 
