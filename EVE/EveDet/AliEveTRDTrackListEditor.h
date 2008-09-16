@@ -5,7 +5,8 @@
 
 class AliEveTRDTrack;
 class AliEveTRDTrackList;
-class TCanvas;                
+class TCanvas;     
+class TEveBrowser;           
 class TEveGedEditor;
 class TEveManager;
 class TFile;
@@ -15,6 +16,7 @@ class TGHorizontal3DLine;
 class TGHorizontalFrame;
 class TGLabel;
 class TGListBox;
+class TGString;
 class TGTab;
 class TGTextButton;
 class TGTextEntry;
@@ -30,28 +32,35 @@ public:
 
   virtual void SetModel(TObject* obj);
 
-  void ApplyMacros();               // Apply macros
-  void BrowseMacros();              // Browse macros
-  void DrawHistos();                // Draw histograms
-  void HandleMacroPathSet();        // Handles the "macro path set"-event 
-  void RemoveMacros();              // Removes the selected macros from the lists
-
+  void AddMacro(const Char_t* path, const Char_t* name);  // Adds macro to the macro list
+  void ApplyMacros();                                     // Apply macros
+  void BrowseMacros();                                    // Browse macros
+  void CloseTabs();                                       // Closes + deletes all the tabs opened created by this class
+  void DrawHistos();                                      // Draw histograms
+  Int_t GetNSelectedHistograms();                         // Get the number of selected histograms for drawing
+  void HandleMacroPathSet();                              // Handles the "macro path set"-signal
+  void HandleNewEventLoaded();                            // Handles the "NewEventLoaded()"-signal
+  void HandleTabChangedToIndex(Int_t);                    // Handles the "Selected(Int_t id)"-signal (tab changed)
+  void RemoveMacros();                                    // Removes the selected macros from the lists
+  void UpdateDataFromMacroListSelection();                // Updates the selection in the "data from macro"-list
+  void UpdateHistoList();                                 // Updates the histogram list
+  void UpdateMacroList();                                 // Updates the macro list
+  void UpdateMacroListSelection(Int_t ind);               // Updates the selection of the process macro list
+  void UpdateMacroSelListSelection(Int_t ind);            // Updates the selection of the selection macro list
+  
 protected:
-  AliEveTRDTrackList* fM;           // Model object.
+  AliEveTRDTrackList* fM;                                 // Model object
 
 private:
   AliEveTRDTrackListEditor(const AliEveTRDTrackListEditor&);            // Not implemented
   AliEveTRDTrackListEditor& operator=(const AliEveTRDTrackListEditor&); // Not implemented 
 
-  void AddMacro(const Char_t* path, const Char_t* name);  // Adds macro to the macro list
-  Int_t GetNSelectedHistograms();                         // Get the number of selected histograms for drawing
-  void UpdateHistoList();                                 // Updates the histogram list
-  void UpdateMacroList();                                 // Updates the macro list
+  TCanvas*          fHistoCanvas;            // Canvas for the histograms
+  TGString*         fHistoCanvasName;        // Name of the histogram canvas
 
-  Int_t             fInitState;              // Holds the initialization state
-  TGVerticalFrame*  fMainFrame;              // Top frame for macro functionality.
-  TGVerticalFrame*  fHistoFrame;             // Top frame for the histogram stuff
-  TGVerticalFrame*  fHistoSubFrame;          // Frame for the histogram buttons themselves
+  TGVerticalFrame*   fMainFrame;             // Top frame for macro functionality.
+  TGVerticalFrame*   fHistoFrame;            // Top frame for the histogram stuff
+  TGVerticalFrame*   fHistoSubFrame;         // Frame for the histogram buttons themselves
   TGHorizontalFrame* fBrowseFrame;           // For searching macros
 
   TGTextButton*   fbBrowse;                  // "Browse" button

@@ -2,9 +2,11 @@
 #include <EveDet/AliEveTRDTrackList.h>
 #include "AliEveTRDTrackListEditor.h"
 
+#include <EveBase/AliEveEventManager.h>
 #include <AliTRDtrackV1.h>
 #include <TGButton.h>
 #include <TCanvas.h>     
+#include <TEveBrowser.h>
 #include <TEveGedEditor.h> 
 #include <TEveMacro.h>
 #include <TEveManager.h>
@@ -32,7 +34,8 @@ AliEveTRDTrackListEditor::AliEveTRDTrackListEditor(const TGWindow* p, Int_t widt
 				                   UInt_t options, Pixel_t back) :
   TGedFrame(p, width, height, options, back),
   fM(0),
-  fInitState(0),
+  fHistoCanvas(0),
+  fHistoCanvasName(0),
   fMainFrame(0),
   fHistoFrame(0),
   fHistoSubFrame(0),
@@ -127,6 +130,19 @@ AliEveTRDTrackListEditor::AliEveTRDTrackListEditor(const TGWindow* p, Int_t widt
   fFileInfo->fFileTypes = (const Char_t**)fFileTypes;
   fFileInfo->fFileTypeIdx = 2;
   fFileInfo->fMultipleSelection = kTRUE;
+
+  fHistoCanvasName = new TGString("");
+
+  // Handle the signal "Selected(Int_t ind)"
+  ftlMacroList->Connect("Selected(Int_t)", "AliEveTRDTrackListEditor", this, "UpdateMacroListSelection(Int_t)");
+  ftlMacroSelList->Connect("Selected(Int_t)", "AliEveTRDTrackListEditor", this, "UpdateMacroSelListSelection(Int_t)");
+
+  // Handle the signal "NewEventLoaded"
+  gAliEveEvent->Connect("NewEventLoaded()", "AliEveTRDTrackListEditor", this, "HandleNewEventLoaded()");
+
+  // Handle the signal "Selected" (another tab has been selected)
+  GetGedEditor()->GetTab()->Connect("Selected(Int_t)", "AliEveTRDTrackListEditor", 
+                                    this, "HandleTabChangedToIndex(Int_t)");
 }
 
 //______________________________________________________
@@ -142,6 +158,14 @@ AliEveTRDTrackListEditor::~AliEveTRDTrackListEditor()
   {
     delete fFileInfo; 
     fFileInfo = 0;
+  }
+  // Close and delete all tabs that have been created by this class
+  CloseTabs();
+
+  if (fHistoCanvasName != 0)
+  {
+    delete fHistoCanvasName;
+    fHistoCanvasName = 0;
   }
 }
 
@@ -161,7 +185,7 @@ void AliEveTRDTrackListEditor::AddMacro(const Char_t* path, const Char_t* name)
     break;
   case SIGNATURE_ERROR:
     new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Error", 
-                 "Macro has not the signature of...\n...a selection macro: Bool_t YourMacro(AliTRDtrackV1*)\n...a process macro: void YourMacro(AliTRDtrackV1*, Double_t*&, Int_t&)", 
+                 "Macro has not the signature of...\n...a selection macro: Bool_t YourMacro(const AliTRDtrackV1*)\n...a process macro: void YourMacro(const AliTRDtrackV1*, Double_t*&, Int_t&)", 
                  kMBIconExclamation, kMBOk);
     break;               
   case NOT_EXIST_ERROR:
@@ -193,57 +217,6 @@ void AliEveTRDTrackListEditor::ApplyMacros()
   iterator = new TList();
   ftlMacroList->GetSelectedEntries(iterator);
   fM->ApplyProcessMacros(iterator);
-  
-  // Now the data is stored in the following file and can easily be accessed
-  TFile* file = new TFile("TRD.TrackListMacroData.root", "READ");
-  if (!file)  
-  {
-    Error("Apply macros", "Cannot open file \"TRD.TrackListMacroData.root\"");
-    new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Error - Apply macros", 
-                 "Cannot open file \"TRD.TrackListMacroData.root\"", kMBIconExclamation, kMBOk);
-    
-    if (iterator != 0)  delete iterator;  
-    iterator = 0;
-
-    return;  
-  }
-    
-  Char_t macroName[100];
-  TTree* t = 0;
-  for (Int_t i = 0; i < iterator->GetEntries(); i++)
-  {
-    t = (TTree*)file->Get(Form("TrackData%d", i));
-    if (t != 0)
-    {
-      memset(macroName, '\0', sizeof(Char_t) * 100);
-      sscanf(iterator->At(i)->GetTitle(), "%s (Path:%*s)", macroName);
-      
-      TCanvas* canvas = (TCanvas*)gROOT->GetListOfCanvases()->TCollection::FindObject(macroName);
-      if (!canvas)
-      {
-        canvas = gEve->AddCanvasTab(macroName);
-        canvas->SetName(macroName);
-      }
-      gPad = canvas;
-      t->Draw(Form("Macro%d", i), "1");
-      canvas->Update();
- 
-      delete t;
-      t = 0;
-
-      // ONLY DISPLAY ONE MACRO (the first one possible) -> Remove the next line to display all
-      //break;
-    }
-    else
-    {
-      Error("Apply macros", Form("No data for macro%d found!", i));
-      new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Error - Apply macros", 
-                   Form("No data for macro%d found!", i), kMBIconExclamation, kMBOk);  
-    }
-  }
-  file->Close("R");
-  delete file;
-  file = 0;
 
   if (iterator != 0)  delete iterator;  
   iterator = 0;  
@@ -252,8 +225,14 @@ void AliEveTRDTrackListEditor::ApplyMacros()
   SetModel(fM);
   Update();
 
-  // Set focus on "Histograms" tab
-  GetGedEditor()->GetTab()->SetTab("Histograms");
+  // AlieveTRDTrackList::ApplyProcessMacros() automatically selects a macro -> Draw the histogram for it
+  if (GetNSelectedHistograms() > 0) 
+  {
+    // Set focus on "Histograms" tab
+    GetGedEditor()->GetTab()->SetTab("Histograms");
+
+    DrawHistos();
+  }
 }
 
 //______________________________________________________
@@ -284,6 +263,25 @@ void AliEveTRDTrackListEditor::BrowseMacros()
   // Some error occurs, when one ends the filedialog with "cancel": fileInfo->fFileNamesList is set to 0x0, but
   // in the next launch no new memory is allocated. So do this manually.
   //if (fileInfo->fFileNamesList == 0)  fileInfo->fFileNamesList = new TList();
+}
+
+//______________________________________________________
+void AliEveTRDTrackListEditor::CloseTabs()
+{
+  if (fHistoCanvas != 0)
+  {
+    // Close the created tab, if it exists
+    if (fHistoCanvasName != 0)
+    {
+      if (gEve->GetBrowser()->GetTab(1)->SetTab(fHistoCanvasName->GetString()))
+      {
+        // Now the created tab is the current one and can be deleted
+        gEve->GetBrowser()->GetTab(1)->RemoveTab();
+      }
+    }
+    // With the tab removal, the canvas will be deleted automatically!
+    fHistoCanvas = 0;
+  }
 }
 
 //______________________________________________________
@@ -340,16 +338,34 @@ void AliEveTRDTrackListEditor::DrawHistos()
         // 1d histogram   
         if (nHistograms == 1) 
         {
-          TCanvas* canvas = (TCanvas*)gROOT->GetListOfCanvases()->TCollection::FindObject(fM->fDataFromMacroList->At(indexOfMacro1)->GetName());
-          if (!canvas)
+          // If the tab with the canvas has been closed, the canvas will be deleted.
+          // So, if there is no tab, set the canvas pointer to zero and recreate it in a new tab.
+          if (fHistoCanvas != 0) 
           {
-            canvas = gEve->AddCanvasTab(fM->fDataFromMacroList->At(indexOfMacro1)->GetName());
-            canvas->SetName(fM->fDataFromMacroList->At(indexOfMacro1)->GetName());
+            if (gEve->GetBrowser()->GetTab(1)->SetTab(fHistoCanvasName->GetString()) == 0)
+            {
+              fHistoCanvas = 0;
+            }
           }
-          gPad = canvas;
+
+          if (!fHistoCanvas)
+          {
+            fHistoCanvas = gEve->AddCanvasTab(fM->fDataFromMacroList->At(indexOfMacro1)->GetName());     
+          }
+                           
+          gPad = fHistoCanvas;
           t->Draw(Form("Macro%d", indexOfMacro1), "1");
-          gROOT->SetSelectedPad(canvas);
-          canvas->Update();
+
+          // Update name of the tab (tab has been set to current tab!)
+          fHistoCanvasName->SetString(fM->fDataFromMacroList->At(indexOfMacro1)->GetName());
+          // Use a copy of fHistoCanvasName!! -> If the user closes a tab manually, the TGString
+          // will be deleted -> Error might occur, when accessing the pointer   
+          gEve->GetBrowser()->GetTab(1)->GetCurrentTab()->SetText(new TGString(fHistoCanvasName));
+
+          // Switch tabs to force redrawing
+          gEve->GetBrowser()->GetTab(1)->SetTab(0);
+          gEve->GetBrowser()->GetTab(1)->SetTab(fHistoCanvasName->GetString());
+          fHistoCanvas->Update();
 
           break;     
         }
@@ -368,22 +384,39 @@ void AliEveTRDTrackListEditor::DrawHistos()
         // 2d histogram
         if (nHistograms == 2) 
         {
-          TCanvas* canvas = (TCanvas*)gROOT->GetListOfCanvases()->TCollection::FindObject(Form("%s - %s",
-                              fM->fDataFromMacroList->At(indexOfMacro1)->GetName(), 
-                              fM->fDataFromMacroList->At(indexOfMacro2)->GetName()));
-          if (!canvas)
+          // If the tab with the canvas has been closed, the canvas will be deleted.
+          // So, if there is no tab, set the canvas pointer to zero and recreate it in a new tab.
+          if (fHistoCanvas != 0) 
           {
-            canvas = gEve->AddCanvasTab(Form("%s - %s",
-                                             fM->fDataFromMacroList->At(indexOfMacro1)->GetName(), 
-                                             fM->fDataFromMacroList->At(indexOfMacro2)->GetName()));
-            canvas->SetName(Form("%s - %s",
-                                 fM->fDataFromMacroList->At(indexOfMacro1)->GetName(), 
-                                 fM->fDataFromMacroList->At(indexOfMacro2)->GetName()));
+            if (gEve->GetBrowser()->GetTab(1)->SetTab(fHistoCanvasName->GetString()) == 0)
+            {
+              fHistoCanvas = 0;
+            }
           }
-          gPad = canvas;
+
+          if (!fHistoCanvas)
+          {
+            fHistoCanvas = gEve->AddCanvasTab(Form("%s - %s",
+                                                   fM->fDataFromMacroList->At(indexOfMacro1)->GetName(), 
+                                                   fM->fDataFromMacroList->At(indexOfMacro2)->GetName()));
+          }
+          
+          gPad = fHistoCanvas;
           t->AddFriend(tFriend1);
           t->Draw(Form("Macro%d:Macro%d", indexOfMacro1, indexOfMacro2), "1");
-          canvas->Update();        
+
+          // Update name of the tab (tab has been set to current tab!)
+          fHistoCanvasName->SetString(Form("%s - %s",
+                                           fM->fDataFromMacroList->At(indexOfMacro1)->GetName(), 
+                                           fM->fDataFromMacroList->At(indexOfMacro2)->GetName()));
+          // Use a copy of fHistoCanvasName!! -> If the user closes a tab manually, the TGString
+          // will be deleted -> Error might occur, when accessing the pointer   
+          gEve->GetBrowser()->GetTab(1)->GetCurrentTab()->SetText(new TGString(fHistoCanvasName));
+
+          // Switch tabs to force redrawing
+          gEve->GetBrowser()->GetTab(1)->SetTab(0);
+          gEve->GetBrowser()->GetTab(1)->SetTab(fHistoCanvasName->GetString());
+          fHistoCanvas->Update();
  
           break;     
         }
@@ -399,27 +432,44 @@ void AliEveTRDTrackListEditor::DrawHistos()
                        Form("No data for macro%d found!", i), kMBIconExclamation, kMBOk);
           break;   
         }
-        
-        TCanvas* canvas = (TCanvas*)gROOT->GetListOfCanvases()->TCollection::FindObject(Form("%s - %s - %s",
-                            fM->fDataFromMacroList->At(indexOfMacro1)->GetName(), 
-                            fM->fDataFromMacroList->At(indexOfMacro2)->GetName(),
-                            fM->fDataFromMacroList->At(indexOfMacro3)->GetName()));
-        if (!canvas)
+
+
+        // If the tab with the canvas has been closed, the canvas will be deleted.
+        // So, if there is no tab, set the canvas pointer to zero and recreate it in a new tab.
+        if (fHistoCanvas != 0) 
         {
-          canvas = gEve->AddCanvasTab(Form("%s - %s - %s",
-                                           fM->fDataFromMacroList->At(indexOfMacro1)->GetName(), 
-                                           fM->fDataFromMacroList->At(indexOfMacro2)->GetName(),
-                                           fM->fDataFromMacroList->At(indexOfMacro3)->GetName()));
-          canvas->SetName(Form("%s - %s - %s",
-                               fM->fDataFromMacroList->At(indexOfMacro1)->GetName(), 
-                               fM->fDataFromMacroList->At(indexOfMacro2)->GetName(),
-                               fM->fDataFromMacroList->At(indexOfMacro3)->GetName()));
+          if (gEve->GetBrowser()->GetTab(1)->SetTab(fHistoCanvasName->GetString()) == 0)
+          {
+            fHistoCanvas = 0;
+          }
         }
-        gPad = canvas;
+
+        if (!fHistoCanvas)
+        {
+          fHistoCanvas = gEve->AddCanvasTab(Form("%s - %s - %s",
+                                                 fM->fDataFromMacroList->At(indexOfMacro1)->GetName(), 
+                                                 fM->fDataFromMacroList->At(indexOfMacro2)->GetName(),
+                                                 fM->fDataFromMacroList->At(indexOfMacro3)->GetName()));
+        }
+          
+        gPad = fHistoCanvas;
         t->AddFriend(tFriend1);
         t->AddFriend(tFriend2);
         t->Draw(Form("Macro%d:Macro%d:Macro%d", indexOfMacro1, indexOfMacro2, indexOfMacro3), "1");
-        canvas->Update();      
+
+        // Update name of the tab (tab has been set to current tab!)
+        fHistoCanvasName->SetString(Form("%s - %s - %s",
+                                         fM->fDataFromMacroList->At(indexOfMacro1)->GetName(), 
+                                         fM->fDataFromMacroList->At(indexOfMacro2)->GetName(),
+                                         fM->fDataFromMacroList->At(indexOfMacro3)->GetName()));
+        // Use a copy of fHistoCanvasName!! -> If the user closes a tab manually, the TGString
+        // will be deleted -> Error might occur, when accessing the pointer   
+        gEve->GetBrowser()->GetTab(1)->GetCurrentTab()->SetText(new TGString(fHistoCanvasName));
+
+        // Switch tabs to force redrawing
+        gEve->GetBrowser()->GetTab(1)->SetTab(0);
+        gEve->GetBrowser()->GetTab(1)->SetTab(fHistoCanvasName->GetString());
+        fHistoCanvas->Update();
  
         break;     
       }
@@ -470,13 +520,13 @@ void AliEveTRDTrackListEditor::HandleMacroPathSet()
       // Current path
       if (name == NULL)
       {
-        name = new Char_t[100];
-        memset(name, '\0', sizeof(Char_t) * 100);
+        name = new Char_t[AliEveTRDTrackList::fkMaxMacroNameLength];
+        memset(name, '\0', sizeof(Char_t) * AliEveTRDTrackList::fkMaxMacroNameLength);
         sprintf(name, "%s", fteField->GetText());
 
-        // Add path to textfield
-        Char_t pathname[100];
-        memset(pathname, '\0', sizeof(Char_t) * 100);
+        // Add path to textfield -> Path is "./" -> Use length for the name + 2
+        Char_t pathname[AliEveTRDTrackList::fkMaxMacroNameLength + 2];
+        memset(pathname, '\0', sizeof(Char_t) * (AliEveTRDTrackList::fkMaxMacroNameLength + 2));
         sprintf(pathname, "./%s", fteField->GetText());
         fteField->SetText(pathname);
 
@@ -488,8 +538,8 @@ void AliEveTRDTrackListEditor::HandleMacroPathSet()
       else
       {
         // Extract path
-        Char_t* path = new Char_t[240];
-        memset(path, '\0', sizeof(Char_t) * 240);
+        Char_t* path = new Char_t[AliEveTRDTrackList::fkMaxMacroPathLength];
+        memset(path, '\0', sizeof(Char_t) * AliEveTRDTrackList::fkMaxMacroPathLength);
         strncpy(path, fteField->GetText(), strlen(fteField->GetText()) - strlen(name));
         
         // Ignore the slash "/" in name
@@ -508,6 +558,18 @@ void AliEveTRDTrackListEditor::HandleMacroPathSet()
 }
 
 //______________________________________________________
+void AliEveTRDTrackListEditor::HandleNewEventLoaded()
+{
+  CloseTabs();
+}
+
+//______________________________________________________
+void AliEveTRDTrackListEditor::HandleTabChangedToIndex(Int_t index)
+{
+  fM->SetSelectedTab(index);
+}
+
+//______________________________________________________
 void AliEveTRDTrackListEditor::RemoveMacros()
 {
   TList* iterator = new TList();
@@ -520,6 +582,10 @@ void AliEveTRDTrackListEditor::RemoveMacros()
   iterator = new TList();
   ftlMacroSelList->GetSelectedEntries(iterator);
   fM->RemoveSelectionMacros(iterator);
+
+  // Selected macros are deleted from the list -> No selected entries left
+  fM->fMacroListSelected = 0;
+  fM->fMacroSelListSelected = 0;
 
   UpdateMacroList();
 
@@ -542,27 +608,23 @@ void AliEveTRDTrackListEditor::SetModel(TObject* obj)
   UpdateMacroList();
   UpdateHistoList(); 
 
-  // Set focus on "Apply macros" tab, if the editor has just been initialized.
-  // To prevent refocusing on "Style" tab, disable "Style" and during the next call
-  // re-enable "Style"
-  if (fInitState == 0)
+  // View correct tab
+  GetGedEditor()->GetTab()->SetTab(fM->fSelectedTab); 
+}
+
+//______________________________________________________
+void AliEveTRDTrackListEditor::UpdateDataFromMacroListSelection()
+{
+  for (Int_t i = 0; i < fM->fDataFromMacroList->GetEntries(); i++)
   {
-    GetGedEditor()->GetTab()->SetEnabled(0, kFALSE);
-    GetGedEditor()->GetTab()->SetTab("Apply macros"); 
-    
-    fInitState = 1;
-  } 
-  else if (fInitState == 1)
-  {
-    GetGedEditor()->GetTab()->SetEnabled(0, kTRUE);
-    fInitState = 2; 
+    fM->SetHistoDataSelection(i, fCheckButtons[i]->IsOn());
   }
 }
 
 //______________________________________________________
 void AliEveTRDTrackListEditor::UpdateHistoList()
 {
-  fHistoSubFrame->TGCompositeFrame::RemoveAll();
+  fHistoSubFrame->TGCompositeFrame::Cleanup();
   
   // Set buttons for histograms
   if (fCheckButtons != 0) delete fCheckButtons;
@@ -576,6 +638,8 @@ void AliEveTRDTrackListEditor::UpdateHistoList()
     
     fCheckButtons[i]->SetState(kButtonUp, kFALSE);
     fCheckButtons[i]->MapRaised();
+    fCheckButtons[i]->SetOn(fM->HistoDataIsSelected(i));
+    fCheckButtons[i]->Connect("Clicked()", "AliEveTRDTrackListEditor", this, "UpdateDataFromMacroListSelection()");
             
     iter = (TObjString*)fM->fDataFromMacroList->After(iter);
   }  
@@ -588,24 +652,53 @@ void AliEveTRDTrackListEditor::UpdateMacroList()
  
   TObjString* iter = (TObjString*)fM->fMacroList->First();
 
+  Int_t ind = 0;
   while (iter != 0)
   {
-    ftlMacroList->AddEntry(iter->GetName(), -1);
+    ftlMacroList->AddEntry(iter->GetName(), ind++);
     iter = (TObjString*)fM->fMacroList->After(iter);
   }
 
   ftlMacroList->SortByName();
+
+  // Select, what has been selected before
+  for (Int_t i = 0; i < fM->fMacroList->GetEntries(); i++)
+  {
+    ftlMacroList->Select(i, fM->MacroListIsSelected(i));
+  }
+
 
 
   ftlMacroSelList->RemoveAll();
  
   iter = (TObjString*)fM->fMacroSelList->First();
 
+  ind = 0;
   while (iter != 0)
   {
-    ftlMacroSelList->AddEntry(iter->GetName(), -1);
+    ftlMacroSelList->AddEntry(iter->GetName(), ind++);
     iter = (TObjString*)fM->fMacroSelList->After(iter);
   }
 
   ftlMacroSelList->SortByName(); 
+
+  // Select, what has been selected before
+  for (Int_t i = 0; i < fM->fMacroSelList->GetEntries(); i++)
+  {
+    ftlMacroSelList->Select(i, fM->MacroSelListIsSelected(i));
+  }
+}
+
+//______________________________________________________
+void AliEveTRDTrackListEditor::UpdateMacroListSelection(Int_t ind)
+{
+  // Toggle selected item
+  fM->SetMacroListSelection(ind, !fM->MacroListIsSelected(ind));
+}
+
+//______________________________________________________
+void AliEveTRDTrackListEditor::UpdateMacroSelListSelection(Int_t ind)
+{
+  // Toggle selected item
+  fM->SetMacroSelListSelection(ind, !fM->MacroSelListIsSelected(ind));
 }
