@@ -1,16 +1,16 @@
 /*
 Contact: cvetan.cheshkov@cern.ch
-Link: missing
+Link: /afs/cern.ch/user/c/cheshkov/public/08000058338016.30.root.date.gz
+Reference Run: 58338
 Run Type: PHYSICS
 DA Type: MON
-Number of events needed: 10000
-Input Files:
-Output Files:
+Number of events needed: 1000
+Input Files: GRP/Geometry/Data , ITS/Align/Data , spd_noisy_ocdb , spd_dead_ocdb
+Output Files: SPDVertexDiamondDA.root
 Trigger types used: PHYSICS
 */
 
 #define OUTPUT_FILE "SPDVertexDiamondDA.root"
-#define CDB_STORAGE "local://$ALICE_ROOT"
 #define N_EVENTS_AUTOSAVE 50
 
 extern "C" {
@@ -29,6 +29,7 @@ extern "C" {
 #include <TROOT.h>
 #include <TH1.h>
 #include <TH2.h>
+#include <TSystem.h>
 
 #include "AliRawReaderDate.h"
 #include "AliCDBManager.h"
@@ -84,9 +85,58 @@ int main(int argc, char **argv) {
   }
   int runNr = atoi(getenv("DATE_RUN_NUMBER"));
 
+  // Get the necessary OCDB files from the DAQ detector DB
+  if (gSystem->AccessPathName("localOCDB/GRP/Geometry/Data",kFileExists)) {
+    if (gSystem->mkdir("localOCDB/GRP/Geometry/Data",kTRUE) != 0) {
+      printf("Failed to create directory: localOCDB/GRP/Geometry/Data");
+      return -1;
+    }
+  }
+  status = daqDA_DB_getFile("GRP/Geometry/Data","localOCDB/GRP/Geometry/Data/Run0_999999999_v0_s0.root");
+  if (status) {
+    printf("Failed to get geometry file (GRP/Geometry/Data) from DAQdetDB, status=%d\n", status);
+    return -1;
+  }
+
+  if (gSystem->AccessPathName("localOCDB/ITS/Align/Data",kFileExists)) {
+    if (gSystem->mkdir("localOCDB/ITS/Align/Data",kTRUE) != 0) {
+      printf("Failed to create directory: localOCDB/ITS/Align/Data");
+      return -1;
+    }
+  }
+  status = daqDA_DB_getFile("ITS/Align/Data","localOCDB/ITS/Align/Data/Run0_999999999_v0_s0.root");
+  if (status) {
+    printf("Failed to get its-alignment file (ITS/Align/Data) from DAQdetDB, status=%d\n", status);
+    return -1;
+  }
+
+  if (gSystem->AccessPathName("localOCDB/ITS/Calib/SPDNoisy",kFileExists)) {
+    if (gSystem->mkdir("localOCDB/ITS/Calib/SPDNoisy",kTRUE) != 0) {
+      printf("Failed to create directory: localOCDB/ITS/Calib/SPDNoisy");
+      return -1;
+    }
+  }
+  status = daqDA_DB_getFile("spd_noisy_ocdb","localOCDB/ITS/Calib/SPDNoisy/Run0_999999999_v0_s0.root");
+  if (status) {
+    printf("Failed to get spd file (spd_noisy_ocdb) from DAQdetDB, status=%d\n", status);
+    return -1;
+  }
+
+  if (gSystem->AccessPathName("localOCDB/ITS/Calib/SPDDead",kFileExists)) {
+    if (gSystem->mkdir("localOCDB/ITS/Calib/SPDDead",kTRUE) != 0) {
+      printf("Failed to create directory: localOCDB/ITS/Calib/SPDDead");
+      return -1;
+    }
+  }
+  status = daqDA_DB_getFile("spd_dead_ocdb","localOCDB/ITS/Calib/SPDDead/Run0_999999999_v0_s0.root");
+  if (status) {
+    printf("Failed to get spd file (spd_dead_ocdb) from DAQdetDB, status=%d\n", status);
+    return -1;
+  }
+
   // Global initializations
   AliCDBManager *man = AliCDBManager::Instance();
-  man->SetDefaultStorage(CDB_STORAGE);
+  man->SetDefaultStorage("local://localOCDB");
   man->SetRun(runNr);
 
   // Init mean vertexer
@@ -144,8 +194,15 @@ int main(int argc, char **argv) {
       if (mv->Reconstruct(rawReader)) nevents_with_vertex++;
 
       // Auto save
-      if ((nevents_physics%N_EVENTS_AUTOSAVE) == 0)
+      if ((nevents_physics%N_EVENTS_AUTOSAVE) == 0) {
 	mv->WriteVertices(OUTPUT_FILE);
+
+#ifdef ALI_AMORE
+      // send the histos to AMORE pool
+	printf("AMORE send status: %d\n",vtxAmore.Send(mv->GetVertexXY()->GetName(),mv->GetVertexXY()));
+	printf("AMORE send status: %d\n",vtxAmore.Send(mv->GetVertexZ()->GetName(),mv->GetVertexZ()));
+#endif
+      }
 
       delete rawReader;
     }
