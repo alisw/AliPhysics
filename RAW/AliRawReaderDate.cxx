@@ -425,7 +425,8 @@ Bool_t AliRawReaderDate::ReadHeader()
       // "read" the data header
       fHeader = (AliRawDataHeader*) fPosition;
       if ((fPosition + fHeader->fSize) != fEnd) {
-	if (fHeader->fSize != 0xFFFFFFFF)
+	if ((fHeader->fSize != 0xFFFFFFFF) &&
+	    (fEquipment->equipmentId != 4352))
 	  Warning("ReadHeader",
 		  "raw data size found in the header is wrong (%d != %d)! Using the equipment size instead !",
 		  fHeader->fSize, fEnd - fPosition);
