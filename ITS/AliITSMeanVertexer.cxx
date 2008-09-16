@@ -63,7 +63,7 @@ fFilterOnTracklets(0)
   }
 
   // Histograms initialization
-  const Float_t xLimit = 2.0, yLimit = 2.0, zLimit = 50.0;
+  const Float_t xLimit = 5.0, yLimit = 5.0, zLimit = 50.0;
   const Float_t xDelta = 0.02, yDelta = 0.02, zDelta = 0.2;
   fVertexXY = new TH2F("VertexXY","Vertex Diamond (Y vs X)",
 		       2*(Int_t)(xLimit/xDelta),-xLimit,xLimit,
@@ -182,6 +182,8 @@ Bool_t AliITSMeanVertexer::Filter(AliESDVertex *vert,AliMultiplicity *mult){
   // Apply selection criteria to events
   Bool_t status = kFALSE;
   if(!vert || !mult)return status;
+  // Remove vertices reconstructed with vertexerZ
+  if(strcmp(vert->GetName(),"SPDVertexZ") == 0) return status;
   Int_t ncontr = vert->GetNContributors();
   Int_t ntracklets = mult->GetNumberOfTracklets();
   AliDebug(1,Form("Number of contributors = %d",ncontr));
