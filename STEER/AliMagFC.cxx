@@ -65,40 +65,6 @@ AliMagFC::AliMagFC(const char *name, const char *title, Int_t integ,
   fType = kConst;
   fMap  = 1;
   
-  //////////////////////////////////////////////////////////////////////
-  // ---- Magnetic field values (according to beam type and energy) ----
-  if(fBeamType==kBeamTypepp && fBeamEnergy==5000.){
-  // p-p @ 5+5 TeV
-      fQuadGradient = 15.7145;
-      fDipoleField  = 27.0558;
-      // SIDE C
-      fCCorrField   = 9.7017;
-      // SIDE A
-      fACorr1Field  = -13.2143;
-      fACorr2Field  = -11.9909;
-  } else if (fBeamType == kBeamTypepp && fBeamEnergy == 450.) {
-  // p-p 0.45+0.45 TeV
-      Float_t const kEnergyRatio = fBeamEnergy / 7000.;
-      
-      fQuadGradient = 22.0002 * kEnergyRatio;
-      fDipoleField  = 37.8781 * kEnergyRatio;
-      // SIDE C
-      fCCorrField   =  9.6908 * kEnergyRatio;
-      // SIDE A
-      fACorr1Field  = -13.2014;
-      fACorr2Field  = -9.6908;
-  } else if ((fBeamType == kBeamTypepp && fBeamEnergy == 7000.) ||
-	     (fBeamType == kBeamTypeAA))
-  {
-      // Pb-Pb @ 2.7+2.7 TeV or p-p @ 7+7 TeV
-      fQuadGradient = 22.0002;
-      fDipoleField  = 37.8781;
-      // SIDE C
-      fCCorrField   = 9.6908;
-      // SIDE A
-      fACorr1Field  = -13.2014;
-      fACorr2Field  = -9.6908;
-  }
 }
 
 //________________________________________
@@ -139,6 +105,48 @@ void AliMagFC::ZDCField(Float_t *x, Float_t *b) const
   // ---- This is the ZDC part
   
   Float_t rad2 = x[0] * x[0] + x[1] * x[1];
+  static Bool_t init = kFALSE;
+
+  if (! init) {
+      init = kTRUE;
+      //////////////////////////////////////////////////////////////////////
+      // ---- Magnetic field values (according to beam type and energy) ----
+      if(fBeamType==kBeamTypepp && fBeamEnergy == 5000.){
+	  // p-p @ 5+5 TeV
+	  fQuadGradient = 15.7145;
+	  fDipoleField  = 27.0558;
+	  // SIDE C
+	  fCCorrField   = 9.7017;
+	  // SIDE A
+	  fACorr1Field  = -13.2143;
+	  fACorr2Field  = -11.9909;
+      } else if (fBeamType == kBeamTypepp && fBeamEnergy == 450.) {
+	  // p-p 0.45+0.45 TeV
+	  Float_t const kEnergyRatio = fBeamEnergy / 7000.;
+	  
+	  fQuadGradient = 22.0002 * kEnergyRatio;
+	  fDipoleField  = 37.8781 * kEnergyRatio;
+	  // SIDE C
+	  fCCorrField   =  9.6908;
+	  // SIDE A
+	  fACorr1Field  = -13.2014;
+	  fACorr2Field  = -9.6908;
+      } else if ((fBeamType == kBeamTypepp && fBeamEnergy == 7000.) ||
+		 (fBeamType == kBeamTypeAA))
+      {
+	  // Pb-Pb @ 2.7+2.7 TeV or p-p @ 7+7 TeV
+	  fQuadGradient = 22.0002;
+	  fDipoleField  = 37.8781;
+	  // SIDE C
+	  fCCorrField   = 9.6908;
+	  // SIDE A
+	  fACorr1Field  = -13.2014;
+	  fACorr2Field  = -9.6908;
+      }
+      
+      printf("Machine field %5d %13.3f %13.3f \n", fBeamType, fBeamEnergy, fDipoleField);
+  }
+  
   
   // SIDE C **************************************************
   if(x[2]<0.){  

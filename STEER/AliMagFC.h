@@ -34,11 +34,11 @@ private:
   Bool_t     fCompensator; // Flag for compensator magnetic field (kTrue -> ON)
   BeamType_t fBeamType;    // Beam type: A-A (fBeamType=0) or p-p (fBeamType=1)
   Float_t    fBeamEnergy;  // Beam energy in GeV
-  Float_t    fQuadGradient;// Gradient field for inner triplet quadrupoles
-  Float_t    fDipoleField; // Field value for D1 and D2 dipoles
-  Float_t    fCCorrField;  // Side C 2nd compensator field
-  Float_t    fACorr1Field; // Side A 1st compensator field 
-  Float_t    fACorr2Field; // Side A 2nd compensator field
+  mutable Float_t    fQuadGradient;// Gradient field for inner triplet quadrupoles
+  mutable Float_t    fDipoleField; // Field value for D1 and D2 dipoles
+  mutable Float_t    fCCorrField;  // Side C 2nd compensator field
+  mutable Float_t    fACorr1Field; // Side A 1st compensator field 
+  mutable Float_t    fACorr2Field; // Side A 2nd compensator field
   
   ClassDef(AliMagFC,3)  //Class for all Alice Constant MagField 
 };
