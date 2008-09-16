@@ -104,6 +104,8 @@ int main(int argc, char **argv) {
   status=daqDA_DB_getFile(idp.Data(),paramsFileName.Data());
   if (status) {
     printf("Failed to get config file %s: status=%d. Using default tuning parameters.\n",idp.Data(),status);
+    TString rmCmd = Form("rm -f %s",paramsFileName.Data());
+    system(rmCmd.Data());
   }
 #endif
   if (status==0) {
@@ -139,6 +141,8 @@ int main(int argc, char **argv) {
   permstatus=daqDA_DB_getFile(idn.Data(),permNoisyFileName.Data());
   if (permstatus) {
     printf("Failed to get config file %s: status=%d. No permanently noisy pixels will be added.\n",idn.Data(),permstatus);
+    TString rmCmd = Form("rm -f %s",permNoisyFileName.Data());
+    system(rmCmd.Data());
   }
 #endif
 
