@@ -635,8 +635,13 @@ void AliTPCclustererMI::AddCluster(AliTPCclusterMI &c, Float_t * matrix, Int_t p
   }
   
   if (AliTPCReconstructor::StreamLevel()>1) {
+    Float_t xyz[3];
+    cl->GetGlobalXYZ(xyz);
      (*fDebugStreamer)<<"Clusters"<<
        "Cl.="<<cl<<
+       "gx="<<xyz[0]<<
+       "gy="<<xyz[1]<<
+       "gz="<<xyz[2]<<
        "\n";
   }
 
@@ -655,7 +660,16 @@ void AliTPCclustererMI::Digits2Clusters()
     Error("Digits2Clusters", "input tree not initialised");
     return;
   }
- 
+  fRecoParam = AliTPCReconstructor::GetRecoParam();
+  if (!fRecoParam){
+    AliFatal("Can not get the reconstruction parameters");
+  }
+  if(AliTPCReconstructor::StreamLevel()>5) {
+    AliInfo("Parameter Dumps");
+    fParam->Dump();
+    fRecoParam->Dump();
+  }
+
   AliTPCCalPad * gainTPC = AliTPCcalibDB::Instance()->GetPadGainFactor();
   AliTPCCalPad * noiseTPC = AliTPCcalibDB::Instance()->GetPadNoise();
   AliSimDigits digarr, *dummy=&digarr;
@@ -728,7 +742,7 @@ void AliTPCclustererMI::Digits2Clusters()
     delete[] fBins;
     delete[] fSigBins;
   }  
-
+ 
   Info("Digits2Clusters", "Number of found clusters : %d", nclusters);
 }
 
@@ -740,8 +754,15 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
 // The pedestal subtraction can be switched on and off
 // using an option of the TPC reconstructor
 //-----------------------------------------------------------------
-
-
+  fRecoParam = AliTPCReconstructor::GetRecoParam();
+  if (!fRecoParam){
+    AliFatal("Can not get the reconstruction parameters");
+  }
+  if(AliTPCReconstructor::StreamLevel()>5) {
+    AliInfo("Parameter Dumps");
+    fParam->Dump();
+    fRecoParam->Dump();
+  }
   fRowDig = NULL;
   AliTPCROC * roc = AliTPCROC::Instance();
   AliTPCCalPad * gainTPC = AliTPCcalibDB::Instance()->GetPadGainFactor();
@@ -905,7 +926,7 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
     // Now loop over rows and perform pedestal subtraction
     if (digCounter==0) continue;
     //    if (calcPedestal) {
-    if (kTRUE) {
+    if (kFALSE ) {
       for (Int_t iRow = 0; iRow < nRows; iRow++) {
 	Int_t maxPad;
 	if (fSector < kNIS)
@@ -940,9 +961,9 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
 	  for (Int_t iTimeBin = 0; iTimeBin < fMaxTime; iTimeBin++) {
 	    Int_t bin = iPad*fMaxTime+iTimeBin;
 	    allBins[iRow][bin] -= pedestalEvent;
-	    if (iTimeBin < AliTPCReconstructor::GetRecoParam()->GetFirstBin())  
+	    if (iTimeBin < fRecoParam->GetFirstBin())  
 	      allBins[iRow][bin] = 0;
-	    if (iTimeBin > AliTPCReconstructor::GetRecoParam()->GetLastBin())  
+	    if (iTimeBin > fRecoParam->GetLastBin())  
 	      allBins[iRow][bin] = 0;
 	    if (allBins[iRow][iPad*fMaxTime+iTimeBin] < zeroSup)
 	      allBins[iRow][bin] = 0;
@@ -973,7 +994,12 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
 	      trafo.Transform(x,i,0,1);
 	      Double_t gx[3]={x[0],x[1],x[2]};
 	      trafo.RotatedGlobal2Global(fSector,gx);
-	      
+	      //	      allSigBins[iRow][allNSigBins[iRow]++]
+	      Int_t rowsigBins = allNSigBins[iRow];
+	      Int_t first=allSigBins[iRow][0];
+	      Int_t last= 0;
+	      if (rowsigBins>0) allSigBins[iRow][allNSigBins[iRow]-1];
+
               if (AliTPCReconstructor::StreamLevel()>0) {
 	      (*fDebugStreamer)<<"Digits"<<
 		"sec="<<fSector<<
@@ -987,6 +1013,10 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
 		"gx="<<gx[0]<<
 		"gy="<<gx[1]<<
 		"gz="<<gx[2]<<
+		//
+		"rowsigBins="<<rowsigBins<<
+		"first="<<first<<
+		"last="<<last<<
 		"\n";
 	      }
 	    }
@@ -1067,7 +1097,7 @@ void AliTPCclustererMI::FindClusters(AliTPCCalROC * noiseROC)
   Float_t minUpDownCutSigma    = fRecoParam->GetMinUpDownCutSigma();
   for (Int_t iSig = 0; iSig < fNSigBins; iSig++) {
     Int_t i = fSigBins[iSig];
-    if (i%fMaxTime<=crtime) continue;
+    //if (i%fMaxTime<=crtime) continue;
     Float_t *b = &fBins[i];
     //absolute custs
     if (b[0]<minMaxCutAbs) continue;   //threshold for maxima  
@@ -1131,7 +1161,7 @@ Double_t AliTPCclustererMI::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t
   Int_t    count1 =  0;
   Float_t  rmsCalib   = rmsEvent;       // backup initial value ( from calib)
   Float_t  pedestalCalib = pedestalEvent;// backup initial value ( from calib)
-  Int_t    firstBin = AliTPCReconstructor::GetRecoParam()->GetFirstBin();
+  Int_t    firstBin = fRecoParam->GetFirstBin();
   //
   UShort_t histo[kPedMax];
   //memset(histo,0,kPedMax*sizeof(UShort_t));
@@ -1246,7 +1276,7 @@ Double_t AliTPCclustererMI::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t
   // Big signals dumping
   //    
   if (AliTPCReconstructor::StreamLevel()>0) {
-  if (max-median>kMin &&maxPos>AliTPCReconstructor::GetRecoParam()->GetFirstBin()) 
+  if (max-median>kMin &&maxPos>fRecoParam->GetFirstBin()) 
     (*fDebugStreamer)<<"SignalB"<<     // pads with signal
       "TimeStamp="<<fTimeStamp<<
       "EventType="<<fEventType<<
