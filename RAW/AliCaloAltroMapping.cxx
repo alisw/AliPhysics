@@ -100,20 +100,20 @@ Bool_t AliCaloAltroMapping::ReadMapping()
       AliFatal(Form("Hardware (ALTRO) adress (%d) outside the range (0 -> %d) !",hwAddress,fMaxHWAddress));
       return kFALSE;
     }
-    Int_t row,col,gain;
-    if (!(*fIn >> row >> col >> gain)) {
+    Int_t row,col,caloFlag;
+    if (!(*fIn >> row >> col >> caloFlag)) {
       AliFatal("Syntax of the mapping file is wrong !");
       return kFALSE;
     }
 
-    if (gain < 0 || gain > 1) {
-      AliFatal(Form("Wrong gain value found (%d)! Should be 0 or 1 !",gain));
+    if (caloFlag < 0 || caloFlag > 3) {
+      AliFatal(Form("Wrong CaloFlag value found (%d)! Should be 0 ,1, 2 or 3 !",caloFlag));
       return kFALSE;
     }
  
     fMapping[3*hwAddress] = row;
     fMapping[3*hwAddress+1] = col;
-    fMapping[3*hwAddress+2] = gain;
+    fMapping[3*hwAddress+2] = caloFlag;
 
     if (row > fMaxRow) fMaxRow = row;
     if (row < fMinRow) fMinRow = row;
@@ -150,15 +150,14 @@ Bool_t AliCaloAltroMapping::CreateInvMapping()
       fInvMappingHigh[nCols*i+j] = -1;
     }
   }
-
   for(Int_t i = 0; i <= fMaxHWAddress; i++) {
     Int_t row = fMapping[3*i];
     Int_t col = fMapping[3*i+1];
-    Int_t gain = fMapping[3*i+2];
+    Int_t caloFlag = fMapping[3*i+2];
     if(row != -1 && col != -1) {
-      if (gain == 0)
+      if (caloFlag == 0)
 	fInvMappingLow[nCols*(row-fMinRow)+(col-fMinCol)] = i;
-      if (gain == 1)
+      if (caloFlag == 1)
 	fInvMappingHigh[nCols*(row-fMinRow)+(col-fMinCol)] = i;
     }
   }
@@ -167,11 +166,11 @@ Bool_t AliCaloAltroMapping::CreateInvMapping()
 }
 
 //_____________________________________________________________________________
-Int_t AliCaloAltroMapping::GetHWAddress(Int_t row, Int_t col, Int_t gain)
+Int_t AliCaloAltroMapping::GetHWAddress(Int_t row, Int_t col, Int_t caloFlag)
 {
   // Get the content of the mapping array
   // return -1 in case there is no hardware
-  // adress defined for these row-column-gain
+  // adress defined for these row-column-caloFlag
   if (!fInvMappingLow || !fInvMappingHigh) {
     if (!CreateInvMapping()) return -1;
   }
@@ -183,18 +182,18 @@ Int_t AliCaloAltroMapping::GetHWAddress(Int_t row, Int_t col, Int_t gain)
     AliWarning(Form("Index of column (%d) outside the range (0 -> %d) !",col,fMinCol,fMaxCol));
     return -1;
   }
-  if (gain < 0 || gain > 1) {
-    AliWarning(Form("Invalid gain (%d)! Should be 0 or 1 !",gain));
+  if (caloFlag < 0 || caloFlag > 3) {
+    AliWarning(Form("Invalid caloFlag (%d)! Should be 0, 1, 2 or 3 !",caloFlag));
     return -1;
   }
   Int_t hwAddress = -1;
-  if (gain == 0)
+  if (caloFlag == 0)
     hwAddress = fInvMappingLow[(fMaxCol - fMinCol + 1)*(row-fMinRow)+(col-fMinCol)];
-  if (gain == 1)
+  if (caloFlag == 1)
     hwAddress = fInvMappingHigh[(fMaxCol - fMinCol + 1)*(row-fMinRow)+(col-fMinCol)];
 
   if (hwAddress == -1)
-    AliWarning(Form("Hardware (ALTRO) adress is not defined for these row (%d), column (%d) and gain (%d) !",row,col,gain));
+    AliWarning(Form("Hardware (ALTRO) adress is not defined for these row (%d), column (%d) and caloFlag (%d) !",row,col,caloFlag));
 
   return hwAddress;
 }
@@ -242,7 +241,7 @@ Int_t AliCaloAltroMapping::GetPad(Int_t hwAddress) const
 //_____________________________________________________________________________
 Int_t AliCaloAltroMapping::GetSector(Int_t hwAddress) const
 {
-  // Return the gain factor (0/1)
+  // Return the caloFlag factor (0/1)
   // Note the difference w.r.t to the base class notation
   if (!fMapping) {
     AliWarning("Mapping array was not initalized correctly !");
@@ -252,9 +251,9 @@ Int_t AliCaloAltroMapping::GetSector(Int_t hwAddress) const
     AliWarning(Form("Hardware (ALTRO) adress (%d) outside the range (0 -> %d) !",hwAddress,fMaxHWAddress));
     return -1;
   }
-  Int_t gain = fMapping[3*hwAddress+2];
-  if (gain == -1)
+  Int_t caloFlag = fMapping[3*hwAddress+2];
+  if (caloFlag == -1)
     AliWarning(Form("Hardware (ALTRO) adress (%d) is not defined !",hwAddress));
 
-  return gain;
+  return caloFlag;
 }
