@@ -282,22 +282,22 @@ if(runType=="STANDALONE_PEDESTAL"){
 	   return 1;
          }
          Log(Form("File %s connected to process pedestal data", pedFileName));
-         Float_t pedVal[(3*knZDCch)][3];
-         for(Int_t k=0; k<(3*knZDCch); k++){
-            for(Int_t j=0; j<3; j++){
+         Float_t pedVal[(2*knZDCch)][2];
+         for(Int_t k=0; k<(2*knZDCch); k++){
+            for(Int_t j=0; j<2; j++){
                fscanf(file,"%f",&pedVal[k][j]);
 	       //if(j==1) printf("pedVal[%d] -> %f, %f \n",k,pedVal[k][0],pedVal[k][1]);
             }
             if(k<knZDCch){
-              pedCalib->SetMeanPed(k,pedVal[k][1]);
-              pedCalib->SetMeanPedWidth(i,pedVal[k][2]);
+              pedCalib->SetMeanPed(k,pedVal[k][0]);
+              pedCalib->SetMeanPedWidth(i,pedVal[k][1]);
             }
             else if(k>=knZDCch && k<(2*knZDCch)){
-              pedCalib->SetOOTPed(k-knZDCch,pedVal[k][1]);
-              pedCalib->SetOOTPedWidth(k-knZDCch,pedVal[k][2]);
+              pedCalib->SetOOTPed(k-knZDCch,pedVal[k][0]);
+              pedCalib->SetOOTPedWidth(k-knZDCch,pedVal[k][1]);
             }
             else if(k>=(2*knZDCch) && k<(3*knZDCch)){
-              pedCalib->SetPedCorrCoeff(k-(2*knZDCch),pedVal[k][1],pedVal[k][2]);
+              pedCalib->SetPedCorrCoeff(k-(2*knZDCch),pedVal[k][0],pedVal[k][1]);
             }
          }
 	 fclose(file);
