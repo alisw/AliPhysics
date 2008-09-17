@@ -51,6 +51,7 @@ public:
 	Int_t GetCurrentRun() const;
 	UInt_t GetCurrentStartTime() const;
 	UInt_t GetCurrentEndTime() const;
+	UInt_t GetCurrentTimeCreated() const;
 	UInt_t GetCurrentYear() const;
 	
 	const char* GetLHCPeriod() const;

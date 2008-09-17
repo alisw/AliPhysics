@@ -2037,12 +2037,16 @@ TMap* AliShuttle::GetValueSet(const char* host, Int_t port, const TSeqCollection
 	TMap* result = 0;
 	if (type == kAlias)
 	{
-		result = client.GetAliasValues(entries, GetCurrentStartTime()-offset, 
+		//result = client.GetAliasValues(entries, GetCurrentStartTime()-offset, 
+		//      GetCurrentEndTime()+offset);
+		result = client.GetAliasValues(entries, GetCurrentTimeCreated()-offset, 
 			GetCurrentEndTime()+offset);
 	} 
 	else if (type == kDP)
 	{
-		result = client.GetDPValues(entries, GetCurrentStartTime()-offset, 
+		//result = client.GetDPValues(entries, GetCurrentStartTime()-offset, 
+		//	GetCurrentEndTime()+offset);
+       		result = client.GetDPValues(entries, GetCurrentTimeCreated()-offset, 
 			GetCurrentEndTime()+offset);
 	}
 
@@ -2803,6 +2807,15 @@ UInt_t AliShuttle::GetCurrentEndTime() const
 	//
 
 	return fLogbookEntry ? fLogbookEntry->GetEndTime() : 0;
+}
+//______________________________________________________________________________________________
+UInt_t AliShuttle::GetCurrentTimeCreated() const
+{
+	//
+	// get current end time from logbook entry
+	//
+
+	return fLogbookEntry ? fLogbookEntry->GetTimeCreated() : 0;
 }
 
 //______________________________________________________________________________________________
