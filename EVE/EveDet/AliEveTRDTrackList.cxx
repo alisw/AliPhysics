@@ -6,6 +6,7 @@
 #include <AliTRDtrackV1.h>
 #include <TFile.h>
 #include <TFunction.h>
+#include <TH1.h>
 #include <TList.h>
 #include <TObjString.h>
 #include <TROOT.h>
@@ -47,19 +48,19 @@ AliEveTRDTrackList::~AliEveTRDTrackList()
 {
   if (fMacroList != 0)
   {
-    fMacroList->Clear();
+    fMacroList->Delete();
     delete fMacroList;
     fMacroList = 0;
   }
   if (fMacroSelList != 0)
   {
-    fMacroSelList->Clear();
+    fMacroSelList->Delete();
     delete fMacroSelList;
     fMacroSelList = 0;
   } 
   if (fDataFromMacroList != 0)
   {
-    fDataFromMacroList->Clear();
+    fDataFromMacroList->Delete();
     delete fDataFromMacroList;
     fDataFromMacroList = 0;
   } 
@@ -71,7 +72,7 @@ AliEveTRDTrackList::~AliEveTRDTrackList()
 }
 
 //______________________________________________________
-Int_t AliEveTRDTrackList::AddMacro(const Char_t* path, const Char_t* nameC)
+Int_t AliEveTRDTrackList::AddMacro(const Char_t* path, const Char_t* nameC, Bool_t forceReload)
 {
   // First check the type of the macro:
   // If it has the signature of a selection macro:
@@ -81,6 +82,7 @@ Int_t AliEveTRDTrackList::AddMacro(const Char_t* path, const Char_t* nameC)
   // void MacroName(AliTRDtrackV1*, Double_t*&, Int_t&)
   // it is assumed to be a process macro.
   // In all other cases: Macro is rejected
+  Bool_t isHistoMacro = kFALSE;
   Bool_t isSelectionMacro = kFALSE;
   Bool_t hasCorrectSignature = kFALSE;
   
@@ -122,38 +124,46 @@ Int_t AliEveTRDTrackList::AddMacro(const Char_t* path, const Char_t* nameC)
   // Clean up root, load the desired macro and then check the type of the macro
   //gROOT->Reset("a");
   gROOT->Reset();
-  gROOT->ProcessLineSync(Form(".L %s+", pathname));
+ 
+  if (forceReload)  gROOT->ProcessLineSync(Form(".L %s++", pathname));
+  else              gROOT->ProcessLineSync(Form(".L %s+", pathname));
 
-  // Selection macro?
+  // Selection macro or process macro of type 2 (histo)?
   TFunction* f = gROOT->GetGlobalFunctionWithPrototype(name, "const AliTRDtrackV1*", kTRUE);
   if (f != 0x0)
   {
-    if (!strcmp(f->GetReturnTypeName(), "Bool_t")) 
+    // Some additional check (is the parameter EXACTLY of the desired type?)
+    if (strstr(f->GetMangledName(), "oPconstsPAliTRDtrackV1mUsP") != 0x0)
     {
-      // Some additional check (is the parameter EXACTLY of the desired type?)
-      if (strstr(f->GetMangledName(), "oPconstsPAliTRDtrackV1mUsP") != 0x0)
-      {
+      // Selection macro?
+      if (!strcmp(f->GetReturnTypeName(), "Bool_t")) 
+      {      
         hasCorrectSignature = kTRUE;
         isSelectionMacro = kTRUE;
+        isHistoMacro = kFALSE;
+      }
+      // Process macro of type 2 (histo)?
+      else if (!strcmp(f->GetReturnTypeName(), "TH1*"))
+      {
+        hasCorrectSignature = kTRUE;
+        isSelectionMacro = kFALSE;
+        isHistoMacro = kTRUE;
       }
     }
   }
-  // Process macro?
-  else
+  // Process macro of type 1?
+  else if ((f = gROOT->GetGlobalFunctionWithPrototype(name, "const AliTRDtrackV1*, Double_t*&, Int_t&", kTRUE)) != 0x0)
   {
-    f = gROOT->GetGlobalFunctionWithPrototype(name, "const AliTRDtrackV1*, Double_t*&, Int_t&", kTRUE);
-    if (f != 0x0)
+    if (!strcmp(f->GetReturnTypeName(), "void"))
     {
-      if (!strcmp(f->GetReturnTypeName(), "void"))
+      // Some additional check (are the parameters EXACTLY of the desired type?)
+      if (strstr(f->GetMangledName(), "oPconstsPAliTRDtrackV1mUsP") != 0x0 &&
+          strstr(f->GetMangledName(), "cODouble_tmUaNsP") != 0x0 &&
+          strstr(f->GetMangledName(), "cOInt_taNsP") != 0x0)
       {
-        // Some additional check (are the parameters EXACTLY of the desired type?)
-        if (strstr(f->GetMangledName(), "oPconstsPAliTRDtrackV1mUsP") != 0x0 &&
-            strstr(f->GetMangledName(), "cODouble_tmUaNsP") != 0x0 &&
-            strstr(f->GetMangledName(), "cOInt_taNsP") != 0x0)
-        {
-          hasCorrectSignature = kTRUE;
-          isSelectionMacro = kFALSE;
-        }
+        hasCorrectSignature = kTRUE;
+        isSelectionMacro = kFALSE;
+        isHistoMacro = kFALSE;
       }
     }
   }
@@ -196,33 +206,47 @@ Int_t AliEveTRDTrackList::AddMacro(const Char_t* path, const Char_t* nameC)
 
   return returnValue;
 }
-/*
+
+//______________________________________________________
+void AliEveTRDTrackList::AddMacroFast(const Char_t* entry, Bool_t toSelectionList)
+{
+  if (toSelectionList)
+  {
+    fMacroSelList->Add(new TObjString(entry));
+    fMacroSelList->Sort();
+  }
+  else 
+  {
+    fMacroList->Add(new TObjString(entry));
+    fMacroList->Sort();
+  }
+}
+
 //______________________________________________________
 void AliEveTRDTrackList::AddMacroFast(const Char_t* path, const Char_t* name, Bool_t toSelectionList)
 {
   Char_t* entry = MakeMacroEntry(path, name);
   if (entry != 0)
   {
-    if (toSelectionList)  fMacroSelList->Add(new TObjString(entry));
-    else                  fMacroList->Add(new TObjString(entry));
-    
-    delete entry;
-    entry = 0;
+    AddMacroFast(entry, toSelectionList);
 
 #ifdef ALIEVETRDTRACKLIST_DEBUG
     // Successfull add will only be displayed in debug mode
-    printf("#AliEveTRDTrackList: Standard macros: Added macro %s/%s to %s list\n", path, name, 
+    printf("#AliEveTRDTrackList::AddMacroFast: Added macro \"%s/%s\" to %s list\n", path, name, 
            (toSelectionList ? "selection" : "process"));
 #endif
+    
+    delete entry;
+    entry = 0;
   }
   else
   {
     // Error will always be displayed
-    printf("#AliEveTRDTrackList: Standard macros: ERROR: Could not add macro %s/%s to %s list\n", path, name, 
+    printf("#AliEveTRDTrackList::AddMacroFast: ERROR: Could not add macro \"%s/%s\" to %s list\n", path, name, 
            (toSelectionList ? "selection" : "process"));
-  } 
+  }
 }
-*/
+
 //______________________________________________________
 void AliEveTRDTrackList::AddStandardMacros()
 {
@@ -235,8 +259,8 @@ void AliEveTRDTrackList::AddStandardMacros()
   // use the return value of AddMacro (NOT_EXIST_ERROR is returned, if file does not exist)
   AddMacro("$(ALICE_ROOT)/TRD/qaRec/macros", "clusterSelection.C");
   AddMacro("$(ALICE_ROOT)/TRD/qaRec/macros", "chargeDistr.C");
-  AddMacro("$(ALICE_ROOT)/TRD/qaRec/macros", "nclusters.C");
   AddMacro("$(ALICE_ROOT)/TRD/qaRec/macros", "clusterResiduals.C");
+  AddMacro("$(ALICE_ROOT)/TRD/qaRec/macros", "PH.C");
 }
 
 //______________________________________________________
@@ -246,6 +270,10 @@ void AliEveTRDTrackList::ApplyProcessMacros(TList* iterator)
 
   Char_t name[fkMaxMacroNameLength];
   Char_t** cmds = new Char_t*[iterator->GetEntries()];
+  Bool_t* isHistoMacro = new Bool_t[iterator->GetEntries()];
+
+  Int_t numHistoMacros = 0;
+  TH1** histos = 0;
 
   AliEveTRDTrack* track = 0;
   AliTRDtrackV1 *trackv1 = 0;
@@ -289,9 +317,27 @@ void AliEveTRDTrackList::ApplyProcessMacros(TList* iterator)
     // Add to "data-from-list"
     fDataFromMacroList->Add(new TObjString(name));
 
-    // Create the command 
-    sprintf(cmds[i], "%s(automaticTrackV1, results, n);", name);    
+    // Find the type of the process macro
+    if (!IsHistogramMacro(name))
+    {
+      // Type 1
+      isHistoMacro[i] = kFALSE;
+      // Create the command 
+      sprintf(cmds[i], "%s(automaticTrackV1, results, n);", name);
+    }
+    else
+    {
+      // Type 2 (histo)
+      isHistoMacro[i] = kTRUE;
+      numHistoMacros++;
+      // Create the command 
+      sprintf(cmds[i], "%s(automaticTrackV1);", name);
+    } 
   }  
+
+  // Allocate memory for the histograms
+  if (numHistoMacros > 0)  histos = new TH1*[numHistoMacros];
+  for (Int_t i = 0; i < numHistoMacros; i++)  histos[i] = 0;
   
   // Walk through the list of tracks     
   for (TEveElement::List_i iter = this->BeginChildren(); iter != this->EndChildren(); ++iter)
@@ -310,34 +356,56 @@ void AliEveTRDTrackList::ApplyProcessMacros(TList* iterator)
     gROOT->ProcessLineSync("AliTRDtrackV1* automaticTrackV1 = (AliTRDtrackV1*)automaticTrack->GetUserData();");
 
     // Collect data for each macro
-    for (Int_t i = 0; i < iterator->GetEntries(); i++)
+    for (Int_t i = 0, histoIndex = 0; i < iterator->GetEntries(); i++)
     {
-      // Create data pointers in CINT, execute the macro and get the data
-      gROOT->ProcessLineSync("Double_t* results = 0;");
-      gROOT->ProcessLineSync("Int_t n = 0;");
-      gROOT->ProcessLineSync(cmds[i]);
-      Double_t* results = (Double_t*)gROOT->ProcessLineSync("results;");
-      Int_t nResults = (Int_t)gROOT->ProcessLineSync("n;");
-      
-      if (results == 0)
+      // Process for macro type 2 (histo)
+      if (isHistoMacro[i])
       {
-        Error("Apply macros", Form("Error reading data from macro \"%s\"", iterator->At(i)->GetTitle()));
-        continue;
+        if (histos[histoIndex] == 0)  histos[histoIndex] = (TH1*)gROOT->ProcessLineSync(cmds[i]);
+        else  histos[histoIndex]->Add((const TH1*)gROOT->ProcessLineSync(cmds[i]));
+        histoIndex++;
       }
-      for (Int_t resInd = 0; resInd < nResults; resInd++)
+      // Process for macro type 1
+      else
       {
-        (*fDataTree) << Form("TrackData%d", i) << Form("Macro%d=", i) << results[resInd] << (Char_t*)"\n";   
-      }
+        // Create data pointers in CINT, execute the macro and get the data
+        gROOT->ProcessLineSync("Double_t* results = 0;");
+        gROOT->ProcessLineSync("Int_t n = 0;");
+        gROOT->ProcessLineSync(cmds[i]);
+        Double_t* results = (Double_t*)gROOT->ProcessLineSync("results;");
+        Int_t nResults = (Int_t)gROOT->ProcessLineSync("n;");
+        
+        if (results == 0)
+        {
+          Error("Apply macros", Form("Error reading data from macro \"%s\"", iterator->At(i)->GetTitle()));
+          continue;
+        }
+        for (Int_t resInd = 0; resInd < nResults; resInd++)
+        {
+          (*fDataTree) << Form("TrackData%d", i) << Form("Macro%d=", i) << results[resInd] << (Char_t*)"\n";   
+        }
 
-      delete results;
-      results = 0;
+        delete results;
+        results = 0;
+      }
     }
   }    
 
-  delete fDataTree;
+  for (Int_t i = 0, histoIndex = 0; i < iterator->GetEntries() && histoIndex < numHistoMacros; i++)
+  {
+    if (isHistoMacro[i])
+      (*fDataTree) << Form("TrackData%d", i) << Form("Macro%d=", i) << histos[histoIndex++] << (Char_t*)"\n";
+  }
+
+  if (fDataTree != 0) delete fDataTree;
   fDataTree = 0;
 
   if (cmds != 0)  delete [] cmds;
+  if (isHistoMacro != 0)  delete isHistoMacro;
+  isHistoMacro = 0;
+
+  if (histos != 0)  delete [] histos;
+  histos = 0;
 
   // Clear root
   gROOT->Reset();
@@ -432,20 +500,37 @@ Char_t* AliEveTRDTrackList::MakeMacroEntry(const Char_t* path, const Char_t* nam
 }
 
 //______________________________________________________
+Bool_t AliEveTRDTrackList::IsHistogramMacro(const Char_t* name) 
+{
+  TFunction* f = 0x0;
+  if ((f = gROOT->GetGlobalFunctionWithPrototype(name, "const AliTRDtrackV1*", kTRUE)) != 0x0)
+    if (strcmp(f->GetReturnTypeName(), "TH1*") == 0)  return kTRUE;
+
+  return kFALSE;  
+}
+
+//______________________________________________________
 void AliEveTRDTrackList::RemoveProcessMacros(TList* iterator) 
 {
+  TObjString* obj = 0;
   for (Int_t i = 0; i < iterator->GetEntries(); i++)
   {
-    fMacroList->Remove(fMacroList->FindObject(iterator->At(i)->GetTitle()));
+    obj = (TObjString*)fMacroList->Remove(fMacroList->FindObject(iterator->At(i)->GetTitle()));
+    
+    if (obj != 0) delete obj;
   }
+  obj = 0;
 }
 
 //______________________________________________________
 void AliEveTRDTrackList::RemoveSelectionMacros(TList* iterator) 
 {
+  TObjString* obj = 0;
   for (Int_t i = 0; i < iterator->GetEntries(); i++)
   {
-    fMacroSelList->Remove(fMacroSelList->FindObject(iterator->At(i)->GetTitle()));
+    obj = (TObjString*)fMacroSelList->Remove(fMacroSelList->FindObject(iterator->At(i)->GetTitle()));
+    if (obj != 0) delete obj;
   }
+  obj = 0;
 }
 

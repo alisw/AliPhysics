@@ -18,6 +18,8 @@ class AliEveTRDTrack;
 class AliTRDtrackV1;
 class TFile;
 class TFunction;
+class TH1;
+class TObjString;
 class TList;
 class TTreeSRedirector;
 
@@ -41,12 +43,17 @@ public:
   AliEveTRDTrackList(const Text_t* n = "AliEveTRDTrackList", const Text_t* t = "", Bool_t doColor = kFALSE);
   virtual ~AliEveTRDTrackList();
 
-  Int_t AddMacro(const Char_t* path, const Char_t* name);       // Adds a macro (path/name) to the corresponding list
-                                                                // (automatic recognition / check) -> library will be
-                                                                // created / (re-)loaded
-  //void AddMacroFast(const Char_t* path, const Char_t* name,     // Adds a macro (path/name) to the selection (process)
-  //                  Bool_t toSelectionList);                    // macro list, if second parameter is kTRUE (kFALSE).
-  //                                                              // No checks are performed (fast).
+  Int_t AddMacro(const Char_t* path, const Char_t* name,        // Adds a macro (path/name) to the corresponding list
+                 Bool_t forceReload = kFALSE);                  // (automatic recognition / check) -> library will be
+                                                                // built, if it does not exist, or updated, if the 
+                                                                // macro code has been changed. If forceReload is
+                                                                // kTRUE, the library will always be (re-)built!
+  void AddMacroFast(const Char_t* entry,                        // Adds an entry to the corresponding list (cf. below)
+                    Bool_t toSelectionList);     
+  void AddMacroFast(const Char_t* path, const Char_t* name,     // Adds a macro (path/name) to the selection (process)
+                    Bool_t toSelectionList);                    // macro list, if second parameter is kTRUE (kFALSE).
+                                                                // No checks are performed (fast) and no libraries are
+                                                                // loaded. Do use only, if library already exists!
   virtual void AddStandardMacros();                             // Adds standard macros to the lists
   void ApplyProcessMacros(TList* iterator);                     // Uses the iterator (for the selected process 
                                                                 // macros) to apply the selected macros to the data
@@ -86,14 +93,19 @@ protected:
   Bool_t MacroSelListIsSelected(Int_t index)            // Is entry in list selected?
     { return TESTBIT(fMacroSelListSelected, index);  }  
 
+  Bool_t IsHistogramMacro(const Char_t* name);          // Returns kTRUE, if a macro with name "name" has been
+                                                        // loaded into a shared library and has the signature
+                                                        // of a process macro of type 2 (histogram) -> NO
+                                                        // additional check with mangled name!!
+
   void SetHistoDataSelection(Int_t index, Bool_t set)       // Set selection of entry in list
     { if (set) SETBIT(fHistoDataSelected, index); else UNSETBIT(fHistoDataSelected, index);  }  
 
   void SetMacroListSelection(Int_t index, Bool_t set)       // Set selection of entry in list
-    { if (set) SETBIT(fMacroListSelected, index); else UNSETBIT(fHistoDataSelected, index);  }  
+    { if (set) SETBIT(fMacroListSelected, index); else UNSETBIT(fMacroListSelected, index);  }  
 
   void SetMacroSelListSelection(Int_t index, Bool_t set)    // Set selection of entry in list
-    { if (set) SETBIT(fMacroSelListSelected, index); else UNSETBIT(fHistoDataSelected, index);  }   
+    { if (set) SETBIT(fMacroSelListSelected, index); else UNSETBIT(fMacroSelListSelected, index);  }   
     
   void SetSelectedTab(Int_t index)    // Set the selected tab
     { fSelectedTab = (Char_t)index; }  
