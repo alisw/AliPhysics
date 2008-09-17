@@ -5,7 +5,6 @@ SRCS= FEMTOSCOPY/AliFemtoUser/AliFemtoQPairCut.cxx \
       FEMTOSCOPY/AliFemtoUser/AliFemtoShareQualityKTPairCut.cxx \
       FEMTOSCOPY/AliFemtoUser/AliFemtoShareQualityTPCEntranceSepPairCut.cxx \
       FEMTOSCOPY/AliFemtoUser/AliFemtoESDTrackCut.cxx \
-      FEMTOSCOPY/AliFemtoUser/AliFemtoShareQualityCorrFctn.cxx \
       FEMTOSCOPY/AliFemtoUser/AliFemtoTPCInnerCorrFctn.cxx \
       FEMTOSCOPY/AliFemtoUser/AliFemtoChi2CorrFctn.cxx \
       FEMTOSCOPY/AliFemtoUser/AliFemtoModelCorrFctnSource.cxx \

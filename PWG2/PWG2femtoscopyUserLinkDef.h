@@ -25,4 +25,3 @@
 #pragma link C++ class AliFemtoCutMonitorTrackTPCncls;
 #pragma link C++ class AliFemtoShareQualityTPCEntranceSepQAPairCut;
 #pragma link C++ class AliFemtoShareQualityQAPairCut;
-#pragma link C++ class AliFemtoShareQualityCorrFctn;
