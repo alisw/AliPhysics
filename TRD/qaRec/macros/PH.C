@@ -15,7 +15,7 @@ TH1* PH(const AliTRDtrackV1* track)
   AliTRDseedV1 *tracklet = 0x0;
 
   Int_t ntb = AliTRDcalibDB::Instance()->GetNumberOfTimeBins();
-  TProfile* ph = new TProfile("ph", "Average PH", ntb, -.5, ntb-.5);
+  TProfile* ph = new TProfile("", "Average PH", ntb, -.5, ntb-.5);
   ph->GetXaxis()->SetTitle("drift time [1/100ns]");
   ph->GetYaxis()->SetTitle("<PH> [a.u.]");
 
