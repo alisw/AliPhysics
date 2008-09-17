@@ -1,7 +1,8 @@
 #if ! defined (__CINT__) || defined (__MAKECINT__)
+#include "TError.h"
 #include <TClass.h>
 #include <TFileMerger.h>
-#include <TPad.h>
+#include <TCanvas.h>
 #include <TH1.h>
 #include <TGraph.h>
 #include <TObjArray.h>
@@ -10,12 +11,9 @@
 #include <TString.h>
 #include <TROOT.h>
 #include <TSystem.h>
+#include <TStyle.h>
 
 #include "qaRec/AliTRDrecoTask.h"
-
-// #include <string>
-// #include <iostream>
-// #include <cstdio>
 
 #endif
 
@@ -26,18 +24,14 @@ Char_t *libs[] = {"libProofPlayer.so", "libANALYSIS.so", "libTRDqaRec.so", "libP
 void makeResults(Char_t* dir=0x0, Char_t *tasks = "ALL")
 {
 	// Load Libraries in interactive mode
-//#ifndef __CINT__
   Int_t nlibs = static_cast<Int_t>(sizeof(libs)/sizeof(Char_t *));
   for(Int_t ilib=0; ilib<nlibs; ilib++){
     if(!gSystem->Load(libs[ilib])) continue;
     printf("Failed to load %s.\n", libs[ilib]);
     return;
   }
-  //gSystem->Setenv("PYTHONPATH", "$ROOTSYS/lib:$PYTHONPATH");
-//#endif
 
 
-  //printf("dir[%s] tasks[%s]\n", dir, tasks);
   gStyle->SetOptStat(0);
   Bool_t mc      = kTRUE;
   Bool_t friends = kTRUE;
@@ -52,29 +46,22 @@ void makeResults(Char_t* dir=0x0, Char_t *tasks = "ALL")
     if(s.CompareTo("ALL") == 0){
       for(Int_t itask = 1; itask < fknTasks; itask++) SETBIT(fSteerTask, itask);
       continue;
-    } else if(s.CompareTo("EFF") == 0){
-      SETBIT(fSteerTask, kTrackingEfficiency);
-      continue;
-    } else if(s.CompareTo("EFFC") == 0){
-      SETBIT(fSteerTask, kTrackingCombinedEfficiency);
-      continue;
-    } else if(s.CompareTo("RES") == 0){
-      SETBIT(fSteerTask, kTrackingResolution);
-      continue;
-    } else if(s.CompareTo("CAL" ) == 0){
-      SETBIT(fSteerTask, kCalibration);
-      continue;
-    } else if(s.CompareTo("PID" ) == 0){
-      SETBIT(fSteerTask, kPIDChecker);
-      continue;
-    } else if(s.CompareTo("DET" ) == 0){
-    	SETBIT(fSteerTask, kCheckDetector);
-    	continue;
-    } else{
-      std::cout << "E-makeResults.C: Task "<< s.Data() << " %s not implemented (yet).\n";
-      continue;
+    } else if(s.CompareTo("NOFR") == 0){ 
+      friends = kFALSE;
+    } else if(s.CompareTo("NOMC") == 0){ 
+      mc = kFALSE;
+    } else { 
+      Bool_t foundOpt = kFALSE;  
+      for(Int_t itask = 1; itask < fknTasks; itask++){
+        if(s.CompareTo(fTaskOpt[itask]) != 0) continue;
+        SETBIT(fSteerTask, itask);
+        foundOpt = kTRUE;
+        break;
+      }
+      if(!foundOpt) Info("makeResults.C", Form("Task %s not implemented (yet).", s.Data()));
     }
   }
+
 
   // catch the list of files using the ROOT Python Interface
   TPython *pyshell = new TPython();
@@ -93,7 +80,7 @@ void makeResults(Char_t* dir=0x0, Char_t *tasks = "ALL")
 
     ctask = new TClass(fTaskClass[itask]);
     task = (AliTRDrecoTask*)ctask->New();
-    task->SetDebugLevel(2);
+    task->SetDebugLevel(0);
     task->SetMCdata(mc);
     task->SetFriends(friends);
     printf("\t%s [%s]\n", task->GetTitle(), task->GetName());
@@ -134,9 +121,9 @@ void makeResults(Char_t* dir=0x0, Char_t *tasks = "ALL")
     task->PostProcess();
     for(Int_t ipic=0; ipic<task->GetNRefFigures(); ipic++){
       TCanvas *c = new TCanvas("c", "", 500, 500);
-      Int_t ifirst, ilast;
+      Int_t ifirst, ilast; Option_t *opt;
       TH1 *h = 0x0; TGraph *g = 0x0;
-      task->GetRefFigure(ipic, ifirst, ilast);
+      task->GetRefFigure(ipic, ifirst, ilast, opt);
       if(!(o = fContainer->At(ifirst))) continue;
       
       if(o->InheritsFrom("TH1")){ 

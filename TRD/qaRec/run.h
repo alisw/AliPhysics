@@ -6,25 +6,40 @@
 #define TESTBIT(n,i)  ((Bool_t)(((n) & BIT(i)) != 0))
 #define CLEARBIT(n,i) ((n) &= ~BIT(i))
 
-const Int_t fknTasks = 7;
+const Int_t fknTasks = 8;
 enum AliTRDrecoTasks{
-  kInfoGen = 0
-  ,kTrackingEfficiency = 1
-  ,kTrackingCombinedEfficiency = 2
-  ,kTrackingResolution = 3
-  ,kCalibration = 4
-  ,kPIDChecker = 5
-  ,kCheckDetector = 6
+   kInfoGen = 0
+  ,kCheckDetector = 1
+  ,kTrackingEfficiency = 2
+  ,kTrackingCombinedEfficiency = 3
+  ,kTrackingResolution = 4
+  ,kCalibration = 5
+  ,kPIDChecker = 6
+  ,kPIDRefMaker = 7
 };
 
 Char_t *fTaskClass[fknTasks] = {
   "AliTRDtrackInfoGen"
+  ,"AliTRDcheckDetector"
   ,"AliTRDtrackingEfficiency"
   ,"AliTRDtrackingEfficiencyCombined"
   ,"AliTRDtrackingResolution"
   ,"AliTRDcalibration"
   ,"AliTRDpidChecker"
-  ,"AliTRDcheckDetector"
+  ,"AliTRDpidRefMaker"
+};
+
+Char_t *fTaskOpt[fknTasks+2] = {
+  "ALL"
+  ,"DET"
+  ,"EFF"
+  ,"EFFC"
+  ,"RES"
+  ,"CAL"
+  ,"PID"
+  ,"PIDR"
+  ,"NOFR"
+  ,"NOMC"
 };
 
 #endif

@@ -20,8 +20,11 @@
 
 class AliTRDCalPIDNN : public AliTRDCalPID
 {
-
  public:
+
+  enum{
+    kMLPscale  = 16000            // scaling of the MLP input to be smaller than 1
+  };
 
   AliTRDCalPIDNN();
   AliTRDCalPIDNN(const Text_t *name, const Text_t *title);

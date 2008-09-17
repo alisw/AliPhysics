@@ -359,7 +359,7 @@ void AliTRDpidChecker::Exec(Option_t *)
 }
 
 //________________________________________________________
-void AliTRDpidChecker::GetRefFigure(Int_t ifig, Int_t &first, Int_t &last)
+void AliTRDpidChecker::GetRefFigure(Int_t ifig, Int_t &first, Int_t &last, Option_t */*opt*/)
 {
   switch(ifig){
   case 0:

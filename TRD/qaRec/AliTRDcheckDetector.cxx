@@ -232,7 +232,7 @@ Bool_t AliTRDcheckDetector::PostProcess(){
 }
 
 //_______________________________________________________
-void AliTRDcheckDetector::GetRefFigure(Int_t ifig, Int_t &first, Int_t &last){
+void AliTRDcheckDetector::GetRefFigure(Int_t ifig, Int_t &first, Int_t &last, Option_t */*opt*/){
 	//
 	// Setting Reference Figures
 	//

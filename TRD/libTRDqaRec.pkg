@@ -4,6 +4,7 @@ SRCS= qaRec/AliTRDtrackInfoGen.cxx \
       qaRec/AliTRDrecoTask.cxx \
       qaRec/AliTRDcheckDetector.cxx \
       qaRec/AliTRDpidChecker.cxx \
+      qaRec/AliTRDpidRefMaker.cxx \
       qaRec/AliTRDcalibration.cxx \
       qaRec/AliTRDtrackingResolution.cxx \
       qaRec/AliTRDtrackingEfficiency.cxx \

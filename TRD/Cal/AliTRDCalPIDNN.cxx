@@ -148,9 +148,6 @@ Double_t AliTRDCalPIDNN::GetProbability(Int_t spec, Float_t mom, Float_t *dedx
   // layer in a given layer (iplane)
   //
 
-  const Int_t kMLPscale  = 16000; // scaling of the MLP input to be smaller than 1
-
-
   if (spec < 0 || spec >= AliPID::kSPECIES) return 0.;
 
   // find the interval in momentum and track segment length which applies for this data
@@ -162,21 +159,21 @@ Double_t AliTRDCalPIDNN::GetProbability(Int_t spec, Float_t mom, Float_t *dedx
 
   TMultiLayerPerceptron *nn = 0x0;
   if(!(nn = (TMultiLayerPerceptron *) fModel->At(GetModelID(imom-1, spec, iplane/*, ilength*/)))){
-    //if(!(nn = (TMultiLayerPerceptron*)fModel->At(GetModelID(imom-1, spec, iplane/*, ilength*/)))){
     AliInfo(Form("Looking for mom(%f) plane(%d)", mom-1, iplane));
     AliError(Form("NN id %d not found in DB.", GetModelID(imom-1, spec, iplane)));
     return 0.;
   }
 
   Double_t ddedx[AliTRDtrack::kNMLPslice];
+
   for (int inode=0; inode<AliTRDtrack::kNMLPslice; inode++) {
-    ddedx[inode] = (((Double_t) dedx[inode]/kMLPscale)*3)          // Bug fix! Needs new reference data or different calculation of dedx!!!!
+    ddedx[inode] = (((Double_t) dedx[inode]/kMLPscale)*6)          // Bug fix! Needs new reference data or different calculation of dedx!!!!
                  / (AliTRDcalibDB::Instance()->GetNumberOfTimeBins()/AliTRDtrack::kNMLPslice);
   }
+
   lNN1 = nn->Evaluate(spec, ddedx);
   
   if(!(nn = (TMultiLayerPerceptron*)fModel->At(GetModelID(imom, spec, iplane/*, ilength*/)))){
-    //if(!(nn = (TMultiLayerPerceptron*)fModel->At(GetModelID(imom, spec, iplane/*, ilength*/)))){
     AliInfo(Form("Looking for mom(%f) plane(%d)", mom, iplane));
     AliError(Form("NN id %d not found in DB.", GetModelID(imom, spec, iplane)));
     return lNN1;

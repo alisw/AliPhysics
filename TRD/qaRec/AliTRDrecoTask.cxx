@@ -50,14 +50,14 @@ void AliTRDrecoTask::ConnectInputData(Option_t *)
 
 
 //_______________________________________________________
-void AliTRDrecoTask::GetRefFigure(Int_t /*ifig*/, Int_t &first, Int_t &last)
+void AliTRDrecoTask::GetRefFigure(Int_t /*ifig*/, Int_t &first, Int_t &last, Option_t */*opt*/)
 {
   AliWarning("Retrieving reference figures not implemented.");
   first = 0; last = 0;
 }
 
 //_______________________________________________________
-Bool_t AliTRDrecoTask::Load(Char_t *filename)
+Bool_t AliTRDrecoTask::Load(const Char_t *filename)
 {
   if(!TFile::Open(filename)) return kFALSE;
   TObjArray *o = (TObjArray*)gFile->Get(GetName());

@@ -10,6 +10,7 @@
 //     "PID"  : TRD PID - pion efficiency 
 //     "PIDR" : TRD PID - reference data
 //     "DET"  : Basic TRD Detector checks
+//     "NOFR" : Data set does not have AliESDfriends.root 
 //     "NOMC" : Data set does not have Monte Carlo Informations (real data), so all tasks which rely
 //              on MC information are switched off
 //
@@ -53,6 +54,7 @@
 #include "TRD/qaRec/AliTRDtrackingResolution.h"
 #include "TRD/qaRec/AliTRDcalibration.h"
 #include "TRD/qaRec/AliTRDpidChecker.h"
+#include "TRD/qaRec/AliTRDpidRefMaker.h"
 #include "TRD/qaRec/AliTRDcheckDetector.h"
 #endif
 
@@ -77,42 +79,31 @@ void run(const Char_t *files=0x0, Char_t *tasks="ALL", Int_t nmax=-1)
   gSystem->Load("libANALYSIS.so");
   gSystem->Load("libTRDqaRec.so");
   
-  Int_t fSteerTask = 0; 
   Bool_t fHasMCdata = kTRUE;
+  Bool_t fHasFriends = kTRUE;
   TObjArray *tasksArray = TString(tasks).Tokenize(" ");
+
+  Int_t fSteerTask = 0; SETBIT(fSteerTask, kInfoGen);
   for(Int_t isel = 0; isel < tasksArray->GetEntriesFast(); isel++){
     TString s = (dynamic_cast<TObjString *>(tasksArray->UncheckedAt(isel)))->String();
     if(s.CompareTo("ALL") == 0){
-      for(Int_t itask = 0; itask < fknTasks; itask++) SETBIT(fSteerTask, itask);
+      for(Int_t itask = 1; itask < fknTasks; itask++) SETBIT(fSteerTask, itask);
       continue;
-    } else if(s.CompareTo("EFF") == 0){
-      SETBIT(fSteerTask, kTrackingEfficiency);
-      continue;
-    } else if(s.CompareTo("EFFC") == 0){
-      SETBIT(fSteerTask, kTrackingCombinedEfficiency);
-      continue;
-    } else if(s.CompareTo("RES") == 0){
-      SETBIT(fSteerTask, kTrackingResolution);
-      continue;
-    } else if(s.CompareTo("CAL" ) == 0){
-      SETBIT(fSteerTask, kCalibration);
-      continue;
-    } else if(s.CompareTo("PID" ) == 0){
-      SETBIT(fSteerTask, kPIDChecker);
-      continue;
-    } else if(s.CompareTo("DET" ) == 0){
-    	SETBIT(fSteerTask, kCheckDetector);
-    	continue;
-    } else if(s.CompareTo("NOMC") == 0){
-    	CLEARBIT(fSteerTask, kTrackingEfficiency);
-    	CLEARBIT(fSteerTask, kTrackingCombinedEfficiency);
+    } else if(s.CompareTo("NOFR") == 0){ 
+      fHasFriends = kFALSE;
+    } else if(s.CompareTo("NOMC") == 0){ 
       fHasMCdata = kFALSE;
-    } else{
-      Info("run.C", Form("Task %s not implemented (yet).", s.Data()));
-      continue;
+    } else { 
+      Bool_t foundOpt = kFALSE;  
+      for(Int_t itask = 1; itask < fknTasks; itask++){
+        if(s.CompareTo(fTaskOpt[itask]) != 0) continue;
+        SETBIT(fSteerTask, itask);
+        foundOpt = kTRUE;
+        break;
+      }
+      if(!foundOpt) Info("run.C", Form("Task %s not implemented (yet).", s.Data()));
     }
   }
-
   // define task list pointers;
   AliTRDrecoTask *taskPtr[fknTasks], *task = 0x0;
   memset(taskPtr, 0, fknTasks*sizeof(AliAnalysisTask*));
@@ -153,29 +144,40 @@ void run(const Char_t *files=0x0, Char_t *tasks="ALL", Int_t nmax=-1)
   mgr->ConnectOutput(task, 0, coutput1);
 
   //____________________________________________
+  // TRD detector checker
+	if(TESTBIT(fSteerTask, kCheckDetector)){
+    mgr->AddTask(task = new AliTRDcheckDetector());
+    taskPtr[(Int_t)kCheckDetector] = task;
+    task->SetDebugLevel(0);
+    task->SetMCdata(fHasMCdata);
+    
+    // Create containers for input/output
+    mgr->ConnectInput( task, 0, coutput1);
+    mgr->ConnectOutput(task, 0, mgr->CreateContainer(task->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%s.root", task->GetName())));
+  }
+
+  //____________________________________________
   // TRD barrel tracking efficiency
-  if(TESTBIT(fSteerTask, kTrackingEfficiency)){
+  if(fHasMCdata && TESTBIT(fSteerTask, kTrackingEfficiency)){
     mgr->AddTask(task = new AliTRDtrackingEfficiency());
     taskPtr[(Int_t)kTrackingEfficiency] = task;
     task->SetDebugLevel(0);
 
     //Create containers for input/output
-    AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(task->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%s.root", task->GetName()));
     mgr->ConnectInput( task, 0, coutput1);
-    mgr->ConnectOutput(task, 0, coutput2);
+    mgr->ConnectOutput(task, 0, mgr->CreateContainer(task->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%s.root", task->GetName())));
   }
 
   //____________________________________________
   // TRD combined tracking efficiency
-  if(TESTBIT(fSteerTask, kTrackingCombinedEfficiency)){
+  if(fHasMCdata && TESTBIT(fSteerTask, kTrackingCombinedEfficiency)){
     mgr->AddTask(task = new AliTRDtrackingEfficiencyCombined());
     taskPtr[(Int_t)kTrackingCombinedEfficiency] = task;
     task->SetDebugLevel(0);
 
     // Create containers for input/output
-    AliAnalysisDataContainer *coutput3 = mgr->CreateContainer(task->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%s.root", task->GetName()));
     mgr->ConnectInput( task, 0, coutput1);
-    mgr->ConnectOutput(task, 0, coutput3);
+    mgr->ConnectOutput(task, 0, mgr->CreateContainer(task->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%s.root", task->GetName())));
   }
 
   //____________________________________________
@@ -188,9 +190,8 @@ void run(const Char_t *files=0x0, Char_t *tasks="ALL", Int_t nmax=-1)
     task->SetDebugLevel(2);
     
     // Create containers for input/output
-    AliAnalysisDataContainer *coutput4 = mgr->CreateContainer(task->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%s.root", task->GetName()));
     mgr->ConnectInput( task, 0, coutput1);
-    mgr->ConnectOutput(task, 0, coutput4);
+    mgr->ConnectOutput(task, 0, mgr->CreateContainer(task->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%s.root", task->GetName())));
   }
 
   //____________________________________________
@@ -204,9 +205,8 @@ void run(const Char_t *files=0x0, Char_t *tasks="ALL", Int_t nmax=-1)
     task->SetDebugLevel(0);
 
     // Create containers for input/output
-    AliAnalysisDataContainer *coutput5 = mgr->CreateContainer(task->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%s.root", task->GetName()));
     mgr->ConnectInput(task, 0, coutput1);
-    mgr->ConnectOutput(task, 0, coutput5);
+    mgr->ConnectOutput(task, 0, mgr->CreateContainer(task->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%s.root", task->GetName())));
   }
   
   //____________________________________________
@@ -218,24 +218,24 @@ void run(const Char_t *files=0x0, Char_t *tasks="ALL", Int_t nmax=-1)
     task->SetMCdata(fHasMCdata);
     
     // Create containers for input/output
-    AliAnalysisDataContainer *coutput6 = mgr->CreateContainer(task->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%s.root", task->GetName()));
     mgr->ConnectInput( task, 0, coutput1);
-    mgr->ConnectOutput(task, 0, coutput6);
+    mgr->ConnectOutput(task, 0, mgr->CreateContainer(task->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%s.root", task->GetName())));
   }
 
+
   //____________________________________________
-  // TRD detector checker
-	if(TESTBIT(fSteerTask, kCheckDetector)){
-    mgr->AddTask(task = new AliTRDcheckDetector());
-    taskPtr[(Int_t)kCheckDetector] = task;
+  // TRD pid checker
+  if(TESTBIT(fSteerTask, kPIDRefMaker)){
+    mgr->AddTask(task = new AliTRDpidRefMaker());
+    taskPtr[(Int_t)kPIDRefMaker] = task;
     task->SetDebugLevel(0);
     task->SetMCdata(fHasMCdata);
     
     // Create containers for input/output
-    AliAnalysisDataContainer *coutput7 = mgr->CreateContainer(task->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%s.root", task->GetName()));
     mgr->ConnectInput( task, 0, coutput1);
-    mgr->ConnectOutput(task, 0, coutput7);
+    mgr->ConnectOutput(task, 0, mgr->CreateContainer(task->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%s.root", task->GetName())));
   }
+
 
   if (!mgr->InitAnalysis()) return;
   printf("\n\tRUNNING TRAIN FOR TASKS:\n");

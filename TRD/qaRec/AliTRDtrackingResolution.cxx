@@ -159,7 +159,7 @@ void AliTRDtrackingResolution::CreateOutputObjects()
     h = new TH1I("h", "", 100, -40., 40.);
     h->GetXaxis()->SetTitle("#Phi [deg]");
     h->GetYaxis()->SetTitle("Tracklet Angular Resolution : #sigma/#mu [deg]");
-    h->GetYaxis()->SetRangeUser(-.05, 1.);
+    h->GetYaxis()->SetRangeUser(-.05, .2);
     fContainer->AddAt(h, jgraph++);
 
     g = new TGraphErrors(h2->GetNbinsX());
@@ -341,7 +341,7 @@ void AliTRDtrackingResolution::Exec(Option_t *)
 }
 
 //________________________________________________________
-void AliTRDtrackingResolution::GetRefFigure(Int_t ifig, Int_t &first, Int_t &last)
+void AliTRDtrackingResolution::GetRefFigure(Int_t ifig, Int_t &first, Int_t &last, Option_t */*opt*/)
 {
   switch(ifig){
   case 0:

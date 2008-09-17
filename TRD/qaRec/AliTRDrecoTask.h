@@ -29,13 +29,13 @@ public:
 
   Int_t          GetDebugLevel() const { return fDebugLevel;}
   Int_t          GetNRefFigures() const { return fNRefFigures; } 
-  virtual void   GetRefFigure(Int_t ifig, Int_t &first, Int_t &last);
+  virtual void   GetRefFigure(Int_t ifig, Int_t &first, Int_t &last, Option_t *opt="lp");
 
   Bool_t         HasFriends() const {return TestBit(kFriends);};
   Bool_t         HasMCdata() const {return TestBit(kMCdata);};
   Bool_t         HasPostProcess() const {return TestBit(kPostProcess);};
 
-  virtual Bool_t Load(Char_t *filename);
+  virtual Bool_t Load(const Char_t *filename);
   virtual Bool_t PostProcess();
   virtual void   SetDebugLevel(Int_t level);
   virtual void   SetFriends(Bool_t fr = kTRUE) {SetBit(kFriends, fr);}
