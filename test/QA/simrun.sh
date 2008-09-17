@@ -3,12 +3,16 @@ if ($#argv < 1) then
  echo "usage simrun.sh RunNumber"
  exit()
 endif
+echo $WORK $VERSION
 if ( ! -e $WORK ) then 
- setenv $WORK ./
+ setenv WORK ./
 endif
 cd $WORK
-if ( ! -e QATest ) then 
- mkdir QATest
+if ( $VERSION == "" ) then 
+ setenv VERSION "UNKNOWN"
+endif
+if ( ! -e QATest/$VERSION ) then 
+ mkdir QATest/$VERSION
 endif    
 cd QATest
 rm -Rf DB* *.root *.C *.log data/*
@@ -19,7 +23,10 @@ ln -si $ALICE_ROOT/test/QA/rec.C rec.C
 ln -si $ALICE_ROOT/test/QA/recqa.C recqa.C
 ln -si $ALICE_ROOT/test/QA/DB.tgz DB.tgz
 root -b -q $ALICE_ROOT/test/QA/simrun.C --run $1
-cd $WORK/QATest/data
+if ( ! -e data ) then 
+ mkdir data
+endif
+cd data
 #ln -s ../geometry.root
 ln -s ../raw.root
 ln -s ../DB 
