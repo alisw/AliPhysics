@@ -27,6 +27,7 @@
 ClassImp(AliDCSSensorArray)
 
 const Double_t kSecInHour = 3600.; // seconds in one hour
+const UInt_t   kMinMapTime = 60;   // don't fit maps shorter than one minute
 
 //_____________________________________________________________________________
 AliDCSSensorArray::AliDCSSensorArray():TNamed(), 
@@ -219,16 +220,22 @@ void AliDCSSensorArray::MakeSplineFit(TMap *map, Bool_t keepMap)
       AliWarning(Form("sensor %s: no input graph",stringID.Data()));
       continue;
     }
-    AliSplineFit *fit = new AliSplineFit();
-    fit->SetMinPoints(fMinGraph);
-    fit->InitKnots(gr,fMinPoints,fIter,fMaxDelta);
-    fit->SplineFit(fFitReq);
-    fit->Cleanup();
-    if (fit) {
-      entry->SetFit(fit);
-    } else {
-      AliWarning(Form("sensor %s: no fit performed, DCS graph kept.",stringID.Data()));
+    UInt_t timeDiff = entry->GetEndTime() - entry->GetStartTime();
+    if ( timeDiff < kMinMapTime ) {
+      AliWarning(Form("sensor %s: map length < 60 s, DCS graph kept.",stringID.Data()));
       entry->SetGraph((TGraph*)gr->Clone());
+    } else {
+      AliSplineFit *fit = new AliSplineFit();
+      fit->SetMinPoints(fMinGraph);
+      fit->InitKnots(gr,fMinPoints,fIter,fMaxDelta);
+      fit->SplineFit(fFitReq);
+      fit->Cleanup();
+      if (fit) {
+        entry->SetFit(fit);
+      } else {
+        AliWarning(Form("sensor %s: no fit performed, DCS graph kept.",stringID.Data()));
+        entry->SetGraph((TGraph*)gr->Clone());
+      }
     }
     if (keepMap) entry->SetGraph((TGraph*)gr->Clone());
   }
@@ -301,14 +308,15 @@ Int_t AliDCSSensorArray::NumFits() const
   return nfit;
 }
 //_____________________________________________________________________________
-Double_t AliDCSSensorArray::GetValue(UInt_t timeSec, Int_t sensor)
+Double_t AliDCSSensorArray::GetValue(UInt_t timeSec, Int_t sensor) 
 {
   //
   // Return sensor value at time timeSec (obtained from fitted function)
   //  timeSec = time in seconds from start of run
   //
+
   AliDCSSensor *entry = (AliDCSSensor*)fSensors->At(sensor);
-  return entry->GetValue(timeSec);
+  return entry->GetValue(TTimeStamp((time_t)fStartTime.GetSec()+timeSec,0));
 }
 
 
