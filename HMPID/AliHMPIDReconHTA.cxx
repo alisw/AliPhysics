@@ -164,37 +164,6 @@ Bool_t AliHMPIDReconHTA::DoRecHiddenTrk()
   
   return kTRUE;
 }//DoRecHiddenTrk()
-/*
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Bool_t AliHMPIDReconHTA::DoRecHiddenTrk(TClonesArray *pCluLst)
-{
-// Pattern recognition method without any infos from tracking...
-// First a preclustering filter to avoid part of the noise
-// Then only ellipsed-rings are fitted (no possibility, 
-// for the moment, to reconstruct very inclined tracks)
-// Finally a fitting with (th,ph) free, starting by very close values
-// previously evaluated.
-// Arguments:   none
-//   Returns:   none
-  Double_t thTrkRec,phiTrkRec,thetaCRec;
-  
-  if(!FindShape(thTrkRec,phiTrkRec,thetaCRec)) return kFALSE;
-
-//  Printf("thTrkRec %f phiTrkRec %f ThetaCRec %f",thTrkRec*TMath::RadToDeg(),phiTrkRec*TMath::RadToDeg(),thetaCRec*TMath::RadToDeg());  
-  Int_t nClTmp1 = pCluLst->GetEntriesFast()-1;  //minus MIP...
-  Int_t nClTmp2 = 0;
-  
-  while(nClTmp1 != nClTmp2){
-    SetNClu(pCluLst->GetEntriesFast());
-    if(!FitFree(thTrkRec,phiTrkRec)) {return kFALSE;}
-    nClTmp2 = NClu();
-    if(nClTmp2!=nClTmp1) {nClTmp1=nClTmp2;nClTmp2=0;}
-  }
-  
-  fNClu = nClTmp2;
-  return kTRUE;
-}//DoRecHiddenTrk()
-*/
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Bool_t AliHMPIDReconHTA::CluPreFilter(TClonesArray *pCluLst)
 {
@@ -379,6 +348,10 @@ Bool_t AliHMPIDReconHTA::ShapeModel(Int_t np,Double_t *phiphot,Double_t *dist,Do
 //  Printf("ShapeModel: phiStart %f xA %f xB %f",phiStart,xA,xB);
   
   phiStart*=TMath::DegToRad();
+  
+  Double_t phitest = FindSimmPhi(); 
+
+  Printf("phiStart %f phiTest %f",phiStart*TMath::RadToDeg(),phitest*TMath::RadToDeg());
  
   return kTRUE;
 }
@@ -608,7 +581,7 @@ void AliHMPIDReconHTA::InitDatabase()
 //  pout->Write();
 //  pout->Close();
   
-}
+}//InitDatabase()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDReconHTA::FillZeroChan()const
 {
@@ -642,5 +615,87 @@ void AliHMPIDReconHTA::FillZeroChan()const
       }
     }
   }
-}
+}//FillZeroChan()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+// stima gli angoli con il metodo dei minimi quadrati che sfrutta le distanze...
+
+Double_t AliHMPIDReconHTA::FindSimmPhi() 
+{ 
+  //It finds the phi of the ring
+  //by using the min. dist. algorithm
+  // Arguments: none
+  //   Returns: phi
+  //
+      
+  Float_t xrotsumm =0;     Float_t yrotsumm =0;     Float_t xx =0;           
+  Float_t yy =0;           Float_t xy =0; 
+
+  Int_t np=0;    
+   
+  for(Int_t i=0;i<fNClu;i++) {
+    if(!fClCk[i]) continue;
+    np++;
+    xrotsumm+=fXClu[i];         // summ xi
+    yrotsumm+=fYClu[i];         // summ yi
+    xx+=fXClu[i]*fXClu[i];      // summ xixi     
+    yy+=fYClu[i]*fYClu[i];      // summ yiyi
+    xy+=fXClu[i]*fYClu[i];      // summ yixi     
+  }
+      
+  //_____calc. met min quadr using effective distance _________________________________________________
+  
+  Double_t coeff[3];
+  coeff[0]= xy-xrotsumm*yrotsumm/np;    
+  coeff[1]= yrotsumm*yrotsumm/np - xrotsumm*xrotsumm/np - yy + xx;
+  coeff[2]= xrotsumm*yrotsumm/np-  xy;
+  
+  //____________________________________________________________________________________________________
+   
+  Double_t m1=0, m2=0;                                           
+  Double_t n1=0, n2=0;
+  
+  r2(coeff,m1,m2);
+  
+  n1=(yrotsumm-m1*xrotsumm)/np;                         
+  n2=(yrotsumm-m2*xrotsumm)/np;
+  
+  // le due soluzioni.................
+  
+  Double_t d1 =(1/(m1*m1+1))*(yy+m1*m1*xx+np*n1*n1-2*m1*xy-2*n1*yrotsumm+2*m1*n1*xrotsumm);
+  Double_t d2 =(1/(m2*m2+1))*(yy+m2*m2*xx+np*n2*n2-2*m2*xy-2*n2*yrotsumm+2*m2*n2*xrotsumm);
+  Double_t mMin;
+  if(d1 > d2) mMin = m2; else mMin = m1;
+  
+  Double_t PhiTrk= TMath::ATan(mMin);                              
+  
+  // positive angles...
+  if(PhiTrk<0)    PhiTrk+=180*TMath::DegToRad();
+  
+  return PhiTrk;
+}
+
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Int_t AliHMPIDReconHTA::r2(Double_t *coef, Double_t &x1, Double_t &x2)
+{
+  //2nd deg. equation
+  //solution
+  // Arguments: coef 2 1 0: ax^2+bx+c=0
+  //   Returns: n. of solutions
+  //            x1= 1st sol
+  //            x2= 2nd sol
+  Double_t a,b,c;
+  a = coef[2];
+  b = coef[1];
+  c = coef[0];
+  Double_t delta = b*b-4*a*c;
+  if(delta<0) {return 0;}
+  if(delta==0) {
+    x1=x2=-b/(2*a);
+    return 1;
+  }
+  // delta>0
+  x1 = (-b+TMath::Sqrt(delta))/(2*a);
+  x2 = (-b-TMath::Sqrt(delta))/(2*a);
+  return 2;
+}//r2()

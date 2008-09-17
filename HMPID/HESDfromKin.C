@@ -97,7 +97,7 @@ void SimEsd(AliLoader *pHL,AliESDEvent *pEsd,Bool_t htaCheck)
       if(htaCheck) {
           Int_t iCh = pTrk->GetHMPIDcluIdx();                                                                  //chamber not found, mip not yet considered
           iCh/=1000000;
-  //      Printf("simulated track theta %f phi %f",thetaTrk*rd,phiTrk*rd);
+        Printf("simulated track theta %f phi %f",thetaTrk*rd,phiTrk*rd);
         TObjArray *pClus = pH->CluLst();
 
         if(AliHMPIDTracker::ReconHiddenTrk(pEsd,pClus,pNmean,pQthre)!=0) continue;

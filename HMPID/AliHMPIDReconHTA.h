@@ -39,6 +39,8 @@ public :
   Bool_t   ShapeModel       (Int_t np,Double_t *phiphot,Double_t *dist,Double_t &xA,Double_t &xB,Double_t &phiStart);//initial shape model for the cluster candidates
   Double_t VertParab        (Double_t x1,Double_t y1,Double_t x2, Double_t y2, Double_t x3, Double_t y3)const;//calculate the coord. of the min. for a parabole for 3 points
   Bool_t   FitFree          (Double_t thTrkRec,Double_t phiTrkRec);                                //Fit (th,ph) of the track and ckovFit as result
+  Double_t FindSimmPhi      ();                                                                    //find phi of the ring with min. dist. algorithm 
+  Int_t    r2               (Double_t *coef, Double_t &x1, Double_t &x2);                          // solution of 2nd degree equation
   void     SetNClu          (Int_t nclu                          ) {fNClu=nclu;}                   //Setter for # of clusters
   void     SetClCk          (Int_t i,Bool_t what                 ) {fClCk[i]=what;}                //Setter for cluster flags 
   void     SetCkovFit       (Double_t ckov                       ) {fCkovFit=ckov;}                //Setter for ckov fitted
