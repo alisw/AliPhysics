@@ -19,3 +19,10 @@
 #pragma link C++ class AliFemtoModelCorrFctn3DLCMSSpherical;
 #pragma link C++ class AliFemtoCutMonitorParticleMomRes;
 #pragma link C++ class AliFemtoModelAllHiddenInfo;
+#pragma link C++ class AliFemtoCutMonitorTrackTPCchiNdof;
+#pragma link C++ class AliFemtoQATrackCut;
+#pragma link C++ class AliFemtoQAEventCut;
+#pragma link C++ class AliFemtoCutMonitorTrackTPCncls;
+#pragma link C++ class AliFemtoShareQualityTPCEntranceSepQAPairCut;
+#pragma link C++ class AliFemtoShareQualityQAPairCut;
+#pragma link C++ class AliFemtoShareQualityCorrFctn;
