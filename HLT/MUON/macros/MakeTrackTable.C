@@ -39,6 +39,7 @@
 #include "AliMUON.h"
 #include "AliMUONMCDataInterface.h"
 #include "AliMUONHit.h"
+#include "AliHLTMUONEvent.h"
 #include "AliHLTMUONRootifierComponent.h"
 #include "AliHLTMUONMansoTrack.h"
 
