@@ -156,7 +156,7 @@ void AliFMDPedestalDA::Analyse(UShort_t det,
   //     sec   Sector 
   //     strip Strip.
   AliFMDParameters* pars     = AliFMDParameters::Instance();
-  Float_t           factor   = pars->GetPedestalFactor();
+  // Float_t           factor   = pars->GetPedestalFactor();
   UInt_t            samples  = pars->GetSampleRate(det, ring, sec, strip);
   for (UShort_t sample = 0; sample < samples; sample++) {
   
@@ -208,8 +208,7 @@ void AliFMDPedestalDA::Analyse(UShort_t det,
 	    << channel << ',' 
 	    << timebin << ','
 	    << mean    << ',' 
-	    << rms     << ','
-	    << factor  << "\n"; break;
+	    << rms     << "\n"; break;
     
     Float_t chi2ndf = 0;
     
@@ -302,6 +301,7 @@ void AliFMDPedestalDA::Terminate(TFile* diagFile)
 //_____________________________________________________________________
 void AliFMDPedestalDA::FillinTimebins(std::ofstream& out, UShort_t ddl)
 {
+#if 0
   unsigned short  boards[] = { 0x0, 0x1, 0x10, 0x11, 0xFFFF };
   unsigned short* board    = boards;
   while ((*boards) != 0xFFFF) { 
@@ -337,6 +337,7 @@ void AliFMDPedestalDA::FillinTimebins(std::ofstream& out, UShort_t ddl)
     } // altro loop
   } // board loop
   // Write trailer, and close 
+#endif
   out.write("# EOF\n", 6);
   out.close();
 }
@@ -365,8 +366,7 @@ void AliFMDPedestalDA::WriteHeaderToFile()
 	      << "channel, "
 	      << "timebin, "
 	      << "pedestal, "
-	      << "noise, "
-	      << "factor\n";
+	      << "noise\n";
 }
 
 //_____________________________________________________________________
