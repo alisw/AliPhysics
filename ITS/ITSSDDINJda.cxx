@@ -74,8 +74,6 @@ int main(int argc, char **argv) {
   }
 
 
-  Int_t eqOffset = 256;
-  Int_t DDLrange = 24;
   Int_t maxNEvents=10; // maximum number of events to be analyzed
   const Int_t kTotDDL=24;
   const Int_t kModPerDDL=12;
@@ -158,7 +156,6 @@ int main(int argc, char **argv) {
       case PHYSICS_EVENT: // uncomment this line for test raw data
 	printf(" event number = %i \n",iev);
 	AliRawReader *rawReader = new AliRawReaderDate((void*)event);
-	rawReader->SelectEquipment(17,eqOffset+1,eqOffset+DDLrange);
 
 	UInt_t timeSt=rawReader->GetTimestamp();
 	//UInt_t timeSt=iev*5000+12;  // fake timestamp for test

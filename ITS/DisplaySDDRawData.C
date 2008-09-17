@@ -15,8 +15,6 @@
 
 void DisplaySDDRawData(Char_t *datafil, Int_t firstEv=0, Int_t lastEv=5){
 
-  Int_t eqOffset = 256;
-  Int_t DDLid_range= 24;
 
   AliITSDDLModuleMapSDD* ddlmap=new AliITSDDLModuleMapSDD();
   ddlmap->SetJun08Map();
@@ -70,12 +68,10 @@ void DisplaySDDRawData(Char_t *datafil, Int_t firstEv=0, Int_t lastEv=5){
 
     evtime->Start();
     printf("Event # %d\n",iev);
-    rd->SelectEquipment(17,eqOffset,eqOffset+DDLid_range); 
     rd->Reset();
     hzphi3->Reset();
     hzphi4->Reset();
     AliITSRawStreamSDD s(rd);
-    rd->SelectEquipment(17,eqOffset,eqOffset+DDLid_range); 
     Int_t iCountNext=0;    
     while(s.Next()){
       iCountNext++;

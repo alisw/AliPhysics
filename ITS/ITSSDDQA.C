@@ -70,15 +70,12 @@ delete [] cindex;
     delete initgeom;
   */
 
-  Int_t eqOffset = 256;
-  Int_t DDLid_range = 24;
   do{       // start loop on events
     if(++evCounter > MaxEvts) { cout << MaxEvts << " events read, stop" << endl; evCounter--; break; }  
      cout << "Read Event: " << evCounter+FirstEvt-1 << endl;
 
     rd->RequireHeader(kFALSE);             
 
-    rd->SelectEquipment(17,eqOffset+1,eqOffset+DDLid_range);
 
     rd->Reset();    // reset the current position to the beginning of the event
     AliITSRawStreamSDD s(rd);    //This class provides access to ITS SDD digits in raw data.

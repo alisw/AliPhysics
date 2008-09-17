@@ -48,8 +48,6 @@ private:
   static const Int_t fgkmodoffset = 240;   // number of SPD modules
   static const Int_t fgknAnode = 256;      // anode per half-module
   static const Int_t fgknSide =2;          // side per module
-  static const Int_t fgkeqOffset = 256;    // DDL offset
-  static const Int_t fgkDDLidRange = 24;   // number of DDL:so DDL range is 257-280
   static const Int_t fgkDDLIDshift = 0;    // necessary option until RawStream Table is complete
   static const Int_t fgkLADDonLAY3 = 14;   // number of ladder on layer 3
   static const Int_t fgkLADDonLAY4 = 22;   // number of ladder on layer 4
@@ -64,7 +62,7 @@ private:
   Bool_t fHLTMode;                            // kTRUE mode C kFALSE mode A 
                                               // Used in online mode only
   AliITSHLTforSDD *fHLTSDD;                   // used for offline QA as the HLT mode flag
-  ClassDef(AliITSQASDDDataMakerRec,5)         // description 
+  ClassDef(AliITSQASDDDataMakerRec,6)         // description 
 
 };
 

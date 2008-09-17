@@ -25,10 +25,6 @@
 
 void AnalyzeSDDGainAllMod(Char_t *datafil, Int_t nDDL, Int_t firstEv=10, Int_t lastEv=16, Float_t pascalDAC=100){
 
-  Int_t eqOffset = 256;
-  Int_t DDLid_range = 24;
-  //  Int_t eqOffset = 100;
-  //  Int_t DDLid_range = 1;
   const Int_t kTotDDL=24;
   const Int_t kModPerDDL=12;
   const Int_t kSides=2;
@@ -71,8 +67,6 @@ void AnalyzeSDDGainAllMod(Char_t *datafil, Int_t nDDL, Int_t firstEv=10, Int_t l
     c0->Clear();
     c0->Divide(4,6,0.001,0.001);
     printf("Event # %d\n",iev);
-    //rd->SelectEvents(7);
-    rd->SelectEquipment(17,eqOffset,eqOffset+DDLid_range); 
     rd->Reset();
     for(Int_t iddl=0; iddl<kTotDDL;iddl++){
       for(Int_t imod=0; imod<kModPerDDL;imod++){
@@ -83,7 +77,6 @@ void AnalyzeSDDGainAllMod(Char_t *datafil, Int_t nDDL, Int_t firstEv=10, Int_t l
       }
     }
     AliITSRawStreamSDD s(rd);
-    rd->SelectEquipment(17,eqOffset,eqOffset+DDLid_range); 
     while(s.Next()){
       Int_t iDDL=rd->GetDDLID();
       Int_t iCarlos=s.GetCarlosId();

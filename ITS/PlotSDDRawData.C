@@ -13,8 +13,6 @@
 
 void PlotSDDRawData(Char_t datafil[100], Int_t nDDL, Int_t firstEv=0, Int_t lastEv=5){
 
-  Int_t eqOffset = 256;
-  Int_t DDLid_range= 24;
   const Int_t nHybrids=24;
 
   TH2F** histo = new TH2F*[nHybrids];
@@ -42,11 +40,9 @@ void PlotSDDRawData(Char_t datafil[100], Int_t nDDL, Int_t firstEv=0, Int_t last
 
     evtime->Start();
     printf("Event # %d\n",iev);
-    rd->SelectEquipment(17,eqOffset,eqOffset+DDLid_range); 
     rd->Reset();
     for(Int_t i=0;i<nHybrids;i++) histo[i]->Reset();
     AliITSRawStreamSDD s(rd);
-    rd->SelectEquipment(17,eqOffset,eqOffset+DDLid_range); 
     Int_t iCountNext=0;    
     while(s.Next()){
       iCountNext++;

@@ -305,7 +305,6 @@ void AliITSQASDDDataMakerRec::MakeRaws(AliRawReader* rawReader)
   }
   if(rawReader->GetType() != 7) return;  // skips non physical triggers
   AliDebug(1,"entering MakeRaws\n");                 
-  rawReader->SelectEquipment(17,fgkeqOffset,fgkeqOffset + fgkDDLidRange); 
 
   rawReader->Reset();       
   AliITSRawStream *stream;

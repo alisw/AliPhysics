@@ -54,14 +54,11 @@ Char_t *hisnam3 = new Char_t[50];
   strFile += "?EventType=7";
   AliRawReader *rd = new AliRawReaderDate(strFile.Data(),FirstEvt);  // open run
   Int_t evCounter = 0;
-  Int_t eqOffset = 256;
-  Int_t DDLid_range = 24;
   do{                       // start loop on events
     if(++evCounter > MaxEvts) { cout << MaxEvts << " events read, stop" << endl; evCounter--; break; }  
     cout << "Read Event: " << evCounter+FirstEvt-1 << endl;
 
     rd->RequireHeader(kFALSE);             
-    rd->SelectEquipment(17,eqOffset+1,eqOffset+DDLid_range);  //17 states for "DRorc acquisition"
     rd->Reset();                           // reset the current position to the beginning of the event
  
     Int_t nSkip = 0;                     // number of skipped signals

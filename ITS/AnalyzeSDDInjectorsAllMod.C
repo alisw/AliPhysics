@@ -26,10 +26,7 @@
 
 
 void AnalyzeSDDInjectorsAllMod(Char_t *datafil, Int_t nDDL, Int_t firstEv=10, Int_t lastEv=15){
-  Int_t eqOffset = 256;
-  Int_t DDLid_range = 24;
-  //  Int_t eqOffset = 100;
-  //  Int_t DDLid_range = 1;
+
   const Int_t kTotDDL=24;
   const Int_t kModPerDDL=12;
   const Int_t kSides=2;
@@ -50,6 +47,12 @@ void AnalyzeSDDInjectorsAllMod(Char_t *datafil, Int_t nDDL, Int_t firstEv=10, In
 	sprintf(hisnam,"h%02dc%02ds%d",iddl,imod,isid);
 	histo[index]=new TH2F(hisnam,"",256,-0.5,255.5,256,-0.5,255.5);
 	anal[index]=new AliITSOnlineSDDInjectors(iddl,imod,isid);
+/* Uncomment these lines for analysis of runs with 40 MHz sapling */
+// 	anal[index]->SetInjLineRange(0,20,50);
+// 	anal[index]->SetInjLineRange(1,90,160);
+// 	anal[index]->SetInjLineRange(2,170,240);
+// 	anal[index]->SetTimeStep(25.);
+/* END of lines to be uncommented */
 	nWrittenEv[index]=0;
       }
     }
@@ -84,8 +87,6 @@ void AnalyzeSDDInjectorsAllMod(Char_t *datafil, Int_t nDDL, Int_t firstEv=10, In
     c1->Divide(4,6,0.001,0.001);
     printf("Event # %d\n",iev);
     UInt_t timeSt=rd->GetTimestamp();
-    //rd->SelectEvents(7);
-    rd->SelectEquipment(17,eqOffset,eqOffset+DDLid_range); 
     rd->Reset();
     for(Int_t iddl=0; iddl<kTotDDL;iddl++){
       for(Int_t imod=0; imod<kModPerDDL;imod++){
@@ -97,7 +98,6 @@ void AnalyzeSDDInjectorsAllMod(Char_t *datafil, Int_t nDDL, Int_t firstEv=10, In
     }
 
     AliITSRawStreamSDD s(rd);
-    rd->SelectEquipment(17,eqOffset,eqOffset+DDLid_range); 
     while(s.Next()){
       Int_t iDDL=rd->GetDDLID();
       Int_t iCarlos=s.GetCarlosId();
