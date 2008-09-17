@@ -14,7 +14,7 @@ endif
 if ( ! -e QATest/$VERSION ) then 
  mkdir QATest/$VERSION
 endif    
-cd QATest
+cd QATest/$VERSION
 rm -Rf DB* *.root *.C *.log data/*
 ln -si $ALICE_ROOT/test/QA/Config.C Config.C
 ln -si $ALICE_ROOT/test/QA/sim.C sim.C
