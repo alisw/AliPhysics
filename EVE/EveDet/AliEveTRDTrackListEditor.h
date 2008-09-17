@@ -21,6 +21,7 @@ class TGTab;
 class TGTextButton;
 class TGTextEntry;
 class TGVerticalFrame;
+class TH1;
 class TTree;
 
 class AliEveTRDTrackListEditor: public TGedFrame
@@ -51,12 +52,17 @@ public:
 protected:
   AliEveTRDTrackList* fM;                                 // Model object
 
+  void InheritMacroList();                                // Inherits macro list from the previously loaded track list
+
 private:
   AliEveTRDTrackListEditor(const AliEveTRDTrackListEditor&);            // Not implemented
   AliEveTRDTrackListEditor& operator=(const AliEveTRDTrackListEditor&); // Not implemented 
 
   TCanvas*          fHistoCanvas;            // Canvas for the histograms
   TGString*         fHistoCanvasName;        // Name of the histogram canvas
+
+  Bool_t            fInheritMacroList;       // Flag indicating, whether the macro list will be inherited from the
+                                             // previously loaded track list within the next call of SetModel
 
   TGVerticalFrame*   fMainFrame;             // Top frame for macro functionality.
   TGVerticalFrame*   fHistoFrame;            // Top frame for the histogram stuff
@@ -88,6 +94,11 @@ private:
 
   // Check buttons for histograms
   TGCheckButton** fCheckButtons;
+
+  // Help functions
+  void SetDrawingToHistoCanvasTab();        // Sets focus on the tab for histograms and makes fHistoCanvas be the
+                                            // current tab
+  void UpdateHistoCanvasTab();              // Updates the histogram and the corresponding tab (including titles)
 
   ClassDef(AliEveTRDTrackListEditor, 0);    // Editor for AliEveTRDTrackList.
 };
