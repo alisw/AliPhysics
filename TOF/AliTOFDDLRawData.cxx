@@ -1056,10 +1056,11 @@ void AliTOFDDLRawData::MakeTDCdigits(Int_t nDDL, Int_t nTRM, Int_t iChain,
 	    digs->GetPadz()  !=volume[4]) AliWarning(" --- ERROR --- ");
 
 	timeOfFlight = (Int_t)(digs->GetTdc())
-	  +
-	  fTOFCableLengthMap->GetCableTimeShiftBin(nDDL, nTRM, iChain, nTDC);
+	  /*+
+	  fTOFCableLengthMap->GetCableTimeShiftBin(nDDL, nTRM, iChain, nTDC)*/;
 
-	if (timeOfFlight>=fMatchingWindow+1000) continue; // adc
+	//if (timeOfFlight>=fMatchingWindow+1000) continue; // adc
+	if (timeOfFlight>=fMatchingWindow) continue; // adc
 
 	//numberOfMeasuresPerChannel++;
 

@@ -112,7 +112,7 @@ ClassImp(AliTOFRawStream)
 const Int_t AliTOFRawStream::fgkddlBCshift[72] = 
 {
   2, 2, -1, -1,
-  2, 3,  0,  0,
+  2, 2,  0,  0,
   2, 2,  0,  0,
   2, 2,  0,  0,
   2, 2,  0,  0,
@@ -756,8 +756,8 @@ Bool_t AliTOFRawStream::Next()
       case 0: // packing ok, digit time and TOT
 	fToT  = GetField(data,TRM_TOT_WIDTH_MASK, TRM_TOT_WIDTH_POSITION);
 	fTime = GetField(data,TRM_DIGIT_TIME_MASK,TRM_DIGIT_TIME_POSITION)
-	  -
-	  fCableLengthMap->GetCableTimeShiftBin(fDDL, fTRM, fTRMchain, fTDC)
+	  /*-
+	  fCableLengthMap->GetCableTimeShiftBin(fDDL, fTRM, fTRMchain, fTDC)*/
 	  /*+
 	  (Int_t)(fgkddlBCshift[fDDL]*25.*1000./AliTOFGeometry::TdcBinWidth())
 	  +
@@ -769,8 +769,8 @@ Bool_t AliTOFRawStream::Next()
 	//fToT  = -1;
 	//fTime  = -1;
 	fLeadingEdge = GetField(data,TRM_LONG_DIGIT_TIME_MASK,TRM_LONG_DIGIT_TIME_POSITION)
-	  -
-	  fCableLengthMap->GetCableTimeShiftBin(fDDL, fTRM, fTRMchain, fTDC)
+	  /*-
+	  fCableLengthMap->GetCableTimeShiftBin(fDDL, fTRM, fTRMchain, fTDC)*/
 	  /*+
 	  (Int_t)(fgkddlBCshift[fDDL]*25.*1000./AliTOFGeometry::TdcBinWidth())
 	  +
@@ -782,8 +782,8 @@ Bool_t AliTOFRawStream::Next()
 	//fToT  = -1;
 	//fTime  = -1;
 	fTrailingEdge = GetField(data,TRM_LONG_DIGIT_TIME_MASK,TRM_LONG_DIGIT_TIME_POSITION)
-	  -
-	  fCableLengthMap->GetCableTimeShiftBin(fDDL, fTRM, fTRMchain, fTDC)
+	  /*-
+	  fCableLengthMap->GetCableTimeShiftBin(fDDL, fTRM, fTRMchain, fTDC)*/
 	  /*+
 	  (Int_t)(fgkddlBCshift[fDDL]*25.*1000./AliTOFGeometry::TdcBinWidth())
 	  +
@@ -794,8 +794,8 @@ Bool_t AliTOFRawStream::Next()
       case 3: // TOT overflow
 	fToT  = GetField(data,TRM_TOT_WIDTH_MASK, TRM_TOT_WIDTH_POSITION);
 	fTime = GetField(data,TRM_DIGIT_TIME_MASK,TRM_DIGIT_TIME_POSITION)
-	  -
-	  fCableLengthMap->GetCableTimeShiftBin(fDDL, fTRM, fTRMchain, fTDC)
+	  /*-
+	  fCableLengthMap->GetCableTimeShiftBin(fDDL, fTRM, fTRMchain, fTDC)*/
 	  /*+
 	  (Int_t)(fgkddlBCshift[fDDL]*25.*1000./AliTOFGeometry::TdcBinWidth())
 	  +
@@ -1458,8 +1458,8 @@ AliTOFRawStream::LoadRawDataBuffers(Int_t indexDDL, Int_t verbose)
     Int_t   hitTOTBin = hitData->GetTOTBin();
     
     Int_t hitLeading = hitData->GetTimeBin()
-      -
-      fCableLengthMap->GetCableTimeShiftBin(indexDDL, hitSlotID, hitChain, hitTDC);//-1; // adc
+      /*-
+      fCableLengthMap->GetCableTimeShiftBin(indexDDL, hitSlotID, hitChain, hitTDC)*/;//-1; // adc
     Int_t hitTrailing = -1;
     Int_t hitError = -1;
     
