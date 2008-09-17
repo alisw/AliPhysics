@@ -27,7 +27,14 @@ void clusters()
   const Int_t detIds[]   = {   0,     1,     2,     3,     5   };
   const Int_t detN       = sizeof(detNames)/sizeof(char*);
 
+  // Hack - AliReconstruction does wonders with gGeoManager.
+  TGeoManager* xxx = gGeoManager; gGeoManager = 0;
   AliReconstruction* reco = new AliReconstruction;
+  gGeoManager = xxx;
+
+  // Hack for ITS - it requires RecoParams outside event-loop!
+  reco.SetRecoParam("ITS", AliITSRecoParam::GetLowFluxParam());
+
   reco->ImportRunLoader(rl);
   {
     TString alldets;
