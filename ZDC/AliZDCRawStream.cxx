@@ -305,7 +305,7 @@ Bool_t AliZDCRawStream::Next()
 	fModType = ((fBuffer & 0xfff00)>>8);
 	fADCNChannels = (fBuffer & 0xff);
 	//
-	printf("\tGEO %d, mod. type %d, #ch. %d\n",fADCModule,fModType,fADCNChannels);
+	//printf("\tGEO %d, mod. type %d, #ch. %d\n",fADCModule,fModType,fADCNChannels);
       }
       else if(fModType==1 && (fBuffer&0x80000000)>>31 == 0){
         // Channel signal
