@@ -135,13 +135,13 @@ int main(int argc, char **argv) {
        sprintf(namhist3lg,"PedCorrReflg_%d",j-22);
      }
      // --- High gain chain histos
-     hPedhg[j] = new TH1F(namhist1hg, namhist1hg, 200,0., 200.);
-     hPedOutOfTimehg[j] = new TH1F(namhist2hg, namhist2hg, 200,0., 200.);
+     hPedhg[j] = new TH1F(namhist1hg, namhist1hg, 200, 0., 200.);
+     hPedOutOfTimehg[j] = new TH1F(namhist2hg, namhist2hg, 200, 0., 200.);
      hPedCorrhg[j] = new TH2F(namhist3hg,namhist3hg,100,0.,200.,100,0.,200.);
      // --- Low gain chain histos
-     hPedlg[j] = new TH1F(namhist1lg, namhist1lg, 100,0., 600.);
-     hPedOutOfTimelg[j] = new TH1F(namhist2lg, namhist2lg, 100,0., 600.);
-     hPedCorrlg[j] = new TH2F(namhist3lg,namhist3lg,100,0.,600.,100,0.,600.);
+     hPedlg[j] = new TH1F(namhist1lg, namhist1lg, 100, 0., 1000.);
+     hPedOutOfTimelg[j] = new TH1F(namhist2lg, namhist2lg, 100, 0., 1000.);
+     hPedCorrlg[j] = new TH2F(namhist3lg,namhist3lg,100,0.,1000.,100,0.,1000.);
   }
 
 
@@ -378,7 +378,7 @@ int main(int argc, char **argv) {
      MeanPed[i] = (Double_t) ADCfunchg[i]->GetParameter(1);
      MeanPedWidth[i] = (Double_t)  ADCfunchg[i]->GetParameter(2);
      fprintf(fileShuttle,"\t%f\t%f\n",MeanPed[i],MeanPedWidth[i]);
-     printf("\t MeanPedhg[%d] = %f\n",i, MeanPed[i]);
+     //printf("\t MeanPedhg[%d] = %f\n",i, MeanPed[i]);
   }
   TF1 *ADCfunclg[kNChannels];
   for(Int_t i=0; i<kNChannels; i++){
@@ -387,7 +387,7 @@ int main(int argc, char **argv) {
      MeanPed[i+kNChannels] = (Double_t)  ADCfunclg[i]->GetParameter(1);
      MeanPedWidth[i+kNChannels] = (Double_t)  ADCfunclg[i]->GetParameter(2);
      fprintf(fileShuttle,"\t%f\t%f\n",MeanPed[i+kNChannels],MeanPedWidth[i+kNChannels]);
-     printf("\t MeanPedlg[%d] = %f\n",i+kNChannels, MeanPed[i+kNChannels]);
+     //printf("\t MeanPedlg[%d] = %f\n",i+kNChannels, MeanPed[i+kNChannels]);
   }
   // --- Out-of-time pedestals
   TF1 *ADCootfunchg[kNChannels];
@@ -397,7 +397,7 @@ int main(int argc, char **argv) {
      MeanPedOOT[i] = (Double_t)  ADCootfunchg[i]->GetParameter(1);
      MeanPedWidthOOT[i] = (Double_t)  ADCootfunchg[i]->GetParameter(2);
      fprintf(fileShuttle,"\t%f\t%f\n",MeanPedOOT[i],MeanPedWidthOOT[i]);
-     printf("\t MeanPedOOThg[%d] = %f\n",i, MeanPedOOT[i]);
+     //printf("\t MeanPedOOThg[%d] = %f\n",i, MeanPedOOT[i]);
   }
   TF1 *ADCootfunclg[kNChannels];
   for(Int_t i=0; i<kNChannels; i++){
@@ -406,7 +406,7 @@ int main(int argc, char **argv) {
      MeanPedOOT[i+kNChannels] = (Double_t)  ADCootfunclg[i]->GetParameter(1);
      MeanPedWidthOOT[i+kNChannels] = (Double_t)  ADCootfunclg[i]->GetParameter(2);
      fprintf(fileShuttle,"\t%f\t%f\n",MeanPedOOT[i+kNChannels],MeanPedWidthOOT[i+kNChannels]);
-     printf("\t MeanPedOOTlg[%d] = %f\n",i+kNChannels, MeanPedOOT[i+kNChannels]);
+     //printf("\t MeanPedOOTlg[%d] = %f\n",i+kNChannels, MeanPedOOT[i+kNChannels]);
   }
   
   // ***************************************************
