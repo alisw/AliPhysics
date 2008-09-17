@@ -68,8 +68,12 @@ fFilterOnTracklets(0)
   fVertexXY = new TH2F("VertexXY","Vertex Diamond (Y vs X)",
 		       2*(Int_t)(xLimit/xDelta),-xLimit,xLimit,
 		       2*(Int_t)(yLimit/yDelta),-yLimit,yLimit);
+  fVertexXY->SetXTitle("X , cm");
+  fVertexXY->SetYTitle("Y , cm");
+  fVertexXY->SetOption("colz");
   fVertexZ  = new TH1F("VertexZ"," Longitudinal Vertex Profile",
 		       2*(Int_t)(zLimit/zDelta),-zLimit,zLimit);
+  fVertexZ->SetXTitle("Z , cm");
 }
 
 //______________________________________________________________________
