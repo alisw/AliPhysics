@@ -130,6 +130,11 @@ void SimEsd(AliLoader *pHL,AliESDEvent *pEsd,Bool_t htaCheck)
     
   }// event loop
   Printf("Events processed %i",iEvt);
+  if(htaCheck) {
+    fout->Write();
+    fout->Close();
+    delete fout;
+  }
   gAL->UnloadHeader();  gAL->UnloadKinematics();
 }//Esd()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
