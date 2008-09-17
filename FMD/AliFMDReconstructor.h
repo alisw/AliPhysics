@@ -192,6 +192,8 @@ protected:
   TH1*                  fDiagStep3;	// Diagnostics histogram
   TH1*                  fDiagStep4;	// Diagnostics histogram
   TH1*                  fDiagAll;	// Diagnostics histogram
+  mutable Bool_t        fZS[3];         // Zero-suppredded?
+  mutable UShort_t      fZSFactor[3];   // Noise factor for Zero-suppression
 private:
    
   ClassDef(AliFMDReconstructor, 3)  // class for the FMD reconstruction

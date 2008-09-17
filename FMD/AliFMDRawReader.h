@@ -60,13 +60,38 @@ public:
       @param array Array to read into 
       @return @c true on success */
   virtual Bool_t ReadAdcs(TClonesArray* array);
-  /** Read SOD event into a container. 
-      @param array Array to read into 
-      @return @c true on success */
+  /** 
+   * Read SOD event into passed objects.
+   * 
+   * @param samplerate   The sample rate object to fill
+   * @param striprange   The strip range object to fill
+   * @param pulseSize    The pulse size object to fill
+   * @param pulseLength  The pulse length (in events) object to fill
+   * 
+   * @return @c true on success
+   */  
   virtual Bool_t ReadSODevent(AliFMDCalibSampleRate* samplerate, 
 			      AliFMDCalibStripRange* striprange, 
 			      TArrayS &pulseSize, 
 			      TArrayS &pulseLength);
+  /** 
+   * Check of the data from DDL @a ddl is zero-suppressed
+   * 
+   * @param ddl DDL number (0-2)
+   * 
+   * @return @c true if the data from this DDL is zero-suppressed. 
+   */  
+  Bool_t IsZeroSuppressed(UShort_t ddl) const { return fZeroSuppress[ddl]; }
+  /** 
+   * The factor used to multiply the noise when making on-line
+   * pedestal subtraction.
+   * 
+   * @param ddl DDL number (0-2)
+   * 
+   * @return The factor used. 
+   */
+  UShort_t NoiseFactor(UShort_t ddl) const { return fNoiseFactor[ddl]; }
+
 protected:
   AliFMDRawReader(const AliFMDRawReader& o) 
     : TTask(o), 
@@ -86,6 +111,8 @@ protected:
   UShort_t        fSampleRate; // The sample rate (if 0, inferred from data)
   UChar_t*        fData; 
   ULong_t  	  fNbytes; 
+  Bool_t          fZeroSuppress[3];
+  UShort_t        fNoiseFactor[3];
   AliFMDUShortMap fSeen;
   
   ClassDef(AliFMDRawReader, 0) // Read FMD raw data into a cache 

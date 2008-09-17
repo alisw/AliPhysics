@@ -17,7 +17,8 @@
 # include <TError.h>
 # include <iostream>
 #endif
-#define SHOW_ALL 1
+bool show_all=false;
+
 //____________________________________________________________________
 /** @ingroup ALTRO_test
     @param ddl 
@@ -113,20 +114,22 @@ CheckTrans(UShort_t det, Char_t ring, UShort_t sec, UShort_t str, UShort_t sam,
     ok = false;
     Warning("TestHWMap", "Sample # differ %d != %d", sam, osam);
   }
-#ifndef SHOW_ALL
-  if (!ok) 
-    PrintTrans(det,ring,sec,str,sam,
-  	       ddl,hwaddr,timebin,
-	       odet,oring,osec,ostr,osam);
-#endif
+
+  if (!show_all) { 
+    if (!ok) 
+      PrintTrans(det,ring,sec,str,sam,
+		 ddl,hwaddr,timebin,
+		 odet,oring,osec,ostr,osam);
+  }
 }
 
 //____________________________________________________________________
 /** @ingroup ALTRO_test
  */
 void
-TestAltroMapping(Int_t min=1, Int_t max=3)
+TestAltroMapping(bool sa=false, Int_t min=1, Int_t max=3)
 {
+  show_all = sa;
   // AliLog::SetModuleDebugLevel("FMD", 1);
   // if (min < 1 || min > 3) min = 1;
   if (max < min)          max = min;
@@ -162,11 +165,10 @@ TestAltroMapping(Int_t min=1, Int_t max=3)
 		      Addr2Str(ddl, hwaddr, timebin));
 	      continue;
 	    }
-#ifdef SHOW_ALL
-	    PrintTrans(det,ring,sec,str,sam,
-		       ddl,hwaddr,timebin,
-		       odet,oring,osec,ostr,osam);
-#endif
+	    if (show_all) 
+	      PrintTrans(det,ring,sec,str,sam,
+			 ddl,hwaddr,timebin,
+			 odet,oring,osec,ostr,osam);
 	    CheckTrans(det,ring,sec,str,sam,
 		       ddl,hwaddr,timebin,
 		       odet,oring,osec,ostr,osam);

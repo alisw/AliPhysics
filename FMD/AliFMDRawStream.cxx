@@ -85,7 +85,26 @@ AliFMDRawStream::ReadChannel(UInt_t& ddl, UInt_t& addr,
 	break;
       }
     }
+    // Sanity check - if the total bunch length is less than 1, then
+    // read until we get the next bunch. 
+    Int_t b  = GetTimeLength();
+    if (b < 1) { 
+      AliWarning(Form("Bunch length %0d is less than 0 for "
+		      "DDL %4d address 0x%03x", 
+		      b, ddl, addr));
+      last = 0xFFFF;
+      continue;
+    }
+
+    // Sanity check - if the current time is less than 0, then read
+    // until we get a new bunch. 
     Int_t t  = GetTime();
+    if (t < 0) {
+      AliWarning(Form("Time %0d is less than 0 for DDL %4d address 0x%03x", 
+		      t, ddl, addr));
+      last = 0xFFFF;
+      continue;
+    }
     l        = TMath::Max(l, t);
     data[t]  = signal;
     last     = 0xFFFF;

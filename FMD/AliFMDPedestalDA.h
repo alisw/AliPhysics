@@ -16,34 +16,141 @@
 #include "TH1.h"
 #include "TObjArray.h"
 
-class AliFMDPedestalDA: public AliFMDBaseDA {
-  
- public:
-  AliFMDPedestalDA() ;
-  AliFMDPedestalDA(const AliFMDPedestalDA & pedDA) ;
+class AliFMDPedestalDA: public AliFMDBaseDA 
+{
+public:
+  /** 
+   * Constructor.
+   * 
+   */  
+  AliFMDPedestalDA();
+  /** 
+   * Copy constructor 
+   * 
+   * @param pedDA Object to copy from
+   */  
+  AliFMDPedestalDA(const AliFMDPedestalDA & pedDA);
   //  AliFMDPedestalDA& operator = (const AliFMDPedestalDA & pedDA) ; 
+  /** 
+   * Destructor
+   * 
+   */
   virtual ~AliFMDPedestalDA();
+  /** 
+   * Initialiser
+   * 
+   */  
   void Init();
  
- protected:
- 
-  void AddChannelContainer(TObjArray* sectorArray, UShort_t det, Char_t ring, UShort_t sec, UShort_t strip);
+protected:
+  /** 
+   * Add a channel to the containers. 
+   * 
+   * @param sectorArray  Array of sectors
+   * @param det          Detector 
+   * @param ring         Ring
+   * @param sec          Sector 
+   * @param strip        Strip
+   */
+  void AddChannelContainer(TObjArray* sectorArray, UShort_t det, 
+			   Char_t ring, UShort_t sec, UShort_t strip);
+  /** 
+   * Fill ADC values from a digit into the corresponding histogram.
+   * 
+   * @param digit Digit to fill ADC values for.
+   */
   void FillChannels(AliFMDDigit* digit);
+  /** 
+   * Analyse a strip.  That is, compute the mean and spread of the ADC
+   * spectra for all strips.  Also output on files the values. 
+   * 
+   * @param det   Detector
+   * @param ring  Ring
+   * @param sec   Sector 
+   * @param strip Strip.
+   */
   void Analyse(UShort_t det, Char_t ring, UShort_t sec, UShort_t strip);
+  /** 
+   * Write headers to files. 
+   * 
+   */  
   void WriteHeaderToFile();
+  /** 
+   * Called at the end of an event.
+   * 
+   */  
   void FinishEvent() {}
+  /** 
+   * Called at the end of a job.  Fills in missing time-bins and
+   * closes output files  
+   * 
+   */  
   void Terminate(TFile* );
- private:
-  TH1S* GetChannel(UShort_t det, Char_t ring, UShort_t sec, UShort_t strip, UInt_t sample);
- 
+private:
+  /** 
+   * Get the histogram corresponding to a strip sample.
+   * 
+   * @param det    Detector
+   * @param ring   Ring
+   * @param sec    Sector
+   * @param strip  Strip
+   * @param sample Sample
+   * 
+   * @return ADC spectra of a strip.
+   */
+  TH1S* GetChannel(UShort_t det, Char_t ring, UShort_t sec, 
+		   UShort_t strip, UInt_t sample);
+  /** 
+   * Calculate the hardware index
+   * 
+   * @param ddl    DDL number
+   * @param board  Board number
+   * @param altro  ALTRO number
+   * @param chan   Channel number
+   * 
+   * @return Index into hardware cache.
+   */
+  Int_t HWIndex(UShort_t ddl, UShort_t board, UShort_t altro, 
+		UShort_t chan) const;
+  void FillinTimebins(std::ofstream& out, UShort_t ddl);
+  /** Current strip */ 
   Int_t fCurrentChannel;
+  /** Pedestal summary */
   TH1F  fPedSummary;
+  /** Noise summary */
   TH1F  fNoiseSummary;
+  /** Output file for zero-suppression for FMD1 */
   std::ofstream fZSfileFMD1;
+  /** Output file for zero-suppression for FMD2 */
   std::ofstream fZSfileFMD2;
+  /** Output file for zero-suppression for FMD3 */
   std::ofstream fZSfileFMD3;
+  /** The minimum timebin seen for all channels */
+  TArrayS fMinTimebin;
+  /** The maximum timebin seen for all channels */
+  TArrayS fMaxTimebin;
+  
   
   ClassDef(AliFMDPedestalDA,0)
-    
 };
+
+inline Int_t
+AliFMDPedestalDA::HWIndex(UShort_t ddl, UShort_t b, UShort_t a, UShort_t c)const
+{
+  // Save some array entries 
+  UShort_t lb = (b > 1 ? b-16+2 : b);
+  const Int_t kNDDL     = 3;
+  const Int_t kNBoard   = 4;
+  const Int_t kNAltro   = 3;
+  const Int_t kNChannel = 16;
+  Int_t idx =  c + kNChannel * (a + kNAltro * (lb + kNBoard * ddl));
+  if (idx > kNDDL * kNBoard * kNAltro * kNChannel) return -1;
+  return idx;
+}
+
 #endif
+//
+// Local Variables:
+//  mode: C++
+// End:
+//

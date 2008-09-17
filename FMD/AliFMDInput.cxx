@@ -78,6 +78,7 @@ AliFMDInput::AliFMDInput()
     fStack(0),
     fFMDLoader(0), 
     fReader(0),
+    fFMDReader(0),
     fFMD(0),
     fESD(0),
     fESDEvent(0),
@@ -119,6 +120,7 @@ AliFMDInput::AliFMDInput(const char* gAliceFile)
     fStack(0),
     fFMDLoader(0), 
     fReader(0),
+    fFMDReader(0),
     fFMD(0),
     fESD(0),
     fESDEvent(0),
@@ -241,6 +243,7 @@ AliFMDInput::Init()
     else 
       fReader = new AliRawReaderFile(-1);
 #endif
+    fFMDReader = new AliFMDRawReader(fReader, 0);
   }
   
   // Optionally, get the geometry 
@@ -382,11 +385,11 @@ AliFMDInput::Begin(Int_t event)
 
   // Possibly load FMD Digit information 
   if (TESTBIT(fTreeMask, kRaw)) {
-    AliInfo("Getting FMD raw data digits");
+    // AliInfo("Getting FMD raw data digits");
     if (!fReader->NextEvent()) return kFALSE;
-    AliFMDRawReader r(fReader, 0);
+    // AliFMDRawReader r(fReader, 0);
     fArrayA->Clear();
-    r.ReadAdcs(fArrayA);
+    fFMDReader->ReadAdcs(fArrayA);
     AliFMDDebug(1, ("Got a total of %d digits", fArrayA->GetEntriesFast()));
   }
   fEventCount++;

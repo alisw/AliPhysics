@@ -38,7 +38,7 @@ void TestPedestalDA(Char_t* fileName="data.raw", Int_t runNumber=1,
   params->UseCompleteHeader(oldFormat);
   
   // Set-up raw readers 
-  AliRawReader *reader = new AliRawReaderDate(fileName,-1);
+  AliRawReader *reader = AliRawReader::Create(fileName);
 
 
   // Set-up timer 

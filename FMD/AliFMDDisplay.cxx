@@ -54,6 +54,7 @@
 #include "AliFMDRecPoint.h"     // ALIFMDRECPOINT_H
 #include "AliFMDGeometry.h"	// ALIFMDGEOMETRY_H
 #include "AliFMDParameters.h"	// ALIFMDPARAMETERS_H
+#include "AliFMDRawReader.h"    // ALIFMDRAWREADER_H
 #include <AliESDFMD.h>          // ALIESDFMD_H
 // #include <AliLog.h>
 #include "AliFMDDebug.h" // Better debug macros
@@ -407,12 +408,19 @@ AliFMDDisplay::MakeAux()
   if (!fAux) {
     fAux = new TCanvas("aux", "Aux");
     fAux->SetLogy();
+    fAux->SetFillColor(kWhite);
+    fAux->SetBorderMode(0);
+    fAux->SetBorderSize(0);
     Float_t dBin = (range->fHigh - range->fLow) / range->fNbins;
     fSpec = new TH1D("spec", "Spectra", range->fNbins, 
-		     range->fLow-dBin/2, range->fHigh-dBin/2);
+		     range->fLow-dBin/2, range->fHigh+dBin/2);
     fSpecCut = static_cast<TH1*>(fSpec->Clone("specCut"));
+    fSpec->SetXTitle("signal");
+    fSpec->SetYTitle("events");
     fSpec->SetFillColor(2);
     fSpec->SetFillStyle(3001);
+    fSpecCut->SetXTitle("signal");
+    fSpecCut->SetYTitle("events");
     fSpecCut->SetFillColor(4);
     fSpecCut->SetFillStyle(3001);
   }
@@ -584,7 +592,8 @@ AliFMDDisplay::ChangeFactor()
   // The factor depends on what is 
   // drawn in the AUX canvas
   AliInfo(Form("Noise factor is now %4.1f, pedestal factor %3.1f", 
-	       10*fFactor->GetMinimum(),fFactor->GetMaximum()));
+	       fFactor->GetMinimum(),
+	       (fFactor->GetMaximum()-fFactor->GetMaximum())));
   Redisplay();
 }
 
@@ -728,10 +737,14 @@ AliFMDDisplay::ProcessDigit(AliFMDDigit* digit)
   UShort_t str           =  digit->Strip();
   Double_t ped           =  parm->GetPedestal(det,ring, sec, str);
   Double_t pedW          =  parm->GetPedestalWidth(det,ring, sec, str);
-  Double_t threshold     =  (ped * fFactor->GetMaximum()
-			     + pedW * fFactor->GetMinimum());
+  Double_t threshold     =  (fFMDReader->IsZeroSuppressed(det-1) ? 
+			     0 : (ped * (fFactor->GetMaximum()
+					 -fFactor->GetMinimum())
+				  + pedW * fFactor->GetMinimum()));
   if (threshold > fgkAdcRange.fHigh) threshold = fgkAdcRange.fHigh;
   Float_t  counts        =  digit->Counts();
+  if (fFMDReader->IsZeroSuppressed(det-1))
+    counts += fFMDReader->NoiseFactor(det-1) * pedW;
 
   AliFMDDebug(10, ("FMD%d%c[%02d,%03d] counts %4d threshold %4d", 
 		   det, ring, sec, str, Int_t(counts), Int_t(threshold)));

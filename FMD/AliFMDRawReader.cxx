@@ -133,13 +133,15 @@ AliFMDRawReader::ReadAdcs(TClonesArray* array)
   UShort_t stripMin = 0;
   UShort_t stripMax = 0; // 127;
   UShort_t preSamp  = 0; // 14+5;
-  
+
+  Int_t  oldddl = -1;
   UInt_t ddl    = 0;
   UInt_t rate   = 0;
   UInt_t last   = 0;
   UInt_t hwaddr = 0;
   // Data array is approx twice the size needed. 
   UShort_t data[2048];
+  for (size_t i = 0; i < 2048; i++) data[i] = 0; // kUShortMax;
 
   Bool_t isGood = kTRUE;
   while (isGood) {
@@ -150,8 +152,28 @@ AliFMDRawReader::ReadAdcs(TClonesArray* array)
 		      array->GetEntriesFast()));
       break;
     }
+    if (oldddl != ddl) { 
+      fZeroSuppress[ddl] = input.GetZeroSupp();
+      AliFMDDebug(20, ("RCU @ DDL %d zero suppression: %s", 
+		       ddl, (fZeroSuppress[ddl] ? "yes" : "no")));
 
-    AliFMDDebug(5, ("Read channel 0x%x of size %d", hwaddr, last));
+      // WARNING: We store the noise factor in the 2nd baseline
+      // filters excluded post samples, since we'll never use that
+      // mode. 
+      fNoiseFactor[ddl]  = input.GetNPostsamples();
+      AliFMDDebug(20, ("RCU @ DDL %d noise factor: %d", ddl,fNoiseFactor[ddl]));
+
+      Int_t nChAddrMismatch = input.GetNChAddrMismatch();
+      Int_t nChLenMismatch  = input.GetNChLengthMismatch();
+      if (nChAddrMismatch != 0) 
+	AliWarning(Form("Got %d channels with address mis-matches for 0x%03x",
+			nChAddrMismatch, hwaddr));
+      if (nChLenMismatch != 0) 
+	AliWarning(Form("Got %d channels with length mis-matches for 0x%03x",
+			nChLenMismatch, hwaddr));
+      oldddl = ddl;
+    }
+    // AliFMDDebug(5, ("Read channel 0x%x of size %d", hwaddr, last));
 
     UShort_t det, sec, samp, board, chip, channel;
     Short_t strbase;
@@ -170,11 +192,15 @@ AliFMDRawReader::ReadAdcs(TClonesArray* array)
     stripMin = pars->GetMinStrip(det, ring, sec, strbase);
     stripMax = pars->GetMaxStrip(det, ring, sec, strbase);
     preSamp  = pars->GetPreSamples(det, ring, sec, strbase);
-    rate     = pars->GetSampleRate(det, ring, sec, strbase);
+    // WARNING: We use the number of pre-samples to store the
+    // oversampling rate in. 
+    rate     = input.GetNPretriggerSamples();
+    if (rate == 0) rate = pars->GetSampleRate(det, ring, sec, strbase);
     
     // Loop over the `timebins', and make the digits
     for (size_t i = 0; i < last; i++) {
       // if (i < preSamp) continue;
+      AliFMDDebug(15, ("0x%04x/0x%03x/%04d %4d", ddl, hwaddr, i, data[i]));
 
       Short_t  stroff = 0;
       map->Timebin2Strip(sec, i, preSamp, rate, stroff, samp);
@@ -184,6 +210,7 @@ AliFMDRawReader::ReadAdcs(TClonesArray* array)
 		      ddl, hwaddr, i, det, ring, sec, str, samp));
       if (str < 0) { 
 	AliFMDDebug(8, ("Got presamples at timebin %d", i));
+	data[i] = 0; // Reset cache 
 	continue;
       }
       
@@ -194,6 +221,7 @@ AliFMDRawReader::ReadAdcs(TClonesArray* array)
       if (lstrip < stripMin || lstrip > stripMax) {
 	AliFMDDebug(5, ("FMD%d%c[%02d,%03d]-%d out of range (%3d->%3d)", 
 			det, ring, sec, samp, str, stripMin, stripMax));
+	data[i] = 0; // Reset cache 
 	continue;
       }
       
@@ -211,6 +239,7 @@ AliFMDRawReader::ReadAdcs(TClonesArray* array)
 		  ("Setting from FMD%d%c[%2d,%3d]-%d from timebin %4d = %4d", 
 		   det, ring, sec, str, samp, i, data[i]));
       digit->SetCount(samp, data[i]);
+      data[i] = 0; // Reset cache 
     }
   }
   return kTRUE;

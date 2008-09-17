@@ -37,6 +37,7 @@
 #include "AliFMDDebug.h"
 #include "AliFMDGeometry.h"                // ALIFMDGEOMETRY_H
 #include "AliFMDParameters.h"              // ALIFMDPARAMETERS_H
+#include "AliFMDAltroMapping.h"            // ALIFMDALTROMAPPING_H
 #include "AliFMDDigit.h"                   // ALIFMDDIGIT_H
 #include "AliFMDReconstructor.h"           // ALIFMDRECONSTRUCTOR_H
 #include "AliFMDRawReader.h"               // ALIFMDRAWREADER_H
@@ -202,6 +203,11 @@ AliFMDReconstructor::ConvertDigits(AliRawReader* reader,
   AliFMDRawReader rawRead(reader, digitsTree);
   // rawRead.SetSampleRate(fFMD->GetSampleRate());
   rawRead.Exec();
+  AliFMDAltroMapping* map = AliFMDParameters::Instance()->GetAltroMap();
+  for (size_t i = 1; i <= 3; i++) { 
+    fZS[i]       = rawRead.IsZeroSuppressed(map->Detector2DDL(i));
+    fZSFactor[i] = rawRead.NoiseFactor(map->Detector2DDL(i));
+  }
 }
 
 //____________________________________________________________________
@@ -363,10 +369,13 @@ AliFMDReconstructor::SubtractPedestal(AliFMDDigit* digit) const
   // something like that. 
 
   AliFMDParameters* param  = AliFMDParameters::Instance();
-  Float_t           ped    = param->GetPedestal(digit->Detector(), 
-						digit->Ring(), 
-						digit->Sector(), 
-						digit->Strip());
+  Bool_t            zs     = fZS[digit->Detector()-1];
+  UShort_t          fac    = fZSFactor[digit->Detector()-1];
+  Float_t           ped    = (zs ? 0 : 
+			      param->GetPedestal(digit->Detector(), 
+						 digit->Ring(), 
+						 digit->Sector(), 
+						 digit->Strip()));
   Float_t           noise  = param->GetPedestalWidth(digit->Detector(), 
 						     digit->Ring(), 
 						     digit->Sector(), 
@@ -383,7 +392,8 @@ AliFMDReconstructor::SubtractPedestal(AliFMDDigit* digit) const
   // else if (digit->Count2() > 0) adc = digit->Count2();
   // else                          adc = digit->Count1();
   Int_t adc    = digit->Counts();
-  Int_t counts = TMath::Max(Int_t(adc - ped), 0);
+  Int_t counts = adc + Int_t(zs ? fac * noise : - ped);
+  counts       = TMath::Max(Int_t(counts), 0);
   if (counts < noise * fNoiseFactor) counts = 0;
   if (counts > 0) AliFMDDebug(15, ("Got a hit strip"));
   if (fDiagStep1) fDiagStep1->Fill(adc, counts);

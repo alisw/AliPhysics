@@ -755,7 +755,7 @@ AliFMDGeometryBuilder::FMD1Geometry(AliFMD1* fmd1,
   TGeoVolume* top    = gGeoManager->GetVolume("ALIC");
   // TGeoMatrix* matrix = new TGeoTranslation("FMD1 trans", 0, 0, z);
   TGeoRotation* rot = new TGeoRotation("FMD1 rotatation");
-  rot->RotateZ(-90);
+  rot->RotateZ(90);
   TGeoMatrix* matrix = new TGeoCombiTrans("FMD1 trans", 0, 0, z, rot);
   AliFMDDebug(5, ("Placing volumes %s and %s in ALIC at z=%f", 
 		   fmd1TopVolume->GetName(), fmd1BotVolume->GetName(), z));
@@ -1020,6 +1020,7 @@ AliFMDGeometryBuilder::FMD3Geometry(AliFMD3* fmd3,
 				     holeLW, holeHW, holeD, holeL);
   TGeoTrd1* plateShape = new TGeoTrd1("FMD3_cooling_plate", 
 				      holeLW, holeHW, .033, holeL);
+  (void*)holeShape;
   TGeoRotation* holeRot = new TGeoRotation();
   holeRot->SetName("FMD3_cone_hole_rotation");
   holeRot->RotateZ(90);
@@ -1027,7 +1028,6 @@ AliFMDGeometryBuilder::FMD3Geometry(AliFMD3* fmd3,
   TGeoCombiTrans* holeBaseTrans = new TGeoCombiTrans(holeX, 0, holeZ, holeRot);
   holeBaseTrans->SetName("FMD3_cone_hole_base_matrix");
   TGeoCombiTrans* plateBaseTrans = new TGeoCombiTrans(plateX, 0,plateZ,holeRot);
-  (void*)holeShape;
   TGeoVolume* plateVolume = new TGeoVolume("FMD3_cooling_plate", 
 					   plateShape, fAl);
   plateShape->SetTitle("FMD3 cooling plate");

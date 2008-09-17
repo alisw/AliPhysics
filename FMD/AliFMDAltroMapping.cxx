@@ -147,17 +147,18 @@ AliFMDAltroMapping::Channel2StripBase(UShort_t  board, UShort_t  altro,
   // return the first strip, as seen by the ALTRO channel, in the
   // given range.  
   //
-  ring         =  Board2Ring(board);
+  ring          =  Board2Ring(board);
+  UShort_t fsec =  board < 16 ? 1 : 0;
   switch (ring) {
   case 'i':
   case 'I':
-    sec = ((board / 16) * 10 + (altro < 1 ? 0 : altro < 2 ? 4 : 6) 
+    sec = (fsec * 10 + (altro < 1 ? 0 : altro < 2 ? 4 : 6) 
 	   + 2 * (chan / 8) + chan % 2);
     str = ((chan % 8) / 2) * 128;
     break;
   case 'o':
   case 'O': 
-    sec = ((board / 16) * 20 + (altro < 1 ? 0 : altro < 2 ? 8 : 12) 
+    sec = (fsec * 20 + (altro < 1 ? 0 : altro < 2 ? 8 : 12) 
 	   + 2 * (chan / 4) + chan % 2);
     str = ((chan % 4) / 2) * 128;
     break;
@@ -377,21 +378,24 @@ AliFMDAltroMapping::Strip2Channel(Char_t    ring,  UShort_t  sec,
   // With this information, we can decode the detector coordinates to
   // give us a unique hardware address 
   //
-  UInt_t tmp   = 0;
+  UInt_t   tmp    = 0;
+  UShort_t fboard = 0;
   switch (ring) {
   case 'I':
   case 'i':
-    board =  (sec / 10) * 16;
-    altro =  (sec % 10) < 4 ? 0 : (sec % 10) < 6 ? 1 : 2;
-    tmp   =  (sec % 10) - (altro == 0 ? 0 : altro == 1 ? 4 : 6);
-    chan  =  2  * (str / 128) + (sec % 2) + ((tmp / 2) % 2) * 8;
+    fboard =  sec < 10 ? 1 : 0;
+    board  =  fboard * 16;
+    altro  =  (sec % 10) < 4 ? 0 : (sec % 10) < 6 ? 1 : 2;
+    tmp    =  (sec % 10) - (altro == 0 ? 0 : altro == 1 ? 4 : 6);
+    chan   =  2  * (str / 128) + (sec % 2) + ((tmp / 2) % 2) * 8;
     break;
   case 'O':
   case 'o':
-    board =  (sec / 20) * 16 + 1;
-    altro =  (sec % 20) < 8 ? 0 : (sec % 20) < 12 ? 1 : 2;
-    tmp   =  (sec % 20) - (altro == 0 ? 0 : altro == 1 ? 8 : 12);
-    chan  =  2 * (str / 128) + (sec % 2) + ((tmp / 2) % 4) * 4;
+    fboard =  sec < 20 ? 1 : 0;
+    board  =  fboard * 16 + 1;
+    altro  =  (sec % 20) < 8 ? 0 : (sec % 20) < 12 ? 1 : 2;
+    tmp    =  (sec % 20) - (altro == 0 ? 0 : altro == 1 ? 8 : 12);
+    chan   =  2 * (str / 128) + (sec % 2) + ((tmp / 2) % 4) * 4;
     break;
   }
   return kTRUE;

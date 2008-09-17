@@ -161,11 +161,12 @@ AliFMDPattern::AliFMDPatternDetector::Begin(Int_t      nlevel,
   TStyle* style = gStyle;  
   if (nlevel < 1) nlevel = style->GetNumberOfColors();
   fCounts.Set(nlevel);
+  Double_t rr = 1.05 * r;
   if (!fFrame) {
     // The code-checker thinks this is not using the declaration of
     // TH2F - what a morron!   
     fFrame = new TH2F(Form("fmd%dFrame", fId), Form("FMD%d", fId), 
-		      10, -r, r, 10, -r, r);
+		      100, -rr, rr, 100, -rr, rr);
     fFrame->SetStats(kFALSE);
     fFrame->Draw();
   }
@@ -190,6 +191,7 @@ AliFMDPattern::AliFMDPatternDetector::Begin(Int_t      nlevel,
     g->SetFillColor(col);
     g->SetMarkerSize(i * .2 + .2);
     g->SetMarkerStyle(2);
+    g->SetEditable(kFALSE);
     g->Draw("same p");
     fGraphs.AddAtAndExpand(g, i);
   }
@@ -217,7 +219,18 @@ AliFMDPattern::AliFMDPatternDetector::End()
   TIter   next(&fGraphs);
   TGraph* g = 0;
   Int_t   i = 0;
-  while ((g = static_cast<TGraph*>(next()))) g->Set(fCounts[i++]);
+  while ((g = static_cast<TGraph*>(next()))) { 
+    Int_t cnt = fCounts[i++];
+    if (cnt > 0) { 
+      g->Set(cnt);
+      g->SetMarkerSize(i * .2 + .2);
+    }
+    else {
+      g->SetPoint(0,0,0);
+      g->SetMarkerSize(0);
+    }
+  }
+  
 }
 //____________________________________________________________________
 void

@@ -3,12 +3,12 @@
 void
 FullMapping()
 {
+  AliGeomManager::LoadGeometry("geometry.root");
   AliCDBManager*    cdb   = AliCDBManager::Instance();
   AliFMDParameters* param = AliFMDParameters::Instance();
   AliFMDGeometry*   geom  = AliFMDGeometry::Instance();
   cdb->SetDefaultStorage("local://$ALICE_ROOT");
   cdb->SetRun(0);
-  AliGeomManager::LoadGeometry();
   param->Init();
   geom->Init();
   geom->InitTransformations();

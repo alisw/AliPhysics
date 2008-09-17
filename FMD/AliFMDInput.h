@@ -38,6 +38,7 @@ class AliLoader;
 class AliStack;
 class AliRun;
 class AliRawReader;
+class AliFMDRawReader;
 class AliFMD;
 class AliFMDHit;
 class AliFMDDigit;
@@ -249,6 +250,7 @@ protected:
       fStack(0),
       fFMDLoader(0),
       fReader(0),
+      fFMDReader(0),
       fFMD(0),
       fESD(0),
       fESDEvent(0),
@@ -276,34 +278,35 @@ protected:
       @return  REference to this */
   AliFMDInput& operator=(const AliFMDInput&) { return *this; }
 
-  TString       fGAliceFile; // File name of gAlice file
-  AliRunLoader* fLoader;     // Loader of FMD data 
-  AliRun*       fRun;        // Run information
-  AliStack*     fStack;      // Stack of particles 
-  AliLoader*    fFMDLoader;  // Loader of FMD data 
-  AliRawReader* fReader;     // Raw data reader 
-  AliFMD*       fFMD;        // FMD object
-  AliESDFMD*    fESD;        // FMD ESD data  
-  AliESDEvent*  fESDEvent;   // ESD Event object. 
-  TTree*        fTreeE;      // Header tree 
-  TTree*        fTreeH;      // Hits tree
-  TTree*        fTreeD;      // Digit tree 
-  TTree*        fTreeS;      // SDigit tree 
-  TTree*        fTreeR;      // RecPoint tree
-  TTree*        fTreeA;      // Raw data tree
-  TChain*       fChainE;     // Chain of ESD's
-  TClonesArray* fArrayE;     // Event info array
-  TClonesArray* fArrayH;     // Hit info array
-  TClonesArray* fArrayD;     // Digit info array
-  TClonesArray* fArrayS;     // SDigit info array
-  TClonesArray* fArrayR;     // Rec points info array
-  TClonesArray* fArrayA;     // Raw data (digits) info array
-  AliHeader*    fHeader;     // Header 
-  TGeoManager*  fGeoManager; // Geometry manager
-  Int_t         fTreeMask;   // Which tree's to load
-  TString       fRawFile;    // Raw input file
-  Bool_t        fIsInit;     // Have we been initialized 
-  Int_t         fEventCount; // Event counter 
+  TString          fGAliceFile; // File name of gAlice file
+  AliRunLoader*    fLoader;     // Loader of FMD data 
+  AliRun*          fRun;        // Run information
+  AliStack*        fStack;      // Stack of particles 
+  AliLoader*       fFMDLoader;  // Loader of FMD data 
+  AliRawReader*    fReader;     // Raw data reader 
+  AliFMDRawReader* fFMDReader;  // FMD raw reader
+  AliFMD*          fFMD;        // FMD object
+  AliESDFMD*       fESD;        // FMD ESD data  
+  AliESDEvent*     fESDEvent;   // ESD Event object. 
+  TTree*           fTreeE;      // Header tree 
+  TTree*           fTreeH;      // Hits tree
+  TTree*           fTreeD;      // Digit tree 
+  TTree*           fTreeS;      // SDigit tree 
+  TTree*           fTreeR;      // RecPoint tree
+  TTree*           fTreeA;      // Raw data tree
+  TChain*          fChainE;     // Chain of ESD's
+  TClonesArray*    fArrayE;     // Event info array
+  TClonesArray*    fArrayH;     // Hit info array
+  TClonesArray*    fArrayD;     // Digit info array
+  TClonesArray*    fArrayS;     // SDigit info array
+  TClonesArray*    fArrayR;     // Rec points info array
+  TClonesArray*    fArrayA;     // Raw data (digits) info array
+  AliHeader*       fHeader;     // Header 
+  TGeoManager*     fGeoManager; // Geometry manager
+  Int_t            fTreeMask;   // Which tree's to load
+  TString          fRawFile;    // Raw input file
+  Bool_t           fIsInit;     // Have we been initialized 
+  Int_t            fEventCount; // Event counter 
   ClassDef(AliFMDInput,0)  //Hits for detector FMD
 };
 
