@@ -80,10 +80,6 @@ void AliTRDtrackingEfficiencyCombined::Exec(Option_t *){
 	Int_t labelsrej[10000];
 	Float_t momacc[10000];
 	Float_t momrej[10000];
-	if(!AliTracker::GetFieldMap()){
-		AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., AliMagFMaps::k5kG);
-		AliTracker::SetFieldMap(field, kTRUE);
-	}
 	TProfile *efficiency = (TProfile *)fContainer->At(0);
 	TProfile *contamination = (TProfile *)fContainer->At(1);
 	
@@ -112,7 +108,7 @@ void AliTRDtrackingEfficiencyCombined::Exec(Option_t *){
 				Int_t iref = 0;
 				while(!(trackRef = trkInf->GetTrackRef(iref++)));
 			}
-			if(!trackRef) printf("Error: Track Reference missing for Track %d\n", TRDtrack->GetLabel());
+			if(!trackRef) printf("Error: Track Reference missing for Track %d\n", trkInf->GetLabel());
 			mom =  trackRef ? trackRef->P() : TRDtrack->P();
 //           Accept track
 			if(fDebugLevel > 3)printf("Accept track\n");
