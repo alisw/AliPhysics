@@ -1,10 +1,10 @@
 /*
 Contact: cvetan.cheshkov@cern.ch
-Link: /afs/cern.ch/user/c/cheshkov/public/08000058338016.30.root.date.gz
+Link: http://alisoft.cern.ch/viewvc/trunk/ITS/ITSSPDVertexDiamondda.cxx?root=AliRoot&view=log , /afs/cern.ch/user/c/cheshkov/public/08000058338016.30.root.date.gz
 Reference Run: 58338
 Run Type: PHYSICS
 DA Type: MON
-Number of events needed: 1000
+Number of events needed: 100
 Input Files: GRP/Geometry/Data , ITS/Align/Data , spd_noisy_ocdb , spd_dead_ocdb
 Output Files: SPDVertexDiamondDA.root
 Trigger types used: PHYSICS
