@@ -75,7 +75,7 @@ void visscan_init()
   TEveUtil::LoadMacro("trd_clusters.C+");
   TEveUtil::LoadMacro("tof_clusters.C+");
 
-  TEveLine::SetDefaultSmooth(1);
+  // TEveLine::SetDefaultSmooth(1);
 
   TEveBrowser* browser = gEve->GetBrowser();
 
@@ -143,7 +143,8 @@ void on_new_event()
   g_trkcnt->Reset();
   g_trkcnt->SetEventId(gAliEveEvent->GetEventId());
   TEveElement::List_i i = cont->BeginChildren();
-  while (i != cont->EndChildren()) {
+  while (i != cont->EndChildren())
+  {
     TEveTrackList* l = dynamic_cast<TEveTrackList*>(*i);
     if (l != 0) {
       // l->SetLineWidth(2);

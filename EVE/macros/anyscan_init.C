@@ -28,7 +28,7 @@ void anyscan_init()
   TEveUtil::LoadMacro("alieve_init.C");
   alieve_init(".", -1);
 
-  TEveLine::SetDefaultSmooth(1);
+  // TEveLine::SetDefaultSmooth(1);
 
   TEveUtil::AssertMacro("VizDB_scan.C");
 

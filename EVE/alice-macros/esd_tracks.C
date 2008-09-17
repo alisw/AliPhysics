@@ -262,51 +262,62 @@ TEveElementList* esd_tracks_vertex_cut()
   TEveElementList* cont = new TEveElementList("ESD Tracks");
   gEve->AddElement(cont);
 
-  TEveTrackList *tl[6];
-  Int_t          tc[6];
+  const Int_t   nCont = 7;
+  const Float_t maxR  = 520;
+  const Float_t magF  = 0.1*esd->GetMagneticField();
+
+  TEveTrackList *tl[nCont];
+  Int_t          tc[nCont];
   Int_t          count = 0;
 
   tl[0] = new TEveTrackList("Sigma < 3");
   tc[0] = 0;
-  tl[0]->GetPropagator()->SetMagField( 0.1*esd->GetMagneticField() );
-  tl[0]->GetPropagator()->SetMaxR    ( 520 );
+  tl[0]->GetPropagator()->SetMagField(magF);
+  tl[0]->GetPropagator()->SetMaxR    (maxR);
   tl[0]->SetMainColor(3);
   gEve->AddElement(tl[0], cont);
 
   tl[1] = new TEveTrackList("3 < Sigma < 5");
   tc[1] = 0;
-  tl[1]->GetPropagator()->SetMagField( 0.1*esd->GetMagneticField() );
-  tl[1]->GetPropagator()->SetMaxR    ( 520 );
+  tl[1]->GetPropagator()->SetMagField(magF);
+  tl[1]->GetPropagator()->SetMaxR    (maxR);
   tl[1]->SetMainColor(7);
   gEve->AddElement(tl[1], cont);
 
   tl[2] = new TEveTrackList("5 < Sigma");
   tc[2] = 0;
-  tl[2]->GetPropagator()->SetMagField( 0.1*esd->GetMagneticField() );
-  tl[2]->GetPropagator()->SetMaxR    ( 520 );
+  tl[2]->GetPropagator()->SetMagField(magF);
+  tl[2]->GetPropagator()->SetMaxR    (maxR);
   tl[2]->SetMainColor(46);
   gEve->AddElement(tl[2], cont);
 
   tl[3] = new TEveTrackList("no ITS refit; Sigma < 5");
   tc[3] = 0;
-  tl[3]->GetPropagator()->SetMagField( 0.1*esd->GetMagneticField() );
-  tl[3]->GetPropagator()->SetMaxR    ( 520 );
+  tl[3]->GetPropagator()->SetMagField(magF);
+  tl[3]->GetPropagator()->SetMaxR    (maxR);
   tl[3]->SetMainColor(41);
   gEve->AddElement(tl[3], cont);
 
   tl[4] = new TEveTrackList("no ITS refit; Sigma > 5");
   tc[4] = 0;
-  tl[4]->GetPropagator()->SetMagField( 0.1*esd->GetMagneticField() );
-  tl[4]->GetPropagator()->SetMaxR    ( 520 );
+  tl[4]->GetPropagator()->SetMagField(magF);
+  tl[4]->GetPropagator()->SetMaxR    (maxR);
   tl[4]->SetMainColor(48);
   gEve->AddElement(tl[4], cont);
 
   tl[5] = new TEveTrackList("no TPC refit");
   tc[5] = 0;
-  tl[5]->GetPropagator()->SetMagField( 0.1*esd->GetMagneticField() );
-  tl[5]->GetPropagator()->SetMaxR    ( 520 );
+  tl[5]->GetPropagator()->SetMagField(magF);
+  tl[5]->GetPropagator()->SetMaxR    (maxR);
   tl[5]->SetMainColor(kRed);
   gEve->AddElement(tl[5], cont);
+
+  tl[6] = new TEveTrackList("ITS stand-alone");
+  tc[6] = 0;
+  tl[6]->GetPropagator()->SetMagField(magF);
+  tl[6]->GetPropagator()->SetMaxR    (maxR);
+  tl[6]->SetMainColor(kMagenta - 9);
+  gEve->AddElement(tl[6], cont);
 
   for (Int_t n = 0; n < esd->GetNumberOfTracks(); ++n)
   {
@@ -320,11 +331,15 @@ TEveElementList* esd_tracks_vertex_cut()
 
     AliExternalTrackParam* tp = at;
 
-    if (!at->IsOn(AliESDtrack::kTPCrefit))
+    if (at->IsOn(AliESDtrack::kITSin) && ! at->IsOn(AliESDtrack::kTPCin))
+    {
+      ti = 6;
+    }
+    else if (at->IsOn(AliESDtrack::kTPCin) && ! at->IsOn(AliESDtrack::kTPCrefit))
     {
       ti = 5;
     }
-    if (!at->IsOn(AliESDtrack::kITSrefit))
+    else if ( ! at->IsOn(AliESDtrack::kITSrefit))
     {
       ti = (ti == 2) ? 4 : 3;
     }
@@ -340,7 +355,7 @@ TEveElementList* esd_tracks_vertex_cut()
     gEve->AddElement(track, tlist);
   }
 
-  for (Int_t ti = 0; ti < 6; ++ti)
+  for (Int_t ti = 0; ti < nCont; ++ti)
   {
     TEveTrackList* tlist = tl[ti];
     tlist->SetName(Form("%s [%d]", tlist->GetName(), tlist->NumChildren()));
