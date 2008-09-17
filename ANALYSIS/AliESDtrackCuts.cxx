@@ -660,9 +660,9 @@ AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack) {
     cuts[20] = kTRUE;
   if (dcaToVertex > fCutDCAToVertex)
     cuts[21] = kTRUE;
-  if (dcaToVertexXY > fCutDCAToVertexXY)
+  if (TMath::Abs(dcaToVertexXY) > fCutDCAToVertexXY)
     cuts[22] = kTRUE;
-  if (dcaToVertexZ > fCutDCAToVertexZ)
+  if (TMath::Abs(dcaToVertexZ) > fCutDCAToVertexZ)
     cuts[23] = kTRUE;
 
   Bool_t cut=kFALSE;
