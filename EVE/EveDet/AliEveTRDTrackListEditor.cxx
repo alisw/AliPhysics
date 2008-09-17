@@ -377,7 +377,7 @@ void AliEveTRDTrackListEditor::DrawHistos()
                
       }
 
-      UpdateHistoCanvasTab();      
+      UpdateHistoCanvasTab();    
     }
     else
     {
@@ -516,7 +516,13 @@ Int_t AliEveTRDTrackListEditor::GetNSelectedHistograms()
 void AliEveTRDTrackListEditor::HandleMacroPathSet()
 {
   if (strlen(fteField->GetText()) != 0)
-  {         			
+  {  
+    // Expand the pathname
+    Char_t* systemPath = gSystem->ExpandPathName(fteField->GetText());
+    fteField->SetText(systemPath);
+    delete systemPath;
+    systemPath = 0;
+       			
     // Check if file exists
     FILE* fp = NULL;
 

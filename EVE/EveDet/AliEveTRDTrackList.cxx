@@ -257,6 +257,7 @@ void AliEveTRDTrackList::AddStandardMacros()
   // AddMacro("$(ALICE_ROOT)/myFolder", "myMacroName.C");
   // -> If the file does not exist, nothing happens. So if you want to handle this,
   // use the return value of AddMacro (NOT_EXIST_ERROR is returned, if file does not exist)
+  // (-> You can also check for other return values (see AddMacro(...)))
   AddMacro("$(ALICE_ROOT)/TRD/qaRec/macros", "clusterSelection.C");
   AddMacro("$(ALICE_ROOT)/TRD/qaRec/macros", "chargeDistr.C");
   AddMacro("$(ALICE_ROOT)/TRD/qaRec/macros", "clusterResiduals.C");
@@ -394,7 +395,14 @@ void AliEveTRDTrackList::ApplyProcessMacros(TList* iterator)
   for (Int_t i = 0, histoIndex = 0; i < iterator->GetEntries() && histoIndex < numHistoMacros; i++)
   {
     if (isHistoMacro[i])
-      (*fDataTree) << Form("TrackData%d", i) << Form("Macro%d=", i) << histos[histoIndex++] << (Char_t*)"\n";
+    {
+      // Might be empty (e.g. no tracks have been selected)!
+      if (histos[histoIndex] != 0)
+      {
+        (*fDataTree) << Form("TrackData%d", i) << Form("Macro%d=", i) << histos[histoIndex] << (Char_t*)"\n";
+      }
+      histoIndex++;
+    }
   }
 
   if (fDataTree != 0) delete fDataTree;
