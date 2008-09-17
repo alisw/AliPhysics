@@ -3,8 +3,15 @@ if ($#argv < 1) then
  echo "usage simrun.sh RunNumber"
  exit()
 endif
-cd $WORK/QATest
-rm -f *.root *.C *.log
+if ( ! -e $WORK ) then 
+ setenv $WORK ./
+endif
+cd $WORK
+if ( ! -e QATest ) then 
+ mkdir QATest
+endif    
+cd QATest
+rm -Rf DB* *.root *.C *.log data/*
 ln -si $ALICE_ROOT/test/QA/Config.C Config.C
 ln -si $ALICE_ROOT/test/QA/sim.C sim.C
 ln -si $ALICE_ROOT/test/QA/simqa.C simqa.C
@@ -13,8 +20,6 @@ ln -si $ALICE_ROOT/test/QA/recqa.C recqa.C
 ln -si $ALICE_ROOT/test/QA/DB.tgz DB.tgz
 root -b -q $ALICE_ROOT/test/QA/simrun.C --run $1
 cd $WORK/QATest/data
-rm -f *.root
-rm -f DB.tgz
 #ln -s ../geometry.root
 ln -s ../raw.root
 ln -s ../DB 
