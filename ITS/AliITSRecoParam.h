@@ -453,7 +453,7 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Float_t fTrackleterPhiOverlapCut;                // Fiducial window in phi for overlap cut
   Float_t fTrackleterZetaOverlapCut;               // Fiducial window in eta for overlap cut
 
-  ClassDef(AliITSRecoParam,10) // ITS reco parameters
+  ClassDef(AliITSRecoParam,11) // ITS reco parameters
 };
 
 #endif

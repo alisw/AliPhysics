@@ -115,7 +115,7 @@ protected:
 
   void LoadClusterArrays(TTree* tree);
 
-  ClassDef(AliITSMultReconstructor,3)
+  ClassDef(AliITSMultReconstructor,4)
 };
 
 #endif
