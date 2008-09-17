@@ -62,16 +62,12 @@ void TestZDCPreprocessor(Int_t obj=0)
   // the "online" naming convention ALICE-INT-2003-039.
   //
   shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "PEDESTALS", "LDC0", "ZDCPedestal.dat");
-  shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "PEDESTALS", "LDC0", "ZDCChMapping.dat");
   //
   shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "LASER", "LDC0", "ZDCLaserCalib.dat");
-  shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "LASER", "LDC0", "ZDCChMapping.dat");
   //
   shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "EMDCALIB", "LDC0", "ZDCEMDCalib.dat");
-  shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "EMDCALIB", "LDC0", "ZDCChMapping.dat");
   //
   shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "PHYSICS", "LDC0", "ZDCChMapping.dat");
-  shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "COSMICS", "LDC0", "ZDCChMapping.dat");
   //
   shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "BC", "LDC0", "ZDCChMapping.dat");
 

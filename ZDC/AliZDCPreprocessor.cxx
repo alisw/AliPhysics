@@ -73,24 +73,10 @@ void AliZDCPreprocessor::Initialize(Int_t run, UInt_t startTime,
 //______________________________________________________________________________________________
 UInt_t AliZDCPreprocessor::ProcessChMap(TString runType)
 { 
-  // Writing channel map in the OCDB
-  TList* daqSource=0;
-  
-  if(runType.CompareTo("STANDALONE_PEDESTAL"))
-    daqSource = GetFileSources(kDAQ, "PEDESTALS");
-  else if(runType.CompareTo("STANDALONE_LASER"))
-    daqSource = GetFileSources(kDAQ, "LASER");
-  else if(runType.CompareTo("STANDALONE_EMD"))
-    daqSource = GetFileSources(kDAQ, "EMDCALIB");
-  else if(runType.CompareTo("STANDALONE_COSMIC"))
-    daqSource = GetFileSources(kDAQ, "COSMICS");
-  else if(runType.CompareTo("STANDALONE_BC"))
-    daqSource = GetFileSources(kDAQ, "BC");
-  else if(runType.CompareTo("PHYSICS"))
-    daqSource = GetFileSources(kDAQ, "PHYSICS");
-  
+  // Reading the file for mapping from FXS
+  TList* daqSource = GetFileSources(kDAQ, runType.Data());
   if(!daqSource){
-    AliError(Form("No sources run %d for run type %s!", fRun, runType));
+    AliError(Form("No sources run %d for run type %s!", fRun, runType.Data()));
     return 1;
   }
   Log("\t List of sources "); daqSource->Print();
@@ -99,28 +85,16 @@ UInt_t AliZDCPreprocessor::ProcessChMap(TString runType)
   TObjString* source = 0;
   Int_t isou=0;
   Int_t res=999;
+  Int_t readMap[48][6]; 
+  //
   while((source = dynamic_cast<TObjString*> (iter.Next()))){
      Log(Form("\n\t Getting file #%d\n",++isou));
      TString fileName = "ZDCChMapping.dat";
-     /*if(runType.CompareTo("STANDALONE_PEDESTAL"))
-      fileName = GetFile(kDAQ, "PEDESTALS", source->GetName());
-     else if(runType.CompareTo("STANDALONE_LASER"))
-      fileName = GetFile(kDAQ, "LASER", source->GetName());
-     else if(runType.CompareTo("STANDALONE_EMD"))
-      fileName = GetFile(kDAQ, "EMDCALIB", source->GetName());
-     else if(runType.CompareTo("STANDALONE_COSMIC"))
-      fileName = GetFile(kDAQ, "COSMICS", source->GetName());
-     else if(runType.CompareTo("STANDALONE_BC"))
-      fileName = GetFile(kDAQ, "BC", source->GetName());
-     else if(runType.CompareTo("PHYSICS"))
-      fileName = GetFile(kDAQ, "PHYSICS", source->GetName());*/
 
      if(fileName.Length() <= 0){
        Log(Form("No file from source %s!", source->GetName()));
        return 1;
      }
-     // --- Initializing mapping calibration object
-     AliZDCChMap *mapCalib = new AliZDCChMap("ZDC");
      // --- Reading file with calibration data
      //const char* fname = fileName.Data();
      if(fileName){
@@ -131,15 +105,10 @@ UInt_t AliZDCPreprocessor::ProcessChMap(TString runType)
        }
        Log(Form("File %s connected to process data for ADC mapping", fileName.Data()));
        //
-       Int_t chMap[48][6]; 
        for(Int_t j=0; j<48; j++){	  
            for(Int_t k=0; k<6; k++){
-             fscanf(file,"%d",&chMap[j][k]);
+             fscanf(file,"%d",&readMap[j][k]);
            }
-	   mapCalib->SetADCModule(j,chMap[j][1]);
-	   mapCalib->SetADCChannel(j,chMap[j][2]);
-	   mapCalib->SetDetector(j,chMap[j][4]);
-	   mapCalib->SetSector(j,chMap[j][5]);
        }
        fclose(file);
      }
@@ -147,7 +116,44 @@ UInt_t AliZDCPreprocessor::ProcessChMap(TString runType)
        Log(Form("File %s not found", fileName.Data()));
        return 1;
      }
-     //mapCalib->Print("");
+  }
+  delete daqSource; daqSource=0;
+  
+  // Store the currently read map ONLY IF it is different
+  // from the entry in the OCDB
+  Bool_t updateOCDB = kFALSE;
+  
+  AliCDBEntry *cdbEntry = GetFromOCDB("Calib","ChMap");
+  if(!cdbEntry){
+    Log("\t AliZDCPreprocessor -> WARNING! No CDB entry for ch. mapping\n");
+    updateOCDB = kTRUE;
+  }
+  else{
+    AliZDCChMap *chMap = (AliZDCChMap*) cdbEntry->GetObject();
+    for(Int_t i=0; i<48; i++){
+      if(  (readMap[i][1] == chMap->GetADCModule(i)) 
+        && (readMap[i][2] == chMap->GetADCChannel(i)) 
+	&& (readMap[i][4] == chMap->GetDetector(i)) 
+	&& (readMap[i][5] == chMap->GetSector(i))){
+	 updateOCDB = kFALSE;
+      }
+      else updateOCDB = kTRUE;
+    }
+  }
+  //
+  if(updateOCDB==kTRUE){
+    Log("\t AliZDCPreprocessor -> A new entry ZDC/Calib/ChMap will be created");
+    //
+    // --- Initializing mapping calibration object
+    AliZDCChMap *mapCalib = new AliZDCChMap("ZDC");
+    // Writing channel map in the OCDB
+    for(Int_t k=0; k<48; k++){
+      mapCalib->SetADCModule(k,readMap[k][1]);
+      mapCalib->SetADCChannel(k,readMap[k][2]);
+      mapCalib->SetDetector(k,readMap[k][4]);
+      mapCalib->SetSector(k,readMap[k][5]);
+    }
+    //mapCalib->Print("");
     // 
     AliCDBMetaData metaData;
     metaData.SetBeamPeriod(0);
@@ -156,7 +162,11 @@ UInt_t AliZDCPreprocessor::ProcessChMap(TString runType)
     //
     res = Store("Calib","ChMap",mapCalib, &metaData, 0, 1);
   }
-  delete daqSource; daqSource=0;
+  else{
+    Log("\t AliZDCPreprocessor -> ZDC/Calib/ChMap entry in OCDB is valid and won't be updated\n");
+    res = kTRUE;
+  }
+
   
   return res;
 
@@ -221,25 +231,34 @@ printf("\n\t AliZDCPreprocessor -> beamType %s\n",beamType);
 printf("\t AliZDCPreprocessor -> runType  %s\n\n",runType.Data());
 
 if(strcmp(beamType,"p-p")==0){
-
-   // --- Initializing pedestal calibration object
-   AliZDCCalib *eCalib = new AliZDCCalib("ZDC");
-   //
-   for(Int_t j=0; j<6; j++) eCalib->SetEnCalib(j,1.);
-   for(Int_t j=0; j<5; j++){  
+   
+   // --- Cheking if there is already the entry in the OCDB
+   AliCDBEntry *cdbEntry = GetFromOCDB("Calib", "EMDCalib");
+   if(!cdbEntry){   
+     printf("\t AliZDCPreprocessor -> ZDC/Calib/EMDCalib entry will be created\n");
+     // --- Initializing calibration object
+     AliZDCCalib *eCalib = new AliZDCCalib("ZDC");
+     //
+     for(Int_t j=0; j<6; j++) eCalib->SetEnCalib(j,1.);
+     for(Int_t j=0; j<5; j++){  
         eCalib->SetZN1EqualCoeff(j, 1.);
         eCalib->SetZP1EqualCoeff(j, 1.);
         eCalib->SetZN2EqualCoeff(j, 1.);
         eCalib->SetZP2EqualCoeff(j, 1.);  
+     }
+     //eCalib->Print("");
+     // 
+     AliCDBMetaData metaData;
+     metaData.SetBeamPeriod(0);
+     metaData.SetResponsible("Chiara Oppedisano");
+     metaData.SetComment("AliZDCCalib object");  
+     //
+     resECal = Store("Calib","EMDCalib",eCalib, &metaData, 0, 1);
    }
-   //eCalib->Print("");
-   // 
-   AliCDBMetaData metaData;
-   metaData.SetBeamPeriod(0);
-   metaData.SetResponsible("Chiara Oppedisano");
-   metaData.SetComment("AliZDCCalib object");  
-   //
-   resECal = Store("Calib","EMDCalib",eCalib, &metaData, 0, 1);
+   else{
+     printf("\t AliZDCPreprocessor -> ZDC/Calib/EMDCalib object already existing in OCDB!!!\n");
+     resECal = kTRUE;
+   }
 }
 // ******************************************
 //   ZDC ADC channel mapping
