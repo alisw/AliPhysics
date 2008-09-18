@@ -99,3 +99,7 @@
 
 // FMD
 #pragma link C++ class AliEveFMDLoader+;
+
+// VZERO
+#pragma link C++ class AliEveVZEROModule+;
+#pragma link C++ class AliEveVZEROModuleEditor+;

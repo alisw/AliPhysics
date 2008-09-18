@@ -82,6 +82,7 @@ void anyscan_init()
   exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "FMD RAW",     "fmd_raw.C",     "fmd_raw",     "", kFALSE));
   exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "FMD DIGITS",  "fmd_digits.C",  "fmd_digits",  "", kFALSE));
   exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "FMD Hits",    "fmd_hits.C",    "fmd_hits",    "", kFALSE));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "VZERO RAW",   "vzero_raw.C",   "vzero_raw",   "", kFALSE));
 
   exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX",         "primary_vertex.C", "primary_vertex",             "",                kTRUE));
   exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX Ellipse", "primary_vertex.C", "primary_vertex_ellipse",     "",                kTRUE));

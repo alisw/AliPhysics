@@ -6,7 +6,7 @@ HDRS     := $(SRCS:.cxx=.h)
 
 DHDR     := EveDet/LinkDef.h
 
-EINCLUDE := RAW EMCAL ITS TPC TRD TOF T0 MUON MUON/mapping PMD HLT/BASE HLT/BASE/HOMER
+EINCLUDE := RAW EMCAL ITS TPC TRD TOF T0 MUON MUON/mapping PMD HLT/BASE HLT/BASE/HOMER VZERO
 
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKCXXFLAGS:= $(CXXFLAGS) -I/usr/X11R6/include
@@ -16,6 +16,7 @@ PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
                          -lMUONgeometry -lMUONmapping -lMUONrec -lMUONsim -lMUONbase -lMUONcore \
                          -lPMDbase -lT0base -lTOFbase -lTOFsim -lTPCbase -lTRDbase -lTRDrec \
                          -lFMDbase -lFMDrec -lEMCALbase \
+			 -lVZERObase -lVZEROrec \
                          -lRAWDatarec -lRAWDatabase \
                          -L$(shell root-config --libdir) -lEve -lRGL -lGed -lGui -lGeom -lEG
 
