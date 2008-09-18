@@ -18,17 +18,30 @@
 #pragma link C++ class AliRsnEventBuffer+;
 
 #pragma link C++ class AliRsnReader+;
+#pragma link C++ class AliRsnReaderTask+;
 #pragma link C++ class AliRsnReaderTaskSE+;
 
 #pragma link C++ class AliRsnPairDef+;
 #pragma link C++ class AliRsnHistoDef+;
 
-#pragma link C++ class AliRsnSimpleFunction+;
-#pragma link C++ class AliRsnSimpleFcnInvMass+;
-#pragma link C++ class AliRsnSimpleFcnResolution+;
+#pragma link C++ class AliRsnFunction+;
 
-#pragma link C++ class AliRsnSimpleAnalysis+;
-#pragma link C++ class AliRsnSimpleAnalyzer+;
-#pragma link C++ class AliRsnSimpleAnalysisTaskSE+;
+#pragma link C++ class AliRsnPair+;
+#pragma link C++ class AliRsnPairMgr+;
+
+#pragma link C++ class AliRsnAnalysisTaskSEBase+;
+#pragma link C++ class AliRsnBaseAT+;
+#pragma link C++ class AliRsnAnalysisSE+;
+#pragma link C++ class AliRsnAnalysisTask2ndStep+;
+#pragma link C++ class AliRsnComparisonObj+;
+#pragma link C++ class AliRsnComparisonAT+;
+
+//#pragma link C++ class AliRsnSimpleFunction+;
+//#pragma link C++ class AliRsnSimpleFcnInvMass+;
+//#pragma link C++ class AliRsnSimpleFcnResolution+;
+
+//#pragma link C++ class AliRsnSimpleAnalysis+;
+//#pragma link C++ class AliRsnSimpleAnalyzer+;
+//#pragma link C++ class AliRsnSimpleAnalysisTaskSE+;
 
 #endif
