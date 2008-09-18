@@ -13,15 +13,25 @@ SRCS= RESONANCES/AliRsnMCInfo.cxx \
       RESONANCES/AliRsnEvent.cxx \
       RESONANCES/AliRsnEventBuffer.cxx \
       RESONANCES/AliRsnReader.cxx \
+      RESONANCES/AliRsnReaderTask.cxx \
       RESONANCES/AliRsnReaderTaskSE.cxx \
       RESONANCES/AliRsnPairDef.cxx \
       RESONANCES/AliRsnHistoDef.cxx \
-      RESONANCES/AliRsnSimpleFunction.cxx \
-      RESONANCES/AliRsnSimpleFcnInvMass.cxx \
-      RESONANCES/AliRsnSimpleFcnResolution.cxx \
-      RESONANCES/AliRsnSimpleAnalysis.cxx \
-      RESONANCES/AliRsnSimpleAnalyzer.cxx \
-      RESONANCES/AliRsnSimpleAnalysisTaskSE.cxx \
+      RESONANCES/AliRsnFunction.cxx \
+      RESONANCES/AliRsnPair.cxx \
+      RESONANCES/AliRsnPairMgr.cxx \
+      RESONANCES/AliRsnAnalysisTaskSEBase.cxx \
+      RESONANCES/AliRsnBaseAT.cxx \
+      RESONANCES/AliRsnAnalysisSE.cxx \
+      RESONANCES/AliRsnAnalysisTask2ndStep.cxx \
+      RESONANCES/AliRsnComparisonObj.cxx \
+      RESONANCES/AliRsnComparisonAT.cxx \
+#      RESONANCES/AliRsnSimpleFunction.cxx \
+#      RESONANCES/AliRsnSimpleFcnInvMass.cxx \
+#      RESONANCES/AliRsnSimpleFcnResolution.cxx \
+#      RESONANCES/AliRsnSimpleAnalysis.cxx \
+#      RESONANCES/AliRsnSimpleAnalyzer.cxx \
+#      RESONANCES/AliRsnSimpleAnalysisTaskSE.cxx \
 
 HDRS= $(SRCS:.cxx=.h)
 
