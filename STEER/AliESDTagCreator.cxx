@@ -30,6 +30,7 @@
 #include <TObjString.h>
 #include <TLorentzVector.h>
 #include <TMap.h>
+#include <TTimeStamp.h>
 
 //ROOT-AliEn
 #include <TGrid.h>
@@ -1162,11 +1163,30 @@ void AliESDTagCreator::CreateTag(TFile* file, const char *filepath, Int_t Counte
 }
 
 //_____________________________________________________________________________
-void AliESDTagCreator::CreateESDTags(Int_t fFirstEvent, Int_t fLastEvent, TMap */* grpData */) {
+void AliESDTagCreator::CreateESDTags(Int_t fFirstEvent, Int_t fLastEvent, TMap *grpData) {
   //GRP
   Float_t lhcLuminosity = 0.0;
   TString lhcState = "test";
   UInt_t detectorMask = 0;
+
+  TObjString *s = new TObjString;
+  s = (TObjString *)grpData->GetValue("fDetectorMask");
+  detectorMask = atoi(s->GetString().Data());
+  
+  s = (TObjString *)grpData->GetValue("fAliceStartTime");
+  Float_t startTime = atof(s->GetString().Data());
+  TTimeStamp *t1 = new TTimeStamp(startTime);
+
+  s = (TObjString *)grpData->GetValue("fAliceStopTime");
+  Float_t stopTime = atof(s->GetString().Data());
+  TTimeStamp *t2 = new TTimeStamp(stopTime);
+
+  s = (TObjString *)grpData->GetValue("fAliceBeamType");
+  const char* beamtype = s->GetString().Data();
+
+  s = (TObjString *)grpData->GetValue("fAliceBeamEnergy");
+  Float_t beamenergy = atof(s->GetString().Data());
+
 
   /////////////
   //muon code//
@@ -1442,6 +1462,11 @@ void AliESDTagCreator::CreateESDTags(Int_t fFirstEvent, Int_t fLastEvent, TMap *
     tag->SetDetectorTag(detectorMask);
 
     tag->SetRunId(iInitRunNumber);
+    tag->SetRunStartTime(t1->GetDate());
+    tag->SetRunStopTime(t2->GetDate());
+    tag->SetBeamEnergy(beamenergy);
+    tag->SetBeamType(beamtype);
+
     tag->AddEventTag(*evTag);
   }
 	
