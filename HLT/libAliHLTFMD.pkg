@@ -1,0 +1,33 @@
+#-*- Mode: Makefile -*-
+
+CLASS_HDRS:=  	AliHLTFMDReconstructionComponent.h \
+		AliHLTAgentFMD.h
+MODULE_SRCS= 	$(CLASS_HDRS:.h=.cxx)
+
+MODULE_HDRS:= 	$(CLASS_HDRS)
+
+MODULE_DHDR:= 		
+
+EINCLUDE := HLT/BASE HLT/FMD STEER RAW FMD
+
+LIBRARY_DEP :=  -lHLTbase -lAliHLTUtil -lRAWDatarec -lRAWDatabase \
+                -lESD -lSTEER -lSTEERBase -lFMDbase -lFMDrec \
+                -L$(shell root-config --libdir)
+
+###############################################################################
+#
+# do not change anything below this line
+#
+include $(MODDIR)/hlt.conf
+
+SRCS:=$(patsubst %,FMD/%,$(MODULE_SRCS))
+CINTHDRS:=$(patsubst %,FMD/%,$(CLASS_HDRS))
+HDRS:=$(patsubst %,FMD/%,$(MODULE_HDRS))
+DHDR:=$(patsubst %,FMD/%,$(MODULE_DHDR))
+CINTAUTOLINK:= $(shell test "x$(MODULE_DHDR)" = "x" && echo 1)
+
+EDEFINE      := ${HLTDEFS}
+PACKCXXFLAGS := ${HLTCXXFLAGS}
+PACKCFLAGS   := ${HLTCLFAGS}
+PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
+PACKSOFLAGS  := $(HLTSOFLAGS)

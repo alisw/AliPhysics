@@ -759,6 +759,45 @@ AC_MSG_RESULT([$enable_module])
 AC_SUBST([ALITRD_LIBS])
 
 dnl ------------------------------------------------------------------
+AH_TEMPLATE([HLT_FMD],[hlt fmd library])
+
+ALIFMD_LIBS=$ALIHLTMODULE_LIBS
+CHECK_HLTMODULE([fmd],
+		[], [],
+		[], [-L$ROOTLIBDIR], [$ROOTLIBS $ADD_ROOTLIBS],
+		[], [-L$ROOTLIBDIR $ALIROOT_LDFLAGS],
+		[$ROOTLIBS $ADD_ROOTLIBS $ALIROOT_LIBS])
+
+if test "x$enable_module" = "xmissheader"; then
+  enable_module="no...requires.AliRoot>v4-15-Release"
+  enable_fmd="no...requires.AliRoot>v4-15-Release"
+elif test "x$enable_module" = "xforce"; then
+  enable_fmd="yes"
+else
+  enable_fmd=$enable_module
+  if test "x$enable_fmd" = "xyes" ; then
+    AC_LANG_PUSH(C++)
+    save_CPPFLAGS="$CPPFLAGS"
+    CPPFLAGS="$save_CPPFLAGS $ALIROOT_CPPFLAGS -I$ALICE_ROOT/FMD"
+    AC_MSG_RESULT([$enable_fmd])
+    AC_LANG_POP(C++)
+    CPPFLAGS="$save_CPPFLAGS"
+  fi
+fi
+
+if test "x$enable_fmd" = "xyes" ; then
+  AC_DEFINE(HLT_FMD)
+  ALIFMD_LIBS=$ALIHLTMODULE_LIBS
+else
+  enable_module=$enable_fmd
+fi
+AM_CONDITIONAL(EN_HLT_FMD, test x$enable_fmd = xyes)
+AC_MSG_CHECKING([whether to compile FMD library])
+AC_MSG_RESULT([$enable_module])
+AC_SUBST([ALIFMD_LIBS])
+
+
+dnl ------------------------------------------------------------------
 AH_TEMPLATE([HLT_MUON],[hlt dimuon library])
 
 ALIMUON_LIBS=

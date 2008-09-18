@@ -172,6 +172,9 @@ const char kAliHLTDataOriginTPC[kAliHLTComponentDataTypefOriginSize]     = {'T',
 /** PHOS */
 const char kAliHLTDataOriginPHOS[kAliHLTComponentDataTypefOriginSize]    = {'P','H','O','S'};
 
+/** FMD */
+const char kAliHLTDataOriginFMD[kAliHLTComponentDataTypefOriginSize]     = {'F','M','D',' '};
+
 /** MUON */
 const char kAliHLTDataOriginMUON[kAliHLTComponentDataTypefOriginSize]    = {'M','U','O','N'};
 

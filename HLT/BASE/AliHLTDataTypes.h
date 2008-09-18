@@ -99,6 +99,11 @@ extern const char kAliHLTDataOriginTPC[kAliHLTComponentDataTypefOriginSize];
  */
 extern const char kAliHLTDataOriginPHOS[kAliHLTComponentDataTypefOriginSize];
 
+/** Data origin FMD
+ * @ingroup alihlt_component_datatypes
+ */
+extern const char kAliHLTDataOriginFMD[kAliHLTComponentDataTypefOriginSize];
+
 /** Data origin MUON 
  * @ingroup alihlt_component_datatypes
  */

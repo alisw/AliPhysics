@@ -1,0 +1,140 @@
+# $Id: Makefile.am 22826 2007-12-07 00:19:58Z richterm $
+# Makefile template for the Alice HLT sample library
+
+# This files defines the autotools-based build system of the
+# libAliHLTSample library. All lines starting with a '#' are comments.
+# Note: Source files definitions must be made in libAliHLTSample.pkg
+# For further information refer to the README.
+
+MODULE 				= AliHLTFMD
+
+EXTRA_DIST			= 
+
+# include the pkg definition which actually contains the source
+# file definitions
+MODDIR				= $(top_srcdir)
+PKGDEF				= $(MODDIR)/libAliHLTFMD.pkg
+include $(top_srcdir)/libAliHLTFMD.pkg
+
+
+# library definition
+# The lib_LTLIBRARIES variable is a fixed variable of the autotools build
+# system. All libraries defined by the Makefile template have to be added
+# here. Since we aim for separated directories for different libraries
+# there will be only one library.
+lib_LTLIBRARIES			=  libAliHLTFMD.la
+
+# version info for the library
+# The libtool program is used to created the library, a version number can
+# be specified by using the -version-info flag. This flag accepts an argument
+# of the form current[:revision[:age]].
+# If either revision or age are omitted, they default to 0. Also note that
+# age must be less than or equal to the current interface number. Here are a
+# set of rules to help you update your library version information:
+#
+#   1. Start with version information of 0:0:0 for each libtool library.
+#   2. Update the version information only immediately before a public release
+#      of your software. More frequent updates are unnecessary, and only
+#      guarantee that the current interface number gets larger faster.
+#   3. If the library source code has changed at all since the last update,
+#      then increment revision (c:r:a becomes c:r+1:a).
+#   4. If any interfaces have been added, removed, or changed since the last
+#      update, increment current, and set revision to 0.
+#   5. If any interfaces have been added since the last public release, then
+#      increment age.
+#   6. If any interfaces have been removed since the last public release, then
+#      set age to 0. 
+LIBRARY_VERSION			= '1:0:0'
+
+# library sources
+# The source files are specified in libAliHLTFMD.pkg
+libAliHLTFMD_la_SOURCES	=  $(MODULE_SRCS)
+
+# library headers
+# The header files are specified in libAliHLTFMD.pkg
+noinst_HEADERS			=  $(MODULE_HDRS)
+
+# compilation flags of the library
+# This is the place to add further include directories if you are
+# using external modules. The AliRoot/STEER and ROOT directories
+# are the default include directories.
+# Include paths within the HLT modules are automatically taken from the
+# EINCLUDE variable of the pkg definition
+# other AliRoot dependencies might need to added
+AM_CPPFLAGS			= -DMODULE=$(MODULE) \
+				  @HLTBASE_CPPFLAGS@ \
+				  @ALIROOT_CPPFLAGS@ \
+				  @ROOTCFLAGS@ \
+				  $(foreach i, $(EINCLUDE),  \
+					$(shell echo $(i) | sed -e "/HLT\//!d" -e "s|HLT/|-I$(top_srcdir)/|")) \
+				  $(foreach i, $(EINCLUDE),  \
+					$(shell echo $(i) | sed -e "/HLT\//d" -e "s|^|-I$(ALICE_ROOT)/|"))
+
+# linking flags of the library
+# This is the place to add further libraries if you are
+# using external modules. The AliRoot, ROOT and HLT base libraries
+# are added by default.
+# Also the version of the library 
+# FMD libraries have been added here explicitly
+#
+libAliHLTFMD_la_LDFLAGS	= -L@ROOTLIBDIR@ \
+				  @ROOTLIBS@ \
+				  @HLTBASE_LDFLAGS@ \
+				  @ALIROOT_LDFLAGS@ \
+				  @ALIROOT_LIBS@ \
+                                  @ALIFMD_LIBS@ \
+                                  -lFMDbase -lFMDrec \
+				  -version-info $(LIBRARY_VERSION)
+
+# automatic generation of data and time of library build
+COMPILE_INFO			=  AliHLTFMDCompileInfo.cxx
+
+# set the file name for the generated root dictionary
+DICTCPP				=  AliHLTFMD-DICT.cxx
+nodist_libAliHLTFMD_la_SOURCES= $(COMPILE_INFO) \
+				   $(DICTCPP)
+
+CLEANFILES			= $(COMPILE_INFO)
+
+###############################################################################
+#
+# do not change anything below this line
+#
+DICTDEF				=  $(MODULE)-LinkDef.h
+DICTFILES			=  $(DICTCPP) $(DICTCPP:.cxx=.h) $(DICTDEF)
+DICTHEADERS			=  $(CLASS_HDRS)
+
+CLEANFILES			+= $(DICTFILES)
+
+# the rootcint buffer for macros is limited to 1024 characters
+# we have to filter out some of the defines
+DEFFILTER			= -DPACKAGE* -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DHAVE_DLFCN_H=1
+
+
+$(DICTCPP:.cxx=.h): $(DICTCPP)
+	if test $@ ; then : ; else rm -f $< ; $(MAKE) $(MAKEFLAGS) $< ; fi 
+
+$(DICTCPP): $(DICTHEADERS:%=$(srcdir)/%) $(DICTDEF)
+	if [ -x $(ROOTCINT) ]; then $(ROOTCINT) -f $@ -c $(CPPFLAGS) $(AM_CPPFLAGS) \
+	 `for i in $(DEFS);do case $$i in $(foreach def, $(DEFFILTER), $(def) |) -DVERSION*);; *) echo -n " $$i";; esac; done` \
+	 $(foreach i, $(DICTINCLUDE), $(i)) \
+	 $^ ; fi
+
+$(DICTDEF): Makefile.am $(PKGDEF)
+	@echo '//automatically generated ROOT DICT definition' > $@
+	@echo '//!!! DO NOT EDIT THIS FILE !!!' >> $@
+	@echo '//add further class definitions to the CLASS_HDRS variable in Makefile.am' >> $@
+	@echo '#ifdef __CINT__' >> $@
+	@echo '#pragma link off all globals;' >> $@
+	@echo '#pragma link off all classes;' >> $@
+	@echo '#pragma link off all functions;' >> $@
+	@$(foreach i, $(DICTHEADERS), \
+	   echo "#pragma link C++ class `echo $(i) | sed -e "s|.*/||g" -e "s|\.h.*||"`;" >> $@ ;)
+	@echo '#endif' >> $@
+
+$(COMPILE_INFO): $(libAliHLTFMD_la_SOURCES) $(pkginclude_HEADERS) $(noinst_HEADERS) Makefile.am
+	@echo '//automatically generated compilation info' > $@
+	@echo '//!!! DO NOT EDIT THIS FILE !!!' >> $@
+	@echo '//add changes in Makefile.am' >> $@
+	@echo 'extern "C" void CompileInfo( char*& date, char*& time)' >> $@
+	@echo '{date=__DATE__; time=__TIME__; return;}' >> $@
