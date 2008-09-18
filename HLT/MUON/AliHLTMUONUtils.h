@@ -1083,10 +1083,11 @@ public:
 	static bool RecordNumberWasSet(WhyNotValid reason);
 
 private:
+
 	// Should never have to create, copy or destroy this object.
-	AliHLTMUONUtils();
+	AliHLTMUONUtils() {}
 	AliHLTMUONUtils(const AliHLTMUONUtils& obj);
-	virtual ~AliHLTMUONUtils();
+	virtual ~AliHLTMUONUtils() {}
 	AliHLTMUONUtils& operator = (const AliHLTMUONUtils& obj);
 	
 	ClassDef(AliHLTMUONUtils, 0);  // Interface for helpful dHLT utility methods.

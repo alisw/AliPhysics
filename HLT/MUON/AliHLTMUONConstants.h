@@ -270,10 +270,11 @@ public:
 private:
 
 	// Should never have to create, destroy or copy this object.
-	AliHLTMUONConstants();
+	AliHLTMUONConstants() {}
 	AliHLTMUONConstants(const AliHLTMUONConstants& obj);
-	virtual ~AliHLTMUONConstants();
+	virtual ~AliHLTMUONConstants() {}
 	AliHLTMUONConstants& operator = (const AliHLTMUONConstants& obj);
+	
 	
 	// The following are null/nil structures that can also be used as sentinels:
 	static const AliHLTMUONTriggerRecordStruct fgkNilTriggerRecordStruct; // Nil trigger record.
