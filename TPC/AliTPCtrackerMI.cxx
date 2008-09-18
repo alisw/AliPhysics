@@ -2662,13 +2662,15 @@ Int_t AliTPCtrackerMI::RefitInward(AliESDEvent *event)
       AliExternalTrackParam paramIn;
       AliExternalTrackParam paramOut;
       Int_t ncl = seed->RefitTrack(seed,&paramIn,&paramOut);
-      (*fDebugStreamer)<<"RecoverIn"<<
-	"seed.="<<seed<<
-	"esd.="<<esd<<
-	"pin.="<<&paramIn<<
-	"pout.="<<&paramOut<<
-	"ncl="<<ncl<<
-	"\n";
+      if (AliTPCReconstructor::StreamLevel()>0) {
+	(*fDebugStreamer)<<"RecoverIn"<<
+	  "seed.="<<seed<<
+	  "esd.="<<esd<<
+	  "pin.="<<&paramIn<<
+	  "pout.="<<&paramOut<<
+	  "ncl="<<ncl<<
+	  "\n";
+      }
       if (ncl>15) {
 	seed->Set(paramIn.GetX(),paramIn.GetAlpha(),paramIn.GetParameter(),paramIn.GetCovariance());
 	seed->SetNumberOfClusters(ncl);
