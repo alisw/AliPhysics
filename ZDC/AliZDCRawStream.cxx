@@ -61,6 +61,8 @@ AliZDCRawStream::AliZDCRawStream(AliRawReader* rawReader) :
   fADCChannel(-1),	 
   fADCValue(-1),	 
   fADCGain(-1),
+  fIsUnderflow(kFALSE),
+  fIsOverflow(kFALSE),
   fScNWords(0),	  
   fScGeo(0),	  
   fScTS(0),	  
@@ -105,6 +107,8 @@ AliZDCRawStream::AliZDCRawStream(const AliZDCRawStream& stream) :
   fADCChannel(stream.GetADCChannel()),	 
   fADCValue(stream.GetADCValue()),	 
   fADCGain(stream.GetADCGain()),
+  fIsUnderflow(stream.fIsUnderflow),
+  fIsOverflow(stream.fIsOverflow),
   fScNWords(stream.GetScNWords()),	  
   fScGeo(stream.GetScGeo()),	  
   fScTS(stream.GetScTS()),	  
@@ -246,6 +250,9 @@ Bool_t AliZDCRawStream::Next()
   if(!fRawReader->ReadNextInt((UInt_t&) fBuffer)) return kFALSE;
   fIsChMapping = kFALSE; fIsADCHeader = kFALSE; 
   fIsADCDataWord = kFALSE; fIsADCEOB = kFALSE;
+  fIsUnderflow = kFALSE;
+  fIsOverflow = kFALSE; 
+  fSector[0]=fSector[1] = -1;
   
   fEvType = fRawReader->GetType();
   //printf("\n\t AliZDCRawStream::Next() -> ev. type %d\n",fEvType);
@@ -462,7 +469,7 @@ Bool_t AliZDCRawStream::Next()
     fADCModule = ((fBuffer & 0xf8000000)>>27);
     if(fADCModule == kScalerAddress){
       DecodeScaler();
-    }
+    } 
     else{//ADC module
       // *** End of event
       if(fBuffer == 0xcafefade){
@@ -483,72 +490,57 @@ Bool_t AliZDCRawStream::Next()
     	
 	//printf("  AliZDCRawStream -> DATA: ADC mod. %d ch. %d gain %d value %d\n",
 	//  fADCModule,fADCChannel,fADCGain,fADCValue);
-
-	// Valid ADC data (not underflow nor overflow)
-        if(!(fBuffer & 0x1000) && !(fBuffer & 0x2000)){ 
 	
-	  // Checking if the channel map for the ADCs has been provided/read
-	  if(fMapADC[0][0]==-1){
-	    printf("\t ATTENTION!!! No ADC mapping has been found/provided!!!\n");
-	    return kFALSE;
-	    // Temporary solution (to be changed!!!!)
-	    // mapping read from ShuttleInput dir
-	    /*char * mapFileName=gSystem->ExpandPathName("$(ALICE_ROOT)/ZDC/ShuttleInput/ZDCChMapping.dat");
-	    FILE *file; 
-	    Int_t ival[48][6];
-	    if((file = fopen(mapFileName,"r")) != NULL){
-	      for(Int_t j=0; j<48; j++){
-	        for(Int_t k=0; k<6; k++){
-	          fscanf(file,"%d",&ival[j][k]);
-		}
-		fMapADC[j][0] = ival[j][1];
-		fMapADC[j][1] = ival[j][2];
-		fMapADC[j][2] = ival[j][3];
-		fMapADC[j][3] = ival[j][4];
-		fMapADC[j][4] = ival[j][5];
-              }
-  	    }
-	    else{
-     		printf("File %s not found\n",mapFileName);
-     		return kFALSE;
-	    }*/
-	  }
-	  //
-	  /*for(Int_t ci=0; ci<48; ci++){
-	    printf("  %d mod. %d ch. %d signal %d\n",ci,fMapADC[ci][0],
-            fMapADC[ci][1], fMapADC[ci][2]);
-	  }
-	  */
-	  
-	  // Scan of the map to assign the correct volumes
-	  for(Int_t k=0; k<48; k++){
-	     if(fADCModule==fMapADC[k][0] && fADCChannel==fMapADC[k][1]){
-	       fSector[0] = fMapADC[k][3];
-	       fSector[1] = fMapADC[k][4];
-	       break;
-	     } 
-	  }
-	  //
-	  //printf("AliZDCRawStream -> ADCmod. %d ADCch %d det %d, sec %d\n",
-	  //  fADCModule,fADCChannel,fSector[0],fSector[1]);
-	  
-	  // Final checks
-	  if(fSector[0]<1 || fSector[0]>5){
-            AliError(Form("	 AliZDCRawStream -> No valid detector assignment: %d\n",fSector[0]));
-            fRawReader->AddMajorErrorLog(kInvalidSector);
-	  }
-	  //
-	  if(fSector[1]<0 || fSector[1]>5){
-            AliError(Form("	 AliZDCRawStream -> No valid sector assignment: %d\n",fSector[1]));
-            fRawReader->AddMajorErrorLog(kInvalidSector);
-	  }
-	  //
-	  if(fADCModule<0 || fADCModule>3){
-            AliError(Form("	 AliZDCRawStream -> No valid ADC module: %d\n",fADCModule));
-            fRawReader->AddMajorErrorLog(kInvalidADCModule);
-          }
+	// Checking if the channel map for the ADCs has been provided/read
+	if(fMapADC[0][0]==-1){
+	  printf("\t ATTENTION!!! No ADC mapping has been found/provided!!!\n");
+	  return kFALSE;
+	}
+	//
+	/*for(Int_t ci=0; ci<48; ci++){
+	  printf("  %d mod. %d ch. %d detector %d sector %d\n",ci,fMapADC[ci][0],
+          fMapADC[ci][1], fMapADC[ci][3], fMapADC[ci][4]);
+	}*/
+		
+	// Scan of the map to assign the correct volumes
+	Int_t foundMapEntry = kFALSE;
+	for(Int_t k=0; k<48; k++){
+	   if(fADCModule==fMapADC[k][0] && fADCChannel==fMapADC[k][1]){
+	     fSector[0] = fMapADC[k][3];
+	     fSector[1] = fMapADC[k][4];
+	     foundMapEntry = kTRUE;
+	     break;
+	   } 
+	}
+	if(foundMapEntry==kFALSE){
+	  AliWarning(Form("AliZDCRawStream -> No valid entry found in ADC mapping\n"));
+	  AliWarning(Form("\t for raw data %d ADCmod. %d ch. %d gain %d\n",
+	      fPosition,fADCModule,fADCChannel,fADCGain));
+	}
+	//
+	//printf("AliZDCRawStream -> ADCmod. %d ch. %d gain %d -> det %d sec %d\n",
+	//  fADCModule,fADCChannel,fADCGain,fSector[0],fSector[1]);
+	
+	// Final checks
+	if(fSector[0]<1 || fSector[0]>5){
+          AliError(Form("      AliZDCRawStream -> No valid detector assignment: %d\n",fSector[0]));
+          fRawReader->AddMajorErrorLog(kInvalidSector);
+	}
+	//
+	if(fSector[1]<0 || fSector[1]>5){
+          AliError(Form("      AliZDCRawStream -> No valid sector assignment: %d\n",fSector[1]));
+          fRawReader->AddMajorErrorLog(kInvalidSector);
+	}
+	//
+	if(fADCModule<0 || fADCModule>3){
+          AliError(Form("      AliZDCRawStream -> No valid ADC module: %d\n",fADCModule));
+          fRawReader->AddMajorErrorLog(kInvalidADCModule);
+        }
 
-        }//No underflow nor overflow	
+	// Checking the underflow and overflow bits
+        if(fBuffer & 0x1000)       fIsUnderflow = kTRUE;
+	else if (fBuffer & 0x2000) fIsOverflow = kTRUE; 
+        	
       }//ADC data word
       // *** ADC EOB
       else if((fBuffer & 0x07000000) == 0x04000000){

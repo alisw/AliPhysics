@@ -133,6 +133,8 @@ class AliZDCRawStream: public TObject {
     Int_t  fADCChannel;   // ADC channel
     Int_t  fADCValue;	  // ADC channel
     Int_t  fADCGain;	  // ADC gain (0=high range; 1=low range)
+    Bool_t fIsUnderflow;  // ADC underflow
+    Bool_t fIsOverflow;   // ADC overflow
     
     // Scaler
     UInt_t fScNWords;        // no. of words in scaler event
