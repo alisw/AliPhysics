@@ -1086,7 +1086,7 @@ private:
 	// Should never have to create, copy or destroy this object.
 	AliHLTMUONUtils();
 	AliHLTMUONUtils(const AliHLTMUONUtils& obj);
-	~AliHLTMUONUtils();
+	virtual ~AliHLTMUONUtils();
 	AliHLTMUONUtils& operator = (const AliHLTMUONUtils& obj);
 	
 	ClassDef(AliHLTMUONUtils, 0);  // Interface for helpful dHLT utility methods.
