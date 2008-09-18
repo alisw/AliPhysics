@@ -18,25 +18,25 @@ class AliRsnExpression : public TObject
 {
 
   public:
-  
-  // operators for complex cut expressions
+
+    // operators for complex cut expressions
     enum ECutOp
     {
-        kOpAND=1,   // AND '&'
-        kOpOR,      // OR '|'
-        kOpNOT      // Unary negation '!'
+      kOpAND=1,   // AND '&'
+      kOpOR,      // OR '|'
+      kOpNOT      // Unary negation '!'
     };
-  
-    AliRsnExpression() : fVname ( 0 ), fArg1 ( 0 ), fArg2 ( 0 ), fOperator ( 0 )  {}
-    AliRsnExpression ( TString exp );
-    virtual    ~AliRsnExpression();
-    AliRsnExpression ( const AliRsnExpression& exp );
-    AliRsnExpression&    operator= ( const AliRsnExpression& exp );
 
-    virtual Bool_t     Value ( TObjArray & vars );
+    AliRsnExpression() : fVname(0), fArg1(0), fArg2(0), fOperator(0)  {}
+    AliRsnExpression(TString exp);
+    virtual    ~AliRsnExpression();
+    AliRsnExpression(const AliRsnExpression& exp);
+    AliRsnExpression&    operator= (const AliRsnExpression& exp);
+
+    virtual Bool_t     Value(TObjArray & vars);
     virtual TString     Unparse() const;
 
-    void SetCutSet ( AliRsnCutSet* theValue ) { sCutSet = theValue; }
+    void SetCutSet(AliRsnCutSet* theValue) { sCutSet = theValue; }
     AliRsnCutSet* GetCutSet() const { return sCutSet; }
 
 
@@ -48,15 +48,15 @@ class AliRsnExpression : public TObject
     AliRsnExpression*   fArg2;         // right argument
     Int_t                 fOperator;     // operator
 
-    AliRsnExpression ( int op, AliRsnExpression* a );
-    AliRsnExpression ( int op, AliRsnExpression* a, AliRsnExpression* b );
+    AliRsnExpression(int op, AliRsnExpression* a);
+    AliRsnExpression(int op, AliRsnExpression* a, AliRsnExpression* b);
 
-    TObjArray*    Tokenize ( TString str ) const;
-    static AliRsnExpression*    Element ( TObjArray &st, Int_t &i );
-    static AliRsnExpression*    Primary ( TObjArray &st, Int_t &i );
-    static AliRsnExpression*    Expression ( TObjArray &st, Int_t &i );
+    TObjArray*    Tokenize(TString str) const;
+    static AliRsnExpression*    Element(TObjArray &st, Int_t &i);
+    static AliRsnExpression*    Primary(TObjArray &st, Int_t &i);
+    static AliRsnExpression*    Expression(TObjArray &st, Int_t &i);
 
-    ClassDef ( AliRsnExpression, 1 ); // Class to evaluate an expression
+    ClassDef(AliRsnExpression, 1);    // Class to evaluate an expression
 };
 
 
@@ -65,12 +65,12 @@ class AliRsnExpression : public TObject
 class AliRsnVariableExpression: public AliRsnExpression
 {
   public:
-    AliRsnVariableExpression ( TString a) : AliRsnExpression() { fVname = a;  };
+    AliRsnVariableExpression(TString a) : AliRsnExpression() { fVname = a;  };
     ~AliRsnVariableExpression() {}
-    virtual Bool_t    Value ( TObjArray& pgm );
+    virtual Bool_t    Value(TObjArray& pgm);
     virtual TString    Unparse() const { return fVname; }
 
-    ClassDef ( AliRsnVariableExpression, 1 ); // Class to define a variable expression
+    ClassDef(AliRsnVariableExpression, 1);    // Class to define a variable expression
 };
 
 #endif

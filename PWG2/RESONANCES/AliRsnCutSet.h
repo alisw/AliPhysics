@@ -2,7 +2,7 @@
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               *
  **************************************************************************/
- 
+
 //
 // class AliRsnCutSet
 // Combination of simple cuts
@@ -23,39 +23,39 @@ class AliRsnEvent;
 
 class AliRsnCutSet : public TNamed
 {
-public:
+  public:
 
     AliRsnCutSet();
-    AliRsnCutSet (TString name);
-    AliRsnCutSet (const AliRsnCutSet &copy);
+    AliRsnCutSet(TString name);
+    AliRsnCutSet(const AliRsnCutSet &copy);
     ~AliRsnCutSet();
 
-    void      AddCut (AliRsnCut* cut);
+    void      AddCut(AliRsnCut* cut);
 
     void      ShowCuts();
-    Int_t     GetIndexByCutName (TString s);
+    Int_t     GetIndexByCutName(TString s);
     Bool_t    Passed();
     Bool_t    IsValidScheme();
     TString   ShowCutScheme();
-    Int_t     TestExpression (TString opt="short");
+    Int_t     TestExpression(TString opt="short");
     void      PrintSetInfo();
 
-    Bool_t    IsSelected (AliRsnCut::ETarget type, AliRsnDaughter *daughter);
-    Bool_t    IsSelected (AliRsnCut::ETarget type, AliRsnPairParticle *pair);
-    Bool_t    IsSelected (AliRsnCut::ETarget type, AliRsnEvent *event);
+    Bool_t    IsSelected(AliRsnCut::ETarget type, AliRsnDaughter *daughter);
+    Bool_t    IsSelected(AliRsnCut::ETarget type, AliRsnPairParticle *pair);
+    Bool_t    IsSelected(AliRsnCut::ETarget type, AliRsnEvent *event);
 
-    void SetBoolValue (Bool_t theValue,Int_t index) { fBoolValues[index] = theValue; }
-    Bool_t GetBoolValue (Int_t index) const { return fBoolValues[index]; }
+    void SetBoolValue(Bool_t theValue,Int_t index) { fBoolValues[index] = theValue; }
+    Bool_t GetBoolValue(Int_t index) const { return fBoolValues[index]; }
 
-    void SetCutScheme (const TString& theValue);
+    void SetCutScheme(const TString& theValue);
     TString GetCutScheme() const { return fCutScheme; }
 
-    void SetCutSchemeIndexed (TString theValue);
+    void SetCutSchemeIndexed(TString theValue);
     TString   GetCutSchemeIndexed();
 
     TObjArray *GetCuts() { return &fCuts; }
 
-private:
+  private:
 
     AliRsnCutSet& operator=(const AliRsnCutSet& /*copy*/) {return (*this);}
 
@@ -66,10 +66,10 @@ private:
 
     Bool_t       *fBoolValues;            //[fNumOfCuts]
     Bool_t        fIsScheme;              // is scheme
-    
+
     AliRsnExpression  *fExpression;       // pointer to AliRsnExpression
 
-    ClassDef (AliRsnCutSet,1);   // ROOT dictionary
+    ClassDef(AliRsnCutSet,1);    // ROOT dictionary
 };
 
 #endif

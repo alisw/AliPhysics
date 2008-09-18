@@ -23,7 +23,7 @@ class AliRsnEventBuffer;
 
 class AliRsnSimpleAnalyzer : public TNamed
 {
-public:
+  public:
 
     AliRsnSimpleAnalyzer(Int_t bufferSize = 1000);
     virtual ~AliRsnSimpleAnalyzer() {Clear();}
@@ -44,12 +44,12 @@ public:
     void         Add(AliRsnSimpleFunction *pair);
     void         Process(AliRsnEvent *event);
 
-private:
+  private:
 
     AliRsnSimpleAnalyzer(const AliRsnSimpleAnalyzer &copy) :
-      TNamed(copy),fBufferSize(1000),
-      fMixMultCut(10),fMixVzCut(0.5),fNMix(10),
-      fSingle(0x0),fMix(0x0),fBuffer(0x0) { }
+        TNamed(copy),fBufferSize(1000),
+        fMixMultCut(10),fMixVzCut(0.5),fNMix(10),
+        fSingle(0x0),fMix(0x0),fBuffer(0x0) { }
     AliRsnSimpleAnalyzer& operator=(const AliRsnSimpleAnalyzer & /*copy*/) { return (*this); }
     void ProcessEvents(TObjArray *pairs, AliRsnEvent *event1, AliRsnEvent *event2 = 0x0);
 

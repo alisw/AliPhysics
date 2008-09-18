@@ -26,21 +26,21 @@
 #include "AliLog.h"
 #include "AliRsnEventBuffer.h"
 
-ClassImp (AliRsnEventBuffer)
+ClassImp(AliRsnEventBuffer)
 
 //_____________________________________________________________________________
-AliRsnEventBuffer::AliRsnEventBuffer (Int_t buffSize, Bool_t deleteBufferWhenReset) :
-  fDeleteBufferWhenReset (deleteBufferWhenReset),
-  fEventsBufferSize (buffSize),
-  fEventsBufferIndex (-1)
+AliRsnEventBuffer::AliRsnEventBuffer(Int_t buffSize, Bool_t deleteBufferWhenReset) :
+    fDeleteBufferWhenReset(deleteBufferWhenReset),
+    fEventsBufferSize(buffSize),
+    fEventsBufferIndex(-1)
 {
 //
 // Constructor.
 // Initializes to NULL all AliRsnEvent pointers.
 //
 
-    Int_t i;
-    for (i = 0; i < fEventsBufferSize; i++) fEventsBuffer[i] = 0;
+  Int_t i;
+  for (i = 0; i < fEventsBufferSize; i++) fEventsBuffer[i] = 0;
 }
 
 //_____________________________________________________________________________
@@ -51,7 +51,7 @@ AliRsnEventBuffer::~AliRsnEventBuffer()
 // Actually does nothing.
 //
 
-    //ClearBuffer();
+  //ClearBuffer();
 }
 
 //_____________________________________________________________________________
@@ -61,12 +61,13 @@ void AliRsnEventBuffer::ClearBuffer()
 // Clears buffer, resetting all pointers.
 // If an event is on the HEAP, it is deleted.
 //
-    Int_t i;
-    for (i = 0; i < fEventsBufferSize; i++) {
-        AliDebug(1, Form ("Clearing slot #%p in buffer", fEventsBuffer[i]));
-        if (fEventsBuffer[i]->IsOnHeap()) delete fEventsBuffer[i];
-        fEventsBuffer[i] = 0;
-    }
+  Int_t i;
+  for (i = 0; i < fEventsBufferSize; i++)
+  {
+    AliDebug(1, Form("Clearing slot #%p in buffer", fEventsBuffer[i]));
+    if (fEventsBuffer[i]->IsOnHeap()) delete fEventsBuffer[i];
+    fEventsBuffer[i] = 0;
+  }
 }
 
 //_____________________________________________________________________________
@@ -75,12 +76,12 @@ void AliRsnEventBuffer::ResetIndex()
 //
 // Resets the index for accessing events in buffer
 //
-    fEventsBufferIndex = -1;
-    if (fDeleteBufferWhenReset == kTRUE) ClearBuffer();
+  fEventsBufferIndex = -1;
+  if (fDeleteBufferWhenReset == kTRUE) ClearBuffer();
 }
 
 //_____________________________________________________________________________
-void AliRsnEventBuffer::AddEvent (AliRsnEvent * event)
+void AliRsnEventBuffer::AddEvent(AliRsnEvent * event)
 {
 //
 // Insert a new event in the buffer.
@@ -88,12 +89,12 @@ void AliRsnEventBuffer::AddEvent (AliRsnEvent * event)
 // the new event replaces the oldest one in the buffer
 //
 
-    if (fEventsBufferIndex >= fEventsBufferSize - 1) ResetIndex();
-    fEventsBufferIndex++;
-    if (fEventsBuffer[fEventsBufferIndex])
-        *fEventsBuffer[fEventsBufferIndex] = *event;
-    else
-        fEventsBuffer[fEventsBufferIndex] = new AliRsnEvent(*event);
+  if (fEventsBufferIndex >= fEventsBufferSize - 1) ResetIndex();
+  fEventsBufferIndex++;
+  if (fEventsBuffer[fEventsBufferIndex])
+    *fEventsBuffer[fEventsBufferIndex] = *event;
+  else
+    fEventsBuffer[fEventsBufferIndex] = new AliRsnEvent(*event);
 }
 
 //_____________________________________________________________________________
@@ -102,7 +103,7 @@ AliRsnEvent* AliRsnEventBuffer::GetCurrentEvent()
 //
 // Returns the current event in the buffer
 //
-    return GetEvent(fEventsBufferIndex);
+  return GetEvent(fEventsBufferIndex);
 }
 
 //_____________________________________________________________________________
@@ -111,21 +112,22 @@ AliRsnEvent * AliRsnEventBuffer::GetNextEvent()
 //
 // Returns next event in the buffer w.r. to current
 //
-    if (fEventsBufferIndex == fEventsBufferSize - 1) return GetEvent (0);
-    else return GetEvent (fEventsBufferIndex + 1);
+  if (fEventsBufferIndex == fEventsBufferSize - 1) return GetEvent(0);
+  else return GetEvent(fEventsBufferIndex + 1);
 }
 
 //_____________________________________________________________________________
-AliRsnEvent * AliRsnEventBuffer::GetEvent (Int_t index)
+AliRsnEvent * AliRsnEventBuffer::GetEvent(Int_t index)
 {
 //
 // Returns an event in the buffer, provided its index
 //
-    if (index < 0 || index >= fEventsBufferSize) {
-        AliError(Form("Index out of range (index = %d , size = %d)", index, fEventsBufferSize));
-        return 0x0;
-    }
-    return (AliRsnEvent*)fEventsBuffer[index];
+  if (index < 0 || index >= fEventsBufferSize)
+  {
+    AliDebug(AliLog::kError,Form("Index out of range (index = %d , size = %d)", index, fEventsBufferSize));
+    return 0x0;
+  }
+  return (AliRsnEvent*)fEventsBuffer[index];
 }
 
 //_____________________________________________________________________________
@@ -134,10 +136,11 @@ Int_t AliRsnEventBuffer::NEmptySlots()
 //
 // Tells if the buffer is completely filled or has empty slots
 //
-    Int_t i, counter = 0;
-    for (i = 0; i < fEventsBufferSize; i++) {
-        if (!fEventsBuffer[i]) counter++;
-    }
-    
-    return counter;
+  Int_t i, counter = 0;
+  for (i = 0; i < fEventsBufferSize; i++)
+  {
+    if (!fEventsBuffer[i]) counter++;
+  }
+
+  return counter;
 }

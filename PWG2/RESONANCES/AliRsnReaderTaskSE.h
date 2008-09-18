@@ -13,13 +13,13 @@
 #ifndef AliRsnReaderTaskSE_H
 #define AliRsnReaderTaskSE_H
 
-#include "AliAnalysisTaskSE.h"
+#include "AliRsnAnalysisTaskSEBase.h"
 
 class AliRsnPID;
 class AliESDEvent;
 class AliRsnReader;
 
-class AliRsnReaderTaskSE : public AliAnalysisTaskSE
+class AliRsnReaderTaskSE : public AliRsnAnalysisTaskSEBase
 {
 public:
 
@@ -34,21 +34,19 @@ public:
     virtual void UserExec(Option_t *option);
     virtual void Terminate(Option_t *option);
 
-    void          SetReader(AliRsnReader *reader) {fReader = reader;}
-    void          SetPID(AliRsnPID *pid) {fPID = pid;}
-    AliRsnReader* GetReader() {return fReader;}
-    AliRsnPID*    GetPID() {return fPID;}
+//     void          SetReader(AliRsnReader *reader) {fReader = reader;}
+//     void          SetPID(AliRsnPID *pid) {fPID = pid;}
+//     AliRsnReader* GetReader() {return fReader;}
+//     AliRsnPID*    GetPID() {return fPID;}
     AliRsnEvent*  GetCurrentEvent() {return fRsnEvent;}
 
 private:
 
     AliRsnReaderTaskSE(const AliRsnReaderTaskSE &copy) :
-      AliAnalysisTaskSE(copy),fReader(0x0),fPID(0x0),fRsnEvent(0x0) { /*nothing*/ }
+      AliRsnAnalysisTaskSEBase(copy),fRsnEvent(0x0) { /*nothing*/ }
     AliRsnReaderTaskSE& operator=(const AliRsnReaderTaskSE&)
       { /*nothing*/ return (*this); }
 
-    AliRsnReader *fReader;     // read manager
-    AliRsnPID    *fPID;        // PID manager
     AliRsnEvent  *fRsnEvent;   // output events in the AliRsnEvent format
 
     ClassDef(AliRsnReaderTaskSE, 1); // implementation of RsnReader as AnalysisTaskSE

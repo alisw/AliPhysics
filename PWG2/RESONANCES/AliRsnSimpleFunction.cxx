@@ -136,17 +136,8 @@ Bool_t AliRsnSimpleFunction::Init()
     Char_t name[200];
     sprintf(name, "h_%s", GetName());
 
-    switch (fHistoDef->GetNDimensions()) {
-        case 1:
-            fHisto1D = (TH1D*)fHistoDef->Create1DHistogram(name, "");
-            return kTRUE;
-        case 2:
-            fHisto2D = (TH2D*)fHistoDef->Create1DHistogram(name, "");
-            return kTRUE;
-        default:
-            AliError("Number of dimensions not properly set.");
-            return kFALSE;
-    }
+    fHisto1D = (TH1D*)fHistoDef->CreateHistogram(name, "");
+    return kTRUE;
 }
 
 //________________________________________________________________________________________

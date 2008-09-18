@@ -20,32 +20,32 @@
 
 class AliRsnEventBuffer : public TObject
 {
-public:
+  public:
 
-    AliRsnEventBuffer (Int_t buffsize = 1000, Bool_t deleteBufferWhenReset=kTRUE);
+    AliRsnEventBuffer(Int_t buffsize = 1000, Bool_t deleteBufferWhenReset=kTRUE);
     ~AliRsnEventBuffer();
 
     void ClearBuffer();
     void ResetIndex();
 
-    void AddEvent (AliRsnEvent *event);
-    AliRsnEvent *GetEvent (Int_t index) ;
-    AliRsnEvent *GetCurrentEvent ();
-    AliRsnEvent *GetNextEvent ();
+    void AddEvent(AliRsnEvent *event);
+    AliRsnEvent *GetEvent(Int_t index) ;
+    AliRsnEvent *GetCurrentEvent();
+    AliRsnEvent *GetNextEvent();
 
-    void SetEventsBufferSize (const Int_t& theValue) { fEventsBufferSize = theValue; }
+    void SetEventsBufferSize(const Int_t& theValue) { fEventsBufferSize = theValue; }
     Int_t GetEventsBufferSize() const { return fEventsBufferSize; }
     Int_t GetEventsBufferIndex() const { return fEventsBufferIndex; }
 
-    void SetDeleteBufferWhenReset (const Bool_t& theValue = kTRUE) { fDeleteBufferWhenReset = theValue; }
+    void SetDeleteBufferWhenReset(const Bool_t& theValue = kTRUE) { fDeleteBufferWhenReset = theValue; }
     Bool_t GetDeleteBufferWhenReset() const { return fDeleteBufferWhenReset; }
 
     Int_t NEmptySlots();
 
   private:
 
-    AliRsnEventBuffer (const AliRsnEventBuffer& buf) :
-      TObject(buf), fDeleteBufferWhenReset(0),fEventsBufferSize(0),fEventsBufferIndex(0) {}
+    AliRsnEventBuffer(const AliRsnEventBuffer& buf) :
+        TObject(buf), fDeleteBufferWhenReset(0),fEventsBufferSize(0),fEventsBufferIndex(0) {}
     const AliRsnEventBuffer& operator=(const AliRsnEventBuffer& /*buf*/) {return (*this);}
 
     Bool_t       fDeleteBufferWhenReset;  // flag if buffer should be deleted when reset is done
@@ -53,7 +53,7 @@ public:
     Int_t        fEventsBufferIndex;      // current buffer index
     AliRsnEvent *fEventsBuffer[10000];    // array of events
 
-    ClassDef (AliRsnEventBuffer, 1)
+    ClassDef(AliRsnEventBuffer, 1)
 };
 
 #endif

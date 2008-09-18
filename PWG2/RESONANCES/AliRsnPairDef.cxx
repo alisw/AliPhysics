@@ -16,8 +16,7 @@
 ClassImp(AliRsnPairDef)
 
 //_____________________________________________________________________________
-AliRsnPairDef::AliRsnPairDef() :
-  fMotherPDG(0)
+AliRsnPairDef::AliRsnPairDef() : fMotherPDG(0)
 {
 //
 // Empty constructor.
@@ -39,7 +38,7 @@ AliRsnPairDef::AliRsnPairDef() :
 //_____________________________________________________________________________
 AliRsnPairDef::AliRsnPairDef
 (Char_t sign1, AliRsnPID::EType type1, Char_t sign2, AliRsnPID::EType type2, Int_t motherPDG) :
-  fMotherPDG(motherPDG)
+    fMotherPDG(motherPDG)
 {
 //
 // Constructor with arguments.
@@ -50,9 +49,23 @@ AliRsnPairDef::AliRsnPairDef
 }
 
 //_____________________________________________________________________________
+AliRsnPairDef::AliRsnPairDef
+(AliRsnPID::EType type1, Char_t sign1, AliRsnPID::EType type2, Char_t sign2, Int_t motherPDG) :
+    fMotherPDG(motherPDG)
+{
+//
+// Constructor with arguments.
+// This constructor allows to define all the working parameters.
+//
+
+    SetPair(sign1, type1, sign2, type2);
+}
+
+
+//_____________________________________________________________________________
 AliRsnPairDef::AliRsnPairDef(const AliRsnPairDef &copy) :
-  TObject(copy),
-  fMotherPDG(copy.fMotherPDG)
+    TObject(copy),
+    fMotherPDG(copy.fMotherPDG)
 {
 //
 // Copy constructor with standard behavior
@@ -96,6 +109,7 @@ Bool_t AliRsnPairDef::SetPairElement(Int_t i, Char_t charge, AliRsnPID::EType ty
     fCharge[i] = charge;
     fType[i] = type;
     fMass[i] = AliRsnPID::ParticleMass(type);
+    
     return kTRUE;
 }
 
@@ -107,9 +121,9 @@ Bool_t AliRsnPairDef::SetPair
 // Set both elements of the pair,
 // returning logical AND of check for each one.
 //
-
     Bool_t part1 = SetPairElement(0, charge1, type1);
     Bool_t part2 = SetPairElement(1, charge2, type2);
+    
     return (part1 && part2);
 }
 
@@ -127,4 +141,21 @@ Double_t AliRsnPairDef::ComputeWeight(AliRsnDaughter *d0, AliRsnDaughter *d1)
     Double_t prob1 = d1->PIDProb()[fType[1]];
 
     return prob0*prob1;
+}
+
+//_____________________________________________________________________________
+TString AliRsnPairDef::GetPairName()
+{
+//
+// Returns a compact string with the name of the pair,
+// to be used for naming objects related to it.
+//
+    
+    TString sName;
+    sName += AliRsnPID::ParticleName(fType[0]);
+    sName += fCharge[0];
+    sName += AliRsnPID::ParticleName(fType[1]);
+    sName += fCharge[1];
+    
+    return sName;
 }

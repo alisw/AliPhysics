@@ -12,19 +12,23 @@
 #ifndef ALIRSNPAIRDEF_H
 #define ALIRSNPAIRDEF_H
 
+#include <TString.h>
+
 #include "AliRsnPID.h"
 
 class AliRsnDaughter;
 
 class AliRsnPairDef : public TObject
 {
-public:
+  public:
 
     AliRsnPairDef();
-    AliRsnPairDef(Char_t ch1, AliRsnPID::EType pid1, 
-                  Char_t ch2, AliRsnPID::EType pid2, Int_t motherPDG = 0);
+    AliRsnPairDef(Char_t sign1, AliRsnPID::EType type1,
+                  Char_t sign2, AliRsnPID::EType type2, Int_t motherPDG = 0);
+    AliRsnPairDef(AliRsnPID::EType type1, Char_t sign1,
+                  AliRsnPID::EType type2, Char_t sign2, Int_t motherPDG = 0);
     AliRsnPairDef(const AliRsnPairDef &copy);
-    const AliRsnPairDef& operator=(const AliRsnPairDef &copy);
+    const AliRsnPairDef& operator= (const AliRsnPairDef &copy);
     virtual ~AliRsnPairDef() { }
 
     // getters
@@ -32,6 +36,7 @@ public:
     AliRsnPID::EType GetType(Int_t i) const {if (i>=0&&i<2) return fType[i]; else return AliRsnPID::kUnknown;}
     Double_t         GetMass(Int_t i) const {if (i>=0&&i<2) return fMass[i]; else return 0.0;}
     Int_t            GetMotherPDG() const {return fMotherPDG;}
+    TString          GetPairName();
 
     // setters
     Bool_t SetPairElement(Int_t i, Char_t charge, AliRsnPID::EType pid);
@@ -45,7 +50,7 @@ public:
     // working routines
     Double_t ComputeWeight(AliRsnDaughter *d0, AliRsnDaughter *d1);
 
-private:
+  private:
 
     // pair parameters
     Int_t             fMotherPDG;  // PDG code of true mother (if known)

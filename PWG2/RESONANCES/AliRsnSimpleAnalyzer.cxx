@@ -41,21 +41,21 @@ ClassImp(AliRsnSimpleAnalyzer)
 
 //_____________________________________________________________________________
 AliRsnSimpleAnalyzer::AliRsnSimpleAnalyzer(Int_t bufferSize) :
-  TNamed("RsnSimpleAnalyzer", ""),
-  fBufferSize(bufferSize),
-  fMixMultCut(10),
-  fMixVzCut(0.5),
-  fNMix(10),
-  fSingle(0x0),
-  fMix(0x0),
-  fBuffer(0x0)
+    TNamed("RsnSimpleAnalyzer", ""),
+    fBufferSize(bufferSize),
+    fMixMultCut(10),
+    fMixVzCut(0.5),
+    fNMix(10),
+    fSingle(0x0),
+    fMix(0x0),
+    fBuffer(0x0)
 {
 //
 // Constructor
 // Initializes all pointers and collections to NULL.
 // Adds this object to the global Directory.
 //
-    gDirectory->Append(this, kTRUE);
+  gDirectory->Append(this, kTRUE);
 }
 
 
@@ -66,10 +66,10 @@ void AliRsnSimpleAnalyzer::Clear(Option_t *option)
 // Clear heap
 //
 
-    fSingle->Clear(option);
-    fMix->Clear(option);
-    delete fBuffer;
-    fBuffer = 0;
+  fSingle->Clear(option);
+  fMix->Clear(option);
+  delete fBuffer;
+  fBuffer = 0;
 }
 
 //_____________________________________________________________________________
@@ -80,10 +80,10 @@ void AliRsnSimpleAnalyzer::Add(AliRsnSimpleFunction *fcn)
 // Second argument tells if the added object is for event mixing.
 //
 
-    Bool_t mixing = fcn->MixFlag();
-    TObjArray* &target = mixing ? fMix : fSingle;
-    if (!target) target = new TObjArray(0);
-    target->AddLast(fcn);
+  Bool_t mixing = fcn->MixFlag();
+  TObjArray* &target = mixing ? fMix : fSingle;
+  if (!target) target = new TObjArray(0);
+  target->AddLast(fcn);
 }
 
 //_____________________________________________________________________________
@@ -93,23 +93,27 @@ void AliRsnSimpleAnalyzer::Init()
 // Initialize what needs to.
 //
 
-    // buffer
-    fBuffer = new AliRsnEventBuffer(fBufferSize, kFALSE);
+  // buffer
+  fBuffer = new AliRsnEventBuffer(fBufferSize, kFALSE);
 
-    // histograms
-    AliRsnSimpleFunction *fcn = 0;
-    if (fSingle) {
-        TObjArrayIter iter(fSingle);
-        while ( (fcn = (AliRsnSimpleFunction*)iter.Next()) ) {
-            fcn->Init();
-        }
+  // histograms
+  AliRsnSimpleFunction *fcn = 0;
+  if (fSingle)
+  {
+    TObjArrayIter iter(fSingle);
+    while ((fcn = (AliRsnSimpleFunction*)iter.Next()))
+    {
+      fcn->Init();
     }
-    if (fMix) {
-        TObjArrayIter iter(fMix);
-        while ( (fcn = (AliRsnSimpleFunction*)iter.Next()) ) {
-            fcn->Init();
-        }
+  }
+  if (fMix)
+  {
+    TObjArrayIter iter(fMix);
+    while ((fcn = (AliRsnSimpleFunction*)iter.Next()))
+    {
+      fcn->Init();
     }
+  }
 }
 
 //_____________________________________________________________________________
@@ -120,38 +124,42 @@ void AliRsnSimpleAnalyzer::Process(AliRsnEvent *event)
 // Depending on the kind of background evaluation method, computes also this one.
 //
 
-    // loop over the collection of pair defs
-    ProcessEvents(fSingle, event, 0x0);
-    
-    if (fMix) {
-        // variables for mixing
-        Int_t    mult1, mult2, i, j, count = 0;
-        Double_t vz1, vz2;
-        // add this event to buffer
-        fBuffer->AddEvent(event);
-        // event mixing
-        vz1 = event->GetPrimaryVertexZ();
-        mult1 = event->GetMultiplicity();
-        if (!fBuffer->NEmptySlots()) {
-            i = fBuffer->GetEventsBufferIndex();
-            j = i+1;
-            for (;;j++) {
-                if (count >= fNMix) break;
-                if (j == fBufferSize) j = 0;
-                if (j == i) break;
-                AliRsnEvent *evmix = fBuffer->GetEvent(j);
-                if (!evmix) continue;
-                vz2 = evmix->GetPrimaryVertexZ();
-                mult2 = evmix->GetMultiplicity();
-                if (TMath::Abs(vz1 - vz2) <= fMixVzCut && TMath::Abs(mult1- mult2) <= fMixMultCut) {
-                    // loop over the collection of pair defs
-                    ProcessEvents(fMix, event, evmix);
-                    ProcessEvents(fMix, evmix, event);
-                    count++;
-                }
-            }
+  // loop over the collection of pair defs
+  ProcessEvents(fSingle, event, 0x0);
+
+  if (fMix)
+  {
+    // variables for mixing
+    Int_t    mult1, mult2, i, j, count = 0;
+    Double_t vz1, vz2;
+    // add this event to buffer
+    fBuffer->AddEvent(event);
+    // event mixing
+    vz1 = event->GetPrimaryVertexZ();
+    mult1 = event->GetMultiplicity();
+    if (!fBuffer->NEmptySlots())
+    {
+      i = fBuffer->GetEventsBufferIndex();
+      j = i+1;
+      for (;;j++)
+      {
+        if (count >= fNMix) break;
+        if (j == fBufferSize) j = 0;
+        if (j == i) break;
+        AliRsnEvent *evmix = fBuffer->GetEvent(j);
+        if (!evmix) continue;
+        vz2 = evmix->GetPrimaryVertexZ();
+        mult2 = evmix->GetMultiplicity();
+        if (TMath::Abs(vz1 - vz2) <= fMixVzCut && TMath::Abs(mult1- mult2) <= fMixMultCut)
+        {
+          // loop over the collection of pair defs
+          ProcessEvents(fMix, event, evmix);
+          ProcessEvents(fMix, evmix, event);
+          count++;
         }
+      }
     }
+  }
 }
 
 //_____________________________________________________________________________
@@ -164,12 +172,13 @@ void AliRsnSimpleAnalyzer::ProcessEvents
 // If the array is NULL nothing is done
 //
 
-    if (!array) return;
+  if (!array) return;
 
-    AliRsnSimpleFunction *fcn = 0;
-    TObjArrayIter iter(array);
-    while ( (fcn = (AliRsnSimpleFunction*)iter.Next()) ) {
-        if (event2) fcn->ProcessTwo(event1, event2);
-        else fcn->ProcessOne(event1);
-    }
+  AliRsnSimpleFunction *fcn = 0;
+  TObjArrayIter iter(array);
+  while ((fcn = (AliRsnSimpleFunction*)iter.Next()))
+  {
+    if (event2) fcn->ProcessTwo(event1, event2);
+    else fcn->ProcessOne(event1);
+  }
 }
