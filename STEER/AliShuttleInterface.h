@@ -37,6 +37,8 @@ class AliShuttleInterface : public TObject
     virtual TList* GetFileIDs(Int_t system, const char* detector, const char* source) = 0;
     
     virtual const char* GetRunParameter(const char* lbEntry) = 0;
+    virtual const UInt_t GetStartTimeDCSQuery() = 0;
+    virtual const UInt_t GetEndTimeDCSQuery() = 0;
     virtual const char* GetRunType() = 0;
     virtual Bool_t GetHLTStatus() = 0;
     virtual const char* GetTriggerConfiguration() = 0;

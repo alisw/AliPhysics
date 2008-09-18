@@ -24,4 +24,6 @@ ppTimeOut: 1200
 sendMail: 1
 passwdFilePath: /home/shuttle/.shuttle
 AliEnPath: /alice/testdata/
+DCSQueryOffset: 180
+DCSDelay: 120
 

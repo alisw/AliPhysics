@@ -1974,7 +1974,7 @@ AliShuttleLogbookEntry* AliShuttle::QueryRunParameters(Int_t run)
 	
 	UInt_t now = time(0);
 	// TODO make this a configuration parameter
-	Int_t dcsDelay = 120+180;
+	Int_t dcsDelay = fConfig->GetDCSDelay()+fConfig->GetDCSQueryOffset();
 	
 	// runs are accepted if they have ecsSuccess set or more than 1 event
 	if (startTime != 0 && endTime != 0 && endTime > startTime && (totEvents > 1 || ecsSuccess) && (endTime < now - dcsDelay))
@@ -2032,7 +2032,7 @@ TMap* AliShuttle::GetValueSet(const char* host, Int_t port, const TSeqCollection
 	// returns TMap of values, 0 when failure
 	
 	AliDCSClient client(host, port, fTimeout, fRetries, multiSplit);
-	Int_t offset = 180;
+	UInt_t offset = fConfig->GetDCSQueryOffset();
 
 	TMap* result = 0;
 	if (type == kAlias)
@@ -3518,6 +3518,24 @@ Bool_t AliShuttle::TouchFile()
 	resultTouch = 0x0; 
 	Log("SHUTTLE", "Sucessfully touched the file");
 	return kTRUE;
+}
+//______________________________________________________________________________________________
+const UInt_t AliShuttle::GetStartTimeDCSQuery()
+{
+	// Return Start Time for the DCS query
+	//
+	// The call is delegated to AliShuttleInterface
+
+	return GetCurrentTimeCreated()-fConfig->GetDCSQueryOffset();
+}
+//______________________________________________________________________________________________
+const UInt_t AliShuttle::GetEndTimeDCSQuery()
+{
+	// Return End Time for the DCS query
+	//
+	// The call is delegated to AliShuttleInterface
+
+	return GetCurrentEndTime()+fConfig->GetDCSQueryOffset();
 }
 
 

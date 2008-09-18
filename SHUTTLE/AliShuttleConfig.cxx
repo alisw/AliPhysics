@@ -668,6 +668,8 @@ AliShuttleConfig::AliShuttleConfig(const char* host, Int_t port,
 	fPPTimeOut(0), 
 	fDCSTimeOut(0), 
 	fDCSRetries(0), 
+	fDCSQueryOffset(0),
+	fDCSDelay(0),
 	fPPMaxMem(0), 
 	fMonitorHost(""), 
 	fMonitorTable(""), 
@@ -1135,6 +1137,22 @@ UInt_t AliShuttleConfig::SetGlobalConfig(TList* list)
 	}
 	tmpStr = anAttribute->GetValue();
 	fDCSRetries = tmpStr.Atoi();
+
+	anAttribute = anEntry->GetAttribute("DCSQueryOffset");
+	if (!anAttribute) {
+		AliError("Can't find DCSQueryOffset attribute!");
+		return 4;
+	}
+	tmpStr = anAttribute->GetValue();
+	fDCSQueryOffset = tmpStr.Atoi();
+
+	anAttribute = anEntry->GetAttribute("DCSDelay");
+	if (!anAttribute) {
+		AliError("Can't find DCSDelay attribute!");
+		return 4;
+	}
+	tmpStr = anAttribute->GetValue();
+	fDCSDelay = tmpStr.Atoi();
 
 	anAttribute = anEntry->GetAttribute("ppMaxMem");
 	if (!anAttribute) {

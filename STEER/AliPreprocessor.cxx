@@ -408,3 +408,22 @@ Bool_t AliPreprocessor::AliPreprocessor::ProcessRunType()
 	Log("Run type not found. Skipping this run.");
 	return kFALSE;
 }
+//______________________________________________________________________________________________
+const UInt_t AliPreprocessor::GetStartTimeDCSQuery()
+{
+	// Return Start Time for the DCS query
+	//
+	// The call is delegated to AliShuttleInterface
+
+	return fShuttle->GetStartTimeDCSQuery();
+}
+//______________________________________________________________________________________________
+const UInt_t AliPreprocessor::GetEndTimeDCSQuery()
+{
+	// Return End Time for the DCS query
+	//
+	// The call is delegated to AliShuttleInterface
+
+	return fShuttle->GetEndTimeDCSQuery();
+}
+

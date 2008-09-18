@@ -67,6 +67,8 @@ public:
 	Int_t GetPPTimeOut() const { return fPPTimeOut; }
 	Int_t GetDCSTimeOut() const { return fDCSTimeOut; }
 	Int_t GetDCSRetries() const { return fDCSRetries; }
+	UInt_t GetDCSQueryOffset() const { return fDCSQueryOffset; }
+	UInt_t GetDCSDelay() const { return fDCSDelay; }
 	Int_t GetPPMaxMem() const { return fPPMaxMem; }
 
 	Bool_t KeepDCSMap() const { return fKeepDCSMap; }
@@ -219,6 +221,9 @@ private:
 	Int_t fPPTimeOut;         	// timeout until a preprocessor is killed
 	Int_t fDCSTimeOut;         	// timeout until the query to DCS is terminated
 	Int_t fDCSRetries;         	// number of retries until the query to DCS connection is terminated
+	UInt_t fDCSQueryOffset;         // offset for the DCS DPs query, to be subracted from the StartTime and
+	                                // added to the EndTime
+	UInt_t fDCSDelay;         	// delay to make the query to DCS
 	Int_t fPPMaxMem;          	// maximum allowed memory until a preprocessor is killed
 	
 	TString fMonitorHost;           // host of the MonaLisa monitoring server
