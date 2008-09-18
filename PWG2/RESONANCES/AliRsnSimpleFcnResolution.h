@@ -13,24 +13,24 @@
 
 class AliRsnSimpleFcnResolution : public AliRsnSimpleFunction
 {
-public:
+  public:
 
     AliRsnSimpleFcnResolution();
     AliRsnSimpleFcnResolution
-      (const char* name, AliRsnPairDef *pd,
-       AliRsnHistoDef *hd, AliRsnCutMgr *cuts=0, Option_t *option="");
+    (const char* name, AliRsnPairDef *pd,
+     AliRsnHistoDef *hd, AliRsnCutMgr *cuts=0, Option_t *option="");
 
     // virtual working routines
     virtual Bool_t ProcessOne(AliRsnEvent *event);
 
-private:
+  private:
 
     // dummy required methods
     AliRsnSimpleFcnResolution(const AliRsnSimpleFcnResolution &copy) :
-      AliRsnSimpleFunction(copy) { /*nothing */ }
+        AliRsnSimpleFunction(copy) { /*nothing */ }
     AliRsnSimpleFcnResolution& operator=(const AliRsnSimpleFcnResolution& /*copy*/)
-      { /* nothing */ return (*this); }
-      
+    { /* nothing */ return (*this); }
+
     // utility methods
     Bool_t Add(AliRsnDaughter *t1, AliRsnDaughter *t2);
 

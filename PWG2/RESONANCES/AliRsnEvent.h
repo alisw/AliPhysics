@@ -34,42 +34,43 @@ class AliRsnEvent : public TNamed
   public:
 
     AliRsnEvent();
-    AliRsnEvent (const AliRsnEvent& copy);
+    AliRsnEvent(const AliRsnEvent& copy);
     AliRsnEvent& operator= (const AliRsnEvent& copy);
     virtual ~AliRsnEvent();
 
     // Array management
     void            Init();
-    void            Clear (Option_t *option = "");
-    AliRsnDaughter* AddTrack (AliRsnDaughter track);
-    AliRsnDaughter* GetTrack (Int_t index);
+    void            Clear(Option_t *option = "");
+    AliRsnDaughter* AddTrack(AliRsnDaughter track);
+    AliRsnDaughter* GetTrack(Int_t index);
     AliRsnDaughter* GetLeadingParticle(Double_t ptMin = 0.0, AliRsnPID::EType type = AliRsnPID::kUnknown, Bool_t realistic = kTRUE);
     Int_t           GetLastFastTrack(Double_t ptMin, AliRsnPID::EType type = AliRsnPID::kUnknown, Bool_t realistic = kTRUE);
     TClonesArray*   GetTracks() {return fTracks;}
-    TArrayI*        GetCharged (Char_t sign);
-    TArrayI*        GetTracksArray (AliRsnDaughter::EPIDMethod method, Char_t sign, AliRsnPID::EType type);
+    TArrayI*        GetCharged(Char_t sign);
+    TArrayI*        GetTracksArray(AliRsnDaughter::EPIDMethod method, Char_t sign, AliRsnPID::EType type);
     void            FillPIDArrays();
     void            SortTracks() {fTracks->Sort();}
-    void            Print (Option_t *option = "") const;
+    void            Print(Option_t *option = "") const;
 
     // Primary vertex
     Double_t GetPrimaryVertexX() const {return fPVx;}
     Double_t GetPrimaryVertexY() const {return fPVy;}
     Double_t GetPrimaryVertexZ() const {return fPVz;}
-    void     GetPrimaryVertex (Double_t &x, Double_t &y, Double_t &z) const {x=fPVx;y=fPVy;z=fPVz;}
-    void     SetPrimaryVertexX (Double_t value) {fPVx = value;}
-    void     SetPrimaryVertexY (Double_t value) {fPVy = value;}
-    void     SetPrimaryVertexZ (Double_t value) {fPVz = value;}
-    void     SetPrimaryVertex (Double_t x, Double_t y, Double_t z) {fPVx=x;fPVy=y;fPVz=z;}
+    void     GetPrimaryVertex(Double_t &x, Double_t &y, Double_t &z) const {x=fPVx;y=fPVy;z=fPVz;}
+    void     SetPrimaryVertexX(Double_t value) {fPVx = value;}
+    void     SetPrimaryVertexY(Double_t value) {fPVy = value;}
+    void     SetPrimaryVertexZ(Double_t value) {fPVz = value;}
+    void     SetPrimaryVertex(Double_t x, Double_t y, Double_t z) {fPVx=x;fPVy=y;fPVz=z;}
+    void     CorrectByPrimaryVertex();
 
     // Multiplicity
     Int_t GetMultiplicity() const;
-    Int_t GetNCharged (Char_t sign);
+    Int_t GetNCharged(Char_t sign);
 
   private:
 
-    Int_t ChargeIndex (Char_t sign) const;
-    Int_t Fill (TObjArray *array);
+    Int_t ChargeIndex(Char_t sign) const;
+    Int_t Fill(TObjArray *array);
 
     Double_t        fPVx;                 // position of
     Double_t        fPVy;                 // primary
@@ -81,7 +82,7 @@ class AliRsnEvent : public TNamed
     AliRsnPIDIndex *fPerfectPID;          // array index for perfect PID
     AliRsnPIDIndex *fRealisticPID;        // array index for realistic PID (largest prob)
 
-    ClassDef (AliRsnEvent, 2);
+    ClassDef(AliRsnEvent, 2);
 };
 
 #endif

@@ -22,17 +22,21 @@ class AliRsnEvent;
 
 class AliRsnPID : public TNamed
 {
-public:
+  public:
 
     // types enum
-    enum EType {
-        kElectron = 0,
-        kMuon,
-        kPion,
-        kKaon,
-        kProton,
-        kUnknown,
-        kSpecies = 5
+    enum EType
+    {
+      kElectron = 0,
+      kMuon,
+      kPion,
+      kKaon,
+      kProton,
+      kUnknown,
+      kSpecies = 5,
+      kPhi=6,
+      kJPsi,
+      kSpeciesAll = 8
     };
 
     AliRsnPID();
@@ -40,7 +44,7 @@ public:
 
     // conversions from PDG code to local type
     static EType        InternalType(Int_t pdgCode);
-    
+
     // retrieve particle informations from internal type
     static Int_t        PDGCode(EType pid);
     static const char*  ParticleName(EType pid, Bool_t shortName = kTRUE);
@@ -64,17 +68,17 @@ public:
     // other
     void DumpPriors();
 
-private:
+  private:
 
     Double_t  fPrior[kSpecies]; // prior probabilities
     Double_t  fMaxPt;           // pt threshold for realistic PID
     Double_t  fMinProb;         // threshold on acceptable largest probability
 
-    static const Double_t  fgkParticleMass[kSpecies + 1];      // PDG particle mass
-    static const char*     fgkParticleNameShort[kSpecies + 1]; // short particle name
-    static const char*     fgkParticleNameLong[kSpecies + 1];  // long particle name
-    static const char*     fgkParticleNameLatex[kSpecies + 1]; // latex particle name
-    static const Int_t     fgkParticlePDG[kSpecies + 1];       // PDG code of particle
+    static const Double_t  fgkParticleMass[kSpeciesAll + 1];      // PDG particle mass
+    static const char*     fgkParticleNameShort[kSpeciesAll + 1]; // short particle name
+    static const char*     fgkParticleNameLong[kSpeciesAll + 1];  // long particle name
+    static const char*     fgkParticleNameLatex[kSpeciesAll + 1]; // latex particle name
+    static const Int_t     fgkParticlePDG[kSpeciesAll + 1];       // PDG code of particle
 
     ClassDef(AliRsnPID,1);
 };

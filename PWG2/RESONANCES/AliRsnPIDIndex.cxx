@@ -28,27 +28,29 @@
 
 #include "AliRsnPIDIndex.h"
 
-ClassImp (AliRsnPIDIndex)
+ClassImp(AliRsnPIDIndex)
 
 //_____________________________________________________________________________
-AliRsnPIDIndex::AliRsnPIDIndex (Int_t num)
+AliRsnPIDIndex::AliRsnPIDIndex(Int_t num)
 {
 //
 // Default constructor
 //
-    Int_t i, j, k;
-    for (i = 0; i < 2; i++) {
-        for (j = 0; j < AliRsnPID::kSpecies+1; j++) {
-            fNumOfIndex[i][j] = 0;
-            fIndex[i][j].Set(num);
-            for (k = 0; k < num; k++) fIndex[i][j].AddAt(-1, k);
-        }
+  Int_t i, j, k;
+  for (i = 0; i < 2; i++)
+  {
+    for (j = 0; j < AliRsnPID::kSpecies+1; j++)
+    {
+      fNumOfIndex[i][j] = 0;
+      fIndex[i][j].Set(num);
+      for (k = 0; k < num; k++) fIndex[i][j].AddAt(-1, k);
     }
+  }
 }
 
 //_____________________________________________________________________________
-AliRsnPIDIndex::AliRsnPIDIndex (const AliRsnPIDIndex & copy)
-    : TObject (copy)
+AliRsnPIDIndex::AliRsnPIDIndex(const AliRsnPIDIndex & copy)
+    : TObject(copy)
 {
 //
 // Copy constructor.
@@ -56,17 +58,20 @@ AliRsnPIDIndex::AliRsnPIDIndex (const AliRsnPIDIndex & copy)
 // to store a copy of all objects.
 //
 
-    Int_t i, j, k, size;
-    for (i = 0; i < 2; i++) {
-        for (j = 0; j < AliRsnPID::kSpecies+1; j++) {
-            fNumOfIndex[i][j] = copy.fNumOfIndex[i][j];
-            size = copy.fIndex[i][j].GetSize();
-            fIndex[i][j].Set(size);
-            for (k = 0; k < size; k++) {
-                fIndex[i][j].AddAt(copy.fIndex[i][j].At(k), k);
-            }
-        }
+  Int_t i, j, k, size;
+  for (i = 0; i < 2; i++)
+  {
+    for (j = 0; j < AliRsnPID::kSpecies+1; j++)
+    {
+      fNumOfIndex[i][j] = copy.fNumOfIndex[i][j];
+      size = copy.fIndex[i][j].GetSize();
+      fIndex[i][j].Set(size);
+      for (k = 0; k < size; k++)
+      {
+        fIndex[i][j].AddAt(copy.fIndex[i][j].At(k), k);
+      }
     }
+  }
 }
 
 //_____________________________________________________________________________
@@ -78,20 +83,23 @@ AliRsnPIDIndex& AliRsnPIDIndex::operator= (const AliRsnPIDIndex & copy)
 // to store a copy of all objects.
 //
 
-    Int_t i, j, k, size;
-    for (i = 0; i < 2; i++) {
-        for (j = 0; j < AliRsnPID::kSpecies+1; j++) {
-            fNumOfIndex[i][j] = copy.fNumOfIndex[i][j];
-            size = copy.fIndex[i][j].GetSize();
-            fIndex[i][j].Set(size);
-            for (k = 0; k < size; k++) {
-                fIndex[i][j].AddAt(copy.fIndex[i][j].At(k), k);
-            }
-        }
+  Int_t i, j, k, size;
+  for (i = 0; i < 2; i++)
+  {
+    for (j = 0; j < AliRsnPID::kSpecies+1; j++)
+    {
+      fNumOfIndex[i][j] = copy.fNumOfIndex[i][j];
+      size = copy.fIndex[i][j].GetSize();
+      fIndex[i][j].Set(size);
+      for (k = 0; k < size; k++)
+      {
+        fIndex[i][j].AddAt(copy.fIndex[i][j].At(k), k);
+      }
     }
+  }
 
-    // return this object
-    return (*this);
+  // return this object
+  return (*this);
 }
 
 AliRsnPIDIndex::~AliRsnPIDIndex()
@@ -103,29 +111,31 @@ AliRsnPIDIndex::~AliRsnPIDIndex()
 }
 
 //_____________________________________________________________________________
-void AliRsnPIDIndex::Print (Option_t* /*option*/) const
+void AliRsnPIDIndex::Print(Option_t* /*option*/) const
 {
 //
 // Prints AliRsnPIDIndex info
 //
-    Int_t i, j;
-    for (i = 0; i < 2; i++) {
-        for (j = 0; j < AliRsnPID::kSpecies + 1; j++) {
-            AliInfo (Form (" [%d][%d] %d %d", i, j, fIndex[i][j].GetSize(), fNumOfIndex[i][j]));
-        }
+  Int_t i, j;
+  for (i = 0; i < 2; i++)
+  {
+    for (j = 0; j < AliRsnPID::kSpecies + 1; j++)
+    {
+      AliInfo(Form(" [%d][%d] %d %d", i, j, fIndex[i][j].GetSize(), fNumOfIndex[i][j]));
     }
+  }
 }
 
 //_____________________________________________________________________________
-void AliRsnPIDIndex::AddIndex (const Int_t index, Char_t sign, AliRsnPID::EType type)
+void AliRsnPIDIndex::AddIndex(const Int_t index, Char_t sign, AliRsnPID::EType type)
 {
 //
 // Adds index to corresponding TArrayI
 //
-    Int_t iCharge = ChargeIndex(sign);
-    Int_t iType = (Int_t)type;
-    fIndex[iCharge][iType].AddAt(index, fNumOfIndex[iCharge][iType]);
-    fNumOfIndex[iCharge][iType]++;
+  Int_t iCharge = ChargeIndex(sign);
+  Int_t iType = (Int_t)type;
+  fIndex[iCharge][iType].AddAt(index, fNumOfIndex[iCharge][iType]);
+  fNumOfIndex[iCharge][iType]++;
 }
 
 //_____________________________________________________________________________
@@ -135,8 +145,8 @@ void AliRsnPIDIndex::AddIndex(const Int_t index, Short_t sign, Int_t type)
 // Adds index to corresponding TArrayI
 //
 
-    fIndex[sign][type].AddAt (index, fNumOfIndex[sign][type]);
-    fNumOfIndex[sign][type]++;
+  fIndex[sign][type].AddAt(index, fNumOfIndex[sign][type]);
+  fNumOfIndex[sign][type]++;
 }
 
 //_____________________________________________________________________________
@@ -146,16 +156,18 @@ void AliRsnPIDIndex::SetCorrectIndexSize()
 // Sets Correct sizes to all TArrayI
 //
 
-    Int_t i, j;
-    for (i = 0; i < 2; i++) {
-        for (j = 0; j < AliRsnPID::kSpecies + 1; j++) {
-            fIndex[i][j].Set(fNumOfIndex[i][j]);
-        }
+  Int_t i, j;
+  for (i = 0; i < 2; i++)
+  {
+    for (j = 0; j < AliRsnPID::kSpecies + 1; j++)
+    {
+      fIndex[i][j].Set(fNumOfIndex[i][j]);
     }
+  }
 }
 
 //_____________________________________________________________________________
-TArrayI* AliRsnPIDIndex::GetTracksArray (Char_t sign, AliRsnPID::EType type)
+TArrayI* AliRsnPIDIndex::GetTracksArray(Char_t sign, AliRsnPID::EType type)
 {
 //
 // Returns the array of indexes of tracks whose charge
@@ -165,18 +177,19 @@ TArrayI* AliRsnPIDIndex::GetTracksArray (Char_t sign, AliRsnPID::EType type)
 // Otherwise returns null pointer.
 //
 
-    Int_t icharge = ChargeIndex (sign);
-    if (icharge < 0) return (TArrayI *) 0x0;
-    if (type < AliRsnPID::kElectron || type > AliRsnPID::kSpecies) {
-        AliError (Form ("Index %d out of range", type));
-        return (TArrayI *) 0x0;
-    }
+  Int_t icharge = ChargeIndex(sign);
+  if (icharge < 0) return (TArrayI *) 0x0;
+  if (type < AliRsnPID::kElectron || type > AliRsnPID::kSpecies)
+  {
+    AliError(Form("Index %d out of range", type));
+    return (TArrayI *) 0x0;
+  }
 
-    return &fIndex[icharge][type];
+  return &fIndex[icharge][type];
 }
 
 //_____________________________________________________________________________
-TArrayI* AliRsnPIDIndex::GetCharged (Char_t sign)
+TArrayI* AliRsnPIDIndex::GetCharged(Char_t sign)
 {
 //
 // Returns the array of indexes of tracks whose charge
@@ -184,38 +197,41 @@ TArrayI* AliRsnPIDIndex::GetCharged (Char_t sign)
 // Otherwise returns a null pointer.
 //
 
-    // check that argument is meaningful
-    Int_t icharge = ChargeIndex (sign);
-    if (icharge < 0) return (TArrayI *)0x0;
+  // check that argument is meaningful
+  Int_t icharge = ChargeIndex(sign);
+  if (icharge < 0) return (TArrayI *)0x0;
 
-    // count total number of tracks with that charge
-    // and create output object of appropriate size
-    Int_t i, total = 0;
-    for (i = 0; i <= AliRsnPID::kSpecies; i++) total += fIndex[icharge][i].GetSize();
-    TArrayI *output = new TArrayI(total);
+  // count total number of tracks with that charge
+  // and create output object of appropriate size
+  Int_t i, total = 0;
+  for (i = 0; i <= AliRsnPID::kSpecies; i++) total += fIndex[icharge][i].GetSize();
+  TArrayI *output = new TArrayI(total);
 
-    // add all indexes
-    Int_t j, counter = 0;
-    for (i = 0; i <= AliRsnPID::kSpecies; i++) {
-        for (j = 0; j < fIndex[icharge][i].GetSize(); j++) {
-            output->AddAt (fIndex[icharge][i].At(j), counter++);
-        }
+  // add all indexes
+  Int_t j, counter = 0;
+  for (i = 0; i <= AliRsnPID::kSpecies; i++)
+  {
+    for (j = 0; j < fIndex[icharge][i].GetSize(); j++)
+    {
+      output->AddAt(fIndex[icharge][i].At(j), counter++);
     }
+  }
 
-    return output;
+  return output;
 }
 
 //_____________________________________________________________________________
-Int_t AliRsnPIDIndex::ChargeIndex (Char_t sign) const
+Int_t AliRsnPIDIndex::ChargeIndex(Char_t sign) const
 {
 //
 // Returns the array index corresponding to charge
 //
 
-    if (sign == '+') return 0;
-    else if (sign == '-') return 1;
-    else {
-        AliError (Form ("Character '%c' not recognized as charge sign", sign));
-        return -1;
-    }
+  if (sign == '+') return 0;
+  else if (sign == '-') return 1;
+  else
+  {
+    AliError(Form("Character '%c' not recognized as charge sign", sign));
+    return -1;
+  }
 }

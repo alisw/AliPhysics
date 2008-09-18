@@ -39,7 +39,7 @@ class AliRsnCutMgr : public TNamed
 
     AliRsnCutSet *fCutSets[AliRsnCut::kLastCutTarget];  // cut definitions for all targets
 
-    ClassDef (AliRsnCutMgr, 1); // dictionary
+    ClassDef(AliRsnCutMgr, 1);  // dictionary
 };
 
 #endif

@@ -30,10 +30,8 @@ ClassImp(AliRsnReaderTaskSE)
 
 //_____________________________________________________________________________
 AliRsnReaderTaskSE::AliRsnReaderTaskSE() :
-  AliAnalysisTaskSE(),
-  fReader(0x0),
-  fPID(0x0),
-  fRsnEvent(0x0)
+    AliRsnAnalysisTaskSEBase(),
+    fRsnEvent(0x0)
 {
 //
 // Default constructor (not recommended)
@@ -42,10 +40,8 @@ AliRsnReaderTaskSE::AliRsnReaderTaskSE() :
 
 //_____________________________________________________________________________
 AliRsnReaderTaskSE::AliRsnReaderTaskSE(const char *name) :
-  AliAnalysisTaskSE(name),
-  fReader(0x0),
-  fPID(0x0),
-  fRsnEvent(0x0)
+    AliRsnAnalysisTaskSEBase(name),
+    fRsnEvent(0x0)
 {
 //
 // Working constructor (recommended)
@@ -63,19 +59,10 @@ void AliRsnReaderTaskSE::UserCreateOutputObjects()
 // raises a fatal error which breaks the AliRoot session.
 //
 
-    if (!fReader) {
-        AliFatal("Event reader not initialized. Impossible to continue");
-        return;
-    }
-    if (!fPID) {
-        AliFatal("PID not initialized. Impossible to continue");
-        return;
-    }
-
-    fRsnEvent = new AliRsnEvent();
-    fRsnEvent->SetName("rsnEvents");
-    fRsnEvent->Init();
-    AddAODBranch("AliRsnEvent", &fRsnEvent);
+  fRsnEvent = new AliRsnEvent();
+  fRsnEvent->SetName("rsnEvents");
+  fRsnEvent->Init();
+  AddAODBranch("AliRsnEvent", &fRsnEvent);
 }
 
 //_____________________________________________________________________________
@@ -96,19 +83,47 @@ void AliRsnReaderTaskSE::UserExec(Option_t */*option*/)
 // and store them in the output AOD event, with all required computations.
 //
 
-    AliInfo(Form("Reading event %d", ++fEntry));
+  AliInfo(Form("Reading event %d", ++fEntry));
 
-    // before adding new data, the ones from previous event
-    // must be cleared explicitly
-    fRsnEvent->Clear();
+  // before adding new data, the ones from previous event
+  // must be cleared explicitly
+  fRsnEvent->Clear();
 
-    // step 1: conversion
-    if (!fReader->Fill(fRsnEvent, fInputEvent, fMCEvent)) AliWarning("Failed reading");
 
-    // step 2: PID probability computation
-    if (!fPID->Process(fRsnEvent)) AliWarning("Failed PID");
+  // step 1: conversion
+  Bool_t ok = kFALSE;
+  switch (fInputType[0])
+    {
+        case kAOD: 
+            AliDebug(5, "Reading AOD event...");
+            ok = fReader.FillFromAOD(fRsnEvent, (AliAODEvent*)fInputEvent, fMCEvent);
+            AliDebug(5, "...done");
+            break;
+        case kESD: 
+            AliDebug(5, "Reading ESD event...");
+            ok = fReader.FillFromESD(fRsnEvent, (AliESDEvent*)fInputEvent, fMCEvent);
+            AliDebug(5, "...done");
+            break;
+        case kESDMC:
+            AliDebug(5, "Reading ESD event with MC...");
+            ok = fReader.FillFromESD(fRsnEvent, (AliESDEvent*)fInputEvent, fMCEvent);
+            AliDebug(5, "...done");
+            break;
+        case kMC: 
+            AliDebug(5, "Reading MC only event...");
+            ok = fReader.FillFromMC(fRsnEvent, fMCEvent);
+            AliDebug(5, "...done");
+            break;
+        default:
+            AliError("Type not supported ...");
+            return;
+    }
+  if (!ok) AliWarning("Failed reading");
 
-    AliInfo(Form("Collected %d tracks", fRsnEvent->GetMultiplicity()));
+  // step 2: PID probability computation
+  if (!fPID.Process(fRsnEvent)) AliWarning("Failed PID");
+
+  AliInfo(Form("Collected %d tracks", fRsnEvent->GetMultiplicity()));
 }
 
 //_____________________________________________________________________________

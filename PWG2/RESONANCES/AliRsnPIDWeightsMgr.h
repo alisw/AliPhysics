@@ -8,7 +8,7 @@
 //-------------------------------------------------------------------------
 //                      Class AliRsnPIDWeightsMgr
 //  Simple collection of reconstructed tracks, selected from an ESD event
-// 
+//
 // author: A. Pulvirenti             (email: alberto.pulvirenti@ct.infn.it)
 //-------------------------------------------------------------------------
 
@@ -19,28 +19,29 @@
 
 class AliRsnPIDWeightsMgr : public TObject
 {
-public:
+  public:
 
     // detectors for customizing PID weights
-    enum EDetector {
-        kITS,
-        kTPC,
-        kTRD,
-        kTOF,
-        kHMPID,
-        kDetectors
+    enum EDetector
+    {
+      kITS,
+      kTPC,
+      kTRD,
+      kTOF,
+      kHMPID,
+      kDetectors
     };
-	
+
     AliRsnPIDWeightsMgr();
     virtual ~AliRsnPIDWeightsMgr() {}
-    
+
     void      UseDetector(EDetector det, Bool_t use) {if (CheckBounds(det)) fUseDet[det] = use;}
     void      SetDetectorWeights(EDetector det, Double_t *weights);
     void      SetAcceptanceRange(EDetector det, Double_t ptmin, Double_t ptmax);
     Double_t  GetWeight(AliRsnPID::EType type, Double_t pt);
     Double_t* GetWeightArray(EDetector det) {if (CheckBounds(det)) return fWeights[det]; else return 0x0;}
-    
-private:
+
+  private:
 
     Bool_t   CheckBounds(EDetector det);
 

@@ -29,30 +29,30 @@ class AliRsnSimpleAnalyzer;
 
 class AliRsnSimpleAnalysisTaskSE : public AliAnalysisTaskSE
 {
-public:
+  public:
 
     AliRsnSimpleAnalysisTaskSE();
     AliRsnSimpleAnalysisTaskSE(const char *name);
     virtual ~AliRsnSimpleAnalysisTaskSE() { }
-    
+
     // Implementation of interface methods
     virtual void UserCreateOutputObjects();
     virtual void UserExec(Option_t *option);
-    
+
     // setters
     Bool_t Configure(const char *configFile = "RsnConfig.C");
     void   SetReader(AliRsnReader *reader) {fReader = reader;}
     void   SetPID(AliRsnPID *pid) {fPID = pid;}
     void   SetAnalyzer(AliRsnSimpleAnalyzer *analyzer) {fAnalyzer = analyzer;}
     void   PrintSettings();
-    
-private:
+
+  private:
 
     AliRsnSimpleAnalysisTaskSE(const AliRsnSimpleAnalysisTaskSE&) :
-      AliAnalysisTaskSE(),fReader(0x0),fPID(0x0),fAnalyzer(0x0),fRsnEvent(0x0),fHistograms(0x0)
-      { /*nothing*/ }
+        AliAnalysisTaskSE(),fReader(0x0),fPID(0x0),fAnalyzer(0x0),fRsnEvent(0x0),fHistograms(0x0)
+    { /*nothing*/ }
     AliRsnSimpleAnalysisTaskSE& operator=(const AliRsnSimpleAnalysisTaskSE&)
-      { /*nothing*/ return (*this); }
+    { /*nothing*/ return (*this); }
 
     AliRsnReader*         fReader;     // read manager
     AliRsnPID*            fPID;        // PID manager

@@ -29,19 +29,21 @@ const Double_t AliRsnCut::fgkDSmallNumber = 1e-100;
 const Double_t AliRsnCut::fgkDBigNumber = 1e10;
 const Int_t    AliRsnCut::fgkIBigNumber = 32767;
 
-ClassImp (AliRsnCut)
+ClassImp(AliRsnCut)
 
 //________________________________________________________________________________________________________________
 AliRsnCut::AliRsnCut() :
-  TNamed(),
-  fDMin(-fgkDBigNumber),
-  fDMax( fgkDBigNumber),
-  fIMin(-fgkIBigNumber),
-  fIMax( fgkIBigNumber),
-  fUIMin(0),
-  fUIMax(2 * (UInt_t)fgkIBigNumber),
-  fType (kLastCutType),
-  fVarType (kDouble_t)
+    TNamed(),
+    fDMin(-fgkDBigNumber),
+    fDMax(fgkDBigNumber),
+    fIMin(-fgkIBigNumber),
+    fIMax(fgkIBigNumber),
+    fUIMin(0),
+    fUIMax(2 * (UInt_t) fgkIBigNumber),
+    fULMin(0),
+    fULMax(2 * (ULong_t) fgkIBigNumber),
+    fType(kLastCutType),
+    fVarType(kDouble_t)
 {
 //
 // Constructor
@@ -49,16 +51,18 @@ AliRsnCut::AliRsnCut() :
 }
 
 //________________________________________________________________________________________________________________
-AliRsnCut::AliRsnCut (const char *name, const char *title, EType type) :
-  TNamed (name,title),
-  fDMin(-fgkDBigNumber),
-  fDMax( fgkDBigNumber),
-  fIMin(-fgkIBigNumber),
-  fIMax( fgkIBigNumber),
-  fUIMin(0),
-  fUIMax(2 * (UInt_t)fgkIBigNumber),
-  fType (type),
-  fVarType (kDouble_t)
+AliRsnCut::AliRsnCut(const char *name, const char *title, EType type) :
+    TNamed(name,title),
+    fDMin(-fgkDBigNumber),
+    fDMax(fgkDBigNumber),
+    fIMin(-fgkIBigNumber),
+    fIMax(fgkIBigNumber),
+    fUIMin(0),
+    fUIMax(2 * (UInt_t) fgkIBigNumber),
+    fULMin(0),
+    fULMax(2 * (ULong_t) fgkIBigNumber),
+    fType(type),
+    fVarType(kDouble_t)
 {
 //
 // Constructor with arguments but not limits
@@ -66,16 +70,18 @@ AliRsnCut::AliRsnCut (const char *name, const char *title, EType type) :
 }
 
 //________________________________________________________________________________________________________________
-AliRsnCut::AliRsnCut (const char *name, const char *title, EType type, Double_t min, Double_t max) :
-  TNamed (name,title),
-  fDMin(min),
-  fDMax(max),
-  fIMin(-fgkIBigNumber),
-  fIMax( fgkIBigNumber),
-  fUIMin(0),
-  fUIMax(2 * (UInt_t)fgkIBigNumber),
-  fType (type),
-  fVarType (kDouble_t)
+AliRsnCut::AliRsnCut(const char *name, const char *title, EType type, Double_t min, Double_t max) :
+    TNamed(name,title),
+    fDMin(min),
+    fDMax(max),
+    fIMin(-fgkIBigNumber),
+    fIMax(fgkIBigNumber),
+    fUIMin(0),
+    fUIMax(2 * (UInt_t) fgkIBigNumber),
+    fULMin(min),
+    fULMax(max),
+    fType(type),
+    fVarType(kDouble_t)
 {
 //
 // Constructor with arguments and limits
@@ -83,16 +89,18 @@ AliRsnCut::AliRsnCut (const char *name, const char *title, EType type, Double_t 
 }
 
 //________________________________________________________________________________________________________________
-AliRsnCut::AliRsnCut (const char * name, const char * title, EType type, Int_t min, Int_t max) :
-  TNamed (name,title),
-  fDMin(-fgkDBigNumber),
-  fDMax( fgkDBigNumber),
-  fIMin(min),
-  fIMax(max),
-  fUIMin(0),
-  fUIMax(2 * (UInt_t)fgkIBigNumber),
-  fType (type),
-  fVarType (kInt_t)
+AliRsnCut::AliRsnCut(const char * name, const char * title, EType type, Int_t min, Int_t max) :
+    TNamed(name,title),
+    fDMin(-fgkDBigNumber),
+    fDMax(fgkDBigNumber),
+    fIMin(min),
+    fIMax(max),
+    fUIMin(0),
+    fUIMax(2 * (UInt_t) fgkIBigNumber),
+    fULMin(min),
+    fULMax(max),
+    fType(type),
+    fVarType(kInt_t)
 {
 //
 // Constructor with arguments and limits
@@ -100,16 +108,37 @@ AliRsnCut::AliRsnCut (const char * name, const char * title, EType type, Int_t m
 }
 
 //________________________________________________________________________________________________________________
-AliRsnCut::AliRsnCut (const char * name, const char * title, EType type, UInt_t min, UInt_t max) :
-  TNamed (name,title),
-  fDMin(-fgkDBigNumber),
-  fDMax( fgkDBigNumber),
-  fIMin(-fgkIBigNumber),
-  fIMax( fgkIBigNumber),
-  fUIMin(min),
-  fUIMax(max),
-  fType (type),
-  fVarType (kUInt_t)
+AliRsnCut::AliRsnCut(const char * name, const char * title, EType type, UInt_t min, UInt_t max) :
+    TNamed(name,title),
+    fDMin(-fgkDBigNumber),
+    fDMax(fgkDBigNumber),
+    fIMin(-fgkIBigNumber),
+    fIMax(fgkIBigNumber),
+    fUIMin(min),
+    fUIMax(max),
+    fULMin(min),
+    fULMax(max),
+    fType(type),
+    fVarType(kUInt_t)
+{
+//
+// Constructor with arguments and limits
+//
+}
+
+//________________________________________________________________________________________________________________
+AliRsnCut::AliRsnCut(const char * name, const char * title, EType type, ULong_t min, ULong_t max) :
+    TNamed(name,title),
+    fDMin(-fgkDBigNumber),
+    fDMax(fgkDBigNumber),
+    fIMin(-fgkIBigNumber),
+    fIMax(fgkIBigNumber),
+    fUIMin(min),
+    fUIMax(max),
+    fULMin(min),
+    fULMax(max),
+    fType(type),
+    fVarType(kUInt_t)
 {
 //
 // Constructor with arguments and limits
@@ -126,49 +155,59 @@ AliRsnCut::~AliRsnCut()
 }
 
 //________________________________________________________________________________________________________________
-Bool_t AliRsnCut::IsBetween (const Double_t &theValue)
+Bool_t AliRsnCut::IsBetween(const Double_t &theValue)
 {
 //
 // Interval check.
 // Question: "Is the argument included between fDMin and fDMax?"
 // (not implemented for integer values because usually it is not used with them)
 //
-    return ((theValue >= fDMin) && (theValue <= fDMax));
+  return ((theValue >= fDMin) && (theValue <= fDMax));
 }
 
 //________________________________________________________________________________________________________________
-Bool_t AliRsnCut::IsBetween (const Int_t &theValue)
+Bool_t AliRsnCut::IsBetween(const Int_t &theValue)
 {
 //
 // Interval check.
 // Question: "Is the argument included between fDMin and fDMax?"
 // (not implemented for integer values because usually it is not used with them)
 //
-    return ((theValue >= fIMin) && (theValue <= fIMax));
+  return ((theValue >= fIMin) && (theValue <= fIMax));
 }
 
 //________________________________________________________________________________________________________________
-Bool_t AliRsnCut::MatchesValue (const Int_t &theValue)
+Bool_t AliRsnCut::MatchesValue(const Int_t &theValue)
 {
 //
 // Reference check.
 // Question: "Is the argument equal to fIMin?" (fIMax is assumed never used)
 //
-    return (theValue == fIMin);
+  return (theValue == fIMin);
 }
 
 //________________________________________________________________________________________________________________
-Bool_t AliRsnCut::MatchesValue (const UInt_t &theValue)
+Bool_t AliRsnCut::MatchesValue(const UInt_t &theValue)
 {
 //
 // Reference check.
 // Question: "Is the argument equal to fUIMin?" (fUIMax is assumed never used)
 //
-    return (theValue == fUIMin);
+  return (theValue == fUIMin);
 }
 
 //________________________________________________________________________________________________________________
-Bool_t AliRsnCut::MatchesValue (const Double_t &theValue)
+Bool_t AliRsnCut::MatchesValue(const ULong_t &theValue)
+{
+  //
+// Reference check.
+// Question: "Is the argument equal to fUIMin?" (fUIMax is assumed never used)
+  //
+  return (theValue == fULMin);
+}
+
+//________________________________________________________________________________________________________________
+Bool_t AliRsnCut::MatchesValue(const Double_t &theValue)
 {
 //
 // Reference check.
@@ -176,40 +215,51 @@ Bool_t AliRsnCut::MatchesValue (const Double_t &theValue)
 // Here, "reasonably close" means that the difference is smaller than the
 // 'fgkSmallNumber' global static data member of this class
 //
-    return (TMath::Abs (theValue - fDMin) < fgkDSmallNumber);
+  return (TMath::Abs(theValue - fDMin) < fgkDSmallNumber);
 }
 
 //________________________________________________________________________________________________________________
-void AliRsnCut::SetCutValues (EType type, const Double_t &theValue, const Double_t &theValue2)
+void AliRsnCut::SetCutValues(EType type, const Double_t &theValue, const Double_t &theValue2)
 {
 //
 // (Re)assignment of cut values
 //
-    fType = type;
-    fDMin = theValue;
-    fDMax = theValue2;
+  fType = type;
+  fDMin = theValue;
+  fDMax = theValue2;
 }
 
 //________________________________________________________________________________________________________________
-void AliRsnCut::SetCutValues (EType type, const Int_t &theValue, const Int_t &theValue2)
+void AliRsnCut::SetCutValues(EType type, const Int_t &theValue, const Int_t &theValue2)
 {
 //
 // (Re)assignment of cut values
 //
-    fType = type;
-    fIMin = theValue;
-    fIMax = theValue2;
+  fType = type;
+  fIMin = theValue;
+  fIMax = theValue2;
 }
 
 //________________________________________________________________________________________________________________
-void AliRsnCut::SetCutValues (EType type, const UInt_t &theValue, const UInt_t &theValue2)
+void AliRsnCut::SetCutValues(EType type, const UInt_t &theValue, const UInt_t &theValue2)
 {
 //
 // (Re)assignment of cut values
 //
-    fType = type;
-    fUIMin = theValue;
-    fUIMax = theValue2;
+  fType = type;
+  fUIMin = theValue;
+  fUIMax = theValue2;
+}
+
+//________________________________________________________________________________________________________________
+void AliRsnCut::SetCutValues(EType type, const ULong_t &theValue, const ULong_t &theValue2)
+{
+  //
+// (Re)assignment of cut values
+  //
+  fType = type;
+  fULMin = theValue;
+  fULMax = theValue2;
 }
 
 //________________________________________________________________________________________________________________
@@ -223,128 +273,132 @@ Bool_t AliRsnCut::IsSelected(ETarget type, AliRsnDaughter *daughter)
 // (the ones for that type of object), otherwise kTRUE is returned in order
 // not to act as a cleaning factor for an AND with other cuts.
 //
-    AliDebug (AliLog::kDebug, "<-");
-    AliRsnMCInfo *mcinfo = daughter->GetMCInfo();
+  AliDebug(AliLog::kDebug, "<-");
+  AliRsnMCInfo *mcinfo = daughter->GetMCInfo();
 
-    // check type
-    if (type != kParticle) {
-        AliWarning(Form("Mismatch: type = %d (expected %d), class type = %s (expected AliRsnDaughter)", type, kParticle, daughter->ClassName()));
-        return kTRUE;
-    }
-    
-    // utility variables
-    AliRsnPID::EType pidType;
-    Double_t prob;
-
-    switch (fType) {
-        case kMomentum:
-            return IsBetween (daughter->P());
-        case kTransMomentum:
-            return IsBetween (daughter->Pt());
-        case kEta:
-            return IsBetween (daughter->Eta());
-        case kRadialImpactParam:
-            return IsBetween (daughter->Dr());
-        case kMomentumMC:
-            if (mcinfo) return IsBetween (mcinfo->P());
-            else return kTRUE;
-        case kTransMomentumMC:
-            if (mcinfo) return IsBetween (mcinfo->P());
-            else return kTRUE;
-        case kStatus:
-            return daughter->CheckFlag(fUIMin);
-        case kChargePos:
-            return (daughter->Charge() > 0);
-        case kChargeNeg:
-            return (daughter->Charge() < 0);
-        case kPIDType:
-        case kPIDProb:
-            pidType = daughter->PIDType(prob);
-            if (fType == kPIDType) return MatchesValue((Int_t)pidType);
-            if (fType == kPIDProb) return IsBetween(prob);
-        /*
-        case kEtaMC:
-            if (mcinfo) return IsBetween (mcinfo->Eta());
-            else return kTRUE;
-        case kMcVt:
-            if (mcinfo) return IsBetween (mcinfo->Vt());
-            else return kTRUE;
-        case kEsdNSigma:
-            return IsBetween (daughter->GetNSigma());
-        case kEsdNSigmaCalculate:
-            return IsBetween (daughter->GetESDInfo()->GetNSigmaCalculate());
-        */
-        default:
-            AliWarning("Requested a cut which cannot be applied to a single track");
-            return kTRUE;
-    }
-
+  // check type
+  if (type != kParticle)
+  {
+    AliWarning(Form("Mismatch: type = %d (expected %d), class type = %s (expected AliRsnDaughter)", type, kParticle, daughter->ClassName()));
     return kTRUE;
+  }
+
+  // utility variables
+  AliRsnPID::EType pidType;
+  Double_t prob;
+
+  switch (fType)
+  {
+    case kMomentum:
+      return IsBetween(daughter->P());
+    case kTransMomentum:
+      return IsBetween(daughter->Pt());
+    case kEta:
+      return IsBetween(daughter->Eta());
+    case kRadialImpactParam:
+      return IsBetween(daughter->Dr());
+    case kMomentumMC:
+      if (mcinfo) return IsBetween(mcinfo->P());
+      else return kTRUE;
+    case kTransMomentumMC:
+      if (mcinfo) return IsBetween(mcinfo->P());
+      else return kTRUE;
+    case kStatus:
+      return daughter->CheckFlag(fUIMin);
+    case kChargePos:
+      return (daughter->Charge() > 0);
+    case kChargeNeg:
+      return (daughter->Charge() < 0);
+    case kPIDType:
+    case kPIDProb:
+      pidType = daughter->PIDType(prob);
+      if (fType == kPIDType) return MatchesValue((Int_t) pidType);
+      if (fType == kPIDProb) return IsBetween(prob);
+    case kEtaMC:
+      if (mcinfo) return IsBetween(mcinfo->Eta());
+      else return kTRUE;
+      /*
+      case kEsdNSigma:
+          return IsBetween (daughter->GetNSigma());
+      case kEsdNSigmaCalculate:
+          return IsBetween (daughter->GetESDInfo()->GetNSigmaCalculate());
+      */
+    default:
+      AliWarning("Requested a cut which cannot be applied to a single track");
+      return kTRUE;
+  }
+
+  return kTRUE;
 }
 
 //________________________________________________________________________________________________________________
 Bool_t AliRsnCut::IsSelected(ETarget type, AliRsnPairParticle * pair)
 {
-    AliDebug (AliLog::kDebug, "<-");
+  AliDebug(AliLog::kDebug, "<-");
 
-    // check type
-    if (type != kPair) {
-        AliWarning(Form("Mismatch: type = %d (expected %d), class type = %s (expected AliRsnPairParticle)", type, kPair, pair->ClassName()));
-        return kTRUE;
-    }
-
-    switch (fType) {
-        case kMomentum:
-            return IsBetween (pair->GetP());
-        case kTransMomentum:
-            return IsBetween (pair->GetPt());
-        /*
-        case kEta:
-            return IsBetween (daughter->Eta());
-        */
-        case kMomentumMC:
-            return IsBetween (pair->GetPMC());
-        case kTransMomentumMC:
-            return IsBetween (pair->GetPtMC());
-        case kIsLabelEqual:
-            return pair->IsLabelEqual();
-        case kIsTruePair:
-            return pair->IsTruePair(fIMin);
-        default:
-            AliWarning("Requested a cut which cannot be applied to a pair");
-            return kTRUE;
-    }
-
+  // check type
+  if (type != kPair)
+  {
+    AliWarning(Form("Mismatch: type = %d (expected %d), class type = %s (expected AliRsnPairParticle)", type, kPair, pair->ClassName()));
     return kTRUE;
+  }
+
+  switch (fType)
+  {
+    case kMomentum:
+      return IsBetween(pair->GetP());
+    case kTransMomentum:
+      return IsBetween(pair->GetPt());
+      /*
+      case kEta:
+          return IsBetween (daughter->Eta());
+      */
+    case kMomentumMC:
+      return IsBetween(pair->GetPMC());
+    case kTransMomentumMC:
+      return IsBetween(pair->GetPtMC());
+    case kIsLabelEqual:
+      return pair->IsLabelEqual();
+    case kIsTruePair:
+      return pair->IsTruePair(fIMin);
+    default:
+      AliWarning("Requested a cut which cannot be applied to a pair");
+      return kTRUE;
+  }
+
+  return kTRUE;
 }
 
 //________________________________________________________________________________________________________________
 Bool_t AliRsnCut::IsSelected(ETarget type, AliRsnEvent * event)
 {
-    AliDebug (AliLog::kDebug, "<-");
+  AliDebug(AliLog::kDebug, "<-");
 
-    // check type
-    if (type != kEvent) {
-        AliWarning(Form("Mismatch: type = %d (expected %d), class type = %s (expected AliRsnEvent)", type, kEvent, event->ClassName()));
-        return kTRUE;
-    }
-
-    switch (fType) {
-        case kMultiplicity:
-            return IsBetween ((Int_t)event->GetMultiplicity());
-        default:
-            AliWarning("Requested a cut which cannot be applied to an event");
-            return kTRUE;
-    }
-
+  // check type
+  if (type != kEvent)
+  {
+    AliWarning(Form("Mismatch: type = %d (expected %d), class type = %s (expected AliRsnEvent)", type, kEvent, event->ClassName()));
     return kTRUE;
+  }
+
+  switch (fType)
+  {
+    case kMultiplicity:
+      return IsBetween((Int_t) event->GetMultiplicity());
+    default:
+      AliWarning("Requested a cut which cannot be applied to an event");
+      return kTRUE;
+  }
+
+  return kTRUE;
 }
 
 //________________________________________________________________________________________________________________
 void AliRsnCut::PrintAllValues()
 {
-  AliInfo (Form ("fType=%d fVarType=%d",fType,fVarType));
-  AliInfo (Form ("fDMin=%.2e fDMax=%.2e",fDMin,fDMax));
-  AliInfo (Form ("fIMin=%d fIMax=%d",fIMin,fIMax));
-  AliInfo (Form ("fUIMin=%d fUIMax=%d",fUIMin,fUIMax));
+  AliInfo(Form("fType=%d fVarType=%d",fType,fVarType));
+  AliInfo(Form("fDMin=%.2e fDMax=%.2e",fDMin,fDMax));
+  AliInfo(Form("fIMin=%d fIMax=%d",fIMin,fIMax));
+  AliInfo(Form("fUIMin=%d fUIMax=%d",fUIMin,fUIMax));
+  AliInfo(Form("fULMin=%d fULMax=%d",fULMin,fULMax));
 }

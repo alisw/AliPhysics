@@ -23,7 +23,7 @@ class AliRsnSimpleAnalyzer;
 
 class AliRsnSimpleAnalysis : public TObject
 {
-public:
+  public:
 
     AliRsnSimpleAnalysis(AliRsnSimpleAnalyzer *ana = 0x0, AliRsnPID *pid = 0x0);
     virtual ~AliRsnSimpleAnalysis() {Clear();}
@@ -39,12 +39,12 @@ public:
     Stat_t  Process();
     void    SaveOutput() const;
 
-private:
+  private:
 
     AliRsnSimpleAnalysis(const AliRsnSimpleAnalysis &copy) :
-      TObject(copy),fInitialized(kFALSE),fStep(1000),fTree(0x0),fPID(0x0),fAnalyzer(0x0) { }
-    AliRsnSimpleAnalysis& operator=(const AliRsnSimpleAnalysis & /*copy*/) 
-      { return (*this); }
+        TObject(copy),fInitialized(kFALSE),fStep(1000),fTree(0x0),fPID(0x0),fAnalyzer(0x0) { }
+    AliRsnSimpleAnalysis& operator=(const AliRsnSimpleAnalysis & /*copy*/)
+    { return (*this); }
 
     Bool_t                fInitialized;     // flag to check initialization
     Int_t                 fStep;            // progress step

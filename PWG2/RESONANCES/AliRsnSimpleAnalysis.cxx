@@ -53,19 +53,19 @@ ClassImp(AliRsnSimpleAnalysis)
 
 //_____________________________________________________________________________
 AliRsnSimpleAnalysis::AliRsnSimpleAnalysis(AliRsnSimpleAnalyzer *ana, AliRsnPID *pid) :
-  TObject(),
-  fInitialized(kFALSE),
-  fStep(1000),
-  fTree(0x0),
-  fPID(pid),
-  fAnalyzer(ana)
+    TObject(),
+    fInitialized(kFALSE),
+    fStep(1000),
+    fTree(0x0),
+    fPID(pid),
+    fAnalyzer(ana)
 {
 //
 // Constructor
 // Initializes all pointers and collections to NULL.
 //
 
-    strcpy(fFileName, "default.root");
+  strcpy(fFileName, "default.root");
 }
 
 
@@ -85,8 +85,8 @@ void AliRsnSimpleAnalysis::SetEventsTree(TTree *tree)
 // Counts also the number of events and stores it in a private datamember.
 // This can avoid the time-wasting entries count in a long TChain.
 //
-    fTree = tree;
-    AliInfo(Form("Total number of events to be processed: %d", fTree->GetEntries()));
+  fTree = tree;
+  AliInfo(Form("Total number of events to be processed: %d", fTree->GetEntries()));
 }
 
 //_____________________________________________________________________________
@@ -95,19 +95,20 @@ Bool_t AliRsnSimpleAnalysis::Initialize()
 //
 // Various initialization processes
 //
-    // check process objects
-    if (!fAnalyzer) {
-        AliError("Analyzer not initialized");
-        return kFALSE;
-    }
+  // check process objects
+  if (!fAnalyzer)
+  {
+    AliError("Analyzer not initialized");
+    return kFALSE;
+  }
 
-    // initialize analyzer
-    fAnalyzer->Init();
+  // initialize analyzer
+  fAnalyzer->Init();
 
-    // at the end, update flag for initialization
-    fInitialized = kTRUE;
+  // at the end, update flag for initialization
+  fInitialized = kTRUE;
 
-    return kTRUE;
+  return kTRUE;
 }
 
 //_____________________________________________________________________________
@@ -118,32 +119,34 @@ Stat_t AliRsnSimpleAnalysis::Process()
 // Depending on the kind of background evaluation method, computes also this one.
 //
 
-    // check initialization
-    if (!fInitialized) {
-        AliError("Analysis not initialized. Use method 'Initialize()'");
-        return 0.0;
-    }
+  // check initialization
+  if (!fInitialized)
+  {
+    AliError("Analysis not initialized. Use method 'Initialize()'");
+    return 0.0;
+  }
 
-    // set cursor object
-    AliRsnEvent *event = 0x0;
-    fTree->SetBranchAddress("rsnEvents", &event);
+  // set cursor object
+  AliRsnEvent *event = 0x0;
+  fTree->SetBranchAddress("rsnEvents", &event);
 
-    // output counter
-    Stat_t nPairs = 0.0;
+  // output counter
+  Stat_t nPairs = 0.0;
 
-	// loop on events
-	Int_t i, nEvents = (Int_t)fTree->GetEntries();
-    for (i = 0; i < nEvents; i++) {
-        // message
-        if ((i % fStep) == 0) AliInfo(Form("Processing event %d", i));
-        // get entry
-        fTree->GetEntry(i);
-        if (!event) continue;
-        fPID->Process(event);
-        fAnalyzer->Process(event);
-    }
+  // loop on events
+  Int_t i, nEvents = (Int_t)fTree->GetEntries();
+  for (i = 0; i < nEvents; i++)
+  {
+    // message
+    if ((i % fStep) == 0) AliInfo(Form("Processing event %d", i));
+    // get entry
+    fTree->GetEntry(i);
+    if (!event) continue;
+    fPID->Process(event);
+    fAnalyzer->Process(event);
+  }
 
-    return nPairs;
+  return nPairs;
 }
 
 //_____________________________________________________________________________
@@ -152,25 +155,28 @@ void AliRsnSimpleAnalysis::SaveOutput() const
 //
 // Writes histograms in current directory
 //
-    TFile *file = TFile::Open(fFileName, "RECREATE");
-    AliRsnSimpleFunction *pair = 0;
-    TH1D *h1D = 0;
-    TH2D *h2D = 0;
-    TObjArrayIter pairIterator(fAnalyzer->GetSingle());
-    while ( (pair = (AliRsnSimpleFunction*)pairIterator.Next()) ) {
-        h1D = pair->GetHistogram1D();
-        h2D = pair->GetHistogram2D();
-        if (h1D) h1D->Write();
-        if (h2D) h2D->Write();
+  TFile *file = TFile::Open(fFileName, "RECREATE");
+  AliRsnSimpleFunction *pair = 0;
+  TH1D *h1D = 0;
+  TH2D *h2D = 0;
+  TObjArrayIter pairIterator(fAnalyzer->GetSingle());
+  while ((pair = (AliRsnSimpleFunction*)pairIterator.Next()))
+  {
+    h1D = pair->GetHistogram1D();
+    h2D = pair->GetHistogram2D();
+    if (h1D) h1D->Write();
+    if (h2D) h2D->Write();
+  }
+  if (fAnalyzer->GetMix() && !fAnalyzer->GetMix()->IsEmpty())
+  {
+    TObjArrayIter mixIterator(fAnalyzer->GetMix());
+    while ((pair = (AliRsnSimpleFunction*)mixIterator.Next()))
+    {
+      h1D = pair->GetHistogram1D();
+      h2D = pair->GetHistogram2D();
+      if (h1D) h1D->Write();
+      if (h2D) h2D->Write();
     }
-    if (fAnalyzer->GetMix() && !fAnalyzer->GetMix()->IsEmpty()) {
-    	TObjArrayIter mixIterator(fAnalyzer->GetMix());
-        while ( (pair = (AliRsnSimpleFunction*)mixIterator.Next()) ) {
-            h1D = pair->GetHistogram1D();
-            h2D = pair->GetHistogram2D();
-            if (h1D) h1D->Write();
-            if (h2D) h2D->Write();
-        }
-	}
-	file->Close();
+  }
+  file->Close();
 }

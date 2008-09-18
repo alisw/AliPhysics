@@ -20,10 +20,10 @@
 
 class AliRsnPIDIndex : public TObject
 {
-public:
+  public:
 
-    AliRsnPIDIndex (Int_t num = 1000);
-    AliRsnPIDIndex (const AliRsnPIDIndex &copy);
+    AliRsnPIDIndex(Int_t num = 2000);
+    AliRsnPIDIndex(const AliRsnPIDIndex &copy);
     AliRsnPIDIndex& operator= (const AliRsnPIDIndex& copy);
 
     virtual ~AliRsnPIDIndex();
@@ -34,17 +34,17 @@ public:
     void     AddIndex(const Int_t index, Short_t sign, Int_t type);
     void     SetCorrectIndexSize();
 
-    TArrayI* GetTracksArray (Char_t sign, AliRsnPID::EType type);
-    TArrayI* GetCharged (Char_t sign);
+    TArrayI* GetTracksArray(Char_t sign, AliRsnPID::EType type);
+    TArrayI* GetCharged(Char_t sign);
 
-private:
+  private:
 
-    Int_t    ChargeIndex (Char_t sign) const;
+    Int_t    ChargeIndex(Char_t sign) const;
 
     TArrayI  fIndex[2][AliRsnPID::kSpecies+1];       // index arrays of pos/neg particles of each PID
     Int_t    fNumOfIndex[2][AliRsnPID::kSpecies+1];  //! array size
 
-    ClassDef (AliRsnPIDIndex, 1);
+    ClassDef(AliRsnPIDIndex, 1);
 };
 
 #endif
