@@ -41,6 +41,7 @@ public:
   Int_t              GetLabel() const { return fLabel; }
   Int_t              GetPDG() const { return fPDG; }
   ULong_t            GetStatus() const {return fStatus;}
+  UChar_t            GetTriggerCluster() const {return fTriggerCluster;}
   AliTRDseedV1*      GetTracklet(Int_t entry) const;
   AliTRDtrackV1 *	 	 GetTRDtrack() const { return fTRDtrack; }
   AliTrackReference* GetTrackRef(Int_t entry) const;
@@ -59,6 +60,7 @@ public:
   void               SetOuterParam(const AliExternalTrackParam *op);
   void               SetStatus(ULong_t stat) {fStatus = stat;}
   void               SetTrackId(Int_t id) {fId = id;}
+  void               SetTriggerCluster(Int_t clusterPattern){fTriggerCluster = clusterPattern;}
   void               SetTRDtrack(const AliTRDtrackV1 *track);
   
 private:
@@ -68,6 +70,7 @@ private:
 	};
   Int_t              fPDG;           	// particle code
   ULong_t            fStatus;        	// ESD track status
+  UChar_t            fTriggerCluster;	// Trigger cluster pattern
   Int_t              fId;            	// ESD track id
   Int_t              fLabel;         	// MC label  
   Int_t              fNClusters;     	// Numer of clusters from refit

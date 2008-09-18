@@ -1,5 +1,6 @@
 #include <TFile.h>
 #include <TH1F.h>
+#include <TGraph.h>
 #include <TMath.h>
 #include <TObjArray.h>
 #include <TProfile.h>
@@ -29,7 +30,7 @@
 
 //_______________________________________________________
 AliTRDcheckDetector::AliTRDcheckDetector():
-  AliTRDrecoTask("DetChecker", "Basic Detector Checker")
+  AliTRDrecoTask("detChecker", "Basic Detector Checker")
   ,fPHSdetector(0x0)
   ,fPHSsector(0x0)
   ,fQCLdetector(0x0)
@@ -71,8 +72,10 @@ void AliTRDcheckDetector::CreateOutputObjects(){
   TH1F *hQcl = new TH1F("hQcl1", "Cluster charge", 200, -1200, 1200);
   TProfile *hPH = new TProfile("hPH", "Average PH", 31, -0.5, 30.5);
   TH1F * hQT = new TH1F("hQT", "Total Charge Deposit", 6000, 0, 6000);
+  TH1F * hEventsTrigger = new TH1F("hEventsTrigger", "Trigger Class", 20, 0, 20);
   // Register Histograms
   fContainer->Add(hNtrks);
+  fContainer->Add(hEventsTrigger);
   fContainer->Add(hNcls);
   fContainer->Add(hNtls);
   fContainer->Add(hNclTls);
@@ -123,6 +126,7 @@ void AliTRDcheckDetector::Exec(Option_t *){
   // Filling TRD quality histos
   //
   Int_t nTracks = 0;		// Count the number of tracks per event
+  Int_t triggermask = 0;
   AliTRDtrackInfo *fTrackInfo = 0x0;
   AliTRDtrackV1 *fTRDtrack = 0x0;
   AliTRDseedV1 *fTracklet = 0x0;
@@ -130,6 +134,7 @@ void AliTRDcheckDetector::Exec(Option_t *){
   for(Int_t iti = 0; iti < fTracks->GetEntriesFast(); iti++){
     fTrackInfo = dynamic_cast<AliTRDtrackInfo *>(fTracks->UncheckedAt(iti));
     if(!fTrackInfo || !(fTRDtrack = fTrackInfo->GetTRDtrack())) continue;
+    if(!triggermask) triggermask = fTrackInfo->GetTriggerCluster();
     Int_t nclusters = fTRDtrack->GetNumberOfClusters();
     Int_t ntracklets = fTRDtrack->GetNumberOfTracklets();
     Float_t chi2 = fTRDtrack->GetChi2();
@@ -177,6 +182,7 @@ void AliTRDcheckDetector::Exec(Option_t *){
     nTracks++;
   }
   dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNTracksEventHist))->Fill(nTracks);
+ 	dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNEventsTrigger))->Fill(triggermask);
   PostData(0, fContainer);
 }
 
@@ -215,9 +221,6 @@ Bool_t AliTRDcheckDetector::PostProcess(){
 	histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNTracksSectorHist));
 	histo->GetXaxis()->SetTitle("Sector");
 	histo->GetYaxis()->SetTitle("Number of Tracks");
-	histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNTracksSectorHist));
-	histo->GetXaxis()->SetTitle("Sector");
-	histo->GetYaxis()->SetTitle("Number of Tracks");
 	histo = dynamic_cast<TProfile *>(fContainer->UncheckedAt(kPulseHeight));
 	histo->GetXaxis()->SetTitle("Time / 100ns");
 	histo->GetYaxis()->SetTitle("Average Pulse Height (a. u.)");
@@ -227,35 +230,48 @@ Bool_t AliTRDcheckDetector::PostProcess(){
 	histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kChargeDeposit));
 	histo->GetXaxis()->SetTitle("Charge Deposit (a.u.)");
 	histo->GetYaxis()->SetTitle("Entries");
-	fNRefFigures = 9;
+	// Calculate the Percentage of events containing tracks as function of the trigger cluster
+	histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNEventsTrigger));
+	Double_t nEvents = histo->Integral();
+	TGraph *percentages = new TGraph(histo->GetNbinsX());
+	for(Int_t ibin = 0; ibin < histo->GetNbinsX(); ibin++)
+		percentages->SetPoint(ibin, ibin, histo->GetBinContent(histo->FindBin(ibin))/nEvents);
+	percentages->GetXaxis()->SetTitle("Trigger Cluster");
+	percentages->GetYaxis()->SetTitle("#%Events");
+	percentages->SetMarkerColor(kBlue);
+	percentages->SetMarkerStyle(22);
+	fContainer->Add(percentages);
+	fNRefFigures = 10;
 	return kTRUE;
 }
 
 //_______________________________________________________
-void AliTRDcheckDetector::GetRefFigure(Int_t ifig, Int_t &first, Int_t &last, Option_t */*opt*/){
+void AliTRDcheckDetector::GetRefFigure(Int_t ifig, Int_t &first, Int_t &last){
 	//
 	// Setting Reference Figures
 	//
 	switch(ifig){
-		case 0:	first = last = 0;
+		case 0:	first = last = kNTracksEventHist;
 						break;
-		case 1:	first = last = 1;
+		case 1:	first = last = kNclustersHist;
 						break;
-		case 2:	first = last = 2;
+		case 2:	first = last = kNtrackletsHist;
 						break;
-		case 3:	first = last = 3;
+		case 3:	first = last = kNclusterTrackletHist;
 						break;
-		case 4:	first = last = 4;
+		case 4:	first = last = kChi2;
 						break;
-		case 5:	first = last = 6;
+		case 5:	first = last = kNTracksSectorHist;
 						break;
-		case 6:	first = last = 7;
+		case 6:	first = last = kPulseHeight;
 						break;
-		case 7:	first = last = 8;
+		case 7:	first = last = kClusterCharge;
 						break;
-		case 8:	first = last = 9;
+		case 8:	first = last = kChargeDeposit;
 						break;
-		default: first = last = 0;
+		case 9: first = last = fContainer->GetEntries() - 1;
+						break;
+		default: first = last = kNTracksEventHist;
 						break;
 	};
 }

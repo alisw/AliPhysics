@@ -18,15 +18,16 @@ enum{
 // The Histogram number
 enum{
   kNTracksEventHist=0,
-  kNclustersHist=1,
-  kNtrackletsHist=2,
-  kNclusterTrackletHist = 3,
-  kChi2 = 4, 
-  kChi2Normalized = 5,
-  kNTracksSectorHist = 6,
-  kPulseHeight = 7,
-  kClusterCharge = 8,
-  kChargeDeposit = 9
+  kNEventsTrigger=1,
+  kNclustersHist=2,
+  kNtrackletsHist=3,
+  kNclusterTrackletHist=4,
+  kChi2=5, 
+  kChi2Normalized=6,
+  kNTracksSectorHist=7,
+  kPulseHeight=8,
+  kClusterCharge=9,
+  kChargeDeposit=10
 };
 public:
   AliTRDcheckDetector();
@@ -37,7 +38,7 @@ public:
   virtual void Terminate(Option_t *);
   
   virtual Bool_t PostProcess();
-  virtual void  GetRefFigure(Int_t ifig, Int_t &first, Int_t &last, Option_t *opt);
+  virtual void  GetRefFigure(Int_t ifig, Int_t &first, Int_t &last);
   
 private:
   AliTRDcheckDetector(const AliTRDcheckDetector &);
