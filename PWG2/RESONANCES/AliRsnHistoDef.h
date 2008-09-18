@@ -11,8 +11,6 @@
 #ifndef ALIRSNHISTODEF_H
 #define ALIRSNHISTODEF_H
 
-class TH1D;
-
 class AliRsnHistoDef : public TObject
 {
   public:
@@ -26,8 +24,6 @@ class AliRsnHistoDef : public TObject
     Double_t GetMax() const {return fMax;}
 
     void     SetBins(Int_t n, Double_t min, Double_t max);
-    TH1D*    CreateHistogram(const char *name, const char *title);
-    void     CheckEdges();
 
   private:
 
