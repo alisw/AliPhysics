@@ -88,7 +88,7 @@ AliTRDtrackingSector::~AliTRDtrackingSector()
 }
     
 //_____________________________________________________________________________
-void AliTRDtrackingSector::Init(const AliTRDReconstructor *rec)
+void AliTRDtrackingSector::Init(const AliTRDReconstructor *rec, const AliTRDCalDet *cal)
 {		
 // 	Steer building of tracking chambers and build tracking sector.
 // 	Propagate radial position information (calibration/alignment aware) from chambers to sector level
@@ -101,7 +101,7 @@ void AliTRDtrackingSector::Init(const AliTRDReconstructor *rec)
       if(!(tb = tc->GetTB(itb))) continue;
       tb->SetReconstructor(rec);
     }
-    tc->Build(fGeom);
+    tc->Build(fGeom, cal, rec->IsHLT());
   }
     
   Int_t nl;

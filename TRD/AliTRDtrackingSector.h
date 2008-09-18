@@ -21,9 +21,10 @@
 #include "Rtypes.h"
 #endif
 
-class AliTRDtrackingChamber;
+class AliTRDCalDet;
 class AliTRDgeometry;
 class AliTRDReconstructor;
+class AliTRDtrackingChamber;
 class AliTRDtrackingSector 
 {
 
@@ -49,7 +50,7 @@ public:
 	AliTRDtrackingChamber** GetStack(Int_t stack);
 	Int_t    GetSector() const {return fSector;}	
 
-	void     Init(const AliTRDReconstructor *rec);
+	void     Init(const AliTRDReconstructor *rec, const AliTRDCalDet *cal);
 	void     Print(Option_t *opt = 0x0);
 	
 	void     SetGeometry(AliTRDgeometry *geo) {fGeom = geo;}

@@ -1636,10 +1636,11 @@ Int_t AliTRDtrackerV1::BuildTrackingContainers()
     
     fTrSec[sector].GetChamber(stack, layer, kTRUE)->InsertCluster(c, icl);
   }
-  
+
+  const AliTRDCalDet *cal = AliTRDcalibDB::Instance()->GetT0Det();
   for(int isector =0; isector<AliTRDgeometry::kNsector; isector++){ 
     if(!fTrSec[isector].GetNChambers()) continue;
-    fTrSec[isector].Init(fReconstructor);
+    fTrSec[isector].Init(fReconstructor, cal);
   }
 
   return nin;
@@ -1850,6 +1851,7 @@ Int_t AliTRDtrackerV1::Clusters2TracksStack(AliTRDtrackingChamber **stack, TClon
   // 8. Build ESD track and register it to the output list
   //
 
+  const AliTRDCalDet *cal = AliTRDcalibDB::Instance()->GetT0Det();
   AliTRDtrackingChamber *chamber = 0x0;
   AliTRDseedV1 sseed[kMaxTracksStack*6]; // to be initialized
   Int_t pars[4]; // MakeSeeds parameters
@@ -2127,7 +2129,7 @@ Int_t AliTRDtrackerV1::Clusters2TracksStack(AliTRDtrackingChamber **stack, TClon
     
     for(Int_t ip = 0; ip < kNPlanes; ip++){ 
       if(!(chamber = stack[ip])) continue;
-      chamber->Build(fGeom);//Indices(fSieveSeeding);
+      chamber->Build(fGeom, cal);//Indices(fSieveSeeding);
     }
 
     if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker) > 1){ 

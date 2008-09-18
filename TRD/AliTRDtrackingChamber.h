@@ -20,6 +20,7 @@
 #include "AliTRDchamberTimeBin.h"
 #endif
 
+class AliTRDCalDet;
 class AliTRDgeometry;
 class AliTRDReconstructor;
 class AliTRDtrackingChamber
@@ -32,7 +33,7 @@ public:
 	AliTRDtrackingChamber(Int_t det);
 	virtual ~AliTRDtrackingChamber(){}
 	
-	Bool_t   Build(AliTRDgeometry *geo);
+	Bool_t   Build(AliTRDgeometry *geo, const AliTRDCalDet *cal, Bool_t hlt = kFALSE);
   void     Clear(const Option_t *opt = 0x0);
 	Int_t    GetDetector() const {return fDetector;}
 	Int_t    GetNClusters() const;
