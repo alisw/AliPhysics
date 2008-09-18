@@ -59,6 +59,8 @@ public :
   Double_t YClu         (Int_t i)const {return fYClu[i];}                                          //Getter of y clu
   Bool_t   ClCk         (Int_t i)const {return fClCk[i];}                                          //Getter of cluster flags
   Double_t CkovFit      ()const {return fCkovFit;}                                                 //Getter of ckov angle fitted
+  Double_t ThTrkIn      ()const {return fThTrkIn;}                                                 //Getter of theta started of the track
+  Double_t PhTrkIn      ()const {return fPhTrkIn;}                                                 //Getter of phi started of the track
   Double_t ThTrkFit     ()const {return fThTrkFit;}                                                //Getter of theta fitted of the track
   Double_t PhTrkFit     ()const {return fPhTrkFit;}                                                //Getter of phi fitted of the track
 //
@@ -74,6 +76,8 @@ protected:
   Double_t *fXClu;                             //container for x clus position
   Double_t *fYClu;                             //container for y clus position
   Bool_t   *fClCk;                             //flag if cluster is used in fitting
+  Double_t fThTrkIn;                           //theta started from ShapeModel
+  Double_t fPhTrkIn;                           //phi   started from ShapeModel
   Double_t fThTrkFit;                          //theta fitted of the track
   Double_t fPhTrkFit;                          //phi   fitted of the track
   Double_t fCkovFit;                           //estimated ring Cherenkov angle
@@ -86,7 +90,7 @@ private:
   AliHMPIDReconHTA(const AliHMPIDReconHTA& r);              //dummy copy constructor
   AliHMPIDReconHTA &operator=(const AliHMPIDReconHTA& r);   //dummy assignment operator
 //
-  ClassDef(AliHMPIDReconHTA,1)
+  ClassDef(AliHMPIDReconHTA,2)
 };
 
 #endif // #ifdef AliHMPIDReconHTA_cxx

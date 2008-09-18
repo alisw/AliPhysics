@@ -129,10 +129,16 @@ Bool_t AliHMPIDReconHTA::CkovHiddenTrk(AliESDtrack *pTrk,TClonesArray *pCluLst,I
   
   pParam->SetRefIdx(nmean);
   
+  //
+  Float_t xra,yra,th,ph; pTrk->GetHMPIDtrk(xra,yra,th,ph);
+  Printf(" simulated phi %6.2f ",ph*TMath::RadToDeg());
+  //
+  
   if(!DoRecHiddenTrk()) {
     pTrk->SetHMPIDsignal(pParam->kNoPhotAccept);
     return kFALSE;
   }                                                                           //Do track and ring reconstruction,if problems returns 1
+  Printf("    fitted phi %6.2f ",fPhTrkFit*TMath::RadToDeg());
   
   pTrk->SetHMPIDtrk(fRadX,fRadY,fThTrkFit,fPhTrkFit);                                        //store track intersection info
   pTrk->SetHMPIDmip(fMipX,fMipY,(Int_t)fMipQ,fNClu);                                         //store mip info 
@@ -347,11 +353,14 @@ Bool_t AliHMPIDReconHTA::ShapeModel(Int_t np,Double_t *phiphot,Double_t *dist,Do
   //
 //  Printf("ShapeModel: phiStart %f xA %f xB %f",phiStart,xA,xB);
   
-  phiStart*=TMath::DegToRad();
   
+  phiStart*=TMath::DegToRad();
   Double_t phitest = FindSimmPhi(); 
-
-  Printf("phiStart %f phiTest %f",phiStart*TMath::RadToDeg(),phitest*TMath::RadToDeg());
+    //Double_t phiStart = phitest;
+  phiStart = phitest;  
+  Printf("   started phi %6.2f ",phiStart*TMath::RadToDeg());
+  
+//  Printf("phiStart %f phiTest %f",phiStart*TMath::RadToDeg(),phitest*TMath::RadToDeg());
  
   return kTRUE;
 }
