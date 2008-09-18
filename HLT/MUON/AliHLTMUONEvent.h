@@ -46,6 +46,29 @@ public:
 	/// Finds the decision object in the array of dHLT objects.
 	const AliHLTMUONDecision* FindDecision() const;
 	
+	/**
+	 * Overloaded to find the object given by name in the array of event objects.
+	 * \param name  The name of the object to find. This will be the class
+	 *      name if the object in the array does not overload the GetName
+	 *      method.
+	 * \returns  The pointer to the found object or NULL if none was found.
+	 */
+	virtual TObject* FindObject(const char* name) const
+	{
+		return fArray.FindObject(name);
+	}
+	
+	/**
+	 * Overloaded to find the object for which obj->IsEqual() is true in
+	 * the array of event objects.
+	 * \param obj  The object to compare to.
+	 * \returns  The pointer to the found object or NULL if none was found.
+	 */
+	virtual TObject* FindObject(const TObject* obj) const
+	{
+		return fArray.FindObject(obj);
+	}
+	
 	/// Adds an object to the event.
 	/// \note This method takes ownership of the object.
 	void Add(TObject* obj) { fArray.Add(obj); }
