@@ -17,6 +17,8 @@ CLASS_HDRS := 	OfflineInterface/AliHLTMUONAgent.h \
 		utils/AliHLTMUONEmptyEventFilterComponent.h \
 		utils/AliHLTMUONDataCheckerComponent.h \
 		utils/AliHLTMUONRawDataHistoComponent.h \
+		AliHLTMUONUtils.h \
+		AliHLTMUONConstants.h \
 		AliHLTMUONProcessor.h \
 		AliHLTMUONRecHit.h \
 		AliHLTMUONTriggerRecord.h \
@@ -26,8 +28,6 @@ CLASS_HDRS := 	OfflineInterface/AliHLTMUONAgent.h \
 
 # Sources that are not ROOT classes:
 MODULE_SRCS :=	$(CLASS_HDRS:.h=.cxx) \
-		AliHLTMUONUtils.cxx \
-		AliHLTMUONConstants.cxx \
 		AliHLTMUONTriggerRecordsBlockStruct.cxx \
 		AliHLTMUONTrigRecsDebugBlockStruct.cxx \
 		AliHLTMUONRecHitsBlockStruct.cxx \

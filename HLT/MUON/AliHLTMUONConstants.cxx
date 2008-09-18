@@ -36,6 +36,7 @@
 #include "AliHLTMUONSinglesDecisionBlockStruct.h"
 #include "AliHLTMUONPairsDecisionBlockStruct.h"
 
+ClassImp(AliHLTMUONConstants);
 
 const AliHLTMUONTriggerRecordStruct
 AliHLTMUONConstants::fgkNilTriggerRecordStruct = {

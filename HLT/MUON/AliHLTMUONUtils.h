@@ -12,6 +12,7 @@
 /// @brief  Class containing various dimuon HLT utility routines and macros.
 ///
 
+#include "TObject.h"
 #include "AliHLTMUONDataTypes.h"
 #include <ostream>
 
@@ -1082,9 +1083,13 @@ public:
 	static bool RecordNumberWasSet(WhyNotValid reason);
 
 private:
-	// Should never have to create or destroy this object.
+	// Should never have to create, copy or destroy this object.
 	AliHLTMUONUtils();
+	AliHLTMUONUtils(const AliHLTMUONUtils& obj);
 	~AliHLTMUONUtils();
+	AliHLTMUONUtils& operator = (const AliHLTMUONUtils& obj);
+	
+	ClassDef(AliHLTMUONUtils, 0);  // Interface for helpful dHLT utility methods.
 };
 
 //_____________________________________________________________________________

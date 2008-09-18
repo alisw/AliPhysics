@@ -38,6 +38,8 @@
 #include <cmath>
 #include <cassert>
 
+ClassImp(AliHLTMUONUtils);
+
 
 AliHLTUInt32_t AliHLTMUONUtils::PackTriggerRecordFlags(
 		AliHLTMUONParticleSign sign, const bool hitset[4]

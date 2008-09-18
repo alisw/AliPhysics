@@ -38,6 +38,8 @@
 #pragma link C++ nestedfunction;
 
 #pragma link C++ class AliHLTMUONAgent+;
+#pragma link C++ class AliHLTMUONConstants+;
+#pragma link C++ class AliHLTMUONUtils+;
 #pragma link C++ class AliHLTMUONProcessor+;
 #pragma link C++ class AliHLTMUONTriggerRecordsSource+;
 #pragma link C++ class AliHLTMUONRecHitsSource+;

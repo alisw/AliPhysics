@@ -27,6 +27,8 @@
  * @brief  Class containing various dimuon HLT constants used in the system.
  */
 
+#include "TObject.h"
+
 // Forward declare structures.
 extern "C" {
 struct AliHLTComponentDataType;
@@ -321,6 +323,8 @@ private:
 	static const char* fgkHitReconstructorCDBPath; // Path to CDB entry for the hit reconstruction component.
 	static const char* fgkMansoTrackerFSMCDBPath; // Path to CDB entry for the Manso FSM tracker component.
 	static const char* fgkDecisionComponentCDBPath; // Path to CDB entry for trigger decision component.
+	
+	ClassDef(AliHLTMUONConstants, 0);  // Interface class to dHLT constants.
 };
 
 #endif // ALIHLTMUONCONSTANTS_H
