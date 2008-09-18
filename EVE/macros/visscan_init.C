@@ -133,21 +133,22 @@ void on_new_event()
   esd_V0_points();
   esd_V0();
 
-  TEveElementList* cont = esd_tracks_vertex_cut();
-
-  // Here we expect five TEveTrackList containers.
-  // First two have reasonable primaries (sigma-to-prim-vertex < 5).
-  // Other three are almost certainly secondaries.
-  Int_t count = 1;
   AliEveTrackCounter* g_trkcnt = AliEveTrackCounter::fgInstance;
   g_trkcnt->Reset();
   g_trkcnt->SetEventId(gAliEveEvent->GetEventId());
+
+  TEveElementList* cont = esd_tracks_by_category();
+
+  // Here we expect several TEveTrackList containers.
+  // First two have reasonable primaries (sigma-to-prim-vertex < 5).
+  // Others are almost certainly secondaries.
+  Int_t count = 1;
   TEveElement::List_i i = cont->BeginChildren();
   while (i != cont->EndChildren())
   {
     TEveTrackList* l = dynamic_cast<TEveTrackList*>(*i);
-    if (l != 0) {
-      // l->SetLineWidth(2);
+    if (l != 0)
+    {
       g_trkcnt->RegisterTracks(l, (count <= 2));
       ++count;
     }

@@ -78,11 +78,11 @@ void anyscan_init()
   exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "SIM Track",   "kine_tracks.C", "kine_tracks", "", kFALSE));
   exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "SIM Hit ITS", "its_hits.C",    "its_hits",    "", kFALSE));
   exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "SIM Hit TPC", "tpc_hits.C",    "tpc_hits",    "", kFALSE));
-  exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "TPC RAW",     "tpc_raw.C",     "tpc_raw",     "", kFALSE));
-  exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "FMD RAW",     "fmd_raw.C",     "fmd_raw",     "", kFALSE));
-  exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "FMD DIGITS",  "fmd_digits.C",  "fmd_digits",  "", kFALSE));
-  exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "FMD Hits",    "fmd_hits.C",    "fmd_hits",    "", kFALSE));
-  exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "VZERO RAW",   "vzero_raw.C",   "vzero_raw",   "", kFALSE));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW TPC",     "tpc_raw.C",     "tpc_raw",     "", kFALSE));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW FMD",     "fmd_raw.C",     "fmd_raw",     "", kFALSE));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "DIG FMD",     "fmd_digits.C",  "fmd_digits",  "", kFALSE));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "SIM Hit FMD", "fmd_hits.C",    "fmd_hits",    "", kFALSE));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW VZERO",   "vzero_raw.C",   "vzero_raw",   "", kFALSE));
 
   exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX",         "primary_vertex.C", "primary_vertex",             "",                kTRUE));
   exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX Ellipse", "primary_vertex.C", "primary_vertex_ellipse",     "",                kTRUE));
@@ -96,10 +96,12 @@ void anyscan_init()
 
   exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC V0",   "esd_V0_points.C",  "esd_V0_points"));
   exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC V0",   "esd_V0.C",         "esd_V0"));
-  // exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "esd_tracks.C",     ""));
-  TEveUtil::LoadMacro("esd_tracks.C");
 
-  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Track", "esd_spd_tracklets.C", "esd_spd_tracklets", "", kFALSE));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Track", "esd_tracks.C", "esd_tracks",             "", kFALSE));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Track", "esd_tracks.C", "esd_tracks_MI",          "", kFALSE));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Track", "esd_tracks.C", "esd_tracks_by_category", "", kTRUE));
+
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracklet", "esd_spd_tracklets.C", "esd_spd_tracklets", "", kFALSE));
 
   exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clus ITS", "its_clusters.C+", "its_clusters"));
   exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clus TPC", "tpc_clusters.C+", "tpc_clusters"));
@@ -136,26 +138,36 @@ void anyscan_init()
 
 void on_new_event()
 {
-  printf("on_new_event() entered ...\n");
-
-  TEveElementList* cont = esd_tracks_vertex_cut();
-
-  // Here we expect five TEveTrackList containers.
-  // First two have reasonable primaries (sigma-to-prim-vertex < 5).
-  // Other three are almost certainly secondaries.
-  Int_t count = 1;
   AliEveTrackCounter* g_trkcnt = AliEveTrackCounter::fgInstance;
   g_trkcnt->Reset();
   g_trkcnt->SetEventId(gAliEveEvent->GetEventId());
-  TEveElement::List_i i = cont->BeginChildren();
-  while (i != cont->EndChildren()) {
-    TEveTrackList* l = dynamic_cast<TEveTrackList*>(*i);
-    if (l != 0) {
-      // l->SetLineWidth(2);
-      g_trkcnt->RegisterTracks(l, (count <= 2));
-      ++count;
+
+  if (g_esd_tracks_by_category_container != 0)
+  {
+    TEveElementList* cont = g_esd_tracks_by_category_container;
+
+    // Here we expect several TEveTrackList containers.
+    // First two have reasonable primaries (sigma-to-prim-vertex < 5).
+    // Others are almost certainly secondaries.
+    Int_t count = 1;
+    TEveElement::List_i i = cont->BeginChildren();
+    while (i != cont->EndChildren())
+    {
+      TEveTrackList* l = dynamic_cast<TEveTrackList*>(*i);
+      if (l != 0)
+      {
+	g_trkcnt->RegisterTracks(l, (count <= 2));
+	++count;
+      }
+      ++i;
     }
-    ++i;
+
+    // Set it to zero, so that we do not reuse an old one.
+    g_esd_tracks_by_category_container = 0;
+  }
+  else
+  {
+    Warning("on_new_event", "g_esd_tracks_by_category_container not initialized.");
   }
 
   AliESDEvent* esd = AliEveEventManager::AssertESD();
@@ -172,14 +184,16 @@ void on_new_event()
 
   TEveElement* top = gEve->GetCurrentEvent();
 
-  if (gRPhiMgr && top) {
+  if (gRPhiMgr && top)
+  {
     gRPhiMgr->DestroyElements();
     gRPhiMgr->SetCenter(x[0], x[1], x[2]);
     gRPhiMgr->ImportElements(gGeomGentleRPhi);
     if (gShowTRD) gRPhiMgr->ImportElements(gGeomGentleTRD);
     gRPhiMgr->ImportElements(top);
   }
-  if (gRhoZMgr && top) {
+  if (gRhoZMgr && top)
+  {
     gRhoZMgr->DestroyElements();
     gRhoZMgr->SetCenter(x[0], x[1], x[2]);
     gRhoZMgr->ImportElements(gGeomGentleRhoZ);
@@ -187,5 +201,5 @@ void on_new_event()
     gRhoZMgr->ImportElements(top);
   }
 
-  gROOT->ProcessLine("SplitGLView::UpdateSummary()");
+  SplitGLView::UpdateSummary();
 }

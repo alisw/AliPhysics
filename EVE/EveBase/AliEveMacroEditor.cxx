@@ -61,7 +61,7 @@ AliEveMacroEditor::AliEveMacroEditor(const TGWindow *p, Int_t width, Int_t heigh
     fSources->AddEntry("RunLoader", AliEveMacro::kRunLoader);
     fSources->AddEntry("ESD",       AliEveMacro::kESD);
     fSources->AddEntry("ESDfriend", AliEveMacro::kESDfriend);
-    fSources->AddEntry("RawReafer", AliEveMacro::kRawReader);
+    fSources->AddEntry("RawReader", AliEveMacro::kRawReader);
     {
       TGListBox* lb = fSources->GetListBox();
       lb->Resize(lb->GetWidth(), 5*16);
