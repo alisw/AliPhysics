@@ -174,6 +174,8 @@ int AliHLTTPCHistogramHandlerComponent::DoInit( int argc, const char** argv ) {
 
     if (!strcmp( argv[i], "-use-general")) {
       fUseGeneral = kTRUE;
+      i++;
+      continue;
     }
     
     Logging(kHLTLogError, "HLT::TPCHistogramHandler::DoInit", "Unknown Option", "Unknown option '%s'", argv[i] );
