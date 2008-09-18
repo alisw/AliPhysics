@@ -13,7 +13,8 @@
 
 Bool_t clusterSelection(const AliTRDtrackV1 *track)
 {
-  if(!track) return kFALSE;
+  if (!track) return kFALSE;
   if (track->GetNumberOfClusters() > 60) return kFALSE;
   return kTRUE;
 }
+

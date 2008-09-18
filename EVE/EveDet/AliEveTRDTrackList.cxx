@@ -190,12 +190,18 @@ Int_t AliEveTRDTrackList::AddMacro(const Char_t* path, const Char_t* nameC, Bool
     fMacroList->Add(new TObjString(entryName));
     fMacroList->Sort();
 
+    // We do not know, where the element has been inserted - deselect this list
+    fMacroListSelected = 0;
+
     returnValue = SUCCESS;
   }
   else if (isSelectionMacro && fMacroSelList->FindObject(entryName) == 0)
   {
     fMacroSelList->Add(new TObjString(entryName));
     fMacroSelList->Sort();
+  
+    // We do not know, where the element has been inserted - deselect this list
+    fMacroSelListSelected = 0;
     
     returnValue = SUCCESS;
   }
@@ -214,11 +220,17 @@ void AliEveTRDTrackList::AddMacroFast(const Char_t* entry, Bool_t toSelectionLis
   {
     fMacroSelList->Add(new TObjString(entry));
     fMacroSelList->Sort();
+
+    // We do not know, where the element has been inserted - deselect this list
+    fMacroSelListSelected = 0;
   }
   else 
   {
     fMacroList->Add(new TObjString(entry));
     fMacroList->Sort();
+
+    // We do not know, where the element has been inserted - deselect this list
+    fMacroListSelected = 0;
   }
 }
 
@@ -278,6 +290,7 @@ void AliEveTRDTrackList::ApplyProcessMacros(TList* iterator)
 
   AliEveTRDTrack* track = 0;
   AliTRDtrackV1 *trackv1 = 0;
+  TH1* returnedHist = 0x0;
 
   // Clear root
   gROOT->Reset();
@@ -362,8 +375,15 @@ void AliEveTRDTrackList::ApplyProcessMacros(TList* iterator)
       // Process for macro type 2 (histo)
       if (isHistoMacro[i])
       {
-        if (histos[histoIndex] == 0)  histos[histoIndex] = (TH1*)gROOT->ProcessLineSync(cmds[i]);
-        else  histos[histoIndex]->Add((const TH1*)gROOT->ProcessLineSync(cmds[i]));
+        returnedHist = (TH1*)gROOT->ProcessLineSync(cmds[i]);
+        if (returnedHist != 0x0)
+        {
+          if (histos[histoIndex] == 0)  histos[histoIndex] = (TH1*)gROOT->ProcessLineSync(cmds[i]);
+          else  histos[histoIndex]->Add((const TH1*)gROOT->ProcessLineSync(cmds[i]));
+      
+          delete returnedHist;
+          returnedHist = 0;
+        }
         histoIndex++;
       }
       // Process for macro type 1
