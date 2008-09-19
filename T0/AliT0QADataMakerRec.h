@@ -39,7 +39,13 @@ private:
   virtual void   MakeESDs(AliESDEvent * esd) ;         //Fill hit QA histo
   virtual void   EndOfDetectorCycle(AliQA::TASKINDEX_t, TObjArray * list) ;
   virtual void   StartOfDetectorCycle() ;
-  ClassDef(AliT0QADataMakerRec,1)  // description 
+
+  Int_t fNumTriggers[6];  //number of trigger signals;
+  Int_t fNumTriggersCal[6];  //number of calibration  trigger signals;
+ 
+
+
+  ClassDef(AliT0QADataMakerRec,2)  // description 
 
 };
 

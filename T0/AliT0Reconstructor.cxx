@@ -370,7 +370,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	     Double_t qtMip = ((TGraph*)fQTC.At(ipmt))->Eval(adc[ipmt]);
 	     AliDebug(10,Form("  Amlitude in MIPS LED %f ,  QTC %f \n ",ampMip,qtMip));
 	     
-	     frecpoints->SetTime(ipmt, Float_t(time[ipmt] - allData[0][0] + 5000) );
+	     frecpoints->SetTime(ipmt, Float_t(time[ipmt]) );
 	     frecpoints->SetAmp(ipmt, Float_t( ampMip)); //for cosmic &pp beam 
 	     frecpoints->SetAmpLED(ipmt, Float_t(qtMip));
 	   } //if physic data end
@@ -411,11 +411,12 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	 }
 	 if(option == "cosmic") {
 	   meanTime =  Float_t((besttimeA + besttimeC)/2);  
-	   onlineMean = onlineMean -allData[0][0];;
+	   onlineMean = onlineMean ;
 	 }
 	 vertex =  meanVertex -c*(timeDiff)/2.; //+ (fdZonA - fdZonC)/2; 
 	 frecpoints->SetVertex(vertex);
 	 frecpoints->SetMeanTime(Int_t(meanTime));
+	 frecpoints->SetOnlineMean(Int_t(onlineMean));
 	 AliDebug(1,Form("  timeDiff %f ps,  meanTime %f ps, vertex %f cm online mean %i ",timeDiff, meanTime,vertex, onlineMean));
 	 
        }
