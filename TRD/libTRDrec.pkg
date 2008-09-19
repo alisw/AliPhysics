@@ -30,6 +30,13 @@ DHDR= TRDrecLinkDef.h
 
 EINCLUDE= RAW
 
+.PHONY default: TRD_clean_compiled_macros
+
+TRD_clean_compiled_macros:
+	@echo "***** Removing .d and .$(SOEXT) files from TRD/qaRec/macros/ *****"
+	$(MUTE)rm -f $(ALICE_ROOT)/TRD/qaRec/macros/*_C.d
+	$(MUTE)rm -f $(ALICE_ROOT)/TRD/qaRec/macros/*_C.$(SOEXT)
+
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
                          -lTRDbase -lSTEER -lESD -lCDB -lSTEERBase \
