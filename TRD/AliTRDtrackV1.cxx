@@ -644,6 +644,7 @@ void AliTRDtrackV1::UpdateESDtrack(AliESDtrack *track)
 
   for (Int_t ip = 0; ip < kNplane; ip++) {
     if(fTrackletIndex[ip] == 0xffff) continue;
+    if(!fTracklet[ip]->IsOK()) continue;
     fTracklet[ip]->CookdEdx(kNslice);
     Float_t *dedx = fTracklet[ip]->GetdEdx();
     for (Int_t js = 0; js < kNslice; js++) track->SetTRDslice(dedx[js], ip, js);

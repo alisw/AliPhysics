@@ -26,7 +26,7 @@ void makeResults(Char_t* dir=0x0, Char_t *tasks = "ALL")
 	// Load Libraries in interactive mode
   Int_t nlibs = static_cast<Int_t>(sizeof(libs)/sizeof(Char_t *));
   for(Int_t ilib=0; ilib<nlibs; ilib++){
-    if(!gSystem->Load(libs[ilib])) continue;
+    if(gSystem->Load(libs[ilib]) >= 0) continue;
     printf("Failed to load %s.\n", libs[ilib]);
     return;
   }
