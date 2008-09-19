@@ -393,7 +393,8 @@ void AliTOFtrackerV1::MatchTracks( ){
     Int_t index[kncmax];//to keep track of the cluster index
     for (Int_t k=FindClusterIndex(z-dz); k<fN; k++) {  
       AliTOFcluster *c=fClusters[k];
-      if(nc>kncmax)break;
+      //      if(nc>kncmax)break; /* R+ fix (buffer overflow) */
+      if(nc>=kncmax)break; /* R+ fix (buffer overflow protection) */
       if(c->GetZ() > z+dz) break;
       if(c->IsUsed()) continue;      
       if(!c->GetStatus()) {
@@ -434,7 +435,8 @@ void AliTOFtrackerV1::MatchTracks( ){
     AliTOFcluster *bestCluster=0;
     Double_t bestChi2=maxChi2; 
     Int_t idclus=-1;
-    for (Int_t i=0; i<nc; i++){
+    //    for (Int_t i=0; i<nc; i++){ /* R+ fix (unsafe) */
+    for (Int_t i=0; i<nc && i<kncmax; i++){ /* R+ fix (buffer overflow protection) */
       AliTOFcluster *c=clusters[i];  // one of the preselected clusters     
       Double_t chi2=trackTOFin->GetPredictedChi2((AliCluster3D*)c); 
       if (chi2 >= bestChi2) continue;
