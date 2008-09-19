@@ -98,14 +98,28 @@ void AliTOFReconstructor::Reconstruct(AliRawReader *rawReader,
   // reconstruct clusters from Raw Data
   //
 
-  TString selectedClusterFinder = GetOption();
+  TString optionString = GetOption();
   // use V1 cluster finder if selected
-  if (selectedClusterFinder.Contains("NCF")) {
+  if (optionString.Contains("ClusterizerV1")) {
     static AliTOFClusterFinderV1 tofClus(fTOFcalib);
+
+    // decoder version option
+    if (optionString.Contains("DecoderV1"))
+      tofClus.SetDecoderVersion(1);
+    else
+      tofClus.SetDecoderVersion(0);
+    
     tofClus.Digits2RecPoints(rawReader, clustersTree);
   }
   else {
     static AliTOFClusterFinder tofClus(fTOFcalib);
+    
+    // decoder version option
+    if (optionString.Contains("DecoderV1"))
+      tofClus.SetDecoderVersion(1);
+    else
+      tofClus.SetDecoderVersion(0);
+
     tofClus.Digits2RecPoints(rawReader, clustersTree);
   }
 
@@ -121,14 +135,28 @@ void AliTOFReconstructor::Reconstruct(TTree *digitsTree,
 
   AliDebug(2,Form("Global Event loop mode: Creating Recpoints from Digits Tree")); 
 
-  TString selectedClusterFinder = GetOption();
+  TString optionString = GetOption();
   // use V1 cluster finder if selected
-  if (selectedClusterFinder.Contains("NCF")) {
+  if (optionString.Contains("ClusterizerV1")) {
     static AliTOFClusterFinderV1 tofClus(fTOFcalib);
+
+    // decoder version option
+    if (optionString.Contains("DecoderV1"))
+      tofClus.SetDecoderVersion(1);
+    else
+      tofClus.SetDecoderVersion(0);
+    
     tofClus.Digits2RecPoints(digitsTree, clustersTree);
   }
   else {
     static AliTOFClusterFinder tofClus(fTOFcalib);
+
+    // decoder version option
+    if (optionString.Contains("DecoderV1"))
+      tofClus.SetDecoderVersion(1);
+    else
+      tofClus.SetDecoderVersion(0);
+    
     tofClus.Digits2RecPoints(digitsTree, clustersTree);
   }
 
@@ -140,14 +168,28 @@ void AliTOFReconstructor::Reconstruct(TTree *digitsTree,
 
   AliDebug(2,Form("Global Event loop mode: Converting Raw Data to a Digits Tree")); 
 
-  TString selectedClusterFinder = GetOption();
+  TString optionString = GetOption();
   // use V1 cluster finder if selected
-  if (selectedClusterFinder.Contains("NCF")) {
+  if (optionString.Contains("ClusterizerV1")) {
     static AliTOFClusterFinderV1 tofClus(fTOFcalib);
+
+    // decoder version option
+    if (optionString.Contains("DecoderV1"))
+      tofClus.SetDecoderVersion(1);
+    else
+      tofClus.SetDecoderVersion(0);
+    
     tofClus.Raw2Digits(reader, digitsTree);
   }
   else {
     static AliTOFClusterFinder tofClus(fTOFcalib);
+
+    // decoder version option
+    if (optionString.Contains("DecoderV1"))
+      tofClus.SetDecoderVersion(1);
+    else
+      tofClus.SetDecoderVersion(0);
+    
     tofClus.Raw2Digits(reader, digitsTree);
   }
 
@@ -166,11 +208,11 @@ AliTracker* AliTOFReconstructor::CreateTracker() const
  
   AliTracker *tracker;
   // use MI tracker if selected
-  if (selectedTracker.Contains("MI")) {
+  if (selectedTracker.Contains("TrackerMI")) {
     tracker = new AliTOFtrackerMI();
   }
   // use V1 tracker if selected
-  if (selectedTracker.Contains("V1")) {
+  if (selectedTracker.Contains("TrackerV1")) {
     tracker =  new AliTOFtrackerV1();
   }
   else {
