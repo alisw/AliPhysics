@@ -49,6 +49,7 @@ TOF Raw Data decoder
 #include "AliTOFHitDataBuffer.h"
 #include "AliTOFDecoder.h"
 #include "AliTOFGeometry.h"
+#include "AliRawDataHeader.h"
 
 ClassImp(AliTOFDecoder)
 
@@ -173,7 +174,7 @@ AliTOFDecoder::~AliTOFDecoder()
 //_________________________________________________________________
 
 Bool_t
-AliTOFDecoder::Decode(UInt_t *rawData, Int_t nWords)
+AliTOFDecoder::Decode(UInt_t *rawData, Int_t nWords, const AliRawDataHeader *cdh)
 {
   /* main decoding routine.
    * it loops over nWords 32-bit words 
@@ -198,6 +199,9 @@ AliTOFDecoder::Decode(UInt_t *rawData, Int_t nWords)
   Short_t  currentACQ = -1;
   Short_t  currentChain = -1;
   Short_t  currentBunchID = -1;
+  Short_t  currentMiniEventID = cdh ? cdh->GetMiniEventID() : (Short_t)-1;
+  if (!cdh)
+    AliWarning("CDH not valid: deltaBunchID not reliable ");
 
   /*** V2718 patch ***/
   if (fV2718Patch){
@@ -451,6 +455,7 @@ AliTOFDecoder::Decode(UInt_t *rawData, Int_t nWords)
 	hitData.SetTimeBin(fTDCPackedHit->GetHitTime());
 	hitData.SetTOT((float)fTDCPackedHit->GetTOTWidth() * TOT_BIN_WIDTH);
 	hitData.SetTOTBin(fTDCPackedHit->GetTOTWidth());
+	hitData.SetDeltaBunchID(currentBunchID - currentMiniEventID);
 	//orphane leading hit
 	if (hitData.GetPS()==LEADING_HIT_PS){
 	  hitData.SetTime((float)fTDCUnpackedHit->GetHitTime() * TIME_BIN_WIDTH);
@@ -544,6 +549,7 @@ AliTOFDecoder::Decode(UInt_t *rawData, Int_t nWords)
 	hitData.SetTimeBin(fTDCUnpackedHit->GetHitTime());
 	hitData.SetTOT(-1.);
 	hitData.SetTOTBin(-1);
+	hitData.SetDeltaBunchID(currentBunchID - currentMiniEventID);
 	//push hit data in data buffer
 	  if (fDataBuffer != 0x0)
 	    fDataBuffer->Add(hitData);
@@ -580,6 +586,7 @@ AliTOFDecoder::Decode(UInt_t *rawData, Int_t nWords)
 	hitData.SetTimeBin(fTDCUnpackedHit->GetHitTime());
 	hitData.SetTOT(-1.);
 	hitData.SetTOTBin(-1);
+	hitData.SetDeltaBunchID(currentBunchID - currentMiniEventID);
 	//push hit data in data buffer
 	  if (fDataBuffer != 0x0)
 	    fDataBuffer->Add(hitData);
@@ -691,7 +698,7 @@ AliTOFDecoder::ResetSpider(){
 //_________________________________________________________________
 
 Bool_t 
-AliTOFDecoder::Spider(AliTOFHitData hitData){
+AliTOFDecoder::Spider(AliTOFHitData &hitData){
 
   /* main SPIDER routine.
      it receives, reads, stores and packs

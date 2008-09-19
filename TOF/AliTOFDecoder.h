@@ -92,6 +92,7 @@
 
 class AliTOFHitData;
 class AliTOFHitDataBuffer;
+class AliRawDataHeader;
 
 class AliTOFDecoder : public TObject
 {
@@ -102,7 +103,7 @@ class AliTOFDecoder : public TObject
   AliTOFDecoder &operator = (const AliTOFDecoder &source); //operator =
   ~AliTOFDecoder(); //distructor
   
-  Bool_t Decode(UInt_t *rawData, Int_t nWords); //main decode function
+  Bool_t Decode(UInt_t *rawData, Int_t nWords, const AliRawDataHeader *cdh); //main decode function
   void   SetVerbose(Int_t Verbose = 1) {fVerbose = Verbose;}; //set verbose level
   void   SetV2718Patch(Bool_t V2718Patch = kTRUE) {fV2718Patch = V2718Patch;}; //set V2718 patch (no DRM)
   void   SetDataBuffer(AliTOFHitDataBuffer *DB) {fDataBuffer = DB;}; //set up data buffer
@@ -142,7 +143,7 @@ enum {
    */     
   Bool_t InitializeSpider(); //initialize SPIDER routine
   Bool_t ResetSpider(); //reset SPIDER routine
-  Bool_t Spider(AliTOFHitData hitData); //main SPIDER routine
+  Bool_t Spider(AliTOFHitData &hitData); //main SPIDER routine
 
   Int_t                fVerbose; //verbose flag
   Bool_t               fV2718Patch; //V2718 patch flag
