@@ -15,6 +15,16 @@
 
 /*
 $Log$
+Revision 1.19.1  2008/09/19  preghenella
+  Decode method updated:
+  it reads the CDH from the rawReader and sends it to the decoder;
+ LoadRawDataBuffers modified:
+     it corrects tof hit infos per ddlBC and deltaBC offsets
+     (in case of the static member fgApplyBCCorrections
+      has been setted to kTRUE);
+ Added static member fgApplyBCCorrections (kTRUE by default)
+ and the related static method ApplyBCCorrections;
+
 Revision 1.19  2007/05/18 13:07:53  decaro
 Error messages stored in the global raw-reader error log (Cvetan, Chiara)
 
@@ -131,7 +141,7 @@ const Int_t AliTOFRawStream::fgkddlBCshift[72] =
   2, 2, -1, -1
 };
 
-
+Bool_t AliTOFRawStream::fgApplyBCCorrections = kTRUE;
 //_____________________________________________________________________________
 AliTOFRawStream::AliTOFRawStream(AliRawReader* rawReader):
   fRawReader(rawReader),
@@ -1340,6 +1350,7 @@ Bool_t AliTOFRawStream::Decode(Int_t verbose = 0) {
 
   Int_t currentEquipment;
   Int_t currentDDL;
+  const AliRawDataHeader *currentCDH;
 
   //pointers
   UChar_t *data = 0x0;
@@ -1354,6 +1365,7 @@ Bool_t AliTOFRawStream::Decode(Int_t verbose = 0) {
     //get equipment infos
     currentEquipment = fRawReader->GetEquipmentId();
     currentDDL = fRawReader->GetDDLID();
+    currentCDH = fRawReader->GetDataHeader();
     const Int_t kDataSize = fRawReader->GetDataSize();
     const Int_t kDataWords = kDataSize / 4;
     data = new UChar_t[kDataSize];
@@ -1385,7 +1397,7 @@ Bool_t AliTOFRawStream::Decode(Int_t verbose = 0) {
     fDecoder->SetPackedDataBuffer(fPackedDataBuffer[currentDDL]);
     
     //start decoding
-    if (fDecoder->Decode((UInt_t *)data, kDataWords) == kTRUE) {
+    if (fDecoder->Decode((UInt_t *)data, kDataWords, currentCDH) == kTRUE) {
       fRawReader->AddMajorErrorLog(kDDLDecoder,Form("DDL # = %d",currentDDL));
       AliWarning(Form("Error while decoding DDL # %d: decoder returned with errors", currentDDL));
     }
@@ -1445,6 +1457,12 @@ AliTOFRawStream::LoadRawDataBuffers(Int_t indexDDL, Int_t verbose)
   if (verbose > 0)
     AliInfo("Filling TClonesArray ...");
 
+  if (verbose > 0)
+    if (fgApplyBCCorrections) {
+      AliInfo("Apply nominal DDL BC time-shift correction");
+      AliInfo("Apply deltaBC time-shift correction");
+    }
+
   //loop over DDL packed hits
   for (Int_t iHit = 0; iHit < fPackedDataBuffer[indexDDL]->GetEntries(); iHit++){
     hitData = fPackedDataBuffer[indexDDL]->GetHit(iHit); //get hit data
@@ -1456,10 +1474,15 @@ AliTOFRawStream::LoadRawDataBuffers(Int_t indexDDL, Int_t verbose)
     Int_t   hitChan = hitData->GetChan();
     Int_t   hitTimeBin = hitData->GetTimeBin();
     Int_t   hitTOTBin = hitData->GetTOTBin();
-    
-    Int_t hitLeading = hitData->GetTimeBin()
-      /*-
-      fCableLengthMap->GetCableTimeShiftBin(indexDDL, hitSlotID, hitChain, hitTDC)*/;//-1; // adc
+
+    if (fgApplyBCCorrections) {
+      /* DDL BC shift time correction */
+      hitTimeBin += fgkddlBCshift[indexDDL];
+      /* deltaBC shift time correction */
+      hitTimeBin += hitData->GetDeltaBunchID();
+    }
+
+    Int_t hitLeading = hitData->GetTimeBin();
     Int_t hitTrailing = -1;
     Int_t hitError = -1;
     

@@ -466,6 +466,7 @@ class AliTOFRawStream: public TObject {
   void ResetBuffers();
 
   Bool_t LoadRawDataBuffers(Int_t indexDDL, Int_t verbose = 0);
+  static void ApplyBCCorrections(Bool_t Value = kTRUE) {fgApplyBCCorrections = Value;};
   
   enum ETOFRawStreamError {
     kPadXError = 0,
@@ -535,6 +536,7 @@ class AliTOFRawStream: public TObject {
   UInt_t fEventID; // event ID
 
   static const Int_t fgkddlBCshift[72]; //
+  static Bool_t fgApplyBCCorrections; //
 
   ClassDef(AliTOFRawStream, 3)  // class for reading TOF raw digits
 };
