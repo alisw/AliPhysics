@@ -17,7 +17,7 @@
 //class AliTOFHitData;
 
 //data buffer size
-#define DATA_BUFFER_SIZE 1000
+#define DATA_BUFFER_SIZE 10000
 
 class AliTOFHitDataBuffer : public TObject{
   
