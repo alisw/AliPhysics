@@ -5,6 +5,9 @@
 // 
 // Usage:
 // .L trd_loader.C
+// AliCDBManager *cdb = AliCDBManager::Instance();
+// cdb->SetDefaultStorage("local://$ALICE_ROOT");
+// cdb->SetRun(0)
 // AliEveTRDLoader *loader = trd_loader();
 // loader->NextEvent();
 // loop(loader)
@@ -12,7 +15,7 @@
 // Author:
 // Alex Bercuci (A.Bercuci@gsi.de)
 //
-AliEveTRDLoader* trd_loader(Int_t event=70)
+AliEveTRDLoader* trd_loader(Int_t event=0)
 {
   // init single file loader
   AliEveTRDLoader *loader = new AliEveTRDLoader("Clusters");
