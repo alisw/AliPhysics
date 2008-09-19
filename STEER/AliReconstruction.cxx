@@ -509,6 +509,7 @@ AliReconstruction::~AliReconstruction()
 // clean up
 
   CleanUp();
+  delete fGRPData;
   delete fForcedFieldMap;
   fOptions.Delete();
   if (fAlignObjArray) {
@@ -2585,9 +2586,6 @@ void AliReconstruction::CleanUp()
     delete fDiamondProfileTPC;
     fDiamondProfileTPC = NULL;
   }
-  delete fGRPData;
-  fGRPData = NULL;
-
   delete fRunLoader;
   fRunLoader = NULL;
   delete fRawReader;
