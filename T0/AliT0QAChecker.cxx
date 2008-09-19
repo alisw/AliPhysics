@@ -65,12 +65,12 @@ const Double_t AliT0QAChecker::Check(AliQA::ALITASK_t index,TObjArray * list)
   Double_t test = 10.0  ;
    
   Int_t count = 0 ;
-  Double_t nent[200], nentraw[200];
-  TString hname[200];
+  Double_t nent[250], nentraw[250];
+  TString hname[250];
   const char *cname;
-  memset(nent,0,200*sizeof(Double_t));
-  Double_t w[200];
-  memset(w,1,200*sizeof(Double_t));
+  memset(nent,0,250*sizeof(Double_t));
+  Double_t w[250];
+  memset(w,1,250*sizeof(Double_t));
   TH1 *fhRecLEDAmp[24];  TH1 * fhRecQTC[24];
   TH1 *fhOnlineMean = 0x0;  
   TH1 * fhRecMean = 0x0;
@@ -89,6 +89,7 @@ const Double_t AliT0QAChecker::Check(AliQA::ALITASK_t index,TObjArray * list)
     count = 0 ;
     while ( (hdata = dynamic_cast<TH1 *>(next())) ) {
       if (hdata) {
+	//     if (count>199) continue;
 	nent[count] = hdata->GetEntries();
 	cname = hdata->GetName();
 	hname[count] = cname;
@@ -131,8 +132,9 @@ const Double_t AliT0QAChecker::Check(AliQA::ALITASK_t index,TObjArray * list)
       else {
 	if(index == 2){
 	  //rec points
-	  if ( TMath::Abs(fhRecMean->GetMean() - fhOnlineMean->GetMean()) > 5) 
-	    AliDebug(10,Form("rec mean %f -> online mean %f",fhRecMean->GetMean(), fhOnlineMean->GetMean())) ;
+	  //	    printf("rec mean %f -> online mean %f",fhRecMean->GetMean(), fhOnlineMean->GetMean()) ;
+	   if ( TMath::Abs(fhRecMean->GetMean() - fhOnlineMean->GetMean()) > 5) 
+	     AliDebug(1,Form("rec mean %f -> online mean %f",fhRecMean->GetMean(), fhOnlineMean->GetMean())) ;
 	  Double_t meanLED, meanQTC;
 	  for (Int_t idet=0; idet<24; idet++) {
 	    meanLED = fhRecLEDAmp[idet]->GetMean();
@@ -145,12 +147,10 @@ const Double_t AliT0QAChecker::Check(AliQA::ALITASK_t index,TObjArray * list)
 	
 	if (index == 0) {
 	  //raw data
-	  Float_t realNumber = Float_t(nent[0]);
-	  for (Int_t i=77; i<count; i++) 
+	  for (Int_t i=0; i<count; i++) 
 	    {
-	      Double_t diff = TMath::Abs(nent[i]-realNumber);
-	      if (diff > 0.1*realNumber )
-		AliDebug(1,Form("Problem in Number of entried in hist %s  is %f number of RefPoints %f\n",hname[i].Data() , nent[i],realNumber )) ; 
+	      if( nent[i] == 0)
+		AliDebug(1,Form("Histogram %s is empty  \n",hname[i].Data()  )) ; 
 	    }
 	}
  	if (index == 3) {

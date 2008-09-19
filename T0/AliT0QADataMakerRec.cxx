@@ -76,7 +76,7 @@ void AliT0QADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray 
 {
   //Detector specific actions at end of cycle
   // do the QA checking
-  //  AliQAChecker::Instance()->Run(AliQA::kT0, task, list) ;
+  AliQAChecker::Instance()->Run(AliQA::kT0, task, list) ;
   Char_t *triggers[6] = {"mean", "vertex","ORA","ORC","central","semi-central"};
   for (Int_t itr=0; itr<6; itr++) {
     GetRawsData(197)->Fill(triggers[itr],fNumTriggersCal[itr]);
@@ -164,7 +164,7 @@ void AliT0QADataMakerRec::InitRaws()
     }
 
   TH1F* fhRawTriggerCal = new TH1F("hRawTriggerCal"," laser triggers",6,0,6);
-  Add2RawsList(fhRawTriggerCal ,197 );
+  Add2RawsList(fhRawTriggerCal ,197 ,saveForCorr);
 
   TH1F* fhRawMeanCal = new TH1F("hRawMeanCal","online mean signal, calibration event",
 				10000,0,10000);
@@ -187,13 +187,13 @@ void AliT0QADataMakerRec::InitRaws()
 
   TH2F* fhEffCFD = new TH2F("hEffCFD"," CFD time",24, 0 ,24, 
 			      100,-500,500);
-  Add2RawsList( fhEffCFD,205);
+  Add2RawsList( fhEffCFD,205, saveForCorr);
   TH2F* fhEffLED = new TH2F("hEffLED","LED time",24, 0 ,24, 
 			      100,-500,500);
-  Add2RawsList( fhEffLED,206);
+  Add2RawsList( fhEffLED,206, saveForCorr);
   TH2F* fhEffQTC = new TH2F("hEffQTC","QTC amplitude",24, 0 ,24, 
 			      100,0,7000);
-  Add2RawsList( fhEffQTC,207);
+  Add2RawsList( fhEffQTC,207, saveForCorr);
 }
 
 //____________________________________________________________________________ 
