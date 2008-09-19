@@ -49,8 +49,10 @@ void AliVZEROPreprocessor::Initialize(Int_t run, UInt_t startTime,
 		TTimeStamp(endTime).AsString()));
 
    fRun       = run;
-   fStartTime = startTime;
-   fEndTime   = endTime;
+   // fStartTime = startTime;
+   // fEndTime   = endTime;
+   fStartTime = GetStartTimeDCSQuery ();
+   fEndTime   = GetEndTimeDCSQuery ();
 
    fData      = new AliVZERODataDCS(fRun, fStartTime, fEndTime);
    
@@ -131,17 +133,21 @@ UInt_t AliVZEROPreprocessor::Process(TMap* dcsAliasMap)
 //   for(Int_t j=0; j<64; j++){printf("WidthHV[%d] -> %f \n",j,calibData->GetWidthHV(j));}
   
   // Now we store the VZERO Calibration Object into CalibrationDB
-  
-  Bool_t result = kFALSE;
-  if(sourceList && sourceList->GetEntries()>0)
-  {
-  	AliCDBMetaData metaData;
-  	metaData.SetBeamPeriod(0);
-  	metaData.SetResponsible("Brigitte Cheynis");
-  	metaData.SetComment("This preprocessor fills an AliVZEROCalibData object");
 
-  	result = Store("Calib", "Data", calibData, &metaData, 0, kTRUE);
-  }
+  Bool_t resECal=kTRUE;
+  
+  Bool_t result = 0;
+//  if(sourceList && sourceList->GetEntries()>0)
+//  {
+  AliCDBMetaData metaData;
+  metaData.SetBeamPeriod(0);
+  metaData.SetResponsible("Brigitte Cheynis");
+  metaData.SetComment("This preprocessor fills an AliVZEROCalibData object");
+
+  resECal = Store("Calib", "Data", calibData, &metaData, 0, kTRUE);
+//  }
+  if(resECal==kFALSE ) result = 1;
+  
 
   delete calibData;
   delete sourceList; 
