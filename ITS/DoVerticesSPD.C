@@ -27,8 +27,9 @@
 /*  $Id$    */
 
 Bool_t DoVerticesSPD(Int_t optdebug=1){
+
   TFile *fint = new TFile("VertexSPD.root","recreate");
-  TNtuple *nt = new TNtuple("ntvert","vertices","xtrue:ytrue:ztrue:zZ:zdiffZ:zerrZ:ntrksZ:x3D:xdiff3D:xerr3D:y3D:ydiff3D:yerr3D:z3D:zdiff3D:zerr3D:ntrks3D:dndy:ntrklets:nrp1:ptyp");
+  TNtuple *nt = new TNtuple("ntvert","vertices","xtrue:ytrue:ztrue:zZ:zdiffZ:zerrZ:ntrksZ:x3D:xdiff3D:xerr3D:y3D:ydiff3D:yerr3D:z3D:zdiff3D:zerr3D:ntrks3D:dndy:ntrklets:nrp1:ptyp:is3D");
 
   if (gClassTable->GetID("AliRun") < 0) {
     gInterpreter->ExecuteMacro("loadlibs.C");
@@ -80,6 +81,8 @@ Bool_t DoVerticesSPD(Int_t optdebug=1){
   vertz->Init("default");
   AliITSVertexer3D *vert3d = new AliITSVertexer3D();
   vert3d->Init("default");
+  vert3d->SetWideFiducialRegion(40.,1.);
+  vert3d->PrintStatus();
 
   /* uncomment these lines to use diamond constrain */
 //   Double_t posdiam[3]={0.03,0.1,0.};
@@ -124,23 +127,22 @@ Bool_t DoVerticesSPD(Int_t optdebug=1){
 
     AliESDVertex* vtxz = vertz->FindVertexForCurrentEvent(cltree);
     AliESDVertex* vtx3d = vert3d->FindVertexForCurrentEvent(cltree);
-
     AliMultiplicity *alimult = vert3d->GetMultiplicity();
-    Int_t ntrklets=0,nrecp1=0;
-    if(alimult) {
-      nrecp1=alimult->GetNumberOfTracklets() ;
-      ntrklets = alimult->GetNumberOfTracklets();
-      for(Int_t l=0;l<alimult->GetNumberOfTracklets();l++){
-	if(alimult->GetDeltaPhi(l)<-9998.) ntrklets--;
-      }
+    Int_t  ntrklets=0;
+    Int_t nrecp1=0;
+    if(alimult){
+      ntrklets=alimult->GetNumberOfTracklets() ;
+      nrecp1=ntrklets+alimult->GetNumberOfSingleClusters();
     }
-
-    
+    TString tit=vtx3d->GetTitle();
+    Bool_t is3d=kFALSE;
+    if(tit.Contains("3D")) is3d=kTRUE;
+       
 
 
     TDirectory *current = gDirectory;
     fint->cd();
-    Float_t xnt[21];
+    Float_t xnt[22];
 
     Double_t zz = 0.;
     Double_t zresz = 0.;
@@ -172,7 +174,7 @@ Bool_t DoVerticesSPD(Int_t optdebug=1){
     if(vtx3d){
 
       ntrk3d = vtx3d->GetNContributors();
-      if(ntrk3d>0)good3d++;
+      if(is3d && ntrk3d>0)good3d++;
       x3d = vtx3d->GetXv();
       xerr3d=vtx3d->GetXRes();
       xdiff3d = 10000.*(x3d-mcVertex[0]);  // microns
@@ -211,6 +213,7 @@ Bool_t DoVerticesSPD(Int_t optdebug=1){
     xnt[18]=float(ntrklets);
     xnt[19]=float(nrecp1);
     xnt[20]=float(ptype);
+    xnt[21]=float(is3d);
     nt->Fill(xnt);
     current->cd();
     
