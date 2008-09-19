@@ -48,7 +48,8 @@ fNz(0),
 fNy(0),
 fChargeRatio(0),
 fType(0),
-fDeltaProb(0)
+fDeltaProb(0),
+fDriftTime(0.)
 {
     // default constructor
 }
@@ -66,7 +67,8 @@ fNz(info[1]),
 fNy(info[0]),
 fChargeRatio(0),
 fType(0),
-fDeltaProb(0)
+fDeltaProb(0),
+fDriftTime(0.)
 {
   //standard constructor used in AliITSClusterFinderV2
 
@@ -118,7 +120,8 @@ fNz(pt.fNz),
 fNy(pt.fNy),
 fChargeRatio(pt.fChargeRatio),
 fType(pt.fType),
-fDeltaProb(pt.fDeltaProb)
+fDeltaProb(pt.fDeltaProb),
+fDriftTime(pt.fDriftTime)
 {
   //Copy constructor
 
@@ -164,7 +167,7 @@ void AliITSRecPoint::Print(ostream *os){
     *os << fXloc << " " << fZloc << " " << fdEdX << " ";
     fmt = os->setf(ios::fixed); // every fixed
     *os << fIndex <<" " << fQ << " "<<fLayer <<" "<<fNz<<" "<<fNy<<" ";
-    *os << fChargeRatio<<" " << fType << " " << fDeltaProb;
+    *os << fChargeRatio<<" " << fType << " " << fDeltaProb << " " << fDriftTime;
     os->flags(fmt); // reset back to old formating.
     return;
 }
@@ -186,7 +189,7 @@ void AliITSRecPoint::Read(istream *is){
     SetVolumeId(lab[0]);// fIsMisalinged = mis;
     *is >> fXloc >> fZloc >> fdEdX;
     *is >> fIndex >> fQ >> fLayer >> fNz >> fNy >> fChargeRatio >> fType;
-    *is >> fDeltaProb;
+    *is >> fDeltaProb >> fDriftTime;
 
     return;
 }

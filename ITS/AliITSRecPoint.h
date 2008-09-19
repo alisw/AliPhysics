@@ -58,7 +58,8 @@ class AliITSRecPoint : public AliCluster {
   void SetPhiR(Float_t y) { fChargeRatio=y; }
   void SetType(Int_t type){ fType=type;}
   void SetDeltaProbability(Float_t prob){fDeltaProb = prob;}
-  
+  void SetDriftTime(Float_t tim) {fDriftTime=tim;}
+ 
   Int_t IsUsed() const {return (fQ<0)?1:0;}
   Float_t GetQ() const {return TMath::Abs(fQ);}
   Int_t GetDetectorIndex() const { return 0x3FF&fIndex; }
@@ -71,7 +72,8 @@ class AliITSRecPoint : public AliCluster {
   Int_t GetNindex() const { return 0xFFC00&fIndex; }  //SSD clusters only
   Int_t GetType() const {return fType;}  // type of the cluster
   Float_t GetDeltaProbability() const{return fDeltaProb;} //probability to belong to the delta ray
-  
+  Float_t GetDriftTime() const{return  fDriftTime;}
+
  protected:
 
   Float_t   fXloc ;        //X of cluster (local coordinates)
@@ -85,9 +87,10 @@ class AliITSRecPoint : public AliCluster {
   Short_t  fNy;       //number of digits in y direction 
   Float_t  fChargeRatio; //charge ratio
   Int_t    fType;         //quality factor of the cluster
-  Float_t  fDeltaProb;    // probability to be deleta electron
+  Float_t  fDeltaProb;    // probability to be delta electron
+  Float_t  fDriftTime;    // drift time in SDD
     
-  ClassDef(AliITSRecPoint,5)  // AliITSRecPoint class
+  ClassDef(AliITSRecPoint,6)  // AliITSRecPoint class
 };
 // Input and output function for standard C++ input/output.
 ostream& operator<<(ostream &os,AliITSRecPoint &source);

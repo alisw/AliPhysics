@@ -226,7 +226,8 @@ FindClustersSDD(AliBin* bins[2], Int_t nMaxBin, Int_t nzBins,
 	Float_t timebin=y-0.5;  // to have time bin in range 0.-255. amd centered on the mid of the bin
 	if(s==1) zAnode += GetSeg()->NpzHalf();  // right side has anodes from 256. to 511.
 	Float_t zdet = GetSeg()->GetLocalZFromAnode(zAnode);
-	Float_t driftTime = GetSeg()->GetDriftTimeFromTb(timebin) - rsdd->GetTimeOffset();
+	Float_t driftTimeUncorr = GetSeg()->GetDriftTimeFromTb(timebin);
+	Float_t driftTime=driftTimeUncorr-rsdd->GetTimeOffset();
 	Float_t driftPathMicron = cal->GetDriftPath(driftTime,zAnode);
 	const Double_t kMicronTocm = 1.0e-4; 
 	Float_t xdet=(driftPathMicron-GetSeg()->Dx())*kMicronTocm; // xdet is negative
@@ -261,6 +262,7 @@ FindClustersSDD(AliBin* bins[2], Int_t nMaxBin, Int_t nzBins,
 
 	AliITSRecPoint cc(milab,hit,info);
 	cc.SetType(npeaks);
+	cc.SetDriftTime(driftTimeUncorr);
 	if(clusters) new (cl[ncl]) AliITSRecPoint(cc); 
 	else {
 	  fDetTypeRec->AddRecPoint(cc);
