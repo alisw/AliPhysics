@@ -116,6 +116,7 @@ Revision 0.01  2005/07/22 A. De Caro
 #include "AliTOFHitData.h"
 
 #include "AliRawEventHeaderBase.h"
+#include "AliRawDataHeader.h"
 
 ClassImp(AliTOFRawStream)
 
@@ -768,11 +769,15 @@ Bool_t AliTOFRawStream::Next()
 	fTime = GetField(data,TRM_DIGIT_TIME_MASK,TRM_DIGIT_TIME_POSITION)
 	  /*-
 	  fCableLengthMap->GetCableTimeShiftBin(fDDL, fTRM, fTRMchain, fTDC)*/
-	  /*+
-	  (Int_t)(fgkddlBCshift[fDDL]*25.*1000./AliTOFGeometry::TdcBinWidth())
-	  +
-	  (Int_t)((fLocalEventCounterChain[fTRM][fTRMchain]-fEventID)*25.*1000./AliTOFGeometry::TdcBinWidth())*/
 	  ;
+	if (fgApplyBCCorrections) {
+	  AliInfo("Apply nominal DDL BC time-shift correction");
+	  AliInfo("Apply deltaBC time-shift correction");
+	  fTime +=
+	    (Int_t)(fgkddlBCshift[fDDL]*25.*1000./AliTOFGeometry::TdcBinWidth())
+	    +
+	    (Int_t)((fLocalEventCounterChain[fTRM][fTRMchain]-fEventID)*25.*1000./AliTOFGeometry::TdcBinWidth());
+	}
 	break;
 
       case 1: // leading edge digit, long digit time, no TOT
@@ -781,11 +786,15 @@ Bool_t AliTOFRawStream::Next()
 	fLeadingEdge = GetField(data,TRM_LONG_DIGIT_TIME_MASK,TRM_LONG_DIGIT_TIME_POSITION)
 	  /*-
 	  fCableLengthMap->GetCableTimeShiftBin(fDDL, fTRM, fTRMchain, fTDC)*/
-	  /*+
-	  (Int_t)(fgkddlBCshift[fDDL]*25.*1000./AliTOFGeometry::TdcBinWidth())
-	  +
-	  (Int_t)((fLocalEventCounterChain[fTRM][fTRMchain]-fEventID)*25.*1000./AliTOFGeometry::TdcBinWidth())*/
 	  ;
+	if (fgApplyBCCorrections) {
+	  AliInfo("Apply nominal DDL BC time-shift correction");
+	  AliInfo("Apply deltaBC time-shift correction");
+	  fLeadingEdge +=
+	    (Int_t)(fgkddlBCshift[fDDL]*25.*1000./AliTOFGeometry::TdcBinWidth())
+	    +
+	    (Int_t)((fLocalEventCounterChain[fTRM][fTRMchain]-fEventID)*25.*1000./AliTOFGeometry::TdcBinWidth());
+	}
 	break;
 
       case 2: // trailing edge digit, long digit time, no TOT
@@ -794,11 +803,15 @@ Bool_t AliTOFRawStream::Next()
 	fTrailingEdge = GetField(data,TRM_LONG_DIGIT_TIME_MASK,TRM_LONG_DIGIT_TIME_POSITION)
 	  /*-
 	  fCableLengthMap->GetCableTimeShiftBin(fDDL, fTRM, fTRMchain, fTDC)*/
-	  /*+
-	  (Int_t)(fgkddlBCshift[fDDL]*25.*1000./AliTOFGeometry::TdcBinWidth())
-	  +
-	  (Int_t)((fLocalEventCounterChain[fTRM][fTRMchain]-fEventID)*25.*1000./AliTOFGeometry::TdcBinWidth())*/
 	  ;
+	if (fgApplyBCCorrections) {
+	  AliInfo("Apply nominal DDL BC time-shift correction");
+	  AliInfo("Apply deltaBC time-shift correction");
+	  fTrailingEdge +=
+	    (Int_t)(fgkddlBCshift[fDDL]*25.*1000./AliTOFGeometry::TdcBinWidth())
+	    +
+	    (Int_t)((fLocalEventCounterChain[fTRM][fTRMchain]-fEventID)*25.*1000./AliTOFGeometry::TdcBinWidth());
+	}
 	break;
 
       case 3: // TOT overflow
@@ -806,11 +819,15 @@ Bool_t AliTOFRawStream::Next()
 	fTime = GetField(data,TRM_DIGIT_TIME_MASK,TRM_DIGIT_TIME_POSITION)
 	  /*-
 	  fCableLengthMap->GetCableTimeShiftBin(fDDL, fTRM, fTRMchain, fTDC)*/
-	  /*+
-	  (Int_t)(fgkddlBCshift[fDDL]*25.*1000./AliTOFGeometry::TdcBinWidth())
-	  +
-	  (Int_t)((fLocalEventCounterChain[fTRM][fTRMchain]-fEventID)*25.*1000./AliTOFGeometry::TdcBinWidth())*/
 	  ;
+	if (fgApplyBCCorrections) {
+	  AliInfo("Apply nominal DDL BC time-shift correction");
+	  AliInfo("Apply deltaBC time-shift correction");
+	  fTime +=
+	    (Int_t)(fgkddlBCshift[fDDL]*25.*1000./AliTOFGeometry::TdcBinWidth())
+	    +
+	    (Int_t)((fLocalEventCounterChain[fTRM][fTRMchain]-fEventID)*25.*1000./AliTOFGeometry::TdcBinWidth());
+	}
 	break;
 
       } // end switch PS bits inside TRM chains
