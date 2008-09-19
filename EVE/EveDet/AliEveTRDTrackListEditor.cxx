@@ -205,6 +205,8 @@ void AliEveTRDTrackListEditor::AddMacro(const Char_t* path, const Char_t* name)
 //______________________________________________________
 void AliEveTRDTrackListEditor::ApplyMacros()
 {
+  Bool_t success = kFALSE;
+
   // First apply the selection macros
   TList* iterator = new TList();
   ftlMacroSelList->GetSelectedEntries(iterator);
@@ -218,7 +220,7 @@ void AliEveTRDTrackListEditor::ApplyMacros()
   // Now apply the process macros
   iterator = new TList();
   ftlMacroList->GetSelectedEntries(iterator);
-  fM->ApplyProcessMacros(iterator);
+  success = fM->ApplyProcessMacros(iterator);
 
   // Update histogram tab (data has to be reloaded)
   SetModel(fM);
@@ -226,7 +228,7 @@ void AliEveTRDTrackListEditor::ApplyMacros()
 
   // AlieveTRDTrackList::ApplyProcessMacros() automatically selects a macro -> Draw the histogram for it,
   // if a process macro has been applied
-  if (iterator->GetEntries() > 0) 
+  if (success && iterator->GetEntries() > 0) 
   {
     // Set focus on "Histograms" tab
     GetGedEditor()->GetTab()->SetTab("Histograms");
@@ -236,6 +238,13 @@ void AliEveTRDTrackListEditor::ApplyMacros()
 
   if (iterator != 0)  delete iterator;  
   iterator = 0;  
+  
+  if (!success)
+  {
+    new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Error", 
+                 "AliEveTRDTrackList::ApplyProcessMacros experienced an error (cf. CINT-output)!", 
+                 kMBIconExclamation, kMBOk);  
+  }
 }
 
 //______________________________________________________

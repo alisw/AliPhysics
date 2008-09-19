@@ -69,6 +69,7 @@ AliEveTRDTrackList::~AliEveTRDTrackList()
     delete fDataTree;
     fDataTree = 0;
   } 
+  if(!gSystem->AccessPathName(Form("/tmp/TRD.TrackListMacroData_%s.root", gSystem->Getenv("USER")))) gSystem->Exec(Form("rm /tmp/TRD.TrackListMacroData_%s.root", gSystem->Getenv("USER")));
 }
 
 //______________________________________________________
@@ -277,9 +278,27 @@ void AliEveTRDTrackList::AddStandardMacros()
 }
 
 //______________________________________________________
-void AliEveTRDTrackList::ApplyProcessMacros(TList* iterator)
+Bool_t AliEveTRDTrackList::ApplyProcessMacros(TList* iterator)
 {
-  if (iterator->GetEntries() <= 0)  return;
+  // No process macros need to be processed
+  if (iterator->GetEntries() <= 0)  return kTRUE;
+
+  // Clear root
+  gROOT->Reset();
+  
+  // Clear old data and re-allocate
+  if (fDataTree == 0) fDataTree = new TTreeSRedirector(Form("/tmp/TRD.TrackListMacroData_%s.root", gSystem->Getenv("USER")));
+  if (!fDataTree)
+  {
+    Error("Apply process macros", "File \"TRD.TrackListMacroData.root\" could not be accessed properly!");
+    return kFALSE;
+  }
+  
+  if (fDataFromMacroList != 0) delete fDataFromMacroList;
+  fDataFromMacroList = new TList();
+
+  fHistoDataSelected = 0;
+
 
   Char_t name[fkMaxMacroNameLength];
   Char_t** cmds = new Char_t*[iterator->GetEntries()];
@@ -291,17 +310,6 @@ void AliEveTRDTrackList::ApplyProcessMacros(TList* iterator)
   AliEveTRDTrack* track = 0;
   AliTRDtrackV1 *trackv1 = 0;
   TH1* returnedHist = 0x0;
-
-  // Clear root
-  gROOT->Reset();
-  
-  // Clear old data and re-allocate
-  if (fDataFromMacroList != 0) delete fDataFromMacroList;
-  fDataFromMacroList = new TList();
-
-  fHistoDataSelected = 0;
-
-  if (fDataTree == 0) fDataTree = new TTreeSRedirector("TRD.TrackListMacroData.root");
 
   // Collect the commands for each macro and add them to "data-from-list"
   for (Int_t i = 0; i < iterator->GetEntries(); i++)
@@ -443,6 +451,7 @@ void AliEveTRDTrackList::ApplyProcessMacros(TList* iterator)
 
   // Now the data is stored in "TRD.TrackListMacroData.root"
   // The editor will access this file to display the data
+  return kTRUE;
 }
 
 //______________________________________________________

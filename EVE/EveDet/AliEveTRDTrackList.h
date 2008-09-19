@@ -55,8 +55,11 @@ public:
                                                                 // No checks are performed (fast) and no libraries are
                                                                 // loaded. Do use only, if library already exists!
   virtual void AddStandardMacros();                             // Adds standard macros to the lists
-  void ApplyProcessMacros(TList* iterator);                     // Uses the iterator (for the selected process 
-                                                                // macros) to apply the selected macros to the data
+  Bool_t ApplyProcessMacros(TList* iterator);                   // Uses the iterator (for the selected process 
+                                                                // macros) to apply the selected macros to the data.
+                                                                // Return kTRUE on success, otherwise kFALSE. If there
+                                                                // no process macros selected, kTRUE is returned (no 
+                                                                // error!).
   void ApplySelectionMacros(TList* iterator);                   // Uses the iterator (for the selected selection
                                                                 // macros) to apply the selected macros to the data
   Char_t* MakeMacroEntry(const Char_t* path, const Char_t* name);  // Constructs an entry for the macro
