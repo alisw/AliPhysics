@@ -114,10 +114,22 @@ class AliTRDtrackV1;
 class AliEveTRDTrack : public TEveLine
 {
 public:
+  enum AliEveTRDTrackColor{
+    kPID = 0
+    ,kSource = 1
+  };
+  enum AliEveTRDTrackModel{
+    kLine = 0
+    ,kRiemann = 1
+    ,kKalman = 2
+  };
+
+
   AliEveTRDTrack(AliTRDtrackV1 *trk);
 //  ~AliEveTRDTrack();
   AliEveTRDTracklet*  GetTracklet(Int_t plane) const {return plane <6 && plane >= 0 ? fTracklet[plane] : 0x0;}
   void               ProcessData(); // *MENU* 
+  void               SetState(AliEveTRDTrackColor c, AliEveTRDTrackModel m){;}
  
 private:
   AliEveTRDTracklet  *fTracklet[6]; // tracklets
