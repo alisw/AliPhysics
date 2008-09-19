@@ -27,8 +27,7 @@ class AliT0QAChecker: public AliQACheckerBase {
 public:
   AliT0QAChecker() : AliQACheckerBase("T0","T0 Quality Assurance Data Checker") {;}          // ctor
   AliT0QAChecker(const AliT0QAChecker& qac) : AliQACheckerBase(qac.GetName(), qac.GetTitle()) {;} // cpy ctor   
-  AliT0QAChecker& operator = (const AliT0QAChecker& qac) ;
-  virtual ~AliT0QAChecker() {;} // dtor
+   virtual ~AliT0QAChecker() {;} // dtor
 
 private:
   virtual const Double_t Check(AliQA::ALITASK_t,TObjArray * list) ;
