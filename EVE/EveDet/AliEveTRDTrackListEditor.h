@@ -10,12 +10,15 @@ class TEveBrowser;
 class TEveGedEditor;
 class TEveManager;
 class TFile;
+class TGButtonGroup;
 class TGCheckButton;
 class TGFileInfo;
+class TGGroupFrame;
 class TGHorizontal3DLine;
 class TGHorizontalFrame;
 class TGLabel;
 class TGListBox;
+class TGRadioButton;
 class TGString;
 class TGTab;
 class TGTextButton;
@@ -43,6 +46,8 @@ public:
   void HandleNewEventLoaded();                            // Handles the "NewEventLoaded()"-signal
   void HandleTabChangedToIndex(Int_t);                    // Handles the "Selected(Int_t id)"-signal (tab changed)
   void RemoveMacros();                                    // Removes the selected macros from the lists
+  void SetTrackColor(Int_t ind);                          // Sets the track model
+  void SetTrackModel(Int_t ind);                          // Sets the track model
   void UpdateDataFromMacroListSelection();                // Updates the selection in the "data from macro"-list
   void UpdateHistoList();                                 // Updates the histogram list
   void UpdateMacroList();                                 // Updates the macro list
@@ -68,6 +73,11 @@ private:
   TGVerticalFrame*   fHistoFrame;            // Top frame for the histogram stuff
   TGVerticalFrame*   fHistoSubFrame;         // Frame for the histogram buttons themselves
   TGHorizontalFrame* fBrowseFrame;           // For searching macros
+  TGButtonGroup*     fbgStyleColor;          // Button group for the color model
+  TGButtonGroup*     fbgStyleTrack;          // Button group for the track model
+  
+  TGRadioButton**    frbColor;               // Radio buttons for the color model
+  TGRadioButton**    frbTrack;               // Radio buttons for the track model
 
   TGTextButton*   fbBrowse;                  // "Browse" button
   TGTextButton*   fbApplyMacros;             // "Apply macros" button
@@ -91,6 +101,7 @@ private:
   TGHorizontal3DLine *fLine2;
   TGHorizontal3DLine *fLine3;
   TGHorizontal3DLine *fLine4;
+  TGHorizontal3DLine *fLine5;  
 
   // Check buttons for histograms
   TGCheckButton** fCheckButtons;

@@ -12,6 +12,7 @@
 #include <TEveManager.h>
 #include <TFile.h>
 #include <TG3DLine.h>
+#include <TGButtonGroup.h>
 #include <TGFileDialog.h>
 #include <TGLabel.h>
 #include <TGListBox.h>
@@ -42,6 +43,10 @@ AliEveTRDTrackListEditor::AliEveTRDTrackListEditor(const TGWindow* p, Int_t widt
   fHistoFrame(0),
   fHistoSubFrame(0),
   fBrowseFrame(0),
+  fbgStyleColor(0),
+  fbgStyleTrack(0),
+  frbColor(new TGRadioButton*[3]),
+  frbTrack(new TGRadioButton*[3]),
   fbBrowse(0),
   fbApplyMacros(0),
   fbRemoveMacros(0),
@@ -52,12 +57,45 @@ AliEveTRDTrackListEditor::AliEveTRDTrackListEditor(const TGWindow* p, Int_t widt
   fFileInfo(0),
   fFileTypes(0),
   fLabel1(0), fLabel2(0), fLabel3(0), fLabel4(0),
-  fLine1(0), fLine2(0), fLine3(0), fLine4(0),
+  fLine1(0), fLine2(0), fLine3(0), fLine4(0), fLine5(0),
   fCheckButtons(0)
-{  
+{
+  // Style stuff
+  fLine5 = new TGHorizontal3DLine(this, 194, 8);
+  AddFrame(fLine5, new TGLayoutHints(kLHintsLeft  | kLHintsTop, 2, 2, 8, 8));
+
+  // Style - Track model
+  fbgStyleTrack = new TGButtonGroup(this, "Track model");
+  fbgStyleTrack->SetMapSubwindows(kTRUE);
+  fbgStyleTrack->Resize(194, 200);
+  AddFrame(fbgStyleTrack);
+
+  frbTrack[0] = new TGRadioButton(fbgStyleTrack, "Linear");
+  fbgStyleTrack->AddFrame(frbTrack[0]);
+  frbTrack[1] = new TGRadioButton(fbgStyleTrack, "Rieman");
+  fbgStyleTrack->AddFrame(frbTrack[1]);
+  frbTrack[2] = new TGRadioButton(fbgStyleTrack, "Kalman");
+  fbgStyleTrack->AddFrame(frbTrack[2]);  
+  fbgStyleTrack->SetButton(2, kTRUE); 
+
+  // Style - Color model
+  fbgStyleColor = new TGButtonGroup(this, "Color model");
+  fbgStyleColor->SetMapSubwindows(kTRUE);
+  fbgStyleColor->Resize(194, 200);
+  AddFrame(fbgStyleColor);
+
+  frbColor[0] = new TGRadioButton(fbgStyleColor, "PID 1");
+  fbgStyleColor->AddFrame(frbColor[0]);
+  frbColor[1] = new TGRadioButton(fbgStyleColor, "PID 2");
+  fbgStyleColor->AddFrame(frbColor[1]);
+  frbColor[2] = new TGRadioButton(fbgStyleColor, "Source");
+  fbgStyleColor->AddFrame(frbColor[2]);  
+  fbgStyleColor->SetButton(1, kTRUE); 
+  
+
+  // Functionality for adding macros  
   fMainFrame = CreateEditorTabSubFrame("Apply macros");
- 
-  // Functionality for adding macros 
+   
   fLabel1 = new TGLabel(fMainFrame,"Add macro(s):");
   fMainFrame->AddFrame(fLabel1);
   fBrowseFrame = new TGHorizontalFrame(fMainFrame);
@@ -134,6 +172,10 @@ AliEveTRDTrackListEditor::AliEveTRDTrackListEditor(const TGWindow* p, Int_t widt
   fFileInfo->fMultipleSelection = kTRUE;
 
   fHistoCanvasName = new TGString("");
+
+  // Handle style changed signals:
+  fbgStyleTrack->Connect("Clicked(Int_t)", "AliEveTRDTrackListEditor", this, "SetTrackModel(Int_t)");
+  fbgStyleColor->Connect("Clicked(Int_t)", "AliEveTRDTrackListEditor", this, "SetTrackColor(Int_t)");
 
   // Handle the signal "Selected(Int_t ind)"
   ftlMacroList->Connect("Selected(Int_t)", "AliEveTRDTrackListEditor", this, "UpdateMacroListSelection(Int_t)");
@@ -704,6 +746,18 @@ void AliEveTRDTrackListEditor::SetModel(TObject* obj)
 
   // View correct tab
   GetGedEditor()->GetTab()->SetTab(fM->fSelectedTab); 
+}
+
+//______________________________________________________
+void AliEveTRDTrackListEditor::SetTrackColor(Int_t ind)
+{
+  Info("SetTrackColor", Form("Button index: %d", ind - 1));
+}
+
+//______________________________________________________
+void AliEveTRDTrackListEditor::SetTrackModel(Int_t ind)
+{
+  Info("SetTrackModel", Form("Button index: %d", ind - 1));
 }
 
 //______________________________________________________
