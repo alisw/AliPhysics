@@ -322,6 +322,7 @@ void AliPHOSQADataMakerRec::MakeRaws(AliRawReader* rawReader)
      hgNtot++ ;  
    }                 
   }                    
+  delete decoder;
   GetRawsData(kEtotLG)->Fill(lgEtot) ; 
   TParameter<double> * p = dynamic_cast<TParameter<double>*>(GetParameterList()->FindObject(Form("%s_%s_%s", GetName(), AliQA::GetTaskName(AliQA::kRAWS).Data(), GetRawsData(kEtotLG)->GetName()))) ; 
   p->SetVal(lgEtot) ; 

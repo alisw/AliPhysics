@@ -41,8 +41,6 @@
 #include "TList.h"
 #include "TMath.h"
 #include "TMinuit.h"
-#include "AliPHOSCalibData.h"
-
 #include "TCanvas.h"
 #include "TH1.h"
 #include "TH2.h"
@@ -50,10 +48,9 @@
 #include "TROOT.h"
 
 // --- AliRoot header files ---
-//#include "AliLog.h"
+#include "AliPHOSCalibData.h"
 #include "AliPHOSRawDecoderv1.h"
 #include "AliPHOSPulseGenerator.h"
-
 
 ClassImp(AliPHOSRawDecoderv1)
 
@@ -175,6 +172,8 @@ Bool_t AliPHOSRawDecoderv1::NextDigit()
   const Float_t sampleMaxHG=102.332 ;  //maximal height of HG sample with given parameterization
   const Float_t sampleMaxLG=277.196 ;  //maximal height of HG sample with given parameterization
   const Float_t maxEtoFit=5 ; //fit only samples above this energy, accept all samples (with good aRMS) below it
+  fSamples->Reset();
+  fTimes  ->Reset();
 
   while ( in->Next() ) { 
 
@@ -197,12 +196,12 @@ Bool_t AliPHOSRawDecoderv1::NextDigit()
        ||(iBin<=0)) {  //or new signal in same address
 
       //First remember new sample
-      fNewLowGainFlag = in->IsLowGain();                                                                                                        
-      fNewModule = in->GetModule()+1;                                                                                                           
-      fNewRow    = in->GetRow()   +1;                                                                                                           
-      fNewColumn = in->GetColumn()+1;                                                                                                           
-      fNewAmp = in->GetSignal() ;
-      fNewTime=in->GetTime() ;  
+      fNewLowGainFlag = in->IsLowGain();
+      fNewModule      = in->GetModule()+1;
+      fNewRow         = in->GetRow()   +1;
+      fNewColumn      = in->GetColumn()+1;
+      fNewAmp         = in->GetSignal() ;
+      fNewTime        = in->GetTime() ;  
   
       //now handle already collected 
       Double_t pedestal =0. ;
@@ -232,20 +231,20 @@ Bool_t AliPHOSRawDecoderv1::NextDigit()
       //calculate time and energy
       Int_t maxBin=0 ;
       Int_t maxAmp=0 ;
-      Double_t aMean=0. ;                                                                                                                  
-      Double_t aRMS=0. ;                                                                                                                   
-      Double_t wts=0 ;                                                                                                                       
-      Int_t tStart = 0 ;                                                                                                                   
+      Double_t aMean=0. ;
+      Double_t aRMS=0. ;
+      Double_t wts=0 ;
+      Int_t tStart = 0 ;
       for(Int_t i=iBin; i<fSamples->GetSize(); i++){
-        if(fSamples->At(i)>pedestal){                                                                                                             
-          Double_t de=fSamples->At(i)-pedestal ;                                                                                           
+        if(fSamples->At(i)>pedestal){
+          Double_t de=fSamples->At(i)-pedestal ;
           if(de>1.){
-            aMean+=de*i ;                                                                                                                      
-            aRMS+=de*i*i ;                                                                                                                    
+            aMean+=de*i ;
+            aRMS+=de*i*i ;
             wts+=de; 
-          }                                                                                                                         
+          }
           if(de>2 && tStart==0) 
-            tStart=i ;                                                                                                                     
+            tStart=i ;
           if(maxAmp<fSamples->At(i)){
             maxBin=i ;
             maxAmp=fSamples->At(i) ;
@@ -280,9 +279,9 @@ Bool_t AliPHOSRawDecoderv1::NextDigit()
         if(aRMS<2.) //sigle peak
           fQuality=999. ;
         else
-          fQuality= 0. ;                                                                                                                   
-        return kTRUE ;                                                                                                                     
-      } 
+          fQuality= 0. ;
+        return kTRUE ;
+      }
 
       
 //Debug:=====Draw sample
@@ -306,31 +305,31 @@ Bool_t AliPHOSRawDecoderv1::NextDigit()
 	gMinuit->SetFCN(AliPHOSRawDecoderv1::UnfoldingChiSquare) ;  
 	// To set the address of the minimization function 
  	
-       fToFit->Clear("nodelete") ;
-       Double_t b,bmin,bmax ;
-       if(fLowGainFlag){
-         fSampleParamsLow->AddAt(pedestal,4) ;
-         if(fOverflow)
-           fSampleParamsLow->AddAt(double(maxAmp),5) ;
-         else
-           fSampleParamsLow->AddAt(double(1023),5) ;
-         fSampleParamsLow->AddAt(double(iBin),6) ;
-         fToFit->AddFirst((TObject*)fSampleParamsLow) ; 
-         b=fSampleParamsLow->At(2) ;
-         bmin=0.5 ;
-         bmax=10. ;
-       }
-       else{
-         fSampleParamsHigh->AddAt(pedestal,4) ;
-         if(fOverflow)
-           fSampleParamsHigh->AddAt(double(maxAmp),5) ;
-         else
-           fSampleParamsHigh->AddAt(double(1023),5);
-         fSampleParamsHigh->AddAt(double(iBin),6);
-         fToFit->AddFirst((TObject*)fSampleParamsHigh) ; 
-         b=fSampleParamsHigh->At(2) ;
-         bmin=0.05 ;
-         bmax=0.4 ;
+        fToFit->Clear("nodelete") ;
+	Double_t b,bmin,bmax ;
+	if(fLowGainFlag){
+	  fSampleParamsLow->AddAt(pedestal,4) ;
+	  if(fOverflow)
+	    fSampleParamsLow->AddAt(double(maxAmp),5) ;
+	  else
+	    fSampleParamsLow->AddAt(double(1023),5) ;
+	  fSampleParamsLow->AddAt(double(iBin),6) ;
+	  fToFit->AddFirst((TObject*)fSampleParamsLow) ; 
+	  b=fSampleParamsLow->At(2) ;
+	  bmin=0.5 ;
+	  bmax=10. ;
+	}
+	else{
+	  fSampleParamsHigh->AddAt(pedestal,4) ;
+	  if(fOverflow)
+	    fSampleParamsHigh->AddAt(double(maxAmp),5) ;
+	  else
+	    fSampleParamsHigh->AddAt(double(1023),5);
+	  fSampleParamsHigh->AddAt(double(iBin),6);
+	  fToFit->AddFirst((TObject*)fSampleParamsHigh) ; 
+	  b=fSampleParamsHigh->At(2) ;
+	  bmin=0.05 ;
+	  bmax=0.4 ;
         }
         fToFit->AddLast((TObject*)fSamples) ;
         fToFit->AddLast((TObject*)fTimes) ;
@@ -396,7 +395,7 @@ Bool_t AliPHOSRawDecoderv1::NextDigit()
         else
           efit*=80.33109+128.6433*bfit ;
 
-        if(efit<0. || efit > 10000.){                                                                          
+        if(efit<0. || efit > 10000.){
 //set energy to previously found max
 //          fEnergy=0 ; //bad sample                                                    
           fTime=-999.;                                                                
@@ -464,7 +463,6 @@ Bool_t AliPHOSRawDecoderv1::NextDigit()
       fTime=t0-4.024*bfit ; //-10.402*bfit+4.669*bfit*bfit ; //Correction for 70 samples
 //      fTime=t0+2.8*bfit ; //-10.402*bfit+4.669*bfit*bfit ; //Correction for 50 samples
 //      fQuality = bfit ;
-      
       return kTRUE;
     }
     
@@ -476,14 +474,14 @@ Bool_t AliPHOSRawDecoderv1::NextDigit()
     //add previouly taken if coincides
     if(fLowGainFlag==fNewLowGainFlag && fModule==fNewModule &&
        fRow==fNewRow && fColumn==fNewColumn){
-       iBin--;                                                                                                                                
-       if(fPedSubtract && fNewTime < nPreSamples) {                                                                                    
-         pedMean += in->GetSignal();                                                                                                          
+       iBin--;
+       if(fPedSubtract && fNewTime < nPreSamples) {
+         pedMean += in->GetSignal();
          pedRMS += in->GetSignal()*in->GetSignal() ;
-         nPed++;                                                                                                                              
-       }                                                                                                                                      
-       fSamples->AddAt(fNewAmp,iBin);                                                                                                 
-       fTimes->AddAt(fNewTime,iBin);                                                                                                     
+         nPed++;
+       }
+       fSamples->AddAt(fNewAmp,iBin);
+       fTimes->AddAt(fNewTime,iBin);
     
        //Mark that we already take it
        fNewModule=-1 ;
