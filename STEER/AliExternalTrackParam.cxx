@@ -247,7 +247,7 @@ Bool_t AliExternalTrackParam::CorrectForMeanMaterial
   //Multiple scattering******************
   if (xOverX0 != 0) {
      Double_t theta2=14.1*14.1/(beta2*p2*1e6)*TMath::Abs(xOverX0);
-     if(theta2>kVeryBig) return kFALSE;
+     if(theta2>TMath::Pi()*TMath::Pi()) return kFALSE;
      //Double_t theta2=1.0259e-6*14*14/28/(beta2*p2)*TMath::Abs(d)*9.36*2.33;
      fC22 += theta2*(1.- fP2*fP2)*(1. + fP3*fP3);
      fC33 += theta2*(1. + fP3*fP3)*(1. + fP3*fP3);
@@ -303,7 +303,7 @@ Bool_t AliExternalTrackParam::CorrectForMaterial
   //Multiple scattering******************
   if (d!=0) {
      Double_t theta2=14.1*14.1/(beta2*p2*1e6)*TMath::Abs(d);
-     if(theta2>kVeryBig) return kFALSE;
+     if(theta2>TMath::Pi()*TMath::Pi()) return kFALSE;
      //Double_t theta2=1.0259e-6*14*14/28/(beta2*p2)*TMath::Abs(d)*9.36*2.33;
      fC22 += theta2*(1.- fP2*fP2)*(1. + fP3*fP3);
      fC33 += theta2*(1. + fP3*fP3)*(1. + fP3*fP3);
