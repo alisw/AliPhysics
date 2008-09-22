@@ -20,6 +20,7 @@
 //-----------------------------------------------------------------
 
 //ROOT
+#include <Riostream.h>
 #include <TSystem.h>
 #include <TChain.h>
 #include <TFile.h>
@@ -51,8 +52,8 @@ AliTagAnalysis::AliTagAnalysis():
   ftagresult(0x0),
   fTagDirName(),
   fChain(0x0),
-  fAnalysisType()
-{
+  fAnalysisType(),
+  fGlobalList(0) {
   //Default constructor for a AliTagAnalysis
 }
 
@@ -62,19 +63,21 @@ AliTagAnalysis::AliTagAnalysis(const char* type):
   ftagresult(0x0),
   fTagDirName(),
   fChain(0x0),
-  fAnalysisType(type)
-{
+  fAnalysisType(type),
+  fGlobalList(0) {
   //constructor for a AliTagAnalysis
 }
 
 //___________________________________________________________________________
 AliTagAnalysis::~AliTagAnalysis() {
-//Default destructor for a AliTagAnalysis
+  //Default destructor for a AliTagAnalysis
+  if(ftagresult) delete ftagresult;
+  if(fChain) delete fChain;
+  if(fGlobalList) delete fGlobalList;
 }
 
 //___________________________________________________________________________
 Bool_t  AliTagAnalysis::AddTagsFile(const char *alienUrl) {
-
   // Add a single tags file to the chain
 
   Bool_t rv = kTRUE ;
@@ -142,7 +145,10 @@ void AliTagAnalysis::ChainGridTags(TGridResult *res) {
 
 
 //___________________________________________________________________________
-TChain *AliTagAnalysis::QueryTags(AliRunTagCuts *runTagCuts, AliLHCTagCuts *lhcTagCuts, AliDetectorTagCuts *detTagCuts, AliEventTagCuts *evTagCuts) {
+TChain *AliTagAnalysis::QueryTags(AliRunTagCuts *runTagCuts, 
+				  AliLHCTagCuts *lhcTagCuts, 
+				  AliDetectorTagCuts *detTagCuts, 
+				  AliEventTagCuts *evTagCuts) {
   //Queries the tag chain using the defined 
   //event tag cuts from the AliEventTagCuts object
   //and returns a TChain along with the associated TEventList
@@ -156,7 +162,7 @@ TChain *AliTagAnalysis::QueryTags(AliRunTagCuts *runTagCuts, AliLHCTagCuts *lhcT
   //ESD file chain
   TChain *fESDchain = new TChain(fAliceFile.Data());
   //global entry list
-  TEntryList *fGlobalList = new TEntryList();
+  fGlobalList = new TEntryList();
   
   //Defining tag objects
   AliRunTag   *tag     = new AliRunTag;
@@ -202,7 +208,10 @@ TChain *AliTagAnalysis::QueryTags(AliRunTagCuts *runTagCuts, AliLHCTagCuts *lhcT
 }
 
 //___________________________________________________________________________
-TChain *AliTagAnalysis::QueryTags(const char *fRunCut, const char *fLHCCut, const char *fDetectorCut, const char *fEventCut) { 	 
+TChain *AliTagAnalysis::QueryTags(const char *fRunCut, 
+				  const char *fLHCCut, 
+				  const char *fDetectorCut, 
+				  const char *fEventCut) { 	 
   //Queries the tag chain using the defined 	 
   //event tag cuts from the AliEventTagCuts object 	 
   //and returns a TChain along with the associated TEventList 	 
@@ -216,7 +225,7 @@ TChain *AliTagAnalysis::QueryTags(const char *fRunCut, const char *fLHCCut, cons
   //ESD file chain
   TChain *fESDchain = new TChain(fAliceFile.Data());
   //global entry list
-  TEntryList *fGlobalList = new TEntryList();
+  fGlobalList = new TEntryList();
   
   //Defining tag objects 	 
   AliRunTag *tag = new AliRunTag; 	 
@@ -234,7 +243,7 @@ TChain *AliTagAnalysis::QueryTags(const char *fRunCut, const char *fLHCCut, cons
   
   Int_t current = -1; 	 
   Int_t iAccepted = 0; 	 
-  for(Int_t iTagFiles = 0; iTagFiles < fChain->GetEntries(); iTagFiles++) { 	 
+  for(Int_t iTagFiles = 0; iTagFiles < fChain->GetEntries(); iTagFiles++) {
     fChain->GetEntry(iTagFiles); 	 
     if (current != fChain->GetTreeNumber()) { 	 
       fRunFormula->UpdateFormulaLeaves(); 	 
@@ -275,7 +284,11 @@ TChain *AliTagAnalysis::QueryTags(const char *fRunCut, const char *fLHCCut, cons
 }
 
 //___________________________________________________________________________
-Bool_t AliTagAnalysis::CreateXMLCollection(const char* name, AliRunTagCuts *runTagCuts, AliLHCTagCuts *lhcTagCuts, AliDetectorTagCuts *detTagCuts, AliEventTagCuts *evTagCuts) {
+Bool_t AliTagAnalysis::CreateXMLCollection(const char* name, 
+					   AliRunTagCuts *runTagCuts, 
+					   AliLHCTagCuts *lhcTagCuts, 
+					   AliDetectorTagCuts *detTagCuts, 
+					   AliEventTagCuts *evTagCuts) {
   //Queries the tag chain using the defined 
   //event tag cuts from the AliEventTagCuts object
   //and returns a XML collection
@@ -322,7 +335,11 @@ Bool_t AliTagAnalysis::CreateXMLCollection(const char* name, AliRunTagCuts *runT
 }
 
 //___________________________________________________________________________
-Bool_t AliTagAnalysis::CreateXMLCollection(const char* name, const char *fRunCut, const char *fLHCCut, const char *fDetectorCut, const char *fEventCut) {
+Bool_t AliTagAnalysis::CreateXMLCollection(const char* name, 
+					   const char *fRunCut, 
+					   const char *fLHCCut, 
+					   const char *fDetectorCut, 
+					   const char *fEventCut) {
   //Queries the tag chain using the defined 
   //event tag cuts from the AliEventTagCuts object
   //and returns a XML collection
@@ -381,6 +398,134 @@ Bool_t AliTagAnalysis::CreateXMLCollection(const char* name, const char *fRunCut
 }
 
 //___________________________________________________________________________
+Bool_t AliTagAnalysis::CreateAsciiCollection(const char* name, 
+					     AliRunTagCuts *runTagCuts, 
+					     AliLHCTagCuts *lhcTagCuts, 
+					     AliDetectorTagCuts *detTagCuts, 
+					     AliEventTagCuts *evTagCuts) {
+  //Queries the tag chain using the defined 
+  //event tag cuts from the AliEventTagCuts object
+  //and returns a XML collection
+  AliInfo(Form("Creating the collection........"));
+
+  ofstream fout;
+  fout.open(name);
+
+  TString guid = 0x0;
+  TString turl = 0x0;
+  TString lfn = 0x0;
+
+  TString line0 = 0;
+
+  //Defining tag objects
+  AliRunTag *tag = new AliRunTag;
+  AliEventTag *evTag = new AliEventTag;
+  fChain->SetBranchAddress("AliTAG",&tag);
+
+  for(Int_t iTagFiles = 0; iTagFiles < fChain->GetEntries(); iTagFiles++) {
+    //Event list
+    TEntryList *fList = new TEntryList();
+    fChain->GetEntry(iTagFiles);
+    if(runTagCuts->IsAccepted(tag)) {
+      if(lhcTagCuts->IsAccepted(tag->GetLHCTag())) {
+	if(detTagCuts->IsAccepted(tag->GetDetectorTags())) {
+	  Int_t iEvents = tag->GetNEvents();
+	  const TClonesArray *tagList = tag->GetEventTags();
+	  for(Int_t i = 0; i < iEvents; i++) {
+	    evTag = (AliEventTag *) tagList->At(i);
+	    guid = evTag->GetGUID(); 
+	    turl = evTag->GetTURL(); 
+	    lfn = turl(8,turl.Length());
+	    if(evTagCuts->IsAccepted(evTag)) fList->Enter(i);
+	  }//event loop
+	  line0 = guid; line0 += " "; line0 += turl; line0 += " ";
+	  for(Int_t i = 0; i < fList->GetN(); i++) {
+	    line0 += fList->GetEntry(i); 
+	    line0 += " ";
+	  }  
+	  fout<<line0<<"\n";
+	}//detector tag cuts
+      }//lhc tag cuts 
+    }//run tag cuts
+    tag->Clear();
+  }//tag file loop
+
+  fout.close();
+
+  return kTRUE;
+}
+
+//___________________________________________________________________________
+Bool_t AliTagAnalysis::CreateAsciiCollection(const char* name, 
+					     const char *fRunCut, 
+					     const char *fLHCCut, 
+					     const char *fDetectorCut, 
+					     const char *fEventCut) {
+  //Queries the tag chain using the defined 
+  //event tag cuts from the AliEventTagCuts object
+  //and returns a XML collection
+  AliInfo(Form("Creating the collection........"));
+
+  ofstream fout;
+  fout.open(name);
+
+  TString guid = 0x0;
+  TString turl = 0x0;
+  TString lfn = 0x0;
+
+  TString line0 = 0;
+  
+  //Defining tag objects
+  AliRunTag *tag = new AliRunTag;
+  AliEventTag *evTag = new AliEventTag;
+  fChain->SetBranchAddress("AliTAG",&tag);
+
+  TTreeFormula *fRunFormula = new TTreeFormula("fRun",fRunCut,fChain);
+  TTreeFormula *fLHCFormula = new TTreeFormula("fLHC",fLHCCut,fChain); 	 
+  TTreeFormula *fDetectorFormula = new TTreeFormula("fDetector",fDetectorCut,fChain);
+  TTreeFormula *fEventFormula = new TTreeFormula("fEvent",fEventCut,fChain);
+
+  Int_t current = -1;
+  for(Int_t iTagFiles = 0; iTagFiles < fChain->GetEntries(); iTagFiles++) {
+    //Event list
+    TEntryList *fList = new TEntryList();
+    fChain->GetEntry(iTagFiles);
+    if (current != fChain->GetTreeNumber()) {
+      fRunFormula->UpdateFormulaLeaves();
+      fLHCFormula->UpdateFormulaLeaves();
+      fDetectorFormula->UpdateFormulaLeaves();
+      fEventFormula->UpdateFormulaLeaves();
+      current = fChain->GetTreeNumber();
+    }
+    if(fRunFormula->EvalInstance(iTagFiles) == 1) {
+      if(fLHCFormula->EvalInstance(iTagFiles) == 1) { 	 
+	if(fDetectorFormula->EvalInstance(iTagFiles) == 1) { 	 
+	  Int_t iEvents = fEventFormula->GetNdata();
+	  const TClonesArray *tagList = tag->GetEventTags();
+	  for(Int_t i = 0; i < iEvents; i++) {
+	    evTag = (AliEventTag *) tagList->At(i);
+	    guid = evTag->GetGUID(); 
+	    turl = evTag->GetTURL(); 
+	    lfn = turl(8,turl.Length());
+	    if(fEventFormula->EvalInstance(i) == 1) fList->Enter(i);
+	  }//event loop
+	  line0 = guid; line0 += " "; line0 += turl; line0 += " ";
+	  for(Int_t i = 0; i < fList->GetN(); i++) {
+	    line0 += fList->GetEntry(i); 
+	    line0 += " ";
+	  }  
+	  fout<<line0<<"\n";
+	}//detector tag cuts
+      }//lhc tag cuts 
+    }//run tag cuts
+  }//tag file loop
+
+  fout.close();
+
+  return kTRUE;
+}
+
+//___________________________________________________________________________
 TChain *AliTagAnalysis::GetInputChain(const char* system, const char *wn) {
   //returns the chain+event list - used in batch sessions
   // this function will be removed once the new root 
@@ -416,7 +561,8 @@ TChain *AliTagAnalysis::GetInputChain(const char* system, const char *wn) {
 }
 
 //___________________________________________________________________________
-TChain *AliTagAnalysis::GetChainFromCollection(const char* collectionname, const char* treename) {
+TChain *AliTagAnalysis::GetChainFromCollection(const char* collectionname, 
+					       const char* treename) {
   //returns the TChain+TEntryList object- used in batch sessions
   TString fAliceFile = treename;
   Int_t iAccepted = 0;
@@ -426,7 +572,7 @@ TChain *AliTagAnalysis::GetChainFromCollection(const char* collectionname, const
   else AliFatal("Inconsistent tree name - use esdTree or aodTree!");
 
   //Event list
-  TEntryList *fGlobalList = new TEntryList();
+  fGlobalList = new TEntryList();
   AliXMLCollection *collection = AliXMLCollection::Open(collectionname);
 
   collection->Reset();
