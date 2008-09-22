@@ -75,6 +75,8 @@ AliTOFDataDCS::AliTOFDataDCS():
 	fRun(0),
 	fStartTime(0),
 	fEndTime(0),
+	fStartTimeDCSQuery(0),
+	fEndTimeDCSQuery(0),
 	fIsProcessed(kFALSE),
 	fFDR(kFALSE)
 {
@@ -92,20 +94,24 @@ AliTOFDataDCS::AliTOFDataDCS():
 }
 
 //---------------------------------------------------------------
-AliTOFDataDCS::AliTOFDataDCS(Int_t nRun, UInt_t startTime, UInt_t endTime):
+AliTOFDataDCS::AliTOFDataDCS(Int_t nRun, UInt_t startTime, UInt_t endTime, UInt_t startTimeDCSQuery, UInt_t endTimeDCSQuery):
 	TObject(),
 	fRun(nRun),
 	fStartTime(startTime),
 	fEndTime(endTime),
+	fStartTimeDCSQuery(startTimeDCSQuery),
+	fEndTimeDCSQuery(endTimeDCSQuery),
 	fIsProcessed(kFALSE),
 	fFDR(kFALSE)
 {
 
   // constructor with arguments
 
-	AliInfo(Form("\n\tRun %d \n\tStartTime %s \n\tEndTime %s", nRun,
+	AliInfo(Form("\n\tRun %d \n\tStartTime %s \n\tEndTime %s \n\tStartTime DCS Query %s \n\tEndTime DCS Query %s", nRun,
 	TTimeStamp(startTime).AsString(),
-	TTimeStamp(endTime).AsString()));
+	TTimeStamp(endTime).AsString(), 
+	TTimeStamp(startTimeDCSQuery).AsString(), 
+        TTimeStamp(endTimeDCSQuery).AsString()));
 
 	Init();
 
@@ -118,6 +124,8 @@ AliTOFDataDCS::AliTOFDataDCS(const AliTOFDataDCS & data):
   fRun(0),
   fStartTime(0),
   fEndTime(0),
+  fStartTimeDCSQuery(0),
+  fEndTimeDCSQuery(0),
   fIsProcessed(kFALSE),
   fFDR(kFALSE)
 
@@ -128,6 +136,8 @@ AliTOFDataDCS::AliTOFDataDCS(const AliTOFDataDCS & data):
   fRun=data.fRun;
   fStartTime=data.fStartTime;
   fEndTime=data.fEndTime;
+  fStartTimeDCSQuery=data.fStartTimeDCSQuery;
+  fEndTimeDCSQuery=data.fEndTimeDCSQuery;
   fIsProcessed=data.fIsProcessed;
   fFDR=data.fFDR;
 
@@ -153,6 +163,8 @@ AliTOFDataDCS& AliTOFDataDCS:: operator=(const AliTOFDataDCS & data) {
   this->fRun=data.GetRun();
   this->fStartTime=data.GetStartTime();
   this->fEndTime=data.GetEndTime();
+  this->fStartTimeDCSQuery=data.GetStartTimeDCSQuery();
+  this->fEndTimeDCSQuery=data.GetEndTimeDCSQuery();
 
   for(int i=0;i<kNAliases;i++) {
     this->fAliasNames[i]=data.GetAliasName(i);
@@ -201,6 +213,8 @@ Bool_t AliTOFDataDCS::ProcessData(TMap& aliasMap){
 
   AliInfo(Form(" Start Time = %i",fStartTime));
   AliInfo(Form(" End Time = %i",fEndTime));
+  AliInfo(Form(" Start Time DCS Query= %i",fStartTimeDCSQuery));
+  AliInfo(Form(" End Time DCS Query= %i",fEndTimeDCSQuery));
 
   if (fEndTime==fStartTime){
     AliError(Form(" Run with null time length: start time = %i = end time = %i",fStartTime,fEndTime));
@@ -279,7 +293,8 @@ Bool_t AliTOFDataDCS::ProcessData(TMap& aliasMap){
   
     //computing the most significant variations
 
-    Float_t timeDiff = (Float_t)(fEndTime-fStartTime);
+    //Float_t timeDiff = (Float_t)(fEndTime-fStartTime);
+    Float_t timeDiff = (Float_t)(fEndTimeDCSQuery-fStartTimeDCSQuery);
     Int_t deltamin = (Int_t)(60/timeDiff*nentries); //sampling every minute
     Int_t klast = nentries-deltamin;
       

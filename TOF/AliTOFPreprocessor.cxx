@@ -105,11 +105,11 @@ void AliTOFPreprocessor::Initialize(Int_t run, UInt_t startTime,
 
   AliPreprocessor::Initialize(run, startTime, endTime);
 
-	AliInfo(Form("\n\tRun %d \n\tStartTime %s \n\tEndTime %s", run,
+	AliInfo(Form("\n\tRun %d \n\tStartTime %s \n\tEndTime %s \n\tStartTime DCS Query %s \n\tEndTime DCS Query %s", run,
 		TTimeStamp(startTime).AsString(),
-		TTimeStamp(endTime).AsString()));
+		TTimeStamp(endTime).AsString(), ((TTimeStamp)GetStartTimeDCSQuery()).AsString(), ((TTimeStamp)GetEndTimeDCSQuery()).AsString()));
 
-	fData = new AliTOFDataDCS(fRun, fStartTime, fEndTime);
+	fData = new AliTOFDataDCS(fRun, fStartTime, fEndTime, GetStartTimeDCSQuery(), GetEndTimeDCSQuery());
 	fNChannels = AliTOFGeometry::NSectors()*(2*(AliTOFGeometry::NStripC()+AliTOFGeometry::NStripB())+AliTOFGeometry::NStripA())*AliTOFGeometry::NpadZ()*AliTOFGeometry::NpadX();
 }
 //_____________________________________________________________________________

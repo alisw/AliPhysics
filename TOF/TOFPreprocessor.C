@@ -22,9 +22,11 @@ void TOFPreprocessor(Char_t * RunType="PHYSICS")
 
   // create AliTestShuttle instance
   Int_t nrun = 6;
-  AliTestShuttle* shuttle = new AliTestShuttle(nrun, 0, 1000);
+  AliTestShuttle* shuttle = new AliTestShuttle(nrun, 30, 980);
   //setting run type to physiscs
   shuttle->SetInputRunType(RunType);
+  shuttle->SetTimeCreated(20);
+  shuttle->SetDCSQueryOffset(20);
 
   // Generation of "fake" input DCS data
   TMap* dcsAliasMap = CreateDCSAliasMap();  

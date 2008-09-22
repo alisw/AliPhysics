@@ -26,7 +26,7 @@ public:
   enum {kNAliases=360, kNHV=90};
   
   AliTOFDataDCS();
-  AliTOFDataDCS(Int_t nRun, UInt_t startTime, UInt_t endTime);
+  AliTOFDataDCS(Int_t nRun, UInt_t startTime, UInt_t endTime, UInt_t startTimeDCSQuery, UInt_t endTimeDCSQuery );
   AliTOFDataDCS(const AliTOFDataDCS & data);
   AliTOFDataDCS& operator=(const AliTOFDataDCS & data);
   ~AliTOFDataDCS();
@@ -34,9 +34,13 @@ public:
   void SetRun(Int_t run) {fRun = run;}
   void SetStartTime(Int_t startTime) {fStartTime = startTime;}
   void SetEndTime(Int_t endTime) {fEndTime = endTime;}
+  void SetStartTimeDCSQuery(Int_t startTimeDCSQuery) {fStartTimeDCSQuery = startTimeDCSQuery;}
+  void SetEndTimeDCSQuery(Int_t endTimeDCSQuery) {fEndTimeDCSQuery = endTimeDCSQuery;}
   Int_t GetRun() const {return fRun;}
   Int_t GetStartTime() const {return fStartTime;}
   Int_t GetEndTime() const {return fEndTime;}
+  Int_t GetStartTimeDCSQuery() const {return fStartTimeDCSQuery;}
+  Int_t GetEndTimeDCSQuery() const {return fEndTimeDCSQuery;}
   
   Bool_t ProcessData(TMap& aliasMap);
   
@@ -65,6 +69,8 @@ private:
   Int_t fRun;       // Run number
   Int_t fStartTime; // start time
   Int_t fEndTime;   // end time  
+  Int_t fStartTimeDCSQuery; // start time DCSQuery
+  Int_t fEndTimeDCSQuery;   // end time DCSQuery
   
   TString fAliasNames[kNAliases];        // aliases for DCS data
   AliTOFFormatDCS *fHVvp[kNHV];          // HV voltages, positive ch
@@ -75,7 +81,7 @@ private:
   Bool_t fIsProcessed;                   // bool to know processing status
   Bool_t fFDR;                   // bool to know whether we are in a FDR run
   
-  ClassDef(AliTOFDataDCS, 4);
+  ClassDef(AliTOFDataDCS, 5);
 };
 
 #endif
