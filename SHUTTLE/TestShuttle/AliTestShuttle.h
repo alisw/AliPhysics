@@ -32,7 +32,8 @@ class AliTestShuttle : public AliShuttleInterface
     void SetInputHLTStatus(Bool_t status) { fHLTStatus = status; }
     void SetInputTriggerConfiguration(const char* configuration) { fTriggerConfiguration = configuration; }
     Bool_t AddInputCDBEntry(AliCDBEntry* entry);
-
+    void SetTimeCreated(UInt_t timeCreated) { fTimeCreated = timeCreated;}
+    void SetDCSQueryOffset(UInt_t dcsQueryOffset) { fDCSQueryOffset = dcsQueryOffset;}
     void Process();
 
     // AliShuttleInterface functions
@@ -45,6 +46,8 @@ class AliTestShuttle : public AliShuttleInterface
     virtual TList* GetFileSources(Int_t system, const char* detector, const char* id = 0);
     virtual TList* GetFileIDs(Int_t system, const char* detector, const char* source);
     virtual const char* GetRunParameter(const char* key);
+    virtual const UInt_t GetStartTimeDCSQuery();
+    virtual const UInt_t GetEndTimeDCSQuery();
     virtual AliCDBEntry* GetFromOCDB(const char* detector, const AliCDBPath& path);
     virtual const char* GetRunType();
     virtual Bool_t GetHLTStatus() {return fHLTStatus;}
@@ -64,9 +67,11 @@ class AliTestShuttle : public AliShuttleInterface
 
   protected:
 
-    Int_t fRun;         // run that is simulated with the AliTestShuttle
-    UInt_t fStartTime;  // starttime that is simulated with the AliTestShuttle
-    UInt_t fEndTime;    // endtime that is simulated with the AliTestShuttle
+    Int_t fRun;             // run that is simulated with the AliTestShuttle
+    UInt_t fStartTime;      // starttime that is simulated with the AliTestShuttle
+    UInt_t fEndTime;        // endtime that is simulated with the AliTestShuttle
+    UInt_t fTimeCreated;    // timecreated that is simulated with the AliTestShuttle
+    UInt_t fDCSQueryOffset; // DCS query offset
 
     TMap* fInputFiles;      // files for GetFile, GetFileSources
     TMap* fRunParameters;   // run parameters

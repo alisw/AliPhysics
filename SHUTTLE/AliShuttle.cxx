@@ -2032,22 +2032,21 @@ TMap* AliShuttle::GetValueSet(const char* host, Int_t port, const TSeqCollection
 	// returns TMap of values, 0 when failure
 	
 	AliDCSClient client(host, port, fTimeout, fRetries, multiSplit);
-	UInt_t offset = fConfig->GetDCSQueryOffset();
 
 	TMap* result = 0;
 	if (type == kAlias)
 	{
 		//result = client.GetAliasValues(entries, GetCurrentStartTime()-offset, 
 		//      GetCurrentEndTime()+offset);
-		result = client.GetAliasValues(entries, GetCurrentTimeCreated()-offset, 
-			GetCurrentEndTime()+offset);
+		result = client.GetAliasValues(entries, GetStartTimeDCSQuery(), 
+			GetEndTimeDCSQuery());
 	} 
 	else if (type == kDP)
 	{
 		//result = client.GetDPValues(entries, GetCurrentStartTime()-offset, 
 		//	GetCurrentEndTime()+offset);
-       		result = client.GetDPValues(entries, GetCurrentTimeCreated()-offset, 
-			GetCurrentEndTime()+offset);
+       		result = client.GetDPValues(entries, GetStartTimeDCSQuery(), 
+			GetEndTimeDCSQuery());
 	}
 
 	if (result == 0)

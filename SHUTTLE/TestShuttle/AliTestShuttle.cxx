@@ -134,6 +134,8 @@ AliTestShuttle::AliTestShuttle(Int_t run, UInt_t startTime, UInt_t endTime) :
   fRun(run),
   fStartTime(startTime),
   fEndTime(endTime),
+  fTimeCreated(startTime),
+  fDCSQueryOffset(0),
   fInputFiles(0),
   fRunParameters(0),
   fRunType(),
@@ -656,4 +658,22 @@ const char* AliTestShuttle::GetTriggerConfiguration()
 		return fTriggerConfiguration;
 	}
 	return NULL;
+}
+//______________________________________________________________________________________________
+const UInt_t AliTestShuttle::GetStartTimeDCSQuery()
+{
+	// Return Start Time for the DCS query
+	//
+	// The call is delegated to AliShuttleInterface
+
+	return fTimeCreated-fDCSQueryOffset;
+}
+//______________________________________________________________________________________________
+const UInt_t AliTestShuttle::GetEndTimeDCSQuery()
+{
+	// Return End Time for the DCS query
+	//
+	// The call is delegated to AliShuttleInterface
+
+	return fEndTime+fDCSQueryOffset;
 }
