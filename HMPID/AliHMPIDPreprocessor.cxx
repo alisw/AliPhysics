@@ -330,7 +330,12 @@ Double_t AliHMPIDPreprocessor::ProcTrans(TMap* pMap)
   for(Int_t i=0; i<30; i++){
 
     // evaluate wavelenght 
-    TObjArray *pWaveLenght  = (TObjArray*)pMap->GetValue(Form("HMP_DET/HMP_INFR/HMP_INFR_TRANPLANT/HMP_INFR_TRANPLANT_MEASURE.measure[%i].waveLenght",i));
+    TObjArray *pWaveLenght = (TObjArray*)pMap->GetValue(Form("HMP_DET/HMP_INFR/HMP_INFR_TRANPLANT/HMP_INFR_TRANPLANT_MEASURE.mesure%i.waveLenght",i));
+    if(!pWaveLenght){ 
+        AliWarning(Form("No Data Point values for HMP_DET/HMP_INFR/HMP_INFR_TRANPLANT/HMP_INFR_TRANPLANT_MEASURE.mesure%i.waveLenght  -----> Default E mean set to 6.75!!!!!",i));
+        return 6.75; // to be fixed
+      } 
+    
     TIter NextWl(pWaveLenght); pVal=(AliDCSValue*)NextWl();
     Double_t lambda = pVal->GetFloat();
 
@@ -339,22 +344,38 @@ Double_t AliHMPIDPreprocessor::ProcTrans(TMap* pMap)
     if(photEn<AliHMPIDParam::EPhotMin() || photEn>AliHMPIDParam::EPhotMax()) continue;
     
     // evaluate phototube current for argon reference
-    TObjArray *pArgonRef  = (TObjArray*)pMap->GetValue(Form("HMP_DET/HMP_INFR/HMP_INFR_TRANPLANT/HMP_INFR_TRANPLANT_MEASURE.measure[%i].argonReference",i));
+    TObjArray *pArgonRef  = (TObjArray*)pMap->GetValue(Form("HMP_DET/HMP_INFR/HMP_INFR_TRANPLANT/HMP_INFR_TRANPLANT_MEASURE.mesure%i.argonReference",i));
+    if(!pArgonRef){ 
+        AliWarning(Form("No Data Point values for HMP_DET/HMP_INFR/HMP_INFR_TRANPLANT/HMP_INFR_TRANPLANT_MEASURE.mesure%i.argonReference  -----> Default E mean set to 6.75!!!!!",i));
+        return 6.75; // to be fixed
+      } 
+    
     TIter NextArRef(pArgonRef); pVal=(AliDCSValue*)NextArRef();
     Double_t aRefArgon = pVal->GetFloat();
 
     // evaluate phototube current for argon cell
-    TObjArray *pArgonCell = (TObjArray*)pMap->GetValue(Form("HMP_DET/HMP_INFR/HMP_INFR_TRANPLANT/HMP_INFR_TRANPLANT_MEASURE.measure[%i].argonCell",i));
+    TObjArray *pArgonCell = (TObjArray*)pMap->GetValue(Form("HMP_DET/HMP_INFR/HMP_INFR_TRANPLANT/HMP_INFR_TRANPLANT_MEASURE.mesure%i.argonCell",i));
+    if(!pArgonCell){ 
+        AliWarning(Form("No Data Point values for HMP_DET/HMP_INFR/HMP_INFR_TRANPLANT/HMP_INFR_TRANPLANT_MEASURE.mesure%i.argonCell  -----> Default E mean set to 6.75!!!!!",i));
+        return 6.75; // to be fixed
+      } 
+      
     TIter NextArCell(pArgonCell); pVal=(AliDCSValue*)NextArCell();
     Double_t aCellArgon = pVal->GetFloat();
 
     //evaluate phototube current for freon reference
-    TObjArray *pFreonRef  = (TObjArray*)pMap->GetValue(Form("HMP_DET/HMP_INFR/HMP_INFR_TRANPLANT/HMP_INFR_TRANPLANT_MEASURE.measure[%i].c6f14Reference",i));
+    TObjArray *pFreonRef  = (TObjArray*)pMap->GetValue(Form("HMP_DET/HMP_INFR/HMP_INFR_TRANPLANT/HMP_INFR_TRANPLANT_MEASURE.mesure%i.c6f14Reference",i));
+    if(!pFreonRef){ 
+        AliWarning(Form("No Data Point values for HMP_DET/HMP_INFR/HMP_INFR_TRANPLANT/HMP_INFR_TRANPLANT_MEASURE.mesure%i.c6f14Reference  -----> Default E mean set to 6.75!!!!!",i));
+        return 6.75; // to be fixed
+      } 
+    
+    
     TIter NextFrRef(pFreonRef); pVal=(AliDCSValue*)NextFrRef();
     Double_t aRefFreon = pVal->GetFloat();
 
     //evaluate phototube current for freon cell
-    TObjArray *pFreonCell = (TObjArray*)pMap->GetValue(Form("HMP_DET/HMP_INFR/HMP_INFR_TRANPLANT/HMP_INFR_TRANPLANT_MEASURE.measure[%i].c6f14Cell",i));
+    TObjArray *pFreonCell = (TObjArray*)pMap->GetValue(Form("HMP_DET/HMP_INFR/HMP_INFR_TRANPLANT/HMP_INFR_TRANPLANT_MEASURE.mesure%i.c6f14Cell",i));
     TIter NextFrCell(pFreonCell); pVal=(AliDCSValue*)NextFrCell();
     Double_t aCellFreon = pVal->GetFloat();
  
