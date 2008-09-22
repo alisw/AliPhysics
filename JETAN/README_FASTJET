@@ -1,0 +1,64 @@
+
+------------------------------------------------
+
+Instructions to interface FastJet in AliRoot
+
+Rafael.Diaz.Valdes@cern.ch
+------------------------------------------------
+
+
+The following steps help you interface Aliroot with Fastjet 
+
+1- Install fastjet-2.3.4 from http://www.lpthe.jussieu.fr/~salam/fastjet 
+
+2- Modify Fastjet installation (temporary)
+   Root can not read the fastjet classes due to a bug in the CINT interprete (see report: https://savannah.cern.ch/bugs/?41608#attached ).
+   Therefore, once you've installed fastjet, go to the installation include location and then do
+
+   sed -i -e 's/^FASTJET_BEGIN_NAMESPACE/namespace fastjet \{/' \
+       -e 's/^FASTJET_END_NAMESPACE.*/\} \/\/ fastjet namespace /' \
+       -e 's/^#define FASTJET/\/\/ #define FASTJET/' \
+       fastjet/*.hh fastjet/*/*.hh 
+  
+  
+3- Setup the following environment variables
+
+   #if you have CGAL 
+   setenv CGAL_MAKEFILE /path to CGAL makefile  (this is mandatory for Fastjet)
+   setenv CGAL_LIB /path to CGAL libraries 
+   setenv LD_LIBRARY_PATH $CGAL_LIB\:$LD_LIBRARY_PATH
+
+   #Fastjet 
+   setenv FASTJET /path to Fastjet installation directory
+   setenv LD_LIBRARY_PATH $FASTJET/lib\:$LD_LIBRARY_PATH
+
+4- Update $ALICE_ROOT/JETAN module with the new Alice Fastjet classes
+
+   AliFastJetFinder.h .cxx
+   AliFastJetHeader.h .cxx
+   
+   Note: as soon as the SVN AliRoot/JETAN is updated you don't have to do it anymore   
+
+5- Recompile JETAN module in AliRoot
+   
+   cd $ALICE_ROOT
+   make
+
+6- Test if the interface is working.
+   Run the following test macro to check that you can call Fastjet algorithms from AliRoot. 
+   
+   % aliroot
+   root [0] .x testFastJet.C
+
+7- Now you are ready to use Fastjet within the Alice Analysis framework (by the moment with local ESD files) using the AliAnalysisTaskJets class. Here is an example of configuration file for Fastjet.
+
+   ConfigJetAnalysisFastjet.C 
+   
+   
+   
+ NOTES: 
+ - The following interface can be used for all the jet algorithms present in Fastjet. The interface with the SiSCone plug-in will be included soon. 
+ 
+ - The defaults set up parameters are not optimized, we are working on it.
+ 
+ 
