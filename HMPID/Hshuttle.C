@@ -84,17 +84,17 @@ void SimMap(TMap *pDcsMap,Int_t runTime=1500)
       pFreonRef[i]   = new TObjArray; pFreonRef[i]->SetOwner(1);
 
       pWaveLenght[i]->Add(new AliDCSValue((Float_t)(160+2*i),0));        // wavelenght (nm)
-      pArgonCell[i] ->Add(new AliDCSValue((Float_t)(aArgonCell[i]),0));
-      pArgonRef[i]  ->Add(new AliDCSValue((Float_t)(aArgonRef[i]),0));
-      pFreonRef[i] ->Add(new AliDCSValue((Float_t)(aFreonRef[i]),0));
-      pFreonCell[i] ->Add(new AliDCSValue((Float_t)(aFreonCell[i]),0));     
+      pArgonCell[i]->Add(new AliDCSValue((Float_t)(aArgonCell[i]),0));
+      pArgonRef[i]->Add(new AliDCSValue((Float_t)(aArgonRef[i]),0));
+      pFreonRef[i]->Add(new AliDCSValue((Float_t)(aFreonRef[i]),0));
+      pFreonCell[i]->Add(new AliDCSValue((Float_t)(aFreonCell[i]),0));     
 
 
-      pDcsMap->Add(new TObjString(Form("HMP_DET/HMP_INFR/HMP_INFR_TRANPLANT/HMP_INFR_TRANPLANT_MEASURE.measure[%i].waveLenght",i)),pWaveLenght[i]);
-      pDcsMap->Add(new TObjString(Form("HMP_DET/HMP_INFR/HMP_INFR_TRANPLANT/HMP_INFR_TRANPLANT_MEASURE.measure[%i].argonCell",i)),pArgonCell[i]);
-      pDcsMap->Add(new TObjString(Form("HMP_DET/HMP_INFR/HMP_INFR_TRANPLANT/HMP_INFR_TRANPLANT_MEASURE.measure[%i].argonReference",i)),pArgonRef[i]);
-      pDcsMap->Add(new TObjString(Form("HMP_DET/HMP_INFR/HMP_INFR_TRANPLANT/HMP_INFR_TRANPLANT_MEASURE.measure[%i].c6f14Cell",i)),pFreonCell[i]);
-      pDcsMap->Add(new TObjString(Form("HMP_DET/HMP_INFR/HMP_INFR_TRANPLANT/HMP_INFR_TRANPLANT_MEASURE.measure[%i].c6f14Reference",i)),pFreonRef[i]);    
+      pDcsMap->Add(new TObjString(Form("HMP_DET/HMP_INFR/HMP_INFR_TRANPLANT/HMP_INFR_TRANPLANT_MEASURE.mesure%i.waveLenght",i)),pWaveLenght[i]);
+      pDcsMap->Add(new TObjString(Form("HMP_DET/HMP_INFR/HMP_INFR_TRANPLANT/HMP_INFR_TRANPLANT_MEASURE.mesure%i.argonCell",i)),pArgonCell[i]);
+      pDcsMap->Add(new TObjString(Form("HMP_DET/HMP_INFR/HMP_INFR_TRANPLANT/HMP_INFR_TRANPLANT_MEASURE.mesure%i.argonReference",i)),pArgonRef[i]);
+      pDcsMap->Add(new TObjString(Form("HMP_DET/HMP_INFR/HMP_INFR_TRANPLANT/HMP_INFR_TRANPLANT_MEASURE.mesure%i.c6f14Cell",i)),pFreonCell[i]);
+      pDcsMap->Add(new TObjString(Form("HMP_DET/HMP_INFR/HMP_INFR_TRANPLANT/HMP_INFR_TRANPLANT_MEASURE.mesure%i.c6f14Reference",i)),pFreonRef[i]);    
      }
   
   TObjArray *pHV[7];
