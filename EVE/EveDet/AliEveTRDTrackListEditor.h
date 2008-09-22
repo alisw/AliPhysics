@@ -46,8 +46,8 @@ public:
   void HandleNewEventLoaded();                            // Handles the "NewEventLoaded()"-signal
   void HandleTabChangedToIndex(Int_t);                    // Handles the "Selected(Int_t id)"-signal (tab changed)
   void RemoveMacros();                                    // Removes the selected macros from the lists
-  void SetTrackColor(Int_t ind);                          // Sets the track model
-  void SetTrackModel(Int_t ind);                          // Sets the track model
+  void SetTrackModel(Int_t ind);                          // Sets the track model 
+  void SetTrackColor(Int_t ind);                          // Sets the track color 
   void UpdateDataFromMacroListSelection();                // Updates the selection in the "data from macro"-list
   void UpdateHistoList();                                 // Updates the histogram list
   void UpdateMacroList();                                 // Updates the macro list
@@ -69,10 +69,11 @@ private:
   Bool_t            fInheritMacroList;       // Flag indicating, whether the macro list will be inherited from the
                                              // previously loaded track list within the next call of SetModel
 
+  TGHorizontalFrame* fStyleFrame;            // Frame for the style stuff
   TGVerticalFrame*   fMainFrame;             // Top frame for macro functionality.
   TGVerticalFrame*   fHistoFrame;            // Top frame for the histogram stuff
   TGVerticalFrame*   fHistoSubFrame;         // Frame for the histogram buttons themselves
-  TGHorizontalFrame* fBrowseFrame;           // For searching macros
+  TGHorizontalFrame* fBrowseFrame;           // Frame for features corresponding to searching macros
   TGButtonGroup*     fbgStyleColor;          // Button group for the color model
   TGButtonGroup*     fbgStyleTrack;          // Button group for the track model
   

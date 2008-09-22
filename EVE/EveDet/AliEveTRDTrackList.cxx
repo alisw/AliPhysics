@@ -3,7 +3,6 @@
 
 #include "AliEveTRDTrackList.h"
 
-#include <AliTRDtrackV1.h>
 #include <TFile.h>
 #include <TFunction.h>
 #include <TH1.h>
@@ -13,23 +12,27 @@
 #include <TSystem.h>
 #include <TTree.h>
 #include <TTreeStream.h>
-#include <EveDet/AliEveTRDData.h>
+
+#include <AliTRDtrackV1.h>
+#include <AliTRDReconstructor.h>
+
 
 ClassImp(AliEveTRDTrackList)
 
 ///////////////////////////////////////////////////////////
 /////////////   AliEveTRDTrackList ////////////////////////
 ///////////////////////////////////////////////////////////
-AliEveTRDTrackList::AliEveTRDTrackList(const Text_t* n, const Text_t* t, Bool_t doColor):
-  TEveElementList(n, t, doColor),
-  fMacroList(0),
-  fMacroSelList(0),
-  fDataFromMacroList(0),
-  fDataTree(0),
-  fHistoDataSelected(0),
-  fMacroListSelected(0),
-  fMacroSelListSelected(0),
-  fSelectedTab(1)             // Standard tab: "Apply macros" (index 1)
+AliEveTRDTrackList::AliEveTRDTrackList(const Text_t* n, const Text_t* t, Bool_t doColor)
+  :TEveElementList(n, t, doColor)
+  ,fMacroList(0)
+  ,fMacroSelList(0)
+  ,fDataFromMacroList(0)
+  ,fDataTree(0)
+  ,fHistoDataSelected(0)
+  ,fMacroListSelected(0)
+  ,fMacroSelListSelected(0)
+  ,fSelectedTab(1)                      // Standard tab: "Apply macros" (index 1)
+  ,fSelectedStyle(0)
 {
   // Only accept childs of type AliEveTRDTrack
   SetChildClass(AliEveTRDTrack::Class());
@@ -38,7 +41,17 @@ AliEveTRDTrackList::AliEveTRDTrackList(const Text_t* n, const Text_t* t, Bool_t 
   fMacroSelList = new TList();
   fDataFromMacroList = new TList();
 
-  //fDataTree = new TTreeSRedirector("TRD.TrackListMacroData.root");
+  // Set the build directory for AClic
+  gSystem->SetBuildDir("$HOME/.trdQArec");
+  
+  // If it does not exist, create it
+  // Note: gSystem->AccessPathName(...) returns kTRUE, if the access FAILED!
+  if(gSystem->AccessPathName("$HOME/.trdQArec")) 
+  {
+    if (gSystem->mkdir("$HOME/.trdQArec") != 0)
+      Error("AliEveTRDTrackList - Constructor", 
+            "Library directory \"$HOME/.trdQArec\" could not be created - no write permission!");
+  }
 
   AddStandardMacros();
 }
@@ -69,7 +82,9 @@ AliEveTRDTrackList::~AliEveTRDTrackList()
     delete fDataTree;
     fDataTree = 0;
   } 
-  if(!gSystem->AccessPathName(Form("/tmp/TRD.TrackListMacroData_%s.root", gSystem->Getenv("USER")))) gSystem->Exec(Form("rm /tmp/TRD.TrackListMacroData_%s.root", gSystem->Getenv("USER")));
+  // Note: gSystem->AccessPathName(...) returns kTRUE, if the access FAILED!
+  if(!gSystem->AccessPathName(Form("/tmp/TRD.TrackListMacroData_%s.root", gSystem->Getenv("USER")))) 
+    gSystem->Exec(Form("rm /tmp/TRD.TrackListMacroData_%s.root", gSystem->Getenv("USER")));
 }
 
 //______________________________________________________
@@ -287,7 +302,8 @@ Bool_t AliEveTRDTrackList::ApplyProcessMacros(TList* iterator)
   gROOT->Reset();
   
   // Clear old data and re-allocate
-  if (fDataTree == 0) fDataTree = new TTreeSRedirector(Form("/tmp/TRD.TrackListMacroData_%s.root", gSystem->Getenv("USER")));
+  if (fDataTree == 0) fDataTree = new TTreeSRedirector(Form("/tmp/TRD.TrackListMacroData_%s.root", 
+                                                            gSystem->Getenv("USER")));
   if (!fDataTree)
   {
     Error("Apply process macros", "File \"TRD.TrackListMacroData.root\" could not be accessed properly!");
@@ -571,3 +587,49 @@ void AliEveTRDTrackList::RemoveSelectionMacros(TList* iterator)
   obj = 0;
 }
 
+
+//______________________________________________________
+void AliEveTRDTrackList::UpdateTrackStyle(AliEveTRDTrack::AliEveTRDTrackState s, UChar_t ss)
+{
+  switch(s){
+  case AliEveTRDTrack::kSource:
+    SETBIT(fSelectedStyle, AliEveTRDTrack::kSource);
+    break;  
+  case AliEveTRDTrack::kPID:
+    CLRBIT(fSelectedStyle, AliEveTRDTrack::kSource);
+    switch(ss){
+    case AliTRDReconstructor::kLQPID:
+      CLRBIT(fSelectedStyle, AliEveTRDTrack::kPID);
+      break;
+    case AliTRDReconstructor::kNNPID:
+      SETBIT(fSelectedStyle, AliEveTRDTrack::kPID);
+      break;
+    }
+    break;  
+  case AliEveTRDTrack::kTrackCosmics:
+    SETBIT(fSelectedStyle, AliEveTRDTrack::kTrackCosmics);
+    break;  
+  case AliEveTRDTrack::kTrackModel:
+    CLRBIT(fSelectedStyle, AliEveTRDTrack::kTrackCosmics);
+    switch(ss){
+    case AliEveTRDTrack::kRieman:
+      CLRBIT(fSelectedStyle, AliEveTRDTrack::kTrackModel);
+      break;
+    case AliEveTRDTrack::kKalman:
+      AliWarning("Kalman fit under testing for the moment.");
+      //SETBIT(fSelectedStyle, AliEveTRDTrack::kTrackModel);
+      break;
+    }
+    break;  
+  }
+
+
+
+  // Walk through the list of tracks     
+  AliEveTRDTrack* track = 0x0;
+  for (TEveElement::List_i iter = this->BeginChildren(); iter != this->EndChildren(); ++iter) {
+    if (!(track = dynamic_cast<AliEveTRDTrack*>(*iter)))  continue;
+
+    track->SetStatus(fSelectedStyle);
+  }
+}

@@ -2,6 +2,7 @@
 #define AliEveTRDTrackList_H
 
 #include <TEveElement.h>
+#include <EveDet/AliEveTRDData.h>
 
 #define SIGNATURE_ERROR   -1
 #define NOT_EXIST_ERROR   -2
@@ -11,8 +12,6 @@
 #define MAX_MACRO_NAME_LENGTH     100
 #define MAX_MACRO_PATH_LENGTH     300
 #define MAX_APPLY_COMMAND_LENGTH   50
-
-#define UNSETBIT(n,i)  ((n) &= ~BIT(i))
 
 class AliEveTRDTrack;
 class AliTRDtrackV1;
@@ -69,24 +68,28 @@ public:
                                                                 // the corresponding list.    
   void RemoveSelectionMacros(TList* iterator);                  // Uses the iterator (for the selected selection
                                                                 // macros) to remove the selection macros from 
-                                                                // the corresponding list.   
+                                                                // the corresponding list.  
+  //void SetTrackStyleState(UChar_t c);   // Sets the track model and the color model for each track in the list
 
 protected:
-  TList* fMacroList;                 // List of (process) macros
-  TList* fMacroSelList;              // List of (selection) macros
-  TList* fDataFromMacroList;         // List of macros that currently have data for histograms
+  TList*  fMacroList;                 // List of (process) macros
+  TList*  fMacroSelList;              // List of (selection) macros
+  TList*  fDataFromMacroList;         // List of macros that currently have data for histograms
 
   TTreeSRedirector *fDataTree;       // Tree containing data for histograms
 
-  Int_t fHistoDataSelected;          // Stores the selection for the data of the histograms
-  Int_t fMacroListSelected;          // Stores the selection of the process macro list
-  Int_t fMacroSelListSelected;       // Stores the selection of the selection macro list
+  Int_t   fHistoDataSelected;          // Stores the selection for the data of the histograms
+  Int_t   fMacroListSelected;          // Stores the selection of the process macro list
+  Int_t   fMacroSelListSelected;       // Stores the selection of the selection macro list
 
-  Char_t fSelectedTab;               // Holds the index of the selected tab
+  Char_t  fSelectedTab;                                            // Holds the index of the selected tab
+  UChar_t fSelectedStyle;        // Holds the selected track style
 
-  Char_t GetSelectedTab()            // Get the selected tab
+  Char_t GetSelectedTab()                                         // Gets the selected tab
     { return fSelectedTab;  }
 
+  UChar_t GetSelectedTrackStyle()     // Gets the selected track style
+    { return fSelectedStyle;  }
   Bool_t HistoDataIsSelected(Int_t index)               // Is entry in list selected?
     { return TESTBIT(fHistoDataSelected, index);  }  
    
@@ -102,16 +105,21 @@ protected:
                                                         // additional check with mangled name!!
 
   void SetHistoDataSelection(Int_t index, Bool_t set)       // Set selection of entry in list
-    { if (set) SETBIT(fHistoDataSelected, index); else UNSETBIT(fHistoDataSelected, index);  }  
+    { if (set) SETBIT(fHistoDataSelected, index); else CLRBIT(fHistoDataSelected, index);  }  
 
   void SetMacroListSelection(Int_t index, Bool_t set)       // Set selection of entry in list
-    { if (set) SETBIT(fMacroListSelected, index); else UNSETBIT(fMacroListSelected, index);  }  
+    { if (set) SETBIT(fMacroListSelected, index); else CLRBIT(fMacroListSelected, index);  }  
 
   void SetMacroSelListSelection(Int_t index, Bool_t set)    // Set selection of entry in list
-    { if (set) SETBIT(fMacroSelListSelected, index); else UNSETBIT(fMacroSelListSelected, index);  }   
+    { if (set) SETBIT(fMacroSelListSelected, index); else CLRBIT(fMacroSelListSelected, index);  }   
     
-  void SetSelectedTab(Int_t index)    // Set the selected tab
+  void SetSelectedTab(Int_t index)                                          // Sets the selected tab
     { fSelectedTab = (Char_t)index; }  
+
+  void SetSelectedTrackStyle(UChar_t index)     // Sets the selected track style
+    { fSelectedStyle = index;  }
+
+  void UpdateTrackStyle(AliEveTRDTrack::AliEveTRDTrackState s, UChar_t ss=0);
 
 private:
   AliEveTRDTrackList(const AliEveTRDTrackList&);            // Not implemented

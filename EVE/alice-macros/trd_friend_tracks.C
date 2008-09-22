@@ -26,15 +26,22 @@ void trd_friend_tracks(TEveElement *cont = 0)
       if(strcmp(cal->IsA()->GetName(), "AliTRDtrackV1") != 0) continue;
       AliTRDtrackV1 *trackObj = dynamic_cast<AliTRDtrackV1 *>(cal);
       trackObj->SetReconstructor(reco);
-      tracks->AddElement(new AliEveTRDTrack(trackObj));
+      AliEveTRDTrack *trackEve = new AliEveTRDTrack(trackObj);
+      tracks->AddElement(trackEve);
+      trackEve->SetESDstatus(esdTrack->GetStatus());
     }
   }
 	
   tracks->SetTitle(Form("Tracks %d", tracks->NumChildren()));
   tracks->StampObjProps();
   gEve->AddElement(tracks, cont);
-
+  
   gEve->Redraw3D();
+
+  TGLViewer *v = gEve->GetGLViewer();
+  v->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
+  ((TGLOrthoCamera&)v->CurrentCamera()).SetEnableRotate(kTRUE);
+  v->UpdateScene();
   
   return;
 }
