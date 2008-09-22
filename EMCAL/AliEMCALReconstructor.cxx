@@ -367,22 +367,24 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
     Float_t *amplFloat = clust->GetEnergiesList();
     Int_t   *digitInts = clust->GetAbsId();
     TArrayS absIdList(cellMult);
-    //Uncomment when unfolding is done
-    //TArrayD fracList(cellMult);
+    TArrayD fracList(cellMult);
 
     Int_t newCellMult = 0;
     for (Int_t iCell=0; iCell<cellMult; iCell++) {
       if (amplFloat[iCell] > 0) {
       absIdList[newCellMult] = (UShort_t)(digitInts[iCell]);
-    //Uncomment when unfolding is done
-    //fracList[newCellMult] = amplFloat[iCell]/emcCells.GetCellAmplitude(digitInts[iCell]);
+      //Uncomment when unfolding is done
+      //if(emcCells.GetCellAmplitude(digitInts[iCell])>0)
+      //fracList[newCellMult] = amplFloat[iCell]/(emcCells.GetCellAmplitude(digitInts[iCell])*calibration);//get cell calibration value 
+      //else
+      fracList[newCellMult] = 0; 
       newCellMult++;
       }
     }
-    absIdList.Set(newCellMult);
-    //Uncomment when unfolding is done
-    //fracList.Set(newCellMult);
 
+    absIdList.Set(newCellMult);
+    fracList.Set(newCellMult);
+    
     if(newCellMult > 0) { // accept cluster if it has some digit
       nClustersNew++;
       //Primaries
@@ -396,16 +398,13 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
       ec->SetNCells(newCellMult);
       //Change type of list from short to ushort
       UShort_t *newAbsIdList  = new UShort_t[newCellMult];
-      //Uncomment when unfolding is done
-      //Double_t *newFracList  = new Double_t[newCellMult];
+      Double_t *newFracList  = new Double_t[newCellMult];
       for(Int_t i = 0; i < newCellMult ; i++) {
         newAbsIdList[i]=absIdList[i];
-      //Uncomment when unfolding is done
-      //newFracList[i]=fracList[i];
+        newFracList[i]=fracList[i];
       }
       ec->SetCellsAbsId(newAbsIdList);
-      //Uncomment when unfolding is done
-      //ec->SetCellsAmplitudeFraction(newFracList);
+      ec->SetCellsAmplitudeFraction(newFracList);
       ec->SetClusterDisp(clust->GetDispersion());
       ec->SetClusterChi2(-1); //not yet implemented
       ec->SetM02(elipAxis[0]*elipAxis[0]) ;
@@ -420,10 +419,10 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
       ec->AddLabels(arrayParents);
 
       // add the cluster to the esd object
-     esd->AddCaloCluster(ec);
+      esd->AddCaloCluster(ec);
       delete ec;
       delete [] newAbsIdList ;
-      //delete [] newFracList ;
+      delete [] newFracList ;
    }
  } // cycle on clusters
 
@@ -439,10 +438,10 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   pid->SetReconstructor(kTRUE);
   pid->RunPID(esd);
   delete pid;
-
+  
   delete digits;
   delete clusters;
-
+  
   // printf(" ## AliEMCALReconstructor::FillESD() is ended : ncl %i -> %i ### \n ",nClusters, nClustersNew); 
 }
 
