@@ -13,13 +13,17 @@
 #define MAX_MACRO_PATH_LENGTH     300
 #define MAX_APPLY_COMMAND_LENGTH   50
 
+#define UNSETBIT(n,i)  ((n) &= ~BIT(i))
+
 class AliEveTRDTrack;
+class AliTRDReconstructor;
 class AliTRDtrackV1;
 class TFile;
 class TFunction;
 class TH1;
 class TObjString;
 class TList;
+class TMap;
 class TTreeSRedirector;
 
 class AliEveTRDTrackList: public TEveElementList
@@ -39,6 +43,14 @@ public:
     fkMaxApplyCommandLength = MAX_APPLY_COMMAND_LENGTH  
   };
 
+  enum AliEveTRDTrackListMacroType
+  {
+    kUnknown        = 0,
+    kSelectionMacro = 1,
+    kProcessMacro   = 2,
+    kHistoMacro     = 3
+  };
+
   AliEveTRDTrackList(const Text_t* n = "AliEveTRDTrackList", const Text_t* t = "", Bool_t doColor = kFALSE);
   virtual ~AliEveTRDTrackList();
 
@@ -48,9 +60,9 @@ public:
                                                                 // macro code has been changed. If forceReload is
                                                                 // kTRUE, the library will always be (re-)built!
   void AddMacroFast(const Char_t* entry,                        // Adds an entry to the corresponding list (cf. below)
-                    Bool_t toSelectionList);     
-  void AddMacroFast(const Char_t* path, const Char_t* name,     // Adds a macro (path/name) to the selection (process)
-                    Bool_t toSelectionList);                    // macro list, if second parameter is kTRUE (kFALSE).
+                    AliEveTRDTrackListMacroType type);     
+  void AddMacroFast(const Char_t* path, const Char_t* name,     // Adds a macro (path/name) to the list associated 
+                    AliEveTRDTrackListMacroType type);          // with the "type" parameter.
                                                                 // No checks are performed (fast) and no libraries are
                                                                 // loaded. Do use only, if library already exists!
   virtual void AddStandardMacros();                             // Adds standard macros to the lists
@@ -61,6 +73,19 @@ public:
                                                                 // error!).
   void ApplySelectionMacros(TList* iterator);                   // Uses the iterator (for the selected selection
                                                                 // macros) to apply the selected macros to the data
+  AliEveTRDTrackListMacroType GetMacroType(const Char_t* entry, // Returns the type of the macro of the corresponding
+                                           Bool_t UseList = kTRUE);// entry (i.e. "macro.C (Path: path)"). If you have 
+                                                                // only the name and the path, you can simply use
+                                                                // MakeMacroEntry.
+                                                                // If "UseList" is kTRUE, the type will be looked up
+                                                                // in the internal list (very fast). But if this list
+                                                                // does not exist, you have to use kFALSE for this 
+                                                                // parameter. Then the type will be determined by the
+                                                                // prototype! NOTE: It is assumed that the macro has
+                                                                // been compiled! If not, the return value is not.
+                                                                // predictable, but normally will be kUnknown.
+                                                                // Note: AddMacro(Fast) will update the internal list 
+                                                                // and RemoveProcess(/Selection)Macros respectively.
   Char_t* MakeMacroEntry(const Char_t* path, const Char_t* name);  // Constructs an entry for the macro
                                                                    // lists with path and name   
   void RemoveProcessMacros(TList* iterator);                    // Uses the iterator (for the selected process
@@ -69,27 +94,29 @@ public:
   void RemoveSelectionMacros(TList* iterator);                  // Uses the iterator (for the selected selection
                                                                 // macros) to remove the selection macros from 
                                                                 // the corresponding list.  
-  //void SetTrackStyleState(UChar_t c);   // Sets the track model and the color model for each track in the list
 
 protected:
-  TList*  fMacroList;                 // List of (process) macros
-  TList*  fMacroSelList;              // List of (selection) macros
-  TList*  fDataFromMacroList;         // List of macros that currently have data for histograms
+  TList* fMacroList;                 // List of (process) macros
+  TList* fMacroSelList;              // List of (selection) macros
+  TList* fDataFromMacroList;         // List of macros that currently have data for histograms
+
+  TMap*  fMacroTypes;                // Contains the type of each macro
 
   TTreeSRedirector *fDataTree;       // Tree containing data for histograms
 
-  Int_t   fHistoDataSelected;          // Stores the selection for the data of the histograms
-  Int_t   fMacroListSelected;          // Stores the selection of the process macro list
-  Int_t   fMacroSelListSelected;       // Stores the selection of the selection macro list
+  Int_t fHistoDataSelected;          // Stores the selection for the data of the histograms
+  Int_t fMacroListSelected;          // Stores the selection of the process macro list
+  Int_t fMacroSelListSelected;       // Stores the selection of the selection macro list
 
-  Char_t  fSelectedTab;                                            // Holds the index of the selected tab
-  UChar_t fSelectedStyle;        // Holds the selected track style
+  Char_t fSelectedTab;               // Holds the index of the selected tab
+  UChar_t fSelectedStyle;            // Holds the selected track style
 
-  Char_t GetSelectedTab()                                         // Gets the selected tab
+  Char_t GetSelectedTab()            // Gets the selected tab
     { return fSelectedTab;  }
 
-  UChar_t GetSelectedTrackStyle()     // Gets the selected track style
+  UChar_t GetSelectedTrackStyle()    // Gets the selected track style
     { return fSelectedStyle;  }
+
   Bool_t HistoDataIsSelected(Int_t index)               // Is entry in list selected?
     { return TESTBIT(fHistoDataSelected, index);  }  
    
@@ -99,27 +126,23 @@ protected:
   Bool_t MacroSelListIsSelected(Int_t index)            // Is entry in list selected?
     { return TESTBIT(fMacroSelListSelected, index);  }  
 
-  Bool_t IsHistogramMacro(const Char_t* name);          // Returns kTRUE, if a macro with name "name" has been
-                                                        // loaded into a shared library and has the signature
-                                                        // of a process macro of type 2 (histogram) -> NO
-                                                        // additional check with mangled name!!
-
   void SetHistoDataSelection(Int_t index, Bool_t set)       // Set selection of entry in list
-    { if (set) SETBIT(fHistoDataSelected, index); else CLRBIT(fHistoDataSelected, index);  }  
+    { if (set) SETBIT(fHistoDataSelected, index); else UNSETBIT(fHistoDataSelected, index);  }  
 
   void SetMacroListSelection(Int_t index, Bool_t set)       // Set selection of entry in list
-    { if (set) SETBIT(fMacroListSelected, index); else CLRBIT(fMacroListSelected, index);  }  
+    { if (set) SETBIT(fMacroListSelected, index); else UNSETBIT(fMacroListSelected, index);  }  
 
   void SetMacroSelListSelection(Int_t index, Bool_t set)    // Set selection of entry in list
-    { if (set) SETBIT(fMacroSelListSelected, index); else CLRBIT(fMacroSelListSelected, index);  }   
+    { if (set) SETBIT(fMacroSelListSelected, index); else UNSETBIT(fMacroSelListSelected, index);  }   
     
-  void SetSelectedTab(Int_t index)                                          // Sets the selected tab
+  void SetSelectedTab(Int_t index)                          // Sets the selected tab
     { fSelectedTab = (Char_t)index; }  
 
-  void SetSelectedTrackStyle(UChar_t index)     // Sets the selected track style
+  void SetSelectedTrackStyle(UChar_t index)                 // Sets the selected track style
     { fSelectedStyle = index;  }
 
-  void UpdateTrackStyle(AliEveTRDTrack::AliEveTRDTrackState s, UChar_t ss=0);
+  void UpdateTrackStyle(AliEveTRDTrack::AliEveTRDTrackState s, UChar_t ss = 0); // Updates the track style
+
 
 private:
   AliEveTRDTrackList(const AliEveTRDTrackList&);            // Not implemented

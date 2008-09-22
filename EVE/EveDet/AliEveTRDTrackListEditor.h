@@ -5,6 +5,7 @@
 
 class AliEveTRDTrack;
 class AliEveTRDTrackList;
+class AliTRDReconstructor;
 class TCanvas;     
 class TEveBrowser;           
 class TEveGedEditor;
@@ -46,8 +47,8 @@ public:
   void HandleNewEventLoaded();                            // Handles the "NewEventLoaded()"-signal
   void HandleTabChangedToIndex(Int_t);                    // Handles the "Selected(Int_t id)"-signal (tab changed)
   void RemoveMacros();                                    // Removes the selected macros from the lists
-  void SetTrackModel(Int_t ind);                          // Sets the track model 
-  void SetTrackColor(Int_t ind);                          // Sets the track color 
+  void SetTrackColor(Int_t ind);                          // Sets the color model
+  void SetTrackModel(Int_t ind);                          // Sets the track model
   void UpdateDataFromMacroListSelection();                // Updates the selection in the "data from macro"-list
   void UpdateHistoList();                                 // Updates the histogram list
   void UpdateMacroList();                                 // Updates the macro list
@@ -58,6 +59,7 @@ protected:
   AliEveTRDTrackList* fM;                                 // Model object
 
   void InheritMacroList();                                // Inherits macro list from the previously loaded track list
+  void InheritStyle();                                    // Inherits the style from the previously loaded track list
 
 private:
   AliEveTRDTrackListEditor(const AliEveTRDTrackListEditor&);            // Not implemented
@@ -66,8 +68,9 @@ private:
   TCanvas*          fHistoCanvas;            // Canvas for the histograms
   TGString*         fHistoCanvasName;        // Name of the histogram canvas
 
-  Bool_t            fInheritMacroList;       // Flag indicating, whether the macro list will be inherited from the
-                                             // previously loaded track list within the next call of SetModel
+  Bool_t            fInheritSettings;        // Flag indicating, whether the macro list and the style settings will be 
+                                             // inherited from the previously loaded track list within the next call 
+                                             // of SetModel
 
   TGHorizontalFrame* fStyleFrame;            // Frame for the style stuff
   TGVerticalFrame*   fMainFrame;             // Top frame for macro functionality.

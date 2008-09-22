@@ -1,4 +1,10 @@
+#include <EveDet/AliEveTRDData.h>
+#include <EveDet/AliEveTRDTrackList.h>
+#include "AliEveTRDTrackListEditor.h"
 
+#include <EveBase/AliEveEventManager.h>
+#include <AliTRDReconstructor.h>
+#include <AliTRDtrackV1.h>
 #include <TGButton.h>
 #include <TCanvas.h>     
 #include <TEveBrowser.h>
@@ -21,14 +27,6 @@
 #include <TH1.h>
 #include <TTreeStream.h>
 
-#include <EveDet/AliEveTRDData.h>
-#include <EveDet/AliEveTRDTrackList.h>
-#include "EveDet/AliEveTRDTrackListEditor.h"
-#include <EveBase/AliEveEventManager.h>
-
-#include <AliTRDtrackV1.h>
-#include <AliTRDReconstructor.h>
-
 
 ClassImp(AliEveTRDTrackListEditor)
 
@@ -41,7 +39,7 @@ AliEveTRDTrackListEditor::AliEveTRDTrackListEditor(const TGWindow* p, Int_t widt
   fM(0),
   fHistoCanvas(0),
   fHistoCanvasName(0),
-  fInheritMacroList(kFALSE),
+  fInheritSettings(kFALSE),
   fStyleFrame(0),
   fMainFrame(0),
   fHistoFrame(0),
@@ -77,38 +75,46 @@ AliEveTRDTrackListEditor::AliEveTRDTrackListEditor(const TGWindow* p, Int_t widt
   fStyleFrame->AddFrame(fbgStyleTrack);
 
   frbTrack[0] = new TGRadioButton(fbgStyleTrack, "Rieman", 0);
+  frbTrack[0]->SetToolTipText("Set the track model to \"Rieman\"");
   fbgStyleTrack->AddFrame(frbTrack[0]);
   frbTrack[1] = new TGRadioButton(fbgStyleTrack, "Kalman", 1);
+  frbTrack[1]->SetToolTipText("Set the track model to \"Kalman\"");
   fbgStyleTrack->AddFrame(frbTrack[1]);
   frbTrack[2] = new TGRadioButton(fbgStyleTrack, "Line", 2);
+  frbTrack[2]->SetToolTipText("Set the track model to \"Line\"");
   fbgStyleTrack->AddFrame(frbTrack[2]);  
 
   // Style - Color model
-  fbgStyleColor = new TGButtonGroup(fStyleFrame, "Color style");
+  fbgStyleColor = new TGButtonGroup(fStyleFrame, "Color model");
   fbgStyleColor->SetMapSubwindows(kTRUE);
   fbgStyleColor->Resize(194, 200);
   fStyleFrame->AddFrame(fbgStyleColor);
 
   frbColor[0] = new TGRadioButton(fbgStyleColor, "PID LQ", 0);
+  frbColor[0]->SetToolTipText("Set color model to \"PID LQ\"");
   fbgStyleColor->AddFrame(frbColor[0]);
   frbColor[1] = new TGRadioButton(fbgStyleColor, "PID NN", 1);
+  frbColor[1]->SetToolTipText("Set color model to \"PID NN\"");
   fbgStyleColor->AddFrame(frbColor[1]);
   frbColor[2] = new TGRadioButton(fbgStyleColor, "ESD Source", 2);
+  frbColor[2]->SetToolTipText("Set color model to \"ESD Source\"");
   fbgStyleColor->AddFrame(frbColor[2]);  
   
 
   // Functionality for adding macros  
-  fMainFrame = CreateEditorTabSubFrame("Analysis");
+  fMainFrame = CreateEditorTabSubFrame("Apply macros");
    
   fLabel1 = new TGLabel(fMainFrame,"Add macro(s):");
   fMainFrame->AddFrame(fLabel1);
   fBrowseFrame = new TGHorizontalFrame(fMainFrame);
 
   fteField = new TGTextEntry(fBrowseFrame);
+  fteField->SetToolTipText("Enter the pathname of the macro you want to add here and press \"Enter\"");
   fteField->Connect("ReturnPressed()","AliEveTRDTrackListEditor", this, "HandleMacroPathSet()"); 
   fBrowseFrame->AddFrame(fteField);
   
   fbBrowse = new TGTextButton(fBrowseFrame, "Browse");
+  fbBrowse->SetToolTipText("Browse the macro you want to add");
   fbBrowse->Connect("Clicked()", "AliEveTRDTrackListEditor", this, "BrowseMacros()");
   fBrowseFrame->AddFrame(fbBrowse);
   fMainFrame->AddFrame(fBrowseFrame);
@@ -125,7 +131,7 @@ AliEveTRDTrackListEditor::AliEveTRDTrackListEditor(const TGWindow* p, Int_t widt
 
   fLine2 = new TGHorizontal3DLine(fMainFrame, 194, 8);
   fMainFrame->AddFrame(fLine2, new TGLayoutHints(kLHintsLeft  | kLHintsTop, 2, 2, 8, 2));
-  fLabel3 = new TGLabel(fMainFrame,"Analysis macros:");
+  fLabel3 = new TGLabel(fMainFrame,"Process macros:");
   fMainFrame->AddFrame(fLabel3);
 
   ftlMacroList = new TGListBox(fMainFrame);
@@ -137,16 +143,18 @@ AliEveTRDTrackListEditor::AliEveTRDTrackListEditor(const TGWindow* p, Int_t widt
   fMainFrame->AddFrame(fLine3, new TGLayoutHints(kLHintsLeft  | kLHintsTop, 2, 2, 8, 2));  
 
   fbApplyMacros = new TGTextButton(fMainFrame, "Apply selected macro(s)");
+  fbApplyMacros->SetToolTipText("Apply all selected macros to the tracklist -> A data file will be generated");
   fbApplyMacros->Connect("Clicked()", "AliEveTRDTrackListEditor", this, "ApplyMacros()");
   fbApplyMacros->SetRightMargin(12);
   fMainFrame->AddFrame(fbApplyMacros);
 
   fbRemoveMacros = new TGTextButton(fMainFrame, "Remove selected macro(s)");
+  fbRemoveMacros->SetToolTipText("Remove the selected macro(s) from the list(s)");
   fbRemoveMacros->Connect("Clicked()", "AliEveTRDTrackListEditor", this, "RemoveMacros()");
   fMainFrame->AddFrame(fbRemoveMacros);
 
   // Stuff for displaying histograms
-  fHistoFrame = CreateEditorTabSubFrame("Results");  
+  fHistoFrame = CreateEditorTabSubFrame("Histograms");  
   fHistoFrame->SetMapSubwindows(kTRUE);
   fLabel4 = new TGLabel(fHistoFrame,"Data from applied macros:");
   fHistoFrame->AddFrame(fLabel4);
@@ -160,6 +168,7 @@ AliEveTRDTrackListEditor::AliEveTRDTrackListEditor(const TGWindow* p, Int_t widt
   fHistoFrame->AddFrame(fLine4, new TGLayoutHints(kLHintsLeft  | kLHintsTop, 2, 2, 8, 2));  
 
   fbDrawHisto = new TGTextButton(fHistoFrame, "Draw histogram");
+  fbDrawHisto->SetToolTipText("Uses the data file created by the last \"Apply selected macro(s)\".\nClick here to display the data histograms of the selected macros.\nSelect multiple macros to create correlated, multi-dimensional plots.\nHisto macros cannot be correlated!");
   fbDrawHisto->Connect("Clicked()", "AliEveTRDTrackListEditor", this, "DrawHistos()");
   fHistoFrame->AddFrame(fbDrawHisto);
 
@@ -186,7 +195,7 @@ AliEveTRDTrackListEditor::AliEveTRDTrackListEditor(const TGWindow* p, Int_t widt
   ftlMacroSelList->Connect("Selected(Int_t)", "AliEveTRDTrackListEditor", this, "UpdateMacroSelListSelection(Int_t)");
 
   // Handle the signal "NewEventLoaded"
-  //gAliEveEvent->Connect("NewEventLoaded()", "AliEveTRDTrackListEditor", this, "HandleNewEventLoaded()");
+  gAliEveEvent->Connect("NewEventLoaded()", "AliEveTRDTrackListEditor", this, "HandleNewEventLoaded()");
 
   // Handle the signal "Selected" (another tab has been selected)
   GetGedEditor()->GetTab()->Connect("Selected(Int_t)", "AliEveTRDTrackListEditor", 
@@ -369,8 +378,8 @@ void AliEveTRDTrackListEditor::DrawHistos()
     {
       selectedChecked++;
 
-      // Histo macro?
-      if (fM->IsHistogramMacro(fM->fDataFromMacroList->At(j)->GetName()))
+      // Histo macro? -> To check this, look for the substring "(histo macro)"
+      if (strstr(fM->fDataFromMacroList->At(j)->GetName(), "(histo macro)") != 0)
       {
         // Is also another macro selected?
         if (nHistograms > 1)
@@ -391,12 +400,14 @@ void AliEveTRDTrackListEditor::DrawHistos()
     }
   }
 
-  TFile* file = new TFile("TRD.TrackListMacroData.root", "READ");
+  TFile* file = new TFile(Form("/tmp/TRD.TrackListMacroData_%s.root", gSystem->Getenv("USER")), "READ");
   if (!file)  
   {
-    Error("Draw histograms", "Cannot open file \"TRD.TrackListMacroData.root\"");
+    Error("Draw histograms", Form("Cannot open file \"/tmp/TRD.TrackListMacroData_%s.root\"", 
+                                  gSystem->Getenv("USER")));
     new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Error - Draw histograms", 
-                 "Cannot open file \"TRD.TrackListMacroData.root\"", kMBIconExclamation, kMBOk);
+                 Form("Cannot open file \"/tmp/TRD.TrackListMacroData_%s.root\"", gSystem->Getenv("USER")),
+                 kMBIconExclamation, kMBOk);
     return;
   }
   
@@ -468,13 +479,12 @@ void AliEveTRDTrackListEditor::DrawHistos()
         if (nHistograms == 1) 
         {
           SetDrawingToHistoCanvasTab();
-
+      
           t->Draw(Form("Macro%d", indexOfMacro1), "1");
           ((TH1*)gPad->GetPrimitive("htemp"))->SetTitle(Form("%s;%s",
             fM->fDataFromMacroList->At(indexOfMacro1)->GetName(),
             fM->fDataFromMacroList->At(indexOfMacro1)->GetName()));
-
-          UpdateHistoCanvasTab();
+          UpdateHistoCanvasTab();        
 
           break;     
         }
@@ -632,8 +642,8 @@ void AliEveTRDTrackListEditor::HandleMacroPathSet()
 //______________________________________________________
 void AliEveTRDTrackListEditor::HandleNewEventLoaded()
 {
-  // Inherit the macro list for the next track list!
-  fInheritMacroList = kTRUE;
+  // Inherit the macro list and track style for the next track list!
+  fInheritSettings = kTRUE;
 
   // Close the tabs
   CloseTabs();
@@ -654,14 +664,38 @@ void AliEveTRDTrackListEditor::InheritMacroList()
   fM->fMacroSelList->Delete();
   for (Int_t i = 0; i < ftlMacroSelList->GetNumberOfEntries(); i++)
   {
-    fM->AddMacroFast(ftlMacroSelList->GetEntry(i)->GetTitle(), kTRUE);
+    fM->AddMacroFast(ftlMacroSelList->GetEntry(i)->GetTitle(), AliEveTRDTrackList::kSelectionMacro);
   }
 
   // Process macros
   fM->fMacroList->Delete();
   for (Int_t i = 0; i < ftlMacroList->GetNumberOfEntries(); i++)
   {
-    fM->AddMacroFast(ftlMacroList->GetEntry(i)->GetTitle(), kFALSE);
+    fM->AddMacroFast(ftlMacroList->GetEntry(i)->GetTitle(), fM->GetMacroType(ftlMacroList->GetEntry(i)->GetTitle(),
+                                                                             kFALSE));
+  }
+}
+
+//______________________________________________________
+void AliEveTRDTrackListEditor::InheritStyle()
+{
+  // The old styles are stored in the corresponding button groups -> set them in track list
+
+  for (Int_t ind = 0; ind < 3; ind++)
+  {
+    if (fbgStyleTrack->GetButton(ind)->IsOn())
+    {
+      SetTrackModel(ind);
+      break;
+    }
+  }
+  for (Int_t ind = 0; ind < 3; ind++)
+  {
+    if (fbgStyleColor->GetButton(ind)->IsOn())
+    {
+      SetTrackColor(ind);
+      break;
+    }
   }
 }
 
@@ -716,32 +750,37 @@ void AliEveTRDTrackListEditor::SetModel(TObject* obj)
   // Set model object
   fM = dynamic_cast<AliEveTRDTrackList*>(obj);
 
-  if (fM == 0){
+  if (fM == 0) 
+  {
     Error("SetModel", "Parameter is zero pointer");
     return;
   }
 
-  // If macro list shall be inherited from previously loaded track list, do so
-  if (fInheritMacroList)
+  // If macro list + track style shall be inherited from previously loaded track list, do so
+  if (fInheritSettings)
   {
     InheritMacroList();
-    fInheritMacroList = kFALSE;
+    InheritStyle();
+
+    fInheritSettings = kFALSE;
   }
 
-  // Select the correct styles -> Button index has offset 1!
+  // Select the correct styles
   Int_t b = 0;
   UChar_t style = fM->GetSelectedTrackStyle();
-  if(TESTBIT(style, AliEveTRDTrack::kSource)) b = 2;
-  else {
-    if(TESTBIT(style, AliEveTRDTrack::kPID)) b = 1;
+  if (TESTBIT(style, AliEveTRDTrack::kSource)) b = 2;
+  else 
+  {
+    if (TESTBIT(style, AliEveTRDTrack::kPID)) b = 1;
     else b = 0;
   } 
   fbgStyleColor->SetButton(b, kTRUE);
 
 
-  if(TESTBIT(style, AliEveTRDTrack::kTrackCosmics)) b = 2;
-  else{
-    if(TESTBIT(style, AliEveTRDTrack::kTrackModel)) b = 1;
+  if (TESTBIT(style, AliEveTRDTrack::kTrackCosmics)) b = 2;
+  else
+  {
+    if (TESTBIT(style, AliEveTRDTrack::kTrackModel)) b = 1;
     else b = 0;
   }
   fbgStyleTrack->SetButton(b, kTRUE);
@@ -754,26 +793,10 @@ void AliEveTRDTrackListEditor::SetModel(TObject* obj)
 }
 
 //______________________________________________________
-void AliEveTRDTrackListEditor::SetTrackModel(Int_t ind)
-{
-  switch(ind){ 
-  case AliEveTRDTrack::kRieman:
-    fM->UpdateTrackStyle(AliEveTRDTrack::kTrackModel, AliEveTRDTrack::kRieman);
-    break;
-  case AliEveTRDTrack::kKalman:
-    fM->UpdateTrackStyle(AliEveTRDTrack::kTrackModel, AliEveTRDTrack::kKalman);
-    break;
-  default:
-    fM->UpdateTrackStyle(AliEveTRDTrack::kTrackCosmics);
-    break;
-  }
-  gEve->Redraw3D();
-}
-
-//______________________________________________________
 void AliEveTRDTrackListEditor::SetTrackColor(Int_t ind)
 {
-  switch(ind){ 
+  switch(ind)
+  { 
   case AliTRDReconstructor::kLQPID:
     fM->UpdateTrackStyle(AliEveTRDTrack::kPID, AliTRDReconstructor::kLQPID);
     break;
@@ -784,9 +807,28 @@ void AliEveTRDTrackListEditor::SetTrackColor(Int_t ind)
     fM->UpdateTrackStyle(AliEveTRDTrack::kSource);
     break;
   }
+
   gEve->Redraw3D();
 }
 
+//______________________________________________________
+void AliEveTRDTrackListEditor::SetTrackModel(Int_t ind)
+{
+  switch(ind)
+  { 
+  case AliEveTRDTrack::kRieman:
+    fM->UpdateTrackStyle(AliEveTRDTrack::kTrackModel, AliEveTRDTrack::kRieman);
+    break;
+  case AliEveTRDTrack::kKalman:
+    fM->UpdateTrackStyle(AliEveTRDTrack::kTrackModel, AliEveTRDTrack::kKalman);
+    break;
+  default:
+    fM->UpdateTrackStyle(AliEveTRDTrack::kTrackCosmics);
+    break;
+  }
+
+  gEve->Redraw3D();
+}
 
 //______________________________________________________
 void AliEveTRDTrackListEditor::UpdateDataFromMacroListSelection()
