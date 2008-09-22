@@ -5,15 +5,35 @@
  * See cxx source for full Copyright notice                               */
 
 
+
 //---------------------------------------------------------------------
-// Fast Jet finder algorithm interface
-// manages the search for jets
+// FastJet v2.3.4 finder algorithm interface
+//
 // Author: Rafael.Diaz.Valdes@cern.ch
-// kt algorithm using NlnN
+//  
 //---------------------------------------------------------------------
 
+//FastJet classes 
+#include "fastjet/PseudoJet.hh"
+#include "fastjet/ClusterSequenceArea.hh"
+#include "fastjet/AreaDefinition.hh"
+#include "fastjet/JetDefinition.hh"
+// get info on how fastjet was configured
+#include "fastjet/config.h"
+#ifdef ENABLE_PLUGIN_SISCONE
+#include "fastjet/SISConePlugin.hh"
+#endif
+
+
+#include<sstream>  // needed for internal io
+#include <vector> 
+#include <cmath> 
+
 #include "AliJetFinder.h"
-class AliFastJetHeader;
+#include "AliFastJetHeader.h"
+
+using namespace std;
+
 
 class AliFastJetFinder : public AliJetFinder
 {
@@ -22,32 +42,18 @@ class AliFastJetFinder : public AliJetFinder
   AliFastJetFinder();
   ~AliFastJetFinder();
 
-  // getters
-
-  // setters
-  void SetJetHeader(AliFastJetHeader* h) {fHeader= h;}
+  void FindJets(); 
   // others
-  void FindJets();
-  void RunAlgorithm(Int_t& nJets,Float_t* etJet,Float_t* etaJet,Float_t* phiJet,
-                    Float_t* etsigJet, Float_t* etallJet, Int_t* ncellsJet,
-                    Int_t& nCell,Float_t* etCell,Float_t* etaCell,Float_t* phiCell,
-                    Float_t* etsigCell, Int_t* jetflagCell);
-  void SubtractBackg(Int_t& nCell, Int_t* jetflagCell, Float_t* etCell,
-                     Int_t& nJets, Float_t* etJet, Float_t* etallJet, Int_t* ncellsJet,
-                     Float_t& meanptCell, Float_t& sqptCell, Float_t& etBackg);
-  void SubtractBackgArea(Int_t& nCell, Int_t* jetflagCell, Float_t* etCell,
-                     Int_t& nJets, Float_t* etJet, Float_t* etallJet);
-  void Reset();
-  void Init();
+  void RunTest(const char* datafile); // a simple test
+  
   void WriteJHeaderToFile();
+  
+  protected:
+  AliFastJetFinder(const AliFastJetFinder& rfj);
+  AliFastJetFinder& operator = (const AliFastJetFinder& rsfj);
 
- protected:
 
-  AliFastJetHeader* fHeader;         // pointer to jet header
-  TH2F*             fLego;           //! Lego Histo
-  TH2F*             fLegoSignal;    // ! Lego histogram for signal
-
-  ClassDef(AliFastJetFinder,1)
+  ClassDef(AliFastJetFinder,2)
 };
 
 #endif

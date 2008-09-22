@@ -5,11 +5,16 @@
  * See cxx source for full Copyright notice                               */
  
 //---------------------------------------------------------------------
-// FastJet algorithm
-//
+// FastJet v2.3.4 finder algorithm interface
+// Finder Header Class 
 // Author: Rafael.Diaz.Valdes@cern.ch
 //---------------------------------------------------------------------
  
+
+#include "fastjet/ClusterSequenceArea.hh"
+#include "fastjet/AreaDefinition.hh"
+#include "fastjet/JetDefinition.hh"
+
 #include "AliJetHeader.h"
 
  
@@ -21,46 +26,62 @@ class AliFastJetHeader : public AliJetHeader
   virtual ~AliFastJetHeader() { }
 
   // Getters
-  Int_t   GetLegoNbinEta()   const  {return fLegoNbinEta;}
-  Int_t   GetLegoNbinPhi()   const  {return fLegoNbinPhi;}
-  Float_t GetLegoEtaMin()    const  {return fLegoEtaMin;}
-  Float_t GetLegoEtaMax()    const  {return fLegoEtaMax;}
-  Float_t GetLegoPhiMin()    const  {return fLegoPhiMin;}
-  Float_t GetLegoPhiMax()    const  {return fLegoPhiMax;}
-  Float_t GetRadius()        const  {return fRadius;}
-  Float_t GetMinJetEt()      const  {return fMinJetEt;}
-  Bool_t  AddSoftBackg()     const  {return fSoftBackg;}
-  Float_t GetPrecBg()        const  {return fPrecBg;}
+  Double_t                     GetRparam()            const {return fRparam;}
+  fastjet::JetAlgorithm        GetAlgorithm()         const {return fAlgorithm;}
+  fastjet::Strategy            GetStrategy()          const {return fStrategy;}
+  fastjet::RecombinationScheme GetRecombScheme()      const {return fRecombScheme;}
+  Double_t                     GetGhostEtaMax()       const {return fGhostEtaMax;}
+  Double_t                     GetGhostArea()         const {return fGhostArea;}
+  Int_t                        GetActiveAreaRepeats() const {return fActiveAreaRepeats;}
+  fastjet::AreaType            GetAreaType()          const {return fAreaType;}
+  Double_t                     GetPtMin()             const {return fPtMin;}
+  Double_t                     GetRapMax()            const {return fRapMax;}
+  Double_t                     GetRapMin()            const {return fRapMin;}
+  Double_t                     GetPhiMax()            const {return fPhiMax;}
+  Double_t                     GetPhiMin()            const {return fPhiMin;}
+  
   // Setters
-  void SetLegoNbinEta(Int_t f) {fLegoNbinEta=f;}
-  void SetLegoNbinPhi(Int_t f) {fLegoNbinPhi=f;}
-  void SetLegoEtaMin(Float_t f) {fLegoEtaMin=f;}
-  void SetLegoEtaMax(Float_t f) {fLegoEtaMax=f;}
-  void SetLegoPhiMin(Float_t f) {fLegoPhiMin=f;}
-  void SetLegoPhiMax(Float_t f) {fLegoPhiMax=f;}
-  void SetRadius(Float_t f)     {fRadius = f;}
-  void SetMinJetEt(Float_t f) {fMinJetEt=f;}
-  void SetSoftBackg(Bool_t f) {fSoftBackg=f;}
-  void SetPrecBg(Float_t f) {fPrecBg=f;}
+  void SetRparam(Double_t f)                           {fRparam = f;}
+  void SetAlgorithm(fastjet::JetAlgorithm f)           {fAlgorithm = f;}
+  void SetStrategy(fastjet::Strategy f)                {fStrategy = f;}
+  void SetRecombScheme(fastjet::RecombinationScheme f) {fRecombScheme = f;}
+  void SetGhostEtaMax(Double_t f)                      {fGhostEtaMax = f;}
+  void SetGhostArea(Double_t f)                        {fGhostArea = f;}
+  void SetActiveAreaRepeats(Int_t f)                   {fActiveAreaRepeats =f;}
+  void SetAreaType(fastjet::AreaType f)                {fAreaType = f;}
+  void SetRapRange(Double_t fmin, Double_t fmax)       {fRapMin = fmin; fRapMax = fmax;}
+  void SetPhiRange(Double_t fmin, Double_t fmax)       {fPhiMin = fmin; fPhiMax = fmax;}
+  
+  void SetComment(TString com) {fComment=com;}
+  
   // others
   void PrintParameters() const;
 
  protected:
-  // parameters for legos
-  Int_t   fLegoNbinEta;         //! number of cells in eta
-  Int_t   fLegoNbinPhi;         //! number of cells in phi
-  Float_t fLegoEtaMin;          //! minimum eta
-  Float_t fLegoEtaMax;          //! maximum eta
-  Float_t fLegoPhiMin;          //! minimun phi
-  Float_t fLegoPhiMax;          //! maximum phi
-  //algorithm parameters
-  Float_t fRadius;              // R parameter  (fastjet)
-  Float_t fMinJetEt;            // Min Et of jet (geneal)
-  Bool_t  fSoftBackg;           // add soft background
-  Float_t fPrecBg;              // max value of change for BG (in %)
 
-
-  ClassDef(AliFastJetHeader,1)
+  //fastjet::JetDefinition parameters
+  Double_t fRparam;
+  fastjet::JetAlgorithm fAlgorithm; //fastjet::kt_algorithm
+  fastjet::Strategy fStrategy;  //= fastjet::Best;
+  fastjet::RecombinationScheme fRecombScheme; // = fastjet::BIpt_scheme;
+  
+  //fastjet::GhostedAreaSpec parameters
+  Double_t fGhostEtaMax;
+  Double_t fGhostArea;
+  Int_t    fActiveAreaRepeats;
+  
+  //fastjet::AreaDefinition parameters
+  fastjet::AreaType fAreaType; 
+  
+  //fastjet::ClusterSequenceArea options parameters
+  Double_t fPtMin; //jets with pt > ptmin
+  
+  //fastjet::RangeDefinition parameters 
+  Double_t fRapMax, fRapMin; // rapidity range of background sub 
+  Double_t fPhiMax, fPhiMin; // phi range of background sub
+  
+  
+  ClassDef(AliFastJetHeader,2)
 };
  
 #endif

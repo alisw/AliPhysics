@@ -13,14 +13,20 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+
 //---------------------------------------------------------------------
-//  FastJet header class
-// Stores parameters of particle algoritm
+// FastJet v2.3.4 finder algorithm interface
+// Finder Header Class 
 // Author: Rafael.Diaz.Valdes@cern.ch
 //---------------------------------------------------------------------
 
 #include <Riostream.h>
 #include <TMath.h>
+
+#include "fastjet/ClusterSequenceArea.hh"
+#include "fastjet/AreaDefinition.hh"
+#include "fastjet/JetDefinition.hh"
+
 #include "AliFastJetHeader.h"
 
 ClassImp(AliFastJetHeader)
@@ -29,18 +35,24 @@ ClassImp(AliFastJetHeader)
 
 AliFastJetHeader::AliFastJetHeader():
     AliJetHeader("AliFastJetHeader"),
-    fLegoNbinEta(60),
-    fLegoNbinPhi(210),
-    fLegoEtaMin(-0.9),
-    fLegoEtaMax(0.9),
-    fLegoPhiMin(0.),
-    fLegoPhiMax(2. * TMath::Pi()),
-    fRadius(1.0),
-    fMinJetEt(10.0),
-    fSoftBackg(kTRUE),
-    fPrecBg(0.035) 
+    fRparam(1.0), 
+    fAlgorithm(fastjet::kt_algorithm),
+    fStrategy(fastjet::Best),
+    fRecombScheme(fastjet::BIpt_scheme),
+    fGhostEtaMax(2.0),
+    fGhostArea(0.05),
+    fActiveAreaRepeats(1),
+    fAreaType(fastjet::active_area), 
+    fPtMin(5.0),
+    fPhiMin(0),
+    fPhiMax(TMath::TwoPi())
 {
   // Constructor
+  
+  Double_t rapmax = fGhostEtaMax - fRparam;
+  Double_t rapmin = -fGhostEtaMax + fRparam;
+  SetRapRange(rapmin, rapmax);
+  
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -49,6 +61,27 @@ void AliFastJetHeader::PrintParameters() const
 {
   // prints out parameters of jet algorithm
 
-  cout << " FastJet algorithm " << endl;
+  cout << "FastJet algorithm  parameters:" << endl;
+  
+  cout << "-- Jet Definition --- " << endl;
+  cout << "R " << fRparam << endl;
+  cout << "Jet Algorithm " << fAlgorithm << endl; 
+  cout << "Strategy " << fStrategy << endl;  
+  cout << "Recombination Scheme " << fRecombScheme << endl; 
+  
+  cout << "-- Ghosted Area Spec parameters --- " << endl;
+  cout << "Ghost Eta Max " << fGhostEtaMax << endl;
+  cout << "Ghost Area " << fGhostArea << endl;
+  cout << "Active Area Repeats " << fActiveAreaRepeats << endl;
+  
+  cout << "-- Area Definition parameters --- " << endl;
+  cout << "Area Type " << fAreaType << endl; 
+  
+  cout << "-- Cluster Sequence Area parameters --- " << endl;
+  cout << "pt min " << fPtMin << endl; 
+  
+  cout << "-- Range Definition parameters --- " << endl;
+  cout << " bkg rapidity range from  " << fRapMin << " to " << fRapMax << endl;
+  cout << " bkg phi range from " << fPhiMin << " to " << fPhiMax << endl;
 
 }
