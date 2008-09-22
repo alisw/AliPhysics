@@ -109,35 +109,38 @@ private:
 };
 
 
-
+class AliTrackPoint;
 class AliTRDtrackV1;
 class AliEveTRDTrack : public TEveLine
 {
 public:
-  enum AliEveTRDTrackColor{
-    kPID = 0
-    ,kSource = 1
+  enum AliEveTRDTrackState{
+    kSource        = 0 
+    ,kPID          = 1 
+    ,kTrackCosmics = 2
+    ,kTrackModel   = 3
   };
   enum AliEveTRDTrackModel{
-    kLine = 0
-    ,kRiemann = 1
-    ,kKalman = 2
+    kRieman  = 0
+    ,kKalman = 1
   };
 
 
   AliEveTRDTrack(AliTRDtrackV1 *trk);
-//  ~AliEveTRDTrack();
-  AliEveTRDTracklet*  GetTracklet(Int_t plane) const {return plane <6 && plane >= 0 ? fTracklet[plane] : 0x0;}
-  void               ProcessData(); // *MENU* 
-  void               SetState(AliEveTRDTrackColor c, AliEveTRDTrackModel m){;}
- 
+  virtual ~AliEveTRDTrack();
+  //AliEveTRDTracklet*  GetTracklet(Int_t plane) const {return plane <6 && plane >= 0 ? fTracklet[plane] : 0x0;}
+  void    SetStatus(UChar_t s);
+  void    SetESDstatus(ULong_t stat) {fESDStatus = stat;} 
 private:
-  AliEveTRDTracklet  *fTracklet[6]; // tracklets
-
   AliEveTRDTrack(const AliEveTRDTrack&);            // Not implemented
   AliEveTRDTrack& operator=(const AliEveTRDTrack&); // Not implemented
 
-  ClassDef(AliEveTRDTrack, 0); // TRD track visualisation
+  UChar_t        fTrackState;   // bit map for the track drawing state
+  ULong_t        fESDStatus;    // ESD status bit for this track
+  Float_t        fAlpha;        // sector angle for this track  
+  AliTrackPoint* fPoints;       // track crossing points
+
+  ClassDef(AliEveTRDTrack, 0);  // TRD track visualisation
 };
 
 

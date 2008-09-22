@@ -302,7 +302,12 @@ void AliEveTRDTracklet::ProcessData()
 ///////////////////////////////////////////////////////////
 
 //______________________________________________________________________________
-AliEveTRDTrack::AliEveTRDTrack(AliTRDtrackV1 *trk) : TEveLine()
+AliEveTRDTrack::AliEveTRDTrack(AliTRDtrackV1 *trk) 
+  :TEveLine()
+  ,fTrackState(0)
+  ,fESDStatus(0)
+  ,fAlpha(0.)
+  ,fPoints(0x0)
 {
   // Constructor.
   SetName("track");
@@ -310,48 +315,130 @@ AliEveTRDTrack::AliEveTRDTrack(AliTRDtrackV1 *trk) : TEveLine()
   SetUserData(trk);
   
   AliTRDtrackerV1::SetNTimeBins(24);
-  AliTrackPoint points[AliTRDtrackV1::kMAXCLUSTERSPERTRACK];
-  Int_t nc = 0, sec = -1; Float_t alpha = 0.;
-  AliTRDcluster *c = 0x0;
+
   AliTRDseedV1 *tracklet = 0x0;
   for(Int_t il=0; il<AliTRDgeometry::kNlayer; il++){
     if(!(tracklet = trk->GetTracklet(il))) continue;
     if(!tracklet->IsOK()) continue;
-    AddElement(fTracklet[il] = new AliEveTRDTracklet(tracklet));
-
-    for(Int_t ic=34; ic>=0; ic--){
-      if(!(c = tracklet->GetClusters(ic))) continue;
-      if(sec<0){
-        sec = c->GetDetector()/30;
-        alpha = AliTRDgeometry::GetAlpha() * (sec<9 ? sec + .5 : sec - 17.5); 
-      }
-      points[nc].SetXYZ(c->GetX(),0.,0.);
-      nc++;
-    }
+    AddElement(new AliEveTRDTracklet(tracklet));
   }
 
-  AliTRDtrackerV1::FitRiemanTilt(trk, 0x0, kTRUE, nc, points);
-  //AliTRDtrackerV1::FitKalman(trk, 0x0, kFALSE, nc, points);
-  //AliTRDtrackerV1::FitLine(trk, 0x0, kFALSE, nc, points);
-
-  Float_t global[3];
-  for(Int_t ip=0; ip<nc; ip++){
-    points[ip].Rotate(-alpha).GetXYZ(global);
-    SetNextPoint(global[0], global[1], global[2]);
-  }
-
-  SetMarkerColor(kGreen);
-  SetLineColor(kGreen);
-  SetSmooth(kTRUE);
+  SetStatus(fTrackState);
 }
 
 //______________________________________________________________________________
-void AliEveTRDTrack::ProcessData()
+AliEveTRDTrack::~AliEveTRDTrack()
 {
-  AliTRDtrackV1 *track = (AliTRDtrackV1*)GetUserData();
-  AliInfo(Form("Clusters[%d]", track->GetNumberOfClusters()));
-  
-  track->CookPID();
-  printf("PIDLQ : "); for(int is=0; is<AliPID::kSPECIES; is++) printf("%s[%5.2f] ", AliPID::ParticleName(is), 1.E2*track->GetPID(is)); printf("\n");
+  if(fPoints) delete [] fPoints; fPoints = 0x0;
+  //delete dynamic_cast<AliTRDtrackV1*>(GetUserData());
 }
 
+
+//______________________________________________________________________________
+void AliEveTRDTrack::SetStatus(UChar_t s)
+{
+  // nothing to be done
+  if(fPoints && fTrackState == s) return;
+
+  const Int_t nc = AliTRDtrackV1::kMAXCLUSTERSPERTRACK;
+  AliTRDtrackV1 *trk = (AliTRDtrackV1*)GetUserData();
+
+  Bool_t BUILD = kFALSE;
+  if(!fPoints){ 
+    fPoints = new AliTrackPoint[nc];
+
+    AliTRDcluster *c = trk->GetCluster(0);
+    Double_t x = c->GetX();
+    Int_t sec = c->GetDetector()/30;
+    fAlpha = AliTRDgeometry::GetAlpha() * (sec<9 ? sec + .5 : sec - 17.5); 
+
+    Double_t dx = (trk->GetCluster(trk->GetNumberOfClusters()-1)->GetX()-x)/nc;
+    for(Int_t ip=0; ip<nc; ip++){
+      fPoints[ip].SetXYZ(x, 0., 0.);
+      x+=dx;
+    }
+    BUILD = kTRUE;
+  }
+
+  // select track model
+  if(BUILD || ((s&12) != (fTrackState&12))){
+    if(TESTBIT(s, kTrackCosmics)){
+      //printf("Straight track\n");
+      AliTRDtrackerV1::FitLine(trk, 0x0, kFALSE, nc, fPoints);
+    } else {
+      if(TESTBIT(s, kTrackModel)){
+        //printf("Kalman track\n");
+        //AliTRDtrackerV1::FitKalman(trk, 0x0, kFALSE, nc, fPoints);
+      } else { 
+        //printf("Rieman track\n");
+        if(trk->GetNumberOfTracklets() >=4) AliTRDtrackerV1::FitRiemanTilt(trk, 0x0, kTRUE, nc, fPoints);
+      }
+    }
+  
+    Float_t global[3];
+    for(Int_t ip=0; ip<nc; ip++){
+      fPoints[ip].Rotate(-fAlpha).GetXYZ(global);
+      SetPoint(ip, global[0], global[1], global[2]);
+    }
+    SetSmooth(kTRUE);
+  }
+
+  // set color
+  if(BUILD || ((s&3) != (fTrackState&3))){
+    if(TESTBIT(s, kSource)){
+      //printf("Source color\n");
+      if(fESDStatus&AliESDtrack::kTRDin){
+        SetMarkerColor(kGreen);
+        SetLineColor(kGreen);
+      } else {
+        SetMarkerColor(kMagenta);
+        SetLineColor(kMagenta);
+      }
+    } else {
+      if(TESTBIT(s, kPID) == AliTRDReconstructor::kLQPID){
+        //printf("PID color kLQPID\n");
+        //trk->GetReconstructor()->SetOption("!nn");
+      } else {
+        //printf("PID color kNNPID\n");
+        //trk->GetReconstructor()->SetOption("nn");
+      }
+      trk->CookPID();
+  
+      Int_t species = 0; Float_t pid = 0.;
+      for(Int_t is=0; is<AliPID::kSPECIES; is++) 
+        if(trk->GetPID(is) > pid){
+          pid = trk->GetPID(is);
+          species = is;
+        }
+      switch(species){
+      case AliPID::kElectron:
+        SetMarkerColor(kRed);
+        SetLineColor(kRed);
+        break;
+      default:
+        SetMarkerColor(kBlue);
+        SetLineColor(kBlue);
+        break;
+      }
+    }
+    SetLineWidth(2);
+  }
+  
+  Char_t *model = "line";
+  if(!TESTBIT(s, kTrackCosmics)){
+    if(TESTBIT(s, kTrackModel)) model = "kalman";
+    else model = "rieman";
+  }
+  Int_t species = 0; Float_t pid = 0.;
+  for(Int_t is=0; is<AliPID::kSPECIES; is++) 
+    if(trk->GetPID(is) > pid){
+      pid = trk->GetPID(is);
+      species = is;
+    }
+
+  SetTitle(Form("Nc[%d] Nt[%d] Model[%s] Source[%s]", trk->GetNumberOfClusters(), trk->GetNumberOfTracklets(), model, fESDStatus&AliESDtrack::kTRDin ? "barrel" : "sa"));
+  SetName(AliPID::ParticleName(species));
+
+  // save track status
+  fTrackState = s;
+}
