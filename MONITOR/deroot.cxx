@@ -7,14 +7,24 @@
 #include <TError.h>
 #include <TSystem.h>
 #include <TSysEvtHandler.h>
+#include <TGrid.h>
 #include "deroot.h"
 
 int deroot(const char *rootFileName, const char *dateFileName, const char *ddlFilesFolder);
 
 int deroot(const char *rootFileName, const char *dateFileName, const char *ddlFilesFolder) {
 
- TFile rootFile(rootFileName);
- TTree *t=(TTree *)rootFile.Get("RAW");
+ TString str = rootFileName;
+ if (str.BeginsWith("alien://"))
+   TGrid::Connect("alien://");
+
+ TFile *rootFile = TFile::Open(rootFileName,"READ");
+ if (!rootFile) {
+   cerr << "Raw data file can not be opened" << endl;
+   return(1);
+ }
+
+ TTree *t=(TTree *)rootFile->Get("RAW");
  if(!t) {
   cerr << "Error getting RAW tree" << endl;
   return(1);
@@ -65,7 +75,7 @@ int deroot(const char *rootFileName, const char *dateFileName, const char *ddlFi
  cerr << "\r     \r";
  cerr.flush();
  delete t;
- rootFile.Close();
+ rootFile->Close();
  fclose(dateFile);
  delete [] dateEvent;
  
