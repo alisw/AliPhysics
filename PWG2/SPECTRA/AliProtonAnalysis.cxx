@@ -664,8 +664,8 @@ void AliProtonAnalysis::Analyze(AliStack* stack) {
   fHistEvents->Fill(0); //number of analyzed events
   for(Int_t i = 0; i < stack->GetNprimary(); i++) {
     TParticle *particle = stack->Particle(i);
-    if(particle->Pt() < 0.1) continue;
-    if(TMath::Abs(particle->Eta()) > 1.0) continue;
+    //if(particle->Pt() < 0.1) continue;
+    //if(TMath::Abs(particle->Eta()) > 1.0) continue;
     Int_t pdgcode = particle->GetPdgCode();
     if(pdgcode == 2212) fHistYPtProtons->Fill(Rapidity(particle->Px(),
 						       particle->Py(),
