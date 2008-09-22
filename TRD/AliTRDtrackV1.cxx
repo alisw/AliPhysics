@@ -325,6 +325,27 @@ Double_t AliTRDtrackV1::GetBz() const
 }
 
 //_______________________________________________________________
+AliTRDcluster* AliTRDtrackV1::GetCluster(Int_t id)
+{
+  Int_t n = 0;
+  for(Int_t ip=0; ip<kNplane; ip++){
+    if(!fTracklet[ip]) continue;
+    if(n+fTracklet[ip]->GetN() <= id){ 
+      n+=fTracklet[ip]->GetN();
+      continue;
+    }
+    AliTRDcluster *c = 0x0;
+    for(Int_t ic=AliTRDseed::knTimebins-1; ic>=0; ic--){
+      if(!(c = fTracklet[ip]->GetClusters(ic))) continue;
+
+      if(n<id){n++; continue;}
+      return c;
+    }
+  }
+  return 0x0;
+}
+
+//_______________________________________________________________
 Int_t  AliTRDtrackV1::GetClusterIndex(Int_t id) const
 {
   Int_t n = 0;

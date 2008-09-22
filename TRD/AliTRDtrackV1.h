@@ -57,6 +57,7 @@ public:
   AliTRDtrackV1* GetBackupTrack() const {return fBackupTrack;}
   Double_t       GetBudget(Int_t i) const { return fBudget[i];}
   Double_t       GetC() const { return AliExternalTrackParam::GetC(GetBz());}
+  AliTRDcluster* GetCluster(Int_t id);
   Int_t          GetClusterIndex(Int_t id) const;
   Float_t        GetEdep() const {return fDE;}
   inline Float_t GetMomentum(Int_t plane) const;
