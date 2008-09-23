@@ -71,7 +71,7 @@ class AliDetectorTag : public TObject {
   
   TObjArray *fDetectorArray; //detectors' names - active
   UInt_t     fMask;          //detector mask
-  UInt_t     fDetectors[20]; //detector mask
+  UInt_t     fDetectors[32]; //detector mask
   Bool_t     fITSSPD;        //ITS-SPD active = 1
   Bool_t     fITSSDD;        //ITS-SDD active = 1
   Bool_t     fITSSSD;        //ITS-SSD active = 1
@@ -88,7 +88,7 @@ class AliDetectorTag : public TObject {
   Bool_t     fZDC;           //ZDC active = 1
   Bool_t     fEMCAL;         //EMCAL active = 1
 
-  ClassDef(AliDetectorTag,3)  //(ClassName, ClassVersion)
+  ClassDef(AliDetectorTag,4)  //(ClassName, ClassVersion)
 };
 //______________________________________________________________________________
 

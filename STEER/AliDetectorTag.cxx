@@ -51,7 +51,7 @@ AliDetectorTag::AliDetectorTag() :
   fEMCAL(kFALSE)
 {
   // Default constructor
-  for(Int_t k = 0; k < 20; k++) fDetectors[k] = 0;
+  for(Int_t k = 0; k < 32; k++) fDetectors[k] = 0;
 }
 
 //___________________________________________________________________________
@@ -76,7 +76,7 @@ AliDetectorTag::AliDetectorTag(const AliDetectorTag & detTag) :
   fEMCAL(detTag.fEMCAL)
  {
   // DetectorTag copy constructor
-  for(Int_t k = 0; k < 20; k++) fDetectors[k] = detTag.fDetectors[k];
+  for(Int_t k = 0; k < 32; k++) fDetectors[k] = detTag.fDetectors[k];
 }
 
 //___________________________________________________________________________
@@ -102,7 +102,7 @@ AliDetectorTag & AliDetectorTag::operator=(const AliDetectorTag &detTag) {
     fVZERO = detTag.fVZERO;
     fZDC = detTag.fZDC;
     fEMCAL = detTag.fEMCAL;
-    for(Int_t k = 0; k < 20; k++) fDetectors[k] = detTag.fDetectors[k];
+    for(Int_t k = 0; k < 32; k++) fDetectors[k] = detTag.fDetectors[k];
   }
   return *this;
 }
@@ -118,7 +118,7 @@ void AliDetectorTag::Int2Bin() {
   // Convert the integer into binary
   Int_t j=0; 
   UInt_t mask = fMask;
-  for(Int_t k = 0; k < 20; k++) fDetectors[k] = 0;
+  for(Int_t k = 0; k < 32; k++) fDetectors[k] = 0;
   while(mask > 0) {
    fDetectors[j] = mask%2;
    mask = mask/2;
@@ -131,7 +131,7 @@ void AliDetectorTag::Int2Bin() {
 UInt_t AliDetectorTag::GetIntDetectorMask() {
   // Returns the detector mask UInt_t
   UInt_t mask = 0;
-  for(Int_t k = 0; k < 20; k++) 
+  for(Int_t k = 0; k < 32; k++) 
     if(fDetectors[k] == 1) mask += (UInt_t)TMath::Power(2,k);
   
   return mask;
