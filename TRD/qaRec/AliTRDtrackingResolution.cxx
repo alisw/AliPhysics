@@ -287,9 +287,9 @@ void AliTRDtrackingResolution::Exec(Option_t *)
           (*fDebugStream) << "ResidualClusters"
             << "ly="   << iplane
             << "stk="  << stack
+            << "pdg="  << pdg
             << "phi="  << fPhi[iplane]
             << "tht="  << fTheta[iplane]
-            << "pdg="  << pdg
             << "q="    << q
             << "x="    << x
             << "z="    << z
@@ -486,6 +486,8 @@ Bool_t AliTRDtrackingResolution::PostProcess()
   //PROCESS RESIDUAL DISTRIBUTIONS
 
   // Clusters residuals
+  // define model
+  TF1 fc("fc", "[0]*exp(-0.5*((x-[1])/[2])**2)+[3]*exp(-0.5*((x-[4])/[5])**2)", -.5, .5);
   h2 = (TH2I *)(fContainer->At(kClusterYResidual));
   jgraph++; //skip the frame histo 
   gm = (TGraphErrors*)fContainer->At(jgraph++);
@@ -494,11 +496,11 @@ Bool_t AliTRDtrackingResolution::PostProcess()
     Double_t phi = h2->GetXaxis()->GetBinCenter(ibin);
     Double_t dphi = h2->GetXaxis()->GetBinWidth(ibin)/2;
     h = h2->ProjectionY("py", ibin, ibin);
-    h->Fit(&f, "QN", "", -0.5, 0.5);
-    gm->SetPoint(ibin - 1, phi, 10.*f.GetParameter(1));
-    gm->SetPointError(ibin - 1, dphi, 10.*f.GetParError(1));
-    gs->SetPoint(ibin - 1, phi, 10.*f.GetParameter(2));
-    gs->SetPointError(ibin - 1, dphi, 10.*f.GetParError(2));
+    Fit(h, &fc);
+    gm->SetPoint(ibin - 1, phi, 10.*fc.GetParameter(1));
+    gm->SetPointError(ibin - 1, dphi, 10.*fc.GetParError(1));
+    gs->SetPoint(ibin - 1, phi, 10.*fc.GetParameter(2));
+    gs->SetPointError(ibin - 1, dphi, 10.*fc.GetParError(2));
   }
   fNRefFigures++;
 
@@ -514,7 +516,7 @@ Bool_t AliTRDtrackingResolution::PostProcess()
       Double_t phi = h2->GetXaxis()->GetBinCenter(iphi);
       f.SetParameter(1, 0.);f.SetParameter(2, 2.e-2);
       h = h2->ProjectionY("py", iphi, iphi);
-      h->Fit(&f, "QN", "", -.5, .5);
+      Fit(h, &fc);
       Int_t jphi = iphi -1;
       gm->SetPoint(jphi, phi, 10.*f.GetParameter(1));
       gm->SetPointError(jphi, 0., 10.*f.GetParError(1));
@@ -555,6 +557,37 @@ void AliTRDtrackingResolution::Terminate(Option_t *)
     fDebugLevel = 0;
   }
   if(HasPostProcess()) PostProcess();
+}
+
+//________________________________________________________
+void AliTRDtrackingResolution::Fit(TH1 *h, TF1 *f)
+{
+// Helper function to avoid duplication of code
+// Make first guesses on the fit parameters
+
+  // find the intial parameters of the fit !! (thanks George)
+  Int_t nbinsy = Int_t(.5*h->GetNbinsX());
+  Double_t sum = 0.;
+  for(Int_t jbin=nbinsy-4; jbin<=nbinsy+4; jbin++) sum+=h->GetBinContent(jbin); sum/=9.;
+  f->SetParLimits(0, 0., 3.*sum);
+  f->SetParameter(0, .9*sum);
+
+  f->SetParLimits(1, -.1, .1);
+  f->SetParameter(1, 0.);
+
+  f->SetParLimits(2, 0., 1.e-1);
+  f->SetParameter(2, 2.e-2);
+
+  f->SetParLimits(3, 0., sum);
+  f->SetParameter(3, .1*sum);
+
+  f->SetParLimits(4, -.3, .3);
+  f->SetParameter(4, 0.);
+
+  f->SetParLimits(5, 0., 1.e2);
+  f->SetParameter(5, 2.e-1);
+
+  h->Fit(f, "QN", "", -0.5, 0.5);
 }
 
 //________________________________________________________

@@ -15,6 +15,8 @@
 #include "AliTRDrecoTask.h"
 #endif
 
+class TH1;
+class TF1;
 class AliTRDReconstructor;
 class AliTRDgeometry;
 class AliTRDrecoParam;
@@ -53,6 +55,7 @@ public:
 private:
   AliTRDtrackingResolution(const AliTRDtrackingResolution&);
   AliTRDtrackingResolution& operator=(const AliTRDtrackingResolution&);
+  void        Fit(TH1 *h, TF1 *f);
   TObjArray*  Histos(); 
   Bool_t      Resolution(AliTRDseedV1 *tracklet, AliTRDtrackInfo *info, Double_t &p, Double_t &y, Double_t &z, Double_t &phi, Double_t &theta);
 
