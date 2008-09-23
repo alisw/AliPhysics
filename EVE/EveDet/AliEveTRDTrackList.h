@@ -11,13 +11,12 @@
 
 #define MAX_MACRO_NAME_LENGTH     100
 #define MAX_MACRO_PATH_LENGTH     300
-#define MAX_APPLY_COMMAND_LENGTH   50
+#define MAX_APPLY_COMMAND_LENGTH  120
 
 #define UNSETBIT(n,i)  ((n) &= ~BIT(i))
 
 class AliEveTRDTrack;
 class AliTRDReconstructor;
-class AliTRDtrackV1;
 class TFile;
 class TFunction;
 class TH1;
@@ -45,11 +44,15 @@ public:
 
   enum AliEveTRDTrackListMacroType
   {
-    kUnknown        = 0,
-    kSelectionMacro = 1,
-    kProcessMacro   = 2,
-    kHistoMacro     = 3
+    kUnknown = 0,
+    kSingleTrackSelect = 1,
+    kSingleTrackAnalyse = 2,
+    kSingleTrackHisto = 3,
+    kCorrelTrackSelect = 4,
+    kCorrelTrackAnalyse = 5,
+    kCorrelTrackHisto = 6
   };
+  
 
   AliEveTRDTrackList(const Text_t* n = "AliEveTRDTrackList", const Text_t* t = "", Bool_t doColor = kFALSE);
   virtual ~AliEveTRDTrackList();
