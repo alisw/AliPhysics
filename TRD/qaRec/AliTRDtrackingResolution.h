@@ -16,6 +16,7 @@
 #endif
 
 class AliTRDReconstructor;
+class AliTRDgeometry;
 class AliTRDrecoParam;
 class AliTRDseedV1;
 class AliTRDtrackInfo;
@@ -61,7 +62,7 @@ private:
   };
   
   AliTRDReconstructor   *fReconstructor;  //! local reconstructor
-  
+  AliTRDgeometry        *fGeo;            //! TRD geometry
   ClassDef(AliTRDtrackingResolution, 1) // tracking resolution task
 };
 #endif

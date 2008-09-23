@@ -42,6 +42,9 @@
 #include "AliTrackPointArray.h"
 #include "AliCDBManager.h"
 
+#include "AliTRDSimParam.h"
+#include "AliTRDgeometry.h"
+#include "AliTRDpadPlane.h"
 #include "AliTRDcluster.h"
 #include "AliTRDseedV1.h"
 #include "AliTRDtrackV1.h"
@@ -58,14 +61,17 @@ ClassImp(AliTRDtrackingResolution)
 AliTRDtrackingResolution::AliTRDtrackingResolution()
   :AliTRDrecoTask("Resolution", "Tracking Resolution")
   ,fReconstructor(0x0)
+  ,fGeo(0x0)
 {
   fReconstructor = new AliTRDReconstructor();
   fReconstructor->SetRecoParam(AliTRDrecoParam::GetLowFluxParam());
+  fGeo = new AliTRDgeometry();
 }
 
 //________________________________________________________
 AliTRDtrackingResolution::~AliTRDtrackingResolution()
 {
+  delete fGeo;
   delete fReconstructor;
   if(gGeoManager) delete gGeoManager;
 }
@@ -186,10 +192,12 @@ void AliTRDtrackingResolution::Exec(Option_t *)
   Int_t nTrackInfos = fTracks->GetEntriesFast();
   if(fDebugLevel>=2) printf("Number of Histograms: %d\n", Histos()->GetEntries());
 
+  Int_t pdg;
   Double_t p, dy, dphi, dymc, dzmc, dphimc;
-  Float_t fP[kNLayers], fY[kNLayers], fZ[kNLayers], fPhi[kNLayers], fTheta[kNLayers]; // phi/theta angle per layer
+  Float_t fP[kNLayers], fX[kNLayers], fY[kNLayers], fZ[kNLayers], fPhi[kNLayers], fTheta[kNLayers]; // phi/theta angle per layer
   Bool_t fMCMap[kNLayers], fLayerMap[kNLayers]; // layer map
 
+  AliTRDpadPlane *pp = 0x0;
   AliTrackPoint tr[kNLayers], tk[kNLayers];
   AliExternalTrackParam *fOp = 0x0;
   AliTRDtrackV1 *fTrack = 0x0;
@@ -200,12 +208,14 @@ void AliTRDtrackingResolution::Exec(Option_t *)
     if(!(fInfo = dynamic_cast<AliTRDtrackInfo *>(fTracks->UncheckedAt(iTI)))) continue;
     if(!(fTrack = fInfo->GetTRDtrack())) continue;
     if(!(fOp = fInfo->GetOuterParam())) continue;
- 
+    pdg = fInfo->GetPDG();
+
     if(fDebugLevel>=3) printf("\tDoing track[%d] NTrackRefs[%d]\n", iTI, fInfo->GetNTrackRefs());
 
     p = fOp->P();
     Int_t npts = 0;
     memset(fP, 0, kNLayers*sizeof(Float_t));
+    memset(fX, 0, kNLayers*sizeof(Float_t));
     memset(fY, 0, kNLayers*sizeof(Float_t));
     memset(fZ, 0, kNLayers*sizeof(Float_t));
     memset(fPhi, 0, kNLayers*sizeof(Float_t));
@@ -227,6 +237,7 @@ void AliTRDtrackingResolution::Exec(Option_t *)
 
       // define reference values
       fP[iplane]   = p;
+      fX[iplane]   = fTracklet->GetX0();
       fY[iplane]   = fTracklet->GetYref(0);
       fZ[iplane]   = fTracklet->GetZref(0);
       fPhi[iplane] = TMath::ATan(fTracklet->GetYref(1));
@@ -248,27 +259,46 @@ void AliTRDtrackingResolution::Exec(Option_t *)
         }
       }
       Float_t phi   = fPhi[iplane]*TMath::RadToDeg();
-      Float_t theta = fTheta[iplane]*TMath::RadToDeg();
+      //Float_t theta = fTheta[iplane]*TMath::RadToDeg();
 
       // Do clusters residuals
       if(!fTracklet->Fit(kFALSE)) continue;
       AliTRDcluster *c = 0x0;
       for(Int_t ic=AliTRDseed::knTimebins-1; ic>=0; ic--){
         if(!(c = fTracklet->GetClusters(ic))) continue;
-        
+
         dy = fTracklet->GetYat(c->GetX()) - c->GetY();
         ((TH2I*)fContainer->At(kClusterYResidual))->Fill(phi, dy);
+
         if(fDebugLevel>=2){
           Float_t q = c->GetQ();
+          // Get z-position with respect to anode wire
+          AliTRDSimParam    *simParam    = AliTRDSimParam::Instance();
+          Int_t det = c->GetDetector();
+          Float_t x = c->GetX();
+          Float_t z = fZ[iplane]-(fX[iplane]-x)*TMath::Tan(fTheta[iplane]);
+          Int_t stack = fGeo->GetStack(det);
+          pp = fGeo->GetPadPlane(iplane, stack);
+          Float_t row0 = pp->GetRow0();
+          Float_t d  =  row0 - z + simParam->GetAnodeWireOffset();
+          d -= ((Int_t)(2 * d)) / 2.0;
+          //if (d > 0.25) d  = 0.5 - d;
+  
           (*fDebugStream) << "ResidualClusters"
             << "ly="   << iplane
-            << "phi="  << phi
-            << "tht="  << theta
+            << "stk="  << stack
+            << "phi="  << fPhi[iplane]
+            << "tht="  << fTheta[iplane]
+            << "pdg="  << pdg
             << "q="    << q
+            << "x="    << x
+            << "z="    << z
+            << "d="    << d
             << "dy="   << dy
             << "\n";
         }
       }
+      pp = 0x0;
     }
 
 
@@ -417,8 +447,10 @@ Bool_t AliTRDtrackingResolution::Resolution(AliTRDseedV1 *tracklet, AliTRDtrackI
   // Fill Debug Tree
   if(fDebugLevel>=2){
     Int_t iplane = tracklet->GetPlane();
+    Int_t pdg = fInfo->GetPDG();
     (*fDebugStream) << "ResolutionTrklt"
       << "ly="	 	  << iplane
+      << "pdg="     << pdg
       << "p="       << p
       << "phi="			<< phi
       << "tht="		  << theta
@@ -428,7 +460,6 @@ Bool_t AliTRDtrackingResolution::Resolution(AliTRDseedV1 *tracklet, AliTRDtrackI
       << "dy="		  << dy
       << "dz="	 	  << dz
       << "dphi="		<< dphi
-      << "tracklet.="<<tracklet 
       << "\n";
   }
 
