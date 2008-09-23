@@ -70,6 +70,13 @@ class AliAnaPi0 : public AliAnalysisTaskSE {
 
        Float_t fPtMin ;     //Cut on minimum photon Pt
        Float_t fZvtxCut ;   //Cut on vertex position
+       Float_t fMinDist ;   //Minimal distance to bad channel to accept cluster
+       Float_t fMinDist2;   //Cuts on Minimal distance to study acceptance evaluation
+       Float_t fMinDist3;   //One more cut on distance used for acceptance-efficiency study
+       Float_t fDispCut;    //Cut on dispersion, used in PID evaluation
+       Float_t fTOFCut;     //Cut on TOF, used in PID evaluation
+       Float_t fPhotPID;    //Baesian PID for photon
+
        Double_t fVert[3] ;   //Currecnt vertex position
        TList ** fEventsList ;        //! containers for photons in stored events
        TClonesArray * fCurrentEvent ; //!Container  with latest event
@@ -77,7 +84,7 @@ class AliAnaPi0 : public AliAnalysisTaskSE {
        TList * fOutputList ; //list of output objects
 
        //Histograms
-       TH3D * fhEtalon ; //!Etalon histo, all distributions will have same binning as this one
+       TH3D * fhEtalon ; //Etalon histo, all distributions will have same binning as this one
 
        TH3D ** fhRe1 ;  //!REAL two-photon invariant mass distribution for different centralities and PID 
        TH3D ** fhMi1 ;  //!MIXED two-photon invariant mass distribution for different centralities and PID
@@ -88,7 +95,7 @@ class AliAnaPi0 : public AliAnalysisTaskSE {
        TH3D * fhEvents;  //!Number of events per centrality, RP, zbin
 
        //Calo Cells
-       ClassDef(AliAnaPi0,1)
+       ClassDef(AliAnaPi0,2)
  } ;
 
 

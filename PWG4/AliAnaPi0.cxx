@@ -44,6 +44,7 @@ ClassImp(AliAnaPi0)
   AliAnaPi0::AliAnaPi0() : AliAnalysisTaskSE(),
   fNCentrBin(1),fNZvertBin(1),fNrpBin(1),fNPID(2),fNmaxMixEv(10),
   fCurCentrBin(0),fCurZvertBin(0),fCurRPBin(0),fPtMin(0.),fZvtxCut(40.),
+  fMinDist(2.),fMinDist2(4.),fMinDist3(5.),fDispCut(1.5),fTOFCut(5.e-9),fPhotPID(0.6),
   fEventsList(0x0),fCurrentEvent(0x0),fOutputList(0x0),fhEtalon(0x0),
   fhRe1(0x0),fhMi1(0x0),fhRe2(0x0),fhMi2(0x0),fhRe3(0x0),fhMi3(0x0),fhEvents(0x0) 
 {
@@ -54,6 +55,7 @@ ClassImp(AliAnaPi0)
   AliAnaPi0::AliAnaPi0(const char *name): AliAnalysisTaskSE(name),
   fNCentrBin(1),fNZvertBin(1),fNrpBin(1),fNPID(9),fNmaxMixEv(10),
   fCurCentrBin(0),fCurZvertBin(0),fCurRPBin(0),fPtMin(0.),fZvtxCut(40.),
+  fMinDist(2.),fMinDist2(4.),fMinDist3(5.),fDispCut(1.5),fTOFCut(5.e-9),fPhotPID(0.6),
   fEventsList(0x0),fCurrentEvent(0x0),fOutputList(0x0),fhEtalon(0x0),
   fhRe1(0x0),fhMi1(0x0),fhRe2(0x0),fhMi2(0x0),fhRe3(0x0),fhMi3(0x0),fhEvents(0x0) 
 {
@@ -62,7 +64,12 @@ ClassImp(AliAnaPi0)
 }
 
 //____________________________________________________________________________
-AliAnaPi0::AliAnaPi0(const AliAnaPi0 & ex) : AliAnalysisTaskSE(ex)  
+AliAnaPi0::AliAnaPi0(const AliAnaPi0 & ex) : AliAnalysisTaskSE(ex),  
+  fNCentrBin(1),fNZvertBin(1),fNrpBin(1),fNPID(9),fNmaxMixEv(10),
+  fCurCentrBin(0),fCurZvertBin(0),fCurRPBin(0),fPtMin(0.),fZvtxCut(40.),
+  fMinDist(2.),fMinDist2(4.),fMinDist3(5.),fDispCut(1.5),fTOFCut(5.e-9),fPhotPID(0.6),
+  fEventsList(0x0),fCurrentEvent(0x0),fOutputList(0x0),fhEtalon(0x0),
+  fhRe1(0x0),fhMi1(0x0),fhRe2(0x0),fhMi2(0x0),fhRe3(0x0),fhMi3(0x0),fhEvents(0x0) 
 {
   // cpy ctor
   //Do not need it
@@ -91,6 +98,7 @@ AliAnaPi0::~AliAnaPi0() {
       }
     }
     delete[] fEventsList; 
+    fEventsList=0 ;
   }
 
   if(fhEtalon){
@@ -113,6 +121,16 @@ void  AliAnaPi0::UserCreateOutputObjects()
 
   AliDebug(1,"Init inv. mass histograms");
   OpenFile(1) ; 
+
+  //create event containers
+  fEventsList = new TList*[fNCentrBin*fNZvertBin*fNrpBin] ;
+  for(Int_t ic=0; ic<fNCentrBin; ic++){
+    for(Int_t iz=0; iz<fNZvertBin; iz++){
+      for(Int_t irp=0; irp<fNrpBin; irp++){
+        fEventsList[ic*fNZvertBin*fNrpBin+iz*fNrpBin+irp] = new TList() ;
+      }
+    }
+  }
 
   fOutputList = new TList() ;
   fOutputList->SetName(GetName()) ;
@@ -180,7 +198,39 @@ void  AliAnaPi0::UserCreateOutputObjects()
   fOutputList->Add(fhEvents) ;
 
   //Save parameters used for analysis
-  fOutputList->Add(this);
+  TString parList ; //this will be list of parameters used for this analysis.
+  char onePar[255] ;
+  sprintf(onePar,"Number of bins in Centrality:  %d \n",fNCentrBin) ;
+  parList+=onePar ;
+  sprintf(onePar,"Number of bins in Z vert. pos: %d \n",fNZvertBin) ;
+  parList+=onePar ;
+  sprintf(onePar,"Number of bins in Reac. Plain: %d \n",fNrpBin) ;
+  parList+=onePar ;
+  sprintf(onePar,"Depth of event buffer: %d \n",fNmaxMixEv) ;
+  parList+=onePar ;
+  sprintf(onePar,"Number of different PID used:  %d \n",fNPID) ;
+  parList+=onePar ;
+  sprintf(onePar,"Cuts: \n") ;
+  parList+=onePar ;
+  sprintf(onePar,"Z vertex position: -%f < z < %f \n",fZvtxCut,fZvtxCut) ;
+  parList+=onePar ;
+  sprintf(onePar,"Minimal P_t: %f \n", fPtMin) ;
+  parList+=onePar ;
+  sprintf(onePar,"fMinDist =%f (Minimal distance to bad channel to accept cluster) \n",fMinDist) ;
+  parList+=onePar ;
+  sprintf(onePar,"fMinDist2=%f (Cuts on Minimal distance to study acceptance evaluation) \n",fMinDist2) ;
+  parList+=onePar ;
+  sprintf(onePar,"fMinDist3=%f (One more cut on distance used for acceptance-efficiency study) \n",fMinDist3) ;
+  parList+=onePar ;
+  sprintf(onePar,"fDispCut =%f (Cut on dispersion, used in PID evaluation) \n",fDispCut) ;
+  parList+=onePar ;
+  sprintf(onePar,"fTOFCut  =%e (Cut on TOF, used in PID evaluation) \n",fTOFCut) ;
+  parList+=onePar ;
+  sprintf(onePar,"fPhotPID =%f (limit for Baesian PID for photon) \n",fPhotPID) ;
+  parList+=onePar ;
+ 
+  TObjString *oString= new TObjString(parList) ;
+  fOutputList->Add(oString);
  
 }
 //__________________________________________________
@@ -201,15 +251,6 @@ void AliAnaPi0::Init()
     fhEtalon->SetZTitle("m_{#gamma#gamma} (GeV)") ;
   }
   
-  //create event containers
-  fEventsList = new TList*[fNCentrBin*fNZvertBin*fNrpBin] ;
-  for(Int_t ic=0; ic<fNCentrBin; ic++){
-    for(Int_t iz=0; iz<fNZvertBin; iz++){
-      for(Int_t irp=0; irp<fNrpBin; irp++){
-        fEventsList[ic*fNZvertBin*fNrpBin+iz*fNrpBin+irp] = new TList() ;
-      }
-    }
-  }
 }
 //__________________________________________________________________
 void AliAnaPi0::Print(const Option_t * /*opt*/) const
@@ -224,6 +265,12 @@ void AliAnaPi0::Print(const Option_t * /*opt*/) const
   printf("Cuts: \n") ;
   printf("Z vertex position: -%f < z < %f \n",fZvtxCut,fZvtxCut) ;
   printf("Minimal P_t: %f \n", fPtMin) ;
+  printf("fMinDist =%f (Minimal distance to bad channel to accept cluster) \n",fMinDist) ;
+  printf("fMinDist2=%f (Cuts on Minimal distance to study acceptance evaluation) \n",fMinDist2) ;
+  printf("fMinDist3=%f (One more cut on distance used for acceptance-efficiency study) \n",fMinDist3) ;
+  printf("fDispCut =%f (Cut on dispersion, used in PID evaluation) \n",fDispCut) ;
+  printf("fTOFCut  =%e (Cut on TOF, used in PID evaluation) \n",fTOFCut) ;
+  printf("fPhotPID =%f (limit for Baesian PID for photon) \n",fPhotPID) ;
   printf("------------------------------------------------------\n") ;
   
 } 
@@ -271,13 +318,7 @@ void AliAnaPi0::UserExec(Option_t *)
 //__________________________________________________________________
 Bool_t AliAnaPi0::FillFromESD(AliESDEvent * esd){
   //Fill photon list from ESD applying 
-  //some cut should be applyed:
-  const Float_t kMinDist=2. ; //Minimal distance to bad channel to accept cluster
-  const Float_t kMinDist2=4.; //Cuts on Minimal distance 
-  const Float_t kMinDist3=5.; //used for acceptance-efficiency study
-  const Float_t kDispCut=1.5; //Cut on dispersion, used in PID evaluation
-  const Float_t kTOFCut=5.e-9;//Cut on TOF, used in PID evaluation 
-  const Float_t kPhotPID=0.6; //Baesian PID for photon
+  //some cut should be applyed
 
   //Impose cut on vertex and calculate Zvertex bin
   const AliESDVertex *esdV = esd->GetVertex() ;
@@ -314,7 +355,7 @@ Bool_t AliAnaPi0::FillFromESD(AliESDEvent * esd){
 
     Double_t distBad=calo->GetDistanceToBadChannel() ; //Distance to bad in cm
     if(distBad<0.)distBad=9999. ; //workout strange convension dist = -1. ;
-    if(distBad<kMinDist) //In bad channel (cristall size 2.2x2.2 cm)
+    if(distBad<fMinDist) //In bad channel (cristall size 2.2x2.2 cm)
       continue ;
 
     new((*fCurrentEvent)[inList])AliCaloPhoton() ;
@@ -328,11 +369,11 @@ Bool_t AliAnaPi0::FillFromESD(AliESDEvent * esd){
     Double_t disp=calo->GetClusterDisp()  ;
 //    Double_t m20=calo->GetM20() ;
 //    Double_t m02=calo->GetM02() ; 
-    ph->SetDispBit(disp<kDispCut) ;  
+    ph->SetDispBit(disp<fDispCut) ;  
 
     //TOF
     Double_t tof=calo->GetTOF()  ;
-    ph->SetTOFBit(TMath::Abs(tof)<kTOFCut) ; 
+    ph->SetTOFBit(TMath::Abs(tof)<fTOFCut) ; 
  
     //Charged veto
 //    Double_t cpvR=calo->GetEmcCpvDistance() ; 
@@ -341,12 +382,12 @@ Bool_t AliAnaPi0::FillFromESD(AliESDEvent * esd){
 
     //Overall PID
     Double_t *pid=calo->GetPid();
-    ph->SetPCAPID(pid[AliPID::kPhoton]>kPhotPID) ;
+    ph->SetPCAPID(pid[AliPID::kPhoton]>fPhotPID) ;
       
     //Set Distance to Bad channel
-    if(distBad>kMinDist3)
+    if(distBad>fMinDist3)
       ph->SetDistToBad(2) ;
-    else if(distBad>kMinDist2)
+    else if(distBad>fMinDist2)
         ph->SetDistToBad(1) ; 
     else
        ph->SetDistToBad(0) ;
@@ -357,14 +398,8 @@ Bool_t AliAnaPi0::FillFromESD(AliESDEvent * esd){
 //__________________________________________________________________
 Bool_t AliAnaPi0::FillFromAOD(AliAODEvent * aod){
   //Fill photon list from AOD applying 
-  //some cuts:
-  const Float_t kMinDist=2. ; //Minimal distance to bad channel to accept cluster
-  const Float_t kMinDist2=4.; //Cuts on Minimal distance 
-  const Float_t kMinDist3=5.; //used for acceptance-efficiency study
-  const Float_t kDispCut=1.5; //Cut on dispersion, used in PID evaluation
-  const Float_t kTOFCut=5.e-9;//Cut on TOF, used in PID evaluation 
-  const Float_t kPhotPID=0.6 ; //Baesian PID for photon
- 
+  //some cuts
+
   //Impose cut on vertex and calculate Zvertex bin
   const AliAODVertex *aodV = aod->GetPrimaryVertex() ;
   fVert[0]=aodV->GetX();
@@ -397,7 +432,7 @@ Bool_t AliAnaPi0::FillFromAOD(AliAODEvent * aod){
       continue ;
 
     Double_t distBad=calo->GetDistToBadChannel() ;
-    if(distBad<kMinDist) //In bad channel
+    if(distBad<fMinDist) //In bad channel
       continue ;
 
     new((*fCurrentEvent)[inList])AliCaloPhoton() ;
@@ -411,11 +446,11 @@ Bool_t AliAnaPi0::FillFromAOD(AliAODEvent * aod){
     Double_t disp=calo->GetDispersion()  ;
 //    Double_t m20=calo->GetM20() ;
 //    Double_t m02=calo->GetM02() ; 
-    ph->SetDispBit(disp<kDispCut) ; 
+    ph->SetDispBit(disp<fDispCut) ; 
 
     //TOF
     Double_t tof=calo->GetTOF()  ;
-    ph->SetTOFBit(TMath::Abs(tof)<kTOFCut) ;
+    ph->SetTOFBit(TMath::Abs(tof)<fTOFCut) ;
  
     //Charged veto
 //    Double_t cpvR=calo->GetEmcCpvDistance() ; 
@@ -425,12 +460,12 @@ Bool_t AliAnaPi0::FillFromAOD(AliAODEvent * aod){
     //Overall PID
     Double_t pid[13];
     calo->GetPID(pid);
-    ph->SetPCAPID(pid[AliAODCluster::kPhoton]>kPhotPID) ;
+    ph->SetPCAPID(pid[AliAODCluster::kPhoton]>fPhotPID) ;
       
     //Distance to Bad
-    if(distBad>kMinDist3)
+    if(distBad>fMinDist3)
       ph->SetDistToBad(2) ; 
-    else if(distBad>kMinDist2)
+    else if(distBad>fMinDist2)
         ph->SetDistToBad(1) ;
     else
        ph->SetDistToBad(0) ;
