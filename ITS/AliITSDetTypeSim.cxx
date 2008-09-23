@@ -895,12 +895,12 @@ void AliITSDetTypeSim::ReadOldSSDNoise(TObjArray *array,
   const Int_t fgkSSDSTRIPSPERMODULE = 1536;
   const Int_t fgkSSDPSIDESTRIPSPERMODULE = 768;
 
-  Int_t fNMod = array->GetEntries();
+  Int_t gNMod = array->GetEntries();
   cout<<"Converting old calibration object for noise..."<<endl;
 
   //NOISE
   Double_t noise = 0.0;
-  for (Int_t iModule = 0; iModule < fNMod; iModule++) {
+  for (Int_t iModule = 0; iModule < gNMod; iModule++) {
     AliITSNoiseSSD *noiseModule = (AliITSNoiseSSD*) (array->At(iModule));
     for(Int_t iStrip = 0; iStrip < fgkSSDSTRIPSPERMODULE; iStrip++) {
       noise = (iStrip < fgkSSDPSIDESTRIPSPERMODULE) ? noiseModule->GetNoiseP(iStrip) : noiseModule->GetNoiseN(1535 - iStrip);

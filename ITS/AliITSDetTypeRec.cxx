@@ -1033,12 +1033,12 @@ void AliITSDetTypeRec::ReadOldSSDNoise(TObjArray *array,
   const Int_t fgkSSDSTRIPSPERMODULE = 1536;
   const Int_t fgkSSDPSIDESTRIPSPERMODULE = 768;
 
-  Int_t fNMod = array->GetEntries();
+  Int_t gNMod = array->GetEntries();
   cout<<"Converting old calibration object for noise..."<<endl;
 
   //NOISE
   Double_t noise = 0.0;
-  for (Int_t iModule = 0; iModule < fNMod; iModule++) {
+  for (Int_t iModule = 0; iModule < gNMod; iModule++) {
     AliITSNoiseSSD *noiseModule = (AliITSNoiseSSD*) (array->At(iModule));
     for(Int_t iStrip = 0; iStrip < fgkSSDSTRIPSPERMODULE; iStrip++) {
       noise = (iStrip < fgkSSDPSIDESTRIPSPERMODULE) ? noiseModule->GetNoiseP(iStrip) : noiseModule->GetNoiseN(1535 - iStrip);
@@ -1054,9 +1054,9 @@ void AliITSDetTypeRec::ReadOldSSDNoise(TObjArray *array,
 void AliITSDetTypeRec::ReadOldSSDBadChannels(TObjArray *array, 
 					     AliITSBadChannelsSSDv2 *badChannelsSSD) {
   //Reads the old SSD calibration object and converts it to the new format
-  Int_t fNMod = array->GetEntries();
+  Int_t gNMod = array->GetEntries();
   cout<<"Converting old calibration object for bad channels..."<<endl;
-  for (Int_t iModule = 0; iModule < fNMod; iModule++) {
+  for (Int_t iModule = 0; iModule < gNMod; iModule++) {
     //for (Int_t iModule = 0; iModule < 1; iModule++) {
     AliITSBadChannelsSSD *bad = (AliITSBadChannelsSSD*) (array->At(iModule));
     TArrayI arrayPSide = bad->GetBadPChannelsList();
@@ -1079,11 +1079,11 @@ void AliITSDetTypeRec::ReadOldSSDGain(TObjArray *array,
 				      AliITSGainSSDv2 *gainSSD) {
   //Reads the old SSD calibration object and converts it to the new format
 
-  Int_t fNMod = array->GetEntries();
+  Int_t gNMod = array->GetEntries();
   cout<<"Converting old calibration object for gain..."<<endl;
 
   //GAIN
-  for (Int_t iModule = 0; iModule < fNMod; iModule++) {
+  for (Int_t iModule = 0; iModule < gNMod; iModule++) {
     AliITSGainSSD *gainModule = (AliITSGainSSD*) (array->At(iModule));
     TArrayF arrayPSide = gainModule->GetGainP();
     for(Int_t iPCounter = 0; iPCounter < arrayPSide.GetSize(); iPCounter++)
