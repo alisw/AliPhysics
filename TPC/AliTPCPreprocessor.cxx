@@ -799,6 +799,11 @@ UInt_t AliTPCPreprocessor::ExtractCE(Int_t sourceFXS)
         AliTPCCalibCE *calCE;
 	f->GetObject("tpcCalibCE",calCE);
 
+        if (!calCE) {
+	  Log ("No valid calibCE object.");
+	  result=2;
+	  break;
+	}
         //  replace entries for the sectors available in the present file
 
         for (Int_t sector=0; sector<nSectors; sector++) {
@@ -867,17 +872,18 @@ UInt_t AliTPCPreprocessor::ExtractQA(Int_t sourceFXS)
 	  result =2;          
 	} else {
    	  f->GetObject("tpcCalibQA",calQA);
-      
+          if ( calQA ) {      
 //
 //  Store updated pedestal entry to OCDB
 //
-         AliCDBMetaData metaData;
-         metaData.SetBeamPeriod(0);
-         metaData.SetResponsible("Haavard Helstrup");
-         metaData.SetComment("Preprocessor AliTPC data base entries.");
+           AliCDBMetaData metaData;
+           metaData.SetBeamPeriod(0);
+           metaData.SetResponsible("Haavard Helstrup");
+           metaData.SetComment("Preprocessor AliTPC data base entries.");
 
-         Bool_t storeOK = Store("Calib", "QA", calQA, &metaData, 0, kTRUE);
-         if ( !storeOK ) ++result;
+           Bool_t storeOK = Store("Calib", "QA", calQA, &metaData, 0, kTRUE);
+           if ( !storeOK ) ++result;
+	  }
         }
     } else {
     Log ("Error: no QA files on FXS!");
