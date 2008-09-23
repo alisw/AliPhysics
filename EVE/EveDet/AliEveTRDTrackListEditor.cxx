@@ -168,7 +168,7 @@ AliEveTRDTrackListEditor::AliEveTRDTrackListEditor(const TGWindow* p, Int_t widt
   fHistoFrame->AddFrame(fLine4, new TGLayoutHints(kLHintsLeft  | kLHintsTop, 2, 2, 8, 2));  
 
   fbDrawHisto = new TGTextButton(fHistoFrame, "Draw histogram");
-  fbDrawHisto->SetToolTipText("Uses the data file created by the last \"Apply selected macro(s)\".\nClick here to display the data histograms of the selected macros.\nSelect multiple macros to create correlated, multi-dimensional plots.\nHisto macros cannot be correlated!");
+  fbDrawHisto->SetToolTipText("Uses the data file created by the last \"Apply selected macro(s)\".\nClick here to display the data histograms of the selected macros.\nSelect multiple macros to create multi-dimensional plots.\nHisto macros cannot be used for multi-dimensional plots!");
   fbDrawHisto->Connect("Clicked()", "AliEveTRDTrackListEditor", this, "DrawHistos()");
   fHistoFrame->AddFrame(fbDrawHisto);
 
@@ -242,7 +242,7 @@ void AliEveTRDTrackListEditor::AddMacro(const Char_t* path, const Char_t* name)
     break;
   case SIGNATURE_ERROR:
     new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Error", 
-                 "Macro has not the signature of...\n...a selection macro: Bool_t YourMacro(const AliTRDtrackV1*)\n...a process macro (type 1): void YourMacro(const AliTRDtrackV1*, Double_t*&, Int_t&)\n...a process macro (type2): TH1* YourMacro(const AliTRDtrackV1*)", 
+                 "Macro has not the signature of...\n...a single track selection macro: Bool_t YourMacro(const AliTRDtrackV1*)\n...a correlated tracks selection macro: Bool_t YourMacro(const AliTRDtrackV1*, const AliTRDtrackV1*)\n...a single track analyse macro: void YourMacro(const AliTRDtrackV1*, Double_t*&, Int_t&)\n...a correlated tracks analyse macro: void YourMacro(const AliTRDtrackV1*, const AliTRDtrackV1*, Double_t*&, Int_t&)\n...a single track histo macro: TH1* YourMacro(const AliTRDtrackV1*)\n...a correlated tracks histo macro: TH1* YourMacro(const AliTRDtrackV1*, const AliTRDtrackV1*)", 
                  kMBIconExclamation, kMBOk);
     break;               
   case NOT_EXIST_ERROR:
@@ -386,7 +386,7 @@ void AliEveTRDTrackListEditor::DrawHistos()
         {
           // Histo macros cannot(!) be correlated!
           new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Error - Draw histograms", 
-                       "Process macros of type 2 (return value \"TH1*\") cannot be correlated with other macros", 
+                       "Histo macros (return value \"TH1*\") cannot be combined with other macros", 
                        kMBIconExclamation, kMBOk);
           return;        
         }
@@ -458,7 +458,7 @@ void AliEveTRDTrackListEditor::DrawHistos()
     i = fM->fDataFromMacroList->GetEntries();
   }
 
-  // Load the trees in succession and remember the entries -> Plot the process macros of type 1
+  // Load the trees in succession and remember the entries -> Plot the analyse macros
   for ( ; i < fM->fDataFromMacroList->GetEntries(); i++)
   {
     if (fCheckButtons[i]->TGButton::GetState() == kButtonDown)
@@ -475,7 +475,7 @@ void AliEveTRDTrackListEditor::DrawHistos()
           break;   
         }
 
-        // 1d histogram - macro of type 1   
+        // 1d histogram
         if (nHistograms == 1) 
         {
           SetDrawingToHistoCanvasTab();
@@ -664,7 +664,8 @@ void AliEveTRDTrackListEditor::InheritMacroList()
   fM->fMacroSelList->Delete();
   for (Int_t i = 0; i < ftlMacroSelList->GetNumberOfEntries(); i++)
   {
-    fM->AddMacroFast(ftlMacroSelList->GetEntry(i)->GetTitle(), AliEveTRDTrackList::kSelectionMacro);
+    fM->AddMacroFast(ftlMacroSelList->GetEntry(i)->GetTitle(), 
+                     fM->GetMacroType(ftlMacroSelList->GetEntry(i)->GetTitle(), kFALSE));
   }
 
   // Process macros
@@ -797,15 +798,15 @@ void AliEveTRDTrackListEditor::SetTrackColor(Int_t ind)
 {
   switch(ind)
   { 
-  case AliTRDReconstructor::kLQPID:
-    fM->UpdateTrackStyle(AliEveTRDTrack::kPID, AliTRDReconstructor::kLQPID);
-    break;
-  case AliTRDReconstructor::kNNPID:
-    fM->UpdateTrackStyle(AliEveTRDTrack::kPID, AliTRDReconstructor::kNNPID);
-    break;
-  default:
-    fM->UpdateTrackStyle(AliEveTRDTrack::kSource);
-    break;
+    case AliTRDReconstructor::kLQPID:
+      fM->UpdateTrackStyle(AliEveTRDTrack::kPID, AliTRDReconstructor::kLQPID);
+      break;
+    case AliTRDReconstructor::kNNPID:
+      fM->UpdateTrackStyle(AliEveTRDTrack::kPID, AliTRDReconstructor::kNNPID);
+      break;
+    default:
+      fM->UpdateTrackStyle(AliEveTRDTrack::kSource);
+      break;
   }
 
   gEve->Redraw3D();
@@ -816,15 +817,15 @@ void AliEveTRDTrackListEditor::SetTrackModel(Int_t ind)
 {
   switch(ind)
   { 
-  case AliEveTRDTrack::kRieman:
-    fM->UpdateTrackStyle(AliEveTRDTrack::kTrackModel, AliEveTRDTrack::kRieman);
-    break;
-  case AliEveTRDTrack::kKalman:
-    fM->UpdateTrackStyle(AliEveTRDTrack::kTrackModel, AliEveTRDTrack::kKalman);
-    break;
-  default:
-    fM->UpdateTrackStyle(AliEveTRDTrack::kTrackCosmics);
-    break;
+    case AliEveTRDTrack::kRieman:
+      fM->UpdateTrackStyle(AliEveTRDTrack::kTrackModel, AliEveTRDTrack::kRieman);
+      break;
+    case AliEveTRDTrack::kKalman:
+      fM->UpdateTrackStyle(AliEveTRDTrack::kTrackModel, AliEveTRDTrack::kKalman);
+      break;
+    default:
+      fM->UpdateTrackStyle(AliEveTRDTrack::kTrackCosmics);
+      break;
   }
 
   gEve->Redraw3D();
