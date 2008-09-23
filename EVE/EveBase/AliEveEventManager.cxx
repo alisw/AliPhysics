@@ -22,6 +22,7 @@
 #include <AliRawReaderDate.h>
 #include <AliMagFMaps.h>
 #include <AliCDBManager.h>
+#include <AliCDBStorage.h>
 #include <AliHeader.h>
 #include <AliGeomManager.h>
 
@@ -369,9 +370,17 @@ void AliEveEventManager::Open()
 
   {
     AliCDBManager* cdb = AliCDBManager::Instance();
-    cdb->SetDefaultStorage(fgCdbUri);
-    if (cdb->IsDefaultStorageSet() == kFALSE)
-      throw (kEH + "CDB initialization failed.");
+    if (cdb->IsDefaultStorageSet() == kTRUE)
+    {
+      Warning(kEH, "CDB already set - using the old storage:\n  '%s'",
+	      cdb->GetDefaultStorage()->GetURI().Data());
+    }
+    else
+    {
+      cdb->SetDefaultStorage(fgCdbUri);
+      if (cdb->IsDefaultStorageSet() == kFALSE)
+	throw (kEH + "CDB initialization failed.");
+    }
     cdb->SetRun(runNo);
   }
 
