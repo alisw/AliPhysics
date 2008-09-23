@@ -77,11 +77,12 @@ const Int_t AliHLTPendolino::kHLTPendolinoNoDCS = -6;
 
 
 
-AliHLTPendolino::AliHLTPendolino(Int_t run, TString HCDBbase, 
-			TString runType, AliHLTPendolinoLogger* logger) :
-			fRunType(runType), fRunNumber(run), 
+AliHLTPendolino::AliHLTPendolino(Int_t run, TString HCDBbase, TString runType,
+			   AliHLTPendolinoLogger* logger, UInt_t startTime, UInt_t endTime) :
+			fRunType(runType), fRunNumber(run),
 			fHCDBPath(""), fPredictionProcessorMap(),
-			fpLogger(0), fOwnLogger(kFALSE) {
+			fpLogger(0), fOwnLogger(kFALSE),
+			fStartTime(startTime), fEndTime(endTime) {
 	// C-tor of AliHLTPendolino
 	fHCDBPath = kLOCAL_STORAGE_DEFINE + HCDBbase;
 	if (logger == 0) {
@@ -752,6 +753,15 @@ Int_t AliHLTPendolino::initPredictProc(TString detector, Int_t run,
     }
 
     return retVal;
+}
+
+
+const UInt_t AliHLTPendolino::GetStartTimeDCSQuery() {
+	return fStartTime;
+}
+
+const UInt_t AliHLTPendolino::GetEndTimeDCSQuery() {
+	return fEndTime;
 }
 
 

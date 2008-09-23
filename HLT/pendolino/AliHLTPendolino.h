@@ -105,9 +105,12 @@ class AliHLTPendolino : public AliShuttleInterface {
 		 * @param runType the current run type
 		 * @param logger pointer to the desired logger; default is the command
 		 * 			line logger.
+		 * @param startTime start time of the DCS Archive DB request
+		 * @param endTime end time of the DCS Archive DB request
 		 */
 		AliHLTPendolino(Int_t run, TString HCDBbase, TString runType = "TEST", 
-				AliHLTPendolinoLogger* logger = 0);
+				AliHLTPendolinoLogger* logger = 0, UInt_t startTime = 0, 
+				UInt_t endTime = 0);
 
 		/**
 		 * Destructor for
@@ -362,6 +365,25 @@ class AliHLTPendolino : public AliShuttleInterface {
  		 * 				list; else false.
  		 */
 		virtual Bool_t includeAliCDBEntryInList(const TString& entryPath); 
+
+		/**
+		 * Function to get the start time of the DCS Archive DB request; in HLT
+		 * this is the same like the start time given in the Initialize() call 
+		 * to the PredictionProcessors (NOTE: thsi is differnet to the 
+		 * implementation in the Offline Shuttle - there the initial start time
+		 * is set to the start-of-data for the complete run.)
+		 */
+		virtual const UInt_t GetStartTimeDCSQuery();
+
+		/**
+		 * Function to get the end time of the DCS Archive DB request; in HLT
+		 * this is the same like the end time given in the Initialize() call
+		 * to the PredictionProcessors (NOTE: thsi is differnet to the
+		 * implementation in the Offline Shuttle - there the initial end time
+		 * is set to the end-of-data for the complete run.)
+		 */
+		virtual const UInt_t GetEndTimeDCSQuery();
+				
 		
 	protected:
 
@@ -453,8 +475,18 @@ class AliHLTPendolino : public AliShuttleInterface {
 		 * Indicates, if Logger is owned by Pendolino
 		 */
 		Bool_t fOwnLogger;  //  Indicates, if Logger is owned by Pendolino
+
+		/**
+		 * Stores the start time of the DCS Archive DB request
+		 */
+		UInt_t fStartTime;
+
+		/**
+		 * Stores the end time of the DCS Archive DB request
+		 */
+		UInt_t fEndTime;
 		
-		ClassDef(AliHLTPendolino, 5);
+		ClassDef(AliHLTPendolino, 6);
 
 };
 
