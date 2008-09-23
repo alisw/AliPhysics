@@ -117,7 +117,7 @@ void MUON_displayData(Bool_t fromRaw = kFALSE, Bool_t showTracks = kTRUE, Bool_t
 
     mucha->SetDataSource(g_muon_data);
 
-    gEve->AddElement(mucha, l);
+    l->AddElement(mucha);
   }
 
   if (showTracks) {
@@ -133,7 +133,8 @@ void MUON_ESD_tracks()
 {
   AliESDEvent* esd = AliEveEventManager::AssertESD();
 
-  TEveTrackList* lt = new TEveTrackList("ESD-Tracks");
+  // TEveTrackList* lt = new TEveTrackList("ESD-Tracks");
+  AliEveMUONTrackList* lt = new TEveTrackList("ESD-Tracks");
   lt->SetMainColor(6);
   //lt->SetMUON();
 
@@ -156,8 +157,8 @@ void MUON_ESD_tracks()
 
     track->MakeESDTrack(mt);
 
-    gEve->AddElement(track, lt);
+    lt->AddElement(track);
   }
-
+  lt->HackMomentumLimits();
 }
 

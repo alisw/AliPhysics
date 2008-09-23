@@ -36,6 +36,7 @@
 #pragma link C++ class AliEveMUONChamberEditor+;
 #pragma link C++ class AliEveMUONChamberGL+;
 #pragma link C++ class AliEveMUONTrack+;
+#pragma link C++ class AliEveMUONTrackList+;
 
 // PMD
 #pragma link C++ class AliEvePMDModule+;

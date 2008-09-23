@@ -76,5 +76,17 @@ class AliEveMUONTrack: public TEveTrack
   ClassDef(AliEveMUONTrack, 0);    // Produce TEveUtil:TEveTrack from AliMUONTrack
 };
 
+class AliEveMUONTrackList : public TEveTrackList
+{
+public:
+  AliEveMUONTrackList(TEveTrackPropagator* rs=0) : TEveTrackList(rs) {}
+  AliEveMUONTrackList(const Text_t* name, TEveTrackPropagator* rs=0) : TEveTrackList(name, rs) {}
+  virtual ~AliEveMUONTrackList() {}
+
+  void HackMomentumLimits(Bool_t recurse=kTRUE);
+
+  ClassDef(AliEveMUONTrackList, 0);    // Temporary workaround for deficiency in TEveTrackList
+};
+
 #endif
 

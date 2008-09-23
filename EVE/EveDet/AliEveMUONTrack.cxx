@@ -1107,3 +1107,32 @@ Int_t AliEveMUONTrack::ColorIndex(Float_t val)
   return gStyle->GetColorPalette(TMath::Min(nCol - 1, cBin));
 
 }
+
+//==============================================================================
+// Temporary AliEveMUONTrackList
+//==============================================================================
+
+//______________________________________________________________________________
+void AliEveMUONTrackList::HackMomentumLimits(Bool_t recurse)
+{
+  // Find momentum limits from included tracks.
+
+  fLimPt = fLimP = 0;
+
+  for (List_i i=BeginChildren(); i!=EndChildren(); ++i)
+  {
+    TEveTrack* track = dynamic_cast<TEveTrack*>(*i);
+    if (track)
+    {
+      fLimPt = TMath::Max(fLimPt, track->GetMomentum().Perp());
+      fLimP  = TMath::Max(fLimP,  track->GetMomentum().Mag());
+    }
+    if (recurse)
+      FindMomentumLimits(*i, recurse);
+  }
+
+  fLimPt = RoundMomentumLimit(fLimPt);
+  fLimP  = RoundMomentumLimit(fLimP);
+  if (fMaxPt == 0) fMaxPt = fLimPt;
+  if (fMaxP  == 0) fMaxP  = fLimP;
+}
