@@ -54,7 +54,9 @@ class AliITSDetTypeRec : public TObject {
     virtual void SetSPDDeadModel(Int_t iMod, AliITSCalibration *cal);
     virtual void SetReconstructionModel(Int_t dettype, AliITSClusterFinder *rec);
     virtual Bool_t GetCalibration();
-    virtual Bool_t GetCalibrationSDDSSD(Bool_t cacheStatus);
+    virtual Bool_t GetCalibrationSPD(Bool_t cacheStatus);
+    virtual Bool_t GetCalibrationSDD(Bool_t cacheStatus);
+    virtual Bool_t GetCalibrationSSD(Bool_t cacheStatus);
     virtual AliITSsegmentation* GetSegmentationModel(Int_t dettype);
     virtual AliITSCalibration* GetCalibrationModel(Int_t iMod);
     virtual AliITSCalibration* GetSPDDeadModel(Int_t iMod);
@@ -63,6 +65,10 @@ class AliITSDetTypeRec : public TObject {
     virtual AliITSresponseSDD* GetResponseSDD() const { return fRespSDD;}
     virtual Bool_t IsHLTmodeC() const {return fIsHLTmodeC;}
     virtual void SetHLTmodeC(Bool_t ishltc){fIsHLTmodeC=ishltc;}
+    virtual Float_t GetAverageGainSDD() const {
+      if(fAveGainSDD>0.) return fAveGainSDD;
+      else return 1.;
+    }
 
     virtual void SetDigitClassName(Int_t i,Char_t *digit) 
       {fDigClassName[i]=digit;}
@@ -136,6 +142,7 @@ class AliITSDetTypeRec : public TObject {
     TObjArray    *fDigits;        //! [NMod][NDigits]
     AliITSDDLModuleMapSDD *fDDLMapSDD; //! mapping DDL/module -> SDD module number
     AliITSresponseSDD *fRespSDD;  //! SDD response parameters 
+    Float_t       fAveGainSDD;    //! Average gain of SDD good anodes
     Bool_t        fIsHLTmodeC;    //! flag for HLT mode C status (used by SDD)
     Int_t        *fNdtype;        //! detector types  
     Char_t*       fClusterClassName[3]; //! String with Cluster class name
@@ -152,7 +159,7 @@ class AliITSDetTypeRec : public TObject {
     Bool_t fFirstcall;         //! flag
     Bool_t fLoadOnlySPDCalib;  //! flag for loading calibrations only fr SPD
 
-    ClassDef(AliITSDetTypeRec,12) // ITS Reconstruction structure
+    ClassDef(AliITSDetTypeRec,13) // ITS Reconstruction structure
 };
 
 #endif

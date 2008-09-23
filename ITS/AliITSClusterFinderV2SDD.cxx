@@ -84,7 +84,7 @@ void AliITSClusterFinderV2SDD::FindClustersSDD(TClonesArray *digits) {
      Int_t itb=d->GetCoord2();
      Int_t iSide=0;
      if (ian >= nAnodes) iSide=1;    
-     Float_t gain=cal->GetChannelGain(ian);
+     Float_t gain=cal->GetChannelGain(ian)/fDetTypeRec->GetAverageGainSDD();
      Float_t charge=d->GetSignal(); // returns expanded signal 
                                     // (10 bit, low threshold already added)
      Float_t baseline = cal->GetBaseline(ian);
@@ -364,7 +364,7 @@ void AliITSClusterFinderV2SDD::FindClustersSDD(AliITSRawStream* input,
       }
       Float_t charge=input->GetSignal();
       Int_t chan=input->GetCoord1()+nAnodes*iSide;
-      Float_t gain=cal->GetChannelGain(chan);
+      Float_t gain=cal->GetChannelGain(chan)/fDetTypeRec->GetAverageGainSDD();;
       Float_t baseline = cal->GetBaseline(chan);
       if(charge>baseline) charge-=baseline;
       else charge=0;

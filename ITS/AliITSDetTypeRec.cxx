@@ -84,6 +84,7 @@ fPostProcess(0),
 fDigits(0),
 fDDLMapSDD(0),
 fRespSDD(0),
+fAveGainSDD(0),
 fIsHLTmodeC(0),
 fNdtype(0),
 fCtype(0),
@@ -141,6 +142,7 @@ fPostProcess(rec.fPostProcess),
 fDigits(rec.fDigits),
 fDDLMapSDD(rec.fDDLMapSDD),
 fRespSDD(rec.fRespSDD),
+fAveGainSDD(rec.fAveGainSDD),
 fIsHLTmodeC(rec.fIsHLTmodeC),
 fNdtype(rec.fNdtype),
 fCtype(rec.fCtype),
@@ -442,15 +444,33 @@ Bool_t AliITSDetTypeRec::GetCalibration() {
     fCalibration->SetOwner(!cacheStatus);
     fCalibration->Clear();
   }
-  
+    
+  Bool_t retCode=GetCalibrationSPD(cacheStatus);
+  if(retCode==kFALSE) return kFALSE;
+
+  if(fLoadOnlySPDCalib==kFALSE){
+    retCode=GetCalibrationSDD(cacheStatus);
+    if(retCode==kFALSE) return kFALSE;
+    retCode=GetCalibrationSSD(cacheStatus);
+    if(retCode==kFALSE) return kFALSE;
+  }
+
+  AliInfo(Form("%i SPD, %i SDD and %i SSD in calibration database",
+	       fNMod[0], fNMod[1], fNMod[2]));
+  return kTRUE;
+}
+//______________________________________________________________________
+Bool_t AliITSDetTypeRec::GetCalibrationSPD(Bool_t cacheStatus) {
+  // Get SPD calibration objects from OCDB
   // dead pixel are not used for local reconstruction
+
   AliCDBEntry *entrySPD = AliCDBManager::Instance()->Get("ITS/Calib/SPDNoisy");
   AliCDBEntry *deadSPD = AliCDBManager::Instance()->Get("ITS/Calib/SPDDead");
   if(!entrySPD || !deadSPD ){
     AliFatal("SPD Calibration object retrieval failed! ");
     return kFALSE;
   }  	
-  
+
   TObjArray *calSPD = (TObjArray *)entrySPD->GetObject();
   if(!cacheStatus)entrySPD->SetObject(NULL);
   entrySPD->SetOwner(kTRUE);
@@ -478,24 +498,14 @@ Bool_t AliITSDetTypeRec::GetCalibration() {
     SetSPDDeadModel(i, cal);
   }
 
-
-
-  if(fLoadOnlySPDCalib==kFALSE){
-    Bool_t retCode=GetCalibrationSDDSSD(cacheStatus);
-    if(retCode==kFALSE) return kFALSE;
-  }
-  AliInfo(Form("%i SPD, %i SDD and %i SSD in calibration database",
-	       fNMod[0], fNMod[1], fNMod[2]));
   return kTRUE;
 }
+
 //______________________________________________________________________
-Bool_t AliITSDetTypeRec::GetCalibrationSDDSSD(Bool_t cacheStatus) {
-  // Get SDD and SSD calibration objects from OCDB
+Bool_t AliITSDetTypeRec::GetCalibrationSDD(Bool_t cacheStatus) {
+  // Get SDD calibration objects from OCDB
+
   AliCDBEntry *entrySDD = AliCDBManager::Instance()->Get("ITS/Calib/CalibSDD");
-  //  AliCDBEntry *entrySSD = AliCDBManager::Instance()->Get("ITS/Calib/CalibSSD");
-  AliCDBEntry *entryNoiseSSD = AliCDBManager::Instance()->Get("ITS/Calib/NoiseSSD");
-  AliCDBEntry *entryGainSSD = AliCDBManager::Instance()->Get("ITS/Calib/GainSSD");
-  AliCDBEntry *entryBadChannelsSSD = AliCDBManager::Instance()->Get("ITS/Calib/BadChannelsSSD");
   AliCDBEntry *entry2SDD = AliCDBManager::Instance()->Get("ITS/Calib/RespSDD");
   AliCDBEntry *drSpSDD = AliCDBManager::Instance()->Get("ITS/Calib/DriftSpeedSDD");
   AliCDBEntry *ddlMapSDD = AliCDBManager::Instance()->Get("ITS/Calib/DDLMapSDD");
@@ -503,10 +513,8 @@ Bool_t AliITSDetTypeRec::GetCalibrationSDDSSD(Bool_t cacheStatus) {
   //   AliCDBEntry *mapASDD = AliCDBManager::Instance()->Get("ITS/Calib/MapsAnodeSDD");
   AliCDBEntry *mapTSDD = AliCDBManager::Instance()->Get("ITS/Calib/MapsTimeSDD");
 
-  if(!entrySDD || !entryNoiseSSD || !entryGainSSD || 
-     !entryBadChannelsSSD || 
-     !entry2SDD || !drSpSDD || !ddlMapSDD || !hltforSDD || !mapTSDD ){
-    AliFatal("SDD,SSD Calibration object retrieval failed! ");
+  if(!entrySDD || !entry2SDD || !drSpSDD || !ddlMapSDD || !hltforSDD || !mapTSDD ){
+    AliFatal("SDD Calibration object retrieval failed! ");
     return kFALSE;
   }  	
 
@@ -539,6 +547,78 @@ Bool_t AliITSDetTypeRec::GetCalibrationSDDSSD(Bool_t cacheStatus) {
   TObjArray *mapT = (TObjArray *)mapTSDD->GetObject();
   if(!cacheStatus)mapTSDD->SetObject(NULL);
   mapTSDD->SetOwner(kTRUE);
+
+
+  // DB entries are deleted. In this way metadeta objects are deleted as well
+  if(!cacheStatus){
+    delete entrySDD;
+    delete entry2SDD;
+    //delete mapASDD;
+    delete hltforSDD;
+    delete mapTSDD;
+    delete drSpSDD;
+    delete ddlMapSDD;
+  }
+
+  if ((!pSDD)||(!calSDD) || (!drSp) || (!ddlsdd) || (!hltsdd) || (!mapT) ){
+    AliWarning("Can not get SDD calibration from calibration database !");
+    return kFALSE;
+  }
+
+  fNMod[1] = calSDD->GetEntries();
+
+  fDDLMapSDD=ddlsdd;
+  fRespSDD=pSDD;
+  fIsHLTmodeC=hltsdd->IsHLTmodeC();
+  AliITSCalibration* cal;
+  Float_t avegain=0.;
+  Float_t nGdAnodes=0;
+  for(Int_t iddl=0; iddl<AliITSDDLModuleMapSDD::GetNDDLs(); iddl++){
+    for(Int_t icar=0; icar<AliITSDDLModuleMapSDD::GetNModPerDDL();icar++){
+      Int_t iMod=fDDLMapSDD->GetModuleNumber(iddl,icar);
+      if(iMod==-1) continue;
+      Int_t i=iMod - fgkDefaultNModulesSPD;
+      cal = (AliITSCalibration*) calSDD->At(i);
+      Int_t i0=2*i;
+      Int_t i1=1+2*i;
+      for(Int_t iAnode=0;iAnode< ((AliITSCalibrationSDD*)cal)->NOfAnodes(); iAnode++){
+	if(((AliITSCalibrationSDD*)cal)->IsBadChannel(iAnode)) continue;
+	avegain+= ((AliITSCalibrationSDD*)cal)->GetChannelGain(iAnode);
+	nGdAnodes++;
+      }
+      AliITSDriftSpeedArraySDD* arr0 = (AliITSDriftSpeedArraySDD*) drSp->At(i0);
+      //      AliITSMapSDD* ma0 = (AliITSMapSDD*)mapAn->At(i0);
+      AliITSMapSDD* mt0 = (AliITSMapSDD*)mapT->At(i0);
+      AliITSDriftSpeedArraySDD* arr1 = (AliITSDriftSpeedArraySDD*) drSp->At(i1);
+      //      AliITSMapSDD* ma1 = (AliITSMapSDD*)mapAn->At(i1);
+      AliITSMapSDD* mt1 = (AliITSMapSDD*)mapT->At(i1);
+      cal->SetDriftSpeed(0,arr0);
+      cal->SetDriftSpeed(1,arr1);
+//       cal->SetMapA(0,ma0);
+//       cal->SetMapA(1,ma1);
+      cal->SetMapT(0,mt0);
+      cal->SetMapT(1,mt1);
+      SetCalibrationModel(iMod, cal);
+    }
+  }
+  if(nGdAnodes) fAveGainSDD=avegain/nGdAnodes;
+  return kTRUE;
+}
+
+
+//______________________________________________________________________
+Bool_t AliITSDetTypeRec::GetCalibrationSSD(Bool_t cacheStatus) {
+  // Get SSD calibration objects from OCDB
+  //  AliCDBEntry *entrySSD = AliCDBManager::Instance()->Get("ITS/Calib/CalibSSD");
+
+  AliCDBEntry *entryNoiseSSD = AliCDBManager::Instance()->Get("ITS/Calib/NoiseSSD");
+  AliCDBEntry *entryGainSSD = AliCDBManager::Instance()->Get("ITS/Calib/GainSSD");
+  AliCDBEntry *entryBadChannelsSSD = AliCDBManager::Instance()->Get("ITS/Calib/BadChannelsSSD");
+
+  if(!entryNoiseSSD || !entryGainSSD || !entryBadChannelsSSD){
+    AliFatal("SSD Calibration object retrieval failed! ");
+    return kFALSE;
+  }  	
 
   TObject *emptyssd = 0; TString ssdobjectname = 0;
   AliITSNoiseSSDv2 *noiseSSD = new AliITSNoiseSSDv2();  
@@ -579,52 +659,14 @@ Bool_t AliITSDetTypeRec::GetCalibrationSDDSSD(Bool_t cacheStatus) {
 
   // DB entries are deleted. In this way metadeta objects are deleted as well
   if(!cacheStatus){
-    delete entrySDD;
     delete entryNoiseSSD;
     delete entryGainSSD;
     delete entryBadChannelsSSD;
-    delete entry2SDD;
-    //delete mapASDD;
-    delete hltforSDD;
-    delete mapTSDD;
-    delete drSpSDD;
-    delete ddlMapSDD;
   }
 
-  if ((!pSDD)||(!calSDD) || (!drSp) || (!ddlsdd)
-      || (!hltsdd) || (!mapT) || (!noiseSSD)|| (!gainSSD)|| (!badChannelsSSD)) {
-    AliWarning("Can not get SDD, SSD calibration from calibration database !");
+  if ((!noiseSSD)|| (!gainSSD)|| (!badChannelsSSD)) {
+    AliWarning("Can not get SSD calibration from calibration database !");
     return kFALSE;
-  }
-
-  fNMod[1] = calSDD->GetEntries();
-
-  fDDLMapSDD=ddlsdd;
-  fRespSDD=pSDD;
-  fIsHLTmodeC=hltsdd->IsHLTmodeC();
-  AliITSCalibration* cal;
-  for(Int_t iddl=0; iddl<AliITSDDLModuleMapSDD::GetNDDLs(); iddl++){
-    for(Int_t icar=0; icar<AliITSDDLModuleMapSDD::GetNModPerDDL();icar++){
-      Int_t iMod=fDDLMapSDD->GetModuleNumber(iddl,icar);
-      if(iMod==-1) continue;
-      Int_t i=iMod - fgkDefaultNModulesSPD;
-      cal = (AliITSCalibration*) calSDD->At(i);
-      Int_t i0=2*i;
-      Int_t i1=1+2*i;
-      AliITSDriftSpeedArraySDD* arr0 = (AliITSDriftSpeedArraySDD*) drSp->At(i0);
-      //      AliITSMapSDD* ma0 = (AliITSMapSDD*)mapAn->At(i0);
-      AliITSMapSDD* mt0 = (AliITSMapSDD*)mapT->At(i0);
-      AliITSDriftSpeedArraySDD* arr1 = (AliITSDriftSpeedArraySDD*) drSp->At(i1);
-      //      AliITSMapSDD* ma1 = (AliITSMapSDD*)mapAn->At(i1);
-      AliITSMapSDD* mt1 = (AliITSMapSDD*)mapT->At(i1);
-      cal->SetDriftSpeed(0,arr0);
-      cal->SetDriftSpeed(1,arr1);
-//       cal->SetMapA(0,ma0);
-//       cal->SetMapA(1,ma1);
-      cal->SetMapT(0,mt0);
-      cal->SetMapT(1,mt1);
-      SetCalibrationModel(iMod, cal);
-    }
   }
 
   fSSDCalibration->SetNoise(noiseSSD);
@@ -632,11 +674,8 @@ Bool_t AliITSDetTypeRec::GetCalibrationSDDSSD(Bool_t cacheStatus) {
   fSSDCalibration->SetBadChannels(badChannelsSSD);
   //fSSDCalibration->FillBadChipMap();
 
-
-
   return kTRUE;
 }
-
 
 //________________________________________________________________
 void AliITSDetTypeRec::SetDefaultClusterFinders(){

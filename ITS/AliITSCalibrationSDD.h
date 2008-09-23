@@ -100,7 +100,8 @@ class AliITSCalibrationSDD : public AliITSCalibration {
     Int_t Wings()const{return fgkWings;}//Total number of SDD wings
     Int_t Chips() const{return fgkChips;} // Number of chips/module
     Int_t Channels() const{ return fgkChannels;}//Number of channels/chip
-    
+    Int_t NOfAnodes() const {return fgkChannels*fgkChips*fgkWings;}
+
     virtual void SetBadChannel(Int_t i,Int_t anode);
     Int_t GetBadChannel(Int_t i) const {return fBadChannels[i];}
     Bool_t IsBadChannel(Int_t anode) const{
