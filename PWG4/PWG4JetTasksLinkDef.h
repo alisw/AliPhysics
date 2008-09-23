@@ -7,6 +7,7 @@
 #pragma link C++ class AliAnalysisTaskUE+;
 #pragma link C++ class AliAnalysisTaskJetSpectrum+;
 #pragma link C++ class AliAnalysisHelperJetTasks+;
+#pragma link C++ class AliAnaESDSpectraQA+;
 
 
 #endif
