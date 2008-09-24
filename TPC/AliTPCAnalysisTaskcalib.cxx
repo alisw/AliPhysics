@@ -69,7 +69,7 @@ AliTPCAnalysisTaskcalib::~AliTPCAnalysisTaskcalib() {
   // destructor
   //
   printf("AliTPCAnalysisTaskcalib::~AliTPCAnalysisTaskcalib");
-  //fCalibJobs->Delete();
+  fCalibJobs->Delete();
 }
 
 void AliTPCAnalysisTaskcalib::Exec(Option_t *) {
