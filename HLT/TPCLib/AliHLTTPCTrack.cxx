@@ -657,7 +657,6 @@ int AliHLTTPCTrack::Convert2AliKalmanTrack()
     xx[2] = TMath::Sin(GetPsi());
   }
   
-  
   //covariance matrix
   Double_t cov[15]={
     GetY0err(),                         //Error in Y (Y and X are the same)
@@ -725,4 +724,29 @@ Double_t AliHLTTPCTrack::GetLengthTot() const
 
   return 100.0;
 
+}
+
+int AliHLTTPCTrack::CheckConsistency()
+{
+  // Check consistency of all members
+  int iResult=0;
+  if (CheckDoubleMember(&fPterr,   0., "fPterr")<0) iResult=-EDOM;
+  if (CheckDoubleMember(&fPsierr,  0., "fPsierr")<0) iResult=-EDOM;
+  if (CheckDoubleMember(&fZ0err,   0., "fZ0err")<0) iResult=-EDOM;
+  if (CheckDoubleMember(&fY0err,   0., "fY0err")<0) iResult=-EDOM;  
+  if (CheckDoubleMember(&fTanlerr, 0., "fTanlerr")<0) iResult=-EDOM;
+  return iResult;
+}
+
+int AliHLTTPCTrack::CheckDoubleMember(double* pMember, double def, const char* name) const
+{
+  // Check consistency of a Double member
+  if (!pMember) return -EINVAL;
+  if (TMath::Abs(*pMember)>kVeryBig) {
+    LOG(AliHLTTPCLog::kWarning,"AliHLTTPCTrack","member consistency")
+      << "invalid Double number %f" << *pMember << " in member " << name << ENDLOG; 
+    *pMember=def;
+    return -EDOM;
+  }
+  return 0;
 }

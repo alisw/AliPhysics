@@ -166,6 +166,16 @@ class AliHLTTPCTrack : public AliTPCtrack {
    */
   int Convert2AliKalmanTrack();
 
+  /**
+   * Check the structure members to be within reasonable limits.
+   */
+  int CheckConsistency();
+
+  /**
+   * Check consistency of a double member
+   */
+  int CheckDoubleMember(double* pMember, double def, const char* name) const;
+
  private:
 
   Int_t fNHits; //Number of hits

@@ -348,6 +348,8 @@ int AliHLTTPCTrackArray::FillTracksChecked(AliHLTTPCTrackSegmentData* tr, Int_t 
     track->SetPID(trs->fPID);
 #endif
 #endif // INCLUDE_TPC_HOUGH
+    track->CheckConsistency();
+
     UChar_t *tmpP = (UChar_t*)trs;
     tmpP += sizeof(AliHLTTPCTrackSegmentData)+trs->fNPoints*sizeof(UInt_t);
     trs = (AliHLTTPCTrackSegmentData*)tmpP;
