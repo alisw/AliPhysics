@@ -190,7 +190,9 @@ void AliTRDtrackingResolution::Exec(Option_t *)
   // angular Resolution: res = Tracklet angle - TrackRef Angle
 
   Int_t nTrackInfos = fTracks->GetEntriesFast();
-  if(fDebugLevel>=2) printf("Number of Histograms: %d\n", Histos()->GetEntries());
+  if(fDebugLevel>=2){ 
+    printf("Event[%d] TrackInfos[%d]\n", (Int_t)AliAnalysisManager::GetAnalysisManager()->GetCurrentEntry(), nTrackInfos);
+  }
 
   Int_t pdg;
   Double_t p, dy, dphi, dymc, dzmc, dphimc;
@@ -202,7 +204,6 @@ void AliTRDtrackingResolution::Exec(Option_t *)
   AliExternalTrackParam *fOp = 0x0;
   AliTRDtrackV1 *fTrack = 0x0;
   AliTRDtrackInfo *fInfo = 0x0;
-  if(fDebugLevel>=2) printf("Number of TrackInfos: %d\n", nTrackInfos);
   for(Int_t iTI = 0; iTI < nTrackInfos; iTI++){
     // check if ESD and MC-Information are available
     if(!(fInfo = dynamic_cast<AliTRDtrackInfo *>(fTracks->UncheckedAt(iTI)))) continue;
@@ -371,8 +372,9 @@ void AliTRDtrackingResolution::Exec(Option_t *)
 }
 
 //________________________________________________________
-void AliTRDtrackingResolution::GetRefFigure(Int_t ifig, Int_t &first, Int_t &last, Option_t */*opt*/)
+void AliTRDtrackingResolution::GetRefFigure(Int_t ifig, Int_t &first, Int_t &last, Option_t *opt)
 {
+  //sprintf(opt, "pl");
   switch(ifig){
   case 0:
     first = (Int_t)kGraphStart; last = first+3;
@@ -461,6 +463,33 @@ Bool_t AliTRDtrackingResolution::Resolution(AliTRDseedV1 *tracklet, AliTRDtrackI
       << "dz="	 	  << dz
       << "dphi="		<< dphi
       << "\n";
+
+    Float_t z0 = 0.;
+    AliTRDpadPlane *pp = 0x0;
+    AliTRDcluster *c = 0x0;
+    for(Int_t ic=AliTRDseed::knTimebins-1; ic>=0; ic--){
+      if(!(c = tracklet->GetClusters(ic))) continue;
+      if(!pp){
+        pp = fGeo->GetPadPlane(iplane, fGeo->GetStack(c->GetDetector()));
+        z0 = pp->GetRow0() + AliTRDSimParam::Instance()->GetAnodeWireOffset();
+      }
+      dx = tracklet->GetX0() - c->GetX(); 
+      Float_t yt = ymc - dx*dydx;
+      Float_t zt = zmc - dx*dzdx; 
+      Float_t yc = c->GetY() - TMath::Tan(tracklet->GetTilt()) * (c->GetZ() - zt);
+      dy = yt - yc;
+      Float_t d = z0 - zt;
+      d -= ((Int_t)(2 * d)) / 2.0;
+      (*fDebugStream) << "ResolutionClstr"
+        << "ly="	 	  << iplane
+        << "pdg="     << pdg
+        << "p="       << p
+        << "phi="			<< phi
+        << "tht="		  << theta
+        << "d="       << d
+        << "dy="		  << dy
+        << "\n";
+    }
   }
 
   return kTRUE;
