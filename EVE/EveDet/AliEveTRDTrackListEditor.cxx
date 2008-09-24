@@ -1,4 +1,13 @@
+// Author: Benjamin Hess   23/09/2008
+
+/*************************************************************************
+ * Copyright (C) 2008, Alexandru Bercuci, Benjamin Hess.                 *
+ * All rights reserved.                                                  *
+ *************************************************************************/
+
 //////////////////////////////////////////////////////////////////////////
+//                                                                      //
+// AliEveTRDTrackListEditor                                             //
 //                                                                      //
 // The AliEveTRDTrackListEditor provides the graphical functionality    //
 // for the AliEveTRDTrackList. It creates the tabs and canvases, when   //
@@ -9,10 +18,6 @@
 // created within the call of ApplyMacros()). Have a look at this       //
 // function to learn more about the structure of the file and how to    //
 // access the data.                                                     //
-//                                                                      //
-// Authors :                                                            //
-//    A.Bercuci <A.Bercuci@gsi.de>                                      //
-//    B.Hess <Hess@Stud.Uni-Heidelberg.de>                              //
 //////////////////////////////////////////////////////////////////////////
 
 #include <EveDet/AliEveTRDData.h>
@@ -94,13 +99,13 @@ AliEveTRDTrackListEditor::AliEveTRDTrackListEditor(const TGWindow* p, Int_t widt
   fStyleFrame->AddFrame(fbgStyleTrack);
 
   frbTrack[0] = new TGRadioButton(fbgStyleTrack, "Rieman", 0);
-  frbTrack[0]->SetToolTipText("Set the track model to \"Rieman\"");
+  frbTrack[0]->SetToolTipText("Set the track model to \"Rieman\" (i.e. the used fit method)");
   fbgStyleTrack->AddFrame(frbTrack[0]);
   frbTrack[1] = new TGRadioButton(fbgStyleTrack, "Kalman", 1);
-  frbTrack[1]->SetToolTipText("Set the track model to \"Kalman\"");
+  frbTrack[1]->SetToolTipText("Set the track model to \"Kalman\" (i.e. the used fit method)");
   fbgStyleTrack->AddFrame(frbTrack[1]);
   frbTrack[2] = new TGRadioButton(fbgStyleTrack, "Line", 2);
-  frbTrack[2]->SetToolTipText("Set the track model to \"Line\"");
+  frbTrack[2]->SetToolTipText("Set the track model to \"Line\" (i.e. the used fit method)");
   fbgStyleTrack->AddFrame(frbTrack[2]);  
 
   // Style - Color model
@@ -110,13 +115,13 @@ AliEveTRDTrackListEditor::AliEveTRDTrackListEditor(const TGWindow* p, Int_t widt
   fStyleFrame->AddFrame(fbgStyleColor);
 
   frbColor[0] = new TGRadioButton(fbgStyleColor, "PID LQ", 0);
-  frbColor[0]->SetToolTipText("Set color model to \"PID LQ\"");
+  frbColor[0]->SetToolTipText("Set color model to \"PID LQ\" -> 2 dimensional likelihood particle identification");
   fbgStyleColor->AddFrame(frbColor[0]);
   frbColor[1] = new TGRadioButton(fbgStyleColor, "PID NN", 1);
-  frbColor[1]->SetToolTipText("Set color model to \"PID NN\"");
+  frbColor[1]->SetToolTipText("Set color model to \"PID NN\" -> Neural network particle identification");
   fbgStyleColor->AddFrame(frbColor[1]);
   frbColor[2] = new TGRadioButton(fbgStyleColor, "ESD Source", 2);
-  frbColor[2]->SetToolTipText("Set color model to \"ESD Source\"");
+  frbColor[2]->SetToolTipText("Set color model to \"ESD Source\" -> By source (TPC track prolongation or TRD stand alone)");
   fbgStyleColor->AddFrame(frbColor[2]);  
   
 
@@ -289,20 +294,18 @@ void AliEveTRDTrackListEditor::ApplyMacros()
 
   Bool_t success = kFALSE;
 
-  // First apply the selection macros
-  TList* iterator = new TList();
-  ftlMacroSelList->GetSelectedEntries(iterator);
-  fM->ApplySelectionMacros(iterator);
+  // First apply the single track selection macros
+  TList* selIterator = new TList();
+  ftlMacroSelList->GetSelectedEntries(selIterator);
+  fM->ApplySTSelectionMacros(selIterator);
   
   // Update view
   gEve->Redraw3D();
 
-  if (iterator != 0) delete iterator;  
-
   // Now apply the process macros
-  iterator = new TList();
-  ftlMacroList->GetSelectedEntries(iterator);
-  success = fM->ApplyProcessMacros(iterator);
+  TList* procIterator = new TList();
+  ftlMacroList->GetSelectedEntries(procIterator);
+  success = fM->ApplyProcessMacros(selIterator, procIterator);
 
   // Update histogram tab (data has to be reloaded)
   SetModel(fM);
@@ -310,7 +313,7 @@ void AliEveTRDTrackListEditor::ApplyMacros()
 
   // AlieveTRDTrackList::ApplyProcessMacros() automatically selects a macro -> Draw the histogram for it,
   // if a process macro has been applied
-  if (success && iterator->GetEntries() > 0) 
+  if (success && procIterator->GetEntries() > 0) 
   {
     // Set focus on "Histograms" tab
     GetGedEditor()->GetTab()->SetTab("Histograms");
@@ -318,8 +321,10 @@ void AliEveTRDTrackListEditor::ApplyMacros()
     DrawHistos();
   }
 
-  if (iterator != 0)  delete iterator;  
-  iterator = 0;  
+  if (selIterator != 0) delete selIterator;
+  selIterator = 0;  
+  if (procIterator != 0)  delete procIterator;  
+  procIterator = 0;  
   
   if (!success)
   {
@@ -482,10 +487,10 @@ void AliEveTRDTrackListEditor::DrawHistos()
     }
     else
     {
-      Error("Draw histograms", Form("No data for histo macro \"%s\" found!", 
+      Error("Draw histograms", Form("No data for histo macro \"%s\" found!\nMaybe no tracks have been selected.", 
                                     fM->fDataFromMacroList->At(indexOfHistoMacro)->GetName()));
       new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Error - Draw histograms", 
-                   Form("No data for histo macro \"%s\" found!", 
+                   Form("No data for histo macro \"%s\" found!\nMaybe no tracks have been selected.", 
                         fM->fDataFromMacroList->At(indexOfHistoMacro)->GetName()), kMBIconExclamation, kMBOk);
     }
 
@@ -503,10 +508,11 @@ void AliEveTRDTrackListEditor::DrawHistos()
         indexOfMacro1 = i;
         if (!(t = (TTree*)file->Get(Form("TrackData%d", i))))
         { 
-          Error("Draw histograms", Form("No data for macro \"%s\" found!", fM->fDataFromMacroList->At(i)->GetName()));
+          Error("Draw histograms", Form("No data for macro \"%s\" found!\nMaybe no tracks have been selected.", 
+                                        fM->fDataFromMacroList->At(i)->GetName()));
           new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Error - Draw histograms", 
-                       Form("No data for macro \"%s\" found!", fM->fDataFromMacroList->At(i)->GetName()),
-                            kMBIconExclamation, kMBOk);
+                       Form("No data for macro \"%s\" found!\nMaybe no tracks have been selected.", 
+                            fM->fDataFromMacroList->At(i)->GetName()), kMBIconExclamation, kMBOk);
           break;   
         }
 
@@ -529,9 +535,11 @@ void AliEveTRDTrackListEditor::DrawHistos()
         indexOfMacro2 = i;
         if (!(tFriend1 = (TTree*)file->Get(Form("TrackData%d", i))))
         { 
-          Error("Draw histograms", Form("No data for macro \"%s\" found!", fM->fDataFromMacroList->At(i)->GetName()));
+          Error("Draw histograms", Form("No data for macro \"%s\" found!\nMaybe no tracks have been selected.", 
+                                        fM->fDataFromMacroList->At(i)->GetName()));
           new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Error - Draw histograms", 
-                       Form("No data for macro \"%s\" found!", fM->fDataFromMacroList->At(i)->GetName()),
+                       Form("No data for macro \"%s\" found!\nMaybe no tracks have been selected.", 
+                            fM->fDataFromMacroList->At(i)->GetName()),
                             kMBIconExclamation, kMBOk);
           break;   
         }
@@ -560,10 +568,11 @@ void AliEveTRDTrackListEditor::DrawHistos()
         indexOfMacro3 = i;
         if (!(tFriend2 = (TTree*)file->Get(Form("TrackData%d", i))))
         { 
-          Error("Draw histograms", Form("No data for macro \"%s\" found!", fM->fDataFromMacroList->At(i)->GetName()));
+          Error("Draw histograms", Form("No data for macro \"%s\" found!\nMaybe no tracks have been selected.", 
+                                        fM->fDataFromMacroList->At(i)->GetName()));
           new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Error - Draw histograms", 
-                       Form("No data for macro \"%s\" found!", fM->fDataFromMacroList->At(i)->GetName()),
-                            kMBIconExclamation, kMBOk);
+                       Form("No data for macro \"%s\" found!\nMaybe no tracks have been selected.", 
+                            fM->fDataFromMacroList->At(i)->GetName()), kMBIconExclamation, kMBOk);
           break;   
         }
 
@@ -600,7 +609,7 @@ void AliEveTRDTrackListEditor::DrawHistos()
 }
 
 //______________________________________________________
-Int_t AliEveTRDTrackListEditor::GetNSelectedHistograms()
+Int_t AliEveTRDTrackListEditor::GetNSelectedHistograms() const
 {
   // Returns the number of selected macros (or rather: Their data) in the "Histograms"-tab
 

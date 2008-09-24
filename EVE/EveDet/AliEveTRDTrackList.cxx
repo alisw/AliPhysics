@@ -1,4 +1,13 @@
+// Author: Benjamin Hess   23/09/2008
+
+/*************************************************************************
+ * Copyright (C) 2008, Alexandru Bercuci, Benjamin Hess.                 *
+ * All rights reserved.                                                  *
+ *************************************************************************/
+
 //////////////////////////////////////////////////////////////////////////
+//                                                                      //
+// AliEveTRDTrackList                                                   //
 //                                                                      //
 // An AliEveTRDTrackList is, in principal, a TEveElementList with some  //
 // sophisticated features. You can add macros to this list, which then  //
@@ -14,7 +23,7 @@
 // and name of a macro, use MakeMacroEntry(...) to get the corresponding//
 // entry. The type of the macros is stored in a map. You can get the    //
 // macro type via GetMacroType(...).                                    //
-// With ApplySelectionMacros(...) or ApplyProcessMacros(...)            //
+// With ApplySTSelectionMacros(...) or ApplyProcessMacros(...)          //
 // respectively you can apply the macros to the track list via          //
 // iterators (same style like for RemoveProcessMacros(...) (cf. above)).//
 // Selection macros (de-)select macros according to a selection rule    //
@@ -40,10 +49,6 @@
 //                                                                      //
 // The macros which take 2 tracks are applied to all pairs              //
 // fullfilling the selection criteria.                                  //
-//                                                                      //
-// Authors :                                                            //
-//    A.Bercuci <A.Bercuci@gsi.de>                                      //
-//    B.Hess <Hess@Stud.Uni-Heidelberg.de>                              //
 //////////////////////////////////////////////////////////////////////////
 
 
@@ -336,14 +341,19 @@ void AliEveTRDTrackList::AddStandardMacros()
 }
 
 //______________________________________________________
-Bool_t AliEveTRDTrackList::ApplyProcessMacros(TList* iterator)
+Bool_t AliEveTRDTrackList::ApplyProcessMacros(const TList* selIterator, const TList* procIterator)
 {
-  // Uses the iterator (for the selected process macros) to apply the selected macros to the data.
+  // Uses the procIterator (for the selected process macros) to apply the selected macros to the data.
   // Returns kTRUE on success, otherwise kFALSE. If there no process macros selected, kTRUE is returned 
   // (this is no error!).
+  // The single track process macros are applied to all selected tracks.
+  // The selIterator (for the selected selection macros) will be used to apply the correlated tracks selection
+  // macros to all track pairs (whereby BOTH tracks have to be selected, otherwise they will be skipped).
+  // All track pairs that have been selected by ALL correlated tracks selection macros will be processed by
+  // the correlated tracks process macros.
 
   // No process macros need to be processed
-  if (iterator->GetEntries() <= 0)  return kTRUE;
+  if (procIterator->GetEntries() <= 0)  return kTRUE;
 
   // Clear root
   gROOT->Reset();
@@ -370,8 +380,12 @@ Bool_t AliEveTRDTrackList::ApplyProcessMacros(TList* iterator)
 
 
   Char_t name[fkMaxMacroNameLength];
-  Char_t** cmds = new Char_t*[iterator->GetEntries()];
-  AliEveTRDTrackListMacroType* mType = new AliEveTRDTrackListMacroType[iterator->GetEntries()];
+  Char_t** procCmds = new Char_t*[procIterator->GetEntries()];
+  Char_t** selCmds  = new Char_t*[selIterator->GetEntries()];
+  AliEveTRDTrackListMacroType* mProcType = new AliEveTRDTrackListMacroType[procIterator->GetEntries()];
+  AliEveTRDTrackListMacroType* mSelType = new AliEveTRDTrackListMacroType[selIterator->GetEntries()];
+
+  Bool_t selectedByCorrSelMacro = kFALSE;
 
   AliEveTRDTrackListMacroType macroType = kUnknown;
   Int_t numHistoMacros = 0;
@@ -381,20 +395,20 @@ Bool_t AliEveTRDTrackList::ApplyProcessMacros(TList* iterator)
   AliEveTRDTrack* track2 = 0;
   TH1* returnedHist = 0x0;
 
-  // Collect the commands for each macro and add them to "data-from-list"
-  for (Int_t i = 0; i < iterator->GetEntries(); i++)
+  // Collect the commands for each process macro and add them to "data-from-list"
+  for (Int_t i = 0; i < procIterator->GetEntries(); i++)
   {
     memset(name, '\0', sizeof(Char_t) * fkMaxMacroNameLength);
     
-    cmds[i] = new Char_t[(fkMaxMacroPathNameLength + fkMaxApplyCommandLength)];
-    memset(cmds[i], '\0', sizeof(Char_t) * (fkMaxMacroNameLength + fkMaxApplyCommandLength));
+    procCmds[i] = new Char_t[(fkMaxMacroPathNameLength + fkMaxApplyCommandLength)];
+    memset(procCmds[i], '\0', sizeof(Char_t) * (fkMaxMacroNameLength + fkMaxApplyCommandLength));
 
 #ifdef ALIEVETRDTRACKLIST_DEBUG
-    printf("AliEveTRDTrackList: Applying process macro: %s\n", iterator->At(i)->GetTitle());
+    printf("AliEveTRDTrackList: Applying process macro: %s\n", procIterator->At(i)->GetTitle());
 #endif
  
     // Extract the name
-    sscanf(iterator->At(i)->GetTitle(), "%s (Path: %*s)", name);
+    sscanf(procIterator->At(i)->GetTitle(), "%s (Path: %*s)", name);
    
     // Delete ".C" at the end 
     // -> Note: Physical address pointer, do NOT delete. / Changes "name" as well!
@@ -407,41 +421,41 @@ Bool_t AliEveTRDTrackList::ApplyProcessMacros(TList* iterator)
     }
        
     // Find the type of the process macro
-    macroType = GetMacroType(iterator->At(i)->GetTitle(), kTRUE);
+    macroType = GetMacroType(procIterator->At(i)->GetTitle(), kTRUE);
     if (macroType == kSingleTrackHisto)
     {
-      mType[i] = macroType;
+      mProcType[i] = macroType;
       numHistoMacros++;
       // Create the command 
-      sprintf(cmds[i], "%s(automaticTrackV1_1);", name);
+      sprintf(procCmds[i], "%s(automaticTrackV1_1);", name);
 
       // Add to "data-from-list" -> Mark as a histo macro with the substring "(histo macro)"
       fDataFromMacroList->Add(new TObjString(Form("%s (histo macro)", name)));
     }
     else if (macroType == kSingleTrackAnalyse)
     {
-      mType[i] = macroType;
+      mProcType[i] = macroType;
       // Create the command 
-      sprintf(cmds[i], "%s(automaticTrackV1_1, results, n);", name);
+      sprintf(procCmds[i], "%s(automaticTrackV1_1, results, n);", name);
 
       // Add to "data-from-list"
       fDataFromMacroList->Add(new TObjString(name));
     }
     else if (macroType == kCorrelTrackHisto)
     {
-      mType[i] = macroType;
+      mProcType[i] = macroType;
       numHistoMacros++;
       // Create the command 
-      sprintf(cmds[i], "%s(automaticTrackV1_1, automaticTrackV1_2);", name);
+      sprintf(procCmds[i], "%s(automaticTrackV1_1, automaticTrackV1_2);", name);
 
       // Add to "data-from-list" -> Mark as a histo macro with the substring "(histo macro)"
       fDataFromMacroList->Add(new TObjString(Form("%s (histo macro)", name)));
     }
     else if (macroType == kCorrelTrackAnalyse)
     {
-      mType[i] = macroType;
+      mProcType[i] = macroType;
       // Create the command 
-      sprintf(cmds[i], "%s(automaticTrackV1_1, automaticTrackV1_2, results, n);", name);
+      sprintf(procCmds[i], "%s(automaticTrackV1_1, automaticTrackV1_2, results, n);", name);
 
       // Add to "data-from-list"
       fDataFromMacroList->Add(new TObjString(name));
@@ -450,7 +464,56 @@ Bool_t AliEveTRDTrackList::ApplyProcessMacros(TList* iterator)
     {
       Error("Apply process macros", 
             Form("Process macro list corrupted: Macro \"%s\" is not registered as a process macro!", name));
-      mType[i] = kUnknown;
+      mProcType[i] = kUnknown;
+    } 
+  }  
+
+  // Collect the commands for each selection macro and add them to "data-from-list"
+  for (Int_t i = 0; i < selIterator->GetEntries(); i++)
+  {
+    memset(name, '\0', sizeof(Char_t) * fkMaxMacroNameLength);
+    
+    selCmds[i] = new Char_t[(fkMaxMacroPathNameLength + fkMaxApplyCommandLength)];
+    memset(selCmds[i], '\0', sizeof(Char_t) * (fkMaxMacroNameLength + fkMaxApplyCommandLength));
+
+#ifdef ALIEVETRDTRACKLIST_DEBUG
+    printf("AliEveTRDTrackList: Applying selection macro (correlated tracks): %s\n", selIterator->At(i)->GetTitle());
+#endif
+ 
+    // Extract the name
+    sscanf(selIterator->At(i)->GetTitle(), "%s (Path: %*s)", name);
+   
+    // Delete ".C" at the end 
+    // -> Note: Physical address pointer, do NOT delete. / Changes "name" as well!
+    Char_t* dotC = (Char_t*)strrchr(name, '.');
+    if (dotC != 0)
+    {
+      *dotC = '\0';
+      dotC++;
+      *dotC = '\0';
+    }
+       
+    // Find the type of the process macro
+    macroType = GetMacroType(selIterator->At(i)->GetTitle(), kTRUE);
+    // Single track select macro
+    if (macroType == kSingleTrackSelect)
+    {
+      // Has already been processed by ApplySTSelectionMacros(...)
+      mSelType[i] = macroType;         
+    }
+    // Correlated tracks select macro
+    else if (macroType == kCorrelTrackSelect)
+    {
+      mSelType[i] = macroType;  
+ 
+      // Create the command
+      sprintf(selCmds[i], "%s(automaticTrackV1_1, automaticTrackV1_2);", name);
+    }
+    else
+    {
+      Error("Apply process macros", 
+            Form("Selection macro list corrupted: Macro \"%s\" is not registered as a selection macro!", name));
+      mProcType[i] = kUnknown;
     } 
   }  
 
@@ -473,28 +536,32 @@ Bool_t AliEveTRDTrackList::ApplyProcessMacros(TList* iterator)
     gROOT->ProcessLineSync("AliTRDtrackV1* automaticTrackV1_1 = (AliTRDtrackV1*)automaticTrack->GetUserData();");
 
     // Collect data for each macro
-    for (Int_t i = 0, histoIndex = 0; i < iterator->GetEntries(); i++)
+    for (Int_t i = 0, histoIndex = 0; i < procIterator->GetEntries(); i++)
     {
       // Single track histo
-      if (mType[i] == kSingleTrackHisto)
+      if (mProcType[i] == kSingleTrackHisto)
       {
-        returnedHist = (TH1*)gROOT->ProcessLineSync(cmds[i]);
+        returnedHist = (TH1*)gROOT->ProcessLineSync(procCmds[i]);
         if (returnedHist != 0x0)
         {
-          if (histos[histoIndex] == 0)  histos[histoIndex] = (TH1*)gROOT->ProcessLineSync(cmds[i]);
-          else  histos[histoIndex]->Add((const TH1*)gROOT->ProcessLineSync(cmds[i]));
-      
-          delete returnedHist;
-          returnedHist = 0;
+          if (histos[histoIndex] == 0)  histos[histoIndex] = returnedHist;
+          else  
+          {
+            histos[histoIndex]->Add((const TH1*)returnedHist);
+            delete returnedHist;
+            returnedHist = 0;
+          }
         }
         histoIndex++;
       }
       // Correlated tracks histo
-      else if (mType[i] == kCorrelTrackHisto)
+      else if (mProcType[i] == kCorrelTrackHisto)
       {
         // Loop over all pairs behind the current one - together with the other loop this will be a loop
         // over all pairs. We have a pair of tracks, if and only if both tracks of the pair are selected (Rnr-state)
         // and are not equal.
+        // The correlated tracks process macro will applied to all pairs that will be additionally selected by
+        // all correlated tracks selection macros.
         TEveElement::List_i iter2 = iter;
         iter2++;
         for ( ; iter2 != this->EndChildren(); ++iter2)
@@ -510,31 +577,48 @@ Bool_t AliEveTRDTrackList::ApplyProcessMacros(TList* iterator)
           // Cast to AliTRDtrackV1
           gROOT->ProcessLineSync("AliTRDtrackV1* automaticTrackV1_2 = (AliTRDtrackV1*)automaticTrack->GetUserData();");
 
-          returnedHist = (TH1*)gROOT->ProcessLineSync(cmds[i]);
+          // Select track by default (so it will be processed, if there are no correlated tracks selection macros!)
+          selectedByCorrSelMacro = kTRUE;
+          for (Int_t j = 0; j < selIterator->GetEntries(); j++)
+          {
+            if (mSelType[j] == kCorrelTrackSelect)
+            {
+              selectedByCorrSelMacro = (Bool_t)gROOT->ProcessLineSync(selCmds[j]);
+              if (!selectedByCorrSelMacro)  break;
+            }
+          }       
+
+          // If the pair has not been selected by the correlated tracks selection macros, skip it!
+          if (!selectedByCorrSelMacro) continue;
+          
+          returnedHist = (TH1*)gROOT->ProcessLineSync(procCmds[i]);
           if (returnedHist != 0x0)
           {
-            if (histos[histoIndex] == 0)  histos[histoIndex] = (TH1*)gROOT->ProcessLineSync(cmds[i]);
-            else  histos[histoIndex]->Add((const TH1*)gROOT->ProcessLineSync(cmds[i]));
-        
-            delete returnedHist;
-            returnedHist = 0;
+            if (histos[histoIndex] == 0)  histos[histoIndex] = returnedHist;
+            else  
+            {
+              histos[histoIndex]->Add((const TH1*)returnedHist);
+
+              delete returnedHist;
+              returnedHist = 0;
+            }
           }
         }
         histoIndex++;
       }
       // Single track analyse
-      else if (mType[i] == kSingleTrackAnalyse)
+      else if (mProcType[i] == kSingleTrackAnalyse)
       {
         // Create data pointers in CINT, execute the macro and get the data
         gROOT->ProcessLineSync("Double_t* results = 0;");
         gROOT->ProcessLineSync("Int_t n = 0;");
-        gROOT->ProcessLineSync(cmds[i]);
+        gROOT->ProcessLineSync(procCmds[i]);
         Double_t* results = (Double_t*)gROOT->ProcessLineSync("results;");
         Int_t nResults = (Int_t)gROOT->ProcessLineSync("n;");
         
         if (results == 0)
         {
-          Error("Apply macros", Form("Error reading data from macro \"%s\"", iterator->At(i)->GetTitle()));
+          Error("Apply macros", Form("Error reading data from macro \"%s\"", procIterator->At(i)->GetTitle()));
           continue;
         }
         for (Int_t resInd = 0; resInd < nResults; resInd++)
@@ -546,11 +630,13 @@ Bool_t AliEveTRDTrackList::ApplyProcessMacros(TList* iterator)
         results = 0;
       }
       // Correlated tracks analyse
-      else if (mType[i] == kCorrelTrackAnalyse)
+      else if (mProcType[i] == kCorrelTrackAnalyse)
       {
         // Loop over all pairs behind the current one - together with the other loop this will be a loop
         // over all pairs. We have a pair of tracks, if and only if both tracks of the pair are selected (Rnr-state)
         // and are not equal.
+        // The correlated tracks process macro will applied to all pairs that will be additionally selected by
+        // all correlated tracks selection macros.
         TEveElement::List_i iter2 = iter;
         iter2++;
         for ( ; iter2 != this->EndChildren(); ++iter2)
@@ -566,16 +652,30 @@ Bool_t AliEveTRDTrackList::ApplyProcessMacros(TList* iterator)
           // Cast to AliTRDtrackV1
           gROOT->ProcessLineSync("AliTRDtrackV1* automaticTrackV1_2 = (AliTRDtrackV1*)automaticTrack->GetUserData();");
 
+          // Select track by default (so it will be processed, if there are no correlated tracks selection macros!)
+          selectedByCorrSelMacro = kTRUE;
+          for (Int_t j = 0; j < selIterator->GetEntries(); j++)
+          {
+            if (mSelType[j] == kCorrelTrackSelect)
+            {
+              selectedByCorrSelMacro = (Bool_t)gROOT->ProcessLineSync(selCmds[j]);
+              if (!selectedByCorrSelMacro)  break;
+            }
+          }       
+
+          // If the pair has not been selected by the correlated tracks selection macros, skip it!
+          if (!selectedByCorrSelMacro) continue;
+          
           // Create data pointers in CINT, execute the macro and get the data
           gROOT->ProcessLineSync("Double_t* results = 0;");
           gROOT->ProcessLineSync("Int_t n = 0;");
-          gROOT->ProcessLineSync(cmds[i]);
+          gROOT->ProcessLineSync(procCmds[i]);
           Double_t* results = (Double_t*)gROOT->ProcessLineSync("results;");
           Int_t nResults = (Int_t)gROOT->ProcessLineSync("n;");
           
           if (results == 0)
           {
-            Error("Apply macros", Form("Error reading data from macro \"%s\"", iterator->At(i)->GetTitle()));
+            Error("Apply macros", Form("Error reading data from macro \"%s\"", procIterator->At(i)->GetTitle()));
             continue;
           }
           for (Int_t resInd = 0; resInd < nResults; resInd++)
@@ -590,9 +690,9 @@ Bool_t AliEveTRDTrackList::ApplyProcessMacros(TList* iterator)
     }
   }    
 
-  for (Int_t i = 0, histoIndex = 0; i < iterator->GetEntries() && histoIndex < numHistoMacros; i++)
+  for (Int_t i = 0, histoIndex = 0; i < procIterator->GetEntries() && histoIndex < numHistoMacros; i++)
   {
-    if (mType[i] == kSingleTrackHisto || mType[i] == kCorrelTrackHisto)
+    if (mProcType[i] == kSingleTrackHisto || mProcType[i] == kCorrelTrackHisto)
     {
       // Might be empty (e.g. no tracks have been selected)!
       if (histos[histoIndex] != 0)
@@ -606,9 +706,13 @@ Bool_t AliEveTRDTrackList::ApplyProcessMacros(TList* iterator)
   if (fDataTree != 0) delete fDataTree;
   fDataTree = 0;
 
-  if (cmds != 0)  delete [] cmds;
-  if (mType != 0)  delete mType;
-  mType = 0;
+  if (procCmds != 0)  delete [] procCmds;
+  if (mProcType != 0)  delete mProcType;
+  mProcType = 0;
+
+  if (selCmds != 0)  delete [] selCmds;
+  if (mSelType != 0)  delete mSelType;
+  mSelType = 0;
 
   if (histos != 0)  delete [] histos;
   histos = 0;
@@ -617,7 +721,7 @@ Bool_t AliEveTRDTrackList::ApplyProcessMacros(TList* iterator)
   gROOT->Reset();
   
   // If there is data, select the first data set
-  if (iterator->GetEntries() > 0) SETBIT(fHistoDataSelected, 0);
+  if (procIterator->GetEntries() > 0) SETBIT(fHistoDataSelected, 0);
 
   // Now the data is stored in "/tmp/TRD.TrackListMacroData_$USER.root"
   // The editor will access this file to display the data
@@ -625,18 +729,19 @@ Bool_t AliEveTRDTrackList::ApplyProcessMacros(TList* iterator)
 }
 
 //______________________________________________________
-void AliEveTRDTrackList::ApplySelectionMacros(TList* iterator)
+void AliEveTRDTrackList::ApplySTSelectionMacros(const TList* iterator)
 {
   // Uses the iterator (for the selected selection macros) to apply the selected macros to the data.
   // The rnr-states of the tracks are set according to the result of the macro calls (kTRUE, if all
   // macros return kTRUE for this track, otherwise: kFALSE).
+  // "ST" stands for "single track". This means that only single track selection macros are applied.
+  // Correlated tracks selection macros will be used inside the call of ApplyProcessMacros(...)!
 
   Char_t name[fkMaxMacroNameLength];
   Char_t cmd[(fkMaxMacroNameLength + fkMaxApplyCommandLength)];
 
   AliEveTRDTrackListMacroType macroType = kUnknown;
   AliEveTRDTrack* track1 = 0;
-  AliEveTRDTrack* track2 = 0;
   Bool_t selectedByMacro = kFALSE;
 
   // Clear root
@@ -702,43 +807,8 @@ void AliEveTRDTrackList::ApplySelectionMacros(TList* iterator)
     // Correlated tracks select macro
     else if (macroType == kCorrelTrackSelect)
     {
-      // Create the command
-      sprintf(cmd, "%s(automaticTrackV1_1, automaticTrackV1_2);", name);
-
-      // Walk through the list of tracks and loop over all possible track pairs
-      for (TEveElement::List_i iter = this->BeginChildren(); iter != this->EndChildren(); ++iter)
-      {
-        track1 = dynamic_cast<AliEveTRDTrack*>(*iter);
-
-        if (!track1) continue;
-
-        // If the track has already been deselected, nothing is to do here
-        if (!track1->GetRnrState()) continue;
-        
-        track1->ExportToCINT((Text_t*)"automaticTrack");
-        // Cast to AliTRDtrackV1
-        gROOT->ProcessLineSync("AliTRDtrackV1* automaticTrackV1_1 = (AliTRDtrackV1*)automaticTrack->GetUserData();");
-
-        // Correlate the track with each other track (except for itself!)
-        for (TEveElement::List_i iter2 = this->BeginChildren() ; iter2 != this->EndChildren(); ++iter2)
-        {
-          // Do not correlate track with itself
-          if (iter == iter2)  continue;
-
-          track2 = dynamic_cast<AliEveTRDTrack*>(*iter2);
-
-          if (!track2) continue;
-        
-          track2->ExportToCINT((Text_t*)"automaticTrack");
-          // Cast to AliTRDtrackV1
-          gROOT->ProcessLineSync("AliTRDtrackV1* automaticTrackV1_2 = (AliTRDtrackV1*)automaticTrack->GetUserData();");
-          selectedByMacro = (Bool_t)gROOT->ProcessLineSync(cmd);
-          track1->SetRnrState(selectedByMacro && track1->GetRnrState());               
-
-          // If track has not been selected by this call, it is switched off and we are done with this track
-          if (!selectedByMacro) break;
-        }
-      }
+      // Will be processed in ApplyProcessMacros(...)
+      continue;
     }
     else
     {
@@ -752,7 +822,7 @@ void AliEveTRDTrackList::ApplySelectionMacros(TList* iterator)
 }
 
 //______________________________________________________
-AliEveTRDTrackList::AliEveTRDTrackListMacroType AliEveTRDTrackList::GetMacroType(const Char_t* entry, Bool_t UseList)
+AliEveTRDTrackList::AliEveTRDTrackListMacroType AliEveTRDTrackList::GetMacroType(const Char_t* entry, Bool_t UseList) const
 {
   // Returns the type of the macro of the corresponding entry (i.e. "macro.C (Path: path)"). 
   // If you have only the name and the path, you can simply use MakeMacroEntry.
@@ -883,7 +953,7 @@ AliEveTRDTrackList::AliEveTRDTrackListMacroType AliEveTRDTrackList::GetMacroType
 }
 
 //______________________________________________________
-Char_t* AliEveTRDTrackList::MakeMacroEntry(const Char_t* path, const Char_t* name)
+Char_t* AliEveTRDTrackList::MakeMacroEntry(const Char_t* path, const Char_t* name) const
 {
   // Constructs an entry for the macro lists with path and name.  
 
@@ -899,7 +969,7 @@ Char_t* AliEveTRDTrackList::MakeMacroEntry(const Char_t* path, const Char_t* nam
 }
 
 //______________________________________________________
-void AliEveTRDTrackList::RemoveProcessMacros(TList* iterator) 
+void AliEveTRDTrackList::RemoveProcessMacros(const TList* iterator) 
 {
   // Uses the iterator (for the selected process macros) to remove the process macros from 
   // the corresponding list.
@@ -917,7 +987,7 @@ void AliEveTRDTrackList::RemoveProcessMacros(TList* iterator)
 }
 
 //______________________________________________________
-void AliEveTRDTrackList::RemoveSelectionMacros(TList* iterator) 
+void AliEveTRDTrackList::RemoveSelectionMacros(const TList* iterator) 
 {
   // Uses the iterator (for the selected selection macros) to remove the selection macros from 
   // the corresponding list.

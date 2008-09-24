@@ -1,10 +1,9 @@
-// Author: Alexandru Bercuci and Benjamin Hess
-// Last change: 23/09/2008
-/**************************************************************************
- * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
- * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 *
- **************************************************************************/
+// Author: Benjamin Hess   23/09/2008
+
+/*************************************************************************
+ * Copyright (C) 2008, Alexandru Bercuci, Benjamin Hess.                 *
+ * All rights reserved.                                                  *
+ *************************************************************************/
 
 #ifndef AliEveTRDTrackListEditor_H
 #define AliEveTRDTrackListEditor_H
@@ -22,10 +21,6 @@
 // created within the call of ApplyMacros()). Have a look at this       //
 // function to learn more about the structure of the file and how to    //
 // access the data.                                                     //
-//                                                                      //
-// Authors :                                                            //
-//    A.Bercuci <A.Bercuci@gsi.de>                                      //
-//    B.Hess <Hess@Stud.Uni-Heidelberg.de>                              //
 //////////////////////////////////////////////////////////////////////////
 
 #include <TGedFrame.h>
@@ -64,29 +59,29 @@ public:
 
   virtual void SetModel(TObject* obj);
 
-  void AddMacro(const Char_t* path, const Char_t* name);  // Adds macro to the macro list
-  void ApplyMacros();                                     // Apply macros
-  void BrowseMacros();                                    // Browse macros
-  void CloseTabs();                                       // Closes + deletes all the tabs created by this class
-  void DrawHistos();                                      // Draw histograms
-  Int_t GetNSelectedHistograms();                         // Get the number of selected histograms for drawing
-  void HandleMacroPathSet();                              // Handles the "macro path set"-signal
-  void HandleNewEventLoaded();                            // Handles the "NewEventLoaded()"-signal
-  void HandleTabChangedToIndex(Int_t);                    // Handles the "Selected(Int_t id)"-signal (tab changed)
-  void RemoveMacros();                                    // Removes the selected macros from the lists
-  void SetTrackColor(Int_t ind);                          // Sets the color model
-  void SetTrackModel(Int_t ind);                          // Sets the track model
-  void UpdateDataFromMacroListSelection();                // Updates the selection in the "data from macro"-list
-  void UpdateHistoList();                                 // Updates the histogram list
-  void UpdateMacroList();                                 // Updates the macro list
-  void UpdateMacroListSelection(Int_t ind);               // Updates the selection of the process macro list
-  void UpdateMacroSelListSelection(Int_t ind);            // Updates the selection of the selection macro list
+  void AddMacro(const Char_t* path, const Char_t* name);  
+  void ApplyMacros();                                     
+  void BrowseMacros();                                    
+  void CloseTabs();                                      
+  void DrawHistos();                                      
+  Int_t GetNSelectedHistograms() const;                        
+  void HandleMacroPathSet();                             
+  void HandleNewEventLoaded();                           
+  void HandleTabChangedToIndex(Int_t);                 
+  void RemoveMacros();                                   
+  void SetTrackColor(Int_t ind);                       
+  void SetTrackModel(Int_t ind);                         
+  void UpdateDataFromMacroListSelection();                
+  void UpdateHistoList();                                
+  void UpdateMacroList();                                 
+  void UpdateMacroListSelection(Int_t ind);              
+  void UpdateMacroSelListSelection(Int_t ind);            
   
 protected:
   AliEveTRDTrackList* fM;                                 // Model object
 
-  void InheritMacroList();                                // Inherits macro list from the previously loaded track list
-  void InheritStyle();                                    // Inherits the style from the previously loaded track list
+  void InheritMacroList();                               
+  void InheritStyle();                                    
 
 private:
   AliEveTRDTrackListEditor(const AliEveTRDTrackListEditor&);            // Not implemented
@@ -137,9 +132,8 @@ private:
   TGCheckButton** fCheckButtons;            // Check buttons for histograms
 
   // Help functions
-  void SetDrawingToHistoCanvasTab();        // Sets focus on the tab for histograms and makes fHistoCanvas be the
-                                            // current tab
-  void UpdateHistoCanvasTab();              // Updates the histogram and the corresponding tab (including titles)
+  void SetDrawingToHistoCanvasTab();        
+  void UpdateHistoCanvasTab();              
 
   ClassDef(AliEveTRDTrackListEditor, 0);    // Editor for AliEveTRDTrackList.
 };

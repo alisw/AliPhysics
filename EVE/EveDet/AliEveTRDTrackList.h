@@ -1,10 +1,9 @@
-// Author: Alexandru Bercuci and Benjamin Hess
-// Last change: 23/09/2008
-/**************************************************************************
- * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
- * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 *
- **************************************************************************/
+// Author: Benjamin Hess   23/09/2008
+
+/*************************************************************************
+ * Copyright (C) 2008, Alexandru Bercuci, Benjamin Hess.                 *
+ * All rights reserved.                                                  *
+ *************************************************************************/
 
 #ifndef AliEveTRDTrackList_H
 #define AliEveTRDTrackList_H
@@ -27,7 +26,7 @@
 // and name of a macro, use MakeMacroEntry(...) to get the corresponding//
 // entry. The type of the macros is stored in a map. You can get the    //
 // macro type via GetMacroType(...).                                    //
-// With ApplySelectionMacros(...) or ApplyProcessMacros(...)            //
+// With ApplySTSelectionMacros(...) or ApplyProcessMacros(...)          //
 // respectively you can apply the macros to the track list via          //
 // iterators (same style like for RemoveProcessMacros(...) (cf. above)).//
 // Selection macros (de-)select macros according to a selection rule    //
@@ -97,6 +96,7 @@ public:
     fkMaxApplyCommandLength = MAX_APPLY_COMMAND_LENGTH  
   };
 
+  // Macro types
   enum AliEveTRDTrackListMacroType
   {
     kUnknown = 0,
@@ -112,29 +112,12 @@ public:
   AliEveTRDTrackList(const Text_t* n = "AliEveTRDTrackList", const Text_t* t = "", Bool_t doColor = kFALSE);
   virtual ~AliEveTRDTrackList();
 
-  Int_t AddMacro(const Char_t* path, const Char_t* name,        // Adds a macro (path/name) to the corresponding list
-                 Bool_t forceReload = kFALSE);                  // (automatic recognition / check) -> library will be
-                                                                // built, if it does not exist, or updated, if the 
-                                                                // macro code has been changed. If forceReload is
-                                                                // kTRUE, the library will always be (re-)built!
-
-  void AddMacroFast(const Char_t* entry,                        // Adds an entry to the corresponding list (cf. 
-                    AliEveTRDTrackListMacroType type);          // overloaded function)
-
-  void AddMacroFast(const Char_t* path, const Char_t* name,     // Adds a macro (path/name) to the list associated 
-                    AliEveTRDTrackListMacroType type);          // with the "type" parameter.
-                                                                // No checks are performed (fast) and no libraries are
-                                                                // loaded. Do use only, if library already exists!
-  virtual void AddStandardMacros();                             // Adds standard macros to the lists
-
-  Bool_t ApplyProcessMacros(TList* iterator);                   // Uses the iterator (for the selected process 
-                                                                // macros) to apply the selected macros to the data.
-                                                                // Returns kTRUE on success, otherwise kFALSE. If there
-                                                                // no process macros selected, kTRUE is returned (no 
-                                                                // error!).
-
-  // Uses the iterator (for the selected selection macros) to apply the selected macros to the data.
-  void ApplySelectionMacros(TList* iterator);                   
+  Int_t AddMacro(const Char_t* path, const Char_t* name, Bool_t forceReload = kFALSE);                  
+  void AddMacroFast(const Char_t* entry, AliEveTRDTrackListMacroType type);          
+  void AddMacroFast(const Char_t* path, const Char_t* name, AliEveTRDTrackListMacroType type);        
+  virtual void AddStandardMacros();                           
+  Bool_t ApplyProcessMacros(const TList* selIterator, const TList* procIterator);               
+  void ApplySTSelectionMacros(const TList* iterator);
 
   // Returns the type of the macro of the corresponding entry (i.e. "macro.C (Path: path)"). 
   // If you have only the name and the path, you can simply use MakeMacroEntry.
@@ -142,19 +125,11 @@ public:
   // does not exist, you have to use kFALSE for this parameter. Then the type will be determined by the
   // prototype! NOTE: It is assumed that the macro has been compiled! If not, the return value is not
   // predictable, but normally will be kUnknown.
-  // Note: AddMacro(Fast) will update the internal list and RemoveProcess(/Selection)Macros respectively. 
-  AliEveTRDTrackListMacroType GetMacroType(const Char_t* entry, Bool_t UseList = kTRUE); 
-                                                               
-  Char_t* MakeMacroEntry(const Char_t* path, const Char_t* name);  // Constructs an entry for the macro
-                                                                   // lists with path and name   
-
-  void RemoveProcessMacros(TList* iterator);                    // Uses the iterator (for the selected process
-                                                                // macros) to remove the process macros from 
-                                                                // the corresponding list.   
- 
-  void RemoveSelectionMacros(TList* iterator);                  // Uses the iterator (for the selected selection
-                                                                // macros) to remove the selection macros from 
-                                                                // the corresponding list.  
+  // Note: AddMacro(Fast) will update the internal list and RemoveProcess(/Selection)Macros respectively.
+  AliEveTRDTrackListMacroType GetMacroType(const Char_t* entry, Bool_t UseList = kTRUE) const; 
+  Char_t* MakeMacroEntry(const Char_t* path, const Char_t* name) const;  
+  void RemoveProcessMacros(const TList* iterator);                   
+  void RemoveSelectionMacros(const TList* iterator);                  
 
 protected:
   TList* fMacroList;                 // List of (process) macros
@@ -172,19 +147,19 @@ protected:
   Char_t fSelectedTab;               // Holds the index of the selected tab
   UChar_t fSelectedStyle;            // Holds the selected track style
 
-  Char_t GetSelectedTab()            // Gets the selected tab
+  Char_t GetSelectedTab() const                          // Gets the selected tab
     { return fSelectedTab;  }
 
-  UChar_t GetSelectedTrackStyle()    // Gets the selected track style
+  UChar_t GetSelectedTrackStyle() const                  // Gets the selected track style
     { return fSelectedStyle;  }
 
-  Bool_t HistoDataIsSelected(Int_t index)               // Is entry in list selected?
+  Bool_t HistoDataIsSelected(Int_t index) const          // Is entry in list selected?
     { return TESTBIT(fHistoDataSelected, index);  }  
    
-  Bool_t MacroListIsSelected(Int_t index)               // Is entry in list selected?
+  Bool_t MacroListIsSelected(Int_t index) const          // Is entry in list selected?
     { return TESTBIT(fMacroListSelected, index);  }     
 
-  Bool_t MacroSelListIsSelected(Int_t index)            // Is entry in list selected?
+  Bool_t MacroSelListIsSelected(Int_t index) const       // Is entry in list selected?
     { return TESTBIT(fMacroSelListSelected, index);  }  
 
   void SetHistoDataSelection(Int_t index, Bool_t set)       // Set selection of entry in list
@@ -202,9 +177,7 @@ protected:
   void SetSelectedTrackStyle(UChar_t index)                 // Sets the selected track style
     { fSelectedStyle = index;  }
 
-  void UpdateTrackStyle(AliEveTRDTrack::AliEveTRDTrackState s, UChar_t ss = 0); // Updates the track style and sets
-                                                                                // this style for each track
-
+  void UpdateTrackStyle(AliEveTRDTrack::AliEveTRDTrackState s, UChar_t ss = 0); 
 
 private:
   AliEveTRDTrackList(const AliEveTRDTrackList&);            // Not implemented
