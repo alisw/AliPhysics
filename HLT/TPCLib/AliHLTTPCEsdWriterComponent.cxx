@@ -197,7 +197,7 @@ int AliHLTTPCEsdWriterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* pESD,
 	    if (pMinSlice && (*pMinSlice==-1 || *pMinSlice>minslice)) *pMinSlice=minslice;
 	    if (pMaxSlice && (*pMaxSlice==-1 || *pMaxSlice<maxslice)) *pMaxSlice=maxslice;
 	  }
-	  HLTDebug("AliHLTTPCEsdWriterComponent::ProcessBlocks: dataspec %#x minslice %d", iter->fSpecification, minslice);
+	  //HLTDebug("dataspec %#x minslice %d", iter->fSpecification, minslice);
 	  if (minslice >=-1 && minslice<AliHLTTPCTransform::GetNSlice()) {
 	    if (minslice!=maxslice) {
 	      HLTWarning("data from multiple sectors in one block: "
@@ -217,7 +217,7 @@ int AliHLTTPCEsdWriterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* pESD,
 	  }
 	}
       }
-      if ( iAddedDataBlocks>0 && pTree) {
+      if (iAddedDataBlocks>0 && pTree) {
 	pTree->Fill();
       }
 
@@ -255,7 +255,6 @@ int AliHLTTPCEsdWriterComponent::Tracks2ESD(AliHLTTPCTrackArray* pTracks, AliESD
 	  points[3] = -pTrack->GetLastPointX() *s + pTrack->GetLastPointY() *c;	  
 	}
         iotrack.SetTPCPoints(points);
- 	//iotrack.SetTPCPoints(pTrack->GetPoints());
 	pESD->AddTrack(&iotrack);
 	} else {
 	  HLTError("conversion to AliKalmanTrack failed for track %d of %d", i, pTracks->GetNTracks());
@@ -342,14 +341,14 @@ AliHLTTPCEsdWriterComponent::AliConverter::AliConverter()
   :
   fESD(NULL),
   fBase(new AliHLTTPCEsdWriterComponent),
-  fWriteTree(1)
+  fWriteTree(0)
 {
   // see header file for class documentation
   // or
   // refer to README to build package
   // or
-  // visit http://web.ift.uib.no/~kjeks
- }
+  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+}
 
 AliHLTTPCEsdWriterComponent::AliConverter::~AliConverter()
 {
@@ -399,12 +398,12 @@ int AliHLTTPCEsdWriterComponent::AliConverter::DoInit(int argc, const char** arg
     } else if (argument.CompareTo("-tree")==0) {
       fWriteTree=1;
 
-    }else if (argument.CompareTo("-solenoidBz")==0) {
+      // -solenoidBz
+    } else if (argument.CompareTo("-solenoidBz")==0) {
       TString tmp="-solenoidBz ";
       tmp+=argv[++i];
       fBase->Configure(tmp.Data());
-    }
-    else {
+    } else {
       HLTError("unknown argument %s", argument.Data());
       break;
     }
@@ -416,7 +415,7 @@ int AliHLTTPCEsdWriterComponent::AliConverter::DoInit(int argc, const char** arg
 
   if (iResult>=0) {
     iResult=fBase->Reconfigure(NULL, NULL);
-  } 
+  }
 
   return iResult;
 }
@@ -433,7 +432,7 @@ int AliHLTTPCEsdWriterComponent::AliConverter::DoEvent(const AliHLTComponentEven
 						       AliHLTUInt8_t* /*outputPtr*/, 
 						       AliHLTUInt32_t& size,
 						       AliHLTComponentBlockDataList& /*outputBlocks*/ )
-{  
+{
   // see header file for class documentation
   int iResult=0;
   // no direct writing to the output buffer

@@ -48,11 +48,13 @@ class AliHLTTPCTrackArray;
  *
  * Arguments TPCEsdConverter: <br>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
- * \li -notree
+ * \li -notree                                                          <br>
  *      write ESD directly to output (::kAliHLTDataTypeESDObject)
- * \li -tree
- *      write ESD directly to TTree and to output (::kAliHLTDataTypeESDTree),
- *      this is the default behavior.
+ *      this has been made the default behavior in Sep 2008.
+ * \li -tree                                                            <br>
+ *      write ESD directly to TTree and to output (::kAliHLTDataTypeESDTree)
+ * \li -solenoidBz                                                      <br>
+ *      magnetic field like -solenoidBz 5.0
  *
  * <pre>
  * Example usage (HLT configuration file):
