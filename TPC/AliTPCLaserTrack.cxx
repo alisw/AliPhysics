@@ -115,47 +115,54 @@ Int_t AliTPCLaserTrack::IdentifyTrack(AliExternalTrackParam *track)
   //
   // 
   const  Float_t   kMaxdphi=0.1;
-  const  Float_t   kMaxdphiP=0.06;
-  const  Float_t   kMaxdz=50;
+  const  Float_t   kMaxdphiP=0.05;
+  const  Float_t   kMaxdz=40;
 
   if ( !fgArrLaserTracks ) LoadTracks();
   TObjArray *arrTracks = GetTracks();
-  
-
   Double_t lxyz0[3];
   Double_t lxyz1[3];
   Double_t pxyz0[3];
   Double_t pxyz1[3];
   track->GetXYZ(lxyz0);
   track->GetPxPyPz(pxyz0);
-  
+  //
+  Float_t mindist=40; // maxima minimal distance
   Int_t id = -1;
+  AliExternalTrackParam*  ltr0= (AliExternalTrackParam*)arrTracks->UncheckedAt(0);
   for (Int_t itrack=0; itrack<fgkNLaserTracks; itrack++){
     AliExternalTrackParam *ltr = (AliExternalTrackParam*)arrTracks->UncheckedAt(itrack);
     Double_t * kokot = (Double_t*)ltr->GetParameter();
     kokot[4]=-0.0000000001;
     //
     ltr->GetXYZ(lxyz1);
-    if ( (lxyz1[2]>0) && lxyz0[2]<0) continue;
-    if ( (lxyz1[2]<0) && lxyz0[2]>0) continue;
-    if (TMath::Abs(lxyz1[2]-lxyz0[2])>kMaxdz) continue;
+    //if (TMath::Abs(lxyz1[2]-lxyz0[2])>kMaxdz) continue;
     // phi position
     Double_t phi0 = TMath::ATan2(lxyz0[1],lxyz0[0]);
     Double_t phi1 = TMath::ATan2(lxyz1[1],lxyz1[0]);
-    if (TMath::Abs(phi0-phi1)>kMaxdphi) continue;
+    //if (TMath::Abs(phi0-phi1)>kMaxdphi) continue;
     // phi direction
     ltr->GetPxPyPz(pxyz1);
-    Double_t pphi0 = TMath::ATan2(pxyz0[1],pxyz0[0]);
-    Double_t pphi1 = TMath::ATan2(pxyz1[1],pxyz1[0]);
-    Bool_t phimatch = kFALSE;
+    Float_t distdir = (ltr->GetParameter()[2]-track->GetParameter()[2])*90; //distance at entrance
     if (TMath::Abs(ltr->GetParameter()[2]-track->GetParameter()[2])>kMaxdphiP)
       continue;
-  //   if (TMath::Abs(pphi0-pphi1)<kMaxdphiP) phimatch=kTRUE;
-//     if (TMath::Abs(pphi0-pphi1-TMath::Pi())<kMaxdphiP) phimatch=kTRUE;
-//     if (TMath::Abs(pphi0-pphi1+TMath::Pi())<kMaxdphiP) phimatch=kTRUE;
-//     if (!phimatch) continue;
     //
-    id =itrack;
+    Float_t dist=0;
+    dist+=TMath::Abs(lxyz1[0]-lxyz0[0]);
+    dist+=TMath::Abs(lxyz1[1]-lxyz0[1]);
+    dist+=TMath::Abs(lxyz1[2]-lxyz0[2]);
+    dist+=distdir;
+    //    
+    if (id<0)  {
+      id =itrack; 
+      mindist=dist; 
+      ltr0=ltr;
+      continue;
+    }
+    if (dist>mindist) continue;
+    id = itrack;
+    mindist=dist;
+    ltr0=ltr;
   }
   return id;
 }
