@@ -13,28 +13,22 @@
 #include "AliAODTrack.h"
 #include "AliAODPid.h"
 class AliAnalysisFilter;
-class AliRunTag;
-class AliAODTagCreator;
 
 
 class AliAnalysisTaskESDfilter : public AliAnalysisTaskSE
 {
  public:
     AliAnalysisTaskESDfilter();
-    AliAnalysisTaskESDfilter(const char* name, Bool_t tags = kFALSE);
+    AliAnalysisTaskESDfilter(const char* name);
     virtual ~AliAnalysisTaskESDfilter() {;}
     // Implementation of interface methods
     virtual void   UserCreateOutputObjects();
     virtual void   Init();
     virtual void   LocalInit() {Init();}
     virtual void   UserExec(Option_t *option);
-    virtual Bool_t Notify();
     virtual void   Terminate(Option_t *option);
-    virtual void   FinishTaskOutput();
 
     virtual void ConvertESDtoAOD();
-    virtual void CreateTags();
-    virtual void SetCreateTags() {fCreateTags = kTRUE;}
     // Setters
     virtual void SetTrackFilter(AliAnalysisFilter* trackF) {fTrackFilter = trackF;}
     virtual void SetKinkFilter (AliAnalysisFilter*  KinkF) {fKinkFilter  =  KinkF;}
@@ -55,13 +49,6 @@ class AliAnalysisTaskESDfilter : public AliAnalysisTaskSE
     // PID
     Double_t     fHighPthreshold;    //  Pt threshold for detector signal setting
     TF1 *        fPtshape;           //  Pt spectrum distribution
-    // Tags
-    Bool_t                   fCreateTags;             //  Flag for tag creation
-    Bool_t                   fFirstFile;              //! To flag the first file   
-    AliRunTag               *fRunTag;                 //! Pointer to run tag
-    TTree                   *fTreeT;                  //! tree for  aod tags
-    AliAODTagCreator        *fTagCreator;             //! The tag creator
-    
     ClassDef(AliAnalysisTaskESDfilter, 1); // Analysis task for standard ESD filtering
 };
  
