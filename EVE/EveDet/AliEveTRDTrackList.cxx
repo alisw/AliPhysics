@@ -1,3 +1,52 @@
+//////////////////////////////////////////////////////////////////////////
+//                                                                      //
+// An AliEveTRDTrackList is, in principal, a TEveElementList with some  //
+// sophisticated features. You can add macros to this list, which then  //
+// can be applied to the list of tracks (these tracks can be added to   //
+// the list in the same way as for the TEveElementList). In general,    //
+// please use AddMacro(...) for this purpose.                           //
+// Macros that are no longer needed can be removed from the list via    //
+// RemoveSelectionMacros(...) or RemoveProcessMacros(...) respectively. //
+// This function takes an iterator of the list of entries that are to   //
+// be removed. An entry looks like:                                     //
+// "MacroName.C (Path: MacroPath)". This is the way, the information    //
+// about a macro is stored in the AliEveTRDTrackList. If you have path  //
+// and name of a macro, use MakeMacroEntry(...) to get the corresponding//
+// entry. The type of the macros is stored in a map. You can get the    //
+// macro type via GetMacroType(...).                                    //
+// With ApplySelectionMacros(...) or ApplyProcessMacros(...)            //
+// respectively you can apply the macros to the track list via          //
+// iterators (same style like for RemoveProcessMacros(...) (cf. above)).//
+// Selection macros (de-)select macros according to a selection rule    //
+// by setting the rnr-state of the tracks.                              //
+// If multiple selection macros are applied, a track is selected, if    //
+// all selection macros select the track.                               //
+// Process macros create data or histograms, which will be stored in    //
+// a temporary file. The editor of this class will access this file     //
+// and draw all the stuff within it's DrawHistos() function. The file   //
+// will be deleted by the destructor.                                   //
+//                                                                      //
+// Currently, the following macro types are supported:                  //
+// Selection macros:                                                    //
+// Bool_t YourMacro(const AliTRDtrackV1*);                              //
+// Bool_t YourMacro(const AliTRDtrackV1*, const AliTRDtrackV1*);        //
+//                                                                      //
+// Process macros:                                                      //
+// void YourMacro(const AliTRDtrackV1*, Double_t*&, Int_t&);            //
+// void YourMacro(const AliTRDtrackV1*, const AliTRDtrackV1*,           //
+//                Double_t*&, Int_t&);                                  //
+// TH1* YourMacro(const AliTRDtrackV1*);                                //
+// TH1* YourMacro(const AliTRDtrackV1*, const AliTRDtrackV1*);          //
+//                                                                      //
+// The macros which take 2 tracks are applied to all pairs              //
+// fullfilling the selection criteria.                                  //
+//                                                                      //
+// Authors :                                                            //
+//    A.Bercuci <A.Bercuci@gsi.de>                                      //
+//    B.Hess <Hess@Stud.Uni-Heidelberg.de>                              //
+//////////////////////////////////////////////////////////////////////////
+
+
 // Uncomment to display debugging infos
 //#define ALIEVETRDTRACKLIST_DEBUG
 
@@ -33,6 +82,8 @@ AliEveTRDTrackList::AliEveTRDTrackList(const Text_t* n, const Text_t* t, Bool_t 
   fSelectedTab(1),                              // Standard tab: "Apply macros" (index 1)
   fSelectedStyle(0)
 {
+  // Creates the AliEveTRDTrackList.
+
   // Only accept childs of type AliEveTRDTrack
   SetChildClass(AliEveTRDTrack::Class());
 
@@ -57,6 +108,8 @@ AliEveTRDTrackList::AliEveTRDTrackList(const Text_t* n, const Text_t* t, Bool_t 
 //______________________________________________________
 AliEveTRDTrackList::~AliEveTRDTrackList()
 {
+  // Frees allocated memory (lists etc.).
+
   if (fMacroList != 0)
   {
     fMacroList->Delete();
@@ -94,15 +147,24 @@ AliEveTRDTrackList::~AliEveTRDTrackList()
 //______________________________________________________
 Int_t AliEveTRDTrackList::AddMacro(const Char_t* path, const Char_t* nameC, Bool_t forceReload)
 {
-  // First check the type of the macro:
-  // If it has the signature of a selection macro:
-  // Bool_t MacroName(AliTRDtrackV1*)
-  // it is assumed to be a selection macro.
-  // If it has the signature of a process macro:
-  // void MacroName(AliTRDtrackV1*, Double_t*&, Int_t&)
-  // it is assumed to be a process macro.
-  // In all other cases: Macro is rejected
-  
+  // Checks, if the file exists and if the signature is correct.
+  // If these criteria are fullfilled, the library for this macro is built
+  // and the macro is added to the corresponding list.
+  // Supported macro types:
+  // Selection macros:                                                    
+  // Bool_t YourMacro(const AliTRDtrackV1*)
+  // Bool_t YourMacro(const AliTRDtrackV1*, const AliTRDtrackV1*)
+  //
+  // Process macros:                                                      
+  // void YourMacro(const AliTRDtrackV1*, Double_t*&, Int_t&)             
+  // void YourMacro(const AliTRDtrackV1*, const AliTRDtrackV1*,           
+  //                Double_t*&, Int_t&)                                   
+  // TH1* YourMacro(const AliTRDtrackV1*)                                 
+  // TH1* YourMacro(const AliTRDtrackV1*, const AliTRDtrackV1*)           
+  //                                                                      
+  // The macros which take 2 tracks are applied to all pairs              
+  // fullfilling the selection criteria.                                  
+
   Char_t* entryName = MakeMacroEntry(path, nameC);
 
   Char_t pathname[fkMaxMacroPathNameLength];
@@ -195,6 +257,8 @@ Int_t AliEveTRDTrackList::AddMacro(const Char_t* path, const Char_t* nameC, Bool
 //______________________________________________________
 void AliEveTRDTrackList::AddMacroFast(const Char_t* entry, AliEveTRDTrackListMacroType type)
 {
+  // Adds an entry to the corresponding list (cf. overloaded function).
+
   switch (type)
   {
     case kSingleTrackSelect:
@@ -229,6 +293,10 @@ void AliEveTRDTrackList::AddMacroFast(const Char_t* entry, AliEveTRDTrackListMac
 //______________________________________________________
 void AliEveTRDTrackList::AddMacroFast(const Char_t* path, const Char_t* name, AliEveTRDTrackListMacroType type)
 {
+  // Adds a macro (path/name) to the list associated with the "type" parameter.
+  // No checks are performed (fast) and no libraries are loaded. 
+  // Do use only, if library already exists!
+
   Char_t* entry = MakeMacroEntry(path, name);
   if (entry != 0)
   {
@@ -253,6 +321,8 @@ void AliEveTRDTrackList::AddMacroFast(const Char_t* path, const Char_t* name, Al
 //______________________________________________________
 void AliEveTRDTrackList::AddStandardMacros()
 {
+  // Adds standard macros to the lists.
+
   // Add your standard macros here, e.g.: 
   // To add a macro use:
   // AddMacro("$(ALICE_ROOT)/myFolder", "myMacroName.C");
@@ -268,6 +338,10 @@ void AliEveTRDTrackList::AddStandardMacros()
 //______________________________________________________
 Bool_t AliEveTRDTrackList::ApplyProcessMacros(TList* iterator)
 {
+  // Uses the iterator (for the selected process macros) to apply the selected macros to the data.
+  // Returns kTRUE on success, otherwise kFALSE. If there no process macros selected, kTRUE is returned 
+  // (this is no error!).
+
   // No process macros need to be processed
   if (iterator->GetEntries() <= 0)  return kTRUE;
 
@@ -553,6 +627,10 @@ Bool_t AliEveTRDTrackList::ApplyProcessMacros(TList* iterator)
 //______________________________________________________
 void AliEveTRDTrackList::ApplySelectionMacros(TList* iterator)
 {
+  // Uses the iterator (for the selected selection macros) to apply the selected macros to the data.
+  // The rnr-states of the tracks are set according to the result of the macro calls (kTRUE, if all
+  // macros return kTRUE for this track, otherwise: kFALSE).
+
   Char_t name[fkMaxMacroNameLength];
   Char_t cmd[(fkMaxMacroNameLength + fkMaxApplyCommandLength)];
 
@@ -676,6 +754,14 @@ void AliEveTRDTrackList::ApplySelectionMacros(TList* iterator)
 //______________________________________________________
 AliEveTRDTrackList::AliEveTRDTrackListMacroType AliEveTRDTrackList::GetMacroType(const Char_t* entry, Bool_t UseList)
 {
+  // Returns the type of the macro of the corresponding entry (i.e. "macro.C (Path: path)"). 
+  // If you have only the name and the path, you can simply use MakeMacroEntry.
+  // If "UseList" is kTRUE, the type will be looked up in the internal list (very fast). But if this list
+  // does not exist, you have to use kFALSE for this parameter. Then the type will be determined by the
+  // prototype! NOTE: It is assumed that the macro has been compiled! If not, the return value is not
+  // predictable, but normally will be kUnknown.
+  // Note: AddMacro(Fast) will update the internal list and RemoveProcess(/Selection)Macros respectively.
+
   AliEveTRDTrackListMacroType type = kUnknown;
 
   // Re do the check of the macro type
@@ -799,6 +885,8 @@ AliEveTRDTrackList::AliEveTRDTrackListMacroType AliEveTRDTrackList::GetMacroType
 //______________________________________________________
 Char_t* AliEveTRDTrackList::MakeMacroEntry(const Char_t* path, const Char_t* name)
 {
+  // Constructs an entry for the macro lists with path and name.  
+
   Char_t* entry = new Char_t[(fkMaxMacroPathNameLength + 30)];
   memset(entry, '\0', sizeof(Char_t) * (fkMaxMacroPathNameLength + 30));
 
@@ -813,6 +901,9 @@ Char_t* AliEveTRDTrackList::MakeMacroEntry(const Char_t* path, const Char_t* nam
 //______________________________________________________
 void AliEveTRDTrackList::RemoveProcessMacros(TList* iterator) 
 {
+  // Uses the iterator (for the selected process macros) to remove the process macros from 
+  // the corresponding list.
+   
   TObjString* obj = 0;
   for (Int_t i = 0; i < iterator->GetEntries(); i++)
   {
@@ -828,6 +919,9 @@ void AliEveTRDTrackList::RemoveProcessMacros(TList* iterator)
 //______________________________________________________
 void AliEveTRDTrackList::RemoveSelectionMacros(TList* iterator) 
 {
+  // Uses the iterator (for the selected selection macros) to remove the selection macros from 
+  // the corresponding list.
+  
   TObjString* obj = 0;
   for (Int_t i = 0; i < iterator->GetEntries(); i++)
   {
@@ -843,6 +937,8 @@ void AliEveTRDTrackList::RemoveSelectionMacros(TList* iterator)
 //______________________________________________________
 void AliEveTRDTrackList::UpdateTrackStyle(AliEveTRDTrack::AliEveTRDTrackState s, UChar_t ss)
 {
+  // Updates the track style and sets this style for each track.
+
   switch(s)
   {
     case AliEveTRDTrack::kSource:

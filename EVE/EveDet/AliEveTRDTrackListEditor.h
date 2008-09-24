@@ -1,5 +1,32 @@
+// Author: Alexandru Bercuci and Benjamin Hess
+// Last change: 23/09/2008
+/**************************************************************************
+ * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
+ * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
+ * full copyright notice.                                                 *
+ **************************************************************************/
+
 #ifndef AliEveTRDTrackListEditor_H
 #define AliEveTRDTrackListEditor_H
+
+//////////////////////////////////////////////////////////////////////////
+//                                                                      //
+// AliEveTRDTrackListEditor                                             //
+//                                                                      //
+// The AliEveTRDTrackListEditor provides the graphical functionality    //
+// for the AliEveTRDTrackList. It creates the tabs and canvases, when   //
+// they are needed and, as well, frees allocated memory on destruction  //
+// (or if new events are loaded and thus some tabs are closed).         //
+// The function DrawHistos() accesses the temporary file created by the //
+// AliEveTRDTrackList and draws the desired data (the file will be      //
+// created within the call of ApplyMacros()). Have a look at this       //
+// function to learn more about the structure of the file and how to    //
+// access the data.                                                     //
+//                                                                      //
+// Authors :                                                            //
+//    A.Bercuci <A.Bercuci@gsi.de>                                      //
+//    B.Hess <Hess@Stud.Uni-Heidelberg.de>                              //
+//////////////////////////////////////////////////////////////////////////
 
 #include <TGedFrame.h>
 
@@ -40,7 +67,7 @@ public:
   void AddMacro(const Char_t* path, const Char_t* name);  // Adds macro to the macro list
   void ApplyMacros();                                     // Apply macros
   void BrowseMacros();                                    // Browse macros
-  void CloseTabs();                                       // Closes + deletes all the tabs opened created by this class
+  void CloseTabs();                                       // Closes + deletes all the tabs created by this class
   void DrawHistos();                                      // Draw histograms
   Int_t GetNSelectedHistograms();                         // Get the number of selected histograms for drawing
   void HandleMacroPathSet();                              // Handles the "macro path set"-signal
@@ -107,8 +134,7 @@ private:
   TGHorizontal3DLine *fLine4;
   TGHorizontal3DLine *fLine5;  
 
-  // Check buttons for histograms
-  TGCheckButton** fCheckButtons;
+  TGCheckButton** fCheckButtons;            // Check buttons for histograms
 
   // Help functions
   void SetDrawingToHistoCanvasTab();        // Sets focus on the tab for histograms and makes fHistoCanvas be the

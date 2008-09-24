@@ -1,3 +1,20 @@
+//////////////////////////////////////////////////////////////////////////
+//                                                                      //
+// The AliEveTRDTrackListEditor provides the graphical functionality    //
+// for the AliEveTRDTrackList. It creates the tabs and canvases, when   //
+// they are needed and, as well, frees allocated memory on destruction  //
+// (or if new events are loaded and thus some tabs are closed).         //
+// The function DrawHistos() accesses the temporary file created by the //
+// AliEveTRDTrackList and draws the desired data (the file will be      //
+// created within the call of ApplyMacros()). Have a look at this       //
+// function to learn more about the structure of the file and how to    //
+// access the data.                                                     //
+//                                                                      //
+// Authors :                                                            //
+//    A.Bercuci <A.Bercuci@gsi.de>                                      //
+//    B.Hess <Hess@Stud.Uni-Heidelberg.de>                              //
+//////////////////////////////////////////////////////////////////////////
+
 #include <EveDet/AliEveTRDData.h>
 #include <EveDet/AliEveTRDTrackList.h>
 #include "AliEveTRDTrackListEditor.h"
@@ -62,6 +79,8 @@ AliEveTRDTrackListEditor::AliEveTRDTrackListEditor(const TGWindow* p, Int_t widt
   fLine1(0), fLine2(0), fLine3(0), fLine4(0), fLine5(0),
   fCheckButtons(0)
 {
+  // Creates the AliEveTRDTrackListEditor.
+
   // Style stuff
   fLine5 = new TGHorizontal3DLine(this, 194, 8);
   AddFrame(fLine5, new TGLayoutHints(kLHintsLeft  | kLHintsTop, 2, 2, 8, 8));
@@ -205,6 +224,9 @@ AliEveTRDTrackListEditor::AliEveTRDTrackListEditor(const TGWindow* p, Int_t widt
 //______________________________________________________
 AliEveTRDTrackListEditor::~AliEveTRDTrackListEditor()
 {
+  // Destructor: Closes all tabs created by this object and
+  // frees the corresponding memory.
+
   if (fFileTypes != 0)
   {
     delete [] fFileTypes;
@@ -229,6 +251,9 @@ AliEveTRDTrackListEditor::~AliEveTRDTrackListEditor()
 //______________________________________________________
 void AliEveTRDTrackListEditor::AddMacro(const Char_t* path, const Char_t* name)
 {
+  // Adds the macro path/name to the macro list. A warning is provided, if there is
+  // something wrong, e.g. if the macro does not have the correct signature.
+
   Int_t result = fM->AddMacro(path, name);
 
   switch (result)
@@ -260,6 +285,8 @@ void AliEveTRDTrackListEditor::AddMacro(const Char_t* path, const Char_t* name)
 //______________________________________________________
 void AliEveTRDTrackListEditor::ApplyMacros()
 {
+  // Applies the selected macros and updates the view.
+
   Bool_t success = kFALSE;
 
   // First apply the selection macros
@@ -305,6 +332,9 @@ void AliEveTRDTrackListEditor::ApplyMacros()
 //______________________________________________________
 void AliEveTRDTrackListEditor::BrowseMacros()
 {
+  // Creates a file-dialog. The selected files will be added to the macro list
+  // via AddMacro(...).
+
   new TGFileDialog(gClient->GetRoot(), GetMainFrame(), kFDOpen, fFileInfo);
   
   if (fFileInfo->fIniDir != 0 && fFileInfo->fFileNamesList != 0)
@@ -335,6 +365,8 @@ void AliEveTRDTrackListEditor::BrowseMacros()
 //______________________________________________________
 void AliEveTRDTrackListEditor::CloseTabs()
 {
+  // Closes + deletes the tabs created by this object
+
   if (fHistoCanvas != 0)
   {
     // Close the created tab, if it exists
@@ -354,6 +386,9 @@ void AliEveTRDTrackListEditor::CloseTabs()
 //______________________________________________________
 void AliEveTRDTrackListEditor::DrawHistos()
 {
+  // Accesses the temporary data file created by the last call of ApplyMacros() and draws
+  // histograms according to the selection in the "Histograms"-tab.
+ 
   Int_t nHistograms = GetNSelectedHistograms();
   if (nHistograms <= 0)
   {
@@ -567,6 +602,8 @@ void AliEveTRDTrackListEditor::DrawHistos()
 //______________________________________________________
 Int_t AliEveTRDTrackListEditor::GetNSelectedHistograms()
 {
+  // Returns the number of selected macros (or rather: Their data) in the "Histograms"-tab
+
   Int_t count = 0;
   
   for (Int_t i = 0; i < fM->fDataFromMacroList->GetEntries(); i++)
@@ -580,6 +617,10 @@ Int_t AliEveTRDTrackListEditor::GetNSelectedHistograms()
 //______________________________________________________
 void AliEveTRDTrackListEditor::HandleMacroPathSet()
 {
+  // Takes the input of the text field (adding a macro), checks if the macro can be
+  // accessed (and that it exists) and adds the macro to the macro list via AddMacro(...).
+  // You can use environment variables in the text field, e.g. "$ALICE_ROOT/Eve/alice-macro/myMacro.C".
+
   if (strlen(fteField->GetText()) != 0)
   {  
     // Expand the pathname
@@ -642,6 +683,10 @@ void AliEveTRDTrackListEditor::HandleMacroPathSet()
 //______________________________________________________
 void AliEveTRDTrackListEditor::HandleNewEventLoaded()
 {
+  // Closes the tabs created by this object and sets a flag that will
+  // cause the function SetModel() to inherit the macro lists + style
+  // for the next AliEveTRDTrackList from the current one.
+
   // Inherit the macro list and track style for the next track list!
   fInheritSettings = kTRUE;
 
@@ -652,13 +697,18 @@ void AliEveTRDTrackListEditor::HandleNewEventLoaded()
 //______________________________________________________
 void AliEveTRDTrackListEditor::HandleTabChangedToIndex(Int_t index)
 {
+  // Saves the current tab in the current AliEveTRDTrackList.
+
   fM->SetSelectedTab(index);
 }
 
 //______________________________________________________
 void AliEveTRDTrackListEditor::InheritMacroList()
 {
-  // The old macro lists are stored in the corresponding list boxes -> add them to the track list
+  // The old macro lists are stored in the corresponding list boxes. This function will add
+  // these lists to the newly loaded AliEveTRDTrackList (or better replace the AliEveTRDTrackList's
+  // macro lists by these lists). With this, the settings will be inherited from the previously loaded
+  // AliEveTRDTrackList.
     
   // Selection macros
   fM->fMacroSelList->Delete();
@@ -680,7 +730,9 @@ void AliEveTRDTrackListEditor::InheritMacroList()
 //______________________________________________________
 void AliEveTRDTrackListEditor::InheritStyle()
 {
-  // The old styles are stored in the corresponding button groups -> set them in track list
+  // The old styles are stored in the corresponding button groups. This function will replace
+  // the style settings of the newly loaded AliEveTRDTrackList with the old styles. With this, the settings
+  // will be inherited from the previously loaded AliEveTRDTrackList.
 
   for (Int_t ind = 0; ind < 3; ind++)
   {
@@ -703,6 +755,8 @@ void AliEveTRDTrackListEditor::InheritStyle()
 //______________________________________________________
 void AliEveTRDTrackListEditor::RemoveMacros()
 {
+  // Removes the selected macros from the corresponding lists.
+
   TList* iterator = new TList();
   
   ftlMacroList->GetSelectedEntries(iterator);
@@ -727,6 +781,9 @@ void AliEveTRDTrackListEditor::RemoveMacros()
 //______________________________________________________
 void AliEveTRDTrackListEditor::SetDrawingToHistoCanvasTab()
 {
+  // Sets gPad to the tab with the name of the current AliEveTRDTrackList. If this tab does
+  // not exist, it will be created. Otherwise, it is re-used.
+
   // If the tab with the canvas has been closed, the canvas will be deleted.
   // So, if there is no tab, set the canvas pointer to zero and recreate it in a new tab.
   if (fHistoCanvas != 0) 
@@ -748,7 +805,9 @@ void AliEveTRDTrackListEditor::SetDrawingToHistoCanvasTab()
 //______________________________________________________
 void AliEveTRDTrackListEditor::SetModel(TObject* obj)
 {  
-  // Set model object
+  // Sets the model object, updates the related data in the GUI and
+  // inherits settings (cf. Inherit*(...)), if the flag fInheritSettings is set to kTRUE.
+
   fM = dynamic_cast<AliEveTRDTrackList*>(obj);
 
   if (fM == 0) 
@@ -796,6 +855,9 @@ void AliEveTRDTrackListEditor::SetModel(TObject* obj)
 //______________________________________________________
 void AliEveTRDTrackListEditor::SetTrackColor(Int_t ind)
 {
+  // Sets the color model for the tracks, updates the tracks with this model and
+  // redraws the scene.
+
   switch(ind)
   { 
     case AliTRDReconstructor::kLQPID:
@@ -815,6 +877,9 @@ void AliEveTRDTrackListEditor::SetTrackColor(Int_t ind)
 //______________________________________________________
 void AliEveTRDTrackListEditor::SetTrackModel(Int_t ind)
 {
+  // Sets the track model for the tracks, updates the tracks with this model and
+  // redraws the scene.
+
   switch(ind)
   { 
     case AliEveTRDTrack::kRieman:
@@ -834,6 +899,10 @@ void AliEveTRDTrackListEditor::SetTrackModel(Int_t ind)
 //______________________________________________________
 void AliEveTRDTrackListEditor::UpdateDataFromMacroListSelection()
 {
+  // Saves the current selection in the "Histograms"-tab to the current
+  // AliEveTRDTrackList. This means that the selection is updated and won't
+  // get lost, if another editor is loaded in Eve.
+
   for (Int_t i = 0; i < fM->fDataFromMacroList->GetEntries(); i++)
   {
     fM->SetHistoDataSelection(i, fCheckButtons[i]->IsOn());
@@ -843,6 +912,8 @@ void AliEveTRDTrackListEditor::UpdateDataFromMacroListSelection()
 //______________________________________________________
 void AliEveTRDTrackListEditor::UpdateHistoCanvasTab()
 {
+   // Updates the histogram and the corresponding tab (including titles).
+
   // Update name of the tab (tab has been set to current tab!)
   fHistoCanvasName->SetString(fM->GetName());  
 
@@ -859,6 +930,9 @@ void AliEveTRDTrackListEditor::UpdateHistoCanvasTab()
 //______________________________________________________
 void AliEveTRDTrackListEditor::UpdateHistoList()
 {
+  // Reloads (updates) the buttons in the "Histograms"-tab via
+  // the current AliEveTRDTrackList (data).
+
   fHistoSubFrame->TGCompositeFrame::Cleanup();
   
   // Set buttons for histograms
@@ -883,6 +957,9 @@ void AliEveTRDTrackListEditor::UpdateHistoList()
 //______________________________________________________
 void AliEveTRDTrackListEditor::UpdateMacroList()
 {
+  // Reloads (updates) the macro list (selection AND process macros) via
+  // the current AliEveTRDTrackList (data).
+
   ftlMacroList->RemoveAll();
  
   TObjString* iter = (TObjString*)fM->fMacroList->First();
@@ -927,6 +1004,10 @@ void AliEveTRDTrackListEditor::UpdateMacroList()
 //______________________________________________________
 void AliEveTRDTrackListEditor::UpdateMacroListSelection(Int_t ind)
 {
+  // Saves the current selection in the process macro list to the current
+  // AliEveTRDTrackList. This means that the selection is updated and won't
+  // get lost, if another editor is loaded in Eve.
+
   // Toggle selected item
   fM->SetMacroListSelection(ind, !fM->MacroListIsSelected(ind));
 }
@@ -934,6 +1015,10 @@ void AliEveTRDTrackListEditor::UpdateMacroListSelection(Int_t ind)
 //______________________________________________________
 void AliEveTRDTrackListEditor::UpdateMacroSelListSelection(Int_t ind)
 {
+  // Saves the current selection in the selection macro list to the current
+  // AliEveTRDTrackList. This means that the selection is updated and won't
+  // get lost, if another editor is loaded in Eve.
+
   // Toggle selected item
   fM->SetMacroSelListSelection(ind, !fM->MacroSelListIsSelected(ind));
 }
