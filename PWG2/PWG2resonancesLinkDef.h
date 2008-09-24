@@ -36,12 +36,4 @@
 #pragma link C++ class AliRsnComparisonObj+;
 #pragma link C++ class AliRsnComparisonAT+;
 
-//#pragma link C++ class AliRsnSimpleFunction+;
-//#pragma link C++ class AliRsnSimpleFcnInvMass+;
-//#pragma link C++ class AliRsnSimpleFcnResolution+;
-
-//#pragma link C++ class AliRsnSimpleAnalysis+;
-//#pragma link C++ class AliRsnSimpleAnalyzer+;
-//#pragma link C++ class AliRsnSimpleAnalysisTaskSE+;
-
 #endif

@@ -26,12 +26,6 @@ SRCS= RESONANCES/AliRsnMCInfo.cxx \
       RESONANCES/AliRsnAnalysisTask2ndStep.cxx \
       RESONANCES/AliRsnComparisonObj.cxx \
       RESONANCES/AliRsnComparisonAT.cxx \
-#      RESONANCES/AliRsnSimpleFunction.cxx \
-#      RESONANCES/AliRsnSimpleFcnInvMass.cxx \
-#      RESONANCES/AliRsnSimpleFcnResolution.cxx \
-#      RESONANCES/AliRsnSimpleAnalysis.cxx \
-#      RESONANCES/AliRsnSimpleAnalyzer.cxx \
-#      RESONANCES/AliRsnSimpleAnalysisTaskSE.cxx \
 
 HDRS= $(SRCS:.cxx=.h)
 
