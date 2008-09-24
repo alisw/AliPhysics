@@ -63,9 +63,7 @@ class AliITSOnlineSPDphysAnalyzer {
 
   // dead noisy parameters:
   Double_t fThreshNoisy;       // at what confidence level do we search for noisy
-  Int_t    fThreshNoisyExp;    // at what confidence level do we search for noisy
   Double_t fThreshDead;        // at what confidence level do we search for dead
-  Int_t    fThreshDeadExp;     // at what confidence level do we search for dead
   UInt_t   fMinEventsForNoisy; // min nr of events required to try noisy algorithm
   UInt_t   fMinEventsForDead;  // min nr of events required to try dead algorithm
   Float_t  fDefinitelyNoisyRatio; // if a pixel fires more than this ratio of the events, it must be noisy

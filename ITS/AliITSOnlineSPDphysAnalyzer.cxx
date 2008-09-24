@@ -38,10 +38,10 @@ AliITSOnlineSPDphysAnalyzer::AliITSOnlineSPDphysAnalyzer(const Char_t *fileName,
   fFileName(fileName),fPhysObj(NULL),fHandler(handler),
   fNrEnoughStatChips(0),fNrDeadChips(0),fNrInefficientChips(0),
   fNrEqHits(0),fbDeadProcessed(kFALSE),
-  fThreshNoisy(1),fThreshNoisyExp(-12),fThreshDead(1),fThreshDeadExp(-12),
+  fThreshNoisy(1e-9),fThreshDead(1e-9),
   fMinEventsForNoisy(10000),fMinEventsForDead(10000),
-  fDefinitelyNoisyRatio(0.1),
-  fMinNrEqHitsForDeadChips(60000),fRatioToMeanForInefficientChip(0.1)//!!!
+  fDefinitelyNoisyRatio(0.3),
+  fMinNrEqHitsForDeadChips(60000),fRatioToMeanForInefficientChip(0.1)
 {
   // constructor  
   Init();
@@ -51,10 +51,10 @@ AliITSOnlineSPDphysAnalyzer::AliITSOnlineSPDphysAnalyzer(AliITSOnlineSPDphys* ph
   fFileName("test.root"),fPhysObj(NULL),fHandler(handler),
   fNrEnoughStatChips(0),fNrDeadChips(0),fNrInefficientChips(0),
   fNrEqHits(0),fbDeadProcessed(kFALSE),
-  fThreshNoisy(1),fThreshNoisyExp(-12),fThreshDead(1),fThreshDeadExp(-12),
+  fThreshNoisy(1e-9),fThreshDead(1e-9),
   fMinEventsForNoisy(10000),fMinEventsForDead(10000),
-  fDefinitelyNoisyRatio(0.1),
-  fMinNrEqHitsForDeadChips(60000),fRatioToMeanForInefficientChip(0.1)//!!!
+  fDefinitelyNoisyRatio(0.3),
+  fMinNrEqHitsForDeadChips(60000),fRatioToMeanForInefficientChip(0.1)
 {
   // alt constructor
   fPhysObj = physObj;
@@ -64,17 +64,15 @@ AliITSOnlineSPDphysAnalyzer::AliITSOnlineSPDphysAnalyzer(const AliITSOnlineSPDph
   fFileName("test.root"),fPhysObj(NULL),fHandler(NULL),
   fNrEnoughStatChips(0),fNrDeadChips(0),fNrInefficientChips(0),
   fNrEqHits(0),fbDeadProcessed(kFALSE),
-  fThreshNoisy(1),fThreshNoisyExp(-12),fThreshDead(1),fThreshDeadExp(-12),
+  fThreshNoisy(1e-9),fThreshDead(1e-9),
   fMinEventsForNoisy(10000),fMinEventsForDead(10000),
-  fDefinitelyNoisyRatio(0.1),
-  fMinNrEqHitsForDeadChips(60000),fRatioToMeanForInefficientChip(0.1)//!!!
+  fDefinitelyNoisyRatio(0.3),
+  fMinNrEqHitsForDeadChips(60000),fRatioToMeanForInefficientChip(0.1)
 {
   // copy constructor, only copies the filename and params (not the processed data)
   fFileName=handle.fFileName;
   fThreshNoisy = handle.fThreshNoisy;
-  fThreshNoisyExp = handle.fThreshNoisyExp;
   fThreshDead = handle.fThreshDead;
-  fThreshDeadExp = handle.fThreshDeadExp;
   fMinEventsForNoisy = handle.fMinEventsForNoisy;
   fMinEventsForDead = handle.fMinEventsForDead;
   fDefinitelyNoisyRatio = handle.fDefinitelyNoisyRatio;
@@ -96,9 +94,7 @@ AliITSOnlineSPDphysAnalyzer& AliITSOnlineSPDphysAnalyzer::operator=(const AliITS
     
     fFileName=handle.fFileName;
     fThreshNoisy = handle.fThreshNoisy;
-    fThreshNoisyExp = handle.fThreshNoisyExp;
     fThreshDead = handle.fThreshDead;
-    fThreshDeadExp = handle.fThreshDeadExp;
     fMinEventsForNoisy = handle.fMinEventsForNoisy;
     fMinEventsForDead = handle.fMinEventsForDead;
     fDefinitelyNoisyRatio = handle.fDefinitelyNoisyRatio;
@@ -137,19 +133,11 @@ void AliITSOnlineSPDphysAnalyzer::SetParam(const Char_t *pname, const Char_t *pv
   //  printf("Setting Param %s  to %s\n",name.Data(),val.Data());
   if (name.CompareTo("MistakeProbabilityNoisy")==0) {
     Double_t mistakeProbabilityNoisy = val.Atof();
-    fThreshNoisy = mistakeProbabilityNoisy;
-    fThreshNoisyExp = 0;
-    Exponent(fThreshNoisy,fThreshNoisyExp);
-    fThreshNoisy/=(20*6*10*32*256);
-    Exponent(fThreshNoisy,fThreshNoisyExp);
+    fThreshNoisy = mistakeProbabilityNoisy/(20*6*10*32*256);
   }
   else if (name.CompareTo("MistakeProbabilityDead")==0) {
     Double_t mistakeProbabilityDead = val.Atof();
-    fThreshDead = mistakeProbabilityDead;
-    fThreshDeadExp = 0;
-    Exponent(fThreshDead,fThreshDeadExp);
-    fThreshDead/=(20*6*10*32*256);
-    Exponent(fThreshDead,fThreshDeadExp);
+    fThreshDead = mistakeProbabilityDead/(20*6*10*32*256);
   }
   else if (name.CompareTo("fMinEventsForNoisy")==0) {
     fMinEventsForNoisy = val.Atoi();
@@ -243,19 +231,13 @@ UInt_t AliITSOnlineSPDphysAnalyzer::ProcessNoisyPixels() {
 
 	  Double_t p = (Double_t)nrChipHits/nrPixels/n;
 
-	  Double_t bin = 1;
-	  Int_t binExp = 0;
 	  // Bin(n,k=0):
-	  for (UInt_t i=0; i<n; i++) {
-	    bin*=(1-p);
-	    Exponent(bin,binExp);
-	  }
+	  Double_t bin = pow(1-p,n);
 	  // Bin(n,k)
 	  UInt_t k=1;
-	  while (((binExp>fThreshNoisyExp || (binExp==fThreshNoisyExp && bin>fThreshNoisy)) || k<n*p) && k<=n) {
+	  while ((bin>fThreshNoisy || k<n*p) && k<=n) {
 	    k++;
 	    bin = bin*(n-k+1)/k*p/(1-p);
-	    Exponent(bin,binExp);
 	  }
 	  
 	  // can we find noisy pixels...?
@@ -292,6 +274,7 @@ UInt_t AliITSOnlineSPDphysAnalyzer::ProcessDeadPixels() {
     Warning("AliITSOnlineSPDphysAnalyzer::ProcessDeadPixels","No data!");
     return 0;
   }
+
   // do we have enough events to even try the algorithm?
   if (GetNrEvents() < fMinEventsForDead) {
     Warning("AliITSOnlineSPDphysAnalyzer::ProcessDeadPixels","Nr events (%d) < fMinEventsForDead (%d)!",GetNrEvents(),fMinEventsForDead);
@@ -380,29 +363,24 @@ UInt_t AliITSOnlineSPDphysAnalyzer::ProcessDeadPixels() {
 	    Double_t p = (Double_t)nrChipHits/nrPixels/n;
 
 	    // probability of falsely assigning a dead pixel
-	    Double_t falselyDeadProb = 1;
-	    Int_t falselyDeadProbExp = 0;
-	    for (UInt_t i=0; i<n; i++) {
-	      falselyDeadProb*=(1-p);
-	      Exponent(falselyDeadProb,falselyDeadProbExp);
-	      // can we find dead pixels...?
-	      if (falselyDeadProbExp<fThreshDeadExp || (falselyDeadProbExp==fThreshDeadExp && falselyDeadProb<fThreshDead)) {
-		fNrEnoughStatChips++;
-		good=kTRUE;
-		// add dead pixels to handler
-		for (UInt_t col=0; col<32; col++) {
-		  for (UInt_t row=0; row<256; row++) {
-		    UInt_t nrHits = fPhysObj->GetHits(hs,chip,col,row);
+	    Double_t falselyDeadProb = pow(1-p,n);
+	    //	    printf("falselyprob=%e\n",falselyDeadProb);
+
+	    // can we find dead pixels...?
+	    if (falselyDeadProb<fThreshDead) {
+	      fNrEnoughStatChips++;
+	      good=kTRUE;
+	      // add dead pixels to handler
+	      for (UInt_t col=0; col<32; col++) {
+		for (UInt_t row=0; row<256; row++) {
+		  UInt_t nrHits = fPhysObj->GetHits(hs,chip,col,row);
+		  if (nrHits==0) {
 		    if (!fHandler->IsPixelNoisy(GetEqNr(),hs,chip,col,row)) {
 		      // don't include noisy pixels
-		      nrPixels++;
-		      if (nrHits==0) {
-			fHandler->SetDeadPixel(GetEqNr(),hs,chip,col,row);
-		      }
+		      fHandler->SetDeadPixel(GetEqNr(),hs,chip,col,row);
 		    }
 		  }
 		}
-		break;
 	      }
 	    }
 	    if (!good) {
