@@ -149,10 +149,10 @@ void ShowCalibrationSDD(Char_t *filnam="$ALICE_ROOT/ITS/Calib/CalibSDD/Run0_9999
   gbad->GetYaxis()->SetTitle("Anode Status (1=OK, 0=bad)");
 }
 
-void ShowCalibrationSDD(Int_t nrun, Int_t nv,Int_t nmod=0){
+void ShowCalibrationSDD(Int_t nrun, Int_t nv, Char_t* dir="LHC08d", Int_t nmod=0){
   TGrid::Connect("alien:",0,0,"t");
   Char_t filnam[200];
-  sprintf(filnam,"alien:///alice/data/2008/LHC08c/OCDB/ITS/Calib/CalibSDD/Run%d_999999999_v%d_s0.root",nrun,nv);
+  sprintf(filnam,"alien:///alice/data/2008/%s/OCDB/ITS/Calib/CalibSDD/Run%d_999999999_v%d_s0.root",dir,nrun,nv);
   printf("Open file: %s\n",filnam);
   ShowCalibrationSDD(filnam,nmod);
 }

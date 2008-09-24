@@ -106,10 +106,10 @@ void ShowDriftSpeedSDD(Char_t filnam[150]="$ALICE_ROOT/ITS/Calib/DriftSpeedSDD/R
 
 
 
-void ShowDriftSpeedSDD(Int_t nrun, Int_t nv){
+void ShowDriftSpeedSDD(Int_t nrun, Int_t nv, Char_t* dir="LHC08d"){
   TGrid::Connect("alien:",0,0,"t");
   Char_t filnam[200];
-  sprintf(filnam,"alien:///alice/data/2008/LHC08c/OCDB/ITS/Calib/DriftSpeedSDD/Run%d_999999999_v%d_s0.root",nrun,nv);
+  sprintf(filnam,"alien:///alice/data/2008/%s/OCDB/ITS/Calib/DriftSpeedSDD/Run%d_999999999_v%d_s0.root",dir,nrun,nv);
   printf("Open file: %s\n",filnam);
   ShowDriftSpeedSDD(filnam,0,260);
 }
