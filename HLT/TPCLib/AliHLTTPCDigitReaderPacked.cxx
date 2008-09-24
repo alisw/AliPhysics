@@ -51,9 +51,6 @@ AliHLTTPCDigitReaderPacked::AliHLTTPCDigitReaderPacked()
   fCurrentBin(-1),
   fRowOffset(0),
   fNRows(0),
-  fNMaxRows(0),
-  fNMaxPads(0),
-  fNTimeBins(0),
   fData(NULL),
   //#endif // ENABLE_PAD_SORTING  
   fUnsorted(kFALSE),
@@ -66,39 +63,58 @@ AliHLTTPCDigitReaderPacked::AliHLTTPCDigitReaderPacked()
   fTPCRawStream = new AliTPCRawStream( fRawMemoryReader );
 
   //#if ENABLE_PAD_SORTING
+
+  // Matthias Sep 2008: the pad sorting functionality needs a deep
+  // revision of the code
+  // I just stumbled over a few awkward realizations
+  // - each instance allocates the buffer for sorted data, this is
+  //   approx. 8 MByte each
+  // - each instance to loops to extract the buffer size
+  //
+  // quick reaction: there is now an instance handling of the buffer
+  // and the buffer size is only calculated once
+  // The sorting of pads is going to be a common functionality of the
+  // DigitReader base class
+
   // get max number of rows
+  if (fNMaxRows<0) {
   for (Int_t ii=0; ii < 6; ii++)
       if (AliHLTTPCTransform::GetNRows(ii) > fNMaxRows) 
 	  fNMaxRows = AliHLTTPCTransform::GetNRows(ii);
+  }
 
   // get max number of pads
+  if (fNMaxPads<0) {
   for (Int_t ii=0; ii < AliHLTTPCTransform::GetNRows();ii++ )
       if (AliHLTTPCTransform::GetNPads(ii) > fNMaxPads) 
 	  fNMaxPads = AliHLTTPCTransform::GetNPads(ii);
+  }
 
   // get max number of bins
+  if (fNTimeBins<0) {
   fNTimeBins = AliHLTTPCTransform::GetNTimeBins();
+  }
 
-  HLTDebug("Array Borders  ||| MAXPAD=%d ||| MAXROW=%d ||| MAXBIN=%d ||| MAXMUL=%d", 
-	   fNMaxPads, fNMaxRows, fNTimeBins, fNTimeBins*fNMaxRows*fNMaxPads);
-
-  // init Data array
-  fData = new Int_t[ fNMaxRows*fNMaxPads*fNTimeBins ];
   //#endif // ENABLE_PAD_SORTING
 }
 
-AliHLTTPCDigitReaderPacked::~AliHLTTPCDigitReaderPacked(){
+Int_t AliHLTTPCDigitReaderPacked::fNMaxRows=-1;
+Int_t AliHLTTPCDigitReaderPacked::fNMaxPads=-1;
+Int_t AliHLTTPCDigitReaderPacked::fNTimeBins=-1;
+Int_t* AliHLTTPCDigitReaderPacked::fgpFreeInstance=NULL;
+Int_t* AliHLTTPCDigitReaderPacked::fgpIssuedInstance=NULL;
+
+AliHLTTPCDigitReaderPacked::~AliHLTTPCDigitReaderPacked()
+{
+  if (fData)
+    ReleaseBufferInstance(fData);
+
   if ( fRawMemoryReader )
     delete fRawMemoryReader;
   fRawMemoryReader = NULL;
   if ( fTPCRawStream )
       delete fTPCRawStream;
   fTPCRawStream = NULL;
-  //#if ENABLE_PAD_SORTING 
-  if ( fData )
-      delete [] fData;
-  fData = NULL;
-  //#endif // ENABLE_PAD_SORTING
 }
 
 Int_t AliHLTTPCDigitReaderPacked::InitBlock(void* ptr,ULong_t size, Int_t patch, Int_t slice)
@@ -138,6 +154,10 @@ Int_t AliHLTTPCDigitReaderPacked::InitBlock(void* ptr,ULong_t size, Int_t patch,
   firstrow -= offset;
   lastrow  -= offset;
 
+  // get the global instance of the array
+  fData=GetBufferInstance();
+  if (!fData) return -ENOMEM;
+
   // Init array with -1
   memset( fData, 0xFF, sizeof(Int_t)*(fNMaxRows*fNMaxPads*fNTimeBins) );
 
@@ -172,10 +192,19 @@ Int_t AliHLTTPCDigitReaderPacked::InitBlock(void* ptr,ULong_t size, Int_t patch,
   return 0;
 }
 
+int AliHLTTPCDigitReaderPacked::Reset()
+{
+  // see header file for class documentation
+  if (fData) ReleaseBufferInstance(fData);
+  fData=NULL;
+  return 0;
+}
+
 Bool_t AliHLTTPCDigitReaderPacked::NextSignal(){
   Bool_t readvalue = kTRUE;
 
   if(!fUnsorted){//added for test
+    if (!fData) return false;
     //#if ENABLE_PAD_SORTING
     while (1) {
       fCurrentBin++;
@@ -261,6 +290,7 @@ Int_t AliHLTTPCDigitReaderPacked::GetSignal(){
     #endif // ENABLE_PAD_SORTING
   */
   if(!fUnsorted){
+    // check for validity of fData is in NextSignal, no check at here
     return fData[ fCurrentRow*fNMaxPads*fNTimeBins+ fCurrentPad*fNTimeBins + fCurrentBin ];
   }
   else{
@@ -358,4 +388,52 @@ const UInt_t* AliHLTTPCDigitReaderPacked::GetSignals()
 {
   // see header file for class documentation
   return &fDataBunch[0];
+}
+
+Int_t* AliHLTTPCDigitReaderPacked::GetBufferInstance()
+{
+  // see header file for class documentation
+
+  // for the moment only a singleton of the buffer is foreseen
+  // could be extended but very unlikly to be worth the effort
+  // because pad sorting is just a debug feature.
+
+  // This is just a poor man's solution, no synchronization for the
+  // moment
+  AliHLTLogging log;
+  if (fgpIssuedInstance) {
+    log.LoggingVarargs(kHLTLogError, "AliHLTTPCDigitReaderPacked", "GetBufferInstance" , __FILE__ , __LINE__ ,
+		       "instance of sorted buffer has not been released or multiple instances requested. Only available as global singleton for DigitReaderPacked");
+    return NULL;
+  }
+
+  if (!fgpFreeInstance) {
+    if (fNMaxRows<0 || fNMaxPads<0 || fNTimeBins<0) {
+      log.LoggingVarargs(kHLTLogError, "AliHLTTPCDigitReaderPacked", "GetBufferInstance" , __FILE__ , __LINE__ ,
+			 "can not determine size of buffer for sorted data");
+      return NULL;
+    }
+    fgpFreeInstance=new Int_t[ fNMaxRows*fNMaxPads*fNTimeBins ];
+    log.LoggingVarargs(kHLTLogDebug, "AliHLTTPCDigitReaderPacked", "GetBufferInstance" , __FILE__ , __LINE__ , 
+		       "Array Borders  ||| MAXPAD=%d ||| MAXROW=%d ||| MAXBIN=%d ||| MAXMUL=%d", 
+		       fNMaxPads, fNMaxRows, fNTimeBins, fNTimeBins*fNMaxRows*fNMaxPads);
+  }
+
+  fgpIssuedInstance=fgpFreeInstance;
+  fgpFreeInstance=NULL;
+  return fgpIssuedInstance;
+}
+
+void AliHLTTPCDigitReaderPacked::ReleaseBufferInstance(Int_t* pInstance)
+{
+  // see header file for class documentation
+  if (!pInstance) return;
+  if (pInstance!=fgpIssuedInstance) {
+    AliHLTLogging log;
+    log.LoggingVarargs(kHLTLogError, "AliHLTTPCDigitReaderPacked", "ReleaseBufferInstance" , __FILE__ , __LINE__ ,
+		       "wrong instance %p, expecting %p", pInstance, fgpIssuedInstance);
+    return;
+  }
+  fgpFreeInstance=fgpIssuedInstance;
+  fgpIssuedInstance=NULL;
 }

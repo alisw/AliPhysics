@@ -275,6 +275,7 @@ int AliHLTTPCKryptonClusterFinderComponent::DoEvent( const AliHLTComponentEventD
 	    else{
 	    size=0;
       }*/
+      fReader->Reset();
   }
   return 0;
 }

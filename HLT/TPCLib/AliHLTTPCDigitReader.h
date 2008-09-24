@@ -67,6 +67,11 @@ public:
    */
   virtual int InitBlock(void* ptr,unsigned long size,Int_t firstrow,Int_t lastrow, Int_t patch, Int_t slice);
 
+  /**
+   * Reset digit reader and release internal structures.
+   */
+  virtual int Reset() {return 0;}
+
   enum {
     kNextSignal = 1,
     kNextChannel,

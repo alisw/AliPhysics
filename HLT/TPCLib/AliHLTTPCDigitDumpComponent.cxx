@@ -257,6 +257,7 @@ int AliHLTTPCDigitDumpComponent::DumpEvent( const AliHLTComponentEventData& evtD
 	  dump << "  " << pReader->GetSignal();
 	}
 	dump << endl << endl;
+	pReader->Reset();
 	delete pReader;
 	pReader=NULL;
       } else {

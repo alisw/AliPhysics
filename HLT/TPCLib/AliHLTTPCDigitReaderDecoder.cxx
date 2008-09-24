@@ -56,11 +56,14 @@ AliHLTTPCDigitReaderDecoder::AliHLTTPCDigitReaderDecoder()
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 }
 
+AliAltroDecoder* AliHLTTPCDigitReaderDecoder::fgpFreeInstance=NULL;
+AliAltroDecoder* AliHLTTPCDigitReaderDecoder::fgpIssuedInstance=NULL;
+
 AliHLTTPCDigitReaderDecoder::~AliHLTTPCDigitReaderDecoder()
 {
   // see header file for class documentation
   if(fAltroDecoder){
-    delete fAltroDecoder;
+    ReleaseDecoderInstance(fAltroDecoder);
   }
   if(fAltroBunch){
     delete fAltroBunch;
@@ -77,14 +80,23 @@ int AliHLTTPCDigitReaderDecoder::InitBlock(void* ptr,unsigned long size, Int_t p
   if(!fMapping){
     fMapping = new AliHLTTPCMapping(patch);
   }
+  fAltroDecoder=GetDecoderInstance();
   if(!fAltroDecoder){
-    fAltroDecoder = new AliAltroDecoder();
+    return -ENODEV;
   }
   if(!fAltroBunch){
     fAltroBunch = new AliAltroBunch();
   }
   fAltroDecoder->SetMemory((UChar_t*)ptr, size);
   fAltroDecoder->Decode();
+  return 0;
+}
+
+int AliHLTTPCDigitReaderDecoder::Reset()
+{
+  // see header file for class documentation
+  if (fAltroDecoder) ReleaseDecoderInstance(fAltroDecoder);
+  fAltroDecoder=NULL;
   return 0;
 }
 
@@ -100,6 +112,7 @@ void AliHLTTPCDigitReaderDecoder::SetUnsorted(bool unsorted)
 bool AliHLTTPCDigitReaderDecoder::NextChannel()
 {
   // see header file for class documentation
+  if (!fAltroDecoder) return false;
   Bool_t result=fAltroDecoder->NextChannel(&fAltroData);
   if(result && !fMapping->IsValidHWAddress(fAltroData.GetHadd())){
     result = fAltroDecoder->NextChannel(&fAltroData);
@@ -210,4 +223,41 @@ AliHLTUInt32_t AliHLTTPCDigitReaderDecoder::GetAltroBlockHWaddr(Int_t row, Int_t
   else{
     return 0;
   }
+}
+
+AliAltroDecoder* AliHLTTPCDigitReaderDecoder::GetDecoderInstance()
+{
+  // see header file for class documentation
+
+  // for the moment only a singleton of the decoder is foreseen
+  // could be extended but very unlikly to be worth the effort
+  // because AliAltroDecoder sooner or later will be deprecated.
+
+  // This is just a poor man's solution, no synchronization for the
+  // moment
+  if (fgpIssuedInstance) {
+    AliHLTLogging log;
+    log.LoggingVarargs(kHLTLogError, "AliHLTTPCDigitReaderDecoder", "GetDecoderInstance" , __FILE__ , __LINE__ ,
+		       "instance of AltroDecoder has not been released or multiple instances requested. Only available as global singleton for DigitReaderDecoder");
+    return NULL;
+  }
+
+  if (!fgpFreeInstance) fgpFreeInstance=new AliAltroDecoder;
+  fgpIssuedInstance=fgpFreeInstance;
+  fgpFreeInstance=NULL;
+  return fgpIssuedInstance;
+}
+
+void AliHLTTPCDigitReaderDecoder::ReleaseDecoderInstance(AliAltroDecoder* pInstance)
+{
+  // see header file for class documentation
+  if (!pInstance) return;
+  if (pInstance!=fgpIssuedInstance) {
+    AliHLTLogging log;
+    log.LoggingVarargs(kHLTLogError, "AliHLTTPCDigitReaderDecoder", "ReleaseDecoderInstance" , __FILE__ , __LINE__ ,
+		       "wrong instance %p, expecting %p", pInstance, fgpIssuedInstance);
+    return;
+  }
+  fgpFreeInstance=fgpIssuedInstance;
+  fgpIssuedInstance=NULL;
 }

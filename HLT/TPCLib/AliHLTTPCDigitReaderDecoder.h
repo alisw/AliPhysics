@@ -37,6 +37,7 @@ public:
 
   // interface functions  
   int InitBlock(void* ptr,unsigned long size, Int_t patch, Int_t slice);
+  int Reset();
   void SetUnsorted(bool unsorted);
   bool NextChannel();
   int NextBunch();
@@ -59,6 +60,23 @@ private:
   /** assignment operator prohibited */
   AliHLTTPCDigitReaderDecoder& operator=(const AliHLTTPCDigitReaderDecoder&);
 
+  /**
+   * Instance handling of the AltroDecoder
+   * The AliAltroDecoder in it's current implementation (Sep 2008) allocates
+   * 16 MByte per instance. This makes it impossible to run more than a couple
+   * of instances. Though, a common decoder with bulk functionality used and
+   * certified by both off- and on-line application is discussed, a quick
+   * bugfix in the digit reader makes use of one global decoder instance.
+   * This can actually be extended in order to support more than one global
+   * instance provided by a scheduler, but thats overkill for the moment.
+   */
+  static AliAltroDecoder* GetDecoderInstance();
+
+  /**
+   * Release an instance of the decoder.
+   */
+  static void ReleaseDecoderInstance(AliAltroDecoder* pInstance);
+
   AliAltroDecoder *fAltroDecoder;                                  //! transient
   AliAltroData fAltroData;                                         //! transient
   AliAltroBunch *fAltroBunch;                                      //! transient
@@ -67,7 +85,10 @@ private:
   int fNextCounter;                                                //! transient
   bool fNextSignalMethodUsed;                                      //! transient
 
-  ClassDef(AliHLTTPCDigitReaderDecoder, 2)
+  static AliAltroDecoder* fgpFreeInstance;                         //! transient
+  static AliAltroDecoder* fgpIssuedInstance;                       //! transient
+  
+  ClassDef(AliHLTTPCDigitReaderDecoder, 3)
     
 };
 #endif

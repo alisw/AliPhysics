@@ -437,6 +437,7 @@ int AliHLTTPCZeroSuppressionComponent::DoEvent( const AliHLTComponentEventData& 
 	  tmpPad->ZeroSuppress(fNRMSThreshold, fSignalThreshold, fMinimumNumberOfSignals, fStartTimeBin, fEndTimeBin, fLeftTimeBin, fRightTimeBin, fValueBelowAverage);
 	}
       }
+      fDigitReader->Reset();
     }
 
   //  HLTDebug("Max number of signals: %d",size/sizeof(Int_t));

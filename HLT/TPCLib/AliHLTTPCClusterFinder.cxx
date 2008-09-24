@@ -695,7 +695,10 @@ void AliHLTTPCClusterFinder::ReadDataUnsorted(void* ptr,unsigned long size)
     InitializePadArray();
   }
 
-  fDigitReader->InitBlock(fPtr,fSize,fFirstRow,fLastRow,fCurrentPatch,fCurrentSlice);
+  if (fDigitReader->InitBlock(fPtr,fSize,fFirstRow,fLastRow,fCurrentPatch,fCurrentSlice)<0) {
+    HLTError("failed setting up digit reader (InitBlock)");
+    return;
+  }
   
   while(fDigitReader->NextChannel()){
     UInt_t row=fDigitReader->GetRow();
@@ -751,7 +754,10 @@ void AliHLTTPCClusterFinder::ReadDataUnsortedDeconvoluteTime(void* ptr,unsigned 
     InitializePadArray();
   }
 
-  fDigitReader->InitBlock(fPtr,fSize,fFirstRow,fLastRow,fCurrentPatch,fCurrentSlice);
+  if (fDigitReader->InitBlock(fPtr,fSize,fFirstRow,fLastRow,fCurrentPatch,fCurrentSlice)<0) {
+    HLTError("failed setting up digit reader (InitBlock)");
+    return;
+  }
   
   while(fDigitReader->NextChannel()){
     UInt_t row=fDigitReader->GetRow();

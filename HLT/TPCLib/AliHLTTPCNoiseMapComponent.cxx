@@ -360,6 +360,7 @@ int AliHLTTPCNoiseMapComponent::DoEvent(const AliHLTComponentEventData& evtData,
       } // end if plotting sides    
      } // end of while loop over pads
    
+     pDigitReader->Reset();
      delete pDigitReader;
   } // end of for loop over data blocks
  

@@ -510,7 +510,7 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponentEventData& ev
 	if ( iter->fDataType != AliHLTTPCDefinitions::fgkUnpackedRawDataType ) continue;
 
       }
-    	
+
       slice = AliHLTTPCDefinitions::GetMinSliceNr( *iter );
       patch = AliHLTTPCDefinitions::GetMinPatchNr( *iter );
       row[0] = AliHLTTPCTransform::GetFirstRow( patch );
@@ -575,7 +575,7 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponentEventData& ev
 	  Logging( kHLTLogFatal, "HLT::TPCClusterFinder::DoEvent", "Too much data", 
 		   "Data written over allowed buffer. Amount written: %lu, allowed amount: %lu.",
 		   tSize, size );
-	  return EMSGSIZE;
+	  return -ENOSPC;
 	}
 	
       if(fUnsorted && fGetActivePads){
@@ -597,6 +597,7 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponentEventData& ev
        
        tSize+=nHWAdd*sizeof(AliHLTUInt16_t);
       }
+      fReader->Reset();
     }
     
   size = tSize;
