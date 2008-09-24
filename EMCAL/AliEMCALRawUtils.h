@@ -103,7 +103,7 @@ class AliEMCALRawUtils : public TObject {
   static Double_t fgFEENoise;           // electronics noise in ADC units
 
   AliEMCALGeometry* fGeom;         //geometry
-  AliAltroMapping*  fMapping[2];   //only two for now
+  AliAltroMapping*  fMapping[4];   //only two for now
 
   TString fOption;                      //! option passed from Reconstructor
 

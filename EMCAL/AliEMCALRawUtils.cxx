@@ -50,11 +50,11 @@
 
 //*-- Author: Marco van Leeuwen (LBL)
 #include "AliEMCALRawUtils.h"
-
+  
 #include "TF1.h"
 #include "TGraph.h"
 #include "TSystem.h"
-
+  
 #include "AliLog.h"
 #include "AliRun.h"
 #include "AliRunLoader.h"
@@ -63,18 +63,18 @@
 #include "AliRawReader.h"
 #include "AliCaloRawStream.h"
 #include "AliDAQ.h"
-
+  
 #include "AliEMCALRecParam.h"
 #include "AliEMCALLoader.h"
 #include "AliEMCALGeometry.h"
 #include "AliEMCALDigitizer.h"
 #include "AliEMCALDigit.h"
 #include "AliEMCAL.h"
-
+  
 ClassImp(AliEMCALRawUtils)
-
+  
 // Signal shape parameters
-Double_t AliEMCALRawUtils::fgTimeBinWidth  = 100E-9 ; // each sample is 100 ns
+ Double_t AliEMCALRawUtils::fgTimeBinWidth  = 100E-9 ; // each sample is 100 ns
 Double_t AliEMCALRawUtils::fgTimeTrigger = 1.5E-6 ;   // 15 time bins ~ 1.5 musec
 
 // some digitization constants
@@ -100,7 +100,7 @@ AliEMCALRawUtils::AliEMCALRawUtils()
   const TObjArray* maps = AliEMCALRecParam::GetMappings();
   if(!maps) AliFatal("Cannot retrieve ALTRO mappings!!");
 
-  for(Int_t i = 0; i < 2; i++) {
+  for(Int_t i = 0; i < 4; i++) {
     fMapping[i] = (AliAltroMapping*)maps->At(i);
   }
 
@@ -143,7 +143,7 @@ AliEMCALRawUtils::AliEMCALRawUtils(AliEMCALGeometry *pGeometry)
   const TObjArray* maps = AliEMCALRecParam::GetMappings();
   if(!maps) AliFatal("Cannot retrieve ALTRO mappings!!");
 
-  for(Int_t i = 0; i < 2; i++) {
+  for(Int_t i = 0; i < 4; i++) {
     fMapping[i] = (AliAltroMapping*)maps->At(i);
   }
 
@@ -165,6 +165,8 @@ AliEMCALRawUtils::AliEMCALRawUtils(const AliEMCALRawUtils& rawU)
   //copy ctor
   fMapping[0] = rawU.fMapping[0];
   fMapping[1] = rawU.fMapping[1];
+  fMapping[2] = rawU.fMapping[2];
+  fMapping[3] = rawU.fMapping[3];
 }
 
 //____________________________________________________________________________
@@ -182,6 +184,8 @@ AliEMCALRawUtils& AliEMCALRawUtils::operator =(const AliEMCALRawUtils &rawU)
     fOption = rawU.fOption;
     fMapping[0] = rawU.fMapping[0];
     fMapping[1] = rawU.fMapping[1];
+    fMapping[2] = rawU.fMapping[2];
+    fMapping[3] = rawU.fMapping[3];
   }
 
   return *this;
@@ -235,7 +239,7 @@ void AliEMCALRawUtils::Digits2Raw()
     fGeom->GetCellIndex(digit->GetId(), nSM, nModule, nIphi, nIeta);
     fGeom->GetCellPhiEtaIndexInSModule(nSM, nModule, nIphi, nIeta,iphi, ieta) ;
     
-    //Check which is the RCU of the cell.
+    //Check which is the RCU, 0 or 1, of the cell.
     Int_t iRCU = -111;
     //RCU0
     if (0<=iphi&&iphi<8) iRCU=0; // first cable row
@@ -245,6 +249,9 @@ void AliEMCALRawUtils::Digits2Raw()
     else if(8<=iphi&&iphi<16 && 24<=ieta&&ieta<48) iRCU=1; // second half; 
     //second cable row
     else if(16<=iphi&&iphi<24) iRCU=1; // third cable row
+
+    if (nSM%2==1) iRCU = 1 - iRCU; // swap for odd=C side, to allow us to cable both sides the same
+
     if (iRCU<0) 
       Fatal("Digits2Raw()","Non-existent RCU number: %d", iRCU);
     
@@ -256,7 +263,14 @@ void AliEMCALRawUtils::Digits2Raw()
     if (buffers[iDDL] == 0) {      
       // open new file and write dummy header
       TString fileName = AliDAQ::DdlFileName("EMCAL",iDDL);
-      buffers[iDDL] = new AliAltroBuffer(fileName.Data(),fMapping[iRCU]);
+      //Select mapping file RCU0A, RCU0C, RCU1A, RCU1C
+      Int_t iRCUside=iRCU+(nSM%2)*2;
+      //iRCU=0 and even (0) SM -> RCU0A.data   0
+      //iRCU=1 and even (0) SM -> RCU1A.data   1
+      //iRCU=0 and odd  (1) SM -> RCU0C.data   2
+      //iRCU=1 and odd  (1) SM -> RCU1C.data   3
+      //cout<<" nSM "<<nSM<<"; iRCU "<<iRCU<<"; iRCUside "<<iRCUside<<endl;
+      buffers[iDDL] = new AliAltroBuffer(fileName.Data(),fMapping[iRCUside]);
       buffers[iDDL]->WriteDataHeader(kTRUE, kFALSE);  //Dummy;
     }
     
@@ -340,6 +354,7 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr)
   Int_t row = 0;
 
   while (readOk) { 
+
     id =  fGeom->GetAbsCellIdFromCellIndexes(in.GetModule(), in.GetRow(), in.GetColumn()) ;
     lowGain = in.IsLowGain();
     Int_t maxTime = in.GetTime();  // timebins come in reverse order
@@ -375,7 +390,6 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr)
     if (amp > 0 && amp < 2000) {  //check both high and low end of
 				   //result, 2000 is somewhat arbitrary
       AliDebug(2,Form("id %d lowGain %d amp %g", id, lowGain, amp));
-      //cout << "col " << col-40 << " row " << row-8 << " lowGain " << lowGain << " amp " << amp << endl;
 
       AddDigit(digitsArr, id, lowGain, (Int_t)amp, time);
     }

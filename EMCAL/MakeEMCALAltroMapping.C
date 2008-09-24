@@ -9,14 +9,19 @@ void MakeEMCALAltroMapping(){
   TString path = gSystem->Getenv("ALICE_ROOT");
   path += "/EMCAL/mapping/RCU";
   TString path2;
-  for(Int_t i = 0; i < 2; i++) {
-    path2 = path;
-    path2 += i;
-    path2 += ".data";
-    AliAltroMapping *mapping = new AliCaloAltroMapping(path2.Data());
-    mappingsArray.Add(mapping);
+  TString side[] = {"A","C"};//+ and - pseudarapidity supermodules
+  for(Int_t j = 0; j < 2; j++){
+    for(Int_t i = 0; i < 2; i++) {
+      path2 = path;
+      path2 += i;
+      path2 +=side[j]; 
+      path2 += ".data";
+      printf("File: %s\n",path2.Data());
+      AliAltroMapping *mapping = new AliCaloAltroMapping(path2.Data());
+      mappingsArray.Add(mapping);
+    }
   }
-
+  
   if( TString(gSystem->Getenv("TOCDB")) != TString("kTRUE") ){
     // save on file
     const char* filename = "EMCALAltroMapping.root";

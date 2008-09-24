@@ -25,7 +25,7 @@
 #define FILE_ID "EMCALPED"
 #define AliDebugLevel() -1
 #define FILE_PEDClassName "emcCalibPedestal"
-const int kNRCU = 2;
+const int kNRCU = 4;
 /* LOCAL_DEBUG is used to bypass daq* calls, for local testing */
 //#define LOCAL_DEBUG 1 // comment out to run normally
 
@@ -98,7 +98,7 @@ int main(int argc, char **argv) {
   monitorSetNoWaitNetworkTimeout(1000);
 
   /* Retrieve mapping files from DAQ DB */ 
-  const char* mapFiles[kNRCU] = {"RCU0.data","RCU1.data"};
+  const char* mapFiles[kNRCU] = {"RCU0A.data","RCU1A.data","RCU0C.data","RCU1C.data"};
 
   for(Int_t iFile=0; iFile<kNRCU; iFile++) {
     int failed = daqDA_DB_getFile(mapFiles[iFile], mapFiles[iFile]);
@@ -117,13 +117,16 @@ int main(int argc, char **argv) {
   TString path = "./";
   path += "RCU";
   TString path2;
-  for(Int_t i = 0; i < kNRCU; i++) {
-    path2 = path;
-    path2 += i;
-    path2 += ".data";
-    mapping[i] = new AliCaloAltroMapping(path2.Data());
-  }
-  
+ TString side[] = {"A","C"};//+ and - pseudarapidity supermodules
+ for(Int_t j = 0; j < 2; j++){
+   for(Int_t i = 0; i < 2; i++) {
+     path2 = path;
+     path2 += i;
+     path2 +=side[j]; 
+     path2 += ".data";
+     mapping[i] = new AliCaloAltroMapping(path2.Data());
+   }
+ }
   /* set up our analysis class */  
   AliCaloCalibPedestal * calibPedestal = new AliCaloCalibPedestal(AliCaloCalibPedestal::kEmCal); // pedestal and noise calibration
   calibPedestal->SetAltroMapping( mapping );
