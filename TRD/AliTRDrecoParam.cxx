@@ -73,6 +73,8 @@ AliTRDrecoParam::AliTRDrecoParam()
   fSysCovMatrix[2] = 0.; // snp
   fSysCovMatrix[3] = 0.; // tgl
   fSysCovMatrix[4] = 0.; // 1/pt
+
+  memset(fPIDThreshold, 0, AliTRDCalPID::kNMom*sizeof(Double_t));
 }
 
 //______________________________________________________________
@@ -91,6 +93,7 @@ AliTRDrecoParam::AliTRDrecoParam(const AliTRDrecoParam &ref)
   ,fkChi2Z(ref.fkChi2Z)
   ,fkChi2Y(ref.fkChi2Y)
   ,fkChi2YCut(ref.fkChi2YCut)
+  ,fkChi2ZCut(ref.fkChi2ZCut)
   ,fkPhiCut(ref.fkPhiCut)
   ,fkMeanNclusters(ref.fkMeanNclusters)
   ,fkSigmaNclusters(ref.fkSigmaNclusters)
@@ -113,6 +116,7 @@ AliTRDrecoParam::AliTRDrecoParam(const AliTRDrecoParam &ref)
   SetImproveTracklets(ref.HasImproveTracklets());
 
   memcpy(fSysCovMatrix, ref.fSysCovMatrix, 5*sizeof(Double_t));
+  memcpy(fPIDThreshold, ref.fPIDThreshold, AliTRDCalPID::kNMom*sizeof(Double_t));
 }
 
 //______________________________________________________________

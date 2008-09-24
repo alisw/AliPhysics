@@ -246,7 +246,7 @@ Bool_t AliTRDcheckDetector::PostProcess(){
 }
 
 //_______________________________________________________
-void AliTRDcheckDetector::GetRefFigure(Int_t ifig, Int_t &first, Int_t &last){
+void AliTRDcheckDetector::GetRefFigure(Int_t ifig, Int_t &first, Int_t &last, Option_t *opt){
 	//
 	// Setting Reference Figures
 	//
@@ -269,7 +269,7 @@ void AliTRDcheckDetector::GetRefFigure(Int_t ifig, Int_t &first, Int_t &last){
 						break;
 		case 8:	first = last = kChargeDeposit;
 						break;
-		case 9: first = last = fContainer->GetEntries() - 1;
+		case 9: first = last = kPostProcessing;
 						break;
 		default: first = last = kNTracksEventHist;
 						break;

@@ -42,6 +42,7 @@ public:
   Int_t              GetPDG() const { return fPDG; }
   ULong_t            GetStatus() const {return fStatus;}
   UChar_t            GetTriggerCluster() const {return fTriggerCluster;}
+  TString            GetTriggerClassName() const {return fTriggerClassName;}
   AliTRDseedV1*      GetTracklet(Int_t entry) const;
   AliTRDtrackV1 *	 	 GetTRDtrack() const { return fTRDtrack; }
   AliTrackReference* GetTrackRef(Int_t entry) const;
@@ -61,6 +62,7 @@ public:
   void               SetStatus(ULong_t stat) {fStatus = stat;}
   void               SetTrackId(Int_t id) {fId = id;}
   void               SetTriggerCluster(Int_t clusterPattern){fTriggerCluster = clusterPattern;}
+  void               SetFiredTriggerClass(TString classname){ fTriggerClassName = classname; }
   void               SetTRDtrack(const AliTRDtrackV1 *track);
   
 private:
@@ -75,6 +77,7 @@ private:
   Int_t              fLabel;         	// MC label  
   Int_t              fNClusters;     	// Numer of clusters from refit
   Int_t              fNTrackRefs;    	// number of track refs
+  TString            fTriggerClassName; // Name of the fired trigger class
   AliTrackReference  *fTrackRefs[12];	// no of track refs
   AliTRDtrackV1      *fTRDtrack; 	// no of tracklets
   AliExternalTrackParam *fOP;       	// outer param if no tracklets

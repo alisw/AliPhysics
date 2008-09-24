@@ -75,6 +75,7 @@ public:
   
   Bool_t         IsOwner() const {return TestBit(kOwner);};
   Bool_t         IsStopped() const {return TestBit(kStopped);};
+  Bool_t         IsElectron() const;
   
   void           MakeBackupTrack();
   Bool_t         PropagateTo(Double_t xr, Double_t x0 = 8.72, Double_t rho = 5.86e-3);

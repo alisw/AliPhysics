@@ -382,6 +382,14 @@ Double_t AliTRDtrackV1::GetPredictedChi2(const AliTRDseedV1 *trklt) const
   return AliExternalTrackParam::GetPredictedChi2(p, cov);
 }
 
+//_______________________________________________________________
+Bool_t AliTRDtrackV1::IsElectron() const
+{
+/*  reco = fReconstructor->GetRecoParam();
+  if(GetPID(0) > reco->GetPIDThreshold(GetP())) return kTRUE;*/
+  return kFALSE;
+}
+
 	
 //_____________________________________________________________________________
 void AliTRDtrackV1::MakeBackupTrack()

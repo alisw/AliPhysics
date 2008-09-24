@@ -14,6 +14,9 @@
 #ifndef ALIDETECTORRECOPARAM_H
 #include "AliDetectorRecoParam.h"
 #endif
+#ifndef ALITRDCALPID_H
+#include "Cal/AliTRDCalPID.h"
+#endif
 
 class AliTRDrecoParam : public AliDetectorRecoParam
 {
@@ -33,6 +36,7 @@ public:
   Double_t GetMaxTheta() const              { return fkMaxTheta; }
   Double_t GetMaxPhi() const                { return fkMaxPhi;   }
   Double_t GetPlaneQualityThreshold() const { return fkPlaneQualityThreshold; }
+  Double_t GetPIDThreshold(Float_t /*p*/){ return 0.;}
   Double_t GetRoad0y() const                { return fkRoad0y;   }
   Double_t GetRoad0z() const                { return fkRoad0z;   }
   Double_t GetRoad1y() const                { return fkRoad1y;   }
@@ -79,6 +83,7 @@ public:
   void     SetClusMaxThresh(Float_t thresh)                   { fClusMaxThresh   = thresh; };
   void     SetClusSigThresh(Float_t thresh)                   { fClusSigThresh   = thresh; };
   void     SetTailCancelation(Bool_t tc = kTRUE)              { SetBit(kTC, tc);  };
+  inline void SetPIDThreshold(Double_t *pid);
   void     SetNexponential(Int_t nexp)                        { fTCnexp          = nexp;   };
   inline void SetSysCovMatrix(Double_t *sys);
   void     SetNumberOfPresamples(Int_t n)                     { fNumberOfPresamples = n;}
@@ -117,6 +122,7 @@ private:
   Double_t  fkTrackLikelihood;       // Track likelihood for tracklets Rieman fit
   
   Double_t  fSysCovMatrix[5];        // Systematic uncertainty from calibration and alignment for each tracklet
+  Double_t  fPIDThreshold[AliTRDCalPID::kNMom];
 
   // Clusterization parameter
   Double_t  fMinMaxCutSigma;         // Threshold sigma noise pad middle
@@ -147,6 +153,12 @@ inline void AliTRDrecoParam::SetSysCovMatrix(Double_t *sys)
   memcpy(fSysCovMatrix, sys, 5*sizeof(Double_t));
 }
 
+//___________________________________________________
+inline void AliTRDrecoParam::SetPIDThreshold(Double_t *pid)
+{
+  if(!pid) return;
+  memcpy(fPIDThreshold, pid, AliTRDCalPID::kNMom*sizeof(Double_t));
+}
 
 
 #endif

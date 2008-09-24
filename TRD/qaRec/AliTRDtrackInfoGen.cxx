@@ -258,6 +258,8 @@ void AliTRDtrackInfoGen::Exec(Option_t *){
     fTrackInfo->SetTrackId(esdTrack->GetID());
     fTrackInfo->SetLabel(label);
     fTrackInfo->SetNumberOfClustersRefit(esdTrack->GetNcls(2));
+    fTrackInfo->SetFiredTriggerClass(fESD->GetFiredTriggerClasses());
+    fTrackInfo->SetTriggerCluster(fESD->GetHeader()->GetTriggerCluster());
     nclsTrklt = 0;
   
 

@@ -46,6 +46,7 @@ AliTRDtrackInfo::AliTRDtrackInfo():
   ,fLabel(0)
   ,fNClusters(0)
   ,fNTrackRefs(0)
+  ,fTriggerClassName("")
   ,fTRDtrack(0x0)
   ,fOP(0x0)
 {
@@ -67,6 +68,7 @@ AliTRDtrackInfo::AliTRDtrackInfo(Int_t pdg):
   ,fLabel(0)
   ,fNClusters(0)
   ,fNTrackRefs(0)
+  ,fTriggerClassName("")
   ,fTRDtrack(0x0)
   ,fOP(0x0)
 {
@@ -88,6 +90,7 @@ AliTRDtrackInfo::AliTRDtrackInfo(const AliTRDtrackInfo &trdInfo):
   ,fLabel(trdInfo.fLabel)
   ,fNClusters(trdInfo.fNClusters)
   ,fNTrackRefs(trdInfo.fNTrackRefs)
+  ,fTriggerClassName(trdInfo.fTriggerClassName)
   ,fTRDtrack(0x0)
   ,fOP(0x0)
 {

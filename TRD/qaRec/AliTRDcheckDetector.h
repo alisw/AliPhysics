@@ -27,7 +27,8 @@ enum{
   kNTracksSectorHist=7,
   kPulseHeight=8,
   kClusterCharge=9,
-  kChargeDeposit=10
+  kChargeDeposit=10,
+  kPostProcessing=17
 };
 public:
   AliTRDcheckDetector();
@@ -38,7 +39,7 @@ public:
   virtual void Terminate(Option_t *);
   
   virtual Bool_t PostProcess();
-  virtual void  GetRefFigure(Int_t ifig, Int_t &first, Int_t &last);
+  virtual void  GetRefFigure(Int_t ifig, Int_t &first, Int_t &last, Option_t *opt = "lp");
   
 private:
   AliTRDcheckDetector(const AliTRDcheckDetector &);
