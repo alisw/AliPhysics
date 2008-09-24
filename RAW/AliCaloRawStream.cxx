@@ -54,33 +54,47 @@ AliCaloRawStream::AliCaloRawStream(AliRawReader* rawReader, TString calo, AliAlt
   fCaloFlag(0),
   fFilter(0),
   fNRCU(0),
+  fNSides(0),
+  fCalo(calo),
   fExternalMapping(kFALSE)
 {
-// create an object to read PHOS/EMCAL raw digits
-
+  // create an object to read PHOS/EMCAL raw digits
   SelectRawData(calo);
 
   // PHOS and EMCAL have differen number of RCU per module
+  //For PHOS
   fNRCU = 4;
-  if(calo == "EMCAL")  fNRCU = 2;
+  fNSides = 1;
+  //For EMCAL
+  TString sides[]={"A","C"};
+  if(fCalo == "EMCAL")  {
+    fNRCU = 2;
+    fNSides = 2;
+  }
 
   if (mapping == NULL) {
     TString path = gSystem->Getenv("ALICE_ROOT");
-    path += "/"+calo+"/mapping/RCU";
+    path += "/"+fCalo+"/mapping/RCU";
     TString path2;
-    for(Int_t i = 0; i < fNRCU; i++) {
-      path2 = path;
-      path2 += i;
-      path2 += ".data";
-      fMapping[i] = new AliCaloAltroMapping(path2.Data());
+    for(Int_t j = 0; j < fNSides; j++){
+      for(Int_t i = 0; i < fNRCU; i++) {
+	path2 = path;
+	path2 += i;
+	if(fCalo == "EMCAL") path2 += sides[j];
+	path2 += ".data";
+	//printf("AliCaloRawStream::RCU:  %s\n",path2.Data());
+	fMapping[i] = new AliCaloAltroMapping(path2.Data());
+      }
     }
   }
   else {
     fExternalMapping = kTRUE;
-    for(Int_t i = 0; i < fNRCU; i++)
+    //printf("AliCaloRawStream::External mapping N: RCU %d, sides %d \n",  fNRCU,fNSides);
+    for(Int_t i = 0; i < fNRCU*fNSides; i++)
       fMapping[i] = mapping[i];
+    
   }
-
+  
   SetNoAltroMapping(kFALSE);
 }
 
@@ -96,6 +110,8 @@ AliCaloRawStream::AliCaloRawStream(const AliCaloRawStream& stream) :
   fCaloFlag(0),
   fFilter(0),
   fNRCU(0),
+  fNSides(0),
+  fCalo(""),
   fExternalMapping(kFALSE)
 {  
   Fatal("AliCaloRawStream", "copy constructor not implemented");
@@ -115,7 +131,7 @@ AliCaloRawStream::~AliCaloRawStream()
 // destructor
 
   if (!fExternalMapping)
-    for(Int_t i = 0; i < fNRCU; i++)
+    for(Int_t i = 0; i < fNRCU*fNSides; i++)
       delete fMapping[i];
 }
 
@@ -126,6 +142,7 @@ void AliCaloRawStream::Reset()
   AliAltroRawStream::Reset();
   fModule = fPrevModule = fRow = fPrevRow = fColumn = fPrevColumn = -1;
   fFilter = fCaloFlag = 0;
+  fCalo="";
 }
 
 //_____________________________________________________________________________
@@ -163,6 +180,10 @@ void AliCaloRawStream::ApplyAltroMapping()
   fModule = ddlNumber / fNRCU;
 
   Int_t rcuIndex = ddlNumber % fNRCU;
+
+  if(fCalo=="EMCAL"){ // EMCAL may need to increase RCU index for the maps
+    if (fModule%2 == 1) { rcuIndex += 2; } // other='C' side maps
+  }
 
   Short_t hwAddress = GetHWAddress();
   fRow = fMapping[rcuIndex]->GetPadRow(hwAddress);
