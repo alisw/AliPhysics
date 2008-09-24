@@ -2,7 +2,10 @@
 #include <TH1F.h>
 #include <TGraph.h>
 #include <TMath.h>
+#include <TMap.h>
 #include <TObjArray.h>
+#include <TObject.h>
+#include <TObjString.h>
 #include <TProfile.h>
 #include <TROOT.h>
 
@@ -37,6 +40,7 @@ AliTRDcheckDetector::AliTRDcheckDetector():
   ,fQCLsector(0x0)
   ,fQTdetector(0x0)
   ,fQTsector(0x0)
+  ,fTriggerNames(0x0)
 {
   //
   // Default constructor
@@ -54,6 +58,7 @@ AliTRDcheckDetector::~AliTRDcheckDetector(){
   if(fQCLsector) delete fQCLsector;
   if(fQTdetector) delete fQTdetector;
   if(fQTsector) delete fQTsector;
+  if(fTriggerNames) delete fTriggerNames;
 }
 
 //_______________________________________________________
@@ -117,6 +122,9 @@ void AliTRDcheckDetector::CreateOutputObjects(){
   fContainer->Add(fPHSsector);
   fContainer->Add(fQCLsector);
   fContainer->Add(fQTsector);
+  fTriggerNames = new TMap();
+  fTriggerNames->SetName("fTriggerNames");
+  fContainer->Add(fTriggerNames);
 }
 
 //_______________________________________________________
@@ -127,6 +135,7 @@ void AliTRDcheckDetector::Exec(Option_t *){
   //
   Int_t nTracks = 0;		// Count the number of tracks per event
   Int_t triggermask = 0;
+  TString triggername =  "notrack";
   AliTRDtrackInfo *fTrackInfo = 0x0;
   AliTRDtrackV1 *fTRDtrack = 0x0;
   AliTRDseedV1 *fTracklet = 0x0;
@@ -134,7 +143,10 @@ void AliTRDcheckDetector::Exec(Option_t *){
   for(Int_t iti = 0; iti < fTracks->GetEntriesFast(); iti++){
     fTrackInfo = dynamic_cast<AliTRDtrackInfo *>(fTracks->UncheckedAt(iti));
     if(!fTrackInfo || !(fTRDtrack = fTrackInfo->GetTRDtrack())) continue;
-    if(!triggermask) triggermask = fTrackInfo->GetTriggerCluster();
+    if(!triggermask){
+    	triggermask = fTrackInfo->GetTriggerCluster();
+	triggername =  fTrackInfo->GetTriggerClassName();
+    }
     Int_t nclusters = fTRDtrack->GetNumberOfClusters();
     Int_t ntracklets = fTRDtrack->GetNumberOfTracklets();
     Float_t chi2 = fTRDtrack->GetChi2();
@@ -182,7 +194,9 @@ void AliTRDcheckDetector::Exec(Option_t *){
     nTracks++;
   }
   dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNTracksEventHist))->Fill(nTracks);
- 	dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNEventsTrigger))->Fill(triggermask);
+  dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNEventsTrigger))->Fill(triggermask);
+  if(!fTriggerNames->FindObject(Form("%d", triggermask)))
+    fTriggerNames->Add(new TObjString(Form("%d", triggermask)), new TObjString(triggername));
   PostData(0, fContainer);
 }
 
@@ -233,13 +247,25 @@ Bool_t AliTRDcheckDetector::PostProcess(){
 	// Calculate the Percentage of events containing tracks as function of the trigger cluster
 	histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNEventsTrigger));
 	Double_t nEvents = histo->Integral();
-	TGraph *percentages = new TGraph(histo->GetNbinsX());
-	for(Int_t ibin = 0; ibin < histo->GetNbinsX(); ibin++)
-		percentages->SetPoint(ibin, ibin, histo->GetBinContent(histo->FindBin(ibin))/nEvents);
+	fTriggerNames = dynamic_cast<TMap *>(fContainer->UncheckedAt(17));
+	TH1F *percentages = new TH1F("fTriggerInf", "Trigger Information", fTriggerNames->GetEntries(), 0, fTriggerNames->GetEntries());
+	TObject *triggerclass = 0x0;
+	Int_t ipt=0;
+	for(Int_t ibin = 0; ibin < histo->GetNbinsX(); ibin++){
+		if((triggerclass = fTriggerNames->FindObject(Form("%d",ibin)))){
+			TObjString *label = dynamic_cast<TObjString *>(dynamic_cast<TPair *>(triggerclass)->Value());
+			//printf("Trigger Pattern for class %d: %s\n", ibin, label->String().Data());
+			//printf("Percentage of Events: %f\n", histo->GetBinContent(histo->FindBin(ibin))/nEvents);
+			percentages->SetBinContent(percentages->FindBin(ipt), histo->GetBinContent(histo->FindBin(ibin))/nEvents);
+			percentages->GetXaxis()->SetBinLabel(percentages->FindBin(ipt),label->String().Data());
+			ipt++;
+		}	
+	}
 	percentages->GetXaxis()->SetTitle("Trigger Cluster");
-	percentages->GetYaxis()->SetTitle("#%Events");
-	percentages->SetMarkerColor(kBlue);
-	percentages->SetMarkerStyle(22);
+	percentages->GetYaxis()->SetTitle("%Events");
+	percentages->GetYaxis()->SetRangeUser(0,1);
+//	percentages->SetMarkerColor(kBlue);
+//	percentages->SetMarkerStyle(22);
 	fContainer->Add(percentages);
 	fNRefFigures = 10;
 	return kTRUE;
@@ -250,6 +276,7 @@ void AliTRDcheckDetector::GetRefFigure(Int_t ifig, Int_t &first, Int_t &last, Op
 	//
 	// Setting Reference Figures
 	//
+	opt = "pl";
 	switch(ifig){
 		case 0:	first = last = kNTracksEventHist;
 						break;
@@ -270,6 +297,7 @@ void AliTRDcheckDetector::GetRefFigure(Int_t ifig, Int_t &first, Int_t &last, Op
 		case 8:	first = last = kChargeDeposit;
 						break;
 		case 9: first = last = kPostProcessing;
+						opt="bar";
 						break;
 		default: first = last = kNTracksEventHist;
 						break;

@@ -6,6 +6,7 @@
 #endif
 
 class TObjArray;
+class TMap;
 class AliTRDcheckDetector : public AliTRDrecoTask{
 // common constants
 enum{
@@ -28,7 +29,7 @@ enum{
   kPulseHeight=8,
   kClusterCharge=9,
   kChargeDeposit=10,
-  kPostProcessing=17
+  kPostProcessing=18
 };
 public:
   AliTRDcheckDetector();
@@ -50,7 +51,7 @@ private:
   TObjArray *fQCLsector;							//! Cluster Charge Container for whole sector
   TObjArray *fQTdetector;							//! Total charge Deposit for single detector 
   TObjArray *fQTsector;								//! Total charge Deposit for whole sector
-  
+  TMap *fTriggerNames;							//! Names of the trigger classes 
   ClassDef(AliTRDcheckDetector, 1)
 };
 #endif

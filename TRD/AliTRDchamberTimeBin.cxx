@@ -294,14 +294,20 @@ void AliTRDchamberTimeBin::BuildIndices(Int_t iter)
   
   // Make a copy
   AliTRDcluster *helpCL[kMaxClustersLayer];
-  Int_t helpInd[kMaxClustersLayer];
+  UInt_t helpInd[kMaxClustersLayer];
   nClStack = 0;
+  // Defining iterators
+  AliTRDcluster **fcliter = &fClusters[0], **hcliter = &helpCL[0]; UInt_t *finditer = &fIndex[0], *hinditer = &helpInd[0];
+  AliTRDcluster *tmpcl = 0x0;
   for(Int_t i = 0; i < TMath::Min(fN, kMaxClustersLayer); i++){
-    if(!fClusters[i]) continue;
-    helpCL[nClStack]  = fClusters[i];
-    helpInd[nClStack] = fIndex[i];
-    fClusters[i]      = 0x0;
-    fIndex[i]         = 0xffff;
+    if(!(tmpcl = *(fcliter++))){
+    	finditer++;
+    	continue;
+    }
+    *(hcliter++)  = tmpcl;
+    *(hinditer++) = *finditer;
+    tmpcl = 0x0;
+    *(finditer++) = 0xffff;
     nClStack++;
   }
   
@@ -311,9 +317,10 @@ void AliTRDchamberTimeBin::BuildIndices(Int_t iter)
   nClStack = 0;
   // Reset Positions array
   memset(fPositions, 0, sizeof(UChar_t)*kMaxRows);
+  AliTRDcluster **cliter = &helpCL[0]; // Declare iterator running over the whole array
   for(Int_t i = 0; i < fN; i++){
     // boundary check
-    AliTRDcluster *cl = helpCL[i];
+    AliTRDcluster *cl = *(cliter++);
     UChar_t rowIndex = cl->GetPadRow();
     // Insert Leaf
     Int_t pos = FindYPosition(cl->GetY(), rowIndex, i);
