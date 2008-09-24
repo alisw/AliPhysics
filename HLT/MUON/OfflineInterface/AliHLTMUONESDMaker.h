@@ -69,6 +69,7 @@ private:
 	
 	bool fWarnForUnexpecedBlock;  /// Flag indicating if we should log a warning if we got a block of an unexpected type.
 	bool fMakeMinimalESD;  /// Flag to indicate if a minimal ESD object should be created.
+	bool fAddCustomData;  /// Flag to turn on adding of all dHLT rootified objects to the ESD.
 
 	ClassDef(AliHLTMUONESDMaker, 0); // Component for converting dHLT reconstructed data into the ESD format.
 };

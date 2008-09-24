@@ -51,7 +51,8 @@ ClassImp(AliHLTMUONESDMaker);
 AliHLTMUONESDMaker::AliHLTMUONESDMaker() :
 	AliHLTMUONProcessor(),
 	fWarnForUnexpecedBlock(false),
-	fMakeMinimalESD(false)
+	fMakeMinimalESD(false),
+	fAddCustomData(false)
 {
 	/// Default constructor.
 }
@@ -107,6 +108,12 @@ int AliHLTMUONESDMaker::DoInit(int argc, const char** argv)
 		if (strcmp(argv[i], "-warn_on_unexpected_block") == 0)
 		{
 			fWarnForUnexpecedBlock = true;
+			continue;
+		}
+		
+		if (strcmp(argv[i], "-add_rootified_objects") == 0)
+		{
+			fAddCustomData = true;
 			continue;
 		}
 
@@ -229,6 +236,10 @@ int AliHLTMUONESDMaker::DoEvent(
 				triggerRecords.push_back(&inblock[n]);
 			}
 		}
+		else if (block->fDataType == AliHLTMUONConstants::RootifiedEventDataType() and fAddCustomData)
+		{
+			// Do nothing for now, will handle this later.
+		}
 		else
 		{
 			if (block->fDataType != AliHLTMUONConstants::MansoTracksBlockDataType())
@@ -244,6 +255,19 @@ int AliHLTMUONESDMaker::DoEvent(
 						DataType2Text(block->fDataType).c_str(), block->fSpecification
 					);
 			}
+		}
+	}
+	
+	// If we were requested to add all dHLT rootified data objects then do so.
+	if (fAddCustomData)
+	{
+		const AliHLTComponentDataType& type = AliHLTMUONConstants::RootifiedEventDataType();
+		const char* classname = AliHLTMUONEvent::Class_Name();
+		const TObject* obj = NULL;
+		for (obj = GetFirstInputObject(type, classname); obj != NULL; obj = GetNextInputObject())
+		{
+			// Clone the object since the ESD takes ownership of it.
+			event.AddObject(obj->Clone());
 		}
 	}
 	

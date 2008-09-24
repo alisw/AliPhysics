@@ -597,7 +597,7 @@ int AliHLTMUONRootifierComponent::DoEvent(
 		event.Add(triggerDecision);
 	}
 	
-	PushBack(&event, "ROOTEVNT", "MUON", specification);
+	PushBack(&event, AliHLTMUONConstants::RootifiedEventDataType(), specification);
 	
 	return 0;
 }

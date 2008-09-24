@@ -127,6 +127,9 @@ const AliHLTComponentDataType
 AliHLTMUONConstants::fgkPairsDecisionBlockDataType = AliHLTComponentDataTypeInitializer("DECIDPAR", kAliHLTDataOriginMUON);
 
 const AliHLTComponentDataType
+AliHLTMUONConstants::fgkRootifiedEventDataType = AliHLTComponentDataTypeInitializer("ROOTEVNT", kAliHLTDataOriginMUON);
+
+const AliHLTComponentDataType
 AliHLTMUONConstants::fgkESDDataType = AliHLTComponentDataTypeInitializer(kAliHLTDataTypeESDObject.fID, kAliHLTDataOriginMUON);
 
 const AliHLTComponentDataType
