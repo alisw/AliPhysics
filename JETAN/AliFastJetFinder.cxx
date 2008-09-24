@@ -55,9 +55,7 @@
 using namespace std;
 
 
-ClassImp(AliFastJetFinder);
-
-
+ClassImp(AliFastJetFinder)
 //____________________________________________________________________________
 
 AliFastJetFinder::AliFastJetFinder():
