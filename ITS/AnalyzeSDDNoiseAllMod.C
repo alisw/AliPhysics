@@ -365,10 +365,10 @@ void AnalyzeSDDNoiseAllMod(Char_t *datafil, Int_t nDDL, Int_t firstEv=10, Int_t 
 
 }
 
-void AnalyzeSDDNoiseAllMod(Int_t nrun, Int_t n2, Int_t nDDL=0, Int_t firstEv=10, Int_t lastEv=15){
+void AnalyzeSDDNoiseAllMod(Int_t nrun, Int_t n2, Char_t* dir="LHC08d_SDD",Int_t nDDL=0, Int_t firstEv=15, Int_t lastEv=18){
   TGrid::Connect("alien:",0,0,"t");
   Char_t filnam[200];
-  sprintf(filnam,"alien:///alice/data/2008/LHC08c_SDD/%09d/raw/08%09d%03d.10.root",nrun,nrun,n2);
+  sprintf(filnam,"alien:///alice/data/2008/%s/%09d/raw/08%09d%03d.10.root",dir,nrun,nrun,n2);
   printf("Open file %s\n",filnam);
   AnalyzeSDDNoiseAllMod(filnam,nDDL,firstEv,lastEv);
 }

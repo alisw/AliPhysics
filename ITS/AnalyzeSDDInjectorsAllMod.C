@@ -59,10 +59,11 @@ void AnalyzeSDDInjectorsAllMod(Char_t *datafil, Int_t nDDL, Int_t firstEv=10, In
   }
   TGraph *gvvsmod0=new TGraph(0);
   TGraph *gvvsmod1=new TGraph(0);
+  TH1F* hanst=new TH1F("hanst","",8,-0.5,7.5);
 
-  TCanvas* c0 = new TCanvas("c0","",900,900);
+  TCanvas* c0 = new TCanvas("c0","Event display",900,900);
   gStyle->SetPalette(1);
-  TCanvas* c1 = new TCanvas("c1","",900,900);
+  TCanvas* c1 = new TCanvas("c1","Drift Speed vs. anode",900,900);
   Char_t text[50];
 
   Int_t iev=firstEv;
@@ -114,11 +115,17 @@ void AnalyzeSDDInjectorsAllMod(Char_t *datafil, Int_t nDDL, Int_t firstEv=10, In
 	  anal[index]->AnalyzeEvent(histo[index]); 
 	  anal[index]->WriteToASCII(iev,timeSt,nWrittenEv[index]);
 	  nWrittenEv[index]++;
-	  if(iev==firstEv && anal[index]->GetInjPadStatus(16)>=6){
-	    Float_t vel=anal[index]->GetDriftSpeed(16);
-	    Int_t iMod=dmap->GetModuleNumber(iddl,imod);
-	    if(isid==0) gvvsmod0->SetPoint(gvvsmod0->GetN(),(Float_t)iMod,vel);
-	    if(isid==1) gvvsmod1->SetPoint(gvvsmod1->GetN(),(Float_t)iMod,vel);
+	  Int_t iMod=dmap->GetModuleNumber(iddl,imod);
+	  if(iMod!=-1 && iev==firstEv){
+	    for(Int_t ipad=0;ipad<33;ipad++){
+	      Int_t st=anal[index]->GetInjPadStatus(ipad);
+	      hanst->Fill(st);
+	    }
+	    if(anal[index]->GetInjPadStatus(16)>=6){
+	      Float_t vel=anal[index]->GetDriftSpeed(16);
+	      if(isid==0) gvvsmod0->SetPoint(gvvsmod0->GetN(),(Float_t)iMod,vel);
+	      if(isid==1) gvvsmod1->SetPoint(gvvsmod1->GetN(),(Float_t)iMod,vel);
+	    }
 	  }
 	  if(iddl==nDDL){
 	    Int_t index2=kSides*imod+isid;
@@ -159,7 +166,7 @@ void AnalyzeSDDInjectorsAllMod(Char_t *datafil, Int_t nDDL, Int_t firstEv=10, In
     printf(" --- OK\n");
   }while(rd->NextEvent()&&iev<=lastEv);
 
-  TCanvas* c8=new TCanvas("c8");
+  TCanvas* c8=new TCanvas("c8","Drift Speed vs. mod");
   gvvsmod0->SetTitle("");
   gvvsmod1->SetTitle("");
 
@@ -185,12 +192,17 @@ void AnalyzeSDDInjectorsAllMod(Char_t *datafil, Int_t nDDL, Int_t firstEv=10, In
   lin->SetLineColor(4);
   lin->Draw();
   c8->Update();
+
+  TCanvas* c9=new TCanvas("c9","Injector status");
+  hanst->Draw();
+  hanst->GetXaxis()->SetTitle("Injector pad status");
+  hanst->GetXaxis()->CenterTitle();
 }
 
-void AnalyzeSDDInjectorsAllMod(Int_t nrun, Int_t n2, Int_t nDDL=0, Int_t firstEv=10, Int_t lastEv=15){
+void AnalyzeSDDInjectorsAllMod(Int_t nrun, Int_t n2, Char_t* dir="LHC08d_SDD", Int_t nDDL=0, Int_t firstEv=15, Int_t lastEv=15){
   TGrid::Connect("alien:",0,0,"t");
   Char_t filnam[200];
-  sprintf(filnam,"alien:///alice/data/2008/LHC08c_SDD/%09d/raw/08%09d%03d.10.root",nrun,nrun,n2);
+  sprintf(filnam,"alien:///alice/data/2008/%s/%09d/raw/08%09d%03d.10.root",dir,nrun,nrun,n2);
   printf("Open file %s\n",filnam);
   AnalyzeSDDInjectorsAllMod(filnam,nDDL,firstEv,lastEv);
 }

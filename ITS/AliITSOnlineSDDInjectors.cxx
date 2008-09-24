@@ -369,10 +369,12 @@ void AliITSOnlineSDDInjectors::FindGoodInjectors(){
       for(Int_t jjj=fTbMin[jlin];jjj<fTbMax[jlin];jjj++){
 	Float_t c1=fHisto->GetBinContent(jjj,ian+1);
 	Float_t c2=fHisto->GetBinContent(jjj+1,ian+1);
-	Float_t c3=fHisto->GetBinContent(jjj+2,ian+1);
-	if(c1>fLowThreshold && c2>fHighThreshold && c3>fLowThreshold){ 
-	  fGoodInj[jpad][jlin]=1;
-	  break;
+	//	Float_t c3=fHisto->GetBinContent(jjj+2,ian+1);
+	if(c1>fLowThreshold && c2>fLowThreshold){ 
+	  if(c1>fHighThreshold || c2>fHighThreshold){
+	    fGoodInj[jpad][jlin]=1;
+	    break;
+	  }
 	}
       }
     }

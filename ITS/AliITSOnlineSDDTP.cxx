@@ -203,6 +203,8 @@ Bool_t AliITSOnlineSDDTP::WriteToROOT(TFile *fil){
   TH1F hcorn(hisnam,"",256,-0.5,255.5);
   sprintf(hisnam,"hgain%02dc%02ds%d",fDDL,fCarlos,fSide);
   TH1F hgain(hisnam,"",256,-0.5,255.5);
+  sprintf(hisnam,"htptb%02dc%02ds%d",fDDL,fCarlos,fSide);
+  TH1F htptb(hisnam,"",256,-0.5,255.5);
   for(Int_t ian=0;ian<fgkNAnodes;ian++){
     hgood.SetBinContent(ian+1,float(IsAnodeGood(ian)));
     hbase.SetBinContent(ian+1,GetAnodeBaseline(ian));
@@ -210,6 +212,7 @@ Bool_t AliITSOnlineSDDTP::WriteToROOT(TFile *fil){
     hcmn.SetBinContent(ian+1,GetAnodeCommonMode(ian));
     hcorn.SetBinContent(ian+1,GetAnodeCorrNoise(ian));
     hgain.SetBinContent(ian+1,GetChannelGain(ian));
+    htptb.SetBinContent(ian+1,GetTimeBinTPPeak(ian));
   }
   hgood.Write();
   hbase.Write();
@@ -217,6 +220,7 @@ Bool_t AliITSOnlineSDDTP::WriteToROOT(TFile *fil){
   hcmn.Write();
   hcorn.Write();
   hgain.Write();
+  htptb.Write();
   return kTRUE;
 }
 
