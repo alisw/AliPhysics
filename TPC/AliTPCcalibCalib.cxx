@@ -31,8 +31,10 @@
   gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");
   gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+")
   AliXRDPROOFtoolkit tool; 
-  TChain * chain = tool.MakeChain("esd.txt","esdTree",0,5000);
-  chain->Lookup();
+  TChain * chainCl = tool.MakeChain("calib.txt","Clusters",0,1);
+  chainCl->Lookup();
+  TChain * chainTr = tool.MakeChain("calib.txt","Tracks",0,1);
+  chainTr->Lookup();
 
 
 
@@ -52,6 +54,7 @@
 #include "AliESDfriend.h"
 #include "AliESDtrack.h"
 #include "AliTracker.h"
+#include "AliTPCClusterParam.h"
 
 #include "AliTPCcalibDB.h"
 #include "AliTPCTransform.h"
@@ -156,6 +159,16 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed){
     Int_t i[1]={cluster->GetDetector()};
     transform->Transform(x,i,0,1);
     //
+    // get position correction
+    //
+    Int_t ipad=0;
+    if (cluster->GetDetector()>35) ipad=1;
+    Float_t dy =AliTPCClusterParam::SPosCorrection(0,ipad,cluster->GetPad(),cluster->GetTimeBin(),cluster->GetZ(),cluster->GetSigmaY2(),cluster->GetSigmaZ2(),cluster->GetMax());
+    Float_t dz =AliTPCClusterParam::SPosCorrection(1,ipad,cluster->GetPad(),cluster->GetTimeBin(),cluster->GetZ(),cluster->GetSigmaY2(),cluster->GetSigmaZ2(),cluster->GetMax());
+    //x[1]-=dy;
+    //x[2]-=dz;
+
+    //
     cluster->SetX(x[0]);
     cluster->SetY(x[1]);
     cluster->SetZ(x[2]);
@@ -165,21 +178,33 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed){
 	(*cstream)<<"Clusters"<<
 	  "cl0.="<<&cl0<<
 	  "cl.="<<cluster<<
+	  "cy="<<dy<<
+	  "cz="<<dz<<
 	  "\n";
       }
     }
   }
-  Int_t ncl = seed->GetNumberOfClusters();  
+  Int_t ncl = seed->GetNumberOfClusters();
+  Double_t covar[15];
+  for (Int_t i=0;i<15;i++) covar[i]=0;
+  covar[0]=10.*10.;
+  covar[2]=10.*10.;
+  covar[5]=10.*10./(64.*64.);
+  covar[9]=10.*10./(64.*64.);
+  covar[14]=1*1;
+
   // 
   // And now do refit
   //
-  AliExternalTrackParam * trackInOld  = (AliExternalTrackParam*)track->GetTPCInnerParam();
+  AliExternalTrackParam * trackInOld  = (AliExternalTrackParam*)track->GetInnerParam();
   AliExternalTrackParam * trackOutOld = (AliExternalTrackParam*)track->GetOuterParam();
 
   AliExternalTrackParam trackIn  = *trackOutOld;
   AliExternalTrackParam trackOut = *trackInOld;
-  trackIn.ResetCovariance(10.);
-  trackOut.ResetCovariance(10.);
+  trackIn.ResetCovariance(200.);
+  trackOut.ResetCovariance(200.);
+  trackIn.AddCovariance(covar);
+  trackOut.AddCovariance(covar);
   Double_t xyz[3];
   Int_t nclIn=0,nclOut=0;
   //
