@@ -26,7 +26,11 @@
   // 3. The drift velocity and jitter is calculated event by event
   //    (see function drift velocity)
   //
-  //
+  // 4. The tracks are refitted at different sectors 
+  //    Fit model 
+  //      4.a) line
+  //      4.b) parabola
+  //      4.c) parabola with common P2 for inner and outer 
   //
   // To make laser scan the user interaction neccessary
   //
@@ -128,20 +132,56 @@ AliTPCcalibLaser::AliTPCcalibLaser():
   fDeltaPhi(336),
   fDeltaPhiP(336),
   fSignals(336),
+  //
+  fHisNclIn(0),      //->Number of clusters inner
+  fHisNclOut(0),     //->Number of clusters outer
+  fHisNclIO(0),      //->Number of cluster inner outer
+  fHisLclIn(0),      //->Level arm inner
+  fHisLclOut(0),     //->Level arm outer
+  fHisLclIO(0),      //->Number of cluster inner outer
+  fHisdEdx(0),     //->dEdx histo
+  fHisdZfit(0),     //->distance to the mirror after linear fit
+  //
+  //
+  fHisChi2YIn1(0),      //->chi2 y inner - line
+  fHisChi2YOut1(0),     //->chi2 y inner - line
+  fHisChi2YIn2(0),      //->chi2 y inner - parabola
+  fHisChi2YOut2(0),     //->chi2 y inner - parabola
+  fHisChi2YIO1(0),      //->chi2 y IO    - common
+  fHisChi2ZIn1(0),      //->chi2 z inner - line
+  fHisChi2ZOut1(0),     //->chi2 z inner - line
+  fHisChi2ZIn2(0),      //->chi2 z inner - parabola
+  fHisChi2ZOut2(0),     //->chi2 z inner - parabola
+  fHisChi2ZIO1(0),      //->chi2 z IO    - common
+  //
+  //
+  fHisPy1vP0(0),     //-> delta y   P0outer-P0inner - line
+  fHisPy2vP0(0),     //-> delta y   P0outer-P0inner - parabola
+  fHisPy3vP0(0),     //-> delta y   P0outer-P0inner - common parabola
+  fHisPy1vP1(0),     //-> delta ky  P1outer-P1inner - line
+  fHisPy2vP1(0),     //-> delta ky  P1outer-P1inner - parabola
+  fHisPy3vP1(0),     //-> delta ky  P1outer-P1inner - common parabola
+  fHisPy2vP2In(0),   //-> Curv  P2inner - parabola
+  fHisPy2vP2Out(0),  //-> Curv  P2outer - parabola
+  fHisPy3vP2IO(0),   //-> Curv  P2outerinner - common parabola
+  //
+  //
+  fHisPz1vP0(0),     //-> delta z   P0outer-P0inner - line
+  fHisPz2vP0(0),     //-> delta z   P0outer-P0inner - parabola
+  fHisPz3vP0(0),     //-> delta z   P0outer-P0inner - common parabola
+  fHisPz1vP1(0),     //-> delta kz  P1outer-P1inner - line
+  fHisPz2vP1(0),     //-> delta kz  P1outer-P1inner - parabola
+  fHisPz3vP1(0),     //-> delta kz  P1outer-P1inner - common parabola
+  fHisPz2vP2In(0),   //-> Curv  P2inner - parabola
+  fHisPz2vP2Out(0),  //-> Curv  P2outer - parabola
+  fHisPz3vP2IO(0),   //-> Curv  P2outerinner - common parabola
+  //
   fDeltaYres(336),
   fDeltaZres(336),  
-  fPol2Par2InY(336),
-  fDiffPar1InY(336),
-  fPol2Par2OutY(336),
-  fDiffPar1OutY(336),
-  fPol2Par2InZ(336),
-  fDiffPar1InZ(336),
-  fPol2Par2OutZ(336),
-  fDiffPar1OutZ(336),
   fFitAside(new TVectorD(3)),
   fFitCside(new TVectorD(3)),      
-  fEdgeXcuts(5),    
-  fEdgeYcuts(5),    
+  fEdgeXcuts(3),    
+  fEdgeYcuts(3),    
   fNClCuts(5),      
   fNcuts(0),        
   fRun(0),
@@ -161,26 +201,66 @@ AliTPCcalibLaser::AliTPCcalibLaser(const Text_t *name, const Text_t *title):
   fTracksEsd(336),
   fTracksEsdParam(336),
   fTracksTPC(336),
+  //
   fDeltaZ(336),          // array of histograms of delta z for each track
   fDeltaP3(336),          // array of histograms of delta z for each track
   fDeltaP4(336),          // array of histograms of P3 for each track
   fDeltaPhi(336),          // array of histograms of P4 for each track
   fDeltaPhiP(336),          // array of histograms of delta z for each track
   fSignals(336),           // array of dedx signals
+  //
+  //
+  fHisNclIn(0),      //->Number of clusters inner
+  fHisNclOut(0),     //->Number of clusters outer
+  fHisNclIO(0),      //->Number of cluster inner outer
+  fHisLclIn(0),      //->Level arm inner
+  fHisLclOut(0),     //->Level arm outer
+  fHisLclIO(0),      //->Number of cluster inner outer
+  fHisdEdx(0), //->dEdx histo  
+  fHisdZfit(0),     //->distance to the mirror after linear fit
+  //
+  //
+  fHisChi2YIn1(0),      //->chi2 y inner - line
+  fHisChi2YOut1(0),     //->chi2 y inner - line
+  fHisChi2YIn2(0),      //->chi2 y inner - parabola
+  fHisChi2YOut2(0),     //->chi2 y inner - parabola
+  fHisChi2YIO1(0),      //->chi2 y IO    - common
+  fHisChi2ZIn1(0),      //->chi2 z inner - line
+  fHisChi2ZOut1(0),     //->chi2 z inner - line
+  fHisChi2ZIn2(0),      //->chi2 z inner - parabola
+  fHisChi2ZOut2(0),     //->chi2 z inner - parabola
+  fHisChi2ZIO1(0),      //->chi2 z IO    - common
+  //
+  //
+  fHisPy1vP0(0),     //-> delta y   P0outer-P0inner - line
+  fHisPy2vP0(0),     //-> delta y   P0outer-P0inner - parabola
+  fHisPy3vP0(0),     //-> delta y   P0outer-P0inner - common parabola
+  fHisPy1vP1(0),     //-> delta ky  P1outer-P1inner - line
+  fHisPy2vP1(0),     //-> delta ky  P1outer-P1inner - parabola
+  fHisPy3vP1(0),     //-> delta ky  P1outer-P1inner - common parabola
+  fHisPy2vP2In(0),   //-> Curv  P2inner - parabola
+  fHisPy2vP2Out(0),  //-> Curv  P2outer - parabola
+  fHisPy3vP2IO(0),   //-> Curv  P2outerinner - common parabola
+  //
+  //
+  fHisPz1vP0(0),     //-> delta z   P0outer-P0inner - line
+  fHisPz2vP0(0),     //-> delta z   P0outer-P0inner - parabola
+  fHisPz3vP0(0),     //-> delta z   P0outer-P0inner - common parabola
+  fHisPz1vP1(0),     //-> delta kz  P1outer-P1inner - line
+  fHisPz2vP1(0),     //-> delta kz  P1outer-P1inner - parabola
+  fHisPz3vP1(0),     //-> delta kz  P1outer-P1inner - common parabola
+  fHisPz2vP2In(0),   //-> Curv  P2inner - parabola
+  fHisPz2vP2Out(0),  //-> Curv  P2outer - parabola
+  fHisPz3vP2IO(0),   //-> Curv  P2outerinner - common parabola
+  //
+  //
+  //
   fDeltaYres(336),
   fDeltaZres(336),  
-  fPol2Par2InY(336),
-  fDiffPar1InY(336),
-  fPol2Par2OutY(336),
-  fDiffPar1OutY(336),
-  fPol2Par2InZ(336),
-  fDiffPar1InZ(336),
-  fPol2Par2OutZ(336),
-  fDiffPar1OutZ(336),
   fFitAside(new TVectorD(3)),        // drift fit - A side
   fFitCside(new TVectorD(3)),        // drift fit - C- side
-  fEdgeXcuts(5),       // cuts in local x direction; used in the refit of the laser tracks
-  fEdgeYcuts(5),       // cuts in local y direction; used in the refit of the laser tracks
+  fEdgeXcuts(3),       // cuts in local x direction; used in the refit of the laser tracks
+  fEdgeYcuts(3),       // cuts in local y direction; used in the refit of the laser tracks
   fNClCuts(5),         // cuts on the number of clusters per tracklet; used in the refit of the laser tracks
   fNcuts(0),           // number of cuts
   fRun(0),
@@ -194,10 +274,147 @@ AliTPCcalibLaser::AliTPCcalibLaser(const Text_t *name, const Text_t *title):
   fTracksEsdParam.SetOwner(kTRUE);
 }
 
+AliTPCcalibLaser::AliTPCcalibLaser(const AliTPCcalibLaser& calibLaser):
+  AliTPCcalibBase(calibLaser), 
+  fESD(0),
+  fESDfriend(0),
+  fTracksMirror(336),
+  fTracksEsd(336),
+  fTracksEsdParam(336),
+  fTracksTPC(336),
+  //
+  fDeltaZ(calibLaser.fDeltaZ),          // array of histograms of delta z for each track
+  fDeltaP3(((calibLaser.fDeltaP3))),          // array of histograms of delta z for each track
+  fDeltaP4(((calibLaser.fDeltaP4))),          // array of histograms of P3 for each track
+  fDeltaPhi(((calibLaser.fDeltaPhi))),          // array of histograms of P4 for each track
+  fDeltaPhiP(((calibLaser.fDeltaPhiP))),          // array of histograms of delta z for each track
+  fSignals(((calibLaser.fSignals))),           // array of dedx signals
+  //
+  //
+  fHisNclIn(new TH2F(*(calibLaser.fHisNclIn))),      //->Number of clusters inner
+  fHisNclOut(new TH2F(*(calibLaser.fHisNclOut))),     //->Number of clusters outer
+  fHisNclIO(new TH2F(*(calibLaser.fHisNclIO))),      //->Number of cluster inner outer
+  fHisLclIn(new TH2F(*(calibLaser.fHisLclIn))),      //->Level arm inner
+  fHisLclOut(new TH2F(*(calibLaser.fHisLclOut))),     //->Level arm outer
+  fHisLclIO(new TH2F(*(calibLaser.fHisLclIO))),      //->Number of cluster inner outer
+  fHisdEdx(new TH2F(*(calibLaser.fHisdEdx))),      //
+  fHisdZfit(new TH2F(*(calibLaser.fHisdZfit))),     //->distance to the mirror after linear fit
+  //
+  //
+  fHisChi2YIn1(new TH2F(*(calibLaser.fHisChi2YIn1))),      //->chi2 y inner - line
+  fHisChi2YOut1(new TH2F(*(calibLaser.fHisChi2YOut1))),     //->chi2 y inner - line
+  fHisChi2YIn2(new TH2F(*(calibLaser.fHisChi2YIn2))),      //->chi2 y inner - parabola
+  fHisChi2YOut2(new TH2F(*(calibLaser.fHisChi2YOut2))),     //->chi2 y inner - parabola
+  fHisChi2YIO1(new TH2F(*(calibLaser.fHisChi2YIO1))),      //->chi2 y IO    - common
+  fHisChi2ZIn1(new TH2F(*(calibLaser.fHisChi2ZIn1))),      //->chi2 z inner - line
+  fHisChi2ZOut1(new TH2F(*(calibLaser.fHisChi2ZOut1))),     //->chi2 z inner - line
+  fHisChi2ZIn2(new TH2F(*(calibLaser.fHisChi2ZIn2))),      //->chi2 z inner - parabola
+  fHisChi2ZOut2(new TH2F(*(calibLaser.fHisChi2ZOut2))),     //->chi2 z inner - parabola
+  fHisChi2ZIO1(new TH2F(*(calibLaser.fHisChi2ZIO1))),      //->chi2 z IO    - common
+  //
+  //
+  fHisPy1vP0(new TH2F(*(calibLaser.fHisPy1vP0))),     //-> delta y   P0outer-P0inner - line
+  fHisPy2vP0(new TH2F(*(calibLaser.fHisPy2vP0))),     //-> delta y   P0outer-P0inner - parabola
+  fHisPy3vP0(new TH2F(*(calibLaser.fHisPy3vP0))),     //-> delta y   P0outer-P0inner - common parabola
+  fHisPy1vP1(new TH2F(*(calibLaser.fHisPy1vP1))),     //-> delta ky  P1outer-P1inner - line
+  fHisPy2vP1(new TH2F(*(calibLaser.fHisPy2vP1))),     //-> delta ky  P1outer-P1inner - parabola
+  fHisPy3vP1(new TH2F(*(calibLaser.fHisPy3vP1))),     //-> delta ky  P1outer-P1inner - common parabola
+  fHisPy2vP2In(new TH2F(*(calibLaser.fHisPy2vP2In))),   //-> Curv  P2inner - parabola
+  fHisPy2vP2Out(new TH2F(*(calibLaser.fHisPy2vP2Out))),  //-> Curv  P2outer - parabola
+  fHisPy3vP2IO(new TH2F(*(calibLaser.fHisPy3vP2IO))),   //-> Curv  P2outerinner - common parabola
+  //
+  //
+  fHisPz1vP0(new TH2F(*(calibLaser.fHisPz1vP0))),     //-> delta z   P0outer-P0inner - line
+  fHisPz2vP0(new TH2F(*(calibLaser.fHisPz2vP0))),     //-> delta z   P0outer-P0inner - parabola
+  fHisPz3vP0(new TH2F(*(calibLaser.fHisPz3vP0))),     //-> delta z   P0outer-P0inner - common parabola
+  fHisPz1vP1(new TH2F(*(calibLaser. fHisPz1vP1))),     //-> delta kz  P1outer-P1inner - line
+  fHisPz2vP1(new TH2F(*(calibLaser.fHisPz2vP1))),     //-> delta kz  P1outer-P1inner - parabola
+  fHisPz3vP1(new TH2F(*(calibLaser.fHisPz3vP1))),     //-> delta kz  P1outer-P1inner - common parabola
+  fHisPz2vP2In(new TH2F(*(calibLaser.fHisPz2vP2In))),   //-> Curv  P2inner - parabola
+  fHisPz2vP2Out(new TH2F(*(calibLaser. fHisPz2vP2Out))),  //-> Curv  P2outer - parabola
+  fHisPz3vP2IO(new TH2F(*(calibLaser.fHisPz3vP2IO))),   //-> Curv  P2outerinner - common parabola
+  //
+  //
+  fDeltaYres(((calibLaser.fDeltaYres))),
+  fDeltaZres(((calibLaser.fDeltaZres))),  
+  fFitAside(new TVectorD(3)),        // drift fit - A side
+  fFitCside(new TVectorD(3)),        // drift fit - C- side
+  fEdgeXcuts(3),       // cuts in local x direction; used in the refit of the laser tracks
+  fEdgeYcuts(3),       // cuts in local y direction; used in the refit of the laser tracks
+  fNClCuts(5),         // cuts on the number of clusters per tracklet; used in the refit of the laser tracks
+  fNcuts(0),           // number of cuts
+  fRun(0),             // run number
+  fEvent(0)            // current eventnumber
+{
+  //
+  // copy constructor
+  //
+}
+
+
+
+AliTPCcalibLaser & AliTPCcalibLaser::operator=(const AliTPCcalibLaser& calibLaser){
+  //
+  // assgnment operator
+  //
+  if (this != &calibLaser) {
+    new (this) AliTPCcalibLaser(calibLaser);
+  }
+  return *this;
+
+}
+
+
+
+
 AliTPCcalibLaser::~AliTPCcalibLaser() {
   //
   // destructor
   //
+  if ( fHisNclIn){
+    delete fHisNclIn;      //->Number of clusters inner
+    delete fHisNclOut;     //->Number of clusters outer
+    delete fHisNclIO;      //->Number of cluster inner outer
+    delete fHisLclIn;      //->Level arm inner
+    delete fHisLclOut;     //->Level arm outer
+    delete fHisLclIO;      //->Number of cluster inner outer
+    delete fHisdEdx;
+    delete fHisdZfit;     
+    //
+    //
+    delete fHisChi2YIn1;      //->chi2 y inner - line
+    delete fHisChi2YOut1;     //->chi2 y inner - line
+    delete fHisChi2YIn2;      //->chi2 y inner - parabola
+    delete fHisChi2YOut2;     //->chi2 y inner - parabola
+    delete fHisChi2YIO1;      //->chi2 y IO    - common
+    delete fHisChi2ZIn1;      //->chi2 z inner - line
+    delete fHisChi2ZOut1;     //->chi2 z inner - line
+    delete fHisChi2ZIn2;      //->chi2 z inner - parabola
+    delete fHisChi2ZOut2;     //->chi2 z inner - parabola
+    delete fHisChi2ZIO1;      //->chi2 z IO    - common
+    //
+    //
+    delete fHisPy1vP0;     //-> delta y   P0outer-P0inner - line
+    delete fHisPy2vP0;     //-> delta y   P0outer-P0inner - parabola
+    delete fHisPy3vP0;     //-> delta y   P0outer-P0inner - common parabola
+    delete fHisPy1vP1;     //-> delta ky  P1outer-P1inner - line
+    delete fHisPy2vP1;     //-> delta ky  P1outer-P1inner - parabola
+    delete fHisPy3vP1;     //-> delta ky  P1outer-P1inner - common parabola
+    delete fHisPy2vP2In;   //-> Curv  P2inner - parabola
+    delete fHisPy2vP2Out;  //-> Curv  P2outer - parabola
+    delete fHisPy3vP2IO;   //-> Curv  P2outerinner - common parabola
+    //
+    //
+    delete fHisPz1vP0;     //-> delta z   P0outer-P0inner - line
+    delete fHisPz2vP0;     //-> delta z   P0outer-P0inner - parabola
+    delete fHisPz3vP0;     //-> delta z   P0outer-P0inner - common parabola
+    delete fHisPz1vP1;     //-> delta kz  P1outer-P1inner - line
+    delete fHisPz2vP1;     //-> delta kz  P1outer-P1inner - parabola
+    delete fHisPz3vP1;     //-> delta kz  P1outer-P1inner - common parabola
+    delete fHisPz2vP2In;   //-> Curv  P2inner - parabola
+    delete fHisPz2vP2Out;  //-> Curv  P2outer - parabola
+    delete fHisPz3vP2IO;   //-> Curv  P2outerinner - common parabola
+  }
 }
 
 
@@ -219,6 +436,16 @@ void AliTPCcalibLaser::Process(AliESDEvent * event) {
   fTracksTPC.Clear();
   fTracksEsd.Clear();
   fTracksEsdParam.Delete();
+  for (Int_t id=0; id<336;id++) {
+    fCounter[id]=0;
+    fClusterCounter[id]=0;
+    fClusterSatur[id]=0;
+  }
+  static Bool_t init=kFALSE;
+  if (!init){
+    init = kTRUE;  // way around for PROOF - to be investigated
+    MakeFitHistos();
+  }
   //
   Int_t n=fESD->GetNumberOfTracks();
   Int_t run = fESD->GetRunNumber();
@@ -231,34 +458,36 @@ void AliTPCcalibLaser::Process(AliESDEvent * event) {
     for (Int_t j=0;(calibObject=friendTrack->GetCalibObject(j));++j)
       if ((seed=dynamic_cast<AliTPCseed*>(calibObject)))
 	break;
-    if (track&&seed) FindMirror(track,seed);
+    if (track&&seed) {
+      FindMirror(track,seed);
+    }
     //
-  }
-
+  }  
   FitDriftV();
-  MakeDistHisto();
   //
-  for (Int_t id=0; id<336; id++){
-    //
+  for (Int_t id=0; id<336; id++){    
     //
     if (!fTracksEsdParam.At(id)) continue;
+    if (fClusterSatur[id]>0.3)   continue;  // tracks in saturation
     DumpLaser(id);
-//    RefitLaser(id);
-    RefitLaserJW(id);
-
+    if ( AcceptLaser(id) && fFitZ[id]<0.5){
+      RefitLaserJW(id);    
+      MakeDistHisto(id);
+    }
   }
-//  fEvent++;
+
+ fEvent++;
 }
 
-void AliTPCcalibLaser::MakeDistHisto(){
+void AliTPCcalibLaser::MakeDistHisto(Int_t id){
   //
   //
   //
-  for (Int_t id=0; id<336; id++){
+  //  for (Int_t id=0; id<336; id++){
     //
     //
-    if (!fTracksEsdParam.At(id)) continue;
-    if (!AcceptLaser(id)) continue;
+    if (!fTracksEsdParam.At(id)) return;
+    if (!AcceptLaser(id)) return;
     //
     //
     TH1F * hisdz = (TH1F*)fDeltaZ.At(id);
@@ -319,74 +548,152 @@ void AliTPCcalibLaser::MakeDistHisto(){
     if (hisdphi) hisdphi->Fill(dphi);
     if (hisdphiP) hisdphiP->Fill(dphiP);
     if (hisSignal) hisSignal->Fill(TMath::Sqrt(TMath::Abs(track->GetTPCsignal())));
-  }
+    // }
 }
 
 void AliTPCcalibLaser::FitDriftV(){
   //
   // Fit drift velocity - linear approximation in the z and global y
   //
+  Float_t kDistCut           = 4;      // cut on distance to the fitted value
+  const Float_t kZCut        = 200;    // remove the closest laser beam
+  const Float_t kSaturCut    = 0.05;   // remove saturated lasers - cut on fraction of saturated 
+  const Float_t kMinClusters = 60;  // minimal amount of the clusters
+  const Float_t kMinSignal   = 16;  // minimal mean height of the signal
+  const Float_t kChi2Cut     = 0.1; // chi2 cut to accept drift fit
   static TLinearFitter fdriftA(3,"hyp2");
   static TLinearFitter fdriftC(3,"hyp2");
-  fdriftA.ClearPoints();
-  fdriftC.ClearPoints();
-  //
-  for (Int_t id=0; id<336; id++){
-    if (!fTracksEsdParam.At(id)) continue;
-    if (!AcceptLaser(id)) continue;
-    AliExternalTrackParam *param=(AliExternalTrackParam*)fTracksEsdParam.At(id);
-    AliTPCLaserTrack *ltrp = ( AliTPCLaserTrack*)fTracksMirror.At(id);
-    Double_t xyz[3];
-    Double_t pxyz[3];
-    Double_t lxyz[3];
-    Double_t lpxyz[3];
-    param->GetXYZ(xyz);
-    param->GetPxPyPz(pxyz);
-    ltrp->GetXYZ(lxyz);
-    ltrp->GetPxPyPz(lpxyz);
-    Double_t xxx[2] = {lxyz[2],lxyz[1]};
-    if (ltrp->GetSide()==0){
-      fdriftA.AddPoint(xxx,xyz[2],1);
-    }else{
-      fdriftC.AddPoint(xxx,xyz[2],1);
-    }
-  }
-  Float_t chi2A = 0;
-  Float_t chi2C = 0;
-  Int_t npointsA=0;
-  Int_t npointsC=0;
-  //
-  if (fdriftA.GetNpoints()>10){
-    fdriftA.Eval();
-    fdriftA.EvalRobust(0.8);
-    fdriftA.GetParameters(*fFitAside);
-    npointsA= fdriftA.GetNpoints();
-    chi2A = fdriftA.GetChisquare()/fdriftA.GetNpoints();
-  }
-  if (fdriftC.GetNpoints()>10){
-    fdriftC.Eval();
-    fdriftC.EvalRobust(0.8);
-    fdriftC.GetParameters(*fFitCside);
-    npointsC= fdriftC.GetNpoints();
-    chi2C = fdriftC.GetChisquare()/fdriftC.GetNpoints();
-  }
+  static TLinearFitter fdriftA1(2,"hyp1");
+  static TLinearFitter fdriftC1(2,"hyp1");
+  TVectorD fitA(3),fitC(3);
 
-  if (fStreamLevel>0){
-    TTreeSRedirector *cstream = GetDebugStreamer();
-    Int_t time = fESD->GetTimeStamp();
-    if (cstream){
-      (*cstream)<<"driftv"<<
-	"driftA.="<<fFitAside<<
-	"driftC.="<<fFitCside<<
-	"chi2A="<<chi2A<<
-	"chi2C="<<chi2C<<
-	"nA="<<npointsA<<
-	"nC="<<npointsC<<
-	"time="<<time<<
-	"\n";
+  for (Int_t id=0; id<336; id++) fFitZ[id]=0;
+
+
+  for (Int_t iter=0; iter<2; iter++){
+    fdriftA.ClearPoints();
+    fdriftC.ClearPoints();
+    fdriftA1.ClearPoints();
+    fdriftC1.ClearPoints();
+    //
+    for (Int_t id=0; id<336; id++){
+      if (!fTracksEsdParam.At(id)) continue;
+      if (!AcceptLaser(id)) continue;
+      if (TMath::Abs(fFitZ[id])>kDistCut-iter) continue;
+      if ( fClusterSatur[id]>kSaturCut)  continue;
+      if ( fClusterCounter[id]<kMinClusters)  continue;
+
+      AliExternalTrackParam *param=(AliExternalTrackParam*)fTracksEsdParam.At(id);
+      AliTPCLaserTrack *ltrp = ( AliTPCLaserTrack*)fTracksMirror.At(id);
+      Double_t xyz[3];
+      Double_t pxyz[3];
+      Double_t lxyz[3];
+      Double_t lpxyz[3];
+      param->GetXYZ(xyz);
+      param->GetPxPyPz(pxyz);
+      ltrp->GetXYZ(lxyz);
+      ltrp->GetPxPyPz(lpxyz);
+      if (TMath::Abs(lxyz[2])>kZCut) continue;
+      Double_t xxx[2] = {lxyz[2],lxyz[1]};
+      if (ltrp->GetSide()==0){
+	fdriftA1.AddPoint(xxx,xyz[2],1);
+	fdriftA.AddPoint(xxx,xyz[2],1);
+      }else{
+	fdriftC1.AddPoint(xxx,xyz[2],1);
+	fdriftC.AddPoint(xxx,xyz[2],1);
+      }
+    }
+    Float_t chi2A = 0;
+    Float_t chi2C = 0;
+    Int_t npointsA=0;
+    Int_t npointsC=0;
+    //
+    if (fdriftA.GetNpoints()>10){
+      fdriftA.Eval();
+      fdriftA.GetParameters(fitA);
+      npointsA= fdriftA.GetNpoints();
+      chi2A = fdriftA.GetChisquare()/fdriftA.GetNpoints();
+      if (chi2A<kChi2Cut ||(*fFitAside)[0]==0 ) (*fFitAside) = fitA;
+    }
+    if (fdriftC.GetNpoints()>10){
+      fdriftC.Eval();
+      fdriftC.GetParameters(fitC);
+      npointsC= fdriftC.GetNpoints();
+      chi2C = fdriftC.GetChisquare()/fdriftC.GetNpoints();
+      if (chi2C<kChi2Cut||(*fFitCside)[0]==0) (*fFitCside) = fitC;
+    }
+    
+    for (Int_t id=0; id<336; id++){
+      if (!fTracksEsdParam.At(id)) continue;
+      //
+      AliExternalTrackParam *param=(AliExternalTrackParam*)fTracksEsdParam.At(id);
+      AliTPCLaserTrack *ltrp = ( AliTPCLaserTrack*)fTracksMirror.At(id);
+      Double_t xyz[3];
+      Double_t pxyz[3];
+      Double_t lxyz[3];
+      Double_t lpxyz[3];
+      param->GetXYZ(xyz);
+      param->GetPxPyPz(pxyz);
+      ltrp->GetXYZ(lxyz);
+      ltrp->GetPxPyPz(lpxyz);
+      Float_t fz =0;
+      if (ltrp->GetSide()==0){
+	fz = (fitA)[0]+(fitA)[1]*lxyz[2]+(fitA)[2]*lxyz[1];
+      }else{
+	fz = (fitC)[0]+(fitC)[1]*lxyz[2]+(fitC)[2]*lxyz[1];	
+      }
+      fFitZ[id]=xyz[2]-fz;
+    }
+    if (fStreamLevel>0){
+      TTreeSRedirector *cstream = GetDebugStreamer();
+      Int_t time = fESD->GetTimeStamp();
+      if (cstream){
+	(*cstream)<<"driftv"<<	    
+	  "iter="<<iter<<
+	  "driftA.="<<fFitAside<<
+	  "driftC.="<<fFitCside<<
+	  "chi2A="<<chi2A<<
+	  "chi2C="<<chi2C<<
+	  "nA="<<npointsA<<
+	  "nC="<<npointsC<<
+	  "time="<<time<<
+	  "\n";
+      }
     }
   }
+}
+
+Float_t AliTPCcalibLaser::GetDistance(AliExternalTrackParam *param, AliTPCLaserTrack *ltrp){
   //
+  // get distance between mirror and laser track
+  //
+  //
+  Double_t xyz[3];
+  Double_t lxyz[3];
+  param->GetXYZ(xyz);
+  ltrp->GetXYZ(lxyz);
+  //
+  //
+  Double_t dist = 0;
+  //radial distance
+  dist+=TMath::Abs((TMath::ATan2(xyz[1],xyz[0])-TMath::ATan2(lxyz[1],lxyz[0]))*param->GetX());
+  //
+  // z distance
+  // apply drift correction if already exist
+  //
+  Float_t dz = 0;
+  if (ltrp->GetSide()==0){
+    if ((*fFitAside)[1]>0.) dz = ((*fFitAside)[0]+(*fFitAside)[1]*lxyz[2]+(*fFitAside)[2]*lxyz[1])-xyz[2];
+  }else{
+    if ((*fFitCside)[1]>0.) dz = ((*fFitCside)[0]+(*fFitCside)[1]*lxyz[2]+(*fFitCside)[2]*lxyz[1])-xyz[2];
+  }
+  if (TMath::Abs(dz)>3*(TMath::Abs(lxyz[2]-xyz[2])+1)) dz= TMath::Abs(lxyz[2]-xyz[2]);
+  dist+=TMath::Abs(dz);
+  //
+  // phi dist - divergence on 50 cm
+  //
+  dist = TMath::Abs((param->GetParameter()[2]-ltrp->GetParameter()[2])*50);
+  return dist;
 }
 
 
@@ -395,7 +702,7 @@ Bool_t  AliTPCcalibLaser::AcceptLaser(Int_t id){
   //
   //
   /*
-  TCut cutP0("cutP0","abs(atan2(x1,x0)-atan2(lx1,lx0))<0.03");
+  TCut cutP0("cutP0","abs((atan2(x1,x0)-atan2(lx1,lx0))*254)<1.5");
   TCut cutP1("cutP1","abs(LTr.fP[1]-Tr.fP[1])<30");
   TCut cutP2("cutP2","abs(LTr.fP[2]-Tr.fP[2])<0.03");
   TCut cutP3("cutP3","abs(Tr.fP[3])<0.05");
@@ -410,7 +717,7 @@ Bool_t  AliTPCcalibLaser::AcceptLaser(Int_t id){
   Double_t lxyz[3];
   param->GetXYZ(xyz);
   ltrp->GetXYZ(lxyz);
-  if (TMath::Abs(TMath::ATan2(xyz[1],xyz[0])-TMath::ATan2(lxyz[1],lxyz[0]))>0.03) return kFALSE; //cut y- P0
+  if (TMath::Abs((TMath::ATan2(xyz[1],xyz[0])-TMath::ATan2(lxyz[1],lxyz[0]))*254)>1.5) return kFALSE; //cut y- P0
   if (TMath::Abs(param->GetParameter()[1]-ltrp->GetParameter()[1])>30) return kFALSE;    // cutZ -P1
   if (TMath::Abs(param->GetParameter()[2]-ltrp->GetParameter()[2])>0.03) return kFALSE;  // cut -P2
   if (TMath::Abs(param->GetParameter()[3])>0.05) return kFALSE;   // cut Tl -P3
@@ -445,20 +752,49 @@ Int_t  AliTPCcalibLaser::FindMirror(AliESDtrack *track, AliTPCseed *seed){
   else
     ltrp=&ltr;
 
-
-  if (id>=0){
-    //
-    //
-    Float_t radius=TMath::Abs(ltrp->GetX());
-    AliTracker::PropagateTrackTo(&param,radius,0.10566,0.01,kTRUE);
-    //
-    if (!fTracksMirror.At(id)) fTracksMirror.AddAt(ltrp,id);
+  if (id<0) return id;
+  fCounter[id]++;
+  //
+  //
+  //
+  Int_t countercl=0;
+  Float_t counterSatur=0;
+  for (Int_t irow=158;irow>-1;--irow) {
+    AliTPCclusterMI *c=seed->GetClusterPointer(irow);
+    if (!c) continue;
+    Double_t pedgeY = c->GetX()*TMath::DegToRad()*(10)-TMath::Abs(c->GetY());
+    Double_t pedgeX = TMath::Min((irow)*0.75, (159.-irow)*1.5);
+    if (pedgeY<3) continue;
+    if (pedgeX<3) continue;
+    countercl++;
+    if (c->GetMax()>900) counterSatur++;
+  }
+  counterSatur/=(countercl+1);
+  //
+  if (counterSatur>fClusterSatur[id]) fClusterSatur[id]=counterSatur;
+  //
+  //
+  Float_t radius=TMath::Abs(ltrp->GetX());
+  AliTracker::PropagateTrackTo(&param,radius,0.10566,0.01,kTRUE);
+  //
+  if (!fTracksMirror.At(id)) fTracksMirror.AddAt(ltrp,id);
+  Bool_t accept=kTRUE;  
+  //
+  // choose closer track
+  //
+  AliExternalTrackParam * param0  = (AliExternalTrackParam *)fTracksEsdParam.At(id);
+  if (param0){
+    Float_t dist0=GetDistance(param0,ltrp);
+    Float_t dist1=GetDistance(&param,ltrp);
+    if (dist0<dist1)    accept=kFALSE;       
+  }
+  
+  if (accept){
+    fClusterCounter[id]=countercl;
     fTracksEsdParam.AddAt(param.Clone(),id);
     fTracksEsd.AddAt(track,id);
     fTracksTPC.AddAt(seed,id);
-    //
   }
-
   return id;
 }
 
@@ -482,7 +818,11 @@ void AliTPCcalibLaser::DumpLaser(Int_t id) {
   param->GetPxPyPz(pxyz);
   ltrp->GetXYZ(lxyz);
   ltrp->GetPxPyPz(lpxyz);
-
+  Float_t dist3D   = GetDistance(param,ltrp);
+  Float_t dist0    = (TMath::ATan2(xyz[1],xyz[0])-TMath::ATan2(lxyz[1],lxyz[0]))*param->GetX();
+  Float_t distphi  = (param->GetParameter()[2]-ltrp->GetParameter()[2])*50;
+  
+  
   if (fStreamLevel>0){
     TTreeSRedirector *cstream = GetDebugStreamer();
     Int_t time = fESD->GetTimeStamp();
@@ -495,6 +835,15 @@ void AliTPCcalibLaser::DumpLaser(Int_t id) {
 	"driftA.="<<fFitAside<<
 	"driftC.="<<fFitCside<<
 	"time="<<time<<
+	"dist3D="<<dist3D<<
+	"dist0="<<dist0<<
+	"distphi="<<distphi<<
+	//
+	//
+	"counter="<<fCounter[id]<<
+	"clcounter="<<fClusterCounter[id]<<
+	"satur="<<fClusterSatur[id]<<
+	"fz="<<fFitZ[id]<<
 	//
         "LTr.="<<ltrp<<
 	"Esd.="<<track<<
@@ -526,6 +875,7 @@ void AliTPCcalibLaser::RefitLaserJW(Int_t id){
   // 4. Per track offset for each sector, linear for each sector, common quadratic
   // store x, y, z information for all models and the cluster to calculate the residuals
   //
+  
   AliTPCseed *track      = (AliTPCseed*)fTracksTPC.At(id);
   AliExternalTrackParam *extparam=(AliExternalTrackParam*)fTracksEsdParam.At(id);
   AliTPCLaserTrack *ltrp = (AliTPCLaserTrack*)fTracksMirror.At(id);
@@ -563,6 +913,10 @@ void AliTPCcalibLaser::RefitLaserJW(Int_t id){
   // Loop over all Tracklet Cuts //
   //=============================//
   for (Int_t icut=0; icut<fNcuts; icut++){
+    Float_t xinMin = 250, xinMax=90;
+    Float_t xoutMin=250, xoutMax=90;
+
+
       AliDebug(4,Form("Processing cut %d for track with ID %d",icut,id));
       //cut parameters
       Double_t edgeCutX = fEdgeXcuts[icut];
@@ -592,16 +946,16 @@ void AliTPCcalibLaser::RefitLaserJW(Int_t id){
       TVectorD vecClZ(159);      // z cluster position
       TVectorD vecSec(159);      // sector for each row
       //chi2 of fits
-      Double_t chi2I1z=-1;       // chi2 of pol1 fit in z (inner)
-      Double_t chi2I1y=-1;       // chi2 of pol1 fit in y (inner)
-      Double_t chi2O1z=-1;       // chi2 of pol1 fit in z (outer)
-      Double_t chi2O1y=-1;       // chi2 of pol1 fit in y (outer)
-      Double_t chi2I2z=-1;       // chi2 of pol2 fit in z (inner)
-      Double_t chi2I2y=-1;       // chi2 of pol2 fit in y (inner)
-      Double_t chi2O2z=-1;       // chi2 of pol2 fit in z (outer)
-      Double_t chi2O2y=-1;       // chi2 of pol2 fit in y (outer)
-      Double_t chi2IOz=-1;       // chi2 of hyp4 fit in z (inner+outer)
-      Double_t chi2IOy=-1;       // chi2 of hyp4 fit in y (inner+outer)
+      Double_t chi2I1z=0;       // chi2 of pol1 fit in z (inner)
+      Double_t chi2I1y=0;       // chi2 of pol1 fit in y (inner)
+      Double_t chi2O1z=0;       // chi2 of pol1 fit in z (outer)
+      Double_t chi2O1y=0;       // chi2 of pol1 fit in y (outer)
+      Double_t chi2I2z=0;       // chi2 of pol2 fit in z (inner)
+      Double_t chi2I2y=0;       // chi2 of pol2 fit in y (inner)
+      Double_t chi2O2z=0;       // chi2 of pol2 fit in z (outer)
+      Double_t chi2O2y=0;       // chi2 of pol2 fit in y (outer)
+      Double_t chi2IOz=0;       // chi2 of hyp4 fit in z (inner+outer)
+      Double_t chi2IOy=0;       // chi2 of hyp4 fit in y (inner+outer)
       //more
       Int_t innerSector = -1;    // number of inner sector
       Int_t outerSector = -1;    // number of outer sector
@@ -665,10 +1019,28 @@ void AliTPCcalibLaser::RefitLaserJW(Int_t id){
 	  AliTPCclusterMI *c=track->GetClusterPointer(irow);
 	  AliTPCclusterMI &cl = (AliTPCclusterMI&) (*arrCl[irow]);
 	  cl=dummyCl;
+	  vecX[irow]   = 0;
+	  vecClY[irow] = 0;
+	  vecClZ[irow] = 0;
+	  Float_t meanY=0, sumY=0;
+	  for (Int_t drow=-1;drow<=1;drow++) {
+	    if (irow+drow<0) continue;
+	    if (irow+drow>158) continue;
+	    AliTPCclusterMI *c=track->GetClusterPointer(irow);
+	    if (!c) continue;
+	    Int_t roc = static_cast<Int_t>(c->GetDetector());
+	    if ( roc!=innerSector && roc!=outerSector ) continue;
+	    if (c->GetX()<10) continue;
+	    if (c->GetY()==0) continue;
+	    meanY+=c->GetY();
+	    sumY++;
+	  }
+	  if (sumY>0)  meanY/=sumY; 
+	 
           //
           vecSec[irow]=-1;
 	  if (!c) continue;
-	  Double_t pedgeY = c->GetX()*TMath::DegToRad()*(10)-TMath::Abs(c->GetY());
+	  Double_t pedgeY = c->GetX()*TMath::DegToRad()*(10)-TMath::Abs(meanY);
 	  Double_t pedgeX = TMath::Min((irow)*0.75, (159.-irow)*1.5);
 	  
           //
@@ -676,7 +1048,10 @@ void AliTPCcalibLaser::RefitLaserJW(Int_t id){
 	  if ( roc!=innerSector && roc!=outerSector ) continue;
           vecSec[irow]=roc;
 	  //store clusters in clones array
-	  cl=*c;
+	  cl=*c;	  
+	  //
+	  if (c->GetMax()<4)   continue;  // noise cluster?
+	  if (TMath::Abs(c->GetY())<0.0001)   continue;  // noise cluster?
 	  //cluster position
 	  vecX[irow]   = c->GetX();
 	  vecClY[irow] = c->GetY();
@@ -697,6 +1072,7 @@ void AliTPCcalibLaser::RefitLaserJW(Int_t id){
 	  x4[3]=x*x;   //common parabolic shape
 	  if (pedgeX < fEdgeXcuts[icut]) continue;
 	  if (pedgeY < fEdgeYcuts[icut]) continue;
+	  if (c->GetMax()>900) continue;  // cluster in saturation	  
           //
 	  if ( roc==innerSector ){
 	      fy1I.AddPoint(x2,y);
@@ -704,6 +1080,8 @@ void AliTPCcalibLaser::RefitLaserJW(Int_t id){
 	      fy2I.AddPoint(x2,y);
 	      fz2I.AddPoint(x2,z);
               ++nclI;
+	      if (x<xinMin) xinMin=x;
+	      if (x>xinMax) xinMax=x;
 	  }
 	  if ( roc==outerSector ){
 	      fy1O.AddPoint(x2,y);
@@ -711,6 +1089,8 @@ void AliTPCcalibLaser::RefitLaserJW(Int_t id){
 	      fy2O.AddPoint(x2,y);
 	      fz2O.AddPoint(x2,z);
               ++nclO;
+	      if (x<xoutMin) xoutMin=x;
+	      if (x>xoutMax) xoutMax=x;
 	  }
 	  fy4.AddPoint(x4,y);
 	  fz4.AddPoint(x4,z);
@@ -827,42 +1207,46 @@ void AliTPCcalibLaser::RefitLaserJW(Int_t id){
       if (fStreamLevel>4){
 	  TTreeSRedirector *cstream = GetDebugStreamer();
 	  if (cstream){
-	      Float_t dedx = track->GetdEdx();
-	      (*cstream)<<"FitModels"<<
-		  "cutNr="      << icut <<
-                  "edgeCutX="   << edgeCutX <<
-		  "edgeCutY="   << edgeCutY <<
-		  "nclCut="     << nclCut <<
-                  "innerSector="<< innerSector <<
-		  "outerSector="<< outerSector <<
-                  "dEdx="       << dedx <<
-		  "LTr.="       << ltrp <<
-		  "Tr.="        << extparam <<
-                  "yPol1In.="   << &vecy1resInner <<
-                  "zPol1In.="   << &vecz1resInner <<
-                  "yPol2In.="   << &vecy2resInner <<
-                  "zPol2In.="   << &vecz2resInner <<
-                  "yPol1Out.="  << &vecy1resOuter <<
-                  "zPol1Out.="  << &vecz1resOuter <<
-                  "yPol2Out.="  << &vecy2resOuter <<
-                  "zPol2Out.="  << &vecz2resOuter <<
-		  "yInOut.="    << &vecy4res <<
-		  "zInOut.="    << &vecz4res <<
-                  "chi2y1In="   << chi2I1y <<
-                  "chi2z1In="   << chi2I1z <<
-                  "chi2y1Out="  << chi2O1y <<
-                  "chi2z1Out="  << chi2O1z <<
-                  "chi2y2In="   << chi2I2y <<
-                  "chi2z2In="   << chi2I2z <<
-                  "chi2y2Out="  << chi2O2y <<
-                  "chi2z2Out="  << chi2O2z <<
-                  "chi2yInOut=" << chi2IOy <<
-                  "chi2zInOut=" << chi2IOz <<
-		  "trletIn.="   << trInner <<
-		  "trletOut.="  << trOuter <<
-		  "nclI="       << nclI <<
-                  "nclO="       << nclO <<
-		  "\n";
+	    Float_t dedx = track->GetdEdx();
+	    (*cstream)<<"FitModels"<<
+	      "cutNr="      << icut <<
+	      "edgeCutX="   << edgeCutX <<
+	      "edgeCutY="   << edgeCutY <<
+	      "nclCut="     << nclCut <<
+	      "innerSector="<< innerSector <<
+	      "outerSector="<< outerSector <<
+	      "dEdx="       << dedx <<
+	      "LTr.="       << ltrp <<
+	      "Tr.="        << extparam <<
+	      "yPol1In.="   << &vecy1resInner <<
+	      "zPol1In.="   << &vecz1resInner <<
+	      "yPol2In.="   << &vecy2resInner <<
+	      "zPol2In.="   << &vecz2resInner <<
+	      "yPol1Out.="  << &vecy1resOuter <<
+	      "zPol1Out.="  << &vecz1resOuter <<
+	      "yPol2Out.="  << &vecy2resOuter <<
+	      "zPol2Out.="  << &vecz2resOuter <<
+	      "yInOut.="    << &vecy4res <<
+	      "zInOut.="    << &vecz4res <<
+	      "chi2y1In="   << chi2I1y <<
+	      "chi2z1In="   << chi2I1z <<
+	      "chi2y1Out="  << chi2O1y <<
+	      "chi2z1Out="  << chi2O1z <<
+	      "chi2y2In="   << chi2I2y <<
+	      "chi2z2In="   << chi2I2z <<
+	      "chi2y2Out="  << chi2O2y <<
+	      "chi2z2Out="  << chi2O2z <<
+	      "chi2yInOut=" << chi2IOy <<
+	      "chi2zInOut=" << chi2IOz <<
+	      "trletIn.="   << trInner <<
+	      "trletOut.="  << trOuter <<
+	      "nclI="       << nclI <<
+	      "nclO="       << nclO <<
+ 	      "xinMin="     << xinMin<<
+	      "xinMax="     << xinMax<<
+ 	      "xoutMin="    << xoutMin<<
+	      "xoutMax="     << xoutMax<<
+	      "\n";
 	  }
       }
 
@@ -870,41 +1254,45 @@ void AliTPCcalibLaser::RefitLaserJW(Int_t id){
       if (fStreamLevel>5){
 	  TTreeSRedirector *cstream = GetDebugStreamer();
 	  if (cstream){
-	      Float_t dedx = track->GetdEdx();
-	      (*cstream)<<"Residuals"<<
-		  "cutNr="      << icut <<
-                  "edgeCutX="   << edgeCutX <<
-		  "edgeCutY="   << edgeCutY <<
-		  "nclCut="     << nclCut   <<
-		  "LTr.="       << ltrp <<
-		  "Tr.="        << extparam<<
-		  "dEdx="       << dedx <<
-		  "Cl.="        << &arrCl <<
-		  "TrX.="       << &vecX <<
-		  "TrYpol1.="   << &vecY1 <<
-		  "TrZpol1.="   << &vecZ1 <<
-		  "TrYpol2.="   << &vecY2 <<
-		  "TrZpol2.="   << &vecZ2 <<
-		  "TrYInOut.="  << &vecY4 <<
-		  "TrZInOut.="  << &vecZ4 <<
-		  "ClY.="       << &vecClY <<
-		  "ClZ.="       << &vecClZ <<
-                  "sec.="       << &vecSec <<
-		  "nclI="       << nclI <<
-                  "nclO="       << nclO <<
-		  "yInOut.="    << &vecy4res <<
-		  "zInOut.="    << &vecz4res <<
-                  "chi2y1In="   << chi2I1y <<
-                  "chi2z1In="   << chi2I1z <<
-                  "chi2y1Out="  << chi2O1y <<
-                  "chi2z1Out="  << chi2O1z <<
-                  "chi2y2In="   << chi2I2y <<
-                  "chi2z2In="   << chi2I2z <<
-                  "chi2y2Out="  << chi2O2y <<
-                  "chi2z2Out="  << chi2O2z <<
-                  "chi2yInOut=" << chi2IOy <<
-                  "chi2zInOut=" << chi2IOz <<
-		  "\n";
+	    Float_t dedx = track->GetdEdx();
+	    (*cstream)<<"Residuals"<<
+	      "cutNr="      << icut <<
+	      "edgeCutX="   << edgeCutX <<
+	      "edgeCutY="   << edgeCutY <<
+	      "nclCut="     << nclCut   <<
+	      "LTr.="       << ltrp <<
+	      "Tr.="        << extparam<<
+	      "dEdx="       << dedx <<
+	      "Cl.="        << &arrCl <<
+	      "TrX.="       << &vecX <<
+	      "TrYpol1.="   << &vecY1 <<
+	      "TrZpol1.="   << &vecZ1 <<
+	      "TrYpol2.="   << &vecY2 <<
+	      "TrZpol2.="   << &vecZ2 <<
+	      "TrYInOut.="  << &vecY4 <<
+	      "TrZInOut.="  << &vecZ4 <<
+	      "ClY.="       << &vecClY <<
+	      "ClZ.="       << &vecClZ <<
+	      "sec.="       << &vecSec <<
+	      "nclI="       << nclI <<
+	      "nclO="       << nclO <<
+ 	      "xinMin="     << xinMin<<
+	      "xinMax="     << xinMax<<
+ 	      "xoutMin="    << xoutMin<<
+	      "xoutMax="     << xoutMax<<
+	      "yInOut.="    << &vecy4res <<
+	      "zInOut.="    << &vecz4res <<
+	      "chi2y1In="   << chi2I1y <<    //
+	      "chi2z1In="   << chi2I1z <<
+	      "chi2y1Out="  << chi2O1y <<
+	      "chi2z1Out="  << chi2O1z <<
+	      "chi2y2In="   << chi2I2y <<
+	      "chi2z2In="   << chi2I2z <<
+	      "chi2y2Out="  << chi2O2y <<
+	      "chi2z2Out="  << chi2O2z <<
+	      "chi2yInOut=" << chi2IOy <<
+	      "chi2zInOut=" << chi2IOz <<
+	      "\n";
 
 	  }
       }
@@ -914,12 +1302,12 @@ void AliTPCcalibLaser::RefitLaserJW(Int_t id){
       TProfile *profy = (TProfile*)fDeltaYres.UncheckedAt(id);
       TProfile *profz = (TProfile*)fDeltaZres.UncheckedAt(id);
       if (!profy){
-	profy=new TProfile(Form("pry%03d",id),Form("Y Residuals for Laser Beam %03d",id),115,80,250);
+	profy=new TProfile(Form("pry%03d",id),Form("Y Residuals for Laser Beam %03d",id),160,0,160);
 	profy->SetDirectory(0);
 	fDeltaYres.AddAt(profy,id);
       }
       if (!profz){
-	profz=new TProfile(Form("prz%03d",id),Form("Z Residuals for Laser Beam %03d",id),115,80,250);
+	profz=new TProfile(Form("prz%03d",id),Form("Z Residuals for Laser Beam %03d",id),160,0,160);
 	profz->SetDirectory(0);
 	fDeltaZres.AddAt(profz,id);
       }
@@ -930,180 +1318,79 @@ void AliTPCcalibLaser::RefitLaserJW(Int_t id){
 	Double_t yfit = vecY1[irow];
 	Double_t zcl  = vecClZ[irow];
 	Double_t zfit = vecZ1[irow];
-	if (profy) 
-	  if (profy->GetEntries()<1000000) 
-	    profy->Fill(x,yfit-ycl);
-	if (profz) 
-	  if (profz->GetEntries()<1000000) 
-	    profz->Fill(x,zfit-zcl);
+	if (TMath::Abs(yfit-ycl)<2&&TMath::Abs(zfit-zcl)<2){
+	  if (profy) 
+	    if (profy->GetEntries()<1000000) 
+	      profy->Fill(irow,yfit-ycl);
+	  if (profz) 
+	    if (profz->GetEntries()<1000000) 
+	      profz->Fill(irow,zfit-zcl);
+	}
       }
-      //===============================//
-      // Fill Fit Parameter Histograms //
-      //===============================//
-      TH1F *pol2InnerY =(TH1F*)fPol2Par2InY.UncheckedAt(id);
-      TH1F *diff1InnerY=(TH1F*)fDiffPar1InY.UncheckedAt(id);
-      TH1F *pol2OuterY =(TH1F*)fPol2Par2OutY.UncheckedAt(id);
-      TH1F *diff1OuterY=(TH1F*)fDiffPar1OutY.UncheckedAt(id);
-      TH1F *pol2InnerZ =(TH1F*)fPol2Par2InZ.UncheckedAt(id);
-      TH1F *diff1InnerZ=(TH1F*)fDiffPar1InZ.UncheckedAt(id);
-      TH1F *pol2OuterZ =(TH1F*)fPol2Par2OutZ.UncheckedAt(id);
-      TH1F *diff1OuterZ=(TH1F*)fDiffPar1OutZ.UncheckedAt(id);
-      //create histograms if the do not already exist
-      if (!pol2InnerY){
-	  pol2InnerY =new TH1F(Form("pol2par2inY%03d",id),
-			       Form("2nd derivative from pol2 fit in Y for Laser beam %03d (inner sector)",id),
-			       500,-.005,.005);
-	  pol2InnerY->SetDirectory(0);
-	  pol2OuterY =new TH1F(Form("pol2par2outY%03d",id),
-			       Form("2nd derivative from pol2 fit in Y for Laser beam %03d (outer sector)",id),
-			       500,0.01,.01);
-	  pol2OuterY->SetDirectory(0);
-
-	  diff1InnerY=new TH1F(Form("diff1inY%03d",id),
-			       Form("diff of 1st derivative from pol1 and pol2 in Y fit for Laser beam %03d (inner sector)",id),
-			       500,-.5,.5);
-	  diff1InnerY->SetDirectory(0);
-
-	  diff1OuterY=new TH1F(Form("diff1outY%03d",id),
-			       Form("diff of 1st derivative from pol1 and pol2 in Yfit for Laser beam %03d (outer sector)",id),
-			       500,-1,1);
-	  diff1OuterY->SetDirectory(0);
-
-	  pol2InnerZ =new TH1F(Form("pol2par2inZ%03d",id),
-			       Form("2nd derivative from pol2 fit in Z for Laser beam %03d (inner sector)",id),
-			       500,-.002,.002);
-	  pol2InnerZ->SetDirectory(0);
-
-	  pol2OuterZ =new TH1F(Form("pol2par2outZ%03d",id),
-			       Form("2nd derivative from pol2 fit in Z for Laser beam %03d (outer sector)",id),
-			       500,-.005,.005);
-	  pol2OuterZ->SetDirectory(0);
-	  diff1InnerZ=new TH1F(Form("diff1inZ%03d",id),
-			       Form("diff of 1st derivative from pol1 and pol2 in Z fit for Laser beam %03d (inner sector)",id),
-			       500,-.02,.02);
-	  diff1InnerZ->SetDirectory(0);
-	  diff1OuterZ=new TH1F(Form("diff1outZ%03d",id),
-			       Form("diff of 1st derivative from pol1 and pol2 in Zfit for Laser beam %03d (outer sector)",id),
-			       500,-.03,.03);
-	  diff1OuterZ->SetDirectory(0);
-          //add
-	  fPol2Par2InY.AddAt(pol2InnerY,id);
-	  fDiffPar1InY.AddAt(diff1InnerY,id);
-	  fPol2Par2OutY.AddAt(pol2OuterY,id);
-	  fDiffPar1OutY.AddAt(diff1OuterY,id);
-	  fPol2Par2InZ.AddAt(pol2InnerZ,id);
-	  fDiffPar1InZ.AddAt(diff1InnerZ,id);
-	  fPol2Par2OutZ.AddAt(pol2OuterZ,id);
-	  fDiffPar1OutZ.AddAt(diff1OuterZ,id);
-      }
-      //fill histograms
-      pol2InnerY ->Fill(vecy2resInner[2]);
-      pol2OuterY ->Fill(vecy2resOuter[2]);
-      diff1InnerY->Fill(vecy2resInner[1]-vecy1resInner[1]);
-      diff1OuterY->Fill(vecy2resOuter[1]-vecy1resOuter[1]);
-      pol2InnerZ ->Fill(vecz2resInner[2]);
-      pol2OuterZ ->Fill(vecz2resOuter[2]);
-      diff1InnerZ->Fill(vecz2resInner[1]-vecz1resInner[1]);
-      diff1OuterZ->Fill(vecz2resOuter[1]-vecz1resOuter[1]);
-
-
-
-  }
-}
-
-
-void AliTPCcalibLaser::RefitLaser(Int_t id){
-  //
-  // Refit the track store residuals
-  //
-
-  AliTPCseed *track    = (AliTPCseed*)fTracksTPC.At(id);
-  AliExternalTrackParam *param=(AliExternalTrackParam*)fTracksEsdParam.At(id);
-  AliTPCLaserTrack *ltrp = (AliTPCLaserTrack*)fTracksMirror.At(id);
-
-  //linear fit model in y and z per sector
-  static TLinearFitter fy1(2,"hyp1");
-  static TLinearFitter fz1(2,"hyp1");
-  //quadratic fit model in y and z per sector
-  static TLinearFitter fy2(3,"hyp2");
-  static TLinearFitter fz2(3,"hyp2");
-  static TVectorD vecy2,vecz2,vecy1,vecz1;
-
-  const Int_t kMinClusters=20;
-  Int_t nclusters[72];
-  //
-  for (Int_t i=0;i<72;++i) nclusters[i]=0;
-
-  for (Int_t i=0;i<160;++i) {
-    AliTPCclusterMI *c=track->GetClusterPointer(i);
-    if (c) nclusters[c->GetDetector()]++;
-  }
-
-  for (Int_t isec=0; isec<72;isec++){
-    if (nclusters[isec]<kMinClusters) continue;
-    fy2.ClearPoints();
-    fz2.ClearPoints();
-    fy1.ClearPoints();
-    fz1.ClearPoints();
-    //
-    for (Int_t irow=0;irow<160;++irow) {
-      AliTPCclusterMI *c=track->GetClusterPointer(irow);
-      //if (c && RejectCluster(c)) continue;
-      Double_t xd = c->GetX()-133.4; // reference x is beteen iroc and oroc
-      if (c&&c->GetDetector()==isec) {
-	Double_t x[2]={xd,xd*xd};
-	fy2.AddPoint(x,c->GetY());
-	fz2.AddPoint(x,c->GetZ());
+      //
+      //
+      // Fill laser fit histograms
+      //
+      if (!fHisNclIn) MakeFitHistos(); 
+      Float_t dedx = track->GetdEdx();
+      if (nclI>20&&nclO>20){
+	fHisNclIn->Fill(id,nclI);      //->Number of clusters inner
+	fHisNclOut->Fill(id,nclO);     //->Number of clusters outer
+	fHisNclIO->Fill(id,nclI+nclO);      //->Number of cluster inner outer
 	//
-	fy1.AddPoint(x,c->GetY());
-	fz1.AddPoint(x,c->GetZ());
+	fHisLclIn->Fill(id,xinMax-xinMin);        //->Level arm inner
+	fHisLclOut->Fill(id,xoutMax-xoutMin);     //->Level arm outer
+	fHisLclIO->Fill(id,xoutMax-xinMin);       //->Number of cluster inner outer
+	//
+	fHisdEdx->Fill(id,TMath::Sqrt(TMath::Abs(dedx)));
+	fHisdZfit->Fill(id,fFitZ[id]);
+	// 
+	//
+	fHisChi2YIn1->Fill(id,TMath::Sqrt(chi2I1y));      //->chi2 y inner - line
+	fHisChi2YOut1->Fill(id,TMath::Sqrt(chi2O1y));     //->chi2 y inner - line
+	fHisChi2YIn2->Fill(id,TMath::Sqrt(chi2I2y));      //->chi2 y inner - parabola
+	fHisChi2YOut2->Fill(id,TMath::Sqrt(chi2O2y));     //->chi2 y inner - parabola
+	fHisChi2YIO1->Fill(id,TMath::Sqrt(chi2IOy));      //->chi2 y IO    - common
+	
+	
+	fHisChi2ZIn1->Fill(id,TMath::Sqrt(chi2I1z));      //->chi2 z inner - line
+	fHisChi2ZOut1->Fill(id,TMath::Sqrt(chi2O1z));     //->chi2 z inner - line
+	fHisChi2ZIn2->Fill(id,TMath::Sqrt(chi2O2y));      //->chi2 z inner - parabola
+	fHisChi2ZOut2->Fill(id,TMath::Sqrt(chi2O2z));     //->chi2 z inner - parabola
+	fHisChi2ZIO1->Fill(id,TMath::Sqrt(chi2IOz));      //->chi2 z IO    - common
+	//
+	//
+	fHisPy1vP0->Fill(id,vecy1resOuter[0]-vecy1resInner[0]);     //-> delta y   P0outer-P0inner - line
+	fHisPy2vP0->Fill(id,vecy2resOuter[0]-vecy2resInner[0]);     //-> delta y   P0outer-P0inner - parabola
+	fHisPy3vP0->Fill(id,vecy4res[1]);                           //-> delta y   P0outer-P0inner - common parabola
+	//
+	fHisPy1vP1->Fill(id,vecy1resOuter[1]-vecy1resInner[1]);     //-> delta ky  P1outer-P1inner - line
+	fHisPy2vP1->Fill(id,vecy2resOuter[1]-vecy2resInner[1]);     //-> delta ky  P1outer-P1inner - parabola
+	fHisPy3vP1->Fill(id,vecy4res[3]-vecy4res[2]);               //-> delta ky  P1outer-P1inner - common parabola
+	//
+	fHisPy3vP2IO->Fill(id,vecy4res[4]);        //-> Curv  P2outerinner - common parabola
+	fHisPz1vP0->Fill(id,vecz1resOuter[0]-vecz1resInner[0]);     //-> delta z   P0outer-P0inner - line
+	fHisPz2vP0->Fill(id,vecz2resOuter[0]-vecz2resInner[0]);     //-> delta z   P0outer-P0inner - parabola
+	fHisPz3vP0->Fill(id,vecz4res[1]);                           //-> delta z   P0outer-P0inner - common parabola
+	//
+	fHisPz1vP1->Fill(id,vecz1resOuter[1]-vecz1resInner[1]);     //-> delta kz  P1outer-P1inner - line
+	fHisPz2vP1->Fill(id,vecz2resOuter[1]-vecz2resInner[1]);     //-> delta kz  P1outer-P1inner - parabola
+	fHisPz3vP1->Fill(id,vecz4res[3]-vecz4res[2]);               //-> delta kz  P1outer-P1inner - common parabola
+	fHisPz3vP2IO->Fill(id,vecz4res[4]);        //-> Curv  P2outerinner - common parabola
       }
-    }
-    fy2.Eval();
-    fz2.Eval();
-    fy1.Eval();
-    fz1.Eval();
-    fy1.GetParameters(vecy1);
-    fy2.GetParameters(vecy2);
-    fz1.GetParameters(vecz1);
-    fz2.GetParameters(vecz2);
-
-    if (fStreamLevel>0){
-      TTreeSRedirector *cstream = GetDebugStreamer();
-      if (cstream){
-	Float_t dedx = track->GetdEdx();
-	(*cstream)<<"Tracklet"<<
-	  "LTr.="<<ltrp<<
-	  "Tr.="<<param<<
-	  "sec="<<isec<<
-	  "ncl="<<nclusters[isec]<<
-	  "dedx="<<dedx<<
-	  "dedx="<<dedx<<
-	  "vy1.="<<&vecy1<<
-	  "vy2.="<<&vecy2<<
-	  "vz1.="<<&vecz1<<
-	  "vz2.="<<&vecz2<<
-	  "\n";
+      if(nclI>20){
+	fHisPy2vP2In->Fill(id,vecy2resInner[2]);   //-> Curv  P2inner - parabola
+	fHisPz2vP2In->Fill(id,vecz2resInner[2]);   //-> Curv  P2inner - parabola
       }
-    }
+      //
+      if (nclO>20){
+	fHisPz2vP2Out->Fill(id,vecz2resOuter[2]);  //-> Curv  P2outer - parabola
+	fHisPy2vP2Out->Fill(id,vecy2resOuter[2]);  //-> Curv  P2outer - parabola
+      }
+      
   }
-  //
-  //
-  //
-  //   for (Int_t irow=0;irow<160;++irow) {
-  //       AliTPCclusterMI *c=track->GetClusterPointer(irow);
-  //       if (c && RejectCluster(c)) continue;
-  //       if (c&&c->GetDetector()==isec) {
-  // 	Double_t x[2]={c->GetX(),c->GetX()*c->GetX()};
-  // 	fy2.AddPoint(&x,c->GetY());
-  // 	fz2.AddPoint(&x,c->GetZ());
-  // 	//
-  // 	fy1.AddPoint(&x,c->GetY());
-  // 	fz1.AddPoint(&x,c->GetZ());
-  //       }
-  //     }
-
 }
+
 
 
 void AliTPCcalibLaser::DumpMeanInfo(Float_t bfield, Int_t run, Int_t minEntries){
@@ -1135,9 +1422,9 @@ void AliTPCcalibLaser::DumpMeanInfo(Float_t bfield, Int_t run, Int_t minEntries)
     TH1F * hisP3    = (TH1F*)laser->fDeltaP3.At(id);
     TH1F * hisP4    = (TH1F*)laser->fDeltaP4.At(id);
     TH1F * hisS    = (TH1F*)laser->fSignals.At(id);
-    if (!hisphi) continue;;
+    //if (!hisphi) continue;
     Double_t entries = hisphi->GetEntries();
-    if (entries<minEntries) continue;
+    //if (entries<minEntries) continue;
     //
     AliTPCLaserTrack *ltrp = (AliTPCLaserTrack*)fTracksMirror.At(id);
     if (!ltrp) {
@@ -1189,18 +1476,277 @@ void AliTPCcalibLaser::DumpMeanInfo(Float_t bfield, Int_t run, Int_t minEntries)
     if (rmsphi>krmsCut0) if (gphi2/rmsphi>kmultiCut) isOK=kFALSE;   // multi peak structure
     if (gphiP2>kcutP0) isOK=kFALSE;
     //
+    //
+    //
+    TH1 *his =0;
+    //
+    his = fHisNclIn->ProjectionY("aaa",id+1,id+1);
+    Float_t mnclIn =  his->GetMean();
+    delete his;
+    his = fHisNclOut->ProjectionY("aaa",id+1,id+1);
+    Float_t mnclOut =  his->GetMean();
+    delete his;
+    his = fHisNclIO->ProjectionY("aaa",id+1,id+1);
+    Float_t mnclIO =  his->GetMean();
+    delete his;
+    his = fHisLclIn->ProjectionY("aaa",id+1,id+1);
+    Float_t mLclIn =  his->GetMean();
+    delete his;
+    his = fHisLclOut->ProjectionY("aaa",id+1,id+1);
+    Float_t mLclOut =  his->GetMean();
+    delete his;
+    his = fHisLclIO->ProjectionY("aaa",id+1,id+1);
+    Float_t mLclIO =  his->GetMean();
+    delete his;
+    //
+    his = fHisdEdx->ProjectionY("aaa",id+1,id+1);
+    Float_t mdEdx =  his->GetMean();
+    delete his;
+    //
+    his = fHisdZfit->ProjectionY("aaa",id+1,id+1);
+    Float_t mdZfit =  his->GetMean();
+    delete his;
+    //
+    //
+    //
+    his = fHisChi2YIn1->ProjectionY("aaa",id+1,id+1);      //->chi2 y inner - line
+    Float_t  mChi2YIn1=  his->GetMean();
+    delete his;
+    his = fHisChi2YOut1->ProjectionY("aaa",id+1,id+1);     //->chi2 y inner - line
+    Float_t mChi2YOut1 =  his->GetMean();
+    delete his;
+    his = fHisChi2YIn2->ProjectionY("aaa",id+1,id+1);      //->chi2 y inner - parabola
+    Float_t mChi2YIn2 =  his->GetMean();
+    delete his;
+    his = fHisChi2YOut2->ProjectionY("aaa",id+1,id+1);     //->chi2 y inner - parabola
+    Float_t mChi2YOut2 =  his->GetMean();
+    delete his;
+    his = fHisChi2YIO1->ProjectionY("aaa",id+1,id+1);      //->chi2 y IO    - common
+    Float_t mChi2YIO1 =  his->GetMean();
+    delete his;
+    his = fHisChi2ZIn1->ProjectionY("aaa",id+1,id+1);      //->chi2 z inner - line
+    Float_t mChi2ZIn1 =  his->GetMean();
+    delete his;
+    his = fHisChi2ZOut1->ProjectionY("aaa",id+1,id+1);     //->chi2 z inner - line
+    Float_t mChi2ZOut1 =  his->GetMean();
+    delete his;
+    his = fHisChi2ZIn2->ProjectionY("aaa",id+1,id+1);      //->chi2 z inner - parabola
+    Float_t mChi2ZIn2 =  his->GetMean();
+    delete his;
+    his = fHisChi2ZOut2->ProjectionY("aaa",id+1,id+1);     //->chi2 z inner - parabola
+    Float_t mChi2ZOut2 =  his->GetMean();
+    delete his;
+    his = fHisChi2ZIO1->ProjectionY("aaa",id+1,id+1);      //->chi2 z IO    - common
+    Float_t mChi2ZIO1 =  his->GetMean();
+    delete his;
+    //
+    // fit res. histos
+    // 
+    his = fHisPy1vP0->ProjectionY("aaa",id+1,id+1);     //-> delta y   P0outer-P0inner - line
+    Float_t  ePy1vP0  = his->GetEntries();
+    Float_t  mPy1vP0  = his->GetMean();
+    Float_t  rPy1vP0  = his->GetRMS();
+    delete his;
+    
+    his = fHisPy2vP0->ProjectionY("aaa",id+1,id+1);     //-> delta y   P0outer-P0inner - parabola
+    Float_t  ePy2vP0  = his->GetEntries();
+    Float_t  mPy2vP0  = his->GetMean();
+    Float_t  rPy2vP0  = his->GetRMS();
+    delete his;
+    
+    his = fHisPy3vP0->ProjectionY("aaa",id+1,id+1);     //-> delta y   P0outer-P0inner - common parabola
+    Float_t  ePy3vP0  = his->GetEntries();
+    Float_t  mPy3vP0  = his->GetMean();
+    Float_t  rPy3vP0  = his->GetRMS();
+    delete his;
+    
+    his = fHisPy1vP1->ProjectionY("aaa",id+1,id+1);     //-> delta ky  P1outer-P1inner - line
+    Float_t  ePy1vP1  = his->GetEntries();
+    Float_t  mPy1vP1  = his->GetMean();
+    Float_t  rPy1vP1  = his->GetRMS();
+    delete his;
+    
+    his = fHisPy2vP1->ProjectionY("aaa",id+1,id+1);     //-> delta ky  P1outer-P1inner - parabola
+    Float_t  ePy2vP1  = his->GetEntries();
+    Float_t  mPy2vP1  = his->GetMean();
+    Float_t  rPy2vP1  = his->GetRMS();
+    delete his;
+    
+    his = fHisPy3vP1->ProjectionY("aaa",id+1,id+1);     //-> delta ky  P1outer-P1inner - common parabola
+    Float_t  ePy3vP1  = his->GetEntries();
+    Float_t  mPy3vP1  = his->GetMean();
+    Float_t  rPy3vP1  = his->GetRMS();
+    delete his;
+    
+    his = fHisPy2vP2In->ProjectionY("aaa",id+1,id+1);   //-> Curv  P2inner - parabola
+    Float_t  ePy2vP2In  = his->GetEntries();
+    Float_t  mPy2vP2In  = his->GetMean();
+    Float_t  rPy2vP2In  = his->GetRMS();
+    delete his;
+    
+    his = fHisPy2vP2Out->ProjectionY("aaa",id+1,id+1);  //-> Curv  P2outer - parabola
+    Float_t  ePy2vP2Out  = his->GetEntries();
+    Float_t  mPy2vP2Out  = his->GetMean();
+    Float_t  rPy2vP2Out  = his->GetRMS();
+    delete his;
+    
+    his = fHisPy3vP2IO->ProjectionY("aaa",id+1,id+1);   //-> Curv  P2outerinner - common parabola
+    Float_t  ePy3vP2IO  = his->GetEntries();
+    Float_t  mPy3vP2IO  = his->GetMean();
+    Float_t  rPy3vP2IO  = his->GetRMS();
+    delete his;
+    
+    //
+    //
+    his = fHisPz1vP0->ProjectionY("aaa",id+1,id+1);     //-> delta z   P0outer-P0inner - line
+    Float_t  ePz1vP0  = his->GetEntries();
+    Float_t  mPz1vP0  = his->GetMean();
+    Float_t  rPz1vP0  = his->GetRMS();
+    delete his;
+    
+    his = fHisPz2vP0->ProjectionY("aaa",id+1,id+1);     //-> delta z   P0outer-P0inner - parabola
+    Float_t  ePz2vP0  = his->GetEntries();
+    Float_t  mPz2vP0  = his->GetMean();
+    Float_t  rPz2vP0  = his->GetRMS();
+    delete his;
+    
+    his = fHisPz3vP0->ProjectionY("aaa",id+1,id+1);     //-> delta z   P0outer-P0inner - common parabola
+    Float_t  ePz3vP0  = his->GetEntries();
+    Float_t  mPz3vP0  = his->GetMean();
+    Float_t  rPz3vP0  = his->GetRMS();
+    delete his;
+    
+    his = fHisPz1vP1->ProjectionY("aaa",id+1,id+1);     //-> delta kz  P1outer-P1inner - line
+    Float_t  ePz1vP1  = his->GetEntries();
+    Float_t  mPz1vP1  = his->GetMean();
+    Float_t  rPz1vP1  = his->GetRMS();
+    delete his;
+    
+    his = fHisPz2vP1->ProjectionY("aaa",id+1,id+1);     //-> delta kz  P1outer-P1inner - parabola
+    Float_t  ePz2vP1  = his->GetEntries();
+    Float_t  mPz2vP1  = his->GetMean();
+    Float_t  rPz2vP1  = his->GetRMS();
+    delete his;
+    
+    his = fHisPz3vP1->ProjectionY("aaa",id+1,id+1);     //-> delta kz  P1outer-P1inner - common parabola
+    Float_t  ePz3vP1  = his->GetEntries();
+    Float_t  mPz3vP1  = his->GetMean();
+    Float_t  rPz3vP1  = his->GetRMS();
+    delete his;
+    
+    his = fHisPz2vP2In->ProjectionY("aaa",id+1,id+1);   //-> Curv  P2inner - parabola
+    Float_t  ePz2vP2In  = his->GetEntries();
+    Float_t  mPz2vP2In  = his->GetMean();
+    Float_t  rPz2vP2In  = his->GetRMS();
+    delete his;
+    
+    his = fHisPz2vP2Out->ProjectionY("aaa",id+1,id+1);  //-> Curv  P2outer - parabola
+    Float_t  ePz2vP2Out  = his->GetEntries();
+    Float_t  mPz2vP2Out  = his->GetMean();
+    Float_t  rPz2vP2Out  = his->GetRMS();
+    delete his;
+    
+    his = fHisPz3vP2IO->ProjectionY("aaa",id+1,id+1);   //-> Curv  P2outerinner - common parabola
+    Float_t  ePz3vP2IO  = his->GetEntries();
+    Float_t  mPz3vP2IO  = his->GetMean();
+    Float_t  rPz3vP2IO  = his->GetRMS();
+    delete his;
+    
+    //
     if (run<=0) run=fRun;
     (*pcstream)<<"Mean"<<
-      "run="<<run<<              //
-      "isOK="<<isOK<<
-      "entries="<<entries<<      // number of entries
-      "bz="<<bfield<<            // bfield
+      "run="<<run<<               //
+      "isOK="<<isOK<<             //
+      "id="<<id<<                 // track id
+      "entries="<<entries<<       // number of entries
+      "bz="<<bfield<<             // bfield
       "LTr.="<<ltrp<<             // refernece track
       //
-      "lx0="<<lxyz[0]<<          // reference x
-      "lx1="<<lxyz[1]<<          // reference y
-      "lx2="<<lxyz[2]<<          // refernece z
-      "lpx0="<<lpxyz[0]<<          // reference x
+      "mnclIn="<<mnclIn<<         // mean number of clusters in inner
+      "mnclOut="<<mnclOut<<       // mean number of clusters in outer
+      "mnclIO="<<mnclIO<<         // mean number of clusters in inner+outer
+      "mLclIn="<<mLclIn<<         // mean number of clusters in inner
+      "mLclOut="<<mLclOut<<       // mean number of clusters in outer
+      "mLclIO="<<mLclIO<<         // mean number of clusters in inner+outer
+      "mdEdx="<<mdEdx<<           // mean dEdx
+      "mdZfit="<<mdZfit<<           // mean z fit
+      //
+      //
+      "mChi2YIn1="<<mChi2YIn1<<       //->chi2 y inner - line
+      "mChi2YOut1="<<mChi2YOut1<<     //->chi2 y inner - line
+      "mChi2YIn2="<<mChi2YIn2<<       //->chi2 y inner - parabola
+      "mChi2YOut2="<<mChi2YOut2<<     //->chi2 y inner - parabola
+      "mChi2YIO1="<<mChi2YIO1<<       //->chi2 y IO    - common
+      "mChi2ZIn1="<<mChi2ZIn1<<       //->chi2 z inner - line
+      "mChi2ZOut1="<<mChi2ZOut1<<     //->chi2 z inner - line
+      "mChi2ZIn2="<<mChi2ZIn2<<       //->chi2 z inner - parabola
+      "mChi2ZOut2="<<mChi2ZOut2<<     //->chi2 z inner - parabola
+      "mChi2ZIO1="<<mChi2ZIO1<<       //->chi2 z IO    - common
+      //
+      //
+      "ePy1vP0="<<ePy1vP0<<
+      "mPy1vP0="<<mPy1vP0<<
+      "rPy1vP0="<<rPy1vP0<<
+      "ePy2vP0="<<ePy2vP0<<
+      "mPy2vP0="<<mPy2vP0<<
+      "rPy2vP0="<<rPy2vP0<<      
+      "ePy3vP0="<<ePy3vP0<<
+      "mPy3vP0="<<mPy3vP0<<
+      "rPy3vP0="<<rPy3vP0<<
+      "ePy1vP1="<<ePy1vP1<<
+      "mPy1vP1="<<mPy1vP1<<
+      "rPy1vP1="<<rPy1vP1<<
+      "ePy2vP1="<<ePy2vP1<<
+      "mPy2vP1="<<mPy2vP1<<
+      "rPy2vP1="<<rPy2vP1<<
+      "ePy3vP1="<<ePy3vP1<<
+      "mPy3vP1="<<mPy3vP1<<
+      "rPy3vP1="<<rPy3vP1<<
+      "ePy2vP2In="<<ePy2vP2In<<
+      "mPy2vP2In="<<mPy2vP2In<<
+      "rPy2vP2In="<<rPy2vP2In<<
+      "ePy2vP2Out="<<ePy2vP2Out<<
+      "mPy2vP2Out="<<mPy2vP2Out<<
+      "rPy2vP2Out="<<rPy2vP2Out<<
+      "ePy3vP2IO="<<ePy3vP2IO<<
+      "mPy3vP2IO="<<mPy3vP2IO<<
+      "rPy3vP2IO="<<rPy3vP2IO<<
+      //
+      //
+      "ePz1vP0="<<ePz1vP0<<
+      "mPz1vP0="<<mPz1vP0<<
+      "rPz1vP0="<<rPz1vP0<<
+      "ePz2vP0="<<ePz2vP0<<
+      "mPz2vP0="<<mPz2vP0<<
+      "rPz2vP0="<<rPz2vP0<<
+      "ePz3vP0="<<ePz3vP0<<
+      "mPz3vP0="<<mPz3vP0<<
+      "rPz3vP0="<<rPz3vP0<<
+      "ePz1vP1="<<ePz1vP1<<
+      "mPz1vP1="<<mPz1vP1<<
+      "rPz1vP1="<<rPz1vP1<<
+      "ePz2vP1="<<ePz2vP1<<
+      "mPz2vP1="<<mPz2vP1<<
+      "rPz2vP1="<<rPz2vP1<<
+      "ePz3vP1="<<ePz3vP1<<
+      "mPz3vP1="<<mPz3vP1<<
+      "rPz3vP1="<<rPz3vP1<<
+      "ePz2vP2In="<<ePz2vP2In<<
+      "mPz2vP2In="<<mPz2vP2In<<
+      "rPz2vP2In="<<rPz2vP2In<<
+      "ePz2vP2Out="<<ePz2vP2Out<<
+      "mPz2vP2Out="<<mPz2vP2Out<<
+      "rPz2vP2Out="<<rPz2vP2Out<<
+      "ePz3vP2IO="<<ePz3vP2IO<<  
+      "mPz3vP2IO="<<mPz3vP2IO<<
+      "rPz3vP2IO="<<rPz3vP2IO<<     
+      //
+      //
+      //
+      "lx0="<<lxyz[0]<<            // reference x
+      "lx1="<<lxyz[1]<<            // reference y
+      "lx2="<<lxyz[2]<<            // refernece z
+      "lpx0="<<lpxyz[0]<<           // reference x
       "lpx1="<<lpxyz[1]<<          // reference y
       "lpx2="<<lpxyz[2]<<          // refernece z
       //
@@ -1229,6 +1775,14 @@ void AliTPCcalibLaser::DumpMeanInfo(Float_t bfield, Int_t run, Int_t minEntries)
       "\n";
   }
   delete pcstream;
+  /*
+    Browse the content
+    TFile fmean("laserMean.root");
+    
+
+   */
+
+
 }
 
 
@@ -1406,14 +1960,7 @@ Long64_t AliTPCcalibLaser::Merge(TCollection *li) {
       return -1;
     }
     //
-   //  fHistNTracks->Add(cal->fHistNTracks);
-//     fClusters->Add(cal->fClusters);
-//     fModules->Add(cal->fModules);
-//     fHistPt->Add(cal->fHistPt);
-//     fPtResolution->Add(cal->fPtResolution);
-//     fDeDx->Add(cal->fDeDx);
-
-
+    MergeFitHistos(cal);
     TH1F *h=0x0;
     TH1F *hm=0x0;
     TProfile *hp=0x0;
@@ -1482,7 +2029,7 @@ Long64_t AliTPCcalibLaser::Merge(TCollection *li) {
       hpm = (TProfile*)cal->fDeltaYres.At(id);
       hp  = (TProfile*)fDeltaYres.At(id);
       if (!hp) {
-	hp=new TProfile(Form("pry%03d",id),Form("Y Residuals for Laser Beam %03d",id),115,80,250);
+	hp=new TProfile(Form("pry%03d",id),Form("Y Residuals for Laser Beam %03d",id),160,0,160);
 	hp->SetDirectory(0);
 	fDeltaYres.AddAt(hp,id);
       }
@@ -1491,82 +2038,214 @@ Long64_t AliTPCcalibLaser::Merge(TCollection *li) {
       hpm = (TProfile*)cal->fDeltaZres.At(id);
       hp  = (TProfile*)fDeltaZres.At(id);
       if (!hp) {
-	hp=new TProfile(Form("prz%03d",id),Form("Z Residuals for Laser Beam %03d",id),115,80,250);
+	hp=new TProfile(Form("prz%03d",id),Form("Z Residuals for Laser Beam %03d",id),160,0,160);
 	hp->SetDirectory(0);
 	fDeltaZres.AddAt(hp,id);
       }
       if (hpm) hp->Add(hpm);
       //
       //
-      //merge fit param histograms
-      //local hists
-      TH1F *pol2InnerY =(TH1F*)fPol2Par2InY.UncheckedAt(id);
-      TH1F *diff1InnerY=(TH1F*)fDiffPar1InY.UncheckedAt(id);
-      TH1F *pol2OuterY =(TH1F*)fPol2Par2OutY.UncheckedAt(id);
-      TH1F *diff1OuterY=(TH1F*)fDiffPar1OutY.UncheckedAt(id);
-      TH1F *pol2InnerZ =(TH1F*)fPol2Par2InZ.UncheckedAt(id);
-      TH1F *diff1InnerZ=(TH1F*)fDiffPar1InZ.UncheckedAt(id);
-      TH1F *pol2OuterZ =(TH1F*)fPol2Par2OutZ.UncheckedAt(id);
-      TH1F *diff1OuterZ=(TH1F*)fDiffPar1OutZ.UncheckedAt(id);
-      //hists to merge
-      TH1F *pol2InnerYm =(TH1F*)cal->fPol2Par2InY.UncheckedAt(id);
-      TH1F *diff1InnerYm=(TH1F*)cal->fDiffPar1InY.UncheckedAt(id);
-      TH1F *pol2OuterYm =(TH1F*)cal->fPol2Par2OutY.UncheckedAt(id);
-      TH1F *diff1OuterYm=(TH1F*)cal->fDiffPar1OutY.UncheckedAt(id);
-      TH1F *pol2InnerZm =(TH1F*)cal->fPol2Par2InZ.UncheckedAt(id);
-      TH1F *diff1InnerZm=(TH1F*)cal->fDiffPar1InZ.UncheckedAt(id);
-      TH1F *pol2OuterZm =(TH1F*)cal->fPol2Par2OutZ.UncheckedAt(id);
-      TH1F *diff1OuterZm=(TH1F*)cal->fDiffPar1OutZ.UncheckedAt(id);
-      //create histos if they do not exist
-      if (!pol2InnerY){
-          pol2InnerY =new TH1F(Form("pol2par2inY%03d",id),
-			       Form("2nd derivative from pol2 fit in Y for Laser beam %03d (inner sector)",id),
-			       500,-.005,.005);
-	  pol2InnerY->SetDirectory(0);
-
-	  pol2OuterY =new TH1F(Form("pol2par2outY%03d",id),
-			       Form("2nd derivative from pol2 fit in Y for Laser beam %03d (outer sector)",id),
-			       500,0.01,.01);
-	  pol2OuterY->SetDirectory(0);
-	  diff1InnerY=new TH1F(Form("diff1inY%03d",id),
-			       Form("diff of 1st derivative from pol1 and pol2 in Y fit for Laser beam %03d (inner sector)",id),
-			       500,-.5,.5);
-	  diff1OuterY=new TH1F(Form("diff1outY%03d",id),
-			       Form("diff of 1st derivative from pol1 and pol2 in Yfit for Laser beam %03d (outer sector)",id),
-			       500,-1,1);
-	  diff1InnerY->SetDirectory(0);
-
-
-	  pol2InnerZ =new TH1F(Form("pol2par2inZ%03d",id),
-			       Form("2nd derivative from pol2 fit in Z for Laser beam %03d (inner sector)",id),
-			       500,-.002,.002);
-	  pol2InnerZ->SetDirectory(0);
-
-	  pol2OuterZ =new TH1F(Form("pol2par2outZ%03d",id),
-			       Form("2nd derivative from pol2 fit in Z for Laser beam %03d (outer sector)",id),
-			       500,-.005,.005);
-	  pol2OuterZ->SetDirectory(0);
-	  diff1InnerZ=new TH1F(Form("diff1inZ%03d",id),
-			       Form("diff of 1st derivative from pol1 and pol2 in Z fit for Laser beam %03d (inner sector)",id),
-			       500,-.02,.02);
-	  diff1InnerZ->SetDirectory(0);
-	  diff1OuterZ=new TH1F(Form("diff1outZ%03d",id),
-			       Form("diff of 1st derivative from pol1 and pol2 in Zfit for Laser beam %03d (outer sector)",id),
-			       500,-.03,.03);
-	  diff1OuterZ->SetDirectory(0);
-      }
-      pol2InnerYm =(TH1F*)cal->fPol2Par2InY.UncheckedAt(id);
-      diff1InnerYm=(TH1F*)cal->fDiffPar1InY.UncheckedAt(id);
-      pol2OuterYm =(TH1F*)cal->fPol2Par2OutY.UncheckedAt(id);
-      diff1OuterYm=(TH1F*)cal->fDiffPar1OutY.UncheckedAt(id);
-      pol2InnerZm =(TH1F*)cal->fPol2Par2InZ.UncheckedAt(id);
-      diff1InnerZm=(TH1F*)cal->fDiffPar1InZ.UncheckedAt(id);
-      pol2OuterZm =(TH1F*)cal->fPol2Par2OutZ.UncheckedAt(id);
-      diff1OuterZm=(TH1F*)cal->fDiffPar1OutZ.UncheckedAt(id);
     }
   }
   return 0;
 }
+
+void   AliTPCcalibLaser::MakeFitHistos(){
+  //
+  // Make a fit histograms
+  // 
+  // Number of clusters
+  //
+  //TH2F           *fHisNclIn;      //->Number of clusters inner
+  //TH2F           *fHisNclOut;     //->Number of clusters outer
+  //TH2F           *fHisNclIO;      //->Number of cluster inner outer
+  // TH2F           *fHisdEdx;       //->dEdx histo
+  fHisNclIn = new TH2F("HisNclIn","HisNclIn",336,0,336,64,10,64);
+  fHisNclOut = new TH2F("HisNclOut","HisNclOut",336,0,336,100,10,100);
+  fHisNclIO = new TH2F("HisNclIO","HisNclIO",336,0,336,160,10,160);
+  //
+  fHisLclIn  = new TH2F("HisLclIn","HisLclIn",336,0,336,64,10,64);
+  fHisLclOut = new TH2F("HisLclOut","HisLclOut",336,0,336,100,10,150);
+  fHisLclIO  = new TH2F("HisLclIO","HisLclIO",336,0,336,160,10,160);
+  //
+  fHisdEdx = new TH2F("HisdEdx","HisdEdx",336,0,336,160,1,50);
+  fHisdZfit = new TH2F("HisdZfit","HisdZfit",336,0,336,300,-1.,1.);
+  
+  //
+  //  Chi2
+  //
+  //   TH2F           *fHisChi2YIn1;      //->chi2 y inner - line
+  //   TH2F           *fHisChi2YOut1;     //->chi2 y inner - line
+  //   TH2F           *fHisChi2YIn2;      //->chi2 y inner - parabola
+  //   TH2F           *fHisChi2YOut2;     //->chi2 y inner - parabola
+  //   TH2F           *fHisChi2YIO1;      //->chi2 y IO    - common
+  fHisChi2YIn1   = new TH2F("Chi2YIn1","Chi2YIn1",336,0,336,500,0.001,0.5);
+  fHisChi2YOut1  = new TH2F("Chi2YOut1","Chi2YOut1",336,0,336,500,0.001,0.5);
+  fHisChi2YIn2   = new TH2F("Chi2YIn2","Chi2YIn2",336,0,336,500,0.001,0.5);
+  fHisChi2YOut2  = new TH2F("Chi2YOut2","Chi2YOut2",336,0,336,500,0.001,0.5);
+  fHisChi2YIO1   = new TH2F("Chi2YIO1","Chi2YIO1",336,0,336,500,0.001,0.5);
+  //   TH2F           *fHisChi2ZIn1;      //->chi2 z inner - line
+  //   TH2F           *fHisChi2ZOut1;     //->chi2 z inner - line
+  //   TH2F           *fHisChi2ZIn2;      //->chi2 z inner - parabola
+  //   TH2F           *fHisChi2ZOut2;     //->chi2 z inner - parabola
+  //   TH2F           *fHisChi2ZIO1;      //->chi2 z IO    - common
+  fHisChi2ZIn1   = new TH2F("Chi2ZIn1","Chi2ZIn1",336,0,336,500,0.001,0.5);
+  fHisChi2ZOut1  = new TH2F("Chi2ZOut1","Chi2ZOut1",336,0,336,500,0.001,0.5);
+  fHisChi2ZIn2   = new TH2F("Chi2ZIn2","Chi2ZIn2",336,0,336,500,0.001,0.5);
+  fHisChi2ZOut2  = new TH2F("Chi2ZOut2","Chi2ZOut2",336,0,336,500,0.001,0.5);
+  fHisChi2ZIO1   = new TH2F("Chi2ZIO1","Chi2ZIO1",336,0,336,500,0.001,0.5);
+  //
+  // Fit
+  //
+  //
+  //   TH2F           *fHisPy1vP0;     //-> delta y   P0outer-P0inner - line
+  //   TH2F           *fHisPy2vP0;     //-> delta y   P0outer-P0inner - parabola
+  //   TH2F           *fHisPy3vP0;     //-> delta y   P0outer-P0inner - common parabola
+  //   TH2F           *fHisPy1vP1;     //-> delta ky  P1outer-P1inner - line
+  //   TH2F           *fHisPy2vP1;     //-> delta ky  P1outer-P1inner - parabola
+  //   TH2F           *fHisPy3vP1;     //-> delta ky  P1outer-P1inner - common parabola
+  //   TH2F           *fHisPy2vP2In;   //-> Curv  P2inner - parabola
+  //   TH2F           *fHisPy2vP2Out;  //-> Curv  P2outer - parabola
+  //   TH2F           *fHisPy3vP2IO;   //-> Curv  P2outerinner - common parabola
+  fHisPy1vP0   = new TH2F("HisPy1vP0",   "HisPy1vP0",336,0,336,500,-0.3,0.3);
+  fHisPy2vP0   = new TH2F("HisPy2vP0",   "HisPy2vP0",336,0,336,500,-0.3,0.3);
+  fHisPy3vP0   = new TH2F("HisPy3vP0",   "HisPy3vP0",336,0,336,500,-0.3,0.3);
+  fHisPy1vP1   = new TH2F("HisPy1vP1",   "HisPy1vP1",336,0,336,500,-0.01,0.01);
+  fHisPy2vP1   = new TH2F("HisPy2vP1",   "HisPy2vP1",336,0,336,500,-0.01,0.01);
+  fHisPy3vP1   = new TH2F("HisPy3vP1",   "HisPy3vP1",336,0,336,500,-0.01,0.01);
+  fHisPy2vP2In = new TH2F("HisPy2vP2In", "HisPy2vP2In",336,0,336,500,-0.0003,0.0003);
+  fHisPy2vP2Out= new TH2F("HisPy2vP2Out","HisPy2vP2Out",336,0,336,500,-0.0003,0.0003);
+  fHisPy3vP2IO = new TH2F("HisPy3vP2IO", "HisPy3vP2IO",336,0,336,500,-0.0003,0.0003);
+  //
+  //
+  //   TH2F           *fHisPz1vP0;     //-> delta z   P0outer-P0inner - line
+  //   TH2F           *fHisPz2vP0;     //-> delta z   P0outer-P0inner - parabola
+  //   TH2F           *fHisPz3vP0;     //-> delta z   P0outer-P0inner - common parabola
+  //   TH2F           *fHisPz1vP1;     //-> delta kz  P1outer-P1inner - line
+  //   TH2F           *fHisPz2vP1;     //-> delta kz  P1outer-P1inner - parabola
+  //   TH2F           *fHisPz3vP1;     //-> delta kz  P1outer-P1inner - common parabola
+  //   TH2F           *fHisPz2vP2In;   //-> Curv  P2inner - parabola
+  //   TH2F           *fHisPz2vP2Out;  //-> Curv  P2outer - parabola
+  //   TH2F           *fHisPz3vP2IO;   //-> Curv  P2outerinner - common parabola
+  fHisPz1vP0   = new TH2F("HisPz1vP0",   "HisPz1vP0",336,0,336,500,-0.3,0.3);
+  fHisPz2vP0   = new TH2F("HisPz2vP0",   "HisPz2vP0",336,0,336,500,-0.3,0.3);
+  fHisPz3vP0   = new TH2F("HisPz3vP0",   "HisPz3vP0",336,0,336,500,-0.3,0.3);
+  fHisPz1vP1   = new TH2F("HisPz1vP1",   "HisPz1vP1",336,0,336,500,-0.01,0.01);
+  fHisPz2vP1   = new TH2F("HisPz2vP1",   "HisPz2vP1",336,0,336,500,-0.01,0.01);
+  fHisPz3vP1   = new TH2F("HisPz3vP1",   "HisPz3vP1",336,0,336,500,-0.01,0.01);
+  fHisPz2vP2In = new TH2F("HisPz2vP2In", "HisPz2vP2In",336,0,336,500,-0.0003,0.0003);
+  fHisPz2vP2Out= new TH2F("HisPz2vP2Out","HisPz2vP2Out",336,0,336,500,-0.0002,0.0002);
+  fHisPz3vP2IO = new TH2F("HisPz3vP2IO", "HisPz3vP2IO",336,0,336,500,-0.0002,0.0002);
+  
+  fHisNclIn->SetDirectory(0);      //->Number of clusters inner
+  fHisNclOut->SetDirectory(0);     //->Number of clusters outer
+  fHisNclIO->SetDirectory(0);      //->Number of cluster inner outer
+  fHisLclIn->SetDirectory(0);      //->Level arm inner
+  fHisLclOut->SetDirectory(0);     //->Level arm outer
+  fHisLclIO->SetDirectory(0);      //->Number of cluster inner outer
+  fHisdEdx->SetDirectory(0);      //->Number of cluster inner outer
+  fHisdZfit->SetDirectory(0);      //->Number of cluster inner outer
+  //
+  //
+  fHisChi2YIn1->SetDirectory(0);      //->chi2 y inner - line
+  fHisChi2YOut1->SetDirectory(0);     //->chi2 y inner - line
+  fHisChi2YIn2->SetDirectory(0);      //->chi2 y inner - parabola
+  fHisChi2YOut2->SetDirectory(0);     //->chi2 y inner - parabola
+  fHisChi2YIO1->SetDirectory(0);      //->chi2 y IO    - common
+  fHisChi2ZIn1->SetDirectory(0);      //->chi2 z inner - line
+  fHisChi2ZOut1->SetDirectory(0);     //->chi2 z inner - line
+  fHisChi2ZIn2->SetDirectory(0);      //->chi2 z inner - parabola
+  fHisChi2ZOut2->SetDirectory(0);     //->chi2 z inner - parabola
+  fHisChi2ZIO1->SetDirectory(0);      //->chi2 z IO    - common
+  //
+  //
+  fHisPy1vP0->SetDirectory(0);     //-> delta y   P0outer-P0inner - line
+  fHisPy2vP0->SetDirectory(0);     //-> delta y   P0outer-P0inner - parabola
+  fHisPy3vP0->SetDirectory(0);     //-> delta y   P0outer-P0inner - common parabola
+  fHisPy1vP1->SetDirectory(0);     //-> delta ky  P1outer-P1inner - line
+  fHisPy2vP1->SetDirectory(0);     //-> delta ky  P1outer-P1inner - parabola
+  fHisPy3vP1->SetDirectory(0);     //-> delta ky  P1outer-P1inner - common parabola
+  fHisPy2vP2In->SetDirectory(0);   //-> Curv  P2inner - parabola
+  fHisPy2vP2Out->SetDirectory(0);  //-> Curv  P2outer - parabola
+  fHisPy3vP2IO->SetDirectory(0);   //-> Curv  P2outerinner - common parabola
+  //
+  //
+  fHisPz1vP0->SetDirectory(0);     //-> delta z   P0outer-P0inner - line
+  fHisPz2vP0->SetDirectory(0);     //-> delta z   P0outer-P0inner - parabola
+  fHisPz3vP0->SetDirectory(0);     //-> delta z   P0outer-P0inner - common parabola
+  fHisPz1vP1->SetDirectory(0);     //-> delta kz  P1outer-P1inner - line
+  fHisPz2vP1->SetDirectory(0);     //-> delta kz  P1outer-P1inner - parabola
+  fHisPz3vP1->SetDirectory(0);     //-> delta kz  P1outer-P1inner - common parabola
+  fHisPz2vP2In->SetDirectory(0);   //-> Curv  P2inner - parabola
+  fHisPz2vP2Out->SetDirectory(0);  //-> Curv  P2outer - parabola
+  fHisPz3vP2IO->SetDirectory(0);   //-> Curv  P2outerinner - common parabola
+
+
+
+}
+
+void AliTPCcalibLaser::MergeFitHistos(AliTPCcalibLaser * laser){
+  //
+  // Merge content of histograms 
+  //
+  // Only first histogram is checked - all other should be the same
+  if (!laser->fHisNclIn) return;  // empty histograms
+  if (!fHisNclIn) MakeFitHistos();
+  //
+  
+  fHisNclIn->Add(laser->fHisNclIn  );      //->Number of clusters inner
+  fHisNclOut->Add(laser->fHisNclOut  );     //->Number of clusters outer
+  fHisNclIO->Add(laser->fHisNclIO  );      //->Number of cluster inner outer
+  fHisLclIn->Add(laser->fHisLclIn  );      //->Level arm inner
+  fHisLclOut->Add(laser->fHisLclOut  );     //->Level arm outer
+  fHisLclIO->Add(laser->fHisLclIO  );      //->Number of cluster inner outer
+  fHisdEdx->Add(laser->fHisdEdx  );      //->dedx
+  fHisdZfit->Add(laser->fHisdZfit  );      //->dedx
+  //
+  //
+  fHisChi2YIn1->Add(laser->fHisChi2YIn1  );      //->chi2 y inner - line
+  fHisChi2YOut1->Add(laser->fHisChi2YOut1  );     //->chi2 y inner - line
+  fHisChi2YIn2->Add(laser->fHisChi2YIn2  );      //->chi2 y inner - parabola
+  fHisChi2YOut2->Add(laser->fHisChi2YOut2  );     //->chi2 y inner - parabola
+  fHisChi2YIO1->Add(laser->fHisChi2YIO1  );      //->chi2 y IO    - common
+  fHisChi2ZIn1->Add(laser->fHisChi2ZIn1  );      //->chi2 z inner - line
+  fHisChi2ZOut1->Add(laser->fHisChi2ZOut1  );     //->chi2 z inner - line
+  fHisChi2ZIn2->Add(laser->fHisChi2ZIn2  );      //->chi2 z inner - parabola
+  fHisChi2ZOut2->Add(laser->fHisChi2ZOut2  );     //->chi2 z inner - parabola
+  fHisChi2ZIO1->Add(laser->fHisChi2ZIO1  );      //->chi2 z IO    - common
+  //
+  //
+  fHisPy1vP0->Add(laser->fHisPy1vP0  );     //-> delta y   P0outer-P0inner - line
+  fHisPy2vP0->Add(laser->fHisPy2vP0  );     //-> delta y   P0outer-P0inner - parabola
+  fHisPy3vP0->Add(laser->fHisPy3vP0  );     //-> delta y   P0outer-P0inner - common parabola
+  fHisPy1vP1->Add(laser->fHisPy1vP1  );     //-> delta ky  P1outer-P1inner - line
+  fHisPy2vP1->Add(laser->fHisPy2vP1  );     //-> delta ky  P1outer-P1inner - parabola
+  fHisPy3vP1->Add(laser->fHisPy3vP1  );     //-> delta ky  P1outer-P1inner - common parabola
+  fHisPy2vP2In->Add(laser-> fHisPy2vP2In  );   //-> Curv  P2inner - parabola
+  fHisPy2vP2Out->Add(laser->fHisPy2vP2Out  );  //-> Curv  P2outer - parabola
+  fHisPy3vP2IO->Add(laser->fHisPy3vP2IO  );   //-> Curv  P2outerinner - common parabola
+  //
+  //
+  fHisPz1vP0->Add(laser->fHisPz1vP0  );     //-> delta z   P0outer-P0inner - line
+  fHisPz2vP0->Add(laser->fHisPz2vP0  );     //-> delta z   P0outer-P0inner - parabola
+  fHisPz3vP0->Add(laser->fHisPz3vP0  );     //-> delta z   P0outer-P0inner - common parabola
+  fHisPz1vP1->Add(laser->fHisPz1vP1  );     //-> delta kz  P1outer-P1inner - line
+  fHisPz2vP1->Add(laser->fHisPz2vP1  );     //-> delta kz  P1outer-P1inner - parabola
+  fHisPz3vP1->Add(laser->fHisPz3vP1  );     //-> delta kz  P1outer-P1inner - common parabola
+  fHisPz2vP2In->Add(laser->fHisPz2vP2In  );   //-> Curv  P2inner - parabola
+  fHisPz2vP2Out->Add(laser->fHisPz2vP2Out  );  //-> Curv  P2outer - parabola
+  fHisPz3vP2IO->Add(laser->fHisPz3vP2IO  );   //-> Curv  P2outerinner - common parabola
+  //
+  //
+  //
+  
+
+
+
+}
+
+
+
 
 void AliTPCcalibLaser::DumpFitInfo(TTree * chainFit,Int_t id){
   //
@@ -1583,6 +2262,10 @@ void AliTPCcalibLaser::DumpFitInfo(TTree * chainFit,Int_t id){
     chainTrack = tool.MakeChain("laser.txt","Track",0,10200);
     chainTrack->Lookup();
     chainTrack->SetProof(kTRUE);
+    chainDrift = tool.MakeChain("laser.txt","driftv",0,10200);
+    chainDrift->Lookup();
+    chainDrift->SetProof(kTRUE);
+ 
     chain = tool.MakeChain("laser.txt","Residuals",0,10200);
     chain->Lookup();
     chainFit = tool.MakeChain("laser.txt","FitModels",0,10200);
@@ -1607,7 +2290,7 @@ void AliTPCcalibLaser::DumpFitInfo(TTree * chainFit,Int_t id){
   TCut cutdEdx("sqrt(dEdx)>3");
   TCut cutDY("abs(yPol2In.fElements[2]*nclI*nclI/4.)<3");
   TCut cutN("nclO>20&&nclI>20");
-  TCut cutA = cutChi2YOut+cutChi2ZOut+cutChi2YIn+cutChi2ZIn+cutN+cutdEdx+cutPx;
+  TCut cutA = cutChi2YOut+cutChi2ZOut+cutChi2YIn+cutChi2ZIn+cutN+cutdEdx+cutPx+"accept";
   //
   // Cluster cuts
   //
