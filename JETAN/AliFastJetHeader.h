@@ -52,7 +52,8 @@ class AliFastJetHeader : public AliJetHeader
   void SetRapRange(Double_t fmin, Double_t fmax)       {fRapMin = fmin; fRapMax = fmax;}
   void SetPhiRange(Double_t fmin, Double_t fmax)       {fPhiMin = fmin; fPhiMax = fmax;}
   
-  void SetComment(TString com) {fComment=com;}
+  void SetComment(TString com)       {fComment=com;}
+  void SetComment(const char* com)   {fComment=com;}
   
   // others
   void PrintParameters() const;

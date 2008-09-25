@@ -44,8 +44,10 @@ AliFastJetHeader::AliFastJetHeader():
     fActiveAreaRepeats(1),
     fAreaType(fastjet::active_area), 
     fPtMin(5.0),
-    fPhiMin(0),
-    fPhiMax(TMath::TwoPi())
+    fRapMax(0),
+    fRapMin(0),
+    fPhiMax(TMath::TwoPi()),
+    fPhiMin(0)
 {
   // Constructor
   

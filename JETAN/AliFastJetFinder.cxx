@@ -92,7 +92,7 @@ void AliFastJetFinder::FindJets()
   if(lvArray == 0) { cout << "Could not get the momentum array" << endl; return; }
   Int_t nIn =  lvArray->GetEntries();
   if(nIn == 0) { if (debug) cout << "entries = 0 ; Event empty !!!" << endl ; return; }
-  Int_t nJets = 0; // n jets in this event
+  //Int_t nJets = 0; // n jets in this event
   fJets->SetNinput(nIn) ; // number of input objects
   Float_t px,py,pz,en;
   // load input vectors
@@ -179,8 +179,8 @@ void AliFastJetFinder::FindJets()
   vector<fastjet::PseudoJet> jets = sorted_by_pt(sub_jets);  
   for (size_t j = 0; j < jets.size(); j++) { // loop for jets
 
-    double area     = clust_seq.area(jets[j]);
-    double area_error = clust_seq.area_error(jets[j]);
+//    double area     = clust_seq.area(jets[j]);
+//    double area_error = clust_seq.area_error(jets[j]);
 
     //printf("%5u %9.5f %8.5f %10.3f %8.3f +- %6.3f\n",j,jets[j].rap(),jets[j].phi(),jets[j].perp(), area, area_error);
 	
@@ -282,7 +282,7 @@ void AliFastJetFinder::RunTest(const char* datafile)
     double area     = clust_seq.area(jets[j]);
     double area_error = clust_seq.area_error(jets[j]);
 
-    printf("%5u %9.5f %8.5f %10.3f %8.3f +- %6.3f\n",j,jets[j].rap(),
+    printf("%5d %9.5f %8.5f %10.3f %8.3f +- %6.3f\n",j,jets[j].rap(),
 	   jets[j].phi(),jets[j].perp(), area, area_error);
   }
   cout << endl;
