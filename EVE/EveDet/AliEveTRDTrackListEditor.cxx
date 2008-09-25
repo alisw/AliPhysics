@@ -1,4 +1,4 @@
-// Author: Benjamin Hess   23/09/2008
+// Author: Benjamin Hess   25/09/2008
 
 /*************************************************************************
  * Copyright (C) 2008, Alexandru Bercuci, Benjamin Hess.                 *
@@ -41,6 +41,7 @@
 #include <TGListBox.h>
 #include <TGMsgBox.h>
 #include <TGTab.h>
+#include <TMap.h>
 #include <TObjString.h>
 #include <TROOT.h>
 #include <TSystem.h>
@@ -61,6 +62,7 @@ AliEveTRDTrackListEditor::AliEveTRDTrackListEditor(const TGWindow* p, Int_t widt
   fM(0),
   fHistoCanvas(0),
   fHistoCanvasName(0),
+  fInheritedMacroList(0),
   fInheritSettings(kFALSE),
   fStyleFrame(0),
   fMainFrame(0),
@@ -216,7 +218,7 @@ AliEveTRDTrackListEditor::AliEveTRDTrackListEditor(const TGWindow* p, Int_t widt
 
   // Handle the signal "Selected(Int_t ind)"
   ftlMacroList->Connect("Selected(Int_t)", "AliEveTRDTrackListEditor", this, "UpdateMacroListSelection(Int_t)");
-  ftlMacroSelList->Connect("Selected(Int_t)", "AliEveTRDTrackListEditor", this, "UpdateMacroSelListSelection(Int_t)");
+  ftlMacroSelList->Connect("Selected(Int_t)", "AliEveTRDTrackListEditor", this, "UpdateMacroListSelection(Int_t)");
 
   // Handle the signal "NewEventLoaded"
   gAliEveEvent->Connect("NewEventLoaded()", "AliEveTRDTrackListEditor", this, "HandleNewEventLoaded()");
@@ -250,6 +252,12 @@ AliEveTRDTrackListEditor::~AliEveTRDTrackListEditor()
   {
     delete fHistoCanvasName;
     fHistoCanvasName = 0;
+  }
+  if (fInheritedMacroList != 0)
+  {
+    fInheritedMacroList->Delete();
+    delete fInheritedMacroList;
+    fInheritedMacroList = 0;
   }
 }
 
@@ -611,7 +619,7 @@ void AliEveTRDTrackListEditor::DrawHistos()
 //______________________________________________________
 Int_t AliEveTRDTrackListEditor::GetNSelectedHistograms() const
 {
-  // Returns the number of selected macros (or rather: Their data) in the "Histograms"-tab
+  // Returns the number of selected macros (or rather: of their selected data) in the "Histograms"-tab
 
   Int_t count = 0;
   
@@ -714,26 +722,36 @@ void AliEveTRDTrackListEditor::HandleTabChangedToIndex(Int_t index)
 //______________________________________________________
 void AliEveTRDTrackListEditor::InheritMacroList()
 {
-  // The old macro lists are stored in the corresponding list boxes. This function will add
-  // these lists to the newly loaded AliEveTRDTrackList (or better replace the AliEveTRDTrackList's
-  // macro lists by these lists). With this, the settings will be inherited from the previously loaded
-  // AliEveTRDTrackList.
-    
-  // Selection macros
-  fM->fMacroSelList->Delete();
-  for (Int_t i = 0; i < ftlMacroSelList->GetNumberOfEntries(); i++)
-  {
-    fM->AddMacroFast(ftlMacroSelList->GetEntry(i)->GetTitle(), 
-                     fM->GetMacroType(ftlMacroSelList->GetEntry(i)->GetTitle(), kFALSE));
-  }
+  // The old macro list is possibly stored in the corresponding interior map. This function will 
+  // use this interior map to move the data from the interior map to the newly loaded AliEveTRDTrackList. 
+  // Then the interior map will be cleaned up. With this, the settings will be inherited from the previously 
+  // loaded AliEveTRDTrackList.
 
-  // Process macros
+  if (fInheritedMacroList == 0)  return;
+
+  // Clear list  
   fM->fMacroList->Delete();
-  for (Int_t i = 0; i < ftlMacroList->GetNumberOfEntries(); i++)
+
+  // Store data from interior list in the track list's map
+  TMapIter* iter = (TMapIter*)fInheritedMacroList->MakeIterator();
+  
+  TObject* key = 0;
+  TMacroData* macro = 0;
+  
+  while ((key = iter->Next()) != 0)
   {
-    fM->AddMacroFast(ftlMacroList->GetEntry(i)->GetTitle(), fM->GetMacroType(ftlMacroList->GetEntry(i)->GetTitle(),
-                                                                             kFALSE));
+    macro = (TMacroData*)fInheritedMacroList->GetValue(key);
+    if (macro != 0)  fM->fMacroList->Add(new TObjString(key->GetName()), 
+                                         new TMacroData(macro->GetName(), macro->GetPath(), macro->GetType()));
+    else
+    {
+      Error("AliEveTRDTrackListEditor::InheritMacroList", Form("Failed to inherit the macro \"%s\"!", key));
+    }
   }
+  
+  fInheritedMacroList->Delete();
+  delete fInheritedMacroList;
+  fInheritedMacroList = 0;
 }
 
 //______________________________________________________
@@ -764,22 +782,21 @@ void AliEveTRDTrackListEditor::InheritStyle()
 //______________________________________________________
 void AliEveTRDTrackListEditor::RemoveMacros()
 {
-  // Removes the selected macros from the corresponding lists.
+  // Removes the selected macros from the corresponding list.
 
   TList* iterator = new TList();
   
   ftlMacroList->GetSelectedEntries(iterator);
-  fM->RemoveProcessMacros(iterator);
+  fM->RemoveSelectedMacros(iterator);
 
   if (iterator != 0)  delete iterator;
 
   iterator = new TList();
   ftlMacroSelList->GetSelectedEntries(iterator);
-  fM->RemoveSelectionMacros(iterator);
+  fM->RemoveSelectedMacros(iterator);
 
   // Selected macros are deleted from the list -> No selected entries left
   fM->fMacroListSelected = 0;
-  fM->fMacroSelListSelected = 0;
 
   UpdateMacroList();
 
@@ -825,6 +842,9 @@ void AliEveTRDTrackListEditor::SetModel(TObject* obj)
     return;
   }
 
+  // Provide a pointer to this editor
+  fM->fEditor = this;
+
   // If macro list + track style shall be inherited from previously loaded track list, do so
   if (fInheritSettings)
   {
@@ -859,6 +879,37 @@ void AliEveTRDTrackListEditor::SetModel(TObject* obj)
 
   // View correct tab
   GetGedEditor()->GetTab()->SetTab(fM->GetSelectedTab()); 
+}
+
+//______________________________________________________
+void AliEveTRDTrackListEditor::SaveMacroList(TMap* list)
+{
+  // Saves the provided macro list in an interior list. This list will be used by
+  // InheritMacroList() to restore the data in "list". With this method one is able
+  // to inherit the macro list from track list to track list (i.e. from event to event).
+
+  if (fInheritedMacroList != 0)
+  {
+    fInheritedMacroList->Delete();
+    delete fInheritedMacroList;
+  }
+  fInheritedMacroList = new TMap();
+  fInheritedMacroList->SetOwnerKeyValue(kTRUE, kTRUE);
+
+  TMapIter* iter = (TMapIter*)list->MakeIterator();
+  TObject* key = 0;
+  TMacroData* macro = 0;
+  
+  while ((key = iter->Next()) != 0)
+  {
+    macro = (TMacroData*)fM->fMacroList->GetValue(key);
+    if (macro != 0) fInheritedMacroList->Add(new TObjString(key->GetName()), 
+                                             new TMacroData(macro->GetName(), macro->GetPath(), macro->GetType()));
+    else
+    {
+      Error("AliEveTRDTrackListEditor::SaveMacroList", Form("Failed to inherit the macro \"%s\"!", key));
+    }
+  }
 }
 
 //______________________________________________________
@@ -970,64 +1021,58 @@ void AliEveTRDTrackListEditor::UpdateMacroList()
   // the current AliEveTRDTrackList (data).
 
   ftlMacroList->RemoveAll();
- 
-  TObjString* iter = (TObjString*)fM->fMacroList->First();
+  ftlMacroSelList->RemoveAll();
+   
+  TMapIter* iter = (TMapIter*)fM->fMacroList->MakeIterator();
+  TObject* key = 0;
+  TMacroData* macro = 0;
 
   Int_t ind = 0;
-  while (iter != 0)
+  while ((key = iter->Next()) != 0)
   {
-    ftlMacroList->AddEntry(iter->GetName(), ind++);
-    iter = (TObjString*)fM->fMacroList->After(iter);
+    macro = (TMacroData*)fM->fMacroList->GetValue(key);
+    if (macro != 0)
+    {
+      if (macro->IsProcessMacro())
+      {
+        ftlMacroList->AddEntry(macro->GetName(), ind);
+        // Select, what has been selected before
+        ftlMacroList->Select(ind, fM->MacroListIsSelected(ind));
+        ind++;
+      }
+      else if (macro->IsSelectionMacro())
+      {
+        ftlMacroSelList->AddEntry(macro->GetName(), ind);
+        // Select, what has been selected before
+        ftlMacroSelList->Select(ind, fM->MacroListIsSelected(ind));
+        ind++;
+      }
+      else
+      {
+        Error("AliEveTRDTrackListEditor::UpdateMacroList()", 
+              Form("Macro \"%s/%s.C\" has neither a selection macro nor a process macro!",
+                   macro->GetPath(), macro->GetName()));                                        
+      }
+    }
+    else
+    {
+      Error("AliEveTRDTrackListEditor::UpdateMacroList()", 
+              Form("Macro list is corrupted: Macro \"%s\" not found!", key->GetName()));            
+    }     
   }
 
-  ftlMacroList->SortByName();
-
-  // Select, what has been selected before
-  for (Int_t i = 0; i < fM->fMacroList->GetEntries(); i++)
-  {
-    ftlMacroList->Select(i, fM->MacroListIsSelected(i));
-  }
-
-
-
-  ftlMacroSelList->RemoveAll();
- 
-  iter = (TObjString*)fM->fMacroSelList->First();
-
-  ind = 0;
-  while (iter != 0)
-  {
-    ftlMacroSelList->AddEntry(iter->GetName(), ind++);
-    iter = (TObjString*)fM->fMacroSelList->After(iter);
-  }
-
+  ftlMacroList->SortByName(); 
   ftlMacroSelList->SortByName(); 
-
-  // Select, what has been selected before
-  for (Int_t i = 0; i < fM->fMacroSelList->GetEntries(); i++)
-  {
-    ftlMacroSelList->Select(i, fM->MacroSelListIsSelected(i));
-  }
 }
 
 //______________________________________________________
 void AliEveTRDTrackListEditor::UpdateMacroListSelection(Int_t ind)
 {
-  // Saves the current selection in the process macro list to the current
+  // Saves the current selection in the macro listS to the current
   // AliEveTRDTrackList. This means that the selection is updated and won't
   // get lost, if another editor is loaded in Eve.
+  // NOTE: The indices in BOTH lists will be unique!
 
   // Toggle selected item
   fM->SetMacroListSelection(ind, !fM->MacroListIsSelected(ind));
-}
-
-//______________________________________________________
-void AliEveTRDTrackListEditor::UpdateMacroSelListSelection(Int_t ind)
-{
-  // Saves the current selection in the selection macro list to the current
-  // AliEveTRDTrackList. This means that the selection is updated and won't
-  // get lost, if another editor is loaded in Eve.
-
-  // Toggle selected item
-  fM->SetMacroSelListSelection(ind, !fM->MacroSelListIsSelected(ind));
 }

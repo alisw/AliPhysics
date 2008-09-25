@@ -1,4 +1,4 @@
-// Author: Benjamin Hess   23/09/2008
+// Author: Benjamin Hess   25/09/2008
 
 /*************************************************************************
  * Copyright (C) 2008, Alexandru Bercuci, Benjamin Hess.                 *
@@ -15,17 +15,17 @@
 // the list in the same way as for the TEveElementList). In general,    //
 // please use AddMacro(...) for this purpose.                           //
 // Macros that are no longer needed can be removed from the list via    //
-// RemoveSelectionMacros(...) or RemoveProcessMacros(...) respectively. //
-// This function takes an iterator of the list of entries that are to   //
+// RemoveSelectedMacros(...).This function takes an iterator of the     //
+// list of macros that are to be removed.                               //
 // be removed. An entry looks like:                                     //
-// "MacroName.C (Path: MacroPath)". This is the way, the information    //
-// about a macro is stored in the AliEveTRDTrackList. If you have path  //
-// and name of a macro, use MakeMacroEntry(...) to get the corresponding//
-// entry. The type of the macros is stored in a map. You can get the    //
-// macro type via GetMacroType(...).                                    //
+// The data for each macro consists of path, name, type and the command //
+// that will be used to apply the macro. This stuff is stored in a map  //
+// which takes the macro name for the key and the above mentioned data  //
+// in a TMacroData-object for the value.                                //
+// You can get the macro type via GetMacroType(...).                    //
 // With ApplySTSelectionMacros(...) or ApplyProcessMacros(...)          //
 // respectively you can apply the macros to the track list via          //
-// iterators (same style like for RemoveProcessMacros(...) (cf. above)).//
+// iterators (same style like for RemoveSelectedMacros(...)(cf. above)).//
 // Selection macros (de-)select macros according to a selection rule    //
 // by setting the rnr-state of the tracks.                              //
 // If multiple selection macros are applied, a track is selected, if    //
@@ -47,8 +47,12 @@
 // TH1* YourMacro(const AliTRDtrackV1*);                                //
 // TH1* YourMacro(const AliTRDtrackV1*, const AliTRDtrackV1*);          //
 //                                                                      //
-// The macros which take 2 tracks are applied to all pairs              //
-// fullfilling the selection criteria.                                  //
+// The macros which take 2 tracks are applied to all track pairs        //
+// (whereby BOTH tracks of the pair have to be selected by the single   //
+// track selection macros and have to be unequal, otherwise they will   //
+// be skipped) that have been selected by ALL correlated tracks         //
+// selection macros. The selection macros with 2 tracks do NOT affect   //
+// process macros that process only a single track!                     //
 //////////////////////////////////////////////////////////////////////////
 
 
@@ -57,6 +61,7 @@
 
 #include "AliEveTRDTrackList.h"
 
+#include <EveDet/AliEveTRDTrackListEditor.h>
 #include <AliTRDReconstructor.h>
 #include <TFile.h>
 #include <TFunction.h>
@@ -76,16 +81,14 @@ ClassImp(AliEveTRDTrackList)
 ///////////////////////////////////////////////////////////
 AliEveTRDTrackList::AliEveTRDTrackList(const Text_t* n, const Text_t* t, Bool_t doColor):
   TEveElementList(n, t, doColor),
-  fMacroList(0),
-  fMacroSelList(0),
   fDataFromMacroList(0),
-  fMacroTypes(0),
+  fMacroList(0),
   fDataTree(0),
   fHistoDataSelected(0),
   fMacroListSelected(0),
-  fMacroSelListSelected(0),
   fSelectedTab(1),                              // Standard tab: "Apply macros" (index 1)
-  fSelectedStyle(0)
+  fSelectedStyle(0),
+  fEditor(0)
 {
   // Creates the AliEveTRDTrackList.
 
@@ -93,16 +96,12 @@ AliEveTRDTrackList::AliEveTRDTrackList(const Text_t* n, const Text_t* t, Bool_t 
   SetChildClass(AliEveTRDTrack::Class());
 
   // Allocate memory for the lists and declare them as owners of their contents
-  fMacroList = new TList();
-  fMacroList->TCollection::SetOwner(kTRUE);
-  fMacroSelList = new TList();
-  fMacroSelList->TCollection::SetOwner(kTRUE);
   fDataFromMacroList = new TList();
   fDataFromMacroList->TCollection::SetOwner(kTRUE);
 
-  fMacroTypes = new TMap();
+  fMacroList = new TMap();
   // Set map to owner of it's objects to delete them, if they are removed from the map
-  fMacroTypes->SetOwnerKeyValue(kTRUE, kTRUE);
+  fMacroList->SetOwnerKeyValue(kTRUE, kTRUE);
 
   // Set the build directory for AClic
   gSystem->SetBuildDir("$HOME/.trdQArec");
@@ -115,18 +114,13 @@ AliEveTRDTrackList::~AliEveTRDTrackList()
 {
   // Frees allocated memory (lists etc.).
 
-  if (fMacroList != 0)
+  // Let the editor know that the list will be destroyed -> The editor will save the data
+  if (fEditor != 0)
   {
-    fMacroList->Delete();
-    delete fMacroList;
-    fMacroList = 0;
+    fEditor->SaveMacroList(fMacroList);
+    fEditor = 0;
   }
-  if (fMacroSelList != 0)
-  {
-    fMacroSelList->Delete();
-    delete fMacroSelList;
-    fMacroSelList = 0;
-  } 
+
   if (fDataFromMacroList != 0)
   {
     fDataFromMacroList->Delete();
@@ -138,11 +132,11 @@ AliEveTRDTrackList::~AliEveTRDTrackList()
     delete fDataTree;
     fDataTree = 0;
   } 
-  if (fMacroTypes != 0)
+  if (fMacroList != 0)
   {
-    fMacroTypes->DeleteAll();
-    delete fMacroTypes;
-    fMacroTypes = 0;
+    fMacroList->DeleteAll();
+    delete fMacroList;
+    fMacroList = 0;
   }
   // Note: gSystem->AccessPathName(...) returns kTRUE, if the access FAILED!
   if(!gSystem->AccessPathName(Form("/tmp/TRD.TrackListMacroData_%s.root", gSystem->Getenv("USER")))) 
@@ -165,12 +159,7 @@ Int_t AliEveTRDTrackList::AddMacro(const Char_t* path, const Char_t* nameC, Bool
   // void YourMacro(const AliTRDtrackV1*, const AliTRDtrackV1*,           
   //                Double_t*&, Int_t&)                                   
   // TH1* YourMacro(const AliTRDtrackV1*)                                 
-  // TH1* YourMacro(const AliTRDtrackV1*, const AliTRDtrackV1*)           
-  //                                                                      
-  // The macros which take 2 tracks are applied to all pairs              
-  // fullfilling the selection criteria.                                  
-
-  Char_t* entryName = MakeMacroEntry(path, nameC);
+  // TH1* YourMacro(const AliTRDtrackV1*, const AliTRDtrackV1*)                              
 
   Char_t pathname[fkMaxMacroPathNameLength];
   memset(pathname, '\0', sizeof(Char_t) * fkMaxMacroPathNameLength);
@@ -196,137 +185,83 @@ Int_t AliEveTRDTrackList::AddMacro(const Char_t* path, const Char_t* nameC, Bool
     fclose(fp);
     fp = 0;
   }
-  else
-  {
-    if (entryName != 0)  delete entryName;
-    entryName = 0;
-
-    return NOT_EXIST_ERROR;
-  }
-
+  else  return NOT_EXIST_ERROR;
+  
   // Clean up root, load the desired macro and then check the type of the macro
   gROOT->Reset();
  
   if (forceReload)  gROOT->ProcessLineSync(Form(".L %s++", pathname));
   else              gROOT->ProcessLineSync(Form(".L %s+", pathname));
 
-  AliEveTRDTrackListMacroType type = GetMacroType(entryName, kFALSE);
+  AliEveTRDTrackListMacroType type = GetMacroType(name, kFALSE);
 
   // Clean up again
   gROOT->Reset();
   
   // Has not the correct signature!
-  if (type == kUnknown) 
-  {
-    if (entryName != 0)  delete entryName;
-    entryName = 0;
-    return SIGNATURE_ERROR;
-  }
+  if (type == kUnknown)  return SIGNATURE_ERROR;
 
   Int_t returnValue = WARNING;
 
   // Only add macro, if it is not already in the list
-  if ((type == kSingleTrackAnalyse || type == kSingleTrackHisto 
-      || type == kCorrelTrackAnalyse || type == kCorrelTrackHisto) && fMacroList->FindObject(entryName) == 0)
+  if (fMacroList->GetValue(name) == 0)
   {
-    fMacroList->Add(new TObjString(entryName));
-    fMacroList->Sort();
-
-    fMacroTypes->Add(new TObjString(entryName), new TObjString(Form("%d", type)));
-
-    // We do not know, where the element has been inserted - deselect this list
-    fMacroListSelected = 0;
-
-    returnValue = SUCCESS;
+    if (AddMacroFast(path, name, type)) returnValue = SUCCESS;
+    else                                returnValue = WARNING;
   }
-  else if ((type == kSingleTrackSelect || type == kCorrelTrackSelect) && fMacroSelList->FindObject(entryName) == 0)
-  {
-    fMacroSelList->Add(new TObjString(entryName));
-    fMacroSelList->Sort();
-
-    fMacroTypes->Add(new TObjString(entryName), new TObjString(Form("%d", type)));
-  
-    // We do not know, where the element has been inserted - deselect this list
-    fMacroSelListSelected = 0;
-    
-    returnValue = SUCCESS;
-  }
-  else  returnValue = WARNING;
-
-  if (entryName != 0)  delete entryName;
-  entryName = 0;
 
   return returnValue;
 }
 
 //______________________________________________________
-void AliEveTRDTrackList::AddMacroFast(const Char_t* entry, AliEveTRDTrackListMacroType type)
+Bool_t AliEveTRDTrackList::AddMacroFast(const Char_t* path, const Char_t* name, AliEveTRDTrackListMacroType type)
 {
-  // Adds an entry to the corresponding list (cf. overloaded function).
+  // Adds a macro (path/name) to the corresponding list. No checks are performed (file exist, 
+  // macro already in list/map, signature correct),  no libraries are created!
+  // You can use this function only, if the macro has been added successfully before 
+  // (and then maybe was removed). The function is very fast. On success kTRUE is returned, otherwise: kFALSE;
+
+  Bool_t success = kFALSE;
 
   switch (type)
   {
     case kSingleTrackSelect:
     case kCorrelTrackSelect:
-      fMacroSelList->Add(new TObjString(entry));
-      fMacroSelList->Sort();
-
-      fMacroTypes->Add(new TObjString(entry), new TObjString(Form("%d", type)));
-
-      // We do not know, where the element has been inserted - deselect this list
-      fMacroSelListSelected = 0;
-
-      break;
     case kSingleTrackAnalyse:
     case kSingleTrackHisto:
     case kCorrelTrackAnalyse:
     case kCorrelTrackHisto:
-      fMacroList->Add(new TObjString(entry));
-      fMacroList->Sort();
-
-      fMacroTypes->Add(new TObjString(entry), new TObjString(Form("%d", type)));
+      fMacroList->Add(new TObjString(name), new TMacroData(name, path, type));
 
       // We do not know, where the element has been inserted - deselect this list
       fMacroListSelected = 0;
-      break;
-    default:
-      Error("AliEveTRDTrackList::AddMacroFast", Form("Unknown macro type for entry \"%s\"!", entry));
-      break;
-  }
-}
-
-//______________________________________________________
-void AliEveTRDTrackList::AddMacroFast(const Char_t* path, const Char_t* name, AliEveTRDTrackListMacroType type)
-{
-  // Adds a macro (path/name) to the list associated with the "type" parameter.
-  // No checks are performed (fast) and no libraries are loaded. 
-  // Do use only, if library already exists!
-
-  Char_t* entry = MakeMacroEntry(path, name);
-  if (entry != 0)
-  {
-    AddMacroFast(entry, type);
+    
+      success = kTRUE;
 
 #ifdef ALIEVETRDTRACKLIST_DEBUG
-    // Successfull add will only be displayed in debug mode
-    printf("#AliEveTRDTrackList::AddMacroFast: Added macro \"%s/%s\" to the corresponding list\n", path, name);
+      // Successfull add will only be displayed in debug mode
+      printf("AliEveTRDTrackList::AddMacroFast: Added macro \"%s/%s\" to the corresponding list\n", path, name);
 #endif
-    
-    delete entry;
-    entry = 0;
+
+      break;
+
+    default:
+      // Error will always be displayed
+      printf("AliEveTRDTrackList::AddMacroFast: ERROR: Could not add macro \"%s/%s\" to the corresponding list\n", 
+             path, name);
+
+      success = kFALSE;
+
+      break;
   }
-  else
-  {
-    // Error will always be displayed
-    printf("#AliEveTRDTrackList::AddMacroFast: ERROR: Could not add macro \"%s/%s\" to the corresponding list\n", 
-           path, name);
-  }
+
+  return success;
 }
 
 //______________________________________________________
 void AliEveTRDTrackList::AddStandardMacros()
 {
-  // Adds standard macros to the lists.
+  // Adds standard macros to the macro list.
 
   // Add your standard macros here, e.g.: 
   // To add a macro use:
@@ -379,12 +314,24 @@ Bool_t AliEveTRDTrackList::ApplyProcessMacros(const TList* selIterator, const TL
   fHistoDataSelected = 0;
 
 
-  Char_t name[fkMaxMacroNameLength];
-  Char_t** procCmds = new Char_t*[procIterator->GetEntries()];
-  Char_t** selCmds  = new Char_t*[selIterator->GetEntries()];
-  AliEveTRDTrackListMacroType* mProcType = new AliEveTRDTrackListMacroType[procIterator->GetEntries()];
-  AliEveTRDTrackListMacroType* mSelType = new AliEveTRDTrackListMacroType[selIterator->GetEntries()];
+  TMacroData* macro = 0;
 
+  Char_t** procCmds = 0;
+  AliEveTRDTrackListMacroType* mProcType = 0;
+  if (procIterator->GetEntries() > 0) 
+  {
+    procCmds = new Char_t*[procIterator->GetEntries()];
+    mProcType = new AliEveTRDTrackListMacroType[procIterator->GetEntries()];
+  }
+
+  Char_t** selCmds  = 0;
+  AliEveTRDTrackListMacroType* mSelType = 0;
+  if (selIterator->GetEntries() > 0) 
+  {
+    selCmds = new Char_t*[selIterator->GetEntries()];
+    mSelType = new AliEveTRDTrackListMacroType[selIterator->GetEntries()];
+  }
+  
   Bool_t selectedByCorrSelMacro = kFALSE;
 
   AliEveTRDTrackListMacroType macroType = kUnknown;
@@ -398,72 +345,48 @@ Bool_t AliEveTRDTrackList::ApplyProcessMacros(const TList* selIterator, const TL
   // Collect the commands for each process macro and add them to "data-from-list"
   for (Int_t i = 0; i < procIterator->GetEntries(); i++)
   {
-    memset(name, '\0', sizeof(Char_t) * fkMaxMacroNameLength);
-    
     procCmds[i] = new Char_t[(fkMaxMacroPathNameLength + fkMaxApplyCommandLength)];
     memset(procCmds[i], '\0', sizeof(Char_t) * (fkMaxMacroNameLength + fkMaxApplyCommandLength));
 
+    macro = (TMacroData*)fMacroList->GetValue(procIterator->At(i)->GetTitle());
+
+    if (!macro)
+    {
+      Error("Apply process macros", 
+            Form("Macro list is corrupted: Macro \"%s\" is not registered!", procIterator->At(i)->GetTitle()));
+      continue;
+    }
+
 #ifdef ALIEVETRDTRACKLIST_DEBUG
-    printf("AliEveTRDTrackList: Applying process macro: %s\n", procIterator->At(i)->GetTitle());
-#endif
- 
-    // Extract the name
-    sscanf(procIterator->At(i)->GetTitle(), "%s (Path: %*s)", name);
-   
-    // Delete ".C" at the end 
-    // -> Note: Physical address pointer, do NOT delete. / Changes "name" as well!
-    Char_t* dotC = (Char_t*)strrchr(name, '.');
-    if (dotC != 0)
-    {
-      *dotC = '\0';
-      dotC++;
-      *dotC = '\0';
-    }
-       
+    printf("AliEveTRDTrackList: Checking process macro: %s\n", macro->GetName());
+#endif 
+           
     // Find the type of the process macro
-    macroType = GetMacroType(procIterator->At(i)->GetTitle(), kTRUE);
-    if (macroType == kSingleTrackHisto)
+    macroType = macro->GetType();
+    if (macroType == kSingleTrackHisto || macroType == kCorrelTrackHisto)
     {
       mProcType[i] = macroType;
       numHistoMacros++;
       // Create the command 
-      sprintf(procCmds[i], "%s(automaticTrackV1_1);", name);
+      sprintf(procCmds[i], macro->GetCmd());
 
       // Add to "data-from-list" -> Mark as a histo macro with the substring "(histo macro)"
-      fDataFromMacroList->Add(new TObjString(Form("%s (histo macro)", name)));
+      fDataFromMacroList->Add(new TObjString(Form("%s (histo macro)", macro->GetName())));
     }
-    else if (macroType == kSingleTrackAnalyse)
+    else if (macroType == kSingleTrackAnalyse || macroType == kCorrelTrackAnalyse)
     {
       mProcType[i] = macroType;
       // Create the command 
-      sprintf(procCmds[i], "%s(automaticTrackV1_1, results, n);", name);
+      sprintf(procCmds[i], macro->GetCmd());
 
       // Add to "data-from-list"
-      fDataFromMacroList->Add(new TObjString(name));
-    }
-    else if (macroType == kCorrelTrackHisto)
-    {
-      mProcType[i] = macroType;
-      numHistoMacros++;
-      // Create the command 
-      sprintf(procCmds[i], "%s(automaticTrackV1_1, automaticTrackV1_2);", name);
-
-      // Add to "data-from-list" -> Mark as a histo macro with the substring "(histo macro)"
-      fDataFromMacroList->Add(new TObjString(Form("%s (histo macro)", name)));
-    }
-    else if (macroType == kCorrelTrackAnalyse)
-    {
-      mProcType[i] = macroType;
-      // Create the command 
-      sprintf(procCmds[i], "%s(automaticTrackV1_1, automaticTrackV1_2, results, n);", name);
-
-      // Add to "data-from-list"
-      fDataFromMacroList->Add(new TObjString(name));
+      fDataFromMacroList->Add(new TObjString(macro->GetName()));
     }
     else
     {
       Error("Apply process macros", 
-            Form("Process macro list corrupted: Macro \"%s\" is not registered as a process macro!", name));
+            Form("Macro list corrupted: Macro \"%s/%s.C\" is not registered as a process macro!", 
+                 macro->GetPath(), macro->GetName()));
       mProcType[i] = kUnknown;
     } 
   }  
@@ -471,30 +394,25 @@ Bool_t AliEveTRDTrackList::ApplyProcessMacros(const TList* selIterator, const TL
   // Collect the commands for each selection macro and add them to "data-from-list"
   for (Int_t i = 0; i < selIterator->GetEntries(); i++)
   {
-    memset(name, '\0', sizeof(Char_t) * fkMaxMacroNameLength);
-    
     selCmds[i] = new Char_t[(fkMaxMacroPathNameLength + fkMaxApplyCommandLength)];
     memset(selCmds[i], '\0', sizeof(Char_t) * (fkMaxMacroNameLength + fkMaxApplyCommandLength));
 
-#ifdef ALIEVETRDTRACKLIST_DEBUG
-    printf("AliEveTRDTrackList: Applying selection macro (correlated tracks): %s\n", selIterator->At(i)->GetTitle());
-#endif
- 
-    // Extract the name
-    sscanf(selIterator->At(i)->GetTitle(), "%s (Path: %*s)", name);
-   
-    // Delete ".C" at the end 
-    // -> Note: Physical address pointer, do NOT delete. / Changes "name" as well!
-    Char_t* dotC = (Char_t*)strrchr(name, '.');
-    if (dotC != 0)
+    macro = (TMacroData*)fMacroList->GetValue(selIterator->At(i)->GetTitle());
+
+    if (!macro)
     {
-      *dotC = '\0';
-      dotC++;
-      *dotC = '\0';
+      Error("Apply process macros", 
+            Form("Macro list is corrupted: Macro \"%s\" is not registered!", selIterator->At(i)->GetTitle()));
+      continue;
     }
+
+#ifdef ALIEVETRDTRACKLIST_DEBUG
+    printf("AliEveTRDTrackList: Checking selection macro: %s\n", macro->GetName());
+#endif
        
     // Find the type of the process macro
-    macroType = GetMacroType(selIterator->At(i)->GetTitle(), kTRUE);
+    macroType = macro->GetType();
+
     // Single track select macro
     if (macroType == kSingleTrackSelect)
     {
@@ -507,30 +425,31 @@ Bool_t AliEveTRDTrackList::ApplyProcessMacros(const TList* selIterator, const TL
       mSelType[i] = macroType;  
  
       // Create the command
-      sprintf(selCmds[i], "%s(automaticTrackV1_1, automaticTrackV1_2);", name);
+      sprintf(selCmds[i], macro->GetCmd());
     }
     else
     {
       Error("Apply process macros", 
-            Form("Selection macro list corrupted: Macro \"%s\" is not registered as a selection macro!", name));
-      mProcType[i] = kUnknown;
+            Form("Macro list corrupted: Macro \"%s/%s.C\" is not registered as a selection macro!", 
+                 macro->GetPath(), macro->GetName()));
+      mSelType[i] = kUnknown;
     } 
   }  
 
   // Allocate memory for the histograms
   if (numHistoMacros > 0)  histos = new TH1*[numHistoMacros];
   for (Int_t i = 0; i < numHistoMacros; i++)  histos[i] = 0;
-  
+
   // Walk through the list of tracks     
   for (TEveElement::List_i iter = this->BeginChildren(); iter != this->EndChildren(); ++iter)
   {
     track1 = dynamic_cast<AliEveTRDTrack*>(*iter);
 
     if (!track1)  continue;
-    
+  
     // Skip tracks that have not been selected
     if (!track1->GetRnrState())  continue;
-      
+    
     track1->ExportToCINT((Text_t*)"automaticTrack");
     // Cast to AliTRDtrackV1
     gROOT->ProcessLineSync("AliTRDtrackV1* automaticTrackV1_1 = (AliTRDtrackV1*)automaticTrack->GetUserData();");
@@ -639,15 +558,16 @@ Bool_t AliEveTRDTrackList::ApplyProcessMacros(const TList* selIterator, const TL
         // all correlated tracks selection macros.
         TEveElement::List_i iter2 = iter;
         iter2++;
+
         for ( ; iter2 != this->EndChildren(); ++iter2)
         {
           track2 = dynamic_cast<AliEveTRDTrack*>(*iter2);
 
           if (!track2)  continue;
-    
+ 
           // Skip tracks that have not been selected
           if (!track2->GetRnrState())  continue;
-      
+    
           track2->ExportToCINT((Text_t*)"automaticTrack");
           // Cast to AliTRDtrackV1
           gROOT->ProcessLineSync("AliTRDtrackV1* automaticTrackV1_2 = (AliTRDtrackV1*)automaticTrack->GetUserData();");
@@ -672,7 +592,7 @@ Bool_t AliEveTRDTrackList::ApplyProcessMacros(const TList* selIterator, const TL
           gROOT->ProcessLineSync(procCmds[i]);
           Double_t* results = (Double_t*)gROOT->ProcessLineSync("results;");
           Int_t nResults = (Int_t)gROOT->ProcessLineSync("n;");
-          
+     
           if (results == 0)
           {
             Error("Apply macros", Form("Error reading data from macro \"%s\"", procIterator->At(i)->GetTitle()));
@@ -707,10 +627,12 @@ Bool_t AliEveTRDTrackList::ApplyProcessMacros(const TList* selIterator, const TL
   fDataTree = 0;
 
   if (procCmds != 0)  delete [] procCmds;
+  procCmds = 0;
   if (mProcType != 0)  delete mProcType;
   mProcType = 0;
 
   if (selCmds != 0)  delete [] selCmds;
+  selCmds = 0;
   if (mSelType != 0)  delete mSelType;
   mSelType = 0;
 
@@ -737,9 +659,7 @@ void AliEveTRDTrackList::ApplySTSelectionMacros(const TList* iterator)
   // "ST" stands for "single track". This means that only single track selection macros are applied.
   // Correlated tracks selection macros will be used inside the call of ApplyProcessMacros(...)!
 
-  Char_t name[fkMaxMacroNameLength];
-  Char_t cmd[(fkMaxMacroNameLength + fkMaxApplyCommandLength)];
-
+  TMacroData* macro = 0;
   AliEveTRDTrackListMacroType macroType = kUnknown;
   AliEveTRDTrack* track1 = 0;
   Bool_t selectedByMacro = kFALSE;
@@ -758,35 +678,25 @@ void AliEveTRDTrackList::ApplySTSelectionMacros(const TList* iterator)
   
   for (Int_t i = 0; i < iterator->GetEntries(); i++)
   {
+    macro = (TMacroData*)fMacroList->GetValue(iterator->At(i)->GetTitle());
 
-    memset(name, '\0', sizeof(Char_t) * fkMaxMacroNameLength);
-    memset(cmd, '\0', sizeof(Char_t) * (fkMaxMacroNameLength + fkMaxApplyCommandLength));
-
-#ifdef ALIEVETRDTRACKLIST_DEBUG
-    printf("AliEveTRDTrackList: Applying selection macro: %s\n", iterator->At(i)->GetTitle());
-#endif
-    
-    // Extract the name
-    sscanf(iterator->At(i)->GetTitle(), "%s (Path: %*s)", name);
-    // Delete ".C" at the end 
-    // -> Note: Physical address pointer, do NOT delete. / Changes "name" as well!
-    Char_t* dotC = (Char_t*)strrchr(name, '.');
-    if (dotC != 0)
+    if (!macro)
     {
-      *dotC = '\0';
-      dotC++;
-      *dotC = '\0';
+      Error("Apply selection macros", 
+            Form("Macro list is corrupted: Macro \"%s\" is not registered!", iterator->At(i)->GetTitle()));
+      continue;
     }
 
+#ifdef ALIEVETRDTRACKLIST_DEBUG
+    printf("AliEveTRDTrackList: Applying selection macro: %s\n", macro->GetName());
+#endif
+    
     // Determine macro type
-    macroType = GetMacroType(iterator->At(i)->GetTitle(), kTRUE);
+    macroType = macro->GetType();
 
     // Single track select macro
     if (macroType == kSingleTrackSelect)
     {
-      // Create the command
-      sprintf(cmd, "%s(automaticTrackV1);", name);
-
       // Walk through the list of tracks
       for (TEveElement::List_i iter = this->BeginChildren(); iter != this->EndChildren(); ++iter)
       {
@@ -799,8 +709,8 @@ void AliEveTRDTrackList::ApplySTSelectionMacros(const TList* iterator)
 
         track1->ExportToCINT((Text_t*)"automaticTrack");
         // Cast to AliTRDtrackV1
-        gROOT->ProcessLineSync("AliTRDtrackV1* automaticTrackV1 = (AliTRDtrackV1*)automaticTrack->GetUserData();");
-        selectedByMacro = (Bool_t)gROOT->ProcessLineSync(cmd);
+        gROOT->ProcessLineSync("AliTRDtrackV1* automaticTrackV1_1 = (AliTRDtrackV1*)automaticTrack->GetUserData();");
+        selectedByMacro = (Bool_t)gROOT->ProcessLineSync(macro->GetCmd());
         track1->SetRnrState(selectedByMacro && track1->GetRnrState());               
       }
     }
@@ -813,7 +723,8 @@ void AliEveTRDTrackList::ApplySTSelectionMacros(const TList* iterator)
     else
     {
       Error("Apply selection macros", 
-            Form("Selection macro list corrupted: Macro \"%s\" is not registered as a selection macro!", name));
+            Form("Macro list corrupted: Macro \"%s/%s.C\" is not registered as a selection macro!", 
+                 macro->GetPath(), macro->GetName()));
     } 
   }
 
@@ -822,38 +733,20 @@ void AliEveTRDTrackList::ApplySTSelectionMacros(const TList* iterator)
 }
 
 //______________________________________________________
-AliEveTRDTrackList::AliEveTRDTrackListMacroType AliEveTRDTrackList::GetMacroType(const Char_t* entry, Bool_t UseList) const
+AliEveTRDTrackList::AliEveTRDTrackListMacroType AliEveTRDTrackList::GetMacroType(const Char_t* name, Bool_t UseList) const
 {
-  // Returns the type of the macro of the corresponding entry (i.e. "macro.C (Path: path)"). 
-  // If you have only the name and the path, you can simply use MakeMacroEntry.
+  // Returns the type of the corresponding macro. 
   // If "UseList" is kTRUE, the type will be looked up in the internal list (very fast). But if this list
   // does not exist, you have to use kFALSE for this parameter. Then the type will be determined by the
   // prototype! NOTE: It is assumed that the macro has been compiled! If not, the return value is not
   // predictable, but normally will be kUnknown.
-  // Note: AddMacro(Fast) will update the internal list and RemoveProcess(/Selection)Macros respectively.
+  // Note: AddMacro(Fast) will update the internal list and RemoveMacros respectively.
 
   AliEveTRDTrackListMacroType type = kUnknown;
 
-  // Re do the check of the macro type
+  // Re-do the check of the macro type
   if (!UseList)
   {
-    Char_t name[fkMaxMacroNameLength];
-  
-    memset(name, '\0', sizeof(Char_t) * fkMaxMacroNameLength);
-
-    // Extract the name
-    sscanf(entry, "%s (Path: %*s)", name);
-   
-    // Delete ".C" at the end 
-    // -> Note: Physical address pointer, do NOT delete. / Changes "name" as well!
-    Char_t* dotC = (Char_t*)strrchr(name, '.');
-    if (dotC != 0)
-    {
-      *dotC = '\0';
-      dotC++;
-      *dotC = '\0';
-    }
-
     // Single track select macro or single track histo macro?
     TFunction* f = gROOT->GetGlobalFunctionWithPrototype(name, "const AliTRDtrackV1*", kTRUE);
     if (f != 0x0)
@@ -929,11 +822,11 @@ AliEveTRDTrackList::AliEveTRDTrackListMacroType AliEveTRDTrackList::GetMacroType
   // Use list to look up the macro type
   else
   {
-    TObjString* objEntry = 0;
-    objEntry = (TObjString*)fMacroTypes->GetValue(entry);
-    if (objEntry == 0)  return kUnknown; 
+    TMacroData* macro = 0;
+    macro = (TMacroData*)fMacroList->GetValue(name);
+    if (macro == 0)  return kUnknown; 
     
-    type = (AliEveTRDTrackListMacroType)objEntry->GetString().Atoi();
+    type = macro->GetType();
     switch (type)
     {
       case kSingleTrackSelect:
@@ -953,55 +846,47 @@ AliEveTRDTrackList::AliEveTRDTrackListMacroType AliEveTRDTrackList::GetMacroType
 }
 
 //______________________________________________________
-Char_t* AliEveTRDTrackList::MakeMacroEntry(const Char_t* path, const Char_t* name) const
+void AliEveTRDTrackList::RemoveSelectedMacros(const TList* iterator) 
 {
-  // Constructs an entry for the macro lists with path and name.  
-
-  Char_t* entry = new Char_t[(fkMaxMacroPathNameLength + 30)];
-  memset(entry, '\0', sizeof(Char_t) * (fkMaxMacroPathNameLength + 30));
-
-  Char_t* systemPath = gSystem->ExpandPathName(path);
-  sprintf(entry, "%s (Path: %s)", name, systemPath);
-  delete systemPath;
-  systemPath = 0;
-
-  return entry;
-}
-
-//______________________________________________________
-void AliEveTRDTrackList::RemoveProcessMacros(const TList* iterator) 
-{
-  // Uses the iterator (for the selected process macros) to remove the process macros from 
+  // Uses the iterator (for the selected macros) to remove the selected macros from 
   // the corresponding list.
    
-  TObjString* obj = 0;
+  TObject* key = 0;
+  TPair*   entry = 0;
   for (Int_t i = 0; i < iterator->GetEntries(); i++)
   {
-    // Key and value will be deleted, too, since fMacroTypes is the owner of them
-    fMacroTypes->DeleteEntry(fMacroTypes->FindObject(iterator->At(i)->GetTitle()));
+    entry = (TPair*)fMacroList->FindObject(iterator->At(i)->GetTitle());
 
-    obj = (TObjString*)fMacroList->Remove(fMacroList->FindObject(iterator->At(i)->GetTitle()));   
-    if (obj != 0) delete obj;
+    if (entry == 0)
+    {
+      Error("AliEveTRDTrackList::RemoveSelectedMacros", Form("Macro \"%s\" not found in list!", 
+                                                             iterator->At(i)->GetTitle()));
+      continue;
+    }
+    key = entry->Key();
+
+    if (key == 0)   
+    {
+      Error("AliEveTRDTrackList::RemoveSelectedMacros", Form("Key for macro \"%s\" not found in list!", 
+                                                             iterator->At(i)->GetTitle()));
+      continue;
+    }
+
+    // Key and value will be deleted, too, since fMacroList is the owner of them
+    Bool_t rem = fMacroList->DeleteEntry(key);
+
+    if (rem)
+    {
+#ifdef ALIEVETRDTRACKLIST_DEBUG
+    printf("AliEveTRDTrackList::RemoveSelectedMacros(): Removed macro: %s\n", iterator->At(i)->GetTitle());
+#endif
+    }
+    else
+    {
+      Error("AliEveTRDTrackList::RemoveSelectedMacros", Form("Macro \"%s\" could not be removed from the list!", 
+                                                             iterator->At(i)->GetTitle()));
+    }
   }
-  obj = 0;
-}
-
-//______________________________________________________
-void AliEveTRDTrackList::RemoveSelectionMacros(const TList* iterator) 
-{
-  // Uses the iterator (for the selected selection macros) to remove the selection macros from 
-  // the corresponding list.
-  
-  TObjString* obj = 0;
-  for (Int_t i = 0; i < iterator->GetEntries(); i++)
-  {
-    // Key and value will be deleted, too, since fMacroTypes is the owner of them
-    fMacroTypes->DeleteEntry(fMacroTypes->FindObject(iterator->At(i)->GetTitle()));
-
-    obj = (TObjString*)fMacroSelList->Remove(fMacroSelList->FindObject(iterator->At(i)->GetTitle()));
-    if (obj != 0) delete obj;
-  }
-  obj = 0;
 }
 
 //______________________________________________________

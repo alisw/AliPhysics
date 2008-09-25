@@ -1,4 +1,4 @@
-// Author: Benjamin Hess   23/09/2008
+// Author: Benjamin Hess   25/09/2008
 
 /*************************************************************************
  * Copyright (C) 2008, Alexandru Bercuci, Benjamin Hess.                 *
@@ -48,6 +48,9 @@ class TGTextButton;
 class TGTextEntry;
 class TGVerticalFrame;
 class TH1;
+class TMacroData;
+class TMap;
+class TMapIter;
 class TTree;
 
 class AliEveTRDTrackListEditor: public TGedFrame
@@ -68,17 +71,17 @@ public:
   void HandleMacroPathSet();                             
   void HandleNewEventLoaded();                           
   void HandleTabChangedToIndex(Int_t);                 
-  void RemoveMacros();                                   
+  void RemoveMacros();    
+  void SaveMacroList(TMap* list);                               
   void SetTrackColor(Int_t ind);                       
   void SetTrackModel(Int_t ind);                         
   void UpdateDataFromMacroListSelection();                
   void UpdateHistoList();                                
   void UpdateMacroList();                                 
-  void UpdateMacroListSelection(Int_t ind);              
-  void UpdateMacroSelListSelection(Int_t ind);            
+  void UpdateMacroListSelection(Int_t ind);                       
   
 protected:
-  AliEveTRDTrackList* fM;                                 // Model object
+  AliEveTRDTrackList* fM;                                               // Model object
 
   void InheritMacroList();                               
   void InheritStyle();                                    
@@ -89,6 +92,8 @@ private:
 
   TCanvas*          fHistoCanvas;            // Canvas for the histograms
   TGString*         fHistoCanvasName;        // Name of the histogram canvas
+
+  TMap*             fInheritedMacroList;     // Stores the from the track list inherited macro list
 
   Bool_t            fInheritSettings;        // Flag indicating, whether the macro list and the style settings will be 
                                              // inherited from the previously loaded track list within the next call 

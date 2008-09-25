@@ -1,4 +1,4 @@
-// Author: Benjamin Hess   23/09/2008
+// Author: Benjamin Hess   25/09/2008
 
 /*************************************************************************
  * Copyright (C) 2008, Alexandru Bercuci, Benjamin Hess.                 *
@@ -18,17 +18,17 @@
 // the list in the same way as for the TEveElementList). In general,    //
 // please use AddMacro(...) for this purpose.                           //
 // Macros that are no longer needed can be removed from the list via    //
-// RemoveSelectionMacros(...) or RemoveProcessMacros(...) respectively. //
-// This function takes an iterator of the list of entries that are to   //
+// RemoveSelectedMacros(...).This function takes an iterator of the     //
+// list of macros that are to be removed.                               //
 // be removed. An entry looks like:                                     //
-// "MacroName.C (Path: MacroPath)". This is the way, the information    //
-// about a macro is stored in the AliEveTRDTrackList. If you have path  //
-// and name of a macro, use MakeMacroEntry(...) to get the corresponding//
-// entry. The type of the macros is stored in a map. You can get the    //
-// macro type via GetMacroType(...).                                    //
+// The data for each macro consists of path, name, type and the command //
+// that will be used to apply the macro. This stuff is stored in a map  //
+// which takes the macro name for the key and the above mentioned data  //
+// in a TMacroData-object for the value.                                //
+// You can get the macro type via GetMacroType(...).                    //
 // With ApplySTSelectionMacros(...) or ApplyProcessMacros(...)          //
 // respectively you can apply the macros to the track list via          //
-// iterators (same style like for RemoveProcessMacros(...) (cf. above)).//
+// iterators (same style like for RemoveSelectedMacros(...)(cf. above)).//
 // Selection macros (de-)select macros according to a selection rule    //
 // by setting the rnr-state of the tracks.                              //
 // If multiple selection macros are applied, a track is selected, if    //
@@ -50,8 +50,12 @@
 // TH1* YourMacro(const AliTRDtrackV1*);                                //
 // TH1* YourMacro(const AliTRDtrackV1*, const AliTRDtrackV1*);          //
 //                                                                      //
-// The macros which take 2 tracks are applied to all pairs              //
-// fullfilling the selection criteria.                                  //
+// The macros which take 2 tracks are applied to all track pairs        //
+// (whereby BOTH tracks of the pair have to be selected by the single   //
+// track selection macros and have to be unequal, otherwise they will   //
+// be skipped) that have been selected by ALL correlated tracks         //
+// selection macros. The selection macros with 2 tracks do NOT affect   //
+// process macros that process only a single track!                     //
 //////////////////////////////////////////////////////////////////////////
 
 
@@ -70,6 +74,7 @@
 #define UNSETBIT(n,i)  ((n) &= ~BIT(i))
 
 class AliEveTRDTrack;
+class AliEveTRDTrackListEditor;
 class AliTRDReconstructor;
 class TFile;
 class TFunction;
@@ -77,6 +82,7 @@ class TH1;
 class TObjString;
 class TList;
 class TMap;
+class TPair;
 class TTreeSRedirector;
 
 class AliEveTRDTrackList: public TEveElementList
@@ -84,6 +90,7 @@ class AliEveTRDTrackList: public TEveElementList
   friend class AliEveTRDTrackListEditor;
 
 public:
+  
   enum
   {
     // Maximum length (number of characters) for a macro name:
@@ -112,9 +119,8 @@ public:
   AliEveTRDTrackList(const Text_t* n = "AliEveTRDTrackList", const Text_t* t = "", Bool_t doColor = kFALSE);
   virtual ~AliEveTRDTrackList();
 
-  Int_t AddMacro(const Char_t* path, const Char_t* name, Bool_t forceReload = kFALSE);                  
-  void AddMacroFast(const Char_t* entry, AliEveTRDTrackListMacroType type);          
-  void AddMacroFast(const Char_t* path, const Char_t* name, AliEveTRDTrackListMacroType type);        
+  Int_t AddMacro(const Char_t* path, const Char_t* name, Bool_t forceReload = kFALSE);                      
+  Bool_t AddMacroFast(const Char_t* path, const Char_t* name, AliEveTRDTrackListMacroType type);        
   virtual void AddStandardMacros();                           
   Bool_t ApplyProcessMacros(const TList* selIterator, const TList* procIterator);               
   void ApplySTSelectionMacros(const TList* iterator);
@@ -126,23 +132,20 @@ public:
   // prototype! NOTE: It is assumed that the macro has been compiled! If not, the return value is not
   // predictable, but normally will be kUnknown.
   // Note: AddMacro(Fast) will update the internal list and RemoveProcess(/Selection)Macros respectively.
-  AliEveTRDTrackListMacroType GetMacroType(const Char_t* entry, Bool_t UseList = kTRUE) const; 
-  Char_t* MakeMacroEntry(const Char_t* path, const Char_t* name) const;  
-  void RemoveProcessMacros(const TList* iterator);                   
-  void RemoveSelectionMacros(const TList* iterator);                  
+  AliEveTRDTrackListMacroType GetMacroType(const Char_t* name, Bool_t UseList = kTRUE) const; 
+  void RemoveSelectedMacros(const TList* iterator);                                    
 
 protected:
-  TList* fMacroList;                 // List of (process) macros
-  TList* fMacroSelList;              // List of (selection) macros
+  AliEveTRDTrackListEditor* fEditor; // Pointer to the editor of this list             
+
   TList* fDataFromMacroList;         // List of macros that currently have data for histograms
 
-  TMap*  fMacroTypes;                // Contains the type of each macro
+  TMap*  fMacroList;                 // Stores the names, paths, types and commands of all macros added to this list
 
   TTreeSRedirector *fDataTree;       // Tree containing data for histograms
 
   Int_t fHistoDataSelected;          // Stores the selection for the data of the histograms
-  Int_t fMacroListSelected;          // Stores the selection of the process macro list
-  Int_t fMacroSelListSelected;       // Stores the selection of the selection macro list
+  Int_t fMacroListSelected;          // Stores the selection of the macro list
 
   Char_t fSelectedTab;               // Holds the index of the selected tab
   UChar_t fSelectedStyle;            // Holds the selected track style
@@ -159,17 +162,11 @@ protected:
   Bool_t MacroListIsSelected(Int_t index) const          // Is entry in list selected?
     { return TESTBIT(fMacroListSelected, index);  }     
 
-  Bool_t MacroSelListIsSelected(Int_t index) const       // Is entry in list selected?
-    { return TESTBIT(fMacroSelListSelected, index);  }  
-
   void SetHistoDataSelection(Int_t index, Bool_t set)       // Set selection of entry in list
     { if (set) SETBIT(fHistoDataSelected, index); else UNSETBIT(fHistoDataSelected, index);  }  
 
   void SetMacroListSelection(Int_t index, Bool_t set)       // Set selection of entry in list
     { if (set) SETBIT(fMacroListSelected, index); else UNSETBIT(fMacroListSelected, index);  }  
-
-  void SetMacroSelListSelection(Int_t index, Bool_t set)    // Set selection of entry in list
-    { if (set) SETBIT(fMacroSelListSelected, index); else UNSETBIT(fMacroSelListSelected, index);  }   
     
   void SetSelectedTab(Int_t index)                          // Sets the selected tab
     { fSelectedTab = (Char_t)index; }  
@@ -177,13 +174,137 @@ protected:
   void SetSelectedTrackStyle(UChar_t index)                 // Sets the selected track style
     { fSelectedStyle = index;  }
 
-  void UpdateTrackStyle(AliEveTRDTrack::AliEveTRDTrackState s, UChar_t ss = 0); 
+  void UpdateTrackStyle(AliEveTRDTrack::AliEveTRDTrackState s, UChar_t ss = 0);      
 
 private:
   AliEveTRDTrackList(const AliEveTRDTrackList&);            // Not implemented
   AliEveTRDTrackList& operator=(const AliEveTRDTrackList&); // Not implemented             
 
   ClassDef(AliEveTRDTrackList, 0);  // Class containing a list of tracks
+};
+
+//////////////////////////////////////////////////////////////////////////
+//                                                                      //
+// TMacroData                                                           //
+//                                                                      //
+// Stores macro data which will be used by AliEveTRDTrackList.          //
+//                                                                      //
+//////////////////////////////////////////////////////////////////////////
+
+class TMacroData: public TObject
+{
+public:
+  TMacroData(const Char_t* name, const Char_t* path,                                                  // Constructor
+             AliEveTRDTrackList::AliEveTRDTrackListMacroType type = AliEveTRDTrackList::kUnknown):
+    TObject(),
+    fIsSelected(kFALSE),
+    fType(AliEveTRDTrackList::kUnknown)
+  {
+    // The command is automatically set via type.
+
+    SetName(name);
+    SetPath(path);
+    SetType(type);
+
+    // Register the commands for each type here
+    switch (type)
+    {
+      case AliEveTRDTrackList::kSingleTrackSelect:
+      case AliEveTRDTrackList::kSingleTrackHisto:
+        SetCmd(Form("%s(automaticTrackV1_1);", name));
+        break;
+
+      case AliEveTRDTrackList::kSingleTrackAnalyse:
+        SetCmd(Form("%s(automaticTrackV1_1, results, n);", name));
+        break;
+
+      case AliEveTRDTrackList::kCorrelTrackSelect:
+      case AliEveTRDTrackList::kCorrelTrackHisto:
+        SetCmd(Form("%s(automaticTrackV1_1, automaticTrackV1_2);", name));
+        break;
+
+      case AliEveTRDTrackList::kCorrelTrackAnalyse:
+        SetCmd(Form("%s(automaticTrackV1_1, automaticTrackV1_2, results, n);", name));
+        break;
+
+      default:
+        SetCmd("");
+        break;
+    }
+  }
+
+  const Char_t* GetCmd() const                // Returns the command that will be used to call this macro
+    { return fCmd;  }
+  const Char_t* GetName() const               // Returns the macro name (without ".C")
+    { return fName;  }
+  const Char_t* GetPath() const               // Returns the path of the macro
+    { return fPath;  }
+  AliEveTRDTrackList::AliEveTRDTrackListMacroType GetType() const   // Returns the type of the macro
+    { return fType;  }
+  Bool_t IsProcessMacro() const             // Returns whether the macro is a process type macro or not
+  {
+    switch (fType)
+    {
+      case AliEveTRDTrackList::kSingleTrackAnalyse:
+      case AliEveTRDTrackList::kSingleTrackHisto:
+      case AliEveTRDTrackList::kCorrelTrackAnalyse:
+      case AliEveTRDTrackList::kCorrelTrackHisto:
+        return kTRUE;
+        break;
+      default:
+        break;
+    }
+    
+    return kFALSE;
+  }
+
+  Bool_t IsSelected() const                   // Returns whether the macro is selected or not
+    { return fIsSelected; }
+  Bool_t IsSelectionMacro() const             // Returns whether the macro is a selection type macro or not
+  {
+    switch (fType)
+    {
+      case AliEveTRDTrackList::kSingleTrackSelect:
+      case AliEveTRDTrackList::kCorrelTrackSelect:
+        return kTRUE;
+        break;
+      default:
+        break;
+    }
+    
+    return kFALSE;
+  }
+
+  void SetCmd(const char* newCmd)             // Sets the command that will be used to call this macro
+  { 
+    memset(fCmd, '\0', sizeof(Char_t) * MAX_APPLY_COMMAND_LENGTH);
+    sprintf(fCmd, "%s", newCmd);
+  }
+  void SetName(const char* newName)           // Sets the macro name (please use without ".C")
+  { 
+    memset(fName, '\0', sizeof(Char_t) * MAX_MACRO_NAME_LENGTH);
+    sprintf(fName, "%s", newName);
+  }
+  void SetPath(const char* newPath)           // Sets the path of the macro
+  { 
+    memset(fPath, '\0', sizeof(Char_t) * MAX_MACRO_PATH_LENGTH);
+    sprintf(fPath, "%s", newPath);
+  }
+  void SetSelected(Bool_t selection)          // Sets whether the macro is selected or not
+  {
+    fIsSelected = selection;
+  }
+  void SetType(AliEveTRDTrackList::AliEveTRDTrackListMacroType newType)  // Sets the type of the macro
+  {
+    fType = newType;
+  }
+
+private:
+  Char_t fCmd[MAX_APPLY_COMMAND_LENGTH];                  // Command that will be used to call this macro
+  Char_t fName[MAX_MACRO_NAME_LENGTH];                    // Macro name (without ".C"!)
+  Char_t fPath[MAX_MACRO_PATH_LENGTH];                    // Path of the macro
+  Bool_t fIsSelected;                                     // Is macro selected (e.g. in the editor's list)?
+  AliEveTRDTrackList::AliEveTRDTrackListMacroType fType;  // Type of the macro  
 };
 
 #endif
