@@ -739,6 +739,17 @@ const Bool_t AliESDtrack::FillTPCOnlyTrack(AliESDtrack &track){
   // into the passed ESDtrack object. For consistency fTPCInner is also filled
   // again
 
+
+
+  // For data produced before r26675
+  // RelateToVertexTPC was not properly called during reco
+  // so you'll have to call it again, before FillTPCOnlyTrack
+  //  Float_t p[2],cov[3];
+  // track->GetImpactParametersTPC(p,cov); 
+  // if(p[0]==0&&p[1]==0) // <- Default values
+  //  track->RelateToVertexTPC(esd->GetPrimaryVertexTPC(),esd->GetMagneticField(),kVeryBig);
+  
+
   if(!fTPCInner)return kFALSE;
 
   // fill the TPC track params to the global track parameters
