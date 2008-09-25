@@ -24,6 +24,7 @@ AliVZEROPreprocessor::AliVZEROPreprocessor(AliShuttleInterface* shuttle) :
 {
   // constructor  
   
+  AddRunType("STANDALONE");
   AddRunType("PHYSICS");
     
 }
