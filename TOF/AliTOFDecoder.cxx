@@ -200,6 +200,8 @@ AliTOFDecoder::Decode(UInt_t *rawData, Int_t nWords, const AliRawDataHeader *cdh
   Short_t  currentChain = -1;
   Short_t  currentBunchID = -1;
   Short_t  currentMiniEventID = cdh ? cdh->GetMiniEventID() : (Short_t)-1;
+  Short_t  currentEventID1 = cdh ? cdh->GetEventID1() : (Short_t)-1;
+  AliInfo(Form("EvID1 = %d, EvID2 = %d, currentMiniEventID = %d", currentEventID1, cdh->GetEventID2(), currentMiniEventID));
   if (!cdh)
     AliWarning("CDH not valid: deltaBunchID not reliable ");
 
@@ -455,7 +457,7 @@ AliTOFDecoder::Decode(UInt_t *rawData, Int_t nWords, const AliRawDataHeader *cdh
 	hitData.SetTimeBin(fTDCPackedHit->GetHitTime());
 	hitData.SetTOT((float)fTDCPackedHit->GetTOTWidth() * TOT_BIN_WIDTH);
 	hitData.SetTOTBin(fTDCPackedHit->GetTOTWidth());
-	hitData.SetDeltaBunchID(currentBunchID - currentMiniEventID);
+	hitData.SetDeltaBunchID(currentBunchID - currentEventID1);
 	//orphane leading hit
 	if (hitData.GetPS()==LEADING_HIT_PS){
 	  hitData.SetTime((float)fTDCUnpackedHit->GetHitTime() * TIME_BIN_WIDTH);
@@ -549,7 +551,7 @@ AliTOFDecoder::Decode(UInt_t *rawData, Int_t nWords, const AliRawDataHeader *cdh
 	hitData.SetTimeBin(fTDCUnpackedHit->GetHitTime());
 	hitData.SetTOT(-1.);
 	hitData.SetTOTBin(-1);
-	hitData.SetDeltaBunchID(currentBunchID - currentMiniEventID);
+	hitData.SetDeltaBunchID(currentBunchID - currentEventID1);
 	//push hit data in data buffer
 	  if (fDataBuffer != 0x0)
 	    fDataBuffer->Add(hitData);
@@ -586,7 +588,7 @@ AliTOFDecoder::Decode(UInt_t *rawData, Int_t nWords, const AliRawDataHeader *cdh
 	hitData.SetTimeBin(fTDCUnpackedHit->GetHitTime());
 	hitData.SetTOT(-1.);
 	hitData.SetTOTBin(-1);
-	hitData.SetDeltaBunchID(currentBunchID - currentMiniEventID);
+	hitData.SetDeltaBunchID(currentBunchID - currentEventID1);
 	//push hit data in data buffer
 	  if (fDataBuffer != 0x0)
 	    fDataBuffer->Add(hitData);
