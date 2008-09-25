@@ -42,16 +42,17 @@
 #include "AliTRDtrackerV1.h"
 #include "AliTRDReconstructor.h"
 #include "AliTRDrecoParam.h"
-#include "AliTRDgeometry.h"
 #include "Cal/AliTRDCalPID.h"
 
 ClassImp(AliTRDseedV1)
 
 //____________________________________________________________________
-AliTRDseedV1::AliTRDseedV1(Int_t plane) 
+AliTRDseedV1::AliTRDseedV1(Int_t det) 
   :AliTRDseed()
   ,fReconstructor(0x0)
-  ,fPlane(plane)
+  ,fClusterIter(0x0)
+  ,fClusterIdx(0)
+  ,fDet(det)
   ,fMom(0.)
   ,fSnp(0.)
   ,fTgl(0.)
@@ -70,7 +71,9 @@ AliTRDseedV1::AliTRDseedV1(Int_t plane)
 AliTRDseedV1::AliTRDseedV1(const AliTRDseedV1 &ref)
   :AliTRDseed((AliTRDseed&)ref)
   ,fReconstructor(ref.fReconstructor)
-  ,fPlane(ref.fPlane)
+  ,fClusterIter(0x0)
+  ,fClusterIdx(0)
+  ,fDet(ref.fDet)
   ,fMom(ref.fMom)
   ,fSnp(ref.fSnp)
   ,fTgl(ref.fTgl)
@@ -129,7 +132,9 @@ void AliTRDseedV1::Copy(TObject &ref) const
   //AliInfo("");
   AliTRDseedV1 &target = (AliTRDseedV1 &)ref; 
 
-  target.fPlane         = fPlane;
+  target.fClusterIter   = 0x0;
+  target.fClusterIdx    = 0;
+  target.fDet           = fDet;
   target.fMom           = fMom;
   target.fSnp           = fSnp;
   target.fTgl           = fTgl;
@@ -284,7 +289,7 @@ Double_t* AliTRDseedV1::GetProbability()
   
   // Sets the a priori probabilities
   for(int ispec=0; ispec<AliPID::kSPECIES; ispec++) {
-    fProb[ispec] = pd->GetProbability(ispec, fMom, &fdEdx[0], length, fPlane);	
+    fProb[ispec] = pd->GetProbability(ispec, fMom, &fdEdx[0], length, GetPlane());	
   }
 
   return &fProb[0];
@@ -376,7 +381,7 @@ Bool_t	AliTRDseedV1::AttachClustersIter(AliTRDtrackingChamber *chamber, Float_t 
         new(clusters[ncls++]) AliTRDcluster(*cc);
       }
     }
-    AliInfo(Form("N clusters[%d] = %d", fPlane, ncls));
+    AliInfo(Form("N clusters[%d] = %d", fDet, ncls));
     
     Int_t ref = c ? 1 : 0;
     TTreeSRedirector &cstreamer = *AliTRDtrackerV1::DebugStreamer();
@@ -430,7 +435,7 @@ Bool_t	AliTRDseedV1::AttachClustersIter(AliTRDtrackingChamber *chamber, Float_t 
       fZ[iTime]        = cl->GetZ();
       ncl++;
     }
-    if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker)>=7) AliInfo(Form("iter = %d ncl [%d] = %d", iter, fPlane, ncl));
+    if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker)>=7) AliInfo(Form("iter = %d ncl [%d] = %d", iter, fDet, ncl));
     
     if(ncl>1){	
       // calculate length of the time bin (calibration aware)
@@ -471,7 +476,7 @@ Bool_t	AliTRDseedV1::AttachClustersIter(AliTRDtrackingChamber *chamber, Float_t 
       
       AliTRDseed::Update();
     }
-    if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker)>=7) AliInfo(Form("iter = %d nclFit [%d] = %d", iter, fPlane, fN2));
+    if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker)>=7) AliInfo(Form("iter = %d nclFit [%d] = %d", iter, fDet, fN2));
     
     if(IsOK()){
       tquality = GetQuality(kZcorr);
@@ -648,12 +653,17 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt)
   //
 
   const Int_t kClmin = 8;
+  const Float_t q0 = 100.;
+  const Float_t clSigma0 = 2.E-2;    //[cm]
+  const Float_t clSlopeQ = -1.19E-2; //[1/cm]
+
+
   const Int_t kNtb = AliTRDtrackerV1::GetNTimeBins();
   AliTRDtrackerV1::AliTRDLeastSquare fitterY, fitterZ;
 
   // convertion factor from square to gauss distribution for sigma
   Double_t convert = 1./TMath::Sqrt(12.);
-
+  
   // book cluster information
   Double_t xc[knTimebins+1], yc[knTimebins], zc[knTimebins+1], sy[knTimebins], sz[knTimebins+1];
   Int_t zRow[knTimebins];
@@ -675,7 +685,8 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt)
     xc[nc]   = c->GetX() - fX0;
     yc[nc]   = c->GetY();
     zc[nc]   = c->GetZ();
-    sy[nc]   = w; // all clusters have the same sigma
+    Float_t qr = c->GetQ() - q0;
+    sy[nc]   = qr < 0. ? clSigma0*TMath::Exp(clSlopeQ*qr) : clSigma0;
     sz[nc]   = fPadLength*convert;
     fitterZ.AddPoint(&xc[nc], zc[nc], sz[nc]);
     nc++;

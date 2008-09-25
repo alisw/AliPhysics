@@ -648,7 +648,7 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
         AliTRDpadPlane *pp = fGeom->GetPadPlane(ilayer, stack);
         tracklet.SetTilt(TMath::Tan(TMath::DegToRad()*pp->GetTiltingAngle()));
         tracklet.SetPadLength(pp->GetLengthIPad());
-        tracklet.SetPlane(ilayer);
+        tracklet.SetDetector(chamber->GetDetector());
         tracklet.SetX0(x);
         if(!tracklet.Init(&t)){
           t.SetStopped(kTRUE);
@@ -2334,7 +2334,7 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *ss
         AliTRDseedV1 *tseed = 0x0;
         for(int iLayer=0; iLayer<kNPlanes; iLayer++){
           tseed = &cseed[iLayer];
-          tseed->SetPlane(iLayer);
+          tseed->SetDetector(stack[iLayer]->GetDetector());
           tseed->SetTilt(hL[iLayer]);
           tseed->SetPadLength(padlength[iLayer]);
           tseed->SetReconstructor(fReconstructor);

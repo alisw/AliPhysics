@@ -15,6 +15,10 @@
 #include "AliTRDseed.h"
 #endif
 
+#ifndef ALITRDGEOMETRY_H
+#include "AliTRDgeometry.h"
+#endif
+
 #ifndef ALIPID_H
 #include "AliPID.h"
 #endif
@@ -45,7 +49,7 @@ class AliTRDseedV1 : public AliTRDseed
   , kRowCross = BIT(15) 
   };
 
-  AliTRDseedV1(Int_t plane = -1);
+  AliTRDseedV1(Int_t det = -1);
   ~AliTRDseedV1();
   AliTRDseedV1(const AliTRDseedV1 &ref);
   AliTRDseedV1& operator=(const AliTRDseedV1 &ref);
@@ -69,21 +73,25 @@ class AliTRDseedV1 : public AliTRDseed
   Double_t  GetCrossSz2() const { return fCross[3];}
   Float_t*  GetdEdx() {return &fdEdx[0];}
   Float_t   GetdQdl(Int_t ic) const;
+  Int_t     GetDetector() const {return fDet;}
   Double_t  GetMomentum() const {return fMom;}
   Int_t     GetN() const {return fN2;}
   Float_t   GetQuality(Bool_t kZcorr) const;
-  Int_t     GetPlane() const         { return fPlane;    }
+  Int_t     GetPlane() const         { return AliTRDgeometry::GetLayer(fDet);    }
+
   Double_t* GetProbability();
   Double_t  GetSnp() const           { return fSnp;}
   Double_t  GetTgl() const           { return fTgl;}
   Double_t  GetYat(Double_t x) const { return fYfit[0] + fYfit[1] * (x-fX0);}
   Double_t  GetZat(Double_t x) const { return fZfit[0] + fZfit[1] * (x-fX0);}
   
+  inline AliTRDcluster* NextCluster();
   void      Print(Option_t *o = "") const;
-  
+  void      ResetClusterIter() {fClusterIter = &fClusters[0]; fClusterIter--; fClusterIdx=-1;}
+
   void      SetMomentum(Double_t mom) {fMom = mom;}
   void      SetOwner();
-  void      SetPlane(Int_t p)                      { fPlane     = p;   }
+  void      SetDetector(Int_t d) {fDet = d;  }
   void      SetSnp(Double_t snp) {fSnp = snp;}
   void      SetTgl(Double_t tgl) {fTgl = tgl;}
   void      SetReconstructor(const AliTRDReconstructor *rec) {fReconstructor = rec;}
@@ -93,7 +101,9 @@ protected:
 
 private:
   const AliTRDReconstructor *fReconstructor;//! local reconstructor
-  Int_t            fPlane;                  //  TRD plane
+  AliTRDcluster    **fClusterIter;          //! clusters iterator
+  UChar_t          fClusterIdx;             //! clusters iterator
+  Int_t            fDet;                    //  TRD detector
   Float_t          fMom;                    //  Momentum estimate for tracklet [GeV/c]
   Float_t          fSnp;                    // sin of track with respect to x direction in XY plane	
   Float_t          fTgl;                    // tg of track with respect to x direction in XZ plane 	
@@ -102,7 +112,7 @@ private:
   Double_t         fCross[4];            // spatial parameters of the pad row crossing
   Double_t         fProb[AliPID::kSPECIES]; //  PID probabilities
 
-  ClassDef(AliTRDseedV1, 1)                 //  New TRD seed 
+  ClassDef(AliTRDseedV1, 2)                 //  New TRD seed 
 
 };
 
@@ -131,6 +141,14 @@ inline void AliTRDseedV1::Init(const AliRieman *rieman)
   fYref[1] = rieman->GetDYat(fX0);
   fC       = rieman->GetC(); 
   fChi2    = rieman->GetChi2();
+}
+
+//____________________________________________________________
+inline AliTRDcluster* AliTRDseedV1::NextCluster()
+{
+  fClusterIdx++; fClusterIter++;
+  while(!(*fClusterIter) && fClusterIdx < AliTRDseed::knTimebins){ fClusterIdx++; fClusterIter++;}
+  return *fClusterIter;
 }
 
 #endif
