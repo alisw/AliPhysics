@@ -1290,20 +1290,20 @@ void AliReconstruction::SlaveBegin(TTree*)
   ftree = new TTree("esdTree", "Tree with ESD objects");
   fesd = new AliESDEvent();
   fesd->CreateStdContent();
-  fesd->WriteToTree(ftree);
-
-  fhlttree = new TTree("HLTesdTree", "Tree with HLT ESD objects");
-  fhltesd = new AliESDEvent();
-  fhltesd->CreateStdContent();
-  fhltesd->WriteToTree(fhlttree);
-
-
   if (fWriteESDfriend) {
     fesdf = new AliESDfriend();
     TBranch *br=ftree->Branch("ESDfriend.","AliESDfriend", &fesdf);
     br->SetFile("AliESDfriends.root");
     fesd->AddObject(fesdf);
   }
+  fesd->WriteToTree(ftree);
+  ftree->GetUserInfo()->Add(fesd);
+
+  fhlttree = new TTree("HLTesdTree", "Tree with HLT ESD objects");
+  fhltesd = new AliESDEvent();
+  fhltesd->CreateStdContent();
+  fhltesd->WriteToTree(fhlttree);
+  fhlttree->GetUserInfo()->Add(fhltesd);
 
   ProcInfo_t ProcInfo;
   gSystem->GetProcInfo(&ProcInfo);
@@ -1717,9 +1717,6 @@ void AliReconstruction::SlaveTerminate()
     fRunLoader->Write(0, TObject::kOverwrite);
   }
 
-  ftree->GetUserInfo()->Add(fesd);
-  fhlttree->GetUserInfo()->Add(fhltesd);
-  
   const TMap *cdbMap = AliCDBManager::Instance()->GetStorageMap();	 
   const TList *cdbList = AliCDBManager::Instance()->GetRetrievedIds();	 
 	 	 
