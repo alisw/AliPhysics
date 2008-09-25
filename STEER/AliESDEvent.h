@@ -347,7 +347,7 @@ public:
 
 protected:
   AliESDEvent(const AliESDEvent&);
-
+  static Bool_t ResetWithPlacementNew(TObject *pObject);
 
   TList *fESDObjects;             // List of esd Objects
 

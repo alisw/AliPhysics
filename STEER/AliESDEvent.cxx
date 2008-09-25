@@ -212,6 +212,7 @@ AliESDEvent & AliESDEvent::operator=(const AliESDEvent& source) {
   // otherwise only TObject::Copy() will be used
 
 
+
   if((fESDObjects->GetSize()==0)&&(source.fESDObjects->GetSize()>=kESDListN)){
     // We cover the case that we do not yet have the 
     // standard content but the source has it
@@ -225,12 +226,32 @@ AliESDEvent & AliESDEvent::operator=(const AliESDEvent& source) {
     name.Form("%s", its->GetName());
     TObject *mine = fESDObjects->FindObject(name.Data());
     if(!mine){
-      // not in this: can be added to list (to be implemented)
-      AliWarning(Form("%s:%d Could not find %s for copying \n",
-		      (char*)__FILE__,__LINE__,name.Data()));
-      continue;
-    }
+      TClass* pClass=TClass::GetClass(its->ClassName());
+      if (!pClass) {
+	AliWarning(Form("Can not find class description for entry %s (%s)\n",
+			its->ClassName(), name.Data()));
+	continue;
+      }
 
+      mine=(TObject*)pClass->New();
+      if(!mine){
+      // not in this: can be added to list
+	AliWarning(Form("%s:%d Could not find %s for copying \n",
+			(char*)__FILE__,__LINE__,name.Data()));
+	continue;
+      }  
+      if(mine->InheritsFrom("TNamed")){
+	((TNamed*)mine)->SetName(name);
+      }
+      else if(mine->InheritsFrom("TCollection")){
+	if(mine->InheritsFrom("TClonesArray"))
+	  dynamic_cast<TClonesArray*>(mine)->SetClass(its->ClassName());
+	dynamic_cast<TCollection*>(mine)->SetName(name);
+      }
+      AliDebug(1, Form("adding object %s of type %s", mine->GetName(), mine->ClassName()));
+      AddObject(mine);
+    }  
+   
     if(!its->InheritsFrom("TCollection")){
       // simple objects
       its->Copy(*mine);
@@ -310,25 +331,51 @@ void AliESDEvent::Copy(TObject &obj) const {
 void AliESDEvent::Reset()
 {
 
-  
+  // Handle the cases
+  // Std content + Non std content
+
   // Reset the standard contents
   ResetStdContent(); 
+
+  //  reset for the old data without AliESDEvent...
   if(fESDOld)fESDOld->Reset();
-  //  reset for the friends...
   if(fESDFriendOld){
     fESDFriendOld->~AliESDfriend();
     new (fESDFriendOld) AliESDfriend();
   }
-  // for new data we have to fetch the Pointer from the list 
-  AliESDfriend *fr = (AliESDfriend*)FindListObject("AliESDfriend");
-  if(fr){
-    // delete the content
-    fr->~AliESDfriend();
-    // make a new valid ESDfriend at the same place
-    new (fr) AliESDfriend();
+  // 
+
+  if(fESDObjects->GetSize()>kESDListN){
+    // we have non std content
+    // this also covers esdfriends
+    for(int i = kESDListN;i < fESDObjects->GetSize();++i){
+      TObject *pObject = fESDObjects->At(i);
+      // TClonesArrays
+      if(pObject->InheritsFrom(TClonesArray::Class())){
+	((TClonesArray*)pObject)->Delete();
+      }
+      else if(!pObject->InheritsFrom(TCollection::Class())){
+	ResetWithPlacementNew(pObject);
+      }
+      else{
+	AliWarning(Form("No reset for %s (%s)\n",
+			pObject->ClassName()));
+      }
+    }
   }
 
-  // call reset for user supplied data?
+}
+
+Bool_t AliESDEvent::ResetWithPlacementNew(TObject *pObject){
+  Long_t dtoronly = TObject::GetDtorOnly();
+  TClass *pClass = TClass::GetClass(pObject->ClassName()); 
+  TObject::SetDtorOnly(pObject);
+  delete pObject;
+  // Recreate with placement new
+  pClass->New(pObject);
+  // Restore the state.
+  TObject::SetDtorOnly((void*)dtoronly);
+  return kTRUE;
 }
 
 void AliESDEvent::ResetStdContent()
@@ -944,8 +991,8 @@ void AliESDEvent::GetStdContent()
 void AliESDEvent::SetStdNames(){
   // Set the names of the standard contents
   // 
-  if(fESDObjects->GetEntries()==kESDListN){
-    for(int i = 0;i < fESDObjects->GetEntries();i++){
+  if(fESDObjects->GetEntries()>=kESDListN){
+    for(int i = 0;i < fESDObjects->GetEntries() && i<kESDListN;i++){
       TObject *fObj = fESDObjects->At(i);
       if(fObj->InheritsFrom("TNamed")){
 	((TNamed*)fObj)->SetName(fgkESDListName[i]);
@@ -956,7 +1003,7 @@ void AliESDEvent::SetStdNames(){
     }
   }
   else{
-    printf("%s:%d SetStdNames() Wrong number of Std Entries \n",(char*)__FILE__,__LINE__);
+     printf("%s:%d SetStdNames() Std Entries missing \n",(char*)__FILE__,__LINE__);
   }
 } 
 
@@ -1069,10 +1116,11 @@ const void AliESDEvent::WriteToTree(TTree* tree) const {
     if ((kSplitlevel > 1) &&  !obj->InheritsFrom(TClonesArray::Class())) {
       if(!branchname.EndsWith("."))branchname += ".";
     }
-    tree->Bronch(branchname, obj->ClassName(), fESDObjects->GetObjectRef(obj),
-		 kBufsize, kSplitlevel - 1);
+    if (!tree->FindBranch(branchname)) {
+      tree->Bronch(branchname, obj->ClassName(), fESDObjects->GetObjectRef(obj),
+		   kBufsize, kSplitlevel - 1);
+    }
   }
-
 }
 
 
