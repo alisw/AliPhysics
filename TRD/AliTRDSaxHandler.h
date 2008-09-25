@@ -61,15 +61,18 @@ public:
   TObjArray*       fPTRArr;        // array of AliTRDCalDCSPTR objects
   TObjArray*       fGTUArr;        // array of AliTRDCalDCSGTU objects
   Int_t            fSystem;        // current system (FEE/PTR/GTU)
+  Int_t            fInsideRstate;  // if we are inside rstate
   Int_t            fCurrentSM;     // current supermodule
   Int_t            fCurrentStack;  // current stack
+  Int_t            fCurrentROB;    // current ROB during processing
+  Int_t            fCurrentMCM;    // current MCM
   TString          fContent;       // content of the xml element (text) 
   AliTRDCalDCSFEE* fDCSFEEObj;     // the calib object for one FEE DCS board
   AliTRDCalDCSPTR* fDCSPTRObj;     // the calib object for one PTR DCS board
   AliTRDCalDCSGTU* fDCSGTUObj;     // the calib object for one GTU DCS board
   AliTRDCalDCS*    fCalDCSObj;     // the complete calib obj containing all inform.
 
-  ClassDef(AliTRDSaxHandler,1);    // The XML file handler for the preprocessor
-
+  ClassDef(AliTRDSaxHandler,2);    // The XML file handler for the preprocessor
 };
 #endif
+

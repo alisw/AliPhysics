@@ -950,7 +950,8 @@ UInt_t AliTRDPreprocessor::ProcessDCSConfigData()
 
   // get the calibration object storing the data from the handler
   AliTRDCalDCS* fCalDCSObj = saxHandler.GetCalDCSObj();
-
+  fCalDCSObj->EvaluateGlobalParameters();
+  
   // store the DCS calib data in the CDB
   AliCDBMetaData metaData1;
   metaData1.SetBeamPeriod(0);

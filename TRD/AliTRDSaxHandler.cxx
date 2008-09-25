@@ -43,6 +43,7 @@
 
 ClassImp(AliTRDSaxHandler)
 
+  
 //_____________________________________________________________________________
 AliTRDSaxHandler::AliTRDSaxHandler()
   :TObject()
@@ -53,8 +54,11 @@ AliTRDSaxHandler::AliTRDSaxHandler()
   ,fPTRArr(new TObjArray(6))
   ,fGTUArr(new TObjArray(19))
   ,fSystem(0)
+  ,fInsideRstate(0)
   ,fCurrentSM(0)
   ,fCurrentStack(0)
+  ,fCurrentROB(-1)
+  ,fCurrentMCM(-1)
   ,fContent(0)
   ,fDCSFEEObj(0)
   ,fDCSPTRObj(0)
@@ -79,8 +83,11 @@ AliTRDSaxHandler::AliTRDSaxHandler(const AliTRDSaxHandler &sh)
   ,fPTRArr(0)
   ,fGTUArr(0)
   ,fSystem(0)
+  ,fInsideRstate(0)
   ,fCurrentSM(0)
   ,fCurrentStack(0)
+  ,fCurrentROB(-1)
+  ,fCurrentMCM(-1)
   ,fContent(0)
   ,fDCSFEEObj(0)
   ,fDCSPTRObj(0)
@@ -134,7 +141,6 @@ AliTRDSaxHandler::~AliTRDSaxHandler()
 AliTRDCalDCS* AliTRDSaxHandler::GetCalDCSObj()
 {
   // put the arrays in the global calibration object and return this
-  fCalDCSObj->SetNumberOfTimeBins(0); //test test test
   fCalDCSObj->SetFEEArr(fFEEArr);
   fCalDCSObj->SetPTRArr(fPTRArr);
   fCalDCSObj->SetGTUArr(fGTUArr);
@@ -169,6 +175,10 @@ void AliTRDSaxHandler::OnStartElement(const char *name, const TList *attributes)
   if (strName.Contains("PTR")) fSystem = kInsidePTR;
   if (strName.Contains("GTU")) fSystem = kInsideGTU;
 
+  // set if we are inside rstate 
+  // (in principle not necessary - just to be more safe against stupid tags)
+  if (strName.Contains("rstate")) fInsideRstate = 1;
+
   // get the attributes of the element
   TXMLAttr *attr;
   TIter next(attributes);
@@ -181,6 +191,12 @@ void AliTRDSaxHandler::OnStartElement(const char *name, const TList *attributes)
     if (attribName.Contains("roc") && strName.Contains("ack")) {
       if (atoi(attr->GetValue()) != fDCSFEEObj->GetDCSid())
 	fDCSFEEObj->SetStatusBit(3); // consistence check
+    }
+    if (attribName.Contains("rob") && (fInsideRstate == 1)) {
+      fCurrentROB = atoi(attr->GetValue());
+    }
+    if (attribName.Contains("mcm") && (fInsideRstate == 1)) {
+      fCurrentMCM = atoi(attr->GetValue());
     }
     if (attribName.Contains("sm") && strName.Contains("DCS")) {
       fCurrentSM = atoi(attr->GetValue()); // only for GTU/PTR
@@ -250,30 +266,46 @@ void AliTRDSaxHandler::OnEndElement(const char *name)
     fCurrentStack = 99; // 99 for no stack set
   }
 
+  // outside of rstate again?
+  if (strName.Contains("rstate")) {
+    fInsideRstate = 0;
+    fCurrentROB   = -1;
+    fCurrentMCM   = -1;
+  }
+  if (strName.Contains("ro-board")) fCurrentROB = -1;
+  
   // store informations of the FEE DCS-Board
   if (fSystem == kInsideFEE) {
-    if (strName.Contains("DNR")) fDCSFEEObj->SetStatusBit(fContent.Atoi());
-    if (strName.Contains("CFGNME")) fDCSFEEObj->SetConfigName(fContent);
-    if (strName.Contains("CFGTAG")) fDCSFEEObj->SetConfigTag(fContent.Atoi());
-    if (strName.Contains("CFGVRSN")) fDCSFEEObj->SetConfigVersion(fContent);
-    if (strName.Contains("NTB")) fDCSFEEObj->SetNumberOfTimeBins(fContent.Atoi());
-    if (strName.Contains("SM-ID")) fDCSFEEObj->SetSM(fContent.Atoi());
-    if (strName.Contains("STACK-ID")) fDCSFEEObj->SetStack(fContent.Atoi());
-    if (strName.Contains("LAYER-ID")) fDCSFEEObj->SetLayer(fContent.Atoi());
+    if (strName.Contains("DNR"))            fDCSFEEObj->SetStatusBit(fContent.Atoi());
+    if (strName.Contains("CFGNME"))         fDCSFEEObj->SetConfigName(fContent);
+    if (strName.Contains("CFGTAG"))         fDCSFEEObj->SetConfigTag(fContent.Atoi());
+    if (strName.Contains("CFGVRSN"))        fDCSFEEObj->SetConfigVersion(fContent);
+    if (strName.Contains("NTB"))            fDCSFEEObj->SetNumberOfTimeBins(fContent.Atoi());
+    if (strName.Contains("SM-ID"))          fDCSFEEObj->SetSM(fContent.Atoi());
+    if (strName.Contains("STACK-ID"))       fDCSFEEObj->SetStack(fContent.Atoi());
+    if (strName.Contains("LAYER-ID"))       fDCSFEEObj->SetLayer(fContent.Atoi());
     if (strName.Contains("SINGLEHITTHRES")) fDCSFEEObj->SetSingleHitThres(fContent.Atoi());
-    if (strName.Contains("THRPADCLSTHRS")) fDCSFEEObj->SetThreePadClustThres(fContent.Atoi());
-    if (strName.Contains("SELNOZS")) fDCSFEEObj->SetSelectiveNoZS(fContent.Atoi());
-    if (strName.Contains("FASTSTATNOISE")) fDCSFEEObj->SetFastStatNoise(fContent.Atoi());
-    if (strName.Contains("FILTWEIGHT")) fDCSFEEObj->SetTCFilterWeight(fContent.Atoi());
+    if (strName.Contains("THRPADCLSTHRS"))  fDCSFEEObj->SetThreePadClustThres(fContent.Atoi());
+    if (strName.Contains("SELNOZS"))        fDCSFEEObj->SetSelectiveNoZS(fContent.Atoi());
+    if (strName.Contains("FASTSTATNOISE"))  fDCSFEEObj->SetFastStatNoise(fContent.Atoi());
+    if (strName.Contains("FILTWEIGHT"))     fDCSFEEObj->SetTCFilterWeight(fContent.Atoi());
     if (strName.Contains("FILTSHRTDCYPRM")) fDCSFEEObj->SetTCFilterShortDecPar(fContent.Atoi());
-    if (strName.Contains("FILTLNGDCYPRM")) fDCSFEEObj->SetTCFilterLongDecPar(fContent.Atoi());
-    if (strName.Contains("FLTR")) fDCSFEEObj->SetFilterType(fContent);
-    if (strName.Contains("READOUTPAR")) fDCSFEEObj->SetReadoutParam(fContent);
-    if (strName.Contains("TESTPATTERN")) fDCSFEEObj->SetTestPattern(fContent);
-    if (strName.Contains("TRCKLTMODE")) fDCSFEEObj->SetTrackletMode(fContent);
-    if (strName.Contains("TRCKLTDEF")) fDCSFEEObj->SetTrackletDef(fContent);
-    if (strName.Contains("TRIGGERSETUP")) fDCSFEEObj->SetTriggerSetup(fContent);
-    if (strName.Contains("ADDOPTIONS")) fDCSFEEObj->SetAddOptions(fContent);
+    if (strName.Contains("FILTLNGDCYPRM"))  fDCSFEEObj->SetTCFilterLongDecPar(fContent.Atoi());
+    if (strName.Contains("FLTR"))           fDCSFEEObj->SetFilterType(fContent);
+    if (strName.Contains("READOUTPAR"))     fDCSFEEObj->SetReadoutParam(fContent);
+    if (strName.Contains("TESTPATTERN"))    fDCSFEEObj->SetTestPattern(fContent);
+    if (strName.Contains("TRCKLTMODE"))     fDCSFEEObj->SetTrackletMode(fContent);
+    if (strName.Contains("TRCKLTDEF"))      fDCSFEEObj->SetTrackletDef(fContent);
+    if (strName.Contains("TRIGGERSETUP"))   fDCSFEEObj->SetTriggerSetup(fContent);
+    if (strName.Contains("ADDOPTIONS"))     fDCSFEEObj->SetAddOptions(fContent);
+    if (fInsideRstate == 1) {
+      if (fCurrentROB>=0 && fCurrentMCM>=0) {
+	if (strName.Contains("gsm")) fDCSFEEObj->SetMCMGlobalState(fCurrentROB, fCurrentMCM, fContent.Atoi());
+	if (strName.Contains("ni")) fDCSFEEObj->SetMCMStateNI(fCurrentROB, fCurrentMCM, fContent.Atoi());
+	if (strName.Contains("ev")) fDCSFEEObj->SetMCMEventCnt(fCurrentROB, fCurrentMCM, fContent.Atoi());
+	if (strName.Contains("ptrg")) fDCSFEEObj->SetMCMPtCnt(fCurrentROB, fCurrentMCM, fContent.Atoi());
+      }
+    }
   }
 
   
