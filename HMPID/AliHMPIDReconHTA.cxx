@@ -33,7 +33,7 @@
 #include <TSpline.h>         //ShapeModel()
 #include "TStopwatch.h"      //
 
-TH2F* AliHMPIDReconHTA::fgDatabase = new TH2F("deconv","database;d1;d2;thC+1000*thTrk",500,0,50,150,0,15);
+TH2F* AliHMPIDReconHTA::fgDatabase = 0x0;
 
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -59,7 +59,7 @@ AliHMPIDReconHTA::AliHMPIDReconHTA():
 //hidden algorithm
 //..
   fParam->SetRefIdx(fParam->MeanIdxRad()); // initialization of ref index to a default one
-  if(fgDatabase->GetEntries()<1) InitDatabase();
+  InitDatabase();
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 AliHMPIDReconHTA::~AliHMPIDReconHTA()
@@ -506,7 +506,13 @@ void AliHMPIDReconHTA::InitDatabase()
   
   TStopwatch timer;
   timer.Start();
-  
+ 
+
+  if(!fgDatabase) fgDatabase = new TH2F("deconv","database;d1;d2;thC+1000*thTrk",500,0,50,150,0,15);
+  if(fgDatabase->GetEntries()>=1) {
+   AliInfo("HTA database already built. ");
+   return;
+  }
   AliInfo(Form("database HTA is being built.Please, wait..."));
 //  
   Double_t x[3]={0,0,0},y[3];
