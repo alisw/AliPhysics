@@ -435,10 +435,13 @@ class AliTOFRawStream: public TObject {
   void SetPadZ();
   void SetPadX();
 
-  Int_t GetLocalEventCounterDRM() {return fLocalEventCounterDRM;};//adc
-  Int_t GetLocalEventCounterLTM() {return fLocalEventCounterLTM;};//adc
-  Int_t GetLocalEventCounterTRM(Int_t trm) {return fLocalEventCounterTRM[trm];};//adc
-  Int_t GetLocalEventCounterChain(Int_t trm, Int_t chain) {return fLocalEventCounterChain[trm][chain];};//adc
+  Bool_t GetBCCorrections() {return fgApplyBCCorrections;}; // getter for the BC application switch
+  Int_t GetDDLBCshift(Int_t ddl) {return fgkddlBCshift[ddl];}; // getter for the DDL BC shift
+  Int_t GetLocalEventCounterDRM() {return fLocalEventCounterDRM;}; // getter for the DRM event counter
+  Int_t GetLocalEventCounterLTM() {return fLocalEventCounterLTM;}; // getter for the LTM event counter
+  Int_t GetLocalEventCounterTRM(Int_t trm) {return fLocalEventCounterTRM[trm];}; // getter for the TRM event counter
+  Int_t GetLocalEventCounterChain(Int_t trm, Int_t chain) {return fLocalEventCounterChain[trm][chain];}; // getter for the chain event counter
+  Int_t GetChainBunchID(Int_t trm, Int_t chain) {return fChainBunchID[trm][chain];}; // getter for the chain BC ID
 
   void  EquipmentId2VolumeId(Int_t nDDL, Int_t nTRM, Int_t iChain,
 			     Int_t iTDC, Int_t iCH, Int_t *volume) const;
@@ -468,6 +471,8 @@ class AliTOFRawStream: public TObject {
   Bool_t LoadRawDataBuffers(Int_t indexDDL, Int_t verbose = 0);
   static void ApplyBCCorrections(Bool_t Value = kTRUE) {fgApplyBCCorrections = Value;};
   
+  Int_t GetEventID() const {return fEventID;}; // getter for the eventID1 (bunch crossing) in the common data header
+
   enum ETOFRawStreamError {
     kPadXError = 0,
     kPadAlongStripError = 1,
@@ -526,17 +531,18 @@ class AliTOFRawStream: public TObject {
   AliTOFHitDataBuffer *fDataBuffer[72]; // pointer to AliTOFHitDataBuffer
   AliTOFHitDataBuffer *fPackedDataBuffer[72]; // pointer to AliTOFHitDataBuffer
 
-  Int_t   fLocalEventCounterDRM;//adc
-  Int_t   fLocalEventCounterLTM;//adc
-  Int_t  *fLocalEventCounterTRM;//adc
-  Int_t **fLocalEventCounterChain;//adc
+  Int_t   fLocalEventCounterDRM; // event counter recorded in the DRM global trailer
+  Int_t   fLocalEventCounterLTM; // event counter recorded in the LTM global trailer
+  Int_t  *fLocalEventCounterTRM; // event counter recorded in the TRMs global trailer
+  Int_t **fLocalEventCounterChain; // event counter recorded in the chains trailer
+  Int_t **fChainBunchID; // BC ID recorded in the chains header
 
   AliTOFCableLengthMap * fCableLengthMap;
 
-  UInt_t fEventID; // event ID
+  Int_t fEventID; // event ID1 in the common data header
 
-  static const Int_t fgkddlBCshift[72]; //
-  static Bool_t fgApplyBCCorrections; //
+  static const Int_t fgkddlBCshift[72]; // DDL BC shifts
+  static Bool_t fgApplyBCCorrections; // switch to choose if apply or not the BC shift corrections
 
   ClassDef(AliTOFRawStream, 3)  // class for reading TOF raw digits
 };
