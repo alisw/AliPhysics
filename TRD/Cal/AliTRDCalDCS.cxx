@@ -22,19 +22,31 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "AliTRDCalDCS.h"
+#include "AliTRDCalDCSFEE.h"
 
 ClassImp(AliTRDCalDCS)
-
+  
 //_____________________________________________________________________________
 AliTRDCalDCS::AliTRDCalDCS()
   :TNamed()
-  ,fNumberOfTimeBins(0)
-  ,fTailCancelationTau1(0)
-  ,fTailCancelationTau2(0)
-  ,fTailCancelationAmp(0)
-  ,fPedestal(0)
-  ,fConfigID(0)
-  ,fGainTableID(0)
+  ,fGNumberOfTimeBins(-1)
+  ,fGConfigTag(-1)
+  ,fGSingleHitThres(-1)
+  ,fGThreePadClustThres(-1)
+  ,fGSelNoZS(-1)
+  ,fGTCFilterWeight(-1)
+  ,fGTCFilterShortDecPar(-1)
+  ,fGTCFilterLongDecPar(-1)
+  ,fGFastStatNoise(-1)
+  ,fGConfigVersion(0)
+  ,fGConfigName(0)
+  ,fGFilterType(0)
+  ,fGReadoutParam(0)
+  ,fGTestPattern(0)
+  ,fGTrackletMode(0)
+  ,fGTrackletDef(0)
+  ,fGTriggerSetup(0)
+  ,fGAddOptions(0)
   ,fFEEArr(new TObjArray(540))
   ,fPTRArr(new TObjArray(6))
   ,fGTUArr(new TObjArray(19))
@@ -47,13 +59,24 @@ AliTRDCalDCS::AliTRDCalDCS()
 //_____________________________________________________________________________
 AliTRDCalDCS::AliTRDCalDCS(const Text_t *name, const Text_t *title)
   :TNamed(name,title)
-  ,fNumberOfTimeBins(0)
-  ,fTailCancelationTau1(0)
-  ,fTailCancelationTau2(0)
-  ,fTailCancelationAmp(0)
-  ,fPedestal(0)
-  ,fConfigID(0)
-  ,fGainTableID(0)
+  ,fGNumberOfTimeBins(-1)
+  ,fGConfigTag(-1)
+  ,fGSingleHitThres(-1)
+  ,fGThreePadClustThres(-1)
+  ,fGSelNoZS(-1)
+  ,fGTCFilterWeight(-1)
+  ,fGTCFilterShortDecPar(-1)
+  ,fGTCFilterLongDecPar(-1)
+  ,fGFastStatNoise(-1)
+  ,fGConfigVersion(0)
+  ,fGConfigName(0)
+  ,fGFilterType(0)
+  ,fGReadoutParam(0)
+  ,fGTestPattern(0)
+  ,fGTrackletMode(0)
+  ,fGTrackletDef(0)
+  ,fGTriggerSetup(0)
+  ,fGAddOptions(0)
   ,fFEEArr(new TObjArray(540))
   ,fPTRArr(new TObjArray(6))
   ,fGTUArr(new TObjArray(19))
@@ -66,13 +89,24 @@ AliTRDCalDCS::AliTRDCalDCS(const Text_t *name, const Text_t *title)
 //_____________________________________________________________________________
 AliTRDCalDCS::AliTRDCalDCS(const AliTRDCalDCS &cd)
   :TNamed(cd)
-  ,fNumberOfTimeBins(0)
-  ,fTailCancelationTau1(0)
-  ,fTailCancelationTau2(0)
-  ,fTailCancelationAmp(0)
-  ,fPedestal(0)
-  ,fConfigID(0)
-  ,fGainTableID(0)
+  ,fGNumberOfTimeBins(-1)
+  ,fGConfigTag(-1)
+  ,fGSingleHitThres(-1)
+  ,fGThreePadClustThres(-1)
+  ,fGSelNoZS(-1)
+  ,fGTCFilterWeight(-1)
+  ,fGTCFilterShortDecPar(-1)
+  ,fGTCFilterLongDecPar(-1)
+  ,fGFastStatNoise(-1)
+  ,fGConfigVersion(0)
+  ,fGConfigName(0)
+  ,fGFilterType(0)
+  ,fGReadoutParam(0)
+  ,fGTestPattern(0)
+  ,fGTrackletMode(0)
+  ,fGTrackletDef(0)
+  ,fGTriggerSetup(0)
+  ,fGAddOptions(0)
   ,fFEEArr(0)
   ,fPTRArr(0)
   ,fGTUArr(0)
@@ -92,5 +126,66 @@ AliTRDCalDCS &AliTRDCalDCS::operator=(const AliTRDCalDCS &cd)
 
   new (this) AliTRDCalDCS(cd);
   return *this;
+}
+
+//_____________________________________________________________________________
+void AliTRDCalDCS::EvaluateGlobalParameters()
+{
+  for(Int_t i=0; i<540; i++) {
+    AliTRDCalDCSFEE *iDCSFEEObj;
+    iDCSFEEObj = GetCalDCSFEEObj(i);
+    if(iDCSFEEObj != NULL) {
+      if(iDCSFEEObj->GetStatusBit() == 0) {
+	// first, set the parameters of the first good ROC as global
+	fGNumberOfTimeBins    = iDCSFEEObj->GetNumberOfTimeBins();
+	fGConfigTag           = iDCSFEEObj->GetConfigTag();
+	fGSingleHitThres      = iDCSFEEObj->GetSingleHitThres();
+	fGThreePadClustThres  = iDCSFEEObj->GetThreePadClustThres();
+	fGSelNoZS             = iDCSFEEObj->GetSelectiveNoZS();
+	fGTCFilterWeight      = iDCSFEEObj->GetTCFilterWeight();
+	fGTCFilterShortDecPar = iDCSFEEObj->GetTCFilterShortDecPar();
+	fGTCFilterLongDecPar  = iDCSFEEObj->GetTCFilterLongDecPar();
+	fGFastStatNoise       = iDCSFEEObj->GetFastStatNoise();
+	fGConfigVersion       = iDCSFEEObj->GetConfigVersion();
+	fGConfigName          = iDCSFEEObj->GetConfigName();
+	fGFilterType          = iDCSFEEObj->GetFilterType();
+	fGReadoutParam        = iDCSFEEObj->GetReadoutParam();
+	fGTestPattern         = iDCSFEEObj->GetTestPattern();
+	fGTrackletMode        = iDCSFEEObj->GetTrackletMode();
+	fGTrackletDef         = iDCSFEEObj->GetTrackletDef();
+	fGTriggerSetup        = iDCSFEEObj->GetTriggerSetup();
+	fGAddOptions          = iDCSFEEObj->GetAddOptions();
+	break;
+      }
+    }
+  }
+
+  for(Int_t i=0; i<540; i++) {
+    AliTRDCalDCSFEE *iDCSFEEObj;
+    iDCSFEEObj = GetCalDCSFEEObj(i);
+    if(iDCSFEEObj != NULL) {
+      if(iDCSFEEObj->GetStatusBit() == 0) {
+	// second, if any of the other good chambers differ, set the global value to -1/""
+	if(fGNumberOfTimeBins    != iDCSFEEObj->GetNumberOfTimeBins())    fGNumberOfTimeBins    = -2;
+	if(fGConfigTag           != iDCSFEEObj->GetConfigTag())           fGConfigTag           = -2;
+	if(fGSingleHitThres      != iDCSFEEObj->GetSingleHitThres())      fGSingleHitThres      = -2;
+	if(fGThreePadClustThres  != iDCSFEEObj->GetThreePadClustThres())  fGThreePadClustThres  = -2;
+	if(fGSelNoZS             != iDCSFEEObj->GetSelectiveNoZS())       fGSelNoZS             = -2;
+	if(fGTCFilterWeight      != iDCSFEEObj->GetTCFilterWeight())      fGTCFilterWeight      = -2;
+	if(fGTCFilterShortDecPar != iDCSFEEObj->GetTCFilterShortDecPar()) fGTCFilterShortDecPar = -2;
+	if(fGTCFilterLongDecPar  != iDCSFEEObj->GetTCFilterLongDecPar())  fGTCFilterLongDecPar  = -2;
+	if(fGFastStatNoise       != iDCSFEEObj->GetFastStatNoise())       fGFastStatNoise       = -2;
+	if(fGConfigVersion       != iDCSFEEObj->GetConfigVersion())       fGConfigVersion       = "mixed";
+	if(fGConfigName          != iDCSFEEObj->GetConfigName())          fGConfigName          = "mixed";
+	if(fGFilterType          != iDCSFEEObj->GetFilterType())          fGFilterType          = "mixed";
+	if(fGReadoutParam        != iDCSFEEObj->GetReadoutParam())        fGReadoutParam        = "mixed";
+	if(fGTestPattern         != iDCSFEEObj->GetTestPattern())         fGTestPattern         = "mixed";
+	if(fGTrackletMode        != iDCSFEEObj->GetTrackletMode())        fGTrackletMode        = "mixed";
+	if(fGTrackletDef         != iDCSFEEObj->GetTrackletDef())         fGTrackletDef         = "mixed";
+	if(fGTriggerSetup        != iDCSFEEObj->GetTriggerSetup())        fGTriggerSetup        = "mixed";
+	if(fGAddOptions          != iDCSFEEObj->GetAddOptions())          fGAddOptions          = "mixed";
+      }
+    }
+  }
 }
 

@@ -23,11 +23,11 @@
 
 // fStatusBit:
 // 0: no errors
-// 1: invalid data received by online fxsproxy
-// 2: ROC was not in state CONFIGURED or STANDBY_INIT (most probably it was OFF or STANDBY)
+// 1: ROC didn't respond even though it should have (was in good state)
+// 2: ROC was not in state CONFIGURED or STANDBY_INIT (most probably it in STANDBY)
 // 3: expected and received DCS-ID do not match. This is a serious communication error!
 // 4: DCS id from XML attributes <DCS> and <ack> and the one calculated from SM, S, L do not match
-//    This should not happen since the DNR flag should have set the status bit to 0 or 1
+// 5: ROC has not responded at all, most probably it was off.
 
 #include "AliTRDCalDCSFEE.h"
 
@@ -37,20 +37,19 @@ ClassImp(AliTRDCalDCSFEE)
 AliTRDCalDCSFEE::AliTRDCalDCSFEE()
   :TNamed()
   ,fStatusBit(0)
-  ,fDCSID(0)
-  ,fSM(0)
-  ,fStack(0)
-  ,fLayer(0)
-  ,fNumberOfTimeBins(0)
-  ,fPedestal(0)
-  ,fConfigTag(0)
-  ,fSingleHitThres(0)
-  ,fThrPdClsThres(0)
-  ,fSelNoZS(0)
-  ,fFastStatNoise(0)
-  ,fTCFilterWeight(0)
-  ,fTCFilterShortDecPar(0)
-  ,fTCFilterLongDecPar(0)
+  ,fDCSID(-1)
+  ,fSM(-1)
+  ,fStack(-1)
+  ,fLayer(-1)
+  ,fNumberOfTimeBins(-1)
+  ,fConfigTag(-1)
+  ,fSingleHitThres(-1)
+  ,fThrPdClsThres(-1)
+  ,fSelNoZS(-1)
+  ,fTCFilterWeight(-1)
+  ,fTCFilterShortDecPar(-1)
+  ,fTCFilterLongDecPar(-1)
+  ,fFastStatNoise(-1)
   ,fFilterType(0)
   ,fReadoutParam(0)
   ,fTestPattern(0)
@@ -60,11 +59,18 @@ AliTRDCalDCSFEE::AliTRDCalDCSFEE()
   ,fAddOptions(0) 
   ,fConfigName(0)
   ,fConfigVersion(0)
-  ,fGainTableID(0)
 {
   //
   // AliTRDCalDCSFEE default constructor
   //
+  for(Int_t i=0; i<nROB; i++) {
+    for(Int_t j=0; j<nMCM; j++) {
+      fRStateGSM[i][j]  = -1;
+      fRStateNI[i][j]   = -1;
+      fRStateEV[i][j]   = -1;
+      fRStatePTRG[i][j] = -1;
+    }
+  }
 }
 
 
@@ -72,20 +78,19 @@ AliTRDCalDCSFEE::AliTRDCalDCSFEE()
 AliTRDCalDCSFEE::AliTRDCalDCSFEE(const char *name, const char *title)
   :TNamed(name,title)
   ,fStatusBit(0)
-  ,fDCSID(0)
-  ,fSM(0)
-  ,fStack(0)
-  ,fLayer(0)
-  ,fNumberOfTimeBins(0)
-  ,fPedestal(0)
-  ,fConfigTag(0)
-  ,fSingleHitThres(0)
-  ,fThrPdClsThres(0)
-  ,fSelNoZS(0)
-  ,fFastStatNoise(0)
-  ,fTCFilterWeight(0)
-  ,fTCFilterShortDecPar(0)
-  ,fTCFilterLongDecPar(0)
+  ,fDCSID(-1)
+  ,fSM(-1)
+  ,fStack(-1)
+  ,fLayer(-1)
+  ,fNumberOfTimeBins(-1)
+  ,fConfigTag(-1)
+  ,fSingleHitThres(-1)
+  ,fThrPdClsThres(-1)
+  ,fSelNoZS(-1)
+  ,fTCFilterWeight(-1)
+  ,fTCFilterShortDecPar(-1)
+  ,fTCFilterLongDecPar(-1)
+  ,fFastStatNoise(-1)
   ,fFilterType(0)
   ,fReadoutParam(0)
   ,fTestPattern(0)
@@ -95,10 +100,17 @@ AliTRDCalDCSFEE::AliTRDCalDCSFEE(const char *name, const char *title)
   ,fAddOptions(0) 
   ,fConfigName(0)
   ,fConfigVersion(0)
-  ,fGainTableID(0)
 {
   //
   // AliTRDCalDCSFEE constructor
   //
+  for(Int_t i=0; i<nROB; i++) {
+    for(Int_t j=0; j<nMCM; j++) {
+      fRStateGSM[i][j]  = -1;
+      fRStateNI[i][j]   = -1;
+      fRStateEV[i][j]   = -1;
+      fRStatePTRG[i][j] = -1;
+    }
+  }
 }
 

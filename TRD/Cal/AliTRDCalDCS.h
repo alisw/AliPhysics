@@ -29,52 +29,68 @@ class AliTRDCalDCS : public TNamed {
   AliTRDCalDCS(const AliTRDCalDCS &cd);
   AliTRDCalDCS &operator=(const AliTRDCalDCS &cd);
   virtual ~AliTRDCalDCS() { };
-    
-  void    SetNumberOfTimeBins(Int_t value)    { fNumberOfTimeBins    = value; }
-  void    SetTailCancelationTau1(Int_t tau1)  { fTailCancelationTau1 = tau1;  }
-  void    SetTailCancelationTau2(Int_t tau2)  { fTailCancelationTau2 = tau2;  }
-  void    SetTailCancelationAmp(Int_t amp)    { fTailCancelationAmp  = amp;   }
-  void    SetPedestal(Int_t ped)              { fPedestal            = ped;   }
-  void    SetConfigID(TString id)             { fConfigID            = id;    }
-  void    SetGainTableID(TString id)          { fGainTableID         = id;    }
-  void    SetFEEArr(TObjArray *fa)            { fFEEArr              = fa;    }
-  void    SetPTRArr(TObjArray *pa)            { fPTRArr              = pa;    }
-  void    SetGTUArr(TObjArray *ga)            { fGTUArr              = ga;    }
 
-  Int_t   GetNumberOfTimeBins() const         { return fNumberOfTimeBins;     }
-  Int_t   GetTailCancelationTau1() const      { return fTailCancelationTau1;  }
-  Int_t   GetTailCancelationTau2() const      { return fTailCancelationTau2;  }
-  Int_t   GetTailCancelationAmp() const       { return fTailCancelationAmp;   }
-  Int_t   GetPedestal() const                 { return fPedestal;             }
-  TString GetConfigID() const                 { return fConfigID;             }
-  TString GetGainTableID() const              { return fGainTableID;          }
-  TObjArray*       GetFEEArr() const          { return fFEEArr;               }
-  TObjArray*       GetPTRArr() const          { return fPTRArr;               }
-  TObjArray*       GetGTUArr() const          { return fGTUArr;               }
+  void    EvaluateGlobalParameters();
+  void    SetFEEArr(TObjArray *fa)             { fFEEArr              = fa;    }
+  void    SetPTRArr(TObjArray *pa)             { fPTRArr              = pa;    }
+  void    SetGTUArr(TObjArray *ga)             { fGTUArr              = ga;    }
+  
+  Int_t   GetGlobalNumberOfTimeBins() const    { return fGNumberOfTimeBins;    }
+  Int_t   GetGlobalConfigTag() const           { return fGConfigTag;           }
+  Int_t   GetGlobalSingleHitThres() const      { return fGSingleHitThres;      }
+  Int_t   GetGlobalThreePadClustThres() const  { return fGThreePadClustThres;  }
+  Int_t   GetGlobalSelectiveNoZS() const       { return fGSelNoZS;             }
+  Int_t   GetGlobalTCFilterWeight() const      { return fGTCFilterWeight;      }
+  Int_t   GetGlobalTCFilterShortDecPar() const { return fGTCFilterShortDecPar; }
+  Int_t   GetGlobalTCFilterLongDecPar() const  { return fGTCFilterLongDecPar;  }
+  Int_t   GetGlobalModeFastStatNoise() const   { return fGFastStatNoise;       }
+  TString GetGlobalConfigVersion() const       { return fGConfigVersion;       }
+  TString GetGlobalConfigName() const          { return fGConfigName;          }
+  TString GetGlobalFilterType() const          { return fGFilterType;          }
+  TString GetGlobalReadoutParam() const        { return fGReadoutParam;        }
+  TString GetGlobalTestPattern() const         { return fGTestPattern;         }
+  TString GetGlobalTrackletMode() const        { return fGTrackletMode;        }
+  TString GetGlobalTrackletDef() const         { return fGTrackletDef;         }
+  TString GetGlobalTriggerSetup() const        { return fGTriggerSetup;        }
+  TString GetGlobalAddOptions() const          { return fGAddOptions;           } 
+  TObjArray*       GetFEEArr() const           { return fFEEArr;               }
+  TObjArray*       GetPTRArr() const           { return fPTRArr;               }
+  TObjArray*       GetGTUArr() const           { return fGTUArr;               }
   AliTRDCalDCSFEE* GetCalDCSFEEObj(Int_t det) 
-  		  	    { return (AliTRDCalDCSFEE*)fFEEArr->At(det);      }
+  		  	          { return (AliTRDCalDCSFEE*)fFEEArr->At(det); }
   AliTRDCalDCSPTR* GetCalDCSPTRObj(Int_t det) 
-  			    { return (AliTRDCalDCSPTR*)fPTRArr->At(det);      }
+  			          { return (AliTRDCalDCSPTR*)fPTRArr->At(det); }
   AliTRDCalDCSGTU* GetCalDCSGTUObj(Int_t det) 
-           		    { return (AliTRDCalDCSGTU*)fGTUArr->At(det);      }
+           		          { return (AliTRDCalDCSGTU*)fGTUArr->At(det); }
 
  protected:
 
   // global configuration parameters
-  Int_t   fNumberOfTimeBins;       //  Number of timebins  
-  Int_t   fTailCancelationTau1;    //  Tau1 of tail cancelation
-  Int_t   fTailCancelationTau2;    //  Tau2 of tail cancelation
-  Int_t   fTailCancelationAmp;     //  Amplitude of tail cancelation
-  Int_t   fPedestal;               //  Pedestal
-  TString fConfigID;               //  Configuration ID
-  TString fGainTableID;            //  Gain table ID
-
+  Int_t   fGNumberOfTimeBins;    // Number of timebins (-1 if diverse)
+  Int_t   fGConfigTag;           // Configuration Tag (-1 if diverse)
+  Int_t   fGSingleHitThres;      // thres. of single hits (arg of readout param) (-1 if diverse)
+  Int_t   fGThreePadClustThres;  // thres. of 3-pad clusters (arg of readout param) (-1 if diverse)
+  Int_t   fGSelNoZS;             // write every fGSelNoZS'th event without ZS (-1 if diverse)
+  Int_t   fGTCFilterWeight;      // tail cancellation filter weight (-1 if diverse)
+  Int_t   fGTCFilterShortDecPar; // tail cancellation filter short decay parameter (-1 if diverse)
+  Int_t   fGTCFilterLongDecPar;  // tail cancellation filter long decay parameter (-1 if diverse)
+  Int_t   fGFastStatNoise;       // collect stat. f. fast noise mode (0: no, 1: yes, -1: diverse)
+  TString fGConfigVersion;       // Configuration version (empty if diverse)
+  TString fGConfigName;          // Configuration name (empty if diverse)
+  TString fGFilterType;          // filter type (p, pgt, nf) (empty if diverse)
+  TString fGReadoutParam;        // readout parameter (zs, nozs, testpattern) (empty if diverse)
+  TString fGTestPattern;         // value of testpattern (for readout param) (empty if diverse)
+  TString fGTrackletMode;        // tracklet mode (trk, csmtrk, notrk) (empty if diverse)
+  TString fGTrackletDef;         // definition for tracklet mode trk (empty if diverse)
+  TString fGTriggerSetup;        // trigger setup (ptrg, autotrg, autol0) (empty if diverse)
+  TString fGAddOptions;          // additional options (nopm, nion) (empty if diverse)
+  
   //individual configuration parameters
   TObjArray *fFEEArr; // config param of the individual chambers
   TObjArray *fPTRArr; // config param of the pretrigger
   TObjArray *fGTUArr; // config param of the GTU
 
-  ClassDef(AliTRDCalDCS,1)         //  TRD calibration class for TRD DCS parameters
+  ClassDef(AliTRDCalDCS,2)         //  TRD calibration class for TRD DCS parameters
 
 };
 #endif
