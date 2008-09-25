@@ -86,8 +86,9 @@ class AliTRDseedV1 : public AliTRDseed
   Double_t  GetZat(Double_t x) const { return fZfit[0] + fZfit[1] * (x-fX0);}
   
   inline AliTRDcluster* NextCluster();
+  inline AliTRDcluster* PrevCluster();
   void      Print(Option_t *o = "") const;
-  void      ResetClusterIter() {fClusterIter = &fClusters[0]; fClusterIter--; fClusterIdx=-1;}
+  inline void ResetClusterIter(Bool_t forward = kTRUE);
 
   void      SetMomentum(Double_t mom) {fMom = mom;}
   void      SetOwner();
@@ -102,7 +103,7 @@ protected:
 private:
   const AliTRDReconstructor *fReconstructor;//! local reconstructor
   AliTRDcluster    **fClusterIter;          //! clusters iterator
-  UChar_t          fClusterIdx;             //! clusters iterator
+  Char_t           fClusterIdx;             //! clusters iterator
   Int_t            fDet;                    //  TRD detector
   Float_t          fMom;                    //  Momentum estimate for tracklet [GeV/c]
   Float_t          fSnp;                    // sin of track with respect to x direction in XY plane	
@@ -146,9 +147,53 @@ inline void AliTRDseedV1::Init(const AliRieman *rieman)
 //____________________________________________________________
 inline AliTRDcluster* AliTRDseedV1::NextCluster()
 {
+// Mimic the usage of STL iterators.
+// Forward iterator
+
   fClusterIdx++; fClusterIter++;
-  while(!(*fClusterIter) && fClusterIdx < AliTRDseed::knTimebins){ fClusterIdx++; fClusterIter++;}
-  return *fClusterIter;
+  while(fClusterIdx < AliTRDseed::knTimebins){
+    if(!(*fClusterIter)){ 
+      fClusterIdx++; 
+      fClusterIter++;
+      continue;
+    }
+    return *fClusterIter;
+  }
+  return 0x0;
+}
+
+//____________________________________________________________
+inline AliTRDcluster* AliTRDseedV1::PrevCluster()
+{
+// Mimic the usage of STL iterators.
+// Backward iterator
+
+  fClusterIdx--; fClusterIter--;
+  while(fClusterIdx >= 0){
+    if(!(*fClusterIter)){ 
+      fClusterIdx--; 
+      fClusterIter--;
+      continue;
+    }
+    return *fClusterIter;
+  }
+  return 0x0;
+}
+
+//____________________________________________________________
+inline void AliTRDseedV1::ResetClusterIter(Bool_t forward) 
+{
+// Mimic the usage of STL iterators.
+// Facilitate the usage of NextCluster for forward like 
+// iterator (kTRUE) and PrevCluster for backward like iterator (kFALSE)
+
+  if(forward){
+    fClusterIter = &fClusters[0]; fClusterIter--; 
+    fClusterIdx=-1;
+  } else {
+    fClusterIter = &fClusters[AliTRDseed::knTimebins-1]; fClusterIter++; 
+    fClusterIdx=AliTRDseed::knTimebins;
+  }
 }
 
 #endif
