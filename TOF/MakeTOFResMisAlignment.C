@@ -42,8 +42,6 @@ void MakeTOFResMisAlignment(){
   TRandom *rnd   = new TRandom(4357);
   Double_t sigmatr = 0.1; // sigma (in cm) for shift w.r.t. local ideal RS
 
-  Int_t sActive[18]={0,1,1,0,0,0,1,1,0,1,1,1,1,0,0,1,1,1};
-
   Int_t nstrA=15;
   Int_t nstrB=19;
   Int_t nstrC=19;
@@ -56,7 +54,6 @@ void MakeTOFResMisAlignment(){
     dz = rnd->Gaus(0.,sigmatr);
       strId++;
       if ((isect==13 || isect==14 || isect==15) && (istr >= 39 && istr <= 53)) continue;
-      if( (TString(gSystem->Getenv("PARTGEOM")) == TString("kTRUE")) && !sActive[isect] ) continue;
       new(alobj[j++]) AliAlignObjParams(AliGeomManager::SymName(idTOF,strId),AliGeomManager::LayerToVolUID(idTOF,strId), dx, dy, dz, dpsi, dtheta, dphi, kFALSE);
     }
   }

@@ -62,7 +62,6 @@ void MakeTOFFullMisAlignment(){
   UShort_t dvoluid = AliGeomManager::LayerToVolUID(iLayer,iIndex); //dummy vol id 
 
   Int_t nSMTOF = 18;
-  Int_t sActive[18]={0,1,1,0,0,0,1,1,0,1,1,1,1,0,0,1,1,1};
   Int_t j=0;
   Double_t smdx, smdy, smdz=0., dpsi=0., dtheta, dphi=0.;
   TRandom *rnd   = new TRandom(2345);
@@ -74,13 +73,11 @@ void MakeTOFFullMisAlignment(){
     smdx = rnd->Gaus(0.,sigmatr);
     smdy = rnd->Gaus(0.,sigmatr);
     dtheta = rnd->Gaus(0.,sigmarot);
-    if( (TString(gSystem->Getenv("PARTGEOM")) == TString("kTRUE")) && !sActive[isect] ) continue;
     new((*array)[j++]) AliAlignObjParams(symname.Data(), dvoluid, smdx, smdy, smdz, dpsi, dtheta, dphi, kFALSE);
   }
   // Apply objects for TOF supermodules 
   Int_t smCounter=0;
   for(Int_t isect=0; isect<nSMTOF; isect++){
-    if( (TString(gSystem->Getenv("PARTGEOM")) == TString("kTRUE")) && !sActive[isect] ) continue;
     AliAlignObjParams* smobj = (AliAlignObjParams*)array->UncheckedAt(smCounter++);
     Info(macroname,Form("Applying object for sector %d ",isect));
     if(!smobj->ApplyToGeometry()){
@@ -109,7 +106,6 @@ void MakeTOFFullMisAlignment(){
     sdz = rnds->Gaus(0.,sigmatr);
     strId++;
     if ((isect==13 || isect==14 || isect==15) && (istr >= 39 && istr <= 53)) continue;
-    if( (TString(gSystem->Getenv("PARTGEOM")) == TString("kTRUE")) && !sActive[isect] ) continue;
     new((*array)[j++]) AliAlignObjParams(AliGeomManager::SymName(idTOF,strId),AliGeomManager::LayerToVolUID(idTOF,strId), sdx, sdy, sdz, sdpsi, sdtheta, sdphi, kFALSE);
     }
   }
