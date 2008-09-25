@@ -246,6 +246,40 @@ AliEMCALRecParam* AliEMCALRecParam::GetDefaultParameters()
 {
   //default parameters for the reconstruction
   AliEMCALRecParam* params = new AliEMCALRecParam();
+  params->SetName("Default - Pb+Pb");
+  params->SetTitle("Default - Pb+Pb");
+  return params;
+
+}
+
+
+//-----------------------------------------------------------------------------
+AliEMCALRecParam* AliEMCALRecParam::GetLowFluxParam()
+{
+  //low flux/multiplicity ("p+p") parameters for the reconstruction
+  AliEMCALRecParam* params = new AliEMCALRecParam();
+  params->SetClusteringThreshold(0.1); // 100 MeV                                             
+  params->SetMinECut(0.01);  //10 MeV       
+  params->SetName("Low Flux - p+p");
+  params->SetTitle("Low Flux - p+p");
+  params->SetEventSpecie(AliRecoParam::kLowMult);
+
+  return params;
+
+}
+
+
+//-----------------------------------------------------------------------------
+AliEMCALRecParam* AliEMCALRecParam::GetHighFluxParam()
+{
+  //high flux/multiplicity ("Pb+Pb") parameters for the reconstruction
+  AliEMCALRecParam* params = new AliEMCALRecParam();
+  //For now, same as default
+  //if later these need to be modified, here's where it is done
+  params->SetName("High Flux - Pb+Pb");
+  params->SetTitle("High Flux - Pb+Pb");
+  params->SetEventSpecie(AliRecoParam::kHighMult);
+
   return params;
 
 }

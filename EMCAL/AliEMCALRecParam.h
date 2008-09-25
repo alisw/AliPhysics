@@ -87,6 +87,9 @@ public:
   virtual void Print(Option_t * option="") const ;
 
   static AliEMCALRecParam* GetDefaultParameters();
+  static AliEMCALRecParam* GetLowFluxParam();
+  static AliEMCALRecParam* GetHighFluxParam();
+
   static const  TObjArray* GetMappings();
 
 private:
