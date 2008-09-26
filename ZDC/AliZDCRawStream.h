@@ -62,6 +62,8 @@ class AliZDCRawStream: public TObject {
     Bool_t IsADCDataWord() const {return fIsADCDataWord;}
     Bool_t IsADCHeader()   const {return fIsADCHeader;}
     Bool_t IsADCEOB()	   const {return fIsADCEOB;}
+    Bool_t IsUnderflow()   const {return fIsUnderflow;}
+    Bool_t IsOverflow()    const {return fIsOverflow;}
     
     UInt_t GetScNWords() const {return fScNWords;}	    
     UInt_t GetScGeo() const {return fScGeo;}	    

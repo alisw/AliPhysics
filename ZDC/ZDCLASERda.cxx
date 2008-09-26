@@ -71,12 +71,24 @@ int main(int argc, char **argv) {
   //
   TH1F::AddDirectory(0);
   //
-  TH1F *hPMRefChg = new TH1F("hPMRefChg","hPMRefChg", 100,0.,1000.);
-  TH1F *hPMRefAhg = new TH1F("hPMRefAhg","hPMRefAhg", 100,0.,1000.);
+  // --- Histos for reference PMTs (high gain chains)
+  TH1F *hPMRefC = new TH1F("hPMRefC","hPMRefC", 100,0.,1400.);
+  TH1F *hPMRefA = new TH1F("hPMRefA","hPMRefA", 100,0.,1400.);
   //
-  TH1F *hPMRefClg = new TH1F("hPMRefClg","hPMRefClg", 100,0.,4000.);
-  TH1F *hPMRefAlg = new TH1F("hPMRefAlg","hPMRefAlg", 100,0.,4000.);
-
+  // --- Histos for detector PMTs (just high gain chain)
+  TH1F *hZNC[5], *hZPC[5], *hZNA[5], *hZPA[5];
+  char hnamZNC[20], hnamZPC[20], hnamZNA[20], hnamZPA[20];
+  for(Int_t j=0; j<5; j++){
+    sprintf(hnamZNC,"ZNC-tow%d",j);
+    sprintf(hnamZPC,"ZPC-tow%d",j);
+    sprintf(hnamZNA,"ZNA-tow%d",j);
+    sprintf(hnamZPA,"ZPA-tow%d",j);
+    //
+    hZNC[j] = new TH1F(hnamZNC, hnamZNC, 100, 0., 1400.);
+    hZPC[j] = new TH1F(hnamZPC, hnamZPC, 100, 0., 1400.);
+    hZNA[j] = new TH1F(hnamZNA, hnamZNA, 100, 0., 1400.);
+    hZPA[j] = new TH1F(hnamZPA, hnamZPA, 100, 0., 1400.);
+  }
 
   /* open result file */
   FILE *fp=NULL;
@@ -258,27 +270,44 @@ int main(int argc, char **argv) {
   	//
 	while(rawStreamZDC->Next()){
   	  Int_t index=-1;
-	  // Getting data only for reference PMTs (sector[1]=5)
-  	  if((rawStreamZDC->IsADCDataWord()) && (rawStreamZDC->GetSector(1)==5)){
-	    index = rawStreamZDC->GetADCChannel();
+	  Int_t detector = rawStreamZDC->GetSector(0);
+	  
+  	  if(rawStreamZDC->IsADCDataWord() && !(rawStreamZDC->IsUnderflow())
+	     && !(rawStreamZDC->IsOverflow()) && detector!=-1){
+	    
+	    printf("  IsADCWord %d, IsUnderflow %d, IsOverflow %d\n",
+	      rawStreamZDC->IsADCDataWord(),rawStreamZDC->IsUnderflow(),rawStreamZDC->IsOverflow());
+ 
+ 	    if(rawStreamZDC->GetSector(1)!=5){ // Physics signals
+    	      if(detector==1) index = rawStreamZDC->GetSector(1);        // *** ZNC
+	      else if(detector==2) index = rawStreamZDC->GetSector(1)+5; // *** ZPC
+	      else if(detector==4) index = rawStreamZDC->GetSector(1)+12;// *** ZNA
+	      else if(detector==5) index = rawStreamZDC->GetSector(1)+17;// *** ZPA
+	    }
+	    else{ // Reference PMs
+	      index = (detector-1)/3+22;
+	    }
+	    
 	    Float_t Pedestal = MeanPed[index];
 	    Float_t CorrADC = rawStreamZDC->GetADCValue() - Pedestal;
 	    
-	    // ==== HIGH GAIN CHAIN
-	    if(rawStreamZDC->GetADCGain() == 0){
-	      // %%%%% PMRef chain side C
-	      if(rawStreamZDC->GetSector(0)==1) hPMRefChg->Fill(CorrADC);
-	      // %%%%% PMRef side A
-	      else if(rawStreamZDC->GetSector(0)==4) hPMRefAhg->Fill(CorrADC);
+	    // **** Detector PMs
+	    if(rawStreamZDC->GetSector(1)!=5 && rawStreamZDC->GetADCGain()==0){
+	      // ---- side C
+	      hZNC[rawStreamZDC->GetSector(1)]->Fill(CorrADC);
+	      hZPC[rawStreamZDC->GetSector(1)]->Fill(CorrADC);
+	      // ---- side A
+	      hZNA[rawStreamZDC->GetSector(1)]->Fill(CorrADC);
+	      hZPA[rawStreamZDC->GetSector(1)]->Fill(CorrADC);
 	    }
-	    // ==== LOW GAIN CHAIN
-	    else{
-	      // %%%%% PMRef chain side C
-	      if(rawStreamZDC->GetSector(0)==1) hPMRefClg->Fill(CorrADC);
-	      // %%%%% PMRef side A
-	      else if(rawStreamZDC->GetSector(0)==4) hPMRefAlg->Fill(CorrADC);
-	    }
-  	  }//IsADCDataWord()
+	    // **** Reference PMs
+	    if(rawStreamZDC->GetSector(1)==5 && rawStreamZDC->GetADCGain()==0){
+	      // ---- PMRef chain side C
+	      if(detector==1) hPMRefC->Fill(CorrADC);
+	      // ---- PMRef side A
+	      else if(detector==4) hPMRefA->Fill(CorrADC);
+	    }	  
+  	  }//IsADCDataWord()+NOunderflow+NOoverflow
   	  //
          }
          //
@@ -298,73 +327,105 @@ int main(int argc, char **argv) {
   
   /* Analysis of the histograms */
   //
-  Int_t maxBinRef[4], nBinRef[4];
-  Float_t xMaxRef[4], maxXvalRef[4], xlowRef[4]; 
-  Float_t meanRef[2], sigmaRef[2];
-  TF1 *funRef[4];
+  Int_t maxBin[22], nBin[22];
+  Float_t xMax[22], maxXval[22], xlow[22]; 
+  Float_t mean[22], sigma[22];
+  TF1 *fun[4];
   
-  // ~~~~~~~~ PM Ref side C high gain chain ~~~~~~~~
-  maxBinRef[0] = hPMRefChg->GetMaximumBin();
-  nBinRef[0] = (hPMRefChg->GetXaxis())->GetNbins();
-  xMaxRef[0] = (hPMRefChg->GetXaxis())->GetXmax();
-  maxXvalRef[0] = maxBinRef[0]*xMaxRef[0]/nBinRef[0];
+  for(Int_t k=0; k<5; k++){
+    // --- ZNC
+    maxBin[k] = hZNC[k]->GetMaximumBin();
+    nBin[k] = (hZNC[k]->GetXaxis())->GetNbins();
+    xMax[k] = (hZNC[k]->GetXaxis())->GetXmax();
+    if(nBin[k]!=0) maxXval[k] = maxBin[k]*xMax[k]/nBin[k];
+    //
+    if(maxXval[k]-150.<0.) xlow[k]=0.;
+    else xlow[k] = maxXval[k]-150.;
+    hZNC[k]->Fit("gaus","Q","",xlow[k],maxXval[k]+150.);
+    fun[k] = hZNC[k]->GetFunction("gaus");
+    mean[k]  = (Float_t) (fun[k]->GetParameter(1));
+    sigma[k] = (Float_t) (fun[k]->GetParameter(2));
+    // --- ZPC
+    maxBin[k+5] = hZPC[k]->GetMaximumBin();
+    nBin[k+5] = (hZPC[k]->GetXaxis())->GetNbins();
+    xMax[k+5] = (hZPC[k]->GetXaxis())->GetXmax();
+    if(nBin[k+5]!=0) maxXval[k+5] = maxBin[k+5]*xMax[k+5]/nBin[k+5];
+    //
+    if(maxXval[k+5]-150.<0.) xlow[k+5]=0.;
+    else xlow[k+5] = maxXval[k+5]-150.;
+    hZPC[k]->Fit("gaus","Q","",xlow[k+5],maxXval[k+5]+150.);
+    fun[k+5] = hZPC[k]->GetFunction("gaus");
+    mean[k+5]  = (Float_t) (fun[k+5]->GetParameter(1));
+    sigma[k+5] = (Float_t) (fun[k+5]->GetParameter(2));
+    // --- ZNA
+    maxBin[k+10] = hZNA[k]->GetMaximumBin();
+    nBin[k+10] = (hZNA[k]->GetXaxis())->GetNbins();
+    xMax[k+10] = (hZNA[k]->GetXaxis())->GetXmax();
+    if(nBin[k+10]!=0) maxXval[k+10] = maxBin[k+10]*xMax[k+10]/nBin[k+10];
+    //
+    if(maxXval[k+10]-150.<0.) xlow[k+10]=0.;
+    else xlow[k+10] = maxXval[k+10]-150.;
+    hZNA[k]->Fit("gaus","Q","",xlow[k+10],maxXval[k+10]+150.);
+    fun[k+10] = hZNA[k]->GetFunction("gaus");
+    mean[k+10]  = (Float_t) (fun[k+10]->GetParameter(1));
+    sigma[k+10] = (Float_t) (fun[k+10]->GetParameter(2));
+    // --- ZPA
+    maxBin[k+15] = hZPA[k]->GetMaximumBin();
+    nBin[k+15] = (hZPA[k]->GetXaxis())->GetNbins();
+    xMax[k+15] = (hZPA[k]->GetXaxis())->GetXmax();
+    if(nBin[k+15]!=0) maxXval[k+15] = maxBin[k+15]*xMax[k+15]/nBin[k+15];
+    //
+    if(maxXval[k+15]-150.<0.) xlow[k+15]=0.;
+    else xlow[k+15] = maxXval[k+15]-150.;
+    hZPA[k]->Fit("gaus","Q","",xlow[k+15],maxXval[k+15]+150.);
+    fun[k+15] = hZPA[k]->GetFunction("gaus");
+    mean[k+15]  = (Float_t) (fun[k+15]->GetParameter(1));
+    sigma[k+15] = (Float_t) (fun[k+15]->GetParameter(2));
+    
+  }
+  
+  // ~~~~~~~~ PM Ref side C ~~~~~~~~
+  maxBin[20] = hPMRefC->GetMaximumBin();
+  nBin[20] = (hPMRefC->GetXaxis())->GetNbins();
+  xMax[20] = (hPMRefC->GetXaxis())->GetXmax();
+  if(nBin[20]!=0) maxXval[20] = maxBin[20]*xMax[20]/nBin[20];
   // 
-  if(maxXvalRef[0]-100.<0.) {xlowRef[0]=0.;}
-  else xlowRef[0] = maxXvalRef[0];
-  hPMRefChg->Fit("gaus","Q","",xlowRef[0],maxXvalRef[0]+100.);
-  funRef[0] = hPMRefChg->GetFunction("gaus");
-  meanRef[0] = (Float_t) (funRef[0]->GetParameter(1));
-  sigmaRef[0] = (Float_t) (funRef[0]->GetParameter(2));
+  if(maxXval[20]-150.<0.) xlow[20]=0.;
+  else xlow[20] = maxXval[20];
+  hPMRefC->Fit("gaus","Q","",xlow[20],maxXval[20]+150.);
+  fun[20] = hPMRefC->GetFunction("gaus");
+  mean[20]  = (Float_t) (fun[20]->GetParameter(1));
+  sigma[20] = (Float_t) (fun[20]->GetParameter(2));
   
-  // ~~~~~~~~ PM Ref side A high gain chain ~~~~~~~~
-  maxBinRef[1] = hPMRefAhg->GetMaximumBin();
-  nBinRef[1] = (hPMRefAhg->GetXaxis())->GetNbins();
-  xMaxRef[1] = (hPMRefAhg->GetXaxis())->GetXmax();
-  maxXvalRef[1] = maxBinRef[1]*xMaxRef[1]/nBinRef[1];
+  // ~~~~~~~~ PM Ref side A ~~~~~~~~
+  maxBin[21] = hPMRefA->GetMaximumBin();
+  nBin[21] = (hPMRefA->GetXaxis())->GetNbins();
+  xMax[21] = (hPMRefA->GetXaxis())->GetXmax();
+  if(nBin[21]!=0) maxXval[21] = maxBin[21]*xMax[21]/nBin[21];
   //
-  if(maxXvalRef[1]-100.<0.) {xlowRef[1]=0.;}
-  else xlowRef[1] = maxXvalRef[1];
-  hPMRefAhg->Fit("gaus","Q","",xlowRef[1],maxXvalRef[1]+100.);
-  funRef[1] = hPMRefAhg->GetFunction("gaus");
-  meanRef[1] = (Float_t) (funRef[1]->GetParameter(1));
-  sigmaRef[1] = (Float_t) (funRef[1]->GetParameter(2));
-  
-  // ~~~~~~~~ PM Ref side C low gain chain ~~~~~~~~
-  maxBinRef[2] = hPMRefClg->GetMaximumBin();
-  nBinRef[2] = (hPMRefClg->GetXaxis())->GetNbins();
-  xMaxRef[2] = (hPMRefClg->GetXaxis())->GetXmax();
-  maxXvalRef[2] = maxBinRef[2]*xMaxRef[2]/nBinRef[2];
-  //
-  if(maxXvalRef[2]-100.<0.) {xlowRef[2]=0.;}
-  else xlowRef[2] = maxXvalRef[2];
-  hPMRefClg->Fit("gaus","Q","",xlowRef[2],maxXvalRef[2]+100.);
-  funRef[2] = hPMRefClg->GetFunction("gaus");
-  meanRef[2] = (Float_t) (funRef[2]->GetParameter(1));
-  sigmaRef[2] = (Float_t) (funRef[2]->GetParameter(2));
-  
-  // ~~~~~~~~ PM Ref side A low gain chain ~~~~~~~~
-  maxBinRef[3] = hPMRefAlg->GetMaximumBin();
-  nBinRef[3] = (hPMRefAlg->GetXaxis())->GetNbins();
-  xMaxRef[3] = (hPMRefAlg->GetXaxis())->GetXmax();
-  maxXvalRef[3] = maxBinRef[3]*xMaxRef[3]/nBinRef[3];
-  //
-  if(maxXvalRef[3]-100.<0.) {xlowRef[3]=0.;}
-  else xlowRef[3] = maxXvalRef[3];
-  hPMRefAlg->Fit("gaus","Q","",xlowRef[3],maxXvalRef[3]+100.);
-  funRef[3] = hPMRefAlg->GetFunction("gaus");
-  meanRef[3] = (Float_t) (funRef[3]->GetParameter(1));
-  sigmaRef[3] = (Float_t) (funRef[3]->GetParameter(2));
-  //
+  if(maxXval[21]-100.<0.) xlow[21]=0.;
+  else xlow[21] = maxXval[21];
+  hPMRefA->Fit("gaus","Q","",xlow[21],maxXval[21]+100.);
+  fun[21] = hPMRefA->GetFunction("gaus");
+  mean[21]  = (Float_t) (fun[21]->GetParameter(1));
+  sigma[21] = (Float_t) (fun[21]->GetParameter(2));
+    
   FILE *fileShuttle;
   fileShuttle = fopen(LASDATA_FILE,"w");
-  for(Int_t i=0; i<4; i++)  fprintf(fileShuttle,"\t%f\t%f\n",meanRef[i], sigmaRef[i]); 
+  for(Int_t i=0; i<22; i++){
+    fprintf(fileShuttle,"\t%f\t%f\n",mean[i], sigma[i]); 
+  }
   //						       
   fclose(fileShuttle);
   //
-  delete hPMRefChg;
-  delete hPMRefAhg;
-  delete hPMRefClg;
-  delete hPMRefAlg;
+  for(Int_t j=0; j<5; j++){
+    delete hZNC[j];
+    delete hZPC[j];
+    delete hZNA[j];
+    delete hZPA[j];
+  }
+  delete hPMRefC;
+  delete hPMRefA;
 
   //delete minuitFit;
   TVirtualFitter::SetFitter(0);
