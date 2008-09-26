@@ -400,6 +400,8 @@ int AliHLTMUONTriggerRecordsSource::GetEvent(
 	///
 	
 	assert( fMCDataInterface != NULL or fDataInterface != NULL );
+	
+	if (not IsDataEvent()) return 0;  // ignore non data events.
 
 	AliHLTInt32_t trigRecId = 0;
 

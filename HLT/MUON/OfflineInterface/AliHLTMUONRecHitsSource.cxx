@@ -388,6 +388,8 @@ int AliHLTMUONRecHitsSource::GetEvent(
 	///
 	
 	assert( fMCDataInterface != NULL or fDataInterface != NULL );
+	
+	if (not IsDataEvent()) return 0;  // ignore non data events.
 
 	// Check the size of the event descriptor structure.
 	if (evtData.fStructSize < sizeof(AliHLTComponentEventData))
