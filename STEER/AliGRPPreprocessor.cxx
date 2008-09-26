@@ -268,8 +268,10 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap)
 	//=================//
 	// DCS data points //
 	//=================//
+	Log(Form("Starting DCS Query at %d and finishing at %d",GetStartTimeDCSQuery(),GetEndTimeDCSQuery()));
 	Int_t entries = ProcessDcsDPs( valueMap, grpobj );
-	if( entries < fgknDCSDP-3 ) { // FIXME (!= ) LHState and pressure map are not working yet...
+	Log(Form("entries found = %d",entries));
+	if( entries < fgknDCSDP-7 ) { // FIXME (!= ) LHState and pressure map are not working yet... and removing the 4 values for the missing HP 
 		Log(Form("Problem with the DCS data points!!!"));
 		error |= 8;
 	} else  Log(Form("DCS data points, successful!"));
@@ -493,12 +495,12 @@ UInt_t AliGRPPreprocessor::ProcessDaqFxs()
 	
 	TString fRawDataFileName = "GRP_Merged.tag.root";
 	Log(Form("Merging %d raw data tags into file: %s", nFiles, fRawDataFileName.Data()));
-	/* temporary, to speed up
+	
 	if( fRawTagChain->Merge(fRawDataFileName) < 1 ) {
 		Log("Error merging raw data files!!!");
 		return 3;
 	}
-	*/
+	
 	TString outputfile = Form("Run%d.Merged.RAW.tag.root", fRun);
 	Bool_t result = StoreRunMetadataFile(fRawDataFileName.Data(),outputfile.Data());
 	
@@ -802,7 +804,8 @@ Int_t AliGRPPreprocessor::ProcessHPDPs(TMap* valueMap, AliGRPObject* grpObj)
 		}
 	}
 		
-	return 0;
+	Log(Form("Hall Probes = %d ", nHPEntries));
+	return nHPEntries;
 }
 
 //_______________________________________________________________
@@ -939,12 +942,12 @@ TString AliGRPPreprocessor::ProcessChar(TObjArray *array)
 	AliDCSValue *v = 0x0;
 	for(Int_t iCount = 0; iCount < array->GetEntries(); iCount++) {
 		v = (AliDCSValue *)array->At(iCount);
-		if ((v->GetTimeStamp() < fStartTime) || (v->GetTimeStamp() > fEndTime)) {
+		if ((v->GetTimeStamp() < GetStartTimeDCSQuery()) || (v->GetTimeStamp() > GetEndTimeDCSQuery())) {
 			AliError(Form("DCS values for the parameter outside the queried interval"));
 			continue;
 		}
 		if (iCount > 0) {
-			if (aDCSString != v->GetChar());
+			if (aDCSString != v->GetChar())
 			AliError(Form("DCS values for the parameter changed from %s to %c within the queried interval", aDCSString.Data(), (Char_t)v->GetChar()));
 		}
 		aDCSString = (TString)v->GetChar();  // keeping always last value in the array
@@ -981,7 +984,7 @@ Float_t* AliGRPPreprocessor::ProcessFloatAll(TObjArray* array)
 	Float_t *tempArray = new Float_t[nCounts];
 	for(Int_t i = 0; i < nCounts; i++) {
 		AliDCSValue *v = (AliDCSValue *)array->At(i);
-		if((v->GetTimeStamp() >= fStartTime) &&(v->GetTimeStamp() <= fEndTime)) {
+		if((v->GetTimeStamp() >= GetStartTimeDCSQuery()) &&(v->GetTimeStamp() <= GetEndTimeDCSQuery())) {
 			aDCSArraySum += v->GetFloat();
 			tempArray[i] = v->GetFloat();
 			AliDebug(2,Form("%d-th entry = %f",i,tempArray[i]));
@@ -1061,12 +1064,12 @@ Char_t AliGRPPreprocessor::ProcessBool(TObjArray* array)
 	
 	for(Int_t iCount = 0; iCount < array->GetEntries(); iCount++) {
 		v = (AliDCSValue *)array->At(iCount);
-		if ((v->GetTimeStamp() < fStartTime) || (v->GetTimeStamp() > fEndTime)) {
+		if ((v->GetTimeStamp() < GetStartTimeDCSQuery()) || (v->GetTimeStamp() > GetEndTimeDCSQuery())) {
 			AliError(Form("DCS values for the parameter outside the queried interval"));
 			continue;
 		}
 		if (iCount > 0) {
-			if (aDCSBool != v->GetBool());
+			if (aDCSBool != v->GetBool())
 			AliError(Form("DCS values for the parameter changed from %d to %d within the queried interval", (UInt_t)aDCSBool, (UInt_t)v->GetBool()));
 		}
 		aDCSBool = v->GetBool(); // always keeping last value
@@ -1092,7 +1095,7 @@ Float_t AliGRPPreprocessor::ProcessInt(TObjArray* array)
 
 	for(Int_t iCount = 0; iCount < array->GetEntries(); iCount++) {
 		v = (AliDCSValue *)array->At(iCount);
-		if((v->GetTimeStamp() >= fStartTime) &&(v->GetTimeStamp() <= fEndTime)) {
+		if((v->GetTimeStamp() >= GetStartTimeDCSQuery()) &&(v->GetTimeStamp() <= GetEndTimeDCSQuery())) {
 			aDCSArraySum += v->GetInt();
 			iCounts += 1;
 		}
@@ -1119,7 +1122,7 @@ Float_t AliGRPPreprocessor::ProcessUInt(TObjArray* array)
 
 	for(Int_t iCount = 0; iCount < array->GetEntries(); iCount++) {
 		v = (AliDCSValue *)array->At(iCount);
-		if((v->GetTimeStamp() >= fStartTime) &&(v->GetTimeStamp() <= fEndTime)) {
+		if((v->GetTimeStamp() >= GetStartTimeDCSQuery()) &&(v->GetTimeStamp() <= GetEndTimeDCSQuery())) {
 			aDCSArraySum += v->GetUInt();
 			iCounts += 1;
 		}
