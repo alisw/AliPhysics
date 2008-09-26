@@ -73,7 +73,7 @@ void AliZDCDataDCS::ProcessData(TMap& aliasMap)
       }
       Introduce(j, aliasArr);
 
-      if(aliasArr->GetEntries()<kNAliases){
+      if(aliasArr->GetEntries()<=2){
    	AliError(Form("Alias %s has just %d entries!",
    			fAliasNames[j].Data(),aliasArr->GetEntries()));
    	continue;

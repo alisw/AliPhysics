@@ -26,24 +26,23 @@ class AliZDCLaserCalib: public TNamed {
   void Reset();
   virtual void  Print(Option_t *) const; 
   //
-  Float_t GetSector(Int_t i) const {return fSector[i];}
-  Float_t GetGain(Int_t i)   const {return fGain[i];}
-  Float_t GetPMRefValue(Int_t i) const {return fPMRefValue[i];}
-  Float_t GetPMRefWidth(Int_t i) const {return fPMRefWidth[i];}
+  Int_t GetDetector(Int_t i) const {return fDetector[i];}
+  Int_t GetSector(Int_t i)   const {return fSector[i];}
+  Float_t GetPMValue(Int_t i)  const {return fPMValue[i];}
+  Float_t GetPMWidth(Int_t i)  const {return fPMWidth[i];}
   
-  void  SetSector(Int_t i, Float_t ival) {fSector[i] = ival;}
-  void  SetGain(Int_t i, Float_t ival)   {fGain[i] = ival;}
-  void  SetfPMRefValue(Int_t i, Float_t ival){fPMRefValue[i] = ival;}
-  void  SetfPMRefWidth(Int_t i, Float_t ival){fPMRefWidth[i] = ival;}
+  void  SetDetector(Int_t i, Int_t ival) {fDetector[i] = ival;}
+  void  SetSector(Int_t i, Int_t ival)   {fSector[i] = ival;}
+  void  SetfPMValue(Int_t i, Float_t ival) {fPMValue[i] = ival;}
+  void  SetfPMWidth(Int_t i, Float_t ival) {fPMWidth[i] = ival;}
   
  protected:
-  // 2 reference ch. x 2 gain chain
-  Float_t fSector[4];     // sector fSector=1(side C), 4(sideA)
-  Float_t fGain[4];	  // fGain=0 (high gain chain), 1 (low gain chain) 
-  Float_t fPMRefValue[4]; // ADC spectrum mean value
-  Float_t fPMRefWidth[4]; // ADC spectrum width
+  Int_t fDetector[22];// detector code
+  Int_t fSector[22];  // sector in detector (=5 for reference PMs)
+  Float_t fPMValue[22]; // ADC spectrum mean value
+  Float_t fPMWidth[22]; // ADC spectrum width
   //
-  ClassDef(AliZDCLaserCalib,2)    // ZDC LASER calibration data
+  ClassDef(AliZDCLaserCalib,3)    // ZDC LASER calibration data
 };
 
 #endif

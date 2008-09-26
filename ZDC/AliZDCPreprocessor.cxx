@@ -178,7 +178,8 @@ UInt_t AliZDCPreprocessor::Process(TMap* dcsAliasMap)
   // *************** From DCS ******************
   // Fills data into a AliZDCDataDCS object
   if(!dcsAliasMap) return 1;
-
+  printf("Processing data from DCS\n");
+  
   // The processing of the DCS input data is forwarded to AliZDCDataDCS
   Float_t dcsValues[28]; // DCSAliases=28
   fData->SetCalibData(dcsValues);
@@ -189,8 +190,8 @@ UInt_t AliZDCPreprocessor::Process(TMap* dcsAliasMap)
   metadata.SetComment("DCS data for ZDC");
   Bool_t resDCSRef = kTRUE;
   resDCSRef = StoreReferenceData("DCS","Data",fData,&metadata);
-  //dcsAliasMap->Print("");
-  //
+  dcsAliasMap->Print("");
+
   // --- Writing ZDC table positions into alignment object
   TClonesArray *array = new TClonesArray("AliAlignObjParams",10);
   TClonesArray &alobj = *array;
@@ -202,7 +203,8 @@ UInt_t AliZDCPreprocessor::Process(TMap* dcsAliasMap)
   Double_t dyZN2 = (Double_t) (dcsValues[2]/10.);
   Double_t dyZP2 = (Double_t) (dcsValues[3]/10.);
   //
-  const char *n1ZDC="ZDC/NeutronZDC_C";
+  
+  const char *n1ZDC="ZDC/NeutronZDC_C";  
   const char *p1ZDC="ZDC/ProtonZDC_C";
   const char *n2ZDC="ZDC/NeutronZDC_A";
   const char *p2ZDC="ZDC/ProtonZDC_A";
@@ -215,6 +217,7 @@ UInt_t AliZDCPreprocessor::Process(TMap* dcsAliasMap)
   new(alobj[1]) AliAlignObjParams(p1ZDC, volid, dx, dyZP1, dz, dpsi, dtheta, dphi, kTRUE);
   new(alobj[2]) AliAlignObjParams(n2ZDC, volid, dx, dyZN2, dz, dpsi, dtheta, dphi, kTRUE);
   new(alobj[3]) AliAlignObjParams(p2ZDC, volid, dx, dyZP2, dz, dpsi, dtheta, dphi, kTRUE);
+  
   // save in CDB storage
   AliCDBMetaData md;
   md.SetResponsible("Chiara Oppedisano");
@@ -371,24 +374,16 @@ else if(runType=="STANDALONE_LASER"){
     	 }
     	 Log(Form("File %s connected to process data from LASER events", laserFileName));
     	 //
-	 Float_t ivalRead[4][2]; 
-    	 for(Int_t j=0; j<4; j++){
-            for(Int_t k=0; k<2; k++){
+	 Float_t ivalRead[22][4]; 
+    	 for(Int_t j=0; j<22; j++){
+            for(Int_t k=0; k<4; k++){
               fscanf(file,"%f",&ivalRead[j][k]);
     	      //printf(" %d %1.0f  ",k, ivalRead[j][k]);
     	    }
-	    if(j==0 || j==1){
-	      lCalib->SetGain(j, 0);
-	      if(j==0) lCalib->SetSector(j, 1);
-	      else lCalib->SetSector(j, 4);
-	    }
-	    else if(j==2 || j==3){
-	      lCalib->SetGain(j, 1);
-	      if(j==2) lCalib->SetSector(j, 1);
-	      else lCalib->SetSector(j, 4);
-	    }
-	    lCalib->SetfPMRefValue(j, ivalRead[j][0]);
-	    lCalib->SetfPMRefWidth(j, ivalRead[j][1]);
+	    lCalib->SetDetector(j, ivalRead[j][0]);
+	    lCalib->SetSector(j, ivalRead[j][1]);
+	    lCalib->SetfPMValue(j, ivalRead[j][2]);
+	    lCalib->SetfPMWidth(j, ivalRead[j][3]);
 	 }
 	 fclose(file);
        }
