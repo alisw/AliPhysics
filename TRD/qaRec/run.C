@@ -63,7 +63,7 @@
 Bool_t MEM = kFALSE;
 
 TChain* CreateESDChain(const char* filename = 0x0, Int_t nfiles=-1 );
-void run(const Char_t *files=0x0, Char_t *tasks="ALL", Int_t nmax=-1)
+void run(Char_t *tasks="ALL", const Char_t *files=0x0, Int_t nmax=-1)
 {
   TMemStat *mem = 0x0;
   if(MEM){ 

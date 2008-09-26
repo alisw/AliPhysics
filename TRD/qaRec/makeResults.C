@@ -21,7 +21,7 @@
 
 Char_t *libs[] = {"libProofPlayer.so", "libANALYSIS.so", "libTRDqaRec.so", "libPyROOT"};
 
-void makeResults(Char_t* dir=0x0, Char_t *tasks = "ALL")
+void makeResults(Char_t *tasks = "ALL", Char_t* dir=0x0)
 {
 	// Load Libraries in interactive mode
   Int_t nlibs = static_cast<Int_t>(sizeof(libs)/sizeof(Char_t *));
