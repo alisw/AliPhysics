@@ -49,7 +49,6 @@
 #include "AliRawReader.h"
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
-#include "AliEMCALRecParam.h"
 #include "AliEMCALGeometry.h"
 #include "AliEMCAL.h"
 #include "AliEMCALHistoUtilities.h"
@@ -69,7 +68,6 @@ AliEMCALReconstructor::AliEMCALReconstructor()
   : fDebug(kFALSE), fList(0), fGeom(0) 
 {
   // ctor
-  InitRecParam();
 
   fgRawUtils = new AliEMCALRawUtils;
   fgClusterizer = new AliEMCALClusterizerv1;
@@ -114,23 +112,6 @@ void AliEMCALReconstructor::Init()
 }
 
 //____________________________________________________________________________
-void AliEMCALReconstructor::InitRecParam() const
-{
-  // Check if the instance of AliEMCALRecParam exists, 
-  // if not, get it from OCDB if available, otherwise create a default one
-
-  if(!fgkRecParam) {
-    fgkRecParam = dynamic_cast<const AliEMCALRecParam*>(AliReconstructor::GetRecoParam(6));
-  }
-  
-  if(!fgkRecParam){
-    AliWarning("The Reconstruction parameters for EMCAL nonitialized - Used default one");
-    fgkRecParam = new AliEMCALRecParam();
-  }
-
-}
-
-//____________________________________________________________________________
 void AliEMCALReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) const
 {
   // method called by AliReconstruction; 
@@ -142,7 +123,7 @@ void AliEMCALReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) 
   AliCodeTimerAuto("")
 
   ReadDigitsArrayFromTree(digitsTree);
-
+  fgClusterizer->InitParameters();
   fgClusterizer->SetOutput(clustersTree);
 
   if(fgDigitsArr && fgDigitsArr->GetEntries()) {
@@ -177,11 +158,11 @@ void AliEMCALReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
   //must be done here because, in constructor, option is not yet known
   fgRawUtils->SetOption(GetOption());
 
-  fgRawUtils->SetRawFormatHighLowGainFactor(fgkRecParam->GetHighLowGainFactor());
-  fgRawUtils->SetRawFormatOrder(fgkRecParam->GetOrderParameter());
-  fgRawUtils->SetRawFormatTau(fgkRecParam->GetTau());
-  fgRawUtils->SetNoiseThreshold(fgkRecParam->GetNoiseThreshold());
-  fgRawUtils->SetNPedSamples(fgkRecParam->GetNPedSamples());
+  fgRawUtils->SetRawFormatHighLowGainFactor(GetRecParam()->GetHighLowGainFactor());
+  fgRawUtils->SetRawFormatOrder(GetRecParam()->GetOrderParameter());
+  fgRawUtils->SetRawFormatTau(GetRecParam()->GetTau());
+  fgRawUtils->SetNoiseThreshold(GetRecParam()->GetNoiseThreshold());
+  fgRawUtils->SetNPedSamples(GetRecParam()->GetNPedSamples());
 
   fgRawUtils->Raw2Digits(rawReader,digitsArr);
 

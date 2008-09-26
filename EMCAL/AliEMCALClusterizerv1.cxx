@@ -94,7 +94,6 @@ AliEMCALClusterizerv1::AliEMCALClusterizerv1()
 {
   // ctor with the indication of the file where header Tree and digits Tree are stored
   
-  InitParameters() ; 
   Init() ;
 }
 
@@ -111,8 +110,6 @@ AliEMCALClusterizerv1::AliEMCALClusterizerv1(AliEMCALGeometry* geometry)
   // ctor with the indication of the file where header Tree and digits Tree are stored
   // use this contructor to avoid usage of Init() which uses runloader
   // change needed by HLT - MP
-
-  InitParameters() ;
 
   // Note for the future: the use on runloader should be avoided or optional at least
   // another way is to make Init virtual and protected at least such that the deriving classes can overload
@@ -372,17 +369,16 @@ void AliEMCALClusterizerv1::InitParameters()
   const AliEMCALRecParam* recParam = AliEMCALReconstructor::GetRecParam();
   if(!recParam) {
     AliFatal("Reconstruction parameters for EMCAL not set!");
-  }
-  else {
+  } else {
     fECAClusteringThreshold = recParam->GetClusteringThreshold();
     fECAW0                  = recParam->GetW0();
     fMinECut                = recParam->GetMinECut();    
     fToUnfold               = recParam->GetUnfold();
     if(fToUnfold) AliWarning("Cluster Unfolding ON. Implementing only for eta=0 case!!!"); 
     fECALocMaxCut           = recParam->GetLocMaxCut();
-
+    
     AliDebug(1,Form("Reconstruction parameters: fECAClusteringThreshold=%.3f, fECAW=%.3f, fMinECut=%.3f, fToUnfold=%d, fECALocMaxCut=%.3f",
-		 fECAClusteringThreshold,fECAW0,fMinECut,fToUnfold,fECALocMaxCut));
+		    fECAClusteringThreshold,fECAW0,fMinECut,fToUnfold,fECALocMaxCut));
   }
 
 }

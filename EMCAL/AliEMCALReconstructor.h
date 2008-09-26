@@ -12,7 +12,7 @@
 //*--         Dmitri Peressounko (SUBATECH & Kurchatov Institute)
 
 // --- ROOT system ---
-
+#include "AliEMCALRecParam.h"
 #include "AliReconstructor.h" 
 #include "AliEMCALTracker.h" 
 
@@ -67,11 +67,11 @@ public:
 
   void   ReadDigitsArrayFromTree(TTree *digitsTree) const;
 
-  void InitRecParam() const;
-
   TList *GetList() {return fList;}
 
-  static const AliEMCALRecParam* GetRecParam(){ return fgkRecParam;}
+  static const AliEMCALRecParam* GetRecParam() { 
+    return dynamic_cast<const AliEMCALRecParam*>(AliReconstructor::GetRecoParam(6)); }
+
   static TClonesArray* GetDigitsArr() {return fgDigitsArr;}
 
 private:
@@ -82,7 +82,8 @@ private:
   AliEMCALGeometry         *fGeom;           // pointer to the EMCAL geometry
 
   static AliEMCALClusterizer* fgClusterizer; // clusterizer
-  static const AliEMCALRecParam*   fgkRecParam; // reconstruction parameters for EMCAL
+  static const AliEMCALRecParam*   fgkRecParam; // reconstruction
+						// parameters for EMCAL
   static AliEMCALRawUtils*   fgRawUtils;  // raw utilities class -
 					  // only need one per reco
   static TClonesArray*       fgDigitsArr; // Array with EMCAL digits

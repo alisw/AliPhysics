@@ -85,8 +85,7 @@ AliEMCALTracker::AliEMCALTracker()
 	// and all collections to NULL.
 	// Output file name is set to a default value.
 	//
-	
-	InitParameters();
+  InitParameters();
 }
 //
 //------------------------------------------------------------------------------

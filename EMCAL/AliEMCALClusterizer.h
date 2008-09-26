@@ -12,7 +12,7 @@
 //  August 2002 Yves Schutz: clone PHOS as closely as possible and intoduction
 //                           of new  IO (à la PHOS)
 // --- ROOT system ---
-
+#include "AliLog.h"
 #include "TObject.h" 
 class TTree;
 
@@ -41,6 +41,7 @@ public:
 
   virtual void SetInput(TTree *digitsTree);
   virtual void SetOutput(TTree *clustersTree);
+  virtual void InitParameters() { AliInfo("Overload this method."); }
 
 protected:
 
