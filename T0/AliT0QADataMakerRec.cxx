@@ -77,15 +77,16 @@ void AliT0QADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray 
   //Detector specific actions at end of cycle
   // do the QA checking
   AliQAChecker::Instance()->Run(AliQA::kT0, task, list) ;
+ if ( task == AliQA::kRAWS ) {
   Char_t *triggers[6] = {"mean", "vertex","ORA","ORC","central","semi-central"};
-  for (Int_t itr=0; itr<6; itr++) {
+ for (Int_t itr=0; itr<6; itr++) {
     GetRawsData(197)->Fill(triggers[itr],fNumTriggersCal[itr]);
     GetRawsData(197)->SetBinContent(itr+1, fNumTriggersCal[itr]);
   }  
     GetRawsData(205)->SetOption("COLZ");
     GetRawsData(206)->SetOption("COLZ");
     GetRawsData(207)->SetOption("COLZ");
-    
+ }   
 }
 
 //____________________________________________________________________________
