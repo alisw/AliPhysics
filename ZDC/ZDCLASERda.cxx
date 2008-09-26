@@ -412,8 +412,10 @@ int main(int argc, char **argv) {
     
   FILE *fileShuttle;
   fileShuttle = fopen(LASDATA_FILE,"w");
+  Int_t det[22]  = {1,1,1,1,1,2,2,2,2,2,4,4,4,4,4,5,5,5,5,5,1,4};
+  Int_t quad[22] = {0,1,2,3,4,0,1,2,3,4,0,1,2,3,4,0,1,2,3,4,5,5};
   for(Int_t i=0; i<22; i++){
-    fprintf(fileShuttle,"\t%f\t%f\n",mean[i], sigma[i]); 
+    fprintf(fileShuttle,"\t%d\t%d\t%f\t%f\n",det[i],quad[i],mean[i], sigma[i]); 
   }
   //						       
   fclose(fileShuttle);
