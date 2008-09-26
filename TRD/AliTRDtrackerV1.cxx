@@ -1866,18 +1866,27 @@ Int_t AliTRDtrackerV1::Clusters2TracksStack(AliTRDtrackingChamber **stack, TClon
     AliInfo(Form("Plane config %d %d %d Quality %f"
     , configs[0], configs[1], configs[2], quality));
   }
+
   
   // Initialize contors
   Int_t ntracks,      // number of TRD track candidates
     ntracks1,     // number of registered TRD tracks/iter
     ntracks2 = 0; // number of all registered TRD tracks in stack
   fSieveSeeding = 0;
+
+  // Get stack index
+  Int_t ic = 0; AliTRDtrackingChamber **cIter = &stack[0];
+  while(ic<kNPlanes && !(*cIter)){ic++; cIter++;}
+  if(!(*cIter)) return ntracks2;
+  Int_t istack = fGeom->GetStack((*cIter)->GetDetector());
+
   do{
     // Loop over seeding configurations
     ntracks = 0; ntracks1 = 0;
     for (Int_t iconf = 0; iconf<3; iconf++) {
       pars[0] = configs[iconf];
       pars[1] = ntracks;
+      pars[2] = istack;
       ntracks = MakeSeeds(stack, &sseed[6*ntracks], pars);
       if(ntracks == kMaxTracksStack) break;
     }
@@ -2258,7 +2267,7 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *ss
 
 	// Default positions for the anode wire in all 6 Layers in case of a stack with missing clusters
 	// Positions taken using cosmic data taken with SM3 after rebuild
-  Double_t x_def[kNPlanes] = {300.2, 312.8, 325.4, 338, 350.6, 363.2};
+  Double_t x_def[kNPlanes] = {300.2, 312.8, 325.4, 338.0, 350.6, 363.2};
 
   // this should be data member of AliTRDtrack
   Double_t seedQuality[kMaxTracksStack];
@@ -2266,13 +2275,12 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *ss
   // unpack control parameters
   Int_t config  = ipar[0];
   Int_t ntracks = ipar[1];
+  Int_t istack  = ipar[2];
   Int_t planes[kNSeedPlanes]; GetSeedingConfig(config, planes);	
   Int_t planesExt[kNPlanes-kNSeedPlanes];         GetExtrapolationConfig(config, planesExt);
 
 
   // Init chambers geometry
-  Int_t ic = 0; while(!(chamber = stack[ic])) ic++;
-  Int_t istack = fGeom->GetStack(chamber->GetDetector());
   Double_t hL[kNPlanes];       // Tilting angle
   Float_t padlength[kNPlanes]; // pad lenghts
   AliTRDpadPlane *pp = 0x0;
@@ -2286,6 +2294,7 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *ss
     AliInfo(Form("Making seeds Stack[%d] Config[%d] Tracks[%d]...", istack, config, ntracks));
   }
 
+  // Build seeding layers
   ResetSeedTB();
   Int_t nlayers = 0;
   for(int isl=0; isl<kNSeedPlanes; isl++){ 
@@ -2331,15 +2340,14 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *ss
       
         FitRieman(c, chi2);
       
-        AliTRDseedV1 *tseed = 0x0;
-        for(int iLayer=0; iLayer<kNPlanes; iLayer++){
-          tseed = &cseed[iLayer];
-          tseed->SetDetector(stack[iLayer]->GetDetector());
+        AliTRDseedV1 *tseed = &cseed[0];
+        AliTRDtrackingChamber **cIter = &stack[0];
+        for(int iLayer=0; iLayer<kNPlanes; iLayer++, tseed++, cIter++){
+          tseed->SetDetector((*cIter) ? (*cIter)->GetDetector() : -1);
           tseed->SetTilt(hL[iLayer]);
           tseed->SetPadLength(padlength[iLayer]);
           tseed->SetReconstructor(fReconstructor);
-          Double_t x_anode = stack[iLayer] ? stack[iLayer]->GetX() : x_def[iLayer];
-          tseed->SetX0(x_anode);
+          tseed->SetX0((*cIter) ? (*cIter)->GetX() : x_def[iLayer]);
           tseed->Init(GetRiemanFitter());
         }
       
