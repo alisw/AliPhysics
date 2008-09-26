@@ -969,7 +969,7 @@ Float_t* AliGRPPreprocessor::ProcessFloatAll(TObjArray* array)
 	// parameters[4] = standard deviation wrt median
 	//
 
-	Float_t* parameters = new Float_t[4];
+	Float_t* parameters = new Float_t[5];
 	Double_t aDCSArrayMean = 0;     // Mean
 	Double_t aDCSArrayTruncMean = 0;// Truncated Mean
 	Double_t aDCSArrayMedian = 0;   // Median
