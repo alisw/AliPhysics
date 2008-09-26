@@ -81,14 +81,14 @@ ClassImp(AliEveTRDTrackList)
 ///////////////////////////////////////////////////////////
 AliEveTRDTrackList::AliEveTRDTrackList(const Text_t* n, const Text_t* t, Bool_t doColor):
   TEveElementList(n, t, doColor),
-  fDataFromMacroList(0),
-  fMacroList(0),
-  fDataTree(0),
+  fEditor(0x0),
+  fDataFromMacroList(0x0),
+  fMacroList(0x0),
+  fDataTree(0x0),
   fHistoDataSelected(0),
   fMacroListSelected(0),
   fSelectedTab(1),                              // Standard tab: "Apply macros" (index 1)
-  fSelectedStyle(0),
-  fEditor(0)
+  fSelectedStyle(0)
 {
   // Creates the AliEveTRDTrackList.
 
@@ -104,7 +104,8 @@ AliEveTRDTrackList::AliEveTRDTrackList(const Text_t* n, const Text_t* t, Bool_t 
   fMacroList->SetOwnerKeyValue(kTRUE, kTRUE);
 
   // Set the build directory for AClic
-  gSystem->SetBuildDir("$HOME/.trdQArec");
+  if(gSystem->AccessPathName(Form("%s/.trdQArec" , gSystem->Getenv("HOME")))) gSystem->Exec("mkdir $HOME/.trdQArec");
+  gSystem->SetBuildDir(Form("%s/.trdQArec", gSystem->Getenv("HOME")));
 
   AddStandardMacros();
 }
