@@ -67,7 +67,8 @@ AliPlaneEff.cxx \
 AliTriggerRunScalers.cxx AliGRPPreprocessor.cxx \
 AliGRPRecoParam.cxx \
 AliRunInfo.cxx AliEventInfo.cxx \
-AliRelAlignerKalman.cxx
+AliRelAlignerKalman.cxx \
+AliGRPObject.cxx
 
 
 HDRS:= $(SRCS:.cxx=.h) 

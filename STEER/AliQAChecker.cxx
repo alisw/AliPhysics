@@ -32,6 +32,7 @@
 #include "AliQACheckerBase.h"
 #include "AliCorrQAChecker.h"
 #include "AliGlobalQAChecker.h"
+#include "AliGRPObject.h"
 
 #include <TKey.h>
 #include <TObjArray.h>
@@ -206,41 +207,63 @@ void AliQAChecker::LoadRunInfoFromGRP()
 {
   AliCDBManager* man = AliCDBManager::Instance() ;
   AliCDBEntry* entry = man->Get(AliQA::GetGRPPath().Data());
-  TMap * data = 0x0 ; 
-  if (entry) 
-    data = dynamic_cast<TMap*>(entry->GetObject());  
-  if (!data) {
-    AliFatal("No GRP entry found in OCDB!");      
+  AliGRPObject* grpObject = 0x0;
+  if (entry) {
+
+	  TMap* m = dynamic_cast<TMap*>(entry->GetObject());  // old GRP entry
+
+	  if (m) {
+	    AliInfo("It is a map");
+	    //m->Print();
+	    grpObject = new AliGRPObject();
+	         grpObject->ReadValuesFromMap(m);
+    }
+
+    else {
+	    AliInfo("It is a new GRP object");
+        grpObject = dynamic_cast<AliGRPObject*>(entry->GetObject());  // new GRP entry
+    }
+
+    entry->SetOwner(0);
+    AliCDBManager::Instance()->UnloadFromCache("GRP/GRP/Data");
   }
-  TObjString *lhcState=  
-    dynamic_cast<TObjString*>(data->GetValue("fLHCState"));
-  if (!lhcState) {
-    AliWarning(Form("%s entry:  missing value for the LHC state ! Using UNKNOWN", AliQA::GetGRPPath().Data()));
+
+  if (!grpObject) {
+     AliFatal("No GRP entry found in OCDB!");
   }
-  TObjString *beamType=
-    dynamic_cast<TObjString*>(data->GetValue("fAliceBeamType"));
-  if (!beamType) {
-    AliWarning(Form("%s entry:  missing value for the LHC state ! Using UNKNOWN", AliQA::GetGRPPath().Data()));
+
+  TString lhcState = grpObject->GetLHCState();
+  if (lhcState==AliGRPObject::GetInvalidString()) {
+    AliError("GRP/GRP/Data entry:  missing value for the LHC state ! Using UNKNOWN");
+    lhcState = "UNKNOWN";
   }
-  TObjString *beamEnergyStr=
-    dynamic_cast<TObjString*>(data->GetValue("fAliceBeamEnergy"));
-  if (!beamEnergyStr) {
-    AliWarning(Form("%s entry:  missing value for the beam energy ! Using 0", AliQA::GetGRPPath().Data()));
+
+  TString beamType = grpObject->GetBeamType();
+  if (beamType==AliGRPObject::GetInvalidString()) {
+    AliError("GRP/GRP/Data entry:  missing value for the beam type ! Using UNKNOWN");
+    beamType = "UNKNOWN";
   }
-  TObjString *runType=
-    dynamic_cast<TObjString*>(data->GetValue("fRunType"));
-  if (!runType) {
-    AliWarning(Form("%s entry:  missing value for the run type ! Using UNKNOWN", AliQA::GetGRPPath().Data()));  }
-  TObjString *activeDetectors=
-    dynamic_cast<TObjString*>(data->GetValue("fDetectorMask"));
-  if (!activeDetectors) {
-    AliWarning(Form("%s entry:  missing value for the detector mask ! Using 1074790399", AliQA::GetGRPPath().Data()));  
+
+  Float_t beamEnergy = grpObject->GetBeamEnergy();
+  if (beamEnergy==AliGRPObject::GetInvalidFloat()) {
+    AliError("GRP/GRP/Data entry:  missing value for the beam energy ! Using 0");
+    beamEnergy = 0;
   }
-  fRunInfo = new AliRunInfo(lhcState ? lhcState->GetString().Data() : "UNKNOWN",
-			    beamType ? beamType->GetString().Data() : "UNKNOWN",
-			    beamEnergyStr ? beamEnergyStr->GetString().Atof() : 0,
-			    runType  ? runType->GetString().Data()  : "UNKNOWN",
-			    activeDetectors ? activeDetectors->GetString().Atoi() : 1074790399);
+
+  TString runType = grpObject->GetRunType();
+  if (runType==AliGRPObject::GetInvalidString()) {
+    AliError("GRP/GRP/Data entry:  missing value for the run type ! Using UNKNOWN");
+    runType = "UNKNOWN";
+  }
+
+  Int_t activeDetectors = grpObject->GetDetectorMask();
+  if (activeDetectors==AliGRPObject::GetInvalidInt()) {
+    AliError("GRP/GRP/Data entry:  missing value for the detector mask ! Using 1074790399");
+    activeDetectors = 1074790399;
+  }
+
+  fRunInfo = new AliRunInfo(lhcState, beamType, beamEnergy, runType, activeDetectors);
+
   fRunInfoOwner = kTRUE ; 
 }
 

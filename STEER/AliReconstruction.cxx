@@ -192,6 +192,8 @@
 
 #include "AliDAQ.h"
 
+#include "AliGRPObject.h"
+
 ClassImp(AliReconstruction)
 
 //_____________________________________________________________________________
@@ -473,7 +475,8 @@ AliReconstruction& AliReconstruction::operator = (const AliReconstruction& rec)
   fMeanVertexConstraint = rec.fMeanVertexConstraint;
 
   delete fGRPData; fGRPData = NULL;
-  if (rec.fGRPData) fGRPData = (TMap*)((rec.fGRPData)->Clone());
+  //  if (rec.fGRPData) fGRPData = (TMap*)((rec.fGRPData)->Clone());
+  if (rec.fGRPData) fGRPData = (AliGRPObject*)((rec.fGRPData)->Clone());
 
   delete fAlignObjArray; fAlignObjArray = NULL;
 
@@ -870,8 +873,22 @@ Bool_t AliReconstruction::InitGRP() {
   AliCDBEntry* entry = AliCDBManager::Instance()->Get("GRP/GRP/Data");
 
   if (entry) {
-    fGRPData = dynamic_cast<TMap*>(entry->GetObject());
-    entry->SetOwner(0);
+
+    TMap* m = dynamic_cast<TMap*>(entry->GetObject());  // old GRP entry
+
+    if (m) {
+       AliInfo("Found a TMap in GRP/GRP/Data, converting it into an AliGRPObject");
+       m->Print();
+       fGRPData = new AliGRPObject();
+       fGRPData->ReadValuesFromMap(m);
+    }
+
+    else {
+       AliInfo("Found an AliGRPObject in GRP/GRP/Data, reading it");
+       fGRPData = dynamic_cast<AliGRPObject*>(entry->GetObject());  // new GRP entry
+       entry->SetOwner(0);
+    }
+
     AliCDBManager::Instance()->UnloadFromCache("GRP/GRP/Data");
   }
 
@@ -880,45 +897,44 @@ Bool_t AliReconstruction::InitGRP() {
      return kFALSE;
   }
 
-  TObjString *lhcState=
-    dynamic_cast<TObjString*>(fGRPData->GetValue("fLHCState"));
-  if (!lhcState) {
+  TString lhcState = fGRPData->GetLHCState();
+  if (lhcState==AliGRPObject::GetInvalidString()) {
     AliError("GRP/GRP/Data entry:  missing value for the LHC state ! Using UNKNOWN");
+    lhcState = "UNKNOWN";
   }
 
-  TObjString *beamType=
-    dynamic_cast<TObjString*>(fGRPData->GetValue("fAliceBeamType"));
-  if (!beamType) {
+  TString beamType = fGRPData->GetBeamType();
+  if (beamType==AliGRPObject::GetInvalidString()) {
     AliError("GRP/GRP/Data entry:  missing value for the beam type ! Using UNKNOWN");
+    beamType = "UNKNOWN";
   }
 
-  TObjString *beamEnergyStr=
-    dynamic_cast<TObjString*>(fGRPData->GetValue("fAliceBeamEnergy"));
-  if (!beamEnergyStr) {
+  Float_t beamEnergy = fGRPData->GetBeamEnergy();
+  if (beamEnergy==AliGRPObject::GetInvalidFloat()) {
     AliError("GRP/GRP/Data entry:  missing value for the beam energy ! Using 0");
+    beamEnergy = 0;
   }
 
-  TObjString *runType=
-    dynamic_cast<TObjString*>(fGRPData->GetValue("fRunType"));
-  if (!runType) {
+  TString runType = fGRPData->GetRunType();
+  if (runType==AliGRPObject::GetInvalidString()) {
     AliError("GRP/GRP/Data entry:  missing value for the run type ! Using UNKNOWN");
+    runType = "UNKNOWN";
   }
 
-  TObjString *activeDetectors=
-    dynamic_cast<TObjString*>(fGRPData->GetValue("fDetectorMask"));
-  if (!activeDetectors) {
+  Int_t activeDetectors = fGRPData->GetDetectorMask();
+  if (activeDetectors==AliGRPObject::GetInvalidInt()) {
     AliError("GRP/GRP/Data entry:  missing value for the detector mask ! Using 1074790399");
+    activeDetectors = 1074790399;
   }
 
-  fRunInfo = new AliRunInfo(lhcState ? lhcState->GetString().Data() : "UNKNOWN",
-			    beamType ? beamType->GetString().Data() : "UNKNOWN",
-			    beamEnergyStr ? beamEnergyStr->GetString().Atof() : 0,
-			    runType  ? runType->GetString().Data()  : "UNKNOWN",
-			    activeDetectors ? activeDetectors->GetString().Atoi() : 1074790399);
+  fRunInfo = new AliRunInfo(lhcState, beamType, beamEnergy, runType, activeDetectors);
+
+  fRunInfo->Dump();
+
 
   // Process the list of active detectors
-  if (activeDetectors && activeDetectors->GetString().IsDigit()) {
-    UInt_t detMask = activeDetectors->GetString().Atoi();
+  if (activeDetectors) {
+    UInt_t detMask = activeDetectors;
     fLoadCDB.Form("%s %s %s %s",
 		  fRunLocalReconstruction.Data(),
 		  fRunTracking.Data(),
@@ -948,6 +964,32 @@ Bool_t AliReconstruction::InitGRP() {
     Bool_t ok = kTRUE;
 
     // L3
+    Float_t l3Current = fGRPData->GetL3Current((AliGRPObject::Stats)0);
+    if (l3Current == AliGRPObject::GetInvalidFloat()) {
+      AliError("GRP/GRP/Data entry:  missing value for the L3 current !");
+      ok = kFALSE;
+    }
+
+    Char_t l3Polarity = fGRPData->GetL3Polarity();
+    if (l3Polarity == AliGRPObject::GetInvalidChar()) {
+      AliError("GRP/GRP/Data entry:  missing value for the L3 polarity !");
+      ok = kFALSE;
+    }
+
+    // Dipole
+    Float_t diCurrent = fGRPData->GetDipoleCurrent((AliGRPObject::Stats)0);
+    if (diCurrent == AliGRPObject::GetInvalidFloat()) {
+      AliError("GRP/GRP/Data entry:  missing value for the dipole current !");
+      ok = kFALSE;
+    }
+
+    Char_t diPolarity = fGRPData->GetDipolePolarity();
+    if (diPolarity == AliGRPObject::GetInvalidChar()) {
+      AliError("GRP/GRP/Data entry:  missing value for the dipole polarity !");
+      ok = kFALSE;
+    }
+
+    /*
     TObjString *l3Current=
        dynamic_cast<TObjString*>(fGRPData->GetValue("fL3Current"));
     if (!l3Current) {
@@ -960,7 +1002,7 @@ Bool_t AliReconstruction::InitGRP() {
       AliError("GRP/GRP/Data entry:  missing value for the L3 polarity !");
       ok = kFALSE;
     }
-
+    
     // Dipole
     TObjString *diCurrent=
        dynamic_cast<TObjString*>(fGRPData->GetValue("fDipoleCurrent"));
@@ -974,11 +1016,15 @@ Bool_t AliReconstruction::InitGRP() {
       AliError("GRP/GRP/Data entry:  missing value for the dipole polarity !");
       ok = kFALSE;
     }
+    */
 
     if (ok) { 
-       Float_t l3Cur=TMath::Abs(atof(l3Current->GetName()));
-       Float_t diCur=TMath::Abs(atof(diCurrent->GetName()));
-       Float_t l3Pol=atof(l3Polarity->GetName());
+       Float_t l3Cur=TMath::Abs(l3Current);
+       Float_t diCur=TMath::Abs(diCurrent);
+       Float_t l3Pol=l3Polarity;
+       //       Float_t l3Cur=TMath::Abs(atof(l3Current->GetName()));
+       //Float_t diCur=TMath::Abs(atof(diCurrent->GetName()));
+       //Float_t l3Pol=atof(l3Polarity->GetName());
        Float_t factor=1.;
        if (l3Pol != 0.) factor=-1.;
     
@@ -1062,6 +1108,7 @@ Bool_t AliReconstruction::Run(const char* input)
     SlaveBegin(NULL);
     if (GetAbort() != TSelector::kContinue) return kFALSE;
     //******* The loop over events
+    AliInfo("Starting looping over events");
     Int_t iEvent = 0;
     while ((iEvent < fRunLoader->GetNumberOfEvents()) ||
 	   (fRawReader && fRawReader->NextEvent())) {
@@ -2528,6 +2575,7 @@ Bool_t AliReconstruction::CreateVertexer()
 Bool_t AliReconstruction::CreateTrackers(const TString& detectors)
 {
 // create the trackers
+	AliInfo("Creating trackers");
 
   TString detStr = detectors;
   for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {

@@ -34,6 +34,7 @@ class TMap;
 class TFile;
 class TGridResult;
 
+class AliGRPObject;
 
 //___________________________________________________________________________
 class AliESDTagCreator : public AliTagCreator {
@@ -42,7 +43,7 @@ class AliESDTagCreator : public AliTagCreator {
   AliESDTagCreator();
   ~AliESDTagCreator(); 
 
-  void CreateESDTags(Int_t fFirstEvent, Int_t fLastEvent, TMap *grpData);
+  void CreateESDTags(Int_t fFirstEvent, Int_t fLastEvent, AliGRPObject *grpData);
 
   void SetInactiveBranches(const char* branches) {fBranches = branches;}
 

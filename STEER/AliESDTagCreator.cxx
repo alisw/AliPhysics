@@ -43,6 +43,7 @@
 #include "AliESDEvent.h"
 #include "AliESDVertex.h"
 #include "AliLog.h"
+#include "AliGRPObject.h"
 
 #include "AliESDTagCreator.h"
 
@@ -1163,29 +1164,20 @@ void AliESDTagCreator::CreateTag(TFile* file, const char *filepath, Int_t Counte
 }
 
 //_____________________________________________________________________________
-void AliESDTagCreator::CreateESDTags(Int_t fFirstEvent, Int_t fLastEvent, TMap *grpData) {
+void AliESDTagCreator::CreateESDTags(Int_t fFirstEvent, Int_t fLastEvent, AliGRPObject *grpData) {
   //GRP
   Float_t lhcLuminosity = 0.0;
   TString lhcState = "test";
-  UInt_t detectorMask = 0;
+  //UInt_t detectorMask = 0;
+  Int_t detectorMask = 0;
 
-  TObjString *s = new TObjString;
-  s = (TObjString *)grpData->GetValue("fDetectorMask");
-  detectorMask = atoi(s->GetString().Data());
-  
-  s = (TObjString *)grpData->GetValue("fAliceStartTime");
-  Float_t startTime = atof(s->GetString().Data());
+  detectorMask = grpData->GetDetectorMask();
+  time_t startTime = grpData->GetTimeStart();
   TTimeStamp *t1 = new TTimeStamp(startTime);
-
-  s = (TObjString *)grpData->GetValue("fAliceStopTime");
-  Float_t stopTime = atof(s->GetString().Data());
-  TTimeStamp *t2 = new TTimeStamp(stopTime);
-
-  s = (TObjString *)grpData->GetValue("fAliceBeamType");
-  const char* beamtype = s->GetString().Data();
-
-  s = (TObjString *)grpData->GetValue("fAliceBeamEnergy");
-  Float_t beamenergy = atof(s->GetString().Data());
+  time_t endTime = grpData->GetTimeEnd();
+  TTimeStamp *t2 = new TTimeStamp(endTime);
+  const char* beamtype = grpData->GetBeamType();
+  Float_t beamenergy = grpData->GetBeamEnergy();
 
 
   /////////////

@@ -153,5 +153,6 @@
 #pragma link C++ class AliEventInfo+;
 
 #pragma link C++ class AliRelAlignerKalman+;
+#pragma link C++ class AliGRPObject+;
 
 #endif

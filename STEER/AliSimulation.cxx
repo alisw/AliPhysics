@@ -141,6 +141,7 @@
 #include "AliHLTSimulation.h"
 #include "AliSysInfo.h"
 #include "AliMagF.h"
+#include "AliGRPObject.h"
 
 ClassImp(AliSimulation)
 
@@ -1876,23 +1877,26 @@ void AliSimulation::ProcessEnvironmentVars()
     AliInfo(Form("Run number = %d", fRun)); 
 }
 
-//_____________________________________________________________________________
+//---------------------------------------------------------------------
+
 void AliSimulation::WriteGRPEntry()
 {
   // Get the necessary information from galice (generator, trigger etc) and
   // write a GRP entry corresponding to the settings in the Config.C used
+  // note that Hall probes and Cavern and Surface Atmos pressures are not simulated.
+
+
   AliInfo("Writing global run parameters entry into the OCDB");
 
-  TMap *grpMap = new TMap();
-  grpMap->SetName("MONTECARLO");
+  AliGRPObject* grpObj = new AliGRPObject();
 
-  grpMap->Add(new TObjString("fRunType"),new TObjString("PHYSICS"));
-  grpMap->Add(new TObjString("fAliceStartTime"),new TObjString("0"));
-  grpMap->Add(new TObjString("fAliceStopTime"),new TObjString("9999"));
+  grpObj->SetRunType("PHYSICS");
+  grpObj->SetTimeStart(0);
+  grpObj->SetTimeEnd(9999);
 
   const AliGenerator *gen = gAlice->Generator();
   if (gen) {
-    grpMap->Add(new TObjString("fAliceBeamEnergy"),new TObjString(Form("%f",gen->GetEnergyCMS())));
+    grpObj->SetBeamEnergy(gen->GetEnergyCMS());
     TString projectile;
     Int_t a,z;
     gen->GetProjectile(projectile,a,z);
@@ -1900,16 +1904,17 @@ void AliSimulation::WriteGRPEntry()
     gen->GetTarget(target,a,z);
     TString beamType = projectile + "-" + target;
     if (!beamType.CompareTo("-")) {
-      grpMap->Add(new TObjString("fAliceBeamType"),new TObjString("UNKNOWN"));
+
+	grpObj->SetBeamType("UNKNOWN");
     }
     else {
-      grpMap->Add(new TObjString("fAliceBeamType"),new TObjString(beamType.Data()));
+	grpObj->SetBeamType(beamType);
     }
   }
   else {
-    AliWarning("Unknown beam type and energy!");
-    grpMap->Add(new TObjString("fAliceBeamEnergy"),new TObjString("UNKNOWN"));
-    grpMap->Add(new TObjString("fAliceBeamType"),new TObjString("0"));
+    AliWarning("Unknown beam type and energy! Setting energy to 0");
+    grpObj->SetBeamEnergy(0);
+    grpObj->SetBeamType("UNKNOWN");
   }
 
   UInt_t detectorPattern  = 0;
@@ -1925,37 +1930,36 @@ void AliSimulation::WriteGRPEntry()
   if (!fRunHLT.IsNull())
     detectorPattern |= (1 << AliDAQ::kHLTId);
 
-  grpMap->Add(new TObjString("fNumberOfDetectors"),new TObjString(Form("%d",nDets)));
-  grpMap->Add(new TObjString("fDetectorMask"),new TObjString(Form("%u",detectorPattern)));
- 
-  grpMap->Add(new TObjString("fLHCPeriod"),new TObjString("LHC08c"));
-
-  grpMap->Add(new TObjString("fLHCState"),new TObjString("STABLE BEAMS"));
-  grpMap->Add(new TObjString("fLHCLuminosity"),new TObjString("0"));
-  grpMap->Add(new TObjString("fBeamIntensity"),new TObjString("0"));
+  grpObj->SetNumberOfDetectors((Char_t)nDets);
+  grpObj->SetDetectorMask((Int_t)detectorPattern);
+  grpObj->SetLHCPeriod("LHC08c");
+  grpObj->SetLHCState("STABLE_BEAMS");
+  grpObj->SetLHCLuminosity(0,(AliGRPObject::Stats)0);
+  grpObj->SetBeamIntensity(0,(AliGRPObject::Stats)0);
 
   AliMagF *field = gAlice->Field();
   Float_t solenoidField = TMath::Abs(field->SolenoidField());
   Float_t factor = field->Factor();
   Float_t l3current = TMath::Abs(factor)*solenoidField*30000./5.;
-  grpMap->Add(new TObjString("fL3Current"),new TObjString(Form("%f",l3current)));
+  grpObj->SetL3Current(l3current,(AliGRPObject::Stats)0);
   
   if (factor > 0) {
-    grpMap->Add(new TObjString("fL3Polarity"),new TObjString("0"));
-    grpMap->Add(new TObjString("fDipolePolarity"),new TObjString("0"));
+    grpObj->SetL3Polarity(0);
+    grpObj->SetDipolePolarity(0);
   }
   else {
-    grpMap->Add(new TObjString("fL3Polarity"),new TObjString("1"));
-    grpMap->Add(new TObjString("fDipolePolarity"),new TObjString("1"));
+    grpObj->SetL3Polarity(1);
+    grpObj->SetDipolePolarity(1);
   }
 
   if (TMath::Abs(factor) != 0)
-    grpMap->Add(new TObjString("fDipoleCurrent"),new TObjString("6000"));
+    grpObj->SetDipoleCurrent(6000,(AliGRPObject::Stats)0);
   else 
-    grpMap->Add(new TObjString("fDipoleCurrent"),new TObjString("0"));
+    grpObj->SetDipoleCurrent(0,(AliGRPObject::Stats)0);
 
-  grpMap->Add(new TObjString("fCavernTemperature"),new TObjString("0"));
-  grpMap->Add(new TObjString("fCavernPressure"),new TObjString("0"));
+  grpObj->SetCavernTemperature(0,(AliGRPObject::Stats)0);
+  
+  //grpMap->Add(new TObjString("fCavernPressure"),new TObjString("0")); ---> not inserted in simulation with the new object, since it is now an AliDCSSensor
 
   // Now store the entry in OCDB
   AliCDBManager* man = AliCDBManager::Instance();
@@ -1966,5 +1970,7 @@ void AliSimulation::WriteGRPEntry()
   metadata->SetResponsible("alice-off@cern.ch");
   metadata->SetComment("Automatically produced GRP entry for Monte Carlo");
  
-  man->Put(grpMap,id,metadata);
+  man->Put(grpObj,id,metadata);
 }
+
+

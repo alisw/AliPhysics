@@ -40,6 +40,7 @@ class TMap;
 class AliRecoParam;
 class AliDetectorRecoParam;
 class AliRunInfo;
+class AliGRPObject;
 #include "AliQA.h"
 #include "AliEventInfo.h"
 #include "AliRecoParam.h"
@@ -256,7 +257,7 @@ private:
   AliESDVertex*  fDiamondProfileTPC;       // (x,y) diamond profile from TPC for AliVertexerTracks
   Bool_t         fMeanVertexConstraint; // use fDiamondProfile in AliVertexerTracks
 
-  TMap*          fGRPData;              // Data from the GRP/GRP/Data CDB folder
+  AliGRPObject*  fGRPData;              // Data from the GRP/GRP/Data CDB folder
 
   TObjArray* 	 fAlignObjArray;      //! array with the alignment objects to be applied to the geometry
 
