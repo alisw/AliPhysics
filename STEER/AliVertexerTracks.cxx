@@ -805,7 +805,8 @@ void AliVertexerTracks::SetCuts(Double_t *cuts)
   SetDCAcut(cuts[0]);
   SetDCAcutIter0(cuts[1]);
   SetMaxd0z0(cuts[2]);
-  SetMinClusters((Int_t)(cuts[3]));
+  if(fMode==0 && cuts[3]<0) SetITSrefitNotRequired();
+  SetMinClusters((Int_t)(TMath::Abs(cuts[3])));
   SetMinTracks((Int_t)(cuts[4]));
   SetNSigmad0(cuts[5]);
   SetMinDetFitter(cuts[6]);
@@ -830,11 +831,15 @@ void AliVertexerTracks::SetITSMode(Double_t dcacut,
 //  Cut values for ITS mode
 //
   fMode = 0;
-  SetITSrefitRequired();
+  if(minCls>0) {
+    SetITSrefitRequired();
+  } else {
+    SetITSrefitNotRequired();
+  }
   SetDCAcut(dcacut);
   SetDCAcutIter0(dcacutIter0);
   SetMaxd0z0(maxd0z0);
-  SetMinClusters(minCls);
+  SetMinClusters(TMath::Abs(minCls));
   SetMinTracks(mintrks);
   SetNSigmad0(nsigma);
   SetMinDetFitter(mindetfitter);
@@ -1154,7 +1159,7 @@ void AliVertexerTracks::TooFewTracks()
   pos[2] = fNominalPos[2];
   err[2] = TMath::Sqrt(fNominalCov[5]);
   Int_t    ncontr = (err[0]>1. ? -1 : -3);
-  fCurrentVertex = 0;
+  if(fCurrentVertex) { delete fCurrentVertex; fCurrentVertex=0; }
   fCurrentVertex = new AliESDVertex(pos,err);
   fCurrentVertex->SetNContributors(ncontr);
 
@@ -1438,6 +1443,7 @@ void AliVertexerTracks::VertexFitter()
   // for correct chi2/ndf, count constraint as additional "track"
   if(fConstraint) nTrksUsed++;
   // store data in the vertex object
+  if(fCurrentVertex) { delete fCurrentVertex; fCurrentVertex=0; }
   fCurrentVertex = new AliESDVertex(position,covmatrix,chi2,nTrksUsed);
 
   if(fDebug) {
@@ -1457,7 +1463,7 @@ AliESDVertex* AliVertexerTracks::VertexForSelectedTracks(TObjArray *trkArray,
 //
 // Return vertex from tracks (AliExternalTrackParam) in array
 //
-
+  fCurrentVertex = 0;
   SetConstraintOff();
 
   // get tracks and propagate them to initial vertex position
