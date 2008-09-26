@@ -48,7 +48,9 @@ class AliITSOnlineSDDInjectors : public AliITSOnlineSDD {
   void SetTimeStep(Float_t tstep) {
     fTimeStep=tstep;
   }
-
+  void SetUseTimeZeroSignal(Bool_t useTZ=kTRUE){
+    fUseTimeZeroSignal=useTZ;
+  }
   TGraphErrors* GetTimeVsDistGraph(Int_t jpad) const;
   TGraphErrors* GetDriftSpeedGraph() const;
   TGraphErrors* GetSelectedDriftSpeedGraph(Int_t minAcceptStatus) const;
@@ -108,6 +110,7 @@ class AliITSOnlineSDDInjectors : public AliITSOnlineSDD {
 
   TH2F* fHisto;                              // histogram of channel counts
   Float_t fTbZero;                           // Time zero for injector event
+  Float_t fRMSTbZero;                        // Error on time zero 
   Float_t fPosition[kInjLines];              // Coordinates of injector lines
   UShort_t fTbMin[kInjLines];                // Minimum time bin for each line
   UShort_t fTbMax[kInjLines];                // Maximum time bin for each line
@@ -130,7 +133,9 @@ class AliITSOnlineSDDInjectors : public AliITSOnlineSDD {
   Int_t fPadStatusCutForFit;         // minimum value of pad status for fit
 
   Float_t fTimeStep;                 // time bin value (25 or 50 ns)
+  Bool_t fUseTimeZeroSignal;         // flag for usage of time zero signal
+                                     // in drift speed calculation
 
-  ClassDef(AliITSOnlineSDDInjectors,4)
+  ClassDef(AliITSOnlineSDDInjectors,5)
 };
 #endif
