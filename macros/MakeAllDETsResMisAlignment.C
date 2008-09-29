@@ -20,9 +20,9 @@ void MakeAllDETsResMisAlignment(Char_t* CDBstorage = "local://$HOME/ResidualMisA
     gSystem->Setenv("ARVERSION",ALIROOT_SVN_BRANCH);
   }
   if(partialGeom){
-    gSystem->Setenv("PARTGEOM","kTRUE");
+    gSystem->Setenv("REALSETUP","kTRUE");
   }else{
-    gSystem->Setenv("PARTGEOM","kFALSE");
+    gSystem->Setenv("REALSETUP","kFALSE");
   }
 
   // Load geometry from CDB updating it if we are producing the
