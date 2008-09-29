@@ -67,7 +67,7 @@ AliPreprocessor("PHS",shuttle)
   // Constructor
 
   AddRunType("PHYSICS");
-  AddRunType("STANDALONE");
+  AddRunType("LED");
 }
 
 //_______________________________________________________________________________________
@@ -78,7 +78,7 @@ UInt_t AliPHOSPreprocessor::Process(TMap* /*valueSet*/)
   TString runType = GetRunType();
   Log(Form("Run type: %s",runType.Data()));
 
-  if(runType=="STANDALONE") {
+  if(runType=="LED") {
     Bool_t ledOK = ProcessLEDRun();
     Bool_t badmap_OK = FindBadChannelsEmc();
     if(!badmap_OK) Log(Form("WARNING! FindBadChannels() completed with BAD status!"));
