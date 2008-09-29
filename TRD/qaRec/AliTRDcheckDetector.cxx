@@ -33,7 +33,7 @@
 
 //_______________________________________________________
 AliTRDcheckDetector::AliTRDcheckDetector():
-  AliTRDrecoTask("detChecker", "Basic Detector Checker")
+  AliTRDrecoTask("DetChecker", "Basic Detector Checker")
   ,fPHSdetector(0x0)
   ,fPHSsector(0x0)
   ,fQCLdetector(0x0)

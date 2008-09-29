@@ -227,7 +227,8 @@ void AliTRDtrackInfoGen::Exec(Option_t *){
         }*/
       }
 
-      new(fTrackInfo) AliTRDtrackInfo(fPdg);
+      new(fTrackInfo) AliTRDtrackInfo();
+      fTrackInfo->SetPDG(fPdg);
       fTrackInfo->SetPrimary(mcParticle->Particle()->IsPrimary());
       Int_t jref = iref;//, kref = 0;
       while(jref<nRefs){
@@ -250,7 +251,8 @@ void AliTRDtrackInfoGen::Exec(Option_t *){
       }
       if(fDebugLevel>=2) printf("NtrackRefs[%d(%d)]\n", fTrackInfo->GetNTrackRefs(), nRefs);
     } else {
-      new (fTrackInfo) AliTRDtrackInfo(fPdg);
+      new (fTrackInfo) AliTRDtrackInfo();
+      fTrackInfo->SetPDG(fPdg);
     }
 
     // copy some relevant info to TRD track info
@@ -315,7 +317,8 @@ void AliTRDtrackInfoGen::Exec(Option_t *){
       Int_t nRefs = mcParticle->GetNumberOfTrackReferences();
       Int_t iref = 0; AliTrackReference *ref = 0x0; 
       Int_t nRefsTRD = 0;
-      new(fTrackInfo) AliTRDtrackInfo(fPdg);
+      new(fTrackInfo) AliTRDtrackInfo();
+      fTrackInfo->SetPDG(fPdg);
       while(iref<nRefs){
         ref = mcParticle->GetTrackReference(iref);
         if(fDebugLevel > 3) printf("\ttrackRef[%2d] @ %7.3f", iref, ref->LocalX());

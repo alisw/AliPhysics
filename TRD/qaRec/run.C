@@ -224,7 +224,7 @@ void run(Char_t *tasks="ALL", const Char_t *files=0x0, Int_t nmax=-1)
 
 
   //____________________________________________
-  // TRD pid checker
+  // TRD pid reference 
   if(TESTBIT(fSteerTask, kPIDRefMaker)){
     mgr->AddTask(task = new AliTRDpidRefMaker());
     taskPtr[(Int_t)kPIDRefMaker] = task;
@@ -234,6 +234,8 @@ void run(Char_t *tasks="ALL", const Char_t *files=0x0, Int_t nmax=-1)
     // Create containers for input/output
     mgr->ConnectInput( task, 0, coutput1);
     mgr->ConnectOutput(task, 0, mgr->CreateContainer(task->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%s.root", task->GetName())));
+    mgr->ConnectOutput(task, 1, mgr->CreateContainer(Form("%sNN", task->GetName()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%sNN.root", task->GetName())));
+    mgr->ConnectOutput(task, 2, mgr->CreateContainer(Form("%sLQ", task->GetName()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%sLQ.root", task->GetName())));
   }
 
 
