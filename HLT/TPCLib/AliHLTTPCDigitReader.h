@@ -193,6 +193,18 @@ public:
    */  
   virtual int GetRowOffset() const;
 
+   /**
+   * Returns the trailer size. used by zerosuppression component. 
+   */
+  virtual int GetRCUTrailerSize();
+
+  /**
+   * Returns the trailer data. used by zerosuppression component. 
+   */
+  virtual bool GetRCUTrailerData(UChar_t *trData);
+
+
+
   /**
    * Access operator to the data of a specific time bin.
    * Not clear if we can manage this.

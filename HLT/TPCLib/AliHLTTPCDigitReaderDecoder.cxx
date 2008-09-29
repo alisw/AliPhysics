@@ -225,6 +225,21 @@ AliHLTUInt32_t AliHLTTPCDigitReaderDecoder::GetAltroBlockHWaddr(Int_t row, Int_t
   }
 }
 
+
+int AliHLTTPCDigitReaderDecoder::GetRCUTrailerSize(){
+  if(fAltroDecoder){
+    return fAltroDecoder->GetRCUTrailerSize();
+  }
+  return 0;
+}
+
+bool AliHLTTPCDigitReaderDecoder::GetRCUTrailerData(UChar_t *trData){
+  if(fAltroDecoder){
+    return fAltroDecoder->GetRCUTrailerData(trData);
+  }
+  return false;
+}
+
 AliAltroDecoder* AliHLTTPCDigitReaderDecoder::GetDecoderInstance()
 {
   // see header file for class documentation

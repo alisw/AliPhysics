@@ -198,6 +198,21 @@ AliHLTUInt32_t AliHLTTPCDigitReader::GetAltroBlockHWaddr(Int_t /*row*/, Int_t /*
   return 0;
 }
 
+int AliHLTTPCDigitReader::GetRCUTrailerSize()
+{
+  // see header file for class documentation
+  PrintMissingFastAccessWarning();
+  return 0;
+}
+
+bool AliHLTTPCDigitReader::GetRCUTrailerData(UChar_t *trData)
+{
+  // see header file for class documentation
+  PrintMissingFastAccessWarning();
+  return 0;
+}
+
+
 void AliHLTTPCDigitReader::PrintMissingFastAccessWarning()
 {
   // see header file for class documentation
@@ -207,3 +222,4 @@ void AliHLTTPCDigitReader::PrintMissingFastAccessWarning()
 	     "      !!! This digit reader does not implement the methods for       !!!\n"
 	     "      !!! fast data access on channel/bunch basis. Data is discarded !!!");
 }
+

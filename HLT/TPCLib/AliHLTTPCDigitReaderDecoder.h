@@ -50,7 +50,9 @@ public:
   int GetRowOffset() const;
   AliHLTUInt32_t GetAltroBlockHWaddr() const;
   AliHLTUInt32_t GetAltroBlockHWaddr(Int_t row, Int_t pad) const;
-  
+  int GetRCUTrailerSize();
+  bool GetRCUTrailerData(UChar_t *trData);  
+
 protected:
   bool NextSignal();
 
