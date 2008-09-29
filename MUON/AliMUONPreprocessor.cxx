@@ -98,20 +98,13 @@ AliMUONPreprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTime)
   }   
   
   // Load mapping from CDB for this run
-  AliCDBEntry* cdbEntry = GetFromOCDB("Calib", "Mapping");
+  AliCDBEntry* cdbEntry = GetFromOCDB("Calib", "DDLStore");
   if (!cdbEntry)
   {
-    Log("Could not get Mapping from OCDB !");
+    Log("Could not get DDLStore from OCDB !");
     fIsValid = kFALSE;
   }
   
-  cdbEntry = GetFromOCDB("Calib", "DDLStore");
-  if (!cdbEntry)
-  {
-    Log("Could not get DDLStore from OCDB");
-    fIsValid = kFALSE;
-  }
-
   if (IsValid())
   {
     // loop over subtasks and initialize them
