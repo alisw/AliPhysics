@@ -118,6 +118,9 @@ public:
 	/// Whether we store values at the manu level or not
 	virtual Bool_t IsManuLevelEnabled() const { return fIsManuLevelEnabled; }
   
+  /// To allow merging of different objects
+  virtual Long64_t Merge(TCollection* list);
+    
 private:
     
   void FillHisto(Int_t detElemId, Int_t manuId, Int_t manuChannel,
@@ -154,9 +157,6 @@ private:
 
   /// Whether we have histograms for a given dimension, or not
   virtual Bool_t IsHistogrammed(Int_t dim) const { return ( fHistogramming[dim] > 0 ); }
-
-  /// To allow merging of different objects
-  virtual Long64_t Merge(TCollection* list);
 
   Int_t DdlIdFromBusPatchId(Int_t buspatchid) const;
   Int_t DdlIdFromDetElemId(Int_t detelemid) const;
