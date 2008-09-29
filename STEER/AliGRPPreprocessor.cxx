@@ -1002,19 +1002,25 @@ Float_t* AliGRPPreprocessor::ProcessFloatAll(TObjArray* array)
 			AliDCSValue *v = (AliDCSValue *)array->At(i);
 			AliDebug(2,Form("maximum = %f, minimum = %f", aDCSArrayMean+3*aDCSArraySDMean, aDCSArrayMean-3*aDCSArraySDMean));
 			AliDebug(2,Form("%i-th entry = %f",i, v->GetFloat())); 
-			if ((v->GetFloat()<aDCSArrayMean+3*aDCSArraySDMean) && (v->GetFloat()>aDCSArrayMean-3*aDCSArraySDMean)){
+			if ((v->GetFloat()<=aDCSArrayMean+3*aDCSArraySDMean) && (v->GetFloat()>=aDCSArrayMean-3*aDCSArraySDMean)){
 				temp1+=v->GetFloat();
 				iCounts1++;
-				AliDebug(2,Form("temp1 = %f, iCounts = %i",temp1,iCounts1));
+				AliDebug(2,Form("temp1 = %f, iCounts1 = %i",temp1,iCounts1));
 			}
     			temp += (v->GetFloat()-aDCSArrayMedian)*(v->GetFloat()-aDCSArrayMedian);
 		}
+		AliDebug(3,Form("temp before the ratio = %f, with %d counts", temp, iCounts));
 		temp/=iCounts;
+		AliDebug(3,Form("temp after the ratio = %f", temp));
     		if (temp>0) {
 			aDCSArraySDMedian = TMath::Sqrt(temp);
 		}
+		else if (temp==0) {
+			AliInfo(Form("Radical = 0 in computing standard deviation wrt median! Setting it to zero...."));
+			aDCSArraySDMedian = 0;
+		}
 		else{
-			AliError(Form("Radical <= 0 in computing standard deviation! Setting it to -99999...."));
+			AliError(Form("Radical < 0 in computing standard deviation! Setting it to invalid...."));
 			aDCSArraySDMedian = AliGRPObject::GetInvalidFloat();
 		}
 	}
@@ -1023,6 +1029,7 @@ Float_t* AliGRPPreprocessor::ProcessFloatAll(TObjArray* array)
 		aDCSArrayMedian = AliGRPObject::GetInvalidFloat();
 		aDCSArraySDMean = AliGRPObject::GetInvalidFloat();
 	}
+	AliDebug(2,Form("iCounts1 = %d and temp1 = %f",iCounts1, temp1));
 	if (iCounts1 > 0) {
 		aDCSArrayTruncMean = temp1/iCounts1;
 	}
@@ -1044,7 +1051,8 @@ Float_t* AliGRPPreprocessor::ProcessFloatAll(TObjArray* array)
 	parameters[3] = aDCSArraySDMean;
 	parameters[4] = aDCSArraySDMedian;
 
-    	AliDebug(2,Form("parameters[0] = %f, parameters[1] = %f, parameters[2] = %f, parameters[3] = %f, parameters[4] = %f ",parameters[0],parameters[1],parameters[2],parameters[3],parameters[4]));
+	//    	AliDebug(2,Form("mean = %f, truncated mean = %f, median = %f, SD wrt mean = %f, SD wrt median = %f ",parameters[0],parameters[1],parameters[2],parameters[3],parameters[4]));
+    	AliInfo(Form("mean = %f, truncated mean = %f, median = %f, SD wrt mean = %f, SD wrt median = %f ",parameters[0],parameters[1],parameters[2],parameters[3],parameters[4]));
 
 	return parameters;
 }
