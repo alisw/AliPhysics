@@ -87,7 +87,7 @@ AliTRDtrackInfoGen::AliTRDtrackInfoGen():
 AliTRDtrackInfoGen::~AliTRDtrackInfoGen()
 {
   if(fTrackInfo) delete fTrackInfo;
-  if(fEventInfo) delete fEventInfo;
+  //if(fEventInfo) delete fEventInfo;
 }
 
 //____________________________________________________________________
