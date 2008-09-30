@@ -107,21 +107,27 @@ bool AliHLTTPCDigitReader::Next(int /*type*/)
 bool AliHLTTPCDigitReader::NextChannel()
 {
   // see header file for class documentation
-  PrintMissingFastAccessWarning();
+  PrintWarningOnce(kWarnMissFastAccess,"\n"
+		   "      !!! This digit reader does not implement the methods for       !!!\n"
+		   "      !!! fast data access on channel/bunch basis. Data is discarded !!!");
   return false;
 }
 
 int AliHLTTPCDigitReader::NextBunch()
 {
   // see header file for class documentation
-  PrintMissingFastAccessWarning();
+  PrintWarningOnce(kWarnMissFastAccess,"\n"
+		   "      !!! This digit reader does not implement the methods for       !!!\n"
+		   "      !!! fast data access on channel/bunch basis. Data is discarded !!!");
   return false;
 }
 
 const UInt_t* AliHLTTPCDigitReader::GetSignals()
 {
   // see header file for class documentation
-  PrintMissingFastAccessWarning();
+  PrintWarningOnce(kWarnMissFastAccess,"\n"
+		   "      !!! This digit reader does not implement the methods for       !!!\n"
+		   "      !!! fast data access on channel/bunch basis. Data is discarded !!!");
   return 0;
 }
 
@@ -176,7 +182,9 @@ int AliHLTTPCDigitReader::RewindToPrevChannel()
 int AliHLTTPCDigitReader::GetBunchSize()
 {
   // see header file for class documentation
-  PrintMissingFastAccessWarning();
+  PrintWarningOnce(kWarnMissFastAccess,"\n"
+		   "      !!! This digit reader does not implement the methods for       !!!\n"
+		   "      !!! fast data access on channel/bunch basis. Data is discarded !!!");
   return 0;
 }
 
@@ -201,25 +209,28 @@ AliHLTUInt32_t AliHLTTPCDigitReader::GetAltroBlockHWaddr(Int_t /*row*/, Int_t /*
 int AliHLTTPCDigitReader::GetRCUTrailerSize()
 {
   // see header file for class documentation
-  PrintMissingFastAccessWarning();
+  PrintWarningOnce(kWarnMissTrailerGetters,"\n"
+		   "      !!! This digit reader does not implement the Getters       !!!\n"
+		   "      !!! for RCU trailer. Ignoring call.                        !!!");
   return 0;
 }
 
-bool AliHLTTPCDigitReader::GetRCUTrailerData(UChar_t *trData)
+bool AliHLTTPCDigitReader::GetRCUTrailerData(UChar_t*& trData)
 {
   // see header file for class documentation
-  PrintMissingFastAccessWarning();
+  PrintWarningOnce(kWarnMissTrailerGetters,"\n"
+		   "      !!! This digit reader does not implement the Getters       !!!\n"
+		   "      !!! for RCU trailer. Ignoring call.                        !!!");
+  if (trData) trData=NULL;
   return 0;
 }
 
 
-void AliHLTTPCDigitReader::PrintMissingFastAccessWarning()
+void AliHLTTPCDigitReader::PrintWarningOnce(int type, const char* message)
 {
   // see header file for class documentation
-  if (CheckFlag(kWarnMissFastAccess)) return;
-  SetFlag(kWarnMissFastAccess);
-  HLTWarning("\n"
-	     "      !!! This digit reader does not implement the methods for       !!!\n"
-	     "      !!! fast data access on channel/bunch basis. Data is discarded !!!");
+  if (CheckFlag(type)) return;
+  SetFlag(type);
+  HLTWarning(message);
 }
 

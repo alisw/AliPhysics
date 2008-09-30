@@ -14,8 +14,6 @@
     @brief  A digit reader implementation for simulated, packed TPC 'raw' data.
 */
 
-//#define ENABLE_PAD_SORTING 1
-
 #include "AliHLTTPCDigitReader.h"
 #include <vector>
 
@@ -58,10 +56,41 @@ public:
   bool NextChannel();
   int NextBunch();
   AliHLTUInt32_t GetAltroBlockHWaddr() const;
+  int GetRCUTrailerSize();
+  bool GetRCUTrailerData(UChar_t*& trData);
   int GetBunchSize();
   const UInt_t* GetSignals();
   Int_t GetTimeOfUnsortedSignal();    
-    
+
+  /**
+   * Compound to hold both the AliTPCRawStreamInstance and the RawReader
+   */
+  class AliHLTTPCRawStream {
+  public:
+    AliHLTTPCRawStream();
+    ~AliHLTTPCRawStream();
+
+    Bool_t SetMemory(Int_t ddlId, UChar_t* memory, ULong_t size );
+
+    bool Next();
+
+    Int_t GetRow() const;
+    Int_t GetPad() const;
+    Int_t GetTime() const;
+    Int_t GetSignal() const;
+    Int_t GetHWAddress() const;
+    Bool_t  GetRCUTrailerData(UChar_t*& data) const;
+    Int_t   GetRCUTrailerSize() const;
+
+  private:
+    /** copy constructor prohibited */
+    AliHLTTPCRawStream(const AliHLTTPCRawStream&);
+    /** assignment operator prohibited */
+    AliHLTTPCRawStream& operator=(const AliHLTTPCRawStream&);
+
+    AliRawReaderMemory *fRawMemoryReader; //!transient
+    AliTPCRawStream *fTPCRawStream; //!transient
+  };
 protected:
     
 private:
@@ -80,38 +109,64 @@ private:
   static Int_t* GetBufferInstance();
 
   /**
-   * Release an instance of the decoder.
+   * Release an instance of the buffer.
    */
   static void ReleaseBufferInstance(Int_t* pInstance);
 
-  // Initialize AliROOT TPC raw stream parsing class
-  AliRawReaderMemory *fRawMemoryReader; //!transient
+  /**
+   * Instance handling of the TPCRawStream.
+   * In order to keep memory consumption small, one global instance of the
+   * TPCRawStream will be used to read data.
+   * This can actually be extended in order to support more than one global
+   * instance provided by a scheduler, but thats overkill for the moment.
+   */
+  AliHLTTPCRawStream* GetRawStreamInstance();
 
-  AliTPCRawStream *fTPCRawStream; //!transient
-    
-  //#if ENABLE_PAD_SORTING 
+  /**
+   * Release an instance of the TPCRawStream.
+   */
+  void ReleaseRawStreamInstance(AliHLTTPCRawStream* pInstance);
+
+  AliHLTTPCRawStream* fTPCRawStream; //!transient
+
   Int_t fCurrentRow; //!transient
   Int_t fCurrentPad; //!transient
   Int_t fCurrentBin; //!transient
  
   Int_t fRowOffset; //!transient
   Int_t fNRows; //!transient
+  Int_t fNPads; //!transient
 
   static Int_t fNMaxRows; //!transient
   static Int_t fNMaxPads; //!transient
   static Int_t fNTimeBins; //!transient
 
   Int_t *fData; //!transient
-  //#endif // ENABLE_PAD_SORTING
 
   Bool_t fUnsorted; //!transient
 
+  /** array to hold bunch data */
   vector<UInt_t> fDataBunch;                             //! transient
-  Bool_t fNextChannelFlag;                               //! transient
+  /** the current channel for bulk read mode */
+  Int_t fCurrentChannel;                                 //! transient
+  /** last NextSignal returned data */
+  Int_t fbHaveData;                                      //! transient
+
+  /** partition the reader is initialized for */
   Int_t fCurrentPatch;                                   //! transient
 
-  static Int_t* fgpFreeInstance;                         //! transient
-  static Int_t* fgpIssuedInstance;                       //! transient
+  /** the global free instance of sorted data buffer */
+  static Int_t* fgpFreeBufferInstance;                   //! transient
+  /** occupied instance */
+  static Int_t* fgpIssuedBufferInstance;                 //! transient
+
+  /** the global free instance of the TPCRawStream */
+  static AliHLTTPCRawStream* fgpFreeStreamInstance;      //! transient
+  /** occupied instance of the TPCRawStream */
+  static AliHLTTPCRawStream* fgpIssuedStreamInstance;    //! transient
+
+  /** counter for instances of the reader */
+  static Int_t fgObjectCount;                            //! transient
 
   ClassDef(AliHLTTPCDigitReaderPacked, 4)
 	

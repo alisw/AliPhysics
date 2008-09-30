@@ -193,17 +193,15 @@ public:
    */  
   virtual int GetRowOffset() const;
 
-   /**
-   * Returns the trailer size. used by zerosuppression component. 
+  /**
+   * Returns the trailer size.
    */
   virtual int GetRCUTrailerSize();
 
   /**
-   * Returns the trailer data. used by zerosuppression component. 
+   * Returns the trailer data.
    */
-  virtual bool GetRCUTrailerData(UChar_t *trData);
-
-
+  virtual bool GetRCUTrailerData(UChar_t*& trData);
 
   /**
    * Access operator to the data of a specific time bin.
@@ -235,6 +233,8 @@ public:
     kNoRewind = 0x4,
     /** warning missing fast access methods */
     kWarnMissFastAccess = 0x8,
+    /** warning on missing RCU trailer getters */
+    kWarnMissTrailerGetters = 0x10,
     /** channel caching enabled */
     kChannelCaching = 0x100
   };
@@ -275,10 +275,10 @@ protected:
 
 private:
   /**
-   * Print a warning on the missing fast access methods.
+   * Print a warning once for missing functionality.
    * Set corresponding flag to avoid repetitive warnings.
    */
-  void PrintMissingFastAccessWarning();
+  void PrintWarningOnce(int type, const char* message);
 
   /** pad/channel is locked */
   unsigned int fFlags;                                    //!transient
