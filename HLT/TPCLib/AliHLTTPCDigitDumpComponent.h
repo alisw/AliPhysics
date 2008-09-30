@@ -15,12 +15,17 @@
 
 #include "AliHLTFileWriter.h"
 
+class AliHLTTPCDigitReader;
+
 /**
  * @class AliHLTTPCDigitDumpComponent
  * A converter for digit data of the TPC input to ASCII output.
  * Data blocks of type ::kAliHLTDataTypeDDLRaw and origin 'TPC ' is docoded
  * written in readable ASCII format to a file.
  * 
+ * The component supports different types of readers in order to
+ * choose different data formats (raw/digits) and reading modes.
+ *
  * Component ID: \b TPCDigitDump <br>
  * Library: \b libAliHLTTPC
  *
@@ -37,9 +42,13 @@
  *      size of the RCU trailer in 32bit words (default 2), if digitreader
  *      'decoder' is used, the trailer size is determined automatically
  * \li -unsorted <br>
- *      unsorted mode of digit readers (default sorted)
+ *      unsorted mode of digit readers (default mode)
  * \li -sorted <br>
- *      sorted mode of digit readers (default)
+ *      sorted mode of digit readers (default is unsorted)
+ * \li -bulk <br>
+ *      bulk read mode: NextChannel/Bunch
+ * \li -stream <br>
+ *      stream read mode: Next
  *
  * @ingroup alihlt_tpc_components
  */
@@ -72,6 +81,15 @@ class AliHLTTPCDigitDumpComponent : public AliHLTFileWriter {
   /** assignment operator prohibited */
   AliHLTTPCDigitDumpComponent& operator=(const AliHLTTPCDigitDumpComponent&);
 
+  /**
+   * Print slice/partition/row/pad header if changed.
+   */
+  int PrintHeaders(int slice, int &iPrintedSlice,
+		   int part, int &iPrintedPart,
+		   AliHLTTPCDigitReader* pReader,
+		   int &iPrintedRow, int &iPrintedPad,
+		   ofstream &dump) const;
+
   enum {
     kDigitReaderInvalid,
     kDigitReaderUnpacked,
@@ -89,7 +107,13 @@ class AliHLTTPCDigitDumpComponent : public AliHLTFileWriter {
   /** unsorted/sorted mode of digit readers */
   bool fUnsorted; //!transient
 
-  ClassDef(AliHLTTPCDigitDumpComponent, 1);
+  /** bulk read mode */
+  bool fbBulkMode; //!transient
+
+  /** the digit reader */
+  AliHLTTPCDigitReader* fpReader; //!transient
+
+  ClassDef(AliHLTTPCDigitDumpComponent, 2);
 };
 
 #endif

@@ -44,7 +44,9 @@ AliHLTTPCDigitDumpComponent::AliHLTTPCDigitDumpComponent()
   AliHLTFileWriter(),
   fDigitReaderType(kDigitReaderDecoder),
   fRcuTrailerSize(2),
-  fUnsorted(false)
+  fUnsorted(true),
+  fbBulkMode(true),
+  fpReader(NULL)
 {
   // see header file for class documentation
   // or
@@ -80,7 +82,33 @@ AliHLTComponent* AliHLTTPCDigitDumpComponent::Spawn()
 int AliHLTTPCDigitDumpComponent::InitWriter()
 {
   // see header file for class documentation
-  return 0;
+  int iResult=0;
+  switch (fDigitReaderType) {
+  case kDigitReaderUnpacked:
+    HLTInfo("create DigitReaderUnpacked");
+    fpReader=new AliHLTTPCDigitReaderUnpacked; 
+    break;
+  case kDigitReaderPacked:
+    HLTInfo("create DigitReaderPacked");
+    fpReader=new AliHLTTPCDigitReaderPacked; 
+    if (fpReader && fRcuTrailerSize==1) {
+      fpReader->SetOldRCUFormat(true);
+    }
+    break;
+  case kDigitReaderRaw:
+    HLTWarning("DigitReaderRaw deprecated, falling back to DigitReaderDecoder");
+  case kDigitReaderDecoder:
+    HLTInfo("create DigitReaderDecoder");
+    fpReader=new AliHLTTPCDigitReaderDecoder();
+    break;
+  }
+  if (!fpReader) {
+    HLTError("can not create digit reader of type %d", fDigitReaderType);
+    iResult=-EFAULT;
+  } else {
+    fpReader->SetUnsorted(fUnsorted);
+  }
+  return iResult;
 }
 
 int AliHLTTPCDigitDumpComponent::ScanArgument(int argc, const char** argv)
@@ -143,6 +171,18 @@ int AliHLTTPCDigitDumpComponent::ScanArgument(int argc, const char** argv)
       fUnsorted=false;
       break;
     }
+
+    // -bulk
+    if (argument.CompareTo("-bulk")==0) {
+      fbBulkMode=true;
+      break;
+    }
+
+    // -stream
+    if (argument.CompareTo("-stream")==0) {
+      fbBulkMode=false;
+      break;
+    }
   } while (0); // just use the do/while here to have the option of breaking
 
   if (bMissingParam) iResult=-EPROTO;
@@ -154,6 +194,8 @@ int AliHLTTPCDigitDumpComponent::ScanArgument(int argc, const char** argv)
 int AliHLTTPCDigitDumpComponent::CloseWriter()
 {
   // see header file for class documentation
+  if (fpReader) delete fpReader;
+  fpReader=NULL;
   return 0;
 }
 
@@ -167,6 +209,9 @@ int AliHLTTPCDigitDumpComponent::DumpEvent( const AliHLTComponentEventData& evtD
   int iPrintedPart=-1;
   int blockno=0;
   const AliHLTComponentBlockData* pDesc=NULL;
+
+  AliHLTTPCDigitReader* pReader=fpReader;
+  if (!pReader) return -ENODEV;
 
   for (pDesc=GetFirstInputBlock(kAliHLTAnyDataType); pDesc!=NULL; pDesc=GetNextInputBlock(), blockno++) {
     HLTDebug("event %Lu block %d: %s 0x%08x size %d", evtData.fEventID, blockno, DataType2Text(pDesc->fDataType).c_str(), pDesc->fSpecification, pDesc->fSize);
@@ -193,79 +238,90 @@ int AliHLTTPCDigitDumpComponent::DumpEvent( const AliHLTComponentEventData& evtD
 	assert(slice==AliHLTTPCDefinitions::GetMaxSliceNr(*pDesc));
 	int firstRow=AliHLTTPCTransform::GetFirstRow(part);
 	int lastRow=AliHLTTPCTransform::GetLastRow(part);
-	AliHLTTPCDigitReader* pReader=NULL;
-	switch (fDigitReaderType) {
-	case kDigitReaderUnpacked:
-	  HLTInfo("create DigitReaderUnpacked");
-	  pReader=new AliHLTTPCDigitReaderUnpacked; 
-	  break;
-	case kDigitReaderPacked:
-	  HLTInfo("create DigitReaderPacked");
-	  pReader=new AliHLTTPCDigitReaderPacked; 
-	  if (pReader && fRcuTrailerSize==1) {
-	    pReader->SetOldRCUFormat(true);
-	  }
-	  break;
-	case kDigitReaderRaw:
-	  HLTWarning("DigitReaderRaw deprecated, falling back to DigitReaderDecoder");
-	case kDigitReaderDecoder:
-	  HLTInfo("create DigitReaderDecoder");
-	  pReader=new AliHLTTPCDigitReaderDecoder();
-	  break;
-	}
-	if (!pReader) {
-	  HLTError("can not create digit reader of type %d", fDigitReaderType);
-	  iResult=-EFAULT;
-	  break;
-	}
-	pReader->SetUnsorted(fUnsorted);
+
 	iResult=pReader->InitBlock(pDesc->fPtr,pDesc->fSize,firstRow,lastRow,part,slice);
 
 	int iPrintedRow=-1;
 	int iPrintedPad=-1;
 	int iLastTime=-1;
+	if (fbBulkMode) {
+	  while (pReader->NextChannel()) {
+	    if (PrintHeaders(slice, iPrintedSlice, part, iPrintedPart, pReader, iPrintedRow, iPrintedPad, dump)) {
+	      iLastTime=-1;
+	    }
+	    while (pReader->NextBunch()) {
+	      int bunchLength=pReader->GetBunchSize();
+	      const  UInt_t* bunchData=pReader->GetSignals();
+
+	      // bunch data is printed in 'reverse' order in order to produce
+	      // the same output as in stream reading mode
+	      dump << "                     Time " << pReader->GetTime()+bunchLength-1 << ":  ";
+	      for (int bin=bunchLength-1; bin>=0; bin--) {
+		dump << "  " << bunchData[bin];
+	      }
+	      dump << "    -> Time: " << pReader->GetTime() << endl;
+	    }
+	  }
+	  dump << endl;
+	} else {
 	while (pReader->Next()) {
 	  if ((iPrintedSlice!=-1 && iLastTime!=-1 && iLastTime!=pReader->GetTime()+1 && iLastTime!=pReader->GetTime()-1)) {
 	    dump << "    -> Time: " << iLastTime << endl;
 	  } else if ((iPrintedPad!=-1 && iPrintedPad!=pReader->GetPad()) ||
 		     (iPrintedRow!=-1 && iPrintedRow!=pReader->GetRow())) {
-	    dump << endl;
+	    dump << "    -> Time: " << iLastTime << endl;
+	    //dump << endl;
 	  }
 
-	  if (iPrintedSlice!=slice || iPrintedPart!=part) {
-	    iPrintedSlice=slice;
-	    iPrintedPart=part;
-	    dump << "====================================================================" << endl;
-	    dump << "    Slice: " << iPrintedSlice << "   Partition: " << iPrintedPart << endl;
-	    iPrintedRow=-1;
-	  }
-	  if (iPrintedRow!=pReader->GetRow()) {
-	    iPrintedRow=pReader->GetRow();
-	    dump << "--------------------------------------------------------------------" << endl;
-	    dump << "Row: " << iPrintedRow << endl;
-	    iPrintedPad=-1;
-	  }
-	  if (iPrintedPad!=pReader->GetPad()) {
-	    iPrintedPad=pReader->GetPad();
-	    dump << "Row: " << iPrintedRow << "  Pad: " << iPrintedPad << "  HW address: " << pReader->GetAltroBlockHWaddr() << endl;
+	  if (PrintHeaders(slice, iPrintedSlice, part, iPrintedPart, pReader, iPrintedRow, iPrintedPad, dump)) {
 	    iLastTime=-1;
 	  }
-	  if (iLastTime!=pReader->GetTime()+1 && iLastTime!=pReader->GetTime()-1 ) {
+	  if (iLastTime==-1 || (iLastTime!=pReader->GetTime()+1 && iLastTime!=pReader->GetTime()-1)) {
 	    dump << "                     Time " << pReader->GetTime() << ":  ";
 	  }
 	  iLastTime=pReader->GetTime();
 	  dump << "  " << pReader->GetSignal();
 	}
-	dump << endl << endl;
-	pReader->Reset();
-	delete pReader;
-	pReader=NULL;
+	if (iLastTime>=0) dump << "    -> Time: " << iLastTime << endl << endl;
+	}
       } else {
 	HLTError("can not open file %s for writing", filename.Data());
 	iResult=-EBADF;
       }
       dump.close();
     }
+    pReader->Reset();
   }
+  return iResult;
+}
+
+int AliHLTTPCDigitDumpComponent::PrintHeaders(int slice, int &iPrintedSlice,
+					      int part, int &iPrintedPart,
+					      AliHLTTPCDigitReader* pReader,
+					      int &iPrintedRow, int &iPrintedPad,
+					      ofstream &dump) const
+{
+  // see header file for class documentation
+  int iResult=0;
+  assert(pReader);
+  if (iPrintedSlice!=slice || iPrintedPart!=part) {
+    iPrintedSlice=slice;
+    iPrintedPart=part;
+    dump << "====================================================================" << endl;
+    dump << "    Slice: " << iPrintedSlice << "   Partition: " << iPrintedPart << endl;
+    iPrintedRow=-1;
+  }
+  if (iPrintedRow!=pReader->GetRow()) {
+    iPrintedRow=pReader->GetRow();
+    dump << "--------------------------------------------------------------------" << endl;
+    dump << "Row: " << iPrintedRow << endl;
+    iPrintedPad=-1;
+  }
+  if (iPrintedPad!=pReader->GetPad()) {
+    iPrintedPad=pReader->GetPad();
+    dump << "Row: " << iPrintedRow << "  Pad: " << iPrintedPad << "  HW address: " << pReader->GetAltroBlockHWaddr() << endl;
+    iResult=1;
+  }
+
   return iResult;
 }
