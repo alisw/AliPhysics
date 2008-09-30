@@ -8,6 +8,7 @@ SRCS= AliTRDcluster.cxx \
       AliTRDtracker.cxx \
       AliTRDseed.cxx \
       AliTRDpropagationLayer.cxx \
+      AliTRDpidUtil.cxx \
       AliTRDpidESD.cxx \
       AliTRDReconstructor.cxx \
       AliTRDtrackingAnalysis.cxx \

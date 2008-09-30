@@ -108,6 +108,7 @@ void AliTRDReconstructor::Init(){
   printf("\tHLT         Tracking  [hlt] : %s\n", fSteerParam&kHLT?"yes":"no");
   printf("\tCosmic Reconstruction [cos] : %s\n", fSteerParam&kCosmic?"yes":"no");
   printf("\tNN PID                 [nn] : %s\n", fSteerParam&kSteerPID?"yes":"no");
+  printf("\t8 dEdx slices in ESD   [8s] : %s\n", fSteerParam&kEightSlices?"yes":"no");
   printf("\tStreaming Levels            : Clusterizer[%d] Tracker[%d] PID[%d]\n", fStreamLevel[kClusterizer], fStreamLevel[kTracker], fStreamLevel[kPID]);
 }
 
@@ -216,11 +217,12 @@ void AliTRDReconstructor::SetOption(Option_t *opt)
 // Default steer param values
 //
 // digits conversion [dc] = false
+// drift gas [ar] = false - do not update the number of exponentials in the TC !
 // write clusters [cw] = true
+// write online tracklets [tw] = false
 // track seeding (stand alone tracking) [sa] = true
 // PID method in reconstruction (NN) [nn] = true
-// write online tracklets [tw] = false
-// drift gas [ar] = false
+// 8 dEdx slices in ESD [8s] = false 
 // HLT tracking [hlt] = false
 // Cosmic Reconstruction [cos] = false
 //
@@ -246,6 +248,10 @@ void AliTRDReconstructor::SetOption(Option_t *opt)
     } else if(sopt.Contains("nn")){
       SETFLG(fSteerParam, kSteerPID);
       if(sopt.Contains("!")) CLRFLG(fSteerParam, kSteerPID);
+      continue;
+    } else if(sopt.Contains("8s")){
+      SETFLG(fSteerParam, kEightSlices);
+      if(sopt.Contains("!")) CLRFLG(fSteerParam, kEightSlices);
       continue;
     } else if(sopt.Contains("tw")){
       SETFLG(fSteerParam, kWriteTracklets);

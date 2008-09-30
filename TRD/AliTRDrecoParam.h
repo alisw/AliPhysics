@@ -36,7 +36,7 @@ public:
   Double_t GetMaxTheta() const              { return fkMaxTheta; }
   Double_t GetMaxPhi() const                { return fkMaxPhi;   }
   Double_t GetPlaneQualityThreshold() const { return fkPlaneQualityThreshold; }
-  Double_t GetPIDThreshold(Float_t /*p*/){ return 0.;}
+  Double_t GetPIDThreshold(Float_t /*p*/) const { return 0.;}
   Double_t GetRoad0y() const                { return fkRoad0y;   }
   Double_t GetRoad0z() const                { return fkRoad0z;   }
   Double_t GetRoad1y() const                { return fkRoad1y;   }

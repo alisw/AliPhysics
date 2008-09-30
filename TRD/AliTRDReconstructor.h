@@ -25,10 +25,11 @@ public:
     ,kWriteClusters  = BIT(1)
     ,kSeeding        = BIT(2)
     ,kSteerPID       = BIT(3)
-    ,kWriteTracklets = BIT(4)
-    ,kDriftGas       = BIT(5)
-    ,kHLT            = BIT(6)
-    ,kCosmic         = BIT(7)
+    ,kEightSlices    = BIT(4)
+    ,kWriteTracklets = BIT(5)
+    ,kDriftGas       = BIT(6)
+    ,kHLT            = BIT(7)
+    ,kCosmic         = BIT(8)
   };
   enum AliTRDReconstructorTask {
     kClusterizer = 0
@@ -73,6 +74,7 @@ public:
   Bool_t              IsHLT() const              { return fSteerParam&kHLT;}
   Bool_t              IsSeeding() const          { return fSteerParam&kSeeding;}
   Bool_t              IsCosmic() const           { return fSteerParam&kCosmic;}
+  Bool_t              IsEightSlices() const      { return fSteerParam&kEightSlices;}
 
   virtual void        Reconstruct(AliRawReader *rawReader, TTree *clusterTree) const;
   virtual void        Reconstruct(TTree *digitsTree, TTree *clusterTree) const;
