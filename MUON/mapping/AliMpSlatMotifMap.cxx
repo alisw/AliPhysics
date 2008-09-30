@@ -41,20 +41,6 @@
 ClassImp(AliMpSlatMotifMap)
 /// \endcond
 
-AliMpSlatMotifMap* AliMpSlatMotifMap::fgInstance = 0;
-
-//______________________________________________________________________________
-AliMpSlatMotifMap* AliMpSlatMotifMap::Instance()
-{
-/// Return its instance
-
-  if ( ! fgInstance) {
-    fgInstance = new AliMpSlatMotifMap();
-  }  
-    
-  return fgInstance;
-}    
-
 //_____________________________________________________________________________
 AliMpSlatMotifMap::AliMpSlatMotifMap()
 : TObject(),
@@ -64,8 +50,6 @@ fMotifTypes()
   /// ctor
   fMotifs.SetOwner(kTRUE);
   fMotifTypes.SetOwner(kTRUE);
-
-  fgInstance = this;
 }
 
 //_____________________________________________________________________________
@@ -73,7 +57,6 @@ AliMpSlatMotifMap::~AliMpSlatMotifMap()
 {
   /// dtor
   Reset();
-  fgInstance = 0;
 }
 
 //_____________________________________________________________________________
