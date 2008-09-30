@@ -17,14 +17,16 @@
 
 #include "AliMUONPreprocessor.h"
 
-#include "AliMUONPedestalSubprocessor.h"
-#include "AliMUONHVSubprocessor.h"
-#include "AliMUONGMSSubprocessor.h"
-
-#include "AliMpSegmentation.h"
-#include "AliMpDDLStore.h"
-
+#include "AliCDBEntry.h"
 #include "AliLog.h"
+#include "AliMUONGMSSubprocessor.h"
+#include "AliMUONHVSubprocessor.h"
+#include "AliMUONPedestalSubprocessor.h"
+#include "AliMpCDB.h"
+#include "AliMpDDLStore.h"
+#include "AliMpDataMap.h"
+#include "AliMpDataStreams.h"
+#include "AliMpSegmentation.h"
 #include "AliShuttleInterface.h"
 #include "Riostream.h"
 #include "TObjArray.h"
@@ -89,8 +91,7 @@ AliMUONPreprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTime)
   /// Load mapping and initialize subtasks  
 
   // Delete previous mapping
-  delete AliMpSegmentation::Instance(false);
-  delete AliMpDDLStore::Instance(false);
+  AliMpCDB::UnloadAll();
   
   if ( ! IsApplicable() ) {
     Log(Form("WARNING-RunType=%s is not one I should handle.",GetRunType()));
@@ -98,11 +99,25 @@ AliMUONPreprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTime)
   }   
   
   // Load mapping from CDB for this run
-  AliCDBEntry* cdbEntry = GetFromOCDB("Calib", "DDLStore");
+  AliCDBEntry* cdbEntry = GetFromOCDB("Calib", "MappingData");
   if (!cdbEntry)
   {
-    Log("Could not get DDLStore from OCDB !");
+    Log("Could not get MappingData from OCDB !");
     fIsValid = kFALSE;
+  }
+  else
+  {
+    AliMpDataMap* dataMap = dynamic_cast<AliMpDataMap*>(cdbEntry->GetObject());
+    if (!dataMap)
+    {
+      Log("DataMap is not of the expected type. That is bad...");
+      fIsValid = kFALSE;
+    }
+    else
+    {
+      AliMpDataStreams dataStreams(dataMap);
+      AliMpDDLStore::ReadData(dataStreams);
+    }
   }
   
   if (IsValid())

@@ -244,6 +244,8 @@ TMap* CreateDCSAliasMap(const char* inputCDB, Int_t runNumber)
   
   delete aliases;
     
+  AliMpCDB::UnloadAll();
+  
   return aliasMap;
 }
 
