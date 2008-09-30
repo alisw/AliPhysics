@@ -287,7 +287,7 @@ Bool_t AliMCEventHandler::Notify(const char *path)
 void AliMCEventHandler::ResetIO()
 {
 //  Clear header and stack
-    fMCEvent->Clean();
+    if (fInitOk) fMCEvent->Clean();
     
 // Delete Tree E
     delete fTreeE; fTreeE = 0;
@@ -306,7 +306,7 @@ Bool_t AliMCEventHandler::FinishEvent()
     // Clean-up after each event
     delete fDirTR;  fDirTR = 0;
     delete fDirK;   fDirK  = 0;    
-    fMCEvent->FinishEvent();
+    if (fInitOk) fMCEvent->FinishEvent();
     return kTRUE;
 }
 
