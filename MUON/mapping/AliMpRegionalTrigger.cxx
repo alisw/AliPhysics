@@ -195,6 +195,11 @@ Bool_t AliMpRegionalTrigger::ReadData(istream& in)
       ++localBoardIndex;
     }
   }
+
+  AliDebug(1,Form("%d trigger crate created",fTriggerCrates.GetSize()));
+  AliDebug(1,Form("%d local board added to the map",fLocalBoardMap.GetSize()));
+  AliDebug(1,Form("%d local board referenced from the array",fLocalBoardArray.GetLast()+1));
+  
   return kTRUE;
 }  
 
