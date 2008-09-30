@@ -16,31 +16,31 @@
 // $Id$
 // $MpId: AliMpTriggerReader.cxx,v 1.4 2006/05/24 13:58:52 ivana Exp $
 
-#include <cstdlib>
 #include "AliMpTriggerReader.h"
-#include "AliMpMotifReader.h"
-#include "AliMpFiles.h"
+
+#include "AliLog.h"
+#include "AliMpConstants.h"
 #include "AliMpDataStreams.h"
+#include "AliMpFiles.h"
+#include "AliMpHelper.h"
+#include "AliMpMotif.h"
+#include "AliMpMotifPosition.h"
+#include "AliMpMotifReader.h"
+#include "AliMpMotifSpecial.h"
 #include "AliMpMotifType.h"
 #include "AliMpPCB.h"
 #include "AliMpSlat.h"
 #include "AliMpSlatMotifMap.h"
-#include "AliMpMotifSpecial.h"
-#include "AliMpMotifPosition.h"
-#include "AliMpMotif.h"
-#include "AliMpHelper.h"
+#include "AliMpSlatMotifMap.h"
 #include "AliMpSt345Reader.h"
 #include "AliMpTrigger.h"
-#include "AliMpConstants.h"
-
-#include "AliLog.h"
-
 #include "Riostream.h"
 #include "TClass.h"
-#include "TObjString.h"
 #include "TList.h"
+#include "TObjString.h"
 #include "TString.h"
 #include <TArrayI.h>
+#include <cstdlib>
 #include <sstream>
 
 //-----------------------------------------------------------------------------
@@ -64,10 +64,10 @@ const TString AliMpTriggerReader::fgkKeywordFlipX("FLIP_X");
 const TString AliMpTriggerReader::fgkKeywordFlipY("FLIP_Y");
 
 //_____________________________________________________________________________
-AliMpTriggerReader::AliMpTriggerReader(const AliMpDataStreams& dataStreams) 
+AliMpTriggerReader::AliMpTriggerReader(const AliMpDataStreams& dataStreams, AliMpSlatMotifMap* motifMap) 
 : TObject(),
   fDataStreams(dataStreams),
-  fMotifMap(AliMpSlatMotifMap::Instance()),
+  fMotifMap(motifMap),
   fLocalBoardMap()
 {
   ///

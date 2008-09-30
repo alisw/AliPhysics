@@ -71,6 +71,10 @@ class AliMpCDB : public  TObject {
     // Switch loading
     static void SetLoadFromData(Bool_t loadFromData);
      
+  // Unload mapping
+  
+  static void UnloadAll(); 
+  
   private:
     /// Not implemented
     AliMpCDB();

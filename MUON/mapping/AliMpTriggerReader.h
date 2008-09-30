@@ -40,7 +40,7 @@ class TList;
 class AliMpTriggerReader : public TObject
 {
  public:
-  AliMpTriggerReader(const AliMpDataStreams& dataStreams);
+  AliMpTriggerReader(const AliMpDataStreams& dataStreams, AliMpSlatMotifMap* motifMap);
   virtual ~AliMpTriggerReader();
 
   AliMpTrigger* ReadSlat(const char* slatType, AliMp::PlaneType planeType);

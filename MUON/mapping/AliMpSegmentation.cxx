@@ -107,13 +107,15 @@ AliMpSegmentation::AliMpSegmentation(const AliMpDataStreams& dataStreams)
 : TObject(),
   fDataStreams(dataStreams),
   fDetElements(0),
-  fMpSegmentations(),
+  fMpSegmentations(true),
   fElCardsMap(),
-  fSlatMotifMap(AliMpSlatMotifMap::Instance())
+  fSlatMotifMap(new AliMpSlatMotifMap)
 {  
 /// Standard constructor - segmentation is loaded from ASCII data files
 
   AliDebug(1,"");
+  
+  fElCardsMap.SetOwner(kTRUE);
   
   // Load DE data
   if ( ! AliMpDEStore::Instance(false) )  
@@ -169,6 +171,8 @@ AliMpSegmentation::~AliMpSegmentation()
   // Segmentations are deleted with fMpSegmentations 
   // El cards arrays are deleted with fElCardsMap
   
+  delete fSlatMotifMap;
+  
   fgInstance = 0;
 }
 
@@ -211,12 +215,12 @@ AliMpSegmentation::CreateMpSegmentation(Int_t detElemId, AliMp::CathodType cath)
     mpSegmentation = new AliMpSectorSegmentation(sector, true);
   }
   else if ( stationType == AliMp::kStation345 ) { 
-    AliMpSt345Reader reader(fDataStreams);
+    AliMpSt345Reader reader(fDataStreams,fSlatMotifMap);
     AliMpSlat* slat = reader.ReadSlat(deTypeName, planeType);
     mpSegmentation =  new AliMpSlatSegmentation(slat, true);
   }
   else if ( stationType == AliMp::kStationTrigger ) {
-    AliMpTriggerReader reader(fDataStreams);
+    AliMpTriggerReader reader(fDataStreams,fSlatMotifMap);
     AliMpTrigger* trigger = reader.ReadSlat(deTypeName, planeType);
     mpSegmentation = new AliMpTriggerSegmentation(trigger, true);
   }

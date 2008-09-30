@@ -37,7 +37,7 @@ class AliMpDataStreams;
 class AliMpSt345Reader : public TObject
 {
  public:
-  AliMpSt345Reader(const AliMpDataStreams& dataStreams);
+  AliMpSt345Reader(const AliMpDataStreams& dataStreams, AliMpSlatMotifMap* motifMap);
   virtual ~AliMpSt345Reader();
 
   AliMpSlat* ReadSlat(const char* slatType, AliMp::PlaneType planeType);

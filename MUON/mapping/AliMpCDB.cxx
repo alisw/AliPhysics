@@ -26,20 +26,19 @@
 
 #include "AliMpCDB.h"
 
-#include "AliMpSegmentation.h"
+#include "AliCDBEntry.h"
+#include "AliCDBManager.h"
+#include "AliLog.h"
 #include "AliMpDDLStore.h"
-#include "AliMpManuStore.h"
+#include "AliMpDEStore.h"
+#include "AliMpDataMap.h"
 #include "AliMpDataProcessor.h"
 #include "AliMpDataStreams.h"
-#include "AliMpDataMap.h"
-
-#include "AliLog.h"
-#include "AliCDBManager.h"
-#include "AliCDBEntry.h"
-
-#include <TSystem.h>
-#include <TClass.h>
+#include "AliMpManuStore.h"
+#include "AliMpSegmentation.h"
 #include <Riostream.h>
+#include <TClass.h>
+#include <TSystem.h>
 
 /// \cond CLASSIMP
 ClassImp(AliMpCDB)
@@ -488,4 +487,12 @@ Bool_t  AliMpCDB::GenerateMpRunData(const char* cdbpath, Int_t runNumber)
   return mp.GenerateData(dataMap);
 } 
 
+//______________________________________________________________________________
+void AliMpCDB::UnloadAll()
+{
+  /// Unload all the mapping from the memory
+  delete AliMpDDLStore::Instance(false);
+  delete AliMpSegmentation::Instance(false);
+  delete AliMpDEStore::Instance(false);
+}
 

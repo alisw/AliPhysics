@@ -318,6 +318,7 @@ void AliMpDEStore::FillDEs()
   if ( ! result ) {
     AliErrorClassStream() << "Error in reading DE names files" << endl;
   }  
+  AliDebug(1,Form("%d detection elements were read in",fDetElements.GetSize()));
 }
 
 //

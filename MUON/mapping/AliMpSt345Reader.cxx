@@ -56,11 +56,11 @@ ClassImp(AliMpSt345Reader)
 /// \endcond
 
 //_____________________________________________________________________________
-AliMpSt345Reader::AliMpSt345Reader(const AliMpDataStreams& dataStreams) 
+AliMpSt345Reader::AliMpSt345Reader(const AliMpDataStreams& dataStreams, AliMpSlatMotifMap* motifMap) 
 : 
 TObject(),
 fDataStreams(dataStreams),
-fMotifMap(AliMpSlatMotifMap::Instance())
+fMotifMap(motifMap)
 {
   ///
   /// Default ctor.

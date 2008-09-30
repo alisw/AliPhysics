@@ -444,7 +444,9 @@ void AliMpDEVisu::DrawSlat(Option_t* option, Bool_t popup)
 
   AliMpDataStreams dataStreams;
 
-  AliMpSt345Reader reader(dataStreams);  
+  AliMpSlatMotifMap mm;
+  
+  AliMpSt345Reader reader(dataStreams,&mm);  
   AliMpSlat* slatCurrent = reader.ReadSlat(nameType.Data(), fCurrentPlane);
   AliMpSlat* slatOther   = reader.ReadSlat(nameType.Data(), AliMp::OtherPlaneType(fCurrentPlane));
   

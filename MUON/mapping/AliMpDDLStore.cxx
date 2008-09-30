@@ -117,25 +117,25 @@ AliMpDDLStore::AliMpDDLStore(const AliMpDataStreams& dataStreams)
         fManuBridge2(),
         fRegionalTrigger()
 {
-    /// Standard constructor
+  /// Standard constructor
+  
+  AliDebug(1,"");
+  fDDLs.SetOwner(true);
+  fBusPatches.SetOwner(true);
+  fBusPatches.SetSize(900);
 
-    AliDebug(1,"");
-    fDDLs.SetOwner(true);
-    fBusPatches.SetOwner(true);
-    fBusPatches.SetSize(900);
+  // Load segmentation & DE store data
+  if ( ! AliMpSegmentation::Instance(false) )
+    AliMpSegmentation::ReadData(dataStreams, true);
     
-    // Load segmentation & DE store data
-    if ( ! AliMpSegmentation::Instance(false) )
-        AliMpSegmentation::ReadData(dataStreams, true);
-
-    // Create all detection elements
-    ReadDDLs();
-    ReadTrigger();
-    SetTriggerDDLs();
-    SetManus();
-    ReadBusPatchSpecial();
-    SetPatchModules();
-    ReadBusPatchInfo();
+  // Create all detection elements
+  ReadDDLs();
+  ReadTrigger();
+  SetTriggerDDLs();
+  SetManus();
+  ReadBusPatchSpecial();
+  SetPatchModules();
+  ReadBusPatchInfo();
 }
 
 //______________________________________________________________________________

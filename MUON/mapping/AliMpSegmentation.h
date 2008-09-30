@@ -85,7 +85,7 @@ class AliMpSegmentation : public  TObject {
     AliMpExMap         fElCardsMap;     ///< Map of el. cards IDs to segmentations
     AliMpSlatMotifMap* fSlatMotifMap;   ///< Map of motif, motifTypes to avoid duplications and allow proper deletion
     
-  ClassDef(AliMpSegmentation,2)  // The factory for building mapping segmentations
+  ClassDef(AliMpSegmentation,3)  // The factory for building mapping segmentations
 };
 
 #endif //ALI_MP_SEGMENTATION_H
