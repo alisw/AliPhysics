@@ -21,9 +21,8 @@ SRCS= RESONANCES/AliRsnMCInfo.cxx \
       RESONANCES/AliRsnPair.cxx \
       RESONANCES/AliRsnPairMgr.cxx \
       RESONANCES/AliRsnAnalysisTaskSEBase.cxx \
-      RESONANCES/AliRsnBaseAT.cxx \
+      RESONANCES/AliRsnAnalysisTaskBase.cxx \
       RESONANCES/AliRsnAnalysisSE.cxx \
-      RESONANCES/AliRsnAnalysisTask2ndStep.cxx \
       RESONANCES/AliRsnComparisonObj.cxx \
       RESONANCES/AliRsnComparisonAT.cxx \
 
