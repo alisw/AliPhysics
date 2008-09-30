@@ -176,7 +176,7 @@ AliITSRecoParam *AliITSRecoParam::GetHighFluxParam()
   // make default reconstruction  parameters for hig  flux env.
   //
   AliITSRecoParam *param = new AliITSRecoParam();
-  param->SetVertexer3DDefaults();
+  param->SetVertexerZ();
 
   param->fMaxSnp = 0.95;
 
