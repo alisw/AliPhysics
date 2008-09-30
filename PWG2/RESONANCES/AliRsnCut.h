@@ -49,6 +49,9 @@ class AliRsnCut : public TNamed
     kPIDType,
     kPIDProb,
     kMultiplicity,
+    kMultiplicityDifference,
+    kPhiMeanDifference,
+    kVzDifference,
     kLastCutType
   };
   
@@ -64,7 +67,7 @@ class AliRsnCut : public TNamed
     kParticle = 0,
     kPair,
     kEvent,
-    kMixEventFinderCut,
+    kMixEvent,
     kLastCutTarget
   };
 
@@ -85,6 +88,7 @@ class AliRsnCut : public TNamed
   Bool_t    IsSelected(ETarget tgt,  AliRsnDaughter *daughter);
   Bool_t    IsSelected(ETarget tgt,  AliRsnPairParticle *pair);
   Bool_t    IsSelected(ETarget tgt,  AliRsnEvent *event);
+  Bool_t    IsSelected(ETarget tgt,  AliRsnEvent *ev1, AliRsnEvent *ev2);
 
   void      PrintAllValues();
 

@@ -1,3 +1,12 @@
+//
+// Class AliRsnCutSet
+//
+// This is the front-end for cut management and checking.
+// It must be prepared by adding all required single cuts,
+// and then with a logical expression which combines all cuts
+// with the "AND", "OR" and "NOT" operators.
+//
+
 #include "AliLog.h"
 
 #include "AliRsnCut.h"
@@ -177,6 +186,28 @@ Bool_t AliRsnCutSet::IsSelected(AliRsnCut::ETarget type, AliRsnEvent * event)
   {
     cut = (AliRsnCut*) fCuts.At(i);
     fBoolValues[i] = cut->IsSelected(type,event);
+  }
+
+  if (fIsScheme) boolReturn = Passed();
+  return boolReturn;
+}
+
+//_____________________________________________________________________________
+Bool_t AliRsnCutSet::IsSelected(AliRsnCut::ETarget type, AliRsnEvent * ev1, AliRsnEvent *ev2)
+{
+//
+// Checks an object according to the cut expression defined here.
+//
+
+  Int_t i;
+  if (!fNumOfCuts) return kTRUE;
+
+  Bool_t boolReturn = kTRUE;
+  AliRsnCut *cut;
+  for (i = 0; i < fNumOfCuts; i++)
+  {
+    cut = (AliRsnCut*) fCuts.At(i);
+    fBoolValues[i] = cut->IsSelected(type,ev1,ev2);
   }
 
   if (fIsScheme) boolReturn = Passed();

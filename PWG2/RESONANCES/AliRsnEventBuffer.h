@@ -18,6 +18,8 @@
 
 #include "AliRsnEvent.h"
 
+class AliRsnCutSet;
+
 class AliRsnEventBuffer : public TObject
 {
   public:
@@ -29,9 +31,11 @@ class AliRsnEventBuffer : public TObject
     void ResetIndex();
 
     void AddEvent(AliRsnEvent *event);
+    Int_t IndexOf(AliRsnEvent *event);
     AliRsnEvent *GetEvent(Int_t index) ;
     AliRsnEvent *GetCurrentEvent();
     AliRsnEvent *GetNextEvent();
+    AliRsnEvent *GetNextGoodEvent(Int_t &start, AliRsnCutSet *cuts = 0);
 
     void SetEventsBufferSize(const Int_t& theValue) { fEventsBufferSize = theValue; }
     Int_t GetEventsBufferSize() const { return fEventsBufferSize; }

@@ -13,11 +13,11 @@
 
 #include "AliRsnDaughter.h"
 #include "AliRsnEvent.h"
-#include "AliRsnBaseAT.h"
+#include "AliRsnAnalysisTaskBase.h"
 #include "AliRsnCut.h"
 #include "AliRsnCutSet.h"
 
-class AliRsnComparisonAT : public AliRsnBaseAT
+class AliRsnComparisonAT : public AliRsnAnalysisTaskBase
 {
   public:
 
@@ -50,9 +50,9 @@ class AliRsnComparisonAT : public AliRsnBaseAT
 
 
   private:
-  
+
     AliRsnComparisonAT(const AliRsnComparisonAT&)
-        : AliRsnBaseAT(""),fOutList(0x0),fMyInputNum(1),fMyPIDInputNum(0) {}
+        : AliRsnAnalysisTaskBase(""),fOutList(0x0),fMyInputNum(1),fMyPIDInputNum(0) {}
     AliRsnComparisonAT& operator=(const AliRsnComparisonAT&) {return *this;}
 
     TList       *fOutList;                      // output list

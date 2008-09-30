@@ -1,27 +1,13 @@
-/**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Author: The ALICE Off-line Project.                                    *
- * Contributors are mentioned in the code where appropriate.              *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
-
 //
 // Class AliRsnPairParticle
 //
 // Implementation of a pair of tracks, for several purposes
 // - computing the total 4-momentum & inv. mass for output histos filling
 // - evaluating cut checks on the pair of particles
+// - evaluating any kind of kinematic value over their sum
 //
-// author: Martin Vala (martin.vala@cern.ch)
-// revised by: Alberto Pulvirenti (alberto.pulvirenti@ct.infn.it)
+// authors: Martin Vala (martin.vala@cern.ch)
+//          Alberto Pulvirenti (alberto.pulvirenti@ct.infn.it)
 //
 
 #include "AliLog.h"
@@ -134,7 +120,7 @@ Double_t AliRsnPairParticle::GetInvMass(Double_t mass0, Double_t mass1)
 // Mass in argument #1 is assigned to first track in the pair (fDaughter[0]),
 // mass in argument #2 is assigned to second track in the pair (fDaughter[1])
 // Then, the invariant mass of the pair is computed by using their total momentum
-// and the sum of their energies as they result from assigned masses.
+// and the sum of their energies computed after assigned masses.
 //
 
   if (!fDaughter[0] || !fDaughter[1])
@@ -160,7 +146,7 @@ Double_t AliRsnPairParticle::GetInvMassMC(Double_t mass0, Double_t mass1)
 // Mass in argument #1 is assigned to first track in the pair (fDaughter[0]),
 // mass in argument #2 is assigned to second track in the pair (fDaughter[1])
 // Then, the invariant mass of the pair is computed by using their total momentum
-// and the sum of their energies as they result from assigned masses.
+// and the sum of their energies.
 //
 
   if (!fDaughter[0] || !fDaughter[1])
@@ -180,7 +166,7 @@ Double_t AliRsnPairParticle::GetInvMassMC(Double_t mass0, Double_t mass1)
   etot += fDaughter[1]->GetMCInfo()->E(mass1);
 
   // compute & return invariant mass
-  return  TMath::Sqrt(etot * etot - GetP2());
+  return  TMath::Sqrt(etot * etot - GetP2MC());
 }
 
 //_____________________________________________________________________________
@@ -190,11 +176,12 @@ Double_t AliRsnPairParticle::GetEtot(Double_t mass0, Double_t mass1) const
 // Compute total pair energy from the sum of single track energies
 // with a necessary mass hypothesis (rec. values).
 //
-    Double_t etot = 0.0;
-    etot += fDaughter[0]->E(mass0);
-    etot += fDaughter[1]->E(mass1);
-    
-    return etot;
+
+  Double_t etot = 0.0;
+  etot += fDaughter[0]->E(mass0);
+  etot += fDaughter[1]->E(mass1);
+
+  return etot;
 }
 
 //_____________________________________________________________________________
@@ -204,11 +191,11 @@ Double_t AliRsnPairParticle::GetEtotMC(Double_t mass0, Double_t mass1) const
 // Compute total pair energy from the sum of single track energies
 // with a necessary mass hypothesis (MC values).
 //
-    Double_t etot = 0.0;
-    etot += fDaughter[0]->GetMCInfo()->E(mass0);
-    etot += fDaughter[1]->GetMCInfo()->E(mass1);
-    
-    return etot;
+  Double_t etot = 0.0;
+  etot += fDaughter[0]->GetMCInfo()->E(mass0);
+  etot += fDaughter[1]->GetMCInfo()->E(mass1);
+
+  return etot;
 }
 
 //_____________________________________________________________________________
@@ -274,6 +261,38 @@ void AliRsnPairParticle::SetPair(AliRsnDaughter *daughter1, AliRsnDaughter *daug
 
   fDaughter[0] = daughter1;
   fDaughter[1] = daughter2;
+
+  // copy MC info (if available)
+  if (fDaughter[0]->GetMCInfo() && fDaughter[1]->GetMCInfo())
+  {
+    for (i = 0; i < 2; i++)
+    {
+      fPTrackMC[i][0] = fDaughter[i]->GetMCInfo()->Px();
+      fPTrackMC[i][1] = fDaughter[i]->GetMCInfo()->Py();
+      fPTrackMC[i][2] = fDaughter[i]->GetMCInfo()->Pz();
+      fMotherPDG[i] = fDaughter[i]->GetMCInfo()->MotherPDG();
+    }
+    for (i = 0; i < 3; i++) fPTotMC[i] = fPTrackMC[0][i] + fPTrackMC[1][i];
+  }
+
+  // copy reconstructed info (always available)
+  for (i = 0; i < 2; i++)
+  {
+    fPTrack[i][0] = fDaughter[i]->Px();
+    fPTrack[i][1] = fDaughter[i]->Py();
+    fPTrack[i][2] = fDaughter[i]->Pz();
+  }
+  for (i = 0; i < 3; i++) fPTot[i] = fPTrack[0][i] + fPTrack[1][i];
+}
+
+//_____________________________________________________________________________
+void AliRsnPairParticle::ResetPair()
+{
+//
+// Computes the total momentum for REC data and MC if available
+//
+
+  Int_t i;
 
   // copy MC info (if available)
   if (fDaughter[0]->GetMCInfo() && fDaughter[1]->GetMCInfo())

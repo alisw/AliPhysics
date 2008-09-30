@@ -1,17 +1,13 @@
-/**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               *
- **************************************************************************/
-
 //
 // Class AliRsnPairParticle
 //
 // Implementation of a pair of tracks, for several purposes
 // - computing the total 4-momentum & inv. mass for output histos filling
 // - evaluating cut checks on the pair of particles
+// - evaluating any kind of kinematic value over their sum
 //
-// author: Martin Vala (martin.vala@cern.ch)
-// revised by: Alberto Pulvirenti (alberto.pulvirenti@ct.infn.it)
+// authors: Martin Vala (martin.vala@cern.ch)
+//          Alberto Pulvirenti (alberto.pulvirenti@ct.infn.it)
 //
 
 #ifndef ALIRSNPAIRPARTICLE_H
@@ -43,7 +39,8 @@ class AliRsnPairParticle : public TObject
     Double_t          GetPz() const {return fPTot[2];}
     Double_t          GetPt() const {return TMath::Sqrt(GetPt2());}
     Double_t          GetPhi() const {return TMath::Pi() + TMath::ATan2(-fPTot[1], -fPTot[0]);}
-    Double_t          GetTheta() const {if(fPTot[2]==0.0){return TMath::PiOver2();}else{return TMath::ACos(fPTot[2]/GetP());}}
+    Double_t          GetTheta() const {if (fPTot[2]==0.0){return TMath::PiOver2();}
+      else{return TMath::ACos(fPTot[2]/GetP());}}
     Double_t          GetEta() const {return -TMath::Log(TMath::ATan(0.5*GetTheta()));}
     Double_t          GetY(Double_t m1, Double_t m2) const {return 0.5*TMath::Log((GetEtot(m1,m2)+fPTot[2])/(GetEtot(m1,m2)-fPTot[2]));}
 
@@ -56,7 +53,8 @@ class AliRsnPairParticle : public TObject
     Double_t          GetPzMC() const {return fPTotMC[2];}
     Double_t          GetPtMC() const {return TMath::Sqrt(GetPt2MC());}
     Double_t          GetPhiMC() const {return TMath::Pi() + TMath::ATan2(-fPTotMC[1], -fPTotMC[0]);}
-    Double_t          GetThetaMC() const {if(fPTotMC[2]==0.0){return TMath::PiOver2();}else{return TMath::ACos(fPTotMC[2]/GetPMC());}}
+    Double_t          GetThetaMC() const {if (fPTotMC[2]==0.0){return TMath::PiOver2();}
+      else{return TMath::ACos(fPTotMC[2]/GetPMC());}}
     Double_t          GetEtaMC() const {return -TMath::Log(TMath::ATan(0.5*GetThetaMC()));}
     Double_t          GetYMC(Double_t m1, Double_t m2) const {return 0.5*TMath::Log((GetEtotMC(m1,m2)+fPTotMC[2])/(GetEtotMC(m1,m2)-fPTotMC[2]));}
 
@@ -69,6 +67,7 @@ class AliRsnPairParticle : public TObject
     Bool_t            IsTruePair(Int_t refPDG = 0);
 
     void              SetPair(AliRsnDaughter *daughter1, AliRsnDaughter *daughter2);
+    void              ResetPair();
     void              PrintInfo(const Option_t *option = "");
 
   private:

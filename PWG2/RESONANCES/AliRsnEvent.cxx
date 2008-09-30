@@ -312,7 +312,7 @@ TArrayI * AliRsnEvent::GetTracksArray
 }
 
 //_____________________________________________________________________________
-void AliRsnEvent::FillPIDArrays()
+void AliRsnEvent::FillPIDArrays(Int_t arraySizeInit)
 {
 //
 // Initializes and fills the AliRsnPIDIndex objects containing
@@ -323,9 +323,9 @@ void AliRsnEvent::FillPIDArrays()
   if (fNoPID) delete fNoPID;
   if (fPerfectPID) delete fPerfectPID;
   if (fRealisticPID) delete fRealisticPID;
-  fNoPID = new AliRsnPIDIndex(2000);
-  fPerfectPID = new AliRsnPIDIndex(2000);
-  fRealisticPID = new AliRsnPIDIndex(2000);
+  fNoPID = new AliRsnPIDIndex(arraySizeInit);
+  fPerfectPID = new AliRsnPIDIndex(arraySizeInit);
+  fRealisticPID = new AliRsnPIDIndex(arraySizeInit);
 
   // set the default type to Realistic
   AliRsnDaughter::SetPIDMethod(AliRsnDaughter::kRealistic);
@@ -390,6 +390,32 @@ void AliRsnEvent::Print(Option_t *option) const
 }
 
 //_____________________________________________________________________________
+void AliRsnEvent::MakeComputations()
+{
+//
+// Computes all required overall variables:
+// - multiplicity
+// - mean phi of tracks
+//
+
+  if (!fTracks) {
+    fMult = 0; 
+    fPhiMean = 0.0;
+  }
+  else {
+    fMult = fTracks->GetEntries();
+    fPhiMean = 0.0;
+    
+    AliRsnDaughter *d = 0;
+    TObjArrayIter next(fTracks);
+    while ( (d = (AliRsnDaughter*)next()) ) {
+      fPhiMean += d->Phi();
+    }
+    fPhiMean /= (Double_t)fMult;
+  }
+}
+
+//_____________________________________________________________________________
 void AliRsnEvent::CorrectByPrimaryVertex()
 {
 //
@@ -404,6 +430,7 @@ void AliRsnEvent::CorrectByPrimaryVertex()
     }
 }
 
+/*
 //_____________________________________________________________________________
 Int_t AliRsnEvent::GetMultiplicity() const
 {
@@ -414,6 +441,7 @@ Int_t AliRsnEvent::GetMultiplicity() const
   if (!fTracks) return 0;
   return fTracks->GetEntries();
 }
+*/
 
 //_____________________________________________________________________________
 Int_t AliRsnEvent::GetNCharged(Char_t sign)

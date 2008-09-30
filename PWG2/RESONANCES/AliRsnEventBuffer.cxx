@@ -24,6 +24,9 @@
 //
 
 #include "AliLog.h"
+
+#include "AliRsnCut.h"
+#include "AliRsnCutSet.h"
 #include "AliRsnEventBuffer.h"
 
 ClassImp(AliRsnEventBuffer)
@@ -91,10 +94,32 @@ void AliRsnEventBuffer::AddEvent(AliRsnEvent * event)
 
   if (fEventsBufferIndex >= fEventsBufferSize - 1) ResetIndex();
   fEventsBufferIndex++;
-  if (fEventsBuffer[fEventsBufferIndex])
+  if (fEventsBuffer[fEventsBufferIndex]) {
+    //AliInfo("Replacing event");
     *fEventsBuffer[fEventsBufferIndex] = *event;
-  else
+  }
+  else {
+    //AliInfo("New event");
     fEventsBuffer[fEventsBufferIndex] = new AliRsnEvent(*event);
+  }
+    
+  // correct for primary vertex
+  fEventsBuffer[fEventsBufferIndex]->CorrectByPrimaryVertex();
+}
+
+//_____________________________________________________________________________
+Int_t AliRsnEventBuffer::IndexOf(AliRsnEvent * event)
+{
+//
+// Return position of the event
+//
+
+  Int_t i;
+  for (i = 0; i < fEventsBufferSize; i++) {
+    if (event == fEventsBuffer[i]) return i;
+  }
+  
+  return -1;
 }
 
 //_____________________________________________________________________________
@@ -114,6 +139,36 @@ AliRsnEvent * AliRsnEventBuffer::GetNextEvent()
 //
   if (fEventsBufferIndex == fEventsBufferSize - 1) return GetEvent(0);
   else return GetEvent(fEventsBufferIndex + 1);
+}
+
+//_____________________________________________________________________________
+AliRsnEvent * AliRsnEventBuffer::GetNextGoodEvent
+(Int_t &start, AliRsnCutSet *cuts)
+{
+//
+// Scans the buffer starting from 'start' in order to
+// find another event which satisfies the cuts defined in 'cuts'.
+// If it finds such an event, returns it and upgrades the 'start' value
+// to its position, otherwise returns NULL.
+//
+
+  Int_t i = start;
+  AliRsnEvent *ref = GetCurrentEvent();
+  AliRsnEvent *ev = 0x0;
+  for(;;i++) {
+    ev = GetEvent(i);
+    if (!ev) break;
+    if (!cuts) {
+      start = i;
+      return ev;
+    }
+    else if (cuts->IsSelected(AliRsnCut::kMixEvent, ref, ev)) {
+      start = i;
+      return ev;
+    }
+  }
+  
+  return 0x0;
 }
 
 //_____________________________________________________________________________

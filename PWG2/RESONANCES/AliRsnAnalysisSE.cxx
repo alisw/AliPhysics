@@ -71,7 +71,7 @@ void AliRsnAnalysisSE::UserCreateOutputObjects()
 
   AliDebug(AliLog::kDebug, "<-");
 //   fPID.DumpPriors();
-  OpenFile ( 0 );
+  OpenFile(0);
   fOutList = new TList();
   fOutList->SetOwner();
   AliRsnPair *def=0;
@@ -89,15 +89,15 @@ void AliRsnAnalysisSE::UserCreateOutputObjects()
       if (def)
       {
         def->Init();
-        //listTmp->Add(def->GenerateHistograms(mgr->GetName()));
-        def->GenerateHistograms(mgr->GetName(), listTmp);
+        listTmp->Add(def->GenerateHistograms(mgr->GetName()));
+        //def->GenerateHistograms(mgr->GetName(), listTmp);
         //def->Print();
       }
     }
     fOutList->Add(listTmp);
   }
 
-  fRsnEventBuffer = new AliRsnEventBuffer(100);
+  fRsnEventBuffer = new AliRsnEventBuffer(1000);
 //   fRsnEventBuffer = new AliRsnEventBuffer ( 10000 ,kFALSE );
   AliDebug(AliLog::kDebug, "->");
 
@@ -111,7 +111,7 @@ void AliRsnAnalysisSE::UserExec(Option_t *)
 //=========================================================
 
   if (fEntry++%1000==0)
-    AliInfo(Form("Event %d",-1));
+    AliInfo(Form("Event %d",fEntry-1));
 
   AliRsnEvent *curEvent = GetRsnEventFromInputType();
   if (!curEvent) return;

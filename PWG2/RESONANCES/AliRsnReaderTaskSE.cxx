@@ -93,31 +93,31 @@ void AliRsnReaderTaskSE::UserExec(Option_t */*option*/)
   // step 1: conversion
   Bool_t ok = kFALSE;
   switch (fInputType[0])
-    {
-        case kAOD: 
-            AliDebug(5, "Reading AOD event...");
-            ok = fReader.FillFromAOD(fRsnEvent, (AliAODEvent*)fInputEvent, fMCEvent);
-            AliDebug(5, "...done");
-            break;
-        case kESD: 
-            AliDebug(5, "Reading ESD event...");
-            ok = fReader.FillFromESD(fRsnEvent, (AliESDEvent*)fInputEvent, fMCEvent);
-            AliDebug(5, "...done");
-            break;
-        case kESDMC:
-            AliDebug(5, "Reading ESD event with MC...");
-            ok = fReader.FillFromESD(fRsnEvent, (AliESDEvent*)fInputEvent, fMCEvent);
-            AliDebug(5, "...done");
-            break;
-        case kMC: 
-            AliDebug(5, "Reading MC only event...");
-            ok = fReader.FillFromMC(fRsnEvent, fMCEvent);
-            AliDebug(5, "...done");
-            break;
-        default:
-            AliError("Type not supported ...");
-            return;
-    }
+  {
+    case kAOD:
+      AliDebug(5, "Reading AOD event...");
+      ok = fReader.FillFromAOD(fRsnEvent, (AliAODEvent*)fInputEvent, fMCEvent);
+      AliDebug(5, "...done");
+      break;
+    case kESD:
+      AliDebug(5, "Reading ESD event...");
+      ok = fReader.FillFromESD(fRsnEvent, (AliESDEvent*)fInputEvent, fMCEvent);
+      AliDebug(5, "...done");
+      break;
+    case kESDMC:
+      AliDebug(5, "Reading ESD event with MC...");
+      ok = fReader.FillFromESD(fRsnEvent, (AliESDEvent*)fInputEvent, fMCEvent);
+      AliDebug(5, "...done");
+      break;
+    case kMC:
+      AliDebug(5, "Reading MC only event...");
+      ok = fReader.FillFromMC(fRsnEvent, fMCEvent);
+      AliDebug(5, "...done");
+      break;
+    default:
+      AliError("Type not supported ...");
+      return;
+  }
   if (!ok) AliWarning("Failed reading");
 
   // step 2: PID probability computation

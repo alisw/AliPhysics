@@ -1,14 +1,12 @@
 //
 // Class AliRsnDaughter
 //
+// Light-weight AOD object which contains all required track details
+// which are used for resonance analysis.
+// Provides converters from all kinds of input track type: ESD, AOD and MC.
 //
-// Light-weight 'track' object into an internal format used
-// for further steps of resonance analysis.
-// Provides converters from all kinds of input track type
-// (ESD, AOD and MC).
-// Contains also a facility to compute invariant mass of a pair.
-//
-// author: A. Pulvirenti --- email: alberto.pulvirenti@ct.infn.it
+// authors: A. Pulvirenti (alberto.pulvirenti@ct.infn.it)
+//          M. Vala (martin.vala@cern.ch)
 //
 
 #include <Riostream.h>
@@ -35,7 +33,12 @@ AliRsnDaughter::AliRsnDaughter() :
     fLabel(-1),
     fCharge(0),
     fFlags(0),
+    fKink(0),
     fMass(0.0),
+    fChi2(0.0),
+    fNSigmaToVertex(-1.0),
+    fITSnum(0),
+    fTPCnum(0),
     fRealisticPID(AliRsnPID::kUnknown),
     fMCInfo(0x0)
 {
@@ -64,7 +67,12 @@ AliRsnDaughter::AliRsnDaughter(const AliRsnDaughter &copy) :
     fLabel(copy.fLabel),
     fCharge(copy.fCharge),
     fFlags(copy.fFlags),
+    fKink(copy.fKink),
     fMass(copy.fMass),
+    fChi2(copy.fChi2),
+    fNSigmaToVertex(copy.fNSigmaToVertex),
+    fITSnum(copy.fITSnum),
+    fTPCnum(copy.fTPCnum),
     fRealisticPID(copy.fRealisticPID),
     fMCInfo(0x0)
 {
@@ -96,7 +104,12 @@ AliRsnDaughter::AliRsnDaughter(AliESDtrack *track, Bool_t useTPC) :
     fLabel(-1),
     fCharge(0),
     fFlags(0),
+    fKink(0),
     fMass(0.0),
+    fChi2(0.0),
+    fNSigmaToVertex(-1.0),
+    fITSnum(0),
+    fTPCnum(0),
     fRealisticPID(AliRsnPID::kUnknown),
     fMCInfo(0x0)
 {
@@ -116,7 +129,12 @@ AliRsnDaughter::AliRsnDaughter(AliAODTrack *track) :
     fLabel(-1),
     fCharge(0),
     fFlags(0),
+    fKink(0),
     fMass(0.0),
+    fChi2(0.0),
+    fNSigmaToVertex(-1.0),
+    fITSnum(0),
+    fTPCnum(0),
     fRealisticPID(AliRsnPID::kUnknown),
     fMCInfo(0x0)
 {
@@ -136,7 +154,12 @@ AliRsnDaughter::AliRsnDaughter(AliMCParticle *track) :
     fLabel(-1),
     fCharge(0),
     fFlags(0),
+    fKink(0),
     fMass(0.0),
+    fChi2(0.0),
+    fNSigmaToVertex(-1.0),
+    fITSnum(0),
+    fTPCnum(0),
     fRealisticPID(AliRsnPID::kUnknown),
     fMCInfo(0x0)
 {
@@ -162,6 +185,11 @@ AliRsnDaughter& AliRsnDaughter::operator=(const AliRsnDaughter &copy)
   fLabel  = copy.fLabel;
   fCharge = copy.fCharge;
   fFlags  = copy.fFlags;
+  fKink   = copy.fKink;
+  fChi2   = copy.fChi2;
+  fNSigmaToVertex = copy.fNSigmaToVertex;
+  fITSnum = copy.fITSnum;
+  fTPCnum = copy.fTPCnum;
 
   Int_t i;
   for (i = 0; i < AliRsnPID::kSpecies; i++)
@@ -203,6 +231,20 @@ AliRsnDaughter::~AliRsnDaughter()
     delete fMCInfo;
     fMCInfo = 0;
   }
+}
+
+//_____________________________________________________________________________
+void AliRsnDaughter::RotateP(Double_t angle)
+{
+//
+// Rotate the momentum along Z axis by an angle
+//
+
+  Double_t s = TMath::Sin(angle);
+  Double_t c = TMath::Cos(angle);
+  Double_t xx = fP[0];
+  fP[0] = c*xx - s*fP[1];
+  fP[1] = s*xx + c*fP[1];
 }
 
 //_____________________________________________________________________________
@@ -307,22 +349,37 @@ Bool_t AliRsnDaughter::Adopt(AliESDtrack* esdTrack,EPIDType pidType ,Double_t di
     return kFALSE;
   }
 
-  // copy momentum and vertex
+  // copy momentum, vertex, chi2 and number of clusters
   if (!useTPCInnerParam)
   {
     esdTrack->GetPxPyPz(fP);
     esdTrack->GetXYZ(fV);
+    fChi2 = esdTrack->GetConstrainedChi2();
+    fITSnum = esdTrack->GetITSclusters(0x0);
+    fTPCnum = esdTrack->GetTPCclusters(0x0);
   }
   else
   {
     if (!esdTrack->GetTPCInnerParam()) return kFALSE;
     esdTrack->GetTPCInnerParam()->GetPxPyPz(fP);
     esdTrack->GetTPCInnerParam()->GetXYZ(fV);
+    fChi2 = esdTrack->GetTPCchi2();
+    fITSnum = 0;
+    fTPCnum = esdTrack->GetTPCclusters(0x0);
   }
+
+  // define the kink index:
+  //  0 = no kink
+  //  1 = kink daughter
+  // -1 = kink mother
+  Int_t i, ik[3];
+  for (i = 0; i < 3; i++) ik[i] = esdTrack->GetKinkIndex(i);
+  if (ik[0] < 0 || ik[1] < 0 || ik[2] < 0) fKink = -1;
+  else if (ik[0] > 0 || ik[1] > 0 || ik[2] > 0) fKink = 1;
+  else fKink = 0;
 
   Double_t p = esdTrack->P();
   // copy PID weights
-  Int_t    i;
   Double_t pid[5];
   if (!useTPCInnerParam)
   {
@@ -340,6 +397,10 @@ Bool_t AliRsnDaughter::Adopt(AliESDtrack* esdTrack,EPIDType pidType ,Double_t di
 
   // copy charge sign
   fCharge = (Short_t)esdTrack->Charge();
+
+  // calculate N sigma to vertex
+  SetNSigmaToVertex(fESDTrackCuts.GetSigmaToVertex(esdTrack));
+
 
   return kTRUE;
 }
@@ -370,6 +431,9 @@ Bool_t AliRsnDaughter::Adopt(AliAODTrack* aodTrack)
   fV[0] = aodTrack->Xv();
   fV[1] = aodTrack->Yv();
   fV[2] = aodTrack->Zv();
+
+  // chi2
+  fChi2 = aodTrack->Chi2perNDF();
 
   // copy PID weights
   Int_t i;
@@ -424,16 +488,18 @@ Bool_t AliRsnDaughter::Adopt(AliMCParticle *mcParticle)
   // recognize charge sign from PDG code sign
   Int_t pdg = particle->GetPdgCode();
   Int_t absPDG = TMath::Abs(pdg);
-  if (absPDG <= 15)
+  if (absPDG == 11 || absPDG == 13)
   {
     if (pdg > 0) fCharge = -1; else fCharge = 1;
   }
-  else if (absPDG < 3000)
+  else if (absPDG == 211 || absPDG == 321 || absPDG == 2212)
   {
     if (pdg > 0) fCharge = 1; else fCharge = -1;
   }
   else
   {
+    // when trying to "adopt" a neutral track (photon, neutron, etc.)
+    // for the moment a "failed" message is returned
     fCharge = 0;
     return kFALSE;
   }
@@ -593,13 +659,20 @@ Int_t AliRsnDaughter::Compare(const TObject* obj) const
 }
 
 //_____________________________________________________________________________
-void AliRsnDaughter::GetESDPID(AliESDtrack * track, Double_t * pid,EPIDType pidType, Double_t divValue, Double_t val)
+void AliRsnDaughter::GetESDPID
+(AliESDtrack * track, Double_t * pid, EPIDType pidType, Double_t divValue, Double_t val)
 {
 //
-// return PID from EPIDType type
+// A simple method to define PID weights by combining the ones
+// from single detectors by multiplication.
+// In the case when 'kITS_TPC_TOF_SP' option is chosen, a separation value
+// defines if the TOF signal must be included or not.
+// This value is usually the transverse momentum, but here it is left undefined.
 //
 
+  Int_t i;
   Double_t ctmp[AliRsnPID::kSpecies];
+
   switch (pidType)
   {
     case kEsd :
@@ -617,31 +690,31 @@ void AliRsnDaughter::GetESDPID(AliESDtrack * track, Double_t * pid,EPIDType pidT
     case kITS_TPC :
       track->GetITSpid(pid);
       track->GetTPCpid(ctmp);
-      for (Int_t i=0;i<5;i++) pid[i]*=ctmp[i];
+      for (i = 0; i < 5; i++) pid[i] *= ctmp[i];
       break;
     case kITS_TOF :
       track->GetITSpid(pid);
       track->GetTOFpid(ctmp);
-      for (Int_t i=0;i<AliRsnPID::kSpecies;i++) pid[i]*=ctmp[i];
+      for (i = 0; i < AliRsnPID::kSpecies; i++) pid[i] *= ctmp[i];
       break;
     case kTPC_TOF :
       track->GetTPCpid(pid);
       track->GetTOFpid(ctmp);
-      for (Int_t i=0;i<AliRsnPID::kSpecies;i++) pid[i]*=ctmp[i];
+      for (i = 0; i < AliRsnPID::kSpecies; i++) pid[i] *= ctmp[i];
       break;
     case kITS_TPC_TOF :
       track->GetITSpid(pid);
       track->GetTPCpid(ctmp);
-      for (Int_t i=0;i<AliRsnPID::kSpecies;i++) pid[i]*=ctmp[i];
+      for (i = 0; i < AliRsnPID::kSpecies; i++) pid[i] *= ctmp[i];
       track->GetTOFpid(ctmp);
-      for (Int_t i=0;i<AliRsnPID::kSpecies;i++) pid[i]*=ctmp[i];
+      for (i = 0; i < AliRsnPID::kSpecies; i++) pid[i] *= ctmp[i];
       break;
     case kITS_TPC_TOF_SP :
-      if (val<divValue)
+      if (val < divValue)
       {
         track->GetITSpid(pid);
         track->GetTPCpid(ctmp);
-        for (Int_t i=0;i<AliRsnPID::kSpecies;i++) pid[i]*=ctmp[i];
+        for (i = 0; i < AliRsnPID::kSpecies; i++) pid[i] *= ctmp[i];
       }
       else
       {
@@ -649,9 +722,10 @@ void AliRsnDaughter::GetESDPID(AliESDtrack * track, Double_t * pid,EPIDType pidT
       }
       break;
     default:
-//       AliWarning("Unrecognized value of EPIDType argument");
-      for (Int_t i=0;i<AliRsnPID::kSpecies;i++) pid[i]=1.0;
+      AliLog::Message(AliLog::kError,
+                      "Unrecognized value of EPIDType argument",
+                      "", "AliRsnDaughter", "GetESDPID", __FILE__, __LINE__);
+      for (i = 0; i < AliRsnPID::kSpecies; i++) pid[i] = 1.0;
       break;
   }
 }
-

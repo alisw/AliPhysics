@@ -35,12 +35,12 @@ class AliRsnAnalysisTaskSEBase : public AliAnalysisTaskSE
 
     enum EInputType
     {
-        kAOD = 0,
-        kESD,
-        kESDMC,
-        kMC,
-        kRSN,
-        kLastIndex
+      kAOD = 0,
+      kESD,
+      kESDMC,
+      kMC,
+      kRSN,
+      kLastIndex
     };
 
     virtual void   InitIOVars();

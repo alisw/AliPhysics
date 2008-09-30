@@ -11,8 +11,8 @@
 // because the AliRsnAnalyzer which executes the analysis will accept a collection
 // of such objects, in order to have a unique format of processing method
 //
-// The user who implements a kind of computation type should inherit from 
-// this class and override the virtual functions defined in it, which 
+// The user who implements a kind of computation type should inherit from
+// this class and override the virtual functions defined in it, which
 // initialize the final output histogram and define how to process data.
 //
 //
@@ -36,12 +36,13 @@ class AliRsnEvent;
 class AliRsnFunction : public TObject
 {
 
-public:
+  public:
 
     enum EFcnType
     {
       kInvMass,
       kInvMassMC,
+      kInvMassRotated,
       kResolution,
       kPtSpectrum,
       kFcnTypes
@@ -58,10 +59,11 @@ public:
     AliRsnHistoDef*  GetHistoDef() {return fHistoDef;}
     TString          GetFcnName();
     TString          GetFcnTitle();
-    
+
     void  SetBinningCut(AliRsnCut::EType type, Double_t min, Double_t max, Double_t step);
-    void  SetBinningCut(AliRsnCut::EType type, Int_t nbins, Double_t *bins); 
+    void  SetBinningCut(AliRsnCut::EType type, Int_t nbins, Double_t *bins);
     void  SetHistoDef(AliRsnHistoDef *def) {fHistoDef = def;}
+    void  SetRotationAngle(Double_t rotAngle) {fRotAngle = rotAngle;}
 
     // working routines
     TList* Init(const char *histoName, const char *histoTitle);
@@ -69,24 +71,26 @@ public:
     Bool_t Fill(AliRsnPairParticle *pair, AliRsnPairDef *ref, Double_t weight = 0.0);
     Double_t FcnValue(AliRsnPairParticle *pair, AliRsnPairDef *ref);
 
-private:
-    
+  private:
+
     const AliRsnFunction& operator=(const AliRsnFunction &copy);
-    
+
     Double_t    FcnResolution(AliRsnPairParticle *pair, AliRsnPairDef *pd);
-    
+
     EFcnType         fFcnType;       // function type
+    
+    Double_t         fRotAngle;      // rotation angle (for "rotated" invMass)
 
     Bool_t           fUseBins;       // flag to choose if binning is used
     Bool_t           fSkipOutsideInterval; // skip pairs which fall outside histogram interval
-    
+
     TArrayD          fBins;          // low edge of each bin (upper is the low edge of next bin)
     AliRsnCut        fBinningCut;    // binning cut
     AliRsnCut::EType fBinningCutType;// binning cut type
 
     AliRsnHistoDef  *fHistoDef;      // definitions for histogram
     TH1D            *fHisto[100];    // binned histograms
-    
+
     // ROOT dictionary
     ClassDef(AliRsnFunction, 1)
 };
