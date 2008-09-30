@@ -34,6 +34,7 @@ class AliAODTracklets : public TNamed
   inline Double32_t GetPhi(Int_t i) const;
   inline Double32_t GetDeltaPhi(Int_t i) const;
   inline Int_t   GetLabel(Int_t i, Int_t layer) const;
+  inline void    SetLabel(Int_t i, Int_t layer,Int_t label);
 
  protected:
   Int_t      fNTracks;       // Number of tracklets
@@ -86,5 +87,16 @@ Int_t AliAODTracklets::GetLabel(Int_t i, Int_t layer) const
   else 
     Error("GetLabel","Invalid track number %d",i); return -9999;
 }
+
+
+void AliAODTracklets::SetLabel(Int_t i, Int_t layer,Int_t label)  
+{
+  if (i>=0 && i<fNTracks) 
+  {
+    if(layer == 0) fLabels[i] = label;
+    else fLabelsL2[i] = label;
+  }
+}
+
 
 #endif
