@@ -139,9 +139,11 @@ void run(Char_t *tasks="ALL", const Char_t *files=0x0, Int_t nmax=-1)
   task->SetMCdata(fHasMCdata);
   // Create containers for input/output
   AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("data", TChain::Class(), AliAnalysisManager::kInputContainer);
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(task->GetName(), TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("trackInfo", TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
+  AliAnalysisDataContainer *coutput1a = mgr->CreateContainer("eventInfo", AliTRDeventInfo::Class(), AliAnalysisManager::kExchangeContainer);
   mgr->ConnectInput( task, 0, cinput1);
   mgr->ConnectOutput(task, 0, coutput1);
+  mgr->ConnectOutput(task, 1, coutput1a);
 
   //____________________________________________
   // TRD detector checker
@@ -153,6 +155,7 @@ void run(Char_t *tasks="ALL", const Char_t *files=0x0, Int_t nmax=-1)
     
     // Create containers for input/output
     mgr->ConnectInput( task, 0, coutput1);
+    mgr->ConnectInput( task, 1, coutput1a);
     mgr->ConnectOutput(task, 0, mgr->CreateContainer(task->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%s.root", task->GetName())));
   }
 
