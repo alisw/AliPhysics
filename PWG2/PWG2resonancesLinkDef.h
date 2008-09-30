@@ -30,10 +30,10 @@
 #pragma link C++ class AliRsnPairMgr+;
 
 #pragma link C++ class AliRsnAnalysisTaskSEBase+;
-#pragma link C++ class AliRsnBaseAT+;
+#pragma link C++ class AliRsnAnalysisTaskBase+;
 #pragma link C++ class AliRsnAnalysisSE+;
-#pragma link C++ class AliRsnAnalysisTask2ndStep+;
 #pragma link C++ class AliRsnComparisonObj+;
 #pragma link C++ class AliRsnComparisonAT+;
+
 
 #endif
