@@ -946,8 +946,9 @@ AliShuttleStatus* AliShuttle::ReadShuttleStatus()
 		fStatusEntry = 0;
 	}
 
+	Int_t path1 = GetCurrentRun()/10000;
 	fStatusEntry = AliCDBManager::Instance()->GetStorage(GetLocalCDB())
-		->Get(Form("/SHUTTLE/STATUS/%s", fCurrentDetector.Data()), GetCurrentRun());
+		->Get(Form("/SHUTTLE/%s/%d", fCurrentDetector.Data(), path1), GetCurrentRun());
 
 	if (!fStatusEntry) return 0;
 	fStatusEntry->SetOwner(1);
@@ -974,8 +975,10 @@ Bool_t AliShuttle::WriteShuttleStatus(AliShuttleStatus* status)
 	}
 
 	Int_t run = GetCurrentRun();
+	Int_t path1 = run/10000;
+	TString path1_string = Form("%d",path1);
 
-	AliCDBId id(AliCDBPath("SHUTTLE", "STATUS", fCurrentDetector), run, run);
+	AliCDBId id(AliCDBPath("SHUTTLE", fCurrentDetector, path1_string), run, run);
 
 	fStatusEntry = new AliCDBEntry(status, id, new AliCDBMetaData);
 	fStatusEntry->SetOwner(1);
@@ -1499,8 +1502,9 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 			}
 			
 			TString wd = gSystem->WorkingDirectory();
-			TString tmpDir = Form("%s/%s_%d_process", GetShuttleTempDir(), 
-				fCurrentDetector.Data(), GetCurrentRun());
+			Int_t dir_lev1 = GetCurrentRun()/10000;
+			TString tmpDir = Form("%s/%d/%d/%s_process", GetShuttleTempDir(), 
+				dir_lev1, GetCurrentRun(), fCurrentDetector.Data());
 			
 			Int_t result = gSystem->GetPathInfo(tmpDir.Data(), 0, (Long64_t*) 0, 0, 0);
 			if (!result) // temp dir already exists!
@@ -2173,10 +2177,12 @@ const char* AliShuttle::GetFile(Int_t system, const char* detector,
 				filePath.Data(), fileSize.Data(), fileChecksum.Data()));
 
 	// retrieved file is renamed to make it unique
-	TString localFileName = Form("%s/%s_%d_process/%s_%s_%d_%s_%s.shuttle",
-					GetShuttleTempDir(), detector, GetCurrentRun(),
+	Int_t dir_lev1 = GetCurrentRun()/10000;
+	TString localFileName = Form("%s/%d/%d/%s_process/%s_%s_%d_%s_%s.shuttle",
+				     GetShuttleTempDir(), dir_lev1, GetCurrentRun(), detector,
 					GetSystemName(system), detector, GetCurrentRun(), 
 					id, sourceName.Data());
+	Log("SHUTTLE",Form("file from FXS = %s",localFileName.Data())); 
 
 
 	// file retrieval from FXS
@@ -2851,11 +2857,12 @@ void AliShuttle::Log(const char* detector, const char* message)
 	//
 	// Fill log string with a message
 	//
-
-	TString logRunDir = GetShuttleLogDir();
-	if (GetCurrentRun() >=0)
-		logRunDir += Form("/%d", GetCurrentRun());
 	
+	TString logRunDir = GetShuttleLogDir();
+	if (GetCurrentRun() >=0) {
+		Int_t logDir_lev1 = GetCurrentRun()/10000;
+		logRunDir += Form("/%d/%d", logDir_lev1, GetCurrentRun());
+	}		
 	void* dir = gSystem->OpenDirectory(logRunDir.Data());
 	if (dir == NULL) {
 		if (gSystem->mkdir(logRunDir.Data(), kTRUE)) {
@@ -2906,8 +2913,9 @@ TString AliShuttle::GetLogFileName(const char* detector) const
 	
 	if (GetCurrentRun() >= 0) 
 	{
-		fileName.Form("%s/%d/%s_%d.log", GetShuttleLogDir(), GetCurrentRun(), 
-			detector, GetCurrentRun());
+		Int_t logDir_lev1 = GetCurrentRun()/10000;
+		fileName.Form("%s/%d/%d/%s.log", GetShuttleLogDir(), logDir_lev1, GetCurrentRun(), 
+			detector);
 	} else {
 		fileName.Form("%s/%s.log", GetShuttleLogDir(), detector);
 	}
@@ -3281,9 +3289,9 @@ Bool_t AliShuttle::SendMail(EMailTarget target, Int_t system)
 	
 	
 	body += Form("Find the %s log for the current run on \n\n"
-		"\thttp://pcalishuttle01.cern.ch:8880/%s/%d/%s_%d.log \n\n", 
-		fCurrentDetector.Data(), logFolder.Data(), GetCurrentRun(), 
-				fCurrentDetector.Data(), GetCurrentRun());
+		"\thttp://pcalishuttle01.cern.ch:8880/%s/%d/%d/%s.log \n\n", 
+		     fCurrentDetector.Data(), logFolder.Data(), GetCurrentRun()/10000,  
+				GetCurrentRun(), fCurrentDetector.Data());
 	body += Form("The last 10 lines of %s log file are following:\n\n", fCurrentDetector.Data());
 
 	AliDebug(2, Form("Body begin: %s", body.Data()));
@@ -3292,8 +3300,8 @@ Bool_t AliShuttle::SendMail(EMailTarget target, Int_t system)
   	mailBody.close();
   	mailBody.open(bodyFileName, ofstream::out | ofstream::app);
 
-	TString logFileName = Form("%s/%d/%s_%d.log", GetShuttleLogDir(), 
-		GetCurrentRun(), fCurrentDetector.Data(), GetCurrentRun());
+	TString logFileName = Form("%s/%d/%d/%s.log", GetShuttleLogDir(), 
+		GetCurrentRun()/10000, GetCurrentRun(), fCurrentDetector.Data());
 	TString tailCommand = Form("tail -n 10 %s >> %s", logFileName.Data(), bodyFileName.Data());
 	if (gSystem->Exec(tailCommand.Data()))
 	{
