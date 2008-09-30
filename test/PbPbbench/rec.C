@@ -3,6 +3,7 @@ void rec() {
 
   reco.SetWriteESDfriend();
   reco.SetWriteAlignmentData();
+  reco.SetRecoParam("ITS",AliITSRecoParam::GetHighFluxParam());
   reco.SetRecoParam("TPC",AliTPCRecoParam::GetHighFluxParam());
   reco.SetRecoParam("TRD",AliTRDrecoParam::GetHighFluxParam());
   reco.SetRecoParam("PHOS",AliPHOSRecoParam::GetDefaultParameters());
