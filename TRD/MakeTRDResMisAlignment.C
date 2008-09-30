@@ -41,7 +41,7 @@ void MakeTRDResMisAlignment(){
   Double_t chry=0.3/1000/TMath::Pi()*180; // 0.3 mrad
   Double_t chrz=0.1/1000/TMath::Pi()*180; // 0.1 mrad
 
-  Int_t sActive[18]={0,0,1,1,1,0,1,0,0,0,0,1,1,0,1,1,0,0};
+  Int_t sActive[18]={1,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,1};
   Double_t dx=0.,dy=0.,dz=0.,rx=0.,ry=0.,rz=0.;
 
   Int_t j=0;
@@ -52,7 +52,7 @@ void MakeTRDResMisAlignment(){
   // create the supermodules' alignment objects
   for (Int_t iSect=0; iSect<18; iSect++) {
     TString sm_symname(Form("TRD/sm%02d",iSect));
-    if( (TString(gSystem->Getenv("PARTGEOM")) == TString("kTRUE")) && !sActive[iSect] ) continue;
+    if( (TString(gSystem->Getenv("REALSETUP")) == TString("kTRUE")) && !sActive[iSect] ) continue;
     new((*array)[j++])
       AliAlignObjParams(sm_symname.Data(),0,dx,dy,dz,rx,ry,rz,kTRUE);
   }
@@ -75,8 +75,8 @@ void MakeTRDResMisAlignment(){
       chId++;
       if ((iSect==13 || iSect==14 || iSect==15) && iCh==2) continue;
       volid = AliGeomManager::LayerToVolUID(iLayer,chId);
+      if( (TString(gSystem->Getenv("REALSETUP")) == TString("kTRUE")) && !sActive[iSect] ) continue;
       symname = AliGeomManager::SymName(volid);
-      if( (TString(gSystem->Getenv("PARTGEOM")) == TString("kTRUE")) && !sActive[iSect] ) continue;
       new(alobj[j++]) AliAlignObjParams(symname,volid,dx,dy,dz,rx,ry,rz,kFALSE);
     }
   }
