@@ -96,7 +96,7 @@ namespace
 //_____________________________________________________________________________
 AliMUONCluster::AliMUONCluster() 
 : TObject(), 
-fPads(0x0),
+fPads(),
 fHasPosition(kFALSE),
 fPosition(1E9,1E9),
 fPositionError(1E9,1E9),
@@ -108,12 +108,13 @@ fChi2(0)
   fRawCharge[0]=fRawCharge[1]=0;
   fCharge[0]=fCharge[1]=0;
   fIsSaturated[0]=fIsSaturated[1]=kFALSE;
+  fPads.SetOwner(kTRUE);
 }
 
 //_____________________________________________________________________________
 AliMUONCluster::AliMUONCluster(const AliMUONCluster& src)
 : TObject(src),
-fPads(0x0),
+fPads(),
 fHasPosition(kFALSE),
 fPosition(1E9,1E9),
 fPositionError(1E9,1E9),
@@ -121,6 +122,7 @@ fHasCharge(kFALSE),
 fChi2(0)
 {
   /// copy ctor
+  fPads.SetOwner(kTRUE);
   src.Copy(*this);
 }
 
@@ -140,7 +142,6 @@ AliMUONCluster::operator=(const AliMUONCluster& src)
 AliMUONCluster::~AliMUONCluster()
 {
   /// dtor : note that we're owner of our pads
-  delete fPads;
 }
 
 //_____________________________________________________________________________
@@ -148,7 +149,7 @@ void
 AliMUONCluster::Clear(Option_t*)
 {
   /// Clear our pad array
-  if (fPads) fPads->Clear("C");
+  fPads.Clear();
 }
 
 //_____________________________________________________________________________
@@ -156,7 +157,8 @@ Bool_t
 AliMUONCluster::Contains(const AliMUONPad& pad) const
 {
   /// Whether this cluster contains the pad
-  if (!fPads) return kFALSE;
+  if (fPads.IsEmpty()) return kFALSE;
+  
   for ( Int_t i = 0; i < Multiplicity(); ++i ) 
   {
     AliMUONPad* p = Pad(i);
@@ -190,14 +192,9 @@ AliMUONCluster::AddPad(const AliMUONPad& pad)
 {
   /// Add a pad to our pad array, and update some internal information
   /// accordingly.
-  
-  if (!fPads) 
-  {
-    fPads = new TObjArray(10);
-    fPads->SetOwner(kTRUE);
-  }
+
   AliMUONPad* p = new AliMUONPad(pad);
-  fPads->AddLast(p);
+  fPads.AddLast(p);
   p->SetClusterId(GetUniqueID());
   Int_t cathode = p->Cathode();
   ++(fMultiplicity[cathode]);
@@ -346,12 +343,8 @@ AliMUONCluster::Copy(TObject& obj) const
   ///
   TObject::Copy(obj);
   AliMUONCluster& dest = static_cast<AliMUONCluster&>(obj);
-  delete dest.fPads;
-  dest.fPads = 0x0;
-  if ( fPads )
-  {
-    dest.fPads = static_cast<TObjArray*>(fPads->Clone());
-  }
+  dest.fPads.Delete();
+  dest.fPads = fPads;
   dest.fHasPosition = fHasPosition;
   dest.fPosition = fPosition;
   dest.fPositionError = fPositionError;
@@ -589,15 +582,15 @@ AliMUONCluster::Pad(Int_t index) const
 {
   /// Returns the index-th pad
   
-  if (!fPads) return 0x0;
-  if ( index < fPads->GetLast()+1 )
+  if (fPads.IsEmpty()) return 0x0;
+  if ( index < fPads.GetLast()+1 )
   {
-    return static_cast<AliMUONPad*>(fPads->At(index));
+    return static_cast<AliMUONPad*>(fPads.At(index));
   }
   else
   {
     AliError(Form("Requested index %d out of bounds (%d) Mult is %d",index,
-                  fPads->GetLast(),Multiplicity()));
+                  fPads.GetLast(),Multiplicity()));
     DumpMe();
   }
   return 0x0;
@@ -651,14 +644,11 @@ AliMUONCluster::DumpMe() const
   }
   cout << endl;
 //  cout << " " << Area() << endl;
-  if (fPads) 
+  for (Int_t i = 0; i < fPads.GetSize(); ++i) 
   {
-    for (Int_t i = 0; i < fPads->GetSize(); ++i) 
-    {
-      cout << Form("fPads[%d]=%x",i,fPads->At(i)) << endl;
-      if ( fPads->At(i) ) fPads->At(i)->Print();
-    }
-  }  
+    cout << Form("fPads[%d]=%x",i,fPads.At(i)) << endl;
+    if ( fPads.At(i) ) fPads.At(i)->Print();
+  }
 }
 
 
@@ -677,13 +667,11 @@ AliMUONCluster::Print(Option_t* opt) const
     cout << " (errX,errY)=(" << PositionError().X() << "," << PositionError().Y() << ")";
   }
   cout << " " << Area();
-  if (fPads) 
-  {
-    TObjArray* a = static_cast<TObjArray*>(fPads->Clone());
-    a->Sort();
-    a->Print("",opt);
-    delete a;
-  }
+
+  TObjArray* a = static_cast<TObjArray*>(fPads.Clone());
+  a->Sort();
+  a->Print("",opt);
+  delete a;
 }
 
 //_____________________________________________________________________________
@@ -752,13 +740,13 @@ AliMUONCluster::RemovePad(AliMUONPad* pad)
   /// Remove a pad. 
   /// As a consequence, some internal information must be updated
   
-  fPads->Remove(pad);
-  fPads->Compress();
+  fPads.Remove(pad);
+  fPads.Compress();
   // update cluster's data
   fIsSaturated[0]=fIsSaturated[1]=kFALSE;
   fMultiplicity[0]=fMultiplicity[1]=0;
   fRawCharge[0]=fRawCharge[1]=0;
-  for ( Int_t i = 0; i <= fPads->GetLast(); ++i )
+  for ( Int_t i = 0; i <= fPads.GetLast(); ++i )
   {
     AliMUONPad* p = Pad(i);
     if ( p->IsSaturated() ) 

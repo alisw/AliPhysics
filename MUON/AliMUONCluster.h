@@ -31,8 +31,11 @@
 #  include "AliMpIntPair.h"
 #endif
 
+#ifndef ROOT_TObjArray
+#  include "TObjArray.h"
+#endif
+
 class AliMUONPad;
-class TObjArray;
 
 class AliMUONCluster : public TObject
 {
@@ -154,7 +157,7 @@ private:
     void DumpMe() const;
   
 private:
-  TObjArray* fPads; ///< AliMUONPad(s) composing this cluster
+  TObjArray fPads; ///< AliMUONPad(s) composing this cluster
   Bool_t fHasPosition; ///< false for pre-cluster (i.e. not yet computed)
   TVector2 fPosition; ///< (x,y) of that cluster (only valid if fHasPosition is kTRUE)
   TVector2 fPositionError; ///< errors on (x,y)
@@ -165,7 +168,7 @@ private:
   Float_t fChi2; ///< chi2 of the RawCharge fit (if any)
   Bool_t fIsSaturated[2]; ///< saturation status of cathodes
   
-  ClassDef(AliMUONCluster,2) // A cluster of AliMUONPad
+  ClassDef(AliMUONCluster,3) // A cluster of AliMUONPad
 };
 
 #endif
