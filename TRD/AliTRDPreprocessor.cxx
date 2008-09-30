@@ -885,38 +885,56 @@ UInt_t AliTRDPreprocessor::ProcessDCSConfigData()
 {
   // 
   // process the configuration of FEE, PTR and GTU
-  // reteive XML file from the DCS FXS
-  // parse it and store TObjArrays in the CDB
+  // reteive XML filei(s) from the DCS FXS
+  // parse it/them and store TObjArrays in the CDB
+  //
   // return 0 for success, otherwise:
-  // 5: could not get the file from the FXS/something wrong with the file
-  // 6: ERROR in XML validation: something wrong with the content
-  // 7: ERROR while creating calibration objects in the handler
-  // 8: error while storing data in the CDB
-  // > 100: SaxHandler error code
+  //  5 : could not get the SOR file from the FXS
+  //  6 : could not get the EOR file from the FXS
+  //  7 : 
+  //  8 : something wrong with the EOR file
+  //  9 : 
+  // 10 : EOR XML is not well-formed
+  // 11 :
+  // 12 : ERROR in XML SAX validation of EOR: something wrong with the content
+  // 13 :
+  // 14 : ERROR while creating calibration objects in the handler
+  // 15 : error while storing data in the CDB
   //
 
   Log("Processing the DCS config summary file.");
 
-  // get the XML file
-  Log("Requesting the summaryfile from the FXS..");
-  const char * xmlFile = GetFile(kDCS,"CONFIGSUMMARY","");
-  if (xmlFile == NULL) {
-    Log(Form("ERROR: File %s not found!",xmlFile));
+  // get the XML files
+  Log("Requesting the 2 summaryfiles from the FXS..");
+  const char * xmlFileS = GetFile(kDCS,"CONFIGSUMMARYSOR","");
+  const char * xmlFile = GetFile(kDCS,"CONFIGSUMMARYEOR","");
+  // for the time being just request BOTH files from the FXS
+  // THEN it can be created online (otherwise the FXS would be messed up)
+  // the next step is to actually read BOTH files and store their informations
+  if (xmlFileS == NULL) {
+    Log(Form("ERROR: SOR File %s not found!",xmlFileS));
     return 5;
   } else {
-    Log(Form("File %s found.",xmlFile));
+    Log(Form("SOR File %s found.",xmlFileS));
   }
+  if (xmlFile == NULL) {
+    Log(Form("ERROR: EOR File %s not found!",xmlFile));
+    return 6;
+  } else {
+    Log(Form("EOR File %s found.",xmlFile));
+  }
+  
   // test the file
   std::ifstream fileTest;
   fileTest.open(xmlFile, std::ios_base::binary | std::ios_base::in);
   if (!fileTest.good() || fileTest.eof() || !fileTest.is_open()) {
     Log(Form("ERROR: File %s not valid!",xmlFile));
-    return 5;
+    return 8;
   }
   fileTest.seekg(0, std::ios_base::end);
   if (static_cast<int>(fileTest.tellg()) < 2) {
     Log(Form("ERROR: File %s is empty!",xmlFile));
-    return 5;
+    return 8;
   }
   Log("File is tested valid.");   
 
@@ -924,10 +942,11 @@ UInt_t AliTRDPreprocessor::ProcessDCSConfigData()
   TSAXParser testParser;
   if (testParser.ParseFile(xmlFile) < 0 ) {
     Log("ERROR: XML content is not well-formed.");
-    return 6;
+    return 10;
   } else {
     Log("XML content is well-formed");   
   }
+  
   // create parser and parse
   TSAXParser saxParser;
   AliTRDSaxHandler saxHandler;
@@ -939,13 +958,13 @@ UInt_t AliTRDPreprocessor::ProcessDCSConfigData()
     Log("XML file validation OK");
   } else {
     Log(Form("ERROR in XML file validation. Parsecode: %s", saxParser.GetParseCode()));
-    return 6;
+    return 12;
   }
   if (saxHandler.GetHandlerStatus() == 0) {
     Log("SAX handler reports no errors.");
   } else  {
     Log(Form("ERROR while creating calibration objects. Error code: %s", saxHandler.GetHandlerStatus()));
-    return 7;
+    return 14;
   }
 
   // get the calibration object storing the data from the handler
@@ -959,7 +978,7 @@ UInt_t AliTRDPreprocessor::ProcessDCSConfigData()
   metaData1.SetComment("DCS configuration data in one AliTRDCalDCS object.");
   if (!Store("Calib", "DCS", fCalDCSObj, &metaData1, 0, kTRUE)) {
     Log("problems while storing DCS config data object");
-    return 8;
+    return 15;
   } else {
     Log("DCS config data object stored.");
   }
