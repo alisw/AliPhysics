@@ -130,7 +130,7 @@ Int_t AliCascadeVertexer::V0sTracks2CascadeVertices(AliESDEvent *event) {
          if (dca > fDCAmax) continue;
 
          AliESDcascade cascade(*pv0,*pbt,bidx);//constucts a cascade candidate
-         if (cascade.GetChi2Xi() > fChi2max) continue;
+	 //PH        if (cascade.GetChi2Xi() > fChi2max) continue;
 
 	 Double_t x,y,z; cascade.GetXYZcascade(x,y,z); // Bo: bug correction
          Double_t r2=x*x + y*y; 
@@ -172,7 +172,7 @@ Int_t AliCascadeVertexer::V0sTracks2CascadeVertices(AliESDEvent *event) {
          if (dca > fDCAmax) continue;
 
          AliESDcascade cascade(*pv0,*pbt,bidx); //constucts a cascade candidate
-         if (cascade.GetChi2Xi() > fChi2max) continue;
+	 //PH         if (cascade.GetChi2Xi() > fChi2max) continue;
 
 	 Double_t x,y,z; cascade.GetXYZcascade(x,y,z); // Bo: bug correction
          Double_t r2=x*x + y*y; 
