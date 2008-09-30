@@ -41,6 +41,7 @@ ClassImp(AliTRDtrackV1)
 AliTRDtrackV1::AliTRDtrackV1() : AliKalmanTrack()
   ,fPIDquality(0)
   ,fDE(0.)
+  ,fReconstructor(0x0)
   ,fBackupTrack(0x0)
 {
   //
@@ -63,6 +64,7 @@ AliTRDtrackV1::AliTRDtrackV1() : AliKalmanTrack()
 AliTRDtrackV1::AliTRDtrackV1(const AliTRDtrackV1 &ref) : AliKalmanTrack(ref)
   ,fPIDquality(ref.fPIDquality)
   ,fDE(ref.fDE)
+  ,fReconstructor(ref.fReconstructor)
   ,fBackupTrack(0x0)
 {
   //
@@ -87,6 +89,7 @@ AliTRDtrackV1::AliTRDtrackV1(const AliTRDtrackV1 &ref) : AliKalmanTrack(ref)
 AliTRDtrackV1::AliTRDtrackV1(const AliESDtrack &t) : AliKalmanTrack()
   ,fPIDquality(0)
   ,fDE(0.)
+  ,fReconstructor(0x0)
   ,fBackupTrack(0x0)
 {
   //
@@ -134,6 +137,7 @@ AliTRDtrackV1::AliTRDtrackV1(AliTRDseedV1 *trklts, const Double_t p[5], const Do
              , Double_t x, Double_t alpha) : AliKalmanTrack()
   ,fPIDquality(0)
   ,fDE(0.)
+  ,fReconstructor(0x0)
   ,fBackupTrack(0x0)
 {
   //
@@ -385,8 +389,7 @@ Double_t AliTRDtrackV1::GetPredictedChi2(const AliTRDseedV1 *trklt) const
 //_______________________________________________________________
 Bool_t AliTRDtrackV1::IsElectron() const
 {
-/*  reco = fReconstructor->GetRecoParam();
-  if(GetPID(0) > reco->GetPIDThreshold(GetP())) return kTRUE;*/
+  if(GetPID(0) > fReconstructor->GetRecoParam()->GetPIDThreshold(GetP())) return kTRUE;
   return kFALSE;
 }
 
@@ -669,14 +672,15 @@ void AliTRDtrackV1::UpdateESDtrack(AliESDtrack *track)
   // Update the TRD PID information in the ESD track
   //
 
-  track->SetNumberOfTRDslices(kNslice);
+  Int_t nslices = fReconstructor->IsEightSlices() ? (Int_t)AliTRDReconstructor::kNNslices : (Int_t)AliTRDReconstructor::kLQslices;
+  track->SetNumberOfTRDslices(nslices);
 
   for (Int_t ip = 0; ip < kNplane; ip++) {
     if(fTrackletIndex[ip] == 0xffff) continue;
     if(!fTracklet[ip]->IsOK()) continue;
-    fTracklet[ip]->CookdEdx(kNslice);
+    fTracklet[ip]->CookdEdx(nslices);
     Float_t *dedx = fTracklet[ip]->GetdEdx();
-    for (Int_t js = 0; js < kNslice; js++) track->SetTRDslice(dedx[js], ip, js);
+    for (Int_t js = 0; js < nslices; js++, dedx++) track->SetTRDslice(*dedx, ip, js);
   }
 
   // copy PID to ESD

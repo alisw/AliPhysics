@@ -284,7 +284,8 @@ Int_t AliTRDtrackerV1::PropagateBack(AliESDEvent *event)
   
     // Do the back prolongation
     new(&track) AliTRDtrackV1(*seed);
-    //track->Print();
+    track.SetReconstructor(fReconstructor);
+
     //Int_t   lbl         = seed->GetLabel();
     //track.SetSeedLabel(lbl);
 
@@ -2657,6 +2658,7 @@ AliTRDtrackV1* AliTRDtrackerV1::MakeTrack(AliTRDseedV1 *seeds, Double_t *params)
   if (nc < 30) return 0x0;
 
   AliTRDtrackV1 *ptrTrack = SetTrack(&track);
+  ptrTrack->SetReconstructor(fReconstructor);
   ptrTrack->CookLabel(.9);
   
   // computes PID for track

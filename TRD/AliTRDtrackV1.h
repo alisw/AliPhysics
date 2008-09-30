@@ -103,11 +103,12 @@ private:
   Double32_t   fPID[AliPID::kSPECIES];//  PID probabilities
   Double32_t   fBudget[3];            //  Integrated material budget
   Double32_t   fDE;                   //  Integrated delta energy
+  const AliTRDReconstructor *fReconstructor;//! reconstructor link 
   AliTRDseedV1 *fTracklet[kNplane];   //  Tracklets array defining the track
   AliTRDtrackV1 *fBackupTrack;        // Backup track
 
 
-  ClassDef(AliTRDtrackV1, 2)          // new TRD track
+  ClassDef(AliTRDtrackV1, 3)          // new TRD track
 };
 
 //____________________________________________________
@@ -146,6 +147,7 @@ inline void AliTRDtrackV1::SetReconstructor(const AliTRDReconstructor *rec)
     if(!fTracklet[ip]) continue;
     fTracklet[ip]->SetReconstructor(rec);
   }
+  fReconstructor = rec;
 }
 
 
