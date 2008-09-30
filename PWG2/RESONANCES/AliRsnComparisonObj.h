@@ -47,7 +47,7 @@ class AliRsnComparisonObj : public TNamed
       kY,
       kLastParameterType
     };
-    
+
     enum EHistoType
     {
       kIndent=0,
@@ -79,7 +79,7 @@ class AliRsnComparisonObj : public TNamed
     void FillPIDHistograms(AliRsnDaughter *daughter);
     void FillPIDHistograms(AliESDtrack *track,AliMCEvent *mc=0);
     void FillPIDHistograms(AliMCParticle *mctrack);
-    
+
     void FillHistograms(AliMCParticle *mctrack);
 
     void SetCurrentESDPID(const EPIDType& type,const Double_t&divValue = 0.0);
@@ -88,10 +88,10 @@ class AliRsnComparisonObj : public TNamed
     void SetESDstatus(const ULong_t status);
     void SetESDTrackQualityCuts(const Int_t& its=-1,const Int_t& tpc=-1,const Int_t& trd=-1);
   private:
-  
-    AliRsnComparisonObj(const AliRsnComparisonObj& copy) 
-    : TNamed(copy),fCurrentComparisonType(kParticleInfo),fCurrentESDPID(kEsd),
-    fESDstatus(0),fITSClusters(0),fTPCClusters(0),fTRDClusters(0),fPIDDivValue(0.) {}
+
+    AliRsnComparisonObj(const AliRsnComparisonObj& copy)
+        : TNamed(copy),fCurrentComparisonType(kParticleInfo),fCurrentESDPID(kEsd),
+        fESDstatus(0),fITSClusters(0),fTPCClusters(0),fTRDClusters(0),fPIDDivValue(0.) {}
     const AliRsnComparisonObj& operator=(const AliRsnComparisonObj&) {return *this;}
 
     EComparisonType   fCurrentComparisonType;
@@ -101,12 +101,12 @@ class AliRsnComparisonObj : public TNamed
     Int_t             fITSClusters;
     Int_t             fTPCClusters;
     Int_t             fTRDClusters;
-    
+
     Double_t          fPIDDivValue;
 
     TH1D              *fHistosPartInfo[kLastParameterType][2][AliRsnPID::kSpeciesAll];
     TH1D              *fHistosPID[kLastFormat][kLastHistoType][AliRsnPID::kSpecies+1];
-    
+
     TString     GetFormatName(EFormat type);
     TString     GetHistoTypeName(EHistoType type);
 

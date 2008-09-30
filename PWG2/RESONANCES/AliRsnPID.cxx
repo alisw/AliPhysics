@@ -1,28 +1,14 @@
-/**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Author: The ALICE Off-line Project.                                    *
- * Contributors are mentioned in the code where appropriate.              *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
-
-//-------------------------------------------------------------------------
-//                      Class AliRsnPID
-//                     -------------------
-//           Simple collection of reconstructed tracks
-//           selected from an ESD event
-//           to be used for analysis.
-//           .........................................
 //
-// author: A. Pulvirenti             (email: alberto.pulvirenti@ct.infn.it)
-//-------------------------------------------------------------------------
+// Class AliRsnPID
+//
+// Processes the tracks to compute PID probabilities,
+// by combining the prior probabilities with the PID weights
+// stored in each AliRsnDaughter
+//
+// authors: A. Pulvirenti (alberto.pulvirenti@ct.infn.it)
+//          M. Vala (martin.vala@cern.ch)
+//
+
 
 #include <TMath.h>
 #include <TDirectory.h>
@@ -34,9 +20,9 @@
 
 #include "AliRsnPID.h"
 
-ClassImp ( AliRsnPID )
+ClassImp(AliRsnPID)
 
-    const Double_t AliRsnPID::fgkParticleMass[AliRsnPID::kSpeciesAll + 1] =
+const Double_t AliRsnPID::fgkParticleMass[AliRsnPID::kSpeciesAll + 1] =
 {
   0.00051099892,   // electron
   0.105658369,     // muon
@@ -98,9 +84,9 @@ const Int_t AliRsnPID::fgkParticlePDG[AliRsnPID::kSpeciesAll + 1] =
 
 //_____________________________________________________________________________
 AliRsnPID::AliRsnPID() :
-    TNamed ( "RsnPID", "" ),
-    fMaxPt ( 100.0 ),
-    fMinProb ( 0.0 )
+    TNamed("RsnPID", ""),
+    fMaxPt(100.0),
+    fMinProb(0.0)
 {
 //
 // Constructor.
@@ -108,13 +94,13 @@ AliRsnPID::AliRsnPID() :
 //
 
   Int_t i;
-  for ( i = 0; i < kSpecies; i++ ) fPrior[i] = 0.0;
+  for (i = 0; i < kSpecies; i++) fPrior[i] = 0.0;
 
 //     gDirectory->Append(this, kTRUE);
 }
 
 //_____________________________________________________________________________
-AliRsnPID::EType AliRsnPID::InternalType ( Int_t pdg )
+AliRsnPID::EType AliRsnPID::InternalType(Int_t pdg)
 //
 // Return the internal enum value corresponding to the PDG
 // code passed as argument, if possible.
@@ -122,9 +108,9 @@ AliRsnPID::EType AliRsnPID::InternalType ( Int_t pdg )
 //
 {
   EType value;
-  Int_t absPDG = TMath::Abs ( pdg );
+  Int_t absPDG = TMath::Abs(pdg);
 
-  switch ( absPDG )
+  switch (absPDG)
   {
     case 11:
       value = kElectron;
@@ -155,14 +141,14 @@ AliRsnPID::EType AliRsnPID::InternalType ( Int_t pdg )
 
 
 //_____________________________________________________________________________
-Int_t AliRsnPID::PDGCode ( EType type )
+Int_t AliRsnPID::PDGCode(EType type)
 {
 //
 // Returns the PDG code of the particle type
 // specified as argument (w.r. to the internal enum)
 //
 
-  if ( type >= kElectron && type <= kUnknown )
+  if (type >= kElectron && type <= kUnknown)
   {
     return fgkParticlePDG[type];
   }
@@ -173,14 +159,14 @@ Int_t AliRsnPID::PDGCode ( EType type )
 }
 
 //_____________________________________________________________________________
-const char* AliRsnPID::ParticleName ( EType type, Bool_t shortName )
+const char* AliRsnPID::ParticleName(EType type, Bool_t shortName)
 {
 //
 // Returns the name of the particle type
 // specified as argument (w.r. to the internal enum)
 //
 
-  if ( type >= kElectron && type <= kSpeciesAll )
+  if (type >= 0 && type <= kSpeciesAll)
   {
     return shortName ? fgkParticleNameShort[type] : fgkParticleNameLong[type];
   }
@@ -191,14 +177,14 @@ const char* AliRsnPID::ParticleName ( EType type, Bool_t shortName )
 }
 
 //_____________________________________________________________________________
-const char* AliRsnPID::ParticleNameLatex ( EType type )
+const char* AliRsnPID::ParticleNameLatex(EType type)
 {
 //
 // Returns the name of the particle type
 // specified as argument (w.r. to the internal enum)
 //
 
-  if ( type >= kElectron && type <= kSpeciesAll )
+  if (type >= kElectron && type <= kSpeciesAll)
   {
     return fgkParticleNameLatex[type];
   }
@@ -209,7 +195,7 @@ const char* AliRsnPID::ParticleNameLatex ( EType type )
 }
 
 //_____________________________________________________________________________
-Double_t AliRsnPID::ParticleMass ( EType type )
+Double_t AliRsnPID::ParticleMass(EType type)
 {
 //
 // Returns the mass corresponding to the particle type
@@ -220,12 +206,12 @@ Double_t AliRsnPID::ParticleMass ( EType type )
   Int_t pdg = PDGCode(type);
   return db->GetParticle(pdg)->Mass();
   */
-  if ( type >= kElectron && type < kSpeciesAll ) return fgkParticleMass[type];
+  if (type >= kElectron && type < kSpeciesAll) return fgkParticleMass[type];
   return 0.0;
 }
 
 //_____________________________________________________________________________
-Bool_t AliRsnPID::ComputeProbs ( AliRsnDaughter *daughter )
+Bool_t AliRsnPID::ComputeProbs(AliRsnDaughter *daughter)
 {
 //
 // Uses the Bayesian combination of prior probabilities
@@ -245,28 +231,28 @@ Bool_t AliRsnPID::ComputeProbs ( AliRsnDaughter *daughter )
 
   // reset all PID probabilities to 0.0
   Int_t i;
-  for ( i = 0; i < kSpecies; i++ ) daughter->SetPIDProb ( i, 1.0 / ( Double_t ) kSpecies );
+  for (i = 0; i < kSpecies; i++) daughter->SetPIDProb(i, 1.0 / (Double_t) kSpecies);
 
   // multiply weights and priors
   Double_t sum = 0.0, prob[kSpecies];
-  for ( i = 0; i < kSpecies; i++ )
+  for (i = 0; i < kSpecies; i++)
   {
-    prob[i] = fPrior[i] * daughter->PID() [i];
+    prob[i] = fPrior[i] * daughter->PID()[i];
     sum += prob[i];
   }
-  if ( sum <= ( Double_t ) 0. )
+  if (sum <= (Double_t) 0.)
   {
-    AliError ( Form ( "Sum of weights = %f <= 0", sum ) );
+    AliError(Form("Sum of weights = %f <= 0", sum));
     return kFALSE;
   }
 
   // normalize
-  for ( i = 0; i < kSpecies; i++ )
+  for (i = 0; i < kSpecies; i++)
   {
     prob[i] /= sum;
-    daughter->SetPIDProb ( i, prob[i] );
+    daughter->SetPIDProb(i, prob[i]);
   }
-  
+
   daughter->AssignRealisticPID();
   Double_t assprob;
   AliRsnDaughter::SetPIDMethod(AliRsnDaughter::kRealistic);
@@ -277,7 +263,7 @@ Bool_t AliRsnPID::ComputeProbs ( AliRsnDaughter *daughter )
 }
 
 //_____________________________________________________________________________
-Bool_t AliRsnPID::IdentifiedAs ( AliRsnDaughter *d, EType type, Short_t charge )
+Bool_t AliRsnPID::IdentifiedAs(AliRsnDaughter *d, EType type, Short_t charge)
 {
 //
 // Tells if a particle has can be identified to be of a given tipe and charge.
@@ -288,24 +274,24 @@ Bool_t AliRsnPID::IdentifiedAs ( AliRsnDaughter *d, EType type, Short_t charge )
 // is kFALSE even when the type and charge are matched.
 //
 
-  EType dType = TrackType ( d );
-  if ( dType != type ) return kFALSE;
-  if ( charge == 0 )
+  EType dType = TrackType(d);
+  if (dType != type) return kFALSE;
+  if (charge == 0)
   {
     return kTRUE;
   }
-  else if ( charge > 0 )
+  else if (charge > 0)
   {
-    return ( d->Charge() > 0 );
+    return (d->Charge() > 0);
   }
   else
   {
-    return ( d->Charge() < 0 );
+    return (d->Charge() < 0);
   }
 }
 
 //_____________________________________________________________________________
-AliRsnPID::EType AliRsnPID::TrackType ( AliRsnDaughter *d )
+AliRsnPID::EType AliRsnPID::TrackType(AliRsnDaughter *d)
 {
 //
 // Returns the track type according to the object settings
@@ -313,16 +299,16 @@ AliRsnPID::EType AliRsnPID::TrackType ( AliRsnDaughter *d )
 //
 
   Double_t prob;
-  EType type = d->PIDType ( prob );
+  EType type = d->PIDType(prob);
 
-  if ( d->Pt() > fMaxPt ) return kUnknown;
-  if ( prob < fMinProb ) return kUnknown;
+  if (d->Pt() > fMaxPt) return kUnknown;
+  if (prob < fMinProb) return kUnknown;
 
   return type;
 }
 
 //_____________________________________________________________________________
-Bool_t AliRsnPID::Process ( AliRsnEvent *event )
+Bool_t AliRsnPID::Process(AliRsnEvent *event)
 {
 //
 // Performs identification for all tracks in a given event.
@@ -330,15 +316,15 @@ Bool_t AliRsnPID::Process ( AliRsnEvent *event )
 //
 
   Bool_t check = kTRUE;
-  if ( !event ) return check;
-  if ( !event->GetTracks() ) return check;
-  if ( event->GetTracks()->IsEmpty() ) return check;
+  if (!event) return check;
+  if (!event->GetTracks()) return check;
+  if (event->GetTracks()->IsEmpty()) return check;
 
   AliRsnDaughter *daughter = 0;
-  TObjArrayIter iter ( event->GetTracks() );
-  while ( ( daughter = ( AliRsnDaughter* ) iter.Next() ) )
+  TObjArrayIter iter(event->GetTracks());
+  while ((daughter = (AliRsnDaughter*) iter.Next()))
   {
-    check = check && ComputeProbs ( daughter );
+    check = check && ComputeProbs(daughter);
   }
   event->FillPIDArrays();
 
@@ -347,14 +333,14 @@ Bool_t AliRsnPID::Process ( AliRsnEvent *event )
 
 
 //_____________________________________________________________________________
-void AliRsnPID::SetPriorProbability ( EType type, Double_t p )
+void AliRsnPID::SetPriorProbability(EType type, Double_t p)
 {
 //
 // Sets the prior probability for Realistic PID, for a
 // given particle species.
 //
 
-  if ( type >= kElectron && type < kSpecies )
+  if (type >= kElectron && type < kSpecies)
   {
     fPrior[type] = p;
   }
@@ -370,9 +356,9 @@ void AliRsnPID::DumpPriors()
   Int_t i;
   Char_t msg[200];
 
-  for ( i = 0; i < kSpecies; i++ )
+  for (i = 0; i < kSpecies; i++)
   {
-    sprintf ( msg, "Prior probability for '%s' = %3.5f", fgkParticleNameLong[i], fPrior[i] );
-    AliInfo ( msg );
+    sprintf(msg, "Prior probability for '%s' = %3.5f", fgkParticleNameLong[i], fPrior[i]);
+    AliInfo(msg);
   }
 }

@@ -21,7 +21,7 @@ class AliRsnReader;
 
 class AliRsnReaderTaskSE : public AliRsnAnalysisTaskSEBase
 {
-public:
+  public:
 
     AliRsnReaderTaskSE();
     AliRsnReaderTaskSE(const char *name);
@@ -40,12 +40,12 @@ public:
 //     AliRsnPID*    GetPID() {return fPID;}
     AliRsnEvent*  GetCurrentEvent() {return fRsnEvent;}
 
-private:
+  private:
 
     AliRsnReaderTaskSE(const AliRsnReaderTaskSE &copy) :
-      AliRsnAnalysisTaskSEBase(copy),fRsnEvent(0x0) { /*nothing*/ }
+        AliRsnAnalysisTaskSEBase(copy),fRsnEvent(0x0) { /*nothing*/ }
     AliRsnReaderTaskSE& operator=(const AliRsnReaderTaskSE&)
-      { /*nothing*/ return (*this); }
+    { /*nothing*/ return (*this); }
 
     AliRsnEvent  *fRsnEvent;   // output events in the AliRsnEvent format
 

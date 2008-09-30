@@ -27,17 +27,17 @@ ClassImp(AliRsnAnalysisTaskSEBase)
 
 //_____________________________________________________________________________
 AliRsnAnalysisTaskSEBase::AliRsnAnalysisTaskSEBase(const char *name) :
-  AliAnalysisTaskSE(name),
-  fUseAutoHandler(kTRUE),
-  fReader(),
-  fPID(),
-  fAnalysisMgr(0x0) // pointer to current AnalysisMgr
+    AliAnalysisTaskSE(name),
+    fUseAutoHandler(kTRUE),
+    fReader(),
+    fPID(),
+    fAnalysisMgr(0x0) // pointer to current AnalysisMgr
 {
 //
 // Default constructor
 //
-    InitIOVars();
-    DefineInput(0, TChain::Class());
+  InitIOVars();
+  DefineInput(0, TChain::Class());
 }
 
 //_____________________________________________________________________________
@@ -46,23 +46,24 @@ void AliRsnAnalysisTaskSEBase::InitIOVars()
 //
 // Initial values for constructor
 //
-    
-    fUseAutoHandler = kFALSE;
-    
-    Int_t i;
-    for (i = 0; i < 2; i++) {
-        fChain[i] = 0;
-        fRSN[i] = 0;
-        fRsnESD[i] = 0;
-        fRsnMC[i] = 0;
-        fRsnAOD[i] = 0;
-        fRsnESDEH[i] = 0;
-        fRsnMCEH[i] = 0;
-        fRsnAODEH[i] = 0;
-        fInputType[i] = kRSN;
-    }
-    
-    fAnalysisMgr = 0;
+
+  fUseAutoHandler = kFALSE;
+
+  Int_t i;
+  for (i = 0; i < 2; i++)
+  {
+    fChain[i] = 0;
+    fRSN[i] = 0;
+    fRsnESD[i] = 0;
+    fRsnMC[i] = 0;
+    fRsnAOD[i] = 0;
+    fRsnESDEH[i] = 0;
+    fRsnMCEH[i] = 0;
+    fRsnAODEH[i] = 0;
+    fInputType[i] = kRSN;
+  }
+
+  fAnalysisMgr = 0;
 }
 
 //_____________________________________________________________________________
@@ -71,7 +72,7 @@ void AliRsnAnalysisTaskSEBase::LocalInit()
 //
 // LocalInit()
 //
-    AliAnalysisTaskSE::LocalInit();
+  AliAnalysisTaskSE::LocalInit();
 }
 
 //_____________________________________________________________________________
@@ -81,7 +82,7 @@ Bool_t AliRsnAnalysisTaskSEBase::Notify()
 // Notify()
 //
 
-    return AliAnalysisTaskSE::Notify();
+  return AliAnalysisTaskSE::Notify();
 }
 
 //_____________________________________________________________________________
@@ -95,47 +96,45 @@ void AliRsnAnalysisTaskSEBase::SetInputType
 // The internal AliAnalysisManager object is redirected to the passed one.
 //
 
-    fInputType[inputIndex] = type;
-    fAnalysisMgr = am;
+  fInputType[inputIndex] = type;
+  fAnalysisMgr = am;
 
-    UseAutoHandler(autohandler);
-    if (!fUseAutoHandler) return;
-      
-    if (!fAnalysisMgr) {
-        AliWarning(Form("fAnalysisMgr is %p and fUseAutoHandler is %d", fAnalysisMgr, fUseAutoHandler));
-        return;
-    }
-    
-    switch (fInputType[inputIndex]) {
-        case kAOD:
-            fRsnAODEH[0] = new AliAODInputHandler();
-            if (fRsnAODEH[0]) fAnalysisMgr->SetInputEventHandler(fRsnAODEH[0]);
-            break;
-        case kESD:
-            fRsnESDEH[0] = new AliESDInputHandler();
-            if (fRsnESDEH[0]) fAnalysisMgr->SetInputEventHandler(fRsnESDEH[0]);
-            break;
-        case kESDMC:
-            fRsnESDEH[0] = new AliESDInputHandler();
-            fRsnMCEH[0] = new AliMCEventHandler();
-            if ((fRsnESDEH[0]) && (fRsnMCEH[0])) {
-                fAnalysisMgr->SetInputEventHandler(fRsnESDEH[0]);
-                fAnalysisMgr->SetMCtruthEventHandler(fRsnMCEH[0]);
-            }
-            break;
-        case kMC:
-            fRsnMCEH[0] = new AliMCEventHandler();
-            if (fRsnMCEH[0]) {
-                fAnalysisMgr->SetMCtruthEventHandler(fRsnMCEH[0]);
-            }
-            break;
-        case kRSN:
-            AliError("Not Implemented Yet ...");
-            break;
-        default:
-            AliError("Type not supported ...");
-            break;
-    }
+  UseAutoHandler(autohandler);
+  if (!fUseAutoHandler) return;
+
+  if (!fAnalysisMgr)
+  {
+    AliWarning(Form("fAnalysisMgr is %p and fUseAutoHandler is %d", fAnalysisMgr, fUseAutoHandler));
+    return;
+  }
+
+  switch (fInputType[inputIndex])
+  {
+    case kAOD:
+      fRsnAODEH[0] = new AliAODInputHandler();
+      if (fRsnAODEH[0]) fAnalysisMgr->SetInputEventHandler(fRsnAODEH[0]);
+      break;
+    case kESD:
+      fRsnESDEH[0] = new AliESDInputHandler();
+      if (fRsnESDEH[0]) fAnalysisMgr->SetInputEventHandler(fRsnESDEH[0]);
+      break;
+    case kESDMC:
+    case kMC:
+      fRsnESDEH[0] = new AliESDInputHandler();
+      fRsnMCEH[0] = new AliMCEventHandler();
+      if ((fRsnESDEH[0]) && (fRsnMCEH[0]))
+      {
+        fAnalysisMgr->SetInputEventHandler(fRsnESDEH[0]);
+        fAnalysisMgr->SetMCtruthEventHandler(fRsnMCEH[0]);
+      }
+      break;
+    case kRSN:
+//       AliError("Not Implemented Yet ...");
+      break;
+    default:
+      AliError("Type not supported ...");
+      break;
+  }
 }
 
 //_____________________________________________________________________________
@@ -148,10 +147,10 @@ void AliRsnAnalysisTaskSEBase::ConnectInputData(Option_t *)
 // just define myTask->SetInputType ( AliRsnAnalysisTaskSEBase::kAOD ); for Rsn input
 //
 
-    if (fInputType[0] != kRSN) AliAnalysisTaskSE::ConnectInputData();
-    
-    // connects input handlers according to the type of analysis being done
-    ConnectInputDataByInputType(fInputType[0], 0);
+  if (fInputType[0] != kRSN) AliAnalysisTaskSE::ConnectInputData();
+
+  // connects input handlers according to the type of analysis being done
+  ConnectInputDataByInputType(fInputType[0], 0);
 }
 
 //_____________________________________________________________________________
@@ -161,31 +160,29 @@ void AliRsnAnalysisTaskSEBase::ConnectInputDataByInputType
 //
 // Connect input data dependint on the input type used.
 //
-    AliDebug(AliLog::kDebug, "<-");
+  AliDebug(AliLog::kDebug, "<-");
 
-    switch (type)
-    {
-        case kAOD:
-            ConnectAOD(inputIndex);
-            break;
-        case kESD:
-            ConnectESD(inputIndex);
-            break;
-        case kESDMC:
-            ConnectESDMC(inputIndex);
-            break;
-        case kMC:
-            ConnectESDMC(inputIndex);
-            break;
-        case kRSN:
-            ConnectRSN(inputIndex);
-            break;
-        default:
-            AliError("Type not supported ...");
-            break;
-    }
-    
-    AliDebug(AliLog::kDebug, "->");
+  switch (type)
+  {
+    case kAOD:
+      ConnectAOD(inputIndex);
+      break;
+    case kESD:
+      ConnectESD(inputIndex);
+      break;
+    case kESDMC:
+    case kMC:
+      ConnectESDMC(inputIndex);
+      break;
+    case kRSN:
+      ConnectRSN(inputIndex);
+      break;
+    default:
+      AliError("Type not supported ...");
+      break;
+  }
+
+  AliDebug(AliLog::kDebug, "->");
 }
 //_____________________________________________________________________________
 void AliRsnAnalysisTaskSEBase::ConnectRSN(Short_t inputIndex)
@@ -194,20 +191,20 @@ void AliRsnAnalysisTaskSEBase::ConnectRSN(Short_t inputIndex)
 // Connect input data by RSN input type
 //
 
-    AliDebug(AliLog::kDebug, "<-");
-    
-    char ** address = (char **) GetBranchAddress(inputIndex, "rsnEvents");
-    if (address)
-    {
-        fRSN[inputIndex] = (AliRsnEvent*)(*address);
-    }
-    else
-    {
-        fRSN[inputIndex] = 0;
-        SetBranchAddress(inputIndex, "rsnEvents", &fRSN[inputIndex]);
-    }
-    
-    AliDebug(AliLog::kDebug, "->");
+  AliDebug(AliLog::kDebug, "<-");
+
+  char ** address = (char **) GetBranchAddress(inputIndex, "rsnEvents");
+  if (address)
+  {
+    fRSN[inputIndex] = (AliRsnEvent*)(*address);
+  }
+  else
+  {
+    fRSN[inputIndex] = 0;
+    SetBranchAddress(inputIndex, "rsnEvents", &fRSN[inputIndex]);
+  }
+
+  AliDebug(AliLog::kDebug, "->");
 }
 
 //_____________________________________________________________________________
@@ -217,9 +214,9 @@ void AliRsnAnalysisTaskSEBase::ConnectESD(Short_t inputIndex)
 // Connect input data by ESD input type
 //
 
-    AliDebug(AliLog::kDebug, "<-");
-    fRsnESD[inputIndex] = (AliESDEvent*)fInputEvent;
-    AliDebug(AliLog::kDebug, "->");
+  AliDebug(AliLog::kDebug, "<-");
+  fRsnESD[inputIndex] = (AliESDEvent*)fInputEvent;
+  AliDebug(AliLog::kDebug, "->");
 
 }
 
@@ -230,10 +227,10 @@ void AliRsnAnalysisTaskSEBase::ConnectESDMC(Short_t inputIndex)
 // Connect input data by ESDMC input type
 //
 
-    AliDebug(AliLog::kDebug, "<-");
-    fRsnESD[inputIndex] = (AliESDEvent*)fInputEvent;
-    //fRSNMC[inputIndex] = fMCEvent;
-    AliDebug(AliLog::kDebug, "->");
+  AliDebug(AliLog::kDebug, "<-");
+  fRsnESD[inputIndex] = (AliESDEvent*)fInputEvent;
+  //fRSNMC[inputIndex] = fMCEvent;
+  AliDebug(AliLog::kDebug, "->");
 }
 
 //_____________________________________________________________________________
@@ -243,18 +240,18 @@ void AliRsnAnalysisTaskSEBase::ConnectAOD(Short_t inputIndex)
 // Connect input data by AOD input type
 //
 
-    AliDebug(AliLog::kDebug, "<-");
+  AliDebug(AliLog::kDebug, "<-");
 
-    TTree* tree = dynamic_cast<TTree*>(GetInputData(inputIndex));
-    if (!tree) { AliError("Could not read chain from input slot 0");}
-    else
-    {
-        AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-        if (!aodH) { AliError("Could not get AODInputHandler"); }
-        else fRsnAOD[inputIndex] = aodH->GetEvent();
-    }
-    
-    AliDebug(AliLog::kDebug, "->");
+  TTree* tree = dynamic_cast<TTree*>(GetInputData(inputIndex));
+  if (!tree) { AliError("Could not read chain from input slot 0");}
+  else
+  {
+    AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+    if (!aodH) { AliError("Could not get AODInputHandler"); }
+    else fRsnAOD[inputIndex] = aodH->GetEvent();
+  }
+
+  AliDebug(AliLog::kDebug, "->");
 }
 
 //_____________________________________________________________________________
@@ -264,19 +261,19 @@ AliRsnEvent * AliRsnAnalysisTaskSEBase::GetRsnEventFromInputType(const Short_t &
 // Gets Event from input type
 //
 
-    switch (fInputType[index])
-    {
-        case kAOD:   return GetRsnFromAOD(index);
-        case kESD:   return GetRsnFromESD(index);
-        case kESDMC: return GetRsnFromESDMC(index);
-        case kMC:    return GetRsnFromMC(index);
-        case kRSN:   return GetRsnFromRSN(index);
-        default:
-            AliError("Type not supported ...");
-            return (AliRsnEvent*) 0x0;
-    }
-    
-    return (AliRsnEvent*) 0x0;
+  switch (fInputType[index])
+  {
+    case kAOD:   return GetRsnFromAOD(index);
+    case kESD:   return GetRsnFromESD(index);
+    case kESDMC: return GetRsnFromESDMC(index);
+    case kMC:    return GetRsnFromMC(index);
+    case kRSN:   return GetRsnFromRSN(index);
+    default:
+      AliError("Type not supported ...");
+      return (AliRsnEvent*) 0x0;
+  }
+
+  return (AliRsnEvent*) 0x0;
 }
 
 //_____________________________________________________________________________
@@ -286,25 +283,25 @@ AliRsnEvent * AliRsnAnalysisTaskSEBase::GetRsnFromAOD(const Short_t & index)
 // Gets RSN event from AOD
 //
 
-    if (!fRsnAOD[index]) 
-    {
-        AliError("fRsnAOD not available."); 
-        return (AliRsnEvent *) 0x0; 
-    }
-    
-    if (!fRSN[0])
-    {
-        fRSN[0] = new AliRsnEvent();
-        fRSN[0]->SetName("rsnEvents");
-        fRSN[0]->Init();
-    }
-    
-    // clear pevious event
-    fRSN[0]->Clear();
-    if (!fReader.FillFromAOD(fRSN[0], fRsnAOD[index])) return (AliRsnEvent*) 0x0;
-    if (!fPID.Process(fRSN[0])) AliWarning("Failed PID");
-    
-    return (AliRsnEvent*) fRSN[0];
+  if (!fRsnAOD[index])
+  {
+    AliError("fRsnAOD not available.");
+    return (AliRsnEvent *) 0x0;
+  }
+
+  if (!fRSN[0])
+  {
+    fRSN[0] = new AliRsnEvent();
+    fRSN[0]->SetName("rsnEvents");
+    fRSN[0]->Init();
+  }
+
+  // clear pevious event
+  fRSN[0]->Clear();
+  if (!fReader.FillFromAOD(fRSN[0], fRsnAOD[index])) return (AliRsnEvent*) 0x0;
+  if (!fPID.Process(fRSN[0])) AliWarning("Failed PID");
+
+  return (AliRsnEvent*) fRSN[0];
 }
 
 //_____________________________________________________________________________
@@ -314,31 +311,31 @@ AliRsnEvent * AliRsnAnalysisTaskSEBase::GetRsnFromESD(const Short_t & index)
 // Gets RSN event from ESD
 //
 
-    if (!fRsnESD[index]) 
-    {
-        AliError("fRsnESD not available.");
-        return (AliRsnEvent *) 0x0; 
-    }
-    
-    if (!fRSN[index])
-    {
-        fRSN[index] = new AliRsnEvent();
-        fRSN[index]->SetName("rsnEvents");
-        fRSN[index]->Init();
-    }
-    
-    // clear pevious event
-    fRSN[index]->Clear();
-    
-    if (!fReader.FillFromESD(fRSN[index], fRsnESD[index])) return (AliRsnEvent*) 0x0;
+  if (!fRsnESD[index])
+  {
+    AliError("fRsnESD not available.");
+    return (AliRsnEvent *) 0x0;
+  }
 
-    if (!fPID.Process(fRSN[index])) 
-    {
-        AliWarning("Failed PID");
-        return (AliRsnEvent*) 0x0;
-    }
-    
-    return fRSN[index];
+  if (!fRSN[index])
+  {
+    fRSN[index] = new AliRsnEvent();
+    fRSN[index]->SetName("rsnEvents");
+    fRSN[index]->Init();
+  }
+
+  // clear pevious event
+  fRSN[index]->Clear();
+
+  if (!fReader.FillFromESD(fRSN[index], fRsnESD[index])) return (AliRsnEvent*) 0x0;
+
+  if (!fPID.Process(fRSN[index]))
+  {
+    AliWarning("Failed PID");
+    return (AliRsnEvent*) 0x0;
+  }
+
+  return fRSN[index];
 }
 
 //_____________________________________________________________________________
@@ -348,20 +345,29 @@ AliRsnEvent * AliRsnAnalysisTaskSEBase::GetRsnFromMC(const Short_t & index)
 // Gets RSN event from ESD
 //
 
-    if (!fRSN[index])
-    {
-        fRSN[index] = new AliRsnEvent();
-        fRSN[index]->SetName("rsnEvents");
-        fRSN[index]->Init();
-    }
-    
-    // clear pevious event
-    fRSN[index]->Clear();
-    fRsnMC[index] = MCEvent();
-    
-    if (!fReader.FillFromMC(fRSN[index], fRsnMC[index])) return (AliRsnEvent*) 0x0;
-    fRSN[index]->FillPIDArrays();
-    return fRSN[index];
+  if (!fRsnESD[index])
+  {
+    AliError("fRsnESD not available.");
+    return (AliRsnEvent *) 0x0;
+  }
+
+  if (!fRSN[index])
+  {
+    fRSN[index] = new AliRsnEvent();
+    fRSN[index]->SetName("rsnEvents");
+    fRSN[index]->Init();
+  }
+
+  // clear pevious event
+  fRSN[index]->Clear();
+  fRsnMC[index] = MCEvent();
+
+  if (!fRsnMC[index]) return (AliRsnEvent *) 0x0;
+  if (!fReader.FillFromMC(fRSN[index], fRsnMC[index])) return (AliRsnEvent*) 0x0;
+  //if (!fReader.FillFromESD(fRSN[index], fRsnESD[index], fRsnMC[index])) return (AliRsnEvent*) 0x0;
+  fPID.Process(fRSN[index]);
+  fRSN[index]->FillPIDArrays(3000);
+  return fRSN[index];
 }
 
 //_____________________________________________________________________________
@@ -371,32 +377,32 @@ AliRsnEvent * AliRsnAnalysisTaskSEBase::GetRsnFromESDMC(const Short_t & index)
 // Gets RSN event from ESD and MC
 //
 
-    if (!fRsnESD[index]) 
-    {
-        AliError("fRsnESD not available.");
-        return (AliRsnEvent *) 0x0; 
-    }
-  
-    if (!fRSN[index])
-    {
-        fRSN[index] = new AliRsnEvent();
-        fRSN[index]->SetName("rsnEvents");
-        fRSN[index]->Init();
-    }
-    
-    // clear pevious event
-    fRSN[index]->Clear();
-    fRsnMC[index] = MCEvent();
+  if (!fRsnESD[index])
+  {
+    AliError("fRsnESD not available.");
+    return (AliRsnEvent *) 0x0;
+  }
 
-    if (!fRsnMC[index]) return (AliRsnEvent *) 0x0;
-    if (!fReader.FillFromESD(fRSN[index], fRsnESD[index], fRsnMC[index])) return (AliRsnEvent*) 0x0;
-    if (!fPID.Process(fRSN[index]))
-    {
-        AliWarning("Failed PID");
-        return (AliRsnEvent*) 0x0;
-    }
-    
-    return fRSN[index];
+  if (!fRSN[index])
+  {
+    fRSN[index] = new AliRsnEvent();
+    fRSN[index]->SetName("rsnEvents");
+    fRSN[index]->Init();
+  }
+
+  // clear pevious event
+  fRSN[index]->Clear();
+  fRsnMC[index] = MCEvent();
+
+  if (!fRsnMC[index]) return (AliRsnEvent *) 0x0;
+  if (!fReader.FillFromESD(fRSN[index], fRsnESD[index], fRsnMC[index])) return (AliRsnEvent*) 0x0;
+  if (!fPID.Process(fRSN[index]))
+  {
+    AliWarning("Failed PID");
+    return (AliRsnEvent*) 0x0;
+  }
+
+  return fRSN[index];
 }
 
 //_____________________________________________________________________________
@@ -406,6 +412,6 @@ AliRsnEvent * AliRsnAnalysisTaskSEBase::GetRsnFromRSN(const Short_t & index)
 // Gets RSN event from RSN
 // not fully implemented yet
 //
-    AliRsnEvent *event = fRSN[index];
-    return event;
+  AliRsnEvent *event = fRSN[index];
+  return event;
 }

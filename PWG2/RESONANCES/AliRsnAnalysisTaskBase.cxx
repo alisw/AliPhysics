@@ -1,5 +1,5 @@
 //
-// Class AliRsnBaseAT
+// Class AliRsnAnalysisTaskBase
 //
 // TODO
 //
@@ -20,13 +20,13 @@
 #include "AliRsnEvent.h"
 #include "AliMCEvent.h"
 
-#include "AliRsnBaseAT.h"
+#include "AliRsnAnalysisTaskBase.h"
 
 
-ClassImp(AliRsnBaseAT)
+ClassImp(AliRsnAnalysisTaskBase)
 
 //________________________________________________________________________
-AliRsnBaseAT::AliRsnBaseAT(const char *name)
+AliRsnAnalysisTaskBase::AliRsnAnalysisTaskBase(const char *name)
     : AliAnalysisTask(name, ""),
     fNumOfEvents(100),
     fUseAutoHandler(100),
@@ -45,7 +45,7 @@ AliRsnBaseAT::AliRsnBaseAT(const char *name)
 }
 
 //________________________________________________________________________
-void AliRsnBaseAT::InitIOVars()
+void AliRsnAnalysisTaskBase::InitIOVars()
 {
 //=========================================================
 // Initial values for constructor
@@ -73,7 +73,7 @@ void AliRsnBaseAT::InitIOVars()
 }
 
 //________________________________________________________________________
-void AliRsnBaseAT::LocalInit()
+void AliRsnAnalysisTaskBase::LocalInit()
 {
 //=========================================================
 // LocalInit()
@@ -81,7 +81,7 @@ void AliRsnBaseAT::LocalInit()
 }
 
 //________________________________________________________________________
-Bool_t AliRsnBaseAT::Notify()
+Bool_t AliRsnAnalysisTaskBase::Notify()
 {
 //=========================================================
 // Notify()
@@ -91,7 +91,7 @@ Bool_t AliRsnBaseAT::Notify()
 }
 
 //________________________________________________________________________
-void AliRsnBaseAT::SetInputType(EInputType type,AliAnalysisManager* am,Bool_t autohandler, Short_t inputIndex)
+void AliRsnAnalysisTaskBase::SetInputType(EInputType type,AliAnalysisManager* am,Bool_t autohandler, Short_t inputIndex)
 {
 //=========================================================
 // Sets input type.
@@ -167,19 +167,19 @@ void AliRsnBaseAT::SetInputType(EInputType type,AliAnalysisManager* am,Bool_t au
 }
 
 //________________________________________________________________________
-void AliRsnBaseAT::ConnectInputData(Option_t *)
+void AliRsnAnalysisTaskBase::ConnectInputData(Option_t *)
 {
 //=========================================================
 // ConectInputData() for AliAnalysisTask
-// just define myTask->SetInputType ( AliRsnBaseAT::kRSN ); for Rsn input
-// just define myTask->SetInputType ( AliRsnBaseAT::kESDMC ); for ESD and MC input
-// just define myTask->SetInputType ( AliRsnBaseAT::kAOD ); for Rsn input
+// just define myTask->SetInputType ( AliRsnAnalysisTaskBase::kRSN ); for Rsn input
+// just define myTask->SetInputType ( AliRsnAnalysisTaskBase::kESDMC ); for ESD and MC input
+// just define myTask->SetInputType ( AliRsnAnalysisTaskBase::kAOD ); for Rsn input
 //=========================================================
 
   ConnectInputDataByInputType(fInputType[0],0);
 }
 
-void AliRsnBaseAT::ConnectInputDataByInputType(EInputType type ,Short_t inputIndex)
+void AliRsnAnalysisTaskBase::ConnectInputDataByInputType(EInputType type ,Short_t inputIndex)
 {
 //=========================================================
 // Connect input data by input type
@@ -219,7 +219,7 @@ void AliRsnBaseAT::ConnectInputDataByInputType(EInputType type ,Short_t inputInd
   AliDebug(AliLog::kDebug, "->");
 }
 //________________________________________________________________________
-void AliRsnBaseAT::ConnectRSN(Short_t inputIndex)
+void AliRsnAnalysisTaskBase::ConnectRSN(Short_t inputIndex)
 {
 //=========================================================
 // Connect input data by RSN input type
@@ -239,7 +239,7 @@ void AliRsnBaseAT::ConnectRSN(Short_t inputIndex)
   AliDebug(AliLog::kDebug, "->");
 }
 
-void AliRsnBaseAT::ConnectESD(Short_t inputIndex)
+void AliRsnAnalysisTaskBase::ConnectESD(Short_t inputIndex)
 {
 //=========================================================
 // Connect input data by ESD input type
@@ -265,7 +265,7 @@ void AliRsnBaseAT::ConnectESD(Short_t inputIndex)
 
 }
 //________________________________________________________________________
-void AliRsnBaseAT::ConnectESDMC(Short_t inputIndex)
+void AliRsnAnalysisTaskBase::ConnectESDMC(Short_t inputIndex)
 {
 //=========================================================
 // Connect input data by ESDMC input type
@@ -292,7 +292,7 @@ void AliRsnBaseAT::ConnectESDMC(Short_t inputIndex)
 
 }
 //________________________________________________________________________
-void AliRsnBaseAT::ConnectAOD(Short_t inputIndex)
+void AliRsnAnalysisTaskBase::ConnectAOD(Short_t inputIndex)
 {
 //=========================================================
 // Connect input data by AOD input type
@@ -316,7 +316,7 @@ void AliRsnBaseAT::ConnectAOD(Short_t inputIndex)
 }
 
 //________________________________________________________________________
-AliRsnEvent * AliRsnBaseAT::GetRsnEventFromInputType(const Short_t & index)
+AliRsnEvent * AliRsnAnalysisTaskBase::GetRsnEventFromInputType(const Short_t & index)
 {
 //=========================================================
 // Gets Evetn from input type
@@ -360,7 +360,7 @@ AliRsnEvent * AliRsnBaseAT::GetRsnEventFromInputType(const Short_t & index)
 
 
 //________________________________________________________________________
-AliRsnEvent * AliRsnBaseAT::GetRsnFromAOD(const Short_t & index)
+AliRsnEvent * AliRsnAnalysisTaskBase::GetRsnFromAOD(const Short_t & index)
 {
 //=========================================================
 // Gets RSN event from AOD
@@ -388,7 +388,7 @@ AliRsnEvent * AliRsnBaseAT::GetRsnFromAOD(const Short_t & index)
 
 }
 //________________________________________________________________________
-AliRsnEvent * AliRsnBaseAT::GetRsnFromESD(const Short_t & index)
+AliRsnEvent * AliRsnAnalysisTaskBase::GetRsnFromESD(const Short_t & index)
 {
 //=========================================================
 // Gets RSN event from ESD
@@ -415,7 +415,7 @@ AliRsnEvent * AliRsnBaseAT::GetRsnFromESD(const Short_t & index)
   return fRSN[index];
 }
 //________________________________________________________________________
-AliRsnEvent * AliRsnBaseAT::GetRsnFromESDMC(const Short_t & index)
+AliRsnEvent * AliRsnAnalysisTaskBase::GetRsnFromESDMC(const Short_t & index)
 {
 //=========================================================
 // Gets RSN event from ESD and MC
@@ -452,7 +452,7 @@ AliRsnEvent * AliRsnBaseAT::GetRsnFromESDMC(const Short_t & index)
   return fRSN[index];
 }
 //________________________________________________________________________
-AliRsnEvent * AliRsnBaseAT::GetRsnFromRSN(const Short_t & index)
+AliRsnEvent * AliRsnAnalysisTaskBase::GetRsnFromRSN(const Short_t & index)
 {
 //=========================================================
 // Gets RSN event from RSN
@@ -469,7 +469,7 @@ AliRsnEvent * AliRsnBaseAT::GetRsnFromRSN(const Short_t & index)
 }
 
 //________________________________________________________________________
-void AliRsnBaseAT::UseAutoHandler(const Bool_t & theValue)
+void AliRsnAnalysisTaskBase::UseAutoHandler(const Bool_t & theValue)
 {
 //=========================================================
 // Sets should create handlers

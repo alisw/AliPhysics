@@ -48,15 +48,17 @@ class AliRsnEvent : public TNamed
     TClonesArray*   GetTracks() {return fTracks;}
     TArrayI*        GetCharged(Char_t sign);
     TArrayI*        GetTracksArray(AliRsnDaughter::EPIDMethod method, Char_t sign, AliRsnPID::EType type);
-    void            FillPIDArrays();
+    void            FillPIDArrays(Int_t arraySizeDefault = 1000);
     void            SortTracks() {fTracks->Sort();}
     void            Print(Option_t *option = "") const;
+    void            MakeComputations();
 
     // Primary vertex
     Double_t GetPrimaryVertexX() const {return fPVx;}
     Double_t GetPrimaryVertexY() const {return fPVy;}
     Double_t GetPrimaryVertexZ() const {return fPVz;}
     void     GetPrimaryVertex(Double_t &x, Double_t &y, Double_t &z) const {x=fPVx;y=fPVy;z=fPVz;}
+    Double_t GetVz() const {return GetPrimaryVertexZ();}
     void     SetPrimaryVertexX(Double_t value) {fPVx = value;}
     void     SetPrimaryVertexY(Double_t value) {fPVy = value;}
     void     SetPrimaryVertexZ(Double_t value) {fPVz = value;}
@@ -64,8 +66,11 @@ class AliRsnEvent : public TNamed
     void     CorrectByPrimaryVertex();
 
     // Multiplicity
-    Int_t GetMultiplicity() const;
+    Int_t GetMultiplicity() const {return fMult;}
     Int_t GetNCharged(Char_t sign);
+    
+    // Mean phi
+    Double_t GetPhiMean() const {return fPhiMean;}
 
   private:
 
@@ -75,6 +80,8 @@ class AliRsnEvent : public TNamed
     Double_t        fPVx;                 // position of
     Double_t        fPVy;                 // primary
     Double_t        fPVz;                 // vertex
+    Double_t        fPhiMean;             // mean "phi" coord of all tracks
+    Int_t           fMult;                // track multiplicity
 
     TClonesArray   *fTracks;              // collection of particles
 

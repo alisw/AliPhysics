@@ -52,6 +52,11 @@ class AliRsnReader : public TNamed
     // sets PID TYPE
     void SetPIDtype(const AliRsnDaughter::EPIDType& theValue = AliRsnDaughter::kEsd, Double_t divValue = 0.0);
     AliRsnDaughter::EPIDType GetPIDtype() const { return fCurrentPIDtype; }
+    
+    // set limits in track references
+    void SetTrackRefs(Int_t value) {fTrackRefs = value;}
+    void SetTrackRefsITS(Int_t value) {fTrackRefsITS = value;}
+    void SetTrackRefsTPC(Int_t value) {fTrackRefsTPC = value;}
 
     // sets Sectors cut
     void SetITSTPCTRDSectors(const Int_t& its = -1, const Int_t& tpc = -1, const Int_t& trd = -1);
@@ -73,6 +78,10 @@ class AliRsnReader : public TNamed
     Int_t                     fITSClusters;    //
     Int_t                     fTPCClusters;    //
     Int_t                     fTRDClusters;    //
+    Int_t                     fTrackRefs;      // minimum required track references for MC reading
+    Int_t                     fTrackRefsITS;   // minimum required track references for MC reading (ITS)
+    Int_t                     fTrackRefsTPC;   // minimum required track references for MC reading (TPC)
+    
 
   private:
 

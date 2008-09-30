@@ -28,7 +28,7 @@ ClassImp(AliRsnReaderTask)
 
 //_____________________________________________________________________________
 AliRsnReaderTask::AliRsnReaderTask() :
-    AliRsnBaseAT(),
+    AliRsnAnalysisTaskBase(),
     fRsnTree(0x0)
 {
 //=========================================================
@@ -38,7 +38,7 @@ AliRsnReaderTask::AliRsnReaderTask() :
 
 //_____________________________________________________________________________
 AliRsnReaderTask::AliRsnReaderTask(const char *name) :
-    AliRsnBaseAT(name),
+    AliRsnAnalysisTaskBase(name),
     fRsnTree(0x0)
 {
 //=========================================================
@@ -50,7 +50,7 @@ AliRsnReaderTask::AliRsnReaderTask(const char *name) :
 
 //_____________________________________________________________________________
 AliRsnReaderTask::AliRsnReaderTask(const AliRsnReaderTask& obj) :
-    AliRsnBaseAT(obj),
+    AliRsnAnalysisTaskBase(obj),
     fRsnTree(0x0)
 {
 //=========================================================
@@ -76,7 +76,7 @@ void AliRsnReaderTask::InitIOVars()
 // Init values for input and output data
 //=========================================================
   AliDebug(AliLog::kDebug, "<-");
-  AliRsnBaseAT::InitIOVars();
+  AliRsnAnalysisTaskBase::InitIOVars();
   AliDebug(AliLog::kDebug, "->");
 }
 

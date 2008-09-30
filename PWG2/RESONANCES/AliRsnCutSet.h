@@ -1,11 +1,12 @@
-/**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               *
- **************************************************************************/
-
 //
-// class AliRsnCutSet
-// Combination of simple cuts
+// Class AliRsnCutSet
+//
+// This is the front-end for cut management and checking.
+// It must be prepared by adding all required single cuts,
+// and then with a logical expression which combines all cuts
+// with the "AND", "OR" and "NOT" operators.
+//
+// author: M. Vala (martin.vala@cern.ch)
 //
 
 #ifndef ALIRSNCUTSET_H
@@ -43,6 +44,7 @@ class AliRsnCutSet : public TNamed
     Bool_t    IsSelected(AliRsnCut::ETarget type, AliRsnDaughter *daughter);
     Bool_t    IsSelected(AliRsnCut::ETarget type, AliRsnPairParticle *pair);
     Bool_t    IsSelected(AliRsnCut::ETarget type, AliRsnEvent *event);
+    Bool_t    IsSelected(AliRsnCut::ETarget type, AliRsnEvent *ev1, AliRsnEvent *ev2);
 
     void SetBoolValue(Bool_t theValue,Int_t index) { fBoolValues[index] = theValue; }
     Bool_t GetBoolValue(Int_t index) const { return fBoolValues[index]; }
@@ -69,7 +71,7 @@ class AliRsnCutSet : public TNamed
 
     AliRsnExpression  *fExpression;       // pointer to AliRsnExpression
 
-    ClassDef(AliRsnCutSet,1);    // ROOT dictionary
+    ClassDef(AliRsnCutSet,1)    // ROOT dictionary
 };
 
 #endif

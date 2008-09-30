@@ -26,7 +26,7 @@ ClassImp(AliRsnComparisonAT)
 
 //________________________________________________________________________
 AliRsnComparisonAT::AliRsnComparisonAT(const char*name)
-    : AliRsnBaseAT(name),fOutList(0x0),fMyInputNum(1),fMyPIDInputNum(0)
+    : AliRsnAnalysisTaskBase(name),fOutList(0x0),fMyInputNum(1),fMyPIDInputNum(0)
 {
 //=========================================================
 // Default constructor
@@ -44,7 +44,7 @@ void AliRsnComparisonAT::InitIOVars()
 // Sets default values for input and output
 //=========================================================
   AliDebug(AliLog::kDebug, "<-");
-  AliRsnBaseAT::InitIOVars();
+  AliRsnAnalysisTaskBase::InitIOVars();
   fOutList = 0;
   AliDebug(AliLog::kDebug, "->");
 }

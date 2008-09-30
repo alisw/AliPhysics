@@ -27,12 +27,13 @@ AliRsnPairDef::AliRsnPairDef() : fMotherPDG(0)
 // must be defined before starting event processing.
 //
 
-    Int_t i;
-    for (i = 0; i < 2; i++) {
-        fCharge[i] = '0';
-        fMass[i] = 0.0;
-        fType[i] = AliRsnPID::kUnknown;
-    }
+  Int_t i;
+  for (i = 0; i < 2; i++)
+  {
+    fCharge[i] = '0';
+    fMass[i] = 0.0;
+    fType[i] = AliRsnPID::kUnknown;
+  }
 }
 
 //_____________________________________________________________________________
@@ -45,7 +46,7 @@ AliRsnPairDef::AliRsnPairDef
 // This constructor allows to define all the working parameters.
 //
 
-    SetPair(sign1, type1, sign2, type2);
+  SetPair(sign1, type1, sign2, type2);
 }
 
 //_____________________________________________________________________________
@@ -58,7 +59,7 @@ AliRsnPairDef::AliRsnPairDef
 // This constructor allows to define all the working parameters.
 //
 
-    SetPair(sign1, type1, sign2, type2);
+  SetPair(sign1, type1, sign2, type2);
 }
 
 
@@ -71,7 +72,7 @@ AliRsnPairDef::AliRsnPairDef(const AliRsnPairDef &copy) :
 // Copy constructor with standard behavior
 //
 
-    SetPair(copy.fCharge[0], copy.fType[0], copy.fCharge[1], copy.fType[1]);
+  SetPair(copy.fCharge[0], copy.fType[0], copy.fCharge[1], copy.fType[1]);
 }
 
 //_____________________________________________________________________________
@@ -81,10 +82,10 @@ const AliRsnPairDef& AliRsnPairDef::operator=(const AliRsnPairDef &copy)
 // Assignment operator with standard behavior.
 //
 
-    fMotherPDG = copy.fMotherPDG;
-    SetPair(copy.fCharge[0], copy.fType[0], copy.fCharge[1], copy.fType[1]);
+  fMotherPDG = copy.fMotherPDG;
+  SetPair(copy.fCharge[0], copy.fType[0], copy.fCharge[1], copy.fType[1]);
 
-    return (*this);
+  return (*this);
 }
 
 //_____________________________________________________________________________
@@ -94,23 +95,26 @@ Bool_t AliRsnPairDef::SetPairElement(Int_t i, Char_t charge, AliRsnPID::EType ty
 // Set one element of the pair
 // and returns warnings if the type is not valid.
 //
-    if (i < 0 || i > 1) {
-        AliError("Index out of range");
-        return kFALSE;
-    }
-    if (charge != '+' && charge != '-') {
-        AliError(Form("Character '%c' not recognized as charge sign"));
-        return kFALSE;
-    }
-    if (type < AliRsnPID::kElectron && type > AliRsnPID::kUnknown) {
-        AliError("Type index out of enumeration range");
-        return kFALSE;
-    }
-    fCharge[i] = charge;
-    fType[i] = type;
-    fMass[i] = AliRsnPID::ParticleMass(type);
-    
-    return kTRUE;
+  if (i < 0 || i > 1)
+  {
+    AliError("Index out of range");
+    return kFALSE;
+  }
+  if (charge != '+' && charge != '-')
+  {
+    AliError(Form("Character '%c' not recognized as charge sign"));
+    return kFALSE;
+  }
+  if (type < AliRsnPID::kElectron && type > AliRsnPID::kUnknown)
+  {
+    AliError("Type index out of enumeration range");
+    return kFALSE;
+  }
+  fCharge[i] = charge;
+  fType[i] = type;
+  fMass[i] = AliRsnPID::ParticleMass(type);
+
+  return kTRUE;
 }
 
 //_____________________________________________________________________________
@@ -121,10 +125,10 @@ Bool_t AliRsnPairDef::SetPair
 // Set both elements of the pair,
 // returning logical AND of check for each one.
 //
-    Bool_t part1 = SetPairElement(0, charge1, type1);
-    Bool_t part2 = SetPairElement(1, charge2, type2);
-    
-    return (part1 && part2);
+  Bool_t part1 = SetPairElement(0, charge1, type1);
+  Bool_t part2 = SetPairElement(1, charge2, type2);
+
+  return (part1 && part2);
 }
 
 //_____________________________________________________________________________
@@ -137,10 +141,10 @@ Double_t AliRsnPairDef::ComputeWeight(AliRsnDaughter *d0, AliRsnDaughter *d1)
 // according to the order of appearance in argument list.
 //
 
-    Double_t prob0 = d0->PIDProb()[fType[0]];
-    Double_t prob1 = d1->PIDProb()[fType[1]];
+  Double_t prob0 = d0->PIDProb()[fType[0]];
+  Double_t prob1 = d1->PIDProb()[fType[1]];
 
-    return prob0*prob1;
+  return prob0*prob1;
 }
 
 //_____________________________________________________________________________
@@ -150,12 +154,12 @@ TString AliRsnPairDef::GetPairName()
 // Returns a compact string with the name of the pair,
 // to be used for naming objects related to it.
 //
-    
-    TString sName;
-    sName += AliRsnPID::ParticleName(fType[0]);
-    sName += fCharge[0];
-    sName += AliRsnPID::ParticleName(fType[1]);
-    sName += fCharge[1];
-    
-    return sName;
+
+  TString sName;
+  sName += AliRsnPID::ParticleName(fType[0]);
+  sName += fCharge[0];
+  sName += AliRsnPID::ParticleName(fType[1]);
+  sName += fCharge[1];
+
+  return sName;
 }

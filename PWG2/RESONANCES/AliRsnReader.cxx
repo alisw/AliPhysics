@@ -55,7 +55,10 @@ AliRsnReader::AliRsnReader(AliRsnPIDWeightsMgr *mgr) :
     fPIDDivValue(0.0),
     fITSClusters(0),
     fTPCClusters(0),
-    fTRDClusters(0)
+    fTRDClusters(0),
+    fTrackRefs(0),
+    fTrackRefsITS(0),
+    fTrackRefsTPC(0)
 {
 //
 // Constructor.
@@ -164,9 +167,18 @@ Bool_t AliRsnReader::FillFromESD
     }
     else
     {
-        vertex[0] = esd->GetPrimaryVertexTPC()->GetXv();
-        vertex[1] = esd->GetPrimaryVertexTPC()->GetYv();
-        vertex[2] = esd->GetPrimaryVertexTPC()->GetZv();
+        // when taking vertex from ESD event there are two options:
+        // if a vertex with tracks was successfully reconstructed, 
+        // it is used for computing DCA;
+        // otherwise, the one computed with SPD is used.
+        // This is known from the "Status" parameter of the vertex itself.
+        const AliESDVertex *v = esd->GetPrimaryVertex();
+        if (!v->GetStatus()) v = esd->GetPrimaryVertexSPD();
+        
+        // get primary vertex
+        vertex[0] = (Double_t)v->GetXv();
+        vertex[1] = (Double_t)v->GetYv();
+        vertex[2] = (Double_t)v->GetZv();
     }
     rsn->SetPrimaryVertex(vertex[0], vertex[1], vertex[2]);
 
@@ -242,12 +254,14 @@ Bool_t AliRsnReader::FillFromESD
         // set index and label and add this object to the output container
         temp.SetIndex(index);
         temp.SetLabel(label);
+        temp.ShiftZero(vertex[0], vertex[1], vertex[2]);
         AliRsnDaughter *ptr = rsn->AddTrack(temp);
         // if problems occurred while storing, that pointer is NULL
         if (!ptr) AliWarning(Form("Failed storing track#%d", index));
     }
 
     // compute total multiplicity
+    rsn->MakeComputations();
     if (rsn->GetMultiplicity() <= 0)
     {
         AliDebug(1, "Zero Multiplicity in this event");
@@ -330,6 +344,7 @@ Bool_t AliRsnReader::FillFromAOD(AliRsnEvent *rsn, AliAODEvent *aod, AliMCEvent 
     }
 
     // compute total multiplicity
+    rsn->MakeComputations();
     if (rsn->GetMultiplicity() <= 0)
     {
         AliDebug(1, "Zero multiplicity in this event");
@@ -372,15 +387,34 @@ Bool_t AliRsnReader::FillFromMC(AliRsnEvent *rsn, AliMCEvent *mc)
     rsn->SetPrimaryVertex(vertex[0], vertex[1], vertex[2]);
 
     // store tracks from MC
-    Int_t    index, labmum;
+    Int_t    i, index, labmum, nHitsITS, nHitsTPC, nRef;
     Bool_t check;
     AliRsnDaughter temp;
     for (index = 0; index < ntracks; index++)
     {
         // get and check MC track
         AliMCParticle *mcTrack = mc->GetTrack(index);
-        // if particle has no track references, it is rejected
-        if (mcTrack->GetNumberOfTrackReferences() <= 0) continue;
+        // check particle track references
+        nRef = mcTrack->GetNumberOfTrackReferences();
+        if (fTrackRefs > 0 && nRef < fTrackRefs) continue;
+        else if (fTrackRefsITS > 0 || fTrackRefsTPC > 0)
+        {
+          nHitsITS = nHitsTPC = 0;
+          for (i = 0; i < nRef; i++) {
+            AliTrackReference *trackRef = mcTrack->GetTrackReference(i);
+            if(trackRef)
+            {
+              Int_t detectorId = trackRef->DetectorId();
+              switch(detectorId) {
+                case AliTrackReference::kITS  : nHitsITS++  ; break ;
+                case AliTrackReference::kTPC  : nHitsTPC++  ; break ;
+                default : break ;
+              }
+            }
+          }
+          if (fTrackRefsITS > 0 && nHitsITS < fTrackRefsITS) continue;
+          if (fTrackRefsTPC > 0 && nHitsTPC < fTrackRefsTPC) continue;
+        }
         // try to insert in the RsnDaughter its data
         check = temp.Adopt(mcTrack);
         if (!check) continue;
@@ -399,6 +433,7 @@ Bool_t AliRsnReader::FillFromMC(AliRsnEvent *rsn, AliMCEvent *mc)
     }
 
     // compute total multiplicity
+    rsn->MakeComputations();
     if (rsn->GetMultiplicity() <= 0)
     {
         AliDebug(1, "Zero multiplicity in this event");

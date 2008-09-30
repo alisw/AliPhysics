@@ -25,17 +25,18 @@ ClassImp(AliRsnPair)
 
 //_____________________________________________________________________________
 AliRsnPair::AliRsnPair
-(EPairType type, AliRsnPairDef *def, Int_t mixNum) :
-    TObject(),
-    fIsMixed(kFALSE),
-    fUseMC(kFALSE),
-    fIsLikeSign(kFALSE),
-    fMixNum(mixNum),
-    fPairDef(def),
-    fPairType(type),
-    fTypePID(AliRsnDaughter::kRealistic),
-    fCutMgr(0),
-    fFunctions("AliRsnFunction", 0)
+(EPairType type, AliRsnPairDef *def, Int_t mixNum, Double_t mixVzCut, Int_t mixMultCut) :
+  TObject(),
+  fIsMixed(kFALSE),
+  fUseMC(kFALSE),
+  fIsLikeSign(kFALSE),
+  fMixNum(mixNum),
+  fMixingCut(0x0),
+  fPairDef(def),
+  fPairType(type),
+  fTypePID(AliRsnDaughter::kRealistic),
+  fCutMgr(0),
+  fFunctions("AliRsnFunction", 0)
 {
 //
 // Default constructor
@@ -123,16 +124,16 @@ void AliRsnPair::Print()
   AliInfo(Form("Number of functions %d", fFunctions.GetEntries()));
   switch(fTypePID) {
     case AliRsnDaughter::kNoPID:
-        AliInfo("PID method: none");
-        break;
+      AliInfo("PID method: none");
+      break;
     case AliRsnDaughter::kRealistic:
-        AliInfo("PID method: realistic");
-        break;
+      AliInfo("PID method: realistic");
+      break;
     case AliRsnDaughter::kPerfect:
-        AliInfo("PID method: perfect");
-        break;
+      AliInfo("PID method: perfect");
+      break;
     default:
-        AliInfo("PID method: undefined");
+      AliInfo("PID method: undefined");
     }
 }
 
@@ -145,22 +146,24 @@ void AliRsnPair::ProcessPair(AliRsnEventBuffer *buf)
 
   AliRsnEvent *e1 = buf->GetCurrentEvent();
   if (!e1) return;
-  if (e1->GetMultiplicity() < 1) return;
+//   if (e1->GetMultiplicity() < 1) return;
   TArrayI* array1 = e1->GetTracksArray(fTypePID, fPairDef->GetCharge(0), fPairDef->GetType(0));
-
+  
   Int_t i = 0;
   Int_t numMixed = 0;
-  Int_t lastOkEvent = 1;
+  Int_t lastOkEvent = 0;
   TArrayI* array2 = 0;
   for (i = 0; i < fMixNum; i++)
   {
     // find other event by event cut
-    AliRsnEvent *e2 = FindEventByEventCut(buf, lastOkEvent);
+    AliRsnEvent *e2 = 0;
+    e2 = FindEventByEventCut(buf, lastOkEvent);
     if (!e2) return;
-    if (e2->GetMultiplicity() < 1) return;
+//     if (e2->GetMultiplicity() < 1) continue;
     array2 = e2->GetTracksArray(fTypePID, fPairDef->GetCharge(1), fPairDef->GetType(1));
     LoopPair(e1, array1, e2, array2);
     numMixed++;
+    lastOkEvent++;
   }
 //  if (fIsMixed) AliInfo (Form ("NumMixed = %d",numMixed));
 }
@@ -178,7 +181,8 @@ AliRsnEvent * AliRsnPair::FindEventByEventCut(AliRsnEventBuffer *buf, Int_t& num
 
   if (fIsMixed)
   {
-    returnEvent = buf->GetEvent(buf->GetEventsBufferIndex() - num);
+    //returnEvent = buf->GetEvent(buf->GetEventsBufferIndex() - num);
+    returnEvent = buf->GetNextGoodEvent(num);
   }
   else
   {
@@ -197,8 +201,8 @@ void AliRsnPair::LoopPair
 // using the arrays of indexes and the events containing them.
 //
 
-  if (!a1) {AliError("No TArrayI 1 from currentEvent->GetTracksArray(...)"); return;}
-  if (!a2) {AliError("No TArrayI 2 from currentEvent->GetTracksArray(...)"); return;}
+  if (!a1) {AliDebug(4, "No TArrayI 1 from currentEvent->GetTracksArray(...)"); return;}
+  if (!a2) {AliDebug(4, "No TArrayI 2 from currentEvent->GetTracksArray(...)"); return;}
 
   AliRsnDaughter::SetPIDMethod(fTypePID);
   AliRsnDaughter *daughter1 = 0;
@@ -288,7 +292,7 @@ void AliRsnPair::GenerateHistograms(TString prefix, TList *tgt)
 }
 
 //_____________________________________________________________________________
-TString AliRsnPair::GetPairTypeName(EPairType type)
+TString AliRsnPair::GetPairTypeName(EPairType type) 
 {
 //
 // Returns type name, made with particle names ant chosen PID
@@ -311,7 +315,7 @@ TString AliRsnPair::GetPairTypeName(EPairType type)
 }
 
 //_____________________________________________________________________________
-TString AliRsnPair::GetPairName()
+TString AliRsnPair::GetPairName() 
 {
 //
 // Retruns pair name
@@ -371,11 +375,8 @@ void AliRsnPair::AddFunction(AliRsnFunction *fcn)
 //
 // Adds a new computing function
 //
-//     if (!fFunctions) fFunctions = new TList;
-  //fFunctions.Add((AliRsnFunction *)fcn->Clone());
   Int_t size = fFunctions.GetEntries();
   new(fFunctions[size]) AliRsnFunction(*fcn);
-  //fFunctions.AddLast(fcopy);
 }
 
 //________________________________________________________________________________________

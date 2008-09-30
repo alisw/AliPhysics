@@ -29,28 +29,22 @@ class AliRsnPair : public TObject
 
     enum EPairType
     {
-        kNoPID = 0,    kNoPIDMix,
-        kRealisticPID, kRealisticPIDMix,
-        kPerfectPID,   kPerfectPIDMix,
-        kTruePairs,
-        kPairTypes
+      kNoPID = 0,    kNoPIDMix,
+      kRealisticPID, kRealisticPIDMix,
+      kPerfectPID,   kPerfectPIDMix,
+      kTruePairs,
+      kPairTypes
     };
 
-    enum EOutputType
-    {
-      kInvMass = 0,
-      kInvMassResolution,
-      kOutputTypes
-    };
-
-
-    AliRsnPair (EPairType type = kRealisticPID, AliRsnPairDef *def = 0, Int_t mixNum = 1);
+    AliRsnPair(EPairType type = kRealisticPID, AliRsnPairDef *def = 0, 
+               Int_t mixNum = 1, Double_t mixVzCut = 1.0, Int_t mixMultCut = 10);
     ~AliRsnPair();
 
     void    Init();
     void    Print();
     void    ProcessPair(AliRsnEventBuffer *buf);
     void    SetCutMgr(AliRsnCutMgr* theValue) { fCutMgr = theValue; }
+    void    SetMixingCut(AliRsnCutSet* theValue) { fMixingCut = theValue; }
     void    AddFunction(AliRsnFunction *fcn);
     TList*  GenerateHistograms(TString prefix = "");
     void    GenerateHistograms(TString prefix, TList *tgt);
@@ -61,11 +55,11 @@ class AliRsnPair : public TObject
     TString GetPairHistTitle(AliRsnFunction *fcn, TString text="");
 
   private:
-  
+
     AliRsnPair (const AliRsnPair &copy) : TObject(copy),
-         fIsMixed(kFALSE),fUseMC(kFALSE),fIsLikeSign(kFALSE),fMixNum(1),
-         fPairDef(0x0),fPairType(kPairTypes),fTypePID(AliRsnDaughter::kRealistic),
-         fCutMgr(0x0),fFunctions("AliRsnFunction",0) {}
+      fIsMixed(kFALSE),fUseMC(kFALSE),fIsLikeSign(kFALSE),fMixNum(1),fMixingCut(0x0),
+      fPairDef(0x0),fPairType(kPairTypes),fTypePID(AliRsnDaughter::kRealistic),
+      fCutMgr(0x0),fFunctions("AliRsnFunction",0) {}
     AliRsnPair& operator=(const AliRsnPair&) {return *this;}
 
     void           SetUp(EPairType type);  // sets up all flags
@@ -73,13 +67,6 @@ class AliRsnPair : public TObject
     AliRsnEvent*   FindEventByEventCut(AliRsnEventBuffer *buf,Int_t & num);
     void           LoopPair(AliRsnEvent *ev1,TArrayI *a1,AliRsnEvent *ev2,TArrayI *a2);
 
-    void           FillHistogram(EOutputType type,AliRsnPairParticle*pairPart);
-    void           FillEffMass(EOutputType type,AliRsnPairParticle*pairPart);
-    void           FillResolution(EOutputType type,AliRsnPairParticle*pairPart);
-
-    TString        GetOutputTypeName(EOutputType type);
-    TString        GetOutputTypeTitle(EOutputType type);
-    
     Bool_t         CutPass(AliRsnDaughter *d);
     Bool_t         CutPass(AliRsnPairParticle *p);
     Bool_t         CutPass(AliRsnEvent *e);
@@ -89,6 +76,7 @@ class AliRsnPair : public TObject
     Bool_t         fUseMC;                   // using MC inv. mass ?
     Bool_t         fIsLikeSign;              // is a like-sign pair ?
     Int_t          fMixNum;                  // number of mixed events
+    AliRsnCutSet  *fMixingCut;               // cut for event mixing
     
     // work management
     AliRsnPairDef              *fPairDef;                // pair definition (particles, charges)

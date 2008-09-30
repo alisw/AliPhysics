@@ -317,11 +317,11 @@ Bool_t AliRsnCut::IsSelected(ETarget type, AliRsnDaughter *daughter)
     case kEtaMC:
       if (mcinfo) return IsBetween(mcinfo->Eta());
       else return kTRUE;
+    case kNSigma:
+      return IsBetween(daughter->NSigmaToVertex());
       /*
-      case kEsdNSigma:
-          return IsBetween (daughter->GetNSigma());
       case kEsdNSigmaCalculate:
-          return IsBetween (daughter->GetESDInfo()->GetNSigmaCalculate());
+      return IsBetween (daughter->GetESDInfo()->GetNSigmaCalculate());
       */
     default:
       AliWarning("Requested a cut which cannot be applied to a single track");
@@ -385,6 +385,33 @@ Bool_t AliRsnCut::IsSelected(ETarget type, AliRsnEvent * event)
   {
     case kMultiplicity:
       return IsBetween((Int_t) event->GetMultiplicity());
+    default:
+      AliWarning("Requested a cut which cannot be applied to an event");
+      return kTRUE;
+  }
+
+  return kTRUE;
+}
+
+//________________________________________________________________________________________________________________
+Bool_t AliRsnCut::IsSelected(ETarget type, AliRsnEvent * ev1, AliRsnEvent * ev2)
+{
+  AliDebug(AliLog::kDebug, "<-");
+
+  Double_t valueD;
+  Int_t    valueI;
+
+  switch (fType)
+  {
+    case kMultiplicityDifference:
+      valueI = TMath::Abs(ev1->GetMultiplicity() - ev2->GetMultiplicity());
+      return IsBetween((Int_t)valueI);
+    case kVzDifference:
+      valueD = TMath::Abs(ev1->GetVz() - ev2->GetVz());
+      return IsBetween((Double_t)valueD);
+    case kPhiMeanDifference:
+      valueD = TMath::Abs(ev1->GetPhiMean() - ev2->GetPhiMean());
+      return IsBetween((Double_t)valueD);
     default:
       AliWarning("Requested a cut which cannot be applied to an event");
       return kTRUE;

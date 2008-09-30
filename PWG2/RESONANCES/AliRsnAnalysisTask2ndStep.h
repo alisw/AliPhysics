@@ -41,12 +41,12 @@ class AliRsnAnalysisTask2ndStep : public AliAnalysisTaskSE
     void PostEventProcess();
 
   private:
-  
+
     AliRsnAnalysisTask2ndStep(const AliRsnAnalysisTask2ndStep& copy) :
         AliAnalysisTaskSE(copy),fOutList(0x0),fPairMgrs(0x0),fEventBuffer(0x0),
         fRsnHandlerAOD(0x0),fAnalysisMgr(0x0) {}
     AliRsnAnalysisTask2ndStep& operator= (const AliRsnAnalysisTask2ndStep&) {return *this;}
-  
+
     TList                       *fOutList;         // list of output histograms
     TObjArray                   *fPairMgrs;        // array if pair managers used
     AliRsnEventBuffer           *fEventBuffer;     // event buffer

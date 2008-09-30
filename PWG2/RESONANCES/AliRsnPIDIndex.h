@@ -1,10 +1,5 @@
-/**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               *
- **************************************************************************/
-
 //
-// *** Class AliRsnPIDIndex ***
+// Class AliRsnPIDIndex
 //
 // It sorts the indexes of all tracks in an AliRsnEvent
 // for a fast retrieval of them according to charge and PID.
@@ -22,7 +17,7 @@ class AliRsnPIDIndex : public TObject
 {
   public:
 
-    AliRsnPIDIndex(Int_t num = 2000);
+    AliRsnPIDIndex(Int_t num = 1000);
     AliRsnPIDIndex(const AliRsnPIDIndex &copy);
     AliRsnPIDIndex& operator= (const AliRsnPIDIndex& copy);
 

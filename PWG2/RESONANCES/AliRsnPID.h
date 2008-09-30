@@ -1,16 +1,13 @@
-/**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               *
- **************************************************************************/
-
-/* $Id: AliRsnPID.h,v 1.5 2007/02/21 14:33:25 pulvir Exp $ */
-
-//-------------------------------------------------------------------------
-//                      Class AliRsnPID
-//  Simple collection of reconstructed tracks, selected from an ESD event
 //
-// author: A. Pulvirenti             (email: alberto.pulvirenti@ct.infn.it)
-//-------------------------------------------------------------------------
+// Class AliRsnPID
+//
+// Processes the tracks to compute PID probabilities,
+// by combining the prior probabilities with the PID weights
+// stored in each AliRsnDaughter
+//
+// authors: A. Pulvirenti (alberto.pulvirenti@ct.infn.it)
+//          M. Vala (martin.vala@cern.ch)
+//
 
 #ifndef ALIRSNPID_H
 #define ALIRSNPID_H

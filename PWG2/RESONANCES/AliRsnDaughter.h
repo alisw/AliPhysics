@@ -5,7 +5,8 @@
 // which are used for resonance analysis.
 // Provides converters from all kinds of input track type: ESD, AOD and MC.
 //
-// author: A. Pulvirenti --- email: alberto.pulvirenti@ct.infn.it
+// authors: A. Pulvirenti (alberto.pulvirenti@ct.infn.it)
+//          M. Vala (martin.vala@cern.ch)
 //
 
 #ifndef ALIRSNDAUGHTER_H
@@ -15,6 +16,7 @@
 
 #include "AliVParticle.h"
 #include "AliRsnPID.h"
+#include "AliESDtrackCuts.h"
 
 class TParticle;
 
@@ -51,7 +53,6 @@ class AliRsnDaughter : public AliVParticle
       kLastPIDType
     };
 
-
     AliRsnDaughter();
     AliRsnDaughter(const AliRsnDaughter &copy);
     AliRsnDaughter(AliESDtrack *track, Bool_t useTPCInnerParam = kFALSE);
@@ -72,11 +73,14 @@ class AliRsnDaughter : public AliVParticle
     virtual Double_t Pt() const {return TMath::Sqrt(Px()*Px() + Py()*Py());}
     virtual Double_t OneOverPt() const {return 1.0 / Pt();}
     virtual Bool_t   PxPyPz(Double_t p[3]) const {p[0] = Px(); p[1] = Py(); p[2] = Pz(); return kTRUE;}
+    virtual Double_t Chi2() const {return fChi2;}
     void             SetPx(Double_t value) {fP[0] = value;}
     void             SetPy(Double_t value) {fP[1] = value;}
     void             SetPz(Double_t value) {fP[2] = value;}
     void             SetP(Double_t px, Double_t py, Double_t pz) {SetPx(px); SetPy(py); SetPz(pz);}
     void             SetM(Double_t m) {fMass = m;}
+    void             SetChi2(Double_t chi2) {fChi2 = chi2;}
+    void             RotateP(Double_t angle);
 
     // DCA vertex
     virtual Double_t Xv() const {return fV[0];}
@@ -98,7 +102,11 @@ class AliRsnDaughter : public AliVParticle
 
     // Charge
     virtual Short_t Charge() const {return fCharge;}
+    virtual Char_t  Kink() const {return fKink;}
+    virtual Bool_t  IsKinkMother() const {return (fKink < 0);}
+    virtual Bool_t  IsKinkDaughter() const {return (fKink > 0);}
     void            SetCharge(Short_t value) {fCharge = value;}
+    void            SetKink(Char_t kink) {fKink = kink;}
 
     // PID
     virtual const Double_t* PID() const {return fPIDWeight;}
@@ -110,10 +118,11 @@ class AliRsnDaughter : public AliVParticle
     AliRsnPID::EType        PIDType(Double_t &prob) const;
 
     // check that contains a given ESD flag
+    UInt_t  GetFlags() {return fFlags;}
     Bool_t  CheckFlag(ULong_t flag) {return ((fFlags & flag) == flag);}
 
     // information getters from objects
-    Bool_t  Adopt(AliESDtrack *track, EPIDType pidType = kEsd,Double_t divValue = 0.0,Bool_t useTPCInnerParam = kFALSE);
+    Bool_t  Adopt(AliESDtrack *track, EPIDType pidType = kEsd, Double_t divValue = 0.0, Bool_t useTPCInnerParam = kFALSE);
     Bool_t  Adopt(AliAODTrack *track);
     Bool_t  Adopt(AliMCParticle *track);
 
@@ -123,6 +132,17 @@ class AliRsnDaughter : public AliVParticle
     Int_t   GetLabel() const {return -1;}
     void    SetIndex(Int_t value) {fIndex = value;}
     void    SetLabel(Int_t value) {fLabel = value;}
+    
+    // N sigma to vertex
+    Float_t NSigmaToVertex() const { return fNSigmaToVertex; }
+    void    SetNSigmaToVertex(const Float_t& theValue) { fNSigmaToVertex = theValue; }
+
+
+    // ITS/TPC clusters
+    Int_t   NumberOfITSClusters() const {return fITSnum;}
+    Int_t   NumberOfTPCClusters() const {return fTPCnum;}
+    void    SetNumberOfITSClusters(Int_t n) {fITSnum = n;}
+    void    SetNumberOfTPCClusters(Int_t n) {fTPCnum = n;}
 
     // Utilities
     void    Print(Option_t *option = "ALL") const;
@@ -137,29 +157,40 @@ class AliRsnDaughter : public AliVParticle
     virtual Bool_t IsSortable() const {return kTRUE;}
     virtual Int_t  Compare(const TObject* obj) const;
 
+
   private:
+
+    static void GetESDPID
+    (AliESDtrack *track, Double_t *pid, EPIDType pidType = kEsd,
+     Double_t divValue = -1.0, Double_t val = -1.0);
 
     Int_t              fIndex;    // index of source object (ESD/AOD/MC) in its collection
     Int_t              fLabel;    // label assigned to the track (act. by GEANT3)
 
     Short_t            fCharge;   // charge sign
     ULong_t            fFlags;    // status flags
+    Char_t             fKink;     // kink index
 
     Double_t           fP[3];     // vector momentum (x, y, z)
     Double_t           fV[3];     // DCA vertex (x, y, z)
     Double_t           fMass;     // mass (assigned externally)
+    Double_t           fChi2;     // chi square of track
+    Float_t            fNSigmaToVertex; // N sigma to vertex
+
+    Int_t              fITSnum;   // number of ITS clusters
+    Int_t              fTPCnum;   // number of TPC clusters
 
     AliRsnPID::EType   fRealisticPID;                   // PID from Bayesian probs (largest one)
     Double_t           fPIDProb[AliRsnPID::kSpecies];   // PID probabilities (Bayesian comp.)
     Double_t           fPIDWeight[AliRsnPID::kSpecies]; // PID weights
 
     AliRsnMCInfo      *fMCInfo;     // reference to particle object (if any)
+    
+    AliESDtrackCuts    fESDTrackCuts; //! tmp object of AliESDtrackCuts for fNSigmaToVertex
 
     static EPIDMethod  fgPIDMethod; // flag to define how the PID is computed for this object
 
-    static void        GetESDPID(AliESDtrack *track,Double_t *pid,EPIDType pidType = kEsd,Double_t divValue=-1.0,Double_t val=-1.0);
-
-    ClassDef(AliRsnDaughter, 4);
+    ClassDef(AliRsnDaughter, 4)
 };
 
 #endif

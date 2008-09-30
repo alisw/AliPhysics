@@ -9,12 +9,12 @@
 #ifndef ALIRSNREADERTASK_H
 #define ALIRSNREADERTASK_H
 
-#include "AliRsnBaseAT.h"
+#include "AliRsnAnalysisTaskBase.h"
 
 class AliRsnPID;
 class AliRsnReader;
 
-class AliRsnReaderTask : public AliRsnBaseAT
+class AliRsnReaderTask : public AliRsnAnalysisTaskBase
 {
   public:
 

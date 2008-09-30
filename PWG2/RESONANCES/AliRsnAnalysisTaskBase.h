@@ -1,13 +1,13 @@
 //
-// Class AliRsnBaseAT
+// Class AliRsnAnalysisTaskBase
 //
 // TODO
 //
 // authors: Martin Vala (martin.vala@cern.ch)
 //          Alberto Pulvirenti (alberto.pulvirenti@ct.infn.it)
 //
-#ifndef ALIRSNBASEAT_H
-#define ALIRSNBASEAT_H
+#ifndef ALIRSNANALYSISTASKBASE_H
+#define ALIRSNANALYSISTASKBASE_H
 
 #include <TChain.h>
 
@@ -25,15 +25,15 @@ class AliMCEvent;
 #include "AliAODInputHandler.h"
 
 
-class AliRsnBaseAT : public AliAnalysisTask
+class AliRsnAnalysisTaskBase : public AliAnalysisTask
 {
   public:
-    AliRsnBaseAT(const char *name = "AliRsnBaseAT");
-    AliRsnBaseAT(const AliRsnBaseAT& copy):AliAnalysisTask(copy),
-       fNumOfEvents(0),fUseAutoHandler(kTRUE),
-       fRsnInput(1),fReader(),fPID(),fAnalysisMgr(0x0) {}
-    AliRsnBaseAT& operator= (const AliRsnBaseAT&) {return *this;}
-    virtual ~AliRsnBaseAT() {/* Does nothing*/}
+    AliRsnAnalysisTaskBase(const char *name = "AliRsnAnalysisTaskBase");
+    AliRsnAnalysisTaskBase(const AliRsnAnalysisTaskBase& copy):AliAnalysisTask(copy),
+        fNumOfEvents(0),fUseAutoHandler(kTRUE),
+        fRsnInput(1),fReader(),fPID(),fAnalysisMgr(0x0) {}
+    AliRsnAnalysisTaskBase& operator= (const AliRsnAnalysisTaskBase&) {return *this;}
+    virtual ~AliRsnAnalysisTaskBase() {/* Does nothing*/}
 
     enum EInputType
     {
@@ -69,7 +69,7 @@ class AliRsnBaseAT : public AliAnalysisTask
 
     AliRsnReader *GetReader() { return &fReader; }
     AliRsnPID *GetPID() { return &fPID;}
-    
+
   protected:
 
     Long64_t      fNumOfEvents;       // number of events
@@ -109,7 +109,7 @@ class AliRsnBaseAT : public AliAnalysisTask
     virtual AliRsnEvent*  GetRsnFromRSN(const Short_t &index=0);
 
 
-    ClassDef(AliRsnBaseAT, 1)
+    ClassDef(AliRsnAnalysisTaskBase, 1)
 };
 
 #endif

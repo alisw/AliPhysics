@@ -18,9 +18,9 @@ ClassImp(AliRsnHistoDef)
 
 //_____________________________________________________________________________
 AliRsnHistoDef::AliRsnHistoDef() :
-  fNBins(0),
-  fMin(0.0),
-  fMax(0.0)
+    fNBins(0),
+    fMin(0.0),
+    fMax(0.0)
 {
 //
 // Default constructor
@@ -30,14 +30,14 @@ AliRsnHistoDef::AliRsnHistoDef() :
 //_____________________________________________________________________________
 AliRsnHistoDef::AliRsnHistoDef
 (Int_t nbins, Double_t min, Double_t max) :
-  fNBins(0),
-  fMin(0.0),
-  fMax(0.0)
+    fNBins(0),
+    fMin(0.0),
+    fMax(0.0)
 {
 //
 // 1D histo definition.
 //
-    SetBins(nbins, min, max);
+  SetBins(nbins, min, max);
 }
 
 //_____________________________________________________________________________
@@ -46,14 +46,16 @@ void AliRsnHistoDef::SetBins(Int_t n, Double_t min, Double_t max)
 //
 // Binning for histogram.
 //
-    fNBins = n;
-    
-    if (min < max) {
-        fMin = min;
-        fMax = max;
-    }
-    else {
-        fMin = max;
-        fMax = min;
-    }
+  fNBins = n;
+
+  if (min < max)
+  {
+    fMin = min;
+    fMax = max;
+  }
+  else
+  {
+    fMin = max;
+    fMax = min;
+  }
 }

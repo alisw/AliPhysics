@@ -4,7 +4,7 @@
 // Histogram definition.
 // Contains required informations to create a histogram
 // with fixed bin size: number of bins, minimum and maximum.
-// Variable bin sizes are not considered because they are 
+// Variable bin sizes are not considered because they are
 // not used as typical output of analysis in this package.
 //
 

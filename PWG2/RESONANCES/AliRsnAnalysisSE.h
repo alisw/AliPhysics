@@ -22,7 +22,7 @@ class AliRsnAnalysisSE : public AliRsnAnalysisTaskSEBase
   public:
     AliRsnAnalysisSE(const char *name = "AliRsnAnalysisSE");
     AliRsnAnalysisSE(const AliRsnAnalysisSE& copy): AliRsnAnalysisTaskSEBase(copy),
-       fPairMgrs(0),fOutList(0x0),fRsnEventBuffer(0x0),fNumOfEventsInBuffer(100) {}
+        fPairMgrs(0),fOutList(0x0),fRsnEventBuffer(0x0),fNumOfEventsInBuffer(100) {}
     AliRsnAnalysisSE& operator= (const AliRsnAnalysisSE&) {return *this;}
     ~AliRsnAnalysisSE();
 
