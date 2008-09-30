@@ -42,8 +42,6 @@ ClassImp(AliTRDtrackInfo::AliESDinfo)
 //___________________________________________________
 AliTRDtrackInfo::AliTRDtrackInfo():
   TObject()
-  ,fTriggerCluster(-1)
-  ,fTriggerClassName("")
   ,fNClusters(0)
   ,fTRDtrack(0x0)
   ,fOP(0x0)
@@ -53,15 +51,12 @@ AliTRDtrackInfo::AliTRDtrackInfo():
   //
   // Default constructor
   //
-
 }
 
 
 //___________________________________________________
 AliTRDtrackInfo::AliTRDtrackInfo(const AliTRDtrackInfo &trdInfo):
   TObject((const TObject&)trdInfo)  
-  ,fTriggerCluster(trdInfo.fTriggerCluster)
-  ,fTriggerClassName(trdInfo.fTriggerClassName)
   ,fNClusters(trdInfo.fNClusters)
   ,fTRDtrack(0x0)
   ,fOP(0x0)

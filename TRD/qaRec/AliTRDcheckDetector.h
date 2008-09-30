@@ -7,6 +7,7 @@
 
 class TObjArray;
 class TMap;
+class AliESDHeader;
 class AliTRDcheckDetector : public AliTRDrecoTask{
 // common constants
 enum{
@@ -19,7 +20,7 @@ enum{
 // The Histogram number
 enum{
   kNTracksEventHist=0,
-  kNEventsTrigger=1,
+  kNEventsTriggerTracks=1,
   kNclustersHist=2,
   kNtrackletsHist=3,
   kNclusterTrackletHist=4,
@@ -29,12 +30,14 @@ enum{
   kPulseHeight=8,
   kClusterCharge=9,
   kChargeDeposit=10,
-  kPostProcessing=18
+  kNEventsTrigger=11,
+  kPostProcessing=19
 };
 public:
   AliTRDcheckDetector();
   virtual ~AliTRDcheckDetector();
   
+  virtual void ConnectInputData(const Option_t *);
   virtual void CreateOutputObjects();
   virtual void Exec(Option_t *);
   virtual void Terminate(Option_t *);
@@ -45,6 +48,7 @@ public:
 private:
   AliTRDcheckDetector(const AliTRDcheckDetector &);
   AliTRDcheckDetector& operator=(const AliTRDcheckDetector &);
+  AliTRDeventInfo *fEventInfo;						//! ESD Header
   TObjArray *fPHSdetector;						//! PHS container for single Detectors
   TObjArray *fPHSsector;							//! PHS container for whole sector
   TObjArray *fQCLdetector;						//!	Cluster Charge Container for single detector

@@ -9,7 +9,8 @@ SRCS= qaRec/AliTRDtrackInfoGen.cxx \
       qaRec/AliTRDtrackingResolution.cxx \
       qaRec/AliTRDtrackingEfficiency.cxx \
       qaRec/AliTRDtrackingEfficiencyCombined.cxx \
-      qaRec/AliTRDtrackInfo/AliTRDtrackInfo.cxx
+      qaRec/AliTRDtrackInfo/AliTRDtrackInfo.cxx \
+      qaRec/AliTRDtrackInfo/AliTRDeventInfo.cxx
 
 HDRS= $(SRCS:.cxx=.h)
 

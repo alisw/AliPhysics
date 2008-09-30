@@ -93,8 +93,6 @@ public:
   Int_t              GetLabel() const { return fMC ? fMC->fLabel:0; }
   Int_t              GetPDG() const { return fMC ? fMC->fPDG : 0; }
   ULong_t            GetStatus() const {return fESD.fStatus;}
-  UChar_t            GetTriggerCluster() const {return fTriggerCluster;}
-  TString            GetTriggerClassName() const {return fTriggerClassName;}
   AliTRDseedV1*      GetTracklet(Int_t entry) const;
   AliTRDtrackV1 *	 	 GetTRDtrack() const { return fTRDtrack; }
   AliTrackReference* GetTrackRef(Int_t entry) const;
@@ -114,8 +112,6 @@ public:
   void               SetOuterParam(const AliExternalTrackParam *op);
   void               SetStatus(ULong_t stat) {fESD.fStatus = stat;}
   void               SetTrackId(Int_t id) {fESD.fId = id;}
-  void               SetTriggerCluster(Int_t clusterPattern){fTriggerCluster = clusterPattern;}
-  void               SetFiredTriggerClass(TString classname){ fTriggerClassName = classname; }
   void               SetTRDtrack(const AliTRDtrackV1 *track);
   void               SetPidQuality(UChar_t q) { fESD.fTRDpidQuality = q;}
   void               SetSlices(Int_t n, Double32_t*);
@@ -127,9 +123,6 @@ private:
   		kPrim = 15
 	};
   // this 2 data members have to go to ESD header.
-  UChar_t            fTriggerCluster;	// Trigger cluster pattern
-  TString            fTriggerClassName; // Name of the fired trigger class
-
   Int_t              fNClusters;     	// Numer of clusters from refit
   AliTRDtrackV1      *fTRDtrack; 	    // tracklets data array
   AliExternalTrackParam *fOP;       	// outer param if no tracklets

@@ -43,6 +43,7 @@
 
 #include "AliESDfriend.h"
 #include "AliESDfriendTrack.h"
+#include "AliESDHeader.h"
 #include "AliESDtrack.h"
 #include "AliMCParticle.h"
 #include "AliStack.h"
@@ -56,6 +57,7 @@
 
 #include "AliTRDtrackInfoGen.h"
 #include "AliTRDtrackInfo/AliTRDtrackInfo.h"
+#include "AliTRDtrackInfo/AliTRDeventInfo.h"
 
 ClassImp(AliTRDtrackInfoGen)
 
@@ -69,6 +71,7 @@ AliTRDtrackInfoGen::AliTRDtrackInfoGen():
   ,fMC(0x0)
   ,fESDfriend(0x0)
   ,fTrackInfo(0x0)
+  ,fEventInfo(0x0)
 {
   //
   // Default constructor
@@ -76,6 +79,7 @@ AliTRDtrackInfoGen::AliTRDtrackInfoGen():
 
   DefineInput(0, TChain::Class());
   DefineOutput(0, TObjArray::Class());
+  DefineOutput(1, AliTRDeventInfo::Class());
   //DefineOutput(1, TTree::Class());
 }
 
@@ -83,6 +87,7 @@ AliTRDtrackInfoGen::AliTRDtrackInfoGen():
 AliTRDtrackInfoGen::~AliTRDtrackInfoGen()
 {
   if(fTrackInfo) delete fTrackInfo;
+  if(fEventInfo) delete fEventInfo;
 }
 
 //____________________________________________________________________
@@ -128,6 +133,7 @@ void AliTRDtrackInfoGen::CreateOutputObjects()
   // Create Output Containers (TObjectArray containing 1D histograms)
   //
   fTrackInfo = new AliTRDtrackInfo();
+  fEventInfo = new AliTRDeventInfo();
   fContainer = new TObjArray(1000);
 
 /*  OpenFile(1, "RECREATE");
@@ -155,6 +161,7 @@ void AliTRDtrackInfoGen::Exec(Option_t *){
   }
   fContainer->Delete();
   fESD->SetESDfriend(fESDfriend);
+  new(fEventInfo)AliTRDeventInfo(fESD->GetHeader(), const_cast<AliESDRun *>(fESD->GetESDRun()));
   
   Bool_t *trackMap = 0x0;
   AliStack * mStack = 0x0;
@@ -262,8 +269,6 @@ void AliTRDtrackInfoGen::Exec(Option_t *){
     fTrackInfo->SetTrackId(esdTrack->GetID());
     fTrackInfo->SetLabel(label);
     fTrackInfo->SetNumberOfClustersRefit(esdTrack->GetNcls(2));
-    fTrackInfo->SetFiredTriggerClass(fESD->GetFiredTriggerClasses());
-    fTrackInfo->SetTriggerCluster(fESD->GetHeader()->GetTriggerCluster());
     nclsTrklt = 0;
   
 
@@ -355,6 +360,7 @@ void AliTRDtrackInfoGen::Exec(Option_t *){
     delete[] trackMap;
   }
   PostData(0, fContainer);
+  PostData(1, fEventInfo);
 }
 
 
@@ -364,7 +370,6 @@ void AliTRDtrackInfoGen::Terminate(Option_t *)
   //
   // Stays empty because we are only interested in the tree
   //
-
   if(fDebugLevel>=1) printf("Terminate:\n");
   //TFile *f =((TFile*)gROOT->FindObject("TRD.TrackInfo.root"));
   //f->cd(); f->Write(); f->Close();

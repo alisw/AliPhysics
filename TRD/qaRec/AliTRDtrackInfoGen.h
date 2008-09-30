@@ -19,6 +19,7 @@ class AliESDEvent;
 class AliMCEvent;
 class AliESDfriend;
 class AliTRDtrackInfo;
+class AliTRDeventInfo;
 class TObjArray;
 class TTreeSRedirector;
 
@@ -44,6 +45,7 @@ private:
   AliMCEvent       *fMC;                   // MC event
   AliESDfriend     *fESDfriend;            // ESD friends
   AliTRDtrackInfo  *fTrackInfo;            // Track info
+  AliTRDeventInfo  *fEventInfo;		   // Event info
 
   ClassDef(AliTRDtrackInfoGen, 1)          // entry to TRD analysis
 };

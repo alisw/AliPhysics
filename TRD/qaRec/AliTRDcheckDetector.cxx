@@ -10,11 +10,14 @@
 #include <TROOT.h>
 
 #include "AliTRDcluster.h"
+#include "AliESDHeader.h"
+#include "AliESDRun.h"
 #include "AliTRDseedV1.h"
 #include "AliTRDtrackV1.h"
 #include "TTreeStream.h"
 
 #include "AliTRDtrackInfo/AliTRDtrackInfo.h"
+#include "AliTRDtrackInfo/AliTRDeventInfo.h"
 #include "AliTRDcheckDetector.h"
 
 #include <cstdio>
@@ -34,6 +37,7 @@
 //_______________________________________________________
 AliTRDcheckDetector::AliTRDcheckDetector():
   AliTRDrecoTask("DetChecker", "Basic Detector Checker")
+  ,fEventInfo(0x0)
   ,fPHSdetector(0x0)
   ,fPHSsector(0x0)
   ,fQCLdetector(0x0)
@@ -45,6 +49,7 @@ AliTRDcheckDetector::AliTRDcheckDetector():
   //
   // Default constructor
   //
+  DefineInput(1,AliTRDeventInfo::Class());
 }
 
 //_______________________________________________________
@@ -52,6 +57,7 @@ AliTRDcheckDetector::~AliTRDcheckDetector(){
   //
   // Destructor
   // 
+  if(fEventInfo) delete fEventInfo;
   if(fPHSdetector) delete fPHSdetector;
   if(fPHSsector) delete fPHSsector;
   if(fQCLdetector) delete fQCLdetector;
@@ -62,35 +68,33 @@ AliTRDcheckDetector::~AliTRDcheckDetector(){
 }
 
 //_______________________________________________________
+void AliTRDcheckDetector::ConnectInputData(Option_t *opt){
+	//
+	// Connect the Input data with the task
+	//
+	AliTRDrecoTask::ConnectInputData(opt);
+	fEventInfo = dynamic_cast<AliTRDeventInfo *>(GetInputData(1));
+}
+
+//_______________________________________________________
 void AliTRDcheckDetector::CreateOutputObjects(){
   //
   // Create Output Objects
   //
   fContainer = new TObjArray();
-  TH1F *hNtrks = new TH1F("hNtrks", "Number of Tracks per event", 100, 0, 100);
-  TH1F *hNcls = new TH1F("hNcls", "Nr. of clusters per track", 30, 0, 180);
-  TH1F *hNtls = new TH1F("hNtls", "Nr. tracklets per track", 10, 0, 10);
-  TH1F *hNclTls = new TH1F("hNclTls","Mean Number of clusters per tracklet", 30, 0, 30);
-  TH1F *hChi2 = new TH1F("hChi2", "Chi2", 200, 0, 20);
-  TH1F *hChi2n = new TH1F("hChi2n", "Norm. Chi2 (tracklets)", 50, 0, 5);
-  TH1F *hSM = new TH1F("hSM", "Track Counts in Supermodule", 18, 0., 18.);
-  TH1F *hQcl = new TH1F("hQcl1", "Cluster charge", 200, -1200, 1200);
-  TProfile *hPH = new TProfile("hPH", "Average PH", 31, -0.5, 30.5);
-  TH1F * hQT = new TH1F("hQT", "Total Charge Deposit", 6000, 0, 6000);
-  TH1F * hEventsTrigger = new TH1F("hEventsTrigger", "Trigger Class", 20, 0, 20);
   // Register Histograms
-  fContainer->Add(hNtrks);
-  fContainer->Add(hEventsTrigger);
-  fContainer->Add(hNcls);
-  fContainer->Add(hNtls);
-  fContainer->Add(hNclTls);
-  fContainer->Add(hChi2);
-  fContainer->Add(hChi2n);
-  fContainer->Add(hSM);
-  fContainer->Add(hPH);
-  fContainer->Add(hQcl);
-  fContainer->Add(hQT);
-
+  fContainer->Add(new TH1F("hNtrks", "Number of Tracks per event", 100, 0, 100));
+  fContainer->Add(new TH1F("hEventsTriggerTracks", "Trigger Class (Tracks)", 20, 0, 20));
+  fContainer->Add(new TH1F("hNcls", "Nr. of clusters per track", 30, 0, 180));
+  fContainer->Add(new TH1F("hNtls", "Nr. tracklets per track", 10, 0, 10));
+  fContainer->Add(new TH1F("hNclTls","Mean Number of clusters per tracklet", 30, 0, 30));
+  fContainer->Add(new TH1F("hChi2", "Chi2", 200, 0, 20));
+  fContainer->Add(new TH1F("hChi2n", "Norm. Chi2 (tracklets)", 50, 0, 5));
+  fContainer->Add(new TH1F("hSM", "Track Counts in Supermodule", 18, 0., 18.));
+  fContainer->Add(new TProfile("hPH", "Average PH", 31, -0.5, 30.5));
+  fContainer->Add(new TH1F("hQcl1", "Cluster charge", 200, -1200, 1200));
+  fContainer->Add(new TH1F("hQT", "Total Charge Deposit", 6000, 0, 6000));
+  fContainer->Add(new TH1F("hEventsTrigger", "Trigger Class", 20, 0, 20));
   // Initialise the PHS, cluster charge and total charge deposit histograms for each detector
   fPHSdetector = new TObjArray();
   fPHSdetector->SetName("fPHSdetector");
@@ -133,9 +137,11 @@ void AliTRDcheckDetector::Exec(Option_t *){
   // Execution function
   // Filling TRD quality histos
   //
+  if(fEventInfo->GetEventHeader()->GetEventType() != 7) return;
   Int_t nTracks = 0;		// Count the number of tracks per event
-  Int_t triggermask = 0;
-  TString triggername =  "notrack";
+  Int_t triggermask = fEventInfo->GetEventHeader()->GetTriggerMask();
+  TString triggername =  fEventInfo->GetRunInfo()->GetTriggerClass(triggermask);
+  dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNEventsTrigger))->Fill(triggermask);
   AliTRDtrackInfo *fTrackInfo = 0x0;
   AliTRDtrackV1 *fTRDtrack = 0x0;
   AliTRDseedV1 *fTracklet = 0x0;
@@ -143,10 +149,6 @@ void AliTRDcheckDetector::Exec(Option_t *){
   for(Int_t iti = 0; iti < fTracks->GetEntriesFast(); iti++){
     fTrackInfo = dynamic_cast<AliTRDtrackInfo *>(fTracks->UncheckedAt(iti));
     if(!fTrackInfo || !(fTRDtrack = fTrackInfo->GetTRDtrack())) continue;
-    if(!triggermask){
-    	triggermask = fTrackInfo->GetTriggerCluster();
-	triggername =  fTrackInfo->GetTriggerClassName();
-    }
     Int_t nclusters = fTRDtrack->GetNumberOfClusters();
     Int_t ntracklets = fTRDtrack->GetNumberOfTracklets();
     Float_t chi2 = fTRDtrack->GetChi2();
@@ -193,8 +195,8 @@ void AliTRDcheckDetector::Exec(Option_t *){
     }
     nTracks++;
   }
+  if(nTracks) dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNEventsTriggerTracks))->Fill(triggermask);
   dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNTracksEventHist))->Fill(nTracks);
-  dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNEventsTrigger))->Fill(triggermask);
   if(!fTriggerNames->FindObject(Form("%d", triggermask)))
     fTriggerNames->Add(new TObjString(Form("%d", triggermask)), new TObjString(triggername));
   PostData(0, fContainer);
@@ -246,7 +248,8 @@ Bool_t AliTRDcheckDetector::PostProcess(){
 	histo->GetYaxis()->SetTitle("Entries");
 	// Calculate the Percentage of events containing tracks as function of the trigger cluster
 	histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNEventsTrigger));
-	Double_t nEvents = histo->Integral();
+	TH1F *histoTracks = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNEventsTriggerTracks));
+	histoTracks->Divide(histo);
 	fTriggerNames = dynamic_cast<TMap *>(fContainer->UncheckedAt(17));
 	TH1F *percentages = new TH1F("fTriggerInf", "Trigger Information", fTriggerNames->GetEntries(), 0, fTriggerNames->GetEntries());
 	TObject *triggerclass = 0x0;
@@ -255,8 +258,7 @@ Bool_t AliTRDcheckDetector::PostProcess(){
 		if((triggerclass = fTriggerNames->FindObject(Form("%d",ibin)))){
 			TObjString *label = dynamic_cast<TObjString *>(dynamic_cast<TPair *>(triggerclass)->Value());
 			//printf("Trigger Pattern for class %d: %s\n", ibin, label->String().Data());
-			//printf("Percentage of Events: %f\n", histo->GetBinContent(histo->FindBin(ibin))/nEvents);
-			percentages->SetBinContent(percentages->FindBin(ipt), histo->GetBinContent(histo->FindBin(ibin))/nEvents);
+			percentages->SetBinContent(percentages->FindBin(ipt), histoTracks->GetBinContent(histoTracks->FindBin(ibin)));
 			percentages->GetXaxis()->SetBinLabel(percentages->FindBin(ipt),label->String().Data());
 			ipt++;
 		}	
