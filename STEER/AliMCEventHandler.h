@@ -52,7 +52,7 @@ public:
     virtual Bool_t       GetEvent(Int_t iev);
     virtual void         SetReadTR(Bool_t flag) { fReadTR = flag; }
     //
-    AliMCEvent* MCEvent() const {return fMCEvent;} 
+    AliMCEvent* MCEvent() const {if (fInitOk == kTRUE) {return fMCEvent;} else {return 0;}} 
     TTree*      TreeTR()  const {return fTreeTR;}
     TTree*      TreeK()   const {return fTreeK;}
     Int_t       GetParticleAndTR(Int_t i, TParticle*& particle, TClonesArray*& trefs);
@@ -78,6 +78,7 @@ private:
     Int_t             fFileNumber;       //! Input file number
     Int_t             fEventsPerFile;    //! Number of events per file
     Bool_t            fReadTR;           // determines if TR shall be read
+    Bool_t            fInitOk;           // Initialization ok
     ClassDef(AliMCEventHandler,1)  //MC Truth EventHandler class
 };
 #endif 

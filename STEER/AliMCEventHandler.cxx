@@ -59,7 +59,8 @@ AliMCEventHandler::AliMCEventHandler() :
     fExtension(""),
     fFileNumber(0),
     fEventsPerFile(0),
-    fReadTR(kTRUE)
+    fReadTR(kTRUE),
+    fInitOk(kFALSE)
 {
   //
   // Default constructor
@@ -85,7 +86,8 @@ AliMCEventHandler::AliMCEventHandler(const char* name, const char* title) :
     fExtension(""),
     fFileNumber(0),
     fEventsPerFile(0),
-    fReadTR(kTRUE)
+    fReadTR(kTRUE),
+    fInitOk(kFALSE)
 {
   //
   // Constructor
@@ -109,8 +111,12 @@ Bool_t AliMCEventHandler::Init(Option_t* opt)
     if (!(strcmp(opt, "proof")) || !(strcmp(opt, "local"))) return kTRUE;
     //
     fFileE = TFile::Open(Form("%sgalice.root", fPathName->Data()));
-    if (!fFileE) AliFatal(Form("AliMCEventHandler:galice.root not found in directory %s ! \n", fPathName->Data()));
-
+    if (!fFileE) {
+	AliError(Form("AliMCEventHandler:galice.root not found in directory %s ! \n", fPathName->Data()));
+	fInitOk = kFALSE;
+	return kFALSE;
+    }
+    
     //
     // Tree E
     fFileE->GetObject("TE", fTreeE);
@@ -120,19 +126,29 @@ Bool_t AliMCEventHandler::Init(Option_t* opt)
     //
     // Tree K
     fFileK = TFile::Open(Form("%sKinematics%s.root", fPathName->Data(), fExtension));
-    if (!fFileK) AliFatal(Form("AliMCEventHandler:Kinematics.root not found in directory %s ! \n", fPathName));
+    if (!fFileK) {
+	AliError(Form("AliMCEventHandler:Kinematics.root not found in directory %s ! \n", fPathName));
+	fInitOk = kFALSE;
+	return kFALSE;
+    }
+    
     fEventsPerFile = fFileK->GetNkeys() - fFileK->GetNProcessIDs();
     //
     // Tree TR
     if (fReadTR) {
-      fFileTR = TFile::Open(Form("%sTrackRefs%s.root", fPathName->Data(), fExtension));
-      if (!fFileTR) AliWarning(Form("AliMCEventHandler:TrackRefs.root not found in directory %s ! \n", fPathName->Data()));
+	fFileTR = TFile::Open(Form("%sTrackRefs%s.root", fPathName->Data(), fExtension));
+	if (!fFileTR) {
+	    AliError(Form("AliMCEventHandler:TrackRefs.root not found in directory %s ! \n", fPathName->Data()));
+	    fInitOk = kFALSE;
+	    return kFALSE;
+	}
     }
     //
     // Reset the event number
     fEvent      = -1;
     fFileNumber =  0;
     AliInfo(Form("Number of events in this directory %5d \n", fNEvent));
+    fInitOk = kTRUE;
     return kTRUE;
 }
 
@@ -141,6 +157,8 @@ Bool_t AliMCEventHandler::GetEvent(Int_t iev)
     // Load the event number iev
     //
     // Calculate the file number
+    if (!fInitOk) return kFALSE;
+    
     Int_t inew  = iev / fEventsPerFile;
     if (inew != fFileNumber) {
 	fFileNumber = inew;
@@ -178,7 +196,6 @@ Bool_t AliMCEventHandler::GetEvent(Int_t iev)
 Bool_t AliMCEventHandler::OpenFile(Int_t i)
 {
     // Open file i
-    Bool_t ok = kTRUE;
     if (i > 0) {
 	fExtension = Form("%d", i);
     } else {
@@ -189,18 +206,23 @@ Bool_t AliMCEventHandler::OpenFile(Int_t i)
     delete fFileK;
     fFileK = TFile::Open(Form("%sKinematics%s.root", fPathName->Data(), fExtension));
     if (!fFileK) {
-	AliFatal(Form("AliMCEventHandler:Kinematics%s.root not found in directory %s ! \n", fExtension, fPathName->Data()));
-	ok = kFALSE;
+	AliError(Form("AliMCEventHandler:Kinematics%s.root not found in directory %s ! \n", fExtension, fPathName->Data()));
+	fInitOk = kFALSE;
+	return kFALSE;
     }
     
-    delete fFileTR;
-    fFileTR = TFile::Open(Form("%sTrackRefs%s.root", fPathName->Data(), fExtension));
-    if (!fFileTR) {
-	AliWarning(Form("AliMCEventHandler:TrackRefs%s.root not found in directory %s ! \n", fExtension, fPathName->Data()));
-	ok = kFALSE;
+    if (fReadTR) {
+	delete fFileTR;
+	fFileTR = TFile::Open(Form("%sTrackRefs%s.root", fPathName->Data(), fExtension));
+	if (!fFileTR) {
+	    AliWarning(Form("AliMCEventHandler:TrackRefs%s.root not found in directory %s ! \n", fExtension, fPathName->Data()));
+	    fInitOk = kFALSE;
+	    return kFALSE;
+	}
     }
     
-    return ok;
+    fInitOk = kTRUE;
+    return kTRUE;
 }
 
 Bool_t AliMCEventHandler::BeginEvent(Long64_t entry)
@@ -223,7 +245,11 @@ Bool_t AliMCEventHandler::BeginEvent(Long64_t entry)
 Int_t AliMCEventHandler::GetParticleAndTR(Int_t i, TParticle*& particle, TClonesArray*& trefs)
 {
     // Retrieve entry i
-    return (fMCEvent->GetParticleAndTR(i, particle, trefs));
+    if (!fInitOk) {
+	return 0;
+    } else {
+	return (fMCEvent->GetParticleAndTR(i, particle, trefs));
+    }
 }
 
 void AliMCEventHandler::DrawCheck(Int_t i, Int_t search)
@@ -271,6 +297,7 @@ void AliMCEventHandler::ResetIO()
     if (fFileK)  {delete fFileK;  fFileK  = 0;}
     if (fFileTR) {delete fFileTR; fFileTR = 0;}
     fExtension="";
+    fInitOk = kFALSE;
 }
 
 			    
