@@ -21,6 +21,7 @@
 #include "AliTRDcheckDetector.h"
 
 #include <cstdio>
+#include <iostream>
 
 ////////////////////////////////////////////////////////////////////////////
 //                                                                        //
@@ -250,16 +251,16 @@ Bool_t AliTRDcheckDetector::PostProcess(){
 	histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNEventsTrigger));
 	TH1F *histoTracks = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNEventsTriggerTracks));
 	histoTracks->Divide(histo);
-	fTriggerNames = dynamic_cast<TMap *>(fContainer->UncheckedAt(17));
+	fTriggerNames = dynamic_cast<TMap *>(fContainer->UncheckedAt(18));
 	TH1F *percentages = new TH1F("fTriggerInf", "Trigger Information", fTriggerNames->GetEntries(), 0, fTriggerNames->GetEntries());
 	TObject *triggerclass = 0x0;
 	Int_t ipt=0;
 	for(Int_t ibin = 0; ibin < histo->GetNbinsX(); ibin++){
 		if((triggerclass = fTriggerNames->FindObject(Form("%d",ibin)))){
 			TObjString *label = dynamic_cast<TObjString *>(dynamic_cast<TPair *>(triggerclass)->Value());
-			//printf("Trigger Pattern for class %d: %s\n", ibin, label->String().Data());
+			printf("Trigger Pattern for class %d: %s\n", ibin, label->String().Data());
 			percentages->SetBinContent(percentages->FindBin(ipt), histoTracks->GetBinContent(histoTracks->FindBin(ibin)));
-			percentages->GetXaxis()->SetBinLabel(percentages->FindBin(ipt),label->String().Data());
+			percentages->GetXaxis()->SetBinLabel(percentages->FindBin(ibin),label->String().Data());
 			ipt++;
 		}	
 	}
