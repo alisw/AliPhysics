@@ -53,6 +53,8 @@
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
  * \li -verbose<br>
  *      print out some more info messages, mainly for the sake of tutorials
+ * \li -silent<br>
+ *      suppress all info messages
  * \li -skipempty
  *      skip all empty ddls in the specified range; by default, the component
  *      generates and inserts empty data blocks
@@ -172,8 +174,8 @@ class AliHLTRawReaderPublisherComponent : public AliHLTOfflineDataSource {
   /** max equipment id */
   int                     fMaxEquId;                               //!transient
 
-  /** be verbose: info printouts */
-  Bool_t                  fVerbose;                                //!transient
+  /** verbosity */
+  Int_t                   fVerbosity;                              //!transient
 
   /** data type */
   AliHLTComponentDataType fDataType;                               //!transient

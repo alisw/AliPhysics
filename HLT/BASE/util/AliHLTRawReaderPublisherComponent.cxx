@@ -45,7 +45,7 @@ AliHLTRawReaderPublisherComponent::AliHLTRawReaderPublisherComponent()
   fDetector(),
   fMinEquId(-1),
   fMaxEquId(-1),
-  fVerbose(kFALSE),
+  fVerbosity(1),
   fDataType(kAliHLTVoidDataType),
   fSpecification(kAliHLTVoidDataSpec),
   fSkipEmpty(kFALSE)
@@ -131,7 +131,11 @@ int AliHLTRawReaderPublisherComponent::DoInit( int argc, const char** argv )
 
       // -verbose
     } else if (argument.CompareTo("-verbose")==0) {
-      fVerbose=kTRUE;
+      fVerbosity=2;
+
+      // -silent
+    } else if (argument.CompareTo("-silent")==0) {
+      fVerbosity=0;
 
       // -skipempty
     } else if (argument.CompareTo("-skipempty")==0) {
@@ -234,7 +238,7 @@ int AliHLTRawReaderPublisherComponent::GetEvent(const AliHLTComponentEventData& 
   if (pRawReader) {
     pRawReader->Reset();
     pRawReader->SelectEquipment(-1, fMinEquId, fMaxEquId);
-    if (fVerbose) {
+    if (fVerbosity>1) {
       AliInfo(Form("get event from RawReader %p equipment id range [%d,%d]", pRawReader, fMinEquId, fMaxEquId));
     } else {
       AliDebug(0, Form("get event from RawReader %p equipment id range [%d,%d]", pRawReader, fMinEquId, fMaxEquId));
@@ -248,7 +252,11 @@ int AliHLTRawReaderPublisherComponent::GetEvent(const AliHLTComponentEventData& 
       }
       unsigned int readSize=pRawReader->GetDataSize()+sizeof(AliRawDataHeader);
       int id=pRawReader->GetEquipmentId();
-      AliInfo(Form("got header for id %d, size %d", id, readSize));
+      if (fVerbosity>0) {
+	AliInfo(Form("got header for id %d, size %d", id, readSize));
+      } else {
+	AliDebug(0, Form("got header for id %d, size %d", id, readSize));
+      }
       if (fMinEquId>id || fMaxEquId<id) {
 	AliError(Form("id %d returned from RawReader is outside range [%d,%d]", id, fMinEquId, fMaxEquId));
 	continue;
