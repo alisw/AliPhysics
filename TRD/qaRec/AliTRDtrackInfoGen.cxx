@@ -59,6 +59,8 @@
 
 ClassImp(AliTRDtrackInfoGen)
 
+const Float_t AliTRDtrackInfoGen::xTPC = 290.;
+const Float_t AliTRDtrackInfoGen::xTOF = 365.;
 
 //____________________________________________________________________
 AliTRDtrackInfoGen::AliTRDtrackInfoGen():
@@ -181,7 +183,7 @@ void AliTRDtrackInfoGen::Exec(Option_t *){
     if(esdTrack->GetNcls(1)) nTPC++;
     if(esdTrack->GetNcls(2)) nTRD++;
 
-    // look at esternal track param
+    // look at external track param
     const AliExternalTrackParam *op = esdTrack->GetOuterParam();
     Double_t xyz[3];
     if(op){
@@ -211,7 +213,7 @@ void AliTRDtrackInfoGen::Exec(Option_t *){
       Int_t iref = 0; AliTrackReference *ref = 0x0; 
       while(iref<nRefs){
         ref = mcParticle->GetTrackReference(iref);
-        if(ref->LocalX() > 250.) break;
+        if(ref->LocalX() > xTPC) break;
         //printf("\ttrackRef[%2d] @ %7.3f\n", iref, ref->LocalX());
         iref++;
       }
@@ -233,7 +235,7 @@ void AliTRDtrackInfoGen::Exec(Option_t *){
       Int_t jref = iref;//, kref = 0;
       while(jref<nRefs){
         ref = mcParticle->GetTrackReference(jref);
-        if(ref->LocalX() > 370.) break;
+        if(ref->LocalX() > xTOF) break;
         if(fDebugLevel>=3) printf("\ttrackRef[%2d (%2d)] @ %7.3f OK\n", jref-iref, jref, ref->LocalX());
         fTrackInfo->AddTrackRef(ref);
         jref++;

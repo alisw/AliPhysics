@@ -396,19 +396,21 @@ void AliTRDtrackingResolution::GetRefFigure(Int_t ifig, Int_t &first, Int_t &las
 Bool_t AliTRDtrackingResolution::Resolution(AliTRDseedV1 *tracklet, AliTRDtrackInfo *fInfo, Double_t &p, Double_t &ymc, Double_t &zmc, Double_t &phi, Double_t &theta)
 {
 
-  AliTrackReference *fTrackRefs[2] = {0x0, 0x0},   *tempTrackRef = 0x0;
+  AliTrackReference *fTrackRefs[2] = {0x0, 0x0};
+  Float_t x0 = tracklet->GetX0();
 
   // check for 2 track ref where the radial position has a distance less than 3.7mm
   Int_t nFound = 0;
-  for(Int_t itr = 0; itr < fInfo->GetNTrackRefs(); itr++){
-    if(!(tempTrackRef = fInfo->GetTrackRef(itr))) continue;
-    if(fDebugLevel>=5) printf("TrackRef %d: x = %f\n", itr, tempTrackRef->LocalX());
-    if(TMath::Abs(tracklet->GetX0() - tempTrackRef->LocalX()) > 3.7) continue;
-    fTrackRefs[nFound++] = tempTrackRef;
+  for(Int_t itr = 0; itr < AliTRDtrackInfo::kNTrackRefs; itr++){
+    if(!(fTrackRefs[nFound] = fInfo->GetTrackRef(itr))) break;
+
+    if(fDebugLevel>=5) printf("\t\tref[%2d] x[%6.3f]\n", itr, fTrackRefs[nFound]->LocalX());
+    if(TMath::Abs(x0 - fTrackRefs[nFound]->LocalX()) > 3.7) continue;
+    nFound++;
     if(nFound == 2) break;
   }
   if(nFound < 2){ 
-    if(fDebugLevel>=4) printf("\t\tFound track crossing [%d] refX[%6.3f]\n", nFound, nFound>0 ? fTrackRefs[0]->LocalX() : 0.);
+    if(fDebugLevel>=3) printf("\t\tMissing track ref x0[%6.3f] ly[%d] nref[%d]\n", x0, tracklet->GetPlane(), fInfo->GetMCinfo()->GetNTrackRefs());
     return kFALSE;
   }
   // We found 2 track refs for the tracklet, get y and z at the anode wire by a linear approximation
@@ -417,7 +419,7 @@ Bool_t AliTRDtrackingResolution::Resolution(AliTRDseedV1 *tracklet, AliTRDtrackI
   // RESOLUTION
   Double_t dx = fTrackRefs[1]->LocalX() - fTrackRefs[0]->LocalX();
   if(dx <= 0.){
-    if(fDebugLevel>=4) printf("\t\ttrack ref in the wrong order refX0[%6.3f] refX1[%6.3f]\n", fTrackRefs[0]->LocalX(), fTrackRefs[1]->LocalX());
+    if(fDebugLevel>=3) printf("\t\tTrack ref in the wrong order refX0[%6.3f] refX1[%6.3f]\n", fTrackRefs[0]->LocalX(), fTrackRefs[1]->LocalX());
     return kFALSE;
   }
   Double_t dydx = (fTrackRefs[1]->LocalY() - fTrackRefs[0]->LocalY()) / dx;
@@ -464,16 +466,20 @@ Bool_t AliTRDtrackingResolution::Resolution(AliTRDseedV1 *tracklet, AliTRDtrackI
       << "dphi="		<< dphi
       << "\n";
 
+    Int_t det, stk;
     Float_t z0 = 0.;
     AliTRDpadPlane *pp = 0x0;
     AliTRDcluster *c = 0x0;
-    for(Int_t ic=AliTRDseed::knTimebins-1; ic>=0; ic--){
-      if(!(c = tracklet->GetClusters(ic))) continue;
+    tracklet->ResetClusterIter(kFALSE);
+    while((c = tracklet->PrevCluster())){
       if(!pp){
-        pp = fGeo->GetPadPlane(iplane, fGeo->GetStack(c->GetDetector()));
+        det = c->GetDetector();
+        stk = fGeo->GetStack(det);
+        pp = fGeo->GetPadPlane(iplane, stk);
         z0 = pp->GetRow0() + AliTRDSimParam::Instance()->GetAnodeWireOffset();
       }
-      dx = tracklet->GetX0() - c->GetX(); 
+      Float_t xc = c->GetX();
+      dx = tracklet->GetX0() - xc; 
       Float_t yt = ymc - dx*dydx;
       Float_t zt = zmc - dx*dzdx; 
       Float_t yc = c->GetY() - TMath::Tan(tracklet->GetTilt()) * (c->GetZ() - zt);
@@ -481,11 +487,18 @@ Bool_t AliTRDtrackingResolution::Resolution(AliTRDseedV1 *tracklet, AliTRDtrackI
       Float_t d = z0 - zt;
       d -= ((Int_t)(2 * d)) / 2.0;
       (*fDebugStream) << "ResolutionClstr"
+        << "det="	 	  << det
         << "ly="	 	  << iplane
+        << "stk="	 	  << stk
         << "pdg="     << pdg
         << "p="       << p
         << "phi="			<< phi
         << "tht="		  << theta
+        << "xc="       << xc
+        << "yc="       << yc
+        << "yt="       << yt
+        << "zt="       << zt
+        << "z0="       << z0
         << "d="       << d
         << "dy="		  << dy
         << "\n";

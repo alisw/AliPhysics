@@ -25,6 +25,9 @@ class AliTrackReference;
 class AliExternalTrackParam;
 class AliTRDtrackInfo : public TObject{
 public:
+  enum{
+    kNTrackRefs = 12
+  };
   class AliESDinfo{
   friend class AliTRDtrackInfo;
   public:
@@ -60,12 +63,12 @@ public:
     Int_t   GetLabel() const {return fLabel;}
     Int_t   GetNTrackRefs() const {return fNTrackRefs;}
     Int_t   GetPDG() const {return fPDG;}
-    AliTrackReference** GetTrackRefIter() {return &fTrackRefs[0];}
+    //AliTrackReference* const* GetTrackRefIter() const {return &fTrackRefs[0];}
   protected:
     Int_t   fLabel;             // MC label  
     Int_t   fPDG;               // particle code
     Int_t   fNTrackRefs;    	// number of track refs
-    AliTrackReference  *fTrackRefs[12];	// track refs array
+    AliTrackReference  *fTrackRefs[kNTrackRefs];	// track refs array
     ClassDef(AliMCinfo, 1)      // MC info related to TRD
   };
 

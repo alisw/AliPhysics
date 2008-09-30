@@ -33,11 +33,12 @@ public:
   void  Exec(Option_t *);
   void  Terminate(Option_t *);
 
+  static const Float_t xTPC;
+  static const Float_t xTOF;
+
 private:
   AliTRDtrackInfoGen(const AliTRDtrackInfoGen&);
   AliTRDtrackInfoGen& operator=(const AliTRDtrackInfoGen&);
-
-private:
 
   AliESDEvent      *fESD;                  // ESD event
   AliMCEvent       *fMC;                   // MC event
