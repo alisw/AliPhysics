@@ -775,6 +775,7 @@ Bool_t AliITStrackerMI::GetTrackPoint(Int_t index, AliTrackPoint& p) const {
   cl->GetGlobalCov(cov);
   p.SetXYZ(xyz, cov);
   p.SetCharge(cl->GetQ());
+  p.SetDriftTime(cl->GetDriftTime());
   AliGeomManager::ELayerID iLayer = AliGeomManager::kInvalidLayer; 
   switch (l) {
   case 0:
@@ -844,6 +845,7 @@ Bool_t AliITStrackerMI::GetTrackPointTrackingError(Int_t index,
 
   p.SetXYZ(xyz, cov);
   p.SetCharge(cl->GetQ());
+  p.SetDriftTime(cl->GetDriftTime());
 
   AliGeomManager::ELayerID iLayer = AliGeomManager::kInvalidLayer; 
   switch (l) {
