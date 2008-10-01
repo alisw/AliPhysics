@@ -52,7 +52,7 @@ public:
     virtual Bool_t       GetEvent(Int_t iev);
     virtual void         SetReadTR(Bool_t flag) { fReadTR = flag; }
     //
-    AliMCEvent* MCEvent() const {if (fInitOk == kTRUE) {return fMCEvent;} else {return 0;}} 
+    AliMCEvent* MCEvent() const {return fMCEvent;} 
     TTree*      TreeTR()  const {return fTreeTR;}
     TTree*      TreeK()   const {return fTreeK;}
     Int_t       GetParticleAndTR(Int_t i, TParticle*& particle, TClonesArray*& trefs);

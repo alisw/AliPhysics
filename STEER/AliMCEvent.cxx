@@ -180,6 +180,10 @@ void AliMCEvent::FinishEvent()
     if (fTRBuffer)
       fTRBuffer->Delete();
     fTrackReferences->Delete();
+    fNparticles = -1;
+    fNprimaries = -1;    
+    fStack      =  0;
+    
 }
 
 
