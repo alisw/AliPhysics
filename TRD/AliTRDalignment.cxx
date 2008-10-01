@@ -485,15 +485,13 @@ void AliTRDalignment::ReadCurrentGeo()
   // represent just the last alignment. -- check this!
   //
 
+  TGeoPNEntry *pne;
   TGeoHMatrix *ideSm[18];  // ideal
   TGeoHMatrix *misSm[18];  // misaligned
-  for (int i = 0; i < 18; i++) {
+  for (int i = 0; i < 18; i++) if (pne = gGeoManager->GetAlignableEntry(GetSmName(i))) {
 
     // read misaligned and original matrices
 
-    TGeoPNEntry      *pne  = gGeoManager->GetAlignableEntry(GetSmName(i));
-    if (!pne) AliError(Form("no such physical node entry: %s",GetSmName(i)));
-    if (!pne) continue;
     TGeoPhysicalNode *node = pne->GetPhysicalNode();
     if (!node) AliError(Form("physical node entry %s has no physical node",GetSmName(i)));
     if (!node) continue;
@@ -525,13 +523,10 @@ void AliTRDalignment::ReadCurrentGeo()
 
   TGeoHMatrix *ideCh[540]; // ideal
   TGeoHMatrix *misCh[540]; // misaligned
-  for (int i = 0; i < 540; i++) {
+  for (int i = 0; i < 540; i++) if (pne = gGeoManager->GetAlignableEntry(GetChName(i))) {
 
     // read misaligned and original matrices
 
-    TGeoPNEntry      *pne  = gGeoManager->GetAlignableEntry(GetChName(i));
-    if (!pne) AliError(Form("no such physical node entry: %s",GetChName(i)));
-    if (!pne) continue;
     TGeoPhysicalNode *node = pne->GetPhysicalNode();
     if (!node) AliError(Form("physical node entry %s has no physical node",GetChName(i)));
     if (!node) continue;
@@ -1204,13 +1199,15 @@ void AliTRDalignment::NumbersToAr(TClonesArray *ar)
   }
 
   for (int i = 0; i < 540; i++) {
-    new(alobj[nobj]) AliAlignObjParams(GetChName(i)
-                                      ,GetVoi(i)
-				      ,fCh[i][0],fCh[i][1],fCh[i][2]
-				      ,fCh[i][3],fCh[i][4],fCh[i][5]
-				      ,0);
-    ((AliAlignObj *) alobj[nobj])->ApplyToGeometry();
-    nobj++;
+    if (gGeoManager->GetAlignableEntry(GetChName(i))) {
+      new(alobj[nobj]) AliAlignObjParams(GetChName(i)
+					 ,GetVoi(i)
+					 ,fCh[i][0],fCh[i][1],fCh[i][2]
+					 ,fCh[i][3],fCh[i][4],fCh[i][5]
+					 ,0);
+      ((AliAlignObj *) alobj[nobj])->ApplyToGeometry();
+      nobj++;
+    }
   }
   AliInfo("current geometry modified");
 
