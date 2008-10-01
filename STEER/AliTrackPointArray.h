@@ -117,7 +117,7 @@ class AliTrackPointArray : public TObject {
   Float_t   *fCov;       //[fSize] Array with space point coordinates cov matrix
   UShort_t  *fVolumeID;  //[fNPoints] Array of space point volume IDs
 
-  ClassDef(AliTrackPointArray,3)
+  ClassDef(AliTrackPointArray,4)
 };
 
 #endif
