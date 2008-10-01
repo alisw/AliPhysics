@@ -186,6 +186,13 @@ int AliHLTFMDReconstructionComponent::DoEvent( const AliHLTComponentEventData& e
     fmdReader->ReadAdcs(digitArray);
     rec.ReconstructDigits(digitArray);
     
+    delete reader;
+    delete fmdReader;
+    delete digitArray;
+    
+    reader = NULL;
+    fmdReader = NULL;
+    digitArray = NULL;
   }
   
   Int_t iResult = 0;
@@ -193,6 +200,9 @@ int AliHLTFMDReconstructionComponent::DoEvent( const AliHLTComponentEventData& e
   esd.SetFMDData(rec.GetFMDData());
   
   iResult=PushBack(&esd, kAliHLTDataTypeESDObject|kAliHLTDataOriginFMD, 0);
+  
+  
+  
   
   return 0;
 }

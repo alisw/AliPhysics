@@ -1,4 +1,3 @@
-// @(#) $Id: AliHLTAgentSample.h 25820 2008-05-16 11:47:09Z richterm $
 
 #ifndef ALIHLTAGENTFMD_H
 #define ALIHLTAGENTFMD_H
@@ -6,7 +5,7 @@
  * See cxx source for full Copyright notice                               */
 
 /** @file   AliHLTAgentSample.h
-    @author Matthias Richter
+    @author Hans Hjersin Dalsgaard
     @date   
     @brief  Agent of the libAliHLTSample library
 */
