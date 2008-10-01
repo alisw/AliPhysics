@@ -99,17 +99,16 @@ void AliTRDReconstructor::Init(){
   //
   SetOption(GetOption());
 
-  AliInfo("TRD reconstruction will use the following settings:");
-  printf("\tDigitsConversion       [dc] : %s\n", fSteerParam&kDigitsConversion?"yes":"no");
-  printf("\tWrite Clusters         [cw] : %s\n", fSteerParam&kWriteClusters?"yes":"no");
-  printf("\tWrite Online Tracklets [tw] : %s\n", fSteerParam&kWriteTracklets?"yes":"no");
-  printf("\tDrift Gas Argon        [ar] : %s\n", fSteerParam&kDriftGas?"yes":"no");
-  printf("\tStand Alone Tracking   [sa] : %s\n", fSteerParam&kSeeding?"yes":"no");
-  printf("\tHLT         Tracking  [hlt] : %s\n", fSteerParam&kHLT?"yes":"no");
-  printf("\tCosmic Reconstruction [cos] : %s\n", fSteerParam&kCosmic?"yes":"no");
-  printf("\tNN PID                 [nn] : %s\n", fSteerParam&kSteerPID?"yes":"no");
-  printf("\t8 dEdx slices in ESD   [8s] : %s\n", fSteerParam&kEightSlices?"yes":"no");
-  printf("\tStreaming Levels            : Clusterizer[%d] Tracker[%d] PID[%d]\n", fStreamLevel[kClusterizer], fStreamLevel[kTracker], fStreamLevel[kPID]);
+  AliInfo(Form("\tDigitsConversion       [dc] : %s", fSteerParam&kDigitsConversion?"yes":"no"));
+  AliInfo(Form("\tWrite Clusters         [cw] : %s", fSteerParam&kWriteClusters?"yes":"no"));
+  AliInfo(Form("\tWrite Online Tracklets [tw] : %s", fSteerParam&kWriteTracklets?"yes":"no"));
+  AliInfo(Form("\tDrift Gas Argon        [ar] : %s", fSteerParam&kDriftGas?"yes":"no"));
+  AliInfo(Form("\tStand Alone Tracking   [sa] : %s", fSteerParam&kSeeding?"yes":"no"));
+  AliInfo(Form("\tHLT         Tracking  [hlt] : %s", fSteerParam&kHLT?"yes":"no"));
+  AliInfo(Form("\tCosmic Reconstruction [cos] : %s", fSteerParam&kCosmic?"yes":"no"));
+  AliInfo(Form("\tNN PID                 [nn] : %s", fSteerParam&kSteerPID?"yes":"no"));
+  AliInfo(Form("\t8 dEdx slices in ESD   [8s] : %s", fSteerParam&kEightSlices?"yes":"no"));
+  AliInfo(Form("\tStreaming Levels            : Clusterizer[%d] Tracker[%d] PID[%d]", fStreamLevel[kClusterizer], fStreamLevel[kTracker], fStreamLevel[kPID]));
 }
 
 //_____________________________________________________________________________
