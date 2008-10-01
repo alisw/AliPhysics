@@ -276,7 +276,7 @@ Bool_t AliShuttle::StoreOCDB()
 	Bool_t resultMetadata = kTRUE;
 	if(fCurrentDetector == "GRP") 
 	{
-		Log("StoreOCDB - SHUTTLE","Storing Run Metadata file ...");
+		Log("SHUTTLE","StoreOCDB - Storing Run Metadata file ...");
 		resultMetadata = CopyFilesToGrid("metadata");
 	}
 	
