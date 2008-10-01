@@ -21,7 +21,10 @@ AliAltroBunch::AliAltroBunch() :
   fData(NULL),
   fBunchSize(-1),
   fEndTimeBin(0),
-  fStartTimeBin(999)
+  fStartTimeBin(999),
+  fPrewBunchSize(0),
+  fPrevEndTimeBin(0)
+//  fIsFirstBunch(true)
 {
   // Default constructor
 }

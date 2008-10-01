@@ -19,13 +19,14 @@
 ClassImp(AliAltroData)
 
 AliAltroData::AliAltroData(): fData(0),
-				    fBunchData(0),
-				    fDataSize(0),
-				    fWc(0),
-                                    fHadd(-1),
-                                    fPrevHadd(-1),
-				    fBunchCounter(0),
-				    fIsComplete(0)
+			      fBunchData(0),
+			      fDataSize(0),
+			      fWc(0),
+			      fHadd(-1),
+			      fPrevHadd(-1),
+			      fBunchCounter(0),
+			      fIsComplete(0),
+			      fBufferLeft(0)
 {
 
 
@@ -92,12 +93,12 @@ AliAltroData::NextBunch(AliAltroBunch *altroBunch)
 
 
 
-Bool_t AliAltroData::NextBunch(AliAltroBunch *altroBunch)
+ //Bool_t AliAltroData::NextBunch(AliAltroBunch *altroBunch)
+int AliAltroData::NextBunch(AliAltroBunch *altroBunch)
 {
 
   if(fIsComplete == kTRUE)
     {
-
       if(fBunchCounter == 0)
 	{
 	  fBunchData = &fData[fDataSize - 1];
@@ -108,9 +109,43 @@ Bool_t AliAltroData::NextBunch(AliAltroBunch *altroBunch)
 	  if(*fBunchData == 0){ fWc += 1;};
 	  fWc += *fBunchData;
 	  altroBunch->SetData(fData + fDataSize - fWc);
-	  altroBunch->SetBunchSize(*fBunchData -2);
+
+	  int tmpsize =  *fBunchData -2;  
+
+	  //	  altroBunch->SetBunchSize(         *fBunchData -2       );
+	  altroBunch->SetBunchSize( tmpsize );
+	  
+
+	  fBufferLeft -= *fBunchData;
+	  //	  printf("%s:%d, bufferleft = %d \n", __FILE__,  __LINE__ , fBufferLeft);
 	  fBunchData --;
 	  altroBunch->SetEndTimeBin( *fBunchData );
+	  
+	  //	  if( (fBufferLeft <=  7 ) || ( fBufferLeft - tmpsize)  <= 7)
+	  if( fBufferLeft - tmpsize  <= 7)
+	    {
+	      //	      printf("%s:%d, ERROR, attempt too access buffer outside allowed range\n",  __FILE__ ,  __LINE__ );
+	      return kFALSE;
+	    }
+	  
+
+	  if(fBunchCounter >0)
+	    {
+	      int tmpret = altroBunch->CheckConsistency();
+	      
+	      if(tmpret != kTRUE)
+		{
+		  return tmpret;
+		}
+
+	      /*
+		if( altroBunch->CheckConsistency() == kFALSE)
+		{
+		  return kFALSE;
+		}
+	      */
+	    }
+
 	  //	  altroBunch->SetStartTimeBin(*fBunchData - fBunchSize);
 	  fBunchData -= (altroBunch->GetBunchSize() +1);
 
@@ -121,7 +156,6 @@ Bool_t AliAltroData::NextBunch(AliAltroBunch *altroBunch)
 	      //	      printf("ERROR altroBunch->GetStartTimeBin( ) is  %d", (int)altroBunch->GetStartTimeBin( ) );
 	      return kFALSE;
 	    }
-
 
 	  fBunchCounter ++;
 	  return kTRUE;
@@ -136,7 +170,7 @@ Bool_t AliAltroData::NextBunch(AliAltroBunch *altroBunch)
   else
     {
       //     printf("\nAliAltroData::NextBunch: WARNING, dataset is not complet. 2AAA endmarker is missing ");
-      //    printf("\nfor branch %d, card %d, chip %d, channel %d\n",  GetBranch(), GetCard(), GetChip(), GetChannel());
+      //     printf("\nfor branch %d, card %d, chip %d, channel %d\n",  GetBranch(), GetCard(), GetChip(), GetChannel());
       return kFALSE;
     }
 

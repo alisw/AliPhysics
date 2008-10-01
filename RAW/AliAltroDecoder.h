@@ -21,6 +21,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 
+#define DECODERERROR -3
+
 #include <TObject.h>
 
 #include <iostream>
@@ -86,10 +88,6 @@ class AliAltroDecoder: public TObject {
    * @return kTRUE if trailer available;
    */
   Bool_t  GetRCUTrailerData(UChar_t*& data) const;
-
-  /**
-   * Provide size of RCU trailer.
-   */
   Int_t   GetRCUTrailerSize() const;
 
  private:
@@ -117,7 +115,10 @@ class AliAltroDecoder: public TObject {
   Int_t    fInComplete;                      // Number of altro channels that is read out properly
   Bool_t   fDecodeIfCorruptedTrailer;        // Wether or not to try to decode the data if the RCU trailer is incorrect (will succseed in most cases)
   Bool_t   fIsDecoded;                       // Wether or not the buffer set last by the "SetMemory()" function has been decoded
-  Bool_t  fIsFatalCorruptedTrailer;          // If trailer is fataly corrupted, not possible in any way to recover, then it is not allowed to decode the DDL payload.  
+  Bool_t   fIsFatalCorruptedTrailer;          // If trailer is fataly corrupted, not possible in any way to recover, then it is not allowed to decode the DDL payload.  
+
+  //  Bool_t   fIsFirstChannelOfPayload;
+
 
   ClassDef(AliAltroDecoder, 0)  // class for decoding Altro payload
 };
