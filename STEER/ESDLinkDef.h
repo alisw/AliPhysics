@@ -48,8 +48,6 @@
 #pragma link C++ class  AliTrackPointArray+;
 #pragma link C++ class  AliTrackPoint+;
 
-#pragma link C++ class AliESDTagCreator+;
-
 #pragma link C++ class AliTrackPointArray+;
 #pragma link C++ class AliTrackPoint+;
 

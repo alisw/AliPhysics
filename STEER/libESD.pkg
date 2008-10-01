@@ -10,7 +10,6 @@ SRCS = AliESDEvent.cxx AliESDInputHandler.cxx AliESDInputHandlerRP.cxx AliESDfri
        AliKalmanTrack.cxx AliExternalTrackParam.cxx \
        AliVertexerTracks.cxx AliStrLine.cxx \
        AliESDV0Params.cxx \
-       AliESDTagCreator.cxx \
        AliTrackPointArray.cxx \
        AliESDFMD.cxx AliFMDMap.cxx AliFMDFloatMap.cxx \
        AliESDMultITS.cxx \

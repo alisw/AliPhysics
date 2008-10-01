@@ -68,6 +68,7 @@ AliTriggerRunScalers.cxx AliGRPPreprocessor.cxx \
 AliGRPRecoParam.cxx \
 AliRunInfo.cxx AliEventInfo.cxx \
 AliRelAlignerKalman.cxx \
+AliESDTagCreator.cxx \
 AliGRPObject.cxx
 
 
