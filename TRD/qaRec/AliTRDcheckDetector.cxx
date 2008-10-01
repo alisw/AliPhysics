@@ -141,7 +141,7 @@ void AliTRDcheckDetector::Exec(Option_t *){
   if(fEventInfo->GetEventHeader()->GetEventType() != 7) return;
   Int_t nTracks = 0;		// Count the number of tracks per event
   Int_t triggermask = fEventInfo->GetEventHeader()->GetTriggerMask();
-  TString triggername =  fEventInfo->GetRunInfo()->GetTriggerClass(triggermask);
+  TString triggername =  fEventInfo->GetRunInfo()->GetFiredTriggerClasses(triggermask);
   dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNEventsTrigger))->Fill(triggermask);
   AliTRDtrackInfo *fTrackInfo = 0x0;
   AliTRDtrackV1 *fTRDtrack = 0x0;
@@ -221,8 +221,6 @@ Bool_t AliTRDcheckDetector::PostProcess(){
 	histo->GetYaxis()->SetTitle("Events");
 	// Calculate percentage of events containing tracks
 	Int_t entries = (Int_t)histo->GetEntries();
-  Float_t percTracks = entries > 0 ? (entries - histo->GetBinContent(1))/Float_t(entries) : 0.;
-	printf("Percentage of Events containing TRD Tracks: %6.3f %%\n", 1.E2*percTracks);
 	histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNclustersHist));
 	histo->GetXaxis()->SetTitle("Number of Clusters");
 	histo->GetYaxis()->SetTitle("Entries");
@@ -258,14 +256,14 @@ Bool_t AliTRDcheckDetector::PostProcess(){
 	for(Int_t ibin = 0; ibin < histo->GetNbinsX(); ibin++){
 		if((triggerclass = fTriggerNames->FindObject(Form("%d",ibin)))){
 			TObjString *label = dynamic_cast<TObjString *>(dynamic_cast<TPair *>(triggerclass)->Value());
-			printf("Trigger Pattern for class %d: %s\n", ibin, label->String().Data());
+			//printf("Trigger Pattern for class %d: %s\n", ibin, label->String().Data());
 			percentages->SetBinContent(percentages->FindBin(ipt), histoTracks->GetBinContent(histoTracks->FindBin(ibin)));
-			percentages->GetXaxis()->SetBinLabel(percentages->FindBin(ibin),label->String().Data());
+			percentages->GetXaxis()->SetBinLabel(percentages->FindBin(ipt),label->String().Data());
 			ipt++;
 		}	
 	}
 	percentages->GetXaxis()->SetTitle("Trigger Cluster");
-	percentages->GetYaxis()->SetTitle("%Events");
+	percentages->GetYaxis()->SetTitle("Ratio");
 	percentages->GetYaxis()->SetRangeUser(0,1);
 //	percentages->SetMarkerColor(kBlue);
 //	percentages->SetMarkerStyle(22);

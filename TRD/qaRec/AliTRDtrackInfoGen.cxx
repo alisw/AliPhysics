@@ -54,6 +54,7 @@
 
 #include <cstdio>
 #include <cstring>
+#include <iostream>
 
 #include "AliTRDtrackInfoGen.h"
 #include "AliTRDtrackInfo/AliTRDtrackInfo.h"
@@ -88,6 +89,7 @@ AliTRDtrackInfoGen::~AliTRDtrackInfoGen()
 {
   if(fTrackInfo) delete fTrackInfo;
   //if(fEventInfo) delete fEventInfo;
+  //fTrackInfo = 0x0; fEventInfo = 0x0;
 }
 
 //____________________________________________________________________
@@ -160,6 +162,7 @@ void AliTRDtrackInfoGen::Exec(Option_t *){
     return;
   }
   fContainer->Delete();
+  fEventInfo->Delete("");
   fESD->SetESDfriend(fESDfriend);
   new(fEventInfo)AliTRDeventInfo(fESD->GetHeader(), const_cast<AliESDRun *>(fESD->GetESDRun()));
   

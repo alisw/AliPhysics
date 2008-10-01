@@ -65,11 +65,9 @@ AliTRDchamberTimeBin::AliTRDchamberTimeBin(Int_t plane, Int_t stack, Int_t secto
   // Default constructor (Only provided to use AliTRDchamberTimeBin with arrays)
   //
 
-  for(int i=0; i<kMaxRows; i++) fPositions[i] = 0xff;
-  for(int ic=0; ic<kMaxClustersLayer; ic++){
-    fClusters[ic] = 0x0;
-    fIndex[ic]    = 0xffff;
-  }
+  memset(fPositions, 1, kMaxRows*sizeof(UChar_t));
+  memset(fClusters, 0, kMaxClustersLayer*sizeof(AliTRDcluster*));
+  memset(fIndex, 1, kMaxClustersLayer*sizeof(UInt_t));
 }
 
 // //_____________________________________________________________________________
