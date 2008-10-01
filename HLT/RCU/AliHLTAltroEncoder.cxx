@@ -94,7 +94,11 @@ int AliHLTAltroEncoder::AddSignal(AliHLTUInt16_t signal, AliHLTUInt16_t timebin)
   // see header file for class documentation
   int iResult=0;
   if (fPrevTimebin!=AliHLTUInt16MAX) {
-    assert(fPrevTimebin!=timebin);
+    if (fPrevTimebin==timebin){
+      HLTWarning("timebin missmatch, two subsequent signals with identical time added, ignoring signal %d at time %d", signal, timebin);
+      return -EINVAL;
+    }
+    //assert(fPrevTimebin!=timebin);
     if (fOrder==kUnknownOrder) {
       if (fPrevTimebin+1==timebin) fOrder=kAscending;
       else if (fPrevTimebin==timebin+1) fOrder=kDescending;
@@ -213,6 +217,7 @@ int AliHLTAltroEncoder::Add10BitValue(AliHLTUInt16_t value)
   int shift=bit%8;
   unsigned short maskLow=~((0xff<<shift)>>8);
   //unsigned short maskHigh=~((0xff<<((bit+10)%8))>>8);
+  if (bit==0) fpBuffer[fOffset]=0;
   fpBuffer[fOffset++]|=maskLow&(value<<shift);
   fpBuffer[fOffset]=(value&0x3ff)>>(8-shift);
   f10bitWords++;
