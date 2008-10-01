@@ -37,7 +37,10 @@ private:
     TGComboBox           *fDetectorListBox; //drop down menun
     TGComboBox           *fLevelListBox; //drop down menu
     TGComboBox           *fHistListBox; //drop down menu
+    TGCheckButton        *fExpertMode;// expertmode
     Bool_t               fIsEmbedded; //whether the window is embedded somewhere
+    AliQAHistViewer(const AliQAHistViewer&);            // Not implemented
+    AliQAHistViewer& operator=(const AliQAHistViewer&); // Not implemented
    
 public:
     AliQAHistViewer(const TGWindow *p, UInt_t w=500, UInt_t h=500, Bool_t embed=kFALSE);
@@ -49,6 +52,7 @@ public:
     void DoSetDetector(Int_t s);
     void DoSetLevel(Int_t s);
     void DoSetHistogram(Int_t s);
+    void DoSetExpertMode(Bool_t mode=kTRUE);
     void FillComboBoxWithListEntries( TGComboBox* box, const TList* list );
     void UpdateAllPathComboBoxes();
    

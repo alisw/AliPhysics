@@ -49,9 +49,10 @@ void AliQAHistViewer::DoDrawNext()
        }
        c1->cd(i);
        TH1* hist;
-       if (!fQANavigator->GetHistogram(hist)) break;
-       if (hist) hist->Draw();
-       else continue;
+       if (fQANavigator->GetHistogram(hist))
+       {
+          if (hist) hist->Draw();
+       }
        if (!fQANavigator->Next())
        {
            break;
@@ -84,9 +85,10 @@ void AliQAHistViewer::DoDrawPrev()
        }
        c1->cd(i);
        TH1* hist;
-       if (!fQANavigator->GetHistogram(hist)) break;
-       if (hist) hist->Draw();
-       else continue;
+       if (fQANavigator->GetHistogram(hist))
+       {
+          if (hist) hist->Draw();
+       }
        if (!fQANavigator->Prev())
        {
            break;
@@ -104,26 +106,17 @@ void AliQAHistViewer::DoExit()
 
 //_________________________________________________________________________
 AliQAHistViewer::AliQAHistViewer(const TGWindow *p, UInt_t w, UInt_t h, Bool_t embed) :
+    fEcan(NULL),
+    fQANavigator(new AliQAHistNavigator()),
     TGMainFrame(p, w, h),
     fFileListBox(NULL),
     fDetectorListBox(NULL),
     fLevelListBox(NULL),
     fHistListBox(NULL),
+    fExpertMode(NULL),
     fIsEmbedded(embed)
 {
    //initialize the QA navigator
-   fQANavigator = new AliQAHistNavigator();
-   // Create the embedded canvas
-   fEcan = new TRootEmbeddedCanvas(0,this,800,600);
-   Int_t wid = fEcan->GetCanvasWindowId();
-   TCanvas *myc = new TCanvas("MyCanvas", 10,10,wid);
-   fEcan->AdoptCanvas(myc);
-   //myc->Connect("ProcessedEvent(Int_t,Int_t,Int_t,TObject*)","AliQAHistViewer",this, 
-   //            "EventInfo(Int_t,Int_t,Int_t,TObject*)");
-
-   AddFrame(fEcan, new TGLayoutHints(kLHintsTop | kLHintsLeft | 
-                                     kLHintsExpandX  | kLHintsExpandY,0,0,1,1));
-  
    // horizontal frame with comboboxes for navigation
    TGHorizontalFrame *hframenav = new TGHorizontalFrame(this, 200,40);
    fFileListBox = new TGComboBox(hframenav); 
@@ -144,7 +137,22 @@ AliQAHistViewer::AliQAHistViewer(const TGWindow *p, UInt_t w, UInt_t h, Bool_t e
    hframenav->AddFrame(fHistListBox, new TGLayoutHints(kLHintsLeft));
    AddFrame(hframenav, new TGLayoutHints((kLHintsLeft|kLHintsExpandX), 5,5,5,5));
    UpdateAllPathComboBoxes();
-   // Create a horizontal frame containing two buttons
+   fExpertMode = new TGCheckButton(hframenav,"Expert");
+   hframenav->AddFrame(fExpertMode,new TGLayoutHints(kLHintsLeft, 0, 4, 3, 0));
+   fExpertMode->SetToolTipText("Show expert histograms");
+   fExpertMode->Connect("Toggled(Bool_t)", "AliQAHistViewer", this, "DoSetExpertMode(Bool_t)");
+   // Create the embedded canvas
+   fEcan = new TRootEmbeddedCanvas(0,this,800,600);
+   Int_t wid = fEcan->GetCanvasWindowId();
+   TCanvas *myc = new TCanvas("MyCanvas", 10,10,wid);
+   fEcan->AdoptCanvas(myc);
+   //myc->Connect("ProcessedEvent(Int_t,Int_t,Int_t,TObject*)","AliQAHistViewer",this, 
+   //            "EventInfo(Int_t,Int_t,Int_t,TObject*)");
+
+   AddFrame(fEcan, new TGLayoutHints(kLHintsTop | kLHintsLeft | 
+                                     kLHintsExpandX  | kLHintsExpandY,0,0,1,1));
+  
+   // Create a horizontal frame containing the buttons
    TGHorizontalFrame *hframebuttons = new TGHorizontalFrame(this, 200, 40); 
    TGTextButton *prev = new TGTextButton(hframebuttons, "&Prev");
    prev->Connect("Clicked()", "AliQAHistViewer", this, "DoDrawPrev()");
@@ -152,13 +160,14 @@ AliQAHistViewer::AliQAHistViewer(const TGWindow *p, UInt_t w, UInt_t h, Bool_t e
    TGTextButton *next = new TGTextButton(hframebuttons, "&Next");
    next->Connect("Clicked()", "AliQAHistViewer", this, "DoDrawNext()");
    hframebuttons->AddFrame(next, new TGLayoutHints(kLHintsCenterX, 5, 5, 3, 4));
+   AddFrame(hframebuttons, new TGLayoutHints(kLHintsCenterX, 2, 2, 2, 2));
+
    if ((!fIsEmbedded))
    {
        TGTextButton *exit = new TGTextButton(hframebuttons, "&Exit ");
        exit->Connect("Pressed()", "AliQAHistViewer", this, "DoExit()");
        hframebuttons->AddFrame(exit, new TGLayoutHints(kLHintsRight, 5, 5, 3, 4));
    }
-   AddFrame(hframebuttons, new TGLayoutHints(kLHintsCenterX, 2, 2, 2, 2));
    
    // Set a name to the main frame   
    SetWindowName("Quality Assurance Monitoring");
@@ -199,14 +208,14 @@ void AliQAHistViewer::FillComboBoxWithListEntries( TGComboBox* box, const TList*
 void AliQAHistViewer::UpdateAllPathComboBoxes()
 {
     if (!fQANavigator->InitOK()) return;
-    FillComboBoxWithListEntries( fFileListBox, fQANavigator->GetFileList() );
-    FillComboBoxWithListEntries( fDetectorListBox, fQANavigator->GetDetectorList() );
-    FillComboBoxWithListEntries( fLevelListBox, fQANavigator->GetLevelList() );
-    FillComboBoxWithListEntries( fHistListBox, fQANavigator->GetHistList() );
-    fFileListBox->Select(fQANavigator->GetCurrListOfFiles()->IndexOf(fQANavigator->GetCurrFile()),kFALSE);
-    fDetectorListBox->Select(fQANavigator->GetCurrFile()->IndexOf(fQANavigator->GetCurrDetector()),kFALSE);
-    fLevelListBox->Select(fQANavigator->GetCurrDetector()->IndexOf(fQANavigator->GetCurrLevel()),kFALSE);
-    fHistListBox->Select(fQANavigator->GetCurrLevel()->IndexOf(fQANavigator->GetCurrHistName()),kFALSE);
+    FillComboBoxWithListEntries( fFileListBox, (TList*)fQANavigator->GetFileList()->GetDirs() );
+    FillComboBoxWithListEntries( fDetectorListBox, (TList*)fQANavigator->GetDetectorList()->GetDirs() );
+    FillComboBoxWithListEntries( fLevelListBox, (TList*)fQANavigator->GetLevelList()->GetDirs() );
+    FillComboBoxWithListEntries( fHistListBox, (TList*)fQANavigator->GetItemList() );
+    fFileListBox->Select(fQANavigator->GetCurrListOfFiles()->GetDirs()->IndexOf(fQANavigator->GetCurrFile()),kFALSE);
+    fDetectorListBox->Select(fQANavigator->GetCurrFile()->GetDirs()->IndexOf(fQANavigator->GetCurrDetector()),kFALSE);
+    fLevelListBox->Select(fQANavigator->GetCurrDetector()->GetDirs()->IndexOf(fQANavigator->GetCurrLevel()),kFALSE);
+    fHistListBox->Select(fQANavigator->GetItemList()->IndexOf(fQANavigator->GetCurrItem()),kFALSE);
 }
 
 //_________________________________________________________________________
@@ -233,6 +242,13 @@ void AliQAHistViewer::DoSetLevel( Int_t s )
 //_________________________________________________________________________
 void AliQAHistViewer::DoSetHistogram( Int_t s )
 {
-    fQANavigator->SetHist(s);
+    fQANavigator->SetItem(s);
+    DoDrawNext();
+}
+
+//_________________________________________________________________________
+void AliQAHistViewer::DoSetExpertMode(Bool_t mode)
+{
+    fQANavigator->SetExpertMode(mode);
     DoDrawNext();
 }

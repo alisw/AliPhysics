@@ -27,5 +27,7 @@
 
 #pragma link C++ class  AliQAHistNavigator+;
 #pragma link C++ class  AliQAHistViewer+;
+#pragma link C++ class  AliQADirList+;
+#pragma link C++ class  AliQADirListItem+;
 #endif
 
