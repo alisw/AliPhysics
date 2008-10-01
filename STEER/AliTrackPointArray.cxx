@@ -39,6 +39,7 @@ AliTrackPointArray::AliTrackPointArray() :
   fY(0),
   fZ(0),
   fCharge(0),
+  fDriftTime(0),
   fSize(0),
   fCov(0),
   fVolumeID(0)
@@ -54,6 +55,7 @@ AliTrackPointArray::AliTrackPointArray(Int_t npoints):
   fY(new Float_t[npoints]),
   fZ(new Float_t[npoints]),
   fCharge(new Float_t[npoints]),
+  fDriftTime(new Float_t[npoints]),
   fSize(6*npoints),
   fCov(new Float_t[fSize]),
   fVolumeID(new UShort_t[npoints])
@@ -65,6 +67,7 @@ AliTrackPointArray::AliTrackPointArray(Int_t npoints):
     fY[ip]=0;
     fZ[ip]=0;
     fCharge[ip]=0;
+    fDriftTime[ip]=0;
     fVolumeID[ip]=0;
     for (Int_t icov=0;icov<6; icov++)
       fCov[6*ip+icov]=0;
@@ -80,6 +83,7 @@ AliTrackPointArray::AliTrackPointArray(const AliTrackPointArray &array):
   fY(new Float_t[fNPoints]),
   fZ(new Float_t[fNPoints]),
   fCharge(new Float_t[fNPoints]),
+  fDriftTime(new Float_t[fNPoints]),
   fSize(array.fSize),
   fCov(new Float_t[fSize]),
   fVolumeID(new UShort_t[fNPoints])
@@ -93,6 +97,11 @@ AliTrackPointArray::AliTrackPointArray(const AliTrackPointArray &array):
     memcpy(fCharge,array.fCharge,fNPoints*sizeof(Float_t));
   } else {
     memset(fCharge, 0, fNPoints*sizeof(Float_t));
+  }
+  if (array.fDriftTime) {
+    memcpy(fDriftTime,array.fDriftTime,fNPoints*sizeof(Float_t));
+  } else {
+    memset(fDriftTime, 0, fNPoints*sizeof(Float_t));
   }
   memcpy(fVolumeID,array.fVolumeID,fNPoints*sizeof(UShort_t));
   memcpy(fCov,array.fCov,fSize*sizeof(Float_t));
@@ -117,6 +126,8 @@ AliTrackPointArray &AliTrackPointArray::operator =(const AliTrackPointArray& arr
   fZ = new Float_t[fNPoints];
   delete [] fCharge;
   fCharge = new Float_t[fNPoints];
+  delete [] fDriftTime;
+  fDriftTime = new Float_t[fNPoints];
   delete [] fVolumeID;
   fVolumeID = new UShort_t[fNPoints];
   delete [] fCov;
@@ -125,6 +136,7 @@ AliTrackPointArray &AliTrackPointArray::operator =(const AliTrackPointArray& arr
   memcpy(fY,array.fY,fNPoints*sizeof(Float_t));
   memcpy(fZ,array.fZ,fNPoints*sizeof(Float_t));
   memcpy(fCharge,array.fCharge,fNPoints*sizeof(Float_t));
+  memcpy(fDriftTime,array.fDriftTime,fNPoints*sizeof(Float_t));
   memcpy(fVolumeID,array.fVolumeID,fNPoints*sizeof(UShort_t));
   memcpy(fCov,array.fCov,fSize*sizeof(Float_t));
 
@@ -140,6 +152,7 @@ AliTrackPointArray::~AliTrackPointArray()
   delete [] fY;
   delete [] fZ;
   delete [] fCharge;
+  delete [] fDriftTime;
   delete [] fVolumeID;
   delete [] fCov;
 }
@@ -155,6 +168,7 @@ Bool_t AliTrackPointArray::AddPoint(Int_t i, const AliTrackPoint *p)
   fY[i] = p->GetY();
   fZ[i] = p->GetZ();
   fCharge[i] = p->GetCharge();
+  fDriftTime[i] = p->GetDriftTime();
   fVolumeID[i] = p->GetVolumeID();
   memcpy(&fCov[6*i],p->GetCov(),6*sizeof(Float_t));
   return kTRUE;
@@ -170,6 +184,7 @@ Bool_t AliTrackPointArray::GetPoint(AliTrackPoint &p, Int_t i) const
   p.SetXYZ(fX[i],fY[i],fZ[i],&fCov[6*i]);
   p.SetVolumeID(fVolumeID[i]);
   p.SetCharge(fCharge[i]);
+  p.SetDriftTime(fDriftTime[i]);
   return kTRUE;
 }
 
@@ -218,6 +233,7 @@ AliTrackPoint::AliTrackPoint() :
   fY(0),
   fZ(0),
   fCharge(0),
+  fDriftTime(0),
   fVolumeID(0)
 {
   // Default constructor
@@ -227,34 +243,38 @@ AliTrackPoint::AliTrackPoint() :
 
 
 //______________________________________________________________________________
-AliTrackPoint::AliTrackPoint(Float_t x, Float_t y, Float_t z, const Float_t *cov, UShort_t volid, Float_t charge) :
+AliTrackPoint::AliTrackPoint(Float_t x, Float_t y, Float_t z, const Float_t *cov, UShort_t volid, Float_t charge, Float_t drifttime) :
   TObject(),
   fX(0),
   fY(0),
   fZ(0),
   fCharge(0),
+  fDriftTime(0),
   fVolumeID(0)
 {
   // Constructor
   //
   SetXYZ(x,y,z,cov);
   SetCharge(charge);
+  SetDriftTime(drifttime);
   SetVolumeID(volid);
 }
 
 //______________________________________________________________________________
-AliTrackPoint::AliTrackPoint(const Float_t *xyz, const Float_t *cov, UShort_t volid, Float_t charge) :
+AliTrackPoint::AliTrackPoint(const Float_t *xyz, const Float_t *cov, UShort_t volid, Float_t charge, Float_t drifttime) :
   TObject(),
   fX(0),
   fY(0),
   fZ(0),
   fCharge(0),
+  fDriftTime(0),
   fVolumeID(0)
 {
   // Constructor
   //
   SetXYZ(xyz[0],xyz[1],xyz[2],cov);
   SetCharge(charge);
+  SetDriftTime(drifttime);
   SetVolumeID(volid);
 }
 
@@ -265,12 +285,14 @@ AliTrackPoint::AliTrackPoint(const AliTrackPoint &p):
   fY(0),
   fZ(0),
   fCharge(0),
+  fDriftTime(0),
   fVolumeID(0)
 {
   // Copy constructor
   //
   SetXYZ(p.fX,p.fY,p.fZ,&(p.fCov[0]));
   SetCharge(p.fCharge);
+  SetDriftTime(p.fDriftTime);
   SetVolumeID(p.fVolumeID);
 }
 
@@ -284,6 +306,7 @@ AliTrackPoint &AliTrackPoint::operator =(const AliTrackPoint& p)
 
   SetXYZ(p.fX,p.fY,p.fZ,&(p.fCov[0]));
   SetCharge(p.fCharge);
+  SetDriftTime(p.fDriftTime);
   SetVolumeID(p.fVolumeID);
 
   return *this;
@@ -507,6 +530,7 @@ void AliTrackPoint::Print(Option_t *) const
   printf("Y = %12.6f    Ty = %12.6f%12.6f%12.6f\n", fY, fCov[1], fCov[3], fCov[4]);
   printf("Z = %12.6f    Tz = %12.6f%12.6f%12.6f\n", fZ, fCov[2], fCov[4], fCov[5]);
   printf("Charge = %f\n", fCharge);
+  printf("Drift Time = %f\n", fDriftTime);
 
 }
 

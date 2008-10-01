@@ -19,8 +19,8 @@ class AliTrackPoint : public TObject {
 
  public:
   AliTrackPoint();
-  AliTrackPoint(Float_t x, Float_t y, Float_t z, const Float_t *cov, UShort_t volid, Float_t charge = 0);
-  AliTrackPoint(const Float_t *xyz, const Float_t *cov, UShort_t volid, Float_t charge = 0);
+  AliTrackPoint(Float_t x, Float_t y, Float_t z, const Float_t *cov, UShort_t volid, Float_t charge = 0, Float_t drifttime = 0);
+  AliTrackPoint(const Float_t *xyz, const Float_t *cov, UShort_t volid, Float_t charge = 0, Float_t drifttime = 0);
   AliTrackPoint(const AliTrackPoint &p);
   AliTrackPoint& operator= (const AliTrackPoint& p);
   virtual ~AliTrackPoint() {}
@@ -31,6 +31,7 @@ class AliTrackPoint : public TObject {
   void     SetXYZ(const Float_t *xyz, const Float_t *cov = 0);
   void     SetVolumeID(UShort_t volid) { fVolumeID = volid; }
   void     SetCharge(Float_t charge) { fCharge = charge; }
+  void     SetDriftTime(Float_t time) { fDriftTime = time; }
 
   Float_t  GetX() const { return fX; }
   Float_t  GetY() const { return fY; }
@@ -39,6 +40,7 @@ class AliTrackPoint : public TObject {
   const Float_t *GetCov() const { return &fCov[0]; }
   UShort_t GetVolumeID() const { return fVolumeID; }
   Float_t  GetCharge() const { return fCharge; }
+  Float_t  GetDriftTime() const { return fDriftTime;}
 
   Float_t  GetResidual(const AliTrackPoint &p, Bool_t weighted = kFALSE) const;
   Bool_t   GetPCA(const AliTrackPoint &p, AliTrackPoint &out) const;
@@ -57,10 +59,11 @@ class AliTrackPoint : public TObject {
   Float_t  fY;        // Y coordinate
   Float_t  fZ;        // Z coordinate
   Float_t  fCharge;   // Cluster charge in arbitrary units
+  Float_t  fDriftTime;// Drift time in SDD (in ns)
   Float_t  fCov[6];   // Cov matrix
   UShort_t fVolumeID; // Volume ID
 
-  ClassDef(AliTrackPoint,2)
+  ClassDef(AliTrackPoint,3)
 };
 
 //////////////////////////////////////////////////////////////////////////////
@@ -93,6 +96,7 @@ class AliTrackPointArray : public TObject {
   const Float_t*  GetY() const { return &fY[0]; }
   const Float_t*  GetZ() const { return &fZ[0]; }
   const Float_t*  GetCharge() const { return &fCharge[0]; }
+  const Float_t*  GetDriftTime() const { return &fDriftTime[0]; }
   const Float_t*  GetCov() const { return &fCov[0]; }
   const UShort_t* GetVolumeID() const { return &fVolumeID[0]; }
 
@@ -108,6 +112,7 @@ class AliTrackPointArray : public TObject {
   Float_t   *fY;         //[fNPoints] Array with space point Y coordinates
   Float_t   *fZ;         //[fNPoints] Array with space point Z coordinates
   Float_t   *fCharge;    //[fNPoints] Array with clusters charge
+  Float_t   *fDriftTime; //[fNPoints] Array with drift times
   Int_t     fSize;       // Size of array with cov matrices = 6*N of points
   Float_t   *fCov;       //[fSize] Array with space point coordinates cov matrix
   UShort_t  *fVolumeID;  //[fNPoints] Array of space point volume IDs
