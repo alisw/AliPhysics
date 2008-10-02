@@ -17,7 +17,7 @@ void JetAnalysisManagerKine()
     //
     gROOT->LoadMacro("CreateESDChain.C");
     TChain* chain = new TChain("TE");
-    chain->Add("/home/morsch/AliRoot/newtrunk/FASTSIM/jets/galice.root");
+    chain->Add("/Users/kleinb/alice/sim/PDC_08/LHC08v/280039/999/galice.root");
     /////////////////////////////////////////////////////////////////////////////////// 
     // Create the analysis manager
     //
@@ -36,6 +36,7 @@ void JetAnalysisManagerKine()
     
     
     AliAnalysisTaskJets *jetana = new AliAnalysisTaskJets("JetAnalysis");
+    jetana->SetConfigFile("ConfigJetAnalysisMC.C");
     jetana->SetDebugLevel(10);
     mgr->AddTask(jetana);
 
