@@ -1,5 +1,4 @@
-/**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+/************************************************************************* * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
  * Contributors are mentioned in the code where appropriate.              *
@@ -53,6 +52,8 @@ AliMCEventHandler::AliMCEventHandler() :
     fTreeTR(0),
     fDirK(0),
     fDirTR(0),
+    fParticleSelected(0),
+    fLabelMap(0),
     fNEvent(-1),
     fEvent(-1),
     fPathName(new TString("./")),
@@ -80,6 +81,8 @@ AliMCEventHandler::AliMCEventHandler(const char* name, const char* title) :
     fTreeTR(0),
     fDirK(0),
     fDirTR(0),
+    fParticleSelected(0),
+    fLabelMap(0),
     fNEvent(-1),
     fEvent(-1),
     fPathName(new TString("./")),
@@ -227,6 +230,8 @@ Bool_t AliMCEventHandler::OpenFile(Int_t i)
 
 Bool_t AliMCEventHandler::BeginEvent(Long64_t entry)
 { 
+    fParticleSelected.Delete();
+    fLabelMap.Delete();
     // Read the next event
     if (entry == -1) {
 	fEvent++;
@@ -240,6 +245,90 @@ Bool_t AliMCEventHandler::BeginEvent(Long64_t entry)
 	return kFALSE;
     }
     return GetEvent(entry);
+}
+
+void AliMCEventHandler::SelectParticle(Int_t i){
+  // taking the absolute values here, need to take care 
+  // of negative daughter and mother
+  // IDs when setting!
+  if(!IsParticleSelected(TMath::Abs(i)))fParticleSelected.Add(TMath::Abs(i),1);
+}
+
+Bool_t AliMCEventHandler::IsParticleSelected(Int_t i)  {
+  // taking the absolute values here, need to take 
+  // care with negative daughter and mother
+  // IDs when setting!
+  return (fParticleSelected.GetValue(TMath::Abs(i))==1);
+}
+
+
+void AliMCEventHandler::CreateLabelMap(){
+
+  //
+  // this should be called once all selections where done 
+  //
+
+  fLabelMap.Delete();
+  if(!fMCEvent){
+    fParticleSelected.Delete();
+    return;
+  }
+
+  VerifySelectedParticles();
+  AliStack *pStack = fMCEvent->Stack();
+
+  Int_t iNew = 0;
+  for(int i = 0;i < pStack->GetNtrack();++i){
+    if(IsParticleSelected(i)){
+      fLabelMap.Add(i,iNew);
+      iNew++;
+    }
+  }
+}
+
+Int_t AliMCEventHandler::GetNewLabel(Int_t i) {
+  // Gets the labe from the new created Map
+  // Call CreatLabelMap before
+  // otherwise only 0 returned
+  return fLabelMap.GetValue(TMath::Abs(i));
+}
+
+void  AliMCEventHandler::VerifySelectedParticles(){
+
+  //  
+  // Make sure that each particle has at least it's predecessors
+  // selected so that we have the complete ancestry tree
+  // Private, should be only called by CreateLabelMap
+
+  if(!fMCEvent){
+    fParticleSelected.Delete();
+    return;
+  }
+  AliStack *pStack = fMCEvent->Stack();
+
+  Int_t nprim = pStack->GetNprimary();
+
+  for(int i = 0;i < pStack->GetNtrack();++i){
+    if(i<nprim){
+      SelectParticle(i);// take all primaries
+      continue;
+    }
+    if(!IsParticleSelected(i))continue;
+    TParticle *part = pStack->Particle(i);
+    Int_t imo = part->GetFirstMother();
+    while((imo >= nprim)&&!IsParticleSelected(imo)){
+      // Mother not yet selected
+      SelectParticle(imo);
+      TParticle *mother = pStack->Particle(imo);
+      imo = mother->GetFirstMother();
+    }
+    // after last step we may have a unselected primary
+    // mother
+    if(imo>=0){
+      if(!IsParticleSelected(imo))
+	SelectParticle(imo);
+    } 
+  }// loop over all tracks
 }
 
 Int_t AliMCEventHandler::GetParticleAndTR(Int_t i, TParticle*& particle, TClonesArray*& trefs)

@@ -24,9 +24,16 @@
 #include <TTree.h>
 #include <TFile.h>
 #include <TString.h>
+#include <TExMap.h>
 
+#include "AliLog.h"
 #include "AliAODHandler.h"
 #include "AliAODEvent.h"
+#include "AliAODTracklets.h"
+#include "AliStack.h"
+#include "AliAODMCParticle.h"
+#include "AliMCEventHandler.h"
+#include "AliMCEvent.h"
 
 ClassImp(AliAODHandler)
 
@@ -34,6 +41,7 @@ ClassImp(AliAODHandler)
 AliAODHandler::AliAODHandler() :
     AliVEventHandler(),
     fIsStandard(kTRUE),
+    fFillAOD(kTRUE),
     fNeedsHeaderReplication(kFALSE),
     fNeedsTracksBranchReplication(kFALSE),
     fNeedsVerticesBranchReplication(kFALSE),
@@ -45,6 +53,7 @@ AliAODHandler::AliAODHandler() :
     fNeedsCaloClustersBranchReplication(kFALSE),
     fAODIsReplicated(kFALSE),
     fAODEvent(NULL),
+    fMCEventH(NULL),
     fTreeA(NULL),
     fFileA(NULL),
     fFileName("")
@@ -56,6 +65,7 @@ AliAODHandler::AliAODHandler() :
 AliAODHandler::AliAODHandler(const char* name, const char* title):
     AliVEventHandler(name, title),
     fIsStandard(kTRUE),
+    fFillAOD(kTRUE),
     fNeedsHeaderReplication(kFALSE),
     fNeedsTracksBranchReplication(kFALSE),
     fNeedsVerticesBranchReplication(kFALSE),
@@ -67,6 +77,7 @@ AliAODHandler::AliAODHandler(const char* name, const char* title):
     fNeedsCaloClustersBranchReplication(kFALSE),
     fAODIsReplicated(kFALSE),
     fAODEvent(NULL),
+    fMCEventH(NULL),
     fTreeA(NULL),
     fFileA(NULL),
     fFileName("")
@@ -120,16 +131,185 @@ Bool_t AliAODHandler::Init(Option_t* opt)
   return kTRUE;
 }
 
+
+void AliAODHandler::StoreMCParticles(){
+  
+  // 
+  // Remap the labels from ESD stack and store
+  // the AODMCParticles, makes only sense if we have
+  // the mcparticles branch
+  // has to be done here since we cannot know in advance 
+  // which particles are needed (e.g. by the tracks etc.)
+  //
+  // Particles have been selected by AliMCEventhanlder->SelectParticle()
+  // To use the MCEventhandler here we need to set it from the outside
+  // can vanish when Handler go to the ANALYSISalice library
+
+  TClonesArray *mcarray = (TClonesArray*)fAODEvent->FindListObject(AliAODMCParticle::StdBranchName()); 
+  if(!mcarray)return;
+  mcarray->Delete();
+
+  // Get the MC Infos.. Handler needs to be set before 
+  // while adding the branch
+  // This needs to be done, not to depend on the AnalysisManager
+
+  if(!fMCEventH)return;
+  if(!fMCEventH->MCEvent())return;
+  AliStack *pStack = fMCEventH->MCEvent()->Stack();
+  if(!pStack)return;
+
+  fMCEventH->CreateLabelMap();
+
+  // First store the AliAODParticlesMC
+
+  Int_t np    = pStack->GetNtrack();
+  Int_t nprim = pStack->GetNprimary();
+
+
+  Int_t j = 0;
+  TClonesArray& l = *mcarray;
+
+  for(int i = 0;i < np;++i){
+    if(fMCEventH->IsParticleSelected(i)){
+
+      Int_t flag = 0;
+      TParticle *part = pStack->Particle(i);
+      if(i<nprim)flag |= AliAODMCParticle::kPrimary;
+      if(pStack->IsPhysicalPrimary(i))flag |= AliAODMCParticle::kPhysicalPrim;
+
+      if(fMCEventH->GetNewLabel(i)!=j){
+	AliError(Form("MISMATCH New label %d j: %d",fMCEventH->GetNewLabel(i),j));
+      }
+      AliAODMCParticle mcpart_tmp(part,i,flag);
+
+      // 
+      Int_t d0 =  mcpart_tmp.GetDaughter(0);
+      Int_t d1 =  mcpart_tmp.GetDaughter(1);
+      Int_t m =  mcpart_tmp.GetMother();
+
+      // other than for the track labels, negative values mean
+      // no daughter/mother so preserve it
+ 
+      if(d0<0 && d1<0){
+	// no first daughter -> no second daughter
+	// nothing to be done
+	// second condition not needed just for sanity check at the end
+	mcpart_tmp.SetDaughter(0,d0);
+	mcpart_tmp.SetDaughter(1,d1);
+      }
+      else if(d1 < 0 && d0 >= 0){
+	// Only one daughter
+	// second condition not needed just for sanity check at the end
+	if(fMCEventH->IsParticleSelected(d0)){
+	  mcpart_tmp.SetDaughter(0,fMCEventH->GetNewLabel(d0));
+	}
+	else{
+	  mcpart_tmp.SetDaughter(0,-1);
+	}
+	mcpart_tmp.SetDaughter(1,d1);
+      }
+      else if (d0 > 0 && d1 > 0 ){
+	// we have two or more daughters loop on the stack to see if they are
+	// selected
+	Int_t d0_tmp = -1;
+	Int_t d1_tmp = -1;
+	for(int id = d0; id<=d1;++id){
+	  if(fMCEventH->IsParticleSelected(id)){
+	    if(d0_tmp==-1){
+	      // first time
+	      d0_tmp = fMCEventH->GetNewLabel(id);
+	      d1_tmp = d0_tmp; // this is to have the same schema as on the stack i.e. with one daugther d0 and d1 are the same 
+	    }
+	    else d1_tmp = fMCEventH->GetNewLabel(id);
+	  }
+	}
+	mcpart_tmp.SetDaughter(0,d0_tmp);
+	mcpart_tmp.SetDaughter(1,d1_tmp);
+      }
+      else{
+	AliError(Form("Unxpected indices %d %d",d0,d1));
+      }
+
+      if(m<0){
+	mcpart_tmp.SetMother(m);
+      }
+      else{
+	if(fMCEventH->IsParticleSelected(m))mcpart_tmp.SetMother(fMCEventH->GetNewLabel(m));
+	else AliError("PROBLEM Mother not selected");
+      }
+
+      new (l[j++]) AliAODMCParticle(mcpart_tmp);
+      
+    }
+  }
+  AliInfo(Form("AliAODHandler::StoreMCParticles: Selected %d (Primaries %d / total %d) after validation",
+	       j,nprim,np));
+  
+  // Set the labels in the AOD output...
+  // Remapping
+
+  // AODTracks
+  TClonesArray* tracks = fAODEvent->GetTracks();
+  if(tracks){
+    for(int it = 0; it < fAODEvent->GetNTracks();++it){
+      AliAODTrack *track = fAODEvent->GetTrack(it);
+      
+      if(TMath::Abs(track->GetLabel())>np||track->GetLabel()==0){
+	AliWarning(Form("Wrong ESD track label %d",track->GetLabel()));
+      }
+      if(fMCEventH->GetNewLabel(track->GetLabel())==0){
+	AliWarning(Form("New label not found for %d",track->GetLabel()));
+      }
+      track->SetLabel(fMCEventH->GetNewLabel(track->GetLabel()));
+    }
+  }
+  
+  // AOD calo cluster
+  TClonesArray *clusters = fAODEvent->GetCaloClusters();
+  if(clusters){
+    for (Int_t iClust = 0;iClust < fAODEvent->GetNCaloClusters(); ++iClust) {
+      AliAODCaloCluster * cluster = fAODEvent->GetCaloCluster(iClust);
+      UInt_t nLabel    = cluster->GetNLabel();
+      // Ugly but do not want to fragment memory by creating 
+      // new Int_t (nLabel)
+      Int_t* labels    = const_cast<Int_t*>(cluster->GetLabels());
+      if (labels){
+	for(UInt_t i = 0;i < nLabel;++i){
+	  labels[i] = fMCEventH->GetNewLabel(cluster->GetLabel(i));
+	}
+      }
+      //      cluster->SetLabels(labels,nLabel);
+    }// iClust
+  }// clusters
+
+  // AOD tracklets
+  AliAODTracklets *tracklets = fAODEvent->GetTracklets();
+  if(tracklets){
+    for(int it = 0;it < tracklets->GetNumberOfTracklets();++it){
+      int label0 = tracklets->GetLabel(it,0);
+      int label1 = tracklets->GetLabel(it,1);
+      if(label0>=0)label0 = fMCEventH->GetNewLabel(label0);      
+      if(label1>=0)label1 = fMCEventH->GetNewLabel(label1);
+      tracklets->SetLabel(it,0,label0);
+      tracklets->SetLabel(it,1,label1);
+    }
+  }
+
+}
+
 Bool_t AliAODHandler::FinishEvent()
 {
-    // Fill data structures
+  // Fill data structures
+  if(fFillAOD){
     fAODEvent->MakeEntriesReferencable();
+    StoreMCParticles();
     FillTree();
-    if (fIsStandard) fAODEvent->ResetStd();
-    // Reset AOD replication flag
-    fAODIsReplicated = kFALSE;
-    
-    return kTRUE;
+  }
+
+  if (fIsStandard) fAODEvent->ResetStd();
+  // Reset AOD replication flag
+  fAODIsReplicated = kFALSE;
+  return kTRUE;
 }
 
 //______________________________________________________________________________
@@ -164,14 +344,14 @@ void AliAODHandler::CreateTree(Int_t flag)
 void AliAODHandler::FillTree()
 {
     // Fill the AOD Tree
-    fTreeA->Fill();
+  fTreeA->Fill();
 }
 
 //______________________________________________________________________________
 void AliAODHandler::AddAODtoTreeUserInfo()
 {
     // Add aod event to tree user info
-    fTreeA->GetUserInfo()->Add(fAODEvent);
+  fTreeA->GetUserInfo()->Add(fAODEvent);
 }
 
 //______________________________________________________________________________

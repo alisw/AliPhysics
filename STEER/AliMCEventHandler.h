@@ -17,6 +17,8 @@
 //-------------------------------------------------------------------------
 #include "AliVEventHandler.h"
 #include "AliHeader.h"
+#include <TExMap.h>
+
 class TFile;
 class TTree;
 class TParticle;
@@ -57,8 +59,16 @@ public:
     TTree*      TreeK()   const {return fTreeK;}
     Int_t       GetParticleAndTR(Int_t i, TParticle*& particle, TClonesArray*& trefs);
     void        DrawCheck(Int_t i, Int_t search=0);
+
+  // label manipulation
+  void   SelectParticle(Int_t i);
+  Bool_t IsParticleSelected(Int_t i);
+  void   CreateLabelMap();
+  Int_t  GetNewLabel(Int_t i);
+
 private:
     Bool_t      OpenFile(Int_t i);
+    void  VerifySelectedParticles();
     AliMCEventHandler(const AliMCEventHandler& handler);             
     AliMCEventHandler& operator=(const AliMCEventHandler& handler);  
 private:
@@ -71,6 +81,8 @@ private:
     TTree            *fTreeTR;           //! TreeTR (track references tree)
     TDirectoryFile   *fDirK;             //! Directory for Kine Tree
     TDirectoryFile   *fDirTR;            //! Directory for TR Tree
+    TExMap            fParticleSelected; //! List of selected MC particles for t
+    TExMap            fLabelMap;         //! Stores the Map of MC (ESDLabel,AODlabel)  
     Int_t             fNEvent;           //! Number of events
     Int_t             fEvent;            //! Current event
     TString          *fPathName;         //! Input file path 

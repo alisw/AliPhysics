@@ -13,6 +13,8 @@
 #include "AliAODTrack.h"
 #include "AliAODPid.h"
 class AliAnalysisFilter;
+class AliStack;
+
 
 
 class AliAnalysisTaskESDfilter : public AliAnalysisTaskSE
@@ -42,6 +44,8 @@ class AliAnalysisTaskESDfilter : public AliAnalysisTaskSE
  private:
     AliAnalysisTaskESDfilter(const AliAnalysisTaskESDfilter&);
     AliAnalysisTaskESDfilter& operator=(const AliAnalysisTaskESDfilter&);
+    void PrintMCInfo(AliStack *pStack,Int_t label); // for debugging
+
     // Filtering
     AliAnalysisFilter* fTrackFilter; //  Track Filter
     AliAnalysisFilter* fKinkFilter;  //  Kink  Filter
@@ -49,7 +53,7 @@ class AliAnalysisTaskESDfilter : public AliAnalysisTaskSE
     // PID
     Double_t     fHighPthreshold;    //  Pt threshold for detector signal setting
     TF1 *        fPtshape;           //  Pt spectrum distribution
-    ClassDef(AliAnalysisTaskESDfilter, 1); // Analysis task for standard ESD filtering
+    ClassDef(AliAnalysisTaskESDfilter, 2); // Analysis task for standard ESD filtering
 };
  
 #endif

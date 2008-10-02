@@ -20,13 +20,18 @@
 #include <TList.h>
 #include <TArrayI.h>
 #include <TRandom.h>
+#include <TParticle.h>
 
 #include "AliAnalysisTaskESDfilter.h"
 #include "AliAnalysisManager.h"
 #include "AliESDEvent.h"
+#include "AliStack.h"
 #include "AliAODEvent.h"
+#include "AliMCEvent.h"
+#include "AliMCEventHandler.h"
 #include "AliESDInputHandler.h"
 #include "AliAODHandler.h"
+#include "AliAODMCParticle.h"
 #include "AliAnalysisFilter.h"
 #include "AliESDMuonTrack.h"
 #include "AliESDVertex.h"
@@ -88,14 +93,23 @@ void AliAnalysisTaskESDfilter::UserExec(Option_t */*option*/)
   if (fDebug > 0) printf("Filter: Analysing event # %5d\n", (Int_t) ientry);
   if (fHighPthreshold == 0) AliInfo("detector PID signals are stored in each track");
   if (!fPtshape) AliInfo("detector PID signals are not stored below the pt threshold");
+
   ConvertESDtoAOD();
 }
 
 void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
     // ESD Filter analysis task executed for each event
+
     AliESDEvent* esd = dynamic_cast<AliESDEvent*>(InputEvent());
     AliESD* old = esd->GetAliESDOld();
-    
+
+    // Fetch Stack for debuggging if available 
+    AliStack *pStack = 0;
+    AliMCEventHandler *mcH = 0;
+    if(MCEvent()){
+      pStack = MCEvent()->Stack();
+      mcH = (AliMCEventHandler*) ((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler()); 
+    }
     // set arrays and pointers
     Float_t posF[3];
     Double_t pos[3];
@@ -112,9 +126,9 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
     for (Int_t i = 0; i < 21; i++) covTr [i] = 0.;
 
     
-  // loop over events and fill them
-  
-  // Multiplicity information needed by the header (to be revised!)
+    // loop over events and fill them
+    
+    // Multiplicity information needed by the header (to be revised!)
     Int_t nTracks    = esd->GetNumberOfTracks();
     //    if (fDebug > 0) printf("-------------------Bo: Number of ESD tracks %d \n",nTracks);
 
@@ -331,6 +345,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 		selectInfo = fTrackFilter->IsSelected(esdTrack);
 	    }
 	    
+	    if(mcH)mcH->SelectParticle(esdTrack->GetLabel());
 	    vV0FromCascade->AddDaughter(aodTrack =
 					new(tracks[jTracks++]) AliAODTrack(esdTrack->GetID(),
 									   esdTrack->GetLabel(), 
@@ -373,7 +388,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 	    esdTrack->GetESDpid(pid);
 	    UInt_t selectInfo = 0;
 	    if (fTrackFilter) selectInfo = fTrackFilter->IsSelected(esdTrack);	    
-
+	    if(mcH)mcH->SelectParticle(esdTrack->GetLabel());
 	    vV0FromCascade->AddDaughter(aodTrack =
 					new(tracks[jTracks++]) AliAODTrack(esdTrack->GetID(),
 									   esdTrack->GetLabel(),
@@ -423,7 +438,8 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 	    esdTrack->GetESDpid(pid);
 	    UInt_t selectInfo = 0;
 	    if (fTrackFilter) selectInfo = fTrackFilter->IsSelected(esdTrack);
-	    
+
+	    if(mcH)mcH->SelectParticle(esdTrack->GetLabel());
 	    vcascade->AddDaughter(aodTrack =
 				  new(tracks[jTracks++]) AliAODTrack(esdTrack->GetID(),
 								     esdTrack->GetLabel(),
@@ -536,6 +552,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 	    usedTrack[posFromV0] = kTRUE;
 	    UInt_t selectInfo = 0;
 	    if (fTrackFilter) selectInfo = fTrackFilter->IsSelected(esdV0Pos);
+	    if(mcH)mcH->SelectParticle(esdV0Pos->GetLabel());
 	    aodTrack = new(tracks[jTracks++]) AliAODTrack(esdV0Pos->GetID(),
 							  esdV0Pos->GetLabel(), 
 							  p_pos, 
@@ -576,6 +593,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 	    usedTrack[negFromV0] = kTRUE;
 	    UInt_t selectInfo = 0;
 	    if (fTrackFilter) selectInfo = fTrackFilter->IsSelected(esdV0Neg);
+	    if(mcH)mcH->SelectParticle(esdV0Neg->GetLabel());
 	    aodTrack = new(tracks[jTracks++]) AliAODTrack(esdV0Neg->GetID(),
 							  esdV0Neg->GetLabel(),
 							  p_neg,
@@ -684,7 +702,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 			esdTrackM->GetXYZ(pos);
 			esdTrackM->GetCovarianceXYZPxPyPz(covTr);
 			esdTrackM->GetESDpid(pid);
-			
+			if(mcH)mcH->SelectParticle(esdTrackM->GetLabel());
 			mother = 
 			    new(tracks[jTracks++]) AliAODTrack(esdTrackM->GetID(),
 							       esdTrackM->GetLabel(),
@@ -740,6 +758,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 			esdTrackD->GetESDpid(pid);
 			selectInfo = 0;
 			if (fTrackFilter) selectInfo = fTrackFilter->IsSelected(esdTrackD);
+			if(mcH)mcH->SelectParticle(esdTrackD->GetLabel());
 			daughter = 
 			    new(tracks[jTracks++]) AliAODTrack(esdTrackD->GetID(),
 							       esdTrackD->GetLabel(),
@@ -799,8 +818,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 	esdTrack->GetXYZ(pos);
 	esdTrack->GetCovarianceXYZPxPyPz(covTr);
 	esdTrack->GetESDpid(pid);
-	
-	    
+	if(mcH)mcH->SelectParticle(esdTrack->GetLabel());
 	primary->AddDaughter(aodTrack =
 			     new(tracks[jTracks++]) AliAODTrack(esdTrack->GetID(),
 								esdTrack->GetLabel(),
@@ -817,7 +835,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 								kTRUE, // check if this is right
 								AliAODTrack::kPrimary, 
 								selectInfo)
-	    );
+			     );
 	aodRefs->AddAt(aodTrack, nTrack);
 	
 	if (esdTrack->GetSign() > 0) nPosTracks++;
@@ -863,7 +881,12 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
       Int_t nLabel    = cluster->GetNLabels();
       TArrayI* labels = cluster->GetLabels();
       Int_t *label = 0;
-      if (labels) label = (cluster->GetLabels())->GetArray();
+      if (labels){
+	label = (cluster->GetLabels())->GetArray();
+	for(int i = 0;i < labels->GetSize();++i){
+	  if(mcH)mcH->SelectParticle(label[i]);
+	}
+      }     
 
       Float_t energy = cluster->E();
       cluster->GetPosition(posF);
@@ -946,7 +969,11 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 	SPDTracklets.CreateContainer(mult->GetNumberOfTracklets());
 
 	for (Int_t n=0; n<mult->GetNumberOfTracklets(); n++) {
-	  SPDTracklets.SetTracklet(n, mult->GetTheta(n), mult->GetPhi(n), mult->GetDeltaPhi(n), mult->GetLabel(n, 0), mult->GetLabel(n, 1));
+	  if(mcH){
+	    mcH->SelectParticle(mult->GetLabel(n, 0));
+	    mcH->SelectParticle(mult->GetLabel(n, 1));
+	  }
+	  SPDTracklets.SetTracklet(n, mult->GetTheta(n), mult->GetPhi(n), mult->GetDeltaPhi(n), mult->GetLabel(n, 0),mult->GetLabel(n, 1));
 	}
       }
     } else {
@@ -1023,3 +1050,22 @@ void AliAnalysisTaskESDfilter::Terminate(Option_t */*option*/)
     if (fDebug > 1) printf("AnalysisESDfilter: Terminate() \n");
 }
 
+void  AliAnalysisTaskESDfilter::PrintMCInfo(AliStack *pStack,Int_t label){
+  if(!pStack)return;
+  label = TMath::Abs(label);
+  TParticle *part = pStack->Particle(label);
+  Printf("########################");
+  Printf("%s:%d %d UniqueID %d PDG %d P %3.3f",(char*)__FILE__,__LINE__,label,part->GetUniqueID(),part->GetPdgCode(),part->P());
+  part->Print();
+  TParticle* mother = part;
+  Int_t imo = part->GetFirstMother();
+  Int_t nprim = pStack->GetNprimary();
+  //  while((imo >= nprim) && (mother->GetUniqueID() == 4)) {
+  while((imo >= nprim)) {
+    mother =  pStack->Particle(imo);
+    Printf("Mother %s:%d Label %d UniqueID %d PDG %d P %3.3f",(char*)__FILE__,__LINE__,imo,mother->GetUniqueID(),mother->GetPdgCode(),mother->P());
+    mother->Print();
+    imo =  mother->GetFirstMother();
+  }
+  Printf("########################");
+}

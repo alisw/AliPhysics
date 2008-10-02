@@ -15,6 +15,7 @@
 class AliAODEvent;
 class TFile;
 class TTree;
+class AliMCEventHandler;
 
 
 
@@ -28,7 +29,7 @@ class AliAODHandler : public AliVEventHandler {
     virtual const char*  GetOutputFileName();
     virtual Bool_t       Init(Option_t* option);
     virtual Bool_t       Init(TTree* /*tree*/, Option_t* /*option*/)  {return kTRUE;}
-    virtual Bool_t       BeginEvent(Long64_t /*entry*/)  {return kTRUE;}
+    virtual Bool_t       BeginEvent(Long64_t /*entry*/){return kTRUE;}
     virtual Bool_t       Notify() { return AliVEventHandler::Notify(); };
     virtual Bool_t       Notify(const char * /* path */) {return kTRUE;}
     virtual Bool_t       FinishEvent();
@@ -36,6 +37,7 @@ class AliAODHandler : public AliVEventHandler {
     virtual Bool_t       TerminateIO();
     //
     virtual void         SetCreateNonStandardAOD()   {fIsStandard = kFALSE;}
+    virtual void         SetFillAOD(Bool_t b)      {fFillAOD = b;}
     virtual void         SetNeedsHeaderReplication() {fNeedsHeaderReplication = kTRUE;}
     virtual void         SetNeedsTracksBranchReplication() {fNeedsTracksBranchReplication = kTRUE;}
     virtual void         SetNeedsVerticesBranchReplication() {fNeedsVerticesBranchReplication = kTRUE;}
@@ -54,6 +56,7 @@ class AliAODHandler : public AliVEventHandler {
     void                 AddAODtoTreeUserInfo();
     void                 AddBranch(const char* cname, void* addobj);
     Bool_t               IsStandard() {return fIsStandard;}
+    Bool_t               GetFillAOD(){return fFillAOD;} 
     Bool_t               NeedsHeaderReplication() {return  fNeedsHeaderReplication;}
     Bool_t               NeedsTracksBranchReplication() {return  fNeedsTracksBranchReplication;}
     Bool_t               NeedsVerticesBranchReplication() {return  fNeedsVerticesBranchReplication;}
@@ -66,11 +69,14 @@ class AliAODHandler : public AliVEventHandler {
     Bool_t               AODIsReplicated() {return fAODIsReplicated;}
     //
     void                 SetInputTree(TTree* /*tree*/) {;}
+    void                 SetMCEventHandler(AliMCEventHandler* mcH) {fMCEventH = mcH;} // For internal use
  private:
+    void StoreMCParticles();
     AliAODHandler(const AliAODHandler&);             // Not implemented
     AliAODHandler& operator=(const AliAODHandler&);  // Not implemented
  private:
     Bool_t                   fIsStandard;                         // Flag for standard aod creation
+    Bool_t                   fFillAOD;                          // Flag for filling of the AOD tree at the end (all or nothing)
     Bool_t                   fNeedsHeaderReplication;             // Flag for header replication
     Bool_t                   fNeedsTracksBranchReplication;       // Flag for tracks replication
     Bool_t                   fNeedsVerticesBranchReplication;     // Flag for vertices replication
@@ -81,12 +87,12 @@ class AliAODHandler : public AliVEventHandler {
     Bool_t                   fNeedsFMDClustersBranchReplication;  // Flag for FMDClusters replication
     Bool_t                   fNeedsCaloClustersBranchReplication; // Flag for CaloClusters replication
     Bool_t                   fAODIsReplicated;                    // Flag true if replication as been executed
-    
     AliAODEvent             *fAODEvent;               //! Pointer to the AOD event
+    AliMCEventHandler       *fMCEventH;               //! Pointer to mc event handler needed not to depend on the manager
     TTree                   *fTreeA;                  //! tree for AOD persistency
     TFile                   *fFileA;                  //! Output file
     TString                  fFileName;               //  Output file name
-    ClassDef(AliAODHandler, 2);
+    ClassDef(AliAODHandler, 3)
 };
 
 #endif
