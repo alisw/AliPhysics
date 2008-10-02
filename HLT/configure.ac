@@ -263,10 +263,10 @@ if test ! "x$have_aliroot" = "xno" ; then
 				  [AliESDEvent esd;
 				   esd.CreateStdContent();
 				   TTree* tree=new TTree("esdTree", "Tree with HLT ESD objects");
-				   esd.WriteToTree(tree);
 				   TClonesArray* a=new TClonesArray("AliExternalTrackParam");
 				   a->SetName("SomeObject");
 				   esd.AddObject(a);
+				   esd.WriteToTree(tree);
 				   if (!tree->FindBranch("SomeObject")) return 1;
 				   return 0;])],
                  [have_esd_nonstd=yes], 
@@ -547,7 +547,7 @@ CHECK_HLTMODULE([tpc],
 
 if test "x$enable_module" = "xmissheader"; then
   enable_module="no...missing.headers"
-  enable_tpc="no...missing.headers"
+  enable_tpc=$enable_module
 elif test "x$enable_module" = "xforce"; then
   enable_tpc="yes"
 else
@@ -621,7 +621,7 @@ CHECK_HLTMODULE([rcu],
 
 if test "x$enable_module" = "xmissheader"; then
   enable_module="no...missing.headers"
-  enable_rcu="no...missing.headers"
+  enable_rcu=$enable_module
 elif test "x$enable_module" = "xforce"; then
   enable_rcu="yes"
 else
@@ -663,7 +663,7 @@ CHECK_HLTMODULE([phos],
 
 if test "x$enable_module" = "xmissheader"; then
   enable_module="no...requires.AliRoot>v4-05-07"
-  enable_phos="no...requires.AliRoot>v4-05-07"
+  enable_phos=$enable_module
 elif test "x$enable_module" = "xforce"; then
   enable_phos="yes"
 else
@@ -722,7 +722,7 @@ CHECK_HLTMODULE([trd],
 
 if test "x$enable_module" = "xmissheader"; then
   enable_module="no...requires.AliRoot>v4-07-Release"
-  enable_trd="no...requires.AliRoot>v4-07-Release"
+  enable_trd=$enable_module
 elif test "x$enable_module" = "xforce"; then
   enable_trd="yes"
 else
@@ -765,24 +765,16 @@ ALIFMD_LIBS=$ALIHLTMODULE_LIBS
 CHECK_HLTMODULE([fmd],
 		[], [],
 		[], [-L$ROOTLIBDIR], [$ROOTLIBS $ADD_ROOTLIBS],
-		[], [-L$ROOTLIBDIR $ALIROOT_LDFLAGS],
+		[FMDbase FMDrec], [-L$ROOTLIBDIR $ALIROOT_LDFLAGS],
 		[$ROOTLIBS $ADD_ROOTLIBS $ALIROOT_LIBS])
 
 if test "x$enable_module" = "xmissheader"; then
-  enable_module="no...requires.AliRoot>v4-15-Release"
-  enable_fmd="no...requires.AliRoot>v4-15-Release"
+  enable_module="no...missing.headers"
+  enable_fmd=$enable_module
 elif test "x$enable_module" = "xforce"; then
   enable_fmd="yes"
 else
   enable_fmd=$enable_module
-  if test "x$enable_fmd" = "xyes" ; then
-    AC_LANG_PUSH(C++)
-    save_CPPFLAGS="$CPPFLAGS"
-    CPPFLAGS="$save_CPPFLAGS $ALIROOT_CPPFLAGS -I$ALICE_ROOT/FMD"
-    AC_MSG_RESULT([$enable_fmd])
-    AC_LANG_POP(C++)
-    CPPFLAGS="$save_CPPFLAGS"
-  fi
 fi
 
 if test "x$enable_fmd" = "xyes" ; then
@@ -795,7 +787,6 @@ AM_CONDITIONAL(EN_HLT_FMD, test x$enable_fmd = xyes)
 AC_MSG_CHECKING([whether to compile FMD library])
 AC_MSG_RESULT([$enable_module])
 AC_SUBST([ALIFMD_LIBS])
-
 
 dnl ------------------------------------------------------------------
 AH_TEMPLATE([HLT_MUON],[hlt dimuon library])
@@ -810,7 +801,7 @@ CHECK_HLTMODULE([dimuon],
 
 if test "x$enable_module" = "xmissheader"; then
   enable_module="no...requires.AliRoot>=v4-08-Release"
-  enable_muon="no...requires.AliRoot>=v4-08-Release"
+  enable_muon=$enable_module
 elif test "x$enable_module" = "xforce"; then
   enable_muon="yes"
 else
@@ -858,7 +849,7 @@ CHECK_HLTMODULE([trigger],
 
 if test "x$enable_module" = "xmissheader"; then
   enable_module="no...header.missing"
-  enable_trigger="no...header.missing"
+  enable_trigger=$enable_module
 elif test "x$enable_module" = "xforce"; then
   enable_trigger="yes"
 else
@@ -888,7 +879,7 @@ CHECK_HLTMODULE([its],
 
 if test "x$enable_module" = "xmissheader"; then
   enable_module="no...header.missing"
-  enable_its="no...header.missing"
+  enable_its=$enable_module
 elif test "x$enable_module" = "xforce"; then
   enable_its="yes"
 else
@@ -934,7 +925,7 @@ CHECK_HLTMODULE([comp],
 
 if test "x$enable_module" = "xmissheader"; then
   enable_module="no...header.missing"
-  enable_comp="no...header.missing"
+  enable_comp=$enable_module
 elif test "x$enable_module" = "xforce"; then
   enable_comp="yes"
 else
@@ -1119,6 +1110,11 @@ fi
 AC_MSG_NOTICE([compile TRD library: $enable_trd])
 if test "x$enable_trd" = "xyes"; then 
   AC_CONFIG_FILES([TRD/Makefile])
+fi
+
+AC_MSG_NOTICE([compile FMD library: $enable_fmd])
+if test "x$enable_fmd" = "xyes"; then 
+  AC_CONFIG_FILES([FMD/Makefile])
 fi
 
 AC_MSG_NOTICE([compile MUON library: $enable_muon])

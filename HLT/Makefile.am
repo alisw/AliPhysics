@@ -29,6 +29,10 @@ if EN_HLT_TRD
 TRD_DIR=TRD
 endif
 
+if EN_HLT_FMD
+FMD_DIR=FMD
+endif
+
 if EN_HLT_MUON
 MUON_DIR=MUON
 endif
@@ -52,6 +56,7 @@ SUBDIRS 		= BASE \
 			  $(TPC_DIR) \
 			  $(PHOS_DIR) \
 			  $(TRD_DIR) \
+			  $(FMD_DIR) \
 			  $(MUON_DIR) \
 			  $(COMP_DIR) \
                           $(TRIGGER_DIR) \
