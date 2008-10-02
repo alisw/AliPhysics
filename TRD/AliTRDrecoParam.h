@@ -30,8 +30,9 @@ public:
   Double_t GetChi2YCut() const              { return fkChi2YCut; }
   Double_t GetChi2ZCut() const              { return fkChi2ZCut; }
   Double_t GetPhiCut() const                { return fkPhiCut;   }
-  Double_t GetMeanNclusters() const         { return fkMeanNclusters; }
-  Double_t GetSigmaNclusters() const        { return fkSigmaNclusters; }
+  Float_t  GetNClusters() const;
+  Double_t GetNMeanClusters() const         { return fkNMeanClusters; }
+  Double_t GetNSigmaClusters() const        { return fkNSigmaClusters; }
   Double_t GetFindableClusters() const      { return fkFindable; }
   Double_t GetMaxTheta() const              { return fkMaxTheta; }
   Double_t GetMaxPhi() const                { return fkMaxPhi;   }
@@ -72,8 +73,8 @@ public:
   void     SetChi2YCut(Double_t chi2YCut) {fkChi2YCut = chi2YCut;}
   void     SetChi2ZCut(Double_t chi2ZCut) {fkChi2ZCut = chi2ZCut;}
   void     SetPhiCut(Double_t phiCut) {fkPhiCut = phiCut;}
-  void     SetMeanNclusters(Double_t meanNclusters) {fkMeanNclusters = meanNclusters;}
-  void     SetSigmaNclusters(Double_t sigmaNclusters) {fkSigmaNclusters = sigmaNclusters;} 
+  void     SetNMeanClusters(Double_t meanNclusters) {fkNMeanClusters = meanNclusters;}
+  void     SetNSigmaClusters(Double_t sigmaNclusters) {fkNSigmaClusters = sigmaNclusters;} 
   void     SetClusterSharing(Bool_t share = kTRUE)            { SetBit(kClusterSharing, share);}
   void     SetImproveTracklets(Bool_t improve = kTRUE)         { SetBit(kImproveTracklet, improve);}
   void     SetVertexConstrained(Bool_t vc = kTRUE)            { SetBit(kVertexConstrained, vc); }
@@ -97,9 +98,10 @@ private:
    ,kVertexConstrained = BIT(17) // Perform vertex constrained fit
    ,kImproveTracklet   = BIT(18) // Improve tracklet in the SA TRD track finder 
   };
-
+  // Physics reference values for TRD
+  Double_t  fkdNchdy;                // dNch/dy
   Double_t  fkMaxTheta;              // Maximum theta
-  Double_t  fkMaxPhi;                // Maximum phi
+  Double_t  fkMaxPhi;                // Maximum phi - momentum cut
 
   Double_t  fkRoad0y;                // Road for middle cluster
   Double_t  fkRoad0z;                // Road for middle cluster
@@ -111,14 +113,16 @@ private:
   Double_t  fkRoad2z;                // Road in z for extrapolated cluster
   
   Double_t  fkPlaneQualityThreshold; // Quality threshold
-  Double_t  fkFindable;              // Ratio of clusters from a track in one chamber which are at minimum supposed to be found.
+  Double_t  fkFindable;              // minimum ratio of clusters per tracklet supposed to be attached.
   Double_t  fkChi2Z;                 // Max chi2 on the z direction for seeding clusters fit
   Double_t  fkChi2Y;                 // Max chi2 on the y direction for seeding clusters Rieman fit
   Double_t  fkChi2YCut;              // Cut on the Chi2 in y-direction in the likelihood filter
   Double_t  fkChi2ZCut;              // Cut on the Chi2 in z-direction in the likelihood filter
   Double_t  fkPhiCut;                // Cut on the deviation of the phi angles between tracklet and track fit (lik. filter)
-  Double_t  fkMeanNclusters;         // Mean of the distribution of the number of clusters per tracklet
-  Double_t  fkSigmaNclusters;        // Sigma of the distribution of the number of clusters per tracklet
+  Double_t  fkNMeanClusters;         // Mean number of clusters per tracklet
+  Double_t  fkNSigmaClusters;        // Sigma of the number of clusters per tracklet
+  Double_t  fkNClusterNoise;         // ratio of noisy clusters to the true one
+  Double_t  fkNMeanTracklets;        // Mean number of tracklets per track
   Double_t  fkTrackLikelihood;       // Track likelihood for tracklets Rieman fit
   
   Double_t  fSysCovMatrix[5];        // Systematic uncertainty from calibration and alignment for each tracklet

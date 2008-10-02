@@ -33,6 +33,7 @@ ClassImp(AliTRDrecoParam)
 //______________________________________________________________
 AliTRDrecoParam::AliTRDrecoParam()
   :AliDetectorRecoParam()
+  ,fkdNchdy(12.)
   ,fkMaxTheta(1.0)	
   ,fkMaxPhi(2.0) 
   ,fkRoad0y(6.0)
@@ -48,8 +49,10 @@ AliTRDrecoParam::AliTRDrecoParam()
   ,fkChi2YCut(7.73)
   ,fkChi2ZCut(0.069)
   ,fkPhiCut(10.6)
-  ,fkMeanNclusters(72)
-  ,fkSigmaNclusters(5.2632)
+  ,fkNMeanClusters(20.)
+  ,fkNSigmaClusters(2.)
+  ,fkNClusterNoise(0.)
+  ,fkNMeanTracklets(5.5)
   ,fkTrackLikelihood(-15.)
   ,fMinMaxCutSigma(4.)
   ,fMinLeftRightCutSigma(8.)
@@ -80,6 +83,7 @@ AliTRDrecoParam::AliTRDrecoParam()
 //______________________________________________________________
 AliTRDrecoParam::AliTRDrecoParam(const AliTRDrecoParam &ref)
   :AliDetectorRecoParam(ref)
+  ,fkdNchdy(ref.fkdNchdy)
   ,fkMaxTheta(ref.fkMaxTheta)
   ,fkMaxPhi(ref.fkMaxPhi)
   ,fkRoad0y(ref.fkRoad0y)
@@ -95,8 +99,10 @@ AliTRDrecoParam::AliTRDrecoParam(const AliTRDrecoParam &ref)
   ,fkChi2YCut(ref.fkChi2YCut)
   ,fkChi2ZCut(ref.fkChi2ZCut)
   ,fkPhiCut(ref.fkPhiCut)
-  ,fkMeanNclusters(ref.fkMeanNclusters)
-  ,fkSigmaNclusters(ref.fkSigmaNclusters)
+  ,fkNMeanClusters(ref.fkNMeanClusters)
+  ,fkNSigmaClusters(ref.fkNSigmaClusters)
+  ,fkNClusterNoise(ref.fkNClusterNoise)
+  ,fkNMeanTracklets(ref.fkNMeanTracklets)
   ,fkTrackLikelihood(ref.fkTrackLikelihood)
   ,fMinMaxCutSigma(ref.fMinMaxCutSigma)
   ,fMinLeftRightCutSigma(ref.fMinLeftRightCutSigma)
@@ -126,7 +132,9 @@ AliTRDrecoParam *AliTRDrecoParam::GetLowFluxParam()
   // Parameters for the low flux environment
   //
 
-  return new AliTRDrecoParam();
+  AliTRDrecoParam *rec = new AliTRDrecoParam();
+  rec->fkdNchdy = 12.; // pp in TRD
+  return rec;
 
 }
 
@@ -138,7 +146,9 @@ AliTRDrecoParam *AliTRDrecoParam::GetHighFluxParam()
   //
 
   AliTRDrecoParam *rec = new AliTRDrecoParam();
+  rec->fkdNchdy = 4000.; // PbPb in TRD
   rec->SetImproveTracklets(kTRUE);
+
   return rec;
 
 }
@@ -153,12 +163,23 @@ AliTRDrecoParam *AliTRDrecoParam::GetCosmicTestParam()
   AliTRDrawStreamBase::SetRawStreamVersion("TB");
   AliTRDrecoParam *par = new AliTRDrecoParam();
   par->SetVertexConstrained(kFALSE);
-  par->SetChi2YCut(1.136);
-  par->SetChi2ZCut(0.069);
-  par->SetMaxTheta(2.1445);
-  par->SetMaxPhi(2.7475);
-  par->SetMeanNclusters(48.1197);
-  par->SetSigmaNclusters(8.59347);
+  par->fkChi2YCut       = 1.136;
+  par->fkChi2ZCut       = 0.069;
+  par->fkMaxTheta       = 2.1445;
+  par->fkMaxPhi         = 2.7475;
+  par->fkNMeanClusters  = 12.;
+  par->fkNSigmaClusters = 2.5;
   return par;
 
+}
+
+
+//______________________________________________________________
+Float_t AliTRDrecoParam::GetNClusters() const
+{
+  // Estimate the number of clusters in the TRD detector
+  
+  Float_t nclusters = (fkNMeanClusters + 2*fkNSigmaClusters)*fkNMeanTracklets*fkdNchdy;
+  nclusters *= 1.+fkNClusterNoise;
+  return nclusters;
 }

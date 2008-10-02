@@ -1537,7 +1537,9 @@ Int_t AliTRDtrackerV1::ReadClusters(TClonesArray* &array, TTree *clusterTree) co
   branch->SetAddress(&clusterArray); 
   
   if(!fClusters){ 
-    array = new TClonesArray("AliTRDcluster", nsize);
+    Float_t nclusters =  fReconstructor->GetRecoParam()->GetNClusters();
+    if(fReconstructor->IsHLT()) nclusters /= AliTRDgeometry::kNsector;
+    array = new TClonesArray("AliTRDcluster", Int_t(nclusters));
     array->SetOwner(kTRUE);
   }
   
@@ -1658,7 +1660,6 @@ void AliTRDtrackerV1::UnloadClusters()
 
   if(fTracks) fTracks->Delete(); 
   if(fTracklets) fTracklets->Delete();
-  if(fClusters && IsClustersOwner()) fClusters->Delete();
   if(fClusters){ 
     if(IsClustersOwner()) fClusters->Delete();
     
@@ -2840,18 +2841,20 @@ Double_t AliTRDtrackerV1::CookLikelihood(AliTRDseedV1 *cseed, Int_t planes[4])
  	Double_t chi2y = GetChi2Y(&cseed[0]);
   Double_t chi2z = GetChi2Z(&cseed[0]);
 
-  Int_t nclusters = 0;
+  Float_t nclusters = 0.;
   Double_t sumda = 0.;
   for(UChar_t ilayer = 0; ilayer < 4; ilayer++){
     Int_t jlayer = planes[ilayer];
     nclusters += cseed[jlayer].GetN2();
     sumda += TMath::Abs(cseed[jlayer].GetYfitR(1) - cseed[jlayer].GetYref(1));
   }
+  nclusters *= .25;
+
   Double_t likea     = TMath::Exp(-sumda * fRecoPars->GetPhiCut());
   Double_t likechi2y  = 0.0000000001;
   if (fReconstructor->IsCosmic() || chi2y < 0.5) likechi2y += TMath::Exp(-TMath::Sqrt(chi2y) * fRecoPars->GetChi2YCut());
   Double_t likechi2z = TMath::Exp(-chi2z * fRecoPars->GetChi2ZCut());
-  Double_t likeN     = TMath::Exp(-(fRecoPars->GetMeanNclusters() - nclusters) / fRecoPars->GetSigmaNclusters());
+  Double_t likeN     = TMath::Exp(-(fRecoPars->GetNMeanClusters() - nclusters) / fRecoPars->GetNSigmaClusters());
   Double_t like      = likea * likechi2y * likechi2z * likeN;
 
   //	AliInfo(Form("sumda(%f) chi2[0](%f) chi2[1](%f) likea(%f) likechi2y(%f) likechi2z(%f) nclusters(%d) likeN(%f)", sumda, chi2[0], chi2[1], likea, likechi2y, likechi2z, nclusters, likeN));

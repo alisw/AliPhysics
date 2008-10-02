@@ -1379,7 +1379,11 @@ TClonesArray *AliTRDclusterizer::RecPoints()
 
   if (!fRecPoints) {
     if(!(fRecPoints = AliTRDReconstructor::GetClusters())){
-      fRecPoints = new TClonesArray("AliTRDcluster", 400);
+      // determine number of clusters which has to be allocated
+      Float_t nclusters = fReconstructor->GetRecoParam()->GetNClusters();
+      if(fReconstructor->IsHLT()) nclusters /= AliTRDgeometry::kNsector;
+
+      fRecPoints = new TClonesArray("AliTRDcluster", Int_t(nclusters));
     }
     //SetClustersOwner(kTRUE);
     AliTRDReconstructor::SetClusters(0x0);
