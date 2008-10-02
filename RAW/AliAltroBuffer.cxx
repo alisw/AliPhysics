@@ -265,7 +265,8 @@ void AliAltroBuffer::WriteDataHeader(Bool_t dummy, Bool_t compressed)
     WriteRCUTrailer(0);
     UInt_t currentFilePos = fFile->Tellp();
     fFile->Seekp(fDataHeaderPos);
-    header.fSize = currentFilePos-fDataHeaderPos;
+    header.fSize = 0xFFFFFFFF; // RCU can't write raw-data size so we always get an 'invalid' size field
+    //    header.fSize = currentFilePos-fDataHeaderPos;
     header.SetAttribute(0);  // valid data
     if (compressed) header.SetAttribute(1); 
     fFile->WriteBuffer((char*)(&header), sizeof(header));
