@@ -379,7 +379,7 @@ void AliTPCQADataMakerRec::MakeESDs(AliESDEvent * esd)
     
     Int_t nTPCclusters         = track->GetTPCNcls();
     Int_t nTPCclustersFindable = track->GetTPCNclsF();
-    
+    if ( nTPCclustersFindable<=0) continue;
     fHistESDclusters->Fill(nTPCclusters);
     fHistESDratio->Fill(Float_t(nTPCclusters)/Float_t(nTPCclustersFindable));
     fHistESDpt->Fill(track->Pt()); 
