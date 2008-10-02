@@ -137,8 +137,6 @@ void AliACORDEQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 
 if(rawStream.Next())
 {
-	rawReader->NextEvent();
-        rawStream.Reset();
         dy[0]=rawStream.GetWord(0);
         dy[1]=rawStream.GetWord(1);
         dy[2]=rawStream.GetWord(2);
