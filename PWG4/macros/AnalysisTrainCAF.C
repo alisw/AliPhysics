@@ -1,5 +1,5 @@
 //______________________________________________________________________________
-void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 0)
+void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 10000)
 {
 // Example of running analysis train in CAF. To run in debug mode:
 //  - export ROOTSYS=debug  on your local client
@@ -11,7 +11,7 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 0)
     Bool_t debug         = kTRUE;
     Bool_t useMC         = kTRUE;
     Bool_t readTR        = kFALSE;
-    Bool_t bPROOF         = kTRUE;
+    Bool_t bPROOF        = kTRUE;
 
 
     
@@ -129,7 +129,7 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 0)
 
 
       // --- Enable the JETAN Package
-      if (iJETAN||iJETANMC) gSystem->Load("libJETAN");
+      if (iJETAN||iJETANMC||iJETANAOD) gSystem->Load("libJETAN");
       // --- Enable particle correlation analysis
       if (iPWG4UE||iPWG4SPECTRUM)gSystem->Load("libPWG4JetTasks");  
     }
