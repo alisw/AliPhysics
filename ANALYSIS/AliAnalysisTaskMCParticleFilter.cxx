@@ -92,8 +92,15 @@ void AliAnalysisTaskMCParticleFilter::UserCreateOutputObjects()
   // Create the output container
     if (OutputTree()&&fTrackFilterMother) 
 	OutputTree()->GetUserInfo()->Add(fTrackFilterMother);
-    // how is this is reset cleared in the UserExec....
-    // Can this be handled by the framework?
+
+    // this part is mainly needed to set the MCEventHandler
+    // to the AODHandler, this will not be needed when
+    // AODHandler goes to ANALYSISalice
+    // setting in the steering macro will not work on proof :(
+    // so we have to do it in a task
+
+    // the branch booking can also go into the AODHandler then
+
     TClonesArray *tca = new TClonesArray("AliAODMCParticle", 0);
     tca->SetName(AliAODMCParticle::StdBranchName());
     AddAODBranch("TClonesArray",&tca);
