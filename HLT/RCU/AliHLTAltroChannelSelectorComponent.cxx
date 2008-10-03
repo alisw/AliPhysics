@@ -135,6 +135,11 @@ int AliHLTAltroChannelSelectorComponent::DoEvent(const AliHLTComponentEventData&
   int iResult=0;
   const int cdhSize=32;
 
+  if (!IsDataEvent()) {
+    size=0;
+    return 0;
+  }
+
   // process the DLL input
   int blockno=0;
   const AliHLTComponentBlockData* pDesc=NULL;
@@ -179,15 +184,25 @@ int AliHLTAltroChannelSelectorComponent::DoEvent(const AliHLTComponentEventData&
       }
     }
 
-    int rcuTrailerLength=decoder->GetRCUTrailerSize();
-    if (rcuTrailerLength>pDesc->fSize-cdhSize) {
-      HLTWarning("corrupted data block: RCU trailer length exceeds buffer size");
+    unsigned int rcuTrailerLength=0;
+    if (iResult>=0 &&
+	((rcuTrailerLength=decoder->GetRCUTrailerSize())==0 ||
+	 rcuTrailerLength>pDesc->fSize-cdhSize)) {
+      if (rcuTrailerLength>0) {
+	HLTWarning("corrupted data block: RCU trailer length exceeds buffer size");
+      } else {
+	HLTWarning("corrupted data block: RCU trailer of zero length");	
+      }
       iResult=-EFAULT;
     }
 
     if (iResult<0) {
-      // forward the whole block
-      outputBlocks.push_back(*pDesc);
+      // TODO: here the trigger has to come into play. It is up to
+      // policy if a corrupted data block should be kept (original
+      // DDL) or discarded. In any case, the block is not going to
+      // be part of HLTOUT
+      HLTWarning("skipping corrupted data block for event %lu, data block %s 0x%08x", evtData.fEventID,
+		 DataType2Text(pDesc->fDataType).c_str(), pDesc->fSpecification);
       iResult=0;
       continue;
     }
@@ -199,6 +214,19 @@ int AliHLTAltroChannelSelectorComponent::DoEvent(const AliHLTComponentEventData&
     AliHLTUInt32_t iNofAltro40=0;
     AliHLTUInt32_t iCapacity=size;
     AliAltroData channel;
+
+    // first add the RCU trailer
+    AliHLTUInt8_t* pSrc=reinterpret_cast<AliHLTUInt8_t*>(pDesc->fPtr);
+    pSrc+=pDesc->fSize-rcuTrailerLength;
+    if ((iResult=CopyBlockToEnd(outputPtr, iCapacity, iOutputSize, pSrc, rcuTrailerLength))>=0) {
+      assert(iResult==(int)rcuTrailerLength);
+      iOutputSize+=rcuTrailerLength;
+    } else {
+      HLTError("failed to write RCU trailer of length %d for block %d, too little space in output buffer?", rcuTrailerLength, blockno);
+      iResult=-ENOSPC;
+      break;
+    }
+
     while (decoder->NextChannel(&channel) && iResult>=0) {
       iTotal++;
 
@@ -218,21 +246,13 @@ int AliHLTAltroChannelSelectorComponent::DoEvent(const AliHLTComponentEventData&
       // in addition, align to complete 40 bit words (the '+3')
       // also, the 5 bytes of the Altro trailer must be added to get the full size
       int channelSize=((channel.GetDataSize()+3)/4)*5;
+      if (channelSize==0) {
+	if (fTalkative) HLTWarning("skipping zero length channel (hw address %d)", hwAddress);
+	iCorrupted++;
+	continue;
+      }
       channelSize+=5;
       HLTDebug("ALTRO block hwAddress 0x%08x (%d) selected (active), size %d", hwAddress, hwAddress, channelSize);
-      if (iOutputSize==0) {
-	// first add the RCU trailer
-	AliHLTUInt8_t* pSrc=reinterpret_cast<AliHLTUInt8_t*>(pDesc->fPtr);
-	pSrc+=pDesc->fSize-rcuTrailerLength;
-	if ((iResult=CopyBlockToEnd(outputPtr, iCapacity, iOutputSize, pSrc, rcuTrailerLength))>=0) {
-	  assert(iResult==rcuTrailerLength);
-	  iOutputSize+=rcuTrailerLength;
-	} else {
-	  HLTError("failed to write RCU trailer of length %d for block %d, too little space in output buffer?", rcuTrailerLength, blockno);
-	  iResult=-ENOSPC;
-	  break;
-	}
-      }
 
       if ((iResult=decoder->CopyBackward(outputPtr, iCapacity-iOutputSize))>=0) {
 	if (channelSize == iResult) {
@@ -240,17 +260,17 @@ int AliHLTAltroChannelSelectorComponent::DoEvent(const AliHLTComponentEventData&
 	    iNofAltro40+=channelSize/5;
 	    iOutputSize+=channelSize;
 	  } else {
-	    if (fTalkative) HLTWarning("corrupted ALTRO channel: incomplete 40 bit word");
+	    if (fTalkative) HLTWarning("corrupted ALTRO channel: incomplete 40 bit word (channel hw address %d)", hwAddress);
 	    iCorrupted++;
 	    continue;
 	  }
 	} else {
-	  if (fTalkative) HLTWarning("internal error: failed to copy full channel: %d out of %d bytes", iResult, channelSize);
+	  if (fTalkative) HLTWarning("internal error: failed to copy full channel: %d out of %d bytes (hw address %d)", iResult, channelSize, hwAddress);
 	  iCorrupted++;
 	  continue;
 	}
       } else {
-	if (fTalkative) HLTError("failed to write ALTRO channel of length %d for block %d", channelSize, blockno);
+	if (fTalkative) HLTError("failed to write ALTRO channel of length %d for block %d  (hw address %d)", channelSize, blockno, hwAddress);
 	// corrupted channel, but keep going
 	iCorrupted++;
 	iResult=0;
