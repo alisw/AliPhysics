@@ -36,8 +36,10 @@ using namespace std;
 #include "AliHLTTPCTransform.h"
 #include "AliHLTTPCDefinitions.h"
 #include "AliHLTTPCDigitData.h"
+#include "AliHLTTPCMapping.h"
 #include <cstdlib>
 #include <cerrno>
+#include <cassert>
 #include "TString.h"
 #include <sys/time.h>
 #include "AliHLTAltroEncoder.h"
@@ -362,6 +364,12 @@ int AliHLTTPCZeroSuppressionComponent::DoEvent( const AliHLTComponentEventData& 
 						vector<AliHLTComponentBlockData>& outputBlocks )
 {
   // see header file for class documentation
+  int iResult=0;
+  if (!fDigitReader) return -ENODEV;
+
+  AliHLTUInt32_t capacity=size;
+  size=0;
+  if (!IsDataEvent()) return 0;
 
   //  HLTInfo("Entered DoEvent in AliHLTTPCZeroSuppressionComponent");
 
@@ -369,8 +377,6 @@ int AliHLTTPCZeroSuppressionComponent::DoEvent( const AliHLTComponentEventData& 
   const AliHLTComponentBlockData* iter = NULL;
   unsigned long ndx;
   //  HLTInfo("Number of blocks: ",evtData.fBlockCnt);
-
-  Bool_t wasInput = 0;
 
   fHwAddressList.clear();
   //reading the data
@@ -383,18 +389,9 @@ int AliHLTTPCZeroSuppressionComponent::DoEvent( const AliHLTComponentEventData& 
 	       DataType2Text( iter->fDataType).c_str(), 
 	       DataType2Text(kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTPC).c_str());
 
-      if (iter->fDataType == AliHLTTPCDefinitions::fgkDDLPackedRawDataType &&
-	  GetEventCount()<2) {
-	HLTWarning("data type %s is depricated, use %s (kAliHLTDataTypeDDLRaw)!",
-		   DataType2Text(AliHLTTPCDefinitions::fgkDDLPackedRawDataType).c_str(),
-		   DataType2Text(kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTPC).c_str());
-      }
-      
-      if ( iter->fDataType != (kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTPC) &&
-	   iter->fDataType != AliHLTTPCDefinitions::fgkDDLPackedRawDataType ){
+      if ( iter->fDataType != (kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTPC)){
 	continue;
       }
-
 
       UInt_t slice = AliHLTTPCDefinitions::GetMinSliceNr( *iter );
       UInt_t patch = AliHLTTPCDefinitions::GetMinPatchNr( *iter );
@@ -408,8 +405,12 @@ int AliHLTTPCZeroSuppressionComponent::DoEvent( const AliHLTComponentEventData& 
 	HLTWarning("Decoder failed to initialize, event aborted.");
 	continue;
       }
+      AliHLTTPCMapping mapping(patch);
 
-      wasInput = 1;
+      int nTotalChannels=0;
+      int nSkippedChannels=0;
+      short lowestOccupancy=-1;
+      float sumOccupancy=0;
 
       //Here the reading of the data and the zerosuppression takes place
       while(fDigitReader->NextChannel()){//Pad
@@ -440,22 +441,40 @@ int AliHLTTPCZeroSuppressionComponent::DoEvent( const AliHLTComponentEventData& 
 	    }
 	  }
 	}
+
+	nTotalChannels++;
+	if (lowestOccupancy<0 || (unsigned short)lowestOccupancy>tmpPad->GetNAddedSignals())
+	  lowestOccupancy=tmpPad->GetNAddedSignals();
+	sumOccupancy+=tmpPad->GetNAddedSignals();
+
 	if(tmpPad->GetNAddedSignals()>=(UInt_t)fMinimumNumberOfSignals){
 	  tmpPad->ZeroSuppress(fNRMSThreshold, fSignalThreshold, fMinimumNumberOfSignals, fStartTimeBin, fEndTimeBin, fLeftTimeBin, fRightTimeBin, fValueBelowAverage);
 	  if(tmpPad->GetNAddedSignals()>0){
+	    assert((int)mapping.GetRow(fDigitReader->GetAltroBlockHWaddr())==row);
+	    assert((int)mapping.GetPad(fDigitReader->GetAltroBlockHWaddr())==pad);
 	    fHwAddressList.push_back((AliHLTUInt16_t)fDigitReader->GetAltroBlockHWaddr());
 	  }
+	} else {
+	  nSkippedChannels++;
 	}
       }
+      if (nSkippedChannels>0) {
+	HLTWarning("skipped %d of %d channels because of low occupancy: average %.2f, lowest %d, threshold %d",
+		   nSkippedChannels, nTotalChannels, sumOccupancy/nTotalChannels, lowestOccupancy, fMinimumNumberOfSignals);
+      }
 
-      if(wasInput>0){
+      AliHLTUInt32_t dataOffsetBeforeHW=0;
+
+      if(fSkipSendingZSData == kFALSE && iter->fSize>sizeof(AliRawDataHeader)) {
   
 	AliHLTAltroEncoder *altroEncoder = new AliHLTAltroEncoder;
-	altroEncoder->SetBuffer(outputPtr,size); //tests if one overwrite the buffer is done in the encoder
+	altroEncoder->SetBuffer(outputPtr,capacity); //tests if one overwrite the buffer is done in the encoder
+
+	// set CDH from the beginning of buffer
+	altroEncoder->SetCDH((AliHLTUInt8_t*)iter->fPtr,sizeof(AliRawDataHeader));
 
 	UChar_t *RCUTrailer=NULL;
 	Int_t RCUTrailerSize=fDigitReader->GetRCUTrailerSize();
-	//	HLTInfo("RCUTrsize %d",RCUTrailerSize );
 	if (RCUTrailerSize<=0 || !fDigitReader->GetRCUTrailerData( RCUTrailer )) {
 	  if(RCUTrailer==NULL){
 	    HLTWarning("can not find RCU trailer for data block %s 0x%08x: skipping data block",
@@ -463,25 +482,33 @@ int AliHLTTPCZeroSuppressionComponent::DoEvent( const AliHLTComponentEventData& 
 	    continue;
 	  }
 	}
-
-	AliRawDataHeader cdh;
-	altroEncoder->SetCDH((AliHLTUInt8_t*)iter->fPtr,sizeof(AliRawDataHeader));
-	
 	altroEncoder->SetRCUTrailer(RCUTrailer, RCUTrailerSize);
 
-	for(Int_t row=0;row<fNumberOfRows;row++){
-	  for(Int_t pad=0;pad<fNumberOfPadsInRow[row];pad++){
+	for(unsigned int channel=0; channel<fHwAddressList.size(); channel++){
+	  int row=mapping.GetRow(fHwAddressList[channel]);
+	  int pad=mapping.GetPad(fHwAddressList[channel]);
+	  if (true) {
 	    AliHLTTPCPad * zeroSuppressedPad= fRowPadVector[row][pad];
 	    Int_t currentTime=0;
 	    Int_t bunchSize=0;
 	    if(zeroSuppressedPad->GetNAddedSignals()>0){
 	      while(zeroSuppressedPad->GetNextGoodSignal(currentTime, bunchSize)){
 		for(Int_t i=0;i<bunchSize;i++){
-		  cout<<"Data added"<<endl;
-		  altroEncoder->AddSignal((AliHLTUInt16_t)(zeroSuppressedPad->GetDataSignal(currentTime+i)),(AliHLTUInt16_t)(currentTime+i));
+		  if (altroEncoder->AddSignal((AliHLTUInt16_t)(zeroSuppressedPad->GetDataSignal(currentTime+i)),(AliHLTUInt16_t)(currentTime+i))<0) {
+		    // Matthias 01.10.2008: there is a problem with certain real data which produces the same
+		    // bunch multiple times, needs investigation. I found an examplary case in run 53465
+		    // (08000053465011.450.root) equipment 981.
+		    // needs to be followed up.
+		    // addon 02.10.2008 I just corrected a bug concerning the loop over the active channels.
+		    // A double loop over all rows and pads also considered pads which had not even been
+		    // filled, and thus not properly cleaned. Maybe the bug above is related to that.
+		    HLTWarning("can not add channel: slice %d, partition %d, hw address %d, row %d, pad %d, time %d, bunch size %d",
+			       slice, patch, fHwAddressList[channel], row, pad, currentTime+i, bunchSize);
+		    break;
+		  }
 		}
 	      }
-	      altroEncoder->SetChannel((AliHLTUInt16_t)(fDigitReader->GetAltroBlockHWaddr(row, pad)));
+	      altroEncoder->SetChannel(fHwAddressList[channel]);
 	    }
 	  }
 	}
@@ -490,40 +517,40 @@ int AliHLTTPCZeroSuppressionComponent::DoEvent( const AliHLTComponentEventData& 
 
 	if (sizeOfData<0) {
 	  HLTError("data encoding failed");
-	  return sizeOfData;
+	  iResult=sizeOfData;
+	  break;
 	}
-	if(sizeOfData>(int)size){
-	  HLTWarning("Buffer too small too add the altrodata: %d of %d byte(s) already used", sizeOfData, size);
-	  return -ENOSPC;
+	if(sizeOfData>(int)capacity){
+	  HLTWarning("Buffer too small too add the altrodata: %d of %d byte(s) already used", sizeOfData, capacity);
+	  iResult=-ENOSPC;
+	  break;
 	}
-
-	AliHLTUInt32_t dataOffsetBeforeHW=0;
 
 	//Push back the zerosuppressed altro data to the output
-	if(fSkipSendingZSData == kFALSE){
+	if(true/* condition was deprecated but keep for the sake of formatting*/){
 	  AliHLTComponentBlockData bd;
 	  FillBlockData( bd );
 	  bd.fOffset = 0;
 	  bd.fSize = sizeOfData;
 	  bd.fDataType = kAliHLTDataTypeDDLRaw|kAliHLTDataOriginTPC;
 	  bd.fSpecification = iter->fSpecification;
-	  Logging( kHLTLogDebug, "HLT::TPCZeroSuppressionComponent::DoEvent", "Event received", 
-		   "Event 0x%08LX (%Lu) output data block %lu of %lu bytes at offset %lu",
-		   evtData.fEventID, evtData.fEventID, ndx,size ,0);
 	  outputBlocks.push_back( bd );
     
 	  //Push back the list of hardware addresses to the output
 	  dataOffsetBeforeHW=sizeOfData;
 	}
+      }
 
-	AliHLTUInt32_t sizeOfHWArray = 0;
+      AliHLTUInt32_t sizeOfHWArray = 0;
+      if(fSendHWList == kTRUE){
 
-	if(fSendHWList == kTRUE){
+	if(true/* condition was deprecated but keep for the sake of formatting*/){
 	  sizeOfHWArray = fHwAddressList.size()*sizeof(AliHLTUInt16_t);
       
-	  if(dataOffsetBeforeHW+sizeOfHWArray>size){
-	    HLTWarning("Buffer too small too add the active channels: %d of %d byte(s) already used", dataOffsetBeforeHW + sizeOfHWArray, size);
-	    return -ENOSPC;
+	  if(dataOffsetBeforeHW+sizeOfHWArray>capacity){
+	    HLTWarning("Buffer too small too add the active channels: %d of %d byte(s) already used", dataOffsetBeforeHW + sizeOfHWArray, capacity);
+	    iResult=-ENOSPC;
+	    break;
 	  }
       
 	  AliHLTUInt16_t*outputHWPtr=(AliHLTUInt16_t*)(outputPtr+dataOffsetBeforeHW);
@@ -532,20 +559,19 @@ int AliHLTTPCZeroSuppressionComponent::DoEvent( const AliHLTComponentEventData& 
 	  FillBlockData( bdHW );
 	  bdHW.fOffset = dataOffsetBeforeHW;
 	  bdHW.fSize = sizeOfHWArray;
-	  bdHW.fDataType = kAliHLTDataTypeHwAddr16;
+	  bdHW.fDataType = kAliHLTDataTypeHwAddr16|kAliHLTDataOriginTPC;
 	  bdHW.fSpecification = iter->fSpecification;
-	  Logging( kHLTLogDebug, "HLT::TPCZeroSuppressionComponent::DoEvent", "Event received", 
-		   "Event 0x%08LX (%Lu) output data block %lu of %lu bytes at offset %lu",
-		   evtData.fEventID, evtData.fEventID, ndx,size ,0);
 	  outputBlocks.push_back( bdHW );
 	}
-	size = dataOffsetBeforeHW+sizeOfHWArray;
-
-      } else {
-	size=0;
       }
+      size = dataOffsetBeforeHW+sizeOfHWArray;
       fDigitReader->Reset();
     }
 
-  return 0;
+  if (iResult<0) {
+    fDigitReader->Reset();
+    size=0;
+  }
+
+  return iResult;
 }
