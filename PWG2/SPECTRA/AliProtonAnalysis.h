@@ -108,6 +108,26 @@ class AliProtonAnalysis : public TObject {
     fMaxSigmaToVertexTPC = maxSigmaToVertex;
     fMaxSigmaToVertexTPCFlag = kTRUE;
   }
+  void    SetMaxDCAXY(Double_t maxDCAXY) {
+    fMaxDCAXY = maxDCAXY;
+    fMaxDCAXYFlag = kTRUE;
+  }
+  void    SetMaxDCAXYTPC(Double_t maxDCAXY) {
+    fMaxDCAXYTPC = maxDCAXY;
+    fMaxDCAXYTPCFlag = kTRUE;
+  }
+  void    SetMaxDCAZ(Double_t maxDCAZ) {
+    fMaxDCAZ = maxDCAZ;
+    fMaxDCAZFlag = kTRUE;
+  }
+  void    SetMaxDCAZTPC(Double_t maxDCAZ) {
+    fMaxDCAZTPC = maxDCAZ;
+    fMaxDCAZTPCFlag = kTRUE;
+  }
+  void    SetMaxConstrainChi2(Double_t maxConstrainChi2) {
+    fMaxConstrainChi2 = maxConstrainChi2;
+    fMaxConstrainChi2Flag = kTRUE;
+  }
   void    SetITSRefit() {fITSRefitFlag = kTRUE;}
   void    SetTPCRefit() {fTPCRefitFlag = kTRUE;}
   void    SetESDpid() {fESDpidFlag = kTRUE;}
@@ -170,11 +190,17 @@ class AliProtonAnalysis : public TObject {
   Double_t fMaxCov11, fMaxCov22, fMaxCov33, fMaxCov44, fMaxCov55; //max values of cov. matrix
   Double_t fMaxSigmaToVertex; //max sigma to vertex cut
   Double_t fMaxSigmaToVertexTPC; //max sigma to vertex cut
+  Double_t fMaxDCAXY, fMaxDCAXYTPC; //max DCA xy
+  Double_t fMaxDCAZ, fMaxDCAZTPC; //max DCA z
+  Double_t fMaxConstrainChi2; //max constrain chi2 - vertex
   Bool_t fMinTPCClustersFlag, fMinITSClustersFlag; //shows if this cut is used or not
   Bool_t fMaxChi2PerTPCClusterFlag, fMaxChi2PerITSClusterFlag; //shows if this cut is used or not
   Bool_t fMaxCov11Flag, fMaxCov22Flag, fMaxCov33Flag, fMaxCov44Flag, fMaxCov55Flag; //shows if this cut is used or not
   Bool_t fMaxSigmaToVertexFlag; //shows if this cut is used or not
   Bool_t fMaxSigmaToVertexTPCFlag; //shows if this cut is used or not
+  Bool_t fMaxDCAXYFlag, fMaxDCAXYTPCFlag; //shows if this cut is used or not
+  Bool_t fMaxDCAZFlag, fMaxDCAZTPCFlag; //shows if this cut is used or not
+  Bool_t fMaxConstrainChi2Flag; //shows if this cut is used or not
   Bool_t fITSRefitFlag, fTPCRefitFlag; //shows if this cut is used or not
   Bool_t fESDpidFlag, fTPCpidFlag; //shows if this cut is used or not
   

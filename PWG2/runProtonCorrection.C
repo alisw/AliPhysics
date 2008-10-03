@@ -6,8 +6,8 @@ Bool_t runProtonCorrection(Int_t stats = 0, const char* dataset = 0x0) {
 
   //________________________________________//
   //Connect to proof  
-  //TProof::Reset("proof://lxb6046.cern.ch");
-  TProof::Open("proof://lxb6046.cern.ch");
+  //TProof::Reset("alicecaf.cern.ch");
+  TProof::Open("alicecaf.cern.ch");
 
   // Enable the STEERBase Package
   gProof->UploadPackage("STEERBase.par");

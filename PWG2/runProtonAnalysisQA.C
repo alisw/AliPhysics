@@ -2,7 +2,7 @@ void runProtonAnalysisQA() {
   TStopwatch timer;
   timer.Start();
   
-  runProof(200000,"/PWG0/COMMON/run30000X_10TeV_0.5T"); //use data sets
+  runProof(200000,"/COMMON/COMMON/LHC08c11_10TeV_0.5T"); //use data sets
   //runProof(200); //use ascii files
   
   timer.Stop();
@@ -17,7 +17,7 @@ void runProof(Int_t stats = 0, const char* dataset = 0x0) {
   TString outputFilename = "Protons.QA.root"; 
 
   printf("****** Connect to PROOF *******\n");
-  TProof::Open("proof://lxb6046.cern.ch"); 
+  TProof::Open("alicecaf.cern.ch"); 
   gProof->SetParallel();
 
   // Enable the Analysis Package
