@@ -106,9 +106,9 @@ void AliQAHistViewer::DoExit()
 
 //_________________________________________________________________________
 AliQAHistViewer::AliQAHistViewer(const TGWindow *p, UInt_t w, UInt_t h, Bool_t embed) :
+    TGMainFrame(p, w, h),
     fEcan(NULL),
     fQANavigator(new AliQAHistNavigator()),
-    TGMainFrame(p, w, h),
     fFileListBox(NULL),
     fDetectorListBox(NULL),
     fLevelListBox(NULL),
