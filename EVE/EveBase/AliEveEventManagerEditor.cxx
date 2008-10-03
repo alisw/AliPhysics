@@ -334,10 +334,12 @@ TGLabel* AliEveEventManagerWindow::MkLabel(TGCompositeFrame* p,
 
 void AliEveEventManagerWindow::SetupTriggerSelect()
 {
-  if (fTrigger->GetNumberOfEntries()>0) return; //do nothing if already enabled
+  // Do nothing if already enabled.
+  if (fTrigger->GetNumberOfEntries() > 0)
+    return;
 
-  AliESDEvent* esd = gAliEveEvent->AssertESD();  //get ESD
-  if (esd)
+  AliESDEvent* esd = gAliEveEvent->GetESD();
+  if (esd && gAliEveEvent->GetESDFile() != 0)
   {
     TString activetrg = esd->GetESDRun()->GetActiveTriggerClasses();  //Get list of active classes
     TObjArray* activetrgarr = activetrg.Tokenize(" "); //break up the classes string, space as separator
@@ -361,6 +363,7 @@ void AliEveEventManagerWindow::SetupTriggerSelect()
       }
     }
     fTrigger->Select(-1, kTRUE); //set default no filtering and emit
+    fTrigger->SetEnabled(kTRUE);
   }
   else
   {

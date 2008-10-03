@@ -64,6 +64,7 @@ public:
 
   Int_t         GetEventId()   const { return fEventId; }
   AliRunLoader* GetRunLoader() const { return fRunLoader; }
+  TFile*        GetESDFile()   const { return fESDFile; }
   TTree*        GetESDTree()   const { return fESDTree; }
   AliESDEvent*  GetESD()       const { return fESD; }
   AliESDfriend* GetESDfriend()       const { return fESDfriend; }
