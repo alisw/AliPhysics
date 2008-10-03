@@ -6,7 +6,7 @@ void runProtonAnalysis() {
   //runInteractive();
   //runBatch();
   
-  runProof("ESD",200000,"/PWG0/COMMON/run30000X_10TeV_0.5T"); //use data sets
+  runProof("ESD",200000,"/COMMON/COMMON/LHC08c11_10TeV_0.5T"); //use data sets
   //runProof("ESD",200); //use ascii files
   
   timer.Stop();
@@ -52,8 +52,8 @@ void runLocal() {
   //__________________________________________________//
   //___________Setting up CORRFW.par__________________//
   //__________________________________________________//
-  gProof->UploadPackage("CORRFW.par");
-  gProof->EnablePackage("CORRFW");
+  setupPar->UploadPackage("CORRFW.par");
+  gSystem->EnablePackage("CORRFW");
 
   //____________________________________________________________//
   //_____________Setting up PWG2spectra.par_____________________//
@@ -160,8 +160,8 @@ void runInteractive() {
   //__________________________________________________//
   //___________Setting up CORRFW.par__________________//
   //__________________________________________________//
-  gProof->UploadPackage("CORRFW.par");
-  gProof->EnablePackage("CORRFW");
+  setupPar->UploadPackage("CORRFW.par");
+  gSystem->EnablePackage("CORRFW");
 
   //____________________________________________________________//
   //_____________Setting up PWG2spectra.par_____________________//
@@ -268,6 +268,12 @@ void runBatch() {
   setupPar("ANALYSISalice");
   gSystem->Load("libANALYSISalice.so");
 
+  //__________________________________________________//
+  //___________Setting up CORRFW.par__________________//
+  //__________________________________________________//
+  setupPar->UploadPackage("CORRFW.par");
+  gSystem->EnablePackage("CORRFW");
+
   //____________________________________________________________//
   //_____________Setting up PWG2spectra.par_____________________//
   //____________________________________________________________//
@@ -336,7 +342,7 @@ void runProof(const char* mode = "ESD",
   outputFilename += ".root";
 
   printf("****** Connect to PROOF *******\n");
-  TProof::Open("proof://lxb6046.cern.ch"); 
+  TProof::Open("alicecaf.cern.ch"); 
   gProof->SetParallel();
 
   // Enable the Analysis Package
