@@ -17,7 +17,7 @@
 #include "AliMCEvent.h"
 #include "AliStack.h"
 
-#include "PWG2spectra/SPECTRA/AliProtonAnalysis.h"
+#include "PWG2spectra/SPECTRA/AliProtonQAAnalysis.h"
 #include "AliAnalysisTaskProtonsQA.h"
 
 // Analysis task used for the QA of the (anti)proton analysis
@@ -82,7 +82,7 @@ void AliAnalysisTaskProtonsQA::CreateOutputObjects() {
   Double_t partFrac[5] = {0.01, 0.01, 0.85, 0.10, 0.05};
   
   //proton analysis object
-  fAnalysis = new AliProtonAnalysis();
+  fAnalysis = new AliProtonQAAnalysis();
   fAnalysis->SetQAOn();
 
   //Use of TPConly tracks

@@ -1,13 +1,13 @@
-#ifndef ALIPROTONANALYSIS_H
-#define ALIPROTONANALYSIS_H
+#ifndef ALIPROTONQAANALYSIS_H
+#define ALIPROTONQAANALYSIS_H
 
 /*  See cxx source for full Copyright notice */
 
 
-/* $Id$ */
+/* $Id: AliProtonQAAnalysis.h 29114 2008-10-03 16:49:02Z pchrist $ */
 
 //-------------------------------------------------------------------------
-//                       Class AliProtonAnalysis
+//                       Class AliProtonQAAnalysis
 //   This is the class for the baryon (proton) analysis
 //
 //    Origin: Panos Christakoglou, UOA-CERN, Panos.Christakoglou@cern.ch
@@ -23,55 +23,19 @@ class TF1;
 class TH2D;
 class TH1F;
 
-#include "AliCFContainer.h"
-class AliCFDataGrid;
-class AliAODEvent;
-class AliAODtrack;
 class AliESDEvent;
 class AliESDtrack;
-class AliExternalTrackParam;
 class AliStack;
 
-class AliProtonAnalysis : public TObject {
+class AliProtonQAAnalysis : public TObject {
  public:
-  AliProtonAnalysis();
-  AliProtonAnalysis(Int_t nbinsY, Float_t fLowY, Float_t fHighY,
-		    Int_t nbinsPt, Float_t fLowPt, Float_t fHighPt);
-  virtual ~AliProtonAnalysis();
+  AliProtonQAAnalysis();
+  virtual ~AliProtonQAAnalysis();
 
   void UseTPCOnly() {fUseTPCOnly = kTRUE;}
   
   void InitAnalysisHistograms(Int_t nbinsY, Float_t fLowY, Float_t fHighY,
 			      Int_t nbinsPt, Float_t fLowPt, Float_t fHighPt);
-  Bool_t ReadFromFile(const char* filename);
-  void Analyze(AliESDEvent *fESD);
-  void Analyze(AliAODEvent *fAOD);
-  void Analyze(AliStack *stack);
-  
-  AliCFContainer *GetProtonContainer() {return fProtonContainer;}
-  AliCFContainer *GetAntiProtonContainer() {return fAntiProtonContainer;}
-
-  TH2D *GetProtonYPtHistogram() {return fHistYPtProtons;}
-  TH2D *GetAntiProtonYPtHistogram() {return fHistYPtAntiProtons;}
-  TH1D *GetProtonYHistogram();
-  TH1D *GetAntiProtonYHistogram();
-  TH1D *GetProtonPtHistogram();
-  TH1D *GetAntiProtonPtHistogram();
-  TH1D *GetProtonCorrectedYHistogram();
-  TH1D *GetAntiProtonCorrectedYHistogram();
-  TH1D *GetProtonCorrectedPtHistogram();
-  TH1D *GetAntiProtonCorrectedPtHistogram();
-  
-  TH1D *GetYRatioHistogram();
-  TH1D *GetPtRatioHistogram();
-  TH1D *GetYAsymmetryHistogram();
-  TH1D *GetPtAsymmetryHistogram();
-
-  TH1I *GetEventHistogram() {return fHistEvents;}
-
-  Int_t   GetNumberOfAnalyzedEvents() {return (Int_t)fHistEvents->GetEntries();} 
-  Bool_t  PrintMean(TH1 *hist, Double_t edge);
-  Bool_t  PrintYields(TH1 *hist, Double_t edge); 
 
   //Cut functions
   void    SetMinITSClusters(Int_t minITSClusters) {
@@ -133,6 +97,14 @@ class AliProtonAnalysis : public TObject {
   void    SetESDpid() {fESDpidFlag = kTRUE;}
   void    SetTPCpid() {fTPCpidFlag = kTRUE;}
 
+  //QA histograms
+  void SetQAOn();
+  void SetQAYPtBins(Int_t nbinsY, Double_t minY, Double_t maxY,
+		    Int_t nbinsPt, Double_t minPt, Double_t maxPt);
+  void InitQA();
+  void RunQA(AliStack *stack, AliESDEvent *esd);
+  TList *GetGlobalQAList() {return fGlobalQAList;}
+
   //Prior probabilities
   void SetPriorProbabilities(Double_t *partFrac) {
     for(Int_t i = 0; i < AliPID::kSPECIESN; i++) fPartFrac[i] = partFrac[i];} 
@@ -146,27 +118,12 @@ class AliProtonAnalysis : public TObject {
   } 
   Double_t GetParticleFraction(Int_t i, Double_t p);
 
-  //interface to the correction framework
-  void Correct(Int_t step);
-  Bool_t ReadCorrectionContainer(const char* filename);
-  TList *GetCorrectionListProtons2D() {return fCorrectionListProtons2D;} 
-  TList *GetEfficiencyListProtons1D() {return fEfficiencyListProtons1D;} 
-  TList *GetCorrectionListProtons1D() {return fCorrectionListProtons1D;} 
-  TList *GetCorrectionListAntiProtons2D() {return fCorrectionListAntiProtons2D;} 
-  TList *GetEfficiencyListAntiProtons1D() {return fEfficiencyListAntiProtons1D;} 
-  TList *GetCorrectionListAntiProtons1D() {return fCorrectionListAntiProtons1D;} 
-  
-  //iStep=0->MC - iStep=1->Acceptance - iStep=2->Reconstruction - iStep=3->PID
-  TH1D  *GetUncorrectedProtonYHistogram(Int_t iStep) {return fProtonContainer->ShowProjection(0, iStep);}
-  TH1D  *GetUncorrectedProtonPtHistogram(Int_t iStep) {return fProtonContainer->ShowProjection(1, iStep);}
-  TH1D  *GetUncorrectedAntiProtonYHistogram(Int_t iStep) {return fAntiProtonContainer->ShowProjection(0, iStep);}
-  TH1D  *GetUncorrectedAntiProtonPtHistogram(Int_t iStep) {return fAntiProtonContainer->ShowProjection(1, iStep);}
-
  private:
-  AliProtonAnalysis(const AliProtonAnalysis&); // Not implemented
-  AliProtonAnalysis& operator=(const AliProtonAnalysis&); // Not implemented
+  AliProtonQAAnalysis(const AliProtonQAAnalysis&); // Not implemented
+  AliProtonQAAnalysis& operator=(const AliProtonQAAnalysis&); // Not implemented
 
   Bool_t   IsAccepted(AliESDtrack *track);
+  void     FillQA(AliESDtrack *track, AliStack *stack);
   Float_t  GetSigmaToVertex(AliESDtrack* esdTrack); 
   Double_t Rapidity(Double_t Px, Double_t Py, Double_t Pz);
   
@@ -195,6 +152,19 @@ class AliProtonAnalysis : public TObject {
   Bool_t fITSRefitFlag, fTPCRefitFlag; //shows if this cut is used or not
   Bool_t fESDpidFlag, fTPCpidFlag; //shows if this cut is used or not
   
+  //QA histograms
+  //Bool_t fQAHistograms; //Boolean to activate the QA histograms
+  TList *fGlobalQAList; //TList storing the directories for the QA histograms
+  TList *fQA2DList; //TList storing the accepted primary/secondary (anti)protons
+  TList *fQAPrimaryProtonsAcceptedList; //list of the QA histos for accepted primary protons
+  TList *fQAPrimaryProtonsRejectedList; //list of the QA histos for rejected primary protons
+  TList *fQASecondaryProtonsAcceptedList; //list of the QA histos for accepted secondary protons
+  TList *fQASecondaryProtonsRejectedList; //list of the QA histos for rejected secondary protons
+  TList *fQAPrimaryAntiProtonsAcceptedList; //list of the QA histos for accepted primary antiprotons
+  TList *fQAPrimaryAntiProtonsRejectedList; //list of the QA histos for rejected primary antiprotons
+  TList *fQASecondaryAntiProtonsAcceptedList; //list of the QA histos for accepted secondary antiprotons
+  TList *fQASecondaryAntiProtonsRejectedList; //list of the QA histos for rejected secondary antiprotons
+
   //pid
   Bool_t fFunctionProbabilityFlag; //flag: kTRUE if functions used
   Double_t fPartFrac[10]; //prior probabilities
@@ -207,26 +177,7 @@ class AliProtonAnalysis : public TObject {
   //Detectors
   Bool_t fUseTPCOnly; //kTRUE if TPC only information is used
 
-  //Analysis containers
-  AliCFContainer *fProtonContainer; //container for protons
-  AliCFContainer *fAntiProtonContainer; //container for antiprotons
-  TH1I *fHistEvents; //event counter
-  TH2D *fHistYPtProtons; //Y-Pt of Protons
-  TH2D *fHistYPtAntiProtons; // Y-Pt of Antiprotons
-
-  //Corrections
-  TList *fEffGridListProtons; //list for the efficiency grid - protons 
-  TList *fCorrectionListProtons2D; //list for the 2d corrections 
-  TList *fEfficiencyListProtons1D; //list for the 1d efficiencies
-  TList *fCorrectionListProtons1D; //list for the 1d corrections 
-  TList *fEffGridListAntiProtons; //list for the efficiency grid - antiprotons 
-  TList *fCorrectionListAntiProtons2D; //list for the 2d corrections 
-  TList *fEfficiencyListAntiProtons1D; //list for the 1d efficiencies
-  TList *fCorrectionListAntiProtons1D; //list for the 1d corrections 
-  AliCFDataGrid *fCorrectProtons; //corrected data grid for protons
-  AliCFDataGrid *fCorrectAntiProtons; //corrected data grid for antiprotons
-
-  ClassDef(AliProtonAnalysis,0);
+  ClassDef(AliProtonQAAnalysis,0);
 };
 
 #endif

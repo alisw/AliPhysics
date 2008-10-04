@@ -5,5 +5,6 @@
 #pragma link off all functions;
 
 #pragma link C++ class AliProtonAnalysis+;
+#pragma link C++ class AliProtonQAAnalysis+;
 
 #endif
