@@ -6,7 +6,7 @@
 class TList;
 class AliESDEvent;
 class AliMCEvent;
-class AliProtonAnalysis;
+class AliProtonQAAnalysis;
 
 #include "AliAnalysisTask.h"
 
@@ -23,14 +23,14 @@ class AliAnalysisTaskProtonsQA : public AliAnalysisTask {
 
  private:
   AliESDEvent *fESD;    //ESD object
-  AliMCEvent  *fMC;     //MC object                                                                                   
+  AliMCEvent  *fMC;     //MC object
 
-  TList  *fList; //TList output object                                                                                
+  TList  *fList; //TList output object
   
-  AliProtonAnalysis *fAnalysis; //analysis object                                                                     
-  
-  AliAnalysisTaskProtonsQA(const AliAnalysisTaskProtonsQA&); // not implemented                                           
-  AliAnalysisTaskProtonsQA& operator=(const AliAnalysisTaskProtonsQA&); // not implemented                                 
+  AliProtonQAAnalysis *fAnalysis; //analysis object
+ 
+  AliAnalysisTaskProtonsQA(const AliAnalysisTaskProtonsQA&); // not implemented
+  AliAnalysisTaskProtonsQA& operator=(const AliAnalysisTaskProtonsQA&); // not implemented
   
   ClassDef(AliAnalysisTaskProtonsQA, 1); // example of analysis
 };

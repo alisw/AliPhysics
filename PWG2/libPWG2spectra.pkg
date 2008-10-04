@@ -1,6 +1,6 @@
 #-*- Mode: Makefile -*-
 
-SRCS=SPECTRA/AliProtonAnalysis.cxx
+SRCS=SPECTRA/AliProtonAnalysis.cxx SPECTRA/AliProtonQAAnalysis.cxx
 
 HDRS= $(SRCS:.cxx=.h) 
 
