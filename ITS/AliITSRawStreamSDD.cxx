@@ -34,6 +34,7 @@ AliITSRawStreamSDD::AliITSRawStreamSDD(AliRawReader* rawReader) :
   AliITSRawStream(rawReader),
 fDDLModuleMap(0),
 fData(0),
+fResetSkip(kTRUE),
 fEventId(0),
 fCarlosId(-1),
 fChannel(0),
@@ -61,6 +62,7 @@ AliITSRawStreamSDD::AliITSRawStreamSDD(const AliITSRawStreamSDD& rs) :
 AliITSRawStream(rs.fRawReader),
 fDDLModuleMap(rs.fDDLModuleMap),
 fData(0),
+fResetSkip(kTRUE),
 fEventId(0),
 fCarlosId(-1),
 fChannel(0),
@@ -122,15 +124,18 @@ Bool_t AliITSRawStreamSDD::Next()
   fCompletedModule=kFALSE;
 
   while (kTRUE) {
-  
+    if(fResetSkip){
+      Reset();
+      Bool_t kSkip = SkipHeaderWord();
+      if(!kSkip) return kSkip;	
+      fResetSkip=kFALSE;
+    }
     if ((fChannel < 0) || (fCarlosId < 0) || (fChannel >= 2) || (fCarlosId >= kModulesPerDDL) || (fLastBit[fCarlosId][fChannel] < fReadBits[fCarlosId][fChannel]) ) {
       if (!fRawReader->ReadNextInt(fData)) return kFALSE;  // read next word
 
 
       if((fData >> 16) == 0x7F00){ // jitter word
-	Reset();
-	Bool_t kSkip = SkipHeaderWord();
-	if(!kSkip) return kSkip;	
+	fResetSkip=kTRUE;
 	continue;
       }
 
