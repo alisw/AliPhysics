@@ -186,7 +186,7 @@ int AliHLTSimulation::Init(AliRunLoader* pRunLoader, const char* options)
   }
 
   if (!fpSystem->CheckStatus(AliHLTSystem::kReady)) {
-    if ((fpSystem->Configure(pRunLoader))<0) {
+    if ((fpSystem->Configure(fpRawReader, pRunLoader))<0) {
       AliError("error during HLT system configuration");
       return -EFAULT;
     }
