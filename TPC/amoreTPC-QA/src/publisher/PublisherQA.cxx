@@ -62,7 +62,7 @@ void PublisherQA::BookMonitorObjects() {
  printf("PublisherQA::BookMonitorObject\n");  
  Publish(moInt1, "moInt1", "My Integer MonitorObject 1");
  int cycleLength=0;
- fqadmList=fqadm->Init(AliQA::kRAWS, 0, cycleLength);
+ fqadmList=fqadm->Init(AliQA::kRAWS, cycleLength);
  TObjArrayIter* lIt=(TObjArrayIter*)fqadmList->MakeIterator();
  TNamed* obj;
  while((obj=(TNamed*)lIt->Next())) {
@@ -80,6 +80,7 @@ void PublisherQA::StartOfCycle() {
 }
 
 void PublisherQA::EndOfCycle() {
+  printf("PublisherQA::EndOfCycle\n");
  
  fqadm->EndOfCycle(AliQA::kRAWS);
  std::cerr << *moInt1 << std::endl;
@@ -87,7 +88,8 @@ void PublisherQA::EndOfCycle() {
 }
 
 void PublisherQA::MonitorEvent(amore::core::Event& event) {
- 
+   printf("MonitorEvent\n");
+
  AliRawReaderDate* arr=new AliRawReaderDate(event.DATEEvent());
  fqadm->Exec(AliQA::kRAWS, arr);
  ++*moInt1;
@@ -95,11 +97,13 @@ void PublisherQA::MonitorEvent(amore::core::Event& event) {
 
 }
 
-void PublisherQA::StartOfRun() {
+void PublisherQA::StartOfRun(const amore::core::Run& /*run*/) {
+  printf("PublisherQA::StartOfRun\n");
 
 }
 
-void PublisherQA::EndOfRun() {
+ void PublisherQA::EndOfRun(const amore::core::Run& /*run*/) {
+  printf("PublisherQA::EndOfRun\n");
 
  fqadm->Finish();
  

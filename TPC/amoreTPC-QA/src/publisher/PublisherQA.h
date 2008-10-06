@@ -46,10 +46,10 @@ class PublisherQA : public amore::publisher::PublisherModule, public amore::TPC:
  virtual void MonitorEvent(amore::core::Event&);
  virtual void StartOfCycle();
  virtual void EndOfCycle();
- virtual void StartOfRun();
- virtual void EndOfRun();
- virtual void StartOfSession() {};
- virtual void EndOfSession() {};
+ virtual void StartOfRun(const amore::core::Run& run);
+ virtual void EndOfRun(const amore::core::Run& run);
+ virtual void StartOfSession(const amore::core::Session& session) {};
+ virtual void EndOfSession(const amore::core::Session& session) {};
  
  protected:
  

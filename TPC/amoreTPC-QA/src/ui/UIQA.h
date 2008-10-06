@@ -26,10 +26,20 @@
 #include <TGTab.h>
 #include <TGNumberEntry.h>
 #include <TGTextView.h>
+#include <TString.h>
+class TList;
 class AliTPCCalibViewerGUI;
 class AliTPCdataQA;
 class AliTPCCalPad;
+class AliTPCCalibPedestal;
+class AliTPCCalibPulser;
+class AliTPCCalibCE;
 namespace amore {
+
+namespace da {
+  class AmoreDA;
+};
+  
 
 namespace TPC {
 
@@ -59,14 +69,23 @@ class UIQA : public amore::ui::VisualModule, public amore::TPC::common::Common {
  
  protected:
  void MakeTree(AliTPCdataQA * qa);
- AliTPCCalPad * GetNoise();
- AliTPCCalPad * GetPedestal();
- AliTPCCalPad * GetTime0();
+ void MergeCalPadPedestal();
+ void RetrieveFromAmoreDB();
+ void CollectFromLDCs(AliTPCCalPad *calPad, const TString &calName, const TString &daType);
+ void CollectFromMon(AliTPCCalPad *calPad, const TString &calName, const TString &daType, const TString &mon);
+ TList *fMapCalibObjects;
+ TList *fListCalibObjInfo;
+ amore::da::AmoreDA      *fAmoreDA;
+ // gui
  TGTab* fTab;
+ TGCompositeFrame* fExpert;
  TRootEmbeddedCanvas* fEC[10];
  TGNumberEntryField* fNEF[10];
  TGTextView* fTextView[10];
  AliTPCCalibViewerGUI *fViewerGUI;
+ TList *fListGuiObjects;
+ void SetupTabDACalib(TGCompositeFrame *frame);
+ void UpdateAmoreDBValues();
  Int_t fCycle;
  ClassDef(UIQA, 1);
 
