@@ -922,7 +922,7 @@ Bool_t AliReconstruction::InitGRP() {
   }
 
   Int_t activeDetectors = fGRPData->GetDetectorMask();
-  if (activeDetectors==AliGRPObject::GetInvalidInt()) {
+  if (activeDetectors==AliGRPObject::GetInvalidUInt()) {
     AliError("GRP/GRP/Data entry:  missing value for the detector mask ! Using 1074790399");
     activeDetectors = 1074790399;
   }

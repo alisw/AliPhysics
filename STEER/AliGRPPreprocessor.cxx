@@ -1235,9 +1235,9 @@ Int_t AliGRPPreprocessor::ReceivePromptRecoParameters(UInt_t run, const char* db
 	TString runType(row->GetField(1));
 	
 	TMap grpData;
-	grpData.Add(new TObjString("DAQ_time_start"), new TObjString(row->GetField(0)));
-	grpData.Add(new TObjString("run_type"), new TObjString(runType));
-	grpData.Add(new TObjString("detectorMask"), new TObjString(row->GetField(2)));
+	grpData.Add(new TObjString("fAliceStartTime"), new TObjString(row->GetField(0)));
+	grpData.Add(new TObjString("fRunType"), new TObjString(runType));
+	grpData.Add(new TObjString("fDetectorMask"), new TObjString(row->GetField(2)));
 	
 	delete row;
 	row = 0;
