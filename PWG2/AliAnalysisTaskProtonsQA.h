@@ -25,7 +25,9 @@ class AliAnalysisTaskProtonsQA : public AliAnalysisTask {
   AliESDEvent *fESD;    //ESD object
   AliMCEvent  *fMC;     //MC object
 
-  TList  *fList; //TList output object
+  TList  *fList0; //TList output object
+  TList  *fList1; //TList output object
+  TList  *fList2; //TList output object
   
   AliProtonQAAnalysis *fAnalysis; //analysis object
  

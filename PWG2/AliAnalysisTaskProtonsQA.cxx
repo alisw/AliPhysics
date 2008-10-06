@@ -28,15 +28,16 @@ ClassImp(AliAnalysisTaskProtonsQA)
 //________________________________________________________________________ 
 AliAnalysisTaskProtonsQA::AliAnalysisTaskProtonsQA()
   : AliAnalysisTask(), fESD(0), fMC(0),
-    fList(0), fAnalysis(0) {
+    fList0(0), fList1(0), fList2(0),
+    fAnalysis(0) {
     //Dummy constructor
-                                                                                                   
 }
 
 //________________________________________________________________________
 AliAnalysisTaskProtonsQA::AliAnalysisTaskProtonsQA(const char *name) 
 : AliAnalysisTask(name, ""), fESD(0), fMC(0),
-  fList(0), fAnalysis(0) {
+  fList0(0), fList1(0), fList2(0),
+  fAnalysis(0) {
   // Constructor
 
   // Define input and output slots here
@@ -44,6 +45,8 @@ AliAnalysisTaskProtonsQA::AliAnalysisTaskProtonsQA(const char *name)
   DefineInput(0, TChain::Class());
   // Output slot #0 writes into a TList container
   DefineOutput(0, TList::Class());
+  DefineOutput(1, TList::Class());
+  DefineOutput(2, TList::Class());
 }
 
 //________________________________________________________________________
@@ -84,6 +87,7 @@ void AliAnalysisTaskProtonsQA::CreateOutputObjects() {
   //proton analysis object
   fAnalysis = new AliProtonQAAnalysis();
   fAnalysis->SetQAOn();
+  fAnalysis->SetRunMCAnalysis();
 
   //Use of TPConly tracks
   /*fAnalysis->SetQAYPtBins(10, -0.5, 0.5, 12, 0.5, 0.9); //TPC only
@@ -118,8 +122,14 @@ void AliAnalysisTaskProtonsQA::CreateOutputObjects() {
   fAnalysis->InitQA();
   fAnalysis->SetPriorProbabilities(partFrac);
 
-  fList = new TList();
-  fList = fAnalysis->GetGlobalQAList();
+  fList0 = new TList();
+  fList0 = fAnalysis->GetGlobalQAList();
+
+  fList1 = new TList();
+  fList1 = fAnalysis->GetPDGList();
+
+  fList2 = new TList();
+  fList2 = fAnalysis->GetMCProcessesList();
 }
 
 //________________________________________________________________________
@@ -144,9 +154,12 @@ void AliAnalysisTaskProtonsQA::Exec(Option_t *) {
   }
   
   fAnalysis->RunQA(stack, fESD);
-    
+  fAnalysis->RunMCAnalysis(stack);
+
   // Post output data.
-  PostData(0, fList);
+  PostData(0, fList0);
+  PostData(1, fList1);
+  PostData(2, fList2);
 }      
 
 //________________________________________________________________________
@@ -154,8 +167,8 @@ void AliAnalysisTaskProtonsQA::Terminate(Option_t *) {
   // Draw result to the screen
   // Called once at the end of the query
   
-  fList = dynamic_cast<TList*> (GetOutputData(0));
-  if (!fList) {
+  fList0 = dynamic_cast<TList*> (GetOutputData(0));
+  if (!fList0) {
     Printf("ERROR: fList not available");
     return;
   }

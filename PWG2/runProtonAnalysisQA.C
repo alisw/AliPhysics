@@ -14,7 +14,9 @@ void runProof(Int_t stats = 0, const char* dataset = 0x0) {
   TStopwatch timer;
   timer.Start();
   
-  TString outputFilename = "Protons.QA.root"; 
+  TString outputFilename1 = "Protons.QA.root"; 
+  TString outputFilename2 = "Protons.MC.Composition.root"; 
+  TString outputFilename3 = "Protons.MC.Processes.root"; 
 
   printf("****** Connect to PROOF *******\n");
   TProof::Open("alicecaf.cern.ch"); 
@@ -58,11 +60,21 @@ void runProof(Int_t stats = 0, const char* dataset = 0x0) {
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("outputList1", 
 							    TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
-							    outputFilename.Data());
+							    outputFilename1.Data());
+  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("outputList2", 
+							    TList::Class(),
+							    AliAnalysisManager::kOutputContainer,
+							    outputFilename2.Data());
+  AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("outputList3", 
+							    TList::Class(),
+							    AliAnalysisManager::kOutputContainer,
+							    outputFilename3.Data());
 
   //____________________________________________//
   mgr->ConnectInput(taskProtonsQA,0,cinput1);
   mgr->ConnectOutput(taskProtonsQA,0,coutput1);
+  mgr->ConnectOutput(taskProtonsQA,1,coutput2);
+  mgr->ConnectOutput(taskProtonsQA,2,coutput3);
   if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
 

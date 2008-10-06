@@ -20,8 +20,8 @@
 #include "AliPID.h"
 
 class TF1;
-class TH2D;
 class TH1F;
+class TH3F;
 
 class AliESDEvent;
 class AliESDtrack;
@@ -34,9 +34,6 @@ class AliProtonQAAnalysis : public TObject {
 
   void UseTPCOnly() {fUseTPCOnly = kTRUE;}
   
-  void InitAnalysisHistograms(Int_t nbinsY, Float_t fLowY, Float_t fHighY,
-			      Int_t nbinsPt, Float_t fLowPt, Float_t fHighPt);
-
   //Cut functions
   void    SetMinITSClusters(Int_t minITSClusters) {
     fMinITSClusters = minITSClusters;
@@ -101,7 +98,6 @@ class AliProtonQAAnalysis : public TObject {
   void SetQAOn();
   void SetQAYPtBins(Int_t nbinsY, Double_t minY, Double_t maxY,
 		    Int_t nbinsPt, Double_t minPt, Double_t maxPt);
-  void InitQA();
   void RunQA(AliStack *stack, AliESDEvent *esd);
   TList *GetGlobalQAList() {return fGlobalQAList;}
 
@@ -118,12 +114,21 @@ class AliProtonQAAnalysis : public TObject {
   } 
   Double_t GetParticleFraction(Int_t i, Double_t p);
 
+  //MC analysis
+  void RunMCAnalysis(AliStack* stack);
+  void SetRunMCAnalysis() {fRunMCAnalysis = kTRUE;}
+  TList *GetPDGList() {return fPDGList;}
+  TList *GetMCProcessesList() {return fMCProcessesList;}
+
  private:
   AliProtonQAAnalysis(const AliProtonQAAnalysis&); // Not implemented
   AliProtonQAAnalysis& operator=(const AliProtonQAAnalysis&); // Not implemented
 
   Bool_t   IsAccepted(AliESDtrack *track);
+  void     InitQA();
   void     FillQA(AliESDtrack *track, AliStack *stack);
+  void     InitMCAnalysis();
+  Int_t    ConvertPDGToInt(Int_t pdgCode);
   Float_t  GetSigmaToVertex(AliESDtrack* esdTrack); 
   Double_t Rapidity(Double_t Px, Double_t Py, Double_t Pz);
   
@@ -176,6 +181,11 @@ class AliProtonQAAnalysis : public TObject {
 
   //Detectors
   Bool_t fUseTPCOnly; //kTRUE if TPC only information is used
+
+  //MC analysis
+  TList *fPDGList; //list with the 3D histograms: y-pt-pdg (anti)protons
+  TList *fMCProcessesList; //list with the MC processes for every secondary (anti)proton
+  Bool_t fRunMCAnalysis; //run this part or not
 
   ClassDef(AliProtonQAAnalysis,0);
 };
