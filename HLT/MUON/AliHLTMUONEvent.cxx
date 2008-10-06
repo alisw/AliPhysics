@@ -27,9 +27,45 @@
 
 #include "AliHLTMUONEvent.h"
 #include "AliHLTMUONDecision.h"
+#include "AliLog.h"
 #include <iostream>
 
 ClassImp(AliHLTMUONEvent);
+
+
+AliHLTMUONEvent::AliHLTMUONEvent(const AliHLTMUONEvent& event) :
+	TObject(),
+	fEventId(event.fEventId),
+	fArray()
+{
+	/// Copy constructor performs a deep copy of the object.
+	
+	fEventId = event.fEventId;
+	fArray.SetOwner(kTRUE);
+	TIter next(&event.fArray);
+	TObject* obj = NULL;
+	while ( (obj = next()) != NULL )
+	{
+		fArray.Add(obj->Clone());
+	}
+}
+
+
+AliHLTMUONEvent& AliHLTMUONEvent::operator = (const AliHLTMUONEvent& event)
+{
+	/// The assignment operator performs a deep copy of the object.
+	
+	TObject::operator = (event);
+	fEventId = event.fEventId;
+	fArray.Clear();
+	TIter next(&event.fArray);
+	TObject* obj = NULL;
+	while ( (obj = next()) != NULL )
+	{
+		fArray.Add(obj->Clone());
+	}
+	return *this;
+}
 
 
 const AliHLTMUONDecision* AliHLTMUONEvent::FindDecision() const
@@ -64,3 +100,39 @@ void AliHLTMUONEvent::Print(Option_t* option) const
 	for (Int_t i = 0; i < fArray.GetEntriesFast(); i++)
 		if (fArray[i] != NULL) fArray[i]->Print(option);
 }
+
+
+void AliHLTMUONEvent::Clear(Option_t* option)
+{
+	/// Clears the internal array of event objects.
+	
+	fEventId = AliHLTEventID_t(-1);
+	fArray.Clear(option);
+}
+
+
+void AliHLTMUONEvent::Copy(TObject& object) const
+{
+	/// Deep copy this object to the target object.
+	/// \param object  The target object to copy to.
+	
+	if (object.IsA() != this->IsA())
+	{
+		AliError(Form("Cannot copy an object of type %s to a type of %s.",
+			this->ClassName(), object.ClassName()
+		));
+		return;
+	}
+	
+	TObject::Copy(object);
+	AliHLTMUONEvent& event = static_cast<AliHLTMUONEvent&>(object);
+	event.fEventId = fEventId;
+	event.fArray.Clear();
+	TIter next(&fArray);
+	TObject* obj = NULL;
+	while ( (obj = next()) != NULL )
+	{
+		event.fArray.Add(obj->Clone());
+	}
+}
+

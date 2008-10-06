@@ -31,6 +31,12 @@ public:
 		fArray.SetOwner(kTRUE);
 	}
 	
+	/// Copy constructor performs a deep copy of the object.
+	AliHLTMUONEvent(const AliHLTMUONEvent& event);
+	
+	/// The assignment operator performs a deep copy of the object.
+	AliHLTMUONEvent& operator = (const AliHLTMUONEvent& event);
+	
 	/// Default destructor.
 	virtual ~AliHLTMUONEvent() {}
 	
@@ -75,6 +81,12 @@ public:
 	
 	/// Inherited method for printing information about all objects in the event.
 	virtual void Print(Option_t* option = NULL) const;
+	
+	/// Inherited method for clearing the event.
+	virtual void Clear(Option_t* option = "");
+	
+	/// Inherited method for deep copying the event.
+	virtual void Copy(TObject& object) const;
 
 private:
 
