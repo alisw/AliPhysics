@@ -58,6 +58,7 @@ New TPC monitoring package from Stefan Kniege. The monitoring package can be sta
 #include "AliTPCMonitorFFT.h"
 #include "AliRawReaderRoot.h"
 #include "AliRawReader.h"
+#include "AliRawEventHeaderBase.h"
 #include "TH2F.h" 
 #include "TF1.h"
 #include "TMath.h"
@@ -814,16 +815,29 @@ Int_t AliTPCMonitor::ReadDataROOT(Int_t secid)
   if(fEventNumberOld>fEventNumber) fReaderROOT->RewindEvents(); 
   
   while(GetProcNextEvent() || fEventNumber==0)
-    {
-      if(fVerb) cout << "AliTPCMonitor::ReadDataROOT get event " << endl;
-      if(!fReaderROOT->NextEvent()) { AliError("Could not get next Event"); return 11 ;}
-      Int_t currentev =  *(fReaderROOT->GetEventId());
-     
-      if(fEventNumber <= currentev ){  break; }
-    }
+  {
+    if(fVerb) cout << "AliTPCMonitor::ReadDataROOT get event " << endl;
+    if(!fReaderROOT->NextEvent()) { AliError("Could not get next Event"); return 11 ;}
+//       Int_t currentev =  *(fReaderROOT->GetEventId());
+      //!! think about
+    Int_t currentev=fReaderROOT->GetEventIndex();
+//      break;
+      // skip all events but physics, calibration and software trigger events!
+    UInt_t eventType=fReaderROOT->GetType();
+    if ( !(eventType==AliRawEventHeaderBase::kPhysicsEvent ||
+           eventType==AliRawEventHeaderBase::kCalibrationEvent ||
+           eventType==AliRawEventHeaderBase::kSystemSoftwareTriggerEvent ||
+           eventType==AliRawEventHeaderBase::kDetectorSoftwareTriggerEvent) ) {
+      if (fVerb) cout<< "Skipping event! Its neither of 'physics, calibration and software trigger event'" << endl;
+      continue;
+           }
+           if(fEventNumber <= currentev ){  break; }
+  }
   
-  fEventNumber     =  *(fReaderROOT->GetEventId());
-  fEventNumberOld  =  *(fReaderROOT->GetEventId()); 
+//   fEventNumber     =  *(fReaderROOT->GetEventId());
+//   fEventNumberOld  =  *(fReaderROOT->GetEventId()); 
+  fEventNumber = fReaderROOT->GetEventIndex();
+  fEventNumberOld = fReaderROOT->GetEventIndex();
   
   ResetHistos() ; 
   
@@ -911,13 +925,16 @@ void AliTPCMonitor::FillHistsDecode(AliTPCMonitorAltro* altro ,Int_t rcupatch, I
   Double_t  hmean            = 0.0;
   Int_t     supnextpos        = 0;
 //  TH1D*     hbase             =  new TH1D("hbase","hbase",GetTimeBins(),0.5,(GetTimeBins()+0.5));
- 
+  Float_t  fbase[1000];
+
+  
   while(lastpos>0) 
     {
       nextpos    = altro->DecodeTrailer(lastpos);
       supnextpos = altro->GetNextTrailerPos();
       if(nextpos==-1) { break; }
-      
+      Int_t itimebin=0;  //timebins in this pad
+        
       lastpos               = nextpos;
       blockpos             = altro->GetTrailerBlockPos();
       hw                    = altro->GetTrailerHwAddress(); 
@@ -931,7 +948,7 @@ void AliTPCMonitor::FillHistsDecode(AliTPCMonitorAltro* altro ,Int_t rcupatch, I
 	  //Int_t hw_before2 = fPad[fChannelIter-3][0];
 	  
 	  if(fVerb){ cout  <<"\n //// Ambiguous hwaddress "   << nextHwAddress << "  write 10bit files and check file for eqid : "  << fEqId << " /////// " << endl;}
-          return;
+          continue;
 	  
 	  if( TMath::Abs(fPadMapRCU[nextHwAddress][4] - fChannelIter)==1) 
 	    {
@@ -986,8 +1003,9 @@ void AliTPCMonitor::FillHistsDecode(AliTPCMonitorAltro* altro ,Int_t rcupatch, I
 	      ntime = timestamp-samplebins;
 	      adc   = entries[blockpos-iterwords];
 	      fPad[fChannelIter][ntime]  = adc;
-//	      if( (adc!=0)  && (ntime>=GetRangeBaseMin()  ) && (ntime<GetRangeBaseMax()    ))  {hbase->Fill(adc)        ;}
-	      if( (adc>max) && (ntime>=GetRangeMaxAdcMin()) && (ntime<GetRangeMaxAdcMax()  ))  {max = adc;maxx = ntime ;}
+//if( (adc!=0)  && (ntime>=GetRangeBaseMin()  ) && (ntime<GetRangeBaseMax()    ))  {hbase->Fill(adc)        ;}
+        if( (adc!=0)  && (ntime>=GetRangeBaseMin()  ) && (ntime<GetRangeBaseMax()    ))  {fbase[itimebin]=adc;itimebin++;}
+        if( (adc>max) && (ntime>=GetRangeMaxAdcMin()) && (ntime<GetRangeMaxAdcMax()  ))  {max = adc;maxx = ntime ;}
 	      if(              (ntime>=GetRangeSumMin())    && (ntime<GetRangeSumMax()     ))  {sum+=adc; sumn++;}
 	      samplebins++;
               sampleiter--;
@@ -998,6 +1016,10 @@ void AliTPCMonitor::FillHistsDecode(AliTPCMonitorAltro* altro ,Int_t rcupatch, I
 //      hbase->GetXaxis()->SetRangeUser(hmean- hmean/3 , hmean + hmean/3);
 //      hmean =  hbase->GetMean();
 //      hrms  = hbase->GetRMS();
+    if (itimebin>0){
+      hmean = TMath::Mean(itimebin, fbase);
+      hrms = TMath::RMS(itimebin, fbase);
+    }   
 
       if(       GetPedestals()==1) fHistAddrMaxAdc->SetBinContent(  nextHwAddress,max- hmean);
       else                         fHistAddrMaxAdc->SetBinContent(  nextHwAddress,max        );
@@ -1171,6 +1193,9 @@ Int_t AliTPCMonitor::CheckEqId(Int_t secid,Int_t eqid)
 
   if(fVerb) cout << "AliTPCMonitor::CheckEqId  : SectorId  " << secid << " EquipmentId " << eqid  << " runid " << fRunId <<  endl;
   Int_t passed =1;
+  //skip all eqids which do not belong to the TPC
+  if ( eqid<768||eqid>983 ) return 0;
+  //
   if(fRunId<704 && 0) // commented out --> runs with runid < 704 in 2006 are not recognized anymore
     {
       if( (secid>-1) && (secid<36) )   // if ( secid is in range) { take only specific eqids}  else { take all }
@@ -1189,6 +1214,7 @@ Int_t AliTPCMonitor::CheckEqId(Int_t secid,Int_t eqid)
 	}
       else                                                                   {if(fVerb) cout << "passed check "<< endl;}
     }
+
   return passed;
 }
 
@@ -2074,13 +2100,15 @@ void AliTPCMonitor::ExecTransform()
   // fft is only performed for a data sample of size 2^n
   // reduce window according to largest  power of 2 which is smaller than the viewing  range 
 
-  Char_t namecanv[256]; 
+  Char_t namecanv[256];
+  Char_t namecanv2[256];
   Char_t projhist[256];
   Char_t namehtrimag[256];
   Char_t namehtrreal[256];
+  Char_t namehtrmag[256];
   
-  if(fPadUsedRoc==1) {    sprintf(namecanv,"coroc_ch_trans") ;    sprintf(projhist,"ProjectionOROC");  }
-  if(fPadUsedRoc==0) {    sprintf(namecanv,"ciroc_ch_trans") ;    sprintf(projhist,"ProjectionIROC");  }
+  if(fPadUsedRoc==1) {    sprintf(namecanv,"coroc_ch_trans") ; sprintf(namecanv2,"coroc_ch_trans2") ;   sprintf(projhist,"ProjectionOROC");  }
+  if(fPadUsedRoc==0) {    sprintf(namecanv,"ciroc_ch_trans") ; sprintf(namecanv2,"ciroc_ch_trans2") ;  sprintf(projhist,"ProjectionIROC");  }
 
   TH1D*  hproj = 0;
   
@@ -2088,79 +2116,89 @@ void AliTPCMonitor::ExecTransform()
   else      hproj = (TH1D*)gROOT->Get(projhist) ;
 
   
-  if(fPadUsedRoc==1) {  sprintf(namehtrimag,"htransimagfreq_oroc");    sprintf(namehtrreal,"htransrealfreq_oroc");  } 
-  else               {  sprintf(namehtrimag,"htransimagfreq_iroc");    sprintf(namehtrreal,"htransrealfreq_iroc");  }
-  
+  if(fPadUsedRoc==1) {  sprintf(namehtrimag,"htransimagfreq_oroc");    sprintf(namehtrreal,"htransrealfreq_oroc"); sprintf(namehtrmag,"htransmagfreq_oroc");  }
+  else               {  sprintf(namehtrimag,"htransimagfreq_iroc");    sprintf(namehtrreal,"htransrealfreq_iroc"); sprintf(namehtrmag,"htransmagfreq_iroc");  }
+
   if( gROOT->Get(namehtrimag))  delete  gROOT->Get(namehtrimag);
   if( gROOT->Get(namehtrreal))  delete  gROOT->Get(namehtrreal);
-  
+  if( gROOT->Get(namehtrmag))  delete  gROOT->Get(namehtrmag);
+
   TCanvas *ctrans = 0;
-  if(!(ctrans = (TCanvas*)gROOT->GetListOfCanvases()->FindObject(namecanv))) 
-    {
-      ctrans = CreateCanvas(namecanv);
-      ctrans->Divide(1,2);
-    }
-  
+  if(!(ctrans = (TCanvas*)gROOT->GetListOfCanvases()->FindObject(namecanv)))
+  {
+    ctrans = CreateCanvas(namecanv);
+    ctrans->Divide(1,2);
+  }
+  TCanvas *ctrans2 = 0;
+  if(!(ctrans2 = (TCanvas*)gROOT->GetListOfCanvases()->FindObject(namecanv2)))
+  {
+    ctrans2 = CreateCanvas(namecanv2);
+//      ctrans2->Divide(1,2);
+  }
+
   Int_t binfirst  =  hproj->GetXaxis()->GetFirst();
   Int_t binlast   =  hproj->GetXaxis()->GetLast();
   Int_t bins       =  binlast -binfirst +1;
-    
+
   Int_t power = 0;
-  for(Int_t pot = 0; pot<=10 ; pot++) 
-    {
-      Int_t comp =  (Int_t)TMath::Power(2,pot);
-      if(bins>=comp)power = pot;
-    }
-  
+  for(Int_t pot = 0; pot<=10 ; pot++)
+  {
+    Int_t comp =  (Int_t)TMath::Power(2,pot);
+    if(bins>=comp)power = pot;
+  }
+
   bins = (Int_t)TMath::Power(2,power);
-  
+
   // sampling frequency ;
   Double_t  deltat = 1.0/(Float_t)GetSamplingFrequency();
-  
+
   // output histo
   TH1D* htransrealfreq = new TH1D(namehtrreal,namehtrreal,10000,-1/(2*deltat),1/(2*deltat));
   TH1D* htransimagfreq = new TH1D(namehtrimag,namehtrimag,10000,-1/(2*deltat),1/(2*deltat));
-
+  TH1D* htransmag      = new TH1D(namehtrmag,namehtrmag,10000,-1/(2*deltat),1/(2*deltat));
 
   Char_t titlereal[256];
   Char_t titleimag[256];
-  if(fPadUsedRoc==1) {    sprintf(titlereal,"OROC DFT real part");  sprintf(titleimag,"OROC DFT imag part");  } 
-  else {                  sprintf(titlereal,"IROC DFT real part");  sprintf(titleimag,"IROC DFT imag part");  }
-  
+  Char_t titlemag[256];
+  if(fPadUsedRoc==1) {    sprintf(titlereal,"OROC DFT real part");  sprintf(titleimag,"OROC DFT imag part");  sprintf(titlemag,"OROC DFT magnitude");  }
+  else {                  sprintf(titlereal,"IROC DFT real part");  sprintf(titleimag,"IROC DFT imag part");  sprintf(titlemag,"IROC DFT magnitude");  }
+
   htransrealfreq->SetTitle(titlereal);  htransrealfreq->SetXTitle("f/hz");  htransrealfreq->SetYTitle("z_{real}(f)");
   htransimagfreq->SetTitle(titleimag);  htransimagfreq->SetXTitle("f/hz");  htransimagfreq->SetYTitle("z_{imag}(f)");
-  
-  
+  htransmag->SetTitle(titlemag);  htransmag->SetXTitle("f/hz");  htransmag->SetYTitle("mag(f)");
+
   // create complex packed data array  
   const Int_t kdatasiz = 2*bins;
   Double_t*  data = new Double_t[kdatasiz];
   for(Int_t i=0;i<2*bins;i++)  { data[i]   =  0.0;}
   for(Int_t i=0;i<bins;i++)    { data[2*i] = (Double_t)hproj->GetBinContent(binfirst+i); }
-  
+
   // make fourier transformation
   AliTPCMonitorFFT* four = new AliTPCMonitorFFT();
   four->ComplexRadix2ForwardWrap(data,1,bins);
-  
+
   // write output  and fill histos forward  
   Double_t freq =  0.0;
-  for(Int_t i=0;i<2*bins;i++) 
+  for(Int_t i=0;i<2*bins;i++)
+  {
+    if(i<bins)
     {
-      if(i<bins) 
-	{
-	  if(i<(bins/2))  { freq = i/(bins*deltat)            ; } 
-	  else            { freq = -1*((bins-i)/(bins*deltat)); }
-	  htransrealfreq->Fill( freq,data[2*i]  );
-	  htransimagfreq->Fill( freq,data[2*i+1]);
-	  
-	  
-	}
+      if(i<(bins/2))  { freq = i/(bins*deltat)            ; }
+      else            { freq = -1*((bins-i)/(bins*deltat)); }
+      htransrealfreq->Fill( freq,data[2*i]  );
+      htransimagfreq->Fill( freq,data[2*i+1]);
+      htransmag->Fill( freq, TMath::Sqrt(data[2*i]*data[2*i]+data[2*i+1]*data[2*i+1]) );
     }
-  
+  }
+
   ctrans->cd(1);
   htransrealfreq->Draw();
   ctrans->cd(2);
   htransimagfreq->Draw();
   ctrans->Update();
+  ctrans2->cd();
+  htransmag->Draw();
+  ctrans2->Update();
   delete four;
   delete data;
 }
@@ -2402,6 +2440,7 @@ Int_t AliTPCMonitor::GetRCUPatch(Int_t runid, Int_t eqid) const
   // Return RCU patch index for given equipment id eqid 
   Int_t patch = 0;
   //if(runid>=704)
+  if ( eqid<768 || eqid>983 ) return 0; //no TPC eqid
   if(runid>=0)
     {
       if(eqid>=1000) return 0;
@@ -2500,6 +2539,8 @@ TCanvas* AliTPCMonitor::CreateCanvas(Char_t* name)
   // FFT for single channel
   else if(strcmp(name,"coroc_ch_trans")==0) {    canv   = new TCanvas("coroc_ch_trans","coroc_ch_trans",(Int_t)(3.0*xspace+xoffset),(Int_t)(yspace+0.5*ysize),(Int_t)(1.5*xsize),(Int_t)(1.5*ysize)); return canv;  }
   else if(strcmp(name,"ciroc_ch_trans")==0) {    canv   = new TCanvas("ciroc_ch_trans","ciroc_ch_trans",(Int_t)(3.0*xspace+xoffset),                       0 ,(Int_t)(1.5*xsize),(Int_t)(1.5*ysize)); return canv;  }
+  else if(strcmp(name,"coroc_ch_trans2")==0) {    canv   = new TCanvas("coroc_ch_trans2","coroc_ch_trans2",(Int_t)(3.0*xspace+xoffset),(Int_t)(yspace+0.5*ysize),(Int_t)(1.5*xsize),(Int_t)(1.5*ysize)); return canv;  }
+  else if(strcmp(name,"ciroc_ch_trans2")==0) {    canv   = new TCanvas("ciroc_ch_trans2","ciroc_ch_trans2",(Int_t)(3.0*xspace+xoffset),                       0 ,(Int_t)(1.5*xsize),(Int_t)(1.5*ysize)); return canv;  }
   // row profile histograms
   else if(strcmp(name,"crowtime"     )==0) {    canv   = new TCanvas("crowtime"     ,"crowtime"  ,              1*xspace+xoffset,         2*yspace +ysize ,(Int_t)(1.0*xsize),(Int_t)(1.0*ysize)); return canv;  }
   else if(strcmp(name,"crowmax"      )==0) {    canv   = new TCanvas("crowmax"      ,"crowmax"   ,              2*xspace+xoffset,         2*yspace +ysize ,(Int_t)(1.0*xsize),(Int_t)(1.0*ysize)); return canv;  }

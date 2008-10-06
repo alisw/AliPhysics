@@ -10,7 +10,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 
 #include <TVectorT.h>
-class TObjArray;
+#include <TObjArray.h>
 class TH1S;
 class TH2S;
 class TH1F;
@@ -24,6 +24,7 @@ class AliTPCRawStream;
 class AliTPCRawStreamFast;
 class TGraph;
 class AliTPCAltroMapping;
+class TMap;
 
 struct eventHeaderStruct;
 
@@ -32,6 +33,7 @@ class AliTPCCalibCE : public TObject {
 public:
     AliTPCCalibCE();
     AliTPCCalibCE(const AliTPCCalibCE &sig);
+    AliTPCCalibCE(const TMap *config);
     virtual ~AliTPCCalibCE();
 
     AliTPCCalibCE& operator = (const  AliTPCCalibCE &source);
@@ -215,14 +217,17 @@ private:
     TVectorD  fVMeanQ;                //!  Mean Q for each sector;
     TVectorD  fVMeanQCounter;         //!  Mean Q counter for each sector;
 
+    Float_t   fCurrentCETimeRef;      //! Time refernce of the current sector  
     //debugging
 //    Int_t fEvent;
     TTreeSRedirector *fDebugStreamer;  //! debug streamer
+    
 
     Short_t fDebugLevel;              // debug level
     //! debugging
 
     void   FindPedestal(Float_t part=.6);
+    void   UpdateCETimeRef(); //Get the time reference of the last valid measurement in sector
     void   FindCESignal(TVectorD &param, Float_t &qSum, const TVectorF maxima);
     void   FindLocalMaxima(TVectorF &maxima);
     Bool_t IsPeak(Int_t pos, Int_t tminus, Int_t tplus) const;

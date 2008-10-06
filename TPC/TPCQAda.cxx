@@ -32,6 +32,7 @@ and save results in a file (named from RESULT_FILE define - see below).
 #define RESULT_FILE "tpcQA.root"
 #define FILE_ID "QA"
 #define MAPPING_FILE "tpcMapping.root"
+#define CONFIG_FILE "TPCQAda.conf"
 
 
 #include <daqDA.h>
@@ -46,6 +47,7 @@ and save results in a file (named from RESULT_FILE define - see below).
 #include <TFile.h>
 #include "TROOT.h"
 #include "TPluginManager.h"
+#include "TSystem.h"
 //
 //AliRoot includes
 //
@@ -58,7 +60,7 @@ and save results in a file (named from RESULT_FILE define - see below).
 #include "AliTPCCalPad.h"
 #include "TTreeStream.h"
 #include "AliLog.h"
-#include "TSystem.h"
+#include "AliTPCConfigDA.h"
 
 //
 // TPC calibration algorithm includes
@@ -81,9 +83,12 @@ int main(int argc, char **argv) {
   AliLog::SetClassDebugLevel("AliTPCAltroMapping",-5);
   AliLog::SetModuleDebugLevel("RAW",-5);
 
+  //variables 
   int i,status;
   AliTPCmapper *mapping = 0;   // The TPC mapping
-  // if  test setup get parameters from $DAQDA_TEST_DIR 
+  // configuration options
+  Bool_t fastDecoding = kFALSE;
+ // if  test setup get parameters from $DAQDA_TEST_DIR 
   
   if (!mapping){
     /* copy locally the mapping file from daq detector config db */
@@ -106,9 +111,23 @@ int main(int argc, char **argv) {
   } else {
     printf("Got mapping object from %s\n", MAPPING_FILE);
   }
+ //retrieve configuration file
+  char localfile[255];
+  sprintf(localfile,"./%s",CONFIG_FILE);
+  status = daqDA_DB_getFile(CONFIG_FILE,localfile);
+  if (status) {
+    printf("Failed to get configuration file (%s) from DAQdetDB, status=%d\n", CONFIG_FILE, status);
+    return -1;
+  }
+  AliTPCConfigDA config(CONFIG_FILE);
+  // check configuration options
+  if ( (Int_t)config.GetValue("UseFastDecoder") == 1 ) {
+    printf("Info: The fast decoder will be used for the processing.\n");
+    fastDecoding=kTRUE;
+  }
 
 
-  AliTPCdataQA calibQA;   // pedestal and noise calibration
+  AliTPCdataQA calibQA(config.GetConfigurationMap());   // pedestal and noise calibration
 
   if (argc<2) {
     printf("Wrong number of arguments\n");
@@ -121,7 +140,7 @@ int main(int argc, char **argv) {
 
 
   /* set time bin range */
-  calibQA.SetRangeTime(0,1000);
+  // calibQA.SetRangeTime(0,1000); // should be done in the configuration file now
   calibQA.SetAltroMapping(mapping->GetAltroMapping()); // Use altro mapping we got from daqDetDb
 
   /* declare monitoring program */
@@ -131,6 +150,8 @@ int main(int argc, char **argv) {
     return -1;
   }
 
+  monitorSetNowait();
+  monitorSetNoWaitNetworkTimeout(1000);
 
   /* loop over RAW data files */
   int nevents=0;
@@ -172,7 +193,8 @@ int main(int argc, char **argv) {
       //  Pulser calibration
 
       AliRawReader *rawReader = new AliRawReaderDate((void*)event);
-      calibQA.ProcessEvent(rawReader);
+      if ( fastDecoding ) calibQA.ProcessEventFast(rawReader);   
+      else calibQA.ProcessEvent(rawReader);
       delete rawReader;
 
       /* free resources */

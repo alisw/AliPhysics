@@ -13,6 +13,7 @@
 #include <TObject.h>
 #include <TObjArray.h>
 class TH2S;
+class TH2F;
 class TTreeSRedirector;
 class AliTPCCalPad;
 class AliTPCROC;
@@ -22,6 +23,7 @@ class AliRawReader;
 class AliTPCRawStream;
 class AliTPCRawStreamFast;
 class AliTPCAltroMapping;
+class TMap;
 
 struct eventHeaderStruct;
 
@@ -30,6 +32,7 @@ class AliTPCCalibPulser : public TObject {
 public:
     AliTPCCalibPulser();
     AliTPCCalibPulser(const AliTPCCalibPulser &sig);
+    AliTPCCalibPulser(const TMap *config);
     virtual ~AliTPCCalibPulser();
 
     void Reset();
@@ -64,6 +67,11 @@ public:
     TH2S* GetHistoQ  (Int_t sector, Bool_t force=kFALSE);           // get refernce histogram
     TH2S* GetHistoT0 (Int_t sector, Bool_t force=kFALSE);           // get refernce histogram
     TH2S* GetHistoRMS(Int_t sector, Bool_t force=kFALSE);           // get refernce histogram
+
+    TH2F* GetHistoTSec();                                        // mean abs time distribution histogram
+
+    Float_t GetMeanTimeSector(Int_t sector) const {return fVMeanTimeSector[sector];}
+    const TVectorF* GetMeanTimeSectorArray() const {return &fVMeanTimeSector;}
 
     Short_t GetDebugLevel()     const { return fDebugLevel;    }
     //
@@ -133,6 +141,9 @@ private:
     TObjArray fHistoT0Array;          //  Calibration histograms for Time0  distribution
     TObjArray fHistoRMSArray;         //  Calibration histograms for signal width distribution
 
+    TH2F *fHMeanTimeSector;           //  Timing distribution per sector
+    TVectorF  fVMeanTimeSector;       //  Mean time per sector from analysis of fHMeanTimeSector
+
     TObjArray fPadTimesArrayEvent;    //! Pad Times for the event, before mean Time0 corrections
     TObjArray fPadQArrayEvent;        //! Charge for the event, only needed for debugging streamer
     TObjArray fPadRMSArrayEvent;      //! Signal width for the event, only needed for debugging streamer
@@ -141,6 +152,7 @@ private:
     Int_t     fCurrentChannel;         //! current channel processed
     Int_t     fCurrentSector;          //! current sector processed
     Int_t     fCurrentRow;             //! current row processed
+    Int_t     fCurrentPad;             //! current pad processed
     Float_t   fMaxPadSignal;           //! maximum bin of current pad
     Int_t     fMaxTimeBin;             //! time bin with maximum value
     TVectorF  fPadSignal;              //! signal of current Pad
@@ -149,6 +161,7 @@ private:
 
     TVectorF  fVTime0Offset;          //!  Time0 Offset from preprocessing for each sector;
     TVectorF  fVTime0OffsetCounter;   //!  Time0 Offset from preprocessing for each sector;
+
 
     //debugging
 //    Int_t fEvent;                      //  Number of events processed
@@ -169,6 +182,8 @@ private:
 
     TVectorF* GetPadTimesEvent(Int_t sector, Bool_t force=kFALSE);
 
+    Bool_t IsEdgePad(Int_t sector, Int_t row, Int_t pad);
+
     void ResetEvent();
     void ResetPad();
     void ProcessPad();
@@ -182,7 +197,8 @@ private:
     TVectorF* GetPadPedestalEvent(Int_t sector, Bool_t force=kFALSE);
 
 
-  ClassDef(AliTPCCalibPulser,3)           //Implementation of the TPC pulser calibration
+
+  ClassDef(AliTPCCalibPulser,4)           //Implementation of the TPC pulser calibration
 };
 
 

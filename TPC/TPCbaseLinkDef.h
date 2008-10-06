@@ -54,6 +54,7 @@
 #pragma link C++ class AliTPCPreprocessorOnline+;
 #pragma link C++ class AliTPCCalibViewer+;
 #pragma link C++ class AliTPCCalibViewerGUI+;
+#pragma link C++ class AliTPCConfigDA+;
 
 #pragma link C++ class AliTPCCalibVdrift+;
 #pragma link C++ class AliTPCGoofieValues+;

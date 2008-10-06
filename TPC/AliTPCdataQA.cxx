@@ -71,6 +71,7 @@ using namespace std;
 #include <TDirectory.h>
 #include <TFile.h>
 #include <TError.h>
+#include <TMap.h>
 //AliRoot includes
 #include "AliRawReader.h"
 #include "AliRawReaderRoot.h"
@@ -180,6 +181,43 @@ AliTPCdataQA::AliTPCdataQA(const AliTPCdataQA &ped) : /*FOLD00*/
     fOverThreshold30  = new AliTPCCalPad(*ped.GetOverThreshold30());
 }
 
+//_____________________________________________________________________
+AliTPCdataQA::AliTPCdataQA(TMap *config) : /*FOLD00*/  
+  TH1F("TPCRAW","TPCRAW",100,0,100),
+  fFirstTimeBin(60),
+  fLastTimeBin(1000),
+  fAdcMin(1),
+  fAdcMax(100),
+  fMapping(NULL),
+  fPedestal(0),
+  fNoise(0),
+  fNLocalMaxima(0),
+  fMaxCharge(0),
+  fMeanCharge(0),
+  fNoThreshold(0),
+  fNTimeBins(0),
+  fNPads(0),
+  fTimePosition(0),
+  fOverThreshold10(0),
+  fOverThreshold20(0),
+  fOverThreshold30(0),
+  fEventCounter(0),
+  fIsAnalysed(kFALSE),
+  fAllBins(0),
+  fAllSigBins(0),
+  fAllNSigBins(0),
+  fRowsMax(0),
+  fPadsMax(0),
+  fTimeBinsMax(0)
+{
+  //
+  // default constructor
+  //
+  if (config->GetValue("FirstTimeBin")) fFirstTimeBin = ((TObjString*)config->GetValue("FirstTimeBin"))->GetString().Atoi();
+  if (config->GetValue("LastTimeBin"))  fLastTimeBin = ((TObjString*)config->GetValue("LastTimeBin"))->GetString().Atoi();
+  if (config->GetValue("AdcMin"))       fAdcMin = ((TObjString*)config->GetValue("AdcMin"))->GetString().Atoi();
+  if (config->GetValue("AdcMax"))       fAdcMax = ((TObjString*)config->GetValue("AdcMax"))->GetString().Atoi();
+}
 
 //_____________________________________________________________________
 AliTPCdataQA& AliTPCdataQA::operator = (const  AliTPCdataQA &source)

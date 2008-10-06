@@ -106,7 +106,7 @@ class AliTPCMonitor : public AliTPCMonitorConfig {
     void          Write10bitChannel();
     
 
- private:
+//  private:
 
     // stats for size of arrays and histograms /////////////////////////////////////////////////
     Int_t**      fPad;                      // array to store channel adc in time    

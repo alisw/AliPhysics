@@ -23,6 +23,9 @@ TPCda_pedestal.cxx - calibration algorithm for TPC pedestal runs
 23/11/2007  christian.lippmann@cern.ch :  Fix in order to avoid streamer problems in case of
                                           invalid ROOTSTYS. The famous magic line provided by Rene.
 28/11/2007  christian.lippmann@cern.ch :  TPC mapping file is read from DaqDetDB
+18/09/2008  christian.lippmann@cern.ch :  Noisy channels are output to ASCII file. Use max noise in ALTRO.
+19/09/2008  J.Wiechula@gsi.de:            Added export of the calibration data to the AMORE data base.
+                                          Added support for configuration files.
 
 contact: marian.ivanov@cern.ch
 
@@ -34,6 +37,7 @@ and save results in a file (named from RESULT_FILE define - see below).
 #define RESULT_FILE  "tpcPedestal.root"
 #define FILE_ID "pedestals"
 #define MAPPING_FILE "tpcMapping.root"
+#define CONFIG_FILE "TPCPEDESTALda.conf"
 #define AliDebugLevel() -1
 
 extern "C" {
@@ -53,7 +57,10 @@ extern "C" {
 #include "TArrayF.h"
 #include "TROOT.h"
 #include "TPluginManager.h"
-
+#include "TSystem.h"
+#include "TString.h"
+#include "TObjString.h"
+#include "TDatime.h"
 //
 //AliRoot includes
 //
@@ -67,7 +74,12 @@ extern "C" {
 #include "AliMathBase.h"
 #include "TTreeStream.h"
 #include "AliLog.h"
-#include "TSystem.h"
+#include "AliTPCConfigDA.h"
+
+//
+//AMORE
+//
+#include <AmoreDA.h>
 
 //
 // TPC calibration algorithm includes
@@ -83,46 +95,48 @@ int main(int argc, char **argv) {
   //
   // Main for TPC pedestal detector algorithm
   //
-
+  /* log start of process */
+  printf("TPC DA started - %s\n",__FILE__);
+  
+  if (argc<2) {
+    printf("Wrong number of arguments\n");
+    return -1;
+  }
   AliLog::SetClassDebugLevel("AliTPCRawStream",-5);
   AliLog::SetClassDebugLevel("AliRawReaderDate",-5);
   AliLog::SetClassDebugLevel("AliTPCAltroMapping",-5);
   AliLog::SetModuleDebugLevel("RAW",-5);
 
-  Bool_t timeAnalysis = kTRUE;
-
-  if (argc<2) {
-    printf("Wrong number of arguments\n");
-    return -1;
-  }
-
   /* magic line */
   gROOT->GetPluginManager()->AddHandler("TVirtualStreamerInfo",
-					"*",
-					"TStreamerInfo",
-					"RIO",
-					"TStreamerInfo()"); 
-  int i, status;
-
-  /* log start of process */
-  printf("TPC DA started - %s\n",__FILE__);
+          "*",
+          "TStreamerInfo",
+          "RIO",
+          "TStreamerInfo()");
 
   /* declare monitoring program */
+  int i, status;
   status=monitorDeclareMp( __FILE__ );
   if (status!=0) {
     printf("monitorDeclareMp() failed : %s\n",monitorDecodeError(status));
     return -1;
   }
-
+  
+  // variables
   AliTPCmapper *mapping = 0;   // The TPC mapping
-   
+  char localfile[255];
+  unsigned long32 runNb=0;     // run number
+  // configuration options 
+  Bool_t timeAnalysis = kTRUE;
+  Bool_t fastDecoding = kFALSE;
+
   if (!mapping){
     /* copy locally the mapping file from daq detector config db */
-    status = daqDA_DB_getFile(MAPPING_FILE,"./tpcMapping.root");
+    sprintf(localfile,"./%s",MAPPING_FILE);
+    status = daqDA_DB_getFile(MAPPING_FILE,localfile);
     if (status) {
       printf("Failed to get mapping file (%s) from DAQdetDB, status=%d\n", MAPPING_FILE, status);
-      printf("Continue anyway ... maybe it works?\n");              // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      return -1;   // temporarily uncommented for testing on pcald47 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      return -1;
     }
 
     /* open the mapping file and retrieve mapping object */
@@ -133,21 +147,42 @@ int main(int argc, char **argv) {
 
   if (mapping == 0) {
     printf("Failed to get mapping object from %s.  ...\n", MAPPING_FILE);
-    //return -1;
+    return -1;
   } else {
     printf("Got mapping object from %s\n", MAPPING_FILE);
   }
 
-  AliTPCCalibPedestal calibPedestal;                         // pedestal and noise calibration
-  calibPedestal.SetRangeTime(60,940);                        // set time bin range
-  calibPedestal.SetTimeAnalysis(timeAnalysis);               // pedestal(t) calibration
-  if (mapping){
-    calibPedestal.SetAltroMapping(mapping->GetAltroMapping()); // Use altro mapping we got from daqDetDb
+  //
+  // DA configuration from configuration file
+  //
+  // retrieve configuration file
+  sprintf(localfile,"./%s",CONFIG_FILE);
+  status = daqDA_DB_getFile(CONFIG_FILE,localfile);
+  if (status) {
+    printf("Failed to get configuration file (%s) from DAQdetDB, status=%d\n", CONFIG_FILE, status);
+    return -1;
   }
-  /* loop over RAW data files */
+  AliTPCConfigDA config(CONFIG_FILE);
+  // check configuration
+  if ( (Int_t)config.GetValue("NoTimeAnalysis") == 1 ) {
+    printf("WARNING: Time analysis was switched off in the configuration file!\n");
+    timeAnalysis=kFALSE;
+  }
+  if ( (Int_t)config.GetValue("UseFastDecoder") == 1 ){
+    printf("Info: The fast decoder will be used for the processing.\n");
+    fastDecoding=kTRUE;
+  }
+  
+  // create calibration object
+  AliTPCCalibPedestal calibPedestal(config.GetConfigurationMap()); // pedestal and noise calibration
+  calibPedestal.SetAltroMapping(mapping->GetAltroMapping()); // Use altro mapping we got from daqDetDb
+  
+  //===========================//
+  // loop over RAW data files //
+  //==========================//
   int nevents=0;
   for ( i=1; i<argc; i++ ) {
-
+    
     /* define data source : this is argument i */
     printf("Processing file %s\n", argv[i]);
     status=monitorSetDataSource( argv[i] );
@@ -155,39 +190,41 @@ int main(int argc, char **argv) {
       printf("monitorSetDataSource() failed. Error=%s. Exiting ...\n", monitorDecodeError(status));
       return -1;
     }
-
+    
     /* read until EOF */
     for ( ; ; ) {
       struct eventHeaderStruct *event;
-
+      
       /* check shutdown condition */
       if (daqDA_checkShutdown()) {break;}
-
+      
       /* get next event (blocking call until timeout) */
       status=monitorGetEventDynamic((void **)&event);
       if (status==MON_ERR_EOF) {
-	printf ("End of File %d (%s) detected\n", i, argv[i]);
-	break; /* end of monitoring file has been reached */
+        printf ("End of File %d (%s) detected\n", i, argv[i]);
+        break; /* end of monitoring file has been reached */
       }
+      
       if (status!=0) {
-	printf("monitorGetEventDynamic() failed : %s\n",monitorDecodeError(status));
-	break;
+        printf("monitorGetEventDynamic() failed : %s\n",monitorDecodeError(status));
+        break;
       }
 
       /* skip start/end of run events */
       if ( (event->eventType != physicsEvent) && (event->eventType != calibrationEvent) )
-	continue;
+        continue;
 
       /* retry if got no event */
       if (event==NULL)
-	continue;
-
+        continue;
+      
       nevents++;
-
+      // get the run number
+      runNb = event->eventRunNb;
       //  Pedestal calibration
       AliRawReader *rawReader = new AliRawReaderDate((void*)event);
-      calibPedestal.ProcessEvent(rawReader);
-      //calibPedestal.ProcessEventFast(rawReader);   // fast data reader
+      if ( fastDecoding ) calibPedestal.ProcessEventFast(rawReader);
+      else calibPedestal.ProcessEvent(rawReader);
       delete rawReader;
 
       /* free resources */
@@ -198,7 +235,6 @@ int main(int argc, char **argv) {
   //
   // Analyse pedestals and write them to rootfile
   //
-
   calibPedestal.Analyse();
   calibPedestal.AnalyseTime(nevents);
   printf ("%d physics/calibration events processed.\n",nevents);
@@ -208,21 +244,58 @@ int main(int argc, char **argv) {
   delete fileTPC;
   printf("Wrote %s.\n",RESULT_FILE);
 
- /* store the result file on FES */
- 
-   status=daqDA_FES_storeFile(RESULT_FILE,FILE_ID);
-   if (status) {
-     status = -2;
-   }
+  /* store the result file on FES */
+  status=daqDA_FES_storeFile(RESULT_FILE,FILE_ID);
+  if (status) {
+    status = -2;
+  }
+  //
+  //Send objects to the AMORE DB
+  //
+  printf ("AMORE part\n");
+  const char *amoreDANameorig=gSystem->Getenv("AMORE_DA_NAME");
+  //cheet a little -- temporary solution (hopefully)
+  //
+  //currently amoreDA uses the environment variable AMORE_DA_NAME to create the mysql
+  //table in which the calib objects are stored. This table is dropped each time AmoreDA
+  //is initialised. This of course makes a problem if we would like to store different
+  //calibration entries in the AMORE DB. Therefore in each DA which writes to the AMORE DB
+  //the AMORE_DA_NAME env variable is overwritten.  
+  const char *role=gSystem->Getenv("DATE_ROLE_NAME");
+  gSystem->Setenv("AMORE_DA_NAME",Form("%s-%s",role,FILE_ID));
+  //
+  // end cheet
+  if ( role ){
+    TDatime time;
+    TObjString info(Form("Run: %u; Date: %s",runNb,time.AsString()));
 
+    amore::da::AmoreDA amoreDA(amore::da::AmoreDA::kSender);
+    Int_t status=0;  
+    status+=amoreDA.Send("Pedestals",calibPedestal.GetCalPadPedestal());
+    status+=amoreDA.Send("Noise",calibPedestal.GetCalPadRMS());
+    status+=amoreDA.Send("Info",&info);
+    if ( status )
+      printf("Waring: Failed to write one of the calib objects to the AMORE database\n");
+    // reset env var
+    if (amoreDANameorig) gSystem->Setenv("AMORE_DA_NAME",amoreDANameorig);
+  } else {
+    printf ("Warning: environment variable 'AMORE_DA_NAME' not set. Cannot write to the AMORE database\n");
+  }
+
+
+  if ( !timeAnalysis ){
+    printf("Skipping ASCII file preparation for local ALTRO configuration, as requested\n");
+    return status;
+  }
 
   //
   // Now prepare ASCII files for local ALTRO configuration through DDL.
   //
-
   ofstream pedfile;
   ofstream noisefile;
   ofstream pedmemfile;
+  ofstream noisychannelfile;
+
   char filename[255];
   sprintf(filename,"tpcPedestals.data");
   pedfile.open(filename);
@@ -230,16 +303,20 @@ int main(int argc, char **argv) {
   noisefile.open(filename);
   sprintf(filename,"tpcPedestalMem.data");
   pedmemfile.open(filename);
+  sprintf(filename,"tpcNoisyChannels.data");
+  noisychannelfile.open(filename);
 
   TArrayF **timePed = calibPedestal.GetTimePedestals();  // pedestal values for each time bin
 
   Int_t ctr_channel = 0;
-  Int_t ctr_altro = 0;
+  Int_t ctr_altro   = 0;
   Int_t ctr_pattern = 0;
+  Int_t ctr_noisy   = 0;
 
-  pedfile    << 10 << std::endl; // mark file to contain PEDESTALS per channel
-  noisefile  << 11 << std::endl; // mark file to contain NOISE per altro
-  pedmemfile << 12 << std::endl; // mark file to contain PEDESTALs per time bin
+  pedfile          << 10 << std::endl; // Mark file to contain PEDESTALS per channel
+  noisefile        << 11 << std::endl; // Mark file to contain NOISE per altro
+  pedmemfile       << 12 << std::endl; // Mark file to contain PEDESTALs per time bin
+  noisychannelfile << 14 << std::endl; // Mark file to contain NOISY CHANNELS
 
   for ( Int_t roc = 0; roc < 72; roc++ ) {
     if ( !calibPedestal.GetCalRocPedestal(roc) ) continue;
@@ -250,53 +327,73 @@ int main(int argc, char **argv) {
     for ( int rcu = 0; rcu < nru; rcu++ ) {
       Int_t patch = mapping->IsIROC(roc) ? rcu : rcu+2;
       for ( int branch = 0; branch < 2; branch++ ) {
-	for ( int fec = 0; fec < mapping->GetNfec(patch, branch); fec++ ) {
-	  for ( int altro = 0; altro < 8; altro++ ) {
-	    Float_t rms = 0.;
-	    Float_t ctr = 0.;
-	    for ( int channel = 0; channel < 16; channel++ ) {
-	      Int_t hwadd     = mapping->CodeHWAddress(branch, fec, altro, channel);
-	      Int_t row       = mapping->GetPadRow(patch, hwadd);        // row in a ROC
-	      Int_t globalrow = mapping->GetGlobalPadRow(patch, hwadd);  // row in full sector
-	      Int_t pad       = mapping->GetPad(patch, hwadd);
-	      Float_t ped     = calibPedestal.GetCalRocPedestal(roc)->GetValue(row,pad);
-	      // fixed pedestal
-	      if ( ped > 1.e-10 ) {
-		pedfile << ctr_channel << "\t" << side << "\t" << sector << "\t" << patch << "\t"
-			<< hwadd << "\t" << ped << std::endl;
-		ctr_channel++;
-	      }
-	      // pedestal(t)
-	      if ( timePed && fabs(timePed[globalrow][pad].GetSum()) > 1e-10 ) {
-		pedmemfile << ctr_pattern << "\t" << side << "\t" << sector << "\t" << patch
-			   << "\t" << hwadd;
-		for ( Int_t timebin = 0; timebin < 1024; timebin++ )
-		  pedmemfile << "\t" << timePed[globalrow][pad].At(timebin);
-		pedmemfile << std::endl;
-		ctr_pattern++;
-	      }
-	      // rms=noise
-	      Float_t rms2 = calibPedestal.GetCalRocRMS(roc)->GetValue(row,pad);
-	      if ( rms2 > 1.e-10 ) { rms += rms2; ctr += 1.; }
-	    } // end channel for loop
-	    // noise data (rms) averaged over all channels in this ALTRO.
-	    Int_t hwadd = mapping->CodeHWAddress(branch, fec, altro, 0);
-	    if ( ctr > 1.e-10 ) {
-	      noisefile << ctr_altro << "\t" << side << "\t" << sector << "\t" << patch << "\t"
-			<< hwadd << "\t" << rms/ctr << std::endl;
-	      ctr_altro++;
-	    }
-	  } // end altro for loop
-	} // end fec for loop
+        for ( int fec = 0; fec < mapping->GetNfec(patch, branch); fec++ ) {
+          for ( int altro = 0; altro < 8; altro++ ) {
+            Float_t rms = 0.;
+            Float_t maxrms = 0.;
+            Float_t ctr_altrochannel = 0.;
+            for ( int channel = 0; channel < 16; channel++ ) {
+              Int_t hwadd     = mapping->CodeHWAddress(branch, fec, altro, channel);
+              Int_t row       = mapping->GetPadRow(patch, hwadd);        // row in a ROC
+              Int_t globalrow = mapping->GetGlobalPadRow(patch, hwadd);  // row in full sector
+              Int_t pad       = mapping->GetPad(patch, hwadd);
+              Float_t ped     = calibPedestal.GetCalRocPedestal(roc)->GetValue(row,pad);
+              // fixed pedestal
+              pedfile << ctr_channel++ << "\t" << side << "\t" << sector << "\t" << patch << "\t"
+                  << hwadd << "\t" << ped << std::endl;
+              // pedestal(t)
+              if ( timePed && fabs(timePed[globalrow][pad].GetSum()) > 1e-10 ) {
+                pedmemfile << ctr_pattern++ << "\t" << side << "\t" << sector << "\t" << patch
+                    << "\t" << hwadd;
+                for ( Int_t timebin = 0; timebin < 1024; timebin++ )
+                  pedmemfile << "\t" << timePed[globalrow][pad].At(timebin);
+                pedmemfile << std::endl;
+              }
+              // rms=noise
+              Float_t rms2 = calibPedestal.GetCalRocRMS(roc)->GetValue(row,pad);
+              if ( fabs(ped) < 1.e-10 ) {                        // dead channel
+                noisychannelfile << ctr_noisy++ << "\t" << side << "\t" << sector << "\t"
+                    << patch << "\t" << hwadd << "\t" << rms2 << std::endl;
+              } else if ( (ped > 1.e-10) && (rms2 > 1.e-10) ) {  // not dead
+              // Find noisy channels
+                if ( ((roc<36)             && (rms2 > 2.0))  ||  // IROC
+                       ((roc>35) && (row<65) && (rms2 > 2.0))  ||  // OROC, small pads
+                       ((roc>35) && (row>64) && (rms2 > 3.0)) ) {  // OROC, large pads (50% more signal)
+                  noisychannelfile << ctr_noisy++ << "\t" << side << "\t" << sector << "\t"
+                      << patch << "\t" << hwadd << "\t" << rms2 << std::endl;
+                       } else {
+                       // Not noisy. Get average and maximum noise in this ALTRO
+                         rms += rms2;
+                         ctr_altrochannel += 1.;
+                         if (rms2 > maxrms) maxrms = rms2;
+                       } // end if noisy
+              } // end if some signal
+            } // end channel for loop
+            Int_t hwadd = mapping->CodeHWAddress(branch, fec, altro, 0);   // ALTRO address
+      // Noise data (rms) averaged over all channels in this ALTRO.
+            if ( ctr_altrochannel > 1.e-10 ) {
+        /*
+        // average noise of this ALTRO (excluding high-noise channels)
+              noisefile << ctr_altro << "\t" << side << "\t" << sector << "\t" << patch << "\t"
+              << hwadd << "\t" << rms/ctr_altrochannel << std::endl;
+        */
+        // maximum noise of this ALTRO (excluding high-noise channels)
+              noisefile << ctr_altro << "\t" << side << "\t" << sector << "\t" << patch << "\t"
+                  << hwadd << "\t" << maxrms << std::endl;
+              ctr_altro++;
+            }
+          } // end altro for loop
+        } // end fec for loop
       } // end branch for loop
     } // end rcu for loop
   } // end roc loop
-
+  
   pedfile.close();
   noisefile.close();
   pedmemfile.close();
-  printf("Wrote ASCII files.\n");
-
+  noisychannelfile.close();
+  printf("Wrote ASCII files. Found %d noisy channels.\n", ctr_noisy);
 
   return status;
+
 }

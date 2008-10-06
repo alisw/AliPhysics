@@ -17,6 +17,7 @@ class AliTPCRawStream;
 class AliTPCRawStreamFast;
 class AliRawReader;
 class AliTPCAltroMapping;
+class TMap;
 
 struct eventHeaderStruct;
 
@@ -25,6 +26,7 @@ class AliTPCCalibPedestal : public TObject {
 public:
   AliTPCCalibPedestal();
   AliTPCCalibPedestal(const AliTPCCalibPedestal &ped);
+  AliTPCCalibPedestal(const TMap *config);
   virtual ~AliTPCCalibPedestal();
 
   AliTPCCalibPedestal& operator = (const  AliTPCCalibPedestal &source);

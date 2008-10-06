@@ -166,11 +166,12 @@
 //Root includes
 #include <TObjArray.h>
 #include <TH1F.h>
+#include <TH2F.h>
 #include <TH2S.h>
 #include <TString.h>
 #include <TVectorF.h>
 #include <TMath.h>
-
+#include <TMap.h>
 #include <TDirectory.h>
 #include <TSystem.h>
 #include <TROOT.h>
@@ -203,12 +204,12 @@ ClassImp(AliTPCCalibPulser)
 AliTPCCalibPulser::AliTPCCalibPulser() :
     TObject(),
     fFirstTimeBin(60),
-    fLastTimeBin(120),
+    fLastTimeBin(900),
     fNbinsT0(200),
     fXminT0(-2),
     fXmaxT0(2),
     fNbinsQ(200),
-    fXminQ(1),
+    fXminQ(10),
     fXmaxQ(40),
     fNbinsRMS(100),
     fXminRMS(0.1),
@@ -230,6 +231,8 @@ AliTPCCalibPulser::AliTPCCalibPulser() :
     fHistoQArray(72),
     fHistoT0Array(72),
     fHistoRMSArray(72),
+    fHMeanTimeSector(0x0),
+    fVMeanTimeSector(72),
     fPadTimesArrayEvent(72),
     fPadQArrayEvent(72),
     fPadRMSArrayEvent(72),
@@ -237,6 +240,7 @@ AliTPCCalibPulser::AliTPCCalibPulser() :
     fCurrentChannel(-1),
     fCurrentSector(-1),
     fCurrentRow(-1),
+    fCurrentPad(-1),
     fMaxPadSignal(-1),
     fMaxTimeBin(-1),
     fPadSignal(1024),
@@ -252,7 +256,7 @@ AliTPCCalibPulser::AliTPCCalibPulser() :
     // AliTPCSignal default constructor
     //
 
-    fParam->Update();
+  fParam->Update();
 }
 //_____________________________________________________________________
 AliTPCCalibPulser::AliTPCCalibPulser(const AliTPCCalibPulser &sig) :
@@ -285,6 +289,8 @@ AliTPCCalibPulser::AliTPCCalibPulser(const AliTPCCalibPulser &sig) :
     fHistoQArray(72),
     fHistoT0Array(72),
     fHistoRMSArray(72),
+    fHMeanTimeSector(0x0),
+    fVMeanTimeSector(72),
     fPadTimesArrayEvent(72),
     fPadQArrayEvent(72),
     fPadRMSArrayEvent(72),
@@ -292,6 +298,7 @@ AliTPCCalibPulser::AliTPCCalibPulser(const AliTPCCalibPulser &sig) :
     fCurrentChannel(-1),
     fCurrentSector(-1),
     fCurrentRow(-1),
+    fCurrentPad(-1),
     fMaxPadSignal(-1),
     fMaxTimeBin(-1),
     fPadSignal(1024),
@@ -337,9 +344,79 @@ AliTPCCalibPulser::AliTPCCalibPulser(const AliTPCCalibPulser &sig) :
 	    hNew->SetDirectory(0);
 	    fHistoQArray.AddAt(hNew,iSec);
 	}
+        fVMeanTimeSector[iSec]=sig.fVMeanTimeSector[iSec];
     }
 
+    if ( sig.fHMeanTimeSector ) fHMeanTimeSector=(TH2F*)sig.fHMeanTimeSector->Clone();
     fParam->Update();
+}
+AliTPCCalibPulser::AliTPCCalibPulser(const TMap *config) :
+  TObject(),
+  fFirstTimeBin(60),
+  fLastTimeBin(900),
+  fNbinsT0(200),
+  fXminT0(-2),
+  fXmaxT0(2),
+  fNbinsQ(200),
+  fXminQ(10),
+  fXmaxQ(40),
+  fNbinsRMS(100),
+  fXminRMS(0.1),
+  fXmaxRMS(5.1),
+  fIsZeroSuppressed(kFALSE),
+  fLastSector(-1),
+  fROC(AliTPCROC::Instance()),
+  fMapping(NULL),
+  fParam(new  AliTPCParam),
+  fPedestalTPC(0x0),
+  fPadNoiseTPC(0x0),
+  fOutliers(0x0),
+  fPedestalROC(0x0),
+  fPadNoiseROC(0x0),
+  fCalRocArrayT0(72),
+  fCalRocArrayQ(72),
+  fCalRocArrayRMS(72),
+  fCalRocArrayOutliers(72),
+  fHistoQArray(72),
+  fHistoT0Array(72),
+  fHistoRMSArray(72),
+  fHMeanTimeSector(0x0),
+  fVMeanTimeSector(72),
+  fPadTimesArrayEvent(72),
+  fPadQArrayEvent(72),
+  fPadRMSArrayEvent(72),
+  fPadPedestalArrayEvent(72),
+  fCurrentChannel(-1),
+  fCurrentSector(-1),
+  fCurrentRow(-1),
+  fMaxPadSignal(-1),
+  fMaxTimeBin(-1),
+  fPadSignal(1024),
+  fPadPedestal(0),
+  fPadNoise(0),
+  fVTime0Offset(72),
+  fVTime0OffsetCounter(72),
+  //  fEvent(-1),
+  fDebugStreamer(0x0),
+  fDebugLevel(0)
+{
+  //
+  // This constructor uses a TMap for setting some parametes
+  //
+  if (config->GetValue("FirstTimeBin")) fFirstTimeBin = ((TObjString*)config->GetValue("FirstTimeBin"))->GetString().Atoi();
+  if (config->GetValue("LastTimeBin")) fLastTimeBin = ((TObjString*)config->GetValue("LastTimeBin"))->GetString().Atoi();
+  if (config->GetValue("NbinsT0")) fNbinsT0 = ((TObjString*)config->GetValue("NbinsT0"))->GetString().Atoi();
+  if (config->GetValue("XminT0")) fXminT0 = ((TObjString*)config->GetValue("XminT0"))->GetString().Atof();
+  if (config->GetValue("XmaxT0")) fXmaxT0 = ((TObjString*)config->GetValue("XmaxT0"))->GetString().Atof();
+  if (config->GetValue("NbinsQ")) fNbinsQ = ((TObjString*)config->GetValue("NbinsQ"))->GetString().Atoi();
+  if (config->GetValue("XminQ")) fXminQ = ((TObjString*)config->GetValue("XminQ"))->GetString().Atof();
+  if (config->GetValue("XmaxQ")) fXmaxQ = ((TObjString*)config->GetValue("XmaxQ"))->GetString().Atof();
+  if (config->GetValue("NbinsRMS")) fNbinsRMS = ((TObjString*)config->GetValue("NbinsRMS"))->GetString().Atoi();
+  if (config->GetValue("XminRMS")) fXminRMS = ((TObjString*)config->GetValue("XminRMS"))->GetString().Atof();
+  if (config->GetValue("XmaxRMS")) fXmaxRMS = ((TObjString*)config->GetValue("XmaxRMS"))->GetString().Atof();
+  if (config->GetValue("IsZeroSuppressed")) fIsZeroSuppressed = (Bool_t)((TObjString*)config->GetValue("IsZeroSuppressed"))->GetString().Atoi();
+
+  fParam->Update();
 }
 //_____________________________________________________________________
 AliTPCCalibPulser& AliTPCCalibPulser::operator = (const  AliTPCCalibPulser &source)
@@ -383,6 +460,8 @@ void AliTPCCalibPulser::Reset()
     fPadQArrayEvent.Delete();
     fPadRMSArrayEvent.Delete();
     fPadPedestalArrayEvent.Delete();
+
+  if (fHMeanTimeSector) delete fHMeanTimeSector;
 }
 //_____________________________________________________________________
 Int_t AliTPCCalibPulser::Update(const Int_t icsector,
@@ -414,14 +493,17 @@ Int_t AliTPCCalibPulser::Update(const Int_t icsector,
 	fCurrentChannel = iChannel;
 	fCurrentSector  = icsector;
         fCurrentRow     = icRow;
+        fCurrentPad     = icPad;
     }
 
     //process last pad if we change to a new one
     if ( iChannel != fCurrentChannel ){
         ProcessPad();
+	fLastSector=fCurrentSector;
 	fCurrentChannel = iChannel;
 	fCurrentSector  = icsector;
         fCurrentRow     = icRow;
+        fCurrentPad     = icPad;
     }
 
     //fill signals for current pad
@@ -446,7 +528,6 @@ void AliTPCCalibPulser::FindPedestal(Float_t part)
 	if ( fCurrentSector!=fLastSector ){
 	    fPedestalROC = fPedestalTPC->GetCalROC(fCurrentSector);
             fPadNoiseROC = fPadNoiseTPC->GetCalROC(fCurrentSector);
-	    fLastSector=fCurrentSector;
 	}
 
 	if ( fPedestalROC&&fPadNoiseROC ){
@@ -536,41 +617,50 @@ void AliTPCCalibPulser::FindPulserSignal(TVectorD &param, Float_t &qSum)
     param[2] = ceRMS;
     qSum     = ceQsum;
 
-    if (cemaxpos>0){
-	ceQmax = fPadSignal.GetMatrixArray()[cemaxpos]-fPadPedestal;
-        if ( ceQmax<ceMaxThreshold ) return;
-	for (Int_t i=cemaxpos-kCemin; i<cemaxpos+kCemax; ++i){
-            Float_t signal = fPadSignal.GetMatrixArray()[i]-fPadPedestal;
-	    if ( (i>fFirstTimeBin) && (i<fLastTimeBin) && (signal>0) ){
-		ceTime+=signal*(i+0.5);
-                ceRMS +=signal*(i+0.5)*(i+0.5);
-		ceQsum+=signal;
-	    }
-	}
+  if (cemaxpos>0){
+    ceQmax = fPadSignal.GetMatrixArray()[cemaxpos]-fPadPedestal;
+    if ( ceQmax<ceMaxThreshold ) return;
+    for (Int_t i=cemaxpos-kCemin; i<cemaxpos+kCemax; ++i){
+      Float_t signal = fPadSignal.GetMatrixArray()[i]-fPadPedestal;
+      if ( (i>fFirstTimeBin) && (i<fLastTimeBin) && (signal>0) ){
+        ceTime+=signal*(i+0.5);
+        ceRMS +=signal*(i+0.5)*(i+0.5);
+        ceQsum+=signal;
+      }
     }
-    if (ceQsum>ceSumThreshold) {
-	ceTime/=ceQsum;
-	ceRMS  = TMath::Sqrt(TMath::Abs(ceRMS/ceQsum-ceTime*ceTime));
+  }
+  if (ceQsum>ceSumThreshold) {
+    ceTime/=ceQsum;
+    ceRMS  = TMath::Sqrt(TMath::Abs(ceRMS/ceQsum-ceTime*ceTime));
         //only fill the Time0Offset if pad was not marked as an outlier!
-	if ( !fOutliers ){
-	    fVTime0Offset.GetMatrixArray()[fCurrentSector]+=ceTime;   // mean time for each sector
-	    fVTime0OffsetCounter.GetMatrixArray()[fCurrentSector]++;
-	} else {
-	    if ( !(fOutliers->GetCalROC(fCurrentSector)->GetValue(fCurrentChannel)) ){
-		fVTime0Offset.GetMatrixArray()[fCurrentSector]+=ceTime;   // mean time for each sector
-		fVTime0OffsetCounter.GetMatrixArray()[fCurrentSector]++;
-	    }
-	}
-
-	//Normalise Q to the pad area
-	Float_t norm = fParam->GetPadPitchWidth(fCurrentSector)*fParam->GetPadPitchLength(fCurrentSector,fCurrentRow);
+    if ( !fOutliers ){
+      //skip edge pads for calculating the mean time
+      if ( !IsEdgePad(fCurrentSector,fCurrentRow,fCurrentPad) ){
+        fVTime0Offset.GetMatrixArray()[fCurrentSector]+=ceTime;   // mean time for each sector
+        fVTime0OffsetCounter.GetMatrixArray()[fCurrentSector]++;
+        GetHistoTSec()->Fill(ceTime,fCurrentSector);
+      }
+    } else {
+      if ( !(fOutliers->GetCalROC(fCurrentSector)->GetValue(fCurrentChannel)) ){
+        fVTime0Offset.GetMatrixArray()[fCurrentSector]+=ceTime;   // mean time for each sector
+        fVTime0OffsetCounter.GetMatrixArray()[fCurrentSector]++;
+      }
+    }
+    
+  //Normalise Q to the 'cell-size': The wire density is the same in the IROC and OROC, therefore the
+  //                                the pick-up signal should scale with the pad area. In addition
+  //                                the signal should decrease with the wire distance (4mm in IROC, 6mm in OROC),
+  //                                ratio 2/3. The pad area we express in mm2 (factor 100). We normalise the signal
+  //                                to the OROC signal (factor 2/3 for the IROCs).
+    Float_t norm = fParam->GetPadPitchWidth(fCurrentSector)*fParam->GetPadPitchLength(fCurrentSector,fCurrentRow)*100;
+    if ( fCurrentSector<fParam->GetNInnerSector() ) norm*=3./2.;
 
 	ceQsum/=norm;
     } else {
-	ceQmax=0;
-	ceTime=0;
-	ceRMS =0;
-	ceQsum=0;
+      ceQmax=0;
+      ceTime=0;
+      ceRMS =0;
+      ceQsum=0;
     }
     param[0] = ceQmax;
     param[1] = ceTime;
@@ -580,36 +670,57 @@ void AliTPCCalibPulser::FindPulserSignal(TVectorD &param, Float_t &qSum)
 //_____________________________________________________________________
 void AliTPCCalibPulser::ProcessPad()
 {
-    //
-    //  Process data of current pad
-    //
+  //
+  //  Process data of current pad
+  //
 
-    FindPedestal();
-    TVectorD param(3);
-    Float_t  qSum;
-    FindPulserSignal(param, qSum);
-
-    Double_t meanT  = param[1];
-    Double_t sigmaT = param[2];
-
-
-    //Fill Event T0 counter
-    (*GetPadTimesEvent(fCurrentSector,kTRUE)).GetMatrixArray()[fCurrentChannel] = meanT;
-
-    //Fill Q histogram
-    GetHistoQ(fCurrentSector,kTRUE)->Fill( TMath::Sqrt(qSum), fCurrentChannel );
-
-    //Fill RMS histogram
-    GetHistoRMS(fCurrentSector,kTRUE)->Fill( sigmaT, fCurrentChannel );
-
-
+  FindPedestal();
+  TVectorD param(3);
+  Float_t  qSum;
+  FindPulserSignal(param, qSum);
+  
+  Double_t meanT  = param[1];
+  Double_t sigmaT = param[2];
+  
+  
+  //Fill Event T0 counter
+  (*GetPadTimesEvent(fCurrentSector,kTRUE)).GetMatrixArray()[fCurrentChannel] = meanT;
+  
+  //Fill Q histogram
+//   GetHistoQ(fCurrentSector,kTRUE)->Fill( TMath::Sqrt(qSum), fCurrentChannel ); //use linear scale, needs also a change in the Analyse funciton.
+  GetHistoQ(fCurrentSector,kTRUE)->Fill( qSum, fCurrentChannel );
+  
+  //Fill RMS histogram
+  GetHistoRMS(fCurrentSector,kTRUE)->Fill( sigmaT, fCurrentChannel );
+  
+  
     //Fill debugging info
-    if ( fDebugLevel>0 ){
-	(*GetPadPedestalEvent(fCurrentSector,kTRUE))[fCurrentChannel]=fPadPedestal;
-	(*GetPadRMSEvent(fCurrentSector,kTRUE))[fCurrentChannel]=sigmaT;
-	(*GetPadQEvent(fCurrentSector,kTRUE))[fCurrentChannel]=qSum;
+  if ( fDebugLevel>0 ){
+    if ( fDebugLevel == 1 ){
+      if ( !fDebugStreamer ) {
+          //debug stream
+        TDirectory *backup = gDirectory;
+        fDebugStreamer = new TTreeSRedirector("debPulserPadSignals.root");
+        if ( backup ) backup->cd();  //we don't want to be cd'd to the debug streamer
+      }
+      Int_t padc = fCurrentPad-(fROC->GetNPads(fCurrentSector,fCurrentRow)/2);
+      (*fDebugStreamer) << "PadSignals" <<
+        "Sector=" <<fCurrentSector<<
+        "Row="    <<fCurrentRow<<
+        "Pad="    <<fCurrentPad<<
+        "PadC="   <<padc<<
+        "Channel="<<fCurrentChannel<<
+        "Sum="    <<qSum<<
+        "params.="<<&param<<
+        "signal.=" <<&fPadSignal<<
+        "\n";
+    } else { //debug > 1
+      (*GetPadPedestalEvent(fCurrentSector,kTRUE))[fCurrentChannel]=fPadPedestal;
+      (*GetPadRMSEvent(fCurrentSector,kTRUE))[fCurrentChannel]=sigmaT;
+      (*GetPadQEvent(fCurrentSector,kTRUE))[fCurrentChannel]=qSum;
     }
-    ResetPad();
+  }
+  ResetPad();
 }
 //_____________________________________________________________________
 void AliTPCCalibPulser::EndEvent()
@@ -617,73 +728,61 @@ void AliTPCCalibPulser::EndEvent()
     //
     //  Process data of current event
     //
-
+  
     //check if last pad has allready been processed, if not do so
-    if ( fMaxTimeBin>-1 ) ProcessPad();
-
+  if ( fMaxTimeBin>-1 ) ProcessPad();
+  
     //loop over all ROCs, fill Time0 histogram corrected for the mean Time0 of each ROC
-    for ( Int_t iSec = 0; iSec<72; ++iSec ){
-	TVectorF *vTimes = GetPadTimesEvent(iSec);
-        if ( !vTimes || fVTime0OffsetCounter[iSec]==0 ) continue;
-	Float_t time0 = fVTime0Offset[iSec]/fVTime0OffsetCounter[iSec];
-	for ( UInt_t iChannel=0; iChannel<fROC->GetNChannels(iSec); ++iChannel ){
-	    Float_t time  = (*vTimes).GetMatrixArray()[iChannel];
-
-            GetHistoT0(iSec,kTRUE)->Fill( time-time0,iChannel );
+  for ( Int_t iSec = 0; iSec<72; ++iSec ){
+    TVectorF *vTimes = GetPadTimesEvent(iSec);
+    if ( !vTimes || fVTime0OffsetCounter[iSec]==0 ) continue;
+    Float_t time0 = fVTime0Offset[iSec]/fVTime0OffsetCounter[iSec];
+    for ( UInt_t iChannel=0; iChannel<fROC->GetNChannels(iSec); ++iChannel ){
+      Float_t time  = (*vTimes).GetMatrixArray()[iChannel];
+      
+      GetHistoT0(iSec,kTRUE)->Fill( time-time0,iChannel );
             //GetHistoT0(iSec,kTRUE)->Fill( time,iChannel );
-
-
-	    //Debug start
-	    if ( fDebugLevel>0 ){
-		if ( !fDebugStreamer ) {
+      
+      
+      //Debug start
+      if ( fDebugLevel>1 ){
+        if ( !fDebugStreamer ) {
                         //debug stream
-		    TDirectory *backup = gDirectory;
-		    fDebugStreamer = new TTreeSRedirector("deb2.root");
-		    if ( backup ) backup->cd();  //we don't want to be cd'd to the debug streamer
-		}
-
-		Int_t row=0;
-		Int_t pad=0;
-		Int_t padc=0;
-
-		Float_t q   = (*GetPadQEvent(iSec)).GetMatrixArray()[iChannel];
-                Float_t rms = (*GetPadRMSEvent(iSec)).GetMatrixArray()[iChannel];
-
-		UInt_t channel=iChannel;
-		Int_t sector=iSec;
-
-		while ( channel > (fROC->GetRowIndexes(sector)[row]+fROC->GetNPads(sector,row)-1) ) row++;
-		pad = channel-fROC->GetRowIndexes(sector)[row];
-		padc = pad-(fROC->GetNPads(sector,row)/2);
-
-		TH1F *h1 = new TH1F(Form("hSignalD%d.%d.%d",sector,row,pad),
-				    Form("hSignalD%d.%d.%d",sector,row,pad),
-				    fLastTimeBin-fFirstTimeBin,
-				    fFirstTimeBin,fLastTimeBin);
-		h1->SetDirectory(0);
-
-		for (Int_t i=fFirstTimeBin; i<fLastTimeBin+1; ++i)
-		    h1->Fill(i,fPadSignal(i));
-
-		(*fDebugStreamer) << "DataPad" <<
+          TDirectory *backup = gDirectory;
+          fDebugStreamer = new TTreeSRedirector("deb2.root");
+          if ( backup ) backup->cd();  //we don't want to be cd'd to the debug streamer
+        }
+        
+        Int_t row=0;
+        Int_t pad=0;
+        Int_t padc=0;
+        
+        Float_t q   = (*GetPadQEvent(iSec)).GetMatrixArray()[iChannel];
+        Float_t rms = (*GetPadRMSEvent(iSec)).GetMatrixArray()[iChannel];
+        
+        UInt_t channel=iChannel;
+        Int_t sector=iSec;
+        
+        while ( channel > (fROC->GetRowIndexes(sector)[row]+fROC->GetNPads(sector,row)-1) ) row++;
+        pad = channel-fROC->GetRowIndexes(sector)[row];
+        padc = pad-(fROC->GetNPads(sector,row)/2);
+         
+        (*fDebugStreamer) << "DataPad" <<
 //		    "Event=" << fEvent <<
-		    "Sector="<< sector <<
-		    "Row="   << row<<
-		    "Pad="   << pad <<
-		    "PadC="  << padc <<
-		    "PadSec="<< channel <<
-		    "Time0="  << time0 <<
-		    "Time="  << time <<
-		    "RMS="   << rms <<
-		    "Sum="   << q <<
-		    "hist.=" << h1 <<
-		    "\n";
-
-		delete h1;
-	    }
-	    //Debug end
-	}
+          "Sector="<< sector <<
+          "Row="   << row<<
+          "Pad="   << pad <<
+          "PadC="  << padc <<
+          "PadSec="<< channel <<
+          "Time0="  << time0 <<
+          "Time="  << time <<
+          "RMS="   << rms <<
+          "Sum="   << q <<
+          "\n";
+      }
+      //Debug end
     }
+  }
 }
 //_____________________________________________________________________
 Bool_t AliTPCCalibPulser::ProcessEventFast(AliTPCRawStreamFast *rawStreamFast)
@@ -701,12 +800,12 @@ Bool_t AliTPCCalibPulser::ProcessEventFast(AliTPCRawStreamFast *rawStreamFast)
 
       while ( rawStreamFast->NextBunch() ){
         Int_t startTbin = (Int_t)rawStreamFast->GetStartTimeBin();
-	Int_t endTbin = (Int_t)rawStreamFast->GetEndTimeBin();
-	for (Int_t iTimeBin = startTbin; iTimeBin < endTbin; iTimeBin++){
+        Int_t endTbin = (Int_t)rawStreamFast->GetEndTimeBin();
+        for (Int_t iTimeBin = startTbin; iTimeBin < endTbin; iTimeBin++){
           Float_t signal=(Float_t)rawStreamFast->GetSignals()[iTimeBin-startTbin];
           Update(isector,iRow,iPad,iTimeBin+1,signal);
           withInput = kTRUE;
-	}
+        }
       }
     }
   }
@@ -835,6 +934,19 @@ TH2S* AliTPCCalibPulser::GetHistoRMS(Int_t sector, Bool_t force)
     return GetHisto(sector, arr, fNbinsRMS, fXminRMS, fXmaxRMS, "RMS", force);
 }
 //_____________________________________________________________________
+TH2F* AliTPCCalibPulser::GetHistoTSec()
+{
+    //
+    // return the pointer to the abs time distribution per sector
+    // create it if it does not exist
+    //
+    if ( !fHMeanTimeSector )   //!!!if you change the binning here, you should also change it in the Analyse Function!!
+	fHMeanTimeSector = new TH2F("fHMeanTimeSector","Abs mean time per sector",
+				    20*(fLastTimeBin-fFirstTimeBin), fFirstTimeBin, fLastTimeBin,
+				    72,0,72);
+   return fHMeanTimeSector;
+}
+//_____________________________________________________________________
 TVectorF* AliTPCCalibPulser::GetPadInfoEvent(Int_t sector, TObjArray *arr, Bool_t force)
 {
     //
@@ -958,11 +1070,13 @@ void AliTPCCalibPulser::ResetEvent()
     fLastSector=-1;
     fCurrentSector=-1;
     fCurrentRow=-1;
+    fCurrentPad=-1;
     fCurrentChannel=-1;
 
     ResetPad();
 
     fPadTimesArrayEvent.Delete();
+
     fPadQArrayEvent.Delete();
     fPadRMSArrayEvent.Delete();
     fPadPedestalArrayEvent.Delete();
@@ -984,6 +1098,18 @@ void AliTPCCalibPulser::ResetPad()
     fMaxPadSignal = -1;
     fPadPedestal  = -1;
     fPadNoise     = -1;
+}
+//_____________________________________________________________________
+Bool_t AliTPCCalibPulser::IsEdgePad(Int_t sector, Int_t row, Int_t pad)
+{
+    //
+    // return true if pad is on the edge of a row
+    //
+    Int_t edge1   = 0;
+    Int_t edge2   = fROC->GetNPads(sector,row)-1;
+    if ( pad == edge1 || pad == edge2 ) return kTRUE;
+
+    return kFALSE;
 }
 //_____________________________________________________________________
 void AliTPCCalibPulser::Merge(AliTPCCalibPulser *sig)
@@ -1034,6 +1160,15 @@ void AliTPCCalibPulser::Merge(AliTPCCalibPulser *sig)
 	}
 
     }
+    if ( sig->fHMeanTimeSector ){
+	TDirectory *dir = sig->fHMeanTimeSector->GetDirectory(); sig->fHMeanTimeSector->SetDirectory(0);
+	if ( fHMeanTimeSector ) fHMeanTimeSector->Add(sig->fHMeanTimeSector);
+	else {
+	    fHMeanTimeSector = new TH2F(*sig->fHMeanTimeSector);
+	    fHMeanTimeSector->SetDirectory(0);
+	}
+	sig->fHMeanTimeSector->SetDirectory(dir);
+    }
 }
 //_____________________________________________________________________
 void AliTPCCalibPulser::Analyse()
@@ -1041,188 +1176,209 @@ void AliTPCCalibPulser::Analyse()
     //
     //  Calculate calibration constants
     //
+  
+  TVectorD paramQ(3);
+  TVectorD paramT0(3);
+  TVectorD paramRMS(3);
+  TMatrixD dummy(3,3);
+  //calculate mean time for each sector and mean time for each side
+  TH1F hMeanTsec("hMeanTsec","hMeanTsec",20*(fLastTimeBin-fFirstTimeBin),fFirstTimeBin,fLastTimeBin);
+  fVMeanTimeSector.Zero();
+  
+  for (Int_t iSec=0; iSec<72; ++iSec){
+    TH2S *hT0 = GetHistoT0(iSec);
+    if (!hT0 ) continue;
+    //calculate sector mean T 
+    if ( fHMeanTimeSector ){
+      Int_t nbinsT = fHMeanTimeSector->GetNbinsX();
+      Int_t offset = (nbinsT+2)*(iSec+1);
+      Float_t *arrP=fHMeanTimeSector->GetArray()+offset;
+      Int_t entries=0;
+      for ( Int_t i=0; i<nbinsT; i++ ) entries+=(Int_t)arrP[i+1];
+      hMeanTsec.Set(nbinsT+2,arrP);
+      hMeanTsec.SetEntries(entries);
+      paramT0.Zero();
+      // truncated mean: remove lower 5% and upper 5%
+      if ( entries>0 ) AliMathBase::TruncatedMean(&hMeanTsec,&paramT0,0.05,.95);
+      fVMeanTimeSector[iSec]=paramT0[1];
+    }    
+    
+    AliTPCCalROC *rocQ   = GetCalRocQ  (iSec,kTRUE);
+    AliTPCCalROC *rocT0  = GetCalRocT0 (iSec,kTRUE);
+    AliTPCCalROC *rocRMS = GetCalRocRMS(iSec,kTRUE);
+    AliTPCCalROC *rocOut = GetCalRocOutliers(iSec,kTRUE);
+    
+    TH2S *hQ   = GetHistoQ(iSec);
+    TH2S *hRMS = GetHistoRMS(iSec);
+    
+    Short_t *arrayhQ   = hQ->GetArray();
+    Short_t *arrayhT0  = hT0->GetArray();
+    Short_t *arrayhRMS = hRMS->GetArray();
+    
+    UInt_t nChannels = fROC->GetNChannels(iSec);
+    Float_t meanTsec = fVMeanTimeSector[iSec];
 
-    TVectorD paramQ(3);
-    TVectorD paramT0(3);
-    TVectorD paramRMS(3);
-    TMatrixD dummy(3,3);
-
-    for (Int_t iSec=0; iSec<72; ++iSec){
-	TH2S *hT0 = GetHistoT0(iSec);
-        if (!hT0 ) continue;
-
-	AliTPCCalROC *rocQ   = GetCalRocQ  (iSec,kTRUE);
-	AliTPCCalROC *rocT0  = GetCalRocT0 (iSec,kTRUE);
-	AliTPCCalROC *rocRMS = GetCalRocRMS(iSec,kTRUE);
-        AliTPCCalROC *rocOut = GetCalRocOutliers(iSec,kTRUE);
-
-	TH2S *hQ   = GetHistoQ(iSec);
-	TH2S *hRMS = GetHistoRMS(iSec);
-
-	Short_t *arrayhQ   = hQ->GetArray();
-	Short_t *arrayhT0  = hT0->GetArray();
-	Short_t *arrayhRMS = hRMS->GetArray();
-
-        UInt_t nChannels = fROC->GetNChannels(iSec);
-
-	//debug
-	Int_t row=0;
-	Int_t pad=0;
-	Int_t padc=0;
-	//! debug
-
-	for (UInt_t iChannel=0; iChannel<nChannels; ++iChannel){
-
-	    Float_t cogTime0 = -1000;
-	    Float_t cogQ     = -1000;
-	    Float_t cogRMS   = -1000;
-            Float_t cogOut   = 0;
-
-	    Int_t offsetQ = (fNbinsQ+2)*(iChannel+1)+1;
-	    Int_t offsetT0 = (fNbinsT0+2)*(iChannel+1)+1;
-	    Int_t offsetRMS = (fNbinsRMS+2)*(iChannel+1)+1;
+  //debug
+    Int_t row=0;
+    Int_t pad=0;
+    Int_t padc=0;
+  //! debug
+    
+    for (UInt_t iChannel=0; iChannel<nChannels; ++iChannel){
+      
+      Float_t cogTime0 = -1000;
+      Float_t cogQ     = -1000;
+      Float_t cogRMS   = -1000;
+      Float_t cogOut   = 0;
+      
+      Int_t offsetQ = (fNbinsQ+2)*(iChannel+1)+1;
+      Int_t offsetT0 = (fNbinsT0+2)*(iChannel+1)+1;
+      Int_t offsetRMS = (fNbinsRMS+2)*(iChannel+1)+1;
 /*
-	    AliMathBase::FitGaus(arrayhQ+offsetQ,fNbinsQ,fXminQ,fXmaxQ,&paramQ,&dummy);
-	    AliMathBase::FitGaus(arrayhT0+offsetT0,fNbinsT0,fXminT0,fXmaxT0,&paramT0,&dummy);
-            AliMathBase::FitGaus(arrayhRMS+offsetRMS,fNbinsRMS,fXminRMS,fXmaxRMS,&paramRMS,&dummy);
-	    cogQ     = paramQ[1];
-	    cogTime0 = paramT0[1];
-	    cogRMS   = paramRMS[1];
+      AliMathBase::FitGaus(arrayhQ+offsetQ,fNbinsQ,fXminQ,fXmaxQ,&paramQ,&dummy);
+      AliMathBase::FitGaus(arrayhT0+offsetT0,fNbinsT0,fXminT0,fXmaxT0,&paramT0,&dummy);
+      AliMathBase::FitGaus(arrayhRMS+offsetRMS,fNbinsRMS,fXminRMS,fXmaxRMS,&paramRMS,&dummy);
+      cogQ     = paramQ[1];
+      cogTime0 = paramT0[1];
+      cogRMS   = paramRMS[1];
 */
-	    cogQ     = AliMathBase::GetCOG(arrayhQ+offsetQ,fNbinsQ,fXminQ,fXmaxQ);
-	    cogTime0 = AliMathBase::GetCOG(arrayhT0+offsetT0,fNbinsT0,fXminT0,fXmaxT0);
-            cogRMS   = AliMathBase::GetCOG(arrayhRMS+offsetRMS,fNbinsRMS,fXminRMS,fXmaxRMS);
-
-	    /*
-	    if ( (cogQ < ??) && (cogTime0 > ??) && (cogTime0<??) && ( cogRMS>??) ){
-		cogOut = 1;
-		cogTime0 = 0;
-		cogQ     = 0;
-		cogRMS   = 0;
-	    }
+      cogQ     = AliMathBase::GetCOG(arrayhQ+offsetQ,fNbinsQ,fXminQ,fXmaxQ);
+      cogTime0 = AliMathBase::GetCOG(arrayhT0+offsetT0,fNbinsT0,fXminT0,fXmaxT0);
+      cogRMS   = AliMathBase::GetCOG(arrayhRMS+offsetRMS,fNbinsRMS,fXminRMS,fXmaxRMS);
+      
+      /*
+      if ( (cogQ < ??) && (cogTime0 > ??) && (cogTime0<??) && ( cogRMS>??) ){
+    cogOut = 1;
+    cogTime0 = 0;
+    cogQ     = 0;
+    cogRMS   = 0;
+      }
 */
-       	    rocQ->SetValue(iChannel, cogQ*cogQ);
-	    rocT0->SetValue(iChannel, cogTime0);
-	    rocRMS->SetValue(iChannel, cogRMS);
-	    rocOut->SetValue(iChannel, cogOut);
-
-
-	    //debug
-	    if ( fDebugLevel > 0 ){
-		if ( !fDebugStreamer ) {
+//       rocQ->SetValue(iChannel, cogQ*cogQ); // changed to linear scale again
+      rocQ->SetValue(iChannel, cogQ);
+      rocT0->SetValue(iChannel, cogTime0+meanTsec); //offset by mean time of the sector
+      rocRMS->SetValue(iChannel, cogRMS);
+      rocOut->SetValue(iChannel, cogOut);
+      
+      
+      //debug
+      if ( fDebugLevel > 2 ){
+        if ( !fDebugStreamer ) {
                         //debug stream
-		    TDirectory *backup = gDirectory;
-		    fDebugStreamer = new TTreeSRedirector("deb2.root");
-		    if ( backup ) backup->cd();  //we don't want to be cd'd to the debug streamer
-		}
-
-		while ( iChannel > (fROC->GetRowIndexes(iSec)[row]+fROC->GetNPads(iSec,row)-1) ) row++;
-		pad = iChannel-fROC->GetRowIndexes(iSec)[row];
-		padc = pad-(fROC->GetNPads(iSec,row)/2);
-
-		(*fDebugStreamer) << "DataEnd" <<
-		    "Sector="  << iSec      <<
-		    "Pad="     << pad       <<
-		    "PadC="    << padc      <<
-		    "Row="     << row       <<
-		    "PadSec="  << iChannel   <<
-		    "Q="       << cogQ      <<
-		    "T0="      << cogTime0  <<
-		    "RMS="     << cogRMS    <<
-		    "\n";
-	    }
-	    //! debug
-	}
+          TDirectory *backup = gDirectory;
+          fDebugStreamer = new TTreeSRedirector("deb2.root");
+          if ( backup ) backup->cd();  //we don't want to be cd'd to the debug streamer
+        }
+        
+        while ( iChannel > (fROC->GetRowIndexes(iSec)[row]+fROC->GetNPads(iSec,row)-1) ) row++;
+        pad = iChannel-fROC->GetRowIndexes(iSec)[row];
+        padc = pad-(fROC->GetNPads(iSec,row)/2);
+        
+        (*fDebugStreamer) << "DataEnd" <<
+          "Sector="  << iSec      <<
+          "Pad="     << pad       <<
+          "PadC="    << padc      <<
+          "Row="     << row       <<
+          "PadSec="  << iChannel   <<
+          "Q="       << cogQ      <<
+          "T0="      << cogTime0  <<
+          "RMS="     << cogRMS    <<
+          "\n";
+      }
+      //! debug
     }
-    delete fDebugStreamer;
-    fDebugStreamer = 0x0;
+    
+    
+  }
+  delete fDebugStreamer;
+  fDebugStreamer = 0x0;
 }
 //_____________________________________________________________________
 void AliTPCCalibPulser::DumpToFile(const Char_t *filename, const Char_t *dir, Bool_t append)
 {
-    //
-    //  Write class to file
-    //
-
-    TString sDir(dir);
-    TString option;
-
-    if ( append )
-	option = "update";
-    else
-        option = "recreate";
-
-    TDirectory *backup = gDirectory;
-    TFile f(filename,option.Data());
-    f.cd();
-    if ( !sDir.IsNull() ){
-	f.mkdir(sDir.Data());
-	f.cd(sDir);
-    }
-    this->Write();
-    f.Close();
-
-    if ( backup ) backup->cd();
+  //
+  //  Write class to file
+  //
+  
+  TString sDir(dir);
+  TString option;
+  
+  if ( append )
+    option = "update";
+  else
+    option = "recreate";
+  
+  TDirectory *backup = gDirectory;
+  TFile f(filename,option.Data());
+  f.cd();
+  if ( !sDir.IsNull() ){
+    f.mkdir(sDir.Data());
+    f.cd(sDir);
+  }
+  this->Write();
+  f.Close();
+  
+  if ( backup ) backup->cd();
 }
 //_____________________________________________________________________
 //_________________________  Test Functions ___________________________
 //_____________________________________________________________________
 TObjArray* AliTPCCalibPulser::TestBinning()
 {
-    //
-    //  Function to test the binning of the reference histograms
-    //  type: T0, Q or RMS
-    //  mode: 0 - number of filled bins per channel
-    //        1 - number of empty bins between filled bins in one ROC
-    //  returns TObjArray with the test histograms type*2+mode:
-    //  position 0 = T0,0 ; 1 = T0,1 ; 2 = Q,0 ...
-
-
-    TObjArray *histArray = new TObjArray(6);
-    const Char_t *type[] = {"T0","Q","RMS"};
-    Int_t fNbins[3] = {fNbinsT0,fNbinsQ,fNbinsRMS};
-
-    for (Int_t itype = 0; itype<3; ++itype){
-	for (Int_t imode=0; imode<2; ++imode){
-            Int_t icount = itype*2+imode;
-	    histArray->AddAt(new TH1F(Form("hTestBinning%s%d",type[itype],imode),
-				      Form("Test Binning of '%s', mode - %d",type[itype],imode),
-				      72,0,72),
-                             icount);
-	}
+  //
+  //  Function to test the binning of the reference histograms
+  //  type: T0, Q or RMS
+  //  mode: 0 - number of filled bins per channel
+  //        1 - number of empty bins between filled bins in one ROC
+  //  returns TObjArray with the test histograms type*2+mode:
+  //  position 0 = T0,0 ; 1 = T0,1 ; 2 = Q,0 ...
+  
+  
+  TObjArray *histArray = new TObjArray(6);
+  const Char_t *type[] = {"T0","Q","RMS"};
+  Int_t fNbins[3] = {fNbinsT0,fNbinsQ,fNbinsRMS};
+  
+  for (Int_t itype = 0; itype<3; ++itype){
+    for (Int_t imode=0; imode<2; ++imode){
+      Int_t icount = itype*2+imode;
+      histArray->AddAt(new TH1F(Form("hTestBinning%s%d",type[itype],imode),
+                                Form("Test Binning of '%s', mode - %d",type[itype],imode),
+                                72,0,72),
+                       icount);
     }
-
-
-    TH2S *hRef=0x0;
-    Short_t *array=0x0;
-    for (Int_t itype = 0; itype<3; ++itype){
-	for (Int_t iSec=0; iSec<72; ++iSec){
-	    if ( itype == 0 ) hRef = GetHistoT0(iSec);
-	    if ( itype == 1 ) hRef = GetHistoQ(iSec);
-            if ( itype == 2 ) hRef = GetHistoRMS(iSec);
-	    if ( hRef == 0x0 ) continue;
-	    array = (hRef->GetArray());
-	    UInt_t nChannels = fROC->GetNChannels(iSec);
-
-	    Int_t nempty=0;
-	    for (UInt_t iChannel=0; iChannel<nChannels; ++iChannel){
-		Int_t nfilled=0;
-		Int_t offset = (fNbins[itype]+2)*(iChannel+1)+1;
-		Int_t c1 = 0;
-		Int_t c2 = 0;
-		for (Int_t iBin=0; iBin<fNbins[itype]; ++iBin){
-		    if ( array[offset+iBin]>0 ) {
-			nfilled++;
-			if ( c1 && c2 ) nempty++;
-			else c1 = 1;
-		    }
-		    else if ( c1 ) c2 = 1;
-
-		}
-		((TH1F*)histArray->At(itype*2))->Fill(nfilled);
-	    }
-	    ((TH1F*)histArray->At(itype*2+1))->Fill(iSec,nempty);
-	}
+  }
+  
+  
+  TH2S *hRef=0x0;
+  Short_t *array=0x0;
+  for (Int_t itype = 0; itype<3; ++itype){
+    for (Int_t iSec=0; iSec<72; ++iSec){
+      if ( itype == 0 ) hRef = GetHistoT0(iSec);
+      if ( itype == 1 ) hRef = GetHistoQ(iSec);
+      if ( itype == 2 ) hRef = GetHistoRMS(iSec);
+      if ( hRef == 0x0 ) continue;
+      array = (hRef->GetArray());
+      UInt_t nChannels = fROC->GetNChannels(iSec);
+      
+      Int_t nempty=0;
+      for (UInt_t iChannel=0; iChannel<nChannels; ++iChannel){
+        Int_t nfilled=0;
+        Int_t offset = (fNbins[itype]+2)*(iChannel+1)+1;
+        Int_t c1 = 0;
+        Int_t c2 = 0;
+        for (Int_t iBin=0; iBin<fNbins[itype]; ++iBin){
+          if ( array[offset+iBin]>0 ) {
+            nfilled++;
+            if ( c1 && c2 ) nempty++;
+            else c1 = 1;
+          }
+          else if ( c1 ) c2 = 1;
+          
+        }
+        ((TH1F*)histArray->At(itype*2))->Fill(nfilled);
+      }
+      ((TH1F*)histArray->At(itype*2+1))->Fill(iSec,nempty);
     }
-    return histArray;
+  }
+  return histArray;
 }

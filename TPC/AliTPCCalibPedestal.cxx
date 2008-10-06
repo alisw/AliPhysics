@@ -26,6 +26,7 @@
 #include <TRandom.h>
 #include <TDirectory.h>
 #include <TFile.h>
+#include <TMap.h>
 //AliRoot includes
 #include "AliRawReader.h"
 #include "AliRawReaderRoot.h"
@@ -260,6 +261,35 @@ AliTPCCalibPedestal::AliTPCCalibPedestal(const AliTPCCalibPedestal &ped) :
     }
   }
 }
+AliTPCCalibPedestal::AliTPCCalibPedestal(const TMap *config): 
+  TObject(),
+  fFirstTimeBin(60),
+  fLastTimeBin(1000),
+  fAdcMin(1),
+  fAdcMax(100),
+  fAnaMeanDown(0.),
+  fAnaMeanUp(1.),
+  fTimeAnalysis(kFALSE),
+  fROC(AliTPCROC::Instance()),
+  fMapping(NULL),
+  fCalRocArrayPedestal(72),
+  fCalRocArraySigma(72),
+  fHistoPedestalArray(72),
+  fTimeSignal(NULL),
+  fCalRocArrayMean(72),
+  fCalRocArrayRMS(72)  
+{
+ //
+ // This constructor uses a TMap for setting some parametes
+ //
+  if (config->GetValue("FirstTimeBin")) fFirstTimeBin = ((TObjString*)config->GetValue("FirstTimeBin"))->GetString().Atoi();
+  if (config->GetValue("LastTimeBin"))  fLastTimeBin = ((TObjString*)config->GetValue("LastTimeBin"))->GetString().Atoi();
+  if (config->GetValue("AdcMin"))       fAdcMin = ((TObjString*)config->GetValue("AdcMin"))->GetString().Atoi();
+  if (config->GetValue("AdcMax"))       fAdcMax = ((TObjString*)config->GetValue("AdcMax"))->GetString().Atoi();
+  if (config->GetValue("TimeAnalysis")) SetTimeAnalysis(((TObjString*)config->GetValue("TimeAnalysis"))->GetString().Atoi());
+ 
+     
+} 
 
 
 //_____________________________________________________________________
@@ -663,6 +693,10 @@ void AliTPCCalibPedestal::Analyse()
 // 	param[1]=0;
 // 	param[2]=0;
 //       }
+      if ( param[1]<fAdcMin || param[1]>fAdcMax ){
+        param[1]=0;
+        param[2]=0;
+      }
       rocPedestal->SetValue(iChannel,param[1]);
       rocSigma->SetValue(iChannel,param[2]);
       //calculate mean and RMS using a truncated means

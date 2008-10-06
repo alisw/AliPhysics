@@ -378,7 +378,12 @@ Char_t* AliTPCMonitorConfig::GetLastProcFile()
       Char_t fnlast[256];
       sprintf(fnlast,"AliTPCMonitorLastFile.txt");
       ifstream datin(fnlast);
-      if(!datin) {  AliWarning("Could not read file containing  name of last processed file: Check permissions and path");}
+      if(!datin.is_open()) {
+        AliWarning("Could not read file containing  name of last processed file: Check permissions and path");
+	sprintf(fFileLast,"%s","");
+	fFileLastSet=0;
+        return fFileLast;
+      }
       datin >> fFileLast;
       datin.close(); 
       fFileLastSet=1;

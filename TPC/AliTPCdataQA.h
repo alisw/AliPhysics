@@ -17,7 +17,8 @@ class AliTPCRawStream;
 class AliTPCRawStreamFast;
 class AliRawReader;
 class AliTPCAltroMapping;
-class AliTPCCalPad; 
+class AliTPCCalPad;
+class TMap; 
 struct eventHeaderStruct;
 
 class AliTPCdataQA : public TH1F {
@@ -25,6 +26,7 @@ class AliTPCdataQA : public TH1F {
 public:
   AliTPCdataQA();
   AliTPCdataQA(const AliTPCdataQA &ped);
+  AliTPCdataQA(TMap *config);
   virtual ~AliTPCdataQA();
 
   AliTPCdataQA& operator = (const  AliTPCdataQA &source);

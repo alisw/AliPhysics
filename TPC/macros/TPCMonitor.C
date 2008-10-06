@@ -345,7 +345,9 @@ void OpenDir()
 {
   TString dir ;
   TString lastfile(fMon->GetLastProcFile());
-  dir= "/";
+  if ( lastfile == "" ) dir=gSystem->pwd();
+  else dir=gSystem->DirName(lastfile);
+  dir="/";
   TGFileInfo* fi = new TGFileInfo();
   fi->fIniDir    = StrDup(dir);
   fi->fFilename  = StrDup(lastfile);
