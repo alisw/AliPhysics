@@ -23,8 +23,8 @@
 #include <TSystem.h>
 #include <TF1.h>
 #include <TH2D.h>
+#include <TH3F.h>
 #include <TH1D.h>
-#include <TH1I.h>
 #include <TParticle.h>
 
 #include "AliProtonQAAnalysis.h"
@@ -71,7 +71,9 @@ AliProtonQAAnalysis::AliProtonQAAnalysis() :
   fFunctionProbabilityFlag(kFALSE), 
   fElectronFunction(0), fMuonFunction(0),
   fPionFunction(0), fKaonFunction(0), fProtonFunction(0),
-  fUseTPCOnly(kFALSE) {
+  fUseTPCOnly(kFALSE),
+  fPDGList(0), fMCProcessesList(0),
+  fRunMCAnalysis(kFALSE) {
   //Default constructor
   for(Int_t i = 0; i < 5; i++) fPartFrac[i] = 0.0;
 }
@@ -93,6 +95,9 @@ AliProtonQAAnalysis::~AliProtonQAAnalysis() {
     delete fQASecondaryAntiProtonsAcceptedList;
   if(fQASecondaryAntiProtonsRejectedList) 
     delete fQASecondaryAntiProtonsRejectedList; 
+
+  if(fPDGList) delete fPDGList;
+  if(fMCProcessesList) delete fMCProcessesList;
 }
 
 //____________________________________________________________________//
@@ -1018,6 +1023,7 @@ void AliProtonQAAnalysis::SetQAYPtBins(Int_t nbinsY, Double_t minY, Double_t max
   fNBinsPt = nbinsPt;
   fMinPt = minPt; fMaxPt = maxPt;
   InitQA();
+  if(fRunMCAnalysis) InitMCAnalysis();
 }
 
 //____________________________________________________________________//
@@ -1768,7 +1774,6 @@ void AliProtonQAAnalysis::InitQA() {
   TH1F *fSecondaryAntiProtonsTPCpidReject = new TH1F("fSecondaryAntiProtonsTPCpidReject",
 						     "",10,-1,1);
   fQASecondaryAntiProtonsRejectedList->Add(fSecondaryAntiProtonsTPCpidReject);
-  
 }
 
 //____________________________________________________________________//
@@ -1927,6 +1932,230 @@ void AliProtonQAAnalysis::RunQA(AliStack *stack, AliESDEvent *fESD) {
     
 }
 
+//____________________________________________________________________//
+void AliProtonQAAnalysis::InitMCAnalysis() {
+  //MC analysis - 3D histograms: y-pT-pdg
+  fPDGList = new TList();
+  TH3F *gHistYPtPDGProtons = new TH3F("gHistYPtPDGProtons",
+				      ";y;P_{T} [GeV/c];PDG",
+				      fNBinsY,fMinY,fMaxY,
+				      fNBinsPt,fMinPt,fMaxPt,
+				      14,-0.5,13.5);
+  fPDGList->Add(gHistYPtPDGProtons);
+  TH3F *gHistYPtPDGAntiProtons = new TH3F("gHistYPtPDGAntiProtons",
+					  ";y;P_{T} [GeV/c];PDG",
+					  fNBinsY,fMinY,fMaxY,
+					  fNBinsPt,fMinPt,fMaxPt,
+					  14,-0.5,13.5);
+  fPDGList->Add(gHistYPtPDGAntiProtons);
+
+  //MC processes
+  fMCProcessesList = new TList();
+  TH1F *gHistProtonsFromKLProcess = new TH1F("gHistProtonsFromKLProcess","",51,-0.5,50.5);
+  fMCProcessesList->Add(gHistProtonsFromKLProcess);
+  TH1F *gHistProtonsFromPionProcess = new TH1F("gHistProtonsFromPionProcess","",51,-0.5,50.5);
+  fMCProcessesList->Add(gHistProtonsFromPionProcess);
+  TH1F *gHistProtonsFromKSProcess = new TH1F("gHistProtonsFromKSProcess","",51,-0.5,50.5);
+  fMCProcessesList->Add(gHistProtonsFromKSProcess);
+  TH1F *gHistProtonsFromKaonProcess = new TH1F("gHistProtonsFromKaonProcess","",51,-0.5,50.5);
+  fMCProcessesList->Add(gHistProtonsFromKaonProcess);
+  TH1F *gHistProtonsFromNeutronProcess = new TH1F("gHistProtonsFromNeutronProcess","",51,-0.5,50.5);
+  fMCProcessesList->Add(gHistProtonsFromNeutronProcess);
+  TH1F *gHistProtonsFromProtonProcess = new TH1F("gHistProtonsFromProtonProcess","",51,-0.5,50.5);
+  fMCProcessesList->Add(gHistProtonsFromProtonProcess);
+  TH1F *gHistProtonsFromSigmaMinusProcess = new TH1F("gHistProtonsFromSigmaMinusProcess","",51,-0.5,50.5);
+  fMCProcessesList->Add(gHistProtonsFromSigmaMinusProcess);
+  TH1F *gHistProtonsFromLambda0Process = new TH1F("gHistProtonsFromLambda0Process","",51,-0.5,50.5);
+  fMCProcessesList->Add(gHistProtonsFromLambda0Process);
+  TH1F *gHistProtonsFromSigmaPlusProcess = new TH1F("gHistProtonsFromSigmaPlusProcess","",51,-0.5,50.5);
+  fMCProcessesList->Add(gHistProtonsFromSigmaPlusProcess);
+  TH1F *gHistProtonsFromXiMinusProcess = new TH1F("gHistProtonsFromXiMinusProcess","",51,-0.5,50.5);
+  fMCProcessesList->Add(gHistProtonsFromXiMinusProcess);
+  TH1F *gHistProtonsFromXi0Process = new TH1F("gHistProtonsFromXi0Process","",51,-0.5,50.5);					    
+  fMCProcessesList->Add(gHistProtonsFromXi0Process);
+  TH1F *gHistProtonsFromOmegaProcess = new TH1F("gHistProtonsFromOmegaProcess","",51,-0.5,50.5); 
+  fMCProcessesList->Add(gHistProtonsFromOmegaProcess);
+
+  TH1F *gHistAntiProtonsFromKLProcess = new TH1F("gHistAntiProtonsFromKLProcess","",51,-0.5,50.5); 
+  fMCProcessesList->Add(gHistAntiProtonsFromKLProcess);
+  TH1F *gHistAntiProtonsFromPionProcess = new TH1F("gHistAntiProtonsFromPionProcess","",51,-0.5,50.5); 
+  fMCProcessesList->Add(gHistAntiProtonsFromPionProcess);
+  TH1F *gHistAntiProtonsFromKSProcess = new TH1F("gHistAntiProtonsFromKSProcess","",51,-0.5,50.5); 
+  fMCProcessesList->Add(gHistAntiProtonsFromKSProcess);
+  TH1F *gHistAntiProtonsFromKaonProcess = new TH1F("gHistAntiProtonsFromKaonProcess","",51,-0.5,50.5); 
+  fMCProcessesList->Add(gHistAntiProtonsFromKaonProcess);
+  TH1F *gHistAntiProtonsFromNeutronProcess = new TH1F("gHistAntiProtonsFromNeutronProcess","",51,-0.5,50.5); 
+  fMCProcessesList->Add(gHistAntiProtonsFromNeutronProcess);
+  TH1F *gHistAntiProtonsFromProtonProcess = new TH1F("gHistAntiProtonsFromProtonProcess","",51,-0.5,50.5); 
+  fMCProcessesList->Add(gHistAntiProtonsFromProtonProcess);
+  TH1F *gHistAntiProtonsFromLambda0Process = new TH1F("gHistAntiProtonsFromLambda0Process","",51,-0.5,50.5); 
+  fMCProcessesList->Add(gHistAntiProtonsFromLambda0Process);
+  TH1F *gHistAntiProtonsFromSigmaPlusProcess = new TH1F("gHistAntiProtonsFromSigmaPlusProcess","",51,-0.5,50.5); 
+  fMCProcessesList->Add(gHistAntiProtonsFromSigmaPlusProcess);
+}
+
+//____________________________________________________________________//
+void AliProtonQAAnalysis::RunMCAnalysis(AliStack* stack) {
+  //Main analysis part - MC 
+  for(Int_t iParticle = 0; iParticle < stack->GetNtrack(); iParticle++) {
+    TParticle *particle = stack->Particle(iParticle);
+    if(TMath::Abs(particle->Eta()) > 1.0) continue;//acceptance
+    Int_t pdgcode = particle->GetPdgCode();
+    if(pdgcode == 2212) {
+      if(iParticle <= stack->GetNprimary()) 
+	((TH3F *)(fPDGList->At(0)))->Fill(Rapidity(particle->Px(),
+						   particle->Py(),
+						   particle->Pz()),
+					  particle->Pt(),0);
+      else if(iParticle > stack->GetNprimary()) {
+	Int_t lPartMother = particle->GetFirstMother();
+	TParticle *motherParticle = stack->Particle(lPartMother);
+	if(!motherParticle) continue;
+	((TH3F *)(fPDGList->At(0)))->Fill(Rapidity(particle->Px(),
+						   particle->Py(),
+						   particle->Pz()),
+					  particle->Pt(),
+					  ConvertPDGToInt(motherParticle->GetPdgCode()));
+	//processes
+	if(TMath::Abs(motherParticle->GetPdgCode()) == 130)
+	  ((TH1F *)(fMCProcessesList->At(0)))->Fill(particle->GetUniqueID());
+	if(TMath::Abs(motherParticle->GetPdgCode()) == 211)
+	  ((TH1F *)(fMCProcessesList->At(1)))->Fill(particle->GetUniqueID());
+	if(TMath::Abs(motherParticle->GetPdgCode()) == 310)
+	  ((TH1F *)(fMCProcessesList->At(2)))->Fill(particle->GetUniqueID());
+	if(TMath::Abs(motherParticle->GetPdgCode()) == 321)
+	  ((TH1F *)(fMCProcessesList->At(3)))->Fill(particle->GetUniqueID());
+	if(TMath::Abs(motherParticle->GetPdgCode()) == 2112)
+	  ((TH1F *)(fMCProcessesList->At(4)))->Fill(particle->GetUniqueID());
+	if(TMath::Abs(motherParticle->GetPdgCode()) == 2212)
+	  ((TH1F *)(fMCProcessesList->At(5)))->Fill(particle->GetUniqueID());
+	if(TMath::Abs(motherParticle->GetPdgCode()) == 3112)
+	  ((TH1F *)(fMCProcessesList->At(6)))->Fill(particle->GetUniqueID());
+	if(TMath::Abs(motherParticle->GetPdgCode()) == 3122)
+	  ((TH1F *)(fMCProcessesList->At(7)))->Fill(particle->GetUniqueID());
+	if(TMath::Abs(motherParticle->GetPdgCode()) == 3222)
+	  ((TH1F *)(fMCProcessesList->At(8)))->Fill(particle->GetUniqueID());
+	if(TMath::Abs(motherParticle->GetPdgCode()) == 3312)
+	  ((TH1F *)(fMCProcessesList->At(9)))->Fill(particle->GetUniqueID());
+	if(TMath::Abs(motherParticle->GetPdgCode()) == 3322)
+	  ((TH1F *)(fMCProcessesList->At(10)))->Fill(particle->GetUniqueID());
+	if(TMath::Abs(motherParticle->GetPdgCode()) == 3334)
+	  ((TH1F *)(fMCProcessesList->At(11)))->Fill(particle->GetUniqueID());
+      }//secondary proton
+    }//pdgcode of proton
+
+    if(pdgcode == -2212) {
+      if(iParticle <= stack->GetNprimary()) 
+	((TH3F *)(fPDGList->At(1)))->Fill(Rapidity(particle->Px(),
+						   particle->Py(),
+						   particle->Pz()),
+					  particle->Pt(),0);
+      else if(iParticle > stack->GetNprimary()) {
+	Int_t lPartMother = particle->GetFirstMother();
+	TParticle *motherParticle = stack->Particle(lPartMother);
+	if(!motherParticle) continue;
+	((TH3F *)(fPDGList->At(1)))->Fill(Rapidity(particle->Px(),
+						   particle->Py(),
+						   particle->Pz()),
+					  particle->Pt(),
+					  ConvertPDGToInt(motherParticle->GetPdgCode()));
+
+	//processes
+	if(TMath::Abs(motherParticle->GetPdgCode()) == 130)
+	  ((TH1F *)(fMCProcessesList->At(12)))->Fill(particle->GetUniqueID());
+	if(TMath::Abs(motherParticle->GetPdgCode()) == 211)
+	  ((TH1F *)(fMCProcessesList->At(13)))->Fill(particle->GetUniqueID());
+	if(TMath::Abs(motherParticle->GetPdgCode()) == 310)
+	  ((TH1F *)(fMCProcessesList->At(14)))->Fill(particle->GetUniqueID());
+	if(TMath::Abs(motherParticle->GetPdgCode()) == 321)
+	  ((TH1F *)(fMCProcessesList->At(15)))->Fill(particle->GetUniqueID());
+	if(TMath::Abs(motherParticle->GetPdgCode()) == 2112)
+	  ((TH1F *)(fMCProcessesList->At(16)))->Fill(particle->GetUniqueID());
+	if(TMath::Abs(motherParticle->GetPdgCode()) == 2212)
+	  ((TH1F *)(fMCProcessesList->At(17)))->Fill(particle->GetUniqueID());
+	if(TMath::Abs(motherParticle->GetPdgCode()) == 3122)
+	  ((TH1F *)(fMCProcessesList->At(18)))->Fill(particle->GetUniqueID());
+	if(TMath::Abs(motherParticle->GetPdgCode()) == 3222)
+	  ((TH1F *)(fMCProcessesList->At(19)))->Fill(particle->GetUniqueID());
+      }//secondary antiproton
+    }//pdgcode of antiproton
+
+  }//particle loop
+}
+
+//____________________________________________________________________//
+Int_t AliProtonQAAnalysis::ConvertPDGToInt(Int_t pdgCode) {
+  //Converts the pdg code to an int based on the following scheme:
+  //1: PDG code: 130 - Name: K_L0
+  //2: PDG code: 211 - Name: pi+
+  //3: PDG code: 310 - Name: K_S0
+  //4: PDG code: 321 - Name: K+
+  //5: PDG code: 2112 - Name: neutron
+  //6: PDG code: 2212 - Name: proton
+  //7: PDG code: 3112 - Name: Sigma-
+  //8: PDG code: 3122 - Name: Lambda0
+  //9: PDG code: 3222 - Name: Sigma+
+  //10: PDG code: 3312 - Name: Xi-
+  //11: PDG code: 3322 - Name: Xi0
+  //12: PDG code: 3334 - Name: Omega-
+  Int_t code = -1;
+  switch (TMath::Abs(pdgCode)) {
+  case 130: {
+    code = 1;
+    break;
+  }
+  case 211: {
+    code = 2;
+    break;
+  }
+  case 310: {
+    code = 3;
+    break;
+  }
+  case 321: {
+    code = 4;
+    break;
+  }
+  case 2112: {
+    code = 5;
+    break;
+  }
+  case 2212: {
+    code = 6;
+    break;
+  }
+  case 3112: {
+    code = 7;
+    break;
+  }
+  case 3122: {
+    code = 8;
+    break;
+  }
+  case 3222: {
+    code = 9;
+    break;
+  }
+  case 3312: {
+    code = 10;
+    break;
+  }
+  case 3322: {
+    code = 11;
+    break;
+  }
+  case 3334: {
+    code = 12;
+    break;
+  }
+  default: {
+    code = -1;
+    break;
+  }
+  }//switch
+
+  return code;
+}
 
 
 
