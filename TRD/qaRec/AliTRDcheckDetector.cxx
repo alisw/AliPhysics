@@ -70,11 +70,11 @@ AliTRDcheckDetector::~AliTRDcheckDetector(){
 
 //_______________________________________________________
 void AliTRDcheckDetector::ConnectInputData(Option_t *opt){
-	//
-	// Connect the Input data with the task
-	//
-	AliTRDrecoTask::ConnectInputData(opt);
-	fEventInfo = dynamic_cast<AliTRDeventInfo *>(GetInputData(1));
+  //
+  // Connect the Input data with the task
+  //
+  AliTRDrecoTask::ConnectInputData(opt);
+  fEventInfo = dynamic_cast<AliTRDeventInfo *>(GetInputData(1));
 }
 
 //_______________________________________________________
@@ -86,12 +86,12 @@ void AliTRDcheckDetector::CreateOutputObjects(){
   // Register Histograms
   fContainer->Add(new TH1F("hNtrks", "Number of Tracks per event", 100, 0, 100));
   fContainer->Add(new TH1F("hEventsTriggerTracks", "Trigger Class (Tracks)", 20, 0, 20));
-  fContainer->Add(new TH1F("hNcls", "Nr. of clusters per track", 30, 0, 180));
-  fContainer->Add(new TH1F("hNtls", "Nr. tracklets per track", 10, 0, 10));
-  fContainer->Add(new TH1F("hNclTls","Mean Number of clusters per tracklet", 30, 0, 30));
+  fContainer->Add(new TH1F("hNcls", "Nr. of clusters per track", 181, -0.5, 180.5));
+  fContainer->Add(new TH1F("hNtls", "Nr. tracklets per track", 7, -0.5, 6.5));
+  fContainer->Add(new TH1F("hNclTls","Mean Number of clusters per tracklet", 31, -0.5, 30.5));
   fContainer->Add(new TH1F("hChi2", "Chi2", 200, 0, 20));
   fContainer->Add(new TH1F("hChi2n", "Norm. Chi2 (tracklets)", 50, 0, 5));
-  fContainer->Add(new TH1F("hSM", "Track Counts in Supermodule", 18, 0., 18.));
+  fContainer->Add(new TH1F("hSM", "Track Counts in Supermodule", 19, -0.5, 18.5));
   fContainer->Add(new TProfile("hPH", "Average PH", 31, -0.5, 30.5));
   fContainer->Add(new TH1F("hQcl1", "Cluster charge", 200, -1200, 1200));
   fContainer->Add(new TH1F("hQT", "Total Charge Deposit", 6000, 0, 6000));
@@ -196,8 +196,10 @@ void AliTRDcheckDetector::Exec(Option_t *){
     }
     nTracks++;
   }
-  if(nTracks) dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNEventsTriggerTracks))->Fill(triggermask);
-  dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNTracksEventHist))->Fill(nTracks);
+  if(nTracks){
+    dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNEventsTriggerTracks))->Fill(triggermask);
+    dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNTracksEventHist))->Fill(nTracks);
+  }
   if(!fTriggerNames->FindObject(Form("%d", triggermask)))
     fTriggerNames->Add(new TObjString(Form("%d", triggermask)), new TObjString(triggername));
   PostData(0, fContainer);
@@ -212,96 +214,95 @@ void AliTRDcheckDetector::Terminate(Option_t *){
 
 //_______________________________________________________
 Bool_t AliTRDcheckDetector::PostProcess(){
-	//
-	// Do Postprocessing (for the moment set the number of Reference histograms)
-	//
-	
-	TH1 * histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNTracksEventHist));
-	histo->GetXaxis()->SetTitle("Number of Tracks");
-	histo->GetYaxis()->SetTitle("Events");
-	// Calculate percentage of events containing tracks
-	Int_t entries = (Int_t)histo->GetEntries();
-	histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNclustersHist));
-	histo->GetXaxis()->SetTitle("Number of Clusters");
-	histo->GetYaxis()->SetTitle("Entries");
-	histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNtrackletsHist));
-	histo->GetXaxis()->SetTitle("Number of Tracklets");
-	histo->GetYaxis()->SetTitle("Entries");
-	histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNclusterTrackletHist));
-	histo->GetXaxis()->SetTitle("Number of Clusters");
-	histo->GetYaxis()->SetTitle("Entries");
-	histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kChi2));
-	histo->GetXaxis()->SetTitle("#chi^2");
-	histo->GetYaxis()->SetTitle("Entries");
-	histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNTracksSectorHist));
-	histo->GetXaxis()->SetTitle("Sector");
-	histo->GetYaxis()->SetTitle("Number of Tracks");
-	histo = dynamic_cast<TProfile *>(fContainer->UncheckedAt(kPulseHeight));
-	histo->GetXaxis()->SetTitle("Time / 100ns");
-	histo->GetYaxis()->SetTitle("Average Pulse Height (a. u.)");
-	histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kClusterCharge));
-	histo->GetXaxis()->SetTitle("Cluster Charge (a.u.)");
-	histo->GetYaxis()->SetTitle("Entries");
-	histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kChargeDeposit));
-	histo->GetXaxis()->SetTitle("Charge Deposit (a.u.)");
-	histo->GetYaxis()->SetTitle("Entries");
-	// Calculate the Percentage of events containing tracks as function of the trigger cluster
-	histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNEventsTrigger));
-	TH1F *histoTracks = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNEventsTriggerTracks));
-	histoTracks->Divide(histo);
-	fTriggerNames = dynamic_cast<TMap *>(fContainer->UncheckedAt(18));
-	TH1F *percentages = new TH1F("fTriggerInf", "Trigger Information", fTriggerNames->GetEntries(), 0, fTriggerNames->GetEntries());
-	TObject *triggerclass = 0x0;
-	Int_t ipt=0;
-	for(Int_t ibin = 0; ibin < histo->GetNbinsX(); ibin++){
-		if((triggerclass = fTriggerNames->FindObject(Form("%d",ibin)))){
-			TObjString *label = dynamic_cast<TObjString *>(dynamic_cast<TPair *>(triggerclass)->Value());
-			//printf("Trigger Pattern for class %d: %s\n", ibin, label->String().Data());
-			percentages->SetBinContent(percentages->FindBin(ipt), histoTracks->GetBinContent(histoTracks->FindBin(ibin)));
-			percentages->GetXaxis()->SetBinLabel(percentages->FindBin(ipt),label->String().Data());
-			ipt++;
-		}	
-	}
-	percentages->GetXaxis()->SetTitle("Trigger Cluster");
-	percentages->GetYaxis()->SetTitle("Ratio");
-	percentages->GetYaxis()->SetRangeUser(0,1);
+  //
+  // Do Postprocessing (for the moment set the number of Reference histograms)
+  //
+  
+  TH1 * histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNTracksEventHist));
+  histo->GetXaxis()->SetTitle("Number of Tracks");
+  histo->GetYaxis()->SetTitle("Events");
+  // Calculate percentage of events containing tracks
+  histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNclustersHist));
+  histo->GetXaxis()->SetTitle("Number of Clusters");
+  histo->GetYaxis()->SetTitle("Entries");
+  histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNtrackletsHist));
+  histo->GetXaxis()->SetTitle("Number of Tracklets");
+  histo->GetYaxis()->SetTitle("Entries");
+  histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNclusterTrackletHist));
+  histo->GetXaxis()->SetTitle("Number of Clusters");
+  histo->GetYaxis()->SetTitle("Entries");
+  histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kChi2));
+  histo->GetXaxis()->SetTitle("#chi^2");
+  histo->GetYaxis()->SetTitle("Entries");
+  histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNTracksSectorHist));
+  histo->GetXaxis()->SetTitle("Sector");
+  histo->GetYaxis()->SetTitle("Number of Tracks");
+  histo = dynamic_cast<TProfile *>(fContainer->UncheckedAt(kPulseHeight));
+  histo->GetXaxis()->SetTitle("Time / 100ns");
+  histo->GetYaxis()->SetTitle("Average Pulse Height (a. u.)");
+  histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kClusterCharge));
+  histo->GetXaxis()->SetTitle("Cluster Charge (a.u.)");
+  histo->GetYaxis()->SetTitle("Entries");
+  histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kChargeDeposit));
+  histo->GetXaxis()->SetTitle("Charge Deposit (a.u.)");
+  histo->GetYaxis()->SetTitle("Entries");
+  // Calculate the Percentage of events containing tracks as function of the trigger cluster
+  histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNEventsTrigger));
+  TH1F *histoTracks = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNEventsTriggerTracks));
+  histoTracks->Divide(histo);
+  fTriggerNames = dynamic_cast<TMap *>(fContainer->UncheckedAt(18));
+  TH1F *percentages = new TH1F("fTriggerInf", "Trigger Information", fTriggerNames->GetEntries(), 0, fTriggerNames->GetEntries());
+  TObject *triggerclass = 0x0;
+  Int_t ipt=1;
+  for(Int_t ibin = 0; ibin < histo->GetNbinsX(); ibin++){
+    if((triggerclass = fTriggerNames->FindObject(Form("%d",ibin)))){
+      TObjString *label = dynamic_cast<TObjString *>(dynamic_cast<TPair *>(triggerclass)->Value());
+      //printf("Trigger Pattern for class %d: %s\n", ibin, label->String().Data());
+      percentages->SetBinContent(ipt, histoTracks->GetBinContent(histoTracks->FindBin(ibin)));
+      percentages->GetXaxis()->SetBinLabel(ipt,label->String().Data());
+      ipt++;
+    }	
+  }
+  percentages->GetXaxis()->SetTitle("Trigger Cluster");
+  percentages->GetYaxis()->SetTitle("Ratio");
+  percentages->GetYaxis()->SetRangeUser(0,1);
 //	percentages->SetMarkerColor(kBlue);
 //	percentages->SetMarkerStyle(22);
-	fContainer->Add(percentages);
-	fNRefFigures = 10;
-	return kTRUE;
+  fContainer->Add(percentages);
+  fNRefFigures = 10;
+  return kTRUE;
 }
 
 //_______________________________________________________
 void AliTRDcheckDetector::GetRefFigure(Int_t ifig, Int_t &first, Int_t &last, Option_t *opt){
-	//
-	// Setting Reference Figures
-	//
-	opt = "pl";
-	switch(ifig){
-		case 0:	first = last = kNTracksEventHist;
-						break;
-		case 1:	first = last = kNclustersHist;
-						break;
-		case 2:	first = last = kNtrackletsHist;
-						break;
-		case 3:	first = last = kNclusterTrackletHist;
-						break;
-		case 4:	first = last = kChi2;
-						break;
-		case 5:	first = last = kNTracksSectorHist;
-						break;
-		case 6:	first = last = kPulseHeight;
-						break;
-		case 7:	first = last = kClusterCharge;
-						break;
-		case 8:	first = last = kChargeDeposit;
-						break;
-		case 9: first = last = kPostProcessing;
-						opt="bar";
-						break;
-		default: first = last = kNTracksEventHist;
-						break;
-	};
+  //
+  // Setting Reference Figures
+  //
+  opt = "pl";
+  switch(ifig){
+    case 0:	first = last = kNTracksEventHist;
+            break;
+    case 1:	first = last = kNclustersHist;
+            break;
+    case 2:	first = last = kNtrackletsHist;
+            break;
+    case 3:	first = last = kNclusterTrackletHist;
+            break;
+    case 4:	first = last = kChi2;
+            break;
+    case 5:	first = last = kNTracksSectorHist;
+            break;
+    case 6:	first = last = kPulseHeight;
+            break;
+    case 7:	first = last = kClusterCharge;
+            break;
+    case 8:	first = last = kChargeDeposit;
+            break;
+    case 9: first = last = kPostProcessing;
+            opt="bar";
+            break;
+    default: first = last = kNTracksEventHist;
+            break;
+  };
 }
 

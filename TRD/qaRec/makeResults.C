@@ -128,10 +128,10 @@ void makeResults(Char_t *tasks = "ALL", Char_t* dir=0x0)
       
       if(o->InheritsFrom("TH1")){ 
         h = dynamic_cast<TH1*>(o);
-        h->Draw("pl");
+        h->Draw(opt);
       } else if(o->InheritsFrom("TGraph")){ 
         g = dynamic_cast<TGraph*>(o);
-        g->Draw("apl");
+        g->Draw(opt);
       } else{
         printf("No idea how to plot object of type %s.\n", o->IsA()->GetName());
         printf("Please teach me.\n");
@@ -142,10 +142,10 @@ void makeResults(Char_t *tasks = "ALL", Char_t* dir=0x0)
         if(!(o = fContainer->At(ig))) continue;
         if(o->InheritsFrom("TH1")){
           h = dynamic_cast<TH1*>(o);
-          h->Draw("plsame");
+          h->Draw(Form("%ssame", opt));
         } else if(o->InheritsFrom("TGraph")){
           g = dynamic_cast<TGraph*>(o);
-          g->Draw("pl");
+          g->Draw(opt);
         }
       }
       c->SaveAs(Form("%s_fig%d.gif", task->GetName(), ipic));
