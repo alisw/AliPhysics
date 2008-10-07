@@ -213,8 +213,10 @@ Float_t AliPHOSPreprocessor::HG2LG(Int_t mod, Int_t X, Int_t Z, TFile* f)
 
   TH1F* h1 = (TH1F*)f->Get(hname);
   if(!h1) return 16.;
-
+  
   if(!h1->GetEntries()) return 16.;
+  
+  h1->Rebin(4);
   if(h1->GetMaximum()<10.) return 16.;
 
   Double_t max = h1->GetBinCenter(h1->GetMaximumBin()); // peak
