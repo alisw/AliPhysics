@@ -100,7 +100,8 @@ AliESDVertex* AliITSVertexerCosmics::FindVertexForCurrentEvent(TTree *itsCluster
   // Search for innermost layer with at least two clusters 
   // on two different modules
   Int_t ilayer=0,ilayer2=0;
-  while(ilayer<6) {
+  Int_t nHitModulesSPDinner=0;
+  while(ilayer<AliITSgeomTGeo::GetNLayers()) {
     if(AliITSReconstructor::GetRecoParam()->GetLayersToSkip(ilayer)) {
       ilayer++;
       continue;
@@ -113,6 +114,7 @@ AliESDVertex* AliITSVertexerCosmics::FindVertexForCurrentEvent(TTree *itsCluster
       if(lay!=ilayer) AliFatal("Layer mismatch!");
       if(recpoints->GetEntriesFast()>0) nHitModules++;
     }
+    if(ilayer==0) nHitModulesSPDinner=nHitModules;
     if(nHitModules>=2) break;
     ilayer++;
   }
@@ -124,7 +126,8 @@ AliESDVertex* AliITSVertexerCosmics::FindVertexForCurrentEvent(TTree *itsCluster
   }
 
   // try tracklet on SPD2 and point on SPD1
-  if(ilayer==1 && !AliITSReconstructor::GetRecoParam()->GetLayersToSkip(0)) {ilayer=0; ilayer2=1;}
+  if(ilayer==1 && !AliITSReconstructor::GetRecoParam()->GetLayersToSkip(0) &&
+     nHitModulesSPDinner>0) { ilayer=0; ilayer2=1; }
 
   if(ilayer>4 || ilayer2>5) {
     AliWarning("Not enough clusters");
