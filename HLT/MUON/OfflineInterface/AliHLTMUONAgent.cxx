@@ -98,7 +98,7 @@ const char* AliHLTMUONAgent::GetReconstructionChains(AliRawReader* rawReader,
 		{
 			if (rawReader->ReadHeader()) dataFromTrigger = true;
 		}
-		rawReader->RewindEvents();
+		rawReader->Reset();
 		
 		// If raw data was found for our detector then select the
 		// appropriate chain.
