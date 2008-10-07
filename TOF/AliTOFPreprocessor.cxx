@@ -35,6 +35,9 @@
 #include "AliTOFGeometry.h"
 #include "AliTOFPreprocessor.h"
 #include "AliTOFFEEReader.h"
+#include "AliTOFRawStream.h"
+#include "AliTOFCableLengthMap.h"
+
 
 // TOF preprocessor class.
 // It takes data from DCS and passes them to the class AliTOFDataDCS, which
@@ -370,7 +373,54 @@ UInt_t AliTOFPreprocessor::ProcessOnlineDelays()
 						  return 7; //return error code for histograms not existing/junky
 					  }
 					  Int_t nNotStatistics = 0; // number of channel with not enough statistics
-					  if (fFDRFlag) Log(" Not computing delays according to flag set in Config entry in OCDB!");
+
+ /* FDR flag set. do not compute delays, use nominal cable delays */
+					  if (fFDRFlag) {
+
+					    Log(" Not computing delays according to flag set in Config entry in OCDB!");
+					    Log(" Using nominal cable delays.");
+					    
+					    AliTOFRawStream tofrs;
+					    Int_t det[5], dummy, index;
+					    Float_t cableTimeShift;
+					    
+					    /* loop over EO indeces */
+					    for (Int_t iddl = 0; iddl < 72; iddl++)
+					      for (Int_t islot = 3; islot <= 12; islot++)
+						for (Int_t ichain = 0; ichain < 2; ichain++)
+						  for (Int_t itdc = 0; itdc < 15; itdc++)
+						    for (Int_t ichannel = 0; ichannel < 8; ichannel++) {
+						      
+						      /* get DO index */
+						      tofrs.EquipmentId2VolumeId(iddl, islot, ichain, itdc, ichannel, det);
+						      
+						      /* swap det[3] and det[4] indeces (needed to obtain correct channel index) */
+						      dummy = det[3];
+						      det[3] = det[4];
+						      det[4] = dummy;
+						      
+						      /* check DO index */
+						      if (det[0] < 0 || det[0] > 17 ||
+							  det[1] < 0 || det[1] > 4 ||
+							  det[2] < 0 || det[2] > 18 ||
+							  det[3] < 0 || det[3] > 1 ||
+							  det[4] < 0 || det[4] > 47)
+							continue;
+						      
+						      /* get channel index */
+						      index = AliTOFGeometry::GetIndex(det);
+						      
+						      /* get cable time shift */
+						      cableTimeShift = AliTOFCableLengthMap::GetCableTimeShift(iddl, islot, ichain, itdc);
+						      
+						      /* set delay */
+						      if (index<fNChannels) {
+							fCal->SetDelay(index,cableTimeShift);  // delay in ns
+							AliDebug(2,Form("Setting delay %f (ns) for channel %i",cableTimeShift,index));
+						      }
+						      
+						    } /* loop over EO indeces */
+					  }
 
 					  else {  // computing delays if not in FDR runs
 						  for (Int_t ich=0;ich<kSize;ich++){
