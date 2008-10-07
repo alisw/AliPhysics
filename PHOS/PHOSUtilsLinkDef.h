@@ -5,5 +5,7 @@
 #pragma link off all functions;
 
 #pragma link C++ class AliPHOSGeoUtils+;
+#pragma link C++ class AliPHOSEMCAGeometry+;
+#pragma link C++ class AliPHOSCPVGeometry+;
 
 #endif
