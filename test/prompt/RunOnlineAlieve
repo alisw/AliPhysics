@@ -13,10 +13,11 @@
 # origin: Mikolaj Krzewicki, Nikhef, Mikolaj.Krzewicki@cern.ch
 #################################################################
 
-if [ $# -ne 2 ]
+if [ $# -lt 2 ]
 then
   echo ""
-  echo "  Usage: `basename $0` RunNumber GDCnumber"
+  echo "  Usage: `basename $0` RunNumber GDCnumber [Trigger]"
+  echo "          (don't use the Trigger argument unless you're really sure what you're doing!)"
   echo ""
   exit 999
 fi
@@ -45,7 +46,7 @@ then
 fi
 
 # data gets put in a dir named after the run number
-DATADIR="${DATADIRBASE}/${1}"
+DATADIR="${DATADIRBASE}/${1}_OnlineDisplay"
 
 # never overwrite existing data, make a new directory if necessary
 # and give it a unique (sequential) number
@@ -72,5 +73,10 @@ mkdir ${DATADIR}
 
 cp ${RECMACRO} ${DATADIR}
 cd ${DATADIR}
-alieve ${PROMPTOFFLINEMACRO}\(${1},${2}\)
 
+if [ $# -eq 3 ]
+then
+  alieve ${PROMPTOFFLINEMACRO}\(${1},${2},${3}\) | tee alieve.log
+else
+  alieve ${PROMPTOFFLINEMACRO}\(${1},${2}\) | tee alieve.log
+fi

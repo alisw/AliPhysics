@@ -73,7 +73,7 @@ mkdir ${DATADIR}
 cp ${RECMACRO} ${DATADIR}
 cd ${DATADIR}
 
-xterm -T "Reconstruction run: ${1} GDC: ${2}" -e "cd $DATADIR;aliroot ${PROMPTOFFLINEMACRO}\(${1},${2}\)"&
+xterm -T "Reconstruction run: ${1} GDC: ${2}" -e "cd $DATADIR; aliroot ${PROMPTOFFLINEMACRO}\(${1},${2}\) | tee rec.log"&
 
 #wait some time for data to appear
 waitcount=0
@@ -89,5 +89,5 @@ while [ ! -f AliESDs.root ]; do
 done
 
 if [[ $runalieve -eq 1 ]]; then
-  alieve anyscan_init.C > display.log
+  alieve anyscan_init.C | tee alieve.log
 fi

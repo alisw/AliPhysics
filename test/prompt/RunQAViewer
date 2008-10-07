@@ -1,0 +1,23 @@
+#!/bin/bash
+#################################################################
+#
+#  Runs the QA histogram viewer in a specified directory
+#
+#  Origin: Mikolaj Krzewicki, Nikhef, Mikolaj.Krzewicki@cern.ch
+#
+#################################################################
+cd ~/data/current
+ls -1tr
+echo ""
+read -p "  Choose directory from the list above: " dir
+if [[ -d $dir ]]
+then
+  cd $dir
+else
+  echo "no such directory - typo?"
+  return 999
+fi
+
+aliroot qam.C
+
+echo "done"

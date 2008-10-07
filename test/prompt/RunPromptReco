@@ -72,5 +72,5 @@ mkdir ${DATADIR}
 
 cp ${RECMACRO} ${DATADIR}
 cd ${DATADIR}
-aliroot ${PROMPTOFFLINEMACRO}\(${1},${2}\)
+aliroot ${PROMPTOFFLINEMACRO}\(${1},${2}\) | tee rec.log
 
