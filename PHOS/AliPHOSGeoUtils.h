@@ -48,6 +48,10 @@ public:
               
   void Global2Local(TVector3& localPosition,const TVector3& globalPosition,Int_t module) const ;
 
+  Bool_t GlobalPos2RelId(TVector3 & global, Int_t * relId) ;
+        //Tranfers global position into numbers in PHOS cols-raws
+        //Returns FALSE if local x,z beyond PHOS. Distance in perpendicular to PHOS direction is not checked.
+
   Bool_t ImpactOnEmc(const TParticle * particle,Int_t & ModuleNumber, Double_t & z, Double_t & x) const ;
                                          //Checks if NEUTRAL particle hits PHOS
   Bool_t ImpactOnEmc(const Double_t * vtx, const TVector3& vec,                

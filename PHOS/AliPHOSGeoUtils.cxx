@@ -433,6 +433,23 @@ void AliPHOSGeoUtils::Global2Local(TVector3& localPosition,
  
 }
 //____________________________________________________________________________
+Bool_t AliPHOSGeoUtils::GlobalPos2RelId(TVector3 & global, Int_t * relId){
+  //Converts position in global ALICE coordinates to relId 
+  //returns false if x,z coordinates are beyond PHOS
+  //distande to PHOS surface is NOT calculated 
+  TVector3 loc ;
+  for(Int_t mod=1; mod<fNModules; mod++){
+    Global2Local(loc,global,mod) ;
+    //If in Acceptance
+    if((TMath::Abs(loc.Z())<fXtlArrSize[2]) && (TMath::Abs(loc.X())<fXtlArrSize[0])){
+       RelPosToRelId(mod,loc.X(),loc.Z(),relId);
+       return kTRUE ;
+    }
+  }
+  return kFALSE ; 
+
+}
+//____________________________________________________________________________
 Bool_t AliPHOSGeoUtils::ImpactOnEmc(const TParticle * particle,
        Int_t & moduleNumber, Double_t & z, Double_t & x) const
 {
