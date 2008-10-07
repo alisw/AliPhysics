@@ -162,3 +162,8 @@ void TestChainCosmicDedx(){
  f.Close();
 
 }
+
+
+void dedxDemo(){
+  chainCosmic->Draw("(Seed0.CookdEdxNorm(0.01,0.65,1,0,159,0,kTRUE,kTRUE)+Seed1.CookdEdxNorm(0.01,0.65,1,0,159,0,kTRUE,kTRUE))*0.5:log(Tr0.P())>>his2(100,-2,5,500,0,200)","min(Orig0.fTPCncls,Orig1.fTPCncls)>110");   
+}

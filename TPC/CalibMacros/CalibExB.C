@@ -201,13 +201,16 @@ void CalibExB(){
   //
   fstringeb+="bz*fbz0++";                //1
   fstringeb+="sign(bz)*bz^2*fbz2++";     //2
-  fstringeb+="((dr)^3-1)*bz*sa++";        //9
+  fstringeb+="((dr)-1)*bz*sa++";        //9
+  fstringeb+="side*((dr)-1)*bz*sa++";        //9
+
+
+  fstringeb+="((dr)-1)*bz*ca++";        //9
   fstringeb+="side*((dr)^3-1)*bz*sa++";        //9
   fstringeb+="side*((dr)^3-1)*bz++";           //7
-  //fstringeb+="((dr)^3-1)*bz++";           //7
-  //fstringeb+="((dr)^3-1)*bz*ca++";        //11
-  //fstringeb+="side*((dr)^3-1)*bz*sa++";        //9
-  //fstringeb+="side*((dr)^3-1)*bz*ca++";        //11
+
+  fstringeb+="((dr)^3-1)*bz++";           //7
+  fstringeb+="side*((dr)^3-1)*bz*ca++";        //11
   
   //  
   TString *strExB = toolkit.FitPlane(treeT,"gphi1-pphi0",fstringeb->Data(), "abs(gphi1-pphi0-fit)<0.06&&abs(bz)>0.1"+cutA, chi2,npoints,fitParam,covMatrix);
