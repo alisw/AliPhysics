@@ -74,7 +74,9 @@ void makeResults(Char_t *tasks = "ALL", Char_t* dir=0x0)
   TObjArray *fContainer = 0x0;
   AliTRDrecoTask *task = 0x0;
 
-  printf("\n\tPROCESSING DATA FOR TASKS [%d]:\n", fSteerTask);
+  if(gSystem->AccessPathName(Form("%s/merge",  gSystem->ExpandPathName("$PWD")))) gSystem->Exec(Form("mkdir -v %s/merge",  gSystem->ExpandPathName("$PWD")));
+
+  printf("\n\tPROCESSING DATA FOR TASKS [%b]:\n", fSteerTask);
   for(Int_t itask = 1; itask <fknTasks; itask++){
     if(!TESTBIT(fSteerTask, itask)) continue;
 
@@ -86,7 +88,7 @@ void makeResults(Char_t *tasks = "ALL", Char_t* dir=0x0)
     printf("\t%s [%s]\n", task->GetTitle(), task->GetName());
 
      // setup filelist
-    TString pathname(dir ? "." : gSystem->ExpandPathName("$PWD"));
+    TString pathname = gSystem->ExpandPathName( dir ? dir : "$PWD");
     TString filestring((const Char_t*) pyshell->Eval(Form("commands.getstatusoutput(\"find %s | grep TRD.Task%s.root\")[1]", pathname.Data(), task->GetName())));
     TObjArray *filenames = filestring.Tokenize("\n");
     Int_t nFiles = filenames->GetEntriesFast();
@@ -99,18 +101,17 @@ void makeResults(Char_t *tasks = "ALL", Char_t* dir=0x0)
 
     if(nFiles>1){
       fFM = new(fFM) TFileMerger(kTRUE);
-      fFM->OutputFile(Form("merge/TRD.Task%s.root",  task->GetName()));
+      fFM->OutputFile(Form("%s/merge/TRD.Task%s.root",  gSystem->ExpandPathName("$PWD"), task->GetName()));
       for(Int_t ifile = 0; ifile < nFiles; ifile++){
         TString filename = (dynamic_cast<TObjString *>(filenames->UncheckedAt(ifile)))->String();
         if(filename.Contains("merge")) continue;
-        printf("\tProcessing %s ...\n", filename.Data());
+        //printf("\tProcessing %s ...\n", filename.Data());
         fFM->AddFile(filename.Data());
       }
       fFM->Merge();
       fFM->~TFileMerger();
-      task->Load(Form("%s/merge/TRD.Task%s.root",gSystem->ExpandPathName("$PWD"), task->GetName()));
+      task->Load(Form("%s/merge/TRD.Task%s.root", gSystem->ExpandPathName("$PWD"), task->GetName()));
     } else task->Load((dynamic_cast<TObjString *>(filenames->UncheckedAt(0)))->String().Data());
-
 
     if(!(fContainer = task->Container())) {
       delete task;
