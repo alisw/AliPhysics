@@ -107,6 +107,7 @@ private:
   Bool_t fNoiseHistograms;   //!transient
   Bool_t fKryptonHistograms; //!transient
   Bool_t fUseGeneral;        //!transient
+  Bool_t fIgnoreSpecification;//!transient 
       
   Int_t fSlice;  //!transient
       
@@ -126,8 +127,9 @@ private:
   TH2 *fHistTPCSideCrms;  //!transient  
 
   vector<AliHLTHistogramData> fHistogramData;
+
   
-  ClassDef(AliHLTTPCHistogramHandlerComponent, 3)
+  ClassDef(AliHLTTPCHistogramHandlerComponent, 4)
 };
 
 #endif

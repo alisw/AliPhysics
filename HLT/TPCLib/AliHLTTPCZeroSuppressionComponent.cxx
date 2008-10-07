@@ -175,8 +175,12 @@ int AliHLTTPCZeroSuppressionComponent::DoInit( int argc, const char** argv )
     }
 
     // -- number of timebins
-    if ( !strcmp( argv[i], "-ntimebins" ) || !strcmp( argv[i], "ntimebins" ) ) {
+    if ( !strcmp( argv[i], "-timebins" ) || !strcmp( argv[i], "ntimebins" ) || !strcmp( argv[i], "-ntimebins" )) {
       fNTimeBins = strtoul( argv[i+1], &cpErr ,0);
+      AliHLTTPCTransform::SetNTimeBins(fNTimeBins);
+      if(fEndTimeBin>AliHLTTPCTransform::GetNTimeBins()){
+	fEndTimeBin = AliHLTTPCTransform::GetNTimeBins();
+      }
       if ( *cpErr ) {
 	HLTError("Cannot convert ntimebins specifier '%s'.", argv[i+1]);
 	return EINVAL;
@@ -297,6 +301,7 @@ int AliHLTTPCZeroSuppressionComponent::DoInit( int argc, const char** argv )
   if(fSkipSendingZSData == kTRUE && fSendHWList == kFALSE){
     HLTError("Component will have no output, check your configuration.");
   }
+  
 
   HLTDebug("using AliHLTTPCDigitReaderDecoder");
   fDigitReader = new AliHLTTPCDigitReaderDecoder();

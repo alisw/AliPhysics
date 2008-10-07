@@ -51,6 +51,7 @@ ClassImp(AliHLTTPCHistogramHandlerComponent) //ROOT macro for the implementation
     fNoiseHistograms(0),
     fKryptonHistograms(0),
     fUseGeneral(kFALSE),
+    fIgnoreSpecification(kFALSE),
     fSlice(-99),
     
     fHistTH1Tmp(NULL),
@@ -174,6 +175,12 @@ int AliHLTTPCHistogramHandlerComponent::DoInit( int argc, const char** argv ) {
 
     if (!strcmp( argv[i], "-use-general")) {
       fUseGeneral = kTRUE;
+      i++;
+      continue;
+    }
+
+    if (!strcmp( argv[i], "-ignore-specification")) {
+      fIgnoreSpecification = kTRUE;
       i++;
       continue;
     }
@@ -347,9 +354,9 @@ int AliHLTTPCHistogramHandlerComponent::DoEvent(const AliHLTComponentEventData&/
       Bool_t histogramNotAdded = kTRUE;
 
       for(UInt_t i=0;i<fHistogramData.size();i++){
-	if(histName.CompareTo(fHistogramData.at(i).fHistogram->GetName())){
-	  if(minSlice==fHistogramData.at(i).fMinSlice && maxSlice == fHistogramData.at(i).fMaxSlice){
-	    if(minPartition==fHistogramData.at(i).fMinPartition && maxPartition == fHistogramData.at(i).fMaxPartition){
+	if(histName.CompareTo(fHistogramData.at(i).fHistogram->GetName())==0){
+	  if(minSlice==fHistogramData.at(i).fMinSlice && maxSlice == fHistogramData.at(i).fMaxSlice || fIgnoreSpecification == kTRUE){
+	    if(minPartition==fHistogramData.at(i).fMinPartition && maxPartition == fHistogramData.at(i).fMaxPartition || fIgnoreSpecification == kTRUE){
 	      fHistogramData.at(i).fHistogram->Add(tmp);
 	      histogramNotAdded = kFALSE;
 	      break;

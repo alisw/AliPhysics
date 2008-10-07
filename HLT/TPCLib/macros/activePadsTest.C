@@ -1,4 +1,3 @@
-// $Id: dumpTPCDigits.C 24993 2008-04-09 00:54:41Z richterm $
 
 //**************************************************************************
 //* This file is property of and copyright by the ALICE HLT Project        * 
@@ -131,13 +130,13 @@ void activePadsTest(const char* input="./"){
     }
   }
   //Dumping data (2.)
-  AliHLTConfiguration dump1("Dump1", "TPCDigitDump", digitDumpInput_OriginalData.Data() , "-digitreader packed -directory dump1 -unsorted -concatenate-blocks");
+  AliHLTConfiguration dump1("Dump1", "TPCDigitDump", digitDumpInput_OriginalData.Data() , "-digitreader decoder -directory dump1 -unsorted -concatenate-blocks");
   //Dumping data (7.)
-  AliHLTConfiguration dump2("Dump2", "TPCDigitDump", digitDumpInput_AfterAPSelection.Data() , "-digitreader packed -directory dump2 -unsorted -concatenate-blocks");
+  AliHLTConfiguration dump2("Dump2", "TPCDigitDump", digitDumpInput_AfterAPSelection.Data() , "-digitreader decoder -directory dump2 -unsorted -concatenate-blocks");
   //Dumping data (5.)
-  AliHLTConfiguration dump3("Dump3", "TPCDigitDump", digitDumpInput_ZeroSuppressedOriginalData.Data() , "-digitreader packed -directory dump3 -unsorted -concatenate-blocks");
+  AliHLTConfiguration dump3("Dump3", "TPCDigitDump", digitDumpInput_ZeroSuppressedOriginalData.Data() , "-digitreader decoder -directory dump3 -unsorted -concatenate-blocks");
   //Dumping data (9.)
-  AliHLTConfiguration dump4("Dump4", "TPCDigitDump", digitDumpInput_ZerosuppressedAPSelectionData.Data() , "-digitreader packed -directory dump4 -unsorted -concatenate-blocks");
+  AliHLTConfiguration dump4("Dump4", "TPCDigitDump", digitDumpInput_ZerosuppressedAPSelectionData.Data() , "-digitreader decoder -directory dump4 -unsorted -concatenate-blocks");
   //Dumping hw lists
   AliHLTConfiguration dump5("Dump5", "FileWriter", dumpHwAddressInput.Data() , "-directory hwlists");
 

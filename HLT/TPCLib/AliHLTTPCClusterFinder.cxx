@@ -941,6 +941,8 @@ void AliHLTTPCClusterFinder::FindClusters()
     clusterlist[i].fLastCharge = fClusters[i].fLastCharge;
     clusterlist[i].fLastMergedPad = fClusters[i].fLastMergedPad;
     clusterlist[i].fRow = fClusters[i].fRowNumber;
+    clusterlist[i].fQMax = fClusters[i].fQMax;
+
   }
   //  PrintClusters();
   WriteClusters(fClusters.size(),clusterlist);
