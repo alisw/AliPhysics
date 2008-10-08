@@ -18,6 +18,12 @@
 // selections/correction containers inside the Analysis job
 // Author:S.Arcelli. Silvia.Arcelli@cern.ch 
 
+//
+// updated by renaud.vernet@cern.ch (2008/10/08) :
+// removed predefined maximum number of steps
+// now the number of steps are fixed by the particle/event containers themselves.
+//
+
 #include "TNamed.h"
 
 class AliCFContainer ;
@@ -38,39 +44,35 @@ class AliCFManager : public TNamed
   //
   enum{
     kEvtGenCuts=0,
-      kEvtTrigCuts,
-      kEvtRecCuts,
-      kNEvtSel=3
-      };
+    kEvtTrigCuts,
+    kEvtRecCuts
+  };
 
   //
   //Currently foreseen selection steps for particle-level cuts:
   //generator, acceptance, reconstruction, user selection
   //
-
   enum{
-      kPartGenCuts=0,
-      kPartAccCuts,
-      kPartRecCuts,
-      kPartSelCuts,
-      kNPartSel=4
-      };
+    kPartGenCuts=0,
+    kPartAccCuts,
+    kPartRecCuts,
+    kPartSelCuts
+  };
 
   //
   // Setters:
   //
   //pass the pointer to the correction container
-  virtual void SetEventContainer(AliCFContainer* c) {fEvtContainer=c;} ; 
+  virtual void SetEventContainer(AliCFContainer* c) {fEvtContainer=c;} ;
 
   //pass the pointer to the correction container
   virtual void SetParticleContainer(AliCFContainer* c) {fPartContainer=c;} ; 
 
   //Setter for event-level selection cut list at selection step isel
-  virtual void SetEventCutsList(Int_t isel, TObjArray* array) {fEvtCutList[isel]=array;} ; 
-
+  virtual void SetEventCutsList(Int_t isel, TObjArray* array) ;
+  
   //Setter for particle-level selection cut list at selection step isel
-  virtual void SetParticleCutsList(Int_t isel, TObjArray* array) {fPartCutList[isel]=array;} ; 
-
+  virtual void SetParticleCutsList(Int_t isel, TObjArray* array) ;
 
   //
   //Getters
@@ -106,13 +108,13 @@ class AliCFManager : public TNamed
   //the correction grid
   AliCFContainer *fPartContainer; //ptr to Particle-level correction container
   //Evt-Level Selections
-  TObjArray *fEvtCutList[kNEvtSel]; //arrays of cuts: gen,trig,rec-level
+  TObjArray **fEvtCutList;   //arrays of cuts for each event-selection level
   //Particle-level selections
-  TObjArray *fPartCutList[kNPartSel]; //arrays of cuts: gen,acceptance,rec,sel-level
+  TObjArray **fPartCutList ; //arrays of cuts for each particle-selection level
 
   Bool_t CompareStrings(const TString  &cutname,const TString  &selcuts) const;
 
-  ClassDef(AliCFManager,1);
+  ClassDef(AliCFManager,2);
 };
 
 

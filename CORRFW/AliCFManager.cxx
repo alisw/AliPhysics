@@ -24,6 +24,7 @@
 #include "AliLog.h"
 #include "AliCFCutBase.h"
 #include "AliCFManager.h"
+#include "AliCFContainer.h"
 
 ClassImp(AliCFManager)
 
@@ -31,38 +32,38 @@ ClassImp(AliCFManager)
 AliCFManager::AliCFManager() : 
   TNamed(),
   fEvtContainer(0x0),
-  fPartContainer(0x0)
+  fPartContainer(0x0),
+  fEvtCutList(0x0),
+  fPartCutList(0x0)
 { 
   //
   // ctor
   //
-  for(Int_t i=0;i<kNEvtSel;i++)fEvtCutList[i]=0x0;
-  for(Int_t i=0;i<kNPartSel;i++)fPartCutList[i]=0x0;
 }
 //_____________________________________________________________________________
 AliCFManager::AliCFManager(Char_t* name, Char_t* title) : 
   TNamed(name,title),
   fEvtContainer(0x0),
-  fPartContainer(0x0)
- { 
+  fPartContainer(0x0),
+  fEvtCutList(0x0),
+  fPartCutList(0x0)
+{ 
    //
    // ctor
    //
-  for(Int_t i=0;i<kNEvtSel;i++)fEvtCutList[i]=0x0;
-  for(Int_t i=0;i<kNPartSel;i++)fPartCutList[i]=0x0;
 }
 //_____________________________________________________________________________
 AliCFManager::AliCFManager(const AliCFManager& c) : 
   TNamed(c),
   fEvtContainer(c.fEvtContainer),
-  fPartContainer(c.fPartContainer)
- { 
+  fPartContainer(c.fPartContainer),
+  fEvtCutList(c.fEvtCutList),
+  fPartCutList(c.fPartCutList)
+{ 
    //
    //copy ctor
    //
-  for(Int_t i=0;i<kNEvtSel;i++)fEvtCutList[i]=c.fEvtCutList[i];
-  for(Int_t i=0;i<kNPartSel;i++)fPartCutList[i]=c.fPartCutList[i];
- }
+}
 //_____________________________________________________________________________
 AliCFManager& AliCFManager::operator=(const AliCFManager& c)
 {
@@ -72,11 +73,11 @@ AliCFManager& AliCFManager::operator=(const AliCFManager& c)
   if (this != &c) {
     TNamed::operator=(c) ;
   }
-
+  
   this->fEvtContainer=c.fEvtContainer;
   this->fPartContainer=c.fPartContainer;
-  for(Int_t i=0;i<kNEvtSel;i++)this->fEvtCutList[i]=c.fEvtCutList[i];
-  for(Int_t i=0;i<kNPartSel;i++)this->fPartCutList[i]=c.fPartCutList[i];
+  this->fEvtCutList=c.fEvtCutList;
+  this->fPartCutList=c.fPartCutList;
   return *this ;
 }
 
@@ -93,9 +94,9 @@ Bool_t AliCFManager::CheckParticleCuts(Int_t isel, TObject *obj, const TString  
   // check whether object obj passes particle-level selection isel
   //
 
-  if(isel>=kNPartSel){
-    AliWarning(Form("Selection index out of Range! isel=%i, max. number of selections= %i", isel,kNPartSel));
-      return kTRUE;
+  if(isel>=fPartContainer->GetNStep()){
+    AliWarning(Form("Selection index out of Range! isel=%i, max. number of selections= %i", isel,fPartContainer->GetNStep()));
+    return kTRUE;
   }
   if(!fPartCutList[isel])return kTRUE;
   TObjArrayIter iter(fPartCutList[isel]);
@@ -114,8 +115,8 @@ Bool_t AliCFManager::CheckEventCuts(Int_t isel, TObject *obj, const TString  &se
   // check whether object obj passes event-level selection isel
   //
 
-  if(isel>=kNEvtSel){
-    AliWarning(Form("Selection index out of Range! isel=%i, max. number of selections= %i", isel,kNEvtSel));
+  if(isel>=fEvtContainer->GetNStep()){
+    AliWarning(Form("Selection index out of Range! isel=%i, max. number of selections= %i", isel,fEvtContainer->GetNStep()));
       return kTRUE;
   }
   if(!fEvtCutList[isel])return kTRUE;
@@ -134,24 +135,34 @@ void  AliCFManager::SetEventInfo(TObject *obj) const {
 
   //Particle level cuts
 
-  for(Int_t isel=0;isel<kNPartSel; isel++){
-    if(!fPartCutList[isel])continue;  
-    TObjArrayIter iter(fPartCutList[isel]);
-    AliCFCutBase *cut = 0;
-    while ( (cut = (AliCFCutBase*)iter.Next()) ) {
-      cut->SetEvtInfo(obj);
-    }    
+  if (!fPartContainer) {
+    AliWarning("No particle container");
+  }
+  else {
+    for(Int_t isel=0;isel<fPartContainer->GetNStep(); isel++){
+      if(!fPartCutList[isel])continue;  
+      TObjArrayIter iter(fPartCutList[isel]);
+      AliCFCutBase *cut = 0;
+      while ( (cut = (AliCFCutBase*)iter.Next()) ) {
+	cut->SetEvtInfo(obj);
+      }    
+    }
   }
   
   //Event level cuts 
-
-  for(Int_t isel=0;isel<kNEvtSel; isel++){
-    if(!fEvtCutList[isel])continue;  
-    TObjArrayIter iter(fEvtCutList[isel]);
-    AliCFCutBase *cut = 0;
-    while ( (cut = (AliCFCutBase*)iter.Next()) ) {
-      cut->SetEvtInfo(obj);
-    }    
+  
+  if (!fEvtContainer) {
+    AliWarning("No event container found");
+  }
+  else {
+    for(Int_t isel=0;isel<fEvtContainer->GetNStep(); isel++){
+      if(!fEvtCutList[isel])continue;  
+      TObjArrayIter iter(fEvtCutList[isel]);
+      AliCFCutBase *cut = 0;
+      while ( (cut = (AliCFCutBase*)iter.Next()) ) {
+	cut->SetEvtInfo(obj);
+      }   
+    }
   }
 }
 
@@ -170,3 +181,44 @@ Bool_t AliCFManager::CompareStrings(const TString  &cutname,const TString  &selc
 }
 
 
+//_____________________________________________________________________________
+void AliCFManager::SetEventCutsList(Int_t isel, TObjArray* array) {
+  //
+  //Setter for event-level selection cut list at selection step isel
+  //
+
+  if (!fEvtContainer) {
+    AliError("No event container defined, please set it first!"); 
+    return;
+  }
+
+  Int_t nstep = fEvtContainer->GetNStep() ;
+
+  if (!fEvtCutList) fEvtCutList = new TObjArray*[nstep] ;
+  if (isel >= nstep) {
+    AliWarning(Form("Selection index out of Range! isel=%i, max. number of selections= %i", isel,nstep));
+    return;
+  }
+  fEvtCutList[isel] = array;
+}
+
+//_____________________________________________________________________________
+void AliCFManager::SetParticleCutsList(Int_t isel, TObjArray* array) {
+  //
+  //Setter for particle-level selection cut list at selection step isel
+  //
+
+  if (!fPartContainer) {
+    AliError("No event container defined, please set it first!"); 
+    return;
+  }
+  
+  Int_t nstep = fPartContainer->GetNStep() ;
+  
+  if (!fPartCutList) fPartCutList = new TObjArray*[nstep] ;
+  if (isel >= nstep) {
+    AliWarning(Form("Selection index out of Range! isel=%i, max. number of selections= %i", isel,nstep));
+    return;
+  }
+  fPartCutList[isel] = array;
+}
