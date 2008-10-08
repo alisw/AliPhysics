@@ -112,10 +112,16 @@ void AliAnalysisTaskProtonsQA::CreateOutputObjects() {
   fAnalysis->SetMaxCov33(0.5);
   fAnalysis->SetMaxCov44(0.5);
   fAnalysis->SetMaxCov55(2.0);
-  fAnalysis->SetMaxSigmaToVertexTPC(2.5);
+  fAnalysis->SetMaxSigmaToVertex(2.5);
   fAnalysis->SetTPCRefit();
   //ITS related cuts - to be used in the case of the analysis of global tracks
-  fAnalysis->SetMinITSClusters(5);
+  fAnalysis->SetPointOnITSLayer1();
+  fAnalysis->SetPointOnITSLayer2();
+  fAnalysis->SetPointOnITSLayer3();
+  fAnalysis->SetPointOnITSLayer4();
+  fAnalysis->SetPointOnITSLayer5();
+  fAnalysis->SetPointOnITSLayer6();
+  fAnalysis->SetMinITSClusters(1);
   fAnalysis->SetITSRefit();
   fAnalysis->SetESDpid();
 

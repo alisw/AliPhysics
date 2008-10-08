@@ -35,6 +35,12 @@ class AliProtonQAAnalysis : public TObject {
   void UseTPCOnly() {fUseTPCOnly = kTRUE;}
   
   //Cut functions
+  void    SetPointOnITSLayer1() {fPointOnITSLayer1Flag = kTRUE;}
+  void    SetPointOnITSLayer2() {fPointOnITSLayer2Flag = kTRUE;}
+  void    SetPointOnITSLayer3() {fPointOnITSLayer3Flag = kTRUE;}
+  void    SetPointOnITSLayer4() {fPointOnITSLayer4Flag = kTRUE;}
+  void    SetPointOnITSLayer5() {fPointOnITSLayer5Flag = kTRUE;}
+  void    SetPointOnITSLayer6() {fPointOnITSLayer6Flag = kTRUE;}
   void    SetMinITSClusters(Int_t minITSClusters) {
     fMinITSClusters = minITSClusters;
     fMinITSClustersFlag = kTRUE;
@@ -156,7 +162,10 @@ class AliProtonQAAnalysis : public TObject {
   Bool_t fMaxConstrainChi2Flag; //shows if this cut is used or not
   Bool_t fITSRefitFlag, fTPCRefitFlag; //shows if this cut is used or not
   Bool_t fESDpidFlag, fTPCpidFlag; //shows if this cut is used or not
-  
+  Bool_t fPointOnITSLayer1Flag, fPointOnITSLayer2Flag; //shows if this cut is used or not
+  Bool_t fPointOnITSLayer3Flag, fPointOnITSLayer4Flag; //shows if this cut is used or not
+  Bool_t fPointOnITSLayer5Flag, fPointOnITSLayer6Flag; //shows if this cut is used or not
+
   //QA histograms
   //Bool_t fQAHistograms; //Boolean to activate the QA histograms
   TList *fGlobalQAList; //TList storing the directories for the QA histograms

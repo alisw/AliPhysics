@@ -59,6 +59,9 @@ AliProtonQAAnalysis::AliProtonQAAnalysis() :
   fMaxConstrainChi2Flag(kFALSE),
   fITSRefitFlag(kFALSE), fTPCRefitFlag(kFALSE),
   fESDpidFlag(kFALSE), fTPCpidFlag(kFALSE),
+  fPointOnITSLayer1Flag(0), fPointOnITSLayer2Flag(0),
+  fPointOnITSLayer3Flag(0), fPointOnITSLayer4Flag(0),
+  fPointOnITSLayer5Flag(0), fPointOnITSLayer6Flag(0),
   fGlobalQAList(0), fQA2DList(0),
   fQAPrimaryProtonsAcceptedList(0),
   fQAPrimaryProtonsRejectedList(0),
@@ -152,6 +155,18 @@ Bool_t AliProtonQAAnalysis::IsAccepted(AliESDtrack* track) {
   Double_t extCov[15];
   track->GetExternalCovariance(extCov);
 
+  if(fPointOnITSLayer1Flag)
+    if(!track->HasPointOnITSLayer(0)) return kFALSE;
+  if(fPointOnITSLayer2Flag)
+    if(!track->HasPointOnITSLayer(1)) return kFALSE;
+  if(fPointOnITSLayer3Flag)
+    if(!track->HasPointOnITSLayer(2)) return kFALSE;
+  if(fPointOnITSLayer4Flag)
+    if(!track->HasPointOnITSLayer(3)) return kFALSE;
+  if(fPointOnITSLayer5Flag)
+    if(!track->HasPointOnITSLayer(4)) return kFALSE;
+  if(fPointOnITSLayer6Flag)
+    if(!track->HasPointOnITSLayer(5)) return kFALSE;
   if(fMinITSClustersFlag)
     if(nClustersITS < fMinITSClusters) return kFALSE;
   if(fMaxChi2PerITSClusterFlag)
@@ -406,6 +421,48 @@ void AliProtonQAAnalysis::FillQA(AliESDtrack* track, AliStack *stack) {
 	else if((track->GetStatus() & AliESDtrack::kTPCpid) != 0)
 	  ((TH1F *)(fQAPrimaryProtonsAcceptedList->At(19)))->Fill(0);
       }//TPC pid
+      if(fPointOnITSLayer1Flag) {
+	if(!track->HasPointOnITSLayer(0)) {
+	  ((TH1F *)(fQAPrimaryProtonsRejectedList->At(20)))->Fill(0);
+	}
+	else if(track->HasPointOnITSLayer(0))
+	  ((TH1F *)(fQAPrimaryProtonsAcceptedList->At(20)))->Fill(0);
+      }//point on SPD1
+      if(fPointOnITSLayer2Flag) {
+	if(!track->HasPointOnITSLayer(1)) {
+	  ((TH1F *)(fQAPrimaryProtonsRejectedList->At(21)))->Fill(0);
+	}
+	else if(track->HasPointOnITSLayer(1))
+	  ((TH1F *)(fQAPrimaryProtonsAcceptedList->At(21)))->Fill(0);
+      }//point on SPD2
+      if(fPointOnITSLayer3Flag) {
+	if(!track->HasPointOnITSLayer(2)) {
+	  ((TH1F *)(fQAPrimaryProtonsRejectedList->At(22)))->Fill(0);
+	}
+	else if(track->HasPointOnITSLayer(2))
+	  ((TH1F *)(fQAPrimaryProtonsAcceptedList->At(22)))->Fill(0);
+      }//point on SDD1
+      if(fPointOnITSLayer4Flag) {
+	if(!track->HasPointOnITSLayer(3)) {
+	  ((TH1F *)(fQAPrimaryProtonsRejectedList->At(23)))->Fill(0);
+	}
+	else if(track->HasPointOnITSLayer(3))
+	  ((TH1F *)(fQAPrimaryProtonsAcceptedList->At(23)))->Fill(0);
+      }//point on SDD2
+      if(fPointOnITSLayer5Flag) {
+	if(!track->HasPointOnITSLayer(4)) {
+	  ((TH1F *)(fQAPrimaryProtonsRejectedList->At(24)))->Fill(0);
+	}
+	else if(track->HasPointOnITSLayer(4))
+	  ((TH1F *)(fQAPrimaryProtonsAcceptedList->At(24)))->Fill(0);
+      }//point on SSD1
+      if(fPointOnITSLayer6Flag) {
+	if(!track->HasPointOnITSLayer(5)) {
+	  ((TH1F *)(fQAPrimaryProtonsRejectedList->At(25)))->Fill(0);
+	}
+	else if(track->HasPointOnITSLayer(5))
+	  ((TH1F *)(fQAPrimaryProtonsAcceptedList->At(25)))->Fill(0);
+      }//point on SSD2
     }//primary particle cut
 
     //Secondaries
@@ -575,6 +632,48 @@ void AliProtonQAAnalysis::FillQA(AliESDtrack* track, AliStack *stack) {
 	else if((track->GetStatus() & AliESDtrack::kTPCpid) != 0)
 	  ((TH1F *)(fQASecondaryProtonsAcceptedList->At(19)))->Fill(0);
       }//TPC pid
+      if(fPointOnITSLayer1Flag) {
+	if(!track->HasPointOnITSLayer(0)) {
+	  ((TH1F *)(fQASecondaryProtonsRejectedList->At(20)))->Fill(0);
+	}
+	else if(track->HasPointOnITSLayer(0))
+	  ((TH1F *)(fQASecondaryProtonsAcceptedList->At(20)))->Fill(0);
+      }//point on SPD1
+      if(fPointOnITSLayer2Flag) {
+	if(!track->HasPointOnITSLayer(1)) {
+	  ((TH1F *)(fQASecondaryProtonsRejectedList->At(21)))->Fill(0);
+	}
+	else if(track->HasPointOnITSLayer(1))
+	  ((TH1F *)(fQASecondaryProtonsAcceptedList->At(21)))->Fill(0);
+      }//point on SPD2
+      if(fPointOnITSLayer3Flag) {
+	if(!track->HasPointOnITSLayer(2)) {
+	  ((TH1F *)(fQASecondaryProtonsRejectedList->At(22)))->Fill(0);
+	}
+	else if(track->HasPointOnITSLayer(2))
+	  ((TH1F *)(fQASecondaryProtonsAcceptedList->At(22)))->Fill(0);
+      }//point on SDD1
+      if(fPointOnITSLayer4Flag) {
+	if(!track->HasPointOnITSLayer(3)) {
+	  ((TH1F *)(fQASecondaryProtonsRejectedList->At(23)))->Fill(0);
+	}
+	else if(track->HasPointOnITSLayer(3))
+	  ((TH1F *)(fQASecondaryProtonsAcceptedList->At(23)))->Fill(0);
+      }//point on SDD2
+      if(fPointOnITSLayer5Flag) {
+	if(!track->HasPointOnITSLayer(4)) {
+	  ((TH1F *)(fQASecondaryProtonsRejectedList->At(24)))->Fill(0);
+	}
+	else if(track->HasPointOnITSLayer(4))
+	  ((TH1F *)(fQASecondaryProtonsAcceptedList->At(24)))->Fill(0);
+      }//point on SSD1
+      if(fPointOnITSLayer6Flag) {
+	if(!track->HasPointOnITSLayer(5)) {
+	  ((TH1F *)(fQASecondaryProtonsRejectedList->At(25)))->Fill(0);
+	}
+	else if(track->HasPointOnITSLayer(5))
+	  ((TH1F *)(fQASecondaryProtonsAcceptedList->At(25)))->Fill(0);
+      }//point on SSD2
     }//secondary particle cut
   }//protons
 
@@ -747,6 +846,48 @@ void AliProtonQAAnalysis::FillQA(AliESDtrack* track, AliStack *stack) {
 	else if((track->GetStatus() & AliESDtrack::kTPCpid) != 0)
 	  ((TH1F *)(fQAPrimaryAntiProtonsAcceptedList->At(19)))->Fill(0);
       }//TPC pid
+      if(fPointOnITSLayer1Flag) {
+	if(!track->HasPointOnITSLayer(0)) {
+	  ((TH1F *)(fQAPrimaryAntiProtonsRejectedList->At(20)))->Fill(0);
+	}
+	else if(track->HasPointOnITSLayer(0))
+	  ((TH1F *)(fQAPrimaryAntiProtonsAcceptedList->At(20)))->Fill(0);
+      }//point on SPD1
+      if(fPointOnITSLayer2Flag) {
+	if(!track->HasPointOnITSLayer(1)) {
+	  ((TH1F *)(fQAPrimaryAntiProtonsRejectedList->At(21)))->Fill(0);
+	}
+	else if(track->HasPointOnITSLayer(1))
+	  ((TH1F *)(fQAPrimaryAntiProtonsAcceptedList->At(21)))->Fill(0);
+      }//point on SPD2
+      if(fPointOnITSLayer3Flag) {
+	if(!track->HasPointOnITSLayer(2)) {
+	  ((TH1F *)(fQAPrimaryAntiProtonsRejectedList->At(22)))->Fill(0);
+	}
+	else if(track->HasPointOnITSLayer(2))
+	  ((TH1F *)(fQAPrimaryAntiProtonsAcceptedList->At(22)))->Fill(0);
+      }//point on SDD1
+      if(fPointOnITSLayer4Flag) {
+	if(!track->HasPointOnITSLayer(3)) {
+	  ((TH1F *)(fQAPrimaryAntiProtonsRejectedList->At(23)))->Fill(0);
+	}
+	else if(track->HasPointOnITSLayer(3))
+	  ((TH1F *)(fQAPrimaryAntiProtonsAcceptedList->At(23)))->Fill(0);
+      }//point on SDD2
+      if(fPointOnITSLayer5Flag) {
+	if(!track->HasPointOnITSLayer(4)) {
+	  ((TH1F *)(fQAPrimaryAntiProtonsRejectedList->At(24)))->Fill(0);
+	}
+	else if(track->HasPointOnITSLayer(4))
+	  ((TH1F *)(fQAPrimaryAntiProtonsAcceptedList->At(24)))->Fill(0);
+      }//point on SSD1
+      if(fPointOnITSLayer6Flag) {
+	if(!track->HasPointOnITSLayer(5)) {
+	  ((TH1F *)(fQAPrimaryAntiProtonsRejectedList->At(25)))->Fill(0);
+	}
+	else if(track->HasPointOnITSLayer(5))
+	  ((TH1F *)(fQAPrimaryAntiProtonsAcceptedList->At(25)))->Fill(0);
+      }//point on SSD2
     }//primary particle cut
 
     //Secondaries
@@ -916,14 +1057,50 @@ void AliProtonQAAnalysis::FillQA(AliESDtrack* track, AliStack *stack) {
 	else if((track->GetStatus() & AliESDtrack::kTPCpid) != 0)
 	  ((TH1F *)(fQASecondaryAntiProtonsAcceptedList->At(19)))->Fill(0);
       }//TPC pid
+      if(fPointOnITSLayer1Flag) {
+	if(!track->HasPointOnITSLayer(0)) {
+	  ((TH1F *)(fQASecondaryAntiProtonsRejectedList->At(20)))->Fill(0);
+	}
+	else if(track->HasPointOnITSLayer(0))
+	  ((TH1F *)(fQASecondaryAntiProtonsAcceptedList->At(20)))->Fill(0);
+      }//point on SPD1
+      if(fPointOnITSLayer2Flag) {
+	if(!track->HasPointOnITSLayer(1)) {
+	  ((TH1F *)(fQASecondaryAntiProtonsRejectedList->At(21)))->Fill(0);
+	}
+	else if(track->HasPointOnITSLayer(1))
+	  ((TH1F *)(fQASecondaryAntiProtonsAcceptedList->At(21)))->Fill(0);
+      }//point on SPD2
+      if(fPointOnITSLayer3Flag) {
+	if(!track->HasPointOnITSLayer(2)) {
+	  ((TH1F *)(fQASecondaryAntiProtonsRejectedList->At(22)))->Fill(0);
+	}
+	else if(track->HasPointOnITSLayer(2))
+	  ((TH1F *)(fQASecondaryAntiProtonsAcceptedList->At(22)))->Fill(0);
+      }//point on SDD1
+      if(fPointOnITSLayer4Flag) {
+	if(!track->HasPointOnITSLayer(3)) {
+	  ((TH1F *)(fQASecondaryAntiProtonsRejectedList->At(23)))->Fill(0);
+	}
+	else if(track->HasPointOnITSLayer(3))
+	  ((TH1F *)(fQASecondaryAntiProtonsAcceptedList->At(23)))->Fill(0);
+      }//point on SDD2
+      if(fPointOnITSLayer5Flag) {
+	if(!track->HasPointOnITSLayer(4)) {
+	  ((TH1F *)(fQASecondaryAntiProtonsRejectedList->At(24)))->Fill(0);
+	}
+	else if(track->HasPointOnITSLayer(4))
+	  ((TH1F *)(fQASecondaryAntiProtonsAcceptedList->At(24)))->Fill(0);
+      }//point on SSD1
+      if(fPointOnITSLayer6Flag) {
+	if(!track->HasPointOnITSLayer(5)) {
+	  ((TH1F *)(fQASecondaryAntiProtonsRejectedList->At(25)))->Fill(0);
+	}
+	else if(track->HasPointOnITSLayer(5))
+	  ((TH1F *)(fQASecondaryAntiProtonsAcceptedList->At(25)))->Fill(0);
+      }//point on SSD2
     }//secondary particle cut
   }//antiprotons
-
-  //if((Pt < fMinPt) || (Pt > fMaxPt)) //status = kFALSE;
-  //if((Rapidity(Px,Py,Pz) < fMinY) || (Rapidity(Px,Py,Pz) > fMaxY)) 
-  //status = kFALSE;
-
-  //return status;
 }
 
 //____________________________________________________________________//
@@ -1183,6 +1360,24 @@ void AliProtonQAAnalysis::InitQA() {
   TH1F *fPrimaryProtonsTPCpidPass = new TH1F("fPrimaryProtonsTPCpidPass",
 					     "",10,-1,1);
   fQAPrimaryProtonsAcceptedList->Add(fPrimaryProtonsTPCpidPass);
+  TH1F *fPrimaryProtonsPointOnITSLayer1Pass = new TH1F("fPrimaryProtonsPointOnITSLayer1Pass",
+					     "",10,-1,1);
+  fQAPrimaryProtonsAcceptedList->Add(fPrimaryProtonsPointOnITSLayer1Pass);
+  TH1F *fPrimaryProtonsPointOnITSLayer2Pass = new TH1F("fPrimaryProtonsPointOnITSLayer2Pass",
+					     "",10,-1,1);
+  fQAPrimaryProtonsAcceptedList->Add(fPrimaryProtonsPointOnITSLayer2Pass);
+  TH1F *fPrimaryProtonsPointOnITSLayer3Pass = new TH1F("fPrimaryProtonsPointOnITSLayer3Pass",
+					     "",10,-1,1);
+  fQAPrimaryProtonsAcceptedList->Add(fPrimaryProtonsPointOnITSLayer3Pass);
+  TH1F *fPrimaryProtonsPointOnITSLayer4Pass = new TH1F("fPrimaryProtonsPointOnITSLayer4Pass",
+					     "",10,-1,1);
+  fQAPrimaryProtonsAcceptedList->Add(fPrimaryProtonsPointOnITSLayer4Pass);
+  TH1F *fPrimaryProtonsPointOnITSLayer5Pass = new TH1F("fPrimaryProtonsPointOnITSLayer5Pass",
+					     "",10,-1,1);
+  fQAPrimaryProtonsAcceptedList->Add(fPrimaryProtonsPointOnITSLayer5Pass);
+  TH1F *fPrimaryProtonsPointOnITSLayer6Pass = new TH1F("fPrimaryProtonsPointOnITSLayer6Pass",
+					     "",10,-1,1);
+  fQAPrimaryProtonsAcceptedList->Add(fPrimaryProtonsPointOnITSLayer6Pass);
 
   //Rejected primary protons
   /*gDirectory->cd("../");
@@ -1265,6 +1460,24 @@ void AliProtonQAAnalysis::InitQA() {
   TH1F *fPrimaryProtonsTPCpidReject = new TH1F("fPrimaryProtonsTPCpidReject",
 					       "",10,-1,1);
   fQAPrimaryProtonsRejectedList->Add(fPrimaryProtonsTPCpidReject);
+  TH1F *fPrimaryProtonsPointOnITSLayer1Reject = new TH1F("fPrimaryProtonsPointOnITSLayer1Reject",
+					     "",10,-1,1);
+  fQAPrimaryProtonsRejectedList->Add(fPrimaryProtonsPointOnITSLayer1Reject);
+  TH1F *fPrimaryProtonsPointOnITSLayer2Reject = new TH1F("fPrimaryProtonsPointOnITSLayer2Reject",
+					     "",10,-1,1);
+  fQAPrimaryProtonsRejectedList->Add(fPrimaryProtonsPointOnITSLayer2Reject);
+  TH1F *fPrimaryProtonsPointOnITSLayer3Reject = new TH1F("fPrimaryProtonsPointOnITSLayer3Reject",
+					     "",10,-1,1);
+  fQAPrimaryProtonsRejectedList->Add(fPrimaryProtonsPointOnITSLayer3Reject);
+  TH1F *fPrimaryProtonsPointOnITSLayer4Reject = new TH1F("fPrimaryProtonsPointOnITSLayer4Reject",
+					     "",10,-1,1);
+  fQAPrimaryProtonsRejectedList->Add(fPrimaryProtonsPointOnITSLayer4Reject);
+  TH1F *fPrimaryProtonsPointOnITSLayer5Reject = new TH1F("fPrimaryProtonsPointOnITSLayer5Reject",
+					     "",10,-1,1);
+  fQAPrimaryProtonsRejectedList->Add(fPrimaryProtonsPointOnITSLayer5Reject);
+  TH1F *fPrimaryProtonsPointOnITSLayer6Reject = new TH1F("fPrimaryProtonsPointOnITSLayer6Reject",
+					     "",10,-1,1);
+  fQAPrimaryProtonsRejectedList->Add(fPrimaryProtonsPointOnITSLayer6Reject);
 
   //________________________________________________________________//
   /*gDirectory->cd("../../");
@@ -1351,6 +1564,24 @@ void AliProtonQAAnalysis::InitQA() {
   TH1F *fSecondaryProtonsTPCpidPass = new TH1F("fSecondaryProtonsTPCpidPass",
 					       "",10,-1,1);
   fQASecondaryProtonsAcceptedList->Add(fSecondaryProtonsTPCpidPass);
+  TH1F *fSecondaryProtonsPointOnITSLayer1Pass = new TH1F("fSecondaryProtonsPointOnITSLayer1Pass",
+							 "",10,-1,1);
+  fQASecondaryProtonsAcceptedList->Add(fSecondaryProtonsPointOnITSLayer1Pass);
+  TH1F *fSecondaryProtonsPointOnITSLayer2Pass = new TH1F("fSecondaryProtonsPointOnITSLayer2Pass",
+							 "",10,-1,1);
+  fQASecondaryProtonsAcceptedList->Add(fSecondaryProtonsPointOnITSLayer2Pass);
+  TH1F *fSecondaryProtonsPointOnITSLayer3Pass = new TH1F("fSecondaryProtonsPointOnITSLayer3Pass",
+							 "",10,-1,1);
+  fQASecondaryProtonsAcceptedList->Add(fSecondaryProtonsPointOnITSLayer3Pass);
+  TH1F *fSecondaryProtonsPointOnITSLayer4Pass = new TH1F("fSecondaryProtonsPointOnITSLayer4Pass",
+							 "",10,-1,1);
+  fQASecondaryProtonsAcceptedList->Add(fSecondaryProtonsPointOnITSLayer4Pass);
+  TH1F *fSecondaryProtonsPointOnITSLayer5Pass = new TH1F("fSecondaryProtonsPointOnITSLayer5Pass",
+							 "",10,-1,1);
+  fQASecondaryProtonsAcceptedList->Add(fSecondaryProtonsPointOnITSLayer5Pass);
+  TH1F *fSecondaryProtonsPointOnITSLayer6Pass = new TH1F("fSecondaryProtonsPointOnITSLayer6Pass",
+							 "",10,-1,1);
+  fQASecondaryProtonsAcceptedList->Add(fSecondaryProtonsPointOnITSLayer6Pass);
 
   //Rejected secondary protons
   /*gDirectory->cd("../");
@@ -1433,6 +1664,24 @@ void AliProtonQAAnalysis::InitQA() {
   TH1F *fSecondaryProtonsTPCpidReject = new TH1F("fSecondaryProtonsTPCpidReject",
 						 "",10,-1,1);
   fQASecondaryProtonsRejectedList->Add(fSecondaryProtonsTPCpidReject);
+  TH1F *fSecondaryProtonsPointOnITSLayer1Reject = new TH1F("fSecondaryProtonsPointOnITSLayer1Reject",
+							   "",10,-1,1);
+  fQASecondaryProtonsRejectedList->Add(fSecondaryProtonsPointOnITSLayer1Reject);
+  TH1F *fSecondaryProtonsPointOnITSLayer2Reject = new TH1F("fSecondaryProtonsPointOnITSLayer2Reject",
+							   "",10,-1,1);
+  fQASecondaryProtonsRejectedList->Add(fSecondaryProtonsPointOnITSLayer2Reject);
+  TH1F *fSecondaryProtonsPointOnITSLayer3Reject = new TH1F("fSecondaryProtonsPointOnITSLayer3Reject",
+							   "",10,-1,1);
+  fQASecondaryProtonsRejectedList->Add(fSecondaryProtonsPointOnITSLayer3Reject);
+  TH1F *fSecondaryProtonsPointOnITSLayer4Reject = new TH1F("fSecondaryProtonsPointOnITSLayer4Reject",
+							   "",10,-1,1);
+  fQASecondaryProtonsRejectedList->Add(fSecondaryProtonsPointOnITSLayer4Reject);
+  TH1F *fSecondaryProtonsPointOnITSLayer5Reject = new TH1F("fSecondaryProtonsPointOnITSLayer5Reject",
+							   "",10,-1,1);
+  fQASecondaryProtonsRejectedList->Add(fSecondaryProtonsPointOnITSLayer5Reject);
+  TH1F *fSecondaryProtonsPointOnITSLayer6Reject = new TH1F("fSecondaryProtonsPointOnITSLayer6Reject",
+							   "",10,-1,1);
+  fQASecondaryProtonsRejectedList->Add(fSecondaryProtonsPointOnITSLayer6Reject);
   
 
   /*gDirectory->cd("../../../");
@@ -1524,6 +1773,24 @@ void AliProtonQAAnalysis::InitQA() {
   TH1F *fPrimaryAntiProtonsTPCpidPass = new TH1F("fPrimaryAntiProtonsTPCpidPass",
 						 "",10,-1,1);
   fQAPrimaryAntiProtonsAcceptedList->Add(fPrimaryAntiProtonsTPCpidPass);
+  TH1F *fPrimaryAntiProtonsPointOnITSLayer1Pass = new TH1F("fPrimaryAntiProtonsPointOnITSLayer1Pass",
+							   "",10,-1,1);
+  fQAPrimaryAntiProtonsAcceptedList->Add(fPrimaryAntiProtonsPointOnITSLayer1Pass);
+  TH1F *fPrimaryAntiProtonsPointOnITSLayer2Pass = new TH1F("fPrimaryAntiProtonsPointOnITSLayer2Pass",
+							   "",10,-1,1);
+  fQAPrimaryAntiProtonsAcceptedList->Add(fPrimaryAntiProtonsPointOnITSLayer2Pass);
+  TH1F *fPrimaryAntiProtonsPointOnITSLayer3Pass = new TH1F("fPrimaryAntiProtonsPointOnITSLayer3Pass",
+							   "",10,-1,1);
+  fQAPrimaryAntiProtonsAcceptedList->Add(fPrimaryAntiProtonsPointOnITSLayer3Pass);
+  TH1F *fPrimaryAntiProtonsPointOnITSLayer4Pass = new TH1F("fPrimaryAntiProtonsPointOnITSLayer4Pass",
+							   "",10,-1,1);
+  fQAPrimaryAntiProtonsAcceptedList->Add(fPrimaryAntiProtonsPointOnITSLayer4Pass);
+  TH1F *fPrimaryAntiProtonsPointOnITSLayer5Pass = new TH1F("fPrimaryAntiProtonsPointOnITSLayer5Pass",
+							   "",10,-1,1);
+  fQAPrimaryAntiProtonsAcceptedList->Add(fPrimaryAntiProtonsPointOnITSLayer5Pass);
+  TH1F *fPrimaryAntiProtonsPointOnITSLayer6Pass = new TH1F("fPrimaryAntiProtonsPointOnITSLayer6Pass",
+							   "",10,-1,1);
+  fQAPrimaryAntiProtonsAcceptedList->Add(fPrimaryAntiProtonsPointOnITSLayer6Pass);
   
   //Rejected primary antiprotons
   /*gDirectory->cd("../");
@@ -1606,6 +1873,24 @@ void AliProtonQAAnalysis::InitQA() {
   TH1F *fPrimaryAntiProtonsTPCpidReject = new TH1F("fPrimaryAntiProtonsTPCpidReject",
 						   "",10,-1,1);
   fQAPrimaryAntiProtonsRejectedList->Add(fPrimaryAntiProtonsTPCpidReject);
+  TH1F *fPrimaryAntiProtonsPointOnITSLayer1Reject = new TH1F("fPrimaryAntiProtonsPointOnITSLayer1Reject",
+							     "",10,-1,1);
+  fQAPrimaryAntiProtonsRejectedList->Add(fPrimaryAntiProtonsPointOnITSLayer1Reject);
+  TH1F *fPrimaryAntiProtonsPointOnITSLayer2Reject = new TH1F("fPrimaryAntiProtonsPointOnITSLayer2Reject",
+							     "",10,-1,1);
+  fQAPrimaryAntiProtonsRejectedList->Add(fPrimaryAntiProtonsPointOnITSLayer2Reject);
+  TH1F *fPrimaryAntiProtonsPointOnITSLayer3Reject = new TH1F("fPrimaryAntiProtonsPointOnITSLayer3Reject",
+							     "",10,-1,1);
+  fQAPrimaryAntiProtonsRejectedList->Add(fPrimaryAntiProtonsPointOnITSLayer3Reject);
+  TH1F *fPrimaryAntiProtonsPointOnITSLayer4Reject = new TH1F("fPrimaryAntiProtonsPointOnITSLayer4Reject",
+							     "",10,-1,1);
+  fQAPrimaryAntiProtonsRejectedList->Add(fPrimaryAntiProtonsPointOnITSLayer4Reject);
+  TH1F *fPrimaryAntiProtonsPointOnITSLayer5Reject = new TH1F("fPrimaryAntiProtonsPointOnITSLayer5Reject",
+							     "",10,-1,1);
+  fQAPrimaryAntiProtonsRejectedList->Add(fPrimaryAntiProtonsPointOnITSLayer5Reject);
+  TH1F *fPrimaryAntiProtonsPointOnITSLayer6Reject = new TH1F("fPrimaryAntiProtonsPointOnITSLayer6Reject",
+							     "",10,-1,1);
+  fQAPrimaryAntiProtonsRejectedList->Add(fPrimaryAntiProtonsPointOnITSLayer6Reject);
   
   //________________________________________________________________//
   /*gDirectory->cd("../../");
@@ -1692,6 +1977,24 @@ void AliProtonQAAnalysis::InitQA() {
   TH1F *fSecondaryAntiProtonsTPCpidPass = new TH1F("fSecondaryAntiProtonsTPCpidPass",
 						   "",10,-1,1);
   fQASecondaryAntiProtonsAcceptedList->Add(fSecondaryAntiProtonsTPCpidPass);
+  TH1F *fSecondaryAntiProtonsPointOnITSLayer1Pass = new TH1F("fSecondaryAntiProtonsPointOnITSLayer1Pass",
+							     "",10,-1,1);
+  fQASecondaryAntiProtonsAcceptedList->Add(fSecondaryAntiProtonsPointOnITSLayer1Pass);
+  TH1F *fSecondaryAntiProtonsPointOnITSLayer2Pass = new TH1F("fSecondaryAntiProtonsPointOnITSLayer2Pass",
+							     "",10,-1,1);
+  fQASecondaryAntiProtonsAcceptedList->Add(fSecondaryAntiProtonsPointOnITSLayer2Pass);
+  TH1F *fSecondaryAntiProtonsPointOnITSLayer3Pass = new TH1F("fSecondaryAntiProtonsPointOnITSLayer3Pass",
+							     "",10,-1,1);
+  fQASecondaryAntiProtonsAcceptedList->Add(fSecondaryAntiProtonsPointOnITSLayer3Pass);
+  TH1F *fSecondaryAntiProtonsPointOnITSLayer4Pass = new TH1F("fSecondaryAntiProtonsPointOnITSLayer4Pass",
+							     "",10,-1,1);
+  fQASecondaryAntiProtonsAcceptedList->Add(fSecondaryAntiProtonsPointOnITSLayer4Pass);
+  TH1F *fSecondaryAntiProtonsPointOnITSLayer5Pass = new TH1F("fSecondaryAntiProtonsPointOnITSLayer5Pass",
+							     "",10,-1,1);
+  fQASecondaryAntiProtonsAcceptedList->Add(fSecondaryAntiProtonsPointOnITSLayer5Pass);
+  TH1F *fSecondaryAntiProtonsPointOnITSLayer6Pass = new TH1F("fSecondaryAntiProtonsPointOnITSLayer6Pass",
+							     "",10,-1,1);
+  fQASecondaryAntiProtonsAcceptedList->Add(fSecondaryAntiProtonsPointOnITSLayer6Pass);
   
   //Rejected secondary antiprotons
   /*gDirectory->cd("../");
@@ -1774,6 +2077,24 @@ void AliProtonQAAnalysis::InitQA() {
   TH1F *fSecondaryAntiProtonsTPCpidReject = new TH1F("fSecondaryAntiProtonsTPCpidReject",
 						     "",10,-1,1);
   fQASecondaryAntiProtonsRejectedList->Add(fSecondaryAntiProtonsTPCpidReject);
+  TH1F *fSecondaryAntiProtonsPointOnITSLayer1Reject = new TH1F("fSecondaryAntiProtonsPointOnITSLayer1Reject",
+							     "",10,-1,1);
+  fQASecondaryAntiProtonsRejectedList->Add(fSecondaryAntiProtonsPointOnITSLayer1Reject);
+  TH1F *fSecondaryAntiProtonsPointOnITSLayer2Reject = new TH1F("fSecondaryAntiProtonsPointOnITSLayer2Reject",
+							     "",10,-1,1);
+  fQASecondaryAntiProtonsRejectedList->Add(fSecondaryAntiProtonsPointOnITSLayer2Reject);
+  TH1F *fSecondaryAntiProtonsPointOnITSLayer3Reject = new TH1F("fSecondaryAntiProtonsPointOnITSLayer3Reject",
+							     "",10,-1,1);
+  fQASecondaryAntiProtonsRejectedList->Add(fSecondaryAntiProtonsPointOnITSLayer3Reject);
+  TH1F *fSecondaryAntiProtonsPointOnITSLayer4Reject = new TH1F("fSecondaryAntiProtonsPointOnITSLayer4Reject",
+							     "",10,-1,1);
+  fQASecondaryAntiProtonsRejectedList->Add(fSecondaryAntiProtonsPointOnITSLayer4Reject);
+  TH1F *fSecondaryAntiProtonsPointOnITSLayer5Reject = new TH1F("fSecondaryAntiProtonsPointOnITSLayer5Reject",
+							     "",10,-1,1);
+  fQASecondaryAntiProtonsRejectedList->Add(fSecondaryAntiProtonsPointOnITSLayer5Reject);
+  TH1F *fSecondaryAntiProtonsPointOnITSLayer6Reject = new TH1F("fSecondaryAntiProtonsPointOnITSLayer6Reject",
+							     "",10,-1,1);
+  fQASecondaryAntiProtonsRejectedList->Add(fSecondaryAntiProtonsPointOnITSLayer6Reject);
 }
 
 //____________________________________________________________________//
