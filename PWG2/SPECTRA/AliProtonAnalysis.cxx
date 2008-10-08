@@ -63,6 +63,9 @@ AliProtonAnalysis::AliProtonAnalysis() :
   fMaxConstrainChi2Flag(kFALSE),
   fITSRefitFlag(kFALSE), fTPCRefitFlag(kFALSE),
   fESDpidFlag(kFALSE), fTPCpidFlag(kFALSE),
+  fPointOnITSLayer1Flag(0), fPointOnITSLayer2Flag(0),
+  fPointOnITSLayer3Flag(0), fPointOnITSLayer4Flag(0),
+  fPointOnITSLayer5Flag(0), fPointOnITSLayer6Flag(0),
   fFunctionProbabilityFlag(kFALSE), 
   fElectronFunction(0), fMuonFunction(0),
   fPionFunction(0), fKaonFunction(0), fProtonFunction(0),
@@ -100,6 +103,9 @@ AliProtonAnalysis::AliProtonAnalysis(Int_t nbinsY, Float_t fLowY, Float_t fHighY
   fMaxConstrainChi2Flag(kFALSE),
   fITSRefitFlag(kFALSE), fTPCRefitFlag(kFALSE),
   fESDpidFlag(kFALSE), fTPCpidFlag(kFALSE),
+  fPointOnITSLayer1Flag(0), fPointOnITSLayer2Flag(0),
+  fPointOnITSLayer3Flag(0), fPointOnITSLayer4Flag(0),
+  fPointOnITSLayer5Flag(0), fPointOnITSLayer6Flag(0),
   fFunctionProbabilityFlag(kFALSE), 
   fElectronFunction(0), fMuonFunction(0),
   fPionFunction(0), fKaonFunction(0), fProtonFunction(0),
@@ -698,6 +704,18 @@ Bool_t AliProtonAnalysis::IsAccepted(AliESDtrack* track) {
   Double_t extCov[15];
   track->GetExternalCovariance(extCov);
 
+  if(fPointOnITSLayer1Flag)
+    if(!track->HasPointOnITSLayer(0)) return kFALSE;
+  if(fPointOnITSLayer2Flag)
+    if(!track->HasPointOnITSLayer(1)) return kFALSE;
+  if(fPointOnITSLayer3Flag)
+    if(!track->HasPointOnITSLayer(2)) return kFALSE;
+  if(fPointOnITSLayer4Flag)
+    if(!track->HasPointOnITSLayer(3)) return kFALSE;
+  if(fPointOnITSLayer5Flag)
+    if(!track->HasPointOnITSLayer(4)) return kFALSE;
+  if(fPointOnITSLayer6Flag)
+    if(!track->HasPointOnITSLayer(5)) return kFALSE;
   if(fMinITSClustersFlag)
     if(nClustersITS < fMinITSClusters) return kFALSE;
   if(fMaxChi2PerITSClusterFlag)
