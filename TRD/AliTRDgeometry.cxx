@@ -2625,7 +2625,7 @@ Int_t AliTRDgeometry::GetLayer(Int_t det)
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDgeometry::GetStack(Int_t det) const
+Int_t AliTRDgeometry::GetStack(Int_t det)
 {
   //
   // Reconstruct the stack number from the detector number
@@ -2667,7 +2667,7 @@ Int_t AliTRDgeometry::GetStack(Double_t z, Int_t layer)
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDgeometry::GetSector(Int_t det) const
+Int_t AliTRDgeometry::GetSector(Int_t det)
 {
   //
   // Reconstruct the sector number from the detector number

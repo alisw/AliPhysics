@@ -59,9 +59,9 @@ class AliTRDgeometry : public AliGeometry {
   static  Int_t    GetDetectorSec(Int_t layer, Int_t stack);
   static  Int_t    GetDetector(Int_t layer, Int_t stack, Int_t sector);
   static  Int_t    GetLayer(Int_t det);
-  virtual Int_t    GetStack(Int_t det) const;
-  virtual Int_t    GetStack(Double_t z, Int_t layer);
-  virtual Int_t    GetSector(Int_t det) const;
+  static  Int_t    GetStack(Int_t det);
+          Int_t    GetStack(Double_t z, Int_t layer);
+  static  Int_t    GetSector(Int_t det);
 
           void     CreatePadPlaneArray();
   AliTRDpadPlane  *CreatePadPlane(Int_t layer, Int_t stack);
