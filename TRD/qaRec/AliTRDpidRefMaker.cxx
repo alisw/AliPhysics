@@ -8,7 +8,6 @@
 #include "TEventList.h"
 #include "TMultiLayerPerceptron.h"
 
-#include "AliPID.h"
 #include "AliESDEvent.h"
 #include "AliESDInputHandler.h"
 #include "AliTrackReference.h"
@@ -53,10 +52,10 @@ AliTRDpidRefMaker::AliTRDpidRefMaker()
   memset(fv0pid, 0, AliPID::kSPECIES*sizeof(Float_t));
   memset(fdEdx, 0, 10*sizeof(Float_t));
 
-  const Int_t nnSize = AliTRDCalPID::kNMom * AliTRDCalPID::kNPlane;
+  const Int_t nnSize = AliTRDCalPID::kNMom * AliTRDgeometry::kNlayer;
   memset(fTrain, 0, nnSize*sizeof(TEventList*));
   memset(fTest, 0, nnSize*sizeof(TEventList*));
-  memset(fNet, 0, AliTRDCalPID::kNPlane*sizeof(TMultiLayerPerceptron*));
+  memset(fNet, 0, AliTRDgeometry::kNlayer*sizeof(TMultiLayerPerceptron*));
 
   DefineOutput(1, TTree::Class());
   DefineOutput(2, TTree::Class());
@@ -94,7 +93,7 @@ AliTRDpidRefMaker::AliTRDpidRefMaker(const Char_t *InFileNN, const Char_t *InFil
   fLQ = (TTree*)fInFileLQ -> Get("LQ");
 
   for(Int_t iMom = 0; iMom < AliTRDCalPID::kNMom; iMom++){
-    for(Int_t ily = 0; ily < AliTRDCalPID::kNPlane; ily++){
+    for(Int_t ily = 0; ily < AliTRDgeometry::kNlayer; ily++){
       fTrain[iMom][ily] = new TEventList(Form("fTrainMom%d_%d", iMom, ily), Form("Training list for momentum intervall %d and plane %d", iMom, ily));
       fTest[iMom][ily] = new TEventList(Form("fTestMom%d_%d", iMom, ily), Form("Test list for momentum intervall %d and plane %d", iMom, ily));
     }
@@ -187,7 +186,7 @@ void AliTRDpidRefMaker::Exec(Option_t *)
     //&&(track->GetNumberOfClustersRefit()
 
     // use only tracks that hit 6 chambers
-    if(!(TRDtrack->GetNumberOfTracklets() == AliTRDCalPID::kNPlane)) continue;
+    if(!(TRDtrack->GetNumberOfTracklets() == AliTRDgeometry::kNlayer)) continue;
      
     ref = track->GetTrackRef(0);
     esd = track->GetOuterParam();
@@ -234,7 +233,7 @@ void AliTRDpidRefMaker::Exec(Option_t *)
 
     // fill the dE/dx information for NN
     fReconstructor -> SetOption("nn");
-    for(Int_t ily = 0; ily < AliTRDCalPID::kNPlane; ily++){
+    for(Int_t ily = 0; ily < AliTRDgeometry::kNlayer; ily++){
       if(!(TRDtracklet = TRDtrack -> GetTracklet(ily))) continue;
       TRDtracklet->CookdEdx(AliTRDReconstructor::kNNslices);
       dedx = TRDtracklet->GetdEdx();
@@ -249,7 +248,7 @@ void AliTRDpidRefMaker::Exec(Option_t *)
 
     // fill the dE/dx information for LQ
     fReconstructor -> SetOption("!nn");
-    for(Int_t ily = 0; ily < AliTRDCalPID::kNPlane; ily++){
+    for(Int_t ily = 0; ily < AliTRDgeometry::kNlayer; ily++){
       if(!(TRDtracklet = TRDtrack -> GetTracklet(ily))) continue;
       TRDtracklet->CookdEdx(AliTRDReconstructor::kLQslices);
       dedx = TRDtracklet->GetdEdx();
@@ -464,12 +463,12 @@ void AliTRDpidRefMaker::MakeTrainingLists()
     // set electrons
     if(fv0pid[0] == 1){
       if(nPart[0][iMomBin] < iTrain[iMomBin]){
-	for(Int_t ily = 0; ily < AliTRDCalPID::kNPlane; ily++)
+	for(Int_t ily = 0; ily < AliTRDgeometry::kNlayer; ily++)
 	  fTrain[iMomBin][ily] -> Enter(iEv + ily);
 	nPart[0][iMomBin]++;
       }
       else if(nPart[0][iMomBin] < iTest[iMomBin]+iTrain[iMomBin]){
-	for(Int_t ily = 0; ily < AliTRDCalPID::kNPlane; ily++)
+	for(Int_t ily = 0; ily < AliTRDgeometry::kNlayer; ily++)
 	  fTest[iMomBin][ily] -> Enter(iEv + ily);
 	nPart[0][iMomBin]++;
       }
@@ -479,12 +478,12 @@ void AliTRDpidRefMaker::MakeTrainingLists()
     // set muons
     else if(fv0pid[1] == 1){
       if(nPart[1][iMomBin] < iTrain[iMomBin]){
-	for(Int_t ily = 0; ily < AliTRDCalPID::kNPlane; ily++)
+	for(Int_t ily = 0; ily < AliTRDgeometry::kNlayer; ily++)
 	  fTrain[iMomBin][ily] -> Enter(iEv + ily);
 	nPart[1][iMomBin]++;
       }
       else if(nPart[1][iMomBin] < iTest[iMomBin]+iTrain[iMomBin]){
-	for(Int_t ily = 0; ily < AliTRDCalPID::kNPlane; ily++)
+	for(Int_t ily = 0; ily < AliTRDgeometry::kNlayer; ily++)
 	  fTest[iMomBin][ily] -> Enter(iEv + ily);
 	nPart[1][iMomBin]++;
       }
@@ -494,12 +493,12 @@ void AliTRDpidRefMaker::MakeTrainingLists()
     // set pions
     else if(fv0pid[2] == 1){
       if(nPart[2][iMomBin] < iTrain[iMomBin]){
-	for(Int_t ily = 0; ily < AliTRDCalPID::kNPlane; ily++)
+	for(Int_t ily = 0; ily < AliTRDgeometry::kNlayer; ily++)
 	  fTrain[iMomBin][ily] -> Enter(iEv + ily);
 	nPart[2][iMomBin]++;
       }
       else if(nPart[2][iMomBin] < iTest[iMomBin]+iTrain[iMomBin]){
-	for(Int_t ily = 0; ily < AliTRDCalPID::kNPlane; ily++)
+	for(Int_t ily = 0; ily < AliTRDgeometry::kNlayer; ily++)
 	  fTest[iMomBin][ily] -> Enter(iEv + ily);
 	nPart[2][iMomBin]++;
       }
@@ -509,12 +508,12 @@ void AliTRDpidRefMaker::MakeTrainingLists()
     // set kaons
     else if(fv0pid[3] == 1){
       if(nPart[3][iMomBin] < iTrain[iMomBin]){
-	for(Int_t ily = 0; ily < AliTRDCalPID::kNPlane; ily++)
+	for(Int_t ily = 0; ily < AliTRDgeometry::kNlayer; ily++)
 	  fTrain[iMomBin][ily] -> Enter(iEv + ily);
 	nPart[3][iMomBin]++;
       }
       else if(nPart[3][iMomBin] < iTest[iMomBin]+iTrain[iMomBin]){
-	for(Int_t ily = 0; ily < AliTRDCalPID::kNPlane; ily++)
+	for(Int_t ily = 0; ily < AliTRDgeometry::kNlayer; ily++)
 	  fTest[iMomBin][ily] -> Enter(iEv + ily);
 	nPart[3][iMomBin]++;
       }
@@ -524,12 +523,12 @@ void AliTRDpidRefMaker::MakeTrainingLists()
     // set protons
     else if(fv0pid[4] == 1){
       if(nPart[4][iMomBin] < iTrain[iMomBin]){
-	for(Int_t ily = 0; ily < AliTRDCalPID::kNPlane; ily++)
+	for(Int_t ily = 0; ily < AliTRDgeometry::kNlayer; ily++)
 	  fTrain[iMomBin][ily] -> Enter(iEv + ily);
 	nPart[4][iMomBin]++;
       }
       else if(nPart[4][iMomBin] < iTest[iMomBin]+iTrain[iMomBin]){
-	for(Int_t ily = 0; ily < AliTRDCalPID::kNPlane; ily++)
+	for(Int_t ily = 0; ily < AliTRDgeometry::kNlayer; ily++)
 	  fTest[iMomBin][ily] -> Enter(iEv + ily);
 	nPart[4][iMomBin]++;
       }
@@ -565,13 +564,13 @@ void AliTRDpidRefMaker::TrainNetworks(Int_t mombin)
   gSystem->Exec(Form("mkdir ./Networks_%d/MomBin_%d",fDate, mombin));
 
   // variable to check if network can load weights from previous training
-  Bool_t bFirstLoop[AliTRDCalPID::kNPlane];
-  memset(bFirstLoop, kTRUE, AliTRDCalPID::kNPlane*sizeof(Bool_t));
+  Bool_t bFirstLoop[AliTRDgeometry::kNlayer];
+  memset(bFirstLoop, kTRUE, AliTRDgeometry::kNlayer*sizeof(Bool_t));
  
   // train networks over several loops and save them after each loop
   for(Int_t iLoop = 0; iLoop < kMoniTrain; iLoop++){
     // loop over chambers
-    for(Int_t iChamb = 0; iChamb < AliTRDCalPID::kNPlane; iChamb++){
+    for(Int_t iChamb = 0; iChamb < AliTRDgeometry::kNlayer; iChamb++){
       // set the event lists
       fNN -> SetEventList(fTrain[mombin][iChamb]);
       fNN -> SetEventList(fTest[mombin][iChamb]);

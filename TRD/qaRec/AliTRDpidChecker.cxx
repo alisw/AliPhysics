@@ -173,8 +173,8 @@ void AliTRDpidChecker::Exec(Option_t *)
   AliTrackReference     *ref = 0x0;
   AliExternalTrackParam *esd = 0x0;
 
-  AliTRDseedV1 *TRDtracklet[AliTRDCalPID::kNPlane];
-  for(Int_t iChamb = 0; iChamb < AliTRDCalPID::kNPlane; iChamb++)
+  AliTRDseedV1 *TRDtracklet[AliTRDgeometry::kNlayer];
+  for(Int_t iChamb = 0; iChamb < AliTRDgeometry::kNlayer; iChamb++)
     TRDtracklet[iChamb] = 0x0;
 
   AliTRDcluster *TRDcluster = 0x0;
@@ -189,7 +189,7 @@ void AliTRDpidChecker::Exec(Option_t *)
     //&&(track->GetNumberOfClustersRefit()
 
     // use only tracks that hit 6 chambers
-    if(!(TRDtrack->GetNumberOfTracklets() == AliTRDCalPID::kNPlane)) continue;
+    if(!(TRDtrack->GetNumberOfTracklets() == AliTRDgeometry::kNlayer)) continue;
      
     ref = track->GetTrackRef(0);
     esd = track->GetOuterParam();
@@ -251,8 +251,8 @@ void AliTRDpidChecker::Exec(Option_t *)
     if(fDebugLevel>=4) Printf("PIDmethod[%d] Slices[%d] PDG[%d] LQLike[%f]", fReconstructor->GetPIDMethod(), fReconstructor->GetNdEdxSlices(), track->GetPDG(), TRDtrack -> GetPID(0));
 
 
-    Float_t SumdEdx[AliTRDCalPID::kNPlane];
-    for(Int_t iChamb = 0; iChamb < AliTRDCalPID::kNPlane; iChamb++){
+    Float_t SumdEdx[AliTRDgeometry::kNlayer];
+    for(Int_t iChamb = 0; iChamb < AliTRDgeometry::kNlayer; iChamb++){
       TRDtracklet[iChamb] = TRDtrack -> GetTracklet(iChamb);
       SumdEdx[iChamb] = 0.;
       fdEdx = TRDtracklet[iChamb] -> GetdEdx();
@@ -263,61 +263,61 @@ void AliTRDpidChecker::Exec(Option_t *)
     case kElectron:
     case kPositron:
       hPIDLQ[AliPID::kElectron][iMomBin] -> Fill(TRDtrack -> GetPID(0));
-      for(Int_t iChamb = 0; iChamb < AliTRDCalPID::kNPlane; iChamb++){
+      for(Int_t iChamb = 0; iChamb < AliTRDgeometry::kNlayer; iChamb++){
         hdEdx[AliPID::kElectron][iMomBin] -> Fill(SumdEdx[iChamb]);
-	for(Int_t iClus = 0; iClus < AliTRDtrackerV1::GetNTimeBins(); iClus++){
-	  if(!(TRDcluster = (AliTRDcluster*)TRDtracklet[iChamb] -> GetClusters(iClus)))
-	    continue;
-	  hPH[AliPID::kElectron][iMomBin] -> Fill(TRDcluster -> GetLocalTimeBin(), TRDtracklet[iChamb] -> GetdQdl(iClus));
-	}
+        for(Int_t iClus = 0; iClus < AliTRDtrackerV1::GetNTimeBins(); iClus++){
+          if(!(TRDcluster = (AliTRDcluster*)TRDtracklet[iChamb] -> GetClusters(iClus)))
+            continue;
+          hPH[AliPID::kElectron][iMomBin] -> Fill(TRDcluster -> GetLocalTimeBin(), TRDtracklet[iChamb] -> GetdQdl(iClus));
+        }
       }
       break;
     case kMuonPlus:
     case kMuonMinus:
       hPIDLQ[AliPID::kMuon][iMomBin] -> Fill(TRDtrack -> GetPID(0));
-      for(Int_t iChamb = 0; iChamb < AliTRDCalPID::kNPlane; iChamb++){
+      for(Int_t iChamb = 0; iChamb < AliTRDgeometry::kNlayer; iChamb++){
         hdEdx[AliPID::kMuon][iMomBin] -> Fill(SumdEdx[iChamb]);
-	for(Int_t iClus = 0; iClus < AliTRDtrackerV1::GetNTimeBins(); iClus++){
-	  if(!(TRDcluster = (AliTRDcluster*)TRDtracklet[iChamb] -> GetClusters(iClus)))
-	    continue;
-	  hPH[AliPID::kMuon][iMomBin] -> Fill(TRDcluster -> GetLocalTimeBin(), TRDtracklet[iChamb] -> GetdQdl(iClus));
-	}
+        for(Int_t iClus = 0; iClus < AliTRDtrackerV1::GetNTimeBins(); iClus++){
+          if(!(TRDcluster = (AliTRDcluster*)TRDtracklet[iChamb] -> GetClusters(iClus)))
+            continue;
+          hPH[AliPID::kMuon][iMomBin] -> Fill(TRDcluster -> GetLocalTimeBin(), TRDtracklet[iChamb] -> GetdQdl(iClus));
+        }
       }
       break;
     case kPiPlus:
     case kPiMinus:
       hPIDLQ[AliPID::kPion][iMomBin] -> Fill(TRDtrack -> GetPID(0));
-      for(Int_t iChamb = 0; iChamb < AliTRDCalPID::kNPlane; iChamb++){
+      for(Int_t iChamb = 0; iChamb < AliTRDgeometry::kNlayer; iChamb++){
         hdEdx[AliPID::kPion][iMomBin] -> Fill(SumdEdx[iChamb]);
-	for(Int_t iClus = 0; iClus < AliTRDtrackerV1::GetNTimeBins(); iClus++){
-	  if(!(TRDcluster = (AliTRDcluster*)TRDtracklet[iChamb] -> GetClusters(iClus)))
-	    continue;
-	  hPH[AliPID::kPion][iMomBin] -> Fill(TRDcluster -> GetLocalTimeBin(), TRDtracklet[iChamb] -> GetdQdl(iClus));
-	}
+        for(Int_t iClus = 0; iClus < AliTRDtrackerV1::GetNTimeBins(); iClus++){
+          if(!(TRDcluster = (AliTRDcluster*)TRDtracklet[iChamb] -> GetClusters(iClus)))
+            continue;
+          hPH[AliPID::kPion][iMomBin] -> Fill(TRDcluster -> GetLocalTimeBin(), TRDtracklet[iChamb] -> GetdQdl(iClus));
+        }
       }
       break;
     case kKPlus:
     case kKMinus:
       hPIDLQ[AliPID::kKaon][iMomBin] -> Fill(TRDtrack -> GetPID(0));
-      for(Int_t iChamb = 0; iChamb < AliTRDCalPID::kNPlane; iChamb++){
+      for(Int_t iChamb = 0; iChamb < AliTRDgeometry::kNlayer; iChamb++){
         hdEdx[AliPID::kKaon][iMomBin] -> Fill(SumdEdx[iChamb]);
-	for(Int_t iClus = 0; iClus < AliTRDtrackerV1::GetNTimeBins(); iClus++){
-	  if(!(TRDcluster = (AliTRDcluster*)TRDtracklet[iChamb] -> GetClusters(iClus)))
-	    continue;
-	  hPH[AliPID::kKaon][iMomBin] -> Fill(TRDcluster -> GetLocalTimeBin(), TRDtracklet[iChamb] -> GetdQdl(iClus));
-	}
+        for(Int_t iClus = 0; iClus < AliTRDtrackerV1::GetNTimeBins(); iClus++){
+          if(!(TRDcluster = (AliTRDcluster*)TRDtracklet[iChamb] -> GetClusters(iClus)))
+            continue;
+          hPH[AliPID::kKaon][iMomBin] -> Fill(TRDcluster -> GetLocalTimeBin(), TRDtracklet[iChamb] -> GetdQdl(iClus));
+        }
       }
       break;
     case kProton:
     case kProtonBar:
       hPIDLQ[AliPID::kProton][iMomBin] -> Fill(TRDtrack -> GetPID(0));
-      for(Int_t iChamb = 0; iChamb < AliTRDCalPID::kNPlane; iChamb++){
+      for(Int_t iChamb = 0; iChamb < AliTRDgeometry::kNlayer; iChamb++){
         hdEdx[AliPID::kProton][iMomBin] -> Fill(SumdEdx[iChamb]);
-	for(Int_t iClus = 0; iClus < AliTRDtrackerV1::GetNTimeBins(); iClus++){
-	  if(!(TRDcluster = (AliTRDcluster*)TRDtracklet[iChamb] -> GetClusters(iClus)))
-	    continue;
-	  hPH[AliPID::kProton][iMomBin] -> Fill(TRDcluster -> GetLocalTimeBin(), TRDtracklet[iChamb] -> GetdQdl(iClus));
-	}
+        for(Int_t iClus = 0; iClus < AliTRDtrackerV1::GetNTimeBins(); iClus++){
+          if(!(TRDcluster = (AliTRDcluster*)TRDtracklet[iChamb] -> GetClusters(iClus)))
+            continue;
+          hPH[AliPID::kProton][iMomBin] -> Fill(TRDcluster -> GetLocalTimeBin(), TRDtracklet[iChamb] -> GetdQdl(iClus));
+        }
       }
       break;
     }

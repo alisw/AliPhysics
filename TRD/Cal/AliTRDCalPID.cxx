@@ -31,7 +31,6 @@
 #include <TROOT.h>
 
 #include "AliLog.h"
-#include "AliPID.h"
 #include "AliESD.h"
 #include "AliESDtrack.h"
 
@@ -42,9 +41,10 @@ ClassImp(AliTRDCalPID)
 
 Char_t* AliTRDCalPID::fPartName[AliPID::kSPECIES] = { "electron", "muon", "pion", "kaon", "proton"};
 Char_t* AliTRDCalPID::fPartSymb[AliPID::kSPECIES] = { "EL", "MU", "PI", "KA", "PR"};
-Float_t AliTRDCalPID::fTrackMomentum[kNMom]       = {  0.6,  0.8,  1.0,  1.5,  2.0
-                                                   ,   3.0,  4.0,  5.0,  6.0,  8.0
-                                                   ,  10.0};
+Color_t AliTRDCalPID::fPartColor[AliPID::kSPECIES] = { kRed, kGreen, kBlue, kYellow, kMagenta};
+Float_t AliTRDCalPID::fTrackMomentum[kNMom]       = {  
+    0.6,  0.8,  1.0,  1.5,  2.0
+   ,3.0,  4.0,  5.0,  6.0,  8.0, 10.0};
 
 //_________________________________________________________________________
 AliTRDCalPID::AliTRDCalPID()
@@ -79,4 +79,13 @@ AliTRDCalPID::~AliTRDCalPID()
     delete fModel;
   }
 
+}
+
+//_________________________________________________________________________
+Int_t AliTRDCalPID::GetPartIndex(Int_t pdg)
+{
+  for(Int_t is=0; is<AliPID::kSPECIES; is++){
+    if(TMath::Abs(pdg) == AliPID::ParticleCode(is)) return is;
+  }
+  return -1;
 }

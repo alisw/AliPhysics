@@ -15,6 +15,14 @@
 #include "AliTRDrecoTask.h"
 #endif
 
+#ifndef ALIPID_H
+#include "AliPID.h"
+#endif
+
+#ifndef ALITRDGEOMETRY_H
+#include "AliTRDgeometry.h"
+#endif
+
 class TTree;
 class TEventList;
 class TMultiLayerPerceptron;
@@ -77,9 +85,9 @@ private:
   AliTRDReconstructor *fReconstructor;     //! reconstructor needed for recalculation the PID
   TTree         *fNN;                      // NN data
   TTree         *fLQ;                      // LQ data
-  TEventList *fTrain[AliTRDCalPID::kNMom][AliTRDCalPID::kNPlane];          // Training list for each momentum 
-  TEventList *fTest[AliTRDCalPID::kNMom][AliTRDCalPID::kNPlane];           // Test list for each momentum 
-  TMultiLayerPerceptron *fNet[AliTRDCalPID::kNPlane]; // artificial neural network
+  TEventList *fTrain[AliTRDCalPID::kNMom][AliTRDgeometry::kNlayer];          // Training list for each momentum 
+  TEventList *fTest[AliTRDCalPID::kNMom][AliTRDgeometry::kNlayer];           // Test list for each momentum 
+  TMultiLayerPerceptron *fNet[AliTRDgeometry::kNlayer]; // artificial neural network
 /*   TMultiLayerPerceptron *fNet[AliTRDCalPID::kNMom][AliTRDCalPID::kNPlane]; // artificial neural network */
 
   Int_t         fLayer;                    // TRD layer index 

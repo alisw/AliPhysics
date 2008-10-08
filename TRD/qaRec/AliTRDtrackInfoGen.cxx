@@ -201,14 +201,6 @@ void AliTRDtrackInfoGen::Exec(Option_t *){
         op->Global2LocalPosition(xyz, op->GetAlpha());
         if(fDebugLevel>=2) printf("op @ X[%7.3f]\n", xyz[0]);
     }
-/*		if(xyz[0] < 270.){ 
-        printf("TPC track missing\n");
-    } else { */
-// 			op->GetXYZAt(ref->LocalX(), AliTracker::GetBz(), xyz);
-// 			op->Global2LocalPosition(xyz, op->GetAlpha());
-// 			dy = ref->LocalY()- xyz[1];
-// 			dz = ref->Z() - xyz[2];
-//    	}
 
     // read MC info
     Int_t fPdg = -1;
@@ -217,7 +209,11 @@ void AliTRDtrackInfoGen::Exec(Option_t *){
       label = esdTrack->GetLabel();
       if(label < fMC->GetNumberOfTracks()) trackMap[TMath::Abs(label)] = kTRUE; // register the track
       //if (TMath::Abs(label) > mStack->GetNtrack()) continue; 
-      AliMCParticle *mcParticle = fMC->GetTrack(TMath::Abs(label));
+      AliMCParticle *mcParticle = 0x0; 
+      if(!(mcParticle = fMC->GetTrack(TMath::Abs(label)))){
+        printf("E - AliTRDtrackInfoGen::Exec() : MC particle missing for ESD label %d\n", label);
+        continue;
+      }
       fPdg = mcParticle->Particle()->GetPdgCode();
       Int_t nRefs = mcParticle->GetNumberOfTrackReferences();
       Int_t iref = 0; AliTrackReference *ref = 0x0; 
@@ -226,17 +222,6 @@ void AliTRDtrackInfoGen::Exec(Option_t *){
         if(ref->LocalX() > xTPC) break;
         //printf("\ttrackRef[%2d] @ %7.3f\n", iref, ref->LocalX());
         iref++;
-      }
-      if(iref == nRefs){
-// 			if(!esdTrack->GetNcls(2)) continue;
-/*			printf("No TRD Track References in the Track [%d] I\n", itrk);
-        printf("Label = %d ITS[%d] TPC[%d] TRD[%d]\n", label, esdTrack->GetITSLabel(), esdTrack->GetTPCLabel(), esdTrack->GetTRDLabel());
-        Int_t kref = 0;
-        while(kref<nRefs){
-          ref = mcParticle->GetTrackReference(kref);
-          printf("\ttrackRef[%2d] @ %7.3f\n", kref, ref->LocalX());
-          kref++;
-        }*/
       }
 
       new(fTrackInfo) AliTRDtrackInfo();

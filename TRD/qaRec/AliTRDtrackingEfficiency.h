@@ -24,9 +24,11 @@ class AliTRDtrackingEfficiency : public AliTRDrecoTask
 public:
   AliTRDtrackingEfficiency();
   virtual ~AliTRDtrackingEfficiency();
-  void  CreateOutputObjects();
-  void  Exec(Option_t *);
-  void  Terminate(Option_t *);
+  void    CreateOutputObjects();
+  void    Exec(Option_t *);
+  void    GetRefFigure(Int_t ifig, Int_t &first, Int_t &last, Option_t *opt);
+  Bool_t  PostProcess();
+  void    Terminate(Option_t *);
 
 private:
   AliTRDtrackingEfficiency(const AliTRDtrackingEfficiency&);

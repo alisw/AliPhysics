@@ -29,6 +29,7 @@
 #include <TProfile.h>
 #include "TTreeStream.h"
 
+#include "AliPID.h"
 #include "AliESDtrack.h"
 #include "AliTrackReference.h"
 #include "AliExternalTrackParam.h"
@@ -36,6 +37,7 @@
 #include "AliMagFMaps.h"
 #include "AliAnalysisManager.h"
 
+#include "Cal/AliTRDCalPID.h"
 #include "AliTRDtrackingEfficiency.h"
 #include "AliTRDtrackInfo/AliTRDtrackInfo.h"
 
@@ -68,10 +70,19 @@ void  AliTRDtrackingEfficiency::CreateOutputObjects()
   //
 
   OpenFile(0, "RECREATE");
-  const Int_t nbins = 11;
+  const Int_t nbins = AliTRDCalPID::kNMom;
   Float_t xbins[nbins+1] = {.5, .7, .9, 1.3, 1.7, 2.4, 3.5, 4.5, 5.5, 7., 9., 11.};
+
+  TH1 *h = 0x0;
   fContainer = new TObjArray();
-  fContainer->Add(new TProfile("h", "", nbins, xbins));
+  for(Int_t is=0; is<AliPID::kSPECIES; is++){
+    fContainer->Add(h = new TProfile(Form("h%s", AliTRDCalPID::GetPartSymb(is)), "", nbins, xbins));
+    h->SetLineColor(AliTRDCalPID::GetPartColor(is));
+    h->SetMarkerColor(AliTRDCalPID::GetPartColor(is));
+    h->SetMarkerStyle(7);
+  }
+  fContainer->Add(h = new TProfile("h", "", nbins, xbins));
+  h->SetMarkerStyle(7);
 } 
 
 //____________________________________________________________________
@@ -81,12 +92,8 @@ void AliTRDtrackingEfficiency::Exec(Option_t *)
   // Do it
   //
 
-  if(!AliTracker::GetFieldMap()){
-    AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., AliMagFMaps::k5kG);
-    AliTracker::SetFieldMap(field, kTRUE);
-  }
-  TProfile *h = (TProfile*)fContainer->At(0);	
-	Int_t labelsacc[10000]; memset(labelsacc, 0, sizeof(Int_t) * 10000);
+  Int_t labelsacc[10000]; 
+  memset(labelsacc, 0, sizeof(Int_t) * 10000);
 	
   if(!fMissed){ 
     fMissed = new TClonesArray("AliTRDtrackInfo", 10);
@@ -95,45 +102,42 @@ void AliTRDtrackingEfficiency::Exec(Option_t *)
 
   Float_t mom;
   Int_t selection[10000], nselect = 0;
-  ULong_t status;
+  ULong_t status; Int_t pidx;
   Int_t nTRD = 0, nTPC = 0, nMiss = 0;
   AliTRDtrackInfo     *track = 0x0;
   AliTrackReference     *ref = 0x0;
   AliExternalTrackParam *esd = 0x0;
   for(Int_t itrk=0; itrk<fTracks->GetEntriesFast(); itrk++){
     track = (AliTRDtrackInfo*)fTracks->UncheckedAt(itrk);
+
 		if(!track->HasESDtrack()) continue;
     status = track->GetStatus();
-    if(!(status&AliESDtrack::kTPCout)){ 
-      // missing TPC propagation - interesting for SA
-      continue;
-    }
 
+    // missing TPC propagation - interesting for SA
+    if(!(status&AliESDtrack::kTPCout)) continue;
+
+    // missing MC info.
+    if(HasMCdata() && track->GetNTrackRefs() <= 1) continue;
+   
     nTPC++;
     selection[nselect++]=itrk;
+    ref  = track->GetTrackRef(0);
+    esd  = track->GetOuterParam();
+    mom  = ref ? ref->P(): esd->P();
+    pidx = AliTRDCalPID::GetPartIndex(track->GetPDG());
+    pidx = TMath::Max(pidx, 0);
 
     //Int_t n = track->GetNumberOfClusters(); 
     // where are this tracklets ???
     //if(ncls0 > ncls1) printf("%3d ESD[%3d] TRD[%3d|%3d]\n", itrk, ncls0, ncls1, n);
     if(track->GetNumberOfClustersRefit()){ 
-      ref = track->GetTrackRef(0);
-      esd = track->GetOuterParam();
-      mom = ref ? ref->P(): esd->P();
-      //printf("FOUND Id[%d] mom[%f]\n", itrk, mom);
-      h->Fill(mom, 1.);
+      ((TProfile*)fContainer->At(pidx))->Fill(mom, 1.);
 			labelsacc[nTRD] = track->GetLabel();
       nTRD++;
       continue;
     }
 
 
-    Int_t nrefs = track->GetNTrackRefs();
-    if(nrefs<=1){ 
-      nTPC--;
-      // we don't have MC info.
-      // we should discard this track 
-      continue;
-    }
 
     Float_t xmed, xleng;
     Int_t iref = 1; Bool_t found = kFALSE;
@@ -156,7 +160,7 @@ void AliTRDtrackingEfficiency::Exec(Option_t *)
     new ((*fMissed)[nMiss]) AliTRDtrackInfo(*track);
     nMiss++;
   }
-  if(fDebugLevel>=1) printf("%3d Tracks: ESD[%3d] TPC[%3d] TRD[%3d | %5.2f%%] Off[%d]\n", (Int_t)AliAnalysisManager::GetAnalysisManager()->GetCurrentEntry(), fTracks->GetEntriesFast(), nTPC, nTRD, nTPC ? 1.E2*nTRD/float(nTPC) : 0., fMissed->GetEntriesFast());
+  if(fDebugLevel>=2) printf("%3d Tracks: ESD[%3d] TPC[%3d] TRD[%3d | %5.2f%%] Off[%d]\n", (Int_t)AliAnalysisManager::GetAnalysisManager()->GetCurrentEntry(), fTracks->GetEntriesFast(), nTPC, nTRD, nTPC ? 1.E2*nTRD/float(nTPC) : 0., fMissed->GetEntriesFast());
 
 
   // Find double tracks
@@ -228,13 +232,14 @@ void AliTRDtrackingEfficiency::Exec(Option_t *)
     else{ 
       ref = tt->GetTrackRef(0);
       mom = ref ? ref->P(): op->P();
-      h->Fill(mom, 0.);
-      printf("\tNOT FOUND Id[%d] Mom[%f]\n", tt->GetTrackId(), mom);
+      pidx = AliTRDCalPID::GetPartIndex(tt->GetPDG());
+      pidx = TMath::Max(pidx, 0);
+      ((TProfile*)fContainer->At(pidx))->Fill(mom, 0.);
+      if(fDebugLevel>=2) printf("\tNOT FOUND Id[%d] Mom[%f]\n", tt->GetTrackId(), mom);
     }
   }
 
-  //if(fDebugLevel>=1)
-  printf("%3d Tracks: ESD[%3d] TPC[%3d] TRD[%3d | %5.2f%%] Off[%d]\n", (Int_t)AliAnalysisManager::GetAnalysisManager()->GetCurrentEntry(), fTracks->GetEntriesFast(), nTPC, nTRD, nTPC ? 1.E2*nTRD/float(nTPC) : 0., fMissed->GetEntriesFast());
+  if(fDebugLevel>=2) printf("%3d Tracks: ESD[%3d] TPC[%3d] TRD[%3d | %5.2f%%] Off[%d]\n", (Int_t)AliAnalysisManager::GetAnalysisManager()->GetCurrentEntry(), fTracks->GetEntriesFast(), nTPC, nTRD, nTPC ? 1.E2*nTRD/float(nTPC) : 0., fMissed->GetEntriesFast());
 
   //fMissed->Delete();
 	// check for double countings
@@ -268,3 +273,29 @@ void AliTRDtrackingEfficiency::Terminate(Option_t *)
 
 }
 
+
+
+//____________________________________________________________________
+void AliTRDtrackingEfficiency::GetRefFigure(Int_t ifig, Int_t &first, Int_t &last, Option_t *opt)
+{
+  switch(ifig){
+  case 0:
+    first = 5; last = 6; opt="e2"; 
+    break;
+  case 1:
+    first = 0; last = 5; opt="e2"; 
+    break;
+  }
+}
+
+
+//____________________________________________________________________
+Bool_t AliTRDtrackingEfficiency::PostProcess()
+{
+  TProfile *h = (TProfile*)fContainer->At(AliPID::kSPECIES);
+  for(Int_t is=0; is<AliPID::kSPECIES; is++){
+    h->Add((TProfile*)fContainer->At(is));
+  }
+  fNRefFigures = HasMCdata() ? 2 : 1; 
+  return kTRUE;
+}

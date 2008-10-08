@@ -676,7 +676,7 @@ Bool_t AliTRDtrack::CookPID(Int_t &pidQuality)
   }
 
   // Calculate the input for the NN if fPIDmethod is kNN
-  Float_t ldEdxNN[AliTRDCalPID::kNPlane * kNMLPslice], *dedx = 0x0;
+  Float_t ldEdxNN[AliTRDgeometry::kNlayer * kNMLPslice], *dedx = 0x0;
   if(fPIDmethod == kNN) {
     CookdEdxNN(&ldEdxNN[0]);
   }

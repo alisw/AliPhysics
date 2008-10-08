@@ -35,6 +35,7 @@
 #include "AliESDtrack.h"
 #include "AliTRDtrack.h"
 
+#include "AliTRDgeometry.h"
 #include "AliTRDCalPIDNN.h"
 #include "AliTRDcalibDB.h"
 
@@ -106,7 +107,7 @@ Bool_t AliTRDCalPIDNN::LoadReferences(Char_t *refFile)
 
   // Read Networks
   for (Int_t imom = 0; imom < kNMom; imom++) {
-    for (Int_t iplane = 0; iplane < kNPlane; iplane++) {
+    for (Int_t iplane = 0; iplane < AliTRDgeometry::kNlayer; iplane++) {
       TMultiLayerPerceptron *nn = (TMultiLayerPerceptron *)
          nnFile->Get(Form("NN_Mom%d_Plane%d",imom,iplane));
       fModel->AddAt(nn,GetModelID(imom,0,iplane));
@@ -200,7 +201,7 @@ void AliTRDCalPIDNN::Init()
   // Initialization
   //
 
-  fModel = new TObjArray(AliTRDCalPID::kNPlane * AliTRDCalPID::kNMom);
+  fModel = new TObjArray(AliTRDgeometry::kNlayer * AliTRDCalPID::kNMom);
   fModel->SetOwner();
   
 }

@@ -461,7 +461,7 @@ void AliTRDgtuTrack::MakePID()
 		// attached to charge slices and track length are dummy
                 Float_t dedx[3];
                 dedx[0] = dedx[1] = q*3.; dedx[2] = 0.;
-                Float_t length = 3.7;
+                //Float_t length = 3.7;
 
     //probEle *= pd->GetProbability(0, TMath::Abs(fPt), dedx, length, 0);
     //probPio *= pd->GetProbability(2, TMath::Abs(fPt), dedx, length, 0);
