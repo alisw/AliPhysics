@@ -167,7 +167,7 @@ Double_t AliTRDCalPIDNN::GetProbability(Int_t spec, Float_t mom, Float_t *dedx
   Double_t ddedx[AliTRDtrack::kNMLPslice];
 
   for (int inode=0; inode<AliTRDtrack::kNMLPslice; inode++) {
-    ddedx[inode] = (((Double_t) dedx[inode]/kMLPscale)*6)          // Bug fix! Needs new reference data or different calculation of dedx!!!!
+    ddedx[inode] = (((Double_t) dedx[inode]/kMLPscale)*3)          // Bug fix! Needs new reference data or different calculation of dedx!!!!
                  / (AliTRDcalibDB::Instance()->GetNumberOfTimeBins()/AliTRDtrack::kNMLPslice);
   }
 
