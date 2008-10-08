@@ -304,17 +304,15 @@ Int_t AliTRDtrackerV1::PropagateBack(AliESDEvent *event)
       // update calibration references using this track
       if(calibra->GetHisto2d()) calibra->UpdateHistogramsV1(&track);
       // save calibration object
+      if (fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker) > 0 /*&& quality TODO*/){ 
+        AliTRDtrackV1 *calibTrack = new AliTRDtrackV1(track);
+        calibTrack->SetOwner();
+        seed->AddCalibObject(calibTrack);
+      }
+      //update ESD track
       if ((track.GetNumberOfClusters() > 15) && (track.GetNumberOfClusters() > 0.5*expectedClr)) {
-        seed->UpdateTrackParams(&track, AliESDtrack::kTRDout);
-  
+        seed->UpdateTrackParams(&track, AliESDtrack::kTRDout);  
         track.UpdateESDtrack(seed);
-        
-        // Add TRD track to ESDfriendTrack
-        if (fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker) > 0 /*&& quality TODO*/){ 
-          AliTRDtrackV1 *calibTrack = new AliTRDtrackV1(track);
-          calibTrack->SetOwner();
-          seed->AddCalibObject(calibTrack);
-        }
       }
     }
 
