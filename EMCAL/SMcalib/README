@@ -1,0 +1,89 @@
+silvermy@ornl.gov, Oct 9, 2008: 
+This README file and the associated macros are meant to help with the SuperModule calibrations.
+
+The steps below indicate how a set of bias
+values (fixed voltage, or V30 for each APD, and a 2nd iteration with gain balancing)
+for a SuperModule can be created.
+
+The necessary information that would be needed to complete the steps would be
+A) APD calibration info (csv file) - from Catania or Houston
+B) Info on which APD goes where in the different StripModules - and
+where these StripModules end up in the SuperModule.
+C) [for the balancing] A file obtained from the first analysis iteration regarding
+how the gains should be modified, for each tower.
+
+/David Silvermyr
+
+0) Compile the help classes in root or aliroot:
+----------------------------------------------
+root [0] .L AliEMCALMapAPD.cxx+
+root [1] .L AliEMCALCalibAPD.cxx+
+
+1) Generating an APD map: normal use case in a root macro for your SuperModule
+-------------------------
+//a) create a dummy space in memory:
+  gSystem->Load("AliEMCALMapAPD_cxx");
+  AliEMCALMapAPD *mapAPD = new AliEMCALMapAPD();
+
+  Int_t iSM[2] = {0,1}; // allow for two SuperModules
+  mapAPD->GenerateDummyAPDInfo(1, iSM); // space for one SuperModule, with number iSM[0] = 0
+
+//b) overwrite this memory with the actual values for the StripModules; one line for each of the 24 stripmodules (0-23)
+  mapAPD->ReadMapAPDInfoSingleStripBasis(0, 21, "APDStripModXY.txt"); 
+// "XY" should perhaps be F5 for 5th stripmodule from Frascati or something like that. F=Frascati, W=WSU, N=Nantes, C=Catania
+
+//For a "APDStripModXY.txt" file, 48 lines with 3 fields:
+//StripColumn StripRow APDNum
+//is expected..
+
+//c) write out the map for column, row, APD for the whole SM:
+  mapAPD->WriteMapAPDInfo("APDSuperModY1.txt"); // Y=Yale, G=Grenoble
+
+2) Generating a file of V30 bias values for each tower:
+------------------------------------------------------- 
+# arguments are:
+1: input APD database csv file
+2: APD map file - which tower is where in the SuperModule; from step 1) above. 
+3: defaultVoltage - use 390 if no settings can be found for some APDs
+4: outputfile
+
+root -b 'WriteBiasV30.C("APD-database.csv", "DummySuperModAPDMap.txt", 390, "BiasV30.txt")' -q 
+# aliroot also works instead of root; as you prefer
+
+3) Optional - e.g. in case you don't have the whole SuperModule APD map or what not 
+Generating a file of the same bias value for each tower:
+---------------------------------------------------------- 
+root -b 'WriteBiasFixVoltage(390, "Bias390.txt")' -q # aliroot also works..
+
+4) Generating a file of new bias values for each tower:
+- based on existing file, and a suggested gain factor change, to obtain a balanced setup
+------------------------------------------------------------
+"GainChange.txt" here contains a factor for each tower: factor 0.9 would mean a reduction
+by 10% and factor 1.1 would mean an increase by 10% relative to the file used previously,
+in this case BiasV30.txt.
+
+root -b 'WriteNewBias.C("APD-database.csv", "DummySuperModAPDMap.txt", "BiasV30.txt", "GainChange.txt", "NewBias.txt")' -q # aliroot also works..
+
+5) Converting a bias value file to a set of files that can be used by DCS/RCU: 
+-----------------------------------------------------------------------------
+Arguments are:
+1: input file with voltage per tower
+2: output directory for scripts
+3: [optional: put a non-zero value there to also ask for the values to be read back at the end of the 'set' files]
+
+mkdir APD # create output directory
+root -b 'DCSGenerateAPD.C("NewBias.txt","APD")' -q
+
+The result should be that 1 'set' and 1 'read' file for each FEC should have been created in the directory APD/.
+
+6) Use the newly produced files:
+-------------------------------
+Copy the files, and possibly biasSetup.sh into your DCS nodes 
+(e.g. with scp, or better use nfsmount on DCS cards to see some directory
+on your DAQ computer, if possible),
+rcu_0 files should be readable by RCU0 DCS, and rcu_1 files should be readable by RCU1 DCS.
+
+Then, on the DCS card, you can do something like:
+cd /dcs
+./biasSetup.sh 0 # argument is RCU (0 or 1),; we need to tell each RCU who (s)he is..
+

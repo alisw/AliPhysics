@@ -1,0 +1,245 @@
+// constants
+static const int fgkEmCalRows = 24; // number of rows per module for EMCAL
+static const int fgkEmCalCols = 48; // number of columns per module for EMCAL
+
+const int NRCU = 2; // per SM
+const int NBranch = 2; // per RCU
+const int NFEC = 9; // per branch, labelled 1..9
+const int NCSP = 32; // per FEC
+
+// some global variables
+int biasVoltage[NRCU][NBranch][NFEC][NCSP]; 
+int towerCol[NRCU][NBranch][NFEC][NCSP]; 
+int towerRow[NRCU][NBranch][NFEC][NCSP]; 
+
+//__________________________________________________________
+void Tower2FEEBiasInfo(const char *inputFileName)
+{
+  ifstream inputFile(inputFileName);
+  int ic, ir,ival;
+  int ircu, ibranch, card, icsp;
+  for (int icol=0; icol<fgkEmCalCols; icol++) {
+    for (int irow=0; irow<fgkEmCalRows; irow++) {
+      inputFile >> ic >> ir >> ival;
+
+      // could check here that ic && ir match with icol && irow, but should not be needed
+
+      // translate to FEE type indices
+      Tower2FEEMap(ic, ir, 
+		   &ircu, &ibranch, &card, &icsp);
+
+      // debug
+      /*
+      printf("ic %d ir %d ircu %d ibranch %d card %d icsp %d\n",
+	     ic, ir, ircu, ibranch, card, icsp);
+      */
+
+      // store value
+      biasVoltage[ircu][ibranch][card][icsp] = ival;
+      towerCol[ircu][ibranch][card][icsp] = ic;
+      towerRow[ircu][ibranch][card][icsp] = ir;
+    }
+  }
+
+  inputFile.close();
+
+  return;
+}
+
+//__________________________________________________________
+void Tower2FEEMap(const int icol, const int irow,
+		  int *ircu, int *ibranch, int *card, int *icsp)
+{ /*
+    If you are interested in where these magic numbers come from -
+    See mapping info on 
+    http://dsilverm.web.cern.ch/dsilverm/mapping/emcal_mapping.html
+    http://dsilverm.web.cern.ch/dsilverm/mapping/ppt/Coordinates_and_Mapping.pdf
+   */
+
+  // each FEC covers a 4x8 tower area
+  int C = irow/8; // Cable bundle
+  int FEC = C*12 + icol/4; // FEC in 0..35 range
+
+  *ircu = FEC / 18; // 18 FEC per RCU
+  *ibranch = (FEC%18) / 9;
+  *card = FEC % 9;  
+
+  // columns and rows within an FEC area
+  int tCol = icol%4;
+  int tRow = irow%8;
+
+  // The mapping to CSP is a bit complicated so I also define two more help variables here..
+  // which T-card?
+  int TCard = tCol/2; // 0=Top (even StripModules), 1=Bottom (odd StripModules)
+  int locCol = tCol%2;  // local column inside T-card 
+
+  *icsp = (7 - tRow) + locCol*16 + TCard*8;
+}
+
+/* Main method.. */
+//__________________________________________________________
+void DCSGenerateAPD(const char *inputFileName,
+		    const char *outputDir,
+		    const int readBack=0) 
+{
+
+  // set up which bias voltage should be applicable for which CSP..
+  Tower2FEEBiasInfo(inputFileName);
+
+  // general setup block: note - for old RCU firmware (DS: hope this doesn't change with new firmware)
+  const char *branch_str[] = { "A", "B"};
+  const int trailer_offset = 0x48;
+  const int read_header = 0x520000; 
+  const int write_header = 0x620000; 
+  
+  // hv = hvmin + prop*DAC; values fitted/measured by ZhongBao; correction with David K at SPS beamtest
+  float hvmin = 207.9;
+  float prop = 0.2022; 
+  // resulting voltage settings should be good within a few volts 
+  cout << " HV-DAC prop. constant = " << prop << endl;
+  char iv_dac_setting[100]; 
+  
+  char cfile[200];
+
+  FILE* fout_setbias_card[NRCU][NBranch][NFEC];
+  FILE* fout_readbias_card[NRCU][NBranch][NFEC];
+  
+  // end of setup, let's go..
+  
+  int rcu_addr_card = 0x7000;
+  int csp_addr = trailer_offset;
+  int word = 0;
+  char comment[400];
+  
+  int rcu_addr_read = 0x7000; // we'll also write the readbias file in the same loop, so
+  // need a separate index also
+
+  for (int rcu=0; rcu<NRCU; rcu++) {
+    for (int branch=0; branch<NBranch; branch++) {
+      for (int ifec=0; ifec<NFEC; ifec++) {
+	int card = ifec;
+	int icard = ifec+1;
+
+	sprintf(cfile,"%s/set_rcu_%d_bias_branch_%s_FEC_%d.scr",
+		outputDir, rcu, 
+		branch_str[branch], icard);
+	fout_setbias_card[rcu][branch][card] = fopen(cfile, "w");
+
+	sprintf(cfile,"%s/read_rcu_%d_bias_branch_%s_FEC_%d.scr", 
+		outputDir, rcu,
+		branch_str[branch], icard);
+	fout_readbias_card[rcu][branch][card] = fopen(cfile, "w");
+
+	rcu_addr_card = 0x7000;
+	rcu_addr_read = 0x7000;
+
+	for (int icsp = 0; icsp<NCSP; icsp++) {
+	  
+	  /* 
+	     some funkiness to address the CSPs correctly follows here. 
+	     DS verified this with section 16.1 "Bias voltage programming", table 8
+	     of H. Muller's PHOS manual (version from Jan 2007) 
+	  */ 
+	  if (icsp<16) { csp_addr = trailer_offset + icsp; }
+	  else { csp_addr = trailer_offset - 1 - (icsp%16); }
+	  if (icsp >= 24) csp_addr += 0x20;
+
+	  // what does the desired voltage (in V) correspond to in DAC?
+	  int iv_dac = (int)( (biasVoltage[rcu][branch][card][icsp] - hvmin)/prop );
+	  if (iv_dac > 0x3FF) iv_dac = 0x3FF;
+	  sprintf(iv_dac_setting,"700%03X",iv_dac);
+
+
+	  // set up instructions that should be written
+	  word = write_header | (branch << 16) | (icard << 12) | (csp_addr);
+
+	  // write a long comment with all info for this CSP
+	  sprintf(comment, "# RCU %d, Branch %s, FEC %d, CSP %d - Tower Col %d, Row %d ", 
+		  rcu, branch_str[branch], icard, icsp,
+		  towerCol[rcu][branch][card][icsp],
+		  towerRow[rcu][branch][card][icsp]
+		  );  
+	
+	  fprintf(fout_setbias_card[rcu][branch][card], "w 0x%4X 0x%6X   %s\n",
+		  rcu_addr_card, word, comment);
+	  rcu_addr_card++;
+
+	  fprintf(fout_setbias_card[rcu][branch][card], "w 0x%4X 0x%s   # Set Voltage: %d V, DAC %d (hex: %03X)\n", 
+		  rcu_addr_card, iv_dac_setting, 
+		  biasVoltage[rcu][branch][card][icsp], 
+		  iv_dac, iv_dac
+		  );
+	  rcu_addr_card++;
+
+	  // slighly modified comment for read command - include voltage info
+	  sprintf(comment, "# RCU %d, Branch %s, FEC %d, CSP %d - Tower Col %d, Row %d : %d V, DAC %d (hex: %03X)", 
+		  rcu, branch_str[branch], icard, icsp,
+		  towerCol[rcu][branch][card][icsp],
+		  towerRow[rcu][branch][card][icsp],
+		  biasVoltage[rcu][branch][card][icsp], 
+		  iv_dac, iv_dac
+		  );  
+
+	  word = read_header | (branch << 16) | (icard << 12) | (csp_addr);
+	  fprintf(fout_readbias_card[rcu][branch][card], "w 0x%4X 0x%06X  %s\n", rcu_addr_read, word, comment);
+	  rcu_addr_read++;
+	} // csp loop
+	
+	// after CSP per card; send update command
+	word = write_header | (branch << 16) | (icard << 12) | 0x1e;
+	fprintf(fout_setbias_card[rcu][branch][card],"w 0x%4X 0x%06X   # Update Voltages\n", 
+		rcu_addr_card, word); 
+	rcu_addr_card++;
+
+	// also put ending for the individual card files:
+	fprintf(fout_setbias_card[rcu][branch][card],"w 0x%4X 0x%06X \n", 
+		rcu_addr_card, 0x700000);
+	rcu_addr_card++;
+	fprintf(fout_setbias_card[rcu][branch][card],"w 0x%4X 0x%06X \n", 
+		rcu_addr_card, 0x390000);
+	rcu_addr_card++;
+      
+	fprintf(fout_setbias_card[rcu][branch][card],"wait 1 us\n");
+	fprintf(fout_setbias_card[rcu][branch][card],"w 0x0 0x0           # execute and update registers\n");
+	fprintf(fout_setbias_card[rcu][branch][card],"wait 1 us\n");
+	fprintf(fout_setbias_card[rcu][branch][card],"w 0x0 0x0           # execute and update registers again\n");
+	fprintf(fout_setbias_card[rcu][branch][card],"wait 1 us\n");
+	fprintf(fout_setbias_card[rcu][branch][card],"r 0x7800            # error checking\n");
+	fprintf(fout_setbias_card[rcu][branch][card],"w 0x6c01 0x 0       # clear registers\n");
+	
+
+	// in case we want to check what was written
+	if (readBack) {
+	  fprintf(fout_setbias_card[rcu][branch][card],"wait 1 us\n");
+	  fprintf(fout_setbias_card[rcu][branch][card],"b %s      # read-back the values also\n", cfile);
+	  fprintf(fout_setbias_card[rcu][branch][card],"wait 1 us\n");
+	}
+
+
+	// close down output files (set)
+	fclose(fout_setbias_card[rcu][branch][card]);
+	
+	// readbias ending
+	fprintf(fout_readbias_card[rcu][branch][card],"w 0x%4X 0x%06X \n", 
+		rcu_addr_read, 0x390000);
+	rcu_addr_read++;
+
+	fprintf(fout_readbias_card[rcu][branch][card],"wait 1 us\n");
+	fprintf(fout_readbias_card[rcu][branch][card],"w 0x0 0x0           # execute and update registers\n");
+
+	fprintf(fout_readbias_card[rcu][branch][card],"wait 1 us\n");
+	fprintf(fout_readbias_card[rcu][branch][card],"r 0x7800            # error checking\n");
+	fprintf(fout_readbias_card[rcu][branch][card],"wait 1 us\n");
+	fprintf(fout_readbias_card[rcu][branch][card],"r 0x6000 %d( \n", NCSP);
+	fprintf(fout_readbias_card[rcu][branch][card],"wait 1 us\n");
+	fprintf(fout_readbias_card[rcu][branch][card],"r 0x7800            # error checking\n");
+	fprintf(fout_readbias_card[rcu][branch][card],"w 0x6c01 0x 0       # clear registers\n");
+	
+	// close down output files (read)
+	fclose(fout_readbias_card[rcu][branch][card]);
+
+      } // card=FEC
+    } // branch
+  } // rcu
+
+}
