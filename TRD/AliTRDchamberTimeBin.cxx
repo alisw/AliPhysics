@@ -665,16 +665,16 @@ AliTRDcluster *AliTRDchamberTimeBin::GetNearestCluster(Double_t *cond)
 }
 
 //_____________________________________________________________________________
-void AliTRDchamberTimeBin::PrintClusters() const
+void AliTRDchamberTimeBin::Print(Option_t *) const
 {
 // Prints the position of each cluster in the stacklayer on the stdout
 //
-  printf("\nnRows = %d\n", fNRows);
-  printf("Z0 = %f\n", fZ0);
-  printf("Z1 = %f\n", fZ0+fZLength);
-  printf("clusters in AliTRDchamberTimeBin %d\n", fN);
-  for(Int_t i = 0; i < fN; i++){
-    printf("AliTRDchamberTimeBin: index=%i, Cluster: X = %3.3f [%d] Y = %3.3f [%d] Z = %3.3f [%d]\n", i,  fClusters[i]->GetX(), fClusters[i]->GetLocalTimeBin(), fClusters[i]->GetY(), fClusters[i]->GetPadCol(), fClusters[i]->GetZ(), fClusters[i]->GetPadRow());
-    if(fClusters[i]->IsUsed()) printf("cluster allready used. rejected in search algorithm\n");
+  if(!fN) return;
+  AliInfo(Form("nRows[%d] nClusters[%d]", fNRows, fN));
+  AliInfo(Form("Z0[%7.3f] Z1[%7.3f]", fZ0, fZ0+fZLength));
+  AliTRDcluster* const* icl = &fClusters[0];
+  for(Int_t jcl = 0; jcl < fN; jcl++, icl++){
+    AliInfo(Form("%2d X[%7.3f] Y[%7.3f] Z[%7.3f] tb[%2d] col[%3d] row[%2d] used[%s]", jcl,  (*icl)->GetX(), (*icl)->GetY(), (*icl)->GetZ(), (*icl)->GetLocalTimeBin(), (*icl)->GetPadCol(), (*icl)->GetPadRow(),
+    (*icl)->IsUsed() ? "y" : "n"));
   }
 }

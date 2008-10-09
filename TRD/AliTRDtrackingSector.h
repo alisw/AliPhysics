@@ -41,7 +41,7 @@ public:
   Int_t    GetSector() const {return fSector;}	
 
   void     Init(const AliTRDReconstructor *rec, const AliTRDCalDet *cal);
-  void     Print(Option_t *opt = 0x0);
+  void     Print(Option_t *opt = 0x0) const;
   
   void     SetGeometry(AliTRDgeometry *geo) {fGeom = geo;}
   

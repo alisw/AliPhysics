@@ -60,7 +60,7 @@ public:
 
   Bool_t         IsT0() const {return TestBit(1);}
   
-  void           PrintClusters()                   const;
+  void           Print(Option_t *opt=0x0) const;
   Int_t          SearchNearestCluster(const Double_t y, const Double_t z, const Double_t Roady, const Double_t Roadz) const;
   void           SetRange(Float_t z0, Float_t zLength);
   void           SetNRows(const Int_t nRows){ fNRows = nRows; }

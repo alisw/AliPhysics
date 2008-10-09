@@ -381,3 +381,13 @@ Bool_t AliTRDtrackingChamber::GetSeedingLayer(AliTRDchamberTimeBin *&fakeLayer, 
   return kTRUE;
 }
 
+
+//_______________________________________________________
+void AliTRDtrackingChamber::Print(Option_t *opt) const
+{
+  if(!GetNClusters()) return;
+  AliInfo(Form("fDetector   = %d", fDetector));
+  AliInfo(Form("fX0         = %7.3f", fX0));
+  const AliTRDchamberTimeBin *itb = &fTB[0];
+  for(Int_t jtb=0; jtb<kNTimeBins; jtb++, itb++) (*itb).Print(opt);
+}

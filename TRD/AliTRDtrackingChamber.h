@@ -48,6 +48,8 @@ public:
   AliTRDchamberTimeBin* GetTB(int tb) {return tb >= 0 && tb < kNTimeBins ? &fTB[tb] : 0x0;}
   void     InsertCluster(AliTRDcluster *c, Int_t index);
   
+  void     Print(Option_t *opt = 0x0) const;
+
   void     SetDetector(Int_t det) { fDetector = det;}
 
 private:

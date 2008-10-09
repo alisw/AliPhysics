@@ -158,18 +158,19 @@ AliTRDtrackingChamber** AliTRDtrackingSector::GetStack(Int_t stack)
 }
 
 //_____________________________________________________________________________
-void AliTRDtrackingSector::Print(Option_t *)
+void AliTRDtrackingSector::Print(Option_t *opt) const
 {
 // Dump info about this tracking sector and the tracking chamber within
 // 
 
-  printf("\tSector %2d\n", fSector);
+  printf("\n\tSector[%2d]\n", fSector);
   for(int il=0; il<AliTRDgeometry::kNlayer; il++){
     for(int is =0; is<AliTRDgeometry::kNstack; is++){
       Int_t ch = is*AliTRDgeometry::kNlayer + il;
-      printf("%2d[%2d] ", fIndex[ch], fIndex[ch]>=0 ? fChamber[Int_t(fIndex[ch])]->GetNClusters() : 0);
+      if(opt) fChamber[Int_t(fIndex[ch])]->Print(opt);
+      else printf("%2d[%2d] ", fIndex[ch], fIndex[ch]>=0 ? fChamber[Int_t(fIndex[ch])]->GetNClusters() : 0);
     }
-    printf("\n");
+    if(!opt) printf("\n");
   }
 
 }
