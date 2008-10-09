@@ -367,30 +367,13 @@ Bool_t	AliTRDseedV1::AttachClustersIter(AliTRDtrackingChamber *chamber, Float_t 
   }
 
   AliTRDchamberTimeBin *layer = 0x0;
-  if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker)>=7 && c){
-    TClonesArray clusters("AliTRDcluster", 24);
-    clusters.SetOwner(kTRUE);
-    AliTRDcluster *cc = 0x0;
-    Int_t det=-1, ncl, ncls = 0;
-    for (Int_t iTime = 0; iTime < AliTRDtrackerV1::GetNTimeBins(); iTime++) {
-      if(!(layer = chamber->GetTB(iTime))) continue;
-      if(!(ncl = Int_t(*layer))) continue;
-      for(int ic=0; ic<ncl; ic++){ 
-        cc = (*layer)[ic];
-        det = cc->GetDetector();
-        new(clusters[ncls++]) AliTRDcluster(*cc);
-      }
-    }
-    AliInfo(Form("N clusters[%d] = %d", fDet, ncls));
-    
-    Int_t ref = c ? 1 : 0;
-    TTreeSRedirector &cstreamer = *AliTRDtrackerV1::DebugStreamer();
-    cstreamer << "AttachClustersIter"
-      << "det="        << det 
-      << "ref="        << ref 
-      << "clusters.="  << &clusters
+  if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker)>=7){
+    AliTRDcluster *cl = c ? new AliTRDcluster(*c) : 0x0;
+    AliTRDtrackingChamber *ch = new AliTRDtrackingChamber(*chamber); 
+    (*AliTRDtrackerV1::DebugStreamer()) << "AttachClustersIter"
+      << "chamber.="   << ch
       << "tracklet.="  << this
-      << "cl.="        << c
+      << "c.="         << cl
       << "\n";	
   }
 

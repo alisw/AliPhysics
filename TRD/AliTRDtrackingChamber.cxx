@@ -43,8 +43,9 @@
 ClassImp(AliTRDtrackingChamber)
 
 //_______________________________________________________
-AliTRDtrackingChamber::AliTRDtrackingChamber(Int_t det) :
-  fDetector(det)
+AliTRDtrackingChamber::AliTRDtrackingChamber(Int_t det) 
+  :TObject()
+  ,fDetector(det)
   ,fX0(0.)
 {}  
 
