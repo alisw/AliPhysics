@@ -48,7 +48,8 @@ AliPHOSPID::AliPHOSPID():
   fEMCRecPoints(NULL),
   fCPVRecPoints(NULL),
   fTrackSegments(NULL),
-  fRecParticles(NULL)
+  fRecParticles(NULL),
+  fEnergyCorrectionOn(kTRUE)
 {
   // ctor
 }
@@ -62,7 +63,8 @@ AliPHOSPID::AliPHOSPID(AliPHOSGeometry *geom):
   fEMCRecPoints(NULL),
   fCPVRecPoints(NULL),
   fTrackSegments(NULL),
-  fRecParticles(NULL)
+  fRecParticles(NULL),
+  fEnergyCorrectionOn(kTRUE)
 {
   // ctor
   fEMCRecPoints = new TObjArray(100) ;
@@ -80,7 +82,8 @@ AliPHOSPID::AliPHOSPID(const AliPHOSPID & pid) :
   fEMCRecPoints(pid.fEMCRecPoints),
   fCPVRecPoints(pid.fCPVRecPoints),
   fTrackSegments(pid.fTrackSegments),
-  fRecParticles(pid.fRecParticles)
+  fRecParticles(pid.fRecParticles),
+  fEnergyCorrectionOn(pid.fEnergyCorrectionOn)
 {
   // Copy constructor
 }

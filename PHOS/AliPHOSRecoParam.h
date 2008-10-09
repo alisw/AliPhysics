@@ -29,6 +29,7 @@ public:
   Bool_t  EMCSubtractPedestals()      const { return fEMCSubtractPedestals;    }
   Bool_t  EMCToUnfold()               const { return fEMCUnfold;               }
   const char* EMCDecoderVersion()     const { return fEMCDecoderVersion.Data();}
+  Bool_t  GetEMCEnergyCorrectionOn()  const { return fEMCEnergyCorrectionOn;   }
   Int_t   GetGlobalAltroOffset()      const { return fGlobalAltroOffset ;      }
 
   Float_t GetCPVClusteringThreshold() const { return fCPVClusteringThreshold;  }
@@ -46,8 +47,9 @@ public:
   void SetEMCEcore2ESD(Bool_t ecore)                 { fEMCEcore2ESD          =ecore;   }
   void SetEMCSubtractPedestals(Bool_t subtract)      { fEMCSubtractPedestals  =subtract;} 
   void SetEMCDecoderVersion(const char* version="v1"){ fEMCDecoderVersion     =version ;}
-  void SetEMCUnfolding(Bool_t toUnfold=kFALSE)       { fEMCUnfold            =toUnfold;}
-  void SetGlobalAltroOffset(Int_t offset=5)          {fGlobalAltroOffset     = offset ; }
+  void SetEMCUnfolding(Bool_t toUnfold=kFALSE)       { fEMCUnfold             =toUnfold;}
+  void SetEMCEnergyCorrectionOn(Bool_t on=kTRUE)     { fEMCEnergyCorrectionOn =on;      }
+  void SetGlobalAltroOffset(Int_t offset=5)          { fGlobalAltroOffset     =offset ; }
 
   void SetCPVClusteringThreshold(Float_t cluth)      { fCPVClusteringThreshold=cluth;   }
   void SetCPVLocalMaxCut(Float_t cut)                { fCPVLocMaxCut          =cut;     }
@@ -71,6 +73,7 @@ protected:
   Bool_t  fEMCEcore2ESD;           // EMC: true if Ecore is stored in ESD instead of Etot
   Bool_t  fEMCSubtractPedestals;   // EMC: true if pedestal should be subtracted (in non-ZS)
   Bool_t  fEMCUnfold;              // EMC: true if overlapped clusters should be unfolded
+  Bool_t  fEMCEnergyCorrectionOn;  // EMC: if true do non-linear correction of cluster energy
   TString fEMCDecoderVersion ;     // EMC: AliPHOSRawDecoder version
   Int_t   fGlobalAltroOffset ;     // Offset used in ALTRO chips in SZ runs
 
@@ -82,7 +85,7 @@ protected:
 
   static TObjArray* fgkMaps;       // ALTRO mappings for RCU0..RCU3
 
-  ClassDef(AliPHOSRecoParam,7)
+  ClassDef(AliPHOSRecoParam,8)
 };
 
 #endif

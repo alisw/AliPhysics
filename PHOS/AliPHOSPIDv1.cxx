@@ -599,7 +599,9 @@ Float_t  AliPHOSPIDv1::GetCalibratedEnergy(Float_t e) const
 //      the formula A + B* E  + C* E^2, whose parameters where obtained 
 //      through the study of the reconstructed energy distribution of 
 //      monoenergetic photons.
- 
+  
+  if(!fEnergyCorrectionOn) return e;
+  
   Float_t p[]={0.,0.,0.};
   for (Int_t i=0; i<3; i++) p[i] = GetParameterCalibration(i);
   Float_t enerec = p[0] +  p[1]*e + p[2]*e*e;

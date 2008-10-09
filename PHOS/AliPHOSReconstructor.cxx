@@ -116,6 +116,8 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   else 
     fTSM->Clusters2TrackSegments("") ;
   
+  fPID->SetEnergyCorrectionOn(GetRecoParam()->GetEMCEnergyCorrectionOn());
+  
   fPID->SetInput(clustersTree, fTSM->GetTrackSegments()) ; 
   fPID->SetESD(esd) ; 
   if ( Debug() ) 
