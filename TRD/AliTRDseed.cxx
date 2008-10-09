@@ -313,7 +313,8 @@ void AliTRDseed::Update()
     yres[i] = 10000.0;
     if (!fClusters[i]) continue;
     if(!fClusters[i]->IsInChamber()) continue;
-    yres[i] = fY[i] - fYref[0] - (fYref[1] + anglecor) * fX[i] + fTilt*(fZ[i] - fZref[0]);   // Residual y
+    yres[i] = fY[i] - fYref[0] - (fYref[1] + anglecor) * fX[i] - fTilt*(fZ[i] - fZref[0]);   // Residual y
+    //printf("dy[%2d]=%6.2f\n", i, yres[i]);
     zints[fN] = Int_t(fZ[i]);
     fN++;    
   }
@@ -338,12 +339,9 @@ void AliTRDseed::Update()
   Int_t  cumul[knTimebins][2];
   Int_t  counts[2] = { 0, 0 };
   
+  // Find the break time allowing one chage on pad-rows
+  // with maximal number of accepted clusters
   if (zouts[3] >= 3) {
-
-    //
-    // Find the break time allowing one chage on pad-rows
-    // with maximal number of accepted clusters
-    //
     fNChange = 1;
     for (Int_t i = 0; i < AliTRDtrackerV1::GetNTimeBins(); i++) {
       cumul[i][0] = counts[0];
@@ -353,24 +351,22 @@ void AliTRDseed::Update()
     }
     Int_t  maxcount = 0;
     for (Int_t i = 0; i < AliTRDtrackerV1::GetNTimeBins(); i++) {
-      Int_t after  = cumul[AliTRDtrackerV1::GetNTimeBins()][0] - cumul[i][0];
+      Int_t after  = counts[0]- cumul[i][0];
       Int_t before = cumul[i][1];
       if (after + before > maxcount) { 
-	maxcount  = after + before; 
-	breaktime = i;
-	mbefore   = kFALSE;
+        maxcount  = after + before; 
+        breaktime = i;
+        mbefore   = kFALSE;
       }
-      after  = cumul[AliTRDtrackerV1::GetNTimeBins()-1][1] - cumul[i][1];
+      after  = counts[1] - cumul[i][1];
       before = cumul[i][0];
       if (after + before > maxcount) { 
-	maxcount  = after + before; 
-	breaktime = i;
-	mbefore   = kTRUE;
+        maxcount  = after + before; 
+        breaktime = i;
+        mbefore   = kTRUE;
       }
     }
-
     breaktime -= 1;
-
   }
 
   for (Int_t i = 0; i < AliTRDtrackerV1::GetNTimeBins()+1; i++) {
@@ -384,12 +380,11 @@ void AliTRDseed::Update()
     // Tracklet z-direction not in correspondance with track z direction 
     //
     fNChange = 0;
-    for (Int_t i = 0; i < AliTRDtrackerV1::GetNTimeBins()+1; i++) {
-      allowedz[i] = zouts[0];  // Only longest taken
-    } 
+    // Only longest taken
+    for (Int_t i = 0; i < AliTRDtrackerV1::GetNTimeBins()+1; i++) allowedz[i] = zouts[0];
   }
   
-  if (fNChange > 0) {
+/*  if (fNChange > 0) {
     //
     // Cross pad -row tracklet  - take the step change into account
     //
@@ -397,13 +392,16 @@ void AliTRDseed::Update()
       if (!fClusters[i]) continue; 
       if(!fClusters[i]->IsInChamber()) continue;
       if (TMath::Abs(fZ[i] - allowedz[i]) > 2) continue;
-      yres[i] = fY[i] - fYref[0] - (fYref[1] + anglecor) * fX[i] /*+ fTilt*(fZ[i] - fZref[0])*/;   // Residual y
-      if (TMath::Abs(fZ[i] - fZProb) > 2) {
-	if (fZ[i] > fZProb) yres[i] += fTilt * fPadLength;
-	if (fZ[i] < fZProb) yres[i] -= fTilt * fPadLength;
-      }
+      // Residual y
+      yres[i] = fY[i] - fYref[0] - (fYref[1] + anglecor) * fX[i] + fTilt*(fZ[i] - fZref[0]);
+      printf("dy[%2d]=%6.2f\n", i, yres[i]);
+      if (TMath::Abs(fZ[i] - fZProb) < 2.) continue;
+      // correction for pad row change
+      if (fZ[i] > fZProb) yres[i] += fTilt * fPadLength;
+      if (fZ[i] < fZProb) yres[i] -= fTilt * fPadLength;
+      printf("z[%7.2f] zp[%7.2f] yres[%6.2f]\n", fZ[i], fZProb, yres[i]);
     }
-  }
+  }*/
   
   Double_t yres2[knTimebins];
   Double_t mean;

@@ -368,28 +368,25 @@ Bool_t	AliTRDseedV1::AttachClustersIter(AliTRDtrackingChamber *chamber, Float_t 
 
   AliTRDchamberTimeBin *layer = 0x0;
   if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker)>=7){
-    AliTRDcluster *cl = c ? new AliTRDcluster(*c) : 0x0;
     AliTRDtrackingChamber *ch = new AliTRDtrackingChamber(*chamber); 
     (*AliTRDtrackerV1::DebugStreamer()) << "AttachClustersIter"
       << "chamber.="   << ch
       << "tracklet.="  << this
-      << "c.="         << cl
       << "\n";	
   }
 
-  Float_t  tquality;
+  Float_t  tquality=0., zcorr=0.;
   Double_t kroady = fReconstructor->GetRecoParam() ->GetRoad1y();
   Double_t kroadz = fPadLength * .5 + 1.;
-  
-  // initialize configuration parameters
-  Float_t zcorr = kZcorr ? fTilt * (fZProb - fZref[0]) : 0.;
-  Int_t   niter = kZcorr ? 1 : 2;
-  
   Double_t yexp, zexp;
   Int_t ncl = 0;
-  // start seed update
-  for (Int_t iter = 0; iter < niter; iter++) {
+
+  // looking for clusters
+  for (Int_t iter = 0; iter < 2; iter++) {
     ncl = 0;
+    // recalculate correction for tilt pad
+    zcorr = (kZcorr&&fN) ? fTilt * (fZProb - fZref[0]) : 0.;
+    
     for (Int_t iTime = 0; iTime < AliTRDtrackerV1::GetNTimeBins(); iTime++) {
       if(!(layer = chamber->GetTB(iTime))) continue;
       if(!Int_t(*layer)) continue;
@@ -405,13 +402,13 @@ Bool_t	AliTRDseedV1::AttachClustersIter(AliTRDtrackingChamber *chamber, Float_t 
           if (zexp < c->GetZ()) zexp = c->GetZ() - fPadLength*0.5;
         }
       } else zexp = fZref[0] + (kZcorr ? fZref[1] * dxlayer : 0.);
-      yexp  = fYref[0] + fYref[1] * dxlayer - zcorr;
+      yexp  = fYref[0] + fYref[1]* dxlayer + (kZcorr ? fZref[1] * dxlayer : 0.) + zcorr;
       
       // Get and register cluster
       Int_t    index = layer->SearchNearestCluster(yexp, zexp, kroady, kroadz);
       if (index < 0) continue;
       AliTRDcluster *cl = (*layer)[index];
-      
+
       fIndexes[iTime]  = layer->GetGlobalIndex(index);
       fClusters[iTime] = cl;
       fY[iTime]        = cl->GetY();
@@ -458,6 +455,7 @@ Bool_t	AliTRDseedV1::AttachClustersIter(AliTRDtrackingChamber *chamber, Float_t 
       } 
       
       AliTRDseed::Update();
+      //Fit(kZcorr);
     }
     if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker)>=7) AliInfo(Form("iter = %d nclFit [%d] = %d", iter, fDet, fN2));
     
@@ -737,7 +735,7 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt)
   dzdx *= fTilt;
   for (Int_t ic=0; ic<nc; ic++) {
     yc[ic] -= (y0 + xc[ic]*dydx);
-    if(tilt) yc[ic] -= (xc[ic]*dzdx + fTilt * (zc[ic] - zc[nc])); 
+    if(tilt) yc[ic] -= fTilt*(xc[ic]*dzdx + (zc[ic] - zc[nc])); 
     fitterY.AddPoint(&xc[ic], yc[ic], sy[ic]);
   }
   fitterY.Eval();
@@ -754,10 +752,6 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt)
   return kTRUE;
 }
 
-//___________________________________________________________________
-void AliTRDseedV1::Draw(Option_t*)
-{
-}
 
 //___________________________________________________________________
 void AliTRDseedV1::Print(Option_t*) const
@@ -766,35 +760,27 @@ void AliTRDseedV1::Print(Option_t*) const
   // Printing the seedstatus
   //
 
-  printf("Seed status :\n");
-  printf("  fTilt      = %f\n", fTilt);
-  printf("  fPadLength = %f\n", fPadLength);
-  printf("  fX0        = %f\n", fX0);
-  for(int ic=0; ic<AliTRDtrackerV1::GetNTimeBins(); ic++) {
-          const Char_t *isUsable = fUsable[ic]?"Yes":"No";
-    printf("  %d X[%f] Y[%f] Z[%f] Indexes[%d] clusters[%p] usable[%s]\n"
-                , ic
-                , fX[ic]
-                , fY[ic]
-                , fZ[ic]
-                , fIndexes[ic]
-                , ((void*) fClusters[ic])
-                , isUsable);
-        }
+  AliInfo(Form("Tracklet X0[%7.2f] Det[%d]", fX0, fDet));
+  printf("  Tilt[%+6.2f] PadLength[%5.2f]\n", fTilt, fPadLength);
+  AliTRDcluster* const* jc = &fClusters[0];
+  for(int ic=0; ic<AliTRDtrackerV1::GetNTimeBins(); ic++, jc++) {
+    if(!(*jc)) continue;
+    printf("  %2d X[%7.2f] Y[%7.2f] Z[%7.2f] Idx[%d] c[%p] usable[%s]\n", 
+      ic, (*jc)->GetX(), (*jc)->GetY(), (*jc)->GetZ(), 
+      fIndexes[ic], (void*)(*jc), fUsable[ic]?"y":"n");
+  }
 
   printf("  fYref[0] =%f fYref[1] =%f\n", fYref[0], fYref[1]);
   printf("  fZref[0] =%f fZref[1] =%f\n", fZref[0], fZref[1]);
   printf("  fYfit[0] =%f fYfit[1] =%f\n", fYfit[0], fYfit[1]);
-  printf("  fYfitR[0]=%f fYfitR[1]=%f\n", fYfitR[0], fYfitR[1]);
   printf("  fZfit[0] =%f fZfit[1] =%f\n", fZfit[0], fZfit[1]);
-  printf("  fZfitR[0]=%f fZfitR[1]=%f\n", fZfitR[0], fZfitR[1]);
   printf("  fSigmaY =%f\n", fSigmaY);
   printf("  fSigmaY2=%f\n", fSigmaY2);            
   printf("  fMeanz  =%f\n", fMeanz);
   printf("  fZProb  =%f\n", fZProb);
   printf("  fLabels[0]=%d fLabels[1]=%d\n", fLabels[0], fLabels[1]);
   printf("  fN      =%d\n", fN);
-  printf("  fN2     =%d (>8 isOK)\n",fN2);
+  printf("  fN2     =%d (>4 isOK - to be redesigned)\n",fN2);
   printf("  fNUsed  =%d\n", fNUsed);
   printf("  fFreq   =%d\n", fFreq);
   printf("  fNChange=%d\n",  fNChange);

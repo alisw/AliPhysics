@@ -59,6 +59,7 @@ class AliTRDseed : public TObject {
           Float_t  GetZProb() const                         { return fZProb;         }
           Int_t    GetLabels(Int_t i) const                 { return fLabels[i];     }
           Int_t    GetN2() const                            { return fN2;            }
+          Int_t    GetNChange() const                       { return fNChange;       }
           Int_t    GetNUsed() const                         { return fNUsed;         }
           Int_t    GetFreq() const                          { return fFreq;          }
           Float_t  GetC() const                             { return fC;             }

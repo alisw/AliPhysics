@@ -58,7 +58,6 @@ class AliTRDseedV1 : public AliTRDseed
                                 , AliTRDcluster *c=0x0);
   Bool_t	AttachClusters(AliTRDtrackingChamber *chamber, Bool_t kZcorr = kFALSE);
   void    CookdEdx(Int_t nslices);
-  void    Draw(Option_t* o = "");
   Bool_t  Fit(Bool_t tilt=kTRUE);
 
   Bool_t  Init(AliTRDtrackV1 *track);
