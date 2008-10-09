@@ -17,7 +17,7 @@
  **************************************************************************/
 
 /** @file   AliHLTRootFilePublisherComponent.cxx
-    @author Matthias Richter
+    @author Matthias Richter, Jochen Thaeder
     @date   
     @brief  HLT file publisher component implementation. */
 
@@ -26,99 +26,170 @@
 //#include <TMath.h>
 //#include <TFile.h>
 
-// temporary
-#include "TH1F.h"
+#include "TList.h"
+#include "TTree.h"
+#include "TKey.h"
+#include "TFile.h"
+
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTRootFilePublisherComponent)
 
+/*
+ * ---------------------------------------------------------------------------------
+ *                            Constructor / Destructor
+ * ---------------------------------------------------------------------------------
+ */
+
+// #################################################################################
 AliHLTRootFilePublisherComponent::AliHLTRootFilePublisherComponent()
   :
-  AliHLTFilePublisher()
-{
+  AliHLTFilePublisher(),
+  fpCurrentEvent(NULL),
+  fObjectName("") {
   // see header file for class documentation
   // or
   // refer to README to build package
   // or
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
+  // Set file to ROOT-File
+  SetIsRawFile( kFALSE );
 }
 
-AliHLTRootFilePublisherComponent::~AliHLTRootFilePublisherComponent()
-{
+// #################################################################################
+AliHLTRootFilePublisherComponent::~AliHLTRootFilePublisherComponent() {
   // see header file for class documentation
 
   // file list and file name list are owner of their objects and
   // delete all the objects
 }
 
-const char* AliHLTRootFilePublisherComponent::GetComponentID()
-{
+/*
+ * ---------------------------------------------------------------------------------
+ * Public functions to implement AliHLTComponent's interface.
+ * These functions are required for the registration process
+ * ---------------------------------------------------------------------------------
+ */
+
+// #################################################################################
+const char* AliHLTRootFilePublisherComponent::GetComponentID() {
   // see header file for class documentation
   return "ROOTFilePublisher";
 }
 
-AliHLTComponentDataType AliHLTRootFilePublisherComponent::GetOutputDataType()
-{
-  // see header file for class documentation
-  AliHLTComponentDataType dt =
-    {sizeof(AliHLTComponentDataType),
-     kAliHLTVoidDataTypeID,
-     kAliHLTVoidDataOrigin};
-  return dt;
-}
-
-void AliHLTRootFilePublisherComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
-{
-  // see header file for class documentation
-  constBase=10000;
-  inputMultiplier=1.0;
-}
-
-AliHLTComponent* AliHLTRootFilePublisherComponent::Spawn()
-{
+// #################################################################################
+AliHLTComponent* AliHLTRootFilePublisherComponent::Spawn() {
   // see header file for class documentation
   return new AliHLTRootFilePublisherComponent;
 }
 
-int AliHLTRootFilePublisherComponent::ScanArgument(int argc, const char** argv)
-{
+/*
+ * ---------------------------------------------------------------------------------
+ * Protected functions to implement AliHLTComponent's interface.
+ * These functions provide initialization as well as the actual processing
+ * capabilities of the component. 
+ * ---------------------------------------------------------------------------------
+ */
+
+// #################################################################################
+Int_t AliHLTRootFilePublisherComponent::ScanArgument(Int_t argc, const char** argv) {
   // see header file for class documentation
 
-  // there are no other arguments than the standard ones
-  if (argc==0 && argv==NULL) {
-    // this is just to get rid of the warning "unused parameter"
+  Int_t iResult = 0;
+
+  TString argument = "";
+  TString parameter = "";
+  Int_t bMissingParam = 0;
+  
+  argument=argv[iResult];
+  if (argument.IsNull()) return -EINVAL;
+
+  // -objectname
+  if ( !argument.CompareTo("-objectname") ) {
+    if ( ! (bMissingParam=(++iResult>=argc)) ) {
+      parameter = argv[iResult];
+      parameter.Remove(TString::kLeading, ' '); // remove all blanks
+      fObjectName = parameter;
+    } 
   }
-  int iResult=-EPROTO;
+  else {
+    HLTError("unknown argument %s", argument.Data());
+    iResult = -EINVAL;    
+  }
+  
+  if ( bMissingParam ) {
+    HLTError("missing parameter for argument %s", argument.Data());
+    iResult = -EPROTO;
+  }
+
   return iResult;
 }
 
-int AliHLTRootFilePublisherComponent::OpenFiles()
-{
-  // see header file for class documentation
-  int iResult=0;
-  return iResult;
-}
-
-int AliHLTRootFilePublisherComponent::GetEvent( const AliHLTComponentEventData& /*evtData*/,
+ // #################################################################################
+Int_t AliHLTRootFilePublisherComponent::GetEvent( const AliHLTComponentEventData& /*evtData*/,
 						AliHLTComponentTriggerData& /*trigData*/,
 						AliHLTUInt8_t* /*outputPtr*/, 
-						AliHLTUInt32_t& /*size*/,
-						vector<AliHLTComponentBlockData>& /*outputBlocks*/ )
-{
+						AliHLTUInt32_t& size,
+						vector<AliHLTComponentBlockData>& /*outputBlocks*/ ) {
   // see header file for class documentation
-  int iResult=0;
-  if (GetEventCount()%2==0) {
-    TH1F *hpx = new TH1F("hpx","px distribution",100,-4,4);
-    hpx->FillRandom("gaus",1000);
-    PushBack(hpx, "TH1F", "ROOT");
-    delete hpx;
-  } else {
-    TH1F *hpy = new TH1F("hpy","py distribution",100,-10,10);
-    hpy->FillRandom("gaus",10000);
-    PushBack(hpy, "TH1F", "ROOT");
-    delete hpy;
+
+  if ( !IsDataEvent() ) return 0;
+
+  Int_t iResult=0;
+  size=0;
+
+  // -- Ptr to current event
+  TObjLink *lnk = fpCurrentEvent;
+  if ( lnk == NULL) {
+    lnk = GetEventList()->FirstLink();
+    fpCurrentEvent = lnk;
   }
+
+  if ( lnk ) {
+    EventFiles* pEventDesc = dynamic_cast<EventFiles*>( lnk->GetObject() );
+    if (pEventDesc) {
+    
+      HLTDebug("publishing files for event %p", pEventDesc);
+      TList& files=*pEventDesc; // type conversion operator defined
+      TObjLink *flnk=files.FirstLink();
+
+      while (flnk && iResult>=0) {
+
+	FileDesc* pFileDesc=dynamic_cast<FileDesc*>(flnk->GetObject());
+
+	if (not fOpenFilesAtStart) pFileDesc->OpenFile();
+	TFile* pFile=NULL;
+
+	if (pFileDesc && (pFile=*pFileDesc)!=NULL) {
+
+	  for ( Int_t i = 0; i < pFile->GetListOfKeys()->GetEntries(); i++  ){
+	    TKey * key= dynamic_cast<TKey*>( pFile->GetListOfKeys()->At(i) );
+
+	    if ( fObjectName ) {
+	      if ( !( ((TString) key->GetName()).CompareTo(fObjectName) ) )
+		PushBack( key->ReadObj(), *pFileDesc, *pFileDesc ); 
+	    }
+	    else 
+	      PushBack( key->ReadObj(), *pFileDesc, *pFileDesc ); 	      
+	      // above : type conversion operator defined for DataType and Spec
+	  }
+
+	  if (not fOpenFilesAtStart) pFileDesc->CloseFile();
+	} else {
+	  HLTError("no file available");
+	  iResult=-EFAULT;
+	}
+	flnk = flnk->Next();
+      }
+    } else {
+      HLTError("can not get event descriptor from list link");
+      iResult=-EFAULT;
+    }
+  } else {
+    iResult=-ENOENT;
+  }
+  if (iResult>=0 && fpCurrentEvent) fpCurrentEvent=fpCurrentEvent->Next();
 
   return iResult;
 }

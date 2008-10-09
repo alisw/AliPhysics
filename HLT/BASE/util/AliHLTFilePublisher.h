@@ -98,6 +98,15 @@ class AliHLTFilePublisher : public AliHLTDataSource  {
    */
   int OpenFiles(bool keepOpen);
 
+  /** Get List of Events, needed in the RootFilePublisher.*/
+  TList* GetEventList() { return &fEvents;} 
+  
+  /** Set if root files instead of raw files should be read,
+   *  needed in the RootFilePublisher.
+   *  @param isRaw  kTRUE if raw file, kFALSE for rootfile
+   */
+  void SetIsRawFile( Bool_t isRaw ) { fIsRaw = isRaw; }
+
  protected:
   /**
    * Init method.
@@ -140,7 +149,6 @@ class AliHLTFilePublisher : public AliHLTDataSource  {
    */
   virtual int ScanArgument(int argc, const char** argv);
 
- protected:
   /**
    * Get the data type which is set for the current file
    */
@@ -157,6 +165,7 @@ class AliHLTFilePublisher : public AliHLTDataSource  {
   /** prohibit assignment operator */
   AliHLTFilePublisher& operator=(const AliHLTFilePublisher&);
 
+ protected:
   /**
    * File descriptor.
    */
@@ -165,7 +174,7 @@ class AliHLTFilePublisher : public AliHLTDataSource  {
     /** constructor not implemented */
     FileDesc();
     /** constructor to use */
-    FileDesc(const char* name, AliHLTComponentDataType dt, AliHLTUInt32_t spec);
+    FileDesc(const char* name, AliHLTComponentDataType dt, AliHLTUInt32_t spec, Bool_t isRaw=kTRUE);
     /** destructor */
     ~FileDesc();
 
@@ -206,6 +215,8 @@ class AliHLTFilePublisher : public AliHLTDataSource  {
     /** prohibited copy operator */
     FileDesc& operator=(FileDesc&);
 
+    /** is raw (kTRUE) or root (kFALSE) file */
+    Bool_t fIsRaw;                                                 //! transient     
     /** file name */
     TString                 fName;                                 //! transient
     /** file instance */
@@ -265,7 +276,7 @@ class AliHLTFilePublisher : public AliHLTDataSource  {
   TList fEvents;                                                   //! transient
 
   /** the maximum buffer size i.e. size of the biggest file */
-  Int_t                   fMaxSize;                                //! transient
+  Int_t fMaxSize;                                                  //! transient
   
   /** Flag specifying if all the files should be opened during initialisation.  */
   bool fOpenFilesAtStart;                                          //! transient
@@ -273,6 +284,9 @@ class AliHLTFilePublisher : public AliHLTDataSource  {
   /** output data types  */
   AliHLTComponentDataTypeList fOutputDataTypes;                    //! transient
 
-  ClassDef(AliHLTFilePublisher, 2)
+  /** Is raw file (kTRUE) [default] or root file (kFALSE). */
+  Bool_t fIsRaw;                                                   //! transient     
+
+  ClassDef(AliHLTFilePublisher, 3)
 };
 #endif

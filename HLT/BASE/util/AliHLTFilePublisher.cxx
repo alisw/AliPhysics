@@ -48,7 +48,8 @@ AliHLTFilePublisher::AliHLTFilePublisher()
   fEvents(),
   fMaxSize(0),
   fOpenFilesAtStart(false),
-  fOutputDataTypes()
+  fOutputDataTypes(),
+  fIsRaw(kTRUE)
 {
   // see header file for class documentation
   // or
@@ -128,7 +129,7 @@ int AliHLTFilePublisher::DoInit( int argc, const char** argv )
       if (!bHaveDatatype) {
 	HLTWarning("no data type available so far, please set data type and specification before the file name. The first available data type will be set for all files preceding it");
       }
-      FileDesc* pDesc=new FileDesc(argv[i], currDataType, currSpecification);
+      FileDesc* pDesc=new FileDesc(argv[i], currDataType, currSpecification, fIsRaw);
       if (pDesc) {
 	iResult=InsertFile(pCurrEvent, pDesc);
       } else {
@@ -406,9 +407,10 @@ int AliHLTFilePublisher::GetEvent( const AliHLTComponentEventData& /*evtData*/,
 //   return 0;
 // }
 
-AliHLTFilePublisher::FileDesc::FileDesc(const char* name, AliHLTComponentDataType dt, AliHLTUInt32_t spec)
+AliHLTFilePublisher::FileDesc::FileDesc(const char* name, AliHLTComponentDataType dt, AliHLTUInt32_t spec, Bool_t isRaw)
   :
   TObject(),
+  fIsRaw(isRaw),
   fName(name),
   fpInstance(NULL),
   fDataType(dt),
@@ -449,7 +451,12 @@ int AliHLTFilePublisher::FileDesc::OpenFile()
 {
   // see header file for class documentation
   int iResult=0;
-  TString fullFN= fName + "?filetype=raw";
+  
+  TString fullFN="";
+
+  if ( fIsRaw ) fullFN = fName + "?filetype=raw";
+  else fullFN = fName;
+
   fpInstance = new TFile(fullFN);
   if (fpInstance) {
     if (fpInstance->IsZombie()==0) {
