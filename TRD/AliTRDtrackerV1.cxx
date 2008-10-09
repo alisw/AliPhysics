@@ -311,7 +311,7 @@ Int_t AliTRDtrackerV1::PropagateBack(AliESDEvent *event)
       }
       //update ESD track
       if ((track.GetNumberOfClusters() > 15) && (track.GetNumberOfClusters() > 0.5*expectedClr)) {
-        seed->UpdateTrackParams(&track, AliESDtrack::kTRDout);  
+        seed->UpdateTrackParams(&track, AliESDtrack::kTRDout);
         track.UpdateESDtrack(seed);
       }
     }
@@ -653,7 +653,7 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
           t.SetStopped(kTRUE);
           return nClustersExpected;
         }
-        if(!tracklet.AttachClustersIter(chamber, 1000.)) continue;
+        if(!tracklet.AttachClustersIter(chamber, 1., kTRUE)) continue;
         tracklet.Init(&t);
         
         if(tracklet.GetN() < fgNTimeBins*fReconstructor->GetRecoParam() ->GetFindableClusters()) continue;

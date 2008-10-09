@@ -415,7 +415,7 @@ Bool_t	AliTRDseedV1::AttachClustersIter(AliTRDtrackingChamber *chamber, Float_t 
       fZ[iTime]        = cl->GetZ();
       ncl++;
     }
-    if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker)>=7) AliInfo(Form("iter = %d ncl [%d] = %d", iter, fDet, ncl));
+    if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker)>=7) AliInfo(Form("Iter[%d] Attach Ncl[%d]", iter, ncl));
     
     if(ncl>1){	
       // calculate length of the time bin (calibration aware)
@@ -457,7 +457,7 @@ Bool_t	AliTRDseedV1::AttachClustersIter(AliTRDtrackingChamber *chamber, Float_t 
       AliTRDseed::Update();
       //Fit(kZcorr);
     }
-    if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker)>=7) AliInfo(Form("iter = %d nclFit [%d] = %d", iter, fDet, fN2));
+    if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker)>=7) AliInfo(Form("Iter[%d] Fitted Ncl[%d]", iter, fN2));
     
     if(IsOK()){
       tquality = GetQuality(kZcorr);
@@ -726,7 +726,7 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt)
     dzdx = fZref[1]; // we don't trust Parameter[1] ??;
     zc[nc] = fitterZ.GetFunctionParameter(0); 
   } else if(nchanges > 1){ // debug
-    AliInfo("ERROR in n changes!!!");
+    AliError("N pad row crossing > 1.");
     return kFALSE;
   }
 
@@ -748,6 +748,8 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt)
 // 	for(int ic=0; ic<35; ic++) printf("%d row[%d]\n", ic, zRow[ic]);	
 // 
 // 	for(int ic=0; ic<nz; ic++) printf("%d n[%d]\n", ic, zN[ic]);	
+
+  UpdateUsed();
 
   return kTRUE;
 }
