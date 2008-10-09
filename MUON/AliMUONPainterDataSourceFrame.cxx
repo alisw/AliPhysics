@@ -184,7 +184,14 @@ AliMUONPainterDataSourceFrame::AliMUONPainterDataSourceFrame(const TGWindow* p, 
                              "AliMUONPainterDataSourceFrame",
                              this,
                              "CreateOCDBDataSource()");
-    
+
+  const char* ocdbToolTip = "Use URL style for either alien or local OCDB (foo://bar). For example :\n"
+  "alien://folder=/alice/data.../OCDB\n"
+  "or\nlocal:///home/user/aliroot (mind the 3 slashes there !)";
+  
+  fRawOCDBPath->SetToolTipText(ocdbToolTip);
+  fOCDBPath->SetToolTipText(ocdbToolTip);
+  
     fOCDBSelector->AddFrame(fOCDBPath,new TGLayoutHints(kLHintsExpandX | kLHintsTop,5,5,5,5));    
     fOCDBSelector->AddFrame(fRunSelector,new TGLayoutHints(kLHintsTop,5,5,5,5));
     fOCDBSelector->AddFrame(fOCDBTypes,new TGLayoutHints(kLHintsExpandX | kLHintsTop,5,5,5,5));
