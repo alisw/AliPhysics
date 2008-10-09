@@ -35,7 +35,7 @@ public:
   enum{
     kNTimeBins = AliTRDseed::knTimebins
   };
-  AliTRDtrackingChamber(Int_t det);
+  AliTRDtrackingChamber();
   virtual ~AliTRDtrackingChamber(){}
   
   Bool_t   Build(AliTRDgeometry *geo, const AliTRDCalDet *cal, Bool_t hlt = kFALSE);
@@ -48,6 +48,7 @@ public:
   AliTRDchamberTimeBin* GetTB(int tb) {return tb >= 0 && tb < kNTimeBins ? &fTB[tb] : 0x0;}
   void     InsertCluster(AliTRDcluster *c, Int_t index);
   
+  void     SetDetector(Int_t det) { fDetector = det;}
 
 private:
   Int_t         fDetector;  // detector number

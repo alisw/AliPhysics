@@ -43,9 +43,9 @@
 ClassImp(AliTRDtrackingChamber)
 
 //_______________________________________________________
-AliTRDtrackingChamber::AliTRDtrackingChamber(Int_t det) 
+AliTRDtrackingChamber::AliTRDtrackingChamber() 
   :TObject()
-  ,fDetector(det)
+  ,fDetector(-1)
   ,fX0(0.)
 {}  
 
@@ -68,6 +68,11 @@ Bool_t AliTRDtrackingChamber::Build(AliTRDgeometry *geo, const AliTRDCalDet *cal
 // Calculates radial position of the chamber based on 
 // radial positions of the time bins (calibration/alignment aware)
 //
+  if(fDetector < 0 || fDetector >= AliTRDgeometry::kNdet){
+    AliWarning(Form("Detector index not set correctly to %d", fDetector));
+    return kFALSE;
+  }
+
   Int_t stack = geo->GetStack(fDetector);
   Int_t layer = geo->GetLayer(fDetector);
   AliTRDpadPlane *pp = geo->GetPadPlane(layer, stack);

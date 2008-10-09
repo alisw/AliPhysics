@@ -25,12 +25,12 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "AliTRDtrackingSector.h"
 #include "AliTRDcalibDB.h"
 #include "AliTRDCommonParam.h"
-#include "AliTRDgeometry.h"
 #include "AliTRDpadPlane.h"
+#include "AliTRDtrackingSector.h"
 #include "AliTRDtrackingChamber.h"
+
 
 ClassImp(AliTRDtrackingSector)
 
@@ -42,11 +42,9 @@ AliTRDtrackingSector::AliTRDtrackingSector()
 {
   // Default constructor
   
-  for(int ic=0; ic<kNChambersSector; ic++){
-    fChamber[ic] = 0x0;
-    fIndex[ic]   = -1;
-  }
-  for(int il=0; il<AliTRDgeometry::kNlayer; il++) fX0[il] = 0.;
+  memset(fChamber, 0, AliTRDgeometry::kNdets*sizeof(AliTRDtrackingChamber*));
+  memset(fIndex, 1, AliTRDgeometry::kNdets*sizeof(Char_t));
+  memset(fX0, 0, AliTRDgeometry::kNlayer*sizeof(Float_t));
 }
 
 //_____________________________________________________________________________
@@ -59,33 +57,11 @@ AliTRDtrackingSector::AliTRDtrackingSector(AliTRDgeometry *geo, Int_t gs)
   // AliTRDtrackingSector Constructor
   //
 
-  for(int ic=0; ic<kNChambersSector; ic++){
-    fChamber[ic] = 0x0;
-    fIndex[ic]   = -1;
-  }
-  for(int il=0; il<AliTRDgeometry::kNlayer; il++) fX0[il] = 0.;
+  memset(fChamber, 0, AliTRDgeometry::kNdets*sizeof(AliTRDtrackingChamber*));
+  memset(fIndex, 1, AliTRDgeometry::kNdets*sizeof(Char_t));
+  memset(fX0, 0, AliTRDgeometry::kNlayer*sizeof(Float_t));
 }
 
-//_____________________________________________________________________________
-AliTRDtrackingSector::AliTRDtrackingSector(const AliTRDtrackingSector &/*t*/)
-  :fSector(-1)
-  ,fN(0)
-  ,fGeom(0x0)
-{
-  //
-  // Copy constructor
-  //
-
-}
-
-//_____________________________________________________________________________
-AliTRDtrackingSector::~AliTRDtrackingSector()
-{
-  //
-  // Destructor
-  //
-
-}
     
 //_____________________________________________________________________________
 void AliTRDtrackingSector::Init(const AliTRDReconstructor *rec, const AliTRDCalDet *cal)
@@ -95,13 +71,13 @@ void AliTRDtrackingSector::Init(const AliTRDReconstructor *rec, const AliTRDCalD
 //
   
   AliTRDchamberTimeBin *tb = 0x0;
-  AliTRDtrackingChamber *tc = 0x0; int ic = 0; 
-  while((ic<kNChambersSector) && (tc = fChamber[ic++])){
-    for(Int_t itb=0; itb<AliTRDtrackingChamber::kNTimeBins; itb++){
-      if(!(tb = tc->GetTB(itb))) continue;
+  AliTRDtrackingChamber **tc = &fChamber[0];
+  for(Int_t ic = 0; (ic<AliTRDgeometry::kNdets) && (*tc); ic++, tc++){
+    for(Int_t itb=0; itb<AliTRDseed::knTimebins; itb++){
+      if(!(tb = (*tc)->GetTB(itb))) continue;
       tb->SetReconstructor(rec);
     }
-    tc->Build(fGeom, cal, rec->IsHLT());
+    (*tc)->Build(fGeom, cal, rec->IsHLT());
   }
     
   Int_t nl;
@@ -110,8 +86,8 @@ void AliTRDtrackingSector::Init(const AliTRDReconstructor *rec, const AliTRDCalD
     for(int is=0; is<AliTRDgeometry::kNstack; is++){
       Int_t idx = is*AliTRDgeometry::kNlayer + il;
       if(fIndex[idx]<0) continue;
-      tc = GetChamber(fIndex[idx]);
-      fX0[il] += tc->GetX(); nl++; 
+      fX0[il] += GetChamber(fIndex[idx])->GetX(); 
+      nl++; 
     }
     if(!nl){
       //printf("Could not estimate radial position  of plane %d in sector %d.\n", ip, fSector);
@@ -128,11 +104,12 @@ void AliTRDtrackingSector::Clear(const Option_t *opt)
 {
 // Reset counters and steer chamber clear
 
-  for(Int_t ich=0; ich<fN; ich++){ 
-    fChamber[ich]->Clear(opt);
-    delete fChamber[ich]; fChamber[ich] = 0x0;   // I would avoid
+  AliTRDtrackingChamber **tc = &fChamber[0];
+  for(Int_t ich=0; ich<fN; ich++, tc++){ 
+    (*tc)->Clear(opt);
+    delete (*tc); (*tc) = 0x0;   // I would avoid
   }	
-  for(Int_t ich=0; ich<kNChambersSector; ich++) fIndex[ich] = -1;
+  memset(fIndex, 1, AliTRDgeometry::kNdets*sizeof(Char_t));
   fN = 0;
 }
 
@@ -151,10 +128,12 @@ AliTRDtrackingChamber* AliTRDtrackingSector::GetChamber(Int_t stack, Int_t layer
   fIndex[ch] = rch >=0 ? fIndex[rch]+1 : 0; 
   fN++;
   
-  memmove(&fChamber[Int_t(fIndex[ch])+1], &fChamber[Int_t(fIndex[ch])], (kNChambersSector-fIndex[ch]-1)*sizeof(void*));
-  for(Int_t ic = ch+1; ic<kNChambersSector; ic++) fIndex[ic] += fIndex[ic] >= 0 ? 1 : 0;
+  memmove(&fChamber[Int_t(fIndex[ch])+1], &fChamber[Int_t(fIndex[ch])], (AliTRDgeometry::kNdets-fIndex[ch]-1)*sizeof(void*));
+  for(Int_t ic = ch+1; ic<AliTRDgeometry::kNdets; ic++) fIndex[ic] += fIndex[ic] >= 0 ? 1 : 0;
   
-  return fChamber[Int_t(fIndex[ch])] = new AliTRDtrackingChamber(AliTRDgeometry::GetDetector(layer, stack, fSector));
+  AliTRDtrackingChamber *chmb = fChamber[Int_t(fIndex[ch])] = new AliTRDtrackingChamber();
+  chmb->SetDetector(AliTRDgeometry::GetDetector(layer, stack, fSector));
+  return chmb;
 }
 
 //_____________________________________________________________________________
@@ -185,8 +164,8 @@ void AliTRDtrackingSector::Print(Option_t *)
 // 
 
   printf("\tSector %2d\n", fSector);
-  for(int il=0; il<6; il++){
-    for(int is =0; is<5; is++){
+  for(int il=0; il<AliTRDgeometry::kNlayer; il++){
+    for(int is =0; is<AliTRDgeometry::kNstack; is++){
       Int_t ch = is*AliTRDgeometry::kNlayer + il;
       printf("%2d[%2d] ", fIndex[ch], fIndex[ch]>=0 ? fChamber[Int_t(fIndex[ch])]->GetNClusters() : 0);
     }
