@@ -150,7 +150,7 @@ void run(Char_t *tasks="ALL", const Char_t *files=0x0, Int_t nmax=-1)
 	if(TESTBIT(fSteerTask, kCheckDetector)){
     mgr->AddTask(task = new AliTRDcheckDetector());
     taskPtr[(Int_t)kCheckDetector] = task;
-    task->SetDebugLevel(0);
+    task->SetDebugLevel(4);
     task->SetMCdata(fHasMCdata);
     
     // Create containers for input/output

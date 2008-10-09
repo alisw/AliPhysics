@@ -31,7 +31,7 @@ enum{
   kClusterCharge=9,
   kChargeDeposit=10,
   kNEventsTrigger=11,
-  kPostProcessing=19
+  kPurity = 12
 };
 public:
   AliTRDcheckDetector();
@@ -49,13 +49,7 @@ private:
   AliTRDcheckDetector(const AliTRDcheckDetector &);
   AliTRDcheckDetector& operator=(const AliTRDcheckDetector &);
   AliTRDeventInfo *fEventInfo;						//! ESD Header
-  TObjArray *fPHSdetector;						//! PHS container for single Detectors
-  TObjArray *fPHSsector;							//! PHS container for whole sector
-  TObjArray *fQCLdetector;						//!	Cluster Charge Container for single detector
-  TObjArray *fQCLsector;							//! Cluster Charge Container for whole sector
-  TObjArray *fQTdetector;							//! Total charge Deposit for single detector 
-  TObjArray *fQTsector;								//! Total charge Deposit for whole sector
-  TMap *fTriggerNames;							//! Names of the trigger classes 
+  TMap *fTriggerNames;										//! Containing trigger class names
   ClassDef(AliTRDcheckDetector, 1)
 };
 #endif
