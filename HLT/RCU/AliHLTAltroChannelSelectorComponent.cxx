@@ -147,7 +147,9 @@ int AliHLTAltroChannelSelectorComponent::DoEvent(const AliHLTComponentEventData&
   AliAltroDecoder* decoder=NULL;
   for (pDesc=GetFirstInputBlock(kAliHLTDataTypeDDLRaw); pDesc!=NULL; pDesc=GetNextInputBlock(), blockno++) {
     iResult=0;
-    if (pDesc->fSize<=32) continue;
+    if (pDesc->fSize<=32) {
+      continue;
+    }
 
     // search for the active pad information
     AliHLTUInt16_t* pActiveHwAddressArray=NULL;
@@ -306,7 +308,7 @@ int AliHLTAltroChannelSelectorComponent::DoEvent(const AliHLTComponentEventData&
 	break;
       }
     }
-    HLTInfo("data block %d (0x%08x): selected %d out of %d ALTRO channel(s), %d corrupted channels skipped", blockno, pDesc->fSpecification, iSelected, iTotal, iCorrupted);
+    if (fTalkative) HLTImportant("data block %d (0x%08x): selected %d out of %d ALTRO channel(s), %d corrupted channels skipped", blockno, pDesc->fSpecification, iSelected, iTotal, iCorrupted);
   }
   if (decoder) delete decoder;
 
@@ -314,7 +316,20 @@ int AliHLTAltroChannelSelectorComponent::DoEvent(const AliHLTComponentEventData&
     outputBlocks.clear();
   }
 
-  // !!! do not change the size since the output buffer is filled from the end !!!
+  // all data blocks need to be moved to the beginning of the
+  // buffer because PubSub is not able to handle data blocks entirely
+  // at the end of the buffer. The problem is that the component always
+  // indicates to use the full size of the buffer
+  if (outputBlocks.size()>0) {
+    int offset=outputBlocks.back().fOffset;
+    size-=offset;
+    memmove(outputPtr, outputPtr+offset, size);
+    for (AliHLTComponentBlockDataList::iterator block=outputBlocks.begin();
+	 block!=outputBlocks.end();
+	 block++) {
+      block->fOffset-=offset;
+    }
+  }
 
   return iResult;
 }
