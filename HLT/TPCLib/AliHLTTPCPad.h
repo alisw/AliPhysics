@@ -297,7 +297,7 @@ public:
    * @param timebinsRight      Timebins to include right of the signals above threshold (to include tails)
    * @param valueBelowAverage  The number of adc-counts below the average value. (sometimes there can be useful to also add some signals below average for your signals, especially when there is a lot of noise) It means that more of the tails of the signal is added.
    */
-  void ZeroSuppress(Double_t nRMS,Int_t threshold,Int_t reqMinPoint,Int_t beginTime,Int_t endTime,Int_t timebinsLeft, Int_t timebinsRight, Int_t valueBelowAverage);
+  void ZeroSuppress(Double_t nRMS,Int_t threshold,Int_t reqMinPoint,Int_t beginTime,Int_t endTime,Int_t timebinsLeft, Int_t timebinsRight, Int_t valueBelowAverage, bool speedup=false);
   
   /**
    * Bool method which returns the timein number of the first signal and number of consecutive signals, used together with GetPointer(bin) to access data 

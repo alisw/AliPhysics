@@ -433,7 +433,7 @@ int AliHLTTPCZeroSuppressionComponent::DoEvent( const AliHLTComponentEventData& 
 	
 	AliHLTTPCPad *tmpPad = fRowPadVector[row][pad];
 	tmpPad->SetDataToDefault();
-	
+
 	//reading data to pad
 	while(fDigitReader->NextBunch()){
 	  const UInt_t *bunchData= fDigitReader->GetSignals();
@@ -453,7 +453,7 @@ int AliHLTTPCZeroSuppressionComponent::DoEvent( const AliHLTComponentEventData& 
 	sumOccupancy+=tmpPad->GetNAddedSignals();
 
 	if(tmpPad->GetNAddedSignals()>=(UInt_t)fMinimumNumberOfSignals){
-	  tmpPad->ZeroSuppress(fNRMSThreshold, fSignalThreshold, fMinimumNumberOfSignals, fStartTimeBin, fEndTimeBin, fLeftTimeBin, fRightTimeBin, fValueBelowAverage);
+	  tmpPad->ZeroSuppress(fNRMSThreshold, fSignalThreshold, fMinimumNumberOfSignals, fStartTimeBin, fEndTimeBin, fLeftTimeBin, fRightTimeBin, fValueBelowAverage, fSkipSendingZSData);
 	  if(tmpPad->GetNAddedSignals()>0){
 	    assert((int)mapping.GetRow(fDigitReader->GetAltroBlockHWaddr())==row);
 	    assert((int)mapping.GetPad(fDigitReader->GetAltroBlockHWaddr())==pad);

@@ -534,7 +534,7 @@ Int_t AliHLTTPCPad::GetDataSignal(Int_t bin) const
   return fDataSignals[bin];
 }
 
-void AliHLTTPCPad::ZeroSuppress(Double_t nRMS, Int_t threshold, Int_t reqMinPoint, Int_t beginTime, Int_t endTime, Int_t timebinsLeft, Int_t timebinsRight, Int_t valueUnderAverage){
+void AliHLTTPCPad::ZeroSuppress(Double_t nRMS, Int_t threshold, Int_t reqMinPoint, Int_t beginTime, Int_t endTime, Int_t timebinsLeft, Int_t timebinsRight, Int_t valueUnderAverage, bool speedup){
   //see headerfile for documentation
  
   //HLTDebug("In Pad: nRMS=%d, threshold=%d, reqMinPoint=%d, beginTime=%d, endTime=%d, timebinsLeft=%d timebinsRight=%d valueUnderAverage=%d \n",nRMS,threshold,reqMinPoint,beginTime,endTime,timebinsLeft,timebinsRight,valueUnderAverage);
@@ -553,7 +553,8 @@ void AliHLTTPCPad::ZeroSuppress(Double_t nRMS, Int_t threshold, Int_t reqMinPoin
   }
  
   Int_t fThresholdUsed=threshold;
- 
+
+  Int_t maxVal=0;
   Int_t nAdded=0;
   Int_t sumNAdded=0;
   fSizeOfSignalPositionArray=0;
@@ -562,6 +563,7 @@ void AliHLTTPCPad::ZeroSuppress(Double_t nRMS, Int_t threshold, Int_t reqMinPoin
       if(fDataSignals[i]>0){
 	nAdded++;
 	sumNAdded+=fDataSignals[i]*fDataSignals[i];
+	if (maxVal<fDataSignals[i]) maxVal=fDataSignals[i];
       }
     }
   }
@@ -570,6 +572,7 @@ void AliHLTTPCPad::ZeroSuppress(Double_t nRMS, Int_t threshold, Int_t reqMinPoin
       if(fDataSignals[i]>0){
 	nAdded++;
 	sumNAdded+=fDataSignals[i];
+	if (maxVal<fDataSignals[i]) maxVal=fDataSignals[i];
       }
     }
   }
@@ -600,6 +603,7 @@ void AliHLTTPCPad::ZeroSuppress(Double_t nRMS, Int_t threshold, Int_t reqMinPoin
   else{
     fThresholdUsed = (Int_t)(averageValue + threshold); 
   }
+  if (maxVal<fThresholdUsed) return;
 
   // Do zero suppression on the adc values within [beginTime,endTime](add the good values)
   for(Int_t i=beginTime;i<endTime;i++){
@@ -630,6 +634,9 @@ void AliHLTTPCPad::ZeroSuppress(Double_t nRMS, Int_t threshold, Int_t reqMinPoin
 	fDataSignals[t]=(AliHLTTPCSignal_t)(fDataSignals[t]-averageValue + valueUnderAverage);
 	fSignalPositionArray[fSizeOfSignalPositionArray]=t;
 	fSizeOfSignalPositionArray++;
+	// Matthias Oct 10 2008: trying hard to make the code faster for the
+	// AltroChannelSelection. For that we only need to know there is data
+	if (speedup) return;
       }
       i+=lastSignalTime;
     }
