@@ -92,6 +92,11 @@ Bool_t AliAltroDecoder::CheckPayloadTrailer() const
 
 Bool_t AliAltroDecoder::Decode()
 { 
+  // Decodes the RCU payload (all altro channels in one go) from the DDL/Altro
+  // format to PC readable format.
+  // The 10 bit words of the 40/10 bit Altro format are transformed to separated
+  // integers.
+
   if( fIsFatalCorruptedTrailer == kTRUE)
     {
       //      printf("\n AliAltroDecoder::Decode(), WARNING, attempt to decode badly corrupted data\n");
@@ -157,6 +162,11 @@ Bool_t AliAltroDecoder::Decode()
 
 Bool_t AliAltroDecoder::NextChannel(AliAltroData *altroDataPtr)
 {
+  // Reads the next altro channel in the RCU payload after the RCU payload
+  // has been decoded. The channels are read starting from the end (backlinked list) 
+  // Returns kTRUE as long as ther are unread channels in the payload
+  // Returns kFALSE when all the channels have been read. 
+
   if(fIsFatalCorruptedTrailer == kTRUE)
     {
       return kFALSE;
@@ -170,6 +180,10 @@ Bool_t AliAltroDecoder::NextChannel(AliAltroData *altroDataPtr)
  	  Decode();
  	}
 
+      // an altro block must constist of at least 2 40bit words:
+      // - 40bit Altro trailer
+      // - at least 3 10bit words (bunch length, time bin, signal) padded to 40 bit
+      // we are reading backwards, so the index is already 1 inside the block
       if(fOutBufferIndex >= 7)
 	{
 	  if((fOutBuffer[fOutBufferIndex] << 4 ) | ((fOutBuffer[fOutBufferIndex-1] & 0x3c0) >> 6) == 0x2aaa)
@@ -202,7 +216,7 @@ Bool_t AliAltroDecoder::NextChannel(AliAltroData *altroDataPtr)
 	  if(fOutBufferIndex >= 0)
 	    {
 	      altroDataPtr->SetData( &fOutBuffer[fOutBufferIndex] );
-	      if(fOutBufferIndex > 0) fOutBufferIndex --;
+	      fOutBufferIndex --;
 	      altroDataPtr->SetDataSize( fNAltro10bitWords );
 	      return kTRUE;
 	    }
@@ -292,6 +306,8 @@ int AliAltroDecoder::SetMemory(UChar_t *dtaPtr, UInt_t size)
   // Returns a negative value if an inconsistency in the data is detected
 
   //  fIsFirstChannelOfPayload = kTRUE;
+  int iRet = 0;
+  fIsDecoded = kFALSE; 
 
   if(dtaPtr == 0)
     {
@@ -300,17 +316,14 @@ int AliAltroDecoder::SetMemory(UChar_t *dtaPtr, UInt_t size)
       return -99;
     }
 
-  if (size<fkN32HeaderWords+4)
+  if (size<(fkN32HeaderWords+1)*4)
     {
       //      printf("\nAliAltroDecoder::SetMemory(UChar_t *dtaPtr, UInt_t size) FATAL ERROR, too little data (%d)\n", size);
       //      printf("Data buffer must contain the CDH and at least one 32bit RCU trailer word\n");
       return -99;
     }
 
-
-  int iRet = 0;
   UInt_t tmpTrailerSize;
-  fIsDecoded = kFALSE; 
   f8DtaPtr =dtaPtr;
   fSize = size;
   f8DtaPtr =f8DtaPtr + fSize;
@@ -510,7 +523,7 @@ Int_t AliAltroDecoder::CopyBackward(Byte_t* pBuffer, Int_t bufferSize)
 	// with the 8 LSBs of the decoded 10 bit word at the beginning of
 	// the current channel
 	//assert(*pSrc==fOutBuffer[currentIndex]&0xff);
-	if (*pSrc==fOutBuffer[currentIndex]&0xff) {
+	if (*pSrc==(fOutBuffer[currentIndex]&0xff)) {
 
 	  // try to verfify the length of the channel
 	  UInt_t lenCheck=*(pSrc+iCopy+2)|(*(pSrc+iCopy+3)&0x3)<<8;
@@ -563,7 +576,7 @@ Bool_t  AliAltroDecoder::GetRCUTrailerData(UChar_t*& data) const
 Int_t   AliAltroDecoder::GetRCUTrailerSize() const
 {
   // Provide size of RCU trailer.
-  if (!f8DtaPtr) return 0;
+  if (!f8DtaPtr || !fIsDecoded || fSize==0) return 0;
   assert(fSize>(f8PayloadSize+fkN32HeaderWords*sizeof(UInt_t)));
   return fSize-(f8PayloadSize+fkN32HeaderWords*sizeof(UInt_t));
 }

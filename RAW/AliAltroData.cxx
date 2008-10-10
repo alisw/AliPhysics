@@ -121,8 +121,15 @@ int AliAltroData::NextBunch(AliAltroBunch *altroBunch)
 	  fBunchData --;
 	  altroBunch->SetEndTimeBin( *fBunchData );
 	  
+	  // Matthias Oct 10 2008: those checks are certainly a bug, first the 
+	  // bunch size is subtracted from fBufferLeft ... and than once again
+	  // I can understand that it should not be negative but the check as
+	  // committed in revision 29090 is wrong.
+	  // Effectively, this is always skipping the last bunch of the last
+	  // channel.
 	  //	  if( (fBufferLeft <=  7 ) || ( fBufferLeft - tmpsize)  <= 7)
-	  if( fBufferLeft - tmpsize  <= 7)
+	  //if( fBufferLeft - tmpsize  <= 7)
+	  if( fBufferLeft < 0)
 	    {
 	      //	      printf("%s:%d, ERROR, attempt too access buffer outside allowed range\n",  __FILE__ ,  __LINE__ );
 	      return kFALSE;
