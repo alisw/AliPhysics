@@ -313,7 +313,9 @@ void AliTRDseed::Update()
     yres[i] = 10000.0;
     if (!fClusters[i]) continue;
     if(!fClusters[i]->IsInChamber()) continue;
-    yres[i] = fY[i] - fYref[0] - (fYref[1] + anglecor) * fX[i] - fTilt*(fZ[i] - fZref[0]);   // Residual y
+    //yres[i] = fY[i] - fYref[0] - (fYref[1] + anglecor) * fX[i] - fTilt*(fZ[i] - fZref[0]);   // Residual y
+    yres[i] = fY[i] - (fYref[0] + fX[i] * fYref[1]) - fTilt*(fZ[i] - (fZref[0] + fX[i]*fZref[1]));   // Residual y
+
     //printf("dy[%2d]=%6.2f\n", i, yres[i]);
     zints[fN] = Int_t(fZ[i]);
     fN++;    

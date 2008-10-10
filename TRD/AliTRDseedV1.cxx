@@ -648,22 +648,22 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt)
   // book cluster information
   Double_t xc[knTimebins+1], yc[knTimebins], zc[knTimebins+1], sy[knTimebins], sz[knTimebins+1];
   Int_t zRow[knTimebins];
-  AliTRDcluster *c = 0x0;
+  AliTRDcluster *c=0x0, **jc = &fClusters[0];
   Int_t nc = 0;
-  for (Int_t ic=0; ic<kNtb; ic++) {
+  for (Int_t ic=0; ic<kNtb; ic++, ++jc) {
     zRow[ic] = -1;
     xc[ic]  = -1.;
     yc[ic]  = 999.;
     zc[ic]  = 999.;
     sy[ic]  = 0.;
     sz[ic]  = 0.;
-    if(!(c = fClusters[ic])) continue;
+    if(!(c = (*jc))) continue;
     if(!c->IsInChamber()) continue;
     Float_t w = 1.;
     if(c->GetNPads()>4) w = .5;
     if(c->GetNPads()>5) w = .2;
     zRow[nc] = c->GetPadRow();
-    xc[nc]   = c->GetX() - fX0;
+    xc[nc]   = fX0 - c->GetX();
     yc[nc]   = c->GetY();
     zc[nc]   = c->GetZ();
     Float_t qr = c->GetQ() - q0;
@@ -675,12 +675,11 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt)
   // to few clusters
   if (nc < kClmin) return kFALSE; 
   
-
   Int_t zN[2*35];
   Int_t nz = AliTRDtrackerV1::Freq(nc, zRow, zN, kFALSE);
   // more than one pad row crossing
   if(nz>2) return kFALSE; 
-  
+
   // estimate reference parameter at average x
   Double_t y0 = fYref[0];
   Double_t dydx = fYref[1]; 
@@ -732,15 +731,21 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt)
 
   
   // estimate deviation from reference direction
-  dzdx *= fTilt;
+  Float_t yt, zt;
   for (Int_t ic=0; ic<nc; ic++) {
-    yc[ic] -= (y0 + xc[ic]*dydx);
-    if(tilt) yc[ic] -= fTilt*(xc[ic]*dzdx + (zc[ic] - zc[nc])); 
+    // extrapolated y value for the track
+    yt = y0 - xc[ic]*dydx; 
+    // extrapolated z value for the track
+    zt = zc[nc] - xc[ic]*dzdx; 
+    // tilt correction
+    if(tilt) yc[ic] -= fTilt*(zc[ic] - zt); 
+    // diff with respect to the track direction
+    yc[ic] -= yt;
     fitterY.AddPoint(&xc[ic], yc[ic], sy[ic]);
   }
   fitterY.Eval();
   fYfit[0] = y0+fitterY.GetFunctionParameter(0);
-  fYfit[1] = dydx+fitterY.GetFunctionParameter(1);
+  fYfit[1] = dydx-fitterY.GetFunctionParameter(1);
 
   if(nchanges) fCross[1] = fYfit[0] + fCross[0] * fYfit[1];
 
