@@ -132,7 +132,7 @@ void makeResults(Char_t *tasks = "ALL", Char_t* dir=0x0)
         h->Draw(opt);
       } else if(o->InheritsFrom("TGraph")){ 
         g = dynamic_cast<TGraph*>(o);
-        g->Draw(opt);
+        g->Draw(Form("a%s", opt));
       } else{
         printf("No idea how to plot object of type %s.\n", o->IsA()->GetName());
         printf("Please teach me.\n");
