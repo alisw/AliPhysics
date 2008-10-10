@@ -25,16 +25,14 @@ class AliTRDpidChecker : public AliTRDrecoTask
 {
 
   enum{
-    kLQlikelihood    = 0                                           // place for 2-dim LQ electron likelihood distributions
-    ,kNNlikelihood = 1 * AliTRDCalPID::kNMom * AliPID::kSPECIES  // place for NN electron likelihood distributions
-    ,kdEdx         = 2 * AliTRDCalPID::kNMom * AliPID::kSPECIES  // place for the dE/dx spectra
-    ,kPH           = 3 * AliTRDCalPID::kNMom * AliPID::kSPECIES  // place for pulse height spectra
-    ,kMomentum     = 4 * AliTRDCalPID::kNMom * AliPID::kSPECIES  // place for the momentum distribution
-    ,kMomentumBin  = kMomentum +1                                // place for the momentum distribution
-    ,kGraphLQ      = kMomentumBin +1                             // place for the 2-dim LQ pion efficiencies
-    ,kGraphLQerr   = kGraphLQ +1                                 // place for the 2-dim LQ pion efficiency errors
-    ,kGraphNN      = kGraphLQerr +1                              // place for the NN pion efficiencies
-    ,kGraphNNerr   = kGraphNN +1                                 // place for the NN pion efficiency errors
+    kLQlikelihood    = 0     // place for 2-dim LQ electron likelihood distributions
+    ,kNNlikelihood   = 1     // place for NN electron likelihood distributions
+    ,kdEdx           = 2     // place for the dE/dx spectra
+    ,kPH             = 3     // place for pulse height spectra
+    ,kMomentum       = 4     // place for the momentum distribution
+    ,kMomentumBin    = 5     // place for the momentum distribution
+    ,kGraphLQ        = 6     // place for the 2-dim LQ pion efficiencies
+    ,kGraphNN        = 7     // place for the NN pion efficiencies
   };
 
   enum{
@@ -56,15 +54,7 @@ private:
   AliTRDpidChecker(const AliTRDpidChecker&);               // not implemented
   AliTRDpidChecker& operator=(const AliTRDpidChecker&);    // not implemented
 
-  Double_t GetPionEfficiency(Int_t Index1, Int_t Index2);  // calculates the pion efficiency
-  Double_t GetError(Int_t Index1, Int_t Index2);           // calculates the error
-  
-
   AliTRDReconstructor *fReconstructor;     //! reconstructor needed for recalculation the PID
-
-  enum{
-    kBins = 12001                // binning of the likelihood histograms
-  };
 
   ClassDef(AliTRDpidChecker, 1); // TRD PID checker
 };

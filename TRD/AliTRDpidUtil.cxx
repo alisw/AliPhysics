@@ -30,7 +30,7 @@ AliTRDpidUtil::AliTRDpidUtil()
 
 
 //________________________________________________________________________
-void  AliTRDpidUtil::CalculatePionEffi(TH1F* histo1, TH1F* histo2)
+void  AliTRDpidUtil::CalculatePionEffi(TH1* histo1, TH1* histo2)
 // Double_t  AliTRDpidUtil::GetError()
 {
   //
@@ -50,17 +50,18 @@ void  AliTRDpidUtil::CalculatePionEffi(TH1F* histo1, TH1F* histo2)
   Int_t abinE, bbinE, cbinE = -1;                    
   Double_t aBinSumE, bBinSumE;                  // content of a single bin
   Bool_t bFirst = 1;                            // checks if threshold is crossed for the first time
-  Double_t SumElecsE[kBins], SumPionsE[kBins];  // array of the integrated sum in each bin
-  memset(SumElecsE, 0, kBins*sizeof(Double_t));
-  memset(SumPionsE, 0, kBins*sizeof(Double_t));
+  Double_t SumElecsE[kBins+2], SumPionsE[kBins+2];  // array of the integrated sum in each bin
+  memset(SumElecsE, 0, (kBins+2)*sizeof(Double_t));
+  memset(SumPionsE, 0, (kBins+2)*sizeof(Double_t));
 
 
   // calculate electron efficiency of each bin
-  for (abinE = (histo1 -> GetNbinsX())-2; abinE >= 0; abinE--){  
-    aBinSumE = 0;
+  for (abinE = (histo1 -> GetNbinsX()); abinE >= 0; abinE--){  
+   aBinSumE = 0;
     aBinSumE = histo1 -> GetBinContent(abinE);
     
     SumElecsE[abinE] = SumElecsE[abinE+1] + aBinSumE;
+
     if((SumElecsE[abinE] >= fEleEffi) && (bFirst == 1)){
       bFirst = 0;
       cbinE = abinE;
@@ -71,7 +72,7 @@ void  AliTRDpidUtil::CalculatePionEffi(TH1F* histo1, TH1F* histo2)
   fThreshold = histo1 -> GetBinCenter(cbinE);
 
   // calculate pion efficiency of each bin
-  for (bbinE = (histo2 -> GetNbinsX())-2; bbinE >= abinE; bbinE--){	
+  for (bbinE = (histo2 -> GetNbinsX()); bbinE >= abinE; bbinE--){	
     bBinSumE = 0;
     bBinSumE = histo2 -> GetBinContent(bbinE);
 
@@ -88,14 +89,17 @@ void  AliTRDpidUtil::CalculatePionEffi(TH1F* histo1, TH1F* histo2)
   // use fit function to get derivate of the TGraph for error calculation
   TF1 *f1 = new TF1("f1","[0]*x*x+[1]*x+[2]", fEleEffi-.05, fEleEffi+.05);
   gEffis -> Fit("f1","Q","",fEleEffi-.05, fEleEffi+.05);
-  AliInfo(Form("Derivative at %4.2f : %f", fEleEffi, f1 -> Derivative(fEleEffi)));
-
+  
   // return the error of the pion efficiency
   if(((1.-fPionEffi) < 0) || ((1.-fCalcEleEffi) < 0)){
     AliWarning(" EleEffi or PioEffi > 1. Error can not be calculated. Please increase statistics or check your simulation!");
     return;
   }
   fError = sqrt(((1/histo2 -> GetEntries())*fPionEffi*(1-fPionEffi))+((f1 -> Derivative(fEleEffi))*(f1 -> Derivative(fEleEffi))*(1/histo1 -> GetEntries())*fCalcEleEffi*(1-fCalcEleEffi)));
+
+  AliInfo(Form("Pion Effi at [%f] : [%f +/- %f], Threshold[%f]", fCalcEleEffi, fPionEffi, fError, fThreshold));
+  AliInfo(Form("Derivative at %4.2f : %f\n", fEleEffi, f1 -> Derivative(fEleEffi)));
+
 }
 
 

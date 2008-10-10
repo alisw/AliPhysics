@@ -9,7 +9,7 @@
 //
 ///////////////////////////////////////////////////////
 
-class TH1F;
+class TH1;
 class AliTRDpidUtil : public TObject {
 public:
 
@@ -20,7 +20,7 @@ public:
   AliTRDpidUtil();
   virtual ~AliTRDpidUtil(){;}
 
-  void     CalculatePionEffi(TH1F* histo1, TH1F* histo2);
+  void     CalculatePionEffi(TH1* histo1, TH1* histo2);
 
   static Float_t ElectronEfficiency() { return fEleEffi;};
 
