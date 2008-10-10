@@ -23,7 +23,10 @@ AliCaloCalibSignal.cxx \
 AliEMCALSurvey.cxx \
 AliEMCALRecParam.cxx \
 AliEMCALQAChecker.cxx \
-AliEMCALSpaceFrame.cxx
+AliEMCALSpaceFrame.cxx \
+AliEMCALSTURawStream.cxx \
+SMcalib/AliEMCALCCUSBRawStream.cxx 
+
 
 
 HDRS= $(SRCS:.cxx=.h) 

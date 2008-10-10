@@ -27,5 +27,7 @@
 #pragma link C++ class AliEMCALRecParam+;
 #pragma link C++ class AliEMCALQAChecker+;
 #pragma link C++ class AliEMCALSpaceFrame+;
+#pragma link C++ class AliEMCALSTURawStream+;
+#pragma link C++ class AliEMCALCCUSBRawStream+;
 
 #endif
