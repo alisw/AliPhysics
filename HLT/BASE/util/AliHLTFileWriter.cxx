@@ -121,7 +121,7 @@ int AliHLTFileWriter::DoInit( int argc, const char** argv )
       if (argument.BeginsWith("=")) {
 	fSubDirFormat=argument.Replace(0,1,"");
       } else {
-	fSubDirFormat="event%03d";
+	fSubDirFormat="event%03lu";
       }
       // no additional eventno in the filename unless set again
       // the sub dir contains the id
@@ -310,9 +310,6 @@ int AliHLTFileWriter::BuildFileName(const AliHLTEventID_t eventID, const int blo
   filename="";
 
   AliHLTUInt32_t eventType=gkAliEventTypeUnknown;
-  IsDataEvent(&eventType);
-  if (eventType==gkAliEventTypeStartOfRun && CheckMode(kWriteAllEvents)) filename+="SOR_";
-  else if (eventType==gkAliEventTypeEndOfRun && CheckMode(kWriteAllEvents)) filename+="EOR_";
 
   if (!fDirectory.IsNull()) {
     filename+=fDirectory;
@@ -327,6 +324,11 @@ int AliHLTFileWriter::BuildFileName(const AliHLTEventID_t eventID, const int blo
   if (filename.EndsWith("/")) {
     gSystem->mkdir(filename);
   }
+
+  IsDataEvent(&eventType);
+  if (eventType==gkAliEventTypeStartOfRun && CheckMode(kWriteAllEvents)) filename+="SOR_";
+  else if (eventType==gkAliEventTypeEndOfRun && CheckMode(kWriteAllEvents)) filename+="EOR_";
+
   if (!fBaseName.IsNull())
     filename+=fBaseName;
   else
