@@ -182,7 +182,7 @@ class AliGRPObject : public TObject {
 	Float_t* fHallProbes;       //[fDimension] 
 	                            // array containg the values for the Hall Probes
 
-	ClassDef(AliGRPObject,1)
+	ClassDef(AliGRPObject,2)
 
 };
 
