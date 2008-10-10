@@ -724,9 +724,9 @@ Bool_t AliSimulation::Run(Int_t nEvents)
   }
 
   
-  
-  // run HLT simulation
-  if (!fRunHLT.IsNull()) {
+  // run HLT simulation on simulated digit data if raw data is not
+  // simulated, otherwise its called as part of WriteRawData
+  if (!fRunHLT.IsNull() && fWriteRawData.IsNull()) {
     if (!RunHLT()) {
       if (fStopOnError) return kFALSE;
     }
@@ -1118,14 +1118,16 @@ Bool_t AliSimulation::WriteRawData(const char* detectors,
   AliCodeTimerAuto("")
   
   TString detStr = detectors;
-  if (IsSelected("HLT", detStr))
-  {
-  	// Do nothing. "HLT" will be removed from detStr because the HLT raw
-  	// data files are generated in RunHLT.
-  }
-
   if (!WriteRawFiles(detStr.Data())) {
     if (fStopOnError) return kFALSE;
+  }
+
+  // run HLT simulation on simulated DDL raw files
+  // and produce HLT ddl raw files to be included in date/root file
+  if (IsSelected("HLT", detStr) && !fRunHLT.IsNull()) {
+    if (!RunHLT()) {
+      if (fStopOnError) return kFALSE;
+    }
   }
 
   TString dateFileName(fileName);
@@ -1200,6 +1202,11 @@ Bool_t AliSimulation::WriteRawFiles(const char* detectors)
     runNbFile.close();
 
     TString detStr = detectors;
+    if (IsSelected("HLT", detStr)) {
+      // Do nothing. "HLT" will be removed from detStr and HLT raw
+      // data files are generated in RunHLT.
+    }
+
     TObjArray* detArray = runLoader->GetAliRun()->Detectors();
     for (Int_t iDet = 0; iDet < detArray->GetEntriesFast(); iDet++) {
       AliModule* det = (AliModule*) detArray->At(iDet);
@@ -1683,8 +1690,8 @@ Bool_t AliSimulation::RunHLT()
   // AliSimulation::SetRunHLT can be used to set the options for HLT simulation
   // The default simulation depends on the HLT component libraries and their
   // corresponding agents which define components and chains to run. See
-  // http://web.ift.uib.no/~kjeks/doc/alice-hlt/
-  // http://web.ift.uib.no/~kjeks/doc/alice-hlt/classAliHLTModuleAgent.html
+  // http://web.ift.uib.no/~kjeks/doc/alice-hlt-current/
+  // http://web.ift.uib.no/~kjeks/doc/alice-hlt-current/classAliHLTModuleAgent.html
   //
   // The libraries to be loaded can be specified as an option.
   // <pre>
@@ -1700,8 +1707,11 @@ Bool_t AliSimulation::RunHLT()
   //     disable redirection of log messages to AliLog class
   // \li config=<i>macro</i>
   //     configuration macro
-  // \li localrec=<i>configuration</i>
+  // \li chains=<i>configuration</i>
   //     comma separated list of configurations to be run during simulation
+  // \li rawfile=<i>file</i>
+  //     source for the RawReader to be created, the default is <i>./</i> if
+  //     raw data is simulated
 
   int iResult=0;
   AliRunLoader* pRunLoader = LoadRun("READ");
@@ -1751,11 +1761,21 @@ Bool_t AliSimulation::RunHLT()
   // init the HLT simulation
   TString options;
   if (fRunHLT.CompareTo("default")!=0) options=fRunHLT;
-  if (!IsSelected("HLT", fWriteRawData)) {
+  TString detStr = fWriteRawData;
+  if (!IsSelected("HLT", detStr)) {
     options+=" writerawfiles=";
   } else {
     options+=" writerawfiles=HLT";
   }
+
+  if (!detStr.IsNull() && !options.Contains("rawfile=")) {
+    // as a matter of fact, HLT will run reconstruction and needs the RawReader
+    // in order to get detector data. By default, RawReaderFile is used to read
+    // the already simulated ddl files. Date and Root files from the raw data
+    // are generated after the HLT simulation.
+    options+=" rawfile=./";
+  }
+
   AliHLTSimulationInit_t fctInit=(AliHLTSimulationInit_t)(gSystem->DynFindSymbol(ALIHLTSIMULATION_LIBRARY, ALIHLTSIMULATION_INIT));
   if (fctInit==NULL || (iResult=(fctInit(pHLT, pRunLoader, options.Data())))<0) {
     AliError(Form("can not init HLT simulation: error %d (init %p)", iResult, fctInit));
