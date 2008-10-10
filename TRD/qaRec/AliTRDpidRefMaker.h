@@ -49,6 +49,11 @@ public:
   };
 
   enum {
+    kGraphTrain = 0
+    ,kGraphTest = 1
+  };
+
+  enum {
     kMoniTrain = 50
   };
 
@@ -69,18 +74,26 @@ public:
   void    SetEpochs(Int_t epochs) {fEpochs = epochs;};
   void    SetMinTrain(Int_t mintrain) {fMinTrain = mintrain;};
   void    SetTrainMomBin(Int_t trainmombin) {fTrainMomBin = trainmombin;};
+  void    SetDate(Int_t date) {fDate = date;};
+  void    SetDoTraining(Bool_t train) {fDoTraining = train;};
+  void    LoadFiles(const Char_t *InFileNN, const Char_t *InFileLQ);
 
   void    Terminate(Option_t *);
+
+  void    MakeTrainingLists();                                 // build the training and the test list
+  void    MonitorTraining(Int_t mombin);                       // monitor training process
+  void    LoadContainer(const Char_t *InFileCont);
+  void    CreateGraphs();
 
 private:
   AliTRDpidRefMaker(const AliTRDpidRefMaker&);              // not implemented
   AliTRDpidRefMaker& operator=(const AliTRDpidRefMaker&);   // not implemented
 
   void GetV0info(AliTRDtrackV1 *TRDtrack, Float_t *v0pdg);  // get the v0 information
-  void MakeTrainingLists();                                 // build the training and the test list
+/*   void MakeTrainingLists();                                 // build the training and the test list */
   void TrainNetworks(Int_t mombin);                         // train the neural networks for a given momentum bin
   void BuildLQRefs(Int_t mombin);                           // build the 2dim histos for a given momentum bin
-  void MonitorTraining(Int_t mombin);                       // monitor training process
+/*   void MonitorTraining(Int_t mombin);                       // monitor training process */
 
   AliTRDReconstructor *fReconstructor;     //! reconstructor needed for recalculation the PID
   TTree         *fNN;                      // NN data
@@ -98,6 +111,7 @@ private:
   Float_t       fMom;                      // momentum
   Float_t       *fdEdx[10];                // dEdx array
   Float_t       fv0pid[AliPID::kSPECIES];  // pid from v0s
+  Bool_t        fDoTraining;               // checks if training will be done
 
   ClassDef(AliTRDpidRefMaker, 1); // TRD reference  maker for NN
 };
