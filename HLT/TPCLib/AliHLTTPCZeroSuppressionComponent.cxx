@@ -419,6 +419,9 @@ int AliHLTTPCZeroSuppressionComponent::DoEvent( const AliHLTComponentEventData& 
 
       //Here the reading of the data and the zerosuppression takes place
       while(fDigitReader->NextChannel()){//Pad
+	int sumSignals=0;
+	int maxSignal=0;
+	int nofSignals=0;
 	Int_t row=fDigitReader->GetRow();
 	Int_t pad=fDigitReader->GetPad();
 	if(row==1000 || pad==1000){
@@ -431,8 +434,9 @@ int AliHLTTPCZeroSuppressionComponent::DoEvent( const AliHLTComponentEventData& 
 	  continue;
 	}  
 	
-	AliHLTTPCPad *tmpPad = fRowPadVector[row][pad];
-	tmpPad->SetDataToDefault();
+	AliHLTTPCPad *tmpPad = NULL;
+	if (!fSkipSendingZSData) tmpPad=fRowPadVector[row][pad];
+	if (tmpPad) tmpPad->SetDataToDefault();
 
 	//reading data to pad
 	while(fDigitReader->NextBunch()){
@@ -441,23 +445,33 @@ int AliHLTTPCZeroSuppressionComponent::DoEvent( const AliHLTComponentEventData& 
 	  for(Int_t i=0;i<fDigitReader->GetBunchSize();i++){
 	    if(bunchData[i]>0){// disregarding 0 data.
 	      if(time+i>=fStartTimeBin && time+i<=fEndTimeBin){
-		tmpPad->SetDataSignal(time+i,bunchData[i]);
+		if (tmpPad) tmpPad->SetDataSignal(time+i,bunchData[i]);
+		sumSignals+=bunchData[i];
+		if (maxSignal<(int)bunchData[i]) maxSignal=bunchData[i];
+		nofSignals++;
 	      }
 	    }
 	  }
 	}
 
 	nTotalChannels++;
-	if (lowestOccupancy<0 || (unsigned short)lowestOccupancy>tmpPad->GetNAddedSignals())
-	  lowestOccupancy=tmpPad->GetNAddedSignals();
-	sumOccupancy+=tmpPad->GetNAddedSignals();
+	if (lowestOccupancy<0 || lowestOccupancy>nofSignals)
+	  lowestOccupancy=nofSignals;
+	sumOccupancy+=nofSignals;
 
-	if(tmpPad->GetNAddedSignals()>=(UInt_t)fMinimumNumberOfSignals){
+	if(nofSignals>=fMinimumNumberOfSignals){
+	  if (tmpPad) {
 	  tmpPad->ZeroSuppress(fNRMSThreshold, fSignalThreshold, fMinimumNumberOfSignals, fStartTimeBin, fEndTimeBin, fLeftTimeBin, fRightTimeBin, fValueBelowAverage, fSkipSendingZSData);
 	  if(tmpPad->GetNAddedSignals()>0){
 	    assert((int)mapping.GetRow(fDigitReader->GetAltroBlockHWaddr())==row);
 	    assert((int)mapping.GetPad(fDigitReader->GetAltroBlockHWaddr())==pad);
 	    fHwAddressList.push_back((AliHLTUInt16_t)fDigitReader->GetAltroBlockHWaddr());
+	  }
+	  } else {
+	    assert(fSkipSendingZSData);
+	    if (nofSignals>0 && maxSignal>(sumSignals/nofSignals)+fSignalThreshold) {
+	      fHwAddressList.push_back((AliHLTUInt16_t)fDigitReader->GetAltroBlockHWaddr());
+	    }
 	  }
 	} else {
 	  nSkippedChannels++;
