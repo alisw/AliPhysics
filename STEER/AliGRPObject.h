@@ -164,9 +164,8 @@ class AliGRPObject : public TObject {
 	Float_t*  fBeamIntensity   ;      // [fPoints]
 	                                  // BeamIntensity entry from DCS DB
 	AliSplineFit*  fBeamIntensitySplineFit;       // BeamIntensity SplineFit from DCS DB
-	Char_t    fL3Polarity;             // L3Polarity entry from DCS DB
-	Char_t    fDipolePolarity;         // [fPoints]
-	                                  // DipolePolarity entry from DCS DB
+	Char_t    fL3Polarity;            // L3Polarity entry from DCS DB
+	Char_t    fDipolePolarity;        // DipolePolarity entry from DCS DB 	                                  
 	Float_t*  fL3Current;             // [fPoints]
 	                                  // L3Current entry from DCS DB
 	Float_t*  fDipoleCurrent;         // [fPoints]

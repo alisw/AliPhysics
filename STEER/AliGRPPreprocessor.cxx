@@ -578,7 +578,7 @@ Int_t AliGRPPreprocessor::ProcessDcsDPs(TMap* valueMap, AliGRPObject* grpObj)
 	// processing DCS DPs
 	//
 
-	Int_t entries = 0;
+	Int_t entries = 0;  // counting the entries that are in the DCS DB, not taking care whether they have values or not
 	Int_t nLHCEntries = 0;
 	Int_t nL3Entries = 0;
 	Int_t nDipoleEntries = 0;
@@ -610,8 +610,14 @@ Int_t AliGRPPreprocessor::ProcessL3DPs(TMap* valueMap, AliGRPObject* grpObj)
 		Log(Form("%s not found in the map!!!",fgkDCSDataPoints[indexDP]));
 	} 
 	else {
-		Char_t charDCS = ProcessBool(array);
-		grpObj->SetL3Polarity(charDCS);
+		if (array->GetEntries() == 0){
+			AliError(Form("No entries found in array! setting %s Polarity to invalid...",fgkDCSDataPoints[indexDP]));
+		}
+		else {
+			Char_t charDCS = ProcessBool(array);
+			grpObj->SetL3Polarity(charDCS);
+			AliInfo(Form("%s set to %d",fgkDCSDataPoints[indexDP],(Int_t)(grpObj->GetL3Polarity())));
+		}
 		nL3Entries++;
 	}
 
@@ -624,9 +630,14 @@ Int_t AliGRPPreprocessor::ProcessL3DPs(TMap* valueMap, AliGRPObject* grpObj)
 		Log(Form("%s not found in the map!!!",fgkDCSDataPoints[indexDP]));
 	} 
 	else {
-		Float_t *floatDCS = ProcessFloatAll(array);
-		grpObj->SetL3Current(floatDCS);
-		delete floatDCS;
+		if (array->GetEntries() == 0){
+			AliError(Form("No entries found in array! setting %s to invalid...",fgkDCSDataPoints[indexDP]));
+		}
+		else {
+			Float_t *floatDCS = ProcessFloatAll(array);
+			grpObj->SetL3Current(floatDCS);
+			delete floatDCS;
+		}
 		nL3Entries++;
 	}
 
@@ -643,15 +654,19 @@ Int_t AliGRPPreprocessor::ProcessDipoleDPs(TMap* valueMap, AliGRPObject* grpObj)
 
 	AliInfo(Form("==========DipolePolarity==========="));
 	indexDP = kDipolePolarity;
-	AliInfo(Form("indexDP = %d",indexDP));
 	array = (TObjArray *)valueMap->GetValue(fgkDCSDataPoints[indexDP]);
-	AliInfo(Form("array entries = %d",array->GetEntries()));
 	if(!array) {
 		Log(Form("%s not found in the map!!!",fgkDCSDataPoints[indexDP]));
 	} 
 	else {
-		Bool_t charDCS = ProcessBool(array);
-		grpObj->SetDipolePolarity(charDCS);
+		if (array->GetEntries() == 0){
+			AliError(Form("No entries found in array! setting %s to invalid...",fgkDCSDataPoints[indexDP]));
+		}
+		else {
+			Char_t charDCS = ProcessBool(array);
+			grpObj->SetDipolePolarity(charDCS);
+			AliInfo(Form("%s set to %d",fgkDCSDataPoints[indexDP],(Int_t)(grpObj->GetDipolePolarity())));
+		}
 		nDipoleEntries++;
 	}
 
@@ -664,9 +679,14 @@ Int_t AliGRPPreprocessor::ProcessDipoleDPs(TMap* valueMap, AliGRPObject* grpObj)
 		Log(Form("%s not found in the map!!!",fgkDCSDataPoints[indexDP]));
 	} 
 	else {
-		Float_t *floatDCS = ProcessFloatAll(array);
-		grpObj->SetDipoleCurrent(floatDCS);
-		delete floatDCS;
+		if (array->GetEntries() == 0){
+			AliError(Form("No entries found in array! setting %s to invalid...",fgkDCSDataPoints[indexDP]));
+		}
+		else {
+			Float_t *floatDCS = ProcessFloatAll(array);
+			grpObj->SetDipoleCurrent(floatDCS);
+			delete floatDCS;
+		}
 		nDipoleEntries++;
 	}
 
@@ -688,8 +708,14 @@ Int_t AliGRPPreprocessor::ProcessEnvDPs(TMap* valueMap, AliGRPObject* grpObj)
 		Log(Form("%s not found in the map!!!",fgkDCSDataPoints[indexDP]));
 	} 
 	else {
-		Float_t *floatDCS = ProcessFloatAll(array);
-		grpObj->SetCavernTemperature(floatDCS);
+		if (array->GetEntries() == 0){
+			AliError(Form("No entries found in array! setting %s to invalid...",fgkDCSDataPoints[indexDP]));
+		}
+		else {
+			Float_t *floatDCS = ProcessFloatAll(array);
+			grpObj->SetCavernTemperature(floatDCS);
+			delete floatDCS;
+		}
 		nEnvEntries++;
 	}
 
@@ -698,8 +724,6 @@ Int_t AliGRPPreprocessor::ProcessEnvDPs(TMap* valueMap, AliGRPObject* grpObj)
 	AliInfo(Form("==========AtmosPressures (Cavern + Surface)==========="));
 	AliDCSSensorArray *dcsSensorArray = GetPressureMap(valueMap);
 	dcsSensorArray->Print();
-	AliInfo(Form("fPressure = %p",fPressure));
-	AliInfo(Form("dcsSensorArray = %p",dcsSensorArray));
 	if( fPressure->NumFits()==0 ) {
 		Log("Problem with the pressure sensor values!!!");
 	} 
@@ -793,13 +817,18 @@ Int_t AliGRPPreprocessor::ProcessHPDPs(TMap* valueMap, AliGRPObject* grpObj)
 			Log(Form("%s not found in the map!!!",AliGRPObject::GetHPDP(indexDP)));
 		} 
 		else {
-			Float_t *floatDCS = ProcessFloatAll(array);
-			AliDebug(2,Form("value[0] = %f, value[1] = %f, value[2] = %f, value[3] = %f, value[4] = %f",floatDCS[0],floatDCS[1],floatDCS[2],floatDCS[3],floatDCS[4])); 
-			grpObj->SetHallProbes((AliGRPObject::DP_HallProbes)indexDP,floatDCS);
-			for (Int_t kk = 0 ; kk< 5; kk++){
-				AliDebug(2,Form("HallProbe[%d][%d]=%f",indexDP,kk,grpObj->GetHallProbes((AliGRPObject::DP_HallProbes)indexDP,(AliGRPObject::Stats)kk)));
+			if (array->GetEntries() == 0){
+				AliError(Form("No entries found in array! setting %s to invalid...",AliGRPObject::GetHPDP(indexDP)));
 			}
-			delete floatDCS;
+			else {
+				Float_t *floatDCS = ProcessFloatAll(array);
+				AliDebug(2,Form("value[0] = %f, value[1] = %f, value[2] = %f, value[3] = %f, value[4] = %f",floatDCS[0],floatDCS[1],floatDCS[2],floatDCS[3],floatDCS[4])); 
+				grpObj->SetHallProbes((AliGRPObject::DP_HallProbes)indexDP,floatDCS);
+				for (Int_t kk = 0 ; kk< 5; kk++){
+					AliDebug(2,Form("HallProbe[%d][%d]=%f",indexDP,kk,grpObj->GetHallProbes((AliGRPObject::DP_HallProbes)indexDP,(AliGRPObject::Stats)kk)));
+				}
+				delete floatDCS;
+			}
 			nHPEntries++;
 		}
 	}
@@ -831,29 +860,34 @@ Int_t AliGRPPreprocessor::ProcessLHCDPs(TMap* valueMap, AliGRPObject* grpObj)
 		Log(Form("%s not found in the map!!!",fgkDCSDataPoints[indexDP]));
 	} 
 	else {
-		TString stringDCS = ProcessChar(array);
-		if (stringDCS.Length()!=0) {
-			Bool_t found = kFALSE;
-			for( Int_t i=0; i<20; i+=2 ) {
-				if( stringDCS.CompareTo(fgkLHCState[i]) == 0 ) {
-					stringDCS = fgkLHCState[i+1];
-					found = kTRUE;
-					break;
-				}
-			}
-			if (found){
-				Log(Form("<%s> for run %d: %s",fgkDCSDataPoints[indexDP],fRun, stringDCS.Data()));
-				grpObj->SetLHCState(stringDCS);
-			}
-			else{
-				Log(Form("%s values found not valid!",fgkDCSDataPoints[indexDP]));
-				grpObj->SetLHCState(AliGRPObject::GetInvalidString());
-			} 
+		if (array->GetEntries() == 0){
+			AliError(Form("No entries found in array! setting %s to invalid...",fgkDCSDataPoints[indexDP]));
 		}
 		else {
-			Log(Form("%s not valid (null length), string set as invalid!",fgkDCSDataPoints[indexDP]));
-			grpObj->SetLHCState(AliGRPObject::GetInvalidString());
-		}	  
+			TString stringDCS = ProcessChar(array);
+			if (stringDCS.Length()!=0) {
+				Bool_t found = kFALSE;
+				for( Int_t i=0; i<20; i+=2 ) {
+					if( stringDCS.CompareTo(fgkLHCState[i]) == 0 ) {
+						stringDCS = fgkLHCState[i+1];
+						found = kTRUE;
+						break;
+					}
+				}
+				if (found){
+					Log(Form("<%s> for run %d: %s",fgkDCSDataPoints[indexDP],fRun, stringDCS.Data()));
+					grpObj->SetLHCState(stringDCS);
+				}
+				else{
+					Log(Form("%s values found not valid!",fgkDCSDataPoints[indexDP]));
+					grpObj->SetLHCState(AliGRPObject::GetInvalidString());
+				} 
+			}
+			else {
+				Log(Form("%s not valid (null length), string set as invalid!",fgkDCSDataPoints[indexDP]));
+				grpObj->SetLHCState(AliGRPObject::GetInvalidString());
+			}	  
+		}
 		nLHCEntries++;
 	}
 	
@@ -866,13 +900,17 @@ Int_t AliGRPPreprocessor::ProcessLHCDPs(TMap* valueMap, AliGRPObject* grpObj)
 		Log(Form("%s not found in the map!!!",fgkDCSDataPoints[indexDP]));
 	} 
 	else {
-		Float_t *floatDCS = ProcessFloatAll(array);
-		grpObj->SetLHCLuminosity(floatDCS);
-		delete floatDCS;
-		nLHCEntries++;
-		AliSplineFit* splfit = GetSplineFit(array,fgkDCSDataPoints[indexDP]);
-		grpObj->SetLHCLuminositySplineFit(splfit);
-		//		delete splfit;
+		if (array->GetEntries() == 0){
+			AliError(Form("No entries found in array! setting %s and its Spline Fit to invalid...",fgkDCSDataPoints[indexDP]));
+		}
+		else {
+			Float_t *floatDCS = ProcessFloatAll(array);
+			grpObj->SetLHCLuminosity(floatDCS);
+			delete floatDCS;
+			AliSplineFit* splfit = GetSplineFit(array,fgkDCSDataPoints[indexDP]);
+			grpObj->SetLHCLuminositySplineFit(splfit);
+			//		delete splfit;
+		}
 		nLHCEntries++;
 	}
 
@@ -885,13 +923,17 @@ Int_t AliGRPPreprocessor::ProcessLHCDPs(TMap* valueMap, AliGRPObject* grpObj)
 		Log(Form("%s not found in the map!!!",fgkDCSDataPoints[indexDP]));
 	} 
 	else {
-		Float_t *floatDCS = ProcessFloatAll(array);
-		grpObj->SetBeamIntensity(floatDCS);
-		delete floatDCS;
-		nLHCEntries++;
-		AliSplineFit* splfit1 = GetSplineFit(array,fgkDCSDataPoints[indexDP]);
-		grpObj->SetBeamIntensitySplineFit(splfit1);
-		//delete splfit;
+		if (array->GetEntries() == 0){
+			AliError(Form("No entries found in array! setting %s and its Spline Fit to invalid...",fgkDCSDataPoints[indexDP]));
+		}
+		else {
+			Float_t *floatDCS = ProcessFloatAll(array);
+			grpObj->SetBeamIntensity(floatDCS);
+			delete floatDCS;
+			AliSplineFit* splfit1 = GetSplineFit(array,fgkDCSDataPoints[indexDP]);
+			grpObj->SetBeamIntensitySplineFit(splfit1);
+			//delete splfit;
+		}
 		nLHCEntries++;
 	}
 
@@ -942,7 +984,7 @@ TString AliGRPPreprocessor::ProcessChar(TObjArray *array)
 	AliDCSValue *v = 0x0;
 	for(Int_t iCount = 0; iCount < array->GetEntries(); iCount++) {
 		v = (AliDCSValue *)array->At(iCount);
-		if ((v->GetTimeStamp() < GetStartTimeDCSQuery()) || (v->GetTimeStamp() > GetEndTimeDCSQuery())) {
+		if (((Int_t)(v->GetTimeStamp()) < (Int_t)GetStartTimeDCSQuery()) || ((Int_t)(v->GetTimeStamp()) > (Int_t)GetEndTimeDCSQuery())) {
 			AliError(Form("DCS values for the parameter outside the queried interval"));
 			continue;
 		}
@@ -984,7 +1026,7 @@ Float_t* AliGRPPreprocessor::ProcessFloatAll(TObjArray* array)
 	Float_t *tempArray = new Float_t[nCounts];
 	for(Int_t i = 0; i < nCounts; i++) {
 		AliDCSValue *v = (AliDCSValue *)array->At(i);
-		if((v->GetTimeStamp() >= GetStartTimeDCSQuery()) &&(v->GetTimeStamp() <= GetEndTimeDCSQuery())) {
+		if(((Int_t)(v->GetTimeStamp()) >= (Int_t)GetStartTimeDCSQuery()) &&((Int_t)(v->GetTimeStamp()) <= (Int_t)GetEndTimeDCSQuery())) {
 			aDCSArraySum += v->GetFloat();
 			tempArray[i] = v->GetFloat();
 			AliDebug(2,Form("%d-th entry = %f",i,tempArray[i]));
@@ -992,10 +1034,12 @@ Float_t* AliGRPPreprocessor::ProcessFloatAll(TObjArray* array)
 		}
 	}
 
+	AliDebug(2,Form("Using %i entries, starting from %i entries",iCounts,nCounts));
     	if(iCounts != 0) {
-		aDCSArrayMean = TMath::Mean(nCounts,tempArray);
-		aDCSArrayMedian = TMath::Median(nCounts,tempArray);
-		aDCSArraySDMean = TMath::RMS(nCounts,tempArray);
+		aDCSArrayMean = TMath::Mean(iCounts,tempArray);
+		aDCSArrayMedian = TMath::Median(iCounts,tempArray);
+		aDCSArraySDMean = TMath::RMS(iCounts,tempArray);
+		AliDebug(2,Form("SD = %f",aDCSArraySDMean));
 		// computing standard deviation wrt median
 		AliDebug(2,Form("maximum = %f, minimum = %f", aDCSArrayMean+3*aDCSArraySDMean, aDCSArrayMean-3*aDCSArraySDMean));
 		for (Int_t i = 0; i < iCounts; i++){
@@ -1039,11 +1083,11 @@ Float_t* AliGRPPreprocessor::ProcessFloatAll(TObjArray* array)
 	
 	
 	
-	AliDebug(2,Form("mean within %d counts = %f ",nCounts,aDCSArrayMean));
-	AliDebug(2,Form("truncated mean within %d counts = %f (%i values used)",nCounts,aDCSArrayTruncMean,iCounts1));
-	AliDebug(2,Form("median within %d counts = %f ",nCounts,aDCSArrayMedian));
-	AliDebug(2,Form("standard deviation with mean within %d counts = %f ",nCounts,aDCSArraySDMean));
-	AliDebug(2,Form("standard deviation with median within %d counts = %f ",nCounts,aDCSArraySDMedian));
+	AliDebug(2,Form("mean within %d counts = %f ",iCounts,aDCSArrayMean));
+	AliDebug(2,Form("truncated mean within %d counts = %f (%i values used)",iCounts,aDCSArrayTruncMean,iCounts1));
+	AliDebug(2,Form("median within %d counts = %f ",iCounts,aDCSArrayMedian));
+	AliDebug(2,Form("standard deviation with mean within %d counts = %f ",iCounts,aDCSArraySDMean));
+	AliDebug(2,Form("standard deviation with median within %d counts = %f ",iCounts,aDCSArraySDMedian));
 	
     	parameters[0] = aDCSArrayMean;
 	parameters[1] = aDCSArrayTruncMean;
@@ -1069,10 +1113,10 @@ Char_t AliGRPPreprocessor::ProcessBool(TObjArray* array)
 	Bool_t aDCSBool = kTRUE;
 
 	AliDCSValue *v = 0x0;
-	
+
 	for(Int_t iCount = 0; iCount < array->GetEntries(); iCount++) {
 		v = (AliDCSValue *)array->At(iCount);
-		if ((v->GetTimeStamp() < GetStartTimeDCSQuery()) || (v->GetTimeStamp() > GetEndTimeDCSQuery())) {
+		if (((Int_t)(v->GetTimeStamp()) < (Int_t)GetStartTimeDCSQuery()) || ((Int_t)(v->GetTimeStamp()) > (Int_t)GetEndTimeDCSQuery())) {
 			AliError(Form("DCS values for the parameter outside the queried interval"));
 			continue;
 		}
@@ -1081,9 +1125,10 @@ Char_t AliGRPPreprocessor::ProcessBool(TObjArray* array)
 			AliError(Form("DCS values for the parameter changed from %d to %d within the queried interval", (UInt_t)aDCSBool, (UInt_t)v->GetBool()));
 		}
 		aDCSBool = v->GetBool(); // always keeping last value
+		AliDebug(2,Form("Bool = %d",(Int_t)aDCSBool));
 	}
 	
-	Char_t caDCSBool = (Char_t)aDCSBool;
+	Char_t caDCSBool = (Char_t) aDCSBool;
 	return caDCSBool;
 	
 }
@@ -1103,7 +1148,7 @@ Float_t AliGRPPreprocessor::ProcessInt(TObjArray* array)
 
 	for(Int_t iCount = 0; iCount < array->GetEntries(); iCount++) {
 		v = (AliDCSValue *)array->At(iCount);
-		if((v->GetTimeStamp() >= GetStartTimeDCSQuery()) &&(v->GetTimeStamp() <= GetEndTimeDCSQuery())) {
+		if(((Int_t)(v->GetTimeStamp()) >= (Int_t)GetStartTimeDCSQuery()) &&((Int_t)(v->GetTimeStamp()) <= (Int_t)GetEndTimeDCSQuery())) {
 			aDCSArraySum += v->GetInt();
 			iCounts += 1;
 		}
@@ -1130,7 +1175,7 @@ Float_t AliGRPPreprocessor::ProcessUInt(TObjArray* array)
 
 	for(Int_t iCount = 0; iCount < array->GetEntries(); iCount++) {
 		v = (AliDCSValue *)array->At(iCount);
-		if((v->GetTimeStamp() >= GetStartTimeDCSQuery()) &&(v->GetTimeStamp() <= GetEndTimeDCSQuery())) {
+		if(((Int_t)(v->GetTimeStamp()) >= (Int_t)GetStartTimeDCSQuery()) &&((Int_t)(v->GetTimeStamp()) <= (Int_t)GetEndTimeDCSQuery())) {
 			aDCSArraySum += v->GetUInt();
 			iCounts += 1;
 		}
@@ -1150,7 +1195,6 @@ AliDCSSensorArray *AliGRPPreprocessor::GetPressureMap(TMap* dcsAliasMap)
 {
 	// extract DCS pressure maps. Perform fits to save space
 	
-	AliInfo ("here ok");
 	TMap *map = fPressure->ExtractDCS(dcsAliasMap);
 	if (map) {
 		fPressure->MakeSplineFit(map);
@@ -1209,7 +1253,7 @@ Int_t AliGRPPreprocessor::ReceivePromptRecoParameters(UInt_t run, const char* db
 	
 	// main logbook
 	TString sqlQuery;
-	sqlQuery.Form("SELECT DAQ_time_start, run_type, detectorMask FROM logbook WHERE run = %d", run);
+	sqlQuery.Form("SELECT DAQ_time_start, run_type, detectorMask, L3_magnetCurrent, Dipole_magnetCurrent FROM logbook WHERE run = %d", run);
 	TSQLResult* result = server->Query(sqlQuery);
 	if (!result)
 		{
@@ -1232,13 +1276,23 @@ Int_t AliGRPPreprocessor::ReceivePromptRecoParameters(UInt_t run, const char* db
 			return -4;
 		}
 	
+	TString timeStartString(row->GetField(0));
 	TString runType(row->GetField(1));
+	TString detectorMaskString(row->GetField(2));
+	TString l3CurrentString(row->GetField(3));
+	TString dipoleCurrentString(row->GetField(4));
+	time_t timeStart = (time_t)(timeStartString.Atoi());
+	UInt_t detectorMask = (UInt_t)(detectorMaskString.Atoi());
+	Float_t l3Current = (Float_t)(TMath::Abs(l3CurrentString.Atof()));
+	Float_t dipoleCurrent = (Float_t)(TMath::Abs(dipoleCurrentString.Atof()));
 	
-	TMap grpData;
-	grpData.Add(new TObjString("fAliceStartTime"), new TObjString(row->GetField(0)));
-	grpData.Add(new TObjString("fRunType"), new TObjString(runType));
-	grpData.Add(new TObjString("fDetectorMask"), new TObjString(row->GetField(2)));
-	
+	AliGRPObject * grpObj = new AliGRPObject();
+	grpObj->SetTimeStart(timeStart); 
+	grpObj->SetRunType((TString)(row->GetField(1)));
+	grpObj->SetDetectorMask(detectorMask);
+	grpObj->SetL3Current(l3Current,(AliGRPObject::Stats)0);
+	grpObj->SetDipoleCurrent(dipoleCurrent,(AliGRPObject::Stats)0);
+
 	delete row;
 	row = 0;
 	
@@ -1246,16 +1300,16 @@ Int_t AliGRPPreprocessor::ReceivePromptRecoParameters(UInt_t run, const char* db
 	result = 0;
 	
 	Printf("Storing GRP/GRP/Data object with the following content");
-	grpData.Print();
+	grpObj->Dump();
 	
 	AliCDBMetaData metadata;
-	metadata.SetResponsible("Jan Fiete Grosse-Oetringhaus");
+	metadata.SetResponsible("Jan Fiete Grosse-Oetringhaus & Chiara Zampolli");
 	metadata.SetComment("GRP Output parameters received during online running");
 	
 	AliCDBId id("GRP/GRP/Data", run, run);
-	Bool_t success = cdb->Put(&grpData, id, &metadata);
+	Bool_t success = cdb->Put(grpObj, id, &metadata);
 	
-	grpData.DeleteAll();
+	delete grpObj;
 	
 	if (!success)
 		{
