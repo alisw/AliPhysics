@@ -1020,8 +1020,11 @@ AC_ARG_ENABLE(doc,
   [AC_HELP_STRING([--disable-doc],
       [disable documentation build; monolithic build --enable-doc=mono ])],
   [],[enable_doc=modules])
+
 if test "x$DOXYGEN" = "x" ; then
    enable_doc=no.doxygen
+elif test "x$enable_doc" = "xyes" ; then
+   enable_doc=yes
 elif test ! "x$enable_doc" = "xmono" && \
      test ! "x$enable_doc" = "xmodules"  && \
      test ! "x$enable_doc" = "xno"; then

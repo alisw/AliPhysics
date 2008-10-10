@@ -23,23 +23,34 @@ class AliHLTEsdManager;
 /**
  * @defgroup alihlt_aliroot_reconstruction AliRoot reconstruction.
  *
+ * @section alihlt_aliroot_reconstruction_intro General Remarks
  * Like all other ALICE detectors, HLT utilizes the AliReconstruction interface
  * to implement a plugin for the AliRoot reconstruction. The reconstructor can be
  * used to
- * - run HLT analysis chains in the AliRoot reconstruction <br>
- *   This option is mainly intended for the development and debugging cycle. HLT
- *   chains can be defined by means of AliHLTConfiguration and can be run either
- *   stand-alone or embedded into the AliReconstruction cycle.
- * - run the default analysis chains <br>
- *   HLT modules can define default analysis chains to be run during AliRoot
- *   reconstruction.
- * - handle the HLTOUT data<br>
- *   The HLT output stream contains multiple data blocks produced by the various
- *   components of the HLT chain. Each block might need different and even
- *   detector specific processing, like e.g. the processing of ESD objects or the
- *   handling of compressed data.
+ * -# run HLT analysis chains in the AliRoot reconstruction <br>
+ *    This option is mainly intended for the <em>development and debugging cycle</em>. 
+ *    HLT chains can be defined by means of AliHLTConfiguration and can be run either
+ *    stand-alone or embedded into the AliReconstruction cycle.
+ * -# run the default analysis chains <br>
+ *    HLT modules can define default analysis chains to be run during AliRoot
+ *    reconstruction.
+ * -# handle the HLTOUT data<br>
+ *    The HLT output stream contains multiple data blocks produced by the various
+ *    components of the HLT chain. Each block might need different and even
+ *    detector specific processing, like e.g. the processing of ESD objects or the
+ *    handling of compressed data.
  *
- * The AliHLTReconstructor provides the main interface for this group.
+ * @section alihlt_aliroot_reconstruction_steering Steering
+ * The AliHLTReconstructor provides the main interface for the reconstruction. 
+ * The handling of the HLTOUT data is described in AliRawReaderHLT.
+ *
+ * @section alihlt_aliroot_reconstruction_examples Examples
+ * @subsection alihlt_aliroot_reconstruction_examples_reco Run chains
+ * - @ref tut_reconstruction
+ *
+ * @subsection alihlt_aliroot_reconstruction_examples_hltout Handle HLTOUT
+ * - @ref tut_alirawreaderhlt
+ *
  * @ingroup alihlt_system
  */
 

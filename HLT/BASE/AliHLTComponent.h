@@ -26,7 +26,7 @@
  * analysis publish new data for the subsequent components. Only the
  * input data blocks and entries from CDB are available for the analysis. 
  *
- * @section alihlt_component_intro Component implementation
+ * @section alihlt_component_implementation Component implementation
  * AliHLTComponent provides the interface for all components, see there
  * for details. Three types are provided:
  * - AliHLTProcessor

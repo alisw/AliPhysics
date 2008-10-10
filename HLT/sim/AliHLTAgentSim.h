@@ -24,6 +24,7 @@
  * This is the agent for the HLTsim library.
  *
  * @ingroup alihlt_system
+ * @ingroup alihlt_aliroot_simulation
  */
 class AliHLTAgentSim : public AliHLTModuleAgent {
  public:

@@ -16,13 +16,13 @@ Comments, bug reports, suggestions welcome!
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 + 1. Overview
 + 2. Requirements
-+ 3. Setting up a version retrieved from CVS
++ 3. Setting up a version retrieved from SVN
 + 4. Modifying a distributed package
 + 5. Installation
 + 6. Documentation
 + 7. Further information
 + 8. Reporting bugs/Asking for support
-+ 9. Committing to the AliRoot CVS
++ 9. Committing to the AliRoot SVN
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 1. Overview
@@ -55,7 +55,7 @@ usual way (ROOTSYS, ALICE_ROOT, library locations evtl. specified in
 LD_LIBRARY_PATH, ...). Actually, the BASE and SampleLib modules are
 not dependend on AliRoot. The TPCLib does.
 
-To set up a version retrieved from CVS, autoconf 2.57, automake 1.6
+To set up a version retrieved from SVN, autoconf 2.57, automake 1.6
 ,and libtool 1.4 or higher versions are required. Thats the versions
 which come with the Scientific Linux CERN 3. The same applies if
 you want to change the Makefiles.
@@ -63,11 +63,11 @@ you want to change the Makefiles.
 If your GNU build tools are too old, ask the maintainers for a distributed
 package.  
 
-3. Setting up a version retrieved from CVS
+3. Setting up a version retrieved from SVN
 ==========================================
 Skip this section if you have started from the tar ball.
 
-A version checked out from CVS requires a few steps to set up the Makefiles.
+A version checked out from SVN requires a few steps to set up the Makefiles.
 Go to the directory and run
 
   autoreconf -i -f
@@ -143,8 +143,9 @@ Some important options (all options are on by default):
   --disable-trd              # disable compilation the TRD library
   --disable-dimuon           # disable compilation the MUON library
   --disable-aliroot-logging  # disable logging
-  --disable-strict           # disable strict coding conventions and
-                               compilation flags
+  --disable-doc		     # disable creation of doxygen documentation
+  --disable-strict           # disable strict coding conventions and compilation flags
+
 
 All detector libraries (including sample and util lib) require AliRoot,
 compilation is disabled if no working AliRoot version was found. This can

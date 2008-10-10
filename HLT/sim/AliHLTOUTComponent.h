@@ -67,7 +67,7 @@ typedef vector<AliHLTMonitoringWriter*> AliHLTMonitoringWriterPVector;
  * chains have output data. By that means, the HLT output is added
  * to the simulation.
  *
- * @ingroup alihlt_rec
+ * @ingroup alihlt_aliroot_simulation
  */
 class AliHLTOUTComponent : public AliHLTOfflineDataSink  {
  public:

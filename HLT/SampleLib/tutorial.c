@@ -54,6 +54,7 @@ AliHLTConfiguration.
 -# @ref tut_macros 
 
 <br>
+<hr width="75%">
 <br>
 @section tut_hltsystem Running Components in the HLT System
 
@@ -144,6 +145,10 @@ directory.
   gHLT.Run();
 }
 </pre>
+
+<br>
+<hr width="75%">
+<br>
 
 @section tut_reconstruction AliRoot reconstruction
 The integration into the AliRoot reconstruction works via the
@@ -276,6 +281,10 @@ in the folder.
 @see
 - conf-sample.C
 
+<br>
+<hr width="75%">
+<br>
+
 @section tut_simulation AliRoot simulation
 In order to simulate the behavior of HLT analysis chains and to
 include this functionality, HLT reconstruction can be embedded
@@ -308,6 +317,11 @@ Options:
 
 @see
   - sim-hlt-rawddl.C for example
+
+
+<br>
+<hr width="75%">
+<br>
 
 @section tut_alirawreaderhlt Replacing reconstruction input by data from the HLT
 The HLTOUT data can contain data blocks which obey exactly the raw DDL 
@@ -363,8 +377,10 @@ needs the following modules:
    - AliRawReaderHLT
    - rec-from-hltout.C
 
+<br>
+<hr width="75%">
+<br>
 
-<br><br><br>
 @section tut_macros Example macros
  */
 

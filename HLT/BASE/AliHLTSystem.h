@@ -17,6 +17,60 @@
 /**
  * @defgroup alihlt_system HLT integration into AliRoot
  * This section describes the HLT integration into AliRoot.
+ * 
+ * @section alihlt_system_intro General Remarks
+ * The HLT analysis is organized in components which can also be used 
+ * in off-line processing. Two different types of off-line applications 
+ * can be distinguished:
+ * - AliRoot simulation (AliSimulation)
+ * - AliRoot reconstruction (AliReconstruction)
+ *
+ * The foundation of the off-line applications is a HLT chain described 
+ * by the means of AliHLTConfiguration. Special components exist, which 
+ * emulate the behavoir of the components of the HLT on-line data 
+ * transportation framework. Together with the analysis components, this 
+ * allows the full emulation of the behavoir of HLT analysis chain off-line.
+ *
+ * More details how to setup up such a chain can be found:
+ * - The examples page under @ref tut_hltsystem
+ *
+ * @section alihlt_system_simulation AliRoot simulation
+ * HLT has a special role in the normal data flow  of simulation and
+ * reconstruction. Since the HLT reconstruction and analysis runs on-line
+ * on the HLT farm, the raw data produced by HLT as a detector contains
+ * already reconstructed events. Consequently, the HLT response has to be
+ * simulated as well as the data of all other detectors. 
+ *
+ * Since the detector data is needed, the HLT simulation is run at the 
+ * end of AliSimulation.
+ *
+ * As a matter of fact, HLT always reconstructs data, <em><b>HLT simulation
+ * </b></em> means <em><b>HLT reconstruction embedded into AliRoot</b></em>.
+ *
+ * More Details an be found in the module: 
+ * - @ref alihlt_aliroot_simulation
+ *
+ * @section alihlt_system_reconstruction AliRoot reconstruction
+ *
+ * Like all other ALICE detectors, HLT utilizes the AliReconstruction interface
+ * to implement a plugin for the AliRoot reconstruction. The reconstructor can be
+ * used to
+ * - run HLT analysis chains in the AliRoot reconstruction <br>
+ *   This option is mainly intended for the development and debugging cycle. HLT
+ *   chains can be defined by means of AliHLTConfiguration and can be run either
+ *   stand-alone or embedded into the AliReconstruction cycle.
+ * - run the default analysis chains <br>
+ *   HLT modules can define default analysis chains to be run during AliRoot
+ *   reconstruction.
+ * - handle the HLTOUT data<br>
+ *   The HLT output stream contains multiple data blocks produced by the various
+ *   components of the HLT chain. Each block might need different and even
+ *   detector specific processing, like e.g. the processing of ESD objects or the
+ *   handling of compressed data.
+ *
+ * More Details an be found in the module: 
+ * - @ref alihlt_aliroot_reconstruction
+ *
  */
 
 #include "AliHLTLogging.h"
