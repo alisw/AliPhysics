@@ -190,7 +190,7 @@ void AliTRDtrackingResolution::Exec(Option_t *)
   // angular Resolution: res = Tracklet angle - TrackRef Angle
 
   Int_t nTrackInfos = fTracks->GetEntriesFast();
-  if(fDebugLevel>=2){ 
+  if(fDebugLevel>=2 && nTrackInfos){ 
     printf("Event[%d] TrackInfos[%d]\n", (Int_t)AliAnalysisManager::GetAnalysisManager()->GetCurrentEntry(), nTrackInfos);
   }
 
@@ -428,19 +428,40 @@ Bool_t AliTRDtrackingResolution::Resolution(AliTRDseedV1 *tracklet, AliTRDtrackI
   ymc =  fTrackRefs[1]->LocalY() - dydx*dx0;
   zmc =  fTrackRefs[1]->Z() - dzdx*dx0;
   
+
+  Float_t sy0   = tracklet->GetYfit(0);
+  Float_t sdydx = tracklet->GetYfit(1);
+  Float_t rdzdx = tracklet->GetZref(1);
+  Float_t rdydx = tracklet->GetYref(1);
+
+
   // recalculate tracklet based on the MC info
-  tracklet->SetZref(0, zmc);
-  tracklet->SetZref(1, -dzdx); // TODO
-  tracklet->Fit();
-  Double_t dy = tracklet->GetYfit(0) - ymc;
-  Double_t dz = tracklet->GetZfit(0) - zmc;
+  AliTRDseedV1 tt(*tracklet);
+  tt.SetZref(0, zmc);
+  tt.SetZref(1, dzdx); 
+  tt.Fit();
+  Double_t dy = tt.GetYfit(0) - ymc;
+  Double_t dz = tt.GetZfit(0) - zmc;
+
+  Float_t fdydx = tt.GetYfit(1);
+  Float_t fy0   = tt.GetYfit(0);
+
+    (*fDebugStream) << "DirTrklt"
+      << "dydx="		<< dydx
+      << "rdydx="		<< rdydx
+      << "fdydx="		<< fdydx
+      << "sy0  ="		<< sy0
+      << "sdydx="		<< sdydx
+      << "dzdx="		<< dzdx
+      << "rdzdx="		<< rdzdx
+      << "\n";
       
   //res_y *= 100; // in mm
   p = fTrackRefs[0]->P();
 
   phi   = TMath::ATan(dydx);
   theta = TMath::ATan(dzdx);
-  Double_t dphi   = TMath::ATan(tracklet->GetYfit(1)) - phi;
+  Double_t dphi   = TMath::ATan(tt.GetYfit(1)) - phi;
   if(fDebugLevel>=4) printf("\t\tdx[%6.4f] dy[%6.4f] dz[%6.4f] dphi[%6.4f] \n", dx, dy, dz, dphi);
   
   // Fill Histograms
@@ -465,7 +486,10 @@ Bool_t AliTRDtrackingResolution::Resolution(AliTRDseedV1 *tracklet, AliTRDtrackI
       << "dz="	 	  << dz
       << "dphi="		<< dphi
       << "\n";
-
+    
+    Float_t q = 0.;
+    Float_t tilt = tracklet->GetTilt();
+    Int_t cross = tracklet->GetNChange();
     Int_t det, stk;
     Float_t z0 = 0.;
     AliTRDpadPlane *pp = 0x0;
@@ -478,27 +502,38 @@ Bool_t AliTRDtrackingResolution::Resolution(AliTRDseedV1 *tracklet, AliTRDtrackI
         pp = fGeo->GetPadPlane(iplane, stk);
         z0 = pp->GetRow0() + AliTRDSimParam::Instance()->GetAnodeWireOffset();
       }
+      q = TMath::Abs(c->GetQ());
+      Float_t zc = c->GetZ();
       Float_t xc = c->GetX();
-      dx = tracklet->GetX0() - xc; 
+      dx = x0 - xc; 
       Float_t yt = ymc - dx*dydx;
       Float_t zt = zmc - dx*dzdx; 
-      Float_t yc = c->GetY() - TMath::Tan(tracklet->GetTilt()) * (c->GetZ() - zt);
-      dy = yt - yc;
+      Float_t yf = fy0 - dx*fdydx;
+      Float_t yc = c->GetY();
+      dy = yt - (yc - tilt*(zc-zt));
       Float_t d = z0 - zt;
       d -= ((Int_t)(2 * d)) / 2.0;
       (*fDebugStream) << "ResolutionClstr"
         << "det="	 	  << det
         << "ly="	 	  << iplane
         << "stk="	 	  << stk
+        << "crs="	 	  << cross
+        << "tilt="	 	<< tilt
+        << "x0="			<< x0
         << "pdg="     << pdg
         << "p="       << p
+        << "ymc="			<< ymc
+        << "dydx="		<< dydx
         << "phi="			<< phi
         << "tht="		  << theta
-        << "xc="       << xc
-        << "yc="       << yc
-        << "yt="       << yt
-        << "zt="       << zt
-        << "z0="       << z0
+        << "q="       << q
+        << "xc="      << xc
+        << "yc="      << yc
+        << "zc="      << zc
+        << "yf="      << yf
+        << "yt="      << yt
+        << "zt="      << zt
+        << "z0="      << z0
         << "d="       << d
         << "dy="		  << dy
         << "\n";
