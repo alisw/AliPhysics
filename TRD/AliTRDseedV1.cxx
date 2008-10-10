@@ -638,6 +638,12 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt)
   const Float_t clSigma0 = 2.E-2;    //[cm]
   const Float_t clSlopeQ = -1.19E-2; //[1/cm]
 
+  // get track direction
+  Double_t y0   = fYref[0];
+  Double_t dydx = fYref[1]; 
+  Double_t z0   = fZref[0];
+  Double_t dzdx = fZref[1];
+  Double_t yt, zt;
 
   const Int_t kNtb = AliTRDtrackerV1::GetNTimeBins();
   AliTRDtrackerV1::AliTRDLeastSquare fitterY, fitterZ;
@@ -646,10 +652,12 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt)
   Double_t convert = 1./TMath::Sqrt(12.);
   
   // book cluster information
-  Double_t xc[knTimebins+1], yc[knTimebins], zc[knTimebins+1], sy[knTimebins], sz[knTimebins+1];
+  Double_t xc[knTimebins], yc[knTimebins], zc[knTimebins], sy[knTimebins], sz[knTimebins];
   Int_t zRow[knTimebins];
+
+
+  fN = 0;
   AliTRDcluster *c=0x0, **jc = &fClusters[0];
-  Int_t nc = 0;
   for (Int_t ic=0; ic<kNtb; ic++, ++jc) {
     zRow[ic] = -1;
     xc[ic]  = -1.;
@@ -662,37 +670,51 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt)
     Float_t w = 1.;
     if(c->GetNPads()>4) w = .5;
     if(c->GetNPads()>5) w = .2;
-    zRow[nc] = c->GetPadRow();
-    xc[nc]   = fX0 - c->GetX();
-    yc[nc]   = c->GetY();
-    zc[nc]   = c->GetZ();
+    zRow[fN] = c->GetPadRow();
+    xc[fN]   = fX0 - c->GetX();
+    yc[fN]   = c->GetY();
+    zc[fN]   = c->GetZ();
+
+    // extrapolated y value for the track
+    yt = y0 - xc[fN]*dydx; 
+    // extrapolated z value for the track
+    zt = z0 - xc[fN]*dzdx; 
+    // tilt correction
+    if(tilt) yc[fN] -= fTilt*(zc[fN] - zt); 
+
+    // elaborate cluster error
     Float_t qr = c->GetQ() - q0;
-    sy[nc]   = qr < 0. ? clSigma0*TMath::Exp(clSlopeQ*qr) : clSigma0;
-    sz[nc]   = fPadLength*convert;
-    fitterZ.AddPoint(&xc[nc], zc[nc], sz[nc]);
-    nc++;
+    sy[fN]   = qr < 0. ? clSigma0*TMath::Exp(clSlopeQ*qr) : clSigma0;
+
+    fitterY.AddPoint(&xc[fN], yc[fN]-yt, sy[fN]);
+
+    sz[fN]   = fPadLength*convert;
+    fitterZ.AddPoint(&xc[fN], zc[fN], sz[fN]);
+    fN++;
   }
   // to few clusters
-  if (nc < kClmin) return kFALSE; 
-  
-  Int_t zN[2*35];
-  Int_t nz = AliTRDtrackerV1::Freq(nc, zRow, zN, kFALSE);
+  if (fN < kClmin) return kFALSE; 
+
+  // fit XY plane
+  fitterY.Eval();
+  fYfit[0] = y0+fitterY.GetFunctionParameter(0);
+  fYfit[1] = dydx-fitterY.GetFunctionParameter(1);
+
+  // check par row crossing
+  Int_t zN[2*AliTRDseed::knTimebins];
+  Int_t nz = AliTRDtrackerV1::Freq(fN, zRow, zN, kFALSE);
   // more than one pad row crossing
   if(nz>2) return kFALSE; 
 
-  // estimate reference parameter at average x
-  Double_t y0 = fYref[0];
-  Double_t dydx = fYref[1]; 
-  Double_t dzdx = fZref[1];
-  zc[nc]  = fZref[0];
 
   // determine z offset of the fit
+  Float_t zslope = 0.;
   Int_t nchanges = 0, nCross = 0;
   if(nz==2){ // tracklet is crossing pad row
     // Find the break time allowing one chage on pad-rows
     // with maximal number of accepted clusters
     Int_t padRef = zRow[0];
-    for (Int_t ic=1; ic<nc; ic++) {
+    for (Int_t ic=1; ic<fN; ic++) {
       if(zRow[ic] == padRef) continue;
       
       // debug
@@ -702,12 +724,12 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt)
     
       // evaluate parameters of the crossing point
       Float_t sx = (xc[ic-1] - xc[ic])*convert;
-      xc[nc] = .5 * (xc[ic-1] + xc[ic]);
-      zc[nc] = .5 * (zc[ic-1] + zc[ic]);
-      sz[nc] = TMath::Max(dzdx * sx, .01);
-      dzdx   = zc[ic-1] > zc[ic] ? 1. : -1.;
-      padRef = zRow[ic];
-      nCross = ic;
+      fCross[0] = .5 * (xc[ic-1] + xc[ic]);
+      fCross[2] = .5 * (zc[ic-1] + zc[ic]);
+      fCross[3] = TMath::Max(dzdx * sx, .01);
+      zslope    = zc[ic-1] > zc[ic] ? 1. : -1.;
+      padRef    = zRow[ic];
+      nCross    = ic;
       nchanges++;
     }
   }
@@ -715,44 +737,19 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt)
   // condition on nCross and reset nchanges TODO
 
   if(nchanges==1){
-    if(dzdx * fZref[1] < 0.){
+    if(dzdx * zslope < 0.){
       AliInfo("tracklet direction does not correspond to the track direction. TODO.");
     }
     SetBit(kRowCross, kTRUE); // mark pad row crossing
-    fCross[0] = xc[nc]; fCross[2] = zc[nc]; fCross[3] = sz[nc]; 
-    fitterZ.AddPoint(&xc[nc], zc[nc], sz[nc]);
+    fitterZ.AddPoint(&fCross[0], fCross[2], fCross[3]);
     fitterZ.Eval();
-    dzdx = fZref[1]; // we don't trust Parameter[1] ??;
-    zc[nc] = fitterZ.GetFunctionParameter(0); 
+    //zc[nc] = fitterZ.GetFunctionParameter(0); 
+    fCross[1] = fYfit[0] - fCross[0] * fYfit[1];
+    fCross[0] = fX0 - fCross[0];
   } else if(nchanges > 1){ // debug
     AliError("N pad row crossing > 1.");
     return kFALSE;
   }
-
-  
-  // estimate deviation from reference direction
-  Float_t yt, zt;
-  for (Int_t ic=0; ic<nc; ic++) {
-    // extrapolated y value for the track
-    yt = y0 - xc[ic]*dydx; 
-    // extrapolated z value for the track
-    zt = zc[nc] - xc[ic]*dzdx; 
-    // tilt correction
-    if(tilt) yc[ic] -= fTilt*(zc[ic] - zt); 
-    // diff with respect to the track direction
-    yc[ic] -= yt;
-    fitterY.AddPoint(&xc[ic], yc[ic], sy[ic]);
-  }
-  fitterY.Eval();
-  fYfit[0] = y0+fitterY.GetFunctionParameter(0);
-  fYfit[1] = dydx-fitterY.GetFunctionParameter(1);
-
-  if(nchanges) fCross[1] = fYfit[0] + fCross[0] * fYfit[1];
-
-// 	printf("\nnz = %d\n", nz);
-// 	for(int ic=0; ic<35; ic++) printf("%d row[%d]\n", ic, zRow[ic]);	
-// 
-// 	for(int ic=0; ic<nz; ic++) printf("%d n[%d]\n", ic, zN[ic]);	
 
   UpdateUsed();
 

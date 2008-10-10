@@ -397,7 +397,9 @@ Bool_t AliTRDtrackingResolution::Resolution(AliTRDseedV1 *tracklet, AliTRDtrackI
 {
 
   AliTrackReference *fTrackRefs[2] = {0x0, 0x0};
-  Float_t x0 = tracklet->GetX0();
+  Float_t x0  = tracklet->GetX0();
+  Float_t tilt= tracklet->GetTilt();
+  Int_t cross = tracklet->GetNChange();
 
   // check for 2 track ref where the radial position has a distance less than 3.7mm
   Int_t nFound = 0;
@@ -429,10 +431,10 @@ Bool_t AliTRDtrackingResolution::Resolution(AliTRDseedV1 *tracklet, AliTRDtrackI
   zmc =  fTrackRefs[1]->Z() - dzdx*dx0;
   
 
-  Float_t sy0   = tracklet->GetYfit(0);
-  Float_t sdydx = tracklet->GetYfit(1);
-  Float_t rdzdx = tracklet->GetZref(1);
-  Float_t rdydx = tracklet->GetYref(1);
+//   Float_t sy0   = tracklet->GetYfit(0);
+//   Float_t sdydx = tracklet->GetYfit(1);
+//   Float_t rdzdx = tracklet->GetZref(1);
+//   Float_t rdydx = tracklet->GetYref(1);
 
 
   // recalculate tracklet based on the MC info
@@ -441,22 +443,11 @@ Bool_t AliTRDtrackingResolution::Resolution(AliTRDseedV1 *tracklet, AliTRDtrackI
   tt.SetZref(1, dzdx); 
   tt.Fit();
   Double_t dy = tt.GetYfit(0) - ymc;
-  Double_t dz = tt.GetZfit(0) - zmc;
-
-  Float_t fdydx = tt.GetYfit(1);
-  Float_t fy0   = tt.GetYfit(0);
-
-    (*fDebugStream) << "DirTrklt"
-      << "dydx="		<< dydx
-      << "rdydx="		<< rdydx
-      << "fdydx="		<< fdydx
-      << "sy0  ="		<< sy0
-      << "sdydx="		<< sdydx
-      << "dzdx="		<< dzdx
-      << "rdzdx="		<< rdzdx
-      << "\n";
-      
-  //res_y *= 100; // in mm
+  Double_t dz = 100.;
+  if(cross){
+    Double_t *xyz = tt.GetCrossXYZ();
+    dz = xyz[2] - (zmc - (x0 - xyz[0])*dzdx) ;
+  }
   p = fTrackRefs[0]->P();
 
   phi   = TMath::ATan(dydx);
@@ -471,71 +462,47 @@ Bool_t AliTRDtrackingResolution::Resolution(AliTRDseedV1 *tracklet, AliTRDtrackI
   }        
   // Fill Debug Tree
   if(fDebugLevel>=2){
-    Int_t iplane = tracklet->GetPlane();
+    Int_t det = tracklet->GetDetector();
     Int_t pdg = fInfo->GetPDG();
     (*fDebugStream) << "ResolutionTrklt"
-      << "ly="	 	  << iplane
+      << "det="	 	  << det
       << "pdg="     << pdg
       << "p="       << p
-      << "phi="			<< phi
-      << "tht="		  << theta
       << "ymc="     << ymc
       << "zmc="     << zmc
-      << "dx="      << dx
+      << "dydx="    << dydx
+      << "dzdx="    << dzdx
+      << "cross="   << cross
       << "dy="		  << dy
       << "dz="	 	  << dz
       << "dphi="		<< dphi
       << "\n";
     
-    Float_t q = 0.;
-    Float_t tilt = tracklet->GetTilt();
-    Int_t cross = tracklet->GetNChange();
-    Int_t det, stk;
-    Float_t z0 = 0.;
-    AliTRDpadPlane *pp = 0x0;
+    AliTRDpadPlane *pp = fGeo->GetPadPlane(AliTRDgeometry::GetLayer(det), AliTRDgeometry::GetStack(det));
+    Float_t z0 = pp->GetRow0() + AliTRDSimParam::Instance()->GetAnodeWireOffset();
+
     AliTRDcluster *c = 0x0;
     tracklet->ResetClusterIter(kFALSE);
     while((c = tracklet->PrevCluster())){
-      if(!pp){
-        det = c->GetDetector();
-        stk = fGeo->GetStack(det);
-        pp = fGeo->GetPadPlane(iplane, stk);
-        z0 = pp->GetRow0() + AliTRDSimParam::Instance()->GetAnodeWireOffset();
-      }
-      q = TMath::Abs(c->GetQ());
-      Float_t zc = c->GetZ();
+      Float_t  q = TMath::Abs(c->GetQ());
       Float_t xc = c->GetX();
+      Float_t yc = c->GetY();
+      Float_t zc = c->GetZ();
       dx = x0 - xc; 
       Float_t yt = ymc - dx*dydx;
       Float_t zt = zmc - dx*dzdx; 
-      Float_t yf = fy0 - dx*fdydx;
-      Float_t yc = c->GetY();
       dy = yt - (yc - tilt*(zc-zt));
       Float_t d = z0 - zt;
       d -= ((Int_t)(2 * d)) / 2.0;
       (*fDebugStream) << "ResolutionClstr"
-        << "det="	 	  << det
-        << "ly="	 	  << iplane
-        << "stk="	 	  << stk
-        << "crs="	 	  << cross
-        << "tilt="	 	<< tilt
-        << "x0="			<< x0
         << "pdg="     << pdg
         << "p="       << p
-        << "ymc="			<< ymc
-        << "dydx="		<< dydx
         << "phi="			<< phi
         << "tht="		  << theta
-        << "q="       << q
-        << "xc="      << xc
-        << "yc="      << yc
-        << "zc="      << zc
-        << "yf="      << yf
-        << "yt="      << yt
-        << "zt="      << zt
-        << "z0="      << z0
-        << "d="       << d
         << "dy="		  << dy
+        << "crs="	 	  << cross
+        << "q="       << q
+        << "d="       << d
         << "\n";
     }
   }
