@@ -389,7 +389,10 @@ int AliHLTSystem::Run(Int_t iNofEvents, int bStop)
       if (fEventCount==0) {
 	InitBenchmarking(fStopwatches);
       } else {
-	ResumeBenchmarking(fStopwatches);    
+	// Matthias Oct 11 2008 this is a bug
+	// By resuming the stopwatches at this point, all continued counting, but the
+	// starting and stopping is controlled by the AliHLTStopwatchGuard
+	//ResumeBenchmarking(fStopwatches);    
       }
       for (int i=fEventCount; i<fEventCount+iNofEvents && iResult>=0; i++) {
 	if (fpHLTOUTTask) {
