@@ -32,6 +32,8 @@
 #include "AliHLTAltroChannelSelectorComponent.h"
 #include "AliAltroDecoder.h"
 #include "AliAltroData.h"
+#include "AliAltroBunch.h"
+#include "TMath.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTAltroChannelSelectorComponent)
@@ -39,8 +41,12 @@ ClassImp(AliHLTAltroChannelSelectorComponent)
 AliHLTAltroChannelSelectorComponent::AliHLTAltroChannelSelectorComponent()
   :
   AliHLTProcessor(),
-  fSkipCorrupted(false),
-  fTalkative(false)
+  fSkipCorrupted(true),
+  fTalkative(false),
+  fStartTimeBin(0),
+  fEndTimeBin(0),
+  fSignalThreshold(0),
+  fRMSThreshold(0)
 {
   // see header file for class documentation
   // or
@@ -93,24 +99,59 @@ int AliHLTAltroChannelSelectorComponent::DoInit(int argc, const char** argv)
   int iResult=0;
   TString argument="";
   bool bMissingParam=0;
-  for (int i=0; i<argc && iResult>=0; i++) {
+  char* cpErr=NULL;
+  int i=0;
+  for (; i<argc && iResult>=0; i++) {
+    cpErr=NULL;
     argument=argv[i];
     if (argument.IsNull()) continue;
 
-    // -skip-corrupted
+    // -skip-corrupted, just for backward compatibility, not announced
     if (argument.CompareTo("-skip-corrupted")==0) {
       fSkipCorrupted=true;
+
+    // -keep-corrupted
+    } else if (argument.CompareTo("-keep-corrupted")==0) {
+      fSkipCorrupted=false;
 
     // -talkative
     } else if (argument.CompareTo("-talkative")==0) {
       fTalkative=true;
+
+    // -start-timebin
+    } else if (argument.CompareTo("-start-timebin")==0) {
+      if (bMissingParam=(++i>=argc)) break;
+      fStartTimeBin = strtoul( argv[i], &cpErr ,0);
+      if ( *cpErr ) break;
+
+    // -end-timebin
+    } else if (argument.CompareTo("-end-timebin")==0) {
+      if (bMissingParam=(++i>=argc)) break;
+      fEndTimeBin = strtoul( argv[i], &cpErr ,0);
+      if ( *cpErr ) break;
+
+    // -signal-threshold
+    } else if (argument.CompareTo("-signal-threshold")==0) {
+      if (bMissingParam=(++i>=argc)) break;
+      fSignalThreshold = strtoul( argv[i], &cpErr ,0);
+      if ( *cpErr ) break;
+
+    // -rms-threshold
+    } else if (argument.CompareTo("-rms-threshold")==0) {
+      if (bMissingParam=(++i>=argc)) break;
+      fRMSThreshold = strtoul( argv[i], &cpErr ,0);
+      if ( *cpErr ) break;
+
     } else {
       HLTError("unknown argument %s", argument.Data());
       iResult=-EINVAL;
     }
   }
 
-  if (bMissingParam) {
+  if (cpErr && *cpErr) {
+    HLTError("Cannot convert specifier '%s' for argument '%s'", argv[i], argument.Data());
+    iResult=-EINVAL;
+  } else if (bMissingParam) {
     HLTError("missing parameter for argument %s", argument.Data());
     iResult=-EINVAL;
   }
@@ -154,6 +195,7 @@ int AliHLTAltroChannelSelectorComponent::DoEvent(const AliHLTComponentEventData&
     // search for the active pad information
     AliHLTUInt16_t* pActiveHwAddressArray=NULL;
     int iArraySize=0;
+    if (fSignalThreshold==0 && fRMSThreshold==0) {
     for (int i=0; i<(int)evtData.fBlockCnt; i++ ) {
       // search for selection data of hw address type
       // which matches the data specification of the block
@@ -164,10 +206,11 @@ int AliHLTAltroChannelSelectorComponent::DoEvent(const AliHLTComponentEventData&
       }
     }
     if (pActiveHwAddressArray==NULL) {
-      HLTWarning("no block of type %s for specification 0x%08x available, data block unchanged", 
+      HLTWarning("no block of type %s for specification 0x%08x available, data block skipped", 
 		 DataType2Text(kAliHLTDataTypeHwAddr16).c_str(), 
 		 pDesc->fSpecification);
-      iResult=-EFAULT;
+      break;
+    }
     }
 
     if (decoder) delete decoder;
@@ -216,6 +259,7 @@ int AliHLTAltroChannelSelectorComponent::DoEvent(const AliHLTComponentEventData&
     AliHLTUInt32_t iNofAltro40=0;
     AliHLTUInt32_t iCapacity=size;
     AliAltroData channel;
+    AliAltroBunch altrobunch;
 
     // first add the RCU trailer
     AliHLTUInt8_t* pSrc=reinterpret_cast<AliHLTUInt8_t*>(pDesc->fPtr);
@@ -233,6 +277,51 @@ int AliHLTAltroChannelSelectorComponent::DoEvent(const AliHLTComponentEventData&
       iTotal++;
 
       int hwAddress=channel.GetHadd();
+      if (fSignalThreshold!=0) {
+	// treshold by adc counts
+	unsigned int sumSignals=0;
+	unsigned int maxSignal=0;
+	unsigned int nofSignals=0;
+	while(channel.NextBunch(&altrobunch)){
+	  const UInt_t *bunchData=altrobunch.GetData();
+	  unsigned int time=altrobunch.GetStartTimeBin();
+	  for(Int_t i=0;i<altrobunch.GetBunchSize();i++){
+	    if(bunchData[i]>0){// disregarding 0 data.
+	      if(time+i>=fStartTimeBin && time+i<=fEndTimeBin){
+		sumSignals+=bunchData[i];
+		if (maxSignal<bunchData[i]) maxSignal=bunchData[i];
+		nofSignals++;
+	      }
+	    }
+	  }
+	}
+	if (nofSignals==0 || maxSignal<=(sumSignals/nofSignals)+fSignalThreshold) {
+	  continue;
+	}
+
+      } else if (fRMSThreshold!=0) {
+	// treshold by adc counts
+	unsigned int sumSignals=0;
+	unsigned int maxSignal=0;
+	unsigned int nofSignals=0;
+	while(channel.NextBunch(&altrobunch)){
+	  const UInt_t *bunchData=altrobunch.GetData();
+	  unsigned int time=altrobunch.GetStartTimeBin();
+	  for(Int_t i=0;i<altrobunch.GetBunchSize();i++){
+	    if(bunchData[i]>0){// disregarding 0 data.
+	      if(time+i>=fStartTimeBin && time+i<=fEndTimeBin){
+		sumSignals+=bunchData[i]*bunchData[i];
+		if (maxSignal<bunchData[i]) maxSignal=bunchData[i];
+		nofSignals++;
+	      }
+	    }
+	  }
+	}
+	if (nofSignals==0 || maxSignal<=TMath::Sqrt(sumSignals/nofSignals)*fRMSThreshold) {
+	  continue;
+	}
+	
+      } else {
       int active=0;
       for (active=0; active<iArraySize; active++) {
 	if (pActiveHwAddressArray[active]==(AliHLTUInt16_t)hwAddress) {
@@ -242,6 +331,7 @@ int AliHLTAltroChannelSelectorComponent::DoEvent(const AliHLTComponentEventData&
       if (active>=iArraySize) {
 	HLTDebug("ALTRO block %#x (%d) discarded (inactive)", hwAddress, hwAddress);
 	continue;
+      }
       }
 
       // no of 10 bit words is without the fill words to fill complete 40 bit words

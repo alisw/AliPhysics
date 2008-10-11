@@ -3,9 +3,9 @@
 
 #ifndef ALIHLTALTROCHANNELSELECTORCOMPONENT_H
 #define ALIHLTALTROCHANNELSELECTORCOMPONENT_H
-/* This file is property of and copyright by the ALICE HLT Project        * 
- * ALICE Experiment at CERN, All rights reserved.                         *
- * See cxx source for full Copyright notice                               */
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
 
 /** @file   AliHLTAltroChannelSelectorComponent.h
     @author Matthias Richter
@@ -13,10 +13,6 @@
     @brief  A filter/selective readout component for Altro data.
 */
 
-// see below for class documentation
-// or
-// refer to README to build package
-// or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt   
 
 #include "AliHLTProcessor.h"
@@ -29,18 +25,39 @@
  * and can be of data type:
  * - {***:HWADDR16}: 16 bit hardware addresses
  *
+ * In Oct 2008 the component has been extended in order to select channels
+ * by calculating average/sigma and applying thresholds.
+ *
  * TheAliAltroDecoder is used as input decoder to read and scan the
  * Altro Raw data.
  * 
- * Component ID: \b AltroChannelSelector <br>
- * Library: \b libAliHLTRCU
+ * <h2>General properties:</h2>
+ *
+ * Component ID: \b AltroChannelSelector                                <br>
+ * Library: \b libAliHLTRCU                                             <br>
+ * Input Data Types: kAliHLTDataTypeDDLRaw, kAliHLTDataTypeHwAddr16	<br>
+ * Output Data Types: kAliHLTDataTypeDDLRaw                             <br>
  *
  * Mandatory arguments: <br>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
  *
  * Optional arguments: <br>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
+ * \li -keep-corrupted
+ *     keep corrupted channels, by default ignored
+ * \li -talkative
+ *     be a bit more verbose, prints out statistics message and warnings
+ * \li -start-timebin <i> bin </i>
+ *     all time bins below will be ignored    
+ * \li -end-timebin <i> bin </i>
+ *     all time bins above will be ignored    
+ * \li -signal-threshold <i> adc_counts </i>
+ *     the average will be calculated from all bins between start and end,
+ *     a channel is considered active if the maximum is bigger than averge
+ *     plus threshold
+ * \li -rms-threshold <i> sigma </i>
  *
+ * @ingroup alihlt_rcu_components
  */
 class AliHLTAltroChannelSelectorComponent : public AliHLTProcessor {
  public:
@@ -93,7 +110,12 @@ class AliHLTAltroChannelSelectorComponent : public AliHLTProcessor {
   /** more verbose output */
   bool fTalkative; //!transient
 
-  ClassDef(AliHLTAltroChannelSelectorComponent, 1);
+  unsigned int fStartTimeBin; //!transient
+  unsigned int fEndTimeBin; //!transient
+  unsigned int fSignalThreshold; //!transient
+  unsigned int fRMSThreshold; //!transient
+
+  ClassDef(AliHLTAltroChannelSelectorComponent, 2);
 };
 
 #endif
