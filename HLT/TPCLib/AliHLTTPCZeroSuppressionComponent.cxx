@@ -398,10 +398,25 @@ int AliHLTTPCZeroSuppressionComponent::DoEvent( const AliHLTComponentEventData& 
 	continue;
       }
 
+      if (iter->fSize<=sizeof(AliRawDataHeader)) {
+	// forward empty DDLs and create empty HW list
+	outputBlocks.push_back(*iter);
+	if(fSendHWList == kTRUE){
+	  AliHLTComponentBlockData bd;
+	  FillBlockData( bd );
+	  bd.fOffset = 0;
+	  bd.fSize = 0;
+	  bd.fDataType = kAliHLTDataTypeHwAddr16|kAliHLTDataOriginTPC;
+	  bd.fSpecification = iter->fSpecification;
+	  outputBlocks.push_back( bd );
+	}
+	continue;
+      }
+
       UInt_t slice = AliHLTTPCDefinitions::GetMinSliceNr( *iter );
       UInt_t patch = AliHLTTPCDefinitions::GetMinPatchNr( *iter );
 
-      if(!fVectorInitialized){
+      if(!fVectorInitialized && !fSkipSendingZSData){
 	fCurrentPatch=patch;
 	InitializePadArray();
       }
@@ -427,10 +442,10 @@ int AliHLTTPCZeroSuppressionComponent::DoEvent( const AliHLTComponentEventData& 
 	if(row==1000 || pad==1000){
 	  continue;
 	}
-	if(row>=fNumberOfRows||row<0){
+	if(!fSkipSendingZSData && row>=fNumberOfRows||row<0){
 	  continue;
 	}
-	else if(pad>=fNumberOfPadsInRow[row]||pad<0){
+	else if(!fSkipSendingZSData && pad>=fNumberOfPadsInRow[row]||pad<0){
 	  continue;
 	}  
 	
