@@ -1284,200 +1284,200 @@ void AliProtonQAAnalysis::InitQA() {
   dirProtonsPrimaryAccepted->cd();*/
 
   //Accepted primary protons
-  TH1F *fPrimaryProtonsITSClustersPass = new TH1F("fPrimaryProtonsITSClustersPass",
+  TH1F *gPrimaryProtonsITSClustersPass = new TH1F("gPrimaryProtonsITSClustersPass",
 					    ";N_{clusters} (ITS);Entries",
 					    7,0,7);
-  fQAPrimaryProtonsAcceptedList->Add(fPrimaryProtonsITSClustersPass);
-  TH1F *fPrimaryProtonsChi2PerClusterITSPass = new TH1F("fPrimaryProtonsChi2PerClusterITSPass",
+  fQAPrimaryProtonsAcceptedList->Add(gPrimaryProtonsITSClustersPass);
+  TH1F *gPrimaryProtonsChi2PerClusterITSPass = new TH1F("gPrimaryProtonsChi2PerClusterITSPass",
 						  ";x^{2}/N_{clusters} (ITS);Entries",
 						  100,0,4);
-  fQAPrimaryProtonsAcceptedList->Add(fPrimaryProtonsChi2PerClusterITSPass);
-  TH1F *fPrimaryProtonsTPCClustersPass = new TH1F("fPrimaryProtonsTPCClustersPass",
+  fQAPrimaryProtonsAcceptedList->Add(gPrimaryProtonsChi2PerClusterITSPass);
+  TH1F *gPrimaryProtonsTPCClustersPass = new TH1F("gPrimaryProtonsTPCClustersPass",
 					    ";N_{clusters} (TPC);Entries",
 					    100,0,200);
-  fQAPrimaryProtonsAcceptedList->Add(fPrimaryProtonsTPCClustersPass);
-  TH1F *fPrimaryProtonsChi2PerClusterTPCPass = new TH1F("fPrimaryProtonsChi2PerClusterTPCPass",
+  fQAPrimaryProtonsAcceptedList->Add(gPrimaryProtonsTPCClustersPass);
+  TH1F *gPrimaryProtonsChi2PerClusterTPCPass = new TH1F("gPrimaryProtonsChi2PerClusterTPCPass",
 						  ";x^{2}/N_{clusters} (TPC);Entries",
 						  100,0,4);
-  fQAPrimaryProtonsAcceptedList->Add(fPrimaryProtonsChi2PerClusterTPCPass);
-  TH1F *fPrimaryProtonsExtCov11Pass = new TH1F("fPrimaryProtonsExtCov11Pass",
+  fQAPrimaryProtonsAcceptedList->Add(gPrimaryProtonsChi2PerClusterTPCPass);
+  TH1F *gPrimaryProtonsExtCov11Pass = new TH1F("gPrimaryProtonsExtCov11Pass",
 					 ";#sigma_{y} [cm];Entries",
 					 100,0,4);
-  fQAPrimaryProtonsAcceptedList->Add(fPrimaryProtonsExtCov11Pass);
-  TH1F *fPrimaryProtonsExtCov22Pass = new TH1F("fPrimaryProtonsExtCov22Pass",
+  fQAPrimaryProtonsAcceptedList->Add(gPrimaryProtonsExtCov11Pass);
+  TH1F *gPrimaryProtonsExtCov22Pass = new TH1F("gPrimaryProtonsExtCov22Pass",
 					 ";#sigma_{z} [cm];Entries",
 					 100,0,4);
-  fQAPrimaryProtonsAcceptedList->Add(fPrimaryProtonsExtCov22Pass);
-  TH1F *fPrimaryProtonsExtCov33Pass = new TH1F("fPrimaryProtonsExtCov33Pass",
+  fQAPrimaryProtonsAcceptedList->Add(gPrimaryProtonsExtCov22Pass);
+  TH1F *gPrimaryProtonsExtCov33Pass = new TH1F("gPrimaryProtonsExtCov33Pass",
 					 ";#sigma_{sin(#phi)};Entries",
 					 100,0,4);
-  fQAPrimaryProtonsAcceptedList->Add(fPrimaryProtonsExtCov33Pass);
-  TH1F *fPrimaryProtonsExtCov44Pass = new TH1F("fPrimaryProtonsExtCov44Pass",
+  fQAPrimaryProtonsAcceptedList->Add(gPrimaryProtonsExtCov33Pass);
+  TH1F *gPrimaryProtonsExtCov44Pass = new TH1F("gPrimaryProtonsExtCov44Pass",
 					 ";#sigma_{tan(#lambda)};Entries",
 					 100,0,4);
-  fQAPrimaryProtonsAcceptedList->Add(fPrimaryProtonsExtCov44Pass);
-  TH1F *fPrimaryProtonsExtCov55Pass = new TH1F("fPrimaryProtonsExtCov55Pass",
+  fQAPrimaryProtonsAcceptedList->Add(gPrimaryProtonsExtCov44Pass);
+  TH1F *gPrimaryProtonsExtCov55Pass = new TH1F("gPrimaryProtonsExtCov55Pass",
 					 ";#sigma_{1/P_{T}} [GeV/c]^{-1};Entries",
 					 100,0,4);
-  fQAPrimaryProtonsAcceptedList->Add(fPrimaryProtonsExtCov55Pass);
-  TH1F *fPrimaryProtonsSigmaToVertexPass = new TH1F("fPrimaryProtonsSigmaToVertexPass",
+  fQAPrimaryProtonsAcceptedList->Add(gPrimaryProtonsExtCov55Pass);
+  TH1F *gPrimaryProtonsSigmaToVertexPass = new TH1F("gPrimaryProtonsSigmaToVertexPass",
 					     ";#sigma_{Vertex};Entries",
 					     100,0,10);
-  fQAPrimaryProtonsAcceptedList->Add(fPrimaryProtonsSigmaToVertexPass);
-  TH1F *fPrimaryProtonsSigmaToVertexTPCPass = new TH1F("fPrimaryProtonsSigmaToVertexTPCPass",
+  fQAPrimaryProtonsAcceptedList->Add(gPrimaryProtonsSigmaToVertexPass);
+  TH1F *gPrimaryProtonsSigmaToVertexTPCPass = new TH1F("gPrimaryProtonsSigmaToVertexTPCPass",
 					     ";#sigma_{Vertex};Entries",
 					     100,0,10);
-  fQAPrimaryProtonsAcceptedList->Add(fPrimaryProtonsSigmaToVertexTPCPass);
-  TH1F *fPrimaryProtonsDCAXYPass = new TH1F("fPrimaryProtonsDCAXYPass",
+  fQAPrimaryProtonsAcceptedList->Add(gPrimaryProtonsSigmaToVertexTPCPass);
+  TH1F *gPrimaryProtonsDCAXYPass = new TH1F("gPrimaryProtonsDCAXYPass",
 					     ";DCA_{xy} [cm];Entries",
 					     100,0,20);
-  fQAPrimaryProtonsAcceptedList->Add(fPrimaryProtonsDCAXYPass);
-  TH1F *fPrimaryProtonsDCAXYTPCPass = new TH1F("fPrimaryProtonsDCAXYTPCPass",
+  fQAPrimaryProtonsAcceptedList->Add(gPrimaryProtonsDCAXYPass);
+  TH1F *gPrimaryProtonsDCAXYTPCPass = new TH1F("gPrimaryProtonsDCAXYTPCPass",
 					       ";DCA_{xy} [cm];Entries",
 					       100,0,20);
-  fQAPrimaryProtonsAcceptedList->Add(fPrimaryProtonsDCAXYTPCPass);
-  TH1F *fPrimaryProtonsDCAZPass = new TH1F("fPrimaryProtonsDCAZPass",
+  fQAPrimaryProtonsAcceptedList->Add(gPrimaryProtonsDCAXYTPCPass);
+  TH1F *gPrimaryProtonsDCAZPass = new TH1F("gPrimaryProtonsDCAZPass",
 					   ";DCA_{z} [cm];Entries",
 					   100,0,20);
-  fQAPrimaryProtonsAcceptedList->Add(fPrimaryProtonsDCAZPass);
-  TH1F *fPrimaryProtonsDCAZTPCPass = new TH1F("fPrimaryProtonsDCAZTPCPass",
+  fQAPrimaryProtonsAcceptedList->Add(gPrimaryProtonsDCAZPass);
+  TH1F *gPrimaryProtonsDCAZTPCPass = new TH1F("gPrimaryProtonsDCAZTPCPass",
 					      ";DCA_{z} [cm];Entries",
 					      100,0,20);
-  fQAPrimaryProtonsAcceptedList->Add(fPrimaryProtonsDCAZTPCPass);
-  TH1F *fPrimaryProtonsConstrainChi2Pass = new TH1F("fPrimaryProtonsConstrainChi2Pass",
+  fQAPrimaryProtonsAcceptedList->Add(gPrimaryProtonsDCAZTPCPass);
+  TH1F *gPrimaryProtonsConstrainChi2Pass = new TH1F("gPrimaryProtonsConstrainChi2Pass",
 						    ";Log_{10}(#chi^{2});Entries",
 						    100,-10,10);
-  fQAPrimaryProtonsAcceptedList->Add(fPrimaryProtonsConstrainChi2Pass);
-  TH1F *fPrimaryProtonsITSRefitPass = new TH1F("fPrimaryProtonsITSRefitPass",
+  fQAPrimaryProtonsAcceptedList->Add(gPrimaryProtonsConstrainChi2Pass);
+  TH1F *gPrimaryProtonsITSRefitPass = new TH1F("gPrimaryProtonsITSRefitPass",
 					       "",10,-1,1);
-  fQAPrimaryProtonsAcceptedList->Add(fPrimaryProtonsITSRefitPass);
-  TH1F *fPrimaryProtonsTPCRefitPass = new TH1F("fPrimaryProtonsTPCRefitPass",
+  fQAPrimaryProtonsAcceptedList->Add(gPrimaryProtonsITSRefitPass);
+  TH1F *gPrimaryProtonsTPCRefitPass = new TH1F("gPrimaryProtonsTPCRefitPass",
 					       "",10,-1,1);
-  fQAPrimaryProtonsAcceptedList->Add(fPrimaryProtonsTPCRefitPass);
-  TH1F *fPrimaryProtonsESDpidPass = new TH1F("fPrimaryProtonsESDpidPass",
+  fQAPrimaryProtonsAcceptedList->Add(gPrimaryProtonsTPCRefitPass);
+  TH1F *gPrimaryProtonsESDpidPass = new TH1F("gPrimaryProtonsESDpidPass",
 					     "",10,-1,1);
-  fQAPrimaryProtonsAcceptedList->Add(fPrimaryProtonsESDpidPass);
-  TH1F *fPrimaryProtonsTPCpidPass = new TH1F("fPrimaryProtonsTPCpidPass",
+  fQAPrimaryProtonsAcceptedList->Add(gPrimaryProtonsESDpidPass);
+  TH1F *gPrimaryProtonsTPCpidPass = new TH1F("gPrimaryProtonsTPCpidPass",
 					     "",10,-1,1);
-  fQAPrimaryProtonsAcceptedList->Add(fPrimaryProtonsTPCpidPass);
-  TH1F *fPrimaryProtonsPointOnITSLayer1Pass = new TH1F("fPrimaryProtonsPointOnITSLayer1Pass",
+  fQAPrimaryProtonsAcceptedList->Add(gPrimaryProtonsTPCpidPass);
+  TH1F *gPrimaryProtonsPointOnITSLayer1Pass = new TH1F("gPrimaryProtonsPointOnITSLayer1Pass",
 					     "",10,-1,1);
-  fQAPrimaryProtonsAcceptedList->Add(fPrimaryProtonsPointOnITSLayer1Pass);
-  TH1F *fPrimaryProtonsPointOnITSLayer2Pass = new TH1F("fPrimaryProtonsPointOnITSLayer2Pass",
+  fQAPrimaryProtonsAcceptedList->Add(gPrimaryProtonsPointOnITSLayer1Pass);
+  TH1F *gPrimaryProtonsPointOnITSLayer2Pass = new TH1F("gPrimaryProtonsPointOnITSLayer2Pass",
 					     "",10,-1,1);
-  fQAPrimaryProtonsAcceptedList->Add(fPrimaryProtonsPointOnITSLayer2Pass);
-  TH1F *fPrimaryProtonsPointOnITSLayer3Pass = new TH1F("fPrimaryProtonsPointOnITSLayer3Pass",
+  fQAPrimaryProtonsAcceptedList->Add(gPrimaryProtonsPointOnITSLayer2Pass);
+  TH1F *gPrimaryProtonsPointOnITSLayer3Pass = new TH1F("gPrimaryProtonsPointOnITSLayer3Pass",
 					     "",10,-1,1);
-  fQAPrimaryProtonsAcceptedList->Add(fPrimaryProtonsPointOnITSLayer3Pass);
-  TH1F *fPrimaryProtonsPointOnITSLayer4Pass = new TH1F("fPrimaryProtonsPointOnITSLayer4Pass",
+  fQAPrimaryProtonsAcceptedList->Add(gPrimaryProtonsPointOnITSLayer3Pass);
+  TH1F *gPrimaryProtonsPointOnITSLayer4Pass = new TH1F("gPrimaryProtonsPointOnITSLayer4Pass",
 					     "",10,-1,1);
-  fQAPrimaryProtonsAcceptedList->Add(fPrimaryProtonsPointOnITSLayer4Pass);
-  TH1F *fPrimaryProtonsPointOnITSLayer5Pass = new TH1F("fPrimaryProtonsPointOnITSLayer5Pass",
+  fQAPrimaryProtonsAcceptedList->Add(gPrimaryProtonsPointOnITSLayer4Pass);
+  TH1F *gPrimaryProtonsPointOnITSLayer5Pass = new TH1F("gPrimaryProtonsPointOnITSLayer5Pass",
 					     "",10,-1,1);
-  fQAPrimaryProtonsAcceptedList->Add(fPrimaryProtonsPointOnITSLayer5Pass);
-  TH1F *fPrimaryProtonsPointOnITSLayer6Pass = new TH1F("fPrimaryProtonsPointOnITSLayer6Pass",
+  fQAPrimaryProtonsAcceptedList->Add(gPrimaryProtonsPointOnITSLayer5Pass);
+  TH1F *gPrimaryProtonsPointOnITSLayer6Pass = new TH1F("gPrimaryProtonsPointOnITSLayer6Pass",
 					     "",10,-1,1);
-  fQAPrimaryProtonsAcceptedList->Add(fPrimaryProtonsPointOnITSLayer6Pass);
+  fQAPrimaryProtonsAcceptedList->Add(gPrimaryProtonsPointOnITSLayer6Pass);
 
   //Rejected primary protons
   /*gDirectory->cd("../");
   TDirectory *dirProtonsPrimaryRejected = gDirectory->mkdir("Rejected");
   dirProtonsPrimaryRejected->cd();*/
 
-  TH1F *fPrimaryProtonsITSClustersReject = new TH1F("fPrimaryProtonsITSClustersReject",
+  TH1F *gPrimaryProtonsITSClustersReject = new TH1F("gPrimaryProtonsITSClustersReject",
 						    ";N_{clusters} (ITS);Entries",
 						    7,0,7);
-  fQAPrimaryProtonsRejectedList->Add(fPrimaryProtonsITSClustersReject);
-  TH1F *fPrimaryProtonsChi2PerClusterITSReject = new TH1F("fPrimaryProtonsChi2PerClusterITSReject",
+  fQAPrimaryProtonsRejectedList->Add(gPrimaryProtonsITSClustersReject);
+  TH1F *gPrimaryProtonsChi2PerClusterITSReject = new TH1F("gPrimaryProtonsChi2PerClusterITSReject",
 							  ";x^{2}/N_{clusters} (ITS);Entries",
 							  100,0,4);
-  fQAPrimaryProtonsRejectedList->Add(fPrimaryProtonsChi2PerClusterITSReject);
-  TH1F *fPrimaryProtonsTPCClustersReject = new TH1F("fPrimaryProtonsTPCClustersReject",
+  fQAPrimaryProtonsRejectedList->Add(gPrimaryProtonsChi2PerClusterITSReject);
+  TH1F *gPrimaryProtonsTPCClustersReject = new TH1F("gPrimaryProtonsTPCClustersReject",
 					    ";N_{clusters} (TPC);Entries",
 					    100,0,200);
-  fQAPrimaryProtonsRejectedList->Add(fPrimaryProtonsTPCClustersReject);
-  TH1F *fPrimaryProtonsChi2PerClusterTPCReject = new TH1F("fPrimaryProtonsChi2PerClusterTPCReject",
+  fQAPrimaryProtonsRejectedList->Add(gPrimaryProtonsTPCClustersReject);
+  TH1F *gPrimaryProtonsChi2PerClusterTPCReject = new TH1F("gPrimaryProtonsChi2PerClusterTPCReject",
 						  ";x^{2}/N_{clusters} (TPC);Entries",
 						  100,0,4);
-  fQAPrimaryProtonsRejectedList->Add(fPrimaryProtonsChi2PerClusterTPCReject);
-  TH1F *fPrimaryProtonsExtCov11Reject = new TH1F("fPrimaryProtonsExtCov11Reject",
+  fQAPrimaryProtonsRejectedList->Add(gPrimaryProtonsChi2PerClusterTPCReject);
+  TH1F *gPrimaryProtonsExtCov11Reject = new TH1F("gPrimaryProtonsExtCov11Reject",
 					 ";#sigma_{y} [cm];Entries",
 					 100,0,4);
-  fQAPrimaryProtonsRejectedList->Add(fPrimaryProtonsExtCov11Reject);
-  TH1F *fPrimaryProtonsExtCov22Reject = new TH1F("fPrimaryProtonsExtCov22Reject",
+  fQAPrimaryProtonsRejectedList->Add(gPrimaryProtonsExtCov11Reject);
+  TH1F *gPrimaryProtonsExtCov22Reject = new TH1F("gPrimaryProtonsExtCov22Reject",
 					 ";#sigma_{z} [cm];Entries",
 					 100,0,4);
-  fQAPrimaryProtonsRejectedList->Add(fPrimaryProtonsExtCov22Reject);
-  TH1F *fPrimaryProtonsExtCov33Reject = new TH1F("fPrimaryProtonsExtCov33Reject",
+  fQAPrimaryProtonsRejectedList->Add(gPrimaryProtonsExtCov22Reject);
+  TH1F *gPrimaryProtonsExtCov33Reject = new TH1F("gPrimaryProtonsExtCov33Reject",
 					 ";#sigma_{sin(#phi)};Entries",
 					 100,0,4);
-  fQAPrimaryProtonsRejectedList->Add(fPrimaryProtonsExtCov33Reject);
-  TH1F *fPrimaryProtonsExtCov44Reject = new TH1F("fPrimaryProtonsExtCov44Reject",
+  fQAPrimaryProtonsRejectedList->Add(gPrimaryProtonsExtCov33Reject);
+  TH1F *gPrimaryProtonsExtCov44Reject = new TH1F("gPrimaryProtonsExtCov44Reject",
 					 ";#sigma_{tan(#lambda)};Entries",
 					 100,0,4);
-  fQAPrimaryProtonsRejectedList->Add(fPrimaryProtonsExtCov44Reject);
-  TH1F *fPrimaryProtonsExtCov55Reject = new TH1F("fPrimaryProtonsExtCov55Reject",
+  fQAPrimaryProtonsRejectedList->Add(gPrimaryProtonsExtCov44Reject);
+  TH1F *gPrimaryProtonsExtCov55Reject = new TH1F("gPrimaryProtonsExtCov55Reject",
 					 ";#sigma_{1/P_{T}} [GeV/c]^{-1};Entries",
 					 100,0,4);
-  fQAPrimaryProtonsRejectedList->Add(fPrimaryProtonsExtCov55Reject);
-  TH1F *fPrimaryProtonsSigmaToVertexReject = new TH1F("fPrimaryProtonsSigmaToVertexReject",
+  fQAPrimaryProtonsRejectedList->Add(gPrimaryProtonsExtCov55Reject);
+  TH1F *gPrimaryProtonsSigmaToVertexReject = new TH1F("gPrimaryProtonsSigmaToVertexReject",
 					     ";#sigma_{Vertex};Entries",
 					     100,0,10);
-  fQAPrimaryProtonsRejectedList->Add(fPrimaryProtonsSigmaToVertexReject);
-  TH1F *fPrimaryProtonsSigmaToVertexTPCReject = new TH1F("fPrimaryProtonsSigmaToVertexTPCReject",
+  fQAPrimaryProtonsRejectedList->Add(gPrimaryProtonsSigmaToVertexReject);
+  TH1F *gPrimaryProtonsSigmaToVertexTPCReject = new TH1F("gPrimaryProtonsSigmaToVertexTPCReject",
 					     ";#sigma_{Vertex};Entries",
 					     100,0,10);
-  fQAPrimaryProtonsRejectedList->Add(fPrimaryProtonsSigmaToVertexTPCReject);
-  TH1F *fPrimaryProtonsDCAXYReject = new TH1F("fPrimaryProtonsDCAXYReject",
+  fQAPrimaryProtonsRejectedList->Add(gPrimaryProtonsSigmaToVertexTPCReject);
+  TH1F *gPrimaryProtonsDCAXYReject = new TH1F("gPrimaryProtonsDCAXYReject",
 					      ";DCA_{xy} [cm];Entries",
 					      100,0,20);
-  fQAPrimaryProtonsRejectedList->Add(fPrimaryProtonsDCAXYReject);
-  TH1F *fPrimaryProtonsDCAXYTPCReject = new TH1F("fPrimaryProtonsDCAXYTPCReject",
+  fQAPrimaryProtonsRejectedList->Add(gPrimaryProtonsDCAXYReject);
+  TH1F *gPrimaryProtonsDCAXYTPCReject = new TH1F("gPrimaryProtonsDCAXYTPCReject",
 						 ";DCA_{xy} [cm];Entries",
 						 100,0,20);
-  fQAPrimaryProtonsRejectedList->Add(fPrimaryProtonsDCAXYTPCReject);
-  TH1F *fPrimaryProtonsDCAZReject = new TH1F("fPrimaryProtonsDCAZReject",
+  fQAPrimaryProtonsRejectedList->Add(gPrimaryProtonsDCAXYTPCReject);
+  TH1F *gPrimaryProtonsDCAZReject = new TH1F("gPrimaryProtonsDCAZReject",
 					     ";DCA_{z} [cm];Entries",
 					     100,0,20);
-  fQAPrimaryProtonsRejectedList->Add(fPrimaryProtonsDCAZReject);
-  TH1F *fPrimaryProtonsDCAZTPCReject = new TH1F("fPrimaryProtonsDCAZTPCReject",
+  fQAPrimaryProtonsRejectedList->Add(gPrimaryProtonsDCAZReject);
+  TH1F *gPrimaryProtonsDCAZTPCReject = new TH1F("gPrimaryProtonsDCAZTPCReject",
 						";DCA_{z} [cm];Entries",
 						100,0,20);
-  fQAPrimaryProtonsRejectedList->Add(fPrimaryProtonsDCAZTPCReject);
-  TH1F *fPrimaryProtonsConstrainChi2Reject = new TH1F("fPrimaryProtonsConstrainChi2Reject",
+  fQAPrimaryProtonsRejectedList->Add(gPrimaryProtonsDCAZTPCReject);
+  TH1F *gPrimaryProtonsConstrainChi2Reject = new TH1F("gPrimaryProtonsConstrainChi2Reject",
 						    ";Log_{10}(#chi^{2});Entries",
 						    100,-10,10);
-  fQAPrimaryProtonsRejectedList->Add(fPrimaryProtonsConstrainChi2Reject);
-  TH1F *fPrimaryProtonsITSRefitReject = new TH1F("fPrimaryProtonsITSRefitReject",
+  fQAPrimaryProtonsRejectedList->Add(gPrimaryProtonsConstrainChi2Reject);
+  TH1F *gPrimaryProtonsITSRefitReject = new TH1F("gPrimaryProtonsITSRefitReject",
 						 "",10,-1,1);
-  fQAPrimaryProtonsRejectedList->Add(fPrimaryProtonsITSRefitReject);
-  TH1F *fPrimaryProtonsTPCRefitReject = new TH1F("fPrimaryProtonsTPCRefitReject",
+  fQAPrimaryProtonsRejectedList->Add(gPrimaryProtonsITSRefitReject);
+  TH1F *gPrimaryProtonsTPCRefitReject = new TH1F("gPrimaryProtonsTPCRefitReject",
 						 "",10,-1,1);
-  fQAPrimaryProtonsRejectedList->Add(fPrimaryProtonsTPCRefitReject);
-  TH1F *fPrimaryProtonsESDpidReject = new TH1F("fPrimaryProtonsESDpidReject",
+  fQAPrimaryProtonsRejectedList->Add(gPrimaryProtonsTPCRefitReject);
+  TH1F *gPrimaryProtonsESDpidReject = new TH1F("gPrimaryProtonsESDpidReject",
 					       "",10,-1,1);
-  fQAPrimaryProtonsRejectedList->Add(fPrimaryProtonsESDpidReject);
-  TH1F *fPrimaryProtonsTPCpidReject = new TH1F("fPrimaryProtonsTPCpidReject",
+  fQAPrimaryProtonsRejectedList->Add(gPrimaryProtonsESDpidReject);
+  TH1F *gPrimaryProtonsTPCpidReject = new TH1F("gPrimaryProtonsTPCpidReject",
 					       "",10,-1,1);
-  fQAPrimaryProtonsRejectedList->Add(fPrimaryProtonsTPCpidReject);
-  TH1F *fPrimaryProtonsPointOnITSLayer1Reject = new TH1F("fPrimaryProtonsPointOnITSLayer1Reject",
+  fQAPrimaryProtonsRejectedList->Add(gPrimaryProtonsTPCpidReject);
+  TH1F *gPrimaryProtonsPointOnITSLayer1Reject = new TH1F("gPrimaryProtonsPointOnITSLayer1Reject",
 					     "",10,-1,1);
-  fQAPrimaryProtonsRejectedList->Add(fPrimaryProtonsPointOnITSLayer1Reject);
-  TH1F *fPrimaryProtonsPointOnITSLayer2Reject = new TH1F("fPrimaryProtonsPointOnITSLayer2Reject",
+  fQAPrimaryProtonsRejectedList->Add(gPrimaryProtonsPointOnITSLayer1Reject);
+  TH1F *gPrimaryProtonsPointOnITSLayer2Reject = new TH1F("gPrimaryProtonsPointOnITSLayer2Reject",
 					     "",10,-1,1);
-  fQAPrimaryProtonsRejectedList->Add(fPrimaryProtonsPointOnITSLayer2Reject);
-  TH1F *fPrimaryProtonsPointOnITSLayer3Reject = new TH1F("fPrimaryProtonsPointOnITSLayer3Reject",
+  fQAPrimaryProtonsRejectedList->Add(gPrimaryProtonsPointOnITSLayer2Reject);
+  TH1F *gPrimaryProtonsPointOnITSLayer3Reject = new TH1F("gPrimaryProtonsPointOnITSLayer3Reject",
 					     "",10,-1,1);
-  fQAPrimaryProtonsRejectedList->Add(fPrimaryProtonsPointOnITSLayer3Reject);
-  TH1F *fPrimaryProtonsPointOnITSLayer4Reject = new TH1F("fPrimaryProtonsPointOnITSLayer4Reject",
+  fQAPrimaryProtonsRejectedList->Add(gPrimaryProtonsPointOnITSLayer3Reject);
+  TH1F *gPrimaryProtonsPointOnITSLayer4Reject = new TH1F("gPrimaryProtonsPointOnITSLayer4Reject",
 					     "",10,-1,1);
-  fQAPrimaryProtonsRejectedList->Add(fPrimaryProtonsPointOnITSLayer4Reject);
-  TH1F *fPrimaryProtonsPointOnITSLayer5Reject = new TH1F("fPrimaryProtonsPointOnITSLayer5Reject",
+  fQAPrimaryProtonsRejectedList->Add(gPrimaryProtonsPointOnITSLayer4Reject);
+  TH1F *gPrimaryProtonsPointOnITSLayer5Reject = new TH1F("gPrimaryProtonsPointOnITSLayer5Reject",
 					     "",10,-1,1);
-  fQAPrimaryProtonsRejectedList->Add(fPrimaryProtonsPointOnITSLayer5Reject);
-  TH1F *fPrimaryProtonsPointOnITSLayer6Reject = new TH1F("fPrimaryProtonsPointOnITSLayer6Reject",
+  fQAPrimaryProtonsRejectedList->Add(gPrimaryProtonsPointOnITSLayer5Reject);
+  TH1F *gPrimaryProtonsPointOnITSLayer6Reject = new TH1F("gPrimaryProtonsPointOnITSLayer6Reject",
 					     "",10,-1,1);
-  fQAPrimaryProtonsRejectedList->Add(fPrimaryProtonsPointOnITSLayer6Reject);
+  fQAPrimaryProtonsRejectedList->Add(gPrimaryProtonsPointOnITSLayer6Reject);
 
   //________________________________________________________________//
   /*gDirectory->cd("../../");
@@ -1488,200 +1488,200 @@ void AliProtonQAAnalysis::InitQA() {
   dirProtonsSecondaryAccepted->cd();*/
 
   //Accepted secondary protons
-  TH1F *fSecondaryProtonsITSClustersPass = new TH1F("fSecondaryProtonsITSClustersPass",
+  TH1F *gSecondaryProtonsITSClustersPass = new TH1F("gSecondaryProtonsITSClustersPass",
 						    ";N_{clusters} (ITS);Entries",
 						    7,0,7);
-  fQASecondaryProtonsAcceptedList->Add(fSecondaryProtonsITSClustersPass);
-  TH1F *fSecondaryProtonsChi2PerClusterITSPass = new TH1F("fSecondaryProtonsChi2PerClusterITSPass",
+  fQASecondaryProtonsAcceptedList->Add(gSecondaryProtonsITSClustersPass);
+  TH1F *gSecondaryProtonsChi2PerClusterITSPass = new TH1F("gSecondaryProtonsChi2PerClusterITSPass",
 							  ";x^{2}/N_{clusters} (ITS);Entries",
 							  100,0,4);
-  fQASecondaryProtonsAcceptedList->Add(fSecondaryProtonsChi2PerClusterITSPass);
-  TH1F *fSecondaryProtonsTPCClustersPass = new TH1F("fSecondaryProtonsTPCClustersPass",
+  fQASecondaryProtonsAcceptedList->Add(gSecondaryProtonsChi2PerClusterITSPass);
+  TH1F *gSecondaryProtonsTPCClustersPass = new TH1F("gSecondaryProtonsTPCClustersPass",
 					    ";N_{clusters} (TPC);Entries",
 					    100,0,200);
-  fQASecondaryProtonsAcceptedList->Add(fSecondaryProtonsTPCClustersPass);
-  TH1F *fSecondaryProtonsChi2PerClusterTPCPass = new TH1F("fSecondaryProtonsChi2PerClusterTPCPass",
+  fQASecondaryProtonsAcceptedList->Add(gSecondaryProtonsTPCClustersPass);
+  TH1F *gSecondaryProtonsChi2PerClusterTPCPass = new TH1F("gSecondaryProtonsChi2PerClusterTPCPass",
 						  ";x^{2}/N_{clusters} (TPC);Entries",
 						  100,0,4);
-  fQASecondaryProtonsAcceptedList->Add(fSecondaryProtonsChi2PerClusterTPCPass);
-  TH1F *fSecondaryProtonsExtCov11Pass = new TH1F("fSecondaryProtonsExtCov11Pass",
+  fQASecondaryProtonsAcceptedList->Add(gSecondaryProtonsChi2PerClusterTPCPass);
+  TH1F *gSecondaryProtonsExtCov11Pass = new TH1F("gSecondaryProtonsExtCov11Pass",
 					 ";#sigma_{y} [cm];Entries",
 					 100,0,4);
-  fQASecondaryProtonsAcceptedList->Add(fSecondaryProtonsExtCov11Pass);
-  TH1F *fSecondaryProtonsExtCov22Pass = new TH1F("fSecondaryProtonsExtCov22Pass",
+  fQASecondaryProtonsAcceptedList->Add(gSecondaryProtonsExtCov11Pass);
+  TH1F *gSecondaryProtonsExtCov22Pass = new TH1F("gSecondaryProtonsExtCov22Pass",
 					 ";#sigma_{z} [cm];Entries",
 					 100,0,4);
-  fQASecondaryProtonsAcceptedList->Add(fSecondaryProtonsExtCov22Pass);
-  TH1F *fSecondaryProtonsExtCov33Pass = new TH1F("fSecondaryProtonsExtCov33Pass",
+  fQASecondaryProtonsAcceptedList->Add(gSecondaryProtonsExtCov22Pass);
+  TH1F *gSecondaryProtonsExtCov33Pass = new TH1F("gSecondaryProtonsExtCov33Pass",
 					 ";#sigma_{sin(#phi)};Entries",
 					 100,0,4);
-  fQASecondaryProtonsAcceptedList->Add(fSecondaryProtonsExtCov33Pass);
-  TH1F *fSecondaryProtonsExtCov44Pass = new TH1F("fSecondaryProtonsExtCov44Pass",
+  fQASecondaryProtonsAcceptedList->Add(gSecondaryProtonsExtCov33Pass);
+  TH1F *gSecondaryProtonsExtCov44Pass = new TH1F("gSecondaryProtonsExtCov44Pass",
 					 ";#sigma_{tan(#lambda)};Entries",
 					 100,0,4);
-  fQASecondaryProtonsAcceptedList->Add(fSecondaryProtonsExtCov44Pass);
-  TH1F *fSecondaryProtonsExtCov55Pass = new TH1F("fSecondaryProtonsExtCov55Pass",
+  fQASecondaryProtonsAcceptedList->Add(gSecondaryProtonsExtCov44Pass);
+  TH1F *gSecondaryProtonsExtCov55Pass = new TH1F("gSecondaryProtonsExtCov55Pass",
 					 ";#sigma_{1/P_{T}} [GeV/c]^{-1};Entries",
 					 100,0,4);
-  fQASecondaryProtonsAcceptedList->Add(fSecondaryProtonsExtCov55Pass);
-  TH1F *fSecondaryProtonsSigmaToVertexPass = new TH1F("fSecondaryProtonsSigmaToVertexPass",
+  fQASecondaryProtonsAcceptedList->Add(gSecondaryProtonsExtCov55Pass);
+  TH1F *gSecondaryProtonsSigmaToVertexPass = new TH1F("gSecondaryProtonsSigmaToVertexPass",
 					     ";#sigma_{Vertex};Entries",
 					     100,0,10);
-  fQASecondaryProtonsAcceptedList->Add(fSecondaryProtonsSigmaToVertexPass);
-  TH1F *fSecondaryProtonsSigmaToVertexTPCPass = new TH1F("fSecondaryProtonsSigmaToVertexTPCPass",
+  fQASecondaryProtonsAcceptedList->Add(gSecondaryProtonsSigmaToVertexPass);
+  TH1F *gSecondaryProtonsSigmaToVertexTPCPass = new TH1F("gSecondaryProtonsSigmaToVertexTPCPass",
 					     ";#sigma_{Vertex};Entries",
 					     100,0,10);
-  fQASecondaryProtonsAcceptedList->Add(fSecondaryProtonsSigmaToVertexTPCPass);
-  TH1F *fSecondaryProtonsDCAXYPass = new TH1F("fSecondaryProtonsDCAXYPass",
+  fQASecondaryProtonsAcceptedList->Add(gSecondaryProtonsSigmaToVertexTPCPass);
+  TH1F *gSecondaryProtonsDCAXYPass = new TH1F("gSecondaryProtonsDCAXYPass",
 					      ";DCA_{xy} [cm];Entries",
 					      100,0,20);
-  fQASecondaryProtonsAcceptedList->Add(fSecondaryProtonsDCAXYPass);
-  TH1F *fSecondaryProtonsDCAXYTPCPass = new TH1F("fSecondaryProtonsDCAXYTPCPass",
+  fQASecondaryProtonsAcceptedList->Add(gSecondaryProtonsDCAXYPass);
+  TH1F *gSecondaryProtonsDCAXYTPCPass = new TH1F("gSecondaryProtonsDCAXYTPCPass",
 						 ";DCA_{xy} [cm];Entries",
 						 100,0,20);
-  fQASecondaryProtonsAcceptedList->Add(fSecondaryProtonsDCAXYTPCPass);
-  TH1F *fSecondaryProtonsDCAZPass = new TH1F("fSecondaryProtonsDCAZPass",
+  fQASecondaryProtonsAcceptedList->Add(gSecondaryProtonsDCAXYTPCPass);
+  TH1F *gSecondaryProtonsDCAZPass = new TH1F("gSecondaryProtonsDCAZPass",
 					     ";DCA_{z} [cm];Entries",
 					     100,0,20);
-  fQASecondaryProtonsAcceptedList->Add(fSecondaryProtonsDCAZPass);
-  TH1F *fSecondaryProtonsDCAZTPCPass = new TH1F("fSecondaryProtonsDCAZTPCPass",
+  fQASecondaryProtonsAcceptedList->Add(gSecondaryProtonsDCAZPass);
+  TH1F *gSecondaryProtonsDCAZTPCPass = new TH1F("gSecondaryProtonsDCAZTPCPass",
 						";DCA_{z} [cm];Entries",
 						100,0,20);
-  fQASecondaryProtonsAcceptedList->Add(fSecondaryProtonsDCAZTPCPass);
-  TH1F *fSecondaryProtonsConstrainChi2Pass = new TH1F("fSecondaryProtonsConstrainChi2Pass",
+  fQASecondaryProtonsAcceptedList->Add(gSecondaryProtonsDCAZTPCPass);
+  TH1F *gSecondaryProtonsConstrainChi2Pass = new TH1F("gSecondaryProtonsConstrainChi2Pass",
 						    ";Log_{10}(#chi^{2});Entries",
 						    100,-10,10);
-  fQASecondaryProtonsAcceptedList->Add(fSecondaryProtonsConstrainChi2Pass);
-  TH1F *fSecondaryProtonsITSRefitPass = new TH1F("fSecondaryProtonsITSRefitPass",
+  fQASecondaryProtonsAcceptedList->Add(gSecondaryProtonsConstrainChi2Pass);
+  TH1F *gSecondaryProtonsITSRefitPass = new TH1F("gSecondaryProtonsITSRefitPass",
 						 "",10,-1,1);
-  fQASecondaryProtonsAcceptedList->Add(fSecondaryProtonsITSRefitPass);
-  TH1F *fSecondaryProtonsTPCRefitPass = new TH1F("fSecondaryProtonsTPCRefitPass",
+  fQASecondaryProtonsAcceptedList->Add(gSecondaryProtonsITSRefitPass);
+  TH1F *gSecondaryProtonsTPCRefitPass = new TH1F("gSecondaryProtonsTPCRefitPass",
 						 "",10,-1,1);
-  fQASecondaryProtonsAcceptedList->Add(fSecondaryProtonsTPCRefitPass);
-  TH1F *fSecondaryProtonsESDpidPass = new TH1F("fSecondaryProtonsESDpidPass",
+  fQASecondaryProtonsAcceptedList->Add(gSecondaryProtonsTPCRefitPass);
+  TH1F *gSecondaryProtonsESDpidPass = new TH1F("gSecondaryProtonsESDpidPass",
 					       "",10,-1,1);
-  fQASecondaryProtonsAcceptedList->Add(fSecondaryProtonsESDpidPass);
-  TH1F *fSecondaryProtonsTPCpidPass = new TH1F("fSecondaryProtonsTPCpidPass",
+  fQASecondaryProtonsAcceptedList->Add(gSecondaryProtonsESDpidPass);
+  TH1F *gSecondaryProtonsTPCpidPass = new TH1F("gSecondaryProtonsTPCpidPass",
 					       "",10,-1,1);
-  fQASecondaryProtonsAcceptedList->Add(fSecondaryProtonsTPCpidPass);
-  TH1F *fSecondaryProtonsPointOnITSLayer1Pass = new TH1F("fSecondaryProtonsPointOnITSLayer1Pass",
+  fQASecondaryProtonsAcceptedList->Add(gSecondaryProtonsTPCpidPass);
+  TH1F *gSecondaryProtonsPointOnITSLayer1Pass = new TH1F("gSecondaryProtonsPointOnITSLayer1Pass",
 							 "",10,-1,1);
-  fQASecondaryProtonsAcceptedList->Add(fSecondaryProtonsPointOnITSLayer1Pass);
-  TH1F *fSecondaryProtonsPointOnITSLayer2Pass = new TH1F("fSecondaryProtonsPointOnITSLayer2Pass",
+  fQASecondaryProtonsAcceptedList->Add(gSecondaryProtonsPointOnITSLayer1Pass);
+  TH1F *gSecondaryProtonsPointOnITSLayer2Pass = new TH1F("gSecondaryProtonsPointOnITSLayer2Pass",
 							 "",10,-1,1);
-  fQASecondaryProtonsAcceptedList->Add(fSecondaryProtonsPointOnITSLayer2Pass);
-  TH1F *fSecondaryProtonsPointOnITSLayer3Pass = new TH1F("fSecondaryProtonsPointOnITSLayer3Pass",
+  fQASecondaryProtonsAcceptedList->Add(gSecondaryProtonsPointOnITSLayer2Pass);
+  TH1F *gSecondaryProtonsPointOnITSLayer3Pass = new TH1F("gSecondaryProtonsPointOnITSLayer3Pass",
 							 "",10,-1,1);
-  fQASecondaryProtonsAcceptedList->Add(fSecondaryProtonsPointOnITSLayer3Pass);
-  TH1F *fSecondaryProtonsPointOnITSLayer4Pass = new TH1F("fSecondaryProtonsPointOnITSLayer4Pass",
+  fQASecondaryProtonsAcceptedList->Add(gSecondaryProtonsPointOnITSLayer3Pass);
+  TH1F *gSecondaryProtonsPointOnITSLayer4Pass = new TH1F("gSecondaryProtonsPointOnITSLayer4Pass",
 							 "",10,-1,1);
-  fQASecondaryProtonsAcceptedList->Add(fSecondaryProtonsPointOnITSLayer4Pass);
-  TH1F *fSecondaryProtonsPointOnITSLayer5Pass = new TH1F("fSecondaryProtonsPointOnITSLayer5Pass",
+  fQASecondaryProtonsAcceptedList->Add(gSecondaryProtonsPointOnITSLayer4Pass);
+  TH1F *gSecondaryProtonsPointOnITSLayer5Pass = new TH1F("gSecondaryProtonsPointOnITSLayer5Pass",
 							 "",10,-1,1);
-  fQASecondaryProtonsAcceptedList->Add(fSecondaryProtonsPointOnITSLayer5Pass);
-  TH1F *fSecondaryProtonsPointOnITSLayer6Pass = new TH1F("fSecondaryProtonsPointOnITSLayer6Pass",
+  fQASecondaryProtonsAcceptedList->Add(gSecondaryProtonsPointOnITSLayer5Pass);
+  TH1F *gSecondaryProtonsPointOnITSLayer6Pass = new TH1F("gSecondaryProtonsPointOnITSLayer6Pass",
 							 "",10,-1,1);
-  fQASecondaryProtonsAcceptedList->Add(fSecondaryProtonsPointOnITSLayer6Pass);
+  fQASecondaryProtonsAcceptedList->Add(gSecondaryProtonsPointOnITSLayer6Pass);
 
   //Rejected secondary protons
   /*gDirectory->cd("../");
   TDirectory *dirProtonsSecondaryRejected = gDirectory->mkdir("Rejected");
   dirProtonsSecondaryRejected->cd();*/
 
-  TH1F *fSecondaryProtonsITSClustersReject = new TH1F("fSecondaryProtonsITSClustersReject",
+  TH1F *gSecondaryProtonsITSClustersReject = new TH1F("gSecondaryProtonsITSClustersReject",
 						      ";N_{clusters} (ITS);Entries",
 						      7,0,7);
-  fQASecondaryProtonsRejectedList->Add(fSecondaryProtonsITSClustersReject);
-  TH1F *fSecondaryProtonsChi2PerClusterITSReject = new TH1F("fSecondaryProtonsChi2PerClusterITSReject",
+  fQASecondaryProtonsRejectedList->Add(gSecondaryProtonsITSClustersReject);
+  TH1F *gSecondaryProtonsChi2PerClusterITSReject = new TH1F("gSecondaryProtonsChi2PerClusterITSReject",
 							    ";x^{2}/N_{clusters} (ITS);Entries",
 							    100,0,4);
-  fQASecondaryProtonsRejectedList->Add(fSecondaryProtonsChi2PerClusterITSReject);
-  TH1F *fSecondaryProtonsTPCClustersReject = new TH1F("fSecondaryProtonsTPCClustersReject",
+  fQASecondaryProtonsRejectedList->Add(gSecondaryProtonsChi2PerClusterITSReject);
+  TH1F *gSecondaryProtonsTPCClustersReject = new TH1F("gSecondaryProtonsTPCClustersReject",
 					    ";N_{clusters} (TPC);Entries",
 					    100,0,200);
-  fQASecondaryProtonsRejectedList->Add(fSecondaryProtonsTPCClustersReject);
-  TH1F *fSecondaryProtonsChi2PerClusterTPCReject = new TH1F("fSecondaryProtonsChi2PerClusterTPCReject",
+  fQASecondaryProtonsRejectedList->Add(gSecondaryProtonsTPCClustersReject);
+  TH1F *gSecondaryProtonsChi2PerClusterTPCReject = new TH1F("gSecondaryProtonsChi2PerClusterTPCReject",
 						  ";x^{2}/N_{clusters} (TPC);Entries",
 						  100,0,4);
-  fQASecondaryProtonsRejectedList->Add(fSecondaryProtonsChi2PerClusterTPCReject);
-  TH1F *fSecondaryProtonsExtCov11Reject = new TH1F("fSecondaryProtonsExtCov11Reject",
+  fQASecondaryProtonsRejectedList->Add(gSecondaryProtonsChi2PerClusterTPCReject);
+  TH1F *gSecondaryProtonsExtCov11Reject = new TH1F("gSecondaryProtonsExtCov11Reject",
 					 ";#sigma_{y} [cm];Entries",
 					 100,0,4);
-  fQASecondaryProtonsRejectedList->Add(fSecondaryProtonsExtCov11Reject);
-  TH1F *fSecondaryProtonsExtCov22Reject = new TH1F("fSecondaryProtonsExtCov22Reject",
+  fQASecondaryProtonsRejectedList->Add(gSecondaryProtonsExtCov11Reject);
+  TH1F *gSecondaryProtonsExtCov22Reject = new TH1F("gSecondaryProtonsExtCov22Reject",
 					 ";#sigma_{z} [cm];Entries",
 					 100,0,4);
-  fQASecondaryProtonsRejectedList->Add(fSecondaryProtonsExtCov22Reject);
-  TH1F *fSecondaryProtonsExtCov33Reject = new TH1F("fSecondaryProtonsExtCov33Reject",
+  fQASecondaryProtonsRejectedList->Add(gSecondaryProtonsExtCov22Reject);
+  TH1F *gSecondaryProtonsExtCov33Reject = new TH1F("gSecondaryProtonsExtCov33Reject",
 					 ";#sigma_{sin(#phi)};Entries",
 					 100,0,4);
-  fQASecondaryProtonsRejectedList->Add(fSecondaryProtonsExtCov33Reject);
-  TH1F *fSecondaryProtonsExtCov44Reject = new TH1F("fSecondaryProtonsExtCov44Reject",
+  fQASecondaryProtonsRejectedList->Add(gSecondaryProtonsExtCov33Reject);
+  TH1F *gSecondaryProtonsExtCov44Reject = new TH1F("gSecondaryProtonsExtCov44Reject",
 					 ";#sigma_{tan(#lambda)};Entries",
 					 100,0,4);
-  fQASecondaryProtonsRejectedList->Add(fSecondaryProtonsExtCov44Reject);
-  TH1F *fSecondaryProtonsExtCov55Reject = new TH1F("fSecondaryProtonsExtCov55Reject",
+  fQASecondaryProtonsRejectedList->Add(gSecondaryProtonsExtCov44Reject);
+  TH1F *gSecondaryProtonsExtCov55Reject = new TH1F("gSecondaryProtonsExtCov55Reject",
 					 ";#sigma_{1/P_{T}} [GeV/c]^{-1};Entries",
 					 100,0,4);
-  fQASecondaryProtonsRejectedList->Add(fSecondaryProtonsExtCov55Reject);
-  TH1F *fSecondaryProtonsSigmaToVertexReject = new TH1F("fSecondaryProtonsSigmaToVertexReject",
+  fQASecondaryProtonsRejectedList->Add(gSecondaryProtonsExtCov55Reject);
+  TH1F *gSecondaryProtonsSigmaToVertexReject = new TH1F("gSecondaryProtonsSigmaToVertexReject",
 					     ";#sigma_{Vertex};Entries",
 					     100,0,10);
-  fQASecondaryProtonsRejectedList->Add(fSecondaryProtonsSigmaToVertexReject);
-  TH1F *fSecondaryProtonsSigmaToVertexTPCReject = new TH1F("fSecondaryProtonsSigmaToVertexTPCReject",
+  fQASecondaryProtonsRejectedList->Add(gSecondaryProtonsSigmaToVertexReject);
+  TH1F *gSecondaryProtonsSigmaToVertexTPCReject = new TH1F("gSecondaryProtonsSigmaToVertexTPCReject",
 							   ";#sigma_{Vertex};Entries",
 							   100,0,10);
-  fQASecondaryProtonsRejectedList->Add(fSecondaryProtonsSigmaToVertexTPCReject);
-  TH1F *fSecondaryProtonsDCAXYReject = new TH1F("fSecondaryProtonsDCAXYReject",
+  fQASecondaryProtonsRejectedList->Add(gSecondaryProtonsSigmaToVertexTPCReject);
+  TH1F *gSecondaryProtonsDCAXYReject = new TH1F("gSecondaryProtonsDCAXYReject",
 						";DCA_{xy} [cm];Entries",
 						100,0,20);
-  fQASecondaryProtonsRejectedList->Add(fSecondaryProtonsDCAXYReject);
-  TH1F *fSecondaryProtonsDCAXYTPCReject = new TH1F("fSecondaryProtonsDCAXYTPCReject",
+  fQASecondaryProtonsRejectedList->Add(gSecondaryProtonsDCAXYReject);
+  TH1F *gSecondaryProtonsDCAXYTPCReject = new TH1F("gSecondaryProtonsDCAXYTPCReject",
 						   ";DCA_{xy} [cm];Entries",
 						   100,0,20);
-  fQASecondaryProtonsRejectedList->Add(fSecondaryProtonsDCAXYTPCReject);
-  TH1F *fSecondaryProtonsDCAZReject = new TH1F("fSecondaryProtonsDCAZReject",
+  fQASecondaryProtonsRejectedList->Add(gSecondaryProtonsDCAXYTPCReject);
+  TH1F *gSecondaryProtonsDCAZReject = new TH1F("gSecondaryProtonsDCAZReject",
 					       ";DCA_{z} [cm];Entries",
 					       100,0,20);
-  fQASecondaryProtonsRejectedList->Add(fSecondaryProtonsDCAZReject);
-  TH1F *fSecondaryProtonsDCAZTPCReject = new TH1F("fSecondaryProtonsDCAZTPCReject",
+  fQASecondaryProtonsRejectedList->Add(gSecondaryProtonsDCAZReject);
+  TH1F *gSecondaryProtonsDCAZTPCReject = new TH1F("gSecondaryProtonsDCAZTPCReject",
 						  ";DCA_{z} [cm];Entries",
 						  100,0,20);
-  fQASecondaryProtonsRejectedList->Add(fSecondaryProtonsDCAZTPCReject);
-  TH1F *fSecondaryProtonsConstrainChi2Reject = new TH1F("fSecondaryProtonsConstrainChi2Reject",
+  fQASecondaryProtonsRejectedList->Add(gSecondaryProtonsDCAZTPCReject);
+  TH1F *gSecondaryProtonsConstrainChi2Reject = new TH1F("gSecondaryProtonsConstrainChi2Reject",
 							";Log_{10}(#chi^{2});Entries",
 							100,-10,10);
-  fQASecondaryProtonsRejectedList->Add(fSecondaryProtonsConstrainChi2Reject);
-  TH1F *fSecondaryProtonsITSRefitReject = new TH1F("fSecondaryProtonsITSRefitReject",
+  fQASecondaryProtonsRejectedList->Add(gSecondaryProtonsConstrainChi2Reject);
+  TH1F *gSecondaryProtonsITSRefitReject = new TH1F("gSecondaryProtonsITSRefitReject",
 						   "",10,-1,1);
-  fQASecondaryProtonsRejectedList->Add(fSecondaryProtonsITSRefitReject);
-  TH1F *fSecondaryProtonsTPCRefitReject = new TH1F("fSecondaryProtonsTPCRefitReject",
+  fQASecondaryProtonsRejectedList->Add(gSecondaryProtonsITSRefitReject);
+  TH1F *gSecondaryProtonsTPCRefitReject = new TH1F("gSecondaryProtonsTPCRefitReject",
 						   "",10,-1,1);
-  fQASecondaryProtonsRejectedList->Add(fSecondaryProtonsTPCRefitReject);
-  TH1F *fSecondaryProtonsESDpidReject = new TH1F("fSecondaryProtonsESDpidReject",
+  fQASecondaryProtonsRejectedList->Add(gSecondaryProtonsTPCRefitReject);
+  TH1F *gSecondaryProtonsESDpidReject = new TH1F("gSecondaryProtonsESDpidReject",
 						 "",10,-1,1);
-  fQASecondaryProtonsRejectedList->Add(fSecondaryProtonsESDpidReject);
-  TH1F *fSecondaryProtonsTPCpidReject = new TH1F("fSecondaryProtonsTPCpidReject",
+  fQASecondaryProtonsRejectedList->Add(gSecondaryProtonsESDpidReject);
+  TH1F *gSecondaryProtonsTPCpidReject = new TH1F("gSecondaryProtonsTPCpidReject",
 						 "",10,-1,1);
-  fQASecondaryProtonsRejectedList->Add(fSecondaryProtonsTPCpidReject);
-  TH1F *fSecondaryProtonsPointOnITSLayer1Reject = new TH1F("fSecondaryProtonsPointOnITSLayer1Reject",
+  fQASecondaryProtonsRejectedList->Add(gSecondaryProtonsTPCpidReject);
+  TH1F *gSecondaryProtonsPointOnITSLayer1Reject = new TH1F("gSecondaryProtonsPointOnITSLayer1Reject",
 							   "",10,-1,1);
-  fQASecondaryProtonsRejectedList->Add(fSecondaryProtonsPointOnITSLayer1Reject);
-  TH1F *fSecondaryProtonsPointOnITSLayer2Reject = new TH1F("fSecondaryProtonsPointOnITSLayer2Reject",
+  fQASecondaryProtonsRejectedList->Add(gSecondaryProtonsPointOnITSLayer1Reject);
+  TH1F *gSecondaryProtonsPointOnITSLayer2Reject = new TH1F("gSecondaryProtonsPointOnITSLayer2Reject",
 							   "",10,-1,1);
-  fQASecondaryProtonsRejectedList->Add(fSecondaryProtonsPointOnITSLayer2Reject);
-  TH1F *fSecondaryProtonsPointOnITSLayer3Reject = new TH1F("fSecondaryProtonsPointOnITSLayer3Reject",
+  fQASecondaryProtonsRejectedList->Add(gSecondaryProtonsPointOnITSLayer2Reject);
+  TH1F *gSecondaryProtonsPointOnITSLayer3Reject = new TH1F("gSecondaryProtonsPointOnITSLayer3Reject",
 							   "",10,-1,1);
-  fQASecondaryProtonsRejectedList->Add(fSecondaryProtonsPointOnITSLayer3Reject);
-  TH1F *fSecondaryProtonsPointOnITSLayer4Reject = new TH1F("fSecondaryProtonsPointOnITSLayer4Reject",
+  fQASecondaryProtonsRejectedList->Add(gSecondaryProtonsPointOnITSLayer3Reject);
+  TH1F *gSecondaryProtonsPointOnITSLayer4Reject = new TH1F("gSecondaryProtonsPointOnITSLayer4Reject",
 							   "",10,-1,1);
-  fQASecondaryProtonsRejectedList->Add(fSecondaryProtonsPointOnITSLayer4Reject);
-  TH1F *fSecondaryProtonsPointOnITSLayer5Reject = new TH1F("fSecondaryProtonsPointOnITSLayer5Reject",
+  fQASecondaryProtonsRejectedList->Add(gSecondaryProtonsPointOnITSLayer4Reject);
+  TH1F *gSecondaryProtonsPointOnITSLayer5Reject = new TH1F("gSecondaryProtonsPointOnITSLayer5Reject",
 							   "",10,-1,1);
-  fQASecondaryProtonsRejectedList->Add(fSecondaryProtonsPointOnITSLayer5Reject);
-  TH1F *fSecondaryProtonsPointOnITSLayer6Reject = new TH1F("fSecondaryProtonsPointOnITSLayer6Reject",
+  fQASecondaryProtonsRejectedList->Add(gSecondaryProtonsPointOnITSLayer5Reject);
+  TH1F *gSecondaryProtonsPointOnITSLayer6Reject = new TH1F("gSecondaryProtonsPointOnITSLayer6Reject",
 							   "",10,-1,1);
-  fQASecondaryProtonsRejectedList->Add(fSecondaryProtonsPointOnITSLayer6Reject);
+  fQASecondaryProtonsRejectedList->Add(gSecondaryProtonsPointOnITSLayer6Reject);
   
 
   /*gDirectory->cd("../../../");
@@ -1697,200 +1697,200 @@ void AliProtonQAAnalysis::InitQA() {
   dirAntiProtonsPrimaryAccepted->cd();*/
   
   //Accepted primary antiprotons
-  TH1F *fPrimaryAntiProtonsITSClustersPass = new TH1F("fPrimaryAntiProtonsITSClustersPass",
+  TH1F *gPrimaryAntiProtonsITSClustersPass = new TH1F("gPrimaryAntiProtonsITSClustersPass",
 						      ";N_{clusters} (ITS);Entries",
 						      7,0,7);
-  fQAPrimaryAntiProtonsAcceptedList->Add(fPrimaryAntiProtonsITSClustersPass);
-  TH1F *fPrimaryAntiProtonsChi2PerClusterITSPass = new TH1F("fPrimaryAntiProtonsChi2PerClusterITSPass",
+  fQAPrimaryAntiProtonsAcceptedList->Add(gPrimaryAntiProtonsITSClustersPass);
+  TH1F *gPrimaryAntiProtonsChi2PerClusterITSPass = new TH1F("gPrimaryAntiProtonsChi2PerClusterITSPass",
 							    ";x^{2}/N_{clusters} (ITS);Entries",
 							    100,0,4);
-  fQAPrimaryAntiProtonsAcceptedList->Add(fPrimaryAntiProtonsChi2PerClusterITSPass);
-  TH1F *fPrimaryAntiProtonsTPCClustersPass = new TH1F("fPrimaryAntiProtonsTPCClustersPass",
+  fQAPrimaryAntiProtonsAcceptedList->Add(gPrimaryAntiProtonsChi2PerClusterITSPass);
+  TH1F *gPrimaryAntiProtonsTPCClustersPass = new TH1F("gPrimaryAntiProtonsTPCClustersPass",
 						      ";N_{clusters} (TPC);Entries",
 						      100,0,200);
-  fQAPrimaryAntiProtonsAcceptedList->Add(fPrimaryAntiProtonsTPCClustersPass);
-  TH1F *fPrimaryAntiProtonsChi2PerClusterTPCPass = new TH1F("fPrimaryAntiProtonsChi2PerClusterTPCPass",
+  fQAPrimaryAntiProtonsAcceptedList->Add(gPrimaryAntiProtonsTPCClustersPass);
+  TH1F *gPrimaryAntiProtonsChi2PerClusterTPCPass = new TH1F("gPrimaryAntiProtonsChi2PerClusterTPCPass",
 							    ";x^{2}/N_{clusters} (TPC);Entries",
 							    100,0,4);
-  fQAPrimaryAntiProtonsAcceptedList->Add(fPrimaryAntiProtonsChi2PerClusterTPCPass);
-  TH1F *fPrimaryAntiProtonsExtCov11Pass = new TH1F("fPrimaryAntiProtonsExtCov11Pass",
+  fQAPrimaryAntiProtonsAcceptedList->Add(gPrimaryAntiProtonsChi2PerClusterTPCPass);
+  TH1F *gPrimaryAntiProtonsExtCov11Pass = new TH1F("gPrimaryAntiProtonsExtCov11Pass",
 						   ";#sigma_{y} [cm];Entries",
 						   100,0,4);
-  fQAPrimaryAntiProtonsAcceptedList->Add(fPrimaryAntiProtonsExtCov11Pass);
-  TH1F *fPrimaryAntiProtonsExtCov22Pass = new TH1F("fPrimaryAntiProtonsExtCov22Pass",
+  fQAPrimaryAntiProtonsAcceptedList->Add(gPrimaryAntiProtonsExtCov11Pass);
+  TH1F *gPrimaryAntiProtonsExtCov22Pass = new TH1F("gPrimaryAntiProtonsExtCov22Pass",
 						   ";#sigma_{z} [cm];Entries",
 						   100,0,4);
-  fQAPrimaryAntiProtonsAcceptedList->Add(fPrimaryAntiProtonsExtCov22Pass);
-  TH1F *fPrimaryAntiProtonsExtCov33Pass = new TH1F("fPrimaryAntiProtonsExtCov33Pass",
+  fQAPrimaryAntiProtonsAcceptedList->Add(gPrimaryAntiProtonsExtCov22Pass);
+  TH1F *gPrimaryAntiProtonsExtCov33Pass = new TH1F("gPrimaryAntiProtonsExtCov33Pass",
 						   ";#sigma_{sin(#phi)};Entries",
 						   100,0,4);
-  fQAPrimaryAntiProtonsAcceptedList->Add(fPrimaryAntiProtonsExtCov33Pass);
-  TH1F *fPrimaryAntiProtonsExtCov44Pass = new TH1F("fPrimaryAntiProtonsExtCov44Pass",
+  fQAPrimaryAntiProtonsAcceptedList->Add(gPrimaryAntiProtonsExtCov33Pass);
+  TH1F *gPrimaryAntiProtonsExtCov44Pass = new TH1F("gPrimaryAntiProtonsExtCov44Pass",
 						   ";#sigma_{tan(#lambda)};Entries",
 						   100,0,4);
-  fQAPrimaryAntiProtonsAcceptedList->Add(fPrimaryAntiProtonsExtCov44Pass);
-  TH1F *fPrimaryAntiProtonsExtCov55Pass = new TH1F("fPrimaryAntiProtonsExtCov55Pass",
+  fQAPrimaryAntiProtonsAcceptedList->Add(gPrimaryAntiProtonsExtCov44Pass);
+  TH1F *gPrimaryAntiProtonsExtCov55Pass = new TH1F("gPrimaryAntiProtonsExtCov55Pass",
 						   ";#sigma_{1/P_{T}} [GeV/c]^{-1};Entries",
 						   100,0,4);
-  fQAPrimaryAntiProtonsAcceptedList->Add(fPrimaryAntiProtonsExtCov55Pass);
-  TH1F *fPrimaryAntiProtonsSigmaToVertexPass = new TH1F("fPrimaryAntiProtonsSigmaToVertexPass",
+  fQAPrimaryAntiProtonsAcceptedList->Add(gPrimaryAntiProtonsExtCov55Pass);
+  TH1F *gPrimaryAntiProtonsSigmaToVertexPass = new TH1F("gPrimaryAntiProtonsSigmaToVertexPass",
 							";#sigma_{Vertex};Entries",
 							100,0,10);
-  fQAPrimaryAntiProtonsAcceptedList->Add(fPrimaryAntiProtonsSigmaToVertexPass);
-  TH1F *fPrimaryAntiProtonsSigmaToVertexTPCPass = new TH1F("fPrimaryAntiProtonsSigmaToVertexTPCPass",
+  fQAPrimaryAntiProtonsAcceptedList->Add(gPrimaryAntiProtonsSigmaToVertexPass);
+  TH1F *gPrimaryAntiProtonsSigmaToVertexTPCPass = new TH1F("gPrimaryAntiProtonsSigmaToVertexTPCPass",
 							   ";#sigma_{Vertex};Entries",
 							   100,0,10);
-  fQAPrimaryAntiProtonsAcceptedList->Add(fPrimaryAntiProtonsSigmaToVertexTPCPass);
-  TH1F *fPrimaryAntiProtonsDCAXYPass = new TH1F("fPrimaryAntiProtonsDCAXYPass",
+  fQAPrimaryAntiProtonsAcceptedList->Add(gPrimaryAntiProtonsSigmaToVertexTPCPass);
+  TH1F *gPrimaryAntiProtonsDCAXYPass = new TH1F("gPrimaryAntiProtonsDCAXYPass",
 						";DCA_{xy} [cm];Entries",
 						100,0,20);
-  fQAPrimaryAntiProtonsAcceptedList->Add(fPrimaryAntiProtonsDCAXYPass);
-  TH1F *fPrimaryAntiProtonsDCAXYTPCPass = new TH1F("fPrimaryAntiProtonsDCAXYTPCPass",
+  fQAPrimaryAntiProtonsAcceptedList->Add(gPrimaryAntiProtonsDCAXYPass);
+  TH1F *gPrimaryAntiProtonsDCAXYTPCPass = new TH1F("gPrimaryAntiProtonsDCAXYTPCPass",
 						   ";DCA_{xy} [cm];Entries",
 						   100,0,20);
-  fQAPrimaryAntiProtonsAcceptedList->Add(fPrimaryAntiProtonsDCAXYTPCPass);
-  TH1F *fPrimaryAntiProtonsDCAZPass = new TH1F("fPrimaryAntiProtonsDCAZPass",
+  fQAPrimaryAntiProtonsAcceptedList->Add(gPrimaryAntiProtonsDCAXYTPCPass);
+  TH1F *gPrimaryAntiProtonsDCAZPass = new TH1F("gPrimaryAntiProtonsDCAZPass",
 					       ";DCA_{z} [cm];Entries",
 					       100,0,20);
-  fQAPrimaryAntiProtonsAcceptedList->Add(fPrimaryAntiProtonsDCAZPass);
-  TH1F *fPrimaryAntiProtonsDCAZTPCPass = new TH1F("fPrimaryAntiProtonsDCAZTPCPass",
+  fQAPrimaryAntiProtonsAcceptedList->Add(gPrimaryAntiProtonsDCAZPass);
+  TH1F *gPrimaryAntiProtonsDCAZTPCPass = new TH1F("gPrimaryAntiProtonsDCAZTPCPass",
 						  ";DCA_{z} [cm];Entries",
 						  100,0,20);
-  fQAPrimaryAntiProtonsAcceptedList->Add(fPrimaryAntiProtonsDCAZTPCPass);
-  TH1F *fPrimaryAntiProtonsConstrainChi2Pass = new TH1F("fPrimaryAntiProtonsConstrainChi2Pass",
+  fQAPrimaryAntiProtonsAcceptedList->Add(gPrimaryAntiProtonsDCAZTPCPass);
+  TH1F *gPrimaryAntiProtonsConstrainChi2Pass = new TH1F("gPrimaryAntiProtonsConstrainChi2Pass",
 							";Log_{10}(#chi^{2});Entries",
 							100,-10,10);
-  fQAPrimaryAntiProtonsAcceptedList->Add(fPrimaryAntiProtonsConstrainChi2Pass);
-  TH1F *fPrimaryAntiProtonsITSRefitPass = new TH1F("fPrimaryAntiProtonsITSRefitPass",
+  fQAPrimaryAntiProtonsAcceptedList->Add(gPrimaryAntiProtonsConstrainChi2Pass);
+  TH1F *gPrimaryAntiProtonsITSRefitPass = new TH1F("gPrimaryAntiProtonsITSRefitPass",
 						   "",10,-1,1);
-  fQAPrimaryAntiProtonsAcceptedList->Add(fPrimaryAntiProtonsITSRefitPass);
-  TH1F *fPrimaryAntiProtonsTPCRefitPass = new TH1F("fPrimaryAntiProtonsTPCRefitPass",
+  fQAPrimaryAntiProtonsAcceptedList->Add(gPrimaryAntiProtonsITSRefitPass);
+  TH1F *gPrimaryAntiProtonsTPCRefitPass = new TH1F("gPrimaryAntiProtonsTPCRefitPass",
 						   "",10,-1,1);
-  fQAPrimaryAntiProtonsAcceptedList->Add(fPrimaryAntiProtonsTPCRefitPass);
-  TH1F *fPrimaryAntiProtonsESDpidPass = new TH1F("fPrimaryAntiProtonsESDpidPass",
+  fQAPrimaryAntiProtonsAcceptedList->Add(gPrimaryAntiProtonsTPCRefitPass);
+  TH1F *gPrimaryAntiProtonsESDpidPass = new TH1F("gPrimaryAntiProtonsESDpidPass",
 						 "",10,-1,1);
-  fQAPrimaryAntiProtonsAcceptedList->Add(fPrimaryAntiProtonsESDpidPass);
-  TH1F *fPrimaryAntiProtonsTPCpidPass = new TH1F("fPrimaryAntiProtonsTPCpidPass",
+  fQAPrimaryAntiProtonsAcceptedList->Add(gPrimaryAntiProtonsESDpidPass);
+  TH1F *gPrimaryAntiProtonsTPCpidPass = new TH1F("gPrimaryAntiProtonsTPCpidPass",
 						 "",10,-1,1);
-  fQAPrimaryAntiProtonsAcceptedList->Add(fPrimaryAntiProtonsTPCpidPass);
-  TH1F *fPrimaryAntiProtonsPointOnITSLayer1Pass = new TH1F("fPrimaryAntiProtonsPointOnITSLayer1Pass",
+  fQAPrimaryAntiProtonsAcceptedList->Add(gPrimaryAntiProtonsTPCpidPass);
+  TH1F *gPrimaryAntiProtonsPointOnITSLayer1Pass = new TH1F("gPrimaryAntiProtonsPointOnITSLayer1Pass",
 							   "",10,-1,1);
-  fQAPrimaryAntiProtonsAcceptedList->Add(fPrimaryAntiProtonsPointOnITSLayer1Pass);
-  TH1F *fPrimaryAntiProtonsPointOnITSLayer2Pass = new TH1F("fPrimaryAntiProtonsPointOnITSLayer2Pass",
+  fQAPrimaryAntiProtonsAcceptedList->Add(gPrimaryAntiProtonsPointOnITSLayer1Pass);
+  TH1F *gPrimaryAntiProtonsPointOnITSLayer2Pass = new TH1F("gPrimaryAntiProtonsPointOnITSLayer2Pass",
 							   "",10,-1,1);
-  fQAPrimaryAntiProtonsAcceptedList->Add(fPrimaryAntiProtonsPointOnITSLayer2Pass);
-  TH1F *fPrimaryAntiProtonsPointOnITSLayer3Pass = new TH1F("fPrimaryAntiProtonsPointOnITSLayer3Pass",
+  fQAPrimaryAntiProtonsAcceptedList->Add(gPrimaryAntiProtonsPointOnITSLayer2Pass);
+  TH1F *gPrimaryAntiProtonsPointOnITSLayer3Pass = new TH1F("gPrimaryAntiProtonsPointOnITSLayer3Pass",
 							   "",10,-1,1);
-  fQAPrimaryAntiProtonsAcceptedList->Add(fPrimaryAntiProtonsPointOnITSLayer3Pass);
-  TH1F *fPrimaryAntiProtonsPointOnITSLayer4Pass = new TH1F("fPrimaryAntiProtonsPointOnITSLayer4Pass",
+  fQAPrimaryAntiProtonsAcceptedList->Add(gPrimaryAntiProtonsPointOnITSLayer3Pass);
+  TH1F *gPrimaryAntiProtonsPointOnITSLayer4Pass = new TH1F("gPrimaryAntiProtonsPointOnITSLayer4Pass",
 							   "",10,-1,1);
-  fQAPrimaryAntiProtonsAcceptedList->Add(fPrimaryAntiProtonsPointOnITSLayer4Pass);
-  TH1F *fPrimaryAntiProtonsPointOnITSLayer5Pass = new TH1F("fPrimaryAntiProtonsPointOnITSLayer5Pass",
+  fQAPrimaryAntiProtonsAcceptedList->Add(gPrimaryAntiProtonsPointOnITSLayer4Pass);
+  TH1F *gPrimaryAntiProtonsPointOnITSLayer5Pass = new TH1F("gPrimaryAntiProtonsPointOnITSLayer5Pass",
 							   "",10,-1,1);
-  fQAPrimaryAntiProtonsAcceptedList->Add(fPrimaryAntiProtonsPointOnITSLayer5Pass);
-  TH1F *fPrimaryAntiProtonsPointOnITSLayer6Pass = new TH1F("fPrimaryAntiProtonsPointOnITSLayer6Pass",
+  fQAPrimaryAntiProtonsAcceptedList->Add(gPrimaryAntiProtonsPointOnITSLayer5Pass);
+  TH1F *gPrimaryAntiProtonsPointOnITSLayer6Pass = new TH1F("gPrimaryAntiProtonsPointOnITSLayer6Pass",
 							   "",10,-1,1);
-  fQAPrimaryAntiProtonsAcceptedList->Add(fPrimaryAntiProtonsPointOnITSLayer6Pass);
+  fQAPrimaryAntiProtonsAcceptedList->Add(gPrimaryAntiProtonsPointOnITSLayer6Pass);
   
   //Rejected primary antiprotons
   /*gDirectory->cd("../");
   TDirectory *dirAntiProtonsPrimaryRejected = gDirectory->mkdir("Rejected");
   dirAntiProtonsPrimaryRejected->cd();*/
   
-  TH1F *fPrimaryAntiProtonsITSClustersReject = new TH1F("fPrimaryAntiProtonsITSClustersReject",
+  TH1F *gPrimaryAntiProtonsITSClustersReject = new TH1F("gPrimaryAntiProtonsITSClustersReject",
 							";N_{clusters} (ITS);Entries",
 							7,0,7);
-  fQAPrimaryAntiProtonsRejectedList->Add(fPrimaryAntiProtonsITSClustersReject);
-  TH1F *fPrimaryAntiProtonsChi2PerClusterITSReject = new TH1F("fPrimaryAntiProtonsChi2PerClusterITSReject",
+  fQAPrimaryAntiProtonsRejectedList->Add(gPrimaryAntiProtonsITSClustersReject);
+  TH1F *gPrimaryAntiProtonsChi2PerClusterITSReject = new TH1F("gPrimaryAntiProtonsChi2PerClusterITSReject",
 							      ";x^{2}/N_{clusters} (ITS);Entries",
 							      100,0,4);
-  fQAPrimaryAntiProtonsRejectedList->Add(fPrimaryAntiProtonsChi2PerClusterITSReject);
-  TH1F *fPrimaryAntiProtonsTPCClustersReject = new TH1F("fPrimaryAntiProtonsTPCClustersReject",
+  fQAPrimaryAntiProtonsRejectedList->Add(gPrimaryAntiProtonsChi2PerClusterITSReject);
+  TH1F *gPrimaryAntiProtonsTPCClustersReject = new TH1F("gPrimaryAntiProtonsTPCClustersReject",
 							";N_{clusters} (TPC);Entries",
 							100,0,200);
-  fQAPrimaryAntiProtonsRejectedList->Add(fPrimaryAntiProtonsTPCClustersReject);
-  TH1F *fPrimaryAntiProtonsChi2PerClusterTPCReject = new TH1F("fPrimaryAntiProtonsChi2PerClusterTPCReject",
+  fQAPrimaryAntiProtonsRejectedList->Add(gPrimaryAntiProtonsTPCClustersReject);
+  TH1F *gPrimaryAntiProtonsChi2PerClusterTPCReject = new TH1F("gPrimaryAntiProtonsChi2PerClusterTPCReject",
 							      ";x^{2}/N_{clusters} (TPC);Entries",
 							      100,0,4);
-  fQAPrimaryAntiProtonsRejectedList->Add(fPrimaryAntiProtonsChi2PerClusterTPCReject);
-  TH1F *fPrimaryAntiProtonsExtCov11Reject = new TH1F("fPrimaryAntiProtonsExtCov11Reject",
+  fQAPrimaryAntiProtonsRejectedList->Add(gPrimaryAntiProtonsChi2PerClusterTPCReject);
+  TH1F *gPrimaryAntiProtonsExtCov11Reject = new TH1F("gPrimaryAntiProtonsExtCov11Reject",
 						     ";#sigma_{y} [cm];Entries",
 						     100,0,4);
-  fQAPrimaryAntiProtonsRejectedList->Add(fPrimaryAntiProtonsExtCov11Reject);
-  TH1F *fPrimaryAntiProtonsExtCov22Reject = new TH1F("fPrimaryAntiProtonsExtCov22Reject",
+  fQAPrimaryAntiProtonsRejectedList->Add(gPrimaryAntiProtonsExtCov11Reject);
+  TH1F *gPrimaryAntiProtonsExtCov22Reject = new TH1F("gPrimaryAntiProtonsExtCov22Reject",
 						     ";#sigma_{z} [cm];Entries",
 						     100,0,4);
-  fQAPrimaryAntiProtonsRejectedList->Add(fPrimaryAntiProtonsExtCov22Reject);
-  TH1F *fPrimaryAntiProtonsExtCov33Reject = new TH1F("fPrimaryAntiProtonsExtCov33Reject",
+  fQAPrimaryAntiProtonsRejectedList->Add(gPrimaryAntiProtonsExtCov22Reject);
+  TH1F *gPrimaryAntiProtonsExtCov33Reject = new TH1F("gPrimaryAntiProtonsExtCov33Reject",
 						     ";#sigma_{sin(#phi)};Entries",
 						     100,0,4);
-  fQAPrimaryAntiProtonsRejectedList->Add(fPrimaryAntiProtonsExtCov33Reject);
-  TH1F *fPrimaryAntiProtonsExtCov44Reject = new TH1F("fPrimaryAntiProtonsExtCov44Reject",
+  fQAPrimaryAntiProtonsRejectedList->Add(gPrimaryAntiProtonsExtCov33Reject);
+  TH1F *gPrimaryAntiProtonsExtCov44Reject = new TH1F("gPrimaryAntiProtonsExtCov44Reject",
 						     ";#sigma_{tan(#lambda)};Entries",
 						     100,0,4);
-  fQAPrimaryAntiProtonsRejectedList->Add(fPrimaryAntiProtonsExtCov44Reject);
-  TH1F *fPrimaryAntiProtonsExtCov55Reject = new TH1F("fPrimaryAntiProtonsExtCov55Reject",
+  fQAPrimaryAntiProtonsRejectedList->Add(gPrimaryAntiProtonsExtCov44Reject);
+  TH1F *gPrimaryAntiProtonsExtCov55Reject = new TH1F("gPrimaryAntiProtonsExtCov55Reject",
 						     ";#sigma_{1/P_{T}} [GeV/c]^{-1};Entries",
 						     100,0,4);
-  fQAPrimaryAntiProtonsRejectedList->Add(fPrimaryAntiProtonsExtCov55Reject);
-  TH1F *fPrimaryAntiProtonsSigmaToVertexReject = new TH1F("fPrimaryAntiProtonsSigmaToVertexReject",
+  fQAPrimaryAntiProtonsRejectedList->Add(gPrimaryAntiProtonsExtCov55Reject);
+  TH1F *gPrimaryAntiProtonsSigmaToVertexReject = new TH1F("gPrimaryAntiProtonsSigmaToVertexReject",
 							  ";#sigma_{Vertex};Entries",
 							  100,0,10);
-  fQAPrimaryAntiProtonsRejectedList->Add(fPrimaryAntiProtonsSigmaToVertexReject);
-  TH1F *fPrimaryAntiProtonsSigmaToVertexTPCReject = new TH1F("fPrimaryAntiProtonsSigmaToVertexTPCReject",
+  fQAPrimaryAntiProtonsRejectedList->Add(gPrimaryAntiProtonsSigmaToVertexReject);
+  TH1F *gPrimaryAntiProtonsSigmaToVertexTPCReject = new TH1F("gPrimaryAntiProtonsSigmaToVertexTPCReject",
 							     ";#sigma_{Vertex};Entries",
 							     100,0,10);
-  fQAPrimaryAntiProtonsRejectedList->Add(fPrimaryAntiProtonsSigmaToVertexTPCReject);
-  TH1F *fPrimaryAntiProtonsDCAXYReject = new TH1F("fPrimaryAntiProtonsDCAXYReject",
+  fQAPrimaryAntiProtonsRejectedList->Add(gPrimaryAntiProtonsSigmaToVertexTPCReject);
+  TH1F *gPrimaryAntiProtonsDCAXYReject = new TH1F("gPrimaryAntiProtonsDCAXYReject",
 						  ";DCA_{xy} [cm];Entries",
 						  100,0,20);
-  fQAPrimaryAntiProtonsRejectedList->Add(fPrimaryAntiProtonsDCAXYReject);
-  TH1F *fPrimaryAntiProtonsDCAXYTPCReject = new TH1F("fPrimaryAntiProtonsDCAXYTPCReject",
+  fQAPrimaryAntiProtonsRejectedList->Add(gPrimaryAntiProtonsDCAXYReject);
+  TH1F *gPrimaryAntiProtonsDCAXYTPCReject = new TH1F("gPrimaryAntiProtonsDCAXYTPCReject",
 						     ";DCA_{xy} [cm];Entries",
 						     100,0,20);
-  fQAPrimaryAntiProtonsRejectedList->Add(fPrimaryAntiProtonsDCAXYTPCReject);
-  TH1F *fPrimaryAntiProtonsDCAZReject = new TH1F("fPrimaryAntiProtonsDCAZReject",
+  fQAPrimaryAntiProtonsRejectedList->Add(gPrimaryAntiProtonsDCAXYTPCReject);
+  TH1F *gPrimaryAntiProtonsDCAZReject = new TH1F("gPrimaryAntiProtonsDCAZReject",
 						 ";DCA_{z} [cm];Entries",
 						 100,0,20);
-  fQAPrimaryAntiProtonsRejectedList->Add(fPrimaryAntiProtonsDCAZReject);
-  TH1F *fPrimaryAntiProtonsDCAZTPCReject = new TH1F("fPrimaryAntiProtonsDCAZTPCReject",
+  fQAPrimaryAntiProtonsRejectedList->Add(gPrimaryAntiProtonsDCAZReject);
+  TH1F *gPrimaryAntiProtonsDCAZTPCReject = new TH1F("gPrimaryAntiProtonsDCAZTPCReject",
 						    ";DCA_{z} [cm];Entries",
 						    100,0,20);
-  fQAPrimaryAntiProtonsRejectedList->Add(fPrimaryAntiProtonsDCAZTPCReject);
-  TH1F *fPrimaryAntiProtonsConstrainChi2Reject = new TH1F("fPrimaryAntiProtonsConstrainChi2Reject",
+  fQAPrimaryAntiProtonsRejectedList->Add(gPrimaryAntiProtonsDCAZTPCReject);
+  TH1F *gPrimaryAntiProtonsConstrainChi2Reject = new TH1F("gPrimaryAntiProtonsConstrainChi2Reject",
 							  ";Log_{10}(#chi^{2});Entries",
 							  100,-10,10);
-  fQAPrimaryAntiProtonsRejectedList->Add(fPrimaryAntiProtonsConstrainChi2Reject);
-  TH1F *fPrimaryAntiProtonsITSRefitReject = new TH1F("fPrimaryAntiProtonsITSRefitReject",
+  fQAPrimaryAntiProtonsRejectedList->Add(gPrimaryAntiProtonsConstrainChi2Reject);
+  TH1F *gPrimaryAntiProtonsITSRefitReject = new TH1F("gPrimaryAntiProtonsITSRefitReject",
 						     "",10,-1,1);
-  fQAPrimaryAntiProtonsRejectedList->Add(fPrimaryAntiProtonsITSRefitReject);
-  TH1F *fPrimaryAntiProtonsTPCRefitReject = new TH1F("fPrimaryAntiProtonsTPCRefitReject",
+  fQAPrimaryAntiProtonsRejectedList->Add(gPrimaryAntiProtonsITSRefitReject);
+  TH1F *gPrimaryAntiProtonsTPCRefitReject = new TH1F("gPrimaryAntiProtonsTPCRefitReject",
 						     "",10,-1,1);
-  fQAPrimaryAntiProtonsRejectedList->Add(fPrimaryAntiProtonsTPCRefitReject);
-  TH1F *fPrimaryAntiProtonsESDpidReject = new TH1F("fPrimaryAntiProtonsESDpidReject",
+  fQAPrimaryAntiProtonsRejectedList->Add(gPrimaryAntiProtonsTPCRefitReject);
+  TH1F *gPrimaryAntiProtonsESDpidReject = new TH1F("gPrimaryAntiProtonsESDpidReject",
 						   "",10,-1,1);
-  fQAPrimaryAntiProtonsRejectedList->Add(fPrimaryAntiProtonsESDpidReject);
-  TH1F *fPrimaryAntiProtonsTPCpidReject = new TH1F("fPrimaryAntiProtonsTPCpidReject",
+  fQAPrimaryAntiProtonsRejectedList->Add(gPrimaryAntiProtonsESDpidReject);
+  TH1F *gPrimaryAntiProtonsTPCpidReject = new TH1F("gPrimaryAntiProtonsTPCpidReject",
 						   "",10,-1,1);
-  fQAPrimaryAntiProtonsRejectedList->Add(fPrimaryAntiProtonsTPCpidReject);
-  TH1F *fPrimaryAntiProtonsPointOnITSLayer1Reject = new TH1F("fPrimaryAntiProtonsPointOnITSLayer1Reject",
+  fQAPrimaryAntiProtonsRejectedList->Add(gPrimaryAntiProtonsTPCpidReject);
+  TH1F *gPrimaryAntiProtonsPointOnITSLayer1Reject = new TH1F("gPrimaryAntiProtonsPointOnITSLayer1Reject",
 							     "",10,-1,1);
-  fQAPrimaryAntiProtonsRejectedList->Add(fPrimaryAntiProtonsPointOnITSLayer1Reject);
-  TH1F *fPrimaryAntiProtonsPointOnITSLayer2Reject = new TH1F("fPrimaryAntiProtonsPointOnITSLayer2Reject",
+  fQAPrimaryAntiProtonsRejectedList->Add(gPrimaryAntiProtonsPointOnITSLayer1Reject);
+  TH1F *gPrimaryAntiProtonsPointOnITSLayer2Reject = new TH1F("gPrimaryAntiProtonsPointOnITSLayer2Reject",
 							     "",10,-1,1);
-  fQAPrimaryAntiProtonsRejectedList->Add(fPrimaryAntiProtonsPointOnITSLayer2Reject);
-  TH1F *fPrimaryAntiProtonsPointOnITSLayer3Reject = new TH1F("fPrimaryAntiProtonsPointOnITSLayer3Reject",
+  fQAPrimaryAntiProtonsRejectedList->Add(gPrimaryAntiProtonsPointOnITSLayer2Reject);
+  TH1F *gPrimaryAntiProtonsPointOnITSLayer3Reject = new TH1F("gPrimaryAntiProtonsPointOnITSLayer3Reject",
 							     "",10,-1,1);
-  fQAPrimaryAntiProtonsRejectedList->Add(fPrimaryAntiProtonsPointOnITSLayer3Reject);
-  TH1F *fPrimaryAntiProtonsPointOnITSLayer4Reject = new TH1F("fPrimaryAntiProtonsPointOnITSLayer4Reject",
+  fQAPrimaryAntiProtonsRejectedList->Add(gPrimaryAntiProtonsPointOnITSLayer3Reject);
+  TH1F *gPrimaryAntiProtonsPointOnITSLayer4Reject = new TH1F("gPrimaryAntiProtonsPointOnITSLayer4Reject",
 							     "",10,-1,1);
-  fQAPrimaryAntiProtonsRejectedList->Add(fPrimaryAntiProtonsPointOnITSLayer4Reject);
-  TH1F *fPrimaryAntiProtonsPointOnITSLayer5Reject = new TH1F("fPrimaryAntiProtonsPointOnITSLayer5Reject",
+  fQAPrimaryAntiProtonsRejectedList->Add(gPrimaryAntiProtonsPointOnITSLayer4Reject);
+  TH1F *gPrimaryAntiProtonsPointOnITSLayer5Reject = new TH1F("gPrimaryAntiProtonsPointOnITSLayer5Reject",
 							     "",10,-1,1);
-  fQAPrimaryAntiProtonsRejectedList->Add(fPrimaryAntiProtonsPointOnITSLayer5Reject);
-  TH1F *fPrimaryAntiProtonsPointOnITSLayer6Reject = new TH1F("fPrimaryAntiProtonsPointOnITSLayer6Reject",
+  fQAPrimaryAntiProtonsRejectedList->Add(gPrimaryAntiProtonsPointOnITSLayer5Reject);
+  TH1F *gPrimaryAntiProtonsPointOnITSLayer6Reject = new TH1F("gPrimaryAntiProtonsPointOnITSLayer6Reject",
 							     "",10,-1,1);
-  fQAPrimaryAntiProtonsRejectedList->Add(fPrimaryAntiProtonsPointOnITSLayer6Reject);
+  fQAPrimaryAntiProtonsRejectedList->Add(gPrimaryAntiProtonsPointOnITSLayer6Reject);
   
   //________________________________________________________________//
   /*gDirectory->cd("../../");
@@ -1901,200 +1901,200 @@ void AliProtonQAAnalysis::InitQA() {
   dirAntiProtonsSecondaryAccepted->cd();*/
 
   //Accepted secondary antiprotons
-  TH1F *fSecondaryAntiProtonsITSClustersPass = new TH1F("fSecondaryAntiProtonsITSClustersPass",
+  TH1F *gSecondaryAntiProtonsITSClustersPass = new TH1F("gSecondaryAntiProtonsITSClustersPass",
 							";N_{clusters} (ITS);Entries",
 							7,0,7);
-  fQASecondaryAntiProtonsAcceptedList->Add(fSecondaryAntiProtonsITSClustersPass);
-  TH1F *fSecondaryAntiProtonsChi2PerClusterITSPass = new TH1F("fSecondaryAntiProtonsChi2PerClusterITSPass",
+  fQASecondaryAntiProtonsAcceptedList->Add(gSecondaryAntiProtonsITSClustersPass);
+  TH1F *gSecondaryAntiProtonsChi2PerClusterITSPass = new TH1F("gSecondaryAntiProtonsChi2PerClusterITSPass",
 							      ";x^{2}/N_{clusters} (ITS);Entries",
 							      100,0,4);
-  fQASecondaryAntiProtonsAcceptedList->Add(fSecondaryAntiProtonsChi2PerClusterITSPass);
-  TH1F *fSecondaryAntiProtonsTPCClustersPass = new TH1F("fSecondaryAntiProtonsTPCClustersPass",
+  fQASecondaryAntiProtonsAcceptedList->Add(gSecondaryAntiProtonsChi2PerClusterITSPass);
+  TH1F *gSecondaryAntiProtonsTPCClustersPass = new TH1F("gSecondaryAntiProtonsTPCClustersPass",
 							";N_{clusters} (TPC);Entries",
 							100,0,200);
-  fQASecondaryAntiProtonsAcceptedList->Add(fSecondaryAntiProtonsTPCClustersPass);
-  TH1F *fSecondaryAntiProtonsChi2PerClusterTPCPass = new TH1F("fSecondaryAntiProtonsChi2PerClusterTPCPass",
+  fQASecondaryAntiProtonsAcceptedList->Add(gSecondaryAntiProtonsTPCClustersPass);
+  TH1F *gSecondaryAntiProtonsChi2PerClusterTPCPass = new TH1F("gSecondaryAntiProtonsChi2PerClusterTPCPass",
 							      ";x^{2}/N_{clusters} (TPC);Entries",
 							      100,0,4);
-  fQASecondaryAntiProtonsAcceptedList->Add(fSecondaryAntiProtonsChi2PerClusterTPCPass);
-  TH1F *fSecondaryAntiProtonsExtCov11Pass = new TH1F("fSecondaryAntiProtonsExtCov11Pass",
+  fQASecondaryAntiProtonsAcceptedList->Add(gSecondaryAntiProtonsChi2PerClusterTPCPass);
+  TH1F *gSecondaryAntiProtonsExtCov11Pass = new TH1F("gSecondaryAntiProtonsExtCov11Pass",
 						     ";#sigma_{y} [cm];Entries",
 						     100,0,4);
-  fQASecondaryAntiProtonsAcceptedList->Add(fSecondaryAntiProtonsExtCov11Pass);
-  TH1F *fSecondaryAntiProtonsExtCov22Pass = new TH1F("fSecondaryAntiProtonsExtCov22Pass",
+  fQASecondaryAntiProtonsAcceptedList->Add(gSecondaryAntiProtonsExtCov11Pass);
+  TH1F *gSecondaryAntiProtonsExtCov22Pass = new TH1F("gSecondaryAntiProtonsExtCov22Pass",
 						     ";#sigma_{z} [cm];Entries",
 						     100,0,4);
-  fQASecondaryAntiProtonsAcceptedList->Add(fSecondaryAntiProtonsExtCov22Pass);
-  TH1F *fSecondaryAntiProtonsExtCov33Pass = new TH1F("fSecondaryAntiProtonsExtCov33Pass",
+  fQASecondaryAntiProtonsAcceptedList->Add(gSecondaryAntiProtonsExtCov22Pass);
+  TH1F *gSecondaryAntiProtonsExtCov33Pass = new TH1F("gSecondaryAntiProtonsExtCov33Pass",
 						     ";#sigma_{sin(#phi)};Entries",
 						     100,0,4);
-  fQASecondaryAntiProtonsAcceptedList->Add(fSecondaryAntiProtonsExtCov33Pass);
-  TH1F *fSecondaryAntiProtonsExtCov44Pass = new TH1F("fSecondaryAntiProtonsExtCov44Pass",
+  fQASecondaryAntiProtonsAcceptedList->Add(gSecondaryAntiProtonsExtCov33Pass);
+  TH1F *gSecondaryAntiProtonsExtCov44Pass = new TH1F("gSecondaryAntiProtonsExtCov44Pass",
 						     ";#sigma_{tan(#lambda)};Entries",
 						     100,0,4);
-  fQASecondaryAntiProtonsAcceptedList->Add(fSecondaryAntiProtonsExtCov44Pass);
-  TH1F *fSecondaryAntiProtonsExtCov55Pass = new TH1F("fSecondaryAntiProtonsExtCov55Pass",
+  fQASecondaryAntiProtonsAcceptedList->Add(gSecondaryAntiProtonsExtCov44Pass);
+  TH1F *gSecondaryAntiProtonsExtCov55Pass = new TH1F("gSecondaryAntiProtonsExtCov55Pass",
 						     ";#sigma_{1/P_{T}} [GeV/c]^{-1};Entries",
 						     100,0,4);
-  fQASecondaryAntiProtonsAcceptedList->Add(fSecondaryAntiProtonsExtCov55Pass);
-  TH1F *fSecondaryAntiProtonsSigmaToVertexPass = new TH1F("fSecondaryAntiProtonsSigmaToVertexPass",
+  fQASecondaryAntiProtonsAcceptedList->Add(gSecondaryAntiProtonsExtCov55Pass);
+  TH1F *gSecondaryAntiProtonsSigmaToVertexPass = new TH1F("gSecondaryAntiProtonsSigmaToVertexPass",
 							  ";#sigma_{Vertex};Entries",
 							  100,0,10);
-  fQASecondaryAntiProtonsAcceptedList->Add(fSecondaryAntiProtonsSigmaToVertexPass);
-  TH1F *fSecondaryAntiProtonsSigmaToVertexTPCPass = new TH1F("fSecondaryAntiProtonsSigmaToVertexTPCPass",
+  fQASecondaryAntiProtonsAcceptedList->Add(gSecondaryAntiProtonsSigmaToVertexPass);
+  TH1F *gSecondaryAntiProtonsSigmaToVertexTPCPass = new TH1F("gSecondaryAntiProtonsSigmaToVertexTPCPass",
 							     ";#sigma_{Vertex};Entries",
 							     100,0,10);
-  fQASecondaryAntiProtonsAcceptedList->Add(fSecondaryAntiProtonsSigmaToVertexTPCPass);
-  TH1F *fSecondaryAntiProtonsDCAXYPass = new TH1F("fSecondaryAntiProtonsDCAXYPass",
+  fQASecondaryAntiProtonsAcceptedList->Add(gSecondaryAntiProtonsSigmaToVertexTPCPass);
+  TH1F *gSecondaryAntiProtonsDCAXYPass = new TH1F("gSecondaryAntiProtonsDCAXYPass",
 						  ";DCA_{xy} [cm];Entries",
 						  100,0,20);
-  fQASecondaryAntiProtonsAcceptedList->Add(fSecondaryAntiProtonsDCAXYPass);
-  TH1F *fSecondaryAntiProtonsDCAXYTPCPass = new TH1F("fSecondaryAntiProtonsDCAXYTPCPass",
+  fQASecondaryAntiProtonsAcceptedList->Add(gSecondaryAntiProtonsDCAXYPass);
+  TH1F *gSecondaryAntiProtonsDCAXYTPCPass = new TH1F("gSecondaryAntiProtonsDCAXYTPCPass",
 						     ";DCA_{xy} [cm];Entries",
 						     100,0,20);
-  fQASecondaryAntiProtonsAcceptedList->Add(fSecondaryAntiProtonsDCAXYTPCPass);
-  TH1F *fSecondaryAntiProtonsDCAZPass = new TH1F("fSecondaryAntiProtonsDCAZPass",
+  fQASecondaryAntiProtonsAcceptedList->Add(gSecondaryAntiProtonsDCAXYTPCPass);
+  TH1F *gSecondaryAntiProtonsDCAZPass = new TH1F("gSecondaryAntiProtonsDCAZPass",
 						 ";DCA_{z} [cm];Entries",
 						 100,0,20);
-  fQASecondaryAntiProtonsAcceptedList->Add(fSecondaryAntiProtonsDCAZPass);
-  TH1F *fSecondaryAntiProtonsDCAZTPCPass = new TH1F("fSecondaryAntiProtonsDCAZTPCPass",
+  fQASecondaryAntiProtonsAcceptedList->Add(gSecondaryAntiProtonsDCAZPass);
+  TH1F *gSecondaryAntiProtonsDCAZTPCPass = new TH1F("gSecondaryAntiProtonsDCAZTPCPass",
 						    ";DCA_{z} [cm];Entries",
 						    100,0,20);
-  fQASecondaryAntiProtonsAcceptedList->Add(fSecondaryAntiProtonsDCAZTPCPass);
-  TH1F *fSecondaryAntiProtonsConstrainChi2Pass = new TH1F("fSecondaryAntiProtonsConstrainChi2Pass",
+  fQASecondaryAntiProtonsAcceptedList->Add(gSecondaryAntiProtonsDCAZTPCPass);
+  TH1F *gSecondaryAntiProtonsConstrainChi2Pass = new TH1F("gSecondaryAntiProtonsConstrainChi2Pass",
 							  ";Log_{10}(#chi^{2});Entries",
 							  100,-10,10);
-  fQASecondaryAntiProtonsAcceptedList->Add(fSecondaryAntiProtonsConstrainChi2Pass);
-  TH1F *fSecondaryAntiProtonsITSRefitPass = new TH1F("fSecondaryAntiProtonsITSRefitPass",
+  fQASecondaryAntiProtonsAcceptedList->Add(gSecondaryAntiProtonsConstrainChi2Pass);
+  TH1F *gSecondaryAntiProtonsITSRefitPass = new TH1F("gSecondaryAntiProtonsITSRefitPass",
 						     "",10,-1,1);
-  fQASecondaryAntiProtonsAcceptedList->Add(fSecondaryAntiProtonsITSRefitPass);
-  TH1F *fSecondaryAntiProtonsTPCRefitPass = new TH1F("fSecondaryAntiProtonsTPCRefitPass",
+  fQASecondaryAntiProtonsAcceptedList->Add(gSecondaryAntiProtonsITSRefitPass);
+  TH1F *gSecondaryAntiProtonsTPCRefitPass = new TH1F("gSecondaryAntiProtonsTPCRefitPass",
 						     "",10,-1,1);
-  fQASecondaryAntiProtonsAcceptedList->Add(fSecondaryAntiProtonsTPCRefitPass);
-  TH1F *fSecondaryAntiProtonsESDpidPass = new TH1F("fSecondaryAntiProtonsESDpidPass",
+  fQASecondaryAntiProtonsAcceptedList->Add(gSecondaryAntiProtonsTPCRefitPass);
+  TH1F *gSecondaryAntiProtonsESDpidPass = new TH1F("gSecondaryAntiProtonsESDpidPass",
 						   "",10,-1,1);
-  fQASecondaryAntiProtonsAcceptedList->Add(fSecondaryAntiProtonsESDpidPass);
-  TH1F *fSecondaryAntiProtonsTPCpidPass = new TH1F("fSecondaryAntiProtonsTPCpidPass",
+  fQASecondaryAntiProtonsAcceptedList->Add(gSecondaryAntiProtonsESDpidPass);
+  TH1F *gSecondaryAntiProtonsTPCpidPass = new TH1F("gSecondaryAntiProtonsTPCpidPass",
 						   "",10,-1,1);
-  fQASecondaryAntiProtonsAcceptedList->Add(fSecondaryAntiProtonsTPCpidPass);
-  TH1F *fSecondaryAntiProtonsPointOnITSLayer1Pass = new TH1F("fSecondaryAntiProtonsPointOnITSLayer1Pass",
+  fQASecondaryAntiProtonsAcceptedList->Add(gSecondaryAntiProtonsTPCpidPass);
+  TH1F *gSecondaryAntiProtonsPointOnITSLayer1Pass = new TH1F("gSecondaryAntiProtonsPointOnITSLayer1Pass",
 							     "",10,-1,1);
-  fQASecondaryAntiProtonsAcceptedList->Add(fSecondaryAntiProtonsPointOnITSLayer1Pass);
-  TH1F *fSecondaryAntiProtonsPointOnITSLayer2Pass = new TH1F("fSecondaryAntiProtonsPointOnITSLayer2Pass",
+  fQASecondaryAntiProtonsAcceptedList->Add(gSecondaryAntiProtonsPointOnITSLayer1Pass);
+  TH1F *gSecondaryAntiProtonsPointOnITSLayer2Pass = new TH1F("gSecondaryAntiProtonsPointOnITSLayer2Pass",
 							     "",10,-1,1);
-  fQASecondaryAntiProtonsAcceptedList->Add(fSecondaryAntiProtonsPointOnITSLayer2Pass);
-  TH1F *fSecondaryAntiProtonsPointOnITSLayer3Pass = new TH1F("fSecondaryAntiProtonsPointOnITSLayer3Pass",
+  fQASecondaryAntiProtonsAcceptedList->Add(gSecondaryAntiProtonsPointOnITSLayer2Pass);
+  TH1F *gSecondaryAntiProtonsPointOnITSLayer3Pass = new TH1F("gSecondaryAntiProtonsPointOnITSLayer3Pass",
 							     "",10,-1,1);
-  fQASecondaryAntiProtonsAcceptedList->Add(fSecondaryAntiProtonsPointOnITSLayer3Pass);
-  TH1F *fSecondaryAntiProtonsPointOnITSLayer4Pass = new TH1F("fSecondaryAntiProtonsPointOnITSLayer4Pass",
+  fQASecondaryAntiProtonsAcceptedList->Add(gSecondaryAntiProtonsPointOnITSLayer3Pass);
+  TH1F *gSecondaryAntiProtonsPointOnITSLayer4Pass = new TH1F("gSecondaryAntiProtonsPointOnITSLayer4Pass",
 							     "",10,-1,1);
-  fQASecondaryAntiProtonsAcceptedList->Add(fSecondaryAntiProtonsPointOnITSLayer4Pass);
-  TH1F *fSecondaryAntiProtonsPointOnITSLayer5Pass = new TH1F("fSecondaryAntiProtonsPointOnITSLayer5Pass",
+  fQASecondaryAntiProtonsAcceptedList->Add(gSecondaryAntiProtonsPointOnITSLayer4Pass);
+  TH1F *gSecondaryAntiProtonsPointOnITSLayer5Pass = new TH1F("gSecondaryAntiProtonsPointOnITSLayer5Pass",
 							     "",10,-1,1);
-  fQASecondaryAntiProtonsAcceptedList->Add(fSecondaryAntiProtonsPointOnITSLayer5Pass);
-  TH1F *fSecondaryAntiProtonsPointOnITSLayer6Pass = new TH1F("fSecondaryAntiProtonsPointOnITSLayer6Pass",
+  fQASecondaryAntiProtonsAcceptedList->Add(gSecondaryAntiProtonsPointOnITSLayer5Pass);
+  TH1F *gSecondaryAntiProtonsPointOnITSLayer6Pass = new TH1F("gSecondaryAntiProtonsPointOnITSLayer6Pass",
 							     "",10,-1,1);
-  fQASecondaryAntiProtonsAcceptedList->Add(fSecondaryAntiProtonsPointOnITSLayer6Pass);
+  fQASecondaryAntiProtonsAcceptedList->Add(gSecondaryAntiProtonsPointOnITSLayer6Pass);
   
   //Rejected secondary antiprotons
   /*gDirectory->cd("../");
   TDirectory *dirAntiProtonsSecondaryRejected = gDirectory->mkdir("Rejected");
   dirAntiProtonsSecondaryRejected->cd();*/
 
-  TH1F *fSecondaryAntiProtonsITSClustersReject = new TH1F("fSecondaryAntiProtonsITSClustersReject",
+  TH1F *gSecondaryAntiProtonsITSClustersReject = new TH1F("gSecondaryAntiProtonsITSClustersReject",
 							  ";N_{clusters} (ITS);Entries",
 							  7,0,7);
-  fQASecondaryAntiProtonsRejectedList->Add(fSecondaryAntiProtonsITSClustersReject);
-  TH1F *fSecondaryAntiProtonsChi2PerClusterITSReject = new TH1F("fSecondaryAntiProtonsChi2PerClusterITSReject",
+  fQASecondaryAntiProtonsRejectedList->Add(gSecondaryAntiProtonsITSClustersReject);
+  TH1F *gSecondaryAntiProtonsChi2PerClusterITSReject = new TH1F("gSecondaryAntiProtonsChi2PerClusterITSReject",
 								";x^{2}/N_{clusters} (ITS);Entries",
 								100,0,4);
-  fQASecondaryAntiProtonsRejectedList->Add(fSecondaryAntiProtonsChi2PerClusterITSReject);
-  TH1F *fSecondaryAntiProtonsTPCClustersReject = new TH1F("fSecondaryAntiProtonsTPCClustersReject",
+  fQASecondaryAntiProtonsRejectedList->Add(gSecondaryAntiProtonsChi2PerClusterITSReject);
+  TH1F *gSecondaryAntiProtonsTPCClustersReject = new TH1F("gSecondaryAntiProtonsTPCClustersReject",
 							  ";N_{clusters} (TPC);Entries",
 							  100,0,200);
-  fQASecondaryAntiProtonsRejectedList->Add(fSecondaryAntiProtonsTPCClustersReject);
-  TH1F *fSecondaryAntiProtonsChi2PerClusterTPCReject = new TH1F("fSecondaryAntiProtonsChi2PerClusterTPCReject",
+  fQASecondaryAntiProtonsRejectedList->Add(gSecondaryAntiProtonsTPCClustersReject);
+  TH1F *gSecondaryAntiProtonsChi2PerClusterTPCReject = new TH1F("gSecondaryAntiProtonsChi2PerClusterTPCReject",
 								";x^{2}/N_{clusters} (TPC);Entries",
 								100,0,4);
-  fQASecondaryAntiProtonsRejectedList->Add(fSecondaryAntiProtonsChi2PerClusterTPCReject);
-  TH1F *fSecondaryAntiProtonsExtCov11Reject = new TH1F("fSecondaryAntiProtonsExtCov11Reject",
+  fQASecondaryAntiProtonsRejectedList->Add(gSecondaryAntiProtonsChi2PerClusterTPCReject);
+  TH1F *gSecondaryAntiProtonsExtCov11Reject = new TH1F("gSecondaryAntiProtonsExtCov11Reject",
 						       ";#sigma_{y} [cm];Entries",
 						       100,0,4);
-  fQASecondaryAntiProtonsRejectedList->Add(fSecondaryAntiProtonsExtCov11Reject);
-  TH1F *fSecondaryAntiProtonsExtCov22Reject = new TH1F("fSecondaryAntiProtonsExtCov22Reject",
+  fQASecondaryAntiProtonsRejectedList->Add(gSecondaryAntiProtonsExtCov11Reject);
+  TH1F *gSecondaryAntiProtonsExtCov22Reject = new TH1F("gSecondaryAntiProtonsExtCov22Reject",
 						       ";#sigma_{z} [cm];Entries",
 						       100,0,4);
-  fQASecondaryAntiProtonsRejectedList->Add(fSecondaryAntiProtonsExtCov22Reject);
-  TH1F *fSecondaryAntiProtonsExtCov33Reject = new TH1F("fSecondaryAntiProtonsExtCov33Reject",
+  fQASecondaryAntiProtonsRejectedList->Add(gSecondaryAntiProtonsExtCov22Reject);
+  TH1F *gSecondaryAntiProtonsExtCov33Reject = new TH1F("gSecondaryAntiProtonsExtCov33Reject",
 						       ";#sigma_{sin(#phi)};Entries",
 						       100,0,4);
-  fQASecondaryAntiProtonsRejectedList->Add(fSecondaryAntiProtonsExtCov33Reject);
-  TH1F *fSecondaryAntiProtonsExtCov44Reject = new TH1F("fSecondaryAntiProtonsExtCov44Reject",
+  fQASecondaryAntiProtonsRejectedList->Add(gSecondaryAntiProtonsExtCov33Reject);
+  TH1F *gSecondaryAntiProtonsExtCov44Reject = new TH1F("gSecondaryAntiProtonsExtCov44Reject",
 						       ";#sigma_{tan(#lambda)};Entries",
 						       100,0,4);
-  fQASecondaryAntiProtonsRejectedList->Add(fSecondaryAntiProtonsExtCov44Reject);
-  TH1F *fSecondaryAntiProtonsExtCov55Reject = new TH1F("fSecondaryAntiProtonsExtCov55Reject",
+  fQASecondaryAntiProtonsRejectedList->Add(gSecondaryAntiProtonsExtCov44Reject);
+  TH1F *gSecondaryAntiProtonsExtCov55Reject = new TH1F("gSecondaryAntiProtonsExtCov55Reject",
 						       ";#sigma_{1/P_{T}} [GeV/c]^{-1};Entries",
 						       100,0,4);
-  fQASecondaryAntiProtonsRejectedList->Add(fSecondaryAntiProtonsExtCov55Reject);
-  TH1F *fSecondaryAntiProtonsSigmaToVertexReject = new TH1F("fSecondaryAntiProtonsSigmaToVertexReject",
+  fQASecondaryAntiProtonsRejectedList->Add(gSecondaryAntiProtonsExtCov55Reject);
+  TH1F *gSecondaryAntiProtonsSigmaToVertexReject = new TH1F("gSecondaryAntiProtonsSigmaToVertexReject",
 							    ";#sigma_{Vertex};Entries",
 							    100,0,10);
-  fQASecondaryAntiProtonsRejectedList->Add(fSecondaryAntiProtonsSigmaToVertexReject);
-  TH1F *fSecondaryAntiProtonsSigmaToVertexTPCReject = new TH1F("fSecondaryAntiProtonsSigmaToVertexTPCReject",
+  fQASecondaryAntiProtonsRejectedList->Add(gSecondaryAntiProtonsSigmaToVertexReject);
+  TH1F *gSecondaryAntiProtonsSigmaToVertexTPCReject = new TH1F("gSecondaryAntiProtonsSigmaToVertexTPCReject",
 							       ";#sigma_{Vertex};Entries",
 							       100,0,10);
-  fQASecondaryAntiProtonsRejectedList->Add(fSecondaryAntiProtonsSigmaToVertexTPCReject);
-  TH1F *fSecondaryAntiProtonsDCAXYReject = new TH1F("fSecondaryAntiProtonsDCAXYReject",
+  fQASecondaryAntiProtonsRejectedList->Add(gSecondaryAntiProtonsSigmaToVertexTPCReject);
+  TH1F *gSecondaryAntiProtonsDCAXYReject = new TH1F("gSecondaryAntiProtonsDCAXYReject",
 						    ";DCA_{xy} [cm];Entries",
 						    100,0,20);
-  fQASecondaryAntiProtonsRejectedList->Add(fSecondaryAntiProtonsDCAXYReject);
-  TH1F *fSecondaryAntiProtonsDCAXYTPCReject = new TH1F("fSecondaryAntiProtonsDCAXYTPCReject",
+  fQASecondaryAntiProtonsRejectedList->Add(gSecondaryAntiProtonsDCAXYReject);
+  TH1F *gSecondaryAntiProtonsDCAXYTPCReject = new TH1F("gSecondaryAntiProtonsDCAXYTPCReject",
 						       ";DCA_{xy} [cm];Entries",
 						       100,0,20);
-  fQASecondaryAntiProtonsRejectedList->Add(fSecondaryAntiProtonsDCAXYTPCReject);
-  TH1F *fSecondaryAntiProtonsDCAZReject = new TH1F("fSecondaryAntiProtonsDCAZReject",
+  fQASecondaryAntiProtonsRejectedList->Add(gSecondaryAntiProtonsDCAXYTPCReject);
+  TH1F *gSecondaryAntiProtonsDCAZReject = new TH1F("gSecondaryAntiProtonsDCAZReject",
 						   ";DCA_{z} [cm];Entries",
 						   100,0,20);
-  fQASecondaryAntiProtonsRejectedList->Add(fSecondaryAntiProtonsDCAZReject);
-  TH1F *fSecondaryAntiProtonsDCAZTPCReject = new TH1F("fSecondaryAntiProtonsDCAZTPCReject",
+  fQASecondaryAntiProtonsRejectedList->Add(gSecondaryAntiProtonsDCAZReject);
+  TH1F *gSecondaryAntiProtonsDCAZTPCReject = new TH1F("gSecondaryAntiProtonsDCAZTPCReject",
 						      ";DCA_{z} [cm];Entries",
 						      100,0,20);
-  fQASecondaryAntiProtonsRejectedList->Add(fSecondaryAntiProtonsDCAZTPCReject);
-  TH1F *fSecondaryAntiProtonsConstrainChi2Reject = new TH1F("fSecondaryAntiProtonsConstrainChi2Reject",
+  fQASecondaryAntiProtonsRejectedList->Add(gSecondaryAntiProtonsDCAZTPCReject);
+  TH1F *gSecondaryAntiProtonsConstrainChi2Reject = new TH1F("gSecondaryAntiProtonsConstrainChi2Reject",
 							    ";Log_{10}(#chi^{2});Entries",
 							    100,-10,10);
-  fQASecondaryAntiProtonsRejectedList->Add(fSecondaryAntiProtonsConstrainChi2Reject);
-  TH1F *fSecondaryAntiProtonsITSRefitReject = new TH1F("fSecondaryAntiProtonsITSRefitReject",
+  fQASecondaryAntiProtonsRejectedList->Add(gSecondaryAntiProtonsConstrainChi2Reject);
+  TH1F *gSecondaryAntiProtonsITSRefitReject = new TH1F("gSecondaryAntiProtonsITSRefitReject",
 						       "",10,-1,1);
-  fQASecondaryAntiProtonsRejectedList->Add(fSecondaryAntiProtonsITSRefitReject);
-  TH1F *fSecondaryAntiProtonsTPCRefitReject = new TH1F("fSecondaryAntiProtonsTPCRefitReject",
+  fQASecondaryAntiProtonsRejectedList->Add(gSecondaryAntiProtonsITSRefitReject);
+  TH1F *gSecondaryAntiProtonsTPCRefitReject = new TH1F("gSecondaryAntiProtonsTPCRefitReject",
 						       "",10,-1,1);
-  fQASecondaryAntiProtonsRejectedList->Add(fSecondaryAntiProtonsTPCRefitReject);
-  TH1F *fSecondaryAntiProtonsESDpidReject = new TH1F("fSecondaryAntiProtonsESDpidReject",
+  fQASecondaryAntiProtonsRejectedList->Add(gSecondaryAntiProtonsTPCRefitReject);
+  TH1F *gSecondaryAntiProtonsESDpidReject = new TH1F("gSecondaryAntiProtonsESDpidReject",
 						     "",10,-1,1);
-  fQASecondaryAntiProtonsRejectedList->Add(fSecondaryAntiProtonsESDpidReject);
-  TH1F *fSecondaryAntiProtonsTPCpidReject = new TH1F("fSecondaryAntiProtonsTPCpidReject",
+  fQASecondaryAntiProtonsRejectedList->Add(gSecondaryAntiProtonsESDpidReject);
+  TH1F *gSecondaryAntiProtonsTPCpidReject = new TH1F("gSecondaryAntiProtonsTPCpidReject",
 						     "",10,-1,1);
-  fQASecondaryAntiProtonsRejectedList->Add(fSecondaryAntiProtonsTPCpidReject);
-  TH1F *fSecondaryAntiProtonsPointOnITSLayer1Reject = new TH1F("fSecondaryAntiProtonsPointOnITSLayer1Reject",
+  fQASecondaryAntiProtonsRejectedList->Add(gSecondaryAntiProtonsTPCpidReject);
+  TH1F *gSecondaryAntiProtonsPointOnITSLayer1Reject = new TH1F("gSecondaryAntiProtonsPointOnITSLayer1Reject",
 							     "",10,-1,1);
-  fQASecondaryAntiProtonsRejectedList->Add(fSecondaryAntiProtonsPointOnITSLayer1Reject);
-  TH1F *fSecondaryAntiProtonsPointOnITSLayer2Reject = new TH1F("fSecondaryAntiProtonsPointOnITSLayer2Reject",
+  fQASecondaryAntiProtonsRejectedList->Add(gSecondaryAntiProtonsPointOnITSLayer1Reject);
+  TH1F *gSecondaryAntiProtonsPointOnITSLayer2Reject = new TH1F("gSecondaryAntiProtonsPointOnITSLayer2Reject",
 							     "",10,-1,1);
-  fQASecondaryAntiProtonsRejectedList->Add(fSecondaryAntiProtonsPointOnITSLayer2Reject);
-  TH1F *fSecondaryAntiProtonsPointOnITSLayer3Reject = new TH1F("fSecondaryAntiProtonsPointOnITSLayer3Reject",
+  fQASecondaryAntiProtonsRejectedList->Add(gSecondaryAntiProtonsPointOnITSLayer2Reject);
+  TH1F *gSecondaryAntiProtonsPointOnITSLayer3Reject = new TH1F("gSecondaryAntiProtonsPointOnITSLayer3Reject",
 							     "",10,-1,1);
-  fQASecondaryAntiProtonsRejectedList->Add(fSecondaryAntiProtonsPointOnITSLayer3Reject);
-  TH1F *fSecondaryAntiProtonsPointOnITSLayer4Reject = new TH1F("fSecondaryAntiProtonsPointOnITSLayer4Reject",
+  fQASecondaryAntiProtonsRejectedList->Add(gSecondaryAntiProtonsPointOnITSLayer3Reject);
+  TH1F *gSecondaryAntiProtonsPointOnITSLayer4Reject = new TH1F("gSecondaryAntiProtonsPointOnITSLayer4Reject",
 							     "",10,-1,1);
-  fQASecondaryAntiProtonsRejectedList->Add(fSecondaryAntiProtonsPointOnITSLayer4Reject);
-  TH1F *fSecondaryAntiProtonsPointOnITSLayer5Reject = new TH1F("fSecondaryAntiProtonsPointOnITSLayer5Reject",
+  fQASecondaryAntiProtonsRejectedList->Add(gSecondaryAntiProtonsPointOnITSLayer4Reject);
+  TH1F *gSecondaryAntiProtonsPointOnITSLayer5Reject = new TH1F("gSecondaryAntiProtonsPointOnITSLayer5Reject",
 							     "",10,-1,1);
-  fQASecondaryAntiProtonsRejectedList->Add(fSecondaryAntiProtonsPointOnITSLayer5Reject);
-  TH1F *fSecondaryAntiProtonsPointOnITSLayer6Reject = new TH1F("fSecondaryAntiProtonsPointOnITSLayer6Reject",
+  fQASecondaryAntiProtonsRejectedList->Add(gSecondaryAntiProtonsPointOnITSLayer5Reject);
+  TH1F *gSecondaryAntiProtonsPointOnITSLayer6Reject = new TH1F("gSecondaryAntiProtonsPointOnITSLayer6Reject",
 							     "",10,-1,1);
-  fQASecondaryAntiProtonsRejectedList->Add(fSecondaryAntiProtonsPointOnITSLayer6Reject);
+  fQASecondaryAntiProtonsRejectedList->Add(gSecondaryAntiProtonsPointOnITSLayer6Reject);
 }
 
 //____________________________________________________________________//
