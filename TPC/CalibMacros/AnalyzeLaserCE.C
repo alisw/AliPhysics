@@ -3,9 +3,9 @@
 Macro to perform fits of the Laser Central electrode data
 Several fit methods implemented
 
-0. RebuildCE("ce.root"); - rebuild data from the scratch
-   
-
+0. RebuildCE("ce.root","pul.root"); - rebuild data from the scratch
+                                    - the data will be storered in file inname
+                                    
 1. RebuildData() - transform arbitrary layout of the Input data to the internal format
    StoreData();  - The data tree expected in file inname (see variable bellow)
    StoreTree();  - Modify inname and xxside and tcor in order to transform data
@@ -79,11 +79,13 @@ timeF2~-Result~:ffit2~-fTL~-fInOut~
 #include "TString.h"
 #include "TSystem.h"
 #include "TTree.h"
+#include "TCut.h"
 #include "TStatToolkit.h"
 #include "AliTPCCalibViewer.h"
 #include "AliTPCCalibViewerGUI.h"
 #include "AliTPCPreprocessorOnline.h"
 #include "AliTPCCalibCE.h"
+#include "AliTPCCalibPulser.h"
 //
 //Define interesting variables - file names
 //
@@ -91,16 +93,18 @@ char * inname = "treeCE.root";  // input file with tree
 //
 // variable name definition in input tree - change it according the input
 //
-TString qaside("CE_A00_Q_05");
-TString taside("CE_A00_T_05");
-TString raside("CE_A00_rms_05");
-TString qcside("CE_C00_Q_05");
-TString tcside("CE_C00_T_05");
-TString rcside("CE_C00_rms_05");
+TString qaside("CE_Q");
+TString taside("CE_T");
+TString raside("CE_RMS");
+TString qcside("CE_Q");
+TString tcside("CE_T");
+TString rcside("CE_RMS");
+
 //
 // correction variable - usually Pulser time
 //
-TString tcor("(sector%36>30)*2");
+//TString tcor("(sector%36>30)*2");
+TString tcor("-pulCorr");
 
 //
 char * fname  = "treefitCE.root";       // output file with tree
@@ -152,6 +156,7 @@ TTree * tree=0;                    // working tree
 void LoadViewer();
 void RebuildData();   // transform the input data to the fit format 
 void MakeFit();       // make fits
+void MakeFitPulser(); // make fit for pulser correction data
 //
 //   internal functions
 //
@@ -170,12 +175,38 @@ void AnalyzeLaser(){
   MakeAliases1();
 }
 
+void MakeFitPulser(){
+  TStatToolkit stat;
+  Int_t npoints;
+  Double_t chi2;
+  TVectorD vec0,vec1,vec2;
+  TMatrixD mat;
+  TString fitvar="P_T.fElements";
+  TCut out("abs(P_T.fElements/P_T_Mean.fElements-1.001)<.002");
+  TCut fitadd("P_T.fElements>446");
+  TString fstring="";
+  fstring+="(sector>=0&&sector<9)++";
+  fstring+="(sector>=9&&sector<18)++";
+  fstring+="(sector>=18&&sector<27)++";
+  fstring+="(sector>=27&&sector<36)++";
+  fstring+="(sector>=36&&sector<45)++";
+  fstring+="(sector>=45&&sector<54)++";
+  fstring+="(sector>=54&&sector<63)++";
+  fstring+="(sector>=63&&sector<72)";
+
+  TString *pulOff =stat.FitPlane(tree,fitvar.Data(),fstring.Data(),(out+fitadd).GetTitle(),chi2,npoints,vec0,mat);
+
+  tree->SetAlias("pul0",pulOff->Data());
+  tree->SetAlias("pulCorr","P_T.fElements-pul0");
+  tree->SetAlias("pulOut",out.GetTitle());
+}
 
 void MakeFit(){
   //
   //
   LoadData();
   LoadViewer();
+  MakeFitPulser();
   TStatToolkit stat;
   Int_t npoints;
   Double_t chi2;
@@ -322,6 +353,8 @@ void MakeFit(){
   calPadOff    = makePad->GetCalPad("fOff","1", "fOff");  
 }
 
+
+
 void LoadViewer(){
   //
   // Load calib Viewer
@@ -344,6 +377,7 @@ void RebuildData(){
   //
   makePad = new AliTPCCalibViewer(inname);
   tree = makePad->GetTree();
+  MakeFitPulser();
   MakeAliases0(); //
   //
   printf("0.   GetCalPads\n");
@@ -391,10 +425,12 @@ void RebuildData(){
     }
   }
   printf("3.  Redo fit of the of parabola \n");
-
-  calPadF1  = calPadIn->GlobalFit("timeF1", calPadOut,kTRUE,0,0.9);
-  calPadF2  = calPadIn->GlobalFit("timeF2", calPadOut,kTRUE,1,0.9);
-  calPadQF1 = calPadQIn->GlobalFit("qF1", calPadOut,kTRUE,0,0.9);
+  //
+  //
+  AliTPCCalPad *calPadInCor  = makePad->GetCalPad("dt","1","timeIn");
+  calPadF1  = calPadInCor->GlobalFit("timeF1", calPadOut,kTRUE,0,0.9);
+  calPadF2  = calPadInCor->GlobalFit("timeF2", calPadOut,kTRUE,1,0.9);
+  calPadQF1 = calPadQIn->GlobalFit("qF1", calPadOut,kFALSE,0,0.9);
   calPadQF2 = calPadQIn->GlobalFit("qF2", calPadOut,kFALSE,1);
 }
 
@@ -574,7 +610,7 @@ void MakeRes()
 
 
 
-void RebuildCE(char *finname){
+void RebuildCE(char *finname, char *pulname){
   //
   // Transformation from the CE to the visualization-analisys output
   //
@@ -588,9 +624,23 @@ void RebuildCE(char *finname){
   padtime->SetName("CE_T");
   padRMS->SetName("CE_RMS");
   padq->SetName("CE_Q");
+
+  TFile f2(pulname);
+  AliTPCCalibPulser *pul = (AliTPCCalibPulser*)f2.Get("AliTPCCalibPulser");
+  AliTPCCalPad *pultime = new AliTPCCalPad((TObjArray*)pul->GetCalPadT0());
+  AliTPCCalPad *pulRMS = new AliTPCCalPad((TObjArray*)pul->GetCalPadRMS());
+  AliTPCCalPad *pulq = new AliTPCCalPad((TObjArray*)pul->GetCalPadQ());
+  pultime->SetName("P_T");
+  pulRMS->SetName("P_RMS");
+  pulq->SetName("P_Q");
+
+
   AliTPCPreprocessorOnline * preprocesor = new AliTPCPreprocessorOnline;
   preprocesor->AddComponent(padtime);
   preprocesor->AddComponent(padq);
   preprocesor->AddComponent(padRMS);
+  preprocesor->AddComponent(pultime);
+  preprocesor->AddComponent(pulq);
+  preprocesor->AddComponent(pulRMS);
   preprocesor->DumpToFile(inname);
 }
