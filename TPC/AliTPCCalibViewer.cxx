@@ -1535,7 +1535,7 @@ TH1F* AliTPCCalibViewer::Integrate(Int_t n, Float_t *array, Int_t nbins, Float_t
 
 
 //_____________________________________________________________________________
-AliTPCCalPad* AliTPCCalibViewer::GetCalPad(const char* desiredData, char* cuts, char* calPadName) const {
+AliTPCCalPad* AliTPCCalibViewer::GetCalPadOld(const char* desiredData, char* cuts, char* calPadName) const {
   //
   // creates a AliTPCCalPad out of the 'desiredData'
   // the functionality of EasyDraw1D is used
@@ -1548,11 +1548,48 @@ AliTPCCalPad* AliTPCCalibViewer::GetCalPad(const char* desiredData, char* cuts, 
    AliTPCCalPad * createdCalPad = new AliTPCCalPad(calPadName, calPadName);
    Int_t entries = 0;
    for (Int_t sec = 0; sec < 72; sec++) {
+     AliTPCCalROC * roc = createdCalPad->GetCalROC(sec);
       entries = EasyDraw1D(drawStr.Data(), (Int_t)sec, cuts, "goff");
       if (entries == -1) return 0;
+      const Double_t *pchannel = fTree->GetV2();
+      const Double_t *pvalue   = fTree->GetV1();
       for (Int_t i = 0; i < entries; i++) 
-         createdCalPad->GetCalROC(sec)->SetValue((UInt_t)(fTree->GetV2()[i]), (Float_t)(fTree->GetV1()[i]));
+         roc->SetValue((UInt_t)(pchannel[i]), (Float_t)(pvalue[i]));
    }
+   return createdCalPad;   
+}
+
+
+//_____________________________________________________________________________
+AliTPCCalPad* AliTPCCalibViewer::GetCalPad(const char* desiredData, char* cuts, char* calPadName) const {
+  //
+  // creates a AliTPCCalPad out of the 'desiredData'
+  // the functionality of EasyDraw1D is used
+  // calPadName specifies the name of the created AliTPCCalPad
+  //  - this takes a while -
+  //
+   TString drawStr(desiredData);
+   drawStr.Append(":channel.fElements:sector");
+   AliTPCCalPad * createdCalPad = new AliTPCCalPad(calPadName, calPadName);
+   //
+   Int_t entries = fTree->Draw(drawStr, cuts,"goff");
+   const Double_t *pvalue   = fTree->GetV1();
+   const Double_t *pchannel = fTree->GetV2();
+   const Double_t *psector  = fTree->GetV3();
+
+   for (Int_t ientry=0; ientry<entries; ientry++){
+     Int_t sector= TMath::Nint(psector[ientry]);
+     AliTPCCalROC * roc = createdCalPad->GetCalROC(sector);
+     if (roc) roc->SetValue((UInt_t)(pchannel[ientry]), (Float_t)(pvalue[ientry]));
+   }
+
+  //  for (Int_t sec = 0; sec < 72; sec++) {
+//      AliTPCCalROC * roc = createdCalPad->GetCalROC(sec);
+//       entries = EasyDraw1D(drawStr.Data(), (Int_t)sec, cuts, "goff");
+//       if (entries == -1) return 0;
+//       for (Int_t i = 0; i < entries; i++) 
+//          roc->SetValue((UInt_t)(pchannel[i]), (Float_t)(pvalue[i]));
+//    }
    return createdCalPad;   
 }
 

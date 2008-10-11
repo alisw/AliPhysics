@@ -58,7 +58,9 @@ public:
    Int_t    Integrate(const char* drawCommand,       Int_t sector, const char* cuts = 0, Float_t sigmaMax = 5, Bool_t plotMean = kTRUE, Bool_t plotMedian = kTRUE, Bool_t plotLTM = kTRUE, const char *sigmas = "", Float_t sigmaStep = -1) const;    // draws an integrated histogram
    Int_t IntegrateOld(const char* drawCommand, const char* sector, const char* cuts = 0, Float_t sigmaMax = 5, Bool_t plotMean = kTRUE, Bool_t plotMedian = kTRUE, Bool_t plotLTM = kTRUE, const char *sigmas = "", Float_t sigmaStep = -1) const;    // draws an integrated histogram
    
+   AliTPCCalPad* GetCalPadOld(const char* desiredData, char* cuts = "", char* calPadName = "NoName") const;     // returns an AliTPCCalPad object containing the specified data with cuts applied
    AliTPCCalPad* GetCalPad(const char* desiredData, char* cuts = "", char* calPadName = "NoName") const;     // returns an AliTPCCalPad object containing the specified data with cuts applied
+
    AliTPCCalROC* GetCalROC(const char* desiredData, UInt_t sector, char* cuts = "") const;  // returns an AliTPCCalROC object containing the specified data for sector with cuts applied
    
    TObjArray* GetArrayOfCalPads();
