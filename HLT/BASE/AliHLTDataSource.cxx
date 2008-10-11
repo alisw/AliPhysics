@@ -65,7 +65,8 @@ int AliHLTDataSource::DoProcessing( const AliHLTComponentEventData& evtData,
     int unknown=-1;
     for (unsigned int block; block<evtData.fBlockCnt; block++) {
       if (blocks[block].fDataType==kAliHLTDataTypeSOR ||
-	  blocks[block].fDataType==kAliHLTDataTypeEOR) {
+	  blocks[block].fDataType==kAliHLTDataTypeEOR ||
+	  blocks[block].fDataType==kAliHLTDataTypeEvent) {
 	continue;
       }
       unknown=block;
