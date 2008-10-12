@@ -24,6 +24,7 @@ Several fit methods implemented
 gSystem->AddIncludePath("-I$ALICE_ROOT/TPC -I$ALICE_ROOT/STAT");
 gSystem->Load("libSTAT.so");
 .L $ALICE_ROOT/TPC/CalibMacros/AnalyzeLaserCE.C+
+
 // setup aliases
 qaside="CE_Q";
 taside="CE_T";
@@ -67,10 +68,10 @@ Gloabl fit o consist of
 // Control variable - check results
 //
 //
-ffit2~-(timeIn~+tcor~):lx~  - fit value minus input time 
+ffit2~-(timeIn~):lx~  - fit value minus input time 
 
 result cosntruction:
-(timeF2~-ffit2~+fTL~+fInOut~+tcor~):Result~+tcor~
+(timeF2~-ffit2~+fTL~+fInOut~):Result~
 //
 timeF2~-Result~:ffit2~-fTL~-fInOut~
 
@@ -86,6 +87,7 @@ timeF2~-Result~:ffit2~-fTL~-fInOut~
 #include "AliTPCPreprocessorOnline.h"
 #include "AliTPCCalibCE.h"
 #include "AliTPCCalibPulser.h"
+#include "TStopwatch.h"
 //
 //Define interesting variables - file names
 //
@@ -103,7 +105,6 @@ TString rcside("CE_RMS");
 //
 // correction variable - usually Pulser time
 //
-//TString tcor("(sector%36>30)*2");
 TString tcor("-pulCorr");
 
 //
@@ -126,7 +127,7 @@ AliTPCCalPad *calPadOut = 0;            // outlyer CalPad
 //
 // cuts
 //
-const Float_t tThr=0.5;                // max diff in the sector
+const Float_t tThr=0.3;                // max diff in the sector
 const Float_t qThr0=0.5;               // max Q diff in the sector
 const Float_t qThr1=2;                 // max Q diff in the sector
 
@@ -145,7 +146,12 @@ AliTPCCalPad *calPadGXY   = 0;          // global XY missalign (drift velocity g
 AliTPCCalPad *calPadOff   = 0;          // normalization offset fit
 AliTPCCalPad *calPadRes   = 0;          // final calibration  
 
-
+TObjString strFit0="";                     // string fit 0
+TObjString strFit1="";                     // string fit 1
+TObjString strFit2="";                     // string fit 2
+TVectorD vecFit0;                       // parameters fit 0
+TVectorD vecFit1;                       // parameters fit 1
+TVectorD vecFit2;                       // parameters fit 2
 //
 // working variables
 //
@@ -165,6 +171,7 @@ void MakeAliases1();  // Make Aliases 1  - for default tree
 void LoadData();      // Load data
 void StoreData();     // store current data
 void StoreTree();     // store fit data in the output tree
+
 
 
 void AnalyzeLaser(){
@@ -205,12 +212,16 @@ void MakeFit(){
   //
   //
   LoadData();
-  LoadViewer();
-  MakeFitPulser();
+  //LoadViewer();
+  //
+  makePad = new AliTPCCalibViewer(fname);
+  tree = makePad->GetTree();
+  MakeAliases1();
+  //
+  //  MakeFitPulser();
   TStatToolkit stat;
   Int_t npoints;
   Double_t chi2;
-  TVectorD vec0,vec1,vec2;
   TMatrixD mat;
   TString fstring="";
   //
@@ -235,9 +246,77 @@ void MakeFit(){
   fstring+="(side*inn*lxr)++";//                        - opposite      //14
   fstring+="(lxr^2)++";       // zr          second     - common        //15
   fstring+="(side*lxr^2)++";  //                        - opposite      //16
+  fstring+="(inn*lxr^2)++";       // zr          second     - common        //15
+  fstring+="(inn*side*lxr^2)++";  //                        - opposite      //16
   //
-  TString *fit0 =stat.FitPlane(tree,"dt",fstring.Data(),"cutF&&cutCE",chi2,npoints,vec0,mat);
+  printf("Fit0\t start\n");
+  TString *fit0 =stat.FitPlane(tree,"dt",fstring.Data(),"cutF&&cutCE",chi2,npoints,vecFit0,mat,0.9);
   tree->SetAlias("f0",fit0->Data());
+  strFit0 = fit0->Data();
+  printf("Fit0\t end\n");
+  printf("Chi2/npoints\t=%f\n",TMath::Sqrt(chi2/npoints));
+  fit0->Tokenize("++")->Print();
+  //
+  printf("Global tendencies extraction\n");
+  //
+  // Extract variables
+  //
+  TString tmpstr = fstring;
+  TObjArray *arr = tmpstr.Tokenize("++");
+  TString fitQ("0");       // q correction 
+  TString fitLX("0");      // lx correction 
+  TString fitInOut("0");   // inner-outer - match
+  TString fitGXY("0");      // global xy fit
+  TString fitOff("0");  // side offsets
+  TString fitTL("0");  // side offsets
+  //
+  fitOff+="+";
+  fitOff+=vecFit0[0];
+  fitOff+="+side*";
+  fitOff+=vecFit0[1];
+  {
+  for(Int_t i=0;i<arr->GetEntriesFast();i++){
+    if (!arr->At(i)) continue;
+    TString *fitstr = new TString(arr->At(i)->GetName());
+    //
+    //Bool_t isQ      = fitstr->Contains("qp)");
+    Bool_t isRot    = fitstr->Contains("sin(")+fitstr->Contains("cos(");
+    Bool_t isLX     = fitstr->Contains("lxr");
+    Bool_t isIn     = fitstr->Contains("inn");
+    Bool_t isGXY    = fitstr->Contains("gxr")+fitstr->Contains("gyr");
+    if (fitstr->Contains("tl^2")){
+      fitTL+="+";
+      fitTL+=(*fitstr)+"*";
+      fitTL+=vecFit0[i+1];
+    }
+    if (isGXY){
+      fitGXY+="+";
+      fitGXY+=(*fitstr)+"*";
+      fitGXY+=vecFit0[i+1];
+    }
+    //
+    if (isLX&&!isRot&&!isIn){
+      fitLX+="+";
+      fitLX+=(*fitstr)+"*";
+      fitLX+=vecFit0[i+1];
+    }
+    //
+    if (!isRot&&isIn){
+      fitInOut+="+";
+      fitInOut+=(*fitstr)+"*";
+      fitInOut+=vecFit0[i+1];
+    }
+  }
+  }
+  //
+  tree->SetAlias("fInOut",fitInOut.Data());
+  tree->SetAlias("fLX",fitLX.Data());
+  tree->SetAlias("fGXY",fitGXY.Data());
+  tree->SetAlias("fOff",fitOff.Data());
+  //tree->SetAlias("fQ",fitQ.Data());
+  tree->SetAlias("fTL",fitTL.Data());
+
+  //
   //
   // Common "deformation" tendencies
   //
@@ -255,8 +334,13 @@ void MakeFit(){
   fstring+="(cos(atan2(gy.fElements,gx.fElements)*3))*lxr++";
   //
 
-  TString *fit1 =stat.FitPlane(tree,"dt",fstring.Data(),"cutF&&cutCE",chi2,npoints,vec1,mat);
+  TString *fit1 =stat.FitPlane(tree,"dt",fstring.Data(),"cutF&&cutCE",chi2,npoints,vecFit1,mat,0.9);
   tree->SetAlias("f1",fit1->Data());
+  strFit1 = fit1->Data();
+  printf("Fit1\t end\n");
+  printf("Chi2/npoints\t=%f\n",TMath::Sqrt(chi2/npoints));
+  fit1->Tokenize("++")->Print();
+
   //
   // Central electrode "deformation"
   //
@@ -273,75 +357,15 @@ void MakeFit(){
   fstring+="(side*sin(atan2(gy.fElements,gx.fElements)*3))*lxr++";
   fstring+="(side*cos(atan2(gy.fElements,gx.fElements)*3))*lxr++";
    
-  TString *fit2 =stat.FitPlane(tree,"dt",fstring.Data(),"cutF&&abs(dt-f0)<0.7&&cutCE",chi2,npoints,vec2,mat);
+  TString *fit2 =stat.FitPlane(tree,"dt",fstring.Data(),"cutF&&abs(dt-f0)<0.7&&cutCE",chi2,npoints,vecFit2,mat,0.9);
+  strFit2 = fit2->Data();
+  printf("Fit2\t end\n");
+  printf("Chi2/npoints\t=%f\n",TMath::Sqrt(chi2/npoints));
+  fit2->Tokenize("++")->Print();
   tree->SetAlias("f2",fit2->Data());
   //
-  // Extract variables
-  //
-  TString tmpstr = fstring;
-  TObjArray *arr = tmpstr.Tokenize("++");
-  TString fitQ("0");       // q correction 
-  TString fitLX("0");      // lx correction 
-  TString fitInOut("0");   // inner-outer - match
-  TString fitGXY("0");      // global xy fit
-  TString fitOff("0");  // side offsets
-  TString fitTL("0");  // side offsets
-  //
-  fitOff+="+";
-  fitOff+=vec2[0];
-  fitOff+="+side*";
-  fitOff+=vec2[1];
-  {
-  for(Int_t i=0;i<arr->GetEntriesFast();i++){
-    if (!arr->At(i)) continue;
-    TString *fitstr = new TString(arr->At(i)->GetName());
-    //
-    //Bool_t isQ      = fitstr->Contains("qp)");
-    Bool_t isRot    = fitstr->Contains("sin(")+fitstr->Contains("cos(");
-    Bool_t isLX     = fitstr->Contains("lxr");
-    Bool_t isIn     = fitstr->Contains("inn");
-    Bool_t isGXY    = fitstr->Contains("gxr")+fitstr->Contains("gyr");
-    if (fitstr->Contains("tl^2")){
-      fitTL+="+";
-      fitTL+=(*fitstr)+"*";
-      fitTL+=vec2[i+1];
-    }
-    if (isGXY){
-      fitGXY+="+";
-      fitGXY+=(*fitstr)+"*";
-      fitGXY+=vec2[i+1];
-    }
-    //if (isQ){
-    //  //
-    //  fitQ+="+";
-    //  fitQ+=(*fitstr)+"*";
-    //  fitQ+=vec2[i+1];
-    //}
-    //
-    if (isLX&&!isRot&&!isIn){
-      fitLX+="+";
-      fitLX+=(*fitstr)+"*";
-      fitLX+=vec2[i+1];
-    }
-    //
-    if (!isRot&&isIn){
-      fitInOut+="+";
-      fitInOut+=(*fitstr)+"*";
-      fitInOut+=vec2[i+1];
-    }
-  }
-  }
-  //
-  tree->SetAlias("fInOut",fitInOut.Data());
-  tree->SetAlias("fLX",fitLX.Data());
-  tree->SetAlias("fGXY",fitGXY.Data());
-  tree->SetAlias("fOff",fitOff.Data());
-  //tree->SetAlias("fQ",fitQ.Data());
-  tree->SetAlias("fTL",fitTL.Data());
   //
   //
-  // fits
-  // 
   calPad0      = makePad->GetCalPad("f0","1", "ffit0");
   calPad1      = makePad->GetCalPad("f1","1", "ffit1");
   calPad2      = makePad->GetCalPad("f2","1", "ffit2");
@@ -375,22 +399,32 @@ void RebuildData(){
   //
   // transform the input data to the fit format 
   //
+  TStopwatch timer;
   makePad = new AliTPCCalibViewer(inname);
   tree = makePad->GetTree();
+  //
+
+  timer.Print();
+  timer.Continue();
+  printf("-1.   MaQkeFitPulser\n");
   MakeFitPulser();
+  timer.Print();
+  timer.Continue();
   MakeAliases0(); //
   //
   printf("0.   GetCalPads\n");
-
+  timer.Print();
   calPadCor = makePad->GetCalPad("tcor","1", "tcor");
-  calPadOut = makePad->GetCalPad("1","!((cutA||cutC)&&abs(ly.fElements/lx.fElements)<0.155)", "out");
-  calPadIn  = makePad->GetCalPad("dt-tcor","1","timeIn");
-  calPadF1  = calPadIn->GlobalFit("timeF1", calPadOut,kTRUE,0,0.9);
+  calPadOut = makePad->GetCalPad("1","!((cutA||cutC)&&abs(ly.fElements/lx.fElements)<0.16)", "out");
+  calPadIn  = makePad->GetCalPad("dt","1","timeIn");
+  
+  calPadF1  = calPadIn->GlobalFit("timeF1", calPadOut,kFALSE,0,0,0.8);  // use robust fit  
   calPadQIn = makePad->GetCalPad("qa*(sector%36<18)+qc*(sector%36>17)","1","qIn");
   //
   //
   printf("1.   Create outlyer map\n");
-
+  timer.Print(); 
+  timer.Continue();
   //
   // Update outlyer maps
   //
@@ -401,37 +435,42 @@ void RebuildData(){
       if (TMath::Abs(val0-val1)>tThr) calPadOut->GetCalROC(isector)->SetValue(ich,1);
     }
   }
-  printf("1.   Fit sector parabolas\n");
-
-  calPadF1  = calPadIn->GlobalFit("timeF1", calPadOut,kTRUE,0,0.9);
-  calPadF2  = calPadIn->GlobalFit("timeF2", calPadOut,kTRUE,1,0.9);
-  calPadQF1 = calPadQIn->GlobalFit("qF1", calPadOut,kTRUE,0,0.9);
+  printf("2.   Fit sector parabolas\n");
+  timer.Print();
+  timer.Continue();
+  calPadF1  = calPadIn->GlobalFit("timeF1", calPadOut,kFALSE,0,0,0.9);
+  calPadF2  = calPadIn->GlobalFit("timeF2", calPadOut,kFALSE,1,0,0.9);
+  calPadQF1 = calPadQIn->GlobalFit("qF1", calPadOut,kFALSE,1);
   calPadQF2 = calPadQIn->GlobalFit("qF2", calPadOut,kFALSE,1);
 
   //
   // Update outlyer maps
   //
-  printf("2.   Update outlyer map\n");
+  printf("3.   Update outlyer map\n");
   for (Int_t isector=0;isector<72; isector++){
     for (UInt_t ich=0;ich<calPadIn->GetCalROC(isector)->GetNchannels();ich++){
       Float_t val0= calPadQIn->GetCalROC(isector)->GetValue(ich);
       Float_t val1= calPadQF2->GetCalROC(isector)->GetValue(ich);
-      if (val1<0.1)  {
-	calPadOut->GetCalROC(isector)->SetValue(ich,1);
+      if (val1<=0)  {
 	continue;
       }
       if (TMath::Abs(val0/val1)<qThr0) calPadOut->GetCalROC(isector)->SetValue(ich,1);
       if (TMath::Abs(val0/val1)>qThr1) calPadOut->GetCalROC(isector)->SetValue(ich,1);
     }
   }
-  printf("3.  Redo fit of the of parabola \n");
+  printf("4.  Redo fit of the of parabola \n");
+  timer.Print();
+  timer.Continue();
   //
   //
   AliTPCCalPad *calPadInCor  = makePad->GetCalPad("dt","1","timeIn");
-  calPadF1  = calPadInCor->GlobalFit("timeF1", calPadOut,kTRUE,0,0.9);
-  calPadF2  = calPadInCor->GlobalFit("timeF2", calPadOut,kTRUE,1,0.9);
-  calPadQF1 = calPadQIn->GlobalFit("qF1", calPadOut,kFALSE,0,0.9);
-  calPadQF2 = calPadQIn->GlobalFit("qF2", calPadOut,kFALSE,1);
+  calPadF1  = calPadInCor->GlobalFit("timeF1", calPadOut,kFALSE,0,0.9);
+  calPadF2  = calPadInCor->GlobalFit("timeF2", calPadOut,kFALSE,1,0.9);
+  calPadQF1 = calPadQIn->GlobalFit("qF1", calPadOut,kFALSE,0,0,0.9);
+  calPadQF2 = calPadQIn->GlobalFit("qF2", calPadOut,kFALSE,1,0,0.9);
+  printf("5. End\n");
+  timer.Print();
+
 }
 
 void LoadData(){
@@ -539,7 +578,7 @@ void MakeAliases0(){
   tree->SetAlias("dt","(ta)*(sector%36<18)+(tc)*(sector%36>17)+tcor");
   tree->SetAlias("cutA","qa>30&&qa<400&&abs(ta)<2&&ra>0.5&&ra<2");
   tree->SetAlias("cutC","qc>30&&qc<400&&abs(tc)<2&&rc>0.5&&rc<2");
-  tree->SetAlias("cutF","(pad.fElements%4==0)&&(row.fElements%3==0)");
+  tree->SetAlias("cutF","((row.fElements+pad.fElements+sector)%19==0)");  // use just part of the statistic - 5 %
   tree->SetAlias("cutCE","V.out.fElements");
   //
   // fit param aliases
@@ -559,11 +598,12 @@ void MakeAliases1(){
   //
   tree->SetAlias("tcor","tcor.fElements");          // correction variable  
   tree->SetAlias("side","1-(sector%36>17)*2");
-  tree->SetAlias("dt","timeIn.fElements+tcor");
+  tree->SetAlias("dt","timeIn.fElements");
   //
   tree->SetAlias("cutA","out.fElements==1");
   tree->SetAlias("cutC","out.fElements==1");
-  tree->SetAlias("cutF","(pad.fElements%5==0)&&(row.fElements%4==0)");
+  tree->SetAlias("cutF","((row.fElements+pad.fElements+sector.fElements)%19==0)");  // use just part of the statistic - 5 %
+
   tree->SetAlias("cutCE","out.fElements<0.5");
   //
   // fit param aliases
@@ -583,7 +623,6 @@ void MakeRes()
   // make final calibration
   //
   AliTPCCalPad * calPadRes0 =new AliTPCCalPad(*calPadIn);
-  calPadRes0->Add(calPadCor);       // add correction
   calPadRes0->Add(calPad2,-1);      // remove global fit
   calPadRes  = calPadRes0->GlobalFit("Result", calPadOut,kTRUE,1,0.9);
   //
@@ -604,7 +643,6 @@ void MakeRes()
     }
   }
   calPadRes->Add(calPadCor,-1);     // remove back correction (e.g Pulser time 0)
-
 }
 
 
@@ -644,3 +682,22 @@ void RebuildCE(char *finname, char *pulname){
   preprocesor->AddComponent(pulRMS);
   preprocesor->DumpToFile(inname);
 }
+
+
+void AnalyzeLaserCE(){
+  RebuildCE("ce.root","pul.root");
+  StoreData();
+  StoreTree();
+  RebuildData();
+  StoreData();
+  StoreTree();
+  MakeFit();
+  StoreData();
+  StoreTree();
+  MakeRes();
+}
+
+//void AddFile(char *fname, char *aname){
+//  TFile f(fname);
+//  TTree 
+//}
