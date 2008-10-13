@@ -668,14 +668,14 @@ void AliCFTrackCutPid::DefineHistograms()
 
      for(Int_t iPart =0; iPart < AliPID::kSPECIES; iPart++)
       {
-       fhCombResp[iPart] = new TH1F(Form("rCombPart%i",iPart),Form(" %s combined response  (AODTrack)  ",partic[iPart]),fNbins,fXmin,fXmax);
+       fhCombResp[iPart] = new TH1F(Form("%s_rCombPart%i",GetName(),iPart),Form(" %s combined response  (AODTrack)  ",partic[iPart]),fNbins,fXmin,fXmax);
        fhCombResp[iPart]->SetXTitle(Form(" %s combined response ",partic[iPart]));
        fhCombResp[iPart]->SetYTitle("entries");
-       AliDebug(1,Form(  "rCombPart%i is booked!!",iPart));
-       fhCombProb[iPart] = new TH1F(Form("pCombPart%i",iPart),Form("%s combined probability (AODTrack) ",partic[iPart]),fNbins,fXmin,fXmax);
-       fhCombProb[iPart]->SetXTitle(Form(" %s combined response ",partic[iPart]));
+       AliDebug(1,Form(  "%s is booked!!",fhCombResp[iPart]->GetName()));
+       fhCombProb[iPart] = new TH1F(Form("%s_pCombPart%i",GetName(),iPart),Form("%s combined probability (AODTrack) ",partic[iPart]),fNbins,fXmin,fXmax);
+       fhCombProb[iPart]->SetXTitle(Form(" %s combined probability ",partic[iPart]));
        fhCombProb[iPart]->SetYTitle("entries");
-       AliDebug(1,Form(  "rCombProb%i is booked!!",iPart));
+       AliDebug(1,Form(  "%s is booked!!",fhCombProb[iPart]->GetName()));
      }
    }
 
@@ -688,11 +688,11 @@ void AliCFTrackCutPid::DefineHistograms()
      {
        if(!fDets[iDet]) continue;
        for(Int_t iP =0; iP < AliPID::kSPECIES; iP++){
- 	fhResp[iDet][iP] = new TH1F(Form("rDet%iPart%i",iDet,iP),Form("%s response for %s  ",detect[iDet],partic[iP]),fNbins,fXmin,fXmax);
+ 	fhResp[iDet][iP] = new TH1F(Form("%s_rDet%iPart%i",GetName(),iDet,iP),Form("%s response for %s  ",detect[iDet],partic[iP]),fNbins,fXmin,fXmax);
         fhResp[iDet][iP]->SetXTitle(Form(" %s response ",partic[iP]));
         fhResp[iDet][iP]->SetYTitle("entries");
- 	fhProb[iDet][iP] = new TH1F(Form("pDet%iPart%i",iDet,iP),Form("%s calculated probability for %s",detect[iDet],partic[iP]),fNbins,fXmin,fXmax);
-        fhProb[iDet][iP]->SetXTitle(Form(" %s response ",partic[iP]));
+ 	fhProb[iDet][iP] = new TH1F(Form("%s_pDet%iPart%i",GetName(),iDet,iP),Form("%s calculated probability for %s",detect[iDet],partic[iP]),fNbins,fXmin,fXmax);
+        fhProb[iDet][iP]->SetXTitle(Form(" %s probability ",partic[iP]));
         fhProb[iDet][iP]->SetYTitle("entries");
        }
      }
@@ -702,14 +702,14 @@ void AliCFTrackCutPid::DefineHistograms()
      { 
       for(Int_t iPart =0; iPart < AliPID::kSPECIES; iPart++)
         {
-	  fhCombResp[iPart] = new TH1F(Form("rCombPart%i",iPart),Form(" %s combined response    ",partic[iPart]),fNbins,fXmin,fXmax);
+	  fhCombResp[iPart] = new TH1F(Form("%s_rCombPart%i",GetName(),iPart),Form(" %s combined response    ",partic[iPart]),fNbins,fXmin,fXmax);
           fhCombResp[iPart]->SetXTitle(Form(" %s response ",partic[iPart]));
           fhCombResp[iPart]->SetYTitle("entries");
-          AliDebug(1,Form(  "rCombPart%i is booked!!",iPart));
-	  fhCombProb[iPart] = new TH1F(Form("pCombPart%i",iPart),Form("%s combined probability ",partic[iPart]),fNbins,fXmin,fXmax);
+          AliDebug(1,Form(  "%s is booked!!",fhCombResp[iPart]->GetName()));
+	  fhCombProb[iPart] = new TH1F(Form("%s_pCombPart%i",GetName(),iPart),Form("%s combined probability ",partic[iPart]),fNbins,fXmin,fXmax);
           fhCombProb[iPart]->SetXTitle(Form(" %s response ",partic[iPart]));
           fhCombProb[iPart]->SetYTitle("entries");
-          AliDebug(1,Form(  "rCombProb%i is booked!!",iPart));
+          AliDebug(1,Form(  "%s is booked!!",fhCombProb[iPart]->GetName()));
         }
      }
    }
