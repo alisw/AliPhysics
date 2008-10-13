@@ -6,6 +6,7 @@
 #include <TStyle.h>
 #include <TLatex.h>
 #include <TFile.h>
+#include <TMath.h>
 #include <TGrid.h>
 #include <TF1.h>
 #include <TLine.h>
@@ -25,7 +26,7 @@
 // Origin: F. Prino (prino@to.infn.it)
 
 
-void AnalyzeSDDInjectorsAllMod(Char_t *datafil, Int_t nDDL, Int_t firstEv=10, Int_t lastEv=15){
+void AnalyzeSDDInjectorsAllMod(Char_t *datafil, Int_t nDDL, Int_t firstEv=10, Int_t lastEv=15,Int_t jpad=16, Int_t statuscut=7){
 
   const Int_t kTotDDL=24;
   const Int_t kModPerDDL=12;
@@ -38,8 +39,15 @@ void AnalyzeSDDInjectorsAllMod(Char_t *datafil, Int_t nDDL, Int_t firstEv=10, In
   Int_t nWrittenEv[kTotDDL*kModPerDDL*kSides];
   TGraphErrors** gvel = new TGraphErrors*[kTotDDL*kModPerDDL*kSides];
   AliITSOnlineSDDInjectors **anal=new AliITSOnlineSDDInjectors*[kTotDDL*kModPerDDL*kSides];
-
+  TH1F** hvdriftl=new TH1F*[260];  
+  TH1F** hvdriftr=new TH1F*[260];  
   Char_t hisnam[20];
+  for(Int_t idet=0; idet<260;idet++){
+    sprintf(hisnam,"vdriftl%03d",idet);
+    hvdriftl[idet]=new TH1F(hisnam,"",500,5.5,8.0);
+    sprintf(hisnam,"vdriftr%03d",idet);
+    hvdriftr[idet]=new TH1F(hisnam,"",500,5.5,8.0);
+  }
   for(Int_t iddl=0; iddl<kTotDDL;iddl++){
     for(Int_t imod=0; imod<kModPerDDL;imod++){
       for(Int_t isid=0;isid<kSides;isid++){
@@ -57,9 +65,15 @@ void AnalyzeSDDInjectorsAllMod(Char_t *datafil, Int_t nDDL, Int_t firstEv=10, In
       }
     }
   }
-  TGraph *gvvsmod0=new TGraph(0);
-  TGraph *gvvsmod1=new TGraph(0);
+  TGraphErrors *gvvsmod0=new TGraphErrors(0);
+  TGraphErrors *gvvsmod1=new TGraphErrors(0);
+  TGraphErrors *gtvsmod0=new TGraphErrors(0);
+  TGraphErrors *gtvsmod1=new TGraphErrors(0);
+  Float_t gvmin=6.0, gvmax=7.5;
+  Float_t gtmin=288., gtmax=308.;
   TH1F* hanst=new TH1F("hanst","",8,-0.5,7.5);
+  TH1F* hpad7l=new TH1F("hpad7l","",33,-0.5,32.5);
+  TH1F* hpad7r=new TH1F("hpad7r","",33,-0.5,32.5);
 
   TCanvas* c0 = new TCanvas("c0","Event display",900,900);
   gStyle->SetPalette(1);
@@ -80,7 +94,7 @@ void AnalyzeSDDInjectorsAllMod(Char_t *datafil, Int_t nDDL, Int_t firstEv=10, In
   t0->SetNDC();
   t0->SetTextSize(0.06);
   t0->SetTextColor(4);
-
+  Int_t readEv=0;
   do{
     c0->Clear();
     c0->Divide(4,6,0.001,0.001);
@@ -116,15 +130,19 @@ void AnalyzeSDDInjectorsAllMod(Char_t *datafil, Int_t nDDL, Int_t firstEv=10, In
 	  anal[index]->WriteToASCII(iev,timeSt,nWrittenEv[index]);
 	  nWrittenEv[index]++;
 	  Int_t iMod=dmap->GetModuleNumber(iddl,imod);
-	  if(iMod!=-1 && iev==firstEv){
+	  if(iMod!=-1){
 	    for(Int_t ipad=0;ipad<33;ipad++){
 	      Int_t st=anal[index]->GetInjPadStatus(ipad);
 	      hanst->Fill(st);
+	      if(anal[index]->GetInjPadStatus(ipad)>=statuscut){
+		if(isid==0) hpad7l->Fill(ipad);
+		if(isid==1) hpad7r->Fill(ipad);
+	      }
 	    }
-	    if(anal[index]->GetInjPadStatus(16)>=6){
-	      Float_t vel=anal[index]->GetDriftSpeed(16);
-	      if(isid==0) gvvsmod0->SetPoint(gvvsmod0->GetN(),(Float_t)iMod,vel);
-	      if(isid==1) gvvsmod1->SetPoint(gvvsmod1->GetN(),(Float_t)iMod,vel);
+	    if(anal[index]->GetInjPadStatus(jpad)>=statuscut){
+	      Float_t vel=anal[index]->GetDriftSpeed(jpad);
+	      if(isid==0) hvdriftl[iMod-240]->Fill(vel);
+	      if(isid==1) hvdriftr[iMod-240]->Fill(vel);
 	    }
 	  }
 	  if(iddl==nDDL){
@@ -163,21 +181,73 @@ void AnalyzeSDDInjectorsAllMod(Char_t *datafil, Int_t nDDL, Int_t firstEv=10, In
       }
     }
     iev++;
+    readEv++;
     printf(" --- OK\n");
   }while(rd->NextEvent()&&iev<=lastEv);
+  printf("Total number of events = %d\n",readEv);
+  Float_t nfac=1./(Float_t)readEv/33./520.;
+  hanst->Scale(nfac);
+  nfac=1./(Float_t)readEv;
+  hpad7l->Scale(nfac);
+  hpad7r->Scale(nfac);
+
+  Int_t ipt0=0, ipt1=0;
+  Float_t Edrift=(1800-45)/291/0.012;  
+  TFile *outfil=new TFile("DriftSpeedHistos.root","recreate");
+  for(Int_t iMod=0; iMod<260; iMod++){
+    outfil->cd();
+    hvdriftl[iMod]->Write();    
+    hvdriftr[iMod]->Write();
+    Float_t modid=iMod+240;
+    if(hvdriftl[iMod]->GetEntries()>0){
+      Float_t avevell=hvdriftl[iMod]->GetMean();
+      Float_t rmsvell=hvdriftl[iMod]->GetRMS();
+      if(avevell > 5.5 && avevell < 8.5){
+	gvvsmod0->SetPoint(ipt0,modid,avevell);
+	gvvsmod0->SetPointError(ipt0,0,rmsvell);
+	Float_t mob=avevell*1.E5/Edrift;  
+	Float_t temper=293.15*TMath::Power((mob/1350.),-1/2.4); 
+	gtvsmod0->SetPoint(ipt0,modid,temper);
+	++ipt0;
+      }
+    }
+    if(hvdriftr[iMod]->GetEntries()>0){
+      Float_t avevelr=hvdriftr[iMod]->GetMean();
+      Float_t rmsvelr=hvdriftr[iMod]->GetRMS();
+      if(avevelr > 5.5 && avevelr < 8.5){
+	gvvsmod1->SetPoint(ipt1,modid,avevelr);
+	gvvsmod1->SetPointError(ipt1,0,rmsvelr);
+	Float_t mob=avevelr*1.E5/Edrift;
+	Float_t temper=293.15*TMath::Power((mob/1350.),-1./2.4); 
+	gtvsmod1->SetPoint(ipt1,modid,temper);
+	++ipt1;
+      }
+    }
+  }
+  gvvsmod0->SetName("gvvsmod0");
+  gvvsmod1->SetName("gvvsmod1");
+  gtvsmod0->SetName("gtvsmod0");
+  gtvsmod1->SetName("gtvsmod1");
+  outfil->cd();
+  gvvsmod0->Write();
+  gvvsmod1->Write();
+  gtvsmod0->Write();
+  gtvsmod1->Write();
+  outfil->Close();
 
   TCanvas* c8=new TCanvas("c8","Drift Speed vs. mod");
   gvvsmod0->SetTitle("");
   gvvsmod1->SetTitle("");
-
   gvvsmod0->SetMarkerStyle(20);
   gvvsmod1->SetMarkerStyle(21);
   gvvsmod1->SetMarkerColor(2);
   gvvsmod0->Draw("AP");
-  gvvsmod0->SetMinimum(6.2);
-  gvvsmod0->SetMaximum(7.2);
+  gvvsmod0->SetMinimum(gvmin);
+  gvvsmod0->SetMaximum(gvmax);
   gvvsmod0->GetXaxis()->SetTitle("Module Number");
-  gvvsmod0->GetYaxis()->SetTitle("Vdrift at injector pad 16");  
+  Char_t title[25];
+  sprintf(title,"Vdrift at injector pad %d",jpad);
+  gvvsmod0->GetYaxis()->SetTitle(title);  
   gvvsmod1->Draw("PSAME");
   TLatex* tleft=new TLatex(0.7,0.82,"Side 0");
   tleft->SetNDC();
@@ -188,15 +258,58 @@ void AnalyzeSDDInjectorsAllMod(Char_t *datafil, Int_t nDDL, Int_t firstEv=10, In
   tright->SetTextColor(2);
   tright->Draw();
 
-  TLine *lin=new TLine(323,6.2,323,7.2);
+  TLine *lin=new TLine(323,gvmin,323,gvmax);
   lin->SetLineColor(4);
   lin->Draw();
   c8->Update();
+  c8->SaveAs("VdriftVsMod.gif");
+
+  TCanvas* c8t=new TCanvas("c8t","Temeprature vs. mod");
+  gtvsmod0->SetTitle("");
+  gtvsmod1->SetTitle("");
+  gtvsmod0->SetMarkerStyle(20);
+  gtvsmod1->SetMarkerStyle(21);
+  gtvsmod1->SetMarkerColor(2);
+  gtvsmod0->Draw("AP");
+  gtvsmod0->SetMinimum(gtmin);
+  gtvsmod0->SetMaximum(gtmax);
+  gtvsmod0->GetXaxis()->SetTitle("Module Number");
+  sprintf(title,"Estimated Temperature (K)");
+  gtvsmod0->GetYaxis()->SetTitle(title);  
+  gtvsmod1->Draw("PSAME");
+  tleft->Draw();
+  tright->Draw();
+  TLine *lint=new TLine(323,gtmin,323,gtmax);
+  lint->SetLineColor(4);
+  lint->Draw();
+  c8t->Update();
+  c8t->SaveAs("TempVsMod.gif");
 
   TCanvas* c9=new TCanvas("c9","Injector status");
+  hanst->SetStats(0);
   hanst->Draw();
   hanst->GetXaxis()->SetTitle("Injector pad status");
   hanst->GetXaxis()->CenterTitle();
+  c9->SaveAs("InjStatus.gif");
+
+//   TCanvas* c10=new TCanvas("c10","Pad status 7",1200,600);
+//   hpad7l->SetStats(0);
+//   hpad7r->SetStats(0);
+//   c10->Divide(2,1);
+//   c10->cd(1);
+//   hpad7l->Draw(); 
+//   hpad7l->GetXaxis()->SetTitle("Side Left -- Pad number");
+//   hpad7l->GetXaxis()->CenterTitle();
+//   hpad7l->GetYaxis()->SetTitle("Number of status 7");
+//   c10->cd(2);
+//   hpad7r->Draw();
+//   hpad7r->GetXaxis()->SetTitle("Side Right -- Pad number");
+//   hpad7r->GetXaxis()->CenterTitle();
+//   hpad7r->GetYaxis()->SetTitle("Number of status 7");
+//   printf("Side 0, maximum pad=%d\n",hpad7l->GetMaximumBin());
+//   printf("Side 1, maximum pad=%d\n",hpad7r->GetMaximumBin());
+  
+
 }
 
 void AnalyzeSDDInjectorsAllMod(Int_t nrun, Int_t n2, Char_t* dir="LHC08d_SDD", Int_t nDDL=0, Int_t firstEv=15, Int_t lastEv=15){
