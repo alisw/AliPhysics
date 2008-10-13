@@ -350,13 +350,19 @@ void AliTRDpidChecker::Exec(Option_t *)
 void AliTRDpidChecker::GetRefFigure(Int_t ifig)
 {
   Bool_t FIRST = kTRUE;
+  TGraphErrors *g = 0x0;
   TH1 *h1 = 0x0;
   TH2 *h2 = 0x0;
   switch(ifig){
   case 0:
-    ((TGraphErrors*)fContainer->At(kGraphStart))->Draw("apl");
+    g = (TGraphErrors*)fContainer->At(kGraphStart);
+    g->Draw("apl");
+    g->GetHistogram()->GetXaxis()->SetTitle("p [GeV/c]");
+    g->GetHistogram()->GetXaxis()->SetRangeUser(.6, 10.5);
+    g->GetHistogram()->GetYaxis()->SetTitle("#epsilon_{#pi} [%]");
     ((TGraphErrors*)fContainer->At(kGraphStart+1))->Draw("pl");
     gPad->SetLogy();
+    gPad->SetLogx();
     break;
   case 1:
     // save 2.0 GeV projection as reference
@@ -372,6 +378,7 @@ void AliTRDpidChecker::GetRefFigure(Int_t ifig)
       FIRST = kFALSE;
     }
     gPad->SetLogy();
+    gPad->SetLogx(0);
     break;
   case 2:
     // save 2.0 GeV projection as reference
@@ -388,6 +395,7 @@ void AliTRDpidChecker::GetRefFigure(Int_t ifig)
       FIRST = kFALSE;
     }
     gPad->SetLogy(0);
+    gPad->SetLogx(0);
     break;
   }
 }
