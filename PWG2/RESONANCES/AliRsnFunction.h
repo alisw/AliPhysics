@@ -45,6 +45,8 @@ class AliRsnFunction : public TObject
       kInvMassRotated,
       kResolution,
       kPtSpectrum,
+      kEtaSpectrum,
+      kAngleSpectrum,
       kFcnTypes
     };
 

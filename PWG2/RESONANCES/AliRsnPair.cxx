@@ -151,7 +151,9 @@ void AliRsnPair::ProcessPair(AliRsnEventBuffer *buf)
   
   Int_t i = 0;
   Int_t numMixed = 0;
-  Int_t lastOkEvent = 0;
+  //Int_t lastOkEvent = buf->IndexOf(e1) - 2*fMixNum;
+  //if (lastOkEvent < 0) lastOkEvent = 0;
+  Int_t lastOkEvent = buf->IndexOf(e1) - 1;
   TArrayI* array2 = 0;
   for (i = 0; i < fMixNum; i++)
   {
@@ -159,11 +161,17 @@ void AliRsnPair::ProcessPair(AliRsnEventBuffer *buf)
     AliRsnEvent *e2 = 0;
     e2 = FindEventByEventCut(buf, lastOkEvent);
     if (!e2) return;
+    //if (fIsMixed) {
+      //AliInfo(Form("ev1 = #%d -- ev2 = #%d -- nMixed = %d/%d", buf->IndexOf(e1), buf->IndexOf(e2), i, fMixNum));
+      //AliInfo(Form("Diff Mult = %d", TMath::Abs(e1->GetMultiplicity() - e2->GetMultiplicity())));
+      //AliInfo(Form("Diff Vz   = %f", TMath::Abs(e1->GetVz() - e2->GetVz())));
+      //AliInfo(Form("Diff Phi  = %f", TMath::Abs(e1->GetPhiMean() - e2->GetPhiMean())));
+    //}
 //     if (e2->GetMultiplicity() < 1) continue;
     array2 = e2->GetTracksArray(fTypePID, fPairDef->GetCharge(1), fPairDef->GetType(1));
     LoopPair(e1, array1, e2, array2);
     numMixed++;
-    lastOkEvent++;
+    lastOkEvent--;
   }
 //  if (fIsMixed) AliInfo (Form ("NumMixed = %d",numMixed));
 }
@@ -182,7 +190,7 @@ AliRsnEvent * AliRsnPair::FindEventByEventCut(AliRsnEventBuffer *buf, Int_t& num
   if (fIsMixed)
   {
     //returnEvent = buf->GetEvent(buf->GetEventsBufferIndex() - num);
-    returnEvent = buf->GetNextGoodEvent(num);
+    returnEvent = buf->GetNextGoodEvent(num, fMixingCut);
   }
   else
   {

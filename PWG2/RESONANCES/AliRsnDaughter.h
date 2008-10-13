@@ -95,8 +95,8 @@ class AliRsnDaughter : public AliVParticle
     void             ShiftZero(Double_t x, Double_t y, Double_t z){fV[0]-=x;fV[1]-=y;fV[2]-=z;}
 
     // Orientation
-    virtual Double_t Phi() const {return TMath::ATan2(Py(), Px());}
-    virtual Double_t Theta() const {return TMath::ATan2(Pt(), Pz());}
+    virtual Double_t Phi() const {return TMath::ATan2(Py(), Px()) * TMath::RadToDeg();}   // degrees
+    virtual Double_t Theta() const {return TMath::ATan2(Pt(), Pz()) * TMath::RadToDeg();} // degrees
     virtual Double_t Eta() const {return -TMath::Log(TMath::Tan(0.5*Theta()));}
     virtual Double_t Y() const {return TMath::Log((E() + Pz()) / (E() - Pz()));}
 

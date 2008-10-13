@@ -105,6 +105,7 @@ void AliRsnEventBuffer::AddEvent(AliRsnEvent * event)
     
   // correct for primary vertex
   fEventsBuffer[fEventsBufferIndex]->CorrectByPrimaryVertex();
+  fEventsBuffer[fEventsBufferIndex]->MakeComputations();
 }
 
 //_____________________________________________________________________________
@@ -155,8 +156,9 @@ AliRsnEvent * AliRsnEventBuffer::GetNextGoodEvent
   Int_t i = start;
   AliRsnEvent *ref = GetCurrentEvent();
   AliRsnEvent *ev = 0x0;
-  for(;;i++) {
+  for(;;i--) {
     ev = GetEvent(i);
+    if (ev == ref) continue;
     if (!ev) break;
     if (!cuts) {
       start = i;
