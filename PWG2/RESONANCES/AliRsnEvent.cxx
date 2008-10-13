@@ -398,20 +398,25 @@ void AliRsnEvent::MakeComputations()
 // - mean phi of tracks
 //
 
-  if (!fTracks) {
+  if (!fTracks) 
+  {
     fMult = 0; 
-    fPhiMean = 0.0;
+    fPhiMean = 1000.0;
   }
-  else {
+  else 
+  {
     fMult = fTracks->GetEntries();
-    fPhiMean = 0.0;
-    
-    AliRsnDaughter *d = 0;
-    TObjArrayIter next(fTracks);
-    while ( (d = (AliRsnDaughter*)next()) ) {
-      fPhiMean += d->Phi();
+    if (fMult < 1) {
+      fPhiMean = 1000.0;
     }
-    fPhiMean /= (Double_t)fMult;
+    else
+    {
+      fPhiMean = 0.0;
+      AliRsnDaughter *d = 0;
+      TObjArrayIter next(fTracks);
+      while ( (d = (AliRsnDaughter*)next()) ) fPhiMean += d->Phi();
+      fPhiMean /= (Double_t)fMult;
+    }
   }
 }
 

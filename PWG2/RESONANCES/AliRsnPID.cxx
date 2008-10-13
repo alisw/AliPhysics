@@ -308,7 +308,7 @@ AliRsnPID::EType AliRsnPID::TrackType(AliRsnDaughter *d)
 }
 
 //_____________________________________________________________________________
-Bool_t AliRsnPID::Process(AliRsnEvent *event)
+Bool_t AliRsnPID::Process(AliRsnEvent *event, Int_t pidArraySizeDefault)
 {
 //
 // Performs identification for all tracks in a given event.
@@ -326,7 +326,7 @@ Bool_t AliRsnPID::Process(AliRsnEvent *event)
   {
     check = check && ComputeProbs(daughter);
   }
-  event->FillPIDArrays();
+  event->FillPIDArrays(pidArraySizeDefault);
 
   return check;
 }

@@ -411,6 +411,7 @@ Bool_t AliRsnCut::IsSelected(ETarget type, AliRsnEvent * ev1, AliRsnEvent * ev2)
       return IsBetween((Double_t)valueD);
     case kPhiMeanDifference:
       valueD = TMath::Abs(ev1->GetPhiMean() - ev2->GetPhiMean());
+      if (valueD > 180.0) valueD = 360.0 - valueD;
       return IsBetween((Double_t)valueD);
     default:
       AliWarning("Requested a cut which cannot be applied to an event");

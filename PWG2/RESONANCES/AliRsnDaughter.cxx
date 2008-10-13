@@ -528,6 +528,7 @@ void AliRsnDaughter::Print(Option_t *option) const
 // - W --> PID weights
 // - M --> Montecarlo (from AliRsnMCInfo)
 // - L --> index & label
+// - A --> angles
 // - ALL --> All oprions switched on
 //
 // Index and label are printed by default.
@@ -544,6 +545,10 @@ void AliRsnDaughter::Print(Option_t *option) const
   if (opt.Contains("P") || opt.Contains("ALL"))
   {
     cout << ".......Px, Py, Pz, Pt   : " << Px() << ' ' << Py() << ' ' << Pz() << ' ' << Pt() << endl;
+  }
+  if (opt.Contains("A") || opt.Contains("ALL"))
+  {
+    cout << ".......Phi, Theta       : " << Phi() << ' ' << Theta() << endl;
   }
   if (opt.Contains("V") || opt.Contains("ALL"))
   {

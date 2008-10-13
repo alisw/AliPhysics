@@ -438,8 +438,10 @@ AliRsnEvent * AliRsnAnalysisTaskBase::GetRsnFromESDMC(const Short_t & index)
 
   if (!fMC[index]) return (AliRsnEvent *) 0x0;
 
-  if (!fReader.Fill(fRSN[index], (AliVEvent*) fESD[index],fMC[index]))
+  Bool_t success = fReader.FillFromESD(fRSN[index], fESD[index], fMC[index]);
+  if (!success)
   {
+    AliInfo("Failed filling");
     return (AliRsnEvent*) 0x0;
   };
 
