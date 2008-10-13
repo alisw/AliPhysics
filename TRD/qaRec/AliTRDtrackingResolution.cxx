@@ -372,21 +372,40 @@ void AliTRDtrackingResolution::Exec(Option_t *)
 }
 
 //________________________________________________________
-void AliTRDtrackingResolution::GetRefFigure(Int_t ifig, Int_t &first, Int_t &last, Option_t *opt)
+void AliTRDtrackingResolution::GetRefFigure(Int_t ifig)
 {
-  //sprintf(opt, "pl");
+  TAxis *ax = 0x0;
+  TGraphErrors *g = 0x0;
   switch(ifig){
   case 0:
-    first = (Int_t)kGraphStart; last = first+3;
+    g = (TGraphErrors*)fContainer->At(kGraphStart+1);
+    g->Draw("apl");
+    ax = g->GetHistogram()->GetYaxis();
+    ax->SetRangeUser(-.1, 1.);
+    ax->SetTitle("Clusters Y Residuals #sigma/#mu [mm]");
+    ax = g->GetHistogram()->GetXaxis();
+    ax->SetTitle("#phi [deg]");
+    ((TGraphErrors*)fContainer->At(kGraphStart+2))->Draw("pl");
     break;
   case 1:
-    first = (Int_t)kGraphStart+3; last = first+3;
+    g = (TGraphErrors*)fContainer->At(kGraphStart+4);
+    ax = g->GetHistogram()->GetYaxis();
+    ax->SetRangeUser(-.1, 1.);
+    ax->SetTitle("Tracklet Y Resolution #sigma/#mu [mm]");
+    ax = g->GetHistogram()->GetXaxis();
+    ax->SetTitle("#phi [deg]");
+    g->Draw("apl");
+    ((TGraphErrors*)fContainer->At(kGraphStart+5))->Draw("pl");
     break;
   case 2:
-    first = (Int_t)kGraphStart+6; last = first+3;
-    break;
-  default:
-    first = (Int_t)kGraphStart; last = first;
+    g = (TGraphErrors*)fContainer->At(kGraphStart+7);
+    ax = g->GetHistogram()->GetYaxis();
+    ax->SetRangeUser(-.1, 1.);
+    ax->SetTitle("Tracklet Angular Resolution #sigma/#mu [deg]");
+    ax = g->GetHistogram()->GetXaxis();
+    ax->SetTitle("#phi [deg]");
+    g->Draw("apl");
+    ((TGraphErrors*)fContainer->At(kGraphStart+8))->Draw("pl");
     break;
   }
 }

@@ -46,6 +46,7 @@ public:
   void    CreateOutputObjects();
   void    Exec(Option_t *option);
   void    GetRefFigure(Int_t ifig, Int_t &first, Int_t &last, Option_t *opt);  
+  void    GetRefFigure(Int_t ifig);
   Bool_t  PostProcess();
   void    Terminate(Option_t *);
 

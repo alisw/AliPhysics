@@ -64,7 +64,7 @@ public:
   
   void    CreateOutputObjects();
   void    Exec(Option_t *option);
-  void    GetRefFigure(Int_t ifig, Int_t &first, Int_t &last, Option_t *opt);  
+  void    GetRefFigure(Int_t ifig);  
   Int_t   GetEpochs() {return fEpochs;};
   Int_t   GetMinTrain() {return fMinTrain;};
   Int_t   GetTrainMomBin() {return fTrainMomBin;};

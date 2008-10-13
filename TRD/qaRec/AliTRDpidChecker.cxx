@@ -1,4 +1,5 @@
 #include "TPDGCode.h"
+#include "TCanvas.h"
 #include "TF1.h"
 #include "TH1F.h"
 #include "TH1D.h"
@@ -344,20 +345,52 @@ void AliTRDpidChecker::Exec(Option_t *)
   PostData(0, fContainer);
 }
 
+
 //________________________________________________________
-void AliTRDpidChecker::GetRefFigure(Int_t ifig, Int_t &first, Int_t &last, Option_t *opt)
+void AliTRDpidChecker::GetRefFigure(Int_t ifig)
 {
-  opt = "pl";
+  Bool_t FIRST = kTRUE;
+  TH1 *h1 = 0x0;
+  TH2 *h2 = 0x0;
   switch(ifig){
   case 0:
-    first = (Int_t)kGraphStart; last = first+2;
+    ((TGraphErrors*)fContainer->At(kGraphStart))->Draw("apl");
+    ((TGraphErrors*)fContainer->At(kGraphStart+1))->Draw("pl");
+    gPad->SetLogy();
     break;
-  default:
-    first = (Int_t)kGraphStart; last = first+2;
+  case 1:
+    // save 2.0 GeV projection as reference
+    FIRST = kTRUE;
+    h2 = (TH2F*)(fContainer->At(kdEdx));
+    for(Int_t is = AliPID::kSPECIES-1; is>=0; is--){
+      Int_t bin = is*AliTRDCalPID::kNMom+4;
+      h1 = h2->ProjectionY("px", bin, bin);
+      if(!h1->GetEntries()) continue;
+      h1->Scale(1./h1->Integral());
+      h1->SetLineColor(AliTRDCalPID::GetPartColor(is));
+      h1->DrawClone(FIRST ? "c" : "samec");
+      FIRST = kFALSE;
+    }
+    gPad->SetLogy();
+    break;
+  case 2:
+    // save 2.0 GeV projection as reference
+    FIRST = kTRUE;
+    h2 = (TH2F*)(fContainer->At(kPH));
+    for(Int_t is=0; is<AliPID::kSPECIES; is++){
+      Int_t bin = is*AliTRDCalPID::kNMom+4;
+      h1 = h2->ProjectionY("py", bin, bin);
+      if(!h1->GetEntries()) continue;
+      h1->SetMarkerStyle(24);
+      h1->SetMarkerColor(AliTRDCalPID::GetPartColor(is));
+      h1->SetLineColor(AliTRDCalPID::GetPartColor(is));
+      h1->DrawClone(FIRST ? "e2" : "same e2");
+      FIRST = kFALSE;
+    }
+    gPad->SetLogy(0);
     break;
   }
 }
-
 
 //________________________________________________________________________
 Bool_t AliTRDpidChecker::PostProcess()
@@ -452,7 +485,7 @@ Bool_t AliTRDpidChecker::PostProcess()
   }
 
 
-  fNRefFigures = 1;
+  fNRefFigures = 3/*1*/;
   return kTRUE; // testing protection
 }
 

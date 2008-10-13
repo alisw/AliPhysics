@@ -23,13 +23,12 @@ public:
   
   
   void           ConnectInputData(Option_t *);
-  TObjArray*     Container() const {return fContainer;}
   virtual void   CreateOutputObjects() = 0;
   virtual void   Exec(Option_t *) = 0;
 
   Int_t          GetDebugLevel() const { return fDebugLevel;}
   Int_t          GetNRefFigures() const { return fNRefFigures; } 
-  virtual void   GetRefFigure(Int_t ifig, Int_t &first, Int_t &last, Option_t *opt="lp");
+  virtual void   GetRefFigure(Int_t ifig);
 
   Bool_t         HasFriends() const {return TestBit(kFriends);};
   Bool_t         HasMCdata() const {return TestBit(kMCdata);};

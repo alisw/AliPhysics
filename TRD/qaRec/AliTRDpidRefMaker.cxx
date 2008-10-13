@@ -241,7 +241,7 @@ void AliTRDpidRefMaker::Exec(Option_t *)
 
 
 //________________________________________________________
-void AliTRDpidRefMaker::GetRefFigure(Int_t /*ifig*/, Int_t &/*first*/, Int_t &/*last*/, Option_t */*opt*/)
+void AliTRDpidRefMaker::GetRefFigure(Int_t /*ifig*/)
 {
   
 }
@@ -613,15 +613,15 @@ void AliTRDpidRefMaker::MonitorTraining(Int_t mombin)
 
   // implement variables for likelihoods
   Float_t Like[AliPID::kSPECIES][AliTRDgeometry::kNlayer];
-  memset(Like, 0., AliPID::kSPECIES*AliTRDgeometry::kNlayer*sizeof(Float_t));
+  memset(Like, 0, AliPID::kSPECIES*AliTRDgeometry::kNlayer*sizeof(Float_t));
   Float_t LikeAll[AliPID::kSPECIES], TotProb;
 
   Double_t PionEffiTrain[kMoniTrain], PionEffiErrTrain[kMoniTrain];
   Double_t PionEffiTest[kMoniTrain], PionEffiErrTest[kMoniTrain];
-  memset(PionEffiTrain, 0., kMoniTrain*sizeof(Double_t));
-  memset(PionEffiErrTrain, 0., kMoniTrain*sizeof(Double_t));
-  memset(PionEffiTest, 0., kMoniTrain*sizeof(Double_t));
-  memset(PionEffiErrTest, 0., kMoniTrain*sizeof(Double_t));
+  memset(PionEffiTrain, 0, kMoniTrain*sizeof(Double_t));
+  memset(PionEffiErrTrain, 0, kMoniTrain*sizeof(Double_t));
+  memset(PionEffiTest, 0, kMoniTrain*sizeof(Double_t));
+  memset(PionEffiErrTest, 0, kMoniTrain*sizeof(Double_t));
 
   // init histos
   const Float_t epsilon = 1/(2*(AliTRDpidUtil::kBins-1));     // get nice histos with bin center at 0 and 1

@@ -132,45 +132,14 @@ void makeResults(Char_t *args = "ALL")
       task->Load(Form("%s/merge/TRD.Task%s.root", gSystem->ExpandPathName("$PWD"), task->GetName()));
     } else task->Load((dynamic_cast<TObjString *>(filenames->UncheckedAt(0)))->String().Data());
 
-    if(!(fContainer = task->Container())) {
-      delete task;
-      delete ctask;
-      continue;
-    } 
-    
     task->PostProcess();
+    TCanvas *c=new TCanvas();
     for(Int_t ipic=0; ipic<task->GetNRefFigures(); ipic++){
-      TCanvas *c = new TCanvas("c", "", 500, 500);
-      Int_t ifirst, ilast; Option_t *opt;
-      TH1 *h = 0x0; TGraph *g = 0x0;
-      task->GetRefFigure(ipic, ifirst, ilast, opt);
-      if(!(o = fContainer->At(ifirst))) continue;
-      
-      if(o->InheritsFrom("TH1")){ 
-        h = dynamic_cast<TH1*>(o);
-        h->Draw(opt);
-      } else if(o->InheritsFrom("TGraph")){ 
-        g = dynamic_cast<TGraph*>(o);
-        g->Draw(Form("a%s", opt));
-      } else{
-        printf("No idea how to plot object of type %s.\n", o->IsA()->GetName());
-        printf("Please teach me.\n");
-        continue;
-      }
-
-      for(Int_t ig=ifirst+1; ig<ilast; ig++){
-        if(!(o = fContainer->At(ig))) continue;
-        if(o->InheritsFrom("TH1")){
-          h = dynamic_cast<TH1*>(o);
-          h->Draw(Form("%ssame", opt));
-        } else if(o->InheritsFrom("TGraph")){
-          g = dynamic_cast<TGraph*>(o);
-          g->Draw(opt);
-        }
-      }
+      task->GetRefFigure(ipic);
       c->SaveAs(Form("%s_fig%d.gif", task->GetName(), ipic));
-      delete c;
+      c->Clear();
     }
+    delete c;
     delete task;
     delete ctask;
   }

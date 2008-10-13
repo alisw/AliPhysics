@@ -50,10 +50,9 @@ void AliTRDrecoTask::ConnectInputData(Option_t *)
 
 
 //_______________________________________________________
-void AliTRDrecoTask::GetRefFigure(Int_t /*ifig*/, Int_t &first, Int_t &last, Option_t */*opt*/)
+void AliTRDrecoTask::GetRefFigure(Int_t /*ifig*/)
 {
   AliWarning("Retrieving reference figures not implemented.");
-  first = 0; last = 0;
 }
 
 //_______________________________________________________

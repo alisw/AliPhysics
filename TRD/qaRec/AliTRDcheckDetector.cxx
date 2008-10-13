@@ -59,11 +59,11 @@ AliTRDcheckDetector::~AliTRDcheckDetector(){
 
 //_______________________________________________________
 void AliTRDcheckDetector::ConnectInputData(Option_t *opt){
-	//
-	// Connect the Input data with the task
-	//
-	AliTRDrecoTask::ConnectInputData(opt);
-	fEventInfo = dynamic_cast<AliTRDeventInfo *>(GetInputData(1));
+  //
+  // Connect the Input data with the task
+  //
+  AliTRDrecoTask::ConnectInputData(opt);
+  fEventInfo = dynamic_cast<AliTRDeventInfo *>(GetInputData(1));
 }
 
 //_______________________________________________________
@@ -81,7 +81,7 @@ void AliTRDcheckDetector::CreateOutputObjects(){
   fContainer->Add(new TH1F("hChi2", "Chi2", 200, 0, 20));
   fContainer->Add(new TH1F("hChi2n", "Norm. Chi2 (tracklets)", 50, 0, 5));
   fContainer->Add(new TH1F("hSM", "Track Counts in Supermodule", 18, -0.5, 17.5));
-	// Detector signal on Detector-by-Detector basis
+  // Detector signal on Detector-by-Detector basis
   fContainer->Add(new TProfile("hPHdetector", "Average PH", 31, -0.5, 30.5));
   fContainer->Add(new TH1F("hQclDetector", "Cluster charge", 200, 0, 1200));
   fContainer->Add(new TH1F("hQTdetector", "Total Charge Deposit", 6000, 0, 6000));
@@ -138,21 +138,21 @@ void AliTRDcheckDetector::Exec(Option_t *){
             dynamic_cast<TProfile *>(fContainer->UncheckedAt(kPulseHeight))->Fill(localtime, absolute_charge);
             dynamic_cast<TH1F *>(fContainer->UncheckedAt(kClusterCharge))->Fill(absolute_charge);
             if(fDebugLevel > 2){
-            	(*fDebugStream) << "PulseHeight"
-            		<< "Detector="	<< detector
-            		<< "Sector="		<< sector
-            		<< "Timebin="		<< localtime
-            		<< "Charge="		<< absolute_charge
-            		<< "\n";
+              (*fDebugStream) << "PulseHeight"
+                << "Detector="	<< detector
+                << "Sector="		<< sector
+                << "Timebin="		<< localtime
+                << "Charge="		<< absolute_charge
+                << "\n";
             }
           }
           dynamic_cast<TH1F *>(fContainer->UncheckedAt(kChargeDeposit))->Fill(Qtot);
           if(fDebugLevel > 3){
-          	(*fDebugStream) << "ChargeDeposit"
-          		<< "Detector="	<< detector
-          		<< "Sector="		<< sector
-          		<< "QT="				<< Qtot
-          		<< "\n";
+            (*fDebugStream) << "ChargeDeposit"
+              << "Detector="	<< detector
+              << "Sector="		<< sector
+              << "QT="				<< Qtot
+              << "\n";
           }
         }
       }
@@ -161,8 +161,8 @@ void AliTRDcheckDetector::Exec(Option_t *){
     nTracks++;
   }
   if(nTracks){
-  	dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNEventsTriggerTracks))->Fill(triggermask);
-  	dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNTracksEventHist))->Fill(nTracks);
+    dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNEventsTriggerTracks))->Fill(triggermask);
+    dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNTracksEventHist))->Fill(nTracks);
   }
   if(triggermask <= 20 && !fTriggerNames->FindObject(Form("%d", triggermask))){
     fTriggerNames->Add(new TObjString(Form("%d", triggermask)), new TObjString(triggername));
@@ -184,98 +184,127 @@ void AliTRDcheckDetector::Terminate(Option_t *){
 
 //_______________________________________________________
 Bool_t AliTRDcheckDetector::PostProcess(){
-	//
-	// Do Postprocessing (for the moment set the number of Reference histograms)
-	//
-	
-	TH1 * histo = 0x0;
-	histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNTracksEventHist));
-	histo->GetXaxis()->SetTitle("Number of Tracks");
-	histo->GetYaxis()->SetTitle("Events");
-	histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNclustersHist));
-	histo->GetXaxis()->SetTitle("Number of Clusters");
-	histo->GetYaxis()->SetTitle("Entries");
-	histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNtrackletsHist));
-	histo->GetXaxis()->SetTitle("Number of Tracklets");
-	histo->GetYaxis()->SetTitle("Entries");
-	histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNclusterTrackletHist));
-	histo->GetXaxis()->SetTitle("Number of Clusters");
-	histo->GetYaxis()->SetTitle("Entries");
-	histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kChi2));
-	histo->GetXaxis()->SetTitle("#chi^2");
-	histo->GetYaxis()->SetTitle("Entries");
-	histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNTracksSectorHist));
-	histo->GetXaxis()->SetTitle("Sector");
-	histo->GetYaxis()->SetTitle("Number of Tracks");
-	histo = dynamic_cast<TProfile *>(fContainer->UncheckedAt(kPulseHeight));
-	histo->GetXaxis()->SetTitle("Time / 100ns");
-	histo->GetYaxis()->SetTitle("Average Pulse Height (a. u.)");
-	histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kClusterCharge));
-	histo->GetXaxis()->SetTitle("Cluster Charge (a.u.)");
-	histo->GetYaxis()->SetTitle("Entries");
-	histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kChargeDeposit));
-	histo->GetXaxis()->SetTitle("Charge Deposit (a.u.)");
-	histo->GetYaxis()->SetTitle("Entries");
-	
-	// Calculate the purity of the trigger clusters
-	histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNEventsTrigger));
-	TH1F *histoTracks = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNEventsTriggerTracks));
-	histoTracks->Divide(histo);
-	Float_t purities[20], val = 0;
-	TString triggernames[20];
-	Int_t nTriggerClasses = 0;
-	for(Int_t ibin = 1; ibin <= histo->GetNbinsX(); ibin++){
-		if((val = histoTracks->GetBinContent(ibin))){
-			purities[nTriggerClasses] = val;
-			triggernames[nTriggerClasses] = histoTracks->GetXaxis()->GetBinLabel(ibin);
-			nTriggerClasses++;
-		}
-	}
-	TH1F *hTriggerInf = new TH1F("fTriggerInf", "Trigger Information", TMath::Max(nTriggerClasses, 1), 0, TMath::Max(nTriggerClasses, 1));
-	for(Int_t ibin = 1; ibin <= nTriggerClasses; ibin++){
-		hTriggerInf->SetBinContent(ibin, purities[ibin-1]);
-		hTriggerInf->GetXaxis()->SetBinLabel(ibin, triggernames[ibin-1].Data());
-	}
-	hTriggerInf->GetXaxis()->SetTitle("Trigger Cluster");
-	hTriggerInf->GetYaxis()->SetTitle("Ratio");
-	hTriggerInf->GetYaxis()->SetRangeUser(0,1);
+  //
+  // Do Postprocessing (for the moment set the number of Reference histograms)
+  //
+  
+  TH1 * histo = 0x0;
+  histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNTracksEventHist));
+  histo->GetXaxis()->SetTitle("Number of Tracks");
+  histo->GetYaxis()->SetTitle("Events");
+  histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNclustersHist));
+  histo->GetXaxis()->SetTitle("Number of Clusters");
+  histo->GetYaxis()->SetTitle("Entries");
+  histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNtrackletsHist));
+  histo->GetXaxis()->SetTitle("Number of Tracklets");
+  histo->GetYaxis()->SetTitle("Entries");
+  histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNclusterTrackletHist));
+  histo->GetXaxis()->SetTitle("Number of Clusters");
+  histo->GetYaxis()->SetTitle("Entries");
+  histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kChi2));
+  histo->GetXaxis()->SetTitle("#chi^2");
+  histo->GetYaxis()->SetTitle("Entries");
+  histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNTracksSectorHist));
+  histo->GetXaxis()->SetTitle("Sector");
+  histo->GetYaxis()->SetTitle("Number of Tracks");
+  histo = dynamic_cast<TProfile *>(fContainer->UncheckedAt(kPulseHeight));
+  histo->GetXaxis()->SetTitle("Time / 100ns");
+  histo->GetYaxis()->SetTitle("Average Pulse Height (a. u.)");
+  histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kClusterCharge));
+  histo->GetXaxis()->SetTitle("Cluster Charge (a.u.)");
+  histo->GetYaxis()->SetTitle("Entries");
+  histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kChargeDeposit));
+  histo->GetXaxis()->SetTitle("Charge Deposit (a.u.)");
+  histo->GetYaxis()->SetTitle("Entries");
+  
+  // Calculate the purity of the trigger clusters
+  histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNEventsTrigger));
+  TH1F *histoTracks = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNEventsTriggerTracks));
+  histoTracks->Divide(histo);
+  Float_t purities[20], val = 0;
+  TString triggernames[20];
+  Int_t nTriggerClasses = 0;
+  for(Int_t ibin = 1; ibin <= histo->GetNbinsX(); ibin++){
+    if((val = histoTracks->GetBinContent(ibin))){
+      purities[nTriggerClasses] = val;
+      triggernames[nTriggerClasses] = histoTracks->GetXaxis()->GetBinLabel(ibin);
+      nTriggerClasses++;
+    }
+  }
+  TH1F *hTriggerInf = new TH1F("fTriggerInf", "Trigger Information", TMath::Max(nTriggerClasses, 1), 0, TMath::Max(nTriggerClasses, 1));
+  for(Int_t ibin = 1; ibin <= nTriggerClasses; ibin++){
+    hTriggerInf->SetBinContent(ibin, purities[ibin-1]);
+    hTriggerInf->GetXaxis()->SetBinLabel(ibin, triggernames[ibin-1].Data());
+  }
+  hTriggerInf->GetXaxis()->SetTitle("Trigger Cluster");
+  hTriggerInf->GetYaxis()->SetTitle("Ratio");
+  hTriggerInf->GetYaxis()->SetRangeUser(0,1);
 //	hTriggerInf->SetMarkerColor(kBlue);
 //	hTriggerInf->SetMarkerStyle(22);
-	fContainer->Add(hTriggerInf);
-	fNRefFigures = 10;
-	return kTRUE;
+  fContainer->Add(hTriggerInf);
+  fNRefFigures = 10;
+  return kTRUE;
 }
 
 //_______________________________________________________
-void AliTRDcheckDetector::GetRefFigure(Int_t ifig, Int_t &first, Int_t &last, Option_t *opt){
-	//
-	// Setting Reference Figures
-	//
-	opt = "pl";
-	switch(ifig){
-		case 0:	first = last = kNTracksEventHist;
-						break;
-		case 1:	first = last = kNclustersHist;
-						break;
-		case 2:	first = last = kNtrackletsHist;
-						break;
-		case 3:	first = last = kNclusterTrackletHist;
-						break;
-		case 4:	first = last = kChi2;
-						break;
-		case 5:	first = last = kNTracksSectorHist;
-						break;
-		case 6:	first = last = kPulseHeight;
-						break;
-		case 7:	first = last = kClusterCharge;
-						break;
-		case 8:	first = last = kChargeDeposit;
-						break;
-		case 9: first = last = kPurity;
-						opt="bar";
-						break;
-		default: first = last = kNTracksEventHist;
-						break;
-	};
+void AliTRDcheckDetector::GetRefFigure(Int_t ifig){
+  //
+  // Setting Reference Figures
+  //
+  TH1 *h = 0x0;
+  switch(ifig){
+  case 0:	
+    ((TH1F*)fContainer->At(kNTracksEventHist))->Draw("pl");
+    break;
+  case 1:
+    ((TH1F*)fContainer->At(kNclustersHist))->Draw("pl");
+    break;
+  case 2:
+    h = (TH1F*)fContainer->At(kNtrackletsHist);
+    if(!h->GetEntries()) break;
+    h->Scale(100./h->Integral());
+    h->GetXaxis()->SetRangeUser(.5, 6.5);
+    h->SetFillColor(kGreen);
+    h->SetBarOffset(.2);
+    h->SetBarWidth(.6);
+    h->Draw("bar1");
+    break;
+  case 3:
+    ((TH1F*)fContainer->At(kNclusterTrackletHist))->Draw("pc");
+    break;
+  case 4:
+    ((TH1F*)fContainer->At(kChi2))->Draw("");
+    break;
+  case 5:
+    h = (TH1F*)fContainer->At(kNTracksSectorHist);
+    if(!h->GetEntries()) break;
+    h->Scale(100./h->Integral());
+    h->SetFillColor(kGreen);
+    h->SetBarOffset(.2);
+    h->SetBarWidth(.6);
+    h->Draw("bar1");
+    break;
+  case 6:
+    h = (TH1F*)fContainer->At(kPulseHeight);
+    h->SetMarkerStyle(24);
+    h->Draw("e1");
+    break;
+  case 7:
+    ((TH1F*)fContainer->At(kClusterCharge))->Draw("c");
+    break;
+  case 8:
+    ((TH1F*)fContainer->At(kChargeDeposit))->Draw("c");
+    break;
+  case 9: 
+    h=(TH1F*)fContainer->At(kPurity);
+    h->SetBarOffset(.2);
+    h->SetBarWidth(.6);
+    h->SetFillColor(kGreen);
+    h->Draw("bar1");
+    break;
+  default:
+    ((TH1F*)fContainer->At(kNTracksEventHist))->Draw("pl");
+    break;
+  }
 }
 

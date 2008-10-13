@@ -276,14 +276,31 @@ void AliTRDtrackingEfficiency::Terminate(Option_t *)
 
 
 //____________________________________________________________________
-void AliTRDtrackingEfficiency::GetRefFigure(Int_t ifig, Int_t &first, Int_t &last, Option_t *opt)
+void AliTRDtrackingEfficiency::GetRefFigure(Int_t ifig)
 {
+  Bool_t FIRST = kTRUE;
+  TProfile *h = 0x0;
   switch(ifig){
   case 0:
-    first = 5; last = 6; opt="e2"; 
+    h = (TProfile*)fContainer->At(AliPID::kSPECIES);
+    for(Int_t is=0; is<AliPID::kSPECIES; is++){
+      h->Add((TProfile*)fContainer->At(is));
+    }
+    h->SetMarkerColor(kBlack);
+    h->SetLineColor(kBlack);
+    h->GetXaxis()->SetTitle("p [GeV/c]");
+    h->Draw("e1");
     break;
   case 1:
-    first = 0; last = 5; opt="e2"; 
+    FIRST = kTRUE;
+    for(Int_t is=0; is<AliPID::kSPECIES; is++){
+      if(!(h = (TProfile*)fContainer->At(is))) continue;
+      if(FIRST){
+        h->Draw("e1");
+        h->GetXaxis()->SetTitle("p [GeV/c]");
+      } else h->Draw("same e1");
+      FIRST = kFALSE;
+    }
     break;
   }
 }
@@ -292,10 +309,6 @@ void AliTRDtrackingEfficiency::GetRefFigure(Int_t ifig, Int_t &first, Int_t &las
 //____________________________________________________________________
 Bool_t AliTRDtrackingEfficiency::PostProcess()
 {
-  TProfile *h = (TProfile*)fContainer->At(AliPID::kSPECIES);
-  for(Int_t is=0; is<AliPID::kSPECIES; is++){
-    h->Add((TProfile*)fContainer->At(is));
-  }
   fNRefFigures = HasMCdata() ? 2 : 1; 
   return kTRUE;
 }
