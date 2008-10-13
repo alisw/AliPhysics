@@ -21,7 +21,7 @@
 
 Char_t *libs[] = {"libProofPlayer.so", "libANALYSIS.so", "libTRDqaRec.so", "libPyROOT"};
 
-void makeResults(Char_t *tasks = "ALL", Char_t* dir=0x0)
+void makeResults(Char_t *args = "ALL")
 {
 	// Load Libraries in interactive mode
   Int_t nlibs = static_cast<Int_t>(sizeof(libs)/sizeof(Char_t *));
@@ -36,10 +36,29 @@ void makeResults(Char_t *tasks = "ALL", Char_t* dir=0x0)
   Bool_t mc      = kTRUE;
   Bool_t friends = kTRUE;
 
+  Char_t *dir = 0x0;
+  TString tasks;
+  TObjArray *argsArray = TString(args).Tokenize("?");
+  switch(argsArray->GetEntriesFast()){
+  case 1:
+    tasks = ((TObjString*)(*argsArray)[0])->String();
+    dir=0x0;
+    break;
+  case 2:
+    tasks = ((TObjString*)(*argsArray)[0])->String();
+    dir = ((TObjString*)(*argsArray)[1])->GetName();
+    break;
+  default:
+    printf("Macro accepts 2 arguments separated by a '?'.\n");
+    printf("arg #1 : list of tasks/options\n");
+    printf("arg #2 : base directory to be processed\n");
+    return;
+  }
+
   // select tasks to process; we should move it to an 
   // individual function and move the task identifiers 
   // outside the const space
-  TObjArray *tasksArray = TString(tasks).Tokenize(" ");
+  TObjArray *tasksArray = tasks.Tokenize(" ");
   Int_t fSteerTask = 0;
   for(Int_t isel = 0; isel < tasksArray->GetEntriesFast(); isel++){
     TString s = (dynamic_cast<TObjString *>(tasksArray->UncheckedAt(isel)))->String();
