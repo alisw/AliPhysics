@@ -27,6 +27,8 @@ public:
   virtual Long64_t Merge(TCollection */*li*/){return 0;}
   virtual void     Analyze(){return;}
   virtual void     Terminate();
+
+  virtual void    UpdateEventInfo(AliESDEvent * event);
   //
   // debug streamer support
   TTreeSRedirector *GetDebugStreamer();
@@ -38,8 +40,14 @@ public:
 protected: 
   TTreeSRedirector *fDebugStreamer;     //! debug streamer
   Int_t  fStreamLevel;                  //  debug stream level
+  Int_t  fRun;                          //!  current Run number
+  Int_t  fEvent;                        //! current Event number
+  Int_t  fTime;                         //!  current Time
+  Int_t  fTrigger;                      //! current trigger type
+  Float_t fMagF;                        //! current magnetic field 
 private:
   Int_t  fDebugLevel;                   //  debug level
+
   ClassDef(AliTPCcalibBase,1)
 };
 

@@ -73,12 +73,22 @@
   AliXRDPROOFtoolkit tool;
   TChain * chain = tool.MakeChain("align.txt","Track",0,10200);
   chain->Lookup();
+  TCut cutA("abs(tp1.fP[1]-tp2.fP[1])<0.3&&abs(tp1.fP[0]-tp2.fP[0])<0.15&&abs(tp1.fP[3]-tp2.fP[3])<0.01&&abs(tp1.fP[2]-tp2.fP[2])<0.01");
+  TCut cutS("s1%36==s2%36");
   
   .x ~/UliStyle.C
+  .x $ALICE_ROOT/macros/loadlibsREC.C
+
+  gSystem->Load("$ROOTSYS/lib/libXrdClient.so");
+  gSystem->Load("libProof");
   gSystem->Load("libANALYSIS");
+  gSystem->Load("libSTAT");
   gSystem->Load("libTPCcalib");
+  //
+  // compare reference
   TFile fcalib("CalibObjects.root");
   TObjArray * array = (TObjArray*)fcalib.Get("TPCCalib");
+
   AliTPCcalibAlign * align = ( AliTPCcalibAlign *)array->FindObject("alignTPC");
   //
   //
@@ -209,7 +219,7 @@ void AliTPCcalibAlign::Terminate(){
   // Terminate function
   // call base terminate + Eval of fitters
   //
-  if (GetDebugLevel()>0) Info("AliTPCcalibAlign","Terminate");
+  Info("AliTPCcalibAlign","Terminate");
   EvalFitters();
   AliTPCcalibBase::Terminate();
 }
@@ -260,6 +270,11 @@ void AliTPCcalibAlign::ProcessTracklets(const AliExternalTrackParam &tp1,
       AliExternalTrackParam *p1 = &((AliExternalTrackParam&)tp1);
       AliExternalTrackParam *p2 = &((AliExternalTrackParam&)tp2);
       (*cstream)<<"Tracklet"<<
+	"run="<<fRun<<              //  run number
+	"event="<<fEvent<<          //  event number
+	"time="<<fTime<<            //  time stamp of event
+	"trigger="<<fTrigger<<      //  trigger
+	"mag="<<fMagF<<             //  magnetic field
 	"tp1.="<<p1<<
 	"tp2.="<<p2<<
 	"v1.="<<&vec1<<
@@ -372,6 +387,11 @@ void  AliTPCcalibAlign::ProcessDiff(const AliExternalTrackParam &t1,
 
     if (cstream){
       (*cstream)<<"Track"<<
+	"run="<<fRun<<              //  run number
+	"event="<<fEvent<<          //  event number
+	"time="<<fTime<<            //  time stamp of event
+	"trigger="<<fTrigger<<      //  trigger
+	"mag="<<fMagF<<             //  magnetic field
 	"Cl.="<<&arrCl<<
 	//"tp0.="<<p0<<
 	"tp1.="<<p1<<
@@ -1098,3 +1118,39 @@ void AliTPCcalibAlign::Add(AliTPCcalibAlign * align){
     }
   }
 }
+
+
+
+
+
+/*
+  
+
+gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");
+gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+")
+AliXRDPROOFtoolkit tool;
+TChain * chainTr = tool.MakeChain("align.txt","Track",0,10200);
+chainTr->Lookup();
+
+
+
+TCut cutS("s1%36==s2%36");
+
+TCut cutN("c1>32&&c2>60");
+TCut cutC0("sqrt(tp2.fC[0])<1");
+
+TCut cutP0("abs(tp1.fP[0]-tp2.fP[0])<0.4");
+TCut cutP2("abs(tp1.fP[2]-tp2.fP[2])<0.01");
+TCut cutP3("abs(tp1.fP[3]-tp2.fP[3])<0.01");
+TCut cutP4("abs(tp1.fP[4]-tp2.fP[4])<0.5");
+TCut cutP=cutP0+cutP2+cutP3+cutP4+cutC0;
+
+TCut cutX("abs(tp2.fX-133.6)<2");
+
+TCut cutA = cutP+cutN;
+
+
+TCut cutY("abs(vcY.fElements-vtY.fElements)<0.3&&vcY.fElements!=0")
+TCut cutZ("abs(vcZ.fElements-vtZ.fElements)<0.3&&vcZ.fElements!=0")
+
+*/

@@ -124,19 +124,23 @@ public:
   //
   TObjArray      fDeltaYres;       //-> array of histograms of delta y residuals for each track
   TObjArray      fDeltaZres;       //-> array of histograms of delta z residuals for each track
+  TObjArray      fDeltaYres2;       //-> array of histograms of delta y residuals for each track
+  TObjArray      fDeltaZres2;       //-> array of histograms of delta z residuals for each track
+  //  TObjArray      fDeltaYres3;       //-> array of histograms of delta y residuals for each track
+  //TObjArray      fDeltaZres3;       //-> array of histograms of delta z residuals for each track
+
   //
   TVectorD*      fFitAside;        //! drift fit - A side
   TVectorD*      fFitCside;        //! drift fit - C- side
+  TVectorD*      fFitACside;        //! drift fit - A+C- side
   //
   TVectorD       fEdgeXcuts;       //! cuts in local x direction; used in the refit of the laser tracks
   TVectorD       fEdgeYcuts;       //! cuts in local y direction; used in the refit of the laser tracks
   TVectorD       fNClCuts;         //! cuts on the number of clusters per tracklet; used in the refit of the laser tracks
   Int_t          fNcuts;           //! number of cuts
   //
-  Int_t          fRun;             // current run number
-  Int_t          fEvent;           // cuttent event - internal counter
 private:
-  ClassDef(AliTPCcalibLaser,2)
+  ClassDef(AliTPCcalibLaser,3)
 };
 
 

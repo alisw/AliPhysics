@@ -1219,6 +1219,11 @@ void AliTPCcalibTracksGain::DumpTrack(AliTPCseed* track) {
    TTreeSRedirector * cstream =  GetDebugStreamer();
    if (cstream){
      (*cstream) << "Track" <<
+       "run="<<fRun<<              //  run number
+       "event="<<fEvent<<          //  event number
+       "time="<<fTime<<            //  time stamp of event
+       "trigger="<<fTrigger<<      //  trigger
+       "mag="<<fMagF<<             //  magnetic field	      
        "Track.=" << track <<        // track information
        "\n";
      //
@@ -1226,6 +1231,11 @@ void AliTPCcalibTracksGain::DumpTrack(AliTPCseed* track) {
      //
      if ( GetStreamLevel()>1 && count>1){
        (*cstream) << "TrackG" <<
+	 "run="<<fRun<<              //  run number
+	 "event="<<fEvent<<          //  event number
+	 "time="<<fTime<<            //  time stamp of event
+	 "trigger="<<fTrigger<<      //  trigger
+	 "mag="<<fMagF<<             //  magnetic field	      
 	 "Track.=" << track <<        // track information
 	 "ncount="<<count<<
 	 // info for pad type 0
@@ -1415,6 +1425,12 @@ Bool_t AliTPCcalibTracksGain::GetDedx(AliTPCseed* track, Int_t padType, Int_t* /
       AddCluster(cluster, momenta, mdedx, padType, xcenter, dedxQ, dedxM, fraction, fraction2, dedge, parY, parZ, meanPos);
       Float_t gain = GetGain(cluster);
       if (cstream) (*cstream) << "dEdx" <<
+	"run="<<fRun<<              //  run number
+	"event="<<fEvent<<          //  event number
+	"time="<<fTime<<            //  time stamp of event
+	"trigger="<<fTrigger<<      //  trigger
+	"mag="<<fMagF<<             //  magnetic field	      
+
 		     "Cl.=" << cluster <<           // cluster of interest
 		     "gain="<<gain<<                // gain at cluster position
 		     "P=" << momenta <<             // track momenta
@@ -1433,6 +1449,11 @@ Bool_t AliTPCcalibTracksGain::GetDedx(AliTPCseed* track, Int_t padType, Int_t* /
    }
    
    if (cstream) (*cstream) << "dEdxT" <<
+     "run="<<fRun<<              //  run number
+     "event="<<fEvent<<          //  event number
+     "time="<<fTime<<            //  time stamp of event
+     "trigger="<<fTrigger<<      //  trigger
+     "mag="<<fMagF<<             //  magnetic field	      
      "P=" << momenta <<             // track momenta
      "npoints="<<inonEdge<<         // number of points
      "sector="<<lastSector<<        // sector number

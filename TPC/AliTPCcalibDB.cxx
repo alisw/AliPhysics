@@ -704,5 +704,6 @@ void  AliTPCcalibDB::SetExBField(Float_t bz){
   //
   // Set magnetic filed for ExB correction
   //
+  printf("Set magnetic field for ExB correction = %f\n",bz); 
   fExB = GetExB(bz,kFALSE);
 }

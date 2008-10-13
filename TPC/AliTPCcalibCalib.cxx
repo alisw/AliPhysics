@@ -176,6 +176,11 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed){
       TTreeSRedirector *cstream = GetDebugStreamer();
       if (cstream){
 	(*cstream)<<"Clusters"<<
+	  "run="<<fRun<<              //  run number
+	  "event="<<fEvent<<          //  event number
+	  "time="<<fTime<<            //  time stamp of event
+	  "trigger="<<fTrigger<<      //  trigger
+	  "mag="<<fMagF<<             //  magnetic field
 	  "cl0.="<<&cl0<<
 	  "cl.="<<cluster<<
 	  "cy="<<dy<<
@@ -265,6 +270,11 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed){
     TTreeSRedirector *cstream = GetDebugStreamer();
     if (cstream){
       (*cstream)<<"Tracks"<<
+	"run="<<fRun<<              //  run number
+	"event="<<fEvent<<          //  event number
+	"time="<<fTime<<            //  time stamp of event
+	"trigger="<<fTrigger<<      //  trigger
+	"mag="<<fMagF<<             //  magnetic field
 	"nclIn="<<nclIn<<
 	"nclOut="<<nclOut<<
 	"ncl="<<ncl<<

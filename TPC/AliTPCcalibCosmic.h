@@ -57,7 +57,7 @@ private:
   TH1F  *fDeDxMIP;                //  TPC signal close to the MIP region of muons 0.4 < p < 0.45 GeV
 
   Double_t fMIPvalue;             //  MIP value calculated via a fit to fDeDxMIP
-
+  //
   // cuts
   //
   Float_t fCutMaxD;     // maximal distance in rfi ditection

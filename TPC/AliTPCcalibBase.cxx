@@ -45,6 +45,7 @@
 #include "TTreeStream.h"
 #include "AliLog.h"
 #include "TTimeStamp.h"
+#include "AliESDEvent.h"
 
 
 ClassImp(AliTPCcalibBase)
@@ -52,7 +53,12 @@ ClassImp(AliTPCcalibBase)
 AliTPCcalibBase::AliTPCcalibBase():
     TNamed(),
     fDebugStreamer(0),
-    fStreamLevel(0),
+    fStreamLevel(0),   
+    fRun(0),                  //!  current Run number
+    fEvent(0),                //!  current Event number
+    fTime(0),                 //!  current Time
+    fTrigger(0),              //! current trigger type
+    fMagF(0),                 //! current magnetic field
     fDebugLevel(0)
 {
   //
@@ -117,6 +123,17 @@ TTreeSRedirector *AliTPCcalibBase::GetDebugStreamer(){
   return fDebugStreamer;
 }
 
+
+void    AliTPCcalibBase::UpdateEventInfo(AliESDEvent * event){
+  //
+  //
+  //
+  fRun     = event->GetRunNumber();
+  fEvent   = event->GetEventNumberInFile();
+  fTime    = event->GetTimeStamp();
+  fTrigger = event->GetTriggerMask();
+  fMagF    = event->GetMagneticField();
+}
 
 void AliTPCcalibBase::RegisterDebugOutput(const char *path){
   //

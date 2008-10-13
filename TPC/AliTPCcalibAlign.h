@@ -58,7 +58,7 @@ public:
 //   Bool_t GetTransformationCovar9(Int_t s1,Int_t s2,TMatrixD &a, Bool_t norm=kFALSE);
 //   Bool_t GetTransformationCovar6(Int_t s1,Int_t s2,TMatrixD &a, Bool_t norm=kFALSE);
   void Add(AliTPCcalibAlign * align);
-  //  Int_t *GetPoints() {return fPoints;}
+  Int_t *GetPoints() {return fPoints;}
 private:
   void FillHisto(const AliExternalTrackParam &t1,
 			const AliExternalTrackParam &t2,

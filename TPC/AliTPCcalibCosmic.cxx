@@ -14,7 +14,7 @@
  **************************************************************************/
 
 /*
-    Comments to be written here:
+    Comments to be written here: 
     1. What do we calibrate.
     2. How to interpret results
     3. Simple example
@@ -144,6 +144,7 @@ void AliTPCcalibCosmic::Process(AliESDEvent *event) {
    return;
   }
    
+
   FindPairs(event); // nearly everything takes place in find pairs...
 
   if (GetDebugLevel()>20) printf("Hallo world: Im here and processing an event\n");
@@ -297,7 +298,7 @@ void AliTPCcalibCosmic::FindPairs(AliESDEvent *event) {
       //
       if (fStreamLevel>0){
 	TTreeSRedirector * cstream =  GetDebugStreamer();
-	printf("My stream=%p\n",(void*)cstream);
+	//printf("My stream=%p\n",(void*)cstream);
 	AliExternalTrackParam *ip0 = (AliExternalTrackParam *)track0->GetInnerParam();
 	AliExternalTrackParam *ip1 = (AliExternalTrackParam *)track1->GetInnerParam();
 	AliExternalTrackParam *op0 = (AliExternalTrackParam *)track0->GetOuterParam();
@@ -306,12 +307,13 @@ void AliTPCcalibCosmic::FindPairs(AliESDEvent *event) {
 	Bool_t isCrossO = op0->GetZ()*op1->GetZ()<0;
 	Double_t alpha0 = TMath::ATan2(dir0[1],dir0[0]);
 	Double_t alpha1 = TMath::ATan2(dir1[1],dir1[0]);
-	Int_t runNr = event->GetRunNumber();
-	UInt_t time = event->GetTimeStamp();
 	if (cstream) {
 	  (*cstream) << "Track0" <<
-	    "runNr="<<runNr<<           //  run number
-	    "time="<<time<<             //  time stamp of event
+	    "run="<<fRun<<              //  run number
+	    "event="<<fEvent<<          //  event number
+	    "time="<<fTime<<            //  time stamp of event
+	    "trigger="<<fTrigger<<      //  trigger
+	    "mag="<<fMagF<<             //  magnetic field
 	    "dir="<<dir<<               //  direction
 	    "OK="<<isPair<<             //  will be accepted
 	    "b0="<<b0<<                 //  propagate status
@@ -542,7 +544,7 @@ chain->Lookup();
 
 TCut cutT("cutT","abs(Tr1.fP[3]+Tr0.fP[3])<0.01");  // OK
 TCut cutD("cutD","abs(Tr0.fP[0]+Tr1.fP[0])<2");     // OK
-TCut cutP1("cutP1","abs(Tr0.fP[1]-Tr1.fP[1])<4");   // OK
+TCut cutP1("cutP1","abs(Tr0.fP[1]-Tr1.fP[1])<10");   // OK
 TCut cutPt("cutPt","abs(Tr1.fP[4]+Tr0.fP[4])<0.1&&abs(Tr0.fP[4])+abs(Tr1.fP[4])<10");
 TCut cutN("cutN","min(Orig0.fTPCncls,Orig1.fTPCncls)>100");
 TCut cutA=cutT+cutD+cutPt+cutN+cutP1;
@@ -563,10 +565,142 @@ chain->SetEntryList(elistV40Z100);
 //
 chain->SetAlias("side","(-1+(Tr0.fP[1]>0)*2)");
 chain->SetAlias("hpt","abs(Tr0.fP[4])<0.2");
+chain->SetAlias("signy","(-1+(Tr0.fP[0]>0)*2)");
+
+chain->SetAlias("dy","Tr0.fP[0]+Tr1.fP[0]");
+chain->SetAlias("dz","Tr0.fP[1]-Tr1.fP[1]");
+chain->SetAlias("d1pt","Tr0.fP[4]+Tr1.fP[4]");
 chain->SetAlias("dtheta","(Tr0.fP[3]+Tr1.fP[3])");
+chain->SetAlias("dphi","(Tr0.fAlpha-Tr1.fAlpha-pi)");
+
 chain->SetAlias("mtheta","(Tr0.fP[3]-Tr1.fP[3])*0.5")
 chain->SetAlias("sa","(sin(Tr0.fAlpha+0.))");
 chain->SetAlias("ca","(cos(Tr0.fAlpha+0.))");
+
+
+
+chain->Draw("dy:sqrt(abs(Tr0.fP[4]))>>hisdyA(5,0,1,50,-1,1)","!crossO&&!crossI&&abs(d0)<40&&Tr0.fP[1]>0");
+hisdyA->FitSlicesY();
+hisdyA_2->SetXTitle("#sqrt{1/p_{t}}");
+hisdyA_2->SetYTitle("#sigma_{y}(cm)");
+hisdyA_2->SetTitle("Cosmic - Y matching");
+hisdyA_2->SetMaximum(0.5);
+
+
+chain->Draw("dy:sqrt(abs(Tr0.fP[4]))>>hisdyC(5,0,1,50,-1,1)","!crossO&&!crossI&&abs(d0)<40&&Tr0.fP[1]<0");
+hisdyC->FitSlicesY();
+hisdyC_2->SetXTitle("#sqrt{1/p_{t}}");
+hisdyC_2->SetYTitle("#sigma_{y}(cm)");
+hisdyC_2->SetTitle("Cosmic - Y matching");
+hisdyC_2->SetMaximum(1);
+hisdyC_2->SetMinimum(0);
+hisdyC_2->SetMarkerStyle(22);
+hisdyA_2->SetMarkerStyle(21);
+hisdyC_2->SetMarkerSize(1.5);
+hisdzA_2->SetMarkerSize(1.5);
+hisdyC_2->Draw();
+hisdyA_2->Draw("same");
+gPad->SaveAs("~/Calibration/Cosmic/pic/ymatching.gif")
+
+chain->Draw("dz:sqrt(abs(Tr0.fP[4]))>>hisdzA(5,0,1,50,-1,1)","!crossO&&!crossI&&abs(d0)<40&&Tr0.fP[1]>0");
+hisdzA->FitSlicesY();
+hisdzA_2->SetXTitle("#sqrt{1/p_{t}}");
+hisdzA_2->SetYTitle("#sigma_{z}(cm)");
+hisdzA_2->SetTitle("Cosmic - Z matching - A side ");
+hisdzA_2->SetMaximum(0.5);
+
+chain->Draw("dz:sqrt(abs(Tr0.fP[4]))>>hisdzC(5,0,1,50,-1,1)","!crossO&&!crossI&&abs(d0)<40&&Tr0.fP[1]<0");
+hisdzC->FitSlicesY();
+hisdzC_2->SetXTitle("#sqrt{1/p_{t}}");
+hisdzC_2->SetYTitle("#sigma_{z}(cm)");
+hisdzC_2->SetTitle("Cosmic - Z matching");
+hisdzC_2->SetMaximum(0.5);
+hisdzC_2->SetMarkerStyle(22);
+hisdzA_2->SetMarkerStyle(21);
+hisdzC_2->SetMarkerSize(1.5);
+hisdzA_2->SetMarkerSize(1.5);
+
+hisdzC_2->Draw();
+hisdzA_2->Draw("same");
+
+
+//
+// PICTURE 1/pt
+//
+chain->Draw("d1pt:sqrt(abs(Tr0.fP[4]))>>hisd1ptA(5,0,1,30,-0.1,0.1)","!crossO&&!crossI&&abs(d0)<40&&Tr0.fP[1]>0");
+hisd1ptA->FitSlicesY();
+hisd1ptA_2->SetXTitle("#sqrt{1/p_{t}}");
+hisd1ptA_2->SetYTitle("#sigma_{z}(cm)");
+hisd1ptA_2->SetTitle("Cosmic - Z matching - A side ");
+hisd1ptA_2->SetMaximum(0.5);
+
+chain->Draw("d1pt:sqrt(abs(Tr0.fP[4]))>>hisd1ptC(5,0,1,30,-0.1,0.1)","!crossO&&!crossI&&abs(d0)<40&&Tr0.fP[1]<0");
+hisd1ptC->FitSlicesY();
+hisd1ptC_2->SetXTitle("#sqrt{1/p_{t}}");
+hisd1ptC_2->SetYTitle("#sigma_{1/pt}(1/GeV)");
+hisd1ptC_2->SetTitle("Cosmic - 1/pt matching");
+hisd1ptC_2->SetMaximum(0.05);
+hisd1ptC_2->SetMarkerStyle(22);
+hisd1ptA_2->SetMarkerStyle(21);
+hisd1ptC_2->SetMarkerSize(1.5);
+hisd1ptA_2->SetMarkerSize(1.5);
+
+hisd1ptC_2->Draw();
+hisd1ptA_2->Draw("same");
+gPad->SaveAs("~/Calibration/Cosmic/pic/1ptmatching.gif")
+
+//
+// Theta
+//
+chain->Draw("dtheta:sqrt(abs(Tr0.fP[4]))>>hisdthetaA(5,0,1,30,-0.01,0.01)","!crossO&&!crossI&&abs(d0)<40&&Tr0.fP[1]>0");
+hisdthetaA->FitSlicesY();
+hisdthetaA_2->SetXTitle("#sqrt{1/p_{t}}");
+hisdthetaA_2->SetYTitle("#sigma_{#theta}(cm)");
+hisdthetaA_2->SetTitle("Cosmic - Z matching - A side ");
+hisdthetaA_2->SetMaximum(0.5);
+
+chain->Draw("dtheta:sqrt(abs(Tr0.fP[4]))>>hisdthetaC(5,0,1,30,-0.01,0.01)","!crossO&&!crossI&&abs(d0)<40&&Tr0.fP[1]<0");
+hisdthetaC->FitSlicesY();
+hisdthetaC_2->SetXTitle("#sqrt{1/p_{t}}");
+hisdthetaC_2->SetYTitle("#sigma_{#theta}(rad)");
+hisdthetaC_2->SetTitle("Cosmic - Theta matching");
+hisdthetaC_2->SetMaximum(0.01);
+hisdthetaC_2->SetMinimum(0.0);
+hisdthetaC_2->SetMarkerStyle(22);
+hisdthetaA_2->SetMarkerStyle(21);
+hisdthetaC_2->SetMarkerSize(1.5);
+hisdthetaA_2->SetMarkerSize(1.5);
+
+hisdthetaC_2->Draw();
+hisdthetaA_2->Draw("same");
+gPad->SaveAs("~/Calibration/Cosmic/pic/thetamatching.gif")
+//
+// Phi
+//
+chain->Draw("dphi:sqrt(abs(Tr0.fP[4]))>>hisdphiA(5,0,1,30,-0.01,0.01)","!crossO&&!crossI&&abs(d0)<40&&Tr0.fP[1]>0");
+hisdphiA->FitSlicesY();
+hisdphiA_2->SetXTitle("#sqrt{1/p_{t}}");
+hisdphiA_2->SetYTitle("#sigma_{#phi}(rad)");
+hisdphiA_2->SetTitle("Cosmic - Z matching - A side ");
+hisdphiA_2->SetMaximum(0.5);
+
+chain->Draw("dphi:sqrt(abs(Tr0.fP[4]))>>hisdphiC(5,0,1,30,-0.01,0.01)","!crossO&&!crossI&&abs(d0)<40&&Tr0.fP[1]<0");
+hisdphiC->FitSlicesY();
+hisdphiC_2->SetXTitle("#sqrt{1/p_{t}}");
+hisdphiC_2->SetYTitle("#sigma_{#phi}(rad)");
+hisdphiC_2->SetTitle("Cosmic - Phi matching");
+hisdphiC_2->SetMaximum(0.01);
+hisdphiC_2->SetMinimum(0.0);
+hisdphiC_2->SetMarkerStyle(22);
+hisdphiA_2->SetMarkerStyle(21);
+hisdphiC_2->SetMarkerSize(1.5);
+hisdphiA_2->SetMarkerSize(1.5);
+
+hisdphiC_2->Draw();
+hisdphiA_2->Draw("same");
+gPad->SaveAs("~/Calibration/Cosmic/pic/phimatching.gif")
+
+
 
 }
 
@@ -589,18 +723,21 @@ TMatrixD covMatrix;
 
 TString fstring="";
 // 
+fstring+="mtheta++";
 fstring+="ca++";
 fstring+="sa++";
 fstring+="ca*mtheta++";
 fstring+="sa*mtheta++";
+//
 fstring+="side++";
+fstring+="side*mtheta++";
 fstring+="side*ca++";
 fstring+="side*sa++";
 fstring+="side*ca*mtheta++";
 fstring+="side*sa*mtheta++";
 
 
-TString *strTheta0 = toolkit.FitPlane(chain,"dtheta",fstring->Data(), "hpt"+cutS, chi2,npoints,fitParamA0,covMatrix,0.8);
+TString *strTheta0 = toolkit.FitPlane(chain,"dtheta",fstring->Data(), "hpt&&!crossI&&!crossO", chi2,npoints,fitParamA0,covMatrix,0.8);
 chain->SetAlias("dtheta0",strTheta0.Data());
 strTheta0->Tokenize("+")->Print();
 
@@ -726,7 +863,7 @@ TCut cutT("cutT","abs(Tr1.fP[3]+Tr0.fP[3])<0.03");  // OK
 TCut cutD("cutD","abs(Tr0.fP[0]+Tr1.fP[0])<5");     // OK
 TCut cutPt("cutPt","abs(Tr1.fP[4]+Tr0.fP[4])<0.2&&abs(Tr0.fP[4])+abs(Tr1.fP[4])<10");
 TCut cutN("cutN","min(Orig0.fTPCncls,Orig1.fTPCncls)>110");
-TCut cutA="abs(norm-1)<0.3"+cutT+cutD+cutPt+cutN;
+TCut cutA=cutT+cutD+cutPt+cutN;
 
 
 
@@ -758,6 +895,16 @@ fstring+="dr4*dr5++";
 TString *strqdedx = toolkit.FitPlane(chain,"norm",fstring->Data(), cutA, chi2,npoints,fitParam,covMatrix,-1,0,200000);
   
 chain->SetAlias("corQT",strqdedx->Data());
+
+*/
+
+
+/*
+  chain->SetProof(kTRUE);
+  chain->Draw("Seed0.CookdEdxNorm(0,0.6,1,0,159,0,kTRUE,kTRUE):Seed0.CookdEdxNorm(0,0.6,1,0,159,0,kFALSE,kTRUE)",""+cutA,"",1000);
+
+
+chain->Draw("Seed0.CookdEdxNorm(0,0.6,1,0,159,0,kTRUE,kTRUE)/Seed1.CookdEdxNorm(0,0.6,1,0,159,0,kTRUE,kTRUE)>>his(100,0.5,1.5)","min(Orig0.fTPCncls,Orig1.fTPCncls)>130"+cutA,"",50000);
 
 */
 
