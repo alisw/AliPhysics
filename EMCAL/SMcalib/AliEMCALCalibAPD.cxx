@@ -70,7 +70,7 @@ void AliEMCALCalibAPD::ReadCalibAPDInfo(Int_t nAPD, const TString &txtFileName)
   for (Int_t i = 0; i < fNCalibAPD; i++) {
     AliEMCALCalibAPDData &t = fData[j];
     if (!inputFile) {
-      printf("AliEMCALCalibAPD::ReadCalibAPDInfo - Error while reading input file.\n");
+      printf("AliEMCALCalibAPD::ReadCalibAPDInfo - Error while reading input file; likely EOF..\n");
       fNCalibAPD = j; // that's how many we actually read succesfully
       printf("AliEMCALCalibAPD::ReadCalibAPDInfo - read %d OK\n", fNCalibAPD);
       return;

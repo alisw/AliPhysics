@@ -4,7 +4,7 @@
 static const int fgkEmCalRows = 24; // number of rows per module for EMCAL
 static const int fgkEmCalCols = 48; // number of columns per module for EMCAL
 
-int biasVoltage[fgkEmCalCols][fgkEmCalRows];
+Float_t biasVoltage[fgkEmCalCols][fgkEmCalRows];
 
 //____________________________________________________________________
 void WriteBiasV30(const char * inputDBName, const char * inputMapName,

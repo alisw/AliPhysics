@@ -7,8 +7,13 @@ const int NBranch = 2; // per RCU
 const int NFEC = 9; // per branch, labelled 1..9
 const int NCSP = 32; // per FEC
 
+// conversion between DAC (0-0x3ff) and HV values (V):
+// hv = hvmin + prop*DAC; values from PHOS manual, and used in Houston/Catania
+const float hvmin = 209.9;
+const float prop = 0.2022; 
+
 // some global variables
-int biasVoltage[NRCU][NBranch][NFEC][NCSP]; 
+Float_t biasVoltage[NRCU][NBranch][NFEC][NCSP]; 
 int towerCol[NRCU][NBranch][NFEC][NCSP]; 
 int towerRow[NRCU][NBranch][NFEC][NCSP]; 
 
@@ -16,7 +21,8 @@ int towerRow[NRCU][NBranch][NFEC][NCSP];
 void Tower2FEEBiasInfo(const char *inputFileName)
 {
   ifstream inputFile(inputFileName);
-  int ic, ir,ival;
+  int ic, ir;
+  Float_t ival;
   int ircu, ibranch, card, icsp;
   for (int icol=0; icol<fgkEmCalCols; icol++) {
     for (int irow=0; irow<fgkEmCalRows; irow++) {
@@ -92,9 +98,6 @@ void DCSGenerateAPD(const char *inputFileName,
   const int read_header = 0x520000; 
   const int write_header = 0x620000; 
   
-  // hv = hvmin + prop*DAC; values fitted/measured by ZhongBao; correction with David K at SPS beamtest
-  float hvmin = 207.9;
-  float prop = 0.2022; 
   // resulting voltage settings should be good within a few volts 
   cout << " HV-DAC prop. constant = " << prop << endl;
   char iv_dac_setting[100]; 
@@ -145,7 +148,7 @@ void DCSGenerateAPD(const char *inputFileName,
 	  if (icsp >= 24) csp_addr += 0x20;
 
 	  // what does the desired voltage (in V) correspond to in DAC?
-	  int iv_dac = (int)( (biasVoltage[rcu][branch][card][icsp] - hvmin)/prop );
+	  int iv_dac = (int)( (biasVoltage[rcu][branch][card][icsp] - hvmin)/prop + 0.5); // round-off
 	  if (iv_dac > 0x3FF) iv_dac = 0x3FF;
 	  sprintf(iv_dac_setting,"700%03X",iv_dac);
 
@@ -154,7 +157,7 @@ void DCSGenerateAPD(const char *inputFileName,
 	  word = write_header | (branch << 16) | (icard << 12) | (csp_addr);
 
 	  // write a long comment with all info for this CSP
-	  sprintf(comment, "# RCU %d, Branch %s, FEC %d, CSP %d - Tower Col %d, Row %d ", 
+	  sprintf(comment, "# RCU %d, Branch %s, FEC %d, CSP %02d - Tower Col %02d, Row %02d ", 
 		  rcu, branch_str[branch], icard, icsp,
 		  towerCol[rcu][branch][card][icsp],
 		  towerRow[rcu][branch][card][icsp]
@@ -164,7 +167,7 @@ void DCSGenerateAPD(const char *inputFileName,
 		  rcu_addr_card, word, comment);
 	  rcu_addr_card++;
 
-	  fprintf(fout_setbias_card[rcu][branch][card], "w 0x%4X 0x%s   # Set Voltage: %d V, DAC %d (hex: %03X)\n", 
+	  fprintf(fout_setbias_card[rcu][branch][card], "w 0x%4X 0x%s   # Set Voltage: %4.1f V, DAC %d (hex: %03X)\n", 
 		  rcu_addr_card, iv_dac_setting, 
 		  biasVoltage[rcu][branch][card][icsp], 
 		  iv_dac, iv_dac
@@ -172,7 +175,7 @@ void DCSGenerateAPD(const char *inputFileName,
 	  rcu_addr_card++;
 
 	  // slighly modified comment for read command - include voltage info
-	  sprintf(comment, "# RCU %d, Branch %s, FEC %d, CSP %d - Tower Col %d, Row %d : %d V, DAC %d (hex: %03X)", 
+	  sprintf(comment, "# RCU %d, Branch %s, FEC %d, CSP %02d - Tower Col %02d, Row %02d : %4.1f V, DAC %d (hex: %03X)", 
 		  rcu, branch_str[branch], icard, icsp,
 		  towerCol[rcu][branch][card][icsp],
 		  towerRow[rcu][branch][card][icsp],

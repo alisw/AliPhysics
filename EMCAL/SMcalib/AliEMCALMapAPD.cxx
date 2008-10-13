@@ -66,7 +66,7 @@ void AliEMCALMapAPD::ReadMapAPDInfoStripBasis(Int_t nSM, const TString &txtFileN
   for (Int_t i = 0; i < fNSuperModule; i++) {
     AliEMCALSuperModuleMapAPD &t = fSuperModuleData[i];
     if (!inputFile) {
-      printf("AliEMCALMapAPD::ReadMapAPDInfoStripBasis - Error while reading input file.\n");
+      printf("AliEMCALMapAPD::ReadMapAPDInfoStripBasis - Error while reading input file; likely EOF..\n");
       return;
     }
     inputFile >> iSM;
@@ -136,7 +136,7 @@ void AliEMCALMapAPD::ReadMapAPDInfoSingleStripBasis(Int_t iSM, Int_t iStrip, con
 
   for (Int_t j=0; j<nAPDPerStrip; j++) {
     if (!inputFile) {
-      printf("AliEMCALMapAPD::ReadMapAPDInfoSingleStripBasis - Error while reading input file.\n");
+      printf("AliEMCALMapAPD::ReadMapAPDInfoSingleStripBasis - Error while reading input file; likely EOF..\n");
       return;
     }
     inputFile >> iStripCol >> iStripRow >> iAPD;
@@ -190,7 +190,7 @@ void AliEMCALMapAPD::ReadMapAPDInfo(Int_t nSM, const TString &txtFileName)
   for (Int_t i = 0; i < fNSuperModule; i++) {
     AliEMCALSuperModuleMapAPD &t = fSuperModuleData[i];
     if (!inputFile) {
-      printf("AliEMCALMapAPD::ReadMapAPDInfo - Error while reading input file.");
+      printf("AliEMCALMapAPD::ReadMapAPDInfo - Error while reading input file; likely EOF..");
       return;
     }
     inputFile >> iSM;

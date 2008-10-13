@@ -32,7 +32,7 @@ public:
     Int_t fTestPos; // location of APD during test
 
     Float_t fV30;      // Catania/Houston Voltage V30 (V) at T = 25 deg C
-    Float_t fV50;      // Catania/Houston Voltage V30 (V) at T = 25 deg C
+    Float_t fV50;      // Catania/Houston Voltage V50 (V) at T = 25 deg C
     Float_t fVoltCoeff; // 1/M x dM/dV
     Float_t fPar[3];   // fit parameters, p0,p1,p2 - for ADC vs bias measurement
     Float_t fParErr[3]; // error on fit parameters	

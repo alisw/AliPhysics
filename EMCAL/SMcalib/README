@@ -53,7 +53,7 @@ root -b 'WriteBiasV30.C("APD-database.csv", "DummySuperModAPDMap.txt", 390, "Bia
 3) Optional - e.g. in case you don't have the whole SuperModule APD map or what not 
 Generating a file of the same bias value for each tower:
 ---------------------------------------------------------- 
-root -b 'WriteBiasFixVoltage(390, "Bias390.txt")' -q # aliroot also works..
+root -b 'WriteBiasFixVoltage.C(390, "Bias390.txt")' -q # aliroot also works..
 
 4) Generating a file of new bias values for each tower:
 - based on existing file, and a suggested gain factor change, to obtain a balanced setup
