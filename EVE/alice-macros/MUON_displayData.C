@@ -11,7 +11,6 @@ class AliEveMUONData;
 class AliEveEventManager;
 
 AliEveMUONData     *g_muon_data       = 0;
-AliEveEventManager *g_muon_last_event = 0;
 
 Int_t  g_currentEvent = -1;
 Bool_t g_fromRaw      = kFALSE;
@@ -39,29 +38,29 @@ void MUON_displayData(Bool_t fromRaw = kFALSE, Bool_t showTracks = kTRUE, Bool_t
   TTree* ct = 0;
   TTree* ht = 0;
 
-  if (gAliEveEvent == 0) {
+  if (AliEveEventManager::GetMaster() == 0) {
     printf("No alieve event: use alieve_init(...) \n");
     return;
   }
 
-  if (g_currentEvent == gAliEveEvent->GetEventId()) {
+  if (g_currentEvent == AliEveEventManager::GetMaster()->GetEventId()) {
     if (g_fromRaw == fromRaw) {
       printf("Same event... \n");
       return;
     } else {
       if (g_fromRaw) {
 	printf("Same event with digits.\n");
-	gAliEveEvent->GotoEvent(g_currentEvent);
+	AliEveEventManager::GetMaster()->GotoEvent(g_currentEvent);
       } else {
 	printf("Same event with raw.\n");
-	gAliEveEvent->GotoEvent(g_currentEvent);
+	AliEveEventManager::GetMaster()->GotoEvent(g_currentEvent);
       }
     }
   }
 
   g_fromRaw = fromRaw;
 
-  TString dataPath = TString(gAliEveEvent->GetTitle());
+  TString dataPath = TString(AliEveEventManager::GetMaster()->GetTitle());
   dataPath.Append("/rawmuon.root");
 
   AliRunLoader* rl =  AliEveEventManager::AssertRunLoader();
@@ -85,7 +84,7 @@ void MUON_displayData(Bool_t fromRaw = kFALSE, Bool_t showTracks = kTRUE, Bool_t
     }
   }
 
-  TString esdDataPath = TString(gAliEveEvent->GetTitle());
+  TString esdDataPath = TString(AliEveEventManager::GetMaster()->GetTitle());
   esdDataPath.Append("/AliESDs.root");
   if (clustersFromESD) {
     g_muon_data->LoadRecPointsFromESD(esdDataPath.Data());
@@ -95,9 +94,7 @@ void MUON_displayData(Bool_t fromRaw = kFALSE, Bool_t showTracks = kTRUE, Bool_t
     g_muon_data->LoadRecPoints(ct);
   }
   
-  g_muon_last_event = gAliEveEvent;
-
-  g_currentEvent = g_muon_last_event->GetEventId();
+  g_currentEvent = AliEveEventManager::GetMaster()->GetEventId();
 
   gStyle->SetPalette(1, 0);
 

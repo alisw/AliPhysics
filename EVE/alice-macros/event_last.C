@@ -9,9 +9,9 @@
 
 void event_last()
 {
-  if (gAliEveEvent == 0) {
+  if (AliEveEventManager::GetMaster() == 0) {
     printf("AliEveEventManager is not initialized!\n");
     return;
   }
-  gAliEveEvent->GotoEvent(-1);
+  AliEveEventManager::GetMaster()->GotoEvent(-1);
 }

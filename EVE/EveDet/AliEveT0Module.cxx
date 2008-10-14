@@ -98,7 +98,7 @@ void AliEveT0Module::LoadRaw(TString fileName, Int_t ievt)
     rawC->QuadValue(start->GetData(i+25,0)-start->GetData(0,0));
   }
     vertexT0->AddHexagon(0, 0, 0, 1);
-    vertexT0->QuadValue(zvertex);
+    vertexT0->QuadValue(TMath::Nint(zvertex));
 
   rawA->RefitPlex();
   rawC->RefitPlex();

@@ -32,15 +32,15 @@ void alieve_init(const Text_t* path   = ".", Int_t event=0,
 
   AliEveEventManager::SetESDFileName(esdfile);
   AliEveEventManager::SetRawFileName(rawfile);
-  AliEveEventManager::SetAssertElements(assert_runloader, assert_esd, assert_raw);
   AliEveEventManager::SetCdbUri(cdburi);
+  AliEveEventManager::SetAssertElements(assert_runloader, assert_esd, assert_raw);
 
   // Open event
-  if(path != 0)
+  if (path != 0)
   {
     Info("alieve_init", "Opening event %d from '%s' ...", event, path);
-    gAliEveEvent = new AliEveEventManager(path, event);
-    gEve->AddEvent(gAliEveEvent);
+    new AliEveEventManager(path, event);
+    gEve->AddEvent(AliEveEventManager::GetMaster());
   }
 }
 
@@ -54,14 +54,15 @@ void alieve_init_import_macros()
 
   TFolder* f = gEve->GetMacroFolder();
   void* dirhandle = gSystem->OpenDirectory(macdir.Data());
-  if(dirhandle != 0) {
+  if (dirhandle != 0)
+  {
     char* filename;
     TPRegexp re("\.C$");
     std::list<string> names;
-    while((filename = gSystem->GetDirEntry(dirhandle)) != 0) {
-      if(re.Match(filename)) {
+    while ((filename = gSystem->GetDirEntry(dirhandle)) != 0)
+    {
+      if (re.Match(filename))
 	names.push_back(filename);
-      }
     }
     names.sort();
     //PH The line below is replaced waiting for a fix in Root

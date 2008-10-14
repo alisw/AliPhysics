@@ -84,8 +84,8 @@ void visscan_init()
   browser->StopEmbedding("EventCtrl");
 
   // event
-  gAliEveEvent->AddNewEventCommand("on_new_event();");
-  gAliEveEvent->GotoEvent(0);
+  AliEveEventManager::GetMaster()->AddNewEventCommand("on_new_event();");
+  AliEveEventManager::GetMaster()->GotoEvent(0);
 
   gEve->EditElement(g_trkcnt);
 
@@ -135,7 +135,7 @@ void on_new_event()
 
   AliEveTrackCounter* g_trkcnt = AliEveTrackCounter::fgInstance;
   g_trkcnt->Reset();
-  g_trkcnt->SetEventId(gAliEveEvent->GetEventId());
+  g_trkcnt->SetEventId(AliEveEventManager::GetMaster()->GetEventId());
 
   TEveElementList* cont = esd_tracks_by_category();
 

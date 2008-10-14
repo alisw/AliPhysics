@@ -4,7 +4,7 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-TEveGeoShape *gGeomGentle    = 0;
+TEveGeoShape *gGeomGentle = 0;
 
 void alieve_online_init()
 {
@@ -51,16 +51,14 @@ void alieve_online_init()
   TEveBrowser* browser = gEve->GetBrowser();
 
   browser->StartEmbedding(TRootBrowser::kBottom);
-  new AliEveEventManagerWindow;
+  new AliEveEventManagerWindow(AliEveEventManager::GetMaster());
   browser->StopEmbedding("EventCtrl");
-
 
   gEve->Redraw3D(kTRUE);
 }
 
 void alieve_online_on_new_event()
 {
-
   its_raw();
   its_clusters();
 

@@ -15,12 +15,6 @@
 // mode = 2 - show only 3D sectors
 // mode = 3 - show both 2D and 3D sectors
 
-class AliRawReader;
-
-class AliEveTPCData;
-class AliEveTPCSector2D;
-class AliEveTPCSector3D;
-
 void tpc_raw(Int_t mode = 3)
 {
   gStyle->SetPalette(1, 0);
@@ -32,12 +26,11 @@ void tpc_raw(Int_t mode = 3)
   AliTPCRawStream input(reader);
   reader->Select("TPC"); // ("TPC", firstRCU, lastRCU);
 
-  x = new AliEveTPCData;
+  AliEveTPCData *x = new AliEveTPCData;
   // x->SetLoadPedestal(5);
   x->SetLoadThreshold(5);
   x->SetAutoPedestal(kTRUE);
 
-  x->DropAllSectors();
   x->LoadRaw(input, kTRUE, kTRUE);
 
   TEveElementList* sec2d = new TEveElementList("TPC 2D");

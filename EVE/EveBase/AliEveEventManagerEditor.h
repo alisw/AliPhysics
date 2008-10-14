@@ -67,7 +67,7 @@ private:
 class AliEveEventManagerWindow : public TGMainFrame
 {
 public:
-  AliEveEventManagerWindow();
+  AliEveEventManagerWindow(AliEveEventManager* mgr);
   virtual ~AliEveEventManagerWindow();
 
   void DoFirstEvent();
@@ -86,6 +86,8 @@ public:
   void Update();
 
 protected:
+  AliEveEventManager   *fM;            // Model object.
+
   TGTextButton         *fFirstEvent;   // Go to first event
   TGTextButton         *fPrevEvent;    // Go to prev event
   TGTextButton         *fNextEvent;    // Go to next event

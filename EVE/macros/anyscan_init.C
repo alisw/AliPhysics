@@ -73,7 +73,7 @@ void anyscan_init()
   }
 
 
-  AliEveMacroExecutor *exec = gAliEveEvent->GetExecutor();
+  AliEveMacroExecutor *exec = AliEveEventManager::GetMaster()->GetExecutor();
 
   exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "SIM Track",   "kine_tracks.C", "kine_tracks", "", kFALSE));
   exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "SIM Hit ITS", "its_hits.C",    "its_hits",    "", kFALSE));
@@ -122,12 +122,12 @@ void anyscan_init()
   browser->GetTabRight()->SetTab(1);
 
   browser->StartEmbedding(TRootBrowser::kBottom);
-  new AliEveEventManagerWindow;
+  new AliEveEventManagerWindow(AliEveEventManager::GetMaster());
   browser->StopEmbedding("EventCtrl");
 
   // event
-  gAliEveEvent->AddNewEventCommand("on_new_event();");
-  gAliEveEvent->GotoEvent(0);
+  AliEveEventManager::GetMaster()->AddNewEventCommand("on_new_event();");
+  AliEveEventManager::GetMaster()->GotoEvent(0);
 
   gEve->EditElement(g_trkcnt);
 
@@ -140,7 +140,7 @@ void on_new_event()
 {
   AliEveTrackCounter* g_trkcnt = AliEveTrackCounter::fgInstance;
   g_trkcnt->Reset();
-  g_trkcnt->SetEventId(gAliEveEvent->GetEventId());
+  g_trkcnt->SetEventId(AliEveEventManager::GetMaster()->GetEventId());
 
   if (g_esd_tracks_by_category_container != 0)
   {

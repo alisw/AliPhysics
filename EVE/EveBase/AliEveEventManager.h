@@ -41,15 +41,14 @@ class AliEveEventManager : public TEveEventManager,
                            public TQObject
 {
 public:
-  static void SetESDFileName(const Text_t* esd);
-  static void SetRawFileName(const Text_t* raw);
-  static void SetCdbUri(const Text_t* cdb);
+  static void SetESDFileName(const TString& esd);
+  static void SetRawFileName(const TString& raw);
+  static void SetCdbUri     (const TString& cdb);
   static void SetAssertElements(Bool_t assertRunloader, Bool_t assertEsd, Bool_t assertRaw);
 
   AliEveEventManager();
-  AliEveEventManager(TString path, Int_t ev=0);
+  AliEveEventManager(const TString& path, Int_t ev=0);
   virtual ~AliEveEventManager();
-
 
   virtual void  Open();
   void          SetEvent(AliRunLoader *runLoader, AliRawReader *rawReader, AliESDEvent *esd);
@@ -87,6 +86,11 @@ public:
 
   static TGeoManager*  AssertGeometry();
 
+  static void AddDependentManager(const TString& path);
+
+  static AliEveEventManager* GetMaster();
+  static AliEveEventManager* GetCurrent();
+
   Double_t      GetAutoLoadTime()        const { return fAutoLoadTime; }
   Bool_t        GetAutoLoad()            const { return fAutoLoad;     }
   void          SetAutoLoadTime(Float_t time);
@@ -113,13 +117,13 @@ protected:
 
   AliRunLoader* fRunLoader;		// Run loader.
 
-  TFile*        fESDFile;		// ESD file.
-  TTree*        fESDTree;		// ESD tree.
-  AliESDEvent*  fESD;			// ESDEvent object.
-  AliESDfriend* fESDfriend;		// ESDfriend object.
+  TFile        *fESDFile;		// ESD file.
+  TTree        *fESDTree;		// ESD tree.
+  AliESDEvent  *fESD;			// ESDEvent object.
+  AliESDfriend *fESDfriend;		// ESDfriend object.
   Bool_t        fESDfriendExists;	// Flag specifying if ESDfriend was found during opening of the event-data.
 
-  AliRawReader* fRawReader;             // Raw-adata reader.
+  AliRawReader *fRawReader;             // Raw-data reader.
 
   Bool_t        fAutoLoad;              // Automatic loading of events (online)
   Float_t       fAutoLoadTime;          // Auto-load time in seconds
@@ -129,10 +133,12 @@ protected:
   Bool_t        fHasEvent;              // Is an event available.
   Bool_t        fExternalCtrl;          // Are we under external event-loop.
 
-  Bool_t        fSelectOnTriggerType;   //whether to select on triggertype
-  TString       fTriggerType;           //triggertype to select on
+  Bool_t        fSelectOnTriggerType;   // Whether to select on trigger-type.
+  TString       fTriggerType;           // Trigger-type to select on.
 
   AliEveMacroExecutor *fExecutor;       // Executor for std macros
+
+  TList        *fSubManagers;           // Dependent event-managers, used for event embedding.
 
   static TString  fgESDFileName;        // Name by which to open ESD.
   static TString  fgRawFileName;        // Name by which to open raw-data file.
@@ -141,7 +147,7 @@ protected:
   static Bool_t   fgAssertESD;		// Global flag specifying if ESDEvent must be asserted during opening of the event-data.
   static Bool_t   fgAssertRaw;		// Global flag specifying if raw-data presence must be asserted during opening of the event-data.
 
-  static AliMagF* fgMagField;		// Global pointer to magneti field.
+  static AliMagF* fgMagField;		// Global pointer to magnetic field.
 
 private:
   AliEveEventManager(const AliEveEventManager&);            // Not implemented
@@ -153,9 +159,10 @@ private:
 
   Bool_t fAutoLoadTimerRunning; // State of auto-load timer.
 
+  static AliEveEventManager* fgMaster;
+  static AliEveEventManager* fgCurrent;
+
   ClassDef(AliEveEventManager, 0); // Interface for getting all event components in a uniform way.
 };
-
-extern AliEveEventManager* gAliEveEvent;
 
 #endif

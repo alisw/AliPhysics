@@ -17,13 +17,14 @@ TEveCompound* assert_vertex_parent(const TString& name, Color_t col)
   // !!! TEveCompound should have viz-db support ... add in root, then fix here,
   // that is, remove the color var and pass viz-db tag.
 
-  TEveCompound* parent = dynamic_cast<TEveCompound*>(gAliEveEvent->FindChild(name));
+  TEveCompound* parent = dynamic_cast<TEveCompound*>
+    (AliEveEventManager::GetCurrent()->FindChild(name));
   if (parent == 0)
   {
     parent = new TEveCompound(name);
     parent->OpenCompound();
     parent->SetMainColor(col);
-    gAliEveEvent->AddElement(parent);
+    AliEveEventManager::GetMaster()->AddElement(parent);
   }
   return parent;
 }

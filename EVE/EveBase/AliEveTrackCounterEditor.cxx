@@ -141,7 +141,7 @@ AliEveTrackCounterEditor::AliEveTrackCounterEditor(const TGWindow *p, Int_t widt
       AddFrame(f, new TGLayoutHints(kLHintsLeft, 0, 0, 0, 0));
    }
 
-  gAliEveEvent->Connect("NewEventLoaded()",
+  AliEveEventManager::GetMaster()->Connect("NewEventLoaded()",
                         "AliEveTrackCounterEditor", this, "UpdateModel()");
 }
 
@@ -149,7 +149,7 @@ AliEveTrackCounterEditor::~AliEveTrackCounterEditor()
 {
   // Destructor.
 
-  gAliEveEvent->Disconnect("NewEventLoaded()", this);
+  AliEveEventManager::GetMaster()->Disconnect("NewEventLoaded()", this);
 }
 
 /******************************************************************************/
@@ -181,7 +181,7 @@ void AliEveTrackCounterEditor::DoPrev()
 {
    // Slot for Prev.
 
-   gAliEveEvent->PrevEvent();
+   AliEveEventManager::GetMaster()->PrevEvent();
 }
 
 //______________________________________________________________________________
@@ -189,14 +189,14 @@ void AliEveTrackCounterEditor::DoNext()
 {
    // Slot for Next.
 
-   gAliEveEvent->NextEvent();
+   AliEveEventManager::GetMaster()->NextEvent();
 }
 
 //______________________________________________________________________________
 void AliEveTrackCounterEditor::DoSetEvent()
 {
    // Slot for SetEvent.
-   gAliEveEvent->GotoEvent((Int_t) fEventId->GetNumber());
+   AliEveEventManager::GetMaster()->GotoEvent((Int_t) fEventId->GetNumber());
 }
 
 /******************************************************************************/

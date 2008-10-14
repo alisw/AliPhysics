@@ -39,19 +39,22 @@
 
 //______________________________________________________________________________
 //
-// Provide interface for loading and navigating standard AliRoot data
-// (AliRunLoader) and ESDs.
-//
-// Missing support for raw-data. For now this is handled individually
-// by each sub-detector.
+// Provides interface for loading and navigating standard AliRoot data
+// (AliRunLoader), ESDs and RAW.
 //
 // Also provides interface to magnetic-field and geometry. Mostly
 // intended as wrappers over standard AliRoot functionality for
 // convenient use from visualizateion macros.
+//
+// There can be a single main event-manger, it is stored in private
+// data member fgMaster and can be accessed via static member function
+// GetMaster().
+//
+// For event overlaying and embedding one can instantiate additional
+// event-managers via static method AddDependentManager(const TString& path).
+// This interface is under development.
 
 ClassImp(AliEveEventManager)
-
-AliEveEventManager* gAliEveEvent = 0;
 
 Bool_t AliEveEventManager::fgAssertRunLoader = kFALSE;
 Bool_t AliEveEventManager::fgAssertESD       = kFALSE;
@@ -63,9 +66,26 @@ TString  AliEveEventManager::fgCdbUri("local://$ALICE_ROOT");
 
 AliMagF* AliEveEventManager::fgMagField = 0;
 
+AliEveEventManager* AliEveEventManager::fgMaster  = 0;
+AliEveEventManager* AliEveEventManager::fgCurrent = 0;
+
 void AliEveEventManager::InitInternals()
 {
   // Initialize internal members.
+
+  static const TEveException kEH("AliEveEventManager::InitInternals ");
+
+  if (fgCurrent != 0)
+  {
+    throw(kEH + "Dependent event-managers should be created via static method AddDependentManager().");
+  }
+
+  if (fgMaster == 0)
+  {
+    fgMaster = this;
+  }
+
+  fgCurrent = this;
 
   fAutoLoadTimer = new TTimer;
   fAutoLoadTimer->Connect("Timeout()", "AliEveEventManager", this, "AutoLoadNextEvent()");
@@ -84,7 +104,8 @@ AliEveEventManager::AliEveEventManager() :
   fAutoLoad  (kFALSE), fAutoLoadTime (5.),     fAutoLoadTimer(0),
   fIsOpen    (kFALSE), fHasEvent     (kFALSE), fExternalCtrl (kFALSE),
   fSelectOnTriggerType(kFALSE), fTriggerType(""),
-  fExecutor  (0),
+  fExecutor    (0),
+  fSubManagers (0),
   fAutoLoadTimerRunning(kFALSE)
 {
   // Default constructor.
@@ -92,7 +113,7 @@ AliEveEventManager::AliEveEventManager() :
   InitInternals();
 }
 
-AliEveEventManager::AliEveEventManager(TString path, Int_t ev) :
+AliEveEventManager::AliEveEventManager(const TString& path, Int_t ev) :
   TEveEventManager("AliEVE AliEveEventManager"),
 
   fPath   (path), fEventId(-1),
@@ -103,7 +124,8 @@ AliEveEventManager::AliEveEventManager(TString path, Int_t ev) :
   fAutoLoad  (kFALSE), fAutoLoadTime (5),      fAutoLoadTimer(0),
   fIsOpen    (kFALSE), fHasEvent     (kFALSE), fExternalCtrl (kFALSE),
   fSelectOnTriggerType(kFALSE), fTriggerType(""),
-  fExecutor  (0),
+  fExecutor    (0),
+  fSubManagers (0),
   fAutoLoadTimerRunning(kFALSE)
 {
   // Constructor with event-directory URL and event-id.
@@ -133,24 +155,24 @@ AliEveEventManager::~AliEveEventManager()
 
 /******************************************************************************/
 
-void AliEveEventManager::SetESDFileName(const Text_t* esd)
+void AliEveEventManager::SetESDFileName(const TString& esd)
 {
   // Set file-name for opening ESD, default "AliESDs.root".
 
-  if (esd) fgESDFileName = esd;
+  if ( ! esd.IsNull()) fgESDFileName = esd;
 }
 
-void AliEveEventManager::SetRawFileName(const Text_t* raw)
+void AliEveEventManager::SetRawFileName(const TString& raw)
 {
   // Set file-name for opening of raw-data, default "raw.root"
-  if (raw) fgRawFileName = raw;
+  if ( ! raw.IsNull()) fgRawFileName = raw;
 }
 
-void AliEveEventManager::SetCdbUri(const Text_t* cdb)
+void AliEveEventManager::SetCdbUri(const TString& cdb)
 {
   // Set path to CDB, default "local://$ALICE_ROOT".
 
-  if (cdb) fgCdbUri = cdb;
+  if ( ! cdb.IsNull()) fgCdbUri = cdb;
 }
 
 void AliEveEventManager::SetAssertElements(Bool_t assertRunloader,
@@ -697,28 +719,28 @@ Bool_t AliEveEventManager::HasRunLoader()
 {
   // Check if AliRunLoader is initialized.
 
-  return gAliEveEvent && gAliEveEvent->fHasEvent && gAliEveEvent->fRunLoader;
+  return fgCurrent && fgCurrent->fHasEvent && fgCurrent->fRunLoader;
 }
 
 Bool_t AliEveEventManager::HasESD()
 {
   // Check if AliESDEvent is initialized.
 
-  return gAliEveEvent && gAliEveEvent->fHasEvent && gAliEveEvent->fESD;
+  return fgCurrent && fgCurrent->fHasEvent && fgCurrent->fESD;
 }
 
 Bool_t AliEveEventManager::HasESDfriend()
 {
   // Check if AliESDfriend is initialized.
 
-  return gAliEveEvent && gAliEveEvent->fHasEvent && gAliEveEvent->fESDfriend;
+  return fgCurrent && fgCurrent->fHasEvent && fgCurrent->fESDfriend;
 }
 
 Bool_t AliEveEventManager::HasRawReader()
 {
   // Check if raw-reader is initialized.
 
-  return gAliEveEvent && gAliEveEvent->fHasEvent && gAliEveEvent->fRawReader;
+  return fgCurrent && fgCurrent->fHasEvent && fgCurrent->fRawReader;
 }
 
 AliRunLoader* AliEveEventManager::AssertRunLoader()
@@ -729,11 +751,11 @@ AliRunLoader* AliEveEventManager::AssertRunLoader()
 
   static const TEveException kEH("AliEveEventManager::AssertRunLoader ");
 
-  if (gAliEveEvent == 0 || gAliEveEvent->fHasEvent == kFALSE)
+  if (fgCurrent == 0 || fgCurrent->fHasEvent == kFALSE)
     throw (kEH + "ALICE event not ready.");
-  if (gAliEveEvent->fRunLoader == 0)
+  if (fgCurrent->fRunLoader == 0)
     throw (kEH + "AliRunLoader not initialised.");
-  return gAliEveEvent->fRunLoader;
+  return fgCurrent->fRunLoader;
 }
 
 AliESDEvent* AliEveEventManager::AssertESD()
@@ -744,11 +766,11 @@ AliESDEvent* AliEveEventManager::AssertESD()
 
   static const TEveException kEH("AliEveEventManager::AssertESD ");
 
-  if (gAliEveEvent == 0 || gAliEveEvent->fHasEvent == kFALSE)
+  if (fgCurrent == 0 || fgCurrent->fHasEvent == kFALSE)
     throw (kEH + "ALICE event not ready.");
-  if (gAliEveEvent->fESD == 0)
+  if (fgCurrent->fESD == 0)
     throw (kEH + "AliESD not initialised.");
-  return gAliEveEvent->fESD;
+  return fgCurrent->fESD;
 }
 
 AliESDfriend* AliEveEventManager::AssertESDfriend()
@@ -759,11 +781,11 @@ AliESDfriend* AliEveEventManager::AssertESDfriend()
 
   static const TEveException kEH("AliEveEventManager::AssertESDfriend ");
 
-  if (gAliEveEvent == 0 || gAliEveEvent->fHasEvent == kFALSE)
+  if (fgCurrent == 0 || fgCurrent->fHasEvent == kFALSE)
     throw (kEH + "ALICE event not ready.");
-  if (gAliEveEvent->fESDfriend == 0)
+  if (fgCurrent->fESDfriend == 0)
     throw (kEH + "AliESDfriend not initialised.");
-  return gAliEveEvent->fESDfriend;
+  return fgCurrent->fESDfriend;
 }
 
 AliRawReader* AliEveEventManager::AssertRawReader()
@@ -772,12 +794,12 @@ AliRawReader* AliEveEventManager::AssertRawReader()
 
   static const TEveException kEH("AliEveEventManager::AssertRawReader ");
 
-  if (gAliEveEvent == 0 || gAliEveEvent->fHasEvent == kFALSE)
+  if (fgCurrent == 0 || fgCurrent->fHasEvent == kFALSE)
     throw (kEH + "ALICE event not ready.");
-  if (gAliEveEvent->fRawReader == 0)
+  if (fgCurrent->fRawReader == 0)
     throw (kEH + "RawReader not ready.");
 
-  return gAliEveEvent->fRawReader;
+  return fgCurrent->fRawReader;
 }
 
 AliMagF* AliEveEventManager::AssertMagField()
@@ -790,12 +812,20 @@ AliMagF* AliEveEventManager::AssertMagField()
   // !!!! This should be fixed ... get field also in some other way,
   // not only via run-loader.
 
+  static const TEveException kEH("AliEveEventManager::AssertMagField ");
+
   if (fgMagField == 0)
   {
-    if (gAliEveEvent && gAliEveEvent->fRunLoader && gAliEveEvent->fRunLoader->GetAliRun())
-      fgMagField = gAliEveEvent->fRunLoader->GetAliRun()->Field();
+    if (fgMaster && fgMaster->fRunLoader && fgMaster->fRunLoader->GetAliRun())
+    {
+      ::Info(kEH, "Retrieving magnetic field from AliRun.");
+      fgMagField = fgMaster->fRunLoader->GetAliRun()->Field();
+    }
     else
+    {
+      ::Warning(kEH, "Instantiating default magnetic field (5kG).");
       fgMagField = new AliMagFMaps("Maps","Maps", 1, 1., 10., AliMagFMaps::k5kG);
+    }
   }
   return fgMagField;
 }
@@ -834,6 +864,41 @@ TGeoManager* AliEveEventManager::AssertGeometry()
   return gGeoManager;
 }
 
+//------------------------------------------------------------------------------
+
+void AliEveEventManager::AddDependentManager(const TString& /*path*/)
+{
+  // Create and attach a dependent event-manager.
+
+  static const TEveException kEH("AliEveEventManager::AddDependentManager ");
+
+  ::Error(kEH, "Not implemented.");
+
+  if (fgMaster == 0)
+    throw(kEH + "Master event-manager must be instantiated first.");
+
+  if (fgMaster->fSubManagers == 0)
+    fgMaster->fSubManagers = new TList;
+
+  // fgCurrent = 0;
+  // construct
+  // insert fgCurrent
+  // fgCurrent = fgMaster;
+}
+
+AliEveEventManager* AliEveEventManager::GetMaster()
+{
+  // Get master event-manager.
+
+  return fgMaster;
+}
+
+AliEveEventManager* AliEveEventManager::GetCurrent()
+{
+  // Get current event-manager.
+
+  return fgCurrent;
+}
 
 //------------------------------------------------------------------------------
 // Autoloading of events

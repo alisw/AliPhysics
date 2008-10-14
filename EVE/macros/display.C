@@ -190,9 +190,9 @@ public:
     }
     std::cout << "Opening " << fileName << " (" << dirName << ")" << std::endl;
     
-    if (gAliEveEvent) delete gAliEveEvent;
-    gAliEveEvent = new AliEveEventManager(dirName.Data(), 0);
-    gEve->AddEvent(gAliEveEvent);
+    if (AliEveEventManager::GetMaster()) delete AliEveEventManager::GetMaster();
+    AliEveEventManager::GetMaster() = new AliEveEventManager(dirName.Data(), 0);
+    gEve->AddEvent(AliEveEventManager::GetMaster());
     
     if (refresh) Refresh();
   }
@@ -283,7 +283,7 @@ public:
   Reload()
   {
     Prepare();
-    Int_t event = gAliEveEvent->GetEventId();
+    Int_t event = AliEveEventManager::GetMaster()->GetEventId();
     std::cout << "Getting event " << event 
 	      << ", please wait ... " << std::flush;
     gROOT->Macro(Form("event_goto.C(%d)", event));

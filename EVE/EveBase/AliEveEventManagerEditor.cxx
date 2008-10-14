@@ -93,8 +93,9 @@ void AliEveEventManagerEditor::DoNextEvent()
 
 ClassImp(AliEveEventManagerWindow)
 
-AliEveEventManagerWindow::AliEveEventManagerWindow() :
+AliEveEventManagerWindow::AliEveEventManagerWindow(AliEveEventManager* mgr) :
   TGMainFrame(gClient->GetRoot(), 400, 100, kVerticalFrame),
+  fM            (mgr),
   fFirstEvent   (0),
   fPrevEvent    (0),
   fNextEvent    (0),
@@ -168,7 +169,7 @@ AliEveEventManagerWindow::AliEveEventManagerWindow() :
   fEventInfo = new TGTextView(this, 400, 600);
   AddFrame(fEventInfo, new TGLayoutHints(kLHintsNormal | kLHintsExpandX | kLHintsExpandY));
 
-  gAliEveEvent->Connect("NewEventLoaded()", cls, this, "Update()");
+  fM->Connect("NewEventLoaded()", cls, this, "Update()");
 
   SetCleanup(kDeepCleanup);
   Layout();
@@ -181,42 +182,42 @@ AliEveEventManagerWindow::~AliEveEventManagerWindow()
 {
   // Destructor.
 
-  gAliEveEvent->Disconnect("NewEventLoaded()", this);
+  fM->Disconnect("NewEventLoaded()", this);
 }
 
 //______________________________________________________________________________
 void AliEveEventManagerWindow::DoFirstEvent()
 {
   // Load previous event
-  gAliEveEvent->GotoEvent(0);
+  fM->GotoEvent(0);
 }
 
 //______________________________________________________________________________
 void AliEveEventManagerWindow::DoPrevEvent()
 {
   // Load previous event
-  gAliEveEvent->PrevEvent();
+  fM->PrevEvent();
 }
 
 //______________________________________________________________________________
 void AliEveEventManagerWindow::DoNextEvent()
 {
   // Load next event
-  gAliEveEvent->NextEvent();
+  fM->NextEvent();
 }
 
 //______________________________________________________________________________
 void AliEveEventManagerWindow::DoLastEvent()
 {
   // Load previous event
-  gAliEveEvent->GotoEvent(-1);
+  fM->GotoEvent(-1);
 }
 
 //______________________________________________________________________________
 void AliEveEventManagerWindow::DoSetEvent()
 {
   // Set current event
-  gAliEveEvent->GotoEvent((Int_t) fEventId->GetNumber());
+  fM->GotoEvent((Int_t) fEventId->GetNumber());
 }
 
 //______________________________________________________________________________
@@ -224,10 +225,10 @@ void AliEveEventManagerWindow::DoRefresh()
 {
   // Refresh event status.
 
-  Int_t ev = gAliEveEvent->GetEventId();
-  gAliEveEvent->Close();
-  gAliEveEvent->Open();
-  gAliEveEvent->GotoEvent(ev);
+  Int_t ev = fM->GetEventId();
+  fM->Close();
+  fM->Open();
+  fM->GotoEvent(ev);
 }
 
 //______________________________________________________________________________
@@ -235,7 +236,7 @@ void AliEveEventManagerWindow::DoSetAutoLoad()
 {
   // Set the auto-load flag
 
-  gAliEveEvent->SetAutoLoad(fAutoLoad->IsOn());
+  fM->SetAutoLoad(fAutoLoad->IsOn());
   Update();
 }
 
@@ -244,7 +245,7 @@ void AliEveEventManagerWindow::DoSetAutoLoadTime()
 {
   // Set the auto-load time in seconds
 
-  gAliEveEvent->SetAutoLoadTime(fAutoLoadTime->GetValue());
+  fM->SetAutoLoadTime(fAutoLoadTime->GetValue());
 }
 
 //______________________________________________________________________________
@@ -255,12 +256,12 @@ void AliEveEventManagerWindow::DoSetTriggerType(const char* type)
   TString typestr = type;
   if (typestr=="")
   {
-    gAliEveEvent->SetSelectOnTriggerType(kFALSE);
+    fM->SetSelectOnTriggerType(kFALSE);
   }
   else
   {
-    gAliEveEvent->SetTriggerType( typestr );
-    gAliEveEvent->SetSelectOnTriggerType(kTRUE);
+    fM->SetTriggerType( typestr );
+    fM->SetSelectOnTriggerType(kTRUE);
   }
 }
 
@@ -269,8 +270,8 @@ void AliEveEventManagerWindow::Update()
 {
   // Update current event, number of available events, list of active triggers
 
-  Bool_t autoLoad = gAliEveEvent->GetAutoLoad();
-  Bool_t extCtrl  = gAliEveEvent->IsUnderExternalControl();
+  Bool_t autoLoad = fM->GetAutoLoad();
+  Bool_t extCtrl  = fM->IsUnderExternalControl();
   Bool_t evNavOn  = !autoLoad && !extCtrl;
 
   fFirstEvent->SetEnabled(evNavOn);
@@ -279,15 +280,15 @@ void AliEveEventManagerWindow::Update()
   fNextEvent ->SetEnabled(!autoLoad);
   fRefresh   ->SetEnabled(evNavOn);
 
-  fEventId->SetNumber(gAliEveEvent->GetEventId());
+  fEventId->SetNumber(fM->GetEventId());
   fEventId->SetState(evNavOn);
-  fInfoLabel->SetText(Form("/ %d", gAliEveEvent->GetMaxEventId()));
+  fInfoLabel->SetText(Form("/ %d", fM->GetMaxEventId()));
 
-  // fAutoLoadTime->SetEnabled(gAliEveEvent->GetAutoLoad());
-  fAutoLoad->SetState(gAliEveEvent->GetAutoLoad() ? kButtonDown : kButtonUp);
-  fAutoLoadTime->SetValue(gAliEveEvent->GetAutoLoadTime());
+  // fAutoLoadTime->SetEnabled(fM->GetAutoLoad());
+  fAutoLoad->SetState(fM->GetAutoLoad() ? kButtonDown : kButtonUp);
+  fAutoLoadTime->SetValue(fM->GetAutoLoadTime());
 
-  fEventInfo->LoadBuffer(gAliEveEvent->GetEventInfoHorizontal());
+  fEventInfo->LoadBuffer(fM->GetEventInfoHorizontal());
 
   SetupTriggerSelect();
 
@@ -338,8 +339,8 @@ void AliEveEventManagerWindow::SetupTriggerSelect()
   if (fTrigger->GetNumberOfEntries() > 0)
     return;
 
-  AliESDEvent* esd = gAliEveEvent->GetESD();
-  if (esd && gAliEveEvent->GetESDFile() != 0)
+  AliESDEvent* esd = fM->GetESD();
+  if (esd && fM->GetESDFile() != 0)
   {
     TString activetrg = esd->GetESDRun()->GetActiveTriggerClasses();  //Get list of active classes
     TObjArray* activetrgarr = activetrg.Tokenize(" "); //break up the classes string, space as separator

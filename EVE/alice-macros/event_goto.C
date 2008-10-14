@@ -9,9 +9,9 @@
 
 void event_goto(Int_t event=0)
 {
-  if (gAliEveEvent == 0) {
+  if (AliEveEventManager::GetMaster() == 0) {
     printf("AliEveEventManager is not initialized!\n");
     return;
   }
-  gAliEveEvent->GotoEvent(event);
+  AliEveEventManager::GetMaster()->GotoEvent(event);
 }

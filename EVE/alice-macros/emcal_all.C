@@ -37,8 +37,8 @@ void emcal_all(const UInt_t evtNum = 0, Bool_t digFile = 0,
     cout<<"Can not instatiate the Run Loader"<<endl;
   AliESDEvent* esd = AliEveEventManager::AssertESD();
   AliEMCALLoader *emcl = dynamic_cast<AliEMCALLoader*> (rl->GetDetectorLoader("EMCAL"));
-  Int_t evtID = gAliEveEvent->GetEventId();
-  if(evtID != evtNum) gAliEveEvent->GotoEvent(evtNum);
+  Int_t evtID = AliEveEventManager::GetMaster()->GetEventId();
+  if(evtID != evtNum) AliEveEventManager::GetMaster()->GotoEvent(evtNum);
 
   //Load Hits
   rl->LoadHits("EMCAL");

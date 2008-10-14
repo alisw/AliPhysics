@@ -69,7 +69,6 @@ void AliEveTrackCounter::Reset()
 {
    // Reset internal track-counters and track-list.
 
-   printf("AliEveTrackCounter::Reset()\n");
    fAllTracks  = 0;
    fGoodTracks = 0;
    TIter next(&fTrackLists);

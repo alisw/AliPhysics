@@ -7,11 +7,12 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
+// MT comment, 14.10.2008 - This is wrong and not in sync with AliEveT0Module.
+// It can not work.
+
 void t0_raw()
 {
   AliRunLoader* rl =  AliEveEventManager::AssertRunLoader();
-  Int_t ievt = gAliEveEvent->GetEventId();
-    cout<<ievt<<endl;
 
   gStyle->SetPalette(1, 0);
 
