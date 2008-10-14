@@ -496,16 +496,21 @@ Bool_t AliTRDPreprocessor::AreThereDataPedestal(AliTRDCalSingleChamberStatus *ca
     nCol0 = nColE + 4;
     nColE = nCols;
   }
+
+  Int_t totalnumberofpads = 0;
+  Int_t totalnumberofdata = 0; 
+
   for(Int_t col = nCol0; col < nColE; col++){
     for(Int_t row = 0; row < calROCStatus->GetNrows(); row++){
+      totalnumberofpads++;
       //printf("ismasked %d\n",(Int_t)calROCStatus->IsMasked(col,row));
       if(!calROCStatus->GetStatus(col,row)) {
 	data = kTRUE;
-	continue;
+	totalnumberofdata++;
       }
     }
-    if(data) continue;
   }
+  if(totalnumberofdata < (Int_t)(totalnumberofpads/2)) data = kFALSE;
 
   return data;
   

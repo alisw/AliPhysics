@@ -8,7 +8,7 @@ DA Type: LDC
 Number of events needed: 100
 Input Files: TRD raw files
 Output Files: trdCalibration.root
-Trigger types used:
+Trigger types used: PHYSICS_EVENT
 
 */
 
@@ -120,6 +120,7 @@ int main(int argc, char **argv) {
     /* read the file  until EOF */
     for(;;) {
       struct eventHeaderStruct *event;
+      eventTypeType eventT;
       
       /* get next event */
       status=monitorGetEventDynamic((void **)&event);
@@ -137,7 +138,10 @@ int main(int argc, char **argv) {
         break;
       }
 
-      if(passpadstatus){
+      /* use event - here, just write event id to result file */
+      eventT=event->eventType;
+
+      if((eventT==PHYSICS_EVENT) && (passpadstatus)){
 
 	AliRawReader *rawReader = new AliRawReaderDate((void*)event);
 	rawReader->Select("TRD");
