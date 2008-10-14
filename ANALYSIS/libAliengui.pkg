@@ -18,7 +18,7 @@ endif
 
 HDRS     := $(SRCS:.cxx=.h)
 
-DHDR:=Aliengui/AlienGUILinkDef.h
+DHDR:=Aliengui/AlienguiLinkDef.h
 
 EINCLUDE:= STEER
 
