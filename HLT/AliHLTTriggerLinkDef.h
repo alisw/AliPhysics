@@ -1,4 +1,4 @@
-// @(#) $Id$
+// @(#) $Id: AliHLTTriggerLinkDef.h 27712 2008-07-31 14:38:57Z fca $
 
 #ifdef __CINT__
  
