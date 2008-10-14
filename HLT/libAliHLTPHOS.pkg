@@ -97,7 +97,7 @@ MODULE_HDRS:=	  $(CLASS_HDRS) \
 		  AliHLTPHOSChannelDataStruct.h \
 		  AliHLTPHOSChannelDataHeaderStruct.h
 
-MODULE_DHDR:=	  HLTPHOSLinkDef.h
+MODULE_DHDR:=	  AliHLTPHOSLinkDef.h
 
 EINCLUDE     := HLT/BASE HLT/BASE/util STEER RAW PHOS
 
