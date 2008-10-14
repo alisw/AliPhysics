@@ -166,7 +166,6 @@ AliTRDCalibPadStatus& AliTRDCalibPadStatus::operator = (const  AliTRDCalibPadSta
 
   return *this;
 }
-
 //_____________________________________________________________________
 AliTRDCalibPadStatus::~AliTRDCalibPadStatus() /*FOLD00*/
 {
@@ -182,7 +181,18 @@ AliTRDCalibPadStatus::~AliTRDCalibPadStatus() /*FOLD00*/
     delete fGeo;
   }
 }
-
+//_____________________________________________________________________
+void AliTRDCalibPadStatus::Destroy()
+{
+  //
+  // Destroy
+  //
+  fCalRocArrayMean.Delete();
+  fCalRocArrayRMS.Delete();
+  fCalRocArrayMeand.Delete();
+  fCalRocArrayRMSd.Delete();
+  fHistoArray.Delete();
+}
 //_____________________________________________________________________
 Int_t AliTRDCalibPadStatus::UpdateHisto(const Int_t icdet, /*FOLD00*/
 					const Int_t icRow,
@@ -224,17 +234,29 @@ Int_t AliTRDCalibPadStatus::ProcessEvent(AliTRDrawStreamBase *rawStream, Bool_t 
   // 0 time bin problem or zero suppression
   // 1 no input
   // 2 input
-  //  
+  // 
+
+  //
+  // Raw version number: 
+  // [3,31] non zero suppressed
+  // 2,4 and [32,63] zero suppressed 
+  //
 
   Int_t withInput = 1;
 
   rawStream->SetSharedPadReadout(kTRUE);
 
   if(!nocheck) {
+
+    // Check the raw version and if all have the same number of timebins. 
+
     while (rawStream->Next()) {
+
       Int_t rawversion = rawStream->GetRawVersion();                     //  current raw version
-      //if(!rawStream->IsDataZeroSuppressed()) {
-      if(rawversion > 2) {
+      //printf("Raw version is %d\n",rawversion);
+
+      // Could eventually change, have to check with time    
+      if((rawversion < 3) || (rawversion > 31)) {
 	AliInfo(Form("this is not no-zero-suppressed data, the version is %d",rawversion));
 	return 0;
       }
@@ -242,9 +264,9 @@ Int_t AliTRDCalibPadStatus::ProcessEvent(AliTRDrawStreamBase *rawStream, Bool_t 
       Int_t iRow       = rawStream->GetRow();                            //  current row
       Int_t iRowMax    = rawStream->GetMaxRow();                         //  current rowmax
       Int_t iCol       = rawStream->GetCol();                            //  current col
-      
-
       Int_t iADC       = 21-rawStream->GetADC();                         //  current ADC
+      
+      // It goes in the opposite direction
       Int_t col        = 0;
       if(iADC == 1) col = 1;
       else {
@@ -255,9 +277,11 @@ Int_t AliTRDCalibPadStatus::ProcessEvent(AliTRDrawStreamBase *rawStream, Bool_t 
       if(col > 1) mcm -= 1;      
       if(col ==1) mcm += 1;
 
+      // printf to check
       //Bool_t shared = rawStream->IsCurrentPadShared();                  
       //printf("ADC %d, iCol %d, col %d, mcm %d, shared %d\n",iADC,iCol,col,mcm,(Int_t)shared);
 
+      // Take the signal
       Int_t *signal    = rawStream->GetSignals();                        //  current ADC signal
       Int_t nbtimebin  = rawStream->GetNumberOfTimeBins();               //  number of time bins read from data
 
@@ -266,7 +290,8 @@ Int_t AliTRDCalibPadStatus::ProcessEvent(AliTRDrawStreamBase *rawStream, Bool_t 
       	return 0;
       }
       fNumberOfTimeBins = nbtimebin;
-      
+      fDetector         = idetector;      
+
       for(Int_t k = 0; k < fNumberOfTimeBins; k++){
 	if(signal[k]>0) UpdateHisto(idetector,iRow,iCol,signal[k],iRowMax,col,mcm);
       }
@@ -275,14 +300,16 @@ Int_t AliTRDCalibPadStatus::ProcessEvent(AliTRDrawStreamBase *rawStream, Bool_t 
     }
   }
   else {
+
     while (rawStream->Next()) {
+    
       Int_t idetector  = rawStream->GetDet();                            //  current detector
       Int_t iRow       = rawStream->GetRow();                            //  current row
       Int_t iRowMax    = rawStream->GetMaxRow();                         //  current rowmax
       Int_t iCol       = rawStream->GetCol();                            //  current col
-     
-
       Int_t iADC       = 21-rawStream->GetADC();                            //  current ADC
+
+      // It goes in the opposite direction      
       Int_t col        = 0;
       if(iADC == 1) col = 1;
       else {
@@ -293,6 +320,7 @@ Int_t AliTRDCalibPadStatus::ProcessEvent(AliTRDrawStreamBase *rawStream, Bool_t 
       if(col > 1) mcm -= 1;      
       if(col ==1) mcm += 1;
 
+      // Take the signal
       Int_t *signal    = rawStream->GetSignals();                        //  current ADC signal
       Int_t nbtimebin = rawStream->GetNumberOfTimeBins();               //  number of time bins read from data
       
@@ -312,7 +340,6 @@ Int_t AliTRDCalibPadStatus::ProcessEvent(AliTRDrawStreamBase *rawStream, Bool_t 
   
   return withInput;
 }
-
 //_____________________________________________________________________
 Int_t AliTRDCalibPadStatus::ProcessEvent(AliRawReader *rawReader, Bool_t nocheck)
 {

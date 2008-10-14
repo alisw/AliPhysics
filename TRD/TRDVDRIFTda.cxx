@@ -167,7 +167,7 @@ int main(int argc, char **argv) {
       AliRawReader *rawReader = new AliRawReaderDate((void*)event);
       rawReader->Select("TRD");
       AliTRDrawStreamTB *trdRawStream = new AliTRDrawStreamTB((AliRawReader *) rawReader);
-      Int_t result = calibra->ProcessEventDAQ((AliTRDrawStreamBase *) trdRawStream,(Bool_t)nevents_physics);
+      Int_t result = calibra->ProcessEventDAQ((AliTRDrawStreamBase *) trdRawStream,(Bool_t)nbvdrift);
       if(!result) passvdrift = kFALSE;
       else nbvdrift += (Int_t) result/2;
              

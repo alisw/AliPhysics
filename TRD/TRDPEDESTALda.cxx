@@ -142,12 +142,13 @@ int main(int argc, char **argv) {
 	AliRawReader *rawReader = new AliRawReaderDate((void*)event);
 	rawReader->Select("TRD");
 	AliTRDrawStreamTB *trdRawStream = new AliTRDrawStreamTB((AliRawReader *)rawReader);
-	//trdRawStream->Init();
-	if(!calipad.ProcessEvent((AliTRDrawStreamBase *)trdRawStream,(Bool_t)nevents_total)) passpadstatus = kFALSE;
-	nevents++;
+	Int_t result = calipad.ProcessEvent((AliTRDrawStreamBase *)trdRawStream,0);
+	// 0 error, 1 no input, 2 output
+	if(result == 2) nevents++;
+	if(result == 0) passpadstatus = kFALSE;
 	delete trdRawStream;
 	delete rawReader;
-     
+      
       }
 
       nevents_total++;
@@ -163,6 +164,7 @@ int main(int argc, char **argv) {
 
   /* write file in any case to see what happens in case of problems*/
   TFile *fileTRD = new TFile(RESULT_FILE,"recreate");
+  if(nevents < 30) calipad.Destroy();
   calipad.AnalyseHisto();
   calipad.Write("calibpadstatus");
   fileTRD->Close();   
