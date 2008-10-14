@@ -112,7 +112,8 @@ int AliHLTAltroGenerator::Generate()
     }
     repetitions=0;
     int totalBunches=0;
-    int bunchEndTime=fMaxTimebin;
+    int bunchEndTime=0;
+    int lastBunchEndTime=0;
 
     HLTDebug("simulate channel %d: address %d", channel, channelAddress);
 
@@ -125,9 +126,18 @@ int AliHLTAltroGenerator::Generate()
     dataPos++; // placeholder for number of bunches
 
     int bunch=0;
-    for (bunch=0; bunch<nofBunches && bunchEndTime>0; bunch++) {
-      bunchEndTime=GetRandom(0, bunchEndTime-1);
-      int bunchLength=GetRandom(0, bunchEndTime<fMaxBunchLength?bunchEndTime:fMaxBunchLength);
+
+    // Matthias Oct 2008:
+    // Data was simulated in the wrong order: bunches for the higher timebins
+    // first. But real data is the other way round: bunches are written in the order
+    // of ascending timebins. A new consistency check was added to AliAltroDecoder
+    // (AliAltroBunch) in revision 29090. Now the channels are checked for overlapping
+    // bunches, the time of a bunch must be smaller than time of the previous one
+    // minus its length.
+    // Data is now simulated in the right order in order to fullfil this check.
+    for (bunch=0; bunch<nofBunches && bunchEndTime<fMaxTimebin-3; bunch++) {
+      while ((bunchEndTime+=GetRandom(0, fMaxTimebin-bunchEndTime))-lastBunchEndTime<3);
+      int bunchLength=GetRandom(0, bunchEndTime-lastBunchEndTime<fMaxBunchLength?bunchEndTime-lastBunchEndTime:fMaxBunchLength);
       if (bunchLength==0) continue;
       totalBunches++;
 
@@ -145,6 +155,8 @@ int AliHLTAltroGenerator::Generate()
       (*fpSimData)[dataPos++]=bunchEndTime;
       (*fpSimData)[dataPos++]=bunchLength;
       fNof10BitWords+=bunchLength+2;
+      lastBunchEndTime=bunchEndTime;
+      bunchEndTime+=bunchLength;
     }
     if (totalBunches>0) {
       (*fpSimData)[position.fPosition+1]=totalBunches;

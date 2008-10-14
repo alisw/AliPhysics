@@ -65,7 +65,7 @@ const int maxChannels=100;
 const int maxBunches=50;
 const int maxTimebin=1024;
 const int maxSignal=1024;
-const int maxEncodedDataSize=40000+sizeofAliRawDataHeader;
+const int maxEncodedDataSize=4000000+sizeofAliRawDataHeader;
 
 // file dumps
 const char* encDataDumpFile=NULL;//"/tmp/altro-enc.dat";
@@ -190,6 +190,7 @@ int Compare(TArrayI& simData, TArrayC& encData)
     }
     int channelAddress=simData[--dataPos];
     int nofBunches=simData[--dataPos];
+    int nofBunchesBackup=nofBunches;
     if (channelAddress!=hwadd) {
       cout << "channel address missmatch: simulated " << channelAddress << " encoded " << hwadd << endl;
       iResult=-1;
@@ -233,6 +234,10 @@ int Compare(TArrayI& simData, TArrayC& encData)
 	}
       }
       dataPos-=bunchLength;
+    }
+    if (nofBunches>0 && iResult==0) {
+      cout << "error getting " << nofBunches << " of " << nofBunchesBackup << " bunches from channel " << channelAddress << endl;
+      iResult=-1;
     }
 
   }
@@ -314,13 +319,23 @@ int testAliHLTAltroEncoder()
     int nofBunches=GetRandom(1, maxBunches);
     if (nofBunches==0) continue;
     int totalBunches=0;
-    int bunchEndTime=maxTimebin;
+    int bunchEndTime=0;
+    int lastBunchEndTime=0;
     
     if (bVerbose) cout << " ------------------ new channel -------------------------" << endl;
     int bunch=0;
-    for (bunch=0; bunch<nofBunches && bunchEndTime>0; bunch++) {
-      bunchEndTime=GetRandom(0, bunchEndTime-1);
-      int bunchLength=GetRandom(0, bunchEndTime<10?bunchEndTime:10);
+
+    // Matthias Oct 2008:
+    // Data was simulated in the wrong order: bunches for the higher timebins
+    // first. But real data is the other way round: bunches are written in the order
+    // of ascending timebins. A new consistency check was added to AliAltroDecoder
+    // (AliAltroBunch) in revision 29090. Now the channels are checked for overlapping
+    // bunches, the time of a bunch must be smaller than time of the previous one
+    // minus its length.
+    // Data is now simulated in the right order in order to fullfil this check.
+    for (bunch=0; bunch<nofBunches && bunchEndTime<maxTimebin-3; bunch++) {
+      while ((bunchEndTime+=GetRandom(0, maxTimebin-bunchEndTime))-lastBunchEndTime<3);
+      int bunchLength=GetRandom(0, bunchEndTime-lastBunchEndTime);
       if (bunchLength==0) continue;
       // check if there is enough space for all the signals, end time
       // and bunch length. The value is aligned to 4. In addition, one
@@ -349,6 +364,8 @@ int testAliHLTAltroEncoder()
       if (bVerbose) cout << endl;
       simData[dataPos++]=bunchEndTime;
       simData[dataPos++]=bunchLength;
+      lastBunchEndTime=bunchEndTime;
+      bunchEndTime+=bunchLength;
     }
     if (simData.GetSize()<dataPos+2) simData.Set(dataPos+2);
     if (totalBunches>0) {
@@ -403,7 +420,7 @@ int main(int /*argc*/, const char** /*argv*/)
 //   return 0;
 
   int iResult=0;
-  int iCount=10000;
+  int iCount=1000;
   for (int i=0; i<iCount; i++) {
     if ((iResult=testAliHLTAltroEncoder())<0) {
       cout << "missmatch in block no " << i << endl;
