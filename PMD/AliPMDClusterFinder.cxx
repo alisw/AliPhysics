@@ -323,7 +323,7 @@ void AliPMDClusterFinder::Digits2RecPoints(TTree *digitsTree,
 	  
 	  // Pedestal Subtraction
 	  Int_t   pedmeanrms = fCalibPed->GetPedMeanRms(det,smn,xpos,ypos);
-	  Int_t   pedrms1    = (Int_t) pedmeanrms%1000;
+	  Int_t   pedrms1    = (Int_t) pedmeanrms%100;
 	  Float_t pedrms     = (Float_t)pedrms1/10.;
 	  Float_t pedmean    = (Float_t) (pedmeanrms - pedrms1)/1000.0;
 	  //printf("%f %f\n",pedmean, pedrms);
@@ -489,7 +489,7 @@ void AliPMDClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
 
 	  // Pedestal Subtraction
 	  Int_t   pedmeanrms = fCalibPed->GetPedMeanRms(det,smn,row,col);
-	  Int_t   pedrms1    = (Int_t) pedmeanrms%1000;
+	  Int_t   pedrms1    = (Int_t) pedmeanrms%100;
 	  Float_t pedrms     = (Float_t)pedrms1/10.;
 	  Float_t pedmean    = (Float_t) (pedmeanrms - pedrms1)/1000.0;
 
@@ -735,7 +735,7 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt, AliRawReader *rawReader)
 	    }
 	  // Pedestal Subtraction
 	  Int_t   pedmeanrms = fCalibPed->GetPedMeanRms(det,smn,row,col);
-	  Int_t   pedrms1    = (Int_t) pedmeanrms%1000;
+	  Int_t   pedrms1    = (Int_t) pedmeanrms%100;
 	  Float_t pedrms     = (Float_t)pedrms1/10.;
 	  Float_t pedmean    = (Float_t) (pedmeanrms - pedrms1)/1000.0;
 

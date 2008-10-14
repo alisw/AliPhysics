@@ -700,11 +700,10 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
 		      // Pedestal Decalibration
 		      Int_t   pedmeanrms = 
 			  fCalibPed->GetPedMeanRms(idet,ism,jrow,kcol);
-		      Int_t   pedrms1    = (Int_t) pedmeanrms%1000;
+		      Int_t   pedrms1    = (Int_t) pedmeanrms%100;
 		      Float_t pedrms     = (Float_t)pedrms1/10.;
 		      Float_t pedmean    = 
 			  (Float_t) (pedmeanrms - pedrms1)/1000.0;
-		      //printf("%f %f\n",pedmean, pedrms);
 		      if (adc > 0.)
 		      {
 			  adc += (pedmean + 3.0*pedrms);
@@ -792,11 +791,9 @@ void AliPMDDigitizer::SDigits2Digits(Int_t ievt)
 	  }
 	  // Pedestal Decalibration
 	  Int_t   pedmeanrms = fCalibPed->GetPedMeanRms(det,smn,irow,icol);
-	  Int_t   pedrms1    = (Int_t) pedmeanrms%1000;
+	  Int_t   pedrms1    = (Int_t) pedmeanrms%100;
 	  Float_t pedrms     = (Float_t)pedrms1/10.;
 	  Float_t pedmean    = (Float_t) (pedmeanrms - pedrms1)/1000.0;
-	  //printf("%f %f\n",pedmean, pedrms);
-	  
 	  if(adc > 0.)
 	  {
 	      adc += (pedmean + 3.0*pedrms);
@@ -894,11 +891,10 @@ void AliPMDDigitizer::Exec(Option_t *option)
 		      // Pedestal Decalibration
 		      Int_t   pedmeanrms = 
 			  fCalibPed->GetPedMeanRms(idet,ism,jrow,kcol);
-		      Int_t   pedrms1    = (Int_t) pedmeanrms%1000;
+		      Int_t   pedrms1    = (Int_t) pedmeanrms%100;
 		      Float_t pedrms     = (Float_t)pedrms1/10.;
 		      Float_t pedmean    = 
 			  (Float_t) (pedmeanrms - pedrms1)/1000.0;
-		      //printf("%f %f\n",pedmean, pedrms);
 		      if (adc > 0.)
 		      {
 			  adc += (pedmean + 3.0*pedrms);

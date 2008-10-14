@@ -849,13 +849,7 @@ void AliPMDClusteringV1::RefClust(Int_t incr, Double_t edepcell[])
 	      Int_t Ncell=1;
 	      for (Int_t ii = 0; ii < cellCount[kcl]; ii++)
 		{
-		  Float_t xx = x[cellXY[ii][kcl]];
-		  Float_t yy = y[cellXY[ii][kcl]];
-
-		  rr=Distance(xclust[kcl],yclust[kcl],xx,yy);
-		  // Natasha
-		  // We store only the nearest and nest-nearest neighbours
-		  if(rr<2.2) 
+		  if(ii<18) 
 		    {	
 		      clxy[Ncell] = t[cellXY[ii][kcl]];
 		      Ncell++;

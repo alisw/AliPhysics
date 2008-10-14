@@ -42,8 +42,8 @@ class AliPMDcluster : public TObject
 
   Int_t   fDet;               // Detector No (0:PRE, 1:CPV)
   Int_t   fSMN;               // Serial Module No.
-  Int_t   fClusCellDataX[15]; // Array containing cell X
-  Int_t   fClusCellDataY[15]; // Array containing cell Y
+  Int_t   fClusCellDataX[19]; // Array containing cell X
+  Int_t   fClusCellDataY[19]; // Array containing cell Y
   Float_t fClusData[6];       // Array containing cluster information
   /*
     fDet         : Det (0:PRE, 1:CPV), fSMN         : SerialModuleNo

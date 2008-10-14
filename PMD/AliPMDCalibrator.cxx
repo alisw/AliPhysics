@@ -256,7 +256,7 @@ void AliPMDCalibrator::CalculateIsoCell()
 	      // Pedestal Subtraction
 	      Int_t   pedmeanrms = 
 		fCalibPed->GetPedMeanRms(idet,ismn,irow,icol);
-	      Int_t   pedrms1    = (Int_t) pedmeanrms%1000;
+	      Int_t   pedrms1    = (Int_t) pedmeanrms%100;
 	      Float_t pedrms     = (Float_t)pedrms1/10.;
 	      Float_t pedmean    = (Float_t) (pedmeanrms - pedrms1)/1000.0;
 	      Float_t isig = isig1 - (pedmean + 3.0*pedrms);

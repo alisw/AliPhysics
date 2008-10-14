@@ -35,7 +35,7 @@ AliPMDcluster::AliPMDcluster():
     {
       fClusData[i] = 0.;
     }
-  for (Int_t i = 0; i < 15; i++)
+  for (Int_t i = 0; i < 19; i++)
     {
       fClusCellDataX[i] = 0;
       fClusCellDataY[i] = 0;
@@ -53,7 +53,7 @@ AliPMDcluster::AliPMDcluster(Int_t idet, Int_t ismn, Float_t *clusdata,
     {
       fClusData[i] = clusdata[i];
     }
-  for (Int_t i = 0; i < 15; i++)
+  for (Int_t i = 0; i < 19; i++)
     {
       fClusCellDataX[i] = celldataX[i];
       fClusCellDataY[i] = celldataY[i];
@@ -79,7 +79,7 @@ AliPMDcluster::AliPMDcluster(const AliPMDcluster &pmdcluster):
     {
       this->fClusData[i] = pmdcluster.fClusData[i];
     }
-  for(Int_t i=0; i<15; i++)
+  for(Int_t i=0; i<19; i++)
     {
       this->fClusCellDataX[i] = pmdcluster.fClusCellDataX[i];
       this->fClusCellDataY[i] = pmdcluster.fClusCellDataY[i];
@@ -98,7 +98,7 @@ AliPMDcluster & AliPMDcluster::operator=(const AliPMDcluster &pmdcluster)
 	{
 	  this->fClusData[i] = pmdcluster.fClusData[i];
 	}
-      for(Int_t i=0; i<15; i++)
+      for(Int_t i=0; i<19; i++)
 	{
 	  this->fClusCellDataX[i] = pmdcluster.fClusCellDataX[i];
 	  this->fClusCellDataY[i] = pmdcluster.fClusCellDataY[i];
