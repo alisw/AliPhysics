@@ -731,10 +731,10 @@ void AddFiles(char *list){
   viewer->Reload();
 }
 
-void AnalyzeSectors(){
-  //
-  // Analyze sector by sector
-  //
-  TTreeSRedirector cstream("fits.root");
-  for (Int_t 
-}
+//void AnalyzeSectors(){
+//  //
+//  // Analyze sector by sector
+//  //
+//  TTreeSRedirector cstream("fits.root");
+//  for (Int_t 
+//}
