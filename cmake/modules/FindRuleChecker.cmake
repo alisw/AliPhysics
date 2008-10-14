@@ -71,3 +71,56 @@ Function(CheckViols LIB SRCS)
     
 EndFunction (CheckViols)
 
+#_______________________________________________________________________________
+Function(CheckViolsNew LIB SRCS)
+
+  If(RULE_CHECKER_FOUND)
+    Set(_FactExt $ENV{ALICE}/local/ALICENewRuleChecker/FactExtractor/FactExtractor.jar)
+    Set(_RuleCheck $ENV{ALICE}/local/ALICENewRuleChecker/NewRuleChecker/NewRuleChecker.jar)
+
+    String(REGEX MATCHALL "[^ ]*.cxx" CXXSRCS "${SRCS}")
+    
+    Set(_checkDir "${CMAKE_CURRENT_BINARY_DIR}/check_new")
+    
+    If(NOT EXISTS ${_checkDir})
+      File(MAKE_DIRECTORY ${_checkDir})
+    EndIf(NOT EXISTS ${_checkDir})
+    
+    Set(_inc_dirs)
+    Foreach(_dir ${INCLUDE_DIRECTORIES})
+      Set(_inc_dirs ${_inc_dirs} -I${_dir})
+    EndForeach(_dir ${INCLUDE_DIRECTORIES})
+    
+    Set(VIOLS)
+    Foreach(_checkFile ${CXXSRCS})
+      Get_Filename_Component(_checkFilePath ${_checkFile} PATH)
+      If(NOT EXISTS ${_checkDir}/${_checkFilePath})
+	File(MAKE_DIRECTORY ${_checkDir}/${_checkFilePath})
+      EndIf(NOT EXISTS ${_checkDir}/${_checkFilePath})
+      String(REGEX REPLACE "([^;]*).cxx" "${_checkDir}/\\1.cxx.xml" _srcxml "${_checkFile}")
+      String(REGEX REPLACE "([^;]*).cxx" "${_checkDir}/\\1.h.xml"   _hdrxml "${_checkFile}")
+      String(REGEX REPLACE "([^;]*).cxx" "${_checkDir}/\\1.h.viol"   _violFile "${_checkFile}")
+      String(REGEX REPLACE "([^;]*).cxx" "\\1.h" _checkHead "${_checkFile}")
+      Add_Custom_Command(
+	OUTPUT ${_violFile}
+	COMMAND src2srcml 
+        ARGS ${CMAKE_CURRENT_SOURCE_DIR}/${_checkFile} ${_srcxml}
+	COMMAND src2srcml 
+        ARGS ${CMAKE_CURRENT_SOURCE_DIR}/${_checkHead} ${_hdrxml}
+	COMMAND java
+	ARGS -jar ${_FactExt} 
+	COMMAND ${RULE_CHECKER_PATCH} ARGS ${_tempFile_in}
+	COMMAND CLASSPATH=${RULE_CHECKER_PATH} java ${RULE_CHECKER} 
+        ARGS ${_tempFile_in} ${CMAKE_CURRENT_SOURCE_DIR} > ${_violFile}
+	DEPENDS ${_checkFile}
+	WORKING_DIRECTORY ${_checkDir})
+      Set(VIOLS ${VIOLS} ${_violFile})
+    EndForeach(_checkFile ${CXXSRCS})
+    
+    Add_Custom_Target(check-${LIB} DEPENDS ${VIOLS})
+    Add_Dependencies(check-all check-${LIB})
+
+  EndIf(RULE_CHECKER_FOUND)
+    
+EndFunction (CheckViolsNew)
+

@@ -51,6 +51,7 @@ Function (AddLibrary LIB SRCS DHDRS)
     Set(ASRCS ${SRCS} ${DICT})
     Root_Generate_Dictionary("${DHDRS}" "${LDEF}" "${DICT}" "${INCLUDE_DIRECTORIES}")
   Else(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${LDEF})
+    Message(STATUS "${LDEF} not found... probably building empty lib")
     Set(ASRCS ${SRCS})
   Endif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${LDEF})
 
@@ -130,8 +131,8 @@ If(ALICE_TARGET STREQUAL macosx64)
 
   Find_Package(fink)
   
-  Set(CMAKE_CXX_COMPILER g++)
-  Set(CMAKE_C_COMPILER gcc)
+#  Set(CMAKE_CXX_COMPILER g++)
+#  Set(CMAKE_C_COMPILER gcc)
 # I found no way to make this work...
 #  Set(CMAKE_CXX_LINK_EXECUTABLE 
 #    "MACOSX_DEPLOYMENT_TARGET=${MACOSX_MAJOR}.${MACOSX_MINOR} ${CMAKE_CXX_LINK_EXECUTABLE}")

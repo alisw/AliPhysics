@@ -25,8 +25,21 @@ Else (${ROOT_CONFIG} MATCHES "ROOT_CONFIG-NOTFOUND")
 
   Execute_process(
     COMMAND root-config --f77 
-    OUTPUT_VARIABLE CMAKE_Fortran_COMPILER 
+    OUTPUT_VARIABLE _f77 
     OUTPUT_STRIP_TRAILING_WHITESPACE)
+  Set(ENV{F77} ${_f77})
+
+  Execute_process(
+    COMMAND root-config --cc
+    OUTPUT_VARIABLE _cc 
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+  Set(ENV{CC} ${_cc})
+
+  Execute_process(
+    COMMAND root-config --cxx
+    OUTPUT_VARIABLE _cxx
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+  Set(ENV{CXX} ${_cxx})
 
   Execute_process(
     COMMAND root-config --version 
@@ -48,7 +61,8 @@ Else (${ROOT_CONFIG} MATCHES "ROOT_CONFIG-NOTFOUND")
     Message(FATAL_ERROR "Found ROOT but not rootcint, your ROOT installation is corrupted")
   EndIf(NOT ROOTCINT)
 
-  Set(ROOT_LIBRARIES ${ROOT_LIBRARIES} -lThread -lMinuit -lHtml -lVMC -lEG -lGeom -lTreePlayer -lXMLIO -lProof -lProofPlayer -lMLP -lSpectrum -lEve -lRGL -lGed)
+  Set(ROOT_LIBRARIES ${ROOT_LIBRARIES} -lThread -lMinuit -lHtml -lVMC -lEG -lGeom -lTreePlayer -lXMLIO -lProof)
+  Set(ROOT_LIBRARIES ${ROOT_LIBRARIES} -lProofPlayer -lMLP -lSpectrum -lEve -lRGL -lGed -lXMLParser -lPhysics)
   Set(ROOT_LIBRARY_DIR ${ROOTSYS}/lib)
 
   # Make variables changeble to the advanced user
@@ -112,9 +126,16 @@ Macro(ROOT_GENERATE_DICTIONARY INFILES LINKDEF_FILE OUTFILE INCLUDE_DIRS_IN)
     Set(infiles_nopath ${infiles_nopath} ${name_wo_path})   
   Endforeach (_current_FILE ${INFILES})
 
+  Get_property(_defs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY COMPILE_DEFINITIONS)
+  Set(_ddefs)
+  Foreach (_def ${_defs})
+    Set(_ddefs "${_ddefs} -D${_def}")
+  Endforeach (_def ${_defs})
+  Separate_arguments(_ddefs)
+
   Add_custom_command(OUTPUT ${OUTFILES}
      COMMAND DYLD_LIBRARY_PATH=$ENV{DYLD_LIBRARY_PATH}:${ROOT_LIBRARY_DIR} ${ROOTCINT}
-     ARGS -f ${OUTFILE} -c -DHAVE_CONFIG_H ${_special_settings} ${INCLUDE_DIRS} ${infiles_nopath} ${LINKDEF_FILE} 
+     ARGS -f ${OUTFILE} -c -DHAVE_CONFIG_H ${_ddefs} ${_special_settings} ${INCLUDE_DIRS} ${infiles_nopath} ${LINKDEF_FILE} 
      DEPENDS ${INFILES} ${LINKDEF_FILE})
 
 Endmacro(ROOT_GENERATE_DICTIONARY)
