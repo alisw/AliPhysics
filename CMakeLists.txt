@@ -1,11 +1,10 @@
 # -*- mode: cmake -*-
-# The name of our project is "AliRoot".  
 
 # Check if cmake has the required version
 Cmake_Minimum_Required(VERSION 2.6 FATAL_ERROR)
 
 # Set name of our project to AliRoot. To be done after check of cmake version
-Project(AliRoot)
+Project(AliRoot NONE)
 
 # Set AliRoot variables
 Set(ALICE_ROOT $ENV{ALICE_ROOT})
@@ -17,6 +16,24 @@ Set(ALICE_STATIC_BUILD ON CACHE BOOL "Build also statics libs")
 # where to look first for cmake modules, before ${CMAKE_ROOT}/Modules/ 
 Set(CMAKE_MODULE_PATH "${ALICE_ROOT}/cmake/modules")
 
+# To fix a hack that has been introduced for the Mac
+If(APPLE)
+  Set(CMAKE_INSTALL_NAME_TOOL CMAKE_INSTALL_NAME_TOOL-NOTFOUND)
+Endif(APPLE)
+
+
+# Setup ROOT
+Find_package(ROOT 5.0.0 REQUIRED)
+
+Set(CMAKE_C_COMPILER $ENV{CC})
+Enable_Language(C)
+
+Set(CMAKE_CXX_COMPILER $ENV{CXX})
+Enable_Language(CXX)
+
+Set(CMAKE_Fortran_COMPILER $ENV{F77})
+Enable_Language(Fortran)
+
 # Load some basic macros which are needed later on
 #Include(WriteConfigFile)
 Include(Dart)
@@ -27,9 +44,6 @@ Check_out_of_Source_Build()
 
 # searches for needed packages
 
-# Setup ROOT
-Find_package(ROOT 5.0.0 REQUIRED)
-Enable_Language(Fortran)
 Set(ALIROOT_INSTALL_DIR ${ALICE_ROOT}/${ALICE_TARGET})
 
 # Setup GEANT3

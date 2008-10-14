@@ -7,9 +7,11 @@ set(SRCS
        AliAnaScale.cxx AliAnaPartCorrMaker.cxx 
        AliAnaPartCorrBaseClass.cxx  AliAnaExample.cxx AliAnaGammaDirect.cxx  
        AliAnaParticlePartonCorrelation.cxx AliAnaParticleHadronCorrelation.cxx 
-       AliAnaParticleJetLeadingConeCorrelation.cxx AliAnalysisTaskParticleCorrelation.cxx 
+       AliAnaParticleJetFinderCorrelation.cxx 
+	   AliAnaParticleJetLeadingConeCorrelation.cxx AliAnalysisTaskParticleCorrelation.cxx 
        AliCaloTrackReader.cxx AliCaloTrackESDReader.cxx 
-       AliCaloTrackAODReader.cxx AliCaloTrackMCReader.cxx  
+       AliCaloTrackAODReader.cxx AliCaloTrackMCReader.cxx   AliAnaPi0.cxx AliCaloPhoton.cxx 
+       AliV0Reader.cxx AliAnalysisTaskGammaConversion.cxx AliGammaConversionHistograms.cxx
 )
 
 # fill list of header files from list of source files
