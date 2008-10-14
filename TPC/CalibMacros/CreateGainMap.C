@@ -188,3 +188,67 @@ AliTPCCalPad * CreateGainMap(AliTPCCalPad *krypFitMean, AliTPCCalPad *krypFitRMS
 
 }
 
+
+
+void MakeCalibTree(char * inputKr="calibKr.root", char * inputCE ="fitCE.root", char * inputPulser=0){
+  //
+  //
+  //
+   AliTPCPreprocessorOnline * preprocesor = new AliTPCPreprocessorOnline;
+   TFile f(inputKr);
+   TFile fce(inputCE);
+   AliTPCCalPad * kryptonMean     = (AliTPCCalPad*)f.Get("spectrMean");
+   AliTPCCalPad * kryptonRMS      = (AliTPCCalPad*)f.Get("spectrRMS");
+   AliTPCCalPad * kryptonMeanG    = (AliTPCCalPad*)f.Get("fitMean");
+   AliTPCCalPad * kryptonRMSG     = (AliTPCCalPad*)f.Get("fitRMS");
+   AliTPCCalPad * kryptonNormChi2 = (AliTPCCalPad*)f.Get("fitNormChi2");
+   AliTPCCalPad * kryptonEntries  = (AliTPCCalPad*)f.Get("entries");
+   AliTPCCalPad * ceqIn           = (AliTPCCalPad*)fce.Get("qIn");
+   AliTPCCalPad * ceqF1             = (AliTPCCalPad*)fce.Get("qF1");
+   AliTPCCalPad * ceqF2             = (AliTPCCalPad*)fce.Get("qF2");
+
+
+
+   preprocesor->AddComponent(kryptonMean->Clone());
+   preprocesor->AddComponent(kryptonRMS->Clone());
+   preprocesor->AddComponent(kryptonMeanG->Clone());
+   preprocesor->AddComponent(kryptonRMSG->Clone());
+   preprocesor->AddComponent(kryptonNormChi2->Clone());
+   preprocesor->AddComponent(kryptonEntries->Clone());
+   //
+   preprocesor->AddComponent(ceqIn->Clone());
+   preprocesor->AddComponent(ceqF1->Clone());
+   preprocesor->AddComponent(ceqF2->Clone());
+
+   preprocesor->DumpToFile("gainTree.root");
+   //
+}
+
+AliTPCCalibViewerGUI*viewer =0;
+TTree * tree =0;
+
+void LoadViewer(){
+  //
+  // Load calib Viewer
+  //
+  TObjArray * array = AliTPCCalibViewerGUI::ShowGUI("gainTree.root");
+  AliTPCCalibViewerGUI* viewer = (AliTPCCalibViewerGUI*)array->At(0);
+  makePad = viewer->GetViewer();
+  tree = viewer->GetViewer()->GetTree();
+
+  tree->SetAlias("krAccept0","abs(fitRMS.fElements/fitMean.fElements-0.06)<0.04");
+  tree->SetAlias("krAccept1","abs(fitRMS.fElements)>30");
+  tree->SetAlias("yedge","tan(10*pi/180.)*lx.fElements");
+  tree->SetAlias("ceAccept1","abs(qIn.fElements/qIn_Median.fElements-1.5)<1.4&&qIn.fElements>3&&qIn_Median.fElements>3");
+
+}
+
+void Fit(){
+  TF1 f1("f1","[0]*exp(-[1]*x)+[2]");
+  f1.SetParameters(1,1,0.2);
+  tree->Draw("1-qIn.fElements/qF1.fElements:yedge-abs(ly.fElements)>>his(50,1.5,5,100,-0.5,1.5)","ceAccept1&&sector>36"); 
+  his->FitSlicesY();
+  his_1->Fit(&f1);
+
+
+}
