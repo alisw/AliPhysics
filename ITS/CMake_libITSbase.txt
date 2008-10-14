@@ -29,12 +29,12 @@ set(SRCS
 		AliITSCalibration.cxx 
 		AliITSresponseSPD.cxx 
 		AliITSresponseSDD.cxx 
-		AliITSresponseSSD.cxx 
 		AliITSCalibrationSPD.cxx 
 		AliITSCalibrationSDD.cxx 
 		AliITSCalibrationSSD.cxx 
                 AliITSChannelStatus.cxx 
 		AliITSMapSDD.cxx 
+		AliITSHLTforSDD.cxx 
 		AliITSDriftSpeedSDD.cxx 
 		AliITSDDLModuleMapSDD.cxx 
 		AliITSDriftSpeedArraySDD.cxx 
@@ -46,10 +46,12 @@ set(SRCS
                 AliITSHandleDaSSD.cxx 
 		AliITSDDLRawData.cxx 
 		AliITSRawStream.cxx 
+		AliITSRawStreamSDDCompressed.cxx 
 		AliITSRawStreamSDDv2.cxx 
 		AliITSRawStreamSDDv3.cxx 
 		AliITSRawStreamSSD.cxx 
 		AliITSRawStreamSDD.cxx 
+		AliITSCompressRawDataSDD.cxx 
 		AliITSRawStreamSPD.cxx 
 		AliITSEventHeader.cxx 
 		AliITSRawStreamSSDv1.cxx 

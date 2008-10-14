@@ -11,7 +11,11 @@ set(SRCS
          AliMUONGeometryMisAligner.cxx 
 	 AliMUONGeometry.cxx 
 	 AliMUONVGeometryBuilder.cxx 
-	 AliMUONGeometryBuilder.cxx
+	 AliMUONGeometryBuilder.cxx 
+         AliMUONSurveyObj.cxx 
+         AliMUONSurveyUtil.cxx 
+         AliMUONSurveyDetElem.cxx 
+         AliMUONSurveyChamber.cxx
 )
 
 # fill list of header files from list of source files

@@ -10,6 +10,7 @@ BASE/AliHLTCalibrationProcessor.cxx
 BASE/AliHLTConfiguration.cxx
 BASE/AliHLTConfigurationHandler.cxx
 BASE/AliHLTTask.cxx
+BASE/AliHLTControlTask.cxx
 BASE/AliHLTLogging.cxx
 BASE/AliHLTDataBuffer.cxx
 BASE/AliHLTConsumerDescriptor.cxx
@@ -26,7 +27,9 @@ BASE/AliHLTHOMERBlockDesc.cxx
 BASE/AliHLTHOMERSourceDesc.cxx
 BASE/AliHLTEsdManager.cxx
 BASE/AliHLTOUT.cxx
+BASE/AliHLTOUTHandlerChain.cxx
 BASE/AliHLTOUTHomerBuffer.cxx
+BASE/AliHLTOUTTask.cxx
 BASE/AliHLTOUTHandler.cxx
 BASE/AliHLTOUTHandlerEquId.cxx
 BASE/AliHLTMemoryFile.cxx

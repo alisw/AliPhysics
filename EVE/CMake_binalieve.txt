@@ -12,6 +12,6 @@ Set(LIBS EveBase EveDet EveHLT MUONbase MUONevaluation MUONmapping MUONshuttle
          HMPIDbase HMPIDrec HMPIDsim ZDCbase ZDCsim ZDCrec VZERObase VZEROsim
          VZEROrec EMCALbase EMCALsim EMCALrec BCM STRUCT T0base T0sim T0rec EVGEN
          STEERBase ESD AOD CDB STEER THijing hijing TEPEMGEN FASTSIM microcern
-         RAWDatabase RAWDatarec RAWDatasim HLTbase XMLParser)
+         RAWDatabase RAWDatarec RAWDatasim HLTbase)
 
 AddExecutable(alieve "${SRCS}" "${LIBS}")

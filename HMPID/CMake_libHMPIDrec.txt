@@ -1,7 +1,7 @@
 # -*- mode: cmake -*-
 
 set(SRCS
-  AliHMPIDReconstructor.cxx AliHMPIDTracker.cxx 
+  AliHMPIDReconstructor.cxx AliHMPIDtrack.cxx AliHMPIDTracker.cxx 
         AliHMPIDRecon.cxx AliHMPIDRecoParam.cxx 
         AliHMPIDReconHTA.cxx AliHMPIDPid.cxx 
 		AliHMPIDQADataMakerRec.cxx

@@ -6,7 +6,8 @@ set(SRCS
 	AliMonitorTPC.cxx AliMonitorITS.cxx AliMonitorV0s.cxx 
 	AliMonitorDataTPC.cxx 
 	AliMonitorProcess.cxx AliMonitorControl.cxx 
-	AliMonitorDialog.cxx AliMonitorClient.cxx
+	AliMonitorDialog.cxx AliMonitorClient.cxx 
+	AliQAHistNavigator.cxx AliQAHistViewer.cxx
 )
 
 # fill list of header files from list of source files

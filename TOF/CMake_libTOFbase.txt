@@ -1,27 +1,28 @@
 # -*- mode: cmake -*-
 
 set(SRCS
-AliTOFGeometry.cxx
-AliTOFdigit.cxx
-AliTOFRawMap.cxx
-AliTOFrawData.cxx
-AliTOFRawStream.cxx
-AliTOFHitData.cxx
-AliTOFHitDataBuffer.cxx
-AliTOFDecoder.cxx
-AliTOFChannelOffline.cxx
-AliTOFChannelOnline.cxx
-AliTOFChannelOnlineStatus.cxx
-AliTOFChannelOnlineArray.cxx 
-AliTOFChannelOnlineStatusArray.cxx  
-AliTOFcalib.cxx
-AliTOFAlignment.cxx
-AliTOFPreprocessor.cxx
-AliTOFDataDCS.cxx
-AliTOFFormatDCS.cxx
-AliTOFPreprocessorFDR.cxx
-AliTOFFEEReader.cxx
-AliTOFCableLengthMap.cxx
+        AliTOFGeometry.cxx  
+        AliTOFdigit.cxx  
+	AliTOFDigitMap.cxx  
+        AliTOFRawMap.cxx
+        AliTOFrawData.cxx
+        AliTOFRawStream.cxx
+        AliTOFHitData.cxx
+        AliTOFHitDataBuffer.cxx
+        AliTOFDecoder.cxx
+	AliTOFChannelOffline.cxx  
+	AliTOFChannelOnline.cxx  
+	AliTOFChannelOnlineStatus.cxx  
+	AliTOFChannelOnlineArray.cxx  
+	AliTOFChannelOnlineStatusArray.cxx  
+	AliTOFcalib.cxx 
+	AliTOFAlignment.cxx 
+	AliTOFPreprocessor.cxx 
+        AliTOFDataDCS.cxx 
+        AliTOFFormatDCS.cxx 
+	AliTOFPreprocessorFDR.cxx 
+	AliTOFFEEReader.cxx 
+	AliTOFCableLengthMap.cxx
 )
 
 # fill list of header files from list of source files

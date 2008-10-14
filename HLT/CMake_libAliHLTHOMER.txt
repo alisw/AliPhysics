@@ -12,7 +12,6 @@ Set_source_files_properties(${SRCS} PROPERTIES COMPILE_FLAGS
 # by exchanging the file extension
 String(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
-
 Set(HDRS "${HDRS}"
 BASE/HOMER/AliHLTHOMERData.h
 )

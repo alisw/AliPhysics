@@ -1,19 +1,20 @@
 # -*- mode: cmake -*-
 
 set(SRCS
-qaGui/AliTRDqaGuiMain.cxx
-qaGui/AliTRDqaGuiClusters.cxx
-qaGui/AliTRDqaGuiClustersSM.cxx
-qaGui/AliTRDqaGuiClustersStack.cxx
-qaGui/AliTRDqaGuiESDs.cxx
-qaGui/AliTRDqaGuiMainBlack.cxx
-qaGui/AliTRDqaGuiBlackSM.cxx
-qaGui/AliTRDqaGuiBlackChamber.cxx
-qaGui/AliTRDqaGuiJPsi.cxx
-qaGui/AliTRDqaGuiEnergyDeposit.cxx
-qaGui/AliTRDqaGuiMainAnalysis.cxx
-qaGui/AliTRDqaGuiBlackError.cxx
-qaGui/AliTRDqaGuiBlackGlobal.cxx
+      qaGui/AliTRDqaGuiMain.cxx 
+      qaGui/AliTRDqaGuiClusters.cxx 
+      qaGui/AliTRDqaGuiClustersSM.cxx 
+      qaGui/AliTRDqaGuiClustersStack.cxx 
+      qaGui/AliTRDqaGuiESDs.cxx 
+      qaGui/AliTRDqaGuiMainBlack.cxx 
+      qaGui/AliTRDqaGuiBlackSM.cxx 
+      qaGui/AliTRDqaGuiBlackChamber.cxx 
+      qaGui/AliTRDqaGuiBlackError.cxx 
+      qaGui/AliTRDqaGuiBlackGlobal.cxx 
+      qaGui/AliTRDqaGuiBlackGTU.cxx 
+      qaGui/AliTRDqaGuiJPsi.cxx 
+      qaGui/AliTRDqaGuiEnergyDeposit.cxx 
+      qaGui/AliTRDqaGuiMainAnalysis.cxx 
 )
 
 # fill list of header files from list of source files

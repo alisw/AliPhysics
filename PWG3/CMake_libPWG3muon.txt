@@ -1,8 +1,9 @@
 # -*- mode: cmake -*-
 
 set(SRCS
-                 muon/AliAnalysisTaskESDMuonFilter.cxx 
+        	 muon/AliAnalysisTaskESDMuonFilter.cxx 
                  muon/AliAnalysisTaskMuonAODfromGeneral.cxx 
+                 muon/AliAnalysisTaskFromStandardToMuonAOD.cxx 
                  muon/AliAnalysisTaskSingleMu.cxx 
                  muon/AliAnalysisTaskLUT.cxx  
                  muon/AliAnalysisTaskTrigChEff.cxx 

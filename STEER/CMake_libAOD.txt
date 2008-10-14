@@ -6,8 +6,8 @@ set(SRCS
 	AliAODCluster.cxx AliAODCaloCluster.cxx AliAODPmdCluster.cxx AliAODFmdCluster.cxx 
 	AliAODJet.cxx AliAODPhoton.cxx AliAODRedCov.cxx AliAODRecoDecay.cxx 
 	AliAODHandler.cxx AliAODTracklets.cxx AliAODTagCreator.cxx 
-	AliAODv0.cxx AliAODCaloCells.cxx AliAODInputHandler.cxx AliMultiAODInputHandler.cxx AliAODDiJet.cxx
-        AliAODcascade.cxx
+	AliAODv0.cxx AliAODcascade.cxx AliAODCaloCells.cxx AliAODInputHandler.cxx 
+	AliMultiAODInputHandler.cxx AliAODDiJet.cxx AliAODMCParticle.cxx
 )
 
 # fill list of header files from list of source files

@@ -12,6 +12,7 @@ Aliengui/AliTagFrame.cxx
 )
 
 Add_Definitions(-DWITHXML)
+#Set(COMPILE_FLAGS -DWITHXML)
 
 # fill list of header files from list of source files
 # by exchanging the file extension

@@ -1,28 +1,31 @@
 # -*- mode: cmake -*-
 
 set(SRCS
-AliEMCALGeometry.cxx
-AliEMCALHit.cxx
-AliEMCALLoader.cxx
-AliEMCALShishKebabModule.cxx
-AliEMCALShishKebabTrd1Module.cxx
-AliEMCALWsuCosmicRaySetUp.cxx
-AliEMCALRecPoint.cxx
-AliEMCALClusterizer.cxx
-AliEMCALHistoUtilities.cxx
-AliEMCALSDigitizer.cxx
-AliEMCALDigit.cxx
-AliEMCALCalibData.cxx
-AliEMCALCalibHistoProducer.cxx
-AliEMCALPreprocessor.cxx
-AliEMCALSensorTemp.cxx
-AliEMCALSensorTempArray.cxx
-AliCaloCalibPedestal.cxx
-AliCaloCalibSignal.cxx
-AliEMCALSurvey.cxx
-AliEMCALRecParam.cxx
-AliEMCALQAChecker.cxx
-AliEMCALCalibTimeDep.cxx
+AliEMCALGeometry.cxx 
+AliEMCALHit.cxx 
+AliEMCALLoader.cxx 
+AliEMCALShishKebabModule.cxx 
+AliEMCALShishKebabTrd1Module.cxx 
+AliEMCALWsuCosmicRaySetUp.cxx 
+AliEMCALRecPoint.cxx 
+AliEMCALClusterizer.cxx 
+AliEMCALHistoUtilities.cxx 
+AliEMCALSDigitizer.cxx 
+AliEMCALDigit.cxx 
+AliEMCALCalibData.cxx 
+AliEMCALCalibHistoProducer.cxx 
+AliEMCALCalibTimeDep.cxx 
+AliEMCALPreprocessor.cxx 
+AliEMCALSensorTemp.cxx 
+AliEMCALSensorTempArray.cxx 
+AliCaloCalibPedestal.cxx 
+AliCaloCalibSignal.cxx 
+AliEMCALSurvey.cxx 
+AliEMCALRecParam.cxx 
+AliEMCALQAChecker.cxx 
+AliEMCALSpaceFrame.cxx 
+AliEMCALSTURawStream.cxx 
+SMcalib/AliEMCALCCUSBRawStream.cxx 
 )
 
 # fill list of header files from list of source files

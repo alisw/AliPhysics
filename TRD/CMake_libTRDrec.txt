@@ -1,29 +1,30 @@
 # -*- mode: cmake -*-
 
 set(SRCS
-AliTRDcluster.cxx
-AliTRDclusterizer.cxx
-AliTRDtransform.cxx
-AliTRDtracklet.cxx
-AliTRDtrack.cxx
-AliTRDtracker.cxx
-AliTRDseed.cxx
-AliTRDpropagationLayer.cxx
-AliTRDpidESD.cxx
-AliTRDReconstructor.cxx
-AliTRDtrackingAnalysis.cxx
-AliTRDseedV1.cxx
-AliTRDtrackV1.cxx
-AliTRDtrackerV1.cxx
-AliTRDtrackerDebug.cxx
-AliTRDtrackingSector.cxx
-AliTRDtrackingChamber.cxx
-AliTRDchamberTimeBin.cxx
-AliTRDQADataMakerRec.cxx
-AliTRDqaBlackEvents.cxx
-AliTRDCalibraFillHisto.cxx
-AliTRDqaBuildReference.cxx
-AliTRDqaRecPoints.cxx
+      AliTRDcluster.cxx
+      AliTRDclusterizer.cxx 
+      AliTRDtransform.cxx 
+      AliTRDtracklet.cxx 
+      AliTRDtrack.cxx 
+      AliTRDtracker.cxx 
+      AliTRDseed.cxx 
+      AliTRDpropagationLayer.cxx 
+      AliTRDpidUtil.cxx 
+      AliTRDpidESD.cxx 
+      AliTRDReconstructor.cxx 
+      AliTRDtrackingAnalysis.cxx 
+      AliTRDseedV1.cxx 
+      AliTRDtrackV1.cxx 
+      AliTRDtrackerV1.cxx 
+      AliTRDtrackerDebug.cxx 
+      AliTRDtrackingSector.cxx 
+      AliTRDtrackingChamber.cxx 
+      AliTRDchamberTimeBin.cxx 
+      AliTRDQADataMakerRec.cxx 
+      AliTRDqaBlackEvents.cxx 
+      AliTRDqaBuildReference.cxx 
+      AliTRDCalibraFillHisto.cxx 
+      AliTRDqaRecPoints.cxx
 )
 
 # fill list of header files from list of source files

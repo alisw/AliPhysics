@@ -1,7 +1,7 @@
 # -*- mode: cmake -*-
 
 set(SRCS
-AliPMD.cxx AliPMDv0.cxx AliPMDv1.cxx AliPMDhit.cxx AliPMDcell.cxx AliPMDDigitizer.cxx AliPMDDDLRawData.cxx AliPMDQADataMakerSim.cxx
+AliPMD.cxx AliPMDv0.cxx AliPMDv1.cxx AliPMDv2008.cxx AliPMDhit.cxx AliPMDcell.cxx AliPMDDigitizer.cxx AliPMDDDLRawData.cxx AliPMDQADataMakerSim.cxx
 )
 
 # fill list of header files from list of source files

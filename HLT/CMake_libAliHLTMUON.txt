@@ -11,8 +11,10 @@ MUON/OnlineAnalysis/AliHLTMUONTriggerReconstructorComponent.cxx
 MUON/OnlineAnalysis/AliHLTMUONHitReconstructorComponent.cxx
 MUON/OnlineAnalysis/AliHLTMUONMansoTrackerFSMComponent.cxx
 MUON/OnlineAnalysis/AliHLTMUONDecisionComponent.cxx
+MUON/OnlineAnalysis/AliHLTMUONClusterFinderComponent.cxx
 MUON/utils/AliHLTMUONEmptyEventFilterComponent.cxx
 MUON/utils/AliHLTMUONDataCheckerComponent.cxx
+MUON/utils/AliHLTMUONRawDataHistoComponent.cxx
 MUON/AliHLTMUONProcessor.cxx
 MUON/AliHLTMUONRecHit.cxx
 MUON/AliHLTMUONTriggerRecord.cxx

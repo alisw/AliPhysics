@@ -64,7 +64,7 @@ PHOS/AliHLTPHOSConstants.h
 PHOS/AliHLTPHOSRecPointDataStruct.h
 PHOS/AliHLTPHOSRawAnalyzer.h
 PHOS/AliHLTPHOSDefinitions.h
-PHOS/AliHLTPHOSModuleCellEnergyDataStruct.h
+#PHOS/AliHLTPHOSModuleCellEnergyDataStruct.h
 PHOS/AliHLTPHOSRcuCellEnergyDataStruct.h
 PHOS/AliHLTPHOSValidCellDataStruct.h
 PHOS/AliHLTPHOSDataHeaderStruct.h

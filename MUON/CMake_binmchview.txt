@@ -4,7 +4,7 @@ set(SRCS
 mchview.cxx
 )
 
-Set(LIBS STEERBase ESD AOD RAWDatarec STEER CDB Physics MUONmapping MUONcalib
+Set(LIBS STEERBase ESD AOD RAWDatarec STEER CDB MUONmapping MUONcalib
          MUONgeometry MUONtrigger RAWDatabase RAWDatasim MUONraw MUONbase
          MUONshuttle MUONrec MUONgraphics MUONcore lhapdf pythia6 microcern)
 

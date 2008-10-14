@@ -8,7 +8,7 @@ AliFMDPoints.cxx
 AliFMDHit.cxx
 AliFMDBaseDigitizer.cxx
 AliFMDDigitizer.cxx
-AliFMDSDigitizer.cxx
+AliFMDHitDigitizer.cxx
 AliFMDEdepMap.cxx
 AliFMDRawWriter.cxx
 AliFMDQADataMakerSim.cxx

@@ -1,14 +1,17 @@
 # -*- mode: cmake -*-
 
 set(SRCS
- 	AliAnalysisTaskSE.cxx AliAnalysisTaskME.cxx
-	AliAnalysisTaskESDfilter.cxx AliAnalysisTaskKineFilter.cxx
-	AliKineTrackCuts.cxx AliESDtrackCuts.cxx AliESDv0Cuts.cxx
-	AliEventPoolOTF.cxx AliEventPoolLoop.cxx AliEventPoolSparse.cxx
+ 	AliAnalysisTaskSE.cxx AliAnalysisTaskME.cxx 
+	AliAnalysisTaskESDfilter.cxx AliAnalysisTaskKineFilter.cxx AliAnalysisTaskMCParticleFilter.cxx 
+	AliKineTrackCuts.cxx AliESDtrackCuts.cxx AliESDv0Cuts.cxx 
+	AliEventPoolOTF.cxx AliEventPoolLoop.cxx AliEventPoolSparse.cxx 
+	AliAnalysisTaskTagCreator.cxx
 )
 
 Set_source_files_properties(${SRCS} COMPILE_FLAGS -DWITHXML)
 Set(SRCS ${SRCS} AliTagAnalysis.cxx AliXMLCollection.cxx)
+
+Add_definitions(-DWITHXML)
 
 # fill list of header files from list of source files
 # by exchanging the file extension
