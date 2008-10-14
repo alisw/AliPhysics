@@ -50,6 +50,7 @@ class AliXMLCollection : public TGridCollection {
   const char *GetLFN(const char *name);
   const char *GetGUID(const char *name);
   TEntryList *GetEventList(const char *filename) const;
+  TEntryList *GetEntryList(const char *filename) { return GetEventList(filename); }
   Bool_t      OverlapCollection(TGridCollection * comparator);
 
   static AliXMLCollection *Open(const char *localcollectionfile);

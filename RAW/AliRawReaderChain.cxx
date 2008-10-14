@@ -26,6 +26,13 @@
 
 #include <TChain.h>
 #include <TFileCollection.h>
+#include <TEntryList.h>
+#include "TGridCollection.h"
+#include <TPluginManager.h>
+#include <TROOT.h>
+#include <TSystem.h>
+#include <TFile.h>
+#include <TKey.h>
 
 #include "AliRawReaderChain.h"
 #include "AliRawEvent.h"
@@ -39,22 +46,102 @@ AliRawReaderChain::AliRawReaderChain() :
   // default constructor
 }
 
-AliRawReaderChain::AliRawReaderChain(const char* listFileName) :
+AliRawReaderChain::AliRawReaderChain(const char* fileName) :
   AliRawReaderRoot(),
   fChain(NULL)
 {
 // create raw-reader objects which takes as an input a root chain
-// from the file list found in 'listFileName'
-
-  TFileCollection collection("RAW",
-			     "Collection with raw-data files",
-			     listFileName);
+// either from the file list found in 'fileName' (IsCollection = true)
+// or from entry list found in 'filename' (IsCollection = false)
+// The entry-list syntax follows root convetion: filename.root/listname
 
   fChain = new TChain("RAW");
-  if (!fChain->AddFileInfoList((TCollection*)(collection.GetList()))) {
-    Error("AliRawReaderChain","Bad file list in collection, the chain is empty");
-    fIsValid = kFALSE;
-    return;
+
+  TString fileNameStr = fileName;
+  if (fileNameStr.EndsWith(".xml")) {
+
+    TGridCollection *collection = NULL;
+    TPluginManager* pluginManager = gROOT->GetPluginManager();
+    TPluginHandler* pluginHandler = pluginManager->FindHandler("TGridCollection", "alice");
+    if (!pluginHandler) {
+      pluginManager->AddHandler("TGridCollection", "alice", 
+				"AliXMLCollection", "ANALYSISalice", "AliXMLCollection(const char*)");
+      pluginHandler = pluginManager->FindHandler("TGridCollection", "alice");
+    }
+    gSystem->Load("libANALYSIS");
+    if (pluginHandler && (pluginHandler->LoadPlugin() == 0)) {
+      collection = (TGridCollection*)pluginHandler->ExecPlugin(1,fileNameStr.Data());
+    }
+    else {
+      fIsValid = kFALSE;
+      return;
+    }
+    collection->Reset();
+    Bool_t elistsExist = kFALSE;
+    TEntryList *elist = new TEntryList();
+    while (collection->Next()) {
+      fChain->Add(collection->GetTURL(""));
+      TEntryList *list = (TEntryList *)collection->GetEntryList("");
+      if (list) {
+	list->SetTreeName("RAW");
+	list->SetFileName(collection->GetTURL(""));
+	elist->Add(list);
+	elistsExist = kTRUE;
+      }
+    }
+    if (elistsExist) {
+      fChain->SetEntryList(elist,"ne");
+    }
+    else {
+      Info("AliRawReaderChain", "no entry lists found in %s. Using all entries", fileNameStr.Data());
+      delete elist;
+    }
+  }
+  else if (fileNameStr.EndsWith(".root")) {
+
+    TDirectory* dir = gDirectory;
+    TFile *listFile = TFile::Open(fileNameStr.Data());
+    dir->cd();
+    if (!listFile || !listFile->IsOpen()) {
+      Error("AliRawReaderChain", "could not open file %s", fileNameStr.Data());
+      fIsValid = kFALSE;
+      return;
+    }
+
+    TEntryList *elist = NULL;
+    TKey *key = NULL;
+    TIter nextkey(listFile->GetListOfKeys());
+    while ((key=(TKey*)nextkey())){
+      if (strcmp("TEntryList", key->GetClassName())==0){
+        elist = (TEntryList*)key->ReadObj();
+      }
+    }
+    if (!elist) {
+      Error("AliRawReaderChain", "no TEntryList found in %s", fileNameStr.Data());
+      fIsValid = kFALSE;
+      return;
+    }
+
+    TEntryList *templist = NULL;
+    TList *elists = elist->GetLists();
+    TIter next(elists);
+    while((templist = (TEntryList*)next())){
+      Info("AliRawReaderChain", "%s added to the chain", templist->GetFileName());
+      fChain->Add(templist->GetFileName());
+    }
+    fChain->SetEntryList(elist,"ne");
+  }
+  else {
+
+    TFileCollection collection("RAW",
+			       "Collection with raw-data files",
+			       fileNameStr.Data());
+
+    if (!fChain->AddFileInfoList((TCollection*)(collection.GetList()))) {
+      Error("AliRawReaderChain","Bad file list in collection, the chain is empty");
+      fIsValid = kFALSE;
+      return;
+    }
   }
 
   fChain->SetBranchStatus("*",1);
@@ -87,6 +174,29 @@ AliRawReaderChain::AliRawReaderChain(TChain *chain) :
 // from a root file collection
 
   if (!fChain) fIsValid = kFALSE;
+
+  fChain->SetBranchStatus("*",1);
+  fChain->SetBranchAddress("rawevent",&fEvent,&fBranch);
+}
+
+AliRawReaderChain::AliRawReaderChain(TEntryList *elist) :
+  AliRawReaderRoot(),
+  fChain(NULL)
+{
+// create raw-reader objects which takes as an input a root chain
+// from a root file collection
+
+  if (!elist) fIsValid = kFALSE;
+
+  fChain = new TChain("RAW");
+
+  TEntryList *templist = NULL;
+  TList *elists = elist->GetLists();
+  TIter next(elists);
+  while((templist = (TEntryList*)next())){
+    fChain->Add(templist->GetFileName());
+  }
+  fChain->SetEntryList(elist,"ne");
 
   fChain->SetBranchStatus("*",1);
   fChain->SetBranchAddress("rawevent",&fEvent,&fBranch);

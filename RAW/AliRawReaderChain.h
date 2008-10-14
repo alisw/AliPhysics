@@ -13,13 +13,15 @@
 
 class TChain;
 class TFileCollection;
+class TEntryList;
 
 class AliRawReaderChain: public AliRawReaderRoot {
   public :
     AliRawReaderChain();
-    AliRawReaderChain(const char* listFileName);
+    AliRawReaderChain(const char* fileName);
     AliRawReaderChain(TFileCollection *collection);
     AliRawReaderChain(TChain *chain);
+    AliRawReaderChain(TEntryList *elist);
     AliRawReaderChain(const AliRawReaderChain& rawReader);
     AliRawReaderChain& operator = (const AliRawReaderChain& rawReader);
     virtual ~AliRawReaderChain();

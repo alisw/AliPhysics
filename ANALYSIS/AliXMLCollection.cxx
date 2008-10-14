@@ -343,8 +343,9 @@ void AliXMLCollection::ParseXML() {
 	TObjString *olfn  = new TObjString(xml.GetAttr(xfile,"lfn"));
 	TObjString *oguid = new TObjString(xml.GetAttr(xfile,"guid"));
 	TObjString *oevlist = new TObjString(xml.GetAttr(xfile, "evlist"));
-	printf("Collection: %s - The Eventlist is %s\n",fXmlFile.Data(),oevlist->GetName());
-	if (oevlist->GetName() != "") {
+	Info("ParseXML","Collection: %s - turl: %s eventlist: %s",
+	     fXmlFile.Data(),oturl->GetName(),oevlist->GetName());
+	if (strcmp(oevlist->GetName(),"") != 0) {
 	  TEntryList *xmlevlist = new TEntryList(oturl->GetName(), oguid->GetName());
 	  TString stringevlist = oevlist->GetName();
 	  TObjArray *evlist = stringevlist.Tokenize(",");
