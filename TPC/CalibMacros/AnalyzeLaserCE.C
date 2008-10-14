@@ -77,9 +77,11 @@ timeF2~-Result~:ffit2~-fTL~-fInOut~
 
 
 */
+#include <fstream>
 #include "TString.h"
 #include "TSystem.h"
 #include "TTree.h"
+#include "TEntryList.h"
 #include "TCut.h"
 #include "TStatToolkit.h"
 #include "AliTPCCalibViewer.h"
@@ -152,6 +154,7 @@ TObjString strFit2="";                     // string fit 2
 TVectorD vecFit0;                       // parameters fit 0
 TVectorD vecFit1;                       // parameters fit 1
 TVectorD vecFit2;                       // parameters fit 2
+TEntryList  *elist=0;                     // event list -slection criterias
 //
 // working variables
 //
@@ -697,7 +700,41 @@ void AnalyzeLaserCE(){
   MakeRes();
 }
 
-//void AddFile(char *fname, char *aname){
-//  TFile f(fname);
-//  TTree 
-//}
+
+
+void AddFiles(char *list){
+  //
+  // prepare viewer for data sets
+  //
+  fstream finput;
+  finput.open(list, ios_base::in);
+  //
+  TString currentFile;
+  Int_t counter=0;
+  if (!elist ) {
+    elist = new TEntryList("elist","elist");
+    tree->Draw(Form(">>elist%d",counter),"1","entrylist");
+  }
+  while(finput.good()) {
+    finput >> currentFile;
+    printf("Getting file%s\n",currentFile.Data());
+    TFile * fC = new TFile(currentFile.Data());
+    TTree * treeC = (TTree*) fC->Get("calPads");
+    makePad->AddFriend(treeC,Form("T%d",counter));
+    //
+    TString cutStrF1=Form("abs(T%d.timeIn.fElements-T%d.timeF1.fElements)<1.5",counter,counter);
+    TEntryList *celist = new TEntryList(Form("listF1%d",counter),Form("listF1%d",counter));
+    tree->Draw(Form(">>listF1%d",counter),cutStrF1,"entrylist");
+    if (celist->GetN()>0) elist->Add(celist);
+    counter++;
+  }
+  viewer->Reload();
+}
+
+void AnalyzeSectors(){
+  //
+  // Analyze sector by sector
+  //
+  TTreeSRedirector cstream("fits.root");
+  for (Int_t 
+}
