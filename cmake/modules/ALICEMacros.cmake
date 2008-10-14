@@ -42,18 +42,36 @@ Function (AddLibrary LIB SRCS DHDRS)
 
 # Adds an AliRoot library as a target
 
-  Set(LDEF "${LIB}LinkDef.h")
+  Set(_path)
+  List(LENGTH SRCS _len)
+  If(_len GREATER 0)
+    List(GET SRCS 0 _file)
+    Get_filename_component(_path ${_file} PATH)
+#    Message(STATUS Debug ${_file} ${_path})
+  Endif(_len GREATER 0)
+
+  Set(LDEF)
+  If(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${LIB}LinkDef.h)
+    Set(LDEF "${LIB}LinkDef.h")
+  Endif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${LIB}LinkDef.h)
+
+  If(_path)
+    If(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${_path}/${LIB}LinkDef.h)
+      Set(LDEF "${_path}/${LIB}LinkDef.h")
+    Endif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${_path}/${LIB}LinkDef.h)
+  Endif(_path)
+
   Set(DICT)
-  If(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${LDEF})
+  If(LDEF)
 # even with no cxx files, one may want to build an empty lib as a placeholder
 # in AliRoot this is signalled by the existence of an (empty) ${LIB}LinkDef.h
     Set(DICT "G__${LIB}.cxx")
     Set(ASRCS ${SRCS} ${DICT})
     Root_Generate_Dictionary("${DHDRS}" "${LDEF}" "${DICT}" "${INCLUDE_DIRECTORIES}")
-  Else(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${LDEF})
-    Message(STATUS "${LDEF} not found... probably building empty lib")
+  Else(LDEF)
+    Message(STATUS "${LIB}LinkDef.h not found... probably building empty lib")
     Set(ASRCS ${SRCS})
-  Endif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${LDEF})
+  Endif(LDEF)
 
   Add_Library(${LIB} SHARED ${ASRCS})
   Target_Link_Libraries(${LIB} ${ALIROOT_LIBRARIES})

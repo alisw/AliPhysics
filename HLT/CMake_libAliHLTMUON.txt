@@ -1,20 +1,6 @@
 # -*- mode: cmake -*-
 
 set(SRCS
-MUON/OfflineInterface/AliHLTMUONAgent.cxx
-MUON/OfflineInterface/AliHLTMUONTriggerRecordsSource.cxx
-MUON/OfflineInterface/AliHLTMUONRecHitsSource.cxx
-MUON/OfflineInterface/AliHLTMUONDigitPublisherComponent.cxx
-MUON/OfflineInterface/AliHLTMUONRootifierComponent.cxx
-MUON/OfflineInterface/AliHLTMUONESDMaker.cxx
-MUON/OnlineAnalysis/AliHLTMUONTriggerReconstructorComponent.cxx
-MUON/OnlineAnalysis/AliHLTMUONHitReconstructorComponent.cxx
-MUON/OnlineAnalysis/AliHLTMUONMansoTrackerFSMComponent.cxx
-MUON/OnlineAnalysis/AliHLTMUONDecisionComponent.cxx
-MUON/OnlineAnalysis/AliHLTMUONClusterFinderComponent.cxx
-MUON/utils/AliHLTMUONEmptyEventFilterComponent.cxx
-MUON/utils/AliHLTMUONDataCheckerComponent.cxx
-MUON/utils/AliHLTMUONRawDataHistoComponent.cxx
 MUON/AliHLTMUONProcessor.cxx
 MUON/AliHLTMUONRecHit.cxx
 MUON/AliHLTMUONTriggerRecord.cxx
@@ -36,6 +22,20 @@ MUON/OnlineAnalysis/AliHLTMUONCalculations.cxx
 MUON/OnlineAnalysis/AliHLTMUONTriggerReconstructor.cxx
 MUON/OnlineAnalysis/AliHLTMUONHitReconstructor.cxx
 MUON/OnlineAnalysis/AliHLTMUONMansoTrackerFSM.cxx
+MUON/OfflineInterface/AliHLTMUONAgent.cxx
+MUON/OfflineInterface/AliHLTMUONTriggerRecordsSource.cxx
+MUON/OfflineInterface/AliHLTMUONRecHitsSource.cxx
+MUON/OfflineInterface/AliHLTMUONDigitPublisherComponent.cxx
+MUON/OfflineInterface/AliHLTMUONRootifierComponent.cxx
+MUON/OfflineInterface/AliHLTMUONESDMaker.cxx
+MUON/OnlineAnalysis/AliHLTMUONTriggerReconstructorComponent.cxx
+MUON/OnlineAnalysis/AliHLTMUONHitReconstructorComponent.cxx
+MUON/OnlineAnalysis/AliHLTMUONMansoTrackerFSMComponent.cxx
+MUON/OnlineAnalysis/AliHLTMUONDecisionComponent.cxx
+MUON/OnlineAnalysis/AliHLTMUONClusterFinderComponent.cxx
+MUON/utils/AliHLTMUONEmptyEventFilterComponent.cxx
+MUON/utils/AliHLTMUONDataCheckerComponent.cxx
+MUON/utils/AliHLTMUONRawDataHistoComponent.cxx
 )
 
 # fill list of header files from list of source files
