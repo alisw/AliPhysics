@@ -1256,7 +1256,9 @@ Double_t AliTRDtrackerV1::FitRiemanTilt(AliTRDtrackV1 *track, AliTRDseedV1 *trac
   Double_t c    =  fitter->GetParameter(2);
   Double_t y0   = 1. / a;
   Double_t x0   = -b * y0;
-  Double_t R    = TMath::Sqrt(y0*y0 + x0*x0 - c*y0);
+  Double_t tmp  = y0*y0 + x0*x0 - c*y0;
+  if(tmp<=0.) return 1.E10;
+  Double_t R    = TMath::Sqrt(tmp);
   Double_t C    =  1.0 + b*b - c*a;
   if (C > 0.0) C  =  a / TMath::Sqrt(C);
 
@@ -1267,7 +1269,9 @@ Double_t AliTRDtrackerV1::FitRiemanTilt(AliTRDtrackV1 *track, AliTRDseedV1 *trac
   if(!track){
     for(Int_t ip = 0; ip < kNPlanes; ip++) {
       x = tracklets[ip].GetX0();
-      Double_t tmp = TMath::Sqrt(R*R-(x-x0)*(x-x0));  
+      Double_t tmp = R*R-(x-x0)*(x-x0);  
+      if(tmp <= 0.) continue;
+      tmp = TMath::Sqrt(tmp);  
 
       // y:     R^2 = (x - x0)^2 + (y - y0)^2
       //     =>   y = y0 +/- Sqrt(R^2 - (x - x0)^2)
@@ -1286,24 +1290,12 @@ Double_t AliTRDtrackerV1::FitRiemanTilt(AliTRDtrackV1 *track, AliTRDseedV1 *trac
     Float_t xyz[3];
     for(int ip=0; ip<np; ip++){
       points[ip].GetXYZ(xyz);
-      xyz[1] = y0 - (y0>0.?1.:-1)*TMath::Sqrt(R*R-(xyz[0]-x0)*(xyz[0]-x0));
+      xyz[1] = y0 - (y0>0.?1.:-1.)*TMath::Sqrt(R*R-(xyz[0]-x0)*(xyz[0]-x0));
       xyz[2] = z0 + dzdx * (xyz[0] - xref);
       points[ip].SetXYZ(xyz);
     }
   }
   
-/*  if(fReconstructor->GetStreamLevel() >=5){
-    TTreeSRedirector &cstreamer = *fgDebugStreamer;
-    Int_t eventNumber			= AliTRDtrackerDebug::GetEventNumber();
-    Int_t candidateNumber	= AliTRDtrackerDebug::GetCandidateNumber();
-    Double_t chi2z = CalculateChi2Z(tracklets, z0, dzdx, xref);
-    cstreamer << "FitRiemanTilt"
-        << "EventNumber="			<< eventNumber
-        << "CandidateNumber="	<< candidateNumber
-        << "xref="						<< xref
-        << "Chi2Z="						<< chi2z
-        << "\n";
-  }*/
   return chi2;
 }
 
