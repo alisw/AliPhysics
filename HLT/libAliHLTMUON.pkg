@@ -51,7 +51,7 @@ MODULE_HDRS := 	$(MODULE_SRCS:.cxx=.h) \
 		OnlineAnalysis/AliHLTMUONMansoTrackerFSMCallback.h
 
 # The dictionary linkdef header for rootcint:
-MODULE_DHDR := 	HLTMUONLinkDef.h
+MODULE_DHDR := 	AliHLTMUONLinkDef.h
 
 EINCLUDE := 	HLT/BASE HLT/MUON HLT/MUON/utils HLT/MUON/OnlineAnalysis \
 		HLT/MUON/OfflineInterface MUON MUON/mapping STEER RAW
