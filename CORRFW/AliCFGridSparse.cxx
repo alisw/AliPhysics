@@ -632,3 +632,61 @@ void AliCFGridSparse::Copy(TObject& c) const
   if(fData)target.fData = fData;
 }
 
+//____________________________________________________________________
+TH1D* AliCFGridSparse::Slice(Int_t iVar, Double_t *varMin, Double_t *varMax) const
+{
+  //
+  // return a slice (1D-projection) on variable iVar while axis ranges are defined with varMin,varMax
+  // arrays varMin and varMax contain the min and max values of each variable.
+  // therefore varMin and varMax must have their dimensions equal to fNVar
+  //
+  
+  THnSparse* clone = (THnSparse*)fData->Clone();
+  for (Int_t iAxis=0; iAxis<fNVar; iAxis++) {
+    clone->GetAxis(iAxis)->SetRangeUser(varMin[iAxis],varMax[iAxis]);
+  }
+  return clone->Projection(iVar);
+}
+
+//____________________________________________________________________
+TH2D* AliCFGridSparse::Slice(Int_t iVar1, Int_t iVar2, Double_t *varMin, Double_t *varMax) const
+{
+  //
+  // return a slice (2D-projection) on variables iVar1 and iVar2 while axis ranges are defined with varMin,varMax
+  // arrays varMin and varMax contain the min and max values of each variable.
+  // therefore varMin and varMax must have their dimensions equal to fNVar
+  //
+  
+  THnSparse* clone = (THnSparse*)fData->Clone();
+  for (Int_t iAxis=0; iAxis<fNVar; iAxis++) {
+    clone->GetAxis(iAxis)->SetRangeUser(varMin[iAxis],varMax[iAxis]);
+  }
+  return clone->Projection(iVar1,iVar2);
+}
+
+//____________________________________________________________________
+TH3D* AliCFGridSparse::Slice(Int_t iVar1, Int_t iVar2, Int_t iVar3, Double_t *varMin, Double_t *varMax) const
+{
+  //
+  // return a slice (3D-projection) on variables iVar1, iVar2 and iVar3 while axis ranges are defined with varMin,varMax
+  // arrays varMin and varMax contain the min and max values of each variable.
+  // therefore varMin and varMax must have their dimensions equal to fNVar
+  //
+
+  THnSparse* clone = (THnSparse*)fData->Clone();
+  for (Int_t iAxis=0; iAxis<fNVar; iAxis++) {
+    clone->GetAxis(iAxis)->SetRangeUser(varMin[iAxis],varMax[iAxis]);
+  }
+  return clone->Projection(iVar1,iVar2,iVar3);
+}
+
+//____________________________________________________________________
+void AliCFGridSparse::SetRangeUser(Double_t *varMin, Double_t *varMax) {
+  //
+  // set range of every axis. varMin and varMax must be of dimension fNVar
+  //
+  for (Int_t iAxis=0; iAxis<fNVar ; iAxis++) { // set new range for every axis
+    fData->GetAxis(iAxis)->SetRangeUser(varMin[iAxis],varMax[iAxis]);
+  }
+  AliWarning("THnSparse has been modified");
+}

@@ -51,7 +51,9 @@ class AliCFVGrid : public AliCFFrame
   virtual TH1D* Project( Int_t ivar) const = 0;
   virtual TH2D* Project( Int_t ivar1, Int_t ivar2) const = 0;
   virtual TH3D* Project( Int_t ivar1, Int_t ivar2,Int_t ivar3) const = 0;
-  virtual TH1D* Slice( Int_t ivar, Double_t *varMin, Double_t *varMax) const = 0;
+  virtual TH1D* Slice(Int_t ivar, Double_t *varMin, Double_t *varMax) const = 0;
+  virtual TH2D* Slice(Int_t ivar1, Int_t ivar2, Double_t *varMin, Double_t *varMax) const = 0;
+  virtual TH3D* Slice(Int_t ivar1, Int_t ivar2, Int_t ivar3, Double_t *varMin, Double_t *varMax) const = 0;
 
   //basic operations
   virtual void SumW2()=0;

@@ -28,7 +28,7 @@
 #include "AliCFGrid.h"
 #include "AliCFGridSparse.h"
 #include "AliCFContainer.h"
-
+#include "TAxis.h"
 //____________________________________________________________________
 ClassImp(AliCFContainer)
 
@@ -213,7 +213,43 @@ TH1D *AliCFContainer::ShowSlice(Int_t ivar, Double_t *varMin, Double_t* varMax, 
     AliError("Non-existent selection step, return NULL");
     return 0x0;
   }
+  if (ivar >= fNVar || ivar < 0) {
+    AliError("Non-existent variable, return NULL");
+    return 0x0;
+  }
   return (TH1D*)fGrid[istep]->Slice(ivar,varMin,varMax);
+}
+//___________________________________________________________________
+TH2D *AliCFContainer::ShowSlice(Int_t ivar1, Int_t ivar2, Double_t *varMin, Double_t* varMax, Int_t istep) const
+{
+  //
+  // Make a slice along variables ivar1 and ivar2 at selection level istep in range [varMin,varMax]
+  //
+  if(istep >= fNStep || istep < 0){
+    AliError("Non-existent selection step, return NULL");
+    return 0x0;
+  }
+  if (ivar1 >= fNVar || ivar1 < 0 || ivar2 >= fNVar || ivar2 < 0) {
+    AliError("Non-existent variable, return NULL");
+    return 0x0;
+  }
+  return (TH2D*)fGrid[istep]->Slice(ivar1,ivar2,varMin,varMax);
+}
+//___________________________________________________________________
+TH3D *AliCFContainer::ShowSlice(Int_t ivar1, Int_t ivar2, Int_t ivar3, Double_t *varMin, Double_t* varMax, Int_t istep) const
+{
+  //
+  // Make a slice along variables ivar1, ivar2and ivar3 at selection level istep in range [varMin,varMax]
+  //
+  if(istep >= fNStep || istep < 0){
+    AliError("Non-existent selection step, return NULL");
+    return 0x0;
+  }
+  if (ivar1 >= fNVar || ivar1 < 0 || ivar2 >= fNVar || ivar2 < 0 || ivar3 >= fNVar || ivar3 < 0) {
+    AliError("Non-existent variable, return NULL");
+    return 0x0;
+  }
+  return (TH3D*)fGrid[istep]->Slice(ivar1,ivar2,ivar3,varMin,varMax);
 }
 //____________________________________________________________________
 Long64_t AliCFContainer::Merge(TCollection* list)
@@ -339,4 +375,24 @@ Double_t AliCFContainer::GetIntegral( Int_t istep, Double_t *varMin, Double_t* v
     return -1.;
   }
   return fGrid[istep]->GetIntegral(varMin,varMax);
+}
+//_____________________________________________________________________
+void AliCFContainer::SetRangeUser(Int_t ivar, Double_t varMin, Double_t varMax, Int_t istep) 
+{
+  //
+  // set axis range at step istep
+  //
+  if ( strcmp(fGrid[istep]->ClassName(),"AliCFGrid") ==0 ) {
+    AliWarning("Could not AliCFGrid::SetRangeUser(), function not implemented");
+    return;
+  }
+  if (istep >= fNStep || istep < 0){
+    AliError("Non-existent selection step");
+    return ;
+  }
+  if (ivar >= fNVar || ivar < 0){
+    AliError("Non-existent selection var");
+    return ;
+  }
+  ((AliCFGridSparse*)fGrid[istep])->GetGrid()->GetAxis(ivar)->SetRangeUser(varMin,varMax);
 }

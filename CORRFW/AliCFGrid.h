@@ -10,6 +10,7 @@
 //--------------------------------------------------------------------//
 
 #include "AliCFVGrid.h"
+#include "AliLog.h"
 
 class TH1D;
 class TH2D;
@@ -51,6 +52,10 @@ class AliCFGrid : public AliCFVGrid
   virtual TH2D* Project( Int_t ivar1, Int_t ivar2) const;
   virtual TH3D* Project( Int_t ivar1, Int_t ivar2,Int_t ivar3) const;
   virtual TH1D* Slice( Int_t ivar, Double_t *varMin, Double_t *varMax) const;
+  virtual TH2D* Slice( Int_t /*ivar1*/, Int_t /*ivar2*/, Double_t */*varMin*/, Double_t */*varMax*/) const 
+  {AliWarning("not implemented"); return 0x0;}
+  virtual TH3D* Slice( Int_t /*ivar1*/, Int_t /*ivar2*/, Int_t /*ivar3*/, Double_t */*varMin*/, Double_t */*varMax*/) const 
+  {AliWarning("not implemented"); return 0x0;}
 
   //basic operations
 

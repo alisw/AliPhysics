@@ -51,6 +51,9 @@ class AliCFContainer : public AliCFFrame
   virtual TH2D* ShowProjection( Int_t ivar1, Int_t ivar2, Int_t istep) const;
   virtual TH3D* ShowProjection( Int_t ivar1, Int_t ivar2,Int_t ivar3, Int_t istep) const;
   virtual TH1D* ShowSlice( Int_t ivar, Double_t *varMin, Double_t *varMax, Int_t istep) const;
+  virtual TH2D* ShowSlice( Int_t ivar1, Int_t ivar2, Double_t *varMin, Double_t *varMax, Int_t istep) const;
+  virtual TH3D* ShowSlice( Int_t ivar1, Int_t ivar2, Int_t ivar3, Double_t *varMin, Double_t *varMax, Int_t istep) const;
+  virtual void  SetRangeUser(Int_t ivar, Double_t varMin, Double_t varMax, Int_t istep) ;
   virtual AliCFVGrid * GetGrid(Int_t istep) const {return (AliCFVGrid*)fGrid[istep];};
   
  private:
