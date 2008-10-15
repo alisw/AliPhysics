@@ -56,7 +56,6 @@ lhapdf5.5.1/src/wrapwhitg.f \
 lhapdf5.5.1/src/wrapzeus.f \
 lhapdf5.5.1/src/lhaglue.f\
 lhapdf5.5.1/src/wrapUSER.f
-FFLAGS += -ffree-form
 PACKFFLAGS = $(FFLAGS) -ffree-form
 
 EXPORT:=AliStructFuncType.h
