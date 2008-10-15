@@ -32,6 +32,7 @@ class AliITSRawStreamSDDCompressed: public AliITSRawStream {
     virtual Int_t    GetChannel() const {return fChannel;}
     virtual Int_t    ReadJitter() const {return 0;}
     virtual Int_t    GetCarlosId() const {return fCarlosId;}
+    virtual UInt_t   GetDataWord() const {return fData;}
 
     virtual void SetDDLModuleMap(AliITSDDLModuleMapSDD* ddlsdd){
       if(!fDDLModuleMap) fDDLModuleMap=new AliITSDDLModuleMapSDD();
