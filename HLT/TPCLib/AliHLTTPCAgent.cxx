@@ -86,7 +86,7 @@ AliHLTTPCAgent::~AliHLTTPCAgent()
 }
 
 int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
-					 AliRawReader* /*rawReader*/,
+					 AliRawReader* rawReader,
 					 AliRunLoader* /*runloader*/) const
 {
   // see header file for class documentation
@@ -109,13 +109,25 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
 	TString arg, publisher, cf;
 
 	// digit publisher components
-	arg.Form("-slice %d -partition %d", slice, part);
 	publisher.Form("TPC-DP_%02d_%d", slice, part);
-	handler->CreateConfiguration(publisher.Data(), "TPCDigitPublisher", NULL , arg.Data());
+	if (!rawReader) {
+	  arg.Form("-slice %d -partition %d", slice, part);
+	  handler->CreateConfiguration(publisher.Data(), "TPCDigitPublisher", NULL , arg.Data());
+	} else {
+	  int ddlno=768;
+	  if (part>1) ddlno+=72+4*slice+(part-2);
+	  else ddlno+=2*slice+part;
+	  arg.Form("-minid %d -datatype 'DDL_RAW ' 'TPC '  -dataspec 0x%02x%02x%02x%02x -silent", ddlno, slice, slice, part, part);
+	  handler->CreateConfiguration(publisher.Data(), "AliRawReaderPublisher", NULL , arg.Data());
+	}
 
 	// cluster finder components
 	cf.Form("TPC-CF_%02d_%d", slice, part);
-	handler->CreateConfiguration(cf.Data(), "TPCClusterFinderUnpacked", publisher.Data(), "-timebins 446 -sorted");
+	if (!rawReader) {
+	  handler->CreateConfiguration(cf.Data(), "TPCClusterFinderUnpacked", publisher.Data(), "-timebins 446 -sorted");
+	} else {
+	  handler->CreateConfiguration(cf.Data(), "TPCClusterFinderDecoder", publisher.Data(), "-timebins 446");
+	}
 	if (trackerInput.Length()>0) trackerInput+=" ";
 	trackerInput+=cf;
       }
@@ -133,7 +145,7 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
     handler->CreateConfiguration("TPC-globalmerger","TPCGlobalMerger",mergerInput.Data(),"");
 
     // the esd converter configuration
-    handler->CreateConfiguration("TPC-esd-converter", "TPCEsdConverter"   , "TPC-globalmerger", "-tree");
+    handler->CreateConfiguration("TPC-esd-converter", "TPCEsdConverter"   , "TPC-globalmerger", "");
 
     /////////////////////////////////////////////////////////////////////////////////////
     //
