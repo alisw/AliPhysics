@@ -189,7 +189,7 @@ void AliEMCALSetRecParamCDB(AliRecoParam::EventSpecie_t default = AliRecoParam::
     //Low multiplicity parameter modifications:
     AliEMCALRecParam *recParamDB = AliEMCALRecParam::GetDefaultParameters();
 
-    recParamDB->SetClusteringThreshold(0.1); // 100 MeV
+    recParamDB->SetClusteringThreshold(0.2); // 200 MeV
     recParamDB->SetMinECut(0.01);  //10 MeV
     recParamDB->SetEventSpecie(AliRecoParam::kLowMult);
     recParamArray->AddLast(recParamDB);

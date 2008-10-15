@@ -258,7 +258,7 @@ AliEMCALRecParam* AliEMCALRecParam::GetLowFluxParam()
 {
   //low flux/multiplicity ("p+p") parameters for the reconstruction
   AliEMCALRecParam* params = new AliEMCALRecParam();
-  params->SetClusteringThreshold(0.1); // 100 MeV                                             
+  params->SetClusteringThreshold(0.2); // 200 MeV                                             
   params->SetMinECut(0.01);  //10 MeV       
   params->SetName("Low Flux - p+p");
   params->SetTitle("Low Flux - p+p");
