@@ -1561,7 +1561,6 @@ AliESDVertex* AliAnalysisVertexingHF::ReconstructSecondaryVertex(TObjArray *trkA
   if(!fSecVtxWithKF) { // AliVertexerTracks
 
     AliVertexerTracks *vertexer2 = new AliVertexerTracks(fBzkG);
-    vertexer2->SetDebug(0);
     vertexer2->SetVtxStart(fV1);
     vertex = (AliESDVertex*)vertexer2->VertexForSelectedESDTracks(trkArray);
     delete vertexer2;
