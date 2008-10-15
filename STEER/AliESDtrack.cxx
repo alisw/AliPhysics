@@ -179,6 +179,7 @@ AliESDtrack::AliESDtrack() :
   fTrackLength(0),
   fdTPC(0),fzTPC(0),
   fCddTPC(0),fCdzTPC(0),fCzzTPC(0),
+  fCchi2TPC(0),
   fD(0),fZ(0),
   fCdd(0),fCdz(0),fCzz(0),
   fCchi2(0),
@@ -265,6 +266,7 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   fTrackLength(track.fTrackLength),
   fdTPC(track.fdTPC),fzTPC(track.fzTPC),
   fCddTPC(track.fCddTPC),fCdzTPC(track.fCdzTPC),fCzzTPC(track.fCzzTPC),
+  fCchi2TPC(track.fCchi2TPC),
   fD(track.fD),fZ(track.fZ),
   fCdd(track.fCdd),fCdz(track.fCdz),fCzz(track.fCzz),
   fCchi2(track.fCchi2),
@@ -362,6 +364,7 @@ AliESDtrack::AliESDtrack(TParticle * part) :
   fTrackLength(0),
   fdTPC(0),fzTPC(0),
   fCddTPC(0),fCdzTPC(0),fCzzTPC(0),
+  fCchi2TPC(0),
   fD(0),fZ(0),
   fCdd(0),fCdz(0),fCzz(0),
   fCchi2(0),
@@ -636,13 +639,15 @@ AliESDtrack &AliESDtrack::operator=(const AliESDtrack &source){
   fCddTPC = source.fCddTPC;
   fCdzTPC = source.fCdzTPC;
   fCzzTPC = source.fCzzTPC;
+  fCchi2TPC = source.fCchi2TPC;
+
   fD  = source.fD; 
   fZ  = source.fZ; 
   fCdd = source.fCdd;
   fCdz = source.fCdz;
   fCzz = source.fCzz;
-
   fCchi2     = source.fCchi2;
+
   fITSchi2   = source.fITSchi2;             
   fTPCchi2   = source.fTPCchi2;            
   fTRDchi2   = source.fTRDchi2;      
@@ -768,6 +773,7 @@ const Bool_t AliESDtrack::FillTPCOnlyTrack(AliESDtrack &track){
   track.fCddTPC = fCddTPC;
   track.fCdzTPC = fCdzTPC;
   track.fCzzTPC = fCzzTPC;
+  track.fCchi2TPC = fCchi2TPC;
 
 
   // copy all other TPC specific parameters
@@ -822,7 +828,6 @@ void AliESDtrack::MakeMiniESDtrack(){
 
   // Reset track parameters constrained to the primary vertex
   delete fCp;fCp = 0;
-  fCchi2 = 0;
 
   // Reset track parameters at the inner wall of TPC
   delete fIp;fIp = 0;
@@ -1569,16 +1574,21 @@ void AliESDtrack::GetESDpid(Double_t *p) const {
 }
 
 //_______________________________________________________________________
-Bool_t AliESDtrack::RelateToVertexTPC
-(const AliESDVertex *vtx, Double_t b, Double_t maxd) {
+Bool_t AliESDtrack::RelateToVertexTPC(const AliESDVertex *vtx, 
+Double_t b, Double_t maxd, AliExternalTrackParam *cParam) {
   //
-  // Try to relate the TPC-only track paramters to the vertex "vtx", 
+  // Try to relate the TPC-only track parameters to the vertex "vtx", 
   // if the (rough) transverse impact parameter is not bigger then "maxd". 
   //            Magnetic field is "b" (kG).
   //
   // a) The TPC-only paramters are extapolated to the DCA to the vertex.
   // b) The impact parameters and their covariance matrix are calculated.
+  // c) An attempt to constrain the TPC-only params to the vertex is done.
+  //    The constrained params are returned via "cParam".
   //
+  // In the case of success, the returned value is kTRUE
+  // otherwise, it's kFALSE)
+  // 
 
   if (!fTPCInner) return kFALSE;
   if (!vtx) return kFALSE;
@@ -1592,12 +1602,26 @@ Bool_t AliESDtrack::RelateToVertexTPC
   fCdzTPC = cov[1];
   fCzzTPC = cov[2];
   
+  Double_t covar[6]; vtx->GetCovMatrix(covar);
+  Double_t p[2]={GetParameter()[0]-dz[0],GetParameter()[1]-dz[1]};
+  Double_t c[3]={covar[2],0.,covar[5]};
+
+  Double_t chi2=GetPredictedChi2(p,c);
+  if (chi2>kVeryBig) return kFALSE;
+
+  fCchi2TPC=chi2;
+
+  if (!cParam) return kTRUE;
+
+  *cParam = *fTPCInner;
+  if (!cParam->Update(p,c)) return kFALSE;
+
   return kTRUE;
 }
 
 //_______________________________________________________________________
-Bool_t AliESDtrack::RelateToVertex
-(const AliESDVertex *vtx, Double_t b, Double_t maxd) {
+Bool_t AliESDtrack::RelateToVertex(const AliESDVertex *vtx, 
+Double_t b, Double_t maxd, AliExternalTrackParam *cParam) {
   //
   // Try to relate this track to the vertex "vtx", 
   // if the (rough) transverse impact parameter is not bigger then "maxd". 
@@ -1606,9 +1630,10 @@ Bool_t AliESDtrack::RelateToVertex
   // a) The track gets extapolated to the DCA to the vertex.
   // b) The impact parameters and their covariance matrix are calculated.
   // c) An attempt to constrain this track to the vertex is done.
+  //    The constrained params are returned via "cParam".
   //
-  //    In the case of success, the returned value is kTRUE
-  //    (otherwise, it's kFALSE)
+  // In the case of success, the returned value is kTRUE
+  // (otherwise, it's kFALSE)
   //  
 
   if (!vtx) return kFALSE;
@@ -1627,14 +1652,24 @@ Bool_t AliESDtrack::RelateToVertex
   Double_t c[3]={covar[2],0.,covar[5]};
 
   Double_t chi2=GetPredictedChi2(p,c);
-  if (chi2>77.) return kFALSE;
+  if (chi2>kVeryBig) return kFALSE;
 
+  fCchi2=chi2;
+
+
+  //--- Could now these lines be removed ? ---
   delete fCp;
   fCp=new AliExternalTrackParam(*this);  
 
   if (!fCp->Update(p,c)) {delete fCp; fCp=0; return kFALSE;}
-  
-  fCchi2=chi2;
+  //----------------------------------------
+
+
+  if (!cParam) return kTRUE;
+
+  *cParam = *this;
+  if (!cParam->Update(p,c)) return kFALSE; 
+
   return kTRUE;
 }
 

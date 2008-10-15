@@ -289,12 +289,16 @@ public:
   const AliTrackPointArray *GetTrackPointArray() const {
     return fFriendTrack->GetTrackPointArray(); 
   }
-  Bool_t RelateToVertexTPC(const AliESDVertex *vtx, Double_t b, Double_t maxd);
+  Bool_t RelateToVertexTPC(const AliESDVertex *vtx, Double_t b, Double_t maxd,
+                           AliExternalTrackParam *cParam=0);
   void GetImpactParametersTPC(Float_t &xy,Float_t &z) const {xy=fdTPC; z=fzTPC;}
   void GetImpactParametersTPC(Float_t p[2], Float_t cov[3]) const {
     p[0]=fdTPC; p[1]=fzTPC; cov[0]=fCddTPC; cov[1]=fCdzTPC; cov[2]=fCzzTPC;
   }
-  Bool_t RelateToVertex(const AliESDVertex *vtx, Double_t b, Double_t maxd);
+  Double_t GetConstrainedChi2TPC() const {return fCchi2TPC;}
+
+  Bool_t RelateToVertex(const AliESDVertex *vtx, Double_t b, Double_t maxd,
+                        AliExternalTrackParam *cParam=0);
   void GetImpactParameters(Float_t &xy,Float_t &z) const {xy=fD; z=fZ;}
   void GetImpactParameters(Float_t p[2], Float_t cov[3]) const {
     p[0]=fD; p[1]=fZ; cov[0]=fCdd; cov[1]=fCdz; cov[2]=fCzz;
@@ -350,14 +354,17 @@ protected:
 
   Double32_t   fTrackTime[AliPID::kSPECIES]; // TOFs estimated by the tracking
   Double32_t   fTrackLength;   // Track length
+
   Double32_t   fdTPC;          // TPC-only impact parameter in XY plane
   Double32_t   fzTPC;          // TPC-only impact parameter in Z
   Double32_t   fCddTPC,fCdzTPC,fCzzTPC; // Covariance matrix of the TPC-only impact parameters 
+  Double32_t   fCchi2TPC;      // [0.,0.,8] TPC-only chi2 at the primary vertex
+
   Double32_t   fD;             // Impact parameter in XY plane
   Double32_t   fZ;             // Impact parameter in Z
   Double32_t   fCdd,fCdz,fCzz; // Covariance matrix of the impact parameters 
-
   Double32_t   fCchi2;          // [0.,0.,8] chi2 at the primary vertex
+
   Double32_t   fITSchi2;        // [0.,0.,8] chi2 in the ITS
   Double32_t   fTPCchi2;        // [0.,0.,8] chi2 in the TPC
   Double32_t   fTRDchi2;        // [0.,0.,8] chi2 in the TRD
@@ -405,7 +412,7 @@ protected:
 
   AliESDtrack & operator=(const AliESDtrack & );
 
-  ClassDef(AliESDtrack,45)  //ESDtrack 
+  ClassDef(AliESDtrack,46)  //ESDtrack 
 };
 
 #endif 
