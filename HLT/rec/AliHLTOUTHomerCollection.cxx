@@ -148,9 +148,11 @@ AliHLTHOMERReader* AliHLTOUTHomerCollection::OpenReader(UChar_t* pSrc, unsigned 
   AliHLTOUTEventHeader* pHLTHeader=reinterpret_cast<AliHLTOUTEventHeader*>(pSrc);
 
   // consistency check for the block size
-  if (pHLTHeader->fLength!=size) {
-    HLTWarning("can not treat HLT data block %d: size mismatch, header %d, but buffer is %d", id, pHLTHeader->fLength, size);
+  if (pHLTHeader->fLength>size) {
+    HLTError("can not treat HLT data block %d: size mismatch, header %d, but buffer is %d", id, pHLTHeader->fLength, size);
     return NULL;
+  } else if (pHLTHeader->fLength<size) {
+    HLTWarning("size mismatch in HLT data block %d: header %d, but buffer is %d", id, pHLTHeader->fLength, size);
   }
 
   // determine the offset of the homer block
