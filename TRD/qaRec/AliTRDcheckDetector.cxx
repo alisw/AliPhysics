@@ -147,11 +147,14 @@ void AliTRDcheckDetector::Exec(Option_t *){
             }
           }
           dynamic_cast<TH1F *>(fContainer->UncheckedAt(kChargeDeposit))->Fill(Qtot);
+          Int_t crossing = fTracklet->GetNChange();
           if(fDebugLevel > 3){
             (*fDebugStream) << "ChargeDeposit"
-              << "Detector="	<< detector
-              << "Sector="		<< sector
-              << "QT="				<< Qtot
+              << "Detector="  << detector
+              << "Sector="    << sector
+              << "nclusters=" << nClustersTracklet
+              << "crossing="  << crossing
+              << "QT="        << Qtot
               << "\n";
           }
         }
