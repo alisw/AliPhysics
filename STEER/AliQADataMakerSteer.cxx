@@ -424,6 +424,28 @@ void  AliQADataMakerSteer::EndOfCycle(TObjArray * detArray)
 }
 
 //_____________________________________________________________________________
+void  AliQADataMakerSteer::EndOfCycle(TString detectors) 
+{
+	// End of cycle QADataMakers 
+	
+	for (UInt_t iDet = 0; iDet < fgkNDetectors ; iDet++) {
+		if (IsSelected(AliQA::GetDetName(iDet))) {
+			AliQADataMaker * qadm = GetQADataMaker(iDet) ;
+			if (!qadm) 
+				continue ;	
+			// skip non active detectors
+      if (!detectors.Contains(AliQA::GetDetName(iDet))) 
+        continue ;
+   		for (UInt_t taskIndex = 0; taskIndex < AliQA::kNTASKINDEX; taskIndex++) {
+				if ( fTasks.Contains(Form("%d", taskIndex)) ) 
+					qadm->EndOfCycle(AliQA::GetTaskIndex(AliQA::GetTaskName(taskIndex))) ;
+			}
+			qadm->Finish();
+		}
+	}
+}
+
+//_____________________________________________________________________________
 void AliQADataMakerSteer::Increment()
 {
   // Increments the cycle counter for all QA Data Makers
@@ -748,9 +770,10 @@ TString AliQADataMakerSteer::Run(const char * detectors, AliRawReader * rawReade
 		rawReader->RewindEvents() ;
 	}	
 	
-	if ( !Init(AliQA::kRAWS) ) 
-		return kFALSE ; 
-	fRawReaderDelete = kFALSE ; 
+	if (!fCycleSame) 
+    if ( !Init(AliQA::kRAWS) ) 
+      return kFALSE ; 
+  fRawReaderDelete = kFALSE ; 
 
 	DoIt(AliQA::kRAWS) ; 
 	return 	fDetectorsW ;
@@ -782,8 +805,9 @@ TString AliQADataMakerSteer::Run(const char * detectors, const char * fileName, 
 		}
 	}
 	
-	if ( !Init(AliQA::kRAWS, fileName) ) 
-		return kFALSE ; 
+	if (!fCycleSame) 
+    if ( !Init(AliQA::kRAWS, fileName) ) 
+      return kFALSE ; 
 	
 	DoIt(AliQA::kRAWS) ; 
 	return 	fDetectorsW ;
@@ -818,17 +842,18 @@ TString AliQADataMakerSteer::Run(const char * detectors, const AliQA::TASKINDEX_
 
 	if ( taskIndex == AliQA::kNULLTASKINDEX) { 
 		for (UInt_t task = 0; task < AliQA::kNTASKINDEX; task++) {
-			if ( fTasks.Contains(Form("%d", task)) ) {
+			if ( fTasks.Contains(Form("%d", task)) && ! fCycleSame ) {
 				if ( !Init(AliQA::GetTaskIndex(AliQA::GetTaskName(task)), fileName) ) 
 					return kFALSE ; 
 				DoIt(AliQA::GetTaskIndex(AliQA::GetTaskName(task))) ;
 			}
 		}
 	} else {
-		if ( !Init(taskIndex, fileName) ) 
-			return kFALSE ; 
-		DoIt(taskIndex) ; 
-	} 		
+    if (! fCycleSame )
+      if ( !Init(taskIndex, fileName) ) 
+        return kFALSE ; 
+      DoIt(taskIndex) ; 
+  } 		
 	
 	return fDetectorsW ;
 

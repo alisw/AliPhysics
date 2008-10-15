@@ -1809,6 +1809,8 @@ Bool_t AliSimulation::RunQA()
 	detectorsw = fQASteer->Run(fQADetectors.Data()) ; 
 	if ( detectorsw.IsNull() ) 
 		rv = kFALSE ; 
+  else 
+    fQASteer->EndOfCycle(detectorsw) ; 
 	return rv ; 
 }
 

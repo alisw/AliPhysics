@@ -41,6 +41,7 @@ public:
 	AliQADataMakerSteer & operator = (const AliQADataMakerSteer & qas) ; 
 	virtual ~AliQADataMakerSteer() ; 
 	void        EndOfCycle(TObjArray * detArray=0x0) ; 
+  void        EndOfCycle(TString detectors) ; 
 	UInt_t      GetCurrentEvent() const { return fCurrentEvent ; }
 	TObjArray * GetFromOCDB(AliQA::DETECTORINDEX_t det, AliQA::TASKINDEX_t task, const char * year) const ; 
 	AliQADataMaker * GetQADataMaker(const Int_t iDet) ; 
