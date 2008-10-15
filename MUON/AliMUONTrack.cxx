@@ -451,62 +451,119 @@ void AliMUONTrack::UpdateCovTrackParamAtCluster()
   //__________________________________________________________________________
 Bool_t AliMUONTrack::IsValid(UInt_t requestedStationMask)
 {
-  /// check the validity of the current track (at least one cluster per requested station)
+  /// check the validity of the current track:
+  /// at least one cluster per requested station
+  /// and at least 2 chambers in stations 4 & 5 that contain cluster(s)
   
   Int_t nClusters = GetNClusters();
   AliMUONTrackParam *trackParam;
-  Int_t currentStation(0);
+  Int_t currentCh, currentSt, previousCh = -1, nChHitInSt45 = 0;
   UInt_t presentStationMask(0);
   
+  // first loop over clusters
   for (Int_t i = 0; i < nClusters; i++) {
     trackParam = (AliMUONTrackParam*) fTrackParamAtCluster->UncheckedAt(i);
-    currentStation = trackParam->GetClusterPtr()->GetChamberId()/2;
-    presentStationMask |= ( 1 << currentStation );
+    
+    currentCh = trackParam->GetClusterPtr()->GetChamberId();
+    currentSt = currentCh/2;
+    
+    // build present station mask
+    presentStationMask |= ( 1 << currentSt );
+    
+    // count the number of chambers in station 4 & 5 that contain cluster(s)
+    if (currentCh > 5 && currentCh != previousCh) {
+      nChHitInSt45++;
+      previousCh = currentCh;
+    }
+    
   }
   
-  return ( (requestedStationMask & presentStationMask) == requestedStationMask );
+  return (((requestedStationMask & presentStationMask) == requestedStationMask) && (nChHitInSt45 >= 2));
 }
 
   //__________________________________________________________________________
 void AliMUONTrack::TagRemovableClusters(UInt_t requestedStationMask) {
   /// Identify clusters that can be removed from the track,
-  /// with the only requirement to have at least 1 cluster per requested station
+  /// with the only requirements to have at least 1 cluster per requested station
+  /// and at least 2 chambers over 4 in stations 4 & 5 that contain cluster(s)
   
   Int_t nClusters = GetNClusters();
   AliMUONTrackParam *trackParam, *nextTrackParam;
-  Int_t currentCh, nextCh;
+  Int_t currentCh, nextCh, currentSt, nextSt, previousCh = -1, nChHitInSt45 = 0;
   
-  // reset flags to kFALSE for all clusters in required station
-  for (Int_t i = 0; i < nClusters; i++) {
-    trackParam = (AliMUONTrackParam*) fTrackParamAtCluster->UncheckedAt(i);
-    Int_t stationId = ( 1 << (trackParam->GetClusterPtr()->GetChamberId()/2) );
-    UInt_t m = ( 1 << stationId );
-    if ( m & requestedStationMask )
-      trackParam->SetRemovable(kFALSE);
-    else trackParam->SetRemovable(kTRUE);
-  }
-  
-  // loop over track parameters
+  // first loop over clusters
   for (Int_t i = 0; i < nClusters; i++) {
     trackParam = (AliMUONTrackParam*) fTrackParamAtCluster->UncheckedAt(i);
     
     currentCh = trackParam->GetClusterPtr()->GetChamberId();
+    currentSt = currentCh/2;
     
-    // loop over next track parameters
-    for (Int_t j = i+1; j < nClusters; j++) {
-      nextTrackParam = (AliMUONTrackParam*) fTrackParamAtCluster->UncheckedAt(j);
-      
-      nextCh = nextTrackParam->GetClusterPtr()->GetChamberId();
-      
-      // check if the 2 clusters are on the same station
-      if (nextCh/2 != currentCh/2) break;
-      
-      // set clusters in the same station as being removable
-      trackParam->SetRemovable(kTRUE);
-      nextTrackParam->SetRemovable(kTRUE);
-      
+    // reset flags to kFALSE for all clusters in required station
+    if ((1 << currentSt) & requestedStationMask) trackParam->SetRemovable(kFALSE);
+    else trackParam->SetRemovable(kTRUE);
+    
+    // count the number of chambers in station 4 & 5 that contain cluster(s)
+    if (currentCh > 5 && currentCh != previousCh) {
+      nChHitInSt45++;
+      previousCh = currentCh;
     }
     
+  }
+  
+  // second loop over clusters
+  for (Int_t i = 0; i < nClusters; i++) {
+    trackParam = (AliMUONTrackParam*) fTrackParamAtCluster->UncheckedAt(i);
+    
+    currentCh = trackParam->GetClusterPtr()->GetChamberId();
+    currentSt = currentCh/2;
+    
+    // make sure they are more than 2 clusters in 2 different chambers of stations 4 & 5
+    // but 2 clusters in he same chamber will still be flagged as removable
+    if (nChHitInSt45 < 3 && currentSt > 2) {
+      
+      if (i == nClusters-1) {
+	
+	trackParam->SetRemovable(kFALSE);
+      
+      } else {
+	
+	nextTrackParam = (AliMUONTrackParam*) fTrackParamAtCluster->UncheckedAt(i+1);
+	nextCh = nextTrackParam->GetClusterPtr()->GetChamberId();
+	
+	// set clusters in the same chamber as being removable
+	if (nextCh == currentCh) {
+	  trackParam->SetRemovable(kTRUE);
+	  nextTrackParam->SetRemovable(kTRUE);
+	  i++; // skip cluster already checked
+	} else {
+	  trackParam->SetRemovable(kFALSE);
+	}
+	
+      }
+      
+    } else {
+      
+      // skip clusters already flag as removable
+      if (trackParam->IsRemovable()) continue;
+      
+      // loop over next track parameters
+      for (Int_t j = i+1; j < nClusters; j++) {
+	nextTrackParam = (AliMUONTrackParam*) fTrackParamAtCluster->UncheckedAt(j);
+	
+	nextCh = nextTrackParam->GetClusterPtr()->GetChamberId();
+	nextSt = nextCh/2;
+	
+	// set clusters in the same station as being removable
+	if (nextSt == currentSt) {
+	  trackParam->SetRemovable(kTRUE);
+	  nextTrackParam->SetRemovable(kTRUE);
+	  i++; // skip cluster already checked
+	}
+	
+      }
+      
+    }
+      
   }
     
 }
