@@ -101,6 +101,13 @@ void AliTRDpidChecker::CreateOutputObjects()
       AliTRDtrackerV1::GetNTimeBins(), -0.5, AliTRDtrackerV1::GetNTimeBins() - 0.5)
     ,kPH);
 
+  // histos of the number of clusters distribution for all 5 particle species and 11 momenta 
+  fContainer->AddAt(
+    new TH2F("NClus", "", 
+      xBins, -0.5, xBins - 0.5,
+      AliTRDtrackerV1::GetNTimeBins(), -0.5, AliTRDtrackerV1::GetNTimeBins() - 0.5)
+    ,kNClus);
+
 
   // momentum distributions - absolute and in momentum bins
   fContainer->AddAt(new TH1F("hMom", "momentum distribution", 100, 0., 12.),kMomentum);
@@ -143,11 +150,13 @@ void AliTRDpidChecker::Exec(Option_t *)
   TH2F *hPIDNN;
   TH2F *hdEdx;
   TProfile2D *hPH;
+  TH2F *hNClus;
 
   hPIDLQ = (TH2F*)fContainer->At(kLQlikelihood);
   hPIDNN = (TH2F*)fContainer->At(kNNlikelihood);
   hdEdx  = (TH2F*)fContainer->At(kdEdx);
   hPH    = (TProfile2D*)fContainer->At(kPH);
+  hNClus  = (TH2F*)fContainer->At(kNClus);
   
   TH1F *hMom    = (TH1F*)fContainer->At(kMomentum);	
   TH1F *hMomBin = (TH1F*)fContainer->At(kMomentumBin);	
@@ -236,13 +245,27 @@ void AliTRDpidChecker::Exec(Option_t *)
     if(fDebugLevel>=4) Printf("PIDmethod[%d] Slices[%d] PDG[%d] LQLike[%f]", fReconstructor->GetPIDMethod(), fReconstructor->GetNdEdxSlices(), track->GetPDG(), TRDtrack -> GetPID(0));
 
 
+//     Bool_t bChange = kFALSE;
+
     Float_t SumdEdx[AliTRDgeometry::kNlayer];
+    Int_t iNClus[AliTRDgeometry::kNlayer];       
+
     for(Int_t iChamb = 0; iChamb < AliTRDgeometry::kNlayer; iChamb++){
       TRDtracklet[iChamb] = TRDtrack -> GetTracklet(iChamb);
+
+//       if(!(TRDtracklet[iChamb] -> GetNChange() == 0))
+// 	bChange = 1;
+
       SumdEdx[iChamb] = 0.;
+      iNClus[iChamb] = 0;
+      iNClus[iChamb] = TRDtracklet[iChamb] -> GetN();
+//       Printf("NClus[%d]", iNClus[iChamb]);
       fdEdx = TRDtracklet[iChamb] -> GetdEdx();
       SumdEdx[iChamb] += fdEdx[0] + fdEdx[1] + fdEdx[2]; 
     }
+
+//     if(bChange == kTRUE)
+//       continue;
 
     switch(track->GetPDG()){
     case kElectron:
@@ -250,6 +273,7 @@ void AliTRDpidChecker::Exec(Option_t *)
       hPIDLQ -> Fill(AliPID::kElectron * AliTRDCalPID::kNMom + iMomBin, TRDtrack -> GetPID(0));
       for(Int_t iChamb = 0; iChamb < AliTRDgeometry::kNlayer; iChamb++){
         hdEdx -> Fill(AliPID::kElectron * AliTRDCalPID::kNMom + iMomBin, SumdEdx[iChamb]);
+	hNClus -> Fill(AliPID::kElectron * AliTRDCalPID::kNMom + iMomBin, iNClus[iChamb]);
         for(Int_t iClus = 0; iClus < AliTRDtrackerV1::GetNTimeBins(); iClus++){
           if(!(TRDcluster = (AliTRDcluster*)TRDtracklet[iChamb] -> GetClusters(iClus)))
             continue;
@@ -262,6 +286,7 @@ void AliTRDpidChecker::Exec(Option_t *)
       hPIDLQ -> Fill(AliPID::kMuon * AliTRDCalPID::kNMom + iMomBin, TRDtrack -> GetPID(0));
       for(Int_t iChamb = 0; iChamb < AliTRDgeometry::kNlayer; iChamb++){
         hdEdx -> Fill(AliPID::kMuon * AliTRDCalPID::kNMom + iMomBin, SumdEdx[iChamb]);
+	hNClus -> Fill(AliPID::kMuon * AliTRDCalPID::kNMom + iMomBin, iNClus[iChamb]);
         for(Int_t iClus = 0; iClus < AliTRDtrackerV1::GetNTimeBins(); iClus++){
           if(!(TRDcluster = (AliTRDcluster*)TRDtracklet[iChamb] -> GetClusters(iClus)))
             continue;
@@ -274,6 +299,7 @@ void AliTRDpidChecker::Exec(Option_t *)
       hPIDLQ -> Fill(AliPID::kPion * AliTRDCalPID::kNMom + iMomBin, TRDtrack -> GetPID(0));
       for(Int_t iChamb = 0; iChamb < AliTRDgeometry::kNlayer; iChamb++){
         hdEdx -> Fill(AliPID::kPion * AliTRDCalPID::kNMom + iMomBin, SumdEdx[iChamb]);
+	hNClus -> Fill(AliPID::kPion * AliTRDCalPID::kNMom + iMomBin, iNClus[iChamb]);
         for(Int_t iClus = 0; iClus < AliTRDtrackerV1::GetNTimeBins(); iClus++){
           if(!(TRDcluster = (AliTRDcluster*)TRDtracklet[iChamb] -> GetClusters(iClus)))
             continue;
@@ -286,6 +312,7 @@ void AliTRDpidChecker::Exec(Option_t *)
       hPIDLQ -> Fill(AliPID::kKaon * AliTRDCalPID::kNMom + iMomBin, TRDtrack -> GetPID(0));
       for(Int_t iChamb = 0; iChamb < AliTRDgeometry::kNlayer; iChamb++){
         hdEdx -> Fill(AliPID::kKaon * AliTRDCalPID::kNMom + iMomBin, SumdEdx[iChamb]);
+	hNClus -> Fill(AliPID::kKaon * AliTRDCalPID::kNMom + iMomBin, iNClus[iChamb]);
         for(Int_t iClus = 0; iClus < AliTRDtrackerV1::GetNTimeBins(); iClus++){
           if(!(TRDcluster = (AliTRDcluster*)TRDtracklet[iChamb] -> GetClusters(iClus)))
             continue;
@@ -298,6 +325,7 @@ void AliTRDpidChecker::Exec(Option_t *)
       hPIDLQ -> Fill(AliPID::kProton * AliTRDCalPID::kNMom + iMomBin, TRDtrack -> GetPID(0));
       for(Int_t iChamb = 0; iChamb < AliTRDgeometry::kNlayer; iChamb++){
         hdEdx -> Fill(AliPID::kProton * AliTRDCalPID::kNMom + iMomBin, SumdEdx[iChamb]);
+	hNClus -> Fill(AliPID::kProton * AliTRDCalPID::kNMom + iMomBin, iNClus[iChamb]);
         for(Int_t iClus = 0; iClus < AliTRDtrackerV1::GetNTimeBins(); iClus++){
           if(!(TRDcluster = (AliTRDcluster*)TRDtracklet[iChamb] -> GetClusters(iClus)))
             continue;
@@ -363,6 +391,8 @@ void AliTRDpidChecker::GetRefFigure(Int_t ifig)
     ((TGraphErrors*)fContainer->At(kGraphStart+1))->Draw("pl");
     gPad->SetLogy();
     gPad->SetLogx();
+    gPad->SetGridy();
+    gPad->SetGridx();
     break;
   case 1:
     // save 2.0 GeV projection as reference
@@ -379,6 +409,8 @@ void AliTRDpidChecker::GetRefFigure(Int_t ifig)
     }
     gPad->SetLogy();
     gPad->SetLogx(0);
+    gPad->SetGridy();
+    gPad->SetGridx();
     break;
   case 2:
     // save 2.0 GeV projection as reference
@@ -396,6 +428,27 @@ void AliTRDpidChecker::GetRefFigure(Int_t ifig)
     }
     gPad->SetLogy(0);
     gPad->SetLogx(0);
+    gPad->SetGridy();
+    gPad->SetGridx();
+    break;
+  case 3:
+    // save 2.0 GeV projection as reference
+    FIRST = kTRUE;
+    h2 = (TH2F*)(fContainer->At(kNClus));
+    for(Int_t is=0; is<AliPID::kSPECIES; is++){
+      Int_t bin = is*AliTRDCalPID::kNMom+4;
+      h1 = h2->ProjectionY("py", bin, bin);
+      if(!h1->GetEntries()) continue;
+      h1->SetMarkerStyle(24);
+      h1->SetMarkerColor(AliTRDCalPID::GetPartColor(is));
+      h1->SetLineColor(AliTRDCalPID::GetPartColor(is));
+      h1->DrawClone(FIRST ? "e2" : "same e2");
+      FIRST = kFALSE;
+    }
+    gPad->SetLogy(0);
+    gPad->SetLogx(0);
+    gPad->SetGridy();
+    gPad->SetGridx();
     break;
   }
 }
@@ -493,7 +546,7 @@ Bool_t AliTRDpidChecker::PostProcess()
   }
 
 
-  fNRefFigures = 3/*1*/;
+  fNRefFigures = 4/*1*/;
   return kTRUE; // testing protection
 }
 
