@@ -21,6 +21,8 @@ void alieve_online_init()
   gROOT->LoadMacro("its_raw.C");
   gROOT->LoadMacro("tpc_raw.C");
 
+  TEveUtil::AssertMacro("VizDB_scan.C");
+
   // Temp fix !!!
   TGeoManager *man = gGeoManager;
   gGeomGentle = geom_gentle();
