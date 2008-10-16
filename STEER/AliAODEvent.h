@@ -74,12 +74,16 @@ class AliAODEvent : public AliVEvent {
   void     SetOrbitNumber(UInt_t n) {if (fHeader) fHeader->SetOrbitNumber(n);}
   void     SetBunchCrossNumber(UShort_t n) {if (fHeader) fHeader->SetBunchCrossNumber(n);}
   void     SetMagneticField(Double_t mf){if (fHeader) fHeader->SetMagneticField(mf);}
+  void     SetDiamond(Float_t xy[2],Float_t cov[3]){if (fHeader) fHeader->SetDiamond(xy,cov);}
 
   Int_t    GetRunNumber() const {return fHeader ? fHeader->GetRunNumber() : -999;}
   UInt_t   GetPeriodNumber() const {return fHeader ? fHeader->GetPeriodNumber() : 0;}
   UInt_t   GetOrbitNumber() const {return fHeader ? fHeader->GetOrbitNumber() : 0;}
   UShort_t GetBunchCrossNumber() const {return fHeader ? fHeader->GetBunchCrossNumber() : 0;}
   Double_t GetMagneticField() const {return fHeader ? fHeader->GetMagneticField() : -999.;}
+  Double_t GetDiamondX() const {return fHeader ? fHeader->GetDiamondX() : -999.;}
+  Double_t GetDiamondY() const {return fHeader ? fHeader->GetDiamondY() : -999.;}
+  void     GetDiamondCovXY(Float_t cov[3]) const {cov[0]=-999.; if(fHeader) fHeader->GetDiamondCovXY(cov);}
   
   void      SetEventType(UInt_t eventType){fHeader->SetEventType(eventType);}
   void      SetTriggerMask(ULong64_t n) {fHeader->SetTriggerMask(n);}
