@@ -29,6 +29,8 @@ ClassImp(AliGRPRecoParam)
 //_____________________________________________________________________________
 AliGRPRecoParam::AliGRPRecoParam() : AliDetectorRecoParam(),
 fMostProbablePt(0.350),
+fVertexerTracksConstraintITS(kTRUE),
+fVertexerTracksConstraintTPC(kTRUE),
 fVertexerTracksNCuts(10),
 fVertexerTracksITSdcacut(0.1),
 fVertexerTracksITSdcacutIter0(0.1),
@@ -69,6 +71,8 @@ AliGRPRecoParam::~AliGRPRecoParam()
 AliGRPRecoParam::AliGRPRecoParam(const AliGRPRecoParam& par) :
   AliDetectorRecoParam(par),
   fMostProbablePt(par.fMostProbablePt),
+  fVertexerTracksConstraintITS(par.fVertexerTracksConstraintITS),
+  fVertexerTracksConstraintTPC(par.fVertexerTracksConstraintTPC),
   fVertexerTracksNCuts(par.fVertexerTracksNCuts),
   fVertexerTracksITSdcacut(par.fVertexerTracksITSdcacut),
   fVertexerTracksITSdcacutIter0(par.fVertexerTracksITSdcacutIter0),
@@ -121,6 +125,16 @@ AliGRPRecoParam *AliGRPRecoParam::GetLowFluxParam()
 {
   //
   // make default reconstruction  parameters for low  flux env.
+  //
+  AliGRPRecoParam *param = new AliGRPRecoParam();
+
+  return param;
+}
+//_____________________________________________________________________________
+AliGRPRecoParam *AliGRPRecoParam::GetCosmicTestParam() 
+{
+  //
+  // make default reconstruction  parameters for cosmics env.
   //
   AliGRPRecoParam *param = new AliGRPRecoParam();
 

@@ -20,6 +20,7 @@ void UpdateCDBVertexDiamond(Double_t xmed = 0., Double_t ymed = 0., Double_t sig
   man->SetRun(0);
   AliCDBId id("GRP/Calib/MeanVertex",0,AliCDBRunRange::Infinity());
   AliCDBId idTPC("GRP/Calib/MeanVertexTPC",0,AliCDBRunRange::Infinity());
+  AliCDBId idSPD("GRP/Calib/MeanVertexSPD",0,AliCDBRunRange::Infinity());
   AliCDBMetaData *metadata= new AliCDBMetaData();
 
   // Get root and AliRoot versions
@@ -62,6 +63,18 @@ void UpdateCDBVertexDiamond(Double_t xmed = 0., Double_t ymed = 0., Double_t sig
   vertexTPC->PrintStatus();
 
   man->Put(vertexTPC,idTPC,metadata);
+
+  position[0]=xmed;
+  position[1]=ymed;
+  position[2]=0.;
+  sigma[0]=TMath::Sqrt(sigx*sigx+resolx*resolx);
+  sigma[1]=TMath::Sqrt(sigy*sigy+resoly*resoly);
+  sigma[2]=sigz;
+
+  AliESDVertex *vertexSPD = new AliESDVertex(position,sigma,"vtxmean");
+  vertexSPD->PrintStatus();
+
+  man->Put(vertexSPD,idSPD,metadata);
 
 
 

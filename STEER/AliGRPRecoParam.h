@@ -23,15 +23,20 @@ class AliGRPRecoParam : public AliDetectorRecoParam
 
   static AliGRPRecoParam *GetLowFluxParam();// make reco parameters for low flux env.
   static AliGRPRecoParam *GetHighFluxParam();// make reco parameters for high flux env. 
+  static AliGRPRecoParam *GetCosmicTestParam();// make reco parameters for cosmics env. 
 
   void  SetMostProbablePt(Double_t pt=0.350) { fMostProbablePt=pt; return; }
   Double_t GetMostProbablePt() const { return fMostProbablePt; }
 
+  void  SetVertexerTracksConstraintITS(Bool_t constr=kTRUE) { fVertexerTracksConstraintITS=constr; return; }
+  void  SetVertexerTracksConstraintTPC(Bool_t constr=kTRUE) { fVertexerTracksConstraintTPC=constr; return; }
   void  SetVertexerTracksCuts(Int_t mode,Int_t ncuts,Double_t cuts[10]);
   void  SetVertexerTracksCutsITS(Int_t ncuts,Double_t cuts[10])
     { SetVertexerTracksCuts(0,ncuts,cuts); return; }
   void  SetVertexerTracksCutsTPC(Int_t ncuts,Double_t cuts[10])
     { SetVertexerTracksCuts(1,ncuts,cuts); return; }
+  Bool_t GetVertexerTracksConstraintITS() const { return fVertexerTracksConstraintITS; }
+  Bool_t GetVertexerTracksConstraintTPC() const { return fVertexerTracksConstraintTPC; }
   Int_t GetVertexerTracksNCuts() const { return fVertexerTracksNCuts; }
   void  GetVertexerTracksCuts(Int_t mode,Double_t *cuts) const;
   void  GetVertexerTracksCutsITS(Double_t *cuts) const
@@ -46,6 +51,8 @@ class AliGRPRecoParam : public AliDetectorRecoParam
   //
 
   Double_t fMostProbablePt; // to be used for B=0 tracking
+  Bool_t   fVertexerTracksConstraintITS; // diamond constr for AliVertexerTracks
+  Bool_t   fVertexerTracksConstraintTPC; // diamond constr for AliVertexerTracks
   Int_t    fVertexerTracksNCuts; // number of cuts for AliVertexerTracks
   // cuts for AliVertexerTracks: ITS mode
   Double_t fVertexerTracksITSdcacut; // general dca
@@ -71,7 +78,7 @@ class AliGRPRecoParam : public AliDetectorRecoParam
   Double_t fVertexerTracksTPCfidR; // fiducial radius
   Double_t fVertexerTracksTPCfidZ; // fiducial z
 
-  ClassDef(AliGRPRecoParam,2) // global reco parameters
+  ClassDef(AliGRPRecoParam,3) // global reco parameters
 };
 
 #endif

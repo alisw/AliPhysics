@@ -96,9 +96,9 @@ public:
   void SetWriteAlignmentData(Bool_t flag=kTRUE){fWriteAlignmentData=flag;}
   void SetWriteESDfriend(Bool_t flag=kTRUE){fWriteESDfriend=flag;}
   void SetFillTriggerESD(Bool_t flag=kTRUE){fFillTriggerESD=flag;}
+  void SetDiamondProfileSPD(AliESDVertex *dp) {fDiamondProfileSPD=dp;}
   void SetDiamondProfile(AliESDVertex *dp) {fDiamondProfile=dp;}
   void SetDiamondProfileTPC(AliESDVertex *dp) {fDiamondProfileTPC=dp;}
-  void SetMeanVertexConstraint(Bool_t flag=kTRUE){fMeanVertexConstraint=flag;}
 		   
   void SetCleanESD(Bool_t flag=kTRUE){fCleanESD=flag;}
   void SetUseHLTData(const char* detectors){fUseHLTData=detectors;}
@@ -253,9 +253,9 @@ private:
   AliLoader*     fLoader[fgkNDetectors];   //! detector loaders
   AliVertexer*   fVertexer;                //! vertexer for ITS
   AliTracker*    fTracker[fgkNDetectors];  //! trackers
-  AliESDVertex*  fDiamondProfile;          // (x,y) diamond profile for AliVertexerTracks
+  AliESDVertex*  fDiamondProfileSPD;       // (x,y) diamond profile from SPD for AliITSVertexer3D(Z)
+  AliESDVertex*  fDiamondProfile;          // (x,y) diamond profile for AliVertexerTracks (ITS+TPC)
   AliESDVertex*  fDiamondProfileTPC;       // (x,y) diamond profile from TPC for AliVertexerTracks
-  Bool_t         fMeanVertexConstraint; // use fDiamondProfile in AliVertexerTracks
 
   AliGRPObject*  fGRPData;              // Data from the GRP/GRP/Data CDB folder
 

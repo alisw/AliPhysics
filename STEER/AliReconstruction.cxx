@@ -247,10 +247,10 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename) :
   fRecoParam(),
 
   fVertexer(NULL),
+  fDiamondProfileSPD(NULL),
   fDiamondProfile(NULL),
   fDiamondProfileTPC(NULL),
-  fMeanVertexConstraint(kTRUE),
-
+  
   fGRPData(NULL),
 
   fAlignObjArray(NULL),
@@ -342,10 +342,10 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fRecoParam(rec.fRecoParam),
 
   fVertexer(NULL),
+  fDiamondProfileSPD(rec.fDiamondProfileSPD),
   fDiamondProfile(rec.fDiamondProfile),
   fDiamondProfileTPC(rec.fDiamondProfileTPC),
-  fMeanVertexConstraint(rec.fMeanVertexConstraint),
-
+  
   fGRPData(NULL),
 
   fAlignObjArray(rec.fAlignObjArray),
@@ -468,11 +468,12 @@ AliReconstruction& AliReconstruction::operator = (const AliReconstruction& rec)
   } 
     
   fVertexer             = NULL;
+  delete fDiamondProfileSPD; fDiamondProfileSPD = NULL;
+  if (rec.fDiamondProfileSPD) fDiamondProfileSPD = new AliESDVertex(*rec.fDiamondProfileSPD);
   delete fDiamondProfile; fDiamondProfile = NULL;
   if (rec.fDiamondProfile) fDiamondProfile = new AliESDVertex(*rec.fDiamondProfile);
   delete fDiamondProfileTPC; fDiamondProfileTPC = NULL;
   if (rec.fDiamondProfileTPC) fDiamondProfileTPC = new AliESDVertex(*rec.fDiamondProfileTPC);
-  fMeanVertexConstraint = rec.fMeanVertexConstraint;
 
   delete fGRPData; fGRPData = NULL;
   //  if (rec.fGRPData) fGRPData = (TMap*)((rec.fGRPData)->Clone());
@@ -1045,21 +1046,26 @@ Bool_t AliReconstruction::InitGRP() {
 
   }
 
-  //*** Get the diamond profile from OCDB
+  //*** Get the diamond profiles from OCDB
+  entry = AliCDBManager::Instance()->Get("GRP/Calib/MeanVertexSPD");
+  if (entry) {
+    fDiamondProfileSPD = dynamic_cast<AliESDVertex*> (entry->GetObject());  
+  } else {
+     AliError("No SPD diamond profile found in OCDB!");
+  }
+
   entry = AliCDBManager::Instance()->Get("GRP/Calib/MeanVertex");
   if (entry) {
-    if (fMeanVertexConstraint)
-      fDiamondProfile = dynamic_cast<AliESDVertex*> (entry->GetObject());  
+    fDiamondProfile = dynamic_cast<AliESDVertex*> (entry->GetObject());  
   } else {
      AliError("No diamond profile found in OCDB!");
   }
 
   entry = AliCDBManager::Instance()->Get("GRP/Calib/MeanVertexTPC");
   if (entry) {
-    if (fMeanVertexConstraint)
-      fDiamondProfileTPC = dynamic_cast<AliESDVertex*> (entry->GetObject());  
+    fDiamondProfileTPC = dynamic_cast<AliESDVertex*> (entry->GetObject());  
   } else {
-     AliError("No diamond profile found in OCDB!");
+     AliError("No TPC diamond profile found in OCDB!");
   }
 
   return kTRUE;
@@ -1305,7 +1311,6 @@ void AliReconstruction::SlaveBegin(TTree*)
   AliSysInfo::AddStamp("LoadLoader");
  
   ftVertexer = new AliVertexerTracks(AliTracker::GetBz());
-  if(fDiamondProfile && fMeanVertexConstraint) ftVertexer->SetVtxStart(fDiamondProfile);
 
   // get vertexer
   if (fRunVertexFinder && !CreateVertexer()) {
@@ -1632,6 +1637,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
 
        // TPC + ITS primary vertex
        ftVertexer->SetITSMode();
+       ftVertexer->SetConstraintOff();
        // get cuts for vertexer from AliGRPRecoParam
        if (grpRecoParam) {
 	 Int_t nCutsVertexer = grpRecoParam->GetVertexerTracksNCuts();
@@ -1639,11 +1645,8 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
 	 grpRecoParam->GetVertexerTracksCutsITS(cutsVertexer);
 	 ftVertexer->SetCuts(cutsVertexer);
 	 delete [] cutsVertexer; cutsVertexer = NULL; 
-       }
-       if(fDiamondProfile && fMeanVertexConstraint) {
-	 ftVertexer->SetVtxStart(fDiamondProfile);
-       } else {
-	 ftVertexer->SetConstraintOff();
+	 if(fDiamondProfile && grpRecoParam->GetVertexerTracksConstraintITS())
+	   ftVertexer->SetVtxStart(fDiamondProfile);
        }
        AliESDVertex *pvtx=ftVertexer->FindPrimaryVertex(fesd);
        if (pvtx) {
@@ -1658,6 +1661,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
 
        // TPC-only primary vertex
        ftVertexer->SetTPCMode();
+       ftVertexer->SetConstraintOff();
        // get cuts for vertexer from AliGRPRecoParam
        if (grpRecoParam) {
 	 Int_t nCutsVertexer = grpRecoParam->GetVertexerTracksNCuts();
@@ -1665,11 +1669,8 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
 	 grpRecoParam->GetVertexerTracksCutsTPC(cutsVertexer);
 	 ftVertexer->SetCuts(cutsVertexer);
 	 delete [] cutsVertexer; cutsVertexer = NULL; 
-       }
-       if(fDiamondProfileTPC && fMeanVertexConstraint) {
-	 ftVertexer->SetVtxStart(fDiamondProfileTPC);
-       } else {
-	 ftVertexer->SetConstraintOff();
+	 if(fDiamondProfileTPC && grpRecoParam->GetVertexerTracksConstraintTPC())
+	   ftVertexer->SetVtxStart(fDiamondProfileTPC);
        }
        pvtx=ftVertexer->FindPrimaryVertex(&trkArray,selectedIdx);
        if (pvtx) {
@@ -1954,7 +1955,7 @@ Bool_t AliReconstruction::RunVertexFinder(AliESDEvent*& esd)
       fLoader[0]->LoadRecPoints();
       TTree* cltree = fLoader[0]->TreeR();
       if (cltree) {
-	if(fDiamondProfile) fVertexer->SetVtxStart(fDiamondProfile);
+	if(fDiamondProfileSPD) fVertexer->SetVtxStart(fDiamondProfileSPD);
 	vertex = fVertexer->FindVertexForCurrentEvent(cltree);
       }
       else {
@@ -2631,6 +2632,8 @@ void AliReconstruction::CleanUp()
   ftVertexer = NULL;
   
   if(!(AliCDBManager::Instance()->GetCacheFlag())) {
+    delete fDiamondProfileSPD;
+    fDiamondProfileSPD = NULL;
     delete fDiamondProfile;
     fDiamondProfile = NULL;
     delete fDiamondProfileTPC;
