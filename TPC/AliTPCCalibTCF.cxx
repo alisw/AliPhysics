@@ -38,6 +38,7 @@
 #include <TNtuple.h>
 #include <TEntryList.h>
 #include "AliRawReaderRoot.h"
+#include "AliRawHLTManager.h"
 #include "AliTPCRawStream.h"
 #include "AliTPCROC.h"
 
@@ -120,24 +121,41 @@ AliTPCCalibTCF::~AliTPCCalibTCF()
 }
 
 //_____________________________________________________________________________
-void AliTPCCalibTCF::ProcessRawFile(const char *nameRawFile, const char *nameFileOut) {
+void AliTPCCalibTCF::ProcessRawFile(const char *nameRawFile, const char *nameFileOut, bool bUseHLTOUT) {
   //
   // Loops over all events within one RawData file and collects proper pulses 
   // (according to given tresholds) per pad
   // Histograms per pad are stored in 'nameFileOut'
   //
   
+  // create the data reader
   AliRawReader *rawReader = new AliRawReaderRoot(nameRawFile);
-  rawReader->Reset();
+  if (!rawReader) {
+    return;
+  }
+  
+  // create HLT reader for redirection of TPC data from HLTOUT to TPC reconstruction
+  AliRawReader *hltReader=AliRawHLTManager::AliRawHLTManager::CreateRawReaderHLT(rawReader, "TPC");
+
+  // now choose the data source
+  if (bUseHLTOUT) rawReader=hltReader;
+
+  //  rawReader->Reset();
+  rawReader->RewindEvents();
+
+  if (!rawReader->NextEvent()) {
+    printf("no events found in %s\n",nameRawFile);
+    return;
+  }
 
   Int_t ievent=0;
-  while ( rawReader->NextEvent() ){ // loop
+  do {  
     printf("Reading next event ... Nr: %d\n",ievent);
     AliTPCRawStream rawStream(rawReader);
     rawReader->Select("TPC");
     ProcessRawEvent(&rawStream, nameFileOut);
     ievent++;
-  }
+  } while (rawReader->NextEvent());
 
   rawReader->~AliRawReader();
   
@@ -155,6 +173,8 @@ void AliTPCCalibTCF::ProcessRawEvent(AliTPCRawStream *rawStream, const char *nam
   //   bin 2;3;4: Sector; Row; Pad; 
   // 
 
+  rawStream->Reset();
+
   Int_t sector = rawStream->GetSector();
   Int_t row    = rawStream->GetRow();
 
@@ -169,6 +189,8 @@ void AliTPCCalibTCF::ProcessRawEvent(AliTPCRawStream *rawStream, const char *nam
   TH1I *tempHis = new TH1I("tempHis","tempHis",fSample+fGateWidth,fGateWidth,fSample+fGateWidth);
   TH1I *tempRMSHis = new TH1I("tempRMSHis","tempRMSHis",2000,0,2000);
 
+  //  printf("raw next: %d\n",rawStream->Next());
+
   while (rawStream->Next()) {
     
     // in case of a new row, get sector and row number
@@ -180,6 +202,8 @@ void AliTPCCalibTCF::ProcessRawEvent(AliTPCRawStream *rawStream, const char *nam
     Int_t pad = rawStream->GetPad();
     Int_t time = rawStream->GetTime();
     Int_t signal = rawStream->GetSignal();
+
+    //printf("%d: t:%d  sig:%d\n",pad,time,signal);
     
     // Reading signal from one Pad 
     if (!rawStream->IsNewPad()) {
@@ -202,7 +226,7 @@ void AliTPCCalibTCF::ProcessRawEvent(AliTPCRawStream *rawStream, const char *nam
       }
       
       if (time>prevTime) {
-        printf("Wrong time: %d %d\n",rawStream->GetTime(),prevTime);
+        //printf("Wrong time: %d %d\n",rawStream->GetTime(),prevTime);
 	continue;
       } else {
 	// still the same pad, save signal to temporary histogram
@@ -215,7 +239,7 @@ void AliTPCCalibTCF::ProcessRawEvent(AliTPCRawStream *rawStream, const char *nam
 
       // complete pulse found and stored into tempHis, now calculation 
       // of the properties and comparison to given thresholds
-      
+
       Int_t max = (Int_t)tempHis->GetMaximum(FLT_MAX);
       Int_t maxpos =  tempHis->GetMaximumBin();
       
@@ -589,7 +613,7 @@ void AliTPCCalibTCF::TestTCFonRootFile(const char *nameFileIn, const char *nameF
 
 
 //_____________________________________________________________________________
-void AliTPCCalibTCF::TestTCFonRawFile(const char *nameRawFile, const char *nameFileOut, const char *nameFileTCF, Int_t minNumPulse, Int_t plotFlag) {
+void AliTPCCalibTCF::TestTCFonRawFile(const char *nameRawFile, const char *nameFileOut, const char *nameFileTCF, Int_t minNumPulse, Int_t plotFlag, bool bUseHLTOUT) {
   //
   // Performs quality parameters evaluation of the calculated TCF parameters in 
   // the file 'nameFileTCF' for every proper pulse (according to given thresholds)
@@ -604,9 +628,27 @@ void AliTPCCalibTCF::TestTCFonRawFile(const char *nameRawFile, const char *nameF
   // and test the found TCF parameters on them ...
   // 
   
+
+  // create the data reader
   AliRawReader *rawReader = new AliRawReaderRoot(nameRawFile);
-  rawReader->Reset();
-        
+  if (!rawReader) {
+    return;
+  }
+
+  // create HLT reader for redirection of TPC data from HLTOUT to TPC reconstruction
+  AliRawReader *hltReader=AliRawHLTManager::AliRawHLTManager::CreateRawReaderHLT(rawReader, "TPC");
+
+  // now choose the data source
+  if (bUseHLTOUT) rawReader=hltReader;
+
+  //  rawReader->Reset();
+  rawReader->RewindEvents();
+
+  if (!rawReader->NextEvent()) {
+    printf("no events found in %s\n",nameRawFile);
+    return;
+  }
+
   Double_t* coefP = new Double_t[3];
   Double_t* coefZ = new Double_t[3];
   for(Int_t i = 0; i < 3; i++){
@@ -625,7 +667,7 @@ void AliTPCCalibTCF::TestTCFonRawFile(const char *nameRawFile, const char *nameF
     qualityTuple = new TNtuple("TCFquality","TCF quality Values","sec:row:pad:npulse:heightDev:areaRed:widthRed:undershot:maxUndershot:pulseRMS");
   }
 
-  while ( rawReader->NextEvent() ){
+  do {
 
     printf("Reading next event ... Nr:%d\n",ievent);
     AliTPCRawStream rawStream(rawReader);
@@ -671,7 +713,7 @@ void AliTPCCalibTCF::TestTCFonRawFile(const char *nameRawFile, const char *nameF
 	}
 
 	if (time>prevTime) {
-	  printf("Wrong time: %d %d\n",rawStream.GetTime(),prevTime);
+	  //	  printf("Wrong time: %d %d\n",rawStream.GetTime(),prevTime);
 	  continue;
 	} else {
 	  // still the same pad, save signal to temporary histogram
@@ -768,7 +810,7 @@ void AliTPCCalibTCF::TestTCFonRawFile(const char *nameRawFile, const char *nameF
 
     printf("Finished to read event ... \n");   
 
-  } // event loop
+} while (rawReader->NextEvent()); // event loop
 
   printf("Finished to read file - close output file ... \n");
   
@@ -1454,7 +1496,7 @@ Double_t *AliTPCCalibTCF::GetQualityOfTCF(TH1F *hisIn, Double_t *coefZ, Double_t
   for (Int_t ipos = 0; ipos<6; ipos++) {
     // before the pulse
     tempRMSHis->Fill(hisIn->GetBinContent(ipos+5));
-    // at the end 
+    // at the end
     tempRMSHis->Fill(hisIn->GetBinContent(hisIn->GetNbinsX()-ipos));
   }
   Double_t pulseRMS = tempRMSHis->GetRMS();
@@ -1467,7 +1509,7 @@ Double_t *AliTPCCalibTCF::GetQualityOfTCF(TH1F *hisIn, Double_t *coefZ, Double_t
     printf("width reduction [percent]:\t\t %3.1f\n", widthReduct);
     printf("mean undershot [ADC]:\t\t\t %3.1f\n", undershot);
     printf("maximum of undershot after pulse [ADC]: %3.1f\n", maxUndershot);
-    printf("RMS of the original pulse [ADC]: \t %3.2f\n\n", pulseRMS);
+    printf("RMS of the original (or summed) pulse [ADC]: \t %3.2f\n\n", pulseRMS);
 
   }
 

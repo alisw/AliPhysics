@@ -33,7 +33,7 @@ public:
   AliTPCCalibTCF& operator = (const  AliTPCCalibTCF &source);
 
  
-  void ProcessRawFile(const char *nameRawFile, const char *nameFileOut);//Int_t *tresholds);
+  void ProcessRawFile(const char *nameRawFile, const char *nameFileOut, bool bUseHLTOUT=false);
   void ProcessRawEvent(AliTPCRawStream *rawStream, const char *nameFileOut);
 
   void MergeHistoPerSector(const char *nameFileIn);
@@ -42,7 +42,7 @@ public:
   Int_t AnalyzePulse(TH1F *hisIn, Double_t *coefZ, Double_t *coefP); 
 
   void TestTCFonRootFile(const char *nameFileIn, const char *nameFileTCF, Int_t nPulseMin=0, Int_t plotFlag=0, Int_t lowKey=1, Int_t upKey=1000000);
-  void TestTCFonRawFile(const char *nameRawFile, const char *nameFileOut, const char *nameFileTCF, Int_t nPulseMin=0, Int_t plotFlag=0);
+  void TestTCFonRawFile(const char *nameRawFile, const char *nameFileOut, const char *nameFileTCF, Int_t nPulseMin=0, Int_t plotFlag=0, bool bUseHLTOUT=false);
 
   Int_t DumpTCFparamToFilePerSector(const char *nameFileTCFPerSec, const char *nameMappingFile="$ALICE_ROOT/TPC/Calib/tpcMapping.root");  
   Int_t DumpTCFparamToFilePerPad(const char *nameFileTCFPerPad,const char *nameFileTCFPerSec, const char *nameMappingFile="$ALICE_ROOT/TPC/Calib/tpcMapping.root");  

@@ -119,7 +119,7 @@ Double_t AliTPCTempMap::GetTempGradientY(UInt_t timeSec, Int_t side){
      x[0]=1;
      x[1]=entry->GetX();
      x[2]=entry->GetY();    
-     Double_t y = entry->GetValue(timeSec); // get temperature value
+     Double_t y = ft->GetValue(timeSec,isensor); // get temperature value
      fitter->AddPoint(x,y,1); // add values to LinearFitter
      i++;
    }
@@ -173,7 +173,7 @@ TLinearFitter *AliTPCTempMap::GetLinearFitter(Int_t type, Int_t side, UInt_t tim
 	x[0]=1;
 	x[1]=entry->GetX();
 	x[2]=entry->GetY();    
-	y = entry->GetValue(timeSec); // get temperature value
+	y = ft->GetValue(timeSec,isensor); // get temperature value
 	fitter->AddPoint(x,y,1); // add values to LinearFitter
 	i++;
       }
@@ -182,7 +182,7 @@ TLinearFitter *AliTPCTempMap::GetLinearFitter(Int_t type, Int_t side, UInt_t tim
 	x[0]=1;
 	x[1]=entry->GetZ();
 	x[2]=entry->GetPhi();    
-	y = entry->GetValue(timeSec);
+	y = ft->GetValue(timeSec,isensor);
 	fitter->AddPoint(x,y,1); 
 	i++;
       }
@@ -191,7 +191,7 @@ TLinearFitter *AliTPCTempMap::GetLinearFitter(Int_t type, Int_t side, UInt_t tim
 	x[0]=1;
 	x[1]=entry->GetZ();
 	x[2]=entry->GetPhi();    
-	y = entry->GetValue(timeSec);
+	y = ft->GetValue(timeSec,isensor);
 	fitter->AddPoint(x,y,1);
 	i++;	
       }
@@ -200,7 +200,7 @@ TLinearFitter *AliTPCTempMap::GetLinearFitter(Int_t type, Int_t side, UInt_t tim
 	x[0]=1;
 	x[1]=entry->GetZ();
 	x[2]=entry->GetPhi();    
-	y = entry->GetValue(timeSec);
+	y = ft->GetValue(timeSec,isensor);
 	fitter->AddPoint(x,y,1); 
 	i++;
       }
@@ -234,18 +234,15 @@ TGraph2D *AliTPCTempMap::GetTempMapsViaSensors(Int_t type, Int_t side, UInt_t ti
   //       3 ... Within the TPC (DriftVolume) (TPC)
   // side: Can be choosen for type 0 and 3 (otherwise it will be ignored in 
   //       in order to get all temperature sensors of interest)
-  //       0 ... Shaft Side (A)
-  //       1 ... Muon Side (C)
+  //       0 ... A - side
+  //       1 ... C - side
   // 
 
   TGraph2D *graph2D = new TGraph2D();
 
   Int_t i = 0;
   
-
   Int_t nsensors = ft->NumSensors();
-
- 
   for (Int_t isensor=0; isensor<nsensors; isensor++) { // loop over all sensors
     AliTPCSensorTemp *entry = (AliTPCSensorTemp*)ft->GetSensorNum(isensor);
 
@@ -255,8 +252,8 @@ TGraph2D *AliTPCTempMap::GetTempMapsViaSensors(Int_t type, Int_t side, UInt_t ti
     z = entry->GetZ();
     r = entry->GetR();
     phi = entry->GetPhi();
-    tempValue = entry->GetValue(timeSec);
-
+    tempValue = ft->GetValue(timeSec,isensor);
+    //    printf("%d type %d: x=%lf y=%lf temp=%lf\n",isensor,entry->GetType(),x,y, tempValue);
     if (type==0 || type==3) { // 'side' information used
       if (entry->GetType()==type && entry->GetSide()==side) {
 	graph2D->SetPoint(i,x,y,tempValue);
@@ -279,13 +276,13 @@ TGraph2D *AliTPCTempMap::GetTempMapsViaSensors(Int_t type, Int_t side, UInt_t ti
     graph2D->GetXaxis()->SetTitle("X[cm]");
     graph2D->GetYaxis()->SetTitle("Y[cm]");
     if (type==0 && side==0) {
-      graph2D->SetTitle("ROC A - Endplate Shaft Side");
+      graph2D->SetTitle("ROC A side");
     } else if (type==0 && side==1) {
-      graph2D->SetTitle("ROC C - Endplate Muon Side");
+      graph2D->SetTitle("ROC C side");
     } else if (type==3 && side==0) {
-      graph2D->SetTitle("TPC A - Inside the TPC Shaft Side");
+      graph2D->SetTitle("TPC A side (Inside the TPC)");
     } else if (type==3 && side==1) {
-      graph2D->SetTitle("TPC C - Inside the TPC Muon Side");
+      graph2D->SetTitle("TPC C side (Inside the TPC)");
     }
   } else if (type==1 || type==2) {
     graph2D->GetXaxis()->SetTitle("Z[cm]");
@@ -293,7 +290,7 @@ TGraph2D *AliTPCTempMap::GetTempMapsViaSensors(Int_t type, Int_t side, UInt_t ti
     if (type==1) {
       graph2D->SetTitle("Outer Containment Vessel");
     } else if (type==2) {
-      graph2D->SetTitle("InnerContainmentVessel + ThermalScreeners");
+      graph2D->SetTitle("Inner Containment Vessel");
     }
   }
 
