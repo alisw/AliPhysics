@@ -24,6 +24,7 @@ set(SRCS
       AliTRDtestBeam.cxx
       AliTRDCommonParam.cxx
       AliTRDfeeParam.cxx
+      AliTRDgtuParam.cxx
       AliTRDcalibDB.cxx
       Cal/AliTRDCalROC.cxx
       Cal/AliTRDCalPad.cxx
@@ -59,9 +60,15 @@ set(SRCS
       AliTRDmcmSim.cxx
       AliTRDtrigParam.cxx
       AliTRDtrigger.cxx
+      AliTRDtrackGTU.cxx
       AliTRDtrackletBase.cxx
+      AliTRDtrackletGTU.cxx
+      AliTRDtrackletMCM.cxx
+      AliTRDtrackletWord.cxx
       AliTRDltuTracklet.cxx
       AliTRDgtuTrack.cxx
+      AliTRDgtuSim.cxx
+      AliTRDgtuTMU.cxx
       AliTRDtrapAlu.cxx
       AliTRDmodule.cxx
       AliTRDhit.cxx
