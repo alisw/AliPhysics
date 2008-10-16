@@ -1091,10 +1091,6 @@ Bool_t AliSimulation::RunHitsDigitization(const char* detectors)
     if (fStopOnError) return kFALSE;
   }
 
-  delete runLoader;
-  //PH Temporary fix to avoid interference with the PHOS loder/getter
-  //PH The problem has to be solved in more general way 09/06/05
-
   return kTRUE;
 }
 
@@ -1802,6 +1798,7 @@ Bool_t AliSimulation::RunQA()
 {
 	// run the QA on summable hits, digits or digits
 	
+  if(!gAlice) return kFALSE;
 	fQASteer->SetRunLoader(gAlice->GetRunLoader()) ;
 
 	TString detectorsw("") ;  
