@@ -164,6 +164,9 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
     header->SetZDCN2Energy(esd->GetZDCN2Energy());
     header->SetZDCP2Energy(esd->GetZDCP2Energy());
     header->SetZDCEMEnergy(esd->GetZDCEMEnergy(0),esd->GetZDCEMEnergy(1));
+    Float_t diamxy[2]={esd->GetDiamondX(),esd->GetDiamondY()};
+    Float_t diamcov[3]; esd->GetDiamondCovXY(diamcov);
+    header->SetDiamond(diamxy,diamcov);
 //
 //    
     Int_t nV0s      = esd->GetNumberOfV0s();

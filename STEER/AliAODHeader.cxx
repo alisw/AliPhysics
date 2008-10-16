@@ -51,6 +51,9 @@ AliAODHeader::AliAODHeader() :
 
   SetName("header");
   for(int j=0; j<2; j++) fZDCEMEnergy[j] = -999.;
+  for(Int_t i=0; i<2; i++) fDiamondXY[i]=0.;
+  fDiamondCovXY[0]=fDiamondCovXY[2]=3.*3.;
+  fDiamondCovXY[1]=0.;
 }
 
 //______________________________________________________________________________
@@ -85,6 +88,9 @@ AliAODHeader::AliAODHeader(Int_t nRun,
   SetName("header");
   SetTitle(title);
   for(int j=0; j<2; j++) fZDCEMEnergy[j] = -999.;
+  for(Int_t i=0; i<2; i++) fDiamondXY[i]=0.;
+  fDiamondCovXY[0]=fDiamondCovXY[2]=3.*3.;
+  fDiamondCovXY[1]=0.;
 }
 
 //______________________________________________________________________________
@@ -133,6 +139,9 @@ AliAODHeader::AliAODHeader(Int_t nRun,
   SetName("header");
   SetTitle(title);
   for(int j=0; j<2; j++) fZDCEMEnergy[j] = emEnergy[j];
+  for(Int_t i=0; i<2; i++) fDiamondXY[i]=0.;
+  fDiamondCovXY[0]=fDiamondCovXY[2]=3.*3.;
+  fDiamondCovXY[1]=0.;
 }
 
 //______________________________________________________________________________
@@ -172,6 +181,8 @@ AliAODHeader::AliAODHeader(const AliAODHeader& hdr) :
   SetTitle(hdr.fTitle);
   SetQTheta(hdr.fQTheta, hdr.fNQTheta);
   SetZDCEMEnergy(hdr.fZDCEMEnergy[0], hdr.fZDCEMEnergy[1]);
+  for(Int_t i=0; i<2; i++) fDiamondXY[i]=hdr.fDiamondXY[i];
+  for(Int_t i=0; i<3; i++) fDiamondCovXY[i]=hdr.fDiamondCovXY[i];
 }
 
 //______________________________________________________________________________
@@ -204,6 +215,8 @@ AliAODHeader& AliAODHeader::operator=(const AliAODHeader& hdr)
     SetTitle(hdr.fTitle);
     SetQTheta(hdr.fQTheta, hdr.fNQTheta);
     SetZDCEMEnergy(hdr.fZDCEMEnergy[0], hdr.fZDCEMEnergy[1]);
+    for(Int_t i=0; i<2; i++) fDiamondXY[i]=hdr.fDiamondXY[i];
+    for(Int_t i=0; i<3; i++) fDiamondCovXY[i]=hdr.fDiamondCovXY[i];
   }
 
 
