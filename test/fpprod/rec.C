@@ -9,15 +9,20 @@ void rec() {
 
   reco.SetWriteESDfriend();
   reco.SetWriteAlignmentData();
+  reco.SetRecoParam("ITS",AliITSRecoParam::GetLowFluxParam());
   reco.SetRecoParam("TPC",AliTPCRecoParam::GetLowFluxParam());
   reco.SetRecoParam("TRD",AliTRDrecoParam::GetLowFluxParam());
   reco.SetRecoParam("PHOS",AliPHOSRecoParam::GetDefaultParameters());
   reco.SetRecoParam("MUON",AliMUONRecoParam::GetLowFluxParam());
+  AliGRPRecoParam *grpRecoParam = AliGRPRecoParam::GetLowFluxParam();
+  grpRecoParam->SetVertexerTracksConstraintITS(kFALSE);
+  grpRecoParam->SetVertexerTracksConstraintTPC(kFALSE);
+  reco.SetRecoParam("GRP",grpRecoParam);
+
   //   reco.SetInput("raw.root");
   reco.SetRunReconstruction("ITS TPC TRD TOF HMPID PHOS EMCAL MUON VZERO T0 FMD PMD ZDC");
   reco.SetRunQA(":");
   reco.SetRunGlobalQA(kTRUE);
-  reco.SetMeanVertexConstraint(kFALSE);
 
 // **** The field map settings must be the same as in Config.C !
   AliMagWrapCheb* field = 0x0;
