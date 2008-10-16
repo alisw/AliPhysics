@@ -105,7 +105,10 @@ The default raw version is 2.
 // additional for new tail filter and/or tracklet
 #include "AliTRDtrapAlu.h"
 #include "AliTRDpadPlane.h"
+#include "AliTRDtrackletMCM.h"
 
+#include "AliRun.h"
+#include "AliLoader.h"
 
 ClassImp(AliTRDmcmSim)
 
@@ -2436,250 +2439,20 @@ void AliTRDmcmSim::Tracklet(){
   if (!fFeeParam->GetMCTrackletOutput()) return;
  
   
-  // structure: in the current directory a root-file called "TRD_readout_tree.root" is stored with subdirectories SMxx/sx (supermodule, stack);
-  // in each of these subdirectories 6 trees according to layers are saved, called lx; 
-  // whenever a mcm of that layer had a bit-word!=0, a branch containing an array with 4 (possibly some valued 0) elements is added;
-  // branch-name: mcmxxxwd; 
-  // another branch contains the channel-number (mcmxxxch)
-  
-  
   AliLog::SetClassDebugLevel("AliTRDmcmSim", 10);
   AliLog::SetFileOutput("../log/tracklet.log");
   
- 
-  UInt_t* trackletWord;
+   UInt_t* trackletWord;
   Int_t*  adcChannel;
 
   Int_t u = 0;
-    
+
   // testing for wordnr in order to speed up the simulation
-  
-  if (wordnr == 0 && fNextEvent == 0) {
+  if (wordnr == 0) 
     return;
-  }
-
    
-  Int_t mcmNr = fRobPos * (fGeo->MCMmax()) + fMcmPos;
+  //Int_t mcmNr = fRobPos * (fGeo->MCMmax()) + fMcmPos;
   
-  Char_t* SMName    = new Char_t[4];
-  Char_t* stackName = new Char_t[2];
-  Char_t* layerName = new Char_t[2];
-
-  Char_t* treeName  = new Char_t[2];
-  Char_t* treeTitle = new Char_t[8];
-  Char_t* branchNameWd = new Char_t[8]; // mcmxxxwd bit word
-  Char_t* branchNameCh = new Char_t[8]; // mcmxxxch channel
-   
-  Char_t* dirName = NULL;
-  Char_t* treeFile  = NULL; 
-  Char_t* evFile = NULL;
-  Char_t* curDir = new Char_t[255];
-  
-  for (Int_t i = 0; i<255; i++) {
-    curDir[i]='n';
-  }
-  sprintf(curDir,"%s",gSystem->BaseName(gSystem->WorkingDirectory()));
-  Int_t rawEvent = 0;
-  Int_t nrPos = 3;
-  
-
-  while(curDir[nrPos]!='n'){
-    
-   
-    switch(curDir[nrPos]) {
-    case '0':
-      rawEvent = rawEvent*10 + 0;
-      break;
-    case '1':
-      rawEvent = rawEvent*10 + 1;
-      break;
-    case '2':
-      rawEvent = rawEvent*10 + 2;
-      break;
-    case '3':
-      rawEvent = rawEvent*10 + 3;
-      break;
-    case '4':
-      rawEvent = rawEvent*10 + 4;
-      break;
-    case '5':
-      rawEvent = rawEvent*10 + 5;
-      break;
-    case '6':
-      rawEvent = rawEvent*10 + 6;
-      break;
-    case '7':
-      rawEvent = rawEvent*10 + 7;
-      break;
-    case '8':
-      rawEvent = rawEvent*10 + 8;
-      break;
-    case '9':
-      rawEvent = rawEvent*10 + 9;
-      break;
-   
-    }
-    nrPos = nrPos + 1; 
-  }
-  delete [] curDir;
-    
-  //if (!gSystem->ChangeDirectory("../TRD_Tracklet")) {
-   // gSystem->MakeDirectory("../TRD_Tracklet");
-    //gSystem->ChangeDirectory("../TRD_Tracklet");
-    //}
-
-  gSystem->ChangeDirectory("..");
-  
-  
-  TFile *f = new TFile("TRD_readout_tree.root","update");
-  TTree *tree          = NULL;
-  TBranch *branch      = NULL;
-  TBranch *branchCh   = NULL; 
-   
-  Int_t iEventNr = 0; 
-  Int_t dignr = 10; // nr of digits of a integer
-  Int_t space = 1;  // additional char-space
-  
-  
-  evFile = new Char_t[2+space];
-  sprintf(evFile,"ev%d",iEventNr);
-
-  
-  while(f->cd(evFile)){
-    iEventNr = iEventNr + 1;
-    if (iEventNr/dignr > 0) {
-      dignr = dignr * 10;
-      space = space + 1;
-    }
-    delete [] evFile;
-    evFile = NULL;
-    evFile = new Char_t[2+space];
-    sprintf(evFile,"ev%d",iEventNr); 
-  }
-  
-  if(iEventNr == rawEvent) { fNextEvent = 1; } // new event
-   
-  if (fNextEvent == 1) {
-    fNextEvent = 0;
-    // turn to head directory
-    f->mkdir(evFile);
-    f->cd(evFile);
-    // create all subdirectories and trees in case of new event
-   
-     
-    for (Int_t iSector = 0; iSector < 18; iSector++) {
-  
-      if (iSector < 10) {
-	sprintf(SMName,"SM0%d",iSector);
-      }
-      else {
-	sprintf(SMName,"SM%d",iSector);
-      }
-
-      for (Int_t iStack = 0; iStack < 5; iStack++) {
-	sprintf(stackName,"s%d",iStack);
-	
-	f->cd(evFile);
-	if (iStack == 0) {
-	  gDirectory->mkdir(SMName);
-	}
-	gDirectory->cd(SMName);
-	gDirectory->mkdir(stackName);
-	gDirectory->cd(stackName);
-	
-	for (Int_t iLayer = 0; iLayer < 6; iLayer++) {
-	  sprintf(layerName,"l%d",iLayer);
-	  sprintf(treeName,"%s",layerName);
-	  sprintf(treeTitle,"%s%s%s",SMName,stackName,layerName);
-	  tree = new TTree(treeName,treeTitle);
-	  tree->Write("",TObject::kOverwrite);
-	  delete tree;
-	  tree = NULL;
-	}
-      }
-    }
-   
-    
-  }
-
-    
-  else {
-    iEventNr = iEventNr - 1;
-    dignr = dignr/10;
-    if (iEventNr/dignr == 0) space = space - 1;
-    delete [] evFile;
-    evFile = NULL;
-    evFile = new Char_t[2+space];
-    sprintf(evFile,"ev%d",iEventNr);    
-  }
-  
-  if (wordnr == 0) {
-    delete [] SMName;
-    delete [] stackName;
-    delete [] layerName;
-    delete [] treeName;
-    delete [] treeTitle;
-    delete [] branchNameWd;
-    delete [] branchNameCh;
-    delete [] evFile;
-    f->Close();
-    dirName   = new Char_t[6+space];
-    //sprintf(dirName,"../raw%d",iEventNr);
-    sprintf(dirName,"raw%d",iEventNr);
-    gSystem->ChangeDirectory(dirName);
-    delete [] dirName;
-    return;
-  }
-  
-  dirName   = new Char_t[6+space];
-  //sprintf(dirName,"../raw%d",iEventNr);
-  sprintf(dirName,"raw%d",iEventNr);
- 
-  f->cd(evFile);
- 
-  if (fSector < 10) {
-    sprintf(SMName,"SM0%d",fSector);
-  }
-  else {
-    sprintf(SMName,"SM%d",fSector);
-  }
-  sprintf(stackName,"s%d",fStack);
-  sprintf(layerName,"l%d",fLayer);
-  sprintf(treeName,"%s",layerName);
-  sprintf(treeTitle,"%s%s%s",SMName,stackName,layerName);
- 
-  treeFile = new Char_t[13+space];
-  sprintf(treeFile,"%s/%s/%s/%s",evFile,SMName,stackName,treeName);
-  delete [] evFile;
-  evFile = NULL;
-  gDirectory->cd(SMName);
-  gDirectory->cd(stackName);
-  tree = (TTree*)f->Get(treeFile);
-  delete [] treeFile;
-  treeFile = NULL;
-
-
-  //make branch with number of words and fill
-
-  if (mcmNr < 10) {
-    sprintf(branchNameWd,"mcm00%dwd",mcmNr);
-    sprintf(branchNameCh,"mcm00%dch",mcmNr);
-  }
-  else {
-    if (mcmNr < 100) {
-      sprintf(branchNameWd,"mcm0%dwd",mcmNr); 
-      sprintf(branchNameCh,"mcm0%dch",mcmNr);
-    }
-    else {
-      sprintf(branchNameWd,"mcm%dwd",mcmNr); 
-      sprintf(branchNameCh,"mcm%dch",mcmNr);
-    }
-  }
-
-      
-  
-  // fill the tracklet word; here wordnr > 0
-
   trackletWord = new UInt_t[fMaxTracklets];
   adcChannel   = new Int_t[fMaxTracklets];
 
@@ -2695,48 +2468,42 @@ void AliTRDmcmSim::Tracklet(){
 	  u = u + 1;
       }
   }
-  
-  branch = tree->GetBranch(branchNameWd);
-  if(!branch) {
-    //make branch and fill
-    branch = tree->Branch(branchNameWd,trackletWord,"trackletWord[4]/i"); // 32 bit unsigned integer
-    branch->Fill();
+
+ AliDataLoader *dl = gAlice->GetRunLoader()->GetLoader("TRDLoader")->GetDataLoader("tracklets");
+  if (!dl) {
+    AliError("Could not get the tracklets data loader!");
   }
+  else {
+    TTree *trackletTree = dl->Tree();
+    if (!trackletTree)
+      dl->MakeTree();
+    trackletTree = dl->Tree();
 
-  branchCh = tree->GetBranch(branchNameCh);
-  if(!branchCh) {
-    //make branch and fill
-    branchCh = tree->Branch(branchNameCh,adcChannel,"adcChannel[4]/i"); // 32 bit unsigned integer
-    branchCh->Fill();
+   AliTRDtrackletMCM *trkl = new AliTRDtrackletMCM(); 
+   TBranch *trkbranch = trackletTree->GetBranch("mcmtrklbranch");
+   if (!trkbranch)
+       trkbranch = trackletTree->Branch("mcmtrklbranch", "AliTRDtrackletMCM", &trkl, 32000);
+    trkbranch->SetAddress(&trkl);
+
+    for (Int_t iTracklet = 0; iTracklet < fMaxTracklets; iTracklet++) {
+	if (trackletWord[iTracklet] == 0)
+	    continue;
+	trkl->SetTrackletWord(trackletWord[iTracklet]);
+	trkl->SetDetector(30*fSector + 6*fStack + fLayer);
+	trkl->SetROB(fRobPos);
+	trkl->SetMCM(fMcmPos);
+	trackletTree->Fill();
+//	AliInfo(Form("Filling tracklet tree with trkl: %i", iTracklet));
+    }
+    delete trkl;
+    dl->WriteData("OVERWRITE");
   }
- 
-
-  tree->Write("",TObject::kOverwrite);
- 
-
-  delete [] SMName;
-  delete [] stackName;
-  delete [] layerName;
-  delete [] treeName;
-  delete [] treeTitle;
-  delete [] branchNameWd;
-  delete [] branchNameCh;
-  delete [] trackletWord;
-  delete [] adcChannel;
-  
-  f->Close();
-  gSystem->ChangeDirectory(dirName);
-  delete [] dirName;
-  
 
 
   // to be done:
   // error measure for quality of fit (not necessarily needed for the trigger)
   // cluster quality threshold (not yet set)
   // electron probability
-  
-
-   
 }
 
 
