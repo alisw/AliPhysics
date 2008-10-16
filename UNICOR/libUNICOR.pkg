@@ -1,0 +1,8 @@
+#-*- Mode: Makefile -*-
+
+SRCS = $(shell cd UNICOR; ls AliD*.cxx)
+
+HDRS = $(SRCS:.cxx=.h) 
+
+CINTAUTOLINK = 1
+
