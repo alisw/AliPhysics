@@ -38,6 +38,7 @@
 
 #pragma link C++ class  AliTRDCommonParam+;
 #pragma link C++ class  AliTRDfeeParam+;
+#pragma link C++ class  AliTRDgtuParam+;
 
 #pragma link C++ class  AliTRDcalibDB+;
 #pragma link C++ class  AliTRDCalROC+;
@@ -82,8 +83,14 @@
 #pragma link C++ class  AliTRDmcm+;
 #pragma link C++ class  AliTRDmcmSim+;
 #pragma link C++ class  AliTRDtrackletBase+;
+#pragma link C++ class  AliTRDtrackletGTU+;
+#pragma link C++ class  AliTRDtrackletMCM+;
+#pragma link C++ class  AliTRDtrackletWord+;
 #pragma link C++ class  AliTRDltuTracklet+;
 #pragma link C++ class  AliTRDgtuTrack+;
+#pragma link C++ class  AliTRDgtuSim+;
+#pragma link C++ class  AliTRDgtuTMU+;
+#pragma link C++ class  AliTRDtrackGTU+;
 #pragma link C++ class  AliTRDtrapAlu++;
 #pragma link C++ class  AliTRDmodule+;
 
