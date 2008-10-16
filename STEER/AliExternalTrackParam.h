@@ -37,6 +37,8 @@ class AliExternalTrackParam: public AliVParticle {
   AliExternalTrackParam& operator=(const AliExternalTrackParam & trkPar);
   AliExternalTrackParam(Double_t x, Double_t alpha, 
 			const Double_t param[5], const Double_t covar[15]);
+  AliExternalTrackParam(Double_t xyz[3],Double_t pxpypz[3],
+			Double_t cv[21],Short_t sign);
   virtual ~AliExternalTrackParam(){}
 
   void Set(Double_t x,Double_t alpha,

@@ -29,6 +29,7 @@
 #include "AliExternalTrackParam.h"
 #include "AliESDVertex.h"
 #include "TPolyMarker3D.h"
+#include "TVector3.h"
 #include "AliLog.h"
 
 ClassImp(AliExternalTrackParam)
@@ -93,6 +94,86 @@ AliExternalTrackParam::AliExternalTrackParam(Double_t x, Double_t alpha,
   //
   for (Int_t i = 0; i < 5; i++)  fP[i] = param[i];
   for (Int_t i = 0; i < 15; i++) fC[i] = covar[i];
+}
+
+//_____________________________________________________________________________
+AliExternalTrackParam::AliExternalTrackParam(Double_t xyz[3],Double_t pxpypz[3],
+					     Double_t cv[21],Short_t sign) :
+  AliVParticle(),
+  fX(0.),
+  fAlpha(0.)
+{
+  //
+  // create external track parameters from the global parameters
+  // x,y,z,px,py,pz and their 6x6 covariance matrix
+  // A.Dainese 10.10.08
+
+  // Calculate alpha: the rotation angle of the corresponding local system
+  fAlpha = TMath::ATan2(pxpypz[1],pxpypz[0]);
+
+  // Get the vertex of origin and the momentum
+  TVector3 ver(xyz[0],xyz[1],xyz[2]);
+  TVector3 mom(pxpypz[0],pxpypz[1],pxpypz[2]);
+
+  // Rotate to the local coordinate system
+  ver.RotateZ(-fAlpha);
+  mom.RotateZ(-fAlpha);
+
+  // x of the reference plane
+  fX = ver.X();
+
+  Double_t charge = (Double_t)sign;
+
+  fP[0] = ver.Y();
+  fP[1] = ver.Z();
+  fP[2] = TMath::Sin(mom.Phi());
+  fP[3] = mom.Pz()/mom.Pt();
+  fP[4] = TMath::Sign(1/mom.Pt(),charge);
+
+  // Covariance matrix (formulas to be simplified)
+
+  Double_t pt=1./TMath::Abs(fP[4]);
+  Double_t cs=TMath::Cos(fAlpha), sn=TMath::Sin(fAlpha);
+  Double_t r=TMath::Sqrt((1.-fP[2])*(1.+fP[2]));
+
+  Double_t m00=-sn;// m10=cs;
+  Double_t m23=-pt*(sn + fP[2]*cs/r), m43=-pt*pt*(r*cs - fP[2]*sn);
+  Double_t m24= pt*(cs - fP[2]*sn/r), m44=-pt*pt*(r*sn + fP[2]*cs);
+  Double_t m35=pt, m45=-pt*pt*fP[3];
+
+  m43*=GetSign();
+  m44*=GetSign();
+  m45*=GetSign();
+
+  Double_t cv34 = TMath::Sqrt(cv[3 ]*cv[3 ]+cv[4 ]*cv[4 ]);
+  Double_t a1=cv[13]-cv[9]*(m23*m44+m43*m24)/m23/m43;
+  Double_t a2=m23*m24-m23*(m23*m44+m43*m24)/m43;
+  Double_t a3=m43*m44-m43*(m23*m44+m43*m24)/m23;
+  Double_t a4=cv[14]-2.*cv[9]*m24*m44/m23/m43;
+  Double_t a5=m24*m24-2.*m24*m44*m23/m43;
+  Double_t a6=m44*m44-2.*m24*m44*m43/m23;
+
+  fC[0 ] = cv[0 ]+cv[2 ];  
+  fC[1 ] = TMath::Sign(cv34,cv[3 ]/m00); 
+  fC[2 ] = cv[5 ]; 
+  fC[3 ] = (cv[10]/m44-cv[6]/m43)/(m24/m44-m23/m43)/m00; 
+  fC[10] = (cv[6]/m00-fC[3 ]*m23)/m43; 
+  fC[6 ] = (cv[15]/m00-fC[10]*m45)/m35; 
+  fC[4 ] = (cv[12]-cv[8]*m44/m43)/(m24-m23*m44/m43); 
+  fC[11] = (cv[8]-fC[4]*m23)/m43; 
+  fC[7 ] = cv[17]/m35-fC[11]*m45/m35; 
+  fC[5 ] = TMath::Abs((a4-a6*a1/a3)/(a5-a6*a2/a3));
+  fC[14] = TMath::Abs(a1/a3-a2*fC[5]/a3);
+  fC[12] = (cv[9]-fC[5]*m23*m23-fC[14]*m43*m43)/m23/m43;
+  Double_t b1=cv[18]-fC[12]*m23*m45-fC[14]*m43*m45;
+  Double_t b2=m23*m35;
+  Double_t b3=m43*m35;
+  Double_t b4=cv[19]-fC[12]*m24*m45-fC[14]*m44*m45;
+  Double_t b5=m24*m35;
+  Double_t b6=m44*m35;
+  fC[8 ] = (b4-b6*b1/b3)/(b5-b6*b2/b3);
+  fC[13] = b1/b3-b2*fC[8]/b3;
+  fC[9 ] = TMath::Abs((cv[20]-fC[14]*(m45*m45)-fC[13]*2.*m35*m45)/(m35*m35));
 }
 
 //_____________________________________________________________________________
