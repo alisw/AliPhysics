@@ -8,7 +8,7 @@ void trd_qaRec()
     return;
   }
   TTree *t = (TTree*)gFile->Get("trackInfo");
-  AliTRDtrackInfo *fTrackInfo = new AliTRDtrackInfo();
+  AliTRDtrackInfo *fTrackInfo = 0x0;
   t->SetBranchAddress("TrackInfo.", &fTrackInfo);
   gROOT->cd();
 
@@ -20,16 +20,19 @@ void trd_qaRec()
 
 
 
-  AliTRDtrackV1 *fTrack = 0x0;
+  AliTRDtrackV1 *fTrack = 0x0, *track = 0x0;
   AliTRDReconstructor *reco = new AliTRDReconstructor();
   for (Int_t it=0; it<t->GetEntries(); it++){
     if(!t->GetEntry(it)) continue;
     if(!fTrackInfo) continue;
-    if(!(fTrack = fTrackInfo->GetTRDtrack())) continue;
+    if(!(fTrack = fTrackInfo->GetTrack())) continue;
     
-    fTrack->SetReconstructor(reco);
-    tracks->AddElement(new AliEveTRDTrack(fTrack));
-    //printf("Trk[%3d] ESD[%d] Ncls[%d]\n", it, fTrackInfo->GetESDinfo()->GetId(), fTrack->GetNumberOfClusters());
+    track = new AliTRDtrackV1(*fTrack);
+    track->SetOwner();
+    track->SetReconstructor(reco);
+    tracks->AddElement(new AliEveTRDTrack(track));
+    printf("Trk[%3d] ESD[%d] Ncls[%d]\n", it, fTrackInfo->GetESDinfo()->GetId(), fTrack->GetNumberOfClusters());
+    if(it>= 100) break;
   }
   gEve->AddElement(tracks);
   gEve->Redraw3D();
