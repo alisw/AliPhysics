@@ -27,19 +27,43 @@ Else (${ROOT_CONFIG} MATCHES "ROOT_CONFIG-NOTFOUND")
     COMMAND root-config --f77 
     OUTPUT_VARIABLE _f77 
     OUTPUT_STRIP_TRAILING_WHITESPACE)
-  Set(ENV{F77} ${_f77})
+  If(APPLE)
+    Execute_process(
+      COMMAND which ${_f77}
+      OUTPUT_VARIABLE _f77path
+      OUTPUT_STRIP_TRAILING_WHITESPACE)
+    Set(ENV{F77} ${_f77path})
+  Else(APPLE)
+    Set(ENV{F77} ${_f77})
+  Endif(APPLE)
 
   Execute_process(
     COMMAND root-config --cc
     OUTPUT_VARIABLE _cc 
     OUTPUT_STRIP_TRAILING_WHITESPACE)
-  Set(ENV{CC} ${_cc})
+  If(APPLE)
+    Execute_process(
+      COMMAND which ${_cc}
+      OUTPUT_VARIABLE _ccpath
+      OUTPUT_STRIP_TRAILING_WHITESPACE)
+    Set(ENV{CC} ${_ccpath})
+  Else(APPLE)
+    Set(ENV{CC} ${_cc})
+  Endif(APPLE)
 
   Execute_process(
     COMMAND root-config --cxx
     OUTPUT_VARIABLE _cxx
     OUTPUT_STRIP_TRAILING_WHITESPACE)
-  Set(ENV{CXX} ${_cxx})
+  If(APPLE)
+    Execute_process(
+      COMMAND which ${_cxx}
+      OUTPUT_VARIABLE _cxxpath
+      OUTPUT_STRIP_TRAILING_WHITESPACE)
+    Set(ENV{CXX} ${_cxxpath})
+  Else(APPLE)
+    Set(ENV{CXX} ${_cxx})
+  Endif(APPLE)
 
   Execute_process(
     COMMAND root-config --version 

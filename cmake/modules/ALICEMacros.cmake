@@ -69,7 +69,7 @@ Function (AddLibrary LIB SRCS DHDRS)
     Set(ASRCS ${SRCS} ${DICT})
     Root_Generate_Dictionary("${DHDRS}" "${LDEF}" "${DICT}" "${INCLUDE_DIRECTORIES}")
   Else(LDEF)
-    Message(STATUS "${LIB}LinkDef.h not found... probably building empty lib")
+    Message(STATUS "No ${LIB}LinkDef.h found... building lib with no ROOT dict")
     Set(ASRCS ${SRCS})
   Endif(LDEF)
 
