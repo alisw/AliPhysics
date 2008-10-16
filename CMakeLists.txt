@@ -70,7 +70,8 @@ SET(ALIROOT_LIBRARY_PROPERTIES ${ALIROOT_LIBRARY_PROPERTIES}
 )
 
 # Set version variables
-Execute_process(COMMAND svn info $ENV{ALICE_ROOT} 
+Execute_process(COMMAND readlink -f ${ALICE_ROOT} 
+  COMMAND xargs svn info
   OUTPUT_VARIABLE _svn_out)
 
 String(REGEX REPLACE "^.*Revision: ([^\n]*).*$" "\\1" 
