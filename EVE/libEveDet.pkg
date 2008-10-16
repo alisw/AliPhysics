@@ -4,7 +4,7 @@ ORGSRCS  := $(wildcard EVE/EveDet/*.cxx)
 SRCS     := $(patsubst EVE/%, %, ${ORGSRCS})
 HDRS     := $(SRCS:.cxx=.h)
 
-DHDR     := EveDet/LinkDef.h
+DHDR     := EveDet/EveDetLinkDef.h
 
 EINCLUDE := RAW EMCAL ITS TPC TRD TOF T0 MUON MUON/mapping PMD HLT/BASE HLT/BASE/HOMER VZERO
 
