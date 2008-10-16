@@ -292,7 +292,7 @@ private:
 
   TTree*              fChain;      //! The raw-data chain in case of AliRawReaderChain
 
-  ClassDef(AliReconstruction, 27)      // class for running the reconstruction
+  ClassDef(AliReconstruction, 28)      // class for running the reconstruction
 };
 
 #endif
