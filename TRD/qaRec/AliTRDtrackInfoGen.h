@@ -22,7 +22,6 @@ class AliTRDtrackInfo;
 class AliTRDeventInfo;
 class TObjArray;
 class TTreeSRedirector;
-
 class AliTRDtrackInfoGen : public AliTRDrecoTask{
 public:
 

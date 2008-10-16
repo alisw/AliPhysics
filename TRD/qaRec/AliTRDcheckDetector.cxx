@@ -108,7 +108,7 @@ void AliTRDcheckDetector::Exec(Option_t *){
   AliTRDcluster *fTRDcluster = 0x0;
   for(Int_t iti = 0; iti < fTracks->GetEntriesFast(); iti++){
     fTrackInfo = dynamic_cast<AliTRDtrackInfo *>(fTracks->UncheckedAt(iti));
-    if(!fTrackInfo || !(fTRDtrack = fTrackInfo->GetTRDtrack())) continue;
+    if(!fTrackInfo || !(fTRDtrack = fTrackInfo->GetTrack())) continue;
     Int_t nclusters = fTRDtrack->GetNumberOfClusters();
     Int_t ntracklets = fTRDtrack->GetNumberOfTracklets();
     Float_t chi2 = fTRDtrack->GetChi2();

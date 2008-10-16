@@ -17,6 +17,7 @@
 
 class TH1;
 class TF1;
+class TObjArray;
 class AliTRDReconstructor;
 class AliTRDgeometry;
 class AliTRDrecoParam;
@@ -27,19 +28,19 @@ class AliTRDtrackingResolution : public AliTRDrecoTask
 public:
   enum{
     kClusterYResidual         = 0
-    ,kTrackletRiemanYResidual = 1 // Riemann track model
-    ,kTrackletRiemanAngleResidual = 2
-    ,kTrackletKalmanYResidual = 3 // Kalman track model
-    ,kTrackletKalmanAngleResidual = 4
-    ,kTrackletYResolution     = 5
-    ,kTrackletAngleResolution = 6
-    ,kTrackRYResolution       = 7 // Riemann track model
-    ,kTrackRZResolution       = 8
-    ,kTrackRAngleResolution   = 9
-    ,kTrackKYResolution       = 10 // Kalman track model
-    ,kTrackKZResolution       = 11
-    ,kTrackKAngleResolution   = 12
-    ,kGraphStart              = 13 // First graph
+//     ,kTrackletRiemanYResidual = 1 // Riemann track model
+//     ,kTrackletRiemanAngleResidual = 2
+//     ,kTrackletKalmanYResidual = 3 // Kalman track model
+//     ,kTrackletKalmanAngleResidual = 4
+    ,kClusterYResolution      = 1/*5*/
+    ,kTrackletYResolution     = 2/*6*/
+    ,kTrackletAngleResolution = 3/*7*/
+//     ,kTrackRYResolution       = 8 // Riemann track model
+//     ,kTrackRZResolution       = 9
+//     ,kTrackRAngleResolution   = 10
+//     ,kTrackKYResolution       = 11 // Kalman track model
+//     ,kTrackKZResolution       = 12
+//     ,kTrackKAngleResolution   = 13
   };
 
   AliTRDtrackingResolution();
@@ -66,6 +67,8 @@ private:
   
   AliTRDReconstructor   *fReconstructor;  //! local reconstructor
   AliTRDgeometry        *fGeo;            //! TRD geometry
+  TObjArray             *fGraphS;         //! result holder - sigma values
+  TObjArray             *fGraphM;         //! result holder - mean values
   ClassDef(AliTRDtrackingResolution, 1) // tracking resolution task
 };
 #endif

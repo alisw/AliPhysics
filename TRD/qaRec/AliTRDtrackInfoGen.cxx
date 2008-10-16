@@ -181,7 +181,7 @@ void AliTRDtrackInfoGen::Exec(Option_t *){
   Int_t nTRD = 0, nTPC = 0, nclsTrklt;
   Int_t nTracks = fESD->GetNumberOfTracks();
   if(fDebugLevel>=1){ 
-    printf("%3d Tracks: ESD[%d] MC[%d]\n", (Int_t)AliAnalysisManager::GetAnalysisManager()->GetCurrentEntry(), nTracks, HasMCdata() ? mStack->GetNtrack() : 0);
+    printf("Entry[%3d] Tracks: ESD[%d] MC[%d]\n", (Int_t)AliAnalysisManager::GetAnalysisManager()->GetCurrentEntry(), nTracks, HasMCdata() ? mStack->GetNtrack() : 0);
   }
   AliESDtrack *esdTrack = 0x0;
   AliESDfriendTrack *esdFriendTrack = 0x0;
@@ -266,13 +266,8 @@ void AliTRDtrackInfoGen::Exec(Option_t *){
       Int_t icalib = 0;
       while((calObject = esdFriendTrack->GetCalibObject(icalib++))){
         if(strcmp(calObject->IsA()->GetName(),"AliTRDtrackV1") != 0) continue; // Look for the TRDtrack
-        track = dynamic_cast<AliTRDtrackV1*>(calObject);
-        //nTRD++;
-        if(!esdTrack->GetNcls(2)){
-          printf("No TRD clusters but track\n");
-          nTRD++;  
-        }  
-        if(!track) continue;
+        if(!(track = dynamic_cast<AliTRDtrackV1*>(calObject))) break;
+        nTRD++;
         if(fDebugLevel>=3) printf("TRD track OK\n");
         fTrackInfo->SetTRDtrack(track);
         break;
@@ -281,20 +276,18 @@ void AliTRDtrackInfoGen::Exec(Option_t *){
     } else if(fDebugLevel>=2) printf("No ESD friends\n");
     if(op) fTrackInfo->SetOuterParam(op);
 
-    if(fDebugLevel >= 2){
-      Int_t ncls = esdTrack->GetNcls(2);
-      nclsTrklt = fTrackInfo->GetNumberOfClusters();
+    if(fDebugLevel >= 1){
+      AliTRDtrackInfo info(*fTrackInfo);
       (*fDebugStream) << "trackInfo"
-      << "ncls="       << ncls
-      << "Ncls="       << nclsTrklt
-      << "TrackInfo.=" << fTrackInfo
+      << "TrackInfo.=" << &info
       << "\n";
+      info.Delete("");
     }
   
     fContainer->Add(new AliTRDtrackInfo(*fTrackInfo));
     fTrackInfo->Delete("");
   }
-  if(fDebugLevel>=1) printf("%3d Tracks: TPC[%d] TRD[%d]\n", (Int_t)AliAnalysisManager::GetAnalysisManager()->GetCurrentEntry(), nTPC, nTRD);
+  if(fDebugLevel>=2) printf("%3d Tracks: TPC[%d] TRD[%d]\n", (Int_t)AliAnalysisManager::GetAnalysisManager()->GetCurrentEntry(), nTPC, nTRD);
 
   // Insert also MC tracks which are passing TRD where the track is not reconstructed
   if(HasMCdata()){
@@ -335,11 +328,11 @@ void AliTRDtrackInfoGen::Exec(Option_t *){
       fTrackInfo->SetPrimary(mcParticle->Particle()->IsPrimary());
       fTrackInfo->SetLabel(itk);
       if(fDebugLevel >= 1){
-        Int_t ncls = esdTrack->GetNcls(2);
+        AliTRDtrackInfo info(*fTrackInfo);
         (*fDebugStream) << "trackInfo"
-        << "ntrackRefs=" << ncls
-        << "TrackInfo.=" << fTrackInfo
+        << "TrackInfo.=" << &info
         << "\n";
+        info.Delete("");
       }
       if(fDebugLevel > 2)printf("Registering rejected MC track with label %d\n", itk);
       fContainer->Add(new AliTRDtrackInfo(*fTrackInfo));

@@ -56,6 +56,7 @@ public:
   class AliMCinfo{
   friend class AliTRDtrackInfo;
   public:
+    //typedef AliTrackReference (const* constAliTrackReference);
     AliMCinfo();
     AliMCinfo(const AliMCinfo&);
     virtual ~AliMCinfo();
@@ -63,7 +64,8 @@ public:
     Int_t   GetLabel() const {return fLabel;}
     Int_t   GetNTrackRefs() const {return fNTrackRefs;}
     Int_t   GetPDG() const {return fPDG;}
-    //AliTrackReference* const* GetTrackRefIter() const {return &fTrackRefs[0];}
+    AliTrackReference const* GetTrackRefIter() const {return fTrackRefs[0];}
+
   protected:
     Int_t   fLabel;             // MC label  
     Int_t   fPDG;               // particle code
@@ -93,8 +95,7 @@ public:
   Int_t              GetLabel() const { return fMC ? fMC->fLabel:0; }
   Int_t              GetPDG() const { return fMC ? fMC->fPDG : 0; }
   ULong_t            GetStatus() const {return fESD.fStatus;}
-  AliTRDseedV1*      GetTracklet(Int_t entry) const;
-  AliTRDtrackV1 *	 	 GetTRDtrack() const { return fTRDtrack; }
+  AliTRDtrackV1 *	 	 GetTrack() const { return fTRDtrack; }
   AliTrackReference* GetTrackRef(Int_t entry) const;
   AliExternalTrackParam* GetOuterParam() const {return fOP;}
 

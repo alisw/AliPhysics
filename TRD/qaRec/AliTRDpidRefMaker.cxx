@@ -71,8 +71,8 @@ AliTRDpidRefMaker::AliTRDpidRefMaker()
 AliTRDpidRefMaker::~AliTRDpidRefMaker() 
 {
   if(fReconstructor) delete fReconstructor;
-  if(fNN) delete fNN;
-  if(fLQ) delete fLQ;
+  //if(fNN) delete fNN;
+  //if(fLQ) delete fLQ;
 }
 
 
@@ -152,7 +152,7 @@ void AliTRDpidRefMaker::Exec(Option_t *)
     status = track->GetStatus();
     if(!(status&AliESDtrack::kTPCout)) continue;
 
-    if(!(TRDtrack = track->GetTRDtrack())) continue; 
+    if(!(TRDtrack = track->GetTrack())) continue; 
     //&&(track->GetNumberOfClustersRefit()
 
     // use only tracks that hit 6 chambers

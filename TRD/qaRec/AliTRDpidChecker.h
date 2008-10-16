@@ -28,12 +28,13 @@ class AliTRDpidChecker : public AliTRDrecoTask
     kLQlikelihood    = 0     // place for 2-dim LQ electron likelihood distributions
     ,kNNlikelihood   = 1     // place for NN electron likelihood distributions
     ,kdEdx           = 2     // place for the dE/dx spectra
-    ,kPH             = 3     // place for pulse height spectra
-    ,kNClus          = 4     // place for the number of clusters per track
-    ,kMomentum       = 5     // place for the momentum distribution
-    ,kMomentumBin    = 6     // place for the momentum distribution
-    ,kGraphLQ        = 7     // place for the 2-dim LQ pion efficiencies
-    ,kGraphNN        = 8     // place for the NN pion efficiencies
+    ,kdEdxSlice      = 3     // place for the dE/dx spectra
+    ,kPH             = 4     // place for pulse height spectra
+    ,kNClus          = 5     // place for the number of clusters per track
+    ,kMomentum       = 6     // place for the momentum distribution
+    ,kMomentumBin    = 7     // place for the momentum distribution
+    ,kGraphLQ        = 8     // place for the 2-dim LQ pion efficiencies
+    ,kGraphNN        = 9     // place for the NN pion efficiencies
   };
 
   enum{

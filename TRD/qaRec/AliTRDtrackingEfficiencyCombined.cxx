@@ -92,7 +92,7 @@ void AliTRDtrackingEfficiencyCombined::Exec(Option_t *){
 		mom = 0.;
 		trkInf = dynamic_cast<AliTRDtrackInfo *>(fTracks->UncheckedAt(itinf));
 		if(!trkInf) continue;
-		if((TRDtrack = trkInf->GetTRDtrack()) || trkInf->GetNumberOfClustersRefit()){
+		if((TRDtrack = trkInf->GetTrack()) || trkInf->GetNumberOfClustersRefit()){
 			// check if allready found by the tracker
 			Bool_t found = kFALSE;
 			for(Int_t il = 0; il < naccepted; il++){

@@ -135,7 +135,7 @@ void run(Char_t *tasks="ALL", const Char_t *files=0x0, Int_t nmax=-1)
   // TRD track summary generator
   mgr->AddTask(task = new AliTRDtrackInfoGen());
   taskPtr[(Int_t)kInfoGen] = task;
-  task->SetDebugLevel(0);
+  task->SetDebugLevel(1);
   task->SetMCdata(fHasMCdata);
   // Create containers for input/output
   AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("data", TChain::Class(), AliAnalysisManager::kInputContainer);
@@ -190,7 +190,7 @@ void run(Char_t *tasks="ALL", const Char_t *files=0x0, Int_t nmax=-1)
     taskPtr[(Int_t)kTrackingResolution] = task;
     task->SetMCdata(fHasMCdata);
     task->SetPostProcess(kFALSE);
-    task->SetDebugLevel(2);
+    task->SetDebugLevel(1);
     
     // Create containers for input/output
     mgr->ConnectInput( task, 0, coutput1);

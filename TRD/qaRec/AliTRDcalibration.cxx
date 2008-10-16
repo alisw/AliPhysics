@@ -141,7 +141,7 @@ void AliTRDcalibration::Exec(Option_t *)
   for(Int_t itrk=0; itrk < fTracks->GetEntriesFast(); itrk++){
     
     fTrackInfo = (AliTRDtrackInfo*)fTracks->UncheckedAt(itrk);
-    ftrdTrack = fTrackInfo->GetTRDtrack();
+    ftrdTrack = fTrackInfo->GetTrack();
     if(!ftrdTrack) continue;
     nbTrdTracksUsed++;
     fTRDCalibraFillHisto->UpdateHistogramsV1(ftrdTrack);

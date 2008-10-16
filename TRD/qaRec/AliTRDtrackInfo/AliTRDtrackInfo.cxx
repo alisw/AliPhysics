@@ -279,24 +279,13 @@ void AliTRDtrackInfo::AddTrackRef(const AliTrackReference *tref)
 }
 
 //___________________________________________________
-AliTRDseedV1* AliTRDtrackInfo::GetTracklet(Int_t idx) const 
-{
-  //
-  // Returns a tracklet
-  //
-
-	if(!fTRDtrack) return 0x0;
-  return idx < 6 ? const_cast<AliTRDseedV1 *>(fTRDtrack->GetTracklet(idx)) : 0x0;
-}
-
-//___________________________________________________
 AliTrackReference * AliTRDtrackInfo::GetTrackRef(Int_t idx) const
 {
   //
   // Returns a track reference
   //
   if(!fMC) return 0x0;
-  return idx < 12 ? fMC->fTrackRefs[idx] : 0x0;
+  return (idx>=0 && idx < 12) ? fMC->fTrackRefs[idx] : 0x0;
 }
 
 //___________________________________________________
