@@ -42,6 +42,10 @@ public:
 //     ,kTrackKZResolution       = 12
 //     ,kTrackKAngleResolution   = 13
   };
+  enum{
+    kVerbose  = 0
+    ,kVisual  = 1
+  };
 
   AliTRDtrackingResolution();
   virtual ~AliTRDtrackingResolution();
@@ -49,22 +53,25 @@ public:
   void    CreateOutputObjects();
   void    Exec(Option_t *);
   void    GetRefFigure(Int_t ifig);
-  void    SetRecoParam(AliTRDrecoParam *r);
+  Bool_t  IsVerbose() const {return TESTBIT(fStatus, kVerbose);}
+  Bool_t  IsVisual() const {return TESTBIT(fStatus, kVisual);}
   Bool_t  PostProcess();
+
+  void    SetRecoParam(AliTRDrecoParam *r);
+  void    SetVerbose(Bool_t v = kTRUE) {v ? SETBIT(fStatus ,kVerbose): CLRBIT(fStatus ,kVerbose);}
+  void    SetVisual(Bool_t v = kTRUE) {v ? SETBIT(fStatus, kVisual) : CLRBIT(fStatus, kVisual);}
+
   void    Terminate(Option_t *);
   
 private:
   AliTRDtrackingResolution(const AliTRDtrackingResolution&);
   AliTRDtrackingResolution& operator=(const AliTRDtrackingResolution&);
-  void        Fit(TH1 *h, TF1 *f);
+  void        AdjustF1(TH1 *h, TF1 *f);
   TObjArray*  Histos(); 
   Bool_t      Resolution(AliTRDseedV1 *tracklet, AliTRDtrackInfo *info, Double_t &p, Double_t &y, Double_t &z, Double_t &phi, Double_t &theta);
 
 private:
-  enum{
-    kNLayers = 6
-  };
-  
+  UChar_t               fStatus;          // steer parameter of the task
   AliTRDReconstructor   *fReconstructor;  //! local reconstructor
   AliTRDgeometry        *fGeo;            //! TRD geometry
   TObjArray             *fGraphS;         //! result holder - sigma values
