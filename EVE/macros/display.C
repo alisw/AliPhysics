@@ -191,7 +191,8 @@ public:
     std::cout << "Opening " << fileName << " (" << dirName << ")" << std::endl;
     
     if (AliEveEventManager::GetMaster()) delete AliEveEventManager::GetMaster();
-    AliEveEventManager::GetMaster() = new AliEveEventManager(dirName.Data(), 0);
+    TString eventName("Event"); // CINT has trouble with direct "Event".
+    AliEveEventManager::GetMaster() = new AliEveEventManager(eventName, dirName, 0);
     gEve->AddEvent(AliEveEventManager::GetMaster());
     
     if (refresh) Refresh();

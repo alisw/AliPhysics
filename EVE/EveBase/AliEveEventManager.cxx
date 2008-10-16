@@ -93,8 +93,8 @@ void AliEveEventManager::InitInternals()
   fExecutor = new AliEveMacroExecutor;
 }
 
-AliEveEventManager::AliEveEventManager() :
-  TEveEventManager(),
+AliEveEventManager::AliEveEventManager(const TString& name) :
+  TEveEventManager(name),
 
   fPath      ( ), fEventId (-1),
   fRunLoader (0),
@@ -113,8 +113,8 @@ AliEveEventManager::AliEveEventManager() :
   InitInternals();
 }
 
-AliEveEventManager::AliEveEventManager(const TString& path, Int_t ev) :
-  TEveEventManager("AliEVE AliEveEventManager"),
+AliEveEventManager::AliEveEventManager(const TString& name, const TString& path, Int_t ev) :
+  TEveEventManager(name, path),
 
   fPath   (path), fEventId(-1),
   fRunLoader (0),
@@ -143,14 +143,12 @@ AliEveEventManager::~AliEveEventManager()
 {
   // Destructor.
 
+  delete fSubManagers;
+
   if (fIsOpen)
   {
     Close();
   }
-
-  // Somewhat unclear what to do here.
-  // In principle should wipe event data and deregister from
-  // TEveManager.
 }
 
 /******************************************************************************/
@@ -209,7 +207,7 @@ void AliEveEventManager::Open()
   }
 
   gSystem->ExpandPathName(fPath);
-  // The following magick is required for ESDriends to be loaded properly
+  // The following magick is required for ESDfriends to be loaded properly
   // from non-current directory.
   if (fPath.IsNull() || fPath == ".")
   {
@@ -305,7 +303,7 @@ void AliEveEventManager::Open()
   // Is AccessPathName check ok for xrootd / alien? Yes, not for http.
   if (gSystem->AccessPathName(gaPath, kReadPermission) == kFALSE)
   {
-    fRunLoader = AliRunLoader::Open(gaPath);
+    fRunLoader = AliRunLoader::Open(gaPath, GetName());
     if (fRunLoader)
     {
       TString alicePath = fPath + "/";
@@ -390,6 +388,7 @@ void AliEveEventManager::Open()
     }
   }
 
+  if (this == fgMaster)
   {
     AliCDBManager* cdb = AliCDBManager::Instance();
     if (cdb->IsDefaultStorageSet() == kTRUE)
@@ -406,8 +405,6 @@ void AliEveEventManager::Open()
     cdb->SetRun(runNo);
   }
 
-  SetName(Form("Event %d", fEventId));
-  SetTitle(fPath);
   fIsOpen = kTRUE;
 }
 
@@ -434,8 +431,8 @@ void AliEveEventManager::SetEvent(AliRunLoader *runLoader, AliRawReader *rawRead
 
   SetTitle("Online event in memory");
   SetName ("Online Event");
-
   ElementChanged();
+
   AfterNewEventLoaded();
 
   if (fAutoLoad) StartAutoLoadTimer();
@@ -608,8 +605,11 @@ void AliEveEventManager::GotoEvent(Int_t event)
 
   fHasEvent = kTRUE;
   fEventId  = event;
-  SetName(Form("Event %d", fEventId));
-  ElementChanged();
+  if (this == fgMaster)
+  {
+    SetName(Form("Event %d", fEventId));
+    ElementChanged();
+  }
 
   AfterNewEventLoaded();
 }
@@ -866,24 +866,53 @@ TGeoManager* AliEveEventManager::AssertGeometry()
 
 //------------------------------------------------------------------------------
 
-void AliEveEventManager::AddDependentManager(const TString& /*path*/)
+AliEveEventManager* AliEveEventManager::AddDependentManager(const TString& name, const TString& path)
 {
   // Create and attach a dependent event-manager.
+  // It is not added into eve list tree.
 
   static const TEveException kEH("AliEveEventManager::AddDependentManager ");
-
-  ::Error(kEH, "Not implemented.");
 
   if (fgMaster == 0)
     throw(kEH + "Master event-manager must be instantiated first.");
 
   if (fgMaster->fSubManagers == 0)
+  {
     fgMaster->fSubManagers = new TList;
+    fgMaster->fSubManagers->SetOwner(kTRUE);
+  }
 
-  // fgCurrent = 0;
-  // construct
-  // insert fgCurrent
-  // fgCurrent = fgMaster;
+  AliEveEventManager* new_mgr = 0;
+  fgCurrent = 0;
+  try
+  {
+    new_mgr = new AliEveEventManager(name, path, fgMaster->fEventId);
+    fgMaster->fSubManagers->Add(new_mgr);
+  }
+  catch (TEveException& exc)
+  {
+    ::Error(kEH, "Creation of new event-manager failed: '%s'.", exc.Data());
+  }
+  fgCurrent = fgMaster;
+
+  return new_mgr;
+}
+
+AliEveEventManager* AliEveEventManager::GetDependentManager(const TString& name)
+{
+  // Get a dependant manager by name.
+  // This will not change the current manager, use helper class
+  // AliEveEventManager::CurrentChanger for that.
+
+  static const TEveException kEH("AliEveEventManager::GetDependentManager ");
+
+  if (fgMaster == 0)
+    throw(kEH + "Master event-manager must be instantiated first.");
+
+  if (fgMaster->fSubManagers == 0)
+    return 0;
+
+  return dynamic_cast<AliEveEventManager*>(fgMaster->fSubManagers->FindObject(name));
 }
 
 AliEveEventManager* AliEveEventManager::GetMaster()
@@ -1056,12 +1085,35 @@ void AliEveEventManager::AfterNewEventLoaded()
   //
   // Virtual from TEveEventManager.
 
+  static const TEveException kEH("AliEveEventManager::AfterNewEventLoaded ");
+
   if (fExecutor)
     fExecutor->ExecMacros();
 
   TEveEventManager::AfterNewEventLoaded();
 
   NewEventLoaded();
+
+  if (this == fgMaster && fSubManagers != 0)
+  {
+    TIter next(fSubManagers);
+    while ((fgCurrent = dynamic_cast<AliEveEventManager*>(next())) != 0)
+    {
+      // gEve->SetCurrentEvent(fgCurrent);
+      try
+      {
+	fgCurrent->GotoEvent(fEventId);
+      }
+      catch (TEveException& exc)
+      {
+	// !!! Should somehow tag / disable / remove it?
+	Error(kEH, "Getting event %d for sub-event-manager '%s' failed: '%s'.",
+	      fEventId, fgCurrent->GetName(), exc.Data());
+      }
+    }
+    fgCurrent = fgMaster;
+    // gEve->SetCurrentEvent(fgMaster);
+  }
 }
 
 void AliEveEventManager::NewEventLoaded()

@@ -46,8 +46,8 @@ public:
   static void SetCdbUri     (const TString& cdb);
   static void SetAssertElements(Bool_t assertRunloader, Bool_t assertEsd, Bool_t assertRaw);
 
-  AliEveEventManager();
-  AliEveEventManager(const TString& path, Int_t ev=0);
+  AliEveEventManager(const TString& name="Event");
+  AliEveEventManager(const TString& name, const TString& path, Int_t ev=0);
   virtual ~AliEveEventManager();
 
   virtual void  Open();
@@ -86,7 +86,8 @@ public:
 
   static TGeoManager*  AssertGeometry();
 
-  static void AddDependentManager(const TString& path);
+  static AliEveEventManager* AddDependentManager(const TString& name, const TString& path);
+  static AliEveEventManager* GetDependentManager(const TString& name);
 
   static AliEveEventManager* GetMaster();
   static AliEveEventManager* GetCurrent();

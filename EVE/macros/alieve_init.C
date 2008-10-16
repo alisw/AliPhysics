@@ -39,7 +39,8 @@ void alieve_init(const Text_t* path   = ".", Int_t event=0,
   if (path != 0)
   {
     Info("alieve_init", "Opening event %d from '%s' ...", event, path);
-    new AliEveEventManager(path, event);
+    TString name("Event"); // CINT has trouble with direct "Event".
+    new AliEveEventManager(name, path, event);
     gEve->AddEvent(AliEveEventManager::GetMaster());
   }
 }

@@ -80,7 +80,7 @@ void visscan_init()
   TEveBrowser* browser = gEve->GetBrowser();
 
   browser->StartEmbedding(TRootBrowser::kBottom);
-  new AliEveEventManagerWindow;
+  new AliEveEventManagerWindow(AliEveEventManager::GetMaster());
   browser->StopEmbedding("EventCtrl");
 
   // event
