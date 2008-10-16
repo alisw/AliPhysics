@@ -4,7 +4,7 @@ ORGSRCS  := $(wildcard EVE/EveBase/*.cxx)
 SRCS     := $(patsubst EVE/%, %, ${ORGSRCS})
 HDRS     := $(SRCS:.cxx=.h)
 
-DHDR     := EveBase/LinkDef.h
+DHDR     := EveBase/EveBaseLinkDef.h
 
 EINCLUDE := RAW ITS TPC
 
