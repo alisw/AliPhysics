@@ -16,7 +16,8 @@
       integer nmem(nmxset),ndef(nmxset),mmem 
       common/NAME/name,nmem,ndef,mmem 
       integer nset 
-      integer initread/0/ 
+      integer initread
+      DATA initread/0/ 
       save 
                                                                         
       call getnset(iset) 
