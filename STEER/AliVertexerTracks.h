@@ -71,7 +71,6 @@ class AliVertexerTracks : public TObject {
   void  SetCuts(Double_t *cuts);
   void  SetConstraintOff() { fConstraint=kFALSE; return; }
   void  SetConstraintOn() { fConstraint=kTRUE; return; }
-  void  SetDebug(Int_t optdebug=0) { fDebug=optdebug; return; }
   void  SetDCAcut(Double_t maxdca) { fDCAcut=maxdca; return; }
   void  SetDCAcutIter0(Double_t maxdca) { fDCAcutIter0=maxdca; return; }
   void  SetFinderAlgorithm(Int_t opt=1) { fAlgo=opt; return; }
@@ -149,7 +148,6 @@ class AliVertexerTracks : public TObject {
   Double_t  fFiducialR;       // radius of fiducial cylinder for tracks 
   Double_t  fFiducialZ;       // length of fiducial cylinder for tracks
   Double_t  fnSigmaForUi00;   // n. sigmas from finder in TrackToPoint
-  Int_t     fDebug;           //! debug flag - verbose printing if >0
   Int_t     fAlgo;            // option for vertex finding algorythm
   // fAlgo=1 (default) finds minimum-distance point among all selected tracks
   //         approximated as straight lines 
@@ -169,7 +167,7 @@ class AliVertexerTracks : public TObject {
   AliVertexerTracks(const AliVertexerTracks & source);
   AliVertexerTracks & operator=(const AliVertexerTracks & source);
 
-  ClassDef(AliVertexerTracks,11) // 3D Vertexing with tracks 
+  ClassDef(AliVertexerTracks,12) // 3D Vertexing with tracks 
 };
 
 #endif

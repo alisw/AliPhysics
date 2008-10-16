@@ -32,6 +32,7 @@
 #include <TTree.h>
 #include <TMatrixD.h>
 //---- AliRoot headers -----
+#include "AliLog.h"
 #include "AliStrLine.h"
 #include "AliExternalTrackParam.h"
 #include "AliESDEvent.h"
@@ -66,7 +67,6 @@ fITSrefit(kTRUE),
 fFiducialR(3.),
 fFiducialZ(30.),
 fnSigmaForUi00(1.5),
-fDebug(0),
 fAlgo(1)
 {
 //
@@ -100,7 +100,6 @@ fITSrefit(kTRUE),
 fFiducialR(3.),
 fFiducialZ(30.),
 fnSigmaForUi00(1.5),
-fDebug(0),
 fAlgo(1)
 {
 //
@@ -158,7 +157,7 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertex(const AliESDEvent *esdEvent)
     Bool_t skipThis = kFALSE;
     for(Int_t j=0; j<fNTrksToSkip; j++) { 
       if(esdt->GetID()==fTrksToSkip[j]) {
-	if(fDebug) printf("skipping track: %d\n",i);
+	AliDebug(1,Form("skipping track: %d",i));
 	skipThis = kTRUE;
       }
     }
@@ -217,9 +216,9 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertex(TObjArray *trkArrayOrig,
 
   // read tracks from array
   Int_t nTrksOrig = (Int_t)trkArrayOrig->GetEntriesFast();
-  if(fDebug) printf("Initial number of tracks: %d\n",nTrksOrig);
+  AliDebug(1,Form("Initial number of tracks: %d",nTrksOrig));
   if(nTrksOrig<fMinTracks) {
-    if(fDebug) printf("TooFewTracks\n");
+    AliDebug(1,"TooFewTracks");
     TooFewTracks();
     return fCurrentVertex;
   } 
@@ -240,12 +239,12 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertex(TObjArray *trkArrayOrig,
       fNominalPos[0] = fVert.GetXv();
       fNominalPos[1] = fVert.GetYv();
       fNominalPos[2] = fVert.GetZv();
-      if(fDebug) printf("No mean vertex: VertexFinder gives (%f, %f, %f)\n",fNominalPos[0],fNominalPos[1],fNominalPos[2]);
+      AliDebug(1,Form("No mean vertex: VertexFinder gives (%f, %f, %f)",fNominalPos[0],fNominalPos[1],fNominalPos[2]));
     } else {
       fNominalPos[0] = 0.;
       fNominalPos[1] = 0.;
       fNominalPos[2] = 0.;
-      if(fDebug) printf("No mean vertex and VertexFinder failed\n");
+      AliDebug(1,"No mean vertex and VertexFinder failed");
     }
   }
   
@@ -265,7 +264,7 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertex(TObjArray *trkArrayOrig,
     if(fIdSel) { delete [] fIdSel; fIdSel=NULL; }
     fIdSel = new UShort_t[nTrksOrig];
     Int_t nTrksSel = PrepareTracks(*trkArrayOrig,idOrig,iter);
-    if(fDebug) printf("N tracks selected in iteration %d: %d\n",iter,nTrksSel);
+    AliDebug(1,Form("N tracks selected in iteration %d: %d",iter,nTrksSel));
     if(nTrksSel < fMinTracks) {
       TooFewTracks();
       return fCurrentVertex; 
@@ -274,7 +273,7 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertex(TObjArray *trkArrayOrig,
     // vertex finder
     if(!fOnlyFitter) {
       if(nTrksSel==1) {
-	if(fDebug) printf("Just one track\n");
+	AliDebug(1,"Just one track");
 	OneTrackVertFinder();
       } else {
 	switch (fAlgo) {
@@ -283,10 +282,10 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertex(TObjArray *trkArrayOrig,
         case 3: HelixVertexFinder();          break;
         case 4: VertexFinder(1);              break;
         case 5: VertexFinder(0);              break;
-        default: printf("Wrong algorithm\n"); break;  
+        default: printf("Wrong algorithm"); break;  
 	}
       }
-      if(fDebug) printf(" Vertex finding completed\n");
+      AliDebug(1," Vertex finding completed");
     }
 
     // vertex fitter
@@ -315,10 +314,7 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertex(TObjArray *trkArrayOrig,
   fCurrentVertex->SetTitle(title.Data());
   //
 
-  if(fDebug) {
-    fCurrentVertex->PrintStatus();
-    fCurrentVertex->PrintIndices();
-  }
+  AliDebug(1,Form("xyz: %f %f %f; nc %d",fCurrentVertex->GetXv(),fCurrentVertex->GetYv(),fCurrentVertex->GetZv(),fCurrentVertex->GetNContributors()));
 
   // clean up
   delete [] fIdSel; fIdSel=NULL;
@@ -420,7 +416,7 @@ Double_t AliVertexerTracks::GetStrLinMinDist(Double_t *p0,Double_t *p1,Double_t 
 void AliVertexerTracks::OneTrackVertFinder() 
 {
   // find vertex for events with 1 track, using DCA to nominal beam axis
-  if(fDebug) printf("Number of prepared tracks =%d - Call OneTrackVertFinder",fTrkArraySel.GetEntries());
+  AliDebug(1,Form("Number of prepared tracks =%d - Call OneTrackVertFinder",fTrkArraySel.GetEntries()));
   AliExternalTrackParam *track1;
   track1 = (AliExternalTrackParam*)fTrkArraySel.At(0);
   Double_t alpha=track1->GetAlpha();
@@ -533,7 +529,7 @@ Int_t AliVertexerTracks::PrepareTracks(TObjArray &trkArrayOrig,
 //
 // Propagate tracks to initial vertex position and store them in a TObjArray
 //
-  if(fDebug) printf(" PrepareTracks()\n");
+  AliDebug(1," PrepareTracks()");
 
   Int_t nTrksOrig = (Int_t)trkArrayOrig.GetEntriesFast();
   Int_t nTrksSel = 0;
@@ -554,7 +550,7 @@ Int_t AliVertexerTracks::PrepareTracks(TObjArray &trkArrayOrig,
     track = new AliExternalTrackParam(*(AliExternalTrackParam*)trkArrayOrig.At(i));
     // tgl cut
     if(TMath::Abs(track->GetTgl())>fMaxTgl) {
-      if(fDebug) printf(" rejecting track with tgl = %f\n",track->GetTgl());
+      AliDebug(1,Form(" rejecting track with tgl = %f",track->GetTgl()));
       delete track; continue;
     }
 
@@ -575,7 +571,7 @@ Int_t AliVertexerTracks::PrepareTracks(TObjArray &trkArrayOrig,
     }
 
     if(!propagateOK) { 
-      if(fDebug) printf("     rejected\n");
+      AliDebug(1,"     rejected");
       delete track; continue; 
     }
 
@@ -586,20 +582,20 @@ Int_t AliVertexerTracks::PrepareTracks(TObjArray &trkArrayOrig,
     //sigmad0z0 = TMath::Sqrt(covd0z0[0]+covd0z0[2]); // for future improvement
     //maxd0z0 = 10.*fNSigma*sigmad0z0;
 
-    if(fDebug) printf("trk %d; id %d; |d0| = %f;  d0 cut = %f; |z0| = %f; |d0|oplus|z0| = %f; d0z0 cut = %f\n",i,(Int_t)idOrig[i],TMath::Abs(d0z0[0]),maxd0rphi,TMath::Abs(d0z0[1]),TMath::Sqrt(d0z0[0]*d0z0[0]+d0z0[1]*d0z0[1]),fMaxd0z0);
+    AliDebug(1,Form("trk %d; id %d; |d0| = %f;  d0 cut = %f; |z0| = %f; |d0|oplus|z0| = %f; d0z0 cut = %f",i,(Int_t)idOrig[i],TMath::Abs(d0z0[0]),maxd0rphi,TMath::Abs(d0z0[1]),TMath::Sqrt(d0z0[0]*d0z0[0]+d0z0[1]*d0z0[1]),fMaxd0z0));
 
 
     //---- track selection based on impact parameters ----//
 
     // always reject tracks outside fiducial volume
     if(TMath::Abs(d0z0[0])>fFiducialR || TMath::Abs(d0z0[1])>fFiducialZ) { 
-      if(fDebug) printf("     rejected\n");
+      AliDebug(1,"     rejected");
       delete track; continue; 
     }
 
     // during iterations 1 and 2 , reject tracks with d0rphi > maxd0rphi
     if(optImpParCut>0 && TMath::Abs(d0z0[0])>maxd0rphi) { 
-      if(fDebug) printf("     rejected\n");
+      AliDebug(1,"     rejected");
       delete track; continue; 
     }
 
@@ -610,7 +606,7 @@ Int_t AliVertexerTracks::PrepareTracks(TObjArray &trkArrayOrig,
        ( fConstraint && optImpParCut==2)) {
       if(nTrksOrig>=3 && 
 	 TMath::Sqrt(d0z0[0]*d0z0[0]+d0z0[1]*d0z0[1])>fMaxd0z0) { 
-	if(fDebug) printf("     rejected\n");
+	AliDebug(1,"     rejected");
 	delete track; continue; 
       }
     }
@@ -680,11 +676,11 @@ AliESDVertex* AliVertexerTracks::RemoveTracksFromVertex(AliESDVertex *inVtx,
 //
 
   if(!strstr(inVtx->GetTitle(),"VertexerTracksWithConstraint")) {
-    printf("ERROR: primary vertex has no constraint: cannot remove tracks\n");
+    printf("ERROR: primary vertex has no constraint: cannot remove tracks");
     return 0x0;
   }
   if(!strstr(inVtx->GetTitle(),"VertexerTracksWithConstraintOnlyFitter"))
-    printf("WARNING: result of tracks' removal will be only approximately correct\n");
+    printf("WARNING: result of tracks' removal will be only approximately correct");
 
   TMatrixD rv(3,1);
   rv(0,0) = inVtx->GetXv();
@@ -711,7 +707,7 @@ AliESDVertex* AliVertexerTracks::RemoveTracksFromVertex(AliESDVertex *inVtx,
   for(Int_t i=0;i<ntrks;i++) {
     track = (AliExternalTrackParam*)trkArray->At(i);
     if(!inVtx->UsesTrack(id[i])) {
-      printf("track %d was not used in vertex fit\n",id[i]);
+      printf("track %d was not used in vertex fit",id[i]);
       continue;
     }
     Double_t alpha = track->GetAlpha();
@@ -741,7 +737,7 @@ AliESDVertex* AliVertexerTracks::RemoveTracksFromVertex(AliESDVertex *inVtx,
 
     nUsedTrks--;
     if(nUsedTrks<2) {
-      printf("Trying to remove too many tracks!\n");
+      printf("Trying to remove too many tracks!");
       return 0x0;
     }
   }
@@ -785,14 +781,14 @@ AliESDVertex* AliVertexerTracks::RemoveTracksFromVertex(AliESDVertex *inVtx,
   outVtx->SetIndices(nIndices,outindices);
   delete [] outindices;
 
-  if(fDebug) {
-    printf("Vertex before removing tracks:\n");
+  /*
+    printf("Vertex before removing tracks:");
     inVtx->PrintStatus();
     inVtx->PrintIndices();
-    printf("Vertex after removing tracks:\n");
+    printf("Vertex after removing tracks:");
     outVtx->PrintStatus();
     outVtx->PrintIndices();
-  }
+  */
 
   return outVtx;
 }
@@ -1071,9 +1067,9 @@ Bool_t AliVertexerTracks::TrackToPoint(AliExternalTrackParam *t,
     uUi(0,1) = t->GetSigmaZY();
     uUi(1,0) = t->GetSigmaZY();
     uUi(1,1) = t->GetSigmaZ2();
-    //printf(" Ui :\n");
-    //printf(" %f   %f\n",uUi(0,0),uUi(0,1));
-    //printf(" %f   %f\n",uUi(1,0),uUi(1,1));
+    //printf(" Ui :");
+    //printf(" %f   %f",uUi(0,0),uUi(0,1));
+    //printf(" %f   %f",uUi(1,0),uUi(1,1));
 
     if(uUi.Determinant() <= 0.) return kFALSE;
     TMatrixD uUiInv(TMatrixD::kInverted,uUi);
@@ -1117,7 +1113,7 @@ Bool_t AliVertexerTracks::TrackToPoint(AliExternalTrackParam *t,
     // covariance matrix of local (x,y,z) - inverted
     TMatrixD uUi(3,3);
     uUi(0,0) = covfVertalongt * fnSigmaForUi00 * fnSigmaForUi00;
-    if(fDebug) printf("=====> sqrtUi00 cm  %f\n",TMath::Sqrt(uUi(0,0)));
+    AliDebug(1,Form("=====> sqrtUi00 cm  %f",TMath::Sqrt(uUi(0,0))));
     uUi(0,1) = 0.;
     uUi(0,2) = 0.;
     uUi(1,0) = 0.;
@@ -1149,7 +1145,7 @@ void AliVertexerTracks::TooFewTracks()
 // When the number of tracks is < fMinTracks,
 // deal with vertices not found and prepare to exit
 //
-  if(fDebug) printf("TooFewTracks\n");
+  AliDebug(1,"TooFewTracks");
 
   Double_t pos[3],err[3];
   pos[0] = fNominalPos[0];
@@ -1294,13 +1290,11 @@ void AliVertexerTracks::VertexFitter()
 
   Int_t nTrksSel = (Int_t)fTrkArraySel.GetEntries();
   if(nTrksSel==1) useConstraint=kTRUE;
-  if(fDebug) { 
-    printf("--- VertexFitter(): start\n");
-    printf(" Number of tracks in array: %d\n",nTrksSel);
-    printf(" Minimum # tracks required in fit: %d\n",fMinTracks);
-    printf(" Vertex position after finder: %f,%f,%f\n",initPos[0],initPos[1],initPos[2]);
-    if(useConstraint) printf(" This vertex will be used in fit: (%f+-%f,%f+-%f)\n",fNominalPos[0],TMath::Sqrt(fNominalCov[0]),fNominalPos[1],TMath::Sqrt(fNominalCov[2])); 
-  }
+  AliDebug(1,"--- VertexFitter(): start");
+  AliDebug(1,Form(" Number of tracks in array: %d\n",nTrksSel));
+  AliDebug(1,Form(" Minimum # tracks required in fit: %d\n",fMinTracks));
+  AliDebug(1,Form(" Vertex position after finder: %f,%f,%f\n",initPos[0],initPos[1],initPos[2]));
+  if(useConstraint) AliDebug(1,Form(" This vertex will be used in fit: (%f+-%f,%f+-%f)\n",fNominalPos[0],TMath::Sqrt(fNominalCov[0]),fNominalPos[1],TMath::Sqrt(fNominalCov[2]))); 
 
   // special treatment for few-tracks fits (e.g. secondary vertices)
   Bool_t uUi3by3 = kFALSE; if(nTrksSel<5 && !useConstraint) uUi3by3 = kTRUE;
@@ -1340,7 +1334,7 @@ void AliVertexerTracks::VertexFitter()
   // 1st - estimate of vtx using all tracks
   // 2nd - estimate of global chi2
   for(step=0; step<2; step++) {
-    if(fDebug) printf(" step = %d\n",step);
+    AliDebug(1,Form(" step = %d\n",step));
     chi2 = 0.;
     nTrksUsed = 0;
 
@@ -1409,7 +1403,7 @@ void AliVertexerTracks::VertexFitter()
 
     Double_t determinant = sumWi.Determinant();
     if(determinant < fMinDetFitter)  { 
-      printf("det(V) = %f (<%f)\n",determinant,fMinDetFitter);       
+      AliDebug(1,Form("det(V) = %f (<%f)\n",determinant,fMinDetFitter));       
       failed=1;
       continue;
     }
@@ -1446,11 +1440,10 @@ void AliVertexerTracks::VertexFitter()
   if(fCurrentVertex) { delete fCurrentVertex; fCurrentVertex=0; }
   fCurrentVertex = new AliESDVertex(position,covmatrix,chi2,nTrksUsed);
 
-  if(fDebug) {
-    printf(" Vertex after fit:\n");
-    fCurrentVertex->PrintStatus();
-    printf("--- VertexFitter(): finish\n");
-  }
+  AliDebug(1," Vertex after fit:");
+  AliDebug(1,Form("xyz: %f %f %f; nc %d",fCurrentVertex->GetXv(),fCurrentVertex->GetYv(),fCurrentVertex->GetZv(),fCurrentVertex->GetNContributors()));
+  AliDebug(1,"--- VertexFitter(): finish\n");
+ 
 
   return;
 }
@@ -1483,7 +1476,7 @@ AliESDVertex* AliVertexerTracks::VertexForSelectedTracks(TObjArray *trkArray,
     case 5: VertexFinder(0);              break;
     default: printf("Wrong algorithm\n"); break;  
   }
-  if(fDebug) printf(" Vertex finding completed\n");
+  AliDebug(1," Vertex finding completed\n");
 
   // vertex fitter
   if(optUseFitter) {
@@ -1511,7 +1504,7 @@ AliESDVertex* AliVertexerTracks::VertexForSelectedTracks(TObjArray *trkArray,
       if(optPropagate && optUseFitter) {
 	if(TMath::Sqrt(fCurrentVertex->GetXv()*fCurrentVertex->GetXv()+fCurrentVertex->GetYv()*fCurrentVertex->GetYv())<3.) {
 	  t->PropagateToDCA(fCurrentVertex,GetFieldkG(),100.,d0z0,covd0z0);
-	  if(fDebug) printf("Track %d propagated to found vertex\n",jj);
+	  AliDebug(1,Form("Track %d propagated to found vertex",jj));
 	} else {
 	  AliWarning("Found vertex outside beam pipe!");
 	}
