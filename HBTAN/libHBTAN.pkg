@@ -17,7 +17,7 @@ FSRCS   = fsiini.F  fsiw.F  led_bldata.F  ltran12.F
 
 HDRS:= $(SRCS:.cxx=.h)
 
-DHDR= HBTAnalysisLinkDef.h
+DHDR= HBTANLinkDef.h
 
 EINCLUDE:= TPC ITS
 
