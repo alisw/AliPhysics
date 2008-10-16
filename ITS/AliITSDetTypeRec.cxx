@@ -93,7 +93,8 @@ fRecPoints(0),
 fNRecPoints(0),
 fSelectedVertexer(),
 fFirstcall(kTRUE),
-fLoadOnlySPDCalib(0){
+fLoadOnlySPDCalib(0),
+fFastOrFiredMap(1200){
     // Standard Constructor
     // Inputs:
     //    none.
@@ -151,7 +152,8 @@ fRecPoints(rec.fRecPoints),
 fNRecPoints(rec.fNRecPoints),
 fSelectedVertexer(rec.fSelectedVertexer),
 fFirstcall(rec.fFirstcall),
-fLoadOnlySPDCalib(rec.fLoadOnlySPDCalib){
+fLoadOnlySPDCalib(rec.fLoadOnlySPDCalib),
+fFastOrFiredMap(rec.fFastOrFiredMap){
 
   // Copy constructor. 
 
@@ -995,7 +997,7 @@ void AliITSDetTypeRec::DigitsToRecPoints(AliRawReader* rawReader,TTree *treeR,Op
     if (!all && !det[id]) continue;
     rec = (AliITSClusterFinderV2*)GetReconstructionModel(id);
     if (!rec)
-      AliFatal("The reconstruction class was not instanciated");
+      AliFatal("The reconstruction class was not instantiated");
     rec->SetDetTypeRec(this);
     rec->RawdataToClusters(rawReader,clusters);    
   } 

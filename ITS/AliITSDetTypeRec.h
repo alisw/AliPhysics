@@ -14,6 +14,7 @@ $Id$
 #include <TObject.h>
 #include <TObjArray.h>
 #include <TClonesArray.h>
+#include <TBits.h>
 #include "AliITSDDLModuleMapSDD.h"
 #include "AliITSresponseSDD.h"
 #include "AliITSgeom.h"
@@ -110,6 +111,10 @@ class AliITSDetTypeRec : public TObject {
     void DigitsToRecPoints(TTree *treeD,TTree *treeR,Int_t lastEntry,Option_t *det,Bool_t v2=kFALSE);
     void DigitsToRecPoints(AliRawReader* rawReader,TTree *treeR,Option_t *det="All");
 
+    void   SetFastOrFiredMap(UInt_t chip){fFastOrFiredMap.SetBitNumber(chip);}
+    TBits  GetFastOrFiredMap() const {return fFastOrFiredMap;}
+    void   ResetFastOrFiredMap(){fFastOrFiredMap.ResetAllBits();}
+
   private:
     // private methods
     AliITSDetTypeRec(const AliITSDetTypeRec& rec);
@@ -159,7 +164,9 @@ class AliITSDetTypeRec : public TObject {
     Bool_t fFirstcall;         //! flag
     Bool_t fLoadOnlySPDCalib;  //! flag for loading calibrations only fr SPD
 
-    ClassDef(AliITSDetTypeRec,13) // ITS Reconstruction structure
+    TBits fFastOrFiredMap;     // Map of FastOr fired chips
+
+    ClassDef(AliITSDetTypeRec,14) // ITS Reconstruction structure
 };
 
 #endif

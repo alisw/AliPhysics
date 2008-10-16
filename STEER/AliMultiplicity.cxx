@@ -14,7 +14,8 @@ AliMultiplicity::AliMultiplicity():
   fPhi(0),
   fDeltPhi(0),
   fThsingle(0),
-  fPhisingle(0)
+  fPhisingle(0),
+  fFastOrFiredChips(1200)
 {
   // Default Constructor
   fFiredChips[0] = 0;
@@ -22,7 +23,7 @@ AliMultiplicity::AliMultiplicity():
 }
 
 //______________________________________________________________________
-AliMultiplicity::AliMultiplicity(Int_t ntr, Float_t *t,  Float_t *ph, Float_t *df, Int_t *labels, Int_t* labelsL2, Int_t ns, Float_t *ts, Float_t *ps, Short_t nfcL1, Short_t nfcL2):
+AliMultiplicity::AliMultiplicity(Int_t ntr, Float_t *t,  Float_t *ph, Float_t *df, Int_t *labels, Int_t* labelsL2, Int_t ns, Float_t *ts, Float_t *ps, Short_t nfcL1, Short_t nfcL2, TBits fFastOr):
   TObject(),
   fNtracks(ntr),
   fNsingle(ns),
@@ -32,7 +33,8 @@ AliMultiplicity::AliMultiplicity(Int_t ntr, Float_t *t,  Float_t *ph, Float_t *d
   fPhi(0),
   fDeltPhi(0),
   fThsingle(0),
-  fPhisingle(0)
+  fPhisingle(0),
+  fFastOrFiredChips(1200)
 {
 // Standard constructor
   if(ntr>0){
@@ -59,6 +61,7 @@ AliMultiplicity::AliMultiplicity(Int_t ntr, Float_t *t,  Float_t *ph, Float_t *d
   }
   fFiredChips[0] = nfcL1;
   fFiredChips[1] = nfcL2;
+  fFastOrFiredChips = fFastOr;
 }
 
 //______________________________________________________________________
@@ -72,7 +75,8 @@ AliMultiplicity::AliMultiplicity(const AliMultiplicity& m):
   fPhi(0),
   fDeltPhi(0),
   fThsingle(0),
-  fPhisingle(0)
+  fPhisingle(0),
+  fFastOrFiredChips(1200)
 {
   // copy constructor
   Duplicate(m);
@@ -147,6 +151,8 @@ void AliMultiplicity::Duplicate(const AliMultiplicity& m){
 
   fFiredChips[0] = m.fFiredChips[0];
   fFiredChips[1] = m.fFiredChips[1];
+
+  fFastOrFiredChips = m.fFastOrFiredChips;
 }
 
 //______________________________________________________________________

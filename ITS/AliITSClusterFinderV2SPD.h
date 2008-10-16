@@ -14,6 +14,7 @@
 class TClonesArray;
 class AliRawReader;
 class AliITSRawStream;
+class AliITSRawStreamSPD;
 
 class AliITSClusterFinderV2SPD : public AliITSClusterFinderV2 {
 public:
@@ -26,7 +27,7 @@ public:
  protected:
 
   void FindClustersSPD(TClonesArray *digits);
-  void FindClustersSPD(AliITSRawStream* input,TClonesArray** clusters);
+  void FindClustersSPD(AliITSRawStreamSPD* input,TClonesArray** clusters);
   Int_t ClustersSPD(AliBin* bins, TClonesArray* digits,TClonesArray* clusters,Int_t maxBins, Int_t nzbins,Int_t iModule,Bool_t rawdata=kFALSE);
 
   Int_t fLastSPD1;       //index of the last SPD1 detector

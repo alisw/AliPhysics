@@ -251,7 +251,7 @@ Int_t AliITSClusterFinderV2SPD::ClustersSPD(AliBin* bins, TClonesArray* digits,T
 
 
 
-void AliITSClusterFinderV2SPD::FindClustersSPD(AliITSRawStream* input, 
+void AliITSClusterFinderV2SPD::FindClustersSPD(AliITSRawStreamSPD* input, 
 					TClonesArray** clusters) 
 {
   //------------------------------------------------------------
@@ -289,6 +289,21 @@ void AliITSClusterFinderV2SPD::FindClustersSPD(AliITSRawStream* input,
     bins[index].SetIndex(index);
     bins[index].SetMask(1);
     bins[index].SetQ(1);
+  }
+
+  // get the FastOr bit map
+  fDetTypeRec->ResetFastOrFiredMap();
+  for(UInt_t eq=0; eq<20; eq++) {
+    for(UInt_t hs=0; hs<6; hs++) {
+      for(UInt_t chip=0; chip<10; chip++) {
+        if(input->GetFastOrSignal(eq,hs,chip)) {
+          UInt_t module = input->GetOfflineModuleFromOnline(eq,hs,chip);
+          UInt_t chipInModule = ( chip>4 ? chip-5 : chip );
+          UInt_t chipKey = module*5 + chipInModule;
+          fDetTypeRec->SetFastOrFiredMap(chipKey);
+        }
+      }
+    }
   }
 
   delete [] binsSPDInit;

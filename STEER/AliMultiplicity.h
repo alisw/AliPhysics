@@ -2,6 +2,7 @@
 #define ALIMULTIPLICITY_H
 
 #include<TObject.h>
+#include <TBits.h>
 #include<TMath.h>
 
 ////////////////////////////////////////////////////////
@@ -16,7 +17,7 @@ class AliMultiplicity : public TObject {
   AliMultiplicity();               // default constructor
   // standard constructor
   AliMultiplicity(Int_t ntr,Float_t *t, Float_t *ph, Float_t *df, Int_t *labels,
-                  Int_t* labelsL2, Int_t ns, Float_t *ts, Float_t *ps, Short_t nfcL1, Short_t nfcL2);
+         Int_t* labelsL2, Int_t ns, Float_t *ts, Float_t *ps, Short_t nfcL1, Short_t nfcL2, TBits fFastOrFiredChips);
   AliMultiplicity(const AliMultiplicity& m);
   AliMultiplicity& operator=(const AliMultiplicity& m);
   virtual void Copy(TObject &obj) const;
@@ -44,6 +45,10 @@ class AliMultiplicity : public TObject {
   Short_t GetNumberOfFiredChips(Int_t layer) const { return fFiredChips[layer]; }
   void SetFiredChips(Int_t layer, Short_t firedChips) { fFiredChips[layer] = firedChips; }
 
+  void   SetFastOrFiredChips(UInt_t chip){fFastOrFiredChips.SetBitNumber(chip);}
+  TBits  GetFastOrFiredChips() const {return fFastOrFiredChips;}
+  Bool_t TestFastOrFiredChips(UInt_t chip) const {return fFastOrFiredChips.TestBitNumber(chip);}
+
   protected:
   void Duplicate(const AliMultiplicity &m);  // used by copy ctr.
 
@@ -59,7 +64,9 @@ class AliMultiplicity : public TObject {
   Double32_t *fPhisingle;    //[fNsingle] array with phi values of L2 clusters
   Short_t fFiredChips[2];    // Number of fired chips in the two SPD layers
 
-  ClassDef(AliMultiplicity,7);
+  TBits fFastOrFiredChips;   // Map of FastOr fired chips
+
+  ClassDef(AliMultiplicity,8);
 };
 
 inline Int_t AliMultiplicity::GetLabel(Int_t i, Int_t layer) const

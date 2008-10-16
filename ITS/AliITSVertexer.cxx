@@ -23,7 +23,8 @@ AliITSVertexer::AliITSVertexer():AliVertexer(),
 fLadders(), 
 fLadOnLay2(0),
 fFirstEvent(0),
-fLastEvent(-1)
+fLastEvent(-1),
+fDetTypeRec(NULL)
 {
   // Default Constructor
   SetLaddersOnLayer2();
@@ -45,6 +46,9 @@ void AliITSVertexer::FindMultiplicity(TTree *itsClusterTree){
   if(!fCurrentVertex)success=kFALSE;
   if(fCurrentVertex && fCurrentVertex->GetNContributors()<1)success=kFALSE;
 
+  // get the FastOr bit mask
+  TBits fastOrFiredMap = fDetTypeRec->GetFastOrFiredMap();
+
   AliITSMultReconstructor multReco;
 
   if(!success){
@@ -57,7 +61,7 @@ void AliITSVertexer::FindMultiplicity(TTree *itsClusterTree){
     multReco.LoadClusterFiredChips(itsClusterTree);
     Short_t nfcL1 = multReco.GetNFiredChips(0);
     Short_t nfcL2 = multReco.GetNFiredChips(1);
-    fMult = new AliMultiplicity(0,0,0,0,0,0,0,0,0,nfcL1,nfcL2);
+    fMult = new AliMultiplicity(0,0,0,0,0,0,0,0,0,nfcL1,nfcL2,fastOrFiredMap);
     return;
   }
 
@@ -93,7 +97,7 @@ void AliITSVertexer::FindMultiplicity(TTree *itsClusterTree){
   }
   Short_t nfcL1 = multReco.GetNFiredChips(0);
   Short_t nfcL2 = multReco.GetNFiredChips(1);
-  fMult = new AliMultiplicity(notracks,tht,phi,dphi,labels,labelsL2,nosingleclus,ths,phs,nfcL1,nfcL2);
+  fMult = new AliMultiplicity(notracks,tht,phi,dphi,labels,labelsL2,nosingleclus,ths,phs,nfcL1,nfcL2,fastOrFiredMap);
 
   delete [] tht;
   delete [] phi;

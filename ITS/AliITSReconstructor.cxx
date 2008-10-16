@@ -168,47 +168,52 @@ AliVertexer* AliITSReconstructor::CreateVertexer() const
 {
 // create a ITS vertexer
 
+  AliITSVertexer *vptr;
   Int_t vtxOpt = GetRecoParam()->GetVertexer();
   if(vtxOpt==3){
     Info("CreateVertexer","a AliITSVertexerIons object has been selected\n");
-    return new AliITSVertexerIons();
+    vptr =  new AliITSVertexerIons();
   }
-  if(vtxOpt==4){
+  else if(vtxOpt==4){
     Double_t smear[3]={0.005,0.005,0.01};
     Info("CreateVertexer","a AliITSVertexerFast object has been selected\n"); 
-    return new AliITSVertexerFast(smear);
+    vptr = new AliITSVertexerFast(smear);
   }
-  if(vtxOpt==1){
+  else if(vtxOpt==1){
     Info("CreateVertexer","a AliITSVertexerZ object has been selected\n");
-    return new AliITSVertexerZ();
+    vptr =  new AliITSVertexerZ();
   }
-  if(vtxOpt==2){
+  else if(vtxOpt==2){
     Info("CreateVertexer","a AliITSVertexerCosmics object has been selected\n");
-    return new AliITSVertexerCosmics();
+    vptr = new AliITSVertexerCosmics();
   }
-  if(vtxOpt==5){ 
+  else if(vtxOpt==5){ 
     Info("CreateVertexer","vertex is fixed in the position of the TDI\n");
-    return new AliITSVertexerFixed("TDI");
+    vptr = new AliITSVertexerFixed("TDI");
   }
-  if(vtxOpt==6){ 
+  else if(vtxOpt==6){ 
     Info("CreateVertexer","vertex is fixed in the position of the TED\n");
-    return new AliITSVertexerFixed("TED");
+    vptr = new AliITSVertexerFixed("TED");
   }
+  else {
   // by default an AliITSVertexer3D object is instatiated
-  Info("CreateVertexer","a AliITSVertexer3D object has been selected\n");
-  AliITSVertexer3D*  vtxr = new AliITSVertexer3D();
-  Float_t dzw=GetRecoParam()->GetVertexer3DWideFiducialRegionZ();
-  Float_t drw=GetRecoParam()->GetVertexer3DWideFiducialRegionR();
-  vtxr->SetWideFiducialRegion(dzw,drw);
-  Float_t dzn=GetRecoParam()->GetVertexer3DNarrowFiducialRegionZ();
-  Float_t drn=GetRecoParam()->GetVertexer3DNarrowFiducialRegionR();
-  vtxr->SetNarrowFiducialRegion(dzn,drn);
-  Float_t dphil=GetRecoParam()->GetVertexer3DLooseDeltaPhiCut();
-  Float_t dphit=GetRecoParam()->GetVertexer3DTightDeltaPhiCut();
-  vtxr->SetDeltaPhiCuts(dphil,dphit);
-  Float_t dcacut=GetRecoParam()->GetVertexer3DDCACut();
-  vtxr->SetDCACut(dcacut);
-  return vtxr;
+    Info("CreateVertexer","a AliITSVertexer3D object has been selected\n");
+    AliITSVertexer3D*  vtxr = new AliITSVertexer3D();
+    Float_t dzw=GetRecoParam()->GetVertexer3DWideFiducialRegionZ();
+    Float_t drw=GetRecoParam()->GetVertexer3DWideFiducialRegionR();
+    vtxr->SetWideFiducialRegion(dzw,drw);
+    Float_t dzn=GetRecoParam()->GetVertexer3DNarrowFiducialRegionZ();
+    Float_t drn=GetRecoParam()->GetVertexer3DNarrowFiducialRegionR();
+    vtxr->SetNarrowFiducialRegion(dzn,drn);
+    Float_t dphil=GetRecoParam()->GetVertexer3DLooseDeltaPhiCut();
+    Float_t dphit=GetRecoParam()->GetVertexer3DTightDeltaPhiCut();
+    vtxr->SetDeltaPhiCuts(dphil,dphit);
+    Float_t dcacut=GetRecoParam()->GetVertexer3DDCACut();
+    vtxr->SetDCACut(dcacut);
+    vptr = vtxr;
+  }
+  vptr->SetDetTypeRec(fDetTypeRec);
+  return vptr;
 }
 
 //_____________________________________________________________________________

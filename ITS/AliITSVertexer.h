@@ -2,6 +2,7 @@
 #define ALIITSVERTEXER_H
 
 #include<AliVertexer.h>
+#include "AliITSDetTypeRec.h"
 
 ///////////////////////////////////////////////////////////////////
 //                                                               //
@@ -34,6 +35,7 @@ class AliITSVertexer : public AliVertexer {
       if(imod>=0 && imod<kNSPDMod) return fUseModule[imod];
       else return 0;
     }
+    virtual void SetDetTypeRec(const AliITSDetTypeRec *ptr){fDetTypeRec = ptr;}
     enum{kNSPDMod=240};
 
     // Methods containing run-loaders, should be moved to some other class
@@ -56,9 +58,10 @@ class AliITSVertexer : public AliVertexer {
     AliITSVertexer& operator=(const AliITSVertexer& /* vtxr */);
 
     Int_t fFirstEvent;          // First event to be processed by FindVertices
-    Int_t fLastEvent;           // Last event to be processed by FindVertices 
+    Int_t fLastEvent;           // Last event to be processed by FindVertices
+    const AliITSDetTypeRec *fDetTypeRec;  //! pointer to DetTypeRec
 
-  ClassDef(AliITSVertexer,6);
+  ClassDef(AliITSVertexer,7);
 };
 
 #endif
