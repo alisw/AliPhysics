@@ -1,6 +1,6 @@
 #-*- Mode: Makefile -*-
 
-SRCS          =  AliPHOSGeoUtils.cxx AliPHOSEMCAGeometry.cxx AliPHOSCPVGeometry.cxx
+SRCS          =  AliPHOSGeoUtils.cxx
 
 HDRS:= $(SRCS:.cxx=.h) 
 
