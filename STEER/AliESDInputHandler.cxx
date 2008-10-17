@@ -176,7 +176,7 @@ Bool_t AliESDInputHandler::Notify(const char* path)
 	TObjArray* arr = arch->GetMembers();
 	TIter next(arr);
 	
-	while (file = (TFile*) next()){
+	while ((file = (TFile*) next())) {
 	    name = file->GetName();
 	    if (strstr(name,tagPattern)) { 
 		tagFilename = pathName->Data();

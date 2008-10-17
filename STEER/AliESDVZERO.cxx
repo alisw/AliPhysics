@@ -313,7 +313,7 @@ Bool_t AliESDVZERO::GetBGFlag(Int_t i)
 }
 
 //__________________________________________________________________________
-Bool_t AliESDVZERO::OutOfRange(Int_t i, const char *s, Int_t upper) const
+Bool_t AliESDVZERO::OutOfRange(Int_t i, const char* /*s*/, Int_t upper) const
 {
   // checks if i is a valid index. s = name of calling method
   if (i > upper || i < 0) {
