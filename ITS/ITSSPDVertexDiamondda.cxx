@@ -31,6 +31,7 @@ extern "C" {
 #include <TH2.h>
 #include <TSystem.h>
 
+#include "AliLog.h"
 #include "AliRawReaderDate.h"
 #include "AliCDBManager.h"
 #include "AliITSMeanVertexer.h"
@@ -135,6 +136,7 @@ int main(int argc, char **argv) {
   }
 
   // Global initializations
+  AliLog::SetGlobalLogLevel(AliLog::kError);
   AliCDBManager *man = AliCDBManager::Instance();
   man->SetDefaultStorage("local://localOCDB");
   man->SetRun(runNr);
