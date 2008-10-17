@@ -87,7 +87,7 @@ AliMUONQAChecker::Check(AliQA::ALITASK_t index, TObjArray * list)
     return CheckRecPoints(list);
   }
   
-  if ( index = AliQA::kESD )
+  if ( index == AliQA::kESD )
   {
     return CheckESD(list);
   }
