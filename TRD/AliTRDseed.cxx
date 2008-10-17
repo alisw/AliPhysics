@@ -304,7 +304,7 @@ void AliTRDseed::Update()
   Int_t    zouts[2*knTimebins];       
   Float_t  allowedz[knTimebins];         // Allowed z for given time bin
   Float_t  yres[knTimebins];             // Residuals from reference
-  Float_t  anglecor = fTilt * fZref[1];  // Correction to the angle
+  //Float_t  anglecor = fTilt * fZref[1];  // Correction to the angle
   
   
   fN  = 0; 

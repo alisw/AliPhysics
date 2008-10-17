@@ -488,7 +488,7 @@ void AliTRDalignment::ReadCurrentGeo()
   TGeoPNEntry *pne;
   TGeoHMatrix *ideSm[18];  // ideal
   TGeoHMatrix *misSm[18];  // misaligned
-  for (int i = 0; i < 18; i++) if (pne = gGeoManager->GetAlignableEntry(GetSmName(i))) {
+  for (int i = 0; i < 18; i++) if ((pne = gGeoManager->GetAlignableEntry(GetSmName(i)))) {
 
     // read misaligned and original matrices
 
@@ -523,7 +523,7 @@ void AliTRDalignment::ReadCurrentGeo()
 
   TGeoHMatrix *ideCh[540]; // ideal
   TGeoHMatrix *misCh[540]; // misaligned
-  for (int i = 0; i < 540; i++) if (pne = gGeoManager->GetAlignableEntry(GetChName(i))) {
+  for (int i = 0; i < 540; i++) if ((pne = gGeoManager->GetAlignableEntry(GetChName(i)))) {
 
     // read misaligned and original matrices
 
