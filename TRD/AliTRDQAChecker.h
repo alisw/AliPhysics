@@ -1,5 +1,5 @@
-#ifndef ALITRDQUALASSCHECKER_H
-#define ALITRDQUALASSCHECKER_H
+#ifndef ALITRDQACHECKER_H
+#define ALITRDQACHECKER_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -36,6 +36,7 @@ public:
   virtual const Double_t Check(AliQA::ALITASK_t /*index*/) {return 1.0;}
   virtual const Double_t Check(TList * /*list*/) {return 1.0;}
   virtual const Double_t Check(AliQA::ALITASK_t /*index*/, TObjArray * /*list*/) {return 1.0;}
+  virtual const Double_t Check(AliQA::ALITASK_t /*index*/, TNtupleD* /*nt*/)     {return 1.0;}
 
 private:
   
@@ -43,4 +44,4 @@ private:
 
 };
 
-#endif // AliTRDQAChecker_H
+#endif // AliTRDQACHECKER_H
