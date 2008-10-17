@@ -246,7 +246,7 @@ void AliTRDtrackingResolution::Exec(Option_t *)
           Float_t row0 = pp->GetRow0();
           Float_t d  =  row0 - z + simParam->GetAnodeWireOffset();
           d -= ((Int_t)(2 * d)) / 2.0;
-          //if (d > 0.25) d  = 0.5 - d;
+          if (d > 0.25) d  = 0.5 - d;
   
           (*fDebugStream) << "ResidualClusters"
             << "ly="   << iplane
