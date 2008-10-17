@@ -46,7 +46,7 @@ class AliDPair : public TObject {
    double Qinv2()                 {return -q.M2();}
    double QCM()                   {return CMq.Vect().Mag();}
    double QCMpar()                {return CMq.Vect()*ubeta;}
-   double QCMper()                {return sqrt(fabs(QCM()*QCM()-QCMpar()*QCMpar()));}
+   double QCMper()                {return TMath::Sqrt(TMath::Abs(QCM()*QCM()-QCMpar()*QCMpar()));}
    double QCMout()                {return +CMq.Vect().X()*ubetat.X()+CMq.Vect().Y()*ubetat.Y();}
    double QCMside()               {return -CMq.Vect().X()*ubetat.Y()+CMq.Vect().Y()*ubetat.X();}
    double QCMlong()               {return CMq.Vect().Z();}

@@ -40,7 +40,7 @@ Double_t AliDEvent::ParticleY(Int_t i, Double_t mass) const
   // rapidity
 
   double pp = ParticleP(i);
-  double ee = sqrt(fabs(mass*mass + pp*pp));
+  double ee = TMath::Sqrt(TMath::Abs(mass*mass + pp*pp));
   double pz = ParticlePz(i);
   double yy = log((ee+pz)/(ee-pz))/2;
   return yy;

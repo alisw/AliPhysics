@@ -55,6 +55,7 @@ ISAJET/module.mk:	ISAJET/libisajet.pkg
 TIsajet/module.mk:	TIsajet/libTIsajet.pkg
 TTherminator/module.mk:	TTherminator/libTTherminator.pkg
 CORRFW/module.mk:       CORRFW/libCORRFW.pkg
+UNICOR/module.mk:       UNICOR/libUNICOR.pkg
 
 ifeq (win32gcc,$(ALICE_TARGET))
 $(LIBPATH)/libAOD.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT)

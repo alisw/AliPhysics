@@ -1,8 +1,20 @@
 #-*- Mode: Makefile -*-
 
-SRCS = $(shell cd UNICOR; ls AliD*.cxx)
+SRCS = \
+AliDAnal.cxx \
+AliDAnalCorrel.cxx \
+AliDAnalGlobal.cxx \
+AliDAnalPtfluc.cxx \
+AliDAnalSingle.cxx \
+AliDAnalysisTask.cxx \
+AliDEvent.cxx \
+AliDEventAliceESD.cxx \
+AliDHN.cxx \
+AliDLoop.cxx \
+AliDPair.cxx 
 
 HDRS = $(SRCS:.cxx=.h) 
 
-CINTAUTOLINK = 1
+DHDR:=UNICORLinkDef.h
+
 
