@@ -16,6 +16,11 @@ void embed_init()
   bkg->AddNewEventCommand("background_event()");
   gEve->AddToListTree(bkg, kTRUE);
 
+  TEveScene* bs = gEve->SpawnNewScene("Background");
+  bs->AddElement(bkg);
+
+  gEve->GetDefViewer()->AddScene(bs);
+
   // ------------------------------------------------------------------------
 
   TEveUtil::LoadMacro("its_clusters.C+");
