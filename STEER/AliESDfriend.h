@@ -18,6 +18,7 @@ class AliESDfriend : public TObject {
 public:
   AliESDfriend();
   AliESDfriend(const AliESDfriend &);
+  AliESDfriend& operator=(const AliESDfriend& esd);  
   virtual ~AliESDfriend();
 
   Int_t GetNumberOfTracks() const {return fTracks.GetEntriesFast();}

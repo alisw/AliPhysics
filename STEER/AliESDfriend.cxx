@@ -40,6 +40,20 @@ AliESDfriend::AliESDfriend(const AliESDfriend &f):TObject(f),fTracks(f.fTracks),
  //
 }
 
+AliESDfriend& AliESDfriend::operator=(const AliESDfriend& esd)
+{
+    
+    // Assignment operator
+    if(&esd == this) return *this;
+    TObject::operator=(esd);
+    fTracks = esd.fTracks;
+    fESDVZEROfriend = esd.fESDVZEROfriend;
+
+    return *this;
+}
+
+
+
 AliESDfriend::~AliESDfriend() {
   //
   // Destructor
