@@ -312,7 +312,8 @@ TString AliEveHOMERXMLHandler::GetNodename( TString xmlHostname ) {
   TXMLNode * node = NULL;
   TXMLNode * prevNode = fRootNode->GetChildren();
 
-  while ( node = prevNode->GetNextNode() ) {
+  while ((node = prevNode->GetNextNode()) != 0)
+  {
     prevNode = node;
 
     // -- Find only "Node" nodes, otherwise continue

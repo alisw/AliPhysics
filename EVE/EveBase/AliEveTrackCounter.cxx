@@ -40,6 +40,7 @@ AliEveTrackCounter::AliEveTrackCounter(const Text_t* name, const Text_t* title) 
 
    fBadLineStyle (6),
    fClickAction  (kCA_ToggleTrack),
+   fEventId      (-1),
    fAllTracks    (0),
    fGoodTracks   (0),
    fTrackLists   ()

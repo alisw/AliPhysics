@@ -51,6 +51,10 @@ public:
 protected:
   static TGGC    *gfGC;
   static TGFont  *gfFont;
+
+private:
+  AliEveMEWListBox(const AliEveMEWListBox&);            // Not implemented
+  AliEveMEWListBox& operator=(const AliEveMEWListBox&); // Not implemented
 };
 
 TGGC   *AliEveMEWListBox::gfGC   = 0;
@@ -59,9 +63,6 @@ TGFont *AliEveMEWListBox::gfFont = 0;
 
 class AliEveMEWEditor : public TGedEditor
 {
-protected:
-  AliEveMacroExecutorWindow* fMEW;
-
 public:
   AliEveMEWEditor(AliEveMacroExecutorWindow* w) : TGedEditor(0), fMEW(w) {}
   virtual ~AliEveMEWEditor() {}
@@ -74,6 +75,11 @@ public:
   {
     SetModel(fPad, fModel, kButton1Down);
   }
+protected:
+  AliEveMacroExecutorWindow* fMEW;
+private:
+  AliEveMEWEditor(const AliEveMEWEditor&);            // Not implemented
+  AliEveMEWEditor& operator=(const AliEveMEWEditor&); // Not implemented
 };
 
 //______________________________________________________________________________
@@ -86,7 +92,8 @@ ClassImp(AliEveMacroExecutorWindow)
 AliEveMacroExecutorWindow::AliEveMacroExecutorWindow(AliEveMacroExecutor* master) :
   TGMainFrame(gClient->GetRoot()), fM(master),
   fMainFrame(0), fCtrlFrame(0), fListBox(0), fEditor(0),
-  fSelectTags(0)
+  fSelectTags(0),
+  fBoxContents()
 {
   // Constructor.
 
