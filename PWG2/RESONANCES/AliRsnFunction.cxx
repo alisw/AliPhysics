@@ -305,8 +305,6 @@ TString AliRsnFunction::GetFcnName()
     case kEtaSpectrum:
       text = "ETA";
       break;
-    case kAngleSpectrum:
-      text = "ANGLE";
     default:
       AliError("Type not defined");
   }
@@ -339,9 +337,6 @@ TString AliRsnFunction::GetFcnTitle()
       break;
     case kEtaSpectrum:
       text = "#eta distribution";
-      break;
-    case kAngleSpectrum:
-      text = "angle distribution";
       break;
     default:
       AliError("Type not defined");
@@ -418,8 +413,6 @@ Double_t AliRsnFunction::FcnValue(AliRsnPairParticle *pair, AliRsnPairDef *ref)
       return pair->GetPt();
     case kEtaSpectrum:
       return pair->GetEta();
-    case kAngleSpectrum:
-      return pair->GetAngle();
     default:
       AliError("Type not defined");
   }

@@ -248,6 +248,28 @@ void AliRsnDaughter::RotateP(Double_t angle)
 }
 
 //_____________________________________________________________________________
+Double_t AliRsnDaughter::AngleTo(AliRsnDaughter *d)
+{
+//
+// Compute angle in DEGREES between the vector momentum of (this)
+// and the one of argument.
+//
+
+  Double_t arg, dot, ptot2 = P2() * d->P2();
+  
+  if(ptot2 <= 0) {
+    return 0.0;
+  }
+  else {
+    dot = Px()*d->Px() + Py()*d->Py() + Pz()*d->Pz();
+    arg = dot / TMath::Sqrt(ptot2);
+    if (arg >  1.0) arg =  1.0;
+    if (arg < -1.0) arg = -1.0;
+    return TMath::ACos(arg) * TMath::RadToDeg();
+  }
+}
+
+//_____________________________________________________________________________
 void AliRsnDaughter::SetPIDWeight(Int_t i, Double_t value)
 {
 //
@@ -399,8 +421,8 @@ Bool_t AliRsnDaughter::Adopt(AliESDtrack* esdTrack,EPIDType pidType ,Double_t di
   fCharge = (Short_t)esdTrack->Charge();
 
   // calculate N sigma to vertex
-  SetNSigmaToVertex(fESDTrackCuts.GetSigmaToVertex(esdTrack));
-
+  AliESDtrackCuts trkCut;
+  SetNSigmaToVertex(trkCut.GetSigmaToVertex(esdTrack));
 
   return kTRUE;
 }

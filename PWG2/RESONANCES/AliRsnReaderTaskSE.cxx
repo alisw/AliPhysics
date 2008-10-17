@@ -91,7 +91,6 @@ void AliRsnReaderTaskSE::UserExec(Option_t */*option*/)
 
 
   // step 1: conversion
-  Int_t arraySize = 1000;
   Bool_t ok = kFALSE;
   switch (fInputType[0])
   {
@@ -113,7 +112,6 @@ void AliRsnReaderTaskSE::UserExec(Option_t */*option*/)
     case kMC:
       AliDebug(5, "Reading MC only event...");
       ok = fReader.FillFromMC(fRsnEvent, fMCEvent);
-      arraySize = 3000;
       AliDebug(5, "...done");
       break;
     default:
@@ -123,7 +121,7 @@ void AliRsnReaderTaskSE::UserExec(Option_t */*option*/)
   if (!ok) AliWarning("Failed reading");
 
   // step 2: PID probability computation
-  if (!fPID.Process(fRsnEvent, arraySize)) AliWarning("Failed PID");
+  if (!fPID.Process(fRsnEvent)) AliWarning("Failed PID");
 
   AliInfo(Form("Collected %d tracks", fRsnEvent->GetMultiplicity()));
 }

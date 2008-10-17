@@ -25,7 +25,7 @@ ClassImp(AliRsnPair)
 
 //_____________________________________________________________________________
 AliRsnPair::AliRsnPair
-(EPairType type, AliRsnPairDef *def, Int_t mixNum, Double_t mixVzCut, Int_t mixMultCut) :
+(EPairType type, AliRsnPairDef *def, Int_t mixNum) :
   TObject(),
   fIsMixed(kFALSE),
   fUseMC(kFALSE),
@@ -112,7 +112,7 @@ void AliRsnPair::Init()
 }
 
 //_____________________________________________________________________________
-void AliRsnPair::Print() 
+void AliRsnPair::Print(Option_t* /*option*/) const
 {
 //
 // Prints info about pair
@@ -161,12 +161,12 @@ void AliRsnPair::ProcessPair(AliRsnEventBuffer *buf)
     AliRsnEvent *e2 = 0;
     e2 = FindEventByEventCut(buf, lastOkEvent);
     if (!e2) return;
-    //if (fIsMixed) {
-      //AliInfo(Form("ev1 = #%d -- ev2 = #%d -- nMixed = %d/%d", buf->IndexOf(e1), buf->IndexOf(e2), i, fMixNum));
+    if (fIsMixed) {
+      AliInfo(Form("ev1 = #%d -- ev2 = #%d -- nMixed = %d/%d", buf->IndexOf(e1), buf->IndexOf(e2), i, fMixNum));
       //AliInfo(Form("Diff Mult = %d", TMath::Abs(e1->GetMultiplicity() - e2->GetMultiplicity())));
       //AliInfo(Form("Diff Vz   = %f", TMath::Abs(e1->GetVz() - e2->GetVz())));
       //AliInfo(Form("Diff Phi  = %f", TMath::Abs(e1->GetPhiMean() - e2->GetPhiMean())));
-    //}
+    }
 //     if (e2->GetMultiplicity() < 1) continue;
     array2 = e2->GetTracksArray(fTypePID, fPairDef->GetCharge(1), fPairDef->GetType(1));
     LoopPair(e1, array1, e2, array2);
@@ -300,7 +300,7 @@ void AliRsnPair::GenerateHistograms(TString prefix, TList *tgt)
 }
 
 //_____________________________________________________________________________
-TString AliRsnPair::GetPairTypeName(EPairType type) 
+TString AliRsnPair::GetPairTypeName(EPairType type) const
 {
 //
 // Returns type name, made with particle names ant chosen PID
@@ -323,7 +323,7 @@ TString AliRsnPair::GetPairTypeName(EPairType type)
 }
 
 //_____________________________________________________________________________
-TString AliRsnPair::GetPairName() 
+TString AliRsnPair::GetPairName() const
 {
 //
 // Retruns pair name
@@ -336,7 +336,7 @@ TString AliRsnPair::GetPairName()
 }
 
 //_____________________________________________________________________________
-TString AliRsnPair::GetPairHistName(AliRsnFunction *fcn, TString text)
+TString AliRsnPair::GetPairHistName(AliRsnFunction *fcn, TString text) const
 {
 //
 // Returns eff. mass histogram name
@@ -357,7 +357,7 @@ TString AliRsnPair::GetPairHistName(AliRsnFunction *fcn, TString text)
 }
 
 //_____________________________________________________________________________
-TString AliRsnPair::GetPairHistTitle(AliRsnFunction *fcn, TString text)
+TString AliRsnPair::GetPairHistTitle(AliRsnFunction *fcn, TString text) const
 {
 //
 // Returns eff. mass histogram title

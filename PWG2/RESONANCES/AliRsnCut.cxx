@@ -397,8 +397,15 @@ Bool_t AliRsnCut::IsSelected(ETarget type, AliRsnEvent * event)
 Bool_t AliRsnCut::IsSelected(ETarget type, AliRsnEvent * ev1, AliRsnEvent * ev2)
 {
   AliDebug(AliLog::kDebug, "<-");
+  
+  // check type
+  if (type != kMixEvent)
+  {
+    AliWarning(Form("Mismatch: type = %d (expected %d)", type, kMixEvent));
+    return kTRUE;
+  }
 
-  Double_t valueD;
+  Double_t valueD, mult1, mult2;
   Int_t    valueI;
 
   switch (fType)
@@ -406,6 +413,12 @@ Bool_t AliRsnCut::IsSelected(ETarget type, AliRsnEvent * ev1, AliRsnEvent * ev2)
     case kMultiplicityDifference:
       valueI = TMath::Abs(ev1->GetMultiplicity() - ev2->GetMultiplicity());
       return IsBetween((Int_t)valueI);
+    case kMultiplicityRatio:
+      mult1 = (Double_t)ev1->GetMultiplicity();
+      mult2 = (Double_t)ev2->GetMultiplicity();
+      if (mult1 == 0.0  && mult2 == 0.0) return kTRUE;
+      valueD = 100.0 * TMath::Abs(mult1 - mult2) / TMath::Max(mult1, mult2); // in %
+      return IsBetween((Double_t)valueD);
     case kVzDifference:
       valueD = TMath::Abs(ev1->GetVz() - ev2->GetVz());
       return IsBetween((Double_t)valueD);

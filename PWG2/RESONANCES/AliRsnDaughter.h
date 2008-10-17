@@ -81,6 +81,7 @@ class AliRsnDaughter : public AliVParticle
     void             SetM(Double_t m) {fMass = m;}
     void             SetChi2(Double_t chi2) {fChi2 = chi2;}
     void             RotateP(Double_t angle);
+    Double_t         AngleTo(AliRsnDaughter *d);
 
     // DCA vertex
     virtual Double_t Xv() const {return fV[0];}
@@ -184,10 +185,7 @@ class AliRsnDaughter : public AliVParticle
     Double_t           fPIDProb[AliRsnPID::kSpecies];   // PID probabilities (Bayesian comp.)
     Double_t           fPIDWeight[AliRsnPID::kSpecies]; // PID weights
 
-    AliRsnMCInfo      *fMCInfo;     // reference to particle object (if any)
-    
-    AliESDtrackCuts    fESDTrackCuts; //! tmp object of AliESDtrackCuts for fNSigmaToVertex
-
+    AliRsnMCInfo      *fMCInfo;      // reference to particle object (if any)
     static EPIDMethod  fgPIDMethod; // flag to define how the PID is computed for this object
 
     ClassDef(AliRsnDaughter, 4)
