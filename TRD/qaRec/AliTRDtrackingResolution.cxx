@@ -155,8 +155,8 @@ void AliTRDtrackingResolution::Exec(Option_t *)
     printf("Event[%d] TrackInfos[%d]\n", (Int_t)AliAnalysisManager::GetAnalysisManager()->GetCurrentEntry(), nTrackInfos);
   }
   const Int_t kNLayers = AliTRDgeometry::kNlayer;
-  Int_t pdg;
-  Double_t p, dy/*, dphi, dymc, dzmc, dphimc*/;
+  Int_t pdg, nly, ncrs;
+  Double_t p, dy, theta/*, dphi, dymc, dzmc, dphimc*/;
   Float_t fP[kNLayers], fX[kNLayers], fY[kNLayers], fZ[kNLayers], fPhi[kNLayers], fTheta[kNLayers]; // phi/theta angle per layer
   Bool_t fMCMap[kNLayers], fLayerMap[kNLayers]; // layer map
 
@@ -171,6 +171,7 @@ void AliTRDtrackingResolution::Exec(Option_t *)
     if(!(fTrack = fInfo->GetTrack())) continue;
     if(!(fOp = fInfo->GetOuterParam())) continue;
     pdg = fInfo->GetPDG();
+    nly = 0; ncrs = 0; theta = 0.;
 
     if(fDebugLevel>=3) printf("\tDoing track[%d] NTrackRefs[%d]\n", iTI, fInfo->GetNTrackRefs());
 
@@ -221,7 +222,8 @@ void AliTRDtrackingResolution::Exec(Option_t *)
         }
       }
       Float_t phi   = fPhi[iplane]*TMath::RadToDeg();
-      //Float_t theta = fTheta[iplane]*TMath::RadToDeg();
+      theta += fTheta[iplane]; nly++;
+      if(fTracklet->GetNChange()) ncrs++;
 
       // Do clusters residuals
       if(!fTracklet->Fit(kFALSE)) continue;
@@ -261,6 +263,14 @@ void AliTRDtrackingResolution::Exec(Option_t *)
         }
       }
       pp = 0x0;
+    }
+    if(nly) theta /= nly; 
+    if(fDebugLevel>=1){
+      (*fDebugStream) << "TrackStatistics"
+        << "nly="   << nly
+        << "ncrs="  << ncrs
+        << "tht="   << theta
+        << "\n";
     }
 
 
@@ -561,7 +571,6 @@ Bool_t AliTRDtrackingResolution::PostProcess()
   fGraphS->AddAt(gs, kClusterYResidual);
   for(Int_t ibin = 1; ibin <= h2->GetNbinsX(); ibin++){
     Double_t phi = h2->GetXaxis()->GetBinCenter(ibin);
-    Double_t dphi = h2->GetXaxis()->GetBinWidth(ibin)/2;
     h = h2->ProjectionY("py", ibin, ibin);
     AdjustF1(h, &fc);
 
@@ -570,9 +579,9 @@ Bool_t AliTRDtrackingResolution::PostProcess()
     if(IsVisual()){c->Modified(); c->Update(); gSystem->Sleep(500);}
     
     gm->SetPoint(ibin - 1, TMath::Tan(phi*TMath::DegToRad()), 10.*fc.GetParameter(1));
-    //gm->SetPointError(ibin - 1, dphi, 10.*fc.GetParError(1));
+    gm->SetPointError(ibin - 1, 0., 10.*fc.GetParError(1));
     gs->SetPoint(ibin - 1, TMath::Tan(phi*TMath::DegToRad()), 10.*fc.GetParameter(2));
-    //gs->SetPointError(ibin - 1, dphi, 10.*fc.GetParError(2));
+    gs->SetPointError(ibin - 1, 0., 10.*fc.GetParError(2));
   }
 
 
@@ -604,9 +613,9 @@ Bool_t AliTRDtrackingResolution::PostProcess()
       Double_t phi = h2->GetXaxis()->GetBinCenter(iphi);
       Int_t jphi = iphi -1;
       gm->SetPoint(jphi, TMath::Tan(phi*TMath::DegToRad()), 10.*fb.GetParameter(1));
-      //gm->SetPointError(jphi, 0., 10.*fb.GetParError(1));
+      gm->SetPointError(jphi, 0., 10.*fb.GetParError(1));
       gs->SetPoint(jphi, TMath::Tan(phi*TMath::DegToRad()), 10.*fb.GetParameter(2));
-      //gs->SetPointError(jphi, 0., 10.*fb.GetParError(2));
+      gs->SetPointError(jphi, 0., 10.*fb.GetParError(2));
     }
   
     // tracklet y resolution
