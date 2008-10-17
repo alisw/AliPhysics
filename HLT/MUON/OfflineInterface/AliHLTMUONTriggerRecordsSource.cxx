@@ -196,9 +196,9 @@ int AliHLTMUONTriggerRecordsSource::DoInit(int argc, const char** argv)
 				HLTError("Expected a positive number after -firstevent.");
 				return -EINVAL;
 			}
-			char* end = "";
+			char* end = NULL;
 			long num = strtol(argv[i], &end, 0);
-			if (*end != '\0' or num < 0) // Check if the conversion is OK.
+			if ((end != NULL and *end != '\0') or num < 0) // Check if the conversion is OK.
 			{
 				HLTError(Form(
 					"Expected a positive number after -firstevent"

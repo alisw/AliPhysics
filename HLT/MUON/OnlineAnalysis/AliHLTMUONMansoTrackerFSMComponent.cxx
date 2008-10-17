@@ -21,7 +21,7 @@
 ///  @file   AliHLTMUONMansoTrackerFSMComponent.cxx
 ///  @author Artur Szostak <artursz@iafrica.com>,
 ///          Indranil Das <indra.das@saha.ac.in>
-///  @date   
+///  @date   18 Sep 2007
 ///  @brief  Implementation of AliHLTMUONMansoTrackerFSMComponent class.
 ///
 
@@ -406,7 +406,7 @@ int AliHLTMUONMansoTrackerFSMComponent::DoInit(int argc, const char** argv)
 		{
 			HLTInfo("Loading configuration parameters from CDB.");
 			
-			int result = ReadConfigFromCDB();
+			result = ReadConfigFromCDB();
 			if (result != 0)
 			{
 				// Error messages already generated in ReadConfigFromCDB.
@@ -798,10 +798,12 @@ int AliHLTMUONMansoTrackerFSMComponent::DoEvent(
 				HLTWarning("Received a data block of a type we cannot handle: '%s', spec: 0x%X",
 					DataType2Text(blocks[n].fDataType).c_str(), blocks[n].fSpecification
 				);
+#ifdef __DEBUG
 			else
 				HLTDebug("Received a data block of a type we cannot handle: '%s', spec: 0x%X",
 					DataType2Text(blocks[n].fDataType).c_str(), blocks[n].fSpecification
 				);
+#endif
 		}
 	}
   

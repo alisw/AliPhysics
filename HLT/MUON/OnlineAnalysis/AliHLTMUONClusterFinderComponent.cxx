@@ -205,7 +205,7 @@ int AliHLTMUONClusterFinderComponent::DoInit(int argc, const char** argv)
 	
 	if (not DelaySetup())
 	{
-		int result = ReadConfigFromCDB();
+		result = ReadConfigFromCDB();
 		if (result != 0)
 		{
 			// Error messages already generated in ReadConfigFromCDB.
@@ -409,9 +409,9 @@ int AliHLTMUONClusterFinderComponent::DoEvent(
 		AliHLTMUONRecHitsBlockWriter outBlock(buffer, bufferSize);
 		outBlock.InitCommonHeader();
 		AliHLTUInt32_t i = 0;
-		TIter next(clusterStore->CreateIterator());
+		TIter next2(clusterStore->CreateIterator());
 		AliMUONVCluster* cluster = NULL;
-		while ( (cluster = static_cast<AliMUONVCluster*>(next())) != NULL )
+		while ( (cluster = static_cast<AliMUONVCluster*>(next2())) != NULL )
 		{
 			AliHLTMUONRecHitStruct& hit = outBlock[i++];
 			hit.fFlags = AliHLTMUONUtils::PackRecHitFlags(

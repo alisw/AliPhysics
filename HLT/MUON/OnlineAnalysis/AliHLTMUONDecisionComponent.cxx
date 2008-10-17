@@ -316,7 +316,7 @@ int AliHLTMUONDecisionComponent::DoInit(int argc, const char** argv)
 		if (not fLowPtCutSet or not fHighPtCutSet or not fLowMassCutSet or not fHighMassCutSet)
 		{
 			HLTInfo("Loading cut parameters from CDB.");
-			int result = ReadConfigFromCDB(
+			result = ReadConfigFromCDB(
 					not fLowPtCutSet, not fHighPtCutSet,
 					not fLowMassCutSet, not fHighMassCutSet
 				);
@@ -467,10 +467,12 @@ int AliHLTMUONDecisionComponent::DoEvent(
 				HLTWarning("Received a data block of a type we cannot handle: '%s', spec: 0x%X",
 					DataType2Text(blocks[n].fDataType).c_str(), blocks[n].fSpecification
 				);
+#ifdef __DEBUG
 			else
 				HLTDebug("Received a data block of a type we cannot handle: '%s', spec: 0x%X",
 					DataType2Text(blocks[n].fDataType).c_str(), blocks[n].fSpecification
 				);
+#endif
 		}
 	}
 	

@@ -200,6 +200,7 @@ AliHLTMUONRecHitStruct AliHLTMUONMansoTrackerFSM::AliLine::FindIntersectWithXYPl
 	else
 		t = 0;
 	AliHLTMUONRecHitStruct p;
+	p.fFlags = 0;
 	p.fX = fMx*t + fCx;
 	p.fY = fMy*t + fCy;
 	p.fZ = z;

@@ -313,10 +313,12 @@ int AliHLTMUONRootifierComponent::DoEvent(
 					HLTWarning("Received a data block of a type we cannot handle: '%s', spec: 0x%X",
 						DataType2Text(block->fDataType).c_str(), block->fSpecification
 					);
+#ifdef __DEBUG
 				else
 					HLTDebug("Received a data block of a type we cannot handle: '%s', spec: 0x%X",
 						DataType2Text(block->fDataType).c_str(), block->fSpecification
 					);
+#endif
 			}
 		}
 	}

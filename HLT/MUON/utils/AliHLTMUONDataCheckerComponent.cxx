@@ -391,12 +391,14 @@ int AliHLTMUONDataCheckerComponent::DoEvent(
 							DataType2Text(blocks[n].fDataType).c_str(),
 							blocks[n].fSpecification
 						);
+#ifdef __DEBUG
 					else
 						HLTDebug("Received a data block of a type we cannot"
 							" handle: '%s', spec: 0x%8.8X",
 							DataType2Text(blocks[n].fDataType).c_str(),
 							blocks[n].fSpecification
 						);
+#endif
 				}
 			}
 			

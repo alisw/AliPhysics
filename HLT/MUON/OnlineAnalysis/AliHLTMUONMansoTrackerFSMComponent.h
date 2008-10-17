@@ -23,7 +23,7 @@
 ///  @file   AliHLTMUONMansoTrackerFSMComponent.h
 ///  @author Artur Szostak <artursz@iafrica.com>,
 ///          Indranil Das <indra.das@saha.ac.in>
-///  @date   
+///  @date   18 Sep 2007
 ///  @brief  Tracker component for the dimuon HLT using the Manso algorithm
 ///          implemented as a finite state machine.
 ///

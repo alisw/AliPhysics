@@ -432,7 +432,7 @@ int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
 			HLTInfo("Loading lookup table information from CDB for DDL %d (ID = %d).",
 				fDDL+1, AliHLTMUONUtils::DDLNumberToEquipId(fDDL)
 			);
-			int result = ReadLutFromCDB();
+			result = ReadLutFromCDB();
 			if (result != 0)
 			{
 				// Error messages already generated in ReadLutFromCDB.
@@ -446,7 +446,7 @@ int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
 	else
 	{
 		HLTInfo("Loading lookup table information from file %s.", lutFileName);
-		int result = ReadLookUpTable(lutFileName);
+		result = ReadLookUpTable(lutFileName);
 		if (result != 0)
 		{
 			// Error messages already generated in ReadLookUpTable.
@@ -468,7 +468,7 @@ int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
 				fDDL+1, AliHLTMUONUtils::DDLNumberToEquipId(fDDL)
 			);
 			
-			int result = ReadConfigFromCDB(not fZmiddleSpecified, not fBLSpecified);
+			result = ReadConfigFromCDB(not fZmiddleSpecified, not fBLSpecified);
 			if (result != 0)
 			{
 				// Error messages already generated in ReadConfigFromCDB.
@@ -613,10 +613,12 @@ int AliHLTMUONTriggerReconstructorComponent::DoEvent(
 				HLTWarning("Received a data block of a type we cannot handle: '%s', spec: 0x%X",
 					DataType2Text(blocks[n].fDataType).c_str(), blocks[n].fSpecification
 				);
+#ifdef __DEBUG
 			else
 				HLTDebug("Received a data block of a type we cannot handle: '%s', spec: 0x%X",
 					DataType2Text(blocks[n].fDataType).c_str(), blocks[n].fSpecification
 				);
+#endif
 			
 			continue;
 		}
