@@ -12,6 +12,8 @@ SRCS= RESONANCES/AliRsnMCInfo.cxx \
       RESONANCES/AliRsnPIDWeightsMgr.cxx \
       RESONANCES/AliRsnEvent.cxx \
       RESONANCES/AliRsnEventBuffer.cxx \
+      RESONANCES/AliRsnEventFunction.cxx \
+      RESONANCES/AliRsnEventTaskSE.cxx \
       RESONANCES/AliRsnReader.cxx \
       RESONANCES/AliRsnReaderTask.cxx \
       RESONANCES/AliRsnReaderTaskSE.cxx \
