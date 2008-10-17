@@ -1,19 +1,25 @@
 # -*- mode: cmake -*-
 
 set(SRCS
-EveBase/AliEveEventManagerEditor.cxx        
+EveBase/AliEveCosmicRayFitter.cxx
+EveBase/AliEveCosmicRayFitterEditor.cxx
+EveBase/AliEveEventManager.cxx
+EveBase/AliEveEventManagerEditor.cxx
+EveBase/AliEveJetPlane.cxx
+EveBase/AliEveJetPlaneEditor.cxx
+EveBase/AliEveJetPlaneGL.cxx
+EveBase/AliEveKineTools.cxx
+EveBase/AliEveMacro.cxx
+EveBase/AliEveMacroEditor.cxx
+EveBase/AliEveMacroExecutor.cxx
+EveBase/AliEveMacroExecutorWindow.cxx
+EveBase/AliEveTrackCounter.cxx
+EveBase/AliEveTrackCounterEditor.cxx
+EveBase/AliEveTrackFitter.cxx
+EveBase/AliEveTrackFitterEditor.cxx
 EveBase/AliEveV0.cxx
 EveBase/AliEveV0Editor.cxx
 EveBase/AliEveV0ListEditor.cxx
-EveBase/AliEveCosmicRayFitter.cxx        
-EveBase/AliEveJetPlaneGL.cxx
-EveBase/AliEveCosmicRayFitterEditor.cxx  
-EveBase/AliEveKineTools.cxx
-EveBase/AliEveEventManager.cxx           
-EveBase/AliEveTrackFitter.cxx
-EveBase/AliEveJetPlane.cxx               
-EveBase/AliEveTrackFitterEditor.cxx
-EveBase/AliEveJetPlaneEditor.cxx         
 EveBase/AliEveVSDCreator.cxx
 )
 

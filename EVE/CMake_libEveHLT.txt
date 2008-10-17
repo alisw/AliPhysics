@@ -1,11 +1,14 @@
 # -*- mode: cmake -*-
 
 set(SRCS
-EveHLT/AliEveHOMERManager.cxx        
-EveHLT/AliEveHOMERSourceList.cxx
-EveHLT/AliEveHOMERManagerEditor.cxx  
-EveHLT/AliEveHOMERSourceMap.cxx
+EveHLT/AliEveHOMERManager.cxx
+EveHLT/AliEveHOMERManagerEditor.cxx
 EveHLT/AliEveHOMERSource.cxx
+EveHLT/AliEveHOMERSourceList.cxx
+EveHLT/AliEveHOMERSourceMap.cxx
+EveHLT/AliEveHOMERSrcObject.cxx
+EveHLT/AliEveHOMERSrcTranslator.cxx
+EveHLT/AliEveHOMERXMLHandler.cxx
 )
 
 # fill list of header files from list of source files

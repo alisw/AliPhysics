@@ -45,6 +45,10 @@ EveDet/AliEveTRDLoaderImp.cxx
 EveDet/AliEveTRDLoaderManager.cxx
 EveDet/AliEveTRDModule.cxx
 EveDet/AliEveTRDModuleImp.cxx
+EveDet/AliEveTRDTrackList.cxx
+EveDet/AliEveTRDTrackListEditor.cxx
+EveDet/AliEveVZEROModule.cxx
+EveDet/AliEveVZEROModuleEditor.cxx
 )
 
 # fill list of header files from list of source files
