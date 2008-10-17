@@ -106,7 +106,7 @@ AliPHOSRecoParam& AliPHOSRecoParam::operator = (const AliPHOSRecoParam& recoPara
 }
 
 //-----------------------------------------------------------------------------
-void AliPHOSRecoParam::Print(Option_t *option) const
+void AliPHOSRecoParam::Print(Option_t * /*option*/) const
 {
   AliDebug(2,Form("PHOS reconstruction parameters:\n"
 		  "\tEMCClusteringThreshold = %f\n"
