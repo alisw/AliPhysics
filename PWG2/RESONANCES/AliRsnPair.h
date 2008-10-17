@@ -36,12 +36,11 @@ class AliRsnPair : public TObject
       kPairTypes
     };
 
-    AliRsnPair(EPairType type = kRealisticPID, AliRsnPairDef *def = 0, 
-               Int_t mixNum = 1, Double_t mixVzCut = 1.0, Int_t mixMultCut = 10);
+    AliRsnPair(EPairType type = kRealisticPID, AliRsnPairDef *def = 0, Int_t mixNum = 1);
     ~AliRsnPair();
 
     void    Init();
-    void    Print();
+    void    Print(Option_t *option = "") const;
     void    ProcessPair(AliRsnEventBuffer *buf);
     void    SetCutMgr(AliRsnCutMgr* theValue) { fCutMgr = theValue; }
     void    SetMixingCut(AliRsnCutSet* theValue) { fMixingCut = theValue; }
@@ -49,10 +48,10 @@ class AliRsnPair : public TObject
     TList*  GenerateHistograms(TString prefix = "");
     void    GenerateHistograms(TString prefix, TList *tgt);
 
-    TString GetPairTypeName(EPairType type);
-    TString GetPairName();
-    TString GetPairHistName(AliRsnFunction *fcn, TString text = "");
-    TString GetPairHistTitle(AliRsnFunction *fcn, TString text="");
+    TString GetPairTypeName(EPairType type) const;
+    TString GetPairName() const;
+    TString GetPairHistName(AliRsnFunction *fcn, TString text = "") const;
+    TString GetPairHistTitle(AliRsnFunction *fcn, TString text = "") const;
 
   private:
 

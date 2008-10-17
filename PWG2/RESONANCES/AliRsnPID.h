@@ -49,7 +49,7 @@ class AliRsnPID : public TNamed
     static Double_t     ParticleMass(EType pid);
 
     // identification routines
-    Bool_t Process(AliRsnEvent *e, Int_t pidArraySizeDefault = 1000);
+    Bool_t Process(AliRsnEvent *e);
     Bool_t ComputeProbs(AliRsnDaughter *d);
     Bool_t IdentifiedAs(AliRsnDaughter *d, EType type, Short_t charge = 0);
     EType  TrackType(AliRsnDaughter *d);

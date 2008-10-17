@@ -50,6 +50,7 @@ class AliRsnCut : public TNamed
     kPIDProb,
     kMultiplicity,
     kMultiplicityDifference,
+    kMultiplicityRatio,
     kPhiMeanDifference,
     kVzDifference,
     kLastCutType

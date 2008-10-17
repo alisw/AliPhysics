@@ -97,7 +97,7 @@ void AliRsnAnalysisSE::UserCreateOutputObjects()
     fOutList->Add(listTmp);
   }
 
-  fRsnEventBuffer = new AliRsnEventBuffer(1000);
+  fRsnEventBuffer = new AliRsnEventBuffer(fNumOfEventsInBuffer);
 //   fRsnEventBuffer = new AliRsnEventBuffer ( 10000 ,kFALSE );
   AliDebug(AliLog::kDebug, "->");
 

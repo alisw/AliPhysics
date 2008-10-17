@@ -27,6 +27,7 @@
 //
 
 #include <Riostream.h>
+#include <TH1.h>
 
 #include "AliLog.h"
 
@@ -42,10 +43,16 @@ AliRsnEvent::AliRsnEvent() :
     fPVx(0.0),
     fPVy(0.0),
     fPVz(0.0),
+    fPhiMean(0.0),
+    fMult(0),
     fTracks(0x0),
     fNoPID(0x0),
     fPerfectPID(0x0),
-    fRealisticPID(0x0)
+    fRealisticPID(0x0),
+    fSelPIDType(AliRsnPID::kUnknown),
+    fSelCharge('0'),
+    fSelPIDMethod(AliRsnDaughter::kRealistic),
+    fSelCuts(0x0)
 {
 //
 // Default constructor
@@ -59,10 +66,16 @@ AliRsnEvent::AliRsnEvent(const AliRsnEvent &event) :
     fPVx(event.fPVx),
     fPVy(event.fPVy),
     fPVz(event.fPVz),
+    fPhiMean(event.fPhiMean),
+    fMult(event.fMult),
     fTracks(0x0),
     fNoPID(0x0),
     fPerfectPID(0x0),
-    fRealisticPID(0x0)
+    fRealisticPID(0x0),
+    fSelPIDType(AliRsnPID::kUnknown),
+    fSelCharge('0'),
+    fSelPIDMethod(AliRsnDaughter::kRealistic),
+    fSelCuts(0x0)
 {
 //
 // Copy constructor.
@@ -97,6 +110,10 @@ AliRsnEvent& AliRsnEvent::operator= (const AliRsnEvent &event)
   fPVx = event.fPVx;
   fPVy = event.fPVy;
   fPVz = event.fPVz;
+  
+  // other data
+  fPhiMean = event.fPhiMean;
+  fMult = event.fMult;
 
   // add tracks from array of argument
   Int_t errors = Fill(event.fTracks);
@@ -190,74 +207,6 @@ AliRsnDaughter* AliRsnEvent::GetTrack(Int_t index)
 // given the absolute index in the global TClonesArray
 //
   return (AliRsnDaughter*) fTracks->UncheckedAt(index);
-}
-
-//_____________________________________________________________________________
-AliRsnDaughter* AliRsnEvent::GetLeadingParticle
-(Double_t ptMin, AliRsnPID::EType type, Bool_t realistic)
-{
-//
-// Returns the particle in this event with largest transverse momentum,
-// provided that this momentum is larger than the first argument
-// and that the PID type correspond to the second argument.
-// If one specifies "AliRsnPID::kUnknown" as second arguments, the PID check is not done.
-//
-
-  Double_t prob;
-  AliRsnPID::EType trackType;
-  AliRsnDaughter *track, *leading = 0x0;
-  TObjArrayIter iter(fTracks);
-  while ((track = (AliRsnDaughter*) iter.Next()))
-  {
-    if (track->Pt() < ptMin) continue;
-    if (realistic)
-    {
-      AliRsnDaughter::SetPIDMethod(AliRsnDaughter::kRealistic);
-    }
-    else
-    {
-      AliRsnDaughter::SetPIDMethod(AliRsnDaughter::kPerfect);
-    }
-    trackType = track->PIDType(prob);
-    if (type != AliRsnPID::kUnknown && trackType != type) continue;
-    ptMin = track->Pt();
-    leading = track;
-  }
-
-  return leading;
-}
-
-//_____________________________________________________________________________
-Int_t AliRsnEvent::GetLastFastTrack
-(Double_t ptMin, AliRsnPID::EType type, Bool_t realistic)
-{
-//
-// Loops on the list of tracks (eventually skipping the ones which do not match
-// the given PID type with the specified PID method) and returns the index of the last
-// one whose transverse momentum is still larger than a specified value.
-// When no tracks are found this way, the value "-1" is returned.
-//
-
-  if (realistic)
-  {
-    AliRsnDaughter::SetPIDMethod(AliRsnDaughter::kRealistic);
-  }
-  else
-  {
-    AliRsnDaughter::SetPIDMethod(AliRsnDaughter::kPerfect);
-  }
-
-  Double_t prob;
-  Int_t i, nTracks = fTracks->GetEntries(), lastIndex = -1;
-  for (i = 0; i < nTracks; i++)
-  {
-    AliRsnDaughter *d = (AliRsnDaughter*) fTracks->At(i);
-    AliRsnPID::EType trackType = d->PIDType(prob);
-    if (type != AliRsnPID::kUnknown && trackType != type) continue;
-    if (d->Pt() >= ptMin) lastIndex = i;
-  }
-
-  return lastIndex;
 }
 
 //_____________________________________________________________________________
@@ -510,4 +459,151 @@ Int_t AliRsnEvent::ChargeIndex(Char_t sign) const
     AliError(Form("Character '%c' not recognized as charge sign", sign));
     return -1;
   }
+}
+//_____________________________________________________________________________
+inline void AliRsnEvent::SetSelection
+(AliRsnPID::EType pid, Char_t charge, AliRsnDaughter::EPIDMethod meth, AliRsnCutSet *cuts)
+{
+//
+// Set all selection parameters at once
+//
+
+  SetSelectionPIDType(pid);
+  SetSelectionCharge(charge);
+  SetSelectionPIDMethod(meth);
+  SetSelectionTrackCuts(cuts);
+}
+
+//_____________________________________________________________________________
+AliRsnDaughter* AliRsnEvent::GetLeadingParticle(Double_t ptMin)
+{
+//
+// Searches the collection of all particles with given PID type and charge,
+// and returns the one with largest momentum, provided that it is greater than 1st argument.
+// If one specifies AliRsnPID::kUnknown as type or AliRsnDaughter::kNoPID as method,
+// the check is done over all particles irrespectively of their PID.
+// If the sign argument is '+' or '-', the check is done over the particles of that charge,
+// otherwise it is done irrespectively of the charge.
+//
+
+  Int_t i;
+  TArrayI *array = 0x0;
+  AliRsnDaughter *track1 = 0x0, *track2 = 0x0, *leading = 0x0;
+
+  if (fSelCharge == '+' || fSelCharge == '-') {
+    // if the charge '+' or '-' does simply the search
+    array = GetTracksArray(fSelPIDMethod, fSelCharge, fSelPIDType);
+    for (i = 0; i < array->GetSize(); i++) {
+      track1 = (AliRsnDaughter *) fTracks->At(array->At(i));
+      if (!track1) continue;
+      if (track1->Pt() < ptMin) continue;
+      if (!CutPass(track1)) continue;
+      ptMin = track1->Pt();
+      leading = track1;
+    }
+  }
+  else {
+    track1 = GetLeadingParticle(ptMin);
+    track2 = GetLeadingParticle(ptMin);
+    if (track1 && track2) {
+      if (track1->Pt() > track2->Pt()) leading = track1;
+      else leading = track2;
+    }
+    else if (track1) leading = track1;
+    else if (track2) leading = track2;
+    else leading = 0x0;
+  }
+
+  return leading;
+}
+
+//_____________________________________________________________________________
+Double_t AliRsnEvent::GetAverageMomentum(Int_t &count)
+{
+//
+// Loops on the list of tracks and computes average total momentum.
+//
+
+  Int_t i;
+  Double_t pmean = 0.0;
+  TArrayI *array = 0x0;
+  AliRsnDaughter *d = 0x0;
+
+  if (fSelCharge == '+' || fSelCharge == '-') {
+    // if the charge '+' or '-' does simply the search
+    count = 0;
+    array = GetTracksArray(fSelPIDMethod, fSelCharge, fSelPIDType);
+    for (i = 0; i < array->GetSize(); i++) {
+      d = (AliRsnDaughter *) fTracks->At(array->At(i));
+      if (!d) continue;
+      if (!CutPass(d)) continue;
+      pmean += d->P();
+      count++;
+    }
+    if (count > 0) pmean /= (Double_t)count;
+    else pmean = 0.0;
+  }
+  else {
+    Int_t countP, countM;
+    Double_t pmeanP = GetAverageMomentum(countP);
+    Double_t pmeanM = GetAverageMomentum(countM);
+    if (countP && countM) {
+      pmean = (pmeanP * (Double_t)countP + pmeanM * (Double_t)countM) / (countP + countM);
+      count = countP + countM;
+    }
+    else if (countP) {
+      pmean = pmeanP;
+      count = countP;
+    }
+    else if (countM) {
+      pmean = pmeanM;
+      count = countM;
+    }
+    else {
+      count = 0;
+      pmean = 0.0;
+    }
+  }
+  
+  return pmean;
+}
+
+//_____________________________________________________________________________
+Bool_t AliRsnEvent::GetAngleDistrWRLeading
+(Double_t &angleMean, Double_t &angleRMS, Double_t ptMin)
+{
+//
+// Takes the leading particle and computes the mean and RMS
+// of the distribution of directions of all other tracks
+// with respect to the direction of leading particle.
+//
+
+  AliRsnDaughter *leading = GetLeadingParticle(ptMin);
+  if (!leading) return kFALSE;
+  
+  Int_t count = 0;
+  Double_t angle, angle2Mean;
+  AliRsnDaughter *trk = 0x0;
+  TObjArrayIter next(fTracks);
+  
+  angleMean = angle2Mean = 0.0;
+  
+  while ( (trk = (AliRsnDaughter*)next()) )
+  {
+    if (trk == leading) continue;
+    
+    angle = leading->AngleTo(trk);
+    
+    angleMean += angle;
+    angle2Mean += angle * angle;
+    count++;
+  }
+  
+  if (!count) return kFALSE;
+  
+  angleMean /= (Double_t)count;
+  angle2Mean /= (Double_t)count;
+  angleRMS = TMath::Sqrt(angle2Mean - angleMean*angleMean);
+  
+  return kTRUE;
 }

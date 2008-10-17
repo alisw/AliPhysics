@@ -28,6 +28,9 @@
 #include "AliRsnPID.h"
 #include "AliRsnPIDIndex.h"
 #include "AliRsnDaughter.h"
+#include "AliRsnCutSet.h"
+
+class TH1D;
 
 class AliRsnEvent : public TNamed
 {
@@ -43,8 +46,6 @@ class AliRsnEvent : public TNamed
     void            Clear(Option_t *option = "");
     AliRsnDaughter* AddTrack(AliRsnDaughter track);
     AliRsnDaughter* GetTrack(Int_t index);
-    AliRsnDaughter* GetLeadingParticle(Double_t ptMin = 0.0, AliRsnPID::EType type = AliRsnPID::kUnknown, Bool_t realistic = kTRUE);
-    Int_t           GetLastFastTrack(Double_t ptMin, AliRsnPID::EType type = AliRsnPID::kUnknown, Bool_t realistic = kTRUE);
     TClonesArray*   GetTracks() {return fTracks;}
     TArrayI*        GetCharged(Char_t sign);
     TArrayI*        GetTracksArray(AliRsnDaughter::EPIDMethod method, Char_t sign, AliRsnPID::EType type);
@@ -71,6 +72,20 @@ class AliRsnEvent : public TNamed
     
     // Mean phi
     Double_t GetPhiMean() const {return fPhiMean;}
+    
+    // functions for event selection and computation (require on-fly setting of sel parameters)
+    void SetSelectionPIDType(AliRsnPID::EType type) {fSelPIDType = type;}
+    void SetSelectionCharge(Char_t charge) {fSelCharge = charge;}
+    void SetSelectionPIDMethod(AliRsnDaughter::EPIDMethod method) {fSelPIDMethod = method;}
+    void SetSelectionTrackCuts(AliRsnCutSet *cuts) {fSelCuts = cuts;}
+    void SetSelection(AliRsnPID::EType pid, Char_t charge, AliRsnDaughter::EPIDMethod meth, AliRsnCutSet *cuts = 0x0);
+    
+    Bool_t          CutPass(AliRsnDaughter *d) 
+      {if (!fSelCuts) return kTRUE; else return fSelCuts->IsSelected(AliRsnCut::kParticle, d);}
+      
+    AliRsnDaughter* GetLeadingParticle(Double_t ptMin = 0.0);
+    Double_t        GetAverageMomentum(Int_t &count);
+    Bool_t          GetAngleDistrWRLeading(Double_t &angleMean, Double_t &angleRMS, Double_t ptMin = 0.0);
 
   private:
 
@@ -88,6 +103,11 @@ class AliRsnEvent : public TNamed
     AliRsnPIDIndex *fNoPID;               // array index only for charged tracks
     AliRsnPIDIndex *fPerfectPID;          // array index for perfect PID
     AliRsnPIDIndex *fRealisticPID;        // array index for realistic PID (largest prob)
+    
+    AliRsnPID::EType           fSelPIDType;    //! (for selection/cut functions) particle type
+    Char_t                     fSelCharge;     //! (for selection/cut functions) particle charge ('0' = both)
+    AliRsnDaughter::EPIDMethod fSelPIDMethod;  //! (for selection/cut functions) PID method used
+    AliRsnCutSet              *fSelCuts;       //! (for selection/cut functions) track cuts used
 
     ClassDef(AliRsnEvent, 2);
 };

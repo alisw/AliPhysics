@@ -365,7 +365,8 @@ AliRsnEvent * AliRsnAnalysisTaskSEBase::GetRsnFromMC(const Short_t & index)
   if (!fRsnMC[index]) return (AliRsnEvent *) 0x0;
   if (!fReader.FillFromMC(fRSN[index], fRsnMC[index])) return (AliRsnEvent*) 0x0;
   //if (!fReader.FillFromESD(fRSN[index], fRsnESD[index], fRsnMC[index])) return (AliRsnEvent*) 0x0;
-  fPID.Process(fRSN[index], 3000);
+  fPID.Process(fRSN[index]);
+  fRSN[index]->FillPIDArrays(3000);
   return fRSN[index];
 }
 

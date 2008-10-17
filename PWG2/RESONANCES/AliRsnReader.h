@@ -66,7 +66,8 @@ class AliRsnReader : public TNamed
     // dummy copy methods
     AliRsnReader(const AliRsnReader &copy) : TNamed(copy),
         fCheckSplit(0),fRejectFakes(0),fWeightsMgr(0x0),fCurrentPIDtype(AliRsnDaughter::kEsd),
-        fPIDDivValue(0.),fITSClusters(0),fTPCClusters(0),fTRDClusters(0) { /*nothing*/ }
+        fPIDDivValue(0.),fITSClusters(0),fTPCClusters(0),fTRDClusters(0),
+        fTrackRefs(0),fTrackRefsITS(0),fTrackRefsTPC(0) { /*nothing*/ }
     AliRsnReader& operator=(const AliRsnReader&) {return (*this);}
 
     Bool_t                    fCheckSplit;     // flag to check and remove split tracks
