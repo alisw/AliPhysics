@@ -14,10 +14,12 @@
 
 void alieve_init(const Text_t* path   = ".", Int_t event=0,
                  const Text_t* esdfile = 0,
+                 const Text_t* aodfile = 0,
                  const Text_t* rawfile = 0,
 		 const Text_t* cdburi  = 0,
 		 Bool_t assert_runloader = kFALSE,
                  Bool_t assert_esd       = kFALSE,
+                 Bool_t assert_aod       = kFALSE,
                  Bool_t assert_raw       = kFALSE)
 {
   Info("alieve_init", "Adding standard macros.");
@@ -33,7 +35,8 @@ void alieve_init(const Text_t* path   = ".", Int_t event=0,
   AliEveEventManager::SetESDFileName(esdfile);
   AliEveEventManager::SetRawFileName(rawfile);
   AliEveEventManager::SetCdbUri(cdburi);
-  AliEveEventManager::SetAssertElements(assert_runloader, assert_esd, assert_raw);
+  AliEveEventManager::SetAssertElements(assert_runloader, assert_esd,
+					assert_aod, assert_raw);
 
   // Open event
   if (path != 0)

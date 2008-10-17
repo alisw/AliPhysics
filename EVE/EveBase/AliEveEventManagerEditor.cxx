@@ -10,7 +10,9 @@
 #include "AliEveEventManagerEditor.h"
 #include "AliEveEventManager.h"
 
-#include "TVirtualPad.h"
+#include <AliESDEvent.h>
+
+#include <TVirtualPad.h>
 #include "TColor.h"
 
 #include <TEveGValuators.h>

@@ -13,8 +13,11 @@
 
 #include <AliRunLoader.h>
 #include <AliRun.h>
+#include <AliESDRun.h>
 #include <AliESDEvent.h>
 #include <AliESDfriend.h>
+#include <AliAODEvent.h>
+
 #include <AliDAQ.h>
 #include <AliRawEventHeaderBase.h>
 #include <AliRawReaderRoot.h>
@@ -40,7 +43,15 @@
 //______________________________________________________________________________
 //
 // Provides interface for loading and navigating standard AliRoot data
-// (AliRunLoader), ESDs and RAW.
+// (AliRunLoader), ESD, AOD and RAW.
+//
+// ESDfriend is attached automatically, if the file is found.
+//
+// AODfriends are not attached automatically as there are several
+// possible files involved. To have a specific AODfriend attached, call
+// static method
+//   AliEveEventManager::AddAODfriend("AliAOD.VertexingHF.root");
+// before initializing the event-manager.
 //
 // Also provides interface to magnetic-field and geometry. Mostly
 // intended as wrappers over standard AliRoot functionality for
@@ -58,13 +69,17 @@ ClassImp(AliEveEventManager)
 
 Bool_t AliEveEventManager::fgAssertRunLoader = kFALSE;
 Bool_t AliEveEventManager::fgAssertESD       = kFALSE;
+Bool_t AliEveEventManager::fgAssertAOD       = kFALSE;
 Bool_t AliEveEventManager::fgAssertRaw       = kFALSE;
 
 TString  AliEveEventManager::fgESDFileName("AliESDs.root");
+TString  AliEveEventManager::fgAODFileName("AliAOD.root");
 TString  AliEveEventManager::fgRawFileName("raw.root");
 TString  AliEveEventManager::fgCdbUri("local://$ALICE_ROOT");
 
 AliMagF* AliEveEventManager::fgMagField = 0;
+
+TList*   AliEveEventManager::fgAODfriends = 0;
 
 AliEveEventManager* AliEveEventManager::fgMaster  = 0;
 AliEveEventManager* AliEveEventManager::fgCurrent = 0;
@@ -100,6 +115,7 @@ AliEveEventManager::AliEveEventManager(const TString& name) :
   fRunLoader (0),
   fESDFile   (0), fESDTree (0), fESD (0),
   fESDfriend (0), fESDfriendExists(kFALSE),
+  fAODFile   (0), fAODTree (0), fAOD (0),
   fRawReader (0),
   fAutoLoad  (kFALSE), fAutoLoadTime (5.),     fAutoLoadTimer(0),
   fIsOpen    (kFALSE), fHasEvent     (kFALSE), fExternalCtrl (kFALSE),
@@ -120,6 +136,7 @@ AliEveEventManager::AliEveEventManager(const TString& name, const TString& path,
   fRunLoader (0),
   fESDFile   (0), fESDTree (0), fESD (0),
   fESDfriend (0), fESDfriendExists(kFALSE),
+  fAODFile   (0), fAODTree (0), fAOD (0),
   fRawReader (0),
   fAutoLoad  (kFALSE), fAutoLoadTime (5),      fAutoLoadTimer(0),
   fIsOpen    (kFALSE), fHasEvent     (kFALSE), fExternalCtrl (kFALSE),
@@ -160,6 +177,26 @@ void AliEveEventManager::SetESDFileName(const TString& esd)
   if ( ! esd.IsNull()) fgESDFileName = esd;
 }
 
+void AliEveEventManager::SetAODFileName(const TString& aod)
+{
+  // Set file-name for opening AOD, default "AliAOD.root".
+
+  if ( ! aod.IsNull()) fgAODFileName = aod;
+}
+
+void AliEveEventManager::AddAODfriend(const TString& friendFileName)
+{
+  // Add new AOD friend file-name to be attached when opening AOD.
+  // This should include '.root', as in 'AliAOD.VertexingHF.root'.
+
+  if (fgAODfriends == 0)
+  {
+    fgAODfriends = new TList;
+    fgAODfriends->SetOwner(kTRUE);
+  }
+  fgAODfriends->Add(new TObjString(friendFileName));
+}
+
 void AliEveEventManager::SetRawFileName(const TString& raw)
 {
   // Set file-name for opening of raw-data, default "raw.root"
@@ -173,15 +210,15 @@ void AliEveEventManager::SetCdbUri(const TString& cdb)
   if ( ! cdb.IsNull()) fgCdbUri = cdb;
 }
 
-void AliEveEventManager::SetAssertElements(Bool_t assertRunloader,
-                                           Bool_t assertEsd,
-                                           Bool_t assertRaw)
+void AliEveEventManager::SetAssertElements(Bool_t assertRunloader, Bool_t assertEsd,
+					   Bool_t assertAod, Bool_t assertRaw)
 {
   // Set global flags that detrmine which parts of the event-data must
   // be present when the event is opened.
 
   fgAssertRunLoader = assertRunloader;
   fgAssertESD = assertEsd;
+  fgAssertAOD = assertAod;
   fgAssertRaw = assertRaw;
 }
 
@@ -296,6 +333,62 @@ void AliEveEventManager::Open()
     }
   }
 
+  // Open AOD and registered friends
+
+  TString aodPath(Form("%s/%s", fPath.Data(), fgAODFileName.Data()));
+  if ((fAODFile = TFile::Open(aodPath)))
+  {
+    fAOD = new AliAODEvent();
+    fAODTree = (TTree*) fAODFile->Get("aodTree");
+    if (fAODTree != 0)
+    {
+      // Check if AODfriends exist and attach them.
+      TIter       friends(fgAODfriends);
+      TObjString *name;
+      while ((name = (TObjString*) friends()) != 0)
+      {
+	TString p(Form("%s/%s", fPath.Data(), name->GetName()));
+	if (gSystem->AccessPathName(p, kReadPermission) == kFALSE)
+	{
+	  fAODTree->AddFriend("aodTree", name->GetName());
+	}
+      }
+
+      fAOD->ReadFromTree(fAODTree);
+
+      if (fAODTree->GetEntry(0) <= 0)
+      {
+	delete fAODFile; fAODFile = 0;
+	delete fAOD;     fAOD     = 0;
+	Warning(kEH, "failed getting the first entry from addTree.");
+      }
+      else
+      {
+	if (runNo < 0)
+	  runNo = fAOD->GetRunNumber();
+      }
+    }
+    else // aodtree == 0
+    {
+      delete fAODFile; fAODFile = 0;
+      delete fAOD;     fAOD     = 0;
+      Warning(kEH, "failed getting the aodTree.");
+    }
+  }
+  else // aod not readable
+  {
+    Warning(kEH, "can not read AOD file '%s'.", aodPath.Data());
+  }
+  if (fAODTree == 0)
+  {
+    if (fgAssertAOD)
+    {
+      throw (kEH + "AOD not initialized. Its precence was requested.");
+    } else {
+      Warning(kEH, "AOD not initialized.");
+    }
+  }
+
   // Open RunLoader from galice.root
 
   TString gaPath(Form("%s/galice.root", fPath.Data()));
@@ -388,6 +481,8 @@ void AliEveEventManager::Open()
     }
   }
 
+  // Initialize OCDB ... only in master event-manager
+
   if (this == fgMaster)
   {
     AliCDBManager* cdb = AliCDBManager::Instance();
@@ -410,8 +505,9 @@ void AliEveEventManager::Open()
 
 void AliEveEventManager::SetEvent(AliRunLoader *runLoader, AliRawReader *rawReader, AliESDEvent *esd)
 {
-  // Set an event from an external source
-  // The method is used in the online visualisation
+  // Set an event from an external source.
+  // The method is used in the online visualisation.
+  // AOD is not supported.
 
   static const TEveException kEH("AliEveEventManager::SetEvent ");
 
@@ -424,6 +520,7 @@ void AliEveEventManager::SetEvent(AliRunLoader *runLoader, AliRawReader *rawRead
   fRunLoader = runLoader;
   fRawReader = rawReader;
   fESD       = esd;
+  fAOD       = 0;
 
   fEventId++;
   fHasEvent     = kTRUE;
@@ -464,6 +561,10 @@ Int_t AliEveEventManager::GetMaxEventId(Bool_t /*refreshESD*/) const
     //   fESDTree->Refresh();
     return fESDTree->GetEntries() - 1;
   }
+  else if (fAODTree)
+  {
+    return fAODTree->GetEntries() - 1;
+  }
   else if (fRunLoader)
   {
     return fRunLoader->GetNumberOfEvents() - 1;
@@ -475,7 +576,7 @@ Int_t AliEveEventManager::GetMaxEventId(Bool_t /*refreshESD*/) const
   }
   else
   {
-    throw (kEH + "neither RunLoader, ESD nor Raw loaded.");
+    throw (kEH + "neither ESD, AOD, RunLoader nor Raw loaded.");
   }
 }
 
@@ -520,6 +621,12 @@ void AliEveEventManager::GotoEvent(Int_t event)
     maxEvent = fESDTree->GetEntries() - 1;
     if (event < 0)
       event = fESDTree->GetEntries() + event;
+  }
+  else if (fAODTree)
+  {
+    maxEvent = fAODTree->GetEntries() - 1;
+    if (event < 0)
+      event = fAODTree->GetEntries() + event;
   }
   else if (fRunLoader)
   {
@@ -569,6 +676,11 @@ void AliEveEventManager::GotoEvent(Int_t event)
 
     if (fESDfriendExists)
       fESD->SetESDfriend(fESDfriend);
+  }
+
+  if (fAODTree) {
+    if (fAODTree->GetEntry(event) <= 0)
+      throw (kEH + "failed getting required event from AOD.");
   }
 
   if (fRunLoader) {
@@ -697,6 +809,13 @@ void AliEveEventManager::Close()
     delete fESDFile;   fESDFile = 0;
   }
 
+  if (fAODTree) {
+    delete fAOD;       fAOD       = 0;
+
+    delete fAODTree;   fAODTree = 0;
+    delete fAODFile;   fAODFile = 0;
+  }
+
   if (fRunLoader) {
     delete fRunLoader; fRunLoader = 0;
   }
@@ -734,6 +853,13 @@ Bool_t AliEveEventManager::HasESDfriend()
   // Check if AliESDfriend is initialized.
 
   return fgCurrent && fgCurrent->fHasEvent && fgCurrent->fESDfriend;
+}
+
+Bool_t AliEveEventManager::HasAOD()
+{
+  // Check if AliESDEvent is initialized.
+
+  return fgCurrent && fgCurrent->fHasEvent && fgCurrent->fAOD;
 }
 
 Bool_t AliEveEventManager::HasRawReader()
@@ -786,6 +912,21 @@ AliESDfriend* AliEveEventManager::AssertESDfriend()
   if (fgCurrent->fESDfriend == 0)
     throw (kEH + "AliESDfriend not initialised.");
   return fgCurrent->fESDfriend;
+}
+
+AliAODEvent* AliEveEventManager::AssertAOD()
+{
+  // Make sure AliAODEvent is initialized and return it.
+  // Throws exception in case AOD is not available.
+  // Static utility for macros.
+
+  static const TEveException kEH("AliEveEventManager::AssertAOD ");
+
+  if (fgCurrent == 0 || fgCurrent->fHasEvent == kFALSE)
+    throw (kEH + "ALICE event not ready.");
+  if (fgCurrent->fAOD == 0)
+    throw (kEH + "AliAOD not initialised.");
+  return fgCurrent->fAOD;
 }
 
 AliRawReader* AliEveEventManager::AssertRawReader()

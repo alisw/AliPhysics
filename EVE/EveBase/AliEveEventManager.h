@@ -13,13 +13,13 @@
 #include <TEveEventManager.h>
 #include <TQObject.h>
 #include <TObjArray.h>
-#include <AliESDEvent.h>
 
 class AliEveMacroExecutor;
 
 class AliRunLoader;
 class AliESDEvent;
 class AliESDfriend;
+class AliAODEvent;
 class AliRawReader;
 
 class AliMagF;
@@ -42,9 +42,12 @@ class AliEveEventManager : public TEveEventManager,
 {
 public:
   static void SetESDFileName(const TString& esd);
+  static void SetAODFileName(const TString& aod);
+  static void AddAODfriend  (const TString& friendFileName);
   static void SetRawFileName(const TString& raw);
   static void SetCdbUri     (const TString& cdb);
-  static void SetAssertElements(Bool_t assertRunloader, Bool_t assertEsd, Bool_t assertRaw);
+  static void SetAssertElements(Bool_t assertRunloader, Bool_t assertEsd,
+				Bool_t assertAod, Bool_t assertRaw);
 
   AliEveEventManager(const TString& name="Event");
   AliEveEventManager(const TString& name, const TString& path, Int_t ev=0);
@@ -61,13 +64,16 @@ public:
   Bool_t        FindPrevByTrigger(Int_t& i);
 
 
-  Int_t         GetEventId()   const { return fEventId; }
-  AliRunLoader* GetRunLoader() const { return fRunLoader; }
-  TFile*        GetESDFile()   const { return fESDFile; }
-  TTree*        GetESDTree()   const { return fESDTree; }
-  AliESDEvent*  GetESD()       const { return fESD; }
+  Int_t         GetEventId()         const { return fEventId; }
+  AliRunLoader* GetRunLoader()       const { return fRunLoader; }
+  TFile*        GetESDFile()         const { return fESDFile; }
+  TTree*        GetESDTree()         const { return fESDTree; }
+  AliESDEvent*  GetESD()             const { return fESD;     }
   AliESDfriend* GetESDfriend()       const { return fESDfriend; }
   Bool_t        GetESDfriendExists() const { return fESDfriendExists; }
+  TFile*        GetAODFile()         const { return fAODFile; }
+  TTree*        GetAODTree()         const { return fAODTree; }
+  AliAODEvent*  GetAOD()             const { return fAOD;     }
   virtual const Text_t* GetTitle()   const { return fPath.Data(); }
   TString       GetEventInfoHorizontal() const;
   TString       GetEventInfoVertical()   const;
@@ -75,11 +81,13 @@ public:
   static Bool_t HasRunLoader();
   static Bool_t HasESD();
   static Bool_t HasESDfriend();
+  static Bool_t HasAOD();
   static Bool_t HasRawReader();
 
   static AliRunLoader* AssertRunLoader();
   static AliESDEvent*  AssertESD();
   static AliESDfriend* AssertESDfriend();
+  static AliAODEvent*  AssertAOD();
   static AliRawReader* AssertRawReader();
 
   static AliMagF*      AssertMagField();
@@ -123,6 +131,9 @@ protected:
   AliESDEvent  *fESD;			// ESDEvent object.
   AliESDfriend *fESDfriend;		// ESDfriend object.
   Bool_t        fESDfriendExists;	// Flag specifying if ESDfriend was found during opening of the event-data.
+  TFile        *fAODFile;		// AOD file.
+  TTree        *fAODTree;		// AOD tree.
+  AliAODEvent  *fAOD;			// AODEvent object.
 
   AliRawReader *fRawReader;             // Raw-data reader.
 
@@ -142,13 +153,17 @@ protected:
   TList        *fSubManagers;           // Dependent event-managers, used for event embedding.
 
   static TString  fgESDFileName;        // Name by which to open ESD.
+  static TString  fgAODFileName;        // Name by which to open AOD.
   static TString  fgRawFileName;        // Name by which to open raw-data file.
   static TString  fgCdbUri;		// Global URI to CDB.
   static Bool_t   fgAssertRunLoader;	// Global flag specifying if AliRunLoader must be asserted during opening of the event-data.
   static Bool_t   fgAssertESD;		// Global flag specifying if ESDEvent must be asserted during opening of the event-data.
+  static Bool_t   fgAssertAOD;		// Global flag specifying if AODEvent must be asserted during opening of the event-data.
   static Bool_t   fgAssertRaw;		// Global flag specifying if raw-data presence must be asserted during opening of the event-data.
 
-  static AliMagF* fgMagField;		// Global pointer to magnetic field.
+  static AliMagF *fgMagField;		// Global pointer to magnetic field.
+
+  static TList   *fgAODfriends;         // Global list of AOD friend names to be attached during opening of the event-data (empty by default).
 
 private:
   AliEveEventManager(const AliEveEventManager&);            // Not implemented

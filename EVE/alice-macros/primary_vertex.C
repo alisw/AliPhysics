@@ -146,6 +146,10 @@ primary_vertex(Bool_t use_sigma=kTRUE, Float_t fx=1, Float_t fy=1, Float_t fz=1)
 {
   AliESDEvent  *esd = AliEveEventManager::AssertESD();
   AliESDVertex *pv  = esd->GetPrimaryVertex();
+  if ( ! pv->GetStatus()) {
+    Info("primary_vertex", "Primary vertex not available.");
+    return 0;
+  }
 
   TEveStraightLineSet* ls = make_vertex_cross(pv, use_sigma, fx, fy, fz);
   ls->ApplyVizTag("PVTX");
@@ -159,6 +163,10 @@ primary_vertex_spd(Bool_t use_sigma=kTRUE, Float_t fx=1, Float_t fy=1, Float_t f
 {
   AliESDEvent  *esd  = AliEveEventManager::AssertESD();
   AliESDVertex *spdv = esd->GetPrimaryVertexSPD();
+  if ( ! spdv->GetStatus()) {
+    Info("primary_vertex_spd", "Primary vertex SPD not available.");
+    return 0;
+  }
 
   TEveStraightLineSet* ls = make_vertex_cross(spdv, use_sigma, fx, fy, fz);
   ls->ApplyVizTag("PVTX SPD");
@@ -172,6 +180,10 @@ primary_vertex_tpc(Bool_t use_sigma=kTRUE, Float_t fx=1, Float_t fy=1, Float_t f
 {
   AliESDEvent  *esd  = AliEveEventManager::AssertESD();
   AliESDVertex *tpcv = esd->GetPrimaryVertexTPC();
+  if ( ! pv->GetStatus()) {
+    Info("primary_vertex_tpc", "Primary vertex TPC not available.");
+    return 0;
+  }
 
   TEveStraightLineSet* ls = make_vertex_cross(tpcv, use_sigma, fx, fy, fz);
   ls->ApplyVizTag("PVTX TPC");
@@ -189,6 +201,10 @@ primary_vertex_ellipse(Bool_t use_sigma=kTRUE, Float_t fx=30, Float_t fy=30, Flo
 {
   AliESDEvent  *esd = AliEveEventManager::AssertESD();
   AliESDVertex *pv  = esd->GetPrimaryVertex();
+  if ( ! pv->GetStatus()) {
+    Info("primary_vertex_ellipse", "Primary vertex not available.");
+    return 0;
+  }
 
   TEveStraightLineSet* ls = make_vertex_ellipse(pv, use_sigma, fx, fy, fz);
   ls->ApplyVizTag("PVTX Ellipse");
@@ -202,6 +218,10 @@ primary_vertex_ellipse_spd(Bool_t use_sigma=kTRUE, Float_t fx=30, Float_t fy=30,
 {
   AliESDEvent  *esd  = AliEveEventManager::AssertESD();
   AliESDVertex *spdv = esd->GetPrimaryVertexSPD();
+  if ( ! spdv->GetStatus()) {
+    Info("primary_vertex_ellipse_spd", "Primary vertex SPD not available.");
+    return 0;
+  }
 
   TEveStraightLineSet* ls = make_vertex_ellipse(spdv, use_sigma, fx, fy, fz);
   ls->ApplyVizTag("PVTX Ellipse SPD");
@@ -215,6 +235,10 @@ primary_vertex_ellipse_tpc(Bool_t use_sigma=kTRUE, Float_t fx=30, Float_t fy=30,
 {
   AliESDEvent  *esd  = AliEveEventManager::AssertESD();
   AliESDVertex *tpcv = esd->GetPrimaryVertexTPC();
+  if ( ! pv->GetStatus()) {
+    Info("primary_vertex_ellipse_tpc", "Primary vertex TPC not available.");
+    return 0;
+  }
 
   TEveStraightLineSet* ls = make_vertex_ellipse(tpcv, use_sigma, fx, fy, fz);
   ls->ApplyVizTag("PVTX Ellipse TPC");
@@ -232,6 +256,10 @@ primary_vertex_box(Bool_t use_sigma=kTRUE, Float_t fx=30, Float_t fy=30, Float_t
 {
   AliESDEvent  *esd = AliEveEventManager::AssertESD();
   AliESDVertex *pv  = esd->GetPrimaryVertex();
+  if ( ! pv->GetStatus()) {
+    Info("primary_vertex_box", "Primary vertex not available.");
+    return 0;
+  }
 
   TEveStraightLineSet* ls = make_vertex_box(pv, use_sigma, fx, fy, fz);
   ls->ApplyVizTag("PVTX Box");
@@ -245,6 +273,10 @@ primary_vertex_box_spd(Bool_t use_sigma=kTRUE, Float_t fx=30, Float_t fy=30, Flo
 {
   AliESDEvent  *esd  = AliEveEventManager::AssertESD();
   AliESDVertex *spdv = esd->GetPrimaryVertexSPD();
+  if ( ! spdv->GetStatus()) {
+    Info("primary_vertex_box_spd", "Primary vertex SPD not available.");
+    return 0;
+  }
 
   TEveStraightLineSet* ls = make_vertex_box(spdv, use_sigma, fx, fy, fz);
   ls->ApplyVizTag("PVTX Box SPD");
@@ -258,6 +290,10 @@ primary_vertex_box_tpc(Bool_t use_sigma=kTRUE, Float_t fx=30, Float_t fy=30, Flo
 {
   AliESDEvent  *esd  = AliEveEventManager::AssertESD();
   AliESDVertex *tpcv = esd->GetPrimaryVertexTPC();
+  if ( ! pv->GetStatus()) {
+    Info("primary_vertex_box_tpc", "Primary vertex TPC not available.");
+    return 0;
+  }
 
   TEveStraightLineSet* ls = make_vertex_box(tpcv, use_sigma, fx, fy, fz);
   ls->ApplyVizTag("PVTX Box TPC");
