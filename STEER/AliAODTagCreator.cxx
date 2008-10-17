@@ -194,7 +194,7 @@ void AliAODTagCreator::CreateAODTags(Int_t fFirstEvent, Int_t fLastEvent, TList 
  
     TFile* ftag = TFile::Open(fileName, "recreate");
 
-    AliRunTag *fRunTag = new AliRunTag();
+    fRunTag = new AliRunTag();
     fTreeT = new TTree("T","A Tree with event tags");
     TBranch * btag = fTreeT->Branch("AliTAG", &fRunTag);
     btag->SetCompressionLevel(9);

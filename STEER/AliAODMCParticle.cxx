@@ -139,7 +139,7 @@ Short_t AliAODMCParticle::Charge()     const
     }
 }
 
-void AliAODMCParticle::Print(const Option_t *opt) const {
+void AliAODMCParticle::Print(const Option_t */*opt*/) const {
   if(TDatabasePDG::Instance()->GetParticle(fPdgCode)){
     Printf(">>> PDG (%d) : %s",fPdgCode,TDatabasePDG::Instance()->GetParticle(fPdgCode)->GetName());
   }
