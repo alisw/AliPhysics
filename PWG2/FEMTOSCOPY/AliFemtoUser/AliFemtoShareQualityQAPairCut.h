@@ -82,7 +82,9 @@ inline AliFemtoShareQualityQAPairCut::AliFemtoShareQualityQAPairCut(const AliFem
   fShareQualitymin(-0.5),
   fShareFractionMax(1.0),
   fShareFractionmin(0.0),
-  fRemoveSameLabel(0)// no cut
+  fRemoveSameLabel(0),// no cut
+  fShareQualityQASwitch(0),
+  fShareFractionQASwitch(0)
 { 
   fShareQualityQASwitch  = c.fShareQualityQASwitch;
   fShareQualityQAExclusionZone[0]  = c.fShareQualityQAExclusionZone[0];

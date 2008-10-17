@@ -26,7 +26,8 @@ AliFemtoCutMonitorParticleVertPos::AliFemtoCutMonitorParticleVertPos():
 AliFemtoCutMonitorParticleVertPos::AliFemtoCutMonitorParticleVertPos(const char *aName):
   AliFemtoCutMonitor(),
   fVertPos(0),
-  fEtaZ(0)
+  fEtaZ(0),
+  fRadPos(0)
 {
   // Normal constructor
   char name[200];
@@ -41,8 +42,8 @@ AliFemtoCutMonitorParticleVertPos::AliFemtoCutMonitorParticleVertPos(const char 
 AliFemtoCutMonitorParticleVertPos::AliFemtoCutMonitorParticleVertPos(const AliFemtoCutMonitorParticleVertPos &aCut):
   AliFemtoCutMonitor(),
   fVertPos(0),
-  fEtaZ(0)
-
+  fEtaZ(0),
+  fRadPos(0)
 {
   // copy constructor
   if (fVertPos) delete fVertPos;

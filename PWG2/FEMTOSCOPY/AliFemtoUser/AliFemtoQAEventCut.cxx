@@ -18,7 +18,10 @@ AliFemtoQAEventCut::AliFemtoQAEventCut() :
   fVertZPos(),
   fAcceptBadVertex(false), 
   fNEventsPassed(0), 
-  fNEventsFailed(0)
+  fNEventsFailed(0),
+  fHighOrLowSwitch(0), 
+  fEventMultQASwitch(kFALSE), 
+  fEventZPosQASwitch(kFALSE)
 {
   // Default constructor
   fEventMult[0] = 0;
