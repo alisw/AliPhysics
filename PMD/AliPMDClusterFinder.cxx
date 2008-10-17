@@ -339,7 +339,7 @@ void AliPMDClusterFinder::Digits2RecPoints(TTree *digitsTree,
 	  //Int_t trno   = pmddigit->GetTrackNumber();
 	  fCellADC[xpos][ypos] = (Double_t) adc;
 
-	  totADCMod += adc;
+	  totADCMod += (Int_t) adc;
 
 	}
 
