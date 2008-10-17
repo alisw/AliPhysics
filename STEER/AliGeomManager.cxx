@@ -461,7 +461,7 @@ const char* AliGeomManager::SymName(ELayerID layerId, Int_t modId)
 }
 
 //_____________________________________________________________________________
-Bool_t AliGeomManager::CheckSymNamesLUT(const char* detsToBeChecked)
+Bool_t AliGeomManager::CheckSymNamesLUT(const char* /*detsToBeChecked*/)
 {
   // Check the look-up table which associates the unique numerical identity of
   // each alignable volume to the corresponding symbolic volume name.

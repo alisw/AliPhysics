@@ -695,7 +695,7 @@ Bool_t AliAlignObj::ApplyToGeometry(Bool_t ovlpcheck)
     return kFALSE;
   }
 
-  Double_t threshold = 0.001;
+  //  Double_t threshold = 0.001;
   
   TGeoHMatrix align,gprime;
   gprime = *node->GetMatrix();

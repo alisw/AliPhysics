@@ -1514,6 +1514,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
     fhltesd->SetMagneticField(AliTracker::GetBz());
 
     // Set most probable pt, for B=0 tracking
+    // Get the global reco-params. They are atposition 16 inside the array of detectors in fRecoParam
     const AliGRPRecoParam *grpRecoParam = dynamic_cast<const AliGRPRecoParam*>(fRecoParam.GetDetRecoParam(fgkNDetectors));
     if (grpRecoParam) AliExternalTrackParam::SetMostProbablePt(grpRecoParam->GetMostProbablePt());
     
@@ -1632,9 +1633,6 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
     }
 
     if (runVertexFinderTracks) {
-      // Get the global reco-params. They are atposition 16 inside the array of detectors in fRecoParam
-      const AliGRPRecoParam *grpRecoParam = dynamic_cast<const AliGRPRecoParam*>(fRecoParam.GetDetRecoParam(fgkNDetectors));
-
        // TPC + ITS primary vertex
        ftVertexer->SetITSMode();
        ftVertexer->SetConstraintOff();
