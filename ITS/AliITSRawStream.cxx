@@ -40,7 +40,8 @@ fPrevModuleID(-1),
 fCoord1(-1),
 fCoord2(-1),
 fSignal(-1),
-fCompletedModule(0)
+fCompletedModule(0),
+fCompletedDDL(0)
 {
 // create an object to read ITS raw digits
 
@@ -54,7 +55,8 @@ fPrevModuleID(stream.fPrevModuleID),
 fCoord1(stream.fCoord1),
 fCoord2(stream.fCoord2),
 fSignal(stream.fSignal),
-fCompletedModule(stream.fCompletedModule)
+fCompletedModule(stream.fCompletedModule),
+fCompletedDDL(stream.fCompletedDDL)
 {
   //copy constructor
 }

@@ -632,8 +632,9 @@ Int_t AliITSDDLRawData::RawDataSDD(TBranch* branch, AliITSDDLModuleMapSDD* ddlsd
   Bool_t retcode;
   retcode = AliBitPacking::PackWord(0x3FFFFFFF,carlosFooterWord,0,31);
   retcode = AliBitPacking::PackWord(0x3F1F1F1F,fifoFooterWord,0,31);
-  retcode = AliBitPacking::PackWord(0x7F00000E,jitterWord,0,31);
-
+  if(!fUseCompressedSDDFormat) retcode = AliBitPacking::PackWord(0x7F000000,jitterWord,0,31);
+  else retcode = AliBitPacking::PackWord(0x80000000,jitterWord,0,31);
+ 
   //loop over DDLs  
   for(Int_t i=0;i<AliDAQ::NumberOfDdls("ITSSDD");i++){
     strcpy(fileName,AliDAQ::DdlFileName("ITSSDD",i)); //The name of the output file.
@@ -673,8 +674,8 @@ Int_t AliITSDDLRawData::RawDataSDD(TBranch* branch, AliITSDDLModuleMapSDD* ddlsd
     // 12 words with FIFO footers (=4 FIFO x 3 3F1F1F1F words per DDL)
     if(!fUseCompressedSDDFormat){
       for(Int_t iw=0;iw<12;iw++) outfile->WriteBuffer((char*)(&fifoFooterWord),sizeof(fifoFooterWord));
-      outfile->WriteBuffer((char*)(&jitterWord),sizeof(jitterWord));      
     }
+    outfile->WriteBuffer((char*)(&jitterWord),sizeof(jitterWord));      
     //Write REAL DATA HEADER
     UInt_t currentFilePosition=outfile->Tellp();
     outfile->Seekp(dataHeaderPosition);

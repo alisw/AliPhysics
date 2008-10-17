@@ -117,8 +117,9 @@ Bool_t AliITSRawStreamSDD::Next()
 {
 // read the next raw digit
 // returns kFALSE if there is no digit left
-// returns kTRUE and fCompletedModule=kFALSE when a digit is found
-// returns kTRUE and fCompletedModule=kTRUE  when a module is completed (=3x3FFFFFFF footer words)
+// returns kTRUE and fCompletedModule=kFALSE and fCompletedDDL=kFALSE when a digit is found
+// returns kTRUE and fCompletedModule=kTRUE  and fCompletedDDL=kFALSE when a module is completed (=3x3FFFFFFF footer words)
+// returns kTRUE and fCompletedModule=kFALSE and fCompletedDDL=kTRUE  when a DDL is completed (=jitter word)
 
   fPrevModuleID = fModuleID;
   fCompletedModule=kFALSE;
@@ -135,9 +136,12 @@ Bool_t AliITSRawStreamSDD::Next()
 
 
       if((fData >> 16) == 0x7F00){ // jitter word
+	fJitter = fData&0x000000ff;
 	fResetSkip=kTRUE;
-	continue;
-      }
+	fCompletedModule=kFALSE;
+	fCompletedDDL=kTRUE;
+	return kTRUE;
+       }
 
       UInt_t nData28= fData >> 28;
       UInt_t nData30= fData >> 30;
@@ -156,6 +160,7 @@ Bool_t AliITSRawStreamSDD::Next()
 	  fICountFoot[fCarlosId]++; // stop before the last word (last word=jitter)
 	  if(fICountFoot[fCarlosId]==3){
 	    fCompletedModule=kTRUE;
+	    fCompletedDDL=kFALSE;
 	    return kTRUE;
 	  }
 	} else if(fData==0x3F1F1F1F){ // CarlosRX footer
@@ -202,6 +207,8 @@ Bool_t AliITSRawStreamSDD::Next()
 	  fCoord1 = fAnode[fCarlosId][fChannel];
 	  fCoord2 = fTimeBin[fCarlosId][fChannel];
 	  fTimeBin[fCarlosId][fChannel]++;
+	  fCompletedModule=kFALSE;
+	  fCompletedDDL=kFALSE;
 	  return kTRUE;
 	}
       }

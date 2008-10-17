@@ -69,6 +69,7 @@ Char_t *hisnam3 = new Char_t[50];
     gStyle->SetPalette(1);
     while(s.Next()){                     //read the next raw digit; returns kFALSE if there is no digit left
       if(s.IsCompletedModule()) continue;
+      if(s.IsCompletedDDL()) continue;
       iddl=rd->GetDDLID()-2; // -2 is temporary for test raw data
 
 	isddmod=s.GetModuleNumber(iddl,s.GetCarlosId());        //this is the FEE Carlos

@@ -46,7 +46,7 @@ void PlotSDDRawData(Char_t datafil[100], Int_t nDDL, Int_t firstEv=0, Int_t last
     Int_t iCountNext=0;    
     while(s.Next()){
       iCountNext++;
-      if(s.IsCompletedModule()==kFALSE){
+      if(s.IsCompletedModule()==kFALSE && s.IsCompletedDDL()==kFALSE){
  	Int_t i=s.GetCarlosId()*2+s.GetChannel();
 	if(rd->GetDDLID()==nDDL) histo[i]->Fill(s.GetCoord2(),s.GetCoord1(),s.GetSignal());
       }

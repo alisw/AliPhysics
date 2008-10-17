@@ -30,7 +30,7 @@ class AliITSRawStreamSDDCompressed: public AliITSRawStream {
     virtual Int_t    GetAnode() const {return fCoord1;}
     virtual Int_t    GetTime() const {return fCoord2;}
     virtual Int_t    GetChannel() const {return fChannel;}
-    virtual Int_t    ReadJitter() const {return 0;}
+    virtual Int_t    GetJitter() const {return fJitter;}
     virtual Int_t    GetCarlosId() const {return fCarlosId;}
     virtual UInt_t   GetDataWord() const {return fData;}
 

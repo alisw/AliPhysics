@@ -30,7 +30,7 @@
 
 const Float_t AliITSresponseSDD::fgkTimeOffsetDefault = 54.30;
 const Float_t AliITSresponseSDD::fgkADC2keVDefault = 5.243;
-
+const Float_t AliITSresponseSDD::fgkCarlosRXClockPeriod = 25.;
 ClassImp(AliITSresponseSDD)
 
 //_________________________________________________________________________

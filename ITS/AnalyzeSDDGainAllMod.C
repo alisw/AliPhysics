@@ -80,7 +80,9 @@ void AnalyzeSDDGainAllMod(Char_t *datafil, Int_t nDDL, Int_t firstEv=10, Int_t l
     while(s.Next()){
       Int_t iDDL=rd->GetDDLID();
       Int_t iCarlos=s.GetCarlosId();
-      if(iDDL>=0 && iDDL<kTotDDL && s.IsCompletedModule()==kFALSE){ 
+      if(s.IsCompletedModule()) continue;
+      if(s.IsCompletedDDL()) continue;
+      if(iDDL>=0 && iDDL<kTotDDL){ 
 	Int_t index=kSides*(kModPerDDL*iDDL+iCarlos)+s.GetChannel(); 
 	histo[index]->Fill(s.GetCoord2(),s.GetCoord1(),s.GetSignal());
 	isFilled[index]=1;
@@ -106,7 +108,7 @@ void AnalyzeSDDGainAllMod(Char_t *datafil, Int_t nDDL, Int_t firstEv=10, Int_t l
     printf(" --- OK\n");
   }while(rd->NextEvent()&&iev<=lastEv);
 
-  TH1F *htotgain=new TH1F("htotgain","",100,0.,5.);
+  TH1F *htotgain=new TH1F("htotgain","",100,0.2,4.2);
   TH1F *htotpeakpos=new TH1F("htotpeakpos","",256,-0.5,255.5);
   TH1F *hstatus=new TH1F("hstatus","",2,-0.5,1.5);
 

@@ -53,7 +53,7 @@
 //    0 -                                                        //
 //                                                               //
 // Plus 2 types of control words:                                //
-// - DDL identifier with the 4 more significant bits     = 1000  //
+// - Jitter word     = 1000                                      //
 // - End of module data (needed by the Cluster Finder)   = 1111  //
 //                                                               //
 // Origin: F.Prino, Torino, prino@to.infn.it                     //
@@ -139,11 +139,12 @@ Bool_t AliITSRawStreamSDDCompressed::Next()
 {
 // read the next raw digit
 // returns kFALSE if there is no digit left
-// returns kTRUE and fCompletedModule=kFALSE when a digit is found
-// returns kTRUE and fCompletedModule=kTRUE  when a module is completed 
+// returns kTRUE and fCompletedModule=kFALSE and fCompletedDDL=kFALSE when a digit is found
+// returns kTRUE and fCompletedModule=kTRUE  and fCompletedDDL=kFALSE when a module is completed (=3x3FFFFFFF footer words)
+// returns kTRUE and fCompletedModule=kFALSE and fCompletedDDL=kTRUE  when a DDL is completed (=jitter word)
 
 
-//  UInt_t masksod=8;    // start of DDL has the 4 most significant bits = 1000
+  UInt_t maskjit=8;    // Jitter word has the 4 most significant bits = 1000
   UInt_t maskeom=15;   // end of module has the 4 most significant bits = 1111
   UInt_t maskmod=15;   // last 4 bits for module number in end of module word
   //  UInt_t maskDDL=0xFF; // last 8 bits for DDL number in start of DDL word
@@ -161,7 +162,13 @@ Bool_t AliITSRawStreamSDDCompressed::Next()
       fCarlosId=fData&maskmod;
       fDDL=fRawReader->GetDDLID();
       fModuleID = GetModuleNumber(fDDL,fCarlosId);
+      fCompletedDDL=kFALSE;
       fCompletedModule=kTRUE;
+      return kTRUE;
+    } else if(mostsigbits==maskjit){
+      fJitter = fData&0x000000ff;      
+      fCompletedModule=kFALSE;
+      fCompletedDDL=kTRUE;
       return kTRUE;
     }else{
       fCarlosId=(fData&maskCarlos)>>27;
@@ -174,6 +181,7 @@ Bool_t AliITSRawStreamSDDCompressed::Next()
       sig8bit+=fLowThresholdArray[fModuleID-kSPDModules][fChannel];
       fSignal=DecompAmbra(sig8bit);
       fCompletedModule=kFALSE;
+      fCompletedDDL=kFALSE;
       return kTRUE;
     }
   }

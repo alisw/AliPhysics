@@ -369,6 +369,10 @@ void AliITSQASDDDataMakerRec::MakeRaws(AliRawReader* rawReader)
       AliDebug(1,Form("IsCompletedModule == KTRUE\n"));
       continue;
     } 
+    if(stream->IsCompletedDDL()) {
+      AliDebug(1,Form("IsCompletedDDL == KTRUE\n"));
+      continue;
+    } 
     
     coord1 = stream->GetCoord1();
     coord2 = stream->GetCoord2();

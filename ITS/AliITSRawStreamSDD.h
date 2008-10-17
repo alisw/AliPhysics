@@ -30,9 +30,11 @@ class AliITSRawStreamSDD: public AliITSRawStream {
     virtual Int_t    GetTime() const {return fCoord2;}
     virtual Int_t    GetChannel() const {return fChannel;}
     virtual Int_t    GetEightBitSignal() const {return fEightBitSignal;}
-    virtual Int_t    ReadJitter() const {return 0;}
     virtual Int_t    GetCarlosId() const {return fCarlosId;}
     virtual Int_t    GetEventId() const {return fEventId;}
+    virtual Int_t    GetJitter() const {return fJitter;}
+
+    virtual Int_t    ReadJitter() const {return 0;}
 
     virtual void     SetDecompressAmbra(Bool_t deco=kTRUE){
       fDecompressAmbra=deco;

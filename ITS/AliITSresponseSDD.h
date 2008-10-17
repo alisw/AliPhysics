@@ -30,12 +30,14 @@ class AliITSresponseSDD : public TObject {
     virtual Float_t GetADC2keV()const {return fADC2keV;}
     static Float_t DefaulttADC2keV() {return fgkADC2keVDefault;}
 
+    static Float_t GetCarlosRXClockPeriod() {return fgkCarlosRXClockPeriod;}
  
 
  protected:
 
     static const Float_t fgkTimeOffsetDefault; // default for fTimeOffset
     static const Float_t fgkADC2keVDefault; // default for fADC2keV
+    static const Float_t fgkCarlosRXClockPeriod;  // clock period for CarlosRX
 
     Float_t  fTimeOffset;     // Time offset due to electronic delays 
     Float_t  fADC2keV;        // Conversion factor from ADC to keV
@@ -45,7 +47,7 @@ class AliITSresponseSDD : public TObject {
    AliITSresponseSDD(const AliITSresponseSDD &ob); // copy constructor
    AliITSresponseSDD& operator=(const AliITSresponseSDD & /* source */); // ass. op.
 
-    ClassDef(AliITSresponseSDD,14) 
+    ClassDef(AliITSresponseSDD,15) 
     
     };
 #endif

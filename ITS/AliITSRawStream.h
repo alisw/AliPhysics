@@ -33,7 +33,8 @@ class AliITSRawStream: public TObject {
     Int_t            GetCoord1() const {return fCoord1;};
     Int_t            GetCoord2() const {return fCoord2;};
     Int_t            GetSignal() const {return fSignal;};
-    virtual Bool_t   IsCompletedModule() const {return fCompletedModule;}; // to be implemented in derived class
+    virtual Bool_t   IsCompletedModule() const {return fCompletedModule;}; 
+    virtual Bool_t   IsCompletedDDL() const {return fCompletedDDL;}; 
     virtual void     SetDDLModuleMap(AliITSDDLModuleMapSDD* /*ddlsdd*/){
       AliError("This method must be implemented in a derived class");
     };
@@ -45,6 +46,10 @@ class AliITSRawStream: public TObject {
       return -1;
     };
     virtual Int_t     GetChannel() const {
+      AliError("This method must be implemented in a derived class");
+      return -1;
+    };
+    virtual Int_t     GetJitter() const {
       AliError("This method must be implemented in a derived class");
       return -1;
     };
@@ -65,8 +70,9 @@ class AliITSRawStream: public TObject {
                                     //  SSD: strip number
     Int_t            fSignal;       // signal in ADC counts
     Bool_t           fCompletedModule; // set to kTRUE when all data from a module (SDD) are read
+    Bool_t           fCompletedDDL;  // set to kTRUE when all data from a DDL (SDD) are read
 
-    ClassDef(AliITSRawStream, 1) // base class for reading ITS raw digits
+    ClassDef(AliITSRawStream, 2) // base class for reading ITS raw digits
 };
 
 #endif

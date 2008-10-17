@@ -22,13 +22,7 @@ class AliITSCompressRawDataSDD : public TObject {
 
  public:
   AliITSCompressRawDataSDD();
-  AliITSCompressRawDataSDD(TString filename);
   ~AliITSCompressRawDataSDD();
-  void SetEventRange(Int_t first, Int_t last){
-    fEventRange=kTRUE;
-    fFirstEvent=first;
-    fLastEvent=last;
-  }
   void SetRawReader(AliRawReader* rd){
     fRawReader=rd;
   }
@@ -39,8 +33,22 @@ class AliITSCompressRawDataSDD : public TObject {
     fSizeInMemory=siz;
   }
 
-  void Compress();
   UInt_t CompressEvent(UChar_t* inputPtr);
+
+  static UInt_t MakeDataWord(Int_t carlos, Int_t side, Int_t anode, Int_t tb, Int_t adc){
+    UInt_t word= (carlos<<27) + (side<<26) + (anode<<18) + (tb<<10) + adc;
+    return word;
+  }
+
+  static UInt_t MakeEndOfModuleWord(Int_t carlos){
+    UInt_t word= (15<<28) + carlos;
+    return word;
+  }
+
+  static UInt_t MakeJitterWord(Int_t jitter){
+    UInt_t word= (8<<28) + jitter;
+    return word;
+  }
 
  protected:
 
@@ -53,10 +61,6 @@ class AliITSCompressRawDataSDD : public TObject {
   AliRawReader* fRawReader; // pointer to raw reader
   UChar_t* fPointerToData;   // pointer to the start of data in memory
   UInt_t  fSizeInMemory;    // free space in memory in Bytes
-  Bool_t  fEventRange;      // flag to select a range of events
-  Int_t   fFirstEvent;      // first event (used only if fEventRange==kTRUE)
-  Int_t   fLastEvent;       // first event (used only if fEventRange==kTRUE)
-  TString fNameFile;        // name of the raw data file
 
   ClassDef(AliITSCompressRawDataSDD, 0)
 };

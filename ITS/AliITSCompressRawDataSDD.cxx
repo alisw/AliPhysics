@@ -25,7 +25,7 @@
 //   29  |                                                       //
 //   28  |-> 4 bits to identify the Carlos (0-11) inside the DDL //
 //   27 -                                                        //
-//   26 detecot side (0= left, =right)                           //
+//   26 detecor side (0= left, =right)                           //
 //   25 -                                                        //
 //   24  |                                                       //
 //   23  |                                                       //
@@ -53,9 +53,11 @@
 //    1  |                                                       //
 //    0 -                                                        //
 //                                                               //
-// Plus 1 type of control words:                                 //
+// Plus 2 typs of control words:                                 //
 // - End of module data (needed by the Cluster Finder)           //
 //       first 4 most significant bits                   = 1111  //
+// - Jitter word                                                 //
+//       first 4 most significant bits                   = 1000  //
 //                                                               //
 // Origin: F.Prino, Torino, prino@to.infn.it                     //
 //                                                               //
@@ -75,72 +77,13 @@ AliITSCompressRawDataSDD::AliITSCompressRawDataSDD():
 TObject(),
 fRawReader(0),
 fPointerToData(0),
-fSizeInMemory(0),
-fEventRange(kFALSE),
-fFirstEvent(0),
-fLastEvent(0)
+fSizeInMemory(0)
 {
   // default constructor
-  fNameFile="";
-}
-//______________________________________________________________________
-AliITSCompressRawDataSDD::AliITSCompressRawDataSDD(TString filename):
-TObject(),
-fRawReader(0),
-fPointerToData(0),
-fSizeInMemory(0),
-fEventRange(kFALSE),
-fFirstEvent(0),
-fLastEvent(0)
-{
-  // Contructor for tests
-  fNameFile=filename;
 }
 //______________________________________________________________________
 AliITSCompressRawDataSDD::~AliITSCompressRawDataSDD(){
   // raw reader is passed from outdside, don't delete it
-}
-
-//______________________________________________________________________
-void AliITSCompressRawDataSDD::Compress(){
-  // Test method to dump raw data on ascii file
-  Int_t iev=0;
-  if(fEventRange) iev=fFirstEvent;
-
-  AliRawReader* rd;
-  if(fNameFile.Contains(".root")){
-    rd=new AliRawReaderRoot(fNameFile.Data(),iev);
-  }else{
-    rd=new AliRawReaderDate(fNameFile.Data(),iev);
-  }
-  
-  FILE *outtxt=fopen("data.txt","w");
-
-  UInt_t word=0;
-  do{
-    rd->Reset();
-
-    AliITSRawStreamSDD s(rd);
-    s.SetDecompressAmbra(kFALSE);
-    while(s.Next()){
-      if(s.IsCompletedModule()==kFALSE){
-	word=s.GetCarlosId()<<27;
-	word+=s.GetChannel()<<26;
-	word+=s.GetCoord1()<<18;
-	word+=s.GetCoord2()<<10;
-	word+=s.GetEightBitSignal();
-	fprintf(outtxt,"%08X\n",word);
-      }
-      if(s.IsCompletedModule()==kTRUE){
-	word=15<<28;
-	word+=s.GetCarlosId();
-	fprintf(outtxt,"%08X\n",word);
-      }
-    }
-    iev++;
-    if(fEventRange && iev>fLastEvent) break;
-  }while(rd->NextEvent());
-  fclose(outtxt);
 }
 //______________________________________________________________________
 UInt_t AliITSCompressRawDataSDD::CompressEvent(UChar_t* inputPtr){
@@ -157,12 +100,9 @@ UInt_t AliITSCompressRawDataSDD::CompressEvent(UChar_t* inputPtr){
   Int_t mask3=0x0000FF00;
   Int_t mask4=0x000000FF;
   while(s.Next()){
-    if(s.IsCompletedModule()==kFALSE){
-      word=s.GetCarlosId()<<27;
-      word+=s.GetChannel()<<26;
-      word+=s.GetCoord1()<<18;
-      word+=s.GetCoord2()<<10;
-      word+=s.GetEightBitSignal();
+    if(s.IsCompletedModule()==kTRUE){
+      word=15<<28;
+      word+=s.GetCarlosId();
       if(siz+4<fSizeInMemory){
 	*(fPointerToData)=(word&mask4);
 	++fPointerToData;
@@ -174,10 +114,26 @@ UInt_t AliITSCompressRawDataSDD::CompressEvent(UChar_t* inputPtr){
 	++fPointerToData;
 	siz+=4;
       }
-    }
-    if(s.IsCompletedModule()==kTRUE){
-      word=15<<28;
-      word+=s.GetCarlosId();
+    }else if(s.IsCompletedDDL()==kTRUE){
+      word=8<<28;
+      word+=s.GetJitter();
+      if(siz+4<fSizeInMemory){
+	*(fPointerToData)=(word&mask4);
+	++fPointerToData;
+	*(fPointerToData)=(word&mask3)>>8;
+	++fPointerToData;
+	*(fPointerToData)=(word&mask2)>>16;
+	++fPointerToData;
+	*(fPointerToData)=(word&mask1)>>24;
+	++fPointerToData;
+	siz+=4;
+      }
+    }else{
+      word=s.GetCarlosId()<<27;
+      word+=s.GetChannel()<<26;
+      word+=s.GetCoord1()<<18;
+      word+=s.GetCoord2()<<10;
+      word+=s.GetEightBitSignal();
       if(siz+4<fSizeInMemory){
 	*(fPointerToData)=(word&mask4);
 	++fPointerToData;

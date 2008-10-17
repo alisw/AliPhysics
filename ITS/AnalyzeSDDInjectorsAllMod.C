@@ -116,7 +116,9 @@ void AnalyzeSDDInjectorsAllMod(Char_t *datafil, Int_t nDDL, Int_t firstEv=10, In
     while(s.Next()){
       Int_t iDDL=rd->GetDDLID();
       Int_t iCarlos=s.GetCarlosId();
-      if(iDDL>=0 && iDDL<kTotDDL && s.IsCompletedModule()==kFALSE){ 
+      if(s.IsCompletedModule()) continue;
+      if(s.IsCompletedDDL()) continue;
+      if(iDDL>=0 && iDDL<kTotDDL){ 
 	Int_t index=kSides*(kModPerDDL*iDDL+iCarlos)+s.GetChannel(); 
 	histo[index]->Fill(s.GetCoord2(),s.GetCoord1(),s.GetSignal());
       }

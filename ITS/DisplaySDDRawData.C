@@ -76,7 +76,7 @@ void DisplaySDDRawData(Char_t *datafil, Int_t firstEv=0, Int_t lastEv=5){
     while(s.Next()){
       iCountNext++;
       
-      if(s.IsCompletedModule()==kFALSE){
+      if(s.IsCompletedModule()==kFALSE && s.IsCompletedDDL()==kFALSE){
 	Int_t lay,lad,det;
 	Int_t modID=ddlmap->GetModuleNumber(rd->GetDDLID(),s.GetCarlosId());
 	AliITSgeomTGeo::GetModuleId(modID,lay,lad,det);

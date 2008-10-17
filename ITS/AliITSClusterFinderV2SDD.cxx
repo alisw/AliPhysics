@@ -119,7 +119,7 @@ void AliITSClusterFinderV2SDD::FindClustersSDD(TClonesArray *digits) {
 
 void AliITSClusterFinderV2SDD::
 FindClustersSDD(AliBin* bins[2], Int_t nMaxBin, Int_t nzBins, 
-		TClonesArray *digits, TClonesArray *clusters) {
+		TClonesArray *digits, TClonesArray *clusters, Int_t jitter) {
   //------------------------------------------------------------
   // Actual SDD cluster finder
   //------------------------------------------------------------
@@ -226,7 +226,7 @@ FindClustersSDD(AliBin* bins[2], Int_t nMaxBin, Int_t nzBins,
 	Float_t timebin=y-0.5;  // to have time bin in range 0.-255. amd centered on the mid of the bin
 	if(s==1) zAnode += GetSeg()->NpzHalf();  // right side has anodes from 256. to 511.
 	Float_t zdet = GetSeg()->GetLocalZFromAnode(zAnode);
-	Float_t driftTimeUncorr = GetSeg()->GetDriftTimeFromTb(timebin);
+	Float_t driftTimeUncorr = GetSeg()->GetDriftTimeFromTb(timebin)+jitter*rsdd->GetCarlosRXClockPeriod();
 	Float_t driftTime=driftTimeUncorr-rsdd->GetTimeOffset();
 	Float_t driftPathMicron = cal->GetDriftPath(driftTime,zAnode);
 	const Double_t kMicronTocm = 1.0e-4; 
@@ -323,6 +323,9 @@ void AliITSClusterFinderV2SDD::FindClustersSDD(AliITSRawStream* input,
   AliBin *bins[2];
   AliBin *ddlbins[kHybridsPerDDL]; // 12 modules (=24 hybrids) of 1 DDL read "in parallel"
   for(Int_t iHyb=0;iHyb<kHybridsPerDDL;iHyb++) ddlbins[iHyb]=new AliBin[kMaxBin];
+  Int_t vectModId[kModulesPerDDL];
+  for(Int_t iMod=0; iMod<kModulesPerDDL; iMod++) vectModId[iMod]=-1;
+
   // read raw data input stream
   while (input->Next()) {
     Int_t iModule = input->GetModuleID();
@@ -330,26 +333,32 @@ void AliITSClusterFinderV2SDD::FindClustersSDD(AliITSRawStream* input,
       AliWarning(Form("Invalid SDD module number %d\n", iModule));
       continue;
     }
-
     Int_t iCarlos =input->GetCarlosId();
     Int_t iSide = input->GetChannel();
     Int_t iHybrid=iCarlos*2+iSide;
+
     if (input->IsCompletedModule()) {
-      // when all data from a module was read, search for clusters
-      if(iCarlos<0){
-	AliWarning(Form("Invalid SDD carlos number %d on module %d\n", iCarlos,iModule));
-	continue;
-      }
-      clusters[iModule] = new TClonesArray("AliITSRecPoint");
-      fModule = iModule;
-      bins[0]=ddlbins[iCarlos*2];   // first hybrid of the completed module
-      bins[1]=ddlbins[iCarlos*2+1]; // second hybrid of the completed module
-      FindClustersSDD(bins, kMaxBin, nzBins, NULL, clusters[iModule]);
-      Int_t nClusters = clusters[iModule]->GetEntriesFast();
-      nClustersSDD += nClusters;
-      for(Int_t iBin=0;iBin<kMaxBin; iBin++){
-	ddlbins[iCarlos*2][iBin].Reset();
-	ddlbins[iCarlos*2+1][iBin].Reset();
+      // store the module number
+      vectModId[iCarlos]=iModule;
+    }
+    else if (input->IsCompletedDDL()) {
+      // when all data from a DDL was read, search for clusters
+      Int_t jitter=input->GetJitter();
+      for(Int_t iMod=0; iMod<kModulesPerDDL; iMod++){
+	if(vectModId[iMod]>=0){
+	  fModule = vectModId[iMod];
+	  clusters[fModule] = new TClonesArray("AliITSRecPoint");
+	  bins[0]=ddlbins[iMod*2];   // first hybrid of the module
+	  bins[1]=ddlbins[iMod*2+1]; // second hybrid of the module
+	  FindClustersSDD(bins, kMaxBin, nzBins, NULL, clusters[fModule],jitter);
+	  Int_t nClusters = clusters[fModule]->GetEntriesFast();
+	  nClustersSDD += nClusters;
+	  vectModId[iMod]=-1;
+	}
+	for(Int_t iBin=0;iBin<kMaxBin; iBin++){
+	  ddlbins[iMod*2][iBin].Reset();
+	  ddlbins[iMod*2+1][iBin].Reset();
+	}
       }
     }else{
     // fill the current digit into the bins array
