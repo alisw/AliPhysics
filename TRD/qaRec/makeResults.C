@@ -1,3 +1,34 @@
+// Usage:
+//   makeResults.C("tasks?file_list")
+//   tasks : "ALL" or one/more of the following separated by space:
+//     "EFF"  : TRD Tracking Efficiency 
+//     "EFFC" : TRD Tracking Efficiency Combined (barrel + stand alone) - only in case of simulations
+//     "RES"  : TRD tracking Resolution
+//     "CAL"  : TRD calibration
+//     "PID"  : TRD PID - pion efficiency 
+//     "PIDR" : TRD PID - reference data
+//     "DET"  : Basic TRD Detector checks
+//     "NOFR" : Data set does not have AliESDfriends.root 
+//     "NOMC" : Data set does not have Monte Carlo Informations (real data), so all tasks which rely
+//              on MC information are switched off
+//   file_list : is the list of the files to be processed. 
+//     They should contain the full path. Here is an example:
+// /lustre_alpha/alice/TRDdata/HEAD/1.0GeV/RUN0/TRD.TaskResolution.root
+// /lustre_alpha/alice/TRDdata/HEAD/2.0GeV/RUN1/TRD.TaskResolution.root
+// /lustre_alpha/alice/TRDdata/HEAD/3.0GeV/RUN2/TRD.TaskResolution.root
+// /lustre_alpha/alice/TRDdata/HEAD/2.0GeV/RUN0/TRD.TaskDetChecker.root
+// /lustre_alpha/alice/TRDdata/HEAD/2.0GeV/RUN1/TRD.TaskDetChecker.root
+// /lustre_alpha/alice/TRDdata/HEAD/2.0GeV/RUN2/TRD.TaskDetChecker.root
+// /lustre_alpha/alice/TRDdata/HEAD/2.0GeV/RUN0/TRD.TaskTrackingEff.root
+//
+// The files which will be processed are the initersaction between the 
+// condition on the tasks and the files iin the file list.  
+//
+// Authors:
+//   Alex Bercuci (A.Bercuci@gsi.de) 
+//   Markus Fasel (m.Fasel@gsi.de) 
+//
+
 #if ! defined (__CINT__) || defined (__MAKECINT__)
 #include "TError.h"
 #include <TClass.h>
@@ -51,7 +82,7 @@ void makeResults(Char_t *args = "ALL")
   default:
     printf("Macro accepts 2 arguments separated by a '?'.\n");
     printf("arg #1 : list of tasks/options\n");
-    printf("arg #2 : base directory to be processed\n");
+    printf("arg #2 : list of files to be processed\n");
     return;
   }
 
@@ -81,17 +112,13 @@ void makeResults(Char_t *args = "ALL")
     }
   }
 
-
-  // catch the list of files using the ROOT Python Interface
-  TPython *pyshell = new TPython();
-  pyshell->Exec("import commands");
-
   // file merger object
   TFileMerger *fFM = new TFileMerger();
   TClass *ctask = 0x0;
   TObject *o = 0x0;
   TObjArray *fContainer = 0x0;
   AliTRDrecoTask *task = 0x0;
+  Int_t nFiles;
 
   if(gSystem->AccessPathName(Form("%s/merge",  gSystem->ExpandPathName("$PWD")))) gSystem->Exec(Form("mkdir -v %s/merge",  gSystem->ExpandPathName("$PWD")));
 
@@ -104,33 +131,41 @@ void makeResults(Char_t *args = "ALL")
     task->SetDebugLevel(0);
     task->SetMCdata(mc);
     task->SetFriends(friends);
-    printf("\t%s [%s]\n", task->GetTitle(), task->GetName());
 
      // setup filelist
-    TString pathname = gSystem->ExpandPathName( dir ? dir : "$PWD");
-    TString filestring((const Char_t*) pyshell->Eval(Form("commands.getstatusoutput(\"find %s | grep TRD.Task%s.root\")[1]", pathname.Data(), task->GetName())));
-    TObjArray *filenames = filestring.Tokenize("\n");
-    Int_t nFiles = filenames->GetEntriesFast();
+    string filename;
+    nFiles = 0;
+    ifstream filestream(dir);
+    while(getline(filestream, filename)){
+      if(Int_t(filename.find(task->GetName())) < 0) continue;
+      if(Int_t(filename.find("merge")) >= 0) continue;
+      nFiles++;
+    }
     if(!nFiles){
       printf("No Files found for Task %s\n", task->GetName());
       delete task;
       delete ctask;
       continue;
     }
+    printf("Processing %d files for task %s ...\n", nFiles, task->GetName());
 
+    ifstream filestream(dir);
     if(nFiles>1){
       fFM = new(fFM) TFileMerger(kTRUE);
       fFM->OutputFile(Form("%s/merge/TRD.Task%s.root",  gSystem->ExpandPathName("$PWD"), task->GetName()));
-      for(Int_t ifile = 0; ifile < nFiles; ifile++){
-        TString filename = (dynamic_cast<TObjString *>(filenames->UncheckedAt(ifile)))->String();
-        if(filename.Contains("merge")) continue;
-        //printf("\tProcessing %s ...\n", filename.Data());
-        fFM->AddFile(filename.Data());
+
+      while(getline(filestream, filename)){
+        if(Int_t(filename.find(task->GetName())) < 0) continue;
+        if(Int_t(filename.find("merge")) >= 0) continue;
+        fFM->AddFile(filename.c_str());
       }
       fFM->Merge();
       fFM->~TFileMerger();
       task->Load(Form("%s/merge/TRD.Task%s.root", gSystem->ExpandPathName("$PWD"), task->GetName()));
-    } else task->Load((dynamic_cast<TObjString *>(filenames->UncheckedAt(0)))->String().Data());
+    } else{
+      getline(filestream, filename);
+      task->Load(filename.c_str());
+    }
 
     task->PostProcess();
     TCanvas *c=new TCanvas();
@@ -143,6 +178,5 @@ void makeResults(Char_t *args = "ALL")
     delete task;
     delete ctask;
   }
-  delete pyshell;
 }
 
