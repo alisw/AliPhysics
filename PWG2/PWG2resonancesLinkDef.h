@@ -16,6 +16,8 @@
 
 #pragma link C++ class AliRsnEvent+;
 #pragma link C++ class AliRsnEventBuffer+;
+#pragma link C++ class AliRsnEventFunction+;
+#pragma link C++ class AliRsnEventTaskSE+;
 
 #pragma link C++ class AliRsnReader+;
 #pragma link C++ class AliRsnReaderTask+;
