@@ -172,6 +172,7 @@ void AliFRAMEv2::CreateGeometry()
   trB77B->RegisterYourself();
   TGeoCompositeShape* shB77 = new TGeoCompositeShape("shB77", "shB77A+shB77B:trB77A+shB77B:trB77B");
   TGeoVolume* voB77 = new TGeoVolume("B077", shB77, gGeoManager->GetMedium("FRAME_Air"));
+  voB77->SetName("B077"); // just to avoid a warning
   gMC->Gspos("B077", 1, "ALIC", 0., 0., 0., 0, "ONLY");
 //
 // Reference plane #1 for TRD

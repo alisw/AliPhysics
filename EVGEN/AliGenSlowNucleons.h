@@ -28,6 +28,7 @@ public:
     virtual void SetPmax(Float_t pmax = 10.) {fPmax = pmax;}
     virtual void SetNominalCmsEnergy(Float_t energy = 14000.) {fCMS = energy;}
     virtual void SetTarget(Float_t a=208, Float_t z=82) {fATarget = a; fZTarget = z;}
+    virtual void SetTarget(TString s, Int_t a, Int_t z) {AliGenerator::SetTarget(s, a, z);}
     virtual void SetProtonDirection(Float_t dir = 1.);
     virtual void SetCharge(Int_t c = 1) {fCharge = c;}
     virtual void SetTemperature(Double_t t1 = 0.04, Double_t t2 = 0.004)

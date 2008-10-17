@@ -157,7 +157,6 @@ void AliGenExtFile::Generate()
 	    origin[2] = fVertex[2] + jparticle->Vz();
 	}
 	
-	Int_t decayed    = jparticle->GetFirstDaughter();
 	Int_t doTracking = fTrackIt && selected && !(jparticle->TestBit(kDoneBit));
 	Int_t parent     = jparticle->GetFirstMother();
 	

@@ -650,6 +650,7 @@ void AliDIPOv2::CreateCompensatorDipole()
     Float_t pbox[3];
 //  Mother volumes
     TGeoVolumeAssembly* asDCM0 = new TGeoVolumeAssembly("DCM0");
+    asDCM0->SetName("DCM0");
     gMC->Gsatt ("DCM0", "SEEN", 0);
     
 //
