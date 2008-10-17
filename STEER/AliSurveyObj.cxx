@@ -42,7 +42,7 @@ const TString AliSurveyObj::fgkStorage = "alien://alice.cern.ch";
 const TString AliSurveyObj::fgkBaseFolder = "/alice/data/Reference";
 const TString AliSurveyObj::fgkValidDetectors = "ACORDE,BABYFRAME,BACKFRAME,\
 EMCAL,FMD,HMPID,ITS,L3 MAGNET,MUON,MUON ABSORBERS,MUON DIPOLE,PHOS,PMD,\
-SPACEFRAME,SUPERSTRUCTURE,T0,TOF,TPC,TRD,V0,ZDC,GRP";
+SPACEFRAME,SUPERSTRUCTURE,T0,TOF,TPC,TRD,VZERO,ZDC,GRP";
 const TString AliSurveyObj::fgkGRPDetectors = "BABYFRAME,BACKFRAME,L3 MAGNET,\
 SPACEFRAME,MUON DIPOLE,MUON ABSORBERS,GRP";
 const TString AliSurveyObj::fgkMUONDetectors = "MUON,SUPERSTRUCTURE";
