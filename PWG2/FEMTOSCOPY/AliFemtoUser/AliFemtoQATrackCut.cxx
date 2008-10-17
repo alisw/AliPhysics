@@ -89,6 +89,7 @@ AliFemtoQATrackCut::AliFemtoQATrackCut() :
     fminTPCclsF(0),
     fminTPCncls(0),
     fminITScls(0),
+    fminTPCchiNdof(0),
     fMaxTPCncls(1000),
     fMaxITSchiNdof(1000.0),
     fMaxTPCchiNdof(1000.0),
@@ -97,7 +98,8 @@ AliFemtoQATrackCut::AliFemtoQATrackCut() :
     fNTracksFailed(0),
     fRemoveKinks(kFALSE),
     fMostProbable(0),
-    fTPCnclsExclusionSwitch(kFALSE)
+    fTPCnclsExclusionSwitch(kFALSE),
+    fTPCchiNdofExclusionSwitch(kFALSE)
 {
   // Default constructor
   fNTracksPassed = fNTracksFailed = 0;

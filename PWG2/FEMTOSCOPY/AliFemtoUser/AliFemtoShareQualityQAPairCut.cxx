@@ -35,7 +35,9 @@ AliFemtoShareQualityQAPairCut::AliFemtoShareQualityQAPairCut():
   fShareQualitymin(-0.5),
   fShareFractionMax(1.0),
   fShareFractionmin(0.0),
-  fRemoveSameLabel(0)
+  fRemoveSameLabel(0),
+  fShareQualityQASwitch(0),
+  fShareFractionQASwitch(0)
 { 
   fShareQualityQASwitch  = false;
   fShareQualityQAExclusionZone[0] = -0.5;

@@ -33,7 +33,8 @@ ClassImp(AliFemtoShareQualityTPCEntranceSepQAPairCut)
 AliFemtoShareQualityTPCEntranceSepQAPairCut::AliFemtoShareQualityTPCEntranceSepQAPairCut():
   AliFemtoShareQualityQAPairCut(),
   fDTPCMin(0.0),
-  fDTPCMax(1000.0)
+  fDTPCMax(1000.0),
+  fDTPCQASwitch(0)
 {
   fDTPCQASwitch = false;
   fDTPCQAExclusionZone[0] = 0.0;
@@ -43,7 +44,8 @@ AliFemtoShareQualityTPCEntranceSepQAPairCut::AliFemtoShareQualityTPCEntranceSepQ
 AliFemtoShareQualityTPCEntranceSepQAPairCut::AliFemtoShareQualityTPCEntranceSepQAPairCut(const AliFemtoShareQualityTPCEntranceSepQAPairCut& c) : 
   AliFemtoShareQualityQAPairCut(c),
   fDTPCMin(0),
-  fDTPCMax(1000.0)
+  fDTPCMax(1000.0),
+  fDTPCQASwitch(0)
 { 
   fDTPCMin = c.fDTPCMin;
   fDTPCMax = c.fDTPCMax;

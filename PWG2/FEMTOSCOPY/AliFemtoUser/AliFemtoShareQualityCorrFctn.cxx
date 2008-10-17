@@ -77,7 +77,9 @@ AliFemtoShareQualityCorrFctn::AliFemtoShareQualityCorrFctn(const AliFemtoShareQu
   fShareNumerator(0),
   fShareDenominator(0),
   fQualityNumerator(0),
-  fQualityDenominator(0)
+  fQualityDenominator(0),
+  fTPCSepNumerator(0),
+  fTPCSepDenominator(0)
 {
   // copy constructor
   if (aCorrFctn.fShareNumerator)

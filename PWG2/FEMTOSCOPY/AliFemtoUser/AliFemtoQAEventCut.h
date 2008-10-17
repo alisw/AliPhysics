@@ -68,7 +68,7 @@ inline void AliFemtoQAEventCut::SetEventZPosQAExclusionZone(const float& lo, con
 inline int  AliFemtoQAEventCut::NEventsPassed() const {return fNEventsPassed;}
 inline int  AliFemtoQAEventCut::NEventsFailed() const {return fNEventsFailed;}
 inline AliFemtoQAEventCut* AliFemtoQAEventCut::Clone() { AliFemtoQAEventCut* c = new AliFemtoQAEventCut(*this); return c;}
-inline AliFemtoQAEventCut::AliFemtoQAEventCut(AliFemtoQAEventCut& c) : AliFemtoEventCut(c), fNEventsPassed(0), fNEventsFailed(0) {
+inline AliFemtoQAEventCut::AliFemtoQAEventCut(AliFemtoQAEventCut& c) : AliFemtoEventCut(c), fAcceptBadVertex(kFALSE), fNEventsPassed(0), fNEventsFailed(0), fHighOrLowSwitch(0), fEventMultQASwitch(kFALSE), fEventZPosQASwitch(kFALSE) {
   fEventMult[0] = c.fEventMult[0];
   fEventMult[1] = c.fEventMult[1];
   fVertZPos[0] = c.fVertZPos[0];
