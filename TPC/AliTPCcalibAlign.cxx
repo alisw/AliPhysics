@@ -375,7 +375,7 @@ void  AliTPCcalibAlign::ProcessDiff(const AliExternalTrackParam &t1,
     // huge output - cluster residuals to be investigated
     //
     TTreeSRedirector *cstream = GetDebugStreamer();
-    AliTPCseed * t = (AliTPCseed*) seed;
+    //AliTPCseed * t = (AliTPCseed*) seed;
     //AliExternalTrackParam *p0 = &((AliExternalTrackParam&)seed);
     AliExternalTrackParam *p1 = &((AliExternalTrackParam&)t1);
     AliExternalTrackParam *p2 = &((AliExternalTrackParam&)t2);
@@ -912,7 +912,7 @@ TGraphErrors * AliTPCcalibAlign::MakeGraph(Int_t sec0, Int_t sec1, Int_t dsec,
   //
   //
   TMatrixD mat;
-  TObjArray *fitArray=0;
+  //TObjArray *fitArray=0;
   Double_t xsec[1000];
   Double_t ysec[1000];
   Int_t npoints=0;
