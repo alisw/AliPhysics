@@ -775,7 +775,7 @@ Bool_t  AliTPCcalibLaser::AcceptLaser(Int_t id){
   */
   AliExternalTrackParam *param =(AliExternalTrackParam*)fTracksEsdParam.At(id);
   AliTPCLaserTrack *ltrp  = ( AliTPCLaserTrack*)fTracksMirror.At(id);
-  AliESDtrack   *track    = (AliESDtrack*)fTracksEsd.At(id);
+  //AliESDtrack   *track    = (AliESDtrack*)fTracksEsd.At(id);
   Double_t xyz[3];
   Double_t lxyz[3];
   param->GetXYZ(xyz);
@@ -1497,15 +1497,15 @@ void AliTPCcalibLaser::RefitLaserJW(Int_t id){
       for (Int_t irow=158;irow>-1;--irow) {
 	if (vecSec[irow]==-1)continue; // no cluster info
 	if (isReject[irow]>0.5) continue;  // 
-	Double_t x    = vecX[irow];
+	//Double_t x    = vecX[irow];
 	Double_t ycl  = vecClY[irow];
 	Double_t yfit = vecY1[irow];
 	Double_t yfit2 = vecY2[irow];
-	Double_t yfit3 = vecY2[irow];
+	//	Double_t yfit3 = vecY2[irow];
 	Double_t zcl  = vecClZ[irow];
 	Double_t zfit = vecZ1[irow];
  	Double_t zfit2 = vecZ2[irow];
-	Double_t zfit3 = vecZ2[irow];
+	//Double_t zfit3 = vecZ2[irow];
 
 	if (TMath::Abs(yfit-ycl)<2&&TMath::Abs(zfit-zcl)<2){
 	  if (profy){	    
