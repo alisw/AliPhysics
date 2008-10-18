@@ -13,6 +13,10 @@
 class AliTPCTransform;
 class AliTPCExB;
 #include "TObject.h"
+#include "TObjArray.h"
+#include "TArrayI.h"
+#include "TVectorD.h"
+
 class AliTPCCalPad;
 class AliTPCSensorTempArray;
 class AliDCSSensorArray;
@@ -20,6 +24,8 @@ class AliCDBEntry;
 class AliTPCParam;
 class AliTPCAltroMapping;
 class AliTPCClusterParam;
+class AliDCSSensor;
+class AliDCSSensorArray;
 //class AliCDBStorage;
 
 class AliTPCcalibDB : public TObject
@@ -45,13 +51,25 @@ class AliTPCcalibDB : public TObject
   AliTPCAltroMapping ** GetMapping(){ return fMapping;}
   AliTPCClusterParam *GetClusterParam(){ return fClusterParam;}
   //
+  Float_t GetPressure(Int_t timeStamp, Int_t run);
+  AliDCSSensor * GetPressureSensor(Int_t run);
+  AliTPCSensorTempArray * GetTemperatureSensor(Int_t run);
+  AliDCSSensorArray *     GetGoofieSensors(Int_t run);
+  static Float_t GetGain(Int_t sector, Int_t row, Int_t pad);
+  //
   static void     CreateObjectList(const Char_t *filename, TObjArray *calibObjects);
   static void MakeTree(const char * fileName, TObjArray * array, const char * mapFileName = 0, AliTPCCalPad* outlierPad = 0, Float_t ltmFraction = 0.9);
   static void RegisterExB(Int_t index, Float_t bz, Bool_t bdelete);
   //
+  //
+  static  void ProcessGoofie( AliDCSSensorArray* goofieArray, TVectorD & vecEntries, TVectorD & vecMedian, TVectorD &vecMean, TVectorD &vecRMS);
+  static void ProcessEnv(const char * runList);
+
+  //
 protected:
   void         Update();  //update entries
   AliCDBEntry* GetCDBEntry(const char* cdbPath);   
+  void GetRunInformations(Int_t run); // JUST FOR CALIBRATION STUDIES
   Long64_t        fRun;         // current run number
   AliTPCTransform *fTransform;      // object responsible for spacial corrections
   AliTPCExB *fExB;              // ExB correction factor
@@ -70,6 +88,13 @@ protected:
   //
   AliTPCParam * fParam;           // TPC parameters
   AliTPCClusterParam * fClusterParam;  // TPC cluster error, shape and Q parameterization
+  //
+  // Get the corssrun information
+  //
+  TObjArray      fGRPArray;           //! array of GRPs  -  per run
+  TObjArray      fGoofieArray;        //! array of GOOFIE values -per run
+  TObjArray      fTemperatureArray;   //! array of temperature sensors - per run
+  TArrayI        fRunList;            //! run list - indicates try to get the run param
   //
   static AliTPCcalibDB* fgInstance;  // singleton control
   static Bool_t       fgTerminated;  // termination control 

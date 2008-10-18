@@ -93,6 +93,7 @@
 #include "AliTPCCalROC.h"
 #include "AliTPCCalPad.h"
 #include "AliTPCSensorTempArray.h"
+#include "AliGRPObject.h"
 #include "AliTPCTransform.h"
 
 class AliCDBStorage;
@@ -111,7 +112,7 @@ class AliTPCCalDet;
 #include "AliTPCCalibPedestal.h"
 #include "AliTPCCalibCE.h"
 #include "AliTPCExBFirst.h"
-
+#include "AliTPCTempMap.h"
 
 
 
@@ -171,7 +172,12 @@ AliTPCcalibDB::AliTPCcalibDB():
   fTemperature(0),
   fMapping(0),
   fParam(0),
-  fClusterParam(0)
+  fClusterParam(0),  
+  fGRPArray(100000),          //! array of GRPs  -  per run  - JUST for calibration studies
+  fGoofieArray(100000),        //! array of GOOFIE values -per run - Just for calibration studies
+  fTemperatureArray(100000),   //! array of temperature sensors - per run - Just for calibration studies
+  fRunList(100000)              //! run list - indicates try to get the run param 
+
 {
   //
   // constructor
@@ -193,8 +199,11 @@ AliTPCcalibDB::AliTPCcalibDB(const AliTPCcalibDB& ):
   fTemperature(0),
   fMapping(0),
   fParam(0),
-  fClusterParam(0)
-
+  fClusterParam(0),
+  fGRPArray(0),          //! array of GRPs  -  per run  - JUST for calibration studies
+  fGoofieArray(0),        //! array of GOOFIE values -per run - Just for calibration studies
+  fTemperatureArray(0),   //! array of temperature sensors - per run - Just for calibration studies
+  fRunList(0)              //! run list - indicates try to get the run param 
 {
   //
   // Copy constructor invalid -- singleton implementation
@@ -707,3 +716,230 @@ void  AliTPCcalibDB::SetExBField(Float_t bz){
   printf("Set magnetic field for ExB correction = %f\n",bz); 
   fExB = GetExB(bz,kFALSE);
 }
+
+
+
+void AliTPCcalibDB::GetRunInformations( Int_t run){
+  //
+  // - > Don't use it for reconstruction - Only for Calibration studies
+  //
+  AliCDBEntry * entry = 0;
+  if (run>= fRunList.GetSize()){
+    fRunList.Set(run*2+1);
+    fGRPArray.Expand(run*2+1);fGoofieArray.Expand(run*2+1); fTemperatureArray.Expand(run*2+1);
+  }
+  if (fRunList[run]>0) return;
+  entry = AliCDBManager::Instance()->Get("GRP/GRP/Data",run);
+  if (entry)  fGRPArray.AddAt(entry->GetObject(),run);
+  entry = AliCDBManager::Instance()->Get("TPC/Calib/Goofie",run);
+  if (entry)  fGoofieArray.AddAt(entry->GetObject(),run);
+  entry = AliCDBManager::Instance()->Get("TPC/Calib/Temperature",run);
+  if (entry)  fTemperatureArray.AddAt(entry->GetObject(),run);
+  fRunList[run]=1;  // sign as used
+}
+
+
+Float_t AliTPCcalibDB::GetGain(Int_t sector, Int_t row, Int_t pad){
+  //
+  //
+  AliTPCCalPad *calPad = Instance()->fDedxGainFactor;;
+  if (!calPad) return 0;
+  return calPad->GetCalROC(sector)->GetValue(row,pad);
+}
+
+AliDCSSensor * AliTPCcalibDB::GetPressureSensor(Int_t run){
+  //
+  //
+  AliGRPObject * grpRun = ( AliGRPObject *)fGRPArray.At(run);
+  if (!grpRun) {
+    GetRunInformations(run);
+    grpRun = ( AliGRPObject *)fGRPArray.At(run);
+    if (!grpRun) return 0; 
+  }
+  AliDCSSensor * sensor = grpRun->GetCavernAtmosPressure();
+  return sensor;
+  
+}
+
+AliTPCSensorTempArray * AliTPCcalibDB::GetTemperatureSensor(Int_t run){
+  //
+  // Get temperature sensor array
+  //
+  AliTPCSensorTempArray * tempArray = (AliTPCSensorTempArray *)fTemperatureArray.At(run);
+  if (!tempArray) {
+    GetRunInformations(run);
+    tempArray = (AliTPCSensorTempArray *)fTemperatureArray.At(run);
+  }
+  return tempArray;
+}
+
+AliDCSSensorArray * AliTPCcalibDB::GetGoofieSensors(Int_t run){
+  //
+  // Get temperature sensor array
+  //
+  AliDCSSensorArray * goofieArray = (AliDCSSensorArray *)fGoofieArray.At(run);
+  if (!goofieArray) {
+    GetRunInformations(run);
+    goofieArray = (AliDCSSensorArray *)fGoofieArray.At(run);
+  }
+  return goofieArray;
+}
+
+
+
+
+Float_t AliTPCcalibDB::GetPressure(Int_t timeStamp, Int_t run){
+  //
+  // GetPressure for given time stamp and runt
+  //
+  TTimeStamp stamp(timeStamp);
+  AliDCSSensor * sensor = GetPressureSensor(run);
+  if (!sensor) return 0;
+  if (!sensor->GetFit()) return 0;
+  return sensor->GetValue(stamp);
+}
+
+
+
+
+
+void AliTPCcalibDB::ProcessEnv(const char * runList){
+  //
+  // Example test function  - how to use the environment variables
+  // runList  -  ascii file with run numbers
+  // output   -  dcsTime.root file with tree 
+
+  ifstream in;
+  in.open(runList);
+  Int_t irun=0;
+  TTreeSRedirector *pcstream = new TTreeSRedirector("dcsTime.root");
+  while(in.good()) {
+    in >> irun;
+    if (irun==0) continue;
+    printf("Processing run %d\n",irun);
+    AliDCSSensor * sensorPressure = AliTPCcalibDB::Instance()->GetPressureSensor(irun);
+    if (!sensorPressure) continue;
+    AliTPCSensorTempArray * tempArray = AliTPCcalibDB::Instance()->GetTemperatureSensor(irun);
+    AliTPCTempMap * tempMap = new AliTPCTempMap(tempArray);
+    AliDCSSensorArray* goofieArray = AliTPCcalibDB::Instance()->GetGoofieSensors(irun);
+    //
+    Int_t startTime = sensorPressure->GetStartTime();
+    Int_t endTime = sensorPressure->GetEndTime();
+    Int_t dtime = TMath::Max((endTime-startTime)/20,10*60);
+    for (Int_t itime=startTime; itime<endTime; itime+=dtime){
+      //
+      TTimeStamp tstamp(itime);
+      Float_t valuePressure = sensorPressure->GetValue(tstamp);
+
+      TLinearFitter * fitter = 0;
+      TVectorD vecTemp[10];
+      if (itime<tempArray->GetStartTime().GetSec() || itime>tempArray->GetEndTime().GetSec()){	
+      }else{
+	for (Int_t itype=0; itype<5; itype++)
+	  for (Int_t iside=0; iside<2; iside++){
+	    fitter= tempMap->GetLinearFitter(itype,iside,tstamp);
+	    if (!fitter) continue;
+	    fitter->Eval(); fitter->GetParameters(vecTemp[itype+iside*5]);
+	    delete fitter;
+	  }
+      }
+      
+      TVectorD vecGoofie, vecEntries, vecMean, vecMedian,vecRMS;
+      if (goofieArray){	
+	vecGoofie.ResizeTo(goofieArray->NumSensors());
+	ProcessGoofie(goofieArray, vecEntries ,vecMedian, vecMean, vecRMS);
+  //
+	for (Int_t isensor=0; isensor<goofieArray->NumSensors();isensor++){
+	  AliDCSSensor *gsensor = goofieArray->GetSensor(isensor);
+	  if (gsensor){
+	    vecGoofie[isensor] = gsensor->GetValue(tstamp);
+	  }
+	}
+      }
+
+
+      //tempMap->GetLinearFitter(0,0,itime);
+      (*pcstream)<<"dcs"<<
+	"run="<<irun<<
+	"time="<<itime<<
+	"goofie.="<<&vecGoofie<<
+	"goofieE.="<<&vecEntries<<
+	"goofieMean.="<<&vecMean<<
+	"goofieMedian.="<<&vecMedian<<
+	"goofieRMS.="<<&vecRMS<<
+	"press="<<valuePressure<<
+	"temp00.="<<&vecTemp[0]<<
+	"temp10.="<<&vecTemp[1]<<
+	"temp20.="<<&vecTemp[2]<<
+	"temp30.="<<&vecTemp[3]<<
+	"temp40.="<<&vecTemp[4]<<
+	"temp01.="<<&vecTemp[5]<<
+	"temp11.="<<&vecTemp[6]<<
+	"temp21.="<<&vecTemp[7]<<
+	"temp31.="<<&vecTemp[8]<<
+	"temp41.="<<&vecTemp[9]<<
+	"\n";
+    }
+  }
+  delete pcstream;
+}
+
+
+void AliTPCcalibDB::ProcessGoofie( AliDCSSensorArray* goofieArray, TVectorD & vecEntries, TVectorD & vecMedian, TVectorD &vecMean, TVectorD &vecRMS){
+  /*
+    
+  1       TPC_ANODE_I_A00_STAT
+  2       TPC_DVM_CO2
+  3       TPC_DVM_DriftVelocity
+  4       TPC_DVM_FCageHV
+  5       TPC_DVM_GainFar
+  6       TPC_DVM_GainNear
+  7       TPC_DVM_N2
+  8       TPC_DVM_NumberOfSparks
+  9       TPC_DVM_PeakAreaFar
+  10      TPC_DVM_PeakAreaNear
+  11      TPC_DVM_PeakPosFar
+  12      TPC_DVM_PeakPosNear
+  13      TPC_DVM_PickupHV
+  14      TPC_DVM_Pressure
+  15      TPC_DVM_T1_Over_P
+  16      TPC_DVM_T2_Over_P
+  17      TPC_DVM_T_Over_P
+  18      TPC_DVM_TemperatureS1
+   */
+  //
+  //
+  //  TVectorD  vecMedian; TVectorD  vecEntries; TVectorD  vecMean; TVectorD  vecRMS;
+  Double_t kEpsilon=0.0000000001;
+  Double_t kBig=100000000000.;
+  Int_t nsensors = goofieArray->NumSensors();
+  vecEntries.ResizeTo(nsensors);
+  vecMedian.ResizeTo(nsensors);
+  vecMean.ResizeTo(nsensors);
+  vecRMS.ResizeTo(nsensors);
+  TVectorF values;
+  for (Int_t isensor=0; isensor<goofieArray->NumSensors();isensor++){
+    AliDCSSensor *gsensor = goofieArray->GetSensor(isensor);
+    if (gsensor &&  gsensor->GetGraph()){
+      Int_t npoints = gsensor->GetGraph()->GetN();
+      // filter zeroes
+      values.ResizeTo(npoints);
+      Int_t nused =0;
+      for (Int_t ipoint=0; ipoint<npoints; ipoint++){
+	if (TMath::Abs(gsensor->GetGraph()->GetY()[ipoint])>kEpsilon && 
+	   TMath::Abs(gsensor->GetGraph()->GetY()[ipoint])<kBig ){
+	  values[nused]=gsensor->GetGraph()->GetY()[ipoint];
+	  nused++;
+	}
+      }
+      //
+      vecEntries[isensor]= nused;      
+      if (nused>1){
+	vecMedian[isensor] = TMath::Median(nused,values.GetMatrixArray());
+	vecMean[isensor]   = TMath::Mean(nused,values.GetMatrixArray());
+	vecRMS[isensor]    = TMath::RMS(nused,values.GetMatrixArray());
+      }
+    }
+  }
+}
+
