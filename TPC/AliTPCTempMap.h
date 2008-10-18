@@ -17,6 +17,7 @@ class TGraph2D;
 class TLinearFitter;
 class TString;
 class AliTPCSensorTempArray;
+class TTimeStamp;
 
 class AliTPCTempMap : public TNamed  {
  public:
@@ -25,16 +26,16 @@ class AliTPCTempMap : public TNamed  {
   virtual ~AliTPCTempMap();
   AliTPCTempMap &operator=(const AliTPCTempMap &c);
   virtual void Copy (TObject &c) const;
-
-  Double_t GetTempGradientY(UInt_t timeSec, Int_t side);
   TLinearFitter *GetLinearFitter(Int_t type, Int_t side, UInt_t timeSec);
+  TLinearFitter *GetLinearFitter(Int_t type, Int_t side, TTimeStamp& stamp);
+  //
+  Double_t GetTempGradientY(UInt_t timeSec, Int_t side);
   TGraph2D *GetTempMapsViaSensors(Int_t type, Int_t side, UInt_t timeSec);
   TGraph *MakeGraphGradient(Int_t axis, Int_t side, Int_t nPoints);
   Double_t GetTemperature(Double_t x, Double_t y, Double_t z, UInt_t timeSec);
-
  protected:
   
-  AliTPCSensorTempArray *ft;   // Array of Sensors (initialized in Constructor)
+  AliTPCSensorTempArray *fTempArray;   // Array of Sensors (initialized in Constructor)
   TString fStringFEsimulation; // Placeholder for file of FiniteElement 
                                // Simulation under ideal conditions - not existing yet
 

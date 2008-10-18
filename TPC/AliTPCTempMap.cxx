@@ -27,6 +27,7 @@
 #include "TLinearFitter.h"
 #include "TString.h"
 #include "TGraph2D.h"
+#include "TTimeStamp.h"
 
 #include "AliTPCTempMap.h"
 
@@ -38,21 +39,21 @@ ClassImp(AliTPCTempMap)
 //_____________________________________________________________________________
 AliTPCTempMap::AliTPCTempMap(AliTPCSensorTempArray *sensorDCS):
   TNamed(),
-  ft(0),
+  fTempArray(0),
   fStringFEsimulation(kStringFEsimulation)
 {
   //
   // AliTPCTempMap default constructor
   //
 
-  ft = sensorDCS;
+  fTempArray = sensorDCS;
 
 }
 
 //_____________________________________________________________________________
 AliTPCTempMap::AliTPCTempMap(const AliTPCTempMap &c):
   TNamed(c),
-  ft(c.ft),
+  fTempArray(c.fTempArray),
   fStringFEsimulation(c.fStringFEsimulation)
 {
   //
@@ -110,16 +111,16 @@ Double_t AliTPCTempMap::GetTempGradientY(UInt_t timeSec, Int_t side){
  TVectorD param(3);
  Int_t i = 0;
 
- Int_t nsensors = ft->NumSensors();
+ Int_t nsensors = fTempArray->NumSensors();
  for (Int_t isensor=0; isensor<nsensors; isensor++) { // loop over all sensors
-   AliTPCSensorTemp *entry = (AliTPCSensorTemp*)ft->GetSensorNum(isensor);
+   AliTPCSensorTemp *entry = (AliTPCSensorTemp*)fTempArray->GetSensorNum(isensor);
    
    if (entry->GetType()==3 && entry->GetSide()==side) { // take SensorType:TPC 
      Double_t x[3];
      x[0]=1;
      x[1]=entry->GetX();
      x[2]=entry->GetY();    
-     Double_t y = ft->GetValue(timeSec,isensor); // get temperature value
+     Double_t y = fTempArray->GetValue(timeSec,isensor); // get temperature value
      fitter->AddPoint(x,y,1); // add values to LinearFitter
      i++;
    }
@@ -132,6 +133,16 @@ Double_t AliTPCTempMap::GetTempGradientY(UInt_t timeSec, Int_t side){
 
  return param[2]; // return vertical (Y) tempGradient in [K/cm]
   
+}
+
+TLinearFitter *AliTPCTempMap::GetLinearFitter(Int_t type, Int_t side, TTimeStamp &stamp)
+{
+  //
+  // absolute time stamp used
+  // see AliTPCTempMap::GetLinearFitter(Int_t type, Int_t side, UInt_t timeSec) for details
+  //
+  Int_t timeSec = stamp.GetSec()-fTempArray->GetEndTime().GetSec();
+  return GetLinearFitter(type,side,timeSec);
 }
 
 //_____________________________________________________________________________
@@ -156,7 +167,8 @@ TLinearFitter *AliTPCTempMap::GetLinearFitter(Int_t type, Int_t side, UInt_t tim
   TLinearFitter *fitter = new TLinearFitter(3);
   Double_t *x = new Double_t[3];
   Double_t y = 0;
-
+  const Float_t kMinT=10, kMaxT =30, kMaxDelta=0.5;
+  
   if (type == 1 || type == 2 || type == 4) {
     fitter->SetFormula("x0++x1++TMath::Sin(x2)"); // returns Z,Y gradient
   } else {
@@ -164,16 +176,32 @@ TLinearFitter *AliTPCTempMap::GetLinearFitter(Int_t type, Int_t side, UInt_t tim
   }
 
   Int_t i = 0;
-  Int_t nsensors = ft->NumSensors();
+  Int_t nsensors = fTempArray->NumSensors();
+
+  Float_t temps[1000];
   for (Int_t isensor=0; isensor<nsensors; isensor++) { // loop over all sensors
-    AliTPCSensorTemp *entry = (AliTPCSensorTemp*)ft->GetSensorNum(isensor);
+    AliTPCSensorTemp *entry = (AliTPCSensorTemp*)fTempArray->GetSensorNum(isensor);
+    if (entry->GetType()==type && entry->GetSide()==side){
+      Float_t temperature= fTempArray->GetValue(timeSec,isensor); // get temperature value
+      if (temperature>kMinT && temperature<kMaxT) {temps[i]=temperature; i++;}
+    }
+  }
+  Float_t medianTemp = TMath::Median(i, temps);
+  if (i<3) return 0;
+  Float_t rmsTemp = TMath::RMS(i, temps);
+  
+  i=0;
+  
+  for (Int_t isensor=0; isensor<nsensors; isensor++) { // loop over all sensors
+    AliTPCSensorTemp *entry = (AliTPCSensorTemp*)fTempArray->GetSensorNum(isensor);
     
     if (type==0 || type==3) { // 'side' information used
       if (entry->GetType()==type && entry->GetSide()==side) {
 	x[0]=1;
 	x[1]=entry->GetX();
 	x[2]=entry->GetY();    
-	y = ft->GetValue(timeSec,isensor); // get temperature value
+	y = fTempArray->GetValue(timeSec,isensor); // get temperature value
+	if (TMath::Abs(y-medianTemp)>kMaxDelta+4.*rmsTemp) continue;
 	fitter->AddPoint(x,y,1); // add values to LinearFitter
 	i++;
       }
@@ -182,7 +210,8 @@ TLinearFitter *AliTPCTempMap::GetLinearFitter(Int_t type, Int_t side, UInt_t tim
 	x[0]=1;
 	x[1]=entry->GetZ();
 	x[2]=entry->GetPhi();    
-	y = ft->GetValue(timeSec,isensor);
+	y = fTempArray->GetValue(timeSec,isensor);
+	if (TMath::Abs(y-medianTemp)>kMaxDelta+4.*rmsTemp) continue;
 	fitter->AddPoint(x,y,1); 
 	i++;
       }
@@ -191,7 +220,8 @@ TLinearFitter *AliTPCTempMap::GetLinearFitter(Int_t type, Int_t side, UInt_t tim
 	x[0]=1;
 	x[1]=entry->GetZ();
 	x[2]=entry->GetPhi();    
-	y = ft->GetValue(timeSec,isensor);
+	y = fTempArray->GetValue(timeSec,isensor);
+	if (TMath::Abs(y-medianTemp)>kMaxDelta+4.*rmsTemp) continue;
 	fitter->AddPoint(x,y,1);
 	i++;	
       }
@@ -200,13 +230,15 @@ TLinearFitter *AliTPCTempMap::GetLinearFitter(Int_t type, Int_t side, UInt_t tim
 	x[0]=1;
 	x[1]=entry->GetZ();
 	x[2]=entry->GetPhi();    
-	y = ft->GetValue(timeSec,isensor);
+	y = fTempArray->GetValue(timeSec,isensor);
+	if (TMath::Abs(y-medianTemp)>kMaxDelta+4.*rmsTemp) continue;
 	fitter->AddPoint(x,y,1); 
 	i++;
       }
     }
   }  
-  fitter->Eval(); // Evaluates fitter
+  fitter->Eval();
+  //fitter->EvalRobust(0.9); // Evaluates fitter
   
   delete [] x;
 
@@ -242,9 +274,9 @@ TGraph2D *AliTPCTempMap::GetTempMapsViaSensors(Int_t type, Int_t side, UInt_t ti
 
   Int_t i = 0;
   
-  Int_t nsensors = ft->NumSensors();
+  Int_t nsensors = fTempArray->NumSensors();
   for (Int_t isensor=0; isensor<nsensors; isensor++) { // loop over all sensors
-    AliTPCSensorTemp *entry = (AliTPCSensorTemp*)ft->GetSensorNum(isensor);
+    AliTPCSensorTemp *entry = (AliTPCSensorTemp*)fTempArray->GetSensorNum(isensor);
 
     Double_t x, y, z, r, phi, tempValue;
     x = entry->GetX();
@@ -252,7 +284,7 @@ TGraph2D *AliTPCTempMap::GetTempMapsViaSensors(Int_t type, Int_t side, UInt_t ti
     z = entry->GetZ();
     r = entry->GetR();
     phi = entry->GetPhi();
-    tempValue = ft->GetValue(timeSec,isensor);
+    tempValue = fTempArray->GetValue(timeSec,isensor);
     //    printf("%d type %d: x=%lf y=%lf temp=%lf\n",isensor,entry->GetType(),x,y, tempValue);
     if (type==0 || type==3) { // 'side' information used
       if (entry->GetType()==type && entry->GetSide()==side) {
@@ -328,8 +360,8 @@ TGraph *AliTPCTempMap::MakeGraphGradient(Int_t axis, Int_t side, Int_t nPoints)
   TVectorD param(3);
   TLinearFitter *fitter = new TLinearFitter(3);
 
-  UInt_t fStartTime = ft->AliTPCSensorTempArray::GetStartTime();
-  UInt_t fEndTime = ft->AliTPCSensorTempArray::GetEndTime();
+  UInt_t fStartTime = fTempArray->AliTPCSensorTempArray::GetStartTime();
+  UInt_t fEndTime = fTempArray->AliTPCSensorTempArray::GetEndTime();
   
   UInt_t stepTime = (fEndTime-fStartTime)/nPoints;
 
