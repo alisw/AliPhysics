@@ -799,6 +799,25 @@ Float_t AliTPCcalibDB::GetPressure(Int_t timeStamp, Int_t run){
   return sensor->GetValue(stamp);
 }
 
+Bool_t  AliTPCcalibDB::GetTemperatureFit(Int_t timeStamp, Int_t run, Int_t side,TVectorD& fit){
+  //
+  //
+  //
+  TTimeStamp tstamp(timeStamp);
+  AliTPCSensorTempArray* tempArray  = GetTemperatureSensor(run);
+  if (! tempArray) return kFALSE;
+  AliTPCTempMap * tempMap = new AliTPCTempMap(tempArray);
+  TLinearFitter * fitter = tempMap->GetLinearFitter(3,side,tstamp);
+  if (fitter){
+    fitter->Eval(); 
+    fitter->GetParameters(fit);
+  }
+  delete fitter;
+  delete tempMap;
+  if (!fitter) return kFALSE;
+  return kTRUE;
+}
+
 
 
 
