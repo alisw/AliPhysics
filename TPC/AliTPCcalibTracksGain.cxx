@@ -356,7 +356,7 @@ AliTPCcalibTracksGain& AliTPCcalibTracksGain::operator=(const AliTPCcalibTracksG
    return *this;
 }
 
-AliTPCcalibTracksGain::AliTPCcalibTracksGain(const char* name, const char* title, AliTPCcalibTracksCuts* cuts, TNamed* /*debugStreamPrefix*/, AliTPCcalibTracksGain* prevIter) :
+AliTPCcalibTracksGain::AliTPCcalibTracksGain(const char* name, const char* title, AliTPCcalibTracksCuts* cuts) :
   AliTPCcalibBase(),
   fCuts(0),            // cuts that are used for sieving the tracks used for calibration
   fGainMap(0),                //  gain map to be applied

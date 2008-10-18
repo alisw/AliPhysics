@@ -1097,7 +1097,7 @@ void AliTPCclustererMI::FindClusters(AliTPCCalROC * noiseROC)
   Float_t minUpDownCutSigma    = fRecoParam->GetMinUpDownCutSigma();
   for (Int_t iSig = 0; iSig < fNSigBins; iSig++) {
     Int_t i = fSigBins[iSig];
-    //if (i%fMaxTime<=crtime) continue;
+    if (i%fMaxTime<=crtime) continue;
     Float_t *b = &fBins[i];
     //absolute custs
     if (b[0]<minMaxCutAbs) continue;   //threshold for maxima  

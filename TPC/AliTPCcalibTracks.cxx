@@ -2519,7 +2519,7 @@ AliTPCcalibTracks* AliTPCcalibTracks::TestMerge(AliTPCcalibTracks *ct, AliTPCClu
 }
 
 
-void  AliTPCcalibTracks::MakeQPosNormAll(TTree * chainres, AliTPCClusterParam * param, Int_t maxPoints, Int_t verbose){
+void  AliTPCcalibTracks::MakeQPosNormAll(TTree * chainres, AliTPCClusterParam * param, Int_t maxPoints){
   //
   // Make position corrections
   // for the moment Only using debug streamer 

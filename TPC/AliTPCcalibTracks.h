@@ -56,7 +56,7 @@ public :
   void            Process(AliTPCseed *track);  // to be called by the Selector
   virtual Long64_t Merge(TCollection *li);
   void     MakeResPlotsQTree(Int_t minEntries = 100, char* pathName = "plots");
-  static void MakeQPosNormAll(TTree * chain, AliTPCClusterParam * param, Int_t maxPoints=1000000, Int_t verbose=0);
+  static void MakeQPosNormAll(TTree * chain, AliTPCClusterParam * param, Int_t maxPoints=1000000);
    void     MakeReport(Int_t stat, char* pathName = "plots");     // calls all functions that procude pictures, results are written to pathName, stat is the minimal statistic threshold
   //
 
