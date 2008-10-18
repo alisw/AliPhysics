@@ -37,6 +37,7 @@ public:
 
 private:
   AliTPCReconstructor(const AliTPCReconstructor& /*rec*/){};
+  AliTPCReconstructor& operator=(const AliTPCReconstructor&){return *this;};
   AliTPCParam*         GetTPCParam() const;
   static Int_t               fgStreamLevel; // flag for streaming      - for TPC reconstruction
   AliTPCclustererMI*         fClusterer;   // TPC clusterer

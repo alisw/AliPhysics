@@ -998,7 +998,7 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
 	      Int_t rowsigBins = allNSigBins[iRow];
 	      Int_t first=allSigBins[iRow][0];
 	      Int_t last= 0;
-	      if (rowsigBins>0) allSigBins[iRow][allNSigBins[iRow]-1];
+	      //	      if (rowsigBins>0) allSigBins[iRow][allNSigBins[iRow]-1];
 
               if (AliTPCReconstructor::StreamLevel()>0) {
 	      (*fDebugStreamer)<<"Digits"<<
