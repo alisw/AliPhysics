@@ -389,6 +389,7 @@ AliTPCCalibPulser::AliTPCCalibPulser(const TMap *config) :
   fCurrentChannel(-1),
   fCurrentSector(-1),
   fCurrentRow(-1),
+  fCurrentPad(-1),
   fMaxPadSignal(-1),
   fMaxTimeBin(-1),
   fPadSignal(1024),
