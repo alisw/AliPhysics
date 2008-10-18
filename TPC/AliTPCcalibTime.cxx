@@ -38,7 +38,7 @@ AliTPCcalibTime *calibTime = new AliTPCcalibTime("cosmicTime","cosmicTime", Star
 c) plot results
 
 TFile f("CalibObjects.root");
-AliTPCcalibTime *cal = f->Get("TPCCalib")->FindObject("cosmicTime");
+AliTPCcalibTime *cal = (AliTPCcalibTime *)f->Get("TPCCalib")->FindObject("cosmicTime");
 cal->GetHistVdrift()->Projection(1,0)->Draw()
 
     4. Analysis using debug streamers.    
@@ -126,12 +126,12 @@ AliTPCcalibTime::AliTPCcalibTime(const Text_t *name, const Text_t *title, ULong6
 
   Double_t deltaTime = EndTime - StartTime;
   
-  Int_t binsVdrift[2] = {deltaTime/deltaIntegrationTimeVdrift, 100};
+  Int_t binsVdrift[2] = {TMath::Nint(deltaTime/deltaIntegrationTimeVdrift), 100};
   Double_t xminVdrift[2] = {StartTime, -20};
   Double_t xmaxVdrift[2] = {EndTime, 20};
   fHistVdrift = new THnSparseF("HistVdrift","vDrift; time;#Delta z",2,binsVdrift,xminVdrift,xmaxVdrift);
 
-  Int_t binsDeDxTgl[3] = {deltaTime/deltaIntegrationTimeDeDx,30,100};
+  Int_t binsDeDxTgl[3] = {TMath::Nint(deltaTime/deltaIntegrationTimeDeDx),30,100};
   Double_t xminDeDxTgl[3] = {StartTime,-1,0.7};
   Double_t xmaxDeDxTgl[3] = {EndTime,1,1.3};
   fHistDeDxTgl = new THnSparseF("HistDeDxTgl","dEdx vs tgl;time;tgl;dEdxUp/dEdxLow",3,binsDeDxTgl,xminDeDxTgl,xmaxDeDxTgl); 
@@ -279,8 +279,10 @@ void AliTPCcalibTime::ProcessCosmic(AliESDEvent *event) {
        //
        // Propagate rest to the 0,0 DCA - z should be ignored
        //
-       Bool_t b0 = param0.PropagateToDCA(&vtx,bz,1000);
-       Bool_t b1 = param1.PropagateToDCA(&vtx,bz,1000);
+       //Bool_t b0 = ;
+       param0.PropagateToDCA(&vtx,bz,1000);
+       //Bool_t b1 = 
+       param1.PropagateToDCA(&vtx,bz,1000);
        //      
        param0.GetDZ(0,0,0,bz,dvertex0);
        param1.GetDZ(0,0,0,bz,dvertex1);
@@ -316,10 +318,11 @@ void AliTPCcalibTime::ProcessCosmic(AliESDEvent *event) {
 
 
 void AliTPCcalibTime::Analyze() {
-
+  //
+  //
+  //
   TH2D * hVdrift = GetHistVdrift()->Projection(1,0);
-  
-
+  hVdift->Draw();
 }
 
 
