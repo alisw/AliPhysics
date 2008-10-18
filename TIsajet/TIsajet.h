@@ -17,34 +17,62 @@
 class TIsajet : public TGenerator , public AliRndm
 {
 //
- private:
+private:
+     TIsajet(const TIsajet&); // Not implemented
+     TIsajet& operator=(const TIsajet&); // Not implemented
+     TObjArray* ImportParticles(const Option_t*); // Not implemented
 
-     Char_t *title, *jobtype;
-     Char_t* pdfpar[20];
-     Float_t pdfval[20];
-     Int_t num_Pdf;
-     Int_t beam1_type, beam2_type;
-     Float_t cutoff_mass;
-     Float_t center_energy;
-     Float_t frag_params[32];
-     Char_t *jet1_type[30], *jet2_type[30], *jet3_type[30];
-     Int_t num_jet_type[3];
-     Float_t qcd_lambda;
-     Bool_t forbid_decay, forbid_eta, forbid_evolve, forbid_hadron, forbid_pi0;
-     Int_t generate_sigma;
-     Float_t p_limits[6];
-     Float_t phi_limits[6];
-     Float_t pt_limits[6];
-     Float_t theta_limits[6];
-     Float_t x_limits[6];
-     Float_t y_limits[6];
-     Float_t peter_jet_frag[8];
+     Char_t *fTitle;
+     Char_t *fJobtype;
+     Char_t* fPdfPar[20];
+     Float_t fPdfVal[20];
+     Int_t fNumPdf;
+     Int_t fBeam1Type;
+     Int_t fBeam2Type;
+     Float_t fCutoffMass;
+     Float_t fCenterEnergy;
+     Float_t fFragParams[32];
+     Char_t *fJet1Type[30];
+     Char_t *fJet2Type[30];
+     Char_t *fJet3Type[30];
+     Int_t fNumJetType[3];
+     Float_t fQcdLambda;
+     Bool_t fForbidDecay;
+     Bool_t fForbidEta;
+     Bool_t fForbidEvolve;
+     Bool_t fForbidHadron;
+     Bool_t fForbidPi0;
+     Int_t fGenerateSigma;
+     Float_t fPLimits[6];
+     Float_t fPhiLimits[6];
+     Float_t fPtLimits[6];
+     Float_t fThetaLimits[6];
+     Float_t fXLimits[6];
+     Float_t fYLimits[6];
+     Float_t fPeterJetFrag[8];
 
-     Bool_t setCutjet, setBeams, setFragment, setJettype1;
-     Bool_t setJettype2, setJettype3, setLambda, setNodcay;
-     Bool_t setNoeta, setNoevolve, setNohadron, setNopi0;
-     Bool_t setNsigma, setP, setPhi, setPt, setTheta;
-     Bool_t setX, setXgen, setY, setPdf, online;
+     Bool_t fSetCutjet;
+     Bool_t fSetBeams;
+     Bool_t fSetFragment;
+     Bool_t fSetJettype1;
+     Bool_t fSetJettype2;
+     Bool_t fSetJettype3;
+     Bool_t fSetLambda;
+     Bool_t fSetNodcay;
+     Bool_t fSetNoeta;
+     Bool_t fSetNoevolve;
+     Bool_t fSetNohadron;
+     Bool_t fSetNopi0;
+     Bool_t fSetNsigma;
+     Bool_t fSetP;
+     Bool_t fSetPhi;
+     Bool_t fSetPt;
+     Bool_t fSetTheta;
+     Bool_t fSetX;
+     Bool_t fSetXgen;
+     Bool_t fSetY;
+     Bool_t fSetPdf;
+     Bool_t fOnline;
      
  public:	
 

@@ -40,6 +40,7 @@ ClassImp(AliGenIsajet)
 
  AliGenIsajet::AliGenIsajet() :
    AliGenMC(),
+   fIsajet(NULL),
    fKineBias(1),
    fTrials(0)
  {  
@@ -48,13 +49,11 @@ ClassImp(AliGenIsajet)
 //____________________________________________________________________________
 AliGenIsajet::AliGenIsajet(Int_t npart) 
   :AliGenMC(npart),
+   fIsajet(new TIsajet),
    fKineBias(1),
    fTrials(0)
 {
-  
-    fIsajet = new TIsajet();
   AliIsajetRndm::SetIsajetRandom(GetRandom());
-  
 }
 
 //____________________________________________________________________________
@@ -91,9 +90,8 @@ void AliGenIsajet::Generate()
 
   Float_t polar[3] =   {0,0,0};
   Float_t origin[3]=   {0,0,0};
-  Float_t origin0[3]=  {0,0,0};
-  Float_t p[4], random[6];
-  Int_t j, kf, ks, imo;
+  Float_t p[4];
+  Int_t kf, ks, imo;
   Int_t nt=0; 
   Int_t jev=0;
 

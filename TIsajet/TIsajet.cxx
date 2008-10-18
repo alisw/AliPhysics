@@ -36,7 +36,17 @@ static TRandom * sRandom;
 
 /**************************************************************************/
 
-TIsajet::TIsajet() : TGenerator("Isajet", "Isajet")
+TIsajet::TIsajet() : TGenerator("Isajet", "Isajet"),
+		     fTitle(""), fJobtype(""), fNumPdf(0), fBeam1Type(0), fBeam2Type(0),
+		     fCutoffMass(0), fCenterEnergy(0), fQcdLambda(0), fForbidDecay(kTRUE),
+		     fForbidEta(kTRUE), fForbidEvolve(kTRUE), fForbidHadron(kTRUE),
+		     fForbidPi0(kTRUE), fGenerateSigma(0), fSetCutjet(kTRUE), fSetBeams(kTRUE),
+		     fSetFragment(kTRUE), fSetJettype1(kTRUE), fSetJettype2(kTRUE),
+		     fSetJettype3(kTRUE), fSetLambda(kTRUE), fSetNodcay(kTRUE),
+		     fSetNoeta(kTRUE), fSetNoevolve(kTRUE), fSetNohadron(kTRUE),
+		     fSetNopi0(kTRUE), fSetNsigma(kTRUE), fSetP(kTRUE), fSetPhi(kTRUE),
+		     fSetPt(kTRUE), fSetTheta(kTRUE), fSetX(kTRUE), fSetXgen(kTRUE),
+		     fSetY(kTRUE), fSetPdf(kTRUE), fOnline(kTRUE)
 {
 //  Default constructor        
 //  Set random number
@@ -66,8 +76,8 @@ TIsajet::TIsajet() : TGenerator("Isajet", "Isajet")
 
 // Defaults :
 
-    title = ("Default title.");
-    jobtype = ("TWOJET");
+    fTitle = ("Default title.");
+    fJobtype = ("TWOJET");
 
     RestoreDefaults();
 }
@@ -90,21 +100,21 @@ void TIsajet::Initialise()
 // unnecessary, hence the output is echoed to the screen instead. 
 
     const char *fname =  gSystem->ExpandPathName("$ALICE_ROOT/ISAJET/data/myjob.par");
-    ofstream Write(fname, ios::out);
+    ofstream WriteStream(fname, ios::out);
 
-    ostream *Writer = &Write;
+    ostream *Writer = &WriteStream;
 
-    if (online) Writer = &cout;
+    if (fOnline) Writer = &cout;
 
-    *Writer << title << '\n';
+    *Writer << fTitle << '\n';
     *Writer << PRIMAR.ecm << ',' << PRIMAR.nevent << ",1,1/\n";
-    *Writer << jobtype << '\n';
+    *Writer << fJobtype << '\n';
 
-    center_energy = PRIMAR.ecm;
+    fCenterEnergy = PRIMAR.ecm;
 
-    if (setBeams) {
-	beam1_type = PRIMAR.idin[0];
-	beam2_type = PRIMAR.idin[1];
+    if (fSetBeams) {
+	fBeam1Type = PRIMAR.idin[0];
+	fBeam2Type = PRIMAR.idin[1];
 
 	*Writer << "BEAMS\n";
 	if (PRIMAR.idin[0] == -1120) *Writer << "AP,";
@@ -118,38 +128,38 @@ void TIsajet::Initialise()
 	else *Writer << "P/\n";
     }
 
-    if (setCutjet) {
-	cutoff_mass = QCDPAR.cutjet;
+    if (fSetCutjet) {
+	fCutoffMass = QCDPAR.cutjet;
 	*Writer << "CUTJET\n" << QCDPAR.cutjet << "/\n";
     }
     
-    if (setFragment) {
-	for (Int_t i = 0; i < 32; i++) frag_params[i] = *FRGPAR.frpar[i];
+    if (fSetFragment) {
+	for (Int_t i = 0; i < 32; i++) fFragParams[i] = *FRGPAR.frpar[i];
 
 	*Writer << "FRAGMENT\n";
 	for (Int_t i = 0; i < 31; i++) *Writer << FRGPAR.frpar[i] << ',';
 	*Writer << FRGPAR.frpar[31] << "/\n";
     }
     
-    if (setJettype1) {
-	for (Int_t i = 0; i < TYPES.njttyp[0]; i++) jet1_type[i] = XTYPES.jetyp[0][i];
-	num_jet_type[0] = TYPES.njttyp[0];
+    if (fSetJettype1) {
+	for (Int_t i = 0; i < TYPES.njttyp[0]; i++) fJet1Type[i] = XTYPES.jetyp[0][i];
+	fNumJetType[0] = TYPES.njttyp[0];
 
 	*Writer << "JETTYPE1\n";
 	for (Int_t i = 0; i < TYPES.njttyp[0]-1; i++) *Writer << XTYPES.jetyp[0][i] << ',';
 	*Writer << XTYPES.jetyp[0][TYPES.njttyp[0]-1] << "/\n";
     }
-    if (setJettype2) {
-	for (Int_t i = 0; i < TYPES.njttyp[1]; i++) jet2_type[i] = XTYPES.jetyp[1][i];
-	num_jet_type[0] = TYPES.njttyp[0];
+    if (fSetJettype2) {
+	for (Int_t i = 0; i < TYPES.njttyp[1]; i++) fJet2Type[i] = XTYPES.jetyp[1][i];
+	fNumJetType[0] = TYPES.njttyp[0];
 
 	*Writer << "JETTYPE2\n";
 	for (Int_t i = 0; i < TYPES.njttyp[1]-1; i++) *Writer << XTYPES.jetyp[1][i] << ',';
 	*Writer << XTYPES.jetyp[1][TYPES.njttyp[1]-1] << "/\n";
     }
-    if (setJettype3) {
-	for (Int_t i = 0; i < TYPES.njttyp[2]; i++) jet3_type[i] = XTYPES.jetyp[2][i];
-	num_jet_type[0] = TYPES.njttyp[0];
+    if (fSetJettype3) {
+	for (Int_t i = 0; i < TYPES.njttyp[2]; i++) fJet3Type[i] = XTYPES.jetyp[2][i];
+	fNumJetType[0] = TYPES.njttyp[0];
 
 	*Writer << "JETTYPE3\n";
 	for (Int_t i = 0; i < TYPES.njttyp[2]-1; i++) *Writer << XTYPES.jetyp[2][i] << ',';
@@ -157,61 +167,61 @@ void TIsajet::Initialise()
     }
     
 	
-    if (setLambda) {
-	qcd_lambda = QCDPAR.alam;
+    if (fSetLambda) {
+	fQcdLambda = QCDPAR.alam;
 	*Writer << "LAMBDA\n" << QCDPAR.alam << "/\n";
     }
     
 
-    if (setNodcay) {
-	forbid_decay = NODCAY.nodcay;
+    if (fSetNodcay) {
+	fForbidDecay = NODCAY.nodcay;
 
 	*Writer << "NODCAY\n";
 	if (NODCAY.nodcay) *Writer << "TRUE/\n";
 	else *Writer << "FALSE/\n";
     }
 
-    if (setNoeta) {
-	forbid_eta = NODCAY.noeta;
+    if (fSetNoeta) {
+	fForbidEta = NODCAY.noeta;
 
 	*Writer << "NOETA\n";
 	if (NODCAY.noeta) *Writer << "TRUE/\n";
 	else *Writer << "FALSE/\n";
     }
 
-    if (setNoevolve) {
-	forbid_evolve = NODCAY.noevol;
+    if (fSetNoevolve) {
+	fForbidEvolve = NODCAY.noevol;
 	
 	*Writer << "NOEVOLVE\n";
 	if (NODCAY.noevol) *Writer << "TRUE/\n";
 	else *Writer << "FALSE/\n";
     }
 
-    if (setNohadron) {
-	forbid_hadron = NODCAY.nohadr;
+    if (fSetNohadron) {
+	fForbidHadron = NODCAY.nohadr;
 	
 	*Writer << "NOHADRON\n";
 	if (NODCAY.nohadr) *Writer << "TRUE/\n";
 	else *Writer << "FALSE/\n";
     }
 
-    if (setNopi0) {
-	forbid_pi0 = NODCAY.nopi0;
+    if (fSetNopi0) {
+	fForbidPi0 = NODCAY.nopi0;
 	
 	*Writer << "NOPI0\n";
 	if (NODCAY.nopi0) *Writer << "TRUE/\n";
 	else *Writer << "FALSE/\n";
     }
 	
-    if (setNsigma) {
-	generate_sigma = PRIMAR.nsigma;
+    if (fSetNsigma) {
+	fGenerateSigma = PRIMAR.nsigma;
 	*Writer << "NSIGMA\n" << PRIMAR.nsigma << "/\n";
     }    
     
-    if (setP) {
+    if (fSetP) {
 	for (Int_t i = 0; i < 3; i++) {
-	    p_limits[2 * i] = JETLIM.pmin[i];
-	    p_limits[2 * i + 1] = JETLIM.pmax[i];
+	    fPLimits[2 * i] = JETLIM.pmin[i];
+	    fPLimits[2 * i + 1] = JETLIM.pmax[i];
 	}	
 
 	*Writer << "P\n";
@@ -220,10 +230,10 @@ void TIsajet::Initialise()
 	*Writer << JETLIM.pmin[2] << ',' << JETLIM.pmax[2] << "/\n";
     }
 
-    if (setPhi) {
+    if (fSetPhi) {
 	for (Int_t i = 0; i < 3; i++) {
-	    phi_limits[2 * i] = JETLIM.phimin[i];
-	    phi_limits[2 * i + 1] = JETLIM.phimax[i];
+	    fPhiLimits[2 * i] = JETLIM.phimin[i];
+	    fPhiLimits[2 * i + 1] = JETLIM.phimax[i];
 	}
 
 	*Writer << "PHI\n";
@@ -232,10 +242,10 @@ void TIsajet::Initialise()
 	*Writer << JETLIM.phimin[2] << ',' << JETLIM.phimax[2] << "/\n";
     }
     
-    if (setPt) {
+    if (fSetPt) {
 	for (Int_t i = 0; i < 3; i++) {
-	    pt_limits[2 * i] = JETLIM.ptmin[i];
-	    pt_limits[2 * i + 1] = JETLIM.ptmax[i];
+	    fPtLimits[2 * i] = JETLIM.ptmin[i];
+	    fPtLimits[2 * i + 1] = JETLIM.ptmax[i];
 	}
 
 	*Writer << "PT\n";
@@ -244,10 +254,10 @@ void TIsajet::Initialise()
 	*Writer << JETLIM.ptmin[2] << ',' << JETLIM.ptmax[2] << "/\n";
     }
 
-    if (setTheta) {
+    if (fSetTheta) {
 	for (Int_t i = 0; i < 3; i++) {
-	    theta_limits[2 * i] = JETLIM.thmin[i];
-	    theta_limits[2 * i + 1] = JETLIM.thmax[i];
+	    fThetaLimits[2 * i] = JETLIM.thmin[i];
+	    fThetaLimits[2 * i + 1] = JETLIM.thmax[i];
 	}
 
 	*Writer << "THETA\n";
@@ -256,10 +266,10 @@ void TIsajet::Initialise()
 	*Writer << JETLIM.thmin[2] << ',' << JETLIM.thmax[2] << "/\n";
     }
 
-    if (setX) {
+    if (fSetX) {
 	for (Int_t i = 0; i < 3; i++) {
-	    x_limits[2 * i] = JETLIM.xjmin[i];
-	    x_limits[2 * i + 1] = JETLIM.xjmax[i];
+	    fXLimits[2 * i] = JETLIM.xjmin[i];
+	    fXLimits[2 * i + 1] = JETLIM.xjmax[i];
 	}
 
 	*Writer << "X\n";
@@ -268,10 +278,10 @@ void TIsajet::Initialise()
 	*Writer << JETLIM.xjmin[2] << ',' << JETLIM.xjmax[2] << "/\n";
     }
 
-    if (setY) {
+    if (fSetY) {
 	for (Int_t i = 0; i < 3; i++) {
-	    y_limits[2 * i] = JETLIM.yjmin[i];
-	    y_limits[2 * i + 1] = JETLIM.yjmax[i];
+	    fYLimits[2 * i] = JETLIM.yjmin[i];
+	    fYLimits[2 * i + 1] = JETLIM.yjmax[i];
 	}
 
 	*Writer << "Y\n";
@@ -280,38 +290,38 @@ void TIsajet::Initialise()
 	*Writer << JETLIM.yjmin[2] << ',' << JETLIM.yjmax[2] << "/\n";
     }
 
-    if (setXgen) {
-	for (Int_t i = 0; i < 8; i++) peter_jet_frag[i] = FRGPAR.xgen[i];
+    if (fSetXgen) {
+	for (Int_t i = 0; i < 8; i++) fPeterJetFrag[i] = FRGPAR.xgen[i];
 
 	*Writer << "XGEN\n";
 	for (Int_t i = 0; i < 7; i++) *Writer << FRGPAR.xgen[i] << ',';
 	*Writer << FRGPAR.xgen[7] << "/\n";
     }
 
-    if (setPdf) {
+    if (fSetPdf) {
 	*Writer << "PDFLIB\n";
-	for (Int_t i = 0; i < num_Pdf; i++) *Writer << "\'" << pdfpar[i] << "\'" << ',' << pdfval[i] << "/\n";
+	for (Int_t i = 0; i < fNumPdf; i++) *Writer << "\'" << fPdfPar[i] << "\'" << ',' << fPdfVal[i] << "/\n";
     }
     
 
     *Writer << "END\n";
     *Writer << "STOP\n";
-    Write.close();
+    WriteStream.close();
 
 //  Stuff for online-control mode :
 
-    if (online) {
-	KEYS.reac = jobtype;
+    if (fOnline) {
+	KEYS.reac = fJobtype;
 	KEYS.keyon = false;
 	for (Int_t i = 0; i < KEYS.mxkeys; i++) KEYS.keys[i] = false;
 	
 	if (!strcmp(KEYS.reac, "TWOJET")) {
-	    KEYS.keys[0] = true;
+	    KEYS.keys[0] = kTRUE;
 	    KEYS.ikey = 1;
 	    PRIMAR.njet = 2;
 	}
 	else if (!strcmp(KEYS.reac, "MINBIAS")) {
-	    KEYS.keys[3] = true;
+	    KEYS.keys[3] = kTRUE;
 	    KEYS.ikey = 4;
 	    PRIMAR.njet = 0;
 	}
@@ -322,7 +332,7 @@ void TIsajet::Initialise()
 	    return;
 	}
 
-	if (setPdf) {
+	if (fSetPdf) {
 //	    PDFinit();
 	}
     }
@@ -336,80 +346,80 @@ void TIsajet::Reload()
 // Sets the common block variables to the data member values.
 //
 
-    SetECM(center_energy);
+    SetECM(fCenterEnergy);
 
-    if (setBeams) {
-	SetIDIN(0, beam1_type);
-	SetIDIN(1, beam2_type);
+    if (fSetBeams) {
+	SetIDIN(0, fBeam1Type);
+	SetIDIN(1, fBeam2Type);
     }
 
-    if (setCutjet) SetCUTJET(cutoff_mass);
+    if (fSetCutjet) SetCUTJET(fCutoffMass);
     
-    if (setFragment) SetAllFRPAR(frag_params, 32);
+    if (fSetFragment) SetAllFRPAR(fFragParams, 32);
     
-    if (setJettype1) for (Int_t i = 0; i < num_jet_type[0]; i++) SetJETYP(0, jet1_type[i]);
+    if (fSetJettype1) for (Int_t i = 0; i < fNumJetType[0]; i++) SetJETYP(0, fJet1Type[i]);
     
-    if (setJettype2) for (Int_t i = 0; i < num_jet_type[1]; i++) SetJETYP(1, jet2_type[i]);
+    if (fSetJettype2) for (Int_t i = 0; i < fNumJetType[1]; i++) SetJETYP(1, fJet2Type[i]);
     
-    if (setJettype3) for (Int_t i = 0; i < num_jet_type[2]; i++) SetJETYP(2, jet3_type[i]);
+    if (fSetJettype3) for (Int_t i = 0; i < fNumJetType[2]; i++) SetJETYP(2, fJet3Type[i]);
 	
-    if (setLambda) SetALAM(qcd_lambda);
+    if (fSetLambda) SetALAM(fQcdLambda);
 
-    if (setNodcay) SetNODCAY(forbid_decay);
+    if (fSetNodcay) SetNODCAY(fForbidDecay);
 
-    if (setNoeta) SetNOETA(forbid_eta);
+    if (fSetNoeta) SetNOETA(fForbidEta);
 
-    if (setNoevolve) SetNOEVOL(forbid_evolve);
+    if (fSetNoevolve) SetNOEVOL(fForbidEvolve);
 
-    if (setNohadron) SetNOHADR(forbid_hadron);
+    if (fSetNohadron) SetNOHADR(fForbidHadron);
 
-    if (setNopi0) SetNOPI0(forbid_pi0);
+    if (fSetNopi0) SetNOPI0(fForbidPi0);
 	
-    if (setNsigma) SetNSIGMA(generate_sigma);
+    if (fSetNsigma) SetNSIGMA(fGenerateSigma);
     
-    if (setP) {
+    if (fSetP) {
 	for (Int_t i = 0; i < 3; i++) {
-	    SetPMIN(p_limits[2 * i], i);
-	    SetPMAX(p_limits[2 * i + 1], i);
+	    SetPMIN(fPLimits[2 * i], i);
+	    SetPMAX(fPLimits[2 * i + 1], i);
 	}	
     }
 
-    if (setPhi) {
+    if (fSetPhi) {
 	for (Int_t i = 0; i < 3; i++) {
-	    SetPHIMIN(phi_limits[2 * i], i);
-	    SetPHIMAX(phi_limits[2 * i + 1], i);
+	    SetPHIMIN(fPhiLimits[2 * i], i);
+	    SetPHIMAX(fPhiLimits[2 * i + 1], i);
 	}	
     }
     
-    if (setPt) {
+    if (fSetPt) {
 	for (Int_t i = 0; i < 3; i++) {
-	    SetPTMIN(pt_limits[2 * i], i);
-	    SetPTMAX(pt_limits[2 * i + 1], i);
+	    SetPTMIN(fPtLimits[2 * i], i);
+	    SetPTMAX(fPtLimits[2 * i + 1], i);
 	}	
     }
 
-    if (setTheta) {
+    if (fSetTheta) {
 	for (Int_t i = 0; i < 3; i++) {
-	    SetTHMIN(theta_limits[2 * i], i);
-	    SetTHMAX(theta_limits[2 * i + 1], i);
+	    SetTHMIN(fThetaLimits[2 * i], i);
+	    SetTHMAX(fThetaLimits[2 * i + 1], i);
 	}	
     }
 
-    if (setX) {
+    if (fSetX) {
 	for (Int_t i = 0; i < 3; i++) {
-	    SetXJMIN(x_limits[2 * i], i);
-	    SetXJMAX(x_limits[2 * i + 1], i);
+	    SetXJMIN(fXLimits[2 * i], i);
+	    SetXJMAX(fXLimits[2 * i + 1], i);
 	}	
     }
 
-    if (setY) {
+    if (fSetY) {
 	for (Int_t i = 0; i < 3; i++) {
-	    SetYJMIN(y_limits[2 * i], i);
-	    SetYJMAX(y_limits[2 * i + 1], i);
+	    SetYJMIN(fYLimits[2 * i], i);
+	    SetYJMAX(fYLimits[2 * i + 1], i);
 	}	
     }
 
-    if (setXgen) SetAllXGEN(peter_jet_frag, 8);
+    if (fSetXgen) SetAllXGEN(fPeterJetFrag, 8);
 }
 
 /**************************************************************************/
@@ -418,12 +428,12 @@ void TIsajet::RestoreDefaults()
 {
 // Booleans indicating which keywords should be written into the parameter file.
 
-    setBeams = setCutjet = setFragment = setJettype1 = false;
-    setJettype2 = setJettype3 = setLambda = setNodcay = false;
-    setNoeta = setNoevolve = setNohadron = setNopi0 = false;
-    setNsigma = setP = setPhi = setPt  = setTheta = false;
-    setX = setXgen = setY = setPdf = false;
-    num_Pdf = 0;
+    fSetBeams = fSetCutjet = fSetFragment = fSetJettype1 = false;
+    fSetJettype2 = fSetJettype3 = fSetLambda = fSetNodcay = false;
+    fSetNoeta = fSetNoevolve = fSetNohadron = fSetNopi0 = false;
+    fSetNsigma = fSetP = fSetPhi = fSetPt  = fSetTheta = false;
+    fSetX = fSetXgen = fSetY = fSetPdf = false;
+    fNumPdf = 0;
 
 // Calling on FORTRAN for initialisation of variables
 
@@ -547,7 +557,7 @@ void TIsajet::GenerateEvent()
  
 //    e = 0;
 
-//    if (online) Isabg2(e);
+//    if (fOnline) Isabg2(e);
 //    else Isabeg(e);
 
     e = 1;
@@ -564,7 +574,7 @@ void TIsajet::SetJobtype(Char_t *val)
     (!strcmp(val, "HIGGS")) || (!strcmp(val, "PHOTON")) ||
     (!strcmp(val, "TCOLOR")) || (!strcmp(val, "WHIGGS")) ||
     (!strcmp(val, "EXTRADIM")) || (!strcmp(val, "ZJJ"))) {
-	    jobtype = val;
+	    fJobtype = val;
     }
     else {
 	printf("Error in TIsajet::SetJobtype :\n");
@@ -579,32 +589,32 @@ void TIsajet::SetJobtype(Char_t *val)
 
 void TIsajet::GetJobtype() const 
 {
-    printf ("Current job type is %s.\n", jobtype);
+    printf ("Current job type is %s.\n", fJobtype);
 }
 
 /**************************************************************************/
 
 void TIsajet::SetOnline(Bool_t val) 
 {
-    online = val;
+    fOnline = val;
 }
 
 /**************************************************************************/
 
 Bool_t TIsajet::GetOnline() const
 {
-    return online;
+    return fOnline;
 }
 
 /**************************************************************************/
 
 void TIsajet::SetPDF(Char_t *name, Float_t val)
 {
-    if (num_Pdf < 19) {
-	pdfpar[num_Pdf] = name;
-	pdfval[num_Pdf] = val;
-	num_Pdf++;
-	setPdf = true;
+    if (fNumPdf < 19) {
+	fPdfPar[fNumPdf] = name;
+	fPdfVal[fNumPdf] = val;
+	fNumPdf++;
+	fSetPdf = kTRUE;
     }
     else {
 	printf ("Error in TIsajet::SetPDF :\n");
@@ -714,7 +724,7 @@ void TIsajet::SetYWMIN(Float_t val)
 	printf("May not set both theta and y limits. Use SetTHWLIMS, then set YWMIN.\n");
     }
     else {
-	DYLIM.ywset = true;
+	DYLIM.ywset = kTRUE;
 	DYLIM.ywmin = val;
     }
 }
@@ -741,7 +751,7 @@ void TIsajet::SetYWMAX(Float_t val)
 	printf("May not set both theta and y limits. Use SetTHWLIMS, then set YWMAX.\n");
     }
     else {
-	DYLIM.ywset = true;
+	DYLIM.ywset = kTRUE;
 	DYLIM.ywmax = val;
     }
 }
@@ -817,7 +827,7 @@ void TIsajet::SetTHWMIN(Float_t val)
 	printf("May not set both theta and y limits. Use SetYWLIMS, then set THWMIN.\n");
     }
     else {
-	DYLIM.thwset = true;
+	DYLIM.thwset = kTRUE;
         DYLIM.thwmin = val;
     }
 }
@@ -844,7 +854,7 @@ void TIsajet::SetTHWMAX(Float_t val)
 	printf("May not set both theta and y limits. Use SetYWLIMS, then set THWMAX.\n");
     }
     else {
-	DYLIM.thwset = true;
+	DYLIM.thwset = kTRUE;
 	DYLIM.thwmax = val;
     }
 }
@@ -1217,7 +1227,7 @@ void TIsajet::SetFRPAR(Float_t val, Int_t index)
     }
     
     *FRGPAR.frpar[index] = val;
-    setFragment = true;
+    fSetFragment = kTRUE;
 }
 
 /**************************************************************************/
@@ -1317,7 +1327,7 @@ void TIsajet::SetXGEN(Float_t val, Int_t index)
 	return;
     }
     SetFRPAR(val, index + 4);
-    setXgen = true;
+    fSetXgen = kTRUE;
 }
 
 /**************************************************************************/
@@ -1414,7 +1424,7 @@ void TIsajet::SetPMIX1(Float_t val, Int_t index1, Int_t index2)
     }
     
     FRGPAR.pmix1[index1][index2] = val;
-    setFragment = true;
+    fSetFragment = kTRUE;
 }
 
 /**************************************************************************/
@@ -1488,7 +1498,7 @@ void TIsajet::SetPMIX2(Float_t val, Int_t index1, Int_t index2)
     }
     
     FRGPAR.pmix2[index1][index2] = val;
-    setFragment = true;
+    fSetFragment = kTRUE;
 }
 
 /**************************************************************************/
@@ -1554,7 +1564,7 @@ void TIsajet::SetPMIXX1(Float_t val, Int_t index)
     }
     
     *FRGPAR.pmixx1[index] = val;
-    setFragment = true;
+    fSetFragment = kTRUE;
 }
 
 /**************************************************************************/
@@ -1599,7 +1609,7 @@ void TIsajet::SetPMIXX2(Float_t val, Int_t index)
     }
     
     *FRGPAR.pmixx2[index] = val;
-    setFragment = true;
+    fSetFragment = kTRUE;
 }
 
 /**************************************************************************/
@@ -1905,7 +1915,7 @@ void TIsajet::SetPMIN(Float_t val, Int_t index)
     }
 
     JETLIM.pmin[index] = val;
-    setP = true;
+    fSetP = kTRUE;
 }
 
 /**************************************************************************/
@@ -1956,7 +1966,7 @@ void TIsajet::SetPMAX(Float_t val, Int_t index)
     }
 
     JETLIM.pmax[index] = val;
-    setP = true;
+    fSetP = kTRUE;
 }
 
 /**************************************************************************/
@@ -2007,9 +2017,9 @@ void TIsajet::SetPTMIN(Float_t val, Int_t index)
     }
 */    
      JETLIM.ptmin[index] = val;
-//     if (!setY) SetYJLIMS();
-//     if (!setTheta) SetTHLIMS();
-     setPt = true;
+//     if (!fSetY) SetYJLIMS();
+//     if (!fSetTheta) SetTHLIMS();
+     fSetPt = kTRUE;
 }
 
 /**************************************************************************/
@@ -2060,7 +2070,7 @@ void TIsajet::SetPTMAX(Float_t val, Int_t index)
     }
 
     JETLIM.ptmax[index] = val;
-    setPt = true;
+    fSetPt = kTRUE;
 }
 
 /**************************************************************************/
@@ -2110,13 +2120,13 @@ void TIsajet::SetYJMIN(Float_t val, Int_t index)
 	return;
     }
 
-    if (setTheta) {
+    if (fSetTheta) {
 	printf("Error in TIsajet::SetYJMIN :\n");
 	printf("May not set both theta and y limits. Use SetTHLIMS, then set YJMIN.\n");
 	return;
     }
 
-    setY =  true;
+    fSetY =  kTRUE;
     JETLIM.yjmin[index] = val;
 }
 
@@ -2167,13 +2177,13 @@ void TIsajet::SetYJMAX(Float_t val, Int_t index)
 	return;
     }
 
-    if (setTheta) {
+    if (fSetTheta) {
 	printf("Error in TIsajet::SetYJMAX :\n");
 	printf("May not set both theta and y limits. Use SetTHLIMS, then set YJMAX.\n");
 	return;
     }
 
-    setY = true;
+    fSetY = kTRUE;
     JETLIM.yjmax[index] = val;
 }
 
@@ -2215,7 +2225,7 @@ void TIsajet::SetYJLIMS()
 	JETLIM.yjmax[i] = acosh(PRIMAR.halfe / JETLIM.ptmin[i]);
 	JETLIM.yjmax[i] = -JETLIM.yjmin[i];
     }
-    setY = false;
+    fSetY = false;
 }
 
 /**************************************************************************/
@@ -2236,7 +2246,7 @@ void TIsajet::SetPHIMIN(Float_t val, Int_t index)
     }
 
     JETLIM.phimin[index] = val;
-    setPhi = true;
+    fSetPhi = kTRUE;
 }
 
 /**************************************************************************/
@@ -2287,7 +2297,7 @@ void TIsajet::SetPHIMAX(Float_t val, Int_t index)
     }
 
     JETLIM.phimax[index] = val;
-    setPhi = true;
+    fSetPhi = kTRUE;
 }
 
 /**************************************************************************/
@@ -2337,7 +2347,7 @@ void TIsajet::SetXJMIN(Float_t val, Int_t index)
     }
 
     JETLIM.xjmin[index] = val;
-    setX = true;
+    fSetX = kTRUE;
 }
 
 /**************************************************************************/
@@ -2388,7 +2398,7 @@ void TIsajet::SetXJMAX(Float_t val, Int_t index)
     }
 
     JETLIM.xjmax[index] = val;
-    setX = true;
+    fSetX = kTRUE;
 }
 
 /**************************************************************************/
@@ -2438,13 +2448,13 @@ void TIsajet::SetTHMIN(Float_t val, Int_t index)
 	return;
     }
 
-    if (setY) {
+    if (fSetY) {
 	printf("Error in TIsajet::SetTHMIN :\n");
 	printf("May not set both theta and y limits. Use SetYJLIMS, then set THMIN.\n");
 	return;
     }
 
-    setTheta = true;
+    fSetTheta = kTRUE;
     JETLIM.thmin[index] = val;
     
 }
@@ -2496,13 +2506,13 @@ void TIsajet::SetTHMAX(Float_t val, Int_t index)
 	return;
     }
 
-    if (setY) {
+    if (fSetY) {
 	printf("Error in TIsajet::SetTHMAX :\n");
 	printf("May not set both theta and y limits. Use SetYJLIMS, then set THMAX.\n");
 	return;
     }
 
-    setTheta = true;
+    fSetTheta = kTRUE;
     JETLIM.thmax[index] = val;
 }
 
@@ -2546,7 +2556,7 @@ void TIsajet::SetTHLIMS()
 	JETLIM.thmin[i] = 2*atan(exp(tmin));
 	JETLIM.thmax[i] = 2*atan(exp(-tmin));
     }
-    setTheta = false;
+    fSetTheta = false;
 }
 
 /**************************************************************************/
@@ -3381,7 +3391,7 @@ Bool_t TIsajet::GetFIXMIJ(Int_t index1, Int_t index2) const
 void TIsajet::SetNODCAY(Bool_t val) 
 {
     NODCAY.nodcay = val;
-    setNodcay = true;
+    fSetNodcay = kTRUE;
 }
 
 /**************************************************************************/
@@ -3396,7 +3406,7 @@ Bool_t TIsajet::GetNODCAY() const
 void TIsajet::SetNOETA(Bool_t val) 
 {
     NODCAY.noeta = val;
-    setNoeta = true;
+    fSetNoeta = kTRUE;
 }
 
 /**************************************************************************/
@@ -3411,7 +3421,7 @@ Bool_t TIsajet::GetNOETA() const
 void TIsajet::SetNOPI0(Bool_t val) 
 {
     NODCAY.nopi0 = val;
-    setNopi0 = true;
+    fSetNopi0 = kTRUE;
 }
 
 /**************************************************************************/
@@ -3440,7 +3450,7 @@ Bool_t TIsajet::GetNONUNU() const
 void TIsajet::SetNOEVOL(Bool_t val) 
 {
     NODCAY.noevol = val;
-    setNoevolve = true;
+    fSetNoevolve = kTRUE;
 }
 
 /**************************************************************************/
@@ -3455,7 +3465,7 @@ Bool_t TIsajet::GetNOEVOL() const
 void TIsajet::SetNOHADR(Bool_t val) 
 {
     NODCAY.nohadr = val;
-    setNohadron = true;
+    fSetNohadron = kTRUE;
 }
 
 /**************************************************************************/
@@ -3663,7 +3673,7 @@ void TIsajet::SetIDIN(Int_t val, Int_t index)
 	return;
     }
 
-    setBeams = true;
+    fSetBeams = kTRUE;
 }
 
 /**************************************************************************/
@@ -3736,7 +3746,7 @@ Int_t TIsajet::GetNTRIES() const
 void TIsajet::SetNSIGMA(Int_t val) 
 {
     PRIMAR.nsigma = val;
-    setNsigma = true;
+    fSetNsigma = kTRUE;
 }
 
 /**************************************************************************/
@@ -3757,7 +3767,7 @@ void TIsajet::SetALAM(Float_t val)
 {
     QCDPAR.alam = val;
     QCDPAR.alam2 = val*val;
-    setLambda = true;
+    fSetLambda = kTRUE;
 }
 
 /**************************************************************************/
@@ -3779,7 +3789,7 @@ Float_t TIsajet::GetALAM2() const
 void TIsajet::SetCUTJET(Float_t val) 
 {
     QCDPAR.cutjet = val;
-    setCutjet = true;
+    fSetCutjet = kTRUE;
 }
 
 /**************************************************************************/
@@ -5323,7 +5333,7 @@ Char_t* TIsajet::GetPARTYP(Int_t index) const
 
 void TIsajet::SetTITLE(Char_t *val) 
 {
-    title = XTYPES.title = val;
+    fTitle = XTYPES.title = val;
 }
 
 /**************************************************************************/
@@ -5379,9 +5389,9 @@ void TIsajet::SetJETYP(Int_t index, Char_t val[])
 	return;
     }
 
-    if (index == 0) setJettype1 = true;
-    else if (index == 1) setJettype2 = true;
-    else if (index == 2) setJettype3 = true;
+    if (index == 0) fSetJettype1 = kTRUE;
+    else if (index == 1) fSetJettype2 = kTRUE;
+    else if (index == 2) fSetJettype3 = kTRUE;
 }
 
 /**************************************************************************/
