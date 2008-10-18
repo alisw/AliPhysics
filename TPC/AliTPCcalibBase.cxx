@@ -70,6 +70,11 @@ AliTPCcalibBase::AliTPCcalibBase(const AliTPCcalibBase&calib):
   TNamed(calib),
   fDebugStreamer(0),
   fStreamLevel(calib.fStreamLevel),
+  fRun(0),                  //!  current Run number
+  fEvent(0),                //!  current Event number
+  fTime(0),                 //!  current Time
+  fTrigger(0),              //! current trigger type
+  fMagF(0),                 //! current magnetic field
   fDebugLevel(calib.fDebugLevel)
 {
   //
