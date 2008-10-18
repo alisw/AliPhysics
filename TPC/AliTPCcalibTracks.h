@@ -53,7 +53,7 @@ public :
   
   virtual ~AliTPCcalibTracks();                // destructor
   
-  void            Process(AliTPCseed *track);  // to be called by the Selector
+  virtual void            Process(AliTPCseed *track);  // to be called by the Selector
   virtual Long64_t Merge(TCollection *li);
   void     MakeResPlotsQTree(Int_t minEntries = 100, char* pathName = "plots");
   static void MakeQPosNormAll(TTree * chain, AliTPCClusterParam * param, Int_t maxPoints=1000000);

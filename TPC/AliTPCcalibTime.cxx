@@ -136,7 +136,7 @@ AliTPCcalibTime::AliTPCcalibTime(const Text_t *name, const Text_t *title, ULong6
   Double_t xmaxDeDxTgl[3] = {EndTime,1,1.3};
   fHistDeDxTgl = new THnSparseF("HistDeDxTgl","dEdx vs tgl;time;tgl;dEdxUp/dEdxLow",3,binsDeDxTgl,xminDeDxTgl,xmaxDeDxTgl); 
 
-  Int_t binsDeDx[2] = {deltaTime/deltaIntegrationTimeDeDx,100};
+  Int_t binsDeDx[2] = {TMath::Nint(deltaTime/deltaIntegrationTimeDeDx),100};
   Double_t xminDeDx[2] = {StartTime,1};
   Double_t xmaxDeDx[2] = {EndTime,100};
   fHistDeDx = new THnSparseF("HistDeDx","dEdx l;time;dEdx",2,binsDeDx,xminDeDx,xmaxDeDx);
@@ -322,7 +322,7 @@ void AliTPCcalibTime::Analyze() {
   //
   //
   TH2D * hVdrift = GetHistVdrift()->Projection(1,0);
-  hVdift->Draw();
+  hVdrift->Draw();
 }
 
 

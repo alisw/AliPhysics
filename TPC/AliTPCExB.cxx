@@ -54,6 +54,30 @@ AliTPCExB::AliTPCExB():
   //
 }
 
+AliTPCExB::AliTPCExB(const AliTPCExB& exb):
+  TObject(exb),
+  fMatBrBz(new TVectorD(*(exb.fMatBrBz))),       //param matrix Br/Bz
+  fMatBrfiBz(new TVectorD(*(exb.fMatBrfiBz))),     //param matrix Br/Bz
+  fMatBrBzI0(new TVectorD(*(exb.fMatBrBzI0))),     //param matrix Br/Bz integral  z>0 
+  fMatBrBzI1(new TVectorD(*(exb.fMatBrBzI1))),     //param matrix Br/Bz integral  z<0 
+  fMatBrfiBzI0(new TVectorD(*(exb.fMatBrfiBzI0))),   //param matrix Br/Bz integral  z>0 
+  fMatBrfiBzI1(new TVectorD(*(exb.fMatBrfiBzI1)))    //param matrix Br/Bz integral  z<0
+{
+  //
+  // copy constructor
+  //
+}
+
+AliTPCExB& AliTPCExB::operator=(const AliTPCExB &/*exb*/)
+{
+  //
+  // Dummy  assignment
+  //
+  return *this;
+}
+
+
+
 
 void AliTPCExB::TestExB(const char* fileName) {
   //

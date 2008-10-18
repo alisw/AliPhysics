@@ -8,6 +8,8 @@ class AliMagF;
 class AliTPCExB:public TObject {
 public:
   AliTPCExB();
+  AliTPCExB& operator=(const AliTPCExB &exb);
+  AliTPCExB(const AliTPCExB& exb);
   virtual ~AliTPCExB() {};
   virtual void Correct(const Double_t *position,Double_t *corrected)=0;
   virtual void CorrectInverse(const Double_t *position,Double_t *corrected) {
@@ -53,7 +55,6 @@ public:
   TVectorD *          fMatBrBzI1;     //param matrix Br/Bz integral  z<0 
   TVectorD *          fMatBrfiBzI0;   //param matrix Br/Bz integral  z>0 
   TVectorD *          fMatBrfiBzI1;   //param matrix Br/Bz integral  z<0
-  AliTPCExB& operator=(const AliTPCExB &/*exb*/){ return *this;}
   
  private:
   static AliTPCExB*   fgInstance;  //! Instance of this class (singleton implementation)

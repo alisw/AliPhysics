@@ -55,7 +55,7 @@ public:
    
   AliTPCcalibTracksGain();
   AliTPCcalibTracksGain(const AliTPCcalibTracksGain& obj);
-  AliTPCcalibTracksGain(const char* name, const char* title, AliTPCcalibTracksCuts* cuts, TNamed* debugStreamPrefix = 0, AliTPCcalibTracksGain* prevIter = 0);
+  AliTPCcalibTracksGain(const char* name, const char* title, AliTPCcalibTracksCuts* cuts);
   virtual ~AliTPCcalibTracksGain();
   AliTPCcalibTracksGain& operator=(const AliTPCcalibTracksGain& rhs);
   virtual Long64_t        Merge(TCollection *list);

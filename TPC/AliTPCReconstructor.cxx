@@ -63,6 +63,22 @@ fClusterer(NULL)
   fClusterer = new AliTPCclustererMI(param);
 }
 
+AliTPCReconstructor::AliTPCReconstructor(const AliTPCReconstructor& /*rec*/):
+AliReconstructor(),
+fClusterer(NULL)
+{
+  //
+  // Dummy copu constructor
+  //
+}
+
+AliTPCReconstructor& AliTPCReconstructor::operator=(const AliTPCReconstructor&){
+  //
+  // dummy operator
+  //
+  return *this;
+}
+
 //_____________________________________________________________________________
 AliTPCReconstructor::~AliTPCReconstructor()
 {
