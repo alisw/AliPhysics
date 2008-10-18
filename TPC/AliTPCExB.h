@@ -53,6 +53,7 @@ public:
   TVectorD *          fMatBrBzI1;     //param matrix Br/Bz integral  z<0 
   TVectorD *          fMatBrfiBzI0;   //param matrix Br/Bz integral  z>0 
   TVectorD *          fMatBrfiBzI1;   //param matrix Br/Bz integral  z<0
+  AliTPCExB& operator=(const AliTPCExB &/*exb*/){ return *this;}
   
  private:
   static AliTPCExB*   fgInstance;  //! Instance of this class (singleton implementation)

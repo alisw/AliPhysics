@@ -25,8 +25,9 @@
 
 ClassImp(AliTPCvtpr)
 
-AliTPCvtpr::AliTPCvtpr()
-:fAdc(0),
+AliTPCvtpr::AliTPCvtpr():
+  TObject(),
+  fAdc(0),
   fTime(0),
   fPad(0),
   fRow(0),
@@ -39,14 +40,15 @@ AliTPCvtpr::AliTPCvtpr()
 //
 }
 
-AliTPCvtpr::AliTPCvtpr(Short_t max,Short_t nt,Short_t np,Short_t nr,Double_t x,Double_t y,Double_t t)
-:fAdc(0),
- fTime(0),
- fPad(0),
- fRow(0),
- fX(0),
- fY(0),
- fT(0)
+AliTPCvtpr::AliTPCvtpr(Short_t max,Short_t nt,Short_t np,Short_t nr,Double_t x,Double_t y,Double_t t):
+  TObject(),
+  fAdc(0),
+  fTime(0),
+  fPad(0),
+  fRow(0),
+  fX(0),
+  fY(0),
+  fT(0)
 {
 //
 // another constructor
@@ -60,14 +62,15 @@ AliTPCvtpr::AliTPCvtpr(Short_t max,Short_t nt,Short_t np,Short_t nr,Double_t x,D
   fT=t;
 }
 
-AliTPCvtpr::AliTPCvtpr(const AliTPCvtpr & param)
-:fAdc(0),
- fTime(0),
- fPad(0),
- fRow(0),
- fX(0),
- fY(0),
- fT(0)
+AliTPCvtpr::AliTPCvtpr(const AliTPCvtpr & param):
+  TObject(param),
+  fAdc(0),
+  fTime(0),
+  fPad(0),
+  fRow(0),
+  fX(0),
+  fY(0),
+  fT(0)
 {
 //
 // copy constructor

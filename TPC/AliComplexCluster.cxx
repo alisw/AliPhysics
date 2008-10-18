@@ -124,6 +124,5 @@ AliTPCTrackerPoint& AliTPCTrackerPoint::operator=(const AliTPCTrackerPoint& o){
 
 ClassImp(AliTPCTrackPoint)
 ClassImp(AliTPCTrackPoint2)
-ClassImp(AliTPCTrackPointRef)
   //_______________________________________________________________
 

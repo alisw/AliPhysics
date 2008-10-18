@@ -215,7 +215,7 @@ void AliTPCQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray
 	    fHistRawsOccupancyVsSector
 	      ->Fill(iSec, occupancyROC->GetValue(iRow, iPad));
 
-	    const Int_t nClusters = nclusterROC->GetValue(iRow, iPad);
+	    const Int_t nClusters = TMath::Nint(nclusterROC->GetValue(iRow, iPad));
 	    
 	    if(nClusters>0) {
 	      

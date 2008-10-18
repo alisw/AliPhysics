@@ -15,7 +15,6 @@ class AliTPCReconstructor: public AliReconstructor {
 public:
   AliTPCReconstructor();
   virtual ~AliTPCReconstructor();
-
   virtual void         Reconstruct(TTree* digitsTree, TTree* clustersTree) const;
   virtual void         Reconstruct(AliRawReader* rawReader, TTree* clustersTree) const;
 
@@ -37,6 +36,7 @@ public:
   static void  SetStreamLevel(Int_t level) { fgStreamLevel = level;}
 
 private:
+  AliTPCReconstructor(const AliTPCReconstructor& /*rec*/){};
   AliTPCParam*         GetTPCParam() const;
   static Int_t               fgStreamLevel; // flag for streaming      - for TPC reconstruction
   AliTPCclustererMI*         fClusterer;   // TPC clusterer

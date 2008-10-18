@@ -233,15 +233,6 @@ class AliTPCTrackPoint2: public AliTPCTrackPoint{
 
 
 
-class AliTPCTrackPointRef: public AliTPCTrackPoint{
- public:
-  AliTPCExactPoint & GetExactPoint(){return fEPoint;}
-  AliTPCExactPoint & GetNearestPoint(){return fNPoint;}  
- private:
-  AliTPCExactPoint fEPoint; //exact point belonging to track
-  AliTPCExactPoint fNPoint; //nearest point  
-  ClassDef(AliTPCTrackPointRef,1)  
-};
 
 
 #endif //ALICOMPLEXCLUSTER_H

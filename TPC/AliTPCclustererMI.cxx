@@ -558,7 +558,7 @@ Float_t AliTPCclustererMI::FitMax(Float_t vmatrix[5][5], Float_t y, Float_t z, F
   return max;
 }
 
-void AliTPCclustererMI::AddCluster(AliTPCclusterMI &c, Float_t * matrix, Int_t pos){
+void AliTPCclustererMI::AddCluster(AliTPCclusterMI &c, Float_t * /*matrix*/, Int_t /*pos*/){
   //
   //
   // Transform cluster to the rotated global coordinata

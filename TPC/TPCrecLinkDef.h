@@ -18,7 +18,6 @@
 #pragma link C++ class AliTPCExactPoint+;     // defined in AliComplexCluster.h
 #pragma link C++ class AliTPCTrackPoint+;     // defined in AliComplexCluster.h
 #pragma link C++ class AliTPCTrackPoint2+;    // defined in AliComplexCluster.h
-#pragma link C++ class AliTPCTrackPointRef+;  // defined in AliComplexCluster.h
 
 #pragma link C++ class AliClusters+;
 #pragma link C++ class AliTPCClustersRow+;
