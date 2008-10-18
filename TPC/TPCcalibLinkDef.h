@@ -16,8 +16,6 @@
 #pragma link C++ class  AliTPCFitPad+;
 #pragma link C++ class  AliTPCCalPadRegion+;
 
-#pragma link C++ class  AliTPCSelectorESD+;
-#pragma link C++ class  AliTPCSelectorTracks+;
 #pragma link C++ class  AliAnaTPCTrackBase+;
 #pragma link C++ class  AliTPCcalibBase+;
 #pragma link C++ class  AliTPCcalibCalib+;
@@ -31,6 +29,7 @@
 #pragma link C++ class AliTPCcalibLaser+;
 #pragma link C++ class AliTPCcalibCosmic+;
 #pragma link C++ class AliTPCLaserTrack+;
+#pragma link C++ class AliTPCcalibTime+;
 
 #endif
 
