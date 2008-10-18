@@ -1440,7 +1440,7 @@ Float_t AliTPCClusterParam::QnormPos(Int_t ipad,Bool_t isMax, Float_t pad, Float
 
 
 
-Float_t AliTPCClusterParam::PosCorrection(Int_t type, Int_t ipad,  Float_t pad, Float_t time, Float_t z, Float_t sy2, Float_t sz2, Float_t qm){
+Float_t AliTPCClusterParam::PosCorrection(Int_t type, Int_t ipad,  Float_t pad, Float_t time, Float_t z, Float_t /*sy2*/, Float_t /*sz2*/, Float_t /*qm*/){
 
   //
   // Make postion correction
@@ -1450,9 +1450,6 @@ Float_t AliTPCClusterParam::PosCorrection(Int_t type, Int_t ipad,  Float_t pad, 
   // pad  - float pad number          
   // time - float time bin number
   //    z - z of the cluster
-  // sy2  - shape of the cluster -pad direction
-  // sz2  - s                    - time direction
-  // qm   - maximum charge
   
   //
   //chainres->SetAlias("dp","(-1+(Cl.fZ>0)*2)*((Cl.fPad-int(Cl.fPad))-0.5)");
@@ -1461,9 +1458,6 @@ Float_t AliTPCClusterParam::PosCorrection(Int_t type, Int_t ipad,  Float_t pad, 
   //chainres->SetAlias("st","(sin(dt)-dt)");
   //
   //chainres->SetAlias("di","sqrt(1.-abs(Cl.fZ/250.))");
-  //chainres->SetAlias("dq","sqrt(15./(5+Cl.fMax))");
-  //chainres->SetAlias("sy","(0.32/sqrt(0.01^2+Cl.fSigmaY2))");
-  //chainres->SetAlias("sz","(0.32/sqrt(0.01^2+Cl.fSigmaZ2))");
 
   //
   // Derived variables
@@ -1473,10 +1467,7 @@ Float_t AliTPCClusterParam::PosCorrection(Int_t type, Int_t ipad,  Float_t pad, 
   Double_t sp = (TMath::Sin(dp*TMath::Pi())-dp*TMath::Pi());
   Double_t st = (TMath::Sin(dt)-dt);
   //
-  Double_t di = TMath::Sqrt(1.-TMath::Abs(z/250.));
-  Double_t dq = TMath::Sqrt(15./(5.+qm));
-  Double_t sy = (0.32/TMath::Sqrt(0.01*0.01+sy2));
-  Double_t sz = (0.32/TMath::Sqrt(0.01*0.01+sz2));
+  Double_t di = TMath::Sqrt(TMath::Abs(1.-TMath::Abs(z/250.)));
   //
   //
   //
@@ -1488,32 +1479,25 @@ Float_t AliTPCClusterParam::PosCorrection(Int_t type, Int_t ipad,  Float_t pad, 
   }
   TVectorD &param = *pvec;
   //
-  Double_t result=param[0];
+  Double_t result=0;
   Int_t index =1;
 
   if (type==0){
     // y corr
     result+=(dp)*param[index++];             //1
     result+=(dp)*di*param[index++];          //2
-    result+=(dp)*dq*param[index++];          //3
-    result+=(dp)*sy*param[index++];          //4
     //
-    result+=(sp)*param[index++];             //5
-    result+=(sp)*di*param[index++];          //6
-    result+=(sp)*dq*param[index++];          //7
-    result+=(sp)*sy*param[index++];          //8
+    result+=(sp)*param[index++];             //3
+    result+=(sp)*di*param[index++];          //4
   }
   if (type==1){
     result+=(dt)*param[index++];             //1
     result+=(dt)*di*param[index++];          //2
-    result+=(dt)*dq*param[index++];          //3
-    result+=(dt)*sz*param[index++];          //4
     //
-    result+=(st)*param[index++];             //5
-    result+=(st)*di*param[index++];          //6
-    result+=(st)*dq*param[index++];          //7
-    result+=(st)*sz*param[index++];          //8
+    result+=(st)*param[index++];             //3
+    result+=(st)*di*param[index++];          //4
   }
+  if (TMath::Abs(result)>0.05) return 0;
   return result;
 }
 
