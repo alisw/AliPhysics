@@ -61,6 +61,7 @@ private:
   // cuts
   //
   Float_t fCutMaxD;     // maximal distance in rfi ditection
+  Float_t fCutMaxDz;     // maximal distance in z ditection
   Float_t fCutTheta;    // maximal distance in theta ditection
   Float_t fCutMinDir;   // direction vector products
 

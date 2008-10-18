@@ -82,6 +82,7 @@ AliTPCcalibCosmic::AliTPCcalibCosmic()
    fDeDxMIP(0),
    fMIPvalue(1), 
    fCutMaxD(5),        // maximal distance in rfi ditection
+   fCutMaxDz(40),      // maximal distance in z ditection
    fCutTheta(0.03),    // maximal distan theta
    fCutMinDir(-0.99)   // direction vector products
 {  
@@ -99,7 +100,8 @@ AliTPCcalibCosmic::AliTPCcalibCosmic(const Text_t *name, const Text_t *title)
    fDeDx(0),
    fDeDxMIP(0),
    fMIPvalue(1),
-   fCutMaxD(5),        // maximal distance in rfi ditection
+   fCutMaxD(5),        // maximal distance in rfi ditection 
+   fCutMaxDz(40),      // maximal distance in z ditection
    fCutTheta(0.03),    // maximal distan theta
    fCutMinDir(-0.99)   // direction vector products
 {  
@@ -287,6 +289,7 @@ void AliTPCcalibCosmic::FindPairs(AliESDEvent *event) {
       //      
       param0.GetDZ(0,0,0,bz,dvertex0);
       param1.GetDZ(0,0,0,bz,dvertex1);
+      if (TMath::Abs(param0.GetZ()-param1.GetZ())>fCutMaxDz) continue;
       //
       Double_t xyz0[3];//,pxyz0[3];
       Double_t xyz1[3];//,pxyz1[3];
@@ -455,7 +458,9 @@ Bool_t  AliTPCcalibCosmic::IsPair(AliExternalTrackParam *tr0, AliExternalTrackPa
   const Double_t *p0 = tr0->GetParameter();
   const Double_t *p1 = tr1->GetParameter();
   if (TMath::Abs(p0[3]+p1[3])>fCutTheta) return kFALSE;
+  if (TMath::Abs(p0[1]-p1[1])>fCutMaxDz) return kFALSE;
   if (TMath::Abs(p0[0]+p1[0])>fCutMaxD)  return kFALSE;
+  
   Double_t d0[3], d1[3];
   tr0->GetDirection(d0);    
   tr1->GetDirection(d1);       
