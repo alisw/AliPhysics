@@ -32,7 +32,7 @@
   gSystem->Load("libNetx.so");
   //Raw data example
   char *mask = "20225";
-  char *path = "/alice/data/2008/"
+  char *path = "/alice/data/2008/LHC08d"
 
   .L $ALICE_ROOT/TPC/macros/testTPC/AlienToolkit.cxx+
   //
@@ -54,7 +54,10 @@ public:
   void             StageCastor();
   void             LocalCopy(const char* destination);
   void             RemoteCopy(const char* destination="root://gsiaf.gsi.de:1094/", Int_t maxfiles=20);
+  void             RemoteCopyAlien(const char* destination="root://gsiaf.gsi.de:1094/", Int_t maxfiles=20);
+
   void             PrintPFN();
+  void             PrintLFN();
   void             MakeJobList(const  char * outname, const char *outputPrefix,  const char *action, const char *suffix);
   static Bool_t    IsDir(const char * name);
   static Bool_t    IsFile(const char * name);
@@ -239,6 +242,22 @@ void              AlienToolkit::PrintPFN(){
   }
 }
 
+void              AlienToolkit::PrintLFN(){
+  //
+  //
+  // 
+  Int_t entries = fInfoArray.GetEntries();
+  for (Int_t i=0; i<entries;i++){
+    TMap &map = *((TMap*)fInfoArray.At(i));
+    TObjString *lfn = (TObjString*)map("alienLFN");
+    TObjString *pfn = (TObjString*)map("alienSURL");
+    if (!lfn) continue;
+    if (!pfn) continue;
+    printf("%s\n",lfn->String().Data());
+  }
+}
+
+
 void   AlienToolkit::MakeJobList(const  char * outname, const char *outputPrefix, const char *action, const char *suffix){
   //
   //
@@ -297,6 +316,45 @@ void AlienToolkit::RemoteCopy(const char *destination,Int_t maxfiles){
     
     (*aout)<< "mkdirhier "<<gSystem->DirName(dname.Data())<<endl;
     (*aout)<<"xrdcp -d 1 "<<pfn->String().Data()<<" "<<dname.Data()<<endl;
+    if (dnames.Contains(".zip")){
+      (*aout)<<"unzip "<<pfn->String().Data()<<endl;
+    }
+  }
+  aout->close();
+  //gSystem->Exec("aliensh file:stage.txt");
+}
+
+void AlienToolkit::RemoteCopyAlien(const char *destination,Int_t maxfiles){
+  //
+  // Copy selected files to the destination directory
+  // the LFN path name translated to the directory name replacing
+  // separtor - the flat structure is created 
+ 
+  Int_t entries = fInfoArray.GetEntries();
+  ofstream *aout=0;
+  for (Int_t i=0; i<entries;i++){
+    if (i%maxfiles==0){
+      if (aout) aout->close();
+      aout = new ofstream(Form("stage_%d.sh",i/maxfiles));
+      (*aout)<<"!/bin/bash\n";
+      (*aout)<<"source ~/.balice\n";
+      (*aout)<<"source ~/.aliensetup\n";      
+    }
+    TMap &map = *((TMap*)fInfoArray.At(i));
+    TObjString *pfn = (TObjString*)map("alienSURL");
+    TObjString *lfn = (TObjString*)map("alienLFN");
+    if (!pfn) continue;
+    if (!lfn) continue;
+    TString dnames=lfn->String().Data();
+    TString dname=destination;
+    dname+=dnames;
+    (*aout)<< " echo Copy"<<gSystem->DirName(dname.Data())<<endl;
+    (*aout)<< "mkdirhier "<<gSystem->DirName(dname.Data())<<endl;
+    (*aout)<<"alien_cp  alien://"<<lfn->String().Data()<<" "<<dname.Data()<<endl;
+    if (dnames.Contains(".zip")){
+      (*aout)<< "cd  "<<gSystem->DirName(dname.Data())<<endl;
+      (*aout)<<"unzip "<<gSystem->BaseName(dname.Data())<<endl;
+    }
   }
   aout->close();
   //gSystem->Exec("aliensh file:stage.txt");

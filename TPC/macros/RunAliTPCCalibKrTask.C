@@ -1,12 +1,56 @@
-
 /*
+  Example usage:
+
+  0. Load neccessary libraries
+  
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libTPCcalib");
+  gSystem->Load("libXrdClient.so");
+  gSystem->Load("libNetx.so");
+  TGrid::Connect("alien://",0,0,"t");
+  gSystem->Load("$ROOTSYS/lib/libXrdClient.so");
+  //
+  // 1. Make list of the files 
+  //
+  .L $ALICE_ROOT/TPC/macros/testTPC/AlienToolkit.cxx+
+  gSystem->Load("libXrdClient.so");
+  gSystem->Load("libNetx.so");
+  AlienToolkit toolkit;
+  char *path = "/alice/cern.ch/user/a/amatyja/alice/data/"
+  toolkit.MakeCollection(path,"32129*Krypton.root");
+  toolkit.MakeCollection(path,"32231*Krypton.root");
+  toolkit.MakeCollection(path,"32284*Krypton.root");
+  toolkit.PrintPFN(); > list.txt
+
+  //
+  // 2. Initialization of proof
+  //
+  TProofMgr * proofmgr = TProof::Mgr("lxgrid5.gsi.de");
+  TProof * proof = proofmgr->CreateSession();
+  proof->SetParameter("PROOF_MaxSlavesPerNode", (Long_t)1000);
+  .L /u/miranov/macros/ProofEnableAliRoot.C
+  ProofEnableAliRoot("/usr/local/grid/AliRoot/HEAD0108");
+  gProof->Exec("gSystem->Load(\"libANALYSIS.so\")",kTRUE);
+  gProof->Exec("gSystem->Load(\"libSTAT.so\")",kTRUE);
+  gProof->Exec("gSystem->Load(\"libTPCcalib.so\")",kTRUE);
+
+  //
+  // 3 Run analysis on PROOF
+  //
+  //
+  // Create chain of input files
+  //
+  gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");
+  gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+");
+  .L $ALICE_ROOT/TPC/macros/RunAliTPCCalibKrTask.C
+  RunAliTPCCalibKrTask(kTRUE);
+  
+  
   //..
   //
   //
-  
+
   //Example usage 
   TFile f("KrHisto.root");
   AliTPCCalibKr *kr = f.Get("AliTPCCalibKr");
@@ -25,33 +69,18 @@ TTree * tree = viewer->GetViewer()->GetTree();
 
 tree->SetAlias("cutAll","abs(fitNormChi2.fElements-2.)<1.8&&entries.fElements/entries_Median.fElements<4&&entries.fElements/entries_Median.fElements>0.4&&fitRMS.fElements/fitMean.fElements<0.09&&fitRMS.fElements/fitMean.fElements>0.02")
 
+*/
 
+TChain * chain = 0;
 
- */
-
-
-void RunAliTPCCalibKrTask(const char* list="KrClusters_250508.txt",Bool_t bProof = kFALSE)
+void RunAliTPCCalibKrTask(Bool_t bProof = kFALSE)
 {
-
-  if(bProof) {
-    TProof *proof = TProof::Open("jacek@gsiaf.gsi.de");
-    gProof->GetManager()->SetROOTVersion("5.18/00a");
-
-    // Proof Enable Libraries
-    gROOT->LoadMacro("ProofEnableAliRoot.C");
-    ProofEnableAliRoot("/d/alice11/jacek/alice/x86_64/AliRoot/HEAD");
-  }
-
   //
-  // Create chain of input files
-  //
-  gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");
-  gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx++");
-  AliXRDPROOFtoolkit tool;
-
-  // -- Make chain of files
-  TChain * chain = tool.MakeChain(list,"Kr","",2,0);
-  chain->SetBranchStatus("Cl.fCluster",kFALSE);
+  AliXRDPROOFtoolkit tool;  
+  chain = tool.MakeChain("list.txt","Kr","",20000,0);
+  chain->Lookup();
+  chain->SetBranchStatus("Cl.fCluster",kFALSE);  
+  
   //
   // Create the analysis manager
   //
@@ -74,11 +103,18 @@ void RunAliTPCCalibKrTask(const char* list="KrClusters_250508.txt",Bool_t bProof
   // Attach output
   cOutput = mgr->CreateContainer("cOutput", TList::Class(), AliAnalysisManager::kOutputContainer,"outHistFile.root");
   mgr->ConnectOutput(task, 0, cOutput);
-
+  //
+  cOutput->SetSpecialOutput(kTRUE);
+  cOutput->SetFileName("CalibObjectFile.root");
+  //
   // Run analysis
-  mgr->InitAnalysis();
+  if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
-  if(bProof) mgr->StartAnalysis("proof", chain);
+  mgr->SetDebugLevel(1);
+  
+  if(bProof) {
+    mgr->StartAnalysis("proof", chain);
+  }
   else mgr->StartAnalysis("local", chain);
 }
 

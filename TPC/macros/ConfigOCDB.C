@@ -6,12 +6,13 @@
 //
 
 
+
 void ConfigOCDB(){
-  //
   // 
   //
   // import geometry
   //
+
   printf("SETUP OCBD for PROOF\n");
   TGeoManager::Import("/u/miranov/proof/geometry.root");
   AliGeomManager::LoadGeometry("/u/miranov/proof/geometry.root");
@@ -24,17 +25,55 @@ void ConfigOCDB(){
   //
   //
   //
-  AliCDBManager::Instance()->SetRun(1);
   AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
-  AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/Parameters","local://$ALICE_ROOT/TPC/Calib/Parameters");
+  AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/Parameters","local://$ALICE_ROOT");
+  AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/ClusterParam","local://$ALICE_ROOT");
+  AliCDBManager::Instance()->SetSpecificStorage("GRP/GRP/Data","local:///lustre_alpha/alice/alien/alice/data/2008/LHC08d/OCDB/");
+  AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/Temperature","local:///lustre_alpha/alice/alien/alice/data/2008/LHC08d/OCDB/");
+  AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/Goofie","local:///lustre_alpha/alice/alien/alice/data/2008/LHC08d/OCDB/");
 
-  AliTPCClusterParam * param = AliTPCcalibDB::Instance()->GetClusterParam();
-  AliTPCClusterParam::SetInstance(param);
+  AliCDBManager::Instance()->SetRun(1);
+
+  AliTPCClusterParam * paramCl = AliTPCcalibDB::Instance()->GetClusterParam(); 
+  AliTPCParam   * paramTPC = AliTPCcalibDB::Instance()->GetParameters();
+  AliTPCClusterParam::SetInstance(paramCl);
+  //paramTPC->Dump();
+  
   AliTPCcalibDB::Instance()->SetExBField(0);
   //
   //
   //
   printf("END of SETUP OCBD for PROOF\n");
+}
 
 
+void ConfigAlien(){
+  //
+  // Setup-activate alien
+  //
+
+  //myvar=342
+  //while [ $myvar -ne 360 ] ; do  echo enable alien on lxb$myvar; lsrun -m lxb$myvar  /u/miranov/.aliensetup;  myvar=$(( $myvar + 1 )) ; echo $myvar ; done 
+  gSystem->Exec("/u/miranov/.aliensetup >setup.log"); 
+  //ifstream in;
+  //in.open("path.txt");
+  
+  TString envString;
+  
+  gSystem->Setenv("LD_LIBRARY_PATH",envString.Data());
+  gSystem->Setenv("GBBOX_ENVFILE","/tmp/xxxxxxx");
+  printf("LOAD LIBRARIES start\n\n\n");
+  gSystem->Load("libANALYSIS.so");
+  gSystem->Load("libSTAT.so");
+  gSystem->Load("libTPCcalib.so");
+  //
+  gSystem->Load("libXrdClient.so");
+  gSystem->Load("libNetx.so");
+  printf("LOAD LIBRARIES end\n\n\n");
+  TGrid * alien = TGrid::Connect("alien://",0,0,"t");
+  if (alien) {
+    printf("Alien activated\n");
+  }else{
+    printf("Alien not activated\n");
+  }
 }

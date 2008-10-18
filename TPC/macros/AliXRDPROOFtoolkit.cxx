@@ -67,7 +67,7 @@ AliXRDPROOFtoolkit::AliXRDPROOFtoolkit () : TObject ()
   //
   // Default  -GSI specific setup
   //
-  for(Int_t i=255;i<269;i++)
+  for(Int_t i=255;i<300;i++)
   //for(Int_t i=259;i<260;i++)
     listeMachine.push_back(new TString(Form("lxb%d.gsi.de", i)));
   fUserGroup = gSystem->GetUserInfo();
@@ -605,9 +605,11 @@ Int_t  AliXRDPROOFtoolkit::CheckTreeInFile(const char*fileName,const char*treeNa
     if (!branch) {file->Close(); delete file; return -4;}
   }
   //
+  if (debugLevel==1 &&  tree->GetEntries()==0 ) return 1; //empty 
+
   tree->SetBranchStatus("*",1);
   try {
-    if (debugLevel>0){
+    if (debugLevel>1){
       Int_t entries = tree->GetEntries();
       for (Int_t i=0;i<entries; i++){
 	if (branch) branch->GetEntry(i);
