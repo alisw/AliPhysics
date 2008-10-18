@@ -750,10 +750,10 @@ Float_t AliTPCcalibDB::GetGain(Int_t sector, Int_t row, Int_t pad){
 AliDCSSensor * AliTPCcalibDB::GetPressureSensor(Int_t run){
   //
   //
-  AliGRPObject * grpRun = ( AliGRPObject *)fGRPArray.At(run);
+  AliGRPObject * grpRun = dynamic_cast<AliGRPObject *>(fGRPArray.At(run));
   if (!grpRun) {
     GetRunInformations(run);
-    grpRun = ( AliGRPObject *)fGRPArray.At(run);
+    grpRun = dynamic_cast<AliGRPObject *>(fGRPArray.At(run));
     if (!grpRun) return 0; 
   }
   AliDCSSensor * sensor = grpRun->GetCavernAtmosPressure();
