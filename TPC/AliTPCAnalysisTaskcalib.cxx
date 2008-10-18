@@ -61,7 +61,7 @@ AliTPCAnalysisTaskcalib::AliTPCAnalysisTaskcalib(const char *name)
   DefineInput(0, TChain::Class());
   DefineOutput(0, TObjArray::Class());
   fCalibJobs = new TObjArray(0);
-  fCalibJobs->SetOwner(kFALSE);
+  fCalibJobs->SetOwner(kTRUE);
 }
 
 AliTPCAnalysisTaskcalib::~AliTPCAnalysisTaskcalib() {
@@ -127,6 +127,7 @@ void AliTPCAnalysisTaskcalib::CreateOutputObjects() {
   //
   //
   //
+  OpenFile(0, "RECREATE");
 }
 void AliTPCAnalysisTaskcalib::Terminate(Option_t */*option*/) {
   //
@@ -138,6 +139,7 @@ void AliTPCAnalysisTaskcalib::Terminate(Option_t */*option*/) {
     job = (AliTPCcalibBase*)fCalibJobs->UncheckedAt(i);
     if (job) job->Terminate();
   }
+  
 }
 
 void AliTPCAnalysisTaskcalib::FinishTaskOutput()
@@ -159,7 +161,10 @@ void AliTPCAnalysisTaskcalib::Process(AliESDEvent *event) {
   Int_t njobs = fCalibJobs->GetEntriesFast();
   for (Int_t i=0;i<njobs;i++){
     job = (AliTPCcalibBase*)fCalibJobs->UncheckedAt(i);
-    if (job) job->Process(event);
+    if (job) {
+      job->UpdateEventInfo(event);
+      job->Process(event);
+    }
   }
 }
 
@@ -219,4 +224,5 @@ void AliTPCAnalysisTaskcalib::RegisterDebugOutput(){
     job = (AliTPCcalibBase*)fCalibJobs->UncheckedAt(i);
     if (job) job->RegisterDebugOutput(fDebugOutputPath.Data());
   }
+ 
 }
