@@ -43,6 +43,13 @@ cal->GetHistVdrift()->Projection(1,0)->Draw()
 
     4. Analysis using debug streamers.    
 
+    gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");
+    gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+")
+    AliXRDPROOFtoolkit tool;
+    TChain * chainTime = tool.MakeChain("time.txt","timeInfo",0,10200);
+    chainTime->Lookup();
+
+
 */
 
 
@@ -81,18 +88,28 @@ cal->GetHistVdrift()->Projection(1,0)->Draw()
 
 #include "TTreeStream.h"
 #include "AliTPCTracklet.h"
+#include "TTimeStamp.h"
+#include "AliTPCcalibDB.h"
+#include "AliTPCcalibLaser.h"
 
 ClassImp(AliTPCcalibTime)
 
 
 AliTPCcalibTime::AliTPCcalibTime() 
-  :AliTPCcalibBase(),
+  :AliTPCcalibBase(), 
+   fTriggerMask(0),
    fHistDeDxTgl(0),
    fHistDeDx(0),
    fHistVdrift(0),
    fIntegrationTimeDeDx(0),
-   fIntegrationTimeVdrift(0),
+   fIntegrationTimeVdrift(0),  
+   fLaser(0),       // pointer to laser calibration
+   fDz(0),          // current delta z
+   fdEdx(0),        // current dEdx
+   fdEdxRatio(0),   // current dEdx ratio
+   fTl(0),          // current tan(lambda)
    fCutMaxD(5),        // maximal distance in rfi ditection
+   fCutMaxDz(20),        // maximal distance in rfi ditection
    fCutTheta(0.03),    // maximal distan theta
    fCutMinDir(-0.99)   // direction vector products
 
@@ -108,8 +125,14 @@ AliTPCcalibTime::AliTPCcalibTime(const Text_t *name, const Text_t *title, ULong6
    fHistDeDx(0),
    fHistVdrift(0),
    fIntegrationTimeDeDx(0),
-   fIntegrationTimeVdrift(0),
+   fIntegrationTimeVdrift(0),  
+   fLaser(0),       // pointer to laser calibration
+   fDz(0),          // current delta z
+   fdEdx(0),        // current dEdx
+   fdEdxRatio(0),   // current dEdx ratio
+   fTl(0),          // current tan(lambda)
    fCutMaxD(5),        // maximal distance in rfi ditection
+   fCutMaxDz(20),        // maximal distance in rfi ditection
    fCutTheta(0.03),    // maximal distan theta
    fCutMinDir(-0.99)   // direction vector products
 {
@@ -150,14 +173,78 @@ AliTPCcalibTime::~AliTPCcalibTime(){
   //
   //
 }
+void AliTPCcalibTime::ResetCurrent(){
+  //
+  // reset current values
+  //
+  fDz=0;          // current delta z
+  fdEdx=0;        // current dEdx
+  fdEdxRatio=0;   // current dEdx ratio
+  fTl=0;          // current tan(lambda)
+
+}
+
 
 void AliTPCcalibTime::Process(AliESDEvent *event) {
   //
   //
   //
-  
+  Int_t ntracks=event->GetNumberOfTracks();
+  if (ntracks<2) return;
+  ResetCurrent();
+  //
   ProcessCosmic(event);
-
+  if (fTrigger==16){
+    if (!fLaser) fLaser =  new AliTPCcalibLaser("laserTPC","laserTPC",kFALSE);
+    fLaser->Process(event);
+  }
+  //  
+  // fill debug streamer
+  if (fStreamLevel>0 && fDz!=0){
+    TTreeSRedirector *cstream = GetDebugStreamer();
+    if (cstream){
+      TTimeStamp tstamp(fTime);
+      Float_t valuePressure0  = AliTPCcalibDB::GetPressure(tstamp,fRun,0);
+      Float_t valuePressure1 = AliTPCcalibDB::GetPressure(tstamp,fRun,1);
+      Double_t ptrelative0   = AliTPCcalibDB::GetPTRelative(tstamp,fRun,0);
+      Double_t ptrelative1   = AliTPCcalibDB::GetPTRelative(tstamp,fRun,1);
+      Double_t temp0         = AliTPCcalibDB::GetTemperature(tstamp,fRun,0);
+      Double_t temp1         = AliTPCcalibDB::GetTemperature(tstamp,fRun,1);
+      TVectorD vdriftA, vdriftC,vdriftAC;
+      if (fLaser && fTrigger==16) {
+	if (fLaser->fFitAside)  vdriftA=*(fLaser->fFitAside);
+	if (fLaser->fFitCside)  vdriftC=*(fLaser->fFitCside);
+	if (fLaser->fFitACside) vdriftAC=*(fLaser->fFitACside);
+      }
+      (*cstream)<<"timeInfo"<<
+	"run="<<fRun<<              //  run number
+	"event="<<fEvent<<          //  event number
+	"time="<<fTime<<            //  time stamp of event
+	"trigger="<<fTrigger<<      //  trigger
+	"mag="<<fMagF<<             //  magnetic field
+	// Environment values
+	"press0="<<valuePressure0<<
+	"press1="<<valuePressure1<<
+	"pt0="<<ptrelative0<<
+	"pt1="<<ptrelative1<<
+	"temp0="<<temp0<<
+	"temp1="<<temp1<<
+	//
+	// accumulated values
+	//
+	"fDz="<<fDz<<          //! current delta z
+	"fdEdx="<<fdEdx<<        //! current dEdx
+	"fdEdxRatio="<<fdEdxRatio<<   //! current dEdx ratio
+	"fTl="<<fTl<<          //! current tan(lambda)
+	//
+	//laser
+	//
+	"laserA.="<<&vdriftA<<
+	"laserC.="<<&vdriftC<<
+	"laserAC.="<<&vdriftAC<<
+	"\n";
+    }
+  }
 }
 
 
@@ -218,7 +305,10 @@ void AliTPCcalibTime::ProcessCosmic(AliESDEvent *event) {
        Double_t meanP = 0.5*(trackIn->GetP() + trackOut->GetP());
        Double_t TPCsignal = seed->CookdEdxNorm(0.0,0.6,1,0,159,0x0,kTRUE,kTRUE);
        Double_t vecDeDx[2] = {time, TPCsignal};
-       if (meanP > 12) fHistDeDx->Fill(vecDeDx);
+       if (meanP > 12) {
+	 fdEdx = TPCsignal;
+	 fHistDeDx->Fill(vecDeDx);
+       }
      }
    }
   }
@@ -302,12 +392,18 @@ void AliTPCcalibTime::ProcessCosmic(AliESDEvent *event) {
        if (isPair && z0>0 && z0inner>0 && z1<0 && z1inner<0) {
 	 Double_t vecVdrift[2] = {time, param0.GetZ() - param1.GetZ()};
 	 
-	 if (track0->GetTPCNcls() > 80) fHistVdrift->Fill(vecVdrift);
+	 if (track0->GetTPCNcls() > 80) {
+	   fHistVdrift->Fill(vecVdrift);
+	   fDz = param0.GetZ() - param1.GetZ();
+	 }
        }
        if (isPair && z0 > 0 && z1 > 0) {
 	 if (track1->GetTPCNcls()> 110 && track0->GetTPCNcls()> 110 && seed1->CookdEdxNorm(0,0.6,1,0,159,0,kFALSE,kTRUE) > 0) {
+	   Float_t dedxratio = seed0->CookdEdxNorm(0,0.6,1,0,159,0,kFALSE,kTRUE)/seed1->CookdEdxNorm(0,0.6,1,0,159,0,kFALSE,kTRUE);
 	   Double_t vecDeDxTgl[3] = {time, track0->GetTgl(), seed0->CookdEdxNorm(0,0.6,1,0,159,0,kFALSE,kTRUE)/seed1->CookdEdxNorm(0,0.6,1,0,159,0,kFALSE,kTRUE)};
 	   fHistDeDxTgl->Fill(vecDeDxTgl);
+	   fdEdxRatio = dedxratio;
+	   fTl = track0->GetTgl() ;
 	 }
        }
        
@@ -371,6 +467,7 @@ Bool_t  AliTPCcalibTime::IsPair(AliExternalTrackParam *tr0, AliExternalTrackPara
   const Double_t *p1 = tr1->GetParameter();
   if (TMath::Abs(p0[3]+p1[3])>fCutTheta) return kFALSE;
   if (TMath::Abs(p0[0]+p1[0])>fCutMaxD)  return kFALSE;
+  if (TMath::Abs(p0[1]-p1[1])>fCutMaxDz)  return kFALSE;
   Double_t d0[3], d1[3];
   tr0->GetDirection(d0);    
   tr1->GetDirection(d1);       

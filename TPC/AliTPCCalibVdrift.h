@@ -15,11 +15,18 @@ class TGraph;
 class AliTPCCalibVdrift : public TNamed {
 
 public:
-  AliTPCCalibVdrift(AliTPCSensorTempArray *SensTemp, TObject *SensPres, TObject *SensGasComp);
+  AliTPCCalibVdrift(AliTPCSensorTempArray *SensTemp, AliDCSSensor *SensPres, TObject *SensGasComp);
   AliTPCCalibVdrift(const AliTPCCalibVdrift& source);
   virtual ~AliTPCCalibVdrift();
   AliTPCCalibVdrift& operator=(const AliTPCCalibVdrift& source);
+  //
+  // Interface for the reconstruction
+  //
+  Double_t GetPTRelative(UInt_t timeSec, Int_t side);
 
+  //
+  // Stefan interfaces - for v drift study
+  //
   Double_t VdriftLinearHyperplaneApprox(Double_t dE, Double_t dT, Double_t dP, Double_t dCco2, Double_t dCn2);
   
   Double_t GetVdriftNominal();
@@ -32,7 +39,8 @@ public:
 protected:
 
   AliTPCSensorTempArray *fSensTemp;   // Temperature sensors 
-  TObject *fSensPres;         // Placeholder for Pressure sensors
+  AliDCSSensor          *fSensPres;   // pressure sensors
+  AliTPCTempMap         *fTempMap;    // Temerature sensor map
   TObject *fSensGasComp;      // placeholder for GasConzentration infos  
   
   ClassDef(AliTPCCalibVdrift,1);

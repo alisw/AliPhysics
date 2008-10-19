@@ -31,7 +31,7 @@
 
 ClassImp(AliTPCCalibVdrift)
 
-  namespace paramDefinitions {
+namespace paramDefinitions {
     
     // Standard Conditions used as origin in the Magbolz simulations
     // Dimesions E [kV/cm], T [K], P [TORR], Cco2 [%], Cn2 [%]
@@ -57,10 +57,11 @@ ClassImp(AliTPCCalibVdrift)
 
 using namespace paramDefinitions;
 
-AliTPCCalibVdrift::AliTPCCalibVdrift(AliTPCSensorTempArray *SensTemp, TObject *SensPres, TObject *SensGasComp):
+AliTPCCalibVdrift::AliTPCCalibVdrift(AliTPCSensorTempArray *SensTemp, AliDCSSensor *SensPres, TObject *SensGasComp):
   TNamed(),
   fSensTemp(0),
   fSensPres(0),
+  fTempMap(0),
   fSensGasComp(0)
 {
   //
@@ -69,6 +70,7 @@ AliTPCCalibVdrift::AliTPCCalibVdrift(AliTPCSensorTempArray *SensTemp, TObject *S
 
   fSensTemp = SensTemp;
   fSensPres = SensPres;
+  fTempMap  = new AliTPCTempMap(fSensTemp);
   fSensGasComp = SensGasComp;
 }
 
@@ -76,6 +78,7 @@ AliTPCCalibVdrift::AliTPCCalibVdrift(const AliTPCCalibVdrift& source) :
   TNamed(source),
   fSensTemp(source.fSensTemp),
   fSensPres(source.fSensPres),
+  fTempMap(source.fTempMap),
   fSensGasComp(source.fSensGasComp)
 {
   //
@@ -100,8 +103,32 @@ AliTPCCalibVdrift::~AliTPCCalibVdrift()
 {
   //
   // AliTPCCalibVdrift destructor
-  //
+  // 
+
 }
+
+Double_t AliTPCCalibVdrift::GetPTRelative(UInt_t timeSec, Int_t side){
+  //
+  // Get Relative difference of p/T for given time stamp
+  // timeSec - absolute time
+  // side    - 0 - A side 1 -C side
+  //
+  TTimeStamp tstamp(timeSec);
+  if (!fSensPres) return 0;
+  Double_t pressure    = fSensPres->GetValue(tstamp);
+  TLinearFitter * fitter = fTempMap->GetLinearFitter(3,side,tstamp);
+  if (!fitter) return 0;
+  TVectorD vec;
+  fitter->GetParameters(vec);
+  delete fitter;
+  if (vec[0]<10) return 0;
+  Double_t  temperature = vec[0]+273.15;
+  Double_t povertMeas = pressure/temperature;
+  const Double_t torrTokPascal = 0.75006;
+  Double_t povertNom =  kstdP/(torrTokPascal*kstdT);
+  return povertMeas/povertNom;
+}
+
 
 //_____________________________________________________________________________
 Double_t AliTPCCalibVdrift::VdriftLinearHyperplaneApprox(Double_t dE, Double_t dT, Double_t dP, Double_t dCco2, Double_t dCn2) 
@@ -137,7 +164,7 @@ Double_t AliTPCCalibVdrift::GetVdriftChange(Double_t x, Double_t y, Double_t z, 
   Double_t dE = 0; //FIXME: eventually include Field-Inhomogenities
 
   // Get Temperature Value ----------------------  
-  AliTPCTempMap *tempMap = new AliTPCTempMap(fSensTemp);
+  AliTPCTempMap *tempMap = fTempMap;
   Double_t tempValue = tempMap->GetTemperature(x, y, z, timeSec);
   Double_t dT = tempValue+273.15 - kstdT;
   
@@ -159,9 +186,7 @@ Double_t AliTPCCalibVdrift::GetVdriftChange(Double_t x, Double_t y, Double_t z, 
   // Calculate change in drift velocity in terms of Vdrift_nominal
   Double_t vdrift = VdriftLinearHyperplaneApprox(dE, dT, dP, dCco2, dCn2); 
   
-  return vdrift;
-    
-  tempMap->~AliTPCTempMap();
+  return vdrift;    
 }
 
 //_____________________________________________________________________________

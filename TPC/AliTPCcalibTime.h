@@ -17,6 +17,7 @@ class THnSparse;
 class TList;
 class AliESDEvent;
 class AliESDtrack;
+class AliTPCcalibLaser;
 
 #include "TTreeStream.h"
 
@@ -41,7 +42,7 @@ public:
   
 
 private:
-
+  void ResetCurrent();                  // reset current values
   ULong64_t fTriggerMask;               // select certain trigger within one run
 
   THnSparse * fHistDeDxTgl;             // dEdx vs. dip angle vs time histogram
@@ -51,9 +52,19 @@ private:
   Float_t fIntegrationTimeDeDx;         // required statistics for each dEdx time bin
   Float_t fIntegrationTimeVdrift;       // required statistics for each Vdrift time bin
 
+  AliTPCcalibLaser * fLaser;            //! laser calibration
+  //
+  // current information
+  //
+  Float_t fDz;          //! current delta z
+  Float_t fdEdx;        //! current dEdx
+  Float_t fdEdxRatio;   //! current dEdx ratio
+  Float_t fTl;          //! current tan(lambda)
+  
   // cuts
   //
   Float_t fCutMaxD;     // maximal distance in rfi ditection
+  Float_t fCutMaxDz;     // maximal distance in z ditection
   Float_t fCutTheta;    // maximal distance in theta ditection
   Float_t fCutMinDir;   // direction vector products
  

@@ -26,6 +26,7 @@ class AliTPCAltroMapping;
 class AliTPCClusterParam;
 class AliDCSSensor;
 class AliDCSSensorArray;
+class AliTPCCalibVdrift;
 //class AliCDBStorage;
 
 class AliTPCcalibDB : public TObject
@@ -51,12 +52,15 @@ class AliTPCcalibDB : public TObject
   AliTPCAltroMapping ** GetMapping(){ return fMapping;}
   AliTPCClusterParam *GetClusterParam(){ return fClusterParam;}
   //
-  static Float_t GetPressure(Int_t timeStamp, Int_t run);
+  //
+  static Float_t GetPressure(Int_t timeStamp, Int_t run, Int_t type=0);
   static Bool_t  GetTemperatureFit(Int_t timeStamp, Int_t run, Int_t side,TVectorD& fit);
   static Float_t GetTemperature(Int_t timeStamp, Int_t run, Int_t side);
-  AliDCSSensor * GetPressureSensor(Int_t run);
+  static Double_t GetPTRelative(UInt_t timeSec, Int_t run,  Int_t side);
+  AliDCSSensor * GetPressureSensor(Int_t run, Int_t type=0);
   AliTPCSensorTempArray * GetTemperatureSensor(Int_t run);
   AliDCSSensorArray *     GetGoofieSensors(Int_t run);
+  AliTPCCalibVdrift *     GetVdrift(Int_t run);
   static Float_t GetGain(Int_t sector, Int_t row, Int_t pad);
   //
   static void     CreateObjectList(const Char_t *filename, TObjArray *calibObjects);
@@ -96,6 +100,7 @@ protected:
   TObjArray      fGRPArray;           //! array of GRPs  -  per run
   TObjArray      fGoofieArray;        //! array of GOOFIE values -per run
   TObjArray      fTemperatureArray;   //! array of temperature sensors - per run
+  TObjArray      fVdriftArray;        //! array of v drift interfaces
   TArrayI        fRunList;            //! run list - indicates try to get the run param
   //
   static AliTPCcalibDB* fgInstance;  // singleton control

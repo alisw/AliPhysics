@@ -545,46 +545,46 @@ gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");
 gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+")
 AliXRDPROOFtoolkit tool; 
 TChain * chain = tool.MakeChain("cosmic.txt","Track0",0,1000000);
-chain->Lookup();
+chainCosmic->Lookup();
 
 TCut cutT("cutT","abs(Tr1.fP[3]+Tr0.fP[3])<0.01");  // OK
 TCut cutD("cutD","abs(Tr0.fP[0]+Tr1.fP[0])<2");     // OK
 TCut cutP1("cutP1","abs(Tr0.fP[1]-Tr1.fP[1])<10");   // OK
 TCut cutPt("cutPt","abs(Tr1.fP[4]+Tr0.fP[4])<0.1&&abs(Tr0.fP[4])+abs(Tr1.fP[4])<10");
 TCut cutN("cutN","min(Orig0.fTPCncls,Orig1.fTPCncls)>100");
-TCut cutA=cutT+cutD+cutPt+cutN+cutP1;
+TCut cutA=cutT+cutD+cutPt+cutN+cutP1+"trigger!=16";
 
 TCut cutS("cutS","Orig0.fIp.fP[1]*Orig1.fIp.fP[1]>0");
 
 //
-chain->Draw(">>listEL",cutA,"entryList");
+chainCosmic->Draw(">>listEL",cutA,"entryList");
 TEntryList *elist = (TEntryList*)gDirectory->Get("listEL");
-chain->SetEntryList(elist);
+chainCosmic->SetEntryList(elist);
 //
-chain->Draw(">>listV40Z100","abs(d0)<40&&abs(v01)<100","entryList");
+chainCosmic->Draw(">>listV40Z100","abs(d0)<40&&abs(v01)<100","entryList");
 TEntryList *elistV40Z100 = (TEntryList*)gDirectory->Get("listV40Z100");
-chain->SetEntryList(elistV40Z100);
+chainCosmic->SetEntryList(elistV40Z100);
 
 //
 // Aliases
 //
-chain->SetAlias("side","(-1+(Tr0.fP[1]>0)*2)");
-chain->SetAlias("hpt","abs(Tr0.fP[4])<0.2");
-chain->SetAlias("signy","(-1+(Tr0.fP[0]>0)*2)");
+chainCosmic->SetAlias("side","(-1+(Tr0.fP[1]>0)*2)");
+chainCosmic->SetAlias("hpt","abs(Tr0.fP[4])<0.2");
+chainCosmic->SetAlias("signy","(-1+(Tr0.fP[0]>0)*2)");
 
-chain->SetAlias("dy","Tr0.fP[0]+Tr1.fP[0]");
-chain->SetAlias("dz","Tr0.fP[1]-Tr1.fP[1]");
-chain->SetAlias("d1pt","Tr0.fP[4]+Tr1.fP[4]");
-chain->SetAlias("dtheta","(Tr0.fP[3]+Tr1.fP[3])");
-chain->SetAlias("dphi","(Tr0.fAlpha-Tr1.fAlpha-pi)");
+chainCosmic->SetAlias("dy","Tr0.fP[0]+Tr1.fP[0]");
+chainCosmic->SetAlias("dz","Tr0.fP[1]-Tr1.fP[1]");
+chainCosmic->SetAlias("d1pt","Tr0.fP[4]+Tr1.fP[4]");
+chainCosmic->SetAlias("dtheta","(Tr0.fP[3]+Tr1.fP[3])");
+chainCosmic->SetAlias("dphi","(Tr0.fAlpha-Tr1.fAlpha-pi)");
 
-chain->SetAlias("mtheta","(Tr0.fP[3]-Tr1.fP[3])*0.5")
-chain->SetAlias("sa","(sin(Tr0.fAlpha+0.))");
-chain->SetAlias("ca","(cos(Tr0.fAlpha+0.))");
+chainCosmic->SetAlias("mtheta","(Tr0.fP[3]-Tr1.fP[3])*0.5")
+chainCosmic->SetAlias("sa","(sin(Tr0.fAlpha+0.))");
+chainCosmic->SetAlias("ca","(cos(Tr0.fAlpha+0.))");
 
 
 
-chain->Draw("dy:sqrt(abs(Tr0.fP[4]))>>hisdyA(5,0,1,50,-1,1)","!crossO&&!crossI&&abs(d0)<40&&Tr0.fP[1]>0");
+chainCosmic->Draw("dy:sqrt(abs(Tr0.fP[4]))>>hisdyA(5,0,1,50,-1,1)","!crossO&&!crossI&&abs(d0)<40&&Tr0.fP[1]>0");
 hisdyA->FitSlicesY();
 hisdyA_2->SetXTitle("#sqrt{1/p_{t}}");
 hisdyA_2->SetYTitle("#sigma_{y}(cm)");
@@ -592,7 +592,7 @@ hisdyA_2->SetTitle("Cosmic - Y matching");
 hisdyA_2->SetMaximum(0.5);
 
 
-chain->Draw("dy:sqrt(abs(Tr0.fP[4]))>>hisdyC(5,0,1,50,-1,1)","!crossO&&!crossI&&abs(d0)<40&&Tr0.fP[1]<0");
+chainCosmic->Draw("dy:sqrt(abs(Tr0.fP[4]))>>hisdyC(5,0,1,50,-1,1)","!crossO&&!crossI&&abs(d0)<40&&Tr0.fP[1]<0");
 hisdyC->FitSlicesY();
 hisdyC_2->SetXTitle("#sqrt{1/p_{t}}");
 hisdyC_2->SetYTitle("#sigma_{y}(cm)");
@@ -602,19 +602,19 @@ hisdyC_2->SetMinimum(0);
 hisdyC_2->SetMarkerStyle(22);
 hisdyA_2->SetMarkerStyle(21);
 hisdyC_2->SetMarkerSize(1.5);
-hisdzA_2->SetMarkerSize(1.5);
+hisdyA_2->SetMarkerSize(1.5);
 hisdyC_2->Draw();
 hisdyA_2->Draw("same");
 gPad->SaveAs("~/Calibration/Cosmic/pic/ymatching.gif")
 
-chain->Draw("dz:sqrt(abs(Tr0.fP[4]))>>hisdzA(5,0,1,50,-1,1)","!crossO&&!crossI&&abs(d0)<40&&Tr0.fP[1]>0");
+chainCosmic->Draw("dz:sqrt(abs(Tr0.fP[4]))>>hisdzA(5,0,1,50,-1,1)","!crossO&&!crossI&&abs(d0)<40&&Tr0.fP[1]>0");
 hisdzA->FitSlicesY();
 hisdzA_2->SetXTitle("#sqrt{1/p_{t}}");
 hisdzA_2->SetYTitle("#sigma_{z}(cm)");
 hisdzA_2->SetTitle("Cosmic - Z matching - A side ");
 hisdzA_2->SetMaximum(0.5);
 
-chain->Draw("dz:sqrt(abs(Tr0.fP[4]))>>hisdzC(5,0,1,50,-1,1)","!crossO&&!crossI&&abs(d0)<40&&Tr0.fP[1]<0");
+chainCosmic->Draw("dz:sqrt(abs(Tr0.fP[4]))>>hisdzC(5,0,1,50,-1,1)","!crossO&&!crossI&&abs(d0)<40&&Tr0.fP[1]<0");
 hisdzC->FitSlicesY();
 hisdzC_2->SetXTitle("#sqrt{1/p_{t}}");
 hisdzC_2->SetYTitle("#sigma_{z}(cm)");
@@ -632,14 +632,14 @@ hisdzA_2->Draw("same");
 //
 // PICTURE 1/pt
 //
-chain->Draw("d1pt:sqrt(abs(Tr0.fP[4]))>>hisd1ptA(5,0,1,30,-0.1,0.1)","!crossO&&!crossI&&abs(d0)<40&&Tr0.fP[1]>0");
+chainCosmic->Draw("d1pt:sqrt(abs(Tr0.fP[4]))>>hisd1ptA(5,0,1,30,-0.1,0.1)","!crossO&&!crossI&&abs(d0)<40&&Tr0.fP[1]>0");
 hisd1ptA->FitSlicesY();
 hisd1ptA_2->SetXTitle("#sqrt{1/p_{t}}");
 hisd1ptA_2->SetYTitle("#sigma_{z}(cm)");
 hisd1ptA_2->SetTitle("Cosmic - Z matching - A side ");
 hisd1ptA_2->SetMaximum(0.5);
 
-chain->Draw("d1pt:sqrt(abs(Tr0.fP[4]))>>hisd1ptC(5,0,1,30,-0.1,0.1)","!crossO&&!crossI&&abs(d0)<40&&Tr0.fP[1]<0");
+chainCosmic->Draw("d1pt:sqrt(abs(Tr0.fP[4]))>>hisd1ptC(5,0,1,30,-0.1,0.1)","!crossO&&!crossI&&abs(d0)<40&&Tr0.fP[1]<0");
 hisd1ptC->FitSlicesY();
 hisd1ptC_2->SetXTitle("#sqrt{1/p_{t}}");
 hisd1ptC_2->SetYTitle("#sigma_{1/pt}(1/GeV)");
@@ -657,14 +657,14 @@ gPad->SaveAs("~/Calibration/Cosmic/pic/1ptmatching.gif")
 //
 // Theta
 //
-chain->Draw("dtheta:sqrt(abs(Tr0.fP[4]))>>hisdthetaA(5,0,1,30,-0.01,0.01)","!crossO&&!crossI&&abs(d0)<40&&Tr0.fP[1]>0");
+chainCosmic->Draw("dtheta:sqrt(abs(Tr0.fP[4]))>>hisdthetaA(5,0,1,30,-0.01,0.01)","!crossO&&!crossI&&abs(d0)<40&&Tr0.fP[1]>0");
 hisdthetaA->FitSlicesY();
 hisdthetaA_2->SetXTitle("#sqrt{1/p_{t}}");
 hisdthetaA_2->SetYTitle("#sigma_{#theta}(cm)");
 hisdthetaA_2->SetTitle("Cosmic - Z matching - A side ");
 hisdthetaA_2->SetMaximum(0.5);
 
-chain->Draw("dtheta:sqrt(abs(Tr0.fP[4]))>>hisdthetaC(5,0,1,30,-0.01,0.01)","!crossO&&!crossI&&abs(d0)<40&&Tr0.fP[1]<0");
+chainCosmic->Draw("dtheta:sqrt(abs(Tr0.fP[4]))>>hisdthetaC(5,0,1,30,-0.01,0.01)","!crossO&&!crossI&&abs(d0)<40&&Tr0.fP[1]<0");
 hisdthetaC->FitSlicesY();
 hisdthetaC_2->SetXTitle("#sqrt{1/p_{t}}");
 hisdthetaC_2->SetYTitle("#sigma_{#theta}(rad)");
@@ -682,14 +682,14 @@ gPad->SaveAs("~/Calibration/Cosmic/pic/thetamatching.gif")
 //
 // Phi
 //
-chain->Draw("dphi:sqrt(abs(Tr0.fP[4]))>>hisdphiA(5,0,1,30,-0.01,0.01)","!crossO&&!crossI&&abs(d0)<40&&Tr0.fP[1]>0");
+chainCosmic->Draw("dphi:sqrt(abs(Tr0.fP[4]))>>hisdphiA(5,0,1,30,-0.01,0.01)","!crossO&&!crossI&&abs(d0)<40&&Tr0.fP[1]>0");
 hisdphiA->FitSlicesY();
 hisdphiA_2->SetXTitle("#sqrt{1/p_{t}}");
 hisdphiA_2->SetYTitle("#sigma_{#phi}(rad)");
 hisdphiA_2->SetTitle("Cosmic - Z matching - A side ");
 hisdphiA_2->SetMaximum(0.5);
 
-chain->Draw("dphi:sqrt(abs(Tr0.fP[4]))>>hisdphiC(5,0,1,30,-0.01,0.01)","!crossO&&!crossI&&abs(d0)<40&&Tr0.fP[1]<0");
+chainCosmic->Draw("dphi:sqrt(abs(Tr0.fP[4]))>>hisdphiC(5,0,1,30,-0.01,0.01)","!crossO&&!crossI&&abs(d0)<40&&Tr0.fP[1]<0");
 hisdphiC->FitSlicesY();
 hisdphiC_2->SetXTitle("#sqrt{1/p_{t}}");
 hisdphiC_2->SetYTitle("#sigma_{#phi}(rad)");
@@ -743,7 +743,7 @@ fstring+="side*sa*mtheta++";
 
 
 TString *strTheta0 = toolkit.FitPlane(chain,"dtheta",fstring->Data(), "hpt&&!crossI&&!crossO", chi2,npoints,fitParamA0,covMatrix,0.8);
-chain->SetAlias("dtheta0",strTheta0.Data());
+chainCosmic->SetAlias("dtheta0",strTheta0.Data());
 strTheta0->Tokenize("+")->Print();
 
 
@@ -774,9 +774,9 @@ strTheta0->Tokenize("+")->Print();
  TMatrixD covMatrix;
  
  //Theta
-chain->SetAlias("dthe","(Tr0.fP[3]+Tr1.fP[3])");
-chain->SetAlias("sign","(-1+(Tr0.fP[1]>0)*2)");
-chain->SetAlias("di","(1-abs(Tr0.fP[1])/250)");
+chainCosmic->SetAlias("dthe","(Tr0.fP[3]+Tr1.fP[3])");
+chainCosmic->SetAlias("sign","(-1+(Tr0.fP[1]>0)*2)");
+chainCosmic->SetAlias("di","(1-abs(Tr0.fP[1])/250)");
 //
 //
 TString strFit="";
@@ -797,8 +797,8 @@ strFit+="cos(Tr0.fAlpha)*Tr0.fP[3]++";         //8
  //					    
  TString * thetaParam = toolkit.FitPlane(chain,"dthe", strFit.Data(),"1", chi2,npoints,fitParam,covMatrix,0.8,0,10000)
  
- chain->SetAlias("corTheta",thetaParam->Data());
- chain->Draw("dthe:Tr0.fP[1]","","",50000);
+ chainCosmic->SetAlias("corTheta",thetaParam->Data());
+ chainCosmic->Draw("dthe:Tr0.fP[1]","","",50000);
 
 
 
@@ -823,12 +823,12 @@ void AliTPCcalibCosmic::dEdxCorrection(){
   gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");
   gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+")
  AliXRDPROOFtoolkit tool; 
-  TChain * chain = tool.MakeChain("cosmic.txt","Track0",0,1000000);
-  chain->Lookup();
+  TChain * chainCosmic = tool.MakeChain("cosmic.txt","Track0",0,1000000);
+  chainCosmic->Lookup();
   
-  chain->Draw(">>listEL",cutA,"entryList");
+  chainCosmic->Draw(">>listEL",cutA,"entryList");
   TEntryList *elist = (TEntryList*)gDirectory->Get("listEL");
-  chain->SetEntryList(elist);
+  chainCosmic->SetEntryList(elist);
 
   .x ~/rootlogon.C
    gSystem->Load("libSTAT.so");
@@ -838,7 +838,7 @@ void AliTPCcalibCosmic::dEdxCorrection(){
   TVectorD fitParam;
   TMatrixD covMatrix;
   
-  chain->Draw("Tr0.fP[4]+Tr1.fP[4]","OK"+cutA);
+  chainCosmic->Draw("Tr0.fP[4]+Tr1.fP[4]","OK"+cutA);
   
   TString strFit;
   strFit+="(Tr0.fP[1]/250)++";
@@ -872,15 +872,15 @@ TCut cutA=cutT+cutD+cutPt+cutN;
 
 
 
-TTree * chain = Track0;
+TTree * chainCosmic = Track0;
 
 
-chain->SetAlias("norm","signalTot0.fElements[3]/signalTot1.fElements[3]");
+chainCosmic->SetAlias("norm","signalTot0.fElements[3]/signalTot1.fElements[3]");
 //
-chain->SetAlias("dr1","(signalTot0.fElements[1]/signalTot0.fElements[3])");
-chain->SetAlias("dr2","(signalTot0.fElements[2]/signalTot0.fElements[3])");
-chain->SetAlias("dr4","(signalTot0.fElements[4]/signalTot0.fElements[3])");
-chain->SetAlias("dr5","(signalTot0.fElements[5]/signalTot0.fElements[3])");
+chainCosmic->SetAlias("dr1","(signalTot0.fElements[1]/signalTot0.fElements[3])");
+chainCosmic->SetAlias("dr2","(signalTot0.fElements[2]/signalTot0.fElements[3])");
+chainCosmic->SetAlias("dr4","(signalTot0.fElements[4]/signalTot0.fElements[3])");
+chainCosmic->SetAlias("dr5","(signalTot0.fElements[5]/signalTot0.fElements[3])");
 
 TString fstring="";  
 fstring+="dr1++";
@@ -899,17 +899,17 @@ fstring+="dr4*dr5++";
 
 TString *strqdedx = toolkit.FitPlane(chain,"norm",fstring->Data(), cutA, chi2,npoints,fitParam,covMatrix,-1,0,200000);
   
-chain->SetAlias("corQT",strqdedx->Data());
+chainCosmic->SetAlias("corQT",strqdedx->Data());
 
 */
 
 
 /*
-  chain->SetProof(kTRUE);
-  chain->Draw("Seed0.CookdEdxNorm(0,0.6,1,0,159,0,kTRUE,kTRUE):Seed0.CookdEdxNorm(0,0.6,1,0,159,0,kFALSE,kTRUE)",""+cutA,"",1000);
+  chainCosmic->SetProof(kTRUE);
+  chainCosmic->Draw("Seed0.CookdEdxNorm(0,0.6,1,0,159,0,kTRUE,kTRUE):Seed0.CookdEdxNorm(0,0.6,1,0,159,0,kFALSE,kTRUE)",""+cutA,"",1000);
 
 
-chain->Draw("Seed0.CookdEdxNorm(0,0.6,1,0,159,0,kTRUE,kTRUE)/Seed1.CookdEdxNorm(0,0.6,1,0,159,0,kTRUE,kTRUE)>>his(100,0.5,1.5)","min(Orig0.fTPCncls,Orig1.fTPCncls)>130"+cutA,"",50000);
+chainCosmic->Draw("Seed0.CookdEdxNorm(0,0.6,1,0,159,0,kTRUE,kTRUE)/Seed1.CookdEdxNorm(0,0.6,1,0,159,0,kTRUE,kTRUE)>>his(100,0.5,1.5)","min(Orig0.fTPCncls,Orig1.fTPCncls)>130"+cutA,"",50000);
 
 */
 

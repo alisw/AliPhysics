@@ -113,6 +113,7 @@ class AliTPCCalDet;
 #include "AliTPCCalibCE.h"
 #include "AliTPCExBFirst.h"
 #include "AliTPCTempMap.h"
+#include "AliTPCCalibVdrift.h"
 
 
 
@@ -173,9 +174,10 @@ AliTPCcalibDB::AliTPCcalibDB():
   fMapping(0),
   fParam(0),
   fClusterParam(0),  
-  fGRPArray(100000),          //! array of GRPs  -  per run  - JUST for calibration studies
-  fGoofieArray(100000),        //! array of GOOFIE values -per run - Just for calibration studies
-  fTemperatureArray(100000),   //! array of temperature sensors - per run - Just for calibration studies
+  fGRPArray(100000),            //! array of GRPs  -  per run  - JUST for calibration studies
+  fGoofieArray(100000),         //! array of GOOFIE values -per run - Just for calibration studies
+  fTemperatureArray(100000),    //! array of temperature sensors - per run - Just for calibration studies
+  fVdriftArray(100000),                 //! array of v drift interfaces
   fRunList(100000)              //! run list - indicates try to get the run param 
 
 {
@@ -203,6 +205,7 @@ AliTPCcalibDB::AliTPCcalibDB(const AliTPCcalibDB& ):
   fGRPArray(0),          //! array of GRPs  -  per run  - JUST for calibration studies
   fGoofieArray(0),        //! array of GOOFIE values -per run - Just for calibration studies
   fTemperatureArray(0),   //! array of temperature sensors - per run - Just for calibration studies
+  fVdriftArray(0),         //! array of v drift interfaces
   fRunList(0)              //! run list - indicates try to get the run param 
 {
   //
@@ -726,7 +729,10 @@ void AliTPCcalibDB::GetRunInformations( Int_t run){
   AliCDBEntry * entry = 0;
   if (run>= fRunList.GetSize()){
     fRunList.Set(run*2+1);
-    fGRPArray.Expand(run*2+1);fGoofieArray.Expand(run*2+1); fTemperatureArray.Expand(run*2+1);
+    fGRPArray.Expand(run*2+1);
+    fGoofieArray.Expand(run*2+1); 
+    fTemperatureArray.Expand(run*2+1);
+    fVdriftArray.Expand(run*2+1);
   }
   if (fRunList[run]>0) return;
   entry = AliCDBManager::Instance()->Get("GRP/GRP/Data",run);
@@ -736,6 +742,13 @@ void AliTPCcalibDB::GetRunInformations( Int_t run){
   entry = AliCDBManager::Instance()->Get("TPC/Calib/Temperature",run);
   if (entry)  fTemperatureArray.AddAt(entry->GetObject(),run);
   fRunList[run]=1;  // sign as used
+
+  AliDCSSensor * press = GetPressureSensor(run);
+  AliTPCSensorTempArray * temp = GetTemperatureSensor(run);
+  if (press && temp){
+    AliTPCCalibVdrift * vdrift = new AliTPCCalibVdrift(temp, press,0);
+    fVdriftArray.AddAt(vdrift,run);
+  }
 }
 
 
@@ -747,7 +760,7 @@ Float_t AliTPCcalibDB::GetGain(Int_t sector, Int_t row, Int_t pad){
   return calPad->GetCalROC(sector)->GetValue(row,pad);
 }
 
-AliDCSSensor * AliTPCcalibDB::GetPressureSensor(Int_t run){
+AliDCSSensor * AliTPCcalibDB::GetPressureSensor(Int_t run, Int_t type){
   //
   //
   AliGRPObject * grpRun = dynamic_cast<AliGRPObject *>(fGRPArray.At(run));
@@ -757,8 +770,8 @@ AliDCSSensor * AliTPCcalibDB::GetPressureSensor(Int_t run){
     if (!grpRun) return 0; 
   }
   AliDCSSensor * sensor = grpRun->GetCavernAtmosPressure();
-  return sensor;
-  
+  if (type==1) sensor = grpRun->GetSurfaceAtmosPressure();
+  return sensor; 
 }
 
 AliTPCSensorTempArray * AliTPCcalibDB::GetTemperatureSensor(Int_t run){
@@ -785,15 +798,27 @@ AliDCSSensorArray * AliTPCcalibDB::GetGoofieSensors(Int_t run){
   return goofieArray;
 }
 
+AliTPCCalibVdrift *     AliTPCcalibDB::GetVdrift(Int_t run){
+  //
+  // Get the interface to the the vdrift 
+  //
+  AliTPCCalibVdrift  * vdrift = (AliTPCCalibVdrift*)fVdriftArray.At(run);
+  if (!vdrift) {
+    GetRunInformations(run);
+    vdrift= (AliTPCCalibVdrift*)fVdriftArray.At(run);
+  }
+  return vdrift;
+}
 
 
 
-Float_t AliTPCcalibDB::GetPressure(Int_t timeStamp, Int_t run){
+
+Float_t AliTPCcalibDB::GetPressure(Int_t timeStamp, Int_t run, Int_t type){
   //
   // GetPressure for given time stamp and runt
   //
   TTimeStamp stamp(timeStamp);
-  AliDCSSensor * sensor = Instance()->GetPressureSensor(run);
+  AliDCSSensor * sensor = Instance()->GetPressureSensor(run,type);
   if (!sensor) return 0;
   if (!sensor->GetFit()) return 0;
   return sensor->GetValue(stamp);
@@ -833,6 +858,17 @@ Float_t AliTPCcalibDB::GetTemperature(Int_t timeStamp, Int_t run, Int_t side){
   }
 }
 
+
+Double_t AliTPCcalibDB::GetPTRelative(UInt_t timeSec, Int_t run, Int_t side){
+  //
+  // Get relative P/T 
+  // time - absolute time
+  // run  - run number
+  // side - 0 - A side   1-C side
+  AliTPCCalibVdrift * vdrift =  Instance()->GetVdrift(run);
+  if (!vdrift) return 0;
+  return vdrift->GetPTRelative(timeSec,side);
+}
 
 
 void AliTPCcalibDB::ProcessEnv(const char * runList){
