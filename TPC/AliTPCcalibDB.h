@@ -51,8 +51,9 @@ class AliTPCcalibDB : public TObject
   AliTPCAltroMapping ** GetMapping(){ return fMapping;}
   AliTPCClusterParam *GetClusterParam(){ return fClusterParam;}
   //
-  Float_t GetPressure(Int_t timeStamp, Int_t run);
-  Bool_t  GetTemperatureFit(Int_t timeStamp, Int_t run, Int_t side,TVectorD& fit);
+  static Float_t GetPressure(Int_t timeStamp, Int_t run);
+  static Bool_t  GetTemperatureFit(Int_t timeStamp, Int_t run, Int_t side,TVectorD& fit);
+  static Float_t GetTemperature(Int_t timeStamp, Int_t run, Int_t side);
   AliDCSSensor * GetPressureSensor(Int_t run);
   AliTPCSensorTempArray * GetTemperatureSensor(Int_t run);
   AliDCSSensorArray *     GetGoofieSensors(Int_t run);

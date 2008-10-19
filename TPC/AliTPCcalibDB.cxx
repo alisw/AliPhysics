@@ -793,7 +793,7 @@ Float_t AliTPCcalibDB::GetPressure(Int_t timeStamp, Int_t run){
   // GetPressure for given time stamp and runt
   //
   TTimeStamp stamp(timeStamp);
-  AliDCSSensor * sensor = GetPressureSensor(run);
+  AliDCSSensor * sensor = Instance()->GetPressureSensor(run);
   if (!sensor) return 0;
   if (!sensor->GetFit()) return 0;
   return sensor->GetValue(stamp);
@@ -804,7 +804,7 @@ Bool_t  AliTPCcalibDB::GetTemperatureFit(Int_t timeStamp, Int_t run, Int_t side,
   //
   //
   TTimeStamp tstamp(timeStamp);
-  AliTPCSensorTempArray* tempArray  = GetTemperatureSensor(run);
+  AliTPCSensorTempArray* tempArray  = Instance()->GetTemperatureSensor(run);
   if (! tempArray) return kFALSE;
   AliTPCTempMap * tempMap = new AliTPCTempMap(tempArray);
   TLinearFitter * fitter = tempMap->GetLinearFitter(3,side,tstamp);
@@ -818,7 +818,20 @@ Bool_t  AliTPCcalibDB::GetTemperatureFit(Int_t timeStamp, Int_t run, Int_t side,
   return kTRUE;
 }
 
-
+Float_t AliTPCcalibDB::GetTemperature(Int_t timeStamp, Int_t run, Int_t side){
+  //
+  //
+  //
+  TVectorD vec;
+  if (side==0) {
+    GetTemperatureFit(timeStamp,run,0,vec);
+    return vec[0];
+  }
+  if (side==1){
+    GetTemperatureFit(timeStamp,run,0,vec);
+    return vec[0];
+  }
+}
 
 
 
