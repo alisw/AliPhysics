@@ -1,5 +1,5 @@
 /**
- * @file rootfilepublisher-sample.C
+ * @file rootfilepublisher.C
  * @brief Macro for testing ROOT-file publishing and writing
  *
  * This macro is a testing/example macro of how to use the RootFilePublisher 
