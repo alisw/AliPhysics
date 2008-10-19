@@ -141,7 +141,7 @@ TLinearFitter *AliTPCTempMap::GetLinearFitter(Int_t type, Int_t side, TTimeStamp
   // absolute time stamp used
   // see AliTPCTempMap::GetLinearFitter(Int_t type, Int_t side, UInt_t timeSec) for details
   //
-  Int_t timeSec = stamp.GetSec()-fTempArray->GetEndTime().GetSec();
+  Int_t timeSec = stamp.GetSec()-fTempArray->GetStartTime().GetSec();
   return GetLinearFitter(type,side,timeSec);
 }
 
