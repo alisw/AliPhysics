@@ -41,7 +41,6 @@ private:
   virtual void   InitRecPoints();  //book cluster QA histo
   virtual void   InitESDs() ;      //book ESD QA histo 
   virtual void   MakeRaws(AliRawReader* rawReader) ;
-  virtual void   MakeRecPoints(TTree * clusters)    ;  //Fill cluster QA histo
   virtual void   MakeESDs(AliESDEvent * esd) ;         //Fill hit QA histo
   virtual void   EndOfDetectorCycle(AliQA::TASKINDEX_t, TObjArray * list) ;
   virtual void   StartOfDetectorCycle() ;

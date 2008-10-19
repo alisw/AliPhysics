@@ -184,12 +184,6 @@ if(rawStream.Next())
 }
 }
 //____________________________________________________________________________
-void AliACORDEQADataMakerRec::MakeRecPoints(TTree * clustersTree)
-{
-  //fills QA histos for clusters
-  // Not needed for ACORDE by now !!!
-}
-//____________________________________________________________________________
 void AliACORDEQADataMakerRec::MakeESDs(AliESDEvent * esd)
 {
   //fills QA histos for ESD
