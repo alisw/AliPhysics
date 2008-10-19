@@ -1,4 +1,3 @@
-
 /**
  * @file rootfilepublisher-sample.C
  * @brief Macro for testing ROOT-file publishing and writing
@@ -35,10 +34,12 @@ void rootfilepublisher(Int_t nEvents=1) {
   // !!! myRootFile.root has to be exchanged with an existing one.
   arg.Form("-objectname HLTesdTree -datatype 'ESD_TREE' 'TPC '-dataspec 0x00000000 -datafile myRootFile.root");
 
-  // -- The AliHLTRootFilePublisher (component Id \em 'ROOTFilePublisher' provides
-  // the given file (see AliHLTRootFilePublisher for more options) to the
-  // subsequent components in the chain.
-  AliHLTConfiguration rootPublisher("RootPublisher", "ROOTFilePublisher", NULL, arg.Data() );
+  // -- The AliHLTRootFilePublisher (Id 'ROOTFilePublisher') is a data source. 
+  //    It provides the given files to the subsequent components in the chain.
+  //    see AliHLTRootFilePublisher for more options
+  AliHLTConfiguration RootPublisher("RootPublisher", "ROOTFilePublisher", NULL, arg.Data() );
+  if (!writerInput.IsNull()) writerInput+=" ";
+  writerInput+="RootPublisher";
 
   // -
   // -- Processing Components can be put in here
@@ -46,8 +47,7 @@ void rootfilepublisher(Int_t nEvents=1) {
 
   // -- The AliHLTRootFileWriter (Id 'ROOTFileWriter') is a data sink. It writes
   // all incoming data blocks to files. Several options available.
-  // AliHLTConfiguration sink1("sink1", "FileWriter", "ESDPublisher", NULL);
-  AliHLTConfiguration rootWriter("RootWriter", "ROOTFileWriter", "RootPublisher","-datafile event");
+  AliHLTConfiguration RootWriter("RootWriter", "ROOTFileWriter", writerInput.Data(),"-datafile event");
 
   // -- Here you specify the top most configuration of the chain. The
   // configuration depends on all the parents. The task lisy is build

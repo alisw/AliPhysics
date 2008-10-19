@@ -44,8 +44,13 @@
  *           AliHLTComponentEnvironment -> AliHLTAnalysisEnvironment
  *   9       added data types for arrays of AliHLTExternalTrackParam sets and
  *           TClonesArrays of AliExternalTrackParam objects.
+ *  10       Changes for information objects neededfor running with offline
+ *           chains and analysis tasks.
+ *           kAliHLTMCObjectDataType added
+ *           kAliHLTDataOriginOffline added
+ *           kAliHLTDataOriginHLT added
  */
-#define ALIHLT_DATA_TYPES_VERSION 9
+#define ALIHLT_DATA_TYPES_VERSION 10
 
 //////////////////////////////////////////////////////////////////////////
 //
@@ -55,7 +60,7 @@
 // the operator|
 //
 // AliHLTComponentDataType dt;
-// dt = kAliHLTDataTypeDDLRaw | gkAliHLTDataOriginTPC;
+// dt = kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTPC;
 //
 //////////////////////////////////////////////////////////////////////////
 
@@ -83,6 +88,17 @@ const int kAliHLTComponentDataTypefOriginSize=4;
  * @ingroup alihlt_component_datatypes
  */
 extern const char kAliHLTDataOriginOut[kAliHLTComponentDataTypefOriginSize];
+
+/** Data origin HLT, used for HLT specifc data 
+ *  in offline chains. This not a bug!
+ * @ingroup alihlt_component_datatypes
+ */
+extern const char kAliHLTDataOriginHLT[kAliHLTComponentDataTypefOriginSize];
+
+/** Data origin Offline 
+ * @ingroup alihlt_component_datatypes
+ */
+extern const char kAliHLTDataOriginOffline[kAliHLTComponentDataTypefOriginSize];
 
 /** Data origin HLT/PubSub private internal 
  * @ingroup alihlt_component_datatypes
@@ -222,6 +238,13 @@ const int kAliHLTComponentDataTypefIDsize=8;
  * @ingroup alihlt_component_datatypes
  */
 # define kAliHLTUpdtDCSDataTypeID  {'U','P','D','T','_','D','C','S'}
+
+/** MC data block
+ * an AliMCEvent object of varying origin
+ * The 'V0' at the end allows a versioning
+ * @ingroup alihlt_component_datatypes
+ */
+# define kAliHLTMCObjectDataTypeID    {'A','L','I','M','C','_','V','0'}
 
 /** ESD data block
  * an AliESD object of varying origin
@@ -778,15 +801,19 @@ extern "C" {
    */
   extern const AliHLTComponentDataType kAliHLTDataTypeDDLRaw;
 
+  /** AliMCEvent object data specification, origin is 'OFFL' 
+   * @ingroup alihlt_component_datatypes
+   */
+  extern const AliHLTComponentDataType kAliHLTDataTypeMCObject;
+
   /** ESD object data specification, origin is 'any' 
    * @ingroup alihlt_component_datatypes
    */
   extern const AliHLTComponentDataType kAliHLTDataTypeESDObject;
 
   /** ESD Tree data specification, origin is 'any' 
-   
-  * @ingroup alihlt_component_datatypes
-  */
+   * @ingroup alihlt_component_datatypes
+   */
   extern const AliHLTComponentDataType kAliHLTDataTypeESDTree;
 
   /** AliRoot TreeD data specification, origin is 'any' 

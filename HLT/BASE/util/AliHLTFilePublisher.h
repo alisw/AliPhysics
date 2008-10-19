@@ -111,7 +111,7 @@ class AliHLTFilePublisher : public AliHLTDataSource  {
   /**
    * Init method.
    */
-  int DoInit( int argc, const char** argv );
+  virtual int DoInit( int argc, const char** argv );
 
   /**
    * Deinit method.
@@ -243,6 +243,7 @@ class AliHLTFilePublisher : public AliHLTDataSource  {
     void Add(TObject* pObj) {fFiles.Add(pObj);}
 
     operator TList&() {return fFiles;}
+    operator TList*() {return &fFiles;}
 
   private:
     /** list of file names for the event */

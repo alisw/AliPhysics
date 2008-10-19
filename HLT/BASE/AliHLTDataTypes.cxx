@@ -79,6 +79,10 @@ const AliHLTComponentDataType kAliHLTDataTypeUpdtDCS = AliHLTComponentDataTypeIn
 const char kAliHLTDDLRawDataTypeIDstring[8] = kAliHLTDDLRawDataTypeID;
 const AliHLTComponentDataType kAliHLTDataTypeDDLRaw = AliHLTComponentDataTypeInitializer(kAliHLTDDLRawDataTypeIDstring, kAliHLTDataOriginAny);
 
+/** MC data specification */
+const char kAliHLTMCObjectDataTypeIDstring[8] = kAliHLTMCObjectDataTypeID;
+const AliHLTComponentDataType kAliHLTDataTypeMCObject = AliHLTComponentDataTypeInitializer(kAliHLTMCObjectDataTypeIDstring, kAliHLTDataOriginOffline);
+
 /** ESD data specification */
 const char kAliHLTESDObjectDataTypeIDstring[8] = kAliHLTESDObjectDataTypeID;
 const AliHLTComponentDataType kAliHLTDataTypeESDObject = AliHLTComponentDataTypeInitializer(kAliHLTESDObjectDataTypeIDstring, kAliHLTDataOriginAny);
@@ -163,6 +167,12 @@ const AliHLTComponentDataType kAliHLTDataTypeExternalTrackParam = AliHLTComponen
 /** HLT out */
 const char kAliHLTDataOriginOut[kAliHLTComponentDataTypefOriginSize]     = {'H','L','T',' '};
 
+/** HLT */
+const char kAliHLTDataOriginHLT[kAliHLTComponentDataTypefOriginSize]     = {'H','L','T',' '};
+
+/** Offline */
+const char kAliHLTDataOriginOffline[kAliHLTComponentDataTypefOriginSize] = {'O','F','F','L'};
+
 /** HLT/PubSub private internal */
 const char kAliHLTDataOriginPrivate[kAliHLTComponentDataTypefOriginSize] = {'P','R','I','V'};
 
@@ -198,3 +208,4 @@ const char kAliHLTDataOriginSample[kAliHLTComponentDataTypefOriginSize]  = {'S',
 
 /** EMCAL */
 const char kAliHLTDataOriginEMCAL[kAliHLTComponentDataTypefOriginSize]   = {'E','M','C','L'};
+

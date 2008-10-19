@@ -4,6 +4,7 @@
 CLASS_HDRS:=  	AliHLTFilePublisher.h \
 		AliHLTFileWriter.h \
 		AliHLTRootFilePublisherComponent.h \
+		AliHLTESDMCEventPublisherComponent.h \
 		AliHLTRootFileWriterComponent.h \
 		AliHLTRootFileStreamerComponent.h \
 		AliHLTLoaderPublisherComponent.h \
