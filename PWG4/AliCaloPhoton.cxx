@@ -32,8 +32,8 @@ AliCaloPhoton::AliCaloPhoton():TLorentzVector(),fDisp(0),
 
 } 
 //===============================================
-AliCaloPhoton::AliCaloPhoton(Double_t px,Double_t py,Double_t pz,Double_t E):
-  TLorentzVector(px,py,pz,E),fDisp(0),
+AliCaloPhoton::AliCaloPhoton(Double_t px,Double_t py,Double_t pz,Double_t energy):
+  TLorentzVector(px,py,pz,energy),fDisp(0),
 			 fTof(0),fCpv(0),fPCA(0),fTrig(0),
 			 fIsTagged(0),fIsIsolated(0),
 			 fX(0.),fY(0.),fZ(0.),
