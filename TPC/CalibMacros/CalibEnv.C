@@ -2,8 +2,8 @@
 gSystem->AddIncludePath("-I$ALICE_ROOT/TPC");
 .L $ALICE_ROOT/TPC/CalibMacros/CalibEnv.C+
 Init();
-CalibEnv("listenv.txt");
-TFile f("dccTime.root")
+CalibEnv("listenv2.txt");
+TFile f("dcsTime.root")
 
 */
 
@@ -55,10 +55,11 @@ void CalibEnv(const char * runList){
   //
   //
   //  
+  AliTPCcalibDB * calibDB = AliTPCcalibDB::Instance();
   ifstream in;
   in.open(runList);
   Int_t irun=0;
-  TTreeSRedirector *pcstream = new TTreeSRedirector("dccTime.root");
+  TTreeSRedirector *pcstream = new TTreeSRedirector("dcsTime.root");
   //  for (Int_t irun=startRun; irun<stopRun; irun++){
   while(in.good()) {
     in >> irun;
@@ -76,20 +77,19 @@ void CalibEnv(const char * runList){
     for (Int_t itime=startTime; itime<endTime; itime+=dtime){
       //
       TTimeStamp tstamp(itime);
-      Float_t valuePressure = sensorPressure->GetValue(tstamp);
+      Float_t valuePressure  = calibDB->GetPressure(tstamp,irun,0);
+      Float_t valuePressure2 = calibDB->GetPressure(tstamp,irun,1);
 
       TLinearFitter * fitter = 0;
       TVectorD vecTemp[10];
-      if (itime<tempArray->GetStartTime().GetSec() || itime>tempArray->GetEndTime().GetSec()){	
-      }else{
-	for (Int_t itype=0; itype<5; itype++)
-	  for (Int_t iside=0; iside<2; iside++){
-	    fitter= tempMap->GetLinearFitter(itype,iside,tstamp);
-	    if (!fitter) continue;
-	    fitter->Eval(); fitter->GetParameters(vecTemp[itype+iside*5]);
-	    delete fitter;
-	  }
-      }
+      for (Int_t itype=0; itype<5; itype++)
+	for (Int_t iside=0; iside<2; iside++){
+	  fitter= tempMap->GetLinearFitter(itype,iside,tstamp);
+	  if (!fitter) continue;
+	  fitter->Eval(); fitter->GetParameters(vecTemp[itype+iside*5]);
+	  delete fitter;
+	} 
+      
       
       TVectorD vecGoofie, vecEntries, vecMean, vecMedian,vecRMS;
       if (goofieArray){	
@@ -103,18 +103,22 @@ void CalibEnv(const char * runList){
 	  }
 	}
       }
-
+      Double_t ptrelative0 = AliTPCcalibDB::GetPTRelative(tstamp,irun,0);
+      Double_t ptrelative1 = AliTPCcalibDB::GetPTRelative(tstamp,irun,1);
 
       tempMap->GetLinearFitter(0,0,itime);
       (*pcstream)<<"dcs"<<
 	"run="<<irun<<
 	"time="<<itime<<
+	"ptrel0="<<ptrelative0<<
+	"ptrel1="<<ptrelative1<<
 	"goofie.="<<&vecGoofie<<
 	"goofieE.="<<&vecEntries<<
 	"goofieMean.="<<&vecMean<<
 	"goofieMedian.="<<&vecMedian<<
 	"goofieRMS.="<<&vecRMS<<
 	"press="<<valuePressure<<
+	"press2="<<valuePressure2<<
 	"temp00.="<<&vecTemp[0]<<
 	"temp10.="<<&vecTemp[1]<<
 	"temp20.="<<&vecTemp[2]<<
@@ -197,7 +201,7 @@ entry = AliCDBManager::Instance()->Get("TPC/Calib/Temperature",run);
 AliTPCSensorTempArray * tempArray = (AliTPCSensorTempArray *)entry->GetObject();
 AliTPCSensorTempArray * tempArray = (AliTPCSensorTempArray *)AliTPCcalibDB::Instance()->GetTemperatureSensor(62084)
 AliTPCTempMap * tempMap = new AliTPCTempMap(tempArray);
-TLinearFitter * fitter = tempMap->GetLinearFitter(0,0,tempArray->GetStartTime()->GetSec());
+TLinearFitter * fitter = tempMap->GetLinearFitter(0,0,tempArray->GetStartTime());
 
 AliDCSSensorArray* goofieArray = AliTPCcalibDB::Instance()->GetGoofieSensors(62084);
 
