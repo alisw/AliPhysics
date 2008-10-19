@@ -53,6 +53,7 @@ AliAnaESDSpectraQA::AliAnaESDSpectraQA(): AliAnalysisTask("AliAnaESDSpectraQA", 
 AliAnaESDSpectraQA::AliAnaESDSpectraQA(const char *name): 
   AliAnalysisTask(name, ""), 
   fESD(0),
+  fTrackCuts(new AliESDtrackCuts),
   fNEvent(0), // just to avoid warnings, inititialized in InitPointers too
   fPtAll(0),  //
   fPtSel(0),  // 
@@ -62,7 +63,7 @@ AliAnaESDSpectraQA::AliAnaESDSpectraQA(const char *name):
   // Output slot #0 writes into a TList
   DefineOutput(0, TList::Class());
   InitHistPointers();
-  fTrackCuts = new AliESDtrackCuts;
+  //fTrackCuts = new AliESDtrackCuts;
   fTrackCuts->SetAcceptKingDaughters(kFALSE);
   fTrackCuts->SetRequireTPCRefit(kTRUE);
   fTrackCuts->SetEtaRange(-1,1);
