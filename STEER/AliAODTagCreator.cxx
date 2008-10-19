@@ -116,16 +116,18 @@ Bool_t AliAODTagCreator::ReadLocalCollection(const char *localpath) {
     sprintf(fPath,"%s/%s",localpath,dirname);
     void *dirb =  gSystem->OpenDirectory(fPath);
     while((filename = gSystem->GetDirEntry(dirb))) {
-      if(strstr(filename,pattern)) {
-	TString aodFileName;
-	aodFileName = fPath;
-	aodFileName += "/";
-	aodFileName += pattern;
-	fChain->Add(aodFileName);
-      }//pattern check
-    }//child directory's entry loop
-  }//parent directory's entry loop
-
+	TString bstr = dirname;
+	if(bstr.Contains("..")) continue;
+	if(strstr(filename,pattern)) {
+	    TString aodFileName;
+	    aodFileName = fPath;
+	    aodFileName += "/";
+	    aodFileName += pattern;
+	    fChain->Add(aodFileName);
+	} //pattern check
+    } //child directory's entry loop
+  } //parent directory's entry loop
+  
   AliInfo(Form("AOD chain created......."));	
   AliInfo(Form("Chain entries: %d",fChain->GetEntries()));	
 
