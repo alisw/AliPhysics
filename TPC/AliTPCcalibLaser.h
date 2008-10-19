@@ -28,7 +28,7 @@ class AliTPCLaserTrack;
 class AliTPCcalibLaser:public AliTPCcalibBase {
 public:
   AliTPCcalibLaser();
-  AliTPCcalibLaser(const Text_t *name, const Text_t *title);
+  AliTPCcalibLaser(const Text_t *name, const Text_t *title, Bool_t full=kTRUE);
   AliTPCcalibLaser(const AliTPCcalibLaser& laser);
   AliTPCcalibLaser & operator=(const AliTPCcalibLaser& calibLaser);
   virtual ~AliTPCcalibLaser();
@@ -65,6 +65,7 @@ public:
   Int_t          fCounter[336];    //! counter of usage
   Float_t        fClusterCounter[336]; //!couter of clusters in "sensitive are"
   Float_t        fClusterSatur[336];   //!couter of saturated clusters in "sensitive are"
+  Bool_t         fFullCalib;            // do full calibrration
   Float_t        fFitZ[336];           //fitted z position
   //
   TObjArray      fDeltaZ;          //-> array of histograms of delta z for each track

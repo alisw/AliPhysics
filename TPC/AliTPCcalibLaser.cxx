@@ -115,6 +115,7 @@
 #include "AliTPCLaserTrack.h"
 #include "AliTPCcalibDB.h"
 #include "AliTPCParam.h"
+#include "TTimeStamp.h"
 
 using namespace std;
 
@@ -128,6 +129,7 @@ AliTPCcalibLaser::AliTPCcalibLaser():
   fTracksEsd(336),
   fTracksEsdParam(336),
   fTracksTPC(336),
+  fFullCalib(kTRUE),
   fDeltaZ(336),
   fDeltaP3(336),
   fDeltaP4(336),
@@ -198,7 +200,7 @@ AliTPCcalibLaser::AliTPCcalibLaser():
   fTracksEsdParam.SetOwner(kTRUE);
 }
 
-AliTPCcalibLaser::AliTPCcalibLaser(const Text_t *name, const Text_t *title):
+AliTPCcalibLaser::AliTPCcalibLaser(const Text_t *name, const Text_t *title, Bool_t full):
   AliTPCcalibBase(),
   fESD(0),
   fESDfriend(0),
@@ -206,6 +208,7 @@ AliTPCcalibLaser::AliTPCcalibLaser(const Text_t *name, const Text_t *title):
   fTracksEsd(336),
   fTracksEsdParam(336),
   fTracksTPC(336),
+  fFullCalib(full),
   //
   fDeltaZ(336),          // array of histograms of delta z for each track
   fDeltaP3(336),          // array of histograms of delta z for each track
@@ -290,6 +293,7 @@ AliTPCcalibLaser::AliTPCcalibLaser(const AliTPCcalibLaser& calibLaser):
   fTracksEsd(336),
   fTracksEsdParam(336),
   fTracksTPC(336),
+  fFullCalib(calibLaser.fFullCalib),
   //
   fDeltaZ(calibLaser.fDeltaZ),          // array of histograms of delta z for each track
   fDeltaP3(((calibLaser.fDeltaP3))),          // array of histograms of delta z for each track
@@ -479,6 +483,7 @@ void AliTPCcalibLaser::Process(AliESDEvent * event) {
   if (counter<kMinTracks) return;
 
   FitDriftV();
+  if (!fFullCalib) return;
   //
   for (Int_t id=0; id<336; id++){    
     //
@@ -703,6 +708,14 @@ void AliTPCcalibLaser::FitDriftV(){
     }
     if (fStreamLevel>0){
       TTreeSRedirector *cstream = GetDebugStreamer();
+      TTimeStamp tstamp(fTime);
+      Float_t valuePressure0  = AliTPCcalibDB::GetPressure(tstamp,fRun,0);
+      Float_t valuePressure1 = AliTPCcalibDB::GetPressure(tstamp,fRun,1);
+      Double_t ptrelative0   = AliTPCcalibDB::GetPTRelative(tstamp,fRun,0);
+      Double_t ptrelative1   = AliTPCcalibDB::GetPTRelative(tstamp,fRun,1);
+      Double_t temp0         = AliTPCcalibDB::GetTemperature(tstamp,fRun,0);
+      Double_t temp1         = AliTPCcalibDB::GetTemperature(tstamp,fRun,1);
+
       if (cstream){
 	(*cstream)<<"driftv"<<
 	  "run="<<fRun<<              //  run number
@@ -710,6 +723,15 @@ void AliTPCcalibLaser::FitDriftV(){
 	  "time="<<fTime<<            //  time stamp of event
 	  "trigger="<<fTrigger<<      //  trigger
 	  "mag="<<fMagF<<             //  magnetic field
+	  // Environment values
+	  "press0="<<valuePressure0<<
+	  "press1="<<valuePressure1<<
+	  "pt0="<<ptrelative0<<
+	  "pt1="<<ptrelative1<<
+	  "temp0="<<temp0<<
+	  "temp1="<<temp1<<
+	  //
+	  //
 	  "iter="<<iter<<
 	  "driftA.="<<fFitAside<<
 	  "driftC.="<<fFitCside<<
