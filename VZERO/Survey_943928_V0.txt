@@ -1,0 +1,67 @@
+> Title:
+
+Alignment of the V0A and the beam pipe support on the Front Absorber
+
+> Date:
+
+12.08.2008
+
+> Subdetector:
+
+V0A
+
+> Report URL:
+
+https://edms.cern.ch/document/943928
+
+> Version:
+
+1
+
+> General Observations:
+
+V0A is measured in several iterations. Only the measurement results of the last session (session 03, chapter 6.5) are given below.
+The center of Circle fitted through 6XXX points on V0A is called CenterV0A.
+
+> Coordinate System:
+
+ALICEPH
+
+> Units:
+
+mm
+
+> Nr Columns:
+
+7
+
+> Column Names:
+
+Point Name,XPH,YPH,ZPH,Point Type,Target Used,Precision(mm)
+
+
+> Data:
+
+V0A_IAB 21.29 -809.66 3309.43 M Y 1
+V0A_IAM 628.57 140.28 3314.01 M Y 1
+V0A_IAT 119.53 636.71 3313.02 M Y 1
+ST_IAB 132.00 -684.55 3303.05 M Y 1
+ST_IAM 533.55 -21.57 3306.64 M Y 1
+ST_IAT 132.12 528.51 3305.62 M Y 1
+V0A_OAB -19.72 -809.83 3311.76 M Y 1
+V0A_OAM -628.13 139.16 3318.48 M Y 1
+V0A_OAT -119.06 636.26 3314.03 M Y 1
+ST_OAB -142.79 -696.23 3304.71 M Y 1
+ST_OAM -529.51 -21.47 3310.06 M Y 1
+ST_OAT -139.11 502.29 3306.56 M Y 1
+ST_ICB 20.70 -328.94 3249.65 M Y 1
+ST_ICM 306.96 4.32 3250.60 M Y 1
+ST_ICT 17.00 281.54 3249.89 M Y 1
+ST_OCB -16.30 -326.44 3250.21 M Y 1
+ST_OCM -295.57 17.33 3251.53 M Y 1
+ST_OCT -10.73 278.00 3250.13 M Y 1
+6001 127.73 -220.41 3246.58 M Y 1
+6002 127.37 219.48 3247.24 M Y 1
+6003 -126.99 -220.40 3247.27 M Y 1
+6004 -126.99 219.51 3247.49 M Y 1
+
