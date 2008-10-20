@@ -212,6 +212,49 @@ If(ALICE_TARGET STREQUAL macosx64)
 
 Endif(ALICE_TARGET STREQUAL macosx64)
 
+If(ALICE_TARGET STREQUAL linuxx8664gcc) 
+
+
+  Set(CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS "${CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS} -shared -Wl")
+
+  Set(CMAKE_Fortran_FLAGS "-fno-second-underscore -m64")
+
+  Set(CLIBDEFS "-DCERNLIB_LXIA64 -DCERNLIB_BLDLIB -DCERNLIB_CZ")
+
+  Set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m64 -pipe -W -Wall -Weffc++ -Woverloaded-virtual -fmessage-length=0 -Wno-long-long -Dlinux -I/usr/X11R6/include")
+  Set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -m64 -Wall -W -pipe")
+
+  If(CMAKE_Fortran_COMPILER MATCHES g95) 
+    Set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fbounds-check -ftrace=full -DFORTRAN_G95")
+    Execute_process(COMMAND svn info $ENV{ALICE_ROOT} 
+      COMMAND g95 --print-search-dirs 
+      OUTPUT_VARIABLE _out)
+    String(REGEX REPLACE "^.*install: *([^\n]*)/\n.*$" "\\1" _libdir ${_out})
+    Set(ROOT_LIBRARIES "${ROOT_LIBRARIES} -L${_libdir} -lf95")
+  Else(CMAKE_Fortran_COMPILER MATCHES g95)
+    Set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DFORTRAN_GFORTRAN")
+    Execute_process(
+      COMMAND gfortran -m64 -print-file-name=libgfortran.so
+      OUTPUT_VARIABLE FLIB
+      OUTPUT_STRIP_TRAILING_WHITESPACE)
+    Set(ROOT_LIBRARIES "${ROOT_LIBRARIES} ${FLIB}")
+    Execute_process(
+      COMMAND gfortran -m64 -print-file-name=libgfortranbegin.a
+      OUTPUT_VARIABLE FLIB
+      OUTPUT_STRIP_TRAILING_WHITESPACE)
+    Set(ROOT_LIBRARIES "${ROOT_LIBRARIES} ${FLIB}")
+  Endif(CMAKE_Fortran_COMPILER MATCHES g95) 
+
+  Set(LINK_FLAGS "${LINK_FLAGS} -m64")
+
+  Set(ALIROOT_LIBRARIES "${ROOT_LIBRARIES}")
+
+  Set(ALIROOT_INCLUDE_DIR ${ROOT_INCLUDE_DIR} /usr/X11/include)
+
+  Set(LINK_FLAGS "${LINK_FLAGS}")
+
+Endif(ALICE_TARGET STREQUAL linuxx8664gcc)
+
 EndMacro (SetupSystem)
 
 # ../build/Makefile.alphacxx6
