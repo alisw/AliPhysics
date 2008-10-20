@@ -34,6 +34,8 @@ class TList;
 // AliESDtrack has to be included so that the compiler 
 // knows its inheritance tree (= that it is a AliVParticle).
 #include "AliESDtrack.h"
+// same for AliESDVertex (which is a AliVVertex)
+#include "AliESDVertex.h"
 
 class AliESDfriend;
 class AliESDVZERO;

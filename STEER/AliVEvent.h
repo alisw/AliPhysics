@@ -17,6 +17,7 @@
 #include <TTree.h>
 #include "AliVHeader.h"
 #include "AliVParticle.h"
+#include "AliVVertex.h"
 
 class AliVEvent : public TObject {
 
@@ -57,6 +58,11 @@ public:
   virtual UInt_t   GetPeriodNumber() const = 0;
   virtual Double_t GetMagneticField() const = 0;
 
+  virtual Double_t GetDiamondX() const {return -999.;}
+  virtual Double_t GetDiamondY() const {return -999.;}
+  virtual void     GetDiamondCovXY(Float_t cov[3]) const
+             {cov[0]=-999.; return;}
+
   // Delegated methods for fHeader
   virtual void      SetOrbitNumber(UInt_t n) = 0;
   virtual void      SetBunchCrossNumber(UShort_t n) = 0;
@@ -82,6 +88,9 @@ public:
   virtual Int_t        GetNumberOfTracks() const = 0;
   virtual Int_t        GetNumberOfV0s() const = 0;
 
+  // Primary vertex
+  virtual const AliVVertex   *GetPrimaryVertex() const {return 0x0;}
+
   //---------- end of new stuff
 
 
@@ -91,7 +100,6 @@ public:
     *fPrimaryVertex = *vertex;
     fPrimaryVertex->SetName("PrimaryVertex");// error prone use class wide names?
   }
-  const AliESDVertex *GetPrimaryVertex() const {return fPrimaryVertex;}
 
   void SetMultiplicity(const AliMultiplicity *mul) {
     *fSPDMult = *mul;
