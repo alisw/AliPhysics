@@ -135,6 +135,7 @@ Macro (SetupSystem)
 
 Message(STATUS "Setting up system dependent parameters for ${ALICE_TARGET}" )
 
+# macosx64
 If(ALICE_TARGET STREQUAL macosx64) 
 
   Execute_process(
@@ -166,8 +167,7 @@ If(ALICE_TARGET STREQUAL macosx64)
 
   If(CMAKE_Fortran_COMPILER MATCHES g95) 
     Set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fbounds-check -ftrace=full -DFORTRAN_G95")
-    Execute_process(COMMAND svn info $ENV{ALICE_ROOT} 
-      COMMAND g95 --print-search-dirs 
+    Execute_process(COMMAND g95 --print-search-dirs 
       OUTPUT_VARIABLE _out)
     String(REGEX REPLACE "^.*install: *([^\n]*)/\n.*$" "\\1" _libdir ${_out})
     Set(ROOT_LIBRARIES "${ROOT_LIBRARIES} -L${_libdir} -lf95")
@@ -212,6 +212,7 @@ If(ALICE_TARGET STREQUAL macosx64)
 
 Endif(ALICE_TARGET STREQUAL macosx64)
 
+# linuxx8664gcc
 If(ALICE_TARGET STREQUAL linuxx8664gcc) 
 
 
@@ -226,8 +227,7 @@ If(ALICE_TARGET STREQUAL linuxx8664gcc)
 
   If(CMAKE_Fortran_COMPILER MATCHES g95) 
     Set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fbounds-check -ftrace=full -DFORTRAN_G95")
-    Execute_process(COMMAND svn info $ENV{ALICE_ROOT} 
-      COMMAND g95 --print-search-dirs 
+    Execute_process(COMMAND g95 --print-search-dirs 
       OUTPUT_VARIABLE _out)
     String(REGEX REPLACE "^.*install: *([^\n]*)/\n.*$" "\\1" _libdir ${_out})
     Set(ROOT_LIBRARIES "${ROOT_LIBRARIES} -L${_libdir} -lf95")
@@ -254,6 +254,58 @@ If(ALICE_TARGET STREQUAL linuxx8664gcc)
   Set(LINK_FLAGS "${LINK_FLAGS}")
 
 Endif(ALICE_TARGET STREQUAL linuxx8664gcc)
+
+# macosx
+If(ALICE_TARGET STREQUAL macosx) 
+
+  Execute_process(
+    COMMAND sw_vers -productVersion
+    OUTPUT_VARIABLE MACOSX
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+  String(REGEX REPLACE "^(.*)[.](.*)[.](.*)$" "\\1" MACOSX_MAJOR "${MACOSX}")
+  String(REGEX REPLACE "^(.*)[.](.*)[.](.*)$" "\\2" MACOSX_MINOR "${MACOSX}")
+
+  Message(STATUS "Mac OS X ${MACOSX_MAJOR}.${MACOSX_MINOR}")
+
+  Find_Package(fink)
+  
+  Set(CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS "${CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS} -flat_namespace -single_module -undefined dynamic_lookup -m32")
+
+  Set(CMAKE_Fortran_FLAGS "-fno-second-underscore -m32")
+
+  Set(CLIBDEFS "-DCERNLIB_LINUX -DCERNLIB_BLDLIB -DCERNLIB_CZ -DCERNLIB_PPC")
+
+  Set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32 -pipe -Wall -W -Wno-long-double -pipe -fbounds-check -fsigned-char -fno-common -fmessage-length=0 -Woverloaded-virtual -Weffc++ -Wconversion -Wshadow -fno-default-inline -fno-inline -I/usr/X11R6/include -I${FINK_ROOT}/include")
+  Set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -m32 -Wall -W -fno-common -pipe -I${FINK_ROOT}/include")
+
+  If(CMAKE_Fortran_COMPILER MATCHES g95) 
+    Set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fbounds-check -ftrace=full -DFORTRAN_G95 -single_module")
+    Execute_process(COMMAND g95 --print-search-dirs 
+      OUTPUT_VARIABLE _out)
+    String(REGEX REPLACE "^.*install: *([^\n]*)/\n.*$" "\\1" _libdir ${_out})
+    Set(ROOT_LIBRARIES "${ROOT_LIBRARIES} -L${_libdir} -lf95")
+  Else(CMAKE_Fortran_COMPILER MATCHES g95)
+    Set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DFORTRAN_GFORTRAN")
+    Execute_process(
+      COMMAND gfortran -m32 -print-file-name=libgfortran.dylib
+      OUTPUT_VARIABLE FLIB
+      OUTPUT_STRIP_TRAILING_WHITESPACE)
+    Set(ROOT_LIBRARIES "${ROOT_LIBRARIES} ${FLIB}")
+    Execute_process(
+      COMMAND gfortran -m32 -print-file-name=libgfortranbegin.a
+      OUTPUT_VARIABLE FLIB
+      OUTPUT_STRIP_TRAILING_WHITESPACE)
+    Set(ROOT_LIBRARIES "${ROOT_LIBRARIES} ${FLIB}")
+  Endif(CMAKE_Fortran_COMPILER MATCHES g95) 
+
+  Set(ALIROOT_LIBRARIES "${ROOT_LIBRARIES}")
+
+  Set(ALIROOT_INCLUDE_DIR ${ROOT_INCLUDE_DIR} /usr/X11/include)
+
+  Set(LINK_FLAGS "${LINK_FLAGS} -bind_at_load -single_module")
+
+Endif(ALICE_TARGET STREQUAL macosx)
 
 EndMacro (SetupSystem)
 
@@ -737,208 +789,6 @@ EndMacro (SetupSystem)
 # SYSLIBS      := -lcrypt -L/usr/X11R6/lib -lX11 $(LIBNOVER) -L/usr/local/lib \
 #                 -lXt -L$(shell which ifort | sed -e 's|bin/ifort|lib|') \
 #                 -lifcore -lifport
-# ../build/Makefile.linuxx8664gcc
-# # -*- mode: makefile -*-
-# # Makefile to build AliRoot for Linux
-# 
-# # System dependent commands
-# 
-# XARGS = xargs -r
-# 
-# # The compilers
-# CXX           = g++ 
-# CC	      = gcc
-# CCMAJORV      = $(shell $(CC) -dumpversion | cut -d. -f1)
-# CCMINORV      = $(shell $(CC) -dumpversion | cut -d. -f2)
-# F77	      = $(shell root-config --f77)
-# 
-# # Global optimisation
-# OPT           = -O0 -g
-# NOOPT         = -g
-# 
-# CXXOPT        = $(OPT)
-# CXXNOOPT      = $(NOOPT)
-# COPT	      = $(OPT)
-# FOPT	      = $(OPT)
-# 
-# # CERNLIB defines
-# CLIBDEFS      = -DCERNLIB_LXIA64 -DCERNLIB_BLDLIB -DCERNLIB_CZ
-# CLIBCXXOPTS   =
-# CLIBCOPT      =
-# CLIBFOPT      = $(CLIBDEFS)
-# 
-# # Compiler flags
-# ifeq ($(CCMAJORV),2)
-# CXXFLAGS       = $(OPT) -W -Wall -fPIC -pipe -m64
-# CXXFLAGSNO     = $(NOOPT) -W -Wall -fPIC -pipe -m64
-# else
-# ifeq ($(CCMAJORV),3)
-# CXXFLAGS       = $(OPT) -W -Wall -Weffc++ -Woverloaded-virtual -fPIC -pipe -fmessage-length=0 -Wno-long-long -pedantic-errors -ansi -Dlinux -m64
-# CXXFLAGSNO     = $(NOOPT) -W -Wall -Weffc++ -fPIC -pipe -fmessage-length=0 -Wno-long-long -pedantic-errors -ansi -m64
-# else
-# ifeq ($(CCMAJORV),4)
-# CXXFLAGS       = $(OPT) -W -Wall -Weffc++ -Woverloaded-virtual -fPIC -pipe -fmessage-length=0 -Wno-long-long -pedantic-errors -ansi -Dlinux -m64
-# CXXFLAGSNO     = $(NOOPT) -W -Wall -Weffc++ -fPIC -pipe -fmessage-length=0 -Wno-long-long -pedantic-errors -ansi -m64
-# else
-# CXXFLAGS       = $(OPT) -W -Wall -Woverloaded-virtual -fPIC -pipe -fmessage-length=0 -Wno-long-long -ansi -Dlinux -m64
-# CXXFLAGSNO     = $(NOOPT) -W -Wall -Weffc++ -fPIC -pipe -fmessage-length=0 -Wno-long-long -ansi -m64
-# endif
-# endif
-# endif
-# CFLAGS	       = $(OPT) -Wall -Werror -fPIC -pipe -Wno-long-long -pedantic-errors -ansi -m64 
-# FFLAGS         = $(CLIBFOPT) $(FOPT) -fno-second-underscore -fPIC -fno-f2c -m64
-# 
-# ifeq (g95,$(F77))
-# FFLAGS	      +=-DFORTRAN_G95
-# else
-# ifeq (gfortran,$(F77))
-# FFLAGS	      +=-DFORTRAN_GFORTRAN
-# else
-# FFLAGS	      +=
-# endif
-# endif
-# 
-# # rmkdepend flags for building dependencies of FORTRAN files
-# DEPENDFFLAGS   = $(FFLAGS)
-# 
-# # rootcint flags
-# CINTFLAGS     = 
-# 
-# LD            = g++
-# LDFLAGS       = $(OPT) 
-# 
-# SHLD	      = $(LD) 
-# SOFLAGS       = $(OPT) -shared -Wl 
-# SOEXT 	      = so
-# 
-# #System libraries
-# LIBNOVER      = `find /lib64 -name 'libNoVersion*.so' | xargs --replace basename {} .so | sed -e 's/lib64/ -l/'`
-# 
-# SYSLIBS      := -ldl -lcrypt -L/usr/X11R6/lib64 -lX11  $(LIBNOVER)
-# 
-# ifeq (g95,$(F77))
-# SHLIB += -L$(shell g95 --print-search-dirs | sed -n -e 's/install: //p') -lf95
-# else
-# ifeq (gfortran,$(F77))
-# SHLIB := $(shell gfortran -print-file-name=libgfortran.so)
-# SHLIB += $(shell gfortran -print-file-name=libgfortranbegin.a)
-# else
-# SHLIB         = -lg2c
-# SYSLIBS +=  -lg2c
-# endif
-# endif
-# 
-# ALLD	      = ar
-# ALFLAGS       = cr
-# ALLIB         = 
-# AEXT 	      = a
-# 
-# 
-# 
-# 
-# 
-# 
-# 
-# 
-# 
-# ../build/Makefile.macosx
-# # -*- mode: makefile -*-
-# # Makefile for AliRoot for MacOS X with gcc
-# 
-# XARGS = xargs
-# 
-# # OS version
-# MACOSX_MAJOR := $(strip $(shell sw_vers | sed -n 's/ProductVersion://p' | cut -d . -f 1))
-# MACOSX_MINOR := $(strip $(shell sw_vers | sed -n 's/ProductVersion://p' | cut -d . -f 2))
-# 
-# # fink directories
-# FINK_ROOT := $(shell which fink | sed -e 's?/bin/fink??')
-# ifeq (,$(FINK_ROOT))
-# # No fink, build will probably fail, but we try a guess
-# FINK_ROOT=/usr/local
-# endif
-# 
-# # The compilers
-# CXX           = g++ 
-# CC	      = gcc
-# F77	      = $(shell root-config --f77)
-# 
-# # Global optimisation
-# OPT           = -O -g
-# NOOPT         = -O0 -g
-# 
-# CXXOPT        = $(OPT) 
-# CXXNOOPT      = $(NOOPT) 
-# COPT	      = $(OPT)
-# FOPT	      = $(OPT) -fno-second-underscore 
-# ifeq (g95,$(F77))
-# FOPT	     += -fbounds-check
-# endif
-# 
-# # CERNLIB defines
-# CLIBDEFS      = -DCERNLIB_LINUX -DCERNLIB_BLDLIB -DCERNLIB_CZ -DCERNLIB_PPC
-# CLIBCXXOPTS   =
-# CLIBCOPT      =
-# CLIBFOPT      = $(CLIBDEFS)
-# 
-# CXXSTF        =  -pipe -Wall -W -Wno-long-double -pipe -fbounds-check -fsigned-char -fno-common -fmessage-length=0 -Woverloaded-virtual -Weffc++ -Wconversion -Wshadow -fno-default-inline -fno-inline -I/usr/X11R6/include -I$(FINK_ROOT)/include
-# 
-# # Compiler flags
-# CXXFLAGS      = $(CXXOPT) $(CXXSTF)
-# 
-# CXXFLAGSNO    = $(CXXNOOPT) $(CXXSTF) 
-# 
-# CFLAGS	      = $(COPT) -Wall -W -fno-common -pipe -I$(FINK_ROOT)/include
-# 
-# FFLAGS        = $(CLIBFOPT) $(FOPT)
-# ifeq (g95,$(F77))
-# FFLAGS        += -ftrace=full
-# FFLAGS        +=-DFORTRAN_G95
-# else
-# FFLAGS        +=-DFORTRAN_GFORTRAN
-# endif
-# 
-# # rmkdepend flags for building dependencies of FORTRAN files
-# DEPENDFFLAGS  = $(FFLAGS)
-# 
-# # rootcint flags
-# CINTFLAGS     = 
-# 
-# LD            = export MACOSX_DEPLOYMENT_TARGET=$(MACOSX_MAJOR).$(MACOSX_MINOR) ; \
-# 		unset LD_PREBIND ; \
-# 		g++
-# LDFLAGS       = $(OPT) $(DICTLOAD)
-# 
-# SHLD	     := $(LD)
-# SOFLAGS      := -bundle -undefined dynamic_lookup
-# SHLIB        := 
-# SOEXT 	     := so
-# 
-# DYLD	     := $(LD)
-# DYFLAGS       = -dynamiclib -undefined dynamic_lookup -single_module
-# DYLIB        := 
-# DYEXT        := dylib
-# 
-# ALLD	      = ar
-# ALFLAGS       = cr
-# ALLIB         = 
-# AEXT 	      = a
-# 
-# DEPENDCXXFLAGS = $(CXXFLAGS) -I/usr/include/sys
-# 
-# SYSLIBS      := -L/usr/X11R6/lib -lX11
-# 
-# EXEFLAGS     := -bind_at_load 
-# 
-# #System libraries
-# 
-# ifeq (g95,$(F77))
-# SYSLIBS += -L$(shell g95 --print-search-dirs | sed -n -e 's/install: //p') -lf95
-# DYLIB += -L$(shell g95 --print-search-dirs | sed -n -e 's/install: //p') -lf95
-# else
-# SYSLIBS += -ldl $(shell $(F77) -print-file-name=libgfortran.dylib)
-# SYSLIBS += $(shell $(F77) -print-file-name=libgfortranbegin.a)
-# endif
 # ../build/Makefile.macosxicc
 # # -*- mode: makefile -*-
 # # Makefile for AliRoot for MacOS X with gcc
