@@ -33,7 +33,7 @@ ln -s ../DB
 ln -si $ALICE_ROOT/test/QA/recraw.C recraw.C
 aliroot -b -q recraw.C  > recraw.log 
 cp  $ALICE_ROOT/test/QA/rawqa.C .
-aliroot -b > rawqa.log << EOF
+alienaliroot -b > rawqa.log << EOF
 .x  $ALICE_ROOT/test/QA/rootlogon.C
 .L rawqa.C++
 rawqa(21950, 10)

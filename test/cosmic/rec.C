@@ -1,4 +1,4 @@
-void rec(const char *filename="raw.root")
+void rec(const char *filename="raw.root", const Int_t mfield=1)
 {
   /////////////////////////////////////////////////////////////////////////////////////////
   //
@@ -7,33 +7,19 @@ void rec(const char *filename="raw.root")
   //
   /////////////////////////////////////////////////////////////////////////////////////////
   //AliLog::SetGlobalLogLevel(AliLog::kWarning);
-  //  AliLog::SetGlobalLogLevel(AliLog::kError);
+  AliLog::SetGlobalLogLevel(AliLog::kError);
 
   gSystem->Load("libRAliEn.so");
   gSystem->Load("libNet.so");
-  if (gSystem->Load("libMonaLisa.so") == 0) {
-    new TMonaLisaWriter(0, "GridAliRoot-rec.C", 0, 0, "global");
-    gSystem->Setenv("APMON_INTERVAL", "120");
-  }
+  gSystem->Load("libMonaLisa.so");
+  new TMonaLisaWriter(0, "GridAliRoot-rec.C", 0, 0, "global");
+  gSystem->Setenv("APMON_INTERVAL", "120");
 
   // Set the CDB storage location
   AliCDBManager * man = AliCDBManager::Instance();
-  //  man->SetDefaultStorage("local://$ALICE_ROOT");
-  man->SetDefaultStorage("alien://folder=/alice/data/2008/LHC08c/OCDB/");
-//   man->SetSpecificStorage("ITS/Calib/*","local://$ALICE_ROOT");
-//   man->SetSpecificStorage("ITS/Calib/BadChannelsSSD","alien://folder=/alice/data/2008/LHC08c/OCDB");
-//   man->SetSpecificStorage("ITS/Calib/CalibSDD","alien://folder=/alice/data/2008/LHC08c/OCDB");
-//   man->SetSpecificStorage("ITS/Calib/DDLMapSDD","alien://folder=/alice/data/2008/LHC08c/OCDB");
-//   man->SetSpecificStorage("ITS/Calib/DriftSpeedSDD","alien://folder=/alice/data/2008/LHC08c/OCDB");
-//   man->SetSpecificStorage("ITS/Calib/GainSSD","alien://folder=/alice/data/2008/LHC08c/OCDB");
-//   man->SetSpecificStorage("ITS/Calib/HLTforSDD","alien://folder=/alice/data/2008/LHC08c/OCDB");
-//   man->SetSpecificStorage("ITS/Calib/MapsTimeSDD","alien://folder=/alice/data/2008/LHC08c/OCDB");
-//   man->SetSpecificStorage("ITS/Calib/NoiseSSD","alien://folder=/alice/data/2008/LHC08c/OCDB");
-//   man->SetSpecificStorage("ITS/Calib/RecoParam","alien://folder=/alice/data/2008/LHC08c/OCDB");
-//   man->SetSpecificStorage("ITS/Calib/SPDDead","alien://folder=/alice/data/2008/LHC08c/OCDB");
-//   man->SetSpecificStorage("ITS/Calib/SPDNoisy","alien://folder=/alice/data/2008/LHC08c/OCDB");
-//   man->SetSpecificStorage("FMD/Calib/*","local://$ALICE_ROOT");
-//   man->SetSpecificStorage("VZERO/Calib/*","local://$ALICE_ROOT");
+    man->SetDefaultStorage("local://$ALICE_ROOT");
+  //man->SetDefaultStorage("alien://folder=/alice/data/2008/LHC08a/OCDB/");
+  man->SetSpecificStorage("ITS/Calib/*","local://$ALICE_ROOT");
   
   // Example in case a specific CDB storage is needed
   //  man->SetSpecificStorage("ITS/Calib/MapsAnodeSDD","local://$ALICE_ROOT");
@@ -107,6 +93,12 @@ void rec(const char *filename="raw.root")
   rec.SetRecoParam("MUON",muonRecoParam);
  
   // Tracking settings
+  AliMagFMaps* field;
+  if (mfield)
+     field = new AliMagFMaps("Maps","Maps", 2, 1., 10., AliMagFMaps::k5kG);
+   else
+     field = new AliMagFMaps("Maps","Maps", 2, 0., 10., 2);
+  AliTracker::SetFieldMap(field,1);
   Double_t mostProbPt=0.35;
   AliExternalTrackParam::SetMostProbablePt(mostProbPt);
 
@@ -119,7 +111,7 @@ void rec(const char *filename="raw.root")
   rec.SetUseTrackingErrorsForAlignment("ITS");
 
   // In case some detectors have to be switched off...
-  rec.SetRunReconstruction("ALL");
+  rec.SetRunReconstruction("ITS TPC TRD TOF HMPID PHOS MUON FMD PMD T0 VZERO ZDC ACORDE");
 
   // Enable vertex finder - it is needed for cosmic track reco
   rec.SetRunVertexFinder(kTRUE);
@@ -143,14 +135,8 @@ void rec(const char *filename="raw.root")
 
   //rec.SetEventRange(0,15);
 
-  rec.SetRunQA("ALL:ALL");
-  for (Int_t det = 0 ; det < AliReconstruction::fgkNDetectors ; det++) {
-    rec.SetQACycles(det, 1) ;
-    rec.SetQAWriteExpert(det) ; 
-  }
-
+  rec.SetRunQA("ITS TPC:ESD RECPOINT");
   rec.SetRunGlobalQA(kTRUE);
-
   AliLog::Flush();
   rec.Run();
 
