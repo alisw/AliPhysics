@@ -8,15 +8,17 @@
 //-------------------------------------------------------------------------
 //     AOD vertex base class
 //     Author: Markus Oldenburg, CERN
+//     Inheritance from AliVVertex: A. Dainese
 //-------------------------------------------------------------------------
 
 #include <TRef.h>
 #include <TRefArray.h>
 #include <TMath.h>
 
+#include "AliVVertex.h"
 #include "AliAODRedCov.h"
 
-class AliAODVertex : public TObject {
+class AliAODVertex : public AliVVertex {
 
  public :
 
@@ -60,6 +62,8 @@ class AliAODVertex : public TObject {
   Double_t GetX() const { return fPosition[0]; }
   Double_t GetY() const { return fPosition[1]; }
   Double_t GetZ() const { return fPosition[2]; }
+  void     GetXYZ(Double_t position[3]) const 
+    {position[0]=fPosition[0]; position[1]=fPosition[1]; position[2]=fPosition[2];}
   template <class T> void GetPosition(T *pos) const
     {pos[0]=fPosition[0]; pos[1]=fPosition[1]; pos[2]=fPosition[2];}
 
@@ -71,6 +75,8 @@ class AliAODVertex : public TObject {
     if(!fCovMatrix) return kFALSE;
     fCovMatrix->GetCovMatrix(covMatrix); return kTRUE;}
 
+  void GetCovarianceMatrix(Double_t covmatrix[6]) const 
+                    {GetCovMatrix(covmatrix);}
   void RemoveCovMatrix() {delete fCovMatrix; fCovMatrix=NULL;}
 
   template <class T> void     GetSigmaXYZ(T *sigma) const;
@@ -125,7 +131,7 @@ class AliAODVertex : public TObject {
   TRef            fParent;      // reference to the parent particle
   TRefArray       fDaughters;   // references to the daughter particles
 
-  ClassDef(AliAODVertex,3);
+  ClassDef(AliAODVertex,4);
 };
 
 #endif

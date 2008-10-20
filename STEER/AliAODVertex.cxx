@@ -20,17 +20,17 @@
 //     Base class for Analysis Object Data
 //     Generic version
 //     Author: Markus Oldenburg, CERN
+//     Inheritance from AliVVertex: A. Dainese
 //-------------------------------------------------------------------------
 
 #include "AliAODVertex.h"
-
 #include "AliAODTrack.h"
 
 ClassImp(AliAODVertex)
 
 //______________________________________________________________________________
 AliAODVertex::AliAODVertex() : 
-  TObject(),
+  AliVVertex(),
   fChi2perNDF(-999.),
   fID(-1),
   fType(kUndef),
@@ -50,7 +50,7 @@ AliAODVertex::AliAODVertex(const Double_t position[3],
 			   TObject  *parent,
 			   Short_t id,
 			   Char_t vtype) :
-  TObject(),
+  AliVVertex(),
   fChi2perNDF(chi2perNDF),
   fID(id),
   fType(vtype),
@@ -72,7 +72,7 @@ AliAODVertex::AliAODVertex(const Float_t position[3],
 			   Short_t id,
 			   Char_t vtype) :
 
-  TObject(),
+  AliVVertex(),
   fChi2perNDF(chi2perNDF),
   fID(id),
   fType(vtype),
@@ -90,7 +90,7 @@ AliAODVertex::AliAODVertex(const Float_t position[3],
 AliAODVertex::AliAODVertex(const Double_t position[3], 
 			   Double_t  chi2perNDF,
 			   Char_t vtype) :
-  TObject(),
+  AliVVertex(),
   fChi2perNDF(chi2perNDF),
   fID(-1),
   fType(vtype),
@@ -107,7 +107,7 @@ AliAODVertex::AliAODVertex(const Double_t position[3],
 AliAODVertex::AliAODVertex(const Float_t position[3], 
 			   Double_t  chi2perNDF,
 			   Char_t vtype) :
-  TObject(),
+  AliVVertex(),
   fChi2perNDF(chi2perNDF),
   fID(-1),
   fType(vtype),
@@ -130,7 +130,7 @@ AliAODVertex::~AliAODVertex()
 
 //______________________________________________________________________________
 AliAODVertex::AliAODVertex(const AliAODVertex& vtx) :
-  TObject(vtx),
+  AliVVertex(vtx),
   fChi2perNDF(vtx.fChi2perNDF),
   fID(vtx.fID),
   fType(vtx.fType),
@@ -153,7 +153,7 @@ AliAODVertex& AliAODVertex::operator=(const AliAODVertex& vtx)
   if (this != &vtx) {
 
     // name and type
-    TObject::operator=(vtx);
+    AliVVertex::operator=(vtx);
 
     //momentum
     for (int i = 0; i < 3; i++) 

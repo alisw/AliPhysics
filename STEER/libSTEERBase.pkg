@@ -1,6 +1,7 @@
 #-*- Mode: Makefile -*-
 
 SRCS = AliVParticle.cxx \
+       AliVVertex.cxx \
        AliVEvent.cxx \
        AliVHeader.cxx \
        AliVEventHandler.cxx \

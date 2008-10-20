@@ -50,9 +50,10 @@ class AliESDVertex : public AliVertex {
 
   virtual ~AliESDVertex() {}
 
-
   void     GetSigmaXYZ(Double_t sigma[3]) const;
   void     GetCovMatrix(Double_t covmatrix[6]) const;
+  void     GetCovarianceMatrix(Double_t covmatrix[6]) const 
+                    {GetCovMatrix(covmatrix);}
   void     GetSNR(Double_t snr[3]) const;
 
   Double_t GetXRes() const {return TMath::Sqrt(fCovXX);}
@@ -65,6 +66,8 @@ class AliESDVertex : public AliVertex {
   Double_t GetChi2() const { return fChi2; }
   Double_t GetChi2toNDF() const 
     { return fChi2/(2.*(Double_t)fNContributors-3.); }
+  Double_t GetChi2perNDF() const { return GetChi2toNDF();}
+  Int_t    GetNDF() const {return (2*fNContributors-3);}
 
   void     Print(Option_t* option = "") const;
   void     PrintStatus() const {Print();}

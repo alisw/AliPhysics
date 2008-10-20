@@ -11,9 +11,9 @@
 //-------------------------------------------------------
 
 
-#include <TNamed.h>
+#include "AliVVertex.h"
 
-class AliVertex : public TNamed {
+class AliVertex : public AliVVertex {
  
  public:
  
@@ -37,6 +37,9 @@ class AliVertex : public TNamed {
   virtual Double_t GetXv() const { return fPosition[0]; }
   virtual Double_t GetYv() const { return fPosition[1]; }
   virtual Double_t GetZv() const { return fPosition[2]; }
+  virtual Double_t GetX()  const { return fPosition[0]; }
+  virtual Double_t GetY()  const { return fPosition[1]; }
+  virtual Double_t GetZ()  const { return fPosition[2]; }
   virtual Double_t GetDispersion() const { return fSigma; }
   virtual Int_t    GetNContributors() const { return fNContributors; }
   virtual Int_t    GetNIndices() const { return fNIndices; }
@@ -52,6 +55,12 @@ class AliVertex : public TNamed {
   virtual void     PrintIndices() const { if(fNIndices>0) 
     for(Int_t i=0;i<fNIndices;i++) printf("AliVertex uses track %d\n",fIndices[i]); return; }
 
+  virtual void     GetCovarianceMatrix(Double_t covmatrix[6]) const;
+  
+  virtual Double_t GetChi2perNDF() const {return -999.;}
+  virtual Double_t GetChi2() const {return -999.;}
+  virtual Int_t    GetNDF() const {return -999;}
+
  protected:
 
   Double32_t fPosition[3];    // vertex position
@@ -61,7 +70,7 @@ class AliVertex : public TNamed {
   UShort_t *fIndices;       //[fNIndices] indices of tracks used for vertex
 
 
-  ClassDef(AliVertex,3)  // Class for Primary Vertex
+  ClassDef(AliVertex,4)  // Class for Primary Vertex
 };
 
 #endif

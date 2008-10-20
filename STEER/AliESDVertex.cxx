@@ -174,7 +174,7 @@ AliESDVertex &AliESDVertex::operator=(const AliESDVertex &source){
   }
   return *this;
 }
-
+//--------------------------------------------------------------------------
 void AliESDVertex::Copy(TObject &obj) const {
   
   // this overwrites the virtual TOBject::Copy()
@@ -187,8 +187,6 @@ void AliESDVertex::Copy(TObject &obj) const {
   *robj = *this;
 
 }
-
-
 //--------------------------------------------------------------------------
 void AliESDVertex::SetToZero() {
   //

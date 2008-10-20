@@ -11,6 +11,7 @@
 #pragma link C++ enum   AliLog::EType_t;
  
 #pragma link C++ class AliVParticle+;
+#pragma link C++ class AliVVertex+;
 #pragma link C++ class AliVEvent+;
 #pragma link C++ class AliVHeader+;
 #pragma link C++ class AliVEventHandler+;

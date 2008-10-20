@@ -28,7 +28,7 @@ ClassImp(AliVertex)
 
 //--------------------------------------------------------------------------
 AliVertex::AliVertex() :
-  TNamed(),
+  AliVVertex(),
   fSigma(0),
   fNContributors(0),
   fNIndices(0),
@@ -43,7 +43,7 @@ AliVertex::AliVertex() :
 //--------------------------------------------------------------------------
 AliVertex::AliVertex(Double_t position[3],Double_t dispersion,
 		     Int_t nContributors):
-  TNamed(),
+  AliVVertex(),
   fSigma(dispersion),
   fNContributors(nContributors),
   fNIndices(0),
@@ -60,7 +60,7 @@ AliVertex::AliVertex(Double_t position[3],Double_t dispersion,
 
 //--------------------------------------------------------------------------
 AliVertex::AliVertex(const AliVertex &source):
-  TNamed(source),
+  AliVVertex(source),
   fSigma(source.GetDispersion()),
   fNContributors(source.GetNContributors()),
   fNIndices(source.GetNIndices()),
@@ -82,7 +82,7 @@ AliVertex &AliVertex::operator=(const AliVertex &source){
   // assignment operator
   //
   if(&source != this){
-    TNamed::operator=(source);
+    AliVVertex::operator=(source);
     for(Int_t i=0;i<3;i++)fPosition[i] = source.fPosition[i];
     fSigma = source.GetDispersion();
     fNContributors = source.GetNContributors();
@@ -112,7 +112,7 @@ void AliVertex::Clear(Option_t* option)
     // Delete allocated memory
     delete [] fIndices;
     fIndices = 0;
-    TNamed::Clear(option);
+    AliVVertex::Clear(option);
 }
 
 //--------------------------------------------------------------------------
@@ -123,6 +123,15 @@ void AliVertex::GetXYZ(Double_t position[3]) const {
   position[0] = fPosition[0];
   position[1] = fPosition[1];
   position[2] = fPosition[2];
+
+  return;
+}
+//--------------------------------------------------------------------------
+void AliVertex::GetCovarianceMatrix(Double_t covmatrix[6]) const {
+//
+// Fake method (is implmented in AliESDVertex)
+//
+  for(Int_t i=0;i<6;i++) covmatrix[i] = -999.;
 
   return;
 }
