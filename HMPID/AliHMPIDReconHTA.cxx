@@ -33,9 +33,9 @@
 #include <TSpline.h>         //ShapeModel()
 #include "TStopwatch.h"      //
 
-TH2F* AliHMPIDReconHTA::fgDatabase = 0x0;
-
-
+//TH2F* AliHMPIDReconHTA::fgDatabase = 0x0;
+TH2F* AliHMPIDReconHTA::fgDatabase = new TH2F("deconv","database;d1;d2;thC+1000*thTrk",500,0,50,150,0,15);
+Int_t AliHMPIDReconHTA::fgDB[501][51]={25551*0};
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 AliHMPIDReconHTA::AliHMPIDReconHTA():
   TTask("RichRec","RichPat"),
@@ -49,6 +49,8 @@ AliHMPIDReconHTA::AliHMPIDReconHTA():
   fXClu(0),
   fYClu(0),
   fClCk(0),
+  fThTrkIn(-999),
+  fPhTrkIn(-999),
   fThTrkFit(-999),
   fPhTrkFit(-999),
   fCkovFit(-999),
@@ -131,14 +133,14 @@ Bool_t AliHMPIDReconHTA::CkovHiddenTrk(AliESDtrack *pTrk,TClonesArray *pCluLst,I
   
   //
   Float_t xra,yra,th,ph; pTrk->GetHMPIDtrk(xra,yra,th,ph);
-  Printf(" simulated phi %6.2f ",ph*TMath::RadToDeg());
+//  Printf(" simulated phi %6.2f ",ph*TMath::RadToDeg());
   //
   
   if(!DoRecHiddenTrk()) {
     pTrk->SetHMPIDsignal(pParam->kNoPhotAccept);
     return kFALSE;
   }                                                                           //Do track and ring reconstruction,if problems returns 1
-  Printf("    fitted phi %6.2f ",fPhTrkFit*TMath::RadToDeg());
+//  Printf("    fitted phi %6.2f ",fPhTrkFit*TMath::RadToDeg());
   
   pTrk->SetHMPIDtrk(fRadX,fRadY,fThTrkFit,fPhTrkFit);                                        //store track intersection info
   pTrk->SetHMPIDmip(fMipX,fMipY,(Int_t)fMipQ,fNClu);                                         //store mip info 
@@ -164,10 +166,16 @@ Bool_t AliHMPIDReconHTA::DoRecHiddenTrk()
 //   Returns:   none
   Double_t thTrkRec,phiTrkRec,thetaCRec;
   
-  if(!FindShape(thTrkRec,phiTrkRec,thetaCRec)) return kFALSE;
+  if(!FindShape(thTrkRec,phiTrkRec,thetaCRec)) {
+//    Printf("FindShape failed...!");
+    return kFALSE;
+  }
 
-  if(!FitFree(thTrkRec,phiTrkRec)) {return kFALSE;}
-  
+  if(!FitFree(thTrkRec,phiTrkRec)) {
+//    Printf("FitFree failed...!");
+    return kFALSE;
+  }
+   
   return kTRUE;
 }//DoRecHiddenTrk()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -259,6 +267,7 @@ Bool_t AliHMPIDReconHTA::FindShape(Double_t &thTrkRec,Double_t &phiTrkRec,Double
   delete [] indphi;
 
   if(npeff<3) {
+    Printf("FindShape failed: no enough photons = %i...",npeff);
     delete [] phiphotP;
     delete [] distP;
     return kFALSE;
@@ -268,26 +277,33 @@ Bool_t AliHMPIDReconHTA::FindShape(Double_t &thTrkRec,Double_t &phiTrkRec,Double
   
   Double_t xA,xB;
   status = kFALSE;
-  if(ShapeModel(npeff,phiphotP,distP,xA,xB,phiTrkRec)) {
+  
+  if(!ShapeModel(npeff,phiphotP,distP,xA,xB,phiTrkRec)) {Printf("ShapeModel failed            "); return kFALSE;}
     
-//    Printf("FindShape: phi start %f xA %f yA %f",phiTrkRec*TMath::RadToDeg(),xA,xB);
-    if(xA < 50 && xB < 15) {                     // limits of the Database. See TH2F in InitDatabase()
+//  if(xA > 50 || xB > 15)                                {Printf("xA and xB failed out of range"); return kFALSE;}
 
-      Int_t bin = fgDatabase->FindBin(xA,xB);
-      if(bin>0) {
-        Int_t compact = (Int_t)fgDatabase->GetBinContent(bin);
-        thetaCRec =  (Double_t)(compact%1000);
-        thTrkRec  =  (Double_t)(compact/1000);
+  Int_t bin = fgDatabase->FindBin(xA,xB);
+  if(bin<=0)                                            {Printf("bin < 0 ! failed             "); return kFALSE;}
+  
+  Int_t compact = (Int_t)fgDatabase->GetBinContent(bin);
+  
+  
+  if(compact<0)                                         {Printf("compact< 0! failed           "); return kFALSE;} 
+  //
+  Int_t binxDB,binyDB;
+  FindBinDB(xA,xB,binxDB,binyDB);
+  Int_t compactDB;
+  if(binxDB>0 && binyDB>0 ) compactDB = fgDB[binxDB][binyDB];
+  //
+  Printf("compact %i compactDB %i",compact,compactDB);
 
-        thTrkRec *= TMath::DegToRad(); 
-        thetaCRec *= TMath::DegToRad();
+  thetaCRec =  (Double_t)(compact%1000);
+  thTrkRec  =  (Double_t)(compact/1000);
 
-    //    Printf("FindShape: xA %f xB %f compact %d thTrk %f thC %f",xA,xB,compact,thTrkRec*TMath::RadToDeg(),thetaCRec*TMath::RadToDeg());
+  thTrkRec  *= TMath::DegToRad(); 
+  thetaCRec *= TMath::DegToRad();
 
-        status = kTRUE;
-      }
-    }
-  }
+  status = kTRUE;
 
   delete [] phiphotP;
   delete [] distP;
@@ -355,11 +371,10 @@ Bool_t AliHMPIDReconHTA::ShapeModel(Int_t np,Double_t *phiphot,Double_t *dist,Do
   
   
   phiStart*=TMath::DegToRad();
-  Double_t phitest = FindSimmPhi(); 
-    //Double_t phiStart = phitest;
-  phiStart = phitest;  
-  Printf("   started phi %6.2f ",phiStart*TMath::RadToDeg());
-  
+  //----
+  Double_t phitest = FindSimmPhi();   
+  phiStart = phitest;
+  //---
 //  Printf("phiStart %f phiTest %f",phiStart*TMath::RadToDeg(),phitest*TMath::RadToDeg());
  
   return kTRUE;
@@ -416,8 +431,6 @@ Bool_t AliHMPIDReconHTA::FitFree(Double_t thTrkRec,Double_t phiTrkRec)
   par[0] = th;par[1] = ph;
   pMinuit->Eval(2,grad,f,par,3);
 
-//  Printf("FitFree: theta %f phi %f",th,ph);
-  
   SetTrkFit(th,ph);
   return kTRUE;
 }
@@ -503,12 +516,12 @@ void AliHMPIDReconHTA::InitDatabase()
 //                        thetaC+1000*thTrk
 //
 //  TFile *pout = new TFile("./database.root","recreate");
-  
+
   TStopwatch timer;
   timer.Start();
  
 
-  if(!fgDatabase) fgDatabase = new TH2F("deconv","database;d1;d2;thC+1000*thTrk",500,0,50,150,0,15);
+//  if(!fgDatabase) fgDatabase = new TH2F("deconv","database;d1;d2;thC+1000*thTrk",500,0,50,150,0,15);
   if(fgDatabase->GetEntries()>=1) {
    AliInfo("HTA database already built. ");
    return;
@@ -552,7 +565,7 @@ void AliHMPIDReconHTA::InitDatabase()
       pos=rec.TracePhot(thetaC,0);
 
       if(pos.X()==-999) {
-        dist1 = 0;            //open ring...anly the distance btw mip and point at 180 will be considered
+        dist1 = 0;            //open ring...only the distance btw mip and point at 180 will be considered
       } else {
         x[0] = pos.X(); y[0] = pos.Y();
         dist1   = TMath::Sqrt((x[0]-xmip)*(x[0]-xmip)+(y[0]-ymip)*(y[0]-ymip));
@@ -583,6 +596,9 @@ void AliHMPIDReconHTA::InitDatabase()
       Int_t compact = (Int_t)(thetaC*TMath::RadToDeg())+1000*(Int_t)(thTrk*TMath::RadToDeg());
       Int_t bin = fgDatabase->FindBin(distA,distB);
       if(fgDatabase->GetBinContent(bin)==0) fgDatabase->Fill(distA,distB,compact);
+      Int_t binxDB,binyDB;
+      FindBinDB(distA,distB,binxDB,binyDB);
+      fgDB[binxDB][binyDB] = compact;
     }
   }
 
@@ -610,6 +626,7 @@ void AliHMPIDReconHTA::FillZeroChan()const
   for(Int_t i = 0;i<nbinx;i++) {
     for(Int_t j = 0;j<nbiny;j++) {
       if(fgDatabase->GetBinContent(i,j) == 0) {
+        fgDatabase->SetCellContent(i,j,-1);
         Int_t nXmin = i-1; Int_t nXmax=i+1;
         Int_t nYmin = j-1; Int_t nYmax=j+1;
         Int_t nc = 0;
@@ -632,65 +649,6 @@ void AliHMPIDReconHTA::FillZeroChan()const
   }
 }//FillZeroChan()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-// stima gli angoli con il metodo dei minimi quadrati che sfrutta le distanze...
-
-Double_t AliHMPIDReconHTA::FindSimmPhi() 
-{ 
-  //It finds the phi of the ring
-  //by using the min. dist. algorithm
-  // Arguments: none
-  //   Returns: phi
-  //
-      
-  Float_t xrotsumm =0;     Float_t yrotsumm =0;     Float_t xx =0;           
-  Float_t yy =0;           Float_t xy =0; 
-
-  Int_t np=0;    
-   
-  for(Int_t i=0;i<fNClu;i++) {
-    if(!fClCk[i]) continue;
-    np++;
-    xrotsumm+=fXClu[i];         // summ xi
-    yrotsumm+=fYClu[i];         // summ yi
-    xx+=fXClu[i]*fXClu[i];      // summ xixi     
-    yy+=fYClu[i]*fYClu[i];      // summ yiyi
-    xy+=fXClu[i]*fYClu[i];      // summ yixi     
-  }
-      
-  //_____calc. met min quadr using effective distance _________________________________________________
-  
-  Double_t coeff[3];
-  coeff[0]= xy-xrotsumm*yrotsumm/np;    
-  coeff[1]= yrotsumm*yrotsumm/np - xrotsumm*xrotsumm/np - yy + xx;
-  coeff[2]= xrotsumm*yrotsumm/np-  xy;
-  
-  //____________________________________________________________________________________________________
-   
-  Double_t m1=0, m2=0;                                           
-  Double_t n1=0, n2=0;
-  
-  r2(coeff,m1,m2);
-  
-  n1=(yrotsumm-m1*xrotsumm)/np;                         
-  n2=(yrotsumm-m2*xrotsumm)/np;
-  
-  // le due soluzioni.................
-  
-  Double_t d1 =(1/(m1*m1+1))*(yy+m1*m1*xx+np*n1*n1-2*m1*xy-2*n1*yrotsumm+2*m1*n1*xrotsumm);
-  Double_t d2 =(1/(m2*m2+1))*(yy+m2*m2*xx+np*n2*n2-2*m2*xy-2*n2*yrotsumm+2*m2*n2*xrotsumm);
-  Double_t mMin;
-  if(d1 > d2) mMin = m2; else mMin = m1;
-  
-  Double_t PhiTrk= TMath::ATan(mMin);                              
-  
-  // positive angles...
-  if(PhiTrk<0)    PhiTrk+=180*TMath::DegToRad();
-  
-  return PhiTrk;
-}
-
-//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Int_t AliHMPIDReconHTA::r2(Double_t *coef, Double_t &x1, Double_t &x2)
 {
   //2nd deg. equation
@@ -714,3 +672,116 @@ Int_t AliHMPIDReconHTA::r2(Double_t *coef, Double_t &x1, Double_t &x2)
   x2 = (-b-TMath::Sqrt(delta))/(2*a);
   return 2;
 }//r2()
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Double_t AliHMPIDReconHTA::FindSimmPhi() 
+{     
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// RESTITUISCE  IN  OUTPUT  IL  VALORE  FINALE  DELL'ANGOLO  RICOSTRUITO 
+// CON  I  DUE  METODI:
+// - metodo dei minimi quadrati con le distanze effettive;................................(PER RING CHIUSI)
+// - metodo della determin della pendenza individuando la distanza minima mip-fotone;.....(PER RING APERTI)
+  
+  Float_t coeff1ord=0;     Float_t coeff2ord=0;     Float_t coeff0ord=0;  
+  Float_t xrotsumm =0;     Float_t yrotsumm =0;     Float_t xx =0;           
+  Float_t yy =0;           Float_t xy =0;           Float_t yx =0; 
+  Double_t xmin=0;
+  Double_t ymin=0;
+
+  Int_t np=0;    
+    
+  Double_t distMin = 999.;
+  
+  for(Int_t i=0;i<fNClu;i++) {
+    if(!fClCk[i]) continue;
+    np++;
+    xrotsumm+=fXClu[i];         // summ xi
+    yrotsumm+=fYClu[i];         // summ yi
+    xx+=fXClu[i]*fXClu[i];      // summ xixi     
+    yy+=fYClu[i]*fYClu[i];      // summ yiyi
+    xy+=fXClu[i]*fYClu[i];      // summ yixi     
+    Double_t dist2= (fXClu[i]-fMipX)*(fXClu[i]-fMipX)+(fYClu[i]-fMipY)*(fYClu[i]-fMipY);
+    if(dist2<distMin) {
+      distMin = dist2;
+      xmin = fXClu[i];
+      ymin = fYClu[i];
+    }
+  }
+
+  Double_t AngM=0;
+  if(ymin <  fMipY && xmin >  fMipX)  {AngM  =  TMath::ATan((ymin-fMipY)/(xmin-fMipX))*TMath::RadToDeg()+180;}
+  if(ymin >  fMipY && xmin <  fMipX)  {AngM  =  TMath::ATan((ymin-fMipY)/(xmin-fMipX))*TMath::RadToDeg()+360;}
+  if(ymin >  fMipY && xmin >  fMipX)  {AngM  =  TMath::ATan((ymin-fMipY)/(xmin-fMipX))*TMath::RadToDeg()+180;}
+  if(ymin <  fMipY && xmin <  fMipX)  {AngM  =  TMath::ATan((ymin-fMipY)/(xmin-fMipX))*TMath::RadToDeg();}
+  if(ymin == fMipY && xmin >  fMipX)  {AngM  =  TMath::ATan((ymin-fMipY)/(xmin-fMipX))*TMath::RadToDeg()+180;}
+  if(ymin == fMipY && xmin <  fMipX)  {AngM  =  TMath::ATan((ymin-fMipY)/(xmin-fMipX))*TMath::RadToDeg();}
+  if(ymin <  fMipY && xmin == fMipX)  {AngM  =  90;}
+  if(ymin >  fMipY && xmin == fMipX)  {AngM  =  270;}
+  
+  //_____calc. met min quadr using effective distance _________________________________________________
+  
+  coeff2ord= xy-xrotsumm*yrotsumm/np;    
+  coeff1ord= yrotsumm*yrotsumm/np - xrotsumm*xrotsumm/np - yy + xx;
+  coeff0ord= xrotsumm*yrotsumm/np -  yx;
+  Double_t m1=0, m2=0;  Double_t n1=0, n2=0;
+                            // c           // b         // a
+  Double_t coeff[3]={coeff0ord,coeff1ord,coeff2ord};    
+  
+  r2(coeff,m1,m2);
+  
+  n1=(yrotsumm-m1*xrotsumm)/np;                         
+  n2=(yrotsumm-m2*xrotsumm)/np;
+  // 2 solutions.................
+  
+  Double_t PhiTrk1= TMath::ATan(m1);                              
+  Double_t PhiTrk2= TMath::ATan(m2);
+  
+  // negative angles solved...
+  
+  Double_t PhiTrk1Positive=0;
+  
+  if(PhiTrk1<0)    PhiTrk1Positive= PhiTrk1 + 180*TMath::DegToRad();
+  if(PhiTrk1>=0)   PhiTrk1Positive= PhiTrk1;
+  
+  Double_t d1 =(1/(m1*m1+1))*(yy+m1*m1*xx+np*n1*n1-2*m1*xy-2*n1*yrotsumm+2*m1*n1*xrotsumm);
+  Double_t d2 =(1/(m2*m2+1))*(yy+m2*m2*xx+np*n2*n2-2*m2*xy-2*n2*yrotsumm+2*m2*n2*xrotsumm);
+  
+  Double_t mMin;
+  if(d1 > d2) mMin = m2; else mMin = m1;
+  
+  Double_t PhiTrk = TMath::ATan(mMin)*TMath::RadToDeg();
+  Double_t PhiTrkPositive=0;
+  // 
+  if(ymin <  fMipY && xmin >  fMipX)  {PhiTrkPositive  =  TMath::ATan(mMin)*TMath::RadToDeg()+180;}
+  if(ymin >  fMipY && xmin <  fMipX)  {PhiTrkPositive  =  TMath::ATan(mMin)*TMath::RadToDeg()+360;}
+  if(ymin >  fMipY && xmin >  fMipX)  {PhiTrkPositive  =  TMath::ATan(mMin)*TMath::RadToDeg()+180;}
+  if(ymin <  fMipY && xmin <  fMipX)  {PhiTrkPositive  =  TMath::ATan(mMin)*TMath::RadToDeg();}
+  if(ymin == fMipY && xmin >  fMipX)  {PhiTrkPositive  =  TMath::ATan(mMin)*TMath::RadToDeg()+180;}
+  if(ymin == fMipY && xmin <  fMipX)  {PhiTrkPositive  =  TMath::ATan(mMin)*TMath::RadToDeg();}
+  if(ymin <  fMipY && xmin == fMipX)  {PhiTrkPositive  =   90;}
+  if(ymin >  fMipY && xmin == fMipX)  {PhiTrkPositive  =  270;}
+  
+  //  ------------------------- choose the best-----------------------
+  
+  
+  Double_t PhiTrkFinal=0;
+  if( AngM-40 <=  PhiTrkPositive  &&  AngM+40 >= PhiTrkPositive)   PhiTrkFinal = PhiTrkPositive;  else PhiTrkFinal = AngM;
+  
+  return PhiTrkFinal*TMath::DegToRad();
+}
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void AliHMPIDReconHTA::FindBinDB(Double_t x,Double_t y,Int_t &binX,Int_t &binY)
+{
+  const Int_t nxDB = 500;
+  const Double_t xlowDB =  0;   
+  const Double_t xhigDB = 50;   
+  const Double_t ylowDB =  0;
+  const Double_t yhigDB = 15;
+
+  binX = -1;
+  binY = -1;
+  if(x<xlowDB && x>xlowDB &&
+     y<ylowDB && y>ylowDB)    return;
+  binX = (Int_t)((x-xlowDB)/(xhigDB-xlowDB));
+  binY = (Int_t)((y-ylowDB)/(yhigDB-ylowDB));
+}

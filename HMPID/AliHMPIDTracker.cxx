@@ -290,9 +290,10 @@ Int_t AliHMPIDTracker::ReconHiddenTrk(AliESDEvent *pEsd,TObjArray *pClus,TObjArr
     
     Double_t qMip=-1;
     Int_t chMip=-1;    
-    Double_t xMip,yMip;
-    Int_t indMip;
-    Int_t cluMipSiz;
+    Double_t xMip = 0;
+    Double_t yMip = 0;
+    Int_t indMip  = 0;
+    Int_t cluMipSiz = 0;
 
     for (Int_t iClu=0; iClu<nMipClusTot;iClu++) {                                               //clusters loop
       
@@ -311,7 +312,7 @@ Int_t AliHMPIDTracker::ReconHiddenTrk(AliESDEvent *pEsd,TObjArray *pClus,TObjArr
     if(chMip<0) return 1;    
     
     Int_t hvsec;
-    Double_t qthre;
+    Double_t qthre=0;
 // evaluate qThre
     if(pQthre->GetEntriesFast()==pParam->kMaxCh+1) {                                              // just for backward compatibility
       qthre=((TF1*)pQthre->At(chMip))->Eval(pEsd->GetTimeStamp());                                //
@@ -351,13 +352,13 @@ Int_t AliHMPIDTracker::ReconHiddenTrk(AliESDEvent *pEsd,TObjArray *pClus,TObjArr
       }
     }
     //
-//    Printf(" qthre %f nmean %f index %i cham %i",qthre,nmean,indMip,chMip);
-    reconHTA.CkovHiddenTrk(pTrk,(TClonesArray *)pClus->At(ipCh),indMip,nmean);                  //search for track parameters and Cerenkov angle of this track
-    
-    AliHMPIDPid pID;
-    Double_t prob[5];
-    pID.FindPid(pTrk,5,prob);
-    pTrk->SetHMPIDpid(prob);
+    Printf(" qthre %f nmean %f index %i cham %i",qthre,nmean,indMip,chMip);
+    if(!reconHTA.CkovHiddenTrk(pTrk,(TClonesArray *)pClus->At(ipCh),indMip,nmean)) {                 //search for track parameters and Cerenkov angle of this track
+      AliHMPIDPid pID;
+      Double_t prob[5];
+      pID.FindPid(pTrk,5,prob);
+      pTrk->SetHMPIDpid(prob);
+    }
 //      Printf(" Prob e- %6.2f mu %6.2f pi %6.2f k %6.2f p %6.2f",prob[0]*100,prob[1]*100,prob[2]*100,prob[3]*100,prob[4]*100);
   }//iTrk
 

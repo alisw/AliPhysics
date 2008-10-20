@@ -303,7 +303,7 @@ void AliHMPIDtrack::Propagate(Double_t len, Double_t x[3],Double_t p[3], Double_
   }
 }//Propagate()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Bool_t AliHMPIDtrack::Update(const AliHMPIDCluster *pClu, Double_t chisq, Int_t index)
+Bool_t AliHMPIDtrack::Update(const AliHMPIDCluster *pClu, Double_t /*chisq*/, Int_t /*index*/)
 {
   //
   // Arguments: AliCluster3D, chi sq, and clu index

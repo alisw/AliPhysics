@@ -31,6 +31,7 @@ public :
   void     DeleteVars       ()const;                                                               //delete variables
   void     InitDatabase     ();                                                                    //initialization of database
   TH2F*    DBHTA            ()     {return fgDatabase;}                                            //pointer for HTA database of rings
+  void     FindBinDB        (Double_t x,Double_t y,Int_t &binX,Int_t &binY);                 //tmp new DB
   void     FillZeroChan     ()const;                                                               //complete the DB
   Bool_t   CkovHiddenTrk    (AliESDtrack *pTrk,TClonesArray *pClu,Int_t index, Double_t nmean);    //Pattern recognition without trackinf information
   Bool_t   CluPreFilter     (TClonesArray *pClu               );                                   //Pre clustering filter to cut bkg clusters
@@ -85,6 +86,7 @@ protected:
   
   AliHMPIDParam *fParam;                       //Pointer to AliHMPIDParam
   static TH2F* fgDatabase;                     //database for ring shapes
+  static Int_t fgDB[501][51];                  //tmp DB
 //
 private:
   AliHMPIDReconHTA(const AliHMPIDReconHTA& r);              //dummy copy constructor
