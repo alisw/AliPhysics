@@ -1,0 +1,358 @@
+/**************************************************************************
+ * Copyright(c) 2004, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+// Thil class computes background corrections for the FMD. The correction is computed 
+// in eta,phi cells and the objects stored can be put into alien to use with analysis.
+// It is based on the AliFMDInput class that is used to loop over hits and primaries.
+//
+// Author: Hans Hjersing Dalsgaard, NBI, hans.dalsgaard@cern.ch
+//
+//
+
+#include "AliSimulation.h"
+#include "TStopwatch.h"
+#include "iostream"
+#include "TGrid.h"
+#include "AliRunLoader.h"
+#include "AliGeomManager.h"
+#include "AliFMDGeometry.h"
+#include "AliStack.h"
+#include "TParticle.h"
+#include "TDatabasePDG.h"
+#include "TParticlePDG.h"
+#include "AliRun.h"
+#include "AliFMDBackgroundCorrection.h"
+#include "TSystem.h"
+#include "AliCDBManager.h"
+#include "TTree.h"
+#include "TClonesArray.h"
+#include "TBranch.h"
+#include "AliFMDHit.h"
+#include "AliLoader.h" 
+#include "AliFMD.h"
+#include "TH2F.h"
+#include "AliGenEventHeader.h"
+#include "AliHeader.h"
+#include "TFile.h"
+#include "TAxis.h"
+#include "AliCDBId.h"
+#include "AliCDBMetaData.h"
+#include "TROOT.h"
+#include "AliFMDParameters.h"
+#include "AliLog.h"
+
+
+
+ClassImp(AliFMDBackgroundCorrection)
+//_____________________________________________________________________
+AliFMDBackgroundCorrection::AliFMDBackgroundCorrection() : 
+  TNamed(),
+  fCorrectionArray()
+{} 
+
+//_____________________________________________________________________
+AliFMDBackgroundCorrection::AliFMDInputBG::AliFMDInputBG() : 
+  AliFMDInput(),
+  fPrim(0),
+  fHits(0),
+  fZvtxCut(0),
+  fNvtxBins(0),
+  fPrevTrack(-1),
+  fPrevDetector(-1),
+  fPrevRing('Q'),
+  fNbinsEta(100)
+{
+  AddLoad(kTracks); 
+  AddLoad(kHits); 
+  AddLoad(kKinematics); 
+  AddLoad(kHeader);
+}
+
+//_____________________________________________________________________
+
+void AliFMDBackgroundCorrection::GenerateBackgroundCorrection(Int_t nvtxbins,
+							      Float_t zvtxcut, 
+							      Int_t nBinsEta, 
+							      Bool_t storeInAlien, 
+							      Int_t runNo,
+							      Int_t endRunNo, 
+							      const Char_t* filename, 
+							      Bool_t simulate,
+							      Int_t nEvents) {
+  
+  TGrid::Connect("alien:",0,0,"t");
+  if(simulate)
+    Simulate(nEvents);
+  else {
+    AliCDBManager::Instance()->SetDefaultStorage("alien://Folder=/alice/data/2008/LHC08d/OCDB/");
+    AliCDBManager::Instance()->SetRun(runNo);
+    
+#if defined(__CINT__)
+    gSystem->Load("liblhapdf");
+    gSystem->Load("libEGPythia6");
+    gSystem->Load("libpythia6");
+    gSystem->Load("libAliPythia6");
+    gSystem->Load("libgeant321");
+#endif
+  }  
+  
+  //Setting up the geometry
+  //-----------------------------------------------
+  if (AliGeomManager::GetGeometry() == NULL)
+    AliGeomManager::LoadGeometry();
+  
+  AliFMDGeometry* geo = AliFMDGeometry::Instance();
+  geo->Init();
+  geo->InitTransformations();
+  
+  
+  
+  AliInfo("Processing hits and primaries ");
+  
+  AliFMDInputBG input;
+  input.SetVtxCutZ(zvtxcut);
+  input.SetNvtxBins(nvtxbins);
+  input.SetNbinsEta(nBinsEta);
+  input.Run();
+  
+  AliInfo(Form("Found %d primaries and %d hits.", input.GetNprim(),input.GetNhits()));
+  
+  TObjArray* hitArray = input.GetHits();
+  TObjArray* primaryArray = input.GetPrimaries();
+  fCorrectionArray.SetName("FMD_bg_correction");
+  fCorrectionArray.SetOwner();
+  for(Int_t det= 1; det <=3; det++) {
+    Int_t nRings = (det==1 ? 1 : 2);
+    
+    TObjArray* detArrayCorrection = new TObjArray();
+    detArrayCorrection->SetName(Form("FMD%d",det));
+    fCorrectionArray.AddAtAndExpand(detArrayCorrection,det);
+    
+    
+    for(Int_t iring = 0; iring<nRings; iring++) {
+      TObjArray* primRingArray = (TObjArray*)primaryArray->At(iring);
+      Char_t ringChar = (iring == 0 ? 'I' : 'O');
+      TObjArray* vtxArrayCorrection = new TObjArray();
+      vtxArrayCorrection->SetName(Form("FMD%d%c",det,ringChar));
+      detArrayCorrection->AddAtAndExpand(vtxArrayCorrection,iring);
+      
+      for(Int_t vertexBin=0;vertexBin<nvtxbins;vertexBin++) {
+	TObjArray* detArray  = (TObjArray*)hitArray->At(det);
+	TObjArray* vtxArray  = (TObjArray*)detArray->At(iring);
+	TH2F* hHits          = (TH2F*)vtxArray->At(vertexBin);
+	TH2F* hPrimary  = (TH2F*)primRingArray->At(vertexBin);
+	TH2F* hCorrection = (TH2F*)hHits->Clone(Form("FMD%d%c_vtxbin_%d_correction",det,ringChar,vertexBin));
+	hCorrection->Divide(hPrimary);
+	vtxArrayCorrection->AddAtAndExpand(hCorrection,vertexBin);
+      }
+      
+    }
+  }
+  
+  TAxis refAxis(nvtxbins,-1*zvtxcut,zvtxcut);
+  
+  
+
+  
+  TFile fout(filename,"RECREATE");
+  refAxis.Write("vertexbins");
+  fout.mkdir("Hits");
+  fout.cd("Hits");
+  hitArray->Write();
+  fout.mkdir("Primaries");
+  fout.cd("Primaries");
+  primaryArray->Write();
+  fout.mkdir("Correction");
+  fout.cd("Correction");
+  fCorrectionArray.Write();
+  
+  if(storeInAlien) {
+    AliCDBManager* cdb = AliCDBManager::Instance();
+    cdb->SetDefaultStorage("local://$ALICE_ROOT");
+    AliCDBId      id("FMD/AnalysisCalib/Background",runNo,endRunNo);
+    
+    AliCDBMetaData* meta = new AliCDBMetaData;				
+    meta->SetResponsible(gSystem->GetUserInfo()->fRealName.Data());	
+    meta->SetAliRootVersion(gROOT->GetVersion());			
+    meta->SetBeamPeriod(1);						
+    meta->SetComment("Background Correction for FMD");
+    meta->SetProperty("key1", &fout );
+    cdb->Put(&fout, id, meta);
+    
+  }
+  
+
+  fout.Close();
+  
+}
+//_____________________________________________________________________
+void AliFMDBackgroundCorrection::Simulate(Int_t nEvents) {
+  
+  AliSimulation sim ; 
+  sim.SetRunNumber(0);
+  TGrid::Connect("alien:",0,0,"t");
+  sim.SetDefaultStorage("alien://Folder=/alice/data/2008/LHC08d/OCDB/");
+  sim.SetConfigFile("Config.C");
+  sim.SetRunQA("FMD:");
+  TStopwatch timer;
+  timer.Start();
+  sim.RunSimulation(nEvents);    
+  timer.Stop();
+  timer.Print();
+  
+}
+
+//_____________________________________________________________________
+Bool_t AliFMDBackgroundCorrection::AliFMDInputBG::ProcessTrack(Int_t i , TParticle* p, AliFMDHit* h) {
+  
+ 
+  //  if(!h)
+  //  return kTRUE;
+  //if(!p)
+  //  return kTRUE;
+  
+  // if(h) {
+  //  if(h->Detector() == 3)
+  //    std::cout<<"Track "<<i<<" hit "<<"FMD3"<<h->Ring()<<std::endl;
+    
+  //}
+  
+  AliGenEventHeader* genHeader = fLoader->GetHeader()->GenEventHeader();
+  TArrayF vertex;
+  genHeader->PrimaryVertex(vertex);
+  
+  if(TMath::Abs(vertex.At(2)) > fZvtxCut) 
+    return kTRUE;
+  
+  Double_t delta = 2*fZvtxCut/fNvtxBins;
+  Double_t vertexBinDouble = (vertex.At(2) + fZvtxCut) / delta;
+  Int_t vertexBin = (Int_t)vertexBinDouble;
+  
+  if(h)
+    if(h->Q() !=  0 && (i != fPrevTrack || h->Detector() != fPrevDetector || h->Ring() != fPrevRing)) {
+      
+      Int_t det = h->Detector();
+      Char_t ring = h->Ring();
+      //  if(h->Detector() == 3)
+      //	std::cout<<"Detected a hit in " <<"FMD"<<det<<ring<<"    ! "<<std::endl;
+     
+      Int_t iring = (ring == 'I' ? 0 : 1);
+      
+      TObjArray* detArray  = (TObjArray*)fHitArray.At(det);
+      TObjArray* vtxArray  = (TObjArray*)detArray->At(iring);
+      TH2F* hHits          = (TH2F*)vtxArray->At(vertexBin);
+      
+      Float_t phi   = TMath::ATan2(h->Py(),h->Px());
+      if(phi<0)
+	phi = phi+2*TMath::Pi();
+      Float_t theta = TMath::ATan2(TMath::Sqrt(TMath::Power(h->X(),2)+TMath::Power(h->Y(),2)),h->Z()+vertex.At(2));
+      Float_t eta   = -1*TMath::Log(TMath::Tan(0.5*theta));
+      hHits->Fill(eta,phi);
+      fHits++;
+      //fPrevTrack = i;
+      fPrevDetector = det;
+      fPrevRing     = ring;
+    }
+  if(p && i != fPrevTrack) {
+    
+    TDatabasePDG* pdgDB = TDatabasePDG::Instance();
+    TParticlePDG* pdgPart = pdgDB->GetParticle(p->GetPdgCode());
+    Float_t charge = (pdgPart ? pdgPart->Charge() : 0);
+    Float_t phi = TMath::ATan2(p->Py(),p->Px());
+
+    if(phi<0)
+      phi = phi+2*TMath::Pi();
+    
+    
+    Bool_t primary = (charge!=0)&&(TMath::Abs(p->Vx() - vertex.At(0))<0.1)&&(TMath::Abs(p->Vy() - vertex.At(1))<0.1)&&(TMath::Abs(p->Vz() - vertex.At(2))<0.1);
+    if(primary) {
+      fPrim++;
+      TObjArray* innerArray = (TObjArray*)fPrimaryArray.At(0);
+      TObjArray* outerArray = (TObjArray*)fPrimaryArray.At(1);
+      
+      TH2F* hPrimaryInner  = (TH2F*)innerArray->At(vertexBin);
+      TH2F* hPrimaryOuter  = (TH2F*)outerArray->At(vertexBin);
+      hPrimaryInner->Fill(p->Eta(),phi);
+      hPrimaryOuter->Fill(p->Eta(),phi);
+    }
+  }
+  
+  
+  fPrevTrack = i;
+  return kTRUE;
+}
+
+//_____________________________________________________________________
+Bool_t AliFMDBackgroundCorrection::AliFMDInputBG::Init() {
+  
+  fPrimaryArray.SetOwner();
+  fPrimaryArray.SetName("FMD_primary");
+  
+  for(Int_t iring = 0; iring<2;iring++) {
+    Char_t ringChar = (iring == 0 ? 'I' : 'O');
+    TObjArray* ringArray = new TObjArray();
+    ringArray->SetName(Form("FMD_%c",ringChar));
+    fPrimaryArray.AddAtAndExpand(ringArray,iring);
+    Int_t nSec = (iring == 1 ? 40 : 20);
+    for(Int_t v=0; v<fNvtxBins;v++) {
+
+      TH2F* hPrimary       = new TH2F(Form("hPrimary_FMD_%c_vtx%d",ringChar,v),
+				      Form("hPrimary_FMD_%c_vtx%d",ringChar,v),
+				      fNbinsEta, -6,6, nSec, 0,2*TMath::Pi());
+      ringArray->AddAtAndExpand(hPrimary,v);
+    }
+  }
+  
+  
+  fHitArray.SetOwner();
+  fHitArray.SetName("FMD_hits");
+   
+  for(Int_t det =1; det<=3;det++)
+    {
+      TObjArray* detArrayHits = new TObjArray();
+      detArrayHits->SetName(Form("FMD%d",det));
+      fHitArray.AddAtAndExpand(detArrayHits,det);
+      Int_t nRings = (det==1 ? 1 : 2);
+      for(Int_t ring = 0;ring<nRings;ring++)
+	{
+	  Int_t nSec = (ring == 1 ? 40 : 20);
+	  Char_t ringChar = (ring == 0 ? 'I' : 'O');
+	  TObjArray* vtxArrayHits = new TObjArray();
+	  vtxArrayHits->SetName(Form("FMD%d%c",det,ringChar));
+	  detArrayHits->AddAtAndExpand(vtxArrayHits,ring);
+	  for(Int_t v=0; v<fNvtxBins;v++)
+	    {
+	      
+	      TH2F* hHits          = new TH2F(Form("hHits_FMD%d%c_vtx%d",det,ringChar,v),
+					      Form("hHits_FMD%d%c_vtx%d",det,ringChar,v),
+					      fNbinsEta, -6,6, nSec, 0, 2*TMath::Pi());
+	      vtxArrayHits->AddAtAndExpand(hHits,v);
+	      	      
+	    } 
+	}
+      
+    }
+
+
+  
+  AliFMDInput::Init();
+  
+  
+  return kTRUE;
+}
+// EOF
+
+
+
