@@ -4,7 +4,7 @@ HDRS:= $(SRCS:.cxx=.h)
 HDRS:= $(filter-out lhapdf5.5.1/src/version.h,$(HDRS)) 
 HDRS:= $(filter-out lhapdf5.5.1/src/getdatapath.h,$(HDRS)) 
 
-DHDR:=LHAPDFLinkDef.h
+DHDR:=lhapdfLinkDef.h
 
 EINCLUDE:= LHAPDF/lhapdf5.5.1 LHAPDF/lhapdf5.5.1/include
 
