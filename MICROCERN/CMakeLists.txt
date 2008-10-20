@@ -17,6 +17,8 @@ ${ROOT_LIBRARY_DIR}
 
 link_directories( ${LINK_DIRECTORIES})
 
+ADD_DEFINITIONS( ${CLIBDEFS} )
+
 SetModule()
 
 include(CMake_libMICROCERN.txt)
