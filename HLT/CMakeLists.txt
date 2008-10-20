@@ -50,7 +50,7 @@ ${ROOT_LIBRARY_DIR}
 
 link_directories( ${LINK_DIRECTORIES})
 
-ADD_DEFINITIONS(-Duse_aliroot -Duse_root -DROWHOUGHPARAMS -Duse_reconstruction -Duse_newio -DROOTVERSION=\"unchecked\" -DALIROOTVERSION=\"unchecked\" -D__ROOT__ -DUSE_ALILOG -DLINUX -DLIBHLTSIM_VERSION=0)
+ADD_DEFINITIONS(-Duse_aliroot -Duse_root -DUSE_ROOT -DROWHOUGHPARAMS -Duse_reconstruction -Duse_newio -DROOTVERSION=\"unchecked\" -DALIROOTVERSION=\"unchecked\" -D__ROOT__ -DUSE_ALILOG -DLINUX -DLIBHLTSIM_VERSION=0)
 
 SetModule()
 

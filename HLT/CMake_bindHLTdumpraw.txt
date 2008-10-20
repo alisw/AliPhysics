@@ -4,8 +4,8 @@ set(SRCS
 MUON/utils/dHLTdumpraw.cxx
 )
 
-Set(LIBS STEERBase ESD AOD RAWDatabase RAWDatarec RAWDatasim CDB STEER HLTbase
+Set(LIBS STEERBase ESD AOD RAWDatarec RAWDatasim CDB STEER HLTbase
          MUONevaluation MUONsim MUONrec MUONbase MUONtrigger MUONgeometry MUONraw
-         MUONcalib MUONmapping MUONcore AliHLTMUON AliHLTHOMER HLTshuttle)
+         MUONcalib MUONmapping MUONcore AliHLTMUON AliHLTHOMER HLTshuttle  RAWDatabase)
 
 AddExecutable(dHLTdumpraw "${SRCS}" "${LIBS}")

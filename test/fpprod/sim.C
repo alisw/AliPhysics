@@ -1,4 +1,4 @@
-void sim(Int_t nev=50) {
+void sim(Int_t nev=5) {
   if (!strcmp(gSystem->GetBuildArch(),"win32gcc")) {
     gSystem->Load("libProof");
     gSystem->Load("libGui");

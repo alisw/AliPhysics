@@ -1,18 +1,20 @@
 # -*- mode: cmake -*-
 
 set(SRCS
-BASE/util/AliHLTFilePublisher.cxx
-BASE/util/AliHLTFileWriter.cxx
-BASE/util/AliHLTRootFilePublisherComponent.cxx
-BASE/util/AliHLTRootFileWriterComponent.cxx
-BASE/util/AliHLTRootFileStreamerComponent.cxx
-BASE/util/AliHLTLoaderPublisherComponent.cxx
-BASE/util/AliHLTRawReaderPublisherComponent.cxx
-BASE/util/AliHLTOUTPublisherComponent.cxx
-BASE/util/AliHLTEsdCollectorComponent.cxx
-BASE/util/AliHLTDataGenerator.cxx
-BASE/util/AliHLTBlockFilterComponent.cxx
-BASE/util/AliHLTAgentUtil.cxx
+  BASE/util/AliHLTFilePublisher.cxx
+  BASE/util/AliHLTFileWriter.cxx
+  BASE/util/AliHLTRootFilePublisherComponent.cxx
+  BASE/util/AliHLTESDMCEventPublisherComponent.cxx
+  BASE/util/AliHLTRootFileWriterComponent.cxx
+  BASE/util/AliHLTRootFileStreamerComponent.cxx
+  BASE/util/AliHLTLoaderPublisherComponent.cxx
+  BASE/util/AliHLTRawReaderPublisherComponent.cxx
+  BASE/util/AliHLTOUTPublisherComponent.cxx
+  BASE/util/AliHLTEsdCollectorComponent.cxx
+  BASE/util/AliHLTDataGenerator.cxx
+  BASE/util/AliHLTBlockFilterComponent.cxx
+  BASE/util/AliHLTCompStatCollector.cxx
+  BASE/util/AliHLTAgentUtil.cxx
 )
 
 # fill list of header files from list of source files

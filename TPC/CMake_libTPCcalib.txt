@@ -1,8 +1,25 @@
 # -*- mode: cmake -*-
 
 set(SRCS
-      AliTPCcalibTracksCuts.cxx   AliTPCcalibTracks.cxx   AliTPCcalibTracksGain.cxx  
-        AliTPCSelectorESD.cxx   AliTPCSelectorTracks.cxx   AliTPCCalPadRegion.cxx AliTPCFitPad.cxx AliAnaTPCTrackBase.cxx AliAnaTPCTrackCalib.cxx AliTPCcalibAlign.cxx AliTPCcalibAlignment.cxx  AliTPCcalibV0.cxx AliTPCCalibKr.cxx AliTPCcalibBase.cxx AliTPCAnalysisTaskcalib.cxx  AliTPCCalibKrTask.cxx AliTPCcalibLaser.cxx AliTPCcalibCosmic.cxx AliTPCLaserTrack.cxx AliTPCcalibCalib.cxx 
+  AliTPCcalibTracksCuts.cxx
+  AliTPCcalibTracks.cxx
+  AliTPCcalibTracksGain.cxx
+  AliTPCCalPadRegion.cxx
+  AliTPCFitPad.cxx
+  AliAnaTPCTrackBase.cxx
+  AliAnaTPCTrackCalib.cxx
+  AliTPCcalibAlign.cxx
+  AliTPCcalibAlignment.cxx
+  AliTPCcalibV0.cxx
+  AliTPCCalibKr.cxx
+  AliTPCcalibBase.cxx
+  AliTPCAnalysisTaskcalib.cxx
+  AliTPCCalibKrTask.cxx
+  AliTPCcalibLaser.cxx
+  AliTPCcalibCosmic.cxx
+  AliTPCLaserTrack.cxx
+  AliTPCcalibCalib.cxx
+  AliTPCcalibTime.cxx
 )
 
 # fill list of header files from list of source files

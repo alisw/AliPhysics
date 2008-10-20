@@ -4,8 +4,10 @@ set(SRCS
 mchview.cxx
 )
 
-Set(LIBS STEERBase ESD AOD RAWDatarec STEER CDB MUONmapping MUONcalib
-         MUONgeometry MUONtrigger RAWDatabase RAWDatasim MUONraw MUONbase
-         MUONshuttle MUONrec MUONgraphics MUONcore lhapdf pythia6 microcern)
+Set(LIBS STEERBase AOD RAWDatarec STEER CDB
+         MUONraw MUONbase RAWDatabase RAWDatasim
+         MUONshuttle MUONrec MUONgraphics MUONtrigger 
+	 MUONcalib MUONgeometry MUONmapping MUONcore 
+	 ESD lhapdf pythia6 microcern)
 
 AddExecutable(mchview "${SRCS}" "${LIBS}")
