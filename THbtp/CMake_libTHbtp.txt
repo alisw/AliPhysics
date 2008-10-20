@@ -5,9 +5,15 @@ THBTprocessor.cxx
 AliGenHBTprocessor.cxx
 )
 
+set(FSRCS
+hbt_event_processor.f
+)
+
 # fill list of header files from list of source files
 # by exchanging the file extension
 String(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+
+Set(SRCS ${SRCS} ${FSRCS} ${CSRCS})
 
 AddLibrary(THbtp "${SRCS}" "${HDRS}")
 
