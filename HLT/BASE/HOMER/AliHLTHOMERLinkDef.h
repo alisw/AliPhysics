@@ -4,9 +4,9 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-#pragma link C++ class MonitoringReader;
-#pragma link C++ class HOMERReader;
-#pragma link C++ class HOMERWriter;
+#pragma link C++ class AliHLTMonitoringReader+;
+#pragma link C++ class AliHLTHOMERReader+;
+#pragma link C++ class AliHLTHOMERWriter+;
 
 
 #pragma link C++ global gROOT;
