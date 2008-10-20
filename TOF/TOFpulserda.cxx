@@ -127,7 +127,8 @@ int main(int argc, char **argv) {
 	Int_t Volume[5];
 	AliRawReader *rawReader = new AliRawReaderDate((void*)event);
 	AliTOFRawStream *rawStreamTOF = new AliTOFRawStream(rawReader);
-	AliTOFDecoder * decoderTOF = new AliTOFDecoder();
+        const AliRawDataHeader *currentCDH;
+       	AliTOFDecoder * decoderTOF = new AliTOFDecoder();
 	AliTOFHitDataBuffer *DataBuffer[72]; 
 	AliTOFHitDataBuffer *PackedDataBuffer[72];	
 	for (Int_t i=0;i<AliDAQ::NumberOfDdls("TOF");i++){
@@ -147,6 +148,7 @@ int main(int argc, char **argv) {
 	  //get equipment infos
 	  currentEquipment = rawReader->GetEquipmentId();
 	  currentDDL = rawReader->GetDDLID();
+  	  currentCDH = rawReader->GetDataHeader();
 	  Int_t nchDDL = 0;
 	  if (currentDDL%2==0) {
 	    nchDDL = 2160;
@@ -175,7 +177,7 @@ int main(int argc, char **argv) {
 	    data = 0x0;
 	    continue;
 	  }
-	  if (decoderTOF->Decode((UInt_t *)data, kDataWords) == kTRUE) {
+	  if (decoderTOF->Decode((UInt_t *)data, kDataWords, currentCDH) == kTRUE) {
 	    rawReader->AddMajorErrorLog(AliTOFRawStream::kDDLDecoder,Form("DDL # = %d",currentDDL));
 	    printf("Error while decoding DDL # %d: decoder returned with errors \n", currentDDL);
 	  }
@@ -239,6 +241,7 @@ int main(int argc, char **argv) {
       /* free resources */
       free(event);
     }
+    
   }
 
   delete geom;
