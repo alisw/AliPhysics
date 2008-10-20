@@ -743,7 +743,7 @@ Bool_t AliTRDgtuTMU::WriteTrackletsToTree(TTree *trklTree)
   AliInfo(Form("---------- Writing tracklets to tree (not yet) ----------"));
   for (Int_t layer = 0; layer < fGtuParam->GetNLayers(); layer++) {
     TIter next(fTracklets[layer]);
-    while (trkl = (AliTRDtrackletGTU*) next()) {
+    while ((trkl = (AliTRDtrackletGTU*) next())) {
 	AliInfo(Form("InputUnit : GetIndex(): %3i, GetZbin(): %2i, GetY() : %5i, GetdY() : %3i, GetYPrime() : %5i, GetYProj() : %5i, GetAlpha() : %3i, Zidx(2..0): %i  %i  %i", trkl->GetIndex(), trkl->GetZbin(), trkl->GetYbin(), trkl->GetdY(), trkl->GetYPrime(), trkl->GetYProj(), trkl->GetAlpha(), trkl->GetSubChannel(2), trkl->GetSubChannel(1), trkl->GetSubChannel(0) ));
 	branch->SetAddress(&trkl);
 	trklTree->Fill();
