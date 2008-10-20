@@ -60,25 +60,29 @@ class AliTRDtrackGTU : public TObject {
 //  void SetOuterIntPoint(Float_t *x);
   void SetFitParams(Float_t a, Float_t b, Float_t c);
 
+  Bool_t CookLabel();
+
  protected:
 
-  Int_t fStack;
-  Int_t fSector;
+  Int_t fStack; // TRD stack to which this track belongs
+  Int_t fSector; // sector in which the track was found
 
   Int_t fPt; // pt in integer representation
-  Int_t fPID;
+  Int_t fPID; // PID calculated from tracklet PID
 
-  TClonesArray *fTracklets;
-  Int_t fTrackletMask;
-  Int_t fNTracklets;
+  TClonesArray *fTracklets; // array holding the tracklets composing this track
+  Int_t fTrackletMask; // mask in which layers tracklets have been assigned
+  Int_t fNTracklets; // number of tracklets in this track
 
-  Int_t fRefLayerIdx;
-  Int_t fZChannel;
-  Int_t fZSubChannel; 
+  Int_t fRefLayerIdx; // index of the reference layer in which this track was found
+  Int_t fZChannel; // z-channel unit in which this track was found
+  Int_t fZSubChannel; // z-subchannel of the assigned tracklets
 
-  Float_t fA; 
-  Float_t fB; 
-  Float_t fC; 
+  Float_t fA; // fit parameter of y' = a + b*x + c*z
+  Float_t fB; // fit parameter of y' = a + b*x + c*z
+  Float_t fC; // fit parameter of y' = a + b*x + c*z
+
+  Int_t fLabel; // MC label
 
  private:
   AliTRDtrackGTU(const AliTRDtrackGTU &rhs); // not implemented

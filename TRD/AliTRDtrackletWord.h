@@ -16,8 +16,8 @@
 
 class AliTRDtrackletWord : public AliTRDtrackletBase {
  public:
-  AliTRDtrackletWord(UInt_t tracklet_word = 0);
-  AliTRDtrackletWord(UInt_t tracklet_word, Int_t hcid);
+  AliTRDtrackletWord(UInt_t trackletWord = 0);
+  AliTRDtrackletWord(UInt_t trackletWord, Int_t hcid);
   AliTRDtrackletWord(const AliTRDtrackletWord &rhs);
   ~AliTRDtrackletWord();
 
@@ -47,6 +47,9 @@ class AliTRDtrackletWord : public AliTRDtrackletBase {
   Int_t fHCId;                  //! half-chamber ID (only transient)
   UInt_t fTrackletWord;		// tracklet word: PID | Z | deflection length | Y 
 				//          bits:  12   4            7          13
+
+ private:
+  AliTRDtrackletWord& operator=(const AliTRDtrackletWord &rhs);   // not implemented
 
   ClassDef(AliTRDtrackletWord, 1);
 };

@@ -246,7 +246,7 @@ Bool_t AliTRDgtuTMU::RunZChannelUnit(Int_t layer)
 
 	TIter nexttrkl(&fZChannelTracklets[layer][zch], kIterBackward);
 	AliTRDtrackletGTU *t = 0x0;
-	while (t = (AliTRDtrackletGTU*) nexttrkl.Next()) {
+	while ((t = (AliTRDtrackletGTU*) nexttrkl.Next())) {
 	  if (t->GetSubChannel(zch) < trk->GetSubChannel(zch) || 
 	      (t->GetSubChannel(zch) == trk->GetSubChannel(zch) && t->GetYProj() < trk->GetYProj()) )
 	    break;
@@ -261,7 +261,7 @@ Bool_t AliTRDgtuTMU::RunZChannelUnit(Int_t layer)
   return kTRUE;
 }
 
-Bool_t AliTRDgtuTMU::RunTrackFinder(Int_t zch, TList *ListOfTracks) 
+Bool_t AliTRDgtuTMU::RunTrackFinder(Int_t zch, TList* /* ListOfTracks */) 
 {
   // run the track finding
 
@@ -564,7 +564,7 @@ Bool_t AliTRDgtuTMU::RunTrackMerging(TList* ListOfTracks)
 
     TList *tracksZMergedStage1 = new TList;
 
-    AliTRDtrackGTU **trk = new AliTRDtrackGTU*[fGtuParam->GetNRefLayers()];
+    AliTRDtrackGTU **trkInRefLayer = new AliTRDtrackGTU*[fGtuParam->GetNRefLayers()];
 
     Bool_t done = kFALSE;
     Int_t minIdx = 0;
@@ -576,19 +576,19 @@ Bool_t AliTRDgtuTMU::RunTrackMerging(TList* ListOfTracks)
 	    done = kTRUE;
 	    trkStage0 = 0x0;
 	    for (Int_t refLayerIdx = 0; refLayerIdx < fGtuParam->GetNRefLayers(); refLayerIdx++) {
-		trk[refLayerIdx] = (AliTRDtrackGTU*) fTracks[zch][refLayerIdx].First();
-		if (trk[refLayerIdx] == 0) {
+		trkInRefLayer[refLayerIdx] = (AliTRDtrackGTU*) fTracks[zch][refLayerIdx].First();
+		if (trkInRefLayer[refLayerIdx] == 0) {
 		    continue;
 		}
 		else if (trkStage0 == 0x0 ) {
-		    trkStage0 = trk[refLayerIdx];
+		    trkStage0 = trkInRefLayer[refLayerIdx];
 		    minIdx = refLayerIdx;
 		    done = kFALSE;
 		}
-		else if (trk[refLayerIdx]->GetZSubChannel() < trkStage0->GetZSubChannel() || 
-			 (trk[refLayerIdx]->GetZSubChannel() == trkStage0->GetZSubChannel() && trk[refLayerIdx]->GetYapprox() < trkStage0->GetYapprox()) ) {
+		else if (trkInRefLayer[refLayerIdx]->GetZSubChannel() < trkStage0->GetZSubChannel() || 
+			 (trkInRefLayer[refLayerIdx]->GetZSubChannel() == trkStage0->GetZSubChannel() && trkInRefLayer[refLayerIdx]->GetYapprox() < trkStage0->GetYapprox()) ) {
 		    minIdx = refLayerIdx;
-		    trkStage0 = trk[refLayerIdx];
+		    trkStage0 = trkInRefLayer[refLayerIdx];
 		    done = kFALSE;
 		}
 	    }

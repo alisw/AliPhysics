@@ -15,13 +15,11 @@
 #include "AliTRDtrackletBase.h"
 #include "AliLog.h"
 
-class AliTRDmcmTracklet;
 class AliTRDgtuParam;
 
 class AliTRDtrackletGTU : public AliTRDtrackletBase {
  public:
   AliTRDtrackletGTU();
-//  AliTRDtrackletGTU(UInt_t tracklet_word = 0);
   AliTRDtrackletGTU(AliTRDtrackletBase *tracklet); 
   AliTRDtrackletGTU(const AliTRDtrackletGTU& trk);
 
@@ -60,6 +58,8 @@ class AliTRDtrackletGTU : public AliTRDtrackletBase {
 
   Int_t GetSide() const { return GetYbin() < 0 ? 0 : 1; } 
 
+  Int_t GetLabel() const; // { return fLabel; }
+
   // ----- Setters -----
   void SetAlpha(Int_t alpha) { fAlpha = alpha; }
   void SetYProj(Int_t yproj) { fYProj = yproj; }
@@ -81,9 +81,9 @@ class AliTRDtrackletGTU : public AliTRDtrackletBase {
   Int_t fAlpha;			// calculated value for alpha
   Int_t fYProj;			// calculated value for y_proj
   Int_t fYPrime;		// calculated value for y'
-  Int_t fIndex;
+  Int_t fIndex;                 // index of tracklet in the sequence after the input units
 
-  static AliTRDtrackletBase* fgkDummyTracklet;
+  static AliTRDtrackletBase* fgkDummyTracklet; // dummy tracklet, used in case no tracklet is given
 
  private:
 

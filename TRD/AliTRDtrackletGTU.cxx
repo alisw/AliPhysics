@@ -24,10 +24,12 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #include "TMath.h"
+#include "TClass.h"
 
 #include "AliTRDtrackletGTU.h"
 #include "AliTRDtrackletWord.h"
 #include "AliTRDmcmTracklet.h"
+#include "AliTRDtrackletMCM.h"
 #include "AliLog.h"
 #include "AliTRDgtuParam.h"
 #include "AliTRDgeometry.h"
@@ -72,6 +74,9 @@ AliTRDtrackletGTU::AliTRDtrackletGTU(AliTRDtrackletBase *tracklet) :
   for (Int_t zch = 0; zch < fGtuParam->GetNZChannels(); zch++) 
     fSubChannel[zch] = 0;
   fTracklet = tracklet;
+  if ( fTracklet->IsA() == TClass::GetClass("AliTRDtrackletMCM")) {
+      AliInfo(Form("label from mcm tracklet: %i", ((AliTRDtrackletMCM*) fTracklet)->GetLabel()));
+  }
 }
 
 AliTRDtrackletGTU::AliTRDtrackletGTU(const AliTRDtrackletGTU& tracklet) :
@@ -170,6 +175,14 @@ Int_t AliTRDtrackletGTU::GetSubChannel(Int_t zch)
 {
   // get the subchannel in the given z-channel
   return fSubChannel[zch];
+}
+
+Int_t AliTRDtrackletGTU::GetLabel() const
+{
+    if ( fTracklet->IsA() == TClass::GetClass("AliTRDtrackletMCM"))
+	return ((AliTRDtrackletMCM*) fTracklet)->GetLabel();
+    else
+	return -1;
 }
 
 /*

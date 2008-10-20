@@ -182,7 +182,7 @@ Bool_t AliTRDgtuSim::RunGTU(AliLoader *loader, AliESDEvent *esd)
     TIter next(fTrackletArray);
     AliTRDtrackletBase *trkl;
 
-    while (trkl = (AliTRDtrackletBase*) next()) {
+    while ((trkl = (AliTRDtrackletBase*) next())) {
 	iSec = trkl->GetDetector() / 30;
 	iStack = (trkl->GetDetector() % 30) / 6;
 	iLink = 2 * (trkl->GetDetector() % 6) + (trkl->GetYbin() < 0 ? 0 : 1);
@@ -352,7 +352,8 @@ Bool_t AliTRDgtuSim::WriteTracksToTree(TList *ListOfTracks, Int_t /*event*/)
   }
 
   TIter next(ListOfTracks);
-  while (trk = (AliTRDtrackGTU*) next()) {
+  while ((trk = (AliTRDtrackGTU*) next())) {
+      trk->CookLabel();
       branch->SetAddress(&trk);
       fTrackTree->Fill();   
   }

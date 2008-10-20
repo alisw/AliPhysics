@@ -30,37 +30,43 @@ ClassImp(AliTRDtrackletMCM)
 
 AliTRDtrackletMCM::AliTRDtrackletMCM(UInt_t trackletWord) :
   AliTRDtrackletBase(),
+  fGeo(0x0),
   fHCId(-1),
   fTrackletWord(trackletWord), 
   fMCM(-1), 
-  fROB(-1)
+  fROB(-1), 
+  fLabel(-1)
 { 
-
+    fGeo = new AliTRDgeometry();
 }
 
 AliTRDtrackletMCM::AliTRDtrackletMCM(UInt_t trackletWord, Int_t hcid) :
   AliTRDtrackletBase(),
+  fGeo(0x0),
   fHCId(hcid),
   fTrackletWord(trackletWord), 
   fMCM(-1),
-  fROB(-1)
+  fROB(-1),
+  fLabel(-1)
 { 
-
+    fGeo = new AliTRDgeometry();
 }
 
 AliTRDtrackletMCM::AliTRDtrackletMCM(const AliTRDtrackletMCM &rhs) :
   AliTRDtrackletBase(rhs),
+  fGeo(0x0),
   fHCId(rhs.fHCId),
   fTrackletWord(rhs.fTrackletWord),
   fMCM(rhs.fMCM),
-  fROB(rhs.fROB)
+  fROB(rhs.fROB),
+  fLabel(rhs.fLabel)
 {
-
+    fGeo = new AliTRDgeometry();
 }
 
 AliTRDtrackletMCM::~AliTRDtrackletMCM() 
 {
-
+    delete fGeo;
 }
 
 Int_t AliTRDtrackletMCM::GetYbin() const {

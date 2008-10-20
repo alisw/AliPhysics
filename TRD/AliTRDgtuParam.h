@@ -79,25 +79,25 @@ class AliTRDgtuParam : public TObject {
   static const Int_t fgkDeltaAlpha = 31; // accepted deviation in alpha, default: 11
   static const Int_t fgkNRefLayers = 3;	 // no. of reference layers
 
-  static const Float_t fgkBinWidthY;
-  static const Float_t fgkBinWidthdY;
+  static const Float_t fgkBinWidthY; // bin width for y-position
+  static const Float_t fgkBinWidthdY; // bin width for deflection length
 
-  static const Int_t fgkBitWidthY;
-  static const Int_t fgkBitWidthdY;
-  static const Int_t fgkBitWidthYProj;
-  static const Int_t fgkBitExcessY;
-  static const Int_t fgkBitExcessAlpha;
-  static const Int_t fgkBitExcessYProj;
+  static const Int_t fgkBitWidthY; // bit width for y-position
+  static const Int_t fgkBitWidthdY; // bit width for deflection length
+  static const Int_t fgkBitWidthYProj; // bit width for projected y-position
+  static const Int_t fgkBitExcessY; // excess bits for y-position
+  static const Int_t fgkBitExcessAlpha; // excess bits for alpha
+  static const Int_t fgkBitExcessYProj; // excess bits for projected y-position
  
   Float_t fVertexSize;		// assumed vertex size (z-dir.) for the z-channel map
 
   Int_t fZChannelMap[5][16][6][16];		  // must be changed
   Int_t fZSubChannel[5][fgkNZChannels][6][16];    // must be changed
 
-  Int_t fCurrTrackletMask;
-  Float_t fAki[6];
-  Float_t fBki[6];
-  Float_t fCki[6];
+  Int_t fCurrTrackletMask; // current tracklet mask for which the coefficients have been calculated
+  Float_t fAki[6]; // coefficients used for the fit, calculated for the current tracklet mask
+  Float_t fBki[6]; // coefficients used for the fit, calculated for the current tracklet mask
+  Float_t fCki[6]; // coefficients used for the fit, calculated for the current tracklet mask
 
   Int_t *fRefLayers;		//[fgkNRefLayers] reference layers for track finding
 

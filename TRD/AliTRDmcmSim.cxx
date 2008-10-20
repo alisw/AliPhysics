@@ -101,6 +101,7 @@ The default raw version is 2.
 #include "AliTRDSimParam.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDcalibDB.h"
+#include "AliTRDdigitsManager.h"
 
 // additional for new tail filter and/or tracklet
 #include "AliTRDtrapAlu.h"
@@ -2436,25 +2437,26 @@ void AliTRDmcmSim::Tracklet(){
 
 //if you want to activate the MC tracklet output, set fgkMCTrackletOutput=kTRUE in AliTRDfeeParam
 	
-  if (!fFeeParam->GetMCTrackletOutput()) return;
+  if (!fFeeParam->GetMCTrackletOutput()) 
+      return;
  
-  
   AliLog::SetClassDebugLevel("AliTRDmcmSim", 10);
   AliLog::SetFileOutput("../log/tracklet.log");
   
-   UInt_t* trackletWord;
-  Int_t*  adcChannel;
-
-  Int_t u = 0;
-
   // testing for wordnr in order to speed up the simulation
   if (wordnr == 0) 
     return;
    
-  //Int_t mcmNr = fRobPos * (fGeo->MCMmax()) + fMcmPos;
-  
-  trackletWord = new UInt_t[fMaxTracklets];
-  adcChannel   = new Int_t[fMaxTracklets];
+  UInt_t 	*trackletWord = new UInt_t[fMaxTracklets];
+  Int_t 	*adcChannel   = new Int_t[fMaxTracklets];
+  Int_t 	*trackRef     = new Int_t[fMaxTracklets];
+
+  Int_t u = 0;
+
+  AliTRDdigitsManager *digman = new AliTRDdigitsManager();
+  digman->ReadDigits(gAlice->GetRunLoader()->GetLoader("TRDLoader")->TreeD());
+  digman->SetUseDictionaries(kTRUE);
+  AliTRDfeeParam *feeParam = AliTRDfeeParam::Instance();
 
   for (Int_t j = 0; j < fMaxTracklets; j++) {
       Int_t i = order[j];
@@ -2463,8 +2465,36 @@ void AliTRDmcmSim::Tracklet(){
       if (bitWord[j]!=0) {
 	  trackletWord[u] = bitWord[j];
 	  adcChannel[u]   = mADC[i];   // mapping onto the original adc-array to be in line with the digits-adc-ordering (21 channels in total on 1 mcm, 18 belonging to pads); mADC[i] should be >-1 in case bitWord[i]>0
-	  
-	  //fMCMT[u] = bitWord[j];
+
+// Finding label of MC track
+	  TH1F *hTrkRef = new TH1F("trackref", "trackref", 100000, 0, 100000);
+	  Int_t track[3];
+	  Int_t padcol = feeParam->GetPadColFromADC(fRobPos, fMcmPos, adcChannel[u]);
+	  Int_t padcol_ngb = feeParam->GetPadColFromADC(fRobPos, fMcmPos, adcChannel[u] - 1);
+	  Int_t padrow = 4 * (fRobPos / 2) + fMcmPos / 4;
+	  Int_t det = 30 * fSector + 6 * fStack + fLayer;
+	  for(Int_t iTimebin = feeParam->GetLinearFitStart(); iTimebin < feeParam->GetLinearFitEnd(); iTimebin++) {
+	      track[0] = digman->GetTrack(0, padrow, padcol, iTimebin, det);
+	      track[1] = digman->GetTrack(1, padrow, padcol, iTimebin, det);
+	      track[2] = digman->GetTrack(2, padrow, padcol, iTimebin, det);
+	      hTrkRef->Fill(track[0]);
+	      if (track[1] != track[0] && track[1] != -1)
+		  hTrkRef->Fill(track[1]);
+	      if (track[2] != track[0] && track[2] != track[1] && track[2] != -1)
+		  hTrkRef->Fill(track[2]);
+	      if (padcol_ngb >= 0) {
+		  track[0] = digman->GetTrack(0, padrow, padcol, iTimebin, det);
+		  track[1] = digman->GetTrack(1, padrow, padcol, iTimebin, det);
+		  track[2] = digman->GetTrack(2, padrow, padcol, iTimebin, det);
+		  hTrkRef->Fill(track[0]);
+		  if (track[1] != track[0] && track[1] != -1)
+		      hTrkRef->Fill(track[1]);
+		  if (track[2] != track[0] && track[2] != track[1] && track[2] != -1)
+		      hTrkRef->Fill(track[2]);
+	      }
+	  }
+	  trackRef[u] = hTrkRef->GetMaximumBin() - 1;
+	  delete hTrkRef;
 	  u = u + 1;
       }
   }
@@ -2492,22 +2522,21 @@ void AliTRDmcmSim::Tracklet(){
 	trkl->SetDetector(30*fSector + 6*fStack + fLayer);
 	trkl->SetROB(fRobPos);
 	trkl->SetMCM(fMcmPos);
+	trkl->SetLabel(trackRef[iTracklet]);
 	trackletTree->Fill();
-//	AliInfo(Form("Filling tracklet tree with trkl: %i", iTracklet));
     }
     delete trkl;
     dl->WriteData("OVERWRITE");
   }
 
+  delete [] trackletWord;
+  delete [] adcChannel; 
+  delete [] trackRef;
+  delete digman;
 
   // to be done:
   // error measure for quality of fit (not necessarily needed for the trigger)
   // cluster quality threshold (not yet set)
   // electron probability
 }
-
-
-
-
-
 

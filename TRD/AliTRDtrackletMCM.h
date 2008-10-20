@@ -13,11 +13,13 @@
 //----------------------------------
 
 #include "AliTRDtrackletBase.h"
+#include "AliTRDgeometry.h"
+#include "AliTRDpadPlane.h"
 
 class AliTRDtrackletMCM : public AliTRDtrackletBase {
  public:
-  AliTRDtrackletMCM(UInt_t tracklet_word = 0);
-  AliTRDtrackletMCM(UInt_t tracklet_word, Int_t hcid);
+  AliTRDtrackletMCM(UInt_t trackletWord = 0);
+  AliTRDtrackletMCM(UInt_t trackletWword, Int_t hcid);
   AliTRDtrackletMCM(const AliTRDtrackletMCM &rhs);
   ~AliTRDtrackletMCM();
 
@@ -30,6 +32,7 @@ class AliTRDtrackletMCM : public AliTRDtrackletBase {
   // ----- Getters for MCM-tracklet information -----
   Int_t GetMCM() const { return fMCM; }
   Int_t GetROB() const { return fROB; }
+  Int_t GetLabel() const { return fLabel; }
 
   // ----- Getters for offline corresponding values -----
   Bool_t CookPID() { return kFALSE; }
@@ -37,9 +40,9 @@ class AliTRDtrackletMCM : public AliTRDtrackletBase {
   Int_t GetDetector() const { return fHCId / 2; }
   Int_t GetHCId() const { return fHCId; }
   Float_t GetdYdX() const { return (GetdY() * 140e-4 / 3.); }
-  Float_t GetX() const { return 0; }
+  Float_t GetX() const { return fGeo->GetTime0((fHCId % 12) / 2); }
   Float_t GetY() const { return (GetYbin() * 160e-4); }
-  Float_t GetZ() const { return 0; }
+  Float_t GetZ() const { return fGeo->GetPadPlane((fHCId % 12) / 2, (fHCId / 12) % 5)->GetRowPos( 4 * (fROB / 2) + fMCM / 4); }
 
   UInt_t GetTrackletWord() const { return fTrackletWord; }
   void SetTrackletWord(UInt_t trackletWord) { fTrackletWord = trackletWord; }
@@ -48,13 +51,21 @@ class AliTRDtrackletMCM : public AliTRDtrackletBase {
   void SetHCId(Int_t id) { fHCId = id; }
   void SetMCM(Int_t mcm) { fMCM = mcm; }
   void SetROB(Int_t rob) { fROB = rob; }
+  void SetLabel(Int_t label) { fLabel = label; }
 
  protected:
+  AliTRDgeometry *fGeo; //! TRD geometry
+
   Int_t fHCId;                  // half-chamber ID (only transient)
   UInt_t fTrackletWord;		// tracklet word: PID | Z | deflection length | Y 
 				//          bits:  12   4            7          13
-  Int_t fMCM;
-  Int_t fROB;
+  Int_t fMCM; // MCM no. in which the tracklet was found
+  Int_t fROB; // ROB no. on which the tracklet was found
+
+  Int_t fLabel; // label for MC track
+
+ private:
+  AliTRDtrackletMCM& operator=(const AliTRDtrackletMCM &rhs);   // not implemented
 
   ClassDef(AliTRDtrackletMCM, 1);
 };

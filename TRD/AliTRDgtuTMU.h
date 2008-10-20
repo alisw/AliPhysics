@@ -49,7 +49,7 @@ class AliTRDgtuTMU : public TObject {
 protected:
   TObjArray **fTracklets; // holding all tracklets from one detector (i. e. one chamber)
   TList **fZChannelTracklets; // holding all tracklets for layer and z-channel
-  TList **fTracks;
+  TList **fTracks; // lists of tracks
   AliTRDgtuParam *fGtuParam; // pointer to the instance of the GtuParam class
 
   Int_t fStack;			// Stack of this TMU
