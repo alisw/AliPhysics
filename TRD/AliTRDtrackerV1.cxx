@@ -1269,7 +1269,7 @@ Double_t AliTRDtrackerV1::FitRiemanTilt(AliTRDtrackV1 *track, AliTRDseedV1 *trac
   if(!track){
     for(Int_t ip = 0; ip < kNPlanes; ip++) {
       x = tracklets[ip].GetX0();
-      Double_t tmp = R*R-(x-x0)*(x-x0);  
+      tmp = R*R-(x-x0)*(x-x0);  
       if(tmp <= 0.) continue;
       tmp = TMath::Sqrt(tmp);  
 
@@ -1985,7 +1985,7 @@ Int_t AliTRDtrackerV1::Clusters2TracksStack(AliTRDtrackingChamber **stack, TClon
     if(TMath::Abs(sseed[jseed].GetYfit(1) - sseed[jseed].GetYfit(1)) >= .2) continue; // check this condition with Marian
     sseed[jseed].UseClusters();
     if(!cl){
-      Int_t ic = 0;
+      ic = 0;
       while(!(cl = sseed[jseed].GetClusters(ic))) ic++;
       clusterIndex =  sseed[jseed].GetIndexes(ic);
     }

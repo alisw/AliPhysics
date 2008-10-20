@@ -328,7 +328,7 @@ Bool_t AliTRDclusterizer::OpenOutput(TTree *clusterTree)
     AliDataLoader *dl = fRunLoader->GetLoader("TRDLoader")->GetDataLoader("tracklets");
     if (!dl) {
       AliError("Could not get the tracklets data loader!");
-      AliDataLoader *dl = new AliDataLoader("TRD.Tracklets.root","tracklets", "tracklets");
+      dl = new AliDataLoader("TRD.Tracklets.root","tracklets", "tracklets");
       fRunLoader->GetLoader("TRDLoader")->AddDataLoader(dl);
     }
     else {
