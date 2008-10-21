@@ -158,25 +158,31 @@ the full components are run also from the offline framework rather
 than just the algorithm hooked on by a special interface class.
 By this one achieves the highest possible compatibility.
 
-The AliRoot reconstruction consists mainly of three steps:
--# local event reconstruction: this is usually the place for digit/raw
-data conversion to clusters/space points. All the events are processed
-at once. If HLT analysis chain are executed in the local event
-reconstruction, the chain must contain an output recorder as the ESD
-is filled on an event by event basis and the corresponding method called
-later.
--# event reconstruction: this is the reconstruction on an event by event
-basis. Immediately after the reconstruction, the FillESD method is
-called.
--# ESD fill: the reconstructed event is written to the ESD.
-
-Regarding the HLT, all analysis is supposed to run on-line on the HLT farm.
+Regarding HLT, all analysis is supposed to run on-line on the HLT farm.
 Thus, only the processing of the HLTOUT data is necessary during the
 default reconstruction. However, it is possible to run HLT chains embedded
 into AliReconstruction mainly for the purpose of debugging and the
 development cycle.
 
-The actual chains to be run and the HLTOUT handlers to be applied depend
+The AliRoot reconstruction consists mainly of three steps which
+are executed on an event by event basis:
+-# event reconstruction: this is usually the place for digit/raw
+data conversion to clusters/space points. HLT chains can be executed
+in the event reconstruction for raw data. HLT Reconstruction from
+digit data is not supported.
+-# tracking: the complete reconstruction on an event by event
+basis.
+-# ESD filling: the reconstructed event is written to the ESD. The
+HLTOUT is processed in this step. All output data blocks produced by
+during the HLT reconstruction are added to the HLTOUT collection
+and are treated as they would have come from the detector.
+
+Note: The AliRoot reconstruction scheme has been changed in Sep 2007
+(revision 20822). Formerly, a stage "LocalEventReconstruction" of
+AliReconstruction was looping over all events and running the event
+reconstruction in one go.
+
+The actual HLT chains to be run and the HLTOUT handlers to be applied depend
 on the HLT library modules which are loaded to the system. There is a
 default collection of libraries defined in AliHLTSystem::fgkHLTDefaultLibs.
 The default libraries are loaded if nothing else is specified. The libraries
@@ -188,6 +194,7 @@ event in the current directory):
 <pre>
 {
   AliReconstruction rec;                 // the reconstruction instance
+  rec.SetInput("raw.root");              // choose some raw data
   rec.SetRunLocalReconstruction("HLT");  // run local rec only for HLT 
   rec.SetRunTracking("");                // switch off tracking
   rec.SetFillESD("HLT");                 // 
@@ -195,6 +202,11 @@ event in the current directory):
   rec.Run();
 }
 </pre>
+Please note the specification of raw data input. HLT reconstruction can
+only run on raw data, either real or simulated.
+
+HLT reconstruction on simulated digit data must be run embedded into
+@ref tut_simulation.
 
 @subsection tut_module_agent The Module Agent
 Each component library has to implement a module agent in order to be

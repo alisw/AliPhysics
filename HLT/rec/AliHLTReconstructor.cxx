@@ -236,7 +236,10 @@ void AliHLTReconstructor::FillESD(TTree* /*digitsTree*/, TTree* /*clustersTree*/
   TString option = GetOption();
   if (!option.IsNull() && 
       (option.Contains("config=") || option.Contains("chains="))) {
-    AliWarning(Form("HLT reconstruction of simulated data takes place in AliSimulation\n"
+    AliWarning(Form("HLT reconstruction can be run embedded into Alireconstruction from\n"
+		    "raw data (real or simulated)). Reconstruction of of digit data takes\n"
+		    "place in AliSimulation, appropriate input conversion is needed.\n"
+		    "Consider running embedded into AliSimulation."
 		    "        /***  run macro *****************************************/\n"
 		    "        AliSimulation sim;\n"
 		    "        sim.SetRunHLT(\"%s\");\n"
