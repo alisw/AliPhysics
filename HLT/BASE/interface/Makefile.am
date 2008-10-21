@@ -35,6 +35,7 @@ libHLTinterface_la_SOURCES	= $(MODULE_SRCS)
 pkginclude_HEADERS		= $(MODULE_HDRS)
 
 # linker flags
+libHLTinterface_la_LIBADD 	= $(top_builddir)/BASE/libHLTbase.la
 libHLTinterface_la_LDFLAGS	= -version-info $(LIBRARY_VERSION)
 
 # automatic generation of data and time of library build
