@@ -61,10 +61,31 @@ AliAnalysisTaskMuonTrackingEff::AliAnalysisTaskMuonTrackingEff()
     fDetEltTDHistList(0x0),
     fDetEltTTHistList(0x0)
 {
-// Default constructor
+/// Default constructor
 }
-
-
+//________________________________________________________________________
+AliAnalysisTaskMuonTrackingEff::AliAnalysisTaskMuonTrackingEff(const AliAnalysisTaskMuonTrackingEff& src)
+    :
+    AliAnalysisTask(src),
+    fTransformer(0x0),
+    fESD(0x0),
+    fDetEltEffHistList(0x0),
+    fDetEltTDHistList(0x0),
+    fDetEltTTHistList(0x0)
+{
+  /// copy ctor
+  src.Copy(*this);
+}
+//________________________________________________________________________
+AliAnalysisTaskMuonTrackingEff& AliAnalysisTaskMuonTrackingEff::operator=(const AliAnalysisTaskMuonTrackingEff& src)
+{
+  /// assignement operator
+  if ( this != &src ) 
+  {
+    src.Copy(*this);
+  }
+  return *this;
+}
 
 //________________________________________________________________________
 AliAnalysisTaskMuonTrackingEff::AliAnalysisTaskMuonTrackingEff(const char* name,

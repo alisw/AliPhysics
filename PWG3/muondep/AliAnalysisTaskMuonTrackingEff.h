@@ -11,6 +11,7 @@
 
 #include "AliAnalysisTask.h"
 #include "AliMUONGeometryTransformer.h"
+#include "AliAnalysisTaskMuonTrackingEff.h"
 class AliESDEvent;
 class TClonesArray;
 class TH2F;
@@ -19,6 +20,8 @@ class AliAnalysisTaskMuonTrackingEff : public AliAnalysisTask
 {
  public:
   AliAnalysisTaskMuonTrackingEff();
+  AliAnalysisTaskMuonTrackingEff(const AliAnalysisTaskMuonTrackingEff& rhs);
+  AliAnalysisTaskMuonTrackingEff& operator=(const AliAnalysisTaskMuonTrackingEff&);
   AliAnalysisTaskMuonTrackingEff(const char* name,
 		     const AliMUONGeometryTransformer* transformer);
   virtual ~AliAnalysisTaskMuonTrackingEff();
