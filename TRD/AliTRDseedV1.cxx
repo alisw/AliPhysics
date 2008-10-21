@@ -375,18 +375,19 @@ Bool_t	AliTRDseedV1::AttachClustersIter(AliTRDtrackingChamber *chamber, Float_t 
       << "\n";	
   }
 
-  Float_t  tquality=0., zcorr=0.;
+  Float_t  tquality;
   Double_t kroady = fReconstructor->GetRecoParam() ->GetRoad1y();
   Double_t kroadz = fPadLength * .5 + 1.;
+  
+  // initialize configuration parameters
+  Float_t zcorr = kZcorr ? fTilt * (fZProb - fZref[0]) : 0.;
+  Int_t   niter = kZcorr ? 1 : 2;
+  
   Double_t yexp, zexp;
   Int_t ncl = 0;
-
-  // looking for clusters
-  for (Int_t iter = 0; iter < 2; iter++) {
+  // start seed update
+  for (Int_t iter = 0; iter < niter; iter++) {
     ncl = 0;
-    // recalculate correction for tilt pad
-    zcorr = (kZcorr&&fN) ? fTilt * (fZProb - fZref[0]) : 0.;
-    
     for (Int_t iTime = 0; iTime < AliTRDtrackerV1::GetNTimeBins(); iTime++) {
       if(!(layer = chamber->GetTB(iTime))) continue;
       if(!Int_t(*layer)) continue;
@@ -402,20 +403,20 @@ Bool_t	AliTRDseedV1::AttachClustersIter(AliTRDtrackingChamber *chamber, Float_t 
           if (zexp < c->GetZ()) zexp = c->GetZ() - fPadLength*0.5;
         }
       } else zexp = fZref[0] + (kZcorr ? fZref[1] * dxlayer : 0.);
-      yexp  = fYref[0] + fYref[1]* dxlayer + (kZcorr ? fZref[1] * dxlayer : 0.) + zcorr;
+      yexp  = fYref[0] + fYref[1] * dxlayer - zcorr;
       
       // Get and register cluster
       Int_t    index = layer->SearchNearestCluster(yexp, zexp, kroady, kroadz);
       if (index < 0) continue;
       AliTRDcluster *cl = (*layer)[index];
-
+      
       fIndexes[iTime]  = layer->GetGlobalIndex(index);
       fClusters[iTime] = cl;
       fY[iTime]        = cl->GetY();
       fZ[iTime]        = cl->GetZ();
       ncl++;
     }
-    if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker)>=7) AliInfo(Form("Iter[%d] Attach Ncl[%d]", iter, ncl));
+    if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker)>=7) AliInfo(Form("iter = %d ncl [%d] = %d", iter, fDet, ncl));
     
     if(ncl>1){	
       // calculate length of the time bin (calibration aware)
@@ -455,9 +456,8 @@ Bool_t	AliTRDseedV1::AttachClustersIter(AliTRDtrackingChamber *chamber, Float_t 
       } 
       
       AliTRDseed::Update();
-      //Fit(kZcorr);
     }
-    if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker)>=7) AliInfo(Form("Iter[%d] Fitted Ncl[%d]", iter, fN2));
+    if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker)>=7) AliInfo(Form("iter = %d nclFit [%d] = %d", iter, fDet, fN2));
     
     if(IsOK()){
       tquality = GetQuality(kZcorr);
