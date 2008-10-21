@@ -338,7 +338,7 @@ public:
   void ReadFromTree(TTree *tree, Option_t* opt = "");
   TObject* FindListObject(const char *name);
   AliESD *GetAliESDOld(){return fESDOld;}
-  const void WriteToTree(TTree* tree) const;
+  void WriteToTree(TTree* tree) const;
   void GetStdContent();
   void ResetStdContent();
   void CreateStdContent();

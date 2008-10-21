@@ -233,8 +233,8 @@ void AliPHOSvImpacts::StepManager(void)
     gMC -> Gmtod (pm,   pd,   2);    // transform 3-momentum from master to daughter system
 
     // Select tracks coming to the crystal from up or down sides
-    if (pd[1]<0 && xyzd[1] >  GetGeometry()->GetCrystalSize(1)/2-0.1 ||
-	pd[1]>0 && xyzd[1] < -GetGeometry()->GetCrystalSize(1)/2+0.1) {
+    if ((pd[1]<0 && xyzd[1] >  GetGeometry()->GetCrystalSize(1)/2-0.1) ||
+	(pd[1]>0 && xyzd[1] < -GetGeometry()->GetCrystalSize(1)/2+0.1)) {
     // Select tracks coming to the crystal from up or down sides
       Int_t pid = gMC->TrackPid();
       Int_t module;

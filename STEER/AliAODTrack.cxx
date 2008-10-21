@@ -472,7 +472,7 @@ void AliAODTrack::SetMatchTrigger(Int_t matchTrig){
   }
 }
 
-Int_t AliAODTrack::HitsMT(Int_t istation, Int_t iplane, Char_t *cathode){
+Int_t AliAODTrack::HitsMT(Int_t istation, Int_t iplane, Option_t *cathode){
 //
 // Retrieve hit information for MUON identified by  (station, plane, cathode)
   if(cathode){

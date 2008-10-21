@@ -334,9 +334,9 @@ Bool_t AliStack::PurifyKine()
 	  part = dynamic_cast<TParticle*>(fParticleMap.At(nkeep));
 	  // as the parent is always *before*, it must be already
 	  // in place. This is what we are checking anyway!
-	  if((parent=part->GetFirstMother())>fHgwmk) 
+	  if((parent=part->GetFirstMother())>fHgwmk) {
 	      if(fTrackLabelMap[parent]==-99) Fatal("PurifyKine","fTrackLabelMap[%d] = -99!\n",parent);
-	      else part->SetFirstMother(fTrackLabelMap[parent]);
+	      else part->SetFirstMother(fTrackLabelMap[parent]);}
 	  nkeep++;
       }
   }

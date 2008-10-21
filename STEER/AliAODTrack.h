@@ -128,7 +128,7 @@ class AliAODTrack : public AliVParticle {
  
   template <class T> void SetPID(const T *pid) {
     if(pid) for(Int_t i=0; i<10; ++i) fPID[i]=pid[i];
-    else {for(Int_t i=0; i<10; fPID[i++]=0.); fPID[AliAODTrack::kUnknown]=1.;}}
+    else {for(Int_t i=0; i<10; fPID[i++]=0.) ; fPID[AliAODTrack::kUnknown]=1.;}}
 
   Bool_t IsOn(Int_t mask) const {return (fFlags&mask)>0;}
   ULong_t GetStatus() const { return GetFlags(); }
@@ -236,7 +236,7 @@ class AliAODTrack : public AliVParticle {
   Int_t    MatchTriggerHighPt()  const  { return (GetMatchTrigger()>2)?1:0; }	//  Muon track matches trigger track and passes High pt cut
   Double_t GetChi2MatchTrigger() const  { return fChi2MatchTrigger;}
   void     SetChi2MatchTrigger(Double_t Chi2MatchTrigger) {fChi2MatchTrigger = Chi2MatchTrigger; }
-  Int_t    HitsMT(Int_t istation, Int_t iplane, Char_t *cathode=0);  // Check if track hits Muon chambers
+  Int_t    HitsMT(Int_t istation, Int_t iplane, Option_t *cathode=0);  // Check if track hits Muon chambers
   Int_t    HitsMuonChamber(Int_t MuonChamber);  // Check if track hits Muon chambers
   Bool_t   IsMuonTrack() const { return (GetMUONClusterMap()>0) ? kTRUE : kFALSE; }
 

@@ -373,7 +373,7 @@ class AliHLTPendolino : public AliShuttleInterface {
 		 * implementation in the Offline Shuttle - there the initial start time
 		 * is set to the start-of-data for the complete run.)
 		 */
-		virtual const UInt_t GetStartTimeDCSQuery();
+		virtual UInt_t GetStartTimeDCSQuery();
 
 		/**
 		 * Function to get the end time of the DCS Archive DB request; in HLT
@@ -382,7 +382,7 @@ class AliHLTPendolino : public AliShuttleInterface {
 		 * implementation in the Offline Shuttle - there the initial end time
 		 * is set to the end-of-data for the complete run.)
 		 */
-		virtual const UInt_t GetEndTimeDCSQuery();
+		virtual UInt_t GetEndTimeDCSQuery();
 				
 		
 	protected:

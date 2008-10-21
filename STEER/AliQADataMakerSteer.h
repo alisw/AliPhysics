@@ -70,7 +70,7 @@ public:
 private: 
 	Bool_t			  DoIt(const AliQA::TASKINDEX_t taskIndex) ;
 	AliLoader   * GetLoader(Int_t iDet) ; 
-	const Int_t   GetQACycles(const Int_t iDet) { return fQACycles[iDet] ; }
+	Int_t   GetQACycles(const Int_t iDet) const { return fQACycles[iDet] ; }
 	Bool_t			  Init(const AliQA::TASKINDEX_t taskIndex, const  char * fileName = NULL) ;
 	Bool_t        InitRunLoader() ; 
 	Bool_t        IsSelected(const char * detName)  ;

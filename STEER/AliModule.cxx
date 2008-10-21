@@ -446,7 +446,7 @@ void AliModule::ReadEuclid(const char* filnam, char* topvol)
     }
     //Pad the string with blanks
     i=-1;
-    while(natmed[++i]);
+    while(natmed[++i]) ;
     while(i<20) natmed[i++]=' ';
     natmed[i]='\0';
     //
@@ -613,7 +613,7 @@ void AliModule::ReadEuclidMedia(const char* filnam)
     if (nwbuf>0) for(i=0;i<nwbuf;i++) fscanf(lun,"%f",&ubuf[i]);
     //Pad the string with blanks
     i=-1;
-    while(namate[++i]);
+    while(namate[++i]) ;
     while(i<20) namate[i++]=' ';
     namate[i]='\0';
     //
@@ -628,7 +628,7 @@ void AliModule::ReadEuclidMedia(const char* filnam)
     if (fieldm<0) fieldm=sxmgmx;
     //Pad the string with blanks
     i=-1;
-    while(natmed[++i]);
+    while(natmed[++i]) ;
     while(i<20) natmed[i++]=' ';
     natmed[i]='\0';
     //

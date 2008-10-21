@@ -37,8 +37,8 @@ class AliShuttleInterface : public TObject
     virtual TList* GetFileIDs(Int_t system, const char* detector, const char* source) = 0;
     
     virtual const char* GetRunParameter(const char* lbEntry) = 0;
-    virtual const UInt_t GetStartTimeDCSQuery() = 0;
-    virtual const UInt_t GetEndTimeDCSQuery() = 0;
+    virtual UInt_t GetStartTimeDCSQuery() = 0;
+    virtual UInt_t GetEndTimeDCSQuery() = 0;
     virtual const char* GetRunType() = 0;
     virtual Bool_t GetHLTStatus() = 0;
     virtual const char* GetTriggerConfiguration() = 0;
@@ -53,8 +53,8 @@ class AliShuttleInterface : public TObject
 
     static const char* GetOfflineDetName(const char* detName);
     static const char* GetDetName(UInt_t detPos);
-    static const Int_t GetDetPos(const char* detName);
-    static const UInt_t NDetectors() {return kNDetectors;}
+    static Int_t GetDetPos(const char* detName);
+    static UInt_t NDetectors() {return kNDetectors;}
 
     static TString GetMainCDB () {return fgkMainCDB;}
     static TString GetLocalCDB () {return fgkLocalCDB;}

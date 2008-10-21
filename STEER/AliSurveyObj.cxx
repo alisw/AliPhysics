@@ -150,7 +150,7 @@ Bool_t AliSurveyObj::Connect(const char *gridUrl, const char *user) {
 
   // If the same "Grid" is alreay active, skip connection
   if (!gGrid || gridUrl != gGrid->GridUrl() ||
-      (( user != "" ) && ( user != gGrid->GetUser() )) ) {
+      (( strcmp(user,"") ) && ( strcmp(user,gGrid->GetUser()) )) ) {
     // connection to the Grid
     AliInfo("\nConnecting to the Grid...");
     if (gGrid) {

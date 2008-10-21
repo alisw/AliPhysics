@@ -51,7 +51,7 @@ class AliSplineFit : public TObject {
 
   void SetGraph (TGraph* graph) { fGraph=graph; }
   void SetMinPoints (Int_t minPoints) { fMinPoints=minPoints;}
-  const Int_t GetMinPoints() const { return fMinPoints; }
+  Int_t GetMinPoints() const { return fMinPoints; }
 
  protected:
 

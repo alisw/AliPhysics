@@ -178,7 +178,7 @@ void AliQA::Close()
 } 
 
 //_______________________________________________________________
-const Bool_t AliQA::CheckFatal() const
+Bool_t AliQA::CheckFatal() const
 {
   // check if any FATAL status is set
   Bool_t rv = kFALSE ;
@@ -189,7 +189,7 @@ const Bool_t AliQA::CheckFatal() const
 }
 
 //_______________________________________________________________
-const Bool_t AliQA::CheckRange(DETECTORINDEX_t det) const
+Bool_t AliQA::CheckRange(DETECTORINDEX_t det) const
 { 
   // check if detector is in given detector range: 0-kNDET
 
@@ -200,7 +200,7 @@ const Bool_t AliQA::CheckRange(DETECTORINDEX_t det) const
 }
 
 //_______________________________________________________________
-const Bool_t AliQA::CheckRange(ALITASK_t task) const
+Bool_t AliQA::CheckRange(ALITASK_t task) const
 { 
   // check if task is given taskk range: 0:kNTASK
   Bool_t rv = ( task < kRAW || task > kNTASK )  ? kFALSE : kTRUE ;
@@ -210,7 +210,7 @@ const Bool_t AliQA::CheckRange(ALITASK_t task) const
 }
 
 //_______________________________________________________________
-const Bool_t AliQA::CheckRange(QABIT_t bit) const
+Bool_t AliQA::CheckRange(QABIT_t bit) const
 { 
   // check if bit is in given bit range: 0-kNBit
 
@@ -280,7 +280,7 @@ const char * AliQA::GetBitName(QABIT_t bit) const
 }
 
 //_______________________________________________________________
-const AliQA::DETECTORINDEX_t AliQA::GetDetIndex(const char * name) 
+AliQA::DETECTORINDEX_t AliQA::GetDetIndex(const char * name) 
 {
 	// returns the detector index corresponding to a given name
 	TString sname(name) ; 
@@ -395,7 +395,7 @@ const TString AliQA::GetRunTypeName(RUNTYPE_t rt)
 }
 
 //_______________________________________________________________
-const AliQA::TASKINDEX_t AliQA::GetTaskIndex(const char * name) 
+AliQA::TASKINDEX_t AliQA::GetTaskIndex(const char * name) 
 {
 	// returns the detector index corresponding to a given name
 	TString sname(name) ; 
@@ -410,7 +410,7 @@ const AliQA::TASKINDEX_t AliQA::GetTaskIndex(const char * name)
 }
 
 //_______________________________________________________________
-const Bool_t AliQA::IsSet(DETECTORINDEX_t det, ALITASK_t tsk, QABIT_t bit) const
+Bool_t AliQA::IsSet(DETECTORINDEX_t det, ALITASK_t tsk, QABIT_t bit) const
 {
   // Checks is the requested bit is set
 	
@@ -426,7 +426,7 @@ const Bool_t AliQA::IsSet(DETECTORINDEX_t det, ALITASK_t tsk, QABIT_t bit) const
 }
 
 //_______________________________________________________________
-const Bool_t AliQA::IsSetAny(DETECTORINDEX_t det, ALITASK_t tsk) const
+Bool_t AliQA::IsSetAny(DETECTORINDEX_t det, ALITASK_t tsk) const
 {
   // Checks is the requested bit is set
 	
@@ -446,7 +446,7 @@ const Bool_t AliQA::IsSetAny(DETECTORINDEX_t det, ALITASK_t tsk) const
 		return kTRUE ;
 }
 //_______________________________________________________________
-const Bool_t AliQA::IsSetAny(DETECTORINDEX_t det) const
+Bool_t AliQA::IsSetAny(DETECTORINDEX_t det) const
 {
   // Checks is the requested bit is set
 	
@@ -563,7 +563,7 @@ void AliQA::Merge(TCollection * list) {
 }
 
 //_______________________________________________________________
-const ULong_t AliQA::Offset(ALITASK_t tsk) const
+ULong_t AliQA::Offset(ALITASK_t tsk) const
 {
   // Calculates the bit offset for a given module (SIM, REC, ESD, ANA)
 

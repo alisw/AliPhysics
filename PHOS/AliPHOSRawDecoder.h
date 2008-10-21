@@ -30,15 +30,15 @@ public:
   void SubtractPedestals(Bool_t subtract) {fPedSubtract=subtract;}
   void SetAmpOffset(Int_t extPed=5){fAmpOffset=extPed ;}
 
-  const Double_t GetEnergy() const { return fEnergy; }
-  const Double_t GetTime() const { return fTime; }
-  const Double_t GetSampleQuality() const {return fQuality ;}
-  const Double_t GetPedestalRMS() const {return fPedestalRMS ;}
-  const Int_t GetModule() const { return fModule; }
-  const Int_t GetColumn() const { return fColumn; }
-  const Int_t GetRow() const { return fRow; }
-  const Bool_t IsLowGain() const { return fLowGainFlag; }
-  const Bool_t IsOverflow() const { return fOverflow ;}
+  Double_t GetEnergy() const { return fEnergy; }
+  Double_t GetTime() const { return fTime; }
+  Double_t GetSampleQuality() const {return fQuality ;}
+  Double_t GetPedestalRMS() const {return fPedestalRMS ;}
+  Int_t GetModule() const { return fModule; }
+  Int_t GetColumn() const { return fColumn; }
+  Int_t GetRow() const { return fRow; }
+  Bool_t IsLowGain() const { return fLowGainFlag; }
+  Bool_t IsOverflow() const { return fOverflow ;}
 
   const AliRawReader* GetRawReader() const { return fRawReader; }
   void SetCalibData(AliPHOSCalibData * cdata){ fCalibData=cdata ;}

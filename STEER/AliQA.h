@@ -47,19 +47,19 @@ public:
 	static  AliQA *        Instance(const DETECTORINDEX_t det) ;
 	static  AliQA *        Instance(const ALITASK_t tsk) ;
 	static  AliQA *        Instance(const TASKINDEX_t tsk) ;
-	const Bool_t           CheckFatal() const ;
+	Bool_t           CheckFatal() const ;
 	static void            Close() ; 
 	static const char *    GetAliTaskName(ALITASK_t tsk) ;
   static const TString   GetExpert() { return fkgExpert ; }
-  static const UInt_t    GetExpertBit() { return fkgExpertBit ; }
+  static       UInt_t    GetExpertBit() { return fkgExpertBit ; }
 	static const TString   GetLabLocalFile() { return fkgLabLocalFile ; } 
 	static const TString   GetLabLocalOCDB() { return fkgLabLocalOCDB ; } 
 	static const TString   GetLabAliEnOCDB() { return fkgLabAliEnOCDB ; } 
-	static const DETECTORINDEX_t GetDetIndex(const char * name) ; 
+	static       DETECTORINDEX_t GetDetIndex(const char * name) ; 
 	static const TString   GetDetName(DETECTORINDEX_t det) { return fgDetNames[det] ; }
 	static const char *    GetDetName(Int_t det) ;
 	static const TString   GetGRPPath() { return fgGRPPath ; }  
-  static const UInt_t    GetQABit() { return fkgQABit ; }
+  static       UInt_t    GetQABit() { return fkgQABit ; }
 	static TFile *         GetQADataFile(const char * name, const Int_t run) ; 
 	static TFile *	       GetQADataFile(const char * fileName) ;
 	static const char *    GetQADataFileName(const char * name, const Int_t run) 
@@ -75,11 +75,11 @@ public:
 	static const char  *   GetRefOCDBDirName() { return fkgRefOCDBDirName.Data() ; }
 	static const char  *   GetRefDataDirName() { return fkgRefDataDirName.Data() ; }
 	static const TString   GetRunTypeName(RUNTYPE_t rt = kNULLTYPE) ;
-	static const TASKINDEX_t GetTaskIndex(const char * name) ; 
-	static const TString   GetTaskName(UInt_t tsk) { return fgTaskNames[tsk] ; }
-	const Bool_t           IsSet(DETECTORINDEX_t det, ALITASK_t tsk, QABIT_t bit) const ;
-	const Bool_t           IsSetAny(DETECTORINDEX_t det, ALITASK_t tsk) const ;
-	const Bool_t           IsSetAny(DETECTORINDEX_t det) const ;
+	static       TASKINDEX_t GetTaskIndex(const char * name) ; 
+	static       TString   GetTaskName(UInt_t tsk) { return fgTaskNames[tsk] ; }
+	      Bool_t           IsSet(DETECTORINDEX_t det, ALITASK_t tsk, QABIT_t bit) const ;
+	      Bool_t           IsSetAny(DETECTORINDEX_t det, ALITASK_t tsk) const ;
+	      Bool_t           IsSetAny(DETECTORINDEX_t det) const ;
 	void                   Merge(TCollection * list) ; 
 	void                   Set(QABIT_t bit) ;
 	static void			       SetQAResultDirName(const char * name) ; 
@@ -94,13 +94,13 @@ public:
 
 private:      
 
-	const Bool_t         CheckRange(DETECTORINDEX_t det) const ;
-	const Bool_t         CheckRange(ALITASK_t tsk) const ;
-	const Bool_t         CheckRange(QABIT_t bit) const ;
+	      Bool_t         CheckRange(DETECTORINDEX_t det) const ;
+	      Bool_t         CheckRange(ALITASK_t tsk) const ;
+	      Bool_t         CheckRange(QABIT_t bit) const ;
 	const char *         GetBitName(QABIT_t bit) const ;
-	const ULong_t        GetStatus(DETECTORINDEX_t det) const  { return fQA[det] ;}
+	      ULong_t        GetStatus(DETECTORINDEX_t det) const  { return fQA[det] ;}
 	void                 Finish() const ;  
-	const ULong_t        Offset(ALITASK_t tsk) const ;
+	      ULong_t        Offset(ALITASK_t tsk) const ;
 	void                 ShowASCIIStatus(DETECTORINDEX_t det, ALITASK_t tsk, ULong_t status) const ; 
 	void                 ResetStatus(DETECTORINDEX_t det) { fQA[det] = 0 ; }
 	void                 Set(DETECTORINDEX_t det) { fDet = det ;}

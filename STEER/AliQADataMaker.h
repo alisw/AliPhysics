@@ -58,10 +58,10 @@ public:
 	virtual TH1 *       GetSDigitsData(const Int_t index)                      = 0 ; 
 	const char *        GetDetectorDirName() const { return fDetectorDirName.Data() ; }
   TList *             GetParameterList() const { return fParameterList ; }
-	const Int_t         Increment() { return ++fCycleCounter ; } 
+	Int_t         Increment() { return ++fCycleCounter ; } 
 	virtual TObjArray * Init(AliQA::TASKINDEX_t, Int_t cycles = -1)                              = 0 ;
 	virtual void        Init(AliQA::TASKINDEX_t, TObjArray * list, Int_t run, Int_t cycles = -1) = 0 ;
-	const Bool_t        IsCycleDone() const { return fCycleCounter > fCycle ? kTRUE : kFALSE ; }
+	Bool_t        IsCycleDone() const { return fCycleCounter > fCycle ? kTRUE : kFALSE ; }
 	void                Reset() { fCycleCounter = 0 ; }
 	void                SetCycle(Int_t nevts) { fCycle = nevts ; } 
   void                SetWriteExpert() { fWriteExpert = kTRUE ; }

@@ -456,7 +456,7 @@ void AliAODVertex::PrintIndices() const
 
   TRefArrayIter iter(&fDaughters);
   while (TObject *daugh = iter.Next()) {
-    printf("Particle %p originates from this vertex.\n", daugh);
+    printf("Particle %p originates from this vertex.\n", static_cast<void*>(daugh));
   }
 }
 
@@ -469,7 +469,7 @@ void AliAODVertex::Print(Option_t* /*option*/) const
   printf("     x = %f\n", fPosition[0]);
   printf("     y = %f\n", fPosition[1]);
   printf("     z = %f\n", fPosition[2]);
-  printf(" parent particle: %p\n", fParent.GetObject());
+  printf(" parent particle: %p\n", static_cast<void*>(fParent.GetObject()));
   printf(" origin of %d particles\n", fDaughters.GetEntriesFast());
   printf(" vertex type %d\n", fType);
   

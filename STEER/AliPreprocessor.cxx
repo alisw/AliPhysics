@@ -409,7 +409,7 @@ Bool_t AliPreprocessor::AliPreprocessor::ProcessRunType()
 	return kFALSE;
 }
 //______________________________________________________________________________________________
-const UInt_t AliPreprocessor::GetStartTimeDCSQuery()
+UInt_t AliPreprocessor::GetStartTimeDCSQuery()
 {
 	// Return Start Time for the DCS query
 	//
@@ -418,7 +418,7 @@ const UInt_t AliPreprocessor::GetStartTimeDCSQuery()
 	return fShuttle->GetStartTimeDCSQuery();
 }
 //______________________________________________________________________________________________
-const UInt_t AliPreprocessor::GetEndTimeDCSQuery()
+UInt_t AliPreprocessor::GetEndTimeDCSQuery()
 {
 	// Return End Time for the DCS query
 	//

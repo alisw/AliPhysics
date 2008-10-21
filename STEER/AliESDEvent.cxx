@@ -1099,7 +1099,7 @@ Int_t AliESDEvent::GetEMCALClusters(TRefArray *clusters) const
   return clusters->GetEntriesFast();
 }
 
-const void AliESDEvent::WriteToTree(TTree* tree) const {
+void AliESDEvent::WriteToTree(TTree* tree) const {
   // Book the branches as in TTree::Branch(TCollection*)
   // but add a "." at the end of top level branches which are
   // not a TClonesArray

@@ -42,7 +42,7 @@ class AliTrackResiduals : public TObject {
   Int_t   GetNdf() const  { return fNdf; }
   Int_t   GetMinNPoints() const  { return fMinNPoints; }
   void    FixParameter(Int_t par,Float_t value=0.) {fBFixed[par]=kTRUE; fFixed[par]= value;}
-  const Int_t GetNFreeParam();
+  Int_t GetNFreeParam();
   void   ReleaseParameter(Int_t par) {fBFixed[par]=kFALSE;}
 
  protected:

@@ -710,7 +710,7 @@ Bool_t AliReconstruction::MisalignGeometry(const TString& detectors)
     
     for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
       if(!IsSelected(fgkDetectorName[iDet], detStr)) continue;
-      if(fgkDetectorName[iDet]=="HLT") continue;
+      if(!strcmp(fgkDetectorName[iDet],"HLT")) continue;
       if(AliGeomManager::IsModuleInGeom(fgkDetectorName[iDet]))
       {
 	loadAlObjsListOfDets += fgkDetectorName[iDet];

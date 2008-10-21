@@ -118,7 +118,7 @@ public:
   }
   const AliExternalTrackParam * GetInnerParam() const { return fIp;}
   const AliExternalTrackParam * GetTPCInnerParam() const {return fTPCInner;}
-  const Bool_t FillTPCOnlyTrack(AliESDtrack &track);
+  Bool_t FillTPCOnlyTrack(AliESDtrack &track);
   Bool_t GetInnerXYZ(Double_t *r) const {
     if (!fIp) return kFALSE;
     return fIp->GetXYZ(r);

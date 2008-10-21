@@ -738,7 +738,7 @@ TObject *  AliESDtrack::GetCalibObject(Int_t index){
 }
 
 
-const Bool_t AliESDtrack::FillTPCOnlyTrack(AliESDtrack &track){
+Bool_t AliESDtrack::FillTPCOnlyTrack(AliESDtrack &track){
   
   // Fills the information of the TPC-only first reconstruction pass
   // into the passed ESDtrack object. For consistency fTPCInner is also filled

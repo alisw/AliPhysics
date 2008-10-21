@@ -75,11 +75,11 @@ class AliAODCluster : public TObject {
  
   template <class T> void SetPID(const T *pid) {
     if(pid) for(Int_t i=0; i<13; ++i) fPID[i]=pid[i];
-    else {for(Int_t i=0; i<13; fPID[i++]=0);} fPID[AliAODCluster::kUnknown]=1.;}
+    else {for(Int_t i=0; i<13; fPID[i++]=0) ;} fPID[AliAODCluster::kUnknown]=1.;}
 
   template <class T> void SetPIDFromESD(const T *pid) {
     if(pid) {for(Int_t i=0; i<11; ++i) fPID[i]=pid[i];  fPID[11]=0;   fPID[12]=0;}
-    else {for(Int_t i=0; i<13; fPID[i++]=0);} fPID[AliAODCluster::kUnknown]=1.;}
+    else {for(Int_t i=0; i<13; fPID[i++]=0) ;} fPID[AliAODCluster::kUnknown]=1.;}
 
   Int_t  GetID() const { return fID; }
   Int_t  GetLabel(UInt_t i) const;

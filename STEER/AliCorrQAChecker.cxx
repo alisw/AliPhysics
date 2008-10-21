@@ -42,7 +42,7 @@
 ClassImp(AliCorrQAChecker)
 
 //__________________________________________________________________
-const Double_t AliCorrQAChecker::Check(AliQA::ALITASK_t index, TNtupleD * nData) 
+Double_t AliCorrQAChecker::Check(AliQA::ALITASK_t index, TNtupleD * nData) 
 {
  // check the QA of correlated data stored in a ntuple
   if ( index != AliQA::kRAW ) {

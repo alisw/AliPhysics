@@ -240,7 +240,7 @@ void AliTrackResiduals::DeleteTrackPointArrays()
 }
 
 //_____________________________________________________
-const Int_t AliTrackResiduals::GetNFreeParam(){ 
+Int_t AliTrackResiduals::GetNFreeParam(){ 
   Int_t unfixedparam=6;
   for(Int_t j=0;j<6;j++){
     if(fBFixed[j]==kTRUE)unfixedparam--;

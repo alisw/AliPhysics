@@ -70,7 +70,7 @@ class AliPHOSPID : public TObject {
   void SetESD(AliESDEvent *esd) { fESD = esd; }
 
   void SetEnergyCorrectionOn(Bool_t on=kTRUE) {fEnergyCorrectionOn = on;}
-  const Bool_t GetEnergyCorrectionOn() const  {return fEnergyCorrectionOn;}
+  Bool_t GetEnergyCorrectionOn() const  {return fEnergyCorrectionOn;}
 
   virtual const char * Version() const = 0;
 

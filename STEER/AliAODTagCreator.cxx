@@ -320,7 +320,7 @@ void AliAODTagCreator::CreateTags(const char* type)
 	const TUrl *url = file->GetEndpointUrl();
 	fguid = file->GetUUID().AsString();
 
-	if (type == "grid") {
+	if (!strcmp(type,"grid")) {
 	    TString fturltemp = "alien://"; fturltemp += url->GetFile();
 	    fturl = fturltemp(0,fturltemp.Index(".root",5,0,TString::kExact)+5);
 	} else {
@@ -334,7 +334,7 @@ void AliAODTagCreator::CreateTags(const char* type)
 	// Set the event and input file references
 	evTag->SetEventId(iEventNumber+1);
 	evTag->SetGUID(fguid);
-	if(type == "grid") {
+	if(!strcmp(type,"grid")) {
 	    evTag->SetMD5(0);
 	    evTag->SetTURL(fturl);
 	    evTag->SetSize(0);

@@ -75,7 +75,7 @@ AliQACheckerBase& AliQACheckerBase::operator = (const AliQACheckerBase& qadm )
 }
 
 //____________________________________________________________________________
-const Double_t AliQACheckerBase::Check(AliQA::ALITASK_t /*index*/) 
+Double_t AliQACheckerBase::Check(AliQA::ALITASK_t /*index*/) 
 {
   // Performs a basic checking
   // Compares all the histograms stored in the directory
@@ -124,7 +124,7 @@ const Double_t AliQACheckerBase::Check(AliQA::ALITASK_t /*index*/)
 }  
 
 //____________________________________________________________________________
-const Double_t AliQACheckerBase::Check(AliQA::ALITASK_t /*index*/, TObjArray * list) 
+Double_t AliQACheckerBase::Check(AliQA::ALITASK_t /*index*/, TObjArray * list) 
 {
   // Performs a basic checking
   // Compares all the histograms in the list
@@ -168,7 +168,7 @@ const Double_t AliQACheckerBase::Check(AliQA::ALITASK_t /*index*/, TObjArray * l
 }  
 
 //____________________________________________________________________________ 
-const Double_t AliQACheckerBase::DiffC(const TH1 * href, const TH1 * hin) const
+Double_t AliQACheckerBase::DiffC(const TH1 * href, const TH1 * hin) const
 {
   // compares two histograms using the Chi2 test
   if ( hin->Integral() == 0 ) {
@@ -180,7 +180,7 @@ const Double_t AliQACheckerBase::DiffC(const TH1 * href, const TH1 * hin) const
 }
 
 //____________________________________________________________________________ 
-const Double_t AliQACheckerBase::DiffK(const TH1 * href, const TH1 * hin) const
+Double_t AliQACheckerBase::DiffK(const TH1 * href, const TH1 * hin) const
 {
   // compares two histograms using the Kolmogorov test
   if ( hin->Integral() == 0 ) {

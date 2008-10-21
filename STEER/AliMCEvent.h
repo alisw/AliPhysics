@@ -45,7 +45,7 @@ public:
     virtual void CreateStdContent()                        {;} 
     virtual void GetStdContent()                           {;}
     virtual void ReadFromTree(TTree * /*tree*/, Option_t* /*opt*/) {;}
-    virtual const void WriteToTree(TTree* /*tree*/)  const {;}
+    virtual void WriteToTree(TTree* /*tree*/)  const {;}
 
     virtual void SetStdNames()                             {;}
     virtual void Print(Option_t */*option=""*/)  const     {;}

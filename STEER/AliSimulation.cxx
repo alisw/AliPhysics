@@ -771,7 +771,7 @@ Bool_t AliSimulation::RunTrigger(const char* config, const char* detectors)
    TString trconfiguration = config;
 
    if (trconfiguration.IsNull()) {
-     if (gAlice->GetTriggerDescriptor() != "") {
+     if (strcmp(gAlice->GetTriggerDescriptor(),"")) {
        trconfiguration = gAlice->GetTriggerDescriptor();
      }
      else
@@ -841,7 +841,7 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
   // Either from AliSimulation or from
   // gAlice
   if (fMakeTrigger.IsNull()) {
-    if (gAlice->GetTriggerDescriptor() != "")
+    if (strcmp(gAlice->GetTriggerDescriptor(),""))
       fMakeTrigger = gAlice->GetTriggerDescriptor();
   }
   else

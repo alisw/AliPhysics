@@ -232,5 +232,5 @@ void AliAODCluster::Print(Option_t* /* option */) const
   printf("Cluster type: %d\n", GetType()); 
   printf("     energy = %f\n", E());
   printf("       chi2 = %f\n", Chi2());
-  printf("  PID object: %p\n", PID());
+  printf("  PID object: %p\n", static_cast<const void*>(PID()));
 }
