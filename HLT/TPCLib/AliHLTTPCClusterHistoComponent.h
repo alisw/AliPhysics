@@ -43,15 +43,15 @@ public:
   // Public functions to implement AliHLTComponent's interface.
   // These functions are required for the registration process
 
-  /** interface function, see @ref AliHLTComponent for description */
+  /** interface function, see AliHLTComponent for description */
   const char* GetComponentID();
-  /** interface function, see @ref AliHLTComponent for description */
+  /** interface function, see AliHLTComponent for description */
   void GetInputDataTypes(AliHLTComponentDataTypeList& list);
-  /** interface function, see @ref AliHLTComponent for description */
+  /** interface function, see AliHLTComponent for description */
   AliHLTComponentDataType GetOutputDataType();
-  /** interface function, see @ref AliHLTComponent for description */
+  /** interface function, see AliHLTComponent for description */
   virtual void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier );
-  /** interface function, see @ref AliHLTComponent for description */
+  /** interface function, see AliHLTComponent for description */
   AliHLTComponent* Spawn();
 
 protected:
@@ -60,11 +60,11 @@ protected:
   // These functions provide initialization as well as the actual processing
   // capabilities of the component. 
 
-  /** interface function, see @ref AliHLTComponent for description */
+  /** interface function, see AliHLTComponent for description */
   int DoInit( int argc, const char** argv );
-  /** interface function, see @ref AliHLTComponent for description */
+  /** interface function, see AliHLTComponent for description */
   int DoDeinit();
-  /** interface function, see @ref AliHLTComponent for description */
+  /** interface function, see AliHLTComponent for description */
   int DoEvent( const AliHLTComponentEventData& /*evtData*/, AliHLTComponentTriggerData& trigData );
 
   int Reconfigure(const char* cdbEntry, const char* chainId);

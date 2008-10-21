@@ -37,19 +37,19 @@ class AliHLTTPCGlobalMergerComponent : public AliHLTProcessor
 	// Public functions to implement AliHLTComponent's interface.
 	// These functions are required for the registration process
 
-      /** @see component interface @ref AliHLTComponent::GetComponentID */
+      /** @see component interface AliHLTComponent::GetComponentID */
 	const char* GetComponentID();
       
-      /** @see component interface @ref AliHLTComponent::GetInputDataTypes */
+      /** @see component interface AliHLTComponent::GetInputDataTypes */
 	void GetInputDataTypes(AliHLTComponentDataTypeList& list);
 
-      /** @see component interface @ref AliHLTComponent::GetOutputDataType */
+      /** @see component interface AliHLTComponent::GetOutputDataType */
 	AliHLTComponentDataType GetOutputDataType();
 
-      /** @see component interface @ref AliHLTComponent::GetOutputDataSize */
+      /** @see component interface AliHLTComponent::GetOutputDataSize */
 	virtual void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier );
 
-      /** @see component interface @ref AliHLTComponent::Spawn */
+      /** @see component interface AliHLTComponent::Spawn */
 	AliHLTComponent* Spawn();
 
     protected:
@@ -65,10 +65,10 @@ class AliHLTTPCGlobalMergerComponent : public AliHLTProcessor
 	// capabilities of the component. 
 
 
-      /** @see component interface @ref AliHLTComponent::DoInit */
+      /** @see component interface AliHLTComponent::DoInit */
 	int DoInit( int argc, const char** argv );
 
-      /** @see component interface @ref AliHLTComponent::DoDeinit */
+      /** @see component interface AliHLTComponent::DoDeinit */
 	int DoDeinit();
 
       /** @see component interface @ref AliHLTProcessor::DoEvent */

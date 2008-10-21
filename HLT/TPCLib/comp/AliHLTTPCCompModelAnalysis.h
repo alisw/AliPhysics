@@ -178,7 +178,7 @@ private:
    */
   Int_t ComparePythiaTrackInfo(AliHLTTPCTrackList* firsttracklistelement, AliHLTTPCTrackList* secondtracklistelement);
 
-  /** if -graphfile <filename>.root is given as input parameter, histrograms are created
+  /** if -graphfile filename.root is given as input parameter, histrograms are created
    * @param relativedifferences boolean to decide whether to plot histograms 
    *                            with relative differences in track paramters (1) or not (0), 1 by default
    * @return 0 upon success

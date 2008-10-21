@@ -53,17 +53,17 @@ class AliHLTTPCZeroSuppressionComponent : public AliHLTProcessor
 	// Public functions to implement AliHLTComponent's interface.
 	// These functions are required for the registration process
 
-  /** interface function, see @ref AliHLTComponent for description */
+  /** interface function, see AliHLTComponent for description */
   const char* GetComponentID();
-  /** interface function, see @ref AliHLTComponent for description */
+  /** interface function, see AliHLTComponent for description */
   void GetInputDataTypes( vector<AliHLTComponentDataType>& list);
-  /** interface function, see @ref AliHLTComponent for description */
+  /** interface function, see AliHLTComponent for description */
   AliHLTComponentDataType GetOutputDataType();
-  /** interface function, see @ref AliHLTComponent for description */
+  /** interface function, see AliHLTComponent for description */
   int GetOutputDataTypes(AliHLTComponentDataTypeList& tgtList);
-  /** interface function, see @ref AliHLTComponent for description */
+  /** interface function, see AliHLTComponent for description */
   virtual void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier );
-  /** interface function, see @ref AliHLTComponent for description */
+  /** interface function, see AliHLTComponent for description */
   AliHLTComponent* Spawn();
 
       Int_t DeInitializePadArray();

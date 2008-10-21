@@ -296,6 +296,7 @@ public:
    * @param timebinsLeft       Timebins to include left of the signals above threshold (to include tails)
    * @param timebinsRight      Timebins to include right of the signals above threshold (to include tails)
    * @param valueBelowAverage  The number of adc-counts below the average value. (sometimes there can be useful to also add some signals below average for your signals, especially when there is a lot of noise) It means that more of the tails of the signal is added.
+   * @param speedup            Do not the full zero suppression but terminate if it is clear wheter the channel has some signal or not.
    */
   void ZeroSuppress(Double_t nRMS,Int_t threshold,Int_t reqMinPoint,Int_t beginTime,Int_t endTime,Int_t timebinsLeft, Int_t timebinsRight, Int_t valueBelowAverage, bool speedup=false);
   
