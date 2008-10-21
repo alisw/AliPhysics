@@ -41,6 +41,7 @@ class AliTPCCalPad;
 class TChain;
 class TTree;
 class TMutex;
+class AliESDEvent;
 
 using namespace std;
 
@@ -54,6 +55,8 @@ public :
   virtual ~AliTPCcalibTracks();                // destructor
   
   virtual void            Process(AliTPCseed *track);  // to be called by the Selector
+  void     Process(AliESDEvent *event) {AliTPCcalibBase::Process(event);};
+  void     Process(AliESDtrack *track, Int_t runNo=-1){AliTPCcalibBase::Process(track,runNo);};
   virtual Long64_t Merge(TCollection *li);
   void     MakeResPlotsQTree(Int_t minEntries = 100, char* pathName = "plots");
   static void MakeQPosNormAll(TTree * chain, AliTPCClusterParam * param, Int_t maxPoints=1000000);
@@ -101,6 +104,7 @@ public :
 protected:         
   
 private:
+
    static Int_t   GetBin(Float_t q, Int_t pad);
    static Int_t   GetBin(Int_t  iq, Int_t pad);
    static Float_t GetQ(Int_t bin);
