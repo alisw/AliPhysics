@@ -255,6 +255,49 @@ If(ALICE_TARGET STREQUAL linuxx8664gcc)
 
 Endif(ALICE_TARGET STREQUAL linuxx8664gcc)
 
+# linux
+If(ALICE_TARGET STREQUAL linux) 
+
+
+  Set(CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS "${CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS} -shared -Wl")
+
+  Set(CMAKE_Fortran_FLAGS "-fno-second-underscore -m32")
+
+  Set(CLIBDEFS "-DCERNLIB_LINUX -DCERNLIB_BLDLIB -DCERNLIB_CZ")
+
+  Set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32 -pipe -W -Wall -Weffc++ -Woverloaded-virtual -fmessage-length=0 -Wno-long-long -Dlinux -I/usr/X11R6/include")
+  Set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -m32 -Wall -W -pipe")
+
+  If(CMAKE_Fortran_COMPILER MATCHES g95) 
+    Set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fbounds-check -ftrace=full -DFORTRAN_G95")
+    Execute_process(COMMAND g95 --print-search-dirs 
+      OUTPUT_VARIABLE _out)
+    String(REGEX REPLACE "^.*install: *([^\n]*)/\n.*$" "\\1" _libdir ${_out})
+    Set(ROOT_LIBRARIES "${ROOT_LIBRARIES} -L${_libdir} -lf95")
+  Else(CMAKE_Fortran_COMPILER MATCHES g95)
+    Set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DFORTRAN_GFORTRAN")
+    Execute_process(
+      COMMAND gfortran -m32 -print-file-name=libgfortran.so
+      OUTPUT_VARIABLE FLIB
+      OUTPUT_STRIP_TRAILING_WHITESPACE)
+    Set(ROOT_LIBRARIES "${ROOT_LIBRARIES} ${FLIB}")
+    Execute_process(
+      COMMAND gfortran -m32 -print-file-name=libgfortranbegin.a
+      OUTPUT_VARIABLE FLIB
+      OUTPUT_STRIP_TRAILING_WHITESPACE)
+    Set(ROOT_LIBRARIES "${ROOT_LIBRARIES} ${FLIB}")
+  Endif(CMAKE_Fortran_COMPILER MATCHES g95) 
+
+  Set(LINK_FLAGS "${LINK_FLAGS} -m32")
+
+  Set(ALIROOT_LIBRARIES "${ROOT_LIBRARIES}")
+
+  Set(ALIROOT_INCLUDE_DIR ${ROOT_INCLUDE_DIR} /usr/X11/include)
+
+  Set(LINK_FLAGS "${LINK_FLAGS}")
+
+Endif(ALICE_TARGET STREQUAL linux)
+
 # macosx
 If(ALICE_TARGET STREQUAL macosx) 
 
@@ -433,108 +476,6 @@ EndMacro (SetupSystem)
 # 
 # # additional ROOT libraries
 # SYSLIBS      := -lcrypt -L/usr/lib/X11R6 -lX11 
-# 
-# 
-# 
-# 
-# 
-# ../build/Makefile.linux
-# # -*- mode: makefile -*-
-# # Makefile to build AliRoot for Linux
-# 
-# # System dependent commands
-# 
-# XARGS = xargs -r
-# 
-# # The compilers
-# CXX           = g++ 
-# CC	      = gcc
-# CCMAJORV      = $(shell $(CC) -dumpversion | cut -d. -f1)
-# CCMINORV      = $(shell $(CC) -dumpversion | cut -d. -f2)
-# F77	      = $(shell root-config --f77)
-# 
-# # Global optimisation
-# OPT           = -O -g
-# NOOPT         = -g
-# 
-# CXXOPT        = $(OPT)
-# CXXNOOPT      = $(NOOPT)
-# COPT	      = $(OPT)
-# FOPT	      = $(OPT)
-# 
-# # CERNLIB defines
-# CLIBDEFS      = -DCERNLIB_LINUX -DCERNLIB_BLDLIB -DCERNLIB_CZ
-# CLIBCXXOPTS   =
-# CLIBCOPT      =
-# CLIBFOPT      = $(CLIBDEFS)
-# 
-# # Compiler flags
-# ifeq ($(CCMAJORV),2)
-# CXXFLAGS       = $(OPT) -W -Wall -fPIC -pipe
-# CXXFLAGSNO     = $(NOOPT) -W -Wall -fPIC -pipe
-# else
-# ifeq ($(CCMAJORV),3)
-# CXXFLAGS       = $(OPT) -W -Wall -Weffc++ -Woverloaded-virtual -fPIC -pipe -fmessage-length=0 -Wno-long-long -pedantic-errors -ansi -Dlinux
-# CXXFLAGSNO     = $(NOOPT) -W -Wall -Weffc++ -fPIC -pipe -fmessage-length=0 -Wno-long-long -pedantic-errors -ansi
-# else
-# ifeq ($(CCMAJORV),4)
-# CXXFLAGS       = $(OPT) -W -Wall -Weffc++ -Woverloaded-virtual -fPIC -pipe -fmessage-length=0 -Wno-long-long -pedantic-errors -ansi -Dlinux
-# CXXFLAGSNO     = $(NOOPT) -W -Wall -Weffc++ -fPIC -pipe -fmessage-length=0 -Wno-long-long -pedantic-errors -ansi
-# else
-# CXXFLAGS       = $(OPT) -W -Wall -Woverloaded-virtual -fPIC -pipe -fmessage-length=0 -Wno-long-long -ansi -Dlinux
-# CXXFLAGSNO     = $(NOOPT) -W -Wall -Weffc++ -fPIC -pipe -fmessage-length=0 -Wno-long-long -ansi
-# endif
-# endif
-# endif
-# CFLAGS	       = $(OPT) -Wall -Werror -fPIC -pipe -Wno-long-long -pedantic-errors -ansi
-# FFLAGS         = $(CLIBFOPT) $(FOPT) -fno-second-underscore
-# 
-# ifeq (g95,$(F77))
-# FFLAGS	      +=-DFORTRAN_G95
-# else
-# ifeq (gfortran,$(F77))
-# FFLAGS	      +=-DFORTRAN_GFORTRAN
-# else
-# FFLAGS	      +=
-# endif
-# endif
-# 
-# # rmkdepend flags for building dependencies of FORTRAN files
-# DEPENDFFLAGS   = $(FFLAGS)
-# 
-# # rootcint flags
-# CINTFLAGS     = 
-# 
-# LD            = g++
-# LDFLAGS       = $(OPT) 
-# 
-# SHLD	      = $(LD)
-# SOFLAGS       = $(OPT) -shared -Wl 
-# SOEXT 	      = so
-# 
-# #System libraries
-# SYSLIBS      := -ldl -lcrypt -L/usr/X11R6/lib -lX11
-# 
-# ifeq (g95,$(F77))
-# SHLIB += -L$(shell g95 --print-search-dirs | sed -n -e 's/install: //p') -lf95
-# else
-# ifeq (gfortran,$(F77))
-# SHLIB := $(shell gfortran -print-file-name=libgfortran.so)
-# SHLIB += $(shell gfortran -print-file-name=libgfortranbegin.a)
-# SYSLIBS += $(SHLIB)
-# else
-# SHLIB         = -lg2c
-# SYSLIBS +=  -lg2c
-# endif
-# endif
-# 
-# ALLD	      = ar
-# ALFLAGS       = cr
-# ALLIB         = 
-# AEXT 	      = a
-# 
-# # additional ROOT libraries
-# 
 # 
 # 
 # 
