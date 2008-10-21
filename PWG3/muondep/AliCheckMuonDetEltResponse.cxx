@@ -63,10 +63,12 @@ const Int_t AliCheckMuonDetEltResponse::fYSlatSize             = 40;
 
 //_____________________________________________________________________________
 AliCheckMuonDetEltResponse::AliCheckMuonDetEltResponse() 
-
 : TObject(),
+  fNCh(0),
+  fNSt(0),
+  fNDE(0),
   fTransformer(0x0),
-  fESD(0),
+  fESD(0x0),
   fTracksTotalNbr(0x0),
   fTrackParams(0x0),
   fTrackParam(0x0),
@@ -95,7 +97,33 @@ AliCheckMuonDetEltResponse::AliCheckMuonDetEltResponse()
     } 
 }
 
-
+//_____________________________________________________________________________
+AliCheckMuonDetEltResponse::AliCheckMuonDetEltResponse(const AliCheckMuonDetEltResponse& src) 
+: TObject(src),
+  fNCh(0),
+  fNSt(0),
+  fNDE(0),
+  fTransformer(0x0),
+  fESD(0x0),
+  fTracksTotalNbr(0x0),
+  fTrackParams(0x0),
+  fTrackParam(0x0),
+  fCluster(0x0),
+  fDetEltTDHistList(0x0),
+  fDetEltTTHistList(0x0)
+{
+ src.Copy(*this);
+}
+//_____________________________________________________________________________
+AliCheckMuonDetEltResponse& AliCheckMuonDetEltResponse::operator=(const AliCheckMuonDetEltResponse& src) 
+{
+  /// assignement operator
+  if ( this != &src ) 
+  {
+    src.Copy(*this);
+  }
+  return *this;
+}
 
 //_____________________________________________________________________________
 AliCheckMuonDetEltResponse::AliCheckMuonDetEltResponse(const AliMUONGeometryTransformer* transformer,
@@ -103,6 +131,9 @@ AliCheckMuonDetEltResponse::AliCheckMuonDetEltResponse(const AliMUONGeometryTran
 						       TClonesArray* detEltTDHistList,
 						       TClonesArray* detEltTTHistList) 
 : TObject(),
+  fNCh(0),
+  fNSt(0),
+  fNDE(0),
   fTransformer(transformer),
   fESD(esd),
   fTracksTotalNbr(0),
@@ -111,7 +142,6 @@ AliCheckMuonDetEltResponse::AliCheckMuonDetEltResponse(const AliMUONGeometryTran
   fCluster(0), 
   fDetEltTDHistList(detEltTDHistList),
   fDetEltTTHistList(detEltTTHistList)
-
 {
 /// Constructor
 
@@ -260,7 +290,7 @@ void AliCheckMuonDetEltResponse::TrackParamLoop()
       if (fTrackFilter[ch] == 1)
       {
 	if ( chamberResponse[ch] != 0) ((TH2F*) fDetEltTDHistList->UncheckedAt(fNDE))->Fill(ch, 0);
-	((TH2F*) fDetEltTTHistList->UncheckedAt(fNDE))->Fill(ch, 0);
+	if (!fDetEltTTHistList) ((TH2F*) fDetEltTTHistList->UncheckedAt(fNDE))->Fill(ch, 0);
       }
     } 
 
@@ -334,7 +364,7 @@ void AliCheckMuonDetEltResponse::FillDetEltTTHisto(Int_t chamber,
     {
       Int_t iDet = 0; //!<Position of the detection element in the histograms' list.
       iDet = FromDetElt2iDet(chamber, detElt);
-      ((TH2F*) fDetEltTTHistList->UncheckedAt(iDet)) -> Fill(posXL, posYL);
+      if (!fDetEltTTHistList)  ((TH2F*) fDetEltTTHistList->UncheckedAt(iDet)) -> Fill(posXL, posYL);
       
       if(TMath::Abs(posYL) > fOverlapSize) //!<It is an overlap area. It can have two clusters for this track in this chamber.
       {
@@ -345,13 +375,13 @@ void AliCheckMuonDetEltResponse::FillDetEltTTHisto(Int_t chamber,
 	  {
 	    fTransformer->Global2Local(fGetDetElt[1], posXG, posYG, posZG, posXL, posYL, posZL);  //!<Transfomation from global to local positions.
 	    iDet = FromDetElt2iDet(chamber, fGetDetElt[1]);
-	    ((TH2F*) fDetEltTTHistList->UncheckedAt(iDet)) -> Fill(posXL, posYL);
+	    if (!fDetEltTTHistList) ((TH2F*) fDetEltTTHistList->UncheckedAt(iDet)) -> Fill(posXL, posYL);
 	  }
 	  else
 	  {
 	    fTransformer->Global2Local(fGetDetElt[0], posXG, posYG, posZG, posXL, posYL, posZL);  //!<Transfomation from global to local positions.
 	    iDet = FromDetElt2iDet(chamber, fGetDetElt[0]);
-	    ((TH2F*) fDetEltTTHistList->UncheckedAt(iDet)) -> Fill(posXL, posYL);
+	    if (!fDetEltTTHistList) ((TH2F*) fDetEltTTHistList->UncheckedAt(iDet)) -> Fill(posXL, posYL);
 	  }
 	}
       }

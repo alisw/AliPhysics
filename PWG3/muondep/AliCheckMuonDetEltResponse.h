@@ -21,10 +21,9 @@ class AliESDEvent;
 class AliCheckMuonDetEltResponse : public TObject
 {
 public:
-
-//Default constructor:
   AliCheckMuonDetEltResponse();
-
+  AliCheckMuonDetEltResponse(const AliCheckMuonDetEltResponse& rhs);
+  AliCheckMuonDetEltResponse& operator=(const AliCheckMuonDetEltResponse& rhs);
 //Constructor:
   AliCheckMuonDetEltResponse(const AliMUONGeometryTransformer* transformer,
 			     AliESDEvent* esd,
