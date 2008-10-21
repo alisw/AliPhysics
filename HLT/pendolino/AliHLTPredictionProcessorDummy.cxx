@@ -158,7 +158,7 @@ UInt_t AliHLTPredictionProcessorDummy::Process(TMap* dcsAliasMap) {
 	return retVal;
 }
 
-TMap* AliHLTPredictionProcessorDummy::produceTestData(TString aliasName) {
+TMap* AliHLTPredictionProcessorDummy::produceTestData(TString /*aliasName*/) {
 	// generates test dummy data for AliHLTPredictionProcessorDummy
 	TMap* resultMap = 0;
 

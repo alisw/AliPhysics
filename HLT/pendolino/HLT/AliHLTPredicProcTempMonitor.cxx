@@ -218,7 +218,7 @@ Bool_t AliHLTPredicProcTempMonitor::GetSensorValue(TMap* dcsAliasMap,
 	return kFALSE;
 }
 
-TMap* AliHLTPredicProcTempMonitor::produceTestData(TString aliasName) {
+TMap* AliHLTPredicProcTempMonitor::produceTestData(TString /*aliasName*/) {
 	// produces test data for AliHLTPredicProcTempMonitor
     TMap* resultMap = 0;
 

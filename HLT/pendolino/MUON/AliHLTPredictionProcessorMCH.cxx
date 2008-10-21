@@ -100,7 +100,7 @@ void AliHLTPredictionProcessorMCH::Initialize(
 }
 
 
-UInt_t AliHLTPredictionProcessorMCH::Process(TMap* dcsAliasMap)
+UInt_t AliHLTPredictionProcessorMCH::Process(TMap* /*dcsAliasMap*/)
 {
 	/// Process the DCS values.
 	/// At the moment nothing is done here.
@@ -114,7 +114,7 @@ UInt_t AliHLTPredictionProcessorMCH::Process(TMap* dcsAliasMap)
 	return 0;
 }
 
-TMap* AliHLTPredictionProcessorMCH::produceTestData(TString aliasName) {
+TMap* AliHLTPredictionProcessorMCH::produceTestData(TString /*aliasName*/) {
     TMap* resultMap = 0;
 
     // here has to come real dummy data :-)

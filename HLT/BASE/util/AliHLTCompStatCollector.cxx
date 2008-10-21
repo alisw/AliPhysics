@@ -297,7 +297,7 @@ int AliHLTCompStatCollector::DoEvent( const AliHLTComponentEventData& /*evtData*
 	  if (parentFolder) {
 	    TIter entries(parentFolder->GetListOfFolders());
 	    while (TObject* entry=entries.Next())
-	      HLTDebug("   searching %s in %s: %s", idstr.Data(), (*consumer)->GetName(), entry->GetName());
+	      if (entry) HLTDebug("   searching %s in %s: %s", idstr.Data(), (*consumer)->GetName(), entry->GetName());
 
 	    TObject* parent=parentFolder->FindObjectAny(idstr);
 	    if (parent) {
