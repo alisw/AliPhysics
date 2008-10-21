@@ -1,28 +1,29 @@
 # -*- mode: cmake -*-
 
 set(SRCS
-       AliVParticle.cxx
-       AliVEvent.cxx
-       AliVHeader.cxx
-       AliVEventHandler.cxx
-       AliVEventPool.cxx
-       AliPID.cxx AliLog.cxx
-       AliRunTag.cxx AliLHCTag.cxx AliDetectorTag.cxx AliEventTag.cxx
-       AliEventTagCuts.cxx AliRunTagCuts.cxx
-       AliLHCTagCuts.cxx AliDetectorTagCuts.cxx
-       AliTagCreator.cxx
-       AliHeader.cxx AliGenEventHeader.cxx AliDetectorEventHeader.cxx
-       AliGenPythiaEventHeader.cxx AliGenCocktailEventHeader.cxx
-       AliGenHijingEventHeader.cxx AliCollisionGeometry.cxx
-       AliGenDPMjetEventHeader.cxx
-       AliStack.cxx AliMCEventHandler.cxx AliInputEventHandler.cxx
-       AliTrackReference.cxx AliSysInfo.cxx
-       AliMCEvent.cxx AliMCParticle.cxx
-       AliMagF.cxx
-       AliCodeTimer.cxx
-       AliPDG.cxx
-       AliQA.cxx
-       AliTimeStamp.cxx AliTriggerScalers.cxx AliTriggerScalersRecord.cxx
+  AliVParticle.cxx
+  AliVVertex.cxx
+  AliVEvent.cxx
+  AliVHeader.cxx
+  AliVEventHandler.cxx
+  AliVEventPool.cxx
+  AliPID.cxx AliLog.cxx
+  AliRunTag.cxx AliLHCTag.cxx AliDetectorTag.cxx AliEventTag.cxx
+  AliEventTagCuts.cxx AliRunTagCuts.cxx
+  AliLHCTagCuts.cxx AliDetectorTagCuts.cxx
+  AliTagCreator.cxx
+  AliHeader.cxx AliGenEventHeader.cxx AliDetectorEventHeader.cxx
+  AliGenPythiaEventHeader.cxx AliGenCocktailEventHeader.cxx
+  AliGenHijingEventHeader.cxx AliCollisionGeometry.cxx
+  AliGenDPMjetEventHeader.cxx
+  AliStack.cxx AliMCEventHandler.cxx AliInputEventHandler.cxx
+  AliTrackReference.cxx AliSysInfo.cxx
+  AliMCEvent.cxx AliMCParticle.cxx
+  AliMagF.cxx
+  AliCodeTimer.cxx
+  AliPDG.cxx
+  AliQA.cxx
+  AliTimeStamp.cxx AliTriggerScalers.cxx AliTriggerScalersRecord.cxx
 )
 
 # fill list of header files from list of source files

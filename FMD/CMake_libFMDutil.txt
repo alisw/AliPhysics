@@ -12,6 +12,7 @@ AliFMDAnaESD.cxx
 AliFMDBaseDA.cxx
 AliFMDPedestalDA.cxx
 AliFMDGainDA.cxx
+AliFMDBackgroundCorrection.cxx
 )
 
 # fill list of header files from list of source files
