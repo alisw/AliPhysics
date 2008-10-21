@@ -140,9 +140,9 @@ int AliHLTComponentHandler::AnnounceVersion()
   // see header file for class documentation
   int iResult=0;
 #ifdef PACKAGE_STRING
-  void HLTbaseCompileInfo( char*& date, char*& time);
-  char* date="";
-  char* time="";
+  extern void HLTbaseCompileInfo( const char*& date, const char*& time);
+  const char* date="";
+  const char* time="";
   HLTbaseCompileInfo(date, time);
   if (!date) date="unknown";
   if (!time) time="unknown";
@@ -407,11 +407,11 @@ int AliHLTComponentHandler::LoadLibrary( const char* libraryPath, int bActivateA
       fLibraryList.insert(fLibraryList.begin(), hLib);
       if (!phSearch) {
       HLTImportant("library %s loaded (%s%s)", libraryPath, hLib.fMode==kStatic?"persistent, ":"", loadtype);
-      typedef void (*CompileInfo)( char*& date, char*& time);
+      typedef void (*CompileInfo)(const char*& date, const char*& time);
       CompileInfo fctInfo=(CompileInfo)FindSymbol(libraryPath, "CompileInfo");
       if (fctInfo) {
-	char* date="";
-	char* time="";
+	const char* date="";
+	const char* time="";
 	(*fctInfo)(date, time);
 	if (!date) date="unknown";
 	if (!time) time="unknown";
