@@ -1003,7 +1003,7 @@ void AliESDEvent::SetStdNames(){
     }
   }
   else{
-     printf("%s:%d SetStdNames() Std Entries missing \n",(char*)__FILE__,__LINE__);
+     AliWarning("Std Entries missing");
   }
 } 
 
@@ -1129,7 +1129,7 @@ void AliESDEvent::ReadFromTree(TTree *tree, Option_t* /*opt*/){
 // Connect the ESDEvent to a tree
 //
   if(!tree){
-    Printf("%s %d AliESDEvent::ReadFromTree() Zero Pointer to Tree \n",(char*)__FILE__,__LINE__);
+    AliWarning("AliESDEvent::ReadFromTree() Zero Pointer to Tree \n");
     return;
   }
   // load the TTree
@@ -1143,14 +1143,14 @@ void AliESDEvent::ReadFromTree(TTree *tree, Option_t* /*opt*/){
     char ** addressF = 0;
     if(esdFB)addressF = (char **)(esdFB->GetAddress());
     if (!address) {
-      printf("%s %d AliESDEvent::ReadFromTree() Reading old Tree \n",(char*)__FILE__,__LINE__);
+      AliInfo("AliESDEvent::ReadFromTree() Reading old Tree");
       tree->SetBranchAddress("ESD",       &fESDOld);
       if(esdFB){
 	tree->SetBranchAddress("ESDfriend.",&fESDFriendOld);
       }
     } else {
-      printf("%s %d AliESDEvent::ReadFromTree() Reading old Tree \n",(char*)__FILE__,__LINE__);
-      printf("%s %d Branch already connected. Using existing branch address. \n",(char*)__FILE__,__LINE__);
+      AliInfo("AliESDEvent::ReadFromTree() Reading old Tree");
+      AliInfo("Branch already connected. Using existing branch address.");
       fESDOld       = (AliESD*)       (*address);
       // addressF can still be 0, since branch needs to switched on
       if(addressF)fESDFriendOld = (AliESDfriend*) (*addressF);
@@ -1242,8 +1242,8 @@ void AliESDEvent::ReadFromTree(TTree *tree, Option_t* /*opt*/){
     // TODO just add new entries
 
     if(fESDObjects->GetEntries()<kESDListN){
-      printf("%s %d AliESDEvent::ReadFromTree() TList contains less than the standard contents %d < %d \n",
-	     (char*)__FILE__,__LINE__,fESDObjects->GetEntries(),kESDListN);
+      AliWarning(Form("AliESDEvent::ReadFromTree() TList contains less than the standard contents %d < %d \n",
+		      fESDObjects->GetEntries(),kESDListN));
     }
     // set the branch addresses
     TIter next(fESDObjects);
@@ -1267,8 +1267,7 @@ void AliESDEvent::ReadFromTree(TTree *tree, Option_t* /*opt*/){
             tree->SetBranchAddress(Form("%s.",bname.Data()),fESDObjects->GetObjectRef(el));
           }
           else{
-            printf("%s %d AliESDEvent::ReadFromTree() No Branch found with Name %s or %s. \n",
-		   (char*)__FILE__,__LINE__,bname.Data(),bname.Data());
+            AliWarning(Form("AliESDEvent::ReadFromTree() No Branch found with Name %s or %s.",bname.Data(),bname.Data()));
           }
 
 	}
