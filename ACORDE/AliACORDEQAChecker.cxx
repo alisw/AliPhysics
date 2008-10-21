@@ -41,7 +41,7 @@ ClassImp(AliACORDEQAChecker)
 
 //__________________________________________________________________
 
-const Double_t AliACORDEQAChecker::Check(AliQA::ALITASK_t /*index*/, TObjArray * list)
+Double_t AliACORDEQAChecker::Check(AliQA::ALITASK_t /*index*/, TObjArray * list)
 {
 
 

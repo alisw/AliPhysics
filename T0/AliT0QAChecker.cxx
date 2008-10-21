@@ -55,7 +55,7 @@ ClassImp(AliT0QAChecker)
 
 
 //__________________________________________________________________
-const Double_t AliT0QAChecker::Check(AliQA::ALITASK_t index,TObjArray * list)
+Double_t AliT0QAChecker::Check(AliQA::ALITASK_t index,TObjArray * list)
 {
 
   // Super-basic check on the QA histograms on the input list:

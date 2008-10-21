@@ -47,8 +47,8 @@ public:
   virtual void SetTaskOffset(Int_t SPDOffset, Int_t SDDOffset, Int_t SSDOffset);
 
  protected:
-  virtual const Double_t Check(AliQA::ALITASK_t /*index*/){return 0.5;}
-  virtual const Double_t Check(AliQA::ALITASK_t index, TObjArray * list ) ;
+  virtual Double_t Check(AliQA::ALITASK_t /*index*/){return 0.5;}
+  virtual Double_t Check(AliQA::ALITASK_t index, TObjArray * list ) ;
 
 private:
 

@@ -27,11 +27,11 @@ public:
 
  protected:
 
-  virtual const Double_t Check(AliQA::ALITASK_t /*index*/, TObjArray * list) ;
-  virtual const Double_t Check(AliQA::ALITASK_t /*index*/) {return 0.;} ;
-  virtual const Double_t Check() {return 0.;} ;
-  virtual const Double_t Check(TObjArray*) {return 0.;} ;
-  virtual const Double_t Check(AliQA::ALITASK_t,  TNtupleD*) {};
+  virtual Double_t Check(AliQA::ALITASK_t /*index*/, TObjArray * list) ;
+  virtual Double_t Check(AliQA::ALITASK_t /*index*/) {return 0.;} ;
+  virtual Double_t Check() {return 0.;} ;
+  virtual Double_t Check(TObjArray*) {return 0.;} ;
+  virtual Double_t Check(AliQA::ALITASK_t,  TNtupleD*) {};
   
   ClassDef(AliTOFQAChecker,2)  // description 
 

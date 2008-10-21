@@ -31,7 +31,7 @@ public:
   virtual ~AliVZEROQAChecker() {;} // destructor
   
 protected:  
-  virtual const Double_t Check(AliQA::ALITASK_t index, TObjArray * list);
+  virtual  Double_t Check(AliQA::ALITASK_t index, TObjArray * list);
   Double_t CheckEntries(TObjArray * list) const ;
   Double_t CheckEsds(TObjArray * list) const;
   

@@ -28,8 +28,8 @@ protected:
 
   using AliQACheckerBase::Check;
   
-  virtual const Double_t Check(AliQA::ALITASK_t index) ;
-  virtual const Double_t Check(AliQA::ALITASK_t index, TObjArray * list) ;
+  virtual Double_t Check(AliQA::ALITASK_t index) ;
+  virtual Double_t Check(AliQA::ALITASK_t index, TObjArray * list) ;
   virtual void SetQA(AliQA::ALITASK_t index, const Double_t value) const ;	
 	
   const Double_t CheckRaws(TObjArray* list);

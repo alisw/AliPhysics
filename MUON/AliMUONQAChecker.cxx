@@ -61,7 +61,7 @@ AliMUONQAChecker::AliMUONQAChecker(const AliMUONQAChecker& qac) :
 }   
 
 //______________________________________________________________________________
-const Double_t 
+Double_t 
 AliMUONQAChecker::Check(AliQA::ALITASK_t /*index*/)
 {
   /// Check data
@@ -72,7 +72,7 @@ AliMUONQAChecker::Check(AliQA::ALITASK_t /*index*/)
 }
 
 //______________________________________________________________________________
-const Double_t 
+Double_t 
 AliMUONQAChecker::Check(AliQA::ALITASK_t index, TObjArray * list)
 {
   /// Check objects in list

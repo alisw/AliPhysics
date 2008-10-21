@@ -22,8 +22,8 @@ public:
 
  protected:
 
-  virtual const Double_t Check(AliQA::ALITASK_t index, TObjArray * list);
-  virtual const Double_t Check(AliQA::ALITASK_t /*index*/) {return 0.5;} 
+  virtual Double_t Check(AliQA::ALITASK_t index, TObjArray * list);
+  virtual Double_t Check(AliQA::ALITASK_t /*index*/) {return 0.5;} 
   
   ClassDef(AliZDCQAChecker,1)  // description 
 

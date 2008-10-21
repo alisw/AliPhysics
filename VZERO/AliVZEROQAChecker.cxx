@@ -41,7 +41,7 @@
 ClassImp(AliVZEROQAChecker)
 
 //__________________________________________________________________
-const Double_t AliVZEROQAChecker::Check(AliQA::ALITASK_t index, TObjArray * list) 
+Double_t AliVZEROQAChecker::Check(AliQA::ALITASK_t index, TObjArray * list) 
 {
 
 // Main check function: Depending on the TASK, different checks will be applied
