@@ -3527,7 +3527,7 @@ Bool_t AliShuttle::TouchFile()
 	return kTRUE;
 }
 //______________________________________________________________________________________________
-const UInt_t AliShuttle::GetStartTimeDCSQuery()
+UInt_t AliShuttle::GetStartTimeDCSQuery()
 {
 	// Return Start Time for the DCS query
 	//
@@ -3536,7 +3536,7 @@ const UInt_t AliShuttle::GetStartTimeDCSQuery()
 	return GetCurrentTimeCreated()-fConfig->GetDCSQueryOffset();
 }
 //______________________________________________________________________________________________
-const UInt_t AliShuttle::GetEndTimeDCSQuery()
+UInt_t AliShuttle::GetEndTimeDCSQuery()
 {
 	// Return End Time for the DCS query
 	//
