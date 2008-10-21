@@ -120,6 +120,7 @@ AliESDVertex* AliITSVertexer3D::FindVertexForCurrentEvent(TTree *itsClusterTree)
   }
   if(!fCurrentVertex){
     AliITSVertexerZ vertz(GetNominalPos()[0],GetNominalPos()[1]);
+    vertz.SetDetTypeRec(GetDetTypeRec());
     AliDebug(1,"Call Vertexer Z\n");
     vertz.SetLowLimit(-fZCutDiamond);
     vertz.SetHighLimit(fZCutDiamond);

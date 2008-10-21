@@ -35,6 +35,8 @@ class AliITSVertexer : public AliVertexer {
       if(imod>=0 && imod<kNSPDMod) return fUseModule[imod];
       else return 0;
     }
+
+    const AliITSDetTypeRec *GetDetTypeRec(){return fDetTypeRec;}
     virtual void SetDetTypeRec(const AliITSDetTypeRec *ptr){fDetTypeRec = ptr;}
     enum{kNSPDMod=240};
 
