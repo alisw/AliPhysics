@@ -190,17 +190,17 @@ void  AliMpSector::SetMinMaxPadDimensions()
   for (Int_t i=1; i<GetNofZones()+1; i++) {
     TVector2 padDimensions = GetZone(i)->GetPadDimensions();
     
-    if ( fDirection == AliMp::kX &&  
-         padDimensions.Y() > 0. && padDimensions.Y() < fMinPadDimensions.Y() ||
-         fDirection == AliMp::kY && 
-	 padDimensions.X() > 0. && padDimensions.X() < fMinPadDimensions.X())
+    if ( (fDirection == AliMp::kX &&  
+	  padDimensions.Y() > 0. && padDimensions.Y() < fMinPadDimensions.Y()) ||
+         (fDirection == AliMp::kY && 
+	  padDimensions.X() > 0. && padDimensions.X() < fMinPadDimensions.X()))
       
       fMinPadDimensions = padDimensions;
 
-    if ( fDirection == AliMp::kX &&  
-         padDimensions.Y() > 0. && padDimensions.Y() > fMaxPadDimensions.Y() ||
-         fDirection == AliMp::kY && 
-	 padDimensions.X() > 0. && padDimensions.X() > fMinPadDimensions.X())
+    if ( (fDirection == AliMp::kX &&  
+	  padDimensions.Y() > 0. && padDimensions.Y() > fMaxPadDimensions.Y()) ||
+         (fDirection == AliMp::kY && 
+	  padDimensions.X() > 0. && padDimensions.X() > fMinPadDimensions.X()))
       
       fMaxPadDimensions = padDimensions;
   }

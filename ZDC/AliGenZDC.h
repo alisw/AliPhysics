@@ -46,8 +46,8 @@ public:
   void SetDebug(Int_t idebu) {fDebugOpt = idebu;};
   
   // Getters 
-  const Double_t GetFermi2p(Int_t key) {return fProbintp[key];}
-  const Double_t GetFermi2n(Int_t key) {return fProbintn[key];}
+  Double_t GetFermi2p(Int_t key) const {return fProbintp[key];}
+  Double_t GetFermi2n(Int_t key) const {return fProbintn[key];}
 
 protected:
   Int_t    fIpart;              // Particle to be generated

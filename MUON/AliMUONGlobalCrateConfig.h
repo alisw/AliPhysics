@@ -178,11 +178,11 @@ class AliMUONGlobalCrateConfig : public  TNamed {
     const Char_t* GetFetName()        const  {return fgkFetName;}
     
             /// Get number of registers for Global
-    const Int_t   GetGlobalNofRegisters() const {return fgkGlobalNofRegisters;}
+    Int_t   GetGlobalNofRegisters() const {return fgkGlobalNofRegisters;}
             /// Get number of registers for FET
-    const Int_t   GetFetNofRegisters()    const {return fgkFetNofRegisters;}
+    Int_t   GetFetNofRegisters()    const {return fgkFetNofRegisters;}
             /// Get number of JTag lines
-    const Int_t   GetJtagNofLines()       const {return fgkJtagNofLines;}
+    Int_t   GetJtagNofLines()       const {return fgkJtagNofLines;}
     
   private:
     /// Not implemented

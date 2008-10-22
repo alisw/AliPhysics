@@ -795,7 +795,7 @@ Int_t AliTPCCalibViewer::SigmaCut(const char* drawCommand, const char* sector, c
          cutHistoLTM->SetLineColor(kGreen+2);
          legend->AddEntry(cutHistoLTM, "LTM", "l");
          cutHistoLTM->SetTitle(Form("%s, cumulative; Multiples of #sigma; Fraction of included data", htemp->GetTitle()));
-         if (plotMean && cutHistoMean || plotMedian && cutHistoMedian) cutHistoLTM->Draw("same");
+         if ((plotMean && cutHistoMean) || (plotMedian && cutHistoMedian)) cutHistoLTM->Draw("same");
             else cutHistoLTM->Draw();
          DrawLines(cutHistoLTM, nsigma, legend, kGreen+2, pm);
       }
@@ -996,7 +996,7 @@ Int_t AliTPCCalibViewer::IntegrateOld(const char* drawCommand, const char* secto
          integralHistoLTM->SetLineColor(kGreen+2);
          legend->AddEntry(integralHistoLTM, "LTM", "l");
          integralHistoLTM->SetTitle(Form("%s, integrated; Multiples of #sigma; Fraction of included data", htemp->GetTitle()));
-         if (plotMean && integralHistoMean || plotMedian && integralHistoMedian) integralHistoLTM->Draw("same");
+         if ((plotMean && integralHistoMean) || (plotMedian && integralHistoMedian)) integralHistoLTM->Draw("same");
             else integralHistoLTM->Draw();
          DrawLines(integralHistoLTM, nsigma, legend, kGreen+2, kTRUE);
       }
@@ -1104,7 +1104,7 @@ Int_t AliTPCCalibViewer::Integrate(const char* drawCommand, const char* sector, 
          integralGraphLTM->SetLineColor(kGreen+2);
          legend->AddEntry(integralGraphLTM, "LTM", "l");
          integralGraphLTM->SetTitle(Form("%s, integrated; Multiples of #sigma; Fraction of included data", htemp->GetTitle()));
-         if (plotMean && integralGraphMean || plotMedian && integralGraphMedian) integralGraphLTM->Draw("samelu");
+         if ((plotMean && integralGraphMean) || (plotMedian && integralGraphMedian)) integralGraphLTM->Draw("samelu");
             else integralGraphLTM->Draw("alu");
          DrawLines(integralGraphLTM, nsigma, legend, kGreen+2, kTRUE);
       }

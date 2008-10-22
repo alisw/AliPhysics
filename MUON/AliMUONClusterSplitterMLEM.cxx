@@ -352,7 +352,7 @@ AliMUONClusterSplitterMLEM::Fit(const AliMUONCluster& cluster,
   Int_t nfitMax = 3; 
   nfitMax = TMath::Min (nfitMax, (npads + 1) / 3);
   if (nfitMax > 1) {
-    if (nInX < 3 && nInY < 3 || nInX == 3 && nInY < 3 || nInX < 3 && nInY == 3) nfitMax = 1; // not enough pads in each direction
+    if (((nInX < 3) && (nInY < 3)) || ((nInX == 3) && (nInY < 3)) || ((nInX < 3) && (nInY == 3))) nfitMax = 1; // not enough pads in each direction
   }
   if (nfit > nfitMax) nfit = nfitMax;
   
@@ -511,8 +511,8 @@ AliMUONClusterSplitterMLEM::Fit(const AliMUONCluster& cluster,
         {
 	  shift[j] = 0;
 	}
-	else if (deriv[min][j]*deriv[!min][j] > 0 && TMath::Abs(deriv[min][j]) > TMath::Abs(deriv[!min][j])
-		 || TMath::Abs(deriv[0][j]-deriv[1][j]) < 1.e-3 || TMath::Abs(dder[j]) < 1.e-6) 
+	else if (((deriv[min][j]*deriv[!min][j] > 0) && (TMath::Abs(deriv[min][j]) > TMath::Abs(deriv[!min][j])))
+		 || (TMath::Abs(deriv[0][j]-deriv[1][j]) < 1.e-3) || (TMath::Abs(dder[j]) < 1.e-6)) 
         {
 	  shift[j] = -TMath::Sign (shift[j], (func2[0]-func2[1]) * (param0[0][j]-param0[1][j]));
 	  if (min == max) 
@@ -591,7 +591,7 @@ AliMUONClusterSplitterMLEM::Fit(const AliMUONCluster& cluster,
 	}
       } // for (Int_t j=0; j<fNpar;
         
-      if (estim < 1 && derMax < 2 || nLoop > 150) break; // minimum was found
+      if (((estim < 1) && (derMax < 2)) || nLoop > 150) break; // minimum was found
         
       nLoop++;
         
@@ -631,8 +631,8 @@ AliMUONClusterSplitterMLEM::Fit(const AliMUONCluster& cluster,
       
     //if (fNpar > 2) cout << param0[min][fNpar-3] << " " << chi2n * (1+TMath::Min(1-param0[min][fNpar-3],0.25)) << endl;
     //if (chi2n*1.2+1.e-6 > chi2o ) 
-    if (fNpar > 2 && (chi2n > chi2o || iseed == nfit-1 
-		      && chi2n * (1+TMath::Min(1-param0[min][fNpar-3],0.25)) > chi2o)) 
+    if (fNpar > 2 && (chi2n > chi2o || ((iseed == nfit-1) 
+					&& (chi2n * (1+TMath::Min(1-param0[min][fNpar-3],0.25)) > chi2o)))) 
       { fNpar -= 3; break; }
       
     // Save parameters and errors
@@ -691,7 +691,7 @@ AliMUONClusterSplitterMLEM::Fit(const AliMUONCluster& cluster,
   if (fDebug) {
     for (Int_t i=0; i<fNpar; ++i) {
       if (i == 4 || i == 7) {
-	if (i == 7 || i == 4 && fNpar < 7) cout << parOk[i] << endl;
+	if ((i == 7) || ((i == 4) && (fNpar < 7))) cout << parOk[i] << endl;
 	else cout << parOk[i] * (1-parOk[7]) << endl;
 	continue;
       }

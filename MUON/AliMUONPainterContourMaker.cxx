@@ -622,7 +622,7 @@ AliMUONPainterContourMaker::MergeContours(const TObjArray& contours,
 //  AliDebug(1,"After AddSegments");
 //  StdoutToAliDebug(1,PrintSegments(segments));
   
-  while (SplitSegments(segments));
+  while (SplitSegments(segments)) {}
 
 //  AliDebug(1,"After SplitSegments");
 //  StdoutToAliDebug(1,PrintSegments(segments));

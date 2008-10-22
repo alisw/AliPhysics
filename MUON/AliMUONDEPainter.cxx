@@ -326,8 +326,8 @@ AliMUONDEPainter::Validate(const AliMUONAttPainter& attributes) const
 
     AliMp::CathodType cathode = AliMpDEManager::GetCathod(fDetElemId,planeType);
     
-    if ( cathode == AliMp::kCath0 && norm.IsCathode1() ||
-         cathode == AliMp::kCath1 && norm.IsCathode0() ) 
+    if ( (cathode == AliMp::kCath0 && norm.IsCathode1()) ||
+         (cathode == AliMp::kCath1 && norm.IsCathode0()) ) 
     {
       norm.SetValid(kFALSE);
     }

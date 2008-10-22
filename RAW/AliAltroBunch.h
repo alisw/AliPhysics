@@ -27,7 +27,7 @@ public:
  
   inline int CheckConsistency()    
   {
-    if( (fPrevEndTimeBin - fPrewBunchSize  )  <= fEndTimeBin )
+    if(static_cast<UInt_t>(fPrevEndTimeBin) <= (fEndTimeBin+fPrewBunchSize))
       {
 	//	printf("%s:%d, ERROR conistency check failed\n", __FILE__ , __LINE__ );
 	return  DECODERERROR;
@@ -38,10 +38,10 @@ public:
       }
   }
 
-  inline UInt_t GetEndTimeBin()   const { return fEndTimeBin; }
+  UInt_t GetEndTimeBin()   const { return fEndTimeBin; }
   inline void   SetEndTimeBin(UInt_t bin) {fPrevEndTimeBin =  fEndTimeBin;  fEndTimeBin = bin; }
-  inline UInt_t GetStartTimeBin() const { return (fEndTimeBin - (fBunchSize -1)); }
-  inline void   SetStartTimeBin(UInt_t bin) { fStartTimeBin = bin; }
+  UInt_t GetStartTimeBin() const { return (fEndTimeBin - (fBunchSize -1)); }
+  void   SetStartTimeBin(UInt_t bin) { fStartTimeBin = bin; }
 
 private:
   AliAltroBunch& operator = (const AliAltroBunch& bunch);

@@ -268,45 +268,45 @@ Int_t	AliTPCPid::GetPcode(Float_t q,Float_t pm)
 	{ if( q<fCutKa->Eval(pm) ){fWpi=1.; return Pion(); } 
 	                     else {fWk =1.; return  Kaon();} }
 //3)----------------------200-400 Mev/c -------------
-    if ( pm<=fcut[3][0] )
+    if ( pm<=fcut[3][0] ){
 	if( q<fCutKa->Eval(pm) )
 		{ fWpi=1.;return Pion(); }
 	     else
 		{ if ( q<=fCutPr->Eval(pm) ) 
 			     {fWk=1.;return Kaon();} 
 			else {fWp=1.;return Proton();}
-		}
+		}}
 //4)----------------------400-450 Mev/c -------------
-    if ( pm<=fcut[4][0] )
+    if ( pm<=fcut[4][0] ){
 	if( q<fCutKaTune*fCutKa->Eval(pm) )
 		{ fWpi=1.;return Pion(); }
 	    else
 		{ if( q<fCutPr->Eval(pm) ) 
                   {fWk=1.;return Kaon();} else {fWp=1.;return Proton(); }
-                }
+                }}
 //5)----------------------450-500 Mev/c -------------
-    if ( pm<=fcut[5][0] )
+    if ( pm<=fcut[5][0] ){
 	if ( q>fCutPr->Eval(pm) )
-           {fWp=1.;return Proton();} else {return Wpik(5,q);};
+	  {fWp=1.;return Proton();} else {return Wpik(5,q);}}
 //6)----------------------500-550 Mev/c -------------
-    if ( pm<=fcut[6][0] )
+    if ( pm<=fcut[6][0] ){
 	if ( q>fCutPr->Eval(pm) )
-           {fWp=1.;return Proton();} else {return Wpik(6,q);};
+	  {fWp=1.;return Proton();} else {return Wpik(6,q);}}
 //7)----------------------550-600 Mev/c -------------
-    if ( pm<=fcut[7][0] )
+    if ( pm<=fcut[7][0] ){
 	if ( q>fCutPr->Eval(pm) )
-           {fWp=1.;return Proton();} else {return Wpik(7,q);};
+	  {fWp=1.;return Proton();} else {return Wpik(7,q);}}
 //8)----------------------600-650 Mev/c -------------
-    if ( pm<=fcut[8][0] )
-      if ( q>fCutPrTune*fCutPr->Eval(pm) ){fWp=1.;return Proton();} 
+    if ( pm<=fcut[8][0] ){
+      if ( q>fCutPrTune*fCutPr->Eval(pm) ){fWp=1.;return Proton();}}
                                      else {return Wpik(8,q);};
 //9)----------------------650-730 Mev/c -------------
-    if ( pm<=fcut[9][0] )
+    if ( pm<=fcut[9][0] ){
       if ( q>fCutPrTune*fCutPr->Eval(pm) ){fWp=1.;return Proton();}
-                                     else {return Wpik(9,q);};
+      else {return Wpik(9,q);}}
 //10)----------------------730-830 Mev/c -------------
-    if( pm<=fcut[10][0] )
-      if ( q>fCutPrTune*fCutPr->Eval(pm) ){fWp=1.;return Proton();}
+    if( pm<=fcut[10][0] ){
+      if ( q>fCutPrTune*fCutPr->Eval(pm) ){fWp=1.;return Proton();}}
                                      else {return Wpik(10,q);};
 //11)----------------------830-930 Mev/c -------------
     if( pm<=fcut[11][0] ){ return Wpikp(11,q); }

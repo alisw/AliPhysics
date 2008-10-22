@@ -110,7 +110,7 @@ AliMUONQAChecker::GetHisto(TObjArray* list, const char* hname) const
 }
 
 //______________________________________________________________________________
-const Double_t 
+Double_t 
 AliMUONQAChecker::CheckRecPoints(TObjArray * list)
 {
   /// Check rec points
@@ -126,7 +126,7 @@ AliMUONQAChecker::CheckRecPoints(TObjArray * list)
 }
 
 //______________________________________________________________________________
-const Double_t 
+Double_t 
 AliMUONQAChecker::MarkHisto(TH1& histo, Double_t value) const
 {
   /// Mark histo as originator of some QA error/warning
@@ -140,7 +140,7 @@ AliMUONQAChecker::MarkHisto(TH1& histo, Double_t value) const
 }
 
 //______________________________________________________________________________
-const Double_t 
+Double_t 
 AliMUONQAChecker::CheckESD(TObjArray * list)
 {
   /// Check ESD
@@ -161,7 +161,7 @@ AliMUONQAChecker::CheckESD(TObjArray * list)
 }
 
 //______________________________________________________________________________
-const Double_t 
+Double_t 
 AliMUONQAChecker::CheckRaws(TObjArray * list)
 {
   /// Check raws

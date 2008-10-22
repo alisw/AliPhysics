@@ -106,7 +106,7 @@ void AliTPCDigitizer::ExecFast(Option_t* option)
   char s[100]; 
   char ss[100];
   TString optionString = option;
-  if (optionString.Data() == "deb") {
+  if (!strcmp(optionString.Data(),"deb")) {
     cout<<"AliTPCDigitizer::Exec: called with option deb "<<endl;
     fDebug = 3;
   }
@@ -344,7 +344,7 @@ void AliTPCDigitizer::ExecSave(Option_t* option)
   //output stored in TreeTPCD
 
   TString optionString = option;
-  if (optionString.Data() == "deb") {
+  if (!strcmp(optionString.Data(),"deb")) {
     cout<<"AliTPCDigitizer::Exec: called with option deb "<<endl;
     fDebug = 3;
   }

@@ -435,9 +435,9 @@ void SurveyFcn(int &npar, double *g, double &f, double *par, int iflag) {
   AliMUONSurveyObj *aSurveyObj = (AliMUONSurveyObj*) gMinuit->GetObjectFit(); 
 
   f = aSurveyObj->SurveyChi2(par);
-  if (iflag==3);
-  if (npar); 
-  if (g); // no warnings about unused stuff...
+  if (iflag==3) {}
+  if (npar) {} 
+  if (g) {} // no warnings about unused stuff...
 
 }
 

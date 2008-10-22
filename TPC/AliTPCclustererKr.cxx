@@ -634,7 +634,7 @@ Int_t AliTPCclustererKr::FindClusterKrIO()
 	  for(Int_t iTimeBin=1;iTimeBin<kNTime-1;iTimeBin++){
 	    if (!ifMaximum)  {
 	      if (val[iTimeBin]==-1) break;   // 0 until the end
-	      for( ; iTimeBin<kNTime-2&&val[iTimeBin]<fMinAdc ;iTimeBin++);
+	      for( ; iTimeBin<kNTime-2&&val[iTimeBin]<fMinAdc ;iTimeBin++){}
 	    }
 	    //
 	    Short_t adc = val[iTimeBin];

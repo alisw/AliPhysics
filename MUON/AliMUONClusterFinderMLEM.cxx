@@ -957,7 +957,7 @@ Bool_t AliMUONClusterFinderMLEM::MainLoop(AliMUONCluster& cluster, Int_t iSimple
       AliMUONPad* pixPtr2 = Pixel(ipix);
       if ( nPix >= npadOK  // too many pixels already
            ||
-           pixPtr2->Charge() < pixMin && pixPtr2->Status() != fgkMustKeep // too low charge
+           ((pixPtr2->Charge() < pixMin) && (pixPtr2->Status() != fgkMustKeep)) // too low charge
            ) 
       { 
         RemovePixel(ipix);

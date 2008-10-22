@@ -359,7 +359,7 @@ AliTPCclusterMI &c)
   
   //
   if ( ( (ry<0.6) || (rz<0.6) ) && fLoop==2) return;
-  if ( (ry <1.2) && (rz<1.2) || (!fRecoParam->GetDoUnfold())) {
+  if ( ((ry <1.2) && (rz<1.2)) || (!fRecoParam->GetDoUnfold())) {
     //
     //if cluster looks like expected or Unfolding not switched on
     //standard COG is used
@@ -445,7 +445,7 @@ void AliTPCclustererMI::UnfoldCluster(Float_t * matrix2[7], Float_t recmatrix[5]
     else{
       Float_t ratio =1;
       if (  ( ((sum3i[dk+3]+3)/(sum3i[3]-3))+1 < (sum3i[2*dk+3]-3)/(sum3i[dk+3]+3))||
-	   sum3i[dk+3]<=sum3i[2*dk+3] && sum3i[dk+3]>2 ){
+	    (sum3i[dk+3]<=sum3i[2*dk+3] && sum3i[dk+3]>2 )){
 	Float_t xm2 = sum3i[-dk+3];
 	Float_t xm1 = sum3i[+3];
 	Float_t x1  = sum3i[2*dk+3];

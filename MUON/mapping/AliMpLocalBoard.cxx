@@ -173,7 +173,7 @@ Int_t  AliMpLocalBoard::GetSwitch(Int_t index) const
 	AliWarning("Switch index too large");
         return -1;
     }
-    return  (fSwitch >> 9-index) & 0x1;
+    return  (fSwitch >> (9-index)) & 0x1;
 }
 
 //______________________________________________________________________________

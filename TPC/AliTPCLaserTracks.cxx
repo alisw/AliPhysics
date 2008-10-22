@@ -192,7 +192,7 @@ Double_t AliTPCLaserTracks::FindBeamLength(TVector3 vF, TVector3 vP)
 
 
 	    //if we cross two boarders on our way return the closer boarder
-            if ( n1>0 && n2>0 )
+            if ( (n1>0) && (n2>0) )
 		if ( (vF-vI1).Mag() <= (vF-vI2).Mag() )
 		    return (vF-vI1).Mag();
 		else

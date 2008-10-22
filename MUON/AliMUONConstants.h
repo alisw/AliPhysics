@@ -77,26 +77,26 @@ class AliMUONConstants : public TObject {
     /// Return yoke lenght
     static Double_t YokeL() {return fgYokeL;}
     /// Return z-position of absorber begining
-    static const Double_t AbsZBeg() {return fgkAbsZBeg;}
+    static Double_t AbsZBeg() {return fgkAbsZBeg;}
     /// Return z-position of absorber end
-    static const Double_t AbsZEnd() {return fgkAbsZEnd;}
+    static Double_t AbsZEnd() {return fgkAbsZEnd;}
     /// Return chamber thickness in X0
     static Double_t ChamberThicknessInX0() {return fgChamberThicknessInX0;}
     /// Return Trigger ToF Limit (75 ns)
     static Float_t TriggerTofLimit() {return fgkTriggerTofLimit;}
     /// Return default trigger chamber resolution in non bending direction
-    static const Double_t TriggerNonBendingReso() {return fgkTriggerNonBendingReso;}
+    static Double_t TriggerNonBendingReso() {return fgkTriggerNonBendingReso;}
     /// Return default trigger chamber resolution in bending direction
-    static const Double_t TriggerBendingReso() {return fgkTriggerBendingReso;}
+    static Double_t TriggerBendingReso() {return fgkTriggerBendingReso;}
     /// Return z-position of muon filter begining
-    static const Double_t MuonFilterZBeg() {return fgkMuonFilterZBeg;}
+    static Double_t MuonFilterZBeg() {return fgkMuonFilterZBeg;}
     /// Return z-position of muon filter end
-    static const Double_t MuonFilterZEnd() {return fgkMuonFilterZEnd;}
+    static Double_t MuonFilterZEnd() {return fgkMuonFilterZEnd;}
     /// Return radiation length (in cm) of muon filter
-    static const Double_t MuonFilterX0() {return fgkMuonFilterX0;}
+    static Double_t MuonFilterX0() {return fgkMuonFilterX0;}
 
     /// Return the most probable bending momentum (GeV/c) (used when B = 0)
-  static const Double_t GetMostProbBendingMomentum() { return fgkMostProbBendingMomentum; }
+  static Double_t GetMostProbBendingMomentum() { return fgkMostProbBendingMomentum; }
   
  protected:
     /// Default constructor

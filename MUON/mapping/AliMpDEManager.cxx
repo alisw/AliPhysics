@@ -154,12 +154,12 @@ Int_t AliMpDEManager::GetGeomModuleId(Int_t detElemId, Bool_t warn)
   if ( ! IsValidDetElemId(detElemId, warn) ) return -1;
   
   return detElemId/fgkCoefficient 
-           + (detElemId >=  505 && detElemId <=  513 || detElemId >= 600 )
-	   + (detElemId >=  605 && detElemId <=  613 || detElemId >= 700 )
-	   + (detElemId >=  707 && detElemId <=  719 || detElemId >= 800 )
-	   + (detElemId >=  807 && detElemId <=  819 || detElemId >= 900 )
-	   + (detElemId >=  907 && detElemId <=  919 || detElemId >= 1000 )
-	   + (detElemId >= 1007 && detElemId <= 1019 || detElemId >= 1100 ) - 1;
+    + ((detElemId >=  505 && detElemId <=  513) || detElemId >= 600 )
+    + ((detElemId >=  605 && detElemId <=  613) || detElemId >= 700 )
+    + ((detElemId >=  707 && detElemId <=  719) || detElemId >= 800 )
+    + ((detElemId >=  807 && detElemId <=  819) || detElemId >= 900 )
+    + ((detElemId >=  907 && detElemId <=  919) || detElemId >= 1000 )
+    + ((detElemId >= 1007 && detElemId <= 1019) || detElemId >= 1100 ) - 1;
 }  
 
 //______________________________________________________________________________

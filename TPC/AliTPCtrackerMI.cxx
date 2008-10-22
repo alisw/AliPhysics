@@ -5273,13 +5273,13 @@ void  AliTPCtrackerMI::FindKinks(TObjArray * array, AliESDEvent *esd)
     kink->SetTPCRow0(GetRowNumber(kink->GetR()));
     Int_t index0 = kink->GetIndex(0);
     Int_t index1 = kink->GetIndex(1);
-    if (circular[index0]||circular[index1]&&kink->GetDistance()>0.2) continue;
+    if (circular[index0]||(circular[index1]&&kink->GetDistance()>0.2)) continue;
     kink->SetMultiple(usage[index0],0);
     kink->SetMultiple(usage[index1],1);
     if (kink->GetMultiple()[0]+kink->GetMultiple()[1]>2) continue;
     if (kink->GetMultiple()[0]+kink->GetMultiple()[1]>0 && quality[indexes[i]]>0.2) continue;
     if (kink->GetMultiple()[0]+kink->GetMultiple()[1]>0 && kink->GetDistance()>0.2) continue;
-    if (circular[index0]||circular[index1]&&kink->GetDistance()>0.1) continue;
+    if (circular[index0]||(circular[index1]&&kink->GetDistance()>0.1)) continue;
 
     AliTPCseed * ktrack0 = (AliTPCseed*)array->At(index0);
     AliTPCseed * ktrack1 = (AliTPCseed*)array->At(index1);
@@ -5688,7 +5688,7 @@ void  AliTPCtrackerMI::FindV0s(TObjArray * array, AliESDEvent *esd)
     AliTPCseed * track0 = (AliTPCseed*)array->At(index0);
     AliTPCseed * track1 = (AliTPCseed*)array->At(index1);
     if (track0->TPCrPID(0)>0.3&&track1->TPCrPID(0)>0.3&&v0->GetAnglep()[2]<0.15) quality[i]+=1000000;              // gamma conversion candidate
-    if (track0->TPCrPID(4)>0.9||track1->TPCrPID(4)>0.9&&minpulldca>4) quality[i]*=10;    // lambda candidate candidate
+    if (track0->TPCrPID(4)>0.9||(track1->TPCrPID(4)>0.9&&minpulldca>4)) quality[i]*=10;    // lambda candidate candidate
   }
 
   TMath::Sort(ncandidates,quality,indexes,kTRUE);

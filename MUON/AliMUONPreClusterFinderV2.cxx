@@ -181,13 +181,13 @@ AliMUONPreClusterFinderV2::NextCluster()
   
   AliMUONPad* pad;
   TIter next(fPads[0]);
-  while (  ( pad = static_cast<AliMUONPad*>(next())) && pad->IsUsed() );
+  while (  ( pad = static_cast<AliMUONPad*>(next())) && pad->IsUsed() ) {}
 
   if (!pad) // protection against no pad in first cathode, which might happen
   {
     // try other cathode
     TIter next2(fPads[1]);
-    while (  ( pad = static_cast<AliMUONPad*>(next2())) && pad->IsUsed() );
+    while (  ( pad = static_cast<AliMUONPad*>(next2())) && pad->IsUsed() ) {}
     if (!pad) 
     {
       // we are done.
