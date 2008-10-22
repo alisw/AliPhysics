@@ -368,7 +368,7 @@ void AliEveTRDTrack::SetStatus(UChar_t s)
     } else {
       if(TESTBIT(s, kTrackModel)){
         //printf("Kalman track\n");
-        //AliTRDtrackerV1::FitKalman(trk, 0x0, kFALSE, nc, fPoints);
+        if(trk->GetNumberOfTracklets() >=4) AliTRDtrackerV1::FitKalman(trk, 0x0, kFALSE, nc, fPoints);
       } else { 
         //printf("Rieman track\n");
         if(trk->GetNumberOfTracklets() >=4) AliTRDtrackerV1::FitRiemanTilt(trk, 0x0, kTRUE, nc, fPoints);

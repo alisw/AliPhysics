@@ -923,8 +923,8 @@ void AliEveTRDTrackList::UpdateTrackStyle(AliEveTRDTrack::AliEveTRDTrackState s,
         CLRBIT(fSelectedStyle, AliEveTRDTrack::kTrackModel);
         break;
       case AliEveTRDTrack::kKalman:
-        AliWarning("Kalman fit under testing for the moment.");
-        //SETBIT(fSelectedStyle, AliEveTRDTrack::kTrackModel);
+        //AliWarning("Kalman fit under testing for the moment.");
+        SETBIT(fSelectedStyle, AliEveTRDTrack::kTrackModel);
         break;
       }
       break;  

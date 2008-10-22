@@ -12,7 +12,11 @@ void trd_friend_tracks(TEveElement *cont = 0)
 
   AliEveEventManager::AssertGeometry();
 
+  AliMagFMaps *field = new AliMagFMaps("Maps","Maps", 2, 1., 10., AliMagFMaps::k5kG);
+  AliTracker::SetFieldMap(field, kTRUE);
+
   AliTRDReconstructor *reco = new AliTRDReconstructor();
+  reco->SetRecoParam(AliTRDrecoParam::GetLowFluxParam());
   reco->SetOption("!nn");
 
   AliEveTRDTrackList *tracks = new AliEveTRDTrackList("TRD Tracks");

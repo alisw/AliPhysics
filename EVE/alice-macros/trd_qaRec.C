@@ -16,12 +16,17 @@ void trd_qaRec()
   cdb->SetDefaultStorage("local://$ALICE_ROOT");
   cdb->SetRun(0);
   AliEveEventManager::AssertGeometry();
+  AliMagFMaps *field = new AliMagFMaps("Maps","Maps", 2, 1., 10., AliMagFMaps::k5kG);
+  AliTracker::SetFieldMap(field, kTRUE);
+
+  AliTRDReconstructor *reco = new AliTRDReconstructor();
+  reco->SetRecoParam(AliTRDrecoParam::GetLowFluxParam());
+
   AliEveTRDTrackList *tracks = new AliEveTRDTrackList("TRD QA Tracks");
 
 
 
   AliTRDtrackV1 *fTrack = 0x0, *track = 0x0;
-  AliTRDReconstructor *reco = new AliTRDReconstructor();
   for (Int_t it=0; it<t->GetEntries(); it++){
     if(!t->GetEntry(it)) continue;
     if(!fTrackInfo) continue;
