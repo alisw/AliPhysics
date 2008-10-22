@@ -431,7 +431,7 @@ Bool_t AliDigits::First0()
   fCurrentCol = -1;
   fCurrentIndex = -1;
   Int_t i;
-  for (i=0; (( i<fNelems) && (fElements->At(i)<=fThreshold));i++);  //MI1211
+  for (i=0; (( i<fNelems) && (fElements->At(i)<=fThreshold));i++) {}  //MI1211
   if (i == fNelems) return kFALSE;
   fCurrentCol =i/fNrows;
   fCurrentRow =i%fNrows;
@@ -446,7 +446,7 @@ Bool_t AliDigits::Next0()
   //
   if (fCurrentIndex<0) return kFALSE;  // if we didn't adjust first 
   Int_t i;
-  for (i=fCurrentIndex+1; ( (i<fNelems) && (fElements->At(i)<=fThreshold) ) ;i++);
+  for (i=fCurrentIndex+1; ( (i<fNelems) && (fElements->At(i)<=fThreshold) ) ;i++) {}
   if (i >= fNelems)  {
     fCurrentIndex = -1;
     return kFALSE;

@@ -106,7 +106,7 @@ void AliTRDtrackingEfficiencyCombined::Exec(Option_t *){
 			}
 			if(trkInf->GetNTrackRefs()){
 				Int_t iref = 0;
-				while(!(trackRef = trkInf->GetTrackRef(iref++)));
+				while(!(trackRef = trkInf->GetTrackRef(iref++))) {}
 			}
 			if(!trackRef) printf("Error: Track Reference missing for Track %d\n", trkInf->GetLabel());
 			mom =  trackRef ? trackRef->P() : trkInf->GetOuterParam()->P();

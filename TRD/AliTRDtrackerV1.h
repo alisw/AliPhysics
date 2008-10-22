@@ -74,10 +74,10 @@ public:
   AliCluster*     GetCluster(Int_t index) const;
   AliTRDseedV1*   GetTracklet(Int_t index) const;
   AliKalmanTrack* GetTrack(Int_t index) const;
-  TClonesArray*   GetListOfClusters() {return fClusters;}
-  TClonesArray*   GetListOfTracklets() {return fTracklets;}
-  TClonesArray*   GetListOfTracks() {return fTracks;}
-  static const Int_t     GetNTimeBins() {return fgNTimeBins;}
+  TClonesArray*   GetListOfClusters() const {return fClusters;}
+  TClonesArray*   GetListOfTracklets() const {return fTracklets;}
+  TClonesArray*   GetListOfTracks() const {return fTracks;}
+  static Int_t     GetNTimeBins() {return fgNTimeBins;}
   static void     GetExtrapolationConfig(Int_t iconfig, Int_t planes[2]);
   static void     GetSeedingConfig(Int_t iconfig, Int_t planes[4]);
   static TLinearFitter*  GetTiltedRiemanFitter();

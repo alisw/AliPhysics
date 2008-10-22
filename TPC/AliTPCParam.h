@@ -545,9 +545,9 @@ inline void AliTPCParam::Transform2to1(Float_t *xyz, Int_t *index) const
   xyz[1]=y1;
   xyz[2]=fZLength-xyz[2]; 
   if (index[1]<fNInnerSector)
-    if ( index[1]>=(fNInnerSector>>1))	xyz[2]*=-1.;
+    {if ( index[1]>=(fNInnerSector>>1))	xyz[2]*=-1.;}
   else 
-    if ( (index[1]-fNInnerSector) >= (fNOuterSector>>1) )    xyz[2]*=-1;      
+    {if ( (index[1]-fNInnerSector) >= (fNOuterSector>>1) )    xyz[2]*=-1;}
   index[0]=1;
 }
 

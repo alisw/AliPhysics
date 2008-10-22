@@ -1138,8 +1138,8 @@ void AliTRDRawStream::DecodeTracklet()
   //		  , *fDataWord, fSM, fLAYER, fSTACK, fSIDE+10
   //                , fTracklPadRow, fTracklPadPos, fTracklDefL, fTracklPID));
 
-  if( (fSTACK == 2) && (fTracklPadRow >= (Int_t) fGeo->RowmaxC0()) ||
-      (fSTACK != 2) && (fTracklPadRow >= (Int_t) fGeo->RowmaxC1()) ) {
+  if( ((fSTACK == 2) && (fTracklPadRow >= (Int_t) fGeo->RowmaxC0())) ||
+      ((fSTACK != 2) && (fTracklPadRow >= (Int_t) fGeo->RowmaxC1())) ) {
     AliWarning(Form("Strange Row read from Tracklet Word: %d", fTracklPadRow));
     fRawReader->AddMajorErrorLog(kTrackletRowMismatch,Form("Word: %d", fTracklPadRow));
   }

@@ -113,9 +113,9 @@ AliSegmentArray::~AliSegmentArray()
     fSegment->Delete();
     delete fSegment;
   }
-  if (fTree) 
+  if (fTree) { 
    if (fTreeOwner) delete fTree;
-   else fTree->Reset();
+   else fTree->Reset();}
 
   if (fTreeIndex) delete fTreeIndex;
   //  if (fClass!=0) delete fClass;
@@ -249,13 +249,13 @@ void AliSegmentArray::MakeTree(char *file)
 {
   //  AliSegmentID  segment;
   AliSegmentID * psegment = NewSegment();  
-  if (fTree) 
+  if (fTree) {
     if (fTreeOwner) 
      {
        delete fTree;
        fTree = new TTree("Segment Tree","Tree with segments");     
      }
-    else fTree->Reset();
+    else fTree->Reset();}
 
   
   //PH  fBranch = fTree->Branch("Segment",psegment->IsA()->GetName(),&psegment,64000);

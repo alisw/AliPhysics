@@ -303,8 +303,8 @@ void AliPHOSJetFinder::FindJetsFromDigits(const TClonesArray * digits, TObjArray
 	if(digit)
 	  totalEnergy+=energy[i] ;
       }
-      if(!fMode || (oldTotalEnergy != 0) && 
-	 (TMath::Abs(oldTotalEnergy - totalEnergy)/oldTotalEnergy < fPrecBg))
+      if(!fMode || ((oldTotalEnergy != 0) && 
+		    (TMath::Abs(oldTotalEnergy - totalEnergy)/oldTotalEnergy < fPrecBg)))
 	break ;	
     }
   }

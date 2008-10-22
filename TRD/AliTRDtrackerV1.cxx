@@ -172,7 +172,7 @@ Bool_t AliTRDtrackerV1::GetTrackPoint(Int_t index, AliTrackPoint &p) const
   
   // get detector for this tracklet
   AliTRDcluster *cl = 0x0;
-  Int_t ic = 0; do; while(!(cl = tracklet->GetClusters(ic++)));	 
+  Int_t ic = 0; do {} while(!(cl = tracklet->GetClusters(ic++)));
   Int_t  idet     = cl->GetDetector();
     
   Double_t local[3];

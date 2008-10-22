@@ -61,7 +61,7 @@ public:
   TTreeStream  &operator<<(Float_t   &f){CheckIn('F',&f);return *this;}
   TTreeStream  &operator<<(Double_t  &d){CheckIn('D',&d);return *this;}
   TTreeStream  &operator<<(TObject*o){CheckIn(o);return *this;} 
-  TTreeStream  &operator<<(Char_t *name);
+  TTreeStream  &operator<<(const Char_t *name);
  protected:
   //
 

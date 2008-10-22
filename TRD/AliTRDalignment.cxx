@@ -915,9 +915,9 @@ void trdAlignmentFcn(int &npar, double *g, double &f, double *par, int iflag) {
   AliTRDalignment *alignment = (AliTRDalignment*) gMinuit->GetObjectFit(); 
 
   f = alignment->SurveyChi2(par);
-  if (iflag==3);
-  if (npar); 
-  if (g); // no warnings about unused stuff...
+  if (iflag==3) {}
+  if (npar) {} 
+  if (g) {} // no warnings about unused stuff...
 
 }
 

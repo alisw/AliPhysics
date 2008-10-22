@@ -70,14 +70,14 @@ public:
     TH2S* GetHistoT0 (Int_t sector, Bool_t force=kFALSE);           // get refernce histogram
     TH2S* GetHistoRMS(Int_t sector, Bool_t force=kFALSE);           // get refernce histogram
 
-    const Float_t GetMeanT0rms() {return fMeanT0rms;}
-    const Float_t GetMeanQrms() {return fMeanQrms;}
-    const Float_t GetMeanRMSrms() {return fMeanRMSrms;}
+    Float_t GetMeanT0rms() const {return fMeanT0rms;}
+    Float_t GetMeanQrms() const {return fMeanQrms;}
+    Float_t GetMeanRMSrms() const {return fMeanRMSrms;}
 
-    const Int_t   GetPeakDetectionMinus(){return fPeakMinus;}
-    const Int_t   GetPeakDetectionPlus(){return fPeakPlus;}
-    const Float_t GetNnoiseThresholdMax() {return fNoiseThresholdMax;}
-    const Float_t GetNnoiseThresholdSum() {return fNoiseThresholdSum;}
+    Int_t   GetPeakDetectionMinus() const {return fPeakMinus;}
+    Int_t   GetPeakDetectionPlus()  const {return fPeakPlus;}
+    Float_t GetNnoiseThresholdMax() const {return fNoiseThresholdMax;}
+    Float_t GetNnoiseThresholdSum() const {return fNoiseThresholdSum;}
 
     TH1S* GetHistoTmean(Int_t sector, Bool_t force=kFALSE);           // get refernce histogram
 

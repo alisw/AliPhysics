@@ -518,7 +518,7 @@ Bool_t AliTRDdataArrayS::Next0()
   Int_t i;
   for (i = fCurrentIndex + 1; 
        ((i < fNelems) && (fElements->At(i) <= fThreshold)); 
-       i++);
+       i++) {}
   if (i >= fNelems)  {
     fCurrentIndex = -1;
     return kFALSE;

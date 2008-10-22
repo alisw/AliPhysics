@@ -468,7 +468,7 @@ TTreeStream & TTreeStream::Endl()
 }
 
 
-TTreeStream  &TTreeStream::operator<<(Char_t *name)
+TTreeStream  &TTreeStream::operator<<(const Char_t *name)
 {
   //
   // Endl 

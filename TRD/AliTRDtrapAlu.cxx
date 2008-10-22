@@ -130,7 +130,7 @@ AliTRDtrapAlu& AliTRDtrapAlu::AssignInt(const Int_t& first){
     
     //setting fValue to maximum; first was to big
     fValue  = fuRestriction;
-    fValue  = fValue & LUT(exponent)-1;
+    fValue  = fValue & (LUT(exponent)-1);
     return *this;
   }
 
@@ -138,14 +138,14 @@ AliTRDtrapAlu& AliTRDtrapAlu::AssignInt(const Int_t& first){
     
     //setting fValue to minimum; first was to small
     fValue  = flRestriction;
-    fValue  = fValue & LUT(exponent)-1;
+    fValue  = fValue & (LUT(exponent)-1);
     return *this;
   }
 
   
   fValue  = first;
   fValue  = fValue<<fPostCom; 
-  fValue  = fValue & LUT(exponent)-1;
+  fValue  = fValue & (LUT(exponent)-1);
  
   return *this;
     

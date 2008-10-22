@@ -323,12 +323,12 @@ void AliTPCMonitorDialog::HandleButtons(Int_t id)
 	    if(s1=="all"){  fComponents[j] = -1;	      }
 	    else         {  fComponents[j] = (int)atoi(s1.Data()); }
 	    if(
-	       j==0 && (fComponents[j] < -1 || fComponents[j]>5000) ||
-	       j==1 && (fComponents[j] < -1 || fComponents[j]>5   ) ||
-	       j==2 && (fComponents[j] < -1 || fComponents[j]>1   ) ||
-	       j==3 && (fComponents[j] < -1 || fComponents[j]>25  ) ||
-	       j==4 && (fComponents[j] < -1 || fComponents[j]>6   ) ||
-	       j==5 && (fComponents[j] < -1 || fComponents[j]>8   )    )
+	       (j==0 && (fComponents[j] < -1 || fComponents[j]>5000)) ||
+	       (j==1 && (fComponents[j] < -1 || fComponents[j]>5   )) ||
+	       (j==2 && (fComponents[j] < -1 || fComponents[j]>1   )) ||
+	       (j==3 && (fComponents[j] < -1 || fComponents[j]>25  )) ||
+	       (j==4 && (fComponents[j] < -1 || fComponents[j]>6   )) ||
+	       (j==5 && (fComponents[j] < -1 || fComponents[j]>8   ))    )
 	      {
 		compsel =0;
 		AliError("Settings out of range ( version 2) "); 
