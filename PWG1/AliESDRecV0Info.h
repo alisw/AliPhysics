@@ -7,7 +7,7 @@
 
 #include "TObject.h"
 #include "AliESDRecInfo.h"
-class AliESDvertex;
+class AliESDVertex;
 class AliKFParticle;
 
 
