@@ -33,8 +33,8 @@
 #include <TSpline.h>         //ShapeModel()
 #include "TStopwatch.h"      //
 
-//TH2F* AliHMPIDReconHTA::fgDatabase = 0x0;
-TH2F* AliHMPIDReconHTA::fgDatabase = new TH2F("deconv","database;d1;d2;thC+1000*thTrk",500,0,50,150,0,15);
+TH2F* AliHMPIDReconHTA::fgDatabase = 0x0;
+//TH2F* AliHMPIDReconHTA::fgDatabase = new TH2F("deconv","database;d1;d2;thC+1000*thTrk",500,0,50,150,0,15);
 Int_t AliHMPIDReconHTA::fgDB[501][51]={25551*0};
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 AliHMPIDReconHTA::AliHMPIDReconHTA():
@@ -521,7 +521,7 @@ void AliHMPIDReconHTA::InitDatabase()
   timer.Start();
  
 
-//  if(!fgDatabase) fgDatabase = new TH2F("deconv","database;d1;d2;thC+1000*thTrk",500,0,50,150,0,15);
+  if(!fgDatabase) fgDatabase = new TH2F("deconv","database;d1;d2;thC+1000*thTrk",500,0,50,150,0,15);
   if(fgDatabase->GetEntries()>=1) {
    AliInfo("HTA database already built. ");
    return;
@@ -734,7 +734,7 @@ Double_t AliHMPIDReconHTA::FindSimmPhi()
   // 2 solutions.................
   
   Double_t PhiTrk1= TMath::ATan(m1);                              
-  Double_t PhiTrk2= TMath::ATan(m2);
+  //Double_t PhiTrk2= TMath::ATan(m2);
   
   // negative angles solved...
   
@@ -749,7 +749,7 @@ Double_t AliHMPIDReconHTA::FindSimmPhi()
   Double_t mMin;
   if(d1 > d2) mMin = m2; else mMin = m1;
   
-  Double_t PhiTrk = TMath::ATan(mMin)*TMath::RadToDeg();
+  //Double_t PhiTrk = TMath::ATan(mMin)*TMath::RadToDeg();
   Double_t PhiTrkPositive=0;
   // 
   if(ymin <  fMipY && xmin >  fMipX)  {PhiTrkPositive  =  TMath::ATan(mMin)*TMath::RadToDeg()+180;}
@@ -772,7 +772,7 @@ Double_t AliHMPIDReconHTA::FindSimmPhi()
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDReconHTA::FindBinDB(Double_t x,Double_t y,Int_t &binX,Int_t &binY)
 {
-  const Int_t nxDB = 500;
+  //const Int_t nxDB = 500;
   const Double_t xlowDB =  0;   
   const Double_t xhigDB = 50;   
   const Double_t ylowDB =  0;
