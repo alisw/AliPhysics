@@ -167,10 +167,6 @@ If(ALICE_TARGET STREQUAL macosx64)
 
   If(CMAKE_Fortran_COMPILER MATCHES g95) 
     Set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fbounds-check -ftrace=full -DFORTRAN_G95")
-    Execute_process(COMMAND g95 --print-search-dirs 
-      OUTPUT_VARIABLE _out)
-    String(REGEX REPLACE "^.*install: *([^\n]*)/\n.*$" "\\1" _libdir ${_out})
-    Set(ROOT_LIBRARIES "${ROOT_LIBRARIES} -L${_libdir} -lf95")
   Else(CMAKE_Fortran_COMPILER MATCHES g95)
     Set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DFORTRAN_GFORTRAN")
     Execute_process(
@@ -227,10 +223,6 @@ If(ALICE_TARGET STREQUAL linuxx8664gcc)
 
   If(CMAKE_Fortran_COMPILER MATCHES g95) 
     Set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fbounds-check -ftrace=full -DFORTRAN_G95")
-    Execute_process(COMMAND g95 --print-search-dirs 
-      OUTPUT_VARIABLE _out)
-    String(REGEX REPLACE "^.*install: *([^\n]*)/\n.*$" "\\1" _libdir ${_out})
-    Set(ROOT_LIBRARIES "${ROOT_LIBRARIES} -L${_libdir} -lf95")
   Else(CMAKE_Fortran_COMPILER MATCHES g95)
     Set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DFORTRAN_GFORTRAN")
     Execute_process(
@@ -270,10 +262,6 @@ If(ALICE_TARGET STREQUAL linux)
 
   If(CMAKE_Fortran_COMPILER MATCHES g95) 
     Set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fbounds-check -ftrace=full -DFORTRAN_G95")
-    Execute_process(COMMAND g95 --print-search-dirs 
-      OUTPUT_VARIABLE _out)
-    String(REGEX REPLACE "^.*install: *([^\n]*)/\n.*$" "\\1" _libdir ${_out})
-    Set(ROOT_LIBRARIES "${ROOT_LIBRARIES} -L${_libdir} -lf95")
   Else(CMAKE_Fortran_COMPILER MATCHES g95)
     Set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DFORTRAN_GFORTRAN")
     Execute_process(
@@ -324,10 +312,6 @@ If(ALICE_TARGET STREQUAL macosx)
 
   If(CMAKE_Fortran_COMPILER MATCHES g95) 
     Set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fbounds-check -ftrace=full -DFORTRAN_G95 -single_module")
-    Execute_process(COMMAND g95 --print-search-dirs 
-      OUTPUT_VARIABLE _out)
-    String(REGEX REPLACE "^.*install: *([^\n]*)/\n.*$" "\\1" _libdir ${_out})
-    Set(ROOT_LIBRARIES "${ROOT_LIBRARIES} -L${_libdir} -lf95")
   Else(CMAKE_Fortran_COMPILER MATCHES g95)
     Set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DFORTRAN_GFORTRAN")
     Execute_process(
