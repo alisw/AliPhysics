@@ -462,7 +462,6 @@ int AliHLTTPCEsdWriterComponent::AliConverter::DoEvent(const AliHLTComponentEven
  
     if (pTree) {
       pTree->SetDirectory(0);
-      pESD->WriteToTree(pTree);
     }
 
     if ((iResult=fBase->ProcessBlocks(pTree, pESD, blocks, (int)evtData.fBlockCnt))>0) {
@@ -471,6 +470,7 @@ int AliHLTTPCEsdWriterComponent::AliConverter::DoEvent(const AliHLTComponentEven
 	// the esd structure is written to the user info and is
 	// needed in te ReadFromTree method to read all objects correctly
 	pTree->GetUserInfo()->Add(pESD);
+	pESD->WriteToTree(pTree);
 	iResult=PushBack(pTree, kAliHLTDataTypeESDTree|kAliHLTDataOriginTPC, 0);
       } else {
 	iResult=PushBack(pESD, kAliHLTDataTypeESDObject|kAliHLTDataOriginTPC, 0);
