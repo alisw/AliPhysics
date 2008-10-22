@@ -590,6 +590,37 @@ Int_t AliTPCclustererKr::FinderIO(AliRawReader* rawReader)
   return 0;
 }
 
+
+Int_t AliTPCclustererKr::CleanSector(Int_t sector){
+  //
+  // clean isolated digits
+  //  
+  const Int_t kNRows=fParam->GetNRow(sector);//number of rows in sector
+  for(Int_t iRow=0; iRow<kNRows; ++iRow){
+    AliSimDigits *digrow;
+    if(fRawData){
+      digrow = (AliSimDigits*)fDigarr->GetRow(sector,iRow);//real data
+    }else{
+      digrow = (AliSimDigits*)fDigarr->LoadRow(sector,iRow);//MC
+    }
+    if(!digrow) continue;
+    digrow->ExpandBuffer(); //decrunch
+    const Int_t kNPads = digrow->GetNCols();  // number of pads
+    const Int_t kNTime = digrow->GetNRows(); // number of timebins
+    for(Int_t iPad=1;iPad<kNPads-1;iPad++){
+      Short_t*  val = digrow->GetDigitsColumn(iPad);
+
+      for(Int_t iTimeBin=1;iTimeBin<kNTime-1;iTimeBin++){
+	if (val[iTimeBin]<=0) continue;
+	if (val[iTimeBin-1]+val[iTimeBin+1]<fZeroSup) {val[iTimeBin]=0; continue;}
+	if (val[iTimeBin-kNTime]+val[iTimeBin+kNTime]<fZeroSup) {val[iTimeBin]=0; continue;}
+	//
+	if (val[iTimeBin-1-kNTime]+val[iTimeBin+1+kNTime]<fZeroSup) {val[iTimeBin]=0; continue;}
+	if (val[iTimeBin+1-kNTime]+val[iTimeBin-1+kNTime]<fZeroSup) {val[iTimeBin]=0; continue;}		
+      }
+    }
+  }
+}
 ////____________________________________________________________________________
 Int_t AliTPCclustererKr::FindClusterKrIO()
 {
@@ -601,7 +632,7 @@ Int_t AliTPCclustererKr::FindClusterKrIO()
   Int_t clusterCounter=0;
   const Int_t nTotalSector=fParam->GetNSector();//number of sectors
   for(Int_t iSec=0; iSec<nTotalSector; ++iSec){
-    
+    CleanSector(iSec);
     //vector of maxima for each sector
     //std::vector<AliPadMax*> maximaInSector;
     TObjArray *maximaInSector=new TObjArray();//to store AliPadMax*
@@ -609,6 +640,8 @@ Int_t AliTPCclustererKr::FindClusterKrIO()
     //
     //  looking for the maxima on the pad
     //
+
+
 
     const Int_t kNRows=fParam->GetNRow(iSec);//number of rows in sector
     for(Int_t iRow=0; iRow<kNRows; ++iRow){

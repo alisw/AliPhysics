@@ -50,6 +50,8 @@ public:
   virtual Int_t FinderIO();//for MC
   virtual Int_t FinderIO(AliRawReader* rawReader);//for data
   virtual Int_t FindClusterKrIO();//main routine for finding clusters
+  virtual Int_t CleanSector(Int_t sector); // clean isolated digits
+
 
   //other
   void GetXY(Int_t sec,Int_t row,Int_t pad,Double_t& xGlob,Double_t& yGlob);//give XY coordinate of the pad
