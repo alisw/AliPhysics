@@ -1526,7 +1526,7 @@ void AliTRDmcmSim::Tracklet(){
     Int_t j = 1; // selection number
     while(i<fNADC-2 && j<=3){
       i = i + 1;
-      if((mark>>(i-1)) & 1 == 1) {
+      if( ((mark>>(i-1)) & 1) == 1) {
 	selection[j].iadc  = fNADC-1-i;
 	selection[j].value = qsum[fNADC-1-i]>>6;   // for hit-selection only the first 8 out of the 14 Bits are used for comparison
 	
@@ -1562,7 +1562,7 @@ void AliTRDmcmSim::Tracklet(){
     // read three from left side
     Int_t k = fNADC-2;
     while(k>i && j<=6) {
-      if((mark>>(k-1)) & 1 == 1) {
+      if( ((mark>>(k-1)) & 1) == 1) {
 	selection[j].iadc  = fNADC-1-k;
 	selection[j].value = qsum[fNADC-1-k]>>6;
 	
@@ -1769,7 +1769,7 @@ void AliTRDmcmSim::Tracklet(){
   // insert marked channels into list and sort according to hit-sum
   while(adcL < fNADC-3 && selNr < fNADC-3){
      
-    if((mPair>>((fNADC-4)-(adcL))) & 1 == 1) {
+    if( ((mPair>>((fNADC-4)-(adcL))) & 1) == 1) {
       selectPair[selNr].iadc  = adcL;
       selectPair[selNr].value = hitSum[adcL];   
       
@@ -2356,7 +2356,7 @@ void AliTRDmcmSim::Tracklet(){
 	shift2 = 1;
 	for(Int_t iBit = 1; iBit < 7; iBit++) {
 	    shift2  = shift2<<1;
-	    shift2 |= (1-((shift)>>(6-iBit))&1);
+	    shift2 |= (1- (((shift)>>(6-iBit))&1) );
 	    //printf("%d",(1-((-mSlope[i])>>(6-iBit))&1));
 	}
 	shift2 = shift2 + 1;
@@ -2385,7 +2385,7 @@ void AliTRDmcmSim::Tracklet(){
 	shift2 = 1;
 	for(Int_t iBit = 1; iBit < 13; iBit++) {
 	    shift2  = shift2<<1;
-	    shift2 |= (1-((shift)>>(12-iBit))&1);
+	    shift2 |= (1-(((shift)>>(12-iBit))&1));
 	    //printf("%d",(1-((-mOffset[i])>>(12-iBit))&1));
 	}
 	shift2 = shift2 + 1;
