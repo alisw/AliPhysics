@@ -380,8 +380,8 @@ else if(runType=="STANDALONE_LASER"){
               fscanf(file,"%f",&ivalRead[j][k]);
     	      //printf(" %d %1.0f  ",k, ivalRead[j][k]);
     	    }
-	    lCalib->SetDetector(j, ivalRead[j][0]);
-	    lCalib->SetSector(j, ivalRead[j][1]);
+	    lCalib->SetDetector(j, (Int_t) ivalRead[j][0]);
+	    lCalib->SetSector(j, (Int_t) ivalRead[j][1]);
 	    lCalib->SetfPMValue(j, ivalRead[j][2]);
 	    lCalib->SetfPMWidth(j, ivalRead[j][3]);
 	 }

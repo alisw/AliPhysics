@@ -499,7 +499,7 @@ void AliZDCv3::CreateBeamLine()
   // Volume: QCLext
   TGeoMedium *medZDCFe = gGeoManager->GetMedium("ZDC_ZIRON");
   TGeoVolume *pQCLext = new TGeoVolume("QCLext",pOutTrousersC, medZDCFe);
-  pQCLext->SetLineColor(4);
+  pQCLext->SetLineColor(kGreen);
   pQCLext->SetVisLeaves(kTRUE);
   //
   TGeoTranslation *tr1c = new TGeoTranslation(0., 0., (Double_t) conpar[0]+0.95+zd1);
@@ -509,7 +509,7 @@ void AliZDCv3::CreateBeamLine()
   // Volume: QCLint
   TGeoMedium *medZDCvoid = gGeoManager->GetMedium("ZDC_ZVOID");
   TGeoVolume *pQCLint = new TGeoVolume("QCLint",pIntTrousersC, medZDCvoid);
-  pQCLint->SetLineColor(6);
+  pQCLint->SetLineColor(kTeal);
   pQCLint->SetVisLeaves(kTRUE);
   pQCLext->AddNode(pQCLint, 1);
     
@@ -1325,7 +1325,7 @@ void AliZDCv3::CreateBeamLine()
   // Volume: QALext
   //TGeoMedium *medZDCFe = gGeoManager->GetMedium("ZDC_ZIRON");
   TGeoVolume *pQALext = new TGeoVolume("QALext",pOutTrousers, medZDCFe);
-  pQALext->SetLineColor(4);
+  pQALext->SetLineColor(kBlue);
   pQALext->SetVisLeaves(kTRUE);
   //
   TGeoTranslation *tr1 = new TGeoTranslation(0., 0., (Double_t) conpar[0]+0.95+zd2);
@@ -1335,7 +1335,7 @@ void AliZDCv3::CreateBeamLine()
   // Volume: QALint
   //TGeoMedium *medZDCvoid = gGeoManager->GetMedium("ZDC_ZVOID");
   TGeoVolume *pQALint = new TGeoVolume("QALint",pIntTrousers, medZDCvoid);
-  pQALint->SetLineColor(7);
+  pQALint->SetLineColor(kAzure);
   pQALint->SetVisLeaves(kTRUE);
   pQALext->AddNode(pQALint, 1);
     
@@ -1382,6 +1382,7 @@ void AliZDCv3::CreateBeamLine()
   boxpar[0] = 8.0/2.;
   boxpar[1] = 8.0/2.;
   boxpar[2] = 15./2.;
+  //boxpar[2] = (15.+15.+7.5)/2.;
   gMC->Gsvolu("QLUA", "BOX ", idtmed[7], boxpar, 3);
   gMC->Gspos("QLUA", 1, "ZDCA", 0., 0.,  fPosZNA[2]-66.-boxpar[2], 0, "ONLY");
   //printf("\n	QLUC LUMINOMETER from z = %f to z= %f\n\n",  fPosZNA[2]-66., fPosZNA[2]-66.-2*boxpar[2]);
