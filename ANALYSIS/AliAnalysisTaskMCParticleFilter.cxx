@@ -184,7 +184,6 @@ void AliAnalysisTaskMCParticleFilter::UserExec(Option_t */*option*/)
     Float_t rv = TMath::Sqrt(xv * xv + yv * yv);
       
     Bool_t write = kFALSE;
-    Int_t flag = 0;
 
     if (ip < nprim) {
       // Select the primary event
