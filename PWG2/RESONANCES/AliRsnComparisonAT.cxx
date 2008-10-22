@@ -180,17 +180,17 @@ void AliRsnComparisonAT::LoopOverESDtracks()
     AliESDtrack *esdtrack = fESD[0]->GetTrack(i);
     for (Int_t j=0;j<fMyInputNum;j++)
     {
-      for (Int_t i=0;i<fMyInput[j].GetEntries();i++)
+      for (Int_t k=0;i<fMyInput[j].GetEntries();k++)
       {
-        input = (AliRsnComparisonObj*) fMyInput[j].At(i);
+        input = (AliRsnComparisonObj*) fMyInput[j].At(k);
 //         input->FillPIDHistograms(esdtrack, fMC[0]);
       }
     }
     for (Int_t j=0;j<fMyPIDInputNum;j++)
     {
-      for (Int_t i=0;i<fMyPIDInput[j].GetEntries();i++)
+      for (Int_t k=0;i<fMyPIDInput[j].GetEntries();k++)
       {
-        input = (AliRsnComparisonObj*) fMyPIDInput[j].At(i);
+        input = (AliRsnComparisonObj*) fMyPIDInput[j].At(k);
         input->FillPIDHistograms(esdtrack, fMC[0]);
       }
     }
@@ -214,17 +214,17 @@ void AliRsnComparisonAT::LoopOverMCtracks()
     if (!mctrack) {AliInfo("mctrack == null");continue;}
     for (Int_t j=0;j<fMyInputNum;j++)
     {
-      for (Int_t i=0;i<fMyInput[j].GetEntries();i++)
+      for (Int_t k=0;k<fMyInput[j].GetEntries();k++)
       {
-        input = (AliRsnComparisonObj*) fMyInput[j].At(i);
+        input = (AliRsnComparisonObj*) fMyInput[j].At(k);
         input->FillHistograms(mctrack);
       }
     }
     for (Int_t j=0;j<fMyPIDInputNum;j++)
     {
-      for (Int_t i=0;i<fMyPIDInput[j].GetEntries();i++)
+      for (Int_t k=0;k<fMyPIDInput[j].GetEntries();k++)
       {
-        input = (AliRsnComparisonObj*) fMyPIDInput[j].At(i);
+        input = (AliRsnComparisonObj*) fMyPIDInput[j].At(k);
         input->FillPIDHistograms(mctrack);
       }
     }
@@ -246,17 +246,17 @@ void AliRsnComparisonAT::LoopOverRSNDaughters()
     daughter = (AliRsnDaughter*) tracks->At(i);
     for (Int_t j=0;j<fMyInputNum;j++)
     {
-      for (Int_t i=0;i<fMyInput[j].GetEntries();i++)
+      for (Int_t k=0;k<fMyInput[j].GetEntries();k++)
       {
-        input = (AliRsnComparisonObj*) fMyInput[j].At(i);
+        input = (AliRsnComparisonObj*) fMyInput[j].At(k);
 //         input->FillPIDHistograms(daughter);
       }
     }
     for (Int_t j=0;j<fMyPIDInputNum;j++)
     {
-      for (Int_t i=0;i<fMyPIDInput[j].GetEntries();i++)
+      for (Int_t k=0;k<fMyPIDInput[j].GetEntries();k++)
       {
-        input = (AliRsnComparisonObj*) fMyPIDInput[j].At(i);
+        input = (AliRsnComparisonObj*) fMyPIDInput[j].At(k);
         input->FillPIDHistograms(daughter);
       }
     }

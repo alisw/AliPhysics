@@ -81,7 +81,7 @@ AliRsnCut::AliRsnCut(const char *name, const char *title, EType type, Double_t m
     fULMin(min),
     fULMax(max),
     fType(type),
-    fVarType(kDouble_t)
+    fVarType((EVarType)kDouble_t)
 {
 //
 // Constructor with arguments and limits
@@ -397,7 +397,7 @@ Bool_t AliRsnCut::IsSelected(ETarget type, AliRsnEvent * event)
 Bool_t AliRsnCut::IsSelected(ETarget type, AliRsnEvent * ev1, AliRsnEvent * ev2)
 {
   AliDebug(AliLog::kDebug, "<-");
-  
+
   // check type
   if (type != kMixEvent)
   {
