@@ -25,8 +25,8 @@
 //
 
 #include "TNamed.h"
-
-class AliCFContainer ;
+#include "AliCFContainer.h"
+#include "AliLog.h"
 
 //____________________________________________________________________________
 class AliCFManager : public TNamed 
@@ -62,12 +62,21 @@ class AliCFManager : public TNamed
   //
   // Setters:
   //
-  //pass the pointer to the correction container
-  virtual void SetEventContainer(AliCFContainer* c) {fEvtContainer=c;} ;
 
   //pass the pointer to the correction container
-  virtual void SetParticleContainer(AliCFContainer* c) {fPartContainer=c;} ; 
-
+  virtual void SetEventContainer(AliCFContainer* c) {
+    fEvtContainer=c; 
+    fNStepEvt=c->GetNStep();
+    AliWarning(Form("Please dont forget to set the cut list (event empty) for the %d event-selection step requested",fNStepEvt));
+  }
+  
+  //pass the pointer to the correction container
+  virtual void SetParticleContainer(AliCFContainer* c) {
+    fPartContainer=c; 
+    fNStepPart=c->GetNStep();
+    AliWarning(Form("Please dont forget to set the cut list (even empty) for the %d particle-selection step requested",fNStepPart));
+  }
+  
   //Setter for event-level selection cut list at selection step isel
   virtual void SetEventCutsList(Int_t isel, TObjArray* array) ;
   
@@ -102,15 +111,18 @@ class AliCFManager : public TNamed
   virtual Bool_t CheckParticleCuts(Int_t isel, TObject *obj, const TString &selcuts="all") const;
 
  private:
-
+  
+  //number of steps
+  Int_t fNStepEvt; 
+  Int_t fNStepPart; 
   //the correction grid
   AliCFContainer *fEvtContainer; //ptr to Evt-Level correction container
   //the correction grid
   AliCFContainer *fPartContainer; //ptr to Particle-level correction container
   //Evt-Level Selections
-  TObjArray **fEvtCutList;   //arrays of cuts for each event-selection level
+  TObjArray **fEvtCutList;   //[fNStepEvt] arrays of cuts for each event-selection level
   //Particle-level selections
-  TObjArray **fPartCutList ; //arrays of cuts for each particle-selection level
+  TObjArray **fPartCutList ; //[fNStepPart] arrays of cuts for each particle-selection level
 
   Bool_t CompareStrings(const TString  &cutname,const TString  &selcuts) const;
 

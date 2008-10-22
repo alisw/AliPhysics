@@ -21,16 +21,16 @@
 // efficiency calculation.
 // prototype version by S.Arcelli silvia.arcelli@cern.ch
 ///////////////////////////////////////////////////////////////////////////
-#include "AliLog.h"
 #include "AliCFCutBase.h"
 #include "AliCFManager.h"
-#include "AliCFContainer.h"
 
 ClassImp(AliCFManager)
 
 //_____________________________________________________________________________
 AliCFManager::AliCFManager() : 
   TNamed(),
+  fNStepEvt(0),
+  fNStepPart(0),
   fEvtContainer(0x0),
   fPartContainer(0x0),
   fEvtCutList(0x0),
@@ -43,6 +43,8 @@ AliCFManager::AliCFManager() :
 //_____________________________________________________________________________
 AliCFManager::AliCFManager(Char_t* name, Char_t* title) : 
   TNamed(name,title),
+  fNStepEvt(0),
+  fNStepPart(0),
   fEvtContainer(0x0),
   fPartContainer(0x0),
   fEvtCutList(0x0),
@@ -55,6 +57,8 @@ AliCFManager::AliCFManager(Char_t* name, Char_t* title) :
 //_____________________________________________________________________________
 AliCFManager::AliCFManager(const AliCFManager& c) : 
   TNamed(c),
+  fNStepEvt(c.fNStepEvt),
+  fNStepPart(c.fNStepPart),
   fEvtContainer(c.fEvtContainer),
   fPartContainer(c.fPartContainer),
   fEvtCutList(c.fEvtCutList),
@@ -74,6 +78,8 @@ AliCFManager& AliCFManager::operator=(const AliCFManager& c)
     TNamed::operator=(c) ;
   }
   
+  this->fNStepEvt=c.fNStepEvt;
+  this->fNStepPart=c.fNStepPart;
   this->fEvtContainer=c.fEvtContainer;
   this->fPartContainer=c.fPartContainer;
   this->fEvtCutList=c.fEvtCutList;
@@ -192,7 +198,7 @@ void AliCFManager::SetEventCutsList(Int_t isel, TObjArray* array) {
     return;
   }
 
-  Int_t nstep = fEvtContainer->GetNStep() ;
+  Int_t nstep = fNStepEvt;
 
   if (!fEvtCutList) fEvtCutList = new TObjArray*[nstep] ;
   if (isel >= nstep) {
@@ -213,7 +219,7 @@ void AliCFManager::SetParticleCutsList(Int_t isel, TObjArray* array) {
     return;
   }
   
-  Int_t nstep = fPartContainer->GetNStep() ;
+  Int_t nstep = fNStepPart ;
   
   if (!fPartCutList) fPartCutList = new TObjArray*[nstep] ;
   if (isel >= nstep) {
