@@ -28,7 +28,7 @@ ClassImp(AliAnalysisTaskProtonsQA)
 //________________________________________________________________________ 
 AliAnalysisTaskProtonsQA::AliAnalysisTaskProtonsQA()
   : AliAnalysisTask(), fESD(0), fMC(0),
-    fList0(0), fList1(0), fList2(0),
+    fList0(0), fList1(0), fList2(0), fList3(0), fList4(0),
     fAnalysis(0) {
     //Dummy constructor
 }
@@ -36,7 +36,7 @@ AliAnalysisTaskProtonsQA::AliAnalysisTaskProtonsQA()
 //________________________________________________________________________
 AliAnalysisTaskProtonsQA::AliAnalysisTaskProtonsQA(const char *name) 
 : AliAnalysisTask(name, ""), fESD(0), fMC(0),
-  fList0(0), fList1(0), fList2(0),
+  fList0(0), fList1(0), fList2(0), fList3(0), fList4(0),
   fAnalysis(0) {
   // Constructor
 
@@ -47,6 +47,8 @@ AliAnalysisTaskProtonsQA::AliAnalysisTaskProtonsQA(const char *name)
   DefineOutput(0, TList::Class());
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
+  DefineOutput(3, TList::Class());
+  DefineOutput(4, TList::Class());
 }
 
 //________________________________________________________________________
@@ -58,9 +60,6 @@ void AliAnalysisTaskProtonsQA::ConnectInputData(Option_t *) {
   if (!tree) {
     Printf("ERROR: Could not read chain from input slot 0");
   } else {
-    //tree->SetBranchStatus("*", kFALSE);
-    //tree->SetBranchStatus("Tracks.*", kTRUE);
-      
     AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
      
     if (!esdH) {
@@ -88,42 +87,46 @@ void AliAnalysisTaskProtonsQA::CreateOutputObjects() {
   fAnalysis = new AliProtonQAAnalysis();
   fAnalysis->SetQAOn();
   fAnalysis->SetRunMCAnalysis();
+  //fAnalysis->SetMCProcessId(4);//4: weak decay - 13: hadronic interaction
+  //fAnalysis->SetMotherParticlePDGCode(3122);//3122: Lambda
 
   //Use of TPConly tracks
-  /*fAnalysis->SetQAYPtBins(10, -0.5, 0.5, 12, 0.5, 0.9); //TPC only
+  fAnalysis->SetQAYPtBins(10, -0.5, 0.5, 12, 0.5, 0.9); //TPC only
   fAnalysis->UseTPCOnly();
-  fAnalysis->SetMinTPCClusters(50);
-  fAnalysis->SetMaxChi2PerTPCCluster(3.5);
-  fAnalysis->SetMaxCov11(2.0);
-  fAnalysis->SetMaxCov22(2.0);
-  fAnalysis->SetMaxCov33(0.5);
-  fAnalysis->SetMaxCov44(0.5);
-  fAnalysis->SetMaxCov55(2.0);
-  fAnalysis->SetMaxSigmaToVertexTPC(2.5);
-  fAnalysis->SetTPCRefit();
-  fAnalysis->SetTPCpid();*/
+  //fAnalysis->SetMinTPCClusters(100);
+  //fAnalysis->SetMaxChi2PerTPCCluster(2.1);
+  //fAnalysis->SetMaxCov11(1.0);
+  //fAnalysis->SetMaxCov22(1.0);
+  //fAnalysis->SetMaxCov33(0.2);
+  //fAnalysis->SetMaxCov44(0.2);
+  //fAnalysis->SetMaxCov55(0.5);
+  //fAnalysis->SetMaxSigmaToVertexTPC(2.0);
+  //fAnalysis->SetMaxDCAXY(1.0);
+  //fAnalysis->SetMaxDCAZ(1.0);
+  //fAnalysis->SetTPCRefit();
+  fAnalysis->SetTPCpid();
 
   //Combined tracking
-  fAnalysis->SetQAYPtBins(20, -1.0, 1.0, 27, 0.4, 3.1); //combined tracking
-  fAnalysis->SetMinTPCClusters(50);
-  fAnalysis->SetMaxChi2PerTPCCluster(3.5);
-  fAnalysis->SetMaxCov11(2.0);
-  fAnalysis->SetMaxCov22(2.0);
-  fAnalysis->SetMaxCov33(0.5);
-  fAnalysis->SetMaxCov44(0.5);
-  fAnalysis->SetMaxCov55(2.0);
-  fAnalysis->SetMaxSigmaToVertex(2.5);
-  fAnalysis->SetTPCRefit();
+  //fAnalysis->SetQAYPtBins(20, -1.0, 1.0, 27, 0.4, 3.1); //combined tracking
+  //fAnalysis->SetMinTPCClusters(50);
+  //fAnalysis->SetMaxChi2PerTPCCluster(3.5);
+  //fAnalysis->SetMaxCov11(2.0);
+  //fAnalysis->SetMaxCov22(2.0);
+  //fAnalysis->SetMaxCov33(0.5);
+  //fAnalysis->SetMaxCov44(0.5);
+  //fAnalysis->SetMaxCov55(2.0);
+  //fAnalysis->SetMaxSigmaToVertex(2.0);
+  //fAnalysis->SetTPCRefit();
   //ITS related cuts - to be used in the case of the analysis of global tracks
-  fAnalysis->SetPointOnITSLayer1();
-  fAnalysis->SetPointOnITSLayer2();
-  fAnalysis->SetPointOnITSLayer3();
-  fAnalysis->SetPointOnITSLayer4();
-  fAnalysis->SetPointOnITSLayer5();
-  fAnalysis->SetPointOnITSLayer6();
-  fAnalysis->SetMinITSClusters(1);
-  fAnalysis->SetITSRefit();
-  fAnalysis->SetESDpid();
+  //fAnalysis->SetPointOnITSLayer1();
+  //fAnalysis->SetPointOnITSLayer2();
+  //fAnalysis->SetPointOnITSLayer3();
+  //fAnalysis->SetPointOnITSLayer4();
+  //fAnalysis->SetPointOnITSLayer5();
+  //fAnalysis->SetPointOnITSLayer6();
+  //fAnalysis->SetMinITSClusters(1);
+  //fAnalysis->SetITSRefit();
+  //fAnalysis->SetESDpid();
 
   fAnalysis->InitQA();
   fAnalysis->SetPriorProbabilities(partFrac);
@@ -136,6 +139,12 @@ void AliAnalysisTaskProtonsQA::CreateOutputObjects() {
 
   fList2 = new TList();
   fList2 = fAnalysis->GetMCProcessesList();
+
+  fList3 = new TList();
+  fList3 = fAnalysis->GetAcceptedCutList();
+
+  fList4 = new TList();
+  fList4 = fAnalysis->GetAcceptedDCAList();
 }
 
 //________________________________________________________________________
@@ -166,6 +175,8 @@ void AliAnalysisTaskProtonsQA::Exec(Option_t *) {
   PostData(0, fList0);
   PostData(1, fList1);
   PostData(2, fList2);
+  PostData(3, fList3);
+  PostData(4, fList4);
 }      
 
 //________________________________________________________________________

@@ -16,6 +16,7 @@ void runProof(Int_t stats = 0, const char* dataset = 0x0) {
   
   TString outputFilename1 = "Protons.QA.root"; 
   TString outputFilename2 = "Protons.MC.QA.root"; 
+  TString outputFilename3 = "Protons.QA.Histograms.root"; 
 
   printf("****** Connect to PROOF *******\n");
   TProof::Open("alicecaf.cern.ch"); 
@@ -56,24 +57,34 @@ void runProof(Int_t stats = 0, const char* dataset = 0x0) {
   AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("dataChain",
 							   TChain::Class(),
 							   AliAnalysisManager::kInputContainer);
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("outputList1", 
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("globalQAList", 
 							    TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
 							    outputFilename1.Data());
-  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("outputList2", 
+  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("pdgCodeList", 
 							    TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
 							    outputFilename2.Data());
-  AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("outputList3", 
+  AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("mcProcessList", 
 							    TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
 							    outputFilename2.Data());
+  AliAnalysisDataContainer *coutput4 = mgr->CreateContainer("acceptedCutList", 
+							    TList::Class(),
+							    AliAnalysisManager::kOutputContainer,
+							    outputFilename3.Data());
+  AliAnalysisDataContainer *coutput5 = mgr->CreateContainer("acceptedDCAList", 
+							    TList::Class(),
+							    AliAnalysisManager::kOutputContainer,
+							    outputFilename3.Data());
 
   //____________________________________________//
   mgr->ConnectInput(taskProtonsQA,0,cinput1);
   mgr->ConnectOutput(taskProtonsQA,0,coutput1);
   mgr->ConnectOutput(taskProtonsQA,1,coutput2);
   mgr->ConnectOutput(taskProtonsQA,2,coutput3);
+  mgr->ConnectOutput(taskProtonsQA,3,coutput4);
+  mgr->ConnectOutput(taskProtonsQA,4,coutput5);
   if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
 
