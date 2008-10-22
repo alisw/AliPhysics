@@ -123,8 +123,21 @@ class AliProtonQAAnalysis : public TObject {
   //MC analysis
   void RunMCAnalysis(AliStack* stack);
   void SetRunMCAnalysis() {fRunMCAnalysis = kTRUE;}
+  void SetMCProcessId(Int_t id) {
+    fMCProcessIdFlag = kTRUE;
+    fMCProcessId = id;
+  }
+  void SetMotherParticlePDGCode(Int_t pdgCode) {
+    fMotherParticlePDGCodeFlag = kTRUE;
+    fMotherParticlePDGCode = pdgCode;
+  }
   TList *GetPDGList() {return fPDGList;}
   TList *GetMCProcessesList() {return fMCProcessesList;}
+
+  TList *GetAcceptedCutList() {return fAcceptedCutList;}
+  TList *GetRejectedCutList() {return fRejectedCutList;}
+  TList *GetAcceptedDCAList() {return fAcceptedDCAList;}
+  TList *GetRejectedDCAList() {return fRejectedDCAList;}
 
  private:
   AliProtonQAAnalysis(const AliProtonQAAnalysis&); // Not implemented
@@ -134,6 +147,7 @@ class AliProtonQAAnalysis : public TObject {
   void     InitQA();
   void     FillQA(AliESDtrack *track, AliStack *stack);
   void     InitMCAnalysis();
+  void     InitCutLists();
   Int_t    ConvertPDGToInt(Int_t pdgCode);
   Float_t  GetSigmaToVertex(AliESDtrack* esdTrack); 
   Double_t Rapidity(Double_t Px, Double_t Py, Double_t Pz);
@@ -195,6 +209,15 @@ class AliProtonQAAnalysis : public TObject {
   TList *fPDGList; //list with the 3D histograms: y-pt-pdg (anti)protons
   TList *fMCProcessesList; //list with the MC processes for every secondary (anti)proton
   Bool_t fRunMCAnalysis; //run this part or not
+  Bool_t fMCProcessIdFlag; //flag to see if we should check the process id
+  UInt_t fMCProcessId; //process id based on the TMCProcess
+  Bool_t fMotherParticlePDGCodeFlag; //flag to see if we should check the pdg code of the mother particle
+  Int_t  fMotherParticlePDGCode; //pdg code of the mother particle
+
+  TList *fAcceptedCutList;// list of the cut parameters' histograms
+  TList *fRejectedCutList;// list of the cut parameters' histograms
+  TList *fAcceptedDCAList;// list of the DCA histograms
+  TList *fRejectedDCAList;// list of the DCA histograms
 
   ClassDef(AliProtonQAAnalysis,0);
 };

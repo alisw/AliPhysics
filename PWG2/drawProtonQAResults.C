@@ -3,7 +3,7 @@ void drawProtonQAResults(const char* filename1 = "Protons.QA.root",
   //Macro to visualize the results of the proton QA task
   gStyle->SetPalette(1,0);
   drawCutStatistics(filename1);
-  //drawMCQA(filename2);
+  drawMCQA(filename2);
 }
 
 //________________________________________//
@@ -31,7 +31,7 @@ void drawCutStatistics(const char *filename) {
   }
 
   TFile *f = TFile::Open(filename);
-  TList *list = (TList *)f->Get("outputList1");
+  TList *list = (TList *)f->Get("globalQAList");
 
   TList *fQA2DList = (TList *)list->At(0);
   GetQAEntries(fQA2DList,gEntriesQA2DList);
@@ -559,6 +559,17 @@ void DrawContamination(TList *inputList) {
   t1->DrawLatex(2.1,43,"Secondaries");
 
   c8->SaveAs("Contamination-Protons-Pt.gif");
+
+  TFile *fout = TFile::Open("Contamination.root","recreate");
+  gYPrimaryProtonsPercentage->Write();
+  gYSecondaryProtonsPercentage->Write();
+  gPtPrimaryProtonsPercentage->Write();
+  gPtSecondaryProtonsPercentage->Write();
+  gYPrimaryAntiProtonsPercentage->Write();
+  gYSecondaryAntiProtonsPercentage->Write();
+  gPtPrimaryAntiProtonsPercentage->Write();
+  gPtSecondaryAntiProtonsPercentage->Write();
+  fout->Close();
 }
 
 //________________________________________________//
@@ -599,11 +610,12 @@ void drawMCQA(const char *filename) {
   TParticlePDG *p = 0x0;
   
   TFile *f = TFile::Open(filename);
-  TList *list2 = (TList *)f->Get("outputList2");  
+  TList *list2 = (TList *)f->Get("pdgCodeList");  
   TH3F *gHistYPtPDGProtons = (TH3F *)list2->At(0);
   TH3F *gHistYPtPDGAntiProtons = (TH3F *)list2->At(1);
-  TList *list3 = (TList *)f->Get("outputList3");
-  
+  TList *list3 = (TList *)f->Get("mcProcessList");
+  readProcesses(list3);
+
   Double_t nParticleCompositionProtonY[100], nParticleCompositionProtonPt[100];
   Double_t nParticleCompositionAntiProtonY[100], nParticleCompositionAntiProtonPt[100];
   Double_t gY[100], gPt[100];
@@ -653,57 +665,60 @@ void drawMCQA(const char *filename) {
   //_________________________________________________________//
   char *fParticleName[14] = {"Primary","K_{L}","#pi","K_{S}","K",
 			     "n","p","#Sigma^{-}","#Lambda","#Sigma^{+}",
-			     "#Xi^{-}","#Xi^{-}","#Omega^{-}"};
+			     "#Xi^{-}","#Xi^{0}","#Omega^{-}"};
   TLatex *t1 = new TLatex();
   t1->SetTextSize(0.04);
 
-  TH2F *hEmptyY = new TH2F("hEmptyY","",100,-1.2,1.2,100,0,100); 
+  TH2F *hEmptyY = new TH2F("hEmptyY","",100,-1.2,1.2,100,0,120); 
   hEmptyY->SetStats(kFALSE); 
   hEmptyY->GetYaxis()->SetTitle("Particle composition [%]");
   hEmptyY->GetXaxis()->SetTitle("y");
 
-  TCanvas *c3 = new TCanvas("c3","MC secondary composition - Protons",
+  TCanvas *c3 = new TCanvas("c3","MC secondary composition vs y - Protons",
 			    0,0,650,550);
   c3->SetFillColor(10); c3->GetFrame()->SetFillColor(10);
   c3->SetHighLightColor(10); c3->SetBottomMargin(0.15);
   c3->SetGridx(); c3->SetGridy();
   hEmptyY->Draw();
   for(Int_t iParticle = 0; iParticle < 10; iParticle++) {
-    gParticleProtonY[iParticle]->Draw("P");
+    //if((iParticle == 0)||(iParticle == 2)||(iParticle == 5)||(iParticle == 6)||(iParticle == 8))
+    if((iParticle == 0)||(iParticle == 2)||(iParticle == 6)||(iParticle == 8))
+      gParticleProtonY[iParticle]->Draw("P");
     if(iParticle < 5) {
-      DrawMarker(-1.1, 95-5*iParticle, 20+iParticle, 1.2, 1);
-      t1->DrawLatex(-1.0,93-5*iParticle,fParticleName[iParticle]);
+      DrawMarker(-1.1, 115-5*iParticle, 20+iParticle, 1.2, 1);
+      t1->DrawLatex(-1.0,113-5*iParticle,fParticleName[iParticle]);
     }
     else {
-      DrawMarker(0.2, 95-5*(iParticle-5), 20+iParticle, 1.2, 1);
-      t1->DrawLatex(0.3,93-5*(iParticle-5),fParticleName[iParticle]);
+      DrawMarker(0.2, 115-5*(iParticle-5), 20+iParticle, 1.2, 1);
+      t1->DrawLatex(0.3,113-5*(iParticle-5),fParticleName[iParticle]);
     }
   }
 
-  TCanvas *c5 = new TCanvas("c5","MC secondary composition - antiProtons",
+  TCanvas *c5 = new TCanvas("c5","MC secondary composition vs y - antiProtons",
 			    0,0,650,550);
   c5->SetFillColor(10); c5->GetFrame()->SetFillColor(10);
   c5->SetHighLightColor(10); c5->SetBottomMargin(0.15);
   c5->SetGridx(); c5->SetGridy();
   hEmptyY->Draw();
   for(Int_t iParticle = 0; iParticle < 10; iParticle++) {
-    gParticleAntiProtonY[iParticle]->Draw("P");
+    if((iParticle == 0)||(iParticle == 6)||(iParticle == 8))
+      gParticleAntiProtonY[iParticle]->Draw("P");
     if(iParticle < 5) {
-      DrawMarker(-1.1, 95-5*iParticle, 20+iParticle, 1.2, 1);
-      t1->DrawLatex(-1.0,93-5*iParticle,fParticleName[iParticle]);
+      DrawMarker(-1.1, 115-5*iParticle, 20+iParticle, 1.2, 1);
+      t1->DrawLatex(-1.0,113-5*iParticle,fParticleName[iParticle]);
     }
     else {
-      DrawMarker(0.2, 95-5*(iParticle-5), 20+iParticle, 1.2, 1);
-      t1->DrawLatex(0.3,93-5*(iParticle-5),fParticleName[iParticle]);
+      DrawMarker(0.2, 115-5*(iParticle-5), 20+iParticle, 1.2, 1);
+      t1->DrawLatex(0.3,113-5*(iParticle-5),fParticleName[iParticle]);
     }
   }
 
-  TH2F *hEmptyPt = new TH2F("hEmptyPt","",100,0.0,4.0,100,0,100); 
+  TH2F *hEmptyPt = new TH2F("hEmptyPt","",100,0.0,4.0,100,0,120); 
   hEmptyPt->SetStats(kFALSE); 
   hEmptyPt->GetYaxis()->SetTitle("Particle composition [%]");
   hEmptyPt->GetXaxis()->SetTitle("P_{T} [GeV/c]");
 
-  TCanvas *c4 = new TCanvas("c4","MC secondary composition - Protons",
+  TCanvas *c4 = new TCanvas("c4","MC secondary composition vs pT - Protons",
 			    0,0,650,550);
   c4->SetFillColor(10); c4->GetFrame()->SetFillColor(10);
   c4->SetHighLightColor(10); c4->SetBottomMargin(0.15);
@@ -711,17 +726,18 @@ void drawMCQA(const char *filename) {
   hEmptyPt->Draw();
   for(Int_t iParticle = 0; iParticle < 10; iParticle++) {
     if(iParticle < 5) {
-      DrawMarker(0.2, 95-5*iParticle, 20+iParticle, 1.2, 1);
-      t1->DrawLatex(0.3,93-5*iParticle,fParticleName[iParticle]);
+      DrawMarker(0.2, 115-5*iParticle, 20+iParticle, 1.2, 1);
+      t1->DrawLatex(0.3,113-5*iParticle,fParticleName[iParticle]);
     }
     else {
-      DrawMarker(2.2, 95-5*(iParticle-5), 20+iParticle, 1.2, 1);
-      t1->DrawLatex(2.3,93-5*(iParticle-5),fParticleName[iParticle]);
+      DrawMarker(2.2, 115-5*(iParticle-5), 20+iParticle, 1.2, 1);
+      t1->DrawLatex(2.3,113-5*(iParticle-5),fParticleName[iParticle]);
     }
-    gParticleProtonPt[iParticle]->Draw("P");
+    if((iParticle == 0)||(iParticle == 2)||(iParticle == 6)||(iParticle == 8))
+      gParticleProtonPt[iParticle]->Draw("P");
   }
 
-  TCanvas *c6 = new TCanvas("c6","MC secondary composition - AntiProtons",
+  TCanvas *c6 = new TCanvas("c6","MC secondary composition vs pT - AntiProtons",
 			    0,0,650,550);
   c6->SetFillColor(10); c6->GetFrame()->SetFillColor(10);
   c6->SetHighLightColor(10); c6->SetBottomMargin(0.15);
@@ -729,14 +745,15 @@ void drawMCQA(const char *filename) {
   hEmptyPt->Draw();
   for(Int_t iParticle = 0; iParticle < 10; iParticle++) {
     if(iParticle < 5) {
-      DrawMarker(0.2, 95-5*iParticle, 20+iParticle, 1.2, 1);
-      t1->DrawLatex(0.3,93-5*iParticle,fParticleName[iParticle]);
+      DrawMarker(0.2, 115-5*iParticle, 20+iParticle, 1.2, 1);
+      t1->DrawLatex(0.3,113-5*iParticle,fParticleName[iParticle]);
     }
     else {
-      DrawMarker(2.2, 95-5*(iParticle-5), 20+iParticle, 1.2, 1);
-      t1->DrawLatex(2.3,93-5*(iParticle-5),fParticleName[iParticle]);
+      DrawMarker(2.2, 115-5*(iParticle-5), 20+iParticle, 1.2, 1);
+      t1->DrawLatex(2.3,113-5*(iParticle-5),fParticleName[iParticle]);
     }
-    gParticleAntiProtonPt[iParticle]->Draw("P");
+    if((iParticle == 0)||(iParticle == 6)||(iParticle == 8))
+      gParticleAntiProtonPt[iParticle]->Draw("P");
   }
 }
 
@@ -775,8 +792,8 @@ void GetComposition(Int_t iSpecies,
   for(Int_t iXbins = 1; iXbins <= gHist->GetNbinsX(); iXbins++) {
     for(Int_t iYbins = 1; iYbins <= gHist->GetNbinsY(); iYbins++) {
       nParticleCompositionY[iXbins-1] += 100.*gHist->GetBinContent(iXbins,iYbins,iSpecies+1)/nTotalY[iXbins-1];
-      if(nParticleCompositionY[iXbins-1] == 0) 
-	nParticleCompositionY[iXbins-1] = -10.0;
+      //if(nParticleCompositionY[iXbins-1] == 0) 
+      //nParticleCompositionY[iXbins-1] = -10.0;
     }//pt loop
     gY[iXbins-1] = ymin + (iXbins-1)*(ymax - ymin)/nybins + 0.5*(ymax - ymin)/nybins;
     //cout<<"y: "<<gY[iXbins-1]<<
@@ -799,8 +816,8 @@ void GetComposition(Int_t iSpecies,
   for(Int_t iYbins = 1; iYbins <= gHist->GetNbinsY(); iYbins++) {
     for(Int_t iXbins = 1; iXbins <= gHist->GetNbinsX(); iXbins++) {
       nParticleCompositionPt[iYbins-1] += 100.*gHist->GetBinContent(iXbins,iYbins,iSpecies+1)/nTotalPt[iYbins-1];
-      if(nParticleCompositionPt[iYbins-1] == 0) 
-	nParticleCompositionPt[iYbins-1] = -10.0;
+      //if(nParticleCompositionPt[iYbins-1] == 0) 
+      //nParticleCompositionPt[iYbins-1] = -10.0;
     }//pt loop
     gPt[iYbins-1] = ptmin + (iYbins-1)*(ptmax - ptmin)/nptbins + 0.5*(ptmax - ptmin)/nptbins;
     //cout<<"Pt: "<<gPt[iYbins-1]<<
@@ -809,6 +826,41 @@ void GetComposition(Int_t iSpecies,
     //" - Total: "<<nTotalPt[iYbins-1]<<
     //" - Percentage: "<<nParticleCompositionPt[iYbins-1]<<endl;
   }//pt loop
+}
+
+//________________________________________//
+void readProcesses(TList *list) {
+  char *fParticleProtonName[12] = {"K_{L}","#pi","K_{S}","K",
+				   "n","p","#Sigma^{-}","#Lambda","#Sigma^{+}",
+				   "#Xi^{-}","#Xi^{0}","#Omega^{-}"};
+  char *fParticleAntiProtonName[8] = {"K_{L}","#pi","K_{S}","K",
+				       "n","p","#Lambda","#Sigma^{+}"};
+  Int_t iProtonCounter = 0, iAntiProtonCounter = 0;
+  TH1F *gMCProcesses;
+  for(Int_t iEntry = 0; iEntry < list->GetEntries(); iEntry++) {
+    gMCProcesses = (TH1F *)list->At(iEntry);
+    TString histName = gMCProcesses->GetName();
+    if(histName.Contains("gHistProtons")) {
+      cout<<"Protons coming from "<<fParticleProtonName[iProtonCounter]<<endl;
+
+      iProtonCounter += 1;
+    }
+    if(histName.Contains("gHistAntiProtons")) {
+      cout<<"Antiprotons coming from "<<fParticleAntiProtonName[iAntiProtonCounter]<<endl;
+
+      iAntiProtonCounter += 1;
+    }
+    for(Int_t iBin = 1; iBin < gMCProcesses->GetNbinsX(); iBin++) {
+      Double_t binContent = gMCProcesses->GetBinContent(iBin);
+      if(binContent > 0) {
+	Int_t processId = gMCProcesses->GetBinCenter(iBin);
+	cout<<"\t Process ID: "<<processId<<" - "<<
+	  100.*binContent/gMCProcesses->GetEntries()<<"%"<<endl;
+      }
+    }
+
+
+  }
 }
 
 //________________________________________________//
@@ -820,3 +872,51 @@ void DrawMarker(Double_t x, Double_t y, Int_t style,
   m->Draw();
 }
 
+//________________________________________________//
+/*const char * const gMCProcessName[45] = {
+  "Primary particle emission",
+  "Multiple scattering",
+  "Energy loss",
+  "Bending in magnetic field",
+  "Decay",
+  "Lepton pair production",
+  "Compton scattering",
+  "Photoelectric effect",
+  "Bremstrahlung",
+  "Delta ray",
+  "Positron annihilation",
+  "Positron annihilation at rest",
+  "Positron annihilation in flight",
+  "Hadronic interaction",
+  "Nuclear evaporation",
+  "Nuclear fission",
+  "Nuclear absorbtion",
+  "Antiproton annihilation",
+  "Antineutron annihilation",
+  "Neutron capture",
+  "Hadronic elastic",
+  "Hadronic incoherent elastic",
+  "Hadronic coherent elastic",
+  "Hadronic inelastic",
+  "Photon inelastic",
+  "Muon nuclear interaction",
+  "Electron nuclear interaction",
+  "Positron nuclear interaction",
+  "Time of flight limit",
+  "Nuclear photofission",
+  "Rayleigh effect",
+  "No active process",
+  "Energy threshold",
+  "Light absorption",
+  "Light detection",
+  "Light scattering",
+  "Maximum allowed step",
+  "Cerenkov production",
+  "Cerenkov feed back photon",
+  "Cerenkov photon reflection",
+  "Cerenkov photon refraction",
+  "Synchrotron radiation",
+  "Scintillation",
+  "Transportation",
+  "Unknown process"
+  };*/
