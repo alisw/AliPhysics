@@ -27,7 +27,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 #include <TMatrixDSym.h>
 #include "AliExternalTrackParam.h"
-#include "AliESDVertex.h"
+#include "AliVVertex.h"
 #include "TPolyMarker3D.h"
 #include "TVector3.h"
 #include "AliLog.h"
@@ -1004,7 +1004,7 @@ PropagateToDCA(AliExternalTrackParam *p, Double_t b) {
 }
 
 
-Bool_t AliExternalTrackParam::PropagateToDCA(const AliESDVertex *vtx, 
+Bool_t AliExternalTrackParam::PropagateToDCA(const AliVVertex *vtx, 
 Double_t b, Double_t maxd, Double_t dz[2], Double_t covar[3]) {
   //
   // Propagate this track to the DCA to vertex "vtx", 
@@ -1020,8 +1020,8 @@ Double_t b, Double_t maxd, Double_t dz[2], Double_t covar[3]) {
   Double_t alpha=GetAlpha();
   Double_t sn=TMath::Sin(alpha), cs=TMath::Cos(alpha);
   Double_t x=GetX(), y=GetParameter()[0], snp=GetParameter()[2];
-  Double_t xv= vtx->GetXv()*cs + vtx->GetYv()*sn;
-  Double_t yv=-vtx->GetXv()*sn + vtx->GetYv()*cs, zv=vtx->GetZv();
+  Double_t xv= vtx->GetX()*cs + vtx->GetY()*sn;
+  Double_t yv=-vtx->GetX()*sn + vtx->GetY()*cs, zv=vtx->GetZ();
   x-=xv; y-=yv;
 
   //Estimate the impact parameter neglecting the track curvature
@@ -1047,7 +1047,7 @@ Double_t b, Double_t maxd, Double_t dz[2], Double_t covar[3]) {
   dz[1] = GetParameter()[1] - zv;
   
   if (covar==0) return kTRUE;
-  Double_t cov[6]; vtx->GetCovMatrix(cov);
+  Double_t cov[6]; vtx->GetCovarianceMatrix(cov);
 
   //***** Improvements by A.Dainese
   alpha=GetAlpha(); sn=TMath::Sin(alpha); cs=TMath::Cos(alpha);

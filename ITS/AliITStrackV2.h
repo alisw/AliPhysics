@@ -17,6 +17,7 @@
 /* $Id$ */
 
 class AliESDtrack;
+class AliESDVertex;
 
 //_____________________________________________________________________________
 class AliITStrackV2 : public AliKalmanTrack {

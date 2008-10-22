@@ -27,6 +27,7 @@
 #include "AliCluster.h"
 #include "AliTracker.h"
 #include "AliESDtrack.h"
+#include "AliESDVertex.h"
 
 ClassImp(AliTPCtrack)
 

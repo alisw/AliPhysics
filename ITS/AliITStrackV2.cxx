@@ -26,6 +26,7 @@
 #include "AliCluster.h"
 #include "AliTracker.h"
 #include "AliESDtrack.h"
+#include "AliESDVertex.h"
 #include "AliITSReconstructor.h"
 #include "AliITStrackV2.h"
 
