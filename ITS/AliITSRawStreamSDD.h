@@ -32,7 +32,7 @@ class AliITSRawStreamSDD: public AliITSRawStream {
     virtual Int_t    GetEightBitSignal() const {return fEightBitSignal;}
     virtual Int_t    GetCarlosId() const {return fCarlosId;}
     virtual Int_t    GetEventId() const {return fEventId;}
-    virtual Int_t    GetJitter() const {return fJitter;}
+    virtual Int_t    GetJitter() {return fJitter;}  // not const in a daughter class
 
     virtual Int_t    ReadJitter() const {return 0;}
 

@@ -49,10 +49,10 @@ class AliITSRawStream: public TObject {
       AliError("This method must be implemented in a derived class");
       return -1;
     };
-    virtual Int_t     GetJitter() const {
+    virtual Int_t     GetJitter()  {
       AliError("This method must be implemented in a derived class");
       return -1;
-    };
+    }; // non cinst in a derived class
 
 
   protected :

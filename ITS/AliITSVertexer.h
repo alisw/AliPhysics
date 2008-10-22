@@ -36,7 +36,7 @@ class AliITSVertexer : public AliVertexer {
       else return 0;
     }
 
-    const AliITSDetTypeRec *GetDetTypeRec(){return fDetTypeRec;}
+    const AliITSDetTypeRec *GetDetTypeRec() const {return fDetTypeRec;}
     virtual void SetDetTypeRec(const AliITSDetTypeRec *ptr){fDetTypeRec = ptr;}
     enum{kNSPDMod=240};
 
