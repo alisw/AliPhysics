@@ -383,7 +383,7 @@ TString AliQAHistNavigator::GetPath(AliQADirListItem* item)
         TString sep = (d->GetParent()) ? "/" : ":/" ;
         path = d->GetName() + sep + path;
     }
-    while (d=d->GetParent());
+    while ((d=d->GetParent()));
     return path;
 }
 
