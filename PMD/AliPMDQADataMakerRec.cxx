@@ -512,8 +512,8 @@ void AliPMDQADataMakerRec::MakeRecPoints(TTree * clustersTree)
 
 		if(recpoint->GetDetector() == 1)
 		  {
-		    if(recpoint->GetSMNumber() >= 0 && recpoint->GetSMNumber() < 6 || 
-		       recpoint->GetSMNumber() >= 18 && recpoint->GetSMNumber() < 24)
+		    if((recpoint->GetSMNumber() >= 0 && recpoint->GetSMNumber() < 6) || 
+		       (recpoint->GetSMNumber() >= 18 && recpoint->GetSMNumber() < 24))
 		      {
 			GetRecPointsData(4)->Fill(recpoint->GetClusCells());
 			multDdl4++;
