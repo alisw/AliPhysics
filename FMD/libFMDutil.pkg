@@ -13,11 +13,14 @@ SRCS		=  AliFMDInput.cxx 		\
 		   AliFMDBaseDA.cxx		\
                    AliFMDPedestalDA.cxx		\
 		   AliFMDGainDA.cxx             \
-	 	   AliFMDBackgroundCorrection.cxx
+	 	   AliFMDBackgroundCorrection.cxx 
 
 HDRS		=  $(SRCS:.cxx=.h) 
 DHDR		:= FMDutilLinkDef.h
-EINCLUDE 	:= RAW
+EINCLUDE 	:= RAW FMD/analysis
+
+ELIBS           := FMDanalysis
+ELIBSDIR	:= $(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)
 
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
