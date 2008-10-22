@@ -4,9 +4,13 @@
 #include <TArray.h>
 #include <TFile.h>
 #include <TArray.h>
+#include <TGraph.h>
+#include <TCanvas.h>
 #include "AliGeomManager.h"
 #include "AliAlignmentTracks.h"
 #include "AliAlignObjParams.h"
+
+/* $Id$ */
 
 class AliITSRealignTracks: public AliAlignmentTracks {
  public:
@@ -17,7 +21,28 @@ class AliITSRealignTracks: public AliAlignmentTracks {
     fgeomfilename(),
     fmintracks(0),
     fCovIsUsed(kFALSE),
-    fUpdateCov(kFALSE){}
+    fUpdateCov(kFALSE),
+    fVarySigmaY(kFALSE),
+    fCorrModules(0),
+    fLimitCorr(0.),
+    fsigmaY(),
+    fDraw(kFALSE),  
+    fAlignDrawObjs(0), 
+    fCanvPar(0), 
+    fCanvGr(0), 
+    fgrIterMeanX(0), 
+    fgrIterRMSX(0),  
+    fgrIterMeanY(0), 
+    fgrIterRMSY(0),  
+    fgrIterMeanZ(0), 
+    fgrIterRMSZ(0),  
+    fgrIterMeanPsi(0), 
+    fgrIterRMSPsi(0),  
+    fgrIterMeanTheta(0), 
+    fgrIterRMSTheta(0),  
+    fgrIterMeanPhi(0), 
+    fgrIterRMSPhi(0)  
+    {}
   
   AliITSRealignTracks(TString minimizer,Int_t fit=0,Bool_t covUsed=kFALSE,TString fileintro="AliTrackPoints.root",TString geometryfile="geometry.root",TString misalignmentFile="",TString startingfile="");
   AliITSRealignTracks(const AliITSRealignTracks &realignTracks);
@@ -25,21 +50,25 @@ class AliITSRealignTracks: public AliAlignmentTracks {
   ~AliITSRealignTracks();
   
   void InitAlignObjs();
-  Bool_t InitSurveyObjs(Bool_t infinite=kFALSE,Double_t factor=1.,Bool_t fromfile=kFALSE,TString filename="",TString arrayName="");
-  void ResetAlignObjs();
+  Bool_t InitSurveyObjs(Bool_t infinite=kFALSE,Double_t factor=1.,TString filename="",TString arrayName="");
+  void ResetAlignObjs(Bool_t all,TArrayI *volids=0x0);
+  void ResetCorrModules();
   void DeleteSurveyObjs();
+  void SetLimitCorr(Double_t limit=0.1){fLimitCorr=limit;}
+  Int_t CheckWithSurvey(Double_t factor=2.,TArrayI *volids=0x0);
   Bool_t SelectFitter(Int_t fit,Int_t minTrackPoint=2);
   Bool_t SelectMinimizer(TString minimizer,Int_t minpoints=1,const Bool_t *coord=0x0);
   void SetMinNtracks(Int_t minNtracks){fmintracks=minNtracks;}
   void SetCovUpdate(Bool_t covupdate){fUpdateCov=covupdate;}
+  void SetVarySigmaY(Bool_t varysigmay,Double_t sigmaYfixed=1.);
   void SetGeomFilename(TString geomfilename){fgeomfilename=geomfilename;}
   //  Int_t LoadPoints(const TArrayI *volids, AliTrackPointArray** &points);
   Bool_t ReadAlignObjs(const char *alignObjFileName = "AlignObjs.root", const char* arrayName = "Alignment");
   void RealignITSVolIndependent(Int_t iter1,Int_t iterations,Int_t minNtracks,Int_t layer=0,Int_t minTrackPoint=6);
   void RealignITStracks(TString minimizer,Int_t fit,Int_t iter1,Int_t iterations,Int_t minNtracks,Int_t layer,Int_t minTrackPoint,Bool_t covUsed,TString misalignmentFile,TString startingfile,Int_t doGlobal);
   Bool_t AlignVolumesITS(const TArrayI *volids, const TArrayI *volidsfit,AliGeomManager::ELayerID layerRangeMin,AliGeomManager::ELayerID layerRangeMax,Int_t iterations);
-  Bool_t FirstAlignmentSPD(Int_t minNtracks,Int_t iterations,TArrayI *volidsSet=0x0);
-  Bool_t FirstAlignmentLayers(Bool_t *layers,Int_t minNtracks,Int_t iterations,TArrayI *volidsSet=0x0);
+  Bool_t FirstAlignmentSPD(Int_t minNtracks,Int_t iterations,Bool_t fitall=kTRUE,TArrayI *volidsSet=0x0);
+  Bool_t FirstAlignmentLayers(Bool_t *layers,Int_t minNtracks,Int_t iterations,Bool_t fitall=kTRUE,TArrayI *volidsSet=0x0);
   Bool_t SPDmodulesAlignToSSD(Int_t minNtracks,Int_t iterations);
   Bool_t AlignSPDBarrel(Int_t iterations);
   Bool_t AlignSPDHalfBarrel(Int_t method,Int_t iterations);
@@ -50,6 +79,7 @@ class AliITSRealignTracks: public AliAlignmentTracks {
   Bool_t AlignSPDSectorToOuterLayers(Int_t sector,Int_t iterations);
   Bool_t AlignSPDSectorWithSectors(Int_t sector,Int_t iterations);
   Bool_t AlignSPDSectorsWithSectors(Int_t *sectorIN,Int_t *sectorFit,Int_t iterations);
+  Bool_t AlignSPDStaves(Int_t *staves,Int_t *sectorsIN,Int_t *sectorsFit,Int_t iterations);
   Bool_t AlignSPDHalfBarrelToHalfBarrel(Int_t updown,Int_t iterations); 
   Bool_t AlignSPDHalfBarrelToSectorRef(Int_t sector,Int_t iterations);
   Bool_t AlignSPD1SectorRef(Int_t sector,Int_t iterations);
@@ -57,22 +87,52 @@ class AliITSRealignTracks: public AliAlignmentTracks {
   TArrayI* GetLayersVolUID(Int_t *layer);
   AliAlignObjParams* MediateAlignObj(TArrayI *volIDs,Int_t lastVolid);
   TArrayI* GetSPDSectorsVolids(Int_t *sectors); 
+  TArrayI* GetSPDStavesVolids(Int_t *sectors,Int_t* staves);
   TArrayI* SelectLayerInVolids(const TArrayI *volidsIN,AliGeomManager::ELayerID layer);
   TArrayI* JoinVolArrays(const TArrayI *vol1,const TArrayI *vol2);
   TArrayI* IntersectVolArray(const TArrayI *vol1,const TArrayI *vol2);
   TArrayI* ExcludeVolidsFromVolidsArray(const TArrayI *volidsToExclude,const TArrayI *volStart);
   TArrayI* GetLayerVolumes(Int_t *layer);
-  
+  TArrayI* GetAlignedVolumes(char *filename);
+  /*  void AlignGlobalToSectRef(Int_t sector,Int_t minNtracks=100);
+      AliAlignObjParams* MediateAlignObjs(AliAlignObj **alObjs,Int_t nObjs,const Bool_t *coords=0x0,TArrayI *volidArray=0x0,Bool_t local=kFALSE,const char* geometryfile=0x0);
+      Bool_t MediateSectorsVolumes(char *filename,Bool_t local=kFALSE,char *geometryfile=0x0,Bool_t *coord=0x0);
+  */
+  void InitDrawHists();
+  void SetDraw(Bool_t draw,Bool_t refresh);
+  void UpdateDraw(TArrayI *volids,Int_t iter,Int_t color);
+  void DeleteDrawHists();
+  void WriteHists(const char *outfile);
 
  private:
   
   AliAlignObj    ***fSurveyObjs;   // Array with survey measurments 
   TString          fgeomfilename; // Geometry file name
-  Double_t           fmintracks;   // minimum number of tracks to realign a set of volumes
+  Int_t           fmintracks;   // minimum number of tracks to realign a set of volumes
   Bool_t             fCovIsUsed;   // indicates wheter AlignObj's cov. matrix is used in loading the points 
   Bool_t             fUpdateCov;   // Update of Covariance for AlignObjs
+  Bool_t            fVarySigmaY;   // If kTRUE the "sigmaY" parameter is changed accordingly to alignObj error
+  Double_t          **fCorrModules;  //  Used to reduce correlations between modules
+  Double_t           fLimitCorr;    // Maximum number of tracks shared between modules
+  Double_t            fsigmaY;    // sigmaY parameter
+  Bool_t              fDraw;     // flag to activate draw objects
+  AliAlignObj  ***fAlignDrawObjs; //Array with reference objects for histograms
+  TCanvas              *fCanvPar; //Canvas with iterations distributions
+  TCanvas               *fCanvGr; //Canvas with iterations results
+  TGraph           *fgrIterMeanX; //
+  TGraph           *fgrIterRMSX;  //
+  TGraph           *fgrIterMeanY; //
+  TGraph           *fgrIterRMSY;  //
+  TGraph           *fgrIterMeanZ; //
+  TGraph           *fgrIterRMSZ;  //        TGraphs for displaying results during iterations
+  TGraph           *fgrIterMeanPsi; //
+  TGraph           *fgrIterRMSPsi;  //
+  TGraph           *fgrIterMeanTheta; //
+  TGraph           *fgrIterRMSTheta;  //
+  TGraph           *fgrIterMeanPhi; //
+  TGraph           *fgrIterRMSPhi;  //
 
-  ClassDef(AliITSRealignTracks,2)
+  ClassDef(AliITSRealignTracks,3)
     
     };
     

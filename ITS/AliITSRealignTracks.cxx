@@ -24,9 +24,13 @@
 #include <TGeoManager.h>
 #include <TSystem.h>
 #include <TGeoMatrix.h>
+#include <TGraph.h>
+#include <TCanvas.h>
+#include <TH1F.h>
 #include "AliITSRealignTracks.h"
 #include "AliAlignmentTracks.h"
 #include "AliAlignObjParams.h"
+#include "AliAlignObj.h"
 #include "AliGeomManager.h"
 #include "AliTrackFitter.h"
 #include "AliTrackFitterKalman.h"
@@ -35,6 +39,8 @@
 #include "AliTrackResidualsChi2.h"
 #include "AliTrackResidualsLinear.h"
 #include "AliLog.h"
+
+/* $Id$ */
 
 
 ClassImp(AliITSRealignTracks)
@@ -48,7 +54,27 @@ AliITSRealignTracks::AliITSRealignTracks(TString minimizer,Int_t fit,Bool_t covU
   fgeomfilename(),
   fmintracks(),
   fCovIsUsed(covUsed),
-  fUpdateCov(kFALSE)
+  fUpdateCov(kFALSE),
+  fVarySigmaY(kFALSE),
+  fCorrModules(0),
+  fLimitCorr(0),
+  fsigmaY(),
+  fDraw(kFALSE),  
+  fAlignDrawObjs(0), 
+  fCanvPar(0), 
+  fCanvGr(0), 
+  fgrIterMeanX(0), 
+  fgrIterRMSX(0),  
+  fgrIterMeanY(0), 
+  fgrIterRMSY(0),  
+  fgrIterMeanZ(0), 
+  fgrIterRMSZ(0),  
+  fgrIterMeanPsi(0), 
+  fgrIterRMSPsi(0),  
+  fgrIterMeanTheta(0), 
+  fgrIterRMSTheta(0),  
+  fgrIterMeanPhi(0), 
+  fgrIterRMSPhi(0)  
 {
 
   // minimizer="fast"->AliTrackResidualFast minimizer
@@ -78,7 +104,7 @@ AliITSRealignTracks::AliITSRealignTracks(TString minimizer,Int_t fit,Bool_t covU
   if(covUsed)SetCovIsUsed(kTRUE);
   if(!SelectFitter(fit))AliWarning("Incorrect fitter assignment!");
   if(!SelectMinimizer(minimizer))AliWarning("Incorrect minimizer assignment!");
-  
+  fsigmaY=1.;
   fmintracks=1;
   BuildIndex();
   
@@ -90,7 +116,28 @@ AliITSRealignTracks::AliITSRealignTracks(const AliITSRealignTracks &realignTrack
   fgeomfilename(realignTracks.fgeomfilename),
   fmintracks(realignTracks.fmintracks),
   fCovIsUsed(realignTracks.fCovIsUsed),
-  fUpdateCov(realignTracks.fUpdateCov)
+  fUpdateCov(realignTracks.fUpdateCov),
+  fVarySigmaY(realignTracks.fVarySigmaY),
+  fCorrModules(new Double_t *(*realignTracks.fCorrModules)),
+  fLimitCorr(realignTracks.fLimitCorr),
+  fsigmaY(realignTracks.fsigmaY),
+  fDraw(kFALSE),  
+  fAlignDrawObjs(realignTracks.fAlignDrawObjs), 
+  fCanvPar(realignTracks.fCanvPar), 
+  fCanvGr(realignTracks.fCanvGr), 
+  fgrIterMeanX(realignTracks.fgrIterMeanX), 
+  fgrIterRMSX(realignTracks.fgrIterRMSX),  
+  fgrIterMeanY(realignTracks.fgrIterMeanY), 
+  fgrIterRMSY(realignTracks.fgrIterRMSY),  
+  fgrIterMeanZ(realignTracks.fgrIterMeanZ), 
+  fgrIterRMSZ(realignTracks.fgrIterRMSZ),  
+  fgrIterMeanPsi(realignTracks.fgrIterMeanPsi), 
+  fgrIterRMSPsi(realignTracks.fgrIterRMSPsi),  
+  fgrIterMeanTheta(realignTracks.fgrIterMeanTheta), 
+  fgrIterRMSTheta(realignTracks.fgrIterRMSTheta),  
+  fgrIterMeanPhi(realignTracks.fgrIterMeanPhi), 
+  fgrIterRMSPhi(realignTracks.fgrIterRMSPhi)  
+
 {//Copy Constructor
   AliWarning("Can't copy AliAlignmentTracks Data member!");
 }
@@ -108,6 +155,7 @@ AliITSRealignTracks::~AliITSRealignTracks(){
   //destructor
   
   if(fSurveyObjs)   DeleteSurveyObjs();
+  if(fAlignDrawObjs) DeleteDrawHists();
   //delete [] fSurveyObjs; 
   
 } 
@@ -174,7 +222,20 @@ Bool_t AliITSRealignTracks::SelectMinimizer(TString minimizer,Int_t minpoints,co
   return kTRUE;
 }
 
+//____________________________________
+void AliITSRealignTracks::SetVarySigmaY(Bool_t varysigmay,Double_t sigmaYfixed){
+  
+  fVarySigmaY=varysigmay;
+  if(!varysigmay){
+    if(sigmaYfixed>0.)fsigmaY=sigmaYfixed;
+    else {
+      printf("Negative assignment to sigmaY! set it to default value (1 cm) \n");
+      fsigmaY=1.;
+    }
+  }
+}
 
+//_______________________________________
 void AliITSRealignTracks::RealignITSVolIndependent(Int_t iter1,Int_t iterations,Int_t minNtracks,Int_t layer,Int_t minTrackPoint){
   
 
@@ -495,36 +556,46 @@ void AliITSRealignTracks::InitAlignObjs()
 }
 
 //______________________________________________________________________________
-Bool_t AliITSRealignTracks::InitSurveyObjs(Bool_t infinite,Double_t factor,Bool_t fromfile,TString filename,TString arrayName){
+void AliITSRealignTracks::ResetCorrModules(){
+  // Initialize and reset to 0 the array with the information on correlation
+  if(!fCorrModules){
+    Int_t nLayers = AliGeomManager::kLastLayer - AliGeomManager::kFirstLayer;
+    fCorrModules = new Double_t*[nLayers];
+    for (Int_t iLayer = 0; iLayer < (AliGeomManager::kLastLayer - AliGeomManager::kFirstLayer); iLayer++) {
+      fCorrModules[iLayer] = new Double_t[AliGeomManager::LayerSize(iLayer + AliGeomManager::kFirstLayer)];
+      for (Int_t iModule = 0; iModule < AliGeomManager::LayerSize(iLayer + AliGeomManager::kFirstLayer); iModule++) {
+	fCorrModules[iLayer][iModule]=0.;
+      }
+    }
+  }
+  else{
+    for (Int_t iLayer = 0; iLayer < (AliGeomManager::kLastLayer - AliGeomManager::kFirstLayer); iLayer++) {
+      for (Int_t iModule = 0; iModule < AliGeomManager::LayerSize(iLayer + AliGeomManager::kFirstLayer); iModule++) {
+	fCorrModules[iLayer][iModule]=0.;
+      }
+    }
+  }
+}
 
-  if(filename!=""){
+//______________________________________________________________________________
+Bool_t AliITSRealignTracks::InitSurveyObjs(Bool_t infinite,Double_t factor,TString filename,TString arrayName){
+  
+  if(fSurveyObjs)DeleteSurveyObjs();
+  Bool_t fromfile=kFALSE;
+  TFile *surveyObj;
+  TClonesArray *clnarray;
+  if(!filename.IsNull()){
     //Initialize from file
     if(gSystem->AccessPathName(filename.Data(),kFileExists)){
       printf("Wrong Survey AlignObjs File Name \n");
       return kFALSE;
     } 
-    
-  TFile *surveyObj=TFile::Open(filename.Data());
-  if (!surveyObj || !surveyObj->IsOpen()) {
-    AliError(Form("Could not open SurveyObjs file: file %s !",filename.Data()));
-    return kFALSE;
-  }  
-  printf("Getting TClonesArray \n");
-  TClonesArray *clnarray=(TClonesArray*)surveyObj->Get(arrayName);
-  Int_t size=clnarray->GetSize();
-  UShort_t volid;
-  for(Int_t ivol=0;ivol<size;ivol++){
-    AliAlignObjParams *a=(AliAlignObjParams*)clnarray->At(ivol);
-    volid=a->GetVolUID();
-    Int_t iModule;
-    AliGeomManager::ELayerID iLayer = AliGeomManager::VolUIDToLayer(volid,iModule);
-    printf("Updating volume: %d ,layer: %d module: %d \n",volid,iLayer,iModule);
-    *fSurveyObjs[iLayer-AliGeomManager::kFirstLayer][iModule] *= *a;
-  }
- 
-  delete clnarray;
-  surveyObj->Close();
-  return kTRUE;
+    if(arrayName.IsNull()){
+      printf("Null Survey Object Name! \n");
+      return kFALSE;
+    }
+   
+    fromfile=kTRUE;
   }
 
   // Initialize the alignment objects array with default values
@@ -534,44 +605,147 @@ Bool_t AliITSRealignTracks::InitSurveyObjs(Bool_t infinite,Double_t factor,Bool_
   Double_t cov[21];
   for(Int_t i=0;i<21;i++)cov[i]=0.;
   for(Int_t i=0;i<3;i++)cov[i*(i+1)/2+i]=0.1*0.1*v;//Set Default Error to 1 mm  for Translation 
-  for(Int_t i=3;i<6;i++)cov[i*(i+1)/2+i]=0.01*0.01*180.*180./3.14/3.14*v;//and 10 mrad (~0.5 degrees)for rotations (global ref. sysytem)
+  for(Int_t i=3;i<6;i++)cov[i*(i+1)/2+i]=0.03*0.03*180.*180./3.14/3.14*v;//and 30 mrad (~1.7 degrees)for rotations (global ref. sysytem)
+  
   Int_t nLayers = AliGeomManager::kLastLayer - AliGeomManager::kFirstLayer;
   fSurveyObjs = new AliAlignObj**[nLayers];
   for (Int_t iLayer = 0; iLayer < (AliGeomManager::kLastLayer - AliGeomManager::kFirstLayer); iLayer++) {
     fSurveyObjs[iLayer] = new AliAlignObj*[AliGeomManager::LayerSize(iLayer + AliGeomManager::kFirstLayer)];
     for (Int_t iModule = 0; iModule < AliGeomManager::LayerSize(iLayer + AliGeomManager::kFirstLayer); iModule++) {
+      fSurveyObjs[iLayer][iModule] = 0x0;
+    }
+  }
+  
+  if(fromfile){
+    surveyObj=TFile::Open(filename.Data());
+    if (!surveyObj || !surveyObj->IsOpen()) {
+      AliError(Form("Could not open SurveyObjs file: %s !",filename.Data()));
+      return kFALSE;
+    }
+    printf("Getting TClonesArray \n");
+    clnarray=(TClonesArray*)surveyObj->Get(arrayName);
+    Int_t size=clnarray->GetSize();
+    UShort_t volid;
+    for(Int_t ivol=0;ivol<size;ivol++){
+      AliAlignObjParams *a=(AliAlignObjParams*)clnarray->At(ivol);
+      volid=a->GetVolUID();
+      Int_t iModule;
+      AliGeomManager::ELayerID iLayer = AliGeomManager::VolUIDToLayer(volid,iModule);
+      if(iLayer<=0)continue;
+      if(a->GetUniqueID()==0)continue;
+      printf("Updating survey for volume: %d ,layer: %d module: %d from file\n",volid,iLayer,iModule);
+      fSurveyObjs[iLayer-AliGeomManager::kFirstLayer][iModule] = new AliAlignObjParams(*a);
+      fSurveyObjs[iLayer-AliGeomManager::kFirstLayer][iModule]->SetUniqueID(a->GetUniqueID());
+      fSurveyObjs[iLayer-AliGeomManager::kFirstLayer][iModule]->Print("");
+    }
+    delete clnarray;
+    surveyObj->Close();
+  }
+ 
+  for (Int_t iLayer = 0; iLayer < (AliGeomManager::kLastLayer - AliGeomManager::kFirstLayer); iLayer++) {
+    for (Int_t iModule = 0; iModule < AliGeomManager::LayerSize(iLayer + AliGeomManager::kFirstLayer); iModule++) {
       UShort_t volid = AliGeomManager::LayerToVolUID(iLayer+ AliGeomManager::kFirstLayer,iModule);
-      if(!fromfile){
+      if(!fSurveyObjs[iLayer][iModule]){
+	printf("Updating survey for volume: %d ,layer: %d module: %d with default values \n",volid,iLayer,iModule);
 	fSurveyObjs[iLayer][iModule] = new AliAlignObjParams(AliGeomManager::SymName(volid),volid,0,0,0,0,0,0,kTRUE);
 	fSurveyObjs[iLayer][iModule]->SetCorrMatrix(cov);
 	fSurveyObjs[iLayer][iModule]->SetUniqueID(0);
       }
+      
     }
   }
+  
+ 
   return kTRUE;
 }
 
 
 //______________________________________________________________________________
-void AliITSRealignTracks::ResetAlignObjs()
+Int_t AliITSRealignTracks::CheckWithSurvey(Double_t factor,TArrayI *volids){
+  
+  // Check the parameters of the alignment objects in volids (or of all objects if volids is null) 
+  // are into the boundaries set by the cov. matrix of the survey objs
+  // Returns the number of objects out of boudaries
+  AliAlignObj *alignObj;	
+  Int_t outofsurv=0;
+  UShort_t volid;
+  Double_t surveycov[21],transl[3],rot[3],survtransl[3],survrot[3];
+  if(volids==0x0){
+    for (Int_t iLayer = 0; iLayer < (AliGeomManager::kLastLayer - AliGeomManager::kFirstLayer); iLayer++) {
+      for (Int_t iModule = 0; iModule < AliGeomManager::LayerSize(iLayer + AliGeomManager::kFirstLayer); iModule++){
+	volid=AliGeomManager::LayerToVolUIDSafe(iLayer+AliGeomManager::kFirstLayer,iModule);
+	alignObj=GetAlignObj(volid);
+	alignObj->GetPars(transl,rot);
+	fSurveyObjs[iLayer][iModule]->GetCovMatrix(surveycov);
+	fSurveyObjs[iLayer][iModule]->GetPars(survtransl,survrot);
+	if(TMath::Sqrt(TMath::Abs(surveycov[0]))*factor<TMath::Abs(transl[0]-survtransl[0])||TMath::Sqrt(TMath::Abs(surveycov[2]))*factor<TMath::Abs(transl[1]-survtransl[1])||TMath::Sqrt(TMath::Abs(surveycov[5]))*factor<TMath::Abs(transl[2]-survtransl[2])||TMath::Sqrt(TMath::Abs(surveycov[9]))*factor<TMath::Abs(rot[0]-survrot[0])||TMath::Sqrt(TMath::Abs(surveycov[14]))*factor<TMath::Abs(rot[1]-survrot[1])||TMath::Sqrt(TMath::Abs(surveycov[20]))*factor<TMath::Abs(rot[2]-survrot[2])){
+	  printf("Results for module %d out of Survey: reinitializing it from survey \n",volid);
+	  //	  *alignObj = *alignObjSurv;
+	  alignObj->SetPars(survtransl[0],survtransl[1],survtransl[2],survrot[0],survrot[1],survrot[2]);
+	  alignObj->SetUniqueID(0);
+	  if(fUpdateCov)alignObj->SetCorrMatrix(surveycov);
+	  outofsurv++;
+	}
+      }
+    }
+  }
+  else{
+    Int_t iLayer;
+    Int_t iModule;
+    for(Int_t j=0;j<volids->GetSize();j++){
+      volid=volids->At(j);
+      alignObj=GetAlignObj(volid);
+      alignObj->GetPars(transl,rot);
+      iLayer=(Int_t)AliGeomManager::VolUIDToLayerSafe(volid,iModule)-(Int_t)AliGeomManager::kFirstLayer;
+      fSurveyObjs[iLayer][iModule]->GetCovMatrix(surveycov);
+      fSurveyObjs[iLayer][iModule]->GetPars(survtransl,survrot);
+      if(TMath::Sqrt(TMath::Abs(surveycov[0]))*factor<TMath::Abs(transl[0]-survtransl[0])||TMath::Sqrt(TMath::Abs(surveycov[2]))*factor<TMath::Abs(transl[1]-survtransl[1])||TMath::Sqrt(TMath::Abs(surveycov[5]))*factor<TMath::Abs(transl[2]-survtransl[2])||TMath::Sqrt(TMath::Abs(surveycov[9]))*factor<TMath::Abs(rot[0]-survrot[0])||TMath::Sqrt(TMath::Abs(surveycov[14]))*factor<TMath::Abs(rot[1]-survrot[1])||TMath::Sqrt(TMath::Abs(surveycov[20]))*factor<TMath::Abs(rot[2]-survrot[2])){
+	printf("Results for module %d out of Survey: reinitializing it from survey \n",volid);
+	//	  *alignObj = *alignObjSurv;
+	alignObj->SetPars(survtransl[0],survtransl[1],survtransl[2],survrot[0],survrot[1],survrot[2]);
+	alignObj->SetUniqueID(0);
+	if(fUpdateCov)alignObj->SetCorrMatrix(surveycov);
+	outofsurv++;
+      }
+    }
+  }  
+  return outofsurv;
+}  
+
+//___________________________________________________________________
+
+void AliITSRealignTracks::ResetAlignObjs(Bool_t all,TArrayI *volids)
 {
-  // Reset the alignment objects array
-  for (Int_t iLayer = 0; iLayer < (AliGeomManager::kLastLayer - AliGeomManager::kFirstLayer); iLayer++) {
-    for (Int_t iModule = 0; iModule < AliGeomManager::LayerSize(iLayer + AliGeomManager::kFirstLayer); iModule++)
-      fAlignObjs[iLayer][iModule]->SetPars(0,0,0,0,0,0);
+  // Reset the alignment objects in volids or all if all=kTRUE
+  if(all){
+    for (Int_t iLayer = 0; iLayer < (AliGeomManager::kLastLayer - AliGeomManager::kFirstLayer); iLayer++) {
+      for (Int_t iModule = 0; iModule < AliGeomManager::LayerSize(iLayer + AliGeomManager::kFirstLayer); iModule++)
+	fAlignObjs[iLayer][iModule]->SetPars(0,0,0,0,0,0);
+    }
+  }
+  else{
+    Int_t layer;
+    Int_t mod;
+    for(Int_t j=0;j<volids->GetSize();j++){
+      layer=(Int_t)AliGeomManager::VolUIDToLayer(volids->At(j),mod)-(Int_t)AliGeomManager::kFirstLayer;
+      fAlignObjs[layer][mod]->SetPars(0,0,0,0,0,0);
+    }
   }
 }
 
 //______________________________________________-
 void AliITSRealignTracks::DeleteSurveyObjs()
 {
+  if(!fSurveyObjs)return;
   // Delete the alignment objects array
   for (Int_t iLayer = 0; iLayer < (AliGeomManager::kLastLayer - AliGeomManager::kFirstLayer); iLayer++) {
-    for (Int_t iModule = 0; iModule < AliGeomManager::LayerSize(iLayer + AliGeomManager::kFirstLayer); iModule++)
-      if (fSurveyObjs[iLayer][iModule])
-	delete fSurveyObjs[iLayer][iModule];
-    delete [] fSurveyObjs[iLayer];
+    for (Int_t iModule = 0; iModule < AliGeomManager::LayerSize(iLayer + AliGeomManager::kFirstLayer); iModule++){
+      if (fSurveyObjs[iLayer][iModule])	delete fSurveyObjs[iLayer][iModule];
+    }
+    
+    if(fSurveyObjs[iLayer])delete [] fSurveyObjs[iLayer];
   }
+    
   delete [] fSurveyObjs;
   fSurveyObjs = 0;
 }
@@ -614,22 +788,24 @@ Bool_t AliITSRealignTracks::ReadAlignObjs(const char *alignObjFileName, const ch
 }
 
 //_________________________________________
-Bool_t AliITSRealignTracks::FirstAlignmentLayers(Bool_t *layers,Int_t minNtracks,Int_t iterations,TArrayI *volidsSet){
+Bool_t AliITSRealignTracks::FirstAlignmentLayers(Bool_t *layers,Int_t minNtracks,Int_t iterations,Bool_t fitall,TArrayI *volidsSet){
 
   //Align all modules in the set of layers independently according to a sequence based on the number of tracks passing through a given module
   
   BuildIndex();
-  
+  TString name="DrawFirstAlignment_Layers";
   UShort_t voluid;
   Int_t **lastIndex;
   Int_t laymax = 0;
   Int_t modmax = 0;
-  Int_t maxntr=0,nMod=0;
-  Int_t size=0;
+  Int_t maxntr=0,nMod=0,modAligned=0,size=0;
   for(Int_t i=0;i<6;i++){
-    if(layers[i]==1)size+=AliGeomManager::LayerSize(i+AliGeomManager::kFirstLayer);
+    if(layers[i]==1){
+      size+=AliGeomManager::LayerSize(i+AliGeomManager::kFirstLayer);
+      name+=i+1;
+    }
   }
-  TArrayI *volFit3;
+
   TArrayI *volFit=new TArrayI(size);
   TArrayI *volFit2=new TArrayI(size-1);
   TArrayI *sequence=new TArrayI(size);
@@ -642,7 +818,7 @@ Bool_t AliITSRealignTracks::FirstAlignmentLayers(Bool_t *layers,Int_t minNtracks
     lastIndex[iLayer] = new Int_t[AliGeomManager::LayerSize(iLayer + AliGeomManager::kFirstLayer)];
     for (Int_t iModule = 0; iModule < AliGeomManager::LayerSize(iLayer + AliGeomManager::kFirstLayer); iModule++) {
       lastIndex[iLayer][iModule] =  fLastIndex[iLayer][iModule];
-      if(layers[iLayer]==1){
+      if(iLayer<=(AliGeomManager::kSSD2-AliGeomManager::kFirstLayer)&&layers[iLayer]==1){
 	volFit->AddAt(AliGeomManager::LayerToVolUID(iLayer+AliGeomManager::kFirstLayer,iModule),maxntr);
 	maxntr++;
       }
@@ -669,31 +845,63 @@ Bool_t AliITSRealignTracks::FirstAlignmentLayers(Bool_t *layers,Int_t minNtracks
       nMod++;
     }
   }
-  
-  Int_t ilayer,imod;
-  for(Int_t iter=0;iter<iterations;iter++){ 
+
+  sequence->Set(nMod);
+
+ Int_t ilayer,imod;
+  for(Int_t iter=0;iter<iterations;iter++){
+    if(iter>0&&fDraw)UpdateDraw(sequence,iter,iter);
+    modAligned=0;
     for(Int_t k=0;k<nMod;k++){
+      TArrayI *volFit3;
       voluid=sequence->At(k);
       ilayer=AliGeomManager::VolUIDToLayer(voluid,imod);
       volIn->AddAt(voluid,0);
       found=0;
-      for(Int_t j=0;j<volFit->GetSize();j++){
-	if(volFit->At(j)!=volIn->At(0))volFit2->AddAt(volFit->At(j),j-found);
-	else found=1;
+      if(!fitall){
+	for(Int_t j=0;j<nMod;j++){
+	  if(j==k){
+	    found=1;
+	    continue;
+	  }
+	  else volFit2->AddAt(sequence->At(j),j-found);
+	}
+	volFit2->Set(nMod-1);
+      }
+      else{
+	for(Int_t j=0;j<volFit->GetSize();j++){
+	  if(volFit->At(j)!=volIn->At(0))volFit2->AddAt(volFit->At(j),j-found);
+	  else found=1;
+	}
       }
       
       if(volidsSet){
 	volFit3=IntersectVolArray(volidsSet,volFit2);
       }
-      else volFit3=volFit2;  
-      AlignVolumesITS(volIn,volFit3,AliGeomManager::kSPD1,AliGeomManager::kSSD1,2);
+      else volFit3=new TArrayI(*volFit2);
+      
+      
+      if(AlignVolumesITS(volIn,volFit3,AliGeomManager::kSPD1,AliGeomManager::kTPC1,2))modAligned++;
+      delete volFit3;
+    
     }
   }
+  Int_t noutofsurv=CheckWithSurvey(2.,sequence);
+  printf("%d modules into the sequence \n %d modules re-aligned \n %d modules moved far away from survey (-> reset) \n",nMod,modAligned,noutofsurv);
+  name.Append("_iter");
+  name+=iterations;
+  name.Append(".root");
+  if(fDraw)WriteHists(name.Data());
+  delete volFit;
+  delete volFit2;
+  delete sequence;
+
   return kTRUE;
+  
 }
 
 //__________________________________________
-Bool_t AliITSRealignTracks::FirstAlignmentSPD(Int_t minNtracks,Int_t iterations,TArrayI *volidsSet){
+Bool_t AliITSRealignTracks::FirstAlignmentSPD(Int_t minNtracks,Int_t iterations,Bool_t fitall,TArrayI *volidsSet){
   
   BuildIndex();
    
@@ -701,7 +909,7 @@ Bool_t AliITSRealignTracks::FirstAlignmentSPD(Int_t minNtracks,Int_t iterations,
   Int_t **lastIndex;
   Int_t laymax = 0;
   Int_t modmax = 0;
-  Int_t maxntr=0,nMod=0;
+  Int_t maxntr=0,nMod=0,modAligned=0;
   TArrayI *volFit=new TArrayI(AliGeomManager::LayerSize(1)+AliGeomManager::LayerSize(2));
   TArrayI *volFit2=new TArrayI(AliGeomManager::LayerSize(1)+AliGeomManager::LayerSize(2)-1);
   TArrayI *sequence=new TArrayI(AliGeomManager::LayerSize(1)+AliGeomManager::LayerSize(2));
@@ -741,28 +949,51 @@ Bool_t AliITSRealignTracks::FirstAlignmentSPD(Int_t minNtracks,Int_t iterations,
       volIn->AddAt(voluid,0);
     }
   }
-
-  TArrayI *volFit3;
+  sequence->Set(nMod);
+  
   Int_t ilayer,imod;
   for(Int_t iter=0;iter<iterations;iter++){ 
+    modAligned=0;
     for(Int_t k=0;k<nMod;k++){
+      TArrayI *volFit3;
       voluid=sequence->At(k);
       ilayer=AliGeomManager::VolUIDToLayer(voluid,imod);
       volIn->AddAt(voluid,0);
       found=0;
-      for(Int_t j=0;j<volFit->GetSize();j++){
-	if(volFit->At(j)!=volIn->At(0))volFit2->AddAt(volFit->At(j),j-found);
-	else found=1;
+      if(!fitall){
+	for(Int_t j=0;j<nMod;j++){
+	  if(j==k){
+	    found=1;
+	    continue;
+	  }
+	  else volFit2->AddAt(sequence->At(j),j-found);
+	}
+	volFit2->Set(nMod-1);
+      }
+      else{
+	for(Int_t j=0;j<volFit->GetSize();j++){
+	  if(volFit->At(j)!=volIn->At(0))volFit2->AddAt(volFit->At(j),j-found);
+	  else found=1;
+	}
       }
       
       if(volidsSet){
 	volFit3=IntersectVolArray(volidsSet,volFit2);
       }
-      else volFit3=volFit2;
+      else volFit3=new TArrayI(*volFit2);
       
-      AlignVolumesITS(volIn,volFit3,AliGeomManager::kSPD1,AliGeomManager::kSDD1,2);
+      
+      if(AlignVolumesITS(volIn,volFit3,AliGeomManager::kSPD1,AliGeomManager::kSDD1,2))modAligned++;
+      delete volFit3;
+      //      if(volidsSet)delete volFit3;
     }
   }
+  Int_t noutofsurv=CheckWithSurvey(2.,sequence);
+  printf("%d modules into the sequence \n %d modules re-aligned \n %d modules moved far away from survey (-> reset) \n",nMod,modAligned,noutofsurv);
+  delete volFit;
+  delete volFit2;
+  delete sequence;
+
   return kTRUE;
 }
 
@@ -813,87 +1044,208 @@ Bool_t AliITSRealignTracks::AlignVolumesITS(const TArrayI *volids, const TArrayI
     AliError("Volume IDs array is empty!");
     return kFALSE;
   }
+  Bool_t correlated=kFALSE;
+  Double_t surveycov[21],transl[3],rot[3],survtransl[3],survrot[3];
+  Double_t frac;
 
-  Double_t surveycov[21],transl[3],rot[3];
+  TGeoHMatrix hM;
+  Double_t phiglob,smearing,rotorig[9],normplanevect[3]={0.,0.,0.},normplanevect2[3]={0.,0.,0.};  
+  Double_t *deltarot;
+  TMatrixDSym covmatrx(6);
+  AliAlignObj *modAlign;
 
   // Load only the tracks with at least one
   // space point in the set of volume (volids)
   BuildIndex();
   AliTrackPointArray **points;
   Bool_t failed=kFALSE;
-  Int_t pointsdim=0;
+  Int_t pointsdim=0,skipped=0;
   // Start the iterations
-  while (iterations > 0) {
+  while (iterations > 0){
+    normplanevect2[0]=0.;
+    normplanevect2[1]=0.;
+    normplanevect2[2]=0.;
+    if(fLimitCorr>0.){
+      ResetCorrModules();
+      skipped=0;
+    }
     Int_t nArrays = LoadPoints(volids, points,pointsdim);
-    if (nArrays < fmintracks) {
+    
+    if (nArrays < fmintracks||nArrays<=0){
       failed=kTRUE;
-      printf("Not enough tracks to try minimization \n");
+      printf("Not enough tracks to try minimization: volUID %d and following in volids \n", volids->At(0));
       UnloadPoints(pointsdim, points);
       break;
     }
-
+    frac=1./(Double_t)nArrays;
     AliTrackResiduals *minimizer = CreateMinimizer();
     minimizer->SetNTracks(nArrays);
     minimizer->InitAlignObj();
     AliTrackFitter *fitter = CreateFitter();
+
+    //Here prepare to set the plane for GetPCArot
+                                                       //    if(volids->GetSize()==1){//TEMPORARY: to be improved
+    AliGeomManager::GetOrigRotation(volids->At(0),rotorig);
+    if((Int_t)AliGeomManager::VolUIDToLayer(volids->At(0))==1){//TEMPORARY: to be improved  
+      normplanevect[0]=-rotorig[1];
+      normplanevect[1]=-rotorig[4];
+      normplanevect[2]=0.;
+    }
+    else{
+	  normplanevect[0]=rotorig[1];
+	  normplanevect[1]=rotorig[4];
+	  normplanevect[2]=0.;
+    }
+    
+    phiglob=TMath::ATan2(normplanevect[1],normplanevect[0]);
+    
+    modAlign=GetAlignObj(volids->At(0));
+    modAlign->GetMatrix(hM);
+    deltarot=hM.GetRotationMatrix();
+    for(Int_t j=0;j<3;j++){
+      for(Int_t i=0;i<3;i++){
+	normplanevect2[j]+=deltarot[j*3+i]*normplanevect[i];
+      }
+      // printf("Here the difference: norm1[%d]=%f  norm2[%d]=%f \n",j,normplanevect[j],j,normplanevect2[j]);
+    }
+    
+    if(fVarySigmaY){
+      if(modAlign->GetUniqueID()==0)smearing=fsigmaY;
+      else{
+	modAlign->GetCovMatrix(covmatrx);
+	smearing=5.*5.*(covmatrx(0,0)+covmatrx(1,1)+covmatrx(2,2)+10.*10.*covmatrx(3,3)+10.*10.*covmatrx(4,4)+10.*10.*covmatrx(5,5))/6.; 
+	//This is a sort of average: the trace with the variances of the angles 
+	//weighted with 10 cm divided per 6 and the result multiplied per 25 
+	// (the sqrt would be 5 times a sort of "mean sigma" )
+	//	 
+	  }
+    }
+    else smearing=fsigmaY;
+    printf("This is the sigmaY value: %f \n",smearing);
+    // the plane will be set into the loop on tracks
+    
+
     for (Int_t iArray = 0; iArray < nArrays; iArray++) {
       if (!points[iArray]) continue;
-      fitter->SetTrackPointArray(points[iArray], kTRUE);
+      points[iArray]->Sort(kTRUE);
+      fitter->SetTrackPointArray(points[iArray], kFALSE);
+      // printf("Here normplane vect: %f \n",normplanevect2[1]); //TO BE REPLACED BY      fitter->SetNormPlaneVect(normplanevect2);
       if (fitter->Fit(volids,volidsfit,layerRangeMin,layerRangeMax) == kFALSE) continue;
+      
+       if(fLimitCorr>0.){
+	correlated=kFALSE;
+	AliTrackPoint p;
+	Int_t layer,module;
+	TArrayI *volparray=new TArrayI(points[iArray]->GetNPoints());
+	for(Int_t point=0;point<points[iArray]->GetNPoints();point++){
+	  points[iArray]->GetPoint(p,point);
+	  volparray->AddAt(p.GetVolumeID(),point);
+	}
+	TArrayI	*volpArray=ExcludeVolidsFromVolidsArray(volids,volparray);
+	for(Int_t point=0;point<volpArray->GetSize();point++){
+	  layer=(Int_t)AliGeomManager::VolUIDToLayerSafe(volpArray->At(point),module);  
+	  if(fCorrModules[layer-AliGeomManager::kFirstLayer][module]>fLimitCorr){
+	    correlated=kTRUE;
+	    //	    printf("volid %d, iarray = %d : skipping %d for Volume: %d \n",volids->At(0),iArray,skipped,volpArray->At(point));
+	    skipped++;
+	    break;
+	  }
+	}
+	if(!correlated){
+	  for(Int_t point=0;point<volpArray->GetSize();point++){
+	    layer=(Int_t)AliGeomManager::VolUIDToLayerSafe(volpArray->At(point),module);  
+	    //printf("Number of common tracks: %d \n",fCorrModules[layer-AliGeomManager::kFirstLayer][module]);
+	    fCorrModules[layer-AliGeomManager::kFirstLayer][module]+=frac;
+	    delete volparray;
+	    delete volpArray;
+	  }
+	}
+       	else { 
+	  delete volparray;
+	  delete volpArray;
+	  continue;
+	}
+       }
+       
       AliTrackPointArray *pVolId,*pTrack;
       fitter->GetTrackResiduals(pVolId,pTrack);
       minimizer->AddTrackPointArrays(pVolId,pTrack);
     }
-    if(minimizer->GetNFilledTracks()<=fmintracks){
-      printf("No good tracks found: could not find parameter for volume %d (and following in volids)\n",volids->At(0));
+    
+    printf("Number of tracks considered: %d \n",nArrays);
+    frac=(Double_t)skipped/(Double_t)nArrays;
+    printf("Number of tracks skipped cause of correlation: %d (fraction: %f )\n",skipped,frac);
+    
+    Int_t ntracks=minimizer->GetNFilledTracks();
+    frac=(Double_t)ntracks/(Double_t)nArrays;
+    printf("Number of tracks into the minimizer: %d (fraction: %f )\n",ntracks,frac);
+    if(ntracks<=fmintracks){
+      printf("Not enough good tracks found: could not find parameter for volume %d (and following in volids)\n",volids->At(0));
       UnloadPoints(pointsdim, points);
       failed=kTRUE;
       break;
     }
+    
     failed=(!minimizer->Minimize());
     
     // Update the alignment object(s)
     if (fDoUpdate) for (Int_t iVolId = 0; iVolId < nVolIds; iVolId++) {
       UShort_t volid = (*volids)[iVolId];
-      Int_t iModule;
-      AliGeomManager::ELayerID iLayer = AliGeomManager::VolUIDToLayer(volid,iModule);
-      
-      AliAlignObj *alignObj = fAlignObjs[iLayer-AliGeomManager::kFirstLayer][iModule];  
-      AliAlignObj *alignObjSurv = fSurveyObjs[iLayer-AliGeomManager::kFirstLayer][iModule];      
-      
       if(!failed){
-	if(fUpdateCov)*alignObj *= *minimizer->GetAlignObj();
-	else{
-	  TMatrixDSym covmatrx(6);
-	  alignObj->GetCovMatrix(covmatrx);
-	  *alignObj *= *minimizer->GetAlignObj();
-	  alignObj->SetCorrMatrix(covmatrx);
-	  alignObj->SetUniqueID(1);
-	}
-	alignObjSurv->GetCovMatrix(surveycov);
-	alignObj->GetPars(transl,rot);
-	
-	if(TMath::Sqrt(TMath::Abs(surveycov[0]))*2<TMath::Abs(transl[0])||TMath::Sqrt(TMath::Abs(surveycov[2]))*2<TMath::Abs(transl[1])||TMath::Sqrt(TMath::Abs(surveycov[5]))*2<TMath::Abs(transl[2])||TMath::Sqrt(TMath::Abs(surveycov[9]))*2<TMath::Abs(rot[0])||TMath::Sqrt(TMath::Abs(surveycov[14]))*2<TMath::Abs(rot[1])||TMath::Sqrt(TMath::Abs(surveycov[20]))*2<TMath::Abs(rot[2])){
-	  printf("Results for module %d out of Survey: reinitializing it from survey \n",volid);
-	  //	  *alignObj = *alignObjSurv;
-	  alignObj->SetPars(0.,0.,0.,0.,0.,0.);
-	  alignObj->SetUniqueID(0);
-	  if(fUpdateCov)alignObj->SetCorrMatrix(surveycov);
+	Int_t iModule;
+	AliGeomManager::ELayerID iLayer = AliGeomManager::VolUIDToLayer(volid,iModule);
+	AliAlignObj *alignObj = fAlignObjs[iLayer-AliGeomManager::kFirstLayer][iModule];  
+
+	//Check the last minimization is not too large
+	minimizer->GetAlignObj()->GetPars(transl,rot);     
+	fSurveyObjs[iLayer-AliGeomManager::kFirstLayer][iModule]->GetCovMatrix(surveycov);
+	fSurveyObjs[iLayer-AliGeomManager::kFirstLayer][iModule]->GetPars(survtransl,survrot);
+	if(TMath::Sqrt(TMath::Abs(surveycov[0]))*2<TMath::Abs(transl[0]-survtransl[0])||TMath::Sqrt(TMath::Abs(surveycov[2]))*2<TMath::Abs(transl[1]-survtransl[1])||TMath::Sqrt(TMath::Abs(surveycov[5]))*2<TMath::Abs(transl[2]-survtransl[2])||TMath::Sqrt(TMath::Abs(surveycov[9]))*2<TMath::Abs(rot[0]-survrot[0])||TMath::Sqrt(TMath::Abs(surveycov[14]))*2<TMath::Abs(rot[1]-survrot[1])||TMath::Sqrt(TMath::Abs(surveycov[20]))*2<TMath::Abs(rot[2]-survrot[2])){
+	  printf("Results for module %d too large: can't update them \n",volid);
+	  alignObj->SetUniqueID(2);
 	  if(iterations==1){
 	    failed=kTRUE;
 	  }
 	}
+	else{
+	  if(fUpdateCov){
+	    *alignObj *= *minimizer->GetAlignObj();
+	    alignObj->SetUniqueID(1);
+	  }
+	  else{
+	    alignObj->GetCovMatrix(covmatrx);
+	    *alignObj *= *minimizer->GetAlignObj();
+	    alignObj->SetCorrMatrix(covmatrx);
+	    alignObj->SetUniqueID(1);
+	  }
+	  
+	  /*alignObj->GetPars(transl,rot);
+	  
+	  if(TMath::Sqrt(TMath::Abs(surveycov[0]))*20<TMath::Abs(transl[0])||TMath::Sqrt(TMath::Abs(surveycov[2]))*20<TMath::Abs(transl[1])||TMath::Sqrt(TMath::Abs(surveycov[5]))*20<TMath::Abs(transl[2])||TMath::Sqrt(TMath::Abs(surveycov[9]))*20<TMath::Abs(rot[0])||TMath::Sqrt(TMath::Abs(surveycov[14]))*20<TMath::Abs(rot[1])||TMath::Sqrt(TMath::Abs(surveycov[20]))*20<TMath::Abs(rot[2])){
+	  printf("Results for module %d out of Survey: reinitializing it from survey \n",volid);
+	    //	  *alignObj = *alignObjSurv;
+	    alignObj->SetPars(0.,0.,0.,0.,0.,0.);
+	    alignObj->SetUniqueID(0);
+	    if(fUpdateCov)alignObj->SetCorrMatrix(surveycov);
+	    if(iterations==1){
+	    failed=kTRUE;
+	    }
+	    }*/
+	}
+	if(iterations==1)alignObj->Print("");
       }
       else {
 	printf("Minimization failed: cannot update AlignObj for volume: %d \n",volid);
       }
-      if(iterations==1)alignObj->Print("");
     }
-    
     UnloadPoints(pointsdim,points);
     if(failed)break;
+    minimizer->InitAlignObj();
     iterations--;
   }
+  
+  printf("\n \n");
+
   return (!failed);
 }
 
@@ -1129,9 +1481,26 @@ Bool_t AliITSRealignTracks::AlignSPDSectorsWithSectors(Int_t *sectorsIN,Int_t *s
   printf("Aligning SPD sectors: modules: %d \n",volIDs->GetSize());  
   printf("Fitting modules: %d \n",volIDsFit->GetSize());
   
-  AlignVolumesITS(volIDs,volIDsFit,AliGeomManager::kSPD1,AliGeomManager::kSDD1,iterations);
   
-  return kTRUE; 
+  
+  return AlignVolumesITS(volIDs,volIDsFit,AliGeomManager::kSPD1,AliGeomManager::kSDD1,iterations);; 
+}
+
+//___________________________________________________
+Bool_t AliITSRealignTracks::AlignSPDStaves(Int_t *staves,Int_t *sectorsIN,Int_t *sectorsFit,Int_t iterations){
+
+  TArrayI *volIDs=GetSPDStavesVolids(sectorsIN,staves);
+  TArrayI *volIDsFit=GetSPDSectorsVolids(sectorsFit);   
+  
+  if(volIDs->GetSize()==0){
+    printf("EMPTY ARRAY !! \n");
+    return kFALSE;
+  }
+  printf("Aligning SPD staves: modules: %d \n",volIDs->GetSize());  
+  printf("Fitting modules: %d \n",volIDsFit->GetSize());
+
+  TArrayI *volIDsFit2=ExcludeVolidsFromVolidsArray(volIDs,volIDsFit);
+  return  AlignVolumesITS(volIDs,volIDsFit2,AliGeomManager::kSPD1,AliGeomManager::kSSD1,iterations); 
 }
 
 
@@ -1320,6 +1689,76 @@ AliAlignObjParams* AliITSRealignTracks::MediateAlignObj(TArrayI *volIDs,Int_t la
   return alignObj;
   
 }
+
+
+//________________________________________________
+TArrayI* AliITSRealignTracks::GetSPDStavesVolids(Int_t *sectors,Int_t* staves){
+
+  
+  // This method gets the volID Array for the chosen staves into the 
+  // chosen sectors. You have to pass an array (10 dim) with a 1 for each 
+  // selected sector and an array (6 dim) with a 1 for each chosen stave.    
+  // The staves are numbered in this way: 0,1 for SPD1 and 2,3,4,5 for SPD2
+  // i.e. sectors[10] = {1,1,0,0,0,0,0,0,1,0} -> Sector 0, 1, 9 selected.
+  // staves[6]={0,1,1,0,0,1} -> Staves 1 on SPD1 and 0 and 3 on SPD2 selected
+  
+  Int_t nSect=0,nStaves=0;
+  Int_t last=0;
+
+ 
+  for(Int_t co=0;co<10;co++){ //counts the number of sectors chosen
+    if(sectors[co]==1) nSect++;
+  }
+
+  for(Int_t co=0;co<6;co++){ //counts the number of sectors chosen
+    if(staves[co]==1) nStaves++;
+  }
+  
+  if(nSect<1||nStaves<1){ //if no sector chosen -> exit
+    Printf("Error! No Sector/s or staves Selected!");
+    return 0x0;
+  }
+
+  TArrayI *volIDs = new TArrayI(nSect*nStaves*4);
+  TString stave="/Stave",str,symn,laystr;
+  
+  TArrayI *sectvol=GetSPDSectorsVolids(sectors); 
+  //SPD1 
+  laystr="SPD0";
+  for(Int_t k=0;k<2;k++){
+    if(staves[k]==1){
+      str=stave;
+      str+=k;
+      for(Int_t i=0;i<sectvol->GetSize();i++){
+	symn=AliGeomManager::SymName(sectvol->At(i));
+	if(symn.Contains(str)&&symn.Contains(laystr)){
+	  //	  printf("Adding: %s \n",symn.Data());
+	  volIDs->AddAt(sectvol->At(i),last);
+	  last++;
+	}
+      }
+    }
+  }
+  //SPD1 
+  laystr="SPD1";
+  for(Int_t k=2;k<6;k++){
+    if(staves[k]==1){
+      str=stave;
+      str+=k-2;
+      for(Int_t i=0;i<sectvol->GetSize();i++){
+	symn=AliGeomManager::SymName(sectvol->At(i));
+	if(symn.Contains(str)&&symn.Contains(laystr)){
+	  volIDs->AddAt(sectvol->At(i),last);
+	  printf("Adding: %s \n",symn.Data());
+	  last++;
+	}
+      }
+    }
+  }
+
+  volIDs->Set(last);
+  return volIDs;
+} 
 
 //________________________________________________
 TArrayI* AliITSRealignTracks::GetSPDSectorsVolids(Int_t *sectors) 
@@ -1753,4 +2192,312 @@ TArrayI* AliITSRealignTracks::GetLayerVolumes(Int_t *layer){
   }  
   out->Set(last);
   return out;
+}
+
+
+
+//______________________________
+TArrayI* AliITSRealignTracks::GetAlignedVolumes(char *filename){
+  if(gSystem->AccessPathName(filename)){
+    printf("Wrong Realignment file name \n");
+    return 0x0;
+  }
+  TFile *f=TFile::Open(filename,"READ");
+  TClonesArray *array=(TClonesArray*)f->Get("ITSAlignObjs");
+  AliAlignObjParams *a;
+  Int_t last=0;
+  TArrayI *volidOut=new TArrayI(2200);
+  for(Int_t j=0;j<array->GetSize();j++){
+    a=(AliAlignObjParams*)array->At(j);
+    if(a->GetUniqueID()==0)continue;
+    
+    else {
+      volidOut->AddAt(a->GetVolUID(),last);
+      last++;								      
+    }
+  }
+  volidOut->Set(last);
+  f->Close();
+  return volidOut;
+}
+
+
+//________________________________________
+void AliITSRealignTracks::SetDraw(Bool_t draw,Bool_t refresh){
+  
+  if(refresh){
+    // WriteHists();
+    if(fAlignDrawObjs)DeleteDrawHists();
+    InitDrawHists();
+  }
+  fDraw=draw;
+  return;
+}
+
+void AliITSRealignTracks::DeleteDrawHists(){
+  for (Int_t iLayer = 0; iLayer < (AliGeomManager::kLastLayer - AliGeomManager::kFirstLayer); iLayer++) {
+    for (Int_t iModule = 0; iModule < AliGeomManager::LayerSize(iLayer + AliGeomManager::kFirstLayer); iModule++) {
+      delete fAlignDrawObjs[iLayer][iModule];
+    }
+    if(fAlignDrawObjs[iLayer])delete [] fAlignDrawObjs[iLayer];
+  }
+  
+  delete [] fAlignDrawObjs;
+  fAlignDrawObjs = 0;
+
+  
+  delete fCanvPar;
+  delete fCanvGr; 
+  delete fgrIterMeanX;
+  delete fgrIterRMSX; 
+  delete fgrIterMeanY;
+  delete fgrIterRMSY;
+  delete fgrIterMeanZ;
+  delete fgrIterRMSZ;
+  delete fgrIterMeanPsi;
+  delete fgrIterRMSPsi;
+  delete fgrIterMeanTheta;
+  delete fgrIterRMSTheta;
+  delete fgrIterMeanPhi;
+  delete fgrIterRMSPhi;  
+
+} 
+
+void AliITSRealignTracks::InitDrawHists(){
+  Int_t nLayers = AliGeomManager::kLastLayer - AliGeomManager::kFirstLayer;
+  fAlignDrawObjs = new AliAlignObj**[nLayers];
+  for (Int_t iLayer = 0; iLayer < (AliGeomManager::kLastLayer - AliGeomManager::kFirstLayer); iLayer++) {
+    fAlignDrawObjs[iLayer] = new AliAlignObj*[AliGeomManager::LayerSize(iLayer + AliGeomManager::kFirstLayer)];
+    for (Int_t iModule = 0; iModule < AliGeomManager::LayerSize(iLayer + AliGeomManager::kFirstLayer); iModule++) {
+      UShort_t volid = AliGeomManager::LayerToVolUID(iLayer+ AliGeomManager::kFirstLayer,iModule);
+      fAlignDrawObjs[iLayer][iModule] = new AliAlignObjParams(AliGeomManager::SymName(volid),volid,0,0,0,0,0,0,kTRUE);
+      fAlignDrawObjs[iLayer][iModule]->SetUniqueID(1);
+    }
+  }
+
+
+  TH1F *hX=new TH1F("hX","hX",1000,-10000.,10000.);
+  TH1F *hY=new TH1F("hY","hY",1000,-10000.,10000.);
+  TH1F *hZ=new TH1F("hZ","hZ",1000,-10000.,10000.);
+  TH1F *hPsi=new TH1F("hPsi","hPsi",1000,-5000.,5000.);
+  TH1F *hTheta=new TH1F("hTheta","hTheta",1000,-5000.,5000.);
+  TH1F *hPhi=new TH1F("hPhi","hPhi",1000,-5000.,5000.);
+
+  fCanvPar=new TCanvas("fCanvPar","Parameters trend during iterations: Convergence \n");
+  fCanvPar->Divide(3,2);
+  fCanvPar->cd(1);
+  hX->Draw();
+  hX->SetXTitle("#mum");
+  fCanvPar->cd(2);
+  hY->Draw();
+  hY->SetXTitle("#mum");
+  fCanvPar->cd(3);
+  hZ->SetXTitle("#mum");
+  hZ->Draw();
+  fCanvPar->cd(4);
+  hPsi->SetXTitle("mdeg");
+  hPsi->Draw();
+  fCanvPar->cd(5);
+  hTheta->SetXTitle("mdeg");
+  hTheta->Draw();
+  fCanvPar->cd(6);
+  hPhi->SetXTitle("mdeg");
+  hPhi->Draw();
+  fCanvPar->Update();
+
+  
+  fCanvGr=new TCanvas("fCanvGr","Parameters trend during iterations: Convergence \n");
+  fCanvGr->Divide(3,2);
+
+  fCanvGr->cd(1);
+  fgrIterMeanX=new TGraph(1);
+  fgrIterRMSX=new TGraph(1);
+  fgrIterRMSX->GetYaxis()->SetRangeUser(-1000.,1000.);
+  fgrIterRMSX->SetName("fgrIterRMSX");
+  fgrIterRMSX->SetLineColor(2);
+  fgrIterMeanX->SetName("fgrIterMeanX");
+  fgrIterMeanX->SetTitle("Convergence of #deltaX \n");
+  fgrIterMeanX->GetXaxis()->SetTitle("#mum");
+  fgrIterRMSX->Draw("acp");
+  fgrIterMeanX->Draw("cp");
+
+  fCanvGr->cd(2);
+  fgrIterMeanY=new TGraph(1);
+  fgrIterRMSY=new TGraph(1);
+  fgrIterRMSY->GetYaxis()->SetRangeUser(-1000.,1000.);
+  fgrIterRMSY->SetName("fgrIterRMSY");
+  fgrIterRMSY->SetLineColor(2);
+  fgrIterMeanY->SetName("fgrIterMeanY");
+  fgrIterMeanY->SetTitle("Convergence of #deltaY \n");
+  fgrIterMeanY->GetXaxis()->SetTitle("#mum");
+  fgrIterRMSY->Draw("acp");
+  fgrIterMeanY->Draw("cp");
+
+  fCanvGr->cd(3);
+  fgrIterMeanZ=new TGraph(1);
+  fgrIterRMSZ=new TGraph(1);
+  fgrIterRMSZ->GetYaxis()->SetRangeUser(-1000.,1000.);
+  fgrIterRMSZ->SetName("fgrIterRMSZ");
+  fgrIterRMSZ->SetLineColor(2);
+  fgrIterMeanZ->SetName("fgrIterMeanZ");
+  fgrIterMeanZ->SetTitle("Convergence of #deltaZ \n");
+  fgrIterMeanZ->GetXaxis()->SetTitle("#mum");
+  fgrIterRMSZ->Draw("acp");
+  fgrIterMeanZ->Draw("cp");
+
+  fCanvGr->cd(4);
+  fgrIterMeanPsi=new TGraph(1);
+  fgrIterRMSPsi=new TGraph(1);
+  fgrIterRMSPsi->GetYaxis()->SetRangeUser(-1000.,1000.);
+  fgrIterRMSPsi->SetName("fgrIterRMSPsi");
+  fgrIterRMSPsi->SetLineColor(2);
+  fgrIterMeanPsi->SetName("fgrIterMeanPsi");
+  fgrIterMeanPsi->SetTitle("Convergence of #deltaPsi \n");
+  fgrIterMeanPsi->GetXaxis()->SetTitle("mdeg");
+  fgrIterRMSPsi->Draw("acp");
+  fgrIterMeanPsi->Draw("cp");
+
+  fCanvGr->cd(5);
+  fgrIterMeanTheta=new TGraph(1);
+  fgrIterRMSTheta=new TGraph(1);
+  fgrIterRMSTheta->GetYaxis()->SetRangeUser(-1000.,1000.);
+  fgrIterRMSTheta->SetName("fgrIterRMSTheta");
+  fgrIterRMSTheta->SetLineColor(2);
+  fgrIterMeanTheta->SetName("fgrIterMeanTheta");
+  fgrIterMeanTheta->SetTitle("Convergence of #deltaTheta \n");
+  fgrIterMeanTheta->GetXaxis()->SetTitle("mdeg");
+  fgrIterRMSTheta->Draw("acp");
+  fgrIterMeanTheta->Draw("cp");
+
+  fCanvGr->cd(6);
+  fgrIterMeanPhi=new TGraph(1);
+  fgrIterRMSPhi=new TGraph(1);
+  fgrIterRMSPhi->GetYaxis()->SetRangeUser(-1000.,1000.);
+  fgrIterRMSPhi->SetName("fgrIterRMSPhi");
+  fgrIterRMSPhi->SetLineColor(2);
+  fgrIterMeanPhi->SetName("fgrIterMeanPhi");
+  fgrIterMeanPhi->SetTitle("Convergence of #deltaPhi \n");
+  fgrIterMeanPhi->GetXaxis()->SetTitle("mdeg");
+  fgrIterRMSPhi->Draw("acp");
+  fgrIterMeanPhi->Draw("cp");
+
+
+  
+}
+
+void AliITSRealignTracks::UpdateDraw(TArrayI *volids,Int_t iter,Int_t color){
+  
+  
+  TString name="hX_";
+  name+=iter;
+  name.Append("iter");
+  TH1F *hX=new TH1F("hX",name.Data(),1000,-10000.,10000.);
+
+  name="hY_";
+  name+=iter;
+  name.Append("iter");
+  TH1F *hY=new TH1F("hY",name.Data(),1000,-10000.,10000.);
+
+  name="hZ_";
+  name+=iter;
+  name.Append("iter");
+  TH1F *hZ=new TH1F("hZ",name.Data(),1000,-10000.,10000.);
+
+  name="hPsi_";
+  name+=iter;
+  name.Append("iter");
+  TH1F *hPsi=new TH1F("hPsi",name.Data(),1000,-5000.,5000.);
+  
+  name="hTheta_";
+  name+=iter;
+  name.Append("iter");
+  TH1F *hTheta=new TH1F("hTheta",name.Data(),1000,-5000.,5000.);
+
+  name="hPhi_";
+  name+=iter;
+  name.Append("iter");
+  TH1F *hPhi=new TH1F("hPhi",name.Data(),1000,-5000.,5000.);
+  
+  Int_t layer,mod;
+  Double_t transl[3],rot[3],transldr[3],rotdr[3];
+  
+  for(Int_t i=0;i<volids->GetSize();i++){
+    layer=AliGeomManager::VolUIDToLayer(volids->At(i),mod); 
+    fAlignObjs[layer-AliGeomManager::kFirstLayer][mod]->GetPars(transl,rot);
+    fAlignDrawObjs[layer-AliGeomManager::kFirstLayer][mod]->GetPars(transldr,rotdr);
+    
+    hX->Fill(10000.*(transl[0]-transldr[0]));
+    hY->Fill(10000.*(transl[1]-transldr[1]));
+    hZ->Fill(10000.*(transl[2]-transldr[2]));
+    hPsi->Fill(1000.*(rot[0]-rotdr[0]));
+    hTheta->Fill(1000.*(rot[1]-rotdr[1]));
+    hPhi->Fill(1000.*(rot[1]-rotdr[2]));
+    //Update the pars of the draw object
+    fAlignDrawObjs[layer-AliGeomManager::kFirstLayer][mod]->SetPars(transl[0],transl[1],transl[2],rot[0],rot[1],rot[2]);
+  }
+
+  hX->SetLineColor(color);
+  hY->SetLineColor(color);
+  hZ->SetLineColor(color);
+  hPsi->SetLineColor(color);
+  hTheta->SetLineColor(color);
+  hPhi->SetLineColor(color);
+  
+  
+  fCanvPar->cd(1);
+  hX->Draw("Same");
+  fCanvPar->cd(2);
+  hY->Draw("Same");
+  fCanvPar->cd(3);
+  hZ->Draw("Same");
+  fCanvPar->cd(4);
+  hPsi->Draw("Same");
+  fCanvPar->cd(5);
+  hTheta->Draw("Same");
+  fCanvPar->cd(6);
+  hPhi->Draw("Same");
+  gPad->Modified();
+  fCanvPar->Update();
+  fCanvPar->Modified();
+  
+  fgrIterMeanX->SetPoint(fgrIterMeanX->GetN()+1,iter,hX->GetMean());
+  fgrIterRMSX->SetPoint(fgrIterRMSX->GetN()+1,iter,hX->GetRMS());
+  fgrIterMeanY->SetPoint(fgrIterMeanY->GetN()+1,iter,hY->GetMean());
+  fgrIterRMSY->SetPoint(fgrIterRMSY->GetN()+1,iter,hY->GetRMS());
+  fgrIterMeanZ->SetPoint(fgrIterMeanZ->GetN()+1,iter,hZ->GetMean());
+  fgrIterRMSZ->SetPoint(fgrIterRMSZ->GetN()+1,iter,hZ->GetRMS());
+  fgrIterMeanPsi->SetPoint(fgrIterMeanPsi->GetN()+1,iter,hPsi->GetMean());
+  fgrIterRMSPsi->SetPoint(fgrIterRMSPsi->GetN()+1,iter,hPsi->GetRMS());
+  fgrIterMeanTheta->SetPoint(fgrIterMeanTheta->GetN()+1,iter,hTheta->GetMean());
+  fgrIterRMSTheta->SetPoint(fgrIterRMSTheta->GetN()+1,iter,hTheta->GetRMS());
+  fgrIterMeanPhi->SetPoint(fgrIterMeanPhi->GetN()+1,iter,hPhi->GetMean());
+  fgrIterRMSPhi->SetPoint(fgrIterRMSPhi->GetN()+1,iter,hPhi->GetRMS());
+
+  gPad->Modified();
+  fCanvGr->Update();
+  fCanvGr->Update();
+}
+
+void AliITSRealignTracks::WriteHists(const char *outfile){
+
+  TFile *f=new TFile(outfile,"RECREATE");
+  f->cd();
+  fCanvPar->Write();
+  fCanvGr->Write(); 
+  fgrIterMeanX->Write(); 
+  fgrIterRMSX->Write();  
+  fgrIterMeanY->Write(); 
+  fgrIterRMSY->Write();  
+  fgrIterMeanZ->Write(); 
+  fgrIterRMSZ->Write();  
+  fgrIterMeanPsi->Write(); 
+  fgrIterRMSPsi->Write();  
+  fgrIterMeanTheta->Write(); 
+  fgrIterRMSTheta->Write();  
+  fgrIterMeanPhi->Write();  
+  fgrIterRMSPhi->Write();
+
+  f->Close();
+  return;
+  
 }
