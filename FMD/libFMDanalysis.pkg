@@ -1,0 +1,14 @@
+#-*- Mode: Makefile -*-
+#
+
+SRCS		=  analysis/AliFMDAnaParameters.cxx		
+
+#		   AliFMDAltroIO.cxx		
+
+HDRS		=  $(SRCS:.cxx=.h) 
+
+DHDR		:= analysis/FMDanalysisLinkDef.h
+
+#
+# EOF
+#
