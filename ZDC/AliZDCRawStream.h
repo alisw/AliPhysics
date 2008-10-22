@@ -79,13 +79,18 @@ class AliZDCRawStream: public TObject {
     
     void SetSODReading(Bool_t iset) {fSODReading = iset;}
     
+    // Error codes in raw data streaming
     enum EZDCRawStreamError{
        kCDHError = 1,
        kDARCError = 2,
        kZDCDataError = 3,
        kInvalidADCModule = 4,
        kInvalidSector = 5};
-
+    
+    // Signal codes for ZDC 
+    // Same codes used in DAQ configuration file
+    // To be changed ONLY IF this file is changed!!! 
+    // **** DO NOT CHANGE THE FOLLOWING LINES!!! ****
     enum ZDCSignal{kNotConnected=0, kVoid=1,
 	 kZNAC=2, kZNA1=3, kZNA2=4, kZNA3=5, kZNA4=6,
 	 kZPAC=7, kZPA1=8, kZPA2=9, kZPA3=10, kZPA4=11,
@@ -105,11 +110,13 @@ class AliZDCRawStream: public TObject {
     AliZDCRawStream& operator = (const AliZDCRawStream& stream);
 
     AliRawReader* fRawReader;    // object for reading the raw data
-
+    
+    // Data for buffer decoding
     UInt_t fBuffer;	      // DARC header + ADC buffer
     UInt_t fEvType;	      // Event type
     Int_t  fPosition;	      // bit position in buffer data word
     
+    // Boolean variables indicating data type
     Bool_t fIsCalib;	      // True when calibration run
     Bool_t fIsDARCHeader;     // True when DARC header
     Bool_t fIsChMapping;      // True when reading ch. mapping
@@ -150,7 +157,7 @@ class AliZDCRawStream: public TObject {
     Int_t  fCabledSignal;  // physics signal (from enum)
     Int_t  fMapADC[48][5]; // ADC map for the current run
         
-    ClassDef(AliZDCRawStream, 7)    // class for reading ZDC raw digits
+    ClassDef(AliZDCRawStream, 8)    // class for reading ZDC raw digits
 };
 
 #endif

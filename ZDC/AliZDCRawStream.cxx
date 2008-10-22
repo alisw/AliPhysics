@@ -193,46 +193,46 @@ void AliZDCRawStream::ReadCDHHeader()
     
     UInt_t status = header->GetStatus();
     //printf("\t AliZDCRawStream::ReadCDHHeader -> status = %d\n",status);
-    if(status & 0x000f == 0x0001){
+    if((status & 0x000f) == 0x0001){
       AliWarning("CDH -> DARC trg0 overlap error\n");
       fRawReader->AddMajorErrorLog(kDARCError);
     }
-    if(status & 0x000f == 0x0002){
+    if((status & 0x000f) == 0x0002){
       AliWarning("CDH -> DARC trg0 missing error\n");
       fRawReader->AddMajorErrorLog(kDARCError);
     }
-    if(status & 0x000f == 0x0004){
+    if((status & 0x000f) == 0x0004){
       AliWarning("CDH -> DARC data parity error\n");
       fRawReader->AddMajorErrorLog(kDARCError);
     }
-    if(status & 0x000f == 0x0008){
+    if((status & 0x000f) == 0x0008){
       AliWarning("CDH -> DARC ctrl parity error\n");
       fRawReader->AddMajorErrorLog(kDARCError);
     }
     //
-    if(status & 0x00f0 == 0x0010){
+    if((status & 0x00f0) == 0x0010){
       AliWarning("CDH -> DARC trg unavailable\n");
       fRawReader->AddMajorErrorLog(kDARCError);
     }
-    if(status & 0x00f0 == 0x0020){
+    if((status & 0x00f0) == 0x0020){
       AliWarning("CDH -> DARC FEE error\n");
       fRawReader->AddMajorErrorLog(kDARCError);
     }
     //
-    if(status & 0x0f00 == 0x0200){
+    if((status & 0x0f00) == 0x0200){
       AliWarning("CDH -> DARC L1 time violation\n");
       fRawReader->AddMajorErrorLog(kDARCError);
     }
-    if(status & 0x0f00 == 0x0400){
+    if((status & 0x0f00) == 0x0400){
       AliWarning("CDH -> DARC L2 time-out\n");
       fRawReader->AddMajorErrorLog(kDARCError);
     }
-    if(status & 0x0f00 == 0x0800){
+    if((status & 0x0f00) == 0x0800){
       AliWarning("CDH -> DARC prepulse time violation\n");
       fRawReader->AddMajorErrorLog(kDARCError);
     }
     //
-    if(status & 0xf000 == 0x1000){
+    if((status & 0xf000) == 0x1000){
       AliWarning("CDH -> DARC other error\n");
       fRawReader->AddMajorErrorLog(kDARCError);
     }
