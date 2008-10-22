@@ -47,7 +47,7 @@ public:
   void SetPMTeff(Int_t ipmt);  
 
   void SetTimeDelayTVD(Float_t r=150)   { fTimeDelayTVD = r; };
-  const Float_t GetTimeDelayTVD()   { return fTimeDelayTVD; }
+  Float_t GetTimeDelayTVD() const   { return fTimeDelayTVD; }
 
  
   // Get `Fixed' various parameters
