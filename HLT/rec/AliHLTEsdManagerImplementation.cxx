@@ -281,9 +281,11 @@ int AliHLTEsdManagerImplementation::AliHLTEsdListEntry::WriteESD(AliESDEvent* pS
 
     fpFile=new TFile(fName, "RECREATE");
     fpTree=new TTree("esdTree", "Tree with HLT ESD objects");
+    fpTree->SetDirectory(0);
     fpEsd=new AliESDEvent;
     if (fpEsd) {
       fpEsd->CreateStdContent();
+      *fpEsd=*pSrcESD;
       if (fpTree) {
 	fpEsd->WriteToTree(fpTree);
       }
@@ -303,7 +305,37 @@ int AliHLTEsdManagerImplementation::AliHLTEsdListEntry::WriteESD(AliESDEvent* pS
     }
 
     if (iResult>=0 && pSrcESD) {
+      int nofObjects=fpEsd->GetList()->GetEntries();
       *fpEsd=*pSrcESD;
+      if (nofObjects!=fpEsd->GetList()->GetEntries()) {
+	// The source ESD contains object not present in the target ESD
+	// before. Those objects will not be written to the tree since
+	// the branch layout has been created earlier.
+	// Create new tree with the additional branches, copy the entries
+	// of the current tree into the new tree, and continue.
+	TTree* pNewTree=new TTree("esdTree", "Tree with HLT ESD objects");
+	pNewTree->SetDirectory(0);
+	AliESDEvent* readESD=new AliESDEvent;
+	readESD->CreateStdContent();
+	readESD->ReadFromTree(fpTree);
+	fpEsd->Reset();
+	fpEsd->WriteToTree(pNewTree);
+	HLTDebug("cloning tree with %d entries", fpTree->GetEntries());
+	for (int event=0; event<fpTree->GetEntries(); event++) {
+	  fpTree->GetEntry(event);
+	  *fpEsd=*readESD;
+	  pNewTree->Fill();
+	  fpEsd->Reset();
+	}
+	fpFile->Close();
+	delete fpFile;
+	delete readESD;
+	delete fpTree;
+	fpFile=new TFile(fName, "RECREATE");
+	fpTree=pNewTree;
+	*fpEsd=*pSrcESD;
+	HLTDebug("new ESD with %d objects", fpEsd->GetList()->GetEntries());
+      }
       fpTree->Fill();
       iResult=1; // indicate tree to be written
     }
