@@ -8,8 +8,10 @@ void runAODFilterMC()
       gSystem->Load("libVMC.so");
 
       bool bKineFilter = true;
-
+      //      TProof::Mgr("alicecaf")->SetROOTVersion("v5-21-01-alice_dbg");
       TProof::Open("alicecaf");
+      //      gProof->SetParallel(1);
+
       char *dataset = "/COMMON/COMMON/LHC08c11_10TeV_0.5T";
       //      char *dataset = "/PWG4/kleinb/LHC08q_jetjet100";
       // gProof->ClearPackages();

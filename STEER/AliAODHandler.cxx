@@ -24,7 +24,7 @@
 #include <TTree.h>
 #include <TFile.h>
 #include <TString.h>
-#include <TExMap.h>
+#include <TList.h>
 
 #include "AliLog.h"
 #include "AliAODHandler.h"
@@ -32,8 +32,16 @@
 #include "AliAODTracklets.h"
 #include "AliStack.h"
 #include "AliAODMCParticle.h"
+#include "AliAODMCHeader.h"
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
+#include "AliGenEventHeader.h"
+#include "AliGenHijingEventHeader.h"
+#include "AliGenDPMjetEventHeader.h"
+#include "AliGenPythiaEventHeader.h"
+#include "AliGenCocktailEventHeader.h"
+
+
 
 ClassImp(AliAODHandler)
 
@@ -133,7 +141,7 @@ Bool_t AliAODHandler::Init(Option_t* opt)
 
 
 void AliAODHandler::StoreMCParticles(){
-  
+
   // 
   // Remap the labels from ESD stack and store
   // the AODMCParticles, makes only sense if we have
@@ -144,10 +152,21 @@ void AliAODHandler::StoreMCParticles(){
   // Particles have been selected by AliMCEventhanlder->SelectParticle()
   // To use the MCEventhandler here we need to set it from the outside
   // can vanish when Handler go to the ANALYSISalice library
+  //
+  // The Branch booking for mcParticles and mcHeader has to happen 
+  // in an external task for now since the AODHandler does not have access
+  // the AnalysisManager. For the same reason the pointer t o the MCEventH
+  // has to passed to the AOD Handler by this task 
+  // (doing this in the steering macro would not work on PROOF)
 
   TClonesArray *mcarray = (TClonesArray*)fAODEvent->FindListObject(AliAODMCParticle::StdBranchName()); 
   if(!mcarray)return;
   mcarray->Delete();
+
+  AliAODMCHeader *mcHeader = (AliAODMCHeader*)fAODEvent->FindListObject(AliAODMCHeader::StdBranchName()); 
+  if(!mcHeader)return;
+
+  mcHeader->Reset();
 
   // Get the MC Infos.. Handler needs to be set before 
   // while adding the branch
@@ -160,7 +179,41 @@ void AliAODHandler::StoreMCParticles(){
 
   fMCEventH->CreateLabelMap();
 
-  // First store the AliAODParticlesMC
+  //
+  // Get the Event Header 
+  // 
+
+  AliHeader* header = fMCEventH->MCEvent()->Header();
+  if (!header)return;
+
+  // get the MC vertex
+  AliGenEventHeader* genHeader = header->GenEventHeader();
+  TArrayF vtxMC(3);
+  genHeader->PrimaryVertex(vtxMC);
+  mcHeader->SetVertex(vtxMC[0],vtxMC[1],vtxMC[2]);
+
+  // we search the MCEventHeaders first 
+  // Two cases, cocktail or not...
+  AliGenCocktailEventHeader* genCocktailHeader = dynamic_cast<AliGenCocktailEventHeader*>(genHeader);
+  if(genCocktailHeader){
+    // we have a coktail header
+    mcHeader->AddGeneratorName(genHeader->GetName());
+    // Loop from the back so that the first one sets the process type
+    TList* headerList = genCocktailHeader->GetHeaders();
+    for(int i = headerList->GetEntries()-1;i>=0;--i){
+      AliGenEventHeader *headerEntry = dynamic_cast<AliGenEventHeader*>(headerList->At(i));
+      SetMCHeaderInfo(mcHeader,headerEntry);
+    }
+  }
+  else{
+    // No Cocktail just take the first one
+    SetMCHeaderInfo(mcHeader,genHeader);
+  }
+
+
+
+
+  // Store the AliAODParticlesMC
 
   Int_t np    = pStack->GetNtrack();
   Int_t nprim = pStack->GetNprimary();
@@ -350,7 +403,7 @@ void AliAODHandler::FillTree()
 //______________________________________________________________________________
 void AliAODHandler::AddAODtoTreeUserInfo()
 {
-    // Add aod event to tree user info
+  // Add aod event to tree user info
   fTreeA->GetUserInfo()->Add(fAODEvent);
 }
 
@@ -360,12 +413,24 @@ void AliAODHandler::AddBranch(const char* cname, void* addobj)
     // Add a new branch to the aod 
     TDirectory *owd = gDirectory;
     if (fFileA) {
-	fFileA->cd();
+      fFileA->cd();
     }
     char** apointer = (char**) addobj;
     TObject* obj = (TObject*) *apointer;
-    fTreeA->Branch(obj->GetName(), cname, addobj);
+
     fAODEvent->AddObject(obj);
+ 
+    const Int_t kSplitlevel = 99; // default value in TTree::Branch()
+    const Int_t kBufsize = 32000; // default value in TTree::Branch()
+
+    if (!fTreeA->FindBranch(obj->GetName())) {
+      // Do the same as if we book via 
+      // TTree::Branch(TCollection*)
+      
+      fTreeA->Bronch(obj->GetName(), cname, fAODEvent->GetList()->GetObjectRef(obj),
+		     kBufsize, kSplitlevel - 1);
+      //    fTreeA->Branch(obj->GetName(), cname, addobj);
+    }
     owd->cd();
 }
 
@@ -381,4 +446,42 @@ const char *AliAODHandler::GetOutputFileName()
 {
 // Get file name.
    return fFileName.Data();
+}
+
+void  AliAODHandler::SetMCHeaderInfo(AliAODMCHeader *mcHeader,AliGenEventHeader *genHeader){
+
+
+  // Utility function to cover different cases for the AliGenEventHeader
+  // Needed since different ProcessType and ImpactParamter are not 
+  // in the base class...
+  // We don't encode process types for event cocktails yet
+  // coul be done e.g. by adding offsets depnding on the generator
+
+
+  mcHeader->AddGeneratorName(genHeader->GetName());
+
+
+
+  if(!genHeader)return;
+  AliGenPythiaEventHeader *pythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(genHeader);
+    if (pythiaGenHeader) {
+      mcHeader->SetEventType(pythiaGenHeader->ProcessType());
+      return;
+    }
+    
+    AliGenDPMjetEventHeader* dpmJetGenHeader = dynamic_cast<AliGenDPMjetEventHeader*>(genHeader);
+
+  if (dpmJetGenHeader){
+    mcHeader->SetEventType(dpmJetGenHeader->ProcessType());
+    return;
+  } 
+
+  AliGenHijingEventHeader* hijingGenHeader = dynamic_cast<AliGenHijingEventHeader*>(genHeader);
+  if(hijingGenHeader){
+    mcHeader->SetImpactParameter(hijingGenHeader->ImpactParameter());
+    return;
+  }
+  
+  AliWarning(Form("MC Eventheader not known: %s",genHeader->GetName()));
+
 }

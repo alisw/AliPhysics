@@ -32,6 +32,7 @@
 #include "AliMCEventHandler.h"
 #include "AliAODEvent.h"
 #include "AliAODHeader.h"
+#include "AliAODMCHeader.h"
 #include "AliAODHandler.h"
 #include "AliAODVertex.h"
 #include "AliAODMCParticle.h"
@@ -101,18 +102,29 @@ void AliAnalysisTaskMCParticleFilter::UserCreateOutputObjects()
 
     // the branch booking can also go into the AODHandler then
 
+
+    // mcparticles
     TClonesArray *tca = new TClonesArray("AliAODMCParticle", 0);
     tca->SetName(AliAODMCParticle::StdBranchName());
     AddAODBranch("TClonesArray",&tca);
-    AliMCEventHandler *mcH = (AliMCEventHandler*) ((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler()); 
 
+    // MC header...
+    AliAODMCHeader *mcHeader = new AliAODMCHeader();
+    Printf("AODMCHeader %p",mcHeader);
+    Printf("AODMCHeader ** %p",&mcHeader);
+    mcHeader->SetName(AliAODMCHeader::StdBranchName());
+    AddAODBranch("AliAODMCHeader",&mcHeader);    
+
+    
+
+    AliMCEventHandler *mcH = (AliMCEventHandler*) ((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler()); 
     AliAODHandler *aodH = dynamic_cast<AliAODHandler*> ((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
     if(!aodH){
       Printf("%s:&d Could not get AODHandler",(char*)__FILE__,__LINE__);
       return;
     }
     aodH->SetMCEventHandler(mcH);
-    // TODO ADD MC VERTEX
+
     
 }
 
@@ -173,7 +185,6 @@ void AliAnalysisTaskMCParticleFilter::UserExec(Option_t */*option*/)
       
     Bool_t write = kFALSE;
     Int_t flag = 0;
-
 
     if (ip < nprim) {
       // Select the primary event

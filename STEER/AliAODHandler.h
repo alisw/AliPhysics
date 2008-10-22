@@ -16,6 +16,8 @@ class AliAODEvent;
 class TFile;
 class TTree;
 class AliMCEventHandler;
+class AliAODMCHeader;
+class AliGenEventHeader;
 
 
 
@@ -72,6 +74,7 @@ class AliAODHandler : public AliVEventHandler {
     void                 SetMCEventHandler(AliMCEventHandler* mcH) {fMCEventH = mcH;} // For internal use
  private:
     void StoreMCParticles();
+    void SetMCHeaderInfo(AliAODMCHeader *mcHeader,AliGenEventHeader *genHeader); // Utility function t catch different types of eventheaders
     AliAODHandler(const AliAODHandler&);             // Not implemented
     AliAODHandler& operator=(const AliAODHandler&);  // Not implemented
  private:
