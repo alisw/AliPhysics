@@ -4,6 +4,7 @@
 // single particle analyzer
 //=============================================================================
 
+#include <cmath>
 #include <TROOT.h>
 #include <TMath.h>
 #include <TAxis.h>
@@ -64,7 +65,7 @@ void AliDAnalSingle::Process(AliDEvent *ev)
     zep->Fill(ev->Zver(),ev->ParticleEta(i),ev->ParticlePhi(i),1.0);
     double y = fMass>0? ev->ParticleY(i,fMass) : ev->ParticleEta(i);
     cyp->Fill(ev->Centrality(),y,ev->ParticlePt(i),1.0);
-    epd->Fill(ev->ParticleEta(i),ev->ParticleP(i),TMath::Sqrt(ev->ParticleDedx(i)),1.0);
+    epd->Fill(ev->ParticleEta(i),ev->ParticleP(i),sqrt(ev->ParticleDedx(i)),1.0);
   }
 }
 //=============================================================================

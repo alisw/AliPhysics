@@ -1,5 +1,9 @@
 // Author: Dariusz Miskowiec <mailto:d.miskowiec@gsi.de> 2007
 
+//=============================================================================
+// single particle analyzer
+//=============================================================================
+
 #ifndef ALIDANALSINGLE_H
 #define ALIDANALSINGLE_H
 

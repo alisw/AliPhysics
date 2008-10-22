@@ -11,8 +11,8 @@
 ClassImp(AliDPair)
 
 //=============================================================================
-AliDPair::AliDPair() : p0(), p1(), p(), q(), beta(), betat(), betaz(), ubeta(), 
-		 ubetat(), ubetaz(), CMp(), CMq(), buf() 
+AliDPair::AliDPair() : fP0(), fP1(), fP(), fQ(), fBeta(), fBetat(), fBetaz(), fUbeta(), 
+		 fUbetat(), fUbetaz(), fCMp(), fCMq(), fBuf() 
 {
   // constructor
 

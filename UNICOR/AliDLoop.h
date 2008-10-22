@@ -1,5 +1,9 @@
 // Author: Dariusz Miskowiec 2007
 
+//=============================================================================
+// simple event loop manager
+//=============================================================================
+
 #ifndef ALIDLOOP_H
 #define ALIDLOOP_H
 
@@ -17,7 +21,7 @@ class AliDLoop : public TObject {
   AliDLoop(const AliDLoop &loop);             // copy constructor
   AliDLoop &operator=(const AliDLoop &loop);  // substitution operator
   virtual ~AliDLoop() {}                   // destructor
-  void Run(int n=-1);                   // process n events; n=-1 means all
+  void Run(int n=-1) const;             // process n events; n=-1 means all
 
  protected:
   TTree *fTree0;                        //! input event tree

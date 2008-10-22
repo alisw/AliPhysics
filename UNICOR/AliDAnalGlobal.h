@@ -1,5 +1,9 @@
 // Author: Dariusz Miskowiec <mailto:d.miskowiec@gsi.de> 2007
 
+//=============================================================================
+// event global variable analyzer
+//=============================================================================
+
 #ifndef ALIDANALGLOBAL_H
 #define ALIDANALGLOBAL_H
 

@@ -1,10 +1,14 @@
 // Author: Dariusz Miskowiec <mailto:d.miskowiec@gsi.de> 2007
 
+//=============================================================================
+// parent class of all events; analyzers access data via this class
+//=============================================================================
+
 #ifndef ALIDEVENT_H
 #define ALIDEVENT_H
 
+#include <cmath>
 #include <TObject.h>
-#include <TMath.h>
 
 class TTree;
 
@@ -41,7 +45,6 @@ class AliDEvent : public TObject {
   Double_t ParticlePz(Int_t i) const {return ParticleP(i)*cos(ParticleTheta(i));}
   Double_t ParticleEta(Int_t i) const;
   Double_t ParticleY(Int_t i, Double_t mass) const; 
-  Double_t PairDCA(Int_t i0, Int_t i1, Double_t *x0, Double_t *y0, Double_t *x1, Double_t *y1) const; 
 
   ClassDef(AliDEvent,0)
 };

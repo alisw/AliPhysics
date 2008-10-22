@@ -19,7 +19,7 @@ ClassImp(AliDAnalysisTask)
 AliDAnalysisTask::AliDAnalysisTask() : 
   AliAnalysisTask("dali", ""), 
   fESD(0), fEv0(0), fEv1(0), 
-  fDag(0), fPim(0), fPip(0), 
+  fDag(0), fAll(0), fPim(0), fPip(0), 
   fCnn(0), fCpp(0), fPtf(0),
   fOutputList(0)
 {

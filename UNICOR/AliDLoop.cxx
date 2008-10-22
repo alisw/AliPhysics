@@ -12,6 +12,7 @@
 //=============================================================================
 
 #include <TROOT.h>
+#include <TMath.h>
 #include <TTree.h>
 #include <TSystem.h>
 #include <TStopwatch.h>
@@ -74,7 +75,7 @@ Int_t AliDLoop::Mem() const
   return memmb;
 }
 //=============================================================================
-void AliDLoop::Run(int nwish) 
+void AliDLoop::Run(int nwish) const 
 {
   // process nwish events from fTree0; nwish=-1 (default) means process all
 

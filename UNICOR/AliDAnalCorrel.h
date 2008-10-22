@@ -1,5 +1,9 @@
 // Author: Dariusz Miskowiec <mailto:d.miskowiec@gsi.de> 2005
 
+//=============================================================================
+// two-particle correlation analyzer
+//=============================================================================
+
 #ifndef ALIDANALCORREL_H
 #define ALIDANALCORREL_H
 #include "AliDAnal.h"

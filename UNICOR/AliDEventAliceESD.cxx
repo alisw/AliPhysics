@@ -4,6 +4,7 @@
 // AliDEvent-AliESD interface                                                   //
 //=============================================================================
 
+#include <cmath>
 #include "AliESDEvent.h"
 #include "AliDEventAliceESD.h"
 
@@ -27,7 +28,7 @@ Bool_t AliDEventAliceESD::Good() const
 {
   // event cuts
 
-  if (TMath::Abs(Zver())>1) return kFALSE;
+  if (fabs(Zver())>1) return kFALSE;
   if (AliESDEvent::GetPrimaryVertex()->GetZRes()>0.1) return kFALSE;
   return kTRUE;
 }
@@ -47,8 +48,8 @@ Bool_t AliDEventAliceESD::ParticleGood(Int_t i, Int_t pidi) const
 
   Float_t r,z;
   track->GetImpactParameters(r,z);
-  //  if (TMath::Abs(z)>0.2) return 0;                          // impact parameter in z
-  //  if (TMath::Abs(r)>0.1) return 0;                          // impact parameter in xy
+  //  if (fabs(z)>0.2) return 0;                          // impact parameter in z
+  //  if (fabs(r)>0.1) return 0;                          // impact parameter in xy
 
   // pid
 

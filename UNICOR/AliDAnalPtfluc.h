@@ -1,5 +1,9 @@
 // Author: Dariusz Miskowiec <mailto:d.miskowiec@gsi.de> 2005
 
+//=============================================================================
+// pt-fluctuations analyzer
+//=============================================================================
+
 #ifndef ALIDANALPTFLUC_H
 #define ALIDANALPTFLUC_H
 

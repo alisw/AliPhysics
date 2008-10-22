@@ -1,5 +1,9 @@
 // Author: Dariusz Miskowiec <mailto:d.miskowiec@gsi.de> 2007
 
+//=============================================================================
+// parent class of all analyzers
+//=============================================================================
+
 #ifndef ALIDANAL_H
 #define ALIDANAL_H
 

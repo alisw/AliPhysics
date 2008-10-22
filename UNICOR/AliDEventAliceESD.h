@@ -3,6 +3,7 @@
 #ifndef ALIDEVENTALICEESD_H
 #define ALIDEVENTALICEESD_H
 
+#include <cmath>
 #include "TVector2.h"
 #include "AliDEvent.h"
 #include "AliESDEvent.h"
@@ -20,7 +21,7 @@ class AliDEventAliceESD : public AliDEvent, public AliESDEvent {
   Bool_t      Good() const;
   Double_t    Centrality() {return 0.9999*exp(-NParticles()/20.0);} // OK for pp
   void        RP(Double_t &qx, Double_t &qy) const {AliDEvent::RP(qx,qy,2);}
-  Double_t    RPphi() const {Double_t qx,qy; RP(qx,qy); return TMath::ATan2(qy,qx);}
+  Double_t    RPphi() const {Double_t qx,qy; RP(qx,qy); return atan2(qy,qx);}
   Double_t    Zver() const {return AliESDEvent::GetPrimaryVertex()->GetZv()/10.0;}
   Int_t       NParticles() const {return AliESDEvent::GetNumberOfTracks();}
 

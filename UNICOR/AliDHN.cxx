@@ -8,11 +8,11 @@
 // histogram and the axes, thus eternal forward compatibility is ensured. 
 //=============================================================================
 
+#include <cmath>
 #include <TFile.h>
 #include <TDirectory.h>
 #include <TAxis.h>
 #include <TH2.h>
-#include <TMath.h>
 #include "AliDHN.h"
 
 ClassImp(AliDHN)
@@ -23,9 +23,9 @@ AliDHN::AliDHN(Char_t *nam, Int_t ndim, TAxis **ax)
     fNdim(ndim) 
 {
   // Constructor for building from scratch.
-  
+ 
   // Above, we just have managed to create a single one-dimensional histogram 
-  // with the number of bins equal to the product of the numbers of bins in all 
+  // with number of bins equal to the product of the numbers of bins in all 
   // dimensions. For easy inspection the histogram range was set to -0.5,n-0.5.
 
   for (int i=0; i<fNdim; i++) ax[i]->Copy(fAxis[i]); 
@@ -110,7 +110,7 @@ Int_t AliDHN::MulToOne(Double_t *x)
   return MulToOne(k);
 }
 //=============================================================================
-void AliDHN::OneToMul(Int_t n, Int_t *k) 
+void AliDHN::OneToMul(Int_t n, Int_t *k) const 
 {
   // Calculate the n-dim indices k[fNdim] from 1-dim index n.
   // Valid n should be between 0 and GetNbinsX()-1. 
@@ -124,17 +124,30 @@ void AliDHN::OneToMul(Int_t n, Int_t *k)
   }
 }
 //=============================================================================
-void AliDHN::Fill(Double_t *xx, Double_t w) 
+Int_t AliDHN::Fill(Double_t *xx, Double_t w) 
 {
   // Fill the histogram. The array xx holds the abscissa information, w is the 
   // weigth. The 1-dim histogram is filled using the standard Fill method 
   // (direct access to the arrays was tried and was not faster). 
 
   int nbin = MulToOne(xx);
-  if (nbin != -1) TH1D::Fill(nbin+1,w); 
+  if (nbin == -1) return 0;
+  return TH1D::Fill(nbin+1,w); 
 }
 //=============================================================================
-Int_t AliDHN::Write() 
+Int_t AliDHN::Fill(Double_t x0, Double_t x1, ...) 
+{
+  // Fill the histogram. Arguments are passed as doubles rather than array. 
+  va_list ap;
+  Double_t xx[fMaxNdim] = {x0, x1};
+  va_start(ap,x1);
+  for (int i=2; i<fNdim; i++) xx[i] = va_arg(ap,Double_t);
+  Double_t weigth = va_arg(ap,Double_t);
+  va_end(ap);
+  return Fill(xx,weigth);
+}
+//=============================================================================
+Int_t AliDHN::Write() const  
 {
   // Save the 1-dim histo and the axes in a subdirectory on file. This might 
   // not be the most elegant way but it is very simple and backward and forward 
@@ -186,7 +199,7 @@ AliDHN *AliDHN::ProjectAlong(char *nam, Int_t dim, Int_t first, Int_t last)
     OneToMul(i,k);
     if (k[dim]+1<first) continue;
     if (k[dim]+1>last) continue;
-    int n = 0;
+    n = 0;
     for (int j=0; j<fNdim; j++) if (j!=dim) m[n++] = k[j];
     n = his->MulToOne(m);
     his->AddBinContent(n+1,GetBinContent(i+1));
@@ -196,7 +209,7 @@ AliDHN *AliDHN::ProjectAlong(char *nam, Int_t dim, Int_t first, Int_t last)
   // combine content and errors in one histogram
 
   for (int i=0; i<his->GetNbinsX(); i++) {
-    his->SetBinError(i+1,TMath::Sqrt(eis->GetBinContent(i+1)));
+    his->SetBinError(i+1,sqrt(eis->GetBinContent(i+1)));
   }
 
   his->SetLineColor(this->GetLineColor());
@@ -210,7 +223,7 @@ AliDHN *AliDHN::ProjectAlong(char *nam, Int_t dim, Int_t first, Int_t last)
   return his;
 }
 //=============================================================================
-TH1D *AliDHN::ProjectOn(char *nam, Int_t dim, Int_t *first, Int_t *last) 
+TH1D *AliDHN::ProjectOn(char *nam, Int_t dim, Int_t *first, Int_t *last) const 
 {
   // Project on dimension dim. Use only bins between first[i] and last[i]. 
   // Use root convention: bin=1 is the first bin, bin=nbins is the last. 
@@ -257,7 +270,7 @@ TH1D *AliDHN::ProjectOn(char *nam, Int_t dim, Int_t *first, Int_t *last)
   his->SetMarkerStyle(this->GetMarkerStyle());
   for (int i=0; i<his->GetNbinsX(); i++) {
     his->SetBinContent(i+1,yy[i]);
-    his->SetBinError(i+1,TMath::Sqrt(ey[i]));
+    his->SetBinError(i+1,sqrt(ey[i]));
   }
 
   // some cleanup
@@ -284,7 +297,7 @@ TH1D *AliDHN::ProjectOn(char *nam, Int_t dim, Double_t *first, Double_t *last)
   return ProjectOn(nam,dim,kfirst,klast);
 }
 //=============================================================================
-TH2D *AliDHN::ProjectOn(char *nam, Int_t dim0, Int_t dim1, Int_t *first, Int_t *last) 
+TH2D *AliDHN::ProjectOn(char *nam, Int_t dim0, Int_t dim1, Int_t *first, Int_t *last) const
 {
   // Project on dim1 vs dim0. Use only bins between first[i] and last[i]. 
   // Use root convention: bin=1 is the first bin, bin=nbins is the last. 
@@ -349,7 +362,7 @@ TH2D *AliDHN::ProjectOn(char *nam, Int_t dim0, Int_t dim1, Int_t *first, Int_t *
   for (int i=0; i<his->GetNbinsX(); i++) 
   for (int j=0; j<his->GetNbinsY(); j++) {
     his->SetBinContent(i+1,j+1,yy[i][j]);
-    his->SetBinError(i+1,j+1,TMath::Sqrt(ey[i][j]));
+    his->SetBinError(i+1,j+1,sqrt(ey[i][j]));
   }
 
   // some cleanup

@@ -5,6 +5,7 @@
 //=============================================================================
 
 #include <TROOT.h>
+#include <TMath.h>
 #include <TRandom2.h>
 #include "AliDEvent.h"
 #include "AliDHN.h"
