@@ -117,7 +117,7 @@ void AliDAJetFinder::InitDetAnn(Double_t &dEtSum,Double_t **xData,TVectorD *vPx,
 		dEtSum+=(*vPx)(iIn);
 		iIn++;
 	}
-	for (Int_t iIn=0; iIn<fNin; iIn++) (*vPx)(iIn)=(*vPx)(iIn)/dEtSum;
+	for (iIn=0; iIn<fNin; iIn++) (*vPx)(iIn)=(*vPx)(iIn)/dEtSum;
 
 	Int_t njdim=2*fNclustMax+1;
 	mPyx->ResizeTo(fNin,njdim);
@@ -127,7 +127,7 @@ void AliDAJetFinder::InitDetAnn(Double_t &dEtSum,Double_t **xData,TVectorD *vPx,
 	(*vPy)(0)=1;
 	TMatrixDColumn(*mPyx,0)=1;
 	Double_t ypos=0,xpos=0;
-	for (Int_t iIn=0; iIn<fNin; iIn++){
+	for (iIn=0; iIn<fNin; iIn++){
 		(*mY)(0,0)+=(*vPx)(iIn)*xEta[iIn];
 		ypos+=(*vPx)(iIn)*TMath::Sin(xPhi[iIn]);
 		xpos+=(*vPx)(iIn)*TMath::Cos(xPhi[iIn]);
