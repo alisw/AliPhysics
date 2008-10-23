@@ -43,7 +43,6 @@ public:
   virtual Bool_t HasDigitConversion() const { return kTRUE; }
   virtual void   ConvertDigits(AliRawReader* rawReader,
 			       TTree* digitsTree) const;
-  Float_t        GetMIP(Int_t channel) const;
                  		 
   AliCDBStorage     *SetStorage(const char* uri);
   AliVZEROCalibData *GetCalibData() const; 
