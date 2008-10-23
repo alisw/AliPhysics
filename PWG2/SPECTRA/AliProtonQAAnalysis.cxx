@@ -2883,6 +2883,12 @@ void AliProtonQAAnalysis::RunMCAnalysis(AliStack* stack) {
 	Int_t lPartMother = particle->GetFirstMother();
 	TParticle *motherParticle = stack->Particle(lPartMother);
 	if(!motherParticle) continue;
+	Int_t motherPDGCode = motherParticle->GetPdgCode();
+	if(fMCProcessIdFlag)
+	  if(particle->GetUniqueID() != fMCProcessId) continue;
+	if(fMotherParticlePDGCodeFlag)
+	  if(TMath::Abs(motherPDGCode) != fMotherParticlePDGCode) continue;
+
 	((TH3F *)(fPDGList->At(0)))->Fill(Rapidity(particle->Px(),
 						   particle->Py(),
 						   particle->Pz()),
@@ -2926,6 +2932,12 @@ void AliProtonQAAnalysis::RunMCAnalysis(AliStack* stack) {
 	Int_t lPartMother = particle->GetFirstMother();
 	TParticle *motherParticle = stack->Particle(lPartMother);
 	if(!motherParticle) continue;
+	Int_t motherPDGCode = motherParticle->GetPdgCode();
+	if(fMCProcessIdFlag)
+	  if(particle->GetUniqueID() != fMCProcessId) continue;
+	if(fMotherParticlePDGCodeFlag)
+	  if(TMath::Abs(motherPDGCode) != fMotherParticlePDGCode) continue;
+
 	((TH3F *)(fPDGList->At(1)))->Fill(Rapidity(particle->Px(),
 						   particle->Py(),
 						   particle->Pz()),
