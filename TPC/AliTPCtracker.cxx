@@ -401,8 +401,8 @@ Int_t AliTPCtracker::FollowBackProlongation
        const AliTPCRow &krow=fSectors[s][i];
        if (accepted>27)
        if (krow) {
-          for (Int_t i=krow.Find(y-road); i<krow; i++) {
-	    AliTPCcluster *c=(AliTPCcluster*)(krow[i]);
+          for (Int_t icl=krow.Find(y-road); icl<krow; icl++) {
+	    AliTPCcluster *c=(AliTPCcluster*)(krow[icl]);
 	    if (c->GetY() > y+road) break;
 	    if (c->IsUsed()) continue;
 	 if ((c->GetZ()-z)*(c->GetZ()-z)>16.*(seed.GetSigmaZ2()+sz2)) continue;
@@ -410,7 +410,7 @@ Int_t AliTPCtracker::FollowBackProlongation
 	    if (chi2 > maxchi2) continue;
 	    maxchi2=chi2;
 	    cl=c;
-            index=krow.GetIndex(i);
+            index=krow.GetIndex(icl);
           }
        }
     }
