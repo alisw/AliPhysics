@@ -78,7 +78,6 @@ void AliHLTTPCCompModelDeconverterComponent::GetOutputDataSize( unsigned long& c
       // see header file for class documentation
       constBase = 8+216*4; // Track count + clusters count
       inputMultiplier = 4.;
-#warning Adapt input Multiplier to something more realistic
     }
 
 // Spawn function, return new instance of this class

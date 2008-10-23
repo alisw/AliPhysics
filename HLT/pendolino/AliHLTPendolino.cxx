@@ -756,11 +756,11 @@ Int_t AliHLTPendolino::initPredictProc(TString detector, Int_t run,
 }
 
 
-UInt_t AliHLTPendolino::GetStartTimeDCSQuery() {
+CONST_PROPERTY UInt_t AliHLTPendolino::GetStartTimeDCSQuery() {
 	return fStartTime;
 }
 
-UInt_t AliHLTPendolino::GetEndTimeDCSQuery() {
+CONST_PROPERTY UInt_t AliHLTPendolino::GetEndTimeDCSQuery() {
 	return fEndTime;
 }
 

@@ -248,13 +248,13 @@ int AliHLTTRDTrackerComponent::DoDeinit()
   return 0;
 }
 
-int AliHLTTRDTrackerComponent::DoEvent( const AliHLTComponentEventData & evtData,
-					AliHLTComponentTriggerData & trigData )
+int AliHLTTRDTrackerComponent::DoEvent( const AliHLTComponentEventData & /*evtData*/,
+					AliHLTComponentTriggerData & /*trigData*/ )
 {
   // Process an event
   
   HLTInfo("Output percentage set to %lu %%", fOutputPercentage );
-  HLTInfo("NofBlocks %lu", evtData.fBlockCnt );
+  HLTInfo("NofBlocks %lu", GetNumberOfInputBlocks() );
 
   AliHLTUInt32_t dBlockSpecification = 0;
 
@@ -262,7 +262,7 @@ int AliHLTTRDTrackerComponent::DoEvent( const AliHLTComponentEventData & evtData
   //   AliHLTUInt32_t triggerDataStructSize = trigData.fStructSize;
   //   AliHLTUInt32_t triggerDataSize = trigData.fDataSize;
   //   void *triggerData = trigData.fData;
-  HLTDebug("Struct size %d Data size %d Data location 0x%x", trigData.fStructSize, trigData.fDataSize, (UInt_t*)trigData.fData);
+  //HLTDebug("Struct size %d Data size %d Data location 0x%x", trigData.fStructSize, trigData.fDataSize, (UInt_t*)trigData.fData);
 
   AliHLTComponentBlockData *dblock = (AliHLTComponentBlockData *)GetFirstInputBlock( AliHLTTRDDefinitions::fgkClusterDataType );
   if (dblock != 0)

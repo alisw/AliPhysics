@@ -749,6 +749,15 @@ int AliHLTComponent::GetNumberOfInputBlocks() const
   return 0;
 }
 
+AliHLTEventID_t AliHLTComponent::GetEventId() const
+{
+  // see header file for function documentation
+  if (fpInputBlocks!=NULL) {
+    return fCurrentEventData.fEventID;
+  }
+  return 0;
+}
+
 const TObject* AliHLTComponent::GetFirstInputObject(const AliHLTComponentDataType& dt,
 						    const char* classname,
 						    int bForce)
@@ -1632,6 +1641,7 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
     // no output blocks, set size to 0
     size=0;
   }
+  FillEventData(fCurrentEventData);
   return iResult;
 }
 

@@ -48,6 +48,7 @@ ClassImp(AliHLTTRDCalibrationComponent);
    
 AliHLTTRDCalibrationComponent::AliHLTTRDCalibrationComponent()
   : AliHLTCalibrationProcessor()
+  , fTRDCalibraFillHisto(NULL)
   , fOutputPercentage(100) // By default we copy to the output exactly what we got as input  
   , fStrorageDBpath("local://$ALICE_ROOT")
   , fCDB(NULL)
@@ -169,11 +170,11 @@ Int_t AliHLTTRDCalibrationComponent::DeinitCalibration()
   
   // Deinitialization of the component
   // gain histo
-  TH2I *hCH2d = fTRDCalibraFillHisto->GetCH2d(); 
+  //TH2I *hCH2d = fTRDCalibraFillHisto->GetCH2d(); 
   // drift velocity histo
-  TProfile2D *hPH2d = fTRDCalibraFillHisto->GetPH2d(); 
+  //TProfile2D *hPH2d = fTRDCalibraFillHisto->GetPH2d(); 
   // PRF histo
-  TProfile2D *hPRF2d = fTRDCalibraFillHisto->GetPRF2d(); 
+  //TProfile2D *hPRF2d = fTRDCalibraFillHisto->GetPRF2d(); 
 
   if (fCDB)
     {

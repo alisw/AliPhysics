@@ -136,7 +136,7 @@ class AliHLTESDMCEventPublisherComponent : public AliHLTFilePublisher  {
    *         -EINVAL unknown argument <br>
    *         -EPROTO parameter for argument missing <br>
    */
-  Int_t DoInit( Int_t argc, const Char_t** argv );
+  Int_t DoInit( int argc, const char** argv );
 
 
   /**

@@ -165,7 +165,7 @@ Bool_t AliHLTPredictionProcessorHLT::GetSensorValue(TMap* dcsAliasMap,
   return kFALSE;
 }
 
-TMap* AliHLTPredictionProcessorHLT::produceTestData(TString aliasName) {
+TMap* AliHLTPredictionProcessorHLT::produceTestData(TString /*aliasName*/) {
 	// produces test data for AliHLTPredictionProcessorHLT
     TMap* resultMap = 0;
 

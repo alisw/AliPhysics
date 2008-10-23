@@ -228,8 +228,8 @@ int AliHLTEMCALTrackerComponent::DoDeinit()
   return 0;
 }
 
-int AliHLTEMCALTrackerComponent::DoEvent( const AliHLTComponentEventData & evtData,
-					AliHLTComponentTriggerData & trigData )
+int AliHLTEMCALTrackerComponent::DoEvent( const AliHLTComponentEventData & /*evtData*/,
+					  AliHLTComponentTriggerData & /*trigData*/ )
 {
   //
   // see header file for class documentation
@@ -237,13 +237,13 @@ int AliHLTEMCALTrackerComponent::DoEvent( const AliHLTComponentEventData & evtDa
 
   // check if the input data are there at all - empty events possible
   
-  HLTDebug("HLT::TRDTracker::DoEvent", "BLOCKS", "NofBlocks %lu", evtData.fBlockCnt );
+  HLTDebug("HLT::TRDTracker::DoEvent", "BLOCKS", "NofBlocks %lu", GetNumberOfInputBlocks() );
 
   //implement a usage of the following
   //   AliHLTUInt32_t triggerDataStructSize = trigData.fStructSize;
   //   AliHLTUInt32_t triggerDataSize = trigData.fDataSize;
   //   void *triggerData = trigData.fData;
-  HLTDebug("Struct size %d Data size %d Data location 0x%x", trigData.fStructSize, trigData.fDataSize, (UInt_t*)trigData.fData);
+  //HLTDebug("Struct size %d Data size %d Data location 0x%x", trigData.fStructSize, trigData.fDataSize, (UInt_t*)trigData.fData);
 
   //   another way to check the blocks
   //   AliHLTComponentBlockData *dblock = (AliHLTComponentBlockData *)GetFirstInputBlock( AliHLTEMCALDefinitions::fgkClusterDataType );

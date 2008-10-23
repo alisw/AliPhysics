@@ -64,9 +64,9 @@ AliHLTTRDClusterizerComponent::AliHLTTRDClusterizerComponent()
   , fRecoParam(NULL)
   , fCDB(NULL)
   , fMemReader(NULL)
+  , fReconstructor(NULL)
   , fGeometryFileName("")
   , fGeometryFile(NULL)
-  , fReconstructor(NULL)
 {
   // Default constructor
 

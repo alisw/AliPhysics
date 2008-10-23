@@ -124,7 +124,7 @@ extern "C" {
    * @return pointer to system call
    * @ingroup alihlt_wrapper_interface
    */
-  void* AliHLTAnalysisGetInterfaceCall(const char*);
+  void* AliHLTAnalysisGetInterfaceCall(const char* function);
 
 #ifdef __cplusplus
 }

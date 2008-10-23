@@ -110,7 +110,7 @@ int AliHLTTPCClusterDumpComponent::CloseWriter()
   return 0;
 }
 
-int AliHLTTPCClusterDumpComponent::DumpEvent( const AliHLTComponentEventData& evtData,
+int AliHLTTPCClusterDumpComponent::DumpEvent( const AliHLTComponentEventData& /*evtData*/,
 					      const AliHLTComponentBlockData* /*blocks*/, 
 					      AliHLTComponentTriggerData& /*trigData*/ )
 {
@@ -140,7 +140,7 @@ int AliHLTTPCClusterDumpComponent::DumpEvent( const AliHLTComponentEventData& ev
   dump.open(fCurrentFileName.Data());
 
   for (pDesc=GetFirstInputBlock(AliHLTTPCDefinitions::fgkClustersDataType); pDesc!=NULL; pDesc=GetNextInputBlock(), blockno++) {
-    HLTDebug("event %Lu block %d: %s 0x%08x size %d", evtData.fEventID, blockno, DataType2Text(pDesc->fDataType).c_str(), pDesc->fSpecification, pDesc->fSize);
+    HLTDebug("event %Lu block %d: %s 0x%08x size %d", GetEventId(), blockno, DataType2Text(pDesc->fDataType).c_str(), pDesc->fSpecification, pDesc->fSize);
 
     if(pDesc->fDataType!=AliHLTTPCDefinitions::fgkClustersDataType){continue;}
  

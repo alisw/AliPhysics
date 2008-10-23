@@ -333,7 +333,7 @@ int AliHLTTPCNoiseMapComponent::DoEvent(const AliHLTComponentEventData& evtData,
       //fHistSignal = new TH1F("fHistSignal", "signal distribution per pad",1024,0,1024);
       
       //fHistSignal->Reset();
-      Int_t time = pDigitReader->GetTime();
+      //Int_t time = pDigitReader->GetTime();
      
       for(Int_t i=0;i<pDigitReader->GetBunchSize();i++){
           

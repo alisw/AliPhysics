@@ -845,6 +845,12 @@ class AliHLTComponent : public AliHLTLogging {
   int GetNumberOfInputBlocks() const;
 
   /**
+   * Get id of the current event
+   * @return event id
+   */
+  AliHLTEventID_t GetEventId() const;
+
+  /**
    * Get the first object of a specific data type from the input data.
    * The hight-level methods provide functionality to transfer ROOT data
    * structures which inherit from TObject.

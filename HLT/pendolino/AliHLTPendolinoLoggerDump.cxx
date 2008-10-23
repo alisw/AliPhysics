@@ -41,7 +41,7 @@ AliHLTPendolinoLoggerDump::~AliHLTPendolinoLoggerDump() {
 
 }
 
-void AliHLTPendolinoLoggerDump::log(const char* detector, const char* msg) {
+void AliHLTPendolinoLoggerDump::log(const char* /*detector*/, const char* /*msg*/) {
 	// log function dump
 
 }

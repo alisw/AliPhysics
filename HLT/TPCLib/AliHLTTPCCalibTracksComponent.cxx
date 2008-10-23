@@ -434,9 +434,9 @@ Int_t AliHLTTPCCalibTracksComponent::ShipDataToFXS(const AliHLTComponentEventDat
 
 void AliHLTTPCCalibTracksComponent::ReadTracks(const AliHLTComponentBlockData *iter, Int_t &tt){
 
-  AliHLTUInt8_t slice = AliHLTTPCDefinitions::GetMinSliceNr( *iter );
-  AliHLTUInt8_t patch = AliHLTTPCDefinitions::GetMinPatchNr( *iter );  
-  HLTDebug("Input Data - TPC cluster - Slice/Patch: %d/%d.", slice, patch);
+  HLTDebug("Input Data - TPC cluster - Slice/Patch: %d/%d.", 
+	   AliHLTTPCDefinitions::GetMinSliceNr( *iter ), 
+	   AliHLTTPCDefinitions::GetMinPatchNr( *iter ));
  
 
   const AliHLTTPCTrackletData *trackData = (const AliHLTTPCTrackletData*)iter->fPtr;

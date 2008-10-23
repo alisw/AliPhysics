@@ -59,8 +59,10 @@ AliHLTTRDTrackerV1Component::AliHLTTRDTrackerV1Component()
   , fField(NULL)
   , fGeometryFileName("")
   , fGeometryFile(NULL)
+  , fGeoManager(NULL)
   , fTracker(NULL)
   , fRecoParam(NULL)
+  , fReconstructor(NULL)
 {
   // Default constructor
 
@@ -412,14 +414,14 @@ int AliHLTTRDTrackerV1Component::DoDeinit()
   return 0;
 }
 
-int AliHLTTRDTrackerV1Component::DoEvent( const AliHLTComponentEventData & evtData,
-					  AliHLTComponentTriggerData & trigData )
+int AliHLTTRDTrackerV1Component::DoEvent( const AliHLTComponentEventData & /*evtData*/,
+					  AliHLTComponentTriggerData & /*trigData*/ )
 {
   // Process an event
   Bool_t bWriteClusters = fReconstructor->IsWritingClusters();
 
   HLTDebug("Output percentage set to %lu %%", fOutputPercentage );
-  HLTDebug("NofBlocks %lu", evtData.fBlockCnt );
+  HLTDebug("NofBlocks %lu", GetNumberOfInputBlocks() );
   
   AliHLTUInt32_t dBlockSpecification = 0;
 
@@ -428,14 +430,14 @@ int AliHLTTRDTrackerV1Component::DoEvent( const AliHLTComponentEventData & evtDa
   //   AliHLTUInt32_t triggerDataStructSize = trigData.fStructSize;
   //   AliHLTUInt32_t triggerDataSize = trigData.fDataSize;
   //   void *triggerData = trigData.fData;
-  HLTDebug("Struct size %d Data size %d Data location 0x%x", trigData.fStructSize, trigData.fDataSize, (UInt_t*)trigData.fData);
+  //HLTDebug("Struct size %d Data size %d Data location 0x%x", trigData.fStructSize, trigData.fDataSize, (UInt_t*)trigData.fData);
   
   AliHLTComponentBlockData *dblock = (AliHLTComponentBlockData *)GetFirstInputBlock( AliHLTTRDDefinitions::fgkClusterDataType );
   if (dblock != 0)
     {
       AliHLTComponentDataType inputDataType = dblock->fDataType;
       HLTDebug( "Event 0x%08LX (%Lu) received datatype: %s",
-		evtData.fEventID, evtData.fEventID, 
+		GetEventId(), GetEventId(), 
 		DataType2Text(inputDataType).c_str());
       dBlockSpecification = dblock->fSpecification;
     }
@@ -479,7 +481,7 @@ int AliHLTTRDTrackerV1Component::DoEvent( const AliHLTComponentEventData & evtDa
 	HLTDebug("TClonesArray of clusters: nbEntries = %i", clusterArray->GetEntriesFast());
 	Int_t nb = clusterArray->GetEntriesFast();
 	for (Int_t i=0; i<nb; i++){
-	  AliTRDcluster * cluster = (AliTRDcluster* ) clusterArray->At(i);
+	  //AliTRDcluster * cluster = (AliTRDcluster* ) clusterArray->At(i);
 	  //HLTDebug("Cluster[%i]: detector %i", i, cluster->GetDetector());
 	}
   

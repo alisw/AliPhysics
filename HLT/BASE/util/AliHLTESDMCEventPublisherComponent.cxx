@@ -108,7 +108,7 @@ AliHLTComponent* AliHLTESDMCEventPublisherComponent::Spawn() {
  */
 
 // #################################################################################
-Int_t AliHLTESDMCEventPublisherComponent::DoInit(Int_t argc, const char** argv) {
+Int_t AliHLTESDMCEventPublisherComponent::DoInit(int argc, const char** argv) {
   // see header file for class documentation
 
   Int_t iResult = 0;

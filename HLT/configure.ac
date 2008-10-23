@@ -321,6 +321,22 @@ if test ! "x$have_aliroot" = "xno" ; then
   AC_MSG_CHECKING(for version of AliExternalTrackParam)
   AC_MSG_RESULT($externaltrackparam_version)
 
+  dnl The AliShuttleInterface was changed in rev 29388. Some return types
+  dnl had been const, now changed according to gcc 4.3 warnings 
+  AC_MSG_CHECKING(for version of AliShuttleInterface.h)
+    CPPFLAGS="$save_CPPFLAGS $ALIROOT_CPPFLAGS -I${ALICE_ROOT}/"
+    LDFLAGS="$save_LDFLAGS -L${ROOTLIBDIR} $ALIROOT_LDFLAGS"
+    LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS $ALITPC_LIBS"
+    AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <AliShuttleInterface.h>],
+                                    [class dummy : public AliShuttleInterface {
+				     public:
+				       const UInt_t GetStartTimeDCSQuery() {;}
+                                     };])],
+                                    [AC_DEFINE(SHUTTLE_PRE_REV29388_INTERFACE)
+				     alishuttleinterface_version=pre.rev.29388],
+  				    [alishuttleinterface_version=up.to.date])
+  AC_MSG_RESULT([$alishuttleinterface_version])
+
   CPPFLAGS=$save_CPPFLAGS
   LDFLAGS=$save_LDFLAGS
   LIBS=$save_LIBS

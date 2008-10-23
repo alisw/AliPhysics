@@ -27,8 +27,8 @@
  *
  * Component ID: \b TPCOfflineTracker <br>
  * Library: \b libAliHLTTPC.so     <br>
- * Input Data Types: @ref kAliHLTDataTypeAliTObjArray|kAliHLTDataOriginTPC <br>
- * Output Data Types: @ref kAliHLTDataTypeESDTree|kAliHLTDataOriginTPC <br>
+ * Input Data Types: ::kAliHLTDataTypeTObjArray|::kAliHLTDataOriginTPC <br>
+ * Output Data Types: ::kAliHLTDataTypeESDTree|::kAliHLTDataOriginTPC <br>
  *
  * <h2>Mandatory arguments:</h2>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->

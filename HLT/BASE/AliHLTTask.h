@@ -81,6 +81,7 @@ class AliHLTTask : public TObject, public AliHLTLogging {
    * Create the component.
    * @param pConf    configuration descritption
    * @param pCH      component handler
+   * @param pComponent [OUT] target to get the component instance
    * @return component instance
    */
   virtual int CreateComponent(AliHLTConfiguration* pConf, AliHLTComponentHandler* pCH, AliHLTComponent*& pComponent) const;
