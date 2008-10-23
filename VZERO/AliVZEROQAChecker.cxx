@@ -35,6 +35,7 @@
 #include "AliQA.h"
 #include "AliQAChecker.h"
 #include "AliVZEROQAChecker.h"
+#include "AliVZEROQADataMakerRec.h"
 //#include "AliCDBEntry.h"
 //#include "AliCDBManager.h"
 
@@ -63,13 +64,13 @@ Double_t AliVZEROQAChecker::Check(AliQA::ALITASK_t index, TObjArray * list)
      if(index == AliQA::kESD) {
         return CheckEsds(list);
      } 
-     
-     return 1.0; 
+
+      return 1.0; 
 }
 //_________________________________________________________________
 Double_t AliVZEROQAChecker::CheckEntries(TObjArray * list) const
 {
-  
+
   //  check on the QA histograms on the input list: list
 //  list->Print();
 
@@ -77,33 +78,30 @@ Double_t AliVZEROQAChecker::CheckEntries(TObjArray * list) const
   Int_t   count = 0 ; 
 
   if (list->GetEntries() == 0){  
-      test = 1.0; 
-      AliInfo(Form("There are NO ENTRIES to be checked..."));
-  }
-  else {
-      TIter next(list) ; 
-      TH1 * hdata ;
-      count = 0 ; 
-      while ( (hdata = dynamic_cast<TH1 *>(next())) ) {
-        if (hdata) { 	   
-	   Double_t rv = 0.0;
-	   if(hdata->GetEntries()>0) rv=1.0;
+	test = 1.0; 
+	AliInfo(Form("There are NO ENTRIES to be checked..."));
+  } else {
+	TIter next(list) ; 
+	TH1 * hdata ;
+	count = 0 ; 
+	while ( (hdata = dynamic_cast<TH1 *>(next())) ) {
+		if (hdata) { 	   
+			Double_t rv = 0.0;
+			if(hdata->GetEntries()>0) rv=1.0;
 //	   AliInfo(Form("%s -> %f", hdata->GetName(), rv)); 
-	   count++ ;        // number of histos
-	   test += rv ;     // number of histos filled
-        }
-        else{
-	   AliError(Form("Data type cannot be processed"));
+			count++ ;        // number of histos
+			test += rv ;     // number of histos filled
+        }else{
+			AliError(Form("Data type cannot be processed"));
         }      
-      }
-      if (count != 0) { 
-          if (test==0.0) {
-	      AliWarning(Form("Histograms are BOOKED for this specific task, but they are all EMPTY"));
-          }
-          else {
-	      test /= count; 
-	  }
-      }
+	}
+	if (count != 0) { 
+		if (test==0.0) {
+			AliWarning(Form("Histograms are BOOKED for this specific task, but they are all EMPTY"));
+		} else {
+			test /= count; 
+		}
+	}
   }
   return test ; 
 }  
@@ -131,41 +129,29 @@ Double_t AliVZEROQAChecker::CheckEsds(TObjArray * list) const
   TH1 * hdata ;
   
   while ( (hdata = dynamic_cast<TH1 *>(next())) ) {
-          if (hdata) {
-	      histo_nb++;
-	      if (histo_nb == 3) {	         
-		  Mult_V0A  = hdata->GetMean();
-//		  printf(" Histo ESD number %d; Mean Mult on V0A = %f\n",histo_nb, Mult_V0A);
-	      }
-	      if (histo_nb == 4) {	         
-		  Mult_V0C  = hdata->GetMean();
-//		  printf(" Histo ESD number %d; Mean Mult on V0C = %f\n",histo_nb, Mult_V0C);
-	      }
-	      if (histo_nb == 6) {
-	          for (Int_t i=0; i<4; i++) {         
-		       V0A_BB_Ring[i]  = hdata->Integral((i*8)+1, (i*8) +8);
-//	               printf(" Histo ESD number %d; Ring = %d; BB A %f\n",histo_nb, i, V0A_BB_Ring[i]);		  
-		  }	      
-	      }
-	      if (histo_nb == 7) {
-	          for (Int_t i=0; i<4; i++) {         
-		       V0A_BG_Ring[i]  = hdata->Integral((i*8)+1, (i*8) +8);
-//		       printf(" Histo ESD number %d; Ring = %d; BG A %f\n",histo_nb, i, V0A_BG_Ring[i]);
-	          }	      
-	      }	      
-	      if (histo_nb == 8) {
-	          for (Int_t i=0; i<4; i++) {    
-		       V0C_BB_Ring[i]  = hdata->Integral((i*8)+1, (i*8) +8);
-//		       printf(" Histo ESD number %d; Ring = %d; BB C %f\n",histo_nb, i, V0C_BB_Ring[i]);
-	          }
-	      }
-	      if (histo_nb == 9) {
-	          for (Int_t i=0; i<4; i++) {    
-		       V0C_BG_Ring[i]  = hdata->Integral((i*8)+1, (i*8) +8);
-//		       printf(" Histo ESD number %d; Ring = %d; BG C %f\n",histo_nb, i, V0C_BG_Ring[i]);
-	          }
-	      }
-          } 
+	  if (hdata) {
+		  switch (histo_nb) {
+		  case AliVZEROQADataMakerRec::kCellMultiV0A:
+			  Mult_V0A  = hdata->GetMean();
+			  break;
+		  case AliVZEROQADataMakerRec::kCellMultiV0C:
+			  Mult_V0C  = hdata->GetMean();
+			  break;
+		  case AliVZEROQADataMakerRec::kBBFlag:
+	          for (Int_t i=0; i<8; i++) {         
+				  if(i<4) V0C_BB_Ring[i]  = hdata->Integral((i*8)+1, (i*8) +8);
+				  else V0A_BB_Ring[i-4]  = hdata->Integral((i*8)+1, (i*8) +8);
+			  }	      
+			  break;
+		  case AliVZEROQADataMakerRec::kBGFlag:
+	          for (Int_t i=0; i<8; i++) {         
+				  if(i<4) V0C_BG_Ring[i]  = hdata->Integral((i*8)+1, (i*8) +8);
+				  else V0A_BG_Ring[i-4]  = hdata->Integral((i*8)+1, (i*8) +8);
+			  }	      
+			  break;
+		  }
+	  }
+	  histo_nb++;
   }
   
   if(Mult_V0A == 0.0 || Mult_V0C == 0.0) {
@@ -186,12 +172,11 @@ Double_t AliVZEROQAChecker::CheckEsds(TObjArray * list) const
 
   return test ; 
 } 
- 
+
 //______________________________________________________________________________
 void AliVZEROQAChecker::SetQA(AliQA::ALITASK_t index, const Double_t value) const
 {
 // sets the QA word according to return value of the Check
-
   AliQA * qa = AliQA::Instance(index);
   
   qa->UnSet(AliQA::kFATAL);
