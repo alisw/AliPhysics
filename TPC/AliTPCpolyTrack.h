@@ -28,12 +28,8 @@ public:
   void Refit(AliTPCpolyTrack & track, Double_t deltay, Double_t deltaz); 
   void Refit(AliTPCpolyTrack & track, Double_t deltay, Double_t deltaz, Int_t nfirst, Int_t ny, Int_t nz); 
 private: 
-  void   Fit2(Double_t fSumY, Double_t fSumYX, Double_t fSumYX2,
-	      Double_t fSumX,  Double_t fSumX2, Double_t fSumX3, 
-	      Double_t fSumX4, Double_t fSumW, Double_t &a, Double_t &b, Double_t &c);
-  void  Fit1(Double_t fSumY, Double_t fSumYX, 
-	      Double_t fSumX,  Double_t fSumX2, 
-	      Double_t fSumW, Double_t &a, Double_t &b, Double_t &c);
+  void   Fit2( Double_t &a, Double_t &b, Double_t &c);
+  void  Fit1(Double_t &a, Double_t &b, Double_t &c);
   //
   Double_t fA; // parameter
   Double_t fB; // parameter

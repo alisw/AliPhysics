@@ -104,14 +104,14 @@ void  AliTPCpolyTrack::UpdateParameters()
   //
   //Update fit parameters
   if (fNPoints>4){
-    Fit2(fSumY,fSumYX,fSumYX2,fSumX,fSumX2,fSumX3,fSumX4,fSumW,fA,fB,fC);
+    Fit2(fA,fB,fC);
     //    Fit2(fSumZ,fSumZX,fSumZX2,fSumX,fSumX2,fSumX3,fSumX4,fNPoints,fD,fE,fF);
-    Fit1(fSumZ,fSumZX,fSumX,fSumX2,fSumW,fD,fE,fF);
+    Fit1(fD,fE,fF);
   }
   else
     {
-      Fit1(fSumY,fSumYX,fSumX,fSumX2,fSumW,fA,fB,fC);
-      Fit1(fSumZ,fSumZX,fSumX,fSumX2,fSumW,fD,fE,fF);
+      Fit1(fA,fB,fC);
+      Fit1(fD,fE,fF);
     }
 }
 
@@ -121,24 +121,22 @@ void  AliTPCpolyTrack::UpdateParameters(Int_t ny, Int_t nz)
   //
   //Update fit parameters
   if (ny>1){
-    Fit2(fSumY,fSumYX,fSumYX2,fSumX,fSumX2,fSumX3,fSumX4,fSumW,fA,fB,fC);
+    Fit2(fA,fB,fC);
   }
   else{ 
-    Fit1(fSumY,fSumYX,fSumX,fSumX2,fSumW,fA,fB,fC);
+    Fit1(fA,fB,fC);
   }
   if (nz>1){
-    Fit2(fSumZ,fSumZX,fSumZX2,fSumX,fSumX2,fSumX3,fSumX4,fNPoints,fD,fE,fF);
+    Fit2(fD,fE,fF);
   }
   else{
-    Fit1(fSumZ,fSumZX,fSumX,fSumX2,fSumW,fD,fE,fF);
+    Fit1(fD,fE,fF);
   }
 }
 
 
 
-void  AliTPCpolyTrack::Fit2(Double_t fSumY, Double_t fSumYX, Double_t fSumYX2,
-	    Double_t fSumX,  Double_t fSumX2, Double_t fSumX3, 
-	    Double_t fSumX4, Double_t fSumW,
+void  AliTPCpolyTrack::Fit2(
 	    Double_t &a, Double_t &b, Double_t &c)
 {
   //fit of second order
@@ -163,9 +161,7 @@ void  AliTPCpolyTrack::Fit2(Double_t fSumY, Double_t fSumYX, Double_t fSumYX2,
   }
 }
 
-void  AliTPCpolyTrack::Fit1(Double_t fSumY, Double_t fSumYX, 
-	      Double_t fSumX,  Double_t fSumX2, 
-	      Double_t fSumW, Double_t &a, Double_t &b, Double_t &c)
+void  AliTPCpolyTrack::Fit1( Double_t &a, Double_t &b, Double_t &c)
 {
   //
   //
