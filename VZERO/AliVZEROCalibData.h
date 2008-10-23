@@ -62,7 +62,9 @@ class AliVZEROCalibData: public TNamed {
   void     SetTimeOffset(Float_t* TimeOffset);
   void     SetTimeGain(Float_t val, Int_t channel) {fTimeGain[channel]=val;}
   void     SetTimeGain(Float_t* TimeGain);
-  
+
+  Float_t  GetMIPperADC(Int_t channel) const;
+
  protected:
   Float_t  fPedestal[128];     // Mean pedestal values
   Float_t  fSigma[128];        // Sigmas of pedestal peaks
