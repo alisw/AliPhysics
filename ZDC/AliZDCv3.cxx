@@ -484,14 +484,14 @@ void AliZDCv3::CreateBeamLine()
   conpar[2] = 21.6/2.;
   conpar[3] = 0.0/2.;
   conpar[4] = 5.8/2.;
-  TGeoShape *pConeExtC = new TGeoCone("QCLext", conpar[0],conpar[1],conpar[2],conpar[3],conpar[4]);
+  new TGeoCone("QCLext", conpar[0],conpar[1],conpar[2],conpar[3],conpar[4]);
   
   conpar[0] = (90.1-0.95-0.26)/2.;
   conpar[1] = 0.0/2.;
   conpar[2] = 21.2/2.;
   conpar[3] = 0.0/2.;
   conpar[4] = 5.4/2.;
-  TGeoShape *pConeIntC = new TGeoCone("QCLint", conpar[0],conpar[1],conpar[2],conpar[3],conpar[4]);
+  new TGeoCone("QCLint", conpar[0],conpar[1],conpar[2],conpar[3],conpar[4]);
 
   // Outer trousers
   TGeoCompositeShape *pOutTrousersC = new TGeoCompositeShape("outTrousersC", "QCLext:ZDCC_c1+QCLext:ZDCC_c2");
@@ -1310,14 +1310,14 @@ void AliZDCv3::CreateBeamLine()
   conpar[2] = 21.6/2.;
   conpar[3] = 0.0/2.;
   conpar[4] = 5.8/2.;
-  TGeoShape *pConeExt = new TGeoCone("QALext", conpar[0],conpar[1],conpar[2],conpar[3],conpar[4]);
+  new TGeoCone("QALext", conpar[0],conpar[1],conpar[2],conpar[3],conpar[4]);
   
   conpar[0] = (90.1-0.95-0.26)/2.;
   conpar[1] = 0.0/2.;
   conpar[2] = 21.2/2.;
   conpar[3] = 0.0/2.;
   conpar[4] = 5.4/2.;
-  TGeoShape *pConeInt = new TGeoCone("QALint", conpar[0],conpar[1],conpar[2],conpar[3],conpar[4]);
+  new TGeoCone("QALint", conpar[0],conpar[1],conpar[2],conpar[3],conpar[4]);
 
   // Outer trousers
   TGeoCompositeShape *pOutTrousers = new TGeoCompositeShape("outTrousers", "QALext:ZDC_c1+QALext:ZDC_c2");
