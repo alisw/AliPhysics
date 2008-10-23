@@ -165,6 +165,26 @@ Double_t AliGenMUONlib::PtJpsi( Double_t *px, Double_t */*dummy*/)
 Double_t AliGenMUONlib::PtJpsiCDFscaled( Double_t *px, Double_t */*dummy*/)
 {
 // J/Psi pT
+//
+// PbPb 5.5 TeV
+// scaled from CDF data at 2 TeV
+// see S.Grigoryan, PWG3 Meeting, 27th Oct 2008
+
+  const Double_t kpt0 = 5.100;
+  const Double_t kxn  = 4.102;
+  Double_t x=*px;
+  //
+  Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
+  return x/TMath::Power(pass1,kxn);
+}
+
+Double_t AliGenMUONlib::PtJpsiCDFscaledold( Double_t *px, Double_t */*dummy*/)
+{
+// J/Psi pT
+//
+// PbPb 5.5 TeV
+// scaled from CDF "old" data at 2 TeV
+
   const Double_t kpt0 = 4.703;
   const Double_t kxn  = 3.826;
   Double_t x=*px;
@@ -178,11 +198,40 @@ Double_t AliGenMUONlib::PtJpsiCDFscaledPP( Double_t *px, Double_t */*dummy*/)
 // J/Psi pT
 //
 // pp 14 TeV
-//
 // scaled from CDF data at 2 TeV
+
+  const Double_t kpt0 = 5.630;
+  const Double_t kxn  = 4.071;
+  Double_t x=*px;
+  //
+  Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
+  return x/TMath::Power(pass1,kxn);
+}
+
+Double_t AliGenMUONlib::PtJpsiCDFscaledPPold( Double_t *px, Double_t */*dummy*/)
+{
+// J/Psi pT
+//
+// pp 14 TeV
+// scaled from CDF "old" data at 2 TeV
 
   const Double_t kpt0 = 5.355;
   const Double_t kxn  = 3.821;
+  Double_t x=*px;
+  //
+  Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
+  return x/TMath::Power(pass1,kxn);
+}
+
+Double_t AliGenMUONlib::PtJpsiCDFscaledPP10( Double_t *px, Double_t */*dummy*/)
+{
+// J/Psi pT
+//
+// pp 10 TeV
+// scaled from CDF data at 2 TeV
+
+  const Double_t kpt0 = 5.334;
+  const Double_t kxn  = 4.071;
   Double_t x=*px;
   //
   Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
@@ -318,10 +367,53 @@ Double_t AliGenMUONlib::YJpsiCDFscaled( Double_t *px, Double_t* dummy)
     return AliGenMUONlib::YJpsiPbPb(px, dummy);
 }
 
+Double_t AliGenMUONlib::YJpsiCDFscaledold( Double_t *px, Double_t* dummy)
+{
+    // J/Psi y 
+    return AliGenMUONlib::YJpsiPbPb(px, dummy);
+}
+
 Double_t AliGenMUONlib::YJpsiCDFscaledPP( Double_t *px, Double_t* dummy)
 {
     // J/Psi y 
     return AliGenMUONlib::YJpsiPP(px, dummy);
+}
+
+Double_t AliGenMUONlib::YJpsiCDFscaledPPold( Double_t *px, Double_t* dummy)
+{
+    // J/Psi y 
+    return AliGenMUONlib::YJpsiPP(px, dummy);
+}
+
+Double_t AliGenMUONlib::YJpsiCDFscaledPP10( Double_t *px, Double_t */*dummy*/)
+{
+
+//
+// J/Psi y
+//
+// pp 10 TeV
+// scaled from YJpsiPP(14 TeV) using 10 TeV / 14 TeV ratio of y-spectra in LO pQCD. 
+// see S.Grigoryan, PWG3 Meeting, 27th Oct 2008
+//
+
+    Double_t c[5] = {2.46681e+01, 8.91486e+01, -3.21227e+01, 3.63075e+00, -1.32047e-01};
+
+    Double_t x = TMath::Abs(px[0]);
+    Double_t y;
+
+    if (x < 3.2) {
+        y = 98.523 - 1.3664 * x * x;
+    } else if (x < 7.5) {
+        Int_t j;
+        y = c[j = 4];
+        while (j > 0) y  = y * x + c[--j];
+    } else {
+        y =0.;
+    }
+
+    if(y<0) y=0;
+
+    return y;
 }
 
 Double_t AliGenMUONlib::YJpsiPP( Double_t *px, Double_t */*dummy*/)
@@ -725,7 +817,6 @@ Double_t AliGenMUONlib::PtCharm( Double_t *px, Double_t */*dummy*/)
 // Charm pT
   const Double_t kpt0 = 2.25;
   const Double_t kxn  = 3.17;
-
   Double_t x=*px;
   //
   Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
@@ -737,12 +828,163 @@ Double_t AliGenMUONlib::PtCharmCentral( Double_t *px, Double_t */*dummy*/)
 // Charm pT
   const Double_t kpt0 = 2.12;
   const Double_t kxn  = 2.78;
-
   Double_t x=*px;
   //
   Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
   return x/TMath::Power(pass1,kxn);
 }
+Double_t AliGenMUONlib::PtCharmF0M0S0PP( Double_t *px, Double_t */*dummy*/)
+{
+// FiMjSkPP define theoretical uncertainties around F0M0S0PP as follows:
+// PtCharmFiMjSkPP = PtCharmF0M0S0PP * (dN(i,j,k)/dpt / dN(0,0,0)/dpt)_MNR
+//       i=0,1,2;  j=0,1,2;  k=0,1,...,6
+// dN(i,j,k)/dpt - spectra obtained by A.Dainese (hep-ph/0601164, p.88; 
+// http://www-zeus.desy.de/~corradi/benchmarks) from NLO pQCD (MNR)
+// calculations for the following inputs: 
+// Peterson fragmentation function (F) with \epsilon_c = 0.02, 0.002 & 0.11 
+// for i=0,1 & 2 respectively; quark mass (M) of 1.5, 1.3 & 1.7 GeV 
+// for j=0,1 & 2 respectively; 
+// factorisation \mu_F = a*mt and renormalisation \mu_R = b*mt scales (S) 
+// with a/b = 1/1, 1/0.5, 0.5/1, 0.5/0.5, 1/2, 2/1 & 2/2 
+// for k = 0, 1, 2, 3, 4, 5 & 6 respectively; CTEQ6.1 PDF set 
+// (PDF uncertainty not considered since is small, see hep-ph/0601164, p.89).
+// June 2008, Smbat.Grigoryan@cern.ch
+
+// Charm pT
+// Pythia6.214 (kCharmppMNRwmi, PDF = CTEQ5L, quark mass = 1.2 GeV, PtHard > 2.76 GeV/c)
+// for pp collisions at 14 TeV with one c-cbar pair per event.
+// Corresponding NLO total cross section is 5.68 mb
+
+
+  const Double_t kpt0 = 2.2930;
+  const Double_t kxn  = 3.1196;
+  Double_t c[3]={-5.2180e-01,1.8753e-01,2.8669e-02};
+  Double_t x=*px;
+  //
+  Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
+  return x/TMath::Power(pass1,kxn)*(1.+c[0]*x+c[1]*x*x)/(1.+c[2]*x*x);
+}
+Double_t AliGenMUONlib::PtCharmF1M0S0PP( Double_t *px, Double_t */*dummy*/)
+{
+// Charm pT
+// Corresponding NLO total cross section is 6.06 mb
+  const Double_t kpt0 = 2.8669;
+  const Double_t kxn  = 3.1044;
+  Double_t c[3]={-4.6714e-01,1.5005e-01,4.5003e-02};
+  Double_t x=*px;
+  //
+  Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
+  return x/TMath::Power(pass1,kxn)*(1.+c[0]*x+c[1]*x*x)/(1.+c[2]*x*x);
+}
+Double_t AliGenMUONlib::PtCharmF2M0S0PP( Double_t *px, Double_t */*dummy*/)
+{
+// Charm pT
+// Corresponding NLO total cross section is 6.06 mb
+  const Double_t kpt0 = 1.8361;
+  const Double_t kxn  = 3.2966;
+  Double_t c[3]={-6.1550e-01,2.6498e-01,1.0728e-02};
+  Double_t x=*px;
+  //
+  Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
+  return x/TMath::Power(pass1,kxn)*(1.+c[0]*x+c[1]*x*x)/(1.+c[2]*x*x);
+}
+Double_t AliGenMUONlib::PtCharmF0M1S0PP( Double_t *px, Double_t */*dummy*/)
+{
+// Charm pT
+// Corresponding NLO total cross section is 7.69 mb
+  const Double_t kpt0 = 2.1280;
+  const Double_t kxn  = 3.1397;
+  Double_t c[3]={-5.4021e-01,2.0944e-01,2.5211e-02};
+  Double_t x=*px;
+  //
+  Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
+  return x/TMath::Power(pass1,kxn)*(1.+c[0]*x+c[1]*x*x)/(1.+c[2]*x*x);
+}
+Double_t AliGenMUONlib::PtCharmF0M2S0PP( Double_t *px, Double_t */*dummy*/)
+{
+// Charm pT
+// Corresponding NLO total cross section is 4.81 mb
+  const Double_t kpt0 = 2.4579;
+  const Double_t kxn  = 3.1095;
+  Double_t c[3]={-5.1497e-01,1.7532e-01,3.2429e-02};
+  Double_t x=*px;
+  //
+  Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
+  return x/TMath::Power(pass1,kxn)*(1.+c[0]*x+c[1]*x*x)/(1.+c[2]*x*x);
+}
+Double_t AliGenMUONlib::PtCharmF0M0S1PP( Double_t *px, Double_t */*dummy*/)
+{
+// Charm pT
+// Corresponding NLO total cross section is 14.09 mb
+  const Double_t kpt0 = 2.1272;
+  const Double_t kxn  = 3.1904;
+  Double_t c[3]={-4.6088e-01,2.1918e-01,2.3055e-02};
+  Double_t x=*px;
+  //
+  Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
+  return x/TMath::Power(pass1,kxn)*(1.+c[0]*x+c[1]*x*x)/(1.+c[2]*x*x);
+}
+Double_t AliGenMUONlib::PtCharmF0M0S2PP( Double_t *px, Double_t */*dummy*/)
+{
+// Charm pT
+// Corresponding NLO total cross section is 1.52 mb
+  const Double_t kpt0 = 2.8159;
+  const Double_t kxn  = 3.0857;
+  Double_t c[3]={-6.4691e-01,2.0289e-01,2.4922e-02};
+  Double_t x=*px;
+  //
+  Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
+  return x/TMath::Power(pass1,kxn)*(1.+c[0]*x+c[1]*x*x)/(1.+c[2]*x*x);
+}
+Double_t AliGenMUONlib::PtCharmF0M0S3PP( Double_t *px, Double_t */*dummy*/)
+{
+// Charm pT
+// Corresponding NLO total cross section is 3.67 mb
+  const Double_t kpt0 = 2.7297;
+  const Double_t kxn  = 3.3019;
+  Double_t c[3]={-6.2216e-01,1.9031e-01,1.5341e-02};
+  Double_t x=*px;
+  //
+  Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
+  return x/TMath::Power(pass1,kxn)*(1.+c[0]*x+c[1]*x*x)/(1.+c[2]*x*x);
+}
+Double_t AliGenMUONlib::PtCharmF0M0S4PP( Double_t *px, Double_t */*dummy*/)
+{
+// Charm pT
+// Corresponding NLO total cross section is 3.38 mb
+  const Double_t kpt0 = 2.3894;
+  const Double_t kxn  = 3.1075;
+  Double_t c[3]={-4.9742e-01,1.7032e-01,2.5994e-02};
+  Double_t x=*px;
+  //
+  Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
+  return x/TMath::Power(pass1,kxn)*(1.+c[0]*x+c[1]*x*x)/(1.+c[2]*x*x);
+}
+Double_t AliGenMUONlib::PtCharmF0M0S5PP( Double_t *px, Double_t */*dummy*/)
+{
+// Charm pT
+// Corresponding NLO total cross section is 10.37 mb
+  const Double_t kpt0 = 2.0187;
+  const Double_t kxn  = 3.3011;
+  Double_t c[3]={-3.9869e-01,2.9248e-01,1.1763e-02};
+  Double_t x=*px;
+  //
+  Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
+  return x/TMath::Power(pass1,kxn)*(1.+c[0]*x+c[1]*x*x)/(1.+c[2]*x*x);
+}
+Double_t AliGenMUONlib::PtCharmF0M0S6PP( Double_t *px, Double_t */*dummy*/)
+{
+// Charm pT
+// Corresponding NLO total cross section is 7.22 mb
+  const Double_t kpt0 = 2.1089;
+  const Double_t kxn  = 3.1848;
+  Double_t c[3]={-4.6275e-01,1.8114e-01,2.1363e-02};
+  Double_t x=*px;
+  //
+  Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
+  return x/TMath::Power(pass1,kxn)*(1.+c[0]*x+c[1]*x*x)/(1.+c[2]*x*x);
+}
+
 //                  y-distribution
 Double_t AliGenMUONlib::YCharm( Double_t *px, Double_t */*dummy*/)
 {
@@ -756,6 +998,222 @@ Double_t AliGenMUONlib::YCharm( Double_t *px, Double_t */*dummy*/)
     Double_t ycharm;
     
     if (TMath::Abs(x)>8) {
+      ycharm=0.;
+    }
+    else {
+      ycharm=TMath::Power(y,3);
+    }
+    
+    return ycharm;
+}
+Double_t AliGenMUONlib::YCharmF0M0S0PP( Double_t *px, Double_t */*dummy*/)
+{
+// FiMjSkPP define theoretical uncertainties around F0M0S0PP as follows:
+// YCharmFiMjSkPP = YCharmF0M0S0PP * (dN(i,j,k)/dy / dN(0,0,0)/dy)_MNR
+//       i=0,1,2;  j=0,1,2;  k=0,1,...,6
+// dN(i,j,k)/dy - spectra obtained by A.Dainese (hep-ph/0601164, p.88; 
+// http://www-zeus.desy.de/~corradi/benchmarks) from NLO pQCD (MNR) 
+// calculations for the following inputs: 
+// Peterson fragmentation function (F) with \epsilon_c = 0.02, 0.002 & 0.11 
+// for i=0,1 & 2 respectively; quark mass (M) of 1.5, 1.3 & 1.7 GeV 
+// for j=0,1 & 2 respectively; 
+// factorisation \mu_F = a*mt and renormalisation \mu_R = b*mt scales (S) 
+// with a/b = 1/1,1/0.5, 0.5/1, 0.5/0.5, 1/2, 2/1 & 2/2 for 
+// k = 0, 1, 2, 3, 4, 5 & 6 respectively; CTEQ6.1 PDF set
+// (PDF uncertainty not considered since is small, see hep-ph/0601164, p.89).
+// June 2008, Smbat.Grigoryan@cern.ch
+
+// Charm y
+// Pythia6.214 (kCharmppMNRwmi, PDF = CTEQ5L, quark mass = 1.2 GeV, PtHard > 2.76 GeV/c)
+// for pp collisions at 14 TeV with one c-cbar pair per event.
+// Corresponding NLO total cross section is 5.68 mb
+
+    Double_t x=px[0];
+    Double_t c[2]={7.0909e-03,6.1967e-05};
+    Double_t y=1-(c[0]*TMath::Power(x,2))-(c[1]*TMath::Power(x,4));
+    Double_t ycharm;
+    
+    if (TMath::Abs(x)>9) {
+      ycharm=0.;
+    }
+    else {
+      ycharm=TMath::Power(y,3);
+    }
+    
+    return ycharm;
+}
+Double_t AliGenMUONlib::YCharmF1M0S0PP( Double_t *px, Double_t */*dummy*/)
+{
+// Charm y
+// Corresponding NLO total cross section is 6.06 mb
+    Double_t x=px[0];
+    Double_t c[2]={6.9707e-03,6.0971e-05};
+    Double_t y=1-(c[0]*TMath::Power(x,2))-(c[1]*TMath::Power(x,4));
+    Double_t ycharm;
+    
+    if (TMath::Abs(x)>9) {
+      ycharm=0.;
+    }
+    else {
+      ycharm=TMath::Power(y,3);
+    }
+    
+    return ycharm;
+}
+Double_t AliGenMUONlib::YCharmF2M0S0PP( Double_t *px, Double_t */*dummy*/)
+{
+// Charm y
+// Corresponding NLO total cross section is 6.06 mb
+    Double_t x=px[0];
+    Double_t c[2]={7.1687e-03,6.5303e-05};
+    Double_t y=1-(c[0]*TMath::Power(x,2))-(c[1]*TMath::Power(x,4));
+    Double_t ycharm;
+    
+    if (TMath::Abs(x)>9) {
+      ycharm=0.;
+    }
+    else {
+      ycharm=TMath::Power(y,3);
+    }
+    
+    return ycharm;
+}
+Double_t AliGenMUONlib::YCharmF0M1S0PP( Double_t *px, Double_t */*dummy*/)
+{
+// Charm y
+// Corresponding NLO total cross section is 7.69 mb
+    Double_t x=px[0];
+    Double_t c[2]={5.9090e-03,7.1854e-05};
+    Double_t y=1-(c[0]*TMath::Power(x,2))-(c[1]*TMath::Power(x,4));
+    Double_t ycharm;
+    
+    if (TMath::Abs(x)>9) {
+      ycharm=0.;
+    }
+    else {
+      ycharm=TMath::Power(y,3);
+    }
+    
+    return ycharm;
+}
+Double_t AliGenMUONlib::YCharmF0M2S0PP( Double_t *px, Double_t */*dummy*/)
+{
+// Charm y
+// Corresponding NLO total cross section is 4.81 mb
+    Double_t x=px[0];
+    Double_t c[2]={8.0882e-03,5.5872e-05};
+    Double_t y=1-(c[0]*TMath::Power(x,2))-(c[1]*TMath::Power(x,4));
+    Double_t ycharm;
+    
+    if (TMath::Abs(x)>9) {
+      ycharm=0.;
+    }
+    else {
+      ycharm=TMath::Power(y,3);
+    }
+    
+    return ycharm;
+}
+Double_t AliGenMUONlib::YCharmF0M0S1PP( Double_t *px, Double_t */*dummy*/)
+{
+// Charm y
+// Corresponding NLO total cross section is 14.09 mb
+    Double_t x=px[0];
+    Double_t c[2]={7.2520e-03,6.2691e-05};
+    Double_t y=1-(c[0]*TMath::Power(x,2))-(c[1]*TMath::Power(x,4));
+    Double_t ycharm;
+    
+    if (TMath::Abs(x)>9) {
+      ycharm=0.;
+    }
+    else {
+      ycharm=TMath::Power(y,3);
+    }
+    
+    return ycharm;
+}
+Double_t AliGenMUONlib::YCharmF0M0S2PP( Double_t *px, Double_t */*dummy*/)
+{
+// Charm y
+// Corresponding NLO total cross section is 1.52 mb
+    Double_t x=px[0];
+    Double_t c[2]={1.1040e-04,1.4498e-04};
+    Double_t y=1-(c[0]*TMath::Power(x,2))-(c[1]*TMath::Power(x,4));
+    Double_t ycharm;
+    
+    if (TMath::Abs(x)>9) {
+      ycharm=0.;
+    }
+    else {
+      ycharm=TMath::Power(y,3);
+    }
+    
+    return ycharm;
+}
+Double_t AliGenMUONlib::YCharmF0M0S3PP( Double_t *px, Double_t */*dummy*/)
+{
+// Charm y
+// Corresponding NLO total cross section is 3.67 mb
+    Double_t x=px[0];
+    Double_t c[2]={-3.1328e-03,1.8270e-04};
+    Double_t y=1-(c[0]*TMath::Power(x,2))-(c[1]*TMath::Power(x,4));
+    Double_t ycharm;
+    
+    if (TMath::Abs(x)>9) {
+      ycharm=0.;
+    }
+    else {
+      ycharm=TMath::Power(y,3);
+    }
+    
+    return ycharm;
+}
+Double_t AliGenMUONlib::YCharmF0M0S4PP( Double_t *px, Double_t */*dummy*/)
+{
+// Charm y
+// Corresponding NLO total cross section is 3.38 mb
+    Double_t x=px[0];
+    Double_t c[2]={7.0865e-03,6.2532e-05};
+    Double_t y=1-(c[0]*TMath::Power(x,2))-(c[1]*TMath::Power(x,4));
+    Double_t ycharm;
+    
+    if (TMath::Abs(x)>9) {
+      ycharm=0.;
+    }
+    else {
+      ycharm=TMath::Power(y,3);
+    }
+    
+    return ycharm;
+}
+Double_t AliGenMUONlib::YCharmF0M0S5PP( Double_t *px, Double_t */*dummy*/)
+{
+// Charm y
+// Corresponding NLO total cross section is 10.37 mb
+    Double_t x=px[0];
+    Double_t c[2]={7.7070e-03,5.3533e-05};
+    Double_t y=1-(c[0]*TMath::Power(x,2))-(c[1]*TMath::Power(x,4));
+    Double_t ycharm;
+    
+    if (TMath::Abs(x)>9) {
+      ycharm=0.;
+    }
+    else {
+      ycharm=TMath::Power(y,3);
+    }
+    
+    return ycharm;
+}
+Double_t AliGenMUONlib::YCharmF0M0S6PP( Double_t *px, Double_t */*dummy*/)
+{
+// Charm y
+// Corresponding NLO total cross section is 7.22 mb
+    Double_t x=px[0];
+    Double_t c[2]={7.9195e-03,5.3823e-05};
+    Double_t y=1-(c[0]*TMath::Power(x,2))-(c[1]*TMath::Power(x,4));
+    Double_t ycharm;
+    
+    if (TMath::Abs(x)>9) {
       ycharm=0.;
     }
     else {
@@ -824,6 +1282,146 @@ Double_t AliGenMUONlib::PtBeautyCentral( Double_t *px, Double_t */*dummy*/)
   Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
   return x/TMath::Power(pass1,kxn);
 }
+Double_t AliGenMUONlib::PtBeautyF0M0S0PP( Double_t *px, Double_t */*dummy*/)
+{
+// FiMjSkPP define theoretical uncertainties around F0M0S0PP as follows:
+// PtBeautyFiMjSkPP = PtBeautyF0M0S0PP * (dN(i,j,k)/dpt / dN(0,0,0)/dpt)_MNR
+//       i=0,1,2;  j=0,1,2;  k=0,1,...,6
+// dN(i,j,k)/dpt - spectra obtained by A.Dainese (hep-ph/0601164, p.88; 
+// http://www-zeus.desy.de/~corradi/benchmarks) from NLO pQCD (MNR) 
+// calculations for the following inputs: 
+// Peterson fragmentation function (F) with \epsilon_b = 0.001, 0.0002 & 0.004 
+// for i=0,1 & 2 respectively; quark mass (M) of 4.75, 4.5 & 5.0 GeV 
+// for j=0,1 & 2 respectively; 
+// factorisation \mu_F = a*mt and renormalisation \mu_R = b*mt scales (S) 
+// with a/b = 1/1, 1/0.5, 0.5/1, 0.5/0.5, 1/2, 2/1 & 2/2 for 
+// k = 0, 1, 2, 3, 4, 5 & 6 respectively; CTEQ6.1 PDF set
+// (PDF uncertainty not considered since is small, see hep-ph/0601164, p.89).
+// June 2008, Smbat.Grigoryan@cern.ch
+
+// Beauty pT
+// Pythia6.214 (kBeautyppMNRwmi, PDF = CTEQ5L, quark mass = 4.75 GeV, PtHard > 2.76 GeV/c)
+// for pp collisions at 14 TeV with one b-bbar pair per event.
+// Corresponding NLO total cross section is 0.494 mb
+
+  const Double_t kpt0 = 8.0575;
+  const Double_t kxn  = 3.1921;
+  Double_t x=*px;
+  //
+  Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
+  return x/TMath::Power(pass1,kxn);
+}
+Double_t AliGenMUONlib::PtBeautyF1M0S0PP( Double_t *px, Double_t */*dummy*/)
+{
+// Beauty pT
+// Corresponding NLO total cross section is 0.445 mb
+  const Double_t kpt0 = 8.6239;
+  const Double_t kxn  = 3.2911;
+  Double_t x=*px;
+  //
+  Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
+  return x/TMath::Power(pass1,kxn);
+}
+Double_t AliGenMUONlib::PtBeautyF2M0S0PP( Double_t *px, Double_t */*dummy*/)
+{
+// Beauty pT
+// Corresponding NLO total cross section is 0.445 mb
+  const Double_t kpt0 = 7.3367;
+  const Double_t kxn  = 3.0692;
+  Double_t x=*px;
+  //
+  Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
+  return x/TMath::Power(pass1,kxn);
+}
+Double_t AliGenMUONlib::PtBeautyF0M1S0PP( Double_t *px, Double_t */*dummy*/)
+{
+// Beauty pT
+// Corresponding NLO total cross section is 0.518 mb
+  const Double_t kpt0 = 7.6409;
+  const Double_t kxn  = 3.1364;
+  Double_t x=*px;
+  //
+  Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
+  return x/TMath::Power(pass1,kxn);
+}
+Double_t AliGenMUONlib::PtBeautyF0M2S0PP( Double_t *px, Double_t */*dummy*/)
+{
+// Beauty pT
+// Corresponding NLO total cross section is 0.384 mb
+  const Double_t kpt0 = 8.4948;
+  const Double_t kxn  = 3.2546;
+  Double_t x=*px;
+  //
+  Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
+  return x/TMath::Power(pass1,kxn);
+}
+Double_t AliGenMUONlib::PtBeautyF0M0S1PP( Double_t *px, Double_t */*dummy*/)
+{
+// Beauty pT
+// Corresponding NLO total cross section is 0.648 mb
+  const Double_t kpt0 = 7.6631;
+  const Double_t kxn  = 3.1621;
+  Double_t x=*px;
+  //
+  Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
+  return x/TMath::Power(pass1,kxn);
+}
+Double_t AliGenMUONlib::PtBeautyF0M0S2PP( Double_t *px, Double_t */*dummy*/)
+{
+// Beauty pT
+// Corresponding NLO total cross section is 0.294 mb
+  const Double_t kpt0 = 8.7245;
+  const Double_t kxn  = 3.2213;
+  Double_t x=*px;
+  //
+  Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
+  return x/TMath::Power(pass1,kxn);
+}
+Double_t AliGenMUONlib::PtBeautyF0M0S3PP( Double_t *px, Double_t */*dummy*/)
+{
+// Beauty pT
+// Corresponding NLO total cross section is 0.475 mb
+  const Double_t kpt0 = 8.5296;
+  const Double_t kxn  = 3.2187;
+  Double_t x=*px;
+  //
+  Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
+  return x/TMath::Power(pass1,kxn);
+}
+Double_t AliGenMUONlib::PtBeautyF0M0S4PP( Double_t *px, Double_t */*dummy*/)
+{
+// Beauty pT
+// Corresponding NLO total cross section is 0.324 mb
+  const Double_t kpt0 = 7.9440;
+  const Double_t kxn  = 3.1614;
+  Double_t x=*px;
+  //
+  Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
+  return x/TMath::Power(pass1,kxn);
+}
+Double_t AliGenMUONlib::PtBeautyF0M0S5PP( Double_t *px, Double_t */*dummy*/)
+{
+// Beauty pT
+// Corresponding NLO total cross section is 0.536 mb
+  const Double_t kpt0 = 8.2408;
+  const Double_t kxn  = 3.3029;
+  Double_t x=*px;
+  //
+  Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
+  return x/TMath::Power(pass1,kxn);
+}
+Double_t AliGenMUONlib::PtBeautyF0M0S6PP( Double_t *px, Double_t */*dummy*/)
+{
+// Beauty pT
+// Corresponding NLO total cross section is 0.420 mb
+  const Double_t kpt0 = 7.8041;
+  const Double_t kxn  = 3.2094;
+  Double_t x=*px;
+  //
+  Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
+  return x/TMath::Power(pass1,kxn);
+}
+
 //                     y-distribution
 Double_t AliGenMUONlib::YBeauty( Double_t *px, Double_t */*dummy*/)
 {
@@ -845,7 +1443,223 @@ Double_t AliGenMUONlib::YBeauty( Double_t *px, Double_t */*dummy*/)
     
     return ybeauty;
 }
+Double_t AliGenMUONlib::YBeautyF0M0S0PP( Double_t *px, Double_t */*dummy*/)
+{
+// FiMjSkPP define theoretical uncertainties around F0M0S0PP as follows:
+// YBeautyFiMjSkPP = YBeautyF0M0S0PP * (dN(i,j,k)/dy / dN(0,0,0)/dy)_MNR
+//       i=0,1,2;  j=0,1,2;  k=0,1,...,6
+// dN(i,j,k)/dy - spectra obtained by A.Dainese (hep-ph/0601164, p.88; 
+// http://www-zeus.desy.de/~corradi/benchmarks) from NLO pQCD (MNR) 
+// calculations for the following inputs: 
+// Peterson fragmentation function (F) with \epsilon_b = 0.001, 0.0002 & 0.004 
+// for i=0,1 & 2 respectively; quark mass (M) of 4.75, 4.5 & 5.0 GeV 
+// for j=0,1 & 2 respectively; 
+// factorisation \mu_F = a*mt and renormalisation \mu_R = b*mt scales (S) 
+// with a/b = 1/1, 1/0.5, 0.5/1, 0.5/0.5, 1/2, 2/1 & 2/2 
+// for k = 0, 1, 2, 3, 4, 5 & 6 respectively; CTEQ6.1 PDF set 
+// (PDF uncertainty not considered since is small, see hep-ph/0601164, p.89).
+// June 2008, Smbat.Grigoryan@cern.ch
 
+// Beauty y
+// Pythia6.214 (kBeautyppMNRwmi, PDF = CTEQ5L, quark mass = 4.75 GeV, PtHard > 2.76 GeV/c)
+// for pp collisions at 14 TeV with one b-bbar pair per event.
+// Corresponding NLO total cross section is 0.494 mb
+
+
+    Double_t x=px[0];
+    Double_t c[2]={1.2350e-02,9.2667e-05};
+    Double_t y=1-c[0]*TMath::Power(x,2)-c[1]*TMath::Power(x,4);
+    Double_t ybeauty;
+    
+    if (TMath::Abs(x)>7.6) {
+      ybeauty=0.;
+    }
+    else {
+      ybeauty=TMath::Power(y,3);
+    }
+    
+    return ybeauty;
+}
+Double_t AliGenMUONlib::YBeautyF1M0S0PP( Double_t *px, Double_t */*dummy*/)
+{
+// Beauty y
+// Corresponding NLO total cross section is 0.445 mb
+    Double_t x=px[0];
+    Double_t c[2]={1.2292e-02,9.1847e-05};
+    Double_t y=1-c[0]*TMath::Power(x,2)-c[1]*TMath::Power(x,4);
+    Double_t ybeauty;
+    
+    if (TMath::Abs(x)>7.6) {
+      ybeauty=0.;
+    }
+    else {
+      ybeauty=TMath::Power(y,3);
+    }
+    
+    return ybeauty;
+}
+Double_t AliGenMUONlib::YBeautyF2M0S0PP( Double_t *px, Double_t */*dummy*/)
+{
+// Beauty y
+// Corresponding NLO total cross section is 0.445 mb
+    Double_t x=px[0];
+    Double_t c[2]={1.2436e-02,9.3709e-05};
+    Double_t y=1-c[0]*TMath::Power(x,2)-c[1]*TMath::Power(x,4);
+    Double_t ybeauty;
+    
+    if (TMath::Abs(x)>7.6) {
+      ybeauty=0.;
+    }
+    else {
+      ybeauty=TMath::Power(y,3);
+    }
+    
+    return ybeauty;
+}
+Double_t AliGenMUONlib::YBeautyF0M1S0PP( Double_t *px, Double_t */*dummy*/)
+{
+// Beauty y
+// Corresponding NLO total cross section is 0.518 mb
+    Double_t x=px[0];
+    Double_t c[2]={1.1714e-02,1.0068e-04};
+    Double_t y=1-c[0]*TMath::Power(x,2)-c[1]*TMath::Power(x,4);
+    Double_t ybeauty;
+    
+    if (TMath::Abs(x)>7.6) {
+      ybeauty=0.;
+    }
+    else {
+      ybeauty=TMath::Power(y,3);
+    }
+    
+    return ybeauty;
+}
+Double_t AliGenMUONlib::YBeautyF0M2S0PP( Double_t *px, Double_t */*dummy*/)
+{
+// Beauty y
+// Corresponding NLO total cross section is 0.384 mb
+    Double_t x=px[0];
+    Double_t c[2]={1.2944e-02,8.5500e-05};
+    Double_t y=1-c[0]*TMath::Power(x,2)-c[1]*TMath::Power(x,4);
+    Double_t ybeauty;
+    
+    if (TMath::Abs(x)>7.6) {
+      ybeauty=0.;
+    }
+    else {
+      ybeauty=TMath::Power(y,3);
+    }
+    
+    return ybeauty;
+}
+Double_t AliGenMUONlib::YBeautyF0M0S1PP( Double_t *px, Double_t */*dummy*/)
+{
+// Beauty y
+// Corresponding NLO total cross section is 0.648 mb
+    Double_t x=px[0];
+    Double_t c[2]={1.2455e-02,9.2713e-05};
+    Double_t y=1-c[0]*TMath::Power(x,2)-c[1]*TMath::Power(x,4);
+    Double_t ybeauty;
+    
+    if (TMath::Abs(x)>7.6) {
+      ybeauty=0.;
+    }
+    else {
+      ybeauty=TMath::Power(y,3);
+    }
+    
+    return ybeauty;
+}
+Double_t AliGenMUONlib::YBeautyF0M0S2PP( Double_t *px, Double_t */*dummy*/)
+{
+// Beauty y
+// Corresponding NLO total cross section is 0.294 mb
+    Double_t x=px[0];
+    Double_t c[2]={1.0897e-02,1.1878e-04};
+    Double_t y=1-c[0]*TMath::Power(x,2)-c[1]*TMath::Power(x,4);
+    Double_t ybeauty;
+    
+    if (TMath::Abs(x)>7.6) {
+      ybeauty=0.;
+    }
+    else {
+      ybeauty=TMath::Power(y,3);
+    }
+    
+    return ybeauty;
+}
+Double_t AliGenMUONlib::YBeautyF0M0S3PP( Double_t *px, Double_t */*dummy*/)
+{
+// Beauty y
+// Corresponding NLO total cross section is 0.475 mb
+    Double_t x=px[0];
+    Double_t c[2]={1.0912e-02,1.1858e-04};
+    Double_t y=1-c[0]*TMath::Power(x,2)-c[1]*TMath::Power(x,4);
+    Double_t ybeauty;
+    
+    if (TMath::Abs(x)>7.6) {
+      ybeauty=0.;
+    }
+    else {
+      ybeauty=TMath::Power(y,3);
+    }
+    
+    return ybeauty;
+}
+Double_t AliGenMUONlib::YBeautyF0M0S4PP( Double_t *px, Double_t */*dummy*/)
+{
+// Beauty y
+// Corresponding NLO total cross section is 0.324 mb
+    Double_t x=px[0];
+    Double_t c[2]={1.2378e-02,9.2490e-05};
+    Double_t y=1-c[0]*TMath::Power(x,2)-c[1]*TMath::Power(x,4);
+    Double_t ybeauty;
+    
+    if (TMath::Abs(x)>7.6) {
+      ybeauty=0.;
+    }
+    else {
+      ybeauty=TMath::Power(y,3);
+    }
+    
+    return ybeauty;
+}
+Double_t AliGenMUONlib::YBeautyF0M0S5PP( Double_t *px, Double_t */*dummy*/)
+{
+// Beauty y
+// Corresponding NLO total cross section is 0.536 mb
+    Double_t x=px[0];
+    Double_t c[2]={1.2886e-02,8.2912e-05};
+    Double_t y=1-c[0]*TMath::Power(x,2)-c[1]*TMath::Power(x,4);
+    Double_t ybeauty;
+    
+    if (TMath::Abs(x)>7.6) {
+      ybeauty=0.;
+    }
+    else {
+      ybeauty=TMath::Power(y,3);
+    }
+    
+    return ybeauty;
+}
+Double_t AliGenMUONlib::YBeautyF0M0S6PP( Double_t *px, Double_t */*dummy*/)
+{
+// Beauty y
+// Corresponding NLO total cross section is 0.420 mb
+    Double_t x=px[0];
+    Double_t c[2]={1.3106e-02,8.0115e-05};
+    Double_t y=1-c[0]*TMath::Power(x,2)-c[1]*TMath::Power(x,4);
+    Double_t ybeauty;
+    
+    if (TMath::Abs(x)>7.6) {
+      ybeauty=0.;
+    }
+    else {
+      ybeauty=TMath::Power(y,3);
+    }
+    
+    return ybeauty;
+}
 
 Int_t AliGenMUONlib::IpBeauty(TRandom *ran)
 {  
@@ -907,6 +1721,12 @@ GenFunc AliGenMUONlib::GetPt(Int_t param,  const char* tname) const
 	    func=PtJpsiCDFscaled;
 	} else if (sname == "CDF pp") {
 	    func=PtJpsiCDFscaledPP;
+	} else if (sname == "CDF pp 10") {
+	    func=PtJpsiCDFscaledPP10;
+	} else if (sname == "CDF scaled old") {
+	    func=PtJpsiCDFscaledold;
+	} else if (sname == "CDF pp old") {
+	    func=PtJpsiCDFscaledPPold;
 	} else if (sname == "Flat") {
 	    func=PtJpsiFlat;
 	} else {
@@ -935,14 +1755,58 @@ GenFunc AliGenMUONlib::GetPt(Int_t param,  const char* tname) const
 	}
 	break;  
     case kCharm:
-	if (sname == "central") {
+	if (sname == "F0M0S0 pp") {
+	    func=PtCharmF0M0S0PP;
+	} else if (sname == "F1M0S0 pp") {
+	    func=PtCharmF1M0S0PP;
+	} else if (sname == "F2M0S0 pp") {
+	    func=PtCharmF2M0S0PP;
+	} else if (sname == "F0M1S0 pp") {
+	    func=PtCharmF0M1S0PP;
+	} else if (sname == "F0M2S0 pp") {
+	    func=PtCharmF0M2S0PP;
+	} else if (sname == "F0M0S1 pp") {
+	    func=PtCharmF0M0S1PP;
+	} else if (sname == "F0M0S2 pp") {
+	    func=PtCharmF0M0S2PP;
+	} else if (sname == "F0M0S3 pp") {
+	    func=PtCharmF0M0S3PP;
+	} else if (sname == "F0M0S4 pp") {
+	    func=PtCharmF0M0S4PP;
+	} else if (sname == "F0M0S5 pp") {
+	    func=PtCharmF0M0S5PP;
+	} else if (sname == "F0M0S6 pp") {
+	    func=PtCharmF0M0S6PP;
+	} else if (sname == "central") {
 	    func=PtCharmCentral;
 	} else {
 	    func=PtCharm;
 	}
 	break;
     case kBeauty:
-	if (sname == "central") {
+	if (sname == "F0M0S0 pp") {
+	    func=PtBeautyF0M0S0PP;
+	} else if (sname == "F1M0S0 pp") {
+	    func=PtBeautyF1M0S0PP;
+	} else if (sname == "F2M0S0 pp") {
+	    func=PtBeautyF2M0S0PP;
+	} else if (sname == "F0M1S0 pp") {
+	    func=PtBeautyF0M1S0PP;
+	} else if (sname == "F0M2S0 pp") {
+	    func=PtBeautyF0M2S0PP;
+	} else if (sname == "F0M0S1 pp") {
+	    func=PtBeautyF0M0S1PP;
+	} else if (sname == "F0M0S2 pp") {
+	    func=PtBeautyF0M0S2PP;
+	} else if (sname == "F0M0S3 pp") {
+	    func=PtBeautyF0M0S3PP;
+	} else if (sname == "F0M0S4 pp") {
+	    func=PtBeautyF0M0S4PP;
+	} else if (sname == "F0M0S5 pp") {
+	    func=PtBeautyF0M0S5PP;
+	} else if (sname == "F0M0S6 pp") {
+	    func=PtBeautyF0M0S6PP;
+	} else if (sname == "central") {
 	    func=PtBeautyCentral;
 	} else {
 	    func=PtBeauty;
@@ -1002,6 +1866,12 @@ GenFunc AliGenMUONlib::GetY(Int_t param, const char* tname) const
 	    func=YJpsiCDFscaled;
 	} else if (sname == "CDF pp") {
 	    func=YJpsiCDFscaledPP;
+	} else if (sname == "CDF pp 10") {
+	    func=YJpsiCDFscaledPP10;
+	} else if (sname == "CDF scaled old") {
+	    func=YJpsiCDFscaledold;
+	} else if (sname == "CDF pp old") {
+	    func=YJpsiCDFscaledPPold;
 	} else if (sname == "Flat") {
 	    func=YJpsiFlat;
 	} else {
@@ -1030,10 +1900,58 @@ GenFunc AliGenMUONlib::GetY(Int_t param, const char* tname) const
 	}
 	break;
     case kCharm:
-	func=YCharm;
+	if (sname == "F0M0S0 pp") {
+	    func=YCharmF0M0S0PP;
+	} else if (sname == "F1M0S0 pp") {
+	    func=YCharmF1M0S0PP;
+	} else if (sname == "F2M0S0 pp") {
+	    func=YCharmF2M0S0PP;
+	} else if (sname == "F0M1S0 pp") {
+	    func=YCharmF0M1S0PP;
+	} else if (sname == "F0M2S0 pp") {
+	    func=YCharmF0M2S0PP;
+	} else if (sname == "F0M0S1 pp") {
+	    func=YCharmF0M0S1PP;
+	} else if (sname == "F0M0S2 pp") {
+	    func=YCharmF0M0S2PP;
+	} else if (sname == "F0M0S3 pp") {
+	    func=YCharmF0M0S3PP;
+	} else if (sname == "F0M0S4 pp") {
+	    func=YCharmF0M0S4PP;
+	} else if (sname == "F0M0S5 pp") {
+	    func=YCharmF0M0S5PP;
+	} else if (sname == "F0M0S6 pp") {
+	    func=YCharmF0M0S6PP;
+	} else {
+	    func=YCharm;
+	}
 	break;
     case kBeauty:
-	func=YBeauty;
+	if (sname == "F0M0S0 pp") {
+	    func=YBeautyF0M0S0PP;
+	} else if (sname == "F1M0S0 pp") {
+	    func=YBeautyF1M0S0PP;
+	} else if (sname == "F2M0S0 pp") {
+	    func=YBeautyF2M0S0PP;
+	} else if (sname == "F0M1S0 pp") {
+	    func=YBeautyF0M1S0PP;
+	} else if (sname == "F0M2S0 pp") {
+	    func=YBeautyF0M2S0PP;
+	} else if (sname == "F0M0S1 pp") {
+	    func=YBeautyF0M0S1PP;
+	} else if (sname == "F0M0S2 pp") {
+	    func=YBeautyF0M0S2PP;
+	} else if (sname == "F0M0S3 pp") {
+	    func=YBeautyF0M0S3PP;
+	} else if (sname == "F0M0S4 pp") {
+	    func=YBeautyF0M0S4PP;
+	} else if (sname == "F0M0S5 pp") {
+	    func=YBeautyF0M0S5PP;
+	} else if (sname == "F0M0S6 pp") {
+	    func=YBeautyF0M0S6PP;
+	} else {
+	    func=YBeauty;
+	}
 	break;
     case kPion:
 	func=YPion;
