@@ -285,6 +285,8 @@ AliShuttleConfig::AliShuttleConfig(const AliShuttleConfig & other):
 	fPPTimeOut(other.fPPTimeOut),
 	fDCSTimeOut(other.fDCSTimeOut),
 	fDCSRetries(other.fDCSRetries),
+	fDCSQueryOffset(other.fDCSQueryOffset),
+	fDCSDelay(other.fDCSDelay),
 	fPPMaxMem(other.fPPMaxMem),
 	fMonitorHost(other.fMonitorHost),
 	fMonitorTable(other.fMonitorTable),
@@ -352,6 +354,8 @@ AliShuttleConfig& AliShuttleConfig::operator=(const AliShuttleConfig &other)
 	this->fPPTimeOut=other.fPPTimeOut;
 	this->fDCSTimeOut=other.fDCSTimeOut;
 	this->fDCSRetries=other.fDCSRetries;
+	this->fDCSQueryOffset=other.fDCSQueryOffset;
+        this->fDCSDelay=other.fDCSDelay;
 	this->fPPMaxMem=other.fPPMaxMem;
 	this->fMonitorHost=other.fMonitorHost;
 	this->fMonitorTable=other.fMonitorTable;
