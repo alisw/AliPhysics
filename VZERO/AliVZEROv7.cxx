@@ -655,8 +655,8 @@ void AliVZEROv7::CreateGeometry()
     /// Replicate sectors and adding sector to v0LE volume
     TGeoVolume *v0LE = new TGeoVolumeAssembly("V0LE");
     for(int i=0; i<4; i++) {
-      TGeoRotation *rot = new TGeoRotation("rot", 90., i*45., 90., 90.+i*45., 0., 0.);
-      v0LE->AddNode(v0ASec,i+1,rot);  
+       TGeoRotation *rotation = new TGeoRotation("rotation", 90., i*45., 90., 90.+i*45., 0., 0.);
+       v0LE->AddNode(v0ASec,i+1,rotation);  
     }
    
     //Upper supports
