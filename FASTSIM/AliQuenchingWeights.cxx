@@ -736,7 +736,7 @@ Int_t AliQuenchingWeights::CalcSingleHard(Int_t ipart, Double_t rrrr,Double_t xx
     Error("CalcSingleHard","Tables are not loaded.");
     return -1;
   }
-  if(!fMultSoft){
+  if(fMultSoft){
     Error("CalcSingleHard","Tables are not loaded for Single Hard Scattering.");
     return -1;
   }
