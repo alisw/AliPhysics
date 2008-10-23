@@ -107,9 +107,9 @@ void AliTRDcheckDetector::Exec(Option_t *){
   AliTRDtrackV1 *fTRDtrack = 0x0;
   AliTRDseedV1 *fTracklet = 0x0;
   AliTRDcluster *fTRDcluster = 0x0;
-	Float_t momentum = 0.;	// momentum information needed for systematic studies
-	Int_t pdg = 0;
-	Float_t theta = 0., phi = 0.;
+  Float_t momentum = 0.;	// momentum information needed for systematic studies
+  Int_t pdg = 0;
+  Float_t theta = 0., phi = 0.;
   for(Int_t iti = 0; iti < fTracks->GetEntriesFast(); iti++){
     fTrackInfo = dynamic_cast<AliTRDtrackInfo *>(fTracks->UncheckedAt(iti));
     if(!fTrackInfo || !(fTRDtrack = fTrackInfo->GetTrack())) continue;
@@ -122,15 +122,15 @@ void AliTRDcheckDetector::Exec(Option_t *){
     dynamic_cast<TH1F *>(fContainer->UncheckedAt(kChi2))->Fill(chi2);
     dynamic_cast<TH1F *>(fContainer->UncheckedAt(kChi2Normalized))->Fill(chi2/static_cast<Float_t>(ntracklets));
     // now loop over single tracklets
-		momentum = 0.;
-		pdg = 0;
-		if(HasMCdata()){
-			AliTrackReference *fRef = 0x0;
-			Int_t iti = 0;
-			while(!(fRef = fTrackInfo->GetTrackRef(iti++)) && (iti <=12));
-			if(fRef) momentum = fRef->P();
-			pdg = fTrackInfo->GetPDG();
- 		}
+    momentum = 0.;
+    pdg = 0;
+    if(HasMCdata()){
+      AliTrackReference *fRef = 0x0;
+      Int_t jti = 0;
+      while(!(fRef = fTrackInfo->GetTrackRef(jti++)) && (jti <=12));
+      if(fRef) momentum = fRef->P();
+      pdg = fTrackInfo->GetPDG();
+    }
     if(ntracklets > 2){
       Int_t sector = -1;
       for(Int_t ilayer = 0; ilayer < kNLayers; ilayer++){
@@ -140,8 +140,8 @@ void AliTRDcheckDetector::Exec(Option_t *){
         if(nClustersTracklet){
           Float_t Qtot = 0;
           Int_t detector = -1;
-					theta = TMath::ATan(fTracklet->GetZfit(1));
-					phi = TMath::ATan(fTracklet->GetYfit(1));
+          theta = TMath::ATan(fTracklet->GetZfit(1));
+          phi = TMath::ATan(fTracklet->GetYfit(1));
           for(Int_t itb = 0; itb < kNTimebins; itb++){
             if(!(fTRDcluster = fTracklet->GetClusters(itb))) continue;
             Int_t localtime        = fTRDcluster->GetLocalTimeBin();
@@ -158,10 +158,10 @@ void AliTRDcheckDetector::Exec(Option_t *){
                 << "Sector="		<< sector
                 << "Timebin="		<< localtime
                 << "Charge="		<< absolute_charge
-								<< "momentum="	<< momentum
-								<< "pdg="				<< pdg
-								<< "theta="			<< theta
-								<< "phi="				<< phi
+                << "momentum="	<< momentum
+                << "pdg="				<< pdg
+                << "theta="			<< theta
+                << "phi="				<< phi
                 << "\n";
             }
           }
@@ -174,10 +174,10 @@ void AliTRDcheckDetector::Exec(Option_t *){
               << "nclusters=" << nClustersTracklet
               << "crossing="  << crossing
               << "QT="        << Qtot
-							<< "momentum="	<< momentum
-							<< "pdg="				<< pdg
-							<< "theta="			<< theta
-							<< "phi="				<< phi
+              << "momentum="	<< momentum
+              << "pdg="				<< pdg
+              << "theta="			<< theta
+              << "phi="				<< phi
               << "\n";
           }
         }
