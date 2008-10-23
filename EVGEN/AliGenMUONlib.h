@@ -50,12 +50,18 @@ class AliGenMUONlib :
     static Double_t PtJpsi( Double_t *px, Double_t *dummy);
     static Double_t PtJpsiCDFscaled( Double_t *px, Double_t *dummy);
     static Double_t PtJpsiCDFscaledPP( Double_t *px, Double_t *dummy);
+    static Double_t PtJpsiCDFscaledPP10( Double_t *px, Double_t *dummy);
+    static Double_t PtJpsiCDFscaledold( Double_t *px, Double_t *dummy);
+    static Double_t PtJpsiCDFscaledPPold( Double_t *px, Double_t *dummy);
     static Double_t YJpsi(Double_t *py, Double_t *dummy);
     static Double_t PtJpsiPbPb( Double_t *px, Double_t *dummy);
     static Double_t PtJpsiBPbPb( Double_t *px, Double_t *dummy);
     static Double_t YJpsiPbPb(Double_t *py, Double_t *dummy);
     static Double_t YJpsiCDFscaled(Double_t *py, Double_t *dummy);
     static Double_t YJpsiCDFscaledPP( Double_t *px, Double_t *dummy);
+    static Double_t YJpsiCDFscaledPP10( Double_t *px, Double_t *dummy);
+    static Double_t YJpsiCDFscaledold(Double_t *py, Double_t *dummy);
+    static Double_t YJpsiCDFscaledPPold( Double_t *px, Double_t *dummy);
     static Double_t PtJpsiPP( Double_t *px, Double_t *dummy);
     static Double_t YJpsiPP(Double_t *py, Double_t *dummy);
     static Double_t YJpsiBPbPb(Double_t *py, Double_t *dummy);
@@ -86,13 +92,57 @@ class AliGenMUONlib :
 // Charm    
     static Double_t PtCharm( Double_t *px, Double_t *dummy );
     static Double_t PtCharmCentral( Double_t *px, Double_t *dummy );
+    static Double_t PtCharmF0M0S0PP( Double_t *px, Double_t *dummy );
+    static Double_t PtCharmF1M0S0PP( Double_t *px, Double_t *dummy );
+    static Double_t PtCharmF2M0S0PP( Double_t *px, Double_t *dummy );
+    static Double_t PtCharmF0M1S0PP( Double_t *px, Double_t *dummy );
+    static Double_t PtCharmF0M2S0PP( Double_t *px, Double_t *dummy );
+    static Double_t PtCharmF0M0S1PP( Double_t *px, Double_t *dummy );
+    static Double_t PtCharmF0M0S2PP( Double_t *px, Double_t *dummy );
+    static Double_t PtCharmF0M0S3PP( Double_t *px, Double_t *dummy );
+    static Double_t PtCharmF0M0S4PP( Double_t *px, Double_t *dummy );
+    static Double_t PtCharmF0M0S5PP( Double_t *px, Double_t *dummy );
+    static Double_t PtCharmF0M0S6PP( Double_t *px, Double_t *dummy );
     static Double_t YCharm(Double_t *py, Double_t *dummy);
+    static Double_t YCharmF0M0S0PP(Double_t *py, Double_t *dummy);
+    static Double_t YCharmF1M0S0PP(Double_t *py, Double_t *dummy);
+    static Double_t YCharmF2M0S0PP(Double_t *py, Double_t *dummy);
+    static Double_t YCharmF0M1S0PP(Double_t *py, Double_t *dummy);
+    static Double_t YCharmF0M2S0PP(Double_t *py, Double_t *dummy);
+    static Double_t YCharmF0M0S1PP(Double_t *py, Double_t *dummy);
+    static Double_t YCharmF0M0S2PP(Double_t *py, Double_t *dummy);
+    static Double_t YCharmF0M0S3PP(Double_t *py, Double_t *dummy);
+    static Double_t YCharmF0M0S4PP(Double_t *py, Double_t *dummy);
+    static Double_t YCharmF0M0S5PP(Double_t *py, Double_t *dummy);
+    static Double_t YCharmF0M0S6PP(Double_t *py, Double_t *dummy);
     static Int_t    IpCharm(TRandom *ran);
 //
 // Beauty
     static Double_t PtBeauty( Double_t *px, Double_t *dummy );
-    static Double_t PtBeautyCentral( Double_t *px, Double_t *dummy );
+    static Double_t PtBeautyF0M0S0PP( Double_t *px, Double_t *dummy );
+    static Double_t PtBeautyF1M0S0PP( Double_t *px, Double_t *dummy );
+    static Double_t PtBeautyF2M0S0PP( Double_t *px, Double_t *dummy );
+    static Double_t PtBeautyF0M1S0PP( Double_t *px, Double_t *dummy );
+    static Double_t PtBeautyF0M2S0PP( Double_t *px, Double_t *dummy );
+    static Double_t PtBeautyF0M0S1PP( Double_t *px, Double_t *dummy );
+    static Double_t PtBeautyF0M0S2PP( Double_t *px, Double_t *dummy );
+    static Double_t PtBeautyF0M0S3PP( Double_t *px, Double_t *dummy );
+    static Double_t PtBeautyF0M0S4PP( Double_t *px, Double_t *dummy );
+    static Double_t PtBeautyF0M0S5PP( Double_t *px, Double_t *dummy );
+    static Double_t PtBeautyF0M0S6PP( Double_t *px, Double_t *dummy );
     static Double_t YBeauty(Double_t *py, Double_t *dummy);
+    static Double_t YBeautyF0M0S0PP(Double_t *py, Double_t *dummy);
+    static Double_t YBeautyF1M0S0PP(Double_t *py, Double_t *dummy);
+    static Double_t YBeautyF2M0S0PP(Double_t *py, Double_t *dummy);
+    static Double_t YBeautyF0M1S0PP(Double_t *py, Double_t *dummy);
+    static Double_t YBeautyF0M2S0PP(Double_t *py, Double_t *dummy);
+    static Double_t YBeautyF0M0S1PP(Double_t *py, Double_t *dummy);
+    static Double_t YBeautyF0M0S2PP(Double_t *py, Double_t *dummy);
+    static Double_t YBeautyF0M0S3PP(Double_t *py, Double_t *dummy);
+    static Double_t YBeautyF0M0S4PP(Double_t *py, Double_t *dummy);
+    static Double_t YBeautyF0M0S5PP(Double_t *py, Double_t *dummy);
+    static Double_t YBeautyF0M0S6PP(Double_t *py, Double_t *dummy);
+    static Double_t PtBeautyCentral( Double_t *px, Double_t *dummy );
     static Int_t    IpBeauty(TRandom *ran);
 //
 
