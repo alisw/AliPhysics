@@ -125,8 +125,8 @@ void AliVZEROQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArr
 	  }
 	  TH1D* hProj;
 	  char Name[50];
-	  for(size_t iChannel=0; iChannel<64; iChannel++) {
-  		for(size_t integrator=0;integrator<2;integrator++){
+	  for(Int_t iChannel=0; iChannel<64; iChannel++) {
+  		for(Int_t integrator=0;integrator<2;integrator++){
 			sprintf(Name,"Ped_%d_%d",iChannel,integrator);
   			hProj = ((TH2I*)GetRawsData((integrator == 0 ? kPedestal_Cycle_Int0 : kPedestal_Cycle_Int1)))->ProjectionY(Name,iChannel+1,iChannel+1);
 			((TH2D*)GetRawsData((integrator == 0 ? kPedestal_Time_Int0 : kPedestal_Time_Int1)))->Fill((double)iChannel,(double)(fCurrentCycle%NMaxBin),(double)hProj->GetMean());
@@ -216,7 +216,7 @@ void AliVZEROQADataMakerRec::InitESDs()
   Bool_t saveCorr = kTRUE ; 
 
  char Name[50] , Title[100];
- const size_t kNintegrator  =    2;
+ const Int_t kNintegrator  =    2;
  
  const Int_t kNTdcTimeBins  = 2048;
  const Int_t kTdcTimeMin    =    0;
@@ -273,7 +273,7 @@ void AliVZEROQADataMakerRec::InitESDs()
   Add2RawsList(h2d,kRawMIPChannel, expert, !saveCorr);   iHisto++;
   
  
- for(size_t iInt=0;iInt<kNintegrator;iInt++){
+ for(Int_t iInt=0;iInt<kNintegrator;iInt++){
     // Creation of Pedestal histograms 
     sprintf(Name,"H2I_Pedestal_Int%d",iInt);
     sprintf(Title,"Pedestal (Int%d)",iInt);
@@ -327,8 +327,8 @@ void AliVZEROQADataMakerRec::InitESDs()
 	Add2RawsList(h2d,(iInt == 0 ? kChargeVsClock_Int0 : kChargeVsClock_Int1 ), expert, !saveCorr); iHisto++;
 	
 	// Creation of Minimum Bias Charge histograms 
-	for(size_t iBB=0;iBB<2;iBB++){
-		for(size_t iBG=0;iBG<2;iBG++){
+	for(Int_t iBB=0;iBB<2;iBB++){
+		for(Int_t iBG=0;iBG<2;iBG++){
 			sprintf(Name,"H2I_ChargeMB_BB%d_BG%d_Int%d",iBB,iBG,iInt);
 			sprintf(Title,"MB Charge (BB=%d, BG=%d, Int=%d)",iBB,iBG,iInt);
 			h2i = new TH2I(Name, Title,kNChannelBins, kChannelMin, kChannelMax,kNChargeBins, kChargeMin, kChargeMax);
@@ -507,19 +507,19 @@ void AliVZEROQADataMakerRec::MakeESDs(AliESDEvent * esd)
 	   TH1D * hProj;
 
 	   //printf("----------------------------------------\n");
-       for(size_t iChannel=0; iChannel<64; iChannel++) { // BEGIN : Loop over channels
+       for(Int_t iChannel=0; iChannel<64; iChannel++) { // BEGIN : Loop over channels
 		   
 		   OfflineCh = rawStream->GetOfflineChannel(iChannel);
 		   
 		   // Fill Pedestal histograms
 		   //-------------------------
 
-	       for(size_t j=15; j<21; j++) {
+	       for(Int_t j=15; j<21; j++) {
 		       if((rawStream->GetBGFlag(iChannel,j) || rawStream->GetBBFlag(iChannel,j))) iFlag++;
 	       }
 
 	       if(iFlag == 0){ //No Flag found
-		       for(size_t j=15; j<21; j++){
+		       for(Int_t j=15; j<21; j++){
 	   		       pedestal=rawStream->GetPedestal(iChannel, j);
 	   		       integrator = rawStream->GetIntegratorFlag(iChannel, j);
 
@@ -534,7 +534,7 @@ void AliVZEROQADataMakerRec::MakeESDs(AliESDEvent * esd)
            Charge = 0;
            Int_t iClock  = 0;
            Int_t iCharge = 0;
-           for(size_t iEvent=0; iEvent<21; iEvent++){
+           for(Int_t iEvent=0; iEvent<21; iEvent++){
                iCharge = rawStream->GetPedestal(iChannel,iEvent);
                if(iCharge>Charge)  {
 	 	           Charge = iCharge;
@@ -578,7 +578,7 @@ void AliVZEROQADataMakerRec::MakeESDs(AliESDEvent * esd)
 		   // Fill Charge Minimum Bias Histograms
 		   //------------------------------------
 		   int idx;
-		   for(size_t iBunch=0; iBunch<10; iBunch++){
+		   for(Int_t iBunch=0; iBunch<10; iBunch++){
 			   integrator = rawStream->GetIntMBFlag(iChannel, iBunch);
 			   BBFlag	   = rawStream->GetBBMBFlag(iChannel, iBunch);
 			   BGFlag	   = rawStream->GetBGMBFlag(iChannel, iBunch);
@@ -635,7 +635,7 @@ void AliVZEROQADataMakerRec::MakeESDs(AliESDEvent * esd)
 		   // Fill Flag and Charge Versus LHC-Clock histograms
 		   //-------------------------------------------------
 
-	   for(size_t iEvent=0; iEvent<21; iEvent++){
+	   for(Int_t iEvent=0; iEvent<21; iEvent++){
                Charge = rawStream->GetPedestal(iChannel,iEvent);
                integrator   = rawStream->GetIntegratorFlag(iChannel,iEvent);
                BBFlag	 = rawStream->GetBBFlag(iChannel, iEvent);
