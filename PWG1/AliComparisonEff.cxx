@@ -755,24 +755,24 @@ void AliComparisonEff::Analyse()
   h_sigmaday0pidtot[3]->Divide(h_sigmaday0pidtot[2]);
 
   // calculate efficiency pid wise
-  for(Int_t idx = 0; idx<5; idx++)
+  for(Int_t jdx = 0; jdx<5; jdx++)
   {
-    h_sigmaidealpid[idx]->Sumw2();
-    h_sigmaidealpid[idx+5]->Divide(h_sigmaidealpid[idx]);
+    h_sigmaidealpid[jdx]->Sumw2();
+    h_sigmaidealpid[jdx+5]->Divide(h_sigmaidealpid[jdx]);
 
-    h_sigmafullpid[idx]->Sumw2();
-    h_sigmafullpid[idx+5]->Divide(h_sigmafullpid[idx]);
+    h_sigmafullpid[jdx]->Sumw2();
+    h_sigmafullpid[jdx+5]->Divide(h_sigmafullpid[jdx]);
 
-    h_sigmaday0pid[idx]->Sumw2();
-    h_sigmaday0pid[idx+5]->Divide(h_sigmaday0pid[idx]);
+    h_sigmaday0pid[jdx]->Sumw2();
+    h_sigmaday0pid[jdx+5]->Divide(h_sigmaday0pid[jdx]);
   }
 
   // calculate cont. pid wise
-  for(Int_t idx = 0; idx<5; idx++)
+  for(Int_t jdx = 0; jdx<5; jdx++)
   {
-    h_sigmaidealpid[idx+15]->Divide(h_sigmaidealpidtot[2]);
-    h_sigmafullpid[idx+15]->Divide(h_sigmafullpidtot[2]);
-    h_sigmaday0pid[idx+15]->Divide(h_sigmaday0pidtot[2]);
+    h_sigmaidealpid[jdx+15]->Divide(h_sigmaidealpidtot[2]);
+    h_sigmafullpid[jdx+15]->Divide(h_sigmafullpidtot[2]);
+    h_sigmaday0pid[jdx+15]->Divide(h_sigmaday0pidtot[2]);
   }
 
   TCanvas * c = new TCanvas("Efficiency","Track efficiency");
@@ -834,56 +834,56 @@ void AliComparisonEff::Analyse()
   aFolderObj->Add(h_sigmaday0pidtot[1]);
   aFolderObj->Add(h_sigmaday0pidtot[3]);
 
-  for(Int_t idx = 0; idx<5; idx++)
+  for(Int_t jdx = 0; jdx<5; jdx++)
   {
-    sprintf(name,"Eff_SigmaIdeal_%d",idx);
-    sprintf(name1,"Cont_SigmaIdeal_%d",idx);
+    sprintf(name,"Eff_SigmaIdeal_%d",jdx);
+    sprintf(name1,"Cont_SigmaIdeal_%d",jdx);
 
 
-    h_sigmaidealpid[idx+5]->SetXTitle("p_{t}");
-    h_sigmaidealpid[idx+5]->SetYTitle("efficiency");
-    h_sigmaidealpid[idx+5]->SetTitle(name);
-    h_sigmaidealpid[idx+5]->SetName(name);
+    h_sigmaidealpid[jdx+5]->SetXTitle("p_{t}");
+    h_sigmaidealpid[jdx+5]->SetYTitle("efficiency");
+    h_sigmaidealpid[jdx+5]->SetTitle(name);
+    h_sigmaidealpid[jdx+5]->SetName(name);
 
-    h_sigmaidealpid[idx+15]->SetXTitle("p_{t}");
-    h_sigmaidealpid[idx+15]->SetYTitle("contamination");
-    h_sigmaidealpid[idx+15]->SetTitle(name1);
-    h_sigmaidealpid[idx+15]->SetName(name1);
+    h_sigmaidealpid[jdx+15]->SetXTitle("p_{t}");
+    h_sigmaidealpid[jdx+15]->SetYTitle("contamination");
+    h_sigmaidealpid[jdx+15]->SetTitle(name1);
+    h_sigmaidealpid[jdx+15]->SetName(name1);
 
-	aFolderObj->Add(h_sigmaidealpid[idx+5]);
-	aFolderObj->Add(h_sigmaidealpid[idx+15]);
+	aFolderObj->Add(h_sigmaidealpid[jdx+5]);
+	aFolderObj->Add(h_sigmaidealpid[jdx+15]);
 
-    sprintf(name,"Eff_SigmaFull_%d",idx);
-    sprintf(name1,"Cont_SigmaFull_%d",idx);
+    sprintf(name,"Eff_SigmaFull_%d",jdx);
+    sprintf(name1,"Cont_SigmaFull_%d",jdx);
 
-    h_sigmafullpid[idx+5]->SetXTitle("p_{t}");
-    h_sigmafullpid[idx+5]->SetYTitle("efficiency");
-    h_sigmafullpid[idx+5]->SetTitle(name);
-    h_sigmafullpid[idx+5]->SetName(name);
+    h_sigmafullpid[jdx+5]->SetXTitle("p_{t}");
+    h_sigmafullpid[jdx+5]->SetYTitle("efficiency");
+    h_sigmafullpid[jdx+5]->SetTitle(name);
+    h_sigmafullpid[jdx+5]->SetName(name);
 
-    h_sigmafullpid[idx+15]->SetXTitle("p_{t}");
-    h_sigmafullpid[idx+15]->SetYTitle("contamination");
-    h_sigmafullpid[idx+15]->SetTitle(name1);
-    h_sigmafullpid[idx+15]->SetName(name1);
+    h_sigmafullpid[jdx+15]->SetXTitle("p_{t}");
+    h_sigmafullpid[jdx+15]->SetYTitle("contamination");
+    h_sigmafullpid[jdx+15]->SetTitle(name1);
+    h_sigmafullpid[jdx+15]->SetName(name1);
 
-	aFolderObj->Add(h_sigmafullpid[idx+5]);
-	aFolderObj->Add(h_sigmafullpid[idx+15]);
+	aFolderObj->Add(h_sigmafullpid[jdx+5]);
+	aFolderObj->Add(h_sigmafullpid[jdx+15]);
 
-    sprintf(name,"Eff_SigmaDay0_%d",idx);
-    sprintf(name1,"Cont_SigmaDay0_%d",idx);
+    sprintf(name,"Eff_SigmaDay0_%d",jdx);
+    sprintf(name1,"Cont_SigmaDay0_%d",jdx);
 
-    h_sigmaday0pid[idx+5]->SetXTitle("p_{t}");
-    h_sigmaday0pid[idx+5]->SetYTitle("efficiency");
-    h_sigmaday0pid[idx+5]->SetTitle(name);
-    h_sigmaday0pid[idx+5]->SetName(name);
+    h_sigmaday0pid[jdx+5]->SetXTitle("p_{t}");
+    h_sigmaday0pid[jdx+5]->SetYTitle("efficiency");
+    h_sigmaday0pid[jdx+5]->SetTitle(name);
+    h_sigmaday0pid[jdx+5]->SetName(name);
 
-    h_sigmaday0pid[idx+15]->SetXTitle("p_{t}");
-    h_sigmaday0pid[idx+15]->SetYTitle("contamination");
-    h_sigmaday0pid[idx+15]->SetTitle(name1);
-    h_sigmaday0pid[idx+15]->SetName(name1);
+    h_sigmaday0pid[jdx+15]->SetXTitle("p_{t}");
+    h_sigmaday0pid[jdx+15]->SetYTitle("contamination");
+    h_sigmaday0pid[jdx+15]->SetTitle(name1);
+    h_sigmaday0pid[jdx+15]->SetName(name1);
 
-	aFolderObj->Add(h_sigmaday0pid[idx+5]);
-	aFolderObj->Add(h_sigmaday0pid[idx+15]);
+	aFolderObj->Add(h_sigmaday0pid[jdx+5]);
+	aFolderObj->Add(h_sigmaday0pid[jdx+15]);
   }
 
   // export objects to analysis folder
