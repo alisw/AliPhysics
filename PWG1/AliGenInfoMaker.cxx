@@ -714,11 +714,11 @@ Int_t AliGenInfoMaker::TreeTRLoop()
       //
       if (trackRef->DetectorId()== AliTrackReference::kTPC){
 	//
-	Int_t label = trackRef->GetTrack();      
-	AliMCInfo * info = GetInfo(label);
+	Int_t label1 = trackRef->GetTrack();      
+	AliMCInfo * info = GetInfo(label1);
 	if (!info && trackRef->Pt()<fTPCPtCut) continue;
 	if (!info) {
-	  info = MakeInfo(label);
+	  info = MakeInfo(label1);
 	}
 	if (!info) continue;
 	info->fPrimPart =  iPrimPart;
@@ -730,10 +730,10 @@ Int_t AliGenInfoMaker::TreeTRLoop()
       //
       if (trackRef->DetectorId()== AliTrackReference::kITS){
 	//
-	Int_t label = trackRef->GetTrack();      
-	AliMCInfo * info = GetInfo(label);
+	Int_t label1 = trackRef->GetTrack();      
+	AliMCInfo * info = GetInfo(label1);
 	if (!info && trackRef->Pt()<fITSPtCut) continue;
-	if (!info) info = MakeInfo(label);
+	if (!info) info = MakeInfo(label1);
 	if (!info) continue;
 	info->fPrimPart =  iPrimPart;
 	TClonesArray & arr = *(info->fITSReferences);
@@ -744,10 +744,10 @@ Int_t AliGenInfoMaker::TreeTRLoop()
       //
       if (trackRef->DetectorId()== AliTrackReference::kTRD){
 	//
-	Int_t label = trackRef->GetTrack();      
-	AliMCInfo * info = GetInfo(label);
+	Int_t label1 = trackRef->GetTrack();      
+	AliMCInfo * info = GetInfo(label1);
 	if (!info&&trackRef->P()<fTRDPtCut) continue;
-	if (!info) info = MakeInfo(label);
+	if (!info) info = MakeInfo(label1);
 	if (!info) continue;
 	info->fPrimPart =  iPrimPart;
 	TClonesArray & arr = *(info->fTRDReferences);
@@ -758,10 +758,10 @@ Int_t AliGenInfoMaker::TreeTRLoop()
       //
       if (trackRef->DetectorId()== AliTrackReference::kTOF){
 	//
-	Int_t label = trackRef->GetTrack();      
-	AliMCInfo * info = GetInfo(label);
+	Int_t label1 = trackRef->GetTrack();      
+	AliMCInfo * info = GetInfo(label1);
 	if (!info&&trackRef->P()<fTOFPtCut) continue;
-	if (!info) info = MakeInfo(label);
+	if (!info) info = MakeInfo(label1);
 	if (!info) continue;
 	info->fPrimPart =  iPrimPart;
 	TClonesArray & arr = *(info->fTOFReferences);
