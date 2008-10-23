@@ -292,7 +292,7 @@ Bool_t AliHMPIDReconHTA::FindShape(Double_t &thTrkRec,Double_t &phiTrkRec,Double
   //
   Int_t binxDB,binyDB;
   FindBinDB(xA,xB,binxDB,binyDB);
-  Int_t compactDB;
+  Int_t compactDB=0;
   if(binxDB>0 && binyDB>0 ) compactDB = fgDB[binxDB][binyDB];
   //
   Printf("compact %i compactDB %i",compact,compactDB);
