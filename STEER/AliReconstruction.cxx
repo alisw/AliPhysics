@@ -1359,6 +1359,31 @@ void AliReconstruction::SlaveBegin(TTree*)
   fhlttree = new TTree("HLTesdTree", "Tree with HLT ESD objects");
   fhltesd = new AliESDEvent();
   fhltesd->CreateStdContent();
+
+  // read the ESD template from CDB
+  // HLT is allowed to put non-std content to its ESD, the non-std
+  // objects need to be created before invocation of WriteToTree in
+  // order to create all branches. Initialization is done from an
+  // ESD layout template in CDB
+  AliCDBManager* man = AliCDBManager::Instance();
+  AliCDBPath hltESDConfigPath("HLT/ConfigHLT/esdLayout");
+  AliCDBEntry* hltESDConfig=NULL;
+  if (man->GetId(hltESDConfigPath)!=NULL &&
+      (hltESDConfig=man->Get(hltESDConfigPath))!=NULL) {
+    AliESDEvent* pESDLayout=dynamic_cast<AliESDEvent*>(hltESDConfig->GetObject());
+    if (pESDLayout) {
+      // init all internal variables from the list of objects
+      pESDLayout->GetStdContent();
+
+      // copy content and create non-std objects
+      *fhltesd=*pESDLayout;
+      fhltesd->Reset();
+    } else {
+      AliError(Form("error setting hltEsd layout from %s: invalid object type",
+		    hltESDConfigPath.GetPath().Data()));
+    }
+  }
+
   fhltesd->WriteToTree(fhlttree);
   fhlttree->GetUserInfo()->Add(fhltesd);
 
