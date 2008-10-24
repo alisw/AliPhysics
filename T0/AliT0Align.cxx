@@ -52,38 +52,50 @@ AliT0Align::AliT0Align() :
   fT0AAlignObj(0x0),
   fT0CAlignObj(0x0),
   fDebug(0),
-  fXPos(0.),
-  fYPos(0.),
-  fRepLoc(0)
-
- {
+  fXPosC(0.),
+  fYPosC(0.),
+  fXPosA(0.),
+  fYPosA(0.),
+  fRepLoc(0),
+  fRepGlob(0),
+  fSide(0x0),
+  fUser(0x0)
+{
   //
   //  default constructor
   //
 }   
 //________________________________________________________________________
-AliT0Align::AliT0Align(Int_t reportloc, Int_t reportglob) :
+AliT0Align::AliT0Align(Int_t reportloc, Int_t side, Int_t reportglob) :
   TObject(),
   fFileGlob(0x0),
   fT0AAlignObj(0x0),
   fT0CAlignObj(0x0),
   fDebug(0),
-  fXPos(0.),
-  fYPos(0.),
-  fRepLoc(0)
+  fXPosC(0.),
+  fYPosC(0.),
+  fXPosA(0.),
+  fYPosA(0.),
+  fRepLoc(0),
+  fRepGlob(0),
+  fSide(0x0),
+  fUser(0x0)
 {
   //
   // constructor - defines data files
   //
   fRepLoc = reportloc;
+  fRepGlob = reportglob;
+  fSide = side;
   Char_t path[50];
   fFileGlob = new Char_t[80];
+  fUser = new Char_t[10];
   sprintf(path,gSystem->Getenv("ALICE_ROOT")); 
   //
   // sprintf(fFileLoc,"%s/T0/Survey_%d_T0.txt",path,reportloc);
   sprintf(fFileGlob,"%s/T0/Survey_%d_V0.txt",path,reportglob);
   //
-
+  sprintf(fUser,gSystem->Getenv("alien_API_USER"));
 }
 //_________________________________________________________________________
 AliT0Align::AliT0Align(const AliT0Align &align) :
@@ -92,9 +104,14 @@ AliT0Align::AliT0Align(const AliT0Align &align) :
   fT0AAlignObj(0x0),
   fT0CAlignObj(0x0),
   fDebug(0),
-  fXPos(0.),
-  fYPos(0.),
-  fRepLoc(0)
+  fXPosC(0.),
+  fYPosC(0.),
+  fXPosA(0.),
+  fYPosA(0.),
+  fRepLoc(0),
+  fRepGlob(0),
+  fSide(0x0),
+  fUser(0x0)  
 {
   //
   //  copy constructor - dummy
@@ -127,16 +144,29 @@ Bool_t AliT0Align::LoadSurveyData()
   // Create a new survey object and fill it.
  
  AliSurveyObj * s1 = new AliSurveyObj();
+ const int numberPoints = 2;
+ TString pointNames[numberPoints]={"FLANGE_CENTER","C67_6_Beamcircle"}; 
  
  if(fRepLoc == 0) 
- //
- // Filling from DCDB (via GRID)
- //
- {
-   s1->SetGridUser("tomatkie");
-   s1->Fill("V0", 835615, "tomatkie");
+ { 
+   //
+   // Filling from DCDB (via GRID)
+   //
+   s1->SetGridUser(fUser);
+   if(fSide == 0) 
+   {
+     s1->Fill("T0", fRepGlob, fUser);
+   }
+   else if(fSide == 1)
+   {
+     s1->Fill("VZERO", fRepGlob, fUser);
+   }
+   else
+   {
+     cout<<"Enter the side properly: '0'- A side, '1'- C side'" <<endl;
+     return 0;
+   }
  }
-
  else
  //
  // Filling from local file
@@ -145,11 +175,7 @@ Bool_t AliT0Align::LoadSurveyData()
    s1->FillFromLocalFile(fFileGlob);
  }
  //
- Int_t numberPoints = 3;
- //
- TString pointNames[3] = {"C67_6_Beamcircle", "T0A", "VERTEX"}; 
- //
- Float_t surveyedPoints [3][2];
+ Float_t surveyedPoints [numberPoints][2];
  AliSurveyPoint *currPoint;
 
  //
@@ -175,8 +201,16 @@ Bool_t AliT0Align::LoadSurveyData()
      }
    }  
  }
- fXPos = surveyedPoints[0][0]; 
- fYPos = surveyedPoints[0][1];
+ if(fSide == 0)
+ {
+   fXPosA = surveyedPoints[0][0];
+   fYPosA = surveyedPoints[0][1];
+ }
+ else if(fSide == 1)
+ {
+   fXPosC = surveyedPoints[1][0]; 
+   fYPosC = surveyedPoints[1][1];
+ }
  //
  delete s1;
  //
@@ -191,24 +225,28 @@ Double_t AliT0Align::ComputePosition()
   return 0;
 }
 //_______________________________________________________________________
-void AliT0Align::CreateAlignObj(){
+void AliT0Align::CreateAlignObj()
+{
   //
   //  TClonesArray *array = new TClonesArray("AliAlignObjParams",2);
   // TClonesArray &alobj = *array;
   
-
   Double_t dx=0., dy=0., dz=0., dpsi=0., dtheta=0., dphi=0.;
+  dx=fXPosA;
+  dy=fYPosA;
   fT0AAlignObj = new AliAlignObjParams("ALIC_1/0STL_1",0,dx,dy,dz,dpsi,dtheta,dphi,kTRUE);
   
-  dx=fXPos;
-  dy=fYPos;
+  dx=fXPosC;
+  dy=fYPosC;
   // dz=surveyedPoints[2];
   dz=0.;
   fT0CAlignObj = new AliAlignObjParams("ALIC_1/0STR_1",0,dx,dy,dz,dpsi,dtheta,dphi,kTRUE);
+  
 }
 
 //______________________________________________________________________
-void AliT0Align::Run(){
+void AliT0Align::Run()
+{
   //
   // runs the full chain
   //
@@ -281,7 +319,7 @@ void AliT0Align::StoreAlignObj()
     //
     AliCDBMetaData* md = new AliCDBMetaData();
     md->SetResponsible("Tomasz Malkiewicz");
-    md->SetComment("Full misalignment of T0-C from surveyors");
+    md->SetComment("Position of T0-A and T0-C from survey");
     AliCDBId id("T0/Align/Data",0,AliCDBRunRange::Infinity());
     storage->Put(array,id,md);
   }
