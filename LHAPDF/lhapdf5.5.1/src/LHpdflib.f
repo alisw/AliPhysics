@@ -35,6 +35,7 @@ subroutine InitPDFsetByNameM(nset,setname)
   character setname*(*)
   integer nset
   character*512 dirpath, setpath
+  integer len_trim
 
   ! Initialise common blocks  
   call commoninit()
@@ -221,6 +222,7 @@ subroutine setPDFpath(pathname)
   include 'parmsetup.inc'
   character*(*) pathname
   integer j
+  integer len_trim
 
   call commoninit()
   lhaparm(20) = 'LHAPATH'

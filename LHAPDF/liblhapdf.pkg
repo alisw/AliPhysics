@@ -56,7 +56,12 @@ lhapdf5.5.1/src/wrapwhitg.f \
 lhapdf5.5.1/src/wrapzeus.f \
 lhapdf5.5.1/src/lhaglue.f\
 lhapdf5.5.1/src/wrapUSER.f
+
+ifeq (solarisCC5,$(ALICE_TARGET))
+PACKFFLAGS = $(FFLAGS) -free
+else
 PACKFFLAGS = $(FFLAGS) -ffree-form
+endif
 PACKCXXFLAGS = $(CXXFLAGS) -DDEFAULTPREFIXPATH=\"NONE\" -DDEFAULTLHAPATH=\"$(ALICE_ROOT)/LHAPDF/PDFsets\"
 EXPORT:=AliStructFuncType.h
 

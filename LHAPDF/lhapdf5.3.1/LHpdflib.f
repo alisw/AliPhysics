@@ -41,6 +41,7 @@ c      integer :: ierror
       character*512 dirpath, homepath, dotlhapath, cachepath, setpath
 c pr      
       INTEGER LNROOT
+      INTEGER LEN_TRIM
       CHARACTER*1000 CHROOT
       CHROOT=' '
  	  	 
