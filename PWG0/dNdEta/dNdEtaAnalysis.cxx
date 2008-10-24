@@ -443,7 +443,7 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
       //vtxBegin = vertexHist->GetXaxis()->FindBin(GetVtxMin(eta));
       //vtxEnd = vertexHist->GetXaxis()->FindBin(-GetVtxMin(-eta));
 
-      Float_t eta = vtxVsEta->GetYaxis()->GetBinCenter(iEta);
+      //Float_t eta = vtxVsEta->GetYaxis()->GetBinCenter(iEta);
       //printf("Eta bin: %d (%f) Vertex range: %d; before: %d %d (range) %d %d (acceptance)", iEta, eta, vertexPos, vertexBinBegin, vertexBinEnd, vtxBegin, vtxEnd);
       vertexBinBegin = TMath::Max(vertexBinBegin, vtxBegin);
       vertexBinEnd =   TMath::Min(vertexBinEnd, vtxEnd);
