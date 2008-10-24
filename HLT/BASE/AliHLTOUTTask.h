@@ -13,7 +13,7 @@
 */
 
 #include "AliHLTOUT.h"
-#include "AliHLTTask.h"
+#include "AliHLTDumpTask.h"
 
 /**
  * @class AliHLTOUTTask
@@ -22,18 +22,15 @@
  * an HLTOUT sub-collection.
  * 
  * The constructor takes the chains as a blank separated list of chain ids.
+ *
+ * @ingroup alihlt_system
  */
-class AliHLTOUTTask : public AliHLTOUT, public AliHLTTask {
+class AliHLTOUTTask : public AliHLTOUT, public AliHLTDumpTask {
  public:
   /** constructor */
   AliHLTOUTTask(const char* chains);
   /** standard destructor */
   virtual ~AliHLTOUTTask();
-
-  /**
-   * Get string of the source chains.
-   */
-  const char* GetSourceChains() const;
 
  protected:
 
@@ -44,17 +41,6 @@ class AliHLTOUTTask : public AliHLTOUT, public AliHLTTask {
   AliHLTOUTTask(const AliHLTOUTTask&);
   /** assignment operator prohibited */
   AliHLTOUTTask& operator=(const AliHLTOUTTask&);
-
-  /**
-   * Custom initialization for child tasks.
-   * Create and init the dummy task.
-   */
-  int CustomInit(AliHLTComponentHandler* pCH);
-
-  /**
-   * Custom clean up for child tasks.
-   */
-  int CustomCleanup();
 
   /**
    * Generate the index of the HLTOUT data.
@@ -74,7 +60,7 @@ class AliHLTOUTTask : public AliHLTOUT, public AliHLTTask {
    * @param size    [out] size of the selected data block
    */
   int GetDataBuffer(AliHLTUInt32_t index, const AliHLTUInt8_t* &pBuffer, 
-			    AliHLTUInt32_t& size);
+		    AliHLTUInt32_t& size);
 
   /**
    * Check byte order of data block
@@ -86,15 +72,6 @@ class AliHLTOUTTask : public AliHLTOUT, public AliHLTTask {
    */
   int CheckBlockAlignment(AliHLTUInt32_t index, AliHLTOUT::AliHLTOUTDataType type);
 
-  /** a dummy task to pretend existence of a consumer */
-  AliHLTTask* fpDummyTask; //!transient
-
-  /** the configuration for the dummy task */
-  AliHLTConfiguration* fpDummyConfiguration; //!transient
-
-  /** list of block descriptors of the output */
-  AliHLTComponentBlockDataList fBlockDescList;
-
-  ClassDef(AliHLTOUTTask, 0)
+  ClassDef(AliHLTOUTTask, 1)
 };
 #endif
