@@ -58,8 +58,8 @@ AliHLTPHOSDigitMaker::AliHLTPHOSDigitMaker() :
   fDigitContainerStructPtr(0),
   fDigitArrayPtr(0),
   fDigitStructPtr(0),
-  fDigitCount(0),
   fShmPtr(0),
+  fDigitCount(0),
   fOrdered(true)
 {
   // See header file for documentation
@@ -104,7 +104,7 @@ AliHLTPHOSDigitMaker::MakeDigits(AliHLTPHOSChannelDataHeaderStruct* channelDataH
   //See header file for documentation
   
   Int_t j = 0;
-  Float_t tmpEnergy = 0;
+  //  Float_t tmpEnergy = 0;
 
 //   Int_t xMod = -1;
 //   Int_t zMod = -1;

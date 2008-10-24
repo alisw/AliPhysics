@@ -9,14 +9,36 @@
 #include <cstdlib>
 #include <time.h>
 #include "stdio.h"
+#include <stdexcept>
 
 #define MIN_BUNCH_SIZE 0
 
+void test();
+
+
 using namespace std;
+
+
 
 int main(int argc, const char** argv)
 {
-  
+
+  /*
+  try
+  {
+    test(); 
+  }
+  // catch( bad_alloc &moryAllocationExeption)
+  // catch( bad_alloc)   
+  //  catch(...)   
+  //   catch( exception &e)
+  catch(...)   
+    {
+      std::cerr<<"something bad happened\n";
+      cout << "SEGFAULT" << endl;
+    }
+*/
+
   //  int n_loops = 200000;
   int n_loops = 1;
 
@@ -53,46 +75,52 @@ int main(int argc, const char** argv)
       decoder->Decode();
  
       
-      while(decoder->NextChannel(&altrodata) == true && channelCnt < 10)
+      //while(decoder->NextChannel(&altrodata) == true && channelCnt < 10)
+      while(decoder->NextChannel(&altrodata) == true)
 	{
 	  channelCnt ++;
 
 	  //	  decoder->PrintInfo(altrodata, altrodata.GetDataSize() +4);
-
-	  if(  altrodata.GetDataSize() != 0 )
-	    {
+	  //	  if(  altrodata.GetDataSize() != 0 )
+	  //	    {
+	      //   cnt = 0;
 	      cnt = 0;
 	      
 	      while( altrodata.NextBunch(altrobunchPtr) == true)
 		{
+		  //	  cnt = 0;
 		  //		  printf("\n");
 
-		  if(altrobunchPtr->GetBunchSize() > MIN_BUNCH_SIZE)
-		    { 
-		      printf("\n");
-		      cout <<"cnt = "<< cnt <<endl;
-		      cout << "altrobunch.fDataSize = "      << altrobunchPtr->GetBunchSize()   << endl;
-		      cout << "altrobunch.fEndTimeBin = "    << altrobunchPtr->GetEndTimeBin()  << endl;
-		      cout << "altrobunch.fStartTimeBin = "  << altrobunchPtr->GetStartTimeBin()  << endl;
+		  //		  if(altrobunchPtr->GetBunchSize() > MIN_BUNCH_SIZE)
+		  //		    { 
+		  printf("\n");
+		  cout <<"bunchcnt = "<< cnt <<endl;
+		  cout << "altrobunch.fDataSize = "      << altrobunchPtr->GetBunchSize()   << endl;
+		  cout << "altrobunch.fEndTimeBin = "    << altrobunchPtr->GetEndTimeBin()  << endl;
+		  cout << "altrobunch.fStartTimeBin = "  << altrobunchPtr->GetStartTimeBin()  << endl;
 
-		      for(int i=0; i<altrobunchPtr->GetBunchSize() + 20; i++)
+		  // for(int i=0; i<altrobunchPtr->GetBunchSize() + 20; i++)
+		  for(int i=0; i<altrobunchPtr->GetBunchSize(); i++)  
+		    {
+		      if(i != 0 && i%4==0)
 			{
-			  if(i != 0 && i%4==0)
-			    {
-			      printf("\n");
-			    }
-			  
-			  //			  printf("%d\t", altrobunchPtr->fData[i]);
-			  printf("%d\t", (altrobunchPtr->GetData())[i]); 
-
+			  printf("\n");
 			}
-			
-		      printf("\n\n");
-		    }
-		  cnt ++; 
-		}
+			  
+		      //			  printf("%d\t", altrobunchPtr->fData[i]);
+		      printf("%d\t", (altrobunchPtr->GetData())[i]); 
 
-	    }
+		    }
+			
+		  cnt ++; 
+
+		  printf("\n\n");
+		}
+	      
+	      //   cnt ++; 
+	      //}
+
+	      //  }
 	}
       
     }
@@ -106,7 +134,29 @@ int main(int argc, const char** argv)
   decoder->GetFailureRate();
 
   //  cnt ++;
-  
- return 0;
+  /*
+  try
+    {
+      test(); 
+    }
+  catch
+    {
+      cout << "SEGFAULT" << endl;
+    }
+  */
+
+  return 0;
  
 }  
+
+
+void test()
+{
+  int *tmp;
+
+  for(int i=0; i < 100; i++)
+    {
+      printf("%d\n", tmp[i]);
+    }
+
+}

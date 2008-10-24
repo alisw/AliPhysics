@@ -65,7 +65,8 @@ public:
   void SetMaxNtupleEntries(Int_t n) { fMaxNtupleEntries = n; }
   
 private:
-
+AliHLTPHOSHistogramProducer(const AliHLTPHOSHistogramProducer  & );
+AliHLTPHOSHistogramProducer  & operator = (const AliHLTPHOSHistogramProducer &);
   TH1D* fClusterEnergiesHistPtr;
   TH1D* fMultiplicitiesHistPtr;
   TNtuple* fClusterNtuplePtr;

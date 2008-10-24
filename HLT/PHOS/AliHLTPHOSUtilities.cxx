@@ -51,6 +51,10 @@ AliHLTPHOSUtilities::ScanSingleIntArgument(int argc, const char** argv, const ch
 	      *value =  atoi(argv[tmpIndex +1]);
 	      return true;
 	    }
+	  else
+	    {
+	      return false;
+	    }
 	}
     }
  
@@ -80,6 +84,10 @@ AliHLTPHOSUtilities::ScanSingleFloatArgument(int argc, const char** argv, const 
 	    {
 	      *value =  atof(argv[tmpIndex +1]);
 	      return true;
+	    }
+	  else
+	    {
+	      return false;
 	    }
 	}
     }
@@ -111,8 +119,11 @@ AliHLTPHOSUtilities::ScanSingleNameArgument(int argc, const char** argv, const c
 	    {
 	      //    *value =  atoi(argv[tmpIndex +1]);
 	      sprintf(outname, "%s", argv[tmpIndex +1] );
-
 	      return true;
+	    }
+	  else
+	    {
+	      return false;
 	    }
 	}
     }

@@ -61,7 +61,8 @@ AliHLTPHOSRawAnalyzer::AliHLTPHOSRawAnalyzer(double * /*dtaPtr*/, double fs): Al
 									      fTau(2), 
 									      fDTof(99999), 
 									      fDAmpl(99999),
-									      fStartIndex(0) 
+									      fStartIndex(0),
+									      fUtilitiesPtr(0)
 {
   fSampleFrequency = fs;
 } //end  
@@ -78,7 +79,7 @@ AliHLTPHOSRawAnalyzer::SetCorrectBaselineUsingFirstFiveSamples()
 void 
 //AliHLTPHOSRawAnalyzer::CorrectBaselineUsingFirstFiveSamples(double *data, int length)
 //AliHLTPHOSRawAnalyzer::CorrectBaselineUsingFirstFiveSamples(int *data, int length)
-AliHLTPHOSRawAnalyzer::CorrectBaselineUsingFirstFiveSamples(UInt_t *data, const int length)
+AliHLTPHOSRawAnalyzer::CorrectBaselineUsingFirstFiveSamples(UInt_t * /*data*/, const int /* length */)
 {
   //  cout << "AliHLTPHOSRawAnalyzer::CorrectBaselineUsingFirstFiveSamples" << endl;
 

@@ -103,7 +103,7 @@ AliHLTPHOSFourierComponent::GetOutputDataTypes(AliHLTComponentDataTypeList& tgtL
 
 
 void 
-AliHLTPHOSFourierComponent::GetOutputDataSize(unsigned long& constBase, double& inputMultiplier)
+AliHLTPHOSFourierComponent::GetOutputDataSize(unsigned long& /*constBase*/, double& inputMultiplier)
 {
  //  constBase =1;
 //   inputMultiplier = 1;

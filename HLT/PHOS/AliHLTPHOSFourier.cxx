@@ -61,7 +61,7 @@ AliHLTPHOSFourier::GetPSD()
 
 
 void 
-AliHLTPHOSFourier::ProcessFourier(const Int_t *data, const int length, const int z, const int x, const int gain, const int event)
+AliHLTPHOSFourier::ProcessFourier(const Int_t *data, const int length, const int /*z*/, const int /*x*/, const int gain, const int event)
 {
   Double_t  re = 0;
   Double_t  im = 0;

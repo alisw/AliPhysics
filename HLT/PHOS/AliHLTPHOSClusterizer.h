@@ -68,8 +68,7 @@ public:
   virtual ~AliHLTPHOSClusterizer();
 
   /** Copy constructor */  
-  AliHLTPHOSClusterizer(const AliHLTPHOSClusterizer &) : 
-    AliHLTPHOSBase(),
+ AliHLTPHOSClusterizer(const AliHLTPHOSClusterizer &) :  AliHLTPHOSBase(),
     fEmcClusteringThreshold(0),
     fEmcMinEnergyThreshold(0),
     fEmcTimeGate(0),
@@ -82,7 +81,8 @@ public:
     fDigitContainerPtr(0),
     fRecPointContainerPtr(0),
     fPHOSGeometry(0),
-    fGetterPtr(0)
+    fGetterPtr(0),
+      fMaxDigitIndexDiff(0)
   {
     //Copy constructor not implemented
   }

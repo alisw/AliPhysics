@@ -87,7 +87,7 @@ AliHLTPHOSClusterizer::SetRecPointContainer(AliHLTPHOSRecPointContainerStruct* r
   }
 
 void
-AliHLTPHOSClusterizer::SetRecoParameters(AliPHOSRecoParam* params)
+AliHLTPHOSClusterizer::SetRecoParameters(AliPHOSRecoParam* /*params*/)
 {
   //see header file for documentation
 #ifndef HAVE_NOT_PHOSRECOPARAMEMC // set from configure if EMC functionality not available in AliPHOSRecoParam

@@ -35,6 +35,7 @@ AliHLTPHOSRawAnalyzerComponentv2::AliHLTPHOSRawAnalyzerComponentv2():AliHLTPHOSR
 								     fDecoderPtr(0),  
 								     fAltroDataPtr(0),
 								     fAltroBunchPtr(0),
+								     fNCorruptedBlocks(0),
 								     fNOKBlocks(0),
 								     fAlgorithm(0),
 								     fOffset(0)
@@ -126,7 +127,7 @@ AliHLTPHOSRawAnalyzerComponentv2::DoEvent( const AliHLTComponentEventData& evtDa
 
   const AliHLTComponentBlockData* iter = NULL; 
   unsigned long ndx;
-  bool droppedRaw = true;
+  // bool droppedRaw = true;
 
   for( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
     {

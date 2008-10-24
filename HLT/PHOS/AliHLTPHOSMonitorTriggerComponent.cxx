@@ -106,8 +106,8 @@ AliHLTPHOSMonitorTriggerComponent::GetOutputDataSize(unsigned long& constBase, d
 
 int
 AliHLTPHOSMonitorTriggerComponent::DoEvent(const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks,
-                                        AliHLTComponentTriggerData& /*trigData*/, AliHLTUInt8_t* outputPtr, AliHLTUInt32_t& size,
-                                        std::vector<AliHLTComponentBlockData>& outputBlocks)
+					   AliHLTComponentTriggerData& /*trigData*/, AliHLTUInt8_t* /*outputPtr*/, AliHLTUInt32_t& /*size*/,
+					   std::vector<AliHLTComponentBlockData>& /*outputBlocks*/)
 {
   //See headerfile for documentation
 
@@ -146,7 +146,7 @@ AliHLTPHOSMonitorTriggerComponent::DoEvent(const AliHLTComponentEventData& evtDa
 	  eddWord = blockCount;
 	  PushEventDoneData( eddWord );
 	  
-	  Int_t blockIndex = 0;
+	  //	  Int_t blockIndex = 0;
 	  // low data type
 	  eddWord = 0;
 	 
