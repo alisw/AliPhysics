@@ -10,6 +10,7 @@ BASE/AliHLTCalibrationProcessor.cxx
 BASE/AliHLTConfiguration.cxx
 BASE/AliHLTConfigurationHandler.cxx
 BASE/AliHLTTask.cxx
+BASE/AliHLTDumpTask.cxx
 BASE/AliHLTControlTask.cxx
 BASE/AliHLTLogging.cxx
 BASE/AliHLTDataBuffer.cxx

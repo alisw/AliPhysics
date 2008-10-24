@@ -2,6 +2,7 @@
 
 set(SRCS
   AliVParticle.cxx
+  AliVTrack.cxx
   AliVVertex.cxx
   AliVEvent.cxx
   AliVHeader.cxx
