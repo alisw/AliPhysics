@@ -1,11 +1,16 @@
 #-*- Mode: Makefile -*-
 #
 
-SRCS		=  analysis/AliFMDAnaParameters.cxx		
+SRCS		=  analysis/AliFMDAnaParameters.cxx	\
+	           analysis/AliFMDAnalysisTaskESDReader.cxx	\
+	           analysis/AliFMDAnalysisTaskSharing.cxx       \
+		   analysis/AliFMDAnalysisTaskDensity.cxx       \
+		   analysis/AliFMDAnalysisTaskBackgroundCorrection.cxx
 
 #		   AliFMDAltroIO.cxx		
 
 HDRS		=  $(SRCS:.cxx=.h) 
+EINCLUDE 	:= ANALYSIS
 
 DHDR		:= analysis/FMDanalysisLinkDef.h
 

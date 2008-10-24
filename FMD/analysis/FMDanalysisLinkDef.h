@@ -29,6 +29,10 @@
 
 
 #pragma link C++ class AliFMDAnaParameters+;
+#pragma link C++ class AliFMDAnalysisTaskESDReader+;
+#pragma link C++ class AliFMDAnalysisTaskSharing+;
+#pragma link C++ class AliFMDAnalysisTaskDensity+;
+#pragma link C++ class AliFMDAnalysisTaskBackgroundCorrection+;
 #else
 # error Not for compilation 
 #endif
