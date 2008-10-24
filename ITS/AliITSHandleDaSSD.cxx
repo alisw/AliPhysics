@@ -1259,7 +1259,7 @@ Int_t AliITSHandleDaSSD::ChannelIsBad(const UChar_t ddl, const UChar_t ad, const
     else return (fBadChannelsList->GetBadChannelN(modid, (AliITSChannelDaSSD::GetMaxStripIdConst() - strn)) & fgkBadChannelMask);
   } else {
     AliError("Error ether bad channels list or DDLMap is not initialized or both, AliITSModuleDaSSD::CheckIfBad(str) is used!");
-    if (module = GetModule(ddl, ad, adc)) {
+    if ((module = GetModule(ddl, ad, adc))) {
       return (module->CheckIfBad(strn) & fgkBadChannelMask);
     } else {
       AliWarning(Form("There is no calibration data for ddl = %i,  ad = %i,  adc = %i, 0 is used!", ddl, ad, adc));
@@ -1342,8 +1342,8 @@ ULong_t AliITSHandleDaSSD::OffsetValue(const UChar_t ddl, const UChar_t ad, cons
 // Calculate the offset value to be upload to FEROM	
   AliITSChannelDaSSD    *strip = NULL;
   AliITSModuleDaSSD     *module = NULL;
-  if (module = GetModule(ddl, ad, adc)) {
-    if (strip = module->GetStrip(strn)) return OffsetValue(strip, ddl, ad, adc, strn);
+  if ((module = GetModule(ddl, ad, adc))) {
+    if ((strip = module->GetStrip(strn))) return OffsetValue(strip, ddl, ad, adc, strn);
     else {
       AliWarning(Form("There is no calibration data for ddl = %i,  ad = %i,  adc = %i,  strip = %i, 0 is used!", ddl, ad, adc, strn));
       return 0ul;
@@ -1378,9 +1378,9 @@ ULong_t AliITSHandleDaSSD::ZsThreshold(const UChar_t ddl, const UChar_t ad, cons
   AliITSModuleDaSSD     *module = NULL;
   if (ChannelIsBad(ddl, ad, adc, strn)) return fgkZsBitMask;
   if (LadderIsOff(ddl, ad, adc)) return fgkZsBitMask;
-  if (module = GetModule(ddl, ad, adc)) {
+  if ((module = GetModule(ddl, ad, adc))) {
 	if (fMergeBCLists) if (module->CheckIfBad(strn)) return fgkZsBitMask;
-    if (strip = module->GetStrip(strn))  return ZsThreshold(strip);
+    if ((strip = module->GetStrip(strn)))  return ZsThreshold(strip);
     else {
       AliWarning(Form("There is no calibration data for ddl = %i,  ad = %i,  adc = %i,  strip = %i, 0 is used!", ddl, ad, adc, strn));
       return 0ul;
