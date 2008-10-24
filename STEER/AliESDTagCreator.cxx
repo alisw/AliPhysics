@@ -452,6 +452,8 @@ void AliESDTagCreator::CreateTag(TChain* chain, const char *type) {
     evTag->SetZDCNeutron1Energy(esd->GetZDCN2Energy());
     evTag->SetZDCProton1Energy(esd->GetZDCP2Energy());
     evTag->SetNumOfParticipants(esd->GetZDCParticipants());
+    evTag->SetNumOfParticipants(esd->GetZDCParticipants());
+    evTag->SetNumOfParticipants2(esd->GetZDCParticipants2());
     
     
     evTag->SetNumOfTracks(esd->GetNumberOfTracks());

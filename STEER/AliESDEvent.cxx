@@ -1341,7 +1341,8 @@ void AliESDEvent::CopyFromOldESD()
            0,
            fESDOld->GetZDCN2Energy(),
            fESDOld->GetZDCP2Energy(),
-           fESDOld->GetZDCParticipants());
+           fESDOld->GetZDCParticipants(),
+	   0);
 
     // FMD
     

@@ -33,6 +33,7 @@ class AliEventTag : public TObject {
   void SetTURL(TString Pid) {fturl = Pid;}
   void SetSize(Long64_t i) {fsize = i;}
   void SetNumOfParticipants(Int_t P) {fNumberOfParticipants = P;}
+  void SetNumOfParticipants2(Int_t P2) {fNumberOfParticipants = P2;}
   void SetImpactParameter(Float_t Pimpact) {fImpactParameter = Pimpact;}
   void SetVertexX(Float_t Pvx) {fPrimaryVertexX = Pvx;}
   void SetVertexY(Float_t Pvy) {fPrimaryVertexY = Pvy;}
@@ -99,6 +100,7 @@ class AliEventTag : public TObject {
   const char *GetTURL() const {return fturl.Data();}
   Long64_t    GetSize() const {return fsize;}
   Int_t       GetNumOfParticipants() const {return fNumberOfParticipants;}
+  Int_t       GetNumOfParticipants2() const {return fNumberOfParticipants2;}
   Float_t     GetImpactParameter() const {return fImpactParameter;}
   Float_t     GetVertexX() const {return fPrimaryVertexX;}
   Float_t     GetVertexY() const {return fPrimaryVertexY;}
@@ -164,7 +166,8 @@ class AliEventTag : public TObject {
   Long64_t  fsize;                          //the size of the file
   TString   fmd5;                           //another file identifier
   TString   fturl;                          //the file's url
-  Int_t     fNumberOfParticipants;    	    //Number of participants
+  Int_t     fNumberOfParticipants;    	    //Number of participants - side C
+  Int_t     fNumberOfParticipants2;    	    //Number of participants - side A
   Float_t   fImpactParameter;		    //The impact parameter
   Int_t     fPrimaryVertexFlag;		    //Primary vertex flag: 0->not found, 1->found
   Float_t   fPrimaryVertexX;		    //Primary vertex - X coordinate
@@ -222,7 +225,7 @@ class AliEventTag : public TObject {
   Float_t   fEventPlaneAngle;		    //event plane info
   Float_t   fHBTRadii;                      //HBT info
   
-  ClassDef(AliEventTag,9)  //(ClassName, ClassVersion)
+  ClassDef(AliEventTag,10)  //(ClassName, ClassVersion)
     };
 //___________________________________________________________________________
 

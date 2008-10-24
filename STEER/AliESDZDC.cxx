@@ -27,7 +27,7 @@
 
 ClassImp(AliESDZDC)
 
-Float_t funCParCentr(const Int_t n) {return 1.8936-0.7126/(n + 0.7179);}
+//Float_t funCParCentr(const Int_t n) {return 1.8936-0.7126/(n + 0.7179);}
 
 //______________________________________________________________________________
 AliESDZDC::AliESDZDC() :
@@ -38,7 +38,8 @@ AliESDZDC::AliESDZDC() :
   fZDCP2Energy(0),
   fZDCEMEnergy(0),
   fZDCEMEnergy1(0),
-  fZDCParticipants(0)
+  fZDCParticipants(0),
+  fZDCParticipants2(0)
 {
   for(Int_t i=0; i<5; i++){
     fZN1TowerEnergy[i] = fZN2TowerEnergy[i] = 0.;
@@ -51,6 +52,7 @@ AliESDZDC::AliESDZDC() :
   }
 }
 
+//______________________________________________________________________________
 AliESDZDC::AliESDZDC(const AliESDZDC& zdc) :
   TObject(zdc),
   fZDCN1Energy(zdc.fZDCN1Energy),
@@ -59,7 +61,8 @@ AliESDZDC::AliESDZDC(const AliESDZDC& zdc) :
   fZDCP2Energy(zdc.fZDCP2Energy),
   fZDCEMEnergy(zdc.fZDCEMEnergy),
   fZDCEMEnergy1(zdc.fZDCEMEnergy1),
-  fZDCParticipants(zdc.fZDCParticipants)
+  fZDCParticipants(zdc.fZDCParticipants),
+  fZDCParticipants2(zdc.fZDCParticipants2)
 {
   // copy constructor
   for(Int_t i=0; i<5; i++){
@@ -78,6 +81,7 @@ AliESDZDC::AliESDZDC(const AliESDZDC& zdc) :
   }
 }
 
+//______________________________________________________________________________
 AliESDZDC& AliESDZDC::operator=(const AliESDZDC&zdc)
 {
   // assigment operator
@@ -88,6 +92,7 @@ AliESDZDC& AliESDZDC::operator=(const AliESDZDC&zdc)
     fZDCN2Energy = zdc.fZDCN2Energy;
     fZDCP2Energy = zdc.fZDCP2Energy;
     fZDCParticipants = zdc.fZDCParticipants;
+    fZDCParticipants2 = zdc.fZDCParticipants2;
     fZDCEMEnergy = zdc.fZDCEMEnergy;
     fZDCEMEnergy1 = zdc.fZDCEMEnergy1;
     for(Int_t i=0; i<5; i++){
@@ -108,6 +113,7 @@ AliESDZDC& AliESDZDC::operator=(const AliESDZDC&zdc)
   return *this;
 }
 
+//______________________________________________________________________________
 void AliESDZDC::Copy(TObject &obj) const {
   
   // this overwrites the virtual TOBject::Copy()
@@ -131,6 +137,7 @@ void AliESDZDC::Reset()
   fZDCN2Energy=0;
   fZDCP2Energy=0;
   fZDCParticipants=0;  
+  fZDCParticipants2=0;  
   fZDCEMEnergy=0;
   fZDCEMEnergy1=0;
   for(Int_t i=0; i<5; i++){
@@ -149,49 +156,49 @@ void AliESDZDC::Print(const Option_t *) const
 {
   //  Print ESD for the ZDC
   printf("\n \t ZN1Energy = %f TeV, ZP1Energy = %f TeV, ZN2Energy = %f TeV,"
-  " ZP2Energy = %f, Nparticipants = %d\n",
-  fZDCN1Energy,fZDCP1Energy,fZDCN2Energy,fZDCP2Energy,fZDCParticipants);
+  " ZP2Energy = %f, Npart side C = %d, Npart side A = %d\n",
+  fZDCN1Energy,fZDCP1Energy,fZDCN2Energy,fZDCP2Energy,fZDCParticipants,fZDCParticipants2);
 }
 
 //______________________________________________________________________________
-Double32_t * AliESDZDC::GetZNCCentroid(Int_t NspecnC) 
+Double32_t * AliESDZDC::GetZNCCentroid() 
 {
   // Provide coordinates of centroid over ZN (side C) front face
   Float_t x[4] = {-1.75, 1.75, -1.75, 1.75};
   Float_t y[4] = {-1.75, -1.72, 1.75, 1.75};
   Float_t NumX=0., NumY=0., Den=0.;
   Float_t alpha=0.395, w;
-  for(Int_t i=1; i<5; i++){
-    w = TMath::Power(fZN1TowerEnergy[i], alpha);
+  for(Int_t i=0; i<4; i++){
+    w = TMath::Power(fZN1TowerEnergy[i+1], alpha);
     NumX += x[i]*w;
     NumY += y[i]*w;
     Den += w;
   }
   if(Den!=0){
-    fZNCCentrCoord[0] = funCParCentr(NspecnC)*NumX/Den;
-    fZNCCentrCoord[1] = funCParCentr(NspecnC)*NumY/Den;
+    fZNCCentrCoord[0] = 1.8665*NumX/Den;
+    fZNCCentrCoord[1] = 1.8665*NumY/Den;
   }
   return fZNCCentrCoord;
 }
 
 //______________________________________________________________________________
-Double32_t * AliESDZDC::GetZNACentroid(Int_t NspecnA) 
+Double32_t * AliESDZDC::GetZNACentroid() 
 {
   // Provide coordinates of centroid over ZN (side A) front face
   Float_t x[4] = {-1.75, 1.75, -1.75, 1.75};
   Float_t y[4] = {-1.75, -1.72, 1.75, 1.75};
   Float_t NumX=0., NumY=0., Den=0.;
   Float_t alpha=0.395, w;
-  for(Int_t i=1; i<5; i++){
-    w = TMath::Power(fZN2TowerEnergy[i], alpha);
+  for(Int_t i=0; i<4; i++){
+    w = TMath::Power(fZN2TowerEnergy[i+1], alpha);
     NumX += x[i]*w;
     NumY += y[i]*w;
     Den += w;
   }
   //
   if(Den!=0){
-    fZNACentrCoord[0] = funCParCentr(NspecnA)*NumX/Den;
-    fZNACentrCoord[1] = funCParCentr(NspecnA)*NumY/Den;
+    fZNACentrCoord[0] = 1.8665*NumX/Den;
+    fZNACentrCoord[1] = 1.8665*NumY/Den;
   }
   return fZNACentrCoord;
 }
