@@ -35,6 +35,8 @@
 #include "AliLog.h"
 #include "AliStrLine.h"
 #include "AliExternalTrackParam.h"
+#include "AliVEvent.h"
+#include "AliVTrack.h"
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
 #include "AliVertexerTracks.h"
@@ -107,7 +109,6 @@ fAlgo(1)
 //
   SetVtxStart();
   SetVtxStartSigma();
-  SetTPCMode();
 }
 //-----------------------------------------------------------------------------
 AliVertexerTracks::~AliVertexerTracks() 
@@ -120,10 +121,10 @@ AliVertexerTracks::~AliVertexerTracks()
   if(fIdSel) { delete [] fIdSel; fIdSel=NULL; }
 }
 //----------------------------------------------------------------------------
-AliESDVertex* AliVertexerTracks::FindPrimaryVertex(const AliESDEvent *esdEvent)
+AliESDVertex* AliVertexerTracks::FindPrimaryVertex(const AliVEvent *vEvent)
 {
 //
-// Primary vertex for current ESD event
+// Primary vertex for current ESD or AOD event
 // (Two iterations: 
 //  1st with 5*fNSigma*sigma cut w.r.t. to initial vertex
 //      + cut on sqrt(d0d0+z0z0) if fConstraint=kFALSE  
@@ -131,11 +132,20 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertex(const AliESDEvent *esdEvent)
 //
   fCurrentVertex = 0;
 
+  TString evtype = vEvent->IsA()->GetName();
+  Bool_t inputAOD = ((evtype=="AliAODEvent") ? kTRUE : kFALSE);
+
+  if(inputAOD && fMode==1) {
+    printf("Error : AliVertexerTracks: no TPC-only vertex from AOD\n"); 
+    TooFewTracks(); 
+    return fCurrentVertex;
+  }
+
   // accept 1-track case only if constraint is available
   if(!fConstraint && fMinTracks==1) fMinTracks=2;
 
-  // read tracks from ESD
-  Int_t nTrks = (Int_t)esdEvent->GetNumberOfTracks();
+  // read tracks from AlivEvent
+  Int_t nTrks = (Int_t)vEvent->GetNumberOfTracks();
   if(nTrks<fMinTracks) {
     TooFewTracks();
     return fCurrentVertex;
@@ -150,43 +160,36 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertex(const AliESDEvent *esdEvent)
 
   Int_t nTrksOrig=0;
   AliExternalTrackParam *t=0;
-  // loop on ESD tracks
+  // loop on tracks
   for(Int_t i=0; i<nTrks; i++) {
-    AliESDtrack *esdt = esdEvent->GetTrack(i);
-    // check tracks to skip
-    Bool_t skipThis = kFALSE;
-    for(Int_t j=0; j<fNTrksToSkip; j++) { 
-      if(esdt->GetID()==fTrksToSkip[j]) {
-	AliDebug(1,Form("skipping track: %d",i));
-	skipThis = kTRUE;
-      }
-    }
-    if(skipThis) continue;
+    AliVTrack *track = (AliVTrack*)vEvent->GetTrack(i);
 
-    // check number of clusters in ITS or TPC
-    if(esdt->GetNcls(fMode) < fMinClusters) continue;
+    if(fITSrefit && !(track->GetStatus()&AliESDtrack::kITSrefit)) continue;
 
-    if(fMode==0) {        // ITS mode
-      if(fITSrefit && !(esdt->GetStatus()&AliESDtrack::kITSrefit)) continue;
+    // check number of clusters in ITS
+    Int_t ncls0=0;
+    for(Int_t l=0;l<6;l++) if(TESTBIT(track->GetITSClusterMap(),l)) ncls0++;
+    if(fMode==0 && ncls0 < fMinClusters) continue;
+
+    if(!inputAOD) {
       Double_t x,p[5],cov[15];
+      AliESDtrack* esdt = (AliESDtrack*)track;
+      if(esdt->GetNcls(fMode) < fMinClusters) continue;
       esdt->GetExternalParameters(x,p);
       esdt->GetExternalCovariance(cov);
       t = new AliExternalTrackParam(x,esdt->GetAlpha(),p,cov);
-    } else if(fMode==1) { // TPC mode
-      t = (AliExternalTrackParam*)esdt->GetTPCInnerParam();
-      if(!t) continue;
-      Double_t radius = 2.8; //something less than the beam pipe radius
-      if(!PropagateTrackTo(t,radius)) continue;
+    } else {
+      t = new AliExternalTrackParam(track);
     }
     trkArrayOrig.AddLast(t);
-    idOrig[nTrksOrig]=(UShort_t)esdt->GetID();
+    idOrig[nTrksOrig]=(UShort_t)track->GetID();
     nTrksOrig++;
-  } // end loop on ESD tracks
+  } // end loop on tracks
   
   // call method that will reconstruct the vertex
   FindPrimaryVertex(&trkArrayOrig,idOrig);
 
-  if(fMode==0) trkArrayOrig.Delete();
+  trkArrayOrig.Delete();
   delete [] idOrig; idOrig=NULL;
 
   if(f) {

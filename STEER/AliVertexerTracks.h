@@ -28,6 +28,7 @@
 #include "AliExternalTrackParam.h"
 #include "AliLog.h"
 
+class AliVEvent;
 class AliESDEvent;
 
 class AliVertexerTracks : public TObject {
@@ -37,7 +38,7 @@ class AliVertexerTracks : public TObject {
   AliVertexerTracks(Double_t fieldkG); 
   virtual ~AliVertexerTracks();
 
-  AliESDVertex* FindPrimaryVertex(const AliESDEvent *esdEvent);
+  AliESDVertex* FindPrimaryVertex(const AliVEvent *vEvent);
   AliESDVertex* FindPrimaryVertex(TObjArray *trkArrayOrig,UShort_t *idOrig);
   AliESDVertex* VertexForSelectedTracks(TObjArray *trkArray,UShort_t *id,
 					Bool_t optUseFitter=kTRUE,
@@ -75,10 +76,12 @@ class AliVertexerTracks : public TObject {
   void  SetDCAcutIter0(Double_t maxdca) { fDCAcutIter0=maxdca; return; }
   void  SetFinderAlgorithm(Int_t opt=1) { fAlgo=opt; return; }
   void  SetITSrefitRequired() { fITSrefit=kTRUE; return; }
+  Bool_t GetITSrefitRequired() const { return fITSrefit; }
   void  SetITSrefitNotRequired() { fITSrefit=kFALSE; return; }
   void  SetFiducialRZ(Double_t r=3,Double_t z=30) { fFiducialR=r; fFiducialZ=z; return; }
   void  SetMaxd0z0(Double_t maxd0z0=0.5) { fMaxd0z0=maxd0z0; return; }
   void  SetMinClusters(Int_t n=5) { fMinClusters=n; return; }
+  Int_t GetMinClusters() const { return fMinClusters; }
   void  SetMinTracks(Int_t n=1) { fMinTracks=n; return; }
   void  SetNSigmad0(Double_t n=3) { fNSigma=n; return; }
   Double_t GetNSigmad0() const { return fNSigma; }
