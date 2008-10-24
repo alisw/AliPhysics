@@ -12,5 +12,6 @@
 #pragma link C++ class  AliAnalysisSelector+;
 #pragma link C++ class  AliAnalysisFilter+;
 #pragma link C++ class  AliAnalysisCuts+;
+#pragma link C++ class  AliAnalysisGrid+;
 
 #endif

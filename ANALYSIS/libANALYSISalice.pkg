@@ -15,7 +15,7 @@ CHECKXML = $(shell root-config --has-xml)
 ifeq (yes,$(CHECKXML))
 PACKCXXFLAGS += $(CXXFLAGS) -DWITHXML
 CINTFLAGS += -DWITHXML
-SRCS += AliTagAnalysis.cxx AliXMLCollection.cxx
+SRCS += AliTagAnalysis.cxx AliXMLCollection.cxx AliAnalysisAlien.cxx
 endif
 
 

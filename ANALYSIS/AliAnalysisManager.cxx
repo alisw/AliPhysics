@@ -37,6 +37,7 @@
 #include <TCanvas.h>
 
 #include "AliAnalysisSelector.h"
+#include "AliAnalysisGrid.h"
 #include "AliAnalysisTask.h"
 #include "AliAnalysisDataContainer.h"
 #include "AliAnalysisDataSlot.h"
@@ -56,7 +57,7 @@ AliAnalysisManager::AliAnalysisManager(const char *name, const char *title)
                     fInputEventHandler(NULL),
                     fOutputEventHandler(NULL),
                     fMCtruthEventHandler(NULL),
-		    fEventPool(NULL),
+                    fEventPool(NULL),
                     fCurrentEntry(-1),
                     fNSysInfo(0),
                     fMode(kLocalAnalysis),
@@ -69,7 +70,8 @@ AliAnalysisManager::AliAnalysisManager(const char *name, const char *title)
                     fContainers(NULL),
                     fInputs(NULL),
                     fOutputs(NULL),
-                    fSelector(NULL)
+                    fSelector(NULL),
+                    fGridHandler(NULL)
 {
 // Default constructor.
    fgAnalysisManager = this;
@@ -102,7 +104,8 @@ AliAnalysisManager::AliAnalysisManager(const AliAnalysisManager& other)
                     fContainers(NULL),
                     fInputs(NULL),
                     fOutputs(NULL),
-                    fSelector(NULL)
+                    fSelector(NULL),
+                    fGridHandler(NULL)
 {
 // Copy constructor.
    fTasks      = new TObjArray(*other.fTasks);
@@ -137,6 +140,7 @@ AliAnalysisManager& AliAnalysisManager::operator=(const AliAnalysisManager& othe
       fInputs     = new TObjArray(*other.fInputs);
       fOutputs    = new TObjArray(*other.fOutputs);
       fSelector   = NULL;
+      fGridHandler = NULL;
       fgAnalysisManager = this;
    }
    return *this;
@@ -152,6 +156,7 @@ AliAnalysisManager::~AliAnalysisManager()
    if (fContainers) {fContainers->Delete(); delete fContainers;}
    if (fInputs) delete fInputs;
    if (fOutputs) delete fOutputs;
+   if (fGridHandler) delete fGridHandler;
    if (fgAnalysisManager==this) fgAnalysisManager = NULL;
 }
 
@@ -532,42 +537,49 @@ void AliAnalysisManager::ImportWrappers(TList *source)
    AliAnalysisDataContainer *cont;
    AliAnalysisDataWrapper   *wrap;
    Int_t icont = 0;
+   Bool_t inGrid = (fMode == kGridAnalysis)?kTRUE:kFALSE;
    while ((cont=(AliAnalysisDataContainer*)next())) {
       wrap = 0;
-      if (cont->GetProducer()->IsPostEventLoop()) continue;
+      if (cont->GetProducer()->IsPostEventLoop() && !inGrid) continue;
       const char *filename = cont->GetFileName();
       Bool_t isManagedByHandler = kFALSE;
       if (!(strcmp(filename, "default")) && fOutputEventHandler) {
          isManagedByHandler = kTRUE;
          filename = fOutputEventHandler->GetOutputFileName();
       }
-      if (cont->IsSpecialOutput()) {
+      if (cont->IsSpecialOutput() || inGrid) {
          if (strlen(fSpecialOutputLocation.Data()) && !isManagedByHandler) continue;
-         // Copy merged file from PROOF scratch space
-         char full_path[512];
-         char ch_url[512];
-         TObject *pof =  source->FindObject(filename);
-         if (!pof || !pof->InheritsFrom("TProofOutputFile")) {
-            Error("ImportWrappers", "TProofOutputFile object not found in output list for container %s", cont->GetName());
-            continue;
-         }
-         gROOT->ProcessLine(Form("sprintf((char*)0x%lx, \"%%s\", ((TProofOutputFile*)0x%lx)->GetOutputFileName();)", full_path, pof));
-         gROOT->ProcessLine(Form("sprintf((char*)0x%lx, \"%%s\", gProof->GetUrl();)", ch_url));
-         TString clientUrl(ch_url);
-         TString full_path_str(full_path);
-         if (clientUrl.Contains("localhost")){
-            TObjArray* array = full_path_str.Tokenize ( "//" );
-            TObjString *strobj = ( TObjString *)array->At(1);
-            full_path_str.ReplaceAll(strobj->GetString().Data(),"localhost:11094");
-            if (fDebug > 1) Info("ImportWrappers","Using tunnel from %s to %s",full_path_str.Data(),filename);
-         }
-         if (fDebug > 1) 
-            printf("   Copying file %s from PROOF scratch space\n", full_path_str.Data());
-         Bool_t gotit = TFile::Cp(full_path_str.Data(), filename); 
-         if (!gotit) {
-            Error("ImportWrappers", "Could not get file %s from proof scratch space", cont->GetFileName());
-            continue;
-         }
+         // Copy merged file from PROOF scratch space. 
+         // In case of grid the files are already in the current directory.
+         if (!inGrid) {
+            char full_path[512];
+            char ch_url[512];
+            TObject *pof =  source->FindObject(filename);
+            if (!pof || !pof->InheritsFrom("TProofOutputFile")) {
+               Error("ImportWrappers", "TProofOutputFile object not found in output list for container %s", cont->GetName());
+               continue;
+            }
+            gROOT->ProcessLine(Form("sprintf((char*)0x%lx, \"%%s\", ((TProofOutputFile*)0x%lx)->GetOutputFileName();)", full_path, pof));
+            gROOT->ProcessLine(Form("sprintf((char*)0x%lx, \"%%s\", gProof->GetUrl();)", ch_url));
+            TString clientUrl(ch_url);
+            TString full_path_str(full_path);
+            if (clientUrl.Contains("localhost")){
+               TObjArray* array = full_path_str.Tokenize ( "//" );
+               TObjString *strobj = ( TObjString *)array->At(1);
+               TObjArray* arrayPort = strobj->GetString().Tokenize ( ":" );
+               TObjString *strobjPort = ( TObjString *) arrayPort->At(1);
+               full_path_str.ReplaceAll(strobj->GetString().Data(),"localhost:PORT");
+               full_path_str.ReplaceAll(":PORT",Form(":%s",strobjPort->GetString().Data()));
+               if (fDebug > 1) Info("ImportWrappers","Using tunnel from %s to %s",full_path_str.Data(),filename);
+            }
+            if (fDebug > 1) 
+               printf("   Copying file %s from PROOF scratch space\n", full_path_str.Data());
+            Bool_t gotit = TFile::Cp(full_path_str.Data(), filename); 
+            if (!gotit) {
+               Error("ImportWrappers", "Could not get file %s from proof scratch space", cont->GetFileName());
+               continue;
+            }
+         }   
          // Normally we should connect data from the copied file to the
          // corresponding output container, but it is not obvious how to do this
          // automatically if several objects in file...
@@ -663,8 +675,9 @@ void AliAnalysisManager::Terminate()
    TIter next1(fOutputs);
    AliAnalysisDataContainer *output;
    while ((output=(AliAnalysisDataContainer*)next1())) {
-      // Special outputs have the files already closed and written.
-     if (output->IsSpecialOutput()&&(fMode == kProofAnalysis)) continue;
+      // Special outputs or grid files have the files already closed and written.
+      if (fMode == kGridAnalysis) continue;
+      if (output->IsSpecialOutput()&&(fMode == kProofAnalysis)) continue;
       const char *filename = output->GetFileName();
       if (!(strcmp(filename, "default"))) {
          if (fOutputEventHandler) filename = fOutputEventHandler->GetOutputFileName();
@@ -971,13 +984,39 @@ void AliAnalysisManager::StartAnalysis(const char *type, TTree *tree, Long64_t n
    TString anaType = type;
    anaType.ToLower();
    fMode = kLocalAnalysis;
+   Bool_t runlocalinit = kTRUE;
+   if (anaType.Contains("file")) runlocalinit = kFALSE;
    if (anaType.Contains("proof"))     fMode = kProofAnalysis;
    else if (anaType.Contains("grid")) fMode = kGridAnalysis;
    else if (anaType.Contains("mix"))  fMode = kMixingAnalysis;
 
    if (fMode == kGridAnalysis) {
-      Warning("StartAnalysis", "GRID analysis mode not implemented. Running local.");
-      fMode = kLocalAnalysis;
+      if (!fGridHandler) {
+         Error("StartAnalysis", "Cannot start grid analysis without a grid handler.");
+         Info("===", "Add an AliAnalysisAlien object as plugin for this manager and configure it.");
+         return;
+      }
+      // Write analysis manager in the analysis file
+      cout << "===== RUNNING GRID ANALYSIS: " << GetName() << endl;
+      // run local task configuration
+      TIter nextTask(fTasks);
+      AliAnalysisTask *task;
+      while ((task=(AliAnalysisTask*)nextTask())) {
+         task->LocalInit();
+      }
+      fGridHandler->StartAnalysis(nentries, firstentry);
+
+      // Terminate grid analysis
+      if (fGridHandler->GetRunMode() == AliAnalysisGrid::kOffline) return;
+      cout << "===== MERGING OUTPUTS REGISTERED BY YOUR ANALYSIS JOB: " << GetName() << endl;
+      if (!fGridHandler->MergeOutputs()) {
+         // Return if outputs could not be merged or if it alien handler
+         // was configured for offline mode or local testing.
+         return;
+      }
+      ImportWrappers(NULL);
+      Terminate();
+      return;
    }
    char line[256];
    SetEventLoop(kFALSE);
@@ -998,9 +1037,11 @@ void AliAnalysisManager::StartAnalysis(const char *type, TTree *tree, Long64_t n
    // Initialize locally all tasks (happens for all modes)
    TIter next(fTasks);
    AliAnalysisTask *task;
-   while ((task=(AliAnalysisTask*)next())) {
-      task->LocalInit();
-   }
+   if (runlocalinit) {
+      while ((task=(AliAnalysisTask*)next())) {
+         task->LocalInit();
+      }
+   }   
    
    switch (fMode) {
       case kLocalAnalysis:

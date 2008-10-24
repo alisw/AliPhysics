@@ -23,6 +23,7 @@
 #ifdef WITHXML
 #pragma link C++ class AliTagAnalysis+;
 #pragma link C++ class AliXMLCollection+;
+#pragma link C++ class AliAnalysisAlien+;
 #endif
 
 #endif

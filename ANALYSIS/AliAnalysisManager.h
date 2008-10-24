@@ -25,6 +25,7 @@ class AliAnalysisDataContainer;
 class AliAnalysisTask;
 class AliVEventHandler;
 class AliVEventPool;
+class AliAnalysisGrid;
 
 
 class AliAnalysisManager : public TNamed {
@@ -95,12 +96,14 @@ enum EAliAnalysisFlags {
    void                SetInputEventHandler(AliVEventHandler*  handler)  {fInputEventHandler   = handler;}
    void                SetOutputEventHandler(AliVEventHandler*  handler) {fOutputEventHandler  = handler;}
    void                SetMCtruthEventHandler(AliVEventHandler* handler) {fMCtruthEventHandler = handler;}
+   void                SetGridHandler(AliAnalysisGrid *handler) {fGridHandler = handler;}
    void                SetEventPool(AliVEventPool* epool) {fEventPool = epool;}
    void                SetNSysInfo(Long64_t nevents) {fNSysInfo = nevents;}
    void                SetSelector(AliAnalysisSelector *sel) {fSelector = sel;}
    AliVEventHandler*   GetInputEventHandler()   {return fInputEventHandler;}
    AliVEventHandler*   GetOutputEventHandler()  {return fOutputEventHandler;}
    AliVEventHandler*   GetMCtruthEventHandler() {return fMCtruthEventHandler;}
+   AliAnalysisGrid*    GetGridHandler()         {return fGridHandler;}
    AliVEventPool*      GetEventPool()           {return fEventPool;}
 
    // Container handling
@@ -152,6 +155,7 @@ private:
    TObjArray              *fInputs;              // List of containers with input data
    TObjArray              *fOutputs;             // List of containers with results
    AliAnalysisSelector    *fSelector;            //! Current selector
+   AliAnalysisGrid        *fGridHandler;         //! Grid handler plugin
 
    static AliAnalysisManager *fgAnalysisManager; //! static pointer to object instance
    ClassDef(AliAnalysisManager,3)  // Analysis manager class
