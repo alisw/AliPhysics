@@ -620,6 +620,7 @@ Int_t AliTPCclustererKr::CleanSector(Int_t sector){
       }
     }
   }
+  return 0;
 }
 ////____________________________________________________________________________
 Int_t AliTPCclustererKr::FindClusterKrIO()

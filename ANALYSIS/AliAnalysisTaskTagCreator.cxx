@@ -128,6 +128,7 @@ Bool_t AliAnalysisTaskTagCreator::Notify()
     } else {
 	fFirstFile = kFALSE;
     }
+    return kTRUE;
 }
 
 

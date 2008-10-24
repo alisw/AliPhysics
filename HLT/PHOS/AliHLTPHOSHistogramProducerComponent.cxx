@@ -60,6 +60,7 @@ int
 AliHLTPHOSHistogramProducerComponent::Deinit()
 { 
   //see header file for documentation
+  return kTRUE;
 }
 
 const char*
