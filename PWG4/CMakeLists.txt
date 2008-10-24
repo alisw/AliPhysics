@@ -6,6 +6,8 @@
 
 set(INCLUDE_DIRECTORIES
 ${CMAKE_SOURCE_DIR}/PWG4
+${CMAKE_SOURCE_DIR}/PWG4/PartCorr
+${CMAKE_SOURCE_DIR}/PWG4/JetTasks
 ${CMAKE_SOURCE_DIR}/STEER
 ${CMAKE_SOURCE_DIR}/ANALYSIS 
 ${ROOT_INCLUDE_DIR}
@@ -22,4 +24,4 @@ link_directories( ${LINK_DIRECTORIES})
 SetModule()
 
 include(CMake_libPWG4PartCorr.txt)
-
+include(CMake_libPWG4JetTasks.txt)

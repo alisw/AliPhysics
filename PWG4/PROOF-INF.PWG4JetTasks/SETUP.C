@@ -9,9 +9,9 @@ void SETUP()
    gROOT->ProcessLine(".include JETAN");
 
    // Set the Include paths
-   gSystem->AddIncludePath("-IPWG4");
-   gROOT->ProcessLine(".include PWG4");
+   gSystem->AddIncludePath("-IPWG4JetTasks");
+   gROOT->ProcessLine(".include PWG4JetTasks/JetTasks");
 
    // Set our location, so that other packages can find us
-   gSystem->Setenv("PWG4JetTasks_INCLUDE", "PWG4");
+   gSystem->Setenv("PWG4JetTasks_INCLUDE", "PWG4JetTasks");
 }
