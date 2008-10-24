@@ -472,8 +472,8 @@ void   AliTreeDraw::GetPoints3D(const char * label, const char * chpoints,
    Int_t npoints = fTree->Draw(label,selection);
    Float_t xyz[30000];
    rmin*=rmin;
-   for (Int_t i=0;i<npoints;i++){
-     Int_t index = (Int_t)fTree->GetV1()[i];
+   for (Int_t ii=0;ii<npoints;ii++){
+     Int_t index = (Int_t)fTree->GetV1()[ii];
      tpoints->GetEntryWithIndex(index,index);
      if (points->GetNPoints()<2) continue;
      Int_t goodpoints=0;
