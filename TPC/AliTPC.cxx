@@ -178,7 +178,8 @@ AliTPC::AliTPC(const char *name, const char *title)
 
 
   if (!strcmp(title,"Default")) {       
-    fTPCParam = new AliTPCParamSR;
+    //fTPCParam = new AliTPCParamSR;
+    fTPCParam = AliTPCcalibDB::Instance()->GetParameters();
   } else {
     AliWarning("In Config.C you must set non-default parameters.");
     fTPCParam=0;
@@ -195,7 +196,7 @@ AliTPC::~AliTPC()
   fIshunt   = 0;
   delete fHits;
   delete fDigits;
-  delete fTPCParam;
+  //delete fTPCParam;
   delete fTrackHits; //MI 15.09.2000
   //  delete fTrackHitsOld; //MI 10.12.2001
   
@@ -1206,14 +1207,21 @@ void AliTPC::SetDefaults(){
   AliRunLoader* rl = (AliRunLoader*)fLoader->GetEventFolder()->FindObject(AliRunLoader::GetRunLoaderName());
   rl->CdGAFile();
   AliTPCParamSR *param=(AliTPCParamSR*)gDirectory->Get("75x40_100x60");
-  if(param){
-    AliInfo("You are using 2 pad-length geom hits with 3 pad-lenght geom digits...");
-    delete param;
-    param = new AliTPCParamSR();
-  }
-  else {
-    param=(AliTPCParamSR*)gDirectory->Get("75x40_100x60_150x60");
-  }
+  // if(param){
+//     AliInfo("You are using 2 pad-length geom hits with 3 pad-lenght geom digits...");
+//     delete param;
+//     param = new AliTPCParamSR();
+//   }
+//   else {
+//     param=(AliTPCParamSR*)gDirectory->Get("75x40_100x60_150x60");
+//   }
+  param = (AliTPCParamSR*)AliTPCcalibDB::Instance()->GetParameters();
+  if (!param->IsGeoRead()){
+      //
+      // read transformation matrices for gGeoManager
+      //
+      param->ReadGeoMatrices();
+    }
   if(!param){
     AliFatal("No TPC parameters found");
   }
@@ -2671,7 +2679,15 @@ AliTPCParam* AliTPC::LoadTPCParam(TFile *file) {
     AliDebugClass(1,Form("TPC parameters %s found.",paramName));
   } else {
     AliWarningClass("TPC parameters not found. Create new (they may be incorrect)");
-    paramTPC = new AliTPCParamSR;
+    //paramTPC = new AliTPCParamSR;
+    paramTPC = AliTPCcalibDB::Instance()->GetParameters();
+    if (!paramTPC->IsGeoRead()){
+      //
+      // read transformation matrices for gGeoManager
+      //
+      paramTPC->ReadGeoMatrices();
+    }
+  
   }
   return paramTPC;
 

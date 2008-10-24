@@ -94,6 +94,7 @@ AliTPCClusterParam::SetInstance(param);
 #include <TProfile2D.h>
 #include <TVectorD.h>
 #include <TObjArray.h>
+#include "AliTPCcalibDB.h"
 
 ClassImp(AliTPCClusterParam)
 

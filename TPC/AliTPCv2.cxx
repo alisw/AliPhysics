@@ -66,8 +66,8 @@ AliTPCv2::AliTPCv2(const char *name, const char *title) :
   SetBufferSize(128000);
 
 
-  if (fTPCParam)
-     fTPCParam->Write(fTPCParam->GetTitle());
+//   if (fTPCParam)
+//      fTPCParam->Write(fTPCParam->GetTitle());
 }
  
 //_____________________________________________________________________________
