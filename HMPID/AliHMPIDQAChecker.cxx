@@ -120,8 +120,8 @@ Double_t AliHMPIDQAChecker::CheckEntries(TObjArray * list) const
 Double_t AliHMPIDQAChecker::CheckRecPoints(TObjArray *listrec, TObjArray *listref) const
 {
   //
-  //  check on the HMPID RecPoints by using expo fit and Kolmogorov Test: 
-  // 
+  //  check on the HMPID RecPoints by using expo fit and Kolmogorov Test:
+  //
 
    Float_t checkresponse = 0;
 
