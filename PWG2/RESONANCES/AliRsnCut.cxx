@@ -78,8 +78,8 @@ AliRsnCut::AliRsnCut(const char *name, const char *title, EType type, Double_t m
     fIMax(fgkIBigNumber),
     fUIMin(0),
     fUIMax(2 * (UInt_t) fgkIBigNumber),
-    fULMin(min),
-    fULMax(max),
+    fULMin((ULong_t)min),
+    fULMax((ULong_t)max),
     fType(type),
     fVarType((EVarType)kDouble_t)
 {
@@ -97,8 +97,8 @@ AliRsnCut::AliRsnCut(const char * name, const char * title, EType type, Int_t mi
     fIMax(max),
     fUIMin(0),
     fUIMax(2 * (UInt_t) fgkIBigNumber),
-    fULMin(min),
-    fULMax(max),
+    fULMin((ULong_t)min),
+    fULMax((ULong_t)max),
     fType(type),
     fVarType(kInt_t)
 {
