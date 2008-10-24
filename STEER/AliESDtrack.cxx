@@ -119,6 +119,7 @@
 #include "AliESDVertex.h"
 #include "AliESDtrack.h"
 #include "AliKalmanTrack.h"
+#include "AliVTrack.h"
 #include "AliLog.h"
 #include "AliTrackPointArray.h"
 #include "TPolyMarker3D.h"
@@ -335,6 +336,108 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   if (track.fOp) fOp=new AliExternalTrackParam(*track.fOp);
 
   if (track.fFriendTrack) fFriendTrack=new AliESDfriendTrack(*(track.fFriendTrack));
+}
+
+//_______________________________________________________________________
+AliESDtrack::AliESDtrack(const AliVTrack *track) : 
+  AliExternalTrackParam(track),
+  fCp(0),
+  fIp(0),
+  fTPCInner(0),
+  fOp(0),
+  fFriendTrack(0),
+  fTPCClusterMap(159),//number of padrows
+  fTPCSharedMap(159),//number of padrows
+  fFlags(0),
+  fID(),
+  fLabel(0),
+  fITSLabel(0),
+  fTPCLabel(0),
+  fTRDLabel(0),
+  fTOFCalChannel(0),
+  fTOFindex(-1),
+  fHMPIDqn(0),
+  fHMPIDcluIdx(0),
+  fEMCALindex(kEMCALNoMatch),
+  fHMPIDtrkTheta(0),
+  fHMPIDtrkPhi(0),
+  fHMPIDsignal(0),
+  fTrackLength(0),
+  fdTPC(0),fzTPC(0),
+  fCddTPC(0),fCdzTPC(0),fCzzTPC(0),
+  fCchi2TPC(0),
+  fD(0),fZ(0),
+  fCdd(0),fCdz(0),fCzz(0),
+  fCchi2(0),
+  fITSchi2(0),
+  fTPCchi2(0),
+  fTRDchi2(0),
+  fTOFchi2(0),
+  fHMPIDchi2(0),
+  fITSsignal(0),
+  fTPCsignal(0),
+  fTPCsignalS(0),
+  fTRDsignal(0),
+  fTRDQuality(0),
+  fTRDBudget(0),
+  fTOFsignal(0),
+  fTOFsignalToT(0),
+  fTOFsignalRaw(0),
+  fTOFsignalDz(0),
+  fHMPIDtrkX(0),
+  fHMPIDtrkY(0),
+  fHMPIDmipX(0),
+  fHMPIDmipY(0),
+  fTPCncls(0),
+  fTPCnclsF(0),
+  fTPCsignalN(0),
+  fITSncls(0),
+  fITSClusterMap(0),
+  fTRDncls(0),
+  fTRDncls0(0),
+  fTRDpidQuality(0),
+  fTRDnSlices(0),
+  fTRDslices(0x0)
+{
+  //
+  // ESD track from AliVTrack
+  //
+
+  // Reset all the arrays
+  Int_t i;
+  for (i=0; i<AliPID::kSPECIES; i++) {
+    fTrackTime[i]=0.;
+    fR[i]=0.;
+    fITSr[i]=0.;
+    fTPCr[i]=0.;
+    fTRDr[i]=0.;
+    fTOFr[i]=0.;
+    fHMPIDr[i]=0.;
+  }
+  
+  for (i=0; i<3; i++)   { fKinkIndexes[i]=0;}
+  for (i=0; i<3; i++)   { fV0Indexes[i]=-1;}
+  for (i=0;i<kTRDnPlanes;i++) {
+    fTRDTimBin[i]=0;
+  }
+  for (i=0;i<4;i++) {fTPCPoints[i]=0;}
+  for (i=0;i<3;i++) {fTOFLabel[i]=0;}
+  for (i=0;i<10;i++) {fTOFInfo[i]=0;}
+  for (i=0;i<12;i++) {fITSModule[i]=-1;}
+
+  // Set the ID
+  SetID(track->GetID());
+
+  // Set ITS cluster map
+  fITSClusterMap=track->GetITSClusterMap();
+
+  // Set the combined PID
+  const Double_t *pid = track->PID();
+  for (i=0; i<5; i++) fR[i]=pid[i];
+
+  // AliESD track label
+  SetLabel(track->GetLabel());
+
 }
 
 //_______________________________________________________________________

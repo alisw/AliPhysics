@@ -20,7 +20,7 @@
  *****************************************************************************/
 #include "TMath.h"
 
-#include "AliVParticle.h"
+#include "AliVTrack.h"
 
 const Double_t kVeryBig=1./kAlmost0;
 const Double_t kMostProbablePt=0.35;
@@ -30,19 +30,21 @@ Double_t ApproximateBetheBloch(Double_t);
 class AliVVertex;
 class TPolyMarker3D; 
 
-class AliExternalTrackParam: public AliVParticle {
+class AliExternalTrackParam: public AliVTrack {
  public:
   AliExternalTrackParam();
   AliExternalTrackParam(const AliExternalTrackParam &);
   AliExternalTrackParam& operator=(const AliExternalTrackParam & trkPar);
   AliExternalTrackParam(Double_t x, Double_t alpha, 
 			const Double_t param[5], const Double_t covar[15]);
+  AliExternalTrackParam(const AliVTrack *vTrack);
   AliExternalTrackParam(Double_t xyz[3],Double_t pxpypz[3],
 			Double_t cv[21],Short_t sign);
   virtual ~AliExternalTrackParam(){}
 
   void Set(Double_t x,Double_t alpha,
 			const Double_t param[5], const Double_t covar[15]);
+  void Set(Double_t xyz[3],Double_t pxpypz[3],Double_t cv[21],Short_t sign);
 
   static void SetMostProbablePt(Double_t pt) { fgMostProbablePt=pt; }
   static Double_t GetMostProbablePt() { return fgMostProbablePt; }
@@ -100,6 +102,11 @@ class AliExternalTrackParam: public AliVParticle {
   virtual Double_t Y() const;
   Short_t  Charge() const { return (Short_t)GetSign(); }
   const Double_t *PID() const { return 0x0; }
+
+  // additional functions from AliVTrack
+  virtual Int_t    GetID() const { return -999; }
+  virtual UChar_t  GetITSClusterMap() const {return 0; }
+  virtual ULong_t  GetStatus() const { return 0; }
 
   Double_t GetSign() const {return (fP[4]>0) ? 1 : -1;}
   Double_t GetP() const;
@@ -175,7 +182,7 @@ class AliExternalTrackParam: public AliVParticle {
 
   static Double32_t    fgMostProbablePt; // "Most probable" pt
                                          // (to be used if Bz=0)
-  ClassDef(AliExternalTrackParam, 7)
+  ClassDef(AliExternalTrackParam, 8)
 };
 
 inline void AliExternalTrackParam::ResetCovariance(Double_t s2) {

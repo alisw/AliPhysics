@@ -6,18 +6,18 @@
 /* $Id$ */
 
 //-------------------------------------------------------------------------
-//     AOD track implementation of AliVParticle
+//     AOD track implementation of AliVTrack
 //     Author: Markus Oldenburg, CERN
 //-------------------------------------------------------------------------
 
 #include <TRef.h>
 
-#include "AliVParticle.h"
+#include "AliVTrack.h"
 #include "AliAODVertex.h"
 #include "AliAODRedCov.h"
 #include "AliAODPid.h"
 
-class AliAODTrack : public AliVParticle {
+class AliAODTrack : public AliVTrack {
 
  public:
   
@@ -134,7 +134,7 @@ class AliAODTrack : public AliVParticle {
   ULong_t GetStatus() const { return GetFlags(); }
   ULong_t GetFlags() const { return fFlags; }
 
-  Short_t GetID() const { return fID; }
+  Int_t   GetID() const { return (Int_t)fID; }
   Int_t   GetLabel() const { return fLabel; } 
   Char_t  GetType() const { return fType;}
   Bool_t  IsPrimaryCandidate() const;
@@ -158,6 +158,9 @@ class AliAODTrack : public AliVParticle {
   template <class T> Bool_t GetCovMatrix(T *covMatrix) const {
     if(!fCovMatrix) return kFALSE;
     fCovMatrix->GetCovMatrix(covMatrix); return kTRUE;}
+
+  Bool_t GetCovarianceXYZPxPyPz(Double_t cv[21]) const {
+    return GetCovMatrix(cv);}
 
   void RemoveCovMatrix() {delete fCovMatrix; fCovMatrix=NULL;}
 

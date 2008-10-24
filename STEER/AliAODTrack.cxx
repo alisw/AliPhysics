@@ -16,7 +16,7 @@
 /* $Id$ */
 
 //-------------------------------------------------------------------------
-//     AOD track implementation of AliVParticle
+//     AOD track implementation of AliVTrack
 //     Author: Markus Oldenburg, CERN
 //     Markus.Oldenburg@cern.ch
 //-------------------------------------------------------------------------
@@ -28,7 +28,7 @@ ClassImp(AliAODTrack)
 
 //______________________________________________________________________________
 AliAODTrack::AliAODTrack() : 
-  AliVParticle(),
+  AliVTrack(),
   fChi2perNDF(-999.),
   fChi2MatchTrigger(0.),
   fFlags(0),
@@ -68,7 +68,7 @@ AliAODTrack::AliAODTrack(Short_t id,
 			 AODTrk_t ttype,
 			 UInt_t selectInfo,
 			 Float_t chi2perNDF) :
-  AliVParticle(),
+  AliVTrack(),
   fChi2perNDF(chi2perNDF),
   fChi2MatchTrigger(0.),
   fFlags(0),
@@ -112,7 +112,7 @@ AliAODTrack::AliAODTrack(Short_t id,
 			 AODTrk_t ttype,
 			 UInt_t selectInfo,
 			 Float_t chi2perNDF) :
-  AliVParticle(),
+  AliVTrack(),
   fChi2perNDF(chi2perNDF),
   fChi2MatchTrigger(0.),
   fFlags(0),
@@ -150,7 +150,7 @@ AliAODTrack::~AliAODTrack()
 
 //______________________________________________________________________________
 AliAODTrack::AliAODTrack(const AliAODTrack& trk) :
-  AliVParticle(trk),
+  AliVTrack(trk),
   fChi2perNDF(trk.fChi2perNDF),
   fChi2MatchTrigger(trk.fChi2MatchTrigger),
   fFlags(trk.fFlags),
@@ -183,7 +183,7 @@ AliAODTrack& AliAODTrack::operator=(const AliAODTrack& trk)
   // Assignment operator
   if(this!=&trk) {
 
-    AliVParticle::operator=(trk);
+    AliVTrack::operator=(trk);
 
     trk.GetP(fMomentum);
     trk.GetPosition(fPosition);

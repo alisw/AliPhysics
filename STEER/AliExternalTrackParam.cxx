@@ -38,7 +38,7 @@ Double32_t AliExternalTrackParam::fgMostProbablePt=kMostProbablePt;
  
 //_____________________________________________________________________________
 AliExternalTrackParam::AliExternalTrackParam() :
-  AliVParticle(),
+  AliVTrack(),
   fX(0),
   fAlpha(0)
 {
@@ -51,7 +51,7 @@ AliExternalTrackParam::AliExternalTrackParam() :
 
 //_____________________________________________________________________________
 AliExternalTrackParam::AliExternalTrackParam(const AliExternalTrackParam &track):
-  AliVParticle(track),
+  AliVTrack(track),
   fX(track.fX),
   fAlpha(track.fAlpha)
 {
@@ -70,7 +70,7 @@ AliExternalTrackParam& AliExternalTrackParam::operator=(const AliExternalTrackPa
   //
   
   if (this!=&trkPar) {
-    AliVParticle::operator=(trkPar);
+    AliVTrack::operator=(trkPar);
     fX = trkPar.fX;
     fAlpha = trkPar.fAlpha;
 
@@ -85,7 +85,7 @@ AliExternalTrackParam& AliExternalTrackParam::operator=(const AliExternalTrackPa
 AliExternalTrackParam::AliExternalTrackParam(Double_t x, Double_t alpha, 
 					     const Double_t param[5], 
 					     const Double_t covar[15]) :
-  AliVParticle(),
+  AliVTrack(),
   fX(x),
   fAlpha(alpha)
 {
@@ -97,11 +97,40 @@ AliExternalTrackParam::AliExternalTrackParam(Double_t x, Double_t alpha,
 }
 
 //_____________________________________________________________________________
-AliExternalTrackParam::AliExternalTrackParam(Double_t xyz[3],Double_t pxpypz[3],
-					     Double_t cv[21],Short_t sign) :
-  AliVParticle(),
+AliExternalTrackParam::AliExternalTrackParam(const AliVTrack *vTrack) :
+  AliVTrack(),
   fX(0.),
   fAlpha(0.)
+{
+  //
+  // constructor from virtual track
+  //
+  Double_t xyz[3]={vTrack->Xv(),vTrack->Yv(),vTrack->Zv()};
+  Double_t pxpypz[3]={vTrack->Px(),vTrack->Py(),vTrack->Pz()};
+  Double_t cv[21];
+  vTrack->GetCovarianceXYZPxPyPz(cv);
+  Short_t sign = (Short_t)vTrack->Charge();
+
+  Set(xyz,pxpypz,cv,sign);
+}
+
+//_____________________________________________________________________________
+AliExternalTrackParam::AliExternalTrackParam(Double_t xyz[3],Double_t pxpypz[3],
+					     Double_t cv[21],Short_t sign) :
+  AliVTrack(),
+  fX(0.),
+  fAlpha(0.)
+{
+  //
+  // constructor from the global parameters
+  //
+
+  Set(xyz,pxpypz,cv,sign);
+}
+
+//_____________________________________________________________________________
+void AliExternalTrackParam::Set(Double_t xyz[3],Double_t pxpypz[3],
+				Double_t cv[21],Short_t sign) 
 {
   //
   // create external track parameters from the global parameters
@@ -174,6 +203,8 @@ AliExternalTrackParam::AliExternalTrackParam(Double_t xyz[3],Double_t pxpypz[3],
   fC[8 ] = (b4-b6*b1/b3)/(b5-b6*b2/b3);
   fC[13] = b1/b3-b2*fC[8]/b3;
   fC[9 ] = TMath::Abs((cv[20]-fC[14]*(m45*m45)-fC[13]*2.*m35*m45)/(m35*m35));
+
+  return;
 }
 
 //_____________________________________________________________________________

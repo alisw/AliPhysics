@@ -1,4 +1,3 @@
-
 #ifndef ALIESDTRACK_H
 #define ALIESDTRACK_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
@@ -30,6 +29,7 @@
 
 #include <TBits.h>
 #include "AliExternalTrackParam.h"
+#include "AliVTrack.h"
 #include "AliPID.h"
 #include "AliESDfriendTrack.h"
 
@@ -59,6 +59,7 @@ public:
   };
   AliESDtrack();
   AliESDtrack(const AliESDtrack& track);
+  AliESDtrack(const AliVTrack* track);
   AliESDtrack(TParticle * part);
   virtual ~AliESDtrack();
   virtual void Copy(TObject &obj) const;
@@ -79,7 +80,8 @@ public:
   void SetIntegratedTimes(const Double_t *times);
   void SetESDpid(const Double_t *p);
   void GetESDpid(Double_t *p) const;
-  
+  const Double_t *PID() const { return fR; }
+
   Bool_t IsOn(Int_t mask) const {return (fFlags&mask)>0;}
   ULong_t GetStatus() const {return fFlags;}
   Int_t GetLabel() const {return fLabel;}
