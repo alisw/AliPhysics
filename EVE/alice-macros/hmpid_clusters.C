@@ -13,10 +13,9 @@ class TEvePointSet;
 
 #else
 
-#include <TEve.h>
 #include <TEveManager.h>
 #include <TEvePointSet.h>
-#include <EveDet/AliEveEventManager.h>
+#include <EveBase/AliEveEventManager.h>
 
 #include <AliRunLoader.h>
 #include <AliCluster3D.h>
@@ -77,6 +76,8 @@ TEvePointSet* hmpid_clusters(TEveElement* cont=0, Float_t maxR=1000)
       }
     }
   }
+
+  rl->UnloadRecPoints("HMPID");
 
   if (clusters->Size() == 0 && gEve->GetKeepEmptyCont() == kFALSE) {
     Warning("hmpid_clusters", "No HMPID clusters");

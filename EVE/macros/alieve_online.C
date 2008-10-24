@@ -16,6 +16,7 @@ void alieve_online_init()
   gROOT->LoadMacro("its_clusters.C++");
   gROOT->LoadMacro("tpc_clusters.C++");
   gROOT->LoadMacro("trd_clusters.C++");
+  gROOT->LoadMacro("hmpid_clusters.C++");
 
   gROOT->LoadMacro("acorde_raw.C");
   gROOT->LoadMacro("its_raw.C");
@@ -66,6 +67,8 @@ void alieve_online_on_new_event()
 
   tpc_raw();
   tpc_clusters();
+
+  hmpid_clusters();
 
   acorde_raw();
 
