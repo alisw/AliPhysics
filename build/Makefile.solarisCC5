@@ -6,9 +6,9 @@
 XARGS = xargs
 
 # The compilers
-CXX           = /opt/SUNWspro/bin/CC
-CC	      = /opt/SUNWspro/bin/cc
-F77	      = /opt/SUNWspro/bin/f77
+CXX           = CC
+CC	      = cc
+F77	      = f77
 
 # Global optimisation
 OPT           = -g -O 
@@ -26,8 +26,8 @@ CLIBCOPT      =
 CLIBFOPT      = $(CLIBDEFS) -xpp=cpp
 
 # Compiler flags
-CXXFLAGS      = $(CXXOPT) +w -KPIC -features=rtti -D_XOPEN_SOURCE -D_XOPEN_VERSION=4 -D__EXTENSIONS__ -template=no%extdef
-CXXFLAGSNO    = $(CXXNOOPT) +w -KPIC -features=rtti -template=no%extdef
+CXXFLAGS      = $(CXXOPT) +w -KPIC -template=no%extdef
+CXXFLAGSNO    = $(CXXNOOPT) +w -KPIC -template=no%extdef
 CFLAGS	      = $(COPT) -KPIC -erroff=%none
 FFLAGS        = $(FOPT) $(CLIBFOPT) $(CLIBDEFS)  -KPIC
 # rmkdepend flags for building dependencies of FORTRAN files
@@ -39,7 +39,7 @@ CINTFLAGS     =
 SHLIB         = 
 SOEXT 	      = so
 
-LD            = /opt/SUNWspro/bin/CC
+LD            = CC
 LDFLAGS       = $(OPT) -Qoption ld -t
 
 SHLD	      = $(LD)
