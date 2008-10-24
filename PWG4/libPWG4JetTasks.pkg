@@ -1,6 +1,6 @@
 #-*- Mode: Makefile -*-
 
-SRCS = AliAnalysisTaskUE.cxx AliAnalysisTaskJetSpectrum.cxx AliAnalysisHelperJetTasks.cxx AliAnaESDSpectraQA.cxx
+SRCS = JetTasks/AliAnalysisTaskUE.cxx JetTasks/AliAnalysisTaskJetSpectrum.cxx JetTasks/AliAnalysisHelperJetTasks.cxx JetTasks/AliAnaESDSpectraQA.cxx
 
 HDRS:= $(SRCS:.cxx=.h) 
 

@@ -38,9 +38,12 @@ ifneq ($(PWG4PartCorr_INCLUDE),)
   ALICEINC += -I../$(PWG4PartCorr_INCLUDE)
 endif
 
-
 ifneq ($(PWG4JetTasks_INCLUDE),)
   ALICEINC += -I../$(PWG4JetTasks_INCLUDE)
+endif
+
+ifneq ($(JETAN_INCLUDE),)
+  ALICEINC += -I../$(JETAN_INCLUDE)
 endif
 
 
