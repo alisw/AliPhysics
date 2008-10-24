@@ -33,6 +33,7 @@
 #include <TMinuit.h>
 #include <TH1F.h>
 #include <TH2F.h>
+#include <AliSysInfo.h>
 
 #include <TMath.h>
 #include <TNtuple.h>
@@ -150,10 +151,13 @@ void AliTPCCalibTCF::ProcessRawFile(const char *nameRawFile, const char *nameFil
 
   Int_t ievent=0;
   do {  
+    AliSysInfo::AddStamp(Form("start_event_%d",ievent), ievent,-1,-1);
     printf("Reading next event ... Nr: %d\n",ievent);
-    AliTPCRawStream rawStream(rawReader);
+    AliTPCRawStream *rawStream = new AliTPCRawStream(rawReader);
     rawReader->Select("TPC");
-    ProcessRawEvent(&rawStream, nameFileOut);
+    ProcessRawEvent(rawStream, nameFileOut);
+    delete rawStream;
+    AliSysInfo::AddStamp(Form("end_event_%d",ievent), ievent,-1,-1);
     ievent++;
   } while (rawReader->NextEvent());
 
@@ -197,6 +201,7 @@ void AliTPCCalibTCF::ProcessRawEvent(AliTPCRawStream *rawStream, const char *nam
     if (rawStream->IsNewRow()){ 
       sector = rawStream->GetSector();
       row    = rawStream->GetRow();
+      //  if (sector!=prevSec) AliSysInfo::AddStamp(Form("sector_%d_row_%d",sector,row), -1,sector,row);
     }
 
     Int_t pad = rawStream->GetPad();
@@ -295,13 +300,13 @@ void AliTPCCalibTCF::ProcessRawEvent(AliTPCRawStream *rawStream, const char *nam
 	if (!his ) { // new entry (pulse in new pad found)
 	  
 	  his = new TH1F(hname,hname, fPulseLength+4, 0, fPulseLength+4);
-	  his->SetBinContent(1,1);       //  pulse counter (1st pulse)
+	  his->SetBinContent(1,1);        //  pulse counter (1st pulse)
 	  his->SetBinContent(2,prevSec);  //  sector
 	  his->SetBinContent(3,prevRow);  //  row
 	  his->SetBinContent(4,prevPad);  //  pad	  
        
 	  for (Int_t ipos=0; ipos<last-first; ipos++){
-	    Int_t signal = (Int_t)(tempHis->GetBinContent(ipos+first)-baseline);
+	    signal = (Int_t)(tempHis->GetBinContent(ipos+first)-baseline);
 	    his->SetBinContent(ipos+5,signal);
 	  }
 	  his->Write(hname);
@@ -311,7 +316,7 @@ void AliTPCCalibTCF::ProcessRawEvent(AliTPCRawStream *rawStream, const char *nam
 	
 	  his->AddBinContent(1,1); //  pulse counter for each pad
 	  for (Int_t ipos=0; ipos<last-first; ipos++){
-	    Int_t signal= (Int_t)(tempHis->GetBinContent(ipos+first)-baseline);
+	    signal= (Int_t)(tempHis->GetBinContent(ipos+first)-baseline);
 	    his->AddBinContent(ipos+5,signal);
 	  }
 	  printf("adding ...  %s: Signal %d at bin %d \n", hname, max-(Int_t)baseline, maxpos+fGateWidth);
@@ -670,30 +675,30 @@ void AliTPCCalibTCF::TestTCFonRawFile(const char *nameRawFile, const char *nameF
   do {
 
     printf("Reading next event ... Nr:%d\n",ievent);
-    AliTPCRawStream rawStream(rawReader);
+    AliTPCRawStream *rawStream = new AliTPCRawStream(rawReader);
     rawReader->Select("TPC");
     ievent++;
 
-    Int_t sector = rawStream.GetSector();
-    Int_t row    = rawStream.GetRow();
+    Int_t sector = rawStream->GetSector();
+    Int_t row    = rawStream->GetRow();
 
     Int_t prevSec  = 999999;
     Int_t prevRow  = 999999;
     Int_t prevPad  = 999999;
     Int_t prevTime = 999999;
 
-    while (rawStream.Next()) {
+    while (rawStream->Next()) {
     
-      if (rawStream.IsNewRow()){
-	sector = rawStream.GetSector();
-	row    = rawStream.GetRow();
+      if (rawStream->IsNewRow()){
+	sector = rawStream->GetSector();
+	row    = rawStream->GetRow();
       }
       
-      Int_t pad = rawStream.GetPad();
-      Int_t time = rawStream.GetTime();
-      Int_t signal = rawStream.GetSignal();
+      Int_t pad = rawStream->GetPad();
+      Int_t time = rawStream->GetTime();
+      Int_t signal = rawStream->GetSignal();
       
-      if (!rawStream.IsNewPad()) { // Reading signal from one Pad 
+      if (!rawStream->IsNewPad()) { // Reading signal from one Pad 
 
 	// this pad always gave a useless signal, probably induced by the supply
 	// voltage of the gate signal (date:2008-Aug-07)
@@ -713,7 +718,7 @@ void AliTPCCalibTCF::TestTCFonRawFile(const char *nameRawFile, const char *nameF
 	}
 
 	if (time>prevTime) {
-	  //	  printf("Wrong time: %d %d\n",rawStream.GetTime(),prevTime);
+	  //	  printf("Wrong time: %d %d\n",rawStream->GetTime(),prevTime);
 	  continue;
 	} else {
 	  // still the same pad, save signal to temporary histogram
@@ -782,7 +787,7 @@ void AliTPCCalibTCF::TestTCFonRawFile(const char *nameRawFile, const char *nameF
           his->SetBinContent(4,prevPad);  //  pad
 
 	  for (Int_t ipos=0; ipos<last-first; ipos++){
-	   Int_t signal = (Int_t)(tempHis->GetBinContent(ipos+first)-baseline);
+	   signal = (Int_t)(tempHis->GetBinContent(ipos+first)-baseline);
 	   his->SetBinContent(ipos+5,signal);
 	  }
 	    
@@ -810,7 +815,10 @@ void AliTPCCalibTCF::TestTCFonRawFile(const char *nameRawFile, const char *nameF
 
     printf("Finished to read event ... \n");   
 
-} while (rawReader->NextEvent()); // event loop
+    delete rawStream;
+
+
+  } while (rawReader->NextEvent()); // event loop
 
   printf("Finished to read file - close output file ... \n");
   
@@ -869,9 +877,9 @@ TH2F *AliTPCCalibTCF::PlotOccupSummary2Dhist(const char *nameFileIn, Int_t side)
 
     if (row==-1 & pad==-1) { // summed pulses per sector
       // fill all pad with this values
-      for (UInt_t row=0; row<roc->GetNRows(sec); row++) {
-        for (UInt_t pad=0; pad<roc->GetNPads(sec,row); pad++) {
-          roc->GetPositionGlobal(sec,row,pad,xyz);
+      for (UInt_t rowi=0; rowi<roc->GetNRows(sec); rowi++) {
+        for (UInt_t padi=0; padi<roc->GetNPads(sec,row); padi++) {
+          roc->GetPositionGlobal(sec,rowi,padi,xyz);
           binx = 1+TMath::Nint((xyz[0]+250.)*0.5);
           biny = 1+TMath::Nint((xyz[1]+250.)*0.5);
           his2D->SetBinContent(binx,biny,npulse);
@@ -909,7 +917,6 @@ void AliTPCCalibTCF::PlotOccupSummary(const char *nameFile, Int_t side, Int_t nP
   //
 
   TFile *file = new TFile(nameFile,"READ");
-
   TH1F *his;
   TKey *key;
   TIter next( file->GetListOfKeys() );
@@ -925,6 +932,9 @@ void AliTPCCalibTCF::PlotOccupSummary(const char *nameFile, Int_t side, Int_t nP
 
   Int_t nHist=file->GetNkeys();
   Int_t iHist = 0;
+
+  Int_t secWise = 0;
+
   while ((key = (TKey *) next())) { // loop over histograms within the file
     iHist+=1;
     his = (TH1F*)file->Get(key->GetName()); // copy object to memory
@@ -939,6 +949,7 @@ void AliTPCCalibTCF::PlotOccupSummary(const char *nameFile, Int_t side, Int_t nP
 
     if (row==-1 & pad==-1) { // summed pulses per sector
       row = 40; pad = 40;    // set to approx middle row for better plot
+      secWise=1;
     }
 
     Float_t *pos = new Float_t[3];
@@ -952,7 +963,7 @@ void AliTPCCalibTCF::PlotOccupSummary(const char *nameFile, Int_t side, Int_t nP
   }
  
 
-  if (iHist<72) { // pulse per sector
+  if (secWise) { // pulse per sector
     ntuple->SetMarkerStyle(8);
     ntuple->SetMarkerSize(4);
   } else {        // pulse per Pad
@@ -1028,19 +1039,18 @@ Int_t AliTPCCalibTCF::FitPulse(TNtuple *dataTuple, Double_t *coefZ, Double_t *co
   //
  
   // initialize TMinuit with a maximum of 8 params
-  TMinuit *gMinuit = new
- TMinuit(8);
-  gMinuit->mncler();                    // Reset Minuit's list of paramters
-  gMinuit->SetPrintLevel(-1);           // No Printout
-  gMinuit->SetFCN(AliTPCCalibTCF::FitFcn); // To set the address of the 
+  TMinuit *minuitFit = new TMinuit(8);
+  minuitFit->mncler();                    // Reset Minuit's list of paramters
+  minuitFit->SetPrintLevel(-1);           // No Printout
+  minuitFit->SetFCN(AliTPCCalibTCF::FitFcn); // To set the address of the 
                                            // minimization function  
-  gMinuit->SetObjectFit(dataTuple);
+  minuitFit->SetObjectFit(dataTuple);
   
   Double_t arglist[10];
   Int_t ierflg = 0;
   
   arglist[0] = 1;
-  gMinuit->mnexcm("SET ERR", arglist ,1,ierflg);
+  minuitFit->mnexcm("SET ERR", arglist ,1,ierflg);
   
   // Set standard starting values and step sizes for each parameter
   // upper and lower limit (in a reasonable range) are set to improve 
@@ -1050,31 +1060,31 @@ Int_t AliTPCCalibTCF::FitPulse(TNtuple *dataTuple, Double_t *coefZ, Double_t *co
   static Double_t min[8]    = {100,  3.,  0.1, 0.2,  3.,  60.,  0.,  2.0};
   static Double_t max[8]    = {200, 20.,   5.,  3., 30., 300., 20., 2.5};
   
-  gMinuit->mnparm(0, "A1", vstart[0], step[0], min[0], max[0], ierflg);
-  gMinuit->mnparm(1, "A2", vstart[1], step[1], min[1], max[1], ierflg);
-  gMinuit->mnparm(2, "A3", vstart[2], step[2], min[2], max[2], ierflg);
-  gMinuit->mnparm(3, "T1", vstart[3], step[3], min[3], max[3], ierflg);
-  gMinuit->mnparm(4, "T2", vstart[4], step[4], min[4], max[4], ierflg);
-  gMinuit->mnparm(5, "T3", vstart[5], step[5], min[5], max[5], ierflg);
-  gMinuit->mnparm(6, "T0", vstart[6], step[6], min[6], max[6], ierflg);
-  gMinuit->mnparm(7, "TTP", vstart[7], step[7], min[7], max[7],ierflg);
-  gMinuit->FixParameter(7); // 2.24 ... out of pulserRun Fit (->IRF)
+  minuitFit->mnparm(0, "A1", vstart[0], step[0], min[0], max[0], ierflg);
+  minuitFit->mnparm(1, "A2", vstart[1], step[1], min[1], max[1], ierflg);
+  minuitFit->mnparm(2, "A3", vstart[2], step[2], min[2], max[2], ierflg);
+  minuitFit->mnparm(3, "T1", vstart[3], step[3], min[3], max[3], ierflg);
+  minuitFit->mnparm(4, "T2", vstart[4], step[4], min[4], max[4], ierflg);
+  minuitFit->mnparm(5, "T3", vstart[5], step[5], min[5], max[5], ierflg);
+  minuitFit->mnparm(6, "T0", vstart[6], step[6], min[6], max[6], ierflg);
+  minuitFit->mnparm(7, "TTP", vstart[7], step[7], min[7], max[7],ierflg);
+  minuitFit->FixParameter(7); // 2.24 ... out of pulserRun Fit (->IRF)
 
   // Now ready for minimization step
   arglist[0] = 2000;   // max num of iterations
   arglist[1] = 0.1;    // tolerance
 
-  gMinuit->mnexcm("MIGRAD", arglist ,2,ierflg);
+  minuitFit->mnexcm("MIGRAD", arglist ,2,ierflg);
   
   Double_t p1 = 0.0 ;
-  gMinuit->mnexcm("SET NOW", &p1 , 0, ierflg) ;  // No Warnings
+  minuitFit->mnexcm("SET NOW", &p1 , 0, ierflg) ;  // No Warnings
   
   if (ierflg == 4) { // Fit failed
     for (Int_t i=0;i<3;i++) { 
       coefP[i] = 0; 
       coefZ[i] = 0; 
     }
-    gMinuit->~TMinuit();
+    minuitFit->~TMinuit();
     return 0;
   } else { // Fit successfull
 
@@ -1083,7 +1093,7 @@ Int_t AliTPCCalibTCF::FitPulse(TNtuple *dataTuple, Double_t *coefZ, Double_t *co
     for (Int_t i=0;i<6;i++) {
       Double_t err = 0;
       Double_t val = 0;
-      gMinuit->GetParameter(i,val,err);
+      minuitFit->GetParameter(i,val,err);
       fitParam[i] = val;
     } 
     
@@ -1099,7 +1109,7 @@ Int_t AliTPCCalibTCF::FitPulse(TNtuple *dataTuple, Double_t *coefZ, Double_t *co
    
     fitParam->~Double_t();
     valuePZ->~Double_t();
-    gMinuit->~TMinuit();
+    minuitFit->~TMinuit();
 
     return 1;
 
@@ -1727,8 +1737,8 @@ void AliTPCCalibTCF::MergeToOneFile(const char *nameFileSum) {
   TKey *key;
 
   // just delete the file entries ...
-  TFile fileSum(nameFileSum,"RECREATE");
-  fileSum.Close();
+  TFile fileSumD(nameFileSum,"RECREATE");
+  fileSumD.Close();
 
   char nameFileSumSec[100];
 
@@ -1747,7 +1757,7 @@ void AliTPCCalibTCF::MergeToOneFile(const char *nameFileSum) {
 
       printf("Sector file %s found\n",nameFileSumSec);
       TIter next(fileSumSec->GetListOfKeys());
-      while(key=(TKey*)next()) {
+      while( key=(TKey*)next() ) {
         const char *hisName = key->GetName();
 
         hisIn=(TH1F*)fileSumSec->Get(hisName);

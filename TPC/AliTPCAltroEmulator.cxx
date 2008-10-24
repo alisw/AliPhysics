@@ -221,8 +221,10 @@ void AliTPCAltroEmulator::ConfigAltro(int ONBaselineCorrection1, int ONTailcance
   fOnBSL2 = InRange(ONBaselineCorrection2,0,1,"AliTPCAltroEmulator::ConfigAltro","ONBaselineCorrection2");
   fOnClip = InRange(ONClipping,0,1,"AliTPCAltroEmulator::ConfigAltro","ONClipping");
   fOnZSU = InRange(ONZerosuppression,0,1,"AliTPCAltroEmulator::ConfigAltro","ONZerosuppression");
-  //  ONDataFormatting; // does not have to be checked
   fConfiguredAltro = 1;
+  if (!fConfiguredAltro) { //dummy code to avoid warning
+    printf("%d\n",ONDataFormatting); // does not have to be checked
+  }
 }
 
 /**  @brief Configures the Base Line Correction 1 (BSL1) Module
