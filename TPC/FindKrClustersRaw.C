@@ -80,12 +80,12 @@ Int_t FindKrClustersRaw(const char *fileName="data.root"){
   //set cluster finder parameters (from MC)
   clusters->SetMinAdc(3);//signal threshold (everything below is treated as 0)
   clusters->SetMinTimeBins(2);//number of neighbouring timebins
-  clusters->SetMaxPadRangeCm(2.5);//distance of the cluster center to the center of a pad (in cm)
-  clusters->SetMaxRowRangeCm(3.5);//distance of the cluster center to the center of a padrow (in cm)
-  clusters->SetMaxTimeRange(7);//distance of the cluster center to the max time bin on a pad (in tackts)
+  clusters->SetMaxPadRangeCm(5.);//distance of the cluster center to the center of a pad (in cm)
+  clusters->SetMaxRowRangeCm(5.);//distance of the cluster center to the center of a padrow (in cm)
+  clusters->SetMaxTimeRange(5.);//distance of the cluster center to the max time bin on a pad (in tackts)
   //ie. fabs(centerT - time)<7
-  clusters->SetValueToSize(6);//cut reduce peak at 0
-
+  clusters->SetValueToSize(7.);//cut reduce peak at 0
+  clusters->SetIsolCut(3);//set isolation cut threshold
 
   AliRawReader *reader = new AliRawReaderRoot(fileName);
   reader->Reset();

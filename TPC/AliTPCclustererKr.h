@@ -50,8 +50,7 @@ public:
   virtual Int_t FinderIO();//for MC
   virtual Int_t FinderIO(AliRawReader* rawReader);//for data
   virtual Int_t FindClusterKrIO();//main routine for finding clusters
-  virtual Int_t CleanSector(Int_t sector); // clean isolated digits
-
+  virtual void CleanSector(Int_t sector); // clean isolated digits
 
   //other
   void GetXY(Int_t sec,Int_t row,Int_t pad,Double_t& xGlob,Double_t& yGlob);//give XY coordinate of the pad
@@ -81,6 +80,8 @@ public:
   virtual void SetMaxPadRangeCm(Double_t v){fMaxPadRangeCm=v;}//set fMaxPadRangeCm
   virtual void SetMaxRowRangeCm(Double_t v){fMaxRowRangeCm=v;}//set fMaxRowRangeCm
 
+  virtual void SetIsolCut(Short_t v){fIsolCut=v;}
+
   virtual void SetDebugLevel(Int_t debug){fDebugLevel=debug;}
   //debug = 0 to 71 -sector number to  print
   // = 72 - all sectors
@@ -109,8 +110,10 @@ public:
   Double_t GetMaxPadRangeCm() const {return fMaxPadRangeCm;}//get fMaxPadRangeCm
   Double_t GetMaxRowRangeCm() const {return fMaxRowRangeCm;}//get fMaxRowRangeCm
 
+  Short_t GetIsolCut() const {return fIsolCut;}
+
   Int_t GetDebugLevel() const {return fDebugLevel;}
-  TH1F * GetHistoRow(){return fHistoRow;}
+  TH1F * GetHistoRow(){return fHistoRow;} 
   TH1F * GetHistoPad(){return fHistoPad;}
   TH1F * GetHistoTime(){return fHistoTime;}
   TH2F * GetHistoRowPad(){return fHistoRowPad;}
@@ -144,6 +147,8 @@ private:
 
   Double_t fMaxPadRangeCm;//maximal pad range in cm from maximum = 2.5cm def.
   Double_t fMaxRowRangeCm;//maximal row range in cm from maximum = 3.5cm def.
+
+  Short_t fIsolCut;//isolation cut in 3D = 5 def.
 
   Int_t fDebugLevel;//! debug level variable
   TH1F *fHistoRow;//!debug histo for rows

@@ -14,7 +14,9 @@
 #include "AliCluster.h"
 #include "TObjArray.h"
 #include "AliTPCvtpr.h"
-
+//#include "TH1F.h"
+#include "TMath.h"
+#include "TArrayI.h"
 
 //_____________________________________________________________________________
 class AliTPCclusterKr: public AliCluster{
@@ -35,6 +37,17 @@ public:
   virtual void SetCenterX(Double_t q){fCenterX=q;}
   virtual void SetCenterY(Double_t q){fCenterY=q;}
   virtual void SetCenterT(Double_t q){fCenterT=q;}
+
+  virtual void SetTimebins1D(Short_t q){fTimebins1D=q;}
+  virtual void SetPads1D(Short_t q){fPads1D=q;}
+  virtual void Set1D();
+  virtual void SetPadRMS(Double_t q){fPadRMS=q;}
+  virtual void SetRowRMS(Double_t q){fRowRMS=q;}
+  virtual void SetTimebinRMS(Double_t q){fTimebinRMS=q;}
+  virtual void SetPadRMS();
+  virtual void SetRowRMS();
+  virtual void SetTimebinRMS();
+  virtual void SetRMS();
   //void AddDigitToCluster(AliTPCvtpr *q){fCluster.push_back(q);}
   virtual void AddDigitToCluster(AliTPCvtpr *q){
     fCluster->AddLast(q);
@@ -47,6 +60,13 @@ public:
   Short_t GetNPads() const {return fNPads;}
   Short_t GetNRows() const {return fNRows;}
   Short_t GetSize() const {return fSize;}
+
+  Short_t GetTimebins1D(){return fTimebins1D;}
+  Short_t GetPads1D(){return fPads1D;}
+  Double_t GetPadRMS(){return fPadRMS;}
+  Double_t GetRowRMS(){return fRowRMS;}
+  Double_t GetTimebinRMS(){return fTimebinRMS;}
+
   Double_t GetCenterX() const {return fCenterX;}
   Double_t GetCenterY() const {return fCenterY;}
   Double_t GetCenterT() const {return fCenterT;}
@@ -57,7 +77,14 @@ private:
   Int_t fADCcluster; //ADC of cluster
   Short_t fSec;  //sector of the cluster
   Short_t fNPads; //number of pads in cluster
-  Short_t fNRows; //number of rows in cluster
+  Short_t fNRows; //number of rows in cluster or row max - min
+
+  Short_t fTimebins1D; //Timebin max - min
+  Short_t fPads1D; //Pad max - min
+  Double_t fPadRMS; //Pad RMS
+  Double_t fRowRMS; //Row RMS
+  Double_t fTimebinRMS; //Timebin RMS
+
   Short_t fSize; //size of vector
   Double_t fCenterX;// X coordinate of the cluster center in cm
   Double_t fCenterY;// Y coordinate of the cluster center in cm
@@ -66,7 +93,7 @@ private:
   TObjArray *fCluster;//cluster contents(adc,nt,np,nr)
 
 
-  ClassDef(AliTPCclusterKr,4)  // Time Projection Chamber Kr clusters
+  ClassDef(AliTPCclusterKr,5)  // Time Projection Chamber Kr clusters
 };
 
 

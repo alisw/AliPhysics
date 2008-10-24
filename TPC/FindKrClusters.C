@@ -1,3 +1,4 @@
+
 /****************************************************************************
  *           Origin: A.Matyja amatyja@cern.ch                               *
  ****************************************************************************/
@@ -35,8 +36,9 @@ Int_t FindKrClusters(){
   //
   //Load DataBase
   //
-  char *ocdbpath ="local:///afs/cern.ch/alice/tpctest/OCDB";
+  //char *ocdbpath ="local:///afs/cern.ch/alice/tpctest/OCDB";
   //char *ocdbpath ="local:///home/matyja/baza/OCDB";
+  char *ocdbpath ="local:///data/baza/OCDB";
   if (ocdbpath==0){
     ocdbpath="alien://folder=/alice/data/2007/LHC07w/OCDB/";
   }
@@ -91,7 +93,23 @@ Int_t FindKrClusters(){
   TStopwatch timer;
   timer.Start();
   cwd->cd();
+
+  TTree *output_tree;
   
+  AliTPCclustererKr *clusters = new AliTPCclustererKr();
+  clusters->SetParam(param);
+  clusters->SetOutput(output_tree);
+
+  clusters->SetMinAdc(3);//signal threshold (everything below is treated as 0)
+  clusters->SetMinTimeBins(2);//number of neighbouring timebins
+  clusters->SetMaxPadRangeCm(5.);//distance of the cluster center to the center of a pad (in cm)
+  clusters->SetMaxRowRangeCm(5.);//distance of the cluster center to the center of a padrow (in cm)
+  clusters->SetMaxTimeRange(7.);//distance of the cluster center to the max time bin on a pad (in tackts)
+  //ie. fabs(centerT - time)<7
+
+  clusters->SetIsolCut(3);//set isolation cut threshold
+  clusters->SetValueToSize(3.1);//cut reduce peak at 0
+
   Int_t nevmax=rl->GetNumberOfEvents();//number of events in run
   for(Int_t nev=0;nev<nevmax /*&& nev<1*/ ;nev++){
     rl->GetEvent(nev);
@@ -101,35 +119,14 @@ Int_t FindKrClusters(){
       cerr << "Can not get TreeD for event " <<nev<<endl;
       continue;
     }
-    
     digarr->ConnectTree(input_tree);
-    
-    TTree *output_tree =tpcl->TreeR();
-    if(output_tree==0x0){
-      tpcl->MakeTree("R");
-      output_tree = tpcl->TreeR();
-      if (output_tree == 0x0){
-	cerr << "Problems with output tree (TreeR) for event "<<nev<<endl;
-	continue;
-      }
-    }
-    
-    cout<<"Processing event "<<nev<<endl;
-
-    //test
-    //cout<<"nentries"<<input_tree->GetEntries();
-
-    AliTPCclustererKr *clusters = new AliTPCclustererKr();
-    clusters->SetParam(param);
     clusters->SetInput(input_tree);
-    clusters->SetOutput(output_tree);
     clusters->SetDigArr(digarr);
+    cout<<"Processing event "<<nev<<endl;
     clusters->FinderIO();
 
-    tpcl->WriteRecPoints("OVERWRITE");
   }
-  
-
+  delete clusters;
   timer.Stop(); timer.Print();
   
   delete rl;//cleans everything

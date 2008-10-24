@@ -25,6 +25,9 @@
 #include "AliCluster.h"
 #include "AliTPCvtpr.h"
 #include "TObjArray.h"
+//#include "TH1F.h"
+#include "TMath.h"
+#include "TArrayI.h"
 
 ClassImp(AliTPCclusterKr)
 
@@ -36,6 +39,11 @@ AliTPCclusterKr::AliTPCclusterKr()
  fSec(0),
  fNPads(0),
  fNRows(0),
+ fTimebins1D(0),
+ fPads1D(0),
+ fPadRMS(0),
+ fRowRMS(0),
+ fTimebinRMS(0),
  fSize(0),
  fCenterX(0),
  fCenterY(0),
@@ -55,6 +63,11 @@ AliTPCclusterKr::AliTPCclusterKr(const AliTPCclusterKr &param)
  fSec(0),
  fNPads(0),
  fNRows(0),
+ fTimebins1D(0),
+ fPads1D(0),
+ fPadRMS(0),
+ fRowRMS(0),
+ fTimebinRMS(0),
  fSize(0),
  fCenterX(0),
  fCenterY(0),
@@ -75,6 +88,11 @@ AliTPCclusterKr::AliTPCclusterKr(const AliTPCclusterKr &param)
   fCenterT = param.fCenterT;
   fCluster=new TObjArray(*(param.fCluster));
   fSize = param.fSize;
+  fTimebins1D = param.fTimebins1D;
+  fPads1D = param.fPads1D;
+  fPadRMS = param.fPadRMS;
+  fRowRMS = param.fRowRMS;
+  fTimebinRMS = param.fTimebinRMS;
 } 
 
 AliTPCclusterKr &AliTPCclusterKr::operator = (const AliTPCclusterKr & param)
@@ -95,6 +113,11 @@ AliTPCclusterKr &AliTPCclusterKr::operator = (const AliTPCclusterKr & param)
   delete fCluster;
   fCluster=new TObjArray(*(param.fCluster));
   fSize=param.fSize;
+  fTimebins1D = param.fTimebins1D;
+  fPads1D = param.fPads1D;
+  fPadRMS = param.fPadRMS;
+  fRowRMS = param.fRowRMS;
+  fTimebinRMS = param.fTimebinRMS;
   return (*this);
 }
 
@@ -137,5 +160,118 @@ void AliTPCclusterKr::SetCenter(){
   fCenterY=rY/fADCcluster;
   fCenterT=rT/fADCcluster;
 
+  return;
+}
+
+void AliTPCclusterKr::SetPadRMS(){
+  //
+  // calculate RMS in pad direction
+  //
+  //  TH1F *histo= new TH1F("","",200,0,200);
+  TArrayI *array= new TArrayI(fCluster->GetEntriesFast());
+  for(Int_t i=0;i<fCluster->GetEntriesFast();i++)
+    {
+      array->SetAt(((AliTPCvtpr *)(fCluster->At(i)))->GetPad(),i);
+      //histo->Fill( ((AliTPCvtpr *)(fCluster->At(i)))->GetPad() );
+    }
+  //  fPadRMS=histo->GetRMS();
+  fPadRMS=TMath::RMS(array->GetSize(),array->GetArray());
+  //  delete histo;
+  delete array;
+  return;
+}
+
+void AliTPCclusterKr::SetRowRMS(){
+  //
+  // calculate RMS in row direction
+  //
+  TArrayI *array= new TArrayI(fCluster->GetEntriesFast());
+  //  TH1F *histo= new TH1F("","",120,0,120);
+  for(Int_t i=0;i<fCluster->GetEntriesFast();i++)
+    {
+      array->SetAt(((AliTPCvtpr *)(fCluster->At(i)))->GetRow(),i);
+      //      histo->Fill( ((AliTPCvtpr *)(fCluster->At(i)))->GetRow() );
+    }
+  //  fRowRMS=histo->GetRMS();
+  fRowRMS=TMath::RMS(array->GetSize(),array->GetArray());
+  //  delete histo;
+  delete array;
+  return;
+}
+
+void AliTPCclusterKr::SetTimebinRMS(){
+  //
+  // calculate RMS in timebin direction
+  //
+  TArrayI *array= new TArrayI(fCluster->GetEntriesFast());
+  //  TH1F *histo= new TH1F("","",1000,0,1000);
+  for(Int_t i=0;i<fCluster->GetEntriesFast();i++)
+    {
+      array->SetAt(((AliTPCvtpr *)(fCluster->At(i)))->GetTime(),i);
+      //      histo->Fill( ((AliTPCvtpr *)(fCluster->At(i)))->GetTime() );
+    }
+  fTimebinRMS=TMath::RMS(array->GetSize(),array->GetArray());
+  //histo->GetRMS();
+  //  delete histo;
+  delete array;
+  return;
+}
+
+void AliTPCclusterKr::SetRMS(){
+  //
+  // calculate RMS in pad,row,timebin direction
+  //
+  TArrayI *arrayPad = new TArrayI(fCluster->GetEntriesFast());
+  TArrayI *arrayRow = new TArrayI(fCluster->GetEntriesFast());
+  TArrayI *arrayTime= new TArrayI(fCluster->GetEntriesFast());
+  //  TH1F *histoPad= new TH1F("p","p",200,0,200);
+  //  TH1F *histoRow= new TH1F("r","r",120,0,120);
+  //  TH1F *histoTime= new TH1F("t","t",1000,0,1000);
+  for(Int_t i=0;i<fCluster->GetEntriesFast();i++)
+    {
+      arrayPad->SetAt(((AliTPCvtpr *)(fCluster->At(i)))->GetPad(),i);
+      arrayRow->SetAt(((AliTPCvtpr *)(fCluster->At(i)))->GetRow(),i);
+      arrayTime->SetAt(((AliTPCvtpr *)(fCluster->At(i)))->GetTime(),i);
+
+      //histoPad->Fill( ((AliTPCvtpr *)(fCluster->At(i)))->GetPad() );
+      //histoRow->Fill( ((AliTPCvtpr *)(fCluster->At(i)))->GetRow() );
+      //histoTime->Fill( ((AliTPCvtpr *)(fCluster->At(i)))->GetTime() );
+    }
+  //  fPadRMS=histoPad->GetRMS();
+  fPadRMS=TMath::RMS(arrayPad->GetSize(),arrayPad->GetArray());
+  fRowRMS=TMath::RMS(arrayRow->GetSize(),arrayRow->GetArray());
+    //histoRow->GetRMS();
+  fTimebinRMS=TMath::RMS(arrayTime->GetSize(),arrayTime->GetArray());
+    //histoTime->GetRMS();
+
+  delete arrayPad;
+  delete arrayRow;
+  delete arrayTime;
+  //  delete histoPad;
+  //  delete histoRow;
+  //  delete histoTime;
+
+  return;
+}
+
+
+void AliTPCclusterKr::Set1D(){
+  //
+  //
+  //
+  Short_t maxTime=0;
+  Short_t minTime=1000;
+  Short_t maxPad=0;
+  Short_t minPad=1000;
+ 
+  for(Int_t i=0;i<fCluster->GetEntriesFast();i++)
+    {
+      if(((AliTPCvtpr *)(fCluster->At(i)))->GetPad()>maxPad)maxPad   =((AliTPCvtpr *)(fCluster->At(i)))->GetPad();
+      if(((AliTPCvtpr *)(fCluster->At(i)))->GetPad()<minPad)minPad   =((AliTPCvtpr *)(fCluster->At(i)))->GetPad();
+      if(((AliTPCvtpr *)(fCluster->At(i)))->GetTime()>maxTime)maxTime=((AliTPCvtpr *)(fCluster->At(i)))->GetTime();
+      if(((AliTPCvtpr *)(fCluster->At(i)))->GetTime()<minTime)minTime=((AliTPCvtpr *)(fCluster->At(i)))->GetTime();
+    }
+  fPads1D=maxPad-minPad+1;
+  fTimebins1D=maxTime-minTime+1;
   return;
 }

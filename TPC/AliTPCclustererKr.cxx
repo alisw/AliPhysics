@@ -255,6 +255,7 @@ AliTPCclustererKr::AliTPCclustererKr()
   fValueToSize(3.5),
   fMaxPadRangeCm(2.5),
   fMaxRowRangeCm(3.5),
+  fIsolCut(3),
   fDebugLevel(-1),
   fHistoRow(0),
   fHistoPad(0),
@@ -287,6 +288,7 @@ AliTPCclustererKr::AliTPCclustererKr(const AliTPCclustererKr &param)
   fValueToSize(3.5),
   fMaxPadRangeCm(2.5),
   fMaxRowRangeCm(3.5),
+  fIsolCut(3),
   fDebugLevel(-1),
   fHistoRow(0),
   fHistoPad(0),
@@ -315,11 +317,13 @@ AliTPCclustererKr::AliTPCclustererKr(const AliTPCclustererKr &param)
   fValueToSize  = param.fValueToSize;
   fMaxPadRangeCm = param.fMaxPadRangeCm;
   fMaxRowRangeCm = param.fMaxRowRangeCm;
+  fIsolCut = param.fIsolCut;
   fDebugLevel = param.fDebugLevel;
   fHistoRow    = param.fHistoRow   ;
   fHistoPad    = param.fHistoPad  ;
   fHistoTime   = param.fHistoTime;
   fHistoRowPad = param.fHistoRowPad;
+
 
 } 
 
@@ -347,6 +351,7 @@ AliTPCclustererKr & AliTPCclustererKr::operator = (const AliTPCclustererKr & par
   fValueToSize  = param.fValueToSize;
   fMaxPadRangeCm = param.fMaxPadRangeCm;
   fMaxRowRangeCm = param.fMaxRowRangeCm;
+  fIsolCut = param.fIsolCut;
   fDebugLevel = param.fDebugLevel;
   fHistoRow    = param.fHistoRow   ;
   fHistoPad    = param.fHistoPad  ;
@@ -590,8 +595,7 @@ Int_t AliTPCclustererKr::FinderIO(AliRawReader* rawReader)
   return 0;
 }
 
-
-Int_t AliTPCclustererKr::CleanSector(Int_t sector){
+void AliTPCclustererKr::CleanSector(Int_t sector){
   //
   // clean isolated digits
   //  
@@ -612,16 +616,18 @@ Int_t AliTPCclustererKr::CleanSector(Int_t sector){
 
       for(Int_t iTimeBin=1;iTimeBin<kNTime-1;iTimeBin++){
 	if (val[iTimeBin]<=0) continue;
-	if (val[iTimeBin-1]+val[iTimeBin+1]<fZeroSup) {val[iTimeBin]=0; continue;}
-	if (val[iTimeBin-kNTime]+val[iTimeBin+kNTime]<fZeroSup) {val[iTimeBin]=0; continue;}
+	if (val[iTimeBin-1]+val[iTimeBin+1]<fIsolCut) {val[iTimeBin]=0; continue;}
+	if (val[iTimeBin-kNTime]+val[iTimeBin+kNTime]<fIsolCut) {val[iTimeBin]=0; continue;}
 	//
-	if (val[iTimeBin-1-kNTime]+val[iTimeBin+1+kNTime]<fZeroSup) {val[iTimeBin]=0; continue;}
-	if (val[iTimeBin+1-kNTime]+val[iTimeBin-1+kNTime]<fZeroSup) {val[iTimeBin]=0; continue;}		
+	if (val[iTimeBin-1-kNTime]+val[iTimeBin+1+kNTime]<fIsolCut) {val[iTimeBin]=0; continue;}
+	if (val[iTimeBin+1-kNTime]+val[iTimeBin-1+kNTime]<fIsolCut) {val[iTimeBin]=0; continue;}
+
       }
     }
   }
-  return 0;
 }
+
+
 ////____________________________________________________________________________
 Int_t AliTPCclustererKr::FindClusterKrIO()
 {
@@ -634,6 +640,7 @@ Int_t AliTPCclustererKr::FindClusterKrIO()
   const Int_t nTotalSector=fParam->GetNSector();//number of sectors
   for(Int_t iSec=0; iSec<nTotalSector; ++iSec){
     CleanSector(iSec);
+
     //vector of maxima for each sector
     //std::vector<AliPadMax*> maximaInSector;
     TObjArray *maximaInSector=new TObjArray();//to store AliPadMax*
@@ -641,8 +648,6 @@ Int_t AliTPCclustererKr::FindClusterKrIO()
     //
     //  looking for the maxima on the pad
     //
-
-
 
     const Int_t kNRows=fParam->GetNRow(iSec);//number of rows in sector
     for(Int_t iRow=0; iRow<kNRows; ++iRow){
@@ -668,11 +673,12 @@ Int_t AliTPCclustererKr::FindClusterKrIO()
 	  for(Int_t iTimeBin=1;iTimeBin<kNTime-1;iTimeBin++){
 	    if (!ifMaximum)  {
 	      if (val[iTimeBin]==-1) break;   // 0 until the end
-	      for( ; iTimeBin<kNTime-2&&val[iTimeBin]<fMinAdc ;iTimeBin++){}
+	      for( ; iTimeBin<kNTime-2&&val[iTimeBin]<fMinAdc ;iTimeBin++);
 	    }
 	    //
 	    Short_t adc = val[iTimeBin];
-	    if(adc<fMinAdc){//standard was 3
+
+	    if(adc<fMinAdc){//standard was 3 for fMinAdc
 	      if(ifMaximum){
 		if(iTimeBin-increaseBegin<fMinTimeBins){//at least 2 time bins
 		  timeBinMax=-1;
@@ -712,7 +718,12 @@ Int_t AliTPCclustererKr::FindClusterKrIO()
 	      }
 	      continue;
 	    }
-	    
+
+
+
+
+
+
 	    if(ifIncreaseBegin){
 	      ifIncreaseBegin=false;
 	      increaseBegin=iTimeBin;
@@ -825,9 +836,9 @@ void AliTPCclustererKr::MakeClusters(TObjArray * maximaInSector, Int_t iSec, Int
     for(Int_t it2 = it1+1; it2 < entriesArr; ++it2 ) {
       AliPadMax *mp2=(AliPadMax *)maximaInSector->UncheckedAt(it2);
       if (!mp2) continue;
-      if (TMath::Abs(clusterKr.GetCenterX() - (mp2)->GetX())>fMaxPadRangeCm) continue;
+      if (TMath::Abs(clusterKr.GetCenterX() - (mp2)->GetX()) > fMaxPadRangeCm) continue;
       if (TMath::Abs(clusterKr.GetCenterY() - (mp2)->GetY()) > fMaxRowRangeCm) continue;      
-      if (TMath::Abs(clusterKr.GetCenterT() - (mp2)->GetT()) >fMaxTimeRange) continue;
+      if (TMath::Abs(clusterKr.GetCenterT() - (mp2)->GetT()) > fMaxTimeRange) continue;
 
       {
 	clusterValue+=(mp2)->GetSum();
@@ -893,6 +904,9 @@ void AliTPCclustererKr::MakeClusters(TObjArray * maximaInSector, Int_t iSec, Int
     clusterKr.SetNRows(nUsedRows.size());
     clusterKr.SetCenter();
     
+    clusterKr.SetRMS();//Set pad,row,timebin RMS
+    clusterKr.Set1D();//Set size in pads and timebins
+
     clusterCounter++;
     
     
