@@ -232,7 +232,7 @@ UInt_t AliITSOnlineSPDphysAnalyzer::ProcessNoisyPixels() {
 	  Double_t p = (Double_t)nrChipHits/nrPixels/n;
 
 	  // Bin(n,k=0):
-	  Double_t bin = pow(1-p,n);
+	  Double_t bin = pow((Double_t)(1-p),(Double_t)n);
 	  // Bin(n,k)
 	  UInt_t k=1;
 	  while ((bin>fThreshNoisy || k<n*p) && k<=n) {
@@ -363,7 +363,7 @@ UInt_t AliITSOnlineSPDphysAnalyzer::ProcessDeadPixels() {
 	    Double_t p = (Double_t)nrChipHits/nrPixels/n;
 
 	    // probability of falsely assigning a dead pixel
-	    Double_t falselyDeadProb = pow(1-p,n);
+	    Double_t falselyDeadProb = pow((Double_t)(1-p),(Double_t)n);
 	    //	    printf("falselyprob=%e\n",falselyDeadProb);
 
 	    // can we find dead pixels...?
