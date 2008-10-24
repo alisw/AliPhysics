@@ -63,8 +63,8 @@ Bool_t AliDEventAliceESD::ParticleGood(Int_t i, Int_t pidi) const
   else return 0;
 }
 //=============================================================================
-Bool_t AliDEventAliceESD::PairGood(Double_t p0, Double_t the0, Double_t phi0, 
-				Double_t p1, Double_t the1, Double_t phi1) const {
+Bool_t AliDEventAliceESD::PairGood(Double_t /*p0*/, Double_t the0, Double_t phi0, 
+				   Double_t /*p1*/, Double_t the1, Double_t phi1) const {
 
   // two-track separation cut
 
