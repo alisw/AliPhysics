@@ -1,10 +1,10 @@
 # -*- mode: cmake -*-
 
 set(SRCS
-AliAnalysisDataContainer.cxx AliAnalysisDataSlot.cxx 
-AliAnalysisManager.cxx AliAnalysisTask.cxx 
-AliAnalysisSelector.cxx 
-AliAnalysisFilter.cxx AliAnalysisCuts.cxx 
+       AliAnalysisDataContainer.cxx AliAnalysisDataSlot.cxx 
+       AliAnalysisManager.cxx AliAnalysisTask.cxx 
+       AliAnalysisSelector.cxx AliAnalysisGrid.cxx 
+       AliAnalysisFilter.cxx AliAnalysisCuts.cxx 
 )
 
 # fill list of header files from list of source files

@@ -5,7 +5,7 @@ set(SRCS
 	AliAnalysisTaskESDfilter.cxx AliAnalysisTaskKineFilter.cxx AliAnalysisTaskMCParticleFilter.cxx 
 	AliKineTrackCuts.cxx AliESDtrackCuts.cxx AliESDv0Cuts.cxx 
 	AliEventPoolOTF.cxx AliEventPoolLoop.cxx AliEventPoolSparse.cxx 
-	AliAnalysisTaskTagCreator.cxx
+	AliAnalysisTaskTagCreator.cxx AliAnalysisAlien.cxx
 )
 
 Set_source_files_properties(${SRCS} COMPILE_FLAGS -DWITHXML)

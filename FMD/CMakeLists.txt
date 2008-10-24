@@ -6,8 +6,10 @@
 set(INCLUDE_DIRECTORIES
 ${CMAKE_SOURCE_DIR}/FMD
 ${CMAKE_SOURCE_DIR}/FMD/flow
+${CMAKE_SOURCE_DIR}/FMD/analysis
 ${CMAKE_SOURCE_DIR}/STEER
 ${CMAKE_SOURCE_DIR}/RAW
+${CMAKE_SOURCE_DIR}/ANALYSIS
 ${ROOT_INCLUDE_DIR}
 )
 
@@ -30,4 +32,6 @@ include(CMake_libFMDutil.txt)
 include(CMake_libFMDflow.txt)
 
 include(CMake_libFMDsim.txt)
+
+include(CMake_libFMDanalysis.txt)
 
