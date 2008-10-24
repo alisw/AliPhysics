@@ -163,22 +163,35 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertex(const AliVEvent *vEvent)
   // loop on tracks
   for(Int_t i=0; i<nTrks; i++) {
     AliVTrack *track = (AliVTrack*)vEvent->GetTrack(i);
+    // check tracks to skip
+    Bool_t skipThis = kFALSE;
+    for(Int_t j=0; j<fNTrksToSkip; j++) { 
+      if(track->GetID()==fTrksToSkip[j]) {
+	AliDebug(1,Form("skipping track: %d",i));
+	skipThis = kTRUE;
+      }
+    }
+    if(skipThis) continue;
 
-    if(fITSrefit && !(track->GetStatus()&AliESDtrack::kITSrefit)) continue;
-
-    // check number of clusters in ITS
-    Int_t ncls0=0;
-    for(Int_t l=0;l<6;l++) if(TESTBIT(track->GetITSClusterMap(),l)) ncls0++;
-    if(fMode==0 && ncls0 < fMinClusters) continue;
-
-    if(!inputAOD) {
-      Double_t x,p[5],cov[15];
+    if(!inputAOD) {  // ESD
       AliESDtrack* esdt = (AliESDtrack*)track;
       if(esdt->GetNcls(fMode) < fMinClusters) continue;
-      esdt->GetExternalParameters(x,p);
-      esdt->GetExternalCovariance(cov);
-      t = new AliExternalTrackParam(x,esdt->GetAlpha(),p,cov);
-    } else {
+      if(fMode==0) {        // ITS mode
+	if(fITSrefit && !(esdt->GetStatus()&AliESDtrack::kITSrefit)) continue;
+	Double_t x,p[5],cov[15];
+	esdt->GetExternalParameters(x,p);
+	esdt->GetExternalCovariance(cov);
+	t = new AliExternalTrackParam(x,esdt->GetAlpha(),p,cov);
+      } else if(fMode==1) { // TPC mode
+	t = (AliExternalTrackParam*)esdt->GetTPCInnerParam();
+	if(!t) continue;
+	Double_t radius = 2.8; //something less than the beam pipe radius
+	if(!PropagateTrackTo(t,radius)) continue;
+      }
+    } else {          // AOD (only ITS mode)
+      Int_t ncls0=0;
+      for(Int_t l=0;l<6;l++) if(TESTBIT(track->GetITSClusterMap(),l)) ncls0++;
+      if(ncls0 < fMinClusters) continue;
       t = new AliExternalTrackParam(track);
     }
     trkArrayOrig.AddLast(t);
@@ -189,7 +202,7 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertex(const AliVEvent *vEvent)
   // call method that will reconstruct the vertex
   FindPrimaryVertex(&trkArrayOrig,idOrig);
 
-  trkArrayOrig.Delete();
+  if(fMode==0) trkArrayOrig.Delete();
   delete [] idOrig; idOrig=NULL;
 
   if(f) {
