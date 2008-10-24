@@ -763,7 +763,7 @@ int AliHLTHOMERReader::FreeShmDataSource( DataSource& source )
     {
 // see header file for class documentation
     if ( source.fShmPtr )
-	shmdt( source.fShmPtr );
+      shmdt( (char*)source.fShmPtr );
 //     if ( source.fShmID != -1 )
 // 	shmctl( source.fShmID, IPC_RMID, NULL );
     return 0;
