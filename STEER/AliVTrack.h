@@ -24,7 +24,6 @@ public:
   virtual UChar_t  GetITSClusterMap() const = 0;
   virtual ULong_t  GetStatus() const = 0;
   virtual Bool_t   GetCovarianceXYZPxPyPz(Double_t cv[21]) const = 0;
-  virtual Bool_t   PropagateTo(Double_t x, Double_t b) = 0;
 
   ClassDef(AliVTrack,0)  // base class for tracks
 };

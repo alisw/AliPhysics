@@ -246,9 +246,6 @@ class AliAODTrack : public AliVTrack {
   void     SetProdVertex(TObject *vertex) { fProdVertex = vertex; }
   void     SetType(AODTrk_t ttype) { fType=ttype; }
 
-  // track operations
-  Bool_t   PropagateTo(Double_t xk, Double_t b);
-
 
  private :
 
