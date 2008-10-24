@@ -360,7 +360,7 @@ void AliEveTRDTrackListEditor::BrowseMacros()
     while (iter != 0)
     {
       // NOTE: fileInfo->fFileNamesList will be changed by that, too!
-      name = strrchr(iter->GetName(), '/');
+      name = (Char_t*)strrchr(iter->GetName(), '/');
       // Delete '"' at the end
       name[strlen(name)] = '\0';
               
@@ -655,7 +655,7 @@ void AliEveTRDTrackListEditor::HandleMacroPathSet()
       fclose(fp);
 
       // Extract filename
-      Char_t* name = strrchr(fteField->GetText(), '/');
+      Char_t* name = (Char_t*)strrchr(fteField->GetText(), '/');
 
       // Current path
       if (name == NULL)
