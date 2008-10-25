@@ -1113,7 +1113,7 @@ void AliTPCtrackerParam::CompareTPCtracks(
   TFile *galiceFile = TFile::Open(galiceName);
 
   // get the AliRun object
-  AliRun *gAlice = (AliRun*)galiceFile->Get("gAlice");
+  AliRun *lAlice = (AliRun*)galiceFile->Get("gAlice");
 
 
   // create the tree for comparison results
@@ -1164,7 +1164,7 @@ void AliTPCtrackerParam::CompareTPCtracks(
     sprintf(tname,"TreeT_TPC_%d",evt);
     
     // particles from TreeK
-    const Int_t knparticles = gAlice->GetEvent(evt);
+    const Int_t knparticles = lAlice->GetEvent(evt);
 
     Int_t *kalLab = new Int_t[knparticles];
     for(Int_t i=0; i<knparticles; i++) kalLab[i] = -1; 
@@ -1223,7 +1223,7 @@ void AliTPCtrackerParam::CompareTPCtracks(
       geatree->GetEvent(j);
       
       label = geatrack->GetLabel();
-      part = (TParticle*)gAlice->GetMCApp()->Particle(label);
+      part = (TParticle*)lAlice->GetMCApp()->Particle(label);
       
       // use only injected tracks with fixed values of pT
       ptgener = part->Pt();
@@ -1373,7 +1373,7 @@ void AliTPCtrackerParam::CompareTPCtracks(
   WriteEffs(tpceffrootName);
 
   // delete AliRun object
-  delete gAlice; gAlice=0;
+  delete lAlice; lAlice=0;
   
   // close all input files
   kalFile->Close();
