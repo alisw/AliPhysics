@@ -43,6 +43,8 @@ public:
   //
   static void       BinLogX(TH1 * h);   // method for correct histogram binning
 
+  void     Process(AliESDtrack *track, Int_t runNo=-1){AliTPCcalibBase::Process(track,runNo);};
+  void     Process(AliTPCseed *track){return AliTPCcalibBase::Process(track);}
 
 private:
 

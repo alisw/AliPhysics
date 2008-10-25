@@ -52,7 +52,9 @@ public:
   Float_t GetDistance(AliExternalTrackParam *track, AliTPCLaserTrack *ltrp);
   void   MakeFitHistos();
   void   MergeFitHistos(AliTPCcalibLaser * add);
-
+  void     Process(AliESDtrack *track, Int_t runNo=-1){AliTPCcalibBase::Process(track,runNo);};
+  void     Process(AliTPCseed *track){return AliTPCcalibBase::Process(track);}
+  //
 
   AliESDEvent  * fESD;             //! ESD event  - not OWNER
   AliESDfriend * fESDfriend;       //! ESD event  - not OWNER

@@ -59,6 +59,8 @@ public:
 //   Bool_t GetTransformationCovar6(Int_t s1,Int_t s2,TMatrixD &a, Bool_t norm=kFALSE);
   void Add(AliTPCcalibAlign * align);
   Int_t *GetPoints() {return fPoints;}
+  void     Process(AliESDtrack *track, Int_t runNo=-1){AliTPCcalibBase::Process(track,runNo);};
+  void     Process(AliESDEvent *event){AliTPCcalibBase::Process(event);}
 private:
   void FillHisto(const AliExternalTrackParam &t1,
 			const AliExternalTrackParam &t2,

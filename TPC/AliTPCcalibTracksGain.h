@@ -116,8 +116,9 @@ public:
   TGraph *        CreateAmpGraph(Int_t ipad, Bool_t qmax);
 
 
-  TLinearFitter*  GetFitter(UInt_t segment, UInt_t padType, UInt_t fitType);
-  
+  TLinearFitter*  GetFitter(UInt_t segment, UInt_t padType, UInt_t fitType);  
+  void     Process(AliESDEvent *event) {AliTPCcalibBase::Process(event);};
+  void     Process(AliESDtrack *track, Int_t runNo=-1){AliTPCcalibBase::Process(track,runNo);};
   
 public:
   //

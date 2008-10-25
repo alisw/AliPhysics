@@ -29,6 +29,9 @@ public:
   
   Bool_t  RefitTrack(AliESDtrack * track, AliTPCseed *seed);
   Bool_t  RejectCluster(AliTPCclusterMI* cl, AliExternalTrackParam * param);
+  void     Process(AliESDtrack *track, Int_t runNo=-1){AliTPCcalibBase::Process(track,runNo);};
+  void     Process(AliTPCseed *track){return AliTPCcalibBase::Process(track);}
+
 protected: 
 private:
   ClassDef(AliTPCcalibCalib,1)

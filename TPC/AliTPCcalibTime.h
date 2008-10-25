@@ -40,7 +40,8 @@ public:
   THnSparse *                 GetHistDeDx(){return (THnSparse*) fHistDeDx;};
 
   
-
+  void     Process(AliESDtrack *track, Int_t runNo=-1){AliTPCcalibBase::Process(track,runNo);};
+  void     Process(AliTPCseed *track){return AliTPCcalibBase::Process(track);}
 private:
   void ResetCurrent();                  // reset current values
   ULong64_t fTriggerMask;               // select certain trigger within one run

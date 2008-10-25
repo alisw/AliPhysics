@@ -46,7 +46,9 @@ public :
   //
   //  
   static AliKFParticle * Fit(AliKFVertex & primVtx, AliESDv0 *v0, Int_t PDG1, Int_t PDG2);
-  
+  void     Process(AliESDtrack *track, Int_t runNo=-1){AliTPCcalibBase::Process(track,runNo);};
+  void     Process(AliTPCseed *track){return AliTPCcalibBase::Process(track);}
+
 protected:
 private:
    AliStack       *fStack;        // pointer to kinematic tree        
