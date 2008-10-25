@@ -361,7 +361,7 @@ UInt_t AliTPCPreprocessor::Process(TMap* dcsAliasMap)
 
     numSources = 1;
     Int_t qaSource[2] = {AliShuttleInterface::kDAQ,AliShuttleInterface::kHLT} ;
-    TString source = fConfEnv->GetValue("QA","DAQ");
+    source = fConfEnv->GetValue("QA","DAQ");
     source.ToUpper();
     if ( source != "OFF" ) { 
      if ( source == "HLT") qaSource[0] = AliShuttleInterface::kHLT;
