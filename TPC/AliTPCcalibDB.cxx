@@ -824,6 +824,22 @@ Float_t AliTPCcalibDB::GetPressure(Int_t timeStamp, Int_t run, Int_t type){
   return sensor->GetValue(stamp);
 }
 
+Float_t AliTPCcalibDB::GetValueGoofie(Int_t timeStamp, Int_t run, Int_t type){
+  //
+  // GetPressure for given time stamp and runt
+  //
+  TTimeStamp stamp(timeStamp);
+  AliDCSSensorArray* goofieArray = AliTPCcalibDB::Instance()->GetGoofieSensors(run);
+  if (!goofieArray) return 0;
+  AliDCSSensor *sensor = goofieArray->GetSensor(type);
+  return sensor->GetValue(stamp);
+}
+
+
+
+
+
+
 Bool_t  AliTPCcalibDB::GetTemperatureFit(Int_t timeStamp, Int_t run, Int_t side,TVectorD& fit){
   //
   //

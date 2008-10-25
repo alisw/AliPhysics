@@ -54,6 +54,7 @@ class AliTPCcalibDB : public TObject
   //
   //
   static Float_t GetPressure(Int_t timeStamp, Int_t run, Int_t type=0);
+  static Float_t GetValueGoofie(Int_t timeStamp, Int_t run, Int_t type);
   static Bool_t  GetTemperatureFit(Int_t timeStamp, Int_t run, Int_t side,TVectorD& fit);
   static Float_t GetTemperature(Int_t timeStamp, Int_t run, Int_t side);
   static Double_t GetPTRelative(UInt_t timeSec, Int_t run,  Int_t side);
