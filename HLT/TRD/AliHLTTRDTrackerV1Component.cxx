@@ -527,9 +527,10 @@ int AliHLTTRDTrackerV1Component::DoEvent( const AliHLTComponentEventData & /*evt
       //delete trdTracks;
 	}
     }
-  else 
-    HLTDebug("Bad array trdTracks = 0x%x", trdTracks);
-
+   else {
+     Bool_t foo; foo=kFALSE; //In order to supress warning in non-debug compile
+     HLTDebug("Bad array trdTracks = 0x%x", trdTracks);
+   }
 
   
   //here we are deleting clusters (but not the TClonesArray itself)
