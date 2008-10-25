@@ -114,7 +114,7 @@ Int_t AliTPCLaserTrack::IdentifyTrack(AliExternalTrackParam *track)
   // return its id
   //
   // 
-  const  Float_t   kMaxdphi=0.1;
+  const  Float_t   kMaxdphi=0.2;
   const  Float_t   kMaxdphiP=0.05;
   const  Float_t   kMaxdz=40;
 
@@ -136,11 +136,11 @@ Int_t AliTPCLaserTrack::IdentifyTrack(AliExternalTrackParam *track)
     kokot[4]=-0.0000000001;
     //
     ltr->GetXYZ(lxyz1);
-    //if (TMath::Abs(lxyz1[2]-lxyz0[2])>kMaxdz) continue;
+    if (TMath::Abs(lxyz1[2]-lxyz0[2])>kMaxdz) continue;
     // phi position
     Double_t phi0 = TMath::ATan2(lxyz0[1],lxyz0[0]);
     Double_t phi1 = TMath::ATan2(lxyz1[1],lxyz1[0]);
-    //if (TMath::Abs(phi0-phi1)>kMaxdphi) continue;
+    if (TMath::Abs(phi0-phi1)>kMaxdphi) continue;
     // phi direction
     ltr->GetPxPyPz(pxyz1);
     Float_t distdir = (ltr->GetParameter()[2]-track->GetParameter()[2])*90; //distance at entrance
