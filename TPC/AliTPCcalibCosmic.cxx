@@ -546,16 +546,17 @@ gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");
 
 gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+")
 AliXRDPROOFtoolkit tool; 
-TChain * chain = tool.MakeChain("cosmic.txt","Track0",0,1000000);
+TChain * chainCosmic = tool.MakeChain("cosmic.txt","Track0",0,1000000);
 chainCosmic->Lookup();
 
 TCut cutT("cutT","abs(Tr1.fP[3]+Tr0.fP[3])<0.01");  // OK
 TCut cutD("cutD","abs(Tr0.fP[0]+Tr1.fP[0])<2");     // OK
-TCut cutP1("cutP1","abs(Tr0.fP[1]-Tr1.fP[1])<10");   // OK
+TCut cutP1("cutP1","abs(Tr0.fP[1]-Tr1.fP[1])<20");   // OK
 TCut cutPt("cutPt","abs(Tr1.fP[4]+Tr0.fP[4])<0.1&&abs(Tr0.fP[4])+abs(Tr1.fP[4])<10");
 TCut cutN("cutN","min(Orig0.fTPCncls,Orig1.fTPCncls)>100");
 TCut cutA=cutT+cutD+cutPt+cutN+cutP1+"trigger!=16";
 
+TCut cuthpt("abs(Tr0.fP[4])+abs(Tr1.fP[4])<0.2");
 TCut cutS("cutS","Orig0.fIp.fP[1]*Orig1.fIp.fP[1]>0");
 
 //
@@ -908,7 +909,7 @@ chainCosmic->SetAlias("corQT",strqdedx->Data());
 
 /*
   chainCosmic->SetProof(kTRUE);
-  chainCosmic->Draw("Seed0.CookdEdxNorm(0,0.6,1,0,159,0,kTRUE,kTRUE):Seed0.CookdEdxNorm(0,0.6,1,0,159,0,kFALSE,kTRUE)",""+cutA,"",1000);
+  chainCosmic->Draw("Seed0.CookdEdxNorm(0,0.6,1,0,159,0,kTRUE,kTRUE):Seed0.CookdEdxNorm(0,0.6,1,0,159,0,kFALSE,kTRUE)",""+cutA,"",100000);
 
 
 chainCosmic->Draw("Seed0.CookdEdxNorm(0,0.6,1,0,159,0,kTRUE,kTRUE)/Seed1.CookdEdxNorm(0,0.6,1,0,159,0,kTRUE,kTRUE)>>his(100,0.5,1.5)","min(Orig0.fTPCncls,Orig1.fTPCncls)>130"+cutA,"",50000);

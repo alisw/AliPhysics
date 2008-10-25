@@ -91,6 +91,8 @@ cal->GetHistVdrift()->Projection(1,0)->Draw()
 #include "TTimeStamp.h"
 #include "AliTPCcalibDB.h"
 #include "AliTPCcalibLaser.h"
+#include "AliDCSSensorArray.h"
+#include "AliDCSSensor.h"
 
 ClassImp(AliTPCcalibTime)
 
@@ -210,6 +212,14 @@ void AliTPCcalibTime::Process(AliESDEvent *event) {
       Double_t ptrelative1   = AliTPCcalibDB::GetPTRelative(tstamp,fRun,1);
       Double_t temp0         = AliTPCcalibDB::GetTemperature(tstamp,fRun,0);
       Double_t temp1         = AliTPCcalibDB::GetTemperature(tstamp,fRun,1);
+      TVectorD vecGoofie(20);
+      AliDCSSensorArray* goofieArray = AliTPCcalibDB::Instance()->GetGoofieSensors(fRun);
+      if (goofieArray) 
+	for (Int_t isensor=0; isensor<goofieArray->NumSensors();isensor++){
+	  AliDCSSensor *gsensor = goofieArray->GetSensor(isensor);
+	  if (gsensor) vecGoofie[isensor]=gsensor->GetValue(tstamp);
+	}
+
       TVectorD vdriftA, vdriftC,vdriftAC;
       if (fLaser && fTrigger==16) {
 	if (fLaser->fFitAside)  vdriftA=*(fLaser->fFitAside);
@@ -229,6 +239,7 @@ void AliTPCcalibTime::Process(AliESDEvent *event) {
 	"pt1="<<ptrelative1<<
 	"temp0="<<temp0<<
 	"temp1="<<temp1<<
+	"vecGoofie.=<<"<<&vecGoofie<<
 	//
 	// accumulated values
 	//
@@ -475,3 +486,86 @@ Bool_t  AliTPCcalibTime::IsPair(AliExternalTrackParam *tr0, AliExternalTrackPara
   //
   return kTRUE;  
 }
+
+
+
+/*
+  gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");
+    gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+")
+    AliXRDPROOFtoolkit tool;
+    TChain * chainTime = tool.MakeChain("time.txt","timeInfo",0,10200);
+    chainTime->Lookup();
+
+TCut dzc("abs(fDz-500*(1-pt1))<4")
+chainTime->SetMarkerSize(0.2);
+chainTime->SetMarkerStyle(24);
+
+
+chainTime->SetMarkerColor(2);
+chainTime->Draw("fDz:time","trigger==4"+dzc);
+chainTime->SetMarkerColor(1);
+chainTime->Draw("fDz:time","trigger==8"+dzc,"same");
+htemp->SetXTitle("time")
+htemp->SetYTitle("#Delta_{z}(cm)")
+gPad->SaveAs("~/Calibration/driftV/pic/cosmicdzraw_time.gif");
+
+
+chainTime->SetMarkerColor(2);
+chainTime->Draw("fDz:500*(1-pt1)","trigger==4"+dzc);
+chainTime->SetMarkerColor(1);
+chainTime->Draw("fDz:500*(1-pt1)","trigger==8"+dzc,"same");
+htemp->SetXTitle("2L#frac{#Delta_{P/T}}{P/T}")
+htemp->SetYTitle("#Delta_{z}(cm)")
+gPad->SaveAs("~/Calibration/driftV/pic/cosmicdzraw_PT1.gif");
+
+
+
+
+chainTime->SetLineColor(2);
+chainTime->Draw("fDz-500*0.965*(1-pt1)","trigger==4"+dzc);
+chainTime->SetLineColor(1);
+chainTime->Draw("fDz-500*0.965*(1-pt1)","trigger==8"+dzc,"same");
+htemp->SetXTitle("#Delta_{z}(cm)")
+htemp->SetYTitle("")
+gPad->SaveAs("~/Calibration/driftV/pic/cosmicdzcorr_1D.gif");
+
+
+chainTime->SetMarkerColor(2);
+chainTime->Draw("fDz-500*0.965*(1-pt1):time","trigger==4"+dzc);
+chainTime->SetMarkerColor(1);
+chainTime->Draw("fDz-500*0.965*(1-pt1):time","trigger==8"+dzc,"same");
+htemp->SetXTitle("time")
+htemp->SetYTitle("#Delta_{z}(cm)")
+gPad->SaveAs("~/Calibration/driftV/pic/cosmicdzcorr_time.gif");
+
+
+
+gSystem->Load("libSTAT.so");
+TStatToolkit toolkit;
+Double_t chi2=0;
+Int_t    npoints=0;
+TVectorD fitParam;
+TMatrixD covMatrix;
+
+
+chainTime->SetAlias("dpr","(1-press0/970)");
+chainTime->SetAlias("dtr","(1-(temp0+273.15)/293.)");
+chainTime->SetAlias("d1pt","(1-(temp0+273.15)/293.)");
+chainTime->SetAlias("dptr","(press0/(273.15+temp0))/(970./293.15)");
+
+
+chainTime->SetAlias("dvr","fDz");
+TString *strvd = toolkit.FitPlane(chainTime,"fDz","dpr*500++dtr*500", "trigger==4"+dzc, chi2,npoints,fitParam,covMatrix,0.99);
+strvd.Tokenize("++")->Print();
+chainTime->SetAlias("vdcorr",strvd->Data());
+
+TString *strvdpt1 = toolkit.FitPlane(chainTime,"fDz","(1-dptr)*500", "trigger==4"+dzc, chi2,npoints,fitParam,covMatrix,0.99);
+strvdpt1.Tokenize("++")->Print();
+chainTime->SetAlias("vdcorrpt1",strvdpt1->Data());
+
+
+TString *strdedx = toolkit.FitPlane(chainTime,"1-fdEdx/27","(1-dptr)", "trigger==4&&run<62000"+dzc, chi2,npoints,fitParam,covMatrix,0.99);
+strdedx.Tokenize("++")->Print();
+chainTime->SetAlias("vdcorrpt1",strvdpt1->Data());
+
+*/

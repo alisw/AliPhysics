@@ -119,6 +119,8 @@
 #include "AliTPCcalibDB.h"
 #include "AliTPCParam.h"
 #include "TTimeStamp.h"
+#include "AliDCSSensorArray.h"
+#include "AliDCSSensor.h"
 
 using namespace std;
 
@@ -718,6 +720,13 @@ void AliTPCcalibLaser::FitDriftV(){
       Double_t ptrelative1   = AliTPCcalibDB::GetPTRelative(tstamp,fRun,1);
       Double_t temp0         = AliTPCcalibDB::GetTemperature(tstamp,fRun,0);
       Double_t temp1         = AliTPCcalibDB::GetTemperature(tstamp,fRun,1);
+      TVectorD vecGoofie(20);
+      AliDCSSensorArray* goofieArray = AliTPCcalibDB::Instance()->GetGoofieSensors(fRun);
+      if (goofieArray) 
+	for (Int_t isensor=0; isensor<goofieArray->NumSensors();isensor++){
+	  AliDCSSensor *gsensor = goofieArray->GetSensor(isensor);
+	  if (gsensor) vecGoofie[isensor]=gsensor->GetValue(tstamp);
+	}
 
       if (cstream){
 	(*cstream)<<"driftv"<<
@@ -733,6 +742,7 @@ void AliTPCcalibLaser::FitDriftV(){
 	  "pt1="<<ptrelative1<<
 	  "temp0="<<temp0<<
 	  "temp1="<<temp1<<
+	  "vecGoofie.="<<&vecGoofie<<
 	  //
 	  //
 	  "iter="<<iter<<
@@ -1185,11 +1195,11 @@ void AliTPCcalibLaser::RefitLaserJW(Int_t id){
 	  vecClY[irow] = c->GetY();
 	  vecClZ[irow] = c->GetZ();
 	  //
-	  Float_t gxyz[3];
-	  c->GetGlobalXYZ(gxyz);
-	  vecgX[irow]   = gxyz[0];
-	  vecgY[irow]   = gxyz[1];
-	  vecgZ[irow]   = gxyz[2];
+// 	  Float_t gxyz[3];
+// 	  c->GetGlobalXYZ(gxyz);
+// 	  vecgX[irow]   = gxyz[0];
+// 	  vecgY[irow]   = gxyz[1];
+// 	  vecgZ[irow]   = gxyz[2];
           //
           Double_t x = vecX[irow]-133.4; //reference is between IROC and OROC
           Double_t y = vecClY[irow];
