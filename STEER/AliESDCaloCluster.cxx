@@ -115,11 +115,9 @@ AliESDCaloCluster &AliESDCaloCluster::operator=(const AliESDCaloCluster& source)
 
   if(&source == this) return *this;
   TObject::operator=(source);
-
   fGlobalPos[0] = source.fGlobalPos[0];
   fGlobalPos[1] = source.fGlobalPos[1];
   fGlobalPos[2] = source.fGlobalPos[2];
-
 
   fEnergy = source.fEnergy;
   fDispersion = source.fDispersion;
@@ -135,17 +133,18 @@ AliESDCaloCluster &AliESDCaloCluster::operator=(const AliESDCaloCluster& source)
 
   if (source.fNCells > 0) {
     if(source.fCellsAbsId){
-      if(fNCells != source.fNCells){
-	delete [] fCellsAbsId;
+      if(fNCells != source.fNCells||!fCellsAbsId){
+	if(fCellsAbsId)delete [] fCellsAbsId;
 	fCellsAbsId = new UShort_t[source.fNCells];
       }
-      for (Int_t i=0; i<source.fNCells; i++)
+      for (Int_t i=0; i<source.fNCells; i++){
 	fCellsAbsId[i]=source.fCellsAbsId[i];
+      }
     }
     
     if(source.fCellsAmpFraction){
-      if(fNCells != source.fNCells){
-	delete [] fCellsAmpFraction;
+      if(fNCells != source.fNCells||!fCellsAmpFraction){
+	if(fCellsAmpFraction) delete [] fCellsAmpFraction;
 	fCellsAmpFraction = new Double32_t[source.fNCells];
       }
       for (Int_t i=0; i<source.fNCells; i++)
@@ -160,21 +159,25 @@ AliESDCaloCluster &AliESDCaloCluster::operator=(const AliESDCaloCluster& source)
   //not in use
   if(source.fTracksMatched){
     // assign or copy construct
-    if(fTracksMatched) *fTracksMatched = *source.fTracksMatched;
+    if(fTracksMatched){
+      *fTracksMatched = *source.fTracksMatched;
+    }
     else fTracksMatched = new TArrayI(*source.fTracksMatched);
   }
   else{
-    delete fTracksMatched;
+    if(fTracksMatched)delete fTracksMatched;
     fTracksMatched = 0;
   }
 
   if(source.fLabels){
     // assign or copy construct
-    if(fLabels) *fLabels = *source.fLabels;
+    if(fLabels){ 
+      *fLabels = *source.fLabels;
+    }
     else fLabels = new TArrayI(*source.fLabels);
   }
   else{
-    delete fLabels;
+    if(fLabels)delete fLabels;
     fLabels = 0;
   }
 
@@ -183,7 +186,7 @@ AliESDCaloCluster &AliESDCaloCluster::operator=(const AliESDCaloCluster& source)
     // assign or copy construct
     if(fDigitAmplitude) *fDigitAmplitude = *source.fDigitAmplitude;
     else fDigitAmplitude = new TArrayS(*source.fDigitAmplitude);
-  }
+   }
   else{
     delete fDigitAmplitude;
     fDigitAmplitude = 0;
@@ -235,13 +238,13 @@ AliESDCaloCluster::~AliESDCaloCluster(){
   //
   // This is destructor according Coding Conventions 
   //
-  delete fTracksMatched;
-  delete fLabels;
+  if(fTracksMatched)delete fTracksMatched;fTracksMatched = 0;
+  if(fLabels) delete fLabels; fLabels = 0;
   delete fDigitAmplitude;  //not in use
   delete fDigitTime;  //not in use
   delete fDigitIndex;  //not in use
-  if(fCellsAmpFraction) delete[] fCellsAmpFraction; fCellsAmpFraction=0;
-  if(fCellsAbsId) delete[] fCellsAbsId;  fCellsAbsId = 0;
+  if(fCellsAmpFraction){ delete[] fCellsAmpFraction; fCellsAmpFraction=0;}
+  if(fCellsAbsId){ delete[] fCellsAbsId;  fCellsAbsId = 0;}
 }
 
 //_______________________________________________________________________

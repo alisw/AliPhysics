@@ -87,8 +87,14 @@ public:
   void SetTOF(Double_t tof) { fTOF = tof; }
   Double_t GetTOF() const { return fTOF; }
   
-  void AddTracksMatched(TArrayI & array)  { fTracksMatched   = new TArrayI(array) ; }
-  void AddLabels(TArrayI & array)         { fLabels = new TArrayI(array) ; }
+  void AddTracksMatched(TArrayI & array)  { 
+    if(!fTracksMatched)fTracksMatched   = new TArrayI(array);
+    else *fTracksMatched = array;
+  }
+  void AddLabels(TArrayI & array)         { 
+    if(!fLabels)fLabels = new TArrayI(array) ; 
+    else *fLabels = array;
+}
   
   TArrayI * GetTracksMatched() const  {return  fTracksMatched;}
   TArrayI * GetLabels() const         {return  fLabels;}
