@@ -450,9 +450,9 @@ void AliTPCCalibKr::Analyse()
         // rowStep (padStep) even: fill s/2 rows (pads) in ascending direction, s/2-1 in descending direction
         for (Int_t r = iRow - (rowStep/2 - (rowStep+1)%2); r <= (Int_t)(iRow + rowStep/2); r++) {
           if (r < 0 || r >= (Int_t)nRows) continue;
-          UInt_t nPads = roc.GetNPads(r);
+          UInt_t nPadsR = roc.GetNPads(r);
           for (Int_t p = iPad - (padStep/2 - (padStep+1)%2); p <= (Int_t)(iPad + padStep/2); p++) {
-            if (p < 0 || p >= (Int_t)nPads) continue;
+            if (p < 0 || p >= (Int_t)nPadsR) continue;
             spectrMeanCalPad->GetCalROC(chamber)->SetValue(r, p, histMean);
             spectrRMSCalPad->GetCalROC(chamber)->SetValue(r, p, histRMS);
             fitMeanCalPad->GetCalROC(chamber)->SetValue(r, p, fitMean);
