@@ -34,7 +34,7 @@ chain->Draw("GetTimeStamp()")
 b) analyse calibration object on Proof in calibration train 
 
 AliTPCcalibTime *calibTime = new AliTPCcalibTime("cosmicTime","cosmicTime", StartTimeStamp, EndTimeStamp, IntegrationTimeVdrift, IntegrationTimeDeDx);
-
+s
 c) plot results
 
 TFile f("CalibObjects.root");
@@ -341,12 +341,12 @@ void AliTPCcalibTime::ProcessCosmic(AliESDEvent *event) {
        if (! seed0) continue;
        if (! seed1) continue;
        Float_t dir = (d1[0]*d2[0] + d1[1]*d2[1] + d1[2]*d2[2]);
-       Float_t d0  = track0->GetLinearD(0,0);
-       Float_t d1  = track1->GetLinearD(0,0);
+       Float_t dist0  = track0->GetLinearD(0,0);
+       Float_t dist1  = track1->GetLinearD(0,0);
        //
        // conservative cuts - convergence to be guarantied
        // applying before track propagation
-       if (TMath::Abs(d0+d1)>fCutMaxD) continue;   // distance to the 0,0
+       if (TMath::Abs(dist0+dist1)>fCutMaxD) continue;   // distance to the 0,0
        if (dir>fCutMinDir) continue;               // direction vector product
        Float_t bz = AliTracker::GetBz();
        Float_t dvertex0[2];   //distance to 0,0
@@ -358,7 +358,7 @@ void AliTPCcalibTime::ProcessCosmic(AliESDEvent *event) {
        //
        //
        //
-       Float_t dmax = TMath::Max(TMath::Abs(d0),TMath::Abs(d1));
+       Float_t dmax = TMath::Max(TMath::Abs(dist0),TMath::Abs(dist1));
        AliExternalTrackParam param0(*track0);
        AliExternalTrackParam param1(*track1);
        //

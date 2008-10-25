@@ -488,8 +488,10 @@ Double_t AliTPCcalibCosmic::CalculateMIPvalue(TH1F * hist) {
 
 
 
-void AliTPCcalibCosmic::CalculateBetheParams(TH2F *hist, Double_t * initialParam) {
-
+void AliTPCcalibCosmic::CalculateBetheParams(TH2F */*hist*/, Double_t * /*initialParam*/) {
+  //
+  // Not implemented yet
+  //
   return;
 
 }

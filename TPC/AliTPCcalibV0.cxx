@@ -136,7 +136,7 @@ void AliTPCcalibV0::MakeMC(){
   //
   Int_t sentries=fParticles->GetEntries();;
   for (Int_t ipart=0; ipart<sentries; ipart++){
-    TParticle *part = (TParticle*)fParticles->At(ipart);
+    part = (TParticle*)fParticles->At(ipart);
     TParticle *p0 = 0;
     TParticle *p1 = 0;
 
@@ -734,7 +734,7 @@ void AliTPCcalibV0::ProcessPI0(){
 
 
 
-AliKFParticle * AliTPCcalibV0::Fit(AliKFVertex & primVtx, AliESDv0 *v0, Int_t PDG1, Int_t PDG2){
+AliKFParticle * AliTPCcalibV0::Fit(AliKFVertex & /*primVtx*/, AliESDv0 *v0, Int_t PDG1, Int_t PDG2){
   //
   // Make KF Particle
   //

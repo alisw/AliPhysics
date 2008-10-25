@@ -856,6 +856,7 @@ Float_t AliTPCcalibDB::GetTemperature(Int_t timeStamp, Int_t run, Int_t side){
     GetTemperatureFit(timeStamp,run,0,vec);
     return vec[0];
   }
+  return 0;
 }
 
 

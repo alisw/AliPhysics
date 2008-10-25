@@ -40,7 +40,7 @@
   TFile fcalib("CalibObjects.root");
   TObjArray * array = (TObjArray*)fcalib.Get("TPCCalib");
   AliTPCcalibLaser * laser = ( AliTPCcalibLaser *)array->FindObject("laserTPC");
-  laser->DumpMeanInfo(-0,0,10)
+  laser->DumpMeanInfo(-0,0)
   TFile fmean("laserMean.root")
   //
   //  laser track clasification;
@@ -71,6 +71,9 @@
   gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");
   gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+")
   AliXRDPROOFtoolkit tool;
+  TChain * chainDrift = tool.MakeChain("laser.txt","driftv",0,10200);
+  chainDrift->Lookup();
+
   TChain * chain = tool.MakeChain("laser.txt","Residuals",0,10200);
   chain->Lookup();
   TChain * chainFit = tool.MakeChain("laser.txt","FitModels",0,10200);
@@ -1151,13 +1154,13 @@ void AliTPCcalibLaser::RefitLaserJW(Int_t id){
 	  for (Int_t drow=-1;drow<=1;drow++) {
 	    if (irow+drow<0) continue;
 	    if (irow+drow>158) continue;
-	    AliTPCclusterMI *c=track->GetClusterPointer(irow);
-	    if (!c) continue;
-	    Int_t roc = static_cast<Int_t>(c->GetDetector());
+	    AliTPCclusterMI *ccurrent=track->GetClusterPointer(irow);
+	    if (!ccurrent) continue;
+	    Int_t roc = static_cast<Int_t>(ccurrent->GetDetector());
 	    if ( roc!=innerSector && roc!=outerSector ) continue;
-	    if (c->GetX()<10) continue;
-	    if (c->GetY()==0) continue;
-	    meanY+=c->GetY();
+	    if (ccurrent->GetX()<10) continue;
+	    if (ccurrent->GetY()==0) continue;
+	    meanY+=ccurrent->GetY();
 	    sumY++;
 	  }
 	  if (sumY>0)  meanY/=sumY; 
@@ -1607,7 +1610,7 @@ void AliTPCcalibLaser::RefitLaserJW(Int_t id){
 
 
 
-void AliTPCcalibLaser::DumpMeanInfo(Float_t bfield, Int_t run, Int_t minEntries){
+void AliTPCcalibLaser::DumpMeanInfo(Float_t bfield, Int_t run){
   //
   //  Dump information about laser beams
   //  isOK variable indicates usability of the beam  

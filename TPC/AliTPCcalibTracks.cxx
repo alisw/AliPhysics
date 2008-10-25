@@ -850,7 +850,6 @@ void  AliTPCcalibTracks::FillResolutionHistoLocal(AliTPCseed * track){
          // if this chi2 is bigger than a given threshold, assume that the current cluster is
          // a kink an goto next padrow
 
-	 TTreeSRedirector *cstream = GetDebugStreamer();
 	 if (cstream){
 	   (*cstream)<<"Cut8"<<
 	     "chi2="<<cchi2<<

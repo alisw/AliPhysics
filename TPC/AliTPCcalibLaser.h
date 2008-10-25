@@ -35,7 +35,7 @@ public:
   virtual void     Process(AliESDEvent *event);
   virtual void Analyze();
   virtual Long64_t Merge(TCollection *li);
-  virtual void DumpMeanInfo(Float_t bfield, Int_t run=-1, Int_t minEntries=100);
+  virtual void DumpMeanInfo(Float_t bfield, Int_t run=-1);
   static  void DumpScanInfo(TTree * tree);
   static  void DumpFitInfo(TTree * chainFit, Int_t id);
   static  TH1* GetLaserProjection(TH2F* his, Int_t laser){return his->ProjectionY("aaa",laser+1,laser+1);}
