@@ -421,18 +421,18 @@ AliTPCcalibTracks::AliTPCcalibTracks(const Text_t *name, const Text_t *title, Al
       for (Int_t ipad = 0; ipad < 3; ipad++){
          Int_t   bin   = GetBin(iq, ipad);
          Float_t qmean = GetQ(bin);
-         char name[200];
-         sprintf(name,"ResolY Pad%d Qmiddle%f",ipad, qmean);
-         his3D = new TH3F(name, name, 20,10,250, 20, 0,1.5, 50, -1,1);
+         char hname[200];
+         sprintf(hname,"ResolY Pad%d Qmiddle%f",ipad, qmean);
+         his3D = new TH3F(hname, hname, 20,10,250, 20, 0,1.5, 50, -1,1);
          fArrayQDY->AddAt(his3D, bin);
-         sprintf(name,"ResolZ Pad%d Qmiddle%f",ipad, qmean);
-         his3D = new TH3F(name, name, 20,10,250, 20, 0,1.5, 50, -1,1);
+         sprintf(hname,"ResolZ Pad%d Qmiddle%f",ipad, qmean);
+         his3D = new TH3F(hname, hname, 20,10,250, 20, 0,1.5, 50, -1,1);
          fArrayQDZ->AddAt(his3D, bin);
-         sprintf(name,"RMSY Pad%d Qmiddle%f",ipad, qmean);
-         his3D = new TH3F(name, name, 20,10,250, 20, 0,1.5, 50, 0,1);
+         sprintf(hname,"RMSY Pad%d Qmiddle%f",ipad, qmean);
+         his3D = new TH3F(hname, hname, 20,10,250, 20, 0,1.5, 50, 0,1);
          fArrayQRMSY->AddAt(his3D, bin);
-         sprintf(name,"RMSZ Pad%d Qmiddle%f",ipad, qmean);
-         his3D = new TH3F(name, name, 20,10,250, 20, 0,1.5, 50, 0,1);
+         sprintf(hname,"RMSZ Pad%d Qmiddle%f",ipad, qmean);
+         his3D = new TH3F(hname, hname, 20,10,250, 20, 0,1.5, 50, 0,1);
          fArrayQRMSZ->AddAt(his3D, bin);
       }
    }
@@ -824,21 +824,21 @@ void  AliTPCcalibTracks::FillResolutionHistoLocal(AliTPCseed * track){
          paramZ0 -= paramZ1;
          matrixY0 += matrixY1;
          matrixZ0 += matrixZ1;
-         Double_t chi2 = 0;
+         Double_t cchi2 = 0;
          
          TMatrixD difY(2, 1, paramY0.GetMatrixArray());
          TMatrixD difYT(1, 2, paramY0.GetMatrixArray());
          matrixY0.Invert();
          TMatrixD mulY(matrixY0, TMatrixD::kMult, difY);
          TMatrixD chi2Y(difYT, TMatrixD::kMult, mulY);
-         chi2 += chi2Y(0, 0);
+         cchi2 += chi2Y(0, 0);
          
          TMatrixD difZ(2, 1, paramZ0.GetMatrixArray());
          TMatrixD difZT(1, 2, paramZ0.GetMatrixArray());
          matrixZ0.Invert();
          TMatrixD mulZ(matrixZ0, TMatrixD::kMult, difZ);
          TMatrixD chi2Z(difZT, TMatrixD::kMult, mulZ);
-         chi2 += chi2Z(0, 0);      
+         cchi2 += chi2Z(0, 0);      
          
          // REMOVE KINK - TO be fixed - proper chi2 calculation for curved track to be implemented
          //if (chi2 * 0.25 > kCutChi2) fRejectedTracksHisto->Fill(8);
@@ -853,7 +853,7 @@ void  AliTPCcalibTracks::FillResolutionHistoLocal(AliTPCseed * track){
 	 TTreeSRedirector *cstream = GetDebugStreamer();
 	 if (cstream){
 	   (*cstream)<<"Cut8"<<
-	     "chi2="<<chi2<<
+	     "chi2="<<cchi2<<
 	     "\n";
 	 }	 
       }
@@ -2256,9 +2256,9 @@ Long64_t AliTPCcalibTracks::Merge(TCollection *collectionList) {
    if (GetDebugLevel() > 0) cout << "merging fArrayAmps..." << endl;
    // merge fArrayAmps
    for (Int_t i = 0; i < fArrayAmp->GetEntriesFast(); i++ ) {  // loop over data member, i<72
-      TIterator *objListIterator = arrayAmpList->MakeIterator();
+      TIterator *cobjListIterator = arrayAmpList->MakeIterator();
       histList = new TList;
-      while (( objarray =  (TObjArray*)objListIterator->Next() )) { 
+      while (( objarray =  (TObjArray*)cobjListIterator->Next() )) { 
          // loop over arrayAmpList, get TObjArray, get object at position i, cast it into TH1F
          if (!objarray) continue;
          hist = (TH1F*)(objarray->At(i));
@@ -2266,7 +2266,7 @@ Long64_t AliTPCcalibTracks::Merge(TCollection *collectionList) {
       }
       ((TH1F*)(fArrayAmp->At(i)))->Merge(histList);
       delete histList;
-      delete objListIterator;
+      delete cobjListIterator;
    }
    
    if (GetDebugLevel() > 0) cout << "merging fArrayQDY..." << endl;

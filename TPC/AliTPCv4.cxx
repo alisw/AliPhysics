@@ -1083,7 +1083,7 @@ void AliTPCv4::SetOuterChambersAlignable() const
 }
 
 //_____________________________________________________________________________
-void AliTPCv4::DrawDetector() const
+void AliTPCv4::DrawDetector()
 {
   //
   // Draw a shaded view of the Time Projection Chamber version 1

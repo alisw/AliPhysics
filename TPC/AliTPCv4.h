@@ -39,7 +39,7 @@ public:
   virtual void  Init();
   virtual Int_t IsVersion() const {return 4;}
   virtual void  StepManager();
-  virtual void  DrawDetector() const;
+  virtual void  DrawDetector();
 
 protected:
   Int_t fIdSens;    // sensitive strip

@@ -453,23 +453,23 @@ void AliTPCFast::Hits2ExactClustersSector(AliRunLoader* runLoader,
 	  Float_t sumxz=0;
 	  Float_t sumx2z=0;
 	  Float_t sumq=0;
-	  for (Int_t index=0;index<currentIndex;index++){
-	    Float_t x,x2,x3,x4;
-	    x=x2=x3=x4=xxx(index*4);
-	    x2*=x;
+	  for (Int_t cindex=0;cindex<currentIndex;cindex++){
+	    Float_t x1,x2,x3,x4;
+	    x1=x2=x3=x4=xxx(cindex*4);
+	    x2*=x1;
 	    x3*=x2;
 	    x4*=x3;
-	    sumx+=x;
+	    sumx+=x1;
 	    sumx2+=x2;
 	    sumx3+=x3;
 	    sumx4+=x4;
-	    sumy+=xxx(index*4+1);
-	    sumxy+=xxx(index*4+1)*x;
-	    sumx2y+=xxx(index*4+1)*x2;
-	    sumz+=xxx(index*4+2);
-	    sumxz+=xxx(index*4+2)*x;
-	    sumx2z+=xxx(index*4+2)*x2;	 
-	    sumq+=xxx(index*4+3);
+	    sumy+=xxx(cindex*4+1);
+	    sumxy+=xxx(cindex*4+1)*x1;
+	    sumx2y+=xxx(cindex*4+1)*x2;
+	    sumz+=xxx(cindex*4+2);
+	    sumxz+=xxx(cindex*4+2)*x1;
+	    sumx2z+=xxx(cindex*4+2)*x2;	 
+	    sumq+=xxx(cindex*4+3);
 	  }
 	  Float_t det=currentIndex*(sumx2*sumx4-sumx3*sumx3)-sumx*(sumx*sumx4-sumx2*sumx3)+
 	    sumx2*(sumx*sumx3-sumx2*sumx2);
