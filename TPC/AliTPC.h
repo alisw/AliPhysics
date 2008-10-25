@@ -63,7 +63,7 @@ public:
 
 
   virtual void  StepManager()=0;
-  virtual void  DrawDetector() {}
+  virtual void  DrawDetector() const  {}
   AliTPCDigitsArray*  GetDigitsArray() {return fDigitsArray;} //MI change
   AliTPCParam *GetParam(){return fTPCParam;} // M.K, M.I changes
   void SetParam(AliTPCParam *param){fTPCParam=param;} // M.K, M.I changes

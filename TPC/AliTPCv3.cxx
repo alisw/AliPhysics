@@ -928,7 +928,7 @@ void AliTPCv3::CreateGeometry()
 } // end of function
  
 //_____________________________________________________________________________
-void AliTPCv3::DrawDetector()
+void AliTPCv3::DrawDetector() const
 {
   //
   // Draw a shaded view of the Time Projection Chamber version 3
