@@ -362,8 +362,11 @@ Int_t AliHLTTPCDisplayMain::Connect( unsigned int cnt, const char** hostnames, u
 
  
 
-#else
-    HLTFatal("HOMER reader not available");
+#else 
+  HLTFatal("HOMER reader not available");
+  cnt = 0; // in order to get rid of compiler warnings
+  hostnames = NULL; // in order to get rid of compiler warnings
+  ports = NULL; // in order to get rid of compiler warnings
 #endif // defined(HAVE_HOMERREADER)  
 
     return 0;
@@ -470,6 +473,7 @@ Int_t AliHLTTPCDisplayMain::ReadData(Bool_t nextSwitch){
 
 #else
   HLTFatal("HOMER raeder not available");
+  nextSwitch = kFALSE;// in order to get rid of compiler warnings
 #endif // defined(HAVE_HOMERREADER) 
 
   return 0;
@@ -529,6 +533,7 @@ void AliHLTTPCDisplayMain::DisplayEvent(Bool_t newRawSlice){
     cout << "afterdraw" << endl;
 #else
     HLTFatal("HOMER raeder not available");
+    newRawSlice = kFALSE;// in order to get rid of compiler warnings
 #endif // defined(HAVE_HOMERREADER) 
 
 }

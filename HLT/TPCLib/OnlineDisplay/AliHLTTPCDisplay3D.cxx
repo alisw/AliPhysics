@@ -142,9 +142,9 @@ void AliHLTTPCDisplay3D::Draw(){
 	
 	    TList* nodeList = masterNode->GetListOfNodes();
 	    TNode* node=0;
-	    TIter next(nodeList);
+	    TIter nextt(nodeList);
 	    
-	    while ((node = static_cast<TNode*> (next()))) {  
+	    while ((node = static_cast<TNode*> (nextt()))) {  
 		
 		ULong_t tmpslice = atol(node->GetName() + 2);
 

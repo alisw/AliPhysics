@@ -50,7 +50,7 @@ class AliTRDclusterizerHLT : public AliTRDclusterizer
 
  protected:
   virtual Bool_t   ReadDigits() const {return kFALSE;} //this method not to be used on HLT
-  virtual Bool_t   ReadDigits(AliRawReader* rawReader) const {if (!rawReader); return kFALSE;} //this method not to be used on HLT
+  virtual Bool_t   ReadDigits(AliRawReader* rawReader) const {/*if (!rawReader) */ return kFALSE;} //this method not to be used on HLT
 
   Bool_t            fTreeCreatedHere; //flag indicating that AliTRDclusterizerHLT has created the cluster tree
 
