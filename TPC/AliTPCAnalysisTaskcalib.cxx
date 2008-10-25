@@ -30,6 +30,9 @@
 #include "AliTPCseed.h"
 #include "AliESDInputHandler.h"
 #include "AliAnalysisManager.h"
+#include "TFile.h"
+#include "TSystem.h"
+#include "TTimeStamp.h"
 
 ClassImp(AliTPCAnalysisTaskcalib)
 
@@ -100,7 +103,7 @@ void AliTPCAnalysisTaskcalib::Exec(Option_t *) {
     if (seed)
       Process(seed);
   }
-  PostData(0,fCalibJobs);
+  //PostData(0,fCalibJobs);
 }
 
 void AliTPCAnalysisTaskcalib::ConnectInputData(Option_t *) {
@@ -127,7 +130,7 @@ void AliTPCAnalysisTaskcalib::CreateOutputObjects() {
   //
   //
   //
-  OpenFile(0, "RECREATE");
+  //  OpenFile(0, "RECREATE");
 }
 void AliTPCAnalysisTaskcalib::Terminate(Option_t */*option*/) {
   //
@@ -150,6 +153,7 @@ void AliTPCAnalysisTaskcalib::FinishTaskOutput()
   //
   Terminate("slave");
   RegisterDebugOutput();
+  
 }
 
 
@@ -224,5 +228,25 @@ void AliTPCAnalysisTaskcalib::RegisterDebugOutput(){
     job = (AliTPCcalibBase*)fCalibJobs->UncheckedAt(i);
     if (job) job->RegisterDebugOutput(fDebugOutputPath.Data());
   }
- 
+  TFile fff("CalibObjects.root","recreate");
+  fCalibJobs->Write("TPCCalib");
+  fff.Close();
+  //
+  // store  - copy debug output to the destination position
+  // currently ONLY for local copy
+  TString dsName="CalibObjects.root";
+  TString dsName2=fDebugOutputPath.Data();
+  gSystem->MakeDirectory(dsName2.Data());
+  dsName2+=gSystem->HostName();
+  gSystem->MakeDirectory(dsName2.Data());
+  dsName2+="/";
+  TTimeStamp s;
+  dsName2+=Int_t(s.GetNanoSec());
+  dsName2+="/";
+  gSystem->MakeDirectory(dsName2.Data());
+  dsName2+=dsName;
+  AliInfo(Form("copy %s\t%s\n",dsName.Data(),dsName2.Data()));
+  printf("copy %s\t%s\n",dsName.Data(),dsName2.Data());
+  TFile::Cp(dsName.Data(),dsName2.Data());
+
 }
