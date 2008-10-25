@@ -16,10 +16,8 @@
 #pragma link C++ class  AliTPCFitPad+;
 #pragma link C++ class  AliTPCCalPadRegion+;
 
-#pragma link C++ class  AliAnaTPCTrackBase+;
 #pragma link C++ class  AliTPCcalibBase+;
 #pragma link C++ class  AliTPCcalibCalib+;
-#pragma link C++ class  AliAnaTPCTrackCalib+;
 #pragma link C++ class  AliTPCcalibAlign+;
 #pragma link C++ class  AliTPCcalibAlignment+;
 #pragma link C++ class  AliTPCcalibV0+;
