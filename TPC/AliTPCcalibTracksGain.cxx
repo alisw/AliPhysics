@@ -1705,13 +1705,13 @@ void  AliTPCcalibTracksGain::MakeQPosNormAll(TTree * chain, AliTPCClusterParam *
   // Fill the content of the of the AliTPCclusterParam
   // with fitted values of corrections 
   //
-  param->fPosQTnorm[0] = MakeQPosNorm(chain,0,kTRUE,100000,kTRUE);
-  param->fPosQTnorm[1] = MakeQPosNorm(chain,1,kTRUE,100000,kTRUE);
-  param->fPosQTnorm[2] = MakeQPosNorm(chain,1,kTRUE,100000,kTRUE);
+  param->fPosQTnorm[0] = MakeQPosNorm(chain,0,kTRUE,maxPoints,verbose);
+  param->fPosQTnorm[1] = MakeQPosNorm(chain,1,kTRUE,maxPoints,verbose);
+  param->fPosQTnorm[2] = MakeQPosNorm(chain,1,kTRUE,maxPoints,verbose);
   //
-  param->fPosQMnorm[0] = MakeQPosNorm(chain,0,kFALSE,100000,kTRUE);
-  param->fPosQMnorm[1] = MakeQPosNorm(chain,1,kFALSE,100000,kTRUE);
-  param->fPosQMnorm[2] = MakeQPosNorm(chain,2,kFALSE,100000,kTRUE);
+  param->fPosQMnorm[0] = MakeQPosNorm(chain,0,kFALSE,maxPoints,verbose);
+  param->fPosQMnorm[1] = MakeQPosNorm(chain,1,kFALSE,maxPoints,verbose);
+  param->fPosQMnorm[2] = MakeQPosNorm(chain,2,kFALSE,maxPoints,verbose);
 }
 
 
