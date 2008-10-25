@@ -56,19 +56,19 @@ public:
    * ---------------------------------------------------------------------------------
    */
   
-  /** interface function, see @ref AliHLTComponent for description */
+  /** interface function, see AliHLTComponent for description */
   const char* GetComponentID();
 
-  /** interface function, see @ref AliHLTComponent for description */
+  /** interface function, see AliHLTComponent for description */
   void GetInputDataTypes( AliHLTComponentDataTypeList& list );
 
-  /** interface function, see @ref AliHLTComponent for description */
+  /** interface function, see AliHLTComponent for description */
   AliHLTComponentDataType GetOutputDataType();
 
-  /** interface function, see @ref AliHLTComponent for description */
+  /** interface function, see AliHLTComponent for description */
   virtual void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier );
 
-  /** interface function, see @ref AliHLTComponent for description */
+  /** interface function, see AliHLTComponent for description */
   AliHLTComponent* Spawn();
 
  protected:

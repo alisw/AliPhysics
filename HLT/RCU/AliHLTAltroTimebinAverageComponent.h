@@ -43,7 +43,7 @@ class AliHLTAltroTimebinAverageComponent : public AliHLTProcessor {
 
   /**
    * Get the output data type of the component.
-   * If @ref kAliHLTMultipleDataType is returned, the framework invokes
+   * If kAliHLTMultipleDataType is returned, the framework invokes
    * @ref GetOutputDataTypes.
    * @return output data type
    */
@@ -53,7 +53,7 @@ class AliHLTAltroTimebinAverageComponent : public AliHLTProcessor {
    * Get the output data types of the component.
    * The function can be implemented to indicate multiple output data types
    * in the target array.
-   * @ref GetOutputDataType must return @ref kAliHLTMultipleDataType in order
+   * @ref GetOutputDataType must return kAliHLTMultipleDataType in order
    * to invoke this method.
    * @param tgtList          list to receive the data types
    * @return no of output data types, data types in the target list
