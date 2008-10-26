@@ -1,12 +1,12 @@
 // $Id$
 /*
- * Example macro to run the HLT Conformal mapping tracker embedded into
- * AliRoot reconstruction. The reconstruction is done from the TPC raw
- * data.
+ * Example macro to run the HLT TPC Cellular Automaton tracker embedded
+ * into AliRoot reconstruction. The reconstruction is done from the TPC
+ * raw data.
  *
  * Usage:
  * <pre>
- *   aliroot -b -q rec-hlt-tpc.C | tee rec-hlt-tpc.log
+ *   aliroot -b -q rec-hlt-tpc-ca.C | tee rec-hlt-tpc-ca.log
  * </pre>
  *
  * The chain to be run is defined by the macro given to the parameter
@@ -15,7 +15,7 @@
  * The macro asumes raw data to be available in the rawx folders, either
  * simulated or real data. A different input can be specified as parameter
  * <pre>
- *   aliroot -b -q rec-hlt-tpc.C'("input.root")'
+ *   aliroot -b -q rec-hlt-tpc-ca.C'("input.root")'
  * </pre>
  *
  * By the second parameter the digit reader can be chosen, default is
@@ -31,12 +31,14 @@
  * @ingroup alihlt_tpc
  * @author Matthias.Richter@ift.uib.no
  */
-void rec_hlt_tpc(const char* input="./", bool bUseClusterFinderDecoder=true)
+void rec_hlt_tpc_ca(const char* input="./", bool bUseClusterFinderDecoder=true)
 {
   if (!input) {
     cerr << "please specify input or run without arguments" << endl;
     return;
   }
+
+  gSystem->Exec("rm galice.root");
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////
   //
@@ -83,30 +85,21 @@ void rec_hlt_tpc(const char* input="./", bool bUseClusterFinderDecoder=true)
     TString tracker;
     // tracker finder components
     tracker.Form("TR_%02d", slice);
-    AliHLTConfiguration trackerconf(tracker.Data(), "TPCSliceTracker", trackerInput.Data(), "-pp-run -bfield 0.5");
+    AliHLTConfiguration trackerconf(tracker.Data(), "TPCCATracker", trackerInput.Data(), "");
     if (writerInput.Length()>0) writerInput+=" ";
     writerInput+=tracker;
     if (mergerInput.Length()>0) mergerInput+=" ";
     mergerInput+=tracker;
   }
 
-  // specify whether to write all blocks separately or merge the tracks
-  // and convert to ESD
-  bool writeBlocks=false;
+  // GlobalMerger component
+  AliHLTConfiguration mergerconf("globalmerger","TPCGlobalMerger",mergerInput.Data(),"");
 
-  if (writeBlocks) {
-    // the writer configuration
-    AliHLTConfiguration fwconf("sink1", "FileWriter"   , writerInput.Data(), "-specfmt=_%d -subdir=out_%d -blcknofmt=_0x%x -idfmt=_0x%08x");
-  } else {
-    // GlobalMerger component
-    AliHLTConfiguration mergerconf("globalmerger","TPCGlobalMerger",mergerInput.Data(),"");
-
-    // the esd converter configuration
-    AliHLTConfiguration esdcconf("esd-converter", "TPCEsdConverter"   , "globalmerger", "-tree");
-    
-    // the root file writer configuration
-    AliHLTConfiguration sink("sink1", "EsdCollector"   , "esd-converter", "-directory hlt-tpc-cm");
-  }
+  // the esd converter configuration
+  AliHLTConfiguration esdcconf("esd-converter", "TPCEsdConverter"   , "globalmerger", "-tree");
+  
+  // the root file writer configuration
+  AliHLTConfiguration sink("sink1", "EsdCollector"   , "esd-converter", "-directory hlt-tpc-ca");
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////
   //
@@ -123,6 +116,6 @@ void rec_hlt_tpc(const char* input="./", bool bUseClusterFinderDecoder=true)
   AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., AliMagFMaps::k5kG);
   AliTracker::SetFieldMap(field,kTRUE);
   rec.SetFillESD("HLT");
-  rec.SetOption("HLT", "libAliHLTUtil.so libAliHLTRCU.so libAliHLTTPC.so loglevel=0x7c chains=sink1");
+  rec.SetOption("HLT", "libAliHLTUtil.so libAliHLTRCU.so libAliHLTTPC.so chains=sink1");
   rec.Run();
 }
