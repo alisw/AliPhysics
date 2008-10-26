@@ -23,6 +23,7 @@ void embed_init()
 
   // ------------------------------------------------------------------------
 
+  TEveUtil::LoadMacro("SplitGLView.C+"); // Needed for dependencies.
   TEveUtil::LoadMacro("its_clusters.C+");
   TEveUtil::LoadMacro("tpc_clusters.C+");
 

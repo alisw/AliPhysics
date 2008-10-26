@@ -7,10 +7,13 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
+class AliEveCascade;
+class AliEveCascadeList;
+
 AliEveCascade* esd_make_cas(TEveTrackPropagator* rnrStyle, AliESDVertex* primVtx,
 			    AliESDcascade* cas, AliESDtrack* neg, AliESDtrack* pos,
-			    AliESDtrack* bach,Int_t i) {
-
+			    AliESDtrack* bach,Int_t i)
+{
   AliEveCascade* myCas = new AliEveCascade(rnrStyle);
   myCas->SetESDIndex(i);
 
@@ -49,7 +52,7 @@ AliEveCascade* esd_make_cas(TEveTrackPropagator* rnrStyle, AliESDVertex* primVtx
 }
 
 
-CascadeList* esd_AliEveCascade(Double_t min_pt=0.1, Double_t max_pt=100)
+AliEveCascadeList* esd_cascade(Double_t min_pt=0.1, Double_t max_pt=100)
 {
   printf("THIS SCRIPT DOES NOT WORK.\n"
 	 "AliEveCascade classes have been temporarily removed.\n"
