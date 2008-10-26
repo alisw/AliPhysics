@@ -828,6 +828,8 @@ if test "x$enable_muon" = "xyes" ; then
   AC_DEFINE(HLT_MUON)
   ALIMUON_LIBS=$ALIHLTMODULE_LIBS
   AC_LANG_PUSH(C++)
+  save_CPPFLAGS="$CPPFLAGS"
+
   dnl
   dnl Check for functionality GetRawStream AliMUONDigitMaker.h
   dnl 
@@ -843,6 +845,7 @@ if test "x$enable_muon" = "xyes" ; then
   				      [AC_DEFINE(HAVE_NOT_MUON_DIGITMAKER_GETRAWSTREAM)])
     LIBS=$save_LIBS
   AC_MSG_RESULT([$have_muon_digitmaker_getrawstream])
+  CPPFLAGS="$save_CPPFLAGS"
 
   AC_LANG_POP(C++)
 else
@@ -935,8 +938,8 @@ AH_TEMPLATE([HLT_EMCAL],[hlt emcal library])
 ALIEMCAL_LIBS=
 CHECK_HLTMODULE([emcal],
 		[], [$ALIROOT_CPPFLAGS -I$ALICE_ROOT/EMCAL],
-		[], [-L$ROOTLIBDIR], [$ROOTLIBS $ADD_ROOTLIBS],
-		[-lEMCALrec -lEMCALsim -lEMCALbase], [-L$ROOTLIBDIR $ALIROOT_LDFLAGS], 
+		[RAWDatasim], [-L$ROOTLIBDIR], [$ROOTLIBS $ADD_ROOTLIBS],
+		[EMCALrec EMCALsim EMCALbase], [-L$ROOTLIBDIR $ALIROOT_LDFLAGS], 
 		[$ROOTLIBS $ADD_ROOTLIBS $ALIROOT_LIBS])
 
 if test "x$enable_module" = "xmissheader"; then
