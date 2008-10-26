@@ -224,14 +224,13 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed){
 
     if (TMath::Abs(dalpha)>0.01)
       trackOut.Rotate(TMath::DegToRad()*(sector%18*20.+10.));
-    if (RejectCluster(cl,&trackOut)) continue;
     Double_t r[3]={cl->GetX(),cl->GetY(),cl->GetZ()};
     Double_t cov[3]={0.01,0.,0.01}; //TODO: correct error parametrisation
     trackOut.GetXYZ(xyz);
     Double_t bz = AliTracker::GetBz(xyz);
     if (trackOut.PropagateTo(r[0],bz)) nclOut++;
+    if (RejectCluster(cl,&trackOut)) continue;
     trackOut.Update(&r[1],cov);    
-    
   }
   //
   // Refit in
@@ -245,13 +244,13 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed){
     Float_t dalpha = TMath::DegToRad()*(sector%18*20.+10.)-trackIn.GetAlpha();
     if (TMath::Abs(dalpha)>0.01)
       trackIn.Rotate(TMath::DegToRad()*(sector%18*20.+10.));
-    if (RejectCluster(cl,&trackIn)) continue;
     Double_t r[3]={cl->GetX(),cl->GetY(),cl->GetZ()};
     Double_t cov[3]={0.01,0.,0.01}; //TODO: correct error parametrisation
     trackOut.GetXYZ(xyz);
     Double_t bz = AliTracker::GetBz(xyz);
 
     if (trackIn.PropagateTo(r[0],bz)) nclIn++;
+    if (RejectCluster(cl,&trackIn)) continue;
     trackIn.Update(&r[1],cov);    
   }
   trackIn.Rotate(trackInOld->GetAlpha());

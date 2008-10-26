@@ -324,13 +324,13 @@ void AliTPCTracklet::FitKalman(const AliTPCseed *seed,Int_t sector) {
   for (Int_t i=imin; i<=imax; i++){
     AliTPCclusterMI *c=track->GetClusterPointer(i);
     if (!c) continue;
-    if (RejectCluster(c,track)) continue;
     Double_t r[3]={c->GetX(),c->GetY(),c->GetZ()};
     Double_t cov[3]={0.01,0.,0.01}; //TODO: correct error parametrisation
     if (!track->PropagateTo(r[0])) {
       isOK=kFALSE;
       break;
     }
+    if (RejectCluster(c,track)) continue;
     if ( !((static_cast<AliExternalTrackParam*>(track)->Update(&r[1],cov)))) isOK=kFALSE;
   }
   if (!isOK) { delete track; return;}
@@ -341,13 +341,13 @@ void AliTPCTracklet::FitKalman(const AliTPCseed *seed,Int_t sector) {
   for (Int_t i=imax; i>=imin; i--){
     AliTPCclusterMI *c=track->GetClusterPointer(i);
     if (!c) continue;
-    if (RejectCluster(c,track)) continue;
     Double_t r[3]={c->GetX(),c->GetY(),c->GetZ()};
     Double_t cov[3]={0.01,0.,0.01}; //TODO: correct error parametrisation
     if (!track->PropagateTo(r[0])) {
       isOK=kFALSE;
       break;
     }
+    if (RejectCluster(c,track)) continue;
     if ( !((static_cast<AliExternalTrackParam*>(track)->Update(&r[1],cov)))) isOK=kFALSE;
   }
   if (!isOK) { delete track; return;}
@@ -358,13 +358,13 @@ void AliTPCTracklet::FitKalman(const AliTPCseed *seed,Int_t sector) {
   for (Int_t i=imin; i<=imax; i++){
     AliTPCclusterMI *c=track->GetClusterPointer(i);
     if (!c) continue;
-    if (RejectCluster(c,track)) continue;
     Double_t r[3]={c->GetX(),c->GetY(),c->GetZ()};
     Double_t cov[3]={0.01,0.,0.01}; //TODO: correct error parametrisation
     if (!track->PropagateTo(r[0])) {
       isOK=kFALSE;
       break;
     }
+    if (RejectCluster(c,track)) continue;
     if ( !((static_cast<AliExternalTrackParam*>(track)->Update(&r[1],cov)))) isOK=kFALSE;
   }
   if (!isOK) { delete track; return;}
