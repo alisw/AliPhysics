@@ -8,6 +8,6 @@ Set(LIBS STEERBase AOD RAWDatarec STEER CDB
          MUONraw MUONbase RAWDatabase RAWDatasim
          MUONshuttle MUONrec MUONgraphics MUONtrigger 
 	 MUONcalib MUONgeometry MUONmapping MUONcore 
-	 ESD lhapdf pythia6 microcern)
+	 ESD )
 
 AddExecutable(mchview "${SRCS}" "${LIBS}")
