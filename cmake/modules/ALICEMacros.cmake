@@ -334,6 +334,28 @@ If(ALICE_TARGET STREQUAL macosx)
 
 Endif(ALICE_TARGET STREQUAL macosx)
 
+# solarisCC5
+If(ALICE_TARGET STREQUAL solarisCC5) 
+
+  Set(CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS "${CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS}")
+
+  Set(CLIBDEFS "-DCERNLIB_SUN -DCERNLIB_BLDLIB -DCERNLIB_CZ")
+
+  Set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} +w -KPIC -template=no%extdef")
+  Set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -KPIC -erroff=%none")
+
+  Set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -KPIC -erroff=%none")
+
+  Set(ALIROOT_LIBRARIES "${ROOT_LIBRARIES}")
+
+  Set(ALIROOT_INCLUDE_DIR ${ROOT_INCLUDE_DIR} /usr/X11/include)
+
+  Set(LINK_FLAGS "${LINK_FLAGS} -L/usr/dt/lib -L/usr/openwin/lib -L/usr/ccs/lib -lXm -lXt -lX11 -lm -lgen -ldl -lsocket -lsunmath -lfsu -lfui -lnsl")
+
+Set(CMAKE_CXX_LINK_EXECUTABLE "${CMAKE_CXX_LINK_EXECUTABLE} -L/usr/dt/lib -L/usr/openwin/lib -L/usr/ccs/lib -lXm -lXt -lX11 -lm -lgen -ldl -lsocket -lsunmath -lfsu -lfui -lnsl")
+
+Endif(ALICE_TARGET STREQUAL solarisCC5)
+
 EndMacro (SetupSystem)
 
 # ../build/Makefile.alphacxx6
