@@ -1,7 +1,7 @@
 #-*- Mode: Makefile -*-
 # $Id$
 
-LIBHLTREC_VERSION := 1
+LIBHLTREC_VERSION := 2
 
 CLASS_HDRS:=  	AliHLTReconstructor.h \
 		AliRawReaderHLT.h \

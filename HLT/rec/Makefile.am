@@ -11,7 +11,7 @@ EXTRA_DIST			=
 lib_LTLIBRARIES			=  libHLTrec.la
 
 # version info for the library
-LIBRARY_VERSION			= "$(LIBHLTREC_VERSION):0:1"
+LIBRARY_VERSION			= "$(LIBHLTREC_VERSION):0:2"
 
 # MODDIR is set by the AliRoot build system and denotes the topdir
 # of the module, we must set it since the package definition libHLTrec.pkg
