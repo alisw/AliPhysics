@@ -591,8 +591,8 @@ Float_t AliTPCseed::CookdEdx(Double_t low, Double_t up,Int_t i1, Int_t i2, Bool_
   for (Int_t of =0; of<4; of++){    
     for (Int_t i=of+i1;i<i2;i+=4)
       {
-	Int_t index = fIndex[i];
-	if (index<0||index&0x8000) continue;
+	Int_t clindex = fIndex[i];
+	if (clindex<0||clindex&0x8000) continue;
 
 	//AliTPCTrackPoint * point = (AliTPCTrackPoint *) arr.At(i);
 	AliTPCTrackerPoint * point = GetTrackPoint(i);
