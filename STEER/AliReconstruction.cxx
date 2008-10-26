@@ -1629,7 +1629,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
       ok = kFALSE;
       if (tpcTrack)
 	ok = AliTracker::
-	  PropagateTrackTo(tpcTrack,kRadius,track->GetMass(),kMaxStep,kTRUE);
+	  PropagateTrackTo(tpcTrack,kRadius,track->GetMass(),kMaxStep,kFALSE);
 
       if (ok) {
 	Int_t n=trkArray.GetEntriesFast();
@@ -1641,7 +1641,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
       if (track->IsOn(AliESDtrack::kITSrefit)) continue;
 
       AliTracker::
-         PropagateTrackTo(track,kRadius,track->GetMass(),kMaxStep,kTRUE);
+         PropagateTrackTo(track,kRadius,track->GetMass(),kMaxStep,kFALSE);
       track->RelateToVertex(fesd->GetPrimaryVertexSPD(), kBz, kVeryBig);
 
     }
