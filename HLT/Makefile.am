@@ -49,6 +49,10 @@ if EN_HLT_ITS
 ITS_DIR=ITS
 endif
 
+if EN_HLT_EMCAL
+EMCAL_DIR=EMCAL
+endif
+
 SUBDIRS 		= BASE \
 			  $(ALIROOT_DEP) \
 			  $(RCU_DIR) \
@@ -61,6 +65,7 @@ SUBDIRS 		= BASE \
 			  $(COMP_DIR) \
                           $(TRIGGER_DIR) \
                           $(ITS_DIR) \
+                          $(EMCAL_DIR) \
 			  doc
 
 EXTRA_DIST		= libHLTbase.pkg \
@@ -75,11 +80,13 @@ EXTRA_DIST		= libHLTbase.pkg \
 			  libAliHLTPHOS.pkg \
 			  libAliHLTTPC.pkg \
 			  libAliHLTTRD.pkg \
+			  libAliHLTFMD.pkg \
 			  libAliHLTMUON.pkg \
 			  libAliHLTComp.pkg \
 			  libAliHLTTrigger.pkg \
 			  libAliHLTRCU.pkg \
 			  libAliHLTITS.pkg \
+			  libAliHLTEMCAL.pkg \
 			  exa/sample-component1.C \
 			  exa/monitoring.C \
 			  hlt.conf \

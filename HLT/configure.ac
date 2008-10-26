@@ -930,6 +930,36 @@ AC_MSG_RESULT([$enable_module])
 AC_SUBST([ALIITS_LIBS])
 
 dnl ------------------------------------------------------------------
+AH_TEMPLATE([HLT_EMCAL],[hlt emcal library])
+
+ALIEMCAL_LIBS=
+CHECK_HLTMODULE([emcal],
+		[], [$ALIROOT_CPPFLAGS -I$ALICE_ROOT/EMCAL],
+		[], [-L$ROOTLIBDIR], [$ROOTLIBS $ADD_ROOTLIBS],
+		[-lEMCALrec -lEMCALsim -lEMCALbase], [-L$ROOTLIBDIR $ALIROOT_LDFLAGS], 
+		[$ROOTLIBS $ADD_ROOTLIBS $ALIROOT_LIBS])
+
+if test "x$enable_module" = "xmissheader"; then
+  enable_module="no...header.missing"
+  enable_emcal=$enable_module
+elif test "x$enable_module" = "xforce"; then
+  enable_emcal="yes"
+else
+  enable_emcal=$enable_module
+fi
+
+if test "x$enable_emcal" = "xyes" ; then 
+  AC_DEFINE(HLT_EMCAL)
+  ALIEMCAL_LIBS=$ALIHLTMODULE_LIBS
+else
+  enable_module=$enable_emcal
+fi
+AM_CONDITIONAL(EN_HLT_EMCAL, test x$enable_emcal = xyes)
+AC_MSG_CHECKING([whether to compile EMCAL library])
+AC_MSG_RESULT([$enable_module])
+AC_SUBST([ALIEMCAL_LIBS])
+
+dnl ------------------------------------------------------------------
 AH_TEMPLATE([HLT_COMP],[hlt comp library])
 
 ALICOMP_LIBS=
@@ -1144,6 +1174,11 @@ fi
 AC_MSG_NOTICE([compile ITS library: $enable_its])
 if test "x$enable_its" = "xyes"; then 
   AC_CONFIG_FILES([ITS/Makefile])
+fi
+
+AC_MSG_NOTICE([compile EMCAL library: $enable_emcal])
+if test "x$enable_emcal" = "xyes"; then 
+  AC_CONFIG_FILES([EMCAL/Makefile])
 fi
 
 AC_MSG_NOTICE([compile trigger library: $enable_trigger])
