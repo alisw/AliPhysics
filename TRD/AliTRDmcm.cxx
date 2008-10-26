@@ -75,7 +75,7 @@ AliTRDmcm::AliTRDmcm()
 }
 
 //_____________________________________________________________________________
-AliTRDmcm::AliTRDmcm(const Int_t id) 
+AliTRDmcm::AliTRDmcm(Int_t id) 
   :TObject()
   ,fNtrk(0)
   ,fRobId(0)
@@ -230,7 +230,7 @@ void AliTRDmcm::Copy(TObject &m) const
 }
 
 //_____________________________________________________________________________
-void AliTRDmcm::AddTrk(const Int_t id) 
+void AliTRDmcm::AddTrk(Int_t id) 
 {
   //
   // Add a tracklet index

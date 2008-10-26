@@ -236,7 +236,7 @@ void AliQACheckerBase::Finish() const
 }
 
 //____________________________________________________________________________
-void AliQACheckerBase::SetQA(AliQA::ALITASK_t index, const Double_t value) const
+void AliQACheckerBase::SetQA(AliQA::ALITASK_t index, Double_t value) const
 {
 	// sets the QA according the return value of the Check
 

@@ -63,7 +63,7 @@ public:
 
   TH2F* GetHisto  (Int_t det, Bool_t force=kFALSE);              // get refernce histogram
   
-  void  DumpToFile(const Char_t *filename, const Char_t *dir="", const Bool_t append=kFALSE);
+  void  DumpToFile(const Char_t *filename, const Char_t *dir="", Bool_t append=kFALSE);
   //
   Int_t   GetAdcMin()       const { return fAdcMin;       }
   Int_t   GetAdcMax()       const { return fAdcMax;       }

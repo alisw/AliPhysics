@@ -564,7 +564,7 @@ void AliEMCALGeometry::DefineSamplingFraction()
 }
 
 //______________________________________________________________________
-void AliEMCALGeometry::GetModulePhiEtaIndexInSModuleFromTRUIndex(const Int_t itru, const Int_t iphitru, const Int_t ietatru, Int_t &iphiSM, Int_t &ietaSM) const 
+void AliEMCALGeometry::GetModulePhiEtaIndexInSModuleFromTRUIndex(Int_t itru, Int_t iphitru, Int_t ietatru, Int_t &iphiSM, Int_t &ietaSM) const 
 {
   
   // This method transforms the (eta,phi) index of module in a 

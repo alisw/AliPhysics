@@ -56,7 +56,7 @@ public:
   const TObjArray* GetCalPadRMS(){return &fCalRocArrayRMS;}             // get calibration object
   
   TH2F* GetHistoPedestal  (Int_t sector, Bool_t force=kFALSE);          // get refernce histogram
-  void  DumpToFile(const Char_t *filename, const Char_t *dir="", const Bool_t append=kFALSE);
+  void  DumpToFile(const Char_t *filename, const Char_t *dir="", Bool_t append=kFALSE);
   //
   void  SetTimeAnalysis(Bool_t time = kTRUE);                  // Use ONLY in TPCPEDESTALda on LDC for one sector!
   void  AnalyseTime(Int_t nevents);                            // Makes sense only in TPCPEDESTALda on LDC!

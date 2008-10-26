@@ -30,7 +30,7 @@ public:
   virtual ~AliTPCdataQA();
 
   AliTPCdataQA& operator = (const  AliTPCdataQA &source);
- void  DumpToFile(const Char_t *filename, const Char_t *dir="", const Bool_t append=kFALSE);
+ void  DumpToFile(const Char_t *filename, const Char_t *dir="", Bool_t append=kFALSE);
  void MakeTree(const char *fname="QApad.root");
 
   //

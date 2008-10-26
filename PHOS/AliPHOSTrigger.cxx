@@ -264,7 +264,7 @@ void AliPHOSTrigger::FillTRU(const TClonesArray * digits, const AliPHOSGeometry 
 }
 
 //______________________________________________________________________
-void AliPHOSTrigger::GetCrystalPhiEtaIndexInModuleFromTRUIndex(const Int_t itru,const Int_t iphitru,const Int_t ietatru,Int_t &iphiMod,Int_t &ietaMod) const 
+void AliPHOSTrigger::GetCrystalPhiEtaIndexInModuleFromTRUIndex(Int_t itru, Int_t iphitru, Int_t ietatru,Int_t &iphiMod,Int_t &ietaMod) const 
 {
   // This method transforms the (eta,phi) index of a crystals in a 
   // TRU matrix into Super Module (eta,phi) index.

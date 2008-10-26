@@ -45,7 +45,7 @@ public:
   void           BuildCond(AliTRDcluster *cl, Double_t *cond, UChar_t Layer, Double_t theta=0., Double_t phi=0.);
   void           Clear(const Option_t *opt = 0x0);
   AliTRDcluster* GetCluster(Int_t index) const {return index < fN && index >= 0 ? fClusters[index] : 0x0;}
-  Int_t          GetGlobalIndex(const Int_t index) const {return ((index < fN) && (index >= 0)) ? fIndex[index] : 0; }
+  Int_t          GetGlobalIndex(Int_t index) const {return ((index < fN) && (index >= 0)) ? fIndex[index] : 0; }
   void           GetClusters(Double_t *cond, Int_t *index, Int_t& ncl, Int_t BufferSize = kMaxClustersLayer);
   AliTRDcluster* GetNearestCluster(Double_t *cond);
   Double_t       GetX()                            const {
@@ -61,9 +61,9 @@ public:
   Bool_t         IsT0() const {return TestBit(1);}
   
   void           Print(Option_t *opt=0x0) const;
-  Int_t          SearchNearestCluster(const Double_t y, const Double_t z, const Double_t Roady, const Double_t Roadz) const;
+  Int_t          SearchNearestCluster(Double_t y, Double_t z, Double_t Roady, Double_t Roadz) const;
   void           SetRange(Float_t z0, Float_t zLength);
-  void           SetNRows(const Int_t nRows){ fNRows = nRows; }
+  void           SetNRows(Int_t nRows){ fNRows = nRows; }
   void           SetPlane(Int_t plane){ fPlane = plane; }
   void           SetReconstructor(const AliTRDReconstructor *rec) {fReconstructor = rec;}
   void           SetStack(Int_t stack){ fStack = stack; }

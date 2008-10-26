@@ -291,7 +291,7 @@ Int_t AliITSBadChannelsAuxSPD::GetNumberOfBadChannels(Int_t* &badChannelsArray, 
 
 //__________________________________________________________________________
 Bool_t AliITSBadChannelsAuxSPD::CreateHTMLReport(char *name, Int_t* &badChannelsArray, Int_t* &indexArray,
-						 const Int_t indexArraySize, TString *buffer, Bool_t tags)
+						 Int_t indexArraySize, TString *buffer, Bool_t tags)
 {
   // Create an HTML report from the bad channels array
   //

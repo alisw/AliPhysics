@@ -209,7 +209,7 @@ AliTRDchamberTimeBin::~AliTRDchamberTimeBin()
 }
 
 //_____________________________________________________________________________
-void AliTRDchamberTimeBin::SetRange(const Float_t z0, const Float_t zLength)
+void AliTRDchamberTimeBin::SetRange(Float_t z0, Float_t zLength)
 {
 // Sets the range in z-direction
 //

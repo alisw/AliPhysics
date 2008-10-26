@@ -52,7 +52,7 @@ AliMpSectorPadIterator::AliMpSectorPadIterator()
 }
 
 //______________________________________________________________________________
-AliMpSectorPadIterator::AliMpSectorPadIterator(const AliMpSector* const sector)
+AliMpSectorPadIterator::AliMpSectorPadIterator(const AliMpSector* sector)
   : AliMpVPadIterator(),
     fkSector(sector),
     fCurrentIndex(0),
