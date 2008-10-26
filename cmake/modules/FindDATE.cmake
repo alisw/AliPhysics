@@ -8,9 +8,7 @@
 
 # Check if DATE is installed and in the path
 
-Execute_process(
-  COMMAND which date-config
-  OUTPUT_VARIABLE DATE_PROGRAM)
+Find_program( DATE_PROGRAM date-config )
 
 If(DATE_PROGRAM)
   Set(DATE_FOUND YES)
