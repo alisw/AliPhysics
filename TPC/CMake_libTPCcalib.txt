@@ -6,8 +6,6 @@ set(SRCS
   AliTPCcalibTracksGain.cxx
   AliTPCCalPadRegion.cxx
   AliTPCFitPad.cxx
-  AliAnaTPCTrackBase.cxx
-  AliAnaTPCTrackCalib.cxx
   AliTPCcalibAlign.cxx
   AliTPCcalibAlignment.cxx
   AliTPCcalibV0.cxx
@@ -20,6 +18,7 @@ set(SRCS
   AliTPCLaserTrack.cxx
   AliTPCcalibCalib.cxx
   AliTPCcalibTime.cxx
+  AliTPCcalibTracksCuts.cxx
 )
 
 # fill list of header files from list of source files
