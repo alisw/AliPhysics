@@ -69,6 +69,17 @@ class AliHLTEsdManager : public AliHLTLogging {
 	       AliESDEvent* tgtesd=NULL, int eventno=-1)=0;
 
   /**
+   * Merge content of source ESD into the target ESD.
+   * Merging is done on the level of objects in the ESD and for the
+   * moment it's only implemented for the TClonesArrays. In that case it's
+   * easy to detect whether the object is empty or not.
+   *
+   * \b Note: The function can not match entries of the same type, like e.g.
+   * tracks from the 'Tracks' member.
+   */
+  virtual int Merge(AliESDEvent* pTgt, AliESDEvent* pSrc) const =0;
+
+  /**
    * Align all ESD to the same number of events.
    * The function adds empty events to all ESD files if their event number
    * does not match the specified one.

@@ -56,6 +56,17 @@ class AliHLTEsdManagerImplementation : public AliHLTEsdManager {
 	       AliESDEvent* tgtesd=NULL, int eventno=-1);
 
   /**
+   * Merge content of source ESD into the target ESD.
+   * Merging is done on the level of objects in the ESD and for the
+   * moment it's only implemented for the TClonesArrays. In that case it's
+   * easy to detect whether the object is empty or not.
+   *
+   * \b Note: The function can not match entries of the same type, like e.g.
+   * tracks from the 'Tracks' member.
+   */
+  int Merge(AliESDEvent* pTgt, AliESDEvent* pSrc) const;
+
+  /**
    * Align all ESD to the same number of events.
    * The function adds empty events to all ESD files if their event number
    * does not match the specified one.
@@ -106,13 +117,6 @@ class AliHLTEsdManagerImplementation : public AliHLTEsdManager {
      * @param eventno     optional event no for tree synchronization
      */
     int WriteESD(AliESDEvent* pESD, int eventno=-1);
-
-    /**
-     * Copy non-empty objects of the source ESD to the target ESD.
-     * The first implementation just copies the entries of type TClonesArray which
-     * are not empty.
-     */
-    int CopyNonEmptyObjects(AliESDEvent* pTgt, AliESDEvent* pSrc);
 
     /**
      * Set the target directory for the ESD file.

@@ -870,14 +870,6 @@ int AliHLTSystem::ProcessHLTOUT(AliHLTOUT* pHLTOUT, AliESDEvent* esd)
   AliHLTOUT::InvalidateBlocks(*pEsdHandlers);
   AliHLTOUT::InvalidateBlocks(*pProprietaryHandlers);
 
-  // first come first serve: the ESD of the first handler is also filled into
-  // the main ESD. Has to be changed later.
-  // currently, merging to the provided ESDs crashes at the level of the
-  // TTree::Fill in AliReconstruction, furthermore, the wrong ESD is passed
-  // by the framework
-  AliESDEvent* pMasterESD=NULL;
-  pMasterESD=esd;
-
   AliHLTComponentDataTypeList esdBlocks;
 
   for (iResult=pHLTOUT->SelectFirstDataBlock();
@@ -914,11 +906,7 @@ int AliHLTSystem::ProcessHLTOUT(AliHLTOUT* pHLTOUT, AliESDEvent* esd)
 	  const AliHLTUInt8_t* pBuffer=NULL;
 	  AliHLTUInt32_t size=0;
 	  if (pHLTOUT->GetDataBuffer(pBuffer, size)>=0) {
-	    pHLTOUT->WriteESD(pBuffer, size, dt);
-	    if (pMasterESD) {
-	      pHLTOUT->WriteESD(pBuffer, size, dt, pMasterESD);
-	      pMasterESD=NULL;
-	    }
+	    pHLTOUT->WriteESD(pBuffer, size, dt, esd);
 	    pHLTOUT->ReleaseDataBuffer(pBuffer);
 	  }
 	  pHLTOUT->MarkDataBlockProcessed();
@@ -978,11 +966,7 @@ int AliHLTSystem::ProcessHLTOUT(AliHLTOUT* pHLTOUT, AliESDEvent* esd)
     if ((size=pHandler->GetProcessedData(pBuffer))>0) {
       AliHLTModuleAgent::AliHLTOUTHandlerDesc desc=*handler;
       AliHLTComponentDataType dt=desc;
-      pHLTOUT->WriteESD(pBuffer, size, dt);
-      if (pMasterESD) {
-	pHLTOUT->WriteESD(pBuffer, size, dt, pMasterESD);
-	pMasterESD=NULL;
-      }
+      pHLTOUT->WriteESD(pBuffer, size, dt, esd);
       pHandler->ReleaseProcessedData(pBuffer, size);
     }
     pHLTOUT->MarkDataBlocksProcessed(&(*handler));

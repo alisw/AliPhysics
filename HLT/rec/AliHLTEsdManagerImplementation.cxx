@@ -111,38 +111,29 @@ int AliHLTEsdManagerImplementation::WriteESD(const AliHLTUInt8_t* pBuffer, AliHL
       if (pESD) {
 	AliHLTEsdListEntry* entry=Find(dt);
 	if (!entry) {
-	  AliHLTEsdListEntry* newEntry=new AliHLTEsdListEntry(dt);
-	  if (!fDirectory.IsNull()) {
-	    newEntry->SetDirectory(fDirectory);
+	  if ((entry=new AliHLTEsdListEntry(dt))!=NULL) {
+	    if (!fDirectory.IsNull()) {
+	      entry->SetDirectory(fDirectory);
+	    }
+	    fESDs.push_back(entry);
 	  }
-	  fESDs.push_back(newEntry);
 	}
-	if (tgtesd) {
-#if 0 // later extension !defined(HAVE_NOT_ESD_NONSTD)
-	  entry=Find(dt);
-	  if (entry) {
-	    entry->CopyNonEmptyObjects(tgtesd, pESD);
-	  } else {
-	    HLTError("internal mismatch, can not create list entry");
-	    iResult=-ENOMEM;
-	  }
-#elif !defined(HAVE_NOT_ESD_COPY)
-	  *tgtesd=*pESD;
-#else //HAVE_NOT_ESD_COPY
-	  static bool warningPrinted=false;
-	  if (!warningPrinted) {
-	    HLTWarning("old version of AliESDEvent does not provide assignment operator, skip merging to global hltEsd");
-	  }
-	  warningPrinted=true;
-#endif //HAVE_NOT_ESD_COPY
-	} else {
-	entry=Find(dt);
 	if (entry) {
+	  if (tgtesd) {
+#if !defined(HAVE_NOT_ESD_COPY)
+	    Merge(tgtesd, pESD);
+#else //HAVE_NOT_ESD_COPY
+	    static bool warningPrinted=false;
+	    if (!warningPrinted) {
+	      HLTWarning("old version of AliESDEvent does not provide assignment operator, skip merging to global hltEsd");
+	    }
+	    warningPrinted=true;
+#endif //HAVE_NOT_ESD_COPY
+	  }
 	  entry->WriteESD(pESD, eventno);
 	} else {
 	  HLTError("internal mismatch, can not create list entry");
 	  iResult=-ENOMEM;
-	}
 	}
       } else {
 	HLTWarning("data block %s is not of class type AliESDEvent, ignoring ...", AliHLTComponent::DataType2Text(dt).c_str());
@@ -639,81 +630,68 @@ const char* AliHLTEsdManagerImplementation::AliHLTEsdListEntry::GetPrefix()
   return fPrefix.Data();
 }
 
-int AliHLTEsdManagerImplementation::AliHLTEsdListEntry::CopyNonEmptyObjects(AliESDEvent* pTgt, AliESDEvent* pSrc)
+int AliHLTEsdManagerImplementation::Merge(AliESDEvent* pTgt, AliESDEvent* pSrc) const
 {
   // see header file for class documentation
   int iResult=0;
   if (!pTgt || !pSrc) return -EINVAL;
 
-  const char* defaultPrefix="HLT";
   TIter next(pSrc->GetList());
   TObject* pSrcObject=NULL;
   TString name;
+  static int warningCount=0;
   while ((pSrcObject=next())) {
     if(!pSrcObject->InheritsFrom("TCollection")){
       // simple objects
     } else if(pSrcObject->InheritsFrom("TClonesArray")){
       TClonesArray* pTClA=dynamic_cast<TClonesArray*>(pSrcObject);
       if (pTClA!=NULL && pTClA->GetEntriesFast()>0) {
-	bool bMakeNewName=true;
-	name=defaultPrefix;
-	name+=pTClA->GetName();
+	name=pTClA->GetName();
 	TObject* pTgtObject=pTgt->GetList()->FindObject(name);
 	TClonesArray* pTgtArray=NULL;
-	if (bMakeNewName=(pTgtObject!=NULL) && pTgtObject->InheritsFrom("TClonesArray")){
+	if (pTgtObject!=NULL && pTgtObject->InheritsFrom("TClonesArray")){
 	  pTgtArray=dynamic_cast<TClonesArray*>(pTgtObject);
 	  if (pTgtArray) {
 	    TString classType=pTClA->Class()->GetName();
 	    if (classType.CompareTo(pTgtArray->Class()->GetName())==0) {
 	      if (pTgtArray->GetEntries()==0) {
-		bMakeNewName=false;
+		pTgtArray->ExpandCreate(pTClA->GetEntries());
+		for(int i=0; i<pTClA->GetEntriesFast(); ++i){
+		  (*pTClA)[i]->Copy(*((*pTgtArray)[i]));
+		}
 	      } else {
-		HLTWarning("TClonesArray \"%s\"  in target ESD %p is already filled with %d entries",
-			   name.Data(), pTgt, pTgtArray->GetEntries());
+		if (warningCount++<10) {
+		  HLTWarning("TClonesArray \"%s\"  in target ESD %p is already filled with %d entries",
+			     name.Data(), pTgt, pTgtArray->GetEntries());
+		}
+		iResult=-EBUSY;
 	      }
 	    } else {
-	      HLTWarning("TClonesArray \"%s\" exists in target ESD %p, but describes incompatible class type %s instead of %s",
-			 name.Data(), pTgt, pTgtArray->GetClass()->GetName(), pTClA->GetClass()->GetName());
+	      if (warningCount++<10) {
+		HLTWarning("TClonesArray \"%s\" exists in target ESD %p, but describes incompatible class type %s instead of %s",
+			   name.Data(), pTgt, pTgtArray->GetClass()->GetName(), pTClA->GetClass()->GetName());
+	      }
+	      iResult=-EBUSY;
 	    }
 	  } else {
-	    HLTError("internal error: dynamic cast failed for object %s %p", pTgtObject->GetName(), pTgtObject);
+	    if (warningCount++<10) {
+	      HLTError("internal error: dynamic cast failed for object %s %p", pTgtObject->GetName(), pTgtObject);
+	    }
+	    iResult=-EBUSY;
 	  }
 	} else if (pTgtObject) {
-	  HLTWarning("object \"%s\" does already exist in target ESD %p, but is %s rather than TClonesArray",
-		     name.Data(), pTgt, pTgtObject->Class()->GetName());
-	  // TODO: temporary solution, think about a general naming scheme and add
-	  // the name as property of AliHLTEsdListEntry
-	}
-
-	if (bMakeNewName) {
-	  pTgtArray=NULL;
-	  int count=1;
-	  while (pTgt->GetList()->FindObject(name)) {
-	    name.Form("%sESD_%s", GetPrefix(), pTClA->GetName());
-	    if (count++>1) {
-	      name+=Form("%d", count);
-	    }
+	  if (warningCount++<10) {
+	    HLTWarning("object \"%s\" does already exist in target ESD %p, but is %s rather than TClonesArray"
+		       " skipping data",
+		       name.Data(), pTgt, pTgtObject->Class()->GetName());
 	  }
-	  HLTWarning("adding new TClonesArray \"%s\" because of conflicts", name.Data());
-	}
-
-	if (pTgtArray) {
-	  pTgtArray->ExpandCreate(pTClA->GetEntries());
-	  HLTInfo("Expanding TClonesArray \"%s\" to %d elements", pTgtArray->GetClass()->GetName(), pTClA->GetEntries());
+	  iResult=-EBUSY;
 	} else {
-	  pTgtArray=new TClonesArray(pTClA->GetClass(), pTClA->GetEntries());
-	  pTgtArray->ExpandCreate(pTClA->GetEntries());
-	  pTgtArray->SetName(name);
-	  pTgt->AddObject(pTgtArray);
-	  HLTInfo("Adding TClonesArray \"%s\" with %d elements to ESD %p", name.Data(), pTClA->GetEntries(), pTgt);
-	}
-
-	if (pTgtArray) {
-	  for(int i=0; i<pTClA->GetEntriesFast(); ++i){
-	    (*pTClA)[i]->Copy(*((*pTgtArray)[i]));
+	  if (warningCount++<10) {
+	    HLTWarning("object \"%s\" does not exist in target ESD %p, data can not be copied because it will be lost when filling the tree",
+		       name.Data(), pTgt);
 	  }
-	} else {
-	  iResult=-ENOMEM;
+	  iResult=-ENOENT;
 	}
       }
     }
