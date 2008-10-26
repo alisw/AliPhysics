@@ -31,12 +31,14 @@
 #pragma link C++ class AliHLTHOMERBlockDesc+;
 #pragma link C++ class AliHLTHOMERSourceDesc+;
 #pragma link C++ class AliHLTEsdManager+;
+#pragma link C++ class AliHLTDAQ+;
 #pragma link C++ class AliHLTOUT+;
 #pragma link C++ class AliHLTOUTHomerBuffer+;
 #pragma link C++ class AliHLTOUTHandlerChain+;
 #pragma link C++ class AliHLTOUTTask+;
 #pragma link C++ class AliHLTOUTHandler+;
 #pragma link C++ class AliHLTOUTHandlerEquId+;
+#pragma link C++ class AliHLTOUTHandlerDetectorDDL+;
 #pragma link C++ class AliHLTMemoryFile+;
 #pragma link C++ class AliHLTMessage+;
 #pragma link C++ class AliHLTEventStatistics+;

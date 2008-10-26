@@ -5,6 +5,7 @@ rec/AliHLTReconstructor.cxx
 rec/AliRawReaderHLT.cxx
 rec/AliHLTOUTHomerCollection.cxx
 rec/AliHLTEsdManagerImplementation.cxx
+rec/AliHLTDAQInterfaceImplementation.cxx
 rec/AliHLTOUTDigitReader.cxx
 rec/AliHLTOUTRawReader.cxx
 )

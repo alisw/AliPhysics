@@ -27,12 +27,14 @@ BASE/AliHLTHOMERLibManager.cxx
 BASE/AliHLTHOMERBlockDesc.cxx
 BASE/AliHLTHOMERSourceDesc.cxx
 BASE/AliHLTEsdManager.cxx
+BASE/AliHLTDAQ.cxx
 BASE/AliHLTOUT.cxx
 BASE/AliHLTOUTHandlerChain.cxx
 BASE/AliHLTOUTHomerBuffer.cxx
 BASE/AliHLTOUTTask.cxx
 BASE/AliHLTOUTHandler.cxx
 BASE/AliHLTOUTHandlerEquId.cxx
+BASE/AliHLTOUTHandlerDetectorDDL.cxx
 BASE/AliHLTMemoryFile.cxx
 BASE/AliHLTMessage.cxx
 BASE/AliHLTEventStatistics.cxx

@@ -7,6 +7,7 @@
 #pragma link C++ class AliRawReaderHLT+;
 #pragma link C++ class AliHLTOUTHomerCollection+;
 #pragma link C++ class AliHLTEsdManager+;
+#pragma link C++ class AliHLTDAQInterfaceImplementation+;
 #pragma link C++ class AliHLTOUTDigitReader+;
 #pragma link C++ class AliHLTOUTRawReader+;
 #endif
