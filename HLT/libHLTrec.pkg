@@ -7,6 +7,7 @@ CLASS_HDRS:=  	AliHLTReconstructor.h \
 		AliRawReaderHLT.h \
 		AliHLTOUTHomerCollection.h \
 		AliHLTEsdManagerImplementation.h \
+		AliHLTDAQInterfaceImplementation.h \
 		AliHLTOUTDigitReader.h \
 		AliHLTOUTRawReader.h
 

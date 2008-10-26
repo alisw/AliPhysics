@@ -29,11 +29,13 @@ CLASS_HDRS:=  	AliHLTComponent.h \
 		AliHLTHOMERBlockDesc.h \
 		AliHLTHOMERSourceDesc.h \
 		AliHLTEsdManager.h \
+		AliHLTDAQ.h \
 		AliHLTOUT.h \
 		AliHLTOUTHomerBuffer.h \
 		AliHLTOUTTask.h \
 		AliHLTOUTHandler.h \
 		AliHLTOUTHandlerEquId.h \
+		AliHLTOUTHandlerDetectorDDL.h \
 		AliHLTOUTHandlerChain.h \
 		AliHLTMemoryFile.h \
 		AliHLTMessage.h \
