@@ -117,6 +117,8 @@ AliEventTagCuts::AliEventTagCuts() :
   fNElectronsAbove10GeVFlag(kFALSE),
   fNElectronsMin(-1), fNElectronsMax(100000),
   fNElectronsFlag(kFALSE),
+  fNFWMuonsMin(-1), fNFWMuonsMax(100000),
+  fNFWMuonsFlag(kFALSE),
   fNMuonsMin(-1), fNMuonsMax(100000),
   fNMuonsFlag(kFALSE),
   fNPionsMin(-1), fNPionsMax(100000),
@@ -209,6 +211,7 @@ void AliEventTagCuts::Reset() {
   fNElectronsAbove3GeVFlag = kFALSE;
   fNElectronsAbove10GeVFlag = kFALSE;
   fNElectronsFlag = kFALSE;
+  fNFWMuonsFlag = kFALSE;
   fNMuonsFlag = kFALSE;
   fNPionsFlag = kFALSE;
   fNKaonsFlag = kFALSE;
@@ -271,6 +274,7 @@ void AliEventTagCuts::Reset() {
   fNElectronsAbove3GeVMin = -1; fNElectronsAbove3GeVMax = 100000;
   fNElectronsAbove10GeVMin = -1; fNElectronsAbove10GeVMax = 100000;
   fNElectronsMin = -1; fNElectronsMax = 100000;
+  fNFWMuonsMin = -1; fNFWMuonsMax = 100000;
   fNMuonsMin = -1; fNMuonsMax = 100000;
   fNPionsMin = -1; fNPionsMax = 100000;
   fNKaonsMin = -1; fNKaonsMax = 100000;
@@ -646,6 +650,15 @@ void AliEventTagCuts::SetNElectronRange(Int_t low, Int_t high) {
   fNElectronsFlag = kTRUE;
 }
 //___________________________________________________________________________
+void AliEventTagCuts::SetNFWMuonRange(Int_t low, Int_t high) {
+  //Sets the forward muon multiplicity range
+  //and the corresponding flag to kTRUE if the cut is used.
+  fNFWMuonsMin = low;
+  fNFWMuonsMax = high;
+  fNFWMuonsFlag = kTRUE;
+}
+
+//___________________________________________________________________________
 void AliEventTagCuts::SetNMuonRange(Int_t low, Int_t high) {
   //Sets the muon multiplicity range
   //and the corresponding flag to kTRUE if the cut is used.
@@ -949,6 +962,10 @@ Bool_t AliEventTagCuts::IsAccepted(AliEventTag *EvTag) const {
   
   if(fNElectronsFlag)
     if((EvTag->GetNumOfElectrons() < fNElectronsMin) || (EvTag->GetNumOfElectrons() > fNElectronsMax))
+      return kFALSE; 
+  
+  if(fNFWMuonsFlag)
+    if((EvTag->GetNumOfFWMuons() < fNFWMuonsMin) || (EvTag->GetNumOfFWMuons() > fNFWMuonsMax))
       return kFALSE; 
   
   if(fNMuonsFlag)

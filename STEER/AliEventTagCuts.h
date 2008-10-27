@@ -70,6 +70,7 @@ class AliEventTagCuts : public TObject {
   void SetNElectronsAbove3GeVRange(Int_t low, Int_t high);
   void SetNElectronsAbove10GeVRange(Int_t low, Int_t high);
   void SetNElectronRange(Int_t low, Int_t high);
+  void SetNFWMuonRange(Int_t low, Int_t high);
   void SetNMuonRange(Int_t low, Int_t high);
   void SetNPionRange(Int_t low, Int_t high);
   void SetNKaonRange(Int_t low, Int_t high);
@@ -179,6 +180,8 @@ class AliEventTagCuts : public TObject {
   Bool_t fNElectronsAbove10GeVFlag;                           // Shows whether this cut is used or not  
   Int_t fNElectronsMin, fNElectronsMax;                       // # of electrons range
   Bool_t fNElectronsFlag;                                     // Shows whether this cut is used or not
+  Int_t fNFWMuonsMin, fNFWMuonsMax;                           // # of forward muons range
+  Bool_t fNFWMuonsFlag;                                       // Shows whether this cut is used or not
   Int_t fNMuonsMin, fNMuonsMax;                               // # of muons range
   Bool_t fNMuonsFlag;                                         // Shows whether this cut is used or not
   Int_t fNPionsMin, fNPionsMax;                               // # of pions range

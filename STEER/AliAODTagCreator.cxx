@@ -388,7 +388,7 @@ void AliAODTagCreator::FillEventTag(AliAODEvent* aod, AliEventTag* evTag)
     Int_t   nPos = 0, nNeg = 0, nNeutr =0;
     Int_t   nKinks = 0, nV0s = 0, nCascades = 0;
     Int_t   nK0s = 0, nNeutrons = 0, nPi0s = 0, nGamas = 0;
-    Int_t   nProtons = 0,  nKaons = 0, nPions = 0, nMuons = 0, nElectrons = 0;
+    Int_t   nProtons = 0,  nKaons = 0, nPions = 0, nMuons = 0, nElectrons = 0, nFWMuons = 0;
     Int_t   nCh1GeV = 0, nCh3GeV = 0, nCh10GeV = 0;
     Int_t   nMu1GeV = 0, nMu3GeV = 0, nMu10GeV = 0;
     Int_t   nEl1GeV = 0, nEl3GeV = 0, nEl10GeV = 0;
@@ -450,10 +450,12 @@ void AliAODTagCreator::FillEventTag(AliAODEvent* aod, AliEventTag* evTag)
 	    if(fPt > fHighPtCut) nEl3GeV++;
 	    if(fPt > fVeryHighPtCut) nEl10GeV++;
 	}
-	    
 	totalP += track->P();
 	meanPt += fPt;
 	ntrack++;
+	// forward muons (in the dimuon spectrometer)
+	if(track->IsMuonTrack()) nFWMuons++;   
+  	                          
     }//track loop
     //
     // Fill the event tags  
@@ -474,6 +476,7 @@ void AliAODTagCreator::FillEventTag(AliAODEvent* aod, AliEventTag* evTag)
     evTag->SetNumOfKaons(nKaons);
     evTag->SetNumOfPions(nPions);
     evTag->SetNumOfMuons(nMuons);
+    evTag->SetNumOfFWMuons(nFWMuons);
     evTag->SetNumOfElectrons(nElectrons);
     evTag->SetNumOfPhotons(nGamas);
     evTag->SetNumOfPi0s(nPi0s);
