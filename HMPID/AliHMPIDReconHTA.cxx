@@ -33,9 +33,7 @@
 #include <TSpline.h>         //ShapeModel()
 #include "TStopwatch.h"      //
 
-TH2F* AliHMPIDReconHTA::fgDatabase = 0x0;
-//TH2F* AliHMPIDReconHTA::fgDatabase = new TH2F("deconv","database;d1;d2;thC+1000*thTrk",500,0,50,150,0,15);
-Int_t AliHMPIDReconHTA::fgDB[501][51]={25551*0};
+Int_t AliHMPIDReconHTA::fgDB[500][150]={75000*0};
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 AliHMPIDReconHTA::AliHMPIDReconHTA():
   TTask("RichRec","RichPat"),
@@ -278,27 +276,21 @@ Bool_t AliHMPIDReconHTA::FindShape(Double_t &thTrkRec,Double_t &phiTrkRec,Double
   Double_t xA,xB;
   status = kFALSE;
   
-  if(!ShapeModel(npeff,phiphotP,distP,xA,xB,phiTrkRec)) {Printf("ShapeModel failed            "); return kFALSE;}
+  if(!ShapeModel(npeff,phiphotP,distP,xA,xB,phiTrkRec)) {/*Printf("ShapeModel failed            ");*/ return kFALSE;}
     
 //  if(xA > 50 || xB > 15)                                {Printf("xA and xB failed out of range"); return kFALSE;}
 
-  Int_t bin = fgDatabase->FindBin(xA,xB);
-  if(bin<=0)                                            {Printf("bin < 0 ! failed             "); return kFALSE;}
-  
-  Int_t compact = (Int_t)fgDatabase->GetBinContent(bin);
-  
-  
-  if(compact<0)                                         {Printf("compact< 0! failed           "); return kFALSE;} 
-  //
   Int_t binxDB,binyDB;
   FindBinDB(xA,xB,binxDB,binyDB);
-  Int_t compactDB=0;
-  if(binxDB>0 && binyDB>0 ) compactDB = fgDB[binxDB][binyDB];
+  if(binxDB<0 || binyDB<0)                              {/*Printf("bin < 0 ! failed             ");*/ return kFALSE;}
+  
+  Int_t compactDB = fgDB[binxDB][binyDB];
+  
+  if(compactDB<0)                                       {/*Printf("compact< 0! failed           ");*/ return kFALSE;} 
   //
-  Printf("compact %i compactDB %i",compact,compactDB);
-
-  thetaCRec =  (Double_t)(compact%1000);
-  thTrkRec  =  (Double_t)(compact/1000);
+  //
+  thetaCRec =  (Double_t)(compactDB%1000);
+  thTrkRec  =  (Double_t)(compactDB/1000);
 
   thTrkRec  *= TMath::DegToRad(); 
   thetaCRec *= TMath::DegToRad();
@@ -510,22 +502,25 @@ void AliHMPIDReconHTA::InitDatabase()
 // Construction a database of ring shapes on fly
 //   Arguments: none
 //   Returns  : none
-//  N.B. fgDatabase points to a TH2I with x-min dist from MIP
-//                                        y-dist from the ring of the MIP perpendicular to major axis
+//  N.B. fgDB is the distance with x-min from MIP
+//                                 y-dist from the ring of the MIP perpendicular to major axis
 //        The content is the packed info of track theta and thetaC in degrees
 //                        thetaC+1000*thTrk
 //
 //  TFile *pout = new TFile("./database.root","recreate");
 
+  static Bool_t isDone = kFALSE;
+  
   TStopwatch timer;
-  timer.Start();
- 
-
-  if(!fgDatabase) fgDatabase = new TH2F("deconv","database;d1;d2;thC+1000*thTrk",500,0,50,150,0,15);
-  if(fgDatabase->GetEntries()>=1) {
-   AliInfo("HTA database already built. ");
+  
+  if(isDone) {
    return;
   }
+  
+  if(!isDone) {
+    timer.Start();
+  }
+ 
   AliInfo(Form("database HTA is being built.Please, wait..."));
 //  
   Double_t x[3]={0,0,0},y[3];
@@ -539,7 +534,6 @@ void AliHMPIDReconHTA::InitDatabase()
   Int_t nstepx = 1000;
   Int_t nstepy = 1000;
 
-//  TH2F *fgDatabase = new TH2F("deconv","database;d1;d2;thC+1000*thTrk",500,0,50,150,0,15);
   //
   Double_t xrad = 0;
   Double_t yrad = 0;
@@ -594,20 +588,20 @@ void AliHMPIDReconHTA::InitDatabase()
       Double_t distB   = TMath::Sqrt((x[2]-xmip)*(x[2]-xmip)+(y[2]-ymip)*(y[2]-ymip));
 // compact the infos...      
       Int_t compact = (Int_t)(thetaC*TMath::RadToDeg())+1000*(Int_t)(thTrk*TMath::RadToDeg());
-      Int_t bin = fgDatabase->FindBin(distA,distB);
-      if(fgDatabase->GetBinContent(bin)==0) fgDatabase->Fill(distA,distB,compact);
       Int_t binxDB,binyDB;
       FindBinDB(distA,distB,binxDB,binyDB);
-      fgDB[binxDB][binyDB] = compact;
+      if(fgDB[binxDB][binyDB]==0) fgDB[binxDB][binyDB] = compact;
     }
   }
 
   FillZeroChan();
-//  fgDatabase = deconv;
 
-  timer.Stop();
-  Double_t nSecs = timer.CpuTime();  
-  AliInfo(Form("database HTA successfully open in %3.1f sec.(CPU). Reconstruction is started.",nSecs));
+  if(!isDone) {
+    timer.Stop();
+    Double_t nSecs = timer.CpuTime();  
+    AliInfo(Form("database HTA successfully open in %3.1f sec.(CPU). Reconstruction is started.",nSecs));
+    isDone = kTRUE;
+  }
   
 //  pout->Write();
 //  pout->Close();
@@ -621,28 +615,29 @@ void AliHMPIDReconHTA::FillZeroChan()const
   // Arguments: histogram pointer of the database
   //   Returns: none
   //
-  Int_t nbinx = fgDatabase->GetNbinsX();
-  Int_t nbiny = fgDatabase->GetNbinsY();
-  for(Int_t i = 0;i<nbinx;i++) {
-    for(Int_t j = 0;j<nbiny;j++) {
-      if(fgDatabase->GetBinContent(i,j) == 0) {
-        fgDatabase->SetCellContent(i,j,-1);
+  const Int_t nxDB = 500;
+  const Int_t nyDB = 150;
+
+  for(Int_t i = 0;i<nxDB;i++) {
+    for(Int_t j = 0;j<nyDB;j++) {
+      if(fgDB[i][j] == 0) {
+        fgDB[i][j] = -1;
         Int_t nXmin = i-1; Int_t nXmax=i+1;
         Int_t nYmin = j-1; Int_t nYmax=j+1;
         Int_t nc = 0;
         Double_t meanC =0;
         Double_t meanTrk =0;
         for(Int_t ix=nXmin;ix<=nXmax;ix++) {
-          if(ix<0||ix>nbinx) continue;
+          if(ix<0||ix>=nxDB) continue;
           for(Int_t iy=nYmin;iy<=nYmax;iy++) {
-            if(iy<0||iy>nbiny) continue;
-            meanC  +=  (Int_t)fgDatabase->GetBinContent(ix,iy)%1000;
-            meanTrk+=  (Int_t)fgDatabase->GetBinContent(ix,iy)/1000;
+            if(iy<0||iy>=nyDB) continue;
+            meanC  +=  (Int_t)(fgDB[ix][iy]%1000);
+            meanTrk+=  (Int_t)(fgDB[ix][iy]/1000);
             nc++;
           }
           meanC/=nc; meanTrk/=nc;
           Int_t compact = (Int_t)meanC+1000*(Int_t)meanTrk;
-          if(compact>0)fgDatabase->SetCellContent(i,j,compact);
+          if(compact>0)fgDB[i][j] = compact;
         }
       }
     }
@@ -772,7 +767,8 @@ Double_t AliHMPIDReconHTA::FindSimmPhi()
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDReconHTA::FindBinDB(Double_t x,Double_t y,Int_t &binX,Int_t &binY)
 {
-  //const Int_t nxDB = 500;
+  const Int_t nxDB = 500;
+  const Int_t nyDB = 150;
   const Double_t xlowDB =  0;   
   const Double_t xhigDB = 50;   
   const Double_t ylowDB =  0;
@@ -780,8 +776,13 @@ void AliHMPIDReconHTA::FindBinDB(Double_t x,Double_t y,Int_t &binX,Int_t &binY)
 
   binX = -1;
   binY = -1;
-  if(x<xlowDB && x>xlowDB &&
-     y<ylowDB && y>ylowDB)    return;
-  binX = (Int_t)((x-xlowDB)/(xhigDB-xlowDB));
-  binY = (Int_t)((y-ylowDB)/(yhigDB-ylowDB));
+  if(x<xlowDB && x>xhigDB &&
+     y<ylowDB && y>yhigDB)    return;
+  binX = Int_t((x-xlowDB)/(xhigDB-xlowDB)*nxDB);
+  binY = Int_t((y-ylowDB)/(yhigDB-ylowDB)*nyDB);
+  if(binX>=nxDB || binY>=nyDB) {
+    binX = -1;
+    binY = -1;
+  }
+  
 }

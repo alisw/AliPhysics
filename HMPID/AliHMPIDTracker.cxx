@@ -352,7 +352,6 @@ Int_t AliHMPIDTracker::ReconHiddenTrk(AliESDEvent *pEsd,TObjArray *pClus,TObjArr
       }
     }
     //
-    Printf(" qthre %f nmean %f index %i cham %i",qthre,nmean,indMip,chMip);
     if(!reconHTA.CkovHiddenTrk(pTrk,(TClonesArray *)pClus->At(ipCh),indMip,nmean)) {                 //search for track parameters and Cerenkov angle of this track
       AliHMPIDPid pID;
       Double_t prob[5];
