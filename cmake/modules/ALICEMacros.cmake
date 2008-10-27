@@ -181,8 +181,6 @@ If(ALICE_TARGET STREQUAL macosx64)
     Set(ROOT_LIBRARIES "${ROOT_LIBRARIES} ${FLIB}")
   Endif(CMAKE_Fortran_COMPILER MATCHES g95) 
 
-  Set(LINK_FLAGS "${LINK_FLAGS} -m64")
-
 # I think this is useless
 #  Set(ALIROOT_LIBRARIES "${ROOT_LIBRARIES} -L/usr/X11R6/lib -lX11")
   Set(ALIROOT_LIBRARIES "${ROOT_LIBRARIES}")
@@ -193,8 +191,6 @@ If(ALICE_TARGET STREQUAL macosx64)
 #Set(ROOT_INCLUDE_DIR ${ROOT_INCLUDE_DIR} ${OPENGL_INCLUDE_DIR})
 # Poor man's version of the above
   Set(ALIROOT_INCLUDE_DIR ${ROOT_INCLUDE_DIR} /usr/X11/include)
-
-  Set(LINK_FLAGS "${LINK_FLAGS} -bind_at_load")
 
 # 
 # LD            = export MACOSX_DEPLOYMENT_TARGET=$(MACOSX_MAJOR).$(MACOSX_MINOR) ; \
@@ -237,13 +233,9 @@ If(ALICE_TARGET STREQUAL linuxx8664gcc)
     Set(ROOT_LIBRARIES "${ROOT_LIBRARIES} ${FLIB}")
   Endif(CMAKE_Fortran_COMPILER MATCHES g95) 
 
-  Set(LINK_FLAGS "${LINK_FLAGS} -m64")
-
   Set(ALIROOT_LIBRARIES "${ROOT_LIBRARIES}")
 
   Set(ALIROOT_INCLUDE_DIR ${ROOT_INCLUDE_DIR} /usr/X11/include)
-
-  Set(LINK_FLAGS "${LINK_FLAGS}")
 
 Endif(ALICE_TARGET STREQUAL linuxx8664gcc)
 
@@ -276,13 +268,9 @@ If(ALICE_TARGET STREQUAL linux)
     Set(ROOT_LIBRARIES "${ROOT_LIBRARIES} ${FLIB}")
   Endif(CMAKE_Fortran_COMPILER MATCHES g95) 
 
-  Set(LINK_FLAGS "${LINK_FLAGS} -m32")
-
   Set(ALIROOT_LIBRARIES "${ROOT_LIBRARIES}")
 
   Set(ALIROOT_INCLUDE_DIR ${ROOT_INCLUDE_DIR} /usr/X11/include)
-
-  Set(LINK_FLAGS "${LINK_FLAGS}")
 
 Endif(ALICE_TARGET STREQUAL linux)
 
@@ -330,8 +318,6 @@ If(ALICE_TARGET STREQUAL macosx)
 
   Set(ALIROOT_INCLUDE_DIR ${ROOT_INCLUDE_DIR} /usr/X11/include)
 
-  Set(LINK_FLAGS "${LINK_FLAGS} -bind_at_load -single_module")
-
 Endif(ALICE_TARGET STREQUAL macosx)
 
 # solarisCC5
@@ -350,9 +336,7 @@ If(ALICE_TARGET STREQUAL solarisCC5)
 
   Set(ALIROOT_INCLUDE_DIR ${ROOT_INCLUDE_DIR} /usr/X11/include)
 
-  Set(LINK_FLAGS "${LINK_FLAGS} -L/usr/dt/lib -L/usr/openwin/lib -L/usr/ccs/lib -lXm -lXt -lX11 -lm -lgen -ldl -lsocket -lsunmath -lfsu -lfui -lnsl")
-
-Set(CMAKE_CXX_LINK_EXECUTABLE "${CMAKE_CXX_LINK_EXECUTABLE} -L/usr/dt/lib -L/usr/openwin/lib -L/usr/ccs/lib -lXm -lXt -lX11 -lm -lgen -ldl -lsocket -lsunmath -lfsu -lfui -lnsl")
+  Set(CMAKE_CXX_LINK_EXECUTABLE "${CMAKE_CXX_LINK_EXECUTABLE} -L/usr/dt/lib -L/usr/openwin/lib -L/usr/ccs/lib -lXm -lXt -lX11 -lm -lgen -ldl -lsocket -lsunmath -lfsu -lfui -lnsl")
 
 Endif(ALICE_TARGET STREQUAL solarisCC5)
 
