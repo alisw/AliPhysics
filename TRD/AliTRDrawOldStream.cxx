@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
+/* $Id: AliTRDrawOldStream.cxx 29393 2008-10-22 08:38:07Z fca $ */
 
 ////////////////////////////////////////////////////////////////////////////
 //                                                                        //
@@ -32,7 +32,7 @@
 #include "AliLog.h"
 #include "AliRawReader.h"
 
-#include "AliTRDRawStream.h"
+#include "AliTRDrawOldStream.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDcalibDB.h"
 #include "AliTRDdigitsManager.h"
@@ -41,10 +41,10 @@
 #include "AliTRDSignalIndex.h"
 #include "AliTRDfeeParam.h"
 
-ClassImp(AliTRDRawStream)
+ClassImp(AliTRDrawOldStream)
 
 //_____________________________________________________________________________
-AliTRDRawStream::AliTRDRawStream() 
+AliTRDrawOldStream::AliTRDrawOldStream() 
   :AliTRDrawStreamBase()
 //  :TObject()
   ,fGeo(NULL) 
@@ -124,7 +124,7 @@ AliTRDRawStream::AliTRDRawStream()
 }
 
 //_____________________________________________________________________________
-AliTRDRawStream::AliTRDRawStream(AliRawReader *rawReader) 
+AliTRDrawOldStream::AliTRDrawOldStream(AliRawReader *rawReader) 
   :AliTRDrawStreamBase(rawReader)
 //  :TObject()
   ,fGeo(NULL) 
@@ -206,7 +206,7 @@ AliTRDRawStream::AliTRDRawStream(AliRawReader *rawReader)
 }
 
 //_____________________________________________________________________________
-AliTRDRawStream::AliTRDRawStream(const AliTRDRawStream& stream)
+AliTRDrawOldStream::AliTRDrawOldStream(const AliTRDrawOldStream& stream)
   :AliTRDrawStreamBase(stream)
 //  :TObject()
   ,fGeo(NULL)
@@ -284,7 +284,7 @@ AliTRDRawStream::AliTRDRawStream(const AliTRDRawStream& stream)
 }
 
 //_____________________________________________________________________________
-AliTRDRawStream& AliTRDRawStream::operator = (const AliTRDRawStream& 
+AliTRDrawOldStream& AliTRDrawOldStream::operator = (const AliTRDrawOldStream& 
 					      /* stream */)
 {
   //
@@ -297,7 +297,7 @@ AliTRDRawStream& AliTRDRawStream::operator = (const AliTRDRawStream&
 }
 
 //_____________________________________________________________________________
-AliTRDRawStream::~AliTRDRawStream()
+AliTRDrawOldStream::~AliTRDrawOldStream()
 {
   //
   // Destructor
@@ -310,7 +310,7 @@ AliTRDRawStream::~AliTRDRawStream()
 }
 
 //_____________________________________________________________________________
-void AliTRDRawStream::SetRawReader(AliRawReader *rawReader) 
+void AliTRDrawOldStream::SetRawReader(AliRawReader *rawReader) 
 {
   //
   // Sets the raw reader
@@ -324,7 +324,7 @@ void AliTRDRawStream::SetRawReader(AliRawReader *rawReader)
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDRawStream::SetRawVersion(Int_t rv)
+Bool_t AliTRDrawOldStream::SetRawVersion(Int_t rv)
 {
   //
   // Set the raw data version
@@ -340,7 +340,7 @@ Bool_t AliTRDRawStream::SetRawVersion(Int_t rv)
 }
 
 //____________________________________________________________________________
-Bool_t AliTRDRawStream::Init()
+Bool_t AliTRDrawOldStream::Init()
 {
   //
   // Initialization
@@ -392,7 +392,7 @@ Bool_t AliTRDRawStream::Init()
 }
 
 //____________________________________________________________________________
-Int_t AliTRDRawStream::NextData()
+Int_t AliTRDrawOldStream::NextData()
 {
   //
   // Updates the next data word pointer
@@ -428,7 +428,7 @@ Int_t AliTRDRawStream::NextData()
 }
 
 //____________________________________________________________________________
-Bool_t AliTRDRawStream::Next()
+Bool_t AliTRDrawOldStream::Next()
 {
   //
   // Updates the next data word pointer
@@ -625,7 +625,7 @@ Bool_t AliTRDRawStream::Next()
 }
 
 //____________________________________________________________________________
-Int_t AliTRDRawStream::NextChamber(AliTRDdigitsManager *man, UInt_t** /*trackletContainer*/)
+Int_t AliTRDrawOldStream::NextChamber(AliTRDdigitsManager *man, UInt_t** /*trackletContainer*/)
 {
   //
   // Updates the next data word pointer
@@ -907,7 +907,7 @@ Int_t AliTRDRawStream::NextChamber(AliTRDdigitsManager *man, UInt_t** /*tracklet
 
 
 //____________________________________________________________________________
-void AliTRDRawStream::DecodeHCheader(Int_t timeBins)
+void AliTRDrawOldStream::DecodeHCheader(Int_t timeBins)
 {
   //
   // Decode the HC header (fRawVersion == 2, 3, 4, ???)
@@ -1035,7 +1035,7 @@ void AliTRDRawStream::DecodeHCheader(Int_t timeBins)
 }  
 
 //____________________________________________________________________________
-void AliTRDRawStream::DecodeMCMheader()
+void AliTRDrawOldStream::DecodeMCMheader()
 {
 
   //
@@ -1111,7 +1111,7 @@ void AliTRDRawStream::DecodeMCMheader()
 }
 
 //____________________________________________________________________________
-void AliTRDRawStream::DecodeTracklet()
+void AliTRDrawOldStream::DecodeTracklet()
 {
 
   //
@@ -1147,7 +1147,7 @@ void AliTRDRawStream::DecodeTracklet()
 }
 
 //____________________________________________________________________________
-void AliTRDRawStream::DecodeGTUlinkMask()
+void AliTRDrawOldStream::DecodeGTUlinkMask()
 {
 
   //
@@ -1171,7 +1171,7 @@ void AliTRDRawStream::DecodeGTUlinkMask()
 }
 
 //____________________________________________________________________________
-Int_t  AliTRDRawStream::DecodeDataWord()
+Int_t  AliTRDrawOldStream::DecodeDataWord()
 {
 
   //
@@ -1191,7 +1191,7 @@ Int_t  AliTRDRawStream::DecodeDataWord()
 }
 
 //____________________________________________________________________________
-Int_t  AliTRDRawStream::DecodeDataWordV1V2()
+Int_t  AliTRDrawOldStream::DecodeDataWordV1V2()
 {
 
   //
@@ -1284,7 +1284,7 @@ Int_t  AliTRDRawStream::DecodeDataWordV1V2()
 }
 
 //____________________________________________________________________________
-Int_t  AliTRDRawStream::DecodeDataWordV3()
+Int_t  AliTRDrawOldStream::DecodeDataWordV3()
 {
 
   //

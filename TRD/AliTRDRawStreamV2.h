@@ -75,6 +75,7 @@ class AliTRDRawStreamV2 : public AliTRDrawStreamBase {
                                  { return fTBins;   }
     
     void SwapOnEndian();
+	static void    SetDumpHead(UInt_t iv) {fgDumpHead = iv;} // set number of words to be dumped on the screen 
 
  protected:
 
@@ -85,6 +86,7 @@ class AliTRDRawStreamV2 : public AliTRDrawStreamBase {
     Bool_t DecodeMCM();
     Bool_t DecodeHC();
     Bool_t DecodeSM();
+	Bool_t DumpWords(UInt_t *px, UInt_t iw, UInt_t marker = 0); // dump some words onto the screen - debugging purpose
     inline void ChangeStatus(Int_t kstat);
 /*       { */
 /* 	fLastStatus = fNextStatus; */
@@ -117,6 +119,8 @@ class AliTRDRawStreamV2 : public AliTRDrawStreamBase {
     static const UInt_t fgkEndoftrackletmarker = 0xAAAAAAAA;     //  This marks the end of tracklet data words
     static const UInt_t fgkEndofrawdatamarker  = 0x00000000;     //  This marks the end of half-chamber-data
     static const UInt_t fgkSizeWord            = sizeof(UInt_t); //  Size of a word in bytes
+
+	static UInt_t fgDumpHead;                                    // number of words to be dumped (from the start of the buffer)
 
   private :
 
@@ -203,6 +207,8 @@ class AliTRDRawStreamV2 : public AliTRDrawStreamBase {
     UInt_t   fBufSize;                        //  Size of the current RawReader buffer
     Bool_t   fkBufferSet;                     //  Is the RawReader buffer available
     UChar_t *fPos;                            //  Position in the buffer of the RawReader
+	UInt_t  *fpBegin; 						  // begin - pointer to the buffer word 0
+	UInt_t  *fpEnd;   					      // end of the buffer
     UInt_t  *fDataWord;                       //  The pointer to the current 32 bit data word
     UInt_t   fTimeBinsCalib;                  //  N of time bins retrieved from calibration
 

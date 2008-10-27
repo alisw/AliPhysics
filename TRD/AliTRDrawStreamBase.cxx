@@ -30,9 +30,9 @@
 
 #include "AliRawReader.h"
 
-#include "AliTRDRawStream.h"
+#include "AliTRDrawOldStream.h"
 #include "AliTRDRawStreamV2.h"
-#include "AliTRDrawStreamTB.h"
+#include "AliTRDrawStream.h"
 
 #include "AliTRDrawStreamBase.h"
 
@@ -100,10 +100,10 @@ AliTRDrawStreamBase *AliTRDrawStreamBase::GetRawStream()
   //
 
   if (fgRawStreamVersion == kTRDoldStream)
-    return new AliTRDRawStream();
+    return new AliTRDrawOldStream();
 
   if (fgRawStreamVersion == kTRDrealStream)
-    return new AliTRDrawStreamTB();
+    return new AliTRDrawStream();
 
   if (fgRawStreamVersion == kTRDsimStream)
     {
@@ -123,10 +123,10 @@ AliTRDrawStreamBase *AliTRDrawStreamBase::GetRawStream(AliRawReader *reader)
   //
 
   if (fgRawStreamVersion == kTRDoldStream)
-    return new AliTRDRawStream(reader);
+    return new AliTRDrawOldStream(reader);
 
   if (fgRawStreamVersion == kTRDrealStream)
-    return new AliTRDrawStreamTB(reader);
+    return new AliTRDrawStream(reader);
 
   if (fgRawStreamVersion == kTRDsimStream)
     {

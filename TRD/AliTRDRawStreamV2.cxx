@@ -42,6 +42,8 @@
 
 ClassImp(AliTRDRawStreamV2)
 
+UInt_t AliTRDRawStreamV2::fgDumpHead = 0;
+
 //_____________________________________________________________________________
 AliTRDRawStreamV2::AliTRDRawStreamV2() 
   :AliTRDrawStreamBase()
@@ -114,6 +116,8 @@ AliTRDRawStreamV2::AliTRDRawStreamV2()
   ,fBufSize(0)
   ,fkBufferSet(kFALSE)
   ,fPos(NULL)
+  ,fpBegin(NULL)
+  ,fpEnd(NULL)
   ,fDataWord(NULL)
   ,fTimeBinsCalib(0)
   ,fADClookup()
@@ -201,6 +205,8 @@ AliTRDRawStreamV2::AliTRDRawStreamV2(AliRawReader *rawReader)
   ,fBufSize(0)
   ,fkBufferSet(kFALSE)
   ,fPos(NULL)
+  ,fpBegin(NULL)
+  ,fpEnd(NULL)
   ,fDataWord(NULL)
   ,fTimeBinsCalib(0)
   ,fADClookup()
@@ -291,6 +297,8 @@ AliTRDRawStreamV2::AliTRDRawStreamV2(const AliTRDRawStreamV2& stream)
   ,fBufSize(0)
   ,fkBufferSet(kFALSE)
   ,fPos(NULL)
+  ,fpBegin(NULL)
+  ,fpEnd(NULL)
   ,fDataWord(NULL)
   ,fTimeBinsCalib(0)
   ,fADClookup()
@@ -406,6 +414,8 @@ Bool_t AliTRDRawStreamV2::Init()
   fBufSize = 0;
   fDataWord = NULL;
   fPos = NULL;
+  fpBegin = NULL;
+  fpEnd = NULL;
   fWordCtr = 0;
   fkBufferSet = kFALSE;
 
@@ -431,23 +441,33 @@ void AliTRDRawStreamV2::SwapOnEndian()
 
   int itemp = 1;
   char* ptemp = (char*) &itemp;
+  fpBegin = (UInt_t*)fPos;
+  fpEnd = fpBegin + (fBufSize/sizeof(UInt_t));
   if (ptemp[0] != 1)
     {
       // need to swap...
       // assume we are at the begining of the buffer!
       //AliDebug(5, "Swapping.");
-      UInt_t *pbegin = (UInt_t*)fPos;
+      //UInt_t *pbegin = (UInt_t*)fPos;
       UInt_t iutmp = 0;
       for (UInt_t i = 0; i < fBufSize / fgkSizeWord; i++)
 	{
-	  fDataWord = pbegin + i;
+	  fDataWord = fpBegin + i;
 	  iutmp = (((*fDataWord & 0x000000ffU) << 24) | ((*fDataWord & 0x0000ff00U) <<  8) |
 		   ((*fDataWord & 0x00ff0000U) >>  8) | ((*fDataWord & 0xff000000U) >> 24));
 	  // here we override the value in the buffer!
 	  *fDataWord = iutmp;
 	}
-      fDataWord = pbegin;
+	  fDataWord = fpBegin;
     }
+	
+    // dump words - debugging perpose
+    if (fgDumpHead > 0){
+        AliInfo(Form("---------- Dumping %u words from the beginnig of the buffer ----------",fgDumpHead));
+        if (DumpWords(fpBegin, fgDumpHead) == kFALSE){AliError("Dump failed. Not enough data.");}
+        AliInfo(Form("---------- Dumping ended ----------------------------------------------"));
+    }
+
 }
 //____________________________________________________________________________
 Int_t AliTRDRawStreamV2::NextData()
@@ -1366,3 +1386,30 @@ Int_t AliTRDRawStreamV2::NextChamber(AliTRDdigitsManager *man, UInt_t** /*trackl
   //return kFALSE;
   return -1;
 }
+
+//____________________________________________________________________________
+Bool_t
+AliTRDRawStreamV2::DumpWords(UInt_t *px, UInt_t iw, UInt_t marker)
+{
+
+  TString tsreturn = Form("\n[ Dump Sequence at 0x%08x ] : ", px);
+  for (UInt_t i = 0; i < iw; i++)
+    {
+      if (px + iw >= fpEnd)
+    return kFALSE;
+
+      if (i % 8 == 0)
+    tsreturn += "\n                              ";
+      if (marker != 0 && marker == px[i])
+    tsreturn += Form(" *>0x%08x<* ", px[i]);
+      else
+    tsreturn += Form("0x%08x ", px[i]);
+    }
+  tsreturn += "\n";
+
+  AliInfo(tsreturn.Data());
+
+  return kTRUE;
+}
+
+

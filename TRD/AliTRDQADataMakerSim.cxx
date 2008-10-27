@@ -47,7 +47,7 @@
 #include "AliTRDgeometry.h"
 #include "AliTRDdataArrayS.h"
 #include "AliTRDdataArrayF.h"
-//#include "AliTRDrawStreamTB.h"
+//#include "AliTRDrawStream.h"
 
 #include "AliQAChecker.h"
 

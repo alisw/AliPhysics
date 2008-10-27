@@ -42,7 +42,7 @@ extern "C" {
 //
 #include "AliRawReader.h"
 #include "AliRawReaderDate.h"
-#include "AliTRDrawStreamTB.h"
+#include "AliTRDrawStream.h"
 #include "AliTRDrawStreamBase.h"
 
 
@@ -114,17 +114,17 @@ int main(int argc, char **argv) {
   Int_t  nbvdrift    = 0;     // number of events with entries for vdrift
 
    // setting
-  // AliTRDrawStreamTB::SetNoDebug();
-  AliTRDrawStreamTB::SetNoErrorWarning();
-  //AliTRDrawStreamTB::SetForceCleanDataOnly();
-  AliTRDrawStreamTB::AllowCorruptedData();
-  AliTRDrawStreamTB::DisableStackNumberChecker();
-  AliTRDrawStreamTB::DisableStackLinkNumberChecker();
-  //AliTRDrawStreamTB::SetSkipCDH();
-  //AliTRDrawStreamTB::SetExtraWordsFix();
-  //AliTRDrawStreamTB::EnableDebugStream();
-  //AliTRDrawStreamTB::SetDumpHead(320);
-  //AliTRDrawStreamTB::SetDumpHead(80);
+  // AliTRDrawStream::SetNoDebug();
+  AliTRDrawStream::SetNoErrorWarning();
+  //AliTRDrawStream::SetForceCleanDataOnly();
+  AliTRDrawStream::AllowCorruptedData();
+  AliTRDrawStream::DisableStackNumberChecker();
+  AliTRDrawStream::DisableStackLinkNumberChecker();
+  //AliTRDrawStream::SetSkipCDH();
+  //AliTRDrawStream::SetExtraWordsFix();
+  //AliTRDrawStream::EnableDebugStream();
+  //AliTRDrawStream::SetDumpHead(320);
+  //AliTRDrawStream::SetDumpHead(80);
 
   
   /* main loop (infinite) */
@@ -166,7 +166,7 @@ int main(int argc, char **argv) {
       //if (eventT==PHYSICS_EVENT) {
       AliRawReader *rawReader = new AliRawReaderDate((void*)event);
       rawReader->Select("TRD");
-      AliTRDrawStreamTB *trdRawStream = new AliTRDrawStreamTB((AliRawReader *) rawReader);
+      AliTRDrawStream *trdRawStream = new AliTRDrawStream((AliRawReader *) rawReader);
       Int_t result = calibra->ProcessEventDAQ((AliTRDrawStreamBase *) trdRawStream,(Bool_t)nbvdrift);
       if(!result) passvdrift = kFALSE;
       else nbvdrift += (Int_t) result/2;

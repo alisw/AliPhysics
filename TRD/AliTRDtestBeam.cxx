@@ -32,7 +32,7 @@
 //#include <fcntl.h>
 //include <unistd.h>
 
-#include "AliTRDrawStreamTB.h"
+#include "AliTRDrawStream.h"
 #include "AliRawReaderMemory.h"
 #include "AliTRDtestBeam.h"
 
@@ -484,13 +484,13 @@ Int_t AliTRDtestBeam::DecodeSi()
 
 }
 //____________________________________________________________________________ 
-AliTRDrawStreamTB *AliTRDtestBeam::GetTRDrawStream() 
+AliTRDrawStream *AliTRDtestBeam::GetTRDrawStream() 
 {
   //
   // Get the TRD raw stream
   //
   
-  // needs AliTRDrawStreamTB  
+  // needs AliTRDrawStream  
   //cout << "Chamber reader:" << (Int_t)(fEventData+fDdlOff) << " " << fDdlSize << endl;
   //int ifout = open("dump.dat", O_WRONLY | O_TRUNC | O_CREAT);
   //write(ifout, (void*)(fEventData+fDdlOff+16), fDdlSize);
@@ -499,13 +499,13 @@ AliTRDrawStreamTB *AliTRDtestBeam::GetTRDrawStream()
   AliRawReaderMemory *reader = new AliRawReaderMemory((UChar_t*)(fEventData+fDdlOff), (UInt_t)fDdlSize);
   reader->SetEquipmentID(1024);
   reader->ReadHeader();
-  //AliTRDrawStreamTB::RawBufferMissAligned(kTRUE);
+  //AliTRDrawStream::RawBufferMissAligned(kTRUE);
 
-  AliTRDrawStreamTB::SetNoErrorWarning();
-  AliTRDrawStreamTB::SetExtraWordsFix();
-  AliTRDrawStreamTB::AllowCorruptedData();
+  AliTRDrawStream::SetNoErrorWarning();
+  AliTRDrawStream::SetExtraWordsFix();
+  AliTRDrawStream::AllowCorruptedData();
   
-  AliTRDrawStreamTB *tb = new AliTRDrawStreamTB(reader); 
+  AliTRDrawStream *tb = new AliTRDrawStream(reader); 
   //tb->Init();
   return tb;
   /*
@@ -514,9 +514,9 @@ AliTRDrawStreamTB *AliTRDtestBeam::GetTRDrawStream()
     AliEawReaderMemory *rmem = data->GetRawReader();
     rmem->ReadHeader();
     
-    AliTRDrawStreamTB tb(rmem);
+    AliTRDrawStream tb(rmem);
     tb.Init();
-    AliTRDrawStreamTB::SupressWarnings(kTRUE);
+    AliTRDrawStream::SupressWarnings(kTRUE);
     
   */
 }

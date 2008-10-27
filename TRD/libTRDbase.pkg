@@ -16,9 +16,9 @@ SRCS= AliTRDarrayI.cxx \
       AliTRDdigitsManager.cxx \
       AliTRDrawData.cxx \
       AliTRDpadPlane.cxx \
-      AliTRDRawStream.cxx \
+      AliTRDrawOldStream.cxx \
       AliTRDRawStreamV2.cxx \
-      AliTRDrawStreamTB.cxx \
+      AliTRDrawStream.cxx \
       AliTRDrawStreamBase.cxx \
       AliTRDtestBeam.cxx \
       AliTRDCommonParam.cxx \

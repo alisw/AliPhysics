@@ -36,7 +36,7 @@ extern "C" {
 //
 #include "AliRawReader.h"
 #include "AliRawReaderDate.h"
-#include "AliTRDrawStreamTB.h"
+#include "AliTRDrawStream.h"
 #include "AliTRDrawStreamBase.h"
 #include "AliCDBManager.h"
 //
@@ -93,17 +93,17 @@ int main(int argc, char **argv) {
   Bool_t passpadstatus = kTRUE;
 
   // setting
-  // AliTRDrawStreamTB::SetNoDebug();
-  AliTRDrawStreamTB::SetNoErrorWarning();
-  //AliTRDrawStreamTB::SetForceCleanDataOnly();
-  AliTRDrawStreamTB::AllowCorruptedData();
-  AliTRDrawStreamTB::DisableStackNumberChecker();
-  AliTRDrawStreamTB::DisableStackLinkNumberChecker();
-  //AliTRDrawStreamTB::SetSkipCDH();
-  //AliTRDrawStreamTB::SetExtraWordsFix();
-  //AliTRDrawStreamTB::EnableDebugStream();
-  //AliTRDrawStreamTB::SetDumpHead(320);
-  //AliTRDrawStreamTB::SetDumpHead(80);
+  // AliTRDrawStream::SetNoDebug();
+  AliTRDrawStream::SetNoErrorWarning();
+  //AliTRDrawStream::SetForceCleanDataOnly();
+  AliTRDrawStream::AllowCorruptedData();
+  AliTRDrawStream::DisableStackNumberChecker();
+  AliTRDrawStream::DisableStackLinkNumberChecker();
+  //AliTRDrawStream::SetSkipCDH();
+  //AliTRDrawStream::SetExtraWordsFix();
+  //AliTRDrawStream::EnableDebugStream();
+  //AliTRDrawStream::SetDumpHead(320);
+  //AliTRDrawStream::SetDumpHead(80);
 
   /* read the data files */
   int n;
@@ -145,7 +145,7 @@ int main(int argc, char **argv) {
 
 	AliRawReader *rawReader = new AliRawReaderDate((void*)event);
 	rawReader->Select("TRD");
-	AliTRDrawStreamTB *trdRawStream = new AliTRDrawStreamTB((AliRawReader *)rawReader);
+	AliTRDrawStream *trdRawStream = new AliTRDrawStream((AliRawReader *)rawReader);
 	Int_t result = calipad.ProcessEvent((AliTRDrawStreamBase *)trdRawStream,0);
 	// 0 error, 1 no input, 2 output
 	if(result == 2) nevents++;

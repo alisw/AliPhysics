@@ -610,6 +610,89 @@ Int_t AliTRDmcmSim::ProduceRawStream( UInt_t *buf, Int_t maxSize )
 }
 
 //_____________________________________________________________________________
+Int_t AliTRDmcmSim::ProduceRawStreamV2( UInt_t *buf, Int_t maxSize )
+{
+  //
+  // Produce raw data stream from this MCM and put in buf
+  // Returns number of words filled, or negative value 
+  // with -1 * number of overflowed words
+  //
+
+  UInt_t  x;
+  UInt_t  iEv = 0;
+  Int_t   nw  = 0;  // Number of written words
+  Int_t   of  = 0;  // Number of overflowed words
+  Int_t   rawVer   = fFeeParam->GetRAWversion();
+  Int_t **adc;
+  Int_t   nActiveADC = 0;	// number of activated ADC bits in a word
+
+  if( !CheckInitialized() ) return 0;
+
+  if( fFeeParam->GetRAWstoreRaw() ) {
+    adc = fADCR;
+  } else {
+    adc = fADCF;
+  }
+
+  // Produce MCM header
+  x = (1<<31) | ((fRobPos * fFeeParam->GetNmcmRob() + fMcmPos) << 24) | ((iEv % 0x100000) << 4) | 0xC;
+  if (nw < maxSize) {
+    buf[nw++] = x;
+	//printf("\nMCM header: %X ",x);
+  }
+  else {
+    of++;
+  }
+
+  // Produce ADC mask : nncc cccm mmmm mmmm mmmm mmmm mmmm 1100
+  // 				n : unused , c : ADC count, m : selected ADCs
+  if( rawVer >= 3 ) {
+    x = 0;
+    for( Int_t iAdc = 0 ; iAdc < fNADC ; iAdc++ ) {
+      if( fZSM1Dim[iAdc] == 0 ) { //  0 means not suppressed
+		x = x | (1 << (iAdc+4) );	// last 4 digit reserved for 1100=0xc
+		nActiveADC++;		// number of 1 in mmm....m
+      }
+    }
+	x = x | (1 << 30) | ( ( 0x3FFFFFFC ) & (~(nActiveADC) << 25) ) | 0xC;	// nn = 01, ccccc are inverted, 0xc=1100
+	//printf("nActiveADC=%d=%08X, inverted=%X ",nActiveADC,nActiveADC,x );
+
+    if (nw < maxSize) {
+      buf[nw++] = x;
+	  //printf("ADC mask: %X nMask=%d ADC data: ",x,nActiveADC);
+    }
+    else {
+      of++;
+    }
+  }
+
+  // Produce ADC data. 3 timebins are packed into one 32 bits word
+  // In this version, different ADC channel will NOT share the same word
+
+  UInt_t aa=0, a1=0, a2=0, a3=0;
+
+  for (Int_t iAdc = 0; iAdc < 21; iAdc++ ) {
+    if( rawVer>= 3 && fZSM1Dim[iAdc] != 0 ) continue; // Zero Suppression, 0 means not suppressed
+    aa = !(iAdc & 1) + 2;
+    for (Int_t iT = 0; iT < fNTimeBin; iT+=3 ) {
+      a1 = ((iT    ) < fNTimeBin ) ? adc[iAdc][iT  ] : 0;
+      a2 = ((iT + 1) < fNTimeBin ) ? adc[iAdc][iT+1] : 0;
+      a3 = ((iT + 2) < fNTimeBin ) ? adc[iAdc][iT+2] : 0;
+      x = (a3 << 22) | (a2 << 12) | (a1 << 2) | aa;
+      if (nw < maxSize) {
+	buf[nw++] = x;
+	//printf("%08X ",x);
+      }
+      else {
+	of++;
+      }
+    }
+  }
+
+  if( of != 0 ) return -of; else return nw;
+}
+
+//_____________________________________________________________________________
 Int_t AliTRDmcmSim::ProduceTrackletStream( UInt_t *buf, Int_t maxSize )
 {
   //

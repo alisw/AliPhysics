@@ -3,7 +3,7 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */
+/* $Id: AliTRDrawOldStream.h 27493 2008-07-22 07:55:01Z cblume $ */
 
 ////////////////////////////////////////////////////////////////////////////
 //                                                                        //
@@ -24,14 +24,14 @@ const UInt_t kEndoftrackletmarker = 0xAAAAAAAA; /*This marks the end of tracklet
 const UInt_t kEndofrawdatamarker  = 0x00000000; /*This marks the end of half-chamber-data*/
 const UInt_t kSizeWord            = sizeof(UInt_t);
 
-//class AliTRDRawStream: public TObject {
-class AliTRDRawStream: public AliTRDrawStreamBase {
+//class AliTRDrawOldStream: public TObject {
+class AliTRDrawOldStream: public AliTRDrawStreamBase {
 
   public :
 
-    AliTRDRawStream();
-    AliTRDRawStream(AliRawReader *rawReader);
-    virtual ~AliTRDRawStream();
+    AliTRDrawOldStream();
+    AliTRDrawOldStream(AliRawReader *rawReader);
+    virtual ~AliTRDrawOldStream();
 
     virtual Bool_t       Next();                                // Read the next data
     virtual Int_t        NextChamber(AliTRDdigitsManager *man, UInt_t **trackletContainer); //  Read next chamber data
@@ -156,8 +156,8 @@ class AliTRDRawStream: public AliTRDrawStreamBase {
 
     UShort_t fGTUlinkMask[18][5];             //  Mask with active links
 
-    AliTRDRawStream(const AliTRDRawStream &stream);
-    AliTRDRawStream &operator=(const AliTRDRawStream &stream);
+    AliTRDrawOldStream(const AliTRDrawOldStream &stream);
+    AliTRDrawOldStream &operator=(const AliTRDrawOldStream &stream);
 
     AliRawReader *fRawReader;              //  Object for reading the raw data
 
@@ -202,7 +202,7 @@ class AliTRDRawStream: public AliTRDrawStreamBase {
       ,kADCChannelOverflow = 13            //
     };
     
-    ClassDef(AliTRDRawStream, 6)           // Class for reading TRD raw digits
+    ClassDef(AliTRDrawOldStream, 6)           // Class for reading TRD raw digits
 
 };
 #endif

@@ -39,7 +39,7 @@
 #include "AliLog.h"
 
 #include "AliTRDgeometry.h"
-#include "AliTRDrawStreamTB.h"
+#include "AliTRDrawStream.h"
 #include "AliTRDqaBlackEvents.h"
 
 #include "AliRawReader.h"
@@ -345,7 +345,7 @@ void AliTRDqaBlackEvents::StartEvent()
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-void AliTRDqaBlackEvents::AddBuffer(AliTRDrawStreamTB *data, AliRawReader *reader) 
+void AliTRDqaBlackEvents::AddBuffer(AliTRDrawStream *data, AliRawReader *reader) 
 {
   
   //printf ("try to read data\n");

@@ -43,7 +43,7 @@
 #include "AliTRDQADataMakerRec.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDdataArrayI.h"
-#include "AliTRDrawStreamTB.h"
+#include "AliTRDrawStream.h"
 
 #include "AliQAChecker.h"
 

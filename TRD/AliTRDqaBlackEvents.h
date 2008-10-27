@@ -22,7 +22,7 @@ class TH2S;
 class TH3F;
 class TGraph;
 class TObjArray;
-class AliTRDrawStreamTB;
+class AliTRDrawStream;
 class AliRawReader;
 
 class AliTRDqaBlackEvents : public TObject {
@@ -36,10 +36,10 @@ class AliTRDqaBlackEvents : public TObject {
 
   void Init();
   void Reset();
-  //Int_t AddEvent(AliTRDrawStreamTB *data, AliRawReader *reader);
+  //Int_t AddEvent(AliTRDrawStream *data, AliRawReader *reader);
 
   void StartEvent();
-  void AddBuffer(AliTRDrawStreamTB *data, AliRawReader *reader);
+  void AddBuffer(AliTRDrawStream *data, AliRawReader *reader);
   void FinishEvent();
 
   void Process(const char* filename);
