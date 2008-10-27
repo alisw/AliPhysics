@@ -136,7 +136,7 @@ AliT0Align::~AliT0Align()
   //
   if(fT0AAlignObj) delete fT0AAlignObj;
   if(fT0CAlignObj) delete fT0CAlignObj;
-  if(fFileGlob) delete[] fT0CAlignObj;
+  if(fFileGlob) delete[] fFileGlob;
   if(fUser) delete[] fUser;
 }
 //__________________________________________________________________________
