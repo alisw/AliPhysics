@@ -42,10 +42,13 @@ private:
 
   Int_t fNumTriggers[6];  //number of trigger signals;
   Int_t fNumTriggersCal[6];  //number of calibration  trigger signals;
- 
+
+  Int_t fnEvent; 
+  Int_t feffC[24]; 
+  Int_t feffA[24]; 
 
 
-  ClassDef(AliT0QADataMakerRec,2)  // description 
+  ClassDef(AliT0QADataMakerRec,3)  // description 
 
 };
 

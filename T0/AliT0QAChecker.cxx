@@ -12,10 +12,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
-
-
-
 //...
 //  Checks the quality assurance. 
 //  By comparing with reference data
@@ -37,11 +33,12 @@
 #include <Riostream.h>
 #include <TClass.h>
 #include <TH1F.h> 
-#include <TH1I.h> 
+#include <TH2.h> 
 #include <TIterator.h> 
 #include <TKey.h> 
 #include <TFile.h> 
 #include <TMath.h>
+#include <TString.h>
 
 // --- Standard library ---
 
@@ -63,20 +60,18 @@ Double_t AliT0QAChecker::Check(AliQA::ALITASK_t index,TObjArray * list)
 
 
   Double_t test = 10.0  ;
-   
-  Int_t count = 0 ;
-  Double_t nent[250], nentraw[250];
+  
+  Double_t nent[250];
   TString hname[250];
   const char *cname;
   memset(nent,0,250*sizeof(Double_t));
   Double_t w[250];
   memset(w,1,250*sizeof(Double_t));
-  TH1 *fhRecLEDAmp[24];  TH1 * fhRecQTC[24];
-  TH1 *fhOnlineMean = 0x0;  
-  TH1 * fhRecMean = 0x0;
-  TH1 *fhESDMean = 0x0;
-  TH1 *fhESDVertex = 0x0;
-  TString dataType = AliQA::GetAliTaskName(index);
+  TH2 *fhRecDiff[3];  
+  TH2 *fhRawEff[250];
+   TH1 *fhESD[2];
+
+  //  TString dataType = AliQA::GetAliTaskName(index);
 
   if (list->GetEntries() == 0){
     test = 1. ; // nothing to check
@@ -86,92 +81,148 @@ Double_t AliT0QAChecker::Check(AliQA::ALITASK_t index,TObjArray * list)
     TIter next(list) ;
     TH1 * hdata ;
     
-    count = 0 ;
-    while ( (hdata = dynamic_cast<TH1 *>(next())) ) {
-      if (hdata) {
-	//     if (count>199) continue;
-	nent[count] = hdata->GetEntries();
-	cname = hdata->GetName();
-	hname[count] = cname;
-	AliDebug(10,Form("count %i %s -> %f",count, hname[count].Data(),nent[count])) ;
-	if(index==2){
-	  if(count>23 && count<48)fhRecLEDAmp[count-24] = hdata;
-	  if(count>47 && count<72)fhRecQTC[count-48] = hdata;
-	  if(count == 72)  fhOnlineMean = hdata; 
-	  if(count == 73)  fhRecMean = hdata; 
-	}
-	
-
-	if(index==3){
-	  if(count==0) fhESDMean = hdata;
-	  if(count==1) fhESDVertex = hdata;
-	  if(count>1){
-	    AliWarning("Unknowm ESD QA histograms");
-	    return 0;
-	  }
-	}
-	count++ ;
-	
-        Double_t rv = 0.;
-        if(hdata->GetEntries()>0) rv = 1;
-	//   AliInfo(Form("%s -> %f", hdata->GetName(), rv)) ;
-        test += rv ;
-	
-     }
-      else{
-        AliError("Data type cannot be processed") ;
-      }
-
-    }
+    TH2 * h ;
+    //  printf(" data type %i %s nentries %i\n",
+    //	   index,dataType.Data(),list->GetEntries());
     
-    if (count != 0) {
-      if (test==0) {
-        AliWarning("Histograms are there, but they are all empty: setting flag to kWARNING");
-        test = 0.5;  //upper limit value to set kWARNING flag for a task
-      }
-      else {
-	if(index == 2){
-	  //rec points
-	  //	    printf("rec mean %f -> online mean %f",fhRecMean->GetMean(), fhOnlineMean->GetMean()) ;
-	   if ( TMath::Abs(fhRecMean->GetMean() - fhOnlineMean->GetMean()) > 5) 
-	     AliDebug(1,Form("rec mean %f -> online mean %f",fhRecMean->GetMean(), fhOnlineMean->GetMean())) ;
-	  Double_t meanLED, meanQTC;
-	  for (Int_t idet=0; idet<24; idet++) {
-	    meanLED = fhRecLEDAmp[idet]->GetMean();
-	    meanQTC = fhRecQTC[idet]->GetMean();
-	    if (TMath::Abs(meanLED-meanQTC)> 1.) 
-	      AliDebug(1,Form("Amplitude measurements are different in channel %i : Amp LED %f -> Amp QTC %f",idet,meanLED, meanQTC)) ;
-	  }
-	}	
-	 
-	
-	if (index == 0) {
-	  //raw data
-	  for (Int_t i=0; i<count; i++) 
-	    {
-	      if( nent[i] == 0)
-		AliDebug(1,Form("Histogram %s is empty  \n",hname[i].Data()  )) ; 
+    for (Int_t ir=0; ir<list->GetEntries(); ir++) 
+      {
+	//raw
+	if(index==0 ){
+	  /*
+	  if(ir < 205) {
+	    hdata = (TH1*) list->UncheckedAt(ir);
+	    if(hdata) {
+	      cname = hdata->GetName();
+	      hname[ir] = cname;
+	      AliDebug(10,Form("count %i %s \n",ir, hname[ir].Data())) ;
+	      fhRaw[ir] = hdata;
 	    }
+	    }*/
+	  if(ir > 204) {
+	    //	  else{
+	    h = (TH2*) list->UncheckedAt(ir);
+	    printf(" index %i ir %i \n", index,ir);
+	    if(h) {
+	      cname = h->GetName();
+	      hname[ir] = cname;
+	      AliDebug(1,Form("count %i %s \n",ir, hname[ir].Data())) ;
+	      fhRawEff[ir] = h;
+	    }
+	  }
 	}
- 	if (index == 3) {
-	  //ESD
-	  Double_t rmsMeanTime = fhESDMean->GetRMS();
-	  if (rmsMeanTime>3) 		
-	    AliDebug(1,Form("Mean time with bad resolution, RMS= %f",rmsMeanTime)) ; 
-	  Double_t rmsVertex = fhESDVertex->GetRMS();
-	  if (rmsVertex>3) 		
-	    AliDebug(1,Form("Vertex with bad resolution, RMS= %f",rmsVertex)) ; 
+     
+	//rec
+	if(index==2){
+	  h = (TH2*) list->UncheckedAt(ir);
+	  
+	  if(h) {
+	    cname = h->GetName();
+	    hname[ir] = cname;
+	    AliDebug(1,Form("count %i %s \n",ir, hname[ir].Data())) ;
+	    fhRecDiff[ir] = h;
+	  }
 	}
- 
+	//esd
+	if(index==3){
+	  cout<<" ir "<<ir<<endl;
+	  hdata = (TH1*) list->UncheckedAt(ir);
+	  if(hdata){
+	    fhESD[ir] = hdata;
+	    AliDebug(1,Form("count %i %s ",ir, hname[ir].Data()) );
+	  }
+	}
+      }
+      
+    if (index == 0)
+      {
+	//raw data
+	
+	for (Int_t icase=205; icase<207; icase++) {
+	  for (Int_t idet=0; idet<24; idet++) {
+	    Double_t mean = fhRawEff[icase]->
+	      ProjectionY(Form("%s_py_%i_%i",
+			       fhRawEff[icase]->GetName(), idet,icase),
+			  idet,idet+1)->GetMean();
+	    Double_t rms= fhRawEff[icase]->
+	      ProjectionY(Form("%s_py%i_%i", 
+			       fhRawEff[icase]->GetName(), idet,icase),
+			  idet,idet+1)->GetRMS();
+	    printf("name %s icase %i idet %i mean %f, rms %f\n",
+		   fhRawEff[icase]->GetName(), icase, idet, mean,rms);
+	    
+	    if (mean<1.2 && mean> 0.8 ) {
+	      test = 1;
+	      AliDebug(1,Form("All channels works meane efficieny %f with rms %f test %f",  mean, rms, test)) ; 
+	    }
+	    if (mean<=0.8 && mean>= 0.5 ){
+	      test = 0.5;
+	      AliDebug(1,Form("%s problem in channel %i  efficieny %f test %f",
+			      fhRawEff[icase]->GetName(), idet,  mean, test)) ; 
+	    }
+	    if (mean<0.5 ) { 
+	      test = 0.25;
+	      AliDebug(1,Form("%s big problem in channel %i  efficieny %f test %f",
+			      fhRawEff[icase]->GetName(), idet,  mean, test)) ; 
+	    }
+	     
+	  }
+	  
+	}
+      }
+    
+    if(index == 2){
+      //rec points
+      for (Int_t icase=0; icase<2; icase++) {
+	for (Int_t idet=0; idet<24; idet++) {
+	  Double_t mean = fhRecDiff[icase]->
+	    ProjectionY(Form("%s_py", fhRecDiff[icase]->GetName()),
+			idet,idet+1)->GetMean();
+	  Double_t rms= fhRecDiff[icase]->
+	    ProjectionY(Form("%s_py", fhRecDiff[icase]->GetName()),
+			idet,idet+1)->GetRMS();
+	  printf("name %s icase %i idet %i mean %f, rms %f\n",
+		 fhRecDiff[icase]->GetName(), icase, idet, mean,rms); 
+	  	  
+	  if(TMath::Abs(mean) >1.5 || rms >1){
+	    AliDebug(1,Form(" calibration is nor perfect; test=%f", test)) ;
+	    test=0.25;
+	  }
+	  if(mean>3 || rms >5) {
+	    test = 0.1;
+	    AliDebug(1,Form(" wrong calibration test=%f", test)) ;
+	    } 
+	 }
+	  	
+      }	 
+    }
+       
+    if (index == 3) {
+      //ESD
+      for (Int_t icase=0; icase<2; icase++) {
+	Double_t rmsVertex = fhESD[icase]->GetRMS();
+	Double_t meanVertex = fhESD[icase]->GetMean();
+
+	test=1;
+	cout<<"numentries "<< fhESD[icase]->GetEntries()<<" meanVertex "<<meanVertex<<" rmsVertex "<<rmsVertex<<endl;
+	if (TMath::Abs(rmsVertex)>3) {
+	  test=0.25;
+	  AliDebug(1,Form("Vertex position resolution not good  , rms= %f test=%f",
+			    rmsVertex, test)) ; 
+	}
+	if (TMath::Abs(meanVertex)>3) {
+	  test=0.25;
+	  AliDebug(1,Form("Vertex position bad calibrated  , Mean= %f test=%f",
+			  meanVertex, test)) ; 
+	}
       }
       
     }
-
-
+       
   } //  if (list->GetEntries() != 0
-  
+    
   AliInfo(Form("Test Result = %f", test)) ;
-
+  
   return test ;
 }
 
