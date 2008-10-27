@@ -34,5 +34,4 @@ Bool_t AliEveHOMERSource::SetRnrState(Bool_t rnr)
     fSrcState->fState = rnr;
 
   return TEveElement::SetRnrState(rnr);
-  return kTRUE;
 }
