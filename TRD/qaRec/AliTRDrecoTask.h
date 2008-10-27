@@ -8,8 +8,15 @@
 #include "AliAnalysisTask.h"
 #endif
 
+#ifndef ALITRDTRACKINFO_H
+#include "AliTRDtrackInfo/AliTRDtrackInfo.h"
+#endif
+
+class TList;
 class TObjArray;
 class TTreeSRedirector;
+class AliTRDtrackV1;
+class AliTRDtrackInfo;
 class AliTRDrecoTask : public AliAnalysisTask 
 {
 public:
@@ -24,10 +31,11 @@ public:
   
   void           ConnectInputData(Option_t *);
   virtual void   CreateOutputObjects() = 0;
-  virtual void   Exec(Option_t *) = 0;
+  virtual void   Exec(Option_t *);
 
   Int_t          GetDebugLevel() const { return fDebugLevel;}
   Int_t          GetNRefFigures() const { return fNRefFigures; } 
+  TList*         GetPlotFunctors() const { return fPlotFuncList;}
   virtual void   GetRefFigure(Int_t ifig);
 
   Bool_t         HasFriends() const {return TestBit(kFriends);};
@@ -42,6 +50,9 @@ public:
   virtual void   SetPostProcess(Bool_t pp = kTRUE) {SetBit(kPostProcess, pp);}
   virtual void   Terminate(Option_t *) = 0;
 
+protected:
+  void   InitFunctorList();
+
 private:
   AliTRDrecoTask(const AliTRDrecoTask&);
   AliTRDrecoTask& operator=(const AliTRDrecoTask&);
@@ -49,9 +60,13 @@ private:
 protected:
   UChar_t   fNRefFigures;  //! no of reference figures reported by task
   UChar_t   fDebugLevel;   //! Debug level 
+  TList     *fPlotFuncList;//! plot functors list
   TObjArray *fContainer;   //! container to store results
   TObjArray *fTracks;      //! Array of tracks
-  TTreeSRedirector *fDebugStream;  //! Debug stream 
+  const AliTRDtrackV1    *fTrack;         //! current track
+  const AliTRDtrackInfo::AliMCinfo  *fMC; //! MC info
+  const AliTRDtrackInfo::AliESDinfo *fESD;//! ESD info
+  TTreeSRedirector *fDebugStream;   //! Debug stream 
 
   ClassDef(AliTRDrecoTask, 0) // base TRD reconstruction task
 };

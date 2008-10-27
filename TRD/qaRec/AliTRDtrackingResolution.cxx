@@ -94,6 +94,7 @@ AliTRDtrackingResolution::AliTRDtrackingResolution()
   fReconstructor = new AliTRDReconstructor();
   fReconstructor->SetRecoParam(AliTRDrecoParam::GetLowFluxParam());
   fGeo = new AliTRDgeometry();
+  InitFunctorList();
 }
 
 //________________________________________________________
@@ -116,7 +117,7 @@ void AliTRDtrackingResolution::CreateOutputObjects()
   fContainer = Histos();
 
   // cluster to tracklet residuals [2]
-  fContainer->AddAt(new TH2I("fYClRes", "Clusters Residuals", 21, -21., 21., 100, -.5, .5), kClusterYResidual);
+  fContainer->AddAt(new TH2I("fYClRes", "Clusters Residuals", 21, -21., 21., 100, -.5, .5), kClusterResidual);
 //   // tracklet to Riemann fit residuals [2]
 //   fContainer->AddAt(new TH2I("fYTrkltRRes", "Tracklet Riemann Residuals", 21, -21., 21., 100, -.5, .5), kTrackletRiemanYResidual);
 //   fContainer->AddAt(new TH2I("fAngleTrkltRRes", "Tracklet Riemann Angular Residuals", 21, -21., 21., 100, -.5, .5), kTrackletRiemanAngleResidual);
@@ -126,9 +127,11 @@ void AliTRDtrackingResolution::CreateOutputObjects()
   // Resolution histos
   if(HasMCdata()){
     // cluster y resolution [0]
-    fContainer->AddAt(new TH2I("fCY", "Cluster Resolution", 31, -31., 31., 100, -.5, .5), kClusterYResolution);
+    fContainer->AddAt(new TH2I("fCY", "Cluster Resolution", 31, -31., 31., 100, -.5, .5), kClusterResolution);
     // tracklet y resolution [0]
     fContainer->AddAt(new TH2I("fY", "Tracklet Resolution", 31, -31., 31., 100, -.5, .5), kTrackletYResolution);
+    // tracklet y resolution [0]
+    fContainer->AddAt(new TH2I("fY", "Tracklet Resolution", 31, -31., 31., 100, -.5, .5), kTrackletZResolution);
     // tracklet angular resolution [1]
     fContainer->AddAt(new TH2I("fPhi", "Tracklet Angular Resolution", 31, -31., 31., 100, -10., 10.), kTrackletAngleResolution);
 
@@ -144,203 +147,399 @@ void AliTRDtrackingResolution::CreateOutputObjects()
   }
 }
 
+// //________________________________________________________
+// void AliTRDtrackingResolution::Exec(Option_t *)
+// {
+//   // spatial Resolution: res = pos_{Tracklet}(x = x_{Anode wire}) - pos_{TrackRef}(x = x_{Anode wire})
+//   // angular Resolution: res = Tracklet angle - TrackRef Angle
+// 
+//   Int_t nTrackInfos = fTracks->GetEntriesFast();
+//   if(fDebugLevel>=2 && nTrackInfos){ 
+//     printf("Event[%d] TrackInfos[%d]\n", (Int_t)AliAnalysisManager::GetAnalysisManager()->GetCurrentEntry(), nTrackInfos);
+//   }
+//   const Int_t kNLayers = AliTRDgeometry::kNlayer;
+//   Int_t pdg, nly, ncrs;
+//   Double_t p, dy, theta/*, dphi, dymc, dzmc, dphimc*/;
+//   Float_t fP[kNLayers], fX[kNLayers], fY[kNLayers], fZ[kNLayers], fPhi[kNLayers], fTheta[kNLayers]; // phi/theta angle per layer
+//   Bool_t fMCMap[kNLayers], fLayerMap[kNLayers]; // layer map
+// 
+//   AliTRDpadPlane *pp = 0x0;
+//   AliTrackPoint tr[kNLayers], tk[kNLayers];
+//   AliExternalTrackParam *fOp = 0x0;
+//   AliTRDtrackV1 *fTrack = 0x0;
+//   AliTRDtrackInfo *fInfo = 0x0;
+//   for(Int_t iTI = 0; iTI < nTrackInfos; iTI++){
+//     // check if ESD and MC-Information are available
+//     if(!(fInfo = dynamic_cast<AliTRDtrackInfo *>(fTracks->UncheckedAt(iTI)))) continue;
+//     if(!(fTrack = fInfo->GetTrack())) continue;
+//     if(!(fOp = fInfo->GetOuterParam())) continue;
+//     pdg = fInfo->GetPDG();
+//     nly = 0; ncrs = 0; theta = 0.;
+// 
+//     if(fDebugLevel>=3) printf("\tDoing track[%d] NTrackRefs[%d]\n", iTI, fInfo->GetNTrackRefs());
+// 
+//     p = fOp->P();
+//     Int_t npts = 0;
+//     memset(fP, 0, kNLayers*sizeof(Float_t));
+//     memset(fX, 0, kNLayers*sizeof(Float_t));
+//     memset(fY, 0, kNLayers*sizeof(Float_t));
+//     memset(fZ, 0, kNLayers*sizeof(Float_t));
+//     memset(fPhi, 0, kNLayers*sizeof(Float_t));
+//     memset(fTheta, 0, kNLayers*sizeof(Float_t));
+//     memset(fLayerMap, 0, kNLayers*sizeof(Bool_t));
+//     memset(fMCMap, 0, kNLayers*sizeof(Bool_t));
+//     AliTRDseedV1 *fTracklet = 0x0;
+//     for(Int_t iplane = 0; iplane < kNLayers; iplane++){
+//       if(!(fTracklet = fTrack->GetTracklet(iplane))) continue;
+//       if(!fTracklet->IsOK()) continue;
+// 
+//       // Book point arrays
+//       fLayerMap[iplane] = kTRUE;
+//       tr[npts].SetXYZ(fTracklet->GetX0(), 0., 0.);
+//       tk[npts].SetXYZ(fTracklet->GetX0(), fTracklet->GetYfit(0), fTracklet->GetZfit(0));
+//       npts++;
+// 
+//       if(fDebugLevel>=4) printf("\t\tLy[%d] X0[%6.3f] Ncl[%d]\n", iplane, fTracklet->GetX0(), fTracklet->GetN());
+// 
+//       // define reference values
+//       fP[iplane]   = p;
+//       fX[iplane]   = fTracklet->GetX0();
+//       fY[iplane]   = fTracklet->GetYref(0);
+//       fZ[iplane]   = fTracklet->GetZref(0);
+//       fPhi[iplane] = TMath::ATan(fTracklet->GetYref(1));
+//       fTheta[iplane] = TMath::ATan(fTracklet->GetZref(1));
+//       
+// 
+//       // RESOLUTION (compare to MC)
+//       if(HasMCdata()){
+//         if(fInfo->GetNTrackRefs() >= 2){ 
+//           Double_t pmc, ymc, zmc, phiMC, thetaMC;
+//           if(Resolution(fTracklet, fInfo, pmc, ymc, zmc, phiMC, thetaMC)){ 
+//             fMCMap[iplane] = kTRUE;
+//             fP[iplane]     = pmc;
+//             fY[iplane]     = ymc;
+//             fZ[iplane]     = zmc;
+//             fPhi[iplane]   = phiMC;
+//             fTheta[iplane] = thetaMC;
+//           }
+//         }
+//       }
+//       Float_t phi   = fPhi[iplane]*TMath::RadToDeg();
+//       theta += fTheta[iplane]; nly++;
+//       if(fTracklet->GetNChange()) ncrs++;
+// 
+//       // Do clusters residuals
+//       if(!fTracklet->Fit(kFALSE)) continue;
+//       AliTRDcluster *c = 0x0;
+//       for(Int_t ic=AliTRDseed::knTimebins-1; ic>=0; ic--){
+//         if(!(c = fTracklet->GetClusters(ic))) continue;
+// 
+//         dy = fTracklet->GetYat(c->GetX()) - c->GetY();
+//         ((TH2I*)fContainer->At(kClusterYResidual))->Fill(phi, dy);
+// 
+//         if(fDebugLevel>=2){
+//           Float_t q = c->GetQ();
+//           // Get z-position with respect to anode wire
+//           AliTRDSimParam    *simParam    = AliTRDSimParam::Instance();
+//           Int_t det = c->GetDetector();
+//           Float_t x = c->GetX();
+//           Float_t z = fZ[iplane]-(fX[iplane]-x)*TMath::Tan(fTheta[iplane]);
+//           Int_t stack = fGeo->GetStack(det);
+//           pp = fGeo->GetPadPlane(iplane, stack);
+//           Float_t row0 = pp->GetRow0();
+//           Float_t d  =  row0 - z + simParam->GetAnodeWireOffset();
+//           d -= ((Int_t)(2 * d)) / 2.0;
+//           if (d > 0.25) d  = 0.5 - d;
+//   
+//           (*fDebugStream) << "ResidualClusters"
+//             << "ly="   << iplane
+//             << "stk="  << stack
+//             << "pdg="  << pdg
+//             << "phi="  << fPhi[iplane]
+//             << "tht="  << fTheta[iplane]
+//             << "q="    << q
+//             << "x="    << x
+//             << "z="    << z
+//             << "d="    << d
+//             << "dy="   << dy
+//             << "\n";
+//         }
+//       }
+//       pp = 0x0;
+//     }
+//     if(nly) theta /= nly; 
+//     if(fDebugLevel>=1){
+//       (*fDebugStream) << "TrackStatistics"
+//         << "nly="   << nly
+//         << "ncrs="  << ncrs
+//         << "tht="   << theta
+//         << "\n";
+//     }
+// 
+// 
+// //     // this protection we might drop TODO
+// //     if(fTrack->GetNumberOfTracklets() < 6) continue;
+// // 
+// //     AliTRDtrackerV1::FitRiemanTilt(fTrack, 0x0, kTRUE, npts, tr);
+// //     Int_t iref = 0;
+// //     for(Int_t ip=0; ip<kNLayers; ip++){
+// //       if(!fLayerMap[ip]) continue;
+// //       fTracklet = fTrack->GetTracklet(ip);
+// //       // recalculate fit based on the new tilt correction
+// //       fTracklet->Fit();
+// // 
+// //       dy = fTracklet->GetYfit(0) - tr[iref].GetY();
+// //       ((TH2I*)fContainer->At(kTrackletRiemanYResidual))->Fill(fPhi[ip]*TMath::RadToDeg(), dy);
+// // 
+// //       dphi = fTracklet->GetYfit(1)- fTracklet->GetYref(1);
+// //       ((TH2I*)fContainer->At(kTrackletRiemanAngleResidual))->Fill(fPhi[ip]*TMath::RadToDeg(), dphi);
+// // 
+// //       if(HasMCdata()){
+// //         dymc = fY[ip] - tr[iref].GetY();
+// //         ((TH2I*)fContainer->At(kTrackRYResolution))->Fill(fPhi[ip]*TMath::RadToDeg(), dymc);
+// // 
+// //         dzmc = fZ[ip] - tr[iref].GetZ();
+// //         ((TH2I*)fContainer->At(kTrackRZResolution))->Fill(fPhi[ip]*TMath::RadToDeg(), dzmc);
+// // 
+// //         dphimc = fPhi[ip] - fTracklet->GetYfit(1);
+// //         ((TH2I*)fContainer->At(kTrackRAngleResolution))->Fill(fPhi[ip]*TMath::RadToDeg(), dphimc);
+// //       }
+// // 
+// //       iref++;
+// // 
+// //       if(fDebugLevel>=1){
+// //         (*fDebugStream) << "RiemannTrack"
+// //           << "ly="    << ip
+// //           << "mc="    << fMCMap[ip]
+// //           << "p="     << fP[ip]
+// //           << "phi="   << fPhi[ip]
+// //           << "tht="   << fTheta[ip]
+// //           << "dy="    << dy
+// //           << "dphi="  << dphi
+// //           << "dymc="  << dymc
+// //           << "dzmc="  << dzmc
+// //           << "dphimc="<< dphimc
+// //           << "\n";
+// //       }
+// //     }
+// 
+// //  if(!gGeoManager) TGeoManager::Import("geometry.root");
+// //     AliTRDtrackerV1::FitKalman(fTrack, 0x0, kFALSE, nc, tr);
+// //     for(Int_t ip=0; ip<nc; ip++){
+// //       dy = cl[ip].GetY() - tr[ip].GetY();
+// //      ((TH2I*)fContainer->At(kTrackletKalmanYResidual))->Fill(phi*TMath::RadToDeg(), dy);
+// //       dz = cl[ip].GetZ() - tr[ip].GetZ();
+// //       if(fDebugLevel>=1){
+// //         (*fDebugStream) << "KalmanTrack"
+// //           << "dy="		  << dy
+// //           << "dz="	 	  << dz
+// // /*          << "phi="			<< phi
+// //           << "theta="		<< theta
+// //           << "dphi="		<< dphi*/
+// //           << "\n";
+// //       }
+// //     }    
+// 
+// 
+//   }
+//   PostData(0, fContainer);
+// }
+
 //________________________________________________________
-void AliTRDtrackingResolution::Exec(Option_t *)
+TH1* AliTRDtrackingResolution::PlotClusterResiduals(const AliTRDtrackV1 *track)
 {
-  // spatial Resolution: res = pos_{Tracklet}(x = x_{Anode wire}) - pos_{TrackRef}(x = x_{Anode wire})
-  // angular Resolution: res = Tracklet angle - TrackRef Angle
-
-  Int_t nTrackInfos = fTracks->GetEntriesFast();
-  if(fDebugLevel>=2 && nTrackInfos){ 
-    printf("Event[%d] TrackInfos[%d]\n", (Int_t)AliAnalysisManager::GetAnalysisManager()->GetCurrentEntry(), nTrackInfos);
-  }
-  const Int_t kNLayers = AliTRDgeometry::kNlayer;
-  Int_t pdg, nly, ncrs;
-  Double_t p, dy, theta/*, dphi, dymc, dzmc, dphimc*/;
-  Float_t fP[kNLayers], fX[kNLayers], fY[kNLayers], fZ[kNLayers], fPhi[kNLayers], fTheta[kNLayers]; // phi/theta angle per layer
-  Bool_t fMCMap[kNLayers], fLayerMap[kNLayers]; // layer map
-
-  AliTRDpadPlane *pp = 0x0;
-  AliTrackPoint tr[kNLayers], tk[kNLayers];
-  AliExternalTrackParam *fOp = 0x0;
-  AliTRDtrackV1 *fTrack = 0x0;
-  AliTRDtrackInfo *fInfo = 0x0;
-  for(Int_t iTI = 0; iTI < nTrackInfos; iTI++){
-    // check if ESD and MC-Information are available
-    if(!(fInfo = dynamic_cast<AliTRDtrackInfo *>(fTracks->UncheckedAt(iTI)))) continue;
-    if(!(fTrack = fInfo->GetTrack())) continue;
-    if(!(fOp = fInfo->GetOuterParam())) continue;
-    pdg = fInfo->GetPDG();
-    nly = 0; ncrs = 0; theta = 0.;
-
-    if(fDebugLevel>=3) printf("\tDoing track[%d] NTrackRefs[%d]\n", iTI, fInfo->GetNTrackRefs());
-
-    p = fOp->P();
-    Int_t npts = 0;
-    memset(fP, 0, kNLayers*sizeof(Float_t));
-    memset(fX, 0, kNLayers*sizeof(Float_t));
-    memset(fY, 0, kNLayers*sizeof(Float_t));
-    memset(fZ, 0, kNLayers*sizeof(Float_t));
-    memset(fPhi, 0, kNLayers*sizeof(Float_t));
-    memset(fTheta, 0, kNLayers*sizeof(Float_t));
-    memset(fLayerMap, 0, kNLayers*sizeof(Bool_t));
-    memset(fMCMap, 0, kNLayers*sizeof(Bool_t));
-    AliTRDseedV1 *fTracklet = 0x0;
-    for(Int_t iplane = 0; iplane < kNLayers; iplane++){
-      if(!(fTracklet = fTrack->GetTracklet(iplane))) continue;
-      if(!fTracklet->IsOK()) continue;
-
-      // Book point arrays
-      fLayerMap[iplane] = kTRUE;
-      tr[npts].SetXYZ(fTracklet->GetX0(), 0., 0.);
-      tk[npts].SetXYZ(fTracklet->GetX0(), fTracklet->GetYfit(0), fTracklet->GetZfit(0));
-      npts++;
-
-      if(fDebugLevel>=4) printf("\t\tLy[%d] X0[%6.3f] Ncl[%d]\n", iplane, fTracklet->GetX0(), fTracklet->GetN());
-
-      // define reference values
-      fP[iplane]   = p;
-      fX[iplane]   = fTracklet->GetX0();
-      fY[iplane]   = fTracklet->GetYref(0);
-      fZ[iplane]   = fTracklet->GetZref(0);
-      fPhi[iplane] = TMath::ATan(fTracklet->GetYref(1));
-      fTheta[iplane] = TMath::ATan(fTracklet->GetZref(1));
-      
-
-      // RESOLUTION (compare to MC)
-      if(HasMCdata()){
-        if(fInfo->GetNTrackRefs() >= 2){ 
-          Double_t pmc, ymc, zmc, phiMC, thetaMC;
-          if(Resolution(fTracklet, fInfo, pmc, ymc, zmc, phiMC, thetaMC)){ 
-            fMCMap[iplane] = kTRUE;
-            fP[iplane]     = pmc;
-            fY[iplane]     = ymc;
-            fZ[iplane]     = zmc;
-            fPhi[iplane]   = phiMC;
-            fTheta[iplane] = thetaMC;
-          }
-        }
-      }
-      Float_t phi   = fPhi[iplane]*TMath::RadToDeg();
-      theta += fTheta[iplane]; nly++;
-      if(fTracklet->GetNChange()) ncrs++;
-
-      // Do clusters residuals
-      if(!fTracklet->Fit(kFALSE)) continue;
-      AliTRDcluster *c = 0x0;
-      for(Int_t ic=AliTRDseed::knTimebins-1; ic>=0; ic--){
-        if(!(c = fTracklet->GetClusters(ic))) continue;
-
-        dy = fTracklet->GetYat(c->GetX()) - c->GetY();
-        ((TH2I*)fContainer->At(kClusterYResidual))->Fill(phi, dy);
-
-        if(fDebugLevel>=2){
-          Float_t q = c->GetQ();
-          // Get z-position with respect to anode wire
-          AliTRDSimParam    *simParam    = AliTRDSimParam::Instance();
-          Int_t det = c->GetDetector();
-          Float_t x = c->GetX();
-          Float_t z = fZ[iplane]-(fX[iplane]-x)*TMath::Tan(fTheta[iplane]);
-          Int_t stack = fGeo->GetStack(det);
-          pp = fGeo->GetPadPlane(iplane, stack);
-          Float_t row0 = pp->GetRow0();
-          Float_t d  =  row0 - z + simParam->GetAnodeWireOffset();
-          d -= ((Int_t)(2 * d)) / 2.0;
-          if (d > 0.25) d  = 0.5 - d;
-  
-          (*fDebugStream) << "ResidualClusters"
-            << "ly="   << iplane
-            << "stk="  << stack
-            << "pdg="  << pdg
-            << "phi="  << fPhi[iplane]
-            << "tht="  << fTheta[iplane]
-            << "q="    << q
-            << "x="    << x
-            << "z="    << z
-            << "d="    << d
-            << "dy="   << dy
-            << "\n";
-        }
-      }
-      pp = 0x0;
+  if(!fTrack){ 
+    if(!track){
+      AliWarning("No track defined.");
+      return 0x0;
     }
-    if(nly) theta /= nly; 
+    fTrack = track;
+  }
+  TH1 *h = 0x0;
+  if(!(h = ((TH2I*)fContainer->At(kClusterResidual)))){
+    AliWarning("No output histogram defined.");
+    return 0x0;
+  }
+
+  Int_t pdg = fMC ? fMC->GetPDG() : 0;
+  Float_t x0, y0, z0, dy, dydx, dzdx;
+  AliTRDseedV1 *fTracklet = 0x0;  
+  for(Int_t ily=0; ily<AliTRDgeometry::kNlayer; ily++){
+    if(!(fTracklet = fTrack->GetTracklet(ily))) continue;
+    if(!fTracklet->IsOK()) continue;
+    if(!fTracklet->Fit(kFALSE)) continue;
+    x0 = fTracklet->GetX0();
+
+    // retrive the track angle with the chamber
+    if(fMC) fMC->GetDirections(x0, y0, z0, dydx, dzdx); 
+    else{ 
+      y0   = fTracklet->GetYref(0);
+      z0   = fTracklet->GetZref(0);
+      dydx = fTracklet->GetYref(1);
+      dzdx = fTracklet->GetZref(1);
+    }
+
+    AliTRDcluster *c = 0x0;
+    fTracklet->ResetClusterIter(kFALSE);
+    while((c = fTracklet->PrevCluster())){
+      dy = fTracklet->GetYat(c->GetX()) - c->GetY();
+      h->Fill(dydx, dy);
+  
+      if(fDebugLevel>=1){
+        Float_t q = c->GetQ();
+        // Get z-position with respect to anode wire
+        AliTRDSimParam    *simParam    = AliTRDSimParam::Instance();
+        Int_t det = c->GetDetector();
+        Float_t x = c->GetX();
+        Float_t z = z0-(x0-x)*dzdx;
+        Int_t istk = fGeo->GetStack(det);
+        AliTRDpadPlane *pp = fGeo->GetPadPlane(ily, istk);
+        Float_t row0 = pp->GetRow0();
+        Float_t d  =  row0 - z + simParam->GetAnodeWireOffset();
+        d -= ((Int_t)(2 * d)) / 2.0;
+        if (d > 0.25) d  = 0.5 - d;
+  
+        (*fDebugStream) << "ClusterResidual"
+          << "ly="   << ily
+          << "stk="  << istk
+          << "pdg="  << pdg
+          << "dydx=" << dydx
+          << "dzdx=" << dzdx
+          << "q="    << q
+          << "x="    << x
+          << "z="    << z
+          << "d="    << d
+          << "dy="   << dy
+          << "\n";
+      }
+    }
+  }
+  return h;
+}
+
+//________________________________________________________
+TH1* AliTRDtrackingResolution::PlotResolution(const AliTRDtrackV1 *track)
+{
+  if(!fMC){ 
+    AliWarning("No MC defined.");
+    return 0x0;
+  }
+  if(!fTrack){ 
+    if(!track){
+      AliWarning("No track defined.");
+      return 0x0;
+    }
+    fTrack = track;
+  }
+  TH1 *h = 0x0;
+  if(!(h = ((TH2I*)fContainer->At(kClusterResolution)))){
+    AliWarning("No output histogram defined.");
+    return 0x0;
+  }
+  if(!(h = ((TH2I*)fContainer->At(kTrackletYResolution)))){
+    AliWarning("No output histogram defined.");
+    return 0x0;
+  }
+  if(!(h = ((TH2I*)fContainer->At(kTrackletZResolution)))){
+    AliWarning("No output histogram defined.");
+    return 0x0;
+  }
+  if(!(h = ((TH2I*)fContainer->At(kTrackletAngleResolution)))){
+    AliWarning("No output histogram defined.");
+    return 0x0;
+  }
+  //printf("called for %d tracklets ... \n", fTrack->GetNumberOfTracklets());
+  Int_t pdg = fMC->GetPDG(), det=-1;
+  Float_t x0, y0, z0, dy, dydx, dzdx;
+  AliTRDseedV1 *fTracklet = 0x0;  
+  for(Int_t ily=0; ily<AliTRDgeometry::kNlayer; ily++){
+    if(!(fTracklet = fTrack->GetTracklet(ily))) continue;
+    if(!fTracklet->IsOK()) continue;
+    //printf("process layer[%d]\n", ily);
+    // retrive the track position and direction within the chamber
+    det = fTracklet->GetDetector();
+    x0  = fTracklet->GetX0();
+    fMC->GetDirections(x0, y0, z0, dydx, dzdx); 
+
+    // recalculate tracklet based on the MC info
+    AliTRDseedV1 tt(*fTracklet);
+    tt.SetZref(0, z0);
+    tt.SetZref(1, dzdx); 
+    if(!tt.Fit()) continue;
+    dy = tt.GetYfit(0) - y0;
+    Float_t dphi   = TMath::ATan(tt.GetYfit(1)) - TMath::ATan(dydx);
+    Float_t dz = 100.;
+    Bool_t  cross = fTracklet->GetNChange();
+    if(cross){
+      Double_t *xyz = tt.GetCrossXYZ();
+      dz = xyz[2] - (z0 - (x0 - xyz[0])*dzdx) ;
+      ((TH2I*)fContainer->At(kTrackletYResolution))->Fill(dzdx, dz);
+    }
+  
+    // Fill Histograms
+    ((TH2I*)fContainer->At(kTrackletYResolution))->Fill(dydx, dy);
+    ((TH2I*)fContainer->At(kTrackletAngleResolution))->Fill(dydx, dphi*TMath::RadToDeg());
+
+    // Fill Debug stream
     if(fDebugLevel>=1){
-      (*fDebugStream) << "TrackStatistics"
-        << "nly="   << nly
-        << "ncrs="  << ncrs
-        << "tht="   << theta
+      Float_t p = fMC->GetTrackRefIter()->P();
+      (*fDebugStream) << "TrkltResolution"
+        << "det="	 	  << det
+        << "pdg="     << pdg
+        << "p="       << p
+        << "ymc="     << y0
+        << "zmc="     << z0
+        << "dydx="    << dydx
+        << "dzdx="    << dzdx
+        << "cross="   << cross
+        << "dy="		  << dy
+        << "dz="	 	  << dz
+        << "dphi="		<< dphi
         << "\n";
     }
 
+    Int_t istk = AliTRDgeometry::GetStack(det); 
+    AliTRDpadPlane *pp = fGeo->GetPadPlane(ily, istk);
+    Float_t z0 = pp->GetRow0() + AliTRDSimParam::Instance()->GetAnodeWireOffset();
+    Float_t tilt = fTracklet->GetTilt();
 
-//     // this protection we might drop TODO
-//     if(fTrack->GetNumberOfTracklets() < 6) continue;
-// 
-//     AliTRDtrackerV1::FitRiemanTilt(fTrack, 0x0, kTRUE, npts, tr);
-//     Int_t iref = 0;
-//     for(Int_t ip=0; ip<kNLayers; ip++){
-//       if(!fLayerMap[ip]) continue;
-//       fTracklet = fTrack->GetTracklet(ip);
-//       // recalculate fit based on the new tilt correction
-//       fTracklet->Fit();
-// 
-//       dy = fTracklet->GetYfit(0) - tr[iref].GetY();
-//       ((TH2I*)fContainer->At(kTrackletRiemanYResidual))->Fill(fPhi[ip]*TMath::RadToDeg(), dy);
-// 
-//       dphi = fTracklet->GetYfit(1)- fTracklet->GetYref(1);
-//       ((TH2I*)fContainer->At(kTrackletRiemanAngleResidual))->Fill(fPhi[ip]*TMath::RadToDeg(), dphi);
-// 
-//       if(HasMCdata()){
-//         dymc = fY[ip] - tr[iref].GetY();
-//         ((TH2I*)fContainer->At(kTrackRYResolution))->Fill(fPhi[ip]*TMath::RadToDeg(), dymc);
-// 
-//         dzmc = fZ[ip] - tr[iref].GetZ();
-//         ((TH2I*)fContainer->At(kTrackRZResolution))->Fill(fPhi[ip]*TMath::RadToDeg(), dzmc);
-// 
-//         dphimc = fPhi[ip] - fTracklet->GetYfit(1);
-//         ((TH2I*)fContainer->At(kTrackRAngleResolution))->Fill(fPhi[ip]*TMath::RadToDeg(), dphimc);
-//       }
-// 
-//       iref++;
-// 
-//       if(fDebugLevel>=1){
-//         (*fDebugStream) << "RiemannTrack"
-//           << "ly="    << ip
-//           << "mc="    << fMCMap[ip]
-//           << "p="     << fP[ip]
-//           << "phi="   << fPhi[ip]
-//           << "tht="   << fTheta[ip]
-//           << "dy="    << dy
-//           << "dphi="  << dphi
-//           << "dymc="  << dymc
-//           << "dzmc="  << dzmc
-//           << "dphimc="<< dphimc
-//           << "\n";
-//       }
-//     }
+    AliTRDcluster *c = 0x0;
+    fTracklet->ResetClusterIter(kFALSE);
+    while((c = fTracklet->PrevCluster())){
+      Float_t  q = TMath::Abs(c->GetQ());
+      Float_t xc = c->GetX();
+      Float_t yc = c->GetY();
+      Float_t zc = c->GetZ();
+      Float_t dx = x0 - xc; 
+      Float_t yt = y0 - dx*dydx;
+      Float_t zt = z0 - dx*dzdx; 
+      dy = yt - (yc - tilt*(zc-zt));
 
-//  if(!gGeoManager) TGeoManager::Import("geometry.root");
-//     AliTRDtrackerV1::FitKalman(fTrack, 0x0, kFALSE, nc, tr);
-//     for(Int_t ip=0; ip<nc; ip++){
-//       dy = cl[ip].GetY() - tr[ip].GetY();
-//      ((TH2I*)fContainer->At(kTrackletKalmanYResidual))->Fill(phi*TMath::RadToDeg(), dy);
-//       dz = cl[ip].GetZ() - tr[ip].GetZ();
-//       if(fDebugLevel>=1){
-//         (*fDebugStream) << "KalmanTrack"
-//           << "dy="		  << dy
-//           << "dz="	 	  << dz
-// /*          << "phi="			<< phi
-//           << "theta="		<< theta
-//           << "dphi="		<< dphi*/
-//           << "\n";
-//       }
-//     }    
-
-
+      // Fill Histograms
+      if(q>100.) ((TH2I*)fContainer->At(kClusterResolution))->Fill(dydx, dy);
+      
+      // Fill Debug Tree
+      if(fDebugLevel>=1){
+        Float_t d = z0 - zt;
+        d -= ((Int_t)(2 * d)) / 2.0;
+        if (d > 0.25) d  = 0.5 - d;
+  
+        (*fDebugStream) << "ClusterResolution"
+          << "ly="   << ily
+          << "stk="  << istk
+          << "pdg="  << pdg
+          << "dydx=" << dydx
+          << "dzdx=" << dzdx
+          << "q="    << q
+          << "d="    << d
+          << "dy="   << dy
+          << "\n";
+      }
+    }
   }
-  PostData(0, fContainer);
+  return h;
 }
+
 
 //________________________________________________________
 void AliTRDtrackingResolution::GetRefFigure(Int_t ifig)
@@ -348,48 +547,59 @@ void AliTRDtrackingResolution::GetRefFigure(Int_t ifig)
   TAxis *ax = 0x0;
   TGraphErrors *g = 0x0;
   switch(ifig){
-  case kClusterYResidual:
-    if(!(g = (TGraphErrors*)fGraphS->At(kClusterYResidual))) break;
+  case kClusterResidual:
+    if(!(g = (TGraphErrors*)fGraphS->At(ifig))) break;
     g->Draw("apl");
     ax = g->GetHistogram()->GetYaxis();
     ax->SetRangeUser(-.5, 1.);
     ax->SetTitle("Clusters Y Residuals #sigma/#mu [mm]");
     ax = g->GetHistogram()->GetXaxis();
     ax->SetTitle("tg(#phi)");
-    if(!(g = (TGraphErrors*)fGraphM->At(kClusterYResidual))) break;
+    if(!(g = (TGraphErrors*)fGraphM->At(ifig))) break;
     g->Draw("pl");
     return;
-  case kClusterYResolution:
-    if(!(g = (TGraphErrors*)fGraphS->At(kClusterYResolution))) break;
+  case kClusterResolution:
+    if(!(g = (TGraphErrors*)fGraphS->At(ifig))) break;
     ax = g->GetHistogram()->GetYaxis();
     ax->SetRangeUser(-.5, 1.);
     ax->SetTitle("Cluster Y Resolution #sigma/#mu [mm]");
     ax = g->GetHistogram()->GetXaxis();
     ax->SetTitle("tg(#phi)");
     g->Draw("apl");
-    if(!(g = (TGraphErrors*)fGraphM->At(kClusterYResolution))) break;
+    if(!(g = (TGraphErrors*)fGraphM->At(ifig))) break;
     g->Draw("pl");
     return;
   case kTrackletYResolution:
-    if(!(g = (TGraphErrors*)fGraphS->At(kTrackletYResolution))) break;
+    if(!(g = (TGraphErrors*)fGraphS->At(ifig))) break;
     ax = g->GetHistogram()->GetYaxis();
     ax->SetRangeUser(-.5, 1.);
     ax->SetTitle("Tracklet Y Resolution #sigma/#mu [mm]");
     ax = g->GetHistogram()->GetXaxis();
-    ax->SetTitle("#phi [deg]");
+    ax->SetTitle("#tg(phi)");
     g->Draw("apl");
-    if(!(g = (TGraphErrors*)fGraphM->At(kTrackletYResolution))) break;
+    if(!(g = (TGraphErrors*)fGraphM->At(ifig))) break;
+    g->Draw("pl");
+    return;
+  case kTrackletZResolution:
+    if(!(g = (TGraphErrors*)fGraphS->At(ifig))) break;
+    ax = g->GetHistogram()->GetYaxis();
+    ax->SetRangeUser(-.5, 1.);
+    ax->SetTitle("Tracklet Z Resolution #sigma/#mu [mm]");
+    ax = g->GetHistogram()->GetXaxis();
+    ax->SetTitle("#tg(theta)");
+    g->Draw("apl");
+    if(!(g = (TGraphErrors*)fGraphM->At(ifig))) break;
     g->Draw("pl");
     return;
   case kTrackletAngleResolution:
-    if(!(g = (TGraphErrors*)fGraphS->At(kTrackletAngleResolution))) break;
+    if(!(g = (TGraphErrors*)fGraphS->At(ifig))) break;
     ax = g->GetHistogram()->GetYaxis();
     ax->SetRangeUser(-.05, .2);
     ax->SetTitle("Tracklet Angular Resolution #sigma/#mu [deg]");
     ax = g->GetHistogram()->GetXaxis();
-    ax->SetTitle("#phi [deg]");
+    ax->SetTitle("tg(#phi)");
     g->Draw("apl");
-    if(!(g = (TGraphErrors*)fGraphM->At(kTrackletAngleResolution))) break;
+    if(!(g = (TGraphErrors*)fGraphM->At(ifig))) break;
     g->Draw("pl");
     return;
   default:
@@ -399,124 +609,6 @@ void AliTRDtrackingResolution::GetRefFigure(Int_t ifig)
   AliInfo(Form("Reference plot [%d] missing result", ifig));
 }
 
-
-//________________________________________________________
-Bool_t AliTRDtrackingResolution::Resolution(AliTRDseedV1 *tracklet, AliTRDtrackInfo *fInfo, Double_t &p, Double_t &ymc, Double_t &zmc, Double_t &phi, Double_t &theta)
-{
-
-  AliTrackReference *fTrackRefs[2] = {0x0, 0x0};
-  Float_t x0  = tracklet->GetX0();
-  Float_t tilt= tracklet->GetTilt();
-  Int_t cross = tracklet->GetNChange();
-  Int_t det = tracklet->GetDetector();
-  Int_t pdg = fInfo->GetPDG();
-
-  // check for 2 track ref where the radial position has a distance less than 3.7mm
-  Int_t nFound = 0;
-  for(Int_t itr = 0; itr < AliTRDtrackInfo::kNTrackRefs; itr++){
-    if(!(fTrackRefs[nFound] = fInfo->GetTrackRef(itr))) break;
-
-    if(fDebugLevel>=5) printf("\t\tref[%2d] x[%6.3f]\n", itr, fTrackRefs[nFound]->LocalX());
-    if(TMath::Abs(x0 - fTrackRefs[nFound]->LocalX()) > 3.7) continue;
-    nFound++;
-    if(nFound == 2) break;
-  }
-  if(nFound < 2){ 
-    if(fDebugLevel>=3) printf("\t\tMissing track ref x0[%6.3f] ly[%d] nref[%d]\n", x0, tracklet->GetPlane(), fInfo->GetMCinfo()->GetNTrackRefs());
-    return kFALSE;
-  }
-  // We found 2 track refs for the tracklet, get y and z at the anode wire by a linear approximation
-
-
-  // RESOLUTION
-  Double_t dx = fTrackRefs[1]->LocalX() - fTrackRefs[0]->LocalX();
-  if(dx <= 0. || TMath::Abs(dx-3.7)>1.E-3){
-    if(fDebugLevel>=3) printf("\t\tTrack ref with wrong radial distances refX0[%6.3f] refX1[%6.3f]\n", fTrackRefs[0]->LocalX(), fTrackRefs[1]->LocalX());
-    return kFALSE;
-  }
-
-  Double_t dydx = (fTrackRefs[1]->LocalY() - fTrackRefs[0]->LocalY()) / dx;
-  Double_t dzdx = (fTrackRefs[1]->Z() - fTrackRefs[0]->Z()) / dx;
-  Double_t dx0 = fTrackRefs[1]->LocalX() - tracklet->GetX0();
-  ymc =  fTrackRefs[1]->LocalY() - dydx*dx0;
-  zmc =  fTrackRefs[1]->Z() - dzdx*dx0;
-  
-  // recalculate tracklet based on the MC info
-  AliTRDseedV1 tt(*tracklet);
-  tt.SetZref(0, zmc);
-  tt.SetZref(1, dzdx); 
-  tt.Fit();
-  Double_t dy = tt.GetYfit(0) - ymc;
-  Double_t dz = 100.;
-  if(cross){
-    Double_t *xyz = tt.GetCrossXYZ();
-    dz = xyz[2] - (zmc - (x0 - xyz[0])*dzdx) ;
-  }
-  p = fTrackRefs[0]->P();
-
-  phi   = TMath::ATan(dydx);
-  theta = TMath::ATan(dzdx);
-  Double_t dphi   = TMath::ATan(tt.GetYfit(1)) - phi;
-  if(fDebugLevel>=4) printf("\t\tdx[%6.4f] dy[%6.4f] dz[%6.4f] dphi[%6.4f] \n", dx, dy, dz, dphi);
-  
-  // Fill Histograms
-  ((TH2I*)fContainer->At(kTrackletYResolution))->Fill(phi*TMath::RadToDeg(), dy);
-  ((TH2I*)fContainer->At(kTrackletAngleResolution))->Fill(phi*TMath::RadToDeg(), dphi*TMath::RadToDeg());
-
-  // Fill Debug Tree
-  if(fDebugLevel>=1){
-    (*fDebugStream) << "ResolutionTrklt"
-      << "det="	 	  << det
-      << "pdg="     << pdg
-      << "p="       << p
-      << "ymc="     << ymc
-      << "zmc="     << zmc
-      << "dydx="    << dydx
-      << "dzdx="    << dzdx
-      << "cross="   << cross
-      << "dy="		  << dy
-      << "dz="	 	  << dz
-      << "dphi="		<< dphi
-      << "\n";
-  }
-
-  AliTRDpadPlane *pp = fGeo->GetPadPlane(AliTRDgeometry::GetLayer(det), AliTRDgeometry::GetStack(det));
-  Float_t z0 = pp->GetRow0() + AliTRDSimParam::Instance()->GetAnodeWireOffset();
-
-  AliTRDcluster *c = 0x0;
-  tracklet->ResetClusterIter(kFALSE);
-  while((c = tracklet->PrevCluster())){
-    Float_t  q = TMath::Abs(c->GetQ());
-    Float_t xc = c->GetX();
-    Float_t yc = c->GetY();
-    Float_t zc = c->GetZ();
-    dx = x0 - xc; 
-    Float_t yt = ymc - dx*dydx;
-    Float_t zt = zmc - dx*dzdx; 
-    dy = yt - (yc - tilt*(zc-zt));
-
-    // Fill Histograms
-    if(q>100.) ((TH2I*)fContainer->At(kClusterYResolution))->Fill(phi*TMath::RadToDeg(), dy);
-    
-    // Fill Debug Tree
-    if(fDebugLevel>=1){
-      Float_t d = z0 - zt;
-      d -= ((Int_t)(2 * d)) / 2.0;
-      (*fDebugStream) << "ResolutionClstr"
-        << "pdg="     << pdg
-        << "p="       << p
-        << "phi="			<< phi
-        << "tht="		  << theta
-        << "dy="		  << dy
-        << "crs="	 	  << cross
-        << "q="       << q
-        << "d="       << d
-        << "\n";
-    }
-  }
-
-  return kTRUE;
-}
 
 //________________________________________________________
 Bool_t AliTRDtrackingResolution::PostProcess()
@@ -556,19 +648,19 @@ Bool_t AliTRDtrackingResolution::PostProcess()
   //PROCESS RESIDUAL DISTRIBUTIONS
 
   // Clusters residuals
-  h2 = (TH2I *)(fContainer->At(kClusterYResidual));
+  h2 = (TH2I *)(fContainer->At(kClusterResidual));
   gm = new TGraphErrors(h2->GetNbinsX());
   gm->SetLineColor(kBlue);
   gm->SetMarkerStyle(7);
   gm->SetMarkerColor(kBlue);
   gm->SetNameTitle("clm", "");
-  fGraphM->AddAt(gm, kClusterYResidual);
+  fGraphM->AddAt(gm, kClusterResidual);
   gs = new TGraphErrors(h2->GetNbinsX());
   gs->SetLineColor(kRed);
   gs->SetMarkerStyle(23);
   gs->SetMarkerColor(kRed);
   gs->SetNameTitle("cls", "");
-  fGraphS->AddAt(gs, kClusterYResidual);
+  fGraphS->AddAt(gs, kClusterResidual);
   for(Int_t ibin = 1; ibin <= h2->GetNbinsX(); ibin++){
     Double_t phi = h2->GetXaxis()->GetBinCenter(ibin);
     h = h2->ProjectionY("py", ibin, ibin);
@@ -589,19 +681,19 @@ Bool_t AliTRDtrackingResolution::PostProcess()
 
   if(HasMCdata()){
     // cluster y resolution
-    h2 = (TH2I*)fContainer->At(kClusterYResolution);
+    h2 = (TH2I*)fContainer->At(kClusterResolution);
     gm = new TGraphErrors(h2->GetNbinsX());
     gm->SetLineColor(kBlue);
     gm->SetMarkerStyle(7);
     gm->SetMarkerColor(kBlue);
     gm->SetNameTitle("clym", "");
-    fGraphM->AddAt(gm, kClusterYResolution);
+    fGraphM->AddAt(gm, kClusterResolution);
     gs = new TGraphErrors(h2->GetNbinsX());
     gs->SetLineColor(kRed);
     gs->SetMarkerStyle(23);
     gs->SetMarkerColor(kRed);
     gs->SetNameTitle("clys", "");
-    fGraphS->AddAt(gs, kClusterYResolution);
+    fGraphS->AddAt(gs, kClusterResolution);
     for(Int_t iphi=1; iphi<=h2->GetNbinsX(); iphi++){
       h = h2->ProjectionY("py", iphi, iphi);
       AdjustF1(h, &fb);
@@ -727,7 +819,7 @@ void AliTRDtrackingResolution::AdjustF1(TH1 *h, TF1 *f)
 //________________________________________________________
 TObjArray* AliTRDtrackingResolution::Histos()
 {
-  if(!fContainer) fContainer  = new TObjArray(4);
+  if(!fContainer) fContainer  = new TObjArray(5);
   return fContainer;
 }
 

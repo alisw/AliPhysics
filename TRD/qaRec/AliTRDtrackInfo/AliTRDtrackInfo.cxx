@@ -27,6 +27,8 @@
 
 #include "AliTrackReference.h"
 #include "AliExternalTrackParam.h"
+#include "AliLog.h"
+
 #include "AliTRDseedV1.h"
 #include "AliTRDtrackV1.h"
 
@@ -246,7 +248,6 @@ void AliTRDtrackInfo::Delete(const Option_t *)
   if(fTRDtrack) delete fTRDtrack; fTRDtrack = 0x0;
 }
 
-
 //___________________________________________________
 void AliTRDtrackInfo::SetTRDtrack(const AliTRDtrackV1 *track)
 {
@@ -347,3 +348,38 @@ void AliTRDtrackInfo::SetSlices(Int_t n, Double32_t *s)
 
   memcpy(fESD.fTRDslices, s, n*sizeof(Double32_t));
 }
+
+//___________________________________________________
+Bool_t AliTRDtrackInfo::AliMCinfo::GetDirections(Float_t x0, Float_t &y0, Float_t &z0, Float_t &dydx, Float_t &dzdx) const
+{
+   // check for 2 track ref where the radial position has a distance less than 3.7mm and are close to the x0
+
+  Int_t nFound = 0;
+  AliTrackReference *tr[2] = {0x0, 0x0};
+  AliTrackReference * const* jtr = &fTrackRefs[0];
+  for(Int_t itr = 0; itr < fNTrackRefs; itr++, ++jtr){
+    if(!(*jtr)) break;
+/*
+    if(fDebugLevel>=5) printf("\t\tref[%2d] x[%6.3f]\n", itr, (*jtr)->LocalX());*/
+    if(TMath::Abs(x0 - (*jtr)->LocalX()) > 3.7) continue;
+    tr[nFound++] = (*jtr);
+    if(nFound == 2) break;
+  } 
+  if(nFound < 2){ 
+    AliWarningGeneral("AliTRDtrackInfo::AliMCinfo::GetDirections()", Form("Missing track ref x0[%6.3f] nref[%d]\n", x0, nFound));
+    return kFALSE;
+  }
+  Double_t dx = tr[1]->LocalX() - tr[0]->LocalX();
+  if(dx <= 0. || TMath::Abs(dx-3.7)>1.E-3){
+    AliWarningGeneral("AliTRDtrackInfo::AliMCinfo::GetDirections()", Form("Track ref with wrong radial distances refX0[%6.3f] refX1[%6.3f]", tr[0]->LocalX(), tr[1]->LocalX()));
+    return kFALSE;
+  }
+
+  dydx = (tr[1]->LocalY() - tr[0]->LocalY()) / dx;
+  dzdx = (tr[1]->Z() - tr[0]->Z()) / dx;
+  Float_t dx0 = tr[1]->LocalX() - x0;
+  y0   =  tr[1]->LocalY() - dydx*dx0;
+  z0   =  tr[1]->Z() - dzdx*dx0;
+  return kTRUE;
+}
+

@@ -27,14 +27,15 @@ class AliTRDtrackingResolution : public AliTRDrecoTask
 {
 public:
   enum{
-    kClusterYResidual         = 0
+    kClusterResidual         = 0
 //     ,kTrackletRiemanYResidual = 1 // Riemann track model
 //     ,kTrackletRiemanAngleResidual = 2
 //     ,kTrackletKalmanYResidual = 3 // Kalman track model
 //     ,kTrackletKalmanAngleResidual = 4
-    ,kClusterYResolution      = 1/*5*/
+    ,kClusterResolution      = 1/*5*/
     ,kTrackletYResolution     = 2/*6*/
-    ,kTrackletAngleResolution = 3/*7*/
+    ,kTrackletZResolution     = 3/*6*/
+    ,kTrackletAngleResolution = 4/*7*/
 //     ,kTrackRYResolution       = 8 // Riemann track model
 //     ,kTrackRZResolution       = 9
 //     ,kTrackRAngleResolution   = 10
@@ -51,11 +52,14 @@ public:
   virtual ~AliTRDtrackingResolution();
   
   void    CreateOutputObjects();
-  void    Exec(Option_t *);
+  //void    Exec(Option_t *);
   void    GetRefFigure(Int_t ifig);
   Bool_t  IsVerbose() const {return TESTBIT(fStatus, kVerbose);}
   Bool_t  IsVisual() const {return TESTBIT(fStatus, kVisual);}
   Bool_t  PostProcess();
+
+  TH1*    PlotClusterResiduals(const AliTRDtrackV1 *t=0x0);
+  TH1*    PlotResolution(const AliTRDtrackV1 *t=0x0);
 
   void    SetRecoParam(AliTRDrecoParam *r);
   void    SetVerbose(Bool_t v = kTRUE) {v ? SETBIT(fStatus ,kVerbose): CLRBIT(fStatus ,kVerbose);}
@@ -68,7 +72,6 @@ private:
   AliTRDtrackingResolution& operator=(const AliTRDtrackingResolution&);
   void        AdjustF1(TH1 *h, TF1 *f);
   TObjArray*  Histos(); 
-  Bool_t      Resolution(AliTRDseedV1 *tracklet, AliTRDtrackInfo *info, Double_t &p, Double_t &y, Double_t &z, Double_t &phi, Double_t &theta);
 
 private:
   UChar_t               fStatus;          // steer parameter of the task

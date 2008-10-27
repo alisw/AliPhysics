@@ -64,12 +64,13 @@ public:
     Int_t   GetLabel() const {return fLabel;}
     Int_t   GetNTrackRefs() const {return fNTrackRefs;}
     Int_t   GetPDG() const {return fPDG;}
+    Bool_t  GetDirections(Float_t x0, Float_t &y0, Float_t &z0, Float_t &dydx, Float_t &dzdx) const;
     AliTrackReference const* GetTrackRefIter() const {return fTrackRefs[0];}
 
   protected:
     Int_t   fLabel;             // MC label  
     Int_t   fPDG;               // particle code
-    Int_t   fNTrackRefs;    	// number of track refs
+    Int_t   fNTrackRefs;    	  // number of track refs
     AliTrackReference  *fTrackRefs[kNTrackRefs];	// track refs array
     ClassDef(AliMCinfo, 1)      // MC info related to TRD
   };
@@ -132,6 +133,7 @@ private:
  
   ClassDef(AliTRDtrackInfo, 2)        // TRD track info
 };
+
 
 //________________________________________________________
 inline void AliTRDtrackInfo::SetMC()
