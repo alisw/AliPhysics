@@ -540,7 +540,7 @@ Int_t AliTRDtrackerV1::FollowProlongation(AliTRDtrackV1 &t)
         
     // Get material budget
     Double_t param[7];
-    AliTracker::MeanMaterialBudget(xyz0, xyz1, param);
+    if(AliTracker::MeanMaterialBudget(xyz0, xyz1, param)<=0.) break;
     Double_t xrho= param[0]*param[4];
     Double_t xx0 = param[1]; // Get mean propagation parameters
 
@@ -693,7 +693,7 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
     xyz1[1] = +x * TMath::Sin(alpha) + y * TMath::Cos(alpha);
     xyz1[2] =  z;
     Double_t param[7];
-    AliTracker::MeanMaterialBudget(xyz0, xyz1, param);	
+    if(AliTracker::MeanMaterialBudget(xyz0, xyz1, param)<=0.) return -1;	
     // The mean propagation parameters
     Double_t xrho = param[0]*param[4]; // density*length
     Double_t xx0  = param[1]; // radiation length
@@ -1386,7 +1386,7 @@ Double_t AliTRDtrackerV1::FitKalman(AliTRDtrackV1 *track, AliTRDseedV1 *tracklet
     xyz1[1] = +x * TMath::Sin(alpha) + y * TMath::Cos(alpha);
     xyz1[2] =  z;
     Double_t param[7];
-    AliTracker::MeanMaterialBudget(xyz0, xyz1, param);	
+    if(AliTracker::MeanMaterialBudget(xyz0, xyz1, param)<=0.) break;	
     Double_t xrho = param[0]*param[4]; // density*length
     Double_t xx0  = param[1]; // radiation length
     
@@ -1487,7 +1487,7 @@ Int_t AliTRDtrackerV1::PropagateToX(AliTRDtrackV1 &t, Double_t xToGo, Double_t m
 
     // Calculate the mean material budget between start and
     // end point of this prolongation step
-    AliTracker::MeanMaterialBudget(xyz0, xyz1, param);
+    if(AliTracker::MeanMaterialBudget(xyz0, xyz1, param)<=0.) return 0;
 
     // Propagate the track to the X-position after the next step
     if (!t.PropagateTo(x,param[1],param[0]*param[4])) {

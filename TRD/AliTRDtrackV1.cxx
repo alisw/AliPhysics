@@ -541,7 +541,7 @@ Int_t   AliTRDtrackV1::PropagateToR(Double_t r,Double_t step)
     xyz1[1] = x * TMath::Sin(alpha) - y * TMath::Cos(alpha);
     xyz1[2] = z;
     Double_t param[7];
-    AliTracker::MeanMaterialBudget(xyz0,xyz1,param);
+    if(AliTracker::MeanMaterialBudget(xyz0,xyz1,param)<=0.) return -1;
     if (param[1] <= 0) {
       param[1] = 100000000;
     }
@@ -558,7 +558,7 @@ Int_t   AliTRDtrackV1::PropagateToR(Double_t r,Double_t step)
   xyz1[1] = r * TMath::Sin(alpha) - y * TMath::Cos(alpha);
   xyz1[2] = z;
   Double_t param[7];
-  AliTracker::MeanMaterialBudget(xyz0,xyz1,param);
+  if(AliTracker::MeanMaterialBudget(xyz0,xyz1,param) <= 0.) return -1;
 
   if (param[1] <= 0) {
     param[1] = 100000000;
