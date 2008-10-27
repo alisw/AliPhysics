@@ -7,6 +7,8 @@ SUBDIRS 			= . test
 
 EXTRA_DIST			= 
 
+bin_SCRIPTS			= startAliEVE-barrel-tracks.sh
+
 # library definition
 lib_LTLIBRARIES			=  libHLTrec.la
 

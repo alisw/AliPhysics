@@ -1124,6 +1124,7 @@ if test "x$have_aliroot" != "xno"; then
   AC_CONFIG_FILES([sim/Makefile	 
 		   rec/Makefile	 
 		   rec/test/Makefile	 
+		   rec/startAliEVE-barrel-tracks.sh
 		   shuttle/Makefile
 		   pendolino/Makefile
 		   ])
