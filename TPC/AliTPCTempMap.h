@@ -32,7 +32,10 @@ class AliTPCTempMap : public TNamed  {
   Double_t GetTempGradientY(UInt_t timeSec, Int_t side);
   TGraph2D *GetTempMapsViaSensors(Int_t type, Int_t side, UInt_t timeSec);
   TGraph *MakeGraphGradient(Int_t axis, Int_t side, Int_t nPoints);
+
   Double_t GetTemperature(Double_t x, Double_t y, Double_t z, UInt_t timeSec);
+  Double_t GetTemperature(Double_t x, Double_t y, Double_t z, TTimeStamp &stamp);
+
  protected:
   
   AliTPCSensorTempArray *fTempArray;   // Array of Sensors (initialized in Constructor)

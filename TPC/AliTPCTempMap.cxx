@@ -135,6 +135,7 @@ Double_t AliTPCTempMap::GetTempGradientY(UInt_t timeSec, Int_t side){
   
 }
 
+//_____________________________________________________________________________
 TLinearFitter *AliTPCTempMap::GetLinearFitter(Int_t type, Int_t side, TTimeStamp &stamp)
 {
   //
@@ -146,7 +147,6 @@ TLinearFitter *AliTPCTempMap::GetLinearFitter(Int_t type, Int_t side, TTimeStamp
 }
 
 //_____________________________________________________________________________
-
 TLinearFitter *AliTPCTempMap::GetLinearFitter(Int_t type, Int_t side, UInt_t timeSec)
 {
   // 
@@ -397,12 +397,25 @@ TGraph *AliTPCTempMap::MakeGraphGradient(Int_t axis, Int_t side, Int_t nPoints)
   return graph;
 }
 
+
+//_____________________________________________________________________________
+Double_t AliTPCTempMap::GetTemperature(Double_t x, Double_t y, Double_t z, TTimeStamp &stamp)
+{
+  //
+  // absolute time stamp used
+  // see also Double_t AliTPCTempMap::GetTemperature(Double_t x, Double_t y, Double_t z, UInt_t timeSec) for details
+  //
+
+  Int_t timeSec = stamp.GetSec()-fTempArray->GetStartTime().GetSec();
+  return GetTemperature(x, y, z, timeSec);
+}
+
 //_____________________________________________________________________________
 
 Double_t AliTPCTempMap::GetTemperature(Double_t x, Double_t y, Double_t z, UInt_t timeSec)
 {  
   //
-  // Returns estimated Temperature at given position (x,y,z) at given time 
+  // Returns estimated Temperature at given position (x,y,z[cm]) at given time 
   // (timeSec) after starttime
   // Method: so far just a linear interpolation between Linar fits of 
   //         the TPC temperature sensors
@@ -429,5 +442,6 @@ Double_t AliTPCTempMap::GetTemperature(Double_t x, Double_t y, Double_t z, UInt_
   fitterC->~TLinearFitter();
 
   return tempValue;
+
 }
 

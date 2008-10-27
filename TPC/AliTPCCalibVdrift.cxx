@@ -33,27 +33,36 @@ ClassImp(AliTPCCalibVdrift)
 
 namespace paramDefinitions {
     
-    // Standard Conditions used as origin in the Magbolz simulations
-    // Dimesions E [kV/cm], T [K], P [TORR], Cco2 [%], Cn2 [%]
-    const Double_t kstdE = 400;
-    const Double_t kstdT = 293;
-    const Double_t kstdP = 744;
-    const Double_t kstdCco2 = 9.52;
-    const Double_t kstdCn2 = 4.76;
-    // Driftvelocity at Standardcontitions [cm/microSec]
-    const Double_t kstdVdrift = 2.57563;
-    
-    // Vdrift dependencies simulated with Magbolz [%(Vdrift)/[unit]]
-    const Double_t kdvdE = 0.24;
-    const Double_t kdvdT = 0.30;
-    const Double_t kdvdP = -0.13;
-    const Double_t kdvdCco2 = -6.60;
-    const Double_t kdvdCn2 = -1.74;
+  // Standard Conditions used as origin in the Magbolz simulations
+  // Dimesions E [kV/cm], T [K], P [TORR], Cco2 [%], Cn2 [%]
+  const Double_t kstdE = 400;
+  const Double_t kstdT = 293;
+  const Double_t kstdP = 744;
+  const Double_t kstdCco2 = 9.52;
+  const Double_t kstdCn2 = 4.76;
+  // Driftvelocity at Standardcontitions [cm/microSec]
+  const Double_t kstdVdrift = 2.57563;
   
-    Double_t krho = 0.934246; // density of TPC-Gas [kg/m^3]
-                              // method of calculation: weighted average
-    Double_t kg = 9.81;
+  // Vdrift dependencies simulated with Magbolz [%(Vdrift)/[unit]]
+  const Double_t kdvdE = 0.24;
+  const Double_t kdvdT = 0.30;
+  const Double_t kdvdP = -0.13;
+  const Double_t kdvdCco2 = -6.60;
+  const Double_t kdvdCn2 = -1.74;
+  // 2nd order effect Taylor expansion
+  const Double_t kdvdE2nd = -0.00107628;
+  const Double_t kdvdT2nd = -0.00134441;
+  const Double_t kdvdP2nd = 0.000135325;
+  const Double_t kdvdCco22nd = 0.328761;
+  const Double_t kdvdCn22nd = 0.151605;
+
+  const Double_t torrTokPascal = 0.750061683;
+ 
+  Double_t krho = 0.934246; // density of TPC-Gas [kg/m^3]
+                            // method of calculation: weighted average
+  Double_t kg = 9.81;
 }
+
 
 using namespace paramDefinitions;
 
@@ -70,10 +79,15 @@ AliTPCCalibVdrift::AliTPCCalibVdrift(AliTPCSensorTempArray *SensTemp, AliDCSSens
 
   fSensTemp = SensTemp;
   fSensPres = SensPres;
-  fTempMap  = new AliTPCTempMap(fSensTemp);
+  if (fSensTemp) {
+    fTempMap  = new AliTPCTempMap(fSensTemp);
+  } else {
+    fTempMap = 0;
+  }
   fSensGasComp = SensGasComp;
 }
 
+//_____________________________________________________________________________
 AliTPCCalibVdrift::AliTPCCalibVdrift(const AliTPCCalibVdrift& source) :
   TNamed(source),
   fSensTemp(source.fSensTemp),
@@ -87,7 +101,6 @@ AliTPCCalibVdrift::AliTPCCalibVdrift(const AliTPCCalibVdrift& source) :
 }
 
 //_____________________________________________________________________________
-
 AliTPCCalibVdrift& AliTPCCalibVdrift::operator=(const AliTPCCalibVdrift& source){
   //
   // assignment operator
@@ -107,15 +120,18 @@ AliTPCCalibVdrift::~AliTPCCalibVdrift()
 
 }
 
-Double_t AliTPCCalibVdrift::GetPTRelative(UInt_t timeSec, Int_t side){
+//_____________________________________________________________________________
+Double_t AliTPCCalibVdrift::GetPTRelative(UInt_t absTimeSec, Int_t side){
   //
   // Get Relative difference of p/T for given time stamp
-  // timeSec - absolute time
-  // side    - 0 - A side 1 -C side
+  // absTimeSec - absolute time in secounds
+  // side: 0 - A side |  1 - C side
   //
-  TTimeStamp tstamp(timeSec);
-  if (!fSensPres) return 0;
-  Double_t pressure    = fSensPres->GetValue(tstamp);
+
+  TTimeStamp tstamp(absTimeSec);
+
+  if (!fSensPres||!fSensTemp) return 0;
+  Double_t pressure = fSensPres->GetValue(tstamp);
   TLinearFitter * fitter = fTempMap->GetLinearFitter(3,side,tstamp);
   if (!fitter) return 0;
   TVectorD vec;
@@ -124,9 +140,10 @@ Double_t AliTPCCalibVdrift::GetPTRelative(UInt_t timeSec, Int_t side){
   if (vec[0]<10) return 0;
   Double_t  temperature = vec[0]+273.15;
   Double_t povertMeas = pressure/temperature;
-  const Double_t torrTokPascal = 0.75006;
   Double_t povertNom =  kstdP/(torrTokPascal*kstdT);
+
   return povertMeas/povertNom;
+
 }
 
 
@@ -134,15 +151,22 @@ Double_t AliTPCCalibVdrift::GetPTRelative(UInt_t timeSec, Int_t side){
 Double_t AliTPCCalibVdrift::VdriftLinearHyperplaneApprox(Double_t dE, Double_t dT, Double_t dP, Double_t dCco2, Double_t dCn2) 
 {
   //
-  // Returns approximated value for the driftvelocity based on  
-  // linear Hyperplane approximation (~ Taylorapproximation of 1st order)
+  // Returns approximated value for the driftvelocity change (in percent)
+  // based on a Hyperplane approximation (~ Taylorapproximation of 2nd order)
   //
 
-  Double_t vdrift = (dE*kdvdE+dT*kdvdT+dP*kdvdP+dCco2*kdvdCco2+dCn2*kdvdCn2);
-  
-  return vdrift; 
+  Double_t termE   = dE*kdvdE + TMath::Power(dE,2)*kdvdE2nd;
+  Double_t termT   = dT*kdvdT + TMath::Power(dT,2)*kdvdT2nd;
+  Double_t termP   = dP*kdvdP + TMath::Power(dP,2)*kdvdP2nd;
+  Double_t termCo2 = dCco2*kdvdCco2 + TMath::Power(dCco2,2)*kdvdCco22nd;
+  Double_t termN2  = dCn2*kdvdCn2 + TMath::Power(dCn2,2)*kdvdCn22nd;
+
+  Double_t vdChange = termE+termT+termP+termCo2+termN2;
+
+  return vdChange;
 
 }
+
 //_____________________________________________________________________________
 
 Double_t AliTPCCalibVdrift::GetVdriftNominal() 
@@ -153,49 +177,59 @@ Double_t AliTPCCalibVdrift::GetVdriftNominal()
 
 //_____________________________________________________________________________
 
-Double_t AliTPCCalibVdrift::GetVdriftChange(Double_t x, Double_t y, Double_t z, UInt_t timeSec)
+Double_t AliTPCCalibVdrift::GetVdriftChange(Double_t x, Double_t y, Double_t z, UInt_t absTimeSec)
 {
   // 
   // Calculates Vdrift change in percent of Vdrift_nominal 
-  // (under nominal conditions) at x,y,z,timeSec
+  // (under nominal conditions) at x,y,z at absolute time (in sec)
   //
 
+  TTimeStamp tstamp(absTimeSec);
+
   // Get E-field Value --------------------------
-  Double_t dE = 0; //FIXME: eventually include Field-Inhomogenities
+  Double_t dE = 0.23; // StandardOffset if CE is set to 100kV
 
   // Get Temperature Value ----------------------  
   AliTPCTempMap *tempMap = fTempMap;
-  Double_t tempValue = tempMap->GetTemperature(x, y, z, timeSec);
-  Double_t dT = tempValue+273.15 - kstdT;
-  
+  Double_t dT = 0;
+  if (fTempMap) {
+    Double_t tempValue = tempMap->GetTemperature(x, y, z, tstamp);
+    dT = tempValue + 273.15 - kstdT;
+  }
+    
   // Get Main Pressure Value ---------------------
-  // FIXME: READ REAL PRESSURE SENSOR  
-  //        through TObject *fSensPres; 
-  //        e.g. Double_t PO = fSensPres->GetValue(timeSec);  
-  Double_t p0 = 744;
-  // recalculate Pressure according to height in TPC and transform to
-  // TORR (with simplified hydrostatic formula)   
-  Double_t dP = p0 - krho*kg*y/10000 /1000*760 - kstdP;
-   
+  Double_t dP = 0;
+  if (fSensPres==0) {
+    // Just the pressure drop over the TPC height
+    dP = - krho*kg*y/10000*torrTokPascal;
+  } else {
+    // pressure sensors plus additional 0.4mbar overpressure within the TPC
+    Double_t pressure = fSensPres->GetValue(tstamp) + 0.4; 
+    // calculate pressure drop according to height in TPC and transform to
+    // TORR (with simplified hydrostatic formula)
+    dP = (pressure - krho*kg*y/10000) * torrTokPascal - kstdP;
+  }
+
   // Get GasComposition
-  // FIXME: include Goofy values for CO2 and N2 conzentration out of DCS? 
-  //   through TObject *fSensGasComp and calculate difference to stdCondit.
+  // FIXME: include Goofy values for CO2 and N2 conzentration out of OCDB
+  //        Goofy not yet reliable ... 
   Double_t dCco2 = 0;
   Double_t dCn2 = 0;
 
   // Calculate change in drift velocity in terms of Vdrift_nominal
-  Double_t vdrift = VdriftLinearHyperplaneApprox(dE, dT, dP, dCco2, dCn2); 
+  Double_t vdChange = VdriftLinearHyperplaneApprox(dE, dT, dP, dCco2, dCn2); 
   
-  return vdrift;    
+  return vdChange;
+    
 }
 
 //_____________________________________________________________________________
 
-Double_t AliTPCCalibVdrift::GetMeanZVdriftChange(Double_t x, Double_t y, UInt_t timeSec)
+Double_t AliTPCCalibVdrift::GetMeanZVdriftChange(Double_t x, Double_t y, UInt_t absTimeSec)
 {
   // 
   // Calculates Meanvalue in z direction of Vdrift change in percent 
-  // of Vdrift_nominal (under standard conditions) at position x,y,timeSec
+  // of Vdrift_nominal (under standard conditions) at position x,y,absTimeSec
   // with help of 'nPopints' base points
   //
   
@@ -205,7 +239,7 @@ Double_t AliTPCCalibVdrift::GetMeanZVdriftChange(Double_t x, Double_t y, UInt_t 
 
   for (Int_t i = 0; i<nPoints; i++) {
     Double_t z = (Double_t)i/(nPoints-1)*500-250;
-    vdriftSum = vdriftSum + GetVdriftChange(x, y, z, timeSec);
+    vdriftSum = vdriftSum + GetVdriftChange(x, y, z, absTimeSec);
   }
   
   Double_t meanZVdrift = vdriftSum/nPoints;
@@ -234,7 +268,7 @@ TGraph *AliTPCCalibVdrift::MakeGraphMeanZVdriftChange(Double_t x, Double_t y, In
 
   for (Int_t ip=0; ip<nPoints; ip++) {
     xvec[ip] = startTime+ip*stepTime;
-    yvec[ip] = GetMeanZVdriftChange(x, y, ip*stepTime);
+    yvec[ip] = GetMeanZVdriftChange(x, y, fSensTemp->GetStartTime().GetSec() + ip*stepTime);
   }
 
   TGraph *graph = new TGraph(nPoints,xvec,yvec);
