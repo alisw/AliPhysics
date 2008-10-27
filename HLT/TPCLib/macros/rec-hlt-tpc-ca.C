@@ -85,7 +85,7 @@ void rec_hlt_tpc_ca(const char* input="./", bool bUseClusterFinderDecoder=true)
     TString tracker;
     // tracker finder components
     tracker.Form("TR_%02d", slice);
-    AliHLTConfiguration trackerconf(tracker.Data(), "TPCCATracker", trackerInput.Data(), "");
+    AliHLTConfiguration trackerconf(tracker.Data(), "TPCCATracker", trackerInput.Data(), "-solenoidBz 5");
     if (writerInput.Length()>0) writerInput+=" ";
     writerInput+=tracker;
     if (mergerInput.Length()>0) mergerInput+=" ";
