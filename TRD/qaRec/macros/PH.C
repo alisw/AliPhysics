@@ -1,10 +1,12 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TROOT.h>
+#include <TProfile.h>
+
 #include <TRD/AliTRDgeometry.h>
 #include <TRD/AliTRDcalibDB.h>
 #include <TRD/AliTRDcluster.h>
 #include <TRD/AliTRDseedV1.h>
 #include <TRD/AliTRDtrackV1.h>
-#include <TProfile.h>
 #endif
 
 TH1* PH(const AliTRDtrackV1* track)
@@ -13,11 +15,15 @@ TH1* PH(const AliTRDtrackV1* track)
   
   AliTRDcluster* cls = 0;
   AliTRDseedV1 *tracklet = 0x0;
+  
+  TProfile* ph = 0x0;
+  if(!(ph = (TProfile*)gROOT->FindObject("PH"))){
+    Int_t ntb = AliTRDcalibDB::Instance()->GetNumberOfTimeBins();
+    ph = new TProfile("PH", "Average PH", ntb, -.5, ntb-.5);
+    ph->GetXaxis()->SetTitle("drift time [1/100ns]");
+    ph->GetYaxis()->SetTitle("<PH> [a.u.]");
+  } else ph->Reset();
 
-  Int_t ntb = AliTRDcalibDB::Instance()->GetNumberOfTimeBins();
-  TProfile* ph = new TProfile("", "Average PH", ntb, -.5, ntb-.5);
-  ph->GetXaxis()->SetTitle("drift time [1/100ns]");
-  ph->GetYaxis()->SetTitle("<PH> [a.u.]");
 
   for (Int_t ily = 0; ily < AliTRDgeometry::kNlayer; ily++) {
     if(!(tracklet = track->GetTracklet(ily))) continue;
