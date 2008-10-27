@@ -36,7 +36,7 @@ cp  $ALICE_ROOT/test/QA/rawqa.C .
 aliroot -b > rawqa.log << EOF
 .x  $ALICE_ROOT/test/QA/rootlogon.C
 .L rawqa.C++
-rawqa(21950, 10)
+rawqa($1, 10)
 EOF
 rm -f rawqa.C
 exit
