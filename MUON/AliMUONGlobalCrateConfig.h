@@ -151,7 +151,13 @@ class AliMUONGlobalCrateConfig : public  TNamed {
     void   SetGlobalRegister(Int_t index, UInt_t reg);
            /// Get register word for Global
     UInt_t* GetGlobalRegister() {return fGlobalRegisters;}
-    
+           /// Set mask for the global input
+      void   SetGlobalMask(Int_t index, UInt_t mask);
+           /// Get mask for the global input
+    UInt_t GetGlobalMask(Int_t index) const;
+           /// Indicates if global masks are active on global inputs
+    Bool_t GetMasksOn() const;    
+
     // fet board
             /// Get FET board VME address
     ULong_t GetFetVmeAddr()  const       {return fFetVmeAddr;}

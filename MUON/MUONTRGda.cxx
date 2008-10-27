@@ -3,9 +3,10 @@ MTR DA for online
 
 Contact: Franck Manso <manso@clermont.in2p3.fr>
 Link: http://aliceinfo.cern.ch/static/Offline/dimuon/muon_html/README_mtrda.html
-Run Type:  ELECTRONICS_CALIBRATION_RUN (calib), DETECTOR_CALIBRATION_RUN (ped)
-DA Type: LDC
-Number of events needed: 100 events for ped and calib
+Reference run: 61898, 61945 (dead channels), 61963 (noisy channels)
+Run Type:  PHYSICS (noisy channels), STANDALONE (dead channels)
+DA Type: MON
+Number of events needed: 1000 events for noisy and dead channels
 Input Files: Rawdata file (DATE format)
 Input Files from DB:
 MtgGlobalCrate-<version>.dat
@@ -91,8 +92,6 @@ extern "C" {
 // global variables
 const Int_t gkNLocalBoard = AliMpConstants::TotalNofLocalBoards()+1;
 
-TString gCommand("ped");
-
 TString gCurrentFileName("MtgCurrent.dat");
 TString gLastCurrentFileName("MtgLastCurrent.dat");
 
@@ -121,6 +120,8 @@ Int_t gLocalLutFileLastVersion;
 
 UInt_t gRunNumber = 0;
 Int_t  gNEvents = 0;
+Int_t  gNEventsN = 0;
+Int_t  gNEventsD = 0;
 
 Int_t gPrintLevel = 0;
 
@@ -128,29 +129,20 @@ AliMUONVStore* gLocalMasks    = 0x0;
 AliMUONRegionalTriggerConfig* gRegionalMasks = 0x0;
 AliMUONGlobalCrateConfig* gGlobalMasks = 0x0;    
 
+AliMUONTriggerIO gTriggerIO;
 
- AliMUONTriggerIO gTriggerIO;
+Bool_t gAlgoNoisyInput = false;
+Bool_t gAlgoDeadInput  = false;
 
-AliMUONVStore* gPatternStore =  new AliMUON1DArray(gkNLocalBoard);
+Int_t   gkGlobalInputs = 4;
+Int_t   gkGlobalInputLength = 32;
+Float_t gkThreshold = 0.1;
+Int_t   gkMinEvents = 10;
 
-Char_t gHistoFileName[256];
+Int_t gAccGlobalInputN[4][32] = {0};
+Int_t gAccGlobalInputD[4][32] = {0};
 
-Float_t gkThreshold = 0.2;
-
-//__________________________________________________________________
-void UpdateLocalMask(Int_t localBoardId, Int_t connector, Int_t strip)
-{
-
-    // update local mask
-    AliMUONVCalibParam* localMask = 
-	static_cast<AliMUONVCalibParam*>(gLocalMasks->FindObject(localBoardId));
-
-    UShort_t mask = localMask->ValueAsInt(connector,0); 
-
-    mask ^= (0x1 << strip); // set strip mask to zero
-
-    localMask->SetValueAsInt(connector,0, mask);  
-}
+Bool_t gWriteInitialDB = false;
 
 //__________________________________________________________________
 void WriteLastCurrentFile(TString currentFile = gLastCurrentFileName)
@@ -189,7 +181,6 @@ Bool_t ReadCurrentFile(TString currentFile = gCurrentFileName, Bool_t lastCurren
       return false;
     }
     
-
     // read SOD 
     in.getline(line,80);  
     sscanf(line, "%s %d", name, &gSodFlag);
@@ -201,7 +192,6 @@ Bool_t ReadCurrentFile(TString currentFile = gCurrentFileName, Bool_t lastCurren
     sscanf(line, "%s %d", name, &gDAFlag);
     gDAName = name;
     if (gPrintLevel) printf("DA Flag: %d\n", gDAFlag);
-
 
     // read global
     in.getline(line,80);    
@@ -235,8 +225,6 @@ Bool_t ReadCurrentFile(TString currentFile = gCurrentFileName, Bool_t lastCurren
 	if (gPrintLevel) printf("Regional File Name: %s last version: %d\n", 
 				gRegionalFileName.Data(), gRegionalFileLastVersion);
     }
-
- 
 
     // read mask
     in.getline(line,80);    
@@ -305,8 +293,8 @@ Bool_t ExportFiles()
     // setenv DATE_ROLE_NAME
     // setenv DATE_DETECTOR_CODE
 
-    // for offline purposes
-    // gSystem->Setenv("DAQDALIB_PATH", "$DATE_SITE/infoLogger");
+    // offline:
+    //gSystem->Setenv("DAQDALIB_PATH", "$DATE_SITE/infoLogger");
 
     // update files
     Int_t status = 0;
@@ -330,26 +318,18 @@ Bool_t ExportFiles()
 	printf("Failed to export file: %s\n",gGlobalFileName.Data());
 	return false;
       }
-      out << gGlobalFileName.Data() << endl;
       if(gPrintLevel) printf("Export file: %s\n",gGlobalFileName.Data());
+      out << gGlobalFileName.Data() << endl;
     }
 
     file = gLocalMaskFileName;  
     if (gLocalMaskFileLastVersion != gLocalMaskFileVersion) {
       modified = true;
-      // export to FES
       status = daqDA_FES_storeFile(file.Data(), file.Data());
       if (status) {
 	printf("Failed to export file: %s\n",gLocalMaskFileName.Data());
 	return false;
       }
-      // export to DB
-      status = daqDA_DB_storeFile(file.Data(), file.Data());
-      if (status) {
-        printf("Failed to export file to DB: %s\n",gLocalMaskFileName.Data());
-        return false;
-      }
-      
       if(gPrintLevel) printf("Export file: %s\n",gLocalMaskFileName.Data());
       out << gLocalMaskFileName.Data() << endl;
     }
@@ -394,6 +374,7 @@ Bool_t ExportFiles()
 
     return true;
 }
+
 //__________________
 Bool_t ImportFiles()
 {
@@ -403,12 +384,21 @@ Bool_t ImportFiles()
     // If environment variable DAQDA_TEST_DIR is defined, files are copied from DAQDA_TEST_DIR
     // instead of the database. The usual environment variables are not needed.
 
-      Int_t status = 0;
+    Int_t status = 0;
 
-    // for offline test
+    // offline:
     //gSystem->Setenv("DAQDALIB_PATH", "$DATE_SITE/db");
-    //gSystem->Setenv("DAQDA_TEST_DIR", "v3r3data");
 
+    // offline: use the test directory as a source / else use the database
+    /*
+    if (gWriteInitialDB) {
+      gSystem->Setenv("DAQDA_TEST_DIR", "/alisoft/Mts-files");
+      gSystem->Exec("echo $DAQDA_TEST_DIR");
+    } else {
+      gSystem->Unsetenv("DAQDA_TEST_DIR");
+      gSystem->Exec("echo $DAQDA_TEST_DIR");
+    }
+    */
     status = daqDA_DB_getFile(gCurrentFileName.Data(), gCurrentFileName.Data());
     if (status) {
       printf("Failed to get current config file from DB: %s\n",gCurrentFileName.Data());
@@ -422,6 +412,10 @@ Bool_t ImportFiles()
       printf("Failed to get current config file from DB: %s\n", gGlobalFileName.Data());
       return false;
     }
+
+    // offline: use always the test directory as a source
+    //gSystem->Setenv("DAQDA_TEST_DIR", "/alisoft/Mts-files");
+    //gSystem->Exec("echo $DAQDA_TEST_DIR");
 
     status = daqDA_DB_getFile(gRegionalFileName.Data(), gRegionalFileName.Data());
     if (status) {
@@ -459,181 +453,196 @@ void ReadMaskFiles()
     gTriggerIO.ReadConfig(localFile.Data(), regionalFile.Data(), globalFile.Data(),
 			 gLocalMasks, gRegionalMasks, gGlobalMasks);			
 }
-//__________
-void MakePattern(Int_t localBoardId, TArrayS& xPattern,  TArrayS& yPattern)
+
+//______________________________________________________________
+UInt_t GetFetMode()
 {
+  // FET mode = 3 to run algorithm for dead global inputs
+  // 0x3 prepulse
+  // 0x0 internal
 
-    // calculate the hit map for each strip in x and y direction
-    AliMUONVCalibParam* pat = 
-	static_cast<AliMUONVCalibParam*>(gPatternStore->FindObject(localBoardId));
-
-    if (!pat) {
-      pat = new AliMUONCalibParamND(2, 64, localBoardId, 0,0.); // put default wise 0.
-      gPatternStore->Add(pat);	
-    }
-
-    for (Int_t i = 0; i < 4; ++i) {
-      for (Int_t j = 0; j < 16; ++j) {
-	
-	Int_t xMask = xPattern[i];
-	Int_t yMask = yPattern[i];
-
-	Int_t index = 16*i + j;
-	Double_t patOcc = 0.;
-
-	if ( (xMask >> j ) & 0x1 ) {
-	    patOcc  = pat->ValueAsDouble(index, 0) + 1.;
-	    pat->SetValueAsDouble(index, 0, patOcc);
-	}
-	if ( (yMask >> j ) & 0x1 ) {
-	    patOcc  = pat->ValueAsDouble(index, 0) + 1.;
-	    pat->SetValueAsDouble(index, 0, patOcc);
-	}
-      }
-    }
+  return gGlobalMasks->GetFetRegister(3);
 
 }
 
-//__________
-void MakePatternStore(Bool_t pedestal = true)
+//______________________________________________________________
+void StoreGlobalInput(UInt_t *globalInput) 
 {
-
-    // calculates the occupancy (option: store in a root file)
-    // check noisy strip (pedestal true, software trigger)
-    // check dead channel (pesdetal false, FET trigger)
-
-    Int_t localBoardId = 0;
-    Bool_t updated = false;
-
-    // histo
-
-    Char_t name[255];
-    Char_t title[255];
-
-    TH1F*  xOccHisto[243];
-    TH1F*  yOccHisto[243];
-    TH1F*  xPatOccHisto = 0x0;
-    TH1F*  yPatOccHisto = 0x0;
-
-    TFile*  histoFile = 0x0;
-
-    if (gHistoFileName[0] != 0) {
-      histoFile = new TFile(gHistoFileName,"RECREATE","MUON Tracking pedestals");
-
-      sprintf(name,"pat_x");
-      sprintf(title,"Occupancy for x strip");
-      Int_t nx = 200;
-      Float_t xmin = -0.2;
-      Float_t xmax = 1.2; 
-      xPatOccHisto = new TH1F(name,title,nx,xmin,xmax);
-      xPatOccHisto ->SetDirectory(histoFile);
-
-      sprintf(name,"pat_y");
-      sprintf(title,"Occupancy for y strip");
-      yPatOccHisto = new TH1F(name,title,nx,xmin,xmax);
-      yPatOccHisto->SetDirectory(histoFile);
-    
-    }
-
-    // iterator over pedestal
-    TIter next(gPatternStore->CreateIterator());
-    AliMUONVCalibParam* pat;
+  // accumulate and build statistics of global input values
   
-    while ( ( pat = dynamic_cast<AliMUONVCalibParam*>(next() ) ) )
-    {
-      localBoardId  = pat->ID0();
+  for (Int_t ii = 0; ii < gkGlobalInputs; ii++) {
+    for (Int_t ib = 0; ib < gkGlobalInputLength; ib++) {
+      // lsb -> msb
+      if (gAlgoNoisyInput)
+	gAccGlobalInputN[ii][ib] += (globalInput[ii] >> ib) & 0x1;
+      if (gAlgoDeadInput)
+	gAccGlobalInputD[ii][ib] += (globalInput[ii] >> ib) & 0x1;
+    }
+  }
 
-      if (gHistoFileName[0] != 0) {
+}
 
-	Int_t nx = 64;
-	Float_t xmin = 0;
-	Float_t xmax = 64;
+//______________________________________________________________
+void UpdateGlobalMasks() 
+{
+  // update the global masks
+  
+  // offline:
+  //gSystem->Setenv("DAQDALIB_PATH", "$DATE_SITE/db");
+  
+  Float_t rateN = 0.0, rateD = 0.0;
+  UInt_t gmask[4], omask;
+  Bool_t noise, deadc, withEvN, withEvD, updated = false;
 
-	sprintf(name,"pat_x_%d",localBoardId);
-	sprintf(title,"Occupancy for x strip, board %d",localBoardId);
-	xOccHisto[localBoardId] = new TH1F(name,title,nx,xmin,xmax);
+  for (Int_t ii = 0; ii < gkGlobalInputs; ii++) {
+    gmask[ii] = 0;
 
-	sprintf(name,"pat_y_%d",localBoardId);
-	sprintf(title,"Occupancy for y strip, board %d",localBoardId);
-	yOccHisto[localBoardId] = new TH1F(name,title,nx,xmin,xmax);
-
+    for (Int_t ib = 0; ib < gkGlobalInputLength; ib++) {
+      // lsb -> msb
+      noise = false;
+      deadc = false;
+      withEvN = false;
+      withEvD = false;
+      if (gNEventsN > gkMinEvents) {
+	rateN = (Float_t)gAccGlobalInputN[ii][ib]/(Float_t)gNEventsN;
+	noise = (rateN > gkThreshold);	
+	withEvN = true;
       }
-
-      for (Int_t index = 0; index < pat->Size() ; ++index) {// 64 bits for X and 64 bits for Y strips
-
-	Double_t patXOcc  = pat->ValueAsDouble(index, 0)/(Double_t)gNEvents;
-	Double_t patYOcc  = pat->ValueAsDouble(index, 1)/(Double_t)gNEvents;
-
-	pat->SetValueAsDouble(index, 0, patXOcc);
-	pat->SetValueAsDouble(index, 1, patYOcc);
-
-
-	// check for x strip
-	if ( (patXOcc > gkThreshold && pedestal) || (patXOcc < 1.- gkThreshold && !pedestal) ) {
-	  UShort_t strip  = index % 16;
-	  Int_t connector = index/16;
-	  UpdateLocalMask(localBoardId, connector, strip); 
-	  updated = true;
+      if (gNEventsD > gkMinEvents) {
+	rateD = (Float_t)gAccGlobalInputD[ii][ib]/(Float_t)gNEventsD;
+	deadc = (rateD < (1.0 - gkThreshold));
+	withEvD = true;
+      }
+      if (!withEvN && !withEvD) {
+	// - copy the bit from the old mask
+	gmask[ii] |= ((gGlobalMasks->GetGlobalMask(ii) >> ib) & 0x1) << ib;
+	printf("Mask not changed (just copy the old values)\n");
+      }
+      if (!withEvN && withEvD) {
+	if (!deadc) {
+	  // - create a new mask, set the bit to 1
+	  gmask[ii] |= 0x1 << ib;
+	} else {
+	  // - create a new mask, set the bit to 0
+	  gmask[ii] |= 0x0 << ib;
+	  printf("Found dead channel %1d:%02d \n",ii,ib);
 	}
-
-	// check for y strip
-	if ( (patYOcc > gkThreshold && pedestal) || (patYOcc < 1.- gkThreshold && !pedestal) ) {
-	  UShort_t strip  = index % 16;
-	  Int_t connector = index/16 + 4;
-	  UpdateLocalMask(localBoardId, connector, strip);
-	  updated = true;
-
+      }
+      if (withEvN && !withEvD) {
+	if (!noise) {
+	  // - create a new mask, set the bit to 1
+	  gmask[ii] |= 0x1 << ib;
+	} else {
+	  // - create a new mask, set the bit to 0
+	  gmask[ii] |= 0x0 << ib;
+	  printf("Found noisy channel %1d:%02d \n",ii,ib);
 	}
-
-	if (gHistoFileName[0] != 0)  {
-	  xPatOccHisto->Fill(patXOcc);
-	  yPatOccHisto->Fill(patYOcc);
-	  xOccHisto[localBoardId]->Fill(index, patXOcc);
-	  yOccHisto[localBoardId]->Fill(index, patYOcc);
-
-	}	
+      }
+      if (withEvN && withEvD) {
+	if (!noise && !deadc) {
+	  // - create a new mask, set the bit to 1
+	  gmask[ii] |= 0x1 << ib;
+	} else {
+	  // - create a new mask, set the bit to 0
+	  gmask[ii] |= 0x0 << ib;
+	  if (noise)
+	    printf("Found noisy channel %1d:%02d \n",ii,ib);
+	  if (deadc)
+	    printf("Found dead channel %1d:%02d \n",ii,ib);
+	}
       }
     }
+    printf("gmask %08x \n",gmask[ii]);
+  }
 
-    if (gHistoFileName[0] != 0) {
-      histoFile->Write();
-      histoFile->Close();
+  // check if at least one mask value has been changed from previous version
+  for (Int_t ii = 0; ii < gkGlobalInputs; ii++) {
+    omask = gGlobalMasks->GetGlobalMask(ii);
+    if (gmask[ii] != omask) {
+      updated = true;
+      gGlobalMasks->SetGlobalMask(ii,gmask[ii]);
+    }
+  }
+
+  Int_t status = 0;
+  if (updated) {
+    
+    // update version
+    gGlobalFileVersion++;
+    
+    // don't change the file version ("-x.dat")
+    
+    gTriggerIO.WriteGlobalConfig(gGlobalFileName,gGlobalMasks);
+    
+    // write last current file
+    WriteLastCurrentFile(gCurrentFileName);
+
+    status = daqDA_DB_storeFile(gGlobalFileName.Data(), gGlobalFileName.Data());
+    if (status) {
+      printf("Failed to export file to DB: %s\n",gGlobalFileName.Data());
+      return;
+    }
+    
+    status = daqDA_DB_storeFile(gCurrentFileName.Data(), gCurrentFileName.Data());
+    if (status) {
+      printf("Failed to export file to DB: %s\n",gCurrentFileName.Data());
+      return;
     }
 
+  }
+  
+}
 
-    if (updated) {
-
-      // update version
-      gLocalMaskFileVersion++;
-
-      TString tmp(gLocalMaskFileName);
-      Int_t pos = tmp.First("-");
-
-      gLocalMaskFileName = tmp(0,pos+1) + Form("%d",gLocalMaskFileVersion) + ".dat"; 
-      gTriggerIO.WriteConfig(gLocalMaskFileName, gRegionalFileName, 
-                           gGlobalFileName, gLocalMasks, gRegionalMasks, gGlobalMasks);
-
-      WriteLastCurrentFile(gCurrentFileName);
-
-
-      Int_t status = daqDA_DB_storeFile(gLocalMaskFileName.Data(), gLocalMaskFileName.Data());
-      if (status) {
-        printf("Failed to export file to DB: %s\n",gLocalMaskFileName.Data());
-        return;
-      }
-
-      status = daqDA_DB_storeFile(gCurrentFileName.Data(), gCurrentFileName.Data());
-      if (status) {
-        printf("Failed to export file to DB: %s\n",gCurrentFileName.Data());
-        return;
-      }
-
-    }
+//______________________________________________________________
+void WriteConfigToDB() 
+{
+  // offline: populate db with initial configuration files
+  // only the global configuration and the current file, for the moment ...
+  //gSystem->Setenv("DAQDALIB_PATH", "$DATE_SITE/db");
+  
+  Int_t status = 0;
+  
+  status = daqDA_DB_storeFile(gCurrentFileName.Data(), gCurrentFileName.Data());
+  if (status) {
+    printf("Failed to export file to DB: %s\n",gCurrentFileName.Data());
+    return;
+  }
+  
+  status = daqDA_DB_storeFile(gGlobalFileName.Data(), gGlobalFileName.Data());
+  if (status) {
+    printf("Failed to export file to DB: %s\n",gGlobalFileName.Data());
+    return;
+  }
+  /*
+  status = daqDA_DB_storeFile(gRegionalFileName.Data(), gRegionalFileName.Data());
+  if (status) {
+    printf("Failed to export file to DB: %s\n",gRegionalFileName.Data());
+    return;
+  }
+  
+  status = daqDA_DB_storeFile(gLocalMaskFileName.Data(), gLocalMaskFileName.Data());
+  if (status) {
+    printf("Failed to export file to DB: %s\n",gLocalMaskFileName.Data());
+    return;
+  }
+  */
+  // this is too big!
+  // Error : mysqlsel/db server: 
+  // Got a packet bigger than 'max_allowed_packet' bytes
+  /*
+  status = daqDA_DB_storeFile(gLocalLutFileName.Data(), gLocalLutFileName.Data());
+  if (status) {
+    printf("Failed to export file to DB: %s\n",gLocalLutFileName.Data());
+    return;
+  }
+  */
+  printf("Initial configuration files written to the DB\n");
+  
 }
 
 //*************************************************************//
 
-  // main routine
+// main routine
 int main(Int_t argc, Char_t **argv) 
 {
   
@@ -673,10 +682,6 @@ int main(Int_t argc, Char_t **argv)
 	  i++;
           gkThreshold = atof(argv[i]);
 	  break;
-      case 'e' : 
-	  i++;
-	  gCommand = argv[i];
-	  break;
       case 'd' :
 	  i++; 
 	  gPrintLevel=atoi(argv[i]);
@@ -689,9 +694,9 @@ int main(Int_t argc, Char_t **argv)
 	  i++; 
 	  sscanf(argv[i],"%d",&maxEvents);
 	  break;
-     case 'r' :
-	  i++; 
-	  sscanf(argv[i],"%s",gHistoFileName);
+      case 'b':
+	  i++;
+	  gWriteInitialDB=atoi(argv[i]);
 	  break;
       case 'h' :
 	  i++;
@@ -702,15 +707,14 @@ int main(Int_t argc, Char_t **argv)
 	  printf("\n Input");
 	  printf("\n-f <raw data file>        (default = %s)",inputFile); 
 	  printf("\n");
-	  printf("\n output");
-	  printf("\n-r <root file>            (default = %s)",gHistoFileName); 
+	  printf("\n Output");
 	  printf("\n");
 	  printf("\n Options");
           printf("\n-t <threshold values>     (default = %3.1f)",gkThreshold);
 	  printf("\n-d <print level>          (default = %d)",gPrintLevel);
 	  printf("\n-s <skip events>          (default = %d)",skipEvents);
 	  printf("\n-n <max events>           (default = %d)",maxEvents);
-	  printf("\n-e <execute ped/calib>    (default = %s)",gCommand.Data());
+	  printf("\n-b <write config in data base> (0/1 default = %1d)",gWriteInitialDB);
 
 	  printf("\n\n");
 	  exit(-1);
@@ -719,9 +723,6 @@ int main(Int_t argc, Char_t **argv)
 	  argc = 2; exit(-1); // exit if error
       } // end of switch  
     } // end of for i  
-
-    // set command to lower case
-    gCommand.ToLower();
 
     // decoding the events
   
@@ -733,8 +734,6 @@ int main(Int_t argc, Char_t **argv)
     // containers
     AliMUONDDLTrigger*       ddlTrigger  = 0x0;
     AliMUONDarcHeader*       darcHeader  = 0x0;
-    AliMUONRegHeader*        regHeader   = 0x0;
-    AliMUONLocalStruct*      localStruct = 0x0;
 
     TStopwatch timers;
 
@@ -749,10 +748,38 @@ int main(Int_t argc, Char_t **argv)
 
     ReadMaskFiles();
 
-    if(!ExportFiles())
-	return -1;
+    if(!ExportFiles()) {
+      printf("ExportFiles failed\n");
+      return -1;
+    }
 
+    if (gWriteInitialDB) {
+      WriteConfigToDB();
+      return 0;
+    }
+
+    // FET is triggered by CTP
+    if (GetFetMode() != 3) {
+      printf("FET is not in mode 3\n");
+      return -1;
+    }
+
+    // All 5 global cards are controlled by the Mts proxy
+    if (gGlobalMasks->GetGlobalCrateEnable() != 0x1F) {
+      printf("The MTS proxy does not control all global cards\n");
+      return -1;
+    }
+
+    // The global cards are ON (active on the global inputs)
+    if (!gGlobalMasks->GetMasksOn()) {
+      printf("Global masks are not ON\n");
+      return -1;
+    }
   
+    // make sure to catch the "rare" calib events (1 every 50s in physics)
+    const Char_t* tableSOD[]  = {"ALL", "yes", "CAL", "all", NULL, NULL};
+    monitorDeclareTable(const_cast<char**>(tableSOD));
+
     status = monitorSetDataSource(inputFile);
     if (status) {
       cerr << "ERROR : monitorSetDataSource status (hex) = " << hex << status
@@ -770,9 +797,10 @@ int main(Int_t argc, Char_t **argv)
     monitorSetNowait();
     monitorSetNoWaitNetworkTimeout(1000);
 
-
     cout << "MUONTRGda : Reading data from file " << inputFile <<endl;
 
+    UInt_t *globalInput;
+    Bool_t doUpdate = false;
     while(1) 
     {
       if (gNEvents >= maxEvents) break;
@@ -808,9 +836,26 @@ int main(Int_t argc, Char_t **argv)
       // CALIBRATION_EVENT 
       // SYSTEM_SOFTWARE_TRIGGER_EVENT
       // DETECTOR_SOFTWARE_TRIGGER_EVENT
-      if (eventType != PHYSICS_EVENT) 
-	  continue; // for the moment
-
+      gAlgoNoisyInput = false;
+      gAlgoDeadInput  = false;
+      if (eventType == PHYSICS_EVENT) {
+	gAlgoNoisyInput = true;
+	doUpdate = true;
+	gNEventsN++;
+      } else if (eventType == CALIBRATION_EVENT) {
+	gAlgoDeadInput  = true;
+	doUpdate = true;
+	gNEventsD++;
+	if (gRunNumber == 61963) {   // FET overwrite, not used for dead channels
+	  gAlgoNoisyInput = true;
+	  gNEventsN++;
+	  gAlgoDeadInput  = false;
+	  gNEventsD--;
+	}
+      } else {
+	continue;
+      }
+      
       gNEvents++;
       if (gPrintLevel) printf("\nEvent # %d\n",gNEvents);
 
@@ -826,38 +871,12 @@ int main(Int_t argc, Char_t **argv)
 	ddlTrigger = rawStream->GetDDLTrigger();
 	darcHeader = ddlTrigger->GetDarcHeader();
 
-	if (gPrintLevel) printf("Global output %x\n", (Int_t)darcHeader->GetGlobalOutput());
+	if (rawStream->GetDDL() == 0) {
+	  if (gPrintLevel) printf("Global output %x\n", (Int_t)darcHeader->GetGlobalOutput());
+	  globalInput = darcHeader->GetGlobalInput();
+	  StoreGlobalInput(globalInput);
+	}
 
-	// loop over regional structures
-	Int_t nReg = darcHeader->GetRegHeaderEntries();
-	for(Int_t iReg = 0; iReg < nReg; ++iReg){   //REG loop
-
-	  if (gPrintLevel) printf("RegionalId %d\n", iReg);
-
-	  regHeader =  darcHeader->GetRegHeaderEntry(iReg);
-
-	  // loop over local structures
-	  Int_t nLocal = regHeader->GetLocalEntries();
-	  for(Int_t iLocal = 0; iLocal < nLocal; ++iLocal) {  
-
-	    localStruct = regHeader->GetLocalEntry(iLocal);
-
-	    Int_t localBoardId = gTriggerIO.LocalBoardId(rawStream->GetDDL(), iReg, iLocal);
-            if (localBoardId == 0) continue;
-	    if (gPrintLevel) printf("local %d\n",  localBoardId );
-
-	    TArrayS xPattern(4);
-	    TArrayS yPattern(4);
-	    localStruct->GetXPattern(xPattern);
-	    localStruct->GetYPattern(yPattern);
-	    MakePattern(localBoardId, xPattern, yPattern);
-
-	    if (gPrintLevel) printf("X pattern %x %x %x %x, Y pattern %x %x %x %x\n", 
-				   localStruct->GetX1(), localStruct->GetX2(),localStruct->GetX3(),localStruct->GetX4(),
-				   localStruct->GetY1(), localStruct->GetY2(),localStruct->GetY3(),localStruct->GetY4());
-	   
-	  } // iLocal
-	} // iReg
       } // NextDDL
 
       delete rawReader;
@@ -865,27 +884,25 @@ int main(Int_t argc, Char_t **argv)
 
     } // while (1)
 
-    if (gCommand.Contains("ped") && gDAFlag) 
-	MakePatternStore();
-
-    if (gCommand.Contains("cal") && gDAFlag)
-    	MakePatternStore(false);
-
+    // update configuration files ifrequested event types were found
+    if (doUpdate && gDAFlag) 
+      UpdateGlobalMasks();
 
     timers.Stop();
 
     cout << "MUONTRGda : Run number                    : " << gRunNumber << endl;
-    cout << "MUONTRGda : Histo file generated          : " << gHistoFileName  << endl;
-    cout << "MUONTRGda : Nb of DATE events     = "         << nDateEvents    << endl;
-    cout << "MUONTRGda : Nb of events used     = "         << gNEvents        << endl;
+    cout << "MUONTRGda : Nb of DATE events     = "         << nDateEvents << endl;
+    cout << "MUONTRGda : Nb of events used     = "         << gNEvents    << endl;
+    cout << "MUONTRGda : Nb of events used (noise)    = "  << gNEventsN   << endl;
+    cout << "MUONTRGda : Nb of events used (deadc)    = "  << gNEventsD   << endl;
 
     printf("Execution time : R:%7.2fs C:%7.2fs\n", timers.RealTime(), timers.CpuTime());
 
     delete gLocalMasks;
     delete gRegionalMasks;
     delete gGlobalMasks; 
-    delete gPatternStore;
 
     return status;
+
 }
 

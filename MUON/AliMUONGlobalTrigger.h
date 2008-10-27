@@ -35,7 +35,9 @@ class AliMUONGlobalTrigger : public TObject {
   Int_t PairLikeHpt()    const {return fPairLikeHpt ;}     
   
   void  SetFromGlobalResponse(UShort_t globalResponse);
+  void  SetFromGlobalInput(UInt_t *globalInput);
   UChar_t GetGlobalResponse() const;
+  UInt_t *GetGlobalInput() { return fInput; }
 
   virtual void Print(Option_t* opt="") const;
   
@@ -47,7 +49,9 @@ private:
   Int_t fPairLikeLpt;    ///< Number of Like sign pair Low pt
   Int_t fPairLikeHpt;    ///< Number of Like sign pair High pt
 
- ClassDef(AliMUONGlobalTrigger,2)  // reconstructed Global Trigger object    
+  UInt_t fInput[4];      ///< Global input to the global trigger board
+
+ ClassDef(AliMUONGlobalTrigger,3)  // reconstructed Global Trigger object    
 };
 #endif
 

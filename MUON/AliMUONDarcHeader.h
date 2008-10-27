@@ -29,7 +29,7 @@ public:
             /// Return first word
    UInt_t   GetWord()               const {return fWord;}
             /// Return global input
-   Int_t    GetGlobalInput(Int_t n) const {return fGlobalInput[n];}
+   UInt_t   GetGlobalInput(Int_t n) const {return fGlobalInput[n];}
             /// Return global output
    UChar_t  GetGlobalOutput()       const {return (fGlobalOutput & 0xFF);}
             /// Return global config  
@@ -61,7 +61,7 @@ public:
            /// Set first word
    void    SetWord(UInt_t w) {fWord = w;}
            /// Set global input
-   void    SetGlobalInput(Int_t in, Int_t n) {fGlobalInput[n] = in;}
+   void    SetGlobalInput(UInt_t in, Int_t n) {fGlobalInput[n] = in;}
            /// Set global output
    void    SetGlobalOutput(Int_t out) {fGlobalOutput = out;}
 
@@ -73,7 +73,7 @@ public:
             /// Return header
    UInt_t* GetHeader() {return &fWord;}
             /// Return global input
-   Int_t*  GetGlobalInput()    {return &fGlobalInput[0];}
+   UInt_t* GetGlobalInput()    {return &fGlobalInput[0];}
 
   // DARC get methods
             /// Return DARC L0 received and used
@@ -143,7 +143,7 @@ public:
  private:
 
    UInt_t    fWord;              ///< first word
-   Int_t     fGlobalInput[4];    ///< global input
+   UInt_t    fGlobalInput[4];    ///< global input
    Int_t     fGlobalOutput;      ///< global ouput
 
    static const Int_t fgkDarcHeaderLength;   ///< darc header length
@@ -179,6 +179,6 @@ public:
 
    TClonesArray* fRegHeaderArray; ///< container for regional header
 
-   ClassDef(AliMUONDarcHeader,1)  // MUON DDL Trigger
+   ClassDef(AliMUONDarcHeader,2)  // MUON DDL Trigger
 };
 #endif

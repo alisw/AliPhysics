@@ -463,12 +463,11 @@ void AliMUONTriggerElectronics::LoadMasks(AliMUONCalibrationData* calibData)
   if (!globalConfig)
      AliWarning("No valid trigger crate configuration in CDB");
 
-    UShort_t gmask = 0;
-    gmask = globalConfig->GetFirstDarcDisable();
-    fGlobalTriggerBoard->Mask(0,gmask);
-
-    gmask = globalConfig->GetSecondDarcDisable();
-    fGlobalTriggerBoard->Mask(1,gmask);
+    UInt_t gmask = 0;
+    for (Int_t i = 0; i < 4; i++) {
+      gmask = globalConfig->GetGlobalMask(i);
+      fGlobalTriggerBoard->Mask(i,gmask);
+    }
 }
 
 //___________________________________________
@@ -556,16 +555,22 @@ void AliMUONTriggerElectronics::GlobalResponse()
                   fCrates->NumberOfCrates()));
   }
 
-  TIter next(fCrates->CreateCrateIterator());
-
-  while ( ( cr = static_cast<AliMUONTriggerCrate*>(next())))
-  {            
-    AliMUONTriggerBoard* rb = 
-      static_cast<AliMUONTriggerBoard*>(cr->Boards()->At(0));
-    regional[irb] = rb->GetResponse();
-    ++irb;
-  }
+  // send regional responses to the global trigger in right order
+  // do not used iterator order
   
+  for (Int_t iSide = 0; iSide < 2; iSide++) // right & left side
+  {            
+    for (Int_t iReg = 0; iReg < 8; iReg++) // 8 crates/regional boards for each side.
+    {
+      cr = fCrates->Crate(iSide, iReg);     
+
+      AliMUONTriggerBoard* rb = 
+	static_cast<AliMUONTriggerBoard*>(cr->Boards()->At(0));
+      regional[irb] = rb->GetResponse();
+      ++irb;
+    }
+  }
+
   fGlobalTriggerBoard->SetRegionalResponse(regional);
   fGlobalTriggerBoard->Response();
 }
@@ -672,10 +677,12 @@ void AliMUONTriggerElectronics::Digits2Trigger(const AliMUONVDigitStore& digitSt
   
   // GLOBAL TRIGGER INFORMATION
   UShort_t global = fGlobalTriggerBoard->GetResponse();
-  
+  UInt_t *globalInput = fGlobalTriggerBoard->GetGlobalInput();  
+
   AliMUONGlobalTrigger globalTrigger;
   
   globalTrigger.SetFromGlobalResponse(global);
+  globalTrigger.SetFromGlobalInput(globalInput);
   // ADD A LOCAL TRIGGER IN THE LIST 
   triggerStore.SetGlobal(globalTrigger);
   

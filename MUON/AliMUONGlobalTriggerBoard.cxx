@@ -42,6 +42,7 @@ AliMUONGlobalTriggerBoard::AliMUONGlobalTriggerBoard(): AliMUONTriggerBoard()
 /// Default constructor
 
    for (Int_t i=0;i<16;i++) fRegionalResponse[i] = 0;
+   for (Int_t i=0;i< 4;i++) fGlobalInput[i] = 0;
 }
 
 //___________________________________________
@@ -50,6 +51,7 @@ AliMUONGlobalTriggerBoard::AliMUONGlobalTriggerBoard(const char *name, Int_t a) 
 /// Standard constructor
 
    for (Int_t i=0;i<16;i++) fRegionalResponse[i] = 0;
+   for (Int_t i=0;i< 4;i++) fGlobalInput[i] = 0;
 }
 
 //___________________________________________
@@ -59,16 +61,16 @@ AliMUONGlobalTriggerBoard::~AliMUONGlobalTriggerBoard()
 }
 
 //___________________________________________
-void AliMUONGlobalTriggerBoard::Mask(Int_t index, UShort_t mask)
+void AliMUONGlobalTriggerBoard::Mask(Int_t index, UInt_t mask)
 {
   /// mask global trigger board input index with value mask
-  if ( index>=0 && index < 2 ) 
+  if ( index >= 0 && index < 4 ) 
   {
     fMask[index]=mask;
   }
   else
   {
-    AliError(Form("Index %d out of bounds (max %d)",index,2));
+    AliError(Form("Index %d out of bounds (max %d)",index,3));
   }  
 }
 
@@ -84,15 +86,12 @@ void AliMUONGlobalTriggerBoard::Response()
 
    Int_t t[16];
 
+   BuildGlobalInput();
+   MaskRegionalInput();
+
    for (Int_t i = 0; i < 16; ++i) 
    {
-     Int_t index = i/8;
-     Int_t shift = i % 8;
-     UShort_t enable = !((fMask[index] >> shift) & 0x1);
-     if (enable)
-      t[i] = fRegionalResponse[i];
-     else
-       t[i] = 0;
+     t[i] = fRegionalResponse[i];
    }
    
    
@@ -118,13 +117,9 @@ void AliMUONGlobalTriggerBoard::Response()
    UChar_t sLpt, sHpt, lsLpt, lsHpt, usLpt, usHpt;
    sLpt  = ((t[0] & 0xC)  != 0);
    sHpt  = ((t[0] & 0xC0) != 0);
-   //lsLpt = ((t[0] & 0x2)  != 0);
    lsLpt = ((t[0] & 0x1)  != 0);
-   //lsHpt = ((t[0] & 0x20) != 0);
    lsHpt = ((t[0] & 0x10) != 0);
-   //usLpt = ((t[0] & 0x1 ) != 0);
    usLpt = ((t[0] & 0x2 ) != 0);
-   //usHpt = ((t[0] & 0x10) != 0);
    usHpt = ((t[0] & 0x20) != 0);
 
    sHpt  <<= 1;
@@ -195,6 +190,63 @@ UShort_t AliMUONGlobalTriggerBoard::Algo(UShort_t i, UShort_t j, char *thres)
    v.Get(&rv);
    
    return rv;
+}
+
+//___________________________________________
+void AliMUONGlobalTriggerBoard::BuildGlobalInput()
+{
+  /// build the 4 words (32bits) global input from the regional responses
+  /// the order of regional responses is:
+  /// 1R, 2R, 2-3R, 3R, 4R, 5R, 6R, 7R, 1L, 2L, 2-3L, 3L, 4L, 5L, 6L, 7L
+
+  for (Int_t i=0;i< 4;i++) fGlobalInput[i] = 0;
+
+  for (Int_t iReg = 0; iReg < 16; iReg++) {
+    if (iReg < 8) {    // right
+      // Lpt word
+      fGlobalInput[0] |=  (fRegionalResponse[iReg] & 0x0F)       << (4*iReg);
+      // Hpt word
+      fGlobalInput[2] |= ((fRegionalResponse[iReg] & 0xF0) >> 4) << (4*iReg);
+    } else {           // left
+      // Lpt word
+      fGlobalInput[1] |=  (fRegionalResponse[iReg] & 0x0F)       << (4*(iReg-8));
+      // Hpt word
+      fGlobalInput[3] |= ((fRegionalResponse[iReg] & 0xF0) >> 4) << (4*(iReg-8));
+    }
+
+  }
+
+}
+
+//___________________________________________
+void AliMUONGlobalTriggerBoard::MaskRegionalInput()
+{
+  /// Apply masks to global input and recalculate regional inputs before
+  /// applying the global response
+
+  // temporary global inputs with masks applied
+  UInt_t gitmp[4];
+
+  for (Int_t i = 0; i < 4; i++) {
+    gitmp[i] = fGlobalInput[i];
+    gitmp[i] &= fMask[i];
+  }
+
+  for (Int_t iReg = 0; iReg < 16; iReg++) {
+    fRegionalResponse[iReg] = 0;
+    if (iReg < 8) {    // right
+      // Lpt
+      fRegionalResponse[iReg] |=  (gitmp[0] >> (4*iReg))     & 0xF;
+      // Hpt
+      fRegionalResponse[iReg] |= ((gitmp[2] >> (4*iReg))     & 0xF) << 4;
+    } else {           // left
+      // Lpt
+      fRegionalResponse[iReg] |=  (gitmp[1] >> (4*(iReg-8))) & 0xF;
+      // Hpt
+      fRegionalResponse[iReg] |= ((gitmp[3] >> (4*(iReg-8))) & 0xF) << 4;
+    }
+  }
+
 }
 
 //___________________________________________

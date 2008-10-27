@@ -38,14 +38,22 @@ class AliMUONGlobalTriggerBoard : public AliMUONTriggerBoard
                        /// Dummy implementation
       virtual void     Resp(Option_t*) const {}
 
-                      /// Set mask (disable) for regional boards
-      void Mask(Int_t index, UShort_t mask);
+                       /// Set mask for global input (from regional boards)
+      void             Mask(Int_t index, UInt_t mask);
+
+                       /// Build the 4 words (32bits) global input
+      void             BuildGlobalInput();
+                       /// Apply masks to regional inputs
+      void             MaskRegionalInput();
+                       /// Global input 4 words (32bits) from regional responses
+      UInt_t*          GetGlobalInput() { return fGlobalInput; }
       
    private:
 
       UShort_t fRegionalResponse[16]; ///< Regional board responses
-      UShort_t fMask[2];              ///< Mask
+      UInt_t   fGlobalInput[4];       ///< Global input 
+      UInt_t   fMask[4];              ///< Mask for the global input
 
-   ClassDef(AliMUONGlobalTriggerBoard,1) //Global trigger board
+   ClassDef(AliMUONGlobalTriggerBoard,2) //Global trigger board
 };
 #endif

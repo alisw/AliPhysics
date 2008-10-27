@@ -49,6 +49,7 @@ AliMUONGlobalTrigger::AliMUONGlobalTrigger()
 { 
   /// Default constructor 
       AliDebug(1,Form("this=%p",this));
+      for (Int_t i = 0; i < 4; i++) fInput[i] = 0;
 }
 
 //----------------------------------------------------------------------
@@ -66,6 +67,7 @@ AliMUONGlobalTrigger::AliMUONGlobalTrigger(const AliMUONGlobalTrigger& theMUONGl
 {
   /// Copy constructor
       AliDebug(1,Form("this=%p copy ctor",this));
+      for (Int_t i = 0; i < 4; i++) fInput[i] = theMUONGlobalTrig.fInput[i];
 
 }
 
@@ -96,6 +98,8 @@ AliMUONGlobalTrigger& AliMUONGlobalTrigger::operator=(const AliMUONGlobalTrigger
   
   fPairLikeLpt    = theMUONGlobalTrig.fPairLikeLpt;
   fPairLikeHpt    = theMUONGlobalTrig.fPairLikeHpt;
+
+  for (Int_t i = 0; i < 4; i++) fInput[i] = theMUONGlobalTrig.fInput[i];
 
   return *this;
 }
@@ -140,6 +144,17 @@ UChar_t AliMUONGlobalTrigger::GetGlobalResponse() const
 
   return response;
 }
+
+//-----------------------------------------------------------
+void AliMUONGlobalTrigger::SetFromGlobalInput(UInt_t *globalInput)
+{
+  /// Global trigger board input
+  /// 4 words each of 32 bits
+
+  for (Int_t i = 0; i < 4; i++) fInput[i] = globalInput[i];
+
+}
+
 //----------------------------------------------------------------------
 void AliMUONGlobalTrigger::Print(Option_t*) const
 {

@@ -470,6 +470,7 @@ Int_t AliMUONRawWriter::WriteTriggerDDL(const AliMUONVTriggerStore& triggerStore
   }
   
   Int_t gloTrigResp = gloTrg->GetGlobalResponse();
+  UInt_t *gloTrigInput = gloTrg->GetGlobalInput();
 
   UInt_t word;
   Int_t* buffer = 0;
@@ -539,10 +540,14 @@ Int_t AliMUONRawWriter::WriteTriggerDDL(const AliMUONVTriggerStore& triggerStore
     index += kDarcHeaderLength;
 
     // no global input for the moment....
-    if (iDDL == 0)
-     fDarcHeader->SetGlobalOutput(gloTrigResp);
-    else 
-     fDarcHeader->SetGlobalOutput(0);
+    if (iDDL == 0) {
+      fDarcHeader->SetGlobalOutput(gloTrigResp);
+      for (Int_t ii = 0; ii < 4; ii++) {
+	fDarcHeader->SetGlobalInput(gloTrigInput[ii],ii);
+      }
+    } else {
+      fDarcHeader->SetGlobalOutput(0);
+    }
 
     if (fScalerEvent) {
       // 6 DARC scaler words

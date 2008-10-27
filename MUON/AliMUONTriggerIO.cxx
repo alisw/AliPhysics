@@ -526,7 +526,7 @@ AliMUONTriggerIO::WriteGlobalConfig(const char* globalFile, AliMUONGlobalCrateCo
   }
    
   out << globalConfig->GetName() << endl;
-  out << globalConfig->GetGlobalCrateEnable() << endl;
+  out << Form("0x%x",globalConfig->GetGlobalCrateEnable()) << endl;
   
   // Jtag
   out << globalConfig->GetJtagName() << endl;
@@ -606,47 +606,63 @@ AliMUONTriggerIO::WriteRegionalConfig(const char* regionalFile, AliMUONRegionalT
       AliError("Could not write regional no configuration in memory");
       return kFALSE;
     }
-    
-    TIter next(fRegionalTrigger.CreateCrateIterator());
+
+    Int_t nofDDLs = 0;
+    TString name;
     AliMpTriggerCrate* crate;
-    while ( ( crate = static_cast<AliMpTriggerCrate*>(next()) ) )
-    {
-      AliMUONTriggerCrateConfig* crateConfig = regionalConfig->FindTriggerCrate(crate->GetName());
-      if (!crateConfig) 
+    for (Int_t ddlId = 0; ddlId < 2; ddlId++) // right & left side            
       {
-        AliError(Form("Cannot find crate %s in CDB", crate->GetName()));
-        return kFALSE;
+	for (Int_t crateId = 0; crateId < 8; crateId++) // 8 crates/regional boards for each side.
+	  {
+	    
+	    name = AliMpTriggerCrate::GenerateName(crateId, ddlId, nofDDLs);
+	    
+	    crate = fRegionalTrigger.FindTriggerCrate(name, false);
+	    
+	    AliMUONTriggerCrateConfig* crateConfig = regionalConfig->FindTriggerCrate(crate->GetName());
+	    if (!crateConfig) 
+	      {
+		AliError(Form("Cannot find crate %s in CDB", crate->GetName()));
+		return kFALSE;
+	      }
+	    
+	    out << crate->GetName()  << endl;
+	    out << Form("%02x", crate->GetId())   << endl;
+	    out << crateConfig->GetMode()  << endl;
+	    out << crateConfig->GetCoinc() << endl;
+	    out << Form("%04x", crateConfig->GetMask()) << endl;
+	    out << Form("%02d",crate->GetNofLocalBoards()) << endl;
+	    
+	    for (Int_t iLocal = 0; iLocal < crate->GetNofLocalBoards(); ++iLocal) 
+	      {
+		Int_t localBoardId = crate->GetLocalBoardId(iLocal);
+		
+		AliMpLocalBoard* board = fRegionalTrigger.FindLocalBoard(localBoardId);
+		
+		out << Form("%02d ", board->GetSlot())  
+		    << board->GetName() 
+		    << Form(" %03d ", localBoardId) 
+		    << Form("%03x", board->GetSwitch()) 
+		    << endl;
+		
+		out << " ";
+		
+		if (board->IsNotified()) {
+		  for (Int_t i = 0; i < board->GetNofDEs(); ++i)
+		    out << Form("%4d ", board->GetDEId(i));
+		} else {
+		  out << Form("%4d ", 0);
+		}
+		out << endl;
+		
+		// print copy card numbers & TC
+		out << Form(" %4d %4d", board->GetInputXfrom(), board->GetInputXto());
+		out << Form(" %4d %4d", board->GetInputYfrom(), board->GetInputYto());
+		out << Form(" %4d",     board->GetTC()) << endl;
+	      }
+	  }
       }
 
-      out << crate->GetName()  << endl;
-      out << Form("%02x", crate->GetId())   << endl;
-      out << crateConfig->GetMode()  << endl;
-      out << crateConfig->GetCoinc() << endl;
-      out << Form("%04x", crateConfig->GetMask()) << endl;
-
-      for (Int_t iLocal = 0; iLocal < crate->GetNofLocalBoards(); ++iLocal) 
-      {
-	Int_t localBoardId = crate->GetLocalBoardId(iLocal);
-        
-	AliMpLocalBoard* board = fRegionalTrigger.FindLocalBoard(localBoardId);
-        
-	out << Form("%02d ", board->GetSlot())  
-	    << board->GetName() 
-	    << Form(" %03d ", localBoardId) 
-	    << Form("%03x", board->GetSwitch()) 
-	    << endl;
- 
-        out << " ";
-        for (Int_t i = 0; i < board->GetNofDEs(); ++i)
-          out << Form("%4d ", board->GetDEId(i));
-        out << endl;
-          
-        // print copy card numbers & TC
-        out << Form(" %4d %4d", board->GetInputXfrom(), board->GetInputXto());
-        out << Form(" %4d %4d", board->GetInputYfrom(), board->GetInputYto());
-        out << Form(" %4d",     board->GetTC()) << endl;
-      }
-    }
     out.close();
     
     return kTRUE;

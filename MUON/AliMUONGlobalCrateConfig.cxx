@@ -122,7 +122,7 @@ Int_t AliMUONGlobalCrateConfig::ReadData(const TString& fileName)
     in.getline(line, 255);
     tmp = AliMpHelper::Normalize(line);
     UChar_t en = 0;
-    sscanf(tmp.Data(), "%c", &en);
+    sscanf(tmp.Data(), "%hhx", &en);
     SetGlobalCrateEnable(en);
 
     in.getline(line, 255);
@@ -378,6 +378,43 @@ void AliMUONGlobalCrateConfig::SetGlobalRegister(Int_t index, UInt_t reg)
   fGlobalRegisters[index] = reg;
 }
    
+//______________________________________________________________________________
+void AliMUONGlobalCrateConfig::SetGlobalMask(Int_t index, UInt_t mask)  
+{
+  /// set one word of the global mask
+
+  if (index >= 0 && index < 4) {
+    SetGlobalRegister(index,mask);
+  } else {
+    AliWarning(Form("Check register number of the mask (%d) \n",index));
+  }
+
+}
+
+//______________________________________________________________________________
+UInt_t AliMUONGlobalCrateConfig::GetGlobalMask(Int_t index) const       
+{
+  /// return one word of the global mask
+  if (index >= 0 && index < 4) {
+    return fGlobalRegisters[index];
+  } else {
+    AliWarning(Form("Check register number of the mask (%d) \n",index));
+    return 0;
+  }
+}
+
+//______________________________________________________________________________
+Bool_t AliMUONGlobalCrateConfig::GetMasksOn() const       
+{
+  /// indicates if global masks are active on global inputs
+
+  // test 7th lsb
+  if (fGlobalRegisters[4] & 0x40) return kTRUE;
+
+  return kFALSE;
+
+}
+
 //______________________________________________________________________________
 UInt_t AliMUONGlobalCrateConfig::GetFetRegister(Int_t index) const       
 {
