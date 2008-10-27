@@ -57,19 +57,19 @@ void its_display_raw_digits(AliEveITSDigitsInfo* di, Int_t mode,
   if (mode & 1) {
     TEveElementList* l = new TEveElementList("SPD0");
     l->SetTitle("SPDs' first layer");
-    l->SetMainColor(2);
+    l->SetMainColor(Color_t(kRed));
     gEve->AddElement(l);
     for (nsec=0; nsec<10; nsec++) {
       sSector  = bsSector;
       sSector += nsec;
       TEveElementList* relSector = new TEveElementList(sSector.Data());
-      relSector->SetMainColor(2);
+      relSector->SetMainColor(Color_t(kRed));
       gEve->AddElement(relSector, l);
       for (nstave=0; nstave<2; nstave++){
 	sStave  = bsStave;
 	sStave += nstave;
 	TEveElementList* relStave = new TEveElementList(sStave.Data());
-	relStave->SetMainColor(2);
+	relStave->SetMainColor(Color_t(kRed));
 	gEve->AddElement(relStave, relSector);
 	for (nMod=0; nMod<4; ++nMod, ++i)
 	{
@@ -84,20 +84,20 @@ void its_display_raw_digits(AliEveITSDigitsInfo* di, Int_t mode,
   if (mode & 2) {
     TEveElementList* l = new TEveElementList("SPD1");
     l->SetTitle("SPDs' second layer");
-    l->SetMainColor(2);
+    l->SetMainColor(Color_t(kRed));
     gEve->AddElement(l);
 
     for (nsec=0; nsec<10; nsec++) {
       sSector  = bsSector;
       sSector += nsec;
       TEveElementList* relSector = new TEveElementList(sSector.Data());
-      relSector->SetMainColor(2);
+      relSector->SetMainColor(Color_t(kRed));
       gEve->AddElement(relSector, l);
       for (nstave=0; nstave<4; nstave++){
 	sStave  = bsStave;
 	sStave += nstave;
 	TEveElementList* relStave = new TEveElementList(sStave.Data());
-	relStave->SetMainColor(2);
+	relStave->SetMainColor(Color_t(kRed));
 	gEve->AddElement(relStave, relSector);
 	for (nMod=0; nMod<4;  ++nMod, ++i)
 	{
@@ -112,14 +112,14 @@ void its_display_raw_digits(AliEveITSDigitsInfo* di, Int_t mode,
   if (mode & 4) {
     TEveElementList* l = new TEveElementList("SDD2");
     l->SetTitle("SDDs' first layer");
-    l->SetMainColor(3);
+    l->SetMainColor(Color_t(kBlue));
     gEve->AddElement(l);
 
     for (nlad=0; nlad<14; nlad++) {
       sLadder  = bsLadder;
       sLadder += nlad;
       TEveElementList* relLadder = new TEveElementList(sLadder.Data());
-      relLadder->SetMainColor(3);
+      relLadder->SetMainColor(Color_t(kBlue));
       gEve->AddElement(relLadder, l);
       for (nMod=0; nMod<6; ++nMod, ++i)
       {
@@ -133,13 +133,13 @@ void its_display_raw_digits(AliEveITSDigitsInfo* di, Int_t mode,
   if (mode & 8) {
     TEveElementList* l = new TEveElementList("SDD3");
     l->SetTitle("SDDs' second layer");
-    l->SetMainColor(3);
+    l->SetMainColor(Color_t(kBlue));
     gEve->AddElement(l);
     for (nlad=0; nlad<22; nlad++) {
       sLadder  = bsLadder;
       sLadder += nlad;
       TEveElementList* relLadder = new TEveElementList(sLadder.Data());
-      relLadder->SetMainColor(3);
+      relLadder->SetMainColor(Color_t(kBlue));
       gEve->AddElement(relLadder, l);
       for (nMod=0; nMod<8;  ++nMod, ++i)
       {
@@ -153,13 +153,13 @@ void its_display_raw_digits(AliEveITSDigitsInfo* di, Int_t mode,
   if (mode & 16) {
     TEveElementList* l = new TEveElementList("SSD4");
     l->SetTitle("SSDs' first layer");
-    l->SetMainColor(4);
+    l->SetMainColor(Color_t(kGreen));
     gEve->AddElement(l);
     for (nlad=0; nlad<34; nlad++) {
       sLadder  = bsLadder;
       sLadder += nlad;
       TEveElementList* relLadder = new TEveElementList(sLadder.Data());
-      relLadder->SetMainColor(4);
+      relLadder->SetMainColor(Color_t(kGreen));
       gEve->AddElement(relLadder, l);
       for (nMod=0; nMod<22; ++nMod, ++i)
       {
@@ -173,13 +173,13 @@ void its_display_raw_digits(AliEveITSDigitsInfo* di, Int_t mode,
   if (mode & 32) {
     TEveElementList* l = new TEveElementList("SSD5");
     l->SetTitle("SSDs' second layer");
-    l->SetMainColor(4);
+    l->SetMainColor(Color_t(kGreen));
     gEve->AddElement(l);
     for (nlad=0; nlad<38; nlad++) {
       sLadder  = bsLadder;
       sLadder += nlad;
       TEveElementList* relLadder = new TEveElementList(sLadder.Data());
-      relLadder->SetMainColor(4);
+      relLadder->SetMainColor(Color_t(kGreen));
       gEve->AddElement(relLadder, l);
       for (nMod=0; nMod<25; ++nMod, ++i)
       {
