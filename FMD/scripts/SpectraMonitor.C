@@ -8,6 +8,51 @@
 //
 // Use the script `Compile.C' to compile this class using ACLic. 
 //
+
+void
+SpectraMonitor(const char* file="", 
+	       Int_t       runno=0, 
+	       const char* cdbSrc="local://$ALICE_ROOT", 
+	       UShort_t    over=0)
+{
+  gSystem->Load("libFMDutil.so");
+  // AliLog::SetModuleDebugLevel("FMD", 8);
+  TString fname(file);
+  if (fname.CompareTo("help", TString::kIgnoreCase) == 0) { 
+    std::cout << "Usage: RunSpectraMonitor(<src>[,<runno>[,<cdb>[,<over>]]])\n"
+	      << "\n"
+	      << "Where:\n\n"
+	      << "   <src>         Is a data source (online, file)\n"
+	      << "   <runno>       Is the (optional) run number\n"
+	      << "   <cdb>         Is the (optional) CDB storage\n"
+	      << "   <over>        Is the (optional) over sampling rate\n\n"
+	      << "Defaults are <runno>=0 and cdb=\"local://$ALICE_ROOT\"\n" 
+	      << "<over> allows one to override the CDB setting.  Default\n"
+	      << "is to use the CDB setting.\n\n"
+	      << "Note: This script _must_ be compiled with ACLic"
+	      << std::endl;
+    return;
+  }
+  AliCDBManager* cdb = AliCDBManager::Instance();
+  cdb->SetDefaultStorage(cdbSrc);
+  cdb->SetRun(runno);
+  UInt_t what = (AliFMDParameters::kPulseGain      |
+		 AliFMDParameters::kPedestal       |
+		 AliFMDParameters::kDeadMap        |
+		 AliFMDParameters::kZeroSuppression|
+		 AliFMDParameters::kAltroMap       |
+		 AliFMDParameters::kStripRange);
+  if (over != 0) what |= AliFMDParameters::kSampleRate;
+  AliFMDParameters::Instance()->Init(kFALSE, what);
+  if (over != 0) AliFMDParameters::Instance()->SetSampleRate(over);
+  
+  AliFMDSpectraDisplay* d = new AliFMDSpectraDisplay;
+  d->AddLoad(AliFMDInput::kRaw);
+  d->SetRawFile(file);
+  d->Run();
+}
+
+#if 0
 #include <AliCDBManager.h>
 #include <AliFMDParameters.h>
 #include <AliFMDHit.h>
@@ -686,7 +731,7 @@ RunSpectraMonitor(const char* file="",
   d->SetRawFile(file);
   d->Run();
 }
-
+#endif
 
   
 

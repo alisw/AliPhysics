@@ -32,6 +32,14 @@
 #pragma link C++ class  AliFMDGainDA;
 #pragma link C++ class  AliFMDBackgroundCorrection+;
 
+#pragma link C++ class  AliFMDSpectraDisplay;
+#pragma link C++ class  AliFMDSpectraDisplayElement;
+#pragma link C++ class  AliFMDSpectraDisplayTop;
+#pragma link C++ class  AliFMDSpectraDisplayDetector;
+#pragma link C++ class  AliFMDSpectraDisplayRing;
+#pragma link C++ class  AliFMDSpectraDisplaySector;
+#pragma link C++ class  AliFMDSpectraDisplayStrip;
+
 #else
 # error Not for compilation 
 #endif

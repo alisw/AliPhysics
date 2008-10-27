@@ -299,7 +299,7 @@ void AliFMDPedestalDA::Terminate(TFile* diagFile)
 }
 
 //_____________________________________________________________________
-void AliFMDPedestalDA::FillinTimebins(std::ofstream& out, UShort_t ddl)
+void AliFMDPedestalDA::FillinTimebins(std::ofstream& out, UShort_t /*ddl*/)
 {
 #if 0
   unsigned short  boards[] = { 0x0, 0x1, 0x10, 0x11, 0xFFFF };

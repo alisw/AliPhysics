@@ -949,9 +949,10 @@ AliFMDGeometryBuilder::FMD3Geometry(AliFMD3* fmd3,
   // Fiducial holes 
   const TObjArray& fiducialHoles  = fmd3->FiducialHoles();
   double           fiducialRadius = fmd3->GetFiducialRadius();
-  TGeoTube*        fiducialShape  = new TGeoTube("FMD3_fiducial_hole", 0, 
-						 fiducialRadius, 
-						 flangeDepth+.1);
+#if 0
+  TGeoTube*        fiducialShape  = 
+#endif
+    new TGeoTube("FMD3_fiducial_hole", 0, fiducialRadius, flangeDepth+.1);
   Int_t            nFiducialHoles = fiducialHoles.GetEntriesFast();
   double           flangeAngle    = TMath::Pi() / 4;
   double           flangeX        = r5->Y()+flangeLength;
@@ -961,8 +962,6 @@ AliFMDGeometryBuilder::FMD3Geometry(AliFMD3* fmd3,
 #if 0// For debugging geometry 
   TGeoVolume* fiducialVolume = new TGeoVolume("FMD3_fiducial", fiducialShape);
   fiducialVolume->SetLineColor(kGreen);
-#else
-  (void*)fiducialShape;
 #endif
   for (Int_t i = 0; i < nFiducialHoles; i++) { 
     TVector2&        v  =  *(static_cast<TVector2*>(fiducialHoles.At(i)));
@@ -1016,11 +1015,9 @@ AliFMDGeometryBuilder::FMD3Geometry(AliFMD3* fmd3,
 		     - 0.033 * TMath::Sin(holeA));
   Double_t plateX = (fmd3->ConeR(-plateZ + fmd3->GetInnerZ()+fmd3->GetNoseZ()) 
 		     - 0.033 * TMath::Cos(holeA));
-  TGeoTrd1* holeShape = new TGeoTrd1("FMD3_cone_hole", 
-				     holeLW, holeHW, holeD, holeL);
+  new TGeoTrd1("FMD3_cone_hole", holeLW, holeHW, holeD, holeL);
   TGeoTrd1* plateShape = new TGeoTrd1("FMD3_cooling_plate", 
 				      holeLW, holeHW, .033, holeL);
-  (void*)holeShape;
   TGeoRotation* holeRot = new TGeoRotation();
   holeRot->SetName("FMD3_cone_hole_rotation");
   holeRot->RotateZ(90);

@@ -59,7 +59,10 @@ public:
   /** Return detector number corresponding to given DDL number 
       @param ddl DDL number 
       @return Detector number */ 
-  Short_t DDL2Detector(UInt_t ddl) const { return (ddl<=2 ? ddl + 1 : -1); }
+  Short_t DDL2Detector(UInt_t ddl) const 
+  { 
+    return (ddl<=2 ? Short_t(ddl + 1) : -1); 
+  }
   /** Return the ring identifier corresponding to a board number 
       @param board Board number 
       @return Ring identifier */ 

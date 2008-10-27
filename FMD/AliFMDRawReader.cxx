@@ -62,7 +62,8 @@
 #include <TTree.h>		// ROOT_TTree
 #include <TClonesArray.h>	// ROOT_TClonesArray
 #include <TString.h>
- #include <iostream>
+#include <iostream>
+#include <climits>
 // #include <iomanip>
 
 //____________________________________________________________________
@@ -147,12 +148,12 @@ AliFMDRawReader::ReadAdcs(TClonesArray* array)
   while (isGood) {
     isGood = input.ReadChannel(ddl, hwaddr, last, data);
     // if (!isGood) break;
-    if (ddl >= UInt_t(-1)) { 
+    if (ddl >= UINT_MAX /* UInt_t(-1) */) { 
       AliFMDDebug(5, ("At end of event with %d digits", 
 		      array->GetEntriesFast()));
       break;
     }
-    if (oldddl != ddl) { 
+    if (UInt_t(oldddl) != ddl) { 
       fZeroSuppress[ddl] = input.GetZeroSupp();
       AliFMDDebug(20, ("RCU @ DDL %d zero suppression: %s", 
 		       ddl, (fZeroSuppress[ddl] ? "yes" : "no")));
@@ -188,6 +189,8 @@ AliFMDRawReader::ReadAdcs(TClonesArray* array)
 		    "hardware address 0x%03x", ddl, hwaddr));
       continue;
     }
+    AliFMDDebug(1, ("Board: 0x%02x, Altro: 0x%x, Channel: 0x%x, Length: %4d", 
+		    board, chip, channel, last));
 
     stripMin = pars->GetMinStrip(det, ring, sec, strbase);
     stripMax = pars->GetMaxStrip(det, ring, sec, strbase);
@@ -723,7 +726,7 @@ Bool_t AliFMDRawReader::ReadSODevent(AliFMDCalibSampleRate* sampleRate,
   
   AliFMDDebug(0, ("End of SOD/EOD"));
   
-   
+  return kTRUE;
 }
 //____________________________________________________________________
 

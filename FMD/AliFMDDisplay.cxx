@@ -440,6 +440,7 @@ AliFMDDisplay::DrawAux()
   if (!fAux) return;
   fAux->cd();
   fAux->Clear();
+  fAux->SetLogy(fSpec->GetMaximum() > 10);
   fSpec->Draw();
   fSpecCut->Draw("same");
   fAux->Modified();
@@ -592,7 +593,7 @@ AliFMDDisplay::ChangeFactor()
   // The factor depends on what is 
   // drawn in the AUX canvas
   AliInfo(Form("Noise factor is now %4.1f, pedestal factor %3.1f", 
-	       fFactor->GetMinimum(),
+	       10 * fFactor->GetMinimum(),
 	       (fFactor->GetMaximum()-fFactor->GetMaximum())));
   Redisplay();
 }
@@ -737,13 +738,13 @@ AliFMDDisplay::ProcessDigit(AliFMDDigit* digit)
   UShort_t str           =  digit->Strip();
   Double_t ped           =  parm->GetPedestal(det,ring, sec, str);
   Double_t pedW          =  parm->GetPedestalWidth(det,ring, sec, str);
-  Double_t threshold     =  (fFMDReader->IsZeroSuppressed(det-1) ? 
+  Double_t threshold     =  ((fFMDReader->IsZeroSuppressed(det-1) ? 
 			     0 : (ped * (fFactor->GetMaximum()
-					 -fFactor->GetMinimum())
-				  + pedW * fFactor->GetMinimum()));
+					 -fFactor->GetMinimum())))
+			     + pedW * 10 * fFactor->GetMinimum());
   if (threshold > fgkAdcRange.fHigh) threshold = fgkAdcRange.fHigh;
   Float_t  counts        =  digit->Counts();
-  if (fFMDReader->IsZeroSuppressed(det-1))
+  if (fFMDReader->IsZeroSuppressed(det-1) && counts > 0)
     counts += fFMDReader->NoiseFactor(det-1) * pedW;
 
   AliFMDDebug(10, ("FMD%d%c[%02d,%03d] counts %4d threshold %4d", 

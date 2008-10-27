@@ -12,7 +12,8 @@ SRCS		=  AliFMDInput.cxx 		\
 		   AliFMDAnaESD.cxx		\
 		   AliFMDBaseDA.cxx		\
                    AliFMDPedestalDA.cxx		\
-		   AliFMDGainDA.cxx             \
+		   AliFMDGainDA.cxx		\
+		   AliFMDSpectraDisplay.cxx	\
 	 	   AliFMDBackgroundCorrection.cxx 
 
 HDRS		=  $(SRCS:.cxx=.h) 

@@ -156,7 +156,7 @@ Int_t
 AliFMDInput::NEvents() const 
 {
   // Get number of events
-  if (TESTBIT(fTreeMask, kRaw)) return -1;
+  if (TESTBIT(fTreeMask, kRaw)) return fReader->GetNumberOfEvents();
   if (fTreeE) return fTreeE->GetEntries();
   return -1;
 }

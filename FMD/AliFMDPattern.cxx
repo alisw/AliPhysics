@@ -66,7 +66,8 @@ AliFMDPattern::AliFMDPatternDetector::AliFMDPatternDetector(UShort_t id)
     fCounts(0), 
     fGraphs(0), 
     fFrame(0), 
-    fInners(id == 1 ? 10 : 0)
+    fInners(10), 
+    fOuters(id == 1 ? 0 : 20)
 {
   // CTOR 
   // 
