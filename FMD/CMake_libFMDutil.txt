@@ -12,6 +12,7 @@ AliFMDAnaESD.cxx
 AliFMDBaseDA.cxx
 AliFMDPedestalDA.cxx
 AliFMDGainDA.cxx
+AliFMDSpectraDisplay.cxx
 AliFMDBackgroundCorrection.cxx
 )
 
