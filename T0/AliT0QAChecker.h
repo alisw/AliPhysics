@@ -33,6 +33,7 @@ private:
   virtual Double_t Check(AliQA::ALITASK_t,TObjArray * list) ;
   virtual Double_t Check(TObjArray*) {return 0.;}
   virtual Double_t Check(AliQA::ALITASK_t,  TNtupleD*) {return 0.;}
+  virtual Double_t Check(AliQA::ALITASK_t) {return 0.;}
   virtual Double_t Check() {return 0.;} ;
   
 

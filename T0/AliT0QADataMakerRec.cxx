@@ -44,11 +44,12 @@ ClassImp(AliT0QADataMakerRec)
            
 //____________________________________________________________________________ 
   AliT0QADataMakerRec::AliT0QADataMakerRec() : 
-  AliQADataMakerRec(AliQA::GetDetName(AliQA::kT0), "T0 Quality Assurance Data Maker")
+AliQADataMakerRec(AliQA::GetDetName(AliQA::kT0), 
+		  "T0 Quality Assurance Data Maker"),
+  fnEvent(0)
 
 {
   // ctor
-  fnEvent=0;
   for (Int_t i=0; i<6; i++) {
     fNumTriggers[i]=0;
     fNumTriggersCal[i]=0;
@@ -62,7 +63,9 @@ ClassImp(AliT0QADataMakerRec)
 
 //____________________________________________________________________________ 
 AliT0QADataMakerRec::AliT0QADataMakerRec(const AliT0QADataMakerRec& qadm) :
-  AliQADataMakerRec() 
+  AliQADataMakerRec(),
+  fnEvent(0)
+  
 {
   //copy ctor 
  SetName((const char*)qadm.GetName()) ; 
