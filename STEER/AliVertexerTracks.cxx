@@ -929,7 +929,7 @@ void AliVertexerTracks::StrLinVertexFinderMinDist(Int_t optUseWeights)
     sigmasq[2]=track1->GetSigmaZ2();
     TMatrixD ri(3,1);
     TMatrixD wWi(3,3);
-    if(!TrackToPoint(track1,ri,wWi)) continue;
+    if(!TrackToPoint(track1,ri,wWi)) optUseWeights=kFALSE;
     Double_t wmat[9];
     Int_t iel=0;
     for(Int_t ia=0;ia<3;ia++){
