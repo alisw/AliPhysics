@@ -25,7 +25,9 @@ AliFMDAnalysisTaskSharing::AliFMDAnalysisTaskSharing()
 : fDebug(0),
   fESD(0x0),
   fOutputESD(0x0),
-  foutputESDFMD(0x0)
+  foutputESDFMD(0x0),
+  fSharedNext(kFALSE),
+  fSharedPrev(kFALSE)
 {
   // Default constructor
   DefineInput (0, AliESDEvent::Class());
@@ -37,7 +39,10 @@ AliFMDAnalysisTaskSharing::AliFMDAnalysisTaskSharing(const char* name):
     fDebug(0),
     fESD(0x0),
     fOutputESD(0x0),
-    foutputESDFMD(0x0)
+    foutputESDFMD(0x0),
+    fSharedNext(kFALSE),
+    fSharedPrev(kFALSE)
+
 {
   DefineInput (0, AliESDEvent::Class());
   DefineOutput(0, AliESDEvent::Class());
@@ -63,7 +68,7 @@ void AliFMDAnalysisTaskSharing::ConnectInputData(Option_t */*option*/)
 //_____________________________________________________________________
 void AliFMDAnalysisTaskSharing::Exec(Option_t */*option*/)
 {
-  AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
+  
   
   AliESD* old = fESD->GetAliESDOld();
   if (old) {
@@ -90,9 +95,19 @@ void AliFMDAnalysisTaskSharing::Exec(Option_t */*option*/)
 	  Float_t mult = fmd->Multiplicity(det,ring,sec,strip);
 	  if(mult == AliESDFMD::kInvalidMult) continue;
 	  //Sharing algorithm goes here
-	  if(mult < 0.75) continue;
 	  
-	  foutputESDFMD->SetMultiplicity(det,ring,sec,strip,1.);
+	  Float_t Eprev = 0;
+	  Float_t Enext = 0;
+	  if(strip != 0)
+	    if(fmd->Multiplicity(det,ring,sec,strip-1) != AliESDFMD::kInvalidMult)
+	      Eprev = fmd->Multiplicity(det,ring,sec,strip-1);
+	  if(strip != nstr - 1)
+	    if(fmd->Multiplicity(det,ring,sec,strip+1) != AliESDFMD::kInvalidMult)
+	    Enext = fmd->Multiplicity(det,ring,sec,strip+1);
+	  
+	  Float_t nParticles = GetMultiplicityOfStrip(mult,Eprev,Enext,det,ring);
+	  //std::cout<<nParticles<<"   "<<mult<<"    "<<Eprev<<"    "<<Enext<<"   "<<det<<"     "<<ring<<"    "<<sec<<"    "<<strip<<std::endl;
+	  foutputESDFMD->SetMultiplicity(det,ring,sec,strip,nParticles);
 	  foutputESDFMD->SetEta(det,ring,sec,strip,fmd->Eta(det,ring,sec,strip));
 	  
 	}
@@ -104,6 +119,50 @@ void AliFMDAnalysisTaskSharing::Exec(Option_t */*option*/)
   PostData(0, fOutputESD); 
   
 }
+//_____________________________________________________________________
+Float_t AliFMDAnalysisTaskSharing::GetMultiplicityOfStrip(Float_t mult,
+							  Float_t Eprev,
+							  Float_t Enext,
+							  Int_t   det,
+							  Char_t  ring) {
+  AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
+  Float_t nParticles = 0;
+  Float_t cutLow  = 0.1;
+  Float_t cutHigh = pars->GetMPV(det,ring) - pars->GetSigma(det,ring);
+  Float_t Etotal = mult;
+  
+  if(fSharedNext) {
+    fSharedNext     = kFALSE;
+    fSharedPrev     = kTRUE;
+    return 0.;
+  }
+  
+  if(Etotal < 0.33*pars->GetMPV(det,ring)) {
+    fSharedNext     = kFALSE;
+    
+    return 0.; 
+  }
+  
+  if(Eprev > cutLow && Eprev < cutHigh && !fSharedPrev ) {
+    Etotal += Eprev;
+  }
+  
+  if(Enext > cutLow && Enext < cutHigh ) {
+    Etotal += Enext;
+    fSharedNext = kTRUE;
+  }
+  
+  if(fSharedPrev)
+    fSharedPrev = kFALSE;
+  
+  if(Etotal > cutLow)
+    nParticles = 1;
+  
+  
+  
+  return nParticles;
+}
+
 //_____________________________________________________________________
 //
 // EOF

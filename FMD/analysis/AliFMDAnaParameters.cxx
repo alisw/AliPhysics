@@ -29,6 +29,7 @@
 #include <sstream>
 #include <TSystem.h>
 #include <TH2D.h>
+#include <TF1.h>
 
 //====================================================================
 ClassImp(AliFMDAnaParameters)
@@ -36,8 +37,8 @@ ClassImp(AliFMDAnaParameters)
   ; // This is here to keep Emacs for indenting the next line
 #endif
 
-const char* AliFMDAnaParameters::fgkBackgroundCorrection  = "FMD/AnalysisCalib/Background";
-const char* AliFMDAnaParameters::fgkEnergyDists  = "FMD/AnalysisCalib/EnergyDistribution";
+const char* AliFMDAnaParameters::fgkBackgroundCorrection  = "FMD/Calib/Background";
+const char* AliFMDAnaParameters::fgkEnergyDists  = "FMD/Calib/EnergyDistribution";
 //____________________________________________________________________
 AliFMDAnaParameters* AliFMDAnaParameters::fgInstance = 0;
 
@@ -123,17 +124,43 @@ Int_t AliFMDAnaParameters::GetNvtxBins() {
 //____________________________________________________________________
 TH1F* AliFMDAnaParameters::GetEnergyDistribution(Int_t det, Char_t ring) {
   
-  if(!fIsInit) {
-    AliWarning("Not initialized yet. Call Init() to remedy");
-    return 0;
-  }
-  
   TObjArray* detArray   = (TObjArray*)fEdistArray->At(det);
   Int_t ringNumber      = (ring == 'I' ? 0 : 1);
   TH1F* hEnergyDist     = (TH1F*)detArray->At(ringNumber);  
   return hEnergyDist;
 }
 //____________________________________________________________________
+Float_t AliFMDAnaParameters::GetSigma(Int_t det, Char_t ring) {
+  
+  if(!fIsInit) {
+    AliWarning("Not initialized yet. Call Init() to remedy");
+    return 0;
+  }
+  
+  TH1F* hEnergyDist     = GetEnergyDistribution(det,ring);
+  TF1*  landau          = hEnergyDist->GetFunction("landau");
+  Float_t sigma           = landau->GetParameter(2);
+  return sigma;
+}
+
+
+//____________________________________________________________________
+Float_t AliFMDAnaParameters::GetMPV(Int_t det, Char_t ring) {
+  
+  if(!fIsInit) {
+    AliWarning("Not initialized yet. Call Init() to remedy");
+    return 0;
+  }
+  
+  TH1F* hEnergyDist     = GetEnergyDistribution(det,ring);
+  TF1*  landau          = hEnergyDist->GetFunction("landau");
+  Float_t MPV           = landau->GetParameter(1);
+  return MPV;
+}
+//____________________________________________________________________
+
+
+
 TH2F* AliFMDAnaParameters::GetBackgroundCorrection(Int_t det, 
 						   Char_t ring, 
 						   Int_t vtxbin) {

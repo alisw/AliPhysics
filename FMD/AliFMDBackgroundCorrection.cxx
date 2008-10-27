@@ -52,8 +52,7 @@
 #include "TROOT.h"
 #include "AliFMDParameters.h"
 #include "AliLog.h"
-
-
+#include "AliFMDAnaParameters.h"
 
 ClassImp(AliFMDBackgroundCorrection)
 //_____________________________________________________________________
@@ -65,6 +64,8 @@ AliFMDBackgroundCorrection::AliFMDBackgroundCorrection() :
 //_____________________________________________________________________
 AliFMDBackgroundCorrection::AliFMDInputBG::AliFMDInputBG() : 
   AliFMDInput(),
+  fPrimaryArray(),
+  fHitArray(),
   fPrim(0),
   fHits(0),
   fZvtxCut(0),
@@ -92,7 +93,7 @@ void AliFMDBackgroundCorrection::GenerateBackgroundCorrection(Int_t nvtxbins,
 							      Bool_t simulate,
 							      Int_t nEvents) {
   
-  TGrid::Connect("alien:",0,0,"t");
+  //TGrid::Connect("alien:",0,0,"t");
   if(simulate)
     Simulate(nEvents);
   else {
@@ -154,6 +155,7 @@ void AliFMDBackgroundCorrection::GenerateBackgroundCorrection(Int_t nvtxbins,
 	TH2F* hHits          = (TH2F*)vtxArray->At(vertexBin);
 	TH2F* hPrimary  = (TH2F*)primRingArray->At(vertexBin);
 	TH2F* hCorrection = (TH2F*)hHits->Clone(Form("FMD%d%c_vtxbin_%d_correction",det,ringChar,vertexBin));
+	hCorrection->SetTitle(hCorrection->GetName());
 	hCorrection->Divide(hPrimary);
 	vtxArrayCorrection->AddAtAndExpand(hCorrection,vertexBin);
       }
@@ -166,35 +168,43 @@ void AliFMDBackgroundCorrection::GenerateBackgroundCorrection(Int_t nvtxbins,
   
 
   
-  TFile fout(filename,"RECREATE");
+  TFile*  fout = new TFile(filename,"RECREATE");
   refAxis.Write("vertexbins");
-  fout.mkdir("Hits");
-  fout.cd("Hits");
+  fout->mkdir("Hits");
+  fout->cd("Hits");
   hitArray->Write();
-  fout.mkdir("Primaries");
-  fout.cd("Primaries");
+  fout->mkdir("Primaries");
+  fout->cd("Primaries");
   primaryArray->Write();
-  fout.mkdir("Correction");
-  fout.cd("Correction");
+  fout->mkdir("Correction");
+  fout->cd("Correction");
   fCorrectionArray.Write();
   
+  TObjArray* container = new TObjArray();
+  container->SetOwner();
+  container->AddAtAndExpand(&refAxis,0);
+  container->AddAtAndExpand(&fCorrectionArray,1);
+  container->AddAtAndExpand(hitArray,2);
+  container->AddAtAndExpand(primaryArray,3);
+
+
   if(storeInAlien) {
     AliCDBManager* cdb = AliCDBManager::Instance();
     cdb->SetDefaultStorage("local://$ALICE_ROOT");
-    AliCDBId      id("FMD/AnalysisCalib/Background",runNo,endRunNo);
+    AliCDBId      id(AliFMDAnaParameters::GetBackgroundPath(),runNo,endRunNo);
     
     AliCDBMetaData* meta = new AliCDBMetaData;				
     meta->SetResponsible(gSystem->GetUserInfo()->fRealName.Data());	
     meta->SetAliRootVersion(gROOT->GetVersion());			
     meta->SetBeamPeriod(1);						
     meta->SetComment("Background Correction for FMD");
-    meta->SetProperty("key1", &fout );
-    cdb->Put(&fout, id, meta);
+    meta->SetProperty("key1", container );
+    cdb->Put(container, id, meta);
     
   }
   
-
-  fout.Close();
+  fout->Close();
+ 
   
 }
 //_____________________________________________________________________
@@ -216,18 +226,6 @@ void AliFMDBackgroundCorrection::Simulate(Int_t nEvents) {
 
 //_____________________________________________________________________
 Bool_t AliFMDBackgroundCorrection::AliFMDInputBG::ProcessTrack(Int_t i , TParticle* p, AliFMDHit* h) {
-  
- 
-  //  if(!h)
-  //  return kTRUE;
-  //if(!p)
-  //  return kTRUE;
-  
-  // if(h) {
-  //  if(h->Detector() == 3)
-  //    std::cout<<"Track "<<i<<" hit "<<"FMD3"<<h->Ring()<<std::endl;
-    
-  //}
   
   AliGenEventHeader* genHeader = fLoader->GetHeader()->GenEventHeader();
   TArrayF vertex;

@@ -28,25 +28,27 @@ AliFMDAnalysisTaskBackgroundCorrection::AliFMDAnalysisTaskBackgroundCorrection()
   fChain(0x0),
   fOutputList(0),
   fArray(0),
-  fInputArray(0)
+  fInputArray(0),
+  fNevents(0)
 {
   // Default constructor
   DefineInput (0, TList::Class());
   DefineOutput(0,TList::Class());
 }
-
+//_____________________________________________________________________
 AliFMDAnalysisTaskBackgroundCorrection::AliFMDAnalysisTaskBackgroundCorrection(const char* name):
     AliAnalysisTask(name, "Density"),
     fDebug(0),
     fChain(0x0),
     fOutputList(0),
     fArray(0),
-    fInputArray(0)
+    fInputArray(0),
+    fNevents(0)
 {
   DefineInput (0, TList::Class());
   DefineOutput(0, TList::Class());
 }
-
+//_____________________________________________________________________
 void AliFMDAnalysisTaskBackgroundCorrection::CreateOutputObjects()
 {
   AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
@@ -81,32 +83,33 @@ void AliFMDAnalysisTaskBackgroundCorrection::CreateOutputObjects()
 			      hBg->GetXaxis()->GetXmin(),
 			      hBg->GetXaxis()->GetXmax(),
 			      nSec, 0, 2*TMath::Pi());
+	    hMult->Sumw2();
 	    vtxArray->AddAtAndExpand(hMult,i);
 	    
 	  }
 	} 
     }
-    
+  fNevents = new TArrayI(nVtxbins);
   fOutputList->Add(fArray);
    
   
 }
-
+//_____________________________________________________________________
 void AliFMDAnalysisTaskBackgroundCorrection::ConnectInputData(Option_t */*option*/)
 {
 
   TList* list = (TList*)GetInputData(0);
   fInputArray = (TObjArray*)list->At(0);
-    
+  fVertexString = (TObjString*)list->At(1);
 }
-
+//_____________________________________________________________________
 void AliFMDAnalysisTaskBackgroundCorrection::Exec(Option_t */*option*/)
 {
   AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
   
-  Int_t nVtxbins = pars->GetNvtxBins();
+  Int_t vtxbin   = fVertexString->GetString().Atoi();
+  fNevents->operator[](vtxbin)++;
   
-    
   for(UShort_t det=1;det<=3;det++) {
     TObjArray* detInputArray = (TObjArray*)fInputArray->At(det);
     TObjArray* detArray = (TObjArray*)fArray->At(det);
@@ -115,29 +118,44 @@ void AliFMDAnalysisTaskBackgroundCorrection::Exec(Option_t */*option*/)
       Char_t ringChar = (ir == 0 ? 'I' : 'O');
       TObjArray* vtxInputArray = (TObjArray*)detInputArray->At(ir);
       TObjArray* vtxArray = (TObjArray*)detArray->At(ir);
-      for(Int_t i =0; i<nVtxbins; i++) {
-	TH2F* hMultTotal = (TH2F*)vtxArray->At(i);
-	TH2F* hMult      = (TH2F*)vtxInputArray->At(i);
-	TH2F* hBg        = pars->GetBackgroundCorrection(det, ringChar, i);
-	
-	TH2F* hTmp       = (TH2F*)hMult->Clone("hMult_from_event");
-	/*for(Int_t j=1; j<=hMult->GetNbinsX();j++) {
-	  for(Int_t k=1; k<=hMult->GetNbinsY();k++) {
-	    if(hBg->GetBinContent(j,k) != 0) {
-	      // std::cout<<hMult->GetBinContent(j,k)<<"    "<<hBg->GetBinContent(j,k)<<std::endl;
-	      hTmp->SetBinContent(j,k,hMult->GetBinContent(j,k)/hBg->GetBinContent(j,k));
-	    }
-	  }
-	  }*/
-	hTmp->Divide(hTmp,hBg,1,1,"B");
-	
-	hMultTotal->Add(hTmp);
-	
-      }
+      TH2F* hMultTotal = (TH2F*)vtxArray->At(vtxbin);
+      TH2F* hMult      = (TH2F*)vtxInputArray->At(vtxbin);
+      TH2F* hBg        = pars->GetBackgroundCorrection(det, ringChar, vtxbin);
+      
+      TH2F* hTmp       = (TH2F*)hMult->Clone("hMult_from_event");
+      hTmp->Sumw2();
+      hTmp->Divide(hTmp,hBg,1,1,"B");
+      
+      hMultTotal->Add(hTmp);
+      
+      
     }
   }
   
   PostData(0, fOutputList); 
   
 }
+//_____________________________________________________________________
+void AliFMDAnalysisTaskBackgroundCorrection::Terminate(Option_t */*option*/) {
+  
+  AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
+  
+  Int_t nVtxbins = pars->GetNvtxBins();
+  
+  for(UShort_t det=1;det<=3;det++) {
+    TObjArray* detArray = (TObjArray*)fArray->At(det);
+    Int_t nRings = (det==1 ? 1 : 2);
+    for (UShort_t ir = 0; ir < nRings; ir++) {
+      TObjArray* vtxArray = (TObjArray*)detArray->At(ir);
+      for(Int_t i =0; i<nVtxbins; i++) {
+	TH2F* hMultTotal = (TH2F*)vtxArray->At(i);
+	hMultTotal->Scale(1/(Float_t)fNevents->At(i));
+      }
+    }
+  }
 
+}
+//_____________________________________________________________________
+//
+//
+// EOF

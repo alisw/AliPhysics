@@ -20,13 +20,19 @@ class AliFMDAnalysisTaskBackgroundCorrection : public AliAnalysisTask
     AliFMDAnalysisTaskBackgroundCorrection();
     AliFMDAnalysisTaskBackgroundCorrection(const char* name);
     virtual ~AliFMDAnalysisTaskBackgroundCorrection() {;}
+ AliFMDAnalysisTaskBackgroundCorrection(const AliFMDAnalysisTaskBackgroundCorrection& o) : 
+    fChain(o.fChain),
+      fOutputList(o.fOutputList),
+      fArray(o.fArray),
+      fInputArray(o.fInputArray) {}
+    AliFMDAnalysisTaskBackgroundCorrection& operator=(const AliFMDAnalysisTaskBackgroundCorrection&) { return *this; }
     // Implementation of interface methods
     virtual void ConnectInputData(Option_t *option = "");
     virtual void CreateOutputObjects();
     virtual void Init() {}
     virtual void LocalInit() {Init();}
     virtual void Exec(Option_t *option);
-    virtual void Terminate(Option_t *option) {}
+    virtual void Terminate(Option_t *option);
     virtual void SetDebugLevel(Int_t level) {fDebug = level;}
     
  private:
@@ -35,7 +41,8 @@ class AliFMDAnalysisTaskBackgroundCorrection : public AliAnalysisTask
     TList*        fOutputList;
     TObjArray*    fArray;
     TObjArray*    fInputArray;
-    
+    TObjString*   fVertexString;
+    TArrayI*      fNevents;
     ClassDef(AliFMDAnalysisTaskBackgroundCorrection, 0); // Analysis task for FMD analysis
 };
  

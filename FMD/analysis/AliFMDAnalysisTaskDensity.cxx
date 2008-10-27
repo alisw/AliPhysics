@@ -86,9 +86,9 @@ void AliFMDAnalysisTaskDensity::CreateOutputObjects()
 	  }
 	} 
     }
-    
+  fVertexString = new TObjString();
   fOutputList->Add(fArray);
-   
+  fOutputList->Add(fVertexString);
   
 }
 //_____________________________________________________________________
@@ -105,11 +105,9 @@ void AliFMDAnalysisTaskDensity::Exec(Option_t */*option*/)
   
   AliESDFMD*   fmd = fESD->GetFMDData();
   
-  Int_t nVtxbins = pars->GetNvtxBins();
-  
   Double_t vertex[3];
   fESD->GetPrimaryVertexSPD()->GetXYZ(vertex);
-  
+  // Z Vtx cut
   if( TMath::Abs(vertex[2]) > pars->GetVtxCutZ()) 
     return;
   Double_t delta = 2*pars->GetVtxCutZ()/pars->GetNvtxBins();
@@ -117,7 +115,8 @@ void AliFMDAnalysisTaskDensity::Exec(Option_t */*option*/)
   
   Int_t vtxbin = (Int_t)vertexBinDouble;
   
-  //Resetting everything
+  fVertexString->SetString(Form("%d",vtxbin));
+  //Reset everything
   for(UShort_t det=1;det<=3;det++) {
     TObjArray* detArray = (TObjArray*)fArray->At(det);
     Int_t nRings = (det==1 ? 1 : 2);

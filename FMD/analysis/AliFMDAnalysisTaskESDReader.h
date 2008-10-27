@@ -20,9 +20,13 @@ class AliFMDAnalysisTaskESDReader : public AliAnalysisTask
  public:
     AliFMDAnalysisTaskESDReader();
     AliFMDAnalysisTaskESDReader(const char* name);
+ AliFMDAnalysisTaskESDReader(const AliFMDAnalysisTaskESDReader& o) :
+    fChain(o.fChain), fESD(o.fESD),fOutputESD(o.fOutputESD) {}
+    
     virtual ~AliFMDAnalysisTaskESDReader() {;}
+    AliFMDAnalysisTaskESDReader& operator=(const AliFMDAnalysisTaskESDReader&) { return *this; }
     // Implementation of interface methods
-    virtual void ConnectInputData(Option_t *option = "");
+    virtual void ConnectInputData(Option_t *option );
     virtual void CreateOutputObjects() {};
     virtual void Init() {}
     virtual void LocalInit() {Init();}

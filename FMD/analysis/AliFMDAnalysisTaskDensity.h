@@ -23,8 +23,13 @@ class AliFMDAnalysisTaskDensity : public AliAnalysisTask
     AliFMDAnalysisTaskDensity();
     AliFMDAnalysisTaskDensity(const char* name);
     virtual ~AliFMDAnalysisTaskDensity() {;}
+    AliFMDAnalysisTaskDensity(const AliFMDAnalysisTaskDensity& o) : 
+    fOutputList(o.fOutputList),
+      fArray(o.fArray),
+      fESD(o.fESD) {}
+    AliFMDAnalysisTaskDensity& operator=(const AliFMDAnalysisTaskDensity&) { return *this; }
     // Implementation of interface methods
-    virtual void ConnectInputData(Option_t *option = "");
+    virtual void ConnectInputData(Option_t *option);
     virtual void CreateOutputObjects();
     virtual void Init() {}
     virtual void LocalInit() {Init();}
@@ -37,6 +42,7 @@ class AliFMDAnalysisTaskDensity : public AliAnalysisTask
     TList*        fOutputList;
     TObjArray*    fArray;
     AliESDEvent*  fESD;
+    TObjString*   fVertexString;
     ClassDef(AliFMDAnalysisTaskDensity, 0); // Analysis task for FMD analysis
 };
  

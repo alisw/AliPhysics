@@ -60,10 +60,12 @@ public:
   void Init(Bool_t forceReInit=kTRUE, UInt_t what=kBackgroundCorrection|kEnergyDistributions);
   Float_t GetVtxCutZ();
   Int_t GetNvtxBins();
+  Float_t GetMPV(Int_t det, Char_t ring);
+  Float_t GetSigma(Int_t det, Char_t ring);
   static const char* GetBackgroundPath() { return fgkBackgroundCorrection;}
   static const char* GetEdistPath()      { return fgkEnergyDists;}
   TH2F* GetBackgroundCorrection(Int_t det, Char_t ring, Int_t vtxbin);
-  TH1F* GetEnergyDistribution(Int_t det, Char_t ring);
+  
 protected:
   
   AliFMDAnaParameters();
@@ -71,7 +73,8 @@ protected:
   AliFMDAnaParameters(const AliFMDAnaParameters& o) 
     : TNamed(o),
       fIsInit(o.fIsInit),
-      fBackgroundArray(o.fBackgroundArray) 
+      fBackgroundArray(o.fBackgroundArray), 
+      fEdistArray(o.fEdistArray)
   {}
   AliFMDAnaParameters& operator=(const AliFMDAnaParameters&) { return *this; }
   virtual ~AliFMDAnaParameters() {}
@@ -81,8 +84,11 @@ protected:
   AliCDBEntry* GetEntry(const char* path, Bool_t fatal=kTRUE) const ;
   void InitBackground();
   void InitEnergyDists();
-  TAxis* GetRefAxis();
+  TH1F* GetEnergyDistribution(Int_t det, Char_t ring);
   TObjArray* GetBackgroundArray();
+  
+  TAxis* GetRefAxis();
+  
   
   Bool_t fIsInit;
   TObjArray*  fBackgroundArray;
