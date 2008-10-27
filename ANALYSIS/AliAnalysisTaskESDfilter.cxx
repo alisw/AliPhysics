@@ -232,6 +232,9 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
     
     AliAODVertex * primary = new(vertices[jVertices++])
 	AliAODVertex(pos, covVtx, vtx->GetChi2toNDF(), NULL, -1, AliAODVertex::kPrimary);
+    primary->SetName(vtx->GetName());
+    primary->SetTitle(vtx->GetTitle());
+
     if (fDebug > 0) primary->Print();
 
     // Create vertices starting from the most complex objects
@@ -362,7 +365,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 									   pid,
 									   vV0FromCascade,
 									   kTRUE,  // check if this is right
-									   kFALSE, // check if this is right
+									   vtx->UsesTrack(esdTrack->GetID()),
 									   AliAODTrack::kSecondary,
 									   selectInfo)
 					);
@@ -405,7 +408,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 									   pid,
 									   vV0FromCascade,
 									   kTRUE,  // check if this is right
-									   kFALSE, // check if this is right
+									   vtx->UsesTrack(esdTrack->GetID()),
 									   AliAODTrack::kSecondary,
 									   selectInfo)
 					);
@@ -456,7 +459,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 								     pid,
 								     vcascade,
 								     kTRUE,  // check if this is right
-								     kFALSE, // check if this is right
+								     vtx->UsesTrack(esdTrack->GetID()),
 								     AliAODTrack::kSecondary,
 								     selectInfo)
 				  );
@@ -568,7 +571,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 							  pid,
 							  vV0,
 							  kTRUE,  // check if this is right
-							  kFALSE, // check if this is right
+							  vtx->UsesTrack(esdV0Pos->GetID()),
 							  AliAODTrack::kSecondary,
 							  selectInfo);
 	    aodRefs->AddAt(aodTrack,posFromV0);
@@ -609,7 +612,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 							  pid,
 							  vV0,
 							  kTRUE,  // check if this is right
-							  kFALSE, // check if this is right
+							  vtx->UsesTrack(esdV0Neg->GetID()),
 							  AliAODTrack::kSecondary,
 							  selectInfo);
 	    
@@ -719,7 +722,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 							       pid,
 							       primary,
 							       kTRUE, // check if this is right
-							       kTRUE, // check if this is right
+							       vtx->UsesTrack(esdTrack->GetID()),
 							       AliAODTrack::kPrimary,
 							       selectInfo);
 			aodRefs->AddAt(mother, imother);
@@ -775,7 +778,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 							       pid,
 							       vkink,
 							       kTRUE, // check if this is right
-							       kTRUE, // check if this is right
+							       vtx->UsesTrack(esdTrack->GetID()),
 							       AliAODTrack::kSecondary,
 							       selectInfo);
 			
@@ -813,7 +816,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 	// Track selection
 	if (fTrackFilter) {
 	    selectInfo = fTrackFilter->IsSelected(esdTrack);
-	    if (!selectInfo) continue;
+	    if (!selectInfo && !vtx->UsesTrack(esdTrack->GetID())) continue;
 	}
 	
 	//
@@ -835,7 +838,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 								pid,
 								primary,
 								kTRUE, // check if this is right
-								kTRUE, // check if this is right
+								vtx->UsesTrack(esdTrack->GetID()),
 								AliAODTrack::kPrimary, 
 								selectInfo)
 			     );
