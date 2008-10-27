@@ -48,10 +48,16 @@ ClassImp(AliT0QADataMakerRec)
 
 {
   // ctor
+  fnEvent=0;
   for (Int_t i=0; i<6; i++) {
     fNumTriggers[i]=0;
     fNumTriggersCal[i]=0;
   }
+  for (Int_t i=0; i<24; i++)
+    {
+      feffC[i]=0;
+      feffA[i]=0;
+    }
 }
 
 //____________________________________________________________________________ 
@@ -78,21 +84,36 @@ void AliT0QADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray 
   // do the QA checking
   AliQAChecker::Instance()->Run(AliQA::kT0, task, list) ;
  if ( task == AliQA::kRAWS ) {
-  Char_t *triggers[6] = {"mean", "vertex","ORA","ORC","central","semi-central"};
+  const Char_t *triggers[6] = {"mean", "vertex","ORA","ORC","central","semi-central"};
  for (Int_t itr=0; itr<6; itr++) {
-    GetRawsData(197)->Fill(triggers[itr],fNumTriggersCal[itr]);
+    GetRawsData(197)->Fill(triggers[itr], fNumTriggersCal[itr]);
     GetRawsData(197)->SetBinContent(itr+1, fNumTriggersCal[itr]);
   }  
     GetRawsData(205)->SetOption("COLZ");
     GetRawsData(206)->SetOption("COLZ");
     GetRawsData(207)->SetOption("COLZ");
- }   
+    GetRawsData(205)->GetXaxis()->SetTitle("#PMT");
+    GetRawsData(206)->GetXaxis()->SetTitle("#PMT");
+    GetRawsData(205)->GetYaxis()->SetTitle("NeventsReg/Nevents");
+    GetRawsData(206)->GetYaxis()->SetTitle("NeventsReg/Nevents");
+    GetRawsData(207)->GetXaxis()->SetTitle("#PMT");
+    GetRawsData(207)->GetYaxis()->SetTitle("Charge, #channels");
+ }
+ if ( task == AliQA::kRECPOINTS) {
+   GetRecPointsData(0)->SetOption("COLZ");
+  GetRecPointsData(1)->SetOption("COLZ");
+  GetRecPointsData(0)->GetXaxis()->SetTitle("#PMT");
+  GetRecPointsData(1)->GetXaxis()->SetTitle("#PMT");
+  GetRecPointsData(0)->GetYaxis()->SetTitle("CFD time");
+  GetRecPointsData(1)->GetYaxis()->SetTitle("Charge, #channels");
+ }
 }
 
 //____________________________________________________________________________
 void AliT0QADataMakerRec::StartOfDetectorCycle()
 {
   //Detector specific actions at start of cycle
+  fnEvent=0;
 
 }
  
@@ -130,7 +151,8 @@ void AliT0QADataMakerRec::InitRaws()
       fhRawQTC[i] = new TH1F(qtcname.Data(), qtcname.Data(),1500,1000,7000);
       Add2RawsList( fhRawQTC[i],i+72+1);
      }
-  const Bool_t saveForCorr = kTRUE;
+  //  const Bool_t saveForCorr = kTRUE;
+  const Bool_t saveForCorr = kFALSE;
   TH1F* fhRawTrigger = new TH1F("hRawTrigger"," phys triggers",5,0,5);
   Add2RawsList(fhRawTrigger ,97);
   
@@ -186,15 +208,23 @@ void AliT0QADataMakerRec::InitRaws()
 			      1000,0,10000);
   Add2RawsList( fhMultCcal,204);
 
-  TH2F* fhEffCFD = new TH2F("hEffCFD"," CFD time",24, 0 ,24, 
-			      100,-500,500);
+  //  TH2F* fhEffCFD = new TH2F("hEffCFD"," CFD time",24, 0 ,24, 
+  //		      100,-500,500);
+  TH2F* fhEffCFD = new TH2F("hEffCFD"," CFD time",24, 0 ,24, 50, 0,5); 
+
   Add2RawsList( fhEffCFD,205, saveForCorr);
   TH2F* fhEffLED = new TH2F("hEffLED","LED time",24, 0 ,24, 
-			      100,-500,500);
+			    100, 0, 5);	
+  //100,-500,500);
+
   Add2RawsList( fhEffLED,206, saveForCorr);
   TH2F* fhEffQTC = new TH2F("hEffQTC","QTC amplitude",24, 0 ,24, 
 			      100,0,7000);
   Add2RawsList( fhEffQTC,207, saveForCorr);
+  //yeys guide line
+  //  TH2F* fhLineQTC = new TH2F("hLineQTC","QTC amplitude boeder",24, 0 ,24, 
+  //			      100,0,7000);
+//  Add2RawsList( fhLineQTC,208, saveForCorr);
 }
 
 //____________________________________________________________________________ 
@@ -204,37 +234,18 @@ void AliT0QADataMakerRec::InitRecPoints()
   // create cluster histograms in RecPoint subdir
 
 
-  
-  TString timename,ampname, qtcname;
-  TH1F *fhRecCFD[24]; TH1F *fhRecLEDAmp[24];  TH1F * fhRecQTC[24];
-  for (Int_t i=0; i<24; i++)
-    {
-      timename ="hRecCFD";
-      ampname = "hRecLED";
-      qtcname = "hRecQTC";
-      timename += i;
-      ampname += i;
-      qtcname += i;
-      fhRecCFD[i] = new TH1F(timename.Data(), timename.Data(),2000,-1000,1000);
-      //    fhRecCFD[i] = new TH1F(timename.Data(), timename.Data(),6000,1244000,1250000);
-      Add2RecPointsList ( fhRecCFD[i],i);
-      fhRecLEDAmp[i] = new TH1F(ampname.Data(), ampname.Data(),100,0, 100);
-      Add2RecPointsList ( fhRecLEDAmp[i],i+24);
-      fhRecQTC[i] = new TH1F(qtcname.Data(), qtcname.Data(),100,0,100);
-      Add2RecPointsList ( fhRecQTC[i],i+48);
-     }
-  
 
-   
-  //  TH1F *fhOnlineMean = new TH1F("hOnlineMean","online mean",2000,-1000,1000);
-  TH1F *fhOnlineMean = new TH1F("hOnlineMean","online mean",6000,1244000,1250000);
-  Add2RecPointsList ( fhOnlineMean,72);
-  //  TH1F * fhRecMean = new TH1F("hRecMean"," reconstructed mean signal",2000,-1000,1000);
-  TH1F * fhRecMean = new TH1F("hRecMean"," reconstructed mean signal",6000,1244000,1250000);
-  Add2RecPointsList( fhRecMean,73);
+  TH2F* fhRecCFD = new TH2F("hRecCFD"," CFD time",24, 0 ,24, 
+			      100,-50,50);
+  Add2RecPointsList ( fhRecCFD,0);
+
+  TH2F* fhRecAmpDiff = new TH2F("hRecAmpDiff"," LED-CFD  min QTC amplitude",
+				24, 0 ,24, 200,-10,10);
+  Add2RecPointsList (fhRecAmpDiff, 1);
   
-  
-}
+  TH1F *fhMean = new TH1F("hMean","online - rec mean",1000, -5000, 5000);
+  Add2RecPointsList ( fhMean,2);
+ }
 
 //____________________________________________________________________________
 void AliT0QADataMakerRec::InitESDs()
@@ -255,13 +266,16 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
 	rawReader->Reset() ; 
   //fills QA histos for RAW
   Int_t shift=0;
+  Float_t effic ;
+
   AliT0RawReader *start = new AliT0RawReader(rawReader);
   //  start->Next();
   if (! start->Next())
     AliDebug(1,Form(" no raw data found!!"));
   else
     {  
-      
+      fnEvent++;
+
       UInt_t type =rawReader->GetType();
       //     cout<<" !!!!! new event type = "<<type<<endl;
       Int_t allData[110][5];
@@ -299,13 +313,17 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
 	      Fill(allData[2*ik+25][iHt]-allData[2*ik+26][iHt]);
 	  
 	  
-	  if(type == 8 && allData[ik+1][iHt]>0 )  
-	    GetRawsData(205)->Fill(ik,allData[ik+1][iHt]-allData[1][0]);
-	  if(type == 8 && allData[ik+13][iHt]>0 ) 
-	    GetRawsData(206)->Fill(ik,allData[ik+13][iHt]-allData[13][0]);
+	  if(type == 8 && allData[ik+1][iHt]>0 ) feffC[ik]++; 
+	  if(type == 8 && allData[ik+13][iHt]>0 ) feffA[ik]++; 
+	  // GetRawsData(206)->Fill(ik,allData[ik+13][iHt]-allData[13][0]);
 	  if(type == 8 && (allData[2*ik+25][iHt]>0 && allData[2*ik+26][iHt]>0) ) 
 	    GetRawsData(207)->Fill(ik,allData[2*ik+25][iHt]-allData[2*ik+26][iHt]);
 	}
+	effic = Float_t(feffC[ik])/Float_t(fnEvent);
+	GetRawsData(205)->Fill(ik,effic );
+	effic = Float_t(feffA[ik])/Float_t(fnEvent);
+	GetRawsData(206)->Fill(ik,effic );
+	//      printf("CFD  efficiency for PMT %i = %f \n", ik, effic); 
       }
       for (Int_t ik = 12; ik<24; ik++) {
 	for (Int_t iHt=0; iHt<5; iHt++) {
@@ -326,16 +344,20 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
 	    GetRawsData(shift+ik+48+1)->
 	      Fill(allData[ik+57][iHt]-allData[ik+45][iHt]);
 	  
-	  if(type == 8 && allData[ik+45][iHt]>0 ) 
-	    GetRawsData(205)->Fill(ik,allData[ik+45][iHt]-allData[57][0]);
-	  if(type == 8 && allData[ik+57][iHt]>0 ) 
-	    GetRawsData(206)->Fill(ik,allData[ik+57][iHt]-allData[69][0]);
-	  if(type == 8 && (allData[2*ik+57][iHt]>0 && allData[2*ik+58][iHt]>0) ) 
-	    GetRawsData(207)->Fill(ik,allData[2*ik+57][iHt]-allData[2*ik+58][iHt]);
-	  
-	  
+	  if(type == 8 && allData[ik+45][iHt]>0 )  feffC[ik]++; 
+
+	  if(type == 8 && allData[ik+57][iHt]>0 )  feffA[ik]++; 
+	  // GetRawsData(206)->Fill(ik,allData[ik+57][iHt]-allData[69][0]);
+	  if(type == 8 && (allData[2*ik+57][iHt]>0 && allData[2*ik+58][iHt]>0) )
+	    GetRawsData(207)->Fill(ik,allData[2*ik+57][iHt]-allData[2*ik+58][iHt]);	  	  
 	}
+	effic = Float_t(feffC[ik])/Float_t(fnEvent);
+	GetRawsData(205)->Fill(ik,effic );
+	effic = Float_t(feffA[ik])/Float_t(fnEvent);
+	GetRawsData(206)->Fill(ik,effic );
+	//   printf("CFD  efficiency for PMT %i = %f \n", ik, effic);       }
       }
+	
       Int_t trChannel[6] = {49,50,51,52,55,56};  
       if(type == 7)
 	{
@@ -357,16 +379,16 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
 		  fNumTriggersCal[itr]++;
 		}
 	    }
-	  if(allData[53][iHt]>0 && allData[54][iHt]>0) 
-	    GetRawsData(204)->Fill(allData[53][iHt]-allData[54][iHt]);
+	    if(allData[53][iHt]>0 && allData[54][iHt]>0) 
+	      GetRawsData(204)->Fill(allData[53][iHt]-allData[54][iHt]);
 	  }
 	} 
 
-    
+      
       
       delete start;
+      }
     }
-}
   
 
 
@@ -389,18 +411,21 @@ void AliT0QADataMakerRec::MakeRecPoints(TTree * clustersTree)
   } 
     
   brRec->GetEntry(0);
-  
+    
   for ( Int_t i=0; i<24; i++) {
     if(i<12)
-      GetRecPointsData(i) -> Fill( frecpoints -> GetTime(i) - frecpoints -> GetTime(0)); 
+      GetRecPointsData(0) -> Fill(i, frecpoints -> GetTime(i) - frecpoints -> GetTime(0)); 
     if(i>11)
-      GetRecPointsData(i) -> Fill( frecpoints -> GetTime(i) - frecpoints -> GetTime(12)); 
-    GetRecPointsData(i+24) -> Fill( frecpoints -> GetAmp(i));
-    GetRecPointsData(i+48) -> Fill( frecpoints->AmpLED(i));
+      GetRecPointsData(0) -> Fill(i,  frecpoints -> GetTime(i) - frecpoints -> GetTime(12)); 
+    GetRecPointsData(1) -> Fill( i, frecpoints -> GetAmp(i) - frecpoints->AmpLED(i));
   }
-   GetRecPointsData(72) ->Fill(frecpoints->GetOnlineMean());
-   GetRecPointsData(73) ->Fill(frecpoints->GetMeanTime());
+  Double_t mmm=frecpoints->GetOnlineMean()- frecpoints->GetMeanTime();
+   GetRecPointsData(2) ->Fill(mmm);
+   // printf(" AliT0QADataMakerRec: diff mean  %f \n",mmm ); 
+   // GetRecPointsData(73) ->Fill(frecpoints->GetMeanTime());
   
+
+
 }
 
 //____________________________________________________________________________
