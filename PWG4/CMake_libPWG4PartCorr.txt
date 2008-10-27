@@ -1,16 +1,17 @@
 # -*- mode: cmake -*-
 
 set(SRCS
-       PartCorr/AliAnaCaloTrigger.cxx PartCorr/AliAnaCaloTriggerMC.cxx 
-       PartCorr/AliAODParticleCorrelation.cxx PartCorr/AliAnalysisTaskPHOSExample.cxx 
+       PartCorr/AliAnaCaloTrigger.cxx PartCorr/AliAnaCaloTriggerMC.cxx
+       PartCorr/AliAODParticleCorrelation.cxx PartCorr/AliAnalysisTaskPHOSExample.cxx
        PartCorr/AliNeutralMesonSelection.cxx  PartCorr/AliFidutialCut.cxx PartCorr/AliCaloPID.cxx PartCorr/AliIsolationCut.cxx
-       PartCorr/AliAnaScale.cxx PartCorr/AliAnaPartCorrMaker.cxx 
-       PartCorr/AliAnaPartCorrBaseClass.cxx  PartCorr/AliAnaExample.cxx PartCorr/AliAnaGammaDirect.cxx  
-       PartCorr/AliAnaParticlePartonCorrelation.cxx PartCorr/AliAnaParticleHadronCorrelation.cxx 
-       PartCorr/AliAnaParticleJetFinderCorrelation.cxx 
-       PartCorr/AliAnaParticleJetLeadingConeCorrelation.cxx PartCorr/AliAnalysisTaskParticleCorrelation.cxx 
-       PartCorr/AliCaloTrackReader.cxx PartCorr/AliCaloTrackESDReader.cxx 
-       PartCorr/AliCaloTrackAODReader.cxx PartCorr/AliCaloTrackMCReader.cxx  PartCorr/AliCaloPhoton.cxx 
+       PartCorr/AliAnaScale.cxx PartCorr/AliAnaPartCorrMaker.cxx
+       PartCorr/AliAnaPartCorrBaseClass.cxx  PartCorr/AliAnaExample.cxx PartCorr/AliAnaGammaDirect.cxx 
+       PartCorr/AliAnaParticlePartonCorrelation.cxx PartCorr/AliAnaParticleHadronCorrelation.cxx
+       PartCorr/AliAnaParticleJetFinderCorrelation.cxx
+       PartCorr/AliAnaParticleJetLeadingConeCorrelation.cxx PartCorr/AliAnalysisTaskParticleCorrelation.cxx
+       PartCorr/AliCaloTrackReader.cxx PartCorr/AliCaloTrackESDReader.cxx
+       PartCorr/AliCaloTrackAODReader.cxx PartCorr/AliCaloTrackMCReader.cxx
+       PartCorr/AliCaloPhoton.cxx PartCorr/AliAnaPi0.cxx
        PartCorr/AliV0Reader.cxx PartCorr/AliAnalysisTaskGammaConversion.cxx PartCorr/AliGammaConversionHistograms.cxx
 )
 
