@@ -65,7 +65,7 @@ void AliT0PreprocessorCosmic::Initialize(Int_t run, UInt_t startTime, UInt_t end
   // Creates AliT0DataDCS object
   AliPreprocessor::Initialize(run, startTime, endTime);
   AliInfo(Form("\n\tRun %d \n\tStartTime %s \n\tEndTime %s", run, TTimeStamp(startTime).AsString(), TTimeStamp(endTime).AsString()));
-  fData = new AliT0DataDCS(fRun, fStartTime, fEndTime);
+  fData = new AliT0DataDCS(fRun, fStartTime, fEndTime,  GetStartTimeDCSQuery(), GetEndTimeDCSQuery());
 }
 //____________________________________________________
 
