@@ -359,8 +359,8 @@ public:
   }
   //____________________________________________________________________
   /** Get the static instance */
-  static Display* Instance() { 
-    if (!fgInstance) fgInstance = new Display();
+  static Display* Instance(const char* file=0) { 
+    if (!fgInstance) fgInstance = new Display(file);
     return fgInstance;
   }
 protected:
@@ -383,11 +383,11 @@ Display* Display::fgInstance = 0;
 
 
 //____________________________________________________________________
-Display* display()
+Display* display(const char* file="")
 {
-  TGeoManager::Import("geometry.root");
+  // TGeoManager::Import(geom);
 
-  Display* d = Display::Instance();
+  Display* d = Display::Instance(file);
   return d;
 
 }
