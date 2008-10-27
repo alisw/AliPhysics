@@ -37,6 +37,7 @@ ClassImp(AliAnalysisTaskTagCreator)
 
 AliAnalysisTaskTagCreator::AliAnalysisTaskTagCreator():
     AliAnalysisTaskSE(),
+    fCreateTags(kFALSE),
     fFirstFile(kTRUE),
     fRunTag(0), 
     fTreeT(0),
@@ -47,6 +48,7 @@ AliAnalysisTaskTagCreator::AliAnalysisTaskTagCreator():
 
 AliAnalysisTaskTagCreator::AliAnalysisTaskTagCreator(const char* name):
     AliAnalysisTaskSE(name),
+    fCreateTags(kFALSE),
     fFirstFile(kTRUE),
     fRunTag(0), 
     fTreeT(0),

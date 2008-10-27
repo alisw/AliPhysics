@@ -64,7 +64,8 @@ AliEventPoolLoop::AliEventPoolLoop(const char* name, const char* title):
 AliEventPoolLoop::AliEventPoolLoop(const AliEventPoolLoop& obj):
     AliVEventPool(obj),
     fMaxIterations(obj.fMaxIterations),
-    fNIteration(obj.fNIteration)
+    fNIteration(obj.fNIteration),
+    fChainClone(0)
 {
     // Copy constructor
 }

@@ -63,6 +63,7 @@ AliAnalysisAlien::AliAnalysisAlien()
                   fOutputArchive(),
                   fOutputFiles(),
                   fInputFormat(),
+                  fDatasetName(),
                   fJDLName(),
                   fInputFiles(0)
 {
@@ -97,6 +98,7 @@ AliAnalysisAlien::AliAnalysisAlien(const char *name)
                   fOutputArchive(),
                   fOutputFiles(),
                   fInputFormat(),
+                  fDatasetName(),
                   fJDLName(),
                   fInputFiles(0)
 {
@@ -131,6 +133,7 @@ AliAnalysisAlien::AliAnalysisAlien(const AliAnalysisAlien& other)
                   fOutputArchive(other.fOutputArchive),
                   fOutputFiles(other.fOutputFiles),
                   fInputFormat(other.fInputFormat),
+                  fDatasetName(other.fDatasetName),
                   fJDLName(other.fJDLName),
                   fInputFiles(0)
 {
@@ -183,6 +186,7 @@ AliAnalysisAlien &AliAnalysisAlien::operator=(const AliAnalysisAlien& other)
       fOutputArchive           = other.fOutputArchive;
       fOutputFiles             = other.fOutputFiles;
       fInputFormat             = other.fInputFormat;
+      fDatasetName             = other.fDatasetName;
       fJDLName                 = other.fJDLName;
       if (other.fInputFiles) {
          fInputFiles = new TObjArray();
@@ -594,7 +598,7 @@ Bool_t AliAnalysisAlien::CreateJDL()
       if (FileExists(fJDLName)) gGrid->Rm(fJDLName);
       TFile::Cp(Form("file:%s",fJDLName.Data()), Form("alien://%s/%s", workdir.Data(), fJDLName.Data()));
       if (fAdditionalLibs.Length()) {
-         TObjArray *arr = fAdditionalLibs.Tokenize(" ");
+         arr = fAdditionalLibs.Tokenize(" ");
          TObjString *os;
          TIter next(arr);
          while ((os=(TObjString*)next())) {
