@@ -41,6 +41,7 @@ public:
   Bool_t         HasFriends() const {return TestBit(kFriends);};
   Bool_t         HasMCdata() const {return TestBit(kMCdata);};
   Bool_t         HasPostProcess() const {return TestBit(kPostProcess);};
+  virtual TObjArray* Histos() {return fContainer;}
 
   virtual Bool_t Load(const Char_t *filename);
   virtual Bool_t PostProcess();

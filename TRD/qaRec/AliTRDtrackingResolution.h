@@ -54,6 +54,7 @@ public:
   void    CreateOutputObjects();
   //void    Exec(Option_t *);
   void    GetRefFigure(Int_t ifig);
+  TObjArray*  Histos(); 
   Bool_t  IsVerbose() const {return TESTBIT(fStatus, kVerbose);}
   Bool_t  IsVisual() const {return TESTBIT(fStatus, kVisual);}
   Bool_t  PostProcess();
@@ -71,7 +72,6 @@ private:
   AliTRDtrackingResolution(const AliTRDtrackingResolution&);
   AliTRDtrackingResolution& operator=(const AliTRDtrackingResolution&);
   void        AdjustF1(TH1 *h, TF1 *f);
-  TObjArray*  Histos(); 
 
 private:
   UChar_t               fStatus;          // steer parameter of the task

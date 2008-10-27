@@ -107,7 +107,7 @@ void AliTRDrecoTask::InitFunctorList()
     TString name(m->GetName());
     if(!name.BeginsWith("Plot")) continue;
     if(!fPlotFuncList) fPlotFuncList = new TList();
-    fPlotFuncList->AddLast(new TMethodCall(c, (const char*)name, "const AliTRDtrackV1*"));
+    fPlotFuncList->AddLast(new TMethodCall(c, (const char*)name, ""));
     printf("%s%s\n", m->GetName(), m->GetSignature());
   }
 }

@@ -115,36 +115,6 @@ void AliTRDtrackingResolution::CreateOutputObjects()
   OpenFile(0, "RECREATE");
 
   fContainer = Histos();
-
-  // cluster to tracklet residuals [2]
-  fContainer->AddAt(new TH2I("fYClRes", "Clusters Residuals", 21, -21., 21., 100, -.5, .5), kClusterResidual);
-//   // tracklet to Riemann fit residuals [2]
-//   fContainer->AddAt(new TH2I("fYTrkltRRes", "Tracklet Riemann Residuals", 21, -21., 21., 100, -.5, .5), kTrackletRiemanYResidual);
-//   fContainer->AddAt(new TH2I("fAngleTrkltRRes", "Tracklet Riemann Angular Residuals", 21, -21., 21., 100, -.5, .5), kTrackletRiemanAngleResidual);
-//   fContainer->AddAt(new TH2I("fYTrkltKRes", "Tracklet Kalman Residuals", 21, -21., 21., 100, -.5, .5), kTrackletKalmanYResidual);
-//   fContainer->AddAt(new TH2I("fAngleTrkltKRes", "Tracklet Kalman Angular Residuals", 21, -21., 21., 100, -.5, .5), kTrackletKalmanAngleResidual);
-
-  // Resolution histos
-  if(HasMCdata()){
-    // cluster y resolution [0]
-    fContainer->AddAt(new TH2I("fCY", "Cluster Resolution", 31, -31., 31., 100, -.5, .5), kClusterResolution);
-    // tracklet y resolution [0]
-    fContainer->AddAt(new TH2I("fY", "Tracklet Resolution", 31, -31., 31., 100, -.5, .5), kTrackletYResolution);
-    // tracklet y resolution [0]
-    fContainer->AddAt(new TH2I("fY", "Tracklet Resolution", 31, -31., 31., 100, -.5, .5), kTrackletZResolution);
-    // tracklet angular resolution [1]
-    fContainer->AddAt(new TH2I("fPhi", "Tracklet Angular Resolution", 31, -31., 31., 100, -10., 10.), kTrackletAngleResolution);
-
-//     // Riemann track resolution [y, z, angular]
-//     fContainer->AddAt(new TH2I("fYRT", "Track Riemann Y Resolution", 21, -21., 21., 100, -.5, .5), kTrackRYResolution);
-//     fContainer->AddAt(new TH2I("fZRT", "Track Riemann Z Resolution", 21, -21., 21., 100, -.5, .5), kTrackRZResolution);
-//     fContainer->AddAt(new TH2I("fPhiRT", "Track Riemann Angular Resolution", 21, -21., 21., 100, -10., 10.), kTrackRAngleResolution);
-// 
-//     Kalman track resolution [y, z, angular]
-//     fContainer->AddAt(new TH2I("fYKT", "", 21, -21., 21., 100, -.5, .5), kTrackKYResolution);
-//     fContainer->AddAt(new TH2I("fZKT", "", 21, -21., 21., 100, -.5, .5), kTrackKZResolution);
-//     fContainer->AddAt(new TH2I("fPhiKT", "", 21, -21., 21., 100, -10., 10.), kTrackKAngleResolution);
-  }
 }
 
 // //________________________________________________________
@@ -500,7 +470,7 @@ TH1* AliTRDtrackingResolution::PlotResolution(const AliTRDtrackV1 *track)
 
     Int_t istk = AliTRDgeometry::GetStack(det); 
     AliTRDpadPlane *pp = fGeo->GetPadPlane(ily, istk);
-    Float_t z0 = pp->GetRow0() + AliTRDSimParam::Instance()->GetAnodeWireOffset();
+    Float_t zr0 = pp->GetRow0() + AliTRDSimParam::Instance()->GetAnodeWireOffset();
     Float_t tilt = fTracklet->GetTilt();
 
     AliTRDcluster *c = 0x0;
@@ -520,7 +490,7 @@ TH1* AliTRDtrackingResolution::PlotResolution(const AliTRDtrackV1 *track)
       
       // Fill Debug Tree
       if(fDebugLevel>=1){
-        Float_t d = z0 - zt;
+        Float_t d = zr0 - zt;
         d -= ((Int_t)(2 * d)) / 2.0;
         if (d > 0.25) d  = 0.5 - d;
   
@@ -819,7 +789,39 @@ void AliTRDtrackingResolution::AdjustF1(TH1 *h, TF1 *f)
 //________________________________________________________
 TObjArray* AliTRDtrackingResolution::Histos()
 {
-  if(!fContainer) fContainer  = new TObjArray(5);
+  if(fContainer) return fContainer;
+
+  fContainer  = new TObjArray(5);
+
+  // cluster to tracklet residuals [2]
+  fContainer->AddAt(new TH2I("fYClRes", "Clusters Residuals", 21, -21., 21., 100, -.5, .5), kClusterResidual);
+//   // tracklet to Riemann fit residuals [2]
+//   fContainer->AddAt(new TH2I("fYTrkltRRes", "Tracklet Riemann Residuals", 21, -21., 21., 100, -.5, .5), kTrackletRiemanYResidual);
+//   fContainer->AddAt(new TH2I("fAngleTrkltRRes", "Tracklet Riemann Angular Residuals", 21, -21., 21., 100, -.5, .5), kTrackletRiemanAngleResidual);
+//   fContainer->AddAt(new TH2I("fYTrkltKRes", "Tracklet Kalman Residuals", 21, -21., 21., 100, -.5, .5), kTrackletKalmanYResidual);
+//   fContainer->AddAt(new TH2I("fAngleTrkltKRes", "Tracklet Kalman Angular Residuals", 21, -21., 21., 100, -.5, .5), kTrackletKalmanAngleResidual);
+
+  // Resolution histos
+  if(HasMCdata()){
+    // cluster y resolution [0]
+    fContainer->AddAt(new TH2I("fCY", "Cluster Resolution", 31, -31., 31., 100, -.5, .5), kClusterResolution);
+    // tracklet y resolution [0]
+    fContainer->AddAt(new TH2I("fY", "Tracklet Resolution", 31, -31., 31., 100, -.5, .5), kTrackletYResolution);
+    // tracklet y resolution [0]
+    fContainer->AddAt(new TH2I("fY", "Tracklet Resolution", 31, -31., 31., 100, -.5, .5), kTrackletZResolution);
+    // tracklet angular resolution [1]
+    fContainer->AddAt(new TH2I("fPhi", "Tracklet Angular Resolution", 31, -31., 31., 100, -10., 10.), kTrackletAngleResolution);
+
+//     // Riemann track resolution [y, z, angular]
+//     fContainer->AddAt(new TH2I("fYRT", "Track Riemann Y Resolution", 21, -21., 21., 100, -.5, .5), kTrackRYResolution);
+//     fContainer->AddAt(new TH2I("fZRT", "Track Riemann Z Resolution", 21, -21., 21., 100, -.5, .5), kTrackRZResolution);
+//     fContainer->AddAt(new TH2I("fPhiRT", "Track Riemann Angular Resolution", 21, -21., 21., 100, -10., 10.), kTrackRAngleResolution);
+// 
+//     Kalman track resolution [y, z, angular]
+//     fContainer->AddAt(new TH2I("fYKT", "", 21, -21., 21., 100, -.5, .5), kTrackKYResolution);
+//     fContainer->AddAt(new TH2I("fZKT", "", 21, -21., 21., 100, -.5, .5), kTrackKZResolution);
+//     fContainer->AddAt(new TH2I("fPhiKT", "", 21, -21., 21., 100, -10., 10.), kTrackKAngleResolution);
+  }
   return fContainer;
 }
 
