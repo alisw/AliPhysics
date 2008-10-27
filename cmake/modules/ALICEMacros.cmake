@@ -156,14 +156,14 @@ If(ALICE_TARGET STREQUAL macosx64)
 #  Set(CMAKE_CXX_LINK_EXECUTABLE 
 #    "MACOSX_DEPLOYMENT_TARGET=${MACOSX_MAJOR}.${MACOSX_MINOR} ${CMAKE_CXX_LINK_EXECUTABLE}")
 
-  Set(CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS "${CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS} -flat_namespace -single_module -undefined dynamic_lookup -m64")
+  Set(CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS "${CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS} -O -g -flat_namespace -single_module -undefined dynamic_lookup -m64")
 
-  Set(CMAKE_Fortran_FLAGS "-fno-second-underscore -m64")
+  Set(CMAKE_Fortran_FLAGS "-O -g -fno-second-underscore -m64")
 
   Set(CLIBDEFS "-DCERNLIB_LXIA64 -DCERNLIB_BLDLIB -DCERNLIB_CZ -DCERNLIB_PPC")
 
-  Set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m64 -pipe -Wall -W -Wno-long-double -pipe -fbounds-check -fsigned-char -fno-common -fmessage-length=0 -Woverloaded-virtual -Weffc++ -Wconversion -Wshadow -fno-default-inline -fno-inline -I/usr/X11R6/include -I${FINK_ROOT}/include")
-  Set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -m64 -Wall -W -fno-common -pipe -I${FINK_ROOT}/include")
+  Set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O -g -m64 -pipe -Wall -W -Wno-long-double -pipe -fbounds-check -fsigned-char -fno-common -fmessage-length=0 -Woverloaded-virtual -Weffc++ -Wconversion -Wshadow -fno-default-inline -fno-inline -I/usr/X11R6/include -I${FINK_ROOT}/include")
+  Set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -O -g -m64 -Wall -W -fno-common -pipe -I${FINK_ROOT}/include")
 
   If(CMAKE_Fortran_COMPILER MATCHES g95) 
     Set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fbounds-check -ftrace=full -DFORTRAN_G95")
@@ -208,14 +208,14 @@ Endif(ALICE_TARGET STREQUAL macosx64)
 If(ALICE_TARGET STREQUAL linuxx8664gcc) 
 
 
-  Set(CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS "${CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS} -shared -Wl")
+  Set(CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS "${CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS} -O -g -shared -Wl")
 
-  Set(CMAKE_Fortran_FLAGS "-fno-second-underscore -m64")
+  Set(CMAKE_Fortran_FLAGS "-O -g -fno-second-underscore -m64")
 
   Set(CLIBDEFS "-DCERNLIB_LXIA64 -DCERNLIB_BLDLIB -DCERNLIB_CZ")
 
-  Set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m64 -pipe -W -Wall -Weffc++ -Woverloaded-virtual -fmessage-length=0 -Wno-long-long -Dlinux -I/usr/X11R6/include")
-  Set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -m64 -Wall -W -pipe")
+  Set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O -g -m64 -pipe -W -Wall -Weffc++ -Woverloaded-virtual -fmessage-length=0 -Wno-long-long -Dlinux -I/usr/X11R6/include")
+  Set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -O -g -m64 -Wall -W -pipe")
 
   If(CMAKE_Fortran_COMPILER MATCHES g95) 
     Set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fbounds-check -ftrace=full -DFORTRAN_G95")
@@ -243,14 +243,14 @@ Endif(ALICE_TARGET STREQUAL linuxx8664gcc)
 If(ALICE_TARGET STREQUAL linux) 
 
 
-  Set(CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS "${CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS} -shared -Wl")
+  Set(CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS "${CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS} -O -g -shared -Wl")
 
-  Set(CMAKE_Fortran_FLAGS "-fno-second-underscore -m32")
+  Set(CMAKE_Fortran_FLAGS "-O -g -fno-second-underscore -m32")
 
   Set(CLIBDEFS "-DCERNLIB_LINUX -DCERNLIB_BLDLIB -DCERNLIB_CZ")
 
-  Set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32 -pipe -W -Wall -Weffc++ -Woverloaded-virtual -fmessage-length=0 -Wno-long-long -Dlinux -I/usr/X11R6/include")
-  Set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -m32 -Wall -W -pipe")
+  Set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O -g -m32 -pipe -W -Wall -Weffc++ -Woverloaded-virtual -fmessage-length=0 -Wno-long-long -Dlinux -I/usr/X11R6/include")
+  Set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -O -g -m32 -Wall -W -pipe")
 
   If(CMAKE_Fortran_COMPILER MATCHES g95) 
     Set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fbounds-check -ftrace=full -DFORTRAN_G95")
@@ -289,14 +289,14 @@ If(ALICE_TARGET STREQUAL macosx)
 
   Find_Package(fink)
   
-  Set(CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS "${CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS} -flat_namespace -single_module -undefined dynamic_lookup -m32")
+  Set(CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS "${CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS} -O -g -flat_namespace -single_module -undefined dynamic_lookup -m32")
 
-  Set(CMAKE_Fortran_FLAGS "-fno-second-underscore -m32")
+  Set(CMAKE_Fortran_FLAGS "-O -g -fno-second-underscore -m32")
 
   Set(CLIBDEFS "-DCERNLIB_LINUX -DCERNLIB_BLDLIB -DCERNLIB_CZ -DCERNLIB_PPC")
 
-  Set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32 -pipe -Wall -W -Wno-long-double -pipe -fbounds-check -fsigned-char -fno-common -fmessage-length=0 -Woverloaded-virtual -Weffc++ -Wconversion -Wshadow -fno-default-inline -fno-inline -I/usr/X11R6/include -I${FINK_ROOT}/include")
-  Set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -m32 -Wall -W -fno-common -pipe -I${FINK_ROOT}/include")
+  Set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O -g -m32 -pipe -Wall -W -Wno-long-double -pipe -fbounds-check -fsigned-char -fno-common -fmessage-length=0 -Woverloaded-virtual -Weffc++ -Wconversion -Wshadow -fno-default-inline -fno-inline -I/usr/X11R6/include -I${FINK_ROOT}/include")
+  Set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -O -g -m32 -Wall -W -fno-common -pipe -I${FINK_ROOT}/include")
 
   If(CMAKE_Fortran_COMPILER MATCHES g95) 
     Set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fbounds-check -ftrace=full -DFORTRAN_G95 -single_module")
@@ -323,14 +323,14 @@ Endif(ALICE_TARGET STREQUAL macosx)
 # solarisCC5
 If(ALICE_TARGET STREQUAL solarisCC5) 
 
-  Set(CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS "${CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS}")
+  Set(CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS "${CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS} -O -g")
 
   Set(CLIBDEFS "-DCERNLIB_SUN -DCERNLIB_BLDLIB -DCERNLIB_CZ")
 
-  Set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} +w -KPIC -template=no%extdef")
-  Set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -KPIC -erroff=%none")
+  Set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O -g +w -KPIC -template=no%extdef")
+  Set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -O -g -KPIC -erroff=%none")
 
-  Set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -KPIC -erroff=%none")
+  Set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -O -g -KPIC -erroff=%none")
 
   Set(ALIROOT_LIBRARIES "${ROOT_LIBRARIES}")
 
