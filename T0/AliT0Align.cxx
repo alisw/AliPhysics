@@ -129,13 +129,15 @@ AliT0Align & AliT0Align::operator =(const AliT0Align & align)
 }
 
 //__________________________________________________________________________
-AliT0Align::~AliT0Align(){
+AliT0Align::~AliT0Align()
+{
   //
   // destructor
   //
   if(fT0AAlignObj) delete fT0AAlignObj;
   if(fT0CAlignObj) delete fT0CAlignObj;
-
+  if(fFileGlob) delete[] fT0CAlignObj;
+  if(fUser) delete[] fUser;
 }
 //__________________________________________________________________________
 Bool_t AliT0Align::LoadSurveyData()
