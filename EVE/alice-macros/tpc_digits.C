@@ -14,7 +14,7 @@ void tpc_digits(Int_t mode=1)
   TTree* dt = rl->GetTreeD("TPC", false);
   if (dt == 0)
   {
-    throw(TEveException("tpc_digits Can not access digits tree."));
+    throw TEveException("tpc_digits Can not access digits tree.");
   }
 
   AliEveTPCData *x = new AliEveTPCData;
@@ -142,7 +142,7 @@ void tpc_digits_2drange(Int_t start, Int_t end)
   TTree* dt = rl->GetTreeD("TPC", false);
   if (dt == 0)
   {
-    throw(TEveException("tpc_digits Can not access digits tree."));
+    throw TEveException("tpc_digits Can not access digits tree.");
   }
 
   AliEveTPCData *x = new AliEveTPCData;
