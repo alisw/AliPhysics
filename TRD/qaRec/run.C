@@ -76,8 +76,8 @@ void run(Char_t *tasks="ALL", const Char_t *files=0x0, Int_t nmax=-1)
   TStopwatch timer;
   timer.Start();
 
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libTRDqaRec.so");
+  if(gSystem->Load("libANALYSIS.so")<0) return;
+  if(gSystem->Load("libTRDqaRec.so")<0) return;
   
   Bool_t fHasMCdata = kTRUE;
   Bool_t fHasFriends = kTRUE;
@@ -87,7 +87,7 @@ void run(Char_t *tasks="ALL", const Char_t *files=0x0, Int_t nmax=-1)
   for(Int_t isel = 0; isel < tasksArray->GetEntriesFast(); isel++){
     TString s = (dynamic_cast<TObjString *>(tasksArray->UncheckedAt(isel)))->String();
     if(s.CompareTo("ALL") == 0){
-      for(Int_t itask = 1; itask < fknTasks; itask++) SETBIT(fSteerTask, itask);
+      for(Int_t itask = 1; itask < NTRDTASKS; itask++) SETBIT(fSteerTask, itask);
       continue;
     } else if(s.CompareTo("NOFR") == 0){ 
       fHasFriends = kFALSE;
@@ -95,8 +95,8 @@ void run(Char_t *tasks="ALL", const Char_t *files=0x0, Int_t nmax=-1)
       fHasMCdata = kFALSE;
     } else { 
       Bool_t foundOpt = kFALSE;  
-      for(Int_t itask = 1; itask < fknTasks; itask++){
-        if(s.CompareTo(fTaskOpt[itask]) != 0) continue;
+      for(Int_t itask = 1; itask < NTRDTASKS; itask++){
+        if(s.CompareTo(fgkTRDtaskOptitask]) != 0) continue;
         SETBIT(fSteerTask, itask);
         foundOpt = kTRUE;
         break;
@@ -105,8 +105,8 @@ void run(Char_t *tasks="ALL", const Char_t *files=0x0, Int_t nmax=-1)
     }
   }
   // define task list pointers;
-  AliTRDrecoTask *taskPtr[fknTasks], *task = 0x0;
-  memset(taskPtr, 0, fknTasks*sizeof(AliAnalysisTask*));
+  AliTRDrecoTask *taskPtr[NTRDTASKS], *task = 0x0;
+  memset(taskPtr, 0, NTRDTASKS*sizeof(AliAnalysisTask*));
 
   //____________________________________________//
   //gROOT->LoadMacro(Form("%s/TRD/qaRec/CreateESDChain.C", gSystem->ExpandPathName("$ALICE_ROOT")));
@@ -244,7 +244,7 @@ void run(Char_t *tasks="ALL", const Char_t *files=0x0, Int_t nmax=-1)
 
   if (!mgr->InitAnalysis()) return;
   printf("\n\tRUNNING TRAIN FOR TASKS:\n");
-  for(Int_t itask = 1; itask < fknTasks; itask++){
+  for(Int_t itask = 1; itask < NTRDTASKS; itask++){
     if(TESTBIT(fSteerTask, itask)) printf("\t   %s [%s]\n", taskPtr[itask]->GetTitle(), taskPtr[itask]->GetName());
   }
   printf("\n\n");
@@ -272,7 +272,7 @@ void run(Char_t *tasks="ALL", const Char_t *files=0x0, Int_t nmax=-1)
   cal->Terminate();
   delete field;
   delete cdbManager;
-  for(Int_t it=fknTasks-1; it>=0; it--) if(taskPtr[it]) delete taskPtr[it];
+  for(Int_t it=NTRDTASKS-1; it>=0; it--) if(taskPtr[it]) delete taskPtr[it];
   if(mcH) delete mcH;
   delete esdH;
   delete mgr;

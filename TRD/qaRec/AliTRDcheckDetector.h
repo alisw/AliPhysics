@@ -6,6 +6,7 @@
 #endif
 
 class TObjArray;
+class TH1;
 class TMap;
 class AliESDHeader;
 class AliTRDcheckDetector : public AliTRDrecoTask{
@@ -15,7 +16,7 @@ enum{
   kNDetectorsSector = 30,
   kNSectors = 18,
   kNLayers = 6,
-  kNTimebins = 30
+  kNTimeBins = 30
 };
 // The Histogram number
 enum{
@@ -42,6 +43,19 @@ public:
   virtual void Exec(Option_t *);
   virtual void Terminate(Option_t *);
   
+  virtual TObjArray *Histos();
+  
+  // Plotting Functions:
+  TH1 *PlotMeanNClusters(AliTRDtrackV1 *);
+  TH1 *PlotNClusters(AliTRDtrackV1 *);
+  TH1 *PlotNTracklets(AliTRDtrackV1 *);
+  TH1 *PlotTracksSector(AliTRDtrackV1 *);
+  TH1 *PlotPulseHeight(AliTRDtrackV1 *);
+	TH1 *PlotChi2(AliTRDtrackV1 *track);
+	TH1 *PlotNormalizedChi2(AliTRDtrackV1 *track);
+	TH1 *PlotClusterCharge(AliTRDtrackV1 *);
+	TH1 *PlotChargeDeposit(AliTRDtrackV1 *);
+
   virtual Bool_t PostProcess();
   virtual void  GetRefFigure(Int_t ifig);
   

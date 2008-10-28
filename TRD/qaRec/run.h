@@ -1,12 +1,13 @@
 #ifndef TRDRECONSTRUCTIONTRAIN_H
 #define TRDRECONSTRUCTIONTRAIN_H
 
-#define BIT(n)        (1 << (n))
-#define SETBIT(n,i)   ((n) |= BIT(i))
-#define TESTBIT(n,i)  ((Bool_t)(((n) & BIT(i)) != 0))
-#define CLEARBIT(n,i) ((n) &= ~BIT(i))
+#define BIT(n)      (1 << (n))
+#define SETBIT(n,i) ((n) |= BIT(i))
+#define TSTBIT(n,i) ((Bool_t)(((n) & BIT(i)) != 0))
+#define CLRBIT(n,i) ((n) &= ~BIT(i))
 
-const Int_t fknTasks = 8;
+#define NTRDTASKS 7
+
 enum AliTRDrecoTasks{
    kInfoGen = 0
   ,kCheckDetector = 1
@@ -18,18 +19,17 @@ enum AliTRDrecoTasks{
   ,kPIDRefMaker = 7
 };
 
-Char_t *fTaskClass[fknTasks] = {
-  "AliTRDtrackInfoGen"
-  ,"AliTRDcheckDetector"
+Char_t* fgkTRDtaskClassName[NTRDTASKS] = {
+  "AliTRDcheckDetector"
   ,"AliTRDtrackingEfficiency"
   ,"AliTRDtrackingEfficiencyCombined"
   ,"AliTRDtrackingResolution"
-  ,"AliTRDcalibration"
   ,"AliTRDpidChecker"
   ,"AliTRDpidRefMaker"
+  ,"AliTRDcalibration"
 };
 
-Char_t *fTaskOpt[fknTasks+2] = {
+Char_t *fgkTRDtaskOpt[NTRDTASKS+3] = {
   "ALL"
   ,"DET"
   ,"EFF"
