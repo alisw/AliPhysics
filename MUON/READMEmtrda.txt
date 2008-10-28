@@ -5,11 +5,13 @@
 \page README_mtrda Trigger DA
  
 The detector algorithm is implemented for the Muon Trigger in the AliRoot framework.
-The main code is located in MUONTRGda.cxx and it runs in the MUON Trigger LDC.
+The main code is located in MUONTRGda.cxx and it runs in the MUON Trigger MON (monitoring).
 
 \section da_s1 The Muon Trigger Calibration
 
-The main goal of the DA is the transfert of the modified configuration files to the FES.
+The main goal of the DA is the transfer of the modified configuration files to the FES and to put them in the
+detector data base. In the current version the DA will modify the global crate configuration only (new).
+
 The configuration files stored in the online DB are the following:
 
 - MtgGlobalCrate-<version>.dat:   contains the global crate information
@@ -17,13 +19,14 @@ The configuration files stored in the online DB are the following:
 - MtgLocalMask-<version>.dat:     contains the local mask
 - MtgLocalLut-<version>.dat:      contains the local LUT 
 - MtgCurrent.dat:                 contains the name list of the above files with their version 
-                                and the flag for master/slave status on the DA
+                                  and the flag for master/slave status on the DA
 
 The copy onto the FES for the modified local masks is only done when the flag is set to master for the DA.
-The DA creates a file (ExportedFiles.dat) containing the name of the files to be transfert by the shuttle.
+The DA creates a file (ExportedFiles.dat) containing the name of the files to be transfered by the shuttle.
 To be able to check the change of version of one the files, another file is created containing the last current
 list of configuration files: MtgLastCurrent.dat.
-The Muon trigger electronics could run with two types of calibration:
+The Muon trigger electronics could run with two types of calibration. New: the two types can be done in the same
+run containing a mixture of physics events with calibration events injected every 50 seconds.
 
 \subsection da_ss1  ELECTRONICS_CALIBRATION_RUN (calib)
 
@@ -34,13 +37,13 @@ The typical ECS sequence for calib is :
 - Switch ON the electronics LV
 - Load Configuration via the MTS package
 - Enable FET pulse 
-- Data taking (typically 100 events)
-- The DA computes the occupancy, if a channel is not responding in 80% of the case, it will be marked as dead 
-- The DA update the local mask file accordingly and put it on the File Exchange Server
+- Data taking (typically 1000 events)
+- The DA computes the occupancy of the global input entries, if a channel is not responding in N% of the case 
+  (10% by default), it will be marked as dead 
+- The DA updates the global mask file accordingly, adds the file to the data base and on the the File Exchange 
+  Server at the beginning of the next run. 
 
 Then the SHUTTLE process the ASCII files and store the configuration on the OCDB
-
-This option is disable for the moment.
 
 \subsection da_ss2  DETECTOR_CALIBRATION_RUN (ped)
 
@@ -50,9 +53,11 @@ The typical ECS sequence for calibration is :
 
 - Switch ON the electronics LV
 - Load Configuration via the MTS package
-- Data taking (typically 100 events)
-- The DA computes the occupancy, if a channel is responding in 80% of the case, it will be marked as noisy
-- The DA update the local mask file accordingly and put it on the File Exchange Server
+- Data taking (typically 1000 events)
+- The DA computes the occupancy of the global input entries, if a channel is responding in N% of the case (90% 
+  by default), it will be marked as noisy
+- The DA updates the global mask file accordingly, adds the file to the data base and on the the File Exchange 
+  Server at the beginning of the next run. 
 
 Then the SHUTTLE process the ASCII files and store the configuration on the OCDB
 
@@ -70,15 +75,11 @@ MUONTRGda.exe -options, the available options are :
  Input
 -f <raw data file>        (default = )
 
- output
--r <root file>            (default = none)
-
  Options
--t <threshold values>     (default = 0.2)
+-t <threshold values>     (default = 0.1)
 -d <print level>          (default = 0)
 -s <skip events>          (default = 0)
 -n <max events>           (default = 1000000)
--e <execute ped/calib>    (default = nil)
 
 \endverbatim
 
@@ -91,8 +92,7 @@ Franck Manso: manson@clermont.in2p3.fr
 
 or 
 
-Christian Finck: finck@subatech.in2p3.fr (until 01 Septembre 08)
-
+Bogdan Vulpescu: vulpescu@clermont.in2p3.fr
 
 This chapter is defined in the READMEmtrda.txt file.
 */
