@@ -46,10 +46,10 @@ public:
   Short_t GetLDC() { return fLDC; }
   virtual void SetTaskOffset(Int_t SPDOffset, Int_t SDDOffset, Int_t SSDOffset);
 
- protected:
+protected:
   virtual Double_t Check(AliQA::ALITASK_t /*index*/){return 0.5;}
   virtual Double_t Check(AliQA::ALITASK_t index, TObjArray * list ) ;
-
+  Double_t Check(AliQA::ALITASK_t, TNtupleD*) {AliFatal("Not implemented\n"); return 0;}
 private:
 
   Bool_t  fkOnline;

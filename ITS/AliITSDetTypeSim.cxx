@@ -916,9 +916,9 @@ void AliITSDetTypeSim::ReadOldSSDNoise(TObjArray *array,
 void AliITSDetTypeSim::ReadOldSSDBadChannels(TObjArray *array, 
 					     AliITSBadChannelsSSDv2 *badChannelsSSD) {
   //Reads the old SSD calibration object and converts it to the new format
-  Int_t fNMod = array->GetEntries();
+  Int_t nMod = array->GetEntries();
   cout<<"Converting old calibration object for bad channels..."<<endl;
-  for (Int_t iModule = 0; iModule < fNMod; iModule++) {
+  for (Int_t iModule = 0; iModule < nMod; iModule++) {
     //for (Int_t iModule = 0; iModule < 1; iModule++) {
     AliITSBadChannelsSSD *bad = (AliITSBadChannelsSSD*) (array->At(iModule));
     TArrayI arrayPSide = bad->GetBadPChannelsList();
@@ -941,11 +941,11 @@ void AliITSDetTypeSim::ReadOldSSDGain(TObjArray *array,
 				      AliITSGainSSDv2 *gainSSD) {
   //Reads the old SSD calibration object and converts it to the new format
 
-  Int_t fNMod = array->GetEntries();
+  Int_t nMod = array->GetEntries();
   cout<<"Converting old calibration object for gain..."<<endl;
 
   //GAIN
-  for (Int_t iModule = 0; iModule < fNMod; iModule++) {
+  for (Int_t iModule = 0; iModule < nMod; iModule++) {
     AliITSGainSSD *gainModule = (AliITSGainSSD*) (array->At(iModule));
     TArrayF arrayPSide = gainModule->GetGainP();
     for(Int_t iPCounter = 0; iPCounter < arrayPSide.GetSize(); iPCounter++)

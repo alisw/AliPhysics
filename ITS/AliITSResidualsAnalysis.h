@@ -121,6 +121,11 @@ class AliITSResidualsAnalysis : public AliAlignmentTracks {
   TString fAliTrackPoints;      // Filename with the AliTrackPoints
   TString fGeom;                // Filename with the Geometry
 
+private:
+  AliITSResidualsAnalysis(const AliITSResidualsAnalysis&); // Not implemented
+  AliITSResidualsAnalysis& operator=(const AliITSResidualsAnalysis&); // Not implemented
+
+
   ClassDef(AliITSResidualsAnalysis,2) // Residuals analysis for the ITS
     
     };

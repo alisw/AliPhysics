@@ -249,15 +249,15 @@ Bool_t AliITSOnlineCalibrationSPDhandler::ReadDeadFromFileName(const char *fileN
 	  UInt_t row = GetRowFromKey(key);
 	  SetDeadPixel(eq,hs,chip,col,row);
 	}
-	UInt_t eq = calib->GetEqNr();
-	if (calib->IsDeadEq()) SetDeadEq(eq);
-	else                   SetDeadEq(eq,kFALSE);
+	UInt_t eq1 = calib->GetEqNr();
+	if (calib->IsDeadEq()) SetDeadEq(eq1);
+	else                   SetDeadEq(eq1,kFALSE);
 	for (UInt_t hs=0; hs<6; hs++) {
-	  if (calib->IsDeadHS(hs)) SetDeadHS(eq,hs);
-	  else                     SetDeadHS(eq,hs,kFALSE);
+	  if (calib->IsDeadHS(hs)) SetDeadHS(eq1,hs);
+	  else                     SetDeadHS(eq1,hs,kFALSE);
 	  for (UInt_t chip=0; chip<10; chip++) {
-	    if (calib->IsDeadChip(hs,chip)) SetDeadChip(eq,hs,chip);
-	    else                            SetDeadChip(eq,hs,chip,kFALSE);
+	    if (calib->IsDeadChip(hs,chip)) SetDeadChip(eq1,hs,chip);
+	    else                            SetDeadChip(eq1,hs,chip,kFALSE);
 	  }
 	}
 	if (inactive) {
