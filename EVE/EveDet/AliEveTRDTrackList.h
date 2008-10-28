@@ -64,6 +64,7 @@
 
 #define SIGNATURE_ERROR   -1
 #define NOT_EXIST_ERROR   -2
+#define ERROR            -3
 #define WARNING           0
 #define SUCCESS           1
 
@@ -121,7 +122,7 @@ public:
 
   Int_t AddMacro(const Char_t* path, const Char_t* name, Bool_t forceReload = kFALSE);                      
   Bool_t AddMacroFast(const Char_t* path, const Char_t* name, AliEveTRDTrackListMacroType type);        
-  virtual void AddStandardMacros();                           
+  virtual void AddStandardContent();                           
   Bool_t ApplyProcessMacros(const TList* selIterator, const TList* procIterator);               
   void ApplySTSelectionMacros(const TList* iterator);
 

@@ -88,6 +88,7 @@
 #pragma link C++ class AliEveTRDTrack+;
 #pragma link C++ class AliEveTRDTrackList+;
 #pragma link C++ class AliEveTRDTrackListEditor+;
+#pragma link C++ class AliEveTRDMacroWizzard+;
 
 // TOF
 #pragma link C++ class AliEveTOFDigitsInfo+;

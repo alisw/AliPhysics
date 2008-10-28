@@ -46,6 +46,8 @@
 #include <TROOT.h>
 #include <TSystem.h>
 #include <TGTextEntry.h>
+#include <TGTextEdit.h>
+#include <TGComboBox.h>
 #include <TGTextView.h>
 #include <TH1.h>
 #include <TTreeStream.h>
@@ -74,6 +76,7 @@ AliEveTRDTrackListEditor::AliEveTRDTrackListEditor(const TGWindow* p, Int_t widt
   frbColor(new TGRadioButton*[3]),
   frbTrack(new TGRadioButton*[3]),
   fbBrowse(0),
+  fbNew(0),
   fbApplyMacros(0),
   fbRemoveMacros(0),
   fbDrawHisto(0),
@@ -128,7 +131,7 @@ AliEveTRDTrackListEditor::AliEveTRDTrackListEditor(const TGWindow* p, Int_t widt
   
 
   // Functionality for adding macros  
-  fMainFrame = CreateEditorTabSubFrame("Apply macros");
+  fMainFrame = CreateEditorTabSubFrame("Process");
    
   fLabel1 = new TGLabel(fMainFrame,"Add macro(s):");
   fMainFrame->AddFrame(fLabel1);
@@ -143,6 +146,11 @@ AliEveTRDTrackListEditor::AliEveTRDTrackListEditor(const TGWindow* p, Int_t widt
   fbBrowse->SetToolTipText("Browse the macro you want to add");
   fbBrowse->Connect("Clicked()", "AliEveTRDTrackListEditor", this, "BrowseMacros()");
   fBrowseFrame->AddFrame(fbBrowse);
+  
+  fbNew = new TGTextButton(fBrowseFrame, "New");
+  fbNew->SetToolTipText("Start macro creation wizzard");
+  fbNew->Connect("Clicked()", "AliEveTRDTrackListEditor", this, "NewMacros()");
+  fBrowseFrame->AddFrame(fbNew);
   fMainFrame->AddFrame(fBrowseFrame);
 
   fLine1 = new TGHorizontal3DLine(fMainFrame, 194, 8);
@@ -157,7 +165,7 @@ AliEveTRDTrackListEditor::AliEveTRDTrackListEditor(const TGWindow* p, Int_t widt
 
   fLine2 = new TGHorizontal3DLine(fMainFrame, 194, 8);
   fMainFrame->AddFrame(fLine2, new TGLayoutHints(kLHintsLeft  | kLHintsTop, 2, 2, 8, 2));
-  fLabel3 = new TGLabel(fMainFrame,"Process macros:");
+  fLabel3 = new TGLabel(fMainFrame,"Process plugins:");
   fMainFrame->AddFrame(fLabel3);
 
   ftlMacroList = new TGListBox(fMainFrame);
@@ -168,21 +176,21 @@ AliEveTRDTrackListEditor::AliEveTRDTrackListEditor(const TGWindow* p, Int_t widt
   fLine3 = new TGHorizontal3DLine(fMainFrame, 194, 8);
   fMainFrame->AddFrame(fLine3, new TGLayoutHints(kLHintsLeft  | kLHintsTop, 2, 2, 8, 2));  
 
-  fbApplyMacros = new TGTextButton(fMainFrame, "Apply selected macro(s)");
-  fbApplyMacros->SetToolTipText("Apply all selected macros to the tracklist -> A data file will be generated");
+  fbApplyMacros = new TGTextButton(fMainFrame, "Apply plugin(s)");
+  fbApplyMacros->SetToolTipText("Apply all selected macros/class functins to the list of tracks -> A data file will be generated");
   fbApplyMacros->Connect("Clicked()", "AliEveTRDTrackListEditor", this, "ApplyMacros()");
   fbApplyMacros->SetRightMargin(12);
   fMainFrame->AddFrame(fbApplyMacros);
 
-  fbRemoveMacros = new TGTextButton(fMainFrame, "Remove selected macro(s)");
-  fbRemoveMacros->SetToolTipText("Remove the selected macro(s) from the list(s)");
+  fbRemoveMacros = new TGTextButton(fMainFrame, "Remove plugin(s)");
+  fbRemoveMacros->SetToolTipText("Remove the selected macros/class functions from the list(s)");
   fbRemoveMacros->Connect("Clicked()", "AliEveTRDTrackListEditor", this, "RemoveMacros()");
   fMainFrame->AddFrame(fbRemoveMacros);
 
   // Stuff for displaying histograms
-  fHistoFrame = CreateEditorTabSubFrame("Histograms");  
+  fHistoFrame = CreateEditorTabSubFrame("Results");  
   fHistoFrame->SetMapSubwindows(kTRUE);
-  fLabel4 = new TGLabel(fHistoFrame,"Data from applied macros:");
+  fLabel4 = new TGLabel(fHistoFrame,"Data from plugins:");
   fHistoFrame->AddFrame(fLabel4);
 
   fHistoSubFrame = new TGVerticalFrame(fHistoFrame);
@@ -193,7 +201,7 @@ AliEveTRDTrackListEditor::AliEveTRDTrackListEditor(const TGWindow* p, Int_t widt
   fLine4 = new TGHorizontal3DLine(fHistoFrame, 194, 8);
   fHistoFrame->AddFrame(fLine4, new TGLayoutHints(kLHintsLeft  | kLHintsTop, 2, 2, 8, 2));  
 
-  fbDrawHisto = new TGTextButton(fHistoFrame, "Draw histogram");
+  fbDrawHisto = new TGTextButton(fHistoFrame, "Draw projections");
   fbDrawHisto->SetToolTipText("Uses the data file created by the last \"Apply selected macro(s)\".\nClick here to display the data histograms of the selected macros.\nSelect multiple macros to create multi-dimensional plots.\nHisto macros cannot be used for multi-dimensional plots!");
   fbDrawHisto->Connect("Clicked()", "AliEveTRDTrackListEditor", this, "DrawHistos()");
   fHistoFrame->AddFrame(fbDrawHisto);
@@ -224,8 +232,7 @@ AliEveTRDTrackListEditor::AliEveTRDTrackListEditor(const TGWindow* p, Int_t widt
   AliEveEventManager::GetMaster()->Connect("NewEventLoaded()", "AliEveTRDTrackListEditor", this, "HandleNewEventLoaded()");
 
   // Handle the signal "Selected" (another tab has been selected)
-  GetGedEditor()->GetTab()->Connect("Selected(Int_t)", "AliEveTRDTrackListEditor", 
-                                    this, "HandleTabChangedToIndex(Int_t)");
+  GetGedEditor()->GetTab()->Connect("Selected(Int_t)", "AliEveTRDTrackListEditor", this, "HandleTabChangedToIndex(Int_t)");
 }
 
 //______________________________________________________
@@ -262,11 +269,10 @@ AliEveTRDTrackListEditor::~AliEveTRDTrackListEditor()
 }
 
 //______________________________________________________
-void AliEveTRDTrackListEditor::AddMacro(const Char_t* path, const Char_t* name)
+void AliEveTRDTrackListEditor::AddMacro(const Char_t* name, const Char_t* path)
 {
   // Adds the macro path/name to the macro list. A warning is provided, if there is
   // something wrong, e.g. if the macro does not have the correct signature.
-
   Int_t result = fM->AddMacro(path, name);
 
   switch (result)
@@ -276,6 +282,10 @@ void AliEveTRDTrackListEditor::AddMacro(const Char_t* path, const Char_t* name)
     break;
   case WARNING:
     new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Warning", "Macro is already in list (won't be added again)!",
+                 kMBIconExclamation, kMBOk);
+    break;
+  case ERROR:
+    new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Error", "Fail to load the macro (check messages in the terminal)!",
                  kMBIconExclamation, kMBOk);
     break;
   case SIGNATURE_ERROR:
@@ -324,7 +334,7 @@ void AliEveTRDTrackListEditor::ApplyMacros()
   if (success && procIterator->GetEntries() > 0) 
   {
     // Set focus on "Histograms" tab
-    GetGedEditor()->GetTab()->SetTab("Histograms");
+    GetGedEditor()->GetTab()->SetTab("Results");
 
     DrawHistos();
   }
@@ -341,6 +351,17 @@ void AliEveTRDTrackListEditor::ApplyMacros()
                  kMBIconExclamation, kMBOk);  
   }
 }
+
+//______________________________________________________
+void AliEveTRDTrackListEditor::NewMacros()
+{
+  // Start the macro creation wizzard.
+  // thanks to Jacek Otwinowski<J.Otwinowski@GSI.DE> for this suggestion
+
+  AliEveTRDMacroWizzard *wizz = new AliEveTRDMacroWizzard();
+  wizz->Connect("Done(Char_t*)", "AliEveTRDTrackListEditor", this, "AddMacro(Char_t*)");
+}
+
 
 //______________________________________________________
 void AliEveTRDTrackListEditor::BrowseMacros()
@@ -364,7 +385,7 @@ void AliEveTRDTrackListEditor::BrowseMacros()
       // Delete '"' at the end
       name[strlen(name)] = '\0';
               
-      AddMacro(fFileInfo->fIniDir, name + 1); 
+      AddMacro(name + 1, fFileInfo->fIniDir); 
       iter = (TObjString*)fFileInfo->fFileNamesList->After(iter);
     }
   }
@@ -670,7 +691,7 @@ void AliEveTRDTrackListEditor::HandleMacroPathSet()
         sprintf(pathname, "./%s", fteField->GetText());
         fteField->SetText(pathname);
 
-        AddMacro(".", name);  
+        AddMacro(name);  
         if (name != 0)  delete name;
         name = 0;
       }
@@ -683,7 +704,7 @@ void AliEveTRDTrackListEditor::HandleMacroPathSet()
         strncpy(path, fteField->GetText(), strlen(fteField->GetText()) - strlen(name));
         
         // Ignore the slash "/" in name
-        AddMacro(path, name + 1);  
+        AddMacro(name + 1, path);  
   
         if (path != 0)  delete path;
         path = 0;
@@ -1075,4 +1096,195 @@ void AliEveTRDTrackListEditor::UpdateMacroListSelection(Int_t ind)
 
   // Toggle selected item
   fM->SetMacroListSelection(ind, !fM->MacroListIsSelected(ind));
+}
+
+
+/////////////////////////////////////////////////
+ClassImp(AliEveTRDMacroWizzard)
+
+//______________________________________________________
+AliEveTRDMacroWizzard::AliEveTRDMacroWizzard(const TGWindow* p)
+  :TGMainFrame(p ? p : gClient->GetRoot(), 10, 10, kMainFrame | kVerticalFrame)
+  ,fText(0x0)
+  ,fCombo(0x0)
+  ,fTextEdit(0x0)
+{
+  const Int_t width = 300;
+
+  // horizontal frame
+  TGHorizontalFrame *fFrameName = new TGHorizontalFrame(this, 10, 10, kHorizontalFrame);
+  TGLabel *fLabel = new TGLabel(fFrameName, "Name*");
+  fLabel->SetTextJustify(36);
+  fLabel->SetMargins(0,0,0,0);
+  fLabel->SetWrapLength(-1);
+  fFrameName->AddFrame(fLabel, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
+
+  fText = new TGTextEntry(fFrameName);
+  fText->SetMaxLength(255);
+  fText->SetAlignment(kTextLeft);
+  fText->SetText("");
+  fText->Resize(width, fText->GetDefaultHeight());
+  fFrameName->AddFrame(fText, new TGLayoutHints(kLHintsRight | kLHintsTop,2,2,2,2));
+
+
+  // horizontal frame
+  TGHorizontalFrame *fFrameComment = new TGHorizontalFrame(this,10,10,kHorizontalFrame);
+  fLabel = new TGLabel(fFrameComment, "Comment");
+  fLabel->SetTextJustify(36);
+  fLabel->SetMargins(0,0,0,0);
+  fLabel->SetWrapLength(-1);
+  fFrameComment->AddFrame(fLabel, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
+
+  fTextEdit = new TGTextEdit(fFrameComment, width, 5*fText->GetDefaultHeight());
+  fFrameComment->AddFrame(fTextEdit, new TGLayoutHints(kLHintsRight | kLHintsTop,2,2,2,2));
+
+  // horizontal frame
+  TGHorizontalFrame *fFrameType = new TGHorizontalFrame(this,10,10,kHorizontalFrame);
+  fLabel = new TGLabel(fFrameType, "Type*");
+  fLabel->SetTextJustify(36);
+  fLabel->SetMargins(0,0,0,0);
+  fLabel->SetWrapLength(-1);
+  fFrameType->AddFrame(fLabel, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
+
+  fCombo = new TGComboBox(fFrameType, -1, kHorizontalFrame | kSunkenFrame | kDoubleBorder | kOwnBackground);
+  fCombo->AddEntry("Single Track Selection", AliEveTRDTrackList::kSingleTrackSelect);
+  fCombo->AddEntry("Pair Tracks Selection", AliEveTRDTrackList::kCorrelTrackSelect);
+  fCombo->AddEntry("Single Track Analyse", AliEveTRDTrackList::kSingleTrackAnalyse);
+  fCombo->AddEntry("Single Track Histo", AliEveTRDTrackList::kSingleTrackHisto);
+  fCombo->AddEntry("Pair Tracks Analyse", AliEveTRDTrackList::kCorrelTrackAnalyse);
+  fCombo->AddEntry("Pair Tracks Histo", AliEveTRDTrackList::kCorrelTrackHisto);
+  fCombo->Select(-1);
+  fCombo->Resize(width, fText->GetDefaultHeight());
+  fFrameType->AddFrame(fCombo, new TGLayoutHints(kLHintsRight | kLHintsTop,2,2,2,2));
+
+
+  // horizontal frame
+  TGHorizontalFrame *fFrameText = new TGHorizontalFrame(this,10,10,kHorizontalFrame);
+  fLabel = new TGLabel(fFrameText, "(*) Mandatory fields");
+  fLabel->SetTextJustify(36);
+  fLabel->SetMargins(0,0,0,0);
+  fLabel->SetWrapLength(-1);
+  fFrameText->AddFrame(fLabel, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
+
+  // put things together  
+  AddFrame(fFrameName, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsExpandX,2,2,2,2));
+  AddFrame(fFrameComment, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsExpandX,2,2,2,2));
+  AddFrame(fFrameType, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsExpandX,2,2,2,2));
+
+  TGHorizontal3DLine *fLine = new TGHorizontal3DLine(this, 281, 2);
+  AddFrame(fLine, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsExpandX,2,2,2,2));
+  AddFrame(fFrameText, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsExpandX,2,2,2,2));
+
+
+  SetWindowName("TRD Macro Wizzard");
+  SetMWMHints(kMWMDecorAll,
+              kMWMFuncAll,
+              kMWMInputModeless);
+  MapSubwindows();
+
+  Resize(GetDefaultSize());
+  MapWindow();
+
+  // Do the linking
+  fCombo->Connect("Selected(Int_t)", "AliEveTRDMacroWizzard", this, "Create(Int_t)");
+}  
+
+Char_t *fIncludes = 
+"#if !defined(__CINT__) || defined(__MAKECINT__)\n"
+"#include <TROOT.h>\n"
+"#include <TH1.h>\n"
+"#include <TRD/AliTRDgeometry.h>\n"
+"#include <TRD/AliTRDcluster.h>\n"
+"#include <TRD/AliTRDseedV1.h>\n"
+"#include <TRD/AliTRDtrackV1.h>\n"
+"#endif\n";
+
+Char_t *fMacroTemplate[7] = {
+""
+,"  if (!track) return kFALSE;\n"
+
+,"  n = 0;\n"
+"  r=0x0;\n"
+"  if (!track) return;\n"
+
+,"  if (!track) return 0x0;\n"
+"  TH1* h = 0x0;\n"
+"  if(!(h = (TH1*)gROOT->FindObject(\"h\"))){\n"
+"    h = new TH1(\"h\", \"Title\", n, xmin, xmax);\n"
+"    h->GetXaxis()->SetTitle("");\n"
+"    h->GetYaxis()->SetTitle("");\n"
+"  } else h->Reset();\n"
+
+,"  if (!track) return kFALSE;\n"
+"  if (!track2) return kFALSE;\n"
+
+,"  n = 0;\n"
+"  r=0x0;\n"
+"  if (!track) return;\n"
+"  if (!track2) return;\n"
+
+,"  if (!track) return 0x0;\n"
+"  if (!track2) return 0x0;\n"
+"  TH1* h = 0x0;\n"
+"  if(!(h = (TH1*)gROOT->FindObject(\"h\"))){\n"
+"    h = new TH1(\"h\", \"Title\", n, xmin, xmax);\n"
+"    h->GetXaxis()->SetTitle("");\n"
+"    h->GetYaxis()->SetTitle("");\n"
+"  } else h->Reset();\n"
+};
+//______________________________________________________
+void AliEveTRDMacroWizzard::Create(Int_t typ)
+{
+  const Char_t *name = fText->GetText();
+  if(strcmp(name,"")==0){
+    AliInfo("Please specify a name for your macro.");
+    fCombo->Select(-1);
+    return;
+  }
+
+  FILE* fp = 0x0;
+  if(!(fp = fopen(Form("%s.C", name), "wt"))){
+    AliInfo("Couldn't create macro file.");
+    fCombo->Select(-1);
+    return;
+  }
+
+  TGText *comment = fTextEdit->GetText();
+  Char_t *line = 0x0; Int_t iline = 0;
+  while((line = comment->GetLine(TGLongPosition(0,iline++), 200))) fprintf(fp, "// %s\n", line);
+
+  fprintf(fp, "\n%s\n", fIncludes);
+
+  switch(typ){
+  case AliEveTRDTrackList::kSingleTrackSelect:
+    fprintf(fp, "Bool_t %s(const AliTRDtrackV1 *track)\n", name);
+    break;
+  case AliEveTRDTrackList::kCorrelTrackSelect:
+    fprintf(fp, "Bool_t %s(const AliTRDtrackV1 *track, const AliTRDtrackV1 *track2)\n", name);
+    break;
+  case AliEveTRDTrackList::kSingleTrackAnalyse:
+    fprintf(fp, "void %s(const AliTRDtrackV1 *track, Double_t*& r, Int_t& n)\n", name);
+    break;
+  case AliEveTRDTrackList::kSingleTrackHisto:
+    fprintf(fp, "TH1* %s(const AliTRDtrackV1 *track)\n", name);
+    break;
+  case AliEveTRDTrackList::kCorrelTrackAnalyse:
+    fprintf(fp, "void %s(const AliTRDtrackV1 *track, const AliTRDtrackV1 *track2, Double_t*& r, Int_t& n)\n", name);
+    break;
+  case AliEveTRDTrackList::kCorrelTrackHisto:
+    fprintf(fp, "TH1* %s(const AliTRDtrackV1 *track, const AliTRDtrackV1 *track2)\n", name);
+    break;
+  default:
+    AliInfo(Form("Unknown typ[%d]", typ));
+    fclose(fp);
+    gSystem->Exec(Form("rm -f %s.C", name));
+    fCombo->Select(-1);
+    return;
+  }
+  
+  fprintf(fp, "{\n%s\n", fMacroTemplate[typ]);
+  fprintf(fp, "// add your own code here\n\n\n}\n");
+  fclose(fp);
+  Done(Form("%s.C", name));
+  CloseWindow();
 }

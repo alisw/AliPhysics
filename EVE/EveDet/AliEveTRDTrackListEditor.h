@@ -23,7 +23,13 @@
 // access the data.                                                     //
 //////////////////////////////////////////////////////////////////////////
 
+#ifndef ROOT_TGedFrame
 #include <TGedFrame.h>
+#endif
+
+#ifndef ROOT_TGFrame
+#include <TGFrame.h>
+#endif
 
 class AliEveTRDTrack;
 class AliEveTRDTrackList;
@@ -59,26 +65,26 @@ public:
   AliEveTRDTrackListEditor(const TGWindow* p = 0, Int_t width = 170, Int_t height = 30,
 		                       UInt_t options = kChildFrame, Pixel_t back = GetDefaultFrameBackground());
   virtual ~AliEveTRDTrackListEditor();
-
   virtual void SetModel(TObject* obj);
 
-  void AddMacro(const Char_t* path, const Char_t* name);  
-  void ApplyMacros();                                     
-  void BrowseMacros();                                    
-  void CloseTabs();                                      
-  void DrawHistos();                                      
-  Int_t GetNSelectedHistograms() const;                        
-  void HandleMacroPathSet();                             
-  void HandleNewEventLoaded();                           
-  void HandleTabChangedToIndex(Int_t);                 
-  void RemoveMacros();    
-  void SaveMacroList(TMap* list);                               
-  void SetTrackColor(Int_t ind);                       
-  void SetTrackModel(Int_t ind);                         
-  void UpdateDataFromMacroListSelection();                
-  void UpdateHistoList();                                
-  void UpdateMacroList();                                 
-  void UpdateMacroListSelection(Int_t ind);                       
+  void    AddMacro(const Char_t* name, const Char_t* path = ".");  
+  void    ApplyMacros();
+  void    BrowseMacros();
+  void    CloseTabs();
+  void    DrawHistos();
+  Int_t   GetNSelectedHistograms() const;
+  void    HandleMacroPathSet();
+  void    HandleNewEventLoaded();
+  void    HandleTabChangedToIndex(Int_t);
+  void    NewMacros();
+  void    RemoveMacros();
+  void    SaveMacroList(TMap* list);
+  void    SetTrackColor(Int_t ind);
+  void    SetTrackModel(Int_t ind);
+  void    UpdateDataFromMacroListSelection();
+  void    UpdateHistoList();
+  void    UpdateMacroList();
+  void    UpdateMacroListSelection(Int_t ind);
   
 protected:
   AliEveTRDTrackList* fM;                                               // Model object
@@ -111,6 +117,7 @@ private:
   TGRadioButton**    frbTrack;               // Radio buttons for the track model
 
   TGTextButton*   fbBrowse;                  // "Browse" button
+  TGTextButton*   fbNew;                     // "New" button
   TGTextButton*   fbApplyMacros;             // "Apply macros" button
   TGTextButton*   fbRemoveMacros;            // "Remove macros" button
   TGTextButton*   fbDrawHisto;               // "Draw histogram" button
@@ -141,6 +148,26 @@ private:
   void UpdateHistoCanvasTab();              
 
   ClassDef(AliEveTRDTrackListEditor, 0);    // Editor for AliEveTRDTrackList.
+};
+
+class TGTextEdit;
+class TGComboBox;
+class AliEveTRDMacroWizzard : public TGMainFrame
+{
+public:
+  AliEveTRDMacroWizzard(const TGWindow* p = 0);
+  void Create(Int_t typ);
+  void Done(Char_t *macro)
+    { Emit("Done(Char_t*)", macro); } //*SIGNAL*
+private:
+  AliEveTRDMacroWizzard(const AliEveTRDMacroWizzard&);
+  AliEveTRDMacroWizzard& operator=(const AliEveTRDMacroWizzard&);
+
+  TGTextEntry *fText;
+  TGComboBox  *fCombo;
+  TGTextEdit  *fTextEdit;
+  
+  ClassDef(AliEveTRDMacroWizzard, 0);    // Helper class to create macro templates 
 };
 
 #endif
