@@ -55,10 +55,10 @@ using namespace PhosHLTConst;
 AliHLTPHOSDigitMaker::AliHLTPHOSDigitMaker() :
   AliHLTPHOSBase(),
   fCellDataPtr(0),
+  fShmPtr(0),
   fDigitContainerStructPtr(0),
   fDigitArrayPtr(0),
   fDigitStructPtr(0),
-  fShmPtr(0),
   fDigitCount(0),
   fOrdered(true)
 {

@@ -32,6 +32,8 @@ public:
   
 protected:  
   virtual  Double_t Check(AliQA::ALITASK_t index, TObjArray * list);
+  Double_t Check(AliQA::ALITASK_t ) {AliFatal("Not implemented\n"); return 0;}
+  Double_t Check(AliQA::ALITASK_t, TNtupleD*) {AliFatal("Not implemented\n"); return 0;}
   Double_t CheckEntries(TObjArray * list) const ;
   Double_t CheckEsds(TObjArray * list) const;
   
