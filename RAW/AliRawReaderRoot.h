@@ -63,6 +63,8 @@ class AliRawReaderRoot: public AliRawReader {
 
     virtual Int_t    CheckData() const;
 
+    virtual const AliRawEvent* GetEvent() const {return fEvent;}
+
   protected :
     TFile*           fFile;         // raw data root file
     TBranch*         fBranch;       // branch of raw events
