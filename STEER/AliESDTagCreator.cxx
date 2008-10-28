@@ -221,7 +221,7 @@ void AliESDTagCreator::CreateTag(TChain* chain, const char *type) {
   // Creates the tags for all the events in a given ESD file
   Bool_t fIsSim = kTRUE;
   Int_t ntrack;
-  Int_t nProtons, nKaons, nPions, nMuons, nElectrons;
+  Int_t nProtons, nKaons, nPions, nMuons, nElectrons, nFWMuons;
   Int_t nPos, nNeg, nNeutr;
   Int_t nK0s, nNeutrons, nPi0s, nGamas;
   Int_t nCh1GeV, nCh3GeV, nCh10GeV;
@@ -286,7 +286,7 @@ void AliESDTagCreator::CreateTag(TChain* chain, const char *type) {
     ntrack = 0; nPos = 0; nNeg = 0; nNeutr =0;
     nK0s = 0; nNeutrons = 0; nPi0s = 0;
     nGamas = 0; nProtons = 0; nKaons = 0;
-    nPions = 0; nMuons = 0; nElectrons = 0;	  
+    nPions = 0; nMuons = 0; nElectrons = 0; nFWMuons = 0;	  
     nCh1GeV = 0; nCh3GeV = 0; nCh10GeV = 0;
     nMu1GeV = 0; nMu3GeV = 0; nMu10GeV = 0;
     nEl1GeV = 0; nEl3GeV = 0; nEl10GeV = 0;
@@ -407,6 +407,7 @@ void AliESDTagCreator::CreateTag(TChain* chain, const char *type) {
       // total number of muons inside a vertex cut 
       if((TMath::Abs(fZ)<fZVertexCut) && (TMath::Sqrt(fY*fY+fX*fX)<fRhoVertexCut)) {
 	nMuons++;
+	nFWMuons++;
 	if(fEPvector.Pt() > fLowPtCut) {
 	  nMu1GeV++; 
 	  if(fEPvector.Pt() > fHighPtCut) {
@@ -470,6 +471,7 @@ void AliESDTagCreator::CreateTag(TChain* chain, const char *type) {
     evTag->SetNumOfKaons(nKaons);
     evTag->SetNumOfPions(nPions);
     evTag->SetNumOfMuons(nMuons);
+    evTag->SetNumOfFWMuons(nFWMuons);
     evTag->SetNumOfElectrons(nElectrons);
     evTag->SetNumOfPhotons(nGamas);
     evTag->SetNumOfPi0s(nPi0s);
@@ -567,7 +569,7 @@ void AliESDTagCreator::CreateTag(TFile* file, const char *guid, const char *md5,
   // Creates the tags for all the events in a given ESD file
   Bool_t fIsSim = kTRUE;
   Int_t ntrack;
-  Int_t nProtons, nKaons, nPions, nMuons, nElectrons;
+  Int_t nProtons, nKaons, nPions, nMuons, nElectrons, nFWMuons;
   Int_t nPos, nNeg, nNeutr;
   Int_t nK0s, nNeutrons, nPi0s, nGamas;
   Int_t nCh1GeV, nCh3GeV, nCh10GeV;
@@ -615,6 +617,7 @@ void AliESDTagCreator::CreateTag(TFile* file, const char *guid, const char *md5,
     nKaons = 0;
     nPions = 0;
     nMuons = 0;
+    nFWMuons = 0;
     nElectrons = 0;	  
     nCh1GeV = 0;
     nCh3GeV = 0;
@@ -730,6 +733,7 @@ void AliESDTagCreator::CreateTag(TFile* file, const char *guid, const char *md5,
       // total number of muons inside a vertex cut 
       if((TMath::Abs(fZ)<fZVertexCut) && (TMath::Sqrt(fY*fY+fX*fX)<fRhoVertexCut)) {
 	nMuons++;
+	nFWMuons++;
 	if(fEPvector.Pt() > fLowPtCut) {
 	  nMu1GeV++; 
 	  if(fEPvector.Pt() > fHighPtCut) {
@@ -783,6 +787,7 @@ void AliESDTagCreator::CreateTag(TFile* file, const char *guid, const char *md5,
     evTag->SetNumOfKaons(nKaons);
     evTag->SetNumOfPions(nPions);
     evTag->SetNumOfMuons(nMuons);
+    evTag->SetNumOfFWMuons(nFWMuons);
     evTag->SetNumOfElectrons(nElectrons);
     evTag->SetNumOfPhotons(nGamas);
     evTag->SetNumOfPi0s(nPi0s);
@@ -890,7 +895,7 @@ void AliESDTagCreator::CreateTag(TFile* file, const char *filepath, Int_t Counte
   // Creates the tags for all the events in a given ESD file
   Bool_t fIsSim = kTRUE;
   Int_t ntrack;
-  Int_t nProtons, nKaons, nPions, nMuons, nElectrons;
+  Int_t nProtons, nKaons, nPions, nMuons, nElectrons, nFWMuons;
   Int_t nPos, nNeg, nNeutr;
   Int_t nK0s, nNeutrons, nPi0s, nGamas;
   Int_t nCh1GeV, nCh3GeV, nCh10GeV;
@@ -932,6 +937,7 @@ void AliESDTagCreator::CreateTag(TFile* file, const char *filepath, Int_t Counte
     nKaons = 0;
     nPions = 0;
     nMuons = 0;
+    nFWMuons = 0;
     nElectrons = 0;	  
     nCh1GeV = 0;
     nCh3GeV = 0;
@@ -1047,6 +1053,7 @@ void AliESDTagCreator::CreateTag(TFile* file, const char *filepath, Int_t Counte
       // total number of muons inside a vertex cut 
       if((TMath::Abs(fZ)<fZVertexCut) && (TMath::Sqrt(fY*fY+fX*fX)<fRhoVertexCut)) {
 	nMuons++;
+	nFWMuons++;
 	if(fEPvector.Pt() > fLowPtCut) {
 	  nMu1GeV++; 
 	  if(fEPvector.Pt() > fHighPtCut) {
@@ -1098,6 +1105,7 @@ void AliESDTagCreator::CreateTag(TFile* file, const char *filepath, Int_t Counte
     evTag->SetNumOfKaons(nKaons);
     evTag->SetNumOfPions(nPions);
     evTag->SetNumOfMuons(nMuons);
+    evTag->SetNumOfFWMuons(nFWMuons);
     evTag->SetNumOfElectrons(nElectrons);
     evTag->SetNumOfPhotons(nGamas);
     evTag->SetNumOfPi0s(nPi0s);
@@ -1205,7 +1213,7 @@ void AliESDTagCreator::CreateESDTags(Int_t fFirstEvent, Int_t fLastEvent, AliGRP
 
   // Creates the tags for all the events in a given ESD file
   Int_t ntrack;
-  Int_t nProtons, nKaons, nPions, nMuons, nElectrons;
+  Int_t nProtons, nKaons, nPions, nMuons, nElectrons, nFWMuons;
   Int_t nPos, nNeg, nNeutr;
   Int_t nK0s, nNeutrons, nPi0s, nGamas;
   Int_t nCh1GeV, nCh3GeV, nCh10GeV;
@@ -1264,6 +1272,7 @@ void AliESDTagCreator::CreateESDTags(Int_t fFirstEvent, Int_t fLastEvent, AliGRP
     nKaons = 0;
     nPions = 0;
     nMuons = 0;
+    nFWMuons = 0;
     nElectrons = 0;	  
     nCh1GeV = 0;
     nCh3GeV = 0;
@@ -1377,6 +1386,7 @@ void AliESDTagCreator::CreateESDTags(Int_t fFirstEvent, Int_t fLastEvent, AliGRP
       // total number of muons inside a vertex cut 
       if((TMath::Abs(fZ)<fZVertexCut) && (TMath::Sqrt(fY*fY+fX*fX)<fRhoVertexCut)) {
 	nMuons++;
+	nFWMuons++;
 	if(fEPvector.Pt() > fLowPtCut) {
 	  nMu1GeV++; 
 	  if(fEPvector.Pt() > fHighPtCut) {
@@ -1429,6 +1439,7 @@ void AliESDTagCreator::CreateESDTags(Int_t fFirstEvent, Int_t fLastEvent, AliGRP
     evTag->SetNumOfKaons(nKaons);
     evTag->SetNumOfPions(nPions);
     evTag->SetNumOfMuons(nMuons);
+    evTag->SetNumOfFWMuons(nFWMuons);
     evTag->SetNumOfElectrons(nElectrons);
     evTag->SetNumOfPhotons(nGamas);
     evTag->SetNumOfPi0s(nPi0s);
