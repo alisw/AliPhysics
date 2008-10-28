@@ -500,7 +500,7 @@ void AliMUONLocalTriggerBoard::TrigX(Int_t ch1q[16], Int_t ch2q[16], Int_t ch3q[
          (!ch2e[i+2] | !ch2e[i+3] | (ch2e[i+1]^ch2e[i+4]));
       dbleHit1[2*i+1] = ch1e[i+1]&ch1e[i+2]&!(ch1e[i]^ch1e[i+3]) & 
          (ch2e[i+2]&(!ch2e[i+1]|!ch2e[i]) | 
-          ch2e[i+3]&(ch2e[i+2]|!ch2e[i+4]|!ch2e[i+5]));
+          (ch2e[i+3]&(ch2e[i+2]|!ch2e[i+4]|!ch2e[i+5])));
    }
 
 //--- calculate dble & sgle second station
@@ -516,7 +516,7 @@ void AliMUONLocalTriggerBoard::TrigX(Int_t ch1q[16], Int_t ch2q[16], Int_t ch3q[
          (!ch4e[i+2] | !ch4e[i+3] | (ch4e[i+1]^ch4e[i+4]));
       dbleHit2[2*i+1] = ch3e[i+1]&ch3e[i+2]&!(ch3e[i]^ch3e[i+3]) & 
          (ch4e[i+2]&(!ch4e[i+1]|!ch4e[i]) | 
-          ch4e[i+3]&(ch4e[i+2]|!ch4e[i+4]|!ch4e[i+5]));
+          (ch4e[i+3]&((ch4e[i+2]|!ch4e[i+4])|!ch4e[i+5])));
    }
 
 //--- 
@@ -624,18 +624,18 @@ void AliMUONLocalTriggerBoard::TrigX(Int_t ch1q[16], Int_t ch2q[16], Int_t ch3q[
       andL2=!rearImage[i][23]&!rearImage[i][24]&!rearImage[i][25]&!rearImage[i][26];
  
       leftDev[0] = (rearImage[i][16]|!rearImage[i][17]) & 
-         (rearImage[i][16]|rearImage[i][18]|!rearImage[i][19]&
-          (rearImage[i][20]|!rearImage[i][21])) &
-         (orL1|!rearImage[i][23]&(rearImage[i][24]|!rearImage[i][25])) & 
-         (orL1|rearImage[i][24]|rearImage[i][26]|!rearImage[i][27]&
-          (rearImage[i][28]|!rearImage[i][29]));
+	 (rearImage[i][16]|rearImage[i][18]|(!rearImage[i][19]&
+	 (rearImage[i][20]|!rearImage[i][21]))) &
+	 (orL1|(!rearImage[i][23]&(rearImage[i][24]|!rearImage[i][25]))) & 
+	 (orL1|rearImage[i][24]|rearImage[i][26]|(!rearImage[i][27]&
+	 (rearImage[i][28]|!rearImage[i][29])));
 				
       leftDev[1] = !rearImage[i][16] & 
          !(!rearImage[i][17]&!rearImage[i][18]&!rearImage[i][21]&!rearImage[i][22] & 
-           (!rearImage[i][25]&!rearImage[i][26]&(rearImage[i][27]|rearImage[i][28]))) &
-         (rearImage[i][17]|rearImage[i][18] | !rearImage[i][19]&!rearImage[i][20]) &
+         (!rearImage[i][25]&!rearImage[i][26]&(rearImage[i][27]|rearImage[i][28]))) &
+	 (rearImage[i][17]|rearImage[i][18] | (!rearImage[i][19]&!rearImage[i][20])) &
          (rearImage[i][17]|rearImage[i][18]|rearImage[i][21]|rearImage[i][22] | 
-          !rearImage[i][23]&!rearImage[i][24]);
+	 (!rearImage[i][23]&!rearImage[i][24]));
 				
       leftDev[2] = (!rearImage[i][16]&!rearImage[i][17]&!rearImage[i][18]) & 
          (rearImage[i][19]|rearImage[i][20]|rearImage[i][21]|rearImage[i][22] | andL2);
@@ -655,18 +655,18 @@ void AliMUONLocalTriggerBoard::TrigX(Int_t ch1q[16], Int_t ch2q[16], Int_t ch3q[
       andR3=!rearImage[i][4]&!rearImage[i][5]&!rearImage[i][6]&!rearImage[i][7]; 
 		
       rightDev[0] = !rearImage[i][15]&(rearImage[i][14]|!rearImage[i][13]) & 
-         ((rearImage[i][12]|rearImage[i][14]|!rearImage[i][11]&
-           (rearImage[i][10]|!rearImage[i][9])) &
-          ((orR1|!rearImage[i][7]&(rearImage[i][6]|!rearImage[i][5])) & 
-           (orR1|rearImage[i][4]|rearImage[i][6]|!rearImage[i][3]&(rearImage[i][2]|
-                                                                   !rearImage[i][1]))));
+	  ((rearImage[i][12]|rearImage[i][14]|(!rearImage[i][11]&
+	  (rearImage[i][10]|!rearImage[i][9]))) &
+	  ((orR1|(!rearImage[i][7]&(rearImage[i][6]|!rearImage[i][5]))) & 
+	   (orR1|rearImage[i][4]|rearImage[i][6]|(!rearImage[i][3]&(rearImage[i][2]|
+								   !rearImage[i][1])))));
 				
       rightDev[1] = !rearImage[i][15]&!rearImage[i][14] & 
          !(!rearImage[i][4]&!rearImage[i][5]&!rearImage[i][8]&!rearImage[i][9] &
            (!rearImage[i][12]&!rearImage[i][13]&(rearImage[i][2]|rearImage[i][3]))) &
-         (rearImage[i][12]|rearImage[i][13] | !rearImage[i][10]&!rearImage[i][11]) & 
+	 (rearImage[i][12]|rearImage[i][13] | (!rearImage[i][10]&!rearImage[i][11])) & 
          (rearImage[i][8]|rearImage[i][9]|rearImage[i][12]|rearImage[i][13] | 
-          !rearImage[i][6]&!rearImage[i][7]);
+          (!rearImage[i][6]&!rearImage[i][7]));
 		
       rightDev[2] = andR1 & (orR2 | andR3); 
       rightDev[3] = andR2;		
@@ -858,29 +858,29 @@ void AliMUONLocalTriggerBoard::TrigY(Int_t y1[16], Int_t y2[16], Int_t y3[16], I
    Int_t tmpy3to16[16], tmpy4to16[16];
    Int_t tmpy3uto16[16], tmpy3dto16[16], tmpy4uto16[16], tmpy4dto16[16];
    for (i=0; i<8; i++){
-      ch1[2*i]   = y1[i]&GetSwitch(1) | y1[2*i]&!GetSwitch(1);		
-      ch1[2*i+1] = y1[i]&GetSwitch(1) | y1[2*i+1]&!GetSwitch(1);
+      ch1[2*i]   = (y1[i]&GetSwitch(1)) | (y1[2*i]&!GetSwitch(1));		
+      ch1[2*i+1] = (y1[i]&GetSwitch(1)) | (y1[2*i+1]&!GetSwitch(1));
 
-      ch2[2*i]   = y2[i]&GetSwitch(1) | y2[2*i]&!GetSwitch(1);		
-      ch2[2*i+1] = y2[i]&GetSwitch(1) | y2[2*i+1]&!GetSwitch(1);
+      ch2[2*i]   = (y2[i]&GetSwitch(1)) | (y2[2*i]&!GetSwitch(1));		
+      ch2[2*i+1] = (y2[i]&GetSwitch(1)) | (y2[2*i+1]&!GetSwitch(1));
 
-      tmpy3to16[2*i  ] = y3[i]&GetSwitch(1) | y3[2*i  ]&!GetSwitch(1);		
-      tmpy3to16[2*i+1] = y3[i]&GetSwitch(1) | y3[2*i+1]&!GetSwitch(1);
+      tmpy3to16[2*i  ] = (y3[i]&GetSwitch(1)) | (y3[2*i  ]&!GetSwitch(1));		
+      tmpy3to16[2*i+1] = (y3[i]&GetSwitch(1)) | (y3[2*i+1]&!GetSwitch(1));
 
-      tmpy4to16[2*i  ] = y4[i]&GetSwitch(1) | y4[2*i  ]&!GetSwitch(1);
-      tmpy4to16[2*i+1] = y4[i]&GetSwitch(1) | y4[2*i+1]&!GetSwitch(1);
+      tmpy4to16[2*i  ] = (y4[i]&GetSwitch(1)) | (y4[2*i  ]&!GetSwitch(1));
+      tmpy4to16[2*i+1] = (y4[i]&GetSwitch(1)) | (y4[2*i+1]&!GetSwitch(1));
 
-      tmpy3uto16[2*i  ] = y3u[i]&GetSwitch(2) | y3u[2*i  ]&!GetSwitch(2); 
-      tmpy3uto16[2*i+1] = y3u[i]&GetSwitch(2) | y3u[2*i+1]&!GetSwitch(2);
+      tmpy3uto16[2*i  ] = (y3u[i]&GetSwitch(2)) | (y3u[2*i  ]&!GetSwitch(2)); 
+      tmpy3uto16[2*i+1] = (y3u[i]&GetSwitch(2)) | (y3u[2*i+1]&!GetSwitch(2));
 
-      tmpy4uto16[2*i  ] = y4u[i]&GetSwitch(2) | y4u[2*i  ]&!GetSwitch(2); 
-      tmpy4uto16[2*i+1] = y4u[i]&GetSwitch(2) | y4u[2*i+1]&!GetSwitch(2);
+      tmpy4uto16[2*i  ] = (y4u[i]&GetSwitch(2)) | (y4u[2*i  ]&!GetSwitch(2)); 
+      tmpy4uto16[2*i+1] = (y4u[i]&GetSwitch(2)) | (y4u[2*i+1]&!GetSwitch(2));
 
-      tmpy3dto16[2*i  ] = y3d[i]&GetSwitch(0) | y3d[2*i  ]&!GetSwitch(0); 
-      tmpy3dto16[2*i+1] = y3d[i]&GetSwitch(0) | y3d[2*i+1]&!GetSwitch(0);
+      tmpy3dto16[2*i  ] = (y3d[i]&GetSwitch(0)) | (y3d[2*i  ]&!GetSwitch(0)); 
+      tmpy3dto16[2*i+1] = (y3d[i]&GetSwitch(0)) | (y3d[2*i+1]&!GetSwitch(0));
     
-      tmpy4dto16[2*i  ] = y4d[i]&GetSwitch(0) | y4d[2*i  ]&!GetSwitch(0); 
-      tmpy4dto16[2*i+1] = y4d[i]&GetSwitch(0) | y4d[2*i+1]&!GetSwitch(0);
+      tmpy4dto16[2*i  ] = (y4d[i]&GetSwitch(0)) | (y4d[2*i  ]&!GetSwitch(0)); 
+      tmpy4dto16[2*i+1] = (y4d[i]&GetSwitch(0)) | (y4d[2*i+1]&!GetSwitch(0));
    }
   
    if (GetSwitch(3)==0&&GetSwitch(4)==0){
@@ -992,13 +992,13 @@ void AliMUONLocalTriggerBoard::TrigY(Int_t y1[16], Int_t y2[16], Int_t y3[16], I
    for (i=1; i<15; i++) {
       frontImage[i] = (dble1[i] | sgle1[i]) & 
          (dble2[i+1] | dble2[i] | dble2[i-1]) |
-         dble1[i] & (sgle2[i+1] | sgle2[i] | sgle2[i-1]);
+	(dble1[i] & (sgle2[i+1] | sgle2[i] | sgle2[i-1]));
    }
    frontImage[0] = (dble1[0] | sgle1[0]) & 
-      (dble2[1] | dble2[0]) | dble1[0] & (sgle2[1] | sgle2[0]);
+     (dble2[1] | dble2[0]) | (dble1[0] & (sgle2[1] | sgle2[0]));
 
    frontImage[15] = (dble1[15] | sgle1[15]) & 
-      (dble2[15] | dble2[14]) | dble1[15] & (sgle2[15] | sgle2[14]);
+     (dble2[15] | dble2[14]) | (dble1[15] & (sgle2[15] | sgle2[14]));
 
 
 //debug
@@ -1028,16 +1028,16 @@ void AliMUONLocalTriggerBoard::TrigY(Int_t y1[16], Int_t y2[16], Int_t y3[16], I
    and3 = !frontImage[11]&!frontImage[10]&!frontImage[9]&!frontImage[8]; 
  
    fCoordY[0] = !frontImage[0]&(frontImage[1]|!frontImage[2]) & 
-      (frontImage[3]|frontImage[1]|!frontImage[4]&(frontImage[5]|!frontImage[6])) &
-      (or1|!frontImage[8]&(frontImage[9]|!frontImage[10])) & 
-      (or1|frontImage[11]|frontImage[9]|!frontImage[12]&(frontImage[13]|!frontImage[14]));
+     (frontImage[3]|frontImage[1]|(!frontImage[4]&(frontImage[5]|!frontImage[6]))) &
+     (or1|(!frontImage[8]&(frontImage[9]|!frontImage[10]))) & 
+     (or1|frontImage[11]|frontImage[9]|(!frontImage[12]&(frontImage[13]|!frontImage[14])));
  
    fCoordY[1] = !frontImage[0]&!frontImage[1] & 
       !(!frontImage[11]&!frontImage[10]&!frontImage[7]&!frontImage[6] & 
         !frontImage[3]&!frontImage[2]&(frontImage[13]|frontImage[12])) &
-      (frontImage[3]|frontImage[2] | !frontImage[5]&!frontImage[4]) & 
+     (frontImage[3]|frontImage[2] | (!frontImage[5]&!frontImage[4])) & 
       (frontImage[7]|frontImage[6]|frontImage[3]|frontImage[2] | 
-       !frontImage[9]&!frontImage[8]);
+       (!frontImage[9]&!frontImage[8]));
 		
    fCoordY[2] = and1 & (or2 | and3);
 		
