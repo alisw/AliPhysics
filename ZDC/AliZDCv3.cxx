@@ -502,7 +502,7 @@ void AliZDCv3::CreateBeamLine()
   pQCLext->SetLineColor(kGreen);
   pQCLext->SetVisLeaves(kTRUE);
   //
-  TGeoTranslation *tr1c = new TGeoTranslation(0., 0., (Double_t) conpar[0]+0.95+zd1);
+  TGeoTranslation *tr1c = new TGeoTranslation(0., 0., (Double_t) -conpar[0]-0.95-zd1);
   pZDCC->AddNode(pQCLext, 1, tr1c);
   // Inner trousers
   TGeoCompositeShape *pIntTrousersC = new TGeoCompositeShape("intTrousersC", "QCLint:ZDCC_c1+QCLint:ZDCC_c2");
