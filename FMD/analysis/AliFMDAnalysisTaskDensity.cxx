@@ -28,7 +28,8 @@ AliFMDAnalysisTaskDensity::AliFMDAnalysisTaskDensity()
 : fDebug(0),
   fOutputList(0),
   fArray(0),
-  fESD(0x0)
+  fESD(0x0),
+  fVertexString(0x0)
 {
   // Default constructor
   DefineInput (0, AliESDEvent::Class());
@@ -40,7 +41,8 @@ AliFMDAnalysisTaskDensity::AliFMDAnalysisTaskDensity(const char* name):
     fDebug(0),
     fOutputList(0),
     fArray(0),
-    fESD(0x0)
+    fESD(0x0),
+    fVertexString(0x0)
 {
   DefineInput (0, AliESDEvent::Class());
   DefineOutput(0, TList::Class());

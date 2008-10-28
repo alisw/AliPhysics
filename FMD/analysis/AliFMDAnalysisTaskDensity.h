@@ -23,10 +23,12 @@ class AliFMDAnalysisTaskDensity : public AliAnalysisTask
     AliFMDAnalysisTaskDensity();
     AliFMDAnalysisTaskDensity(const char* name);
     virtual ~AliFMDAnalysisTaskDensity() {;}
-    AliFMDAnalysisTaskDensity(const AliFMDAnalysisTaskDensity& o) : 
-    fOutputList(o.fOutputList),
+ AliFMDAnalysisTaskDensity(const AliFMDAnalysisTaskDensity& o) : AliAnalysisTask(),
+      fDebug(o.fDebug),
+      fOutputList(o.fOutputList),
       fArray(o.fArray),
-      fESD(o.fESD) {}
+      fESD(o.fESD),
+      fVertexString(o.fVertexString) {}
     AliFMDAnalysisTaskDensity& operator=(const AliFMDAnalysisTaskDensity&) { return *this; }
     // Implementation of interface methods
     virtual void ConnectInputData(Option_t *option);
@@ -34,7 +36,7 @@ class AliFMDAnalysisTaskDensity : public AliAnalysisTask
     virtual void Init() {}
     virtual void LocalInit() {Init();}
     virtual void Exec(Option_t *option);
-    virtual void Terminate(Option_t *option) {}
+    virtual void Terminate(Option_t */*option*/) {}
     virtual void SetDebugLevel(Int_t level) {fDebug = level;}
     
  private:

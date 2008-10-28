@@ -20,8 +20,8 @@ class AliFMDAnalysisTaskESDReader : public AliAnalysisTask
  public:
     AliFMDAnalysisTaskESDReader();
     AliFMDAnalysisTaskESDReader(const char* name);
- AliFMDAnalysisTaskESDReader(const AliFMDAnalysisTaskESDReader& o) :
-    fChain(o.fChain), fESD(o.fESD),fOutputESD(o.fOutputESD) {}
+ AliFMDAnalysisTaskESDReader(const AliFMDAnalysisTaskESDReader& o) : AliAnalysisTask(),
+      fDebug(o.fDebug),fChain(o.fChain), fESD(o.fESD),fOutputESD(o.fOutputESD) {}
     
     virtual ~AliFMDAnalysisTaskESDReader() {;}
     AliFMDAnalysisTaskESDReader& operator=(const AliFMDAnalysisTaskESDReader&) { return *this; }
@@ -31,7 +31,7 @@ class AliFMDAnalysisTaskESDReader : public AliAnalysisTask
     virtual void Init() {}
     virtual void LocalInit() {Init();}
     virtual void Exec(Option_t *option);
-    virtual void Terminate(Option_t *option) {}
+    virtual void Terminate(Option_t/* *option*/) {}
     virtual void SetDebugLevel(Int_t level) {fDebug = level;}
     
  private:

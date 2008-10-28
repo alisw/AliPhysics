@@ -20,11 +20,14 @@ class AliFMDAnalysisTaskBackgroundCorrection : public AliAnalysisTask
     AliFMDAnalysisTaskBackgroundCorrection();
     AliFMDAnalysisTaskBackgroundCorrection(const char* name);
     virtual ~AliFMDAnalysisTaskBackgroundCorrection() {;}
- AliFMDAnalysisTaskBackgroundCorrection(const AliFMDAnalysisTaskBackgroundCorrection& o) : 
-    fChain(o.fChain),
+ AliFMDAnalysisTaskBackgroundCorrection(const AliFMDAnalysisTaskBackgroundCorrection& o) : AliAnalysisTask(),
+      fDebug(o.fDebug),
+      fChain(o.fChain),
       fOutputList(o.fOutputList),
       fArray(o.fArray),
-      fInputArray(o.fInputArray) {}
+      fInputArray(o.fInputArray),
+      fVertexString(o.fVertexString),
+      fNevents(o.fNevents)  {}
     AliFMDAnalysisTaskBackgroundCorrection& operator=(const AliFMDAnalysisTaskBackgroundCorrection&) { return *this; }
     // Implementation of interface methods
     virtual void ConnectInputData(Option_t *option = "");

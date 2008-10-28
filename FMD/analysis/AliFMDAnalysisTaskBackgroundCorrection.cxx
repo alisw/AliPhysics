@@ -29,6 +29,7 @@ AliFMDAnalysisTaskBackgroundCorrection::AliFMDAnalysisTaskBackgroundCorrection()
   fOutputList(0),
   fArray(0),
   fInputArray(0),
+  fVertexString(0x0),
   fNevents(0)
 {
   // Default constructor
@@ -43,6 +44,7 @@ AliFMDAnalysisTaskBackgroundCorrection::AliFMDAnalysisTaskBackgroundCorrection(c
     fOutputList(0),
     fArray(0),
     fInputArray(0),
+    fVertexString(0x0),
     fNevents(0)
 {
   DefineInput (0, TList::Class());
