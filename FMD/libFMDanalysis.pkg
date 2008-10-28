@@ -5,8 +5,8 @@ SRCS		=  analysis/AliFMDAnaParameters.cxx	\
 	           analysis/AliFMDAnalysisTaskESDReader.cxx	\
 	           analysis/AliFMDAnalysisTaskSharing.cxx       \
 		   analysis/AliFMDAnalysisTaskDensity.cxx       \
-		   analysis/AliFMDAnalysisTaskBackgroundCorrection.cxx \
-		   analysis/AliFMDAnalysisTaskCollector.cxx
+		   analysis/AliFMDAnalysisTaskBackgroundCorrection.cxx 
+#		   analysis/AliFMDAnalysisTaskCollector.cxx
 #		   AliFMDAltroIO.cxx		
 
 HDRS		=  $(SRCS:.cxx=.h) 
