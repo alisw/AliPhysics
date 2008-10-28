@@ -8,7 +8,7 @@ fpu.c
 Set(LIBS MUONcore MUONgeometry MUONrec MUONsim MUONbase MUONtrigger MUONraw
          MUONcalib MUONmapping TPCbase TPCsim TPCrec TPCfast ITSbase ITSsim ITSrec
          PMDbase PMDsim PMDrec TRDbase TRDsim TRDrec TRDfast FMDbase FMDsim FMDrec
-         TOFbase TOFrec TOFsim PHOSbase PHOSsim PHOSrec ACORDEbase ACORDEsim
+         TOFbase TOFrec TOFsim PHOSUtils PHOSbase PHOSsim PHOSrec ACORDEbase ACORDEsim
          ACORDErec HMPIDbase HMPIDrec HMPIDsim ZDCbase ZDCsim ZDCrec VZERObase
          VZEROsim VZEROrec EMCALbase EMCALsim EMCALrec BCM STRUCT T0base T0sim
          T0rec EVGEN STEERBase ESD AOD CDB STEER THijing hijing FASTSIM microcern

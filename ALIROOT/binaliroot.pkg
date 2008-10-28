@@ -11,7 +11,7 @@ ELIBS:= MUONcore MUONgeometry MUONrec MUONsim MUONbase MUONtrigger MUONraw MUONc
         TPCbase TPCsim TPCrec TPCfast \
 	ITSbase ITSsim ITSrec PMDbase PMDsim PMDrec TRDbase \
         TRDsim TRDrec TRDfast \
-	FMDbase FMDsim FMDrec TOFbase TOFrec TOFsim PHOSbase PHOSsim PHOSrec \
+	FMDbase FMDsim FMDrec TOFbase TOFrec TOFsim PHOSUtils PHOSbase PHOSsim PHOSrec \
 	ACORDEbase ACORDEsim ACORDErec \
         HMPIDbase HMPIDrec HMPIDsim \
         ZDCbase ZDCsim ZDCrec VZERObase VZEROsim VZEROrec \
@@ -82,6 +82,7 @@ ARLIBS:= \
    MUON/tgt_$(ALICE_TARGET)/G__MUONsim.o $(LIBPATH)/libMUONsim.a \
    MUON/tgt_$(ALICE_TARGET)/G__MUONrec.o $(LIBPATH)/libMUONrec.a \
    MUON/tgt_$(ALICE_TARGET)/G__MUONraw.o $(LIBPATH)/libMUONraw.a \
+   PHOS/tgt_$(ALICE_TARGET)/G__PHOSUtils.o $(LIBPATH)/libPHOSUtils.a \
    PHOS/tgt_$(ALICE_TARGET)/G__PHOSbase.o $(LIBPATH)/libPHOSbase.a \
    PHOS/tgt_$(ALICE_TARGET)/G__PHOSsim.o $(LIBPATH)/libPHOSsim.a \
    PHOS/tgt_$(ALICE_TARGET)/G__PHOSrec.o $(LIBPATH)/libPHOSrec.a \

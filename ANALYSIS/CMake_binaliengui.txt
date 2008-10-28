@@ -8,7 +8,7 @@ Set(LIBS Aliengui MUONevaluation MUONgeometry MUONrec MUONsim MUONbase
          MUONtrigger MUONraw MUONcalib MUONmapping MUONcore TPCbase TPCsim 
          TPCrec TPCfast ITSbase ITSsim ITSrec PMDbase PMDsim PMDrec TRDbase 
          TRDsim TRDrec TRDfast FMDbase FMDsim FMDrec TOFbase TOFrec TOFsim 
-         PHOSbase PHOSsim PHOSrec ACORDEbase ACORDEsim ACORDErec HMPIDbase 
+         PHOSUtils PHOSbase PHOSsim PHOSrec ACORDEbase ACORDEsim ACORDErec HMPIDbase 
          HMPIDrec HMPIDsim ZDCbase ZDCsim ZDCrec VZERObase VZEROsim VZEROrec 
          EMCALbase EMCALsim EMCALrec STRUCT T0base T0sim T0rec EVGEN STEERBase 
          ESD AOD CDB STEER THijing hijing THbtp TEPEMGEN FASTSIM microcern 

@@ -1,0 +1,15 @@
+# -*- mode: cmake -*-
+
+set(SRCS
+  AliPHOSGeoUtils.cxx
+  AliPHOSEMCAGeometry.cxx
+  AliPHOSCPVGeometry.cxx
+  AliPHOSCPVBaseGeometry.cxx
+  AliPHOSSupportGeometry.cxx
+)
+
+# fill list of header files from list of source files
+# by exchanging the file extension
+String(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+
+AddLibrary(PHOSUtils "${SRCS}" "${HDRS}")

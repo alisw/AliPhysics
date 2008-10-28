@@ -20,15 +20,17 @@
 
 // --- AliRoot header files ---
 
-#include "AliGeometry.h"
+#include "AliPHOSGeoUtils.h"
 #include "AliPHOSEMCAGeometry.h"
 #include "AliPHOSCPVGeometry.h"
 #include "AliPHOSSupportGeometry.h"
+#include <TMatrixFfwd.h>
 
+class AliRecPoint ;
 class AliPHOSRecPoint;
 class TVector3;
 
-class AliPHOSGeometry : public AliGeometry {
+class AliPHOSGeometry : public AliPHOSGeoUtils {
 
 public: 
 
@@ -38,56 +40,19 @@ public:
   virtual ~AliPHOSGeometry(void) ; 
   static AliPHOSGeometry * GetInstance(const Text_t* name, const Text_t* title="") ; 
   static AliPHOSGeometry * GetInstance() ; 
+
   virtual void   GetGlobal(const AliRecPoint* RecPoint, TVector3 & gpos, TMatrixF & /* gmat */) const 
                  {GetGlobal(RecPoint,gpos); }
   virtual void   GetGlobal(const AliRecPoint* RecPoint, TVector3 & gpos) const ;
   virtual void   GetGlobalPHOS(const AliPHOSRecPoint* RecPoint, TVector3 & gpos) const ;
   virtual void   GetGlobalPHOS(const AliPHOSRecPoint* RecPoint, TVector3 & gpos, TMatrixF & /* gmat */) const 
                  {GetGlobalPHOS(RecPoint,gpos); }
-  virtual Bool_t Impact(const TParticle * particle) const ;
 
   AliPHOSGeometry & operator = (const AliPHOSGeometry  & /*rvalue*/) {
     Fatal("operator =", "not implemented") ;
     return *this ;    
   }
  
-  // General
-
-  static TString Degre(void) { return TString("deg") ; }  // a global for degree (deg)
-
-  static TString Radian(void){ return TString("rad") ; }  // a global for radian (rad)
-
-  Bool_t AbsToRelNumbering(Int_t AbsId, Int_t * RelId) const ; 
-                                          // converts the absolute PHOS numbering to a relative 
-
-//  void EmcModuleCoverage(Int_t m, Double_t & tm, Double_t & tM, Double_t & pm, 
-//			                  Double_t & pM, Option_t * opt = Radian() ) const ;
-//                                         // calculates the angular coverage in theta and phi of a EMC module
-//  void EmcXtalCoverage(Double_t & theta, Double_t & phi, Option_t * opt = Radian() ) const ; 
-//                                         // calculates the angular coverage in theta and phi of a  
-//                                         // single crystal in a EMC module
-
-  void ImpactOnEmc(Double_t * vtx, Double_t theta, Double_t phi, 
-		   Int_t & ModuleNumber, Double_t & z, Double_t & x) const ; 
-//  void ImpactOnEmc(const TVector3& vec, Int_t & ModuleNumber, 
-//		         Double_t & z, Double_t & x) const ; 
-//  void ImpactOnEmc(const TParticle& p, Int_t & ModuleNumber, 
-//		         Double_t & z, Double_t & x) const ; 
-//                                        // calculates the impact coordinates of a neutral particle  
-//                                         // emitted in direction theta and phi in ALICE
-  Bool_t IsInEMC(Int_t id) const { if (id > GetNModules() *  GetNCristalsInModule() ) return kFALSE; return kTRUE; } 
-  void RelPosInModule(const Int_t * RelId, Float_t & y, Float_t & z) const ; 
-                                         // gets the position of element (pad or Xtal) relative to 
-                                         // center of PHOS module  
-  void RelPosInAlice(Int_t AbsId, TVector3 &  pos) const ;             
-                                         // gets the position of element (pad or Xtal) relative to Alice
-  Bool_t RelToAbsNumbering(const Int_t * RelId, Int_t & AbsId) const ;         
-                                         // converts the absolute PHOS numbering to a relative 
-  void  RelPosToAbsId(Int_t module, Double_t x, Double_t z, Int_t & AbsId) const; 
-                                         // converts local PHOS-module (x, z) coordinates to absId 
-  void  GetIncidentVector(const TVector3 &vtx, Int_t module, Float_t x, Float_t z, TVector3& vInc) const ;
-                                         //calculates vector from vertex to current point in module local frame
-  void  Local2Global(Int_t module, Float_t x, Float_t z, TVector3 &globaPos) const ;
 
   Bool_t IsInitialized(void)                  const { return fgInit ; }  
                                                                        
@@ -137,9 +102,6 @@ public:
 
   // Return real CPV geometry parameters
   void GetModuleCenter(TVector3& center, const char *det, Int_t module) const;
-  void Global2Local(TVector3& localPosition,
-		    const TVector3& globalPosition,
-		    Int_t module) const;
 
   // Return PHOS' support geometry parameters
 
@@ -162,8 +124,9 @@ protected:
 
   AliPHOSGeometry(const Text_t* name, const Text_t* title="") ;
 private:
+  void                     SetPHOSAngles();  // calculates the PHOS modules PHI angle
 
-  Int_t                    fNModules ;       // Number of modules constituing PHOS
+
   Float_t                  fAngle ;          // Position angles between modules
   Float_t                 *fPHOSAngle ;      //[fNModules] Position angles of modules
   Float_t                  fPHOSParams[4] ;  // Half-sizes of PHOS trapecoid
@@ -171,18 +134,14 @@ private:
   Float_t                  fCrystalShift ;   //Distance from crystal center to front surface
   Float_t                  fCryCellShift ;   //Distance from crystal center to front surface
   TObjArray               *fRotMatrixArray ; // Liste of rotation matrices (one per phos module)
-  AliPHOSEMCAGeometry     *fGeometryEMCA ;   // Geometry object for Electromagnetic calorimeter
-  AliPHOSCPVGeometry      *fGeometryCPV ;    // Geometry object for CPV  (IHEP)
-  AliPHOSSupportGeometry  *fGeometrySUPP ;   // Geometry object for PHOS support
   Float_t fModuleCenter[5][3];   // xyz-position of the module center
   Float_t fModuleAngle[5][3][2]; // polar and azymuth angles for 3 axes of modules
 
-  void                     SetPHOSAngles();  // calculates the PHOS modules PHI angle
 
   static AliPHOSGeometry * fgGeom ; // pointer to the unique instance of the singleton 
   static Bool_t fgInit ;            // Tells if geometry has been succesfully set up 
 
-  ClassDef(AliPHOSGeometry,2)       // PHOS geometry class 
+  ClassDef(AliPHOSGeometry,3)       // PHOS geometry class 
 
 } ;
 

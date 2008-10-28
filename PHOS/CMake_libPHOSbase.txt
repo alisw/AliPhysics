@@ -1,36 +1,33 @@
 # -*- mode: cmake -*-
 
 set(SRCS
-                 AliPHOSGeometry.cxx 
-                 AliPHOSEMCAGeometry.cxx 
-                 AliPHOSCPVGeometry.cxx AliPHOSCPVBaseGeometry.cxx 
-                 AliPHOSSupportGeometry.cxx 
-                 AliPHOSLoader.cxx 
-                 AliPHOSHit.cxx AliPHOSTrackSegmentMaker.cxx  AliPHOSPID.cxx 
-                 AliPHOSClusterizer.cxx 
-                 AliPHOSCalibrationDB.cxx AliPHOSDigitizer.cxx 
-                 AliPHOSSDigitizer.cxx AliPHOSDigit.cxx 
-                 AliPHOSFastRecParticle.cxx AliPHOSRawStream2004.cxx 
-                 AliPHOSCalibData.cxx 
-		 AliPHOSCalibrationData.cxx 
-                 AliPHOSCpvCalibData.cxx 
-                 AliPHOSEmcCalibData.cxx AliPHOSCalibrManager.cxx 
-		 AliPHOSConTableDB.cxx 
-                 AliPHOSPulseGenerator.cxx 
-                 AliPHOSRawDecoder.cxx 
-                 AliPHOSRawDecoderv1.cxx 
-                 AliPHOSRawDecoderv2.cxx 
-                 AliPHOSRawDigiProducer.cxx 
-                 AliPHOSEmcBadChannelsMap.cxx 
-                 AliPHOSSurvey.cxx 
-                 AliPHOSSurvey1.cxx 
-                 AliPHOSQAChecker.cxx 
-                 AliPHOSRecParticle.cxx AliPHOSRecPoint.cxx 
-                 AliPHOSEmcRecPoint.cxx 
-                 AliPHOSCpvRecPoint.cxx   AliPHOSTrackSegment.cxx 
-		 AliPHOSRecoParam.cxx 
-                 AliPHOSImpact.cxx 
-                 AliPHOSTrigger.cxx 
+                 AliPHOSGeometry.cxx
+                 AliPHOSLoader.cxx
+                 AliPHOSHit.cxx AliPHOSTrackSegmentMaker.cxx  AliPHOSPID.cxx
+                 AliPHOSClusterizer.cxx
+                 AliPHOSCalibrationDB.cxx AliPHOSDigitizer.cxx
+                 AliPHOSSDigitizer.cxx AliPHOSDigit.cxx
+                 AliPHOSFastRecParticle.cxx AliPHOSRawStream2004.cxx
+                 AliPHOSCalibData.cxx
+		 AliPHOSCalibrationData.cxx
+                 AliPHOSCpvCalibData.cxx
+                 AliPHOSEmcCalibData.cxx AliPHOSCalibrManager.cxx
+		 AliPHOSConTableDB.cxx
+                 AliPHOSPulseGenerator.cxx
+                 AliPHOSRawDecoder.cxx
+                 AliPHOSRawDecoderv1.cxx
+                 AliPHOSRawDecoderv2.cxx
+                 AliPHOSRawDigiProducer.cxx
+                 AliPHOSEmcBadChannelsMap.cxx
+                 AliPHOSSurvey.cxx
+                 AliPHOSSurvey1.cxx
+                 AliPHOSQAChecker.cxx
+                 AliPHOSRecParticle.cxx AliPHOSRecPoint.cxx
+                 AliPHOSEmcRecPoint.cxx
+                 AliPHOSCpvRecPoint.cxx   AliPHOSTrackSegment.cxx
+		 AliPHOSRecoParam.cxx
+                 AliPHOSImpact.cxx
+                 AliPHOSTrigger.cxx
                  AliPHOSSimParam.cxx
 )
 

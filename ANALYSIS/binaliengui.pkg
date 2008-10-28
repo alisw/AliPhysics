@@ -9,7 +9,7 @@ ELIBS    := Aliengui \
   TPCbase TPCsim TPCrec TPCfast \
   ITSbase ITSsim ITSrec PMDbase PMDsim PMDrec TRDbase \
   TRDsim TRDrec TRDfast \
-  FMDbase FMDsim FMDrec TOFbase TOFrec TOFsim PHOSbase PHOSsim PHOSrec \
+  FMDbase FMDsim FMDrec TOFbase TOFrec TOFsim PHOSUtils PHOSbase PHOSsim PHOSrec \
   ACORDEbase ACORDEsim ACORDErec \
   HMPIDbase HMPIDrec HMPIDsim \
   ZDCbase ZDCsim ZDCrec VZERObase VZEROsim VZEROrec \

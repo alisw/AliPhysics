@@ -5,8 +5,10 @@
 
 //_________________________________________________________________________
 // class for geometry transformations in PHOS
+// this class contains AiRoot-independent transformations,
+// AliRoot part is in AliPHOSGeometry
 // PHOS consists of the electromagnetic calorimeter (EMCA)
-// and a charged particle veto (CPV)
+// charged particle veto (CPV) and support
 // 
 //*-- Author: Dmitri Peressounko (RRC "KI")
 
@@ -17,6 +19,9 @@
 
 class TVector3;
 class TParticle ;
+class AliPHOSEMCAGeometry;
+class AliPHOSCPVGeometry;
+class AliPHOSSupportGeometry;
 
 class AliPHOSGeoUtils : public TNamed {
 
@@ -68,13 +73,14 @@ public:
   Bool_t IsInEMC(Int_t id) const { if (id > fNModules *  fNCristalsInModule ) return kFALSE; return kTRUE; } 
 
 
-private:
+protected:
+
+  AliPHOSEMCAGeometry     *fGeometryEMCA ;   // Geometry object for Electromagnetic calorimeter
+  AliPHOSCPVGeometry      *fGeometryCPV ;    // Geometry object for CPV  (IHEP)
+  AliPHOSSupportGeometry  *fGeometrySUPP ;   // Geometry object for PHOS support
  
-  void Init(void) ;  //Read all sizes etc. for EMC and CPV geometries
 
-private:
-
-  Int_t fNModules ;          // Maximal designed number of modules in PHOS
+  Int_t fNModules ;          //Maximal designed number of modules in PHOS
   Int_t fNCristalsInModule ; //Number of crystals in one module
   Int_t fNPhi ;              //Number of crystals along Phi direction
   Int_t fNZ ;                //Number of crystals along Z direction
@@ -92,7 +98,7 @@ private:
   Float_t fPadSizeZ ;        //Size of CPV pad in Z direction
   Float_t fCPVBoxSizeY ;
 
-  ClassDef(AliPHOSGeoUtils,1)       // PHOS geometry class 
+  ClassDef(AliPHOSGeoUtils,2)       // PHOS geometry class 
 
 } ;
 

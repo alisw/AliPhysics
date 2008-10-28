@@ -38,12 +38,14 @@
 // --- AliRoot header files ---
 #include "AliPHOSEMCAGeometry.h"
 #include "AliPHOSCPVGeometry.h"
+#include "AliPHOSSupportGeometry.h"
 #include "AliPHOSGeoUtils.h"
 
 ClassImp(AliPHOSGeoUtils)
 
 //____________________________________________________________________________
 AliPHOSGeoUtils::AliPHOSGeoUtils():
+  fGeometryEMCA(0x0),fGeometryCPV(0x0),fGeometrySUPP(0x0),
   fNModules(0),fNCristalsInModule(0),fNPhi(0),fNZ(0),
   fNumberOfCPVPadsPhi(0),fNumberOfCPVPadsZ(0),
   fNCellsXInStrip(0),fNCellsZInStrip(0),fNStripZ(0),
@@ -58,6 +60,7 @@ AliPHOSGeoUtils::AliPHOSGeoUtils():
 //____________________________________________________________________________
 AliPHOSGeoUtils::AliPHOSGeoUtils(const AliPHOSGeoUtils & rhs)
   : TNamed(rhs),
+  fGeometryEMCA(0x0),fGeometryCPV(0x0),fGeometrySUPP(0x0),
   fNModules(0),fNCristalsInModule(0),fNPhi(0),fNZ(0),
   fNumberOfCPVPadsPhi(0),fNumberOfCPVPadsZ(0),
   fNCellsXInStrip(0),fNCellsZInStrip(0),fNStripZ(0),
@@ -70,6 +73,7 @@ AliPHOSGeoUtils::AliPHOSGeoUtils(const AliPHOSGeoUtils & rhs)
 //____________________________________________________________________________
 AliPHOSGeoUtils::AliPHOSGeoUtils(const Text_t* name, const Text_t* title) 
     : TNamed(name, title),
+  fGeometryEMCA(0x0),fGeometryCPV(0x0),fGeometrySUPP(0x0),
   fNModules(0),fNCristalsInModule(0),fNPhi(0),fNZ(0),
   fNumberOfCPVPadsPhi(0),fNumberOfCPVPadsZ(0),
   fNCellsXInStrip(0),fNCellsZInStrip(0),fNStripZ(0),
@@ -77,12 +81,45 @@ AliPHOSGeoUtils::AliPHOSGeoUtils(const Text_t* name, const Text_t* title)
   fPadSizePhi(0.),fPadSizeZ(0.),fCPVBoxSizeY(0.)
 { 
   // ctor only for normal usage 
-  Init() ;
+
+  fGeometryEMCA = new AliPHOSEMCAGeometry() ;
+  fGeometryCPV  = new AliPHOSCPVGeometry() ;
+  fGeometrySUPP = new AliPHOSSupportGeometry() ;
+
+  fNModules     = 5;
+  fNPhi  = fGeometryEMCA->GetNPhi() ;
+  fNZ    = fGeometryEMCA->GetNZ() ;
+  fNCristalsInModule = fNPhi*fNZ ;
+  fNCellsXInStrip= fGeometryEMCA->GetNCellsXInStrip() ;
+  fNCellsZInStrip= fGeometryEMCA->GetNCellsZInStrip() ;
+  fNStripZ = fGeometryEMCA->GetNStripZ() ;
+  fXtlArrSize[0]=fGeometryEMCA->GetInnerThermoHalfSize()[0] ; //Wery close to the zise of the Xtl set
+  fXtlArrSize[1]=fGeometryEMCA->GetInnerThermoHalfSize()[1] ; //Wery close to the zise of the Xtl set
+  fXtlArrSize[2]=fGeometryEMCA->GetInnerThermoHalfSize()[2] ; //Wery close to the zise of the Xtl set
+
+  //calculate offset to crystal surface
+  Float_t * inthermo = fGeometryEMCA->GetInnerThermoHalfSize() ;
+  Float_t * strip = fGeometryEMCA->GetStripHalfSize() ;
+  Float_t* splate = fGeometryEMCA->GetSupportPlateHalfSize();
+  Float_t * crystal = fGeometryEMCA->GetCrystalHalfSize() ;
+  Float_t * pin = fGeometryEMCA->GetAPDHalfSize() ;
+  Float_t * preamp = fGeometryEMCA->GetPreampHalfSize() ;
+  fCrystalShift=-inthermo[1]+strip[1]+splate[1]+crystal[1]-fGeometryEMCA->GetAirGapLed()/2.+pin[1]+preamp[1] ;
+  fCryCellShift=crystal[1]-(fGeometryEMCA->GetAirGapLed()-2*pin[1]-2*preamp[1])/2;
+  fCellStep = 2.*fGeometryEMCA->GetAirCellHalfSize()[0] ;
+
+
+  fNumberOfCPVPadsPhi = fGeometryCPV->GetNumberOfCPVPadsPhi() ;
+  fNumberOfCPVPadsZ   = fGeometryCPV->GetNumberOfCPVPadsZ() ;
+  fPadSizePhi = fGeometryCPV->GetCPVPadSizePhi() ;
+  fPadSizeZ   = fGeometryCPV->GetCPVPadSizeZ() ; 
+  fCPVBoxSizeY= fGeometryCPV->GetCPVBoxSize(1) ;
 }
 
 //____________________________________________________________________________
 AliPHOSGeoUtils & AliPHOSGeoUtils::operator = (const AliPHOSGeoUtils  & /*rvalue*/) { 
-    Init() ;
+
+  Fatal("assignment operator", "not implemented") ; 
     return *this ;
 }
 
@@ -90,6 +127,16 @@ AliPHOSGeoUtils & AliPHOSGeoUtils::operator = (const AliPHOSGeoUtils  & /*rvalue
 AliPHOSGeoUtils::~AliPHOSGeoUtils(void)
 {
   // dtor
+  if(fGeometryEMCA){
+    delete fGeometryEMCA; fGeometryEMCA = 0 ;
+  }
+  if(fGeometryCPV){
+    delete fGeometryCPV; fGeometryCPV=0 ;
+  }
+  if(fGeometrySUPP){
+    delete fGeometrySUPP ; fGeometrySUPP=0 ;
+  }
+
 }
 //____________________________________________________________________________
 Bool_t AliPHOSGeoUtils::AbsToRelNumbering(Int_t absId, Int_t * relid) const
@@ -519,40 +566,12 @@ Bool_t AliPHOSGeoUtils::ImpactOnEmc(const Double_t * vtx, const TVector3 &p,
   return kFALSE ;
 
 }
-
 //____________________________________________________________________________
-void AliPHOSGeoUtils::Init(void){
-  //Reads geometry parameters from dedicated classes
+void AliPHOSGeoUtils::GetIncidentVector(const TVector3 &vtx, Int_t module, Float_t x,Float_t z, TVector3 &vInc) const {
+  //Calculates vector pointing from vertex to current poisition in module local frame
+  //Note that PHOS local system and ALICE global have opposite z directions
 
-  AliPHOSEMCAGeometry emcGeom ;
-
-  fNModules     = 5;
-  fNPhi  = emcGeom.GetNPhi() ;
-  fNZ    = emcGeom.GetNZ() ;
-  fNCristalsInModule = fNPhi*fNZ ;
-  fNCellsXInStrip= emcGeom.GetNCellsXInStrip() ;
-  fNCellsZInStrip= emcGeom.GetNCellsZInStrip() ;
-  fNStripZ = emcGeom.GetNStripZ() ;
-  fXtlArrSize[0]=emcGeom.GetInnerThermoHalfSize()[0] ; //Wery close to the zise of the Xtl set
-  fXtlArrSize[1]=emcGeom.GetInnerThermoHalfSize()[1] ; //Wery close to the zise of the Xtl set
-  fXtlArrSize[2]=emcGeom.GetInnerThermoHalfSize()[2] ; //Wery close to the zise of the Xtl set
-
-  //calculate offset to crystal surface
-  Float_t * inthermo = emcGeom.GetInnerThermoHalfSize() ;
-  Float_t * strip = emcGeom.GetStripHalfSize() ;
-  Float_t* splate = emcGeom.GetSupportPlateHalfSize();
-  Float_t * crystal = emcGeom.GetCrystalHalfSize() ;
-  Float_t * pin = emcGeom.GetAPDHalfSize() ;
-  Float_t * preamp = emcGeom.GetPreampHalfSize() ;
-  fCrystalShift=-inthermo[1]+strip[1]+splate[1]+crystal[1]-emcGeom.GetAirGapLed()/2.+pin[1]+preamp[1] ;
-  fCryCellShift=crystal[1]-(emcGeom.GetAirGapLed()-2*pin[1]-2*preamp[1])/2;
-  fCellStep = 2.*emcGeom.GetAirCellHalfSize()[0] ;
-
-  AliPHOSCPVGeometry cpvGeom ;
-
-  fNumberOfCPVPadsPhi = cpvGeom.GetNumberOfCPVPadsPhi() ;
-  fNumberOfCPVPadsZ   = cpvGeom.GetNumberOfCPVPadsZ() ;
-  fPadSizePhi = cpvGeom.GetCPVPadSizePhi() ;
-  fPadSizeZ   = cpvGeom.GetCPVPadSizeZ() ; 
-  fCPVBoxSizeY= cpvGeom.GetCPVBoxSize(1) ;
+  Global2Local(vInc,vtx,module) ; 
+  vInc.SetXYZ(vInc.X()+x,vInc.Y(),vInc.Z()+z) ;
 }
+

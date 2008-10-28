@@ -20,6 +20,8 @@ link_directories( ${LINK_DIRECTORIES})
 
 SetModule()
 
+include(CMake_libPHOSUtils.txt)
+
 include(CMake_libPHOSrec.txt)
 
 include(CMake_libPHOSbase.txt) 

@@ -2,9 +2,6 @@
 
 SRCS          =  \
                  AliPHOSGeometry.cxx \
-                 AliPHOSEMCAGeometry.cxx \
-                 AliPHOSCPVGeometry.cxx AliPHOSCPVBaseGeometry.cxx \
-                 AliPHOSSupportGeometry.cxx \
                  AliPHOSLoader.cxx \
                  AliPHOSHit.cxx AliPHOSTrackSegmentMaker.cxx  AliPHOSPID.cxx \
                  AliPHOSClusterizer.cxx \
@@ -41,6 +38,7 @@ EINCLUDE:=RAW
 
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
+                         -lPHOSUtils \
                          -lSTEER -lCDB -lESD -lSTEERBase \
                          -lRAWDatasim -lRAWDatarec -lRAWDatabase \
                          -L$(shell root-config --libdir) -lVMC -lEG -lGeom -lMinuit
