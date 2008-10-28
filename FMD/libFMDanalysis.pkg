@@ -5,13 +5,14 @@ SRCS		=  analysis/AliFMDAnaParameters.cxx	\
 	           analysis/AliFMDAnalysisTaskESDReader.cxx	\
 	           analysis/AliFMDAnalysisTaskSharing.cxx       \
 		   analysis/AliFMDAnalysisTaskDensity.cxx       \
-		   analysis/AliFMDAnalysisTaskBackgroundCorrection.cxx
-
+		   analysis/AliFMDAnalysisTaskBackgroundCorrection.cxx \
+		   analysis/AliFMDAnalysisTaskCollector.cxx
 #		   AliFMDAltroIO.cxx		
 
 HDRS		=  $(SRCS:.cxx=.h) 
 EINCLUDE 	:= ANALYSIS
-
+ELIBS           := ANALYSIS
+ELIBSDIR	:= $(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)
 DHDR		:= analysis/FMDanalysisLinkDef.h
 
 #
