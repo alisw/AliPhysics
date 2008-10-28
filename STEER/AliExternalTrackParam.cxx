@@ -105,9 +105,11 @@ AliExternalTrackParam::AliExternalTrackParam(const AliVTrack *vTrack) :
   //
   // constructor from virtual track
   //
-  Double_t xyz[3]={vTrack->Xv(),vTrack->Yv(),vTrack->Zv()};
-  Double_t pxpypz[3]={vTrack->Px(),vTrack->Py(),vTrack->Pz()};
-  Double_t cv[21];
+  Double_t xyz[3],pxpypz[3],cv[21];
+  vTrack->GetXYZ(xyz);
+  pxpypz[0]=vTrack->Px();
+  pxpypz[1]=vTrack->Py();
+  pxpypz[2]=vTrack->Pz();
   vTrack->GetCovarianceXYZPxPyPz(cv);
   Short_t sign = (Short_t)vTrack->Charge();
 
@@ -924,8 +926,6 @@ Double_t b, Double_t &xthis, Double_t &xp) const {
   Double_t dy2=GetSigmaY2() + p->GetSigmaY2();
   Double_t dz2=GetSigmaZ2() + p->GetSigmaZ2();
   Double_t dx2=dy2; 
-
-  //dx2=dy2=dz2=1.;
 
   Double_t p1[8]; GetHelixParameters(p1,b);
   p1[6]=TMath::Sin(p1[2]); p1[7]=TMath::Cos(p1[2]);

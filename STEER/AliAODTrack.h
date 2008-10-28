@@ -159,6 +159,9 @@ class AliAODTrack : public AliVTrack {
     if(!fCovMatrix) return kFALSE;
     fCovMatrix->GetCovMatrix(covMatrix); return kTRUE;}
 
+  Bool_t GetXYZ(Double_t *p) const {
+    return GetPosition(p); }
+
   Bool_t GetCovarianceXYZPxPyPz(Double_t cv[21]) const {
     return GetCovMatrix(cv);}
 

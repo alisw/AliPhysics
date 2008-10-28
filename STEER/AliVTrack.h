@@ -23,6 +23,7 @@ public:
   virtual Int_t    GetID() const = 0;
   virtual UChar_t  GetITSClusterMap() const = 0;
   virtual ULong_t  GetStatus() const = 0;
+  virtual Bool_t   GetXYZ(Double_t *p) const = 0;
   virtual Bool_t   GetCovarianceXYZPxPyPz(Double_t cv[21]) const = 0;
 
   ClassDef(AliVTrack,0)  // base class for tracks
