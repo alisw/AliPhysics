@@ -39,12 +39,15 @@ Bool_t AliHMPIDTracker::GetTrackPoint(Int_t idx, AliTrackPoint& point) const
 //   Returns: status of operation  if FALSE then AliReconstruction::WriteAlignmentData() do not store this point to array of points for current track. 
   if(idx<0) return kFALSE; //no MIP cluster assigned to this track in PropagateBack()
   Int_t iCham=idx/1000000; Int_t iClu=idx%1000000;
-  point.SetVolumeID(AliGeomManager::LayerToVolUID(AliGeomManager::kHMPID,iCham-1));//layer and chamber number
+  iClu = iClu%1000; //GetHMPIDcluIdx -> 1e+6*ch + 1e+3*clusize + cluIdx;
+  point.SetVolumeID(AliGeomManager::LayerToVolUID(AliGeomManager::kHMPID,iCham));//layer and chamber number
   TClonesArray *pArr=(TClonesArray*)(*fClu)[iCham];
   AliHMPIDCluster *pClu=(AliHMPIDCluster*)pArr->UncheckedAt(iClu);//get pointer to cluster
-  Double_t mars[3];
-  AliHMPIDParam::Instance()->Lors2Mars(iCham,pClu->X(),pClu->Y(),mars);
-  point.SetXYZ(mars[0],mars[1],mars[2]);
+  Float_t xyz[3];
+  pClu->GetGlobalXYZ(xyz);
+  Float_t cov[6];
+  pClu->GetGlobalCov(cov);
+  point.SetXYZ(xyz,cov);
   return kTRUE;
 }//GetTrackPoint()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
