@@ -2466,16 +2466,16 @@ Int_t AliTPCMonitor::GetRCUPatch(Int_t runid, Int_t eqid) const
 }
 
 //__________________________________________________________________
-void AliTPCMonitor::DumpHeader(AliRawReaderRoot * fReaderROOT) const
+void AliTPCMonitor::DumpHeader(AliRawReaderRoot * readerROOT) const
 {
   // Dump Event header for ROOT format
   
-  cout << "EventHeader     : fReaderROOT->GetEquipmentSize()            :" << fReaderROOT->GetEquipmentSize()        << endl;
-  cout << "EventHeader     : fReaderROOT->GetType()                     :" << fReaderROOT->GetType()                 << endl;
-  cout << "EventHeader     : fReaderROOT->GetRunNumber()                :" << fReaderROOT->GetRunNumber()            << endl;
-  cout << "EventHeader     : fReaderROOT->GetEventId()                  :" << *(fReaderROOT->GetEventId())           << endl;
-  cout << "EventHeader     : fReaderROOT->GetLDCId()                    :" << fReaderROOT->GetLDCId()                << endl;
-  cout << "EventHeader     : fReaderROOT->GetGDCId()                    :" << fReaderROOT->GetGDCId()                << endl;
+  cout << "EventHeader     : fReaderROOT->GetEquipmentSize()            :" << readerROOT->GetEquipmentSize()        << endl;
+  cout << "EventHeader     : fReaderROOT->GetType()                     :" << readerROOT->GetType()                 << endl;
+  cout << "EventHeader     : fReaderROOT->GetRunNumber()                :" << readerROOT->GetRunNumber()            << endl;
+  cout << "EventHeader     : fReaderROOT->GetEventId()                  :" << *(readerROOT->GetEventId())           << endl;
+  cout << "EventHeader     : fReaderROOT->GetLDCId()                    :" << readerROOT->GetLDCId()                << endl;
+  cout << "EventHeader     : fReaderROOT->GetGDCId()                    :" << readerROOT->GetGDCId()                << endl;
 }
 
 //__________________________________________________________________

@@ -118,6 +118,11 @@ protected:
   
 protected:
   TTree *fGoofieValues;   // tree with all Goofie values in branches
+
+private:
+  AliTPCGoofieValues(const AliTPCGoofieValues&); // Not implemented
+  AliTPCGoofieValues& operator=(const AliTPCGoofieValues&); // Not implemented
+
   
   ClassDef(AliTPCGoofieValues,1)  //Basic ROOT object
 };

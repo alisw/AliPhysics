@@ -422,7 +422,6 @@ for(Int_t i=0;i<trs->GetEntries();i++)
   TVector xx( *((TVector*)trs->At(i)) );     
     if( xx.IsValid() && xx(0)>0 )
 	{
-	    TVector xx( *((TVector*)trs->At(i)) );
 	    if(xx(0)>=2)
 		{
 //       1)Calculate Qtrm	

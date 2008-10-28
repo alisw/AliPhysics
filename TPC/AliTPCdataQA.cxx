@@ -625,9 +625,9 @@ void AliTPCdataQA::FindLocalMaxima(const Int_t iSector)
 	  if(i==0 && j==0)
 	    continue;
 	  
-	  Float_t charge = GetQ(b, i, j, maxTimeBin, minT, maxT, minP, maxP);
-	  qTot += charge;
-	  if(charge>0) {
+	  Float_t charge1 = GetQ(b, i, j, maxTimeBin, minT, maxT, minP, maxP);
+	  qTot += charge1;
+	  if(charge1>0) {
 	    // see if the next neighbor is also above threshold
 	    if(i*j==0) {
 	      qTot += GetQ(b, 2*i, 2*j, maxTimeBin, minT, maxT, minP, maxP); 

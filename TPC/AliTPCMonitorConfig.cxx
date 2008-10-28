@@ -285,7 +285,7 @@ void AliTPCMonitorConfig::ReadConfig(Char_t* nameconf)
   // Read base configuration from file
   // Update main window size
 
-  string line;
+  //  string line;
   ifstream datin;
   datin.open(nameconf);
   

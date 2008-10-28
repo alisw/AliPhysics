@@ -51,6 +51,11 @@ public :
 
 protected:
 private:
+
+   AliTPCcalibV0(const AliTPCcalibV0&); // Not implemented
+   AliTPCcalibV0& operator=(const AliTPCcalibV0&); // Not implemented
+
+
    AliStack       *fStack;        // pointer to kinematic tree        
    AliESDEvent    *fESD;              //! current ED to proccess - NOT OWNER
    TDatabasePDG   *fPdg;              // particle database

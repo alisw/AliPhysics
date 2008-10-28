@@ -598,38 +598,38 @@ Bool_t AliTPCTrackHitsV2::FlushHitStack(Bool_t force)
     dr = dl/ratio; 
     oldr+=dr;
     //calculate precission
-    AliTrackHitsParamV2 &param = *(fTempInfo->GetParam());    
+    AliTrackHitsParamV2 &paraml = *(fTempInfo->GetParam());    
     //real deltas
-    Double_t dr1=  position[0]-param.GetR();
-    Double_t dz =  position[1]-param.GetZ();
-    Double_t dfi = position[2]-param.GetFi();
+    Double_t dr1=  position[0]-paraml.GetR();
+    Double_t dz =  position[1]-paraml.GetZ();
+    Double_t dfi = position[2]-paraml.GetFi();
     //extrapolated deltas
-    Double_t dr2 = oldr-param.GetR(); 
+    Double_t dr2 = oldr-paraml.GetR(); 
     Double_t ddr = dr2-dr1;
-    Double_t ddz = dr2*param.GetTheta()+dr2*dr2*param.GetThetaD()-dz;
-    Double_t ddfi= dr2*param.GetAn()+dr2*dr2*param.GetAd()-dfi;    
+    Double_t ddz = dr2*paraml.GetTheta()+dr2*dr2*paraml.GetThetaD()-dz;
+    Double_t ddfi= dr2*paraml.GetAn()+dr2*dr2*paraml.GetAd()-dfi;    
     dd = TMath::Sqrt(ddz*ddz+oldr*oldr*ddfi*ddfi+ddr*ddr); 
 
 
     if ( (dd>fPrecision) ){ 
       //if ( (dd<0) ){ 
       if (i==0){
-	param.SetAn(0);
-	param.SetAd(0);
-	param.SetTheta(0);
-        param.SetThetaD(0);
-	Double_t ddz = dr2*param.GetTheta()+dr2*dr2*param.GetThetaD()-dz;
-	Double_t ddfi= dr2*param.GetAn()+dr2*dr2*param.GetAd()-dfi;    
+	paraml.SetAn(0);
+	paraml.SetAd(0);
+	paraml.SetTheta(0);
+        paraml.SetThetaD(0);
+	Double_t ddz1 = dr2*paraml.GetTheta()+dr2*dr2*paraml.GetThetaD()-dz;
+	Double_t ddfi1= dr2*paraml.GetAn()+dr2*dr2*paraml.GetAd()-dfi;    
 	dl = 0;
-	dd = TMath::Sqrt(ddz*ddz+oldr*oldr*ddfi*ddfi+ddr*ddr); 
+	dd = TMath::Sqrt(ddz1*ddz1+oldr*oldr*ddfi1*ddfi1+ddr*ddr); 
       }
       else
      	break;
     }
 
-    param.HitDistance(i)= Short_t(TMath::Nint(dl/fStep));
-    param.Charge(i)= Short_t(fTempInfo->GetQStack(i));
-    param.Time(i)= Short_t(fTempInfo->GetTimeStack(i)/AliTPCTrackHitsV2::fgkTimePrecision);
+    paraml.HitDistance(i)= Short_t(TMath::Nint(dl/fStep));
+    paraml.Charge(i)= Short_t(fTempInfo->GetQStack(i));
+    paraml.Time(i)= Short_t(fTempInfo->GetTimeStack(i)/AliTPCTrackHitsV2::fgkTimePrecision);
   }    
   
   if (i<=fTempInfo->GetStackIndex()){ //if previous iteration not succesfull 
