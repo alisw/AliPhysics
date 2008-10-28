@@ -25,6 +25,8 @@
 #include <TMath.h>
 #include <TMatrixD.h>
 #include <TMatrixDSym.h>
+#include <TGeoMatrix.h>
+#include <TMatrixDSymEigen.h>
 
 #include "AliTrackPointArray.h"
 
@@ -465,6 +467,32 @@ Float_t AliTrackPoint::GetAngle() const
   return phi;
 
 }
+
+//______________________________________________________________________________
+Bool_t AliTrackPoint::GetRotMatrix(TGeoRotation& rot) const
+{
+  // Returns the orientation of the
+  // sensitive layer (using cluster
+  // covariance matrix).
+  // Assumes that cluster has errors only in the layer's plane.
+  // Return value is kTRUE in case of success.
+
+  TMatrixDSym mcov(3);
+  {
+    const Float_t *cov=GetCov();
+    mcov(0,0)=cov[0]; mcov(0,1)=cov[1]; mcov(0,2)=cov[2];
+    mcov(1,0)=cov[1]; mcov(1,1)=cov[3]; mcov(1,2)=cov[4];
+    mcov(2,0)=cov[2]; mcov(2,1)=cov[4]; mcov(2,2)=cov[5];
+  }
+
+  TMatrixDSymEigen eigen(mcov);
+  TMatrixD eigenMatrix = eigen.GetEigenVectors();
+
+  rot.SetMatrix(eigenMatrix.GetMatrixArray());
+
+  return kTRUE;
+}
+
 
 //_____________________________________________________________________________
 AliTrackPoint& AliTrackPoint::Rotate(Float_t alpha) const

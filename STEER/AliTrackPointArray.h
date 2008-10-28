@@ -15,6 +15,8 @@
 #include <TObject.h>
 #include <TMatrixDSym.h>
 
+class TGeoRotation;
+
 class AliTrackPoint : public TObject {
 
  public:
@@ -46,6 +48,7 @@ class AliTrackPoint : public TObject {
   Bool_t   GetPCA(const AliTrackPoint &p, AliTrackPoint &out) const;
 
   Float_t  GetAngle() const;
+  Bool_t   GetRotMatrix(TGeoRotation& rot) const;
   void SetAlignCovMatrix(const TMatrixDSym alignparmtrx);
 
   AliTrackPoint& Rotate(Float_t alpha) const;
@@ -63,7 +66,7 @@ class AliTrackPoint : public TObject {
   Float_t  fCov[6];   // Cov matrix
   UShort_t fVolumeID; // Volume ID
 
-  ClassDef(AliTrackPoint,3)
+  ClassDef(AliTrackPoint,4)
 };
 
 //////////////////////////////////////////////////////////////////////////////
