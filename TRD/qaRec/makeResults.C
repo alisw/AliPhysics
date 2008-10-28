@@ -30,6 +30,7 @@
 //
 
 #if ! defined (__CINT__) || defined (__MAKECINT__)
+#include <fstream>
 #include "TError.h"
 #include <TClass.h>
 #include <TFileMerger.h>
@@ -67,7 +68,7 @@ void makeResults(Char_t *args = "ALL")
   Bool_t mc      = kTRUE;
   Bool_t friends = kTRUE;
 
-  Char_t *dir = 0x0;
+  const Char_t *dir = 0x0;
   TString tasks;
   TObjArray *argsArray = TString(args).Tokenize("?");
   switch(argsArray->GetEntriesFast()){
@@ -115,8 +116,6 @@ void makeResults(Char_t *args = "ALL")
   // file merger object
   TFileMerger *fFM = new TFileMerger();
   TClass *ctask = 0x0;
-  TObject *o = 0x0;
-  TObjArray *fContainer = 0x0;
   AliTRDrecoTask *task = 0x0;
   Int_t nFiles;
 
@@ -149,12 +148,12 @@ void makeResults(Char_t *args = "ALL")
     }
     printf("Processing %d files for task %s ...\n", nFiles, task->GetName());
 
-    ifstream filestream(dir);
+    ifstream file(dir);
     if(nFiles>1){
       fFM = new(fFM) TFileMerger(kTRUE);
       fFM->OutputFile(Form("%s/merge/TRD.Task%s.root",  gSystem->ExpandPathName("$PWD"), task->GetName()));
 
-      while(getline(filestream, filename)){
+      while(getline(file, filename)){
         if(Int_t(filename.find(task->GetName())) < 0) continue;
         if(Int_t(filename.find("merge")) >= 0) continue;
         fFM->AddFile(filename.c_str());
@@ -163,7 +162,7 @@ void makeResults(Char_t *args = "ALL")
       fFM->~TFileMerger();
       task->Load(Form("%s/merge/TRD.Task%s.root", gSystem->ExpandPathName("$PWD"), task->GetName()));
     } else{
-      getline(filestream, filename);
+      getline(file, filename);
       task->Load(filename.c_str());
     }
 

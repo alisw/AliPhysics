@@ -48,6 +48,7 @@
 
 #include "TRD/AliTRDtrackerV1.h"
 #include "TRD/AliTRDcalibDB.h"
+#include "TRD/qaRec/AliTRDtrackInfo/AliTRDeventInfo.h"
 #include "TRD/qaRec/AliTRDtrackInfoGen.h"
 #include "TRD/qaRec/AliTRDtrackingEfficiency.h"
 #include "TRD/qaRec/AliTRDtrackingEfficiencyCombined.h"
@@ -96,7 +97,7 @@ void run(Char_t *tasks="ALL", const Char_t *files=0x0, Int_t nmax=-1)
     } else { 
       Bool_t foundOpt = kFALSE;  
       for(Int_t itask = 1; itask < NTRDTASKS; itask++){
-        if(s.CompareTo(fgkTRDtaskOptitask]) != 0) continue;
+        if(s.CompareTo(fgkTRDtaskOpt[itask]) != 0) continue;
         SETBIT(fSteerTask, itask);
         foundOpt = kTRUE;
         break;
