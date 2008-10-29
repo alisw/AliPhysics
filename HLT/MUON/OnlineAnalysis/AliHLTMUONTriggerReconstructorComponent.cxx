@@ -121,7 +121,7 @@ void AliHLTMUONTriggerReconstructorComponent::GetOutputDataSize(
 	/// Inherited from AliHLTComponent. Returns an estimate of the expected output data size.
 	///
 	
-	constBase = sizeof(AliHLTMUONTriggerRecordsBlockWriter::HeaderType);
+	constBase = sizeof(AliHLTMUONTriggerRecordsBlockWriter::HeaderType) + 1024*1024;
 	inputMultiplier = 4;
 }
 

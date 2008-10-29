@@ -123,7 +123,7 @@ void AliHLTMUONMansoTrackerFSMComponent::GetOutputDataSize(
 	/// Inherited from AliHLTComponent. Returns an estimate of the expected output data size.
 	///
 	
-	constBase = sizeof(AliHLTMUONMansoTracksBlockStruct);
+	constBase = sizeof(AliHLTMUONMansoTracksBlockStruct) + 1024*1024;
 	inputMultiplier = 1;
 }
 

@@ -130,7 +130,7 @@ void AliHLTMUONClusterFinderComponent::GetOutputDataSize(unsigned long& constBas
 {
 	/// Inherited from AliHLTComponent. Returns an estimate of the expected output data size.
 	
-	constBase = sizeof(AliMUONVClusterStore);
+	constBase = sizeof(AliMUONVClusterStore) + 1024*1024;
 	inputMultiplier = 1;
 }
 
