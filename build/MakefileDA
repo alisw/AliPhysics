@@ -114,7 +114,7 @@ DATRIGGERTYPE=$(sort $(shell grep -i "Trigger types used:" $(DASRC) | cut -d':' 
 
 $(DATARGETNAME): $(DAEXE)
 
-$(DAEXE): $(DAOBJ) $(LIBPATH) $(DALIB) $(DAQDALIB) $(EXTRAROOTLIB)
+$(DAEXE): $(DAOBJ) $(BINPATH) $(LIBPATH) $(DALIB) $(DAQDALIB) $(EXTRAROOTLIB)
 	@echo "***** Making executable $(DAEXE) *****"
 	$(MUTE)$(LD) $(LDFLAGS) -o $@ $< \
 	$(DALIB) \
@@ -311,7 +311,7 @@ $(DASPECFILE): $(DATARGETDIR)
 	@echo "# launched after rpm removed" >> $@
 	@echo "%postun" >> $@
 
-$(DATARGETNAME)-rpm: $(DATAR) $(DASPECFILE) $(DALIB) $(DADEP) $(EXTRAROOTLIB)
+$(DATARGETNAME)-rpm: $(DATAR) $(DASPECFILE) $(LIBPATH) $(DALIB) $(DADEP) $(EXTRAROOTLIB)
 	@echo "***** Making RPMS for $(DAMODULE)$(SUBDAMODULE)$(DANAME) detector-algorithm *****"
 	$(MUTE)rm -rf junk
 	$(MUTE)mkdir -p junk/SOURCES junk/SPECS junk/BUILD junk/RPMS junk/SRPMS
