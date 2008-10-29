@@ -33,6 +33,7 @@ class AliProtonQAAnalysis : public TObject {
   virtual ~AliProtonQAAnalysis();
 
   void UseTPCOnly() {fUseTPCOnly = kTRUE;}
+  void UseHybridTPC() {fUseTPCOnly = kTRUE; fUseHybridTPC = kTRUE;}
   
   //Cut functions
   void    SetPointOnITSLayer1() {fPointOnITSLayer1Flag = kTRUE;}
@@ -204,6 +205,7 @@ class AliProtonQAAnalysis : public TObject {
 
   //Detectors
   Bool_t fUseTPCOnly; //kTRUE if TPC only information is used
+  Bool_t fUseHybridTPC; //kTRUE if TPC info is used for momentum - PID and ITS for vertex & points
 
   //MC analysis
   TList *fPDGList; //list with the 3D histograms: y-pt-pdg (anti)protons
