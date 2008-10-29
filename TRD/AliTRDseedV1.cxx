@@ -368,9 +368,10 @@ Bool_t	AliTRDseedV1::AttachClustersIter(AliTRDtrackingChamber *chamber, Float_t 
 
   AliTRDchamberTimeBin *layer = 0x0;
   if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker)>=7){
-    AliTRDtrackingChamber *ch = new AliTRDtrackingChamber(*chamber); 
+    AliTRDtrackingChamber ch(*chamber);
+    ch.SetOwner(); 
     (*AliTRDtrackerV1::DebugStreamer()) << "AttachClustersIter"
-      << "chamber.="   << ch
+      << "chamber.="   << &ch
       << "tracklet.="  << this
       << "\n";	
   }
