@@ -112,6 +112,7 @@ Bool_t AliTRDtrackingChamber::Build(AliTRDgeometry *geo, const AliTRDCalDet *cal
 //_______________________________________________________	
 Int_t AliTRDtrackingChamber::GetNClusters() const
 {
+// Basic loop method
 // Returns number of clusters in chamber
 //
   Int_t n = 0;
@@ -120,6 +121,31 @@ Int_t AliTRDtrackingChamber::GetNClusters() const
   }
   return n;	
 }	
+
+//_______________________________________________________
+void AliTRDtrackingChamber::Bootstrap(const AliTRDReconstructor *rec)
+{
+// Basic loop method
+// Bootstrap each time bin
+//
+  AliTRDchamberTimeBin *jtb = &fTB[0];
+  for(Int_t itb=0; itb<kNTimeBins; itb++, ++jtb){ 
+    (*jtb).Bootstrap(rec, fDetector);
+  }
+}
+
+//_______________________________________________________
+void  AliTRDtrackingChamber::SetOwner()
+{
+// Basic loop method
+// Set ownership in time bins
+//
+  AliTRDchamberTimeBin *jtb = &fTB[0];
+  for(Int_t itb=0; itb<kNTimeBins; itb++, ++jtb){ 
+    if(!(Int_t(*jtb))) continue;
+    (*jtb).SetOwner();
+  }
+}
 
 //_______________________________________________________
 Double_t AliTRDtrackingChamber::GetQuality()
@@ -327,7 +353,8 @@ Bool_t AliTRDtrackingChamber::GetSeedingLayer(AliTRDchamberTimeBin *&fakeLayer, 
   
   new(fakeLayer) AliTRDchamberTimeBin(layer, stack, sector, z0, zl);
   fakeLayer->SetReconstructor(rec);
-  AliTRDcluster *cluster = 0x0;
+  fakeLayer->SetNRows(nRows);
+  fakeLayer->SetOwner(kFALSE);
   if(nCandidates){
     UInt_t fakeIndex = 0;
     for(Int_t ican = 0; ican < nCandidates; ican++){
@@ -352,14 +379,11 @@ Bool_t AliTRDtrackingChamber::GetSeedingLayer(AliTRDchamberTimeBin *&fakeLayer, 
       pos[2] = z/n;
       sig[0] = .02;
       sig[1] = sigcands[ican];
-      cluster = new AliTRDcluster(fDetector, 0., pos, sig, 0x0, 3, signal, col, row, 0, 0, 0., 0);
-      fakeLayer->InsertCluster(cluster, fakeIndex++);
+      fakeLayer->InsertCluster(new AliTRDcluster(fDetector, 0., pos, sig, 0x0, 3, signal, col, row, 0, 0, 0., 0), fakeIndex++);
     }
   }
-  fakeLayer->SetNRows(nRows);
-  fakeLayer->SetOwner();
   fakeLayer->BuildIndices();
-  //fakeLayer->PrintClusters();
+  //fakeLayer->Print();
   
   if(rec->GetStreamLevel(AliTRDReconstructor::kTracker) >= 3){
     //TMatrixD hist(nRows, nCols);

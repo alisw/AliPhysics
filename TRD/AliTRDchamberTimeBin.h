@@ -24,8 +24,12 @@ class AliTRDReconstructor;
 class AliTRDchamberTimeBin : public TObject
 {
 public:
+  enum AliTRDchamberTimeBinStatus {
+     kT0    = BIT(14) // is the T0 time bin
+    ,kOwner = BIT(15) // is owner of the clusters
+  };
   enum{
-    kMaxClustersLayer = 150
+     kMaxClustersLayer = 150
     ,kMaxRows = 16
   };
 
@@ -34,13 +38,14 @@ public:
   //AliTRDchamberTimeBin(const AliTRDpropagationLayer &layer);
   AliTRDchamberTimeBin(const AliTRDchamberTimeBin &layer);
   ~AliTRDchamberTimeBin();
-  //AliTRDchamberTimeBin   &operator=(const AliTRDpropagationLayer &myLayer);
-  operator Int_t() const                                        { return fN;                    }
-  AliTRDchamberTimeBin   &operator=(const AliTRDchamberTimeBin &myLayer);
-  AliTRDcluster      *operator[](const Int_t i) const {
+  operator       Int_t() const  { return fN; }
+  AliTRDchamberTimeBin&
+                 operator=(const AliTRDchamberTimeBin &myLayer);
+  AliTRDcluster* operator[](const Int_t i) const {
     return ((i < fN) && (i >= 0)) ? fClusters[i] : 0x0;
   }
 
+  void           Bootstrap(const AliTRDReconstructor *rec, Int_t det);
   void           BuildIndices(Int_t iter = 0);
   void           BuildCond(AliTRDcluster *cl, Double_t *cond, UChar_t Layer, Double_t theta=0., Double_t phi=0.);
   void           Clear(const Option_t *opt = 0x0);
@@ -58,8 +63,9 @@ public:
   Int_t          GetSector()                       const { return fSector; }
   void           InsertCluster(AliTRDcluster *c, UInt_t index);
 
-  Bool_t         IsT0() const {return TestBit(1);}
-  
+  Bool_t         IsT0() const {return TestBit(kT0);}
+  Bool_t         IsOwner() const {return TestBit(kOwner);}
+
   void           Print(Option_t *opt=0x0) const;
   Int_t          SearchNearestCluster(Double_t y, Double_t z, Double_t Roady, Double_t Roadz) const;
   void           SetRange(Float_t z0, Float_t zLength);
@@ -68,8 +74,8 @@ public:
   void           SetReconstructor(const AliTRDReconstructor *rec) {fReconstructor = rec;}
   void           SetStack(Int_t stack){ fStack = stack; }
   void           SetSector(Int_t sector){ fSector = sector; }
-  void           SetOwner(Bool_t own = kTRUE) {fOwner = own;}
-  void           SetT0(Bool_t set=kTRUE) {SetBit(1, set);}
+  void           SetOwner(Bool_t copy=kTRUE);
+  void           SetT0(Bool_t set=kTRUE) {SetBit(kT0, set);}
   void           SetX(Double_t x) {fX = x;}
 private:
   void           Copy(TObject &o) const;
@@ -78,17 +84,16 @@ private:
   Int_t          FindNearestYCluster(Double_t y, UChar_t z) const;
 
 private:
-  const AliTRDReconstructor *fReconstructor; //
-  Bool_t        fOwner;               //  owner of the clusters
-  Char_t        fPlane;               // Plane number
-  Char_t        fStack;               //  stack number in supermodule
-  Char_t        fSector;              // Sector mumber
-  Char_t        fNRows;               //  number of pad rows in the chamber
-  UChar_t       fPositions[kMaxRows]; //  starting index of clusters in pad row 
-  Int_t         fN;                   // number of clusters
+  const AliTRDReconstructor *fReconstructor; //!
+  Char_t        fPlane;               //! Plane number
+  Char_t        fStack;               //!  stack number in supermodule
+  Char_t        fSector;              //! Sector mumber
+  Char_t        fNRows;               //!  number of pad rows in the chamber
+  UChar_t       fPositions[kMaxRows]; //!  starting index of clusters in pad row 
+  Int_t         fN;                   //! number of clusters
   AliTRDcluster *fClusters[kMaxClustersLayer];            //Array of pointers to clusters
-  UInt_t        fIndex[kMaxClustersLayer];                //Array of cluster indexes
-  Double_t      fX;                   //  radial position of tb
+  UInt_t        fIndex[kMaxClustersLayer];                //!Array of cluster indexes
+  Double_t      fX;                   //!  radial position of tb
   
   // obsolete !!
   Double_t      fZ0;                  //  starting position of the layer in Z direction
@@ -97,7 +102,6 @@ private:
   ClassDef(AliTRDchamberTimeBin, 2)   //  tracking propagation layer for one time bin in chamber
 
 };
-
 
 #endif	// ALITRDCHAMBERTIMEBIN_H
 

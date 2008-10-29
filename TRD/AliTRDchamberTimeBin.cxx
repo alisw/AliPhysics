@@ -38,7 +38,8 @@
 
 #include "AliLog.h"
 
-#include "AliTRDcluster.h"
+#include "AliTRDgeometry.h"
+#include "AliTRDpadPlane.h"
 #include "AliTRDchamberTimeBin.h"
 #include "AliTRDrecoParam.h"
 #include "AliTRDReconstructor.h"
@@ -51,7 +52,6 @@ ClassImp(AliTRDchamberTimeBin)
 AliTRDchamberTimeBin::AliTRDchamberTimeBin(Int_t plane, Int_t stack, Int_t sector, Double_t z0, Double_t zLength)
   :TObject()
   ,fReconstructor(0x0)
-  ,fOwner(kFALSE)
   ,fPlane(plane)
   ,fStack(stack)
   ,fSector(sector)
@@ -64,74 +64,18 @@ AliTRDchamberTimeBin::AliTRDchamberTimeBin(Int_t plane, Int_t stack, Int_t secto
   //
   // Default constructor (Only provided to use AliTRDchamberTimeBin with arrays)
   //
-
+  SetBit(kT0, kFALSE);
+  SetBit(kOwner, kFALSE);
   memset(fPositions, 1, kMaxRows*sizeof(UChar_t));
   memset(fClusters, 0, kMaxClustersLayer*sizeof(AliTRDcluster*));
   memset(fIndex, 1, kMaxClustersLayer*sizeof(UInt_t));
 }
 
-// //_____________________________________________________________________________
-// AliTRDchamberTimeBin::AliTRDchamberTimeBin(const AliTRDpropagationLayer &layer, Double_t
-// z0, Double_t zLength, UChar_t stackNr):
-// 	TObject()
-// 	,fOwner(kFALSE)
-//   ,fPlane(0xff)
-//   ,fStack(0xff)
-//   ,fSector(0xff)
-//   ,fNRows(kMaxRows)
-//   ,fN(0)
-//   ,fX(0.)
-// 	,fZ0(z0)
-// 	,fZLength(zLength)
-// {
-// // Standard constructor.
-// // Initialize also the underlying AliTRDpropagationLayer using the copy constructor.
-// 
-// 	SetT0(layer.IsT0());
-// 	for(int i=0; i<kMaxRows; i++) fPositions[i] = 0xff;
-// 	for(int ic=0; ic<kMaxClustersLayer; ic++){
-// 		fClusters[ic] = 0x0;
-// 		fIndex[ic]    = 0xffff;
-// 	}
-// }
-// 
-// //_____________________________________________________________________________
-// AliTRDchamberTimeBin::AliTRDchamberTimeBin(const AliTRDpropagationLayer &layer):
-// 	TObject()
-// 	,fOwner(kFALSE)
-//   ,fPlane(0xff)
-//   ,fStack(0xff)
-//   ,fSector(0xff)
-//   ,fNRows(kMaxRows)
-//   ,fN(0)
-//   ,fX(0.)
-// 	,fZ0(0)
-// 	,fZLength(0)
-// {
-// // Standard constructor using only AliTRDpropagationLayer.
-// 	
-// 	SetT0(layer.IsT0());
-// 	for(int i=0; i<kMaxRows; i++) fPositions[i] = 0xff;
-// 	for(int ic=0; ic<kMaxClustersLayer; ic++){
-// 		fClusters[ic] = 0x0;
-// 		fIndex[ic]    = 0xffff;
-// 	}
-// }
-// //_____________________________________________________________________________
-// AliTRDchamberTimeBin &AliTRDchamberTimeBin::operator=(const AliTRDpropagationLayer &layer)
-// {
-// // Assignment operator from an AliTRDpropagationLayer
-// 
-// 	if (this != &layer) layer.Copy(*this);
-// 	return *this;
-// }
-// 
 
 //_____________________________________________________________________________
 AliTRDchamberTimeBin::AliTRDchamberTimeBin(const AliTRDchamberTimeBin &layer):
   TObject()
   ,fReconstructor(layer.fReconstructor)
-  ,fOwner(layer.fOwner)
   ,fPlane(layer.fPlane)
   ,fStack(layer.fStack)
   ,fSector(layer.fSector)
@@ -141,11 +85,12 @@ AliTRDchamberTimeBin::AliTRDchamberTimeBin(const AliTRDchamberTimeBin &layer):
   ,fZ0(layer.fZ0)
   ,fZLength(layer.fZLength)
 {
-// Copy Constructor (performs a deep copy)
+// Copy Constructor 
   
-  SetT0(layer.IsT0());
+  SetBit(kT0, layer.IsT0());
+  SetBit(kOwner, kFALSE);
   for(int i=0; i<kMaxRows; i++) fPositions[i] = layer.fPositions[i];
-  memcpy(&fClusters[0], &layer.fClusters[0], kMaxClustersLayer*sizeof(UChar_t));
+  memcpy(&fClusters[0], &layer.fClusters[0], kMaxClustersLayer*sizeof(AliTRDcluster*));
   memcpy(&fIndex[0], &layer.fIndex[0], kMaxClustersLayer*sizeof(UInt_t));
 
 
@@ -164,11 +109,10 @@ AliTRDchamberTimeBin &AliTRDchamberTimeBin::operator=(const AliTRDchamberTimeBin
 //_____________________________________________________________________________
 void AliTRDchamberTimeBin::Clear(const Option_t *) 
 { 
-  for (Int_t i = 0; i < fN; i++){ 
-    if(!fClusters[i]) continue;
-    if(fOwner) delete fClusters[i];
-    fClusters[i] = NULL;
-  }
+  for(AliTRDcluster **cit = &fClusters[0]; (*cit); cit++){
+    if(IsOwner()) delete (*cit);
+    (*cit) = NULL;
+  } 
   fN = 0; 
 }
 
@@ -179,7 +123,6 @@ void AliTRDchamberTimeBin::Copy(TObject &o) const
   
   AliTRDchamberTimeBin &layer = (AliTRDchamberTimeBin &)o;
   layer.fReconstructor = fReconstructor;
-  layer.fOwner       = kFALSE;
   layer.fPlane       = fPlane;
   layer.fStack       = fStack;
   layer.fSector      = fSector;
@@ -189,11 +132,10 @@ void AliTRDchamberTimeBin::Copy(TObject &o) const
   layer.fZ0          = fZ0;
   layer.fZLength     = fZLength;
   layer.SetT0(IsT0());
-  
-  for(int i = 0; i < kMaxRows; i++) layer.fPositions[i] = 0;
+  layer.SetBit(kOwner, kFALSE);
   
   for(int i=0; i<kMaxRows; i++) layer.fPositions[i] = fPositions[i];
-  memcpy(&layer.fClusters[0], &fClusters[0], kMaxClustersLayer*sizeof(UChar_t));
+  memcpy(&layer.fClusters[0], &fClusters[0], kMaxClustersLayer*sizeof(AliTRDcluster*));
   memcpy(&layer.fIndex[0], &fIndex[0], kMaxClustersLayer*sizeof(UInt_t));
   
   TObject::Copy(layer); // copies everything into layer
@@ -205,7 +147,24 @@ void AliTRDchamberTimeBin::Copy(TObject &o) const
 AliTRDchamberTimeBin::~AliTRDchamberTimeBin()
 {
 // Destructor
-  if(fOwner) for(int ic=0; ic<fN; ic++) delete fClusters[ic];
+  if(IsOwner()){ 
+    for(AliTRDcluster **cit = &fClusters[0]; (*cit); cit++) delete (*cit);
+  }
+}
+
+//_____________________________________________________________________________
+void  AliTRDchamberTimeBin::SetOwner(Bool_t copy) 
+{
+// Sets the ownership of the clusters to this 
+// If option "copy" is kTRUE [default] the clusters 
+// are also copied otherwise only the ownership bit 
+// is flipped.
+
+  SetBit(kOwner, kTRUE);
+  if(!copy) return;
+  for(AliTRDcluster **cit = &fClusters[0]; (*cit); ++cit){
+    (*cit) = new AliTRDcluster(*(*cit)); 
+  }
 }
 
 //_____________________________________________________________________________
@@ -251,9 +210,24 @@ void AliTRDchamberTimeBin::InsertCluster(AliTRDcluster *c, UInt_t index)
   fIndex[i]    = index; 
   fClusters[i] = c; 
   fN++;
+}
 
-}  
+//___________________________________________________
+void AliTRDchamberTimeBin::Bootstrap(const AliTRDReconstructor *rec, Int_t det)
+{
+// Reinitialize all data members from the clusters array
+// It has to be used after reading from disk
 
+  fReconstructor = rec;
+  fPlane  = AliTRDgeometry::GetLayer(det);
+  fStack  = AliTRDgeometry::GetStack(det);
+  fSector = AliTRDgeometry::GetSector(det);
+  AliTRDgeometry g;
+  fNRows  = g.GetPadPlane(fPlane, fStack)->GetNrows();
+  fN = 0;
+  for(AliTRDcluster **cit = &fClusters[0]; (*cit); cit++) fN++;
+  BuildIndices();
+}
 
 //_____________________________________________________________________________
 void AliTRDchamberTimeBin::BuildIndices(Int_t iter)
@@ -670,11 +644,15 @@ void AliTRDchamberTimeBin::Print(Option_t *) const
 // Prints the position of each cluster in the stacklayer on the stdout
 //
   if(!fN) return;
-  AliInfo(Form("nRows[%d] nClusters[%d]", fNRows, fN));
+  AliInfo(Form("Layer[%d] Stack[%d] Sector[%2d] nRows[%2d]", fPlane, fStack, fSector, fNRows));
   AliInfo(Form("Z0[%7.3f] Z1[%7.3f]", fZ0, fZ0+fZLength));
   AliTRDcluster* const* icl = &fClusters[0];
   for(Int_t jcl = 0; jcl < fN; jcl++, icl++){
     AliInfo(Form("%2d X[%7.3f] Y[%7.3f] Z[%7.3f] tb[%2d] col[%3d] row[%2d] used[%s]", jcl,  (*icl)->GetX(), (*icl)->GetY(), (*icl)->GetZ(), (*icl)->GetLocalTimeBin(), (*icl)->GetPadCol(), (*icl)->GetPadRow(),
     (*icl)->IsUsed() ? "y" : "n"));
+  }
+  Int_t irow = 0;
+  for(UChar_t const* pos = &fPositions[0]; irow<fNRows; pos++, irow++){ 
+    if((*pos) != 0xff) AliInfo(Form("r[%2d] pos[%d]", irow, (*pos)));
   }
 }

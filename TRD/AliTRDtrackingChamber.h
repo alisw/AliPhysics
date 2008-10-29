@@ -38,6 +38,7 @@ public:
   AliTRDtrackingChamber();
   virtual ~AliTRDtrackingChamber(){}
   
+  void     Bootstrap(const AliTRDReconstructor *rec);
   Bool_t   Build(AliTRDgeometry *geo, const AliTRDCalDet *cal, Bool_t hlt = kFALSE);
   void     Clear(const Option_t *opt = 0x0);
   Int_t    GetDetector() const {return fDetector;}
@@ -51,6 +52,7 @@ public:
   void     Print(Option_t *opt = 0x0) const;
 
   void     SetDetector(Int_t det) { fDetector = det;}
+  void     SetOwner();
 
 private:
   Int_t         fDetector;  // detector number
