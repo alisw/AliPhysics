@@ -85,6 +85,8 @@ String(REGEX REPLACE "^.*Revision: ([^\n]*).*$" "\\1"
   ALIROOT_SVN_REVISION ${_svn_out})
 String(REGEX REPLACE "^.*URL: https://alisoft.cern.ch/AliRoot/([^\n]*).*$" "w \\1"
   ALIROOT_SVN_BRANCH ${_svn_out})
+String(REPLACE "/" "\\\\/"
+  ALIROOT_SVN_BRANCH ${ALIROOT_SVN_BRANCH})
 
 # Additional targets
 Add_Custom_Target(check-all COMMENT "Checking coding conventions")
