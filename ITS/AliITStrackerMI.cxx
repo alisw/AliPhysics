@@ -2027,7 +2027,7 @@ void AliITStrackerMI::AliITSdetector::ReadBadDetectorAndChips(Int_t ilayer,Int_t
       (detType==0 && calibSPDdead->IsBad())) // TEMPORARY
     {
       SetBad();
-      printf("lay %d bad %d\n",ilayer,idet);
+      //      printf("lay %d bad %d\n",ilayer,idet);
     }
 
   // Get segmentation from AliITSDetTypeRec
