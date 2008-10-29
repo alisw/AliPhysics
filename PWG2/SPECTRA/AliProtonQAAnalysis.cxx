@@ -74,7 +74,7 @@ AliProtonQAAnalysis::AliProtonQAAnalysis() :
   fFunctionProbabilityFlag(kFALSE), 
   fElectronFunction(0), fMuonFunction(0),
   fPionFunction(0), fKaonFunction(0), fProtonFunction(0),
-  fUseTPCOnly(kFALSE),
+  fUseTPCOnly(kFALSE), fUseHybridTPC(kFALSE),
   fPDGList(0), fMCProcessesList(0),
   fRunMCAnalysis(kFALSE),
   fMCProcessIdFlag(kFALSE), fMCProcessId(0),
@@ -128,99 +128,12 @@ Double_t AliProtonQAAnalysis::GetParticleFraction(Int_t i, Double_t p) {
 }
 
 //____________________________________________________________________//
-/*Bool_t AliProtonQAAnalysis::IsAccepted(AliESDtrack* track) {
-  // Checks if the track is excluded from the cuts
-  Double_t Pt = 0.0, Px = 0.0, Py = 0.0, Pz = 0.0;
-  if(fUseTPCOnly) {
-    AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
-    if(!tpcTrack) {
-      Pt = 0.0; Px = 0.0; Py = 0.0; Pz = 0.0;
-    }
-    else {
-      Pt = tpcTrack->Pt();
-      Px = tpcTrack->Px();
-      Py = tpcTrack->Py();
-      Pz = tpcTrack->Pz();
-    }
-  }
-  else{
-    Pt = track->Pt();
-    Px = track->Px();
-    Py = track->Py();
-    Pz = track->Pz();
-  }
-     
-  Int_t  fIdxInt[200];
-  Int_t nClustersITS = track->GetITSclusters(fIdxInt);
-  Int_t nClustersTPC = track->GetTPCclusters(fIdxInt);
-
-  Float_t chi2PerClusterITS = -1;
-  if (nClustersITS!=0)
-    chi2PerClusterITS = track->GetITSchi2()/Float_t(nClustersITS);
-  Float_t chi2PerClusterTPC = -1;
-  if (nClustersTPC!=0)
-    chi2PerClusterTPC = track->GetTPCchi2()/Float_t(nClustersTPC);
-
-  Double_t extCov[15];
-  track->GetExternalCovariance(extCov);
-
-  if(fPointOnITSLayer1Flag)
-    if(!track->HasPointOnITSLayer(0)) return kFALSE;
-  if(fPointOnITSLayer2Flag)
-    if(!track->HasPointOnITSLayer(1)) return kFALSE;
-  if(fPointOnITSLayer3Flag)
-    if(!track->HasPointOnITSLayer(2)) return kFALSE;
-  if(fPointOnITSLayer4Flag)
-    if(!track->HasPointOnITSLayer(3)) return kFALSE;
-  if(fPointOnITSLayer5Flag)
-    if(!track->HasPointOnITSLayer(4)) return kFALSE;
-  if(fPointOnITSLayer6Flag)
-    if(!track->HasPointOnITSLayer(5)) return kFALSE;
-  if(fMinITSClustersFlag)
-    if(nClustersITS < fMinITSClusters) return kFALSE;
-  if(fMaxChi2PerITSClusterFlag)
-    if(chi2PerClusterITS > fMaxChi2PerITSCluster) return kFALSE; 
-  if(fMinTPCClustersFlag)
-    if(nClustersTPC < fMinTPCClusters) return kFALSE;
-  if(fMaxChi2PerTPCClusterFlag)
-    if(chi2PerClusterTPC > fMaxChi2PerTPCCluster) return kFALSE; 
-  if(fMaxCov11Flag)
-    if(extCov[0] > fMaxCov11) return kFALSE;
-  if(fMaxCov22Flag)
-    if(extCov[2] > fMaxCov22) return kFALSE;
-  if(fMaxCov33Flag)
-    if(extCov[5] > fMaxCov33) return kFALSE;
-  if(fMaxCov44Flag)
-    if(extCov[9] > fMaxCov44) return kFALSE;
-  if(fMaxCov55Flag)
-    if(extCov[14] > fMaxCov55) return kFALSE;
-  if(fMaxSigmaToVertexFlag)
-    if(GetSigmaToVertex(track) > fMaxSigmaToVertex) return kFALSE;
-  if(fMaxSigmaToVertexTPCFlag)
-    if(GetSigmaToVertex(track) > fMaxSigmaToVertexTPC) return kFALSE;
-  if(fITSRefitFlag)
-    if ((track->GetStatus() & AliESDtrack::kITSrefit) == 0) return kFALSE;
-  if(fTPCRefitFlag)
-    if ((track->GetStatus() & AliESDtrack::kTPCrefit) == 0) return kFALSE;
-  if(fESDpidFlag)
-    if ((track->GetStatus() & AliESDtrack::kESDpid) == 0) return kFALSE;
-  if(fTPCpidFlag)
-    if ((track->GetStatus() & AliESDtrack::kTPCpid) == 0) return kFALSE;
-
-  if((Pt < fMinPt) || (Pt > fMaxPt)) return kFALSE;
-  if((Rapidity(Px,Py,Pz) < fMinY) || (Rapidity(Px,Py,Pz) > fMaxY)) 
-    return kFALSE;
-
-  return kTRUE;
-}*/
-
-//____________________________________________________________________//
 Bool_t AliProtonQAAnalysis::IsAccepted(AliESDtrack* track) {
   // Checks if the track is excluded from the cuts
   Double_t Pt = 0.0, Px = 0.0, Py = 0.0, Pz = 0.0;
   Float_t dcaXY = 0.0, dcaZ = 0.0;
 
-  if(fUseTPCOnly) {
+  if((fUseTPCOnly)&&(!fUseHybridTPC)) {
     AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
     if(!tpcTrack) {
       Pt = 0.0; Px = 0.0; Py = 0.0; Pz = 0.0;
@@ -234,12 +147,38 @@ Bool_t AliProtonQAAnalysis::IsAccepted(AliESDtrack* track) {
       track->GetImpactParametersTPC(dcaXY,dcaZ);
     }
   }
+  else if(fUseHybridTPC) {
+     AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
+    if(!tpcTrack) {
+      Pt = 0.0; Px = 0.0; Py = 0.0; Pz = 0.0;
+      dcaXY = -100.0, dcaZ = -100.0;
+    }
+    else {
+      Pt = tpcTrack->Pt();
+      Px = tpcTrack->Px();
+      Py = tpcTrack->Py();
+      Pz = tpcTrack->Pz();
+      track->GetImpactParameters(dcaXY,dcaZ);
+    }
+  }
   else{
-    Pt = track->Pt();
+    AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
+    if(!tpcTrack) {
+      Pt = 0.0; Px = 0.0; Py = 0.0; Pz = 0.0;
+      dcaXY = -100.0, dcaZ = -100.0;
+    }
+    else {
+      Pt = tpcTrack->Pt();
+      Px = tpcTrack->Px();
+      Py = tpcTrack->Py();
+      Pz = tpcTrack->Pz();
+      track->GetImpactParameters(dcaXY,dcaZ);
+    }
+    /*Pt = track->Pt();
     Px = track->Px();
     Py = track->Py();
     Pz = track->Pz();
-    track->GetImpactParameters(dcaXY,dcaZ);
+    track->GetImpactParameters(dcaXY,dcaZ);*/
   }
      
   Int_t  fIdxInt[200];
@@ -293,11 +232,11 @@ Bool_t AliProtonQAAnalysis::IsAccepted(AliESDtrack* track) {
   if(fMaxDCAXYFlag) 
     if(TMath::Abs(dcaXY) > fMaxDCAXY) return kFALSE;
   if(fMaxDCAXYTPCFlag) 
-    if(TMath::Abs(dcaXY) > fMaxDCAXY) return kFALSE;
+    if(TMath::Abs(dcaXY) > fMaxDCAXYTPC) return kFALSE;
     if(fMaxDCAZFlag) 
     if(TMath::Abs(dcaZ) > fMaxDCAZ) return kFALSE;
   if(fMaxDCAZTPCFlag) 
-    if(TMath::Abs(dcaZ) > fMaxDCAZ) return kFALSE;
+    if(TMath::Abs(dcaZ) > fMaxDCAZTPC) return kFALSE;
   if(fMaxConstrainChi2Flag) {
     if(track->GetConstrainedChi2() > 0) 
       if(TMath::Log(track->GetConstrainedChi2()) > fMaxConstrainChi2) return kFALSE;
@@ -326,7 +265,7 @@ void AliProtonQAAnalysis::FillQA(AliESDtrack* track, AliStack *stack) {
 
   Double_t Pt = 0.0, Px = 0.0, Py = 0.0, Pz = 0.0;
   Float_t dcaXY = 0.0, dcaZ = 0.0;
-  if(fUseTPCOnly) {
+  if((fUseTPCOnly)&&(!fUseHybridTPC)) {
     AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
     if(!tpcTrack) {
       Pt = 0.0; Px = 0.0; Py = 0.0; Pz = 0.0;
@@ -338,6 +277,20 @@ void AliProtonQAAnalysis::FillQA(AliESDtrack* track, AliStack *stack) {
       Py = tpcTrack->Py();
       Pz = tpcTrack->Pz();
       track->GetImpactParametersTPC(dcaXY,dcaZ);
+    }
+  }
+  else if(fUseHybridTPC) {
+    AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
+    if(!tpcTrack) {
+      Pt = 0.0; Px = 0.0; Py = 0.0; Pz = 0.0;
+      dcaXY = -100.0, dcaZ = -100.0;
+    }
+    else {
+      Pt = tpcTrack->Pt();
+      Px = tpcTrack->Px();
+      Py = tpcTrack->Py();
+      Pz = tpcTrack->Pz();
+      track->GetImpactParameters(dcaXY,dcaZ);
     }
   }
   else{
@@ -469,11 +422,11 @@ void AliProtonQAAnalysis::FillQA(AliESDtrack* track, AliStack *stack) {
 	  ((TH1F *)(fQAPrimaryProtonsAcceptedList->At(11)))->Fill(dcaXY);
       }//DCA xy global tracking
       if(fMaxDCAXYTPCFlag) {
-	if(dcaXY > fMaxDCAXY) {
+	if(dcaXY > fMaxDCAXYTPC) {
 	  ((TH1F *)(fQAPrimaryProtonsRejectedList->At(12)))->Fill(dcaXY);
 	  //status = kFALSE;
 	}
-	else if(dcaXY <= fMaxDCAXY)
+	else if(dcaXY <= fMaxDCAXYTPC)
 	  ((TH1F *)(fQAPrimaryProtonsAcceptedList->At(12)))->Fill(dcaXY);
       }//DCA xy TPC tracking
       if(fMaxDCAZFlag) {
@@ -485,11 +438,11 @@ void AliProtonQAAnalysis::FillQA(AliESDtrack* track, AliStack *stack) {
 	  ((TH1F *)(fQAPrimaryProtonsAcceptedList->At(13)))->Fill(dcaZ);
       }//DCA z global tracking
       if(fMaxDCAZTPCFlag) {
-	if(dcaZ > fMaxDCAZ) {
+	if(dcaZ > fMaxDCAZTPC) {
 	  ((TH1F *)(fQAPrimaryProtonsRejectedList->At(14)))->Fill(dcaZ);
 	  //status = kFALSE;
 	}
-	else if(dcaZ <= fMaxDCAZ)
+	else if(dcaZ <= fMaxDCAZTPC)
 	  ((TH1F *)(fQAPrimaryProtonsAcceptedList->At(14)))->Fill(dcaZ);
       }//DCA z TPC tracking
       if(fMaxConstrainChi2Flag) {
@@ -680,11 +633,11 @@ void AliProtonQAAnalysis::FillQA(AliESDtrack* track, AliStack *stack) {
 	  ((TH1F *)(fQASecondaryProtonsAcceptedList->At(11)))->Fill(dcaXY);
       }//DCA xy global tracking
       if(fMaxDCAXYTPCFlag) {
-	if(dcaXY > fMaxDCAXY) {
+	if(dcaXY > fMaxDCAXYTPC) {
 	  ((TH1F *)(fQASecondaryProtonsRejectedList->At(12)))->Fill(dcaXY);
 	  //status = kFALSE;
 	}
-	else if(dcaXY <= fMaxDCAXY)
+	else if(dcaXY <= fMaxDCAXYTPC)
 	  ((TH1F *)(fQASecondaryProtonsAcceptedList->At(12)))->Fill(dcaXY);
       }//DCA xy TPC tracking
       if(fMaxDCAZFlag) {
@@ -696,11 +649,11 @@ void AliProtonQAAnalysis::FillQA(AliESDtrack* track, AliStack *stack) {
 	  ((TH1F *)(fQASecondaryProtonsAcceptedList->At(13)))->Fill(dcaZ);
       }//DCA z global tracking
       if(fMaxDCAZTPCFlag) {
-	if(dcaZ > fMaxDCAZ) {
+	if(dcaZ > fMaxDCAZTPC) {
 	  ((TH1F *)(fQASecondaryProtonsRejectedList->At(14)))->Fill(dcaZ);
 	  //status = kFALSE;
 	}
-	else if(dcaZ <= fMaxDCAZ)
+	else if(dcaZ <= fMaxDCAZTPC)
 	  ((TH1F *)(fQASecondaryProtonsAcceptedList->At(14)))->Fill(dcaZ);
       }//DCA z TPC tracking
       if(fMaxConstrainChi2Flag) {
@@ -894,11 +847,11 @@ void AliProtonQAAnalysis::FillQA(AliESDtrack* track, AliStack *stack) {
 	  ((TH1F *)(fQAPrimaryAntiProtonsAcceptedList->At(11)))->Fill(dcaXY);
       }//DCA xy global tracking
       if(fMaxDCAXYTPCFlag) {
-	if(dcaXY > fMaxDCAXY) {
+	if(dcaXY > fMaxDCAXYTPC) {
 	  ((TH1F *)(fQAPrimaryAntiProtonsRejectedList->At(12)))->Fill(dcaXY);
 	  //status = kFALSE;
 	}
-	else if(dcaXY <= fMaxDCAXY)
+	else if(dcaXY <= fMaxDCAXYTPC)
 	  ((TH1F *)(fQAPrimaryAntiProtonsAcceptedList->At(12)))->Fill(dcaXY);
       }//DCA xy TPC tracking
       if(fMaxDCAZFlag) {
@@ -910,11 +863,11 @@ void AliProtonQAAnalysis::FillQA(AliESDtrack* track, AliStack *stack) {
 	  ((TH1F *)(fQAPrimaryAntiProtonsAcceptedList->At(13)))->Fill(dcaZ);
       }//DCA z global tracking
       if(fMaxDCAZTPCFlag) {
-	if(dcaZ > fMaxDCAZ) {
+	if(dcaZ > fMaxDCAZTPC) {
 	  ((TH1F *)(fQAPrimaryAntiProtonsRejectedList->At(14)))->Fill(dcaZ);
 	  //status = kFALSE;
 	}
-	else if(dcaZ <= fMaxDCAZ)
+	else if(dcaZ <= fMaxDCAZTPC)
 	  ((TH1F *)(fQAPrimaryAntiProtonsAcceptedList->At(14)))->Fill(dcaZ);
       }//DCA z TPC tracking
       if(fMaxConstrainChi2Flag) {
@@ -1105,11 +1058,11 @@ void AliProtonQAAnalysis::FillQA(AliESDtrack* track, AliStack *stack) {
 	  ((TH1F *)(fQASecondaryAntiProtonsAcceptedList->At(11)))->Fill(dcaXY);
       }//DCA xy global tracking
       if(fMaxDCAXYTPCFlag) {
-	if(dcaXY > fMaxDCAXY) {
+	if(dcaXY > fMaxDCAXYTPC) {
 	  ((TH1F *)(fQASecondaryAntiProtonsRejectedList->At(12)))->Fill(dcaXY);
 	  //status = kFALSE;
 	}
-	else if(dcaXY <= fMaxDCAXY)
+	else if(dcaXY <= fMaxDCAXYTPC)
 	  ((TH1F *)(fQASecondaryAntiProtonsAcceptedList->At(12)))->Fill(dcaXY);
       }//DCA xy TPC tracking
       if(fMaxDCAZFlag) {
@@ -1121,11 +1074,11 @@ void AliProtonQAAnalysis::FillQA(AliESDtrack* track, AliStack *stack) {
 	  ((TH1F *)(fQASecondaryAntiProtonsAcceptedList->At(13)))->Fill(dcaZ);
       }//DCA z global tracking
       if(fMaxDCAZTPCFlag) {
-	if(dcaZ > fMaxDCAZ) {
+	if(dcaZ > fMaxDCAZTPC) {
 	  ((TH1F *)(fQASecondaryAntiProtonsRejectedList->At(14)))->Fill(dcaZ);
 	  //status = kFALSE;
 	}
-	else if(dcaZ <= fMaxDCAZ)
+	else if(dcaZ <= fMaxDCAZTPC)
 	  ((TH1F *)(fQASecondaryAntiProtonsAcceptedList->At(14)))->Fill(dcaZ);
       }//DCA z TPC tracking
       if(fMaxConstrainChi2Flag) {
@@ -1223,7 +1176,7 @@ Float_t AliProtonQAAnalysis::GetSigmaToVertex(AliESDtrack* esdTrack) {
   Float_t b[2];
   Float_t bRes[2];
   Float_t bCov[3];
-  if(fUseTPCOnly) 
+  if((fUseTPCOnly)&&(!fUseHybridTPC))
     esdTrack->GetImpactParametersTPC(b,bCov);
   else
     esdTrack->GetImpactParameters(b,bCov);
@@ -2480,7 +2433,8 @@ void AliProtonQAAnalysis::RunQA(AliStack *stack, AliESDEvent *fESD) {
       if(!tpcTrack) continue;
       Pt = tpcTrack->Pt();
       P = tpcTrack->P();
-      track->GetImpactParametersTPC(dcaXY,dcaZ);
+      if(fUseHybridTPC) track->GetImpactParameters(dcaXY,dcaZ);
+      else track->GetImpactParametersTPC(dcaXY,dcaZ);
       
       //pid
       track->GetTPCpid(probability);
@@ -2640,6 +2594,8 @@ void AliProtonQAAnalysis::RunQA(AliStack *stack, AliESDEvent *fESD) {
     }//TPC only tracks
     //combined tracking
     else if(!fUseTPCOnly) {
+      AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
+      if(!tpcTrack) continue;
       Pt = track->Pt();
       P = track->P();
       track->GetImpactParameters(dcaXY,dcaZ);

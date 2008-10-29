@@ -93,40 +93,62 @@ void AliAnalysisTaskProtonsQA::CreateOutputObjects() {
   //Use of TPConly tracks
   fAnalysis->SetQAYPtBins(10, -0.5, 0.5, 12, 0.5, 0.9); //TPC only
   fAnalysis->UseTPCOnly();
-  //fAnalysis->SetMinTPCClusters(100);
-  //fAnalysis->SetMaxChi2PerTPCCluster(2.1);
-  //fAnalysis->SetMaxCov11(1.0);
-  //fAnalysis->SetMaxCov22(1.0);
-  //fAnalysis->SetMaxCov33(0.2);
-  //fAnalysis->SetMaxCov44(0.2);
-  //fAnalysis->SetMaxCov55(0.5);
-  //fAnalysis->SetMaxSigmaToVertexTPC(2.0);
-  //fAnalysis->SetMaxDCAXY(1.0);
-  //fAnalysis->SetMaxDCAZ(1.0);
-  //fAnalysis->SetTPCRefit();
+  fAnalysis->SetMinTPCClusters(50);
+  fAnalysis->SetMaxChi2PerTPCCluster(2.5);
+  fAnalysis->SetMaxCov11(2.0);
+  fAnalysis->SetMaxCov22(2.0);
+  fAnalysis->SetMaxCov33(0.5);
+  fAnalysis->SetMaxCov44(0.5);
+  fAnalysis->SetMaxCov55(2.0);
+  fAnalysis->SetMaxSigmaToVertexTPC(2.0);
+  //fAnalysis->SetMaxDCAXYTPC(2.0);
+  //fAnalysis->SetMaxDCAZTPC(2.0);
   fAnalysis->SetTPCpid();
 
+  //Use of HybridTPC tracks
+  /*fAnalysis->SetQAYPtBins(10, -0.5, 0.5, 12, 0.5, 0.9); //HybridTPC
+  fAnalysis->UseHybridTPC();
+  fAnalysis->SetMinTPCClusters(50);
+  fAnalysis->SetMaxChi2PerTPCCluster(2.5);
+  fAnalysis->SetMaxCov11(2.0);
+  fAnalysis->SetMaxCov22(2.0);
+  fAnalysis->SetMaxCov33(0.5);
+  fAnalysis->SetMaxCov44(0.5);
+  fAnalysis->SetMaxCov55(2.0);
+  fAnalysis->SetMaxSigmaToVertexTPC(2.0);
+  //fAnalysis->SetMaxDCAXY(2.0);
+  //fAnalysis->SetMaxDCAZ(2.0);
+  fAnalysis->SetTPCpid();
+  fAnalysis->SetPointOnITSLayer1();
+  fAnalysis->SetPointOnITSLayer2();
+  fAnalysis->SetPointOnITSLayer3();
+  fAnalysis->SetPointOnITSLayer4();
+  fAnalysis->SetPointOnITSLayer5();
+  fAnalysis->SetPointOnITSLayer6();
+  fAnalysis->SetMinITSClusters(5);*/
+
   //Combined tracking
-  //fAnalysis->SetQAYPtBins(20, -1.0, 1.0, 27, 0.4, 3.1); //combined tracking
-  //fAnalysis->SetMinTPCClusters(50);
-  //fAnalysis->SetMaxChi2PerTPCCluster(3.5);
-  //fAnalysis->SetMaxCov11(2.0);
-  //fAnalysis->SetMaxCov22(2.0);
-  //fAnalysis->SetMaxCov33(0.5);
-  //fAnalysis->SetMaxCov44(0.5);
-  //fAnalysis->SetMaxCov55(2.0);
-  //fAnalysis->SetMaxSigmaToVertex(2.0);
-  //fAnalysis->SetTPCRefit();
-  //ITS related cuts - to be used in the case of the analysis of global tracks
-  //fAnalysis->SetPointOnITSLayer1();
-  //fAnalysis->SetPointOnITSLayer2();
-  //fAnalysis->SetPointOnITSLayer3();
-  //fAnalysis->SetPointOnITSLayer4();
-  //fAnalysis->SetPointOnITSLayer5();
-  //fAnalysis->SetPointOnITSLayer6();
-  //fAnalysis->SetMinITSClusters(1);
-  //fAnalysis->SetITSRefit();
-  //fAnalysis->SetESDpid();
+  /*fAnalysis->SetQAYPtBins(20, -1.0, 1.0, 27, 0.4, 3.1); //combined tracking
+  fAnalysis->SetMinTPCClusters(50);
+  fAnalysis->SetMaxChi2PerTPCCluster(3.5);
+  fAnalysis->SetMaxCov11(2.0);
+  fAnalysis->SetMaxCov22(2.0);
+  fAnalysis->SetMaxCov33(0.5);
+  fAnalysis->SetMaxCov44(0.5);
+  fAnalysis->SetMaxCov55(2.0);
+  fAnalysis->SetMaxSigmaToVertex(2.0);
+  //fAnalysis->SetMaxDCAXY(2.0);
+  //fAnalysis->SetMaxDCAZ(2.0);
+  fAnalysis->SetTPCRefit();
+  fAnalysis->SetPointOnITSLayer1();
+  fAnalysis->SetPointOnITSLayer2();
+  fAnalysis->SetPointOnITSLayer3();
+  fAnalysis->SetPointOnITSLayer4();
+  fAnalysis->SetPointOnITSLayer5();
+  fAnalysis->SetPointOnITSLayer6();
+  fAnalysis->SetMinITSClusters(1);
+  fAnalysis->SetITSRefit();
+  fAnalysis->SetESDpid();*/
 
   fAnalysis->InitQA();
   fAnalysis->SetPriorProbabilities(partFrac);
