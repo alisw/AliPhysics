@@ -77,14 +77,14 @@ CXXFLAGS  += $(AMOREFLAGS)
 CFLAGS    += $(AMOREFLAGS)
 CINTFLAGS += $(AMOREFLAGS)
 DEPINC    += $(AMOREFLAGS)
-AMOREDALIBS+=$(shell amore-config --auxlibs)
+AMOREDALIBS+=-static $(shell amore-config --auxlibs) $(shell date-config --rcproxylibs)
 else
 AMOREDALIBS=
 endif
 
 ROOTLIBDIR=$(shell root-config --libdir)
 
-SYSLIBS=-ldl -lpthread
+SYSLIBS=-ldl -lpthread $(shell xml2-config --libs)
 
 MONITORLIBS=$(shell date-config --monitorlibs=noshift)
 
@@ -144,7 +144,7 @@ $(DALIB): $(ALIROOTALIBS)
 	$(MUTE)mkdir junk && cd junk && $(addprefix $(AR) x ../,$(addsuffix &&,$^)) $(AR) r $@ *.o && cd .. && rm -rf junk
 
 $(EXTRAROOTLIB): $(LIBPATH) 
-	$(MUTE)$(AR) r $@ `ls ${ROOTSYS}/montecarlo/vmc/src/*.o ${ROOTSYS}/tree/treeplayer/src/*.o`
+	$(MUTE)$(AR) r $@ `ls ${ROOTSYS}/montecarlo/vmc/src/*.o ${ROOTSYS}/tree/treeplayer/src/*.o ${ROOTSYS}/io/xmlparser/src/*.o`
 
 $(DATARGETNAME)-clean:
 	@echo "***** Cleaning $(DAMODULE)$(SUBDAMODULE)$(DANAME) detector-algorithm *****"
@@ -183,7 +183,7 @@ $(DAMAKEFILE): $(DATARGETDIR)
 	@echo "endif" >> $@
 	@echo "" >> $@
 	@echo "DAQDALIB=""$$""(DAQDADIR)/libdaqDA.a" >> $@
-	@echo "AMOREDALIBS=""$$""(shell amore-config --auxlibs)" >> $@
+	@echo "AMOREDALIBS=-static ""$$""(shell amore-config --auxlibs) ""$$""(shell date-config --rcproxylibs)" >> $@
 	@echo "MONITORLIBS=""$$""(shell date-config --monitorlibs=noshift)" >> $@
 	@echo "" >> $@
 	@echo "${DAMODULE}${SUBDAMODULE}${DANAME}da.exe: ${DAMODULE}${SUBDAMODULE}${DANAME}da.o" >> $@
