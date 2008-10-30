@@ -27,9 +27,10 @@ public:
 
   Double_t GetChi2Y() const                 { return fkChi2Y;    }
   Double_t GetChi2Z() const                 { return fkChi2Z;    }
-  Double_t GetChi2YCut() const              { return fkChi2YCut; }
-  Double_t GetChi2ZCut() const              { return fkChi2ZCut; }
-  Double_t GetPhiCut() const                { return fkPhiCut;   }
+  Double_t GetChi2YSlope() const            { return fkChi2YSlope; }
+  Double_t GetChi2ZSlope() const            { return fkChi2ZSlope; }
+	Double_t GetChi2YCut() const              { return fkChi2YCut; }
+  Double_t GetPhiSlope() const              { return fkPhiSlope;   }
   Float_t  GetNClusters() const;
   Double_t GetNMeanClusters() const         { return fkNMeanClusters; }
   Double_t GetNSigmaClusters() const        { return fkNSigmaClusters; }
@@ -70,9 +71,10 @@ public:
   void     SetFindableClusters(Double_t r) {fkFindable = r;}
   void     SetChi2Y(Double_t chi2) {fkChi2Y = chi2;}
   void     SetChi2Z(Double_t chi2) {fkChi2Z = chi2;}
-  void     SetChi2YCut(Double_t chi2YCut) {fkChi2YCut = chi2YCut;}
-  void     SetChi2ZCut(Double_t chi2ZCut) {fkChi2ZCut = chi2ZCut;}
-  void     SetPhiCut(Double_t phiCut) {fkPhiCut = phiCut;}
+  void     SetChi2YSlope(Double_t chi2YSlope) {fkChi2YSlope = chi2YSlope;}
+  void     SetChi2ZSlope(Double_t chi2ZSlope) {fkChi2ZSlope = chi2ZSlope;}
+	void	   SetChi2YCut(Double_t chi2Cut) {fkChi2YCut = chi2Cut; }
+  void     SetPhiSlope(Double_t phiSlope) {fkPhiSlope = phiSlope;}
   void     SetNMeanClusters(Double_t meanNclusters) {fkNMeanClusters = meanNclusters;}
   void     SetNSigmaClusters(Double_t sigmaNclusters) {fkNSigmaClusters = sigmaNclusters;} 
   void     SetClusterSharing(Bool_t share = kTRUE)            { SetBit(kClusterSharing, share);}
@@ -116,9 +118,10 @@ private:
   Double_t  fkFindable;              // minimum ratio of clusters per tracklet supposed to be attached.
   Double_t  fkChi2Z;                 // Max chi2 on the z direction for seeding clusters fit
   Double_t  fkChi2Y;                 // Max chi2 on the y direction for seeding clusters Rieman fit
-  Double_t  fkChi2YCut;              // Cut on the Chi2 in y-direction in the likelihood filter
-  Double_t  fkChi2ZCut;              // Cut on the Chi2 in z-direction in the likelihood filter
-  Double_t  fkPhiCut;                // Cut on the deviation of the phi angles between tracklet and track fit (lik. filter)
+  Double_t  fkChi2YSlope;            // Slope of the chi2-distribution in y-direction
+  Double_t  fkChi2ZSlope;            // Slope of the chi2-distribution in z-direction
+	Double_t  fkChi2YCut;							 // Cut on the Chi2 in y-direction in the likelihood filter
+  Double_t  fkPhiSlope;              // Slope of the distribution of the deviation between track angle and tracklet angle
   Double_t  fkNMeanClusters;         // Mean number of clusters per tracklet
   Double_t  fkNSigmaClusters;        // Sigma of the number of clusters per tracklet
   Double_t  fkNClusterNoise;         // ratio of noisy clusters to the true one
@@ -139,7 +142,7 @@ private:
   Int_t     fNumberOfPresamples;     // number of presamples 
   Int_t     fNumberOfPostsamples;     // number of postsamples 
 
-  ClassDef(AliTRDrecoParam, 6)       // Reconstruction parameters for TRD detector
+  ClassDef(AliTRDrecoParam, 7)       // Reconstruction parameters for TRD detector
 
 };
 

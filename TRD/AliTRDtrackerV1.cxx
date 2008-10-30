@@ -2840,10 +2840,10 @@ Double_t AliTRDtrackerV1::CookLikelihood(AliTRDseedV1 *cseed, Int_t planes[4])
   }
   nclusters *= .25;
 
-  Double_t likea     = TMath::Exp(-sumda * fRecoPars->GetPhiCut());
+  Double_t likea     = TMath::Exp(-sumda * fRecoPars->GetPhiSlope());
   Double_t likechi2y  = 0.0000000001;
-  if (fReconstructor->IsCosmic() || chi2y < 0.5) likechi2y += TMath::Exp(-TMath::Sqrt(chi2y) * fRecoPars->GetChi2YCut());
-  Double_t likechi2z = TMath::Exp(-chi2z * fRecoPars->GetChi2ZCut());
+  if (fReconstructor->IsCosmic() || chi2y < fRecoPars->GetChi2YCut()) likechi2y += TMath::Exp(-TMath::Sqrt(chi2y) * fRecoPars->GetChi2YSlope());
+  Double_t likechi2z = TMath::Exp(-chi2z * fRecoPars->GetChi2ZSlope());
   Double_t likeN     = TMath::Exp(-(fRecoPars->GetNMeanClusters() - nclusters) / fRecoPars->GetNSigmaClusters());
   Double_t like      = likea * likechi2y * likechi2z * likeN;
 
@@ -2884,8 +2884,6 @@ Double_t AliTRDtrackerV1::CookLikelihood(AliTRDseedV1 *cseed, Int_t planes[4])
 
   return like;
 }
-
-
 
 //____________________________________________________________________
 void AliTRDtrackerV1::GetSeedingConfig(Int_t iconfig, Int_t planes[4])

@@ -46,9 +46,10 @@ AliTRDrecoParam::AliTRDrecoParam()
   ,fkFindable(.333)
   ,fkChi2Z(30./*14.*//*12.5*/)
   ,fkChi2Y(.25)
-  ,fkChi2YCut(7.73)
-  ,fkChi2ZCut(0.069)
-  ,fkPhiCut(10.6)
+  ,fkChi2YSlope(7.73)
+  ,fkChi2ZSlope(0.069)
+	,fkChi2YCut(0.5)
+  ,fkPhiSlope(10.6)
   ,fkNMeanClusters(20.)
   ,fkNSigmaClusters(2.)
   ,fkNClusterNoise(0.)
@@ -96,9 +97,10 @@ AliTRDrecoParam::AliTRDrecoParam(const AliTRDrecoParam &ref)
   ,fkFindable(ref.fkFindable)
   ,fkChi2Z(ref.fkChi2Z)
   ,fkChi2Y(ref.fkChi2Y)
-  ,fkChi2YCut(ref.fkChi2YCut)
-  ,fkChi2ZCut(ref.fkChi2ZCut)
-  ,fkPhiCut(ref.fkPhiCut)
+  ,fkChi2YSlope(ref.fkChi2YSlope)
+  ,fkChi2ZSlope(ref.fkChi2ZSlope)
+	,fkChi2YCut(ref.fkChi2YCut)
+  ,fkPhiSlope(ref.fkPhiSlope)
   ,fkNMeanClusters(ref.fkNMeanClusters)
   ,fkNSigmaClusters(ref.fkNSigmaClusters)
   ,fkNClusterNoise(ref.fkNClusterNoise)
@@ -163,12 +165,14 @@ AliTRDrecoParam *AliTRDrecoParam::GetCosmicTestParam()
   AliTRDrawStreamBase::SetRawStreamVersion("TB");
   AliTRDrecoParam *par = new AliTRDrecoParam();
   par->SetVertexConstrained(kFALSE);
-  par->fkChi2YCut       = 1.136;
-  par->fkChi2ZCut       = 0.069;
+  par->fkChi2YSlope       = 0.11853;
+  par->fkChi2ZSlope       = 0.04527;
+	par->fkChi2YCut					= 1.;
+	par->fkPhiSlope					= 3.17954;
   par->fkMaxTheta       = 2.1445;
   par->fkMaxPhi         = 2.7475;
-  par->fkNMeanClusters  = 12.;
-  par->fkNSigmaClusters = 2.5;
+  par->fkNMeanClusters  = 12.89;
+  par->fkNSigmaClusters = 2.095;
   return par;
 
 }
