@@ -1,9 +1,9 @@
-#ifndef ALIITSRAWSTREAMSDDV2_H
-#define ALIITSRAWSTREAMSDDV2_H
+#ifndef ALIITSRAWSTREAMSDDBEAMTESTNOV04_H
+#define ALIITSRAWSTREAMSDDBEAMTESTNOV04_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */
+/* $Id: */
 
 ///////////////////////////////////////////////////////////////////////////////
 ///
@@ -11,22 +11,22 @@
 ///
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "AliITSRawStreamSDD.h"
+#include "AliITSRawStreamSDDBeamTest.h"
 
 class AliRawReader;
 
 
-class AliITSRawStreamSDDv2: public AliITSRawStreamSDD {
+class AliITSRawStreamSDDBeamTestNov04: public AliITSRawStreamSDDBeamTest {
   public :
-    AliITSRawStreamSDDv2(AliRawReader* rawReader);
-    virtual ~AliITSRawStreamSDDv2() {};
+    AliITSRawStreamSDDBeamTestNov04(AliRawReader* rawReader);
+    virtual ~AliITSRawStreamSDDBeamTestNov04() {};
 
     virtual Bool_t   Next();
-
+    virtual Int_t    ReadJitter();
   private :
- 
 
-    ClassDef(AliITSRawStreamSDDv2, 1) // class for reading ITS SDD raw digits
+
+    ClassDef(AliITSRawStreamSDDBeamTestNov04, 1) // class for reading ITS SDD raw digits
 };
 
 #endif

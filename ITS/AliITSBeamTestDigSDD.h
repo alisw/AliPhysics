@@ -11,7 +11,7 @@
 #include "AliITSBeamTestDig.h"
 
 
-class AliITSRawStreamSDD;
+class AliITSRawStreamSDDBeamTest;
 
 typedef enum {kAug04,kNov04} BeamtestPeriod_t;
 
@@ -45,14 +45,14 @@ class AliITSBeamTestDigSDD: public AliITSBeamTestDig {
                                      // November 2004 = kNov04
                                      // August 2004 = kAug04
   Int_t fThreshold;                  // Low carlos threshold 
-  AliITSRawStreamSDD* fStreamer;     //! SDD streamer
+  AliITSRawStreamSDDBeamTest* fStreamer;     //! SDD streamer
 
  private: 
 
   Int_t GetEventType();
 
 
-  ClassDef(AliITSBeamTestDigSDD,1)  // An Alice SDD beam test digitizer
+  ClassDef(AliITSBeamTestDigSDD,2)  // An Alice SDD beam test digitizer
 
  };
 

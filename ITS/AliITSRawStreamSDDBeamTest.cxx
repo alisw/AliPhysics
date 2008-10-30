@@ -1,5 +1,5 @@
 /**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * Copyright(c) 2007-2009, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
  * Contributors are mentioned in the code where appropriate.              *
@@ -13,81 +13,101 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id: $*/
 
 ///////////////////////////////////////////////////////////////////////////////
 ///
-/// This class provides access to ITS SDD digits in test beam raw data.
-//  for beam test of November 2004
+/// This class provides access to ITS SDD digits in beam test raw data
 ///
 ///////////////////////////////////////////////////////////////////////////////
 
-/*
-	Error Flag words: (http://www.bo.infn.it/~falchier/alice.html)
-        with multi-event buffer
-	   
-bits 31-14: all zeros
-bit  13   : L0 ack
-bit  12   : L1 reject ack
-bit  11   : L2 reject ack
-bit  10   : prepulse ack
-bit   9   : testpulse ack
-bit   8   : flush
-bit   7   : busy
-bit   6   : flag error ch 1
-bit   5   : flag error ch 0
-bit   4   : disable trigger mismatch ack
-bit   3   : parity error right hybrid
-bit   2   : parity error left hybrid
-bit   1   : parity error CARLOS ch 1
-bit   0   : parity error CARLOS ch 2
-*/
-#include "AliITSRawStreamSDDv3.h"
+#include "AliLog.h"
+#include "AliITSRawStreamSDDBeamTest.h"
 #include "AliRawReader.h"
 
-ClassImp(AliITSRawStreamSDDv3)
 
+ClassImp(AliITSRawStreamSDDBeamTest)
+  
+const UInt_t AliITSRawStreamSDDBeamTest::fgkCodeLength[8] =  {8, 18, 2, 3, 4, 5, 6, 7};
 
-
-
-
-AliITSRawStreamSDDv3::AliITSRawStreamSDDv3(AliRawReader* rawReader) :
-  AliITSRawStreamSDD(rawReader)
+//______________________________________________________________________
+AliITSRawStreamSDDBeamTest::AliITSRawStreamSDDBeamTest(AliRawReader* rawReader) :
+  AliITSRawStream(rawReader),
+fData(0),
+fSkip(0),
+fEventId(0),
+fCarlosId(-1),
+fChannel(0),
+fJitter(0)
 {
 // create an object to read ITS SDD raw digits
-
-
   fRawReader->Reset();
   fRawReader->SelectEquipment(17, 204, 204);
+
+
 }
 
+//______________________________________________________________________
+UInt_t AliITSRawStreamSDDBeamTest::ReadBits()
+{
+// read bits from the given channel
+  UInt_t result = (fChannelData[fCarlosId][fChannel] & ((1<<fReadBits[fCarlosId][fChannel]) - 1));
+  fChannelData[fCarlosId][fChannel] >>= fReadBits[fCarlosId][fChannel]; 
+  fLastBit[fCarlosId][fChannel] -= fReadBits[fCarlosId][fChannel];
+  return result;
+}
 
-Bool_t AliITSRawStreamSDDv3::Next()
+//______________________________________________________________________
+Int_t AliITSRawStreamSDDBeamTest::DecompAmbra(Int_t value) const
+{
+  // AMBRA decompression (from 8 to 10 bit)
+  
+  if ((value & 0x80) == 0) {
+    return value & 0x7f;
+  } else if ((value & 0x40) == 0) {
+    return 0x081 + ((value & 0x3f) << 1);
+  } else if ((value & 0x20) == 0) {
+    return 0x104 + ((value & 0x1f) << 3);
+  } else {
+    return 0x208 + ((value & 0x1f) << 4);
+  }
+  
+}
+
+//______________________________________________________________________
+Bool_t AliITSRawStreamSDDBeamTest::Next()
 {
 // read the next raw digit
 // returns kFALSE if there is no digit left
+
   // skip the first 8 words
-  while (fSkip[0] < 9) {
+  while (fSkip < 8) {
     if (!fRawReader->ReadNextInt(fData)) return kFALSE;
     if ((fData >> 30) == 0x01) continue;  // JTAG word
-    fSkip[0]++;
+    if (fSkip == 4) {
+      if (fData != 0) {
+	Error("Next", "data not valid: %8.8d", fData);
+	return kFALSE;
+      }
+    }
+    fSkip++;
   }
 
-  Int_t countFoot=0;	
   while (kTRUE) {
     if ((fChannel < 0) || (fLastBit[0][fChannel] < fReadBits[0][fChannel])) {
       if (!fRawReader->ReadNextInt(fData)) return kFALSE;  // read next word
+
       fChannel = -1;
       if ((fData >> 28) == 0x02) {           // header
 	fEventId = (fData >> 3) & 0x07FF;
 	fCarlosId = (fData >> 1) & 0x03;
       } else if ((fData >> 28) == 0x03) {    // footer
-        countFoot++; // stop before the last word (last word=jitter)
-        if(countFoot==3) return kFALSE;	 
+	// ignored
       } else if ((fData >> 29) == 0x00) {    // error
-
-	if ((fData & 0x00000163) != 0) {
-	  Error("Next", "error codes = %8.8x",fData);
-	  return kFALSE; 
+	if ((fData & 0x1FFFFFFF) != 0) {
+	  Error("Next", "error codes = %x, %x\n", 
+		(fData >> 0) & 0x3FFF, (fData >> 14) & 0x3FFF);
+	  return kFALSE;
 	}
       } else if ((fData >> 30) == 0x01) {    // JTAG word
 	// ignored
@@ -99,7 +119,6 @@ Bool_t AliITSRawStreamSDDv3::Next()
 	Error("Next", "invalid data: %8.8x\n", fData);
 	return kFALSE;
       }
-      
 
       if (fChannel >= 0) {          // add read word to the data
 	fChannelData[0][fChannel] += 
@@ -133,34 +152,10 @@ Bool_t AliITSRawStreamSDDv3::Next()
       }
     }
   }
+
   return kFALSE;
 }
 
 
-Int_t AliITSRawStreamSDDv3::GetJitter() {
-
-  // Reads the value of the jitter between L0 and pascal stop
-  // written in the last word of the buffer
-
-     if (!fRawReader->ReadNextInt(fData)){
-       Error("GetJitter","Jitter word not found!!");
-       return -1;  // read last word
-     }
-     if ( (fData&0xff000000) != 0xff000000) {
-       Error("GetJitter","wrong mask on Jitter word (0xffxxxxxx): %8.8x",fData);
-       return -1;  // read last word
-     }
-     fJitter = fData&0x000000ff;
-     if (fJitter<0x7 || fJitter>0xe) {
-       Warning("GetJitter","Unexpected jitter value %2.2x (%8.8x)",fJitter,fData);
-       return fJitter;  // read last word
-     }
-
-     if (fRawReader->ReadNextInt(fData)){
-       Error("GetJitter","The equipment payload contains something after jitter");
-       return -1;  // read last word
-     }
-     return fJitter;
-}
 
 

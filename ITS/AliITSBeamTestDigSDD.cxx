@@ -8,9 +8,8 @@
 #include "AliITSdigitSDD.h"
 #include "AliRawReader.h"
 #include "AliVMERawStream.h"
-#include "AliITSRawStreamSDDv2.h"
-#include "AliITSRawStreamSDDv3.h"
-#include "AliITSRawStreamSDD.h"
+#include "AliITSRawStreamSDDBeamTest.h"
+#include "AliITSRawStreamSDDBeamTestNov04.h"
 #include "AliITSBeamTestDigSDD.h"
 #include "AliITSEventHeader.h"
 #include "AliITSgeom.h"
@@ -95,7 +94,7 @@ void AliITSBeamTestDigSDD::Exec(Option_t* /*opt*/)
 
   switch(fBtPer){
   case kNov04:
-    fStreamer = new AliITSRawStreamSDDv3(fReader);
+    fStreamer = new AliITSRawStreamSDDBeamTestNov04(fReader);
     break;
   case kAug04:
     AliVMERawStream vmeStreamer(fReader);
@@ -109,7 +108,7 @@ void AliITSBeamTestDigSDD::Exec(Option_t* /*opt*/)
     if(fSDDEvType==2) fITSHeader->SetEventTypeSDD(kCalibration1);
     if(fSDDEvType==3) fITSHeader->SetEventTypeSDD(kCalibration2);
     fReader->Reset();
-    fStreamer = new AliITSRawStreamSDDv2(fReader);
+    fStreamer = new AliITSRawStreamSDDBeamTest(fReader);
     break;
   }
 

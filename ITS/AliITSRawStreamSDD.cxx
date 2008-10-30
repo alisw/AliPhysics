@@ -49,7 +49,6 @@ fDecompressAmbra(kTRUE)
     fLowThresholdArray[im][1]=0;
   }
   for(Int_t i=0;i<kFifoWords;i++) fNfifo[i]=0;
-  for(Int_t i=0;i<kDDLsNumber;i++) fSkip[i]=0;
   fRawReader->Reset();
   fRawReader->Select("ITSSDD");
 

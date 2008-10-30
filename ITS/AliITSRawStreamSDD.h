@@ -32,18 +32,16 @@ class AliITSRawStreamSDD: public AliITSRawStream {
     virtual Int_t    GetEightBitSignal() const {return fEightBitSignal;}
     virtual Int_t    GetCarlosId() const {return fCarlosId;}
     virtual Int_t    GetEventId() const {return fEventId;}
-    virtual Int_t    GetJitter() {return fJitter;}  // not const in a daughter class
+    virtual Int_t    GetJitter() const {return fJitter;}  
 
-    virtual Int_t    ReadJitter() const {return 0;}
 
     virtual void     SetDecompressAmbra(Bool_t deco=kTRUE){
       fDecompressAmbra=deco;
     }
     virtual void SetDDLModuleMap(AliITSDDLModuleMapSDD* ddlsdd){
       if(!fDDLModuleMap) fDDLModuleMap=new AliITSDDLModuleMapSDD();
-      fDDLModuleMap->SetDDLMap(ddlsdd);}
-    virtual void     SetLowCarlosThreshold(Int_t th, Int_t i)
-      {fLowThreshold[i]=th;}
+      fDDLModuleMap->SetDDLMap(ddlsdd);
+    }
     virtual void     SetZeroSuppLowThreshold(Int_t iMod, Int_t iSid, Int_t th) 
       {fLowThresholdArray[iMod][iSid]=th;}
     Int_t   GetModuleNumber(UInt_t iDDL, UInt_t iModule) const {
@@ -72,7 +70,7 @@ class AliITSRawStreamSDD: public AliITSRawStream {
     AliITSDDLModuleMapSDD* fDDLModuleMap; // mapping DDL/module -> module number 
     UInt_t           fData;         // data read for file
     Bool_t           fResetSkip;    // flag for end of DDL data
-    Int_t            fSkip[kDDLsNumber];// obsolete -- needed to compile AliITSRawStreamSDDv2
+
     Int_t            fEventId;      // event ID from header
     Int_t            fCarlosId;     // carlos ID
     Int_t            fChannel;      // current channel
@@ -83,7 +81,7 @@ class AliITSRawStreamSDD: public AliITSRawStream {
     Bool_t           fReadCode[kModulesPerDDL][2];   // next bits are code or data
     UInt_t           fReadBits[kModulesPerDDL][2];   // number of bits to read
     Int_t            fLowThresholdArray[kSDDModules][2]; // array with low thresholds for all modules
-    Int_t            fLowThreshold[2];    // obsolete -- needed to compile AliITSRawStreamSDDv2
+
     Int_t            fNfifo[kFifoWords];  // FIFO number
     Int_t            fTimeBin[kModulesPerDDL][2];  // current timebin [ncarlos][nchannels]
     Int_t            fAnode[kModulesPerDDL][2]; // current anode [ncarlos][nchannels]

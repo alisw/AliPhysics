@@ -89,8 +89,8 @@
 #pragma link C++ class AliITSRawStream+;
 #pragma link C++ class AliITSRawStreamSDD+;
 #pragma link C++ class AliITSRawStreamSDDCompressed+;
-#pragma link C++ class AliITSRawStreamSDDv2+;
-#pragma link C++ class AliITSRawStreamSDDv3+;
+#pragma link C++ class AliITSRawStreamSDDBeamTest+;
+#pragma link C++ class AliITSRawStreamSDDBeamTestNov04+;
 #pragma link C++ class AliITSCompressRawDataSDD+;
 #pragma link C++ class AliITSRawStreamSPD+;
 #pragma link C++ class AliITSRawStreamSSD+;

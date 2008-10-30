@@ -50,8 +50,8 @@ set(SRCS
 		AliITSDDLRawData.cxx
 		AliITSRawStream.cxx
 		AliITSRawStreamSDDCompressed.cxx
-		AliITSRawStreamSDDv2.cxx
-		AliITSRawStreamSDDv3.cxx
+		AliITSRawStreamSDDBeamTest.cxx
+		AliITSRawStreamSDDBeamTestNov04.cxx
 		AliITSRawStreamSSD.cxx
 		AliITSRawStreamSDD.cxx
 		AliITSCompressRawDataSDD.cxx
