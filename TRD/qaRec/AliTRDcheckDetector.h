@@ -12,10 +12,6 @@ class AliESDHeader;
 class AliTRDcheckDetector : public AliTRDrecoTask{
 // common constants
 enum{
-  kNDetectors = 540,
-  kNDetectorsSector = 30,
-  kNSectors = 18,
-  kNLayers = 6,
   kNTimeBins = 30
 };
 // The Histogram number
@@ -46,15 +42,15 @@ public:
   virtual TObjArray *Histos();
   
   // Plotting Functions:
-  TH1 *PlotMeanNClusters(AliTRDtrackV1 *);
-  TH1 *PlotNClusters(AliTRDtrackV1 *);
-  TH1 *PlotNTracklets(AliTRDtrackV1 *);
-  TH1 *PlotTracksSector(AliTRDtrackV1 *);
-  TH1 *PlotPulseHeight(AliTRDtrackV1 *);
-	TH1 *PlotChi2(AliTRDtrackV1 *track);
-	TH1 *PlotNormalizedChi2(AliTRDtrackV1 *track);
-	TH1 *PlotClusterCharge(AliTRDtrackV1 *);
-	TH1 *PlotChargeDeposit(AliTRDtrackV1 *);
+  TH1 *PlotMeanNClusters(const AliTRDtrackV1 *t = 0x0);
+  TH1 *PlotNClusters(const AliTRDtrackV1 *t = 0x0);
+  TH1 *PlotNTracklets(const AliTRDtrackV1 *t = 0x0);
+  TH1 *PlotTracksSector(const AliTRDtrackV1 *t = 0x0);
+  TH1 *PlotPulseHeight(const AliTRDtrackV1 *t = 0x0);
+	TH1 *PlotChi2(const AliTRDtrackV1 *t = 0x0);
+	TH1 *PlotNormalizedChi2(const AliTRDtrackV1 *t = 0x0);
+	TH1 *PlotClusterCharge(const AliTRDtrackV1 *t = 0x0);
+	TH1 *PlotChargeDeposit(const AliTRDtrackV1 *t = 0x0);
 
   virtual Bool_t PostProcess();
   virtual void  GetRefFigure(Int_t ifig);
