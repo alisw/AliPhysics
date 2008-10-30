@@ -122,7 +122,7 @@ AliHLTPHOSRawAnalyzerComponentv2::DoEvent( const AliHLTComponentEventData& evtDa
 					 AliHLTUInt8_t* outputPtr, AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks )
 {
   //comment
-  UInt_t blockSize         = 0;
+  Int_t blockSize         = 0;
   UInt_t totSize           = 0;
 
   const AliHLTComponentBlockData* iter = NULL; 

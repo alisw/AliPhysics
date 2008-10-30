@@ -107,16 +107,16 @@ AliHLTPHOSHistogramProducerComponent::GetOutputDataSize(unsigned long& constBase
 // 					std::vector<AliHLTComponentBlockData>& outputBlocks)
 
 int 
-AliHLTPHOSHistogramProducerComponent::DoEvent(const AliHLTComponentEventData& evtData,
-			 AliHLTComponentTriggerData& trigData)
+AliHLTPHOSHistogramProducerComponent::DoEvent(const AliHLTComponentEventData& /*evtData*/,
+			 AliHLTComponentTriggerData& /*trigData*/)
 
 
 {
   //see header file for documentation
 
-  UInt_t specification = 0;
+  //UInt_t specification = 0;
 
-  AliHLTPHOSCaloClusterContainerStruct* tmpClusters = 0;
+  //  AliHLTPHOSCaloClusterContainerStruct* tmpClusters = 0;
 
   const AliHLTComponentBlockData* block = GetFirstInputBlock(AliHLTPHOSDefinitions::fgkClusterDataType);
   

@@ -35,11 +35,6 @@
 using namespace std;
 #endif
 
-const AliHLTComponentDataType AliHLTPHOSMonitorTriggerComponent::fgkInputDataTypes[]=
-  {
-    kAliHLTVoidDataType,{0,"",""}
-  };
-
 AliHLTPHOSMonitorTriggerComponent gAliHLTPHOSMonitorTriggerComponent;
 
 
@@ -189,7 +184,7 @@ AliHLTPHOSMonitorTriggerComponent::CheckClusters(AliHLTPHOSCaloClusterContainerS
 {
   //See headerfile for documentation
 
-  Int_t nClusters = 0;
+  UInt_t nClusters = 0;
 
   AliHLTPHOSCaloClusterDataStruct* clusterPtr = 0;
 

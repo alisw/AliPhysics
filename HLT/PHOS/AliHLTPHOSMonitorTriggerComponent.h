@@ -113,13 +113,9 @@ private:
   Float_t fClusterEnergyThreshold; //COMMENT
   UInt_t fMultiplicityThreshold; //COMMENT
   Float_t fMultEnergyThreshold; //COMMENT
-  Int_t fDigitMultiplicityThreshold; //COMMENT
-  Int_t fMultDigitMultiplicityThreshold; //COMMENT
-  
-
-  /** interface function, see @ref AliHLTComponent for description */
-  static const AliHLTComponentDataType fgkInputDataTypes[];     //COMMENT  
-  
+  UInt_t fDigitMultiplicityThreshold; //COMMENT
+  UInt_t fMultDigitMultiplicityThreshold; //COMMENT
+    
 
 };
 

@@ -73,7 +73,7 @@ AliHLTPHOSHistogramProducer::Fill(AliHLTPHOSCaloClusterContainerStruct* clusterC
   //comment
   AliHLTPHOSCaloClusterDataStruct* tmpClusterPtr = 0;
 
-  for(Int_t i = 0; i < clusterContainerPtr->fNCaloClusters; i++)
+  for(UInt_t i = 0; i < clusterContainerPtr->fNCaloClusters; i++)
     {
       tmpClusterPtr = &(clusterContainerPtr->fCaloClusterArray[i]);
       if(fFillClusterEnergies)
