@@ -128,12 +128,13 @@ public:
    Int_t    CompLength() const { return (Int_t)(fBufCompCur - fBufComp); }
 
 private:
-   UInt_t   fWhat;        //Message type
-   TClass  *fClass;       //If message is kMESS_OBJECT pointer to object's class
-   Int_t    fCompress;    //Compression level from 0 (not compressed) to 9 (max compression)
-   char    *fBufComp;     //Compressed buffer
-   char    *fBufCompCur;  //Current position in compressed buffer
-   char    *fCompPos;     //Position of fBufCur when message was compressed
+   UInt_t   fWhat;        //!Message type
+   TClass  *fClass;       //!If message is kMESS_OBJECT pointer to object's class
+   Int_t    fCompress;    //!Compression level from 0 (not compressed) to 9 (max compression)
+   char    *fBufComp;     //!Compressed buffer
+   char    *fBufCompCur;  //!Current position in compressed buffer
+   char    *fCompPos;     //!Position of fBufCur when message was compressed
+   char    *fBufUncompressed; //!Uncompressed buffer
 
    // AliHLTMessage objects cannot be copied or assigned
    AliHLTMessage(const AliHLTMessage &);           // not implemented
@@ -145,7 +146,7 @@ private:
    /** a default buffer describing an empty message */
    static UInt_t fgkDefaultBuffer[2]; //!transient
 
-   ClassDef(AliHLTMessage,0)  // Message buffer class
+   ClassDef(AliHLTMessage,1)  // Message buffer class
 };
 
 #endif // ALIHLTMESSAGE_H

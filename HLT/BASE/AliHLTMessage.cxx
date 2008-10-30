@@ -53,6 +53,7 @@ AliHLTMessage::AliHLTMessage(UInt_t what)
   fBufComp(0),
   fBufCompCur(0),
   fCompPos(0)
+  , fBufUncompressed(0)
 {
    // Create a AliHLTMessage object for storing objects. The "what" integer
    // describes the type of message. Predifined ROOT system message types
@@ -90,6 +91,7 @@ AliHLTMessage::AliHLTMessage(void *buf, Int_t bufsize)
   fBufComp(0),
   fBufCompCur(0),
   fCompPos(0)
+  , fBufUncompressed(0)
 {
    // Create a AliHLTMessage object for reading objects. The objects will be
    // read from buf. Use the What() method to get the message type.
@@ -128,7 +130,7 @@ AliHLTMessage::AliHLTMessage(void *buf, Int_t bufsize)
 AliHLTMessage::~AliHLTMessage()
 {
    // Clean up compression buffer.
-  if (fBufComp) delete [] fBufComp;
+  Reset();
 }
 
 //______________________________________________________________________________
@@ -160,6 +162,10 @@ void AliHLTMessage::Reset()
       fBufComp    = 0;
       fBufCompCur = 0;
       fCompPos    = 0;
+   }
+   if (fBufUncompressed) {
+     delete [] fBufUncompressed;
+     fBufUncompressed=NULL;
    }
 }
 
@@ -314,6 +320,7 @@ Int_t AliHLTMessage::Uncompress()
    UChar_t *bufcur = (UChar_t*)fBufComp + hdrlen;
    frombuf((char *&)bufcur, &buflen);
    fBuffer  = new char[buflen];
+   fBufUncompressed = fBuffer;
    fBufSize = buflen;
    fBufCur  = fBuffer + sizeof(UInt_t) + sizeof(fWhat);
    fBufMax  = fBuffer + fBufSize;
