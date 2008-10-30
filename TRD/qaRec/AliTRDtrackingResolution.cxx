@@ -454,7 +454,7 @@ TH1* AliTRDtrackingResolution::PlotResolution(const AliTRDtrackV1 *track)
 
     // Fill Debug stream
     if(fDebugLevel>=1){
-      Float_t p = fMC->GetTrackRef()->P();
+      Float_t p = fMC->GetTrackRef() ? fMC->GetTrackRef()->P() : -1.;
       (*fDebugStream) << "TrkltResolution"
         << "det="	 	  << det
         << "pdg="     << pdg
