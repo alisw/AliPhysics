@@ -172,7 +172,7 @@ AliESDtrack::AliESDtrack() :
   fTOFCalChannel(0),
   fTOFindex(-1),
   fHMPIDqn(0),
-  fHMPIDcluIdx(0),
+  fHMPIDcluIdx(-1),
   fEMCALindex(kEMCALNoMatch),
   fHMPIDtrkTheta(0),
   fHMPIDtrkPhi(0),
@@ -357,7 +357,7 @@ AliESDtrack::AliESDtrack(const AliVTrack *track) :
   fTOFCalChannel(0),
   fTOFindex(-1),
   fHMPIDqn(0),
-  fHMPIDcluIdx(0),
+  fHMPIDcluIdx(-1),
   fEMCALindex(kEMCALNoMatch),
   fHMPIDtrkTheta(0),
   fHMPIDtrkPhi(0),
@@ -459,7 +459,7 @@ AliESDtrack::AliESDtrack(TParticle * part) :
   fTOFCalChannel(0),
   fTOFindex(-1),
   fHMPIDqn(0),
-  fHMPIDcluIdx(0),
+  fHMPIDcluIdx(-1),
   fEMCALindex(kEMCALNoMatch),
   fHMPIDtrkTheta(0),
   fHMPIDtrkPhi(0),
@@ -995,7 +995,7 @@ void AliESDtrack::MakeMiniESDtrack(){
   // Reset HMPID related track information
   fHMPIDchi2 = 0;     
   fHMPIDqn = 0;     
-  fHMPIDcluIdx = 0;     
+  fHMPIDcluIdx = -1;     
   fHMPIDsignal = 0;     
   for (Int_t i=0;i<AliPID::kSPECIES;i++) fHMPIDr[i] = 0;
   fHMPIDtrkTheta = 0;     
@@ -1320,6 +1320,15 @@ Int_t AliESDtrack::GetNcls(Int_t idet) const
     if (fTOFindex != -1)
       ncls = 1;
     break;
+  case 4: //PHOS
+    break;
+  case 5: //HMPID
+    if ((fHMPIDcluIdx >= 0) && (fHMPIDcluIdx < 7000000)) {
+      if ((fHMPIDcluIdx%1000000 != 9999) && (fHMPIDcluIdx%1000000 != 99999)) {
+	ncls = 1;
+      }
+    }    
+    break;
   default:
     break;
   }
@@ -1350,9 +1359,11 @@ Int_t AliESDtrack::GetClusters(Int_t idet, Int_t *idx) const
   case 4: //PHOS
     break;
   case 5:
-    if (fHMPIDcluIdx != 0) {
-      idx[0] = GetHMPIDcluIdx();
-      ncls = 1;
+    if ((fHMPIDcluIdx >= 0) && (fHMPIDcluIdx < 7000000)) {
+      if ((fHMPIDcluIdx%1000000 != 9999) && (fHMPIDcluIdx%1000000 != 99999)) {
+	idx[0] = GetHMPIDcluIdx();
+	ncls = 1;
+      }
     }    
     break;
   case 6: //EMCAL

@@ -2687,7 +2687,7 @@ void AliReconstruction::WriteAlignmentData(AliESDEvent* esd)
       AliESDtrack *track = esd->GetTrack(itrack);
       Int_t nsp = 0;
       Int_t idx[200];
-      for (Int_t iDet = 3; iDet >= 0; iDet--) {// TOF, TRD, TPC, ITS clusters
+      for (Int_t iDet = 5; iDet >= 0; iDet--) {// TOF, TRD, TPC, ITS clusters
           nsp += track->GetNcls(iDet);
 
           if (iDet==0) { // ITS "extra" clusters
@@ -2700,7 +2700,7 @@ void AliReconstruction::WriteAlignmentData(AliESDEvent* esd)
 	AliTrackPointArray *sp = new AliTrackPointArray(nsp);
 	track->SetTrackPointArray(sp);
 	Int_t isptrack = 0;
-	for (Int_t iDet = 3; iDet >= 0; iDet--) {
+	for (Int_t iDet = 5; iDet >= 0; iDet--) {
 	  AliTracker *tracker = fTracker[iDet];
 	  if (!tracker) continue;
 	  Int_t nspdet = track->GetClusters(iDet,idx);
