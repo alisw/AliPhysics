@@ -257,6 +257,9 @@ void AliTRDtrackInfoGen::Exec(Option_t *){
     fTrackInfo->SetTrackId(esdTrack->GetID());
     fTrackInfo->SetLabel(label);
     fTrackInfo->SetNumberOfClustersRefit(esdTrack->GetNcls(2));
+    // some other Informations which we may wish to store in order to find problematic cases
+    fTrackInfo->SetKinkIndex(esdTrack->GetKinkIndex(0));
+    fTrackInfo->SetTPCncls(static_cast<UShort_t>(esdTrack->GetNcls(1)));
     nclsTrklt = 0;
   
 

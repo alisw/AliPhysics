@@ -338,8 +338,10 @@ TH1 *AliTRDcheckDetector::PlotNClusters(const AliTRDtrackV1 *track){
       Float_t phi = TMath::ATan(tracklet->GetYfit(1));
       Float_t momentum = 0.;
       Int_t pdg = 0;
+      Int_t kinkIndex = fESD ? fESD->GetKinkIndex() : 0;
+      UShort_t TPCncls = fESD ? fESD->GetTPCncls() : 0;
       if(fMC){
-	      if(fMC->GetTrackRef()) momentum = fMC->GetTrackRef()->P();
+        if(fMC->GetTrackRef()) momentum = fMC->GetTrackRef()->P();
         pdg = fMC->GetPDG();
       }
       (*fDebugStream) << "NClusters"
@@ -350,6 +352,8 @@ TH1 *AliTRDcheckDetector::PlotNClusters(const AliTRDtrackV1 *track){
         << "pdg="				<< pdg
         << "theta="			<< theta
         << "phi="				<< phi
+        << "kinkIndex="	<< kinkIndex
+        << "TPCncls="		<< TPCncls
         << "nclusters=" << nclusters
         << "\n";
     }
@@ -468,6 +472,8 @@ TH1 *AliTRDcheckDetector::PlotPulseHeight(const AliTRDtrackV1 *track){
         Float_t phi = TMath::ATan(tracklet->GetYfit(1));
         Float_t momentum = 0.;
         Int_t pdg = 0;
+        Int_t kinkIndex = fESD ? fESD->GetKinkIndex() : 0;
+        UShort_t TPCncls = fESD ? fESD->GetTPCncls() : 0;
         if(fMC){
           if(fMC->GetTrackRef()) momentum = fMC->GetTrackRef()->P();
           pdg = fMC->GetPDG();
@@ -482,6 +488,8 @@ TH1 *AliTRDcheckDetector::PlotPulseHeight(const AliTRDtrackV1 *track){
           << "pdg="				<< pdg
           << "theta="			<< theta
           << "phi="				<< phi
+          << "kinkIndex="	<< kinkIndex
+          << "TPCncls="		<< TPCncls
           << "\n";
       }
     }
@@ -556,6 +564,8 @@ TH1 *AliTRDcheckDetector::PlotChargeDeposit(const AliTRDtrackV1 *track){
       Float_t phi = TMath::ATan(tracklet->GetYfit(1));
       Float_t momentum = 0.;
       Int_t pdg = 0;
+      Int_t kinkIndex = fESD ? fESD->GetKinkIndex() : 0;
+      UShort_t TPCncls = fESD ? fESD->GetTPCncls() : 0;
       if(fMC){
 	      if(fMC->GetTrackRef()) momentum = fMC->GetTrackRef()->P();
         pdg = fMC->GetPDG();
@@ -568,6 +578,8 @@ TH1 *AliTRDcheckDetector::PlotChargeDeposit(const AliTRDtrackV1 *track){
         << "pdg="				<< pdg
         << "theta="			<< theta
         << "phi="				<< phi
+        << "kinkIndex="	<< kinkIndex
+        << "TPCncls="		<< TPCncls
         << "QT="        << Qtot
         << "\n";
     }
