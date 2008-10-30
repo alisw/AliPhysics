@@ -33,6 +33,7 @@
 #pragma link C++ class  AliTRDRawStreamV2+;
 
 #pragma link C++ class  AliTRDrawStream+;
+#pragma link C++ class  AliTRDrawTPStream+;
 #pragma link C++ class  AliTRDrawStreamBase+;
 #pragma link C++ class  AliTRDtestBeam+;
 

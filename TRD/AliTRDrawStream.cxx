@@ -1,4 +1,4 @@
-#/**************************************************************************
+/**************************************************************************
 * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
 *                                                                        *
 * Author: The ALICE Off-line Project.                                    *
@@ -40,11 +40,9 @@
 #include "AliTRDdataArrayI.h"
 #include "AliTRDdataArrayDigits.h"
 #include "AliTRDSignalIndex.h"
-#include "AliTRDrecoParam.h"
 #include "AliTRDcalibDB.h"
 #include "Cal/AliTRDCalPadStatus.h"
-
-//[mj tracklet writing] #include "AliTRDrawTracklet.h"
+#include "AliTRDrawTPStream.h"
 
 #include "AliLog.h"
 #include "AliRawReader.h"
@@ -1121,6 +1119,7 @@ AliTRDrawStream::DecodeSM(void *buffer, UInt_t length)
           fgLastIndex = -1 ; // to check mcm number odering 
     if (DecodeHC() == kFALSE)
       {
+        if ((fHC->fRawVMajor & 64) == 64 && fHC->fRawVMajorOpt == 7) continue; // special treatmeant for the configuration data which doesn't have data-end-marker 
         fSM.fClean = kFALSE;
               if (fHC->fCorrupted < 16)  SeekEndOfData(); // In case that we meet END_OF_TRACKLET_MARKERNEW 
                                                           // during ADC data decoding or MCM header decoding
@@ -1491,7 +1490,8 @@ AliTRDrawStream::DecodeMCMheader()
 
   fMCM->fROW = fTRDfeeParam->GetPadRowFromMCM(fMCM->fROB, fMCM->fMCM); 
 
-  if ((fHC->fRawVMajor > 2 && fHC->fRawVMajor <5) || (fHC->fRawVMajor > 31 && fHC->fRawVMajor < 64)) //cover old and new version definition of ZS data
+  if ((fHC->fRawVMajor > 2 && fHC->fRawVMajor <5) || ((fHC->fRawVMajor & 32) == 32)) //cover old and new version definition of ZS data
+  //if ((fHC->fRawVMajor > 2 && fHC->fRawVMajor <5) || (fHC->fRawVMajor > 31 && fHC->fRawVMajor < 64)) //cover old and new version definition of ZS data
     {
       fpPos++;
       if ( fpPos < fpEnd )
@@ -1692,6 +1692,18 @@ AliTRDrawStream::DecodeHC()
     return kFALSE;
   }
     }
+
+  if ((fHC->fRawVMajor & 64) == 64) // test pattern data
+    {
+      AliTRDrawTPStream *tpStream = new AliTRDrawTPStream(fHC->fRawVMajorOpt, fpPos);
+      if (tpStream->DecodeTPdata() == kFALSE)
+        {
+         if (fgWarnError) AliError("failed to decode test pattern data");
+         return kFALSE; 
+        }
+      else if(fHC->fRawVMajorOpt == 7) return kFALSE; // always return false in case of configuration data(special treatment due to lack of data-end-marker).
+      return kTRUE;
+    } 
 
   fHC->fMCMmax = 0;
   while (*fpPos != ENDOFRAWDATAMARKER && fpPos < fpEnd)

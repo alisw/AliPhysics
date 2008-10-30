@@ -22,6 +22,7 @@ class AliTRDdigitsManager;
 #define TRD_MAX_TBINS 30
 #define TRD_MAX_ADC   21
 #define TRD_MAX_MCM   4 * 16
+#define MAX_TRACKLETS_PERHC 256
 
 /* // old raw stream */
 /* #define TRD_OLD_STREAM -1 */

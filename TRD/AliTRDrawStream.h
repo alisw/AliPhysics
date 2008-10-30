@@ -22,12 +22,6 @@ class AliTRDdigitsManager;
 class TTreeSRedirector;
 class AliTRDfeeParam;
 
-// defined in AliTRDrawStreamBase.h:
-/* #define TRD_MAX_TBINS 30 */
-/* #define TRD_MAX_ADC   21 */
-/* #define TRD_MAX_MCM   4 * 16 */
-
-#define MAX_TRACKLETS_PERHC 256
 
 class AliTRDrawStream : public AliTRDrawStreamBase
 { // class def begin

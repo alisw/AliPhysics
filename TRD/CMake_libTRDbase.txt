@@ -20,6 +20,7 @@ set(SRCS
       AliTRDrawOldStream.cxx
       AliTRDRawStreamV2.cxx
       AliTRDrawStream.cxx
+      AliTRDrawTPStream.cxx
       AliTRDrawStreamBase.cxx
       AliTRDtestBeam.cxx
       AliTRDCommonParam.cxx
