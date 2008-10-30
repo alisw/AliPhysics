@@ -33,6 +33,7 @@
 #include "AliLog.h"
 #include "AliMathBase.h"
 
+#include "AliTRDpadPlane.h"
 #include "AliTRDcluster.h"
 #include "AliTRDseedV1.h"
 #include "AliTRDtrackV1.h"
@@ -616,6 +617,42 @@ Bool_t	AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *chamber
   
   return kTRUE;
 }
+
+//____________________________________________________________
+void AliTRDseedV1::Bootstrap(const AliTRDReconstructor *rec)
+{
+//   Fill in all derived information. It has to be called after recovery from file or HLT.
+//   The primitive data are
+//   - list of clusters
+//   - detector (as the detector will be removed from clusters)
+//   - position of anode wire (fX0) - temporary
+//   - track reference position and direction
+//   - momentum of the track
+//   - time bin length [cm]
+// 
+//   A.Bercuci <A.Bercuci@gsi.de> Oct 30th 2008
+//
+  fReconstructor = rec;
+  AliTRDgeometry g;
+  AliTRDpadPlane *pp = g.GetPadPlane(fDet);
+  fTilt      = TMath::Tan(TMath::DegToRad()*pp->GetTiltingAngle());
+  fPadLength = pp->GetLengthIPad();
+  fSnp = fYref[1]/TMath::Sqrt(1+fYref[1]*fYref[1]);
+  fTgl = fZref[1];
+  fN = 0; fN2 = 0; fMPads = 0.;
+  AliTRDcluster **cit = &fClusters[0];
+  for(Int_t ic = knTimebins; ic--; cit++){
+    if(!(*cit)) return;
+    fN++; fN2++;
+    fX[ic] = (*cit)->GetX() - fX0;
+    fY[ic] = (*cit)->GetY();
+    fZ[ic] = (*cit)->GetZ();
+  }
+  Update(); // Fit();
+  CookLabels();
+  GetProbability();
+}
+
 
 //____________________________________________________________________
 Bool_t AliTRDseedV1::Fit(Bool_t tilt)

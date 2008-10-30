@@ -57,6 +57,7 @@ class AliTRDseedV1 : public AliTRDseed
   Bool_t	AttachClustersIter(AliTRDtrackingChamber *chamber, Float_t quality, Bool_t kZcorr = kFALSE
                                 , AliTRDcluster *c=0x0);
   Bool_t	AttachClusters(AliTRDtrackingChamber *chamber, Bool_t kZcorr = kFALSE);
+  void    Bootstrap(const AliTRDReconstructor *rec);
   void    CookdEdx(Int_t nslices);
   Bool_t  Fit(Bool_t tilt=kTRUE);
 
