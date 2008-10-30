@@ -339,12 +339,8 @@ TH1 *AliTRDcheckDetector::PlotNClusters(const AliTRDtrackV1 *track){
       Float_t momentum = 0.;
       Int_t pdg = 0;
       if(fMC){
-        const AliTrackReference *fRef = 0x0;
-        Int_t jti = 0;
-        while(!(fRef = fMC->GetTrackRef(jti++)) && (jti <=12));
-        if(fRef) momentum = fRef->P();
-/*	      if(fMC->GetNTrackRefs()) momentum = fMC->GetTrackRefIter()->P();
-        pdg = fMC->GetPDG();*/
+	      if(fMC->GetTrackRef()) momentum = fMC->GetTrackRef()->P();
+        pdg = fMC->GetPDG();
       }
       (*fDebugStream) << "NClusters"
         << "Detector="  << detector
@@ -473,12 +469,8 @@ TH1 *AliTRDcheckDetector::PlotPulseHeight(const AliTRDtrackV1 *track){
         Float_t momentum = 0.;
         Int_t pdg = 0;
         if(fMC){
-        const AliTrackReference *fRef = 0x0;
-          Int_t jti = 0;
-          while(!(fRef = fMC->GetTrackRef(jti++)) && (jti <=12));
-          if(fRef) momentum = fRef->P();
-/*		      if(fMC->GetNTrackRefs()) momentum = fMC->GetTrackRefIter()->P();
-          pdg = fMC->GetPDG();*/
+          if(fMC->GetTrackRef()) momentum = fMC->GetTrackRef()->P();
+          pdg = fMC->GetPDG();
         }
         (*fDebugStream) << "PulseHeight"
           << "Detector="	<< detector
@@ -565,12 +557,8 @@ TH1 *AliTRDcheckDetector::PlotChargeDeposit(const AliTRDtrackV1 *track){
       Float_t momentum = 0.;
       Int_t pdg = 0;
       if(fMC){
-        const AliTrackReference *fRef = 0x0;
-        Int_t jti = 0;
-        while(!(fRef = fMC->GetTrackRef(jti++)) && (jti <=12));
-        if(fRef) momentum = fRef->P();
-/*	      if(fMC->GetNTrackRefs()) momentum = fMC->GetTrackRefIter()->P();
-        pdg = fMC->GetPDG();*/
+	      if(fMC->GetTrackRef()) momentum = fMC->GetTrackRef()->P();
+        pdg = fMC->GetPDG();
       }
       (*fDebugStream) << "ChargeDeposit"
         << "Detector="  << detector

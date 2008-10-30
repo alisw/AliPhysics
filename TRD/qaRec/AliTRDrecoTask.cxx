@@ -108,18 +108,25 @@ void AliTRDrecoTask::InitFunctorList()
     if(!name.BeginsWith("Plot")) continue;
     if(!fPlotFuncList) fPlotFuncList = new TList();
     fPlotFuncList->AddLast(new TMethodCall(c, (const char*)name, ""));
-    //printf("%s%s\n", m->GetName(), m->GetSignature());
+    printf("%s%s\n", m->GetName(), m->GetSignature());
   }
 }
 
 //_______________________________________________________
 Bool_t AliTRDrecoTask::Load(const Char_t *filename)
 {
-  if(!TFile::Open(filename)) return kFALSE;
-  TObjArray *o = (TObjArray*)gFile->Get(GetName());
+  if(!TFile::Open(filename)){
+    AliWarning(Form("Couldn't open file %s.", filename));
+    return kFALSE;
+  }
+  TObjArray *o = 0x0;
+  if(!(o = (TObjArray*)gFile->Get(GetName()))){
+    AliWarning("Missing histogram container.");
+    return kFALSE;
+  }
   fContainer = (TObjArray*)o->Clone(GetName());
   gFile->Close();
-  return kFALSE;
+  return kTRUE;
 }
 
 //_______________________________________________________
