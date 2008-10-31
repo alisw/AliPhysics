@@ -64,6 +64,7 @@ void SimEsd(AliLoader *pHL,AliESDEvent *pEsd,Bool_t htaCheck)
     pHL->TreeR()->GetEntry(0);
     AliStack *pStack=gAL->Stack();
     Int_t nTrkHMPID=0;
+
     for(Int_t i=0;i<pStack->GetNtrack();i++){
       if(!pStack->IsPhysicalPrimary(i)) continue;
       TParticle *pTrack=pStack->Particle(i); 
@@ -85,18 +86,19 @@ void SimEsd(AliLoader *pHL,AliESDEvent *pEsd,Bool_t htaCheck)
       trk.SetHMPIDtrk(xRa,yRa,thRa,phRa);                                                        //store initial infos
       pEsd->AddTrack(&trk);
     
-  //    if(!(iEvt%50)) Printf("Number of events processed: %i with tracks %i in HMPID",iEvt,nTrkHMPID);
-      Printf("Number of events processed: %i with tracks %i in HMPID",iEvt,nTrkHMPID);
-
       Int_t status;
       if(!htaCheck) status = pTracker.Recon         (pEsd,pH->CluLst(),pNmean,pQthre);
       else          status = pTracker.ReconHiddenTrk(pEsd,pH->CluLst(),pNmean,pQthre);
 
-      Printf("status %i",status);
+//      Printf("status %i",status);
       if(status !=0) continue;
 
     
     }// track loop
+    
+    if(!(iEvt%50)) Printf("Number of events processed: %i with tracks %i in HMPID",iEvt,nTrkHMPID);
+//      Printf("Number of events processed: %i with tracks %i in HMPID",iEvt,nTrkHMPID);
+    
     gEsdTr->Fill();
     pEsd->Reset();
   }// event loop
