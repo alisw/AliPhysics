@@ -2,18 +2,28 @@ void drawProtonQAResults(const char* filename1 = "Protons.QA.root",
 			 const char* filename2 = "Protons.MC.QA.root") {
   //Macro to visualize the results of the proton QA task
   gStyle->SetPalette(1,0);
-  drawCutStatistics(filename1);
-  drawMCQA(filename2);
+ 
+  TFile *fQA = TFile::Open(filename1);
+  TList *listGlobalQA = (TList *)fQA->Get("globalQAList");
+  drawCutStatistics(listGlobalQA);
+ 
+  TFile *fMC = TFile::Open(filename2);
+  TList *listPDG = (TList *)fMC->Get("pdgCodeList");  
+  TList *listMCProcesses = (TList *)fMC->Get("mcProcessList");  
+  drawMCQA(listPDG,listMCProcesses);
+  
+  fQA->Close();
+  fMC->Close();
 }
 
 //________________________________________//
-void drawCutStatistics(const char *filename) {
+void drawCutStatistics(TList *list) {
   //Function to display the statistics from the cuts
   //The histogram shows the influence of each cut on the primary
   //and secondary (anti)protons
   const Int_t NQAHISTOSPERLIST = 26;
   
-  Double_t gEntriesQA2DList[8] = {0.,0.,0.,0.,0.,0.,0.,0.};
+  Double_t gEntriesQA2DList[10] = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
   Double_t gEntriesQAPrimaryProtonsAcceptedList[NQAHISTOSPERLIST], gEntriesQAPrimaryProtonsRejectedList[NQAHISTOSPERLIST];
   Double_t gEntriesQASecondaryProtonsAcceptedList[NQAHISTOSPERLIST], gEntriesQASecondaryProtonsRejectedList[NQAHISTOSPERLIST];
   Double_t gEntriesQAPrimaryAntiProtonsAcceptedList[NQAHISTOSPERLIST], gEntriesQAPrimaryAntiProtonsRejectedList[NQAHISTOSPERLIST];
@@ -30,12 +40,8 @@ void drawCutStatistics(const char *filename) {
     gEntriesQASecondaryAntiProtonsRejectedList[i] = 0.0;
   }
 
-  TFile *f = TFile::Open(filename);
-  TList *list = (TList *)f->Get("globalQAList");
-
   TList *fQA2DList = (TList *)list->At(0);
   GetQAEntries(fQA2DList,gEntriesQA2DList);
-  DrawContamination(fQA2DList);
 
   TList *fQAPrimaryProtonsAcceptedList = (TList *)list->At(1);
   GetQAEntries(fQAPrimaryProtonsAcceptedList,gEntriesQAPrimaryProtonsAcceptedList);
@@ -210,9 +216,9 @@ void drawCutStatistics(const char *filename) {
     hPrimaryProtons->SetBinError(i,1.0);
     hSecondaryProtons->SetBinError(i,1.0);
   }
-  hEmpty->Draw();
-  hPrimaryProtons->Draw("EHISTSAME");
-  hSecondaryProtons->Draw("EHISTSAME");
+  hEmpty->DrawCopy();
+  hPrimaryProtons->DrawCopy("EHISTSAME");
+  hSecondaryProtons->DrawCopy("EHISTSAME");
   DrawMarker(20.5, 90, 20, 1.2, 4);
   t1->DrawLatex(21,88,"Primary p");
   DrawMarker(20.5, 80, 22, 1.2, 2);
@@ -221,7 +227,7 @@ void drawCutStatistics(const char *filename) {
   c1->SaveAs("CutInfluence-Protons.gif");
 
   //_________________________________________________________//
-  TCanvas *c2 = new TCanvas("c2","Cut Influence - AntiProtons",0,300,950,550);
+  TCanvas *c2 = new TCanvas("c2","Cut Influence - AntiProtons",50,50,950,550);
   c2->SetFillColor(10); c2->GetFrame()->SetFillColor(10);
   c2->SetHighLightColor(10); c2->SetBottomMargin(0.15);
   c2->SetGridx(); c2->SetGridy();
@@ -230,9 +236,9 @@ void drawCutStatistics(const char *filename) {
     hPrimaryAntiProtons->SetBinError(i,1.0);
     hSecondaryAntiProtons->SetBinError(i,1.0);
   }
-  hEmpty->Draw();
-  hPrimaryAntiProtons->Draw("EHISTSAME");
-  hSecondaryAntiProtons->Draw("EHISTSAME");
+  hEmpty->DrawCopy();
+  hPrimaryAntiProtons->DrawCopy("EHISTSAME");
+  hSecondaryAntiProtons->DrawCopy("EHISTSAME");
   DrawMarker(20.5, 90, 20, 1.2, 4);
   t1->DrawLatex(21,88,"Primary #bar{p}");
   DrawMarker(20.5, 80, 22, 1.2, 2);
@@ -313,7 +319,8 @@ void drawCutStatistics(const char *filename) {
   hSecondaryAntiProtonsITS->GetXaxis()->SetLabelSize(0.045);
 
   //_______________________________________________________//
-  TCanvas *c9 = new TCanvas("c9","Cut Influence - Protons",0,0,950,550);
+  TCanvas *c9 = new TCanvas("c9","ITS cluster map - (anti)protons",
+			    100,100,950,550);
   c9->SetFillColor(10); c9->GetFrame()->SetFillColor(10);
   c9->SetHighLightColor(10); c9->Divide(2,1);
   for(Int_t i = 1; i <= 6; i++) {
@@ -334,8 +341,8 @@ void drawCutStatistics(const char *filename) {
     hSecondaryProtonsITS->SetBinContent(i,GetPercentage(gEntriesQASecondaryProtonsAcceptedList[19+i],
 							gEntriesQASecondaryProtonsRejectedList[19+i]));
   }
-  hPrimaryProtonsITS->Draw("EHISTSAME");
-  hSecondaryProtonsITS->Draw("EHISTSAME");
+  hPrimaryProtonsITS->DrawCopy("EHISTSAME");
+  hSecondaryProtonsITS->DrawCopy("EHISTSAME");
   DrawMarker(6.5, 90, 20, 1.2, 4);
   t1->DrawLatex(7,88,"Primary p");
   DrawMarker(6.5, 80, 22, 1.2, 2);
@@ -352,14 +359,18 @@ void drawCutStatistics(const char *filename) {
     hSecondaryAntiProtonsITS->SetBinContent(i,GetPercentage(gEntriesQASecondaryAntiProtonsAcceptedList[19+i],
 							    gEntriesQASecondaryAntiProtonsRejectedList[19+i]));
   }
-  hPrimaryAntiProtonsITS->Draw("EHISTSAME");
-  hSecondaryAntiProtonsITS->Draw("EHISTSAME");
+  hPrimaryAntiProtonsITS->DrawCopy("EHISTSAME");
+  hSecondaryAntiProtonsITS->DrawCopy("EHISTSAME");
   DrawMarker(6.5, 90, 20, 1.2, 4);
   t1->DrawLatex(7,88,"Primary #bar{p}");
   DrawMarker(6.5, 80, 22, 1.2, 2);
   t1->DrawLatex(7,78,"Secondary #bar{p}");
 
   c9->SaveAs("CutInfluence-ITS.gif");
+  
+  //Contamination plots
+  DrawContamination(fQA2DList);
+  DrawEfficiency(fQA2DList);
 }
 
 //________________________________________________//
@@ -393,6 +404,7 @@ void DrawContamination(TList *inputList) {
 					      hPrimaryProtons->GetXaxis()->GetXmax());					      
   gYPrimaryProtonsPercentage->Divide(gYPrimaryProtons,
 				     gYTotalProtons,100.,1.0);
+  SetError(gYPrimaryProtonsPercentage,gYTotalProtons);
   gYPrimaryProtonsPercentage->SetMarkerStyle(kFullCircle);
 
   TH1D *gYSecondaryProtonsPercentage = new TH1D("gYSecondaryProtonsPercentage",
@@ -402,6 +414,7 @@ void DrawContamination(TList *inputList) {
 						hSecondaryProtons->GetXaxis()->GetXmax());					      
   gYSecondaryProtonsPercentage->Divide(gYSecondaryProtons,
 				       gYTotalProtons,100.,1.0);
+  SetError(gYSecondaryProtonsPercentage,gYTotalProtons);
   gYSecondaryProtonsPercentage->SetMarkerStyle(kOpenCircle);
 
 
@@ -418,6 +431,7 @@ void DrawContamination(TList *inputList) {
 						  hPrimaryAntiProtons->GetXaxis()->GetXmax());					      
   gYPrimaryAntiProtonsPercentage->Divide(gYPrimaryAntiProtons,
 					 gYTotalAntiProtons,100.,1.0);
+  SetError(gYPrimaryAntiProtonsPercentage,gYTotalAntiProtons);
   gYPrimaryAntiProtonsPercentage->SetMarkerStyle(kFullCircle);
   
   TH1D *gYSecondaryAntiProtonsPercentage = new TH1D("gYSecondaryAntiProtonsPercentage",
@@ -427,6 +441,7 @@ void DrawContamination(TList *inputList) {
 						    hSecondaryAntiProtons->GetXaxis()->GetXmax());					      
   gYSecondaryAntiProtonsPercentage->Divide(gYSecondaryAntiProtons,
 					   gYTotalAntiProtons,100.,1.0);
+  SetError(gYSecondaryAntiProtonsPercentage,gYTotalAntiProtons);
   gYSecondaryAntiProtonsPercentage->SetMarkerStyle(kOpenCircle);
   
   
@@ -437,8 +452,8 @@ void DrawContamination(TList *inputList) {
   hEmptyY->GetYaxis()->SetTitleOffset(1.3);
   hEmptyY->GetXaxis()->SetTitle("y");
 
-  TCanvas *c7 = new TCanvas("c7","(Anti)Proton composition",
-			    200,0,950,550);
+  TCanvas *c7 = new TCanvas("c7","(Anti)Proton contamination vs y",
+			    150,150,950,550);
   c7->SetFillColor(10); c7->GetFrame()->SetFillColor(10); 
   c7->SetHighLightColor(10); c7->Divide(2,1);
 
@@ -447,8 +462,8 @@ void DrawContamination(TList *inputList) {
   c7->cd(1)->SetGridx(); c7->cd(1)->SetGridy();
   hEmptyY->SetTitle("Protons");
   hEmptyY->DrawCopy();
-  gYPrimaryProtonsPercentage->Draw("ESAME");
-  gYSecondaryProtonsPercentage->Draw("ESAME");
+  gYPrimaryProtonsPercentage->DrawCopy("ESAME");
+  gYSecondaryProtonsPercentage->DrawCopy("ESAME");
 
   DrawMarker(0, 55, kFullCircle, 1.2, 1);
   t1->DrawLatex(0.1,53,"Primaries");
@@ -460,8 +475,8 @@ void DrawContamination(TList *inputList) {
   c7->cd(2)->SetGridx(); c7->cd(2)->SetGridy();
   hEmptyY->SetTitle("Antiprotons");
   hEmptyY->DrawCopy();
-  gYPrimaryAntiProtonsPercentage->Draw("ESAME");
-  gYSecondaryAntiProtonsPercentage->Draw("ESAME");
+  gYPrimaryAntiProtonsPercentage->DrawCopy("ESAME");
+  gYSecondaryAntiProtonsPercentage->DrawCopy("ESAME");
 
   DrawMarker(0, 55, kFullCircle, 1.2, 1);
   t1->DrawLatex(0.1,53,"Primaries");
@@ -484,6 +499,7 @@ void DrawContamination(TList *inputList) {
 					       hPrimaryProtons->GetYaxis()->GetXmax());					      
   gPtPrimaryProtonsPercentage->Divide(gPtPrimaryProtons,
 				      gPtTotalProtons,100.,1.0);
+  SetError(gPtPrimaryProtonsPercentage,gPtTotalProtons);
   gPtPrimaryProtonsPercentage->SetMarkerStyle(kFullCircle);
   
   TH1D *gPtSecondaryProtonsPercentage = new TH1D("gPtSecondaryProtonsPercentage",
@@ -493,6 +509,7 @@ void DrawContamination(TList *inputList) {
 						 hSecondaryProtons->GetYaxis()->GetXmax());					      
   gPtSecondaryProtonsPercentage->Divide(gPtSecondaryProtons,
 					gPtTotalProtons,100.,1.0);
+  SetError(gPtSecondaryProtonsPercentage,gPtTotalProtons);
   gPtSecondaryProtonsPercentage->SetMarkerStyle(kOpenCircle);
 
 
@@ -509,6 +526,7 @@ void DrawContamination(TList *inputList) {
 						   hPrimaryAntiProtons->GetYaxis()->GetXmax());					      
   gPtPrimaryAntiProtonsPercentage->Divide(gPtPrimaryAntiProtons,
 					  gPtTotalAntiProtons,100.,1.0);
+  SetError(gPtPrimaryAntiProtonsPercentage,gPtTotalAntiProtons);
   gPtPrimaryAntiProtonsPercentage->SetMarkerStyle(kFullCircle);
   
   TH1D *gPtSecondaryAntiProtonsPercentage = new TH1D("gPtSecondaryAntiProtonsPercentage",
@@ -518,6 +536,7 @@ void DrawContamination(TList *inputList) {
 						     hSecondaryAntiProtons->GetYaxis()->GetXmax());					      
   gPtSecondaryAntiProtonsPercentage->Divide(gPtSecondaryAntiProtons,
 					    gPtTotalAntiProtons,100.,1.0);
+  SetError(gPtSecondaryAntiProtonsPercentage,gPtTotalAntiProtons);
   gPtSecondaryAntiProtonsPercentage->SetMarkerStyle(kOpenCircle);
   
   TH2F *hEmptyPt = new TH2F("hEmptyCompositionPt","",
@@ -527,8 +546,8 @@ void DrawContamination(TList *inputList) {
   hEmptyPt->GetYaxis()->SetTitleOffset(1.3);
   hEmptyPt->GetXaxis()->SetTitle("P_{T} [GeV/c]");
 
-  TCanvas *c8 = new TCanvas("c8","(Anti)Proton composition",
-			    200,100,950,550);
+  TCanvas *c8 = new TCanvas("c8","(Anti)Proton comtamination vs pT",
+			    200,200,950,550);
   c8->SetFillColor(10); c8->GetFrame()->SetFillColor(10); 
   c8->SetHighLightColor(10); c8->Divide(2,1);
 
@@ -537,8 +556,8 @@ void DrawContamination(TList *inputList) {
   c8->cd(1)->SetGridx(); c8->cd(1)->SetGridy();
   hEmptyPt->SetTitle("Protons");
   hEmptyPt->DrawCopy();
-  gPtPrimaryProtonsPercentage->Draw("ESAME");
-  gPtSecondaryProtonsPercentage->Draw("ESAME");
+  gPtPrimaryProtonsPercentage->DrawCopy("ESAME");
+  gPtSecondaryProtonsPercentage->DrawCopy("ESAME");
 
   DrawMarker(2.0, 55, kFullCircle, 1.2, 1);
   t1->DrawLatex(2.1,53,"Primaries");
@@ -550,8 +569,8 @@ void DrawContamination(TList *inputList) {
   c8->cd(2)->SetGridx(); c8->cd(2)->SetGridy();
   hEmptyPt->SetTitle("Antirotons");
   hEmptyPt->DrawCopy();
-  gPtPrimaryAntiProtonsPercentage->Draw("ESAME");
-  gPtSecondaryAntiProtonsPercentage->Draw("ESAME");
+  gPtPrimaryAntiProtonsPercentage->DrawCopy("ESAME");
+  gPtSecondaryAntiProtonsPercentage->DrawCopy("ESAME");
 
   DrawMarker(2.0, 55, kFullCircle, 1.2, 1);
   t1->DrawLatex(2.1,53,"Primaries");
@@ -569,6 +588,121 @@ void DrawContamination(TList *inputList) {
   gYSecondaryAntiProtonsPercentage->Write();
   gPtPrimaryAntiProtonsPercentage->Write();
   gPtSecondaryAntiProtonsPercentage->Write();
+  fout->Close();
+}
+
+//________________________________________________//
+void DrawEfficiency(TList *inputList) {
+  //loops over the list entries and
+  //draws the rapidity and pT dependence
+  //of the percentage of primary and secondary
+  //protons and antiprotons after the track cuts
+  cout<<"Extracting the entries for the histograms in the list: "<<
+    inputList->GetName()<<"..."<<endl;
+
+  TLatex *t1 = new TLatex();
+  t1->SetTextSize(0.04);
+
+  TH2F *hPrimaryESDProtons = (TH2F *)inputList->At(0);
+  TH2F *hPrimaryESDAntiProtons = (TH2F *)inputList->At(4);
+  TH2F *hPrimaryMCProtons = (TH2F *)inputList->At(8);
+  TH2F *hPrimaryMCAntiProtons = (TH2F *)inputList->At(9);
+
+  //rapidity dependence
+  //Protons
+  TH1D *gYPrimaryESDProtons = (TH1D *)hPrimaryESDProtons->ProjectionX("gYPrimaryESDProtons",0,hPrimaryESDProtons->GetXaxis()->GetNbins(),"e");
+  TH1D *gYPrimaryMCProtons = (TH1D *)hPrimaryMCProtons->ProjectionX("gYPrimaryMCProtons",0,hPrimaryMCProtons->GetXaxis()->GetNbins(),"e");
+  gYPrimaryESDProtons->Divide(gYPrimaryMCProtons);
+  gYPrimaryESDProtons->Scale(100.);
+  SetError(gYPrimaryESDProtons,gYPrimaryMCProtons);
+  gYPrimaryESDProtons->SetMarkerStyle(kFullCircle);
+
+  //Antiprotons
+  TH1D *gYPrimaryESDAntiProtons = (TH1D *)hPrimaryESDAntiProtons->ProjectionX("gYPrimaryESDAntiProtons",0,hPrimaryESDAntiProtons->GetXaxis()->GetNbins(),"e");
+  TH1D *gYPrimaryMCAntiProtons = (TH1D *)hPrimaryMCAntiProtons->ProjectionX("gYPrimaryMCAntiProtons",0,hPrimaryMCAntiProtons->GetXaxis()->GetNbins(),"e");
+  gYPrimaryESDAntiProtons->Divide(gYPrimaryMCAntiProtons);
+  gYPrimaryESDAntiProtons->Scale(100.);
+  SetError(gYPrimaryESDAntiProtons,gYPrimaryMCAntiProtons);
+  gYPrimaryESDAntiProtons->SetMarkerStyle(kFullCircle);
+  
+  TH2F *hEmptyY = new TH2F("hEmptyEfficiencyY","",
+			   100,-1.2,1.2,100,-10.0,130); 
+  hEmptyY->SetStats(kFALSE); 
+  hEmptyY->GetYaxis()->SetTitle("#epsilon [%]");
+  hEmptyY->GetYaxis()->SetTitleOffset(1.3);
+  hEmptyY->GetXaxis()->SetTitle("y");
+
+  TCanvas *c10 = new TCanvas("c10","(Anti)Proton efficiency vs y",
+			    250,250,950,550);
+  c10->SetFillColor(10); c10->GetFrame()->SetFillColor(10); 
+  c10->SetHighLightColor(10); c10->Divide(2,1);
+
+  c10->cd(1)->SetBottomMargin(0.15); 
+  c10->cd(1)->SetLeftMargin(0.15); 
+  c10->cd(1)->SetGridx(); c10->cd(1)->SetGridy();
+  hEmptyY->SetTitle("Protons");
+  hEmptyY->DrawCopy();
+  gYPrimaryESDProtons->DrawCopy("ESAME");
+
+  c10->cd(2)->SetBottomMargin(0.15); 
+  c10->cd(2)->SetLeftMargin(0.15); 
+  c10->cd(2)->SetGridx(); c10->cd(2)->SetGridy();
+  hEmptyY->SetTitle("Antiprotons");
+  hEmptyY->DrawCopy();
+  gYPrimaryESDAntiProtons->DrawCopy("ESAME");
+
+  c10->SaveAs("Efficiency-Protons-Rapidity.gif");
+
+  //pT dependence
+  //Protons
+  TH1D *gPtPrimaryESDProtons = (TH1D *)hPrimaryESDProtons->ProjectionY("gPtPrimaryESDProtons",0,hPrimaryESDProtons->GetYaxis()->GetNbins(),"e");
+  TH1D *gPtPrimaryMCProtons = (TH1D *)hPrimaryMCProtons->ProjectionY("gPtPrimaryMCProtons",0,hPrimaryMCProtons->GetYaxis()->GetNbins(),"e");
+  gPtPrimaryESDProtons->Divide(gPtPrimaryMCProtons);
+  gPtPrimaryESDProtons->Scale(100.);
+  SetError(gPtPrimaryESDProtons,gPtPrimaryMCProtons);
+  gPtPrimaryESDProtons->SetMarkerStyle(kFullCircle);
+
+  //Antiprotons
+  TH1D *gPtPrimaryESDAntiProtons = (TH1D *)hPrimaryESDAntiProtons->ProjectionY("gPtPrimaryESDAntiProtons",0,hPrimaryESDAntiProtons->GetYaxis()->GetNbins(),"e");
+  TH1D *gPtPrimaryMCAntiProtons = (TH1D *)hPrimaryMCAntiProtons->ProjectionY("gPtPrimaryMCAntiProtons",0,hPrimaryMCAntiProtons->GetYaxis()->GetNbins(),"e");
+  gPtPrimaryESDAntiProtons->Divide(gPtPrimaryMCAntiProtons);
+  gPtPrimaryESDAntiProtons->Scale(100.);
+  SetError(gPtPrimaryESDAntiProtons,gPtPrimaryMCAntiProtons);
+  gPtPrimaryESDAntiProtons->SetMarkerStyle(kFullCircle);
+
+  TH2F *hEmptyPt = new TH2F("hEmptyEfficiencyPt","",
+			   100,0.0,4.0,100,-10.0,130); 
+  hEmptyPt->SetStats(kFALSE); 
+  hEmptyPt->GetYaxis()->SetTitle("#epsilon [%]");
+  hEmptyPt->GetYaxis()->SetTitleOffset(1.3);
+  hEmptyPt->GetXaxis()->SetTitle("P_{T} [GeV/c]");
+
+  TCanvas *c11 = new TCanvas("c11","(Anti)Proton efficiency vs pT",
+			    300,300,950,550);
+  c11->SetFillColor(10); c11->GetFrame()->SetFillColor(10); 
+  c11->SetHighLightColor(10); c11->Divide(2,1);
+
+  c11->cd(1)->SetBottomMargin(0.15); 
+  c11->cd(1)->SetLeftMargin(0.15); 
+  c11->cd(1)->SetGridx(); c11->cd(1)->SetGridy();
+  hEmptyPt->SetTitle("Protons");
+  hEmptyPt->DrawCopy();
+  gPtPrimaryESDProtons->DrawCopy("ESAME");
+
+  c11->cd(2)->SetBottomMargin(0.15); 
+  c11->cd(2)->SetLeftMargin(0.15); 
+  c11->cd(2)->SetGridx(); c11->cd(2)->SetGridy();
+  hEmptyPt->SetTitle("Antirotons");
+  hEmptyPt->DrawCopy();
+  gPtPrimaryESDAntiProtons->DrawCopy("ESAME");
+
+  c11->SaveAs("Efficiency-Protons-Pt.gif");
+
+  TFile *fout = TFile::Open("Efficiency.root","recreate");
+  gYPrimaryESDProtons->Write();
+  gYPrimaryESDAntiProtons->Write();
+  gPtPrimaryESDProtons->Write();
+  gPtPrimaryESDAntiProtons->Write();
   fout->Close();
 }
 
@@ -601,7 +735,7 @@ Double_t GetPercentage(Double_t nPassEntries,
 }
 
 //________________________________________//
-void drawMCQA(const char *filename) {
+void drawMCQA(TList *listPDG, TList *listMCProcesses) {
   //Function to display the composition of secondary (anti)protons
   //The histogram shows the percentage of secondary (anti)protons
   //originating from each particle species.
@@ -609,13 +743,9 @@ void drawMCQA(const char *filename) {
   TDatabasePDG *db = TDatabasePDG::Instance();
   TParticlePDG *p = 0x0;
   
-  TFile *f = TFile::Open(filename);
-  TList *list2 = (TList *)f->Get("pdgCodeList");  
-  TH3F *gHistYPtPDGProtons = (TH3F *)list2->At(0);
-  TH3F *gHistYPtPDGAntiProtons = (TH3F *)list2->At(1);
-  TList *list3 = (TList *)f->Get("mcProcessList");
-  readProcesses(list3);
-
+  TH3F *gHistYPtPDGProtons = (TH3F *)listPDG->At(0);
+  TH3F *gHistYPtPDGAntiProtons = (TH3F *)listPDG->At(1);
+  readProcesses(listMCProcesses);
   Double_t nParticleCompositionProtonY[100], nParticleCompositionProtonPt[100];
   Double_t nParticleCompositionAntiProtonY[100], nParticleCompositionAntiProtonPt[100];
   Double_t gY[100], gPt[100];
@@ -675,11 +805,11 @@ void drawMCQA(const char *filename) {
   hEmptyY->GetXaxis()->SetTitle("y");
 
   TCanvas *c3 = new TCanvas("c3","MC secondary composition vs y - Protons",
-			    0,0,650,550);
+			    350,350,650,550);
   c3->SetFillColor(10); c3->GetFrame()->SetFillColor(10);
   c3->SetHighLightColor(10); c3->SetBottomMargin(0.15);
   c3->SetGridx(); c3->SetGridy();
-  hEmptyY->Draw();
+  hEmptyY->DrawCopy();
   for(Int_t iParticle = 0; iParticle < 10; iParticle++) {
     //if((iParticle == 0)||(iParticle == 2)||(iParticle == 5)||(iParticle == 6)||(iParticle == 8))
     if((iParticle == 0)||(iParticle == 2)||(iParticle == 6)||(iParticle == 8))
@@ -695,11 +825,11 @@ void drawMCQA(const char *filename) {
   }
 
   TCanvas *c5 = new TCanvas("c5","MC secondary composition vs y - antiProtons",
-			    0,0,650,550);
+			    400,400,650,550);
   c5->SetFillColor(10); c5->GetFrame()->SetFillColor(10);
   c5->SetHighLightColor(10); c5->SetBottomMargin(0.15);
   c5->SetGridx(); c5->SetGridy();
-  hEmptyY->Draw();
+  hEmptyY->DrawCopy();
   for(Int_t iParticle = 0; iParticle < 10; iParticle++) {
     if((iParticle == 0)||(iParticle == 6)||(iParticle == 8))
       gParticleAntiProtonY[iParticle]->Draw("P");
@@ -719,11 +849,11 @@ void drawMCQA(const char *filename) {
   hEmptyPt->GetXaxis()->SetTitle("P_{T} [GeV/c]");
 
   TCanvas *c4 = new TCanvas("c4","MC secondary composition vs pT - Protons",
-			    0,0,650,550);
+			    450,450,650,550);
   c4->SetFillColor(10); c4->GetFrame()->SetFillColor(10);
   c4->SetHighLightColor(10); c4->SetBottomMargin(0.15);
   c4->SetGridx(); c4->SetGridy();
-  hEmptyPt->Draw();
+  hEmptyPt->DrawCopy();
   for(Int_t iParticle = 0; iParticle < 10; iParticle++) {
     if(iParticle < 5) {
       DrawMarker(0.2, 115-5*iParticle, 20+iParticle, 1.2, 1);
@@ -737,12 +867,13 @@ void drawMCQA(const char *filename) {
       gParticleProtonPt[iParticle]->Draw("P");
   }
 
-  TCanvas *c6 = new TCanvas("c6","MC secondary composition vs pT - AntiProtons",
-			    0,0,650,550);
+  TCanvas *c6 = new TCanvas("c6",
+			    "MC secondary composition vs pT - AntiProtons",
+			    500,500,650,550);
   c6->SetFillColor(10); c6->GetFrame()->SetFillColor(10);
   c6->SetHighLightColor(10); c6->SetBottomMargin(0.15);
   c6->SetGridx(); c6->SetGridy();
-  hEmptyPt->Draw();
+  hEmptyPt->DrawCopy();
   for(Int_t iParticle = 0; iParticle < 10; iParticle++) {
     if(iParticle < 5) {
       DrawMarker(0.2, 115-5*iParticle, 20+iParticle, 1.2, 1);
@@ -834,7 +965,7 @@ void readProcesses(TList *list) {
 				   "n","p","#Sigma^{-}","#Lambda","#Sigma^{+}",
 				   "#Xi^{-}","#Xi^{0}","#Omega^{-}"};
   char *fParticleAntiProtonName[8] = {"K_{L}","#pi","K_{S}","K",
-				       "n","p","#Lambda","#Sigma^{+}"};
+				      "n","p","#Lambda","#Sigma^{+}"};
   Int_t iProtonCounter = 0, iAntiProtonCounter = 0;
   TH1F *gMCProcesses;
   for(Int_t iEntry = 0; iEntry < list->GetEntries(); iEntry++) {
@@ -855,11 +986,20 @@ void readProcesses(TList *list) {
       if(binContent > 0) {
 	Int_t processId = gMCProcesses->GetBinCenter(iBin);
 	cout<<"\t Process ID: "<<processId<<" - "<<
+	  gMCProcessName[processId]<<" - "<<
 	  100.*binContent/gMCProcesses->GetEntries()<<"%"<<endl;
       }
     }
+  }
+}
 
-
+//________________________________________________//
+void SetError(TH1D *hEff, TH1D *hGen) {
+  for(Int_t iBin = 1; iBin <= hEff->GetNbinsX(); iBin++) {
+    Double_t error = 0.0;
+    if(hEff->GetBinContent(iBin) <= 100.) 
+      error = TMath::Sqrt(hEff->GetBinContent(iBin)*(100. - hEff->GetBinContent(iBin))/hGen->GetBinContent(iBin));
+    hEff->SetBinError(iBin,error);
   }
 }
 
@@ -873,7 +1013,7 @@ void DrawMarker(Double_t x, Double_t y, Int_t style,
 }
 
 //________________________________________________//
-/*const char * const gMCProcessName[45] = {
+const char * const gMCProcessName[45] = {
   "Primary particle emission",
   "Multiple scattering",
   "Energy loss",
@@ -919,4 +1059,4 @@ void DrawMarker(Double_t x, Double_t y, Int_t style,
   "Scintillation",
   "Transportation",
   "Unknown process"
-  };*/
+};
