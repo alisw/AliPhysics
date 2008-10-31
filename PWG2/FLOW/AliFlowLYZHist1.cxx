@@ -21,6 +21,7 @@
 #include "TList.h"
 #include "AliFlowLYZConstants.h" 
 #include "AliFlowLYZHist1.h"
+#include "TBrowser.h"
 
 class TH1D; 
 
@@ -35,7 +36,7 @@ ClassImp(AliFlowLYZHist1)
 //-----------------------------------------------------------------------
 
   AliFlowLYZHist1::AliFlowLYZHist1():
-    TObject(),
+    TNamed(),
     fHistGtheta(0),
     fHistProReGtheta(0),
     fHistProImGtheta(0),
@@ -46,8 +47,8 @@ ClassImp(AliFlowLYZHist1)
 
 //-----------------------------------------------------------------------
 
-  AliFlowLYZHist1::AliFlowLYZHist1(Int_t theta):
-    TObject(),
+  AliFlowLYZHist1::AliFlowLYZHist1(Int_t theta, const char *anInput,const char *aTitle):
+    TNamed(anInput,aTitle),
     fHistGtheta(0),
     fHistProReGtheta(0),
     fHistProImGtheta(0),
@@ -218,4 +219,31 @@ Int_t AliFlowLYZHist1::GetNBins()
   return (double)iCount;
     
 }
+
+//----------------------------------------------------------------------- 
+void AliFlowLYZHist1::Print(Option_t *option) const
+{
+  //   -*-*-*-*-*Print some global quantities for this histogram collection class *-*-*-*-*-*-*-*
+  //             ===============================================
+  //   printf( "TH1.Print Name  = %s, Entries= %d, Total sum= %g\n",GetName(),Int_t(fEntries),GetSumOfWeights());
+  printf( "Class.Print Name = %s, Histogram list:\n",GetName());
+
+  if (fHistList) {  
+    fHistList->Print(option);
+  }
+  else
+    {
+      printf( "Empty histogram list \n");
+    }
+}
+
+//----------------------------------------------------------------------- 
+ void AliFlowLYZHist1::Browse(TBrowser *b)
+{
+
+  if (!b) return;
+  if (fHistList) b->Add(fHistList,"AliFlowLYZHist1List");
+}
+
+
 

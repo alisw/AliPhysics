@@ -16,6 +16,7 @@
 #include "Riostream.h" //needed as include
 #include "TChain.h"
 #include "TTree.h"
+#include "TProfile.h"
 #include "TFile.h"
 #include "TList.h"
 
@@ -35,6 +36,8 @@ class AliAnalysisTask;
 
 #include "AliAnalysisTaskLYZEventPlane.h"
 #include "AliFlowEventSimpleMaker.h"
+#include "AliFlowCommonHist.h"
+#include "AliFlowCommonHistResults.h"
 #include "AliFlowLYZEventPlane.h"
 #include "AliFlowAnalysisWithLYZEventPlane.h"
 
@@ -47,7 +50,7 @@ class AliAnalysisTask;
 ClassImp(AliAnalysisTaskLYZEventPlane)
 
 //________________________________________________________________________
-AliAnalysisTaskLYZEventPlane::AliAnalysisTaskLYZEventPlane(const char *name) : 
+AliAnalysisTaskLYZEventPlane::AliAnalysisTaskLYZEventPlane(const char *name, Bool_t on) : 
   AliAnalysisTask(name, ""), 
   fESD(NULL), 
   fAOD(NULL),
@@ -58,7 +61,10 @@ AliAnalysisTaskLYZEventPlane::AliAnalysisTaskLYZEventPlane(const char *name) :
   fCFManager1(NULL),
   fCFManager2(NULL),
   fListHistos(NULL),
-  fSecondRunFile(NULL)
+  fSecondRunFile(NULL),
+  fQAInt(NULL),
+  fQADiff(NULL),
+  fQA(on)
 {
   // Constructor
   cout<<"AliAnalysisTaskLYZEventPlane::AliAnalysisTaskLYZEventPlane(const char *name)"<<endl;
@@ -68,7 +74,10 @@ AliAnalysisTaskLYZEventPlane::AliAnalysisTaskLYZEventPlane(const char *name) :
   DefineInput(0, TChain::Class());
   DefineInput(1, TList::Class());
   // Output slot #0 writes into a TList container
-  DefineOutput(0, TList::Class());  
+  DefineOutput(0, TList::Class());
+  if(on) {
+    DefineOutput(1, TList::Class());
+    DefineOutput(2, TList::Class()); } 
 }
 
 //________________________________________________________________________
@@ -82,7 +91,10 @@ AliAnalysisTaskLYZEventPlane::AliAnalysisTaskLYZEventPlane() :
   fCFManager1(NULL),
   fCFManager2(NULL),
   fListHistos(NULL),
-  fSecondRunFile(NULL)
+  fSecondRunFile(NULL),
+  fQAInt(NULL),
+  fQADiff(NULL),
+  fQA(kFALSE)
 {
   // Constructor
   cout<<"AliAnalysisTaskLYZEventPlane::AliAnalysisTaskLYZEventPlane()"<<endl;
@@ -168,12 +180,11 @@ void AliAnalysisTaskLYZEventPlane::CreateOutputObjects()
   fLyz = new AliFlowAnalysisWithLYZEventPlane() ;
      
   // Get data from input slot
-  fSecondRunFile = (TFile*)GetInputData(1);
-  cerr<<"fSecondRunFile ("<<fSecondRunFile<<")"<<endl;
-  if (fSecondRunFile) cerr<<"fSecondRunFile -> IsOpen() = "<<fSecondRunFile -> IsOpen()<<endl;
- 
-  fLyzEp -> SetSecondRunFile(fSecondRunFile);
-  fLyz -> SetSecondRunFile(fSecondRunFile);
+  TList* pSecondRunList = (TList*)GetInputData(1);
+  if (pSecondRunList) {
+    fLyzEp -> SetSecondRunList(pSecondRunList);
+    fLyz -> SetSecondRunList(pSecondRunList);
+  } else { cout<<"No Second run List!"<<endl; exit(0); }
 
   fLyzEp-> Init();
   fLyz-> Init();
@@ -283,21 +294,51 @@ void AliAnalysisTaskLYZEventPlane::Exec(Option_t *)
   }
   
   PostData(0,fListHistos);
+  if (fQA) {
+    PostData(1,fQAInt);
+    PostData(2,fQADiff); }
 }      
 
 //________________________________________________________________________
 void AliAnalysisTaskLYZEventPlane::Terminate(Option_t *) 
 {
   // Called once at the end of the query
-  fLyz->Finish();
+  AliFlowAnalysisWithLYZEventPlane* fLyzTerm = new AliFlowAnalysisWithLYZEventPlane() ;
+  fListHistos = (TList*)GetOutputData(0);
+  cout << "histogram list in Terminate" << endl;
+  if (fListHistos) {
+    //Get the common histograms from the output list
+    AliFlowCommonHist *pCommonHist = dynamic_cast<AliFlowCommonHist*> 
+      (fListHistos->FindObject("AliFlowCommonHistLYZEP"));
+    AliFlowCommonHistResults *pCommonHistResults = dynamic_cast<AliFlowCommonHistResults*> 
+      (fListHistos->FindObject("AliFlowCommonHistResultsLYZEP"));
 
-  TList* fOutHistos = (TList*)GetOutputData(0);
-  if (fOutHistos) { fOutHistos->Print(); }
-  else { cout<<"hostogram list pointer in Terminate is empty"<<endl; }
+    TProfile* pHistProR0theta = dynamic_cast<TProfile*> 
+      (fListHistos->FindObject("First_FlowPro_r0theta_LYZ"));
 
-  //delete fLyz;
-  //delete fLyzEp;
-  //delete fEventMaker;
+    TProfile* pHistProFlow = dynamic_cast<TProfile*> 
+      (fListHistos->FindObject("FlowPro_VPt_LYZEP"));
+
+    TH1F* pHistQsumforChi = dynamic_cast<TH1F*> 
+      (fListHistos->FindObject("Flow_QsumforChi_LYZEP"));
+
+    if (pCommonHist && pCommonHistResults && pHistProR0theta &&
+	pHistProFlow && pHistQsumforChi ) {
+    fLyzTerm->SetCommonHists(pCommonHist);
+    fLyzTerm->SetCommonHistsRes(pCommonHistResults);
+    fLyzTerm->SetFirstr0theta(pHistProR0theta);
+    fLyzTerm->SetHistProFlow(pHistProFlow);
+    fLyzTerm->SetHistQsumforChi(pHistQsumforChi);
+    fLyzTerm->Finish();
+    PostData(0,fListHistos);
+    } else { 
+      cout<<"WARNING: Histograms needed to run Finish() are not accessable!"<<endl; 
+    }
+
+    fListHistos->Print(); 
+  } else { cout << "histogram list pointer is empty" << endl;}
+
+  cout<<".....finished"<<endl;  
 }
 
 

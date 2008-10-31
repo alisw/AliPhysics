@@ -39,18 +39,33 @@ class AliFlowAnalysisWithMCEventPlane {
    AliFlowAnalysisWithMCEventPlane();            //default constructor
    virtual  ~AliFlowAnalysisWithMCEventPlane();  //destructor
  
-   void    Init();                             //defines variables and histograms
-   void    Make(AliFlowEventSimple* anEvent, Double_t aRP);   //calculates variables and fills histograms
-   void    Finish();                           //saves histograms
-  
-   void      SetDebug(Bool_t kt)                 { this->fDebug = kt ; }
-   Bool_t    GetDebug() const                    { return this->fDebug ; }
+   void      Init();                             //defines variables and histograms
+   void      Make(AliFlowEventSimple* anEvent, Double_t aRP);   //calculates variables and fills histograms
+   void      Finish();                           //saves histograms
+   
+   void      SetDebug(Bool_t kt)          { this->fDebug = kt ; }
+   Bool_t    GetDebug() const             { return this->fDebug ; }
 
+   void      SetEventNumber(Int_t n)      { this->fEventNumber = n; }
+   Int_t     GetEventNumber() const       { return this->fEventNumber; }
 
    // Output 
-   TList*   GetHistList() const                  { return this->fHistList ; }  
-  
+   TList*    GetHistList() const          { return this->fHistList ; }  
+   AliFlowCommonHist* GetCommonHists() const  { return this->fCommonHists; }
+   void               SetCommonHists(AliFlowCommonHist* aCommonHist)  
+     { this->fCommonHists = aCommonHist; }
+   AliFlowCommonHistResults*  GetCommonHistsRes() const  
+     { return this->fCommonHistsRes; }
+   void      SetCommonHistsRes(AliFlowCommonHistResults* aCommonHistResult) 
+     { this->fCommonHistsRes = aCommonHistResult; }
    
+   //histograms
+   TProfile* GetHistProFlow()             {return this->fHistProFlow; }  
+   void      SetHistProFlow(TProfile* aHistProFlow)   
+     {this->fHistProFlow = aHistProFlow; }
+   TH1F*     GetHistRP()                  {return this->fHistRP; } 
+   void      SetHistRP(TH1F* aHistRP)     {this->fHistRP = aHistRP; }
+
  private:
  
    AliFlowAnalysisWithMCEventPlane(const AliFlowAnalysisWithMCEventPlane& aAnalysis);             //copy constructor
@@ -73,7 +88,7 @@ class AliFlowAnalysisWithMCEventPlane {
    TProfile*    fHistProFlow;       //
    TH1F*        fHistRP;            //
 
-   ClassDef(AliFlowAnalysisWithMCEventPlane,0)  // macro for rootcint
+   ClassDef(AliFlowAnalysisWithMCEventPlane,1)  // macro for rootcint
      };
  
      

@@ -25,9 +25,9 @@ $Log$
 #include "TString.h" 
 #include "TComplex.h"
 #include "TList.h"
+#include "TBrowser.h"
 
 class TH1D;
-
 
 // Class to organize the histograms in the second run
 // in the Lee Yang Zeros Flow analysis.
@@ -35,14 +35,12 @@ class TH1D;
 // which are called in AliFlowLeeYandZerosMaker::Finish().
 // author: N. van der Kolk (kolk@nikhef.nl)
 
- 
-
 ClassImp(AliFlowLYZHist2)
   
 //-----------------------------------------------------------------------
 
   AliFlowLYZHist2::AliFlowLYZHist2():
-    TObject(),
+    TNamed(),
     fHistProReNumer(0),
     fHistProImNumer(0),
     fHistProReNumerPt(0),
@@ -56,8 +54,8 @@ ClassImp(AliFlowLYZHist2)
  
 //-----------------------------------------------------------------------
 
-  AliFlowLYZHist2::AliFlowLYZHist2(Int_t theta):
-    TObject(),
+  AliFlowLYZHist2::AliFlowLYZHist2(Int_t theta, const char *anInput,const char *aTitle):
+    TNamed(anInput,aTitle),
     fHistProReNumer(0),
     fHistProImNumer(0),
     fHistProReNumerPt(0),
@@ -227,4 +225,29 @@ TComplex AliFlowLYZHist2::GetNumerPt(Int_t i)
     
   return (double)iCount;
     
+}
+
+//----------------------------------------------------------------------- 
+void AliFlowLYZHist2::Print(Option_t *option) const
+{
+  //   -*-*-*-*-*Print some global quantities for this histogram collection class *-*-*-*-*-*-*-*
+  //             ===============================================
+  //   printf( "TH1.Print Name  = %s, Entries= %d, Total sum= %g\n",GetName(),Int_t(fEntries),GetSumOfWeights());
+  printf( "Class.Print Name = %s, Histogram list:\n",GetName());
+
+  if (fHistList) {  
+    fHistList->Print(option);
+  }
+  else
+    {
+      printf( "Empty histogram list \n");
+    }
+}
+
+//----------------------------------------------------------------------- 
+ void AliFlowLYZHist2::Browse(TBrowser *b)
+{
+
+  if (!b) return;
+  if (fHistList) b->Add(fHistList,"AliFlowLYZHist2List");
 }

@@ -21,6 +21,7 @@
 #include "TH1D.h"   //needed as include
 #include "TMath.h"  //needed as include
 #include "TList.h"
+#include "TBrowser.h"
 
 class TH1F;
 class AliFlowVector;
@@ -37,7 +38,7 @@ ClassImp(AliFlowCommonHistResults)
 //-----------------------------------------------------------------------
 
   AliFlowCommonHistResults::AliFlowCommonHistResults(): 
-    TObject(),
+    TNamed(),
     fHistIntFlow(0),
     fHistDiffFlow(0),
     fHistChi(0),
@@ -48,8 +49,8 @@ ClassImp(AliFlowCommonHistResults)
 
 //-----------------------------------------------------------------------
 
-  AliFlowCommonHistResults::AliFlowCommonHistResults(TString input): 
-    TObject(),
+  AliFlowCommonHistResults::AliFlowCommonHistResults(const char *anInput,const char *title): 
+    TNamed(anInput,title),
     fHistIntFlow(0),
     fHistDiffFlow(0),
     fHistChi(0),
@@ -64,21 +65,21 @@ ClassImp(AliFlowCommonHistResults)
   
   //integrated flow
   name = "Flow_Integrated_";
-  name +=input;
+  name += anInput;
   fHistIntFlow = new TH1D(name.Data(), name.Data(),1,0.5,1.5);
   fHistIntFlow ->SetXTitle("");
   fHistIntFlow ->SetYTitle("Integrated Flow value (%)");
 
   //differential flow
   name = "Flow_Differential_Pt_";
-  name +=input;
+  name += anInput;
   fHistDiffFlow = new TH1D(name.Data(), name.Data(),iNbinsPt,dPtMin,dPtMax);
   fHistDiffFlow ->SetXTitle("Pt");
   fHistDiffFlow ->SetYTitle("v (%)");
   
   //Chi (needed for rebinning later on)
   name = "Flow_Chi_";
-  name +=input;
+  name += anInput;
   fHistChi = new TH1D(name.Data(), name.Data(),1,0.5,1.5);
   fHistChi ->SetXTitle("");
   fHistChi ->SetYTitle("Chi");
@@ -160,5 +161,32 @@ Bool_t AliFlowCommonHistResults::FillChi(Double_t aChi)
   return (double)iCount;
     
 }
+
+//----------------------------------------------------------------------- 
+void AliFlowCommonHistResults::Print(Option_t *option) const
+{
+  //   -*-*-*-*-*Print some global quantities for this histogram collection class *-*-*-*-*-*-*-*
+  //             ===============================================
+  //   printf( "TH1.Print Name  = %s, Entries= %d, Total sum= %g\n",GetName(),Int_t(fEntries),GetSumOfWeights());
+  printf( "Class.Print Name = %s, Histogram list:\n",GetName());
+
+  if (fHistList) {  
+    fHistList->Print(option);
+  }
+  else
+    {
+      printf( "Empty histogram list \n");
+    }
+}
+
+//----------------------------------------------------------------------- 
+ void AliFlowCommonHistResults::Browse(TBrowser *b)
+{
+
+  if (!b) return;
+  if (fHistList) b->Add(fHistList,"AliFlowCommonHistResultsList");
+}
+
+
 
 

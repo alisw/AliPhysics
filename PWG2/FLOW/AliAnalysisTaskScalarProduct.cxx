@@ -16,7 +16,7 @@
 #include "Riostream.h" //needed as include
 #include "TChain.h"
 #include "TTree.h"
-//#include "TFile.h" //needed as include
+#include "TFile.h" //needed as include
 #include "TList.h"
 
 
@@ -48,7 +48,7 @@ class AliAnalysisTask;
 ClassImp(AliAnalysisTaskScalarProduct)
 
 //________________________________________________________________________
-AliAnalysisTaskScalarProduct::AliAnalysisTaskScalarProduct(const char *name) : 
+AliAnalysisTaskScalarProduct::AliAnalysisTaskScalarProduct(const char *name, Bool_t on) : 
   AliAnalysisTask(name, ""), 
   fESD(NULL),
   fAOD(NULL),
@@ -57,7 +57,10 @@ AliAnalysisTaskScalarProduct::AliAnalysisTaskScalarProduct(const char *name) :
   fAnalysisType("ESD"),
   fCFManager1(NULL),
   fCFManager2(NULL),
-  fListHistos(NULL)
+  fListHistos(NULL),
+  fQAInt(NULL),
+  fQADiff(NULL),
+  fQA(on)
 {
   // Constructor
   cout<<"AliAnalysisTaskScalarProduct::AliAnalysisTaskScalarProduct(const char *name)"<<endl;
@@ -67,7 +70,9 @@ AliAnalysisTaskScalarProduct::AliAnalysisTaskScalarProduct(const char *name) :
   DefineInput(0, TChain::Class());
   // Output slot #0 writes into a TList container
   DefineOutput(0, TList::Class());  
-
+  if(on) {
+    DefineOutput(1, TList::Class());
+    DefineOutput(2, TList::Class()); }  
 }
 
 //________________________________________________________________________
@@ -79,7 +84,10 @@ AliAnalysisTaskScalarProduct::AliAnalysisTaskScalarProduct() :
   fAnalysisType("ESD"),
   fCFManager1(NULL),
   fCFManager2(NULL),
-  fListHistos(NULL)
+  fListHistos(NULL),
+  fQAInt(NULL),
+  fQADiff(NULL),
+  fQA(kFALSE)
 {
   // Constructor
   cout<<"AliAnalysisTaskScalarProduct::AliAnalysisTaskScalarProduct()"<<endl;
@@ -114,7 +122,6 @@ void AliAnalysisTaskScalarProduct::ConnectInputData(Option_t *)
   } else {
     // Disable all branches and enable only the needed ones
     if (fAnalysisType == "MC") {
-      cout<<"!!!!!reading MC kinematics only"<<endl;
       // we want to process only MC
       tree->SetBranchStatus("*", kFALSE);
 
@@ -127,7 +134,6 @@ void AliAnalysisTaskScalarProduct::ConnectInputData(Option_t *)
       }
     }
     else if (fAnalysisType == "ESD" || fAnalysisType == "ESDMC0" || fAnalysisType == "ESDMC1") {
-      cout<<"!!!!!reading the ESD only"<<endl;
       tree->SetBranchStatus("*", kFALSE);
       tree->SetBranchStatus("Tracks.*", kTRUE);
 
@@ -139,7 +145,6 @@ void AliAnalysisTaskScalarProduct::ConnectInputData(Option_t *)
 	fESD = esdH->GetEvent();
     }
     else if (fAnalysisType == "AOD") {
-      cout<<"!!!!!reading the AOD only"<<endl;
       AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
 
       if (!aodH) {
@@ -176,7 +181,7 @@ void AliAnalysisTaskScalarProduct::CreateOutputObjects()
   
 
   if (fSP->GetHistList()) {
-	fSP->GetHistList()->Print();
+    //fSP->GetHistList()->Print();
 	fListHistos = fSP->GetHistList();
 	fListHistos->Print();
   }
@@ -279,39 +284,23 @@ else if (fAnalysisType == "ESDMC0" || fAnalysisType == "ESDMC1" ) {
 
   //fListHistos->Print();	
   PostData(0,fListHistos);
+  if (fQA) {
+    PostData(1,fQAInt);
+    PostData(2,fQADiff); }
 } 
 
 //________________________________________________________________________
 void AliAnalysisTaskScalarProduct::Terminate(Option_t *) 
 {
-  // Called once at the end of the query
+  // Called once at the end of the query -- do not call in case of CAF
   //  fSP->Finish();
   //  PostData(0,fListHistos);
 
   fListHistos = (TList*)GetOutputData(0);
   cout << "histgram list in Terminate" << endl;
-  if (fListHistos) 
-    {
-      fListHistos->Print();
-//       AliFlowCommonHist *SDHistClass = dynamic_cast<AliFlowCommonHist*> 
-// 	(fListHistos->FindObject("SP"));
-//       if (SDHistClass)
-// 	{ 
-// 	  // open a file and write the CLASS to the file
-// 	  TFile *f = new TFile("mytest.root","recreate");
-// 	  SDHistClass->Write();
-// 	  SDHistClass->Print();
-// 	  f->Close();
-// 	}
-//       else
-// 	{
-// 	  cout << "SD class pointer is NULL" << endl;
-// 	}
-    }	
-  else
-    {
-      cout << "histgram list pointer is empty" << endl;
-    }
-//  delete fSP;
-//  delete fEventMaker;
+  if (fListHistos)  {
+    fListHistos->Print();
+  }	
+  else { cout << "histgram list pointer is empty" << endl; }
+
 }

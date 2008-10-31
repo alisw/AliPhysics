@@ -15,6 +15,7 @@
 class AliFlowEventSimple;
 class TProfile;
 class TFile;
+class TList;
 
 class AliFlowLYZEventPlane {
  public:
@@ -27,25 +28,18 @@ class AliFlowLYZEventPlane {
   Double_t GetWR() const  {return this->fWR; }
   Double_t GetPsi() const {return this->fPsi; }
   
-  // input file
-  void	   SetSecondRunFileName(TString name) 	
-    { this->fSecondRunFileName = name ; }     // Sets input file name
-  TString  GetSecondRunFileName() const		
-    { return this->fSecondRunFileName ; }     // Gets output file name
-  void     SetSecondRunFile(TFile* file)         
-    { this->fSecondRunFile = file ; }         // Sets second run file
-
-
+  //input
+  void       SetSecondRunList(TList* list) { this->fSecondRunList = list; }
+  TList*     GetSecondRunList()            { return this->fSecondRunList; }
+  
  private:
   
   AliFlowLYZEventPlane(const AliFlowLYZEventPlane& aAnalysis);             // copy constructor
   AliFlowLYZEventPlane& operator=(const AliFlowLYZEventPlane& aAnalysis);  // assignment operator
   
-  TFile*   fSecondRunFile ;         //! pointer to file from second run
-  TString  fSecondRunFileName;      //!
-
-  Double_t fWR;            // event weight
-  Double_t fPsi;           // reaction plane
+  TList*   fSecondRunList;   // list from Second LYZ run output
+  Double_t fWR;              // event weight
+  Double_t fPsi;             // reaction plane
 
   TProfile* fSecondReDtheta; // holds Re of Dtheta
   TProfile* fSecondImDtheta; // holds Im of Dtheta
