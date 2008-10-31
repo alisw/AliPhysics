@@ -348,6 +348,8 @@ void AliGenParam::Generate()
 // if fForceDecay == none Primary particle is tracked by GEANT 
 // (In the latest, make sure that GEANT actually does all the decays you want)	  
 //
+	  Bool_t decayed = kFALSE;
+	  
 
 	  if (fForceDecay != kNoDecay) {
 // Using lujet to decay particle
@@ -374,6 +376,7 @@ void AliGenParam::Generate()
 	      }
 	      
 	      if (np >1) {
+		  decayed = kTRUE;
 		  TParticle* iparticle =  (TParticle *) particles->At(0);
 		  Int_t ipF, ipL;
 		  for (i = 1; i<np ; i++) {
@@ -437,7 +440,9 @@ void AliGenParam::Generate()
 		  ipa++;
 //
 // Parent
-		  PushTrack(0, -1, iPart, p, origin0, polar, 0, kPPrimary, nt, wgtp);
+		  
+		  
+		  PushTrack(0, -1, iPart, p, origin0, polar, 0, kPPrimary, nt, wgtp, ((decayed)? 11 : 1));
 		  pParent[0] = nt;
 		  KeepTrack(nt); 
 		  fNprimaries++;
@@ -449,6 +454,7 @@ void AliGenParam::Generate()
 		      if (pSelected[i]) {
 			  TParticle* iparticle = (TParticle *) particles->At(i);
 			  Int_t kf   = iparticle->GetPdgCode();
+			  Int_t ksc  = iparticle->GetStatusCode();
 			  Int_t jpa  = iparticle->GetFirstMother()-1;
 			  
 			  och[0] = origin0[0]+iparticle->Vx()/10;
@@ -466,7 +472,7 @@ void AliGenParam::Generate()
 			 
 			  PushTrack(fTrackIt * trackIt[i], iparent, kf,
 					   pc, och, polar,
-					   0, kPDecay, nt, wgtch);
+					   0, kPDecay, nt, wgtch, ksc);
 			  pParent[i] = nt;
 			  KeepTrack(nt); 
 			  fNprimaries++;
@@ -482,7 +488,7 @@ void AliGenParam::Generate()
 	  else  // nodecay option, so parent will be tracked by GEANT (pions, kaons, eta, omegas, baryons)
 	  {
 	    gAlice->GetMCApp()->
-		PushTrack(fTrackIt,-1,iPart,p,origin0,polar,0,kPPrimary,nt,wgtp);
+		PushTrack(fTrackIt,-1,iPart,p,origin0,polar,0,kPPrimary,nt,wgtp, 1);
             ipa++; 
 	    fNprimaries++;
 	  }
