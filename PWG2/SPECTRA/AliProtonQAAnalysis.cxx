@@ -162,23 +162,11 @@ Bool_t AliProtonQAAnalysis::IsAccepted(AliESDtrack* track) {
     }
   }
   else{
-    AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
-    if(!tpcTrack) {
-      Pt = 0.0; Px = 0.0; Py = 0.0; Pz = 0.0;
-      dcaXY = -100.0, dcaZ = -100.0;
-    }
-    else {
-      Pt = tpcTrack->Pt();
-      Px = tpcTrack->Px();
-      Py = tpcTrack->Py();
-      Pz = tpcTrack->Pz();
-      track->GetImpactParameters(dcaXY,dcaZ);
-    }
-    /*Pt = track->Pt();
+    Pt = track->Pt();
     Px = track->Px();
     Py = track->Py();
     Pz = track->Pz();
-    track->GetImpactParameters(dcaXY,dcaZ);*/
+    track->GetImpactParameters(dcaXY,dcaZ);
   }
      
   Int_t  fIdxInt[200];
@@ -1576,6 +1564,21 @@ void AliProtonQAAnalysis::InitQA() {
   gHistYPtSecondaryAntiProtonsReject->GetXaxis()->SetTitleColor(1);
   fQA2DList->Add(gHistYPtSecondaryAntiProtonsReject);
 
+  TH2D *gHistYPtPrimaryProtonsMC = new TH2D("gHistYPtPrimaryProtonsMC",
+					    ";y;P_{T} [GeV/c]",
+					    fNBinsY,fMinY,fMaxY,
+					    fNBinsPt,fMinPt,fMaxPt);
+  gHistYPtPrimaryProtonsMC->SetStats(kTRUE);
+  gHistYPtPrimaryProtonsMC->GetXaxis()->SetTitleColor(1);
+  fQA2DList->Add(gHistYPtPrimaryProtonsMC);
+  TH2D *gHistYPtPrimaryAntiProtonsMC = new TH2D("gHistYPtPrimaryAntiProtonsMC",
+						";y;P_{T} [GeV/c]",
+						fNBinsY,fMinY,fMaxY,
+						fNBinsPt,fMinPt,fMaxPt);
+  gHistYPtPrimaryAntiProtonsMC->SetStats(kTRUE);
+  gHistYPtPrimaryAntiProtonsMC->GetXaxis()->SetTitleColor(1);
+  fQA2DList->Add(gHistYPtPrimaryAntiProtonsMC);
+
   /*gDirectory->cd("../");
   //protons
   TDirectory *dirProtons = gDirectory->mkdir("Protons");
@@ -2404,6 +2407,27 @@ void AliProtonQAAnalysis::InitQA() {
 //____________________________________________________________________//
 void AliProtonQAAnalysis::RunQA(AliStack *stack, AliESDEvent *fESD) {
   //Runs the QA code
+  //MC loop
+  for(Int_t iParticle = 0; iParticle < stack->GetNprimary(); iParticle++) {
+    TParticle *particle = stack->Particle(iParticle);
+    if(TMath::Abs(particle->Eta()) > 1.0) continue;//acceptance
+    if((particle->Pt() > fMaxPt)||(particle->Pt() < fMinPt)) continue;
+    if((Rapidity(particle->Px(),particle->Py(),particle->Pz()) > fMaxY)||(Rapidity(particle->Px(),particle->Py(),particle->Pz()) < fMinY)) continue;
+
+    Int_t pdgcode = particle->GetPdgCode();
+    if(pdgcode == 2212) 
+      ((TH2D *)(fQA2DList->At(8)))->Fill(Rapidity(particle->Px(),
+						  particle->Py(),
+						  particle->Pz()),
+					 particle->Pt());
+    if(pdgcode == -2212) 
+      ((TH2D *)(fQA2DList->At(9)))->Fill(Rapidity(particle->Px(),
+						  particle->Py(),
+						  particle->Pz()),
+					 particle->Pt());
+  }//MC loop
+
+  //ESD loop
   Int_t nGoodTracks = fESD->GetNumberOfTracks();
   for(Int_t iTracks = 0; iTracks < nGoodTracks; iTracks++) {
     AliESDtrack* track = fESD->GetTrack(iTracks);
