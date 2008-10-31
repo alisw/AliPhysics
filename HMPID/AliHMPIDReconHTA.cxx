@@ -31,6 +31,7 @@
 #include <TH2F.h>            //InitDatabase()
 #include <TGraph.h>          //ShapeModel()
 #include <TSpline.h>         //ShapeModel()
+#include <TCanvas.h>         //ShapeModel()
 #include "TStopwatch.h"      //
 
 Int_t AliHMPIDReconHTA::fgDB[500][150]={75000*0};
@@ -46,13 +47,17 @@ AliHMPIDReconHTA::AliHMPIDReconHTA():
   fNClu(0),
   fXClu(0),
   fYClu(0),
+  fPhiPhot(0),
+  fThetaPhot(0),
   fClCk(0),
   fThTrkIn(-999),
   fPhTrkIn(-999),
   fThTrkFit(-999),
   fPhTrkFit(-999),
   fCkovFit(-999),
+  fNCluFit(0),
   fCkovSig2(0),
+  fFitStatus(0),
   fParam(AliHMPIDParam::Instance())
 {
 //..
@@ -74,6 +79,8 @@ void AliHMPIDReconHTA::InitVars(Int_t n)
 //..
   fXClu = new Double_t[n];
   fYClu = new Double_t[n];
+  fPhiPhot = new Double_t[n];
+  fThetaPhot = new Double_t[n];
   fClCk = new Bool_t[n];
   for(Int_t i=0;i<n;i++) fClCk[i] = kTRUE;
 //
@@ -86,6 +93,8 @@ void AliHMPIDReconHTA::DeleteVars()const
 //..
   if(fXClu) delete fXClu;
   if(fYClu) delete fYClu;
+  if(fPhiPhot) delete fPhiPhot;
+  if(fThetaPhot) delete fThetaPhot;
   if(fClCk) delete fClCk;
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -123,7 +132,7 @@ Bool_t AliHMPIDReconHTA::CkovHiddenTrk(AliESDtrack *pTrk,TClonesArray *pCluLst,I
       nCh = pClu->Ch();
       fClCk[index] = kFALSE;
       fIdxMip = index;
- //    Printf(" n. %d x %f y %f Q %f",iClu,pClu->X(),pClu->Y(),pClu->Q());
+      AliDebug(1,Form(" MIP n. %i x %f y %f Q %f",iClu,pClu->X(),pClu->Y(),pClu->Q()));
     }
   }//clusters loop
   
@@ -131,22 +140,25 @@ Bool_t AliHMPIDReconHTA::CkovHiddenTrk(AliESDtrack *pTrk,TClonesArray *pCluLst,I
   
   //
   Float_t xra,yra,th,ph; pTrk->GetHMPIDtrk(xra,yra,th,ph);
-//  Printf(" simulated phi %6.2f ",ph*TMath::RadToDeg());
+  AliDebug(1,Form(" simulated phiTRK %6.2f thetaTRK %6.2f",ph*TMath::RadToDeg(),th*TMath::RadToDeg()));
   //
   
   if(!DoRecHiddenTrk()) {
     pTrk->SetHMPIDsignal(pParam->kNoPhotAccept);
     return kFALSE;
   }                                                                           //Do track and ring reconstruction,if problems returns 1
-//  Printf("    fitted phi %6.2f ",fPhTrkFit*TMath::RadToDeg());
+  AliDebug(1,Form("    fitted phi %6.2f ",fPhTrkFit*TMath::RadToDeg()));
   
   pTrk->SetHMPIDtrk(fRadX,fRadY,fThTrkFit,fPhTrkFit);                                        //store track intersection info
-  pTrk->SetHMPIDmip(fMipX,fMipY,(Int_t)fMipQ,fNClu);                                         //store mip info 
+  pTrk->SetHMPIDmip(fMipX,fMipY,(Int_t)fMipQ,NCluFit());                                     //store mip info + n. phots of the ring 
   pTrk->SetHMPIDcluIdx(nCh,fIdxMip+1000*sizeClu);                                            //set cham number, index of cluster + cluster size
   pTrk->SetHMPIDsignal(fCkovFit);                                                            //find best Theta ckov for ring i.e. track
   pTrk->SetHMPIDchi2(fCkovSig2);                                                             //errors squared
-//    Printf(" n clusters tot %i accepted %i",pCluLst->GetEntriesFast(),fNClu);
-//    Printf("CkovHiddenTrk: thetaC %f th %f ph %f",fCkovFit,fThTrkFit,fPhTrkFit);
+  AliDebug(1,Form(" n clusters tot %i fitted to ring %i",fNClu,NCluFit()));
+  for(Int_t i=0;i<fNClu;i++) {
+    AliDebug(1,Form(" n.%3i  ThetaCer %8.3f PhiCer %8.3f check %i",i,fThetaPhot[i],fPhiPhot[i],fClCk[i]));
+  }
+  AliDebug(1,Form("CkovHiddenTrk: thetaC %f th %f ph %f",fCkovFit,fThTrkFit*TMath::RadToDeg(),fPhTrkFit*TMath::RadToDeg()));
   
   return kTRUE;
   
@@ -165,15 +177,23 @@ Bool_t AliHMPIDReconHTA::DoRecHiddenTrk()
   Double_t thTrkRec,phiTrkRec,thetaCRec;
   
   if(!FindShape(thTrkRec,phiTrkRec,thetaCRec)) {
-//    Printf("FindShape failed...!");
+    AliDebug(1,Form(" FindShape failed...!"));
     return kFALSE;
   }
+  AliDebug(1,Form(" FindShape accepted...!"));
 
-  if(!FitFree(thTrkRec,phiTrkRec)) {
-//    Printf("FitFree failed...!");
+  if(!FitRing(thTrkRec,phiTrkRec)) {
+    AliDebug(1,Form(" FitRing failed...!"));
     return kFALSE;
   }
-   
+  AliDebug(1,Form(" FitRing accepted...!"));
+  
+  if(!UniformDistrib()) {
+    AliDebug(1,Form(" UniformDistrib failed...!"));
+    return kFALSE;
+  }
+  AliDebug(1,Form(" UniformDistrib accepted...!"));
+
   return kTRUE;
 }//DoRecHiddenTrk()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -209,16 +229,16 @@ Bool_t AliHMPIDReconHTA::FindShape(Double_t &thTrkRec,Double_t &phiTrkRec,Double
   Bool_t status;
     
 // Sort in phi angle...
-//  Printf(" mipX %f mipy %f",fMipX,fMipY);
   for(Int_t i=0;i<fNClu;i++) {
     if(!fClCk[i]) {
+      AliDebug(1,Form(" n.%3i  xMIP    %8.3f yMIP %8.3f check %i",i,fMipX,fMipY,fClCk[i]));
       phiphot[i] = 999.;
-      dist[i] = 999.;
+      dist[i]    = 999.;
       continue;
     }
     phiphot[i] = (TMath::ATan2(fMipY-fYClu[i],fMipX-fXClu[i])+TMath::Pi())*TMath::RadToDeg();
     dist[i]=TMath::Sqrt((fMipX-fXClu[i])*(fMipX-fXClu[i])+(fMipY-fYClu[i])*(fMipY-fYClu[i]));
-//    Printf(" n.%3i  phiphot %f dist %f check %i",i,phiphot[i],dist[i],fClCk[i]);
+    AliDebug(1,Form(" n.%3i  phiphot %8.3f dist %8.3f check %i",i,phiphot[i],dist[i],fClCk[i]));
   }
   
   TMath::Sort(fNClu,phiphot,indphi,kFALSE);
@@ -240,12 +260,13 @@ Bool_t AliHMPIDReconHTA::FindShape(Double_t &thTrkRec,Double_t &phiTrkRec,Double
   
   for(Int_t i=0;i<fNClu;i++) {
     if(!fClCk[indphi[i]]) continue;                                                  // Check if a good photon candidate or not
-    if(TMath::Abs(dMean-dist[indphi[i]]) > 2*rms) {
+    if(TMath::Abs(dMean-dist[indphi[i]]) > 1.5*rms) {
       fClCk[indphi[i]] = kFALSE;
       continue;
     }
   }
 
+  AliDebug(1,"Purification of photons...");
 //
 //  purify vectors for good photon candidates
 //
@@ -253,10 +274,10 @@ Bool_t AliHMPIDReconHTA::FindShape(Double_t &thTrkRec,Double_t &phiTrkRec,Double
   Double_t *phiphotP = new Double_t[fNClu+1];  
   Double_t *distP    = new Double_t[fNClu+1];  
   for(Int_t i=0;i<fNClu;i++) {
+    AliDebug(1,Form(" n. %3i phiphot %8.3f dist %8.3f check %i",i,phiphot[indphi[i]],dist[indphi[i]],fClCk[indphi[i]]));
     if(!fClCk[indphi[i]]) continue;                                                  // Check if a good photon candidate or not
     phiphotP[npeff] = phiphot[indphi[i]];
     distP[npeff]    = dist[indphi[i]];
-//    Printf("n. %2i phi %f dist %f",npeff,phiphotP[npeff],distP[npeff]);
     npeff++;
   }
   
@@ -265,33 +286,55 @@ Bool_t AliHMPIDReconHTA::FindShape(Double_t &thTrkRec,Double_t &phiTrkRec,Double
   delete [] indphi;
 
   if(npeff<3) {
-    Printf("FindShape failed: no enough photons = %i...",npeff);
+    AliDebug(1,Form("FindShape failed: no enough photons = %i...",npeff));
     delete [] phiphotP;
     delete [] distP;
     return kFALSE;
   }
 
-//  for(Int_t i=0;i<npeff;i++) {Printf(" n. %d phiphot %f dist %f",i,phiphotP[i],distP[i]);}
-  
   Double_t xA,xB;
   status = kFALSE;
   
-  if(!ShapeModel(npeff,phiphotP,distP,xA,xB,phiTrkRec)) {/*Printf("ShapeModel failed            ");*/ return kFALSE;}
-    
-//  if(xA > 50 || xB > 15)                                {Printf("xA and xB failed out of range"); return kFALSE;}
+  if(!ShapeModel(npeff,phiphotP,distP,xA,xB,phiTrkRec)) {AliDebug(1,Form("ShapeModel failed            ")); return kFALSE;}
+   
+//  if(xA > 50 || xB > 15)                                {AliDebug(1,Form("xA and xB failed out of range")); return kFALSE;}
 
   Int_t binxDB,binyDB;
-  FindBinDB(xA,xB,binxDB,binyDB);
-  if(binxDB<0 || binyDB<0)                              {/*Printf("bin < 0 ! failed             ");*/ return kFALSE;}
+  Int_t compactDB=-1;
   
-  Int_t compactDB = fgDB[binxDB][binyDB];
-  
-  if(compactDB<0)                                       {/*Printf("compact< 0! failed           ");*/ return kFALSE;} 
-  //
-  //
-  thetaCRec =  (Double_t)(compactDB%1000);
-  thTrkRec  =  (Double_t)(compactDB/1000);
+  if(xA > xB)  {                                        //geometrically not possible, try to recover on a mean values...
 
+    FindBinDB(xA,xA,binxDB,binyDB);
+    if(binxDB<0 || binyDB<0)                              {AliDebug(1,Form("bin < 0 ! failed             ")); return kFALSE;}
+    Int_t compactDB1 = CompactDB(binxDB,binyDB);
+    FindBinDB(xB,xB,binxDB,binyDB);
+    if(binxDB<0 || binyDB<0)                              {AliDebug(1,Form("bin < 0 ! failed             ")); return kFALSE;}
+    Int_t compactDB2 = CompactDB(binxDB,binyDB);
+    Double_t thetaCRec1 =  (Double_t)(compactDB1%1000);
+    Double_t thetaCRec2 =  (Double_t)(compactDB2%1000);
+    Double_t thTrkRec1  =  (Double_t)(compactDB1/1000);
+    Double_t thTrkRec2  =  (Double_t)(compactDB2/1000);
+    thetaCRec = 0.5*(thetaCRec1+thetaCRec2);
+    thTrkRec  = 0.5*( thTrkRec1+ thTrkRec2);
+    
+  } else {
+      
+    FindBinDB(xA,xB,binxDB,binyDB);
+    if(binxDB<0 || binyDB<0) {AliDebug(1,Form("bin < 0 ! failed             ")); return kFALSE;}
+
+    compactDB = CompactDB(binxDB,binyDB);
+
+    if(compactDB<0)                                       {AliDebug(1,Form("compact< 0! failed           ")); return kFALSE;} 
+    //
+    //
+    thetaCRec =  (Double_t)(compactDB%1000);
+    thTrkRec  =  (Double_t)(compactDB/1000);
+
+  }
+
+  AliDebug(1,Form(" CompactDB %i thTrkRec %8.3f thetaCRec %8.3f ",compactDB,thTrkRec,thetaCRec));
+    
+  phiTrkRec *= TMath::DegToRad();
   thTrkRec  *= TMath::DegToRad(); 
   thetaCRec *= TMath::DegToRad();
 
@@ -315,60 +358,21 @@ Bool_t AliHMPIDReconHTA::ShapeModel(Int_t np,Double_t *phiphot,Double_t *dist,Do
 //             phiStart- estimate of the track phi
 
   TGraph *phigr = new TGraph(np,phiphot,dist);
-  TSpline3 *sphi = new TSpline3("sphi",phigr);
-  if(!sphi) {Printf("Spline not created!Bye.");return kFALSE;}
-
-  Int_t locMin = TMath::LocMin(np,dist);
-  Int_t locMax = TMath::LocMax(np,dist);
+  phiStart = FindSimmPhi();   
   
-  Double_t minX = phiphot[locMin];
-//  Double_t minY =    dist[locMin];
-  Double_t maxX = phiphot[locMax];
-//  Double_t maxY =    dist[locMax];
-  
-  Int_t ip[3] = {-1,0,1};
-  if(locMin==0   ) {ip[0]= 0;ip[1]= 1;ip[2]= 2;}
-  if(locMin==np-1) {ip[0]=-2;ip[1]=-1;ip[2]= 0;}
-  
-  Double_t minXf = VertParab(phiphot[locMin+ip[0]],dist[locMin+ip[0]], 
-                             phiphot[locMin+ip[1]],dist[locMin+ip[1]],
-                             phiphot[locMin+ip[2]],dist[locMin+ip[2]]);
-  if(minXf< phiphot[locMin+ip[0]] || minXf > phiphot[locMin+ip[2]]) minXf = minX;
-  
-  ip[0]=-1;ip[1]=0;ip[2]=1;
-  if(locMax==0   ) {ip[0]= 0;ip[1]= 1;ip[2]= 2;}
-  if(locMax==np-1) {ip[0]=-2;ip[1]=-1;ip[2]= 0;}
-  
-  Double_t maxXf = VertParab(phiphot[locMax+ip[0]],dist[locMax+ip[0]], 
-                             phiphot[locMax+ip[1]],dist[locMax+ip[1]],
-                             phiphot[locMax+ip[2]],dist[locMax+ip[2]]);
-  if(maxXf< phiphot[locMax+ip[0]] || maxXf > phiphot[locMax+ip[2]]) maxXf = maxX;
-  
-//  
-  if(TMath::Abs(maxXf-minXf)>30) {
-    xA = sphi->Eval(minXf);
-    if(xA < 0) xA = dist[sphi->FindX(xA)];
-    xB = sphi->Eval(minXf-90);
-    if(xB < 0) xB = dist[sphi->FindX(xB)];
-    phiStart = minXf-180;  //open ring or acceptance effect...so believe to min phi angle!
-  } else {
-    phiStart = 0.5*(maxXf-180+minXf);
-    xA = sphi->Eval(phiStart+180);
-    if(xA < 0) xA = dist[sphi->FindX(xA)];
-    xB = sphi->Eval(phiStart+90);
-    if(xB < 0) xB = dist[sphi->FindX(xB)];
-  }
-  //
-//  Printf("ShapeModel: phiStart %f xA %f xB %f",phiStart,xA,xB);
-  
-  
-  phiStart*=TMath::DegToRad();
-  //----
-  Double_t phitest = FindSimmPhi();   
-  phiStart = phitest;
+  Double_t phiStart1 = phiStart;
+  if(phiStart1 > 360) phiStart1 -= 360;
+  Double_t phiStart2 = phiStart+90;
+  if(phiStart2 > 360) phiStart2 -= 360;
+  xA = phigr->Eval(phiStart1);
+  xB = phigr->Eval(phiStart2);
   //---
-//  Printf("phiStart %f phiTest %f",phiStart*TMath::RadToDeg(),phitest*TMath::RadToDeg());
- 
+  AliDebug(1,Form("phiStart %f phiStart1 %f phiStart2 %f ",phiStart,phiStart1,phiStart2));
+  AliDebug(1,Form("xA  %f xB  %f",xA,xB));
+
+  phiStart += 180;  
+  if(phiStart>360) phiStart-=360;
+  
   return kTRUE;
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -382,6 +386,20 @@ Double_t AliHMPIDReconHTA::VertParab(Double_t x1,Double_t y1,Double_t x2, Double
   Double_t b = (y1-y2 - a*(x1*x1-x2*x2))/(x1-x2);
 //  Double_t c = y1 - a*x1*x1-b*x1;
   return -0.5*b/a;
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Bool_t AliHMPIDReconHTA::FitRing(Double_t thTrkRec,Double_t phiTrkRec)
+{
+  Double_t th = thTrkRec;
+  Double_t ph = phiTrkRec;
+  
+  FitFree(th,ph);
+  while(FitStatus()) {
+    th = fThTrkFit;
+    ph = fPhTrkFit;
+    FitFree(th,ph);
+  }
+  return kTRUE;
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Bool_t AliHMPIDReconHTA::FitFree(Double_t thTrkRec,Double_t phiTrkRec)
@@ -406,6 +424,8 @@ Bool_t AliHMPIDReconHTA::FitFree(Double_t thTrkRec,Double_t phiTrkRec)
 
   if(thTrkRec==0) thTrkRec = 3.*TMath::DegToRad();    // not to start from the edge...
   
+  AliDebug(1,Form(" Minimization STARTED with phiTRK %6.2f thetaTRK %6.2f",phiTrkRec,thTrkRec));
+
   pMinuit->mnparm(0," thTrk  ",thTrkRec ,parStep=0.01,parLow=0,parHigh=TMath::PiOver4(),iErrFlg);
   pMinuit->mnparm(1," phiTrk ",phiTrkRec,parStep=0.01,parLow=0,parHigh=TMath::TwoPi(),iErrFlg);
   
@@ -454,14 +474,27 @@ void AliHMPIDReconHTA::FunMinPhot(Int_t &/* */,Double_t* /* */,Double_t &f,Doubl
   Double_t thetaCer,phiCer;
   Int_t nClAcc = 0;
   Int_t nClTot=pRecHTA->NClu();
-    
+
   for(Int_t i=0;i<nClTot;i++) {
+    
+    if(pRecHTA->IdxMip() == i) {
+      pRecHTA->SetPhotAngles(i,999.,999.);
+      continue;
+    }
+    
     if(!(pRecHTA->ClCk(i))) continue;
-    pRec.FindPhotCkov(pRecHTA->XClu(i),pRecHTA->YClu(i),thetaCer,phiCer);  
+    
+    Bool_t status = pRec.FindPhotCkov(pRecHTA->XClu(i),pRecHTA->YClu(i),thetaCer,phiCer);
+    if(!status) {
+      pRecHTA->SetPhotAngles(i,999.,999.);
+      continue;
+    }
+    pRecHTA->SetPhotAngles(i,thetaCer,phiCer);
     meanCkov  += thetaCer;
     meanCkov2 += thetaCer*thetaCer;
     nClAcc++;
   }
+  
   if(nClAcc==0) {f=999;return;}
   meanCkov  /=(Double_t)nClAcc;
   meanCkov2 /=(Double_t)nClAcc;
@@ -469,31 +502,37 @@ void AliHMPIDReconHTA::FunMinPhot(Int_t &/* */,Double_t* /* */,Double_t &f,Doubl
   f = rms/TMath::Sqrt((Double_t)nClAcc);
   
   if(iflag==3) {
-/*
-    Printf("FunMinPhot before: photons candidates %i used %i",nClTot,nClAcc);
+    Int_t nClAccStep1 = nClAcc;
     nClAcc = 0;
     Double_t meanCkov1=0;
     Double_t meanCkov2=0;
     for(Int_t i=0;i<nClTot;i++) {
-      if(!(pRec->ClCk(i))) continue;
-      pRec->FindPhotCkov(pRec->XClu(i),pRec->YClu(i),thetaCer,phiCer);  
+      
+      if(!(pRecHTA->ClCk(i))) continue;
+      thetaCer = pRecHTA->PhotTheta(i);
       if(TMath::Abs(thetaCer-meanCkov)<2*rms) {
         meanCkov1 += thetaCer;
         meanCkov2 += thetaCer*thetaCer;
         nClAcc++;
-      } else pRec->SetClCk(i,kFALSE);
+      } else pRecHTA->SetClCk(i,kFALSE);
     }
+    
+    if(nClAcc<3) {
+      pRecHTA->SetFitStatus(kFALSE);
+      pRecHTA->SetCkovFit(meanCkov);
+      pRecHTA->SetCkovSig2(rms*rms);
+      pRecHTA->SetNCluFit(nClAccStep1);
+      return;
+    }
+      
     meanCkov1/=nClAcc;
     Double_t rms2 = (meanCkov2 - meanCkov*meanCkov*nClAcc)/nClAcc;
-    Printf("FunMinPhot after: photons candidates %i used %i thetaCer %f",nClTot,nClAcc,meanCkov1);
-    pRec->SetCkovFit(meanCkov1);
-    pRec->SetCkovSig2(rms2);
-    pRec->SetNClu(nClAcc);
-*/
-//    Printf("FunMinPhot: reconstructed theta Cerenkov %f with %d photons",meanCkov,nClAcc);
-    pRecHTA->SetCkovFit(meanCkov);
-    pRecHTA->SetCkovSig2(rms*rms);
-    pRecHTA->SetNClu(nClAcc);
+    AliLog::Instance();
+    if(nClAcc!=nClAccStep1) pRecHTA->SetFitStatus(kTRUE); else pRecHTA->SetFitStatus(kFALSE);
+    
+    pRecHTA->SetCkovFit(meanCkov1);
+    pRecHTA->SetCkovSig2(rms2);
+    pRecHTA->SetNCluFit(nClAcc);
   }
 }//FunMinPhot()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -570,7 +609,7 @@ void AliHMPIDReconHTA::InitDatabase()
       rec.SetTrack(xrad,yrad,thTrk,phTrk);
       pos=rec.TracePhot(thetaC,TMath::Pi());
 
-      if(pos.X()==-999) {Printf("it should not happens!Bye");return;}
+      if(pos.X()==-999) {AliDebug(1,Form("it should not happens!Bye"));return;}
       x[1] = pos.X(); y[1] = pos.Y();
       if((x[1]-xmip)*(x[0]-xmip)>0) continue; // to avoid circles out mips (for very low ThetaC)
       dist2   = TMath::Sqrt((x[1]-xmip)*(x[1]-xmip)+(y[1]-ymip)*(y[1]-ymip));
@@ -672,14 +711,14 @@ Int_t AliHMPIDReconHTA::r2(Double_t *coef, Double_t &x1, Double_t &x2)
 Double_t AliHMPIDReconHTA::FindSimmPhi() 
 {     
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-// RESTITUISCE  IN  OUTPUT  IL  VALORE  FINALE  DELL'ANGOLO  RICOSTRUITO 
-// CON  I  DUE  METODI:
-// - metodo dei minimi quadrati con le distanze effettive;................................(PER RING CHIUSI)
-// - metodo della determin della pendenza individuando la distanza minima mip-fotone;.....(PER RING APERTI)
+// Reconstruction of phiTRK angle with two methods (in switching)
+// 
+// - least square method (for closed rings)
+// - by minimum distance mip-photon (for open rings)
   
   Float_t coeff1ord=0;     Float_t coeff2ord=0;     Float_t coeff0ord=0;  
   Float_t xrotsumm =0;     Float_t yrotsumm =0;     Float_t xx =0;           
-  Float_t yy =0;           Float_t xy =0;           Float_t yx =0; 
+  Float_t yy =0;           Float_t xy =0;
   Double_t xmin=0;
   Double_t ymin=0;
 
@@ -703,21 +742,19 @@ Double_t AliHMPIDReconHTA::FindSimmPhi()
     }
   }
 
-  Double_t AngM=0;
-  if(ymin <  fMipY && xmin >  fMipX)  {AngM  =  TMath::ATan((ymin-fMipY)/(xmin-fMipX))*TMath::RadToDeg()+180;}
-  if(ymin >  fMipY && xmin <  fMipX)  {AngM  =  TMath::ATan((ymin-fMipY)/(xmin-fMipX))*TMath::RadToDeg()+360;}
-  if(ymin >  fMipY && xmin >  fMipX)  {AngM  =  TMath::ATan((ymin-fMipY)/(xmin-fMipX))*TMath::RadToDeg()+180;}
-  if(ymin <  fMipY && xmin <  fMipX)  {AngM  =  TMath::ATan((ymin-fMipY)/(xmin-fMipX))*TMath::RadToDeg();}
-  if(ymin == fMipY && xmin >  fMipX)  {AngM  =  TMath::ATan((ymin-fMipY)/(xmin-fMipX))*TMath::RadToDeg()+180;}
-  if(ymin == fMipY && xmin <  fMipX)  {AngM  =  TMath::ATan((ymin-fMipY)/(xmin-fMipX))*TMath::RadToDeg();}
-  if(ymin <  fMipY && xmin == fMipX)  {AngM  =  90;}
-  if(ymin >  fMipY && xmin == fMipX)  {AngM  =  270;}
+  Double_t AngM = TMath::ATan2(ymin-fMipY,(xmin-fMipX))*TMath::RadToDeg();
+  if (AngM<0) AngM+=360;
+  
+  AliDebug(1,Form(" Simple angle prediction with MIN phi = %f",AngM));
   
   //_____calc. met min quadr using effective distance _________________________________________________
   
-  coeff2ord= xy-xrotsumm*yrotsumm/np;    
-  coeff1ord= yrotsumm*yrotsumm/np - xrotsumm*xrotsumm/np - yy + xx;
-  coeff0ord= xrotsumm*yrotsumm/np -  yx;
+  coeff2ord = xy-xrotsumm*yrotsumm/np;    
+  coeff1ord = yrotsumm*yrotsumm/np - xrotsumm*xrotsumm/np - yy + xx;
+  coeff0ord = -coeff2ord;
+  
+  AliDebug(1,Form(" a = %f b = %f c = %f",coeff2ord,coeff1ord,coeff0ord));
+  
   Double_t m1=0, m2=0;  Double_t n1=0, n2=0;
                             // c           // b         // a
   Double_t coeff[3]={coeff0ord,coeff1ord,coeff2ord};    
@@ -728,41 +765,31 @@ Double_t AliHMPIDReconHTA::FindSimmPhi()
   n2=(yrotsumm-m2*xrotsumm)/np;
   // 2 solutions.................
   
-  Double_t PhiTrk1= TMath::ATan(m1);                              
-  //Double_t PhiTrk2= TMath::ATan(m2);
-  
   // negative angles solved...
-  
-  Double_t PhiTrk1Positive=0;
-  
-  if(PhiTrk1<0)    PhiTrk1Positive= PhiTrk1 + 180*TMath::DegToRad();
-  if(PhiTrk1>=0)   PhiTrk1Positive= PhiTrk1;
   
   Double_t d1 =(1/(m1*m1+1))*(yy+m1*m1*xx+np*n1*n1-2*m1*xy-2*n1*yrotsumm+2*m1*n1*xrotsumm);
   Double_t d2 =(1/(m2*m2+1))*(yy+m2*m2*xx+np*n2*n2-2*m2*xy-2*n2*yrotsumm+2*m2*n2*xrotsumm);
-  
+
+  AliDebug(1,Form(" predicted distance d1 %f for angle %6.2f d2 %f for angle %6.2f",d1,TMath::ATan(m1)*TMath::RadToDeg(),
+                                                                                    d2,TMath::ATan(m2)*TMath::RadToDeg()));
   Double_t mMin;
   if(d1 > d2) mMin = m2; else mMin = m1;
   
-  //Double_t PhiTrk = TMath::ATan(mMin)*TMath::RadToDeg();
-  Double_t PhiTrkPositive=0;
+  Double_t phiTrk=0;
   // 
-  if(ymin <  fMipY && xmin >  fMipX)  {PhiTrkPositive  =  TMath::ATan(mMin)*TMath::RadToDeg()+180;}
-  if(ymin >  fMipY && xmin <  fMipX)  {PhiTrkPositive  =  TMath::ATan(mMin)*TMath::RadToDeg()+360;}
-  if(ymin >  fMipY && xmin >  fMipX)  {PhiTrkPositive  =  TMath::ATan(mMin)*TMath::RadToDeg()+180;}
-  if(ymin <  fMipY && xmin <  fMipX)  {PhiTrkPositive  =  TMath::ATan(mMin)*TMath::RadToDeg();}
-  if(ymin == fMipY && xmin >  fMipX)  {PhiTrkPositive  =  TMath::ATan(mMin)*TMath::RadToDeg()+180;}
-  if(ymin == fMipY && xmin <  fMipX)  {PhiTrkPositive  =  TMath::ATan(mMin)*TMath::RadToDeg();}
-  if(ymin <  fMipY && xmin == fMipX)  {PhiTrkPositive  =   90;}
-  if(ymin >  fMipY && xmin == fMipX)  {PhiTrkPositive  =  270;}
+  if(ymin <  fMipY && xmin >  fMipX)  {phiTrk  =  TMath::ATan(mMin)*TMath::RadToDeg()+180;}
+  if(ymin >  fMipY && xmin <  fMipX)  {phiTrk  =  TMath::ATan(mMin)*TMath::RadToDeg()+360;}
+  if(ymin >  fMipY && xmin >  fMipX)  {phiTrk  =  TMath::ATan(mMin)*TMath::RadToDeg()+180;}
+  if(ymin <  fMipY && xmin <  fMipX)  {phiTrk  =  TMath::ATan(mMin)*TMath::RadToDeg();}
+  if(ymin == fMipY && xmin >  fMipX)  {phiTrk  =  TMath::ATan(mMin)*TMath::RadToDeg()+180;}
+  if(ymin == fMipY && xmin <  fMipX)  {phiTrk  =  TMath::ATan(mMin)*TMath::RadToDeg();}
+  if(ymin <  fMipY && xmin == fMipX)  {phiTrk  =   90;}
+  if(ymin >  fMipY && xmin == fMipX)  {phiTrk  =  270;}
   
   //  ------------------------- choose the best-----------------------
   
   
-  Double_t PhiTrkFinal=0;
-  if( AngM-40 <=  PhiTrkPositive  &&  AngM+40 >= PhiTrkPositive)   PhiTrkFinal = PhiTrkPositive;  else PhiTrkFinal = AngM;
-  
-  return PhiTrkFinal*TMath::DegToRad();
+  if( AngM-40 <=  phiTrk  &&  AngM+40 >= phiTrk)   return phiTrk;  else return AngM;
 }
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDReconHTA::FindBinDB(Double_t x,Double_t y,Int_t &binX,Int_t &binY)
@@ -772,7 +799,7 @@ void AliHMPIDReconHTA::FindBinDB(Double_t x,Double_t y,Int_t &binX,Int_t &binY)
   const Double_t xlowDB =  0;   
   const Double_t xhigDB = 50;   
   const Double_t ylowDB =  0;
-  const Double_t yhigDB = 15;
+  const Double_t yhigDB = 30;
 
   binX = -1;
   binY = -1;
@@ -786,3 +813,55 @@ void AliHMPIDReconHTA::FindBinDB(Double_t x,Double_t y,Int_t &binX,Int_t &binY)
   }
   
 }
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Bool_t AliHMPIDReconHTA::UniformDistrib() 
+{
+  AliHMPIDParam *pParam=AliHMPIDParam::Instance();
+  AliHMPIDRecon pRec;
+
+  Double_t sizeCh = 0.5*pParam->RadThick()+pParam->WinThick()+pParam->GapThick();
+  Double_t xrad = MipX() - sizeCh*TMath::Tan(fThTrkFit)*TMath::Cos(fPhTrkFit);
+  Double_t yrad = MipY() - sizeCh*TMath::Tan(fThTrkFit)*TMath::Sin(fPhTrkFit);
+  
+  pRec.SetTrack(xrad,yrad,fThTrkFit,fPhTrkFit);
+    
+  Int_t npeff=0;
+  Int_t nPhotPerBin = 4;
+  for(Int_t i=0;i<fNClu;i++) {  
+    if(!ClCk(i)) continue;
+    npeff++;
+  }
+  
+  Int_t nPhiBins = npeff/nPhotPerBin+1;
+  if(nPhiBins<=1) nPhiBins = 2;
+
+  Double_t *iPhiBin;
+  iPhiBin = new Double_t[nPhiBins];
+  
+  for(Int_t i=0;i<nPhiBins;i++) iPhiBin[i] =0;
+
+  for(Int_t i=0;i<fNClu;i++) { 
+    if(!ClCk(i)) continue;
+    Double_t phiCer = PhotPhi(i);
+    
+    Double_t PhiProva = phiCer*TMath::RadToDeg();
+    if(PhiProva<0) PhiProva+= 360;
+    Int_t index = (Int_t)((Float_t)nPhiBins*PhiProva/360.);
+    iPhiBin[index]++;
+   }
+
+   Double_t chi2 = 0;
+   for(Int_t i=0;i<nPhiBins;i++) {
+     Double_t theo = (Double_t)npeff/(Double_t)nPhiBins;
+     chi2+= (iPhiBin[i] - theo)*(iPhiBin[i] - theo)/theo;
+   }
+   
+    delete iPhiBin;
+    
+    Double_t prob = TMath::Prob(chi2, nPhiBins-1);
+    AliDebug(1,Form(" Probability for uniform distrib: %6f.3 %s",prob,(prob<0.05) ? "rejected" : "accepted"));
+    if(prob<0.05) return kFALSE;
+    return kTRUE;
+    
+ }
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
