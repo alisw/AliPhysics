@@ -24,9 +24,9 @@ Char_t* fgkTRDtaskClassName[NTRDTASKS] = {
   ,"AliTRDtrackingEfficiency"
   ,"AliTRDtrackingEfficiencyCombined"
   ,"AliTRDtrackingResolution"
+  ,"AliTRDcalibration"
   ,"AliTRDpidChecker"
   ,"AliTRDpidRefMaker"
-  ,"AliTRDcalibration"
 };
 
 Char_t *fgkTRDtaskOpt[NTRDTASKS+3] = {

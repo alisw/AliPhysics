@@ -95,7 +95,7 @@ void makeResults(Char_t *args = "ALL")
   for(Int_t isel = 0; isel < tasksArray->GetEntriesFast(); isel++){
     TString s = (dynamic_cast<TObjString *>(tasksArray->UncheckedAt(isel)))->String();
     if(s.CompareTo("ALL") == 0){
-      for(Int_t itask = 1; itask < NTRDTASKS; itask++) SETBIT(fSteerTask, itask);
+      for(Int_t itask = 1; itask < NTRDTASKS; itask++) SETBIT(fSteerTask, itask - 1);
       continue;
     } else if(s.CompareTo("NOFR") == 0){ 
       friends = kFALSE;
@@ -105,7 +105,7 @@ void makeResults(Char_t *args = "ALL")
       Bool_t foundOpt = kFALSE;  
       for(Int_t itask = 1; itask < NTRDTASKS; itask++){
         if(s.CompareTo(fgkTRDtaskOpt[itask]) != 0) continue;
-        SETBIT(fSteerTask, itask);
+        SETBIT(fSteerTask, itask - 1);
         foundOpt = kTRUE;
         break;
       }
@@ -122,8 +122,8 @@ void makeResults(Char_t *args = "ALL")
   if(gSystem->AccessPathName(Form("%s/merge",  gSystem->ExpandPathName("$PWD")))) gSystem->Exec(Form("mkdir -v %s/merge",  gSystem->ExpandPathName("$PWD")));
 
   printf("\n\tPROCESSING DATA FOR TASKS [%b]:\n", fSteerTask);
-  for(Int_t itask = 1; itask <NTRDTASKS; itask++){
-    if(!TESTBIT(fSteerTask, itask)) continue;
+  for(Int_t itask = 0; itask <NTRDTASKS; itask++){
+    if(!TSTBIT(fSteerTask, itask)) continue;
 
     ctask = new TClass(fgkTRDtaskClassName[itask]);
     task = (AliTRDrecoTask*)ctask->New();
