@@ -15,6 +15,7 @@
 
 #include "Riostream.h" //needed as include
 #include "TChain.h"
+#include "TProfile.h"
 #include "TTree.h"
 #include "TFile.h" //needed as include
 #include "TList.h"
@@ -39,6 +40,8 @@ class AliAnalysisTask;
 
 #include "AliAnalysisTaskMCEventPlane.h"
 #include "AliFlowEventSimpleMaker.h"
+#include "AliFlowCommonHist.h"
+#include "AliFlowCommonHistResults.h"
 #include "AliFlowAnalysisWithMCEventPlane.h"
 
 // AliAnalysisTaskMCEventPlane:
@@ -50,7 +53,7 @@ class AliAnalysisTask;
 ClassImp(AliAnalysisTaskMCEventPlane)
 
 //________________________________________________________________________
-AliAnalysisTaskMCEventPlane::AliAnalysisTaskMCEventPlane(const char *name) : 
+AliAnalysisTaskMCEventPlane::AliAnalysisTaskMCEventPlane(const char *name, Bool_t on) : 
   AliAnalysisTask(name, ""), 
   fESD(0),
   fAOD(0),
@@ -59,7 +62,10 @@ AliAnalysisTaskMCEventPlane::AliAnalysisTaskMCEventPlane(const char *name) :
   fCFManager2(NULL),
   fMc(0),
   fEventMaker(0),
-  fListHistos(NULL)
+  fListHistos(NULL),
+  fQAInt(NULL),
+  fQADiff(NULL),
+  fQA(on)
 {
   // Constructor
   cout<<"AliAnalysisTaskMCEventPlane::AliAnalysisTaskMCEventPlane(const char *name)"<<endl;
@@ -68,7 +74,10 @@ AliAnalysisTaskMCEventPlane::AliAnalysisTaskMCEventPlane(const char *name) :
   // Input slot #0 works with a TChain
   DefineInput(0, TChain::Class());
   // Output slot #0 writes into a TList container
-  DefineOutput(0, TList::Class());  
+  DefineOutput(0, TList::Class()); 
+  if(on) {
+    DefineOutput(1, TList::Class());
+    DefineOutput(2, TList::Class()); }  
 }
 
 //________________________________________________________________________
@@ -80,7 +89,10 @@ AliAnalysisTaskMCEventPlane::AliAnalysisTaskMCEventPlane() :
   fCFManager2(NULL),
   fMc(0),
   fEventMaker(0),
-  fListHistos(NULL)
+  fListHistos(NULL),
+  fQAInt(NULL),
+  fQADiff(NULL),
+  fQA(kFALSE)
 {
   // Constructor
   cout<<"AliAnalysisTaskMCEventPlane::AliAnalysisTaskMCEventPlane()"<<endl;
@@ -109,7 +121,6 @@ void AliAnalysisTaskMCEventPlane::ConnectInputData(Option_t *)
     // Disable all branches and enable only the needed ones
     
     if (fAnalysisType == "MC") {
-      cout<<"!!!!!reading MC kinematics only"<<endl;
       // we want to process only MC
       tree->SetBranchStatus("*", kFALSE);
 
@@ -123,7 +134,6 @@ void AliAnalysisTaskMCEventPlane::ConnectInputData(Option_t *)
     }
 
     else if (fAnalysisType == "ESD" || fAnalysisType == "ESDMC0" || fAnalysisType == "ESDMC1" ) {
-      cout<<"!!!!!reading the ESD only"<<endl;
       tree->SetBranchStatus("*", kFALSE);
       tree->SetBranchStatus("Tracks.*", kTRUE);
 
@@ -136,7 +146,6 @@ void AliAnalysisTaskMCEventPlane::ConnectInputData(Option_t *)
     }
 
     else if (fAnalysisType == "AOD") {
-      cout<<"!!!!!reading the AOD only"<<endl;
       AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
 
       if (!aodH) {
@@ -173,7 +182,7 @@ void AliAnalysisTaskMCEventPlane::CreateOutputObjects()
   fMc-> Init();
 
   if (fMc->GetHistList()) {
-	fMc->GetHistList()->Print();
+    //fMc->GetHistList()->Print();
 	fListHistos = fMc->GetHistList();
 	fListHistos->Print();
   }
@@ -227,7 +236,7 @@ void AliAnalysisTaskMCEventPlane::Exec(Option_t *)
   }
     
   Double_t fRP = hdh->ReactionPlaneAngle();
-  cout<<"The reactionPlane is "<<hdh->ReactionPlaneAngle()<<endl;
+  //cout<<"The reactionPlane is "<<hdh->ReactionPlaneAngle()<<endl;
   
   if (fAnalysisType == "MC") {
     // analysis 
@@ -292,17 +301,45 @@ void AliAnalysisTaskMCEventPlane::Exec(Option_t *)
     delete fEvent;
   }
 
-  //PostData(0,fListHistos); //here for CAF
+  PostData(0,fListHistos); //here for CAF
+  if (fQA) {
+    PostData(1,fQAInt);
+    PostData(2,fQADiff); }
 
 }      
+
 
 //________________________________________________________________________
 void AliAnalysisTaskMCEventPlane::Terminate(Option_t *) 
 {
   // Called once at the end of the query
-  fMc->Finish();
-  PostData(0,fListHistos);
+  AliFlowAnalysisWithMCEventPlane* fMcTerm = new AliFlowAnalysisWithMCEventPlane() ;
 
-  //delete fMc;
-  //delete fEventMaker;
+  //Get output data
+  fListHistos = (TList*)GetOutputData(0);
+  cout << "histgram list in Terminate" << endl;
+  if (fListHistos) {
+    //Get the common histograms from the output list
+    AliFlowCommonHist *pCommonHists = dynamic_cast<AliFlowCommonHist*> 
+      (fListHistos->FindObject("AliFlowCommonHistMCEP"));
+    AliFlowCommonHistResults *pCommonHistResults = 
+      dynamic_cast<AliFlowCommonHistResults*> 
+      (fListHistos->FindObject("AliFlowCommonHistResultsMCEP"));
+
+    TProfile *pHistProFlow = dynamic_cast<TProfile*> 
+      (fListHistos->FindObject("FlowPro_VPt_MCEP"));
+
+    if (pCommonHists && pCommonHistResults && pHistProFlow) {
+      fMcTerm->SetCommonHists(pCommonHists);
+      fMcTerm->SetCommonHistsRes(pCommonHistResults);
+      fMcTerm->SetHistProFlow(pHistProFlow);
+      fMcTerm->Finish();
+      PostData(0,fListHistos);
+    } else {
+      cout<<"WARNING: Histograms needed to run Finish() are not accessable!"<<endl;  }
+    
+    fListHistos->Print();
+  } else { cout << "histogram list pointer is empty" << endl;}
+    
+  cout<<"...finished."<<endl;
 }

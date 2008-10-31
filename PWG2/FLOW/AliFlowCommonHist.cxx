@@ -285,8 +285,12 @@ Bool_t AliFlowCommonHist::FillControlHistograms(AliFlowEventSimple* anEvent)
 
   AliFlowVector vQ = anEvent->GetQ(); 
   //weight by the Multiplicity
-  Double_t dQX = vQ.X()/vQ.GetMult();
-  Double_t dQY = vQ.Y()/vQ.GetMult();
+  Double_t dQX = 0.;
+  Double_t dQY = 0.;
+  if (iNumberOfTracks!=0.) {
+    dQX = vQ.X()/vQ.GetMult();
+    dQY = vQ.Y()/vQ.GetMult();
+  }
   vQ.Set(dQX,dQY);
   fHistQ->Fill(vQ.Mod());
 

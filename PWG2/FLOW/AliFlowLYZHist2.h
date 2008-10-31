@@ -12,6 +12,7 @@ class TComplex;
 class TProfile2D;
 class TCollection;
 class TList;
+class TBrowser;
 
 // Description: Class to organise histograms for Flow
 //              by the LeeYangZeros method in the second run.
@@ -19,14 +20,17 @@ class TList;
 //              which are called in AliFlowLeeYandZerosMaker::Finish().
 
 
-class AliFlowLYZHist2: public TObject  {
+class AliFlowLYZHist2: public TNamed  {
 
  public:
 
   AliFlowLYZHist2();                                //default constructor
-  AliFlowLYZHist2(Int_t theta);                     //constructor
+  AliFlowLYZHist2(Int_t theta, const char *name = "AliFlowLYZHist2" ,const char *title = "AliFlowLYZHist2");                     //constructor
   virtual  ~AliFlowLYZHist2();                      //destructor
   
+  Bool_t  IsFolder() const {return kTRUE;};
+  void Browse(TBrowser *b); 
+
   void     Fill(Double_t d1,Double_t d2, TComplex c);   //fill the histograms
   Int_t    GetNbinsX()                
     {Int_t iMaxEtaBins = fHistProReNumer->GetNbinsX();  return iMaxEtaBins;}     
@@ -48,7 +52,8 @@ class AliFlowLYZHist2: public TObject  {
   TList*      GetHistList()         {return this->fHistList;}   
   
   virtual Double_t Merge(TCollection *aList);  //merge function
- 
+  void Print(Option_t* option = "") const;     //method to print stats
+
  private:
  
   AliFlowLYZHist2(const AliFlowLYZHist2& aAnalysis);             //copy constructor
@@ -62,7 +67,7 @@ class AliFlowLYZHist2: public TObject  {
   TProfile2D* fHistProImNumer2D;       //holds Im of Numerator
   TList*      fHistList;               //list to hold all histograms  
 
-  ClassDef(AliFlowLYZHist2,0)          // macro for rootcint
+  ClassDef(AliFlowLYZHist2,1)          // macro for rootcint
     };
  
      

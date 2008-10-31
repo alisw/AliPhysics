@@ -27,6 +27,7 @@ $Log$
 #include "TCanvas.h"   //needed as include
 #include "TLegend.h"   //needed as include
 #include "TProfile.h"  //needed as include
+#include "TVector2.h"
 
 class TH1F;
 
@@ -53,36 +54,35 @@ ClassImp(AliFlowAnalysisWithLYZEventPlane)
   //-----------------------------------------------------------------------
  
  AliFlowAnalysisWithLYZEventPlane::AliFlowAnalysisWithLYZEventPlane():
-  fSecondRunFile(0),
-  fSecondRunFileName(0),
-  fHistList(NULL),
-  fSecondReDtheta(NULL),
-  fSecondImDtheta(NULL),
-  fFirstr0theta(NULL),
-  fSecondVPt(NULL),
-  fHistProFlow(NULL),
-  fHistProFlow2(NULL),
-  fHistProWr(NULL),
-  fHistProWrCorr(NULL),
-  fHistFlow(NULL),
-  fHistDeltaPhi(NULL),
-  fHistDeltaPhi2(NULL),
-  fHistDeltaPhihere(NULL),
-  fHistPhiEP(NULL),
-  fHistPhiEPhere(NULL),
-  fHistPhiLYZ(NULL),
-  fHistPhiLYZ2(NULL),
-  fCommonHists(NULL),
-  fCommonHistsRes(NULL),
-  fEventNumber(0),
-  fQsum(NULL),
-  fQ2sum(0)
+   fHistList(NULL),
+   fSecondRunList(NULL),
+   fSecondReDtheta(NULL),
+   fSecondImDtheta(NULL),
+   fFirstr0theta(NULL),
+   fHistProFlow(NULL),
+   fHistProFlow2(NULL),
+   fHistProWr(NULL),
+   fHistProWrCorr(NULL),
+   fHistQsumforChi(NULL),
+   fHistDeltaPhi(NULL),
+   fHistDeltaPhi2(NULL),
+   fHistDeltaPhihere(NULL),
+   fHistPhiEP(NULL),
+   fHistPhiEPhere(NULL),
+   fHistPhiLYZ(NULL),
+   fHistPhiLYZ2(NULL),
+   fCommonHists(NULL),
+   fCommonHistsRes(NULL),
+   fEventNumber(0),
+   fQsum(NULL),
+   fQ2sum(0)
 {
 
   // Constructor.
   fQsum = new TVector2();        // flow vector sum
 
   fHistList = new TList();
+  fSecondRunList = new TList();
 }
 
  
@@ -95,6 +95,7 @@ ClassImp(AliFlowAnalysisWithLYZEventPlane)
    //destructor
    delete fQsum;
    delete fHistList;
+   delete fSecondRunList;
  }
  
 
@@ -105,42 +106,29 @@ void AliFlowAnalysisWithLYZEventPlane::Init() {
   cout<<"---Analysis with Lee Yang Zeros Event Plane Method---"<<endl;
 
   //input histograms
-  if (fSecondRunFile->IsZombie()){ //check if file exists
-    cout << "Error opening file, no input file from LYZ analysis" << endl;
-    exit(-1);
-  } else if (fSecondRunFile->IsOpen()){
-    cout<<"----secondRunFile is open----"<<endl;
-    //get List
-    TList* list   = (TList*)fSecondRunFile->Get("cobj1");
-    fSecondVPt    = (TProfile*)list->FindObject("Flow_Differential_Pt_LYZ"); //to compare to
-    fSecondReDtheta = (TProfile*)list->FindObject("Second_FlowPro_ReDtheta_LYZ");
+  if (fSecondRunList) {
+    fSecondReDtheta = (TProfile*)fSecondRunList->FindObject("Second_FlowPro_ReDtheta_LYZ");
     fHistList->Add(fSecondReDtheta);
-    fSecondImDtheta = (TProfile*)list->FindObject("Second_FlowPro_ImDtheta_LYZ");
+
+    fSecondImDtheta = (TProfile*)fSecondRunList->FindObject("Second_FlowPro_ImDtheta_LYZ");
     fHistList->Add(fSecondImDtheta);
-    fFirstr0theta = (TProfile*)list->FindObject("First_FlowPro_r0theta_LYZ");
+    
+    fFirstr0theta = (TProfile*)fSecondRunList->FindObject("First_FlowPro_r0theta_LYZ");
     fHistList->Add(fFirstr0theta);
+
+    //warnings
+    if (!fSecondReDtheta) {cout<<"fSecondReDtheta is NULL!"<<endl; }
+    if (!fSecondImDtheta) {cout<<"fSecondImDtheta is NULL!"<<endl; }
+    if (!fFirstr0theta)   {cout<<"fFirstr0theta is NULL!"<<endl; }
+
   }
 
-
-  fCommonHists = new AliFlowCommonHist("LYZEP");
-  fHistList->Add(fCommonHists->GetHistMultOrig());
-  fHistList->Add(fCommonHists->GetHistMultInt());
-  fHistList->Add(fCommonHists->GetHistMultDiff());
-  fHistList->Add(fCommonHists->GetHistPtInt());
-  fHistList->Add(fCommonHists->GetHistPtDiff());
-  fHistList->Add(fCommonHists->GetHistPhiInt());
-  fHistList->Add(fCommonHists->GetHistPhiDiff());
-  fHistList->Add(fCommonHists->GetHistEtaInt());
-  fHistList->Add(fCommonHists->GetHistEtaDiff());
-  fHistList->Add(fCommonHists->GetHistProMeanPtperBin());
-  fHistList->Add(fCommonHists->GetHistQ());
-
-  fCommonHistsRes = new AliFlowCommonHistResults("LYZEP"); 
-  fHistList->Add(fCommonHistsRes->GetHistDiffFlow()); 
-  fHistList->Add(fCommonHistsRes->GetHistChi()); 
-  fHistList->Add(fCommonHistsRes->GetHistIntFlow()); 
-
+  fCommonHists = new AliFlowCommonHist("AliFlowCommonHistLYZEP");
+  fHistList->Add(fCommonHists);
   
+  fCommonHistsRes = new AliFlowCommonHistResults("AliFlowCommonHistResultsLYZEP"); 
+  fHistList->Add(fCommonHistsRes); 
+    
   Int_t iNbinsPt = AliFlowCommonConstants::GetNbinsPt();
   Double_t  dPtMin = AliFlowCommonConstants::GetPtMin();	     
   Double_t  dPtMax = AliFlowCommonConstants::GetPtMax();
@@ -154,6 +142,11 @@ void AliFlowAnalysisWithLYZEventPlane::Init() {
   fHistProWr->SetXTitle("Q");
   fHistProWr->SetYTitle("Wr");
   fHistList->Add(fHistProWr);
+
+  fHistQsumforChi = new TH1F("Flow_QsumforChi_LYZEP","Flow_QsumforChi_LYZEP",3,-1.,2.);
+  fHistQsumforChi->SetXTitle("Qsum.X , Qsum.Y, Q2sum");
+  fHistQsumforChi->SetYTitle("value");
+  fHistList->Add(fHistQsumforChi);
 
   fHistDeltaPhi = new TH1F("Flow_DeltaPhi_LYZEP","Flow_DeltaPhi_LYZEP",100,0.,3.14);
   fHistDeltaPhi->SetXTitle("DeltaPhi");
@@ -186,6 +179,7 @@ void AliFlowAnalysisWithLYZEventPlane::Make(AliFlowEventSimple* anEvent, AliFlow
 
     //get the Q vector from the FlowEvent
     AliFlowVector vQ = anEvent->GetQ(); 
+    if (vQ.X()== 0. && vQ.Y()== 0. ) { cout<<"Q vector is NULL!"<<endl; }
     //Weight with the multiplicity
     Double_t dQX = 0.;
     Double_t dQY = 0.;
@@ -194,11 +188,15 @@ void AliFlowAnalysisWithLYZEventPlane::Make(AliFlowEventSimple* anEvent, AliFlow
       dQY = vQ.Y()/vQ.GetMult();
     } else {cerr<<"vQ.GetMult() is zero!"<<endl; }
     vQ.Set(dQX,dQY);
+    //cout<<"vQ("<<dQX<<","<<dQY<<")"<<endl;
 
     //for chi calculation:
     *fQsum += vQ;
+    fHistQsumforChi->SetBinContent(1,fQsum->X());
+    fHistQsumforChi->SetBinContent(2,fQsum->Y());
     fQ2sum += vQ.Mod2();
-    cout<<"fQ2sum = "<<fQ2sum<<endl;
+    fHistQsumforChi->SetBinContent(3,fQ2sum);
+    //cout<<"fQ2sum = "<<fQ2sum<<endl;
 
     //call AliFlowLYZEventPlane::CalculateRPandW() here!
     aLYZEP->CalculateRPandW(vQ);
@@ -259,11 +257,19 @@ void AliFlowAnalysisWithLYZEventPlane::Finish() {
    
   //plot histograms etc. 
   cout<<"AliFlowAnalysisWithLYZEventPlane::Terminate()"<<endl;
-  //constands:
+  
+  //constants:
   Double_t  dJ01 = 2.405; 
   Int_t iNtheta = AliFlowLYZConstants::kTheta;
   Int_t iNbinsPt = AliFlowCommonConstants::GetNbinsPt();
-    
+  //set the event number
+  SetEventNumber((int)fCommonHists->GetHistMultOrig()->GetEntries());
+  //cout<<"number of events processed is "<<fEventNumber<<endl;
+  
+  //set the sum of Q vectors
+  fQsum->Set(fHistQsumforChi->GetBinContent(1),fHistQsumforChi->GetBinContent(2));
+  SetQ2sum(fHistQsumforChi->GetBinContent(3));  
+
   //calculate dV the mean of dVtheta
   Double_t  dVtheta = 0; 
   Double_t  dV = 0; 
@@ -334,33 +340,6 @@ void AliFlowAnalysisWithLYZEventPlane::Finish() {
     
   } //loop over b
 
-
-  cout<<"Making some plots to check the results:"<<endl<<endl;
-
-  TCanvas *canvas = new TCanvas("canvas","compare v2 vs pt",800,800);
-  canvas->cd();
-  fSecondVPt->SetLineColor(3);
-  fSecondVPt->SetLineWidth(2);
-  fSecondVPt->Draw();
-  fHistFlow = fCommonHistsRes->GetHistDiffFlow();
-  fHistFlow->Draw("SAME");
-  // draw the legend
-  TLegend *legend2 = new TLegend(0.6,0.65,0.88,0.85);
-  legend2->SetTextFont(72);
-  legend2->SetTextSize(0.04);
-  legend2->AddEntry(fSecondVPt,"stand. LYZ","lpe");
-  legend2->AddEntry(fHistFlow,"new LYZ with calculated errors","lpe");
-  legend2->Draw();
-   
-  TCanvas *canvas5 = new TCanvas("canvas5","phi and Delta Phi",800,600);
-  canvas5->Divide(3,1);
-  canvas5->cd(1); 
-  fHistDeltaPhi->Draw();
-  canvas5->cd(2); 
-  fHistPhiLYZ->Draw();
-  canvas5->cd(3);
-  fHistPhiEP->Draw();
-  	  
   cout<<".....finished"<<endl;
  }
 

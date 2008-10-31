@@ -25,6 +25,7 @@
 #include "TProfile.h"
 #include "TFile.h"
 #include "TComplex.h"
+#include "TList.h"
 
 #include "AliFlowVector.h"
 #include "AliFlowLYZConstants.h"
@@ -38,8 +39,7 @@ ClassImp(AliFlowLYZEventPlane)
   //-----------------------------------------------------------------------
   
 AliFlowLYZEventPlane::AliFlowLYZEventPlane():
-  fSecondRunFile(0),
-  fSecondRunFileName("noname.ESD"),
+  fSecondRunList(0),
   fWR(0),            
   fPsi(0),
   fSecondReDtheta(0),
@@ -55,7 +55,7 @@ AliFlowLYZEventPlane::AliFlowLYZEventPlane():
 AliFlowLYZEventPlane::~AliFlowLYZEventPlane() 
 {
   //destructor
-   
+  delete fSecondRunList;
 }
  
 
@@ -66,17 +66,17 @@ void AliFlowLYZEventPlane::Init()
   cout<<"---Lee Yang Zeros Event Plane Method---"<<endl;
 
   //input histograms
-  if (fSecondRunFile->IsZombie()){ //check if file exists
-    cout << "Error opening file, run first regular LYZ second run" << endl;
-    exit(-1);
-  } else if (fSecondRunFile->IsOpen()){
-    cout<<"----secondRunFile is open----"<<endl;
-    //get List
-    TList* list = (TList*)fSecondRunFile->Get("cobj1");
-    fSecondReDtheta = ( TProfile*)list->FindObject("Second_FlowPro_ReDtheta_LYZ");
-    fSecondImDtheta = ( TProfile*)list->FindObject("Second_FlowPro_ImDtheta_LYZ");
-    fFirstr0theta   = ( TProfile*)list->FindObject("First_FlowPro_r0theta_LYZ");
+  if (fSecondRunList) {
+    fSecondReDtheta = (TProfile*)fSecondRunList->FindObject("Second_FlowPro_ReDtheta_LYZ");
+    fSecondImDtheta = (TProfile*)fSecondRunList->FindObject("Second_FlowPro_ImDtheta_LYZ");
+    fFirstr0theta   = (TProfile*)fSecondRunList->FindObject("First_FlowPro_r0theta_LYZ");
+
+    //warnings
+    if (!fSecondReDtheta) {cout<<"fSecondReDtheta is NULL!"<<endl; }
+    if (!fSecondImDtheta) {cout<<"fSecondImDtheta is NULL!"<<endl; }
+    if (!fFirstr0theta)   {cout<<"fFirstr0theta is NULL!"<<endl; }
   }
+
 
 }
 
@@ -89,44 +89,47 @@ void AliFlowLYZEventPlane::CalculateRPandW(AliFlowVector aQ)
   Double_t dSinTerm = 0;
   TComplex cDtheta;
   TComplex cRatio;
-
-  for (Int_t theta=0;theta<iNtheta;theta++)	{
-    Double_t dTheta = ((float)theta/iNtheta)*TMath::Pi()/2;  
-    //Calculate Qtheta 
-    Double_t dQtheta = aQ.X()*cos(2*dTheta)+aQ.Y()*sin(2*dTheta);  //get Qtheta from Q vector
-            
-    //get R0
-    Double_t dR0 = fFirstr0theta->GetBinContent(theta+1); 
-    //cerr<<"dR0 = "<<dR0<<endl;
-
-    //get Dtheta
-    Double_t dReDtheta = fSecondReDtheta->GetBinContent(theta+1);
-    //cerr<<"dReDtheta = "<<dReDtheta<<endl;
-    Double_t dImDtheta = fSecondImDtheta->GetBinContent(theta+1);
-    //cerr<<"dImDtheta = "<<dImDtheta<<endl;
-    cDtheta(dReDtheta,dImDtheta);
-    
-    TComplex cExpo(0.,dR0*dQtheta);                  //Complex number: 0 +(i r0 Qtheta)
-    if (cDtheta.Rho()!=0.) { cRatio =(TComplex::Exp(cExpo))/cDtheta; } //(e^(i r0 Qtheta))/Dtheta
-    else { cRatio(0.,0.); }
-      
-    //sum over theta
-    dCosTerm += cRatio.Re() * TMath::Cos(2*dTheta);    //Re{(e^(i r0 Qtheta))/Dtheta } cos(2 theta)  
-    dSinTerm += cRatio.Re() * TMath::Sin(2*dTheta);    //Re{(e^(i r0 Qtheta))/Dtheta } sin(2 theta)
-      
-  }//loop over theta
-
-  //average over theta
-  dCosTerm /= iNtheta;  
-  dSinTerm /= iNtheta;
-  //cerr<<"cosTerm & sinTerm are: "<<dCosTerm<<" & "<<dSinTerm<<endl;
-    
-  //calculate fWR
-  fWR = TMath::Sqrt(dCosTerm*dCosTerm + dSinTerm*dSinTerm);
-        
-  //calculate fRP
-  fPsi = 0.5*TMath::ATan2(dSinTerm,dCosTerm);   //takes care of the signs correctly!
-  if (fPsi < 0.) { fPsi += TMath::Pi(); }       //to shift distribution from (-pi/2 to pi/2) to (0 to pi)
   
+  if (aQ.Mod()==0.) { cout<<"Q vector is NULL"<<endl; }
+  else {
+    for (Int_t theta=0;theta<iNtheta;theta++)	{
+      Double_t dTheta = ((float)theta/iNtheta)*TMath::Pi()/2;  
+      //Calculate Qtheta 
+      Double_t dQtheta = aQ.X()*cos(2*dTheta)+aQ.Y()*sin(2*dTheta);  //get Qtheta from Q vector
+            
+      //get R0
+      Double_t dR0 = fFirstr0theta->GetBinContent(theta+1); 
+      //cerr<<"dR0 = "<<dR0<<endl;
+
+      //get Dtheta
+      Double_t dReDtheta = fSecondReDtheta->GetBinContent(theta+1);
+      //cerr<<"dReDtheta = "<<dReDtheta<<endl;
+      Double_t dImDtheta = fSecondImDtheta->GetBinContent(theta+1);
+      //cerr<<"dImDtheta = "<<dImDtheta<<endl;
+      cDtheta(dReDtheta,dImDtheta);
+    
+      TComplex cExpo(0.,dR0*dQtheta);                  //Complex number: 0 +(i r0 Qtheta)
+      if (cDtheta.Rho()!=0.) { cRatio =(TComplex::Exp(cExpo))/cDtheta; } //(e^(i r0 Qtheta))/Dtheta
+      else { cRatio(0.,0.); }
+      
+      //sum over theta
+      dCosTerm += cRatio.Re() * TMath::Cos(2*dTheta);    //Re{(e^(i r0 Qtheta))/Dtheta } cos(2 theta)  
+      dSinTerm += cRatio.Re() * TMath::Sin(2*dTheta);    //Re{(e^(i r0 Qtheta))/Dtheta } sin(2 theta)
+      
+    }//loop over theta
+
+    //average over theta
+    dCosTerm /= iNtheta;  
+    dSinTerm /= iNtheta;
+    //cerr<<"cosTerm & sinTerm are: "<<dCosTerm<<" & "<<dSinTerm<<endl;
+    
+    //calculate fWR
+    fWR = TMath::Sqrt(dCosTerm*dCosTerm + dSinTerm*dSinTerm);
+        
+    //calculate fRP
+    fPsi = 0.5*TMath::ATan2(dSinTerm,dCosTerm);   //takes care of the signs correctly!
+    if (fPsi < 0.) { fPsi += TMath::Pi(); }       //to shift distribution from (-pi/2 to pi/2) to (0 to pi)
+  }
+
 }
 

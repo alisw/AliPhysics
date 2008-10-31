@@ -18,6 +18,7 @@
 #include "TTree.h"
 #include "TFile.h"
 #include "TList.h"
+#include "TProfile.h"
 
 
 class AliAnalysisTask;
@@ -36,6 +37,10 @@ class AliAnalysisTask;
 
 #include "AliAnalysisTaskLeeYangZeros.h"
 #include "AliFlowEventSimpleMaker.h"
+#include "AliFlowCommonHist.h"
+#include "AliFlowCommonHistResults.h"
+#include "AliFlowLYZHist1.h"
+#include "AliFlowLYZHist2.h"
 #include "AliFlowAnalysisWithLeeYangZeros.h"
 
 // AliAnalysisTaskLeeYangZeros:
@@ -45,7 +50,7 @@ class AliAnalysisTask;
 ClassImp(AliAnalysisTaskLeeYangZeros)
 
 //________________________________________________________________________
-AliAnalysisTaskLeeYangZeros::AliAnalysisTaskLeeYangZeros(const char *name, Bool_t firstrun) : 
+AliAnalysisTaskLeeYangZeros::AliAnalysisTaskLeeYangZeros(const char *name, Bool_t firstrun, Bool_t on) : 
   AliAnalysisTask(name, ""), 
   fESD(0),
   fAOD(0),
@@ -56,8 +61,11 @@ AliAnalysisTaskLeeYangZeros::AliAnalysisTaskLeeYangZeros(const char *name, Bool_
   fEventMaker(0),
   fFirstRunFile(0),
   fListHistos(NULL),
-  fFirstRunLYZ(firstrun), //set boolean for firstrun to initial value
-  fUseSumLYZ(kTRUE)       //set boolean for use sum to initial value
+  fQAInt(NULL),
+  fQADiff(NULL),
+  fFirstRunLYZ(firstrun),  //set boolean for firstrun to initial value
+  fUseSumLYZ(kTRUE),       //set boolean for use sum to initial value
+  fQA(on)
 {
   // Constructor
   cout<<"AliAnalysisTaskLeeYangZeros::AliAnalysisTaskLeeYangZeros(const char *name)"<<endl;
@@ -68,10 +76,13 @@ AliAnalysisTaskLeeYangZeros::AliAnalysisTaskLeeYangZeros(const char *name, Bool_
   if (!firstrun) DefineInput(1, TList::Class()); //for second loop 
   // Output slot #0 writes into a TList container
   DefineOutput(0, TList::Class());  
-}
+  if(on) {
+    DefineOutput(1, TList::Class());
+    DefineOutput(2, TList::Class()); }  
+} 
 
 
-/*
+
 //________________________________________________________________________
 AliAnalysisTaskLeeYangZeros::AliAnalysisTaskLeeYangZeros() :  
   fESD(0),
@@ -83,15 +94,16 @@ AliAnalysisTaskLeeYangZeros::AliAnalysisTaskLeeYangZeros() :
   fEventMaker(0),
   fFirstRunFile(0),
   fListHistos(NULL),
+  fQAInt(NULL),
+  fQADiff(NULL),
   fFirstRunLYZ(kTRUE), //set boolean for firstrun to initial value
-  fUseSumLYZ(kTRUE)    //set boolean for use sum to initial value
+  fUseSumLYZ(kTRUE),    //set boolean for use sum to initial value
+  fQA(kFALSE)
 {
   // Constructor
-  cout<<"AliAnalysisTaskLeeYangZeros::AliAnalysisTaskLeeYangZeros(const char *name)"<<endl;
+  cout<<"AliAnalysisTaskLeeYangZeros::AliAnalysisTaskLeeYangZeros()"<<endl;
 
 }
-
-*/
 
 //________________________________________________________________________
 AliAnalysisTaskLeeYangZeros::~AliAnalysisTaskLeeYangZeros()
@@ -100,8 +112,6 @@ AliAnalysisTaskLeeYangZeros::~AliAnalysisTaskLeeYangZeros()
   //destructor
 
 }
-
-
 
 //________________________________________________________________________
 void AliAnalysisTaskLeeYangZeros::ConnectInputData(Option_t *) 
@@ -177,19 +187,17 @@ void AliAnalysisTaskLeeYangZeros::CreateOutputObjects()
 
   // Get data from input slot 1
   if (GetNinputs() == 2) {                   //if there are two input slots
-    fFirstRunFile = (TFile*)GetInputData(1);
-    cerr<<"fFirstRunFile ("<<fFirstRunFile<<")"<<endl;
-    if (fFirstRunFile) { cerr<<"fFirstRunFile -> IsOpen() = "<<fFirstRunFile -> IsOpen()<<endl;}
-    else { cerr<<"fFirstRunFile has a NULL pointer!!"<<endl; exit(0);}
-    fLyz -> SetFirstRunFile(fFirstRunFile);
+    TList* pFirstRunList = (TList*)GetInputData(1);
+    if (pFirstRunList) {
+      fLyz -> SetFirstRunList(pFirstRunList);
+    } else { cout<<"No first run List!"<<endl; exit(0); }
   }
   
-  fLyz-> Init();
+  fLyz -> Init();
 
   if (fLyz->GetHistList()) {
-	fLyz->GetHistList()->Print();
-	fListHistos = fLyz->GetHistList();
-	fListHistos->Print();
+    fListHistos = fLyz->GetHistList();
+    fListHistos->Print();
   }
   else {Printf("ERROR: Could not retrieve histogram list"); }
   
@@ -288,33 +296,122 @@ void AliAnalysisTaskLeeYangZeros::Exec(Option_t *)
     delete fEvent;
   }
   
-  //PostData(0,fListHistos); //here for CAF
-
+  PostData(0,fListHistos); //here for CAF
+  if (fQA) {
+    PostData(1,fQAInt);
+    PostData(2,fQADiff); }
 }      
 
 //________________________________________________________________________
 void AliAnalysisTaskLeeYangZeros::Terminate(Option_t *) 
 {
   // Called once at the end of the query
-  if (GetNinputs() == 2) { 
-    cerr<<"fFirstRunFile -> IsOpen() = "<<fFirstRunFile -> IsOpen()<<endl;
-  }
-  
-  fLyz->Finish();           //remove for CAF
-  PostData(0,fListHistos);  //remove for CAF
-  
 
-  //print histogram list:
-  TList* fOutListHistos = (TList*)GetOutputData(0);
+  AliFlowAnalysisWithLeeYangZeros* fLyzTerm = new AliFlowAnalysisWithLeeYangZeros() ;
+  fLyzTerm -> SetFirstRun(GetFirstRunLYZ());   //set first run true or false
+  fLyzTerm -> SetUseSum(GetUseSumLYZ());       //set use sum true or false
+   
+  fListHistos = (TList*)GetOutputData(0);
   cout << "histogram list in Terminate" << endl;
-  if (fOutListHistos) {
-    //fOutListHistos->Print();  //gives error for secondrun??
-  }	
-  else {
-    cout << "histgram list pointer is empty" << endl;}
+  if (fListHistos) {
+    //Get the common histograms from the output list
+    AliFlowCommonHist *pCommonHist = dynamic_cast<AliFlowCommonHist*> 
+      (fListHistos->FindObject("AliFlowCommonHistLYZ"));
 
-  //delete fLyz;
-  //delete fEventMaker;
+    AliFlowCommonHistResults *pCommonHistResults = dynamic_cast<AliFlowCommonHistResults*> 
+      (fListHistos->FindObject("AliFlowCommonHistResultsLYZ"));
+
+    TProfile* pHistProR0theta = dynamic_cast<TProfile*> 
+      (fListHistos->FindObject("First_FlowPro_r0theta_LYZ"));
+
+    TH1F* pHistQsumforChi = dynamic_cast<TH1F*> 
+      (fListHistos->FindObject("Flow_QsumforChi_LYZEP"));
+
+    //define histograms for first and second run
+    TProfile* pHistProVtheta = 0;
+    TProfile* pHistProReDenom = 0;
+    TProfile* pHistProImDenom = 0;
+    TProfile* pHistProReDtheta = 0;
+    TProfile* pHistProImDtheta = 0;
+    TProfile* pHistProVeta = 0;
+    TProfile* pHistProVPt  = 0;
+
+    AliFlowLYZHist1 *pLYZHist1[5] = {0};      //array of pointers to AliFlowLYZHist1
+    AliFlowLYZHist2 *pLYZHist2[5] = {0};      //array of pointers to AliFlowLYZHist2
+
+    if (GetFirstRunLYZ()) { //for firstrun
+      //Get the histograms from the output list
+      for(Int_t theta = 0;theta<5;theta++){
+	TString name = "AliFlowLYZHist1_"; 
+	name += theta;
+	pLYZHist1[theta] = dynamic_cast<AliFlowLYZHist1*> 
+	  (fListHistos->FindObject(name));
+      }
+      pHistProVtheta = dynamic_cast<TProfile*> 
+	  (fListHistos->FindObject("First_FlowPro_Vtheta_LYZ"));
+
+      //Set the histogram pointers and call Finish()
+      if (pCommonHist && pCommonHistResults && pLYZHist1 && 
+	  pHistProVtheta && pHistProR0theta && pHistQsumforChi ) {
+	fLyzTerm->SetCommonHists(pCommonHist);
+	fLyzTerm->SetCommonHistsRes(pCommonHistResults);
+	fLyzTerm->SetHist1(pLYZHist1);
+	fLyzTerm->SetHistProVtheta(pHistProVtheta);
+	fLyzTerm->SetHistProR0theta(pHistProR0theta);
+	fLyzTerm->SetHistQsumforChi(pHistQsumforChi);
+	fLyzTerm->Finish();
+	PostData(0,fListHistos);
+      } else { 
+	cout<<"WARNING: Histograms needed to run Finish() firstrun are not accessable!"<<endl; 
+      }
+    } else { //for second run
+      //Get the histograms from the output list
+      for(Int_t theta = 0;theta<5;theta++){
+	TString name = "AliFlowLYZHist2_"; 
+	name += theta;
+	pLYZHist2[theta] = dynamic_cast<AliFlowLYZHist2*> 
+	  (fListHistos->FindObject(name));
+      }
+      
+      pHistProReDenom = dynamic_cast<TProfile*> 
+	(fListHistos->FindObject("Second_FlowPro_ReDenom_LYZ"));
+      pHistProImDenom = dynamic_cast<TProfile*> 
+	(fListHistos->FindObject("Second_FlowPro_ImDenom_LYZ"));
+
+      pHistProReDtheta = dynamic_cast<TProfile*> 
+	(fListHistos->FindObject("Second_FlowPro_ReDtheta_LYZ"));
+      pHistProImDtheta = dynamic_cast<TProfile*> 
+	(fListHistos->FindObject("Second_FlowPro_ImDtheta_LYZ"));
+
+      pHistProVeta = dynamic_cast<TProfile*> 
+	(fListHistos->FindObject("Second_FlowPro_Veta_LYZ"));
+      pHistProVPt = dynamic_cast<TProfile*> 
+	(fListHistos->FindObject("Second_FlowPro_VPt_LYZ"));
+
+      //Set the histogram pointers and call Finish()
+      if (pCommonHist && pCommonHistResults && pLYZHist2 && pHistProR0theta && 
+	  pHistProReDenom && pHistProImDenom && pHistProVeta && pHistProVPt) {
+	fLyzTerm->SetCommonHists(pCommonHist);
+	fLyzTerm->SetCommonHistsRes(pCommonHistResults);
+	fLyzTerm->SetHist2(pLYZHist2);
+	fLyzTerm->SetHistProR0theta(pHistProR0theta);
+	fLyzTerm->SetHistProReDenom(pHistProReDenom);
+	fLyzTerm->SetHistProImDenom(pHistProImDenom);
+	fLyzTerm->SetHistProReDtheta(pHistProReDtheta);
+	fLyzTerm->SetHistProImDtheta(pHistProImDtheta);
+	fLyzTerm->SetHistProVeta(pHistProVeta);
+	fLyzTerm->SetHistProVPt(pHistProVPt);
+	fLyzTerm->SetHistQsumforChi(pHistQsumforChi);
+	fLyzTerm->Finish();
+	PostData(0,fListHistos);
+      } else { 
+	cout<<"WARNING: Histograms needed to run Finish() secondrun are not accessable!"<<endl; 
+      }
+    }
+          
+    fListHistos->Print(); 
+  }	
+  else { cout << "histogram list pointer is empty" << endl;}
 
   cout<<".....finished"<<endl;
 }

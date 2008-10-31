@@ -12,7 +12,7 @@
 class TH1D;
 class TCollection;
 class TList;
-
+class TBrowser;
 
 // Description: Class to organise histograms for Flow 
 //              by the LeeYangZeros method in the first run.
@@ -20,27 +20,32 @@ class TList;
 //              in the generating function.
 
 
-class AliFlowLYZHist1: public TObject  {
+class AliFlowLYZHist1: public TNamed  {
 
  public:
 
   AliFlowLYZHist1();                          //default constructor
-  AliFlowLYZHist1(Int_t theta);               //constructor
+  AliFlowLYZHist1(Int_t theta, const char *name ,const char *title = "AliFlowLYZHist1");               //constructor
   virtual  ~AliFlowLYZHist1();                //destructor
   
+  Bool_t  IsFolder() const {return kTRUE;};
+  void Browse(TBrowser *b); 
+
   void Fill(Double_t f, TComplex c);          //fill the histograms
   TH1D* FillGtheta();                         //fills fHistGtheta
   Double_t GetR0();                           //get R0
   Double_t GetBinCenter(Int_t i);             //Get a bincentre of fHistGtheta
   Int_t GetNBins();                           //Gets Nbins
 
-  TH1D*     GetHistGtheta()  {return this->fHistGtheta;} ;
+  TH1D*     GetHistGtheta()      {return this->fHistGtheta;} ;
   TProfile* GetHistProReGtheta() {return this->fHistProReGtheta;} ;
   TProfile* GetHistProImGtheta() {return this->fHistProImGtheta;} ;
-  TList*    GetHistList()    {return this->fHistList;} ;  
+  TList*    GetHistList()        {return this->fHistList;} ;  
 
   virtual Double_t  Merge(TCollection *aList);  //merge function
-   
+  void Print(Option_t* option = "") const;      //method to print stats
+
+ 
 private:
 
   AliFlowLYZHist1(const AliFlowLYZHist1& aAnalysis);             //copy constructor
@@ -52,7 +57,7 @@ private:
   TList*    fHistList;               //list to hold all histograms  
 
 
-  ClassDef(AliFlowLYZHist1,0)        // macro for rootcint
+  ClassDef(AliFlowLYZHist1,1)        // macro for rootcint
     };
  
      

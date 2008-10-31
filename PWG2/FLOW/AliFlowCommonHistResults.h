@@ -9,17 +9,21 @@ class TH1F;
 class TH1D;
 class TCollection;
 class TList;
+class TBrowser;
 
 // AliFlowCommonHistResults:
 // Class to organize the common histograms for Flow Analysis
 // authors: N. van der Kolk (kolk@nikhef.nl) and A. Bilandzic (anteb@nikhef.nl)
 
-class AliFlowCommonHistResults : public TObject {
+class AliFlowCommonHistResults : public TNamed {
 
  public:
   AliFlowCommonHistResults();               //default constructor
-  AliFlowCommonHistResults(TString input);  //constructor
+  AliFlowCommonHistResults(const char *name,const char *title = "AliFlowCommonHist");  //constructor
   virtual ~AliFlowCommonHistResults();      //destructor
+
+  Bool_t  IsFolder() const {return kTRUE;};
+  void Browse(TBrowser *b); 
 
   //make fill methods here
   Bool_t FillIntegratedFlow(Double_t aV, Double_t anError);                //fill fHistIntFlow
@@ -33,6 +37,7 @@ class AliFlowCommonHistResults : public TObject {
   TList*   GetHistList()                   {return fHistList;} ;  
 
   virtual Double_t  Merge(TCollection *aList);  //merge function
+  void Print(Option_t* option = "") const;      //method to print stats
 
  private:
 
@@ -44,7 +49,7 @@ class AliFlowCommonHistResults : public TObject {
   TH1D*     fHistChi;          //resolution
   TList*    fHistList;         //list to hold all histograms
 
-  ClassDef(AliFlowCommonHistResults,0)                 // macro for rootcint
+  ClassDef(AliFlowCommonHistResults,1)                 // macro for rootcint
 };
  
 #endif

@@ -61,8 +61,7 @@ ClassImp(AliFlowAnalysisWithLeeYangZeros)
     fDoubleLoop(kFALSE),
     fDebug(kFALSE),
     fHistList(NULL),
-    firstRunFileName(0),
-    firstRunFile(NULL),
+    fFirstRunList(NULL),
     fHistProVtheta(NULL),
     fHistProVeta(NULL),
     fHistProVPt(NULL),
@@ -71,6 +70,7 @@ ClassImp(AliFlowAnalysisWithLeeYangZeros)
     fHistProImDenom(NULL),
     fHistProReDtheta(NULL),
     fHistProImDtheta(NULL),
+    fHistQsumforChi(NULL),
     fCommonHists(NULL),
     fCommonHistsRes(NULL)
   
@@ -79,6 +79,7 @@ ClassImp(AliFlowAnalysisWithLeeYangZeros)
   if (fDebug) cout<<"****AliFlowAnalysisWithLeeYangZeros::AliFlowAnalysisWithLeeYangZeros default constructor****"<<endl;
 
   fHistList = new TList();
+  fFirstRunList = new TList();
 
   for(Int_t i = 0;i<5;i++)
     {
@@ -99,6 +100,8 @@ ClassImp(AliFlowAnalysisWithLeeYangZeros)
    if (fDebug) cout<<"****~AliFlowAnalysisWithLeeYangZeros****"<<endl;
    delete fQsum;
    delete fHistList;
+   delete fFirstRunList;
+   
  }
  
  //-----------------------------------------------------------------------
@@ -117,27 +120,18 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Init()
   Double_t  dPtMax = AliFlowCommonConstants::GetPtMax();
   Double_t  dEtaMin = AliFlowCommonConstants::GetEtaMin();	     
   Double_t  dEtaMax = AliFlowCommonConstants::GetEtaMax();
-  
-  
+    
   //for control histograms
-  fCommonHists = new AliFlowCommonHist("LYZ");
-  //fHistList->Add(fCommonHists->GetHistList());
-  fHistList->Add(fCommonHists->GetHistMultOrig());
-  fHistList->Add(fCommonHists->GetHistMultInt());
-  fHistList->Add(fCommonHists->GetHistMultDiff());
-  fHistList->Add(fCommonHists->GetHistPtInt());
-  fHistList->Add(fCommonHists->GetHistPtDiff());
-  fHistList->Add(fCommonHists->GetHistPhiInt());
-  fHistList->Add(fCommonHists->GetHistPhiDiff());
-  fHistList->Add(fCommonHists->GetHistEtaInt());
-  fHistList->Add(fCommonHists->GetHistEtaDiff());
-  fHistList->Add(fCommonHists->GetHistProMeanPtperBin());
-  fHistList->Add(fCommonHists->GetHistQ());
-  fCommonHistsRes = new AliFlowCommonHistResults("LYZ");
-  //fHistList->Add(fCommonHistsRes->GetHistList()); 
-  fHistList->Add(fCommonHistsRes->GetHistDiffFlow()); 
-  fHistList->Add(fCommonHistsRes->GetHistChi()); 
-  fHistList->Add(fCommonHistsRes->GetHistIntFlow()); 
+  fCommonHists = new AliFlowCommonHist("AliFlowCommonHistLYZ");
+  fHistList->Add(fCommonHists);
+  
+  fCommonHistsRes = new AliFlowCommonHistResults("AliFlowCommonHistResultsLYZ");
+  fHistList->Add(fCommonHistsRes); 
+  
+  fHistQsumforChi = new TH1F("Flow_QsumforChi_LYZEP","Flow_QsumforChi_LYZEP",3,-1.,2.);
+  fHistQsumforChi->SetXTitle("Qsum.X , Qsum.Y, Q2sum");
+  fHistQsumforChi->SetYTitle("value");
+  fHistList->Add(fHistQsumforChi);
 
   //for first loop over events 
   if (fFirstRun){
@@ -153,13 +147,12 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Init()
 
     //class AliFlowLYZHist1 defines the histograms: fHistProGtheta, fHistProReGtheta, fHistProImGtheta, fHistProR0theta
     for (Int_t theta=0;theta<iNtheta;theta++) {  
-      fHist1[theta]=new AliFlowLYZHist1(theta);
-      //fHistList->Add(fHist1[theta]->GetHistList() );
-      fHistList->Add(fHist1[theta]->GetHistGtheta() );
-      fHistList->Add(fHist1[theta]->GetHistProReGtheta() );
-      fHistList->Add(fHist1[theta]->GetHistProImGtheta() );
+      TString name = "AliFlowLYZHist1_";
+      name += theta;
+      fHist1[theta]=new AliFlowLYZHist1(theta, name);
+      fHistList->Add(fHist1[theta]);
     }
-     
+         
   }
   //for second loop over events 
   else {
@@ -195,29 +188,19 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Init()
 
     //class AliFlowLYZHist2 defines the histograms: 
     for (Int_t theta=0;theta<iNtheta;theta++)  {  
-      fHist2[theta]=new AliFlowLYZHist2(theta);
-      //fHistList->Add(fHist2[theta]->GetHistList() );
-      fHistList->Add(fHist2[theta]->GetHistProReNumer() );
-      fHistList->Add(fHist2[theta]->GetHistProImNumer() );
-      fHistList->Add(fHist2[theta]->GetHistProReNumerPt() );
-      fHistList->Add(fHist2[theta]->GetHistProImNumerPt() );
-      //fHistList->Add(fHist2[theta]->GetHistProReNumer2D() ); //gives error in compilation 
-      //fHistList->Add(fHist2[theta]->GetHistProImNumer2D() ); //gives error in compilation
+      TString name = "AliFlowLYZHist2_";
+      name += theta;
+      fHist2[theta]=new AliFlowLYZHist2(theta,name);
+      fHistList->Add(fHist2[theta]);
     }
-      
-    //read hists from first run file
-    //firstRunFile = new TFile("fof_flowLYZAnal_firstrun.root","READ");  //default is read
-    if (firstRunFile->IsZombie()){ //check if file exists
-      cout << "Error opening file, run first with fFirstrun = kTRUE" << endl;
-      exit(-1);
-    } else if (firstRunFile->IsOpen()){
-      cout<<"----firstRunFile is open----"<<endl<<endl;
-      TList* list = (TList*)firstRunFile->Get("cobj1");
-      if (!list) {cout<<"list is NULL pointer!"<<endl;}
-      fHistProR0theta  = (TProfile*)list->FindObject("First_FlowPro_r0theta_LYZ");
+     
+    //read histogram fHistProR0theta from the first run list
+    if (fFirstRunList) {
+      fHistProR0theta  = (TProfile*)fFirstRunList->FindObject("First_FlowPro_r0theta_LYZ");
       if (!fHistProR0theta) {cout<<"fHistProR0theta has a NULL pointer!"<<endl;}
       fHistList->Add(fHistProR0theta);
-    }    
+    } else { cout<<"list is NULL pointer!"<<endl; }
+
   }
    
 
@@ -268,7 +251,14 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Make(AliFlowEventSimple* anEvent)
   //define variables for both runs
   Double_t  dJ01 = 2.405; 
   Int_t iNtheta = AliFlowLYZConstants::kTheta;
-  
+  //set the event number
+  SetEventNumber((int)fCommonHists->GetHistMultOrig()->GetEntries());
+  //cout<<"number of events processed is "<<fEventNumber<<endl;
+
+  //set the sum of Q vectors
+  fQsum->Set(fHistQsumforChi->GetBinContent(1),fHistQsumforChi->GetBinContent(2));
+  SetQ2sum(fHistQsumforChi->GetBinContent(3));  
+    
   if (fFirstRun){
     Double_t  dR0 = 0;
     Double_t  dVtheta = 0; 
@@ -317,7 +307,7 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Make(AliFlowEventSimple* anEvent)
     // recalculate statistical errors on integrated flow
     //combining 5 theta angles to 1 relative error BP eq. 89
     Double_t dRelErr2comb = 0.;
-    Int_t iEvts = fEventNumber;
+    Int_t iEvts = fEventNumber; 
     for (Int_t theta=0;theta<iNtheta;theta++){
       Double_t dTheta = ((double)theta/iNtheta)*TMath::Pi(); 
       Double_t dApluscomb = TMath::Exp((dJ01*dJ01)/(2*dChi*dChi)*
@@ -331,7 +321,6 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Make(AliFlowEventSimple* anEvent)
     }
     dRelErr2comb /= iNtheta;
     Double_t dRelErrcomb = TMath::Sqrt(dRelErr2comb);
-    cout<<"dRelErrcomb = "<<dRelErrcomb<<endl;         
 
     //copy content of profile into TH1D and add error
     Double_t dv2pro = dV;   //in the case that fv is equal to fV
@@ -359,8 +348,7 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Make(AliFlowEventSimple* anEvent)
     Int_t iNbinsEta = AliFlowCommonConstants::GetNbinsEta();
 
     Double_t dEta, dPt, dReRatio, dVeta, dVPt;
-        
-     
+         
     Double_t dR0 = 0.; 
     Double_t dVtheta = 0.;
     Double_t dV = 0.;
@@ -388,8 +376,7 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Make(AliFlowEventSimple* anEvent)
       //} //loop over theta
       
       cDenom(dReDenom,dImDenom);
-	 
-
+      
       //for new method and use by others (only with the sum generating function):
       if (fUseSum) {
 	dR0 = fHistProR0theta->GetBinContent(theta+1); 
@@ -498,12 +485,7 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Make(AliFlowEventSimple* anEvent)
       //fill TH1D
       fCommonHistsRes->FillDifferentialFlow(b, dv2pro, dErrdifcomb); 
     } //loop over bins b
- 
-         
-    //close the first run file 
-    //firstRunFile->Close(); //gives error when writing to TList
-
-     
+          
   } //secondrun
    
   cout<<"----LYZ analysis finished....----"<<endl<<endl;
@@ -544,9 +526,13 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Make(AliFlowEventSimple* anEvent)
     dQY = vQ.Y()/vQ.GetMult();
   }
   vQ.Set(dQX,dQY);
+
   //for chi calculation:
   *fQsum += vQ;
+  fHistQsumforChi->SetBinContent(1,fQsum->X());
+  fHistQsumforChi->SetBinContent(2,fQsum->Y());
   fQ2sum += vQ.Mod2();
+  fHistQsumforChi->SetBinContent(3,fQ2sum);
   //cerr<<"fQ2sum = "<<fQ2sum<<endl;
 
   for (Int_t theta=0;theta<iNtheta;theta++)
@@ -615,10 +601,14 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Make(AliFlowEventSimple* anEvent)
     dQX = vQ.X()/vQ.GetMult(); 
     dQY = vQ.Y()/vQ.GetMult();
   }
-  vQ.Set(dQX,dQY);               
+  vQ.Set(dQX,dQY); 
+              
   //for chi calculation:
   *fQsum += vQ;
+  fHistQsumforChi->SetBinContent(1,fQsum->X());
+  fHistQsumforChi->SetBinContent(2,fQsum->Y());
   fQ2sum += vQ.Mod2();
+  fHistQsumforChi->SetBinContent(3,fQ2sum);
 
   for (Int_t theta=0;theta<iNtheta;theta++)
     {

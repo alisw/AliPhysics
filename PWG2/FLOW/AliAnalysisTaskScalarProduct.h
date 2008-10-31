@@ -22,7 +22,7 @@ class TList;
 class AliAnalysisTaskScalarProduct : public AliAnalysisTask {
  public:
   AliAnalysisTaskScalarProduct();
-  AliAnalysisTaskScalarProduct(const char *name);
+  AliAnalysisTaskScalarProduct(const char *name,Bool_t QAon = kFALSE);
   virtual ~AliAnalysisTaskScalarProduct();
   
   virtual void   ConnectInputData(Option_t *);
@@ -37,20 +37,30 @@ class AliAnalysisTaskScalarProduct : public AliAnalysisTask {
   AliCFManager* GetCFManager1()           {return this->fCFManager1; }
   void SetCFManager2(AliCFManager* cfmgr) {this->fCFManager2 = cfmgr; } 
   AliCFManager* GetCFManager2()           {return this->fCFManager2; }
+  void          SetQAList1(TList* list)   {this->fQAInt = list; }
+  TList*        GetQAList1()              {return this->fQAInt; }
+  void          SetQAList2(TList* list)   {this->fQADiff = list; }
+  TList*        GetQAList2()              {return this->fQADiff; }
+  void          SetQAOn(Bool_t kt)        {this->fQA = kt; }
+  Bool_t        GetQAOn()                 {return this->fQA; }
 
  private:
 
   AliAnalysisTaskScalarProduct(const AliAnalysisTaskScalarProduct& aAnalysisTask);
   AliAnalysisTaskScalarProduct& operator=(const AliAnalysisTaskScalarProduct& aAnalysisTask); 
 
-  AliESDEvent *fESD;                      // ESD object
-  AliAODEvent *fAOD;                      // AOD object
+  AliESDEvent*  fESD;                     // ESD object
+  AliAODEvent*  fAOD;                     // AOD object
   AliFlowAnalysisWithScalarProduct* fSP;  // analysis object
   AliFlowEventSimpleMaker* fEventMaker;   // FlowEventSimple maker object
-  TString fAnalysisType;                  // can be MC, ESD or AOD
+  TString       fAnalysisType;            // can be MC, ESD or AOD
   AliCFManager* fCFManager1;              // correction framework manager
   AliCFManager* fCFManager2;              // correction framework manager
-  TList  *fListHistos;                    // collection of output
+  TList*        fListHistos;              // collection of output
+  TList*        fQAInt;                   // QA histogram list
+  TList*        fQADiff;                  // QA histogram list
+
+  Bool_t fQA;                             // flag to set the filling of the QA hostograms
 
   ClassDef(AliAnalysisTaskScalarProduct, 1); // example of analysis
 };
