@@ -599,13 +599,12 @@ Int_t AliAltroRawStream::ReadRCUTrailer(Int_t &index, Int_t trailerSize)
 
   if (index < 4) {
     fRawReader->AddMajorErrorLog(kRCUTrailerErr,Form("tr=%d raw=%d bytes",
-						     trailerSize*4,
+						     fRCUTrailerSize,
 						     fRawReader->GetDataSize()));
     AliWarning(Form("Invalid trailer size found (%d bytes) ! The size is bigger than the raw data size (%d bytes)!",
-		    trailerSize*4,
+		    fRCUTrailerSize,
 		    fRawReader->GetDataSize()));
   }
-  fRCUTrailerSize = trailerSize*4;
   fRCUTrailerData = fData + index;
 
   Int_t position = Get32bitWord(index);
