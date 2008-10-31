@@ -7,7 +7,7 @@
 // LYZEP = Lee Yang Zeroes Event Plane
 // CUM   = Cumulants
 // MCEP  = Flow calculated from the real MC event plane (only for simulated data)
-const TString method = "SP";
+const TString method = "LYZ1";
 
 
 //analysis type can be ESD, AOD, MC, ESDMC0, ESDMC1
@@ -49,7 +49,7 @@ const Int_t maxnsigmatovertex2 = 3;
 //void runProofFlow(const Char_t* data="/PWG2/pulvir/PDC08_pythia10TeV_ESD", Int_t nRuns=100, Int_t offset=0) {
 //void runProofFlow(const Char_t* data="/PWG2/mvala/pp_09_run82xxT_ESD", Int_t nRuns=100, Int_t offset=0) {
 //void runProofFlow(const Char_t* data="/PWG2/pulvir/PDC08_pythia10TeV_MC", Int_t nRuns=100, Int_t offset=0) {
-void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_midcentral", Int_t nRuns=-1, Int_t offset=0) {
+void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_c2030", Int_t nRuns=-1, Int_t offset=0) {
 //  void runProofFlow(const Char_t* data="/PWG2/nkolk/myDataSet", Int_t nRuns=-1, Int_t offset=0) {
 
 
