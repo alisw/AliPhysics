@@ -24,7 +24,7 @@ Bool_t gShowTRD = kFALSE;
 void visscan_init()
 {
   TEveUtil::LoadMacro("alieve_init.C");
-  alieve_init(".", -1);
+  alieve_init(".", -1, 0, 0, 0, 0, kFALSE, kTRUE, kFALSE, kFALSE);
 
   AliEveTrackFitter* fitter = new AliEveTrackFitter();
   gEve->AddToListTree(fitter, 1);

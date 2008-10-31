@@ -32,14 +32,21 @@ ClassImp(AliEveKineTools)
 
 namespace {
 
-  typedef std::map<Int_t, TEveTrack*> TrackMap_t;
+  // Map to store label-to-track association.
+  //
+  // multimap is used as there are cases when initial particles (in
+  // particular resonances) are not assigned proper status-codes
+  // and can thus be found several times in the eve-track-list.
+
+  typedef std::multimap<Int_t, TEveTrack*>                 TrackMap_t;
+  typedef std::multimap<Int_t, TEveTrack*>::const_iterator TrackMap_ci;
 
   void MapTracks(TrackMap_t& map, TEveElement* cont, Bool_t recurse)
   {
     TEveElement::List_i i = cont->BeginChildren();
     while (i != cont->EndChildren()) {
       TEveTrack* track = dynamic_cast<TEveTrack*>(*i);
-      map[track->GetLabel()] = track;
+      map.insert(std::make_pair(track->GetLabel(), track));
       if (recurse)
         MapTracks(map, track, recurse);
       ++i;
@@ -110,7 +117,7 @@ void AliEveKineTools::SetTrackReferences(TEveElement* cont, TTree* treeTR, Bool_
     treeTR->GetEntry(te);
 
     Int_t last_label = -1;
-    TrackMap_t::iterator iter = map.end();
+    std::pair<TrackMap_ci, TrackMap_ci> range;
     Int_t nArrEntries = arr->GetEntriesFast();
 
     // printf("tree-entry %d, n-arr-entries %d\n", te, nArrEntries);
@@ -131,13 +138,13 @@ void AliEveKineTools::SetTrackReferences(TEveElement* cont, TTree* treeTR, Bool_
 
       if (label != last_label)
       {
-        iter       = map.find(label);
+        range      = map.equal_range(label);
         last_label = label;
       }
 
-      if (iter != map.end())
+      for (TrackMap_ci i = range.first; i != range.second; ++i)
       {
-        iter->second->AddPathMark
+	i->second->AddPathMark
           (TEvePathMark(isRef ? TEvePathMark::kReference : TEvePathMark::kDecay,
                         TEveVector(atr->X(),  atr->Y(),  atr->Z()),
                         TEveVector(atr->Px(), atr->Py(), atr->Pz()),
