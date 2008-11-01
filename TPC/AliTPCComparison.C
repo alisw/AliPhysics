@@ -40,11 +40,13 @@
   #include "AliTPCClustersRow.h"
   #include "AliTPCcluster.h"
   #include "AliTPCLoader.h"
+
+  #include "AliCDBManager.h"
+  #include "AliTPCcalibDB.h"
 #endif
 
 Int_t GoodTracksTPC(const Char_t *dir=".");
 
-extern AliRun *gAlice;
 extern TBenchmark *gBenchmark;
 extern TROOT *gROOT;
 
@@ -373,12 +375,6 @@ Int_t AliTPCComparison
 
 
 Int_t GoodTracksTPC(const Char_t *dir) {
-   if (gAlice) { 
-       delete gAlice->GetRunLoader();
-       delete gAlice;//if everything was OK here it is already NULL
-       gAlice = 0x0;
-   }
-
    Char_t fname[100];
    sprintf(fname,"%s/galice.root",dir);
 
@@ -411,14 +407,17 @@ Int_t GoodTracksTPC(const Char_t *dir) {
       return 3;
    } 
 
-   rl->CdGAFile();
-   AliTPCParamSR *digp=(AliTPCParamSR*)gDirectory->Get("75x40_100x60_150x60");
+
+   AliCDBManager *man=AliCDBManager::Instance();
+   man->SetDefaultStorage("local://$ALICE_ROOT");
+   man->SetRun(0);
+   AliTPCParamSR *digp=
+   (AliTPCParamSR*)(AliTPCcalibDB::Instance()->GetParameters());
    if (!digp) { 
-     ::Error("AliTPCHits2Digits.C","TPC parameters have not been found !");
+     ::Error("AliTPCComparison.C","TPC parameters have not been found !");
      delete rl;
      return 4; 
    }
-   TPC->SetParam(digp);
 
    Int_t nrow_up=digp->GetNRowUp();
    Int_t nrows=digp->GetNRowLow()+nrow_up;
