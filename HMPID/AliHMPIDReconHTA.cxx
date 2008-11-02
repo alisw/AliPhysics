@@ -505,14 +505,14 @@ void AliHMPIDReconHTA::FunMinPhot(Int_t &/* */,Double_t* /* */,Double_t &f,Doubl
     Int_t nClAccStep1 = nClAcc;
     nClAcc = 0;
     Double_t meanCkov1=0;
-    Double_t meanCkov2=0;
+    Double_t meanCkov3=0;
     for(Int_t i=0;i<nClTot;i++) {
       
       if(!(pRecHTA->ClCk(i))) continue;
       thetaCer = pRecHTA->PhotTheta(i);
       if(TMath::Abs(thetaCer-meanCkov)<2*rms) {
         meanCkov1 += thetaCer;
-        meanCkov2 += thetaCer*thetaCer;
+        meanCkov3 += thetaCer*thetaCer;
         nClAcc++;
       } else pRecHTA->SetClCk(i,kFALSE);
     }
@@ -526,7 +526,7 @@ void AliHMPIDReconHTA::FunMinPhot(Int_t &/* */,Double_t* /* */,Double_t &f,Doubl
     }
       
     meanCkov1/=nClAcc;
-    Double_t rms2 = (meanCkov2 - meanCkov*meanCkov*nClAcc)/nClAcc;
+    Double_t rms2 = (meanCkov3 - meanCkov*meanCkov*nClAcc)/nClAcc;
     AliLog::Instance();
     if(nClAcc!=nClAccStep1) pRecHTA->SetFitStatus(kTRUE); else pRecHTA->SetFitStatus(kFALSE);
     
