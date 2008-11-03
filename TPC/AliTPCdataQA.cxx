@@ -182,7 +182,7 @@ AliTPCdataQA::AliTPCdataQA(const AliTPCdataQA &ped) : /*FOLD00*/
 }
 
 //_____________________________________________________________________
-AliTPCdataQA::AliTPCdataQA(TMap *config) : /*FOLD00*/  
+AliTPCdataQA::AliTPCdataQA(const TMap *config) : /*FOLD00*/  
   TH1F("TPCRAW","TPCRAW",100,0,100),
   fFirstTimeBin(60),
   fLastTimeBin(1000),

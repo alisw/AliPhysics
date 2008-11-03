@@ -26,7 +26,7 @@ class AliTPCdataQA : public TH1F {
 public:
   AliTPCdataQA();
   AliTPCdataQA(const AliTPCdataQA &ped);
-  AliTPCdataQA(TMap *config);
+  AliTPCdataQA(const TMap *config);
   virtual ~AliTPCdataQA();
 
   AliTPCdataQA& operator = (const  AliTPCdataQA &source);
