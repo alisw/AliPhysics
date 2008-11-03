@@ -1,3 +1,33 @@
+/////////////////////////////////////////////////////////////////////////////////
+//
+// HOW TO USE THIS MACRO:
+//
+// With this macro several flow analysis can be run.
+// SP    = Scalar Product                (for PbPb or pp)
+// LYZ1  = Lee Yang Zeroes first run     (for PbPb)
+// LYZ2  = Lee Yang Zeroes second run    (for PbPb)
+// LYZEP = Lee Yang Zeroes Event Plane   (for PbPb)
+// CUM   = Cumulants  WARNING: THIS MACRO IS NOT YET TESTED FOR THE OPTION "CUM"
+// MCEP  = Flow calculated from the real MC event plane (for PbPb only)
+//
+// The LYZ analysis should be done in the following order;
+// LYZ1 -> LYZ2 -> LYZEP,
+// because LYZ2 depends on the outputfile of LYZ1 and LYZEP on the outputfile
+// of LYZ2.
+//
+// The MCEP method is a reference method. 
+// It can only be run when MC information (kinematics.root & galice.root file) 
+// is available in which the reaction plane is stored.
+//
+// One can run on ESD, AOD or MC.
+// Additional options are ESDMC0, ESDMC1. In these options the ESD and MC 
+// information is combined. Tracks are selected in the ESD, the PID information 
+// is taken from the MC (perfect PID). For ESDMC0 the track kinematics is taken 
+// from the ESD and for ESDMC1 it is taken from the MC information.
+//
+///////////////////////////////////////////////////////////////////////////////////
+
+
 //RUN SETTINGS
 
 //Flow analysis method can be:
@@ -44,12 +74,9 @@ const Int_t maxnsigmatovertex2 = 3;
 
 //ESD (pp)
 //void runProofFlow(const Char_t* data="/COMMON/COMMON/LHC08c11_10TeV_0.5T", Int_t nRuns=-1, Int_t offset=0) {
-
-//AOD
-//void runProofFlow(const Char_t* data="/PWG2/pulvir/PDC08_pythia10TeV_ESD", Int_t nRuns=100, Int_t offset=0) {
-//void runProofFlow(const Char_t* data="/PWG2/mvala/pp_09_run82xxT_ESD", Int_t nRuns=100, Int_t offset=0) {
-//void runProofFlow(const Char_t* data="/PWG2/pulvir/PDC08_pythia10TeV_MC", Int_t nRuns=100, Int_t offset=0) {
+//ESD (therminator)
 void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_c2030", Int_t nRuns=-1, Int_t offset=0) {
+//AOD
 //  void runProofFlow(const Char_t* data="/PWG2/nkolk/myDataSet", Int_t nRuns=-1, Int_t offset=0) {
 
 
