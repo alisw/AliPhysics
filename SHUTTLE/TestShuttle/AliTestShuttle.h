@@ -46,8 +46,8 @@ class AliTestShuttle : public AliShuttleInterface
     virtual TList* GetFileSources(Int_t system, const char* detector, const char* id = 0);
     virtual TList* GetFileIDs(Int_t system, const char* detector, const char* source);
     virtual const char* GetRunParameter(const char* key);
-    virtual const UInt_t GetStartTimeDCSQuery();
-    virtual const UInt_t GetEndTimeDCSQuery();
+    virtual UInt_t GetStartTimeDCSQuery();
+    virtual UInt_t GetEndTimeDCSQuery();
     virtual AliCDBEntry* GetFromOCDB(const char* detector, const AliCDBPath& path);
     virtual const char* GetRunType();
     virtual Bool_t GetHLTStatus() {return fHLTStatus;}
