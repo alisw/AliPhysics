@@ -3,11 +3,34 @@ TChain* CreateESDChain(const char* aDataDir = "ESDfiles.txt", Int_t aRuns = 10, 
 TChain* CreateAODChain(const char* aDataDir = "ESDfiles.txt", Int_t aRuns = 10, Int_t offset = 0) ;
 void LookupWrite(TChain* chain, const char* target) ;
 
-//////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
 //
-// WARNING: THIS MACRO IS NOT TESTED FOR THE OPTION "CUM"
+// HOW TO USE THIS MACRO:
 //
-//////////////////////////////////////////////////////////
+// With this macro several flow analysis can be run.
+// SP    = Scalar Product                (for PbPb or pp)
+// LYZ1  = Lee Yang Zeroes first run     (for PbPb)
+// LYZ2  = Lee Yang Zeroes second run    (for PbPb)
+// LYZEP = Lee Yang Zeroes Event Plane   (for PbPb)
+// CUM   = Cumulants  WARNING: THIS MACRO IS NOT YET TESTED FOR THE OPTION "CUM"
+// MCEP  = Flow calculated from the real MC event plane (for PbPb only)
+//
+// The LYZ analysis should be done in the following order;
+// LYZ1 -> LYZ2 -> LYZEP,
+// because LYZ2 depends on the outputfile of LYZ1 and LYZEP on the outputfile
+// of LYZ2.
+//
+// The MCEP method is a reference method. 
+// It can only be run when MC information (kinematics.root & galice.root file) is available
+// in which the reaction plane is stored.
+//
+// One can run on ESD, AOD or MC.
+// Additional options are ESDMC0, ESDMC1. In these options the ESD and MC 
+// information is combined. Tracks are selected in the ESD, the PID information 
+// is taken from the MC (perfect PID). For ESDMC0 the track kinematics is taken 
+// from the ESD and for ESDMC1 it is taken from the MC information.
+//
+///////////////////////////////////////////////////////////////////////////////////
 
 
 //SETTING THE ANALYSIS
@@ -23,7 +46,7 @@ const TString method = "SP";
 
 //Type of analysis can be:
 // ESD, AOD, MC, ESDMC0, ESDMC1
-const TString type = "AOD";
+const TString type = "MC";
 
 //Bolean to fill/not fill the QA histograms
 Bool_t QA = kTRUE;    
