@@ -660,7 +660,7 @@ const char* AliTestShuttle::GetTriggerConfiguration()
 	return NULL;
 }
 //______________________________________________________________________________________________
-const UInt_t AliTestShuttle::GetStartTimeDCSQuery()
+UInt_t AliTestShuttle::GetStartTimeDCSQuery()
 {
 	// Return Start Time for the DCS query
 	//
@@ -669,7 +669,7 @@ const UInt_t AliTestShuttle::GetStartTimeDCSQuery()
 	return fTimeCreated-fDCSQueryOffset;
 }
 //______________________________________________________________________________________________
-const UInt_t AliTestShuttle::GetEndTimeDCSQuery()
+UInt_t AliTestShuttle::GetEndTimeDCSQuery()
 {
 	// Return End Time for the DCS query
 	//
