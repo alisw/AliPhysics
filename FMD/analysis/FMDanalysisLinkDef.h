@@ -33,6 +33,7 @@
 #pragma link C++ class AliFMDAnalysisTaskSharing+;
 #pragma link C++ class AliFMDAnalysisTaskDensity+;
 #pragma link C++ class AliFMDAnalysisTaskBackgroundCorrection+;
+#pragma link C++ class AliFMDAnalysisTaskCollector+;
 #else
 # error Not for compilation 
 #endif
