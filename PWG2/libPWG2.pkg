@@ -1,0 +1,8 @@
+SRCS:=  
+     
+HDRS:= $(SRCS:.cxx=.h)
+
+DHDR:= PWG2LinkDef.h
+
+EINCLUDE:=  
+
