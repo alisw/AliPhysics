@@ -20,10 +20,14 @@ class TGraphErrors;
 
 class AliTPCcalibAlign:public AliTPCcalibBase {
 public:
-  enum HistoType {kY=0, kZ =1, kPhi=2, kTheta=3};
-  enum FitType{ k6=0, k9=1, k12};
+  enum HistoType {kY=0, kZ =1, kPhi=2, kTheta=3, 
+		  kYPhi=4, kZTheta=5, 
+		  kYz=6,kZz=7,kPhiZ=8,kThetaZ=9};
+  enum FitType{ k6=0, k9=1, k12=2};
   AliTPCcalibAlign();
   AliTPCcalibAlign(const Text_t *name, const Text_t *title);
+  AliTPCcalibAlign(const AliTPCcalibAlign &align);
+  //
   virtual ~AliTPCcalibAlign();
   virtual void Process(AliTPCseed *track);
   virtual void Analyze();
@@ -73,10 +77,20 @@ private:
   TLinearFitter* GetOrMakeFitter12(Int_t s1,Int_t s2);
   TLinearFitter* GetOrMakeFitter9(Int_t s1,Int_t s2);
   TLinearFitter* GetOrMakeFitter6(Int_t s1,Int_t s2);
-  TObjArray fDphiHistArray;    // array of residual histograms  phi
-  TObjArray fDthetaHistArray;  // array of residual histograms  theta
-  TObjArray fDyHistArray;      // array of residual histograms  y
-  TObjArray fDzHistArray;      // array of residual histograms  z
+  TObjArray fDphiHistArray;    // array of residual histograms  phi      -kPhi
+  TObjArray fDthetaHistArray;  // array of residual histograms  theta    -kTheta
+  TObjArray fDyHistArray;      // array of residual histograms  y        -kY
+  TObjArray fDzHistArray;      // array of residual histograms  z        -kZ
+  //
+  TObjArray fDyPhiHistArray;      // array of residual histograms  y     -kYPhi
+  TObjArray fDzThetaHistArray;    // array of residual histograms  z-z   -kZTheta
+  //
+  TObjArray fDphiZHistArray;      // array of residual histograms  phi   -kPhiz
+  TObjArray fDthetaZHistArray;    // array of residual histograms  theta -kThetaz
+  TObjArray fDyZHistArray;        // array of residual histograms  y     -kYz
+  TObjArray fDzZHistArray;        // array of residual histograms  z     -kZz
+  //
+  //
   TObjArray fFitterArray12;    // array of fitters
   TObjArray fFitterArray9;     // array of fitters
   TObjArray fFitterArray6;     // array of fitters

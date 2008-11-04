@@ -92,9 +92,10 @@
   AliTPCcalibAlign * align = ( AliTPCcalibAlign *)array->FindObject("alignTPC");
   //
   //
+  align->EvalFitters();
   align->MakeTree("alignTree.root");
-  TFile f("alignTree.root");
-  TTree * tree = (TTree*)f.Get("Align");
+  TFile falignTree("alignTree.root");
+  TTree * treeAlign = (TTree*)falignTree.Get("Align");
   
 
 */
@@ -107,6 +108,7 @@
 #include "AliExternalTrackParam.h"
 #include "AliTPCTracklet.h"
 #include "TH1D.h"
+#include "TH2F.h"
 #include "TVectorD.h"
 #include "TTreeStream.h"
 #include "TFile.h"
@@ -126,10 +128,18 @@ using namespace std;
 ClassImp(AliTPCcalibAlign)
 
 AliTPCcalibAlign::AliTPCcalibAlign()
-  :  fDphiHistArray(72*72),
+  :  AliTPCcalibBase(),
+     fDphiHistArray(72*72),
      fDthetaHistArray(72*72),
      fDyHistArray(72*72),
      fDzHistArray(72*72),
+     //
+     fDyPhiHistArray(72*72),      // array of residual histograms  y     -kYPhi
+     fDzThetaHistArray(72*72),    // array of residual histograms  z-z   -kZTheta
+     fDphiZHistArray(72*72),      // array of residual histograms  phi   -kPhiz
+     fDthetaZHistArray(72*72),    // array of residual histograms  theta -kThetaz
+     fDyZHistArray(72*72),        // array of residual histograms  y     -kYz
+     fDzZHistArray(72*72),        // array of residual histograms  z     -kZz     
      fFitterArray12(72*72),
      fFitterArray9(72*72),
      fFitterArray6(72*72)
@@ -148,6 +158,13 @@ AliTPCcalibAlign::AliTPCcalibAlign(const Text_t *name, const Text_t *title)
    fDthetaHistArray(72*72),
    fDyHistArray(72*72),
    fDzHistArray(72*72),
+   fDyPhiHistArray(72*72),      // array of residual histograms  y     -kYPhi
+   fDzThetaHistArray(72*72),    // array of residual histograms  z-z   -kZTheta
+   fDphiZHistArray(72*72),      // array of residual histograms  phi   -kPhiz
+   fDthetaZHistArray(72*72),    // array of residual histograms  theta -kThetaz
+   fDyZHistArray(72*72),        // array of residual histograms  y     -kYz
+   fDzZHistArray(72*72),        // array of residual histograms  z     -kZz     
+
    fFitterArray12(72*72),
    fFitterArray9(72*72),
    fFitterArray6(72*72)
@@ -161,6 +178,85 @@ AliTPCcalibAlign::AliTPCcalibAlign(const Text_t *name, const Text_t *title)
     fPoints[i]=0;
   }
 }
+
+
+AliTPCcalibAlign::AliTPCcalibAlign(const AliTPCcalibAlign &align)
+  :AliTPCcalibBase(align),  
+   fDphiHistArray(align.fDphiHistArray),
+   fDthetaHistArray(align.fDthetaHistArray),
+   fDyHistArray(align.fDyHistArray),
+   fDzHistArray(align.fDzHistArray),
+   fDyPhiHistArray(align.fDyPhiHistArray),      // array of residual histograms  y     -kYPhi
+   fDzThetaHistArray(align.fDzThetaHistArray),    // array of residual histograms  z-z   -kZTheta
+   fDphiZHistArray(align.fDphiZHistArray),      // array of residual histograms  phi   -kPhiz
+   fDthetaZHistArray(align.fDthetaZHistArray),    // array of residual histograms  theta -kThetaz
+   fDyZHistArray(align.fDyZHistArray),        // array of residual histograms  y     -kYz
+   fDzZHistArray(align.fDzZHistArray),        // array of residual histograms  z     -kZz     
+   //
+   fFitterArray12(align.fFitterArray12),
+   fFitterArray9(align.fFitterArray9),
+   fFitterArray6(align.fFitterArray6)
+   
+{
+  //
+  // copy constructor - copy also the content
+  //
+  TH1 * his = 0;
+  TObjArray * arr0=0;
+  const TObjArray *arr1=0;
+  for (Int_t index =0; index<72*72; index++){
+    for (Int_t iarray=0;iarray<10; iarray++){
+      if (iarray==kY){
+	arr0 = &fDyHistArray;
+	arr1 = &align.fDyHistArray;
+      }
+      if (iarray==kZ){
+	arr0 = &fDzHistArray;
+	arr1 = &align.fDzHistArray;
+      }
+      if (iarray==kPhi){
+	arr0 = &fDphiHistArray;
+	arr1 = &align.fDphiHistArray;
+      }
+      if (iarray==kTheta){
+	arr0 = &fDthetaHistArray;
+	arr1 = &align.fDthetaHistArray;
+      }
+      if (iarray==kYz){
+	arr0 = &fDyZHistArray;
+	arr1 = &align.fDyZHistArray;
+      }
+      if (iarray==kZz){
+	arr0 = &fDzZHistArray;
+	arr1 = &align.fDzZHistArray;
+      }
+      if (iarray==kPhiZ){
+	arr0 = &fDphiZHistArray;
+	arr1 = &align.fDphiZHistArray;
+      }
+      if (iarray==kThetaZ){
+	arr0 = &fDthetaZHistArray;
+	arr1 = &align.fDthetaZHistArray;
+      }
+
+      if (iarray==kYPhi){
+	arr0 = &fDyPhiHistArray;
+	arr1 = &align.fDyPhiHistArray;
+      }
+      if (iarray==kZTheta){
+	arr0 = &fDzThetaHistArray;
+	arr1 = &align.fDzThetaHistArray;
+      }
+
+      if (arr1->At(index)) {
+	his = (TH1*)arr1->At(index)->Clone();
+	his->SetDirectory(0);
+	arr0->AddAt(his,index);
+      }    
+    }
+  }
+}
+
 
 AliTPCcalibAlign::~AliTPCcalibAlign() {
   //
@@ -301,6 +397,9 @@ void AliTPCcalibAlign::ProcessTracklets(const AliExternalTrackParam &tp1,
     //
     //
     TCut acut =  c1pt+cdy+cdz+cdphi+cdt+cd1pt;
+    chainalign->Draw(">>listEL",acut,"entryList");
+    TEntryList *elist = (TEntryList*)gDirectory->Get("listEL");
+    chainalign->SetEntryList(elist);
 
   */
   //   1. pt cut
@@ -731,7 +830,7 @@ TLinearFitter* AliTPCcalibAlign::GetOrMakeFitter12(Int_t s1,Int_t s2) {
   if (fitter) return fitter;
   //  fitter =new TLinearFitter(12,"x[0]++x[1]++x[2]++x[3]++x[4]++x[5]++x[6]++x[7]++x[8]++x[9]++x[10]++x[11]");
   fitter =new TLinearFitter(&f12,"");
-  fitter->StoreData(kFALSE);
+  fitter->StoreData(kTRUE);
   fFitterArray12.AddAt(fitter,GetIndex(s1,s2));	
   counter12++;
   if (GetDebugLevel()>0) cerr<<"Creating fitter12 "<<s1<<","<<s2<<"  :  "<<counter12<<endl;
@@ -748,7 +847,7 @@ TLinearFitter* AliTPCcalibAlign::GetOrMakeFitter9(Int_t s1,Int_t s2) {
   if (fitter) return fitter;
   //  fitter =new TLinearFitter(9,"x[0]++x[1]++x[2]++x[3]++x[4]++x[5]++x[6]++x[7]++x[8]");
   fitter =new TLinearFitter(&f9,"");
-  fitter->StoreData(kFALSE);
+  fitter->StoreData(kTRUE);
   fFitterArray9.AddAt(fitter,GetIndex(s1,s2));
   counter9++;
   if (GetDebugLevel()>0) cerr<<"Creating fitter12 "<<s1<<","<<s2<<"  :  "<<counter9<<endl;
@@ -767,7 +866,7 @@ TLinearFitter* AliTPCcalibAlign::GetOrMakeFitter6(Int_t s1,Int_t s2) {
   if (fitter) return fitter;
   //  fitter=new TLinearFitter(6,"x[0]++x[1]++x[2]++x[3]++x[4]++x[5]");
   fitter=new TLinearFitter(&f6,"");
-  fitter->StoreData(kFALSE);
+  fitter->StoreData(kTRUE);
   fFitterArray6.AddAt(fitter,GetIndex(s1,s2));
   counter6++;
   if (GetDebugLevel()>0) cerr<<"Creating fitter6 "<<s1<<","<<s2<<"  :  "<<counter6<<endl;
@@ -848,6 +947,16 @@ void AliTPCcalibAlign::FillHisto(const AliExternalTrackParam &tp1,
     GetHisto(kTheta,s1,s2,kTRUE)->Fill(TMath::ATan(tp1.GetTgl())-TMath::ATan(tp2.GetTgl()));
     GetHisto(kY,s1,s2,kTRUE)->Fill(tp1.GetY()-tp2.GetY());
     GetHisto(kZ,s1,s2,kTRUE)->Fill(tp1.GetZ()-tp2.GetZ());
+    //
+    GetHisto(kPhiZ,s1,s2,kTRUE)->Fill(tp1.GetZ(),TMath::ASin(tp1.GetSnp())-TMath::ASin(tp2.GetSnp()));    
+    GetHisto(kThetaZ,s1,s2,kTRUE)->Fill(tp1.GetZ(),TMath::ATan(tp1.GetTgl())-TMath::ATan(tp2.GetTgl()));
+    GetHisto(kYz,s1,s2,kTRUE)->Fill(tp1.GetZ(),tp1.GetY()-tp2.GetY());
+    GetHisto(kZz,s1,s2,kTRUE)->Fill(tp1.GetZ(),tp1.GetZ()-tp2.GetZ());
+    //
+    GetHisto(kYPhi,s1,s2,kTRUE)->Fill(tp1.GetSnp(),tp1.GetY()-tp2.GetY());
+    GetHisto(kZTheta,s1,s2,kTRUE)->Fill(tp1.GetTgl(),tp1.GetZ()-tp2.GetZ());
+
+
   }  
 }
 
@@ -871,6 +980,18 @@ TH1 * AliTPCcalibAlign::GetHisto(HistoType type, Int_t s1, Int_t s2, Bool_t forc
     histoArray = &fDphiHistArray; break;
   case kTheta:
     histoArray = &fDthetaHistArray; break;
+  case kYPhi:
+    histoArray = &fDyPhiHistArray; break;
+  case kZTheta:
+    histoArray = &fDzThetaHistArray; break;
+  case kYz:
+    histoArray = &fDyZHistArray; break;
+  case kZz:
+    histoArray = &fDzZHistArray; break;
+  case kPhiZ:
+    histoArray = &fDphiZHistArray; break;
+  case kThetaZ:
+    histoArray = &fDthetaZHistArray; break;
   }
   TH1 * histo= (TH1*)histoArray->At(GetIndex(s1,s2));
   if (histo) return histo;
@@ -899,6 +1020,43 @@ TH1 * AliTPCcalibAlign::GetHisto(HistoType type, Int_t s1, Int_t s2, Bool_t forc
     title<<"Theta Missalignment for sectors "<<s1<<" and "<<s2;
     histo =new TH1D(name.str().c_str(),title.str().c_str(),512,-0.01,0.01); // +/- 10 mrad
     break;
+    //
+    //
+  case kYPhi:
+    name<<"hist_yphi_"<<s1<<"_"<<s2;
+    title<<"Y Missalignment for sectors Phi"<<s1<<" and "<<s2;
+    histo =new TH2F(name.str().c_str(),title.str().c_str(),20,-1,1,128,-0.3,0.3); // +/- 3 mm
+    break;
+  case kZTheta:
+    name<<"hist_ztheta_"<<s1<<"_"<<s2;
+    title<<"Z Missalignment for sectors Theta"<<s1<<" and "<<s2;
+    histo = new TH2F(name.str().c_str(),title.str().c_str(),128,20,-1,1,-0.3,0.3); // +/- 3 mm
+    break;
+    //
+    //
+    //
+  case kYz:
+    name<<"hist_yz_"<<s1<<"_"<<s2;
+    title<<"Y Missalignment for sectors Z"<<s1<<" and "<<s2;
+    histo =new TH2F(name.str().c_str(),title.str().c_str(),20,-250,250,128,-0.3,0.3); // +/- 3 mm
+    break;
+  case kZz:
+    name<<"hist_zz_"<<s1<<"_"<<s2;
+    title<<"Z Missalignment for sectors Z"<<s1<<" and "<<s2;
+    histo = new TH2F(name.str().c_str(),title.str().c_str(),20,-250,250,128,-0.3,0.3); // +/- 3 mm
+    break;
+  case kPhiZ:
+    name<<"hist_phiz_"<<s1<<"_"<<s2;
+    title<<"Phi Missalignment for sectors Z"<<s1<<" and "<<s2;
+    histo =new TH2F(name.str().c_str(),title.str().c_str(),20,-250,250,128,-0.01,0.01); // +/- 10 mrad
+    break;
+  case kThetaZ:
+    name<<"hist_thetaz_"<<s1<<"_"<<s2;
+    title<<"Theta Missalignment for sectors Z"<<s1<<" and "<<s2;
+    histo =new TH2F(name.str().c_str(),title.str().c_str(),20,-250,250,128,-0.01,0.01); // +/- 10 mrad
+    break;
+
+
   }
   histo->SetDirectory(0);
   histoArray->AddAt(histo,GetIndex(s1,s2));
@@ -1027,67 +1185,82 @@ Long64_t AliTPCcalibAlign::Merge(TCollection* list) {
 
 void AliTPCcalibAlign::Add(AliTPCcalibAlign * align){
   //
-  // Add entry
+  // Add entry - used for merging of compoents
   //
-
   for (Int_t i=0; i<72;i++){
     for (Int_t j=0; j<72;j++){
+      if (align->fPoints[GetIndex(i,j)]==0) continue;
       fPoints[GetIndex(i,j)]+=align->fPoints[GetIndex(i,j)];
-
       //
-      // dy
-      TH1* hdy0 = GetHisto(kY,i,j);
-      TH1* hdy1 = align->GetHisto(kY,i,j);
-      if (hdy1){
-	if (hdy0) hdy0->Add(hdy1);
-	else {
-	  hdy0 = GetHisto(kY,i,j,kTRUE);
-	  hdy0->Add(hdy1);
-	}
-      }      
       //
-      // dz
-      TH1* hdz0 = GetHisto(kZ,i,j);
-      TH1* hdz1 = align->GetHisto(kZ,i,j);
-      if (hdz1){
-	if (hdz0) hdz0->Add(hdz1);
-	else {
-	  hdz0 = GetHisto(kZ,i,j,kTRUE);
-	  hdz0->Add(hdz1);
-	}
+      //
+      for (Int_t itype=0; itype<10; itype++){
+	TH1 * his0=0, *his1=0;
+	his0 = GetHisto((HistoType)itype,i,j);
+	his1 = align->GetHisto((HistoType)itype,i,j);
+	if (his1){
+	  if (his0) his0->Add(his1);
+	  else {
+	    his0 = GetHisto(kY,i,j,kTRUE);
+	    his0->Add(his1);
+	  }
+	}   	
       }
-      //
-      // dphi
-      TH1* hdphi0 = GetHisto(kPhi,i,j);
-      TH1* hdphi1 = align->GetHisto(kPhi,i,j);
-      if (hdphi1){
-	if (hdphi0) hdphi0->Add(hdphi1);
-	else {
-	  hdphi0 = GetHisto(kPhi,i,j,kTRUE);
-	  hdphi0->Add(hdphi1);
-	}
-      }      
-      //
-      // dtheta
-      TH1* hdTheta0 = GetHisto(kTheta,i,j);
-      TH1* hdTheta1 = align->GetHisto(kTheta,i,j);
-      if (hdTheta1){
-	if (hdTheta0) hdTheta0->Add(hdTheta1);
-	else {
-	  hdTheta0 = GetHisto(kTheta,i,j,kTRUE);
-	  hdTheta0->Add(hdTheta1);
-	}
-      }           
+    //   //
+//       // dy
+//       TH1* hdy0 = GetHisto(kY,i,j);
+//       TH1* hdy1 = align->GetHisto(kY,i,j);
+//       if (hdy1){
+// 	if (hdy0) hdy0->Add(hdy1);
+// 	else {
+// 	  hdy0 = GetHisto(kY,i,j,kTRUE);
+// 	  hdy0->Add(hdy1);
+// 	}
+//       }      
+//       //
+//       // dz
+//       TH1* hdz0 = GetHisto(kZ,i,j);
+//       TH1* hdz1 = align->GetHisto(kZ,i,j);
+//       if (hdz1){
+// 	if (hdz0) hdz0->Add(hdz1);
+// 	else {
+// 	  hdz0 = GetHisto(kZ,i,j,kTRUE);
+// 	  hdz0->Add(hdz1);
+// 	}
+//       }
+//       //
+//       // dphi
+//       TH1* hdphi0 = GetHisto(kPhi,i,j);
+//       TH1* hdphi1 = align->GetHisto(kPhi,i,j);
+//       if (hdphi1){
+// 	if (hdphi0) hdphi0->Add(hdphi1);
+// 	else {
+// 	  hdphi0 = GetHisto(kPhi,i,j,kTRUE);
+// 	  hdphi0->Add(hdphi1);
+// 	}
+//       }      
+//       //
+//       // dtheta
+//       TH1* hdTheta0 = GetHisto(kTheta,i,j);
+//       TH1* hdTheta1 = align->GetHisto(kTheta,i,j);
+//       if (hdTheta1){
+// 	if (hdTheta0) hdTheta0->Add(hdTheta1);
+// 	else {
+// 	  hdTheta0 = GetHisto(kTheta,i,j,kTRUE);
+// 	  hdTheta0->Add(hdTheta1);
+// 	}
+//       }           
     }
   }
   TLinearFitter *f0=0;
   TLinearFitter *f1=0;
   for (Int_t i=0; i<72;i++){
     for (Int_t j=0; j<72;j++){
+      if (align->fPoints[GetIndex(i,j)]==0) continue;
       //
       // fitter12
       f0 =  GetFitter12(i,j);
-      f1 =  GetFitter12(i,j);
+      f1 =  align->GetFitter12(i,j);
       if (f1){
 	if (f0) f0->Add(f1);
 	else {
@@ -1098,7 +1271,7 @@ void AliTPCcalibAlign::Add(AliTPCcalibAlign * align){
       //
       // fitter9
       f0 =  GetFitter9(i,j);
-      f1 =  GetFitter9(i,j);
+      f1 =  align->GetFitter9(i,j);
       if (f1){
 	if (f0) f0->Add(f1);
 	else {
@@ -1107,12 +1280,12 @@ void AliTPCcalibAlign::Add(AliTPCcalibAlign * align){
 	}
       }      
       f0 =  GetFitter6(i,j);
-      f1 =  GetFitter6(i,j);
+      f1 =  align->GetFitter6(i,j);
       if (f1){
 	if (f0) f0->Add(f1);
 	else {
 	  f0 = GetOrMakeFitter6(i,j);
-	  f0->Add(f1);
+	  f0->Add(f1);	 
 	}
       }   
     }
@@ -1131,6 +1304,22 @@ gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+")
 AliXRDPROOFtoolkit tool;
 TChain * chainTr = tool.MakeChain("align.txt","Track",0,10200);
 chainTr->Lookup();
+
+TCut c1pt("abs((tp1.fP[4]+tp2.fP[4])*0.5)<3"); // pt cut  - OK
+TCut cdy("abs(tp1.fP[0]-tp2.fP[0])<0.6");
+TCut cdz("abs(tp1.fP[1]-tp2.fP[1])<0.6");
+TCut cdphi("abs(tp1.fP[2]-tp2.fP[2])<0.02");
+TCut cdt("abs(tp1.fP[3]-tp2.fP[3])<0.02");
+TCut cd1pt("abs(tp1.fP[4]-tp2.fP[4])<0.3");    // delta 1/pt cut  -OK   
+//
+//
+TCut cutA =  c1pt+cdy+cdz+cdphi+cdt+cd1pt;
+chainTr->Draw(">>listEL",acut,"entryList");
+TEntryList *elist = (TEntryList*)gDirectory->Get("listEL");
+chainTr->SetEntryList(elist);
+
+
+
 
 
 
