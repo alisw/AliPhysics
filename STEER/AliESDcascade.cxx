@@ -190,6 +190,16 @@ void AliESDcascade::Copy(TObject &obj) const {
 
 }
 
+// Start with AliVParticle functions
+Double_t AliESDcascade::E() const {
+  //--------------------------------------------------------------------
+  // This gives the energy assuming the ChangeMassHypothesis was called
+  //--------------------------------------------------------------------
+  Double_t mass = TDatabasePDG::Instance()->GetParticle(fPdgCodeXi)->Mass();
+  return TMath::Sqrt(mass*mass+P()*P());
+}
+
+// Then the older functions
 Double_t AliESDcascade::ChangeMassHypothesis(Double_t &v0q, Int_t code) {
   //--------------------------------------------------------------------
   // This function changes the mass hypothesis for this cascade

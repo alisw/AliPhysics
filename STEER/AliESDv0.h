@@ -18,8 +18,9 @@
 #include <TPDGCode.h>
 #include "AliESDV0Params.h"
 #include "AliExternalTrackParam.h"
+#include "AliVParticle.h"
 
-class AliESDv0 : public TObject {
+class AliESDv0 : public AliVParticle {
 public:
   AliESDv0();
   AliESDv0(const AliExternalTrackParam &t1, Int_t i1,
@@ -30,6 +31,31 @@ public:
   AliESDv0& operator=(const AliESDv0&);
   virtual void Copy(TObject &obj) const;
 
+// Start with AliVParticle functions
+  virtual Double_t Px() const { return fNmom[0]+fPmom[0]; }
+  virtual Double_t Py() const { return fNmom[1]+fPmom[1]; }
+  virtual Double_t Pz() const { return fNmom[2]+fPmom[2]; }
+  virtual Double_t Pt() const { return TMath::Sqrt(Px()*Px()+Py()*Py()); }
+  virtual Double_t P()  const { 
+     return TMath::Sqrt(Px()*Px()+Py()*Py()+Pz()*Pz()); 
+  }
+  virtual Bool_t   PxPyPz(Double_t p[3]) const { p[0] = Px(); p[1] = Py(); p[2] = Pz(); return kTRUE; }
+  virtual Double_t Xv() const { return fPos[0]; }
+  virtual Double_t Yv() const { return fPos[1]; }
+  virtual Double_t Zv() const { return fPos[2]; }
+  virtual Bool_t   XvYvZv(Double_t x[3]) const { x[0] = Xv(); x[1] = Yv(); x[2] = Zv(); return kTRUE; }
+  virtual Double_t OneOverPt() const { return (Pt() != 0.) ? 1./Pt() : -999.; }
+  virtual Double_t Phi() const {return TMath::Pi()+TMath::ATan2(-Py(),-Px()); }
+  virtual Double_t Theta() const {return 0.5*TMath::Pi()-TMath::ATan(Pz()/(Pt()+1.e-13)); }
+  virtual Double_t E() const; // default is KOs but can be changed via ChangeMassHypothesis (defined in the .cxx)
+  virtual Double_t M() const { return GetEffMass(); }
+  virtual Double_t Eta() const { return 0.5*TMath::Log((P()+Pz())/(P()-Pz()+1.e-13)); }
+  virtual Double_t Y() const { return 0.5*TMath::Log((E()+Pz())/(E()-Pz()+1.e-13)); }
+  virtual Short_t  Charge() const { return 0; }
+  virtual Int_t    GetLabel() const { return -1; }  // temporary
+  virtual const Double_t *PID() const { return 0; } // return PID object ? (to be discussed!)
+
+  // Then the older functions
   Double_t ChangeMassHypothesis(Int_t code=kK0Short); 
 
   Int_t    GetPdgCode() const {return fPdgCode;}
@@ -110,7 +136,7 @@ protected:
   Double32_t   fPosCov[6];      // covariance matrix of the vertex position
   Double32_t   fNmom[3];        // momentum of the negative daughter (global)
   Double32_t   fPmom[3];        // momentum of the positive daughter (global)
-  Double32_t   fNormDCAPrim[2];  // normalize distance to the priary vertex CKBrev
+  Double32_t   fNormDCAPrim[2];  // normalize distance to the primary vertex CKBrev
   Double32_t   fRr;         //rec position of the vertex CKBrev
   Double32_t   fDistSigma; //sigma of distance CKBrev
   Double32_t        fChi2Before;   //chi2 of the tracks before V0 CKBrev

@@ -40,7 +40,7 @@ ClassImp(AliESDv0)
 const AliESDV0Params  AliESDv0::fgkParams;
 
 AliESDv0::AliESDv0() :
-  TObject(),
+  AliVParticle(),
   fParamN(),
   fParamP(),
   fEffMass(TDatabasePDG::Instance()->GetParticle(kK0Short)->Mass()),
@@ -82,7 +82,7 @@ AliESDv0::AliESDv0() :
 }
 
 AliESDv0::AliESDv0(const AliESDv0& v0) :
-  TObject(v0),
+  AliVParticle(v0),
   fParamN(v0.fParamN),
   fParamP(v0.fParamP),
   fEffMass(v0.fEffMass),
@@ -132,7 +132,7 @@ AliESDv0::AliESDv0(const AliESDv0& v0) :
 
 AliESDv0::AliESDv0(const AliExternalTrackParam &t1, Int_t i1,
                    const AliExternalTrackParam &t2, Int_t i2) :
-  TObject(),
+  AliVParticle(),
   fParamN(t1),
   fParamP(t2),
   fEffMass(TDatabasePDG::Instance()->GetParticle(kK0Short)->Mass()),
@@ -203,7 +203,7 @@ AliESDv0& AliESDv0::operator=(const AliESDv0 &v0){
   //--------------------------------------------------------------------
 
   if(this==&v0)return *this;
-  TObject::operator=(v0);
+  AliVParticle::operator=(v0);
   fParamN  = v0.fParamN;
   fParamP  = v0.fParamP;
   fEffMass = v0.fEffMass;
@@ -266,8 +266,16 @@ AliESDv0::~AliESDv0(){
   //--------------------------------------------------------------------
 }
 
+// Start with AliVParticle functions
+Double_t AliESDv0::E() const {
+  //--------------------------------------------------------------------
+  // This gives the energy assuming the ChangeMassHypothesis was called
+  //--------------------------------------------------------------------
+  Double_t mass = TDatabasePDG::Instance()->GetParticle(fPdgCode)->Mass();
+  return TMath::Sqrt(mass*mass+P()*P());
+}
 
-
+// Then the older functions
 Double_t AliESDv0::ChangeMassHypothesis(Int_t code) {
   //--------------------------------------------------------------------
   // This function changes the mass hypothesis for this V0

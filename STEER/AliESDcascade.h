@@ -35,6 +35,31 @@ public:
   AliESDcascade& operator=(const AliESDcascade&);
   virtual void Copy(TObject &obj) const;
 
+// Start with AliVParticle functions
+  virtual Double_t Px() const { return fNmom[0]+fPmom[0]+fBachMom[0]; }
+  virtual Double_t Py() const { return fNmom[1]+fPmom[1]+fBachMom[1]; }
+  virtual Double_t Pz() const { return fNmom[2]+fPmom[2]+fBachMom[2]; }
+  virtual Double_t Pt() const { return TMath::Sqrt(Px()*Px()+Py()*Py()); }
+  virtual Double_t P()  const { 
+     return TMath::Sqrt(Px()*Px()+Py()*Py()+Pz()*Pz()); 
+  }
+  virtual Bool_t   PxPyPz(Double_t p[3]) const { p[0] = Px(); p[1] = Py(); p[2] = Pz(); return kTRUE; }
+  virtual Double_t Xv() const { return fPosXi[0]; }
+  virtual Double_t Yv() const { return fPosXi[1]; }
+  virtual Double_t Zv() const { return fPosXi[2]; }
+  virtual Bool_t   XvYvZv(Double_t x[3]) const { x[0] = Xv(); x[1] = Yv(); x[2] = Zv(); return kTRUE; }
+  virtual Double_t OneOverPt() const { return (Pt() != 0.) ? 1./Pt() : -999.; }
+  virtual Double_t Phi() const {return TMath::Pi()+TMath::ATan2(-Py(),-Px()); }
+  virtual Double_t Theta() const {return 0.5*TMath::Pi()-TMath::ATan(Pz()/(Pt()+1.e-13)); }
+  virtual Double_t E() const; // default is Xis but can be changed via ChangeMassHypothesis (defined in the .cxx)
+  virtual Double_t M() const { return GetEffMassXi(); }
+  virtual Double_t Eta() const { return 0.5*TMath::Log((P()+Pz())/(P()-Pz()+1.e-13)); }
+  virtual Double_t Y() const { return 0.5*TMath::Log((E()+Pz())/(E()-Pz()+1.e-13)); }
+  virtual Short_t  Charge() const { return 0; }
+  virtual Int_t    GetLabel() const { return -1; }  // temporary
+  virtual const Double_t *PID() const { return 0; } // return PID object ? (to be discussed!)
+
+  // Then the older functions
   Double_t ChangeMassHypothesis(Double_t &v0q, Int_t code=kXiMinus); 
 
   Int_t    GetPdgCodeXi() const {return fPdgCodeXi;}
@@ -49,8 +74,8 @@ public:
   }
 
   Int_t    GetBindex() const {return fBachIdx;}
-  void     SetIndex(Int_t i) {fBachIdx=i;}        //for the consistensy with V0
-  Int_t    GetIndex() const {return GetBindex();} //for the consistensy with V0
+  void     SetIndex(Int_t i) {fBachIdx=i;}        //for the consistency with V0
+  Int_t    GetIndex() const {return GetBindex();} //for the consistency with V0
   void     SetDcaXiDaughters(Double_t rDcaXiDaughters=0.);
   Double_t GetDcaXiDaughters() const {return fDcaXiDaughters;}
   Double_t GetCascadeCosineOfPointingAngle(Double_t&, Double_t&, Double_t&) const;
