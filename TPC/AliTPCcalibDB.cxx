@@ -759,6 +759,22 @@ Float_t AliTPCcalibDB::GetGain(Int_t sector, Int_t row, Int_t pad){
   return calPad->GetCalROC(sector)->GetValue(row,pad);
 }
 
+
+AliGRPObject *AliTPCcalibDB::GetGRP(Int_t run){
+  //
+  // Get GRP object for given run 
+  //
+  AliGRPObject * grpRun = dynamic_cast<AliGRPObject *>((Instance()->fGRPArray).At(run));
+  if (!grpRun) {
+    Instance()->GetRunInformations(run);
+    grpRun = dynamic_cast<AliGRPObject *>(Instance()->fGRPArray.At(run));
+    if (!grpRun) return 0; 
+  }
+  return grpRun;
+}
+
+
+
 AliDCSSensor * AliTPCcalibDB::GetPressureSensor(Int_t run, Int_t type){
   //
   //

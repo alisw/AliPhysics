@@ -27,6 +27,7 @@ class AliTPCClusterParam;
 class AliDCSSensor;
 class AliDCSSensorArray;
 class AliTPCCalibVdrift;
+class AliGRPObject;
 //class AliCDBStorage;
 
 class AliTPCcalibDB : public TObject
@@ -53,6 +54,7 @@ class AliTPCcalibDB : public TObject
   AliTPCClusterParam *GetClusterParam(){ return fClusterParam;}
   //
   //
+  static AliGRPObject * GetGRP(Int_t run);
   static Float_t GetPressure(Int_t timeStamp, Int_t run, Int_t type=0);
   static Float_t GetValueGoofie(Int_t timeStamp, Int_t run, Int_t type);
   static Bool_t  GetTemperatureFit(Int_t timeStamp, Int_t run, Int_t side,TVectorD& fit);
