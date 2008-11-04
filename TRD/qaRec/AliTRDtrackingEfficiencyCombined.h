@@ -23,6 +23,9 @@ public:
   virtual void CreateOutputObjects();
   virtual void Exec(Option_t *);
   virtual void Terminate(Option_t *);
+	
+  virtual Bool_t PostProcess();
+	void GetRefFigure(Int_t ifig);
     
 private:
   AliTRDtrackingEfficiencyCombined(const AliTRDtrackingEfficiencyCombined &);
