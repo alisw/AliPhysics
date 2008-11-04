@@ -43,7 +43,7 @@ protected:
   Int_t  fRun;                          //!  current Run number
   Int_t  fEvent;                        //! current Event number
   Int_t  fTime;                         //!  current Time
-  Int_t  fTrigger;                      //! current trigger type
+  ULong64_t  fTrigger;                  //! current trigger mask
   Float_t fMagF;                        //! current magnetic field 
 private:
   Int_t  fDebugLevel;                   //  debug level
