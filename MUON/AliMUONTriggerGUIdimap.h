@@ -13,6 +13,7 @@
 
 class AliLoader;
 class AliMUONMCDataInterface;
+class AliMUONDigitStoreV1;
 class TGTransientFrame;
 class TObjArray;
 class TRootEmbeddedCanvas;
@@ -35,6 +36,8 @@ public:
  void SetLoader(AliLoader *loader) { fLoader = loader; };
  /// set the MC data interface
  void SetMCDataInterface(AliMUONMCDataInterface *mc) { fMCDataInterface = mc; };
+ /// set the digit store from raw data
+ void SetRawDigitStore(AliMUONDigitStoreV1 *ds) { fRawDigitStore = ds; };
 
  /// return info if the map is open
  Bool_t IsOn() const { return fIsOn; };
@@ -63,6 +66,7 @@ private:
 
   AliLoader   *fLoader;           ///< The MUON loader
   AliMUONMCDataInterface *fMCDataInterface;  ///< MC data interface
+  AliMUONDigitStoreV1 *fRawDigitStore;       ///< Raw data digit store
 
   TRootEmbeddedCanvas *fEc[kNMT]; ///< Canvases for drawing the digits
 
@@ -71,7 +75,7 @@ private:
 
   Bool_t fIsOn;                   ///< True if the map is open
 
-  ClassDef(AliMUONTriggerGUIdimap,1) //Trigger GUI utility class: digits maps of the trigger chambers
+  ClassDef(AliMUONTriggerGUIdimap,2) //Trigger GUI utility class: digits maps of the trigger chambers
    
 };
 

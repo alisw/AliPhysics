@@ -29,12 +29,16 @@ class AliStack;
 class AliLoader;
 class AliRunLoader;
 class AliCDBManager;
+class AliRawReader;
 class AliMUONCalibrationData;
 class AliMUONTriggerGUIboard;
 class AliMUONTriggerGUIdimap;
 class AliMUONTriggerElectronics;
 class AliMUONTriggerCrateStore;
 class AliMUONMCDataInterface;
+class AliMUONDigitStoreV2R;
+class AliMUONDigitStoreV1;
+class AliMUONTriggerStoreV1;
 
 class AliMUONTriggerGUI : public TObject
 {
@@ -49,9 +53,23 @@ public:
   void OpenBoard(Int_t id);
   void HandleMenu(Int_t id);
 
+  void CreateDigitStore();
+  void PrintDigitStore() const;
+  void ClearDigitStore();
+
+  void CreateTriggerStore();
+  void PrintTriggerStore() const;
+  void ClearTriggerStore();
+
+  void WriteTriggerRawData();
+
+  void FET(Int_t onoff);
+  void FETboard(Int_t ib, Int_t amp);
+
   /* Do functions */
 
-  void DoRunApply();
+  void DoRunGalApply();
+  void DoRunRawApply();
   void DoRunCancel();
   void DoControlClose();
   void DoCircuitCancel();
@@ -61,6 +79,11 @@ public:
   void DoPreviousEvent();
   void DoSkipToEvent();
   void DoErrorGUI(const Char_t *wt);
+  void DoFETRegRun(Int_t onoff);
+  void DoFETRegOnCancel();
+  void DoFETRegOffCancel();
+  void DoFETRegOnRun();
+  void DoFETRegOffRun();
 
   /* Close functions */
 
@@ -69,6 +92,8 @@ public:
   void CloseError() const;
   void CloseControl() const;
   void CloseCircuit() const;
+  void CloseFETRegOn() const;
+  void CloseFETRegOff() const;
 
 private:
     
@@ -92,7 +117,19 @@ private:
 
     kMCIRCUITOPEN,
 
-    kMTRIGGERDSET
+    kMFETON,
+    kMFETOFF,
+    kMFETREGON,
+    kMFETREGOFF,
+
+    kMDSTORE,
+    kMTSTORE,
+    kMDSTORECL,
+    kMTSTORECL,
+    kMDSTOREP,
+    kMTSTOREP,
+
+    kMTRAWDATA
 
   };
 
@@ -105,11 +142,15 @@ private:
   TGTextBuffer     *fTxtBuffer1;    ///< Path to the data (galice.root)
   TGTextBuffer     *fTxtBuffer2;    ///< Current event number
   TGTextBuffer     *fTxtCircuit;    ///< Circuit to open
+  TGTextBuffer     *fTxtFETRegOn;   ///< Regional crate to FET ON
+  TGTextBuffer     *fTxtFETRegOff;  ///< Regional crate to FET OFF
 
   TGTransientFrame *fRunInput;      ///< Run input window
   TGTransientFrame *fError;         ///< Error window
   TGTransientFrame *fControl;       ///< Run control window
   TGTransientFrame *fCircuit;       ///< Circuit window
+  TGTransientFrame *fFETRegOn;      ///< FET ON for a regional card
+  TGTransientFrame *fFETRegOff;     ///< FET OFF for a regional card
 
   TGTextEntry      *fSkipToEventTxt;///< Control field shows current event number
 
@@ -130,12 +171,23 @@ private:
   AliMUONMCDataInterface *fMCDataInterface;   ///< MC data interface
 
   Bool_t            fBoardsInit;    ///< Control the InitBoards only once
+  Bool_t            fControlOn;     ///< If the control frame is open
 
   AliMUONTriggerGUIdimap *fDiMap;   ///< Digits map
 
   AliMUONTriggerElectronics *fTriggerProcessor;   ///< The GUI trigger processor
 
   TObjArray *fBoards;               ///< The array of trigger boards
+
+  AliMUONDigitStoreV2R *fDigitStore;    ///< GUI digit store (DSET)
+  AliMUONTriggerStoreV1* fTriggerStore; ///< Trigger store with GUI digit store
+  Bool_t fTStoreOn;                   ///< True if DSET trigger store has data
+  Bool_t fRUNRAW;                     ///< True if run with raw data (root)
+  AliRawReader *fRawReader;           ///< Reader for raw data input
+  Int_t fCurrentRawEvent;             ///< Current event for raw data input
+  AliMUONDigitStoreV1 *fRawDigitStore; ///< Digit store from raw data
+  AliMUONTriggerStoreV1 *fRawTriggerStore; ///< Trigger store from raw data
+
   /// Access the array of trigger boards
   TObjArray *Boards() {
     if(!fBoards) fBoards = new TObjArray(kNBoards); return fBoards;

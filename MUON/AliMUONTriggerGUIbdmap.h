@@ -28,6 +28,8 @@ class AliMUONTriggerGUI;
 class AliMUONTriggerCircuit;
 class AliMUONTriggerCrateStore;
 class AliMUONMCDataInterface;
+class AliMUONDigitStoreV1;
+class AliMUONTriggerStoreV1;
 class AliLoader;
 
 class AliMUONTriggerGUIbdmap : public TGFrame
@@ -50,6 +52,11 @@ public:
   void SetLoader(AliLoader *loader)        { fLoader = loader; };
   /// set the MC data interface
   void SetMCDataInterface(AliMUONMCDataInterface *mc) { fMCDataInterface = mc; };
+  /// set the digit store from raw data
+  void SetRawDigitStore(AliMUONDigitStoreV1 *ds) { fRawDigitStore = ds; };
+  /// set the trigger store from raw data
+  void SetRawTriggerStore(AliMUONTriggerStoreV1 *ts) { fRawTriggerStore = ts; };
+
   /// set the trigger boards manager
   void SetCrateManager(AliMUONTriggerCrateStore *crates) { fCrateManager = crates; };
 
@@ -63,7 +70,7 @@ public:
   void Init();
   void HandleButtons(Int_t id = -1);
   void HandleEditButton();
-  void CloseWindow();
+  void CloseWindow() const;
   void DoClose();
   void DoDigits();
   void ResetDigits();
@@ -85,6 +92,8 @@ private:
   AliMUONTriggerGUIboard  *fBoard;           ///< Current board object
   AliLoader               *fLoader;          ///< The MUON loader
   AliMUONMCDataInterface  *fMCDataInterface; ///< MC data interface
+  AliMUONDigitStoreV1     *fRawDigitStore;   ///< Raw data digit store
+  AliMUONTriggerStoreV1   *fRawTriggerStore; ///< Raw data trigger store
 
   TGCheckButton        *fXStrips;          ///< Draw x-strips and digits
   TGCheckButton        *fYStrips;          ///< Draw y-strips and digits
@@ -119,7 +128,7 @@ private:
   AliMUONCalibrationData *fCalibrationData;  ///< Pointer to calibration data
   AliMUONTriggerCrateStore *fCrateManager;   ///< trigger boards manager
 
-  ClassDef(AliMUONTriggerGUIbdmap,1)       // board gui class
+  ClassDef(AliMUONTriggerGUIbdmap,2)       // board gui class
 
 };
 

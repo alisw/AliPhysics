@@ -28,23 +28,35 @@
 #include "AliMUONTriggerGUIdimap.h"
 #include "AliMUONTriggerGUIbdmap.h"
 
+#include "AliMpDDLStore.h"
 #include "AliMpSegmentation.h"
 #include "AliMpVSegmentation.h"
-#include "AliMpPad.h"
+#include "AliMpTriggerSegmentation.h"
 #include "AliMpIntPair.h"
 #include "AliMpCDB.h"
-#include "AliMUON.h"
+#include "AliMpDEManager.h"
 #include "AliMpDEIterator.h"
+
 #include "AliMUONGeometryTransformer.h"
 #include "AliMUONTriggerCrateStore.h"
 #include "AliMUONLocalTriggerBoard.h"
 #include "AliMUONTriggerElectronics.h"
 #include "AliMUONCalibrationData.h"
 #include "AliMUONMCDataInterface.h"
+#include "AliMUONDigitStoreV1.h"
+#include "AliMUONDigitStoreV2R.h"
+#include "AliMUONTriggerStoreV1.h"
+#include "AliMUONLocalTrigger.h"
+#include "AliMUONRawWriter.h"
+#include "AliMUONDigitMaker.h"
+#include "AliMUONGlobalTrigger.h"
 
 #include "AliRun.h"
+#include "AliDAQ.h"
 #include "AliRunLoader.h"
 #include "AliCDBManager.h"
+#include "AliRawDataHeaderSim.h"
+#include "AliRawReader.h"
 
 #include <TSystem.h>
 #include <TGLabel.h>
@@ -71,10 +83,14 @@ AliMUONTriggerGUI::AliMUONTriggerGUI(Int_t runNumber)
     fTxtBuffer1(0),
     fTxtBuffer2(0),
     fTxtCircuit(0),
+    fTxtFETRegOn(0),
+    fTxtFETRegOff(0),
     fRunInput(0),
     fError(0),
     fControl(0),
     fCircuit(0),
+    fFETRegOn(0),
+    fFETRegOff(0),
     fSkipToEventTxt(0),
     fFileName(0),
     fPath(0),
@@ -89,9 +105,18 @@ AliMUONTriggerGUI::AliMUONTriggerGUI(Int_t runNumber)
     fCrateManager(0),
     fMCDataInterface(0),
     fBoardsInit(0),
+    fControlOn(kFALSE),
     fDiMap(0),
     fTriggerProcessor(0),
-    fBoards(0)
+    fBoards(0),
+    fDigitStore(0),
+    fTriggerStore(0),
+    fTStoreOn(kFALSE),
+    fRUNRAW(kFALSE),
+    fRawReader(0),
+    fCurrentRawEvent(-1),
+    fRawDigitStore(0),
+    fRawTriggerStore(0)
 {
   /// main GUI frame of the trigger monitor
 
@@ -106,7 +131,17 @@ AliMUONTriggerGUI::AliMUONTriggerGUI(Int_t runNumber)
   fEvString = new TString("");
   fPath = new TString("");
 
-  fTriggerProcessor = 0;
+  fDigitStore = new AliMUONDigitStoreV2R;
+  fDigitStore->Create();
+
+  fTriggerStore = new AliMUONTriggerStoreV1;
+  fTriggerStore->Create();
+
+  fRawDigitStore = new AliMUONDigitStoreV1;
+  fRawDigitStore->Create();
+
+  fRawTriggerStore = new AliMUONTriggerStoreV1;
+  fRawTriggerStore->Create();
 
   fCDBManager = AliCDBManager::Instance();
   fCDBManager->SetDefaultStorage("local://$ALICE_ROOT");
@@ -114,6 +149,8 @@ AliMUONTriggerGUI::AliMUONTriggerGUI(Int_t runNumber)
   AliMpCDB::LoadDDLStore();
   fCalibrationData = new AliMUONCalibrationData(runNumber);
   
+  fTriggerProcessor = new AliMUONTriggerElectronics(fCalibrationData);
+
   // Main frame
 
   fMain = new TGMainFrame(gClient->GetRoot(), 750, 420);
@@ -128,9 +165,9 @@ AliMUONTriggerGUI::AliMUONTriggerGUI(Int_t runNumber)
   TGPopupMenu *menuFile = new TGPopupMenu(gClient->GetRoot());
   //menuFile->AddLabel("");
 
-  menuFile->AddEntry("Run",     kMFILERUN);
-  menuFile->AddEntry("Control", kMFILECNTRL);
-  menuFile->AddEntry("Exit",    kMFILEEXIT);
+  menuFile->AddEntry("Run input", kMFILERUN);
+  menuFile->AddEntry("Control",   kMFILECNTRL);
+  menuFile->AddEntry("Exit",      kMFILEEXIT);
 
   menuFile->Connect("Activated(Int_t)", "AliMUONTriggerGUI", this, "HandleMenu(Int_t)");
 
@@ -157,9 +194,29 @@ AliMUONTriggerGUI::AliMUONTriggerGUI(Int_t runNumber)
   // Trigger menu
 
   TGPopupMenu *menuTrigger = new TGPopupMenu(gClient->GetRoot());
-  //menuTrigger->AddLabel("");
 
-  menuTrigger->AddEntry("Trigger DSET",     kMTRIGGERDSET);
+  TGPopupMenu *menuTriggerD = new TGPopupMenu(gClient->GetRoot());
+  TGPopupMenu *menuTriggerT = new TGPopupMenu(gClient->GetRoot());
+  TGPopupMenu *menuTriggerF = new TGPopupMenu(gClient->GetRoot());
+
+  menuTrigger->AddPopup("Digit store",       menuTriggerD);
+  menuTrigger->AddSeparator();
+  menuTrigger->AddPopup("Trigger store",menuTriggerT);
+  menuTrigger->AddSeparator();
+  menuTrigger->AddPopup("Front End Test",    menuTriggerF);
+  menuTrigger->AddSeparator();
+
+  menuTriggerD->AddEntry("Create", kMDSTORE);
+  menuTriggerD->AddEntry("Print",  kMDSTOREP);
+  menuTriggerD->AddEntry("Clear",  kMDSTORECL);
+  menuTriggerT->AddEntry("Create", kMTSTORE);
+  menuTriggerT->AddEntry("Print",  kMTSTOREP);
+  menuTriggerT->AddEntry("Clear",  kMTSTORECL);
+  menuTriggerF->AddEntry("On",     kMFETON);
+  menuTriggerF->AddEntry("Off",    kMFETOFF);
+  menuTriggerF->AddEntry("Reg On", kMFETREGON);
+  menuTriggerF->AddEntry("Reg Off",kMFETREGOFF);
+  menuTrigger->AddEntry("Write raw data", kMTRAWDATA);
 
   menuTrigger->Connect("Activated(Int_t)", "AliMUONTriggerGUI", this, "HandleMenu(Int_t)");
 
@@ -177,7 +234,7 @@ AliMUONTriggerGUI::AliMUONTriggerGUI(Int_t runNumber)
 		    new TGLayoutHints(kLHintsTop | kLHintsLeft, 5,5,2,2)
 		    );
 
-  menuBar->AddPopup("Trigger", menuTrigger, 
+  menuBar->AddPopup("TriggerDSET", menuTrigger, 
 		    new TGLayoutHints(kLHintsTop | kLHintsLeft, 5,5,2,2)
 		    );
 
@@ -214,10 +271,7 @@ AliMUONTriggerGUI::AliMUONTriggerGUI(Int_t runNumber)
 
   fBoardsInit = kFALSE;
 
-  //HandleMenu(kMFILERUN);  // temporary
-
-  //InitBoards();
-  //Init();
+  InitBoards();
   
 }
 
@@ -228,21 +282,16 @@ void AliMUONTriggerGUI::HandleMenu(Int_t id)
 
   TGCompositeFrame *runInput1, *runInput2, *runInput3;
   TGCompositeFrame *control1, *control2, *circuit1, *circuit2;
-  TGLabel *runL1, *runL2, *circuitL1;
+  TGCompositeFrame *fetregon1, *fetregon2;
+  TGCompositeFrame *fetregoff1, *fetregoff2;
+  TGLabel *runL1, *runL2, *circuitL1, *fetregonL1, *fetregoffL1;
   TGTextEntry *runText1, *runText2, *circuitText1;
-  TGTextButton *runApply, *runCancel; 
+  TGTextEntry *fetregonText1, *fetregoffText1;
+  TGTextButton *runApply1, *runApply2, *runCancel; 
   TGTextButton *controlClose, *nextEvent, *previousEvent, *skipToEvent;
   TGTextButton *circuitCancel, *circuitOpen;
-
-  //Int_t trigInfo[kNBoards*6] = {-1};
-  //Int_t nLocalTrigger = 0;
-
-  TString error = TString("");
-  if (id != kMFILEEXIT && id != kMFILERUN && fRunLoader == 0) {
-    error.Append("Run not initialized (Menu: File/Run)");
-    DoErrorGUI(error.Data());
-    return;
-  }
+  TGTextButton *fetregonCancel, *fetregoffCancel;
+  TGTextButton *fetregonRun, *fetregoffRun;
 
   switch (id) {
 
@@ -253,7 +302,7 @@ void AliMUONTriggerGUI::HandleMenu(Int_t id)
     break;
     
   case kMFILERUN:
-    
+
     // input main frame
 
     fRunInput = new TGTransientFrame(gClient->GetRoot(), fMain, 400, 200);
@@ -272,17 +321,14 @@ void AliMUONTriggerGUI::HandleMenu(Int_t id)
 
     // .. with labels
 
-    runL1 = new TGLabel(runInput1, new TGString("Path to gAlice:"));
+    runL1 = new TGLabel(runInput1, new TGString("Full file path:"));
     runL2 = new TGLabel(runInput2, new TGString("Event number:"));
 
     // galice text entry
 
     runText1 = new TGTextEntry(runInput1, fTxtBuffer1 = new TGTextBuffer(100));
 
-    //fPath->Append("dset");                 // temporary
-    //fTxtBuffer1->AddText(0,fPath->Data());  // temporary
-
-    runText1->SetToolTipText("Enter the path to galice.root");
+    runText1->SetToolTipText("Enter the path to galice.root or the raw data file (root)");
     runText1->Resize(300, runText1->GetDefaultHeight());
 
     // event number text entry
@@ -337,16 +383,27 @@ void AliMUONTriggerGUI::HandleMenu(Int_t id)
 
     // buttons
 
-    runApply = new TGTextButton(runInput3, "Apply", 1);
-    runApply->Connect("Clicked()", "AliMUONTriggerGUI", this, "DoRunApply()");
-    runApply->SetToolTipText("Apply changes");
+    runApply1 = new TGTextButton(runInput3, "Apply (galice)", 1);
+    runApply1->Connect("Clicked()", "AliMUONTriggerGUI", this, "DoRunGalApply()");
+    runApply1->SetToolTipText("Apply changes (galice input)");
+
+    runApply2 = new TGTextButton(runInput3, "Apply (raw)", 1);
+    runApply2->Connect("Clicked()", "AliMUONTriggerGUI", this, "DoRunRawApply()");
+    runApply2->SetToolTipText("Apply changes (raw data input)");
 
     runCancel = new TGTextButton(runInput3, "Cancel", 2);
-    runCancel->Connect("Clicked()", "AliMUONTriggerGUI", this, "DoRunCancel()");    runCancel->SetToolTipText("Cancel changes");
+    runCancel->Connect("Clicked()", "AliMUONTriggerGUI", this, "DoRunCancel()");    
+    runCancel->SetToolTipText("Cancel changes");
 
     // add buttons
 
-    runInput3->AddFrame(runApply, 
+    runInput3->AddFrame(runApply1, 
+			 new TGLayoutHints(kLHintsTop | 
+					   kLHintsLeft, 
+					   3, 3, 2, 2)
+			);
+    
+    runInput3->AddFrame(runApply2, 
 			 new TGLayoutHints(kLHintsTop | 
 					   kLHintsLeft, 
 					   3, 3, 2, 2)
@@ -369,8 +426,6 @@ void AliMUONTriggerGUI::HandleMenu(Int_t id)
     fRunInput->MapSubwindows();
     fRunInput->Resize();
     fRunInput->MapWindow();
-
-    //DoRunApply();   // temporary
 
     break;
     
@@ -470,6 +525,8 @@ void AliMUONTriggerGUI::HandleMenu(Int_t id)
     fControl->MapSubwindows();
     fControl->Resize();
     fControl->MapWindow();
+
+    fControlOn = kTRUE;
    
     break;
 
@@ -479,11 +536,13 @@ void AliMUONTriggerGUI::HandleMenu(Int_t id)
       fDiMap = new AliMUONTriggerGUIdimap(fBoards,gClient->GetRoot(), fMain, 400, 200);
       fDiMap->SetLoader(fLoader);
       fDiMap->SetMCDataInterface(fMCDataInterface);
+      fDiMap->SetRawDigitStore(fRawDigitStore);
       fDiMap->DrawAllMaps();
     } else if (!fDiMap->IsOn()) {
       fDiMap = new AliMUONTriggerGUIdimap(fBoards,gClient->GetRoot(), fMain, 400, 200);
       fDiMap->SetLoader(fLoader);
       fDiMap->SetMCDataInterface(fMCDataInterface);
+      fDiMap->SetRawDigitStore(fRawDigitStore);
       fDiMap->DrawAllMaps();
     }
 
@@ -580,27 +639,182 @@ void AliMUONTriggerGUI::HandleMenu(Int_t id)
 
     break;
 
-  case kMTRIGGERDSET:
-    /*
-    cout << "Trigger with boards digits....." << endl;
-    fTriggerProcessor->FeedBoardsGUI(Boards());
+  case kMDSTORE:
+    CreateDigitStore();
+    break;
 
-    nLocalTrigger = fTriggerProcessor->TriggerGUI(trigInfo,kTRUE);
+  case kMDSTOREP:
+    PrintDigitStore();
+    break;
 
-    cout << "Trigger done with " << nLocalTrigger << " local decisions !" << endl;
+  case kMDSTORECL:
+    ClearDigitStore();
+    break;
 
-    for (Int_t ilo = 0; ilo < nLocalTrigger; ilo++) {
+  case kMTSTORE:
+    CreateTriggerStore();
+    break;
 
-      cout << "Local decision " << ilo << endl;
-      cout << "Circuit = "  << trigInfo[6*ilo+0] << endl;
-      cout << "LoStripX = " << trigInfo[6*ilo+1] << endl;
-      cout << "LoStripY = " << trigInfo[6*ilo+2] << endl;
-      cout << "LoDev = "    << trigInfo[6*ilo+3] << endl;
-      cout << "LoLpt = "    << trigInfo[6*ilo+4] << endl;
-      cout << "LoHpt = "    << trigInfo[6*ilo+5] << endl;
-      cout                                       << endl;
-    }
-    */
+  case kMTSTOREP:
+    PrintTriggerStore();
+    break;
+
+  case kMTSTORECL:
+    ClearTriggerStore();
+    break;
+
+  case kMTRAWDATA:
+    WriteTriggerRawData();
+    break;
+
+  case kMFETON:
+    FET(1);
+    break;
+
+  case kMFETOFF:
+    FET(0);
+    break;
+
+  case kMFETREGON:
+
+    fFETRegOn = new TGTransientFrame(gClient->GetRoot(), fMain, 50, 50);
+    fFETRegOn->Connect("CloseWindow()", "AliMUONTriggerGUI", this, "CloseFETRegOn()");
+    fFETRegOn->DontCallClose(); // to avoid double deletions.
+  
+    // use hierarchical cleaning
+    fFETRegOn->SetCleanup(kDeepCleanup);
+  
+    fFETRegOn->SetWindowName("FET ON regional crate");
+
+    // sub-frames
+
+    fetregon1 = new TGCompositeFrame(fFETRegOn, 400, 200, kHorizontalFrame);
+    fetregon2 = new TGCompositeFrame(fFETRegOn, 400, 200, kHorizontalFrame);
+
+    // labels
+
+    fetregonL1 = new TGLabel(fetregon1, new TGString("Regional crate name:"));
+    
+    // text entry
+    
+    fetregonText1 = new TGTextEntry(fetregon1, fTxtFETRegOn = new TGTextBuffer(10));
+    // buttons
+
+    fetregonCancel = new TGTextButton(fetregon2, "Cancel", 1);
+    fetregonCancel->Connect("Clicked()", "AliMUONTriggerGUI", this, "DoFETRegOnCancel()");
+    //fetregonCancel->Resize(100, fetregonCancel->GetDefaultHeight());  
+
+    fetregonRun = new TGTextButton(fetregon2, "Run FET", 2);
+    fetregonRun->Connect("Clicked()", "AliMUONTriggerGUI", this, "DoFETRegOnRun()");
+    //fetregonRun->Resize(100, fetregonRun->GetDefaultHeight());  
+
+    // adding
+
+    fetregon1->AddFrame(fetregonL1,
+		       new TGLayoutHints(kLHintsLeft | 
+					 kLHintsCenterY, 
+					 5, 5, 2, 2)
+		       );
+    
+    fetregon1->AddFrame(fetregonText1, 
+		       new TGLayoutHints(kLHintsRight | 
+					 kLHintsCenterY, 
+					 0, 2, 2, 2)
+		       );
+    
+    fetregon2->AddFrame(fetregonCancel, 
+		 new TGLayoutHints(kLHintsBottom | 
+				   kLHintsCenterY, 
+				   5, 5, 2, 2)
+		 );
+  
+    fetregon2->AddFrame(fetregonRun, 
+		 new TGLayoutHints(kLHintsBottom | 
+				   kLHintsCenterY, 
+				   5, 5, 2, 2)
+		 );
+  
+    fFETRegOn->AddFrame(fetregon1, 
+		       new TGLayoutHints(kLHintsTop | kLHintsExpandX, 2, 2, 3, 0));
+    
+    fFETRegOn->AddFrame(fetregon2, 
+		       new TGLayoutHints(kLHintsTop | kLHintsExpandX, 2, 2, 3, 0));
+    
+    fFETRegOn->MapSubwindows();
+    fFETRegOn->Resize();
+    fFETRegOn->MapWindow();
+
+    break;
+
+  case kMFETREGOFF:
+
+    fFETRegOff = new TGTransientFrame(gClient->GetRoot(), fMain, 50, 50);
+    fFETRegOff->Connect("CloseWindow()", "AliMUONTriggerGUI", this, "CloseFETRegOff()");
+    fFETRegOff->DontCallClose(); // to avoid double deletions.
+  
+    // use hierarchical cleaning
+    fFETRegOff->SetCleanup(kDeepCleanup);
+  
+    fFETRegOff->SetWindowName("FET OFF regional crate");
+
+    // sub-frames
+
+    fetregoff1 = new TGCompositeFrame(fFETRegOff, 400, 200, kHorizontalFrame);
+    fetregoff2 = new TGCompositeFrame(fFETRegOff, 400, 200, kHorizontalFrame);
+
+    // labels
+
+    fetregoffL1 = new TGLabel(fetregoff1, new TGString("Regional crate name:"));
+    
+    // text entry
+    
+    fetregoffText1 = new TGTextEntry(fetregoff1, fTxtFETRegOff = new TGTextBuffer(10));
+    // buttons
+
+    fetregoffCancel = new TGTextButton(fetregoff2, "Cancel", 1);
+    fetregoffCancel->Connect("Clicked()", "AliMUONTriggerGUI", this, "DoFETRegOffCancel()");
+    //fetregoffCancel->Resize(100, fetregoffCancel->GetDefaultHeight());  
+
+    fetregoffRun = new TGTextButton(fetregoff2, "Run FET", 2);
+    fetregoffRun->Connect("Clicked()", "AliMUONTriggerGUI", this, "DoFETRegOffRun()");
+    //fetregoffRun->Resize(100, fetregoffRun->GetDefaultHeight());  
+
+    // adding
+
+    fetregoff1->AddFrame(fetregoffL1,
+		       new TGLayoutHints(kLHintsLeft | 
+					 kLHintsCenterY, 
+					 5, 5, 2, 2)
+		       );
+    
+    fetregoff1->AddFrame(fetregoffText1, 
+		       new TGLayoutHints(kLHintsRight | 
+					 kLHintsCenterY, 
+					 0, 2, 2, 2)
+		       );
+    
+    fetregoff2->AddFrame(fetregoffCancel, 
+		 new TGLayoutHints(kLHintsBottom | 
+				   kLHintsCenterY, 
+				   5, 5, 2, 2)
+		 );
+  
+    fetregoff2->AddFrame(fetregoffRun, 
+		 new TGLayoutHints(kLHintsBottom | 
+				   kLHintsCenterY, 
+				   5, 5, 2, 2)
+		 );
+  
+    fFETRegOff->AddFrame(fetregoff1, 
+		       new TGLayoutHints(kLHintsTop | kLHintsExpandX, 2, 2, 3, 0));
+    
+    fFETRegOff->AddFrame(fetregoff2, 
+		       new TGLayoutHints(kLHintsTop | kLHintsExpandX, 2, 2, 3, 0));
+    
+    fFETRegOff->MapSubwindows();
+    fFETRegOff->Resize();
+    fFETRegOff->MapWindow();
+
     break;
 
   default:
@@ -650,6 +864,24 @@ void AliMUONTriggerGUI::CloseCircuit() const
 }
 
 //__________________________________________________________________________
+void AliMUONTriggerGUI::CloseFETRegOn() const
+{
+  /// close the FET regional on frame
+
+  delete fFETRegOn;
+
+}
+
+//__________________________________________________________________________
+void AliMUONTriggerGUI::CloseFETRegOff() const
+{
+  /// close the FET regional off frame
+
+  delete fFETRegOff;
+
+}
+
+//__________________________________________________________________________
 void AliMUONTriggerGUI::CloseWindow() 
 {
   /// close the main frame and exit aplication
@@ -662,22 +894,24 @@ void AliMUONTriggerGUI::CloseWindow()
 }
 
 //__________________________________________________________________________
-void AliMUONTriggerGUI::DoRunApply()
+void AliMUONTriggerGUI::DoRunGalApply()
 {
-  /// apply changes in the run control frame
+  /// apply changes in the run control frame for galice input
 
-  printf("Input 1 = %s \n",fTxtBuffer1->GetString());
+  if (fRUNRAW) {
+    printf("This is a run with raw data input.\n");
+    return;
+  }
 
   TString es = TString(fTxtBuffer2->GetString());
   fEvent = es.Atoi();
 
-  printf("Input 2 = %s event = %d \n",fTxtBuffer2->GetString(),fEvent);
+  printf("Galice input = %s event = %d \n",fTxtBuffer1->GetString(),fEvent);
 
   TString error = TString("");;
 
   fPath->Form("%s",fTxtBuffer1->GetString());
   fFileName->Form("%s",fTxtBuffer1->GetString());
-  printf("File location: %s \n",fFileName->Data());
 
   if (gSystem->AccessPathName(fFileName->Data()) || !fFileName->EndsWith(".root")) {
 
@@ -740,7 +974,6 @@ void AliMUONTriggerGUI::DoRunApply()
 	}
       }
       
-      //fTriggerProcessor = new AliMUONTriggerElectronics(fCalibrationData);
     }
 
   }
@@ -748,16 +981,77 @@ void AliMUONTriggerGUI::DoRunApply()
 }
 
 //__________________________________________________________________________
-void AliMUONTriggerGUI::DoRunCancel()
+void AliMUONTriggerGUI::DoRunRawApply()
 {
-  /// cancel the changes in the run control frame
+  /// apply changes in the run control frame for raw date input
 
-  printf("Input 1 = %s \n",fTxtBuffer1->GetString());
+  if (fControlOn) DoControlClose();
+
+  if (fRunLoader != 0) {
+    printf("This is a run with galice input.\n");
+    return;
+  }
 
   TString es = TString(fTxtBuffer2->GetString());
   fEvent = es.Atoi();
 
-  printf("Input 2 = %s event = %d \n",fTxtBuffer2->GetString(),fEvent);
+  printf("Raw data input = %s event = %d \n",fTxtBuffer1->GetString(),fEvent);
+
+  TString error = TString("");;
+
+  fPath->Form("%s",fTxtBuffer1->GetString());
+  fFileName->Form("%s",fTxtBuffer1->GetString());
+
+  if (gSystem->AccessPathName(fFileName->Data()) || !fFileName->EndsWith(".root")) {
+
+    error.Append("No raw data file: ");
+    error.Append(fFileName->Data());
+    DoErrorGUI(error.Data());
+
+  } else {
+
+    if (fRawReader == 0) {
+      fRawReader = AliRawReader::Create(fFileName->Data());
+    } else {
+      delete fRawReader;
+      fRawReader = AliRawReader::Create(fFileName->Data());
+    }
+    if (fRawReader == 0) {
+      error.Append("Not a valid raw data file: ");
+      error.Append(fFileName->Data());
+      DoErrorGUI(error.Data());
+      return;
+    }
+
+    fRawReader->GotoEvent(fEvent);
+    fCurrentRawEvent = fEvent;
+
+    AliMUONDigitMaker digitMaker;
+    digitMaker.SetMakeTriggerDigits(kTRUE);
+    digitMaker.Raw2Digits(fRawReader,fRawDigitStore,fRawTriggerStore);
+
+    fRunInput->SendCloseMessage();
+      
+    if (!fBoardsInit) {
+      InitBoards();
+    }
+    
+    if (fDiMap) {
+      if (fDiMap->IsOn()) {
+	fDiMap->SetRawDigitStore(fRawDigitStore);
+      }
+    }
+
+    fRUNRAW = kTRUE;
+
+  }
+    
+}
+
+//__________________________________________________________________________
+void AliMUONTriggerGUI::DoRunCancel()
+{
+  /// cancel the changes in the run control frame
 
   fRunInput->SendCloseMessage();
 
@@ -815,18 +1109,35 @@ void AliMUONTriggerGUI::DoNextEvent()
 
   TString error = TString("");
 
-  if (fEvent < (fEventsPerRun-1)) {
-    fEvent++;
-    fRunLoader->GetEvent(fEvent);
-
-    fEvString->Form("%d",fEvent);               
-    fTxtBuffer2->RemoveText(0,5);
-    fTxtBuffer2->AddText(0,fEvString->Data());
-    fSkipToEventTxt->SetFocus();
-
+  if (!fRUNRAW) {
+    if (fEvent < (fEventsPerRun-1)) {
+      fEvent++;
+      fRunLoader->GetEvent(fEvent);
+      
+      fEvString->Form("%d",fEvent);               
+      fTxtBuffer2->RemoveText(0,5);
+      fTxtBuffer2->AddText(0,fEvString->Data());
+      fSkipToEventTxt->SetFocus();
+      
+    } else {
+      error.Form("Only %d event(s) in the run !",fEventsPerRun);
+      DoErrorGUI(error.Data());
+    }
   } else {
-    error.Form("Only %d event(s) in the run !",fEventsPerRun);
-    DoErrorGUI(error.Data());
+    if (fRawReader->NextEvent()) {
+      fCurrentRawEvent++;
+
+      AliMUONDigitMaker digitMaker;
+      digitMaker.SetMakeTriggerDigits(kTRUE);
+      digitMaker.Raw2Digits(fRawReader,fRawDigitStore,fRawTriggerStore);
+      
+      fEvString->Form("%d",fCurrentRawEvent);               
+      fTxtBuffer2->RemoveText(0,5);
+      fTxtBuffer2->AddText(0,fEvString->Data());
+      fSkipToEventTxt->SetFocus();
+      
+    }
+
   }
 
 }
@@ -838,18 +1149,36 @@ void AliMUONTriggerGUI::DoPreviousEvent()
 
   TString error = TString("");
 
-  if (fEvent > 0) {
-    fEvent--;
-    fRunLoader->GetEvent(fEvent);
-
-    fEvString->Form("%d",fEvent);               
-    fTxtBuffer2->RemoveText(0,5);
-    fTxtBuffer2->AddText(0,fEvString->Data());
-    fSkipToEventTxt->SetFocus();
-
+  if (!fRUNRAW) {
+    if (fEvent > 0) {
+      fEvent--;
+      fRunLoader->GetEvent(fEvent);
+      
+      fEvString->Form("%d",fEvent);               
+      fTxtBuffer2->RemoveText(0,5);
+      fTxtBuffer2->AddText(0,fEvString->Data());
+      fSkipToEventTxt->SetFocus();
+      
+    } else {
+      error.Form("Already at event 0 !");
+      DoErrorGUI(error.Data());
+    }
   } else {
-    error.Form("Already at event 0 !");
-    DoErrorGUI(error.Data());
+    if (fCurrentRawEvent > 0) {
+      fCurrentRawEvent--;
+      fRawReader->GotoEvent(fCurrentRawEvent);
+
+      AliMUONDigitMaker digitMaker;
+      digitMaker.SetMakeTriggerDigits(kTRUE);
+      digitMaker.Raw2Digits(fRawReader,fRawDigitStore,fRawTriggerStore);
+      
+      fEvString->Form("%d",fCurrentRawEvent);               
+      fTxtBuffer2->RemoveText(0,5);
+      fTxtBuffer2->AddText(0,fEvString->Data());
+      fSkipToEventTxt->SetFocus();
+    
+    }
+
   }
 
 }
@@ -864,37 +1193,27 @@ void AliMUONTriggerGUI::DoSkipToEvent()
   TString es = TString(fTxtBuffer2->GetString());
   fEvent = es.Atoi();
 
-  if (fEvent < 0 || fEvent > (fEventsPerRun-1)) {
-    error.Form("Event number out of range !");
-    DoErrorGUI(error.Data());
-  } else {
-    fRunLoader->GetEvent(fEvent);
-    /*
-    fRunLoader->LoadKinematics();
-
-    AliStack* stack = gAlice->Stack();
-    Int_t nParticles = stack->GetNtrack();
-    Int_t nPrimaries = stack->GetNprimary();
-    
-    TParticle *part;
-    Int_t nMuons = 0;
-    Int_t pdgCode;
-    Double_t px, py, pz, theta, phi;
-    for (Int_t i = 0; i < nPrimaries; i++) {
-      part = stack->Particle(i);
-      if (!part) continue;
-      if (TMath::Abs(part->GetPdgCode()) == 13) {
-	nMuons++;
-	pdgCode = part->GetPdgCode();
-	px = part->Px();
-	py = part->Py();
-	pz = part->Pz();
-	theta = part->Theta();
-	phi = part->Phi();
-	printf("Kine %d px %f py %f pz %f th %f ph %f \n",pdgCode,px,py,pz,theta,phi); 
-      }
+  if (!fRUNRAW) {
+    if (fEvent < 0 || fEvent > (fEventsPerRun-1)) {
+      error.Form("Event number out of range !");
+      DoErrorGUI(error.Data());
+    } else {
+      fRunLoader->GetEvent(fEvent);
     }
-    */    
+  } else {
+    if (fRawReader->GotoEvent(fEvent)) {
+      fCurrentRawEvent = fEvent;
+
+      AliMUONDigitMaker digitMaker;
+      digitMaker.SetMakeTriggerDigits(kTRUE);
+      digitMaker.Raw2Digits(fRawReader,fRawDigitStore,fRawTriggerStore);
+      
+      fEvString->Form("%d",fCurrentRawEvent);               
+      fTxtBuffer2->RemoveText(0,5);
+      fTxtBuffer2->AddText(0,fEvString->Data());
+      fSkipToEventTxt->SetFocus();
+    }
+
   }
 
 }
@@ -914,6 +1233,7 @@ void AliMUONTriggerGUI::DoControlClose()
   /// close the event control frame
 
   fControl->SendCloseMessage();
+  fControlOn = kFALSE;
 
 }
 
@@ -923,6 +1243,66 @@ void AliMUONTriggerGUI::DoCircuitCancel()
   /// close the circuit frame
 
   fCircuit->SendCloseMessage();
+
+}
+
+//__________________________________________________________________________
+void AliMUONTriggerGUI::DoFETRegOnCancel()
+{
+  /// close the FET regional on window
+
+  fFETRegOn->SendCloseMessage();
+
+}
+
+//__________________________________________________________________________
+void AliMUONTriggerGUI::DoFETRegOffCancel()
+{
+  /// close the FET regional off window
+
+  fFETRegOff->SendCloseMessage();
+
+}
+
+//__________________________________________________________________________
+void AliMUONTriggerGUI::DoFETRegRun(Int_t onoff)
+{
+  /// FET ON/OFF for the regional crate
+
+  TString crateName;
+  if (onoff == 1) 
+    crateName = TString(fTxtFETRegOn->GetString());
+  if (onoff == 0) 
+    crateName = TString(fTxtFETRegOff->GetString());
+
+  AliMUONTriggerGUIboard *board;
+  Int_t amp = onoff;
+
+  for (Int_t ib = 0; ib < kNBoards; ib++) {
+    board = (AliMUONTriggerGUIboard*)fBoards->At(ib);
+    if (strcmp(board->GetCrateName(),crateName.Data()) != 0) continue;
+    FETboard(ib,amp);
+  }
+
+}
+
+//__________________________________________________________________________
+void AliMUONTriggerGUI::DoFETRegOnRun()
+{
+  /// FET ON for the regional crate
+
+  DoFETRegRun(1);
+  fFETRegOn->SendCloseMessage();
+
+}
+
+//__________________________________________________________________________
+void AliMUONTriggerGUI::DoFETRegOffRun()
+{
+  /// FET ON for the regional crate
+
+  DoFETRegRun(0);
+  fFETRegOff->SendCloseMessage();
 
 }
 
@@ -1010,6 +1390,8 @@ void AliMUONTriggerGUI::OpenBoard(Int_t id)
   bf->SetLoader(fLoader);
   bf->SetCrateManager(fCrateManager);
   bf->SetMCDataInterface(fMCDataInterface);
+  bf->SetRawDigitStore(fRawDigitStore);
+  bf->SetRawTriggerStore(fRawTriggerStore);
   bf->Init();
 
   bf->Show();
@@ -1047,10 +1429,101 @@ void AliMUONTriggerGUI::InitBoards()
   
   fBoardsInit = kTRUE;
 
+  // used by bdmap
   if (fCrateManager == 0x0) {
     fCrateManager = new AliMUONTriggerCrateStore();
     fCrateManager->ReadFromFile(fCalibrationData);
   }
+
+  // create boards geometry from the mapping
+  AliMUONTriggerGUIboard *board;
+  for (Int_t ib = 0; ib < kNBoards; ib++) {
+    Boards()->Add(new AliMUONTriggerGUIboard());
+  }
+  
+  // circuit number to board number in array
+  Int_t cIdtobId[235];
+
+  AliMpDEIterator it;
+  Int_t boardId = -1;
+  Int_t manuIdPrev, ich, idet, boardIdTmp = -1;
+  for (Int_t chamber = 0; chamber < kNMT; chamber++) {
+    for ( it.First(); ! it.IsDone(); it.Next() ) {
+      
+      if (it.CurrentDEId()/100 < 11) continue;
+      
+      ich = it.CurrentDEId()/100 - 11;
+      if (ich != chamber) continue;
+      idet = it.CurrentDEId()%100;
+      
+      const AliMpVSegmentation* seg0 = AliMpSegmentation::Instance()->GetMpSegmentation(it.CurrentDEId(), AliMp::kCath0);
+      const AliMpVSegmentation* seg1 = AliMpSegmentation::Instance()->GetMpSegmentation(it.CurrentDEId(), AliMp::kCath1);
+
+      // x-strips
+      manuIdPrev = 0;
+      const AliMpTriggerSegmentation *trigseg0 = static_cast<const AliMpTriggerSegmentation*>(seg0);
+      for (Int_t ix = 0; ix <= seg0->MaxPadIndexX(); ix++) {
+	for (Int_t iy = 0; iy <= seg0->MaxPadIndexY(); iy++) {
+	  AliMpIntPair indices(ix,iy);
+	  AliMpPad pad = trigseg0->PadByIndices(indices,kFALSE);
+	  if (pad.IsValid()) {
+	    AliMpIntPair loc = pad.GetLocation(0);
+	    Int_t manuId = loc.GetFirst();
+	    if (manuId != manuIdPrev) {
+	      AliMpLocalBoard *mpboard = AliMpDDLStore::Instance()->GetLocalBoard(manuId);
+	      manuIdPrev = manuId;
+	      if (ich == 0) {
+		boardId++;
+	      } else {
+		boardId = cIdtobId[manuId];
+	      }
+	      board = GetBoard(boardId);
+	      if (board->GetNumber() == -1)
+		board->SetNumber(boardId);
+	      if (board->GetDetElemId() == -1) 
+		board->SetDetElemId(idet);
+	      if (!strcmp(board->GetBoardName(),""))
+		board->SetBoardName(mpboard->GetName());
+	      cIdtobId[manuId] = boardId;
+	    }
+	    GetBoard(boardId)->AddPadX(pad,ich);
+	  }
+	}
+      }  // end plane 0 (x-strips)
+         
+      // y-strips
+      manuIdPrev = 0;
+      const AliMpTriggerSegmentation *trigseg1 = static_cast<const AliMpTriggerSegmentation*>(seg1);
+      for (Int_t ix = 0; ix <= seg1->MaxPadIndexX(); ix++) {
+	for (Int_t iy = 0; iy <= seg1->MaxPadIndexY(); iy++) {
+	  AliMpIntPair indices(ix,iy);
+	  AliMpPad pad = trigseg1->PadByIndices(indices,kFALSE);
+	  if (pad.IsValid()) {
+	    Int_t nloc = pad.GetNofLocations();
+	    for (Int_t iloc = 0; iloc < nloc; iloc++) {
+	      AliMpIntPair loc = pad.GetLocation(iloc);
+	      Int_t manuId = loc.GetFirst();
+	      if (manuId != manuIdPrev) {
+		manuIdPrev = manuId;
+		boardIdTmp = cIdtobId[manuId];
+	      }
+	      GetBoard(boardIdTmp)->AddPadY(pad,ich);
+	    }
+	  }
+	}
+      }  // end plane 1 (y-strips)
+      
+    } // end det elem loop
+  } // end chamber loop
+  
+  for (Int_t ib = 0; ib < kNBoards; ib++) {
+    board = GetBoard(ib);
+    board->MakeGeometry();
+    AliMUONLocalTriggerBoard* b = fCrateManager->LocalBoard(board->GetIdCircuit());
+    board->SetCrateName((b->GetCrate()).Data());
+  }
+  
+  // create the sensitive map
 
   Int_t nPixelX = 700;
   Int_t nPixelY = 676;
@@ -1058,56 +1531,33 @@ void AliMUONTriggerGUI::InitBoards()
   Int_t nPixelBorderX = 40;  // to guess...
   Int_t nPixelBorderY = 40;  // to guess...
 
+  // boards limits
   Float_t boardsX = 2*257.00;  // cm
   Float_t boardsY = 2*306.61;  // cm
 
-  FILE *fmap;
-
-  Int_t side, col, line, nbx, detElemId = 0;
   UShort_t status = 1;
-  Float_t xCenter, yCenter, zCenter, xWidth, yWidth;
-  Float_t xc, yc;
-  Char_t name[8], text[200];
+  Float_t xc, yc, xw, yw;
+  Char_t text[256];
   Int_t x, y;
   UInt_t w, h;
   Int_t xp[5];
   Int_t yp[5];
-  TString mapspath = gSystem->Getenv("ALICE_ROOT");
-  mapspath.Append("/MUON/data");
 
   TGRegion *reg;
-  AliMUONTriggerGUIboard *board;
 
-  // regions for the image map
-
-  sprintf(text,"%s/guimapp11.txt",mapspath.Data());
-  fmap = fopen(text,"r");
+  // regions for the image map (from MT11)
 
   for (Int_t ib = 0; ib < kNBoards; ib++) {
 
-    fscanf(fmap,"%d   %d   %d   %d   %f   %f   %f   %f   %f   %s   \n",&side,&col,&line,&nbx,&xCenter,&yCenter,&xWidth,&yWidth,&zCenter,&name[0]);
-
-    //printf("%d   %d   %d   %d   %f   %f   %f   %f   %f   %s   \n",side,col,line,nbx,xCenter,yCenter,xWidth,yWidth,zCenter,name);
-
-    board = new AliMUONTriggerGUIboard(ib,name);
+    board = GetBoard(ib);
 
     status = 1;
     board->SetStatus(status);
 
-    // calculate detElemId%100
-    // side=0 left
-    // side=1 right
-    // ALICE SC
-    if (side == 0)              detElemId = 14 - line;
-    if (side == 1 && line <  5) detElemId = 13 + line;
-    if (side == 1 && line >= 5) detElemId = line - 5;
-    
-    board->SetDetElemId(detElemId);
-
-    Boards()->Add(board);
-
-    xc = xCenter;
-    yc = yCenter;
+    xc = board->GetXCenter(0);
+    yc = board->GetYCenter(0);
+    xw = board->GetXWidth(0);
+    yw = board->GetYWidth(0);
 
     x = (Int_t)(nPixelX/2 + xc * (nPixelX - 2*nPixelBorderX)/boardsX);
     y = (Int_t)(nPixelY/2 - yc * (nPixelY - 2*nPixelBorderY)/boardsY);
@@ -1115,8 +1565,8 @@ void AliMUONTriggerGUI::InitBoards()
     if (x < 0) x = 0;
     if (y < 0) y = 0;
 
-    w = (UInt_t)(xWidth*(nPixelX-2*nPixelBorderX)/boardsX);
-    h = (UInt_t)(yWidth*(nPixelY-2*nPixelBorderY)/boardsY);
+    w = (UInt_t)(xw*(nPixelX-2*nPixelBorderX)/boardsX);
+    h = (UInt_t)(yw*(nPixelY-2*nPixelBorderY)/boardsY);
     
     xp[0] = x-w/2;
     xp[1] = x+w/2;
@@ -1133,147 +1583,17 @@ void AliMUONTriggerGUI::InitBoards()
     reg = new TGRegion(5,xp,yp);
     fImageMap->AddRegion(*reg, ib);
 
-    if (status & kGood) {
-      sprintf(text,"%s working",name);
-    }
-    if (status & kWithProblems) {
-      sprintf(text,"%s has problems...",name);
-    }
-    if (status & kNotWorking) {
-      sprintf(text,"%s not working",name);
-    }
-    if (status & kUnknown) {
-      sprintf(text,"%s status unknown",name);
-    }
-    
-    //fImageMap->SetToolTipText(ib, text);
-    
-  }
-
-  fclose(fmap);
-  
-  // MT position and dimension in board
-  
-  for (Int_t imt = 0; imt < kNMT; imt++) {
-
-    sprintf(text,"%s/guimapp%2d.txt",mapspath.Data(),11+imt);
-
-    fmap = fopen(text,"r");
-
-    for (Int_t ib = 0; ib < kNBoards; ib++) {
-
-      fscanf(fmap,"%d   %d   %d   %d   %f   %f   %f   %f   %f   %s   \n",&side,&col,&line,&nbx,&xCenter,&yCenter,&xWidth,&yWidth,&zCenter,&name[0]);
-
-      board = GetBoard(ib);
-      board->SetDimensions(imt,xCenter,yCenter,zCenter,xWidth,yWidth);
-
-    }
-
-    fclose(fmap);
-
-  }
-
-  // MT x-strips indices and circuit number
-  Int_t ix, iy1, iy2, sIx, sIy1, cathode, icirc;
-  sprintf(text,"%s/guimapix11.txt",mapspath.Data());
-
-  fmap = fopen(text,"r");
-  
-  for (Int_t ib = 0; ib < kNBoards; ib++) {
-    
-    fscanf(fmap,"%d   %d   %d   %d   %d   %d   %d   %s   \n",&side,&col,&line,&nbx,&ix,&iy1,&iy2,&name[0]);
-    
-    board = GetBoard(ib);
-    board->SetXSindex(ix,iy1,iy2);
-
-    // set the circuit number
-    detElemId = board->GetDetElemId();
-    detElemId += 100 * 11;
-    cathode = 0;
-    sIx  = board->GetXSix();
-    sIy1 = board->GetXSiy1();
-    const AliMpVSegmentation* seg = 
-      AliMpSegmentation::Instance()->GetMpSegmentation(detElemId,AliMp::GetCathodType(cathode));
-    
-    AliMpPad pad = seg->PadByIndices(AliMpIntPair(sIx,sIy1),kTRUE);
-    AliMpIntPair location = pad.GetLocation(0);
-
-    Int_t nboard = location.GetFirst();
-    AliMUONLocalTriggerBoard* b = fCrateManager->LocalBoard(nboard);
-    icirc = b->GetNumber();
-    board->SetBoardName((Char_t*)b->GetName());
-    board->SetIdCircuit(icirc);
-
-    TString crateName = b->GetCrate();
-    
-    sprintf(text,"%s (crate %s circuit %3d, number %3d)",board->GetBoardName(),crateName.Data(),icirc,ib);
+    sprintf(text,"%s (crate %s circuit %3d, number %3d)",board->GetBoardName(),board->GetCrateName(),board->GetIdCircuit(),board->GetNumber());
     fImageMap->SetToolTipText(ib, text);
-        
-  }
-  
-  fclose(fmap);
 
-  // MT y-strips indices
-  Int_t ix1, ix2, iy;
-
-  sprintf(text,"%s/guimapiy11.txt",mapspath.Data());
-  
-  fmap = fopen(text,"r");
-  
-  for (Int_t ib = 0; ib < kNBoards; ib++) {
+    // Set coordinates of strips boxes
     
-    fscanf(fmap,"%d   %d   %d   %d   %d   %d   %d   %s   \n",&side,&col,&line,&nbx,&ix1,&ix2,&iy,&name[0]);
-    
-    board = GetBoard(ib);
-    board->SetYSindex(ix1,ix2,iy);
-    
-  }
-  
-  fclose(fmap);
-
-  // Extended y-strips over neighbouring boards
-
-  sprintf(text,"%s/guimapp11.txt",mapspath.Data());
-  
-  fmap = fopen(text,"r");
-  
-  for (Int_t ib = 0; ib < kNBoards; ib++) {
-    
-    fscanf(fmap,"%d   %d   %d   %d   %f   %f   %f   %f   %f   %s   \n",&side,&col,&line,&nbx,&xCenter,&yCenter,&xWidth,&yWidth,&zCenter,&name[0]);
-    
-    board = GetBoard(ib);
-
-    board->SetPosition(nbx);
-    
-    if ((col == 2 || col == 3) && (line >= 4 && line <= 6)) {
-      board->SetYOver(4);
-    } else
-      
-    if (col == 1 && (line == 4 || line == 6)) {
-      board->SetYOver(3);
-    } else
-	
-    if (col == 7 || line == 1 || line == 9) {
-      board->SetYOver(1);
-    } else
-	  
-    {
-      board->SetYOver(2);
-    }
-    
-  }
-  
-  fclose(fmap);
-
-  // Set coordinates of strips boxes
-
-  for (Int_t ib = 0; ib < kNBoards; ib++) {
-    
-    board = GetBoard(ib);
     SetStripBoxes(board);
-
+    
+    //board->PrintBoard();
+    
   }
-
+  
 }
 
 //__________________________________________________________________________
@@ -1281,15 +1601,14 @@ void AliMUONTriggerGUI::SetStripBoxes(AliMUONTriggerGUIboard *board)
 {
   /// set coordinates of strip boxes
 
-  gAlice = fRunLoader->GetAliRun();
-  AliMUON *pMUON = (AliMUON*)gAlice->GetModule("MUON");
-  const AliMUONGeometryTransformer* kGeomTransformer = pMUON->GetGeometryTransformer();
+  AliMUONGeometryTransformer transformer;
+  transformer.LoadGeometryData("transform.dat");
 
   const AliMpVSegmentation* seg;
   AliMpPad pad;
   AliMpDEIterator it;
 
-  Int_t chamber, detElemId, maxX, maxY, ic;
+  Int_t chamber, detElemId, maxX, maxY;
   Float_t xpmin, xpmax, ypmin, ypmax;
   Float_t xg1, xg2, yg1, yg2, zg1;
   Float_t xlocal1, xlocal2, ylocal1, ylocal2;
@@ -1310,10 +1629,9 @@ void AliMUONTriggerGUI::SetStripBoxes(AliMUONTriggerGUIboard *board)
     
       if (detElemId%100 != board->GetDetElemId()) continue;
 
-      /*---------- y-pads ic = 2 ----------*/
-      ic = 2;
+      /*---------- y-pads cath = 1 ----------*/
       
-      seg = AliMpSegmentation::Instance()->GetMpSegmentation(detElemId, AliMp::GetCathodType(ic-1));
+      seg = AliMpSegmentation::Instance()->GetMpSegmentation(detElemId, AliMp::kCath1);
 
       maxX = seg->MaxPadIndexX();
       maxY = seg->MaxPadIndexY();
@@ -1331,16 +1649,12 @@ void AliMUONTriggerGUI::SetStripBoxes(AliMUONTriggerGUIboard *board)
 	  xlocal2 = pad.Dimensions().X();
 	  ylocal2 = pad.Dimensions().Y();
 	  
-	  kGeomTransformer->Local2Global(detElemId, xlocal1, ylocal1, 0, xg1, yg1, zg1);
+	  transformer.Local2Global(detElemId, xlocal1, ylocal1, 0, xg1, yg1, zg1);
 	  // (no transformation for pad dimensions)
 	  xg2 = xlocal2;
 	  yg2 = ylocal2;
 	  
 	  // transform in the monitor coordinate system
-	  //xpmin = -(xg1+xg2);
-	  //xpmax = -(xg1-xg2);
-	  //ypmin = -(yg2-yg1);
-	  //ypmax = +(yg2+yg1);
 	  // ALICE SC
 	  xpmin = +(xg1-xg2);
 	  xpmax = +(xg1+xg2);
@@ -1371,10 +1685,9 @@ void AliMUONTriggerGUI::SetStripBoxes(AliMUONTriggerGUIboard *board)
 	}  // end maxY
       }  // end maxX
 
-      /*---------- x-pads ic = 1 ----------*/
-      ic = 1;
+      /*---------- x-pads cath = 0 ----------*/
       
-      seg = AliMpSegmentation::Instance()->GetMpSegmentation(detElemId, AliMp::GetCathodType(ic-1));
+      seg = AliMpSegmentation::Instance()->GetMpSegmentation(detElemId, AliMp::kCath0);
 
       maxX = seg->MaxPadIndexX();
       maxY = seg->MaxPadIndexY();
@@ -1392,16 +1705,12 @@ void AliMUONTriggerGUI::SetStripBoxes(AliMUONTriggerGUIboard *board)
 	  xlocal2 = pad.Dimensions().X();
 	  ylocal2 = pad.Dimensions().Y();
 	  
-	  kGeomTransformer->Local2Global(detElemId, xlocal1, ylocal1, 0, xg1, yg1, zg1);
+	  transformer.Local2Global(detElemId, xlocal1, ylocal1, 0, xg1, yg1, zg1);
 	  // (no transformation for pad dimensions)
 	  xg2 = xlocal2;
 	  yg2 = ylocal2;
 	  
 	  // transform in the monitor coordinate system
-	  //xpmin = -(xg1+xg2);
-	  //xpmax = -(xg1-xg2);
-	  //ypmin = -(yg2-yg1);
-	  //ypmax = +(yg2+yg1);
 	  // ALICE SC
 	  xpmin = +(xg1+xg2);
 	  xpmax = +(xg1-xg2);
@@ -1435,3 +1744,370 @@ void AliMUONTriggerGUI::SetStripBoxes(AliMUONTriggerGUIboard *board)
 	
 }
 
+//__________________________________________________________________________
+void AliMUONTriggerGUI::CreateDigitStore() 
+{
+  /// create memory resident digits store with set strips
+
+  Int_t nstripX, nstripY, detElemId, charge, ix, iy, iX1, iY1;
+  Int_t cathode, maxX, maxY;
+  Int_t manuId, manuChannel;
+  const AliMpVSegmentation* seg;
+  AliMpPad pad;
+  AliMUONTriggerGUIboard* board;
+  AliMUONVDigit *dig;
+
+  for (Int_t ib = 0; ib < kNBoards; ib++) {
+
+    board = (AliMUONTriggerGUIboard*)fBoards->At(ib);
+    if (board == 0) continue;
+
+    nstripX = board->GetNStripX();
+    nstripY = board->GetNStripY();
+    for (Int_t ichamber = 11; ichamber <= 14; ichamber++) {
+      
+      detElemId = ichamber * 100 + board->GetDetElemId();
+      // x strips
+      cathode = 0;
+      for (Int_t isx = 0; isx < nstripX; isx++) {
+	
+	charge = (Int_t)board->GetXDig(ichamber-11,isx);
+	if (charge == 0) continue;
+        ix  = board->GetXSix();
+        iY1 = board->GetXSiy1();
+        iy  = isx + iY1;
+	seg = AliMpSegmentation::Instance()->GetMpSegmentation(detElemId, AliMp::GetCathodType(cathode));
+	maxX = seg->MaxPadIndexX();
+	maxY = seg->MaxPadIndexY();
+	if (ix > maxX) printf("Index x > maximum!\n");
+	if (iy > maxY) printf("Index y > maximum!\n");
+        pad = seg->PadByIndices(AliMpIntPair(ix,iy),kTRUE);
+	manuId = pad.GetLocation(0).GetFirst();
+	manuChannel = pad.GetLocation(0).GetSecond();
+
+	dig = fDigitStore->Add(detElemId,manuId,manuChannel,cathode,AliMUONVDigitStore::kAllow);
+	dig->SetCharge(charge);
+	dig->SetPadXY(ix,iy);
+	//printf("Cathode 0: ix %3d iy %3d manuId %3d manuChannel %3d \n",ix,iy,manuId,manuChannel);
+
+      }  // end x strips
+
+      // y strips
+      cathode = 1;
+      for (Int_t isy = 0; isy < nstripY; isy++) {
+	
+	charge = board->GetYDig(ichamber-11,isy);
+	if (charge == 0) continue;
+        iX1 = board->GetYSix1();
+        ix  = isy + iX1;
+        iy  = board->GetYSiy();
+	seg = AliMpSegmentation::Instance()->GetMpSegmentation(detElemId, AliMp::GetCathodType(cathode));
+	maxX = seg->MaxPadIndexX();
+	maxY = seg->MaxPadIndexY();
+	if (ix > maxX) printf("Index x > maximum!\n");
+	if (iy > maxY) printf("Index y > maximum!\n");
+        pad = seg->PadByIndices(AliMpIntPair(ix,iy),kTRUE);
+	manuId = pad.GetLocation(0).GetFirst();
+	manuChannel = pad.GetLocation(0).GetSecond();
+
+	dig = fDigitStore->Add(detElemId,manuId,manuChannel,cathode,AliMUONVDigitStore::kAllow);
+	dig->SetCharge(charge);
+	dig->SetPadXY(ix,iy);
+	//printf("Cathode 1: ix %3d iy %3d manuId %3d manuChannel %3d \n",ix,iy,manuId,manuChannel);
+
+      }  // end y strips
+
+    }  // end chambers
+
+  }  // end boards
+
+}
+
+//__________________________________________________________________________
+void AliMUONTriggerGUI::PrintDigitStore() const
+{
+  /// Print the digits created in the GUI
+
+  const AliMpVSegmentation* seg;
+  AliMpPad pad;
+  Int_t ix, iy, charge, detElemId, cathode;
+
+  Int_t chamber;
+  for (Int_t i = 0; i < kNMT; i++) {
+
+    chamber = 11+i;
+
+    AliMpIntPair deRange = AliMpDEManager::GetDetElemIdRange(chamber-1);
+    TIter next(fDigitStore->CreateIterator(deRange.GetFirst(),deRange.GetSecond()));
+    AliMUONVDigit *mdig;
+
+    while ( ( mdig = static_cast<AliMUONVDigit*>(next())) )
+    {
+      cathode = mdig->Cathode();
+      
+      ix = mdig->PadX();
+      iy = mdig->PadY();
+      detElemId = mdig->DetElemId(); 
+      charge = (Int_t)mdig->Charge();
+
+      seg = AliMpSegmentation::Instance()->GetMpSegmentation(detElemId, AliMp::GetCathodType(cathode));  
+      pad = seg->PadByIndices(AliMpIntPair(ix,iy),kTRUE);
+      AliMpIntPair ind = pad.GetIndices();
+
+      printf("Digit: detElemId %4d cath %1d ix %2d iy %3d charge %1d \n",detElemId,cathode,ix,iy,charge);
+      
+    }
+
+  }
+
+}
+
+//__________________________________________________________________________
+void AliMUONTriggerGUI::CreateTriggerStore() 
+{
+  /// Process the DSET digit store and fill the trigger store
+
+  if (fDigitStore->GetSize() == 0) {
+    printf("The digit store is empty...\n");
+    return;
+  }
+  fTStoreOn = kTRUE;
+
+  AliMUONVDigitStore *digitStore = static_cast<AliMUONVDigitStore*>(fDigitStore);
+
+  fTriggerProcessor->Digits2Trigger(*digitStore,*fTriggerStore);
+
+}
+
+//__________________________________________________________________________
+void AliMUONTriggerGUI::PrintTriggerStore() const
+{
+  /// Print the trigger output for DSET digits store
+
+  if (!fTStoreOn) return;
+
+  TIter next(fTriggerStore->CreateLocalIterator());
+  
+  UShort_t x2m, x2u, x2d;
+  Int_t loStripX, loStripY, loDev, loCircuit, iStripX, iStripY, loLpt, loHpt;
+  AliMUONLocalTrigger *mlt;
+  while ( ( mlt = static_cast<AliMUONLocalTrigger*>(next()) ) )
+  {    
+    loCircuit = mlt->LoCircuit();
+
+    AliMUONLocalTriggerBoard* ltb = fCrateManager->LocalBoard(loCircuit);
+    x2d = ltb->GetSwitch(0);
+    x2m = ltb->GetSwitch(1);
+    x2u = ltb->GetSwitch(2);
+    
+    loStripX = mlt->LoStripX();
+    loStripY = mlt->LoStripY();
+    loDev    = mlt->LoDev();
+    loLpt    = mlt->LoLpt();
+    loHpt    = mlt->LoHpt();
+
+    iStripX = loStripX/2;
+    if ((x2u == 1 || x2m == 1 || x2d == 1) && x2m == 1) {
+      iStripY = loStripY/2;
+    } else {
+      iStripY = loStripY;
+    }
+    
+    printf("Circ %3d Xs %2d Ys %2d Dev %2d Lpt %1d Hpt %1d \n",loCircuit,loStripX,loStripY,loDev,loLpt,loHpt);
+
+    AliMUONGlobalTrigger *globalTrigger = fTriggerStore->Global();
+    globalTrigger->Print();
+
+  }
+
+}
+
+//__________________________________________________________________________
+void AliMUONTriggerGUI::WriteTriggerRawData() 
+{
+  /// Write raw data (DATE and ROOT) for the trigger store from 
+  /// the DSET digit store
+
+  if (!fTStoreOn) {
+    printf("The trigger store is empty... \n");
+    return;
+  }
+
+  // raw data (ddl)
+
+  AliMUONRawWriter *rawWriter = new AliMUONRawWriter();
+  AliRawDataHeaderSim header;
+  rawWriter->SetHeader(header);
+  rawWriter->Digits2Raw(0,fTriggerStore);
+
+  delete rawWriter;
+
+  // raw data (ddl) to date
+  // AliSimulation::ConvertRawFilesToDate
+
+  char command[256];
+  char dateFileName[256];
+  sprintf(dateFileName,"TriggerGUI.date");
+  sprintf(command, "dateStream -c -s -D -o %s -# %d -C -run %d",
+          dateFileName, 1, 0);
+  FILE* pipe = gSystem->OpenPipe(command, "w");
+
+  UInt_t detectorPattern = 0;
+  fprintf(pipe, "GDC DetectorPattern %u\n", detectorPattern);
+  Float_t ldc = 0;
+  Int_t prevLDC = -1;
+  
+  // loop over detectors and DDLs
+  for (Int_t iDet = 0; iDet < AliDAQ::kNDetectors; iDet++) {
+    for (Int_t iDDL = 0; iDDL < AliDAQ::NumberOfDdls(iDet); iDDL++) {
+      
+      Int_t ddlID = AliDAQ::DdlID(iDet,iDDL);
+      Int_t ldcID = Int_t(ldc + 0.0001);
+      ldc += AliDAQ::NumberOfLdcs(iDet) / AliDAQ::NumberOfDdls(iDet);
+      
+      char rawFileName[256];
+      sprintf(rawFileName, "%s",AliDAQ::DdlFileName(iDet,iDDL));
+      // check existence and size of raw data file
+      FILE* file = fopen(rawFileName, "rb");
+      if (!file) continue;
+      fseek(file, 0, SEEK_END);
+      unsigned long size = ftell(file);
+      fclose(file);
+      if (!size) continue;
+
+      if (ldcID != prevLDC) {
+	fprintf(pipe, " LDC Id %d\n", ldcID);
+	prevLDC = ldcID;
+      }
+      fprintf(pipe, "  Equipment Id %d Payload %s\n", ddlID, rawFileName);
+    }
+  }
+  Int_t result = gSystem->ClosePipe(pipe);
+
+  // raw data (date) to root
+  // AliSimulation::ConvertDateToRoot
+
+  char rootFileName[256];
+  sprintf(rootFileName,"TriggerGUI.root");
+
+  // ALIMDC setup
+  const Int_t kDBSize = 2000000000;
+  const Int_t kTagDBSize = 1000000000;
+  const Bool_t kFilter = kFALSE;
+  const Int_t kCompression = 1;
+
+  char* path = gSystem->Which(gSystem->Getenv("PATH"), "alimdc");
+  if (!path) {
+    printf("the program alimdc was not found\n");
+    return;
+  } else {
+    delete[] path;
+  }
+
+  printf("converting DATE file %s to root file %s \n",
+               dateFileName, rootFileName);
+
+  const char* rawDBFS[2] = { "/tmp/mdc1", "/tmp/mdc2" };
+  const char* tagDBFS    = "/tmp/mdc1/tags";
+
+  // User defined file system locations
+  if (gSystem->Getenv("ALIMDC_RAWDB1"))
+    rawDBFS[0] = gSystem->Getenv("ALIMDC_RAWDB1");
+  if (gSystem->Getenv("ALIMDC_RAWDB2"))
+    rawDBFS[1] = gSystem->Getenv("ALIMDC_RAWDB2");
+  if (gSystem->Getenv("ALIMDC_TAGDB"))
+    tagDBFS = gSystem->Getenv("ALIMDC_TAGDB");
+
+  gSystem->Exec(Form("rm -rf %s",rawDBFS[0]));
+  gSystem->Exec(Form("rm -rf %s",rawDBFS[1]));
+  gSystem->Exec(Form("rm -rf %s",tagDBFS));
+
+  gSystem->Exec(Form("mkdir %s",rawDBFS[0]));
+  gSystem->Exec(Form("mkdir %s",rawDBFS[1]));
+  gSystem->Exec(Form("mkdir %s",tagDBFS));
+
+  result = gSystem->Exec(Form("alimdc %d %d %d %d %s",
+			      kDBSize, kTagDBSize, kFilter, kCompression,
+			      dateFileName));
+  gSystem->Exec(Form("mv %s/*.root %s", rawDBFS[0], rootFileName));
+
+  gSystem->Exec(Form("rm -rf %s",rawDBFS[0]));
+  gSystem->Exec(Form("rm -rf %s",rawDBFS[1]));
+  gSystem->Exec(Form("rm -rf %s",tagDBFS));
+
+}
+
+//__________________________________________________________________________
+void AliMUONTriggerGUI::FETboard(Int_t ib, Int_t amp) 
+{
+  /// Front End test set all strips for board with index "ib"
+  /// AliMUONTriggerGUIbdmap::DoDigits()
+
+  AliMUONTriggerGUIboard *board;
+  AliMUONTriggerGUIboard *btmp;
+  Int_t pos, over, number, nStripX, nStripY;
+
+  board = (AliMUONTriggerGUIboard*)fBoards->At(ib);
+  if (board == 0) return;
+  
+  nStripX = board->GetXSiy2() - board->GetXSiy1() + 1;
+  nStripY = board->GetYSix2() - board->GetYSix1() + 1;
+  
+  number = board->GetNumber();
+  pos    = board->GetPosition();
+  over   = board->GetYOver();
+  
+  for (Int_t imt = 0; imt < kNMT; imt++) {
+    
+    for (Int_t ix = 0; ix < nStripX; ix++) {
+      board->SetDigitX(imt,ix,amp);
+    }
+    
+    for (Int_t iy = 0; iy < nStripY; iy++) {
+      board->SetDigitY(imt,iy,amp);
+      
+      // extended y-strips
+      for (Int_t io = 1; io <= over; io++) {
+	if (io == pos) continue;
+	btmp = (AliMUONTriggerGUIboard*)fBoards->UncheckedAt(number+io-pos);
+	btmp->SetDigitY(imt,iy,amp);
+      }
+      
+    }
+    
+  }
+  
+}
+
+//__________________________________________________________________________
+void AliMUONTriggerGUI::FET(Int_t onoff) 
+{
+  /// Front End test set all strips for all boards
+  /// AliMUONTriggerGUIbdmap::DoDigits()
+
+  Int_t amp = onoff;
+
+  for (Int_t ib = 0; ib < kNBoards; ib++) {
+    FETboard(ib,amp);
+  }
+
+}
+
+//__________________________________________________________________________
+void AliMUONTriggerGUI::ClearDigitStore() 
+{
+  /// Clear the DSET digit store
+
+  fDigitStore->Clear();
+
+}
+
+//__________________________________________________________________________
+void AliMUONTriggerGUI::ClearTriggerStore() 
+{
+  /// Clear the trigger store from the DSET digit store
+
+  fTriggerStore->Clear();
+  fTStoreOn = kFALSE;
+
+}

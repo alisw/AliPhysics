@@ -9,10 +9,12 @@
 /// \brief Trigger GUI utility class: single board object
 //  Author Bogdan Vulpescu, LPC Clermont-Ferrand
 
+#include "AliMpPad.h"
+
 #include <TString.h>
 #include <TObject.h>
 
-class TObjArray;
+class TClonesArray;
 class TBox;
 
 class AliMUONTriggerGUIboard : public TObject
@@ -20,57 +22,62 @@ class AliMUONTriggerGUIboard : public TObject
 
 public:
 
-  AliMUONTriggerGUIboard(Int_t id, Char_t *name);
+  AliMUONTriggerGUIboard();
   virtual ~AliMUONTriggerGUIboard();
 
-  /// returns the standard name of this board
+  /// get the standard name of this board
   Char_t  *GetBoardName()   const { return (Char_t*)(fName->Data()); };
-  /// returns the working status of this board
+  /// get the name of the crate containing this board
+  Char_t  *GetCrateName()   const { return (Char_t*)(fCrateName->Data()); };
+  /// get the working status of this board
   UShort_t GetStatus() const { return fStatus; };
-  /// returns the number of this board
+  /// get the number of this board
   Int_t    GetNumber() const { return fID; };
+  /// get the id of the detector element
+  Int_t    GetDetElemId() const { return fDetElemId; };
+  /// get the id of the circuit
+  Int_t    GetIdCircuit() const { return fIdCircuit; };
+  /// get detector side (Left=0 , Right=1)
+  Int_t GetSide() const;
+  /// get line
+  Int_t GetLine() const;
+  /// get column
+  Int_t GetCol() const;
 
   /// initialize the board
   void Init() {};
   /// set the working status of this board
   void SetStatus(UShort_t s) { fStatus = s; };
   /// set the standard name of this board
-  void SetBoardName(Char_t *name) { fName = new TString(name); };
-  /// set the geometrical location and dimensions of this board
-  void SetDimensions(Int_t imt, 
-		     Float_t xc, Float_t yc, Float_t zc,
-		     Float_t xw, Float_t yw) { 
-    fXCenter[imt] = xc; fYCenter[imt] = yc; fZCenter[imt] = zc;
-    fXWidth[imt]  = xw; fYWidth[imt]  = yw; 
-  };
-  /// set the index range for the x strips
-  void SetXSindex(Int_t ix, Int_t iy1, Int_t iy2) {
-    fXSix  = ix;
-    fXSiy1 = iy1;
-    fXSiy2 = iy2;
-  };
-  /// set the index range for the y strips
-  void SetYSindex(Int_t ix1, Int_t ix2, Int_t iy) {
-    fYSix1 = ix1;
-    fYSix2 = ix2;
-    fYSiy  = iy;
-  };
+  void SetBoardName(const Char_t *name) { fName = new TString(name); };
+  /// set the name of the crate containing this board
+  void SetCrateName(const Char_t *name) { fCrateName = new TString(name); };
   /// set the number of the detector element containing this board
   void SetDetElemId(Int_t id) { fDetElemId = id; };
-  /// set the number of this board 
-  void SetIdCircuit(Int_t id) { fIdCircuit = id; };
+  /// set the number of this board
+  void SetNumber(Int_t id) { fID = id; }
+
+  /// add a mapping x-pad
+  void AddPadX(const AliMpPad &pad, Int_t ich) 
+  { 
+    new ((*fPadsX[ich])[fNPadsX[ich]++]) AliMpPad(pad); 
+  }
+  /// add a mapping y-pad
+  void AddPadY(const AliMpPad &pad, Int_t ich) 
+  { 
+    new ((*fPadsY[ich])[fNPadsY[ich]++]) AliMpPad(pad); 
+  }
+  /// create the display geometry from the mapping pads
+  void MakeGeometry();
+
   /// set an x-strip digit in a chamber with amplitude = amp
   void SetDigitX(Int_t imt, Int_t is, Int_t amp) { 
     fXDig[imt][is] = (UChar_t)amp; }; 
   /// set a  y-strip digit in a chamber with amplitude = amp
   void SetDigitY(Int_t imt, Int_t is, Int_t amp) { 
     fYDig[imt][is] = (UChar_t)amp; }; 
-  /// set neighbouring boards with common y strips
-  void SetYOver(Int_t over) { fYOver = (UChar_t)over; };
   /// get neighbouring boards with common y strips
   UChar_t GetYOver() const  { return fYOver; };
-  /// set the board position inside the detector element in y direction
-  void SetPosition(Int_t pos) { fPosition = (UChar_t)pos; };
   /// get the board position inside the detector element in y direction
   UChar_t GetPosition() const { return fPosition; };
   /// get the digit amplitude for an x-strip in a given chamber
@@ -78,11 +85,14 @@ public:
   /// get the digit amplitude for a  y-strip in a given chamber
   Int_t GetYDig(Int_t imt, Int_t is) const { return fYDig[imt][is]; };
 
+  /// set x-strip box for display
   void SetXDigBox(Int_t imt, Int_t is, Double_t x1, Double_t y1, Double_t x2, Double_t y2);
+  /// set y-strip box for display
   void SetYDigBox(Int_t imt, Int_t is, Double_t x1, Double_t y1, Double_t x2, Double_t y2);
-  /// get the graphical box of an x-trip
+
+  /// get x-strip box for display
   TBox *GetXDigBox(Int_t imt, Int_t is) const { return fXDigBox[imt][is]; };
-  /// get the graphical box of a  y-trip
+  /// get y-strip box for display
   TBox *GetYDigBox(Int_t imt, Int_t is) const { return fYDigBox[imt][is]; };
 
   /// get x-center of the board in chamber imt
@@ -112,18 +122,19 @@ public:
   Int_t GetNStripX() const { return GetXSiy2() - GetXSiy1() + 1; };
   /// get number of y strips
   Int_t GetNStripY() const { return GetYSix2() - GetYSix1() + 1; };
-  /// get the id of the detector element
-  Int_t GetDetElemId() const { return fDetElemId; };
-  /// get the id of the circuit
-  Int_t GetIdCircuit() const { return fIdCircuit; };
 
   /// set true if this board has a gui active
   void   SetOpen(Bool_t open) { fIsOpen = open; };
   /// true if this board has a gui active
   Bool_t IsOpen() const       { return fIsOpen; };
 
+  /// delete the set x-digits
   void  ClearXDigits();
+  /// delete the set y-digits
   void  ClearYDigits();
+
+  /// print information on this board
+  void PrintBoard() const;
 
 private:
 
@@ -135,7 +146,8 @@ private:
   AliMUONTriggerGUIboard& operator=(const AliMUONTriggerGUIboard& board);
 
   TString       *fName;            ///< Board name LCxLxBx or RCxLxBx
-  Int_t          fID;              ///< Board serial number
+  TString       *fCrateName;       ///< Crate name
+  Int_t          fID;              ///< Board array number
   UShort_t       fStatus;          ///< Board status
   UChar_t        fPosition;        ///< Y-boards position
   UChar_t        fYOver;           ///< Y-boards with common y-strips
@@ -166,7 +178,13 @@ private:
 
   Bool_t         fIsOpen;          ///< Selection flag for the digits map
 
-  ClassDef(AliMUONTriggerGUIboard,1) //Trigger GUI utility class: single board object
+  /// adding pads from mapping to calculate the board geometry
+  Int_t fNPadsX[kNMT];             ///< nr of added mapping pads in x
+  Int_t fNPadsY[kNMT];             ///< nr of added mapping pads in y
+  TClonesArray *fPadsX[kNMT];      ///< array of mapping pads in x
+  TClonesArray *fPadsY[kNMT];      ///< array of mapping pads in y
+
+  ClassDef(AliMUONTriggerGUIboard,2) //Trigger GUI utility class: single board object
 
 };
 

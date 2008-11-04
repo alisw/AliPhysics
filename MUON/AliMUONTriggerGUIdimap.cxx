@@ -28,15 +28,13 @@
 #include <TGTab.h>
 #include <TRootEmbeddedCanvas.h>
 #include <TBox.h>
-#include <TClonesArray.h>
 #include <TPave.h>
 #include <TPaveText.h>
 #include <TStyle.h>
 #include <TObjArray.h>
 
-#include "AliRun.h"
+#include "AliRunLoader.h"
 
-#include "AliMUON.h"
 #include "AliMUONVDigit.h"
 #include "AliMpSegmentation.h"
 #include "AliMpVSegmentation.h"
@@ -46,7 +44,7 @@
 #include "AliMUONTriggerGUIboard.h"
 #include "AliMUONTriggerGUIdimap.h"
 
-#include "AliMUONVDigitStore.h"
+#include "AliMUONDigitStoreV1.h"
 
 /// \cond CLASSIMP
 ClassImp(AliMUONTriggerGUIdimap)
@@ -58,6 +56,7 @@ AliMUONTriggerGUIdimap::AliMUONTriggerGUIdimap(TObjArray *boards, const TGWindow
     fMain(0),
     fLoader(0),
     fMCDataInterface(0),
+    fRawDigitStore(0),
     fBoards(0),
     fIsOn(0)
 {
@@ -220,10 +219,10 @@ void AliMUONTriggerGUIdimap::DrawAllMaps()
   /// draw maps 
 
   if (fLoader == 0x0) {
-    return;
+    //return;
   }
   if (fMCDataInterface == 0x0) {
-    return;
+    //return;
   }
 
   DrawMaps(11);
@@ -238,28 +237,28 @@ void AliMUONTriggerGUIdimap::DrawMaps(Int_t chamber)
 {
   /// draw the digits map for chamber-
 
-  TString mapspath = gSystem->Getenv("ALICE_ROOT");
-  mapspath.Append("/MUON/data");
+  Bool_t drawDigits = kTRUE;
+  Bool_t drawDigitsRaw = kTRUE;
+  if (fLoader == 0x0) {
+    drawDigits = kFALSE;
+  }
+  if (fRawDigitStore == 0x0) {
+    drawDigitsRaw = kFALSE;
+  }
+  
+  AliMUONTriggerGUIboard *board;
 
   TCanvas *canvas = fEc[chamber-11]->GetCanvas();
   canvas->cd();
   canvas->Clear();
 
-  AliRunLoader *runLoader = fLoader->GetRunLoader();
-  gAlice = runLoader->GetAliRun();
-  AliMUON *pMUON = (AliMUON*)gAlice->GetModule("MUON");
-  const AliMUONGeometryTransformer* kGeomTransformer = pMUON->GetGeometryTransformer();
-  
-  AliMUONVDigitStore *digitStore = fMCDataInterface->DigitStore(runLoader->GetEventNumber());
-
   TPaveText *label;
   TBox *boxd;
 
-  Char_t fntxt[256], name[8], cln[2];
+  Char_t cln[2];
   Int_t detElemId, cathode, ix, iy, charge, color;
-  Int_t side, col, line, nbx;
   Int_t holdS, holdL, holdC;
-  Float_t xCenter, yCenter, zCenter, xWidth, yWidth, holdXC, holdYC;
+  Float_t xCenter, yCenter, xWidth, yWidth, holdXC, holdYC;
   Float_t xMin, xMax, yMin, yMax;
   Float_t ptx1, ptx2, pty1, pty2;
   Float_t xpmin, xpmax, ypmin, ypmax;
@@ -295,21 +294,18 @@ void AliMUONTriggerGUIdimap::DrawMaps(Int_t chamber)
 
   // draw the boards
   
-  sprintf(fntxt,"%s/guimapp%2d.txt",mapspath.Data(),chamber);
-  FILE *ftxt = fopen(fntxt,"r");
-  
   for (Int_t ib = 0; ib < kNBoards; ib++) {
     
-    fscanf(ftxt,"%d   %d   %d   %d   %f   %f   %f   %f   %f   %s   \n",
-	   &side,&col,&line,&nbx,
-	   &xCenter,&yCenter,&xWidth,&yWidth,&zCenter,
-	   &name[0]);
+    board = (AliMUONTriggerGUIboard*)fBoards->At(ib);
 
-    //printf("%d   %d   %d   %d   %f   %f   %f   %f   %f   %s   \n",side,col,line,nbx,xCenter,yCenter,xWidth,yWidth,zCenter,name);
+    holdS = board->GetSide();
+    holdC = board->GetCol();
+    holdL = board->GetLine();
 
-    holdS = side;
-    holdC = col;
-    holdL = line;
+    xCenter = board->GetXCenter(chamber-11);
+    yCenter = board->GetYCenter(chamber-11);
+    xWidth  = board->GetXWidth(chamber-11);
+    yWidth  = board->GetYWidth(chamber-11);
 
     holdXC = xCenter;
     holdYC = yCenter;
@@ -389,11 +385,8 @@ void AliMUONTriggerGUIdimap::DrawMaps(Int_t chamber)
     
   }
 
-  fclose(ftxt);
-
   // draw digits set from the board GUI
 
-  AliMUONTriggerGUIboard *board;
   Int_t imt = chamber -11;
   Int_t nStripX, nStripY;
   TBox *box;
@@ -449,58 +442,71 @@ void AliMUONTriggerGUIdimap::DrawMaps(Int_t chamber)
 
   }
   
-  // draw the digits
+  // draw the digits from galice
 
-  TIter next(digitStore->CreateIterator());
-  AliMUONVDigit* mdig;
+  if (drawDigits || drawDigitsRaw) {
+
+    AliMUONGeometryTransformer transformer;
+    transformer.LoadGeometryData("transform.dat");
+    
+    AliMUONVDigitStore *digitStore = 0x0;
+    
+    if (drawDigits) {
+      AliRunLoader *runLoader = fLoader->GetRunLoader();
+      digitStore = fMCDataInterface->DigitStore(runLoader->GetEventNumber());
+    }
+    if (drawDigitsRaw) {
+      digitStore = static_cast<AliMUONVDigitStore*>(fRawDigitStore);
+    }
+    
+    TIter next(digitStore->CreateIterator());
+    AliMUONVDigit* mdig;
+    
+    while ( ( mdig = static_cast<AliMUONVDigit*>(next()) ) ) {
+
+      cathode = mdig->Cathode()+1;
+      
+      ix=mdig->PadX();
+      iy=mdig->PadY();
+      detElemId=mdig->DetElemId();      
+      charge = (Int_t)mdig->Charge();
+      color  = 261+5*(charge-1);
+      if (color > 282) color = 282;
+      
+      if (detElemId/100 != chamber) continue;
+      
+      const AliMpVSegmentation* seg2 = AliMpSegmentation::Instance()->GetMpSegmentation(detElemId,AliMp::GetCathodType(cathode-1));
+      
+      AliMpPad mpad = seg2->PadByIndices(AliMpIntPair(ix,iy),kTRUE);
+      
+      // get the pad position and dimensions
+      Float_t xlocal1 = mpad.Position().X();
+      Float_t ylocal1 = mpad.Position().Y();
+      Float_t xlocal2 = mpad.Dimensions().X();
+      Float_t ylocal2 = mpad.Dimensions().Y();
+      
+      transformer.Local2Global(detElemId, xlocal1, ylocal1, 0, xg1, yg1, zg1);
+      // (no transformation for pad dimensions)
+      xg2 = xlocal2;
+      yg2 = ylocal2;
+      
+      // transform in the monitor coordinate system
+      // ALICE SC
+      xpmin = +(xg1-xg2);
+      xpmax = +(xg1+xg2);
+      ypmin = -(yg2-yg1);
+      ypmax = +(yg2+yg1);
+      
+      boxd = new TBox(xpmin,ypmin,xpmax,ypmax);
+      boxd->SetBit(kCannotPick);
+      boxd->SetFillStyle(1001);
+      boxd->SetFillColor(2);
+      boxd->Draw();
+      
+    }  // end digits loop
+    
+  }  // end draw digits
   
-  while ( ( mdig = static_cast<AliMUONVDigit*>(next()) ) ) 
-  {
-    cathode = mdig->Cathode()+1;
-    
-    ix=mdig->PadX();
-    iy=mdig->PadY();
-    detElemId=mdig->DetElemId();      
-    charge = (Int_t)mdig->Charge();
-    color  = 261+5*(charge-1);
-    if (color > 282) color = 282;
-
-    if (detElemId/100 != chamber) continue;
-
-    const AliMpVSegmentation* seg2 = AliMpSegmentation::Instance()->GetMpSegmentation(detElemId,AliMp::GetCathodType(cathode-1));
-    
-    AliMpPad mpad = seg2->PadByIndices(AliMpIntPair(ix,iy),kTRUE);
-    
-    // get the pad position and dimensions
-    Float_t xlocal1 = mpad.Position().X();
-    Float_t ylocal1 = mpad.Position().Y();
-    Float_t xlocal2 = mpad.Dimensions().X();
-    Float_t ylocal2 = mpad.Dimensions().Y();
-    
-    kGeomTransformer->Local2Global(detElemId, xlocal1, ylocal1, 0, xg1, yg1, zg1);
-    // (no transformation for pad dimensions)
-    xg2 = xlocal2;
-    yg2 = ylocal2;
-
-    // transform in the monitor coordinate system
-    //xpmin = -(xg1+xg2);
-    //xpmax = -(xg1-xg2);
-    //ypmin = -(yg2-yg1);
-    //ypmax = +(yg2+yg1);
-    // ALICE SC
-    xpmin = +(xg1-xg2);
-    xpmax = +(xg1+xg2);
-    ypmin = -(yg2-yg1);
-    ypmax = +(yg2+yg1);
-	      
-    boxd = new TBox(xpmin,ypmin,xpmax,ypmax);
-    boxd->SetBit(kCannotPick);
-    boxd->SetFillStyle(1001);
-    boxd->SetFillColor(2);
-    boxd->Draw();
-    
-  }  // end digits loop
-
   canvas->Modified();
   canvas->Update();
 

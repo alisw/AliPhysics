@@ -35,8 +35,7 @@
 #include <TObjArray.h>
 #include <TCanvas.h>
 
-#include "AliRun.h"
-#include "AliMUON.h"
+#include "AliRunLoader.h"
 #include "AliMUONVDigit.h"
 #include "AliMpVSegmentation.h"
 #include "AliMpSegmentation.h"
@@ -46,8 +45,8 @@
 #include "AliMUONLocalTriggerBoard.h"
 #include "AliMUONTriggerCrateStore.h"
 #include "AliMUONMCDataInterface.h"
-#include "AliMUONVTriggerStore.h"
-#include "AliMUONVDigitStore.h"
+#include "AliMUONTriggerStoreV1.h"
+#include "AliMUONDigitStoreV1.h"
 #include "AliMpDEManager.h"
 
 #include "AliMUONTriggerGUIboard.h"
@@ -65,6 +64,8 @@ AliMUONTriggerGUIbdmap::AliMUONTriggerGUIbdmap(const TGWindow *p, const TGWindow
     fBoard(0),
     fLoader(0),
     fMCDataInterface(0),
+    fRawDigitStore(0),
+    fRawTriggerStore(0),
     fXStrips(0),
     fYStrips(0),
     fEditStrips(0),
@@ -275,17 +276,26 @@ void AliMUONTriggerGUIbdmap::Show()
 void AliMUONTriggerGUIbdmap::LocalTriggerInfo()
 {
   /// print the local trigger
-  
+
   TGText txt;
   Char_t buffer[20];
 
   sprintf(buffer,"Local trigger info\n");
   fLocTrigE->LoadBuffer(buffer);
 
-  AliRunLoader *runLoader = fLoader->GetRunLoader();
-  gAlice = runLoader->GetAliRun();
+  AliMUONVTriggerStore *triggerStore;
 
-  AliMUONVTriggerStore *triggerStore = fMCDataInterface->TriggerStore(runLoader->GetEventNumber());
+  if (fLoader != 0x0) {
+    AliRunLoader *runLoader = fLoader->GetRunLoader();
+    triggerStore = fMCDataInterface->TriggerStore(runLoader->GetEventNumber());
+  } else if (fRawTriggerStore != 0x0) {
+    triggerStore = static_cast<AliMUONVTriggerStore*>(fRawTriggerStore);
+  } else {
+    sprintf(buffer,"No data loaded yet...\n");
+    txt.LoadBuffer(buffer);
+    fLocTrigE->AddText(&txt);
+    return;
+  }
 
   Int_t circuitNumber = fBoard->GetIdCircuit();
 
@@ -373,52 +383,13 @@ void AliMUONTriggerGUIbdmap::Init()
 {
   /// initialize the boards in the four MT
 
-  TString mapspath = gSystem->Getenv("ALICE_ROOT");
-  mapspath.Append("/MUON/data");
-
-  TString mapName[kNMT];
-  mapName[0] = TString(mapspath.Data());
-  mapName[1] = TString(mapspath.Data());
-  mapName[2] = TString(mapspath.Data());
-  mapName[3] = TString(mapspath.Data());
-  mapName[0].Append("/guimapp11.txt");
-  mapName[1].Append("/guimapp12.txt");
-  mapName[2].Append("/guimapp13.txt");
-  mapName[3].Append("/guimapp14.txt");
-
-  Int_t side, col, line, nbx;
-  Float_t xCenter, yCenter, zCenter, xWidth, yWidth;
-  Char_t name[8];
-
-  FILE *fmap;
   for (Int_t i = 0; i < kNMT; i++) {
 
-    fmap = fopen(mapName[i].Data(),"r");
-
-    for (Int_t ib = 0; ib < kNBoards; ib++) {
-
-      fscanf(fmap,"%d   %d   %d   %d   %f   %f   %f   %f   %f   %s   \n",&side,&col,&line,&nbx,&xCenter,&yCenter,&xWidth,&yWidth,&zCenter,&name[0]);
-
-      if (side == 0) {
-	sprintf(name,"LC%1dL%1dB%1d%1d",col,line,2*nbx-1,2*nbx);
-      }
-      if (side == 1) {
-	sprintf(name,"RC%1dL%1dB%1d%1d",col,line,2*nbx-1,2*nbx);
-      }
-
-      if (strncmp(name,fBoard->GetBoardName(),7) == 0) {
-	fXWidth[i]  = xWidth;
-	fYWidth[i]  = yWidth; 
-	fXCenter[i] = xCenter;
-	fYCenter[i] = yCenter; 
-
-	fclose(fmap);
-
-	break;
-      }
-
-    }
-
+    fXWidth[i]  = fBoard->GetXWidth(i);
+    fYWidth[i]  = fBoard->GetYWidth(i); 
+    fXCenter[i] = fBoard->GetXCenter(i);
+    fYCenter[i] = fBoard->GetYCenter(i); 
+    
   }
 
   Float_t xw, yw;
@@ -627,7 +598,7 @@ void AliMUONTriggerGUIbdmap::EditStrips(Int_t event, Int_t x, Int_t y, TObject *
 	      fYDigBox[iMT][iy]->SetX2(xMax);
 	      fYDigBox[iMT][iy]->SetY2(yMax);
 	      
-	      //fYDigBox[iMT][iy]->Draw();
+	      fYDigBox[iMT][iy]->Draw();
 
 	    } else if (fYDigBox[iMT][iy]->GetFillStyle() == 1001) {
 
@@ -644,7 +615,7 @@ void AliMUONTriggerGUIbdmap::EditStrips(Int_t event, Int_t x, Int_t y, TObject *
 	      fYDigBox[iMT][iy]->SetX2(-fBoard->GetXCenter(iMT));
 	      fYDigBox[iMT][iy]->SetY2(-fBoard->GetYCenter(iMT));
 
-	      //fYDigBox[iMT][iy]->Draw();
+	      fYDigBox[iMT][iy]->Draw();
 
 	    }
 
@@ -859,10 +830,14 @@ void AliMUONTriggerGUIbdmap::DrawDigits(Bool_t bx, Bool_t by)
 {
   /// draw the digits in "x" or/and "y"
 
-  AliRunLoader *runLoader = fLoader->GetRunLoader();
-  gAlice = runLoader->GetAliRun();
-  AliMUON *pMUON = (AliMUON*)gAlice->GetModule("MUON");
-  const AliMUONGeometryTransformer* kGeomTransformer = pMUON->GetGeometryTransformer();
+  Bool_t drawDigits = kTRUE;
+  Bool_t drawDigitsRaw = kTRUE;
+  if (fLoader == 0x0) {
+    drawDigits = kFALSE;
+  }
+  if (fRawDigitStore == 0x0) {
+    drawDigitsRaw = kFALSE;
+  }
   
   AliMUONTriggerGUIboard *board;
   Int_t over, pos, number;
@@ -879,188 +854,209 @@ void AliMUONTriggerGUIbdmap::DrawDigits(Bool_t bx, Bool_t by)
   TBox *boxd;
   Double_t xMin, xMax, yMin, yMax;
   Double_t *px, *py;
-
+    
   number = fBoard->GetNumber();
   pos    = fBoard->GetPosition();
   over   = fBoard->GetYOver();
-
-  AliMUONVDigitStore *digitStore = fMCDataInterface->DigitStore(runLoader->GetEventNumber());
   
-  for (Int_t i = 0; i < kNMT; i++) {
+  if (drawDigits || drawDigitsRaw) {
 
+  for (Int_t i = 0; i < kNMT; i++) {
+    
     fCanvas[i]->cd();
     
     fCanvas[i]->GetRange(xc1,yc1,xc2,yc2);
     xcw = (Float_t)(0.5*(xc2-xc1));
     ycw = (Float_t)(0.5*(yc2-yc1));
 
-    chamber = 11+i;
+    AliMUONVDigitStore *digitStore = 0x0;
+    AliMUONGeometryTransformer transformer;
+    transformer.LoadGeometryData("transform.dat");
 
+    if (drawDigits) {
+      AliRunLoader *runLoader = fLoader->GetRunLoader();
+      digitStore = fMCDataInterface->DigitStore(runLoader->GetEventNumber());
+    }
+    if (drawDigitsRaw) {
+      digitStore = static_cast<AliMUONVDigitStore*>(fRawDigitStore);
+    }
+
+    chamber = 11+i;
+    
     AliMpIntPair deRange = AliMpDEManager::GetDetElemIdRange(chamber-1);
     TIter next(digitStore->CreateIterator(deRange.GetFirst(),deRange.GetSecond()));
     AliMUONVDigit *mdig;
-
+    
     while ( ( mdig = static_cast<AliMUONVDigit*>(next())) )
-    {
-      cathode = mdig->Cathode()+1;
-      
-      ix = mdig->PadX();
-      iy = mdig->PadY();
-      detElemId = mdig->DetElemId(); 
-      charge = (Int_t)mdig->Charge();
-
-      Bool_t triggerBgn = kFALSE;
-      Int_t schg = (Int_t)(charge + 0.5);
-      // APPLY CONDITION ON SOFT BACKGROUND	
-      Int_t tchg = schg - (Int_t(schg/10))*10;	
-      if (schg<=10 || tchg>0) {
-	triggerBgn = kFALSE;
-      } else {
-	triggerBgn = kTRUE;
-      }
-
-      if (detElemId%100 != fBoard->GetDetElemId()) continue;
-      
-      seg = AliMpSegmentation::Instance()->GetMpSegmentation(detElemId, AliMp::GetCathodType(cathode-1));  
-      
-      pad = seg->PadByIndices(AliMpIntPair(ix,iy),kTRUE);
-      
-      //if (cathode == 1) printf("GUI x:  ix %d iy %d \n",ix,iy);
-      //if (cathode == 2) printf("GUI y:  ix %d iy %d \n",ix,iy);
-
-      // get the pad position and dimensions
-      Float_t xlocal1 = pad.Position().X();
-      Float_t ylocal1 = pad.Position().Y();
-      Float_t xlocal2 = pad.Dimensions().X();
-      Float_t ylocal2 = pad.Dimensions().Y();
-      
-      kGeomTransformer->Local2Global(detElemId, xlocal1, ylocal1, 0, xg1, yg1, zg1);
-      // (no transformation for pad dimensions)
-      xg2 = xlocal2;
-      yg2 = ylocal2;
-      
-      // transform in the monitor coordinate system
-      //xpmin = -(xg1+xg2);
-      //xpmax = -(xg1-xg2);
-      //ypmin = -(yg2-yg1);
-      //ypmax = +(yg2+yg1);
-      // ALICE SC
-      xpmin = +(xg1-xg2);
-      xpmax = +(xg1+xg2);
-      ypmin = -(yg2-yg1);
-      ypmax = +(yg2+yg1);
-       
-      xpmin -= fXCenter[i];
-      xpmax -= fXCenter[i];
-      ypmin -= fYCenter[i];
-      ypmax -= fYCenter[i];
-
-      xdw = xpmax-xpmin;
-      ydw = ypmax-ypmin;
-
-      // x-strips
-      if ((xdw > ydw) && bx) {
-
-	//printf("X strips mdig->Cathode() = %1d \n",mdig->Cathode());
-
-	Int_t iX, iY1, iY2;
-	iX  = fBoard->GetXSix();
-	iY1 = fBoard->GetXSiy1();
-	iY2 = fBoard->GetXSiy2();
-	if (ix == iX && iy >= iY1 && iy <= iY2) {
-	  //printf("Digit indices (x-strip) ix = %3d iy = %3d board = %s %d chamber = %2d \n",ix,iy,fBoard->GetBoardName(),fBoard->GetNumber(),chamber); 
-	  /*
-	  xpmin += 0.01*fXWidth[i];
-	  xpmax -= 0.01*fXWidth[i];
-	  ypmin += 0.1*ydw;
-	  ypmax -= 0.1*ydw;
-	  */
-	  boxd = new TBox(xpmin,ypmin,xpmax,ypmax);
-	  boxd->SetFillStyle(1001);
-	  if (triggerBgn) boxd->SetFillColor(6);
-	  else boxd->SetFillColor(5);
-	  boxd->SetBit(kCannotPick);
-	  boxd->Draw();
+      {
+	cathode = mdig->Cathode();
+	
+	ix = mdig->PadX();
+	iy = mdig->PadY();
+	detElemId = mdig->DetElemId(); 
+	charge = (Int_t)mdig->Charge();
+	
+	Bool_t triggerBgn = kFALSE;
+	Int_t schg = (Int_t)(charge + 0.5);
+	// APPLY CONDITION ON SOFT BACKGROUND	
+	Int_t tchg = schg - (Int_t(schg/10))*10;	
+	if (schg<=10 || tchg>0) {
+	  triggerBgn = kFALSE;
+	} else {
+	  triggerBgn = kTRUE;
+	}
+	
+	if (detElemId%100 != fBoard->GetDetElemId()) continue;
+	
+	seg = AliMpSegmentation::Instance()->GetMpSegmentation(detElemId, AliMp::GetCathodType(cathode));  
+	
+	pad = seg->PadByIndices(AliMpIntPair(ix,iy),kTRUE);
+	
+	//if (cathode == 0) printf("GUI x:  ix %d iy %d \n",ix,iy);
+	//if (cathode == 1) printf("GUI y:  ix %d iy %d \n",ix,iy);
+	
+	// get the pad position and dimensions
+	Float_t xlocal1 = pad.Position().X();
+	Float_t ylocal1 = pad.Position().Y();
+	Float_t xlocal2 = pad.Dimensions().X();
+	Float_t ylocal2 = pad.Dimensions().Y();
+	
+	transformer.Local2Global(detElemId, xlocal1, ylocal1, 0, xg1, yg1, zg1);
+	// (no transformation for pad dimensions)
+	xg2 = xlocal2;
+	yg2 = ylocal2;
+	
+	// transform in the monitor coordinate system
+	// ALICE SC
+	xpmin = +(xg1-xg2);
+	xpmax = +(xg1+xg2);
+	ypmin = -(yg2-yg1);
+	ypmax = +(yg2+yg1);
+	
+	xpmin -= fXCenter[i];
+	xpmax -= fXCenter[i];
+	ypmin -= fYCenter[i];
+	ypmax -= fYCenter[i];
+	
+	xdw = xpmax-xpmin;
+	ydw = ypmax-ypmin;
+	
+	// x-strips
+	if ((xdw > ydw) && bx) {
 	  
-	  fXDigBox[i][iy-iY1]->SetFillStyle(1001);
-	  fXDigBox[i][iy-iY1]->SetFillColor(2);
-	  fXDigBox[i][iy-iY1]->SetX1(xpmin);
-	  fXDigBox[i][iy-iY1]->SetY1(ypmin);
-	  fXDigBox[i][iy-iY1]->SetX2(xpmax);
-	  fXDigBox[i][iy-iY1]->SetY2(ypmax);
-	  fXDigBox[i][iy-iY1]->Draw();
-
-	  sprintf(cln,"%2d",(iy-iY1));
-	  fXLabelL[i][iy-iY1]->Clear();
-	  fXLabelL[i][iy-iY1]->AddText(cln);
-	  fXLabelL[i][iy-iY1]->Draw();
-	  fXLabelR[i][iy-iY1]->Clear();
-	  fXLabelR[i][iy-iY1]->AddText(cln);
-	  fXLabelR[i][iy-iY1]->Draw();
-
-	  fBoard->SetDigitX(i,iy-iY1,charge);
-
-	}
-
-      }
-
-      // y-strips
-      if ((xdw < ydw) && by) {
-
-	//printf("Y strips mdig->Cathode() = %1d \n",mdig->Cathode());
-
-	Int_t iX1, iX2, iY;
-	iX1 = fBoard->GetYSix1();
-	iX2 = fBoard->GetYSix2();
-	iY  = fBoard->GetYSiy();
-	if (ix >= iX1 && ix <= iX2 && iy == iY) {
-	  //printf("Digit indices (y-strip) ix = %3d iy = %3d board = %s chamber = %2d \n",ix,iy,fBoard->GetBoardName(),chamber); 
-	  ypmin = -0.5*fYWidth[i];
-	  ypmax = +0.5*fYWidth[i];
-	  /*
-	  ypmin = -0.5*fYWidth[i];
-	  ypmax = +0.5*fYWidth[i];
-	  ypmin += 0.01*fYWidth[i];
-	  ypmax -= 0.01*fYWidth[i];	  
-	  xpmin += 0.1*xdw;
-	  xpmax -= 0.1*xdw;
-	  */
-	  boxd = new TBox(xpmin,ypmin,xpmax,ypmax);
-	  boxd->SetFillStyle(1001);
-	  if (triggerBgn) boxd->SetFillColor(6);
-	  else boxd->SetFillColor(5);
-	  boxd->SetBit(kCannotPick);
-	  boxd->Draw();
-
-	  fYDigBox[i][ix-iX1]->SetFillStyle(1001);
-	  fYDigBox[i][ix-iX1]->SetFillColor(2);
-	  fYDigBox[i][ix-iX1]->SetX1(xpmin);
-	  fYDigBox[i][ix-iX1]->SetY1(ypmin);
-	  fYDigBox[i][ix-iX1]->SetX2(xpmax);
-	  fYDigBox[i][ix-iX1]->SetY2(ypmax);
-	  fYDigBox[i][ix-iX1]->Draw();
-
-	  sprintf(cln,"%2d",(ix-iX1));
-	  fYLabelL[i][ix-iX1]->Clear();
-	  fYLabelL[i][ix-iX1]->AddText(cln);
-	  fYLabelL[i][ix-iX1]->Draw();
-	  fYLabelR[i][ix-iX1]->Clear();
-	  fYLabelR[i][ix-iX1]->AddText(cln);
-	  fYLabelR[i][ix-iX1]->Draw();
-
-	  fBoard->SetDigitY(i,ix-iX1,charge);
-
-	  // extended y-strips
-	  for (Int_t io = 1; io <= over; io++) {
-	    if (io == pos) continue;
-	    board = (AliMUONTriggerGUIboard*)fBoards->UncheckedAt(number+io-pos);
-	    board->SetDigitY(i,ix-iX1,charge);
+	  //printf("X strips mdig->Cathode() = %1d \n",mdig->Cathode());
+	  
+	  Int_t iX, iY1, iY2;
+	  iX  = fBoard->GetXSix();
+	  iY1 = fBoard->GetXSiy1();
+	  iY2 = fBoard->GetXSiy2();
+	  if (ix == iX && iy >= iY1 && iy <= iY2) {
+	    //printf("Digit indices (x-strip) ix = %3d iy = %3d board = %s %d chamber = %2d \n",ix,iy,fBoard->GetBoardName(),fBoard->GetNumber(),chamber); 
+	    /*
+	      xpmin += 0.01*fXWidth[i];
+	      xpmax -= 0.01*fXWidth[i];
+	      ypmin += 0.1*ydw;
+	      ypmax -= 0.1*ydw;
+	    */
+	    boxd = new TBox(xpmin,ypmin,xpmax,ypmax);
+	    boxd->SetFillStyle(1001);
+	    if (triggerBgn) boxd->SetFillColor(6);
+	    else boxd->SetFillColor(5);
+	    boxd->SetBit(kCannotPick);
+	    boxd->Draw();
+	    
+	    fXDigBox[i][iy-iY1]->SetFillStyle(1001);
+	    fXDigBox[i][iy-iY1]->SetFillColor(2);
+	    fXDigBox[i][iy-iY1]->SetX1(xpmin);
+	    fXDigBox[i][iy-iY1]->SetY1(ypmin);
+	    fXDigBox[i][iy-iY1]->SetX2(xpmax);
+	    fXDigBox[i][iy-iY1]->SetY2(ypmax);
+	    fXDigBox[i][iy-iY1]->Draw();
+	    
+	    sprintf(cln,"%2d",(iy-iY1));
+	    fXLabelL[i][iy-iY1]->Clear();
+	    fXLabelL[i][iy-iY1]->AddText(cln);
+	    fXLabelL[i][iy-iY1]->Draw();
+	    fXLabelR[i][iy-iY1]->Clear();
+	    fXLabelR[i][iy-iY1]->AddText(cln);
+	    fXLabelR[i][iy-iY1]->Draw();
+	    
+	    fBoard->SetDigitX(i,iy-iY1,charge);
+	    
 	  }
-
+	  
 	}
-      }
-      
-    }  // end digits loop
+	
+	// y-strips
+	if ((xdw < ydw) && by) {
+	  
+	  //printf("Y strips mdig->Cathode() = %1d \n",mdig->Cathode());
+	  
+	  Int_t iX1, iX2, iY;
+	  iX1 = fBoard->GetYSix1();
+	  iX2 = fBoard->GetYSix2();
+	  iY  = fBoard->GetYSiy();
+	  if (ix >= iX1 && ix <= iX2 && iy == iY) {
+	    //printf("Digit indices (y-strip) ix = %3d iy = %3d board = %s chamber = %2d \n",ix,iy,fBoard->GetBoardName(),chamber); 
+	    ypmin = -0.5*fYWidth[i];
+	    ypmax = +0.5*fYWidth[i];
+	    /*
+	      ypmin = -0.5*fYWidth[i];
+	      ypmax = +0.5*fYWidth[i];
+	      ypmin += 0.01*fYWidth[i];
+	      ypmax -= 0.01*fYWidth[i];	  
+	      xpmin += 0.1*xdw;
+	      xpmax -= 0.1*xdw;
+	    */
+	    boxd = new TBox(xpmin,ypmin,xpmax,ypmax);
+	    boxd->SetFillStyle(1001);
+	    if (triggerBgn) boxd->SetFillColor(6);
+	    else boxd->SetFillColor(5);
+	    boxd->SetBit(kCannotPick);
+	    boxd->Draw();
+	    
+	    fYDigBox[i][ix-iX1]->SetFillStyle(1001);
+	    fYDigBox[i][ix-iX1]->SetFillColor(2);
+	    fYDigBox[i][ix-iX1]->SetX1(xpmin);
+	    fYDigBox[i][ix-iX1]->SetY1(ypmin);
+	    fYDigBox[i][ix-iX1]->SetX2(xpmax);
+	    fYDigBox[i][ix-iX1]->SetY2(ypmax);
+	    fYDigBox[i][ix-iX1]->Draw();
+	    
+	    sprintf(cln,"%2d",(ix-iX1));
+	    fYLabelL[i][ix-iX1]->Clear();
+	    fYLabelL[i][ix-iX1]->AddText(cln);
+	    fYLabelL[i][ix-iX1]->Draw();
+	    fYLabelR[i][ix-iX1]->Clear();
+	    fYLabelR[i][ix-iX1]->AddText(cln);
+	    fYLabelR[i][ix-iX1]->Draw();
+	    
+	    fBoard->SetDigitY(i,ix-iX1,charge);
+	    
+	    // extended y-strips
+	    for (Int_t io = 1; io <= over; io++) {
+	      if (io == pos) continue;
+	      board = (AliMUONTriggerGUIboard*)fBoards->UncheckedAt(number+io-pos);
+	      board->SetDigitY(i,ix-iX1,charge);
+	    }
+	    
+	  }
+	}
+	
+      }  // end digits loop
+
+  }  // end chamber loop
+
+  }  // end drawDigits
+
+  // DSET digits
+  for (Int_t i = 0; i < kNMT; i++) {
+    
+    fCanvas[i]->cd();
+    
+    fCanvas[i]->GetRange(xc1,yc1,xc2,yc2);
+    xcw = (Float_t)(0.5*(xc2-xc1));
+    ycw = (Float_t)(0.5*(yc2-yc1));
     
     // x-strips DSET
     if (bx) {
@@ -1152,7 +1148,6 @@ void AliMUONTriggerGUIbdmap::DrawDigits(Bool_t bx, Bool_t by)
 	  fYLabelR[i][iy]->AddText(cln);
 	  fYLabelR[i][iy]->Draw();
 	  
-	  
 	  fYDigBox[i][iy]->Draw();
 	  
 	}
@@ -1164,7 +1159,7 @@ void AliMUONTriggerGUIbdmap::DrawDigits(Bool_t bx, Bool_t by)
     fCanvas[i]->Modified();
     fCanvas[i]->Update();
       
-  }  // end canvas loop
+  }  // end canvas (chamber) loop
 
   fMain->MapWindow();
 
@@ -1175,10 +1170,8 @@ void AliMUONTriggerGUIbdmap::DrawStrips(Bool_t bx, Bool_t by)
 {
   /// draw the "x" or/and "y" strips
 
-  AliRunLoader *runLoader = fLoader->GetRunLoader();
-  gAlice = runLoader->GetAliRun();
-  AliMUON *pMUON = (AliMUON*)gAlice->GetModule("MUON");
-  const AliMUONGeometryTransformer* kGeomTransformer = pMUON->GetGeometryTransformer();
+  AliMUONGeometryTransformer transformer;
+  transformer.LoadGeometryData("transform.dat");
 
   const AliMpVSegmentation* seg;
   AliMpPad pad;
@@ -1186,7 +1179,7 @@ void AliMUONTriggerGUIbdmap::DrawStrips(Bool_t bx, Bool_t by)
   Int_t chamber;
   Float_t xg1, xg2, yg1, yg2, zg1;
   Float_t xlocal1, xlocal2, ylocal1, ylocal2;
-  Int_t detElemId, ic, maxX, maxY;
+  Int_t detElemId, maxX, maxY;
   Float_t xdw, ydw, xpmin, xpmax, ypmin, ypmax;
   Float_t ptx1, ptx2, pty1, pty2;
   Char_t cln[2];
@@ -1222,10 +1215,9 @@ void AliMUONTriggerGUIbdmap::DrawStrips(Bool_t bx, Bool_t by)
     
       if (detElemId%100 != fBoard->GetDetElemId()) continue;
 
-      /*---------- y-pads ic = 2 ----------*/
-      ic = 2;
+      /*---------- y-pads ic = 1 ----------*/
       
-      seg = AliMpSegmentation::Instance()->GetMpSegmentation(detElemId, AliMp::GetCathodType(ic-1));  
+      seg = AliMpSegmentation::Instance()->GetMpSegmentation(detElemId, AliMp::kCath1);  
 
       maxX = seg->MaxPadIndexX();
       maxY = seg->MaxPadIndexY();
@@ -1243,16 +1235,12 @@ void AliMUONTriggerGUIbdmap::DrawStrips(Bool_t bx, Bool_t by)
 	  xlocal2 = pad.Dimensions().X();
 	  ylocal2 = pad.Dimensions().Y();
 	  
-	  kGeomTransformer->Local2Global(detElemId, xlocal1, ylocal1, 0, xg1, yg1, zg1);
+	  transformer.Local2Global(detElemId, xlocal1, ylocal1, 0, xg1, yg1, zg1);
 	  // (no transformation for pad dimensions)
 	  xg2 = xlocal2;
 	  yg2 = ylocal2;
 	  
 	  // transform in the monitor coordinate system
-	  //xpmin = -(xg1+xg2);
-	  //xpmax = -(xg1-xg2);
-	  //ypmin = -(yg2-yg1);
-	  //ypmax = +(yg2+yg1);
 	  // ALICE SC
 	  xpmin = +(xg1-xg2);
 	  xpmax = +(xg1+xg2);
@@ -1322,10 +1310,9 @@ void AliMUONTriggerGUIbdmap::DrawStrips(Bool_t bx, Bool_t by)
 	
       }  // end maxX
       
-      /*---------- x-pads ic = 1 ----------*/
-      ic = 1;
+      /*---------- x-pads ic = 0 ----------*/
       
-      seg = AliMpSegmentation::Instance()->GetMpSegmentation(detElemId, AliMp::GetCathodType(ic-1)); 
+      seg = AliMpSegmentation::Instance()->GetMpSegmentation(detElemId, AliMp::kCath0); 
 
       maxX = seg->MaxPadIndexX();
       maxY = seg->MaxPadIndexY();
@@ -1343,16 +1330,12 @@ void AliMUONTriggerGUIbdmap::DrawStrips(Bool_t bx, Bool_t by)
 	  xlocal2 = pad.Dimensions().X();
 	  ylocal2 = pad.Dimensions().Y();
 	  
-	  kGeomTransformer->Local2Global(detElemId, xlocal1, ylocal1, 0, xg1, yg1, zg1);
+	  transformer.Local2Global(detElemId, xlocal1, ylocal1, 0, xg1, yg1, zg1);
 	  // (no transformation for pad dimensions)
 	  xg2 = xlocal2;
 	  yg2 = ylocal2;
 	  
 	  // transform in the monitor coordinate system
-	  //xpmin = -(xg1+xg2);
-	  //xpmax = -(xg1-xg2);
-	  //ypmin = -(yg2-yg1);
-	  //ypmax = +(yg2+yg1);
 	  // ALICE SC
 	  xpmin = +(xg1-xg2);
 	  xpmax = +(xg1+xg2);
@@ -1430,7 +1413,7 @@ void AliMUONTriggerGUIbdmap::DrawStrips(Bool_t bx, Bool_t by)
 }
 
 //__________________________________________________________________________
-void AliMUONTriggerGUIbdmap::CloseWindow()
+void AliMUONTriggerGUIbdmap::CloseWindow() const
 {
   /// close dialog in response to window manager close.
 

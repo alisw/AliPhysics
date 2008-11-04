@@ -23,7 +23,11 @@
 /// \author Bogdan Vulpescu, LPC Clermont-Ferrand
 //-----------------------------------------------------------------------------
 
+#include <TClonesArray.h>
 #include <TBox.h>
+#include <TMath.h>
+
+#include "AliMUONGeometryTransformer.h"
 
 #include "AliMUONTriggerGUIboard.h"
 
@@ -32,9 +36,10 @@ ClassImp(AliMUONTriggerGUIboard)
 /// \endcond
 
 //__________________________________________________________________________
-AliMUONTriggerGUIboard::AliMUONTriggerGUIboard(Int_t id, Char_t *name) 
+AliMUONTriggerGUIboard::AliMUONTriggerGUIboard() 
   : TObject(),
     fName(0),
+    fCrateName(0),
     fID(-1),
     fStatus(0),
     fPosition(0),
@@ -47,12 +52,16 @@ AliMUONTriggerGUIboard::AliMUONTriggerGUIboard(Int_t id, Char_t *name)
     fYSiy(0),
     fDetElemId(0),
     fIdCircuit(-1),
-    fIsOpen(0)
+    fIsOpen(0),
+    fNPadsX(),
+    fNPadsY(),
+    fPadsX(),
+    fPadsY()
 {
   /// board main constructor
 
-  fName = new TString(name);
-  fID   = id;
+  fName = new TString("");
+  fCrateName = new TString("");
 
   for (Int_t i = 0; i < kNMT; i++) {
     fXCenter[i] = 0.;
@@ -89,6 +98,11 @@ AliMUONTriggerGUIboard::AliMUONTriggerGUIboard(Int_t id, Char_t *name)
 
   fYOver    = 0;
   fPosition = 0;
+
+  for (Int_t i = 0; i < kNMT; i++) {
+    fPadsX[i] = new TClonesArray("AliMpPad",16); fNPadsX[i] = 0;
+    fPadsY[i] = new TClonesArray("AliMpPad",16); fNPadsY[i] = 0;
+  }
 
 }
 
@@ -157,3 +171,165 @@ void AliMUONTriggerGUIboard::ClearYDigits()
   }
 
 }
+
+//__________________________________________________________________________
+void AliMUONTriggerGUIboard::MakeGeometry()
+{
+  /// create the display geometry from the mapping pads
+
+  AliMpPad *pad;
+
+  // circuit number and manu channel (from x-strips)
+  for (Int_t ich = 0; ich < kNMT; ich++) {
+    if (fNPadsX[ich]) {
+      pad = (AliMpPad*)fPadsX[ich]->At(0);
+      AliMpIntPair loc = pad->GetLocation(0);
+      fIdCircuit = loc.GetFirst();
+      break;
+    }
+  }
+
+  // position index
+  if (fName->Length()) {
+    if (fName->Contains("12")) fPosition = 1;
+    if (fName->Contains("34")) fPosition = 2;
+    if (fName->Contains("56")) fPosition = 3;
+    if (fName->Contains("78")) fPosition = 4;
+  }
+
+  // position index for common y-strip boards
+  for (Int_t ich = 0; ich < kNMT; ich++) {
+    if (fNPadsY[ich]) {
+      AliMpPad *pad = (AliMpPad*)fPadsY[ich]->At(0);
+      fYOver = pad->GetNofLocations();
+      break;
+    }
+  }
+
+  // pad indices
+  Int_t padxIx = -1, padxIy1 = +999, padxIy2 = -999;
+  Int_t padyIy = -1, padyIx1 = +999, padyIx2 = -999;
+  for (Int_t ip = 0; ip < fNPadsX[0]; ip++) {
+    pad = (AliMpPad*)fPadsX[0]->At(ip);
+    AliMpIntPair ind = pad->GetIndices();
+    padxIx = ind.GetFirst();
+    padxIy1 = TMath::Min(padxIy1,ind.GetSecond());
+    padxIy2 = TMath::Max(padxIy2,ind.GetSecond());
+  }
+  for (Int_t ip = 0; ip < fNPadsY[0]; ip++) {
+    pad = (AliMpPad*)fPadsY[0]->At(ip);
+    AliMpIntPair ind = pad->GetIndices();
+    padyIy = ind.GetSecond();
+    padyIx1 = TMath::Min(padyIx1,ind.GetFirst());
+    padyIx2 = TMath::Max(padyIx2,ind.GetFirst());
+  }
+  fXSix  = padxIx;
+  fXSiy1 = padxIy1;
+  fXSiy2 = padxIy2;
+  fYSiy  = padyIy;
+  fYSix1 = padyIx1;
+  fYSix2 = padyIx2;
+
+  // position and dimension
+
+  AliMUONGeometryTransformer transformer;
+  transformer.LoadGeometryData("transform.dat");
+
+  Float_t minX, maxX, minY, maxY;
+  Float_t dx, dy;
+  Float_t xloc, yloc, xglo, yglo, zglo;
+  for (Int_t ich = 0; ich < kNMT; ich++) {
+    minX = +9999; maxX = -9999;
+    minY = +9999; maxY = -9999;
+    for (Int_t ix = 0; ix < fNPadsX[ich]; ix++) {
+      pad = (AliMpPad*)fPadsX[ich]->At(ix);
+      xloc = pad->Position().X();
+      yloc = pad->Position().Y();
+      dx = pad->Dimensions().X();
+      dy = pad->Dimensions().Y();
+      transformer.Local2Global((11+ich)*100+GetDetElemId(), xloc, yloc, 0, xglo, yglo, zglo);
+      minX = TMath::Min(minX,(xglo-dx));
+      maxX = TMath::Max(maxX,(xglo+dx));
+      minY = TMath::Min(minY,(yglo-dy));
+      maxY = TMath::Max(maxY,(yglo+dy));
+    }
+    fXCenter[ich] = 0.5*(minX+maxX);
+    fYCenter[ich] = 0.5*(minY+maxY);
+    fZCenter[ich] = zglo;
+    fXWidth[ich]  = maxX-minX;
+    fYWidth[ich]  = maxY-minY;
+    // truncate to same precision as in the old guimap files
+    fXCenter[ich] = 0.01*TMath::Nint(fXCenter[ich]*100.0);
+    fYCenter[ich] = 0.01*TMath::Nint(fYCenter[ich]*100.0);
+    fXWidth[ich] = 0.01*TMath::Nint(fXWidth[ich]*100.0);
+    fYWidth[ich] = 0.01*TMath::Nint(fYWidth[ich]*100.0);
+
+  }
+
+  // delete the pads arrays
+  for (Int_t ich = 0; ich < kNMT; ich++) {
+    delete fPadsX[ich]; fNPadsX[ich] = 0;
+    delete fPadsY[ich]; fNPadsY[ich] = 0;
+  }
+  
+}
+
+//__________________________________________________________________________
+Int_t AliMUONTriggerGUIboard::GetLine() const
+{
+  /// get detector side
+  if (fName->Length() >= 5) {
+    const Char_t *name = fName->Data();
+    TString sline = TString(name[4]);
+    return sline.Atoi();
+  }
+
+  return -1;
+
+}
+
+//__________________________________________________________________________
+Int_t AliMUONTriggerGUIboard::GetCol() const
+{
+  /// get detector side
+  if (fName->Length() >= 5) {
+    const Char_t *name = fName->Data();
+    TString scol = TString(name[2]);
+    return scol.Atoi();
+  }
+
+  return -1;
+
+}
+
+//__________________________________________________________________________
+Int_t AliMUONTriggerGUIboard::GetSide() const
+{
+  /// get detector side
+  if (fName->Length() >= 5) {
+    const Char_t *name = fName->Data();
+    if (!strncmp(name,"L",1)) return 0;
+    if (!strncmp(name,"R",1)) return 1;
+  }
+
+  return -1;
+
+}
+
+//__________________________________________________________________________
+void AliMUONTriggerGUIboard::PrintBoard() const
+{
+  /// print information on this board
+
+  printf("Name: %s Id %3d Circ %3d DetElemId %2d Pos %1d YOver %1d\n",GetBoardName(),GetNumber(),GetIdCircuit(),GetDetElemId(),GetPosition(),GetYOver());
+  printf("NStrips: X %2d Y %2d \n",GetNStripX(),GetNStripY());
+  printf("Pad indices: X: ix %3d iy1 %3d iy2 %3d \n",GetXSix(),GetXSiy1(),GetXSiy2());
+  printf("Pad indices: Y: iy %3d ix1 %3d ix2 %3d \n",GetYSiy(),GetYSix1(),GetYSix2());
+  printf("Position and dimension:\n");
+  for (Int_t imt = 0; imt < 4; imt++) {
+    printf("MT=%1d: X %9.4f Y %9.4f Z %10.4f \n",imt,GetXCenter(imt),GetYCenter(imt),GetZCenter(imt));
+    printf("      DX %7.4f DY %7.4f \n",GetXWidth(imt),GetYWidth(imt));
+  }
+
+}
+
