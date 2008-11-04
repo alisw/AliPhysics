@@ -57,6 +57,18 @@ static Double_t funCosh(Double_t *x, Double_t * par)
   return 1/TMath::CosH(3.14159*x[0]/(2*par[0]));  
 }    
 
+static Double_t funGamma4(Double_t *x, Double_t * par)
+{
+  //
+  // Gamma 4 function
+  //
+  if (x[0]<0) return 0;
+  Double_t g1 = TMath::Exp(-4.*x[0]/par[1]);
+  Double_t g2 = TMath::Power(x[0]/par[1],4);
+  return par[0]*g1*g2;
+}    
+
+
 static Double_t funGati(Double_t *x, Double_t * par)
 {
   //Gati function  -needde by the generic function object 
@@ -158,11 +170,11 @@ Float_t AliTPCRF1D::GetRF(Float_t xin)
   //function which return response
   //for the charge in distance xin 
   //return linear aproximation of RF
-  Float_t x = TMath::Abs((xin-fOffset)*fDSTEPM1)+fNRF/2;
+  Float_t x = (xin-fOffset)*fDSTEPM1+fNRF/2;
   Int_t i1=Int_t(x);
   if (x<0) i1-=1;
   Float_t res=0;
-  if (i1+1<fNRF)
+  if (i1+1<fNRF &&i1>0)
     res = fcharge[i1]*(Float_t(i1+1)-x)+fcharge[i1+1]*(x-Float_t(i1));    
   return res;
 }
@@ -248,6 +260,8 @@ void AliTPCRF1D::SetGati(Float_t K3, Float_t padDistance, Float_t padWidth,
   //by default I set the step as one tenth of sigma
   sprintf(fType,"Gati");
 }
+
+
 
 void AliTPCRF1D::DrawRF(Float_t x1,Float_t x2,Int_t N)
 { 
@@ -349,5 +363,16 @@ void AliTPCRF1D::Streamer(TBuffer &R__b)
    } else {
       AliTPCRF1D::Class()->WriteBuffer(R__b, this);
    }
+}
+
+
+Double_t  AliTPCRF1D::Gamma4(Double_t x, Double_t p0, Double_t p1){
+  //
+  // Gamma 4 Time response function of ALTRO
+  //
+  if (x<0) return 0;
+  Double_t g1 = TMath::Exp(-4.*x/p1);
+  Double_t g2 = TMath::Power(x/p1,4);
+  return p0*g1*g2;
 }
  

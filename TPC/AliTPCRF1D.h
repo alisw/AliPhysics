@@ -47,6 +47,7 @@ public :
   //draw RF it don't delete histograms after drawing
   /// it's on user !!!!
   void Update();  
+  static Double_t Gamma4(Double_t x, Double_t p0, Double_t p1);
 private: 
   Double_t funParam[5];//parameters of used charge function
   Int_t  fNRF;      //number of interpolations point
