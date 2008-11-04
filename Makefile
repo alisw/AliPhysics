@@ -298,9 +298,15 @@ alimdc-rpm: alimdc-static alimdc-specfile
 	$(ROOTALIBDIR)/libfreetype.a $(ROOTALIBDIR)/libpcre.a \
 	alimdc-root/opt/alimdc/lib
 	$(MUTE)rm -rf RPMS
-	$(MUTE)mkdir -p RPMS/i386
-	$(MUTE)rpmbuild --verbose --define "_topdir $(ALICE_ROOT)" --define "_tmppath $(ALICE_ROOT)" -bb $(ALIMDCSPECFILE)
-	$(MUTE)cp -p RPMS/i386/alimdc-*.rpm .
+	$(MUTE)case `uname -m` in \
+	    i?86*)	ALIMDCARCHDIR=i386;;\
+	    ia64*)	ALIMDCARCHDIR=ia64;;\
+	    x86_64*)	ALIMDCARCHDIR=x86_64;;\
+	    *)		echo "Unknown architecture: `uname -m`"; exit 1;;\
+	esac; \
+	mkdir -p RPMS/$$ALIMDCARCHDIR; \
+	rpmbuild --verbose --define "_topdir $(ALICE_ROOT)" --define "_tmppath $(ALICE_ROOT)" -bb $(ALIMDCSPECFILE); \
+	cp -p RPMS/$$ALIMDCARCHDIR/alimdc-*.rpm .;
 	$(MUTE)rm -rf alimdc-root
 	$(MUTE)rm -rf RPMS
 	@echo "***** alimdc RPM created and put $(ALICE_ROOT) folder *****"
