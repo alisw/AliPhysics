@@ -18,6 +18,9 @@
 // This class is designed to handle 
 // particle selection at generated level.
 //
+// added support for MC in AOD tree (2008-11-04)
+// added a bool flag for the alternative (standard MC) vs (AOD MC).
+//
 // author : R. Vernet (renaud.vernet@cern.ch)
 //////////////////////////////////////////////////////////////////////
 
@@ -37,6 +40,10 @@ class TH2F;
 class TBits;
 class TArrayF;
 class TDecayChannel;
+class AliVParticle;
+class AliVEvent;
+class AliAODMCParticle;
+
 
 class AliCFParticleGenCuts : public AliCFCutBase
 {
@@ -49,11 +56,15 @@ class AliCFParticleGenCuts : public AliCFCutBase
   virtual Bool_t IsSelected(TObject* obj) ;
   Bool_t IsSelected(TList* /*list*/) {return kTRUE;}
   virtual void   SetEvtInfo(TObject* mcEvent) ;
+  void    SetAODMC(Bool_t flag) {fIsAODMC=flag;}
+
+  Bool_t IsPrimaryCharged(AliVParticle *mcPart);
+  Bool_t IsPrimary(AliMCParticle    *mcPart) ;
+  Bool_t IsPrimary(AliAODMCParticle *mcPart) ;
   //static checkers
-  static Bool_t IsPrimaryCharged(AliMCParticle *mcPart,AliStack*stack);
-  static Bool_t IsPrimary(AliMCParticle *mcPart,AliStack*stack);
-  static Bool_t IsCharged(AliMCParticle *mcPart);
-  static Bool_t IsA(AliMCParticle *mcPart, Int_t pdg, Bool_t abs=kFALSE);
+  static Bool_t IsCharged(AliVParticle *mcPart);
+  static Bool_t IsA(AliMCParticle    *mcPart, Int_t pdg, Bool_t abs=kFALSE);
+  static Bool_t IsA(AliAODMCParticle *mcPart, Int_t pdg, Bool_t abs=kFALSE);
 
   void SetRequireIsCharged   () {fRequireIsCharged  =kTRUE; fRequireIsNeutral  =kFALSE;}
   void SetRequireIsNeutral   () {fRequireIsNeutral  =kTRUE; fRequireIsCharged  =kFALSE;}
@@ -96,7 +107,8 @@ class AliCFParticleGenCuts : public AliCFCutBase
   };
 
  private:
-  AliMCEvent* fMCInfo ;    // pointer to the MC event information
+  Bool_t fIsAODMC ;       // flag for standard MC or MC from AOD tree
+  AliVEvent* fMCInfo ;    // pointer to the MC event information
   Bool_t     fRequireIsCharged;   // require charged particle
   Bool_t     fRequireIsNeutral;   // require neutral particle
   Bool_t     fRequireIsPrimary;   // require primary particle
@@ -128,12 +140,13 @@ class AliCFParticleGenCuts : public AliCFCutBase
   TArrayF* fCutValues;             // array of cut values
   TBits* fBitmap ;                 // stores single selection decisions
 
-  void SelectionBitMap(TObject* obj);
+  void SelectionBitMap(AliMCParticle*    obj); // for MC got from Kinematics
+  void SelectionBitMap(AliAODMCParticle* obj); // for MC got from AOD
   void FillHistograms(TObject* obj, Bool_t afterCuts);
   void AddQAHistograms(TList *qaList) ;
   void DefineHistograms();
 
-  ClassDef(AliCFParticleGenCuts,1);
+  ClassDef(AliCFParticleGenCuts,2);
 };
 
 #endif

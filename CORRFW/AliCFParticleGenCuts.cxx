@@ -35,12 +35,15 @@
 #include "TList.h"
 #include "TArrayF.h"
 #include "TDecayChannel.h"
+#include "AliAODMCParticle.h"
+#include "AliAODEvent.h"
 
 ClassImp(AliCFParticleGenCuts)
 
 //______________________________
 AliCFParticleGenCuts::AliCFParticleGenCuts() : 
   AliCFCutBase(),
+  fIsAODMC(0),
   fMCInfo(0x0),
   fRequireIsCharged(0),
   fRequireIsNeutral(0),
@@ -81,6 +84,7 @@ AliCFParticleGenCuts::AliCFParticleGenCuts() :
 //______________________________
 AliCFParticleGenCuts::AliCFParticleGenCuts(const Char_t* name, const Char_t* title) : 
   AliCFCutBase(name,title),
+  fIsAODMC(0),
   fMCInfo(0x0),
   fRequireIsCharged(0),
   fRequireIsNeutral(0),
@@ -121,6 +125,7 @@ AliCFParticleGenCuts::AliCFParticleGenCuts(const Char_t* name, const Char_t* tit
 //______________________________
 AliCFParticleGenCuts::AliCFParticleGenCuts(const AliCFParticleGenCuts& c) : 
   AliCFCutBase(c),
+  fIsAODMC(c.fIsAODMC),
   fMCInfo(c.fMCInfo),
   fRequireIsCharged(c.fRequireIsCharged),
   fRequireIsNeutral(c.fRequireIsNeutral),
@@ -166,6 +171,7 @@ AliCFParticleGenCuts& AliCFParticleGenCuts::operator=(const AliCFParticleGenCuts
   //
   if (this != &c) {
     AliCFCutBase::operator=(c) ;
+    fIsAODMC=c.fIsAODMC;
     fMCInfo=c.fMCInfo;
     fRequireIsCharged=c.fRequireIsCharged;
     fRequireIsNeutral=c.fRequireIsNeutral;
@@ -210,7 +216,10 @@ Bool_t AliCFParticleGenCuts::IsSelected(TObject* obj) {
   // 'obj' must be an AliMCParticle
   //
   
-  SelectionBitMap(obj);
+  if (!obj) return kFALSE ;
+
+  if (!fIsAODMC) SelectionBitMap((AliMCParticle*)   obj);
+  else           SelectionBitMap((AliAODMCParticle*)obj);
 
   if (fIsQAOn) FillHistograms(obj,0);
 
@@ -222,42 +231,32 @@ Bool_t AliCFParticleGenCuts::IsSelected(TObject* obj) {
 }
 	     
 //__________________________________________________________________________________
-void AliCFParticleGenCuts::SelectionBitMap(TObject* obj)
+void AliCFParticleGenCuts::SelectionBitMap(AliMCParticle* mcPart)
 {
   //
   // test if the track passes the single cuts
   // and store the information in a bitmap
   //
-  
+
   for (UInt_t i=0; i<kNCuts; i++) {
     fBitmap->SetBitNumber(i,kFALSE);
     fCutValues->SetAt((Double32_t)0,i) ;
   }
 
-  if (!obj) return  ;
-  TString className(obj->ClassName());
-  if (className.CompareTo("AliMCParticle") != 0) {
-    AliError("argument must point to an AliMCParticle !");
-    return ;
-  }
-  
-  AliMCParticle* mcPart = dynamic_cast<AliMCParticle*>(obj) ;
-  TParticle* part = mcPart->Particle();
-  AliStack*  stack = fMCInfo->Stack();
-
-
   // fill the cut array
-  Double32_t partVx=(Double32_t)part->Vx();
-  Double32_t partVy=(Double32_t)part->Vy();
-  Double32_t partVz=(Double32_t)part->Vz();
+  Double32_t partVx=(Double32_t)mcPart->Xv();
+  Double32_t partVy=(Double32_t)mcPart->Yv();
+  Double32_t partVz=(Double32_t)mcPart->Zv();
 
-  TParticle* daughter=0x0;
   Double32_t decayVx=0.;
   Double32_t decayVy=0.;
   Double32_t decayVz=0.;
   Double32_t decayL=0.;
   Double32_t decayRxy=0.;
 
+  TParticle* part = mcPart->Particle();
+  AliStack*  stack = ((AliMCEvent*)fMCInfo)->Stack();
+  TParticle* daughter=0x0;
   if ( part->GetNDaughters() > 0 ) {
     daughter = stack->Particle(part->GetFirstDaughter()) ;
     decayVx=(Double32_t)daughter->Vx();
@@ -295,8 +294,8 @@ void AliCFParticleGenCuts::SelectionBitMap(TObject* obj)
   
   // cut on primary/secondary
   if ( fRequireIsPrimary || fRequireIsSecondary) {
-    if (fRequireIsPrimary   &&  IsPrimary(mcPart,stack)) fCutValues->SetAt((Double32_t)kTRUE,kCutPrimSec);
-    if (fRequireIsSecondary && !IsPrimary(mcPart,stack)) fCutValues->SetAt((Double32_t)kTRUE,kCutPrimSec);
+    if (fRequireIsPrimary   &&  IsPrimary(mcPart)) fCutValues->SetAt((Double32_t)kTRUE,kCutPrimSec);
+    if (fRequireIsSecondary && !IsPrimary(mcPart)) fCutValues->SetAt((Double32_t)kTRUE,kCutPrimSec);
   } 
   else fCutValues->SetAt((Double32_t)kTRUE,kCutPrimSec);
   
@@ -323,6 +322,136 @@ void AliCFParticleGenCuts::SelectionBitMap(TObject* obj)
 	goodDecay = kTRUE ;
 	for (Int_t iDaughter = 0; iDaughter<nDaughters; iDaughter++) {
 	  TParticle* daug = stack->Particle(mcPart->Particle()->GetDaughter(nDaughters-(iDaughter+1))) ;
+	  if (daug->GetPdgCode() != fDecayChannel->DaughterPdgCode(iDaughter)) {goodDecay = kFALSE; break;}
+	}
+      }
+    }
+    fCutValues->SetAt((Double32_t)goodDecay,kCutDecayChannel) ;
+  }
+  else fCutValues->SetAt((Double32_t)kTRUE,kCutDecayChannel);
+  
+  
+  // now array of cut is build, fill the bitmap consequently
+  Int_t iCutBit = -1;
+  if ( fCutValues->At(++iCutBit) !=0 )              fBitmap->SetBitNumber(iCutBit,kTRUE);
+  if ( fCutValues->At(++iCutBit) !=0 )              fBitmap->SetBitNumber(iCutBit,kTRUE);
+  if ( fCutValues->At(++iCutBit) !=0 )              fBitmap->SetBitNumber(iCutBit,kTRUE);
+  if ( fCutValues->At(++iCutBit) > fProdVtxXMin)    fBitmap->SetBitNumber(iCutBit,kTRUE);
+  if ( fCutValues->At(++iCutBit) < fProdVtxXMax)    fBitmap->SetBitNumber(iCutBit,kTRUE);
+  if ( fCutValues->At(++iCutBit) > fProdVtxYMin)    fBitmap->SetBitNumber(iCutBit,kTRUE);
+  if ( fCutValues->At(++iCutBit) < fProdVtxYMax)    fBitmap->SetBitNumber(iCutBit,kTRUE);
+  if ( fCutValues->At(++iCutBit) > fProdVtxZMin)    fBitmap->SetBitNumber(iCutBit,kTRUE);
+  if ( fCutValues->At(++iCutBit) < fProdVtxZMax)    fBitmap->SetBitNumber(iCutBit,kTRUE);
+  if ( fCutValues->At(++iCutBit) > fDecayVtxXMin)   fBitmap->SetBitNumber(iCutBit,kTRUE);
+  if ( fCutValues->At(++iCutBit) < fDecayVtxXMax)   fBitmap->SetBitNumber(iCutBit,kTRUE);
+  if ( fCutValues->At(++iCutBit) > fDecayVtxYMin)   fBitmap->SetBitNumber(iCutBit,kTRUE);
+  if ( fCutValues->At(++iCutBit) < fDecayVtxYMax)   fBitmap->SetBitNumber(iCutBit,kTRUE);
+  if ( fCutValues->At(++iCutBit) > fDecayVtxZMin)   fBitmap->SetBitNumber(iCutBit,kTRUE);
+  if ( fCutValues->At(++iCutBit) < fDecayVtxZMax)   fBitmap->SetBitNumber(iCutBit,kTRUE);
+  if ( fCutValues->At(++iCutBit) > fDecayLengthMin) fBitmap->SetBitNumber(iCutBit,kTRUE);
+  if ( fCutValues->At(++iCutBit) < fDecayLengthMax) fBitmap->SetBitNumber(iCutBit,kTRUE);
+  if ( fCutValues->At(++iCutBit) > fDecayRxyMin)    fBitmap->SetBitNumber(iCutBit,kTRUE);
+  if ( fCutValues->At(++iCutBit) < fDecayRxyMax)    fBitmap->SetBitNumber(iCutBit,kTRUE);
+  if ( fCutValues->At(++iCutBit) != 0 )             fBitmap->SetBitNumber(iCutBit,kTRUE);
+}
+
+//__________________________________________________________________________________
+void AliCFParticleGenCuts::SelectionBitMap(AliAODMCParticle* mcPart)
+{
+  //
+  // test if the track passes the single cuts
+  // and store the information in a bitmap
+  //
+  
+  for (UInt_t i=0; i<kNCuts; i++) {
+    fBitmap->SetBitNumber(i,kFALSE);
+    fCutValues->SetAt((Double32_t)0,i) ;
+  }
+
+  // fill the cut array
+  Double32_t partVx=(Double32_t)mcPart->Xv();
+  Double32_t partVy=(Double32_t)mcPart->Yv();
+  Double32_t partVz=(Double32_t)mcPart->Zv();
+
+  Double32_t decayVx=0.;
+  Double32_t decayVy=0.;
+  Double32_t decayVz=0.;
+  Double32_t decayL=0.;
+  Double32_t decayRxy=0.;
+
+  AliAODEvent* aod = dynamic_cast<AliAODEvent*>(fMCInfo);
+  TClonesArray* mcArray = dynamic_cast<TClonesArray*>(aod->FindListObject(AliAODMCParticle::StdBranchName()));
+  AliAODMCParticle* daughter = 0x0 ;
+
+  if (mcPart->GetDaughter(0)>0) {
+    daughter = dynamic_cast<AliAODMCParticle*>(mcArray->At(mcPart->GetDaughter(0)));
+
+    decayVx=(Double32_t)daughter->Xv();
+    decayVy=(Double32_t)daughter->Yv();
+    decayVz=(Double32_t)daughter->Zv();
+    decayL = TMath::Sqrt(TMath::Power(partVx-decayVx,2) + 
+			 TMath::Power(partVy-decayVy,2) + 
+			 TMath::Power(partVz-decayVz,2) ) ;
+    decayRxy = TMath::Sqrt(TMath::Power(decayVx,2) + TMath::Power(decayVy,2) ) ;
+    
+  }
+  
+  fCutValues->SetAt(partVx  ,kCutProdVtxXMin) ;
+  fCutValues->SetAt(partVy  ,kCutProdVtxYMin) ;
+  fCutValues->SetAt(partVz  ,kCutProdVtxZMin) ;
+  fCutValues->SetAt(partVx  ,kCutProdVtxXMax) ;
+  fCutValues->SetAt(partVy  ,kCutProdVtxYMax) ;
+  fCutValues->SetAt(partVz  ,kCutProdVtxZMax) ;
+  fCutValues->SetAt(decayVx ,kCutDecVtxXMin)  ;
+  fCutValues->SetAt(decayVy ,kCutDecVtxYMin)  ;
+  fCutValues->SetAt(decayVz ,kCutDecVtxZMin)  ;
+  fCutValues->SetAt(decayVx ,kCutDecVtxXMax)  ;
+  fCutValues->SetAt(decayVy ,kCutDecVtxYMax)  ;
+  fCutValues->SetAt(decayVz ,kCutDecVtxZMax)  ;
+  fCutValues->SetAt(decayL  ,kCutDecLgthMin)  ;
+  fCutValues->SetAt(decayL  ,kCutDecLgthMax)  ;
+  fCutValues->SetAt(decayRxy,kCutDecRxyMin)   ;
+  fCutValues->SetAt(decayRxy,kCutDecRxyMax)   ;
+  
+  // cut on charge
+  if ( fRequireIsCharged || fRequireIsNeutral ) {
+    if (fRequireIsCharged &&  IsCharged(mcPart)) fCutValues->SetAt((Double32_t)kTRUE,kCutCharge) ;
+    if (fRequireIsNeutral && !IsCharged(mcPart)) fCutValues->SetAt((Double32_t)kTRUE,kCutCharge) ;
+  } 
+  else fCutValues->SetAt((Double32_t)kTRUE,kCutCharge) ;
+  
+  // cut on primary/secondary
+  if ( fRequireIsPrimary || fRequireIsSecondary) {
+    if (fRequireIsPrimary   &&  IsPrimary(mcPart)) fCutValues->SetAt((Double32_t)kTRUE,kCutPrimSec);
+    if (fRequireIsSecondary && !IsPrimary(mcPart)) fCutValues->SetAt((Double32_t)kTRUE,kCutPrimSec);
+  } 
+  else fCutValues->SetAt((Double32_t)kTRUE,kCutPrimSec);
+  
+  // cut on PDG code
+  if ( fRequirePdgCode ) {
+    if (IsA(mcPart,fPdgCode,kFALSE)) fCutValues->SetAt((Double32_t)kTRUE,kCutPDGCode);
+  }
+  else fCutValues->SetAt((Double32_t)kTRUE,kCutPDGCode);
+  
+  // cut on decay channel
+  if ( fDecayChannel ) {
+    Bool_t goodDecay = kTRUE ;
+    Short_t nDaughters = 0 ;
+    if (mcPart->GetDaughter(0) >=0) nDaughters = 1 + mcPart->GetDaughter(1) - mcPart->GetDaughter(0);
+    
+    if (nDaughters != fDecayChannel->NDaughters()) goodDecay = kFALSE ;
+    if (goodDecay) {
+      // now check if decay channel is respected
+      // first try
+      for (Int_t iDaughter = 0 ; iDaughter<nDaughters; iDaughter++) {
+	AliAODMCParticle* daug = dynamic_cast<AliAODMCParticle*>(mcArray->At(mcPart->GetDaughter(0)+iDaughter));
+	if (daug->GetPdgCode() != fDecayChannel->DaughterPdgCode(iDaughter)) {goodDecay = kFALSE; break;}
+      }
+      if (!goodDecay) {
+	//second try inverting the order of the daughters
+	goodDecay = kTRUE ;
+	for (Int_t iDaughter = 0 ; iDaughter<nDaughters; iDaughter++) {
+	  AliAODMCParticle* daug = dynamic_cast<AliAODMCParticle*>(mcArray->At(mcPart->GetDaughter(1)-iDaughter));
 	  if (daug->GetPdgCode() != fDecayChannel->DaughterPdgCode(iDaughter)) {goodDecay = kFALSE; break;}
 	}
       }
@@ -470,30 +599,45 @@ void AliCFParticleGenCuts::DefineHistograms() {
 
 
 //______________________________
-Bool_t AliCFParticleGenCuts::IsCharged(AliMCParticle *mcPart) {
+Bool_t AliCFParticleGenCuts::IsCharged(AliVParticle *mcPart) {
   //
   //check if particle is charged.
   //
-  TParticle* part = mcPart->Particle();
-  TParticlePDG* pdgPart = part->GetPDG();
-  if(!pdgPart)return kFALSE;
-  if (pdgPart->Charge() == 0) return kFALSE;
+  if (mcPart->Charge()==0) return kFALSE;
   return kTRUE;
 }
 //______________________________
-Bool_t AliCFParticleGenCuts::IsPrimary(AliMCParticle *mcPart, AliStack *stack) {
+Bool_t AliCFParticleGenCuts::IsPrimary(AliMCParticle *mcPart) {
   //
   //check if particle is primary (standard definition)
   //
-  if (!stack->IsPhysicalPrimary(mcPart->Label())) return kFALSE ;
+  
+  AliStack* stack = ((AliMCEvent*)fMCInfo)->Stack();
+
+  if (!stack->IsPhysicalPrimary(mcPart->GetLabel())) return kFALSE;
   return kTRUE;
 }
 //______________________________
-Bool_t AliCFParticleGenCuts::IsPrimaryCharged(AliMCParticle *mcPart, AliStack *stack) {
+Bool_t AliCFParticleGenCuts::IsPrimary(AliAODMCParticle *mcPart) {
+  //
+  //check if particle is primary (standard definition)
+  //
+  
+  if (!mcPart->IsPhysicalPrimary()) return kFALSE;
+  return kTRUE;
+}
+//______________________________
+Bool_t AliCFParticleGenCuts::IsPrimaryCharged(AliVParticle *mcPart) {
   //
   //check if a charged particle is primary (standard definition)
   //
-  if (!stack->IsPhysicalPrimary(mcPart->Label()) || !IsCharged(mcPart)) return kFALSE ;
+
+  if (!fIsAODMC) {
+    if (!IsPrimary((AliMCParticle*)mcPart) || !IsCharged(mcPart)) return kFALSE ;
+  }
+  else {
+    if (!IsPrimary((AliAODMCParticle*)mcPart) || !IsCharged(mcPart)) return kFALSE ;
+  }
   return kTRUE;
 }
 //______________________________
@@ -504,6 +648,22 @@ Bool_t AliCFParticleGenCuts::IsA(AliMCParticle *mcPart, Int_t pdg, Bool_t abs) {
   //
   TParticle* part = mcPart->Particle();
   Int_t pdgCode = part->GetPdgCode();
+
+  if (abs) {
+    pdgCode = TMath::Abs(pdgCode);
+    pdg = TMath::Abs(pdg);
+  }
+  if (pdgCode != pdg ) return kFALSE;
+  return kTRUE;
+}
+//______________________________
+Bool_t AliCFParticleGenCuts::IsA(AliAODMCParticle *mcPart, Int_t pdg, Bool_t abs) {
+  //
+  //Check on the pdg code of the MC particle. if abs=kTRUE then check on the 
+  //absolute value. By default is set to kFALSE.
+  //
+  Int_t pdgCode = mcPart->GetPdgCode();
+  
   if (abs) {
     pdgCode = TMath::Abs(pdgCode);
     pdg = TMath::Abs(pdg);
@@ -523,10 +683,11 @@ void AliCFParticleGenCuts::SetEvtInfo(TObject* mcEvent) {
   }
   
   TString className(mcEvent->ClassName());
-  if (className.CompareTo("AliMCEvent") != 0) {
-    AliError("argument must point to an AliMCEvent !");
+  if (className.CompareTo("AliMCEvent") != 0 && className.CompareTo("AliAODEvent") != 0) {
+    AliError("argument must point to an AliMCEvent or an AliAODEvent !");
     return ;
   }
   
-  fMCInfo = (AliMCEvent*) mcEvent ;
+  if (fIsAODMC) fMCInfo = dynamic_cast<AliAODEvent*>(mcEvent) ;
+  else          fMCInfo = dynamic_cast<AliMCEvent*> (mcEvent) ;
 }
