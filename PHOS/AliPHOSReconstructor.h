@@ -48,8 +48,6 @@
 #include <Riostream.h>
 #include "AliReconstructor.h" 
 #include "AliPHOSRecoParam.h"
-// #include "AliPHOSRecoParamEmc.h"
-// #include "AliPHOSRecoParamCpv.h"
 class AliPHOSDigitizer ;
 class AliPHOSClusterizer ;
 class AliPHOSClusterizerv1 ;
