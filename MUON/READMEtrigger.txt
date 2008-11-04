@@ -24,65 +24,80 @@ root [1] MUONTrigger("galice.root")
 </pre>
 
 
-\section trigger_s2 OFFLINE trigger GUI data quality and debugging tool
+\section trigger_s2 OFFLINE trigger Graphical User Interface (GUI) data quality and debugging tool
 
 - read digits and local trigger decision from simulated/real data
-- display
+- display the strips in local boards
 - reprocess trigger decision inside AliRoot
 - set x/y strips interactively on boards and transfer them to the AliRoot
   TriggerElectronics, execute trigger algorithm and recover the local trigger
   decision
 
-To run:
-
+Usage (aliroot):
 <pre>
-aliroot
-new AliMUONTriggerGUI()
+root [0] new AliMUONTriggerGUI
 </pre>
 
 Main window shows the map of the local boards as seen from the I.P.
-The main window is position sensitive (after file initialization) and it is 
-possible to open a GUI for a circuit.
+The main window is position sensitive: by focusing a board, the "tip text"
+shows the board name, the crate name, the board ID and the board
+internal number in the GUI.
 
-By menus:
+Menus:
 
 
 \subsection trigger_s2_sub1 File
 
-- Run     - open a file and start with a given event number
-            takes the full path your_path/galice.root
-- Control - navigate in the tree with events
-- Exit    - exit the main application
+- "Run input" - open a file and start with a given event number:
+              - "your_path/galice.root" to use simulated (or re-created) aliroot digits 
+              - confirm with "Apply (galice)"              
+              - "your_path/rawfilename.root" to use raw data in root format
+              - confirm with "Apply (raw)"
+- "Control"   - navigate in the tree with events
+- "Exit"      - exit the main application
 
 
 \subsection trigger_s2_sub2 Maps
 
-- Digits map   - graphical map with digits in the four chambers, MT11 ... MT22
+- "Digits map"   - graphical map showing digits in the four chambers, MT11 ... MT22
+- "Reset digits" - clean the digits map
 
-\subsection trigger_s2_sub3 Chambers digit maps window
+\subsection trigger_s2_sub3 Chambers digit maps
 
-- Update - update the map after:
+- "Update" - update the map after:
              - loading of another event
              - changing interactively the strip signals in boards GUI
 
 
 \subsection trigger_s2_sub4 Circuit
 
-- Open   - open a board GUI by circuit number
+- "Open"   - open a board GUI by circuit (board) number
 
 
-\subsection trigger_s2_sub5 Trigger
+\subsection trigger_s2_sub5 TriggerDSET, run the trigger algorithm with interactively set strips 
 
-- Trigger DSET  - (re)run the trigger algorithm
+- this is an interface to AliMUONTriggerElectronics
+- "Digit store"    - create a digit store (object) with the current board digits (input from the circuit GUI)
+- "Trigger store"  - create a trigger store (object) from the digit store, using AliMUONTriggerElectronics; 
+each type of store can be "cleared" and "printed"
+- "Front End Test" - simulate a FET (all strips fire) on all boards or on a regional board
+- "Write raw data" - save the trigger store in a raw data file (DATE and ROOT) format
 
+\subsection trigger_s2_sub6 Circuit GUI ("Circuit/Open" or click on boards map)
 
-\subsection trigger_s2_sub6 Circuit GUI window
-
-- visualize x/y strips
-- "Set/unset" x (or) y strips
+- the window title shows the name of the board, the number and the status
+- "Draw" visualize x/y strips
+- "Set/unset" x (or) y strips, on mouse click
 - "Digits" create board digits from the actual configuration created in the GUI
 - "Reset" reset modification on strips done interactively
 
+The sequence to test the trigger algorithm is:
+- open a board GUI
+- set some x/y strips
+- press "Digits" to create board digits
+- from the TrigerDSET menu create a digit store, then a trigger store and print it to see the trigger
+decision
+- write raw data for further investigation
 
 \section trigger_s3 How to check integrated trigger efficiency
 
