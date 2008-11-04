@@ -2029,9 +2029,13 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
 	  
 	}
 	xyz[2]+=correction;
+	xyz[2]+=fTPCParam->GetNTBinsL1();    // adding Level 1 time bin offset
 	//
 	// Electron track time (for pileup simulation)
-	xyz[4] = tpcHit->Time()/fTPCParam->GetTSample();
+	xyz[2]+=tpcHit->Time()/fTPCParam->GetTSample(); // adding time of flight
+	xyz[4] =0;
+
+	//
 	// row 0 - cross talk from the innermost row
 	// row fNRow+1 cross talk from the outermost row
 	rowNumber = index[2]+1; 

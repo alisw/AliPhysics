@@ -140,11 +140,11 @@ Int_t  AliTPCParamSR::CalcResponse(Float_t* xyz, Int_t * index, Int_t row)
 
   Int_t fpadrow = TMath::Max(TMath::Nint(index[2]+xyz[0]-sfpadrow),0);  //"first" padrow
   Int_t fpad    = TMath::Nint(xyz[1]-sfpad);     //first pad
-  Int_t ftime   = TMath::Max(TMath::Nint(xyz[2]+xyz[3]+GetZOffset()/GetZWidth()-sftime-GetNTBinsL1()),0);  // first time
+  Int_t ftime   = TMath::Max(TMath::Nint(xyz[2]+xyz[3]+GetZOffset()/GetZWidth()-sftime),0);  // first time
   Int_t lpadrow = TMath::Min(TMath::Nint(index[2]+xyz[0]+sfpadrow),fpadrow+19);  //"last" padrow
   lpadrow       = TMath::Min(GetNRow(index[1])-1,lpadrow);
   Int_t lpad    = TMath::Min(TMath::Nint(xyz[1]+sfpad),fpad+19);     //last pad
-  Int_t ltime   = TMath::Min(TMath::Nint(xyz[2]+xyz[3]+GetZOffset()/GetZWidth()+sftime-GetNTBinsL1()),ftime+19);    // last time
+  Int_t ltime   = TMath::Min(TMath::Nint(xyz[2]+xyz[3]+GetZOffset()/GetZWidth()+sftime),ftime+19);    // last time
   ltime         = TMath::Min(ltime,GetMaxTBin()-1); 
   // 
   Int_t npads = GetNPads(index[1],row);
@@ -186,7 +186,7 @@ Int_t  AliTPCParamSR::CalcResponse(Float_t* xyz, Int_t * index, Int_t row)
   //calculate time response function
   Int_t time;
   for (time = ftime;time<=ltime;time++) 
-    timeres[time-ftime]= fTimeRF->GetRF((-xyz[2]-xyz[3]+Float_t(time))*fZWidth+GetNTBinsL1());     
+    timeres[time-ftime]= fTimeRF->GetRF((-xyz[2]-xyz[3]+Float_t(time))*fZWidth);     
   //write over threshold values to stack
   for (padrow = fpadrow;padrow<=lpadrow;padrow++)
     for (pad = fpad;pad<=lpad;pad++)
@@ -521,11 +521,11 @@ Int_t  AliTPCParamSR::CalcResponseFast(Float_t* xyz, Int_t * index, Int_t row)
   Int_t npads = GetNPads(index[1],index[3]-1);
   Int_t cpadrow = index[2]; // electrons are here
   Int_t cpad    = TMath::Nint(xyz[1]);
-  Int_t ctime   = TMath::Nint(xyz[2]+zoffset2+xyz[3]-GetNTBinsL1());
+  Int_t ctime   = TMath::Nint(xyz[2]+zoffset2+xyz[3]);
   //calulate deviation
   Float_t dpadrow = xyz[0];
   Float_t dpad    = xyz[1]-cpad;
-  Float_t dtime   = xyz[2]+zoffset2+xyz[3]-ctime-GetNTBinsL1();
+  Float_t dtime   = xyz[2]+zoffset2+xyz[3]-ctime;
   Int_t cindex =0;
   Int_t cindex3 =0;
   Int_t maxt =GetMaxTBin();
