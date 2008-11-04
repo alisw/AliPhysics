@@ -1,4 +1,4 @@
-#!/bin/csh
+#!/bin/csh -f 
 if ($#argv < 1) then
  echo "usage simrun.sh RunNumber"
  exit()
