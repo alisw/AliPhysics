@@ -44,7 +44,7 @@ Bool_t AliEMCALCCUSBRawStream::Next()
 // read the next raw digit
 // returns kFALSE if there is no digit left
 	
-	if ( fEOBuffer == 0xFFFFFFFF ) { fEOBuffer = 0; return kFALSE; }
+	if ( fEOBuffer == 0xFFFF ) { fEOBuffer = 0; return kFALSE; }
 	
 	if (!fRawReader->ReadNextInt((UInt_t&) fHeader)) {
 		Error("Next", "No header");
