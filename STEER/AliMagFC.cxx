@@ -143,8 +143,6 @@ void AliMagFC::ZDCField(Float_t *x, Float_t *b) const
 	  fACorr1Field  = -13.2014;
 	  fACorr2Field  = -9.6908;
       }
-      
-      printf("Machine field %5d %13.3f %13.3f \n", fBeamType, fBeamEnergy, fDipoleField);
   }
   
   
