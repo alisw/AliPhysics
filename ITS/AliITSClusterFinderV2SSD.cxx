@@ -336,8 +336,8 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input,
     if (repa->GetUseCosmicRunShiftsSSD()) {  // Special condition for 2007/2008 cosmic data
       dStrip = fgkCosmic2008StripShifts[oddl][oad-1];
     }
-    if (fabs(dStrip) > 1.5)
-      printf("Indexing error ? oddl = %d, dStrip %f\n",oddl,dStrip);
+    if (TMath::Abs(dStrip) > 1.5)
+      AliError(Form("Indexing error ? oddl = %d, dStrip %f\n",oddl,dStrip));
     // fill 1Dclusters
     for(Int_t iadc=0; iadc<12; iadc++) {  // loop over ADC index for ddl=oddl and ad=oad
       
