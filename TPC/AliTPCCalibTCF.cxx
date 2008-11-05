@@ -52,7 +52,7 @@ ClassImp(AliTPCCalibTCF)
   
 AliTPCCalibTCF::AliTPCCalibTCF() :
   TNamed(),
-  fGateWidth(100),
+  fGateWidth(80),
   fSample(900),
   fPulseLength(500),
   fLowPulseLim(30),
@@ -235,7 +235,7 @@ void AliTPCCalibTCF::ProcessRawEvent(AliTPCRawStream *rawStream, const char *nam
 	continue;
       } else {
 	// still the same pad, save signal to temporary histogram
-	if (time<=fSample+fGateWidth && time>fGateWidth) {
+	if ( (time<=fSample+fGateWidth) && (time>=fGateWidth)) {
 	  tempHis->SetBinContent(time,signal);
 	}
       }   
@@ -249,7 +249,7 @@ void AliTPCCalibTCF::ProcessRawEvent(AliTPCRawStream *rawStream, const char *nam
       Int_t maxpos =  tempHis->GetMaximumBin();
       
       Int_t first = (Int_t)TMath::Max(maxpos-10, 0);
-      Int_t last  = TMath::Min((Int_t)maxpos+fPulseLength-10, fSample);
+      Int_t last  = TMath::Min((Int_t)maxpos+fPulseLength-10, fSample+fGateWidth);
       
       // simple baseline substraction ? better one needed ? (pedestalsubstr.?)
       // and RMS calculation with timebins before the pulse and at the end of
@@ -291,7 +291,7 @@ void AliTPCCalibTCF::ProcessRawEvent(AliTPCRawStream *rawStream, const char *nam
       }
       
       // Decision if found pulse is a proper one according to given tresholds
-      if (max>lowLim && max<upLim && !((last-first)<fPulseLength) && rms<fRMSLim && (intHist/intPulse)<fRatioIntLim && binRatio >= 0.1) {
+      if (max>lowLim && max<upLim && !((last-first)<fPulseLength) && rms<fRMSLim && (intHist/intPulse)<fRatioIntLim && (binRatio >= 0.1) ) {
 	char hname[100];
 	sprintf(hname,"sec%drow%dpad%d",prevSec,prevRow,prevPad);
 	
@@ -732,7 +732,7 @@ void AliTPCCalibTCF::TestTCFonRawFile(const char *nameRawFile, const char *nameF
 	Int_t maxpos =  tempHis->GetMaximumBin();
 	
 	Int_t first = (Int_t)TMath::Max(maxpos-10, 0);
-	Int_t last  = TMath::Min((Int_t)maxpos+fPulseLength-10, fSample);
+	Int_t last  = TMath::Min((Int_t)maxpos+fPulseLength-10, fSample+fGateWidth);
 	
 
 	// simple baseline substraction ? better one needed ? (pedestalsubstr.?)
@@ -775,7 +775,7 @@ void AliTPCCalibTCF::TestTCFonRawFile(const char *nameRawFile, const char *nameF
 
 
 	// Decision if found pulse is a proper one according to given tresholds
-	if (max>lowLim && max<upLim && !((last-first)<fPulseLength) && rms<fRMSLim && intHist/intPulse<fRatioIntLim && binRatio >= 0.1){
+	if (max>lowLim && max<upLim && !((last-first)<fPulseLength) && rms<fRMSLim && intHist/intPulse<fRatioIntLim && (binRatio >= 0.1) ){
 	  // note:
 	  // assuming that lowLim is higher than the pedestal value!
 	  char hname[100];
@@ -849,9 +849,12 @@ TH2F *AliTPCCalibTCF::PlotOccupSummary2Dhist(const char *nameFileIn, Int_t side)
   TIter next(fileIn.GetListOfKeys());
 
   TH2F * his2D = new TH2F("his2D","his2D", 250,-250,250,250,-250,250);
+
   AliTPCROC * roc  = AliTPCROC::Instance();
 
   Int_t nHist=fileIn.GetNkeys();
+  if (!nHist) { return 0; }
+
   Int_t iHist = 0;
   Float_t xyz[3];
 
@@ -864,7 +867,7 @@ TH2F *AliTPCCalibTCF::PlotOccupSummary2Dhist(const char *nameFileIn, Int_t side)
   Int_t pad = 0;
 
   while ((key = (TKey *) next())) { // loop over histograms within the file
-    iHist+=1;
+    iHist++;
     his = (TH1F*)fileIn.Get(key->GetName()); // copy object to memory
 
     npulse = (Int_t)his->GetBinContent(1);
@@ -872,13 +875,13 @@ TH2F *AliTPCCalibTCF::PlotOccupSummary2Dhist(const char *nameFileIn, Int_t side)
     row = (Int_t)his->GetBinContent(3);
     pad = (Int_t)his->GetBinContent(4);
 
-    if (side==0 && sec%36>=18) continue;
-    if (side>0 && sec%36<18) continue;
+    if ( (side==0) && (sec%36>=18) ) continue;
+    if ( (side>0) && (sec%36<18) ) continue;
 
-    if (row==-1 & pad==-1) { // summed pulses per sector
+    if ( (row==-1) && (pad==-1) ) { // summed pulses per sector
       // fill all pad with this values
       for (UInt_t rowi=0; rowi<roc->GetNRows(sec); rowi++) {
-        for (UInt_t padi=0; padi<roc->GetNPads(sec,row); padi++) {
+        for (UInt_t padi=0; padi<roc->GetNPads(sec,rowi); padi++) {
           roc->GetPositionGlobal(sec,rowi,padi,xyz);
           binx = 1+TMath::Nint((xyz[0]+250.)*0.5);
           biny = 1+TMath::Nint((xyz[1]+250.)*0.5);
@@ -896,6 +899,9 @@ TH2F *AliTPCCalibTCF::PlotOccupSummary2Dhist(const char *nameFileIn, Int_t side)
   }
   his2D->SetXTitle("x (cm)");
   his2D->SetYTitle("y (cm)");
+  his2D->SetStats(0);
+
+  his2D->DrawCopy("colz");
 
   if (!side) {
     gPad->SetTitle("A side");
@@ -903,7 +909,6 @@ TH2F *AliTPCCalibTCF::PlotOccupSummary2Dhist(const char *nameFileIn, Int_t side)
     gPad->SetTitle("C side");
   }
 
-  his2D->DrawCopy("colz");
   return his2D;
 }
 
@@ -925,29 +930,26 @@ void AliTPCCalibTCF::PlotOccupSummary(const char *nameFile, Int_t side, Int_t nP
   char nameFileOut[100];
   sprintf(nameFileOut,"Occup-%s",nameFile);
   TFile fileOut(nameFileOut,"RECREATE");
-  fileOut.cd();
+  // fileOut.cd();
 
   TNtuple *ntuple = new TNtuple("ntuple","ntuple","x:y:z:npulse");
-  //  ntuple->SetDirectory(0); // force to be memory resistent
+  // ntuple->SetDirectory(0); // force to be memory resistent
 
   Int_t nHist=file->GetNkeys();
+  if (!nHist) { return; }
   Int_t iHist = 0;
 
   Int_t secWise = 0;
 
   while ((key = (TKey *) next())) { // loop over histograms within the file
-    iHist+=1;
     his = (TH1F*)file->Get(key->GetName()); // copy object to memory
-
+    iHist++;
     Int_t npulse = (Int_t)his->GetBinContent(1);
     Int_t sec = (Int_t)his->GetBinContent(2);
     Int_t row = (Int_t)his->GetBinContent(3);
     Int_t pad = (Int_t)his->GetBinContent(4);
 
-    //    if (side==0 && sec%36>=18) continue;
-    //    if (side>0 && sec%36<18) continue;
-
-    if (row==-1 & pad==-1) { // summed pulses per sector
+    if ( (row==-1) && (pad==-1) ) { // summed pulses per sector
       row = 40; pad = 40;    // set to approx middle row for better plot
       secWise=1;
     }
@@ -961,7 +963,6 @@ void AliTPCCalibTCF::PlotOccupSummary(const char *nameFile, Int_t side, Int_t nP
     }
     pos->~Float_t();
   }
- 
 
   if (secWise) { // pulse per sector
     ntuple->SetMarkerStyle(8);
@@ -974,12 +975,17 @@ void AliTPCCalibTCF::PlotOccupSummary(const char *nameFile, Int_t side, Int_t nP
   if (!side) {
     sprintf(cSel,"z>0&&npulse>=%d",nPulseMin);
     ntuple->Draw("y:x:npulse",cSel,"colz");
-    gPad->SetTitle("A side");
   } else {
     sprintf(cSel,"z<0&&npulse>=%d",nPulseMin);
     ntuple->Draw("y:x:npulse",cSel,"colz");
+  }
+
+  if (!side) {
+    gPad->SetTitle("A side");
+  } else {
     gPad->SetTitle("C side");
   }
+
 
   ntuple->Write();
   fileOut.Close();
@@ -1021,12 +1027,12 @@ void AliTPCCalibTCF::PlotQualitySummary(const char *nameFileQuality, const char 
   gStyle->SetLabelOffset(-0.01,"Y");
   gStyle->SetLabelOffset(-0.03,"Z");
 
-  gPad->SetPhi(0.1);gPad->SetTheta(90);
-
   his2D->GetXaxis()->SetTitle("max. undershot [ADC]");
   his2D->GetYaxis()->SetTitle("width Reduction [%]");
 
   his2D->DrawCopy(pOpt);
+
+  gPad->SetPhi(0.1);gPad->SetTheta(90);
   
   his2D->~TH2F();
   
@@ -1186,7 +1192,7 @@ Double_t* AliTPCCalibTCF::ExtractPZValues(Double_t *param) {
   if (param[3]==param[4]) {param[3]=param[3]+0.0001;}
   if (param[5]==param[4]) {param[5]=param[5]+0.0001;}
   
-  if ((param[5]>param[4])&(param[5]>param[3])) {
+  if ((param[5]>param[4])&&(param[5]>param[3])) {
     if (param[4]>=param[3]) {
       vA1 = param[0];  vA2 = param[1];  vA3 = param[2];
       vTT1 = param[3]; vTT2 = param[4]; vTT3 = param[5];
@@ -1194,7 +1200,7 @@ Double_t* AliTPCCalibTCF::ExtractPZValues(Double_t *param) {
       vA1 = param[1];  vA2 = param[0];  vA3 = param[2];
       vTT1 = param[4]; vTT2 = param[3]; vTT3 = param[5];
     }
-  } else if ((param[4]>param[5])&(param[4]>param[3])) {
+  } else if ((param[4]>param[5])&&(param[4]>param[3])) {
     if (param[5]>=param[3]) {
       vA1 = param[0];  vA2 = param[2];  vA3 = param[1];
       vTT1 = param[3]; vTT2 = param[5]; vTT3 = param[4];
@@ -1202,7 +1208,7 @@ Double_t* AliTPCCalibTCF::ExtractPZValues(Double_t *param) {
       vA1 = param[2];  vA2 = param[0];  vA3 = param[1];
       vTT1 = param[5]; vTT2 = param[3]; vTT3 = param[4];
     }
-  } else if ((param[3]>param[4])&(param[3]>param[5])) {
+  } else if ((param[3]>param[4])&&(param[3]>param[5])) {
     if (param[5]>=param[4]) {
       vA1 = param[1];  vA2 = param[2];  vA3 = param[0];
       vTT1 = param[4]; vTT2 = param[5]; vTT3 = param[3];
@@ -1757,7 +1763,7 @@ void AliTPCCalibTCF::MergeToOneFile(const char *nameFileSum) {
 
       printf("Sector file %s found\n",nameFileSumSec);
       TIter next(fileSumSec->GetListOfKeys());
-      while( (key=(TKey*)next()) ) {
+      while( key=(TKey*)next() ) {
         const char *hisName = key->GetName();
 
         hisIn=(TH1F*)fileSumSec->Get(hisName);
