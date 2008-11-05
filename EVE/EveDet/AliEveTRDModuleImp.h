@@ -37,6 +37,7 @@ class AliTRDdigitsManager;
 
 class AliEveTRDHits;
 class AliEveTRDDigits;
+class AliTRDtrackingChamber;
 class AliEveTRDChamber : public TEveElement, public AliEveTRDModule
 {
   friend class AliEveTRDDigits;
@@ -52,6 +53,7 @@ public:
 
   void  LoadHits(TClonesArray *hits, Int_t &idx);
   void  LoadClusters(TObjArray *cs);
+  void  LoadClusters(AliTRDtrackingChamber *tc);
   void  LoadDigits(AliTRDdigitsManager *digits);
   void  LoadTracklets(TObjArray *ts);
 

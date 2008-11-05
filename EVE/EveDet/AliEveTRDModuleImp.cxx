@@ -9,6 +9,7 @@
 
 #include "AliEveTRDModuleImp.h"
 #include "AliEveTRDData.h"
+#include "EveBase/AliEveEventManager.h"
 
 #include "TGListTree.h"
 #include "TClonesArray.h"
@@ -22,11 +23,13 @@
 
 
 #include "AliLog.h"
+#include "AliCDBManager.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDCommonParam.h"
 #include "AliTRDpadPlane.h"
 #include "AliTRDhit.h"
 #include "AliTRDcluster.h"
+#include "AliTRDtrackingChamber.h"
 #include "AliTRDmcmTracklet.h"
 
 ClassImp(AliEveTRDChamber)
@@ -276,6 +279,39 @@ void AliEveTRDChamber::LoadClusters(TObjArray *clusters)
   fLoadRecPoints = kTRUE;
 }
 
+
+//______________________________________________________________________________
+void AliEveTRDChamber::LoadClusters(AliTRDtrackingChamber *tc)
+{
+  if(!fGeo){
+    AliError(Form("Geometry not set for chamber %d. Please call first AliEveTRDChamber::SetGeometry().", fDet));
+    return;
+  }
+
+  if(!fRecPoints){ 
+    AddElement(fRecPoints = new AliEveTRDClusters());
+    fRecPoints->SetTitle(Form("Clusters for Det %d", GetID()));
+  }
+  fRecPoints->Reset();
+
+  Float_t g[3]; //global coordinates
+  const AliTRDchamberTimeBin *tb = 0x0;
+  for(int itb=0; itb<AliTRDtrackingChamber::kNTimeBins; itb++){
+    tb = tc->GetTB(itb);
+    if(!(Int_t(*tb))) continue;
+    const AliTRDcluster *c= 0x0; Int_t ic = 0;
+    while((c=tb->GetCluster(ic))){
+      c->GetGlobalXYZ(g); 
+      Int_t id = fRecPoints->SetNextPoint(g[0], g[1], g[2]);    
+      fRecPoints->SetPointId(id, new AliTRDcluster(*c));
+      ic++;
+    }
+  }
+  fRecPoints->StampObjProps();
+  fLoadRecPoints = kTRUE;
+}
+
+
 //______________________________________________________________________________
 void AliEveTRDChamber::LoadDigits(AliTRDdigitsManager *digits)
 {
@@ -432,6 +468,12 @@ void AliEveTRDChamber::SetGeometry(AliTRDgeometry *geo)
 // * (TGeoShape**) (((char*)eg_shape) + shape_offset) = gGeoManager->GetCurrentVolume()->GetShape();
 // 
 // eg_shape->StampColorSelection();
+  if(!(gGeoManager)){ 
+    AliCDBManager *fCDBManager=AliCDBManager::Instance();
+    fCDBManager->SetDefaultStorage("local://$ALICE_ROOT");
+    fCDBManager->SetRun(0);
+    AliEveEventManager::AssertGeometry();
+  }
 
   // define rendarable volumes
   gGeoManager->cd(Form("/B077_1/BSEGMO%d_1/BTRD%d_1/UTR1_1/UTS1_1/UTI1_1/UT%02d_1", ism, ism, icha));
