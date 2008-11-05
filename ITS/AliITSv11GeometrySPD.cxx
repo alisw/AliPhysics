@@ -3028,7 +3028,7 @@ TGeoVolumeAssembly* AliITSv11GeometrySPD::CreateConeModule(TGeoManager *mgr) con
     TGeoVolume *volCable = new TGeoVolume("ITSSPDExtender", shCable, medExt);
     volCable->SetLineColor(kGreen);
     
-    TGeoVolume *volTube = gGeoManager->MakeTube("ITSSPDCoolingTubeCone", medInox, 4.*fgkmm, 5.*fgkmm, 0.5*(x[5] - x[0]));
+    TGeoVolume *volTube = gGeoManager->MakeTube("ITSSPDCoolingTubeCone", medInox, 5.*fgkmm, 6.*fgkmm, 0.5*(x[5] - x[0]));
     volTube->SetLineColor(kGray);
     
     Double_t thickness = cableThickness + mcmThickness;
@@ -3085,7 +3085,6 @@ void AliITSv11GeometrySPD::CreateCones(TGeoVolume *moth) const
 	angle2[i] -= 1.5;
         rot2->RotateZ(90.0 - angle2[i]);
         TGeoCombiTrans *tr2 = new TGeoCombiTrans(0.0, 0.0, -40.4, rot2);
-        if (i != 1 && i != 6)
         moth->AddNode(module, 2*i+1, tr2);
     }
 }
