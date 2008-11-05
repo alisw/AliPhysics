@@ -146,6 +146,7 @@ Int_t AliCascadeVertexer::V0sTracks2CascadeVertices(AliESDEvent *event) {
 
   	 if (cascade.GetCascadeCosineOfPointingAngle(xPrimaryVertex,yPrimaryVertex,zPrimaryVertex) <fCPAmin) continue; //condition on the cascade pointing angle 
 	 
+         cascade.SetDcaXiDaughters(dca);
 	 event->AddCascade(&cascade);
          ncasc++;
       } // end loop tracks
@@ -185,9 +186,10 @@ Int_t AliCascadeVertexer::V0sTracks2CascadeVertices(AliESDEvent *event) {
 
          Double_t x1,y1,z1; pv0->GetXYZ(x1,y1,z1);
          if (r2 > (x1*x1+y1*y1)) continue;
-         if (z*z > z1*z1) continue;
 
 	 if (cascade.GetCascadeCosineOfPointingAngle(xPrimaryVertex,yPrimaryVertex,zPrimaryVertex) < fCPAmin) continue; //condition on the cascade pointing angle 
+
+         cascade.SetDcaXiDaughters(dca);
 	 event->AddCascade(&cascade);
          ncasc++;
 
