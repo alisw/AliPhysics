@@ -3,20 +3,105 @@ void runProtonAnalysisQA() {
   timer.Start();
   
   runProof(200000,"/COMMON/COMMON/LHC08c11_10TeV_0.5T"); //use data sets
-  //runProof(200); //use ascii files
+  //runInteractive("wn.xml");
   
   timer.Stop();
   timer.Print();
 }
 
 //_________________________________________________//
-void runProof(Int_t stats = 0, const char* dataset = 0x0) {
-  TStopwatch timer;
-  timer.Start();
-  
+void runInteractive(const char *collectionfile) {
   TString outputFilename1 = "Protons.QA.root"; 
   TString outputFilename2 = "Protons.MC.QA.root"; 
   TString outputFilename3 = "Protons.QA.Histograms.root"; 
+  TString outputFilename4 = "Protons.Efficiency.root"; 
+
+  TGrid::Connect("alien://");
+
+  //Setup the par files
+  setupPar("STEERBase");
+  gSystem->Load("libSTEERBase.so");
+  setupPar("ESD");
+  gSystem->Load("libESD.so");
+  setupPar("AOD");
+  gSystem->Load("libAOD.so");
+  setupPar("ANALYSIS");
+  gSystem->Load("libANALYSIS.so");
+  setupPar("ANALYSISalice");
+  gSystem->Load("libANALYSISalice.so");
+  setupPar("CORRFW");
+  gSystem->Load("libCORRFW.so");
+  setupPar("PWG2spectra");
+  gSystem->Load("libPWG2spectra.so");
+
+  gROOT->LoadMacro("AliAnalysisTaskProtonsQA.cxx+");
+  //____________________________________________//
+  //Usage of event tags
+  AliTagAnalysis *analysis = new AliTagAnalysis();
+  TChain *chain = 0x0;
+  chain = analysis->GetChainFromCollection(collectionfile,"esdTree");
+
+  //____________________________________________//
+  // Make the analysis manager
+  AliAnalysisManager *mgr = new AliAnalysisManager("TestManager");
+  AliVEventHandler* esdH = new AliESDInputHandler;
+  mgr->SetInputEventHandler(esdH);
+  AliMCEventHandler *mc = new AliMCEventHandler();
+  mgr->SetMCtruthEventHandler(mc);
+  
+  //____________________________________________//
+  // 1st Proton task
+  AliAnalysisTaskProtonsQA *taskProtonsQA = new AliAnalysisTaskProtonsQA("TaskProtonsQA");
+  mgr->AddTask(taskProtonsQA);
+
+  // Create containers for input/output
+  AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("dataChain",
+							   TChain::Class(),
+							   AliAnalysisManager::kInputContainer);
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("globalQAList", 
+							    TList::Class(),
+							    AliAnalysisManager::kOutputContainer,
+							    outputFilename1.Data());
+  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("pdgCodeList", 
+							    TList::Class(),
+							    AliAnalysisManager::kOutputContainer,
+							    outputFilename2.Data());
+  AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("mcProcessList", 
+							    TList::Class(),
+							    AliAnalysisManager::kOutputContainer,
+							    outputFilename2.Data());
+  AliAnalysisDataContainer *coutput4 = mgr->CreateContainer("acceptedCutList", 
+							    TList::Class(),
+							    AliAnalysisManager::kOutputContainer,
+							    outputFilename3.Data());
+  AliAnalysisDataContainer *coutput5 = mgr->CreateContainer("acceptedDCAList", 
+							    TList::Class(),
+							    AliAnalysisManager::kOutputContainer,
+							    outputFilename3.Data());
+  AliAnalysisDataContainer *coutput6 = mgr->CreateContainer("efficiencyList", 
+							    TList::Class(),
+							    AliAnalysisManager::kOutputContainer,
+							    outputFilename4.Data());
+
+  //____________________________________________//
+  mgr->ConnectInput(taskProtonsQA,0,cinput1);
+  mgr->ConnectOutput(taskProtonsQA,0,coutput1);
+  mgr->ConnectOutput(taskProtonsQA,1,coutput2);
+  mgr->ConnectOutput(taskProtonsQA,2,coutput3);
+  mgr->ConnectOutput(taskProtonsQA,3,coutput4);
+  mgr->ConnectOutput(taskProtonsQA,4,coutput5);
+  mgr->ConnectOutput(taskProtonsQA,5,coutput6);
+  if (!mgr->InitAnalysis()) return;
+  mgr->PrintStatus();
+  mgr->StartAnalysis("local",chain);
+}
+ 
+//_________________________________________________//
+void runProof(Int_t stats = 0, const char* dataset = 0x0) {
+  TString outputFilename1 = "Protons.QA.root"; 
+  TString outputFilename2 = "Protons.MC.QA.root"; 
+  TString outputFilename3 = "Protons.QA.Histograms.root"; 
+  TString outputFilename4 = "Protons.Efficiency.root"; 
 
   printf("****** Connect to PROOF *******\n");
   TProof::Open("alicecaf.cern.ch"); 
@@ -77,6 +162,10 @@ void runProof(Int_t stats = 0, const char* dataset = 0x0) {
 							    TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
 							    outputFilename3.Data());
+  AliAnalysisDataContainer *coutput6 = mgr->CreateContainer("efficiencyList", 
+							    TList::Class(),
+							    AliAnalysisManager::kOutputContainer,
+							    outputFilename4.Data());
 
   //____________________________________________//
   mgr->ConnectInput(taskProtonsQA,0,cinput1);
@@ -85,6 +174,7 @@ void runProof(Int_t stats = 0, const char* dataset = 0x0) {
   mgr->ConnectOutput(taskProtonsQA,2,coutput3);
   mgr->ConnectOutput(taskProtonsQA,3,coutput4);
   mgr->ConnectOutput(taskProtonsQA,4,coutput5);
+  mgr->ConnectOutput(taskProtonsQA,5,coutput6);
   if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
 
@@ -101,9 +191,6 @@ void runProof(Int_t stats = 0, const char* dataset = 0x0) {
     mgr->StartAnalysis("proof",chain);
     //mgr->StartAnalysis("local",chain);
   }
-
-  timer.Stop();
-  timer.Print();
 }
 
 //_________________________________________________//
