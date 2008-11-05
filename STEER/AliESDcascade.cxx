@@ -94,10 +94,6 @@ AliESDcascade::AliESDcascade(const AliESDv0 &v,
   Double_t ym=y2+a2*py2;
   Double_t zm=z2+a2*pz2;
 
-  //dca between V0 and bachelor
-  
-  fDcaXiDaughters = TMath::Sqrt((x1-xm)*(x1-xm) + (y1-ym)*(y1-ym) + (z1-zm)*(z1-zm));
-
   // position of the cascade decay
   
   fPosXi[0]=0.5*(x1+xm); fPosXi[1]=0.5*(y1+ym); fPosXi[2]=0.5*(z1+zm);
