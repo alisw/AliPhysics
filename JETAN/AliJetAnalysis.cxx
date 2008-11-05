@@ -947,38 +947,25 @@ void AliJetAnalysis::PlotHistograms()
 void AliJetAnalysis::PlotKineH() const
 {
     // missing    
-    if (fDoPart) ;
-    if (fDoGenJ) ;
-    if (fDoRecJ) ;
 }
 
 void AliJetAnalysis::PlotCorrH() const
 {
     // missing    
-    if (fDoPart && fDoGenJ) ;
-    if (fDoPart && fDoRecJ) ; 
-    if (fDoGenJ && fDoRecJ) ; 
 }
 void AliJetAnalysis::PlotCorr50H() const
 {
     // missing    
-    if (fDoPart && fDoGenJ) ;
-    if (fDoPart && fDoRecJ) ; 
-    if (fDoGenJ && fDoRecJ) ; 
 }
 
 void AliJetAnalysis::PlotShapH() const
 {
     // missing    
-    if (fDoGenJ) ;
-    if (fDoRecJ) ;
 }
 
 void AliJetAnalysis::PlotFragH() const
 {
     // missing    
-    if (fDoGenJ) ;
-    if (fDoRecJ) ;
 }
 
 void AliJetAnalysis::PlotTrigH()
