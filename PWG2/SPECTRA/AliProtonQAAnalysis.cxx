@@ -25,6 +25,7 @@
 #include <TH2D.h>
 #include <TH3F.h>
 #include <TH1D.h>
+#include <TArrayI.h>
 #include <TParticle.h>
 
 #include "AliProtonQAAnalysis.h"
@@ -80,7 +81,8 @@ AliProtonQAAnalysis::AliProtonQAAnalysis() :
   fMCProcessIdFlag(kFALSE), fMCProcessId(0),
   fMotherParticlePDGCodeFlag(kFALSE), fMotherParticlePDGCode(0),
   fAcceptedCutList(0), fRejectedCutList(0),
-  fAcceptedDCAList(0), fRejectedDCAList(0) {
+  fAcceptedDCAList(0), fRejectedDCAList(0),
+  fRunEfficiencyAnalysis(kFALSE), fEfficiencyList(0) {
   //Default constructor
   for(Int_t i = 0; i < 5; i++) fPartFrac[i] = 0.0;
 }
@@ -110,6 +112,8 @@ AliProtonQAAnalysis::~AliProtonQAAnalysis() {
   if(fRejectedCutList) delete fRejectedCutList;
   if(fAcceptedDCAList) delete fAcceptedDCAList;
   if(fRejectedDCAList) delete fRejectedDCAList;
+ 
+  if(fEfficiencyList) delete fEfficiencyList;
 }
 
 //____________________________________________________________________//
@@ -1204,7 +1208,7 @@ Double_t AliProtonQAAnalysis::Rapidity(Double_t Px, Double_t Py, Double_t Pz) {
 }
 
 //____________________________________________________________________//
-void AliProtonQAAnalysis::SetQAOn() {
+void AliProtonQAAnalysis::SetRunQAAnalysis() {
   //initializes the QA lists
   //fQAHistograms = kTRUE;
   fGlobalQAList = new TList();
@@ -1256,6 +1260,82 @@ void AliProtonQAAnalysis::SetQAYPtBins(Int_t nbinsY, Double_t minY, Double_t max
   InitQA();
   InitCutLists();
   if(fRunMCAnalysis) InitMCAnalysis();
+  if(fRunEfficiencyAnalysis) InitEfficiencyAnalysis();
+}
+
+//____________________________________________________________________//
+void AliProtonQAAnalysis::InitEfficiencyAnalysis() {
+  //Initialization of the efficiency list - reconstruction & PID efficiency
+  //Adding each monitored object in the list
+  fEfficiencyList = new TList();
+
+  //MC primary protons and antiprotons for the reconstruction efficiency
+  TH2D *gHistMCYPtProtons = new TH2D("gHistMCYPtProtons",
+				     ";y;P_{T} [GeV/c]",
+				     fNBinsY,fMinY,fMaxY,
+				     fNBinsPt,fMinPt,fMaxPt);
+  gHistMCYPtProtons->SetStats(kTRUE);
+  gHistMCYPtProtons->GetXaxis()->SetTitleColor(1);
+  fEfficiencyList->Add(gHistMCYPtProtons);
+  TH2D *gHistMCYPtAntiProtons = new TH2D("gHistMCYPtAntiProtons",
+					 ";y;P_{T} [GeV/c]",
+					 fNBinsY,fMinY,fMaxY,
+					 fNBinsPt,fMinPt,fMaxPt);
+  gHistMCYPtAntiProtons->SetStats(kTRUE);
+  gHistMCYPtAntiProtons->GetXaxis()->SetTitleColor(1);
+  fEfficiencyList->Add(gHistMCYPtAntiProtons);
+
+  //ESD primary protons and antiprotons for the reconstruction efficiency
+  TH2D *gHistESDYPtProtons = new TH2D("gHistESDYPtProtons",
+				      ";y;P_{T} [GeV/c]",
+				      fNBinsY,fMinY,fMaxY,
+				      fNBinsPt,fMinPt,fMaxPt);
+  gHistESDYPtProtons->SetStats(kTRUE);
+  gHistESDYPtProtons->GetXaxis()->SetTitleColor(1);
+  fEfficiencyList->Add(gHistESDYPtProtons);
+  TH2D *gHistESDYPtAntiProtons = new TH2D("gHistESDYPtAntiProtons",
+					  ";y;P_{T} [GeV/c]",
+					  fNBinsY,fMinY,fMaxY,
+					  fNBinsPt,fMinPt,fMaxPt);
+  gHistESDYPtAntiProtons->SetStats(kTRUE);
+  gHistESDYPtAntiProtons->GetXaxis()->SetTitleColor(1);
+  fEfficiencyList->Add(gHistESDYPtAntiProtons);
+
+  //ESD reconstructed tracks that were initially protons for the PID efficiency
+  TH2D *gHistESDInitYPtProtons = new TH2D("gHistESDInitYPtProtons",
+					  ";y;P_{T} [GeV/c]",
+					  fNBinsY,fMinY,fMaxY,
+					  fNBinsPt,fMinPt,fMaxPt);
+  gHistESDInitYPtProtons->SetStats(kTRUE);
+  gHistESDInitYPtProtons->GetXaxis()->SetTitleColor(1);
+  fEfficiencyList->Add(gHistESDInitYPtProtons);
+  
+  //ESD reconstructed tracks that were initially protons and were identified as protons for the PID efficiency
+  TH2D *gHistESDIdYPtProtons = new TH2D("gHistESDIdYPtProtons",
+					";y;P_{T} [GeV/c]",
+					fNBinsY,fMinY,fMaxY,
+					fNBinsPt,fMinPt,fMaxPt);
+  gHistESDIdYPtProtons->SetStats(kTRUE);
+  gHistESDIdYPtProtons->GetXaxis()->SetTitleColor(1);
+  fEfficiencyList->Add(gHistESDIdYPtProtons);
+ 
+  //ESD reconstructed tracks that were identified as protons for the PID contamination
+  TH2D *gHistESDRecIdYPtProtons = new TH2D("gHistESDRecIdYPtProtons",
+					   ";y;P_{T} [GeV/c]",
+					   fNBinsY,fMinY,fMaxY,
+					   fNBinsPt,fMinPt,fMaxPt);
+  gHistESDRecIdYPtProtons->SetStats(kTRUE);
+  gHistESDRecIdYPtProtons->GetXaxis()->SetTitleColor(1);
+  fEfficiencyList->Add(gHistESDRecIdYPtProtons);
+
+  //ESD reconstructed tracks that were identified as protons but were initially not protons for the PID contamination
+  TH2D *gHistESDContamYPtProtons = new TH2D("gHistESDContamYPtProtons",
+					   ";y;P_{T} [GeV/c]",
+					   fNBinsY,fMinY,fMaxY,
+					   fNBinsPt,fMinPt,fMaxPt);
+  gHistESDContamYPtProtons->SetStats(kTRUE);
+  gHistESDContamYPtProtons->GetXaxis()->SetTitleColor(1);
+  fEfficiencyList->Add(gHistESDContamYPtProtons);
 }
 
 //____________________________________________________________________//
@@ -1499,7 +1579,7 @@ void AliProtonQAAnalysis::InitCutLists() {
 void AliProtonQAAnalysis::InitQA() {
   //Initializes the QA histograms and builds the directory structure
   //if(!fQAHistograms) 
-  SetQAOn();
+  SetRunQAAnalysis();
 
   //2D histograms
   //TDirectory *dir2D = gDirectory->mkdir("2D");
@@ -1510,14 +1590,14 @@ void AliProtonQAAnalysis::InitQA() {
 					      fNBinsPt,fMinPt,fMaxPt);
   gHistYPtPrimaryProtonsPass->SetStats(kTRUE);
   gHistYPtPrimaryProtonsPass->GetXaxis()->SetTitleColor(1);
-  fQA2DList->Add(gHistYPtPrimaryProtonsPass);
+  fQA2DList->Add(gHistYPtPrimaryProtonsPass);//y-pT of primary accepted ESD protons
   TH2D *gHistYPtPrimaryProtonsReject = new TH2D("gHistYPtPrimaryProtonsReject",
 						";y;P_{T} [GeV/c]",
 						fNBinsY,fMinY,fMaxY,
 						fNBinsPt,fMinPt,fMaxPt);
   gHistYPtPrimaryProtonsReject->SetStats(kTRUE);
   gHistYPtPrimaryProtonsReject->GetXaxis()->SetTitleColor(1);
-  fQA2DList->Add(gHistYPtPrimaryProtonsReject);
+  fQA2DList->Add(gHistYPtPrimaryProtonsReject);//y-pT of primary rejected ESD protons
 
   TH2D *gHistYPtSecondaryProtonsPass = new TH2D("gHistYPtSecondaryProtonsPass",
 						";y;P_{T} [GeV/c]",
@@ -1525,14 +1605,14 @@ void AliProtonQAAnalysis::InitQA() {
 						fNBinsPt,fMinPt,fMaxPt);
   gHistYPtSecondaryProtonsPass->SetStats(kTRUE);
   gHistYPtSecondaryProtonsPass->GetXaxis()->SetTitleColor(1);
-  fQA2DList->Add(gHistYPtSecondaryProtonsPass);
+  fQA2DList->Add(gHistYPtSecondaryProtonsPass);//y-pT of secondary accepted ESD protons
   TH2D *gHistYPtSecondaryProtonsReject = new TH2D("gHistYPtSecondaryProtonsReject",
 						  ";y;P_{T} [GeV/c]",
 						  fNBinsY,fMinY,fMaxY,
 						  fNBinsPt,fMinPt,fMaxPt);
   gHistYPtSecondaryProtonsReject->SetStats(kTRUE);
   gHistYPtSecondaryProtonsReject->GetXaxis()->SetTitleColor(1);
-  fQA2DList->Add(gHistYPtSecondaryProtonsReject);
+  fQA2DList->Add(gHistYPtSecondaryProtonsReject);//y-pT of secondary rejected ESD protons
 
   TH2D *gHistYPtPrimaryAntiProtonsPass = new TH2D("gHistYPtPrimaryAntiProtonsPass",
 						  ";y;P_{T} [GeV/c]",
@@ -1540,14 +1620,14 @@ void AliProtonQAAnalysis::InitQA() {
 						  fNBinsPt,fMinPt,fMaxPt);
   gHistYPtPrimaryAntiProtonsPass->SetStats(kTRUE);
   gHistYPtPrimaryAntiProtonsPass->GetXaxis()->SetTitleColor(1);
-  fQA2DList->Add(gHistYPtPrimaryAntiProtonsPass);
+  fQA2DList->Add(gHistYPtPrimaryAntiProtonsPass);//y-pT of primary accepted ESD antiprotons
   TH2D *gHistYPtPrimaryAntiProtonsReject = new TH2D("gHistYPtPrimaryAntiProtonsReject",
 						  ";y;P_{T} [GeV/c]",
 						  fNBinsY,fMinY,fMaxY,
 						  fNBinsPt,fMinPt,fMaxPt);
   gHistYPtPrimaryAntiProtonsReject->SetStats(kTRUE);
   gHistYPtPrimaryAntiProtonsReject->GetXaxis()->SetTitleColor(1);
-  fQA2DList->Add(gHistYPtPrimaryAntiProtonsReject);
+  fQA2DList->Add(gHistYPtPrimaryAntiProtonsReject);//y-pT of primary rejected ESD antiprotons
 
   TH2D *gHistYPtSecondaryAntiProtonsPass = new TH2D("gHistYPtSecondaryAntiProtonsPass",
 						  ";y;P_{T} [GeV/c]",
@@ -1555,14 +1635,14 @@ void AliProtonQAAnalysis::InitQA() {
 						  fNBinsPt,fMinPt,fMaxPt);
   gHistYPtSecondaryAntiProtonsPass->SetStats(kTRUE);
   gHistYPtSecondaryAntiProtonsPass->GetXaxis()->SetTitleColor(1);
-  fQA2DList->Add(gHistYPtSecondaryAntiProtonsPass);
+  fQA2DList->Add(gHistYPtSecondaryAntiProtonsPass);//y-pT of secondary accepted ESD antiprotons
   TH2D *gHistYPtSecondaryAntiProtonsReject = new TH2D("gHistYPtSecondaryAntiProtonsReject",
 						  ";y;P_{T} [GeV/c]",
 						  fNBinsY,fMinY,fMaxY,
 						  fNBinsPt,fMinPt,fMaxPt);
   gHistYPtSecondaryAntiProtonsReject->SetStats(kTRUE);
   gHistYPtSecondaryAntiProtonsReject->GetXaxis()->SetTitleColor(1);
-  fQA2DList->Add(gHistYPtSecondaryAntiProtonsReject);
+  fQA2DList->Add(gHistYPtSecondaryAntiProtonsReject);//y-pT of secondary rejected ESD antiprotons
 
   TH2D *gHistYPtPrimaryProtonsMC = new TH2D("gHistYPtPrimaryProtonsMC",
 					    ";y;P_{T} [GeV/c]",
@@ -1570,14 +1650,27 @@ void AliProtonQAAnalysis::InitQA() {
 					    fNBinsPt,fMinPt,fMaxPt);
   gHistYPtPrimaryProtonsMC->SetStats(kTRUE);
   gHistYPtPrimaryProtonsMC->GetXaxis()->SetTitleColor(1);
-  fQA2DList->Add(gHistYPtPrimaryProtonsMC);
+  fQA2DList->Add(gHistYPtPrimaryProtonsMC);//y-pT of primary MC protons
   TH2D *gHistYPtPrimaryAntiProtonsMC = new TH2D("gHistYPtPrimaryAntiProtonsMC",
 						";y;P_{T} [GeV/c]",
 						fNBinsY,fMinY,fMaxY,
 						fNBinsPt,fMinPt,fMaxPt);
   gHistYPtPrimaryAntiProtonsMC->SetStats(kTRUE);
   gHistYPtPrimaryAntiProtonsMC->GetXaxis()->SetTitleColor(1);
-  fQA2DList->Add(gHistYPtPrimaryAntiProtonsMC);
+  fQA2DList->Add(gHistYPtPrimaryAntiProtonsMC);//y-pT of primary MC antiprotons
+
+  TH3F *gHistYPtPDGProtonsPass = new TH3F("gHistYPtPDGProtonsPass",
+					  ";y;P_{T} [GeV/c];PDG",
+					  fNBinsY,fMinY,fMaxY,
+					  fNBinsPt,fMinPt,fMaxPt,
+					  14,-0.5,13.5);
+  fQA2DList->Add(gHistYPtPDGProtonsPass);//composition of secondary protons
+  TH3F *gHistYPtPDGAntiProtonsPass = new TH3F("gHistYPtPDGAntiProtonsPass",
+					      ";y;P_{T} [GeV/c];PDG",
+					      fNBinsY,fMinY,fMaxY,
+					      fNBinsPt,fMinPt,fMaxPt,
+					      14,-0.5,13.5);
+  fQA2DList->Add(gHistYPtPDGAntiProtonsPass);//composition of secondary antiprotons
 
   /*gDirectory->cd("../");
   //protons
@@ -2405,7 +2498,192 @@ void AliProtonQAAnalysis::InitQA() {
 }
 
 //____________________________________________________________________//
-void AliProtonQAAnalysis::RunQA(AliStack *stack, AliESDEvent *fESD) {
+void AliProtonQAAnalysis::RunEfficiencyAnalysis(AliStack *stack, 
+						AliESDEvent *esd) {
+  //Runs the efficiency code
+  //MC loop
+  Int_t nMCProtons = 0, nESDProtons = 0;
+  for(Int_t iParticle = 0; iParticle <= stack->GetNprimary(); iParticle++) {
+    TParticle *particle = stack->Particle(iParticle);
+    if(!particle) continue;
+    if(TMath::Abs(particle->Eta()) > 1.0) continue;//acceptance
+    if((particle->Pt() > fMaxPt)||(particle->Pt() < fMinPt)) continue;
+    if((Rapidity(particle->Px(),particle->Py(),particle->Pz()) > fMaxY)||(Rapidity(particle->Px(),particle->Py(),particle->Pz()) < fMinY)) continue;
+
+    Int_t pdgcode = particle->GetPdgCode();
+    if(pdgcode == 2212) {
+      nMCProtons += 1;
+      ((TH2D *)(fEfficiencyList->At(0)))->Fill(Rapidity(particle->Px(),
+							particle->Py(),
+							particle->Pz()),
+					       particle->Pt());
+    }
+    if(pdgcode == -2212) 
+      ((TH2D *)(fEfficiencyList->At(1)))->Fill(Rapidity(particle->Px(),
+							particle->Py(),
+							particle->Pz()),
+					       particle->Pt());
+  }//MC loop
+
+  //ESD loop
+  Int_t nGoodTracks = esd->GetNumberOfTracks();
+  TArrayI labelArray(nGoodTracks);
+  Int_t labelCounter = 0;
+  for(Int_t iTracks = 0; iTracks < nGoodTracks; iTracks++) {
+    AliESDtrack* track = esd->GetTrack(iTracks);
+    if(!track) continue;
+
+    Int_t label = TMath::Abs(track->GetLabel());
+    if(IsLabelUsed(labelArray,label)) continue;
+    labelArray.AddAt(label,labelCounter);
+    labelCounter += 1;
+
+    TParticle *particle = stack->Particle(label);
+    if(!particle) continue;
+    Int_t pdgcode = particle->GetPdgCode();
+    
+    Double_t Pt = 0.0, P = 0.0;
+    Double_t probability[5];
+    
+    //TPC only
+    if(fUseTPCOnly) {
+      AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
+      if(!tpcTrack) continue;
+      Pt = tpcTrack->Pt();
+      P = tpcTrack->P();
+
+      if((tpcTrack->Pt() > fMaxPt)||(tpcTrack->Pt() < fMinPt)) continue;
+      if((Rapidity(tpcTrack->Px(),tpcTrack->Py(),tpcTrack->Pz()) > fMaxY)||(Rapidity(tpcTrack->Px(),tpcTrack->Py(),tpcTrack->Pz()) < fMinY)) continue;
+
+      //reconstructed primary (anti)protons
+      if(pdgcode == 2212) {
+	((TH2D *)(fEfficiencyList->At(4)))->Fill(Rapidity(tpcTrack->Px(),
+							  tpcTrack->Py(),
+							  tpcTrack->Pz()),
+						 Pt);
+	if(label <= stack->GetNprimary()) {
+	  nESDProtons += 1;
+	  ((TH2D *)(fEfficiencyList->At(2)))->Fill(Rapidity(tpcTrack->Px(),
+							    tpcTrack->Py(),
+							    tpcTrack->Pz()),
+						   Pt);
+	}
+      }//initial protons
+      if(pdgcode == -2212) {
+	((TH2D *)(fEfficiencyList->At(4)))->Fill(Rapidity(tpcTrack->Px(),
+							  tpcTrack->Py(),
+							  tpcTrack->Pz()),
+						 Pt);
+	if(label <= stack->GetNprimary())
+	  ((TH2D *)(fEfficiencyList->At(3)))->Fill(Rapidity(tpcTrack->Px(),
+							    tpcTrack->Py(),
+							    tpcTrack->Pz()),
+						   Pt);
+      }//initial antiprotons
+
+      //pid
+      track->GetTPCpid(probability);
+      Double_t rcc = 0.0;
+      for(Int_t i = 0; i < AliPID::kSPECIES; i++)
+	rcc += probability[i]*GetParticleFraction(i,P);
+      if(rcc == 0.0) continue;
+      Double_t w[5];
+      for(Int_t i = 0; i < AliPID::kSPECIES; i++)
+	w[i] = probability[i]*GetParticleFraction(i,P)/rcc;
+      Long64_t fParticleType = TMath::LocMax(AliPID::kSPECIES,w);
+      if(fParticleType == 4) {
+	((TH2D *)(fEfficiencyList->At(6)))->Fill(Rapidity(tpcTrack->Px(),
+							  tpcTrack->Py(),
+							  tpcTrack->Pz()),
+						 Pt);
+	if(TMath::Abs(pdgcode) == 2212) 
+	  ((TH2D *)(fEfficiencyList->At(5)))->Fill(Rapidity(tpcTrack->Px(),
+							    tpcTrack->Py(),
+							    tpcTrack->Pz()),
+						   Pt);
+	else
+	  ((TH2D *)(fEfficiencyList->At(7)))->Fill(Rapidity(tpcTrack->Px(),
+							    tpcTrack->Py(),
+							    tpcTrack->Pz()),
+						   Pt);
+      }//identified as proton
+    }//TPC only tracks
+    else if(!fUseTPCOnly) {
+      if((track->Pt() > fMaxPt)||(track->Pt() < fMinPt)) continue;
+      if((Rapidity(track->Px(),track->Py(),track->Pz()) > fMaxY)||(Rapidity(track->Px(),track->Py(),track->Pz()) < fMinY)) continue;
+
+      //reconstructed primary (anti)protons
+      if(pdgcode == 2212) {
+	((TH2D *)(fEfficiencyList->At(4)))->Fill(Rapidity(track->Px(),
+							  track->Py(),
+							  track->Pz()),
+						 Pt);
+	if(label <= stack->GetNprimary())
+	  ((TH2D *)(fEfficiencyList->At(2)))->Fill(Rapidity(track->Px(),
+							    track->Py(),
+							    track->Pz()),
+						   Pt);
+      }//initial protons
+      if(pdgcode == -2212) {
+	((TH2D *)(fEfficiencyList->At(4)))->Fill(Rapidity(track->Px(),
+							  track->Py(),
+							  track->Pz()),
+						 Pt);
+	if(label <= stack->GetNprimary())
+	  ((TH2D *)(fEfficiencyList->At(3)))->Fill(Rapidity(track->Px(),
+							    track->Py(),
+							    track->Pz()),
+						   Pt);
+      }//initial antiprotons
+      
+      //pid
+      track->GetESDpid(probability);
+      Double_t rcc = 0.0;
+      for(Int_t i = 0; i < AliPID::kSPECIES; i++)
+	rcc += probability[i]*GetParticleFraction(i,P);
+      if(rcc == 0.0) continue;
+      Double_t w[5];
+      for(Int_t i = 0; i < AliPID::kSPECIES; i++)
+	w[i] = probability[i]*GetParticleFraction(i,P)/rcc;
+      Long64_t fParticleType = TMath::LocMax(AliPID::kSPECIES,w);
+      if(fParticleType == 4) {
+	((TH2D *)(fEfficiencyList->At(6)))->Fill(Rapidity(track->Px(),
+							  track->Py(),
+							  track->Pz()),
+						 Pt);
+	if(TMath::Abs(pdgcode) == 2212) 
+	  ((TH2D *)(fEfficiencyList->At(5)))->Fill(Rapidity(track->Px(),
+							    track->Py(),
+							    track->Pz()),
+						   Pt);
+	else
+	  ((TH2D *)(fEfficiencyList->At(7)))->Fill(Rapidity(track->Px(),
+							    track->Py(),
+							    track->Pz()),
+						   Pt);
+      }//identified as proton
+    }//global tracking
+  }//track loop
+  
+  //Printf("MC protons: %d - ESD protons: %d",nMCProtons,nESDProtons);
+}
+
+//____________________________________________________________________//
+Bool_t AliProtonQAAnalysis::IsLabelUsed(TArrayI labelArray, 
+					Int_t label) {
+  //Checks if the label is used already
+  Bool_t status = kFALSE;
+  for(Int_t i = 0; i < labelArray.GetSize(); i++) {
+    if(labelArray.At(i) == label)
+      status = kTRUE;
+  }
+
+  return status;
+}
+
+//____________________________________________________________________//
+void AliProtonQAAnalysis::RunQAAnalysis(AliStack *stack, 
+					AliESDEvent *esd) {
   //Runs the QA code
   //MC loop
   for(Int_t iParticle = 0; iParticle < stack->GetNprimary(); iParticle++) {
@@ -2428,9 +2706,11 @@ void AliProtonQAAnalysis::RunQA(AliStack *stack, AliESDEvent *fESD) {
   }//MC loop
 
   //ESD loop
-  Int_t nGoodTracks = fESD->GetNumberOfTracks();
+  Int_t nGoodTracks = esd->GetNumberOfTracks();
   for(Int_t iTracks = 0; iTracks < nGoodTracks; iTracks++) {
-    AliESDtrack* track = fESD->GetTrack(iTracks);
+    AliESDtrack* track = esd->GetTrack(iTracks);
+    if(!track) continue;
+    
     Int_t label = TMath::Abs(track->GetLabel()); 
 
     Double_t Pt = 0.0, P = 0.0;
@@ -2493,9 +2773,9 @@ void AliProtonQAAnalysis::RunQA(AliStack *stack, AliESDEvent *fESD) {
 	      ((TH1F *)(fAcceptedDCAList->At(0)))->Fill(TMath::Abs(dcaXY));
 	      ((TH1F *)(fAcceptedDCAList->At(4)))->Fill(TMath::Abs(dcaZ));
 	      ((TH1F *)(fAcceptedDCAList->At(8)))->Fill(nSigmaToVertex);
-              ((TH2D *)(fQA2DList->At(0)))->Fill(Rapidity(track->Px(),
-							  track->Py(),
-							  track->Pz()),
+              ((TH2D *)(fQA2DList->At(0)))->Fill(Rapidity(tpcTrack->Px(),
+							  tpcTrack->Py(),
+							  tpcTrack->Pz()),
 						 Pt);
 	    }
             else if(track->Charge() < 0) {
@@ -2517,9 +2797,9 @@ void AliProtonQAAnalysis::RunQA(AliStack *stack, AliESDEvent *fESD) {
 	      ((TH1F *)(fAcceptedDCAList->At(1)))->Fill(TMath::Abs(dcaXY));
 	      ((TH1F *)(fAcceptedDCAList->At(5)))->Fill(TMath::Abs(dcaZ));
 	      ((TH1F *)(fAcceptedDCAList->At(9)))->Fill(nSigmaToVertex);
-              ((TH2D *)(fQA2DList->At(4)))->Fill(Rapidity(track->Px(),
-							  track->Py(),
-							  track->Pz()),
+              ((TH2D *)(fQA2DList->At(4)))->Fill(Rapidity(tpcTrack->Px(),
+							  tpcTrack->Py(),
+							  tpcTrack->Pz()),
 						 Pt);
 	    }
 	  }//primary particles
@@ -2557,10 +2837,15 @@ void AliProtonQAAnalysis::RunQA(AliStack *stack, AliESDEvent *fESD) {
 	      ((TH1F *)(fAcceptedDCAList->At(2)))->Fill(TMath::Abs(dcaXY));
 	      ((TH1F *)(fAcceptedDCAList->At(6)))->Fill(TMath::Abs(dcaZ));
 	      ((TH1F *)(fAcceptedDCAList->At(10)))->Fill(nSigmaToVertex);
-	      ((TH2D *)(fQA2DList->At(2)))->Fill(Rapidity(track->Px(),
-							  track->Py(),
-							  track->Pz()),
+	      ((TH2D *)(fQA2DList->At(2)))->Fill(Rapidity(tpcTrack->Px(),
+							  tpcTrack->Py(),
+							  tpcTrack->Pz()),
 						 Pt);
+	      ((TH3F *)(fQA2DList->At(10)))->Fill(Rapidity(tpcTrack->Px(),
+							   tpcTrack->Py(),
+							   tpcTrack->Pz()),
+						  Pt,
+						  ConvertPDGToInt(motherPDGCode));
 	    }
             else if(track->Charge() < 0) {
 	      for(Int_t iLayer = 0; iLayer < 6; iLayer++) {
@@ -2581,36 +2866,41 @@ void AliProtonQAAnalysis::RunQA(AliStack *stack, AliESDEvent *fESD) {
 	      ((TH1F *)(fAcceptedDCAList->At(3)))->Fill(TMath::Abs(dcaXY));
 	      ((TH1F *)(fAcceptedDCAList->At(7)))->Fill(TMath::Abs(dcaZ));
 	      ((TH1F *)(fAcceptedDCAList->At(11)))->Fill(nSigmaToVertex);
-              ((TH2D *)(fQA2DList->At(6)))->Fill(Rapidity(track->Px(),
-							  track->Py(),
-							  track->Pz()),
+              ((TH2D *)(fQA2DList->At(6)))->Fill(Rapidity(tpcTrack->Px(),
+							  tpcTrack->Py(),
+							  tpcTrack->Pz()),
 						 Pt);
+	      ((TH3F *)(fQA2DList->At(11)))->Fill(Rapidity(tpcTrack->Px(),
+							   tpcTrack->Py(),
+							   tpcTrack->Pz()),
+						  Pt,
+						  ConvertPDGToInt(motherPDGCode));
 	    }
 	  }//secondary particles
 	}//accepted - track cuts
 	else if(!IsAccepted(track)) {
 	  if(label <= stack->GetNprimary()) {
             if(track->Charge() > 0)
-              ((TH2D *)(fQA2DList->At(1)))->Fill(Rapidity(track->Px(),
-							  track->Py(),
-							  track->Pz()),
+              ((TH2D *)(fQA2DList->At(1)))->Fill(Rapidity(tpcTrack->Px(),
+							  tpcTrack->Py(),
+							  tpcTrack->Pz()),
 						 Pt);
             else if(track->Charge() < 0)
-              ((TH2D *)(fQA2DList->At(5)))->Fill(Rapidity(track->Px(),
-							  track->Py(),
-							  track->Pz()),
+              ((TH2D *)(fQA2DList->At(5)))->Fill(Rapidity(tpcTrack->Px(),
+							  tpcTrack->Py(),
+							  tpcTrack->Pz()),
 						 Pt);
 	  }//primary particles
 	  else if(label > stack->GetNprimary()) {
 	    if(track->Charge() > 0)
-              ((TH2D *)(fQA2DList->At(3)))->Fill(Rapidity(track->Px(),
-							  track->Py(),
-							  track->Pz()),
+              ((TH2D *)(fQA2DList->At(3)))->Fill(Rapidity(tpcTrack->Px(),
+							  tpcTrack->Py(),
+							  tpcTrack->Pz()),
 						 Pt);
             else if(track->Charge() < 0)
-              ((TH2D *)(fQA2DList->At(7)))->Fill(Rapidity(track->Px(),
-							  track->Py(),
-							  track->Pz()),
+              ((TH2D *)(fQA2DList->At(7)))->Fill(Rapidity(tpcTrack->Px(),
+							  tpcTrack->Py(),
+							  tpcTrack->Pz()),
 						 Pt);
 	  }//secondary particles
 	}//rejected - track cuts
@@ -2618,8 +2908,6 @@ void AliProtonQAAnalysis::RunQA(AliStack *stack, AliESDEvent *fESD) {
     }//TPC only tracks
     //combined tracking
     else if(!fUseTPCOnly) {
-      AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
-      if(!tpcTrack) continue;
       Pt = track->Pt();
       P = track->P();
       track->GetImpactParameters(dcaXY,dcaZ);
@@ -2725,6 +3013,11 @@ void AliProtonQAAnalysis::RunQA(AliStack *stack, AliESDEvent *fESD) {
 							  track->Py(),
 							  track->Pz()),
 						 Pt);
+	      ((TH3F *)(fQA2DList->At(10)))->Fill(Rapidity(track->Px(),
+							   track->Py(),
+							   track->Pz()),
+						  Pt,
+						  ConvertPDGToInt(motherPDGCode));
 	    }
             else if(track->Charge() < 0) {
 	      for(Int_t iLayer = 0; iLayer < 6; iLayer++) {
@@ -2749,6 +3042,12 @@ void AliProtonQAAnalysis::RunQA(AliStack *stack, AliESDEvent *fESD) {
 							  track->Py(),
 							  track->Pz()),
 						 Pt);
+
+	      ((TH3F *)(fPDGList->At(11)))->Fill(Rapidity(track->Px(),
+							  track->Py(),
+							  track->Pz()),
+						 Pt,
+						 ConvertPDGToInt(motherPDGCode));
 	    }
 	  }//secondary particles
 	}//accepted - track cuts
