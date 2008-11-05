@@ -136,7 +136,7 @@ int AliHLTAltroGenerator::Generate()
     // minus its length.
     // Data is now simulated in the right order in order to fullfil this check.
     for (bunch=0; bunch<nofBunches && bunchEndTime<fMaxTimebin-3; bunch++) {
-      while ((bunchEndTime+=GetRandom(0, fMaxTimebin-bunchEndTime))-lastBunchEndTime<3);
+      while ((bunchEndTime+=GetRandom(0, fMaxTimebin-bunchEndTime))-lastBunchEndTime<3) {/*empty body*/};
       int bunchLength=GetRandom(0, bunchEndTime-lastBunchEndTime<fMaxBunchLength?bunchEndTime-lastBunchEndTime:fMaxBunchLength);
       if (bunchLength==0) continue;
       totalBunches++;

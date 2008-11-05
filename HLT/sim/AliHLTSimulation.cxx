@@ -127,7 +127,7 @@ int AliHLTSimulation::Init(AliRunLoader* pRunLoader, const char* options)
 	if (fpRawReader) {
 	    fpRawReader->RewindEvents();
 	    int count=0;
-	    for (; fpRawReader->NextEvent(); count++);
+	    for ( ; fpRawReader->NextEvent(); count++);
 	    if (count!=pRunLoader->GetNumberOfEvents()) {
 	      AliError(Form("mismatch in event count: runloader %d, rawreader %d; ignoring rawreader", 
 			    pRunLoader->GetNumberOfEvents(), count));

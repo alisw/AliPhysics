@@ -207,12 +207,13 @@ Int_t AliHLTTriggerMonitoringComponent::DoEvent( const AliHLTComponentEventData&
   // Trigger on eventSummary
   Trigger();
   
-  if (fEventSummary->IsAccepted())
+  if (fEventSummary->IsAccepted()) {
     HLTWarning( "Triggered" );
-  else
+  } else {
     HLTWarning( "Discarded" );
-  
-  HLTWarning( "../../trigger/AliHLTTriggerMonitoringComponent.cxx:139:RunNumber %d ", GetRunNo() );
+  }
+
+  HLTWarning( "RunNumber %d ", GetRunNo() );
   
   // ** PushBack Event Summary
   PushBack ( (TObject*) fEventSummary, sizeof(AliHLTEventSummary), kAliHLTDataTypeEventSummary, (AliHLTUInt32_t) 0 );

@@ -70,7 +70,7 @@ int AliHLTTPCDigitReaderUnpacked::InitBlock(void* ptr,unsigned long size, Int_t 
   fDigitRowData = (AliHLTTPCDigitRowData*) tmpptr->fDigits;
   fActRowData = fDigitRowData;
 
-  while (fActRowData && ((iResult=GetNextRowData(fActRowData))>=0));
+  while (fActRowData && ((iResult=GetNextRowData(fActRowData))>=0)) {/* empty body */};
 
   if (iResult>=0) {
   fActRowData = fDigitRowData;

@@ -356,7 +356,7 @@ int AliHLTLogging::CheckFilter(AliHLTComponentLogSeverity severity) const
 {
   // see header file for class documentation
 
-  int iResult=severity==kHLTLogNone || (severity&fgGlobalLogFilter)>0 && (severity&fLocalLogFilter)>0;
+  int iResult=severity==kHLTLogNone || ((severity&fgGlobalLogFilter)>0 && (severity&fLocalLogFilter)>0);
   return iResult;
 }
 

@@ -96,7 +96,7 @@ public:
    * The function is pure virtual and must be implemented by the child class.
    * @return bit mask for active detectors (Int_t)
    */
-  virtual const Int_t GetModuleNumber() = 0;
+  virtual Int_t GetModuleNumber() = 0;
 
   /** Get detector bit mask (bit mask comparable to the detectorMask but for the respective detector only)
    *  out of detector name

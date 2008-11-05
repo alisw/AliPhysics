@@ -609,7 +609,7 @@ int AliHLTComponent::FindMatchingDataTypes(AliHLTComponent* pConsumer, AliHLTCom
       }
       
       AliHLTComponentDataTypeList::iterator itype=itypes.begin();
-      for (;itype!=itypes.end() && (*itype)!=(*otype); itype++);
+      for ( ; itype!=itypes.end() && (*itype)!=(*otype) ; itype++);
       //if (itype!=itypes.end()) PrintDataTypeContent(*itype, "consumer \'%s\'");
       if (itype!=itypes.end()) {
 	if (tgtList) tgtList->push_back(*otype);

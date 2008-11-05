@@ -140,9 +140,9 @@ int AliHLTAltroEncoder::SetChannel(AliHLTUInt16_t hwaddress)
     assert((length+iResult)%4==0);
     //HLTInfo("%d %x", hwaddress, hwaddress);
     fpBuffer[fOffset++]=hwaddress&0xff;
-    fpBuffer[fOffset++]=0xa0 | (hwaddress>>8)&0xf;
+    fpBuffer[fOffset++]=0xa0 | ((hwaddress>>8)&0xf);
     fpBuffer[fOffset++]=length&0xff;
-    fpBuffer[fOffset++]=0xa8 | (length>>8)&0x3;
+    fpBuffer[fOffset++]=0xa8 | ((length>>8)&0x3);
     fpBuffer[fOffset++]=0xaa;
     f10bitWords+=4;
     fChannelStart=f10bitWords;

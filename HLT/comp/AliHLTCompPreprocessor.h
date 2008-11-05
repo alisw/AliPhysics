@@ -67,7 +67,7 @@ class AliHLTCompPreprocessor : public AliHLTModulePreprocessor
   const char* GetModuleID() {return "AliHLTCompPreprocessor";};
 
   /** Define bit mask of the active detectors needed by this preprocessor module */
-  const Int_t GetModuleNumber() {
+  Int_t GetModuleNumber() {
     Int_t modulenumber = 0;
     modulenumber = AliHLTModulePreprocessor::DetectorBitMask("TPC") | AliHLTModulePreprocessor::DetectorBitMask("PHOS");
     return modulenumber;

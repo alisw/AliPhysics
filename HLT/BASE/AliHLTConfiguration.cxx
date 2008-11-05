@@ -234,7 +234,7 @@ int AliHLTConfiguration::SourcesResolved(int bAuto)
 {
   // see header file for function documentation
   int iResult=0;
-  if (fNofSources>=0 || bAuto && (iResult=ExtractSources())>=0) {
+  if (fNofSources>=0 || (bAuto && (iResult=ExtractSources()))>=0) {
     //HLTDebug("fNofSources=%d", fNofSources);
     //HLTDebug("list size = %d", fListSources.size());
     iResult=fNofSources==(int)fListSources.size();

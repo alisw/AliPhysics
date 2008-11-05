@@ -64,7 +64,7 @@ class AliHLTSamplePreprocessor : public AliHLTModulePreprocessor
   /** Define module id */
   const char* GetModuleID() {return "AliHLTSamplePreprocessor";};
 
-  const Int_t GetModuleNumber() {return AliHLTModulePreprocessor::DetectorBitMask("TPC");};
+  Int_t GetModuleNumber() {return AliHLTModulePreprocessor::DetectorBitMask("TPC");};
 
  protected:
 

@@ -21,7 +21,7 @@ class AliHLTDCSArray : public TObject {
    AliHLTDCSArray(Int_t entries=0);
    virtual ~AliHLTDCSArray();
    void SetTime(UInt_t time) {fTimeStamp=time;}
-   const UInt_t GetTime() const {return fTimeStamp;}
+   UInt_t GetTime() const {return fTimeStamp;}
    void SetValue(Int_t i, Float_t val) {fValues[i]=val;}
    Float_t GetValue(Int_t i) const {return fValues[i];}
    
