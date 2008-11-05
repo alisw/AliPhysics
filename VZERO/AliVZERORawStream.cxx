@@ -138,8 +138,8 @@ Bool_t AliVZERORawStream::Next()
       for(Int_t iEvOfInt = 0; iEvOfInt < kNEvOfInt; iEvOfInt=iEvOfInt+2) {
         UShort_t data = GetNextShort();
         for(Int_t iChannel = iChannel_Offset; iChannel < iChannel_Offset+4; iChannel++) {          
-          fIsBB[iChannel][iEvOfInt] = (data >> 2*(iChannel-iChannel_Offset)) & 0x1;
-          fIsBG[iChannel][iEvOfInt] = (data >> 2*(iChannel-iChannel_Offset)+1) & 0x1; 
+          fIsBB[iChannel][iEvOfInt] = (data >>  2*(iChannel-iChannel_Offset)) & 0x1;
+          fIsBG[iChannel][iEvOfInt] = (data >> (2*(iChannel-iChannel_Offset)+1)) & 0x1; 
 	  if(iEvOfInt < (kNEvOfInt - 1)) {      
              fIsBB[iChannel][iEvOfInt+1] = (data >> (8+ 2*(iChannel-iChannel_Offset))) & 0x1;
              fIsBG[iChannel][iEvOfInt+1] = (data >> (8+ 2*(iChannel-iChannel_Offset)+1)) & 0x1;
@@ -160,8 +160,8 @@ Bool_t AliVZERORawStream::Next()
       for(Int_t iBunch = 0; iBunch < kNBunches; iBunch=iBunch+2) {
         UShort_t data = GetNextShort();
         for(Int_t iChannel = iChannel_Offset; iChannel < iChannel_Offset+4; iChannel++) {  
-          fIsBBMB[iChannel][iBunch] = (data >> 2*iBunch) & 0x1;
-          fIsBGMB[iChannel][iBunch] = (data >> 2*iBunch+1) & 0x1;
+          fIsBBMB[iChannel][iBunch] = (data >>  2*iBunch) & 0x1;
+          fIsBGMB[iChannel][iBunch] = (data >> (2*iBunch+1)) & 0x1;
 	  if(iBunch < (kNBunches - 1)) {
              fIsBBMB[iChannel][iBunch+1] = (data >> (8+2*iBunch)) & 0x1;
              fIsBGMB[iChannel][iBunch+1] = (data >> (8+2*iBunch+1)) & 0x1;
