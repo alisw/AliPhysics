@@ -9,7 +9,7 @@
 #include "TObjString.h"
 #include "AliESDFMD.h"
 #include "TTree.h"
-class AliESDEvent;
+#include "AliESDEvent.h"
 class TChain;
 class AliAODEvent;
 
@@ -24,7 +24,7 @@ class AliFMDAnalysisTaskSharing : public AliAnalysisTask
  AliFMDAnalysisTaskSharing(const AliFMDAnalysisTaskSharing& o) : AliAnalysisTask(),
       fDebug(o.fDebug),
       fESD(o.fESD),
-      fOutputESD(o.fOutputESD),
+      fOutputESD(),
       foutputESDFMD(o.foutputESDFMD),
       fSharedThis(o.fSharedThis),
       fSharedPrev(o.fSharedPrev) {}
@@ -42,8 +42,8 @@ class AliFMDAnalysisTaskSharing : public AliAnalysisTask
  private:
     Int_t         fDebug;        //  Debug flag
     AliESDEvent*  fESD;          //! ESD
-    AliESDEvent*  fOutputESD;
-    AliESDFMD*    foutputESDFMD;
+    AliESDEvent   fOutputESD;
+    AliESDFMD     foutputESDFMD;
     Bool_t        fSharedThis;
     Bool_t        fSharedPrev;
     ClassDef(AliFMDAnalysisTaskSharing, 0); // Analysis task for FMD analysis

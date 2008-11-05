@@ -26,10 +26,10 @@ ClassImp(AliFMDAnalysisTaskDensity)
 //_____________________________________________________________________
 AliFMDAnalysisTaskDensity::AliFMDAnalysisTaskDensity()
 : fDebug(0),
-  fOutputList(0),
-  fArray(0),
+  fOutputList(),
+  fArray(),
   fESD(0x0),
-  fVertexString(0x0)
+  fVertexString()
 {
   // Default constructor
   DefineInput (0, AliESDEvent::Class());
@@ -39,10 +39,10 @@ AliFMDAnalysisTaskDensity::AliFMDAnalysisTaskDensity()
 AliFMDAnalysisTaskDensity::AliFMDAnalysisTaskDensity(const char* name):
     AliAnalysisTask(name, "Density"),
     fDebug(0),
-    fOutputList(0),
-    fArray(0),
+    fOutputList(),
+    fArray(),
     fESD(0x0),
-    fVertexString(0x0)
+    fVertexString()
 {
   DefineInput (0, AliESDEvent::Class());
   DefineOutput(0, TList::Class());
@@ -51,11 +51,9 @@ AliFMDAnalysisTaskDensity::AliFMDAnalysisTaskDensity(const char* name):
 void AliFMDAnalysisTaskDensity::CreateOutputObjects()
 {
   AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
-  fOutputList = new TList();
   
-  fArray     = new TObjArray();
-  fArray->SetName("FMD");
-  fArray->SetOwner();
+  fArray.SetName("FMD");
+  fArray.SetOwner();
   
   TH2F* hMult = 0;
   
@@ -65,7 +63,7 @@ void AliFMDAnalysisTaskDensity::CreateOutputObjects()
     {
       TObjArray* detArray = new TObjArray();
       detArray->SetName(Form("FMD%d",det));
-      fArray->AddAtAndExpand(detArray,det);
+      fArray.AddAtAndExpand(detArray,det);
       Int_t nRings = (det==1 ? 1 : 2);
       for(Int_t ring = 0;ring<nRings;ring++)
 	{
@@ -88,9 +86,9 @@ void AliFMDAnalysisTaskDensity::CreateOutputObjects()
 	  }
 	} 
     }
-  fVertexString = new TObjString();
-  fOutputList->Add(fArray);
-  fOutputList->Add(fVertexString);
+  
+  fOutputList.Add(&fArray);
+  fOutputList.Add(&fVertexString);
   
 }
 //_____________________________________________________________________
@@ -117,10 +115,10 @@ void AliFMDAnalysisTaskDensity::Exec(Option_t */*option*/)
   
   Int_t vtxbin = (Int_t)vertexBinDouble;
   
-  fVertexString->SetString(Form("%d",vtxbin));
+  fVertexString.SetString(Form("%d",vtxbin));
   //Reset everything
   for(UShort_t det=1;det<=3;det++) {
-    TObjArray* detArray = (TObjArray*)fArray->At(det);
+    TObjArray* detArray = (TObjArray*)fArray.At(det);
     Int_t nRings = (det==1 ? 1 : 2);
     for (UShort_t ir = 0; ir < nRings; ir++) {
       TObjArray* vtxArray = (TObjArray*)detArray->At(ir);
@@ -133,7 +131,7 @@ void AliFMDAnalysisTaskDensity::Exec(Option_t */*option*/)
   
   
   for(UShort_t det=1;det<=3;det++) {
-    TObjArray* detArray = (TObjArray*)fArray->At(det);
+    TObjArray* detArray = (TObjArray*)fArray.At(det);
     Int_t nRings = (det==1 ? 1 : 2);
     for (UShort_t ir = 0; ir < nRings; ir++) {
       TObjArray* vtxArray = (TObjArray*)detArray->At(ir);
@@ -160,7 +158,7 @@ void AliFMDAnalysisTaskDensity::Exec(Option_t */*option*/)
 	
   
   }
-  PostData(0, fOutputList); 
+  PostData(0, &fOutputList); 
   
 }
 //_____________________________________________________________________

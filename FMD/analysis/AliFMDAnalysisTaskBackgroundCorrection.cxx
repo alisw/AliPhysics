@@ -25,27 +25,25 @@ ClassImp(AliFMDAnalysisTaskBackgroundCorrection)
 
 AliFMDAnalysisTaskBackgroundCorrection::AliFMDAnalysisTaskBackgroundCorrection()
 : fDebug(0),
-  fChain(0x0),
   fOutputList(0),
   fArray(0),
   fInputArray(0),
   fVertexString(0x0),
-  fNevents(0)
+  fNevents()
 {
   // Default constructor
   DefineInput (0, TList::Class());
-  DefineOutput(0,TList::Class());
+  DefineOutput(0, TList::Class());
 }
 //_____________________________________________________________________
 AliFMDAnalysisTaskBackgroundCorrection::AliFMDAnalysisTaskBackgroundCorrection(const char* name):
     AliAnalysisTask(name, "Density"),
     fDebug(0),
-    fChain(0x0),
-    fOutputList(0),
-    fArray(0),
+    fOutputList(),
+    fArray(),
     fInputArray(0),
     fVertexString(0x0),
-    fNevents(0)
+    fNevents()
 {
   DefineInput (0, TList::Class());
   DefineOutput(0, TList::Class());
@@ -54,11 +52,9 @@ AliFMDAnalysisTaskBackgroundCorrection::AliFMDAnalysisTaskBackgroundCorrection(c
 void AliFMDAnalysisTaskBackgroundCorrection::CreateOutputObjects()
 {
   AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
-  fOutputList = new TList();
   
-  fArray     = new TObjArray();
-  fArray->SetName("FMD");
-  fArray->SetOwner();
+  fArray.SetName("FMD");
+  fArray.SetOwner();
   
   TH2F* hMult = 0;
   
@@ -68,7 +64,7 @@ void AliFMDAnalysisTaskBackgroundCorrection::CreateOutputObjects()
     {
       TObjArray* detArray = new TObjArray();
       detArray->SetName(Form("FMD%d",det));
-      fArray->AddAtAndExpand(detArray,det);
+      fArray.AddAtAndExpand(detArray,det);
       Int_t nRings = (det==1 ? 1 : 2);
       for(Int_t ring = 0;ring<nRings;ring++)
 	{
@@ -91,8 +87,8 @@ void AliFMDAnalysisTaskBackgroundCorrection::CreateOutputObjects()
 	  }
 	} 
     }
-  fNevents = new TArrayI(nVtxbins);
-  fOutputList->Add(fArray);
+  fNevents.Set(nVtxbins);
+  fOutputList.Add(&fArray);
    
   
 }
@@ -110,11 +106,12 @@ void AliFMDAnalysisTaskBackgroundCorrection::Exec(Option_t */*option*/)
   AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
   
   Int_t vtxbin   = fVertexString->GetString().Atoi();
-  fNevents->operator[](vtxbin)++;
+  
+  fNevents.operator[](vtxbin)++;
   
   for(UShort_t det=1;det<=3;det++) {
     TObjArray* detInputArray = (TObjArray*)fInputArray->At(det);
-    TObjArray* detArray = (TObjArray*)fArray->At(det);
+    TObjArray* detArray = (TObjArray*)fArray.At(det);
     Int_t nRings = (det==1 ? 1 : 2);
     for (UShort_t ir = 0; ir < nRings; ir++) {
       Char_t ringChar = (ir == 0 ? 'I' : 'O');
@@ -123,18 +120,16 @@ void AliFMDAnalysisTaskBackgroundCorrection::Exec(Option_t */*option*/)
       TH2F* hMultTotal = (TH2F*)vtxArray->At(vtxbin);
       TH2F* hMult      = (TH2F*)vtxInputArray->At(vtxbin);
       TH2F* hBg        = pars->GetBackgroundCorrection(det, ringChar, vtxbin);
-      
       TH2F* hTmp       = (TH2F*)hMult->Clone("hMult_from_event");
-      hTmp->Sumw2();
       hTmp->Divide(hTmp,hBg,1,1,"B");
       
       hMultTotal->Add(hTmp);
-      
+      delete hTmp;
       
     }
   }
   
-  PostData(0, fOutputList); 
+  PostData(0, &fOutputList); 
   
 }
 //_____________________________________________________________________
@@ -145,13 +140,14 @@ void AliFMDAnalysisTaskBackgroundCorrection::Terminate(Option_t */*option*/) {
   Int_t nVtxbins = pars->GetNvtxBins();
   
   for(UShort_t det=1;det<=3;det++) {
-    TObjArray* detArray = (TObjArray*)fArray->At(det);
+    TObjArray* detArray = (TObjArray*)fArray.At(det);
     Int_t nRings = (det==1 ? 1 : 2);
     for (UShort_t ir = 0; ir < nRings; ir++) {
       TObjArray* vtxArray = (TObjArray*)detArray->At(ir);
       for(Int_t i =0; i<nVtxbins; i++) {
 	TH2F* hMultTotal = (TH2F*)vtxArray->At(i);
-	hMultTotal->Scale(1/(Float_t)fNevents->At(i));
+	if(fNevents.At(i))
+	  hMultTotal->Scale(1/(Float_t)fNevents.At(i));
       }
     }
   }

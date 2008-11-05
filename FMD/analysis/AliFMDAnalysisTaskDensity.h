@@ -25,7 +25,7 @@ class AliFMDAnalysisTaskDensity : public AliAnalysisTask
     virtual ~AliFMDAnalysisTaskDensity() {;}
  AliFMDAnalysisTaskDensity(const AliFMDAnalysisTaskDensity& o) : AliAnalysisTask(),
       fDebug(o.fDebug),
-      fOutputList(o.fOutputList),
+      fOutputList(),
       fArray(o.fArray),
       fESD(o.fESD),
       fVertexString(o.fVertexString) {}
@@ -41,10 +41,10 @@ class AliFMDAnalysisTaskDensity : public AliAnalysisTask
     
  private:
     Int_t         fDebug;        //  Debug flag
-    TList*        fOutputList;
-    TObjArray*    fArray;
+    TList         fOutputList;
+    TObjArray     fArray;
     AliESDEvent*  fESD;
-    TObjString*   fVertexString;
+    TObjString    fVertexString;
     ClassDef(AliFMDAnalysisTaskDensity, 0); // Analysis task for FMD analysis
 };
  

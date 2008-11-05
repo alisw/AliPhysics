@@ -7,12 +7,8 @@
 #include "AliAnalysisTask.h"
 
 #include "TObjArray.h"
-#include "AliESDFMD.h"
-class AliESDEvent;
-class TChain;
-class AliAODEvent;
-
-
+#include "TObjString.h"
+#include "TArrayI.h"
 
 class AliFMDAnalysisTaskBackgroundCorrection : public AliAnalysisTask
 {
@@ -22,8 +18,7 @@ class AliFMDAnalysisTaskBackgroundCorrection : public AliAnalysisTask
     virtual ~AliFMDAnalysisTaskBackgroundCorrection() {;}
  AliFMDAnalysisTaskBackgroundCorrection(const AliFMDAnalysisTaskBackgroundCorrection& o) : AliAnalysisTask(),
       fDebug(o.fDebug),
-      fChain(o.fChain),
-      fOutputList(o.fOutputList),
+      fOutputList(),
       fArray(o.fArray),
       fInputArray(o.fInputArray),
       fVertexString(o.fVertexString),
@@ -40,12 +35,11 @@ class AliFMDAnalysisTaskBackgroundCorrection : public AliAnalysisTask
     
  private:
     Int_t         fDebug;        //  Debug flag
-    TChain*       fChain;        //! chained files
-    TList*        fOutputList;
-    TObjArray*    fArray;
+    TList         fOutputList;
+    TObjArray     fArray;
     TObjArray*    fInputArray;
     TObjString*   fVertexString;
-    TArrayI*      fNevents;
+    TArrayI       fNevents;
     ClassDef(AliFMDAnalysisTaskBackgroundCorrection, 0); // Analysis task for FMD analysis
 };
  
