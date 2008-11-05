@@ -99,15 +99,15 @@ void AliTRDtrackingEfficiencyCombined::Exec(Option_t *){
       for(Int_t il = 0; il < naccepted; il++){
         if(labelsacc[il] == trkInf->GetLabel()) found = kTRUE;
       }
+      if(trkInf->GetNTrackRefs()){
+        Int_t iref = 0;
+        while(!(trackRef = trkInf->GetTrackRef(iref++))) {}
+      }
       if(found){
         mom =  trackRef ? trackRef->P() : TRDtrack->P();
         contamination->Fill(mom, 1);
         ndoublecounted++;
         continue;
-      }
-      if(trkInf->GetNTrackRefs()){
-        Int_t iref = 0;
-        while(!(trackRef = trkInf->GetTrackRef(iref++))) {}
       }
       if(!trackRef) printf("Error: Track Reference missing for Track %d\n", trkInf->GetLabel());
       mom =  trackRef ? trackRef->P() : trkInf->GetOuterParam()->P();
@@ -209,8 +209,8 @@ void AliTRDtrackingEfficiencyCombined::Exec(Option_t *){
     }
   }
   //if(fDebugLevel>=1)
-  printf("%3d Tracks: MC[%3d] TRD[%3d | %5.2f%%] \n", (Int_t)AliAnalysisManager::GetAnalysisManager()->GetCurrentEntry(), nall, naccepted, 1.E2*Float_t(naccepted)/Float_t(nall));
-  printf("%3d Tracks: ALL[%3d] DoubleCounted[%3d | %5.2f%%] \n", (Int_t)AliAnalysisManager::GetAnalysisManager()->GetCurrentEntry(), nall + ndoublecounted, ndoublecounted, 1.E2*Float_t(ndoublecounted)/Float_t(nall + ndoublecounted));
+  printf("%3d Tracks: MC[%3d] TRD[%3d | %5.2f%%] \n", (Int_t)AliAnalysisManager::GetAnalysisManager()->GetCurrentEntry(), nall, naccepted, nall ? 1.E2*Float_t(naccepted)/Float_t(nall) : 0.);
+  printf("%3d Tracks: ALL[%3d] DoubleCounted[%3d | %5.2f%%] \n", (Int_t)AliAnalysisManager::GetAnalysisManager()->GetCurrentEntry(), nall + ndoublecounted, ndoublecounted, nall ? 1.E2*Float_t(ndoublecounted)/Float_t(nall + ndoublecounted) : 0.);
 
   PostData(0, fContainer);
 }
