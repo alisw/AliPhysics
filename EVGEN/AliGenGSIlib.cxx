@@ -67,7 +67,7 @@ Double_t AliGenGSIlib::PtUpsilonFlat( Double_t *px, Double_t */*dummy*/ )
   Double_t x=*px;
   Double_t weight = 0.;
 
-  if (kptmin < x < kptmax) weight = 1.;
+  if ((x > kptmin) &&  (x < kptmax)) weight = 1.;
 
   return weight;
    
@@ -222,7 +222,7 @@ Double_t AliGenGSIlib::PtJpsiFlat( Double_t *px, Double_t */*dummy*/ )
   Double_t x=*px;
   Double_t weight = 0.;
 
-  if (kptmin < x < kptmax) weight = 1.;
+  if ((x > kptmin) && (x < kptmax)) weight = 1.;
 
   return weight;
    

@@ -439,7 +439,7 @@ void AliGenCorrHF::Generate()
 	    //
 	    // children
 	    
-	    if (ChildSelected(TMath::Abs(kf)) || fForceDecay == kAll && trackIt[i])
+	    if ((ChildSelected(TMath::Abs(kf)) || fForceDecay == kAll) && trackIt[i])
 	      {
 		if (fCutOnChild) {
 		  pc[0]=iparticle->Px();
