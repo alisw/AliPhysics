@@ -101,7 +101,7 @@ class AliExternalTrackParam: public AliVTrack {
   Double_t Eta() const;
   virtual Double_t Y() const;
   Short_t  Charge() const { return (Short_t)GetSign(); }
-  const Double_t *PID() const { return 0x0; }
+  virtual const Double_t *PID() const { return 0x0; }
 
   // additional functions from AliVTrack
   virtual Int_t    GetID() const { return -999; }

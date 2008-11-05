@@ -80,7 +80,7 @@ public:
   void SetIntegratedTimes(const Double_t *times);
   void SetESDpid(const Double_t *p);
   void GetESDpid(Double_t *p) const;
-  const Double_t *PID() const { return fR; }
+  virtual const Double_t *PID() const { return fR; }
 
   Bool_t IsOn(Int_t mask) const {return (fFlags&mask)>0;}
   ULong_t GetStatus() const {return fFlags;}

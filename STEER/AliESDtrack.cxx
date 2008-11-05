@@ -433,8 +433,9 @@ AliESDtrack::AliESDtrack(const AliVTrack *track) :
 
   // Set the combined PID
   const Double_t *pid = track->PID();
-  for (i=0; i<5; i++) fR[i]=pid[i];
-
+  if(pid){
+    for (i=0; i<AliPID::kSPECIES; i++) fR[i]=pid[i];
+  }
   // AliESD track label
   SetLabel(track->GetLabel());
 
