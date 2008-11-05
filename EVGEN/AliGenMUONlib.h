@@ -18,7 +18,7 @@ class AliGenMUONlib :
 {
  public:
   enum constants{kPhi, kOmega, kEta, kJpsi, kJpsiFamily, kPsiP, kJpsiFromB, kUpsilon, kUpsilonFamily,
-		   kUpsilonP, kUpsilonPP, kCharm, kBeauty, kPion, kKaon,kChi_c, kChi_c0, kChi_c1, kChi_c2 }; 
+		   kUpsilonP, kUpsilonPP, kCharm, kBeauty, kPion, kKaon, kChic, kChic0, kChic1, kChic2 }; 
     
     GenFunc   GetPt(Int_t param, const char* tname=0) const;
     GenFunc   GetY (Int_t param, const char* tname=0) const;
@@ -147,21 +147,21 @@ class AliGenMUONlib :
 //
 
    // Chi 1c 2c
-   static Double_t PtChi_c0( Double_t *px, Double_t *dummy);
-   static Double_t YChi_c0(Double_t *py, Double_t *dummy);
-   static Int_t    IpChi_c0(TRandom *ran);
+   static Double_t PtChic0( Double_t *px, Double_t *dummy);
+   static Double_t YChic0(Double_t *py, Double_t *dummy);
+   static Int_t    IpChic0(TRandom *ran);
 
-   static Double_t PtChi_c1( Double_t *px, Double_t *dummy);
-   static Double_t YChi_c1(Double_t *py, Double_t *dummy);
-   static Int_t    IpChi_c1(TRandom *ran);
+   static Double_t PtChic1( Double_t *px, Double_t *dummy);
+   static Double_t YChic1(Double_t *py, Double_t *dummy);
+   static Int_t    IpChic1(TRandom *ran);
 
-   static Double_t PtChi_c2( Double_t *px, Double_t *dummy);
-   static Double_t YChi_c2(Double_t *py, Double_t *dummy);
-   static Int_t    IpChi_c2(TRandom *ran);
+   static Double_t PtChic2( Double_t *px, Double_t *dummy);
+   static Double_t YChic2(Double_t *py, Double_t *dummy);
+   static Int_t    IpChic2(TRandom *ran);
 
-   static Double_t PtChi_c( Double_t *px, Double_t *dummy);
-   static Double_t YChi_c(Double_t *py, Double_t *dummy);
-   static Int_t    IpChi_c(TRandom *ran);
+   static Double_t PtChic( Double_t *px, Double_t *dummy);
+   static Double_t YChic(Double_t *py, Double_t *dummy);
+   static Int_t    IpChic(TRandom *ran);
 
 //
 
