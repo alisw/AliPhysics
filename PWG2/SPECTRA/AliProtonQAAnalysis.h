@@ -16,6 +16,7 @@
 #include "TObject.h"
 #include "TH1I.h"
 #include "TList.h"
+#include "TArrayI.h"
 
 #include "AliPID.h"
 
@@ -101,13 +102,6 @@ class AliProtonQAAnalysis : public TObject {
   void    SetESDpid() {fESDpidFlag = kTRUE;}
   void    SetTPCpid() {fTPCpidFlag = kTRUE;}
 
-  //QA histograms
-  void SetQAOn();
-  void SetQAYPtBins(Int_t nbinsY, Double_t minY, Double_t maxY,
-		    Int_t nbinsPt, Double_t minPt, Double_t maxPt);
-  void RunQA(AliStack *stack, AliESDEvent *esd);
-  TList *GetGlobalQAList() {return fGlobalQAList;}
-
   //Prior probabilities
   void SetPriorProbabilities(Double_t *partFrac) {
     for(Int_t i = 0; i < AliPID::kSPECIESN; i++) fPartFrac[i] = partFrac[i];} 
@@ -120,6 +114,24 @@ class AliProtonQAAnalysis : public TObject {
     fProtonFunction = fproton;
   } 
   Double_t GetParticleFraction(Int_t i, Double_t p);
+
+  //QA histograms
+  void SetQAYPtBins(Int_t nbinsY, Double_t minY, Double_t maxY,
+		    Int_t nbinsPt, Double_t minPt, Double_t maxPt);
+  void RunQAAnalysis(AliStack *stack, AliESDEvent *esd);
+  void SetRunQAAnalysis();
+  TList *GetGlobalQAList() {return fGlobalQAList;}
+
+  //Efficiency plots (reconstruction & PID)
+  void RunEfficiencyAnalysis(AliStack *stack, AliESDEvent *esd);
+  void SetRunEfficiencyAnalysis() {fRunEfficiencyAnalysis = kTRUE;}
+  TList *GetEfficiencyQAList() {return fEfficiencyList;}
+  /*TH1F *GetReconstructionEfficiency(const char *variable, 
+				    const char *particle);
+  TH1F *GetPIDEfficiencyY();
+  TH1F *GetPIDEfficiencyPt();
+  TH1F *GetPIDContaminationY();
+  TH1F *GetPIDContaminationPt();*/
 
   //MC analysis
   void RunMCAnalysis(AliStack* stack);
@@ -142,13 +154,18 @@ class AliProtonQAAnalysis : public TObject {
 
  private:
   AliProtonQAAnalysis(const AliProtonQAAnalysis&); // Not implemented
-  AliProtonQAAnalysis& operator=(const AliProtonQAAnalysis&); // Not implemented
+  AliProtonQAAnalysis& operator=(const AliProtonQAAnalysis&);// Not implemented
 
   Bool_t   IsAccepted(AliESDtrack *track);
-  void     InitQA();
+
   void     FillQA(AliESDtrack *track, AliStack *stack);
+
+  void     InitQA();
   void     InitMCAnalysis();
   void     InitCutLists();
+  void     InitEfficiencyAnalysis();
+
+  Bool_t   IsLabelUsed(TArrayI array, Int_t label);
   Int_t    ConvertPDGToInt(Int_t pdgCode);
   Float_t  GetSigmaToVertex(AliESDtrack* esdTrack); 
   Double_t Rapidity(Double_t Px, Double_t Py, Double_t Pz);
@@ -220,6 +237,11 @@ class AliProtonQAAnalysis : public TObject {
   TList *fRejectedCutList;// list of the cut parameters' histograms
   TList *fAcceptedDCAList;// list of the DCA histograms
   TList *fRejectedDCAList;// list of the DCA histograms
+
+  //Efficiency (reconstruction & PID)
+  Bool_t fRunEfficiencyAnalysis; //run this part or not
+  
+  TList *fEfficiencyList;// list of the efficiency histograms
 
   ClassDef(AliProtonQAAnalysis,0);
 };

@@ -28,7 +28,7 @@ ClassImp(AliAnalysisTaskProtonsQA)
 //________________________________________________________________________ 
 AliAnalysisTaskProtonsQA::AliAnalysisTaskProtonsQA()
   : AliAnalysisTask(), fESD(0), fMC(0),
-    fList0(0), fList1(0), fList2(0), fList3(0), fList4(0),
+    fList0(0), fList1(0), fList2(0), fList3(0), fList4(0), fList5(0),
     fAnalysis(0) {
     //Dummy constructor
 }
@@ -36,7 +36,7 @@ AliAnalysisTaskProtonsQA::AliAnalysisTaskProtonsQA()
 //________________________________________________________________________
 AliAnalysisTaskProtonsQA::AliAnalysisTaskProtonsQA(const char *name) 
 : AliAnalysisTask(name, ""), fESD(0), fMC(0),
-  fList0(0), fList1(0), fList2(0), fList3(0), fList4(0),
+  fList0(0), fList1(0), fList2(0), fList3(0), fList4(0), fList5(0),
   fAnalysis(0) {
   // Constructor
 
@@ -49,6 +49,7 @@ AliAnalysisTaskProtonsQA::AliAnalysisTaskProtonsQA(const char *name)
   DefineOutput(2, TList::Class());
   DefineOutput(3, TList::Class());
   DefineOutput(4, TList::Class());
+  DefineOutput(5, TList::Class());
 }
 
 //________________________________________________________________________
@@ -85,8 +86,8 @@ void AliAnalysisTaskProtonsQA::CreateOutputObjects() {
   
   //proton analysis object
   fAnalysis = new AliProtonQAAnalysis();
-  fAnalysis->SetQAOn();
   fAnalysis->SetRunMCAnalysis();
+  fAnalysis->SetRunEfficiencyAnalysis();
   //fAnalysis->SetMCProcessId(4);//4: weak decay - 13: hadronic interaction
   //fAnalysis->SetMotherParticlePDGCode(3122);//3122: Lambda
 
@@ -150,7 +151,6 @@ void AliAnalysisTaskProtonsQA::CreateOutputObjects() {
   fAnalysis->SetITSRefit();
   fAnalysis->SetESDpid();*/
 
-  fAnalysis->InitQA();
   fAnalysis->SetPriorProbabilities(partFrac);
 
   fList0 = new TList();
@@ -167,6 +167,9 @@ void AliAnalysisTaskProtonsQA::CreateOutputObjects() {
 
   fList4 = new TList();
   fList4 = fAnalysis->GetAcceptedDCAList();
+
+  fList5 = new TList();
+  fList5 = fAnalysis->GetEfficiencyQAList();
 }
 
 //________________________________________________________________________
@@ -190,8 +193,9 @@ void AliAnalysisTaskProtonsQA::Exec(Option_t *) {
     return;
   }
   
-  fAnalysis->RunQA(stack, fESD);
+  fAnalysis->RunQAAnalysis(stack, fESD);
   fAnalysis->RunMCAnalysis(stack);
+  fAnalysis->RunEfficiencyAnalysis(stack, fESD);
 
   // Post output data.
   PostData(0, fList0);
@@ -199,6 +203,7 @@ void AliAnalysisTaskProtonsQA::Exec(Option_t *) {
   PostData(2, fList2);
   PostData(3, fList3);
   PostData(4, fList4);
+  PostData(5, fList5);
 }      
 
 //________________________________________________________________________
