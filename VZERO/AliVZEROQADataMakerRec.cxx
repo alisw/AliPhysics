@@ -501,7 +501,7 @@ void AliVZEROQADataMakerRec::MakeESDs(AliESDEvent * esd)
 	   int integrator;
 	   Bool_t BBFlag;	 
        Bool_t BGFlag;	 
-       uint32_t Time, Width;
+       UInt_t Time, Width;
 	   Int_t MBCharge, Charge;
 	   Int_t OfflineCh;
 	   TH1D * hProj;
