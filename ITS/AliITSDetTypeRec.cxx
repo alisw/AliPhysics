@@ -29,13 +29,9 @@
 #include "AliCDBStorage.h"
 #include "AliCDBEntry.h"
 #include "AliITSClusterFinder.h"
-#include "AliITSClusterFinderV2.h"
 #include "AliITSClusterFinderV2SPD.h"
 #include "AliITSClusterFinderV2SDD.h"
 #include "AliITSClusterFinderV2SSD.h"
-#include "AliITSClusterFinderSPD.h"
-#include "AliITSClusterFinderSDD.h"
-#include "AliITSClusterFinderSSD.h"
 #include "AliITSDetTypeRec.h"
 #include "AliITSgeom.h"
 #include "AliITSRawCluster.h"
@@ -680,54 +676,6 @@ Bool_t AliITSDetTypeRec::GetCalibrationSSD(Bool_t cacheStatus) {
 }
 
 //________________________________________________________________
-void AliITSDetTypeRec::SetDefaultClusterFinders(){
-  
-  //set defaults for standard cluster finder
-
-  if(!GetITSgeom()){
-    Warning("SetDefaults","null pointer to AliITSgeom!");
-    return;
-  }
-
-  AliITSClusterFinder *clf; 
-
-  for(Int_t dettype=0;dettype<fgkNdettypes;dettype++){
-    //SPD
-    if(dettype==0){
-      if(!GetReconstructionModel(dettype)){
-	TClonesArray *dig0 = DigitsAddress(0);
-	TClonesArray *rec0 = ClustersAddress(0);
-	clf = new AliITSClusterFinderSPD(this,dig0,rec0);
-	SetReconstructionModel(dettype,clf);
-
-      }
-    }
-   
-    //SDD
-    if(dettype==1){
-      if(!GetReconstructionModel(dettype)){
-	TClonesArray *dig1 = DigitsAddress(1);
-	TClonesArray *rec1 = ClustersAddress(1);
-	clf = new AliITSClusterFinderSDD(this,dig1,rec1);
-	SetReconstructionModel(dettype,clf);
-      }
-
-    }
-    //SSD
-    if(dettype==2){
-      if(!GetReconstructionModel(dettype)){
-	TClonesArray* dig2 = DigitsAddress(2);
-	clf = new AliITSClusterFinderSSD(this,dig2);
-	SetReconstructionModel(dettype,clf);
-      }
-    }
-
- }
- 
-  
-}
-
-//________________________________________________________________
 void AliITSDetTypeRec::SetDefaultClusterFindersV2(Bool_t rawdata){
 
   //Set defaults for cluster finder V2
@@ -912,7 +860,7 @@ void AliITSDetTypeRec::AddRecPoint(const AliITSRecPoint &r){
 }
 
 //______________________________________________________________________
-void AliITSDetTypeRec::DigitsToRecPoints(TTree *treeD,TTree *treeR,Int_t lastentry,Option_t *opt, Bool_t v2){
+void AliITSDetTypeRec::DigitsToRecPoints(TTree *treeD,TTree *treeR,Int_t lastentry,Option_t *opt, Int_t optCluFind){
   // cluster finding and reconstruction of space points
   // the condition below will disappear when the geom class will be
   // initialized for all versions - for the moment it is only for v5 !
@@ -929,13 +877,12 @@ void AliITSDetTypeRec::DigitsToRecPoints(TTree *treeD,TTree *treeR,Int_t lastent
   const char *all = strstr(opt,"All");
   const char *det[3] = {strstr(opt,"SPD"),strstr(opt,"SDD"),
                         strstr(opt,"SSD")};
-  if(!v2) {
-    SetDefaultClusterFinders();
-    AliInfo("Original cluster finder has been selected\n");
-  }
-  else   { 
+  if(optCluFind==0){
     SetDefaultClusterFindersV2();
     AliInfo("V2 cluster finder has been selected \n");
+  }else{
+    SetDefaultClusterFindersV2();
+    AliInfo("Cluster Finder Option not implemented, V2 cluster finder will be udes \n");    
   }
 
   AliITSClusterFinder *rec     = 0;
@@ -982,7 +929,7 @@ void AliITSDetTypeRec::DigitsToRecPoints(AliRawReader* rawReader,TTree *treeR,Op
   const char *all = strstr(opt,"All");
   const char *det[3] = {strstr(opt,"SPD"),strstr(opt,"SDD"),
                         strstr(opt,"SSD")};
-  AliITSClusterFinderV2 *rec     = 0;
+  AliITSClusterFinder *rec     = 0;
   Int_t id=0;
 
   TClonesArray *array=new TClonesArray("AliITSRecPoint",1000);
@@ -995,7 +942,7 @@ void AliITSDetTypeRec::DigitsToRecPoints(AliRawReader* rawReader,TTree *treeR,Op
   }
   for(id=0;id<3;id++){
     if (!all && !det[id]) continue;
-    rec = (AliITSClusterFinderV2*)GetReconstructionModel(id);
+    rec = (AliITSClusterFinder*)GetReconstructionModel(id);
     if (!rec)
       AliFatal("The reconstruction class was not instantiated");
     rec->SetDetTypeRec(this);

@@ -104,13 +104,11 @@ void AliITSReconstructor::Reconstruct(TTree *digitsTree, TTree *clustersTree) co
 // reconstruct clusters
 
   Int_t cluFindOpt = GetRecoParam()->GetClusterFinder();
-  Bool_t useV2=kTRUE;   // Default: V2 cluster finder
-  if(cluFindOpt==1) useV2=kFALSE;
 
   fDetTypeRec->SetTreeAddressD(digitsTree);
   fDetTypeRec->MakeBranch(clustersTree,"R");
   fDetTypeRec->SetTreeAddressR(clustersTree);
-  fDetTypeRec->DigitsToRecPoints(digitsTree,clustersTree,0,"All",useV2);    
+  fDetTypeRec->DigitsToRecPoints(digitsTree,clustersTree,0,"All",cluFindOpt);    
 }
 
 //_________________________________________________________________

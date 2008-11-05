@@ -41,7 +41,7 @@
 
 ClassImp(AliITSClusterFinderV2SDD)
 
-AliITSClusterFinderV2SDD::AliITSClusterFinderV2SDD(AliITSDetTypeRec* dettyp):AliITSClusterFinderV2(dettyp)
+AliITSClusterFinderV2SDD::AliITSClusterFinderV2SDD(AliITSDetTypeRec* dettyp):AliITSClusterFinder(dettyp)
 {
 
   //Default constructor

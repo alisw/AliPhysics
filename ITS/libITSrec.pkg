@@ -3,10 +3,6 @@
 SRCS = 	AliITSDetTypeRec.cxx \
 		AliITSRawCluster.cxx \
 		AliITSClusterFinder.cxx \
-		AliITSClusterFinderSPD.cxx \
-		AliITSClusterFinderSDD.cxx \
-		AliITSClusterFinderSSD.cxx \
-		AliITSClusterFinderV2.cxx \
 		AliITSClusterFinderV2SDD.cxx \
 		AliITSClusterFinderV2SPD.cxx \
 		AliITSClusterFinderV2SSD.cxx \

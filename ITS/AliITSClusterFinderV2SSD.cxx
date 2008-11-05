@@ -45,7 +45,7 @@ Int_t    AliITSClusterFinderV2SSD::fgPairsSize = 0;
 ClassImp(AliITSClusterFinderV2SSD)
 
 
-AliITSClusterFinderV2SSD::AliITSClusterFinderV2SSD(AliITSDetTypeRec* dettyp):AliITSClusterFinderV2(dettyp),
+AliITSClusterFinderV2SSD::AliITSClusterFinderV2SSD(AliITSDetTypeRec* dettyp):AliITSClusterFinder(dettyp),
 fLastSSD1(AliITSgeomTGeo::GetModuleIndex(6,1,1)-1)
 {
 //Default constructor
@@ -53,7 +53,7 @@ fLastSSD1(AliITSgeomTGeo::GetModuleIndex(6,1,1)-1)
 }
  
 //______________________________________________________________________
-AliITSClusterFinderV2SSD::AliITSClusterFinderV2SSD(const AliITSClusterFinderV2SSD &cf) : AliITSClusterFinderV2(cf),						fLastSSD1(cf.fLastSSD1)
+AliITSClusterFinderV2SSD::AliITSClusterFinderV2SSD(const AliITSClusterFinderV2SSD &cf) : AliITSClusterFinder(cf),						fLastSSD1(cf.fLastSSD1)
 {
   // Copy constructor
 }

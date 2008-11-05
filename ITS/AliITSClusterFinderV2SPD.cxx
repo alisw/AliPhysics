@@ -34,7 +34,7 @@
 
 ClassImp(AliITSClusterFinderV2SPD)
 
-AliITSClusterFinderV2SPD::AliITSClusterFinderV2SPD(AliITSDetTypeRec* dettyp):AliITSClusterFinderV2(dettyp),
+AliITSClusterFinderV2SPD::AliITSClusterFinderV2SPD(AliITSDetTypeRec* dettyp):AliITSClusterFinder(dettyp),
 fLastSPD1(AliITSgeomTGeo::GetModuleIndex(2,1,1)-1),
 fNySPD(256),
 fNzSPD(160),

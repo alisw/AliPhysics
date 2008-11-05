@@ -45,7 +45,6 @@ class AliITSDetTypeRec : public TObject {
     virtual AliITSgeom* GetITSgeom() const { return fITSgeom; }
     virtual void SetITSgeom(AliITSgeom *geom) { fITSgeom = geom; }
     virtual void SetDefaults();
-    virtual void SetDefaultClusterFinders();
     virtual void SetDefaultClusterFindersV2(Bool_t rawdata=kFALSE);
     virtual void MakeBranch(TTree *tree,Option_t *opt);
     virtual void SetTreeAddressD(TTree* treeD);
@@ -108,7 +107,7 @@ class AliITSDetTypeRec : public TObject {
     // Return pointer to rec points 
     TClonesArray  *RecPoints()   {return fRecPoints;}
     void MakeBranchRF(TTree *treeR){MakeBranchR(treeR,"Fast");}
-    void DigitsToRecPoints(TTree *treeD,TTree *treeR,Int_t lastEntry,Option_t *det,Bool_t v2=kFALSE);
+    void DigitsToRecPoints(TTree *treeD,TTree *treeR,Int_t lastEntry,Option_t *det, Int_t optCluFind=0);
     void DigitsToRecPoints(AliRawReader* rawReader,TTree *treeR,Option_t *det="All");
 
     void   SetFastOrFiredMap(UInt_t chip){fFastOrFiredMap.SetBitNumber(chip);}

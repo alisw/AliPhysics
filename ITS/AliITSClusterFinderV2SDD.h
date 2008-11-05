@@ -9,7 +9,7 @@
 //
 //   Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch 
 //--------------------------------------------------------------
-#include "AliITSClusterFinderV2.h"
+#include "AliITSClusterFinder.h"
 #include "AliITSDetTypeRec.h"
 
 class TClonesArray;
@@ -18,7 +18,7 @@ class AliITSRawStream;
 class AliITSCalibrationSDD;
 class AliITSsegmentationSDD;
 
-class AliITSClusterFinderV2SDD : public AliITSClusterFinderV2 {
+class AliITSClusterFinderV2SDD : public AliITSClusterFinder {
 public:
   AliITSClusterFinderV2SDD(AliITSDetTypeRec* dettyp);
   virtual ~AliITSClusterFinderV2SDD(){;}

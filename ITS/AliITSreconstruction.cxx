@@ -193,51 +193,11 @@ Bool_t AliITSreconstruction::InitRec(){
     //      none.
     // Return:
     //      none.
-  /*
-  //AliITSDetType *idt;
-  fDetTypeRec->SetLoader(fLoader);
-    // SPD
-  if(fDet[kSPD]){
-    Info("InitRec","SPD");
-    //idt = fITS->DetType(kSPD);
-    AliITSsegmentationSPD *segSPD = (AliITSsegmentationSPD*)fDetTypeRec->GetSegmentationModel(0);
-      TClonesArray *digSPD = fDetTypeRec->DigitsAddress(kSPD);
-      TClonesArray *recpSPD = fDetTypeRec->ClustersAddress(kSPD);
-      Info("InitRec","idt = %#x; digSPD = %#x; recpSPD = %#x",fDetTypeRec,digSPD,recpSPD);
-      AliITSClusterFinderSPD *recSPD = new AliITSClusterFinderSPD(segSPD,digSPD,recpSPD);
-      fDetTypeRec->SetReconstructionModel(kSPD,recSPD);
-    } // end if fDet[kSPD].
-  // SDD
-  if(fDet[kSDD]){
-    Info("InitRec","SDD");
-    //    idt = fITS->DetType(kSDD);
-    AliITSsegmentationSDD *segSDD = (AliITSsegmentationSDD*)
-      fDetTypeRec->GetSegmentationModel(1);
-    AliITSresponseSDD *resSDD = (AliITSresponseSDD*)
-      fDetTypeRec->GetCalibrationModel(fDetTypeRec->GetITSgeom()->GetStartSDD()); 
-    TClonesArray *digSDD = fDetTypeRec->DigitsAddress(kSDD);
-    TClonesArray *recpSDD = fDetTypeRec->ClustersAddress(kSDD);
-    AliITSClusterFinderSDD *recSDD =new AliITSClusterFinderSDD(segSDD,
-							       resSDD,
-							       digSDD,recpSDD);
-    fDetTypeRec->SetReconstructionModel(kSDD,recSDD);
-  } // end if fDet[kSDD]
-    // SSD
-  if(fDet[kSSD]){
-    Info("InitRec","SSD");
-    //idt = fITS->DetType(kSSD);
-    AliITSsegmentationSSD *segSSD = (AliITSsegmentationSSD*)
-                                       fDetTypeRec->GetSegmentationModel(2);
-      TClonesArray *digSSD = fDetTypeRec->DigitsAddress(kSSD);
-      AliITSClusterFinderSSD *recSSD =new AliITSClusterFinderSSD(segSSD,
-								 digSSD);
-      recSSD->SetITSgeom(fDetTypeRec->GetITSgeom());
-      fDetTypeRec->SetReconstructionModel(kSSD,recSSD);
-    } // end if fDet[kSSD]
-  */
-  fDetTypeRec->SetDefaultClusterFinders();
-    Info("InitRec","    Done\n");
-    return kTRUE;
+
+
+  fDetTypeRec->SetDefaultClusterFindersV2();
+  Info("InitRec","    Done\n");
+  return kTRUE;
 }
 //______________________________________________________________________ 
 void AliITSreconstruction::Exec(const Option_t *opt){

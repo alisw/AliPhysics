@@ -9,14 +9,14 @@
 //
 //   Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch 
 //--------------------------------------------------------------
-#include "AliITSClusterFinderV2.h"
+#include "AliITSClusterFinder.h"
 
 class TClonesArray;
 class AliRawReader;
 class AliITSRawStream;
 class AliITSRawStreamSPD;
 
-class AliITSClusterFinderV2SPD : public AliITSClusterFinderV2 {
+class AliITSClusterFinderV2SPD : public AliITSClusterFinder {
 public:
   AliITSClusterFinderV2SPD(AliITSDetTypeRec* dettyp);
   virtual ~AliITSClusterFinderV2SPD(){;}

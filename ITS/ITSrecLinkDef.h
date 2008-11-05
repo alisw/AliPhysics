@@ -18,9 +18,6 @@
 #pragma link C++ class  AliITSRawClusterSDD+;
 #pragma link C++ class  AliITSRawClusterSSD+;
 #pragma link C++ class  AliITSClusterFinder+;
-#pragma link C++ class  AliITSClusterFinderSPD+;
-#pragma link C++ class  AliITSClusterFinderSDD+;
-#pragma link C++ class  AliITSClusterFinderSSD+;
 #pragma link C++ class  AliITSClusterParam+;
 #pragma link C++ class  AliITSDetTypeRec+;
 
@@ -64,7 +61,6 @@
 #pragma link C++ class AliITStrackSA+;
 #pragma link C++ class AliITSReconstructor+;
 #pragma link C++ class AliITSRecoParam+;
-#pragma link C++ class AliITSClusterFinderV2+;
 #pragma link C++ class AliITSClusterFinderV2SDD+;
 #pragma link C++ class AliITSClusterFinderV2SPD+;
 #pragma link C++ class AliITSClusterFinderV2SSD+;
