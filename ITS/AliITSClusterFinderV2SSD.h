@@ -1,5 +1,10 @@
 #ifndef ALIITSCLUSTERFINDERV2SSD_H
 #define ALIITSCLUSTERFINDERV2SSD_H
+/* Copyright(c) 2007-2009, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/* $Id$ */
+
 //--------------------------------------------------------------
 //                       ITS clusterer V2 for SSD
 //
@@ -39,8 +44,9 @@ public:
   Int_t fLastSSD1;        //index of the last SSD1 detector   
   static Short_t* fgPairs;       //array used to build positive-negative pairs
   static Int_t    fgPairsSize;    //actual size of pairs array
+  static const Float_t fgkCosmic2008StripShifts[16][9]; // Shifts for 2007/2008 Cosmic data (timing problem)
 
-  ClassDef(AliITSClusterFinderV2SSD,2)  // ITS cluster finder V2 for SDD
+  ClassDef(AliITSClusterFinderV2SSD,3)  // ITS cluster finder V2 for SDD
 };
 
 #endif

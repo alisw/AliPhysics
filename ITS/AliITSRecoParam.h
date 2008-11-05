@@ -268,6 +268,9 @@ class AliITSRecoParam : public AliDetectorRecoParam
   void   SetUseChargeMatchingInClusterFinderSSD(Bool_t use=kTRUE) { fUseChargeMatchingInClusterFinderSSD=use; return; }
   Bool_t GetUseChargeMatchingInClusterFinderSSD() const { return fUseChargeMatchingInClusterFinderSSD; }
 
+  void   SetUseCosmicRunShiftsSSD(Bool_t use=kFALSE) { fUseCosmicRunShiftsSSD=use; return; }
+  Bool_t GetUseCosmicRunShiftsSSD() const { return fUseCosmicRunShiftsSSD; }
+
   // SPD Tracklets (D. Elia)
   void    SetTrackleterOnlyOneTrackletPerC2(Bool_t use= kTRUE) {fTrackleterOnlyOneTrackletPerC2=use; return; }
   Bool_t  GetTrackleterOnlyOneTrackletPerC2() const { return fTrackleterOnlyOneTrackletPerC2; }
@@ -452,8 +455,9 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Bool_t  fTrackleterRemoveClustersFromOverlaps;   // Option to skip clusters in the overlaps
   Float_t fTrackleterPhiOverlapCut;                // Fiducial window in phi for overlap cut
   Float_t fTrackleterZetaOverlapCut;               // Fiducial window in eta for overlap cut
+  Bool_t fUseCosmicRunShiftsSSD; // SSD time shifts for cosmic run 2007/2008 (use for data taken up to 18 sept 2008)
 
-  ClassDef(AliITSRecoParam,11) // ITS reco parameters
+  ClassDef(AliITSRecoParam,12) // ITS reco parameters
 };
 
 #endif

@@ -41,12 +41,29 @@
 
 Short_t *AliITSClusterFinderV2SSD::fgPairs = 0x0;
 Int_t    AliITSClusterFinderV2SSD::fgPairsSize = 0;
+const Float_t AliITSClusterFinderV2SSD::fgkCosmic2008StripShifts[16][9] = 
+  {{-0.35,-0.35,-0.35,-0.35,-0.35,-0.35,-0.35,-0.35,-0.35},  // DDL 512
+   {-0.35,-0.35,-0.35,-0.35,-0.35,-0.35,-0.35,-0.35,-0.35},  // DDL 513
+   {-0.15,-0.15,-0.15,-0.15,-0.15,-0.15,-0.15,-0.15,-0.15},  // DDL 514
+   {-0.15,-0.15,-0.15,-0.15,-0.15,-0.15,-0.15,-0.15,-0.15},  // DDL 515
+   { 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00},  // DDL 516
+   { 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00},  // DDL 517
+   {-0.15,-0.15,-0.15,-0.15,-0.15,-0.15,-0.15,-0.15,-0.15},  // DDL 518
+   {-0.15,-0.15,-0.15,-0.15,-0.15,-0.15,-0.15,-0.15,-0.15},  // DDL 519
+   {-0.15,-0.15,-0.15,-0.15,-0.15,-0.15,-0.15,-0.25,-0.15},  // DDL 520
+   {-0.15,-0.15,-0.15,-0.15,-0.15,-0.15,-0.15,-0.15,-0.15},  // DDL 521
+   {-0.10,-0.10,-0.10,-0.40,-0.40,-0.40,-0.10,-0.10,-0.45},  // DDL 522
+   {-0.10,-0.10,-0.10,-0.35,-0.35,-0.35,-0.10,-0.35,-0.50},  // DDL 523
+   { 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00},  // DDL 524
+   { 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00},  // DDL 525
+   { 0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35},  // DDL 526
+   { 0.45, 0.45, 0.45, 0.45, 0.45, 0.45, 0.45, 0.45, 0.45}}; // DDL 527
 
 ClassImp(AliITSClusterFinderV2SSD)
 
 
 AliITSClusterFinderV2SSD::AliITSClusterFinderV2SSD(AliITSDetTypeRec* dettyp):AliITSClusterFinder(dettyp),
-fLastSSD1(AliITSgeomTGeo::GetModuleIndex(6,1,1)-1)
+									     fLastSSD1(AliITSgeomTGeo::GetModuleIndex(6,1,1)-1)
 {
 //Default constructor
 
@@ -314,7 +331,13 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input,
     
     if(n==0) continue; // first occurence
     n=0; //osignal=0;
-    
+
+    Float_t dStrip = 0;
+    if (repa->GetUseCosmicRunShiftsSSD()) {  // Special condition for 2007/2008 cosmic data
+      dStrip = fgkCosmic2008StripShifts[oddl][oad-1];
+    }
+    if (fabs(dStrip) > 1.5)
+      printf("Indexing error ? oddl = %d, dStrip %f\n",oddl,dStrip);
     // fill 1Dclusters
     for(Int_t iadc=0; iadc<12; iadc++) {  // loop over ADC index for ddl=oddl and ad=oad
       
@@ -322,7 +345,7 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input,
       Int_t iModule = AliITSRawStreamSSD::GetModuleNumber(oddl,iimod);
       if(iModule==-1) continue;
       cal = (AliITSCalibrationSSD*)GetResp(iModule);
-      
+
       Bool_t first = 0;
       
       /*
@@ -372,8 +395,8 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input,
 	    
 	    Ali1Dcluster& cluster = clusters1D[0][nClusters[0]++];
 
-	    if(q!=0) cluster.SetY(y/q);
-	    else cluster.SetY(istrip-1);
+	    if(q!=0) cluster.SetY(y/q + dStrip);
+	    else cluster.SetY(istrip + dStrip -1);
 
 	    cluster.SetQ(q);
 	    cluster.SetNd(nDigits);
@@ -383,16 +406,16 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input,
 	      
 	      //Split suspiciously big cluster
 	      if (nDigits > 4&&nDigits < 25) {
-		if(q!=0) cluster.SetY(y/q - 0.25*nDigits);
-		else cluster.SetY(istrip-1 - 0.25*nDigits);
+		if(q!=0) cluster.SetY(y/q + dStrip - 0.25*nDigits);
+		else cluster.SetY(istrip-1 + dStrip - 0.25*nDigits);
 		cluster.SetQ(0.5*q);
 		if (nClusters[0] == kMax) {
 		  Error("FindClustersSSD", "Too many 1D clusters !");
 		  return;
 		}
 		Ali1Dcluster& cluster2 = clusters1D[0][nClusters[0]++];
-		if(q!=0) cluster2.SetY(y/q + 0.25*nDigits);
-		else cluster2.SetY(istrip-1 + 0.25*nDigits);
+		if(q!=0) cluster2.SetY(y/q + dStrip + 0.25*nDigits);
+		else cluster2.SetY(istrip-1 + dStrip + 0.25*nDigits);
 		cluster2.SetQ(0.5*q);
 		cluster2.SetNd(nDigits);
 		cluster2.SetLabels(lab);
@@ -414,8 +437,8 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input,
 	  
 	  Ali1Dcluster& cluster = clusters1D[0][nClusters[0]++];
 
-	  if(q!=0) cluster.SetY(y/q);
-	  else cluster.SetY(istrip-1);
+	  if(q!=0) cluster.SetY(y/q + dStrip);
+	  else cluster.SetY(istrip - 1 + dStrip);
 
 	  cluster.SetQ(q);
 	  cluster.SetNd(nDigits);
@@ -425,16 +448,16 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input,
 	    
 	    //Split suspiciously big cluster
 	    if (nDigits > 4&&nDigits < 25) {
-	      if(q!=0) cluster.SetY(y/q - 0.25*nDigits);
-	      else cluster.SetY(istrip-1 - 0.25*nDigits);
+	      if(q!=0) cluster.SetY(y/q + dStrip - 0.25*nDigits);
+	      else cluster.SetY(istrip-1 + dStrip - 0.25*nDigits);
 	      cluster.SetQ(0.5*q);
 	      if (nClusters[0] == kMax) {
 		Error("FindClustersSSD", "Too many 1D clusters !");
 		return;
 	      }
 	      Ali1Dcluster& cluster2 = clusters1D[0][nClusters[0]++];
-	      if(q!=0) cluster2.SetY(y/q + 0.25*nDigits);
-	      else cluster2.SetY(istrip-1 + 0.25*nDigits);
+	      if(q!=0) cluster2.SetY(y/q + dStrip + 0.25*nDigits);
+	      else cluster2.SetY(istrip-1 + dStrip + 0.25*nDigits);
 	      cluster2.SetQ(0.5*q);
 	      cluster2.SetNd(nDigits);
 	      cluster2.SetLabels(lab);
@@ -497,8 +520,8 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input,
 	    
 	    Ali1Dcluster& cluster = clusters1D[1][nClusters[1]++];
 
-	    if(q!=0) cluster.SetY(y/q);
-	    else cluster.SetY(strip+1);
+	    if(q!=0) cluster.SetY(y/q - dStrip);
+	    else cluster.SetY(strip+1 - dStrip);
 
 	    cluster.SetQ(q);
 	    cluster.SetNd(nDigits);
@@ -508,14 +531,14 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input,
 
 	      //Split suspiciously big cluster
 	      if (nDigits > 4&&nDigits < 25) {
-		cluster.SetY(y/q - 0.25*nDigits);
+		cluster.SetY(y/q - dStrip - 0.25*nDigits);
 		cluster.SetQ(0.5*q);
 		if (nClusters[1] == kMax) {
 		  Error("FindClustersSSD", "Too many 1D clusters !");
 		  return;
 		}
 		Ali1Dcluster& cluster2 = clusters1D[1][nClusters[1]++];
-		cluster2.SetY(y/q + 0.25*nDigits);
+		cluster2.SetY(y/q - dStrip + 0.25*nDigits);
 		cluster2.SetQ(0.5*q);
 		cluster2.SetNd(nDigits);
 		cluster2.SetLabels(lab);
@@ -536,8 +559,8 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input,
 	  
 	  Ali1Dcluster& cluster = clusters1D[1][nClusters[1]++];
 	  
-	  if(q!=0) cluster.SetY(y/q);
-	  else cluster.SetY(strip+1);
+	  if(q!=0) cluster.SetY(y/q - dStrip);
+	  else cluster.SetY(strip - dStrip + 1);
 
 	  cluster.SetQ(q);
 	  cluster.SetNd(nDigits);
@@ -547,16 +570,16 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input,
 	    
 	    //Split suspiciously big cluster
 	    if (nDigits > 4&&nDigits < 25) {
-	      if(q!=0) cluster.SetY(y/q - 0.25*nDigits);
-	      else cluster.SetY(strip+1 - 0.25*nDigits);
+	      if(q!=0) cluster.SetY(y/q - dStrip - 0.25*nDigits);
+	      else cluster.SetY(strip+1 - dStrip - 0.25*nDigits);
 	      cluster.SetQ(0.5*q);
 	      if (nClusters[1] == kMax) {
 		Error("FindClustersSSD", "Too many 1D clusters !");
 		return;
 	      }
 	      Ali1Dcluster& cluster2 = clusters1D[1][nClusters[1]++];
-	      if(q!=0) cluster2.SetY(y/q + 0.25*nDigits);
-	      else cluster2.SetY(strip+1 + 0.25*nDigits);
+	      if(q!=0) cluster2.SetY(y/q - dStrip + 0.25*nDigits);
+	      else cluster2.SetY(strip+1 - dStrip + 0.25*nDigits);
 	      cluster2.SetQ(0.5*q);
 	      cluster2.SetNd(nDigits);
 	      cluster2.SetLabels(lab);
