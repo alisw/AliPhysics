@@ -87,7 +87,7 @@ public:
   //////////////////////////////////////
   // Return EMCAL geometrical parameters
   //
-  Char_t* GetNameOfEMCALEnvelope() const {return "XEN1";}
+  Char_t* GetNameOfEMCALEnvelope() const { Char_t* env = "XEN1"; return env ;}
   Float_t GetArm1PhiMin() const { return fArm1PhiMin ; }
   Float_t GetArm1PhiMax() const { return fArm1PhiMax ; }
   Float_t GetArm1EtaMin() const { return fArm1EtaMin;}

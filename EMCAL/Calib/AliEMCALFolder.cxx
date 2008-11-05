@@ -438,7 +438,8 @@ void  AliEMCALFolder::Save(const char *fn, const char *opt)
   f.NextEventPut(this, eventNum, runNumber);
   printf(" Save %s to file %s\n", GetName(), FN.Data());
   */
-  if(fn || opt);
+  //if(fn || opt);//For what is this?, commented due to compilation warnings
+
 }
 
 //_____________________________________________________________

@@ -220,7 +220,7 @@ const char* coment)
   if(man == 0) {
     printf("<E> AliEMCALCalibCoefs::GetCalibTableForDb : define AliCDBManager, NO saving  !! \n"); 
   } else {
-    printf("<I> AliCDBManager %p \n", man); 
+    //printf("<I> AliCDBManager %p \n", man); 
     AliCDBId id("EMCAL/Calib/Data",firstRun,lastRun); // create in EMCAL/Calib/Data DBFolder 
     TString dBFolder(dbLocation);
     AliCDBStorage* loc = man->GetStorage(dBFolder.Data());

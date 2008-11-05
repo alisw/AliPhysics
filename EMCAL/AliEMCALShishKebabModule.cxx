@@ -161,7 +161,7 @@ Double_t xmin, Double_t xmax, Int_t npar, Double_t *par, Double_t eps, Int_t max
 Double_t AliEMCALShishKebabModule::Y2(Double_t *x, Double_t *par)
 { 
   // For position calulation of second module
-  if(par);
+  //if(par);//For what is this?, commented due to compilation warnings
   Double_t theta = x[0];
   Double_t cos = TMath::Cos(theta);
   Double_t sin = TMath::Sin(theta);

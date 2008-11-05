@@ -362,16 +362,16 @@ AliRunLoader* AliEMCALHistoUtilities::InitKinematics(const Int_t nev, const char
   static AliRunLoader *rl = 0;
 
   if((rl == 0 || nev==0) && galiceName) {
-    printf("<I> AliEMCALHistoUtilities::InitKinematics() : nev %i : rl %p : %s (IN)\n", 
-	 nev, rl, galiceName);  
+    //printf("<I> AliEMCALHistoUtilities::InitKinematics() : nev %i : rl %p : %s (IN)\n", 
+	// nev, rl, galiceName);  
     if(rl)  {
       rl->UnloadgAlice();
       delete rl;
     }
     rl = AliRunLoader::Open(galiceName,AliConfig::GetDefaultEventFolderName(),"read");
     rl->LoadgAlice(); // obligatory
-    printf("<I> AliEMCALHistoUtilities::InitKinematics() : nev %i : rl %p : %s (OUT)\n", 
-	 nev, rl, galiceName);  
+    //printf("<I> AliEMCALHistoUtilities::InitKinematics() : nev %i : rl %p : %s (OUT)\n", 
+	 //nev, rl, galiceName);  
   }
   if(rl) {
     rl->GetEvent(nev);

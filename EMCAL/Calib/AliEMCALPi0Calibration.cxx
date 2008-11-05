@@ -180,15 +180,15 @@ AliEMCALPi0Calibration::AliEMCALPi0Calibration(const AliAnalysisTaskSE& obj) :
   fArrOpts(0),
   fKeyOpts(0)
 { 
-  if(&obj);
   // Copy constructor - unused
+//  if(&obj); //FOR WHAT IS THIS, commented due to warnings
 }
 
 AliEMCALPi0Calibration& AliEMCALPi0Calibration::operator=(const AliAnalysisTaskSE& other)
 { 
-  if(&other);
-  return *this;
   // Assignment
+//  if(&other); //FOR WHAT IS THIS, commented due to warnings
+  return *this;
 }
 
 AliEMCALPi0Calibration::~AliEMCALPi0Calibration()
@@ -1170,7 +1170,7 @@ TCanvas *AliEMCALPi0Calibration::Linearity(TList *l, int ifun)
     line = new TLine(0.0,0.0, 101.,0.0);
     line->Draw();
     TLatex *lat = u::Lat("linearity better 0.2% after correction",20., 0.15, 12, 0.06, 1); 
-    if(lat);
+    //if(lat); //For what is this?, commented due to compilation warnings
   }
   if(1) {
     TString latexName;
@@ -1191,7 +1191,7 @@ TCanvas *AliEMCALPi0Calibration::Linearity(TList *l, int ifun)
     gr3->SetMarkerSize(1.5);
 
     TLatex *lat = u::Lat(latexName.Data(),82., 11., 12, 0.06, 1);
-    if(lat);
+    if(lat); //For what is this?, commented due to compilation warnings
     // Exp. data
     TF1 *fexp = new TF1(*f);
     fexp->SetName("fexp");
@@ -1361,7 +1361,7 @@ TCanvas* AliEMCALPi0Calibration::DrawDeffVsEnergy()
   Int_t markerColor=1;
   c->cd(1);
   TF1 *fdeff= new TF1("fdeff","[0]+[1]*log(x)",0.4, 100.4);
-  if(fdeff);
+  if(fdeff); //For what is this?, commented due to compilation warnings
   TGraphErrors *gr = u::DrawGraphErrors(np, p,deff, ep, edeff,
     markerColor,21+markerColor,"AP"," D_{eff} vs E_{#gamma} ","E_{#gamma}         "," D_{eff} in cm ",
 					-1, "", 0);

@@ -46,8 +46,8 @@ class AliCaloCalibPedestal : public TObject {
   AliCaloCalibPedestal& operator = (const  AliCaloCalibPedestal &source);
   
   //Functions to ask for the constants (in case a GUI needs them, for an example
-  static const int GetSampleMax() {return fgkSampleMax;};
-  static const int GetSampleMin() {return fgkSampleMin;};
+  int GetSampleMax() const {return fgkSampleMax;};
+  int GetSampleMin() const {return fgkSampleMin;};
 
   // Event processing methods:  
   Bool_t ProcessEvent(AliRawReader *rawReader);
