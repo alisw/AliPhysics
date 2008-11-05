@@ -62,13 +62,14 @@ class AliAltroRawStream: public TObject {
 
     UInt_t  GetAltroCFG1() const { return fAltroCFG1; }
     UChar_t GetBaselineCorr() const { return fAltroCFG1 & 0xF; }
-    UChar_t GetNPresamples() const  { return (fAltroCFG1 >> 4) & 0x3; }
-    UChar_t GetNPostsamples() const { return (fAltroCFG1 >> 6) & 0xF; }
-    Bool_t  GetSecondBaselineCorr() const { return (fAltroCFG1 >> 10) & 0x1; }
-    UChar_t GetGlitchFilter() const { return (fAltroCFG1 >> 11) & 0x3; }
-    UChar_t GetNNonZSPostsamples() const { return (fAltroCFG1 >> 13) & 0x7; }
-    UChar_t GetNNonZSPresamples() const  { return (fAltroCFG1 >> 16) & 0x3; }
-    Bool_t  GetZeroSupp() const          { return (fAltroCFG1 >> 18) & 0x1; }
+    Bool_t  GetPolarity() const { return (fAltroCFG1 >> 4) & 0x1; }
+    UChar_t GetNPresamples() const  { return (fAltroCFG1 >> 5) & 0x3; }
+    UChar_t GetNPostsamples() const { return (fAltroCFG1 >> 7) & 0xF; }
+    Bool_t  GetSecondBaselineCorr() const { return (fAltroCFG1 >> 11) & 0x1; }
+    UChar_t GetGlitchFilter() const { return (fAltroCFG1 >> 12) & 0x3; }
+    UChar_t GetNNonZSPostsamples() const { return (fAltroCFG1 >> 14) & 0x7; }
+    UChar_t GetNNonZSPresamples() const  { return (fAltroCFG1 >> 17) & 0x3; }
+    Bool_t  GetZeroSupp() const          { return (fAltroCFG1 >> 19) & 0x1; }
     
     UInt_t   GetAltroCFG2() const { return fAltroCFG2; }
     Bool_t   GetNAltroBuffers() const     { return (fAltroCFG2 >> 24) & 0x1; }

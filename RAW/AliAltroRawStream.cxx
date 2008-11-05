@@ -583,7 +583,7 @@ Int_t AliAltroRawStream::ReadRCUTrailer(Int_t &index, Int_t trailerSize)
       break;
     case 7:
       // RDO_CFG1
-      fAltroCFG1 = parData & 0x7FFFF;
+      fAltroCFG1 = parData & 0xFFFFF;
       break;
     case 8:
       // RDO_CFG2
