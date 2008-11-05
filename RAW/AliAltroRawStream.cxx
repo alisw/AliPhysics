@@ -324,7 +324,7 @@ Bool_t AliAltroRawStream::ReadDummyTrailer()
   //Read a trailer of 40 bits in the backward reading mode
   //In case of no mapping is provided, read a dummy trailer
   UShort_t temp;
-  while ((temp = GetNextWord()) == 0x2AA);
+  while ((temp = GetNextWord()) == 0x2AA) { };
 
   fSegmentation[0] = temp;
   fSegmentation[1] = GetNextWord();
