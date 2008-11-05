@@ -917,11 +917,11 @@ Double_t AliFastGlauber::WPathLength0(Double_t* x, Double_t* par)
   } // radial steps
 
   Double_t y=0.;
-  if (!kiopt)  // My length definition (is exact for hard disk)
-    if(w) y= 2. * rw / w; 
-  else {
-    const Double_t knorm=fgWSta->Eval(1e-4);
-    if(knorm) y =  TMath::Sqrt(2. * rw * kDr / knorm / knorm);
+  if (!kiopt) { // My length definition (is exact for hard disk)
+      if(w) y= 2. * rw / w; 
+  } else {
+      const Double_t knorm=fgWSta->Eval(1e-4);
+      if(knorm) y =  TMath::Sqrt(2. * rw * kDr / knorm / knorm);
   }
   return y; //fm
 }
