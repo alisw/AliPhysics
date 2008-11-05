@@ -260,7 +260,7 @@ int AliHLTMUONEmptyEventFilterComponent::DoEvent(
 
 	// If we are filtering or required to send only empty events then
 	// copy all the input blocks to the output.
-	if (emptyEvent and fSendOnEmpty or not emptyEvent and not fSendOnEmpty)
+	if ((emptyEvent and fSendOnEmpty) or (not emptyEvent and not fSendOnEmpty))
 	{
 		for (AliHLTUInt32_t n = 0; n < evtData.fBlockCnt; n++)
 		{
