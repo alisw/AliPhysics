@@ -111,6 +111,8 @@ Bool_t  AliESDInputHandler::FinishEvent()
 Bool_t AliESDInputHandler::Notify(const char* path)
 {
     // Notify a directory change
+    AliInfo(Form("Directory change %s \n", path));
+    //
     if (!fUseTags) return (kTRUE);
     
     Bool_t zip = kFALSE;
@@ -139,9 +141,6 @@ Bool_t AliESDInputHandler::Notify(const char* path)
 	// For running with galice and kinematics alone...
 	fileName.ReplaceAll("galice.root", "");
     }
-
-
-    
 
     
     TString* pathName = new TString("./");
