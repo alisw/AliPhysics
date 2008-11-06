@@ -515,7 +515,7 @@ int AliHLTTask::ProcessTask(Int_t eventNo, AliHLTUInt32_t eventType)
 
     // process the event
     int iNofTrial=0; // repeat processing if component returns -ENOSPC
-    AliHLTUInt32_t size=0;
+    AliHLTUInt32_t iLastOutputDataSize=0;
     if (iResult>=0) {
     do {
       long unsigned int iOutputDataSize=0;
@@ -542,7 +542,7 @@ int AliHLTTask::ProcessTask(Int_t eventNo, AliHLTUInt32_t eventType)
       }
       if (iNofTrial>0) {
 	// dont process again if the buffer size is the same
-	if (size==iOutputDataSize) break;
+	if (iLastOutputDataSize==iOutputDataSize) break;
 	HLTInfo("processing task %s again with buffer size %d", GetName(), iOutputDataSize);
       }
       AliHLTUInt8_t* pTgtBuffer=NULL;
@@ -556,7 +556,8 @@ int AliHLTTask::ProcessTask(Int_t eventNo, AliHLTUInt32_t eventType)
       trigData.fStructSize=sizeof(trigData);
       trigData.fDataSize=0;
       trigData.fData=NULL;
-      size=iOutputDataSize;
+      iLastOutputDataSize=iOutputDataSize;
+      AliHLTUInt32_t size=iOutputDataSize;
       AliHLTUInt32_t outputBlockCnt=0;
       AliHLTComponentBlockData* outputBlocks=NULL;
       AliHLTComponentEventDoneData* edd=NULL;
