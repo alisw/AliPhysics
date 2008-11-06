@@ -54,7 +54,10 @@ const Char_t* AliESDtrackCuts::fgkCutNames[kNCuts] = {
  "eta",
  "trk-to-vtx dca absolute",
  "trk-to-vtx dca xy absolute",
- "trk-to-vtx dca z absolute"
+ "trk-to-vtx dca z absolute",
+ "SPD cluster requirement",
+ "SDD cluster requirement",
+ "SSD cluster requirement"
 };
 
 //____________________________________________________________________
@@ -111,11 +114,11 @@ AliESDtrackCuts::AliESDtrackCuts(const Char_t* name, const Char_t* title) : AliA
   SetRequireTPCRefit();
   SetRequireITSRefit();
   SetAcceptKingDaughters();
-  SetMinNsigmaToVertex();
+  SetMaxNsigmaToVertex();
   SetRequireSigmaToVertex();
-  SetDCAToVertex();
-  SetDCAToVertexXY();
-  SetDCAToVertexZ();
+  SetMaxDCAToVertex();
+  SetMaxDCAToVertexXY();
+  SetMaxDCAToVertexZ();
   SetPRange();
   SetPtRange();
   SetPxRange();
@@ -123,6 +126,9 @@ AliESDtrackCuts::AliESDtrackCuts(const Char_t* name, const Char_t* title) : AliA
   SetPzRange();
   SetEtaRange();
   SetRapRange();
+  SetClusterRequirementITS(kSPD);
+  SetClusterRequirementITS(kSDD);
+  SetClusterRequirementITS(kSSD);
 
   SetHistogramsOn();
 }
@@ -242,6 +248,9 @@ void AliESDtrackCuts::Init()
 
   fCutMaxChi2PerClusterTPC = 0;
   fCutMaxChi2PerClusterITS = 0;
+  
+  for (Int_t i = 0; i < 3; i++)
+  	fCutClusterRequirementITS[i] = kOff;
 
   fCutMaxC11 = 0;
   fCutMaxC22 = 0;
@@ -336,6 +345,9 @@ void AliESDtrackCuts::Copy(TObject &c) const
 
   target.fCutMaxChi2PerClusterTPC = fCutMaxChi2PerClusterTPC;
   target.fCutMaxChi2PerClusterITS = fCutMaxChi2PerClusterITS;
+
+  for (Int_t i = 0; i < 3; i++)
+    target.fCutClusterRequirementITS[i] = fCutClusterRequirementITS[i];
 
   target.fCutMaxC11 = fCutMaxC11;
   target.fCutMaxC22 = fCutMaxC22;
@@ -664,6 +676,9 @@ AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack) {
     cuts[22] = kTRUE;
   if (TMath::Abs(dcaToVertexZ) > fCutDCAToVertexZ)
     cuts[23] = kTRUE;
+  
+  for (Int_t i = 0; i < 3; i++)
+    cuts[24+i] = !CheckITSClusterRequirement(fCutClusterRequirementITS[i], esdTrack->HasPointOnITSLayer(i*2), esdTrack->HasPointOnITSLayer(i*2+1));
 
   Bool_t cut=kFALSE;
   for (Int_t i=0; i<kNCuts; i++) 
@@ -739,6 +754,26 @@ AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack) {
   }
 
   return kTRUE;
+}
+
+//____________________________________________________________________
+Bool_t AliESDtrackCuts::CheckITSClusterRequirement(ITSClusterRequirement req, Bool_t clusterL1, Bool_t clusterL2)
+{
+  // checks if the cluster requirement is fullfilled (in this case: return kTRUE)
+  
+  switch (req)
+  {
+  	case kOff:        return kTRUE;
+  	case kNone:       return !clusterL1 && !clusterL2;
+  	case kAny:        return clusterL1 || clusterL2;
+  	case kFirst:      return clusterL1;
+  	case kOnlyFirst:  return clusterL1 && !clusterL2;
+  	case kSecond:     return clusterL2;
+  	case kOnlySecond: return clusterL2 && !clusterL1;
+  	case kBoth:       return clusterL1 && clusterL2;
+  }
+  
+  return kFALSE;
 }
 
 //____________________________________________________________________
@@ -1204,3 +1239,47 @@ void AliESDtrackCuts::DrawHistograms()
   fhChi2PerClusterTPC[1]->DrawCopy("SAME");*/
 }
 
+Float_t AliESDtrackCuts::GetMinNsigmaToVertex() const
+{
+  // deprecated, please use GetMaxNsigmaToVertex
+
+  Printf("WARNING: AliESDtrackCuts::GetMinNsigmaToVertex is DEPRECATED and will be removed in the next release. Please use GetMaxNsigmaToVertex instead. Renaming was done to improve code readability.");
+
+  return GetMaxNsigmaToVertex();
+}
+
+void AliESDtrackCuts::SetMinNsigmaToVertex(Float_t sigma)
+{
+  // deprecated, will be removed in next release
+
+  Printf("WARNING: AliESDtrackCuts::SetMinNsigmaToVertex is DEPRECATED and will be removed in the next release. Please use SetMaxNsigmaToVertex instead. Renaming was done to improve code readability.");
+  
+  SetMaxNsigmaToVertex(sigma);
+}
+
+void AliESDtrackCuts::SetDCAToVertex(Float_t dist)
+{
+  // deprecated, will be removed in next release
+
+  Printf("WARNING: AliESDtrackCuts::SetDCAToVertex is DEPRECATED and will be removed in the next release. Please use SetMaxDCAToVertex instead. Renaming was done to improve code readability.");
+  
+  SetMaxDCAToVertex(dist);
+}
+  
+void AliESDtrackCuts::SetDCAToVertexXY(Float_t dist)
+{
+  // deprecated, will be removed in next release
+
+  Printf("WARNING: AliESDtrackCuts::SetDCAToVertexXY is DEPRECATED and will be removed in the next release. Please use SetMaxDCAToVertexXY instead. Renaming was done to improve code readability.");
+  
+  SetMaxDCAToVertexXY(dist);
+}
+  
+void AliESDtrackCuts::SetDCAToVertexZ(Float_t dist)
+{
+  // deprecated, will be removed in next release
+
+  Printf("WARNING: AliESDtrackCuts::SetDCAToVertexZ is DEPRECATED and will be removed in the next release. Please use SetMaxDCAToVertexZ instead. Renaming was done to improve code readability.");
+  
+  SetMaxDCAToVertexZ(dist);
+}

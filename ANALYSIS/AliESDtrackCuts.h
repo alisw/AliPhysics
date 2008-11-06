@@ -33,6 +33,9 @@ class TTree;
 class AliESDtrackCuts : public AliAnalysisCuts
 {
 public:
+  enum ITSClusterRequirement { kOff = 0, kNone, kAny, kFirst, kOnlyFirst, kSecond, kOnlySecond, kBoth };
+  enum Detector { kSPD = 0, kSDD, kSSD };
+  
   AliESDtrackCuts(const Char_t* name = "AliESDtrackCuts", const Char_t* title = "");
   virtual ~AliESDtrackCuts();
 
@@ -55,6 +58,7 @@ public:
   // track quality cut setters  
   void SetMinNClustersTPC(Int_t min=-1)          {fCutMinNClusterTPC=min;}
   void SetMinNClustersITS(Int_t min=-1)          {fCutMinNClusterITS=min;}
+  void SetClusterRequirementITS(Detector det, ITSClusterRequirement req = kOff) { fCutClusterRequirementITS[det] = req; }
   void SetMaxChi2PerClusterTPC(Float_t max=1e10) {fCutMaxChi2PerClusterTPC=max;}
   void SetMaxChi2PerClusterITS(Float_t max=1e10) {fCutMaxChi2PerClusterITS=max;}
   void SetRequireTPCRefit(Bool_t b=kFALSE)       {fCutRequireTPCRefit=b;}
@@ -64,16 +68,24 @@ public:
     {fCutMaxC11=c1; fCutMaxC22=c2; fCutMaxC33=c3; fCutMaxC44=c4; fCutMaxC55=c5;}
 
   // track to vertex cut setters
-  void SetMinNsigmaToVertex(Float_t sigma=1e10)       {fCutNsigmaToVertex = sigma;}
+  void SetMaxNsigmaToVertex(Float_t sigma=1e10)       {fCutNsigmaToVertex = sigma;}
   void SetRequireSigmaToVertex(Bool_t b=kTRUE )       {fCutSigmaToVertexRequired = b;}
-  void SetDCAToVertex(Float_t dist=1e10)              {fCutDCAToVertex = dist;}
-  void SetDCAToVertexXY(Float_t dist=1e10)            {fCutDCAToVertexXY = dist;}
-  void SetDCAToVertexZ(Float_t dist=1e10)             {fCutDCAToVertexZ = dist;}
+  void SetMaxDCAToVertex(Float_t dist=1e10)           {fCutDCAToVertex = dist;}
+  void SetMaxDCAToVertexXY(Float_t dist=1e10)         {fCutDCAToVertexXY = dist;}
+  void SetMaxDCAToVertexZ(Float_t dist=1e10)          {fCutDCAToVertexZ = dist;}
+  
+  // deprecated, will be removed in next release
+  void SetMinNsigmaToVertex(Float_t sigma=1e10);
+  void SetDCAToVertex(Float_t dist=1e10);
+  void SetDCAToVertexXY(Float_t dist=1e10);
+  void SetDCAToVertexZ(Float_t dist=1e10);
+  Float_t GetMinNsigmaToVertex() const;
 
   // getters
 
   Int_t   GetMinNClusterTPC()        const   { return fCutMinNClusterTPC;}
   Int_t   GetMinNClustersITS()       const   { return fCutMinNClusterITS;}
+  ITSClusterRequirement GetClusterRequirementITS(Detector det) const { return fCutClusterRequirementITS[det]; }
   Float_t GetMaxChi2PerClusterTPC()  const   { return fCutMaxChi2PerClusterTPC;}
   Float_t GetMaxChi2PerClusterITS()  const   { return fCutMaxChi2PerClusterITS;}
   Bool_t  GetRequireTPCRefit()       const   { return fCutRequireTPCRefit;}
@@ -81,9 +93,10 @@ public:
   Bool_t  GetAcceptKingDaughters()   const   { return fCutAcceptKinkDaughters;}
   void    GetMaxCovDiagonalElements(Float_t& c1, Float_t& c2, Float_t& c3, Float_t& c4, Float_t& c5) 
       {c1 = fCutMaxC11; c2 = fCutMaxC22; c3 = fCutMaxC33; c4 = fCutMaxC44; c5 = fCutMaxC55;}
-  Float_t GetMinNsigmaToVertex()     const   { return fCutNsigmaToVertex;}
-  Float_t GetDCAToVertex()           const   { return fCutDCAToVertex;}
-  Float_t GetDCAToVertexXY()         const   { return fCutDCAToVertexXY;}
+  Float_t GetMaxNsigmaToVertex()     const   { return fCutNsigmaToVertex;}
+  Float_t GetMaxDCAToVertex()         const   { return fCutDCAToVertex;}
+  Float_t GetMaxDCAToVertexXY()       const   { return fCutDCAToVertexXY;}
+  Float_t GetMaxDCAToVertexZ()       const   { return fCutDCAToVertexZ;}
   Bool_t  GetRequireSigmaToVertex( ) const   { return fCutSigmaToVertexRequired;}
 
   void GetPRange(Float_t& r1, Float_t& r2)   {r1=fPMin;   r2=fPMax;}
@@ -121,8 +134,9 @@ public:
 
 protected:
   void Init(); // sets everything to 0
-
-  enum { kNCuts = 24 };
+  Bool_t CheckITSClusterRequirement(ITSClusterRequirement req, Bool_t clusterL1, Bool_t clusterL2);
+  
+  enum { kNCuts = 27 };
 
   //######################################################
   // esd track quality cuts
@@ -130,6 +144,8 @@ protected:
 
   Int_t   fCutMinNClusterTPC;         // min number of tpc clusters
   Int_t   fCutMinNClusterITS;         // min number of its clusters
+  
+  ITSClusterRequirement fCutClusterRequirementITS[3];  // detailed ITS cluster requirements for (SPD, SDD, SSD)
 
   Float_t fCutMaxChi2PerClusterTPC;   // max tpc fit chi2 per tpc cluster
   Float_t fCutMaxChi2PerClusterITS;   // max its fit chi2 per its cluster
@@ -194,7 +210,7 @@ protected:
   TH1F*  fhCutStatistics;             //-> statistics of what cuts the tracks did not survive
   TH2F*  fhCutCorrelation;            //-> 2d statistics plot
 
-  ClassDef(AliESDtrackCuts, 2)
+  ClassDef(AliESDtrackCuts, 3)
 };
 
 
