@@ -494,7 +494,6 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 	// V0 selection 
 	//
 	AliESDVertex *esdVtx = new AliESDVertex(*(esd->GetPrimaryVertex()));
-	
 	AliESDtrack *esdV0Pos = esd->GetTrack(posFromV0);
 	AliESDtrack *esdV0Neg = esd->GetTrack(negFromV0);
 	TList v0objects;
@@ -506,13 +505,16 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 	if (fV0Filter) {
 	  selectV0 = fV0Filter->IsSelected(&v0objects);
 	  // this is a little awkward but otherwise the 
-	  // list wants to access the pointer again when going out of scope
-	  delete v0objects.RemoveAt(3);
+	  // list wants to access the pointer (delete it) 
+	  // again when going out of scope
+	  delete v0objects.RemoveAt(3); // esdVtx created via copy construct
+	  esdVtx = 0;
 	  if (!selectV0) 
 	    continue;
 	}
 	else{
-	  delete v0objects.RemoveAt(3);
+	  delete v0objects.RemoveAt(3); // esdVtx created via copy construct
+	  esdVtx = 0;
 	}
     
 	v0->GetXYZ(pos[0], pos[1], pos[2]);
@@ -541,7 +543,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 	Double_t dcaDaughterToPrimVertex[2] = { 999., 999.}; // ..[0] = Pos and ..[1] = Neg
 	
 	Double_t  dcaV0Daughters      = v0->GetDcaV0Daughters();
-	Double_t  dcaV0ToPrimVertex   = v0->GetD(esdVtx->GetX(),esdVtx->GetY(),esdVtx->GetZ());
+	Double_t  dcaV0ToPrimVertex   = v0->GetD(esd->GetPrimaryVertex()->GetX(),esd->GetPrimaryVertex()->GetY(),esd->GetPrimaryVertex()->GetZ());
 	v0->GetPPxPyPz(p_pos_atv0[0],p_pos_atv0[1],p_pos_atv0[2]); 
 	v0->GetNPxPyPz(p_neg_atv0[0],p_neg_atv0[1],p_neg_atv0[2]); 
 
