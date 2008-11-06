@@ -156,16 +156,16 @@ void dumpEvents() {
 	    gdc = gdc->next ) {
 	struct ldcEventDescriptorStruct *ldc;
 
-	printf( " GDC (%p)\n", gdc );
+	printf( " GDC (%p)\n", (void*)gdc );
 	for ( ldc = gdc->head; ldc != NULL; ldc = ldc->next ) {
 	  struct equipmentEventDescriptorStruct *eq;
 	    
-	  printf( "   LDC (%p): %d\n", ldc, ldc->id );
+	  printf( "   LDC (%p): %d\n", (void*)ldc, ldc->id );
 	  for ( eq = ldc->head; eq != NULL; eq = eq->next ) {
 	    printf( "     EQUIPMENT (%p): %d PAYLOAD (%p):",
-		    eq,
+		    (void*)eq,
 		    eq->id,
-		    eq->payload );
+		    (void*)eq->payload );
 	    fflush( stdout );
 	    printf( "\"%s\" (%d bytes)\n",
 		    eq->payload->fileName,
@@ -186,9 +186,9 @@ void dumpEvents() {
 	printf( "   LDC\n" );
 	for ( eq = ldc->head; eq != NULL; eq = eq->next ) {
 	  printf( "     EQUIPMENT (%p): %d PAYLOAD (%p):",
-		  eq,
+		  (void*)eq,
 		  eq->id,
-		  eq->payload );
+		  (void*)eq->payload );
 	  fflush( stdout );
 	  printf( "\"%s\" (%d bytes)\n",
 		  eq->payload->fileName,
@@ -492,7 +492,7 @@ void loadPayload( const char *fileName ) {
       printf( "%d)       Payload \"%s\" loaded at %p\n",
 	      lineNo,
 	      fileName,
-	      payload );
+	      (void*)payload );
       if ( bufferData ) {
 	if ( handleCDH &&
 	     strncmp(fileName,"TRG_",4) != 0 ) {
@@ -652,7 +652,7 @@ void loadPayload( const char *fileName ) {
       printf( "%d)       Payload \"%s\" already loaded at %p\n",
 	      lineNo,
 	      fileName,
-	      payload );
+	      (void*)payload );
   }
 
   currEvent->payload = payload;
@@ -767,7 +767,7 @@ void parseGdc( char * const line ) {
 		 lineNo );
 	exit( 1 );
       }
-      if ( sscanf( idNum, "%d", &currGdcId ) != 1 ) {
+      if ( sscanf( idNum, "%d", (int*)&currGdcId ) != 1 ) {
 	fprintf( stderr,
 		 "%s: line:%d GDC declaration, numeric ID needed (%s)",
 		 myName,
@@ -826,7 +826,7 @@ void parseLdc( char * const line ) {
 		 lineNo );
 	exit( 1 );
       }
-      if ( sscanf( idNum, "%d", &currLdcId ) != 1 ) {
+      if ( sscanf( idNum, "%d", (int*)&currLdcId ) != 1 ) {
 	fprintf( stderr,
 		 "%s: line:%d LDC declaration, numeric ID needed (%s)",
 		 myName,
