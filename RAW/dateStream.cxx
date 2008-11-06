@@ -916,7 +916,7 @@ void parseRules() {
 	}
       }
     }
-  } while ( !feof( stdin ) );
+  } while ( !feof( stdin ) ) {}
   lineNo -= 2;
 
   DBG_VERBOSE {
@@ -950,7 +950,7 @@ void parseRules() {
     assert( ldcsHead != NULL );
     assert( ldcsTail != NULL );
     assert( ldcsTail->next == NULL );
-    for ( ldc = ldcsHead; ldc->next != NULL; ldc = ldc->next );
+    for ( ldc = ldcsHead; ldc->next != NULL; ldc = ldc->next ) {}
     assert ( ldc == ldcsTail );
   }
 
