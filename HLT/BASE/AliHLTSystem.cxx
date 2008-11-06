@@ -434,7 +434,7 @@ int AliHLTSystem::InitTasks()
   TObjLink *lnk=fTaskList.FirstLink();
 
   if (lnk==NULL) {
-    HLTWarning("%s%sTask list is empty, skipping HLT", fName.Data(), fName.IsNull()?"":": ");
+    HLTInfo("%s%sTask list is empty, skipping HLT", fName.Data(), fName.IsNull()?"":": ");
     return -126 /*ENOKEY*/;
   }
   while (lnk && iResult>=0) {
@@ -606,7 +606,7 @@ int AliHLTSystem::StartTasks()
     fEventCount=0;
     fGoodEvents=0;
     if ((iResult=SendControlEvent(kAliHLTDataTypeSOR))<0) {
-      HLTError("%s%scan not send SOR event", fName.Data(), fName.IsNull()?"":": ");
+      HLTError("%s%scan not send SOR event: error %d", fName.Data(), fName.IsNull()?"":": ", iResult);
     }
   }
   return iResult;
