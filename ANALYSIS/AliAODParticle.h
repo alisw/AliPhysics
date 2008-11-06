@@ -136,7 +136,7 @@ protected:
   Int_t          GetPidSlot(Int_t pdg) const;//returns position of the given PID in fPids (and fPidProb) array.
 
 private:
-  Char_t         fPdgIdx;               // index of PDG code of the particle in fPids
+  Int_t          fPdgIdx;               // index of PDG code of the particle in fPids
   Int_t          fIdxInEvent;           // index of a particle: the same particle can appear in the event
                                         //  many times with different pid's. Idx allows to check that they are the same particles
   Int_t          fNPids;                // number of non-zero proboble Pids
