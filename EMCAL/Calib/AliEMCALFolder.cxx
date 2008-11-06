@@ -422,25 +422,25 @@ TList *l, Double_t deff, Double_t w0, Double_t phiSlope)
 }
 
 //_____________________________________________________________
-void  AliEMCALFolder::Save(const char *fn, const char *opt)
-{ 
-  //
-  // Jun 5, 2007; See TFileIter and StFMC.cxx
-  // Jul 16 - added fgkDirOfRootFiles
-  // Sep 7, 2007 - should be changed without TFileIter
-  /*
-  TString FN = fgkDirOfRootFiles;
-  FN += fn;
-  if(FN.Contains(".root")==0) FN += ".root";
-  TFileIter f(FN.Data(),opt,"EMCAL object");
-  UInt_t eventNum  = 0; // just one object
-  UInt_t runNumber = 0; // 0 now, - may statistics on selector
-  f.NextEventPut(this, eventNum, runNumber);
-  printf(" Save %s to file %s\n", GetName(), FN.Data());
-  */
-  //if(fn || opt);//For what is this?, commented due to compilation warnings
-
-}
+//void  AliEMCALFolder::Save(const char *fn, const char *opt)
+//{ 
+//  //
+//  // Jun 5, 2007; See TFileIter and StFMC.cxx
+//  // Jul 16 - added fgkDirOfRootFiles
+//  // Sep 7, 2007 - should be changed without TFileIter
+//  /*
+//  TString FN = fgkDirOfRootFiles;
+//  FN += fn;
+//  if(FN.Contains(".root")==0) FN += ".root";
+//  TFileIter f(FN.Data(),opt,"EMCAL object");
+//  UInt_t eventNum  = 0; // just one object
+//  UInt_t runNumber = 0; // 0 now, - may statistics on selector
+//  f.NextEventPut(this, eventNum, runNumber);
+//  printf(" Save %s to file %s\n", GetName(), FN.Data());
+//  */
+//  //if(fn || opt);//For what is this?, commented due to compilation warnings
+//
+//}
 
 //_____________________________________________________________
 AliEMCALFolder* AliEMCALFolder::ReadFolder(const char *fn, const char *opt)

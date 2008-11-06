@@ -82,7 +82,7 @@ class AliEMCALFolder : public TFolder {
   static AliEMCALRecPoint *GetRecPoint(AliESDCaloCluster *cl,AliEMCALCalibCoefs *tOld,AliEMCALCalibCoefs *tNew, 
   TList *l=0, Double_t deff=-1., Double_t w0=-1., Double_t phiSlope=0.0); 
   // MENU
-  void   Save(const char *fn = "EMCALFOLDER.root", const char *opt="RECREATE");  // *MENU*
+  //void   Save(const char *fn = "EMCALFOLDER.root", const char *opt="RECREATE");  // *MENU*
   static AliEMCALFolder*  ReadFolder(const char *fn = "EMCALFOLDER.root", const char *opt="READ");
   void   InitAfterRead();                // *MENU*
   void   DrawQA(const int nsm=0); // *MENU*

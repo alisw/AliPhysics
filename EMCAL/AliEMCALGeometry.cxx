@@ -270,7 +270,7 @@ void AliEMCALGeometry::Init(void){
   if(fGeoName.Contains("WSUC")) fGeoName = "EMCAL_WSUC";
 
   //check that we have a valid geometry name
-  if(!(fGeoName.Contains("EMCAL_PDC06") || fGeoName.Contains("EMCAL_COMPLETE") || fGeoName.Contains("EMCAL_WSUC"))) {
+  if(!(fGeoName.Contains("EMCAL_PDC06") || fGeoName.Contains("EMCAL_COMPLETE") || fGeoName.Contains("EMCAL_WSUC") || fGeoName.Contains("EMCAL_1stYear"))) {
     Fatal("Init", "%s is an undefined geometry!", fGeoName.Data()) ; 
   }
 
@@ -331,6 +331,24 @@ void AliEMCALGeometry::Init(void){
     CheckAdditionalOptions();
   }
 
+  if(fGeoName.Contains("1stYear")){	
+	fNumberOfSuperModules = 2;	
+	 
+	if(fGeoName.Contains("LowerEta")) {
+		fNPhiSuperModule = 1;		
+	}
+	else if(fGeoName.Contains("LowerPhi_SideA")){
+	fNPhiSuperModule = 2;	
+	fArm1EtaMax=0;		
+	}
+	else if(fGeoName.Contains("LowerPhi_SideC")){
+	fNPhiSuperModule = 2;		
+	fArm1EtaMin=0;	
+	}
+		
+      CheckAdditionalOptions();	
+  }	
+
   // constant for transition absid <--> indexes
   fNCellsInModule  = fNPHIdiv*fNETAdiv;
   fNCellsInSupMod = fNCellsInModule*fNPhi*fNZ;
@@ -338,7 +356,7 @@ void AliEMCALGeometry::Init(void){
   if(GetKey110DEG()) fNCells -= fNCellsInSupMod;
 
   fNPhiSuperModule = fNumberOfSuperModules/2;
-  if(fNPhiSuperModule<1) fNPhiSuperModule = 1;
+  if(fNPhiSuperModule < 1) fNPhiSuperModule = 1;
     
   fPhiTileSize = fPhiModuleSize/double(fNPHIdiv) - fLateralSteelStrip; // 13-may-05 
   fEtaTileSize = fEtaModuleSize/double(fNETAdiv) - fLateralSteelStrip; // 13-may-05 
@@ -1024,7 +1042,7 @@ void AliEMCALGeometry::CreateListOfTrd1Modules()
   AliDebug(2,Form(" Cells grid in phi directions : size %i\n", fCentersOfCellsPhiDir.GetSize()));
   Int_t ind=0; // this is phi index
   Int_t ieta=0, nModule=0, iphiTemp;
-  Double_t xr, zr, theta, phi, eta, r, x,y;
+  Double_t xr=0., zr=0., theta=0., phi=0., eta=0., r=0., x=0.,y=0.;
   TVector3 vglob;
   Double_t ytCenterModule=0.0, ytCenterCell=0.0;
 

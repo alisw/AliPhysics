@@ -34,8 +34,8 @@ class AliEMCALPi0Calibration :  public AliAnalysisTaskSE {
   public:
     AliEMCALPi0Calibration();
     AliEMCALPi0Calibration(const char* name);
-    AliEMCALPi0Calibration(const AliAnalysisTaskSE& obj);
-    AliEMCALPi0Calibration& operator=(const AliAnalysisTaskSE& other);
+    //AliEMCALPi0Calibration(const AliAnalysisTaskSE& obj);
+    //AliEMCALPi0Calibration& operator=(const AliAnalysisTaskSE& other);
 
     virtual ~AliEMCALPi0Calibration();
 

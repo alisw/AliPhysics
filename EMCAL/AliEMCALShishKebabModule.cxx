@@ -142,10 +142,10 @@ void AliEMCALShishKebabModule::DefineSecondModuleFirstAssumption()
 
 //_________________________________________________________________________
 Double_t AliEMCALShishKebabModule::Solve(Double_t (*fcn)(Double_t*,Double_t*), 
-Double_t xmin, Double_t xmax, Int_t npar, Double_t *par, Double_t eps, Int_t maxIter)
+Double_t xmin, Double_t xmax, Int_t /*npar*/, Double_t *par, Double_t eps, Int_t maxIter)
 {
   // Find out "zero" using TGraph method
-  if(npar); // unused now
+  //if(npar); // unused now
   TGraph gr;
   Double_t x,y;
   Int_t k = 0;
@@ -158,10 +158,10 @@ Double_t xmin, Double_t xmax, Int_t npar, Double_t *par, Double_t eps, Int_t max
 }
 
 //_________________________________________________________________________
-Double_t AliEMCALShishKebabModule::Y2(Double_t *x, Double_t *par)
+Double_t AliEMCALShishKebabModule::Y2(Double_t *x, Double_t */*par*/)
 { 
   // For position calulation of second module
-  //if(par);//For what is this?, commented due to compilation warnings
+  //if(par); //unused now
   Double_t theta = x[0];
   Double_t cos = TMath::Cos(theta);
   Double_t sin = TMath::Sin(theta);

@@ -166,30 +166,29 @@ AliEMCALPi0Calibration::AliEMCALPi0Calibration(const char* name) :
   for(int i=0; i<fgNanaOpt; i++) fgAnaOpt[i] = anaOpt[i];
 }
 
-AliEMCALPi0Calibration::AliEMCALPi0Calibration(const AliAnalysisTaskSE& obj) :
-  AliAnalysisTaskSE(),
-  fPmom(0),
-  fChain(0),
-  fLofHistsPC(0),
-  fLofHistsRP(0),
-  fLKineVsRP(0),
-  fLShowerProfile(0),
-  fCellsInfo(0),
-  fEmcalPool(0),
-  fRunOpts(0),
-  fArrOpts(0),
-  fKeyOpts(0)
-{ 
-  // Copy constructor - unused
-//  if(&obj); //FOR WHAT IS THIS, commented due to warnings
-}
-
-AliEMCALPi0Calibration& AliEMCALPi0Calibration::operator=(const AliAnalysisTaskSE& other)
-{ 
-  // Assignment
-//  if(&other); //FOR WHAT IS THIS, commented due to warnings
-  return *this;
-}
+//AliEMCALPi0Calibration::AliEMCALPi0Calibration(const AliAnalysisTaskSE& obj) :
+//  AliAnalysisTaskSE(),
+//  fPmom(0),
+//  fChain(0),
+//  fLofHistsPC(0),
+//  fLofHistsRP(0),
+//  fLKineVsRP(0),
+//  fLShowerProfile(0),
+//  fCellsInfo(0),
+//  fEmcalPool(0),
+//  fRunOpts(0),
+//  fArrOpts(0),
+//  fKeyOpts(0)
+//{ 
+//  // Copy constructor - unused
+//}
+//
+//AliEMCALPi0Calibration& AliEMCALPi0Calibration::operator=(const AliAnalysisTaskSE& other)
+//{ 
+//  // Assignment
+// 
+//  return *this;
+//}
 
 AliEMCALPi0Calibration::~AliEMCALPi0Calibration()
 {
@@ -1169,7 +1168,8 @@ TCanvas *AliEMCALPi0Calibration::Linearity(TList *l, int ifun)
     gr2->GetHistogram()->SetMinimum(-0.1);
     line = new TLine(0.0,0.0, 101.,0.0);
     line->Draw();
-    TLatex *lat = u::Lat("linearity better 0.2% after correction",20., 0.15, 12, 0.06, 1); 
+    //TLatex *lat = 
+	u::Lat("linearity better 0.2% after correction",20., 0.15, 12, 0.06, 1); 
     //if(lat); //For what is this?, commented due to compilation warnings
   }
   if(1) {
@@ -1190,8 +1190,9 @@ TCanvas *AliEMCALPi0Calibration::Linearity(TList *l, int ifun)
     gr3->GetHistogram()->SetMinimum(0.0);
     gr3->SetMarkerSize(1.5);
 
-    TLatex *lat = u::Lat(latexName.Data(),82., 11., 12, 0.06, 1);
-    if(lat); //For what is this?, commented due to compilation warnings
+    //TLatex *lat = 
+	u::Lat(latexName.Data(),82., 11., 12, 0.06, 1);
+    //if(lat); //For what is this?, commented due to compilation warnings
     // Exp. data
     TF1 *fexp = new TF1(*f);
     fexp->SetName("fexp");
@@ -1360,8 +1361,8 @@ TCanvas* AliEMCALPi0Calibration::DrawDeffVsEnergy()
 
   Int_t markerColor=1;
   c->cd(1);
-  TF1 *fdeff= new TF1("fdeff","[0]+[1]*log(x)",0.4, 100.4);
-  if(fdeff); //For what is this?, commented due to compilation warnings
+  //TF1 *fdeff= new TF1("fdeff","[0]+[1]*log(x)",0.4, 100.4);
+  //if(fdeff); //For what is this?, commented due to compilation warnings
   TGraphErrors *gr = u::DrawGraphErrors(np, p,deff, ep, edeff,
     markerColor,21+markerColor,"AP"," D_{eff} vs E_{#gamma} ","E_{#gamma}         "," D_{eff} in cm ",
 					-1, "", 0);
