@@ -331,9 +331,12 @@ void AliFlowAnalysisWithCumulants::Make(AliFlowEventSimple* anEvent)
  fQVectorComponents->Fill(3.,pow(fQVector.Y(),2.),1); //in the 4th bin fill (Q_y)^2
  
  //q-distribution
- Double_t qDist = fQVector.Mod()/sqrt(fQVector.GetMult());
- fQDist->Fill(qDist,1); 
-
+ if(fQVector.GetMult()!=0)
+ {
+  Double_t qDist = fQVector.Mod()/sqrt(fQVector.GetMult());
+  fQDist->Fill(qDist,1); 
+ }
+ 
  /*
  //two 3D profiles for differential flow
  //second loop over data: evaluating the generating function D[b][p][q] for differential flow 
