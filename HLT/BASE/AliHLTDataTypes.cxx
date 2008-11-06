@@ -149,7 +149,7 @@ const AliHLTComponentDataType kAliHLTDataTypeTNtuple = AliHLTComponentDataTypeIn
 
 /** Array of HLT Tracks (AliHLTTracksData) */
 const char kAliHLTTrackDataTypeIDstring[8] = kAliHLTTrackDataTypeID;
-const AliHLTComponentDataType kAliHLTTrack = AliHLTComponentDataTypeInitializer(kAliHLTTrackDataTypeIDstring, kAliHLTDataOriginAny);
+const AliHLTComponentDataType kAliHLTDataTypeTrack = AliHLTComponentDataTypeInitializer(kAliHLTTrackDataTypeIDstring, kAliHLTDataOriginAny);
 
 /** TClonesArray of AliExternalTrackParam */
 const char kAliHLTExternalTrackParamDataTypeIDstring[8] = kAliHLTExternalTrackParamDataTypeID;
