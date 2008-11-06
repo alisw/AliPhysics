@@ -100,8 +100,8 @@ Bool_t AliCFManager::CheckParticleCuts(Int_t isel, TObject *obj, const TString  
   // check whether object obj passes particle-level selection isel
   //
 
-  if(isel>=fPartContainer->GetNStep()){
-    AliWarning(Form("Selection index out of Range! isel=%i, max. number of selections= %i", isel,fPartContainer->GetNStep()));
+  if(isel>=fNStepPart){
+    AliWarning(Form("Selection index out of Range! isel=%i, max. number of selections= %i", isel,fNStepPart));
     return kTRUE;
   }
   if(!fPartCutList[isel])return kTRUE;
@@ -121,8 +121,8 @@ Bool_t AliCFManager::CheckEventCuts(Int_t isel, TObject *obj, const TString  &se
   // check whether object obj passes event-level selection isel
   //
 
-  if(isel>=fEvtContainer->GetNStep()){
-    AliWarning(Form("Selection index out of Range! isel=%i, max. number of selections= %i", isel,fEvtContainer->GetNStep()));
+  if(isel>=fNStepEvt){
+    AliWarning(Form("Selection index out of Range! isel=%i, max. number of selections= %i", isel,fNStepEvt));
       return kTRUE;
   }
   if(!fEvtCutList[isel])return kTRUE;
@@ -141,11 +141,11 @@ void  AliCFManager::SetEventInfo(TObject *obj) const {
 
   //Particle level cuts
 
-  if (!fPartContainer) {
-    AliWarning("No particle container");
+  if (!fPartCutList) {
+    AliWarning("No particle cut list found");
   }
   else {
-    for(Int_t isel=0;isel<fPartContainer->GetNStep(); isel++){
+    for(Int_t isel=0;isel<fNStepPart; isel++){
       if(!fPartCutList[isel])continue;  
       TObjArrayIter iter(fPartCutList[isel]);
       AliCFCutBase *cut = 0;
@@ -157,11 +157,11 @@ void  AliCFManager::SetEventInfo(TObject *obj) const {
   
   //Event level cuts 
   
-  if (!fEvtContainer) {
-    AliWarning("No event container found");
+  if (!fEvtCutList) {
+    AliWarning("No event cut list found");
   }
   else {
-    for(Int_t isel=0;isel<fEvtContainer->GetNStep(); isel++){
+    for(Int_t isel=0;isel<fNStepEvt; isel++){
       if(!fEvtCutList[isel])continue;  
       TObjArrayIter iter(fEvtCutList[isel]);
       AliCFCutBase *cut = 0;
@@ -194,8 +194,7 @@ void AliCFManager::SetEventCutsList(Int_t isel, TObjArray* array) {
   //
 
   if (!fEvtContainer) {
-    AliError("No event container defined, please set it first!"); 
-    return;
+    AliWarning("No event container defined, you may need to set it first!"); 
   }
 
   Int_t nstep = fNStepEvt;
@@ -215,8 +214,7 @@ void AliCFManager::SetParticleCutsList(Int_t isel, TObjArray* array) {
   //
 
   if (!fPartContainer) {
-    AliError("No event container defined, please set it first!"); 
-    return;
+    AliWarning("No particle container defined, you may need to set it first!"); 
   }
   
   Int_t nstep = fNStepPart ;

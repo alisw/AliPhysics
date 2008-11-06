@@ -66,17 +66,21 @@ class AliCFManager : public TNamed
   //pass the pointer to the correction container
   virtual void SetEventContainer(AliCFContainer* c) {
     fEvtContainer=c; 
-    fNStepEvt=c->GetNStep();
+    SetNStepEvent(c->GetNStep());
     AliWarning(Form("Please dont forget to set the cut list (event empty) for the %d event-selection step requested",fNStepEvt));
   }
   
   //pass the pointer to the correction container
   virtual void SetParticleContainer(AliCFContainer* c) {
     fPartContainer=c; 
-    fNStepPart=c->GetNStep();
+    SetNStepParticle(c->GetNStep());
     AliWarning(Form("Please dont forget to set the cut list (even empty) for the %d particle-selection step requested",fNStepPart));
   }
   
+  //Set the number of steps (already done if you have defined your containers)
+  virtual void SetNStepEvent   (Int_t nstep) {fNStepEvt  = nstep;}
+  virtual void SetNStepParticle(Int_t nstep) {fNStepPart = nstep;}
+
   //Setter for event-level selection cut list at selection step isel
   virtual void SetEventCutsList(Int_t isel, TObjArray* array) ;
   
