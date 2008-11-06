@@ -30,6 +30,7 @@
 #include <TDatabasePDG.h>
 #include <TPDGCode.h>
 #include <TParticlePDG.h>
+#include <TVector3.h>
 
 #include "AliLog.h"
 #include "AliESDv0.h"
@@ -195,11 +196,10 @@ AliESDv0::AliESDv0(const AliExternalTrackParam &t1, Int_t i1,
   for (Int_t i=0;i<4;i++){fCausality[i]=0;}
 }
 
-AliESDv0& AliESDv0::operator=(const AliESDv0 &v0){
-
-
+AliESDv0& AliESDv0::operator=(const AliESDv0 &v0)
+{
   //--------------------------------------------------------------------
-  // The assingment operator
+  // The assignment operator
   //--------------------------------------------------------------------
 
   if(this==&v0)return *this;
@@ -249,7 +249,7 @@ AliESDv0& AliESDv0::operator=(const AliESDv0 &v0){
 
 void AliESDv0::Copy(TObject& obj) const {
 
-   // this overwrites the virtual TOBject::Copy()
+  // this overwrites the virtual TOBject::Copy()
   // to allow run time copying without casting
   // in AliESDEvent
 
@@ -258,7 +258,6 @@ void AliESDv0::Copy(TObject& obj) const {
   if(!robj)return; // not an aliesesv0
   *robj = *this;
 }
-
 
 AliESDv0::~AliESDv0(){
   //--------------------------------------------------------------------
@@ -271,11 +270,72 @@ Double_t AliESDv0::E() const {
   //--------------------------------------------------------------------
   // This gives the energy assuming the ChangeMassHypothesis was called
   //--------------------------------------------------------------------
-  Double_t mass = TDatabasePDG::Instance()->GetParticle(fPdgCode)->Mass();
+  return E(fPdgCode);
+}
+
+Double_t AliESDv0::Y() const {
+  //--------------------------------------------------------------------
+  // This gives the energy assuming the ChangeMassHypothesis was called
+  //--------------------------------------------------------------------
+  return Y(fPdgCode);
+}
+
+// Then extend AliVParticle functions
+Double_t AliESDv0::E(Int_t pdg) const {
+  //--------------------------------------------------------------------
+  // This gives the energy with the particle hypothesis as argument 
+  //--------------------------------------------------------------------
+  Double_t mass = TDatabasePDG::Instance()->GetParticle(pdg)->Mass();
   return TMath::Sqrt(mass*mass+P()*P());
 }
 
-// Then the older functions
+Double_t AliESDv0::Y(Int_t pdg) const {
+  //--------------------------------------------------------------------
+  // This gives the rapidity with the particle hypothesis as argument 
+  //--------------------------------------------------------------------
+  return 0.5*TMath::Log((E(pdg)+Pz())/(E(pdg)-Pz()+1.e-13));
+}
+
+// Now the functions for analysis consistency
+Double_t AliESDv0::RapK0Short() const {
+  //--------------------------------------------------------------------
+  // This gives the pseudorapidity assuming a K0s particle
+  //--------------------------------------------------------------------
+  return Y(kK0Short);
+}
+
+Double_t AliESDv0::RapLambda() const {
+  //--------------------------------------------------------------------
+  // This gives the pseudorapidity assuming a (Anti) Lambda particle
+  //--------------------------------------------------------------------
+  return Y(kLambda0);
+}
+
+Double_t AliESDv0::AlphaV0() const {
+  //--------------------------------------------------------------------
+  // This gives the Armenteros-Podolanski alpha
+  //--------------------------------------------------------------------
+  TVector3 momNeg(fNmom[0],fNmom[1],fNmom[2]);
+  TVector3 momPos(fPmom[0],fPmom[1],fPmom[2]);
+  TVector3 momTot(Px(),Py(),Pz());
+
+  Double_t QlNeg = momNeg.Dot(momTot)/momTot.Mag();
+  Double_t QlPos = momNeg.Dot(momTot)/momTot.Mag();
+
+  return 1.-2./(1.+QlNeg/QlPos);
+}
+
+Double_t AliESDv0::PtArmV0() const {
+  //--------------------------------------------------------------------
+  // This gives the Armenteros-Podolanski ptarm
+  //--------------------------------------------------------------------
+  TVector3 momNeg(fNmom[0],fNmom[1],fNmom[2]);
+  TVector3 momTot(Px(),Py(),Pz());
+
+  return momNeg.Perp(momTot);
+}
+
+// Eventually the older functions
 Double_t AliESDv0::ChangeMassHypothesis(Int_t code) {
   //--------------------------------------------------------------------
   // This function changes the mass hypothesis for this V0

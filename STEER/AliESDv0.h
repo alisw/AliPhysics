@@ -50,12 +50,22 @@ public:
   virtual Double_t E() const; // default is KOs but can be changed via ChangeMassHypothesis (defined in the .cxx)
   virtual Double_t M() const { return GetEffMass(); }
   virtual Double_t Eta() const { return 0.5*TMath::Log((P()+Pz())/(P()-Pz()+1.e-13)); }
-  virtual Double_t Y() const { return 0.5*TMath::Log((E()+Pz())/(E()-Pz()+1.e-13)); }
+  virtual Double_t Y() const;
   virtual Short_t  Charge() const { return 0; }
   virtual Int_t    GetLabel() const { return -1; }  // temporary
   virtual const Double_t *PID() const { return 0; } // return PID object ? (to be discussed!)
 
-  // Then the older functions
+  // Then extend the AliVParticle functions
+  Double_t E(Int_t pdg) const;
+  Double_t Y(Int_t pdg) const;
+
+  // Now the functions for analysis consistency
+  Double_t RapK0Short() const;
+  Double_t RapLambda() const;
+  Double_t AlphaV0() const;
+  Double_t PtArmV0() const;
+
+  // Eventually the older functions
   Double_t ChangeMassHypothesis(Int_t code=kK0Short); 
 
   Int_t    GetPdgCode() const {return fPdgCode;}
@@ -66,7 +76,7 @@ public:
   void     GetNPxPyPz(Double_t &px, Double_t &py, Double_t &pz) const;
   void     GetPPxPyPz(Double_t &px, Double_t &py, Double_t &pz) const;
   void     GetXYZ(Double_t &x, Double_t &y, Double_t &z) const;
-  Float_t  GetD(Double_t x0=0.,Double_t y0=0.,Double_t z0=0.) const;
+  Float_t  GetD(Double_t x0,Double_t y0,Double_t z0) const;
   Int_t    GetNindex() const {return fNidx;}
   Int_t    GetPindex() const {return fPidx;}
   void     SetDcaV0Daughters(Double_t rDcaV0Daughters=0.);

@@ -21,10 +21,13 @@
 //              which contains the result of the reconstruction
 //              and is the main set of classes for analaysis
 //    Origin: Christian Kuhn, IReS, Strasbourg, christian.kuhn@ires.in2p3.fr
+//     Modified by: Antonin Maire,IPHC, Antonin.Maire@ires.in2p3.fr
+//            and  Boris Hippolyte,IPHC, hippolyt@in2p3.fr 
 //-------------------------------------------------------------------------
 
 #include <TDatabasePDG.h>
 #include <TMath.h>
+#include <TVector3.h>
 
 #include "AliLog.h"
 #include "AliExternalTrackParam.h"
@@ -62,7 +65,25 @@ AliESDcascade::AliESDcascade() :
   fBachMomCov[5]=1024;
 }
 
-AliESDcascade::~AliESDcascade() {
+AliESDcascade::AliESDcascade(const AliESDcascade& cas) :
+  AliESDv0(cas),
+  fEffMassXi(cas.fEffMassXi),
+  fChi2Xi(cas.fChi2Xi),
+  fDcaXiDaughters(cas.fDcaXiDaughters),
+  fPdgCodeXi(cas.fPdgCodeXi),
+  fBachIdx(cas.fBachIdx)
+{
+  //--------------------------------------------------------------------
+  // The copy constructor
+  //--------------------------------------------------------------------
+  for (int i=0; i<3; i++) {
+    fPosXi[i]     = cas.fPosXi[i];
+    fBachMom[i] = cas.fBachMom[i];
+  }
+  for (int i=0; i<6; i++) {
+    fPosCovXi[i]   = cas.fPosCovXi[i];
+    fBachMomCov[i] = cas.fBachMomCov[i];
+  }
 }
 
 AliESDcascade::AliESDcascade(const AliESDv0 &v,
@@ -74,9 +95,9 @@ AliESDcascade::AliESDcascade(const AliESDv0 &v,
   fPdgCodeXi(kXiMinus),
   fBachIdx(i)
 {
-  //---------------------------------------------------------------------------------------------
+  //--------------------------------------------------------------------
   // Main constructor  (Xi-)
-  //---------------------------------------------------------------------------------------------
+  //--------------------------------------------------------------------
 
   Double_t r[3]; t.GetXYZ(r);
   Double_t x1=r[0], y1=r[1], z1=r[2]; // position of the bachelor
@@ -129,30 +150,11 @@ AliESDcascade::AliESDcascade(const AliESDv0 &v,
 
 }
 
-AliESDcascade::AliESDcascade(const AliESDcascade& cas) :
-  AliESDv0(cas),
-  fEffMassXi(cas.fEffMassXi),
-  fChi2Xi(cas.fChi2Xi),
-  fDcaXiDaughters(cas.fDcaXiDaughters),
-  fPdgCodeXi(cas.fPdgCodeXi),
-  fBachIdx(cas.fBachIdx)
+AliESDcascade& AliESDcascade::operator=(const AliESDcascade& cas)
 {
-  //copy constructor
-  for (int i=0; i<3; i++) {
-    fPosXi[i]     = cas.fPosXi[i];
-    fBachMom[i] = cas.fBachMom[i];
-  }
-  for (int i=0; i<6; i++) {
-    fPosCovXi[i]   = cas.fPosCovXi[i];
-    fBachMomCov[i] = cas.fBachMomCov[i];
-  }
-}
-
-AliESDcascade& AliESDcascade::operator=(const AliESDcascade& cas){
-
-  // -------
-  // Assigmnet oeprator
-  // -----
+  //--------------------------------------------------------------------
+  // The assignment operator
+  //--------------------------------------------------------------------
 
   if(this==&cas) return *this;
   AliESDv0::operator=(cas);
@@ -183,7 +185,12 @@ void AliESDcascade::Copy(TObject &obj) const {
   AliESDcascade *robj = dynamic_cast<AliESDcascade*>(&obj);
   if(!robj)return; // not an AliESDcascade
   *robj = *this;
+}
 
+AliESDcascade::~AliESDcascade() {
+  //--------------------------------------------------------------------
+  // Empty destructor
+  //--------------------------------------------------------------------
 }
 
 // Start with AliVParticle functions
@@ -191,8 +198,69 @@ Double_t AliESDcascade::E() const {
   //--------------------------------------------------------------------
   // This gives the energy assuming the ChangeMassHypothesis was called
   //--------------------------------------------------------------------
-  Double_t mass = TDatabasePDG::Instance()->GetParticle(fPdgCodeXi)->Mass();
+  return E(fPdgCodeXi);
+}
+
+Double_t AliESDcascade::Y() const {
+  //--------------------------------------------------------------------
+  // This gives the energy assuming the ChangeMassHypothesis was called
+  //--------------------------------------------------------------------
+  return Y(fPdgCodeXi);
+}
+
+// Then extend AliVParticle functions
+Double_t AliESDcascade::E(Int_t pdg) const {
+  //--------------------------------------------------------------------
+  // This gives the energy with the particle hypothesis as argument 
+  //--------------------------------------------------------------------
+  Double_t mass = TDatabasePDG::Instance()->GetParticle(pdg)->Mass();
   return TMath::Sqrt(mass*mass+P()*P());
+}
+
+Double_t AliESDcascade::Y(Int_t pdg) const {
+  //--------------------------------------------------------------------
+  // This gives the rapidity with the particle hypothesis as argument 
+  //--------------------------------------------------------------------
+  return 0.5*TMath::Log((E(pdg)+Pz())/(E(pdg)-Pz()+1.e-13));
+}
+
+// Now the functions for analysis consistency
+Double_t AliESDcascade::RapXi() const {
+  //--------------------------------------------------------------------
+  // This gives the pseudorapidity assuming a (Anti) Xi particle
+  //--------------------------------------------------------------------
+  return Y(kXiMinus);
+}
+
+Double_t AliESDcascade::RapOmega() const {
+  //--------------------------------------------------------------------
+  // This gives the pseudorapidity assuming a (Anti) Omega particle
+  //--------------------------------------------------------------------
+  return Y(kOmegaMinus);
+}
+
+Double_t AliESDcascade::AlphaXi() const {
+  //--------------------------------------------------------------------
+  // This gives the Armenteros-Podolanski alpha
+  //--------------------------------------------------------------------
+  TVector3 momBach(fBachMom[0],fBachMom[1],fBachMom[2]);
+  TVector3 momV0(fNmom[0]+fPmom[0],fNmom[1]+fPmom[1],fNmom[2]+fPmom[2]);
+  TVector3 momTot(Px(),Py(),Pz());
+
+  Double_t QlBach = momBach.Dot(momTot)/momTot.Mag();
+  Double_t QlV0 = momV0.Dot(momTot)/momTot.Mag();
+
+  return 1.-2./(1.+QlBach/QlV0);
+}
+
+Double_t AliESDcascade::PtArmXi() const {
+  //--------------------------------------------------------------------
+  // This gives the Armenteros-Podolanski ptarm
+  //--------------------------------------------------------------------
+  TVector3 momBach(fBachMom[0],fBachMom[1],fBachMom[2]);
+  TVector3 momTot(Px(),Py(),Pz());
+
+  return momBach.Perp(momTot);
 }
 
 // Then the older functions

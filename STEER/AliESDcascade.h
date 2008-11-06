@@ -10,6 +10,8 @@
 //                        ESD Cascade Vertex Class
 //               Implementation of the cascade vertex class
 //    Origin: Christian Kuhn, IReS, Strasbourg, christian.kuhn@ires.in2p3.fr
+//     Modified by: Antonin Maire,IPHC, Antonin.Maire@ires.in2p3.fr
+//            and  Boris Hippolyte,IPHC, hippolyt@in2p3.fr 
 //-------------------------------------------------------------------------
 
 #include <TObject.h>
@@ -54,12 +56,22 @@ public:
   virtual Double_t E() const; // default is Xis but can be changed via ChangeMassHypothesis (defined in the .cxx)
   virtual Double_t M() const { return GetEffMassXi(); }
   virtual Double_t Eta() const { return 0.5*TMath::Log((P()+Pz())/(P()-Pz()+1.e-13)); }
-  virtual Double_t Y() const { return 0.5*TMath::Log((E()+Pz())/(E()-Pz()+1.e-13)); }
+  virtual Double_t Y() const;
   virtual Short_t  Charge() const { return 0; }
   virtual Int_t    GetLabel() const { return -1; }  // temporary
   virtual const Double_t *PID() const { return 0; } // return PID object ? (to be discussed!)
 
-  // Then the older functions
+  // Then extend the AliVParticle functions
+  Double_t E(Int_t pdg) const;
+  Double_t Y(Int_t pdg) const;
+
+  // Now the functions for analysis consistency
+  Double_t RapXi() const;
+  Double_t RapOmega() const;
+  Double_t AlphaXi() const;
+  Double_t PtArmXi() const;
+
+  // Eventually the older functions
   Double_t ChangeMassHypothesis(Double_t &v0q, Int_t code=kXiMinus); 
 
   Int_t    GetPdgCodeXi() const {return fPdgCodeXi;}
