@@ -190,13 +190,13 @@ Bool_t   AliRawReaderHLT::ReadHeader()
   // see header file for class documentation
   Bool_t result=kFALSE;
   Bool_t firstParentCycle=fbHaveHLTData;
-  while (fbHaveHLTData=(fbHaveHLTData && ReadNextHLTData())) {
+  while ((fbHaveHLTData=(fbHaveHLTData && ReadNextHLTData()))) {
     // all internal data variables set
     assert(fpData!=NULL);
     fHeader=reinterpret_cast<AliRawDataHeader*>(const_cast<AliHLTUInt8_t*>(fpData));
     fOffset=sizeof(AliRawDataHeader);
     fPosition=fOffset;
-    if (result=IsSelected()) break;
+    if ((result=IsSelected())) break;
   }
   firstParentCycle&=!fbHaveHLTData; // true if it just changed from true to false
   while (!result) {
@@ -218,7 +218,7 @@ Bool_t   AliRawReaderHLT::ReadHeader()
 
     // filter out all equipment ids which should be taken from the HLT stream
     int id=fpParentReader->GetEquipmentId();
-    if (result=!IsHLTInput(id)) break;
+    if ((result=!IsHLTInput(id))) break;
   }
   return result;
 }
@@ -461,12 +461,12 @@ Bool_t   AliRawReaderHLT::ReadNextHLTData()
   if (fbReadFirst || !fpHLTOUT) {
     if (!fpHLTOUT) {
     fpHLTOUT=new AliHLTOUTRawReader(fpParentReader);
-    if (result=(fpHLTOUT!=NULL)) {
+    if ((result=(fpHLTOUT!=NULL))) {
       AliHLTSystem* pSystem=GetInstance();
       if (pSystem) {
 	pSystem->ScanOptions(fSystemOptions.Data());
       }
-      if (result=(fpHLTOUT->Init()>=0)) {
+      if ((result=(fpHLTOUT->Init())>=0)) {
       }
     }
     }
@@ -556,7 +556,7 @@ Bool_t AliRawReaderHLT::EvaluateSelection()
 {
   // see header file for class documentation
   Bool_t bHaveHLTData=kFALSE;
-  if (bHaveHLTData=(fDetectors.size()>0)) {
+  if ((bHaveHLTData=(fDetectors.size())>0)) {
     vector<int>::iterator detector=fDetectors.begin();
     for (; detector!=fDetectors.end(); detector++) {
       int ddlOffset=AliDAQ::DdlIDOffset(*detector);

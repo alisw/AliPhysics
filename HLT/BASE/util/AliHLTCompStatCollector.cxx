@@ -192,7 +192,7 @@ int AliHLTCompStatCollector::DoEvent( const AliHLTComponentEventData& /*evtData*
 
   bool bEmbeddedTree=false;
   bool bFolderCreated=false;
-  if (bFolderCreated=(fpFolder==NULL)) {
+  if ((bFolderCreated=(fpFolder==NULL))) {
     fpFolder=new TFolder(HLTSTAT_FOLDER_NAME, HLTSTAT_FOLDER_DESC);
     if (bEmbeddedTree) fpFolder->Add(fpStatTree);
   }

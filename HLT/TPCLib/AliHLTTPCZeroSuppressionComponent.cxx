@@ -442,10 +442,10 @@ int AliHLTTPCZeroSuppressionComponent::DoEvent( const AliHLTComponentEventData& 
 	if(row==1000 || pad==1000){
 	  continue;
 	}
-	if(!fSkipSendingZSData && row>=fNumberOfRows||row<0){
+	if(!fSkipSendingZSData && (row>=fNumberOfRows||row<0)){
 	  continue;
 	}
-	else if(!fSkipSendingZSData && pad>=fNumberOfPadsInRow[row]||pad<0){
+	else if(!fSkipSendingZSData && (pad>=fNumberOfPadsInRow[row]||pad<0)){
 	  continue;
 	}  
 	

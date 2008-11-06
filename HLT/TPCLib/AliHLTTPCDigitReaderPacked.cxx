@@ -256,7 +256,7 @@ Bool_t AliHLTTPCDigitReaderPacked::NextSignal()
       if (fData[ fCurrentRow*fNMaxPads*fNTimeBins + fCurrentPad*fNTimeBins + fCurrentBin  ] != -1) break;
     }
   } else{
-    if (readvalue = fTPCRawStream->Next()) {
+    if ((readvalue = fTPCRawStream->Next())) {
       fCurrentBin=fTPCRawStream->GetTime();
     }
   }

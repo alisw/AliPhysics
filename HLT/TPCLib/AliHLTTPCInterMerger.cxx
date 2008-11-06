@@ -111,7 +111,7 @@ void AliHLTTPCInterMerger::SlowMerge(){
 }
 
 void AliHLTTPCInterMerger::MMerge(){
-  while(Merge());
+  while(Merge()) {/*empty body*/};
   GetOutTracks()->AddTracks(GetInTracks(0));
 }
 

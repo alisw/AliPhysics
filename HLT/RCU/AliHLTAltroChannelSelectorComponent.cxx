@@ -120,25 +120,25 @@ int AliHLTAltroChannelSelectorComponent::DoInit(int argc, const char** argv)
 
     // -start-timebin
     } else if (argument.CompareTo("-start-timebin")==0) {
-      if (bMissingParam=(++i>=argc)) break;
+      if ((bMissingParam=(++i>=argc))) break;
       fStartTimeBin = strtoul( argv[i], &cpErr ,0);
       if ( *cpErr ) break;
 
     // -end-timebin
     } else if (argument.CompareTo("-end-timebin")==0) {
-      if (bMissingParam=(++i>=argc)) break;
+      if ((bMissingParam=(++i>=argc))) break;
       fEndTimeBin = strtoul( argv[i], &cpErr ,0);
       if ( *cpErr ) break;
 
     // -signal-threshold
     } else if (argument.CompareTo("-signal-threshold")==0) {
-      if (bMissingParam=(++i>=argc)) break;
+      if ((bMissingParam=(++i>=argc))) break;
       fSignalThreshold = strtoul( argv[i], &cpErr ,0);
       if ( *cpErr ) break;
 
     // -rms-threshold
     } else if (argument.CompareTo("-rms-threshold")==0) {
-      if (bMissingParam=(++i>=argc)) break;
+      if ((bMissingParam=(++i>=argc))) break;
       fRMSThreshold = strtoul( argv[i], &cpErr ,0);
       if ( *cpErr ) break;
 
