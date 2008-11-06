@@ -44,6 +44,8 @@
 #pragma	link C++ class AliAnalysisTaskJetsCDF+;
 #pragma	link C++ class AliCdfJetFinder+;
 #pragma	link C++ class AliCdfJetHeader+;
+#pragma	link C++ class AliEventShape+;
+
 #ifdef WITHFASTJET
 #pragma	link C++ class AliFastJetFinder+;
 #pragma	link C++ class AliFastJetHeader+;
