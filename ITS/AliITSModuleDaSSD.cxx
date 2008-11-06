@@ -408,14 +408,14 @@ Bool_t AliITSModuleDaSSD::SetEventsNumber(const Long_t eventsnumber)
   Int_t i;
   if (!fStrips) return kFALSE;
   for (i = 0; i < fNumberOfStrips; i++) {
-    if (fStrips[i])  
+    if (fStrips[i]) { 
       if (!fStrips[i]->SetEvenetsNumber(eventsnumber)) {
         for (Int_t j = 0; j < i; j++) fStrips[j]->DeleteSignal();
-        AliError(Form("AliITSModuleDaSSD: Error allocating memory for i% events for module %i, strip %i", 
-	                            eventsnumber, (Int_t)fModuleId, i));
+        AliError(Form("AliITSModuleDaSSD: Error allocating memory for i% events for module %i, strip %i",eventsnumber, (Int_t)fModuleId, i));
         return kFALSE;
       }
-    else 
+    }
+    else { 
       if (!(fStrips[i] = new AliITSChannelDaSSD(i, eventsnumber))) {
         for (Int_t j = 0; j < i; j++) delete fStrips[j];
         delete [] fStrips;
@@ -424,6 +424,7 @@ Bool_t AliITSModuleDaSSD::SetEventsNumber(const Long_t eventsnumber)
         AliError(Form("AliITSModuleDaSSD: Error allocating memory for strip %i of module %i!", (Int_t)fModuleId, i));
         return kFALSE;
       }
+    }
   } 
   if (fCmFerom) {
     for (Int_t ie = 0; ie < fgkChipsPerModule; ie++) {

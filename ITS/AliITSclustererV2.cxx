@@ -279,9 +279,15 @@ static void CheckLabels(Int_t lab[3]) {
 	label=m;
 	part=(TParticle*)gAlice->GetMCApp()->Particle(label);
       }
-      if      (lab[1]<0) lab[1]=label;
-      else if (lab[2]<0) lab[2]=label;
-      else ;//cerr<<"CheckLabels : No empty labels !\n";
+      if(lab[1]<0){
+	lab[1]=label;
+      }
+      else if (lab[2]<0) {
+	lab[2]=label;
+      }
+      else {
+	//	cerr<<"CheckLabels : No empty labels !\n";
+      }
     }
   }
 }

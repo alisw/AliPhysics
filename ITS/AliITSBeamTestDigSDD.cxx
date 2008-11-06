@@ -77,9 +77,10 @@ void AliITSBeamTestDigSDD::Exec(Option_t* /*opt*/)
     for(Int_t nlad=1;nlad<=fITSgeom->GetNladders(nlay);nlad++){
       for(Int_t ndet=1;ndet<=fITSgeom->GetNdetectors(nlay);ndet++){
 	Int_t index=fITSgeom->GetModuleIndex(nlay,nlad,ndet);
-	if(fITSgeom->GetModuleTypeName(index)=="kSPD") nspd++;
-	if(fITSgeom->GetModuleTypeName(index)=="kSDD") nsdd++;
-	if(fITSgeom->GetModuleTypeName(index)=="kSSD") nssd++;
+	TString dtype(fITSgeom->GetModuleTypeName(index));
+	if(dtype.Contains("SPD")) nspd++;
+	if(dtype.Contains("SDD")) nsdd++;
+	if(dtype.Contains("SSD")) nssd++;
       }
     }
   }

@@ -202,7 +202,7 @@ Int_t AliITSClusterFinderV2SPD::ClustersSPD(AliBin* bins, TClonesArray* digits,T
 	    if(TMath::Abs(iz-iiz)>0.75*idz) continue;
 	  }
 	  ndigits++;
-	  Float_t qBin;
+	  Float_t qBin=0.;
 	  if(rawdata) qBin = bins[idxBins[idx]].GetQ();
 	  if(!rawdata){
 	    AliITSdigitSPD* dig = (AliITSdigitSPD*)digits->UncheckedAt(idxBins[idx]);

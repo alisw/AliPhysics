@@ -28,7 +28,7 @@ class AliITStrackSA : public AliITStrackMI {
   Int_t GetClusterMark(Int_t layer,Int_t i) const {return fCluMark[layer][i];}
   Int_t GetNumberOfClustersSA() const {return fNSA;}
   Int_t GetNumberOfMarked(Int_t lay) const {return fNM[lay];}
-  static const Int_t GetMaxNumberOfClusters() {return kMaxNumberOfClusters;}
+  static Int_t GetMaxNumberOfClusters() {return kMaxNumberOfClusters;}
   Int_t GetMaxNMarkedPerLayer() const {return kMaxNumberOfClustersL;}
   void  AddClusterSA(Int_t layer, Int_t clnumb);
   void  AddClusterV2(Int_t layer,Int_t clnumb);

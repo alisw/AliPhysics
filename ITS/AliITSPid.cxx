@@ -243,9 +243,14 @@ Int_t	AliITSPid::GetPcode(Float_t q,Float_t pm)
 	    else{return Proton();}
 	    } 
 	}
-    if ( pm<=0.750 )
-	if ( q>fCutPr->Eval(pm)  )
-	    {return Proton();} else {return Wpik(pm,q);};
+    if ( pm<=0.750 ){
+	if ( q>fCutPr->Eval(pm)  ){
+	  return Proton();
+	}
+	else {
+	  return Wpik(pm,q);
+	}
+    }
     if( pm<=1.10 ){ return Wpikp(pm,q); }
     return fPcode;    
 }

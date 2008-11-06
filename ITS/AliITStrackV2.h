@@ -145,11 +145,22 @@ inline void  AliITStrackV2::SetModuleIndexInfo(Int_t ilayer,Int_t idet,Int_t sta
   Int_t xInt = Int_t(xloc*10.);
   Int_t zInt = Int_t(zloc*10.);
 
-  if(TMath::Abs(xloc*10.-(Float_t)xInt)>0.5)
-    if(zloc>0) { xInt++; } else { xInt--; }
-  if(TMath::Abs(zloc*10.-(Float_t)zInt)>0.5)
-    if(zloc>0) { zInt++; } else { zInt--; }
-
+  if(TMath::Abs(xloc*10.-(Float_t)xInt)>0.5){
+    if(zloc>0) { 
+      xInt++; 
+    } 
+    else { 
+      xInt--; 
+    }
+  }
+  if(TMath::Abs(zloc*10.-(Float_t)zInt)>0.5){
+    if(zloc>0) { 
+      zInt++; 
+    } 
+    else { 
+      zInt--; 
+    }
+  }
   Int_t signs=0;
   if(xInt>=0 && zInt>=0) signs=10000;
   if(xInt>=0 && zInt<0)  signs=20000;

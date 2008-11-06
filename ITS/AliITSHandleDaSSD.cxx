@@ -842,7 +842,7 @@ Bool_t AliITSHandleDaSSD::CalculateCM(AliITSModuleDaSSD *const module)
       }
       if ((n = AliITSModuleDaSSD::GetStripsPerChip() - ovstr)) cmsum /= (Float_t)(n);
       else cmsum = 0.0L;
-      if (!module->SetCM(cmsum, chipind, ev));
+      if (!(module->SetCM(cmsum, chipind, ev)));
     } 
   }
   return kTRUE; 
@@ -1221,8 +1221,8 @@ Bool_t AliITSHandleDaSSD::SaveEqSlotCalibrationData(const Int_t ddl, const Int_t
 	AliError(Form("Can not open the file %s for output!", fname)); 
     return kFALSE;
   }
-  for (zsml = 0; fgkZsBitMask >> zsml; zsml++);
-  for (offsetml = 0; fgkOffSetBitMask >> offsetml; offsetml++);
+  for (zsml = 0; fgkZsBitMask >> zsml; zsml++) ;
+  for (offsetml = 0; fgkOffSetBitMask >> offsetml; offsetml++) ;
   for (Int_t strind = 0; strind < AliITSModuleDaSSD::GetStripsPerModuleConst(); strind++) {
     for (Int_t adcb = 0; adcb < fgkAdcPerDBlock; adcb++) {
       zsoffset = 0x0;

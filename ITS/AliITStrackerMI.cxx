@@ -4399,7 +4399,7 @@ void AliITStrackerMI::FindV02(AliESDEvent *event)
 	if (fnorm0<0) fnorm0*=-3;
 	Float_t fnorm1 = normdist[itrack1];
 	if (fnorm1<0) fnorm1*=-3;
- 	if (pvertex->GetAnglep()[2]>0.1 ||  (pvertex->GetRr()<10.5)&& pvertex->GetAnglep()[2]>0.05 || pvertex->GetRr()<3){
+ 	if ((pvertex->GetAnglep()[2]>0.1) || ( (pvertex->GetRr()<10.5)&& pvertex->GetAnglep()[2]>0.05 ) || (pvertex->GetRr()<3)){
  	  pb0    =  TMath::Exp(-TMath::Min(fnorm0,Float_t(16.))/12.);
  	  pb1    =  TMath::Exp(-TMath::Min(fnorm1,Float_t(16.))/12.);
  	}

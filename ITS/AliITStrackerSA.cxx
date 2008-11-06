@@ -332,7 +332,7 @@ Int_t AliITStrackerSA::FindTracks(AliESDEvent* event){
   if(AliITSReconstructor::GetRecoParam()->GetSAUseAllClusters()==kFALSE) {
     while (nentr--) {
       AliESDtrack *track=event->GetTrack(nentr);
-      if (track->GetStatus()&AliESDtrack::kITSin==AliESDtrack::kITSin){
+      if ((track->GetStatus()&AliESDtrack::kITSin) == AliESDtrack::kITSin){
 	Int_t idx[12];
 	Int_t ncl = track->GetITSclusters(idx);
 	for(Int_t k=0;k<ncl;k++){

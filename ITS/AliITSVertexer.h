@@ -26,7 +26,7 @@ class AliITSVertexer : public AliVertexer {
     void FindMultiplicity(TTree *itsClusterTree);
     void SetFirstEvent(Int_t ev){fFirstEvent = ev;}
     void SetLastEvent(Int_t ev){fLastEvent = ev;}
-    const Float_t GetPipeRadius()const {return fgkPipeRadius;}
+    static Float_t GetPipeRadius() {return fgkPipeRadius;}
     void SetLaddersOnLayer2(Int_t ladwid=4);
     virtual void SetUseModule(Int_t imod, Bool_t optUse){
       if(imod>=0 && imod<kNSPDMod) fUseModule[imod]=optUse;

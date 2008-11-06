@@ -1018,7 +1018,7 @@ Bool_t AliITSPlaneEffSDD::WriteHistosToFile(TString filename, Option_t* option) 
   // Saves the histograms into a tree and saves the trees into a file
   //
   if (!fHis) return kFALSE;
-  if (filename.Data()=="") {
+  if (filename.IsNull() || filename.IsWhitespace()) {
      AliWarning("WriteHistosToFile: null output filename!");
      return kFALSE;
   }
@@ -1105,7 +1105,7 @@ Bool_t AliITSPlaneEffSDD::ReadHistosFromFile(TString filename) {
   // Read histograms from an already existing file 
   //
   if (!fHis) return kFALSE;
-  if (filename.Data()=="") {
+  if (filename.IsNull() || filename.IsWhitespace()) {
      AliWarning("ReadHistosFromFile: incorrect output filename!");
      return kFALSE;
   }
