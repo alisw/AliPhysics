@@ -30,10 +30,10 @@ class AliGRPRecoParam : public AliDetectorRecoParam
 
   void  SetVertexerTracksConstraintITS(Bool_t constr=kTRUE) { fVertexerTracksConstraintITS=constr; return; }
   void  SetVertexerTracksConstraintTPC(Bool_t constr=kTRUE) { fVertexerTracksConstraintTPC=constr; return; }
-  void  SetVertexerTracksCuts(Int_t mode,Int_t ncuts,Double_t cuts[10]);
-  void  SetVertexerTracksCutsITS(Int_t ncuts,Double_t cuts[10])
+  void  SetVertexerTracksCuts(Int_t mode,Int_t ncuts,Double_t cuts[12]);
+  void  SetVertexerTracksCutsITS(Int_t ncuts,Double_t cuts[12])
     { SetVertexerTracksCuts(0,ncuts,cuts); return; }
-  void  SetVertexerTracksCutsTPC(Int_t ncuts,Double_t cuts[10])
+  void  SetVertexerTracksCutsTPC(Int_t ncuts,Double_t cuts[12])
     { SetVertexerTracksCuts(1,ncuts,cuts); return; }
   Bool_t GetVertexerTracksConstraintITS() const { return fVertexerTracksConstraintITS; }
   Bool_t GetVertexerTracksConstraintTPC() const { return fVertexerTracksConstraintTPC; }
@@ -65,6 +65,8 @@ class AliGRPRecoParam : public AliDetectorRecoParam
   Double_t fVertexerTracksITSmaxtgl; // max tgl 
   Double_t fVertexerTracksITSfidR; // fiducial radius
   Double_t fVertexerTracksITSfidZ; // fiducial z
+  Double_t fVertexerTracksITSalgo; // finder algo
+  Double_t fVertexerTracksITSalgoIter0; // finder algo iteration 0
 
   // cuts for AliVertexerTracks: TPC-only mode
   Double_t fVertexerTracksTPCdcacut; // general dca
@@ -77,8 +79,10 @@ class AliGRPRecoParam : public AliDetectorRecoParam
   Double_t fVertexerTracksTPCmaxtgl; // max tgl 
   Double_t fVertexerTracksTPCfidR; // fiducial radius
   Double_t fVertexerTracksTPCfidZ; // fiducial z
+  Double_t fVertexerTracksTPCalgo; // finder algo
+  Double_t fVertexerTracksTPCalgoIter0; // finder algo iteration 0
 
-  ClassDef(AliGRPRecoParam,3) // global reco parameters
+  ClassDef(AliGRPRecoParam,4) // global reco parameters
 };
 
 #endif

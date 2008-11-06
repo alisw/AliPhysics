@@ -58,7 +58,9 @@ class AliVertexerTracks : public TObject {
 		   Double_t mindetfitter=100.,
 		   Double_t maxtgl=1000.,
 		   Double_t fidR=3.,
-		   Double_t fidZ=30.); 
+		   Double_t fidZ=30.,
+		   Int_t finderAlgo=1,
+		   Int_t finderAlgoIter0=4); 
   void  SetTPCMode(Double_t dcacut=0.1,
 		   Double_t dcacutIter0=1.0,
 		   Double_t maxd0z0=5.0,
@@ -68,7 +70,9 @@ class AliVertexerTracks : public TObject {
 		   Double_t mindetfitter=0.1,
 		   Double_t maxtgl=1.5, 
 		   Double_t fidR=3.,
-		   Double_t fidZ=30.);
+		   Double_t fidZ=30.,
+		   Int_t finderAlgo=1,
+		   Int_t finderAlgoIter0=4); 
   void  SetCuts(Double_t *cuts);
   void  SetConstraintOff() { fConstraint=kFALSE; return; }
   void  SetConstraintOn() { fConstraint=kTRUE; return; }
@@ -152,6 +156,7 @@ class AliVertexerTracks : public TObject {
   Double_t  fFiducialZ;       // length of fiducial cylinder for tracks
   Double_t  fnSigmaForUi00;   // n. sigmas from finder in TrackToPoint
   Int_t     fAlgo;            // option for vertex finding algorythm
+  Int_t     fAlgoIter0;       // this is for iteration 0
   // fAlgo=1 (default) finds minimum-distance point among all selected tracks
   //         approximated as straight lines 
   //         and uses errors on track parameters as weights

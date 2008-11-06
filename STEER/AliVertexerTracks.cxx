@@ -69,7 +69,8 @@ fITSrefit(kTRUE),
 fFiducialR(3.),
 fFiducialZ(30.),
 fnSigmaForUi00(1.5),
-fAlgo(1)
+fAlgo(1),
+fAlgoIter0(4)
 {
 //
 // Default constructor
@@ -102,7 +103,8 @@ fITSrefit(kTRUE),
 fFiducialR(3.),
 fFiducialZ(30.),
 fnSigmaForUi00(1.5),
-fAlgo(1)
+fAlgo(1),
+fAlgoIter0(4)
 {
 //
 // Standard constructor
@@ -248,7 +250,15 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertex(TObjArray *trkArrayOrig,
     if(fIdSel) { delete [] fIdSel; fIdSel=NULL; }
     Double_t cutsave = fDCAcut;  
     fDCAcut = fDCAcutIter0;
-    VertexFinder(1); // using weights, cutting dca < fDCAcutIter0
+    // vertex finder
+    switch (fAlgoIter0) {
+    case 1: StrLinVertexFinderMinDist(1); break;
+    case 2: StrLinVertexFinderMinDist(0); break;
+    case 3: HelixVertexFinder();          break;
+    case 4: VertexFinder(1);              break;
+    case 5: VertexFinder(0);              break;
+    default: printf("Wrong algorithm\n"); break;  
+    }
     fDCAcut = cutsave;
     if(fVert.GetNContributors()>0) {
       fVert.GetXYZ(fNominalPos);
@@ -824,6 +834,8 @@ void AliVertexerTracks::SetCuts(Double_t *cuts)
   SetMinDetFitter(cuts[6]);
   SetMaxTgl(cuts[7]);
   SetFiducialRZ(cuts[8],cuts[9]);
+  fAlgo=(Int_t)(cuts[10]);
+  fAlgoIter0=(Int_t)(cuts[11]);
 
   return;
 }
@@ -837,7 +849,9 @@ void AliVertexerTracks::SetITSMode(Double_t dcacut,
 				   Double_t mindetfitter,
 				   Double_t maxtgl,
 				   Double_t fidR,
-				   Double_t fidZ) 
+				   Double_t fidZ,
+				   Int_t finderAlgo,
+				   Int_t finderAlgoIter0)
 {
 //
 //  Cut values for ITS mode
@@ -857,6 +871,8 @@ void AliVertexerTracks::SetITSMode(Double_t dcacut,
   SetMinDetFitter(mindetfitter);
   SetMaxTgl(maxtgl);
   SetFiducialRZ(fidR,fidZ);
+  fAlgo=finderAlgo;
+  fAlgoIter0=finderAlgoIter0;
 
   return; 
 }
@@ -870,7 +886,9 @@ void AliVertexerTracks::SetTPCMode(Double_t dcacut,
 				   Double_t mindetfitter,
 				   Double_t maxtgl,
 				   Double_t fidR,
-				   Double_t fidZ) 
+				   Double_t fidZ,
+				   Int_t finderAlgo,
+				   Int_t finderAlgoIter0) 
 {
 //
 //  Cut values for TPC mode
@@ -886,6 +904,8 @@ void AliVertexerTracks::SetTPCMode(Double_t dcacut,
   SetMinDetFitter(mindetfitter);
   SetMaxTgl(maxtgl);
   SetFiducialRZ(fidR,fidZ);
+  fAlgo=finderAlgo;
+  fAlgoIter0=finderAlgoIter0;
 
   return; 
 }
@@ -929,7 +949,8 @@ void AliVertexerTracks::StrLinVertexFinderMinDist(Int_t optUseWeights)
     sigmasq[2]=track1->GetSigmaZ2();
     TMatrixD ri(3,1);
     TMatrixD wWi(3,3);
-    if(!TrackToPoint(track1,ri,wWi)) optUseWeights=kFALSE;
+    //if(!TrackToPoint(track1,ri,wWi)) {printf("WARNING\n");continue;}
+    if(!TrackToPoint(track1,ri,wWi)) {optUseWeights=kFALSE;printf("WARNING\n");}
     Double_t wmat[9];
     Int_t iel=0;
     for(Int_t ia=0;ia<3;ia++){
@@ -938,7 +959,7 @@ void AliVertexerTracks::StrLinVertexFinderMinDist(Int_t optUseWeights)
 	iel++;
       }    
     }
-    new(linarray[i]) AliStrLine(pos,sigmasq,wmat,dir);     
+    new(linarray[i]) AliStrLine(pos,sigmasq,wmat,dir);
   }
   fVert=TrackletVertexFinder(&linarray,optUseWeights);
   linarray.Clear("C");
@@ -947,7 +968,6 @@ void AliVertexerTracks::StrLinVertexFinderMinDist(Int_t optUseWeights)
 AliESDVertex AliVertexerTracks::TrackletVertexFinder(TClonesArray *lines, Int_t optUseWeights)
 {
   // Calculate the point at minimum distance to prepared tracks 
-  
   const Int_t knacc = (Int_t)lines->GetEntriesFast();
   Double_t initPos[3]={0.,0.,0.};
 
@@ -968,6 +988,7 @@ AliESDVertex AliVertexerTracks::TrackletVertexFinder(TClonesArray *lines, Int_t 
     AliStrLine* line1 = (AliStrLine*)lines->At(i); 
     Double_t p0[3],cd[3],sigmasq[3];
     Double_t wmat[9];
+    if(!line1) printf("ERROR %d %d\n",i,knacc);
     line1->GetP0(p0);
     line1->GetCd(cd);
     line1->GetSigma2P0(sigmasq);
