@@ -541,8 +541,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 	Double_t dcaDaughterToPrimVertex[2] = { 999., 999.}; // ..[0] = Pos and ..[1] = Neg
 	
 	Double_t  dcaV0Daughters      = v0->GetDcaV0Daughters();
-	Double_t  dcaV0ToPrimVertex   = v0->GetD();
-
+	Double_t  dcaV0ToPrimVertex   = v0->GetD(esdVtx->GetX(),esdVtx->GetY(),esdVtx->GetZ());
 	v0->GetPPxPyPz(p_pos_atv0[0],p_pos_atv0[1],p_pos_atv0[2]); 
 	v0->GetNPxPyPz(p_neg_atv0[0],p_neg_atv0[1],p_neg_atv0[2]); 
 
