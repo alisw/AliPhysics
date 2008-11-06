@@ -164,6 +164,16 @@ AliMUONDigitizerV3::ApplyResponseToTrackerDigit(AliMUONVDigit& digit, Bool_t add
     return;    
   }
   
+  Int_t manuChannel = digit.ManuChannel();
+  
+  if ( pedestal->ValueAsFloat(manuChannel,0) == AliMUONVCalibParam::InvalidFloatValue() ||
+      pedestal->ValueAsFloat(manuChannel,1) == AliMUONVCalibParam::InvalidFloatValue() )
+  {
+    // protection against invalid pedestal value
+    digit.SetADC(0);
+    return;
+  }
+      
   AliMUONVCalibParam* gain = fCalibrationData->Gains(detElemId,manuId);
   if (!gain)
   {
@@ -174,8 +184,6 @@ AliMUONDigitizerV3::ApplyResponseToTrackerDigit(AliMUONVDigit& digit, Bool_t add
     return;        
   }    
 
-  Int_t manuChannel = digit.ManuChannel();
-  
   Int_t adc = DecalibrateTrackerDigit(*pedestal,*gain,manuChannel,charge,addNoise,
                                       digit.IsNoiseOnly());
   
@@ -586,11 +594,6 @@ AliMUONDigitizerV3::GenerateNoisyDigitsForOneCathode(AliMUONVDigitStore& digitSt
       {
         fLogger->Log("Added noiseOnly digit");
       }
-    }
-    else
-    {
-      AliError("Pure noise below threshold. This should not happen. Not adding "
-               "this digit.");
     }
     delete d;
   }
