@@ -2294,7 +2294,7 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *ss
     if(!chamber->GetSeedingLayer(fSeedTB[isl], fGeom, fReconstructor)) continue;
     nlayers++;
   }
-  if(nlayers < 4) return 0;
+  if(nlayers < 4) return ntracks;
   
   
   // Start finding seeds
