@@ -170,7 +170,7 @@ protected:
 
 private:
 
-  ClassDef(AliESDv0,4)      // ESD V0 vertex
+  ClassDef(AliESDv0,5)      // ESD V0 vertex
 };
 
 inline 
