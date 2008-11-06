@@ -44,12 +44,18 @@
 #include "AliFMDRecPoint.h"	   	   // ALIFMDMULTNAIIVE_H
 #include "AliESDEvent.h"		   // ALIESDEVENT_H
 #include "AliESDVertex.h"		   // ALIESDVERTEX_H
+#include "AliESDTZERO.h"		   // ALIESDVERTEX_H
 #include <AliESDFMD.h>			   // ALIESDFMD_H
 #include <TMath.h>
 #include <TH1.h>
 #include <TH2.h>
 #include <TFile.h>
 #include <climits>
+// Import revertexer into a private namespace (to prevent conflicts) 
+namespace { 
+# include "AliFMDESDRevertexer.h"
+}
+
 
 class AliRawReader;
 
@@ -220,10 +226,21 @@ AliFMDReconstructor::GetVertex() const
   fVertexType    = kNoVertex;
   fCurrentVertex = 0;
   if (fESD) {
-    const AliESDVertex* vertex = fESD->GetVertex();
+    const AliESDVertex* vertex = fESD->GetPrimaryVertex();
+    if (!vertex) vertex = fESD->GetPrimaryVertexSPD();
+    if (!vertex) vertex = fESD->GetPrimaryVertexTPC();
+    if (!vertex) vertex = fESD->GetVertex();
+
     if (vertex) {
-      AliFMDDebug(2, ("Got vertex from ESD: %f", vertex->GetZv()));
+      AliFMDDebug(2, ("Got %s (%s) from ESD: %f", 
+		      vertex->GetName(), vertex->GetTitle(), vertex->GetZv()));
       fCurrentVertex = vertex->GetZv();
+      fVertexType    = kESDVertex;
+      return;
+    }
+    else if (fESD->GetESDTZERO()) { 
+      AliFMDDebug(2, ("Got primary vertex from T0: %f", fESD->GetT0zVertex()));
+      fCurrentVertex = fESD->GetT0zVertex();
       fVertexType    = kESDVertex;
       return;
     }
@@ -234,22 +251,29 @@ AliFMDReconstructor::GetVertex() const
 
 //____________________________________________________________________
 void 
-AliFMDReconstructor::Reconstruct(AliRawReader* /*reader*/, TTree*) const
+AliFMDReconstructor::Reconstruct(AliRawReader* reader, TTree*) const
 {
   // Reconstruct directly from raw data (no intermediate output on
   // digit tree or rec point tree).  
+  // 
   // Parameters: 
   //   reader	Raw event reader 
   //   ctree    Not used. 
-  AliError("Method is not used");
-#if 0
-  TClonesArray*   array = new TClonesArray("AliFMDDigit");
-  AliFMDRawReader rawRead(reader, 0);
-  rawRead.ReadAdcs(array);
-  ProcessDigits(array);
-  array->Delete();
-  delete array;
-#endif
+  AliFMDRawReader rawReader(reader, 0);
+
+  UShort_t det, sec, str, fac;
+  Short_t  adc, oldDet = -1;
+  Bool_t   zs;
+  Char_t   rng;
+    
+  while (rawReader.NextSignal(det, rng, sec, str, adc, zs, fac)) { 
+    if (det != oldDet) { 
+      fZS[det-1]       = zs;
+      fZSFactor[det-1] = fac;
+      oldDet           = det;
+    }
+    ProcessSignal(det, rng, sec, str, adc);
+  }
 }
 
 //____________________________________________________________________
@@ -261,6 +285,11 @@ AliFMDReconstructor::Reconstruct(TTree* digitsTree,
   // Get the FMD branch holding the digits. 
   // FIXME: The vertex may not be known yet, so we may have to move
   // some of this to FillESD. 
+  // 
+  // Parameters: 
+  //   digitsTree	Pointer to a tree containing digits 
+  //   clusterTree	Pointer to output tree 
+  // 
   AliFMDDebug(2, ("Reconstructing from digits in a tree"));
   GetVertex();
 
@@ -299,99 +328,133 @@ AliFMDReconstructor::ProcessDigits(TClonesArray* digits) const
   // For each digit, find the pseudo rapdity, azimuthal angle, and
   // number of corrected ADC counts, and pass it on to the algorithms
   // used. 
+  // 
+  // Parameters: 
+  //    digits	Array of digits
+  // 
   Int_t nDigits = digits->GetEntries();
   AliFMDDebug(1, ("Got %d digits", nDigits));
   fESDObj->SetNoiseFactor(fNoiseFactor);
   fESDObj->SetAngleCorrected(fAngleCorrect);
   for (Int_t i = 0; i < nDigits; i++) {
     AliFMDDigit* digit = static_cast<AliFMDDigit*>(digits->At(i));
-    AliFMDParameters* param  = AliFMDParameters::Instance();
-    // Check that the strip is not marked as dead 
-    if (param->IsDead(digit->Detector(), digit->Ring(), 
-		      digit->Sector(), digit->Strip())) {
-      AliFMDDebug(10, ("FMD%d%c[%2d,%3d] is dead", digit->Detector(), 
-			digit->Ring(), digit->Sector(), digit->Strip()));
-      continue;
-    }
-
-    // digit->Print();
-    // Get eta and phi 
-    Float_t eta, phi;
-    PhysicalCoordinates(digit, eta, phi);
-    
-    // Substract pedestal. 
-    UShort_t counts   = SubtractPedestal(digit);
-    if(counts == USHRT_MAX) continue;
-    
-    // Gain match digits. 
-    Double_t edep     = Adc2Energy(digit, eta, counts);
-    // Get rid of nonsense energy
-    if(edep < 0)  continue;
-        
-    // Make rough multiplicity 
-    Double_t mult     = Energy2Multiplicity(digit, edep);
-    // Get rid of nonsense mult
-    if(mult < 0)  continue; 
-    AliFMDDebug(5, ("FMD%d%c[%2d,%3d]: "
-		      "ADC: %d, Counts: %d, Energy: %f, Mult: %f", 
-		      digit->Detector(), digit->Ring(), digit->Sector(),
-		      digit->Strip(), digit->Counts(), counts, edep, mult));
-    
-    // Create a `RecPoint' on the output branch. 
-    if (fMult) {
-      AliFMDRecPoint* m = 
-	new ((*fMult)[fNMult]) AliFMDRecPoint(digit->Detector(), 
-					      digit->Ring(), 
-					      digit->Sector(),
-					      digit->Strip(),
-					      eta, phi, 
-					      edep, mult);
-      (void)m; // Suppress warnings about unused variables. 
-      fNMult++;
-    }
-    
-    fESDObj->SetMultiplicity(digit->Detector(), digit->Ring(), 
-			     digit->Sector(),  digit->Strip(), mult);
-    fESDObj->SetEta(digit->Detector(), digit->Ring(), 
-		    digit->Sector(),  digit->Strip(), eta);
-
-    if (fDiagAll) fDiagAll->Fill(digit->Counts(), mult);  
+    if (!digit) continue;
+    ProcessDigit(digit);
   }
 }
 
 //____________________________________________________________________
+void
+AliFMDReconstructor::ProcessDigit(AliFMDDigit* digit) const
+{
+  UShort_t det = digit->Detector();
+  Char_t   rng = digit->Ring();
+  UShort_t sec = digit->Sector();
+  UShort_t str = digit->Strip();
+  Short_t  adc = digit->Counts();
+  
+  ProcessSignal(det, rng, sec, str, adc);
+}
+
+//____________________________________________________________________
+void
+AliFMDReconstructor::ProcessSignal(UShort_t det, 
+				   Char_t   rng, 
+				   UShort_t sec, 
+				   UShort_t str, 
+				   Short_t  adc) const
+{
+  // Process the signal from a single strip 
+  // 
+  // Parameters: 
+  //    det	Detector ID
+  //    rng	Ring ID
+  //    sec	Sector ID
+  //    rng	Strip ID
+  //    adc     ADC counts
+  // 
+  AliFMDParameters* param  = AliFMDParameters::Instance();
+  // Check that the strip is not marked as dead 
+  if (param->IsDead(det, rng, sec, str)) {
+    AliFMDDebug(10, ("FMD%d%c[%2d,%3d] is dead", det, rng, sec, str));
+    return;
+  }
+  
+  // digit->Print();
+  // Get eta and phi 
+  Float_t eta, phi;
+  PhysicalCoordinates(det, rng, sec, str, eta, phi);
+    
+  // Substract pedestal. 
+  UShort_t counts   = SubtractPedestal(det, rng, sec, str, adc);
+  if(counts == USHRT_MAX) return;
+  
+    // Gain match digits. 
+  Double_t edep     = Adc2Energy(det, rng, sec, str, eta, counts);
+  // Get rid of nonsense energy
+  if(edep < 0)  return;
+  
+  // Make rough multiplicity 
+  Double_t mult     = Energy2Multiplicity(det, rng, sec, str, edep);
+  // Get rid of nonsense mult
+  if (mult < 0)  return; 
+  AliFMDDebug(5, ("FMD%d%c[%2d,%3d]: "
+		    "ADC: %d, Counts: %d, Energy: %f, Mult: %f",
+		  det, rng, sec, str, adc, counts, edep, mult));
+  
+  // Create a `RecPoint' on the output branch. 
+  if (fMult) {
+    AliFMDRecPoint* m = 
+      new ((*fMult)[fNMult]) AliFMDRecPoint(det, rng, sec, str, 
+					    eta, phi, edep, mult);
+    (void)m; // Suppress warnings about unused variables. 
+    fNMult++;
+  }
+  
+  fESDObj->SetMultiplicity(det, rng, sec, str, mult);
+  fESDObj->SetEta(det, rng, sec, str, eta);
+  
+  if (fDiagAll) fDiagAll->Fill(adc, mult);  
+
+}
+
+
+
+//____________________________________________________________________
 UShort_t
-AliFMDReconstructor::SubtractPedestal(AliFMDDigit* digit) const
+AliFMDReconstructor::SubtractPedestal(UShort_t det, 
+				      Char_t   rng, 
+				      UShort_t sec, 
+				      UShort_t str, 
+				      Short_t  adc) const
 {
   // Member function to subtract the pedestal from a digit
-  // This implementation does nothing, but a derived class could over
-  // load this to subtract a pedestal that was given in a database or
-  // something like that. 
-
+  //
+  // Parameters: 
+  //    det	Detector ID
+  //    rng	Ring ID
+  //    sec	Sector ID
+  //    rng	Strip ID
+  //    adc     # of ADC counts
+  // Return:
+  //    Pedestal subtracted signal or USHRT_MAX in case of problems 
+  //
   AliFMDParameters* param  = AliFMDParameters::Instance();
-  Bool_t            zs     = fZS[digit->Detector()-1];
-  UShort_t          fac    = fZSFactor[digit->Detector()-1];
+  Bool_t            zs     = fZS[det-1];
+  UShort_t          fac    = fZSFactor[det-1];
   Float_t           ped    = (zs ? 0 : 
-			      param->GetPedestal(digit->Detector(), 
-						 digit->Ring(), 
-						 digit->Sector(), 
-						 digit->Strip()));
-  Float_t           noise  = param->GetPedestalWidth(digit->Detector(), 
-						     digit->Ring(), 
-						     digit->Sector(), 
-						     digit->Strip());
+			      param->GetPedestal(det, rng, sec, str));
+  Float_t           noise  = param->GetPedestalWidth(det, rng, sec, str);
   if(ped < 0 || noise < 0) { 
-    AliWarning(Form("Invalid pedestal (%f) or noise (%f) for %s", 
-		    ped, noise, digit->GetName()));
+    AliWarning(Form("Invalid pedestal (%f) or noise (%f) "
+		    "for FMD%d%c[%02d,%03d]", ped, noise, det, rng, sec, str));
     return USHRT_MAX;
   }
 
-  AliFMDDebug(5, ("Subtracting pedestal %f from signal %d", 
-		  ped, digit->Counts()));
+  AliFMDDebug(5, ("Subtracting pedestal %f from signal %d", ped, adc));
   // if (digit->Count3() > 0)      adc = digit->Count3();
   // else if (digit->Count2() > 0) adc = digit->Count2();
   // else                          adc = digit->Count1();
-  Int_t adc    = digit->Counts();
   Int_t counts = adc + Int_t(zs ? fac * noise : - ped);
   counts       = TMath::Max(Int_t(counts), 0);
   if (counts < noise * fNoiseFactor) counts = 0;
@@ -403,9 +466,12 @@ AliFMDReconstructor::SubtractPedestal(AliFMDDigit* digit) const
 
 //____________________________________________________________________
 Float_t
-AliFMDReconstructor::Adc2Energy(AliFMDDigit* digit, 
-				Float_t      eta, 
-				UShort_t     count) const
+AliFMDReconstructor::Adc2Energy(UShort_t det, 
+				Char_t   rng, 
+				UShort_t sec, 
+				UShort_t str, 
+				Float_t  eta, 
+				UShort_t count) const
 {
   // Converts number of ADC counts to energy deposited. 
   // Note, that this member function can be overloaded by derived
@@ -426,25 +492,37 @@ AliFMDReconstructor::Adc2Energy(AliFMDDigit* digit,
   //
   // For the production we use the conversion measured in the NBI lab.
   // The total conversion is then:
-  // gain = ADC / DAC
-  // => energy = EdepMip*count / gain*DACPerADC
-  //
+  // 
+  //    gain = ADC / DAC
+  // 
+  //                  EdepMip * count
+  //      => energy = ----------------
+  //                  gain * DACPerADC
+  // 
+  // Parameters: 
+  //    det	Detector ID
+  //    rng	Ring ID
+  //    sec	Sector ID
+  //    rng	Strip ID
+  //    eta     Psuedo-rapidity
+  //    counts  Number of ADC counts over pedestal
+  // Return 
+  //    The energy deposited in a single strip, or -1 in case of problems
   //
   if (count <= 0) return 0;
   AliFMDParameters* param = AliFMDParameters::Instance();
-  Float_t           gain  = param->GetPulseGain(digit->Detector(), 
-						digit->Ring(), 
-						digit->Sector(), 
-						digit->Strip());
+  Float_t           gain  = param->GetPulseGain(det, rng, sec, str);
   // 'Tagging' bad gains as bad energy
   if (gain < 0) { 
-    AliWarning(Form("Invalid gain (%f) for %s", gain, digit->GetName()));
+    AliWarning(Form("Invalid gain (%f) for FMD%d%c[%02d,%03d]", 
+		    gain, det, rng, sec, str));
     return -1;
   }
-  AliFMDDebug(5, ("Converting counts %d to energy via factor %f and DAC2MIP %f", 
+  AliFMDDebug(5, ("Converting counts %d to energy (factor=%f, DAC2MIP=%f)", 
 		  count, gain,param->GetDACPerMIP()));
 
-  Double_t edep  = (count * param->GetEdepMip()) / (gain * param->GetDACPerMIP());
+  Double_t edep  = ((count * param->GetEdepMip()) 
+		    / (gain * param->GetDACPerMIP()));
   if (fDiagStep2) fDiagStep2->Fill(count, edep);  
   if (fAngleCorrect) {
     Double_t theta = 2 * TMath::ATan(TMath::Exp(-eta));
@@ -460,8 +538,11 @@ AliFMDReconstructor::Adc2Energy(AliFMDDigit* digit,
 
 //____________________________________________________________________
 Float_t
-AliFMDReconstructor::Energy2Multiplicity(AliFMDDigit* /* digit */, 
-					 Float_t      edep) const
+AliFMDReconstructor::Energy2Multiplicity(UShort_t /*det*/, 
+					 Char_t   /*rng*/, 
+					 UShort_t /*sec*/, 
+					 UShort_t /*str*/, 
+					 Float_t  edep) const
 {
   // Converts an energy signal to number of particles. 
   // Note, that this member function can be overloaded by derived
@@ -477,6 +558,15 @@ AliFMDReconstructor::Energy2Multiplicity(AliFMDDigit* /* digit */,
   //   Energy_deposited_per_MIP = 1.664 * SI_density * SI_thickness 
   // 
   // is constant and the same for all strips 
+  //
+  // Parameters: 
+  //    det	Detector ID
+  //    rng	Ring ID
+  //    sec	Sector ID
+  //    rng	Strip ID
+  //    edep    Energy deposited in a single strip
+  // Return 
+  //    The "bare" multiplicity corresponding to the energy deposited
   AliFMDParameters* param   = AliFMDParameters::Instance();
   Double_t          edepMIP = param->GetEdepMip();
   Float_t           mult    = edep / edepMIP;
@@ -491,17 +581,26 @@ AliFMDReconstructor::Energy2Multiplicity(AliFMDDigit* /* digit */,
 
 //____________________________________________________________________
 void
-AliFMDReconstructor::PhysicalCoordinates(AliFMDDigit* digit, 
+AliFMDReconstructor::PhysicalCoordinates(UShort_t det, 
+					 Char_t   rng, 
+					 UShort_t sec, 
+					 UShort_t str, 
 					 Float_t& eta, 
 					 Float_t& phi) const
 {
   // Get the eta and phi of a digit 
   // 
-  // Get geometry. 
+  // Parameters: 
+  //    det	Detector ID
+  //    rng	Ring ID
+  //    sec	Sector ID
+  //    rng	Strip ID
+  //    eta	On return, contains the psuedo-rapidity of the strip
+  //    phi     On return, contains the azimuthal angle of the strip
+  // 
   AliFMDGeometry* geom = AliFMDGeometry::Instance();
   Double_t x, y, z, r, theta;
-  geom->Detector2XYZ(digit->Detector(), digit->Ring(), digit->Sector(), 
-		    digit->Strip(), x, y, z);
+  geom->Detector2XYZ(det, rng, sec, str, x, y, z);
   // Correct for vertex offset. 
   z     += fCurrentVertex;
   phi   =  TMath::ATan2(y, x);
@@ -523,6 +622,15 @@ AliFMDReconstructor::FillESD(TTree*  /* digitsTree */,
   // so we may have to move some of that member function here. 
   AliFMDDebug(2, ("Calling FillESD with two trees and one ESD"));
   // fESDObj->Print();
+
+  Double_t oldVz = fCurrentVertex;
+  GetVertex();
+  if (fVertexType != kNoVertex) { 
+    AliFMDDebug(2, ("Revertexing the ESD data to vz=%f (was %f)",
+		    fCurrentVertex, oldVz));
+    AliFMDESDRevertexer revertexer;
+    revertexer.Revertex(fESDObj, fCurrentVertex);
+  }
 
   if (esd) { 
     AliFMDDebug(2, ("Writing FMD data to ESD tree"));

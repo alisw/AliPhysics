@@ -38,138 +38,251 @@ class TH1;
 
 /** @defgroup FMD_rec Reconstruction */
 //____________________________________________________________________
-/** @brief This is a class that reconstructs AliFMDRecPoint objects from of
-    Digits.  
-    This class reads either digits from a TClonesArray or raw data
-    from a DDL file (or similar), and applies calibrations to get
-    psuedo-inclusive multiplicities per strip.
-
-    @ingroup FMD_rec
+/** 
+ * @brief This is a class that reconstructs AliFMDRecPoint objects
+ *        from of Digits.  
+ *
+ * This class reads either digits from a TClonesArray or raw data
+ * from a DDL file (or similar), and applies calibrations to get
+ * psuedo-inclusive multiplicities per strip.
+ * 
+ * @ingroup FMD_rec
  */
 class AliFMDReconstructor: public AliReconstructor 
 {
 public:
-  /** CTOR */
+  /** 
+   * CTOR 
+   */
   AliFMDReconstructor();
-  /** DTOR */
+  /** 
+   * DTOR 
+   */
   virtual ~AliFMDReconstructor();
 
-  /** Initialize the reconstructor.  Here, we initialize the geometry
-      manager, and finds the local to global transformations from the
-      geometry.   The calibration parameter manager is also
-      initialized (meaning that the calibration parameters is read
-      from CDB).
-  */
+  /** 
+   * Initialize the reconstructor.  Here, we initialize the geometry
+   * manager, and finds the local to global transformations from the
+   * geometry.   The calibration parameter manager is also
+   * initialized (meaning that the calibration parameters is read
+   * from CDB).
+   */
   virtual void   Init();
-  /** Flag that we can convert raw data into digits. 
-      @return always @c true */
+  /** 
+   * Flag that we can convert raw data into digits. 
+   *
+   * @return always @c true 
+   */
   virtual Bool_t HasDigitConversion() const { return kTRUE; }
-  /** Convert raw data read from the AliRawReader @a reader into
-      digits.  This is done using AliFMDRawReader and
-      AliFMDAltroReader.  The digits are put in the passed TTree @a
-      digitsTree. 
-      @param reader     Raw reader. 
-      @param digitsTree Tree to store read digits in. */
+  /** 
+   * Convert raw data read from the AliRawReader @a reader into
+   * digits.  This is done using AliFMDRawReader and
+   * AliFMDAltroReader.  The digits are put in the passed TTree @a
+   * digitsTree. 
+   *
+   * @param reader     Raw reader. 
+   * @param digitsTree Tree to store read digits in. 
+   */
   virtual void   ConvertDigits(AliRawReader* reader, TTree* digitsTree) const;
-  /** Reconstruct one event from the digits passed in @a digitsTree.
-      The member function creates AliFMDRecPoint objects and stores
-      them on the output tree @a clusterTree.  An FMD ESD object is
-      created in parallel. 
-      @todo Make sure we get a vertex. 
-      @param digitsTree  Tree holding the digits of this event
-      @param clusterTree Tree to store AliFMDRecPoint objects in. */
+  /** 
+   * Reconstruct one event from the digits passed in @a digitsTree.
+   * The member function creates AliFMDRecPoint objects and stores
+   * them on the output tree @a clusterTree.  An FMD ESD object is
+   * created in parallel. 
+   *
+   * @param digitsTree  Tree holding the digits of this event
+   * @param clusterTree Tree to store AliFMDRecPoint objects in. 
+   */
   virtual void   Reconstruct(TTree* digitsTree, TTree* clusterTree) const;
-  /** Not used */
+  /** 
+   * Not used 
+   * @todo Implement this, such that we'll reconstruct directly from
+   *       the read ADC values rather than going via an intermedant
+   *       TClonesArray of AliFMDDigits
+   */
   virtual void   Reconstruct(AliRawReader *, TTree*) const;
-  /** Put in the ESD data, the FMD ESD data.  The object created by
-      the Reconstruct member function is copied to the ESD object. 
-      @param digitsTree   Tree of digits for this event - not used
-      @param clusterTree  Tree of reconstructed points for this event
-      - not used. 
-      @param esd ESD object to store data in. 
-  */
+  /** 
+   * Put in the ESD data, the FMD ESD data.  The object created by
+   * the Reconstruct member function is copied to the ESD object. 
+   *
+   * @param digitsTree   Tree of digits for this event - not used
+   * @param clusterTree  Tree of reconstructed points for this event -
+   *        not used.
+   * @param esd ESD object to store data in. 
+   */
   virtual void   FillESD(TTree* digitsTree, TTree* clusterTree, 
 			 AliESDEvent* esd) const;
-  /** Forwards to above member function */
+  /** 
+   * Forwards to above member function 
+   */
   virtual void   FillESD(AliRawReader*, TTree* clusterTree, 
 			 AliESDEvent* esd) const;
-  /** Not used */
+  /** 
+   * Not used 
+   */
   virtual void   SetESD(AliESDEvent* esd) { fESD = esd; }
-  /** Set the noise factor 
-      @param f Factor to use */
+  /** 
+   * Set the noise factor 
+   *
+   * @param f Factor to use 
+   */
   virtual void SetNoiseFactor(Float_t f=3) { fNoiseFactor = f; }
-  /** Set whether we should do angle correction or nor 
-      @param use If true, do angle correction */
+  /** 
+   * Set whether we should do angle correction or nor 
+   *
+   * @param use If true, do angle correction 
+   */
   virtual void SetAngleCorrect(Bool_t use=kTRUE) { fAngleCorrect = use; }
-  /** Set whether we want to do diagnostics.  If this is enabled, a
-      file named @c FMD.Diag.root will be made.  It contains a set of
-      histograms for each event, filed in separate directories in the
-      file.  The histograms are 
-      @verbatim 
-      diagStep1   Read ADC vs. Noise surpressed ADC 
-      diagStep2   Noise surpressed ADC vs. calculated Energy dep.
-      diagStep3   Energy deposition vs. angle corrected Energy dep.
-      diagStep4   Energy deposition vs. calculated multiplicity
-      diagAll     Read ADC vs. calculated multiplicity
-      @endverbatim 
-      @param use If true, make the diagnostics file */
+  /** 
+   * Set whether we want to do diagnostics.  If this is enabled, a
+   * file named @c FMD.Diag.root will be made.  It contains a set of
+   * histograms for each event, filed in separate directories in the
+   * file.  The histograms are 
+   * @verbatim 
+   * diagStep1   Read ADC vs. Noise surpressed ADC 
+   * diagStep2   Noise surpressed ADC vs. calculated Energy dep.
+   * diagStep3   Energy deposition vs. angle corrected Energy dep.
+   * diagStep4   Energy deposition vs. calculated multiplicity
+   * diagAll     Read ADC vs. calculated multiplicity
+   * @endverbatim 
+   *
+   * @param use If true, make the diagnostics file 
+   */
   void SetDiagnose(Bool_t use=kTRUE) { fDiagnostics = use; }
 protected:
-  /** Copy CTOR 
-      @param other Object to copy from. */
+  /** 
+   * Copy CTOR 
+   *
+   * @param other Object to copy from. 
+   */
   AliFMDReconstructor(const AliFMDReconstructor& other);
-  /** Assignment operator 
-      @param other Object to assign from
-      @return reference to this object */
+  /** 
+   * Assignment operator 
+   *
+   * @param other Object to assign from
+   *
+   * @return reference to this object 
+   */
   AliFMDReconstructor& operator=(const AliFMDReconstructor& other);
-  /** Try to get the vertex from either ESD or generator header.  Sets
-      @c fCurrentVertex to the found Z posistion of the vertex (if 
-      found), and sets the flag @c fVertexType accordingly */
+  /** 
+   * Try to get the vertex from either ESD or generator header.  Sets
+   * @c fCurrentVertex to the found Z posistion of the vertex (if 
+   * found), and sets the flag @c fVertexType accordingly 
+   */
   virtual void GetVertex() const;
-  /** Process AliFMDDigit objects in @a digits.  For each digit, find
-      the psuedo-rapidity @f$ \eta@f$, azimuthal angle @f$ \varphi@f$,
-      energy deposited @f$ E@f$, and psuedo-inclusive multiplicity @f$
-      M@f$.
-      @param digits Array of digits. */
+  /** 
+   * Process AliFMDDigit objects in @a digits.  For each digit, find
+   * the psuedo-rapidity @f$ \eta@f$, azimuthal angle @f$ \varphi@f$,
+   * energy deposited @f$ E@f$, and psuedo-inclusive multiplicity @f$
+   * M@f$.
+   * 
+   * @param digits Array of digits. 
+   */
   virtual void     ProcessDigits(TClonesArray* digits) const;
-  /** Substract pedestals from raw ADC in @a digit
-      @param digit Digit data
-      @return Pedestal subtracted ADC count. */
-  virtual UShort_t SubtractPedestal(AliFMDDigit* digit) const;
-  /** Converts number of ADC counts to energy deposited.   This is
-      done by 
-      @f[
-      E_i = A_i g_i
-      @f]
-      where @f$ A_i@f$ is the pedestal subtracted ADC counts, and @f$
-      g_i@f$ is the gain for the @f$ i^{\mbox{th}}@f$ strip. 
-      @param digit Raw data
-      @param eta   Psuedo-rapidity of digit.
-      @param count Pedestal subtracted ADC counts
-      @return Energy deposited @f$ E_i@f$ */
-  virtual Float_t  Adc2Energy(AliFMDDigit* digit, Float_t eta, 
+  /** 
+   * Process a single digit 
+   * 
+   * @param digit Digiti to process
+   */ 
+  virtual void ProcessDigit(AliFMDDigit* digit) const;
+  /** 
+   * Process the signal from a single strip. 
+   * 
+   * @param det Detector number 
+   * @param rng Ring identifier 
+   * @param sec Sector number
+   * @param str Strip number 
+   * @param adc Number of ADC counts for this strip
+   */  
+  virtual void ProcessSignal(UShort_t det, 
+			     Char_t   rng, 
+			     UShort_t sec, 
+			     UShort_t str, 
+			     Short_t  adc) const;
+  /** 
+   * Substract pedestals from raw ADC in @a digit
+   * 
+   * @param det	  Detector number  
+   * @param rng   Ring identifier 
+   * @param sec   Sector number
+   * @param str   Strip number 
+   * @param adc   Number of ADC counts
+   *
+   * @return Pedestal subtracted ADC count. 
+   */
+  virtual UShort_t SubtractPedestal(UShort_t det, 
+				    Char_t   rng, 
+				    UShort_t sec, 
+				    UShort_t str, 
+				    Short_t  adc) const;
+  /** 
+   * Converts number of ADC counts to energy deposited.   This is
+   * done by 
+   * @f[
+   * E_i = A_i g_i
+   * @f]
+   * where @f$ A_i@f$ is the pedestal subtracted ADC counts, and @f$
+   * g_i@f$ is the gain for the @f$ i^{\mbox{th}}@f$ strip. 
+   * 
+   * @param det	  Detector number  
+   * @param rng   Ring identifier 
+   * @param sec   Sector number
+   * @param str   Strip number 
+   * @param eta   Psuedo-rapidity of digit.
+   * @param count Pedestal subtracted ADC counts
+   *
+   * @return Energy deposited @f$ E_i@f$ 
+   */
+  virtual Float_t  Adc2Energy(UShort_t det, 
+			      Char_t   rng, 
+			      UShort_t sec, 
+			      UShort_t str, 
+			      Float_t  eta, 
 			      UShort_t count) const;
-  /** Converts an energy signal to number of particles. In this
-      implementation, it's done by 
-      @f[
-      M_i = E_i / E_{\mbox{MIP}}
-      @f]
-      where @f$ E_i@f$ is the energy deposited, and @f$
-      E_{\mbox{MIP}}@f$ is the average energy deposited by a minimum
-      ionizing particle
-      @param digit Raw data
-      @param edep Energy deposited @f$ E_i@f$
-      @return Psuedo-inclusive multiplicity @f$ M@f$ */
-  virtual Float_t  Energy2Multiplicity(AliFMDDigit* digit, Float_t edep) const;
-  /** Calculate the physical coordinates psuedo-rapidity @f$ \eta@f$,
-      azimuthal angle @f$ \varphi@f$ of the strip corresponding to
-      the digit @a digit.   This is done by using the information
-      obtained, and previously cached by AliFMDGeometry, from the
-      TGeoManager. 
-      @param digit Digit.
-      @param eta   On return, psuedo-rapidity @f$ \eta@f$
-      @param phi   On return, azimuthal angle @f$ \varphi@f$ */
-  virtual void     PhysicalCoordinates(AliFMDDigit* digit, Float_t& eta, 
+  /** 
+   * Converts an energy signal to number of particles. In this
+   * implementation, it's done by 
+   * @f[
+   * M_i = E_i / E_{\mbox{MIP}}
+   * @f]
+   * where @f$ E_i@f$ is the energy deposited, and 
+   * @f$ E_{\mbox{MIP}}@f$ is the average energy deposited by a
+   * minimum ionizing particle
+   * 
+   * @param det	  Detector number  
+   * @param rng   Ring identifier 
+   * @param sec   Sector number
+   * @param str   Strip number 
+   * @param eta   On return, psuedo-rapidity @f$ \eta@f$
+   * @param phi   On return, azimuthal angle @f$ \varphi@f$ 
+   * @param edep Energy deposited @f$ E_i@f$
+   *
+   * @return Psuedo-inclusive multiplicity @f$ M@f$ 
+   */
+  virtual Float_t  Energy2Multiplicity(UShort_t det, 
+				       Char_t   rng, 
+				       UShort_t sec, 
+				       UShort_t str, 
+				       Float_t  edep) const;
+  /** 
+   * Calculate the physical coordinates psuedo-rapidity @f$ \eta@f$,
+   * azimuthal angle @f$ \varphi@f$ of the strip corresponding to
+   * the digit @a digit.   This is done by using the information
+   * obtained, and previously cached by AliFMDGeometry, from the
+   * TGeoManager. 
+   * 
+   * @param det	  Detector number  
+   * @param rng   Ring identifier 
+   * @param sec   Sector number
+   * @param str   Strip number 
+   * @param eta   On return, psuedo-rapidity @f$ \eta@f$
+   * @param phi   On return, azimuthal angle @f$ \varphi@f$ 
+   */
+  virtual void     PhysicalCoordinates(UShort_t det, 
+				       Char_t   rng, 
+				       UShort_t sec, 
+				       UShort_t str, 
+				       Float_t& eta, 
 				       Float_t& phi) const;
   
   enum Vertex_t {
