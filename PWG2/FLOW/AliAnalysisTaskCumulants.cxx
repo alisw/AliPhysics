@@ -62,7 +62,7 @@ ClassImp(AliAnalysisTaskCumulants)
 
 //================================================================================================================
 
-AliAnalysisTaskCumulants::AliAnalysisTaskCumulants(const char *name): 
+AliAnalysisTaskCumulants::AliAnalysisTaskCumulants(const char *name, Bool_t on): 
  AliAnalysisTask(name,""), 
  fESD(NULL),
  fAOD(NULL),
@@ -71,7 +71,10 @@ AliAnalysisTaskCumulants::AliAnalysisTaskCumulants(const char *name):
  fAnalysisType("ESD"), 
  fCFManager1(NULL),
  fCFManager2(NULL),
- fListHistos(NULL)
+ fListHistos(NULL),
+ fQAInt(NULL),
+ fQADiff(NULL),
+ fQA(on)
 {
  //constructor
  cout<<"AliAnalysisTaskCumulants::AliAnalysisTaskCumulants(const char *name)"<<endl;
@@ -90,7 +93,10 @@ AliAnalysisTaskCumulants::AliAnalysisTaskCumulants():
  fAnalysisType("ESD"),
  fCFManager1(NULL),
  fCFManager2(NULL),
- fListHistos(NULL)
+ fListHistos(NULL),  
+ fQAInt(NULL),
+ fQADiff(NULL),
+ fQA(kFALSE)
 {
  //dummy constructor
  cout<<"AliAnalysisTaskCumulants::AliAnalysisTaskCumulants()"<<endl;
@@ -184,9 +190,6 @@ void AliAnalysisTaskCumulants::CreateOutputObjects()
  {
   Printf("ERROR: Could not retrieve histogram list"); 
  }
- 
- //PostData(0,fListHistos);
- 
 }
 
 //================================================================================================================
@@ -281,6 +284,11 @@ void AliAnalysisTaskCumulants::Exec(Option_t *)
 
 
   PostData(0,fListHistos); 
+  if(fQA) 
+  {
+   PostData(1,fQAInt);
+   PostData(2,fQADiff); 
+  }
 }
 
 //================================================================================================================

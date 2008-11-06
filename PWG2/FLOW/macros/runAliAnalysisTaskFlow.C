@@ -1,37 +1,7 @@
 // from CreateESDChain.C - instead of  #include "CreateESDChain.C"
 TChain* CreateESDChain(const char* aDataDir = "ESDfiles.txt", Int_t aRuns = 10, Int_t offset = 0) ;
-TChain* CreateAODChain(const char* aDataDir = "ESDfiles.txt", Int_t aRuns = 10, Int_t offset = 0) ;
+TChain* CreateAODChain(const char* aDataDir = "AODfiles.txt", Int_t aRuns = 10, Int_t offset = 0) ;
 void LookupWrite(TChain* chain, const char* target) ;
-
-/////////////////////////////////////////////////////////////////////////////////
-//
-// HOW TO USE THIS MACRO:
-//
-// With this macro several flow analysis can be run.
-// SP    = Scalar Product                (for PbPb or pp)
-// LYZ1  = Lee Yang Zeroes first run     (for PbPb)
-// LYZ2  = Lee Yang Zeroes second run    (for PbPb)
-// LYZEP = Lee Yang Zeroes Event Plane   (for PbPb)
-// CUM   = Cumulants  WARNING: THIS MACRO IS NOT YET TESTED FOR THE OPTION "CUM"
-// MCEP  = Flow calculated from the real MC event plane (for PbPb only)
-//
-// The LYZ analysis should be done in the following order;
-// LYZ1 -> LYZ2 -> LYZEP,
-// because LYZ2 depends on the outputfile of LYZ1 and LYZEP on the outputfile
-// of LYZ2.
-//
-// The MCEP method is a reference method. 
-// It can only be run when MC information (kinematics.root & galice.root file) is available
-// in which the reaction plane is stored.
-//
-// One can run on ESD, AOD or MC.
-// Additional options are ESDMC0, ESDMC1. In these options the ESD and MC 
-// information is combined. Tracks are selected in the ESD, the PID information 
-// is taken from the MC (perfect PID). For ESDMC0 the track kinematics is taken 
-// from the ESD and for ESDMC1 it is taken from the MC information.
-//
-///////////////////////////////////////////////////////////////////////////////////
-
 
 //SETTING THE ANALYSIS
 
@@ -40,13 +10,13 @@ void LookupWrite(TChain* chain, const char* target) ;
 // LYZ1  = Lee Yang Zeroes first run
 // LYZ2  = Lee Yang Zeroes second run
 // LYZEP = Lee Yang Zeroes Event Plane
-// CUM   = Cumulants
+// GFC   = Generating Function Cumulants
 // MCEP  = Flow calculated from the real MC event plane (only for simulated data)
-const TString method = "SP";
+const TString method = "GFC";
 
 //Type of analysis can be:
 // ESD, AOD, MC, ESDMC0, ESDMC1
-const TString type = "MC";
+const TString type = "AOD";
 
 //Bolean to fill/not fill the QA histograms
 Bool_t QA = kTRUE;    
@@ -166,12 +136,12 @@ void runAliAnalysisTaskFlow(Int_t nRuns = 3, const Char_t* dataDir="/data/alice1
 
   AliCFTrackQualityCuts *recQualityCuts1 = new AliCFTrackQualityCuts("recQualityCuts1","rec-level quality cuts");
   recQualityCuts1->SetMinNClusterTPC(minclustersTPC1);
-  recQualityCuts1->SetRequireITSRefit(kTRUE);
+  //recQualityCuts1->SetRequireITSRefit(kTRUE);
   if (QA) { recQualityCuts1->SetQAOn(qaInt); }
 
   AliCFTrackQualityCuts *recQualityCuts2 = new AliCFTrackQualityCuts("recQualityCuts2","rec-level quality cuts");
   recQualityCuts2->SetMinNClusterTPC(minclustersTPC2);
-  recQualityCuts2->SetRequireITSRefit(kTRUE);
+  //recQualityCuts2->SetRequireITSRefit(kTRUE);
   if (QA) { recQualityCuts2->SetQAOn(qaDiff); }
 
   AliCFTrackIsPrimaryCuts *recIsPrimaryCuts1 = new AliCFTrackIsPrimaryCuts("recIsPrimaryCuts1","rec-level isPrimary cuts");
@@ -374,16 +344,16 @@ void runAliAnalysisTaskFlow(Int_t nRuns = 3, const Char_t* dataDir="/data/alice1
       taskLYZEP->SetQAList2(qaDiff); }
     mgr->AddTask(taskLYZEP);
   }
-  else if (method == "CUM"){
-    if (QA) { AliAnalysisTaskCumulants *taskCUM = new AliAnalysisTaskCumulants("TaskCumulants",kTRUE);}
-    else { AliAnalysisTaskCumulants *taskCUM = new AliAnalysisTaskCumulants("TaskCumulants",kFALSE);}
-    taskCUM->SetAnalysisType(type);
-    taskCUM->SetCFManager1(cfmgr1);
-    taskCUM->SetCFManager2(cfmgr2);
+  else if (method == "GFC"){
+    if (QA) { AliAnalysisTaskCumulants *taskGFC = new AliAnalysisTaskCumulants("TaskCumulants",kTRUE);}
+    else { AliAnalysisTaskCumulants *taskGFC = new AliAnalysisTaskCumulants("TaskCumulants",kFALSE);}
+    taskGFC->SetAnalysisType(type);
+    taskGFC->SetCFManager1(cfmgr1);
+    taskGFC->SetCFManager2(cfmgr2);
     if (QA) { 
-      taskCUM->SetQAList1(qaInt);
-      taskCUM->SetQAList2(qaDiff); }
-    mgr->AddTask(taskCUM);
+      taskGFC->SetQAList1(qaInt);
+      taskGFC->SetQAList2(qaDiff); }
+    mgr->AddTask(taskGFC);
   }
   else if (method == "MCEP"){
     if (QA) { AliAnalysisTaskMCEventPlane *taskMCEP = new AliAnalysisTaskMCEventPlane("TaskMCEventPlane",kTRUE);}
@@ -409,7 +379,7 @@ void runAliAnalysisTaskFlow(Int_t nRuns = 3, const Char_t* dataDir="/data/alice1
 
   TString outputName = "output";
   outputName+= method;
-  outputName+= "analysis";
+  outputName+= "Analysis";
   outputName+= type;
   if (method == "LYZ1") outputName+= "_firstrun";
   if (method == "LYZ2") outputName+= "_secondrun";
@@ -465,11 +435,11 @@ void runAliAnalysisTaskFlow(Int_t nRuns = 3, const Char_t* dataDir="/data/alice1
     mgr->ConnectOutput(taskLYZEP,2,coutput3); }
     cinput2->SetData(fInputList);
   }
-  else if (method == "CUM")   { 
-    mgr->ConnectInput(taskCUM,0,cinput1); 
-    mgr->ConnectOutput(taskCUM,0,coutput1);
-    if (QA) { mgr->ConnectOutput(taskCUM,1,coutput2);
-    mgr->ConnectOutput(taskCUM,2,coutput3); }
+  else if (method == "GFC")   { 
+    mgr->ConnectInput(taskGFC,0,cinput1); 
+    mgr->ConnectOutput(taskGFC,0,coutput1);
+    if (QA) { mgr->ConnectOutput(taskGFC,1,coutput2);
+    mgr->ConnectOutput(taskGFC,2,coutput3); }
   }  
   else if (method == "MCEP")  { 
     mgr->ConnectInput(taskMCEP,0,cinput1); 

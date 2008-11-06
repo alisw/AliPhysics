@@ -160,12 +160,13 @@ void AliCumulantsFunctions::Calculate()
  /////////////////////////////////////////////////////////////////////////////
   
  Double_t C[fgkPmax][fgkQmax]={0.};//C[p][q]
- for (Int_t p=0;p<fgkPmax;p++){
-  for (Int_t q=0;q<fgkQmax;q++){
-   C[p][q]=1.*AvM*(pow(AvG[p][q],(1./AvM))-1.); 
+ if(AvM!=0){
+  for (Int_t p=0;p<fgkPmax;p++){
+   for (Int_t q=0;q<fgkQmax;q++){
+    C[p][q]=1.*AvM*(pow(AvG[p][q],(1./AvM))-1.); 
+   }
   }
  }
- 
  /////////////////////////////////////////////////////////////////////////////
  ///////avaraging the gen. function for the cumulants over azimuth////////////
  /////////////////////////////////////////////////////////////////////////////
@@ -259,7 +260,7 @@ void AliCumulantsFunctions::Calculate()
  Double_t ChiQ[4]={0.};
    
    //v_2{2}
-   if((cumulant[0]>=0.) && (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(pow(cumulant[0],(1./2.))*AvM,2.)>0.))
+   if(AvM!=0 && (cumulant[0]>=0.) && (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(pow(cumulant[0],(1./2.))*AvM,2.)>0.))
    {        
     ChiQ[0]=AvM*V2/pow(AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(V2*AvM,2.),0.5);
     SdQ[0]=pow(((1./(2.*AvM*nEvents))*((1.+1.*pow(ChiQ[0],2))/(1.*pow(ChiQ[0],2)))),0.5);
@@ -273,7 +274,7 @@ void AliCumulantsFunctions::Calculate()
    }
    
    //v_2{4}   
-   if((cumulant[1]<=0.) && (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(pow(-cumulant[1],(1./4.))*AvM,2.)>0.))
+   if(AvM!=0 && (cumulant[1]<=0.) && (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(pow(-cumulant[1],(1./4.))*AvM,2.)>0.))
    {
     ChiQ[1]=AvM*V4/pow(AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(V4*AvM,2.),0.5);
     SdQ[1]=(1./(pow(2.*AvM*nEvents,.5)))*pow((1.+2.*pow(ChiQ[1],2)+(1./4.)*pow(ChiQ[1],4.)+(1./4.)*pow(ChiQ[1],6.))/((1./4.)*pow(ChiQ[1],6.)),.5);
@@ -287,7 +288,7 @@ void AliCumulantsFunctions::Calculate()
    } 
   
   //v_2{6}
-  if((cumulant[2]>=0.) && (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(pow((1./4.)*cumulant[2],(1./6.))*AvM,2.)>0.))
+  if(AvM!=0 && (cumulant[2]>=0.) && (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(pow((1./4.)*cumulant[2],(1./6.))*AvM,2.)>0.))
   {
    ChiQ[2]=AvM*V6/pow(AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(V6*AvM,2.),0.5);
    SdQ[2]=(1./(pow(2.*AvM*nEvents,.5)))*pow((3.+18.*pow(ChiQ[2],2)+9.*pow(ChiQ[2],4.)+28.*pow(ChiQ[2],6.)+12.*pow(ChiQ[2],8.)+24.*pow(ChiQ[2],10.))/(24.*pow(ChiQ[2],10.)),.5);
@@ -301,7 +302,7 @@ void AliCumulantsFunctions::Calculate()
   }
   
   //v_2{8}
-  if((cumulant[3]<=0.) && (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(pow(-(1./33.)*cumulant[3],(1./8.))*AvM,2.)>0.))
+  if(AvM!=0 && (cumulant[3]<=0.) && (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(pow(-(1./33.)*cumulant[3],(1./8.))*AvM,2.)>0.))
   {  
    ChiQ[3]=AvM*V8/pow(AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(V8*AvM,2.),0.5);
    SdQ[3]=(1./(pow(2.*AvM*nEvents,.5)))*pow((12.+96.*pow(ChiQ[3],2)+72.*pow(ChiQ[3],4.)+304.*pow(ChiQ[3],6.)+257.*pow(ChiQ[3],8.)+804.*pow(ChiQ[3],10.)+363.*pow(ChiQ[3],12.)+726.*pow(ChiQ[3],14.))/(726.*pow(ChiQ[3],14.)),.5);
@@ -315,7 +316,7 @@ void AliCumulantsFunctions::Calculate()
   }
   
   //v_2{10}
-  if (cumulant[4]>=0.){
+  if (AvM!=0 && cumulant[4]>=0.){
     cout<<"v_"<<fgkFlow<<"{10} = "<<100.*V10<<"%"<<endl;
     fifr->SetBinContent(5,100.*pow((1./456.)*cumulant[4],(1./10.)));
   } else {
@@ -323,7 +324,7 @@ void AliCumulantsFunctions::Calculate()
   }
   
   //v_2{12}
-  if (cumulant[5]<=0.){
+  if (AvM!=0 && AvM!=0 && cumulant[5]<=0.){
     cout<<"v_"<<fgkFlow<<"{12} = "<<100.*V12<<"%"<<endl;
     fifr->SetBinContent(6,100.*pow(-(1./9460.)*cumulant[5],(1./12.)));
   } else {
@@ -331,7 +332,7 @@ void AliCumulantsFunctions::Calculate()
   }
   
   //v_2{14}
-  if (cumulant[6]>=0.){
+  if (AvM!=0 && cumulant[6]>=0.){
     cout<<"v_"<<fgkFlow<<"{14} = "<<100.*V14<<"%"<<endl;
     fifr->SetBinContent(7,100.*pow((1./274800.)*cumulant[6],(1./14.)));
   } else {
@@ -339,7 +340,7 @@ void AliCumulantsFunctions::Calculate()
   }
   
   //v_2{16}
-  if (cumulant[7]<=0.){
+  if (AvM!=0 && cumulant[7]<=0.){
     cout<<"v_"<<fgkFlow<<"{16} = "<<100.*V16<<"%"<<endl;
     fifr->SetBinContent(8,100.*pow(-(1./10643745.)*cumulant[7],(1./16.)));
   } else {
@@ -367,6 +368,7 @@ void AliCumulantsFunctions::Calculate()
   } 
   */
 
+  if(AvM!=0){
   for(Int_t b=0;b<fgknBins;b++){
     //for(Int_t p=0;p<fgkPmax;p++){
       for(Int_t q=0;q<fgkQmax;q++){
@@ -395,6 +397,7 @@ void AliCumulantsFunctions::Calculate()
 	Y[b][7][q]=fdIm7->GetBinContent(b+1,q+1)/AvG[7][q];
       }
     //}   
+  }
   }
   
   Double_t D[fgknBins][fgkPmax]={0.};
@@ -430,7 +433,7 @@ void AliCumulantsFunctions::Calculate()
     //cout<<"pt bin: "<<b*fBinWidth<<"-"<<(b+1)*fBinWidth<<" GeV"<<endl;
     
     //v'_{2/2}{2}
-    if(cumulant[0]>=0)
+    if(cumulant[0]>0)
     {
       v2[b]=100.*DiffCumulant2[b]/pow(cumulant[0],.5);
       if (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(V2*AvM,2.)>0.)
@@ -447,7 +450,7 @@ void AliCumulantsFunctions::Calculate()
     } 
     
     //v'_{2/2}{4}
-    if(cumulant[1]<=0)
+    if(cumulant[1]<0)
     {
       v4[b]=-100.*DiffCumulant4[b]/pow(-cumulant[1],.75);
       if (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(V4*AvM,2.)>0.)
@@ -464,7 +467,7 @@ void AliCumulantsFunctions::Calculate()
     }  
     
     //v'_{2/2}{6}
-    if(cumulant[2]>=0){
+    if(cumulant[2]>0){
       //cout<<"v'_2/2{6} = "<<100.*DiffCumulant6[b]/(4.*pow((1./4.)*cumulant[2],(5./6.)))<<"%"<<endl;
       v6[b]=100.*DiffCumulant6[b]/(4.*pow((1./4.)*cumulant[2],(5./6.)));
       //fCommonHistsRes6->FillDifferentialFlow(b+1,v6[b],0.);
@@ -474,7 +477,7 @@ void AliCumulantsFunctions::Calculate()
     }     
     
     //v'_{2/2}{8}
-    if(cumulant[3]<=0){
+    if(cumulant[3]<0){
       //cout<<"v'_2/2{8} = "<<-100.*DiffCumulant8[b]/(33.*pow(-(1./33.)*cumulant[3],(7./8.)))<<"%"<<endl;
       v8[b]=-100.*DiffCumulant8[b]/(33.*pow(-(1./33.)*cumulant[3],(7./8.))); 
       //fCommonHistsRes8->FillDifferentialFlow(b+1,v8[b],0.);
