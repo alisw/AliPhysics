@@ -1,7 +1,7 @@
 void recraw() {
   const char * kYear = "08" ; 
  
-  AliLog::SetGlobalLogLevel(AliLog::kError);
+  //  AliLog::SetGlobalLogLevel(AliLog::kError);
 	
 //	gSystem->Load("libRAliEn.so");
 //  gSystem->Load("libNet.so");
@@ -49,9 +49,9 @@ void recraw() {
 	// switch off cleanESD
   reco.SetCleanESD(kFALSE);
 	
- 	reco.SetRunQA("ALL:ALL") ;
+  	reco.SetRunQA("ALL:ALL") ;
 	//AliQA::SetQARefStorage(Form("%s%s/", AliQA::GetQARefDefaultStorage(), kYear)) ;
-  AliQA::SetQARefStorage("local://$ALICE_ROOT") ;
+      AliQA::SetQARefStorage("local://$ALICE_ROOT") ;
   for (Int_t det = 0 ; det < AliQA::kNDET ; det++) {
     reco.SetQACycles(det, 9999) ;
     reco.SetQAWriteExpert(det) ; 

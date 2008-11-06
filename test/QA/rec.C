@@ -3,7 +3,6 @@
   AliCDBManager * man = AliCDBManager::Instance();
   //man->SetDefaultStorage("alien://Folder=/alice/data/2008/LHC08d/OCDB/");
   man->SetDefaultStorage("local://$ALICE_ROOT");
-  man->SetSpecificStorage("EMCAL/*","local://DB");
   
   AliReconstruction reco;
 
@@ -14,6 +13,7 @@
   reco.SetRecoParam("TRD",AliTRDrecoParam::GetLowFluxParam());
   reco.SetRecoParam("PHOS",AliPHOSRecoParam::GetDefaultParameters());
   reco.SetRecoParam("MUON",AliMUONRecoParam::GetLowFluxParam());
+  reco.SetRecoParam("EMCAL",AliEMCALRecParam::GetLowFluxParam()); 
 	
  	AliTPCReconstructor::SetStreamLevel(1);
   reco.SetRunReconstruction("ITS TPC TRD TOF HMPID PHOS EMCAL MUON T0 VZERO FMD PMD ZDC ACORDE");
