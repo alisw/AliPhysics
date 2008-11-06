@@ -41,7 +41,7 @@
 #include "STRUCT/AliHALL.h"
 #include "STRUCT/AliFRAMEv2.h"
 #include "STRUCT/AliSHILv2.h"
-#include "STRUCT/AliPIPEv0.h"
+#include "STRUCT/AliPIPEv3.h"
 #include "ITS/AliITSvPPRasymmFMD.h"
 #include "TPC/AliTPCv2.h"
 #include "TOF/AliTOFv4T0.h"
@@ -461,11 +461,11 @@ Config()
   Bool_t useFMD   = kTRUE; 
   Bool_t useFRAME = kFALSE; 
   Bool_t useHALL  = kFALSE; 
-  Bool_t useITS   = kFALSE;
+  Bool_t useITS   = kTRUE;
   Bool_t useMAG   = kFALSE; 
   Bool_t useMUON  = kFALSE; 
   Bool_t usePHOS  = kFALSE; 
-  Bool_t usePIPE  = kFALSE; 
+  Bool_t usePIPE  = kTRUE; 
   Bool_t usePMD   = kFALSE; 
   Bool_t useHMPID = kFALSE; 
   Bool_t useSHIL  = kFALSE; 
@@ -522,7 +522,7 @@ Config()
 
   if (usePIPE) {
     // ================== PIPE parameters ============================
-    AliPIPE *PIPE = new AliPIPEv0("PIPE", "Beam Pipe");
+    AliPIPE *PIPE = new AliPIPEv3("PIPE", "Beam Pipe");
   }
   
   if (useITS) {

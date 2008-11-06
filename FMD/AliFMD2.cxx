@@ -45,9 +45,11 @@ AliFMD2::AliFMD2(AliFMDRing* inner, AliFMDRing* outer)
   // Constructor 
   // SetInnerZ(83.4);
   // SetOuterZ(75.2);
-  AliWarning("Z position of FMD2 rings may be wrong by 2.35cm!");
-  SetInnerZ(83.4+2.35);
-  SetOuterZ(75.2+2.35);
+  Double_t off = 0; // 2.35
+  if (off != 0) 
+    AliWarning(Form("Z position of FMD2 rings may be wrong by %fcm!", off));
+  SetInnerZ(83.4+off);
+  SetOuterZ(75.2+off);
 }
 
 

@@ -104,6 +104,13 @@ protected:
   virtual TGeoShape* HoneycombShape(Int_t id, Char_t ring,
 				    double r1, double r2, 
 				    double w, double t, double c=0.3);
+  /** 
+   * Get the tension box volume
+   * 
+   * 
+   * @return 
+   */
+  virtual TGeoVolume* TensionBox();
   /** Make a detector volume 
       @param d Detector geometry 
       @param motherTop Mother volume (detector volume)

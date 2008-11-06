@@ -54,22 +54,23 @@ AliFMD3::AliFMD3(AliFMDRing* inner, AliFMDRing* outer)
     fFiducialRadius(.25),
     fConeInnerAngle(0),
     fConeOuterAngle(0),
-    fHoleOffset(7),      // From drawing
+    fHoleOffset(6.9),    // From drawing
     fHoleDepth(2),       // What's needed
-    fHoleLength(0),      
-    fHoleLowWidth(4),    // What's needed
-    fHoleHighWidth(18),  // What's needed
+    fHoleLength(31.2),   // From drawing
+    fHoleLowWidth(3), // 4),    // What's needed
+    fHoleHighWidth(18.5), // 17.5), // 18),  // What's needed
     fBoltLength(1),      // Guessed
     fBoltRadius(0.15),   // Estimate
     fConeRadii(6),    
     fFiducialHoles(4)
 {
   // Constructor. 
-  // SetInnerZ(-62.8);             // By design
-  // SetOuterZ(-75.2);             // By design
-  AliWarning("Z position of FMD3 rings may be off by 0.25cm!");
-  SetInnerZ(-63.05);             // Slightly off (2.5mm) from design
-  SetOuterZ(-75.45);             // Slightly off (2.5mm) from design
+  Double_t off = -0.25;
+  if (off != 0) 
+    AliWarning(Form("Z position of FMD3 rings may be off by %fcm!", off));
+
+  SetInnerZ(-62.8+off);             // By design
+  SetOuterZ(-75.2+off);             // By design
 
   SetInnerHoneyLowR(4.18207);   // From drawing
   SetInnerHoneyHighR(19.74922); // From drawing
@@ -111,8 +112,10 @@ AliFMD3::Init()
   fConeOuterAngle  = TMath::ATan2(v3.Y()-v2.Y(), v3.X()-v2.X());
   
   Double_t    hz1  = -fHoleOffset+fInnerZ+fNoseZ;
+#if 0
   fHoleLength      = TMath::Sqrt(TMath::Power(v4.Z()-ConeR(hz1),2) + 
 				 TMath::Power(v4.X()-fHoleOffset,2));  
+#endif
 }
 
 //____________________________________________________________________
