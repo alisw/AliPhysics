@@ -105,6 +105,160 @@ AliFMDRawReader::Exec(Option_t*)
 }
 
 
+//____________________________________________________________________
+Bool_t
+AliFMDRawReader::NextSignal(UShort_t& det, Char_t&   rng, 
+			    UShort_t& sec, UShort_t& str, 
+			    Short_t&  adc, Bool_t&   zs, 
+			    UShort_t& fac)
+{
+  // Scan current event for next signal.   It returns kFALSE when
+  // there's no more data in the event. 
+  static AliAltroRawStream   stream(fReader); //    = 0;
+  static AliFMDParameters*   pars     = 0;
+  static AliFMDAltroMapping* map      = 0;
+  static Int_t               ddl      = -1;
+  static UInt_t              rate     = 0;
+  static UShort_t            tdet     = 0;
+  static Char_t              trng     = '\0';
+  static UShort_t            tsec     = 0;
+  static Short_t             tstr     = 0;   
+  static Short_t             bstr     = -1;
+  static Int_t               hwaddr   = -1;
+  static UShort_t            stripMin = 0;
+  static UShort_t            stripMax = 0; // 127;
+  static UShort_t            preSamp  = 0; // 14+5;
+  if (stream.GetDDLNumber() < 0) { 
+    fReader->Select("FMD");
+
+    // Reset "seen" array
+    // const UShort_t kUShortMax = (1 << 16) - 1;
+    // fSeen.Reset(kUShortMax);
+
+    pars   = AliFMDParameters::Instance();
+    map    = pars->GetAltroMap();
+    // stream = new AliAltroRawStream(fReader);
+
+    AliFMDDebug(5, ("Setting %d word headers", 
+		    pars->HasCompleteHeader() ? 8 : 7));
+    stream.SetShortDataHeader(!pars->HasCompleteHeader());
+    stream.SetNoAltroMapping(kFALSE);
+
+    // Reset variables
+    ddl    = -1;  
+    rate   = 0;   
+    tdet   = 0;   
+    trng   = '\0';
+    tsec   = 0;   
+    tstr   = 0;  
+    hwaddr = -1;
+  }
+  do { 
+    Bool_t next = stream.Next();
+    if (!next) { 
+      // if (stream) delete stream;
+      // stream = 0;
+      return kFALSE;
+    }
+    Int_t thisDDL = stream.GetDDLNumber();
+    AliFMDDebug(10, ("RCU @ DDL %d", thisDDL));
+    if (thisDDL != ddl) { 
+      ddl  = thisDDL;
+      zs   = stream.GetZeroSupp();
+      fac  = stream.GetNPostsamples();
+      tdet = map->DDL2Detector(ddl);
+      rate = 0; // stream.GetNPresamples();
+      AliFMDDebug(10, ("RCU @ DDL %d zero suppression: %s",ddl, zs?"yes":"no"));
+      AliFMDDebug(10, ("RCU @ DDL %d noise factor: %d", ddl,fac));
+      AliFMDDebug(10, ("RCU @ DDL %d sample rate: %d", ddl, rate));
+    }
+    Int_t thisAddr = stream.GetHWAddress();
+    AliFMDDebug(10, ("RCU @ DDL %d, Address 0x%03x", ddl, thisAddr));    
+    if (thisAddr != hwaddr) { 
+      hwaddr = thisAddr;
+      UShort_t  board, chip, channel;
+      map->ChannelAddress(hwaddr, board, chip, channel);
+      map->Channel2StripBase(board, chip, channel, trng, tsec, bstr);
+      AliFMDDebug(10, ("0x%04x/0x%03x maps to FMD%d%c[%2d]-%3d", 
+		      ddl, hwaddr, tdet, trng, tsec, bstr));
+      
+      stripMin = pars->GetMinStrip(tdet, trng, tsec, bstr);
+      stripMax = pars->GetMaxStrip(tdet, trng, tsec, bstr);
+      preSamp  = pars->GetPreSamples(tdet, trng, tsec, bstr);
+      if (rate == 0) rate = pars->GetSampleRate(tdet, trng, tsec, bstr);
+      AliFMDDebug(10, ("RCU @ DDL %d, Address 0x%03x sample rate: %d", 
+		      ddl, hwaddr, rate));
+      
+      Int_t nChAddrMismatch = stream.GetNChAddrMismatch();
+      Int_t nChLenMismatch  = stream.GetNChLengthMismatch();
+      if (nChAddrMismatch != 0) 
+	AliWarning(Form("Got %d channels with address mis-matches for 0x%03x",
+			nChAddrMismatch, hwaddr));
+      if (nChLenMismatch != 0) 
+	AliWarning(Form("Got %d channels with length mis-matches for 0x%03x",
+			nChLenMismatch, hwaddr));
+    }
+    // Get the signal
+    adc = stream.GetSignal();
+
+    // Sanity check - if the total bunch length is less than 1, then
+    // read until we get the next bunch. 
+    Int_t b  = stream.GetTimeLength();
+    if (b < 1) { 
+      AliWarning(Form("Bunch length %0d is less than 0 for "
+		      "DDL %4d address 0x%03x", b, ddl, hwaddr));
+      continue;
+    }
+    // Sanity check - if the current time is less than 0, then read
+    // until we get a new bunch. 
+    Int_t t  = stream.GetTime();
+    if (t < 0) {
+      AliWarning(Form("Time %0d is less than 0 for DDL %4d address 0x%03x", 
+		      t, ddl, hwaddr));
+      continue;
+    }
+
+    Short_t  strOff = 0;
+    UShort_t samp   = 0;
+    map->Timebin2Strip(tsec, t, preSamp, rate, strOff, samp);
+    tstr = bstr + strOff;
+    AliFMDDebug(20, ("0x%04x/0x%03x/%04d maps to FMD%d%c[%2d,%3d]-%d", 
+		     ddl, hwaddr, t, tdet, trng, tsec, tstr, samp));
+    
+    Bool_t take = kFALSE;
+    switch (rate) { 
+    case 1:                      take = kTRUE; break;
+    case 2:  if (samp == 1)      take = kTRUE; break;
+    case 3:  if (samp == 1)      take = kTRUE; break; 
+    case 4:  if (samp == 2)      take = kTRUE; break;
+    default: if (samp == rate-2) take = kTRUE; break;
+    }
+    if (!take) continue;
+
+
+    // Local strip number to channel
+    Short_t l = (tstr > bstr ? tstr - bstr : bstr - tstr);
+    AliFMDDebug(10, ("Checking if strip %d in range [%d,%d]", 
+		     l, stripMin, stripMax));
+    if (l < stripMin || l > stripMax) { 
+      AliFMDDebug(5, ("VA channel %3d (t: %4d) of DDL %4d address 0x%03x "
+		      "is out of range (%3d->%3d)", 
+		      l, t, ddl, hwaddr, stripMin, stripMax));
+      continue;
+    }
+
+
+    det = tdet;
+    rng = trng;
+    sec = tsec;
+    str = tstr;
+    // adc = stream.GetSignal();
+    
+    break;
+  } while (true);
+  return kTRUE;
+}
+
 #if 1
 //____________________________________________________________________
 Bool_t

@@ -92,6 +92,10 @@ public:
    */
   UShort_t NoiseFactor(UShort_t ddl) const { return fNoiseFactor[ddl]; }
 
+  Bool_t NextSignal(UShort_t& det, Char_t&   rng, 
+		    UShort_t& sec, UShort_t& str, 
+		    Short_t&  adc, Bool_t&   zs, 
+		    UShort_t& fac);
 protected:
   AliFMDRawReader(const AliFMDRawReader& o) 
     : TTask(o), 
