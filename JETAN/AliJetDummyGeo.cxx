@@ -644,6 +644,9 @@ void AliJetDummyGeo::CreateListOfTrd1Modules()
   Int_t ind=0; // this is phi index
   Int_t ieta=0, nModule=0, iphiTemp;
   Double_t xr, zr, theta, phi, eta, r, x,y;
+  xr = 0.;
+  zr = 0.;
+  
   TVector3 vglob;
   Double_t ytCenterModule=0.0, ytCenterCell=0.0;
 
