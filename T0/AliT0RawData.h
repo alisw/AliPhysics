@@ -35,10 +35,6 @@ class AliT0RawData : public TObject {
   void  GetDigits(AliT0digit *fDigits);
   //This method formats and stores in buf all the digits of a TOF module
 
-   void  PackWord(UInt_t &BaseWord, UInt_t Word, Int_t StartBit, Int_t StopBit);
-  //This method stores the value of the variable Word of StopBit-StartBit+1 bits 
-  //in BaseWord, starting from the bit StartBit
-
    void  WriteDataHeader(Bool_t dummy, Bool_t compressed);
    void  WriteDRMDataHeader();
    void  WriteTRMDataHeader(UInt_t slotID, Int_t nWords, Int_t positionOfTRMHeader);
