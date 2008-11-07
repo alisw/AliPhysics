@@ -81,7 +81,7 @@ public:
   AliEveTRDClusters();
 
   void PointSelected(Int_t n);
-
+  void Print(Option_t *o = "") const; // *MENU*
 private:
   AliEveTRDClusters(const AliEveTRDClusters&);            // Not implemented
   AliEveTRDClusters& operator=(const AliEveTRDClusters&); // Not implemented
@@ -98,7 +98,7 @@ public:
   AliEveTRDTracklet(AliTRDseedV1 *trklt);
 //  ~AliEveTRDTracklet();
   AliEveTRDClusters* GetClusters() const {return fClusters;}
-  void               ProcessData(); // *MENU*
+  void               Print(Option_t *o="") const; // *MENU*
 private:
   AliEveTRDClusters *fClusters;  // clusters
 

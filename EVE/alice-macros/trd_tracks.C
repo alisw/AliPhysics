@@ -33,6 +33,7 @@ void trd_tracks(TEveElement *cont = 0)
       AliEveTRDTrack *trackEve = new AliEveTRDTrack(trackObj);
       tracks->AddElement(trackEve);
       trackEve->SetESDstatus(esdTrack->GetStatus());
+      trackEve->SetName(Form("[%4d] %s", n, trackEve->GetName()));
     }
   }
 	

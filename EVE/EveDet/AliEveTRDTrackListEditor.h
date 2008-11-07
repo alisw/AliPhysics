@@ -156,9 +156,9 @@ class AliEveTRDMacroWizzard : public TGMainFrame
 {
 public:
   AliEveTRDMacroWizzard(const TGWindow* p = 0);
-  void Create(Int_t typ);
-  void Done(Char_t *macro)
-    { Emit("Done(Char_t*)", macro); } //*SIGNAL*
+  void Create(Int_t typ); //*SIGNAL*
+  void Create(Char_t *pname); //*SIGNAL*
+
 private:
   AliEveTRDMacroWizzard(const AliEveTRDMacroWizzard&);
   AliEveTRDMacroWizzard& operator=(const AliEveTRDMacroWizzard&);

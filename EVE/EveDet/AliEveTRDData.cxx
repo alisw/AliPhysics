@@ -243,6 +243,17 @@ void AliEveTRDClusters::PointSelected(Int_t n)
   // Float_t	AliCluster::GetSigmaZ2() const
 }
 
+//______________________________________________________________________________
+void AliEveTRDClusters::Print(Option_t *o) const
+{
+  AliTRDcluster *c = 0x0;
+
+  for(Int_t n = GetN(); n--;){
+    if(!(c = dynamic_cast<AliTRDcluster*>(GetPointId(n)))) continue;
+    c->Print(o);
+  }
+}
+
 ///////////////////////////////////////////////////////////
 /////////////   AliEveTRDTracklet         /////////////////////
 ///////////////////////////////////////////////////////////
@@ -258,14 +269,17 @@ AliEveTRDTracklet::AliEveTRDTracklet(AliTRDseedV1 *trklt):TEveLine()
   Int_t det = -1, sec;
   Float_t g[3];
   AliTRDcluster *c = 0x0;
-  AddElement(fClusters = new AliEveTRDClusters());
-  for(Int_t ic=0; ic<35; ic++){
+  for(Int_t ic=0; ic<AliTRDseed::knTimebins; ic++){
     if(!(c = trklt->GetClusters(ic))) continue;
+    if(!fClusters) AddElement(fClusters = new AliEveTRDClusters());
     det = c->GetDetector();
     c->GetGlobalXYZ(g); 
     Int_t id = fClusters->SetNextPoint(g[0], g[1], g[2]);    
+    //Int_t id = fClusters->SetNextPoint(c->GetX(), c->GetY(), c->GetZ());    
     fClusters->SetPointId(id, new AliTRDcluster(*c));
   } 
+  if(fClusters) fClusters->SetTitle(Form("N[%d]", trklt->GetN2()));
+
 
   SetTitle(Form("Det[%d] Plane[%d] P[%7.3f]", det, trklt->GetPlane(), trklt->GetMomentum()));
   SetLineColor(kRed);
@@ -281,6 +295,9 @@ AliEveTRDTracklet::AliEveTRDTracklet(AliTRDseedV1 *trklt):TEveLine()
   Double_t xg =  x0 * TMath::Cos(alpha) - y0f * TMath::Sin(alpha); 
   Double_t yg = x0 * TMath::Sin(alpha) + y0f * TMath::Cos(alpha);
   SetPoint(0, xg, yg, z0r);
+  //SetPoint(0, x0, y0f, z0r);
+
+
   //SetPointId(0, new AliTRDseedV1(*trackletObj));
   Double_t x1 = x0-3.5, 
     y1f = y0f - ysf*3.5,
@@ -288,13 +305,15 @@ AliEveTRDTracklet::AliEveTRDTracklet(AliTRDseedV1 *trklt):TEveLine()
   xg =  x1 * TMath::Cos(alpha) - y1f * TMath::Sin(alpha); 
   yg = x1 * TMath::Sin(alpha) + y1f * TMath::Cos(alpha);
   SetPoint(1, xg, yg, z1r);
+  //SetPoint(1, x1, y1f, z1r);
 }
 
 //______________________________________________________________________________
-void AliEveTRDTracklet::ProcessData()
+void AliEveTRDTracklet::Print(Option_t *o) const
 {
   AliTRDseedV1 *tracklet = (AliTRDseedV1*)GetUserData();
-  tracklet->Print();
+  if(!tracklet) return;
+  tracklet->Print(o);
 }
 
 ///////////////////////////////////////////////////////////
@@ -310,10 +329,9 @@ AliEveTRDTrack::AliEveTRDTrack(AliTRDtrackV1 *trk)
   ,fPoints(0x0)
 {
   // Constructor.
-  SetName("track");
-
   SetUserData(trk);
-  
+  SetName("");
+
   AliTRDtrackerV1::SetNTimeBins(24);
 
   AliTRDseedV1 *tracklet = 0x0;
@@ -436,8 +454,18 @@ void AliEveTRDTrack::SetStatus(UChar_t s)
       species = is;
     }
 
-  SetTitle(Form("Nc[%d] Nt[%d] Model[%s] Source[%s]", trk->GetNumberOfClusters(), trk->GetNumberOfTracklets(), model, fESDStatus&AliESDtrack::kTRDin ? "barrel" : "sa"));
-  SetName(AliPID::ParticleName(species));
+  SetTitle(Form(
+    "Tracklets[%d] Clusters[%d]\n"
+    "Reconstruction Source[%s]\n"
+    "PID[%4.1f %4.1f %4.1f %4.1f %4.1f]\n"
+    "MC[%d]", trk->GetNumberOfTracklets(), trk->GetNumberOfClusters(), fESDStatus&AliESDtrack::kTRDin ? "barrel" : "sa",
+    1.E2*trk->GetPID(0), 1.E2*trk->GetPID(1),
+    1.E2*trk->GetPID(2), 1.E2*trk->GetPID(3), 1.E2*trk->GetPID(4), trk->GetLabel()));
+
+  if(GetName()){
+    char id[6]; strncpy(id, GetName(), 6); 
+    SetName(Form("%s %s", id, AliPID::ParticleName(species)));
+  }
 
   // save track status
   fTrackState = s;
