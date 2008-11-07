@@ -371,7 +371,7 @@ void AliAnalysisTaskStrange::UserExec(Option_t *)
 
 	// filling myAODv0
 	lDcaV0Daughters    = v0->GetDcaV0Daughters();
-	lDcaV0ToPrimVertex = v0->GetD();
+	lDcaV0ToPrimVertex = v0->GetD(tPrimaryVtxPosition[0],tPrimaryVtxPosition[1],tPrimaryVtxPosition[2]);
 
 	if (TrackPos) TrackPos->GetImpactParameters(tdcaPosToPrimVertexXYZ[0],tdcaPosToPrimVertexXYZ[1]);
 	if (TrackNeg) TrackNeg->GetImpactParameters(tdcaNegToPrimVertexXYZ[0],tdcaNegToPrimVertexXYZ[1]);
