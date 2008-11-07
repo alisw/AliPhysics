@@ -28,7 +28,11 @@ void Hlib()
   gSystem->Load("libHMPIDsim.so");
   gSystem->Load("libHMPIDrec.so");
 
-  gSystem->AddIncludePath("-I$ALICE_ROOT/include -I$ALICE_ROOT/HMPID"); 
+//  gSystem->AddIncludePath("-I$ALICE_ROOT/include -I$ALICE_ROOT/HMPID"); 
+  gInterpreter->AddIncludePath("$HOME/HMPID");
+  gInterpreter->AddIncludePath("$ALICE_ROOT/include");
+  gInterpreter->AddIncludePath("$ALICE_ROOT/HMPID");
+
 }
 
 
