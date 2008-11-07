@@ -59,7 +59,7 @@ public:
 			       UInt_t options=kChildFrame, Pixel_t back=GetDefaultFrameBackground());
   virtual ~AliEveTRDLoaderManagerEditor() {}
 
-  virtual void	Add();
+  virtual void	Add(Char_t *entry);
   virtual void	Remove(Int_t entry);
   virtual void	SetModel(TObject* obj);
 

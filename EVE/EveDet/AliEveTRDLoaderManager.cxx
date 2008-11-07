@@ -122,13 +122,8 @@ AliEveTRDLoaderManagerEditor(const TGWindow* p, Int_t width, Int_t height,
   fSelector->AddEntry("Raw (DATE) ", AliEveTRDLoader::kTRDRawDate);
   fSelector->Resize(136,22);
   fHorizontalFrame539->AddFrame(fSelector, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsCenterY,2,2,2,2));
-
-  fAdd = new TGTextButton(fHorizontalFrame539, "Add");
-  fAdd->SetTextJustify(36);
-  fAdd->Resize(31,22);
-  fAdd->SetToolTipText("Add selected loader to list");
-  fAdd->Connect("Clicked()", "AliEveTRDLoaderManagerEditor", this, "Add()");
-  fHorizontalFrame539->AddFrame(fAdd, new TGLayoutHints(kLHintsLeft | kLHintsCenterX | kLHintsTop | kLHintsCenterY,2,2,2,2));
+  //fSelector->SetToolTipText("Select TRD data loader and add it to the list.\nThe loader can be removed by clicking the \"Remove\" button");
+  fSelector->Connect("Selected(char*)", "AliEveTRDLoaderManagerEditor", this, "Add(char*)");
   AddFrame(fHorizontalFrame539, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsExpandX,2,2,2,2));
 
   fGroupFrame = 0;
@@ -137,16 +132,9 @@ AliEveTRDLoaderManagerEditor(const TGWindow* p, Int_t width, Int_t height,
 
 
 //______________________________________________________________________________
-void AliEveTRDLoaderManagerEditor::Add()
+void AliEveTRDLoaderManagerEditor::Add(Char_t *name)
 {
   // Slot to add something.
-
-  TGTextLBEntry *entry = (TGTextLBEntry*)fSelector->GetSelectedEntry();
-  if(!entry){
-    AliWarning("Select first the loader type that you want to use from the drop down list.");
-    return;
-  }
-
   if(!fGroupFrame){
     // "TRD Loaders" group frame
     fGroupFrame = new TGGroupFrame(this,"TRD Loaders",kVerticalFrame,TGGroupFrame::GetDefaultGC()(),TGGroupFrame::GetDefaultFontStruct());
@@ -161,19 +149,7 @@ void AliEveTRDLoaderManagerEditor::Add()
   // horizontal frame
   TGHorizontalFrame *fHorizontalFrame = new TGHorizontalFrame(fGroupFrame, 264, 26, kHorizontalFrame);
 
-  // 	TGFont *ufont = gClient->GetFont("-*-helvetica-(null)-*-*-0-*-*-*-*-*-*-*");
-  // 	TGGC   *uGC;           // will reflect user GC changes
-  // 	// graphics context changes
-  // 	GCValues_t vall717;
-  // 	vall717.fMask = kGCForeground | kGCBackground | kGCFillStyle | kGCFont | kGCGraphicsExposures;
-  // 	gClient->GetColorByName(color[type], vall717.fForeground);
-  // 	gClient->GetColorByName("#c0c0c0", vall717.fBackground);
-  // 	vall717.fFillStyle = kFillSolid;
-  // 	vall717.fFont = ufont->GetFontHandle();
-  // 	vall717.fGraphicsExposures = kFALSE;
-  // 	uGC = gClient->GetGC(&vall717, kTRUE);
-
-  TGLabel *fLabel717 = new TGLabel(fHorizontalFrame, entry->GetText()->GetString()/*, uGC->GetGC(), ufont->GetFontStruct(), kChildFrame*/);
+  TGLabel *fLabel717 = new TGLabel(fHorizontalFrame, name);
   fLabel717->SetTextJustify(36);
   fHorizontalFrame->AddFrame(fLabel717, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsCenterY | kLHintsExpandX,2,2,2,2));
 
@@ -183,7 +159,7 @@ void AliEveTRDLoaderManagerEditor::Add()
   fRemoveButton->SetTextJustify(36);
   fRemoveButton->Resize(53,22);
   fRemoveButton->Connect("Clicked()", "AliEveTRDLoaderManagerEditor", this, Form("Remove(=%d)", nbutton));
-  fRemoveButton->SetToolTipText(Form("Remove %s Loader", entry->GetText()->GetString()));
+  fRemoveButton->SetToolTipText(Form("Remove %s Loader", name));
   fHorizontalFrame->AddFrame(fRemoveButton, new TGLayoutHints(kLHintsLeft | kLHintsCenterX | kLHintsTop | kLHintsCenterY,2,2,2,2));
 
   fGroupFrame->AddFrame(fHorizontalFrame, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsCenterY | kLHintsExpandX,2,2,2,2));
@@ -211,7 +187,7 @@ void AliEveTRDLoaderManagerEditor::Add()
     type = 0;
     break;
   }
-  fM->Add(id, entry->GetText()->GetString(), title[type]);
+  fM->Add(id, name, title[type]);
 }
 
 
