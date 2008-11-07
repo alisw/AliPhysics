@@ -57,9 +57,6 @@
       sprintf(sqhat,gApplication->Argv(i+1));
 
   }
-  char cmd[200] ; 
-  sprintf(cmd, ".! tar zxvf DB.tgz") ; 
-  gROOT->ProcessLine(cmd) ; 
   
   seed = nrun * 100000 + nevent;
   sprintf(sseed,"%d",seed);
