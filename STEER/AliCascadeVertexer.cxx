@@ -61,20 +61,11 @@ Int_t AliCascadeVertexer::V0sTracks2CascadeVertices(AliESDEvent *event) {
   // This function reconstructs cascade vertices
   //      Adapted to the ESD by I.Belikov (Jouri.Belikov@cern.ch)
   //--------------------------------------------------------------------
-   const AliESDVertex *vtxSPD=event->GetVertex();
    const AliESDVertex *vtxT3D=event->GetPrimaryVertex();
 
-   Double_t xPrimaryVertex=999, yPrimaryVertex=999, zPrimaryVertex=999;
-   if (vtxT3D->GetStatus()) {
-     xPrimaryVertex=vtxT3D->GetXv();
-     yPrimaryVertex=vtxT3D->GetYv();
-     zPrimaryVertex=vtxT3D->GetZv();
-   }
-   else {
-     xPrimaryVertex=vtxSPD->GetXv();
-     yPrimaryVertex=vtxSPD->GetYv();
-     zPrimaryVertex=vtxSPD->GetZv();
-   }
+   Double_t xPrimaryVertex=vtxT3D->GetXv();
+   Double_t yPrimaryVertex=vtxT3D->GetYv();
+   Double_t zPrimaryVertex=vtxT3D->GetZv();
 
    Double_t b=event->GetMagneticField();
    Int_t nV0=(Int_t)event->GetNumberOfV0s();
