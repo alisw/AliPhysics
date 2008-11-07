@@ -11,6 +11,23 @@
 // Author:
 // Alex Bercuci (A.Bercuci@gsi.de)
 // 
+
+//_______________________________________________________
+void analyseHits(AliEveTRDHits *hits = 0x0)
+{
+// Simple print hits from a detector
+
+  if(!hits) {
+    Info("analyseHits", "Invalid hits set.");
+    return;
+  }
+
+  AliTRDhit *h = 0x0;
+  for(Int_t ih=0; ih<hits->GetN(); ih++){
+    hits->PointSelected(ih);
+  }
+}
+
 //_______________________________________________________
 void analyseDigits(AliEveTRDDigits *digits = 0x0)
 {
@@ -51,7 +68,7 @@ void analyseClusters(TEvePointSet *points = 0x0)
   for(Int_t ic=0; ic<points->Size(); ic++){
     if(!(c = (AliTRDcluster*)points->GetPointId(ic))) continue;
   
-    printf("%2d[%p] Det[%d] LabelMC[%d] TB[%d]\n", ic, c, c->GetDetector(), c->GetLabel(0), c->GetLocalTimeBin());
+    c->Print();
   }
 }
 

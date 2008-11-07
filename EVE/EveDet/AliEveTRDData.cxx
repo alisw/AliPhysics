@@ -194,13 +194,13 @@ void AliEveTRDHits::PointSelected(Int_t n)
 {
   // Handle an individual point selection from GL.
 
-  AliTRDhit *h = dynamic_cast<AliTRDhit*>(GetPointId(n));
-  printf("\nDetector             : %d\n", h->GetDetector());
-  printf("Region of production : %c\n", h->FromAmplification() ? 'A' : 'D');
-  printf("TR photon            : %s\n", h->FromTRphoton() ? "Yes" : "No");
-  printf("Charge               : %d\n", h->GetCharge());
-  printf("MC track label       : %d\n", h->GetTrack());
-  printf("Time from collision  : %f\n", h->GetTime());
+  AliTRDhit *h = 0x0;
+  if(!(h = dynamic_cast<AliTRDhit*>(GetPointId(n)))) return;
+  printf("Id[%3d] Det[%3d] Reg[%c] TR[%c] Q[%3d] MC[%d] t[%f]\n", 
+    n, h->GetDetector(), 
+    h->FromAmplification() ? 'A' : 'D', 
+    h->FromTRphoton() ? 'y' : 'n', 
+    h->GetCharge(), h->GetTrack(), h->GetTime());
 }
 
 
