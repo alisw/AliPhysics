@@ -22,12 +22,12 @@ public:
   inline Int_t  GetBunchSize()    const { return fBunchSize; }
   inline void SetBunchSize(Int_t size) 
   {
-    fPrewBunchSize =  fBunchSize;  fBunchSize = size; 
+    fPrevBunchSize =  fBunchSize;  fBunchSize = size; 
   }
  
   inline int CheckConsistency()    
   {
-    if(static_cast<UInt_t>(fPrevEndTimeBin) <= (fEndTimeBin+fPrewBunchSize))
+    if( fPrevEndTimeBin <= fEndTimeBin + fPrevBunchSize )
       {
 	//	printf("%s:%d, ERROR conistency check failed\n", __FILE__ , __LINE__ );
 	return  DECODERERROR;
@@ -50,8 +50,8 @@ private:
   Int_t   fBunchSize;     // total size of current bunch including timestamp and the size indicator (i.e a bunch with just one sample will have size 3)
   UInt_t  fEndTimeBin;    // Time stamp of the last sample in the bunch in entities of sample indexes
   UInt_t  fStartTimeBin;  // Time index of the first bin in the bunch 
-  Int_t   fPrewBunchSize;   
-  Int_t   fPrevEndTimeBin;
+  UInt_t  fPrevBunchSize; // Previous bunch size  
+  UInt_t  fPrevEndTimeBin;// Previous end time bin
   // bool fIsFirstBunch;
 
   ClassDef(AliAltroBunch,0) // container class for Altro bunches

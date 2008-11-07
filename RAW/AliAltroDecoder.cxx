@@ -186,7 +186,7 @@ Bool_t AliAltroDecoder::NextChannel(AliAltroData *altroDataPtr)
       // we are reading backwards, so the index is already 1 inside the block
       if(fOutBufferIndex >= 7)
 	{
-	  if((fOutBuffer[fOutBufferIndex] << 4 ) | ((fOutBuffer[fOutBufferIndex-1] & 0x3c0) >> 6) == 0x2aaa)
+	  if(((fOutBuffer[fOutBufferIndex] << 4 ) | ((fOutBuffer[fOutBufferIndex-1] & 0x3c0) >> 6)) == 0x2aaa)
 	    {
 	      altroDataPtr->SetIsComplete(kTRUE);
 	      fComplete ++;
@@ -316,7 +316,7 @@ int AliAltroDecoder::SetMemory(UChar_t *dtaPtr, UInt_t size)
       return -99;
     }
 
-  if (size<(fkN32HeaderWords+1)*4)
+  if ((Int_t)size<(fkN32HeaderWords+1)*4)
     {
       //      printf("\nAliAltroDecoder::SetMemory(UChar_t *dtaPtr, UInt_t size) FATAL ERROR, too little data (%d)\n", size);
       //      printf("Data buffer must contain the CDH and at least one 32bit RCU trailer word\n");
