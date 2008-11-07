@@ -1373,7 +1373,8 @@ AliExternalTrackParam::GetXYZAt(Double_t x, Double_t b, Double_t *r) const {
   Double_t r1=TMath::Sqrt(1.- f1*f1), r2=TMath::Sqrt(1.- f2*f2);
   r[0] = x;
   r[1] = fP[0] + dx*(f1+f2)/(r1+r2);
-  r[2] = fP[1] + dx*(f1+f2)/(f1*r2 + f2*r1)*fP[3];
+  r[2] = fP[1] + dx*(r2 + f2*(f1+f2)/(r1+r2))*fP[3];//Thanks to Andrea & Peter
+
   return Local2GlobalPosition(r,fAlpha);
 }
 
