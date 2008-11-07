@@ -69,7 +69,7 @@ class AliAODRecoDecayHF : public AliAODRecoDecay {
   
   void SetProngIDs(Int_t nIDs,UShort_t *id);
   UShort_t GetProngID(Int_t ip) const 
-    {if(fProngID) {return fProngID[ip];} else {return 999999;}}
+    {if(fProngID) {return fProngID[ip];} else {return 9999;}}
 
 
  protected:

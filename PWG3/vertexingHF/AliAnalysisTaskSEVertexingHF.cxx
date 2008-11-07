@@ -25,6 +25,7 @@
 #include <TSystem.h>
 #include <TClonesArray.h>
 
+#include "AliVEvent.h"
 #include "AliAODEvent.h"
 #include "AliESDEvent.h"
 #include "AliAnalysisVertexingHF.h"
@@ -131,15 +132,15 @@ void AliAnalysisTaskSEVertexingHF::UserExec(Option_t */*option*/)
   // Execute analysis for current event:
   // heavy flavor vertexing
   
-  AliESDEvent *esd = dynamic_cast<AliESDEvent*> (InputEvent());
+  AliVEvent *event = dynamic_cast<AliVEvent*> (InputEvent());
 
   // heavy flavor vertexing
-  fVHF->FindCandidatesESDtoAOD(esd,
-			       fVerticesHFTClArr,
-			       fD0toKpiTClArr,
-			       fJPSItoEleTClArr,
-			       fCharm3ProngTClArr,
-			       fCharm4ProngTClArr);
+  fVHF->FindCandidates(event,
+		       fVerticesHFTClArr,
+		       fD0toKpiTClArr,
+		       fJPSItoEleTClArr,
+		       fCharm3ProngTClArr,
+		       fCharm4ProngTClArr);
   
   return;
 }

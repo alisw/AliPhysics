@@ -6,7 +6,11 @@
 
 void AliAnalysisVertexingHFTest()
 {
-  
+
+
+  printf("THIS MACRO IS OBSOLETE, PLEASE USE AliAnalysisTaskSEVertexingHFTest.C");
+  return;
+
   gSystem->Load("libANALYSIS.so");
   gSystem->Load("libANALYSISalice.so");
   gSystem->Load("libAOD.so");
@@ -14,7 +18,6 @@ void AliAnalysisVertexingHFTest()
   gSystem->Load("libPWG3vertexingHF.so");
 
   AliAnalysisVertexingHF *vHF = new AliAnalysisVertexingHF();
-  //vHF->SetUseTRef();
   //--- switch-off candidates finding (default: all on)
   //vHF->SetD0toKpiOff();
   vHF->SetJPSItoEleOff();

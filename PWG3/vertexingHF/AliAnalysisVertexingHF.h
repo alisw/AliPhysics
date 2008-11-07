@@ -12,14 +12,15 @@
 //-------------------------------------------------------------------------
 
 #include <TNamed.h>
-#include <TTree.h>
-#include "AliESDEvent.h"
 #include "AliESDVertex.h"
-#include "AliAODVertex.h"
 #include "AliAODRecoDecayHF.h"
 #include "AliAODRecoDecayHF2Prong.h"
 #include "AliAODRecoDecayHF3Prong.h"
 #include "AliAODRecoDecayHF4Prong.h"
+
+class AliESDtrack;
+class AliVEvent;
+class AliAODVertex;
 
 //-----------------------------------------------------------------------------
 class AliAnalysisVertexingHF : public TNamed {
@@ -30,32 +31,14 @@ class AliAnalysisVertexingHF : public TNamed {
   AliAnalysisVertexingHF& operator=(const AliAnalysisVertexingHF& source); 
   virtual ~AliAnalysisVertexingHF();
 
-  void FindCandidatesESDtoAOD(AliESDEvent *esd,
-			      TClonesArray *aodVerticesHFTClArr,
-			      TClonesArray *aodD0toKpiTClArr,
-			      TClonesArray *aodJPSItoEleTClArr,
-			      TClonesArray *aodCharm3ProngTClArr,
-			      TClonesArray *aodCharm4ProngTClArr);
-  void FindCandidates(AliESDEvent *esd,TTree *treeout[]);
-  AliAODRecoDecayHF2Prong* Make2Prong(TObjArray *twoTrackArray1,AliESDEvent *esd,
-				     AliESDVertex *vertexp1n1,Double_t dcap1n1,
-				     Bool_t &okD0,Bool_t &okJPSI) const;
-  AliAODRecoDecayHF3Prong* Make3Prong(TObjArray *threeTrackArray,AliESDEvent *esd,
-				     AliESDVertex *vertexp1n1,
-				     AliESDVertex *vertexp2n1,
-				     Double_t dcap1n1,Double_t dcap2n1,Double_t dcap1p2,
-				     Bool_t &ok3Prong) const;
-  AliAODRecoDecayHF4Prong* Make4Prong(TObjArray *fourTrackArray,AliESDEvent *esd,
-			       AliESDVertex *vertexp1n1,
-			       AliESDVertex *vertexp2n1,
-			       Double_t dcap1n1,Double_t dcap1n2,
-			       Double_t dcap2n1,
-			       Bool_t &ok4Prong) const;
+  void FindCandidates(AliVEvent *event,
+		      TClonesArray *aodVerticesHFTClArr,
+		      TClonesArray *aodD0toKpiTClArr,
+		      TClonesArray *aodJPSItoEleTClArr,
+		      TClonesArray *aodCharm3ProngTClArr,
+		      TClonesArray *aodCharm4ProngTClArr);
 
-
-  void SetDebug(Int_t debug=0) {fDebug=debug;}
   void PrintStatus() const;
-  void SetUseTRef() { fUseTRef=kTRUE; }
   void SetSecVtxWithKF() { fSecVtxWithKF=kTRUE; }
   void SetD0toKpiOn() { fD0toKpi=kTRUE; }
   void SetD0toKpiOff() { fD0toKpi=kFALSE; }
@@ -115,11 +98,13 @@ class AliAnalysisVertexingHF : public TNamed {
   //
  private:
   //
+  Bool_t fInputAOD; // input from AOD (kTRUE) or ESD (kFALSE) 
+
+  Int_t *fAODMap; // map between index and ID for AOD tracks
+
   Double_t fBzkG; // z componenent of field in kG
 
   Bool_t fSecVtxWithKF; // if kTRUE use KF vertexer, else AliVertexerTracks
-
-  Bool_t fUseTRef;      // use TRef to store in the AOD 
 
   Bool_t fRecoPrimVtxSkippingTrks; // flag for primary vertex reco on the fly
                                    // for each candidate, w/o its daughters
@@ -127,8 +112,6 @@ class AliAnalysisVertexingHF : public TNamed {
                              // the primary vertex
 
   AliESDVertex *fV1; // primary vertex
-
-  Int_t  fDebug; // enable verbose mode
 
   // flag to enable candidates production
   Bool_t fD0toKpi; 
@@ -209,17 +192,37 @@ class AliAnalysisVertexingHF : public TNamed {
                         // 10 = Sum d0^2 (cm^2)
                         // 11 = dca cut (cm)
   //
-  AliESDVertex* OwnPrimaryVertex(Int_t ntrks,TObjArray *trkArray,AliESDEvent *esd) const;
+  void AddDaughterRefs(AliAODVertex *v,AliVEvent *event,
+		       TObjArray *trkArray) const;
+  AliAODRecoDecayHF2Prong* Make2Prong(TObjArray *twoTrackArray1,AliVEvent *event,
+				      AliAODVertex *secVert,Double_t dcap1n1,
+				      Bool_t &okD0,Bool_t &okJPSI) const;
+  AliAODRecoDecayHF3Prong* Make3Prong(TObjArray *threeTrackArray,AliVEvent *event,
+				      AliAODVertex *secVert,
+				      Double_t dispersion,
+				      AliAODVertex *vertexp1n1,
+				      AliAODVertex *vertexp2n1,
+				      Double_t dcap1n1,Double_t dcap2n1,Double_t dcap1p2,
+				      Bool_t &ok3Prong) const;
+  AliAODRecoDecayHF4Prong* Make4Prong(TObjArray *fourTrackArray,AliVEvent *event,
+				      AliAODVertex *secVert,
+				      AliAODVertex *vertexp1n1,
+				      AliAODVertex *vertexp2n1,
+				      Double_t dcap1n1,Double_t dcap1n2,
+				      Double_t dcap2n1,
+				      Bool_t &ok4Prong) const;
+
+  AliAODVertex* OwnPrimaryVertex(TObjArray *trkArray,AliVEvent *event) const;
+  AliAODVertex* ReconstructSecondaryVertex(TObjArray *trkArray,Double_t &dispersion) const;
   Bool_t SelectInvMass(Int_t decay,Int_t nprongs,
 		       Double_t *px,Double_t *py,Double_t *pz) const;
-  void SelectTracks(AliESDEvent *esd,
+  void   SelectTracksAndCopyVertex(AliVEvent *event,
 		    TObjArray &trksP,Int_t &nTrksP,
-		    TObjArray &trksN,Int_t &nTrksN) const;
-  void SetPrimaryVertex(AliESDVertex* v1) { fV1 = v1; }
-  Bool_t SingleTrkCuts(AliESDtrack& trk) const;
-  AliESDVertex* ReconstructSecondaryVertex(TObjArray *trkArray) const;
+		    TObjArray &trksN,Int_t &nTrksN);
+  void   SetPrimaryVertex(AliESDVertex *v1) { fV1 = v1; }
+  Bool_t SingleTrkCuts(AliESDtrack &trk) const;
   //
-  ClassDef(AliAnalysisVertexingHF,2)  // Reconstruction of HF decay candidates
+  ClassDef(AliAnalysisVertexingHF,4)  // Reconstruction of HF decay candidates
 };
 
 

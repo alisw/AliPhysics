@@ -4,6 +4,8 @@ void AliAnalysisTaskSEVertexingHFTest()
   // Test macro for the AliAnalysisTaskSE for heavy-flavour vertexing
   // A.Dainese, andrea.dainese@lnl.infn.it
   //
+  Bool_t inputAOD=kTRUE; // otherwise, ESD
+
 
   gSystem->Load("libTree.so");
   gSystem->Load("libGeom.so");
@@ -19,8 +21,16 @@ void AliAnalysisTaskSEVertexingHFTest()
 
 
   // Local files 
-  TChain *chain = new TChain("esdTree");
-  chain->Add("./AliESDs.root");
+  TString treeName,fileName;
+  if(inputAOD) {
+    treeName="aodTree"; 
+    fileName="AliAOD.root";
+  } else {
+    treeName="esdTree"; 
+    fileName="AliESDs.root";
+  }
+  TChain *chain = new TChain(treeName.Data());
+  chain->Add(fileName.Data());
 
   // or:
   /*
@@ -50,9 +60,12 @@ void AliAnalysisTaskSEVertexingHFTest()
   mgr->SetDebugLevel(10);
   
   // Input Handler
-  //AliAODInputHandler *inputHandler = new AliAODInputHandler();
-  AliESDInputHandler *inputHandler = new AliESDInputHandler();
-  inputHandler->SetInactiveBranches("FMD CaloCluster");
+  AliInputEventHandler *inputHandler = 0;
+  if(inputAOD) {
+    inputHandler = new AliAODInputHandler();
+  } else {
+    inputHandler = new AliESDInputHandler();
+  }
   mgr->SetInputEventHandler(inputHandler);
   
   // Output 

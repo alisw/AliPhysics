@@ -3,7 +3,6 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   printf("Call to AliAnalysisVertexingHF parameters setting :\n");
   vHF = new AliAnalysisVertexingHF();
  
-  vHF->SetUseTRef(); // only if you write on the AOD
   //--- switch-off candidates finding (default: all on)
   //vHF->SetD0toKpiOff();
   //vHF->SetJPSItoEleOff();
@@ -18,7 +17,7 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   vHF->SetMinPtCut(0.3);
   vHF->SetMind0Cut(0.);
   //--- set cuts for candidates selection
-  vHF->SetD0toKpiCuts(0.2,999999.,1.1,0.,0.,999999.,999999.,999999.,0.3);
+  vHF->SetD0toKpiCuts(0.7,999999.,1.1,0.,0.,999999.,999999.,999999.,0.);
   vHF->SetBtoJPSICuts(0.350);
   vHF->SetDplusCuts(0.2,0.,0.,0.,0.,0.01,0.06,0.,0.,0.8);
   vHF->SetDsCuts(0.2,0.,0.,0.,0.,0.005,0.06,0.,0.,0.8,0.,0.1,0.1);
@@ -34,7 +33,7 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   //--- check the settings
   vHF->PrintStatus();
   //--- verbose
-  vHF->SetDebug(0);
+  //AliLog::SetClassDebugLevel("AliAnalysisVertexingHF",1);
 
  
   return vHF;
