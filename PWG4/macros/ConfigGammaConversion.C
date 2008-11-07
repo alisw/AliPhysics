@@ -58,141 +58,131 @@ Double_t maxPhi      = TMath::Pi();
 
 /** ------------------- define which histograms to plot here --------------------------------*/
 /**   NB: to change the bin numbers, see below the histogram flags                           */
-Bool_t plotMC_EP_R                             = kTRUE;
-Bool_t plotMC_EP_Z_R                           = kTRUE;
-Bool_t plotMC_EP_X_Y                           = kTRUE;
-Bool_t plotMC_EP_OpeningAngle                  = kTRUE;
+Bool_t plotMCEPR                             = kTRUE;
+Bool_t plotMCEPZR                           = kTRUE;
+Bool_t plotMCEPXY                           = kTRUE;
+Bool_t plotMCEPOpeningAngle                  = kTRUE;
 
-Bool_t plotMC_E_Energy                         = kTRUE;
-Bool_t plotMC_E_Pt                             = kTRUE;
-Bool_t plotMC_E_Eta                            = kTRUE;
-Bool_t plotMC_E_Phi                            = kTRUE;
+Bool_t plotMCEEnergy                         = kTRUE;
+Bool_t plotMCEPt                             = kTRUE;
+Bool_t plotMCEEta                            = kTRUE;
+Bool_t plotMCEPhi                            = kTRUE;
 
-Bool_t plotMC_P_Energy                         = kTRUE;
-Bool_t plotMC_P_Pt                             = kTRUE;
-Bool_t plotMC_P_Eta                            = kTRUE;
-Bool_t plotMC_P_Phi                            = kTRUE;
+Bool_t plotMCPEnergy                         = kTRUE;
+Bool_t plotMCPPt                             = kTRUE;
+Bool_t plotMCPEta                            = kTRUE;
+Bool_t plotMCPPhi                            = kTRUE;
 
-Bool_t plotMC_Gamma_Energy                     = kTRUE;
-Bool_t plotMC_Gamma_Pt                         = kTRUE;
-Bool_t plotMC_Gamma_Eta                        = kTRUE;
-Bool_t plotMC_Gamma_Phi                        = kTRUE;
+Bool_t plotMCGammaEnergy                     = kTRUE;
+Bool_t plotMCGammaPt                         = kTRUE;
+Bool_t plotMCGammaEta                        = kTRUE;
+Bool_t plotMCGammaPhi                        = kTRUE;
 
-Bool_t plotMC_DirectGamma_Energy               = kTRUE;
-Bool_t plotMC_DirectGamma_Pt                   = kTRUE;
-Bool_t plotMC_DirectGamma_Eta                  = kTRUE;
-Bool_t plotMC_DirectGamma_Phi                  = kTRUE;
+Bool_t plotMCDirectGammaEnergy               = kTRUE;
+Bool_t plotMCDirectGammaPt                   = kTRUE;
+Bool_t plotMCDirectGammaEta                  = kTRUE;
+Bool_t plotMCDirectGammaPhi                  = kTRUE;
 
-Bool_t plotMC_Match_Gamma_Eta                  = kTRUE;
-Bool_t plotMC_Match_Gamma_Phi                  = kTRUE;
-Bool_t plotMC_Match_Gamma_Pt                   = kTRUE;
-Bool_t plotMC_Match_Gamma_Energy               = kTRUE;
-Bool_t plotMC_Match_Gamma_Mass                 = kTRUE;
-Bool_t plotMC_Match_Gamma_OpeningAngle         = kTRUE;
-Bool_t plotMC_Match_Gamma_R                    = kTRUE;
-Bool_t plotMC_Match_Gamma_Z_R                  = kTRUE;
-Bool_t plotMC_Match_Gamma_X_Y                  = kTRUE;
+Bool_t plotMCMatchGammaEta                  = kTRUE;
+Bool_t plotMCMatchGammaPhi                  = kTRUE;
+Bool_t plotMCMatchGammaPt                   = kTRUE;
+Bool_t plotMCMatchGammaEnergy               = kTRUE;
+Bool_t plotMCMatchGammaMass                 = kTRUE;
+Bool_t plotMCMatchGammaOpeningAngle         = kTRUE;
+Bool_t plotMCMatchGammaR                    = kTRUE;
+Bool_t plotMCMatchGammaZR                  = kTRUE;
+Bool_t plotMCMatchGammaXY                  = kTRUE;
 
-Bool_t plotMC_Pi0_Eta                          = kTRUE;
-Bool_t plotMC_Pi0_Phi                          = kTRUE;
-Bool_t plotMC_Pi0_Pt                           = kTRUE;
-Bool_t plotMC_Pi0_Energy                       = kTRUE;
-Bool_t plotMC_Pi0_Mass                         = kTRUE;
-Bool_t plotMC_Pi0_OpeningAngle                 = kTRUE;
-Bool_t plotMC_Pi0_R                            = kTRUE;
-Bool_t plotMC_Pi0_Z_R                          = kTRUE;
-Bool_t plotMC_Pi0_X_Y                          = kTRUE;
+Bool_t plotMCPi0Eta                          = kTRUE;
+Bool_t plotMCPi0Phi                          = kTRUE;
+Bool_t plotMCPi0Pt                           = kTRUE;
+Bool_t plotMCPi0Energy                       = kTRUE;
+Bool_t plotMCPi0Mass                         = kTRUE;
+Bool_t plotMCPi0OpeningAngle                 = kTRUE;
+Bool_t plotMCPi0R                            = kTRUE;
+Bool_t plotMCPi0ZR                          = kTRUE;
+Bool_t plotMCPi0XY                          = kTRUE;
 
-Bool_t plotMC_Eta_Eta                          = kTRUE;
-Bool_t plotMC_Eta_Phi                          = kTRUE;
-Bool_t plotMC_Eta_Pt                           = kTRUE;
-Bool_t plotMC_Eta_Energy                       = kTRUE;
-Bool_t plotMC_Eta_Mass                         = kTRUE;
-Bool_t plotMC_Eta_OpeningAngleGamma            = kTRUE;
-Bool_t plotMC_Eta_R                            = kTRUE;
-Bool_t plotMC_Eta_Z_R                          = kTRUE;
-Bool_t plotMC_Eta_X_Y                          = kTRUE;
+Bool_t plotMCEtaEta                          = kTRUE;
+Bool_t plotMCEtaPhi                          = kTRUE;
+Bool_t plotMCEtaPt                           = kTRUE;
+Bool_t plotMCEtaEnergy                       = kTRUE;
+Bool_t plotMCEtaMass                         = kTRUE;
+Bool_t plotMCEtaOpeningAngleGamma            = kTRUE;
+Bool_t plotMCEtaR                            = kTRUE;
+Bool_t plotMCEtaZR                          = kTRUE;
+Bool_t plotMCEtaXY                          = kTRUE;
     
 // Histograms from esd tracks
-Bool_t plotESD_EP_R                            = kTRUE;
-Bool_t plotESD_EP_Z_R                          = kTRUE;
-Bool_t plotESD_EP_X_Y                          = kTRUE;
-Bool_t plotESD_EP_OpeningAngle                 = kTRUE;
+Bool_t plotESDEPR                            = kTRUE;
+Bool_t plotESDEPZR                          = kTRUE;
+Bool_t plotESDEPXY                          = kTRUE;
+Bool_t plotESDEPOpeningAngle                 = kTRUE;
 
-Bool_t plotESD_E_Energy                        = kTRUE;
-Bool_t plotESD_E_Pt                            = kTRUE;
-Bool_t plotESD_E_Eta                           = kTRUE;
-Bool_t plotESD_E_Phi                           = kTRUE;
+Bool_t plotESDEEnergy                        = kTRUE;
+Bool_t plotESDEPt                            = kTRUE;
+Bool_t plotESDEEta                           = kTRUE;
+Bool_t plotESDEPhi                           = kTRUE;
 
-Bool_t plotESD_P_Energy                        = kTRUE;
-Bool_t plotESD_P_Pt                            = kTRUE;
-Bool_t plotESD_P_Eta                           = kTRUE;
-Bool_t plotESD_P_Phi                           = kTRUE;
+Bool_t plotESDPEnergy                        = kTRUE;
+Bool_t plotESDPPt                            = kTRUE;
+Bool_t plotESDPEta                           = kTRUE;
+Bool_t plotESDPPhi                           = kTRUE;
 
 
-Bool_t plotESD_Gamma_Energy                    = kTRUE;
-Bool_t plotESD_Gamma_Pt                        = kTRUE;
-Bool_t plotESD_Gamma_Eta                       = kTRUE;
-Bool_t plotESD_Gamma_Phi                       = kTRUE;
+Bool_t plotESDGammaEnergy                    = kTRUE;
+Bool_t plotESDGammaPt                        = kTRUE;
+Bool_t plotESDGammaEta                       = kTRUE;
+Bool_t plotESDGammaPhi                       = kTRUE;
 
-Bool_t plotESD_Match_Gamma_OpeningAngle        = kTRUE;
-Bool_t plotESD_Match_Gamma_Energy              = kTRUE;
-Bool_t plotESD_Match_Gamma_Pt                  = kTRUE;
-Bool_t plotESD_Match_Gamma_Eta                 = kTRUE;
-Bool_t plotESD_Match_Gamma_Phi                 = kTRUE;
-Bool_t plotESD_Match_Gamma_Mass                = kTRUE;
-Bool_t plotESD_Match_Gamma_Width               = kTRUE;
-Bool_t plotESD_Match_Gamma_Chi2                = kTRUE;
-Bool_t plotESD_Match_Gamma_NDF                 = kTRUE;
-Bool_t plotESD_Match_Gamma_R                   = kTRUE;
-Bool_t plotESD_Match_Gamma_Z_R                 = kTRUE;
-Bool_t plotESD_Match_Gamma_X_Y                 = kTRUE;
+Bool_t plotESDMatchGammaOpeningAngle        = kTRUE;
+Bool_t plotESDMatchGammaEnergy              = kTRUE;
+Bool_t plotESDMatchGammaPt                  = kTRUE;
+Bool_t plotESDMatchGammaEta                 = kTRUE;
+Bool_t plotESDMatchGammaPhi                 = kTRUE;
+Bool_t plotESDMatchGammaMass                = kTRUE;
+Bool_t plotESDMatchGammaWidth               = kTRUE;
+Bool_t plotESDMatchGammaChi2                = kTRUE;
+Bool_t plotESDMatchGammaNDF                 = kTRUE;
+Bool_t plotESDMatchGammaR                   = kTRUE;
+Bool_t plotESDMatchGammaZR                 = kTRUE;
+Bool_t plotESDMatchGammaXY                 = kTRUE;
 
-Bool_t plotESD_Pi0_OpeningAngleGamma           = kTRUE;
-Bool_t plotESD_Pi0_Energy                      = kTRUE;
-Bool_t plotESD_Pi0_Pt                          = kTRUE;
-Bool_t plotESD_Pi0_Eta                         = kTRUE;
-Bool_t plotESD_Pi0_Phi                         = kTRUE;
-Bool_t plotESD_Pi0_Mass                        = kTRUE;
-Bool_t plotESD_Pi0_R                           = kTRUE;
-Bool_t plotESD_Pi0_Z_R                         = kTRUE;
-Bool_t plotESD_Pi0_X_Y                         = kTRUE;
+Bool_t plotESDTwoGammaCombinationOpeningAngleGamma         = kTRUE;
+Bool_t plotESDTwoGammaCombinationEnergy    = kTRUE;
+Bool_t plotESDTwoGammaCombinationPt        = kTRUE;
+Bool_t plotESDTwoGammaCombinationEta       = kTRUE;
+Bool_t plotESDTwoGammaCombinationPhi       = kTRUE;
+Bool_t plotESDTwoGammaCombinationMass      = kTRUE;
+Bool_t plotESDTwoGammaCombinationR         = kTRUE;
+Bool_t plotESDTwoGammaCombinationZR        = kTRUE;
+Bool_t plotESDTwoGammaCombinationXY        = kTRUE;
 
-Bool_t plotESD_Eta_OpeningAngleGamma           = kTRUE;
-Bool_t plotESD_Eta_Energy                      = kTRUE;
-Bool_t plotESD_Eta_Pt                          = kTRUE;
-Bool_t plotESD_Eta_Eta                         = kTRUE;
-Bool_t plotESD_Eta_Phi                         = kTRUE;
-Bool_t plotESD_Eta_Mass                        = kTRUE;
-Bool_t plotESD_Eta_R                           = kTRUE;
-Bool_t plotESD_Eta_Z_R                         = kTRUE;
-Bool_t plotESD_Eta_X_Y                         = kTRUE;
-
-Bool_t plotESD_Background_OpeningAngleGamma    = kTRUE;
-Bool_t plotESD_Background_Energy               = kTRUE;
-Bool_t plotESD_Background_Pt                   = kTRUE;
-Bool_t plotESD_Background_Eta                  = kTRUE;
-Bool_t plotESD_Background_Phi                  = kTRUE;
-Bool_t plotESD_Background_Mass                 = kTRUE;
-Bool_t plotESD_Background_R                    = kTRUE;
-Bool_t plotESD_Background_Z_R                  = kTRUE;
-Bool_t plotESD_Background_X_Y                  = kTRUE;
+Bool_t plotESDBackgroundOpeningAngleGamma    = kTRUE;
+Bool_t plotESDBackgroundEnergy               = kTRUE;
+Bool_t plotESDBackgroundPt                   = kTRUE;
+Bool_t plotESDBackgroundEta                  = kTRUE;
+Bool_t plotESDBackgroundPhi                  = kTRUE;
+Bool_t plotESDBackgroundMass                 = kTRUE;
+Bool_t plotESDBackgroundR                    = kTRUE;
+Bool_t plotESDBackgroundZR                  = kTRUE;
+Bool_t plotESDBackgroundXY                  = kTRUE;
 
 Bool_t plotMapping                             = kTRUE;       
 
-Bool_t plotResolution_dPt                      = kTRUE;
-Bool_t plotResolution_dR                       = kTRUE;
-Bool_t plotResolution_dZ                       = kTRUE;
+Bool_t plotResolutiondPt                      = kTRUE;
+Bool_t plotResolutiondR                       = kTRUE;
+Bool_t plotResolutiondZ                       = kTRUE;
   
-Bool_t plotResolution_dR_dPt                   = kTRUE;
+Bool_t plotResolutiondRdPt                   = kTRUE;
 
-Bool_t plotResolution_MC_Pt                    = kTRUE;
-Bool_t plotResolution_MC_R                     = kTRUE;
-Bool_t plotResolution_MC_Z                     = kTRUE;
+Bool_t plotResolutionMCPt                    = kTRUE;
+Bool_t plotResolutionMCR                     = kTRUE;
+Bool_t plotResolutionMCZ                     = kTRUE;
 
-Bool_t plotResolution_ESD_Pt                   = kTRUE;
-Bool_t plotResolution_ESD_R                    = kTRUE;
-Bool_t plotResolution_ESD_Z                    = kTRUE;
+Bool_t plotResolutionESDPt                   = kTRUE;
+Bool_t plotResolutionESDR                    = kTRUE;
+Bool_t plotResolutionESDZ                    = kTRUE;
 
 Bool_t plotNumberOfV0s                         = kTRUE;
 Bool_t plotNumberOfSurvivingV0s                = kTRUE;
@@ -207,6 +197,9 @@ Bool_t plotV0MassDebugCut6                     = kTRUE;
 Bool_t plotV0MassDebugCut7                     = kTRUE;
 Bool_t plotV0MassDebugCut8                     = kTRUE;
 
+Bool_t plotPi0Spectra                          = kTRUE;
+Bool_t plotEtaSpectra                          = kTRUE;
+
 
 /** ----------------- end define which histograms to plot here -------------------------------*/
 
@@ -218,21 +211,21 @@ Int_t nXBinsR = 1000;
 Double_t firstXBinR = 0.;
 Double_t lastXBinR = 250.;
 
-//Z_R-plots
-Int_t nXBinsZ_R = 2000;
-Double_t firstXBinZ_R = -10.;
-Double_t lastXBinZ_R = 10.;
-Int_t nYBinsZ_R = 1000;
-Double_t firstYBinZ_R = 0.;
-Double_t lastYBinZ_R = 250.;
+//ZR-plots
+Int_t nXBinsZR = 2000;
+Double_t firstXBinZR = -10.;
+Double_t lastXBinZR = 10.;
+Int_t nYBinsZR = 1000;
+Double_t firstYBinZR = 0.;
+Double_t lastYBinZR = 250.;
 
-//X_Y-plots
-Int_t nXBinsX_Y = 2000;
-Double_t firstXBinX_Y = -250.;
-Double_t lastXBinX_Y = 250.;
-Int_t nYBinsX_Y = 2000;
-Double_t firstYBinX_Y = -250.;
-Double_t lastYBinX_Y = 250.;
+//XY-plots
+Int_t nXBinsXY = 2000;
+Double_t firstXBinXY = -250.;
+Double_t lastXBinXY = 250.;
+Int_t nYBinsXY = 2000;
+Double_t firstYBinXY = -250.;
+Double_t lastYBinXY = 250.;
 
 //OpenAngle-plots
 Int_t nXBinsOpeningAngle = 200;
@@ -268,7 +261,7 @@ Double_t firstYBinMapping = -1.5;
 Double_t lastYBinMapping = 1.5;
 
 //ResolutionPlots
-//RES_dPt
+//RESdPt
 Int_t nXBinsResdPt=500;
 Int_t firstXBinResdPt= 0;
 Int_t lastXBinResdPt=5;
@@ -276,7 +269,7 @@ Int_t nYBinsResdPt=1000;
 Int_t firstYBinResdPt= -5;
 Int_t lastYBinResdPt=5;
 
-//RES_dR
+//RESdR
 Int_t nXBinsResdR=1000;
 Int_t firstXBinResdR= 0;
 Int_t lastXBinResdR=250;
@@ -284,7 +277,7 @@ Int_t nYBinsResdR=1000;
 Int_t firstYBinResdR= -25;
 Int_t lastYBinResdR=25;
 
-//RES_dZ
+//RESdZ
 Int_t nXBinsResdZ=2000;
 Int_t firstXBinResdZ= -20;
 Int_t lastXBinResdZ=20;
@@ -292,59 +285,68 @@ Int_t nYBinsResdZ=1000;
 Int_t firstYBinResdZ= -20;
 Int_t lastYBinResdZ=20;
 
-//RES_dR_dPt
-Int_t nXBinsResdR_dPt=1000;
-Int_t firstXBinResdR_dPt= -22;
-Int_t lastXBinResdR_dPt=22;
-Int_t nYBinsResdR_dPt=1000;
-Int_t firstYBinResdR_dPt= -5;
-Int_t lastYBinResdR_dPt=5;
+//RESdRdPt
+Int_t nXBinsResdRdPt=1000;
+Int_t firstXBinResdRdPt= -22;
+Int_t lastXBinResdRdPt=22;
+Int_t nYBinsResdRdPt=1000;
+Int_t firstYBinResdRdPt= -5;
+Int_t lastYBinResdRdPt=5;
 
 
-//RES_MC_Pt
+//RESMCPt
 Int_t nXBinsResPt=500;
 Int_t firstXBinResPt= 0;
 Int_t lastXBinResPt=5;
 
-//RES_MC_R
+//RESMCR
 Int_t nXBinsResR=1000;
 Int_t firstXBinResR= 0;
 Int_t lastXBinResR=250;
 
-//RES_MC_Z
+//RESMCZ
 Int_t nXBinsResZ=1000;
 Int_t firstXBinResZ= 0;
 Int_t lastXBinResZ=250;
 
 //GammaMass-plots
-Int_t nXBinsGamma_Mass = 100;
-Double_t firstXBinGamma_Mass = 0.;
-Double_t lastXBinGamma_Mass = 1.;
+Int_t nXBinsGammaMass = 100;
+Double_t firstXBinGammaMass = 0.;
+Double_t lastXBinGammaMass = 1.;
 
 //Pi0Mass-plots
-Int_t nXBinsPi0_Mass = 100;
-Double_t firstXBinPi0_Mass = 0.;
-Double_t lastXBinPi0_Mass = 1.;
+Int_t nXBinsPi0Mass = 100;
+Double_t firstXBinPi0Mass = 0.;
+Double_t lastXBinPi0Mass = 1.;
 
 //EtaMass-plots
-Int_t nXBinsEta_Mass = 100;
-Double_t firstXBinEta_Mass = 0.;
-Double_t lastXBinEta_Mass = 1.;
+Int_t nXBinsEtaMass = 100;
+Double_t firstXBinEtaMass = 0.;
+Double_t lastXBinEtaMass = 1.;
 
-//Gamma_Width-plots
-Int_t nXBinsGamma_Width = 100;
-Double_t firstXBinGamma_Width = 0.;
-Double_t lastXBinGamma_Width = 1.;
+//GammaWidth-plots
+Int_t nXBinsGammaWidth = 100;
+Double_t firstXBinGammaWidth = 0.;
+Double_t lastXBinGammaWidth = 1.;
 
-//Gamma_Chi2-plots
-Int_t nXBinsGamma_Chi2 = 100;
-Double_t firstXBinGamma_Chi2 = 0;
-Double_t lastXBinGamma_Chi2 = 100.;
+//GammaChi2-plots
+Int_t nXBinsGammaChi2 = 100;
+Double_t firstXBinGammaChi2 = 0;
+Double_t lastXBinGammaChi2 = 100.;
 
-//Gamma_NDF-plots
-Int_t nXBinsGamma_NDF = 10;
-Double_t firstXBinGamma_NDF = 0.;
-Double_t lastXBinGamma_NDF = 10.;
+//GammaNDF-plots
+Int_t nXBinsGammaNDF = 10;
+Double_t firstXBinGammaNDF = 0.;
+Double_t lastXBinGammaNDF = 10.;
+
+//Spectra-plots
+Int_t nXBinsSpectra = 100;
+Double_t firstXBinSpectra = 0.;
+Double_t lastXBinSpectra = 1.;
+Int_t nYBinsSpectra = 500;
+Double_t firstYBinSpectra = 0.;
+Double_t lastYBinSpectra = 100.;
+
 /** ---------- end Define the binning for the different plot types here ----------------------*/
 
 
@@ -368,165 +370,162 @@ void ConfigGammaConversion(const char *chainName, const char *sample, int limit 
   //-------------------------------- Creating the histograms -------------------------------
   AliGammaConversionHistograms * histograms = new AliGammaConversionHistograms();
 
-  //Change here
-  // All the plots need to be given good names for the x-axis and y-axis so that people don't have to ask, or get confused.
-  // I put in cm and cm in the first one as an example where to put in the axis titles.
-  
-  if(plotMC_EP_R != NULL){ histograms->Initialize_MC_EP_R(nXBinsR, firstXBinR, lastXBinR,"cm","cm");}
-  if(plotMC_EP_Z_R != NULL){ histograms->Initialize_MC_EP_Z_R(nXBinsZ_R, firstXBinZ_R, lastXBinZ_R, nYBinsZ_R, firstYBinZ_R, lastYBinZ_R, "", "");}
-  if(plotMC_EP_X_Y != NULL){ histograms->Initialize_MC_EP_X_Y(nXBinsX_Y, firstXBinX_Y, lastXBinX_Y, nYBinsX_Y, firstYBinX_Y, lastYBinX_Y, "", "");}
-  if(plotMC_EP_OpeningAngle != NULL){ histograms->Initialize_MC_EP_OpeningAngle(nXBinsOpeningAngle, firstXBinOpeningAngle, lastXBinOpeningAngle, "", "");}
+  if(plotMCEPR == kTRUE){ histograms->AddHistogram("MC_EP_R","Radius of gamma conversion points",nXBinsR, firstXBinR, lastXBinR,"counts","cm");}
+  if(plotMCEPZR == kTRUE){ histograms->AddHistogram("MC_EP_ZR","Radius of gamma conversion points vs Z",nXBinsZR, firstXBinZR, lastXBinZR, nYBinsZR, firstYBinZR, lastYBinZR, "cm", "cm");}
+  if(plotMCEPXY == kTRUE){ histograms->AddHistogram("MC_EP_XY","Gamma XY converison point.",nXBinsXY, firstXBinXY, lastXBinXY, nYBinsXY, firstYBinXY, lastYBinXY, "cm", "cm");}
+  if(plotMCEPOpeningAngle == kTRUE){ histograms->AddHistogram("MC_EP_OpeningAngle","Opening angle of e+e- pairs from gamma conversion",nXBinsOpeningAngle, firstXBinOpeningAngle, lastXBinOpeningAngle, "counts", "cm");}
 
-  if(plotMC_E_Energy != NULL){ histograms->Initialize_MC_E_Energy(nXBinsEnergy, firstXBinEnergy, lastXBinEnergy, "", "");}
-  if(plotMC_E_Pt != NULL){ histograms->Initialize_MC_E_Pt(nXBinsPt, firstXBinPt, lastXBinPt, "", "");}
-  if(plotMC_E_Eta != NULL){ histograms->Initialize_MC_E_Eta(nXBinsEta, firstXBinEta, lastXBinEta, "", "");}
-  if(plotMC_E_Phi != NULL){ histograms->Initialize_MC_E_Phi(nXBinsPhi, firstXBinPhi, lastXBinPhi, "", "");}
+  if(plotMCEEnergy == kTRUE){ histograms->AddHistogram("MC_E_Energy" ,"" , nXBinsEnergy, firstXBinEnergy, lastXBinEnergy, "", "");}
+  if(plotMCEPt == kTRUE){ histograms->AddHistogram("MC_E_Pt" ,"" , nXBinsPt, firstXBinPt, lastXBinPt, "", "");}
+  if(plotMCEEta == kTRUE){ histograms->AddHistogram("MC_E_Eta" ,"" , nXBinsEta, firstXBinEta, lastXBinEta, "", "");}
+  if(plotMCEPhi == kTRUE){ histograms->AddHistogram("MC_E_Phi" ,"" , nXBinsPhi, firstXBinPhi, lastXBinPhi, "", "");}
 
-  if(plotMC_P_Energy != NULL){ histograms->Initialize_MC_P_Energy(nXBinsEnergy, firstXBinEnergy, lastXBinEnergy, "", "");}
-  if(plotMC_P_Pt != NULL){ histograms->Initialize_MC_P_Pt(nXBinsPt, firstXBinPt, lastXBinPt, "", "");}
-  if(plotMC_P_Eta != NULL){ histograms->Initialize_MC_P_Eta(nXBinsEta, firstXBinEta, lastXBinEta, "", "");}
-  if(plotMC_P_Phi != NULL){ histograms->Initialize_MC_P_Phi(nXBinsPhi, firstXBinPhi, lastXBinPhi, "", "");}
+  if(plotMCPEnergy == kTRUE){ histograms->AddHistogram("MC_P_Energy" ,"" , nXBinsEnergy, firstXBinEnergy, lastXBinEnergy, "", "");}
+  if(plotMCPPt == kTRUE){ histograms->AddHistogram("MC_P_Pt" ,"" , nXBinsPt, firstXBinPt, lastXBinPt, "", "");}
+  if(plotMCPEta == kTRUE){ histograms->AddHistogram("MC_P_Eta" ,"" , nXBinsEta, firstXBinEta, lastXBinEta, "", "");}
+  if(plotMCPPhi == kTRUE){ histograms->AddHistogram("MC_P_Phi" ,"" , nXBinsPhi, firstXBinPhi, lastXBinPhi, "", "");}
 
-  if(plotMC_Gamma_Energy != NULL){ histograms->Initialize_MC_Gamma_Energy(nXBinsEnergy, firstXBinEnergy, lastXBinEnergy, "", "");}
-  if(plotMC_Gamma_Pt != NULL){ histograms->Initialize_MC_Gamma_Pt(nXBinsPt, firstXBinPt, lastXBinPt, "", "");}
-  if(plotMC_Gamma_Eta != NULL){ histograms->Initialize_MC_Gamma_Eta(nXBinsEta, firstXBinEta, lastXBinEta, "", "");}
-  if(plotMC_Gamma_Phi != NULL){ histograms->Initialize_MC_Gamma_Phi(nXBinsPhi, firstXBinPhi, lastXBinPhi, "", "");}
+  if(plotMCGammaEnergy == kTRUE){ histograms->AddHistogram("MC_Gamma_Energy" ,"" , nXBinsEnergy, firstXBinEnergy, lastXBinEnergy, "", "");}
+  if(plotMCGammaPt == kTRUE){ histograms->AddHistogram("MC_Gamma_Pt" ,"" , nXBinsPt, firstXBinPt, lastXBinPt, "", "");}
+  if(plotMCGammaEta == kTRUE){ histograms->AddHistogram("MC_Gamma_Eta" ,"" , nXBinsEta, firstXBinEta, lastXBinEta, "", "");}
+  if(plotMCGammaPhi == kTRUE){ histograms->AddHistogram("MC_Gamma_Phi" ,"" , nXBinsPhi, firstXBinPhi, lastXBinPhi, "", "");}
 
-  if(plotMC_DirectGamma_Energy != NULL){ histograms->Initialize_MC_DirectGamma_Energy(nXBinsEnergy, firstXBinEnergy, lastXBinEnergy, "", "");}
-  if(plotMC_DirectGamma_Pt != NULL){ histograms->Initialize_MC_DirectGamma_Pt(nXBinsPt, firstXBinPt, lastXBinPt, "", "");}
-  if(plotMC_DirectGamma_Eta != NULL){ histograms->Initialize_MC_DirectGamma_Eta(nXBinsEta, firstXBinEta, lastXBinEta, "", "");}
-  if(plotMC_DirectGamma_Phi != NULL){ histograms->Initialize_MC_DirectGamma_Phi(nXBinsPhi, firstXBinPhi, lastXBinPhi, "", "");}
+  if(plotMCDirectGammaEnergy == kTRUE){ histograms->AddHistogram("MC_DirectGamma_Energy" ,"" , nXBinsEnergy, firstXBinEnergy, lastXBinEnergy, "", "");}
+  if(plotMCDirectGammaPt == kTRUE){ histograms->AddHistogram("MC_DirectGamma_Pt" ,"" , nXBinsPt, firstXBinPt, lastXBinPt, "", "");}
+  if(plotMCDirectGammaEta == kTRUE){ histograms->AddHistogram("MC_DirectGamma_Eta" ,"" , nXBinsEta, firstXBinEta, lastXBinEta, "", "");}
+  if(plotMCDirectGammaPhi == kTRUE){ histograms->AddHistogram("MC_DirectGamma_Phi" ,"" , nXBinsPhi, firstXBinPhi, lastXBinPhi, "", "");}
 
-  if(plotMC_Match_Gamma_Eta != NULL){ histograms->Initialize_MC_Match_Gamma_Eta(nXBinsEta, firstXBinEta, lastXBinEta, "", "");}
-  if(plotMC_Match_Gamma_Phi != NULL){ histograms->Initialize_MC_Match_Gamma_Phi(nXBinsPhi, firstXBinPhi, lastXBinPhi, "", "");}
-  if(plotMC_Match_Gamma_Pt != NULL){ histograms->Initialize_MC_Match_Gamma_Pt(nXBinsPt, firstXBinPt, lastXBinPt, "", "");}
-  if(plotMC_Match_Gamma_Energy != NULL){ histograms->Initialize_MC_Match_Gamma_Energy(nXBinsEnergy, firstXBinEnergy, lastXBinEnergy, "", "");}
-  if(plotMC_Match_Gamma_Mass != NULL){ histograms->Initialize_MC_Match_Gamma_Mass(nXBinsGamma_Mass, firstXBinGamma_Mass, lastXBinGamma_Mass, "", "");}
-  if(plotMC_Match_Gamma_OpeningAngle != NULL){ histograms->Initialize_MC_Match_Gamma_OpeningAngle(nXBinsOpeningAngle, firstXBinOpeningAngle, lastXBinOpeningAngle, "", "");}
-  if(plotMC_Match_Gamma_R != NULL){ histograms->Initialize_MC_Match_Gamma_R(nXBinsR, firstXBinR, lastXBinR, "", "");}
-  if(plotMC_Match_Gamma_Z_R != NULL){ histograms->Initialize_MC_Match_Gamma_Z_R(nXBinsZ_R, firstXBinZ_R, lastXBinZ_R, nYBinsZ_R, firstYBinZ_R, lastYBinZ_R, "", "");}
-  if(plotMC_Match_Gamma_X_Y != NULL){ histograms->Initialize_MC_Match_Gamma_X_Y(nXBinsX_Y, firstXBinX_Y, lastXBinX_Y, nYBinsX_Y, firstYBinX_Y, lastYBinX_Y, "", "");}
+  if(plotMCMatchGammaEta == kTRUE){ histograms->AddHistogram("MC_Match_Gamma_Eta" ,"" , nXBinsEta, firstXBinEta, lastXBinEta, "", "");}
+  if(plotMCMatchGammaPhi == kTRUE){ histograms->AddHistogram("MC_Match_Gamma_Phi" ,"" , nXBinsPhi, firstXBinPhi, lastXBinPhi, "", "");}
+  if(plotMCMatchGammaPt == kTRUE){ histograms->AddHistogram("MC_Match_Gamma_Pt" ,"" , nXBinsPt, firstXBinPt, lastXBinPt, "", "");}
+  if(plotMCMatchGammaEnergy == kTRUE){ histograms->AddHistogram("MC_Match_Gamma_Energy" ,"" , nXBinsEnergy, firstXBinEnergy, lastXBinEnergy, "", "");}
+  if(plotMCMatchGammaMass == kTRUE){ histograms->AddHistogram("MC_Match_Gamma_Mass" ,"" , nXBinsGammaMass, firstXBinGammaMass, lastXBinGammaMass, "", "");}
+  if(plotMCMatchGammaOpeningAngle == kTRUE){ histograms->AddHistogram("MC_Match_Gamma_OpeningAngle" ,"" , nXBinsOpeningAngle, firstXBinOpeningAngle, lastXBinOpeningAngle, "", "");}
+  if(plotMCMatchGammaR == kTRUE){ histograms->AddHistogram("MC_Match_GammaR" ,"" , nXBinsR, firstXBinR, lastXBinR, "", "");}
+  if(plotMCMatchGammaZR == kTRUE){ histograms->AddHistogram("MC_Match_GammaZR" ,"" , nXBinsZR, firstXBinZR, lastXBinZR, nYBinsZR, firstYBinZR, lastYBinZR, "", "");}
+  if(plotMCMatchGammaXY == kTRUE){ histograms->AddHistogram("MC_Match_GammaXY" ,"" , nXBinsXY, firstXBinXY, lastXBinXY, nYBinsXY, firstYBinXY, lastYBinXY, "", "");}
 
-  if(plotMC_Pi0_Eta != NULL){ histograms->Initialize_MC_Pi0_Eta(nXBinsEta, firstXBinEta, lastXBinEta, "", "");}
-  if(plotMC_Pi0_Phi != NULL){ histograms->Initialize_MC_Pi0_Phi(nXBinsPhi, firstXBinPhi, lastXBinPhi, "", "");}
-  if(plotMC_Pi0_Pt != NULL){ histograms->Initialize_MC_Pi0_Pt(nXBinsPt, firstXBinPt, lastXBinPt, "", "");}
-  if(plotMC_Pi0_Energy != NULL){ histograms->Initialize_MC_Pi0_Energy(nXBinsEnergy, firstXBinEnergy, lastXBinEnergy, "", "");}
-  if(plotMC_Pi0_Mass != NULL){ histograms->Initialize_MC_Pi0_Mass(nXBinsPi0_Mass, firstXBinPi0_Mass, lastXBinPi0_Mass, "", "");}
-  if(plotMC_Pi0_OpeningAngle != NULL){ histograms->Initialize_MC_Pi0_OpeningAngleGamma(nXBinsOpeningAngle, firstXBinOpeningAngle, lastXBinOpeningAngle, "", "");}
-  if(plotMC_Pi0_R != NULL){ histograms->Initialize_MC_Pi0_R(nXBinsR, firstXBinR, lastXBinR, "", "");}
-  if(plotMC_Pi0_Z_R != NULL){ histograms->Initialize_MC_Pi0_Z_R(nXBinsZ_R, firstXBinZ_R, lastXBinZ_R, nYBinsZ_R, firstYBinZ_R, lastYBinZ_R, "", "");}
-  if(plotMC_Pi0_X_Y != NULL){ histograms->Initialize_MC_Pi0_X_Y(nXBinsX_Y, firstXBinX_Y, lastXBinX_Y, nYBinsX_Y, firstYBinX_Y, lastYBinX_Y, "", "");}
+  if(plotMCPi0Eta == kTRUE){ histograms->AddHistogram("MC_Pi0_Eta" ,"" , nXBinsEta, firstXBinEta, lastXBinEta, "", "");}
+  if(plotMCPi0Phi == kTRUE){ histograms->AddHistogram("MC_Pi0_Phi" ,"" , nXBinsPhi, firstXBinPhi, lastXBinPhi, "", "");}
+  if(plotMCPi0Pt == kTRUE){ histograms->AddHistogram("MC_Pi0_Pt" ,"" , nXBinsPt, firstXBinPt, lastXBinPt, "", "");}
+  if(plotMCPi0Energy == kTRUE){ histograms->AddHistogram("MC_Pi0_Energy" ,"" , nXBinsEnergy, firstXBinEnergy, lastXBinEnergy, "", "");}
+  if(plotMCPi0Mass == kTRUE){ histograms->AddHistogram("MC_Pi0_Mass" ,"" , nXBinsPi0Mass, firstXBinPi0Mass, lastXBinPi0Mass, "", "");}
+  if(plotMCPi0OpeningAngle == kTRUE){ histograms->AddHistogram("MC_Pi0_GammaDaughter_OpeningAngle" ,"" , nXBinsOpeningAngle, firstXBinOpeningAngle, lastXBinOpeningAngle, "", "");}
+  if(plotMCPi0R == kTRUE){ histograms->AddHistogram("MC_Pi0_R" ,"" , nXBinsR, firstXBinR, lastXBinR, "", "");}
+  if(plotMCPi0ZR == kTRUE){ histograms->AddHistogram("MC_Pi0_ZR" ,"" , nXBinsZR, firstXBinZR, lastXBinZR, nYBinsZR, firstYBinZR, lastYBinZR, "", "");}
+  if(plotMCPi0XY == kTRUE){ histograms->AddHistogram("MC_Pi0_XY" ,"" , nXBinsXY, firstXBinXY, lastXBinXY, nYBinsXY, firstYBinXY, lastYBinXY, "", "");}
 
-  if(plotMC_Eta_Eta != NULL){ histograms->Initialize_MC_Eta_Eta(nXBinsEta, firstXBinEta, lastXBinEta, "", "");}
-  if(plotMC_Eta_Phi != NULL){ histograms->Initialize_MC_Eta_Phi(nXBinsPhi, firstXBinPhi, lastXBinPhi, "", "");}
-  if(plotMC_Eta_Pt != NULL){ histograms->Initialize_MC_Eta_Pt(nXBinsPt, firstXBinPt, lastXBinPt, "", "");}
-  if(plotMC_Eta_Energy != NULL){ histograms->Initialize_MC_Eta_Energy(nXBinsEnergy, firstXBinEnergy, lastXBinEnergy, "", "");}
-  if(plotMC_Eta_Mass != NULL){ histograms->Initialize_MC_Eta_Mass(nXBinsEta_Mass, firstXBinEta_Mass, lastXBinEta_Mass, "", "");}
-  if(plotMC_Eta_OpeningAngleGamma != NULL){ histograms->Initialize_MC_Eta_OpeningAngleGamma(nXBinsOpeningAngle, firstXBinOpeningAngle, lastXBinOpeningAngle, "", "");}
-  if(plotMC_Eta_R != NULL){ histograms->Initialize_MC_Eta_R(nXBinsR, firstXBinR, lastXBinR, "", "");}
-  if(plotMC_Eta_Z_R != NULL){ histograms->Initialize_MC_Eta_Z_R(nXBinsZ_R, firstXBinZ_R, lastXBinZ_R, nYBinsZ_R, firstYBinZ_R, lastYBinZ_R, "", "");}
-  if(plotMC_Eta_X_Y != NULL){ histograms->Initialize_MC_Eta_X_Y(nXBinsX_Y, firstXBinX_Y, lastXBinX_Y, nYBinsX_Y, firstYBinX_Y, lastYBinX_Y, "", "");}
+  if(plotMCEtaEta == kTRUE){ histograms->AddHistogram("MC_Eta_Eta" ,"" , nXBinsEta, firstXBinEta, lastXBinEta, "", "");}
+  if(plotMCEtaPhi == kTRUE){ histograms->AddHistogram("MC_Eta_Phi" ,"" , nXBinsPhi, firstXBinPhi, lastXBinPhi, "", "");}
+  if(plotMCEtaPt == kTRUE){ histograms->AddHistogram("MC_Eta_Pt" ,"" , nXBinsPt, firstXBinPt, lastXBinPt, "", "");}
+  if(plotMCEtaEnergy == kTRUE){ histograms->AddHistogram("MC_Eta_Energy" ,"" , nXBinsEnergy, firstXBinEnergy, lastXBinEnergy, "", "");}
+  if(plotMCEtaMass == kTRUE){ histograms->AddHistogram("MC_Eta_Mass" ,"" , nXBinsEtaMass, firstXBinEtaMass, lastXBinEtaMass, "", "");}
+  if(plotMCEtaOpeningAngleGamma == kTRUE){ histograms->AddHistogram("MC_Eta_GammaDaughter_OpeningAngle" ,"" , nXBinsOpeningAngle, firstXBinOpeningAngle, lastXBinOpeningAngle, "", "");}
+  if(plotMCEtaR == kTRUE){ histograms->AddHistogram("MC_Eta_R" ,"" , nXBinsR, firstXBinR, lastXBinR, "", "");}
+  if(plotMCEtaZR == kTRUE){ histograms->AddHistogram("MC_Eta_ZR" ,"" , nXBinsZR, firstXBinZR, lastXBinZR, nYBinsZR, firstYBinZR, lastYBinZR, "", "");}
+  if(plotMCEtaXY == kTRUE){ histograms->AddHistogram("MC_Eta_XY" ,"" , nXBinsXY, firstXBinXY, lastXBinXY, nYBinsXY, firstYBinXY, lastYBinXY, "", "");}
     
   // Histograms from esd tracks
-  if(plotESD_EP_R != NULL){ histograms->Initialize_ESD_EP_R(nXBinsR, firstXBinR, lastXBinR, "", "");}
-  if(plotESD_EP_Z_R != NULL){ histograms->Initialize_ESD_EP_Z_R(nXBinsZ_R, firstXBinZ_R, lastXBinZ_R, nYBinsZ_R, firstYBinZ_R, lastYBinZ_R, "", "");}
-  if(plotESD_EP_X_Y != NULL){ histograms->Initialize_ESD_EP_X_Y(nXBinsX_Y, firstXBinX_Y, lastXBinX_Y, nYBinsX_Y, firstYBinX_Y, lastYBinX_Y, "", "");}
-  if(plotESD_EP_OpeningAngle != NULL){ histograms->Initialize_ESD_EP_OpeningAngle(nXBinsOpeningAngle, firstXBinOpeningAngle, lastXBinOpeningAngle, "", "");}
+  if(plotESDEPR == kTRUE){ histograms->AddHistogram("ESD_EP_R" ,"" , nXBinsR, firstXBinR, lastXBinR, "", "");}
+  if(plotESDEPZR == kTRUE){ histograms->AddHistogram("ESD_EP_ZR" ,"" , nXBinsZR, firstXBinZR, lastXBinZR, nYBinsZR, firstYBinZR, lastYBinZR, "", "");}
+  if(plotESDEPXY == kTRUE){ histograms->AddHistogram("ESD_EP_XY" ,"" , nXBinsXY, firstXBinXY, lastXBinXY, nYBinsXY, firstYBinXY, lastYBinXY, "", "");}
+  if(plotESDEPOpeningAngle == kTRUE){ histograms->AddHistogram("ESD_EP_OpeningAngle" ,"" , nXBinsOpeningAngle, firstXBinOpeningAngle, lastXBinOpeningAngle, "", "");}
 
-  if(plotESD_E_Energy != NULL){ histograms->Initialize_ESD_E_Energy(nXBinsEnergy, firstXBinEnergy, lastXBinEnergy, "", "");}
-  if(plotESD_E_Pt != NULL){ histograms->Initialize_ESD_E_Pt(nXBinsPt, firstXBinPt, lastXBinPt, "", "");}
-  if(plotESD_E_Eta != NULL){ histograms->Initialize_ESD_E_Eta(nXBinsEta, firstXBinEta, lastXBinEta, "", "");}
-  if(plotESD_E_Phi != NULL){ histograms->Initialize_ESD_E_Phi(nXBinsPhi, firstXBinPhi, lastXBinPhi, "", "");}
+  if(plotESDEEnergy == kTRUE){ histograms->AddHistogram("ESD_E_Energy" ,"" , nXBinsEnergy, firstXBinEnergy, lastXBinEnergy, "", "");}
+  if(plotESDEPt == kTRUE){ histograms->AddHistogram("ESD_E_Pt" ,"" , nXBinsPt, firstXBinPt, lastXBinPt, "", "");}
+  if(plotESDEEta == kTRUE){ histograms->AddHistogram("ESD_E_Eta" ,"" , nXBinsEta, firstXBinEta, lastXBinEta, "", "");}
+  if(plotESDEPhi == kTRUE){ histograms->AddHistogram("ESD_E_Phi" ,"" , nXBinsPhi, firstXBinPhi, lastXBinPhi, "", "");}
 
-  if(plotESD_P_Energy != NULL){ histograms->Initialize_ESD_P_Energy(nXBinsEnergy, firstXBinEnergy, lastXBinEnergy, "", "");}
-  if(plotESD_P_Pt != NULL){ histograms->Initialize_ESD_P_Pt(nXBinsPt, firstXBinPt, lastXBinPt, "", "");}
-  if(plotESD_P_Eta != NULL){ histograms->Initialize_ESD_P_Eta(nXBinsEta, firstXBinEta, lastXBinEta, "", "");}
-  if(plotESD_P_Phi != NULL){ histograms->Initialize_ESD_P_Phi(nXBinsPhi, firstXBinPhi, lastXBinPhi, "", "");}
+  if(plotESDPEnergy == kTRUE){ histograms->AddHistogram("ESD_P_Energy" ,"" , nXBinsEnergy, firstXBinEnergy, lastXBinEnergy, "", "");}
+  if(plotESDPPt == kTRUE){ histograms->AddHistogram("ESD_P_Pt" ,"" , nXBinsPt, firstXBinPt, lastXBinPt, "", "");}
+  if(plotESDPEta == kTRUE){ histograms->AddHistogram("ESD_P_Eta" ,"" , nXBinsEta, firstXBinEta, lastXBinEta, "", "");}
+  if(plotESDPPhi == kTRUE){ histograms->AddHistogram("ESD_P_Phi" ,"" , nXBinsPhi, firstXBinPhi, lastXBinPhi, "", "");}
 
-  if(plotESD_Gamma_Energy != NULL){ histograms->Initialize_ESD_Gamma_Energy(nXBinsEnergy, firstXBinEnergy, lastXBinEnergy, "", "");}
-  if(plotESD_Gamma_Pt != NULL){ histograms->Initialize_ESD_Gamma_Pt(nXBinsPt, firstXBinPt, lastXBinPt, "", "");}
-  if(plotESD_Gamma_Eta != NULL){ histograms->Initialize_ESD_Gamma_Eta(nXBinsEta, firstXBinEta, lastXBinEta, "", "");}
-  if(plotESD_Gamma_Phi != NULL){ histograms->Initialize_ESD_Gamma_Phi(nXBinsPhi, firstXBinPhi, lastXBinPhi, "", "");}
+  if(plotESDGammaEnergy == kTRUE){ histograms->AddHistogram("ESD_Gamma_Energy" ,"" , nXBinsEnergy, firstXBinEnergy, lastXBinEnergy, "", "");}
+  if(plotESDGammaPt == kTRUE){ histograms->AddHistogram("ESD_Gamma_Pt" ,"" , nXBinsPt, firstXBinPt, lastXBinPt, "", "");}
+  if(plotESDGammaEta == kTRUE){ histograms->AddHistogram("ESD_Gamma_Eta" ,"" , nXBinsEta, firstXBinEta, lastXBinEta, "", "");}
+  if(plotESDGammaPhi == kTRUE){ histograms->AddHistogram("ESD_Gamma_Phi" ,"" , nXBinsPhi, firstXBinPhi, lastXBinPhi, "", "");}
 
-  if(plotESD_Match_Gamma_OpeningAngle != NULL){ histograms->Initialize_ESD_Match_Gamma_OpeningAngle(nXBinsOpeningAngle, firstXBinOpeningAngle, lastXBinOpeningAngle, "", "");}
-  if(plotESD_Match_Gamma_Energy != NULL){ histograms->Initialize_ESD_Match_Gamma_Energy(nXBinsEnergy, firstXBinEnergy, lastXBinEnergy, "", "");}
-  if(plotESD_Match_Gamma_Pt != NULL){ histograms->Initialize_ESD_Match_Gamma_Pt(nXBinsPt, firstXBinPt, lastXBinPt, "", "");}
-  if(plotESD_Match_Gamma_Eta != NULL){ histograms->Initialize_ESD_Match_Gamma_Eta(nXBinsEta, firstXBinEta, lastXBinEta, "", "");}
-  if(plotESD_Match_Gamma_Phi != NULL){ histograms->Initialize_ESD_Match_Gamma_Phi(nXBinsPhi, firstXBinPhi, lastXBinPhi, "", "");}
-  if(plotESD_Match_Gamma_Mass != NULL){ histograms->Initialize_ESD_Match_Gamma_Mass(nXBinsGamma_Mass, firstXBinGamma_Mass, lastXBinGamma_Mass, "", "");}
-  if(plotESD_Match_Gamma_Width != NULL){ histograms->Initialize_ESD_Match_Gamma_Width(nXBinsGamma_Width, firstXBinGamma_Width, lastXBinGamma_Width, "", "");}
-  if(plotESD_Match_Gamma_Chi2 != NULL){ histograms->Initialize_ESD_Match_Gamma_Chi2(nXBinsGamma_Chi2, firstXBinGamma_Chi2, lastXBinGamma_Chi2, "", "");}
-  if(plotESD_Match_Gamma_NDF != NULL){ histograms->Initialize_ESD_Match_Gamma_NDF(nXBinsGamma_NDF, firstXBinGamma_NDF, lastXBinGamma_NDF, "", "");}
-  if(plotESD_Match_Gamma_R != NULL){ histograms->Initialize_ESD_Match_Gamma_R(nXBinsR, firstXBinR, lastXBinR, "", "");}
-  if(plotESD_Match_Gamma_Z_R != NULL){ histograms->Initialize_ESD_Match_Gamma_Z_R(nXBinsZ_R, firstXBinZ_R, lastXBinZ_R, nYBinsZ_R, firstYBinZ_R, lastYBinZ_R, "", "");}
-  if(plotESD_Match_Gamma_X_Y != NULL){ histograms->Initialize_ESD_Match_Gamma_X_Y(nXBinsX_Y, firstXBinX_Y, lastXBinX_Y, nYBinsX_Y, firstYBinX_Y, lastYBinX_Y, "", "");}
+  if(plotESDMatchGammaOpeningAngle == kTRUE){ histograms->AddHistogram("ESD_Match_Gamma_OpeningAngle" ,"" , nXBinsOpeningAngle, firstXBinOpeningAngle, lastXBinOpeningAngle, "", "");}
+  if(plotESDMatchGammaEnergy == kTRUE){ histograms->AddHistogram("ESD_Match_Gamma_Energy" ,"" , nXBinsEnergy, firstXBinEnergy, lastXBinEnergy, "", "");}
+  if(plotESDMatchGammaPt == kTRUE){ histograms->AddHistogram("ESD_Match_Gamma_Pt" ,"" , nXBinsPt, firstXBinPt, lastXBinPt, "", "");}
+  if(plotESDMatchGammaEta == kTRUE){ histograms->AddHistogram("ESD_Match_Gamma_Eta" ,"" , nXBinsEta, firstXBinEta, lastXBinEta, "", "");}
+  if(plotESDMatchGammaPhi == kTRUE){ histograms->AddHistogram("ESD_Match_Gamma_Phi" ,"" , nXBinsPhi, firstXBinPhi, lastXBinPhi, "", "");}
+  if(plotESDMatchGammaMass == kTRUE){ histograms->AddHistogram("ESD_Match_Gamma_Mass" ,"" , nXBinsGammaMass, firstXBinGammaMass, lastXBinGammaMass, "", "");}
+  if(plotESDMatchGammaWidth == kTRUE){ histograms->AddHistogram("ESD_Match_Gamma_Width" ,"" , nXBinsGammaWidth, firstXBinGammaWidth, lastXBinGammaWidth, "", "");}
+  if(plotESDMatchGammaChi2 == kTRUE){ histograms->AddHistogram("ESD_Match_Gamma_Chi2" ,"" , nXBinsGammaChi2, firstXBinGammaChi2, lastXBinGammaChi2, "", "");}
+  if(plotESDMatchGammaNDF == kTRUE){ histograms->AddHistogram("ESD_Match_Gamma_NDF" ,"" , nXBinsGammaNDF, firstXBinGammaNDF, lastXBinGammaNDF, "", "");}
+  if(plotESDMatchGammaR == kTRUE){ histograms->AddHistogram("ESD_Match_Gamma_R" ,"" , nXBinsR, firstXBinR, lastXBinR, "", "");}
+  if(plotESDMatchGammaZR == kTRUE){ histograms->AddHistogram("ESD_Match_Gamma_ZR" ,"" , nXBinsZR, firstXBinZR, lastXBinZR, nYBinsZR, firstYBinZR, lastYBinZR, "", "");}
+  if(plotESDMatchGammaXY == kTRUE){ histograms->AddHistogram("ESD_Match_Gamma_XY" ,"" , nXBinsXY, firstXBinXY, lastXBinXY, nYBinsXY, firstYBinXY, lastYBinXY, "", "");}
 
-  if(plotESD_Pi0_OpeningAngleGamma != NULL){ histograms->Initialize_ESD_Pi0_OpeningAngleGamma(nXBinsOpeningAngle, firstXBinOpeningAngle, lastXBinOpeningAngle, "", "");}
-  if(plotESD_Pi0_Energy != NULL){ histograms->Initialize_ESD_Pi0_Energy(nXBinsEnergy, firstXBinEnergy, lastXBinEnergy, "", "");}
-  if(plotESD_Pi0_Pt != NULL){ histograms->Initialize_ESD_Pi0_Pt(nXBinsPt, firstXBinPt, lastXBinPt, "", "");}
-  if(plotESD_Pi0_Eta != NULL){ histograms->Initialize_ESD_Pi0_Eta(nXBinsEta, firstXBinEta, lastXBinEta, "", "");}
-  if(plotESD_Pi0_Phi != NULL){ histograms->Initialize_ESD_Pi0_Phi(nXBinsPhi, firstXBinPhi, lastXBinPhi, "", "");}
-  if(plotESD_Pi0_Mass != NULL){ histograms->Initialize_ESD_Pi0_Mass(nXBinsPi0_Mass, firstXBinPi0_Mass, lastXBinPi0_Mass, "", "");}
-  if(plotESD_Pi0_R != NULL){ histograms->Initialize_ESD_Pi0_R(nXBinsR, firstXBinR, lastXBinR, "", "");}
-  if(plotESD_Pi0_Z_R != NULL){ histograms->Initialize_ESD_Pi0_Z_R(nXBinsZ_R, firstXBinZ_R, lastXBinZ_R, nYBinsZ_R, firstYBinZ_R, lastYBinZ_R, "", "");}
-  if(plotESD_Pi0_X_Y != NULL){ histograms->Initialize_ESD_Pi0_X_Y(nXBinsX_Y, firstXBinX_Y, lastXBinX_Y, nYBinsX_Y, firstYBinX_Y, lastYBinX_Y, "", "");}
+  if(plotESDTwoGammaCombinationOpeningAngleGamma == kTRUE){ histograms->AddHistogram("ESD_TwoGammaCombination_GammaDaughter_OpeningAngle" ,"" , nXBinsOpeningAngle, firstXBinOpeningAngle, lastXBinOpeningAngle, "", "");}
+  if(plotESDTwoGammaCombinationEnergy == kTRUE){ histograms->AddHistogram("ESD_TwoGammaCombination_Energy" ,"" , nXBinsEnergy, firstXBinEnergy, lastXBinEnergy, "", "");}
+  if(plotESDTwoGammaCombinationPt == kTRUE){ histograms->AddHistogram("ESD_TwoGammaCombination_Pt" ,"" , nXBinsPt, firstXBinPt, lastXBinPt, "", "");}
+  if(plotESDTwoGammaCombinationEta == kTRUE){ histograms->AddHistogram("ESD_TwoGammaCombination_Eta" ,"" , nXBinsEta, firstXBinEta, lastXBinEta, "", "");}
+  if(plotESDTwoGammaCombinationPhi == kTRUE){ histograms->AddHistogram("ESD_TwoGammaCombination_Phi" ,"" , nXBinsPhi, firstXBinPhi, lastXBinPhi, "", "");}
+  if(plotESDTwoGammaCombinationMass == kTRUE){ histograms->AddHistogram("ESD_TwoGammaCombination_Mass" ,"" , nXBinsPi0Mass, firstXBinPi0Mass, lastXBinPi0Mass, "", "");}
+  if(plotESDTwoGammaCombinationR == kTRUE){ histograms->AddHistogram("ESD_TwoGammaCombination_R" ,"" , nXBinsR, firstXBinR, lastXBinR, "", "");}
+  if(plotESDTwoGammaCombinationZR == kTRUE){ histograms->AddHistogram("ESD_TwoGammaCombination_ZR" ,"" , nXBinsZR, firstXBinZR, lastXBinZR, nYBinsZR, firstYBinZR, lastYBinZR, "", "");}
+  if(plotESDTwoGammaCombinationXY == kTRUE){ histograms->AddHistogram("ESD_TwoGammaCombination_XY" ,"" , nXBinsXY, firstXBinXY, lastXBinXY, nYBinsXY, firstYBinXY, lastYBinXY, "", "");}
 
-  if(plotESD_Eta_OpeningAngleGamma != NULL){ histograms->Initialize_ESD_Eta_OpeningAngleGamma(nXBinsOpeningAngle, firstXBinOpeningAngle, lastXBinOpeningAngle, "", "");}
-  if(plotESD_Eta_Energy != NULL){ histograms->Initialize_ESD_Eta_Energy(nXBinsEnergy, firstXBinEnergy, lastXBinEnergy, "", "");}
-  if(plotESD_Eta_Pt != NULL){ histograms->Initialize_ESD_Eta_Pt(nXBinsPt, firstXBinPt, lastXBinPt, "", "");}
-  if(plotESD_Eta_Eta != NULL){ histograms->Initialize_ESD_Eta_Eta(nXBinsEta, firstXBinEta, lastXBinEta, "", "");}
-  if(plotESD_Eta_Phi != NULL){ histograms->Initialize_ESD_Eta_Phi(nXBinsPhi, firstXBinPhi, lastXBinPhi, "", "");}
-  if(plotESD_Eta_Mass != NULL){ histograms->Initialize_ESD_Eta_Mass(nXBinsEta_Mass, firstXBinEta_Mass, lastXBinEta_Mass, "", "");}
-  if(plotESD_Eta_R != NULL){ histograms->Initialize_ESD_Eta_R(nXBinsR, firstXBinR, lastXBinR, "", "");}
-  if(plotESD_Eta_Z_R != NULL){ histograms->Initialize_ESD_Eta_Z_R(nXBinsZ_R, firstXBinZ_R, lastXBinZ_R, nYBinsZ_R, firstYBinZ_R, lastYBinZ_R, "", "");}
-  if(plotESD_Eta_X_Y != NULL){ histograms->Initialize_ESD_Eta_X_Y(nXBinsX_Y, firstXBinX_Y, lastXBinX_Y, nYBinsX_Y, firstYBinX_Y, lastYBinX_Y, "", "");}
+  /*
+  if(plotESDEtaOpeningAngleGamma == kTRUE){ histograms->AddHistogram("ESD_Eta_GammaDaughter_OpeningAngle" ,"" , nXBinsOpeningAngle, firstXBinOpeningAngle, lastXBinOpeningAngle, "", "");}
+  if(plotESDEtaEnergy == kTRUE){ histograms->AddHistogram("ESD_Eta_Energy" ,"" , nXBinsEnergy, firstXBinEnergy, lastXBinEnergy, "", "");}
+  if(plotESDEtaPt == kTRUE){ histograms->AddHistogram("ESD_Eta_Pt" ,"" , nXBinsPt, firstXBinPt, lastXBinPt, "", "");}
+  if(plotESDEtaEta == kTRUE){ histograms->AddHistogram("ESD_Eta_Eta" ,"" , nXBinsEta, firstXBinEta, lastXBinEta, "", "");}
+  if(plotESDEtaPhi == kTRUE){ histograms->AddHistogram("ESD_Eta_Phi" ,"" , nXBinsPhi, firstXBinPhi, lastXBinPhi, "", "");}
+  if(plotESDEtaMass == kTRUE){ histograms->AddHistogram("ESD_Eta_Mass" ,"" , nXBinsEtaMass, firstXBinEtaMass, lastXBinEtaMass, "", "");}
+  if(plotESDEtaR == kTRUE){ histograms->AddHistogram("ESD_Eta_R" ,"" , nXBinsR, firstXBinR, lastXBinR, "", "");}
+  if(plotESDEtaZR == kTRUE){ histograms->AddHistogram("ESD_Eta_ZR" ,"" , nXBinsZR, firstXBinZR, lastXBinZR, nYBinsZR, firstYBinZR, lastYBinZR, "", "");}
+  if(plotESDEtaXY == kTRUE){ histograms->AddHistogram("ESD_Eta_XY" ,"" , nXBinsXY, firstXBinXY, lastXBinXY, nYBinsXY, firstYBinXY, lastYBinXY, "", "");}
+  */
+  if(plotESDBackgroundOpeningAngleGamma == kTRUE){ histograms->AddHistogram("ESD_Background_GammaDaughter_OpeningAngle" ,"" , nXBinsOpeningAngle, firstXBinOpeningAngle, lastXBinOpeningAngle, "", "");}
+  if(plotESDBackgroundEnergy == kTRUE){ histograms->AddHistogram("ESD_Background_Energy" ,"" , nXBinsEnergy, firstXBinEnergy, lastXBinEnergy, "", "");}
+  if(plotESDBackgroundPt == kTRUE){ histograms->AddHistogram("ESD_Background_Pt" ,"" , nXBinsPt, firstXBinPt, lastXBinPt, "", "");}
+  if(plotESDBackgroundEta == kTRUE){ histograms->AddHistogram("ESD_Background_Eta" ,"" , nXBinsEta, firstXBinEta, lastXBinEta, "", "");}
+  if(plotESDBackgroundPhi == kTRUE){ histograms->AddHistogram("ESD_Background_Phi" ,"" , nXBinsPhi, firstXBinPhi, lastXBinPhi, "", "");}
+  if(plotESDBackgroundMass == kTRUE){ histograms->AddHistogram("ESD_Background_Mass" ,"" , nXBinsEtaMass, firstXBinEtaMass, lastXBinEtaMass, "", "");}
+  if(plotESDBackgroundR == kTRUE){ histograms->AddHistogram("ESD_Background_R" ,"" , nXBinsR, firstXBinR, lastXBinR, "", "");}
+  if(plotESDBackgroundZR == kTRUE){ histograms->AddHistogram("ESD_Background_ZR" ,"" , nXBinsZR, firstXBinZR, lastXBinZR, nYBinsZR, firstYBinZR, lastYBinZR, "", "");}
+  if(plotESDBackgroundXY == kTRUE){ histograms->AddHistogram("ESD_Background_XY" ,"" , nXBinsXY, firstXBinXY, lastXBinXY, nYBinsXY, firstYBinXY, lastYBinXY, "", "");}
 
-  if(plotESD_Background_OpeningAngleGamma != NULL){ histograms->Initialize_ESD_Background_OpeningAngleGamma(nXBinsOpeningAngle, firstXBinOpeningAngle, lastXBinOpeningAngle, "", "");}
-  if(plotESD_Background_Energy != NULL){ histograms->Initialize_ESD_Background_Energy(nXBinsEnergy, firstXBinEnergy, lastXBinEnergy, "", "");}
-  if(plotESD_Background_Pt != NULL){ histograms->Initialize_ESD_Background_Pt(nXBinsPt, firstXBinPt, lastXBinPt, "", "");}
-  if(plotESD_Background_Eta != NULL){ histograms->Initialize_ESD_Background_Eta(nXBinsEta, firstXBinEta, lastXBinEta, "", "");}
-  if(plotESD_Background_Phi != NULL){ histograms->Initialize_ESD_Background_Phi(nXBinsPhi, firstXBinPhi, lastXBinPhi, "", "");}
-  if(plotESD_Background_Mass != NULL){ histograms->Initialize_ESD_Background_Mass(nXBinsEta_Mass, firstXBinEta_Mass, lastXBinEta_Mass, "", "");}
-  if(plotESD_Background_R != NULL){ histograms->Initialize_ESD_Background_R(nXBinsR, firstXBinR, lastXBinR, "", "");}
-  if(plotESD_Background_Z_R != NULL){ histograms->Initialize_ESD_Background_Z_R(nXBinsZ_R, firstXBinZ_R, lastXBinZ_R, nYBinsZ_R, firstYBinZ_R, lastYBinZ_R, "", "");}
-  if(plotESD_Background_X_Y != NULL){ histograms->Initialize_ESD_Background_X_Y(nXBinsX_Y, firstXBinX_Y, lastXBinX_Y, nYBinsX_Y, firstYBinX_Y, lastYBinX_Y, "", "");}
+  if(plotMapping == kTRUE){
+    histograms->InitializeMappingValues(nPhiIndex,nRIndex,nXBinsMapping,minRadius,maxRadius,nYBinsMapping,minPhi,maxPhi);
+    histograms->AddMappingHistograms(nPhiIndex,nRIndex,nXBinsMapping,minRadius,maxRadius,nYBinsMapping,minPhi,maxPhi);
+  }
 
-  if(plotMapping != NULL){histograms->Initialize_MappingValues(nPhiIndex,nRIndex,nXBinsMapping,minRadius,maxRadius,nYBinsMapping,minPhi,maxPhi);}
-  //create the mapping histograms
-  if(plotMapping != NULL){histograms->Initialize_MappingHistograms(nPhiIndex,nRIndex,nXBinsMapping,firstXBinMapping,lastXBinMapping,nYBinsMapping,firstYBinMapping,lastYBinMapping,"", "");}
-
-
-
-
+  if(plotResolutiondPt == kTRUE){histograms->AddHistogram("Resolution_dPt" ,"" , nXBinsResdPt, firstXBinResdPt, lastXBinResdPt, nYBinsResdPt, firstYBinResdPt, lastYBinResdPt, "", "");}
+  if(plotResolutiondR == kTRUE){histograms->AddHistogram("Resolution_dR" ,"" , nXBinsResdR, firstXBinResdR, lastXBinResdR, nYBinsResdR, firstYBinResdR, lastYBinResdR, "", "");}
+  if(plotResolutiondZ == kTRUE){histograms->AddHistogram("Resolution_dZ" ,"" , nXBinsResdZ, firstXBinResdZ, lastXBinResdZ, nYBinsResdZ, firstYBinResdZ, lastYBinResdZ, "", "");}
   
-  if(plotResolution_dPt !=NULL){histograms->Initialize_Resolution_dPt(nXBinsResdPt, firstXBinResdPt, lastXBinResdPt, nYBinsResdPt, firstYBinResdPt, lastYBinResdPt, "", "");}
-  if(plotResolution_dR !=NULL){histograms->Initialize_Resolution_dR(nXBinsResdR, firstXBinResdR, lastXBinResdR, nYBinsResdR, firstYBinResdR, lastYBinResdR, "", "");}
-  if(plotResolution_dZ !=NULL){histograms->Initialize_Resolution_dZ(nXBinsResdZ, firstXBinResdZ, lastXBinResdZ, nYBinsResdZ, firstYBinResdZ, lastYBinResdZ, "", "");}
+  if(plotResolutiondRdPt == kTRUE){histograms->AddHistogram("Resolution_dR_dPt" ,"" , nXBinsResdRdPt, firstXBinResdRdPt, lastXBinResdRdPt, nYBinsResdRdPt, firstYBinResdRdPt, lastYBinResdRdPt, "", "");}
   
-  if(plotResolution_dR_dPt !=NULL){histograms->Initialize_Resolution_dR_dPt(nXBinsResdR_dPt, firstXBinResdR_dPt, lastXBinResdR_dPt, nYBinsResdR_dPt, firstYBinResdR_dPt, lastYBinResdR_dPt, "", "");}
+  if(plotResolutionMCPt == kTRUE){histograms->AddHistogram("Resolution_MC_Pt" ,"" , nXBinsResPt, firstXBinResPt, lastXBinResPt,"","");}
+  if(plotResolutionMCR == kTRUE){histograms->AddHistogram("Resolution_MC_R" ,"" , nXBinsResR, firstXBinResR, lastXBinResR,"","");}
+  if(plotResolutionMCZ == kTRUE){histograms->AddHistogram("Resolution_MC_Z" ,"" , nXBinsResZ, firstXBinResZ, lastXBinResZ,"","");}
   
-  if(plotResolution_MC_Pt !=NULL){histograms->Initialize_Resolution_MC_Pt(nXBinsResPt, firstXBinResPt, lastXBinResPt,"","");}
-  if(plotResolution_MC_R !=NULL){histograms->Initialize_Resolution_MC_R(nXBinsResR, firstXBinResR, lastXBinResR,"","");}
-  if(plotResolution_MC_Z !=NULL){histograms->Initialize_Resolution_MC_Z(nXBinsResZ, firstXBinResZ, lastXBinResZ,"","");}
+  if(plotResolutionESDPt == kTRUE){histograms->AddHistogram("Resolution_ESD_Pt" ,"" , nXBinsResPt, firstXBinResPt, lastXBinResPt,"","");}
+  if(plotResolutionESDR == kTRUE){histograms->AddHistogram("Resolution_ESD_R" ,"" , nXBinsResR, firstXBinResR, lastXBinResR,"","");}
+  if(plotResolutionESDZ == kTRUE){histograms->AddHistogram("Resolution_ESD_Z" ,"" , nXBinsResZ, firstXBinResZ, lastXBinResZ,"","");}
   
-  if(plotResolution_ESD_Pt !=NULL){histograms->Initialize_Resolution_ESD_Pt(nXBinsResPt, firstXBinResPt, lastXBinResPt,"","");}
-  if(plotResolution_ESD_R !=NULL){histograms->Initialize_Resolution_ESD_R(nXBinsResR, firstXBinResR, lastXBinResR,"","");}
-  if(plotResolution_ESD_Z !=NULL){histograms->Initialize_Resolution_ESD_Z(nXBinsResZ, firstXBinResZ, lastXBinResZ,"","");}
-  
-  if(plotNumberOfV0s != NULL){histograms->Initialize_NumberOfV0s(100, 0, 100,"","");}
-  if(plotNumberOfSurvivingV0s != NULL){histograms->Initialize_NumberOfSurvivingV0s(100, 0, 100,"","");}
+  if(plotNumberOfV0s == kTRUE){histograms->AddHistogram("NumberOfV0s","Number of v0s",100, 0, 100,"","");}
+  if(plotNumberOfSurvivingV0s == kTRUE){histograms->AddHistogram("NumberOfSurvivingV0s","Number of surviving v0s",100, 0, 100,"","");}
 
   //  debug histograms
-  if(plotV0MassDebugCut1 != NULL){histograms->Initialize_V0MassDebugCut1(nXBinsGamma_Mass, firstXBinGamma_Mass, lastXBinGamma_Mass,"","");}
-  if(plotV0MassDebugCut2 != NULL){histograms->Initialize_V0MassDebugCut2(nXBinsGamma_Mass, firstXBinGamma_Mass, lastXBinGamma_Mass,"","");}
-  if(plotV0MassDebugCut3 != NULL){histograms->Initialize_V0MassDebugCut3(nXBinsGamma_Mass, firstXBinGamma_Mass, lastXBinGamma_Mass,"","");}
-  if(plotV0MassDebugCut4 != NULL){histograms->Initialize_V0MassDebugCut4(nXBinsGamma_Mass, firstXBinGamma_Mass, lastXBinGamma_Mass,"","");}
-  if(plotV0MassDebugCut5 != NULL){histograms->Initialize_V0MassDebugCut5(nXBinsGamma_Mass, firstXBinGamma_Mass, lastXBinGamma_Mass,"","");}
-  if(plotV0MassDebugCut6 != NULL){histograms->Initialize_V0MassDebugCut6(nXBinsGamma_Mass, firstXBinGamma_Mass, lastXBinGamma_Mass,"","");}
-  if(plotV0MassDebugCut7 != NULL){histograms->Initialize_V0MassDebugCut7(nXBinsGamma_Mass, firstXBinGamma_Mass, lastXBinGamma_Mass,"","");}
-  if(plotV0MassDebugCut8 != NULL){histograms->Initialize_V0MassDebugCut8(nXBinsGamma_Mass, firstXBinGamma_Mass, lastXBinGamma_Mass,"","");}
+  if(plotV0MassDebugCut1 == kTRUE){histograms->AddHistogram("V0MassDebugCut1" ,"debug1" , nXBinsGammaMass, firstXBinGammaMass, lastXBinGammaMass,"","");}
+  if(plotV0MassDebugCut2 == kTRUE){histograms->AddHistogram("V0MassDebugCut2" ,"debug2" , nXBinsGammaMass, firstXBinGammaMass, lastXBinGammaMass,"","");}
+  if(plotV0MassDebugCut3 == kTRUE){histograms->AddHistogram("V0MassDebugCut3" ,"debug3" , nXBinsGammaMass, firstXBinGammaMass, lastXBinGammaMass,"","");}
+  if(plotV0MassDebugCut4 == kTRUE){histograms->AddHistogram("V0MassDebugCut4" ,"debug4" , nXBinsGammaMass, firstXBinGammaMass, lastXBinGammaMass,"","");}
+  if(plotV0MassDebugCut5 == kTRUE){histograms->AddHistogram("V0MassDebugCut5" ,"debug5" , nXBinsGammaMass, firstXBinGammaMass, lastXBinGammaMass,"","");}
+  if(plotV0MassDebugCut6 == kTRUE){histograms->AddHistogram("V0MassDebugCut6" ,"debug6" , nXBinsGammaMass, firstXBinGammaMass, lastXBinGammaMass,"","");}
+  if(plotV0MassDebugCut7 == kTRUE){histograms->AddHistogram("V0MassDebugCut7" ,"debug7" , nXBinsGammaMass, firstXBinGammaMass, lastXBinGammaMass,"","");}
+  if(plotV0MassDebugCut8 == kTRUE){histograms->AddHistogram("V0MassDebugCut8" ,"debug8" , nXBinsGammaMass, firstXBinGammaMass, lastXBinGammaMass,"","");}
 
 
+  if(plotPi0Spectra == kTRUE){histograms->AddHistogram("InvMass_vs_Pt__Spectra" ,"Inv mass vs Pt" , nXBinsSpectra, firstXBinSpectra, lastXBinSpectra,nYBinsSpectra, firstYBinSpectra, lastYBinSpectra,"InvMass [GeV]","Pt [GeV]");}
+
+  
 
   //------------------------------ end Creating the histograms -----------------------------
 
@@ -637,7 +636,6 @@ void ConfigGammaConversion(const char *chainName, const char *sample, int limit 
   mgr->PrintStatus();
   
   mgr->StartAnalysis("local",chain);
-
 }
 
 
@@ -650,41 +648,41 @@ void build() {
   gSystem->Load("libGeom");
   //  gSystem->Load("libANALYSISalice");
 
-  //____________________________________________________//
-  //____________________________________________________//
-  //_____________Setting up STEERBase.par_______________//
-  //____________________________________________________//
+  ////
+  ////
+  //Setting up STEERBase.par//
+  ////
   setupPar("STEERBase");
   gSystem->Load("libSTEERBase.so");
 
-  //____________________________________________________//
-  //_____________Setting up ESD.par_____________________//
-  //____________________________________________________//
+  ////
+  //Setting up ESD.par//
+  ////
   setupPar("ESD");
   gSystem->Load("libVMC.so");
   gSystem->Load("libESD.so");
 
-  //____________________________________________________//
-  //_____________Setting up AOD.par_____________________//
-  //____________________________________________________//
+  ////
+  //Setting up AOD.par//
+  ////
   setupPar("AOD");
   gSystem->Load("libAOD.so");
                                                                 
-  //_____________________________________________________________//
-  //_____________Setting up ANALYSIS.par_________________________//
-  //_____________________________________________________________//
+  ////
+  //Setting up ANALYSIS.par//
+  ////
   setupPar("ANALYSIS");
   gSystem->Load("libANALYSIS.so");
 
-  //_____________________________________________________________//
-  //_____________Setting up ANALYSISalice.par_________________________//
-  //_____________________________________________________________//
+  ////
+  //Setting up ANALYSISalice.par//
+  ////
   setupPar("ANALYSISalice");
   gSystem->Load("libANALYSISalice.so");
                                                                                                                                   
-  //_____________________________________________________________//
-  //_____________Setting up PWG4Gamma.par_____________________//
-  //_____________________________________________________________//
+  ////
+  //Setting up PWG4Gamma.par//
+  ////
   //  setupPar("PWG4Gamma");
   //  gSystem->Load("libPWG4Gamma.so");
   setupPar("PWG4PartCorr");
@@ -697,12 +695,12 @@ void build() {
   //  gROOT->LoadMacro("AliAnaScale.cxx+");
 
 
-  //gROOT->LoadMacro("$ALICE_ROOT/PWG0/CreateESDChain.C");
+  //gROOT->LoadMacro("$ALICEROOT/PWG0/CreateESDChain.C");
   //TChain* chain = CreateESDChain("files1.txt");
 
 
 
-  //____________________________________________//
+  ////
 
 
 }

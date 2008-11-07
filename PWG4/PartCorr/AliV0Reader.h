@@ -3,33 +3,37 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
 
+////////////////////////////////////////////////
+//--------------------------------------------- 
+// Class used to do analysis on conversion pairs
+//---------------------------------------------
+////////////////////////////////////////////////
 
 // --- ROOT system ---
 #include "TObject.h" 
-#include "TChain.h"
 #include "AliESDv0.h"
-#include "AliESDVertex.h"
-#include "AliESDInputHandler.h"
-#include "AliMCEventHandler.h"
 #include "AliESDEvent.h"
-#include "AliESDtrack.h"
 #include "AliKFParticle.h"
 #include "TParticle.h"
-#include "AliStack.h"
 #include "AliGammaConversionHistograms.h"
 #include <vector>
 
-class TClonesArray ; 
-class TFormula ;
-class TParticle ; 
-class Riostream ;
+class TClonesArray; 
+class TFormula;
+class Riostream;
 class TChain;
 //--- AliRoot system ---
 
-class AliStack ;
-class AliESDEvent ; 
+class AliStack;
+class AliESDEvent; 
 class AliMCEventHandler;
-class AliLog ;
+class AliESDInputHandler;
+class AliESDVertex;
+class AliLog;
+class TChain;
+class TChain;
+
+
 
 class AliV0Reader : public TObject {
 
@@ -47,7 +51,7 @@ class AliV0Reader : public TObject {
   /*
    *Returns the number of v0s in the event, no cuts applied.
    */
-  Int_t GetNumberOfV0s(){return fESDEvent->GetNumberOfV0s();}
+  Int_t GetNumberOfV0s() const{return fESDEvent->GetNumberOfV0s();}
 
   /*
    * Check if there are any more good v0s left in the v0 stack
@@ -65,7 +69,7 @@ class AliV0Reader : public TObject {
   /*
    * Returns the current v0
    */
-  AliESDv0* GetCurrentV0(){return fCurrentV0;}
+  AliESDv0* GetCurrentV0() const{return fCurrentV0;}
 
   /*
    * Returns the negative ESD track which belongs to fCurrentV0
@@ -80,16 +84,16 @@ class AliV0Reader : public TObject {
   /*
    * Returns the negative KF particle which belongs to fCurrentV0
    */
-  AliKFParticle* GetNegativeKFParticle();
+  AliKFParticle* GetNegativeKFParticle() const{return fCurrentNegativeKFParticle;}
 
   /*
    * Returns the positive KF particle which belongs to fCurrentV0
    */
-  AliKFParticle* GetPositiveKFParticle();
+  AliKFParticle* GetPositiveKFParticle() const{return fCurrentPositiveKFParticle;}
   /*
    * Returns the KFParticle object of the 2 tracks.
    */
-  AliKFParticle* GetMotherCandidateKFCombination();
+  AliKFParticle* GetMotherCandidateKFCombination() const{return fCurrentMotherKFCandidate;}
   /*
    * Checks the probablity that the PID of the particle is what we want it to be.
    */
@@ -98,29 +102,29 @@ class AliV0Reader : public TObject {
   /*
    *Get the negative MC TParticle from the stack 
    */
-  TParticle * GetNegativeMCParticle(){return fNegativeMCParticle;}//fMCStack->Particle(TMath::Abs(fESDEvent->GetTrack(fCurrentV0->GetNindex())->GetLabel()));}
+  TParticle * GetNegativeMCParticle() const{return fNegativeMCParticle;}
 
   /*
    *Get the positive MC TParticle from the stack 
    */
-  TParticle * GetPositiveMCParticle(){return fPositiveMCParticle;}//{return fMCStack->Particle(TMath::Abs(fESDEvent->GetTrack(fCurrentV0->GetPindex())->GetLabel()));}
+  TParticle * GetPositiveMCParticle() const{return fPositiveMCParticle;}
 
   /*
    *Get the mother MC TParticle from the stack 
    */
-  TParticle * GetMotherMCParticle(){return fMotherMCParticle;}
+  TParticle * GetMotherMCParticle() const{return fMotherMCParticle;}
 
   Bool_t HasSameMCMother();
 
   /*
    *Get the MC stack 
    */
-  AliStack* GetMCStack(){return fMCStack;}
+  AliStack* GetMCStack() const{return fMCStack;}
 
   /*
    *Get the magnetic field from the ESD event 
    */
-  Double_t GetMagneticField(){return fESDEvent->GetMagneticField();}
+  Double_t GetMagneticField() const{return fESDEvent->GetMagneticField();}
 
   /*
    *Get the primary vertex from the esd event
@@ -160,55 +164,55 @@ class AliV0Reader : public TObject {
   /*
    * Return the x coordinate of the v0
    */
-  Double_t GetX(){return fCurrentXValue;}
+  Double_t GetX() const{return fCurrentXValue;}
 
   /*
    * Return the y coordinate of the v0
    */
-  Double_t GetY(){return fCurrentYValue;}
+  Double_t GetY() const{return fCurrentYValue;}
 
   /*
    * Return the Z coordinate of the v0
    */
-  Double_t GetZ(){return fCurrentZValue;}
+  Double_t GetZ() const{return fCurrentZValue;}
 
   /*
    * Return the radius of the v0
    */
-  Double_t GetXYRadius(){return sqrt((Double_t)(fCurrentXValue*fCurrentXValue + fCurrentYValue*fCurrentYValue));}
+  Double_t GetXYRadius() const{return sqrt((Double_t)(fCurrentXValue*fCurrentXValue + fCurrentYValue*fCurrentYValue));}
 
   /*
    * Get the opening angle between the two tracks
    */
   Double_t GetOpeningAngle(){return fNegativeTrackLorentzVector->Angle(fPositiveTrackLorentzVector->Vect());}
 
-  Double_t GetNegativeTrackEnergy(){return fCurrentNegativeKFParticle->E();}
-  Double_t GetPositiveTrackEnergy(){return fCurrentPositiveKFParticle->E();}
-  Double_t GetMotherCandidateEnergy(){return fCurrentMotherKFCandidate->E();}
+  Double_t GetNegativeTrackEnergy() const{return fCurrentNegativeKFParticle->E();}
+  Double_t GetPositiveTrackEnergy() const{return fCurrentPositiveKFParticle->E();}
+  Double_t GetMotherCandidateEnergy() const{return fCurrentMotherKFCandidate->E();}
 
-  Double_t GetNegativeTrackPt(){return fNegativeTrackLorentzVector->Pt();}
-  Double_t GetPositiveTrackPt(){return fPositiveTrackLorentzVector->Pt();}
-  Double_t GetMotherCandidatePt(){return fMotherCandidateLorentzVector->Pt();}
+  Double_t GetNegativeTrackPt() const{return fNegativeTrackLorentzVector->Pt();}
+  Double_t GetPositiveTrackPt() const{return fPositiveTrackLorentzVector->Pt();}
+  Double_t GetMotherCandidatePt() const{return fMotherCandidateLorentzVector->Pt();}
 
-  Double_t GetNegativeTrackEta(){return fNegativeTrackLorentzVector->Eta();}
-  Double_t GetPositiveTrackEta(){return fPositiveTrackLorentzVector->Eta();}
-  Double_t GetMotherCandidateEta(){return fMotherCandidateLorentzVector->Eta();}
+  Double_t GetNegativeTrackEta() const{return fNegativeTrackLorentzVector->Eta();}
+  Double_t GetPositiveTrackEta() const{return fPositiveTrackLorentzVector->Eta();}
+  Double_t GetMotherCandidateEta() const{return fMotherCandidateLorentzVector->Eta();}
 
-  Double_t GetMotherCandidateNDF(){return fCurrentMotherKFCandidate->GetNDF();}
-  Double_t GetMotherCandidateChi2(){return fCurrentMotherKFCandidate->GetChi2();}
-  Double_t GetMotherCandidateMass(){return fMotherCandidateKFMass;}
-  Double_t GetMotherCandidateWidth(){return fMotherCandidateKFWidth;}
+  Double_t GetMotherCandidateNDF() const{return fCurrentMotherKFCandidate->GetNDF();}
+  Double_t GetMotherCandidateChi2() const{return fCurrentMotherKFCandidate->GetChi2();}
+  Double_t GetMotherCandidateMass() const{return fMotherCandidateKFMass;}
+  Double_t GetMotherCandidateWidth() const{return fMotherCandidateKFWidth;}
 
-  Double_t GetNegativeTrackPhi();
-  Double_t GetPositiveTrackPhi();
-  Double_t GetMotherCandidatePhi();
+  Double_t GetNegativeTrackPhi() const;
+  Double_t GetPositiveTrackPhi() const;
+  Double_t GetMotherCandidatePhi() const;
 
   void UpdateEventByEventData();
   
-  Double_t GetMaxRCut(){return fMaxR;}
-  Double_t GetEtaCut(){return fEtaCut;}
-  Double_t GetPtCut(){return fPtCut;}
-  Double_t GetChi2Cut(){return fChi2Cut;}
+  Double_t GetMaxRCut() const{return fMaxR;}
+  Double_t GetEtaCut() const{return fEtaCut;}
+  Double_t GetPtCut() const{return fPtCut;}
+  Double_t GetChi2Cut() const{return fChi2Cut;}
 
   void SetMaxRCut(Double_t maxR){fMaxR=maxR;}
   void SetEtaCut(Double_t etaCut){fEtaCut=etaCut;}
@@ -226,8 +230,8 @@ class AliV0Reader : public TObject {
 
   void SetHistograms(AliGammaConversionHistograms *histograms){fHistograms=histograms;}
 
-  std::vector<AliKFParticle> fCurrentEventGoodV0s;
-  std::vector<AliKFParticle> fPreviousEventGoodV0s;
+  vector<AliKFParticle> GetCurrentEventGoodV0s() const{return fCurrentEventGoodV0s;}
+  vector<AliKFParticle> GetPreviousEventGoodV0s() const{return fPreviousEventGoodV0s;}
 
  private:
   AliStack * fMCStack;           // pointer to MonteCarlo particle stack 
@@ -285,6 +289,9 @@ class AliV0Reader : public TObject {
   
   Bool_t fUseImprovedVertex;
   
+  vector<AliKFParticle> fCurrentEventGoodV0s;
+  vector<AliKFParticle> fPreviousEventGoodV0s;
+
   ClassDef(AliV0Reader,0)
 };
 

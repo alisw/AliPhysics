@@ -3,18 +3,20 @@
  
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
+
+////////////////////////////////////////////////
+//--------------------------------------------- 
+// Class used to do analysis on conversion pairs
+//---------------------------------------------
+////////////////////////////////////////////////
  
 #include "AliAnalysisTaskSE.h"
-#include "AliV0Reader.h"
-//#include "TH2F.h"
-//#include "TH1F.h"
-#include "AliGammaConversionHistograms.h"
-#include "AliESDv0.h"
 #include <vector>
-//#include "TLorentzVector.h"
-#include "AliKFParticle.h"
+#include "AliV0Reader.h"
 
-//class AliAnaGamma;
+class AliGammaConversionHistograms;
+class AliESDv0;
+class AliKFParticle;
 class AliESDInputHandler;
 class AliESDEvent;
 class AliAODEvent;
@@ -51,7 +53,7 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
     void SetV0Reader(AliV0Reader* reader){fV0Reader=reader;}
     void SetCalculateBackground(Bool_t bg){fCalculateBackground=bg;}
     void CalculateBackground();
-    Double_t GetMCOpeningAngle(TParticle* daughter0,TParticle* daughter1);
+    Double_t GetMCOpeningAngle(TParticle* daughter0, TParticle* daughter1) const;
 
  private:
     AliAnalysisTaskGammaConversion(const AliAnalysisTaskGammaConversion&); // Not implemented
@@ -70,7 +72,7 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
     vector<TParticle*> fMCAllGammas;
     vector<TParticle*> fMCPi0s;
     vector<TParticle*> fMCEtas;
-    vector<TParticle*> fMCGammaChi_c;
+    vector<TParticle*> fMCGammaChic;
 
     vector<AliKFParticle> fKFReconstructedGammas;
 

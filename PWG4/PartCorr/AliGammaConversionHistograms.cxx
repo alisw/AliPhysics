@@ -12,15 +12,21 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/**
- * Class containing histograms 
- //Change here
- // here we need a description of the naming scheme of the histograms.
 
-*/
+////////////////////////////////////////////////
+//--------------------------------------------- 
+// Class used to do analysis on conversion pairs
+//---------------------------------------------
+////////////////////////////////////////////////
 
 #include "AliGammaConversionHistograms.h"
 #include "TMath.h"
+#include "TObjString.h"
+#include "TMap.h"
+#include "TList.h"
+#include "TH1F.h"
+#include "TH2F.h"
+
 
 using namespace std;
 
@@ -28,7 +34,7 @@ ClassImp(AliGammaConversionHistograms)
 
 
 AliGammaConversionHistograms::AliGammaConversionHistograms() :
-  fOutputContainer(NULL),
+  fHistogramMap(new TMap()),
   fNPhiIndex(0),
   fNRIndex(0),
   fMinRadius(0.),
@@ -36,302 +42,28 @@ AliGammaConversionHistograms::AliGammaConversionHistograms() :
   fDeltaR(0.),
   fMinPhi(0.),
   fMaxPhi(0.),
-  fDeltaPhi(0.),
-  fMC_EP_R(NULL),
-  fMC_EP_Z_R(NULL),
-  fMC_EP_X_Y(NULL),
-  fMC_EP_OpeningAngle(NULL),
-  fMC_E_Energy(NULL),
-  fMC_E_Pt(NULL),
-  fMC_E_Eta(NULL),
-  fMC_E_Phi(NULL),
-  fMC_P_Energy(NULL),
-  fMC_P_Pt(NULL),
-  fMC_P_Eta(NULL),
-  fMC_P_Phi(NULL),
-  fMC_Gamma_Energy(NULL),
-  fMC_Gamma_Pt(NULL),
-  fMC_Gamma_Eta(NULL),
-  fMC_Gamma_Phi(NULL),
-  fMC_DirectGamma_Energy(NULL),
-  fMC_DirectGamma_Pt(NULL),
-  fMC_DirectGamma_Eta(NULL),
-  fMC_DirectGamma_Phi(NULL),
-  fMC_Mapping(),
-  fMC_Mapping_Phi(),
-  fMC_Mapping_R(),
-  fMC_Match_Gamma_Eta(NULL),
-  fMC_Match_Gamma_Phi(NULL),
-  fMC_Match_Gamma_Pt(NULL),
-  fMC_Match_Gamma_Energy(NULL),
-  fMC_Match_Gamma_Mass(NULL),
-  fMC_Match_Gamma_OpeningAngle(NULL),
-  fMC_Match_Gamma_R(NULL),
-  fMC_Match_Gamma_Z_R(NULL),
-  fMC_Match_Gamma_X_Y(NULL),
-  fMC_Pi0_Eta(NULL),
-  fMC_Pi0_Phi(NULL),
-  fMC_Pi0_Pt(NULL),
-  fMC_Pi0_Energy(NULL),
-  fMC_Pi0_Mass(NULL),
-  fMC_Pi0_OpeningAngleGamma(NULL),
-  fMC_Pi0_R(NULL),
-  fMC_Pi0_Z_R(NULL),
-  fMC_Pi0_X_Y(NULL),
-  fMC_Pi0Secondaries_Eta(NULL),
-  fMC_Pi0Secondaries_Phi(NULL),
-  fMC_Pi0Secondaries_Pt(NULL),
-  fMC_Pi0Secondaries_Energy(NULL),
-  fMC_Pi0Secondaries_Mass(NULL),
-  fMC_Pi0Secondaries_OpeningAngleGamma(NULL),
-  fMC_Pi0Secondaries_R(NULL),
-  fMC_Pi0Secondaries_Z_R(NULL),
-  fMC_Pi0Secondaries_X_Y(NULL),
-  fMC_Eta_Eta(NULL),
-  fMC_Eta_Phi(NULL),
-  fMC_Eta_Pt(NULL),
-  fMC_Eta_Energy(NULL),
-  fMC_Eta_Mass(NULL),
-  fMC_Eta_OpeningAngleGamma(NULL),
-  fMC_Eta_R(NULL),
-  fMC_Eta_Z_R(NULL),
-  fMC_Eta_X_Y(NULL),
-  fESD_EP_R(NULL),
-  fESD_EP_Z_R(NULL),
-  fESD_EP_X_Y(NULL),
-  fESD_EP_OpeningAngle(NULL),
-  fESD_E_Energy(NULL),
-  fESD_E_Pt(NULL),
-  fESD_E_Eta(NULL),
-  fESD_E_Phi(NULL),
-  fESD_P_Energy(NULL),
-  fESD_P_Pt(NULL),
-  fESD_P_Eta(NULL),
-  fESD_P_Phi(NULL),
-  fESD_Gamma_Energy(NULL),
-  fESD_Gamma_Pt(NULL),
-  fESD_Gamma_Eta(NULL),
-  fESD_Gamma_Phi(NULL),
-  fESD_Mapping(),
-  fESD_Mapping_Phi(),
-  fESD_Mapping_R(),
-  fESD_Match_Gamma_OpeningAngle(NULL),
-  fESD_Match_Gamma_Energy(NULL),
-  fESD_Match_Gamma_Pt(NULL),
-  fESD_Match_Gamma_Eta(NULL),
-  fESD_Match_Gamma_Phi(NULL),
-  fESD_Match_Gamma_Mass(NULL),
-  fESD_Match_Gamma_Width(NULL),
-  fESD_Match_Gamma_Chi2(NULL),
-  fESD_Match_Gamma_NDF(NULL),
-  fESD_Match_Gamma_R(NULL),
-  fESD_Match_Gamma_Z_R(NULL),
-  fESD_Match_Gamma_X_Y(NULL),
-  fESD_Pi0_OpeningAngleGamma(NULL),
-  fESD_Pi0_Energy(NULL),
-  fESD_Pi0_Pt(NULL),
-  fESD_Pi0_Eta(NULL),
-  fESD_Pi0_Phi(NULL),
-  fESD_Pi0_Mass(NULL),
-  fESD_Pi0_R(NULL),
-  fESD_Pi0_Z_R(NULL),
-  fESD_Pi0_X_Y(NULL),
-  fESD_Eta_OpeningAngleGamma(NULL),
-  fESD_Eta_Energy(NULL),
-  fESD_Eta_Pt(NULL),
-  fESD_Eta_Eta(NULL),
-  fESD_Eta_Phi(NULL),
-  fESD_Eta_Mass(NULL),
-  fESD_Eta_R(NULL),
-  fESD_Eta_Z_R(NULL),
-  fESD_Eta_X_Y(NULL),
-  fESD_Background_OpeningAngleGamma(NULL),
-  fESD_Background_Energy(NULL),
-  fESD_Background_Pt(NULL),
-  fESD_Background_Eta(NULL),
-  fESD_Background_Phi(NULL),
-  fESD_Background_Mass(NULL),
-  fESD_Background_R(NULL),
-  fESD_Background_Z_R(NULL),
-  fESD_Background_X_Y(NULL),
-  fResolution_dPt(NULL),
-  fResolution_dR(NULL),
-  fResolution_dZ(NULL),
-  fResolution_dR_dPt(NULL),
-  fResolution_MC_Pt(NULL),
-  fResolution_MC_R(NULL),
-  fResolution_MC_Z(NULL),
-  fResolution_ESD_Pt(NULL),
-  fResolution_ESD_R(NULL),
-  fResolution_ESD_Z(NULL),
-  fNumberOfV0s(NULL),
-  fNumberOfSurvivingV0s(NULL),
-  fV0MassDebugCut1(NULL),
-  fV0MassDebugCut2(NULL),
-  fV0MassDebugCut3(NULL),
-  fV0MassDebugCut4(NULL),
-  fV0MassDebugCut5(NULL),
-  fV0MassDebugCut6(NULL),
-  fV0MassDebugCut7(NULL),
-  fV0MassDebugCut8(NULL)
+  fDeltaPhi(0.)
 {
-
+  // see header file for documenation
 }
 
 
 AliGammaConversionHistograms::AliGammaConversionHistograms(const AliGammaConversionHistograms & original) :
-  fOutputContainer(original.fOutputContainer),
-  fNPhiIndex(0),
-  fNRIndex(0),
-  fMinRadius(0.),
-  fMaxRadius(0.),
-  fDeltaR(0.),
-  fMinPhi(0.),
-  fMaxPhi(0.),
-  fDeltaPhi(0.),
-  fMC_EP_R(original.fMC_EP_R),
-  fMC_EP_Z_R(original.fMC_EP_Z_R),
-  fMC_EP_X_Y(original.fMC_EP_X_Y),
-  fMC_EP_OpeningAngle(original.fMC_EP_OpeningAngle),
-  fMC_E_Energy(original.fMC_E_Energy),
-  fMC_E_Pt(original.fMC_E_Pt),
-  fMC_E_Eta(original.fMC_E_Eta),
-  fMC_E_Phi(original.fMC_E_Phi),
-  fMC_P_Energy(original.fMC_P_Energy),
-  fMC_P_Pt(original.fMC_P_Pt),
-  fMC_P_Eta(original.fMC_P_Eta),
-  fMC_P_Phi(original.fMC_P_Phi),
-  fMC_Gamma_Energy(original.fMC_Gamma_Energy),
-  fMC_Gamma_Pt(original.fMC_Gamma_Pt),
-  fMC_Gamma_Eta(original.fMC_Gamma_Eta),
-  fMC_Gamma_Phi(original.fMC_Gamma_Phi),
-  fMC_DirectGamma_Energy(original.fMC_Gamma_Energy),
-  fMC_DirectGamma_Pt(original.fMC_Gamma_Pt),
-  fMC_DirectGamma_Eta(original.fMC_Gamma_Eta),
-  fMC_DirectGamma_Phi(original.fMC_Gamma_Phi),
-  fMC_Mapping(),
-  fMC_Mapping_Phi(),
-  fMC_Mapping_R(),
-  fMC_Match_Gamma_Eta(original.fMC_Match_Gamma_Eta),
-  fMC_Match_Gamma_Phi(original.fMC_Match_Gamma_Phi),
-  fMC_Match_Gamma_Pt(original.fMC_Match_Gamma_Pt),
-  fMC_Match_Gamma_Energy(original.fMC_Match_Gamma_Energy),
-  fMC_Match_Gamma_Mass(original.fMC_Match_Gamma_Mass),
-  fMC_Match_Gamma_OpeningAngle(original.fMC_Match_Gamma_OpeningAngle),
-  fMC_Match_Gamma_R(original.fMC_Match_Gamma_R),
-  fMC_Match_Gamma_Z_R(original.fMC_Match_Gamma_Z_R),
-  fMC_Match_Gamma_X_Y(original.fMC_Match_Gamma_X_Y),
-  fMC_Pi0_Eta(original.fMC_Pi0_Eta),
-  fMC_Pi0_Phi(original.fMC_Pi0_Phi),
-  fMC_Pi0_Pt(original.fMC_Pi0_Pt),
-  fMC_Pi0_Energy(original.fMC_Pi0_Energy),
-  fMC_Pi0_Mass(original.fMC_Pi0_Mass),
-  fMC_Pi0_OpeningAngleGamma(original.fMC_Pi0_OpeningAngleGamma),
-  fMC_Pi0_R(original.fMC_Pi0_R),
-  fMC_Pi0_Z_R(original.fMC_Pi0_Z_R),
-  fMC_Pi0_X_Y(original.fMC_Pi0_X_Y),
-  fMC_Pi0Secondaries_Eta(original.fMC_Pi0_Eta),
-  fMC_Pi0Secondaries_Phi(original.fMC_Pi0_Phi),
-  fMC_Pi0Secondaries_Pt(original.fMC_Pi0_Pt),
-  fMC_Pi0Secondaries_Energy(original.fMC_Pi0_Energy),
-  fMC_Pi0Secondaries_Mass(original.fMC_Pi0_Mass),
-  fMC_Pi0Secondaries_OpeningAngleGamma(original.fMC_Pi0_OpeningAngleGamma),
-  fMC_Pi0Secondaries_R(original.fMC_Pi0_R),
-  fMC_Pi0Secondaries_Z_R(original.fMC_Pi0_Z_R),
-  fMC_Pi0Secondaries_X_Y(original.fMC_Pi0Secondaries_X_Y),
-  fMC_Eta_Eta(original.fMC_Eta_Eta),
-  fMC_Eta_Phi(original.fMC_Eta_Phi),
-  fMC_Eta_Pt(original.fMC_Eta_Pt),
-  fMC_Eta_Energy(original.fMC_Eta_Energy),
-  fMC_Eta_Mass(original.fMC_Eta_Mass),
-  fMC_Eta_OpeningAngleGamma(original.fMC_Eta_OpeningAngleGamma),
-  fMC_Eta_R(original.fMC_Eta_R),
-  fMC_Eta_Z_R(original.fMC_Eta_Z_R),
-  fMC_Eta_X_Y(original.fMC_Eta_X_Y),
-  fESD_EP_R(original.fESD_EP_R),
-  fESD_EP_Z_R(original.fESD_EP_Z_R),
-  fESD_EP_X_Y(original.fESD_EP_X_Y),
-  fESD_EP_OpeningAngle(original.fESD_EP_OpeningAngle),
-  fESD_E_Energy(original.fESD_E_Energy),
-  fESD_E_Pt(original.fESD_E_Pt),
-  fESD_E_Eta(original.fESD_E_Eta),
-  fESD_E_Phi(original.fESD_E_Phi),
-  fESD_P_Energy(original.fESD_P_Energy),
-  fESD_P_Pt(original.fESD_P_Pt),
-  fESD_P_Eta(original.fESD_P_Eta),
-  fESD_P_Phi(original.fESD_P_Phi),
-  fESD_Gamma_Energy(original.fESD_Gamma_Energy),
-  fESD_Gamma_Pt(original.fESD_Gamma_Pt),
-  fESD_Gamma_Eta(original.fESD_Gamma_Eta),
-  fESD_Gamma_Phi(original.fESD_Gamma_Phi),
-  fESD_Mapping(original.fESD_Mapping),
-  fESD_Mapping_Phi(original.fESD_Mapping_Phi),
-  fESD_Mapping_R(original.fESD_Mapping_R),
-  fESD_Match_Gamma_OpeningAngle(original.fESD_Match_Gamma_OpeningAngle),
-  fESD_Match_Gamma_Energy(original.fESD_Match_Gamma_Energy),
-  fESD_Match_Gamma_Pt(original.fESD_Match_Gamma_Pt),
-  fESD_Match_Gamma_Eta(original.fESD_Match_Gamma_Eta),
-  fESD_Match_Gamma_Phi(original.fESD_Match_Gamma_Phi),
-  fESD_Match_Gamma_Mass(original.fESD_Match_Gamma_Mass),
-  fESD_Match_Gamma_Width(original.fESD_Match_Gamma_Width),
-  fESD_Match_Gamma_Chi2(original.fESD_Match_Gamma_Chi2),
-  fESD_Match_Gamma_NDF(original.fESD_Match_Gamma_NDF),
-  fESD_Match_Gamma_R(original.fESD_Match_Gamma_R),
-  fESD_Match_Gamma_Z_R(original.fESD_Match_Gamma_Z_R),
-  fESD_Match_Gamma_X_Y(original.fESD_Match_Gamma_X_Y),
-  fESD_Pi0_OpeningAngleGamma(original.fESD_Pi0_OpeningAngleGamma),
-  fESD_Pi0_Energy(original.fESD_Pi0_Energy),
-  fESD_Pi0_Pt(original.fESD_Pi0_Pt),
-  fESD_Pi0_Eta(original.fESD_Pi0_Eta),
-  fESD_Pi0_Phi(original.fESD_Pi0_Phi),
-  fESD_Pi0_Mass(original.fESD_Pi0_Mass),
-  fESD_Pi0_R(original.fESD_Pi0_R),
-  fESD_Pi0_Z_R(original.fESD_Pi0_Z_R),
-  fESD_Pi0_X_Y(original.fESD_Pi0_X_Y),
-  fESD_Eta_OpeningAngleGamma(original.fESD_Eta_OpeningAngleGamma),
-  fESD_Eta_Energy(original.fESD_Eta_Energy),
-  fESD_Eta_Pt(original.fESD_Eta_Pt),
-  fESD_Eta_Eta(original.fESD_Eta_Eta),
-  fESD_Eta_Phi(original.fESD_Eta_Phi),
-  fESD_Eta_Mass(original.fESD_Eta_Mass),
-  fESD_Eta_R(original.fESD_Eta_R),
-  fESD_Eta_Z_R(original.fESD_Eta_Z_R),
-  fESD_Eta_X_Y(original.fESD_Eta_X_Y),
-  fESD_Background_OpeningAngleGamma(original.fESD_Background_OpeningAngleGamma),
-  fESD_Background_Energy(original.fESD_Background_Energy),
-  fESD_Background_Pt(original.fESD_Background_Pt),
-  fESD_Background_Eta(original.fESD_Background_Eta),
-  fESD_Background_Phi(original.fESD_Background_Phi),
-  fESD_Background_Mass(original.fESD_Background_Mass),
-  fESD_Background_R(original.fESD_Background_R),
-  fESD_Background_Z_R(original.fESD_Background_Z_R),
-  fESD_Background_X_Y(original.fESD_Background_X_Y),
-  fResolution_dPt(original.fResolution_dPt),
-  fResolution_dR(original.fResolution_dR),
-  fResolution_dZ(original.fResolution_dZ),
-  fResolution_dR_dPt(original.fResolution_dR_dPt),
-  fResolution_MC_Pt(original.fResolution_MC_Pt),
-  fResolution_MC_R(original.fResolution_MC_R),
-  fResolution_MC_Z(original.fResolution_MC_Z),
-  fResolution_ESD_Pt(original.fResolution_ESD_Pt),
-  fResolution_ESD_R(original.fResolution_ESD_R),
-  fResolution_ESD_Z(original.fResolution_ESD_Z),
-  fNumberOfV0s(original.fNumberOfV0s),
-  fNumberOfSurvivingV0s(original.fNumberOfSurvivingV0s),
-  fV0MassDebugCut1(original.fV0MassDebugCut1),
-  fV0MassDebugCut2(original.fV0MassDebugCut2),
-  fV0MassDebugCut3(original.fV0MassDebugCut3),
-  fV0MassDebugCut4(original.fV0MassDebugCut4),
-  fV0MassDebugCut5(original.fV0MassDebugCut5),
-  fV0MassDebugCut6(original.fV0MassDebugCut6),
-  fV0MassDebugCut7(original.fV0MassDebugCut7),
-  fV0MassDebugCut8(original.fV0MassDebugCut8)
+  fHistogramMap(original.fHistogramMap),
+  fNPhiIndex(original.fNPhiIndex),
+  fNRIndex(original.fNRIndex),
+  fMinRadius(original.fMinRadius),
+  fMaxRadius(original.fMaxRadius),
+  fDeltaR(original.fDeltaR),
+  fMinPhi(original.fMinPhi),
+  fMaxPhi(original.fMaxPhi),
+  fDeltaPhi(original.fDeltaPhi)
 {    
-
+  //see header file for documentation
 }
 
 
-AliGammaConversionHistograms & AliGammaConversionHistograms::operator = (const AliGammaConversionHistograms & /*source*/)
+AliGammaConversionHistograms & AliGammaConversionHistograms::operator = (const AliGammaConversionHistograms & /*original*/)
 {
   // assignment operator
   return *this;
@@ -339,365 +71,235 @@ AliGammaConversionHistograms & AliGammaConversionHistograms::operator = (const A
 
 
 AliGammaConversionHistograms::~AliGammaConversionHistograms() {
-  if(fOutputContainer != NULL){ delete fOutputContainer;}
+  //destructor
 
-  if(fMC_EP_R != NULL){ delete fMC_EP_R;}
-  if(fMC_EP_Z_R != NULL){ delete fMC_EP_Z_R;}
-  if(fMC_EP_X_Y != NULL){ delete fMC_EP_X_Y;}
-  if(fMC_EP_OpeningAngle != NULL){ delete fMC_EP_OpeningAngle;}
-
-  if(fMC_E_Energy != NULL){ delete fMC_E_Energy;}
-  if(fMC_E_Pt != NULL){ delete fMC_E_Pt;}
-  if(fMC_E_Eta != NULL){ delete fMC_E_Eta;}
-  if(fMC_E_Phi != NULL){ delete fMC_E_Phi;}
-
-  if(fMC_P_Energy != NULL){ delete fMC_P_Energy;}
-  if(fMC_P_Pt != NULL){ delete fMC_P_Pt;}
-  if(fMC_P_Eta != NULL){ delete fMC_P_Eta;}
-  if(fMC_P_Phi != NULL){ delete fMC_P_Phi;}
-
-  if(fMC_Gamma_Energy != NULL){ delete fMC_Gamma_Energy;}
-  if(fMC_Gamma_Pt != NULL){ delete fMC_Gamma_Pt;}
-  if(fMC_Gamma_Eta != NULL){ delete fMC_Gamma_Eta;}
-  if(fMC_Gamma_Phi != NULL){ delete fMC_Gamma_Phi;}
-
-  if(fMC_DirectGamma_Energy != NULL){ delete fMC_DirectGamma_Energy;}
-  if(fMC_DirectGamma_Pt != NULL){ delete fMC_DirectGamma_Pt;}
-  if(fMC_DirectGamma_Eta != NULL){ delete fMC_DirectGamma_Eta;}
-  if(fMC_DirectGamma_Phi != NULL){ delete fMC_DirectGamma_Phi;}
-
-  //mapping
-  for(UInt_t i=0;i<fMC_Mapping.size();i++){
-    for(UInt_t j=0;j<fMC_Mapping[i].size();j++){
-      if(fMC_Mapping[i][j] != NULL){delete fMC_Mapping[i][j];}
-      fMC_Mapping[i][j]=NULL;
-    }
-    fMC_Mapping[i].clear();
-  }
-  fMC_Mapping.clear();
-
-  for(UInt_t i=0;i<fMC_Mapping_Phi.size();i++){
-    if(fMC_Mapping_Phi[i] != NULL){delete fMC_Mapping_Phi[i];}
-    fMC_Mapping_Phi[i]=NULL;
-  }
-  fMC_Mapping_Phi.clear();
-
-  for(UInt_t i=0;i<fMC_Mapping_R.size();i++){
-    if(fMC_Mapping_R[i] != NULL){delete fMC_Mapping_R[i];}
-    fMC_Mapping_R[i]=NULL;
-  }
-  fMC_Mapping_R.clear();
-
-
-  if(fMC_Match_Gamma_Eta != NULL){ delete fMC_Match_Gamma_Eta;}
-  if(fMC_Match_Gamma_Phi != NULL){ delete fMC_Match_Gamma_Phi;}
-  if(fMC_Match_Gamma_Pt != NULL){ delete fMC_Match_Gamma_Pt;}
-  if(fMC_Match_Gamma_Energy != NULL){ delete fMC_Match_Gamma_Energy;}
-  if(fMC_Match_Gamma_Mass != NULL){ delete fMC_Match_Gamma_Mass;}
-  if(fMC_Match_Gamma_OpeningAngle != NULL){ delete fMC_Match_Gamma_OpeningAngle;}
-  if(fMC_Match_Gamma_R != NULL){ delete fMC_Match_Gamma_R;}
-  if(fMC_Match_Gamma_Z_R != NULL){ delete fMC_Match_Gamma_Z_R;}
-  if(fMC_Match_Gamma_X_Y != NULL){ delete fMC_Match_Gamma_X_Y;}
-
-  if(fMC_Pi0_Eta != NULL){ delete fMC_Pi0_Eta;}
-  if(fMC_Pi0_Phi != NULL){ delete fMC_Pi0_Phi;}
-  if(fMC_Pi0_Pt != NULL){ delete fMC_Pi0_Pt;}
-  if(fMC_Pi0_Energy != NULL){ delete fMC_Pi0_Energy;}
-  if(fMC_Pi0_Mass != NULL){ delete fMC_Pi0_Mass;}
-  if(fMC_Pi0_OpeningAngleGamma != NULL){ delete fMC_Pi0_OpeningAngleGamma;}
-  if(fMC_Pi0_R != NULL){ delete fMC_Pi0_R;}
-  if(fMC_Pi0_Z_R != NULL){ delete fMC_Pi0_Z_R;}
-  if(fMC_Pi0_X_Y != NULL){ delete fMC_Pi0_X_Y;}
-  if(fMC_Pi0Secondaries_X_Y != NULL){ delete fMC_Pi0Secondaries_X_Y;}
-
-  if(fMC_Eta_Eta != NULL){ delete fMC_Eta_Eta;}
-  if(fMC_Eta_Phi != NULL){ delete fMC_Eta_Phi;}
-  if(fMC_Eta_Pt != NULL){ delete fMC_Eta_Pt;}
-  if(fMC_Eta_Energy != NULL){ delete fMC_Eta_Energy;}
-  if(fMC_Eta_Mass != NULL){ delete fMC_Eta_Mass;}
-  if(fMC_Eta_OpeningAngleGamma != NULL){ delete fMC_Eta_OpeningAngleGamma;}
-  if(fMC_Eta_R != NULL){ delete fMC_Eta_R;}
-  if(fMC_Eta_Z_R != NULL){ delete fMC_Eta_Z_R;}
-  if(fMC_Eta_X_Y != NULL){ delete fMC_Eta_X_Y;}
-    
-  // Histograms from esd tracks
-  if(fESD_EP_R != NULL){ delete fESD_EP_R;}
-  if(fESD_EP_Z_R != NULL){ delete fESD_EP_Z_R;}
-  if(fESD_EP_X_Y != NULL){ delete fESD_EP_X_Y;}
-  if(fESD_EP_OpeningAngle != NULL){ delete fESD_EP_OpeningAngle;}
-
-  if(fESD_E_Energy != NULL){ delete fESD_E_Energy;}
-  if(fESD_E_Pt != NULL){ delete fESD_E_Pt;}
-  if(fESD_E_Eta != NULL){ delete fESD_E_Eta;}
-  if(fESD_E_Phi != NULL){ delete fESD_E_Phi;}
-
-  if(fESD_P_Energy != NULL){ delete fESD_P_Energy;}
-  if(fESD_P_Pt != NULL){ delete fESD_P_Pt;}
-  if(fESD_P_Eta != NULL){ delete fESD_P_Eta;}
-  if(fESD_P_Phi != NULL){ delete fESD_P_Phi;}
-
-  if(fESD_Gamma_Energy != NULL){ delete fESD_Gamma_Energy;}
-  if(fESD_Gamma_Pt != NULL){ delete fESD_Gamma_Pt;}
-  if(fESD_Gamma_Eta != NULL){ delete fESD_Gamma_Eta;}
-  if(fESD_Gamma_Phi != NULL){ delete fESD_Gamma_Phi;}
-
-  //mapping
-  for(UInt_t i=0;i<fESD_Mapping.size();i++){
-    for(UInt_t j=0;j<fESD_Mapping[i].size();j++){
-      if(fESD_Mapping[i][j] != NULL){delete fESD_Mapping[i][j];}
-      fESD_Mapping[i][j]=NULL;
-    }
-    fESD_Mapping[i].clear();
-  }
-  fESD_Mapping.clear();
-
-  for(UInt_t i=0;i<fESD_Mapping_Phi.size();i++){
-    if(fESD_Mapping_Phi[i] != NULL){delete fESD_Mapping_Phi[i];}
-    fESD_Mapping_Phi[i]=NULL;
-  }
-  fESD_Mapping_Phi.clear();
-
-  for(UInt_t i=0;i<fESD_Mapping_R.size();i++){
-    if(fESD_Mapping_R[i] != NULL){delete fESD_Mapping_R[i];}
-    fESD_Mapping_R[i]=NULL;
-  }
-  fESD_Mapping_R.clear();
-
-  if(fESD_Match_Gamma_OpeningAngle != NULL){ delete fESD_Match_Gamma_OpeningAngle;}
-  if(fESD_Match_Gamma_Energy != NULL){ delete fESD_Match_Gamma_Energy;}
-  if(fESD_Match_Gamma_Pt != NULL){ delete fESD_Match_Gamma_Pt;}
-  if(fESD_Match_Gamma_Eta != NULL){ delete fESD_Match_Gamma_Eta;}
-  if(fESD_Match_Gamma_Phi != NULL){ delete fESD_Match_Gamma_Phi;}
-  if(fESD_Match_Gamma_Mass != NULL){ delete fESD_Match_Gamma_Mass;}
-  if(fESD_Match_Gamma_Width != NULL){ delete fESD_Match_Gamma_Width;}
-  if(fESD_Match_Gamma_Chi2 != NULL){ delete fESD_Match_Gamma_Chi2;}
-  if(fESD_Match_Gamma_NDF != NULL){ delete fESD_Match_Gamma_NDF;}
-  if(fESD_Match_Gamma_R != NULL){ delete fESD_Match_Gamma_R;}
-  if(fESD_Match_Gamma_Z_R != NULL){ delete fESD_Match_Gamma_Z_R;}
-  if(fESD_Match_Gamma_X_Y != NULL){ delete fESD_Match_Gamma_X_Y;}
-
-  if(fESD_Pi0_OpeningAngleGamma != NULL){ delete fESD_Pi0_OpeningAngleGamma;}
-  if(fESD_Pi0_Energy != NULL){ delete fESD_Pi0_Energy;}
-  if(fESD_Pi0_Pt != NULL){ delete fESD_Pi0_Pt;}
-  if(fESD_Pi0_Eta != NULL){ delete fESD_Pi0_Eta;}
-  if(fESD_Pi0_Phi != NULL){ delete fESD_Pi0_Phi;}
-  if(fESD_Pi0_Mass != NULL){ delete fESD_Pi0_Mass;}
-  if(fESD_Pi0_R != NULL){ delete fESD_Pi0_R;}
-  if(fESD_Pi0_Z_R != NULL){ delete fESD_Pi0_Z_R;}
-  if(fESD_Pi0_X_Y != NULL){ delete fESD_Pi0_X_Y;}
-
-  if(fESD_Eta_OpeningAngleGamma != NULL){ delete fESD_Eta_OpeningAngleGamma;}
-  if(fESD_Eta_Energy != NULL){ delete fESD_Eta_Energy;}
-  if(fESD_Eta_Pt != NULL){ delete fESD_Eta_Pt;}
-  if(fESD_Eta_Eta != NULL){ delete fESD_Eta_Eta;}
-  if(fESD_Eta_Phi != NULL){ delete fESD_Eta_Phi;}
-  if(fESD_Eta_Mass != NULL){ delete fESD_Eta_Mass;}
-  if(fESD_Eta_R != NULL){ delete fESD_Eta_R;}
-  if(fESD_Eta_Z_R != NULL){ delete fESD_Eta_Z_R;}
-  if(fESD_Eta_X_Y != NULL){ delete fESD_Eta_X_Y;}
-
-  if(fESD_Background_OpeningAngleGamma != NULL){ delete fESD_Background_OpeningAngleGamma;}
-  if(fESD_Background_Energy != NULL){ delete fESD_Background_Energy;}
-  if(fESD_Background_Pt != NULL){ delete fESD_Background_Pt;}
-  if(fESD_Background_Eta != NULL){ delete fESD_Background_Eta;}
-  if(fESD_Background_Phi != NULL){ delete fESD_Background_Phi;}
-  if(fESD_Background_Mass != NULL){ delete fESD_Background_Mass;}
-  if(fESD_Background_R != NULL){ delete fESD_Background_R;}
-  if(fESD_Background_Z_R != NULL){ delete fESD_Background_Z_R;}
-  if(fESD_Background_X_Y != NULL){ delete fESD_Background_X_Y;}
-
-  if(fResolution_dPt != NULL){ delete fResolution_dPt;}
-  if(fResolution_dR != NULL){ delete fResolution_dR;}
-  if(fResolution_dZ != NULL){ delete fResolution_dZ;}
-  if(fResolution_dR_dPt != NULL){ delete fResolution_dR_dPt;}
-  if(fResolution_MC_Pt != NULL){ delete fResolution_MC_Pt;}
-  if(fResolution_MC_R != NULL){ delete fResolution_MC_R;}
-  if(fResolution_MC_Z != NULL){ delete fResolution_MC_Z;}
-  if(fResolution_ESD_Pt != NULL){ delete fResolution_ESD_Pt;}
-  if(fResolution_ESD_R != NULL){ delete fResolution_ESD_R;}
-  if(fResolution_ESD_Z != NULL){ delete fResolution_ESD_Z;}
-  
-  if(fNumberOfV0s != NULL){delete fNumberOfV0s;}
-  if(fNumberOfSurvivingV0s != NULL){delete fNumberOfSurvivingV0s;}
-  if(fV0MassDebugCut1 != NULL){delete fV0MassDebugCut1;}
-  if(fV0MassDebugCut2 != NULL){delete fV0MassDebugCut2;}
-  if(fV0MassDebugCut3 != NULL){delete fV0MassDebugCut3;}
-  if(fV0MassDebugCut4 != NULL){delete fV0MassDebugCut4;}
-  if(fV0MassDebugCut5 != NULL){delete fV0MassDebugCut5;}
-  if(fV0MassDebugCut6 != NULL){delete fV0MassDebugCut6;}
-  if(fV0MassDebugCut7 != NULL){delete fV0MassDebugCut7;}
-  if(fV0MassDebugCut8 != NULL){delete fV0MassDebugCut8;}
 
 }
 
+void AliGammaConversionHistograms::AddHistogram(TString histogramName, TString histogramTitle, Int_t nXBins, Double_t firstX,Double_t lastX,TString xAxisTitle, TString yAxisTitle){
+  // see header file for documentation
+  TH1F *tmp = new TH1F(histogramName, histogramTitle,nXBins,firstX,lastX);
+  tmp->GetXaxis()->SetTitle(xAxisTitle);
+  tmp->GetYaxis()->SetTitle(yAxisTitle);
+  TObjString* tobjstring = new TObjString(histogramName.Data());
+  fHistogramMap->Add((TObject*)tobjstring,(TObject*)tmp);
+}
 
-TList * AliGammaConversionHistograms::GetOutputContainer(){
-  //checking if the container is alrerady created
-  if(fOutputContainer != NULL){
-    delete fOutputContainer;
-    fOutputContainer=NULL;
+void AliGammaConversionHistograms::AddHistogram(TString histogramName, TString histogramTitle, Int_t nXBins, Double_t firstX, Double_t lastX, Int_t nYBins, Double_t firstY, Double_t lastY, TString xAxisTitle, TString yAxisTitle){
+  // see header file for documentation
+  TH2F *tmp = new TH2F(histogramName, histogramTitle,nXBins,firstX,lastX,nYBins,firstY,lastY);
+  tmp->GetXaxis()->SetTitle(xAxisTitle);
+  tmp->GetYaxis()->SetTitle(yAxisTitle);
+  TObjString *tobjstring = new TObjString(histogramName.Data());
+  fHistogramMap->Add((TObject*)tobjstring,(TObject*)tmp);
+}
+
+void AliGammaConversionHistograms::FillHistogram(TString histogramName, Double_t xValue) const{
+  //see header file for documentation
+  TH1 *tmp = (TH1*)fHistogramMap->GetValue(histogramName.Data());
+  if(tmp){
+      tmp->Fill(xValue);
   }
-  fOutputContainer = new TList();
+  else{
+    cout<<"Histogram does not exist"<<histogramName.Data()<<endl;
+  }
+}
+
+void AliGammaConversionHistograms::FillHistogram(TString histogramName, Double_t xValue, Double_t yValue) const{
+  //see header file for documentation
+  TH1 *tmp = (TH1*)fHistogramMap->GetValue(histogramName.Data());
+  if(tmp){
+    tmp->Fill(xValue, yValue);
+  }
+  else{
+    cout<<"Histogram does not exist"<<histogramName.Data()<<endl;
+  }
+}
+
+void AliGammaConversionHistograms::GetOutputContainer(TList *fOutputContainer) const{
+  //checking if the container is alrerady created
+
+  if(fOutputContainer == NULL){
+    //print warning
+    return;
+  }
+  cout<<"Creating the histogram output container"<<endl;
+
+  if(fHistogramMap){
+    TIter iter(fHistogramMap);
+    TObjString *histogramName;
+    while ((histogramName = (TObjString*) iter.Next())) {
+      cout<<"Histohram name "<<histogramName->GetString().Data()<<endl;
+      TString histogramString = histogramName->GetString();
+      fOutputContainer->Add((TH1*)fHistogramMap->GetValue(histogramString.Data()));
+      histogramName = NULL;
+    }  
+  }
+
+  //remember mapping stuff!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+  /*
   TList*  fMappingContainer = new TList();
   fMappingContainer->SetName("Mapping Histograms");
 
-  if(fMC_EP_R != NULL){ fOutputContainer->Add(fMC_EP_R);}
-  if(fMC_EP_Z_R != NULL){ fOutputContainer->Add(fMC_EP_Z_R);}
-  if(fMC_EP_X_Y != NULL){ fOutputContainer->Add(fMC_EP_X_Y);}
-  if(fMC_EP_OpeningAngle != NULL){ fOutputContainer->Add(fMC_EP_OpeningAngle);}
+  if(fMCEPR != NULL){ fOutputContainer->Add(fMCEPR);}
+  if(fMCEPZR != NULL){ fOutputContainer->Add(fMCEPZR);}
+  if(fMCEPXY != NULL){ fOutputContainer->Add(fMCEPXY);}
+  if(fMCEPOpeningAngle != NULL){ fOutputContainer->Add(fMCEPOpeningAngle);}
 
-  if(fMC_E_Energy != NULL){ fOutputContainer->Add(fMC_E_Energy);}
-  if(fMC_E_Pt != NULL){ fOutputContainer->Add(fMC_E_Pt);}
-  if(fMC_E_Eta != NULL){ fOutputContainer->Add(fMC_E_Eta);}
-  if(fMC_E_Phi != NULL){ fOutputContainer->Add(fMC_E_Phi);}
+  if(fMCEEnergy != NULL){ fOutputContainer->Add(fMCEEnergy);}
+  if(fMCEPt != NULL){ fOutputContainer->Add(fMCEPt);}
+  if(fMCEEta != NULL){ fOutputContainer->Add(fMCEEta);}
+  if(fMCEPhi != NULL){ fOutputContainer->Add(fMCEPhi);}
 
-  if(fMC_P_Energy != NULL){ fOutputContainer->Add(fMC_P_Energy);}
-  if(fMC_P_Pt != NULL){ fOutputContainer->Add(fMC_P_Pt);}
-  if(fMC_P_Eta != NULL){ fOutputContainer->Add(fMC_P_Eta);}
-  if(fMC_P_Phi != NULL){ fOutputContainer->Add(fMC_P_Phi);}
+  if(fMCPEnergy != NULL){ fOutputContainer->Add(fMCPEnergy);}
+  if(fMCPPt != NULL){ fOutputContainer->Add(fMCPPt);}
+  if(fMCPEta != NULL){ fOutputContainer->Add(fMCPEta);}
+  if(fMCPPhi != NULL){ fOutputContainer->Add(fMCPPhi);}
 
-  if(fMC_Gamma_Energy != NULL){ fOutputContainer->Add(fMC_Gamma_Energy);}
-  if(fMC_Gamma_Pt != NULL){ fOutputContainer->Add(fMC_Gamma_Pt);}
-  if(fMC_Gamma_Eta != NULL){ fOutputContainer->Add(fMC_Gamma_Eta);}
-  if(fMC_Gamma_Phi != NULL){ fOutputContainer->Add(fMC_Gamma_Phi);}
+  if(fMCGammaEnergy != NULL){ fOutputContainer->Add(fMCGammaEnergy);}
+  if(fMCGammaPt != NULL){ fOutputContainer->Add(fMCGammaPt);}
+  if(fMCGammaEta != NULL){ fOutputContainer->Add(fMCGammaEta);}
+  if(fMCGammaPhi != NULL){ fOutputContainer->Add(fMCGammaPhi);}
 
-  if(fMC_DirectGamma_Energy != NULL){ fOutputContainer->Add(fMC_DirectGamma_Energy);}
-  if(fMC_DirectGamma_Pt != NULL){ fOutputContainer->Add(fMC_DirectGamma_Pt);}
-  if(fMC_DirectGamma_Eta != NULL){ fOutputContainer->Add(fMC_DirectGamma_Eta);}
-  if(fMC_DirectGamma_Phi != NULL){ fOutputContainer->Add(fMC_DirectGamma_Phi);}
+  if(fMCDirectGammaEnergy != NULL){ fOutputContainer->Add(fMCDirectGammaEnergy);}
+  if(fMCDirectGammaPt != NULL){ fOutputContainer->Add(fMCDirectGammaPt);}
+  if(fMCDirectGammaEta != NULL){ fOutputContainer->Add(fMCDirectGammaEta);}
+  if(fMCDirectGammaPhi != NULL){ fOutputContainer->Add(fMCDirectGammaPhi);}
 
   //mapping
-  for(UInt_t i=0;i<fMC_Mapping.size();i++){
-    for(UInt_t j=0;j<fMC_Mapping[i].size();j++){
-      if(fMC_Mapping[i][j] != NULL){fMappingContainer->Add(fMC_Mapping[i][j]);}
+  for(UInt_t i=0;i<fMCMapping.size();i++){
+    for(UInt_t j=0;j<fMCMapping[i].size();j++){
+      if(fMCMapping[i][j] != NULL){fMappingContainer->Add(fMCMapping[i][j]);}
     }
   }
-  for(UInt_t i=0;i<fMC_Mapping_Phi.size();i++){
-    if(fMC_Mapping_Phi[i] != NULL){fMappingContainer->Add(fMC_Mapping_Phi[i]);}
+  for(UInt_t i=0;i<fMCMappingPhi.size();i++){
+    if(fMCMappingPhi[i] != NULL){fMappingContainer->Add(fMCMappingPhi[i]);}
   }
-  for(UInt_t i=0;i<fMC_Mapping_R.size();i++){
-    if(fMC_Mapping_R[i] != NULL){fMappingContainer->Add(fMC_Mapping_R[i]);}
+  for(UInt_t i=0;i<fMCMappingR.size();i++){
+    if(fMCMappingR[i] != NULL){fMappingContainer->Add(fMCMappingR[i]);}
   }
-  if(fMC_Match_Gamma_Eta != NULL){ fOutputContainer->Add(fMC_Match_Gamma_Eta);}
-  if(fMC_Match_Gamma_Phi != NULL){ fOutputContainer->Add(fMC_Match_Gamma_Phi);}
-  if(fMC_Match_Gamma_Pt != NULL){ fOutputContainer->Add(fMC_Match_Gamma_Pt);}
-  if(fMC_Match_Gamma_Energy != NULL){ fOutputContainer->Add(fMC_Match_Gamma_Energy);}
-  if(fMC_Match_Gamma_Mass != NULL){ fOutputContainer->Add(fMC_Match_Gamma_Mass);}
-  if(fMC_Match_Gamma_OpeningAngle != NULL){ fOutputContainer->Add(fMC_Match_Gamma_OpeningAngle);}
-  if(fMC_Match_Gamma_R != NULL){ fOutputContainer->Add(fMC_Match_Gamma_R);}
-  if(fMC_Match_Gamma_Z_R != NULL){ fOutputContainer->Add(fMC_Match_Gamma_Z_R);}
-  if(fMC_Match_Gamma_X_Y != NULL){ fOutputContainer->Add(fMC_Match_Gamma_X_Y);}
+  if(fMCMatchGammaEta != NULL){ fOutputContainer->Add(fMCMatchGammaEta);}
+  if(fMCMatchGammaPhi != NULL){ fOutputContainer->Add(fMCMatchGammaPhi);}
+  if(fMCMatchGammaPt != NULL){ fOutputContainer->Add(fMCMatchGammaPt);}
+  if(fMCMatchGammaEnergy != NULL){ fOutputContainer->Add(fMCMatchGammaEnergy);}
+  if(fMCMatchGammaMass != NULL){ fOutputContainer->Add(fMCMatchGammaMass);}
+  if(fMCMatchGammaOpeningAngle != NULL){ fOutputContainer->Add(fMCMatchGammaOpeningAngle);}
+  if(fMCMatchGammaR != NULL){ fOutputContainer->Add(fMCMatchGammaR);}
+  if(fMCMatchGammaZR != NULL){ fOutputContainer->Add(fMCMatchGammaZR);}
+  if(fMCMatchGammaXY != NULL){ fOutputContainer->Add(fMCMatchGammaXY);}
 
-  if(fMC_Pi0_Eta != NULL){ fOutputContainer->Add(fMC_Pi0_Eta);}
-  if(fMC_Pi0_Phi != NULL){ fOutputContainer->Add(fMC_Pi0_Phi);}
-  if(fMC_Pi0_Pt != NULL){ fOutputContainer->Add(fMC_Pi0_Pt);}
-  if(fMC_Pi0_Energy != NULL){ fOutputContainer->Add(fMC_Pi0_Energy);}
-  if(fMC_Pi0_Mass != NULL){ fOutputContainer->Add(fMC_Pi0_Mass);}
-  if(fMC_Pi0_OpeningAngleGamma != NULL){ fOutputContainer->Add(fMC_Pi0_OpeningAngleGamma);}
-  if(fMC_Pi0_R != NULL){ fOutputContainer->Add(fMC_Pi0_R);}
-  if(fMC_Pi0_Z_R != NULL){ fOutputContainer->Add(fMC_Pi0_Z_R);}
-  if(fMC_Pi0_X_Y != NULL){ fOutputContainer->Add(fMC_Pi0_X_Y);}
-  if(fMC_Pi0Secondaries_X_Y != NULL){ fOutputContainer->Add(fMC_Pi0Secondaries_X_Y);}
+  if(fMCPi0Eta != NULL){ fOutputContainer->Add(fMCPi0Eta);}
+  if(fMCPi0Phi != NULL){ fOutputContainer->Add(fMCPi0Phi);}
+  if(fMCPi0Pt != NULL){ fOutputContainer->Add(fMCPi0Pt);}
+  if(fMCPi0Energy != NULL){ fOutputContainer->Add(fMCPi0Energy);}
+  if(fMCPi0Mass != NULL){ fOutputContainer->Add(fMCPi0Mass);}
+  if(fMCPi0OpeningAngleGamma != NULL){ fOutputContainer->Add(fMCPi0OpeningAngleGamma);}
+  if(fMCPi0R != NULL){ fOutputContainer->Add(fMCPi0R);}
+  if(fMCPi0ZR != NULL){ fOutputContainer->Add(fMCPi0ZR);}
+  if(fMCPi0XY != NULL){ fOutputContainer->Add(fMCPi0XY);}
+  if(fMCPi0SecondariesXY != NULL){ fOutputContainer->Add(fMCPi0SecondariesXY);}
 
-  if(fMC_Eta_Eta != NULL){ fOutputContainer->Add(fMC_Eta_Eta);}
-  if(fMC_Eta_Phi != NULL){ fOutputContainer->Add(fMC_Eta_Phi);}
-  if(fMC_Eta_Pt != NULL){ fOutputContainer->Add(fMC_Eta_Pt);}
-  if(fMC_Eta_Energy != NULL){ fOutputContainer->Add(fMC_Eta_Energy);}
-  if(fMC_Eta_Mass != NULL){ fOutputContainer->Add(fMC_Eta_Mass);}
-  if(fMC_Eta_OpeningAngleGamma != NULL){ fOutputContainer->Add(fMC_Eta_OpeningAngleGamma);}
-  if(fMC_Eta_R != NULL){ fOutputContainer->Add(fMC_Eta_R);}
-  if(fMC_Eta_Z_R != NULL){ fOutputContainer->Add(fMC_Eta_Z_R);}
-  if(fMC_Eta_X_Y != NULL){ fOutputContainer->Add(fMC_Eta_X_Y);}
+  if(fMCEtaEta != NULL){ fOutputContainer->Add(fMCEtaEta);}
+  if(fMCEtaPhi != NULL){ fOutputContainer->Add(fMCEtaPhi);}
+  if(fMCEtaPt != NULL){ fOutputContainer->Add(fMCEtaPt);}
+  if(fMCEtaEnergy != NULL){ fOutputContainer->Add(fMCEtaEnergy);}
+  if(fMCEtaMass != NULL){ fOutputContainer->Add(fMCEtaMass);}
+  if(fMCEtaOpeningAngleGamma != NULL){ fOutputContainer->Add(fMCEtaOpeningAngleGamma);}
+  if(fMCEtaR != NULL){ fOutputContainer->Add(fMCEtaR);}
+  if(fMCEtaZR != NULL){ fOutputContainer->Add(fMCEtaZR);}
+  if(fMCEtaXY != NULL){ fOutputContainer->Add(fMCEtaXY);}
     
   // Histograms from esd tracks
-  if(fESD_EP_R != NULL){ fOutputContainer->Add(fESD_EP_R);}
-  if(fESD_EP_Z_R != NULL){ fOutputContainer->Add(fESD_EP_Z_R);}
-  if(fESD_EP_X_Y != NULL){ fOutputContainer->Add(fESD_EP_X_Y);}
-  if(fESD_EP_OpeningAngle != NULL){ fOutputContainer->Add(fESD_EP_OpeningAngle);}
+  if(fESDEPR != NULL){ fOutputContainer->Add(fESDEPR);}
+  if(fESDEPZR != NULL){ fOutputContainer->Add(fESDEPZR);}
+  if(fESDEPXY != NULL){ fOutputContainer->Add(fESDEPXY);}
+  if(fESDEPOpeningAngle != NULL){ fOutputContainer->Add(fESDEPOpeningAngle);}
 
-  if(fESD_E_Energy != NULL){ fOutputContainer->Add(fESD_E_Energy);}
-  if(fESD_E_Pt != NULL){ fOutputContainer->Add(fESD_E_Pt);}
-  if(fESD_E_Eta != NULL){ fOutputContainer->Add(fESD_E_Eta);}
-  if(fESD_E_Phi != NULL){ fOutputContainer->Add(fESD_E_Phi);}
+  if(fESDEEnergy != NULL){ fOutputContainer->Add(fESDEEnergy);}
+  if(fESDEPt != NULL){ fOutputContainer->Add(fESDEPt);}
+  if(fESDEEta != NULL){ fOutputContainer->Add(fESDEEta);}
+  if(fESDEPhi != NULL){ fOutputContainer->Add(fESDEPhi);}
 
-  if(fESD_P_Energy != NULL){ fOutputContainer->Add(fESD_P_Energy);}
-  if(fESD_P_Pt != NULL){ fOutputContainer->Add(fESD_P_Pt);}
-  if(fESD_P_Eta != NULL){ fOutputContainer->Add(fESD_P_Eta);}
-  if(fESD_P_Phi != NULL){ fOutputContainer->Add(fESD_P_Phi);}
+  if(fESDPEnergy != NULL){ fOutputContainer->Add(fESDPEnergy);}
+  if(fESDPPt != NULL){ fOutputContainer->Add(fESDPPt);}
+  if(fESDPEta != NULL){ fOutputContainer->Add(fESDPEta);}
+  if(fESDPPhi != NULL){ fOutputContainer->Add(fESDPPhi);}
 
-  if(fESD_Gamma_Energy != NULL){ fOutputContainer->Add(fESD_Gamma_Energy);}
-  if(fESD_Gamma_Pt != NULL){ fOutputContainer->Add(fESD_Gamma_Pt);}
-  if(fESD_Gamma_Eta != NULL){ fOutputContainer->Add(fESD_Gamma_Eta);}
-  if(fESD_Gamma_Phi != NULL){ fOutputContainer->Add(fESD_Gamma_Phi);}
+  if(fESDGammaEnergy != NULL){ fOutputContainer->Add(fESDGammaEnergy);}
+  if(fESDGammaPt != NULL){ fOutputContainer->Add(fESDGammaPt);}
+  if(fESDGammaEta != NULL){ fOutputContainer->Add(fESDGammaEta);}
+  if(fESDGammaPhi != NULL){ fOutputContainer->Add(fESDGammaPhi);}
 
   //mapping
-  for(UInt_t i=0;i<fESD_Mapping.size();i++){
-    for(UInt_t j=0;j<fESD_Mapping[i].size();j++){
-      if(fESD_Mapping[i][j] != NULL){fMappingContainer->Add(fESD_Mapping[i][j]);}
+  for(UInt_t i=0;i<fESDMapping.size();i++){
+    for(UInt_t j=0;j<fESDMapping[i].size();j++){
+      if(fESDMapping[i][j] != NULL){fMappingContainer->Add(fESDMapping[i][j]);}
     }
   }
-  for(UInt_t i=0;i<fESD_Mapping_Phi.size();i++){
-    if(fESD_Mapping_Phi[i] != NULL){fMappingContainer->Add(fESD_Mapping_Phi[i]);}
+  for(UInt_t i=0;i<fESDMappingPhi.size();i++){
+    if(fESDMappingPhi[i] != NULL){fMappingContainer->Add(fESDMappingPhi[i]);}
   }
-  for(UInt_t i=0;i<fESD_Mapping_R.size();i++){
-    if(fESD_Mapping_R[i] != NULL){fMappingContainer->Add(fESD_Mapping_R[i]);}
+  for(UInt_t i=0;i<fESDMappingR.size();i++){
+    if(fESDMappingR[i] != NULL){fMappingContainer->Add(fESDMappingR[i]);}
   }
 
   fOutputContainer->Add(fMappingContainer);
 
-  if(fESD_Match_Gamma_OpeningAngle != NULL){ fOutputContainer->Add(fESD_Match_Gamma_OpeningAngle);}
-  if(fESD_Match_Gamma_Energy != NULL){ fOutputContainer->Add(fESD_Match_Gamma_Energy);}
-  if(fESD_Match_Gamma_Pt != NULL){ fOutputContainer->Add(fESD_Match_Gamma_Pt);}
-  if(fESD_Match_Gamma_Eta != NULL){ fOutputContainer->Add(fESD_Match_Gamma_Eta);}
-  if(fESD_Match_Gamma_Phi != NULL){ fOutputContainer->Add(fESD_Match_Gamma_Phi);}
-  if(fESD_Match_Gamma_Mass != NULL){ fOutputContainer->Add(fESD_Match_Gamma_Mass);}
-  if(fESD_Match_Gamma_Width != NULL){ fOutputContainer->Add(fESD_Match_Gamma_Width);}
-  if(fESD_Match_Gamma_Chi2 != NULL){ fOutputContainer->Add(fESD_Match_Gamma_Chi2);}
-  if(fESD_Match_Gamma_NDF != NULL){ fOutputContainer->Add(fESD_Match_Gamma_NDF);}
-  if(fESD_Match_Gamma_R != NULL){ fOutputContainer->Add(fESD_Match_Gamma_R);}
-  if(fESD_Match_Gamma_Z_R != NULL){ fOutputContainer->Add(fESD_Match_Gamma_Z_R);}
-  if(fESD_Match_Gamma_X_Y != NULL){ fOutputContainer->Add(fESD_Match_Gamma_X_Y);}
+  if(fESDMatchGammaOpeningAngle != NULL){ fOutputContainer->Add(fESDMatchGammaOpeningAngle);}
+  if(fESDMatchGammaEnergy != NULL){ fOutputContainer->Add(fESDMatchGammaEnergy);}
+  if(fESDMatchGammaPt != NULL){ fOutputContainer->Add(fESDMatchGammaPt);}
+  if(fESDMatchGammaEta != NULL){ fOutputContainer->Add(fESDMatchGammaEta);}
+  if(fESDMatchGammaPhi != NULL){ fOutputContainer->Add(fESDMatchGammaPhi);}
+  if(fESDMatchGammaMass != NULL){ fOutputContainer->Add(fESDMatchGammaMass);}
+  if(fESDMatchGammaWidth != NULL){ fOutputContainer->Add(fESDMatchGammaWidth);}
+  if(fESDMatchGammaChi2 != NULL){ fOutputContainer->Add(fESDMatchGammaChi2);}
+  if(fESDMatchGammaNDF != NULL){ fOutputContainer->Add(fESDMatchGammaNDF);}
+  if(fESDMatchGammaR != NULL){ fOutputContainer->Add(fESDMatchGammaR);}
+  if(fESDMatchGammaZR != NULL){ fOutputContainer->Add(fESDMatchGammaZR);}
+  if(fESDMatchGammaXY != NULL){ fOutputContainer->Add(fESDMatchGammaXY);}
 
-  if(fESD_Pi0_OpeningAngleGamma != NULL){ fOutputContainer->Add(fESD_Pi0_OpeningAngleGamma);}
-  if(fESD_Pi0_Energy != NULL){ fOutputContainer->Add(fESD_Pi0_Energy);}
-  if(fESD_Pi0_Pt != NULL){ fOutputContainer->Add(fESD_Pi0_Pt);}
-  if(fESD_Pi0_Eta != NULL){ fOutputContainer->Add(fESD_Pi0_Eta);}
-  if(fESD_Pi0_Phi != NULL){ fOutputContainer->Add(fESD_Pi0_Phi);}
-  if(fESD_Pi0_Mass != NULL){ fOutputContainer->Add(fESD_Pi0_Mass);}
-  if(fESD_Pi0_R != NULL){ fOutputContainer->Add(fESD_Pi0_R);}
-  if(fESD_Pi0_Z_R != NULL){ fOutputContainer->Add(fESD_Pi0_Z_R);}
-  if(fESD_Pi0_X_Y != NULL){ fOutputContainer->Add(fESD_Pi0_X_Y);}
+  if(fESDPi0OpeningAngleGamma != NULL){ fOutputContainer->Add(fESDPi0OpeningAngleGamma);}
+  if(fESDPi0Energy != NULL){ fOutputContainer->Add(fESDPi0Energy);}
+  if(fESDPi0Pt != NULL){ fOutputContainer->Add(fESDPi0Pt);}
+  if(fESDPi0Eta != NULL){ fOutputContainer->Add(fESDPi0Eta);}
+  if(fESDPi0Phi != NULL){ fOutputContainer->Add(fESDPi0Phi);}
+  if(fESDPi0Mass != NULL){ fOutputContainer->Add(fESDPi0Mass);}
+  if(fESDPi0R != NULL){ fOutputContainer->Add(fESDPi0R);}
+  if(fESDPi0ZR != NULL){ fOutputContainer->Add(fESDPi0ZR);}
+  if(fESDPi0XY != NULL){ fOutputContainer->Add(fESDPi0XY);}
 
-  if(fESD_Eta_OpeningAngleGamma != NULL){ fOutputContainer->Add(fESD_Eta_OpeningAngleGamma);}
-  if(fESD_Eta_Energy != NULL){ fOutputContainer->Add(fESD_Eta_Energy);}
-  if(fESD_Eta_Pt != NULL){ fOutputContainer->Add(fESD_Eta_Pt);}
-  if(fESD_Eta_Eta != NULL){ fOutputContainer->Add(fESD_Eta_Eta);}
-  if(fESD_Eta_Phi != NULL){ fOutputContainer->Add(fESD_Eta_Phi);}
-  if(fESD_Eta_Mass != NULL){ fOutputContainer->Add(fESD_Eta_Mass);}
-  if(fESD_Eta_R != NULL){ fOutputContainer->Add(fESD_Eta_R);}
-  if(fESD_Eta_Z_R != NULL){ fOutputContainer->Add(fESD_Eta_Z_R);}
-  if(fESD_Eta_X_Y != NULL){ fOutputContainer->Add(fESD_Eta_X_Y);}
+  if(fESDEtaOpeningAngleGamma != NULL){ fOutputContainer->Add(fESDEtaOpeningAngleGamma);}
+  if(fESDEtaEnergy != NULL){ fOutputContainer->Add(fESDEtaEnergy);}
+  if(fESDEtaPt != NULL){ fOutputContainer->Add(fESDEtaPt);}
+  if(fESDEtaEta != NULL){ fOutputContainer->Add(fESDEtaEta);}
+  if(fESDEtaPhi != NULL){ fOutputContainer->Add(fESDEtaPhi);}
+  if(fESDEtaMass != NULL){ fOutputContainer->Add(fESDEtaMass);}
+  if(fESDEtaR != NULL){ fOutputContainer->Add(fESDEtaR);}
+  if(fESDEtaZR != NULL){ fOutputContainer->Add(fESDEtaZR);}
+  if(fESDEtaXY != NULL){ fOutputContainer->Add(fESDEtaXY);}
 
-  if(fESD_Background_OpeningAngleGamma != NULL){ fOutputContainer->Add(fESD_Background_OpeningAngleGamma);}
-  if(fESD_Background_Energy != NULL){ fOutputContainer->Add(fESD_Background_Energy);}
-  if(fESD_Background_Pt != NULL){ fOutputContainer->Add(fESD_Background_Pt);}
-  if(fESD_Background_Eta != NULL){ fOutputContainer->Add(fESD_Background_Eta);}
-  if(fESD_Background_Phi != NULL){ fOutputContainer->Add(fESD_Background_Phi);}
-  if(fESD_Background_Mass != NULL){ fOutputContainer->Add(fESD_Background_Mass);}
-  if(fESD_Background_R != NULL){ fOutputContainer->Add(fESD_Background_R);}
-  if(fESD_Background_Z_R != NULL){ fOutputContainer->Add(fESD_Background_Z_R);}
-  if(fESD_Background_X_Y != NULL){ fOutputContainer->Add(fESD_Background_X_Y);}
+  if(fESDBackgroundOpeningAngleGamma != NULL){ fOutputContainer->Add(fESDBackgroundOpeningAngleGamma);}
+  if(fESDBackgroundEnergy != NULL){ fOutputContainer->Add(fESDBackgroundEnergy);}
+  if(fESDBackgroundPt != NULL){ fOutputContainer->Add(fESDBackgroundPt);}
+  if(fESDBackgroundEta != NULL){ fOutputContainer->Add(fESDBackgroundEta);}
+  if(fESDBackgroundPhi != NULL){ fOutputContainer->Add(fESDBackgroundPhi);}
+  if(fESDBackgroundMass != NULL){ fOutputContainer->Add(fESDBackgroundMass);}
+  if(fESDBackgroundR != NULL){ fOutputContainer->Add(fESDBackgroundR);}
+  if(fESDBackgroundZR != NULL){ fOutputContainer->Add(fESDBackgroundZR);}
+  if(fESDBackgroundXY != NULL){ fOutputContainer->Add(fESDBackgroundXY);}
 
-  if(fResolution_dPt != NULL){ fOutputContainer->Add(fResolution_dPt);}
-  if(fResolution_dR != NULL){ fOutputContainer->Add(fResolution_dR);}
-  if(fResolution_dZ != NULL){ fOutputContainer->Add(fResolution_dZ);}
-  if(fResolution_dR_dPt != NULL){ fOutputContainer->Add(fResolution_dR_dPt);}
-  if(fResolution_MC_Pt != NULL){ fOutputContainer->Add(fResolution_MC_Pt);}
-  if(fResolution_MC_R != NULL){ fOutputContainer->Add(fResolution_MC_R);}
-  if(fResolution_MC_Z != NULL){ fOutputContainer->Add(fResolution_MC_Z);}
-  if(fResolution_ESD_Pt != NULL){ fOutputContainer->Add(fResolution_ESD_Pt);}
-  if(fResolution_ESD_R != NULL){ fOutputContainer->Add(fResolution_ESD_R);}
-  if(fResolution_ESD_Z != NULL){ fOutputContainer->Add(fResolution_ESD_Z);}
+  if(fResolutiondPt != NULL){ fOutputContainer->Add(fResolutiondPt);}
+  if(fResolutiondR != NULL){ fOutputContainer->Add(fResolutiondR);}
+  if(fResolutiondZ != NULL){ fOutputContainer->Add(fResolutiondZ);}
+  if(fResolutiondRdPt != NULL){ fOutputContainer->Add(fResolutiondRdPt);}
+  if(fResolutionMCPt != NULL){ fOutputContainer->Add(fResolutionMCPt);}
+  if(fResolutionMCR != NULL){ fOutputContainer->Add(fResolutionMCR);}
+  if(fResolutionMCZ != NULL){ fOutputContainer->Add(fResolutionMCZ);}
+  if(fResolutionESDPt != NULL){ fOutputContainer->Add(fResolutionESDPt);}
+  if(fResolutionESDR != NULL){ fOutputContainer->Add(fResolutionESDR);}
+  if(fResolutionESDZ != NULL){ fOutputContainer->Add(fResolutionESDZ);}
 
   if(fNumberOfV0s != NULL){fOutputContainer->Add(fNumberOfV0s);}
   if(fNumberOfSurvivingV0s != NULL){fOutputContainer->Add(fNumberOfSurvivingV0s);}
@@ -709,11 +311,13 @@ TList * AliGammaConversionHistograms::GetOutputContainer(){
   if(fV0MassDebugCut6 != NULL){fOutputContainer->Add(fV0MassDebugCut6);}
   if(fV0MassDebugCut7 != NULL){fOutputContainer->Add(fV0MassDebugCut7);}
   if(fV0MassDebugCut8 != NULL){fOutputContainer->Add(fV0MassDebugCut8);}
-
+  
   return fOutputContainer;
+*/
 }
 
-Int_t AliGammaConversionHistograms::GetRBin(Double_t radius){
+Int_t AliGammaConversionHistograms::GetRBin(Double_t radius) const{
+  // see header file for documentation
   Int_t iResult=0;
   if(fDeltaR>0){
     iResult = (Int_t)((radius - fMinRadius)/fDeltaR);
@@ -721,7 +325,8 @@ Int_t AliGammaConversionHistograms::GetRBin(Double_t radius){
   return iResult;
 }
 
-Int_t AliGammaConversionHistograms::GetPhiBin(Double_t phi){
+Int_t AliGammaConversionHistograms::GetPhiBin(Double_t phi) const{
+  // see header file for documentation
   Int_t iResult=0;
   if(fDeltaPhi>0){
     if(phi>TMath::Pi()){
@@ -734,819 +339,123 @@ Int_t AliGammaConversionHistograms::GetPhiBin(Double_t phi){
 
 
 
-// Initializing the valuse for the mapping
-void AliGammaConversionHistograms::Initialize_MappingValues(Int_t nPhiIndex, Int_t nRIndex, Int_t nBinsR, Double_t minRadius, Double_t maxRadius,Int_t nBinsPhi, Double_t minPhi, Double_t maxPhi){
+void AliGammaConversionHistograms::InitializeMappingValues(Int_t nPhiIndex, Int_t nRIndex, Int_t nBinsR, Double_t minRadius, Double_t maxRadius,Int_t nBinsPhi, Double_t minPhi, Double_t maxPhi){
+  // Initializing the valuse for the mapping
+
   fNPhiIndex = nPhiIndex;
   fNRIndex   = nRIndex;
   fMinRadius      = minRadius;
   fMaxRadius      = maxRadius;
-  if(nBinsR>0){
+  if(nBinsR>0 && nRIndex!=0){
     fDeltaR       = (fMaxRadius - fMinRadius)/nRIndex;
   }
   fMinPhi         = minPhi;
   fMaxPhi         = maxPhi;
-  if(nBinsPhi>0){
+  if(nBinsPhi>0 && nPhiIndex!=0){
     fDeltaPhi     = (fMaxPhi-fMinPhi)/nPhiIndex;
   }
 }
 
-//Initializing functions for the histograms
-void AliGammaConversionHistograms::Initialize_MC_EP_R(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fMC_EP_R = new TH1F("MC_EP_R", "", nXBins, firstX, lastX);
-  fMC_EP_R->GetXaxis()->SetTitle(xAxisTitle);
-  fMC_EP_R->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_MC_EP_Z_R(Int_t nXBins, Double_t firstX, Double_t lastX, Int_t nYBins, Double_t firstY, Double_t lastY, TString xAxisTitle, TString yAxisTitle){
-  fMC_EP_Z_R = new TH2F("MC_EP_Z_R", "", nXBins, firstX, lastX, nYBins, firstY, lastY);
-  fMC_EP_Z_R->GetXaxis()->SetTitle(xAxisTitle);
-  fMC_EP_Z_R->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_MC_EP_X_Y(Int_t nXBins, Double_t firstX, Double_t lastX, Int_t nYBins, Double_t firstY, Double_t lastY, TString xAxisTitle, TString yAxisTitle){
-  fMC_EP_X_Y = new TH2F("MC_EP_X_Y", "", nXBins, firstX, lastX, nYBins, firstY, lastY);
-  fMC_EP_X_Y->GetXaxis()->SetTitle(xAxisTitle);
-  fMC_EP_X_Y->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_MC_EP_OpeningAngle(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fMC_EP_OpeningAngle = new TH1F("MC_EP_OpeningAngle", "", nXBins, firstX, lastX);
-  fMC_EP_OpeningAngle->GetXaxis()->SetTitle(xAxisTitle);
-  fMC_EP_OpeningAngle->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_MC_E_Energy(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fMC_E_Energy = new TH1F("MC_E_Energy", "", nXBins, firstX, lastX);
-  fMC_E_Energy->GetXaxis()->SetTitle(xAxisTitle);
-  fMC_E_Energy->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_MC_E_Pt(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fMC_E_Pt = new TH1F("MC_E_Pt", "", nXBins, firstX, lastX);
-  fMC_E_Pt->GetXaxis()->SetTitle(xAxisTitle);
-  fMC_E_Pt->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_MC_E_Eta(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fMC_E_Eta = new TH1F("MC_E_Eta", "", nXBins, firstX, lastX);
-  fMC_E_Eta->GetXaxis()->SetTitle(xAxisTitle);
-  fMC_E_Eta->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_MC_E_Phi(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fMC_E_Phi = new TH1F("MC_E_Phi", "", nXBins, firstX, lastX);
-  fMC_E_Phi->GetXaxis()->SetTitle(xAxisTitle);
-  fMC_E_Phi->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_MC_P_Energy(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fMC_P_Energy = new TH1F("MC_P_Energy", "", nXBins, firstX, lastX);
-  fMC_P_Energy->GetXaxis()->SetTitle(xAxisTitle);
-  fMC_P_Energy->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_MC_P_Pt(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fMC_P_Pt = new TH1F("MC_P_Pt", "", nXBins, firstX, lastX);
-  fMC_P_Pt->GetXaxis()->SetTitle(xAxisTitle);
-  fMC_P_Pt->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_MC_P_Eta(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fMC_P_Eta = new TH1F("MC_P_Eta", "", nXBins, firstX, lastX);
-  fMC_P_Eta->GetXaxis()->SetTitle(xAxisTitle);
-  fMC_P_Eta->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_MC_P_Phi(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fMC_P_Phi = new TH1F("MC_P_Phi", "", nXBins, firstX, lastX);
-  fMC_P_Phi->GetXaxis()->SetTitle(xAxisTitle);
-  fMC_P_Phi->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_MC_Gamma_Energy(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fMC_Gamma_Energy = new TH1F("MC_Gamma_Energy", "", nXBins, firstX, lastX);
-  fMC_Gamma_Energy->GetXaxis()->SetTitle(xAxisTitle);
-  fMC_Gamma_Energy->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_MC_Gamma_Pt(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fMC_Gamma_Pt = new TH1F("MC_Gamma_Pt", "", nXBins, firstX, lastX);
-  fMC_Gamma_Pt->GetXaxis()->SetTitle(xAxisTitle);
-  fMC_Gamma_Pt->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_MC_Gamma_Eta(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fMC_Gamma_Eta = new TH1F("MC_Gamma_Eta", "", nXBins, firstX, lastX);
-  fMC_Gamma_Eta->GetXaxis()->SetTitle(xAxisTitle);
-  fMC_Gamma_Eta->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_MC_Gamma_Phi(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fMC_Gamma_Phi = new TH1F("MC_Gamma_Phi", "", nXBins, firstX, lastX);
-  fMC_Gamma_Phi->GetXaxis()->SetTitle(xAxisTitle);
-  fMC_Gamma_Phi->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_MC_DirectGamma_Energy(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fMC_DirectGamma_Energy = new TH1F("MC_DirectGamma_Energy", "", nXBins, firstX, lastX);
-  fMC_DirectGamma_Energy->GetXaxis()->SetTitle(xAxisTitle);
-  fMC_DirectGamma_Energy->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_MC_DirectGamma_Pt(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fMC_DirectGamma_Pt = new TH1F("MC_DirectGamma_Pt", "", nXBins, firstX, lastX);
-  fMC_DirectGamma_Pt->GetXaxis()->SetTitle(xAxisTitle);
-  fMC_DirectGamma_Pt->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_MC_DirectGamma_Eta(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fMC_DirectGamma_Eta = new TH1F("MC_DirectGamma_Eta", "", nXBins, firstX, lastX);
-  fMC_DirectGamma_Eta->GetXaxis()->SetTitle(xAxisTitle);
-  fMC_DirectGamma_Eta->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_MC_DirectGamma_Phi(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fMC_DirectGamma_Phi = new TH1F("MC_DirectGamma_Phi", "", nXBins, firstX, lastX);
-  fMC_DirectGamma_Phi->GetXaxis()->SetTitle(xAxisTitle);
-  fMC_DirectGamma_Phi->GetYaxis()->SetTitle(yAxisTitle);
-}
 
 //mapping
-
-
-void AliGammaConversionHistograms::Initialize_MappingHistograms(Int_t nPhiIndex, Int_t nRIndex,Int_t nXBins, Double_t firstX, Double_t lastX, Int_t nYBins, Double_t firstY, Double_t lastY, TString xAxisTitle, TString yAxisTitle){
+void AliGammaConversionHistograms::AddMappingHistograms(Int_t nPhiIndex, Int_t nRIndex,Int_t nXBins, Double_t firstX, Double_t lastX, Int_t nYBins, Double_t firstY, Double_t lastY, TString xAxisTitle, TString yAxisTitle){
+  // see header file for documentation
   
   for(Int_t phi =0; phi<=fNPhiIndex;phi++){
-    AliConversionMappingVector tmpRowMC;
-    AliConversionMappingVector tmpRowESD;
+
     for(Int_t r =0; r<fNRIndex;r++){
+
+      //Creating the axis titles
+      if(xAxisTitle.Length() == 0){
+	xAxisTitle.Form("Phi %02d",phi);
+      }
+      
+      if(yAxisTitle.Length() == 0){
+	yAxisTitle.Form("R %02d",phi);
+      }
+
       //MC
-      Char_t nameMC[100];
-      sprintf(nameMC,"MC_EP_Mapping-Phi%02d-R%02d",phi,r);
-      TH2F * tmpMC = new TH2F(nameMC,nameMC,nXBins,firstX,lastX,nYBins,firstY,lastY);
-      tmpMC->SetXTitle(xAxisTitle);
-      tmpMC->SetYTitle(yAxisTitle);
-      tmpRowMC.push_back(tmpMC);
+      TString nameMC="";
+      nameMC.Form("MC_EP_Mapping-Phi%02d-R%02d",phi,r);
+      TString titleMC="";
+      titleMC.Form("Electron-Positron MC Mapping-Phi%02d-R%02d",phi,r);
+
+      AddHistogram(nameMC, titleMC, nXBins, firstX, lastX, nYBins, firstY, lastY, xAxisTitle, yAxisTitle);
+
       //ESD
-      Char_t nameESD[100];
-      sprintf(nameESD,"ESD_EP_Mapping-Phi%02d-R%02d",phi,r);
-      TH2F * tmpESD = new TH2F(nameESD,nameESD,nXBins,firstX,lastX,nYBins,firstY,lastY);
-      tmpESD->SetXTitle(xAxisTitle);
-      tmpESD->SetYTitle(yAxisTitle);
-      tmpRowESD.push_back(tmpESD);
+      TString nameESD="";
+      nameESD.Form("ESD_EP_Mapping-Phi%02d-R%02d",phi,r);
+      TString titleESD="";
+      titleESD.Form("Electron-Positron ESD Mapping-Phi%02d-R%02d",phi,r);
+
+      AddHistogram(nameESD, titleESD, nXBins, firstX, lastX, nYBins, firstY, lastY, xAxisTitle, yAxisTitle);
     }
-    fMC_Mapping.push_back(tmpRowMC);
-    fESD_Mapping.push_back(tmpRowESD);
   }
 
   for(Int_t phi =0; phi<=nPhiIndex;phi++){ 
+
+    //Creating the axis titles
+    if(xAxisTitle.Length() == 0){
+      xAxisTitle.Form("Phi %02d",phi);
+    }
+    if(yAxisTitle.Length() == 0){
+      yAxisTitle = "Counts";
+    }
+    
     //MC
-    Char_t nameMC[100];
-    sprintf(nameMC,"MC_EP_Mapping-Phi%02d",phi);
-    TH2F * tmpMC = new TH2F(nameMC,nameMC,nXBins,firstX,lastX,nYBins,firstY,lastY);
-    tmpMC->SetXTitle(xAxisTitle);
-    tmpMC->SetYTitle(yAxisTitle);
-    fMC_Mapping_Phi.push_back(tmpMC);
-    //ESD
-    Char_t nameESD[100];
-    sprintf(nameESD,"ESD_EP_Mapping-Phi%02d",phi);
-    TH2F * tmpESD = new TH2F(nameESD,nameESD,nXBins,firstX,lastX,nYBins,firstY,lastY);
-    tmpESD->SetXTitle(xAxisTitle);
-    tmpESD->SetYTitle(yAxisTitle);
-    fESD_Mapping_Phi.push_back(tmpESD);   
+    TString nameMC="";
+    nameMC.Form("MC_EP_Mapping-Phi%02d",phi);
+    TString titleMC="";
+    titleMC.Form("Electron-Positron MC Mapping-Phi%02d",phi);
+    
+    AddHistogram(nameMC, titleMC, nXBins, firstX, lastX, xAxisTitle, yAxisTitle);
+
+    //MC
+    TString nameESD="";
+    nameMC.Form("ESD_EP_Mapping-Phi%02d",phi);
+    TString titleESD="";
+    titleMC.Form("Electron-Positron ESD Mapping-Phi%02d",phi);
+    
+    AddHistogram(nameESD, titleESD, nXBins, firstX, lastX, xAxisTitle, yAxisTitle);
   }
+
+
   for(Int_t r =0; r<=nRIndex;r++){
+    //Creating the axis titles
+    if(xAxisTitle.Length() == 0){
+      xAxisTitle.Form("R %02d",r);
+    }
+    if(yAxisTitle.Length() == 0){
+      yAxisTitle = "Counts";
+    }
+    
     //MC
-    Char_t nameMC[100];
-    sprintf(nameMC,"MC_EP_Mapping-R%02d",r);
-    TH2F * tmpMC = new TH2F(nameMC,nameMC,nXBins,firstX,lastX,nYBins,firstY,lastY);
-    tmpMC->SetXTitle(xAxisTitle);
-    tmpMC->SetYTitle(yAxisTitle);
-    fMC_Mapping_R.push_back(tmpMC);
+    TString nameMC="";
+    nameMC.Form("MC_EP_Mapping-R%02d",r);
+    TString titleMC="";
+    titleMC.Form("Electron-Positron MC Mapping-R%02d",r);
+    
+    AddHistogram(nameMC, titleMC, nXBins, firstX, lastX, xAxisTitle, yAxisTitle);
+
     //ESD
-    Char_t nameESD[100];
-    sprintf(nameESD,"ESD_EP_Mapping-R%02d",r);
-    TH2F * tmpESD = new TH2F(nameESD,nameESD,nXBins,firstX,lastX,nYBins,firstY,lastY);
-    tmpESD->SetXTitle(xAxisTitle);
-    tmpESD->SetYTitle(yAxisTitle);
-    fESD_Mapping_R.push_back(tmpESD);
+    TString nameESD="";
+    nameESD.Form("ESD_EP_Mapping-R%02d",r);
+    TString titleESD="";
+    titleESD.Form("Electron-Positron ESD Mapping-R%02d",r);
+    
+    AddHistogram(nameESD, titleESD, nXBins, firstX, lastX, xAxisTitle, yAxisTitle);
+
+    //Mapping Phi in R
+    TString nameMCPhiInR="";
+    nameMCPhiInR.Form("MC_EP_Mapping_Phi_vs_R_R-%02d",r);
+    TString titleMCPhiInR="";
+    titleMCPhiInR.Form("Electron-Positron MC Mapping of Phi in R%02d",r);
+    AddHistogram(nameMCPhiInR, titleMCPhiInR, nXBins, firstX, lastX, nYBins, firstY, lastY, xAxisTitle, yAxisTitle);
+
+    TString nameESDPhiInR="";
+    nameESDPhiInR.Form("ESD_EP_Mapping_Phi_vs_R_R-%02d",r);
+    TString titleESDPhiInR="";
+    titleESDPhiInR.Form("Electron-Positron ESD Mapping of Phi in R%02d",r);
+    AddHistogram(nameESDPhiInR, titleESDPhiInR, nXBins, firstX, lastX, nYBins, firstY, lastY, xAxisTitle, yAxisTitle);    
   }
-}
-
-void AliGammaConversionHistograms::Initialize_MC_Match_Gamma_Eta(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fMC_Match_Gamma_Eta = new TH1F("MC_Match_Gamma_Eta", "", nXBins, firstX, lastX);
-  fMC_Match_Gamma_Eta->GetXaxis()->SetTitle(xAxisTitle);
-  fMC_Match_Gamma_Eta->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_MC_Match_Gamma_Phi(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fMC_Match_Gamma_Phi = new TH1F("MC_Match_Gamma_Phi", "", nXBins, firstX, lastX);
-  fMC_Match_Gamma_Phi->GetXaxis()->SetTitle(xAxisTitle);
-  fMC_Match_Gamma_Phi->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_MC_Match_Gamma_Pt(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fMC_Match_Gamma_Pt = new TH1F("MC_Match_Gamma_Pt", "", nXBins, firstX, lastX);
-  fMC_Match_Gamma_Pt->GetXaxis()->SetTitle(xAxisTitle);
-  fMC_Match_Gamma_Pt->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_MC_Match_Gamma_Energy(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fMC_Match_Gamma_Energy = new TH1F("MC_Match_Gamma_Energy", "", nXBins, firstX, lastX);
-  fMC_Match_Gamma_Energy->GetXaxis()->SetTitle(xAxisTitle);
-  fMC_Match_Gamma_Energy->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_MC_Match_Gamma_Mass(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fMC_Match_Gamma_Mass = new TH1F("MC_Match_Gamma_Mass", "", nXBins, firstX, lastX);
-  fMC_Match_Gamma_Mass->GetXaxis()->SetTitle(xAxisTitle);
-  fMC_Match_Gamma_Mass->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_MC_Match_Gamma_OpeningAngle(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fMC_Match_Gamma_OpeningAngle = new TH1F("MC_Match_Gamma_OpeningAngle", "", nXBins, firstX, lastX);
-  fMC_Match_Gamma_OpeningAngle->GetXaxis()->SetTitle(xAxisTitle);
-  fMC_Match_Gamma_OpeningAngle->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_MC_Match_Gamma_R(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fMC_Match_Gamma_R = new TH1F("MC_Match_Gamma_R", "", nXBins, firstX, lastX);
-  fMC_Match_Gamma_R->GetXaxis()->SetTitle(xAxisTitle);
-  fMC_Match_Gamma_R->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_MC_Match_Gamma_Z_R(Int_t nXBins, Double_t firstX, Double_t lastX, Int_t nYBins, Double_t firstY, Double_t lastY, TString xAxisTitle, TString yAxisTitle){
-  fMC_Match_Gamma_Z_R = new TH2F("MC_Match_Gamma_Z_R", "", nXBins, firstX, lastX, nYBins, firstY, lastY);
-  fMC_Match_Gamma_Z_R->GetXaxis()->SetTitle(xAxisTitle);
-  fMC_Match_Gamma_Z_R->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_MC_Match_Gamma_X_Y(Int_t nXBins, Double_t firstX, Double_t lastX, Int_t nYBins, Double_t firstY, Double_t lastY, TString xAxisTitle, TString yAxisTitle){
-  fMC_Match_Gamma_X_Y = new TH2F("MC_Match_Gamma_X_Y", "", nXBins, firstX, lastX, nYBins, firstY, lastY);
-  fMC_Match_Gamma_X_Y->GetXaxis()->SetTitle(xAxisTitle);
-  fMC_Match_Gamma_X_Y->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_MC_Pi0_Eta(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fMC_Pi0_Eta = new TH1F("MC_Pi0_Eta", "", nXBins, firstX, lastX);
-  fMC_Pi0_Eta->GetXaxis()->SetTitle(xAxisTitle);
-  fMC_Pi0_Eta->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_MC_Pi0_Phi(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fMC_Pi0_Phi = new TH1F("MC_Pi0_Phi", "", nXBins, firstX, lastX);
-  fMC_Pi0_Phi->GetXaxis()->SetTitle(xAxisTitle);
-  fMC_Pi0_Phi->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_MC_Pi0_Pt(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fMC_Pi0_Pt = new TH1F("MC_Pi0_Pt", "", nXBins, firstX, lastX);
-  fMC_Pi0_Pt->GetXaxis()->SetTitle(xAxisTitle);
-  fMC_Pi0_Pt->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_MC_Pi0_Energy(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fMC_Pi0_Energy = new TH1F("MC_Pi0_Energy", "", nXBins, firstX, lastX);
-  fMC_Pi0_Energy->GetXaxis()->SetTitle(xAxisTitle);
-  fMC_Pi0_Energy->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_MC_Pi0_Mass(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fMC_Pi0_Mass = new TH1F("MC_Pi0_Mass", "", nXBins, firstX, lastX);
-  fMC_Pi0_Mass->GetXaxis()->SetTitle(xAxisTitle);
-  fMC_Pi0_Mass->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_MC_Pi0_OpeningAngleGamma(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fMC_Pi0_OpeningAngleGamma = new TH1F("MC_Pi0_OpeningAngleGamma", "", nXBins, firstX, lastX);
-  fMC_Pi0_OpeningAngleGamma->GetXaxis()->SetTitle(xAxisTitle);
-  fMC_Pi0_OpeningAngleGamma->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_MC_Pi0_R(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fMC_Pi0_R = new TH1F("MC_Pi0_R", "", nXBins, firstX, lastX);
-  fMC_Pi0_R->GetXaxis()->SetTitle(xAxisTitle);
-  fMC_Pi0_R->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_MC_Pi0_Z_R(Int_t nXBins, Double_t firstX, Double_t lastX, Int_t nYBins, Double_t firstY, Double_t lastY, TString xAxisTitle, TString yAxisTitle){
-  fMC_Pi0_Z_R = new TH2F("MC_Pi0_Z_R", "", nXBins, firstX, lastX, nYBins, firstY, lastY);
-  fMC_Pi0_Z_R->GetXaxis()->SetTitle(xAxisTitle);
-  fMC_Pi0_Z_R->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_MC_Pi0_X_Y(Int_t nXBins, Double_t firstX, Double_t lastX, Int_t nYBins, Double_t firstY, Double_t lastY, TString xAxisTitle, TString yAxisTitle){
-  fMC_Pi0_X_Y = new TH2F("MC_Pi0_X_Y", "", nXBins, firstX, lastX, nYBins, firstY, lastY);
-  fMC_Pi0_X_Y->GetXaxis()->SetTitle(xAxisTitle);
-  fMC_Pi0_X_Y->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_MC_Pi0Secondaries_X_Y(Int_t nXBins, Double_t firstX, Double_t lastX, Int_t nYBins, Double_t firstY, Double_t lastY, TString xAxisTitle, TString yAxisTitle){
-  fMC_Pi0Secondaries_X_Y = new TH2F("MC_Pi0Secondaries_X_Y", "", nXBins, firstX, lastX, nYBins, firstY, lastY);
-  fMC_Pi0Secondaries_X_Y->GetXaxis()->SetTitle(xAxisTitle);
-  fMC_Pi0Secondaries_X_Y->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_MC_Eta_Eta(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fMC_Eta_Eta = new TH1F("MC_Eta_Eta", "", nXBins, firstX, lastX);
-  fMC_Eta_Eta->GetXaxis()->SetTitle(xAxisTitle);
-  fMC_Eta_Eta->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_MC_Eta_Phi(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fMC_Eta_Phi = new TH1F("MC_Eta_Phi", "", nXBins, firstX, lastX);
-  fMC_Eta_Phi->GetXaxis()->SetTitle(xAxisTitle);
-  fMC_Eta_Phi->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_MC_Eta_Pt(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fMC_Eta_Pt = new TH1F("MC_Eta_Pt", "", nXBins, firstX, lastX);
-  fMC_Eta_Pt->GetXaxis()->SetTitle(xAxisTitle);
-  fMC_Eta_Pt->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_MC_Eta_Energy(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fMC_Eta_Energy = new TH1F("MC_Eta_Energy", "", nXBins, firstX, lastX);
-  fMC_Eta_Energy->GetXaxis()->SetTitle(xAxisTitle);
-  fMC_Eta_Energy->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_MC_Eta_Mass(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fMC_Eta_Mass = new TH1F("MC_Eta_Mass", "", nXBins, firstX, lastX);
-  fMC_Eta_Mass->GetXaxis()->SetTitle(xAxisTitle);
-  fMC_Eta_Mass->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_MC_Eta_OpeningAngleGamma(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fMC_Eta_OpeningAngleGamma = new TH1F("MC_Eta_OpeningAngleGamma", "", nXBins, firstX, lastX);
-  fMC_Eta_OpeningAngleGamma->GetXaxis()->SetTitle(xAxisTitle);
-  fMC_Eta_OpeningAngleGamma->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_MC_Eta_R(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fMC_Eta_R = new TH1F("MC_Eta_R", "", nXBins, firstX, lastX);
-  fMC_Eta_R->GetXaxis()->SetTitle(xAxisTitle);
-  fMC_Eta_R->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_MC_Eta_Z_R(Int_t nXBins, Double_t firstX, Double_t lastX, Int_t nYBins, Double_t firstY, Double_t lastY, TString xAxisTitle, TString yAxisTitle){
-  fMC_Eta_Z_R = new TH2F("MC_Eta_Z_R", "", nXBins, firstX, lastX, nYBins, firstY, lastY);
-  fMC_Eta_Z_R->GetXaxis()->SetTitle(xAxisTitle);
-  fMC_Eta_Z_R->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_MC_Eta_X_Y(Int_t nXBins, Double_t firstX, Double_t lastX, Int_t nYBins, Double_t firstY, Double_t lastY, TString xAxisTitle, TString yAxisTitle){
-  fMC_Eta_X_Y = new TH2F("MC_Eta_X_Y", "", nXBins, firstX, lastX, nYBins, firstY, lastY);
-  fMC_Eta_X_Y->GetXaxis()->SetTitle(xAxisTitle);
-  fMC_Eta_X_Y->GetYaxis()->SetTitle(yAxisTitle);
-}   
-// esd
-
-void AliGammaConversionHistograms::Initialize_ESD_EP_R(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fESD_EP_R = new TH1F("ESD_EP_R", "", nXBins, firstX, lastX);
-  fESD_EP_R->GetXaxis()->SetTitle(xAxisTitle);
-  fESD_EP_R->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_ESD_EP_Z_R(Int_t nXBins, Double_t firstX, Double_t lastX, Int_t nYBins, Double_t firstY, Double_t lastY, TString xAxisTitle, TString yAxisTitle){
-  fESD_EP_Z_R = new TH2F("ESD_EP_Z_R", "", nXBins, firstX, lastX, nYBins, firstY, lastY);
-  fESD_EP_Z_R->GetXaxis()->SetTitle(xAxisTitle);
-  fESD_EP_Z_R->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_ESD_EP_X_Y(Int_t nXBins, Double_t firstX, Double_t lastX, Int_t nYBins, Double_t firstY, Double_t lastY, TString xAxisTitle, TString yAxisTitle){
-  fESD_EP_X_Y = new TH2F("ESD_EP_X_Y", "", nXBins, firstX, lastX, nYBins, firstY, lastY);
-  fESD_EP_X_Y->GetXaxis()->SetTitle(xAxisTitle);
-  fESD_EP_X_Y->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_ESD_EP_OpeningAngle(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fESD_EP_OpeningAngle = new TH1F("ESD_EP_OpeningAngle", "", nXBins, firstX, lastX);
-  fESD_EP_OpeningAngle->GetXaxis()->SetTitle(xAxisTitle);
-  fESD_EP_OpeningAngle->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_ESD_E_Energy(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fESD_E_Energy = new TH1F("ESD_E_Energy", "", nXBins, firstX, lastX);
-  fESD_E_Energy->GetXaxis()->SetTitle(xAxisTitle);
-  fESD_E_Energy->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_ESD_E_Pt(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fESD_E_Pt = new TH1F("ESD_E_Pt", "", nXBins, firstX, lastX);
-  fESD_E_Pt->GetXaxis()->SetTitle(xAxisTitle);
-  fESD_E_Pt->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_ESD_E_Eta(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fESD_E_Eta = new TH1F("ESD_E_Eta", "", nXBins, firstX, lastX);
-  fESD_E_Eta->GetXaxis()->SetTitle(xAxisTitle);
-  fESD_E_Eta->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_ESD_E_Phi(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fESD_E_Phi = new TH1F("ESD_E_Phi", "", nXBins, firstX, lastX);
-  fESD_E_Phi->GetXaxis()->SetTitle(xAxisTitle);
-  fESD_E_Phi->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_ESD_P_Energy(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fESD_P_Energy = new TH1F("ESD_P_Energy", "", nXBins, firstX, lastX);
-  fESD_P_Energy->GetXaxis()->SetTitle(xAxisTitle);
-  fESD_P_Energy->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_ESD_P_Pt(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fESD_P_Pt = new TH1F("ESD_P_Pt", "", nXBins, firstX, lastX);
-  fESD_P_Pt->GetXaxis()->SetTitle(xAxisTitle);
-  fESD_P_Pt->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_ESD_P_Eta(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fESD_P_Eta = new TH1F("ESD_P_Eta", "", nXBins, firstX, lastX);
-  fESD_P_Eta->GetXaxis()->SetTitle(xAxisTitle);
-  fESD_P_Eta->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_ESD_P_Phi(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fESD_P_Phi = new TH1F("ESD_P_Phi", "", nXBins, firstX, lastX);
-  fESD_P_Phi->GetXaxis()->SetTitle(xAxisTitle);
-  fESD_P_Phi->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_ESD_Gamma_Energy(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fESD_Gamma_Energy = new TH1F("ESD_Gamma_Energy", "", nXBins, firstX, lastX);
-  fESD_Gamma_Energy->GetXaxis()->SetTitle(xAxisTitle);
-  fESD_Gamma_Energy->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_ESD_Gamma_Pt(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fESD_Gamma_Pt = new TH1F("ESD_Gamma_Pt", "", nXBins, firstX, lastX);
-  fESD_Gamma_Pt->GetXaxis()->SetTitle(xAxisTitle);
-  fESD_Gamma_Pt->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_ESD_Gamma_Eta(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fESD_Gamma_Eta = new TH1F("ESD_Gamma_Eta", "", nXBins, firstX, lastX);
-  fESD_Gamma_Eta->GetXaxis()->SetTitle(xAxisTitle);
-  fESD_Gamma_Eta->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_ESD_Gamma_Phi(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fESD_Gamma_Phi = new TH1F("ESD_Gamma_Phi", "", nXBins, firstX, lastX);
-  fESD_Gamma_Phi->GetXaxis()->SetTitle(xAxisTitle);
-  fESD_Gamma_Phi->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_ESD_Match_Gamma_OpeningAngle(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fESD_Match_Gamma_OpeningAngle = new TH1F("ESD_Match_Gamma_OpeningAngle", "", nXBins, firstX, lastX);
-  fESD_Match_Gamma_OpeningAngle->GetXaxis()->SetTitle(xAxisTitle);
-  fESD_Match_Gamma_OpeningAngle->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_ESD_Match_Gamma_Energy(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fESD_Match_Gamma_Energy = new TH1F("ESD_Match_Gamma_Energy", "", nXBins, firstX, lastX);
-  fESD_Match_Gamma_Energy->GetXaxis()->SetTitle(xAxisTitle);
-  fESD_Match_Gamma_Energy->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_ESD_Match_Gamma_Pt(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fESD_Match_Gamma_Pt = new TH1F("ESD_Match_Gamma_Pt", "", nXBins, firstX, lastX);
-  fESD_Match_Gamma_Pt->GetXaxis()->SetTitle(xAxisTitle);
-  fESD_Match_Gamma_Pt->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_ESD_Match_Gamma_Eta(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fESD_Match_Gamma_Eta = new TH1F("ESD_Match_Gamma_Eta", "", nXBins, firstX, lastX);
-  fESD_Match_Gamma_Eta->GetXaxis()->SetTitle(xAxisTitle);
-  fESD_Match_Gamma_Eta->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_ESD_Match_Gamma_Phi(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fESD_Match_Gamma_Phi = new TH1F("ESD_Match_Gamma_Phi", "", nXBins, firstX, lastX);
-  fESD_Match_Gamma_Phi->GetXaxis()->SetTitle(xAxisTitle);
-  fESD_Match_Gamma_Phi->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_ESD_Match_Gamma_Mass(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fESD_Match_Gamma_Mass = new TH1F("ESD_Match_Gamma_Mass", "", nXBins, firstX, lastX);
-  fESD_Match_Gamma_Mass->GetXaxis()->SetTitle(xAxisTitle);
-  fESD_Match_Gamma_Mass->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_ESD_Match_Gamma_Width(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fESD_Match_Gamma_Width = new TH1F("ESD_Match_Gamma_Width", "", nXBins, firstX, lastX);
-  fESD_Match_Gamma_Width->GetXaxis()->SetTitle(xAxisTitle);
-  fESD_Match_Gamma_Width->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_ESD_Match_Gamma_Chi2(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fESD_Match_Gamma_Chi2 = new TH1F("ESD_Match_Gamma_Chi2", "", nXBins, firstX, lastX);
-  fESD_Match_Gamma_Chi2->GetXaxis()->SetTitle(xAxisTitle);
-  fESD_Match_Gamma_Chi2->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_ESD_Match_Gamma_NDF(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fESD_Match_Gamma_NDF = new TH1F("ESD_Match_Gamma_NDF", "", nXBins, firstX, lastX);
-  fESD_Match_Gamma_NDF->GetXaxis()->SetTitle(xAxisTitle);
-  fESD_Match_Gamma_NDF->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_ESD_Match_Gamma_R(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fESD_Match_Gamma_R = new TH1F("ESD_Match_Gamma_R", "", nXBins, firstX, lastX);
-  fESD_Match_Gamma_R->GetXaxis()->SetTitle(xAxisTitle);
-  fESD_Match_Gamma_R->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_ESD_Match_Gamma_Z_R(Int_t nXBins, Double_t firstX, Double_t lastX, Int_t nYBins, Double_t firstY, Double_t lastY, TString xAxisTitle, TString yAxisTitle){
-  fESD_Match_Gamma_Z_R = new TH2F("ESD_Match_Gamma_Z_R", "", nXBins, firstX, lastX, nYBins, firstY, lastY);
-  fESD_Match_Gamma_Z_R->GetXaxis()->SetTitle(xAxisTitle);
-  fESD_Match_Gamma_Z_R->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_ESD_Match_Gamma_X_Y(Int_t nXBins, Double_t firstX, Double_t lastX, Int_t nYBins, Double_t firstY, Double_t lastY, TString xAxisTitle, TString yAxisTitle){
-  fESD_Match_Gamma_X_Y = new TH2F("ESD_Match_Gamma_X_Y", "", nXBins, firstX, lastX, nYBins, firstY, lastY);
-  fESD_Match_Gamma_X_Y->GetXaxis()->SetTitle(xAxisTitle);
-  fESD_Match_Gamma_X_Y->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_ESD_Pi0_OpeningAngleGamma(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fESD_Pi0_OpeningAngleGamma = new TH1F("ESD_Pi0_OpeningAngleGamma", "", nXBins, firstX, lastX);
-  fESD_Pi0_OpeningAngleGamma->GetXaxis()->SetTitle(xAxisTitle);
-  fESD_Pi0_OpeningAngleGamma->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_ESD_Pi0_Energy(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fESD_Pi0_Energy = new TH1F("ESD_Pi0_Energy", "", nXBins, firstX, lastX);
-  fESD_Pi0_Energy->GetXaxis()->SetTitle(xAxisTitle);
-  fESD_Pi0_Energy->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_ESD_Pi0_Pt(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fESD_Pi0_Pt = new TH1F("ESD_Pi0_Pt", "", nXBins, firstX, lastX);
-  fESD_Pi0_Pt->GetXaxis()->SetTitle(xAxisTitle);
-  fESD_Pi0_Pt->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_ESD_Pi0_Eta(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fESD_Pi0_Eta = new TH1F("ESD_Pi0_Eta", "", nXBins, firstX, lastX);
-  fESD_Pi0_Eta->GetXaxis()->SetTitle(xAxisTitle);
-  fESD_Pi0_Eta->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_ESD_Pi0_Phi(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fESD_Pi0_Phi = new TH1F("ESD_Pi0_Phi", "", nXBins, firstX, lastX);
-  fESD_Pi0_Phi->GetXaxis()->SetTitle(xAxisTitle);
-  fESD_Pi0_Phi->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_ESD_Pi0_Mass(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fESD_Pi0_Mass = new TH1F("ESD_Pi0_Mass", "", nXBins, firstX, lastX);
-  fESD_Pi0_Mass->GetXaxis()->SetTitle(xAxisTitle);
-  fESD_Pi0_Mass->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_ESD_Pi0_R(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fESD_Pi0_R = new TH1F("ESD_Pi0_R", "", nXBins, firstX, lastX);
-  fESD_Pi0_R->GetXaxis()->SetTitle(xAxisTitle);
-  fESD_Pi0_R->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_ESD_Pi0_Z_R(Int_t nXBins, Double_t firstX, Double_t lastX, Int_t nYBins, Double_t firstY, Double_t lastY, TString xAxisTitle, TString yAxisTitle){
-  fESD_Pi0_Z_R = new TH2F("ESD_Pi0_Z_R", "", nXBins, firstX, lastX, nYBins, firstY, lastY);
-  fESD_Pi0_Z_R->GetXaxis()->SetTitle(xAxisTitle);
-  fESD_Pi0_Z_R->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_ESD_Pi0_X_Y(Int_t nXBins, Double_t firstX, Double_t lastX, Int_t nYBins, Double_t firstY, Double_t lastY, TString xAxisTitle, TString yAxisTitle){
-  fESD_Pi0_X_Y = new TH2F("ESD_Pi0_X_Y", "", nXBins, firstX, lastX, nYBins, firstY, lastY);
-  fESD_Pi0_X_Y->GetXaxis()->SetTitle(xAxisTitle);
-  fESD_Pi0_X_Y->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_ESD_Eta_OpeningAngleGamma(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fESD_Eta_OpeningAngleGamma = new TH1F("ESD_Eta_OpeningAngleGamma", "", nXBins, firstX, lastX);
-  fESD_Eta_OpeningAngleGamma->GetXaxis()->SetTitle(xAxisTitle);
-  fESD_Eta_OpeningAngleGamma->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_ESD_Eta_Energy(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fESD_Eta_Energy = new TH1F("ESD_Eta_Energy", "", nXBins, firstX, lastX);
-  fESD_Eta_Energy->GetXaxis()->SetTitle(xAxisTitle);
-  fESD_Eta_Energy->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_ESD_Eta_Pt(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fESD_Eta_Pt = new TH1F("ESD_Eta_Pt", "", nXBins, firstX, lastX);
-  fESD_Eta_Pt->GetXaxis()->SetTitle(xAxisTitle);
-  fESD_Eta_Pt->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_ESD_Eta_Eta(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fESD_Eta_Eta = new TH1F("ESD_Eta_Eta", "", nXBins, firstX, lastX);
-  fESD_Eta_Eta->GetXaxis()->SetTitle(xAxisTitle);
-  fESD_Eta_Eta->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_ESD_Eta_Phi(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fESD_Eta_Phi = new TH1F("ESD_Eta_Phi", "", nXBins, firstX, lastX);
-  fESD_Eta_Phi->GetXaxis()->SetTitle(xAxisTitle);
-  fESD_Eta_Phi->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_ESD_Eta_Mass(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fESD_Eta_Mass = new TH1F("ESD_Eta_Mass", "", nXBins, firstX, lastX);
-  fESD_Eta_Mass->GetXaxis()->SetTitle(xAxisTitle);
-  fESD_Eta_Mass->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_ESD_Eta_R(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fESD_Eta_R = new TH1F("ESD_Eta_R", "", nXBins, firstX, lastX);
-  fESD_Eta_R->GetXaxis()->SetTitle(xAxisTitle);
-  fESD_Eta_R->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_ESD_Eta_Z_R(Int_t nXBins, Double_t firstX, Double_t lastX, Int_t nYBins, Double_t firstY, Double_t lastY, TString xAxisTitle, TString yAxisTitle){
-  fESD_Eta_Z_R = new TH2F("ESD_Eta_Z_R", "", nXBins, firstX, lastX, nYBins, firstY, lastY);
-  fESD_Eta_Z_R->GetXaxis()->SetTitle(xAxisTitle);
-  fESD_Eta_Z_R->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_ESD_Eta_X_Y(Int_t nXBins, Double_t firstX, Double_t lastX, Int_t nYBins, Double_t firstY, Double_t lastY, TString xAxisTitle, TString yAxisTitle){
-  fESD_Eta_X_Y = new TH2F("ESD_Eta_X_Y", "", nXBins, firstX, lastX, nYBins, firstY, lastY);
-  fESD_Eta_X_Y->GetXaxis()->SetTitle(xAxisTitle);
-  fESD_Eta_X_Y->GetYaxis()->SetTitle(yAxisTitle);
-}
-void AliGammaConversionHistograms::Initialize_ESD_Background_OpeningAngleGamma(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fESD_Background_OpeningAngleGamma = new TH1F("ESD_Background_OpeningAngleGamma", "", nXBins, firstX, lastX);
-  fESD_Background_OpeningAngleGamma->GetXaxis()->SetTitle(xAxisTitle);
-  fESD_Background_OpeningAngleGamma->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_ESD_Background_Energy(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fESD_Background_Energy = new TH1F("ESD_Background_Energy", "", nXBins, firstX, lastX);
-  fESD_Background_Energy->GetXaxis()->SetTitle(xAxisTitle);
-  fESD_Background_Energy->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_ESD_Background_Pt(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fESD_Background_Pt = new TH1F("ESD_Background_Pt", "", nXBins, firstX, lastX);
-  fESD_Background_Pt->GetXaxis()->SetTitle(xAxisTitle);
-  fESD_Background_Pt->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_ESD_Background_Eta(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fESD_Background_Eta = new TH1F("ESD_Background_Eta", "", nXBins, firstX, lastX);
-  fESD_Background_Eta->GetXaxis()->SetTitle(xAxisTitle);
-  fESD_Background_Eta->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_ESD_Background_Phi(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fESD_Background_Phi = new TH1F("ESD_Background_Phi", "", nXBins, firstX, lastX);
-  fESD_Background_Phi->GetXaxis()->SetTitle(xAxisTitle);
-  fESD_Background_Phi->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_ESD_Background_Mass(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fESD_Background_Mass = new TH1F("ESD_Background_Mass", "", nXBins, firstX, lastX);
-  fESD_Background_Mass->GetXaxis()->SetTitle(xAxisTitle);
-  fESD_Background_Mass->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_ESD_Background_R(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fESD_Background_R = new TH1F("ESD_Background_R", "", nXBins, firstX, lastX);
-  fESD_Background_R->GetXaxis()->SetTitle(xAxisTitle);
-  fESD_Background_R->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_ESD_Background_Z_R(Int_t nXBins, Double_t firstX, Double_t lastX, Int_t nYBins, Double_t firstY, Double_t lastY, TString xAxisTitle, TString yAxisTitle){
-  fESD_Background_Z_R = new TH2F("ESD_Background_Z_R", "", nXBins, firstX, lastX, nYBins, firstY, lastY);
-  fESD_Background_Z_R->GetXaxis()->SetTitle(xAxisTitle);
-  fESD_Background_Z_R->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_ESD_Background_X_Y(Int_t nXBins, Double_t firstX, Double_t lastX, Int_t nYBins, Double_t firstY, Double_t lastY, TString xAxisTitle, TString yAxisTitle){
-  fESD_Background_X_Y = new TH2F("ESD_Background_X_Y", "", nXBins, firstX, lastX, nYBins, firstY, lastY);
-  fESD_Background_X_Y->GetXaxis()->SetTitle(xAxisTitle);
-  fESD_Background_X_Y->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_Resolution_dPt(Int_t nXBins, Double_t firstX, Double_t lastX, Int_t nYBins, Double_t firstY, Double_t lastY, TString xAxisTitle, TString yAxisTitle){
-  fResolution_dPt = new TH2F("Resolution_dPt", "", nXBins, firstX, lastX, nYBins, firstY, lastY);
-  fResolution_dPt->GetXaxis()->SetTitle(xAxisTitle);
-  fResolution_dPt->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_Resolution_dR(Int_t nXBins, Double_t firstX, Double_t lastX, Int_t nYBins, Double_t firstY, Double_t lastY, TString xAxisTitle, TString yAxisTitle){
-  fResolution_dR = new TH2F("Resolution_dR", "", nXBins, firstX, lastX, nYBins, firstY, lastY);
-  fResolution_dR->GetXaxis()->SetTitle(xAxisTitle);
-  fResolution_dR->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_Resolution_dZ(Int_t nXBins, Double_t firstX, Double_t lastX, Int_t nYBins, Double_t firstY, Double_t lastY, TString xAxisTitle, TString yAxisTitle){
-  fResolution_dZ = new TH2F("Resolution_dZ", "", nXBins, firstX, lastX, nYBins, firstY, lastY);
-  fResolution_dZ->GetXaxis()->SetTitle(xAxisTitle);
-  fResolution_dZ->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_Resolution_dR_dPt(Int_t nXBins, Double_t firstX, Double_t lastX, Int_t nYBins, Double_t firstY, Double_t lastY, TString xAxisTitle, TString yAxisTitle){
-  fResolution_dR_dPt = new TH2F("Resolution_dR_dPt", "", nXBins, firstX, lastX, nYBins, firstY, lastY);
-  fResolution_dR_dPt->GetXaxis()->SetTitle(xAxisTitle);
-  fResolution_dR_dPt->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_Resolution_MC_Pt(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fResolution_MC_Pt = new TH1F("Resolution_MC_Pt", "", nXBins, firstX, lastX);
-  fResolution_MC_Pt->GetXaxis()->SetTitle(xAxisTitle);
-  fResolution_MC_Pt->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_Resolution_MC_R(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fResolution_MC_R = new TH1F("Resolution_MC_R", "", nXBins, firstX, lastX);
-  fResolution_MC_R->GetXaxis()->SetTitle(xAxisTitle);
-  fResolution_MC_R->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_Resolution_MC_Z(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fResolution_MC_Z = new TH1F("Resolution_MC_Z", "", nXBins, firstX, lastX);
-  fResolution_MC_Z->GetXaxis()->SetTitle(xAxisTitle);
-  fResolution_MC_Z->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_Resolution_ESD_Pt(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fResolution_ESD_Pt = new TH1F("Resolution_ESD_Pt", "", nXBins, firstX, lastX);
-  fResolution_ESD_Pt->GetXaxis()->SetTitle(xAxisTitle);
-  fResolution_ESD_Pt->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_Resolution_ESD_R(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fResolution_ESD_R = new TH1F("Resolution_ESD_R", "", nXBins, firstX, lastX);
-  fResolution_ESD_R->GetXaxis()->SetTitle(xAxisTitle);
-  fResolution_ESD_R->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_Resolution_ESD_Z(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fResolution_ESD_Z = new TH1F("Resolution_ESD_Z", "", nXBins, firstX, lastX);
-  fResolution_ESD_Z->GetXaxis()->SetTitle(xAxisTitle);
-  fResolution_ESD_Z->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_NumberOfV0s(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fNumberOfV0s = new TH1F("NumberOfV0s", "", nXBins, firstX, lastX);
-  fNumberOfV0s->GetXaxis()->SetTitle(xAxisTitle);
-  fNumberOfV0s->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_NumberOfSurvivingV0s(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fNumberOfSurvivingV0s = new TH1F("NumberOfSurvivingV0s", "", nXBins, firstX, lastX);
-  fNumberOfSurvivingV0s->GetXaxis()->SetTitle(xAxisTitle);
-  fNumberOfSurvivingV0s->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_V0MassDebugCut1(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fV0MassDebugCut1 = new TH1F("V0MassDebugCut1", "", nXBins, firstX, lastX);
-  fV0MassDebugCut1->GetXaxis()->SetTitle(xAxisTitle);
-  fV0MassDebugCut1->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_V0MassDebugCut2(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fV0MassDebugCut2 = new TH1F("V0MassDebugCut2", "", nXBins, firstX, lastX);
-  fV0MassDebugCut2->GetXaxis()->SetTitle(xAxisTitle);
-  fV0MassDebugCut2->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_V0MassDebugCut3(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fV0MassDebugCut3 = new TH1F("V0MassDebugCut3", "", nXBins, firstX, lastX);
-  fV0MassDebugCut3->GetXaxis()->SetTitle(xAxisTitle);
-  fV0MassDebugCut3->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_V0MassDebugCut4(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fV0MassDebugCut4 = new TH1F("V0MassDebugCut4", "", nXBins, firstX, lastX);
-  fV0MassDebugCut4->GetXaxis()->SetTitle(xAxisTitle);
-  fV0MassDebugCut4->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_V0MassDebugCut5(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fV0MassDebugCut5 = new TH1F("V0MassDebugCut5", "", nXBins, firstX, lastX);
-  fV0MassDebugCut5->GetXaxis()->SetTitle(xAxisTitle);
-  fV0MassDebugCut5->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_V0MassDebugCut6(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fV0MassDebugCut6 = new TH1F("V0MassDebugCut6", "", nXBins, firstX, lastX);
-  fV0MassDebugCut6->GetXaxis()->SetTitle(xAxisTitle);
-  fV0MassDebugCut6->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_V0MassDebugCut7(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fV0MassDebugCut7 = new TH1F("V0MassDebugCut7", "", nXBins, firstX, lastX);
-  fV0MassDebugCut7->GetXaxis()->SetTitle(xAxisTitle);
-  fV0MassDebugCut7->GetYaxis()->SetTitle(yAxisTitle);
-}
-
-void AliGammaConversionHistograms::Initialize_V0MassDebugCut8(Int_t nXBins, Double_t firstX, Double_t lastX, TString xAxisTitle, TString yAxisTitle){
-  fV0MassDebugCut8 = new TH1F("V0MassDebugCut8", "", nXBins, firstX, lastX);
-  fV0MassDebugCut8->GetXaxis()->SetTitle(xAxisTitle);
-  fV0MassDebugCut8->GetYaxis()->SetTitle(yAxisTitle);
 }
