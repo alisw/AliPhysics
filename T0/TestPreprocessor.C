@@ -49,16 +49,82 @@ TMap* CreateDCSAliasMap()
   TMap* aliasMap = new TMap;
   aliasMap->SetOwner(1);
 
-  Int_t n_ac_scalers=32;
+  TString aliasName;
+  Int_t n_T0aliases=184;
+  Int_t nValues=10;	
   
-  for(int nAlias=0;nAlias<n_ac_scalers;nAlias++)
+  for(int nAlias=0;nAlias<n_T0aliases;nAlias++)
   {
     TObjArray* valueSet = new TObjArray;
     valueSet->SetOwner(1);
-
-    TString aliasName=Form("t00_ac_scaler_%02d",nAlias);
-    
-    Int_t nValues=10;
+    if(nAlias < 32)
+    {			
+      aliasName=Form("t00_ac_scaler_%02d",nAlias);
+    }
+    else if(nAlias < 64)
+    {
+      aliasName=Form("t00_ac_scaler_sec_%02d",nAlias);
+    }
+    else if(nAlias < 76)
+    {
+      aliasName=Form("t00_a_hv_imon_%02d",nAlias);
+    }
+    else if(nAlias < 88)
+    {
+      aliasName=Form("t00_a_hv_vmon_%02d",nAlias);
+    }
+    else if(nAlias < 90)
+    {
+      aliasName=Form("t00_a_lv_imon_%02d",nAlias);
+    }
+    else if(nAlias < 92)
+    {
+      aliasName=Form("t00_a_lv_vmon_%02d",nAlias);
+    }
+    else if(nAlias < 104)
+    {
+      aliasName=Form("t00_c_hv_imon_%02d",nAlias);
+    }
+    else if(nAlias < 116)
+    {
+      aliasName=Form("t00_c_hv_vmon_%02d",nAlias);
+    }
+    else if(nAlias < 118)
+    {
+      aliasName=Form("t00_c_lv_imon_%02d",nAlias);
+    }
+    else if(nAlias < 120)
+    {
+      aliasName=Form("t00_c_lv_vmon_%02d",nAlias);
+    }
+    else if(nAlias < 132)
+    {
+      aliasName=Form("t00_a_cfd_thre_%02d",nAlias);
+    }
+    else if(nAlias < 144)
+    {
+      aliasName=Form("t00_a_cfd_walk_%02d",nAlias);
+    }
+    else if(nAlias < 156)
+    {
+      aliasName=Form("t00_c_cfd_thre_%02d",nAlias);
+    }
+    else if(nAlias < 168)
+    {
+      aliasName=Form("t00_c_cfd_walk_%02d",nAlias);
+    }
+    else if(nAlias < 178)
+    {
+      aliasName=Form("t00_ac_trm_%02d",nAlias);
+    }
+    else if(nAlias < 183)
+    {
+      aliasName=Form("t00_ac_drm_%02d",nAlias);
+    }
+    else
+    {
+      aliasName=Form("t00_ac_atten",nAlias);
+    }
 
     for (int timeStamp=0;timeStamp<nValues;timeStamp++)
     {
