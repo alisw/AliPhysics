@@ -1674,7 +1674,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
        AliESDVertex *pvtx=ftVertexer->FindPrimaryVertex(fesd);
        if (pvtx) {
           if (pvtx->GetStatus()) {
-             fesd->SetPrimaryVertex(pvtx);
+             fesd->SetPrimaryVertexTracks(pvtx);
              for (Int_t i=0; i<ntracks; i++) {
 	         AliESDtrack *t = fesd->GetTrack(i);
                  t->RelateToVertex(pvtx, kBz, kVeryBig);

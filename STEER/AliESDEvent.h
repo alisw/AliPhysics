@@ -195,8 +195,10 @@ public:
      return GetPrimaryVertexSPD();
   }
 
-  void SetPrimaryVertex(const AliESDVertex *vertex);
-  const AliESDVertex *GetPrimaryVertex() const {return fPrimaryVertex;}
+  void SetPrimaryVertexTracks(const AliESDVertex *vertex);
+  const AliESDVertex *GetPrimaryVertexTracks() const {return fPrimaryVertex;}
+
+  const AliESDVertex *GetPrimaryVertex() const;
 
   void SetMultiplicity(const AliMultiplicity *mul);
 

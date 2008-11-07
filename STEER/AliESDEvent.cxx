@@ -76,7 +76,7 @@ ClassImp(AliESDEvent)
 						       "AliESDTZERO",
 						       "TPCVertex",
 						       "SPDVertex",
-						       "PrimaryVertex",
+						       "TrkVertex",
 						       "AliMultiplicity",
 						       "PHOSTrigger",
 						       "EMCALTrigger",
@@ -883,14 +883,31 @@ void  AliESDEvent::SetPrimaryVertexSPD(const AliESDVertex *vertex)
   }
 }
 
-void  AliESDEvent::SetPrimaryVertex(const AliESDVertex *vertex) 
+void  AliESDEvent::SetPrimaryVertexTracks(const AliESDVertex *vertex) 
 {
-  // Set the primary vertex
+  // Set the primary vertex reconstructed using he ESD tracks.
   // use already allocated space
   if(fPrimaryVertex){
     *fPrimaryVertex = *vertex;
     fPrimaryVertex->SetName(fgkESDListName[kPrimaryVertex]);
   }
+}
+
+const AliESDVertex * AliESDEvent::GetPrimaryVertex() const 
+{
+  //
+  // Get the "best" available reconstructed primary vertex.
+  //
+  if(fPrimaryVertex){
+    if (fPrimaryVertex->GetStatus()) return fPrimaryVertex;
+  }
+  if(fSPDVertex){
+    if (fSPDVertex->GetStatus()) return fSPDVertex;
+  }
+  if(fTPCVertex) return fTPCVertex;
+  
+  AliWarning("No primary vertex available. Returning the \"default\"...");
+  return fSPDVertex;
 }
 
 void AliESDEvent::SetMultiplicity(const AliMultiplicity *mul) 
@@ -1359,7 +1376,7 @@ void AliESDEvent::CopyFromOldESD()
 
     if(fESDOld->GetVertex())SetPrimaryVertexSPD(fESDOld->GetVertex());
 
-    if(fESDOld->GetPrimaryVertex())SetPrimaryVertex(fESDOld->GetPrimaryVertex());
+    if(fESDOld->GetPrimaryVertex())SetPrimaryVertexTracks(fESDOld->GetPrimaryVertex());
 
     if(fESDOld->GetMultiplicity())SetMultiplicity(fESDOld->GetMultiplicity());
 
