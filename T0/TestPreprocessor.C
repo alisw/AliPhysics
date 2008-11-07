@@ -23,7 +23,7 @@ void TestPreprocessor()
  
   shuttle->SetInputRunType("PHYSICS");
 
-  shuttle->AddInputFile(AliTestShuttle::kDAQ, "T00", "PHYSICS", "LDC0", "daPhys.root");
+  shuttle->AddInputFile(AliTestShuttle::kDAQ, "T00", "PHYSICS", "LDC0", "daCosmic.root");
 
   AliPreprocessor* start = new AliT0Preprocessor(shuttle);
 
@@ -63,67 +63,67 @@ TMap* CreateDCSAliasMap()
     }
     else if(nAlias < 64)
     {
-      aliasName=Form("t00_ac_scaler_sec_%02d",nAlias);
+      aliasName=Form("t00_ac_scaler_sec_%02d",nAlias-32);
     }
     else if(nAlias < 76)
     {
-      aliasName=Form("t00_a_hv_imon_%02d",nAlias);
+      aliasName=Form("t00_a_hv_imon_%02d",nAlias-64);
     }
     else if(nAlias < 88)
     {
-      aliasName=Form("t00_a_hv_vmon_%02d",nAlias);
+      aliasName=Form("t00_a_hv_vmon_%02d",nAlias-76);
     }
     else if(nAlias < 90)
     {
-      aliasName=Form("t00_a_lv_imon_%02d",nAlias);
+      aliasName=Form("t00_a_lv_imon_%02d",nAlias-88);
     }
     else if(nAlias < 92)
     {
-      aliasName=Form("t00_a_lv_vmon_%02d",nAlias);
+      aliasName=Form("t00_a_lv_vmon_%02d",nAlias-90);
     }
     else if(nAlias < 104)
     {
-      aliasName=Form("t00_c_hv_imon_%02d",nAlias);
+      aliasName=Form("t00_c_hv_imon_%02d",nAlias-92);
     }
     else if(nAlias < 116)
     {
-      aliasName=Form("t00_c_hv_vmon_%02d",nAlias);
+      aliasName=Form("t00_c_hv_vmon_%02d",nAlias-104);
     }
     else if(nAlias < 118)
     {
-      aliasName=Form("t00_c_lv_imon_%02d",nAlias);
+      aliasName=Form("t00_c_lv_imon_%02d",nAlias-116);
     }
     else if(nAlias < 120)
     {
-      aliasName=Form("t00_c_lv_vmon_%02d",nAlias);
+      aliasName=Form("t00_c_lv_vmon_%02d",nAlias-118);
     }
     else if(nAlias < 132)
     {
-      aliasName=Form("t00_a_cfd_thre_%02d",nAlias);
+      aliasName=Form("t00_a_cfd_thre_%02d",nAlias-120);
     }
     else if(nAlias < 144)
     {
-      aliasName=Form("t00_a_cfd_walk_%02d",nAlias);
+      aliasName=Form("t00_a_cfd_walk_%02d",nAlias-132);
     }
     else if(nAlias < 156)
     {
-      aliasName=Form("t00_c_cfd_thre_%02d",nAlias);
+      aliasName=Form("t00_c_cfd_thre_%02d",nAlias-144);
     }
     else if(nAlias < 168)
     {
-      aliasName=Form("t00_c_cfd_walk_%02d",nAlias);
+      aliasName=Form("t00_c_cfd_walk_%02d",nAlias-156);
     }
     else if(nAlias < 178)
     {
-      aliasName=Form("t00_ac_trm_%02d",nAlias);
+      aliasName=Form("t00_ac_trm_%02d",nAlias-168);
     }
     else if(nAlias < 183)
     {
-      aliasName=Form("t00_ac_drm_%02d",nAlias);
+      aliasName=Form("t00_ac_drm_%02d",nAlias-178);
     }
     else
     {
-      aliasName=Form("t00_ac_atten",nAlias);
+      aliasName=Form("t00_ac_atten",nAlias-183);
     }
 
     for (int timeStamp=0;timeStamp<nValues;timeStamp++)
