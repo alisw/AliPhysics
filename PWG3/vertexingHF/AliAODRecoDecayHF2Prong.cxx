@@ -70,40 +70,9 @@ AliAODRecoDecayHF2Prong &AliAODRecoDecayHF2Prong::operator=(const AliAODRecoDeca
   // assignment operator
   //
   if(&source == this) return *this;
-  fOwnPrimaryVtx = source.fOwnPrimaryVtx;
-  fSecondaryVtx = source.fSecondaryVtx;
-  fCharge = source.fCharge;
-  fNProngs = source.fNProngs;
-  fNDCA = source.fNDCA;
-  fNPID = source.fNPID;
-  fEventNumber = source.fEventNumber;
-  fRunNumber = source.fRunNumber;
-  if(source.GetNProngs()>0) {
-    fd0 = new Double_t[GetNProngs()];
-    fd0err = new Double_t[GetNProngs()];
-    memcpy(fd0,source.fd0,GetNProngs()*sizeof(Double_t));
-    memcpy(fd0err,source.fd0err,GetNProngs()*sizeof(Double_t));
-    if(source.fPx) {
-      fPx = new Double_t[GetNProngs()];
-      fPy = new Double_t[GetNProngs()];
-      fPz = new Double_t[GetNProngs()];
-      memcpy(fPx,source.fPx,GetNProngs()*sizeof(Double_t));
-      memcpy(fPy,source.fPy,GetNProngs()*sizeof(Double_t));
-      memcpy(fPz,source.fPz,GetNProngs()*sizeof(Double_t));
-    }
-    if(source.fPID) {
-      fPID = new Double_t[5*GetNProngs()];
-      memcpy(fPID,source.fPID,GetNProngs()*sizeof(Double_t));
-    }
-    if(source.fDCA) {
-      fDCA = new Double32_t[GetNProngs()*(GetNProngs()-1)/2];
-      memcpy(fDCA,source.fDCA,(GetNProngs()*(GetNProngs()-1)/2)*sizeof(Float_t));
-    }
-    if(source.fProngID) {
-      fProngID = new UShort_t[GetNProngs()];
-      memcpy(fProngID,source.fProngID,GetNProngs()*sizeof(UShort_t));
-    }
-  }
+
+  AliAODRecoDecayHF::operator=(source);
+
   return *this;
 }
 //--------------------------------------------------------------------------

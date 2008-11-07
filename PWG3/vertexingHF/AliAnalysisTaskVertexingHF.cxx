@@ -126,8 +126,10 @@ void AliAnalysisTaskVertexingHF::Exec(Option_t *)
   //Performs heavy flavor vertexing
   
   //Heavy flavor vertexing :
-  fVHF->FindCandidates(fESD,fTrees);
+  //fVHF->FindCandidates(fESD,fTrees);
   
+  printf(" NOTHING DONE, THIS CLASS IS OBSOLETE, PLEASE USE AliAnalysisTaskSEVertexingHF\n");
+
   //Post final data. It will be written to a file with option "RECREATE"
   PostData(0, fTrees[0]);
   PostData(1, fTrees[1]);
