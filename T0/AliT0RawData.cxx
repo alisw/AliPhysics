@@ -280,24 +280,6 @@ void AliT0RawData::GetDigits(AliT0digit *fDigits)
     delete allData;
     
 }
-//------------------------------------------------------------------------------
-void AliT0RawData::PackWord(UInt_t &BaseWord, UInt_t Word, Int_t StartBit, Int_t StopBit)
-{
-  
-  // Build mask
-  Int_t len=StopBit-StartBit+1;
-  UInt_t mask=0;
-  for(Int_t jb=0; jb<len; mask|=1<<jb++);
-  // Check consistency
-  if(Word > mask){
-    Error("PackWord", "Word to be filled is not within desired length\n"
-          "Word:%d Start bit:%d Stop Bit:%d",Word,StartBit,StopBit);
-    return;
-  }
-  BaseWord=(BaseWord&~(mask<<StartBit))|Word<<StartBit;
-
-}
-
 
 //_____________________________________________________________________________
 
@@ -311,64 +293,61 @@ void  AliT0RawData::WriteDRMDataHeader()
   //fill DRM headers
   //DRM Global Header
   word = 1;
-  PackWord(baseWord,word,0, 3); // 0001 
+  AliBitPacking::PackWord(word,baseWord,0, 3); // 0001 
   word = fIndex ;
 
-  PackWord(baseWord,word,4, 20); // event words 
+  AliBitPacking::PackWord(word,baseWord,4, 20); // event words 
   word=124;
-  PackWord(baseWord,word,21,27); // DRM ID for T0 - 124
+  AliBitPacking::PackWord(word,baseWord, 21, 27); // event words 
   word=4;
-  PackWord(baseWord,word,28,31); // 0100 marks header
+  AliBitPacking::PackWord(word,baseWord,28, 31);// 0100 marks header
   fBuffer[0]=  baseWord;
 
 
   //DRM status header 1
   word = 1;
-  PackWord(baseWord,word,0, 3); // 0001 
+  AliBitPacking::PackWord(word,baseWord,0, 3); // 0001 
   word = 1;
-  PackWord(baseWord,word,4, 14); // slotID now 0000000001
+  AliBitPacking::PackWord(word,baseWord,4, 14); // slotID now 0000000001
   word = 1;
-  PackWord(baseWord,word,15, 15); //if 1  LHC clock is coorectly recieved from CPDM 
+  AliBitPacking::PackWord(word,baseWord,15, 15); //if 1  LHC clock is coorectly recieved from CPDM 
   word=0;
-  PackWord(baseWord,word,16,27); // reserve for future use
+  AliBitPacking::PackWord(word,baseWord,16,27); // reserve for future use
   word=4;
-  PackWord(baseWord,word,28,31); // 0100 marks header
-   fBuffer[1] = baseWord;
-
-
+  AliBitPacking::PackWord(word,baseWord,28,31); // 0100 marks header
+  fBuffer[1] = baseWord;
+  
    word=0;
    baseWord=0;
-
-    //DRM status header 2
-    word = 1;
-    PackWord(baseWord,word, 0, 3); // 0001 
-    word = 3;
-    PackWord(baseWord,word, 4, 14); //enable slotID now 00000000011
+   
+   //DRM status header 2
+   word = 1;
+   AliBitPacking::PackWord(word,baseWord, 0, 3); // 0001 
+   word = 3;
+   AliBitPacking::PackWord(word,baseWord, 4, 14); //enable slotID now 00000000011
+   word = 0;
+   AliBitPacking::PackWord(word,baseWord, 15, 15); // something
+   word=0;
+   AliBitPacking::PackWord(word,baseWord, 16, 27); // fault ID for simulation 0
+   word=4;
+   AliBitPacking::PackWord(word,baseWord,28,31); // 0100 marks header
+   fBuffer[2]=  baseWord;
+        
+   word=0;
+   baseWord=0;
+   //DRM status header 3
+   word = 1;
+    AliBitPacking::PackWord(word,baseWord,0, 3); // 0001 
     word = 0;
-    PackWord(baseWord,word, 15, 15); // something
-    word=0;
-    PackWord(baseWord,word, 16, 27); // fault ID for simulation 0
+    AliBitPacking::PackWord(word,baseWord,4, 27); // TTC event counter
     word=4;
-    PackWord(baseWord,word,28,31); // 0100 marks header
-    fBuffer[2]=  baseWord;
- 
-
-    
-    word=0;
-    baseWord=0;
-    //DRM status header 3
-    word = 1;
-    PackWord(baseWord,word,0, 3); // 0001 
-    word = 0;
-    PackWord(baseWord,word,4, 27); // TTC event counter
-    word=4;
-    PackWord(baseWord,word,28,31); // 0100 marks header
+    AliBitPacking::PackWord(word,baseWord,28,31); // 0100 marks header
     fBuffer[3]=  baseWord;
 
     // new DRM format
     fBuffer[4]=  baseWord;
     fBuffer[5]=  baseWord;
-    
+   
     word=0;
     baseWord=0;
     
@@ -387,21 +366,21 @@ void  AliT0RawData::WriteTRMDataHeader(UInt_t slotID, Int_t nWordsInTRM,
   //fill TRM headers
   //TRM Global Header
   word = slotID;
-  PackWord(baseWord,word,0, 3); // slotID
+  AliBitPacking::PackWord(word,baseWord,0, 3); // slotID
   word = nWordsInTRM;
  //+this word - DRM header 
 
-  PackWord(baseWord,word,4, 16); // event words 
+  AliBitPacking::PackWord(word,baseWord,4, 16); // event words 
   word=0;
-  PackWord(baseWord,word,17,18); // ACQ
+  AliBitPacking::PackWord(word,baseWord,17,18); // ACQ
   word=0;
-  PackWord(baseWord,word,19,19); //  L SEY inside LUT
+  AliBitPacking::PackWord(word,baseWord,19,19); //  L SEY inside LUT
   word=0;
-  PackWord(baseWord,word,20,27); //  MBZ
+  AliBitPacking::PackWord(word,baseWord,20,27); //  MBZ
   word=4;
-  PackWord(baseWord,word,28,31); // 0100 marks header
+  AliBitPacking::PackWord(word,baseWord,28,31); // 0100 marks header
   fBuffer[positionOfTRMHeader] =  baseWord;
-//  cout<<" TRM header "<<baseWord<<endl;
+
   word=0; 
   baseWord=0;
      
@@ -419,17 +398,17 @@ void  AliT0RawData::WriteChainDataHeader(UInt_t chainNumber,UInt_t slotID)
   //fill TRM headers
   //TRM Global Header
   word = slotID; // ask Tatiana 7 or 9 
-  PackWord(baseWord,word,0, 3); // slotID
+  AliBitPacking::PackWord(word,baseWord,0, 3); // slotID
   word = 0;
-  PackWord(baseWord,word,4, 15); // bunchID
+  AliBitPacking::PackWord(word,baseWord,4, 15); // bunchID
   word=0;
-  PackWord(baseWord,word,16,23); // PB24 temperature
+  AliBitPacking::PackWord(word,baseWord,16,23); // PB24 temperature
   word=0;
-  PackWord(baseWord,word,24,26); //  PB24 ID
+  AliBitPacking::PackWord(word,baseWord,24,26); //  PB24 ID
   word=0;
-  PackWord(baseWord,word,27,27); //  TS
+  AliBitPacking::PackWord(word,baseWord,27,27); //  TS
   word=chainNumber;
-  PackWord(baseWord,word,28,31); // 0100 marks header
+  AliBitPacking::PackWord(word,baseWord,28,31); // 0100 marks header
   fBuffer[fIndex] =  baseWord;
   //cout<<" chain header "<<baseWord<<" number "<<chainNumber<<endl;
   word=0;
@@ -446,16 +425,16 @@ void  AliT0RawData::WriteChainDataTrailer(UInt_t chainNumber )
   UInt_t word;
   UInt_t baseWord=0;
   word = 0; // ask Tatiana 7 or 9 
-  PackWord(baseWord,word,0, 3); // status
+  AliBitPacking::PackWord(word,baseWord,0, 3); // status
   word = 0;
-  PackWord(baseWord,word,4, 15); // MBZ
+  AliBitPacking::PackWord(word,baseWord,4, 15); // MBZ
   word=fEventNumber;
-  PackWord(baseWord,word,16,27); // event counter
+  AliBitPacking::PackWord(word,baseWord,16,27); // event counter
   word=chainNumber;
-  PackWord(baseWord,word,28,31); // chain number
+  AliBitPacking::PackWord(word,baseWord,28,31); // chain number
   fIndex++;
   fBuffer[fIndex] =  baseWord;
- // cout<<" chain trailer "<<baseWord<<endl;
+
   word=0;
   baseWord=0;     
   
@@ -495,16 +474,16 @@ void  AliT0RawData::WriteTrailer(UInt_t slot, Int_t word1, UInt_t word2, UInt_t 
   UInt_t word;
   UInt_t baseWord=0;
   word = slot;
-  PackWord(baseWord,word,0, 3); // 0001 
+  AliBitPacking::PackWord(word,baseWord,0, 3); // 0001 
   word=word1;
-  PackWord(baseWord,word,4, 15); // CRC ?
+  AliBitPacking::PackWord(word,baseWord,4, 15); // CRC ?
   word = word2;
-  PackWord(baseWord,word,16,27); // event counter
+  AliBitPacking::PackWord(word,baseWord,16,27); // event counter
   word=word3;
-  PackWord(baseWord,word,28,31); //  marks trailer
+  AliBitPacking::PackWord(word,baseWord,28,31); //  marks trailer
   fIndex++;
   fBuffer[fIndex] =  baseWord;
- // cout<<" trailer "<<baseWord<<endl;
+
   word=0;
   baseWord=0;
 
@@ -520,22 +499,23 @@ void  AliT0RawData::FillTime(Int_t ch, Int_t iTDC, Int_t time)
   UInt_t baseWord=0;
 
   word=time;
-  PackWord(baseWord,word, 0, 20); // Time 
+  AliBitPacking::PackWord(word,baseWord, 0, 20); // Time 
 
   word=ch;
-  PackWord(baseWord,word, 21, 23); // number of channel 
+  AliBitPacking::PackWord(word,baseWord, 21, 23); // number of channel 
   word=iTDC;
-  PackWord(baseWord,word, 24, 27); // TDC ID
+  AliBitPacking::PackWord(word,baseWord, 24, 27); // TDC ID
 
   word=0;
-  PackWord(baseWord,word, 28, 28); // E = 0 in simulation
+  AliBitPacking::PackWord(word,baseWord, 28, 28); // E = 0 in simulation
   word=0;
-  PackWord(baseWord,word, 29, 30); // PS bit data 00
+  AliBitPacking::PackWord(word,baseWord, 29, 30); // PS bit data 00
   word=1;
-  PackWord(baseWord,word, 31, 31); // 1
+  AliBitPacking::PackWord(word,baseWord, 31, 31); // 1
   fIndex++;
   fBuffer[fIndex]=baseWord;
- // cout<<" data  "<<baseWord<<endl;  word=0;
+
+  word=0;
   baseWord=0;
 }
 //---------------------------------------------------------------------------------------
