@@ -106,6 +106,7 @@ public:
                                                                                    Float_t pt=TMath::Sqrt(l[0]*l[0]+l[1]*l[1]); 
                                                                                            th=TMath::ATan(pt/l[2]); 
                                                                                            ph=TMath::ATan2(l[1],l[0]);}    
+  void     Lors2MarsVec(Int_t c,Double_t *m,Double_t *l                     )const{fM[c]->MasterToLocalVect(m,l);                              }//LRS->MRS 
   TVector3 Norm        (Int_t c                                             )const{Double_t n[3]; Norm(c,n); return TVector3(n);               }//norm 
   void     Norm        (Int_t c,Double_t *n                                 )const{Double_t l[3]={0,0,1};fM[c]->LocalToMasterVect(l,n);        }//norm
   void     Point       (Int_t c,Double_t *p,Int_t plane                     )const{Lors2Mars(c,0,0,p,plane);}         //point of given chamber plane
