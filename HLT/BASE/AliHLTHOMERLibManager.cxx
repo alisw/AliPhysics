@@ -190,12 +190,12 @@ int AliHLTHOMERLibManager::LoadHOMERLibrary()
       //HLTInfo("no build info available for %s", *library);
     }
 
-    fFctCreateReaderFromTCPPort=gSystem->DynFindSymbol(*library, ALIHLTHOMERREADER_CREATE_FROM_TCPPORT);
-    fFctCreateReaderFromTCPPorts=gSystem->DynFindSymbol(*library, ALIHLTHOMERREADER_CREATE_FROM_TCPPORTS);
-    fFctCreateReaderFromBuffer=gSystem->DynFindSymbol(*library, ALIHLTHOMERREADER_CREATE_FROM_BUFFER);
-    fFctDeleteReader=gSystem->DynFindSymbol(*library, ALIHLTHOMERREADER_DELETE);
-    fFctCreateWriter=gSystem->DynFindSymbol(*library, ALIHLTHOMERWRITER_CREATE);
-    fFctDeleteWriter=gSystem->DynFindSymbol(*library, ALIHLTHOMERWRITER_DELETE);
+    fFctCreateReaderFromTCPPort=(void (*)())gSystem->DynFindSymbol(*library, ALIHLTHOMERREADER_CREATE_FROM_TCPPORT);
+    fFctCreateReaderFromTCPPorts=(void (*)())gSystem->DynFindSymbol(*library, ALIHLTHOMERREADER_CREATE_FROM_TCPPORTS);
+    fFctCreateReaderFromBuffer=(void (*)())gSystem->DynFindSymbol(*library, ALIHLTHOMERREADER_CREATE_FROM_BUFFER);
+    fFctDeleteReader=(void (*)())gSystem->DynFindSymbol(*library, ALIHLTHOMERREADER_DELETE);
+    fFctCreateWriter=(void (*)())gSystem->DynFindSymbol(*library, ALIHLTHOMERWRITER_CREATE);
+    fFctDeleteWriter=(void (*)())gSystem->DynFindSymbol(*library, ALIHLTHOMERWRITER_DELETE);
     if (fFctCreateReaderFromTCPPort==NULL ||
 	fFctCreateReaderFromTCPPorts==NULL ||
 	fFctCreateReaderFromBuffer==NULL || 

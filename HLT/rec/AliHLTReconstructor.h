@@ -283,7 +283,7 @@ private:
   AliHLTReconstructor& operator=(const AliHLTReconstructor& src);
 
   /** function pointer: processing of HLTOUT data */
-  void* fFctProcessHLTOUT; //!transient
+  void (*fFctProcessHLTOUT)(); //!transient
 
   /** ESD manger instance for this reconstruction */
   AliHLTEsdManager* fpEsdManager; //!transient

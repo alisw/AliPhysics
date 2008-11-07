@@ -1437,7 +1437,7 @@ int AliHLTSystem::ClearStatusFlags(int flags)
   return fState;
 }
 
-void* AliHLTSystem::FindDynamicSymbol(const char* library, const char* symbol)
+void (*AliHLTSystem::FindDynamicSymbol(const char* library, const char* symbol))()
 {
   // see header file for class documentation
   if (fpComponentHandler==NULL) return NULL;

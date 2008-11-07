@@ -547,17 +547,17 @@ int AliHLTComponentHandler::UnloadLibraries()
   return iResult;
 }
 
-void* AliHLTComponentHandler::FindSymbol(const char* library, const char* symbol)
+void (*AliHLTComponentHandler::FindSymbol(const char* library, const char* symbol))()
 {
   // see header file for class documentation
   AliHLTLibHandle* hLib=FindLibrary(library);
   if (hLib==NULL) return NULL;
-  void* pFunc=NULL;
+  void (*pFunc)()=NULL;
 #ifdef HAVE_DLFCN_H
-  pFunc=dlsym(hLib->fHandle, symbol);
+  pFunc=(void (*)())dlsym(hLib->fHandle, symbol);
 #else
   TString* name=reinterpret_cast<TString*>(hLib->fName);
-  pFunc=gSystem->DynFindSymbol(name->Data(), symbol);
+  pFunc=(void (*)())gSystem->DynFindSymbol(name->Data(), symbol);
 #endif
   return pFunc;
 }

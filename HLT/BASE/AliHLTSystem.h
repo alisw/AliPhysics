@@ -384,7 +384,7 @@ class AliHLTSystem : public AliHLTLogging {
    * @param symbol       the symbol to find
    * @return void pointer to function
    */
-  void* FindDynamicSymbol(const char* library, const char* symbol);
+  void (*FindDynamicSymbol(const char* library, const char* symbol))();
 
   /**
    * Prepare the HLT system for running.

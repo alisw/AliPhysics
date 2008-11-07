@@ -157,7 +157,7 @@ void AliHLTReconstructor::Init()
   }
 
   gSystem->Load("libHLTinterface.so");
-  fFctProcessHLTOUT=gSystem->DynFindSymbol("libHLTinterface.so", "AliHLTSystemProcessHLTOUT");
+  fFctProcessHLTOUT=(void (*)())gSystem->DynFindSymbol("libHLTinterface.so", "AliHLTSystemProcessHLTOUT");
 
   fpEsdManager=AliHLTEsdManager::New();
 }

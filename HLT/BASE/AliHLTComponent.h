@@ -1434,7 +1434,7 @@ class AliHLTComponent : public AliHLTLogging {
   AliHLTEventDDL* fpDDLList;                                       //! transient
 
   /** external fct to set CDB run no, indicates external CDB initialization */
-  void* fCDBSetRunNoFunc;                                          //! transient
+  void (*fCDBSetRunNoFunc)();                                      //! transient
 
   /** id of the component in the analysis chain */
   string fChainId;                                                 //! transient

@@ -136,22 +136,22 @@ class AliHLTHOMERLibManager {
   int fLibraryStatus; //!transient
 
   /** entry in the HOMER library */
-  void* fFctCreateReaderFromTCPPort; //!transient
+  void (*fFctCreateReaderFromTCPPort)(); //!transient
 
   /** entry in the HOMER library */
-  void* fFctCreateReaderFromTCPPorts; //!transient
+  void (*fFctCreateReaderFromTCPPorts)(); //!transient
 
   /** entry in the HOMER library */
-  void* fFctCreateReaderFromBuffer; //!transient
+  void (*fFctCreateReaderFromBuffer)(); //!transient
 
   /** entry in the HOMER library */
-  void* fFctDeleteReader; //!transient
+  void (*fFctDeleteReader)(); //!transient
 
   /** entry in the HOMER library */
-  void* fFctCreateWriter; //!transient
+  void (*fFctCreateWriter)(); //!transient
 
   /** entry in the HOMER library */
-  void* fFctDeleteWriter; //!transient
+  void (*fFctDeleteWriter)(); //!transient
 
   ClassDef(AliHLTHOMERLibManager, 0)
 };
