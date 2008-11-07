@@ -692,7 +692,7 @@ void AliAnalysisTaskESDStrangeMC::Exec(Option_t *)
 
     // filling myAODv0
     tdcaV0Daughters    = v0->GetDcaV0Daughters();
-    tdcaV0ToPrimVertex = v0->GetD();
+    tdcaV0ToPrimVertex = v0->GetD(primary->GetX(),primary->GetY(),primary->GetZ());
 
     if (TrackPos) TrackPos->GetImpactParameters(tdcaPosToPrimVertexXYZ[0],tdcaPosToPrimVertexXYZ[1]);
     if (TrackNeg) TrackNeg->GetImpactParameters(tdcaNegToPrimVertexXYZ[0],tdcaNegToPrimVertexXYZ[1]);
