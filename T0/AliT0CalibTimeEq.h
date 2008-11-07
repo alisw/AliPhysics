@@ -30,7 +30,7 @@ class AliT0CalibTimeEq: public TNamed {
  
   Float_t  GetTimeEqRms(Int_t channel)        const {return fTimeEqRms[channel];}
 
- const Float_t  GetMeanT0() const {return 1.;} // WARNING: USED IN AliT0Parameters!!!!
+  Float_t  GetMeanT0() const {return 1.;} // WARNING: USED IN AliT0Parameters!!!!
   void SetCFDvalue(Int_t channel, Int_t number, Float_t val) {fCFDvalue[channel][number]=val;}
   void SetTimeEq(Int_t channel, Float_t val) {fTimeEq[channel]=val;}
   void  SetTimeEqRms(Int_t channel, Float_t rms)  { fTimeEqRms[channel]=rms;}

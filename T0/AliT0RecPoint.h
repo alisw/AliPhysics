@@ -16,13 +16,13 @@ class AliT0RecPoint: public TObject  {
     AliT0RecPoint& operator= (const AliT0RecPoint &)  { return *this;}
     virtual ~AliT0RecPoint() {}
 
-    const Int_t  GetMeanTime() {return fTimeAverage;}
-    const Int_t  GetOnlineMean() {return fTimeOnlineMean;}
-    const Int_t  GetBestTimeA() {return fTimeBestA ;}
-    const Int_t  GetBestTimeC() {return fTimeBestC ;}
-    const Int_t GetMultC() {return fMultC;}
-    const Int_t GetMultA() {return fMultA;}
-    const Float_t  GetVertex() {return fVertexPosition;}
+     Int_t  GetMeanTime()   const {return fTimeAverage;}
+     Int_t  GetOnlineMean() const {return fTimeOnlineMean;}
+     Int_t  GetBestTimeA()  const {return fTimeBestA ;}
+     Int_t  GetBestTimeC()  const {return fTimeBestC ;}
+     Int_t GetMultC()       const {return fMultC;}
+     Int_t GetMultA()       const {return fMultA;}
+     Float_t  GetVertex()   const {return fVertexPosition;}
 
 
     void SetMeanTime(Int_t time) {fTimeAverage=time;}
@@ -34,11 +34,11 @@ class AliT0RecPoint: public TObject  {
     void SetMultA(Int_t mult) {fMultA = mult;}
 
     void SetTime (Int_t ipmt, Float_t time) { fTime[ipmt] = time;}
-    const Float_t GetTime (Int_t ipmt) { return fTime[ipmt];}
+    Float_t GetTime (Int_t ipmt)const { return fTime[ipmt];}
     void SetAmp (Int_t ipmt, Float_t adc) { fADC[ipmt] = adc;}
-    const Float_t GetAmp (Int_t ipmt) { return fADC[ipmt];}
+    Float_t GetAmp (Int_t ipmt) const{ return fADC[ipmt];}
     void SetAmpLED (Int_t ipmt, Float_t adc) { fADCLED[ipmt] = adc;}
-    const Float_t AmpLED (Int_t ipmt) { return fADCLED[ipmt];}
+    Float_t AmpLED (Int_t ipmt) const{ return fADCLED[ipmt];}
 
   private: 
     Int_t fTimeAverage;     // Average time
