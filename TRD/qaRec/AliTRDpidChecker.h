@@ -9,18 +9,12 @@
 //
 ///////////////////////////////////////////////////////
 
-#include "AliPID.h"
-#include "../Cal/AliTRDCalPID.h"
-
 #ifndef ALITRDRECOTASK_H
 #include "AliTRDrecoTask.h"
 #endif
 
-class TObjArray;
-class TList;
-class TClonesArray;
-class TTreeSRedirector;
 class AliTRDReconstructor;
+class AliTRDpidUtil;
 class AliTRDpidChecker : public AliTRDrecoTask 
 {
 
@@ -45,19 +39,31 @@ public:
   AliTRDpidChecker();
   virtual ~AliTRDpidChecker();
   
-  void    CreateOutputObjects();
-  void    Exec(Option_t *option);
-  void    GetRefFigure(Int_t ifig, Int_t &first, Int_t &last, Option_t *opt);  
-  void    GetRefFigure(Int_t ifig);
-  Bool_t  PostProcess();
-  void    Terminate(Option_t *);
+  virtual void    CreateOutputObjects();
+  virtual void    GetRefFigure(Int_t ifig);
+  virtual Bool_t  PostProcess();
+  virtual void    Terminate(Option_t *);
 
+  TH1 *PlotLQ(const AliTRDtrackV1 *track = 0x0);
+  TH1 *PlotNN(const AliTRDtrackV1 *track = 0x0);
+  TH1 *PlotdEdx(const AliTRDtrackV1 *track = 0x0);
+  TH1 *PlotdEdxSlice(const AliTRDtrackV1 *track = 0x0);
+  TH1 *PlotPH(const AliTRDtrackV1 *track = 0x0);
+  TH1 *PlotNClus(const AliTRDtrackV1 *track = 0x0);
+  TH1 *PlotMom(const AliTRDtrackV1 *track = 0x0);
+  TH1 *PlotMomBin(const AliTRDtrackV1 *track = 0x0);
+
+  virtual TObjArray *Histos();
 
 private:
   AliTRDpidChecker(const AliTRDpidChecker&);               // not implemented
   AliTRDpidChecker& operator=(const AliTRDpidChecker&);    // not implemented
 
+  Int_t  CalcPDG(AliTRDtrackV1* track = 0x0);
+  Bool_t CheckTrackQuality(const AliTRDtrackV1* track = 0x0);
+  
   AliTRDReconstructor *fReconstructor;     //! reconstructor needed for recalculation the PID
+  AliTRDpidUtil       *fUtil;              //! utility class for PID calculations
 
   ClassDef(AliTRDpidChecker, 1); // TRD PID checker
 };

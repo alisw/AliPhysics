@@ -282,12 +282,10 @@ TH1 *AliTRDcheckDetector::PlotMeanNClusters(const AliTRDtrackV1 *track){
   //
   // Plot the mean number of clusters per tracklet
   //
+  if(track) fTrack = track;
   if(!fTrack){
-    if(!track){
-      AliWarning("No Track defined.");
-      return 0x0;
-    }
-    fTrack = track;
+    AliWarning("No Track defined.");
+    return 0x0;
   }
   TH1 *h = 0x0;
   if(!(h = dynamic_cast<TH1F *>(fContainer->At(kNclusterTrackletHist)))){
@@ -307,12 +305,10 @@ TH1 *AliTRDcheckDetector::PlotNClusters(const AliTRDtrackV1 *track){
   //
   // Plot the number of clusters in one track
   //
+  if(track) fTrack = track;
   if(!fTrack){
-    if(!track){
-      AliWarning("No Track defined.");
-      return 0x0;
-    }
-    fTrack = track;
+    AliWarning("No Track defined.");
+    return 0x0;
   }
   TH1 *h = 0x0;
   if(!(h = dynamic_cast<TH1F *>(fContainer->At(kNclustersHist)))){
@@ -367,12 +363,10 @@ TH1 *AliTRDcheckDetector::PlotChi2(const AliTRDtrackV1 *track){
   //
   // Plot the chi2 of the track
   //
-    if(!fTrack){
-    if(!track){
-      AliWarning("No Track defined.");
-      return 0x0;
-    }
-    fTrack = track;
+  if(track) fTrack = track;
+  if(!fTrack){
+    AliWarning("No Track defined.");
+    return 0x0;
   }
   TH1 *h = 0x0;
   if(!(h = dynamic_cast<TH1F *>(fContainer->At(kChi2)))){
@@ -388,12 +382,10 @@ TH1 *AliTRDcheckDetector::PlotNormalizedChi2(const AliTRDtrackV1 *track){
   //
   // Plot the chi2 of the track
   //
-    if(!fTrack){
-    if(!track){
-      AliWarning("No Track defined.");
-      return 0x0;
-    }
-    fTrack = track;
+  if(track) fTrack = track;
+  if(!fTrack){
+    AliWarning("No Track defined.");
+    return 0x0;
   }
   TH1 *h = 0x0;
   if(!(h = dynamic_cast<TH1F *>(fContainer->At(kChi2Normalized)))){
@@ -416,12 +408,10 @@ TH1 *AliTRDcheckDetector::PlotNTracklets(const AliTRDtrackV1 *track){
   //
   // Plot the number of tracklets
   //
+  if(track) fTrack = track;
   if(!fTrack){
-    if(!track){
-      AliWarning("No Track defined.");
-      return 0x0;
-    }
-    fTrack = track;
+    AliWarning("No Track defined.");
+    return 0x0;
   }
   TH1 *h = 0x0;
   if(!(h = dynamic_cast<TH1F *>(fContainer->At(kNtrackletsHist)))){
@@ -443,12 +433,10 @@ TH1 *AliTRDcheckDetector::PlotPulseHeight(const AliTRDtrackV1 *track){
   //
   // Plot the average pulse height
   //
+  if(track) fTrack = track;
   if(!fTrack){
-    if(!track){
-      AliWarning("No Track defined.");
-      return 0x0;
-    }
-    fTrack = track;
+    AliWarning("No Track defined.");
+    return 0x0;
   }
   TProfile *h = 0x0;
   if(!(h = dynamic_cast<TProfile *>(fContainer->At(kPulseHeight)))){
@@ -502,12 +490,10 @@ TH1 *AliTRDcheckDetector::PlotClusterCharge(const AliTRDtrackV1 *track){
   //
   // Plot the cluster charge
   //
+  if(track) fTrack = track;
   if(!fTrack){
-    if(!track){
-      AliWarning("No Track defined.");
-      return 0x0;
-    }
-    fTrack = track;
+    AliWarning("No Track defined.");
+    return 0x0;
   }
   TH1 *h = 0x0;
   if(!(h = dynamic_cast<TH1F *>(fContainer->At(kClusterCharge)))){
@@ -531,12 +517,10 @@ TH1 *AliTRDcheckDetector::PlotChargeDeposit(const AliTRDtrackV1 *track){
   //
   // Plot the charge deposit per chamber
   //
+  if(track) fTrack = track;
   if(!fTrack){
-    if(!track){
-      AliWarning("No Track defined.");
-      return 0x0;
-    }
-    fTrack = track;
+    AliWarning("No Track defined.");
+    return 0x0;
   }
   TH1 *h = 0x0;
   if(!(h = dynamic_cast<TH1F *>(fContainer->At(kChargeDeposit)))){
@@ -592,12 +576,10 @@ TH1 *AliTRDcheckDetector::PlotTracksSector(const AliTRDtrackV1 *track){
   //
   // Plot the number of tracks per Sector
   //
+  if(track) fTrack = track;
   if(!fTrack){
-    if(!track){
-      AliWarning("No Track defined.");
-      return 0x0;
-    }
-    fTrack = track;
+    AliWarning("No Track defined.");
+    return 0x0;
   }
   TH1 *h = 0x0;
   if(!(h = dynamic_cast<TH1F *>(fContainer->At(kNTracksSectorHist)))){

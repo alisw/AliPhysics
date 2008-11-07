@@ -318,12 +318,10 @@ void AliTRDtrackingResolution::CreateOutputObjects()
 //________________________________________________________
 TH1* AliTRDtrackingResolution::PlotClusterResiduals(const AliTRDtrackV1 *track)
 {
-  if(!fTrack){ 
-    if(!track){
-      AliWarning("No track defined.");
-      return 0x0;
-    }
-    fTrack = track;
+  if(track) fTrack = track;
+  if(!fTrack){
+    AliWarning("No Track defined.");
+    return 0x0;
   }
   TH1 *h = 0x0;
   if(!(h = ((TH2I*)fContainer->At(kClusterResidual)))){
@@ -393,15 +391,13 @@ TH1* AliTRDtrackingResolution::PlotClusterResiduals(const AliTRDtrackV1 *track)
 TH1* AliTRDtrackingResolution::PlotResolution(const AliTRDtrackV1 *track)
 {
   if(!fMC){ 
-    AliWarning("No MC defined.");
+    AliWarning("No MC defined. Results will not be available.");
     return 0x0;
   }
-  if(!fTrack){ 
-    if(!track){
-      AliWarning("No track defined.");
-      return 0x0;
-    }
-    fTrack = track;
+  if(track) fTrack = track;
+  if(!fTrack){
+    AliWarning("No Track defined.");
+    return 0x0;
   }
   TH1 *h = 0x0;
   if(!(h = ((TH2I*)fContainer->At(kClusterResolution)))){
