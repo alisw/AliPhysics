@@ -110,18 +110,18 @@ bool AliFemtoShareQualityQAPairCut::Pass(const AliFemtoPair* pair){
 
   // Determine if pair pass/fail cuts:
   if (fShareQualityQASwitch) {
-  pass = ((hsmval >= fShareQualitymin)  && (hsmval < fShareQualityQAExclusionZone[0])  || 
-          (hsmval >= fShareQualityQAExclusionZone[1])  && (hsmval < fShareQualityMax)) &&
-         (hsfval >= fShareFractionmin) && (hsfval < fShareFractionMax);
+    pass = (((hsmval >= fShareQualitymin)  && (hsmval < fShareQualityQAExclusionZone[0]))  || 
+	    ((hsmval >= fShareQualityQAExclusionZone[1])  && (hsmval < fShareQualityMax))) &&
+      (hsfval >= fShareFractionmin) && (hsfval < fShareFractionMax);
   }
   else if (fShareFractionQASwitch) {
-  pass = ((hsfval >= fShareFractionmin)  && (hsfval < fShareFractionQAExclusionZone[0])  || 
-          (hsfval >= fShareFractionQAExclusionZone[1])  && (hsfval < fShareFractionMax)) &&
-         (hsmval >= fShareQualitymin) && (hsmval < fShareQualityMax);
+    pass = (((hsfval >= fShareFractionmin)  && (hsfval < fShareFractionQAExclusionZone[0]))  || 
+	    ((hsfval >= fShareFractionQAExclusionZone[1])  && (hsfval < fShareFractionMax))) &&
+      (hsmval >= fShareQualitymin) && (hsmval < fShareQualityMax);
   }
   else {
-  pass = (hsmval >= fShareQualitymin)  && (hsmval < fShareQualityMax) && 
-         (hsfval >= fShareFractionmin) && (hsfval < fShareFractionMax);
+    pass = (hsmval >= fShareQualitymin)  && (hsmval < fShareQualityMax) && 
+      (hsfval >= fShareFractionmin) && (hsfval < fShareFractionMax);
   }
 
   if (fRemoveSameLabel) {

@@ -56,8 +56,8 @@ bool AliFemtoQAEventCut::Pass(const AliFemtoEvent* event){
   
   if (fEventMultQASwitch) {
     goodEvent =
-    ( ((mult < fEventMultQAExclusionZone[0]) && (fHighOrLowSwitch > 0)  ||
-       (mult > fEventMultQAExclusionZone[1]) && (fHighOrLowSwitch < 0)) &&
+      ( (((mult < fEventMultQAExclusionZone[0]) && (fHighOrLowSwitch > 0))  ||
+	 ((mult > fEventMultQAExclusionZone[1]) && (fHighOrLowSwitch < 0))) &&
       (mult > fEventMult[0]) && 
       (mult < fEventMult[1]) && 
       (vertexZPos > fVertZPos[0]) &&
@@ -66,8 +66,8 @@ bool AliFemtoQAEventCut::Pass(const AliFemtoEvent* event){
   }
   else if (fEventZPosQASwitch) {
     goodEvent =
-    ( ((vertexZPos < fEventZPosQAExclusionZone[0]) && (fHighOrLowSwitch > 0)  ||
-       (vertexZPos > fEventZPosQAExclusionZone[1]) && (fHighOrLowSwitch < 0)) &&
+      ((((vertexZPos < fEventZPosQAExclusionZone[0]) && (fHighOrLowSwitch > 0))  ||
+	((vertexZPos > fEventZPosQAExclusionZone[1]) && (fHighOrLowSwitch < 0))) &&
       (mult > fEventMult[0]) && 
       (mult < fEventMult[1]) && 
       (vertexZPos > fVertZPos[0]) &&
