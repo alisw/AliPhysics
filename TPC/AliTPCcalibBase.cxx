@@ -59,6 +59,8 @@ AliTPCcalibBase::AliTPCcalibBase():
     fTime(0),                 //!  current Time
     fTrigger(0),              //! current trigger type
     fMagF(0),                 //! current magnetic field
+    fTriggerMaskReject(-1),   //trigger mask - reject trigger
+    fTriggerMaskAccept(-1),   //trigger mask - accept trigger
     fDebugLevel(0)
 {
   //
@@ -75,6 +77,8 @@ AliTPCcalibBase::AliTPCcalibBase(const AliTPCcalibBase&calib):
   fTime(0),                 //!  current Time
   fTrigger(0),              //! current trigger type
   fMagF(0),                 //! current magnetic field
+  fTriggerMaskReject(calib.fTriggerMaskReject),   //trigger mask - reject trigger
+  fTriggerMaskAccept(calib.fTriggerMaskAccept),   //trigger mask - accept trigger
   fDebugLevel(calib.fDebugLevel)
 {
   //
@@ -139,6 +143,16 @@ void    AliTPCcalibBase::UpdateEventInfo(AliESDEvent * event){
   fTrigger = event->GetTriggerMask();
   fMagF    = event->GetMagneticField();
 }
+
+Bool_t AliTPCcalibBase::AcceptTrigger(){
+  //
+  // Apply trigger mask - Don't do calibration for non proper triggers
+  // 
+  if (fTriggerMaskReject==fTrigger) return kFALSE;
+  if (fTriggerMaskAccept>0 && fTriggerMaskAccept!=fTrigger) return kFALSE;
+  return kTRUE;
+}
+
 
 void AliTPCcalibBase::RegisterDebugOutput(const char *path){
   //

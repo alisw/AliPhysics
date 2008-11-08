@@ -103,7 +103,7 @@ void AliTPCAnalysisTaskcalib::Exec(Option_t *) {
     if (seed)
       Process(seed);
   }
-  //PostData(0,fCalibJobs);
+  PostData(0,fCalibJobs);
 }
 
 void AliTPCAnalysisTaskcalib::ConnectInputData(Option_t *) {
@@ -130,7 +130,7 @@ void AliTPCAnalysisTaskcalib::CreateOutputObjects() {
   //
   //
   //
-  //  OpenFile(0, "RECREATE");
+  OpenFile(0, "RECREATE");
 }
 void AliTPCAnalysisTaskcalib::Terminate(Option_t */*option*/) {
   //
@@ -167,7 +167,8 @@ void AliTPCAnalysisTaskcalib::Process(AliESDEvent *event) {
     job = (AliTPCcalibBase*)fCalibJobs->UncheckedAt(i);
     if (job) {
       job->UpdateEventInfo(event);
-      job->Process(event);
+      if (job->AcceptTrigger())
+	job->Process(event);
     }
   }
 }
@@ -180,7 +181,9 @@ void AliTPCAnalysisTaskcalib::Process(AliTPCseed *track) {
   Int_t njobs = fCalibJobs->GetEntriesFast();
   for (Int_t i=0;i<njobs;i++){
     job = (AliTPCcalibBase*)fCalibJobs->UncheckedAt(i);
-    if (job) job->Process(track);
+    if (job)  
+      if (job->AcceptTrigger())
+	job->Process(track);
   }
 }
 
@@ -192,7 +195,9 @@ void AliTPCAnalysisTaskcalib::Process(AliESDtrack *track, Int_t run) {
   Int_t njobs = fCalibJobs->GetEntriesFast();
   for (Int_t i=0;i<njobs;i++){
     job = (AliTPCcalibBase*)fCalibJobs->UncheckedAt(i);
-    if (job) job->Process(track,run);
+    if (job) 
+      if (job->AcceptTrigger())
+	job->Process(track,run);
   }
 }
 
@@ -229,7 +234,7 @@ void AliTPCAnalysisTaskcalib::RegisterDebugOutput(){
     if (job) job->RegisterDebugOutput(fDebugOutputPath.Data());
   }
   TFile fff("CalibObjects.root","recreate");
-  fCalibJobs->Write("TPCCalib");
+  fCalibJobs->Write("TPCCalib",TObject::kSingleKey);
   fff.Close();
   //
   // store  - copy debug output to the destination position

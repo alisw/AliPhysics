@@ -27,8 +27,9 @@ public:
   virtual Long64_t Merge(TCollection */*li*/){return 0;}
   virtual void     Analyze(){return;}
   virtual void     Terminate();
-
-  virtual void    UpdateEventInfo(AliESDEvent * event);
+  virtual void     UpdateEventInfo(AliESDEvent * event);
+  virtual Bool_t   AcceptTrigger();
+  virtual void     SetTriggerMask(Int_t accept, Int_t reject){fTriggerMaskAccept=accept;fTriggerMaskReject=reject;}
   //
   // debug streamer support
   TTreeSRedirector *GetDebugStreamer();
@@ -45,6 +46,8 @@ protected:
   Int_t  fTime;                         //!  current Time
   ULong64_t  fTrigger;                  //! current trigger mask
   Float_t fMagF;                        //! current magnetic field 
+  Int_t   fTriggerMaskReject;           //trigger mask - non accept trigger
+  Int_t   fTriggerMaskAccept;           //trigger mask - accept
 private:
   Int_t  fDebugLevel;                   //  debug level
 
