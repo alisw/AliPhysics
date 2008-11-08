@@ -118,7 +118,7 @@ void     AliTPCcalibCalib::Process(AliESDEvent *event){
   
   if (GetDebugLevel()>20) printf("Hallo world: Im here\n");
   Int_t ntracks=event->GetNumberOfTracks();   
-  AliTPCcalibDB::Instance()->SetExBField(fMagF);
+  //AliTPCcalibDB::Instance()->SetExBField(fMagF);
 
   //
   //
@@ -227,7 +227,11 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed){
     if (TMath::Abs(dalpha)>0.01)
       trackOut.Rotate(TMath::DegToRad()*(sector%18*20.+10.));
     Double_t r[3]={cl->GetX(),cl->GetY(),cl->GetZ()};
-    Double_t cov[3]={0.01,0.,0.01}; //TODO: correct error parametrisation
+
+    Double_t cov[3]={0.01,0.,0.01}; //TODO: correct error parametrisation    
+    AliTPCseed::GetError(cl, &trackOut,cov[0],cov[2]);
+    cov[0]*=cov[0];
+    cov[2]*=cov[2];
     trackOut.GetXYZ(xyz);
     Double_t bz = AliTracker::GetBz(xyz);
     if (trackOut.PropagateTo(r[0],bz)) nclOut++;
@@ -248,7 +252,10 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed){
       trackIn.Rotate(TMath::DegToRad()*(sector%18*20.+10.));
     Double_t r[3]={cl->GetX(),cl->GetY(),cl->GetZ()};
     Double_t cov[3]={0.01,0.,0.01}; //TODO: correct error parametrisation
-    trackOut.GetXYZ(xyz);
+    AliTPCseed::GetError(cl, &trackIn,cov[0],cov[2]);
+    cov[0]*=cov[0];
+    cov[2]*=cov[2];
+    trackIn.GetXYZ(xyz);
     Double_t bz = AliTracker::GetBz(xyz);
 
     if (trackIn.PropagateTo(r[0],bz)) nclIn++;
@@ -312,5 +319,6 @@ Bool_t AliTPCcalibCalib::RejectCluster(AliTPCclusterMI* cl, AliExternalTrackPara
   if (cl->GetType()<0) isReject=kTRUE;
   return isReject;
 }
+
 
 

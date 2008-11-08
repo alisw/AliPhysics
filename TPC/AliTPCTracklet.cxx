@@ -326,6 +326,9 @@ void AliTPCTracklet::FitKalman(const AliTPCseed *seed,Int_t sector) {
     if (!c) continue;
     Double_t r[3]={c->GetX(),c->GetY(),c->GetZ()};
     Double_t cov[3]={0.01,0.,0.01}; //TODO: correct error parametrisation
+    AliTPCseed::GetError(c, track,cov[0],cov[2]);
+    cov[0]*=cov[0];
+    cov[2]*=cov[2];
     if (!track->PropagateTo(r[0])) {
       isOK=kFALSE;
       break;
@@ -342,7 +345,10 @@ void AliTPCTracklet::FitKalman(const AliTPCseed *seed,Int_t sector) {
     AliTPCclusterMI *c=track->GetClusterPointer(i);
     if (!c) continue;
     Double_t r[3]={c->GetX(),c->GetY(),c->GetZ()};
-    Double_t cov[3]={0.01,0.,0.01}; //TODO: correct error parametrisation
+    Double_t cov[3]={0.01,0.,0.01}; 
+    AliTPCseed::GetError(c, track,cov[0],cov[2]);
+    cov[0]*=cov[0];
+    cov[2]*=cov[2];
     if (!track->PropagateTo(r[0])) {
       isOK=kFALSE;
       break;
@@ -359,7 +365,10 @@ void AliTPCTracklet::FitKalman(const AliTPCseed *seed,Int_t sector) {
     AliTPCclusterMI *c=track->GetClusterPointer(i);
     if (!c) continue;
     Double_t r[3]={c->GetX(),c->GetY(),c->GetZ()};
-    Double_t cov[3]={0.01,0.,0.01}; //TODO: correct error parametrisation
+    Double_t cov[3]={0.01,0.,0.01}; 
+    AliTPCseed::GetError(c, track,cov[0],cov[2]);
+    cov[0]*=cov[0];
+    cov[2]*=cov[2];
     if (!track->PropagateTo(r[0])) {
       isOK=kFALSE;
       break;
