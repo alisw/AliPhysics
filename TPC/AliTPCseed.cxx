@@ -1336,3 +1336,57 @@ Bool_t AliTPCseed::RefitTrack(AliTPCseed* /*seed*/, Bool_t /*out*/){
   //
   return kFALSE;
 }
+
+
+
+
+
+
+void  AliTPCseed::GetError(AliTPCclusterMI* cluster, AliExternalTrackParam * param, 
+				  Double_t& erry, Double_t &errz)
+{
+  //
+  // Get cluster error at given position
+  //
+  AliTPCClusterParam *clusterParam = AliTPCcalibDB::Instance()->GetClusterParam();
+  Double_t tany,tanz;  
+  Double_t snp1=param->GetSnp();
+  tany=snp1/TMath::Sqrt(1.-snp1*snp1);
+  //
+  Double_t tgl1=param->GetTgl();
+  tanz=tgl1/TMath::Sqrt(1.-snp1*snp1);
+  //
+  Int_t padSize = 0;                          // short pads
+  if (cluster->GetDetector() >= 36) {
+    padSize = 1;                              // medium pads 
+    if (cluster->GetRow() > 63) padSize = 2; // long pads
+  }
+
+  erry  = clusterParam->GetError0Par( 0, padSize, (250.0 - TMath::Abs(cluster->GetZ())), TMath::Abs(tany) );
+  errz  = clusterParam->GetError0Par( 1, padSize, (250.0 - TMath::Abs(cluster->GetZ())), TMath::Abs(tanz) );
+}
+
+
+void  AliTPCseed::GetShape(AliTPCclusterMI* cluster, AliExternalTrackParam * param, 
+				  Double_t& rmsy, Double_t &rmsz)
+{
+  //
+  // Get cluster error at given position
+  //
+  AliTPCClusterParam *clusterParam = AliTPCcalibDB::Instance()->GetClusterParam();
+  Double_t tany,tanz;  
+  Double_t snp1=param->GetSnp();
+  tany=snp1/TMath::Sqrt(1.-snp1*snp1);
+  //
+  Double_t tgl1=param->GetTgl();
+  tanz=tgl1/TMath::Sqrt(1.-snp1*snp1);
+  //
+  Int_t padSize = 0;                          // short pads
+  if (cluster->GetDetector() >= 36) {
+    padSize = 1;                              // medium pads 
+    if (cluster->GetRow() > 63) padSize = 2; // long pads
+  }
+
+  rmsy  = clusterParam->GetRMSQ( 0, padSize, (250.0 - TMath::Abs(cluster->GetZ())), TMath::Abs(tany), TMath::Abs(cluster->GetMax()) );
+  rmsz  = clusterParam->GetRMSQ( 1, padSize, (250.0 - TMath::Abs(cluster->GetZ())), TMath::Abs(tanz) ,TMath::Abs(cluster->GetMax()));
+}

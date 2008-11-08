@@ -140,6 +140,10 @@ class AliTPCseed : public AliTPCtrack {
      const TBits& GetSharedMap() const { return fSharedMap; };
 
   Float_t  CookdEdxNorm(Double_t low=0.05, Double_t up=0.70, Int_t type=0, Int_t i1=0, Int_t i2=159, AliTPCCalPad * gainMap = 0, Bool_t posNorm=kFALSE, Bool_t padNorm=kFALSE);
+ static   void GetError(AliTPCclusterMI* cluster, AliExternalTrackParam * param, 
+			 Double_t& erry, Double_t &errz);
+ static   void GetShape(AliTPCclusterMI* cluster, AliExternalTrackParam * param, 
+			 Double_t& rmsy, Double_t &rmsz);
 
  private:
      //     AliTPCseed & operator = (const AliTPCseed &)
