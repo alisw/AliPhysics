@@ -833,7 +833,7 @@ void AliEveVSDCreator::ConvertKinks()
     Double_t pos[3];
 
     fKK.fLabel  = kk->GetLabel(0);
-    fKK.fStatus = Int_t(kk->GetStatus(1) << 8 + kk->GetStatus(2));
+    fKK.fStatus = 0; // status is Char_t[12] ... have no idea how/what to extract.
 
     // reconstructed kink position
     fKK.fLabelSec = kk->GetLabel(1);
