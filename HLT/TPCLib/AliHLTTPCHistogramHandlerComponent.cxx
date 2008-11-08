@@ -355,8 +355,8 @@ int AliHLTTPCHistogramHandlerComponent::DoEvent(const AliHLTComponentEventData&/
 
       for(UInt_t i=0;i<fHistogramData.size();i++){
 	if(histName.CompareTo(fHistogramData.at(i).fHistogram->GetName())==0){
-	  if(minSlice==fHistogramData.at(i).fMinSlice && maxSlice == fHistogramData.at(i).fMaxSlice || fIgnoreSpecification == kTRUE){
-	    if(minPartition==fHistogramData.at(i).fMinPartition && maxPartition == fHistogramData.at(i).fMaxPartition || fIgnoreSpecification == kTRUE){
+	  if((minSlice==fHistogramData.at(i).fMinSlice && maxSlice == fHistogramData.at(i).fMaxSlice) || fIgnoreSpecification == kTRUE){
+	    if((minPartition==fHistogramData.at(i).fMinPartition && maxPartition == fHistogramData.at(i).fMaxPartition) || fIgnoreSpecification == kTRUE){
 	      fHistogramData.at(i).fHistogram->Add(tmp);
 	      histogramNotAdded = kFALSE;
 	      break;
