@@ -1282,8 +1282,8 @@ void AliTPCv4::StepManager()
   fTPCParam->AdjustCosSin(sector,cos,sin);
   Float_t x1=p[0]*cos + p[1]*sin;
   // check if within sector's limits
-  if(x1>=fTPCParam->GetInnerRadiusLow()&&x1<=fTPCParam->GetInnerRadiusUp()
-     ||x1>=fTPCParam->GetOuterRadiusLow()&&x1<=fTPCParam->GetOuterRadiusUp()){
+  if((x1>=fTPCParam->GetInnerRadiusLow()&&x1<=fTPCParam->GetInnerRadiusUp())
+     ||(x1>=fTPCParam->GetOuterRadiusLow()&&x1<=fTPCParam->GetOuterRadiusUp())){
   // calculate real sector number...
   if (x1>fTPCParam->GetOuterRadiusLow()){
     sector = TMath::Nint((angle-fTPCParam->GetOuterAngleShift())/
