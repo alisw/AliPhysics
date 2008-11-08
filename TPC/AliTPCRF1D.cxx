@@ -57,18 +57,6 @@ static Double_t funCosh(Double_t *x, Double_t * par)
   return 1/TMath::CosH(3.14159*x[0]/(2*par[0]));  
 }    
 
-static Double_t funGamma4(Double_t *x, Double_t * par)
-{
-  //
-  // Gamma 4 function
-  //
-  if (x[0]<0) return 0;
-  Double_t g1 = TMath::Exp(-4.*x[0]/par[1]);
-  Double_t g2 = TMath::Power(x[0]/par[1],4);
-  return par[0]*g1*g2;
-}    
-
-
 static Double_t funGati(Double_t *x, Double_t * par)
 {
   //Gati function  -needde by the generic function object 

@@ -1763,7 +1763,7 @@ void AliTPCCalibTCF::MergeToOneFile(const char *nameFileSum) {
 
       printf("Sector file %s found\n",nameFileSumSec);
       TIter next(fileSumSec->GetListOfKeys());
-      while( key=(TKey*)next() ) {
+      while( (key=(TKey*)next()) ) {
         const char *hisName = key->GetName();
 
         hisIn=(TH1F*)fileSumSec->Get(hisName);
