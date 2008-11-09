@@ -18,9 +18,13 @@
 // refer to README to build package
 // or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
-
+ 
 class AliRawReader;
 #include "TObject.h"
+
+extern "C" {
+  typedef AliRawReader* (*AliRawReaderHLTCreateInstance_t)(AliRawReader* pParentReader, const char* options);
+}
                         
 /**
  * @class AliRawHLTManager
@@ -67,7 +71,7 @@ class AliRawHLTManager {
   static int fLibraryStatus; //!transient
 
   /** entry in the HOMER library */
-  static void* fFctCreateRawReaderHLT; //!transient
+  static AliRawReaderHLTCreateInstance_t fFctCreateRawReaderHLT; //!transient
 
   /** entry in the HOMER library */
   static void* fFctCreateRawStream; //!transient
@@ -81,10 +85,5 @@ class AliRawHLTManager {
 #define ALIHLTREC_LIBRARY_VERSION           0
 #define ALIRAWREADERHLT_CREATE_INSTANCE     "AliRawReaderHLTCreateInstance"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-  typedef AliRawReader* (*AliRawReaderHLTCreateInstance_t)(AliRawReader* pParentReader, const char* options);
-}
 
 #endif //ALIRAWHLTMANAGER_H

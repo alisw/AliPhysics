@@ -47,7 +47,7 @@ AliRawHLTManager::~AliRawHLTManager()
 }
 
 int AliRawHLTManager::fLibraryStatus=kUnloaded;
-void* AliRawHLTManager::fFctCreateRawReaderHLT=NULL;
+AliRawReaderHLTCreateInstance_t AliRawHLTManager::fFctCreateRawReaderHLT=NULL;
 void* AliRawHLTManager::fFctCreateRawStream=NULL;
 
 AliRawReader* AliRawHLTManager::CreateRawReaderHLT(AliRawReader* pParent, const char* detectors)
@@ -81,7 +81,7 @@ int AliRawHLTManager::LoadLibrary()
   // library has been loaded. If it was already loaded we get 0 
   int iTrials=0;
   do {
-    fFctCreateRawReaderHLT=gSystem->DynFindSymbol(ALIHLTREC_LIBRARY, ALIRAWREADERHLT_CREATE_INSTANCE);
+    fFctCreateRawReaderHLT=(AliRawReaderHLTCreateInstance_t)gSystem->DynFindSymbol(ALIHLTREC_LIBRARY, ALIRAWREADERHLT_CREATE_INSTANCE);
   } while (fFctCreateRawReaderHLT==NULL && gSystem->Load(ALIHLTREC_LIBRARY)==0 && iTrials++<1);
   if (fFctCreateRawReaderHLT) {
     iResult=kLoaded;
