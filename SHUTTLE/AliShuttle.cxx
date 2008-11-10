@@ -2627,6 +2627,8 @@ Bool_t AliShuttle::UpdateTableSkippedCase(const char* detector)
 
 	Bool_t result = kTRUE;
 
+	TString detName(detector);
+
 	for (UInt_t system=0; system<3; system++)
 	{
 
@@ -2644,7 +2646,7 @@ Bool_t AliShuttle::UpdateTableSkippedCase(const char* detector)
 		TIter iter(&fFXSlist[system]);
 			
 		TString whereClause;
-		if (detector == "ALL") whereClause = Form("where run=%d and time_processed IS NULL;",GetCurrentRun());
+		if (detName == "ALL") whereClause = Form("where run=%d and time_processed IS NULL;",GetCurrentRun());
 		else whereClause = Form("where run=%d and detector=\"%s\" and time_processed IS NULL;",GetCurrentRun(), detector);
 
 		Log("SHUTTLE",Form(" whereClause = %s ",whereClause.Data()));
