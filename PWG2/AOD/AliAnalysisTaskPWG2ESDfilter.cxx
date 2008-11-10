@@ -840,7 +840,8 @@ void AliAnalysisTaskPWG2ESDfilter::Exec(Option_t */*option*/)
 	pos[2] = primary->GetZ();
 	
 	// has to be changed once the muon pid is provided by the ESD
-	for (Int_t i = 0; i < 10; pid[i++] = 0.); pid[AliAODTrack::kMuon]=1.;
+	for (Int_t i = 0; i < 10; pid[i++] = 0.) {}
+	pid[AliAODTrack::kMuon]=1.;
 	
 	primary->AddDaughter(
 	    new(tracks[jTracks++]) AliAODTrack(0, // no ID provided

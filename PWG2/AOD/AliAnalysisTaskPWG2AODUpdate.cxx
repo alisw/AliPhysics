@@ -77,7 +77,7 @@ void AliAnalysisTaskPWG2AODUpdate::UserCreateOutputObjects()
   const char *name = "pwg2aodtracks";
   fPWG2AODTracks->SetName(name);
   
-  AddAODBranch("TClonesArray", fPWG2AODTracks);
+  AddAODBranch("TClonesArray", &fPWG2AODTracks);
 }
 
 void AliAnalysisTaskPWG2AODUpdate::UserExec(Option_t */*option*/)
