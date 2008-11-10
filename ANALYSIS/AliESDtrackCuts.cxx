@@ -115,7 +115,6 @@ AliESDtrackCuts::AliESDtrackCuts(const Char_t* name, const Char_t* title) : AliA
   SetRequireITSRefit();
   SetAcceptKingDaughters();
   SetMaxNsigmaToVertex();
-  SetRequireSigmaToVertex();
   SetMaxDCAToVertex();
   SetMaxDCAToVertexXY();
   SetMaxDCAToVertexZ();

@@ -68,7 +68,7 @@ public:
     {fCutMaxC11=c1; fCutMaxC22=c2; fCutMaxC33=c3; fCutMaxC44=c4; fCutMaxC55=c5;}
 
   // track to vertex cut setters
-  void SetMaxNsigmaToVertex(Float_t sigma=1e10)       {fCutNsigmaToVertex = sigma;}
+  void SetMaxNsigmaToVertex(Float_t sigma=1e10)       {fCutNsigmaToVertex = sigma; SetRequireSigmaToVertex(kTRUE);}
   void SetRequireSigmaToVertex(Bool_t b=kTRUE )       {fCutSigmaToVertexRequired = b;}
   void SetMaxDCAToVertex(Float_t dist=1e10)           {fCutDCAToVertex = dist;}
   void SetMaxDCAToVertexXY(Float_t dist=1e10)         {fCutDCAToVertexXY = dist;}
