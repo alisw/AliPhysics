@@ -7,7 +7,6 @@ void sim(Int_t nev=4) {
   simu.SetWriteRawData("ALL","raw.root",kTRUE);
 //  simu.SetDefaultStorage("alien://Folder=/alice/data/2008/LHC08d/OCDB/");
   simu.SetDefaultStorage("local://$ALICE_ROOT");
-  simu.SetSpecificStorage("EMCAL/*","local://DB");
 
   simu.SetRunQA("ALL:ALL") ; 
  // AliQA::SetQARefStorage(Form("%s%s/", AliQA::GetQARefDefaultStorage(), kYear)) ;
