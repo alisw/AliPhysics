@@ -1,3 +1,6 @@
+//-*- Mode: C++ -*-
+// $Id$
+
 #ifndef ALIHLTPHOSFOURIERCOMPONENT_H
 #define ALIHLTPHOSFOURIERCOMPONENT_H
 

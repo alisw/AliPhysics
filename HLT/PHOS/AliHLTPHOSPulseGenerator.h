@@ -1,3 +1,6 @@
+//-*- Mode: C++ -*-
+// $Id$
+
 #ifndef ALIHLTPHOSPULSEGENERATOR_H
 #define ALIHLTPHOSPULSEGENERATOR_H
 /* Copyright(c) 2006, ALICE Experiment at CERN, All rights reserved. *

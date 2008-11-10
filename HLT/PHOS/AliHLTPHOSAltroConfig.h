@@ -1,3 +1,6 @@
+//-*- Mode: C++ -*-
+// $Id$
+
 #ifndef ALIHLTPHOSALTROCONFIG_H
 #define ALIHLTPHOSALTROCONFIG_H
 

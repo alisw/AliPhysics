@@ -1,3 +1,6 @@
+//-*- Mode: C++ -*-
+// $Id$
+
 #ifndef ALIHLTPHOSRAWANALYZERPEAKFINDER_H
 #define ALIHLTPHOSRAWANALYZERPEAKFINDER_H
 /* Copyright(c) 2006, ALICE Experiment at CERN, All rights reserved. *

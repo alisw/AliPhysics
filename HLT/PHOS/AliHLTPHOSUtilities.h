@@ -1,3 +1,6 @@
+//-*- Mode: C++ -*-
+// $Id$
+
 #ifndef ALIHLTPHOSUTILITIES_H
 #define ALIHLTPHOSUTILITIES_H
 

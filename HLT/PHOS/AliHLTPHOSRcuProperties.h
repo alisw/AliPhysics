@@ -1,3 +1,6 @@
+//-*- Mode: C++ -*-
+// $Id$
+
 #ifndef ALIHLTPHOSRCUPROPERTIES_HPP
 #define ALIHLTPHOSRCUPROPERTIES_HPP
 

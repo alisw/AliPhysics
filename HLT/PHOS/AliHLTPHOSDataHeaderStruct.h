@@ -1,3 +1,6 @@
+//-*- Mode: C++ -*-
+// $Id$
+
 #ifndef ALIHLTPHOSDATAHEADERSTRUCT_H
 #define ALIHLTPHOSDATAHEADERSTRUCT_H
 /**************************************************************************

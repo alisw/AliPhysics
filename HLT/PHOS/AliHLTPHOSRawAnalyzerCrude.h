@@ -1,3 +1,6 @@
+//-*- Mode: C++ -*-
+// $Id$
+
 #ifndef ALIHLTPHOSRAWANALYZERCRUDE_H
 #define ALIHLTPHOSRAWANALYZERCRUDE_H
 #include "AliHLTPHOSRawAnalyzer.h"

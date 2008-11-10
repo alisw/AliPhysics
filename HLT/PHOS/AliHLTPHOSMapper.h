@@ -1,3 +1,6 @@
+//-*- Mode: C++ -*-
+// $Id$
+
 #ifndef ALIHLTPHOSMAPPER_H
 #define ALIHLTPHOSMAPPER_H
 

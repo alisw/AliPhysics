@@ -1,3 +1,6 @@
+//-*- Mode: C++ -*-
+// $Id$
+
 //
 // C++ Interface: AliHLTPHOSTRUMapper
 //

@@ -1,3 +1,6 @@
+//-*- Mode: C++ -*-
+// $Id$
+
 #ifndef ALIHLTPHOSMIPCLUSTERMANAGER_H
 #define ALIHLTPHOSMIPCLUSTERMANAGER_H
 

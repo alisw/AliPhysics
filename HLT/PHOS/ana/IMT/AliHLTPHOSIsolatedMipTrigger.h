@@ -1,3 +1,6 @@
+//-*- Mode: C++ -*-
+// $Id$
+
 #ifndef ALIHLTPHOSISOLATEDMIPTRIGGER_H
 #define ALIHLTPHOSISOLATEDMIPTRIGGER_H
 

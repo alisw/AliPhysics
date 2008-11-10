@@ -1,3 +1,6 @@
+//-*- Mode: C++ -*-
+// $Id$
+
 #ifndef ALIHLTPHOSDQM_H
 #define ALIHLTPHOSDQM_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *

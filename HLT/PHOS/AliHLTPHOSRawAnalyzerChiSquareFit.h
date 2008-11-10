@@ -1,3 +1,6 @@
+//-*- Mode: C++ -*-
+// $Id$
+
 #ifndef ALIHLTPHOSRAWANALYZERCHISQUAREFIT_H
 #define ALIHLTPHOSRAWANALYZERCHISQUAREFIT_H
 //#include <Rtypes.h>

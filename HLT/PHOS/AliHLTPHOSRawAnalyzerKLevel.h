@@ -1,3 +1,6 @@
+//-*- Mode: C++ -*-
+// $Id$
+
 #ifndef ALIHLTPHOSRAWANALYZERKLEVEL_H
 #define ALIHLTPHOSRAWANALYZERKLEVEL_H
 #include <Rtypes.h>

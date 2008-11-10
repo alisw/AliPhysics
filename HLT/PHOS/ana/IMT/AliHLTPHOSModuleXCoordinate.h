@@ -1,3 +1,6 @@
+//-*- Mode: C++ -*-
+// $Id$
+
 #ifndef ALIHLTPHOSMODULEXCOORDINATE_H
 #define ALIHLTPHOSMODULEXCOORDINATE_H
 

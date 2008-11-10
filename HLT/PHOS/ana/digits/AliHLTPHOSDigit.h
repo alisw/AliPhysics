@@ -1,3 +1,6 @@
+//-*- Mode: C++ -*-
+// $Id$
+
 //insert copyright
 
 #ifndef ALIHLTPHOSDIGIT_H

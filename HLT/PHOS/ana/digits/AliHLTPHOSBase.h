@@ -1,3 +1,6 @@
+//-*- Mode: C++ -*-
+// $Id$
+
 #ifndef ALIHLTPHOSBASE_H
 #define ALIHLTPHOSBASE_H
 

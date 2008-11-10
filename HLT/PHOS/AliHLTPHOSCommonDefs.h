@@ -1,3 +1,6 @@
+//-*- Mode: C++ -*-
+// $Id$
+
 #ifndef COMMONDEFS_H
 #define COMMONDEFS_H
 

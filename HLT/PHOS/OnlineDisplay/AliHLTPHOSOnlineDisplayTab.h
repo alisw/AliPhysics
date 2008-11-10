@@ -1,3 +1,6 @@
+//-*- Mode: C++ -*-
+// $Id$
+
 
 #ifndef ALIHLTPHOSONLINEDISPLAYTAB_H
 #define ALIHLTPHOSONLINEDISPLAYTAB_H

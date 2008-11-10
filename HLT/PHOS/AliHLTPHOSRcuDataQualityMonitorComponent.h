@@ -1,3 +1,6 @@
+//-*- Mode: C++ -*-
+// $Id$
+
 #ifndef AliHLTPHOSRCUDATAQUALITYMONITORCOMPONENT_H
 #define AliHLTPHOSRCUDATAQUALITYMONITORCOMPONENT_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
