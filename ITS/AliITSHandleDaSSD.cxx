@@ -842,7 +842,7 @@ Bool_t AliITSHandleDaSSD::CalculateCM(AliITSModuleDaSSD *const module)
       }
       if ((n = AliITSModuleDaSSD::GetStripsPerChip() - ovstr)) cmsum /= (Float_t)(n);
       else cmsum = 0.0L;
-      if (!(module->SetCM(cmsum, chipind, ev)));
+      //      if (!(module->SetCM(cmsum, chipind, ev)));
     } 
   }
   return kTRUE; 
