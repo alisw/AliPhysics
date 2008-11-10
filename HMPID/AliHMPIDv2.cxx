@@ -758,12 +758,13 @@ void AliHMPIDv2::StepHistory()
   }
 
   TString flag="fanny combination";
-  if(gMC->IsTrackAlive())
-      if(gMC->IsTrackEntering())      flag="enters to";
-      else if(gMC->IsTrackExiting())  flag="exits from";
-      else if(gMC->IsTrackInside())   flag="inside";
-  else
-      if(gMC->IsTrackStop())          flag="stoped in";        
+  if(gMC->IsTrackAlive()) {
+    if(gMC->IsTrackEntering())      flag="enters to";
+    else if(gMC->IsTrackExiting())  flag="exits from";
+    else if(gMC->IsTrackInside())   flag="inside";
+  } else {
+    if(gMC->IsTrackStop())          flag="stopped in";
+  }
   
   Int_t vid=0,copy=0;
   TString path=gMC->CurrentVolName(); path.Prepend("-");path.Prepend(gMC->CurrentVolOffName(1));//current volume and his mother are always there

@@ -34,7 +34,7 @@
 #include <TCanvas.h>         //ShapeModel()
 #include "TStopwatch.h"      //
 
-Int_t AliHMPIDReconHTA::fgDB[500][150]={75000*0};
+Int_t AliHMPIDReconHTA::fgDB[500][150]={{75000*0}};
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 AliHMPIDReconHTA::AliHMPIDReconHTA():
   TTask("RichRec","RichPat"),
