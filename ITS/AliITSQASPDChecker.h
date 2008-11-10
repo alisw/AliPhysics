@@ -30,7 +30,7 @@ public:
   AliITSQASPDChecker():fSubDetOffset(0) {;}          // ctor
   AliITSQASPDChecker& operator = (const AliITSQASPDChecker& qac) ; //operator =
   virtual ~AliITSQASPDChecker() {;} // dtor
-  const Double_t Check(AliQA::ALITASK_t index, TObjArray * list);
+  Double_t Check(AliQA::ALITASK_t index, TObjArray * list);
   void SetTaskOffset(Int_t TaskOffset);
 private:
   

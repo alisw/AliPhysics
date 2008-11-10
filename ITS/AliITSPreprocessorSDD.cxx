@@ -263,7 +263,7 @@ UInt_t AliITSPreprocessorSDD::ProcessInjector(AliITSDDLModuleMapSDD* ddlmap){
 	}
 	fscanf(injFil,"%d",&polDeg);
 	while (!feof(injFil)){
-	  fscanf(injFil,"%d %d ",&evNumb,&timeStamp);
+	  fscanf(injFil,"%d %u ",&evNumb,&timeStamp);
 	  if(feof(injFil)) break;
 	  for(Int_t ic=0;ic<4;ic++){ 
 	    fscanf(injFil,"%f ",&auxP);

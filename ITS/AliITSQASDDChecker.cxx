@@ -46,7 +46,7 @@ AliITSQASDDChecker& AliITSQASDDChecker::operator = (const AliITSQASDDChecker& qa
 }
 
 //__________________________________________________________________
-const Double_t AliITSQASDDChecker::Check(AliQA::ALITASK_t index, TObjArray * list) 
+Double_t AliITSQASDDChecker::Check(AliQA::ALITASK_t index, TObjArray * list) 
 {  
   AliDebug(1,Form("AliITSQASDDChecker called with offset: %d\n", fSubDetOffset));
   AliCDBEntry *QARefObj = AliCDBManager::Instance()->Get("ITS/QARef/SDD");

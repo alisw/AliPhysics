@@ -1532,7 +1532,7 @@ Bool_t AliITSTrackleterSPDEff::WriteHistosToFile(TString filename, Option_t* opt
   // Also the histograms from the base class are saved 
   //
   if (!GetHistOn()) return kFALSE;
-  if (filename.Data()=="") {
+  if (filename.IsNull() || filename.IsWhitespace()) {
      AliWarning("WriteHistosToFile: null output filename!");
      return kFALSE;
   }
