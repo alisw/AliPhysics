@@ -65,6 +65,7 @@ AliHLTCompStatCollector::AliHLTCompStatCollector()
   fpTotalInputSizeArray(NULL),
   fpOutputBlockCountArray(NULL),
   fpTotalOutputSizeArray(NULL)
+  , fSizeEstimator(1000)
 {
   // see header file for class documentation
   // or
@@ -103,7 +104,7 @@ int AliHLTCompStatCollector::GetOutputDataTypes(AliHLTComponentDataTypeList& tgt
 void AliHLTCompStatCollector::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
 {
   // see header file for class documentation
-  constBase=1000;
+  constBase=fSizeEstimator;
   inputMultiplier=100.0;
 }
 
@@ -338,8 +339,9 @@ int AliHLTCompStatCollector::DoEvent( const AliHLTComponentEventData& /*evtData*
   if (iResult>0) {
     fNofSets=fPosition;
     fpStatTree->Fill();
-    if (!bEmbeddedTree)
-      iResult=PushBack(fpStatTree, kAliHLTDataTypeTTree|kAliHLTDataOriginOut);
+    if (!bEmbeddedTree && ((iResult=PushBack(fpStatTree, kAliHLTDataTypeTTree|kAliHLTDataOriginOut))==-ENOSPC)) {
+      fSizeEstimator+=GetLastObjectSize();
+    }
 
     // init the timer for the next cycle
     if (!fpTimer)  fpTimer=new TStopwatch;
@@ -350,7 +352,9 @@ int AliHLTCompStatCollector::DoEvent( const AliHLTComponentEventData& /*evtData*
   }
 
   if (iResult>=0 /*&& eventType==gkAliEventTypeEndOfRun*/) {
-    PushBack(fpFolder, kAliHLTDataTypeTObject|kAliHLTDataOriginOut);
+    if ((iResult=PushBack(fpFolder, kAliHLTDataTypeTObject|kAliHLTDataOriginOut))==-ENOSPC) {
+      fSizeEstimator+=GetLastObjectSize();
+    }
   }
 
   if (iResult>0) iResult=0;
