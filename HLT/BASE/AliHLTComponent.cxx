@@ -2131,3 +2131,26 @@ int AliHLTComponent::ExtractComponentTableEntry(const AliHLTUInt8_t* pBuffer, Al
 
   return 1;
 }
+
+int AliHLTComponent::LoggingVarargs(AliHLTComponentLogSeverity severity, 
+				    const char* originClass, const char* originFunc,
+				    const char* file, int line, ... ) const
+{
+  // see header file for function documentation
+  int iResult=0;
+
+  va_list args;
+  va_start(args, line);
+
+  // logging function needs to be const in order to be called from const member functions
+  // without problems. But at this point we face the problem with virtual members which
+  // are not necessarily const.
+  AliHLTComponent* nonconst=const_cast<AliHLTComponent*>(this);
+  AliHLTLogging::SetLogString("%s (%s, %p): ", 
+			      fChainId[0]!=0?fChainId.c_str():nonconst->GetComponentID(),
+			      nonconst->GetComponentID(), this);
+  iResult=SendMessage(severity, originClass, originFunc, file, line, AliHLTLogging::BuildLogString(NULL, args, true /*append*/));
+  va_end(args);
+
+  return iResult;
+}

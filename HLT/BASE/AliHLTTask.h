@@ -283,6 +283,14 @@ class AliHLTTask : public TObject, public AliHLTLogging {
    */
   int GetNofSources() const {return fListDependencies.GetSize();}
 
+  /**
+   * Customized logging function.
+   * The task id and pointer is added at the beginning of each message.
+   */
+  int LoggingVarargs(AliHLTComponentLogSeverity severity, 
+		     const char* originClass, const char* originFunc,
+		     const char* file, int line, ... ) const;
+
  private:
   /** prohibited copy constructor */
   AliHLTTask(const AliHLTTask&);

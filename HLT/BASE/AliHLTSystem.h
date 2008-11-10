@@ -489,6 +489,15 @@ class AliHLTSystem : public AliHLTLogging {
    */
   void SetFrameworkLog(AliHLTComponentLogSeverity level);
 
+  /**
+   * Customized logging function.
+   * The name of the system and pointer is added at the beginning of each
+   * message if name was set.
+   */
+  int LoggingVarargs(AliHLTComponentLogSeverity severity, 
+		     const char* originClass, const char* originFunc,
+		     const char* file, int line, ... ) const;
+
  protected:
  
  private:

@@ -681,6 +681,14 @@ class AliHLTComponent : public AliHLTLogging {
   int SetStopwatches(TObjArray* pStopwatches);
 
   /**
+   * Customized logging function.
+   * The chain id, component id and pointer is added at the beginning of each message.
+   */
+  int LoggingVarargs(AliHLTComponentLogSeverity severity, 
+		     const char* originClass, const char* originFunc,
+		     const char* file, int line, ... ) const;
+
+  /**
    * Get size of last serialized object.
    * During PushBack, TObjects are serialized in a separate buffer. The
    * size of the last object can be retrieved by this function.

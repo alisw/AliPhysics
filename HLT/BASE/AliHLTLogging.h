@@ -119,12 +119,20 @@ public:
    */
   int Logging( AliHLTComponentLogSeverity severity, const char* origin, const char* keyword, const char* message, ... );
 
-  /*
+  /**
    * Logging function with two origin parameters, used by the log macros
    */
-  int LoggingVarargs(AliHLTComponentLogSeverity severity, 
-		     const char* originClass, const char* originFunc,
-		     const char* file, int line, ... ) const;
+  virtual int LoggingVarargs(AliHLTComponentLogSeverity severity, 
+			     const char* originClass, const char* originFunc,
+			     const char* file, int line, ... ) const;
+
+  /**
+   * Send formatted string to the different channels
+   */
+  int SendMessage(AliHLTComponentLogSeverity severity, 
+		  const char* originClass, const char* originFunc,
+		  const char* file, int line,
+		  const char* message) const;
 
   /**
    * Evaluate the group of the debug message from the class name.
@@ -185,9 +193,17 @@ public:
    * Build the log string from format specifier and variadac arguments
    * @param format     format string of printf style
    * @param ap         opened and initialized argument list
+   * @param bAppend    append to current content
    * @return const char string with the formatted message 
    */
-  static const char* BuildLogString(const char *format, va_list ap);
+  static const char* BuildLogString(const char *format, va_list ap, bool bAppend=false);
+
+  /**
+   * Set the log string from format specifier and from variable arguments.
+   * @param format     format string of printf style
+   * @return const char string with the formatted message 
+   */
+  static const char* SetLogString(const char *format, ... );
 
   /**
    * Get parameter given by the external caller.

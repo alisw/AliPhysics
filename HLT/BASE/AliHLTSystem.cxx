@@ -434,7 +434,7 @@ int AliHLTSystem::InitTasks()
   TObjLink *lnk=fTaskList.FirstLink();
 
   if (lnk==NULL) {
-    HLTInfo("%s%sTask list is empty, skipping HLT", fName.Data(), fName.IsNull()?"":": ");
+    HLTInfo("Task list is empty, skipping HLT");
     return -126 /*ENOKEY*/;
   }
   while (lnk && iResult>=0) {
@@ -450,7 +450,7 @@ int AliHLTSystem::InitTasks()
     lnk = lnk->Next();
   }
   if (iResult<0) {
-    HLTError("%s%scan not initialize task list, error %d", fName.Data(), fName.IsNull()?"":": ", iResult);
+    HLTError("can not initialize task list, error %d", iResult);
   }
 
   return iResult;
@@ -600,13 +600,13 @@ int AliHLTSystem::StartTasks()
     lnk = lnk->Next();
   }
   if (iResult<0) {
-    HLTError("%s%scan not start task list, error %d", fName.Data(), fName.IsNull()?"":": ", iResult);
+    HLTError("can not start task list, error %d", iResult);
   } else {
     SetStatusFlags(kStarted);
     fEventCount=0;
     fGoodEvents=0;
     if ((iResult=SendControlEvent(kAliHLTDataTypeSOR))<0) {
-      HLTError("%s%scan not send SOR event: error %d", fName.Data(), fName.IsNull()?"":": ", iResult);
+      HLTError("can not send SOR event: error %d", iResult);
     }
   }
   return iResult;
@@ -632,10 +632,10 @@ int AliHLTSystem::ProcessTasks(Int_t eventNo)
   }
 
   if (iResult>=0) {
-    HLTImportant("%s%sEvent %d successfully finished (%d)", fName.Data(), fName.IsNull()?"":": ", eventNo, iResult);
+    HLTImportant("Event %d successfully finished (%d)", eventNo, iResult);
     iResult=0;
   } else {
-    HLTError("%s%sProcessing of event %d failed (%d)", fName.Data(), fName.IsNull()?"":": ", eventNo, iResult);
+    HLTError("Processing of event %d failed (%d)", eventNo, iResult);
   }
 
   return iResult;
@@ -646,7 +646,7 @@ int AliHLTSystem::StopTasks()
   // see header file for class documentation
   int iResult=0;
   if ((iResult=SendControlEvent(kAliHLTDataTypeEOR))<0) {
-    HLTError("%s%scan not send EOR event", fName.Data(), fName.IsNull()?"":": ");
+    HLTError("can not send EOR event");
   }
 
   // cleanup blocks from the last event. This is a bit awkward. All output
@@ -1450,4 +1450,22 @@ void AliHLTSystem::SetFrameworkLog(AliHLTComponentLogSeverity level)
   SetLocalLoggingLevel(level);
   if (fpComponentHandler) fpComponentHandler->SetLocalLoggingLevel(level);
   if (fpConfigurationHandler) fpConfigurationHandler->SetLocalLoggingLevel(level);
+}
+
+int AliHLTSystem::LoggingVarargs(AliHLTComponentLogSeverity severity, 
+				 const char* originClass, const char* originFunc,
+				 const char* file, int line, ... ) const
+{
+  // see header file for function documentation
+  int iResult=0;
+
+  va_list args;
+  va_start(args, line);
+
+  if (!fName.IsNull())
+    AliHLTLogging::SetLogString("%s (%p): ", fName.Data(), this);
+  iResult=SendMessage(severity, originClass, originFunc, file, line, AliHLTLogging::BuildLogString(NULL, args, !fName.IsNull() /*append if non empty*/));
+  va_end(args);
+
+  return iResult;
 }

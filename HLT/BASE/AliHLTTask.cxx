@@ -100,8 +100,8 @@ int AliHLTTask::Init(AliHLTConfiguration* pConf, AliHLTComponentHandler* pCH)
   // see header file for function documentation
   int iResult=0;
   if (fpConfiguration!=NULL && pConf!=NULL && fpConfiguration!=pConf) {
-    HLTWarning("overriding existing reference to configuration object %p (%s) by %p",
-	       fpConfiguration, GetName(), pConf);
+    HLTWarning("overriding existing reference to configuration object %p by %p",
+	       fpConfiguration, pConf);
   }
   if (pConf!=NULL) fpConfiguration=pConf;
   iResult=CreateComponent(fpConfiguration, pCH, fpComponent);
@@ -164,7 +164,7 @@ int AliHLTTask::Deinit()
     pComponent->Deinit();
     delete pComponent;
   } else {
-    HLTWarning("task %s (%p) doesn't seem to be in initialized", GetName(), this);
+    HLTWarning("task doesn't seem to be in initialized");
   }
   return iResult;
 }
@@ -243,7 +243,7 @@ void AliHLTTask::PrintDependencyTree(const char* id, int bFromConfiguration)
   } else
     iResult=FollowDependency(id, &tgtList);
   if (iResult>0) {
-    HLTMessage("     task \"%s\": dependency level %d ", GetName(), iResult);
+    HLTMessage("     dependency level %d ", iResult);
     TObjLink* lnk=tgtList.FirstLink();
     int i=iResult;
     char* pSpace = new char[iResult+1];
@@ -543,7 +543,7 @@ int AliHLTTask::ProcessTask(Int_t eventNo, AliHLTUInt32_t eventType)
       if (iNofTrial>0) {
 	// dont process again if the buffer size is the same
 	if (iLastOutputDataSize==iOutputDataSize) break;
-	HLTInfo("processing task %s again with buffer size %d", GetName(), iOutputDataSize);
+	HLTImportant("processing event %d again with buffer size %d", eventNo, iOutputDataSize);
       }
       AliHLTUInt8_t* pTgtBuffer=NULL;
       if (iOutputDataSize>0) pTgtBuffer=fpDataBuffer->GetTargetBuffer(iOutputDataSize);
@@ -574,7 +574,7 @@ int AliHLTTask::ProcessTask(Int_t eventNo, AliHLTUInt32_t eventType)
 	// process
 	evtData.fBlockCnt=fBlockDataArray.size();
 	iResult=pComponent->ProcessEvent(evtData, &fBlockDataArray[0], trigData, pTgtBuffer, size, outputBlockCnt, outputBlocks, edd);
-	HLTDebug("task %s: component %s ProcessEvent finnished (%d): size=%d blocks=%d", GetName(), pComponent->GetComponentID(), iResult, size, outputBlockCnt);
+	HLTDebug("component %s ProcessEvent finnished (%d): size=%d blocks=%d", pComponent->GetComponentID(), iResult, size, outputBlockCnt);
 
 	// remove event data block
 	fBlockDataArray.pop_back();
@@ -670,7 +670,7 @@ int AliHLTTask::ProcessTask(Int_t eventNo, AliHLTUInt32_t eventType)
 	  }
 	}
       } else {
-	HLTError("task %s: no target buffer available", GetName());
+	HLTError("no target buffer available");
 	iResult=-EFAULT;
       }
     } while (iResult==-ENOSPC && iNofTrial++<1);
@@ -684,19 +684,19 @@ int AliHLTTask::ProcessTask(Int_t eventNo, AliHLTUInt32_t eventType)
       if (pSrcTask) {
 	int iTempRes=0;
 	if ((iTempRes=pSrcTask->Release(&fBlockDataArray[iSourceDataBlock], this))>=0) {
-	  HLTDebug("Task %s (%p) successfully released segment of task %s (%p)", GetName(), this, pSrcTask->GetName(), pSrcTask);
+	  HLTDebug("successfully released segment of task %s (%p)", pSrcTask->GetName(), pSrcTask);
 	} else {
-	  HLTError("Task %s (%p): realease of task %s (%p) failed with error %d", GetName(), this, pSrcTask->GetName(), pSrcTask, iTempRes);
+	  HLTError("realease of task %s (%p) failed with error %d", pSrcTask->GetName(), pSrcTask, iTempRes);
 	}
       }
       subscribedTaskList.erase(element);
       iSourceDataBlock++;
     }
     if (subscribedTaskList.size()>0) {
-      HLTError("task %s (%p): could not release all data buffers", GetName(), this);
+      HLTError("could not release all data buffers");
     }
   } else {
-    HLTError("task %s (%p): internal failure (not initialized component %p, data buffer %p)", GetName(), this, fpComponent, fpDataBuffer);
+    HLTError("internal failure (not initialized component %p, data buffer %p)", fpComponent, fpDataBuffer);
     iResult=-EFAULT;
   }
   return iResult;
@@ -802,7 +802,7 @@ void AliHLTTask::PrintStatus()
       lnk = lnk->Next();
     }
   } else {
-    HLTMessage("     task \"%s\" not initialized", GetName());
+    HLTMessage("     task not initialized");
   }
 }
 
@@ -816,4 +816,21 @@ int AliHLTTask::CustomCleanup()
 {
   // default implementation nothing to do
   return 0;
+}
+
+int AliHLTTask::LoggingVarargs(AliHLTComponentLogSeverity severity, 
+				    const char* originClass, const char* originFunc,
+				    const char* file, int line, ... ) const
+{
+  // see header file for function documentation
+  int iResult=0;
+
+  va_list args;
+  va_start(args, line);
+
+  AliHLTLogging::SetLogString("%s (%p): ", GetName(), this);
+  iResult=SendMessage(severity, originClass, originFunc, file, line, AliHLTLogging::BuildLogString(NULL, args, true /*append*/));
+  va_end(args);
+
+  return iResult;
 }

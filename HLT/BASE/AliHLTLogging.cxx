@@ -241,7 +241,7 @@ int AliHLTLogging::AliMessage(AliHLTComponentLogSeverity severity,
 }
 #endif
 
-const char* AliHLTLogging::BuildLogString(const char *format, va_list ap) 
+const char* AliHLTLogging::BuildLogString(const char *format, va_list ap, bool bAppend) 
 {
   // see header file for class documentation
 
@@ -256,13 +256,22 @@ const char* AliHLTLogging::BuildLogString(const char *format, va_list ap)
   const char* fmt = format;
   if (fmt==NULL) fmt=va_arg(ap, const char*);
 
-  fgAliHLTLoggingTarget[0]=0;
+  unsigned int iOffset=0;
+  if (bAppend) {
+    iOffset=strlen(fgAliHLTLoggingTarget.GetArray());
+  } else {
+    fgAliHLTLoggingTarget[0]=0;
+  }
   while (fmt!=NULL) {
-    iResult=vsnprintf(fgAliHLTLoggingTarget.GetArray(), fgAliHLTLoggingTarget.GetSize(), fmt, ap);
+    iResult=vsnprintf(fgAliHLTLoggingTarget.GetArray()+iOffset, fgAliHLTLoggingTarget.GetSize()-iOffset, fmt, ap);
     if (iResult==-1)
       // for compatibility with older version of vsnprintf
       iResult=fgAliHLTLoggingTarget.GetSize()*2;
-    else if (iResult<fgAliHLTLoggingTarget.GetSize())
+    else
+      iResult+=iOffset;
+
+    if (iResult<fgAliHLTLoggingTarget.GetSize())
+      // everything in the limit
       break;
 
     // terminate if buffer is already at the limit
@@ -293,6 +302,18 @@ const char* AliHLTLogging::BuildLogString(const char *format, va_list ap)
   return fgAliHLTLoggingTarget.GetArray();
 }
 
+const char* AliHLTLogging::SetLogString(const char *format, ...)
+{
+  // see header file for class documentation
+  va_list args;
+  va_start(args, format);
+
+  const char* message=BuildLogString(format, args);
+  va_end(args);
+
+  return message;
+}
+
 int AliHLTLogging::Logging(AliHLTComponentLogSeverity severity,
 			   const char* origin, const char* keyword,
 			   const char* format, ... ) 
@@ -320,34 +341,42 @@ int AliHLTLogging::LoggingVarargs(AliHLTComponentLogSeverity severity,
 				  const char* file, int line,  ... ) const
 {
   // see header file for class documentation
+  int iResult=0;
 
-  if (file==NULL && line==0) {
-    // this is currently just to get rid of the warning "unused parameter"
+  va_list args;
+  va_start(args, line);
+
+  iResult=SendMessage(severity, originClass, originFunc, file, line, AliHLTLogging::BuildLogString(NULL, args ));
+  va_end(args);
+
+  return iResult;
+}
+
+int AliHLTLogging::SendMessage(AliHLTComponentLogSeverity severity, 
+			       const char* originClass, const char* originFunc,
+			       const char* file, int line,
+			       const char* message) const
+{
+  // see header file for class documentation
+  int iResult=0;
+  const char* separator="";
+  TString origin;
+  if (originClass) {
+    origin+=originClass;
+    separator="::";
   }
-  int iResult=1; //CheckFilter(severity); // check moved to makro
-  if (iResult>0) {
-    const char* separator="";
-    TString origin;
-    if (originClass) {
-	origin+=originClass;
-	separator="::";
-    }
-    if (originFunc) {
-	origin+=separator;
-	origin+=originFunc;
-    }
-    va_list args;
-    va_start(args, line);
+  if (originFunc) {
+    origin+=separator;
+    origin+=originFunc;
+  }
 
-    if (fgLoggingFunc) {
-      iResult=(*fgLoggingFunc)(NULL/*fParam*/, severity, origin.Data(), GetKeyword(), AliHLTLogging::BuildLogString(NULL, args ));
-    } else {
-      if (fgUseAliLog!=0 && fgAliLoggingFunc!=NULL)
-	iResult=(*fgAliLoggingFunc)(severity, originClass, originFunc, file, line, AliHLTLogging::BuildLogString(NULL, args ));
-      else
-	iResult=Message(NULL/*fParam*/, severity, origin.Data(), GetKeyword(), AliHLTLogging::BuildLogString(NULL, args ));
-    }
-    va_end(args);
+  if (fgLoggingFunc) {
+    iResult=(*fgLoggingFunc)(NULL/*fParam*/, severity, origin.Data(), GetKeyword(), message);
+  } else {
+    if (fgUseAliLog!=0 && fgAliLoggingFunc!=NULL)
+      iResult=(*fgAliLoggingFunc)(severity, originClass, originFunc, file, line, message);
+    else
+      iResult=Message(NULL/*fParam*/, severity, origin.Data(), GetKeyword(), message);
   }
   return iResult;
 }
