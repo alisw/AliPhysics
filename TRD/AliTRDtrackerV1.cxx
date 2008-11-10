@@ -538,15 +538,22 @@ Int_t AliTRDtrackerV1::FollowProlongation(AliTRDtrackV1 &t)
     xyz1[1] =  x * TMath::Sin(alpha) + y * TMath::Cos(alpha);
     xyz1[2] =  z;
         
-    // Get material budget
-    Double_t param[7];
-    if(AliTracker::MeanMaterialBudget(xyz0, xyz1, param)<=0.) break;
-    Double_t xrho= param[0]*param[4];
-    Double_t xx0 = param[1]; // Get mean propagation parameters
-
-    // Propagate and update		
-    t.PropagateTo(x, xx0, xrho);
-    if (!AdjustSector(&t)) break;
+    Double_t length = TMath::Sqrt(
+      (xyz0[0]-xyz1[0])*(xyz0[0]-xyz1[0]) +
+      (xyz0[1]-xyz1[1])*(xyz0[1]-xyz1[1]) +
+      (xyz0[2]-xyz1[2])*(xyz0[2]-xyz1[2])
+    );
+    if(length>0.){
+      // Get material budget
+      Double_t param[7];
+      if(AliTracker::MeanMaterialBudget(xyz0, xyz1, param)<=0.) break;
+      Double_t xrho= param[0]*param[4];
+      Double_t xx0 = param[1]; // Get mean propagation parameters
+  
+      // Propagate and update		
+      t.PropagateTo(x, xx0, xrho);
+      if (!AdjustSector(&t)) break;
+    }
     
     Double_t maxChi2 = t.GetPredictedChi2(tracklet);
     if (maxChi2 < 1e+10 && t.Update(tracklet, maxChi2)){ 
@@ -556,7 +563,7 @@ Int_t AliTRDtrackerV1::FollowProlongation(AliTRDtrackV1 &t)
 
   if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker) > 1){
     Int_t index;
-    for(int iplane=0; iplane<6; iplane++){
+    for(int iplane=0; iplane<AliTRDgeometry::kNlayer; iplane++){
       AliTRDseedV1 *tracklet = GetTracklet(&t, iplane, index);
       if(!tracklet) continue;
       t.SetTracklet(tracklet, index);
