@@ -898,7 +898,7 @@ void AliTOFDecoder::GetArrayDDL(Int_t* array, Int_t ddl){
     }
   }
   //AliInfo(Form("ichTOF = %i",ichTOF));
-  if (((indexDDL==0 || indexDDL==2)&ichTOF!=2160) || ((indexDDL==1 || indexDDL==3)&ichTOF!=2208)){
+  if ((((indexDDL==0 || indexDDL==2)&ichTOF)!=2160) || (((indexDDL==1 || indexDDL==3)&ichTOF)!=2208)){
     AliWarning(Form("Something strange occurred, number of entries in array different from expected! Please, check! ichTOF = %i",ichTOF));
   }
   return;
