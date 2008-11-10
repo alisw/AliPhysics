@@ -1013,6 +1013,7 @@ Int_t AliTOFRawStream::Equip2VolNplate(Int_t iDDL, Int_t nTRM, Int_t nTDC)
   //
 
   Int_t iPlate = -1;
+
   if (iDDL==0) {
 
     if (nTRM>=4 && nTRM<7) {
@@ -1263,7 +1264,7 @@ Int_t AliTOFRawStream::Equip2VolNpadZ(Int_t iDDL, Int_t iChain, Int_t nTDC,
 }
 
 //----------------------------------------------------------------------------
-Int_t AliTOFRawStream::GetSectorNumber(Int_t nDDL) const
+Int_t AliTOFRawStream::GetSectorNumber(Int_t nDDL)
 {
   //
   // Returns the sector number [0;17]
@@ -1276,7 +1277,7 @@ Int_t AliTOFRawStream::GetSectorNumber(Int_t nDDL) const
 
 }
 //----------------------------------------------------------------------------
-Int_t AliTOFRawStream::GetDDLnumberPerSector(Int_t nDDL) const
+Int_t AliTOFRawStream::GetDDLnumberPerSector(Int_t nDDL)
 {
   //
   // Return the DRM/DDL number per sector [0;3]
@@ -1545,3 +1546,473 @@ AliTOFRawStream::LoadRawDataBuffers(Int_t indexDDL, Int_t verbose)
   return kFALSE;
 }
 
+//---------------------------------------------------------------------------
+void AliTOFRawStream::Geant2EquipmentId(Int_t vol[], Int_t eqId[])
+{
+  //
+  // To convert:
+  //      nSector number -vol[0]- (variable in [0,17])
+  //      nPlate  number -vol[1]- (variable in [0, 5])
+  //      nStrip  number -vol[2]- (variable in [0,14/18])
+  //      nPadZ   number -vol[3]- (variable in [0, 1])
+  //      nPadX   number -vol[4]- (variable in [0,47])
+  // in:
+  //      nDDL     -eqId[0]- (variable in [0;71]) -> number of the DDL file 
+  //      nTRM     -eqId[1]- (variable in [3;12]) -> number of the TRM file 
+  //      nTDC     -eqId[2]- (variable in [0;14]) -> number of the TDC file 
+  //      nChain   -eqId[3]- (variable in [0; 1]) -> number of the chain file 
+  //      nChannel -eqId[4]- (variable in [0; 8]) -> number of the channel file 
+  //
+
+  eqId[0] = Geant2DDL(vol);
+  eqId[1] = Geant2TRM(vol);
+  eqId[2] = Geant2TDC(vol);
+  eqId[3] = Geant2Chain(vol);
+  eqId[4] = Geant2Channel(vol);
+
+}
+
+//---------------------------------------------------------------------------
+Int_t AliTOFRawStream::Geant2DDL(Int_t vol[])
+{
+  //
+  // To convert:
+  //      nSector number -vol[0]- (variable in [0,17])
+  //      nPlate  number -vol[1]- (variable in [0, 5])
+  //      nStrip  number -vol[2]- (variable in [0,14/18])
+  //      nPadZ   number -vol[3]- (variable in [0, 1])
+  //      nPadX   number -vol[4]- (variable in [0,47])
+  // in:
+  //      nDDL   (variable in [0;71]) -> number of the DDL file 
+  //
+
+
+  Int_t iDDL = -1;
+
+  if (vol[0]<0 || vol[0]>=AliTOFGeometry::NSectors()) {
+    printf(" AliTOFRawStream - Error: the sector number (%i) is out of the range: [0,17]\n", vol[0]);
+    return iDDL;
+  }
+  if (vol[1]<0 || vol[1]>=AliTOFGeometry::NPlates()) {
+    printf(" AliTOFRawStream - Error: the module number (%i) is out of the range: [0,4]\n", vol[1]);
+    return iDDL;
+  }
+  if (vol[2]<0 || vol[2]>=AliTOFGeometry::NStrip(vol[1])) {
+    printf(" AliTOFRawStream - Error: the strip number (%i) is out of the range: [0,%i]\n", vol[2], AliTOFGeometry::NStrip(vol[1]));
+    return iDDL;
+  }
+  if (vol[3]<0 || vol[3]>=AliTOFGeometry::NpadZ())
+    printf(" AliTOFRawStream - Error: the padz number (%i) is out of the range: [0,1]\n", vol[3]);
+  if (vol[4]<0 || vol[4]>=AliTOFGeometry::NpadX())
+    printf(" AliTOFRawStream - Error: the padx number (%i) is out of the range: [0,47]\n", vol[4]);
+  if ( vol[3]>=AliTOFGeometry::NpadZ() ) {
+    printf("Maybe you have to invert the order between vol[3](=%i) and vol[4](=%i)\n", vol[3], vol[4]);
+    return iDDL;
+  }
+
+  Int_t nSector = vol[0];
+  Int_t nPlate  = vol[1];
+  Int_t nStrip  = vol[2];
+  Int_t nPadX   = vol[4];
+
+  if ( nPadX<24 && ( nPlate==0 || nPlate==1 || (nPlate==2 && nStrip<7) ) )
+    iDDL = 0;
+  else if ( nPadX>=24 && ( nPlate==0 || nPlate==1 || (nPlate==2 && nStrip<8) ) )
+    iDDL = 1;
+  else if ( nPadX>=24 && ( nPlate==3 || nPlate==4 || (nPlate==2 && nStrip>7) ) )
+    iDDL = 2;
+  else if ( nPadX<24 && ( nPlate==3 || nPlate==4 || (nPlate==2 && nStrip>6) ) )
+    iDDL = 3;
+
+  return 4*nSector+iDDL;
+
+}
+
+//---------------------------------------------------------------------------
+Int_t AliTOFRawStream::Geant2TRM(Int_t vol[])
+{
+  //
+  // To convert:
+  //      nSector number -vol[0]- (variable in [0,17])
+  //      nPlate  number -vol[1]- (variable in [0, 5])
+  //      nStrip  number -vol[2]- (variable in [0,14/18])
+  //      nPadZ   number -vol[3]- (variable in [0, 1])
+  //      nPadX   number -vol[4]- (variable in [0,47])
+  // in:
+  //      nTRM   (variable in [3;12]) -> number of the TRM slot
+  //
+
+  Int_t nTRM = -1;
+
+  if (vol[0]<0 || vol[0]>=AliTOFGeometry::NSectors()) {
+    printf(" AliTOFRawStream - Error: the sector number (%i) is out of the range: [0,17]\n", vol[0]);
+    return nTRM;
+  }
+  if (vol[1]<0 || vol[1]>=AliTOFGeometry::NPlates()) {
+    printf(" AliTOFRawStream - Error: the module number (%i) is out of the range: [0,4]\n", vol[1]);
+    return nTRM;
+  }
+  if (vol[2]<0 || vol[2]>=AliTOFGeometry::NStrip(vol[1])) {
+    printf(" AliTOFRawStream - Error: the strip number (%i) is out of the range: [0,%i]\n", vol[2], AliTOFGeometry::NStrip(vol[1]));
+    return nTRM;
+  }
+  if (vol[3]<0 || vol[3]>=AliTOFGeometry::NpadZ()) {
+    printf(" AliTOFRawStream - Error: the padz number (%i) is out of the range: [0,1]\n", vol[3]);
+    return nTRM;
+  }
+  if (vol[4]<0 || vol[4]>=AliTOFGeometry::NpadX()) {
+    printf(" AliTOFRawStream - Error: the padx number (%i) is out of the range: [0,47]\n", vol[4]);
+    return nTRM;
+  }
+
+  if ( vol[3]>=AliTOFGeometry::NpadZ() )
+    {
+      printf("Maybe you have to invert the order between vol[3](=%i) and vol[4](=%i)\n", vol[3], vol[4]);
+      return nTRM;
+    }
+
+  Int_t nPlate  = vol[1];
+  Int_t nStrip  = vol[2];
+
+  Int_t iDDL = Geant2DDL(vol)%4;
+
+  switch (iDDL) {
+
+  case 0:
+
+    if (nPlate==0) {
+      if (nStrip<= 4) nTRM =  4;
+      else if (nStrip> 4 && nStrip<= 9) nTRM =  5;
+      else if (nStrip> 9 && nStrip<=14) nTRM =  6;
+      else if (nStrip>14) nTRM =  7;
+    }
+    else if (nPlate==1) {
+      if (nStrip== 0) nTRM =  7;
+      else if (nStrip> 0 && nStrip<= 5) nTRM =  8;
+      else if (nStrip> 5 && nStrip<=10) nTRM =  9;
+      else if (nStrip>10 && nStrip<=15) nTRM = 10;
+      else if (nStrip>15) nTRM = 11;
+    }
+    else if (nPlate==2) {
+      if (nStrip<= 1) nTRM = 11;
+      else if (nStrip> 1 && nStrip< 7) nTRM = 12;
+    }
+
+    break;
+  case 1:
+
+    if (nPlate==0) {
+      if (nStrip== 0) nTRM =  3;
+      else if (nStrip> 0 && nStrip<= 5) nTRM =  4;
+      else if (nStrip> 5 && nStrip<=10) nTRM =  5;
+      else if (nStrip>10 && nStrip<=15) nTRM =  6;
+      else if (nStrip>15) nTRM =  7;
+    }
+    else if (nPlate==1) {
+      if (nStrip<=1) nTRM = 7;
+      else if (nStrip> 1 && nStrip<= 6) nTRM =  8;
+      else if (nStrip> 6 && nStrip<=11) nTRM =  9;
+      else if (nStrip>11 && nStrip<=16) nTRM = 10;
+      else if (nStrip>16) nTRM = 11;
+    }
+    else if (nPlate==2) {
+      if (nStrip<= 2) nTRM = 11;
+      else if (nStrip> 2 && nStrip<= 7) nTRM = 12;
+    }
+
+    break;
+  case 2:
+
+    if (nPlate==4) {
+      if (nStrip>=14) nTRM =  4;
+      else if (nStrip<14 && nStrip>= 9) nTRM =  5;
+      else if (nStrip< 9 && nStrip>= 4) nTRM =  6;
+      else if (nStrip< 4) nTRM =  7;
+    }
+    else if (nPlate==3) {
+      if (nStrip==18) nTRM =  7;
+      else if (nStrip<18 && nStrip>=13) nTRM =  8;
+      else if (nStrip<13 && nStrip>= 8) nTRM =  9;
+      else if (nStrip< 8 && nStrip>= 3) nTRM = 10;
+      else if (nStrip< 3) nTRM = 11;
+    }
+    else if (nPlate==2) {
+      if (nStrip>=13) nTRM = 11;
+      else if (nStrip<13 && nStrip>= 8) nTRM = 12;
+    }
+
+    break;
+  case 3:
+
+    if (nPlate==4) {
+      if (nStrip==18) nTRM =  3;
+      else if (nStrip<18 && nStrip>=13) nTRM =  4;
+      else if (nStrip<13 && nStrip>= 8) nTRM =  5;
+      else if (nStrip< 8 && nStrip>= 3) nTRM =  6;
+      else if (nStrip< 3) nTRM =  7;
+    }
+    else if (nPlate==3) {
+      if (nStrip>=17) nTRM = 7;
+      else if (nStrip<17 && nStrip>=12) nTRM =  8;
+      else if (nStrip<12 && nStrip>= 7) nTRM =  9;
+      else if (nStrip< 7 && nStrip>= 2) nTRM = 10;
+      else if (nStrip< 2) nTRM = 11;
+    }
+    else if (nPlate==2) {
+      if (nStrip>=12) nTRM = 11;
+      else if (nStrip <12 && nStrip>= 7) nTRM = 12;
+    }
+
+    break;
+
+  }
+
+  return nTRM;
+
+}
+
+//---------------------------------------------------------------------------
+Int_t AliTOFRawStream::Geant2TDC(Int_t vol[])
+{
+  //
+  // To convert:
+  //      nSector number -vol[0]- (variable in [0,17])
+  //      nPlate  number -vol[1]- (variable in [0, 5])
+  //      nStrip  number -vol[2]- (variable in [0,14/18])
+  //      nPadZ   number -vol[3]- (variable in [0, 1])
+  //      nPadX   number -vol[4]- (variable in [0,47])
+  // in:
+  //      nTDC   (variable in [0;14]) -> number of the TDC
+  //
+
+  Int_t nTDC = -1;
+
+  if (vol[0]<0 || vol[0]>=AliTOFGeometry::NSectors()) {
+    printf(" AliTOFRawStream - Error: the sector number (%i) is out of the range: [0,17]\n", vol[0]);
+    return nTDC;
+  }
+  if (vol[1]<0 || vol[1]>=AliTOFGeometry::NPlates()) {
+    printf(" AliTOFRawStream - Error: the module number (%i) is out of the range: [0,4]\n", vol[1]);
+    return nTDC;
+  }
+  if (vol[2]<0 || vol[2]>=AliTOFGeometry::NStrip(vol[1])) {
+    printf(" AliTOFRawStream - Error: the strip number (%i) is out of the range: [0,%i]\n", vol[2], AliTOFGeometry::NStrip(vol[1]));
+    return nTDC;
+  }
+  if (vol[3]<0 || vol[3]>=AliTOFGeometry::NpadZ())
+    printf(" AliTOFRawStream - Error: the padz number (%i) is out of the range: [0,1]\n", vol[3]);
+  if (vol[4]<0 || vol[4]>=AliTOFGeometry::NpadX())
+    printf(" AliTOFRawStream - Error: the padx number (%i) is out of the range: [0,47]\n", vol[4]);
+  if ( vol[3]>=AliTOFGeometry::NpadZ() ) {
+    printf("Maybe you have to invert the order between vol[3](=%i) and vol[4](=%i)\n", vol[3], vol[4]);
+    return nTDC;
+  }
+
+  Int_t nPlate  = vol[1];
+  Int_t nStrip  = vol[2];
+  Int_t iPadX   = vol[4];
+
+  Int_t iDDL = Geant2DDL(vol)%4;
+
+  switch (iDDL) {
+
+  case 0:
+
+    if (nPlate==0) {
+      if (nStrip<= 4) nTDC = (3*(nStrip)+2-(iPadX/4)%3);
+      else if (nStrip> 4 && nStrip<= 9) nTDC = (3*(nStrip- 5)+2-(iPadX/4)%3);
+      else if (nStrip> 9 && nStrip<=14) nTDC = (3*(nStrip-10)+2-(iPadX/4)%3);
+      else if (nStrip>14) nTDC =  (3*(nStrip-15)+2-(iPadX/4)%3);
+    }
+    else if (nPlate==1) {
+      if (nStrip== 0) nTDC =  (3*(nStrip+ 4)+2-(iPadX/4)%3);
+      else if (nStrip> 0 && nStrip<= 5) nTDC = (3*(nStrip- 1)+2-(iPadX/4)%3);
+      else if (nStrip> 5 && nStrip<=10) nTDC = (3*(nStrip- 6)+2-(iPadX/4)%3);
+      else if (nStrip>10 && nStrip<=15) nTDC = (3*(nStrip-11)+2-(iPadX/4)%3);
+      else if (nStrip>15) nTDC = (3*(nStrip-16)+2-(iPadX/4)%3);
+    }
+    else if (nPlate==2) {
+      if (nStrip<= 1) nTDC = (3*(nStrip+ 3)+2-(iPadX/4)%3);
+      else if (nStrip> 1 && nStrip< 7) nTDC = (3*(nStrip- 2)+2-(iPadX/4)%3);
+    }
+
+    break;
+  case 1:
+
+    if (nPlate==0) {
+      if (nStrip== 0) nTDC = (3*(nStrip)+(iPadX/4)%3);
+      else if (nStrip> 0 && nStrip<= 5) nTDC = (3*( 5-nStrip)+(iPadX/4)%3);
+      else if (nStrip> 5 && nStrip<=10) nTDC = (3*(10-nStrip)+(iPadX/4)%3);
+      else if (nStrip>10 && nStrip<=15) nTDC = (3*(15-nStrip)+(iPadX/4)%3);
+      else if (nStrip>15) nTDC = (3*(20-nStrip)+(iPadX/4)%3);
+    }
+    else if (nPlate==1) {
+      if (nStrip<= 1) nTDC = (3*( 1-nStrip)+(iPadX/4)%3);
+      else if (nStrip> 1 && nStrip<= 6) nTDC = (3*( 6-nStrip)+(iPadX/4)%3);
+      else if (nStrip> 6 && nStrip<=11) nTDC = (3*(11-nStrip)+(iPadX/4)%3);
+      else if (nStrip>11 && nStrip<=16) nTDC = (3*(16-nStrip)+(iPadX/4)%3);
+      else if (nStrip>16) nTDC = (3*(21-nStrip)+(iPadX/4)%3);
+    }
+    else if (nPlate==2) {
+      if (nStrip<= 2) nTDC = (3*( 2-nStrip)+(iPadX/4)%3);
+      else if (nStrip> 2 && nStrip<= 7) nTDC = (3*( 7-nStrip)+(iPadX/4)%3);
+    }
+
+    break;
+  case 2:
+
+    if (nPlate==4) {
+      if (nStrip>=14) nTDC = (3*(18-nStrip)+((iPadX/4)%3));
+      else if (nStrip<14 && nStrip>= 9) nTDC = (3*(13-nStrip)+((iPadX/4)%3));
+      else if (nStrip< 9 && nStrip>= 4) nTDC = (3*( 8-nStrip)+((iPadX/4)%3));
+      else if (nStrip< 4) nTDC = (3*( 3-nStrip)+((iPadX/4)%3));
+    }
+    else if (nPlate==3) {
+      if (nStrip==18) nTDC = (3*(22-nStrip)+((iPadX/4)%3));
+      else if (nStrip<18 && nStrip>=13) nTDC = (3*(17-nStrip)+((iPadX/4)%3));
+      else if (nStrip<13 && nStrip>= 8) nTDC = (3*(12-nStrip)+((iPadX/4)%3));
+      else if (nStrip< 8 && nStrip>= 3) nTDC = (3*( 7-nStrip)+((iPadX/4)%3));
+      else if (nStrip< 3) nTDC = (3*( 2-nStrip)+((iPadX/4)%3));
+    }
+    else if (nPlate==2) {
+      if (nStrip>=13) nTDC = (3*(17-nStrip)+((iPadX/4)%3));
+      else if (nStrip<13 && nStrip>= 8) nTDC = (3*(12-nStrip)+((iPadX/4)%3));
+    }
+
+    break;
+  case 3:
+
+    if (nPlate==4) {
+      if (nStrip==18) nTDC = (3*(nStrip-18)+2-(iPadX/4)%3);
+      else if (nStrip<18 && nStrip>=13) nTDC = (3*(nStrip-13)+2-(iPadX/4)%3);
+      else if (nStrip<13 && nStrip>= 8) nTDC = (3*(nStrip- 8)+2-(iPadX/4)%3);
+      else if (nStrip< 8 && nStrip>= 3) nTDC = (3*(nStrip- 3)+2-(iPadX/4)%3);
+      else if (nStrip< 3) nTDC = (3*(nStrip+ 2)+2-(iPadX/4)%3);
+    }
+    else if (nPlate==3) {
+      if (nStrip>=17) nTDC = (3*(nStrip-17)+2-(iPadX/4)%3);
+      else if (nStrip<17 && nStrip>=12) nTDC = (3*(nStrip-12)+2-(iPadX/4)%3);
+      else if (nStrip<12 && nStrip>= 7) nTDC = (3*(nStrip- 7)+2-(iPadX/4)%3);
+      else if (nStrip< 7 && nStrip>= 2) nTDC = (3*(nStrip- 2)+2-(iPadX/4)%3);
+      else if (nStrip< 2) nTDC = (3*(nStrip+ 3)+2-(iPadX/4)%3);
+    }
+    else if (nPlate==2) {
+      if (nStrip>=12) nTDC = (3*(nStrip-12)+2-(iPadX/4)%3);
+      else if (nStrip <12 && nStrip>= 7) nTDC = (3*(nStrip- 7)+2-(iPadX/4)%3);
+    }
+
+    break;
+
+  }
+
+  return nTDC;
+
+}
+
+//---------------------------------------------------------------------------
+Int_t AliTOFRawStream::Geant2Chain(Int_t vol[])
+{
+  //
+  // To convert:
+  //      nSector number -vol[0]- (variable in [0,17])
+  //      nPlate  number -vol[1]- (variable in [0, 5])
+  //      nStrip  number -vol[2]- (variable in [0,14/18])
+  //      nPadZ   number -vol[3]- (variable in [0, 1])
+  //      nPadX   number -vol[4]- variable in [0,47])
+  // in:
+  //      nChain (variable in [0; 1]) -> number of the TRM chain
+  //
+
+  Int_t nChain = -1;
+
+  if (vol[0]<0 || vol[0]>=AliTOFGeometry::NSectors()) {
+    printf(" AliTOFRawStream - Error: the sector number (%i) is out of the range: [0,17]\n", vol[0]);
+    return nChain;
+  }
+  if (vol[1]<0 || vol[1]>=AliTOFGeometry::NPlates()) {
+    printf(" AliTOFRawStream - Error: the module number (%i) is out of the range: [0,4]\n", vol[1]);
+    return nChain;
+  }
+  if (vol[2]<0 || vol[2]>=AliTOFGeometry::NStrip(vol[1])) {
+    printf(" AliTOFRawStream - Error: the strip number (%i) is out of the range: [0,%i]\n", vol[2], AliTOFGeometry::NStrip(vol[1]));
+    return nChain;
+  }
+  if (vol[3]<0 || vol[3]>=AliTOFGeometry::NpadZ())
+    printf(" AliTOFRawStream - Error: the padz number (%i) is out of the range: [0,1]\n", vol[3]);
+  if (vol[4]<0 || vol[4]>=AliTOFGeometry::NpadX())
+    printf(" AliTOFRawStream - Error: the padx number (%i) is out of the range: [0,47]\n", vol[4]);
+  if ( vol[3]>=AliTOFGeometry::NpadZ() ) {
+    printf("Maybe you have to invert the order between vol[3](=%i) and vol[4](=%i)\n", vol[3], vol[4]);
+    return nChain;
+  }
+
+  Int_t iPadX = vol[4];
+
+  if (iPadX<12 || iPadX>=36) nChain = 0;
+  else nChain = 1;
+
+  return nChain;
+
+}
+
+//---------------------------------------------------------------------------
+Int_t AliTOFRawStream::Geant2Channel(Int_t vol[])
+{
+  //
+  // To convert:
+  //      nSector number -vol[0]- (variable in [0,17])
+  //      nPlate  number -vol[1]- (variable in [0, 5])
+  //      nStrip  number -vol[2]- (variable in [0,14/18])
+  //      nPadZ   number -vol[3]- (variable in [0, 1])
+  //      nPadX   number -vol[4]- (variable in [0,47])
+  // in:
+  //      nChannel (variable in [0; 7]) -> number of the TDC channel
+  //
+
+  Int_t nChannel = -1;
+
+  if (vol[0]<0 || vol[0]>=AliTOFGeometry::NSectors()) {
+    printf(" AliTOFRawStream - Error: the sector number (%i) is out of the range: [0,17]\n", vol[0]);
+    return nChannel;
+  }
+  if (vol[1]<0 || vol[1]>=AliTOFGeometry::NPlates()) {
+    printf(" AliTOFRawStream - Error: the module number (%i) is out of the range: [0,4]\n", vol[1]);
+    return nChannel;
+  }
+  if (vol[2]<0 || vol[2]>=AliTOFGeometry::NStrip(vol[1])) {
+    printf(" AliTOFRawStream - Error: the strip number (%i) is out of the range: [0,%i]\n", vol[2], AliTOFGeometry::NStrip(vol[1]));
+    return nChannel;
+  }
+  if (vol[3]<0 || vol[3]>=AliTOFGeometry::NpadZ())
+    printf(" AliTOFRawStream - Error: the padz number (%i) is out of the range: [0,1]\n", vol[3]);
+  if (vol[4]<0 || vol[4]>=AliTOFGeometry::NpadX())
+    printf(" AliTOFRawStream - Error: the padx number (%i) is out of the range: [0,47]\n", vol[4]);
+  if ( vol[3]>=AliTOFGeometry::NpadZ() ) {
+    printf("Maybe you have to invert the order between vol[3](=%i) and vol[4](=%i)\n", vol[3], vol[4]);
+    return nChannel;
+  }
+
+  Int_t iPadZ   = vol[3];
+  Int_t iPadX   = vol[4];
+
+  Int_t iDDL = Geant2DDL(vol)%4;
+
+  switch (iDDL) {
+
+  case 0:
+    nChannel = ((2*(23-iPadX) + (1-iPadZ)))%8;
+    break;
+  case 1:
+    nChannel = ((2*(iPadX-24) + (iPadZ)))%8;
+    break;
+  case 2:
+    nChannel = ((2*(iPadX-24) + (iPadZ)))%8;
+    break;
+  case 3:
+    nChannel = ((2*(23-iPadX) + (1-iPadZ)))%8;
+    break;
+  }
+
+  return nChannel;
+
+}

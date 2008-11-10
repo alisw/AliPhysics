@@ -451,8 +451,15 @@ class AliTOFRawStream: public TObject {
   static Int_t Equip2VolNpad(Int_t iDDL, Int_t iChain, Int_t nTDC, Int_t iCH);
   static Int_t Equip2VolNpadX(Int_t iDDL, Int_t iChain, Int_t nTDC, Int_t iCH);
   static Int_t Equip2VolNpadZ(Int_t iDDL, Int_t iChain, Int_t nTDC, Int_t iCH);
-  Int_t GetDDLnumberPerSector(Int_t nDDL) const;
-  Int_t GetSectorNumber(Int_t nDDL) const;
+  static Int_t GetDDLnumberPerSector(Int_t nDDL);
+  static Int_t GetSectorNumber(Int_t nDDL);
+
+  static Int_t Geant2DDL(Int_t vol[]);
+  static Int_t Geant2TRM(Int_t vol[]);
+  static Int_t Geant2TDC(Int_t vol[]);
+  static Int_t Geant2Chain(Int_t vol[]);
+  static Int_t Geant2Channel(Int_t vol[]);
+  static void  Geant2EquipmentId(Int_t vol[], Int_t eqId[]);
 
   Bool_t DecodeDDL(Int_t DDLMin, Int_t DDLMax, Int_t verbose);
   Bool_t Decode(Int_t verbose);
