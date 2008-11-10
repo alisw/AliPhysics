@@ -680,6 +680,16 @@ class AliHLTComponent : public AliHLTLogging {
    */
   int SetStopwatches(TObjArray* pStopwatches);
 
+  /**
+   * Get size of last serialized object.
+   * During PushBack, TObjects are serialized in a separate buffer. The
+   * size of the last object can be retrieved by this function.
+   *
+   * This might be especially useful for PushBack failures caused by too
+   * small output buffer.
+   */
+  int GetLastObjectSize() const {return fLastObjectSize;}
+
  protected:
 
   /**
@@ -1464,6 +1474,9 @@ class AliHLTComponent : public AliHLTLogging {
   /** Comression level for ROOT objects */
   int fCompressionLevel;                                           //! transient
 
-  ClassDef(AliHLTComponent, 9)
+  /** size of last PushBack-serialized object */
+  int fLastObjectSize;                                             //! transient
+
+  ClassDef(AliHLTComponent, 10)
 };
 #endif

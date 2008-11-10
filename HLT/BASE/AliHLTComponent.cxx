@@ -88,6 +88,7 @@ AliHLTComponent::AliHLTComponent()
   fEventDoneData(NULL),
   fEventDoneDataSize(0),
   fCompressionLevel(ALIHLTCOMPONENT_DEFAULT_OBJECT_COMPRESSION)
+  , fLastObjectSize(0)
 {
   // see header file for class documentation
   // or
@@ -1079,6 +1080,7 @@ int AliHLTComponent::PushBack(TObject* pObject, const AliHLTComponentDataType& d
   // see header file for function documentation
   ALIHLTCOMPONENT_BASE_STOPWATCH();
   int iResult=0;
+  fLastObjectSize=0;
   if (pObject) {
     AliHLTMessage msg(kMESS_OBJECT);
     msg.SetCompressionLevel(fCompressionLevel);
@@ -1108,6 +1110,7 @@ int AliHLTComponent::PushBack(TObject* pObject, const AliHLTComponentDataType& d
       if (iResult>=0) {
 	HLTDebug("object %s (%p) size %d compression %d inserted to output", pObject->ClassName(), pObject, iMsgLength, msg.GetCompressionLevel());
       }
+      fLastObjectSize=iMsgLength;
     } else {
       HLTError("object serialization failed for object %p", pObject);
       iResult=-ENOMSG;
@@ -1176,7 +1179,7 @@ int AliHLTComponent::InsertOutputBlock(const void* pBuffer, int iBufferSize, con
       //HLTDebug("buffer inserted to output: size %d data type %s spec %#x", iBlkSize, DataType2Text(dt).c_str(), spec);
     } else {
       if (fpOutputBuffer) {
-	HLTError("too little space in output buffer: %d, required %d", fOutputBufferSize-fOutputBufferFilled, iBlkSize);
+	HLTError("too little space in output buffer: %d of %d, required %d", fOutputBufferSize-fOutputBufferFilled, fOutputBufferSize, iBlkSize);
       } else {
 	HLTError("output buffer not available");
       }
