@@ -48,7 +48,8 @@ AliHLTPHOSProcessor::CheckFileLog(const char *origin,   const char *filename,  c
 
   if(fp == 0)
     {
-      if( (opt == "w")  || (opt == "a"))
+      //      if( (opt == "w")  || (opt == "a")) \\OD
+      if( (!strcmp(opt,"w"))  || (!strcmp(opt,"a")))
 	{
 	  sprintf(fMessage, "for writing  please check that the directory exists and that you have write access to it"  );
 	}
@@ -61,7 +62,8 @@ AliHLTPHOSProcessor::CheckFileLog(const char *origin,   const char *filename,  c
     }
   else
     {
-      if( (opt == "w")  || (opt == "a"))
+      //      if( (opt == "w")  || (opt == "a")) \\OD
+      if( (!strcmp(opt,"w"))  || (!strcmp(opt,"a")))
 	{
 	  sprintf(fMessage, "for writing" );
 	}
@@ -97,11 +99,11 @@ AliHLTPHOSProcessor::ScanRunNumberFromFile()
  
   
   sprintf(tmpFileName, "%s%s", tmpDirectory, "/hlt/rundir/runNumber.txt");
- 
+  int tmp = 0;
   if(CheckFileLog( __FILE__ , tmpFileName , "r")== true) 
     { 
       FILE *fp = fopen(tmpFileName, "r");
-      fscanf(fp, "%d", &fRunNumber);
+      tmp = fscanf(fp, "%d", &fRunNumber);
       fclose(fp);
     }
 

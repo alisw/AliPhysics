@@ -35,7 +35,6 @@
 #include "AliHLTPHOSDigitDataStruct.h"
 #include "AliHLTPHOSDigitContainerDataStruct.h"
 #include "TClonesArray.h"
-#include "AliPHOSGeometry.h"
 #include "AliPHOSDigit.h"
 #ifndef HAVE_NOT_PHOSRECOPARAMEMC // set from configure if EMC functionality not available in AliPHOSRecoParam
 #include "AliPHOSRecoParam.h"
@@ -50,27 +49,19 @@ ClassImp(AliHLTPHOSClusterizer);
 
 AliHLTPHOSClusterizer::AliHLTPHOSClusterizer():
   AliHLTPHOSBase(),
+  fRecPointDataPtr(0),
+  fDigitDataPtr(0),
   fEmcClusteringThreshold(0),
   fEmcMinEnergyThreshold(0),
   fEmcTimeGate(0),
-  fLogWeight(0),
   fDigitsInCluster(0),
-  fOnlineMode(true),
-  fDigitArrayPtr(0),
-  fEmcRecPointsPtr(0),
-  fDigitPtr(0),
   fDigitContainerPtr(0),
-  fRecPointContainerPtr(0),
-  fPHOSGeometry(0),
-  fGetterPtr(0),
   fMaxDigitIndexDiff(2*N_ZROWS_MOD)
-  {
+{
   //See header file for documentation
-  fPHOSGeometry = AliPHOSGeometry::GetInstance("noCPV");
   fEmcClusteringThreshold = 0.2;
   fEmcMinEnergyThreshold = 0.03;
   fEmcTimeGate = 1.e-6 ;
-  fLogWeight = 4.5;
 }//end
 
 
@@ -80,14 +71,13 @@ AliHLTPHOSClusterizer::~AliHLTPHOSClusterizer()
 }
 
 void 
-AliHLTPHOSClusterizer::SetRecPointContainer(AliHLTPHOSRecPointContainerStruct* recPointContainerPtr)
-  { 
-    fRecPointContainerPtr = recPointContainerPtr; 
-    fRecPointContainerPtr->fNRecPoints = 0;
-  }
+AliHLTPHOSClusterizer::SetRecPointDataPtr(AliHLTPHOSRecPointDataStruct* recPointDataPtr)
+{
+  fRecPointDataPtr = recPointDataPtr;
+}
 
 void
-AliHLTPHOSClusterizer::SetRecoParameters(AliPHOSRecoParam* /*params*/)
+AliHLTPHOSClusterizer::SetRecoParameters(AliPHOSRecoParam* params)
 {
   //see header file for documentation
 #ifndef HAVE_NOT_PHOSRECOPARAMEMC // set from configure if EMC functionality not available in AliPHOSRecoParam
@@ -95,6 +85,8 @@ AliHLTPHOSClusterizer::SetRecoParameters(AliPHOSRecoParam* /*params*/)
   //  fEmcClusteringThreshold = params->GetEMCClusteringThreshold();
   // fEmcMinEnergyThreshold = params->GetEMCMinE();
   //  fLogWeight = params->GetEMCLogWeight();
+  params++;
+  params--;
 #else
   fEmcClusteringThreshold = params->GetClusteringThreshold();
   fEmcMinEnergyThreshold = params->GetMinE();
@@ -103,64 +95,86 @@ AliHLTPHOSClusterizer::SetRecoParameters(AliPHOSRecoParam* /*params*/)
 }  
 
 Int_t 
-AliHLTPHOSClusterizer::ClusterizeEvent()
+AliHLTPHOSClusterizer::ClusterizeEvent(UInt_t availableSize, UInt_t& totSize)
 {
   //see header file for documentation
   Int_t nRecPoints = 0;
-  UInt_t i = 0;
-  AliHLTPHOSRecPointDataStruct *recPoint = 0;
+
+  UInt_t maxRecPointSize = sizeof(AliHLTPHOSRecPointDataStruct) + (sizeof(AliHLTPHOSDigitDataStruct) << 7); //Reasonable estimate... 
+
   //Clusterization starts
-  for(i = 0; i < fDigitContainerPtr->fNDigits; i++)
+  for(UInt_t i = 0; i < fDigitContainerPtr->fNDigits; i++)
     { 
       fDigitsInCluster = 0;
-     
+      
       if(fDigitContainerPtr->fDigitDataStruct[i].fEnergy < fEmcClusteringThreshold)
 	{
 	  continue;
 	}
-      recPoint = &(fRecPointContainerPtr->fRecPointArray[nRecPoints]);
-      recPoint->fAmp = 0;
-      recPoint->fModule = fDigitContainerPtr->fDigitDataStruct[i].fModule;
-      recPoint->fDigitsList[fDigitsInCluster] =  fDigitContainerPtr->fDigitDataStruct[i];
-      recPoint->fAmp += fDigitContainerPtr->fDigitDataStruct[i].fEnergy;
+      if(availableSize < (totSize + maxRecPointSize)) 
+	{
+	  return -1; //Might get out of buffer, exiting
+	}
+
+      // First digit is placed at the fDigits member variable in the recpoint
+      fDigitDataPtr = &(fRecPointDataPtr->fDigits);
+
+      fRecPointDataPtr->fAmp = 0;
+      fRecPointDataPtr->fModule = fDigitContainerPtr->fDigitDataStruct[i].fModule;
+      // Assigning digit data to the digit pointer
+      fRecPointDataPtr->fDigits = fDigitContainerPtr->fDigitDataStruct[i];
+
+      // Incrementing the pointer to be ready for new entry
+      fDigitDataPtr++;
+
+      fRecPointDataPtr->fAmp += fDigitContainerPtr->fDigitDataStruct[i].fEnergy;
       fDigitContainerPtr->fDigitDataStruct[i].fEnergy = 0;
       fDigitsInCluster++;
       nRecPoints++;
-      if(nRecPoints == 100) 
-	{
-	  //	  HLTWarning("Too many rec points in event. Aborting clusterisation");
-	  break;
-	}
-      ScanForNeighbourDigits(i, recPoint);
-      recPoint->fMultiplicity = fDigitsInCluster;
-     
+
+      // Scanning for the neighbours
+      ScanForNeighbourDigits(i, fRecPointDataPtr);
+
+      totSize += sizeof(AliHLTPHOSRecPointDataStruct) + (fDigitsInCluster-1)*sizeof(AliHLTPHOSDigitDataStruct);   
+      fRecPointDataPtr->fMultiplicity = fDigitsInCluster;     
+
+      fRecPointDataPtr = reinterpret_cast<AliHLTPHOSRecPointDataStruct*>(fDigitDataPtr);
     }//end of clusterization
-  fRecPointContainerPtr->fNRecPoints = nRecPoints;
-  return nRecPoints;
+
+   return nRecPoints;
 }
 
 void
 AliHLTPHOSClusterizer::ScanForNeighbourDigits(Int_t index, AliHLTPHOSRecPointDataStruct* recPoint)
-
 {
   //see header file for documentation
-  UInt_t max = TMath::Min((Int_t)fDigitContainerPtr->fNDigits, (Int_t)fMaxDigitIndexDiff+index);
-  UInt_t min = TMath::Max(0, (Int_t)(index - (Int_t)fMaxDigitIndexDiff));
-  for(UInt_t j = min; j < max; j++)
+  Int_t max = TMath::Min((Int_t)fDigitContainerPtr->fNDigits, (Int_t)fMaxDigitIndexDiff+index);
+  Int_t min = TMath::Max(0, (Int_t)(index - (Int_t)fMaxDigitIndexDiff));
+
+  max = fDigitContainerPtr->fNDigits;
+  min = 0;
+  for(Int_t j = min; j < max; j++)
     {
       if(fDigitContainerPtr->fDigitDataStruct[j].fEnergy > fEmcMinEnergyThreshold)
 	{
-	  if(AreNeighbours(&(fDigitContainerPtr->fDigitDataStruct[index]),
-			       &(fDigitContainerPtr->fDigitDataStruct[j])))
+	  if(j != index)
 	    {
-	      recPoint->fDigitsList[fDigitsInCluster] =  fDigitContainerPtr->fDigitDataStruct[j];
-	      recPoint->fAmp += fDigitContainerPtr->fDigitDataStruct[j].fEnergy;
-	      fDigitContainerPtr->fDigitDataStruct[j].fEnergy = 0;	      
-	      fDigitsInCluster++;
-	      ScanForNeighbourDigits(j, recPoint);
+	      if(AreNeighbours(&(fDigitContainerPtr->fDigitDataStruct[index]),
+			       &(fDigitContainerPtr->fDigitDataStruct[j])))
+		{
+		  // Assigning value to digit ptr
+		  *fDigitDataPtr = fDigitContainerPtr->fDigitDataStruct[j];
+		  // Incrementing digit pointer to be ready for new entry
+		  fDigitDataPtr++;
+
+		  recPoint->fAmp += fDigitContainerPtr->fDigitDataStruct[j].fEnergy;
+		  fDigitContainerPtr->fDigitDataStruct[j].fEnergy = 0;	      
+		  fDigitsInCluster++;
+		  ScanForNeighbourDigits(j, recPoint);
+		}
 	    }
 	}
-    } 
+    }
   return;
 }
 

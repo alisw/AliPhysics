@@ -16,12 +16,18 @@ class AliHLTPHOSPattern : public AliHLTPHOSBase
  public:
   AliHLTPHOSPattern(const int *pattern, const int length);
   ~AliHLTPHOSPattern();
-  const int AddPattern(const int *readbackpattern,  const int nsamples =  ALTRO_MAX_SAMPLES, const int nPresamples = 0);
-  const bool CheckDoExistPattern(const int *readbackpattern,  const int nsamples =  ALTRO_MAX_SAMPLES, const int nPresamples = 0);
-  const AliHLTPHOSPattern *GetNextPtr() const {return fPattern;}; 
-  const int  GetPattern(int *pattern,  const int maxlengths =  ALTRO_MAX_SAMPLES) const;
-  const int GetPatternLength() const {return  fPatternLength;};
-  const int ValidatePattern(const int *readbackpattern,  const int nsamples =  ALTRO_MAX_SAMPLES, const int nPresamples = 0) const;
+//   const int AddPattern(const int *readbackpattern,  const int nsamples =  ALTRO_MAX_SAMPLES, const int nPresamples = 0);
+//   const bool CheckDoExistPattern(const int *readbackpattern,  const int nsamples =  ALTRO_MAX_SAMPLES, const int nPresamples = 0);
+//   const AliHLTPHOSPattern *GetNextPtr() const {return fPattern;}; 
+//   const int  GetPattern(int *pattern,  const int maxlengths =  ALTRO_MAX_SAMPLES) const;
+//   const int GetPatternLength() const {return  fPatternLength;};
+//   const int ValidatePattern(const int *readbackpattern,  const int nsamples =  ALTRO_MAX_SAMPLES, const int nPresamples = 0) const;
+  int AddPattern(const int *readbackpattern,  const int nsamples =  ALTRO_MAX_SAMPLES, const int nPresamples = 0);
+  bool CheckDoExistPattern(const int *readbackpattern,  const int nsamples =  ALTRO_MAX_SAMPLES, const int nPresamples = 0);
+  AliHLTPHOSPattern *GetNextPtr() const {return fPattern;}; 
+  int  GetPattern(int *pattern,  const int maxlengths =  ALTRO_MAX_SAMPLES) const;
+  int GetPatternLength() const {return  fPatternLength;};
+  int ValidatePattern(const int *readbackpattern,  const int nsamples =  ALTRO_MAX_SAMPLES, const int nPresamples = 0) const;
   void PrintPattern(const int nPerLine = ALTRO_MAX_SAMPLES);
  
  
@@ -30,8 +36,10 @@ class AliHLTPHOSPattern : public AliHLTPHOSBase
   AliHLTPHOSPattern & operator = (const AliHLTPHOSPattern &); 
   AliHLTPHOSPattern();
 
-  const int DoComparePattern(const int *inputPattern1, const int *inputPattern2, const int nsamples) const;
-  const bool CheckPatternLength(const int nsamples, const int nPresamples) const;
+  // const int DoComparePattern(const int *inputPattern1, const int *inputPattern2, const int nsamples) const;
+//   const bool CheckPatternLength(const int nsamples, const int nPresamples) const;
+  int DoComparePattern(const int *inputPattern1, const int *inputPattern2, const int nsamples) const;
+  bool CheckPatternLength(const int nsamples, const int nPresamples) const;
   void SetPattern(const int *pattern, const int length);
   int fVal[ALTRO_MAX_SAMPLES];
   int fPatternLength;

@@ -32,10 +32,7 @@
 // or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
-//struct AliHLTPHOSDigitDataStruct;
 #include "AliHLTPHOSDigitDataStruct.h"
-//#include "AliHLTTypes.h"
-
 
 /**
  * @struct AliHLTPHOSRecPointDataStruct
@@ -80,8 +77,8 @@ struct AliHLTPHOSRecPointDataStruct
   /** Distance to nearest bad channel */
   Float_t fDistanceToBadChannel;              //COMMENT
 
-  /** Array of digits in the rec point */
-  AliHLTPHOSDigitDataStruct fDigitsList[256];  //COMMENT
+  /** Digits in the rec point */
+  AliHLTPHOSDigitDataStruct fDigits;          //COMMENT
 
 };
 

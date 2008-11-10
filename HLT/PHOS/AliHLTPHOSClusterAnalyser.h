@@ -34,9 +34,9 @@
 #include "AliHLTPHOSBase.h"
 
 class AliHLTPHOSPhysicsAnalyzer;
-class AliHLTPHOSRecPointContainerStruct;
+class AliHLTPHOSRecPointHeaderStruct;
 class AliHLTPHOSRecPointDataStruct;
-class AliHLTPHOSCaloClusterContainerStruct;
+class AliHLTPHOSCaloClusterHeaderStruct;
 class AliHLTPHOSCaloClusterDataStruct;
 class AliPHOSGeometry;
 
@@ -62,8 +62,10 @@ public:
   AliHLTPHOSClusterAnalyser(const AliHLTPHOSClusterAnalyser &) : 
     AliHLTPHOSBase(),
     fLogWeight(0),
-    fRecPointsPtr(0),
-    fCaloClustersPtr(0),
+    fRecPointDataPtr(0),
+    fNRecPoints(0),
+    fCaloClusterDataPtr(0),
+    fCaloClusterHeaderPtr(0),
     fPHOSGeometry(0),
     fAnalyzerPtr(0),
     fDoClusterFit(false),
@@ -83,16 +85,17 @@ public:
     }
   
   /**
-   * Set the rec point container
-   * @param recPointContainerPtr is a pointer to the rec points
+   * Set the rec point data buffer
+   * @param recPointDataPtr is a pointer to the rec points
    */
-  void SetRecPointContainer(AliHLTPHOSRecPointContainerStruct *recPointContainerPtr) { fRecPointsPtr = recPointContainerPtr; }
+  void SetRecPointDataPtr(AliHLTPHOSRecPointHeaderStruct *recPointDataPtr);
+
 
   /** 
-   * Set the calo cluster container
-   * @param caloClusterContainerPtr is a pointer to the calo clusters
+   * Set the calo cluster output buffer
+   * @param caloClusterDataPtr is a pointer to the calo cluster buffer
    */
-  void SetCaloClusterContainer(AliHLTPHOSCaloClusterContainerStruct *caloClusterContainerPtr);
+  void SetCaloClusterDataPtr(AliHLTPHOSCaloClusterDataStruct *caloClusterDataPtr);
 
   /** 
    * Calculates the center of gravity for the reconstruction points in the container
@@ -122,7 +125,7 @@ public:
    * Convert the rec points into calo clusters
    * @return
    */
-  Int_t CreateClusters();
+  Int_t CreateClusters(UInt_t availableSize, UInt_t& totSize);
 
   /**
    * Fit a cluster
@@ -177,11 +180,17 @@ private:
   /** Used for calculation of center of gravity */
   Float_t fLogWeight;                                       //COMMENT
   
-  /** Pointer to the rec point container */
-  AliHLTPHOSRecPointContainerStruct *fRecPointsPtr;         //! transient
+  /** Pointer to the rec points */
+  AliHLTPHOSRecPointDataStruct *fRecPointDataPtr;         //! transient
 
-  /** Pointer to the cluster container */
-  AliHLTPHOSCaloClusterContainerStruct *fCaloClustersPtr;   //! transient
+  /** Number of rec points */
+  Int_t fNRecPoints;                                      //COMMENT
+
+  /** Pointer to the cluster buffer */
+  AliHLTPHOSCaloClusterDataStruct *fCaloClusterDataPtr;   //! transient
+
+  /** Pointer to the cluster header */
+  AliHLTPHOSCaloClusterHeaderStruct *fCaloClusterHeaderPtr;   //! transient
 
   /** Instance of the PHOS geometry */
   AliPHOSGeometry *fPHOSGeometry;                           //! transient

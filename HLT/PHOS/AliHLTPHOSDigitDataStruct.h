@@ -32,8 +32,6 @@
 // or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
-#include "AliHLTPHOSBase.h"
-
 /**
  * @struct AliHLTPHOSDigitDataStruct
  * Digit struct for PHOS HLT

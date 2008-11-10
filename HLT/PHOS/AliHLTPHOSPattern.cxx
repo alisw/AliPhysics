@@ -50,7 +50,7 @@ AliHLTPHOSPattern::~AliHLTPHOSPattern()
  * @retrun the number of samples that mismatch, zero fo a complete macth, or -1 if the comparison
  * could not be done due to an incorrect input (wrong number of samples and/or presamples)
 */
-const int 
+int 
 AliHLTPHOSPattern::ValidatePattern(const int *readbackpattern, const int nSamples, const int nPresamples) const
 {
   int iRet = 0;
@@ -69,7 +69,7 @@ AliHLTPHOSPattern::ValidatePattern(const int *readbackpattern, const int nSample
 }
 
 
-const int 
+int 
 AliHLTPHOSPattern::AddPattern(const int *readbackpattern,  const int nSamples, const int nPresamples)
 {
   int iRet = ValidatePattern(readbackpattern, nSamples, nPresamples);
@@ -94,7 +94,7 @@ AliHLTPHOSPattern::AddPattern(const int *readbackpattern,  const int nSamples, c
 }
 
 
-const bool 
+bool 
 AliHLTPHOSPattern::CheckDoExistPattern(const int *readbackpattern,  const int nSamples, const int nPresamples)
 {
   bool iRet = false;
@@ -112,7 +112,7 @@ AliHLTPHOSPattern::CheckDoExistPattern(const int *readbackpattern,  const int nS
 }
 
 
-const int 
+int 
 AliHLTPHOSPattern::DoComparePattern(const int *pattern1, const int *pattern2, const int length) const
 {
   int nomatch = 0;
@@ -128,7 +128,7 @@ AliHLTPHOSPattern::DoComparePattern(const int *pattern1, const int *pattern2, co
 }
 
 
-const bool 
+bool 
 AliHLTPHOSPattern::CheckPatternLength(const int nSamples, const int nPresamples) const
 {
   bool iRet = true;
@@ -181,7 +181,7 @@ AliHLTPHOSPattern::SetPattern(const int *pattern, const int length)
  * @return the number of samples actually filled, retruns the smalles value of maxlength and
  * and the length of the pattern array
  */
-const int  
+int  
 AliHLTPHOSPattern::GetPattern(int *pattern,  const int maxlength) const
 {
   int tmplength = 0;

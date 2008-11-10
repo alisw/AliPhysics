@@ -26,10 +26,14 @@ class AliHLTPHOSRcuAltroPatternTest : public AliHLTPHOSBase
  public:
   AliHLTPHOSRcuAltroPatternTest(const AliHLTUInt8_t moduleID, const AliHLTUInt8_t rcuX, const AliHLTUInt8_t rcuZ, const int *pattern, const int length);
   virtual ~AliHLTPHOSRcuAltroPatternTest();
-  const int ValidateAltroPattern(const int *inputPattern,  const int length =  ALTRO_MAX_SAMPLES, const int presamples = 0) const;
-  const int AddPattern(const int *inputPattern,  const int z, const int x, const int gain, const int length =  ALTRO_MAX_SAMPLES, const int presamples = 0); 
-  const int countPatterns(const AliHLTPHOSPattern *pattern) const;
-  const int countAllPatterns(const int length, const bool printpatterns = true);
+//   const int ValidateAltroPattern(const int *inputPattern,  const int length =  ALTRO_MAX_SAMPLES, const int presamples = 0) const;
+//   const int AddPattern(const int *inputPattern,  const int z, const int x, const int gain, const int length =  ALTRO_MAX_SAMPLES, const int presamples = 0); 
+//   const int countPatterns(const AliHLTPHOSPattern *pattern) const;
+//   const int countAllPatterns(const int length, const bool printpatterns = true);
+  int ValidateAltroPattern(const int *inputPattern,  const int length =  ALTRO_MAX_SAMPLES, const int presamples = 0) const;
+  int AddPattern(const int *inputPattern,  const int z, const int x, const int gain, const int length =  ALTRO_MAX_SAMPLES, const int presamples = 0); 
+  int countPatterns(const AliHLTPHOSPattern *pattern) const;
+  int countAllPatterns(const int length, const bool printpatterns = true);
   void PrintStatistics() const;
  
  //  void PrintPatterns(const AliHLTPHOSPattern *pattern) const;

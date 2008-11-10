@@ -33,8 +33,7 @@
 
 #include "AliHLTPHOSProcessor.h"
 
-class AliHLTPHOSCaloClusterContainerStruct;
-
+class AliHLTPHOSCaloClusterHeaderStruct;
 
 /**
  * @class AliHLTPHOSMonitorTriggerComponent
@@ -61,7 +60,9 @@ class AliHLTPHOSMonitorTriggerComponent: public AliHLTPHOSProcessor
     fMultiplicityThreshold(5),
     fMultEnergyThreshold(0.5),
     fDigitMultiplicityThreshold(16),
-    fMultDigitMultiplicityThreshold(9)
+    fMultDigitMultiplicityThreshold(9),
+    fLowerCentrality(0),
+    fUpperCentrality(0)
   {
     //Copy constructor not implemented
   }
@@ -103,7 +104,7 @@ protected:
   /** interface function, see @ref AliHLTComponent for description */
   int Deinit();
   
-  Bool_t CheckClusters(AliHLTPHOSCaloClusterContainerStruct* clusterContainer);
+  Bool_t CheckClusters(AliHLTPHOSCaloClusterHeaderStruct* clusterHeader);
 
 private:
   
@@ -115,7 +116,14 @@ private:
   Float_t fMultEnergyThreshold; //COMMENT
   UInt_t fDigitMultiplicityThreshold; //COMMENT
   UInt_t fMultDigitMultiplicityThreshold; //COMMENT
-    
+
+  Float_t fLowerCentrality; //COMMENT
+  Float_t fUpperCentrality; //COMMENT
+  
+
+  /** interface function, see @ref AliHLTComponent for description */
+  static const AliHLTComponentDataType fgkInputDataTypes[];     //COMMENT  
+  
 
 };
 

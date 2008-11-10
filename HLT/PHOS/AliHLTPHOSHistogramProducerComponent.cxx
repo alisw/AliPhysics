@@ -60,7 +60,7 @@ int
 AliHLTPHOSHistogramProducerComponent::Deinit()
 { 
   //see header file for documentation
-  return kTRUE;
+  return 0;
 }
 
 const char*
@@ -108,13 +108,13 @@ AliHLTPHOSHistogramProducerComponent::GetOutputDataSize(unsigned long& constBase
 
 int 
 AliHLTPHOSHistogramProducerComponent::DoEvent(const AliHLTComponentEventData& /*evtData*/,
-			 AliHLTComponentTriggerData& /*trigData*/)
+					      AliHLTComponentTriggerData& /*trigData*/)
 
 
 {
   //see header file for documentation
 
-  //UInt_t specification = 0;
+  //  UInt_t specification = 0;
 
   //  AliHLTPHOSCaloClusterContainerStruct* tmpClusters = 0;
 

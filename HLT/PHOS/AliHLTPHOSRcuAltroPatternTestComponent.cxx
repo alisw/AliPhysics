@@ -259,7 +259,7 @@ AliHLTPHOSRcuAltroPatternTestComponent::DoInit(int argc, const char** argv )
 	    }
 	  else
 	    {
-	      sprintf(patternFilename, argv[i+1]);
+	      sprintf(patternFilename, "%s", argv[i+1]);
 	      isSetPartternArg = true;
 	    }
 	}
@@ -308,10 +308,10 @@ AliHLTPHOSRcuAltroPatternTestComponent::ScanPatternFromFile(const char *filename
 
   //  int tmpPattern[ALTRO_MAX_SAMPLES];
   int dummy = 0;
-
+  int res = 0;
   for(int i=0; i<ALTRO_MAX_SAMPLES; i++)
     {
-      fscanf(fp,"w 0x%X 0x%X\n", &dummy, &pattern[i]);
+       res = fscanf(fp,"w 0x%X 0x%X\n", &dummy, &pattern[i]);
       //      cout << tmpPattern[i] << endl;
     }
 

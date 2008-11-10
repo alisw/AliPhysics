@@ -278,6 +278,7 @@ AliHLTPHOSRcuCalibrationProcessor::WriteAllHistograms(char *opt)
   sprintf(runNumberFile, "%s/rundir/runNumber.txt", getenv("HOME"));
 
   FILE *fp = fopen(runNumberFile, "r");
+  Int_t res = 0; //OD to get rid of warnings
   if(fp == 0)
     {
       ScanTimeString(timeString);  
@@ -289,7 +290,7 @@ AliHLTPHOSRcuCalibrationProcessor::WriteAllHistograms(char *opt)
     } 
   else
     {
-      fscanf(fp, "%d", &runNumber);
+      res = fscanf(fp, "%d", &runNumber);
       sprintf(tmpEFileName, "%s/Energy/EnergyHisttograms_run%d_mod%d_rcuZ%d_rcuX%d.root", fHistoOutDir, runNumber, (int)fModuleID, (int)fRcuZ, (int)fRcuX);
       sprintf(tmpDeadFileName_gain0, "%s/DeadMap/DeadChannleHistograms_run%d_mod%d_rcuZ%d_rcuX%d_LG.root", fHistoOutDir, runNumber, (int)fModuleID, (int)fRcuZ, (int)fRcuX);
       sprintf(tmpDeadFileName_gain1, "%s/DeadMap/DeadChannleHistograms_run%d_mod%d_rcuZ%d_rcuX%d_HG.root", fHistoOutDir, runNumber, (int)fModuleID, (int)fRcuZ, (int)fRcuX);

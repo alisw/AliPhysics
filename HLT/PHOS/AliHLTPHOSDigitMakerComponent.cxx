@@ -18,8 +18,9 @@
 #include "TTree.h"
 #include "AliHLTPHOSProcessor.h"
 #include "AliHLTPHOSRcuCellEnergyDataStruct.h"
-#include "AliHLTPHOSDigitContainerDataStruct.h"
+#include "AliHLTPHOSDigitDataStruct.h"
 #include "AliHLTPHOSChannelDataHeaderStruct.h"
+#include "AliHLTPHOSChannelDataStruct.h"
 #include "TClonesArray.h"
 #include "TFile.h"
 #include <sys/stat.h>
@@ -52,6 +53,7 @@ AliHLTPHOSDigitMakerComponent::AliHLTPHOSDigitMakerComponent() :
 {
   //see header file for documentation
 }
+
 
 AliHLTPHOSDigitMakerComponent::~AliHLTPHOSDigitMakerComponent()
 {
@@ -104,8 +106,8 @@ void
 AliHLTPHOSDigitMakerComponent::GetOutputDataSize(unsigned long& constBase, double& inputMultiplier)
 {
   //see header file for documentation
-  constBase = sizeof(AliHLTPHOSDigitContainerDataStruct);
-  inputMultiplier = 1;
+  constBase = 0;
+  inputMultiplier = (float)sizeof(AliHLTPHOSDigitDataStruct)/sizeof(AliHLTPHOSChannelDataStruct) + 1;
 }
 
 int 
@@ -117,7 +119,8 @@ AliHLTPHOSDigitMakerComponent::DoEvent(const AliHLTComponentEventData& evtData, 
   UInt_t tSize            = 0;
   UInt_t offset           = 0; 
   UInt_t mysize           = 0;
-  Int_t digitCount = 0;
+  Int_t digitCount        = 0;
+  Int_t ret               = 0;
 
   AliHLTUInt8_t* outBPtr;
   outBPtr = outputPtr;
@@ -127,7 +130,7 @@ AliHLTPHOSDigitMakerComponent::DoEvent(const AliHLTComponentEventData& evtData, 
   UInt_t specification = 0;
   AliHLTPHOSChannelDataHeaderStruct* tmpChannelData = 0;
   
-  fDigitMakerPtr->SetDigitContainerStruct(reinterpret_cast<AliHLTPHOSDigitContainerDataStruct*>(outputPtr));
+  fDigitMakerPtr->SetDigitDataPtr(reinterpret_cast<AliHLTPHOSDigitDataStruct*>(outputPtr));
 
   for( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
     {
@@ -138,19 +141,23 @@ AliHLTPHOSDigitMakerComponent::DoEvent(const AliHLTComponentEventData& evtData, 
 	  HLTDebug("Data block is not of type fgkChannelDataType");
 	  continue;
 	}
-      if(iter == 0) continue;
-      if((reinterpret_cast<AliHLTPHOSChannelDataHeaderStruct*>(iter->fPtr))->fNChannels == 0) continue;
-      specification = specification|iter->fSpecification;
+
+      specification |= iter->fSpecification;
       tmpChannelData = reinterpret_cast<AliHLTPHOSChannelDataHeaderStruct*>(iter->fPtr);
     
-      digitCount += fDigitMakerPtr->MakeDigits(tmpChannelData);
+      ret = fDigitMakerPtr->MakeDigits(tmpChannelData, size-(digitCount*sizeof(AliHLTPHOSDigitDataStruct)));
+      if(ret == -1) 
+	{
+	  HLTError("Trying to write over buffer size");
+	  return -ENOBUFS;
+	}
+      digitCount += ret; 
     }
   
-  //  mysize = 0;
-  //offset = tSize;
-      
-  mysize += sizeof(AliHLTPHOSDigitContainerDataStruct);
-  (reinterpret_cast<AliHLTPHOSDigitContainerDataStruct*>(outputPtr))->fNDigits = digitCount;
+  mysize = digitCount*sizeof(AliHLTPHOSDigitDataStruct);
+
+  HLTDebug("# of digits: %d, used memory size: %d, available size: %d", digitCount, mysize, size);
+  
   AliHLTComponentBlockData bd;
   FillBlockData( bd );
   bd.fOffset = offset;
@@ -159,9 +166,6 @@ AliHLTPHOSDigitMakerComponent::DoEvent(const AliHLTComponentEventData& evtData, 
   bd.fSpecification = specification;
   outputBlocks.push_back(bd);
        
-//   tSize += mysize;
-//   outputPtr += mysize;
-
   if( tSize > size )
     {
       Logging( kHLTLogFatal, "HLT::AliHLTPHOSDigitMakerComponent::DoEvent", "Too much data", "Data written over allowed buffer. Amount written: %lu, allowed amount: %lu.", tSize, size );
@@ -185,10 +189,6 @@ AliHLTPHOSDigitMakerComponent::DoInit(int argc, const char** argv )
   
   for(int i = 0; i < argc; i++)
     {
-      if(!strcmp("-rmsfilepath", argv[i]))
-	{
-	  fDigitMakerPtr->SetDigitThresholds(argv[i+1], 3);
-	}
       if(!strcmp("-lowgainfactor", argv[i]))
 	{
 	  fDigitMakerPtr->SetGlobalLowGainFactor(atof(argv[i+1]));
@@ -197,9 +197,9 @@ AliHLTPHOSDigitMakerComponent::DoInit(int argc, const char** argv )
 	{
 	  fDigitMakerPtr->SetGlobalHighGainFactor(atof(argv[i+1]));
 	}
-      if(!strcmp("-digitthresholds", argv[i]))
+      if(!strcmp("-reverseorder", argv[i]))
 	{
-	  fDigitMakerPtr->SetDigitThresholds(atof(argv[i+1]), atof(argv[i+2]));
+	  fDigitMakerPtr->SetOrdered(false);
 	}
     }
  

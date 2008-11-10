@@ -33,24 +33,20 @@
 
 #include "AliHLTPHOSBase.h"
 #include "AliHLTPHOSConstants.h"
+#include "AliHLTPHOSDigitDataStruct.h"
+#include "AliHLTPHOSChannelDataStruct.h"
 
 /**
  * @class AliHLTPHOSDigitMaker
  * Digit maker for PHOS HLT. Takes input from AliHLTPHOSRawAnalyzer, and 
- * outputs an AliHLTPHOSDigitDataStruct container, or a TClonesArray of
- * AliHLTPHOSDigit. Can do software zero suppression
+ * outputs a block of AliHLTPHOSDigitDataStruct container
  * @ingroup alihlt_phos
  */
 
-class TClonesArray;
-class TTree;
 class TH2F;
-class AliHLTPHOSValidCellDataStruct;
-class AliHLTPHOSRcuCellEnergyDataStruct;
-class AliHLTPHOSDigitContainerDataStruct;
-class AliHLTPHOSDigitDataStruct;
 class AliHLTPHOSSharedMemoryInterfacev2; // added by PTH
 class AliHLTPHOSChannelDataHeaderStruct;
+class AliHLTPHOSMapper;
        
 using namespace PhosHLTConst;
 
@@ -67,13 +63,11 @@ public:
   /** Copy constructor */  
   AliHLTPHOSDigitMaker(const AliHLTPHOSDigitMaker &) : 
     AliHLTPHOSBase(),
-    fCellDataPtr(0),
     fShmPtr(0),
-    fDigitContainerStructPtr(0),
-    fDigitArrayPtr(0),
     fDigitStructPtr(0),
     fDigitCount(0),
-    fOrdered(true)
+    fOrdered(true),
+    fMapperPtr(0)
   {
     //Copy constructor not implemented
   }
@@ -85,45 +79,12 @@ public:
     return *this; 
   }
 
- 
-  // void SetValidCellData(AliHLTPHOSValidCellDataStruct *data) { fCellDataPtr = data; }
-  //  void SetDigitContainerStruct(AliHLTPHOSDigitContainerStruct *container) 
-  //{ fDigitContainerStructPtr = container; }
-   
   /**
-   * Sets the AliHLTPHOSDigitDataStruct container 
-   * @param container the digit container
+   * Sets the pointer to the output
+   * @param the output pointer
    */
-  void SetDigitContainerStruct(AliHLTPHOSDigitContainerDataStruct *container) 
-  { fDigitContainerStructPtr = container; }
-
-  /** 
-   * Sets the TClonesArray of AliHLTPHOSDigit 
-   * @param array the array
-   */
-  void SetDigitArray(TClonesArray *array) { fDigitArrayPtr = array; }
-
-  /** 
-   * Sets the digit thresholds
-   * @param filepath is the path to a file containing RMS
-   *                 histograms for both gains
-   * @param nSigmas is the number of sigmas to put the threshold
-   */
-  void SetDigitThresholds(const char* filepath, Int_t nSigmas);
-
-  /** 
-   * Sets the digit thresholds
-   * @param thresholdHG is the high gain threshold for digitisation
-   * @param thresholdLG is the low gain threshold for digitisation
-   */
-  void SetDigitThresholds(const float thresholdHG, float thresholdLG);
-  
-
-  /**
-   * Sets the number of pre samples
-   * @param n the number of pre samples
-   */
-  //void SetNrPresamples(Int_t n) { fNrPresamples = n; }
+  void SetDigitDataPtr(AliHLTPHOSDigitDataStruct *digitDataPtr) 
+  { fDigitStructPtr = digitDataPtr; }
 
   /**
    * Set the global high gain conversion factory 
@@ -142,7 +103,8 @@ public:
    * @param channelDataHeader is the data header from the AliHLTPHOSRawAnalyzer
    * @return the number of digits found
    */
-  Int_t MakeDigits(AliHLTPHOSChannelDataHeaderStruct* channelDataHeader);
+  Int_t MakeDigits(AliHLTPHOSChannelDataHeaderStruct* channelDataHeader, AliHLTUInt32_t availableSize);
+
 
   /**
    * Set the mask for dead channels
@@ -156,35 +118,44 @@ public:
    * Set ordering of gains or not
    */
   void SetOrdered(bool val) { fOrdered = val; }
-
-  /** Reset the digit maker */
-  void Reset();
+  
+  void Reset() { fDigitCount = 0; }
 
 private:
 
-  /** Pointer to valid cell list */
-  AliHLTPHOSValidCellDataStruct *fCellDataPtr;                   //! transient
+  /**
+   * Add a new digit
+   * @param channelData is the channel data
+   * @param coordinates is the coordinates of the channel, including gain and module
+   */
+  void AddDigit(AliHLTPHOSChannelDataStruct* channelData, UShort_t* coordinates) 
+  {
+    fDigitStructPtr->fX = coordinates[0];
+    fDigitStructPtr->fZ = coordinates[1];
+    if(coordinates[2] == HIGH_GAIN)
+      fDigitStructPtr->fAmplitude = channelData->fEnergy*fHighGainFactors[coordinates[0]][coordinates[1]];
+    else
+      fDigitStructPtr->fAmplitude = channelData->fEnergy*fLowGainFactors[coordinates[0]][coordinates[1]];
+    fDigitStructPtr->fTime = channelData->fTime * 0.0000001; //CRAP
+    fDigitStructPtr->fCrazyness = channelData->fCrazyness;
+    fDigitStructPtr->fModule = coordinates[3];
+    fDigitStructPtr++;
+  }
 
   /** Pointer to shared memory interface */
   AliHLTPHOSSharedMemoryInterfacev2* fShmPtr;                    //! transient
 
-  /** Pointer to the digit container */
-  AliHLTPHOSDigitContainerDataStruct *fDigitContainerStructPtr;  //! transient
-
-  /** Pointer to the digit TClonesArray */
-  TClonesArray *fDigitArrayPtr;                                  //! transient
-
-  /** Pointer to a AliHLTPHOSDigitDataStruct */
+  /** Pointer to the AliHLTPHOSDigitDataStruct */
   AliHLTPHOSDigitDataStruct *fDigitStructPtr;                    //! transient
 
   /** Digit count */
   Int_t fDigitCount;                                             //COMMENT
 
-  /** Is the gains ordered? */
+  /** Are the gains ordered? */
   bool fOrdered;                                                 //COMMENT
 
-  /** Array containing the energies of all RCU channels */
-  Float_t fEnergyArray[N_XCOLUMNS_RCU][N_ZROWS_RCU][N_GAINS];    //COMMENT
+  /** Mapper */
+  AliHLTPHOSMapper* fMapperPtr;                                  //COMMENT
 
   /** High gain energy conversion factors */
   Float_t fHighGainFactors[N_XCOLUMNS_MOD][N_ZROWS_MOD];         //COMMENT
@@ -192,13 +163,11 @@ private:
   /** Low gain energy conversion factors */
   Float_t fLowGainFactors[N_XCOLUMNS_MOD][N_ZROWS_MOD];          //COMMENT
 
-   /** Threshold for making digit ( zero suppression threshold) */
-  Float_t fDigitThresholds[N_XCOLUMNS_MOD][N_ZROWS_MOD][N_GAINS]; //COMMENT
-
   /** Bad channel mask */
   Float_t fBadChannelMask[N_XCOLUMNS_MOD][N_ZROWS_MOD][N_GAINS]; //COMMENT
 
   ClassDef(AliHLTPHOSDigitMaker, 1); 
+
 };
 
 

@@ -51,6 +51,26 @@ public:
   AliHLTPHOSHistogramProducer();
   ~AliHLTPHOSHistogramProducer();
   
+
+  AliHLTPHOSHistogramProducer(const AliHLTPHOSHistogramProducer &) :
+    AliHLTPHOSBase(),
+    fClusterEnergiesHistPtr(0),
+    fMultiplicitiesHistPtr(0),
+    fClusterNtuplePtr(0),
+    fFillClusterEnergies(false),
+    fFillMultiplicities(false),
+    fFillNtuple(false),
+    fMaxNtupleEntries(1000000000)
+  {
+    //comment
+  }
+  
+  AliHLTPHOSHistogramProducer & operator = (const AliHLTPHOSHistogramProducer)
+  {
+    //Assignment
+    return *this;
+  }
+
   Int_t Fill(AliHLTPHOSCaloClusterContainerStruct* clusterContainerPtr);
 
   Int_t InitializeObjects();
@@ -65,8 +85,7 @@ public:
   void SetMaxNtupleEntries(Int_t n) { fMaxNtupleEntries = n; }
   
 private:
-AliHLTPHOSHistogramProducer(const AliHLTPHOSHistogramProducer  & );
-AliHLTPHOSHistogramProducer  & operator = (const AliHLTPHOSHistogramProducer &);
+
   TH1D* fClusterEnergiesHistPtr;
   TH1D* fMultiplicitiesHistPtr;
   TNtuple* fClusterNtuplePtr;

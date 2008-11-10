@@ -55,7 +55,7 @@ AliHLTPHOSRcuAltroPatternTest::AliHLTPHOSRcuAltroPatternTest(const AliHLTUInt8_t
 }
 
 
-const int 
+int 
 AliHLTPHOSRcuAltroPatternTest::ValidateAltroPattern(const int *inputPattern, const int samples, const int presamples) const
 {
   if(fReferenceAltroPattern !=0)
@@ -69,7 +69,7 @@ AliHLTPHOSRcuAltroPatternTest::ValidateAltroPattern(const int *inputPattern, con
 }
 
 
-const int 
+int 
 AliHLTPHOSRcuAltroPatternTest::AddPattern(const int *inputPattern,  const int z, const int x, const int gain, const int nSamples, const int nPresamples)
 {
  
@@ -92,7 +92,7 @@ AliHLTPHOSRcuAltroPatternTest::AddPattern(const int *inputPattern,  const int z,
 /*
  *Conts the number of linkes (patterns) in the linked list)
  */  
-const int 
+int 
 AliHLTPHOSRcuAltroPatternTest::countPatterns(const AliHLTPHOSPattern *pattern) const
 {
   int tmp = 0; 
@@ -123,7 +123,7 @@ AliHLTPHOSRcuAltroPatternTest::countPatterns(const AliHLTPHOSPattern *pattern) c
 
 //   const int  GetPattern(int *pattern,  const int maxlengths =  ALTRO_MAX_SAMPLES) const;
 //   const int GetPatternLength() const {return  fPatternLength;}; 
-const int 
+int 
 AliHLTPHOSRcuAltroPatternTest::countAllPatterns(const int length, const bool /*doprintpattern*/)
 {
   fCnt ++;

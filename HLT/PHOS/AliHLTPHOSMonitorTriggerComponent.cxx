@@ -15,7 +15,7 @@
 #include <iostream>
 
 #include "AliHLTPHOSMonitorTriggerComponent.h"
-#include "AliHLTPHOSCaloClusterContainerStruct.h"
+#include "AliHLTPHOSCaloClusterHeaderStruct.h"
 #include "AliHLTPHOSCaloClusterDataStruct.h"
 #include "AliHLTDataTypes.h"
 
@@ -35,6 +35,11 @@
 using namespace std;
 #endif
 
+const AliHLTComponentDataType AliHLTPHOSMonitorTriggerComponent::fgkInputDataTypes[]=
+  {
+    kAliHLTVoidDataType,{0,"",""}
+  };
+
 AliHLTPHOSMonitorTriggerComponent gAliHLTPHOSMonitorTriggerComponent;
 
 
@@ -46,7 +51,9 @@ AliHLTPHOSMonitorTriggerComponent::AliHLTPHOSMonitorTriggerComponent():
   fMultiplicityThreshold(5),
   fMultEnergyThreshold(0.5),
   fDigitMultiplicityThreshold(16),
-  fMultDigitMultiplicityThreshold(9)
+  fMultDigitMultiplicityThreshold(9),
+  fLowerCentrality(0.5),
+  fUpperCentrality(0.9)
 {
   //See headerfile for documentation
 }
@@ -102,7 +109,7 @@ AliHLTPHOSMonitorTriggerComponent::GetOutputDataSize(unsigned long& constBase, d
 int
 AliHLTPHOSMonitorTriggerComponent::DoEvent(const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks,
 					   AliHLTComponentTriggerData& /*trigData*/, AliHLTUInt8_t* /*outputPtr*/, AliHLTUInt32_t& /*size*/,
-					   std::vector<AliHLTComponentBlockData>& /*outputBlocks*/)
+                                        std::vector<AliHLTComponentBlockData>& /*outputBlocks*/)
 {
   //See headerfile for documentation
 
@@ -122,7 +129,7 @@ AliHLTPHOSMonitorTriggerComponent::DoEvent(const AliHLTComponentEventData& evtDa
 	}
       specification |= iter->fSpecification;
 
-      monitorflag += CheckClusters(reinterpret_cast<AliHLTPHOSCaloClusterContainerStruct*>(iter->fPtr));
+      monitorflag += CheckClusters(reinterpret_cast<AliHLTPHOSCaloClusterHeaderStruct*>(iter->fPtr));
 	
     }
 
@@ -141,7 +148,7 @@ AliHLTPHOSMonitorTriggerComponent::DoEvent(const AliHLTComponentEventData& evtDa
 	  eddWord = blockCount;
 	  PushEventDoneData( eddWord );
 	  
-	  //	  Int_t blockIndex = 0;
+	  //Int_t blockIndex = 0;
 	  // low data type
 	  eddWord = 0;
 	 
@@ -180,21 +187,27 @@ AliHLTPHOSMonitorTriggerComponent::DoEvent(const AliHLTComponentEventData& evtDa
 }
 
 Bool_t
-AliHLTPHOSMonitorTriggerComponent::CheckClusters(AliHLTPHOSCaloClusterContainerStruct* clusterContainer)
+AliHLTPHOSMonitorTriggerComponent::CheckClusters(AliHLTPHOSCaloClusterHeaderStruct* clusterHeaderPtr)
 {
   //See headerfile for documentation
-
-  UInt_t nClusters = 0;
+  
+  UInt_t nClusters = clusterHeaderPtr->fNClusters;
+  Float_t* ampFracPtr = 0;
 
   AliHLTPHOSCaloClusterDataStruct* clusterPtr = 0;
 
+  clusterPtr = reinterpret_cast<AliHLTPHOSCaloClusterDataStruct*>(clusterHeaderPtr + sizeof(AliHLTPHOSCaloClusterHeaderStruct));
       
-  for(UInt_t n = 0; n < clusterContainer->fNCaloClusters; n++)
+  for(UInt_t n = 0; n < nClusters; n++)
     {
-      clusterPtr = &(clusterContainer->fCaloClusterArray[n]);
       if(fCheckClusterEnergy == true && clusterPtr->fEnergy > fClusterEnergyThreshold && clusterPtr->fNCells > fDigitMultiplicityThreshold)
 	{
-	  return true;
+	  ampFracPtr = &(clusterPtr->fCellsAmpFraction);
+	  for(UInt_t i = 0; i < clusterPtr->fNCells; i++)
+	    {
+	      if(*ampFracPtr > fLowerCentrality && *ampFracPtr < fUpperCentrality) return true;
+	      ampFracPtr += 6; // 6 = sizeof(Short_t) + sizeof(Float_t)
+	    }
 	}
       if(fCheckClusterMultiplicities == true && clusterPtr->fEnergy > fMultEnergyThreshold && clusterPtr->fNCells > fMultDigitMultiplicityThreshold)
 	{
@@ -204,6 +217,7 @@ AliHLTPHOSMonitorTriggerComponent::CheckClusters(AliHLTPHOSCaloClusterContainerS
 	      return true;
 	    }
 	}
+      clusterPtr += sizeof(AliHLTPHOSCaloClusterDataStruct) + 5*clusterPtr->fNCells; //5 = sizeof(Short_t) + sizeof(Float_t) - 1(pair already included)
     }
 
   return false;
@@ -215,7 +229,6 @@ int
 AliHLTPHOSMonitorTriggerComponent::DoInit(int argc, const char** argv )
 {
   //See headerfile for documentation
-
 
   for (int i = 0; i < argc; i++)
     {
@@ -232,12 +245,24 @@ AliHLTPHOSMonitorTriggerComponent::DoInit(int argc, const char** argv )
 	  fClusterEnergyThreshold = atof(argv[i+1]);
 	  fCheckClusterEnergy = true;
 	}
+      if(!strcmp("-multiplicityinclusterE", argv[i]))
+	{
+	  fDigitMultiplicityThreshold = atoi(argv[i+1]);
+	}
       if(!strcmp("-multiplicitythreshold", argv[i]))
 	{
 	  fMultiplicityThreshold = atoi(argv[i+1]);
 	  fCheckClusterMultiplicities = true;
 	}
-      
+      if(!strcmp("-multiplicityinclusterMult", argv[i]))
+	{
+	  fMultDigitMultiplicityThreshold = atoi(argv[i+1]);
+	}
+      if(!strcmp("-centralitylimits", argv[i]))
+	{
+	  fLowerCentrality = atof(argv[i+1]);
+	  fUpperCentrality = atof(argv[i+2]);
+	} 
     }
   return 0;
 }

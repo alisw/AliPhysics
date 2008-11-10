@@ -47,7 +47,7 @@ AliHLTPHOSSanityInspector::~AliHLTPHOSSanityInspector()
 
 
 
-const Int_t  
+Int_t  
 AliHLTPHOSSanityInspector::CheckInsanity(const UInt_t* data, const Int_t N) const
 {
    //See header file for documentation

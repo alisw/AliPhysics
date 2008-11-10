@@ -32,8 +32,10 @@ class  AliHLTPHOSRcuProperties
 public:
   AliHLTPHOSRcuProperties();
   virtual ~AliHLTPHOSRcuProperties();
-  const int  GetEquippmentID() const;
-  const int GetRCUID() const;
+  //  const int  GetEquippmentID() const;
+  //  const int GetRCUID() const;
+  int  GetEquippmentID() const; //OD
+  int GetRCUID() const; //OD
   virtual int ScanArguments(int argc, const char** argv);
   void InitializeCoordinates(const AliHLTUInt16_t equippmentID);
  

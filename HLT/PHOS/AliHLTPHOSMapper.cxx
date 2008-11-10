@@ -59,7 +59,7 @@ AliHLTPHOSMapper::InitAltroMapping()
   int tmpZRow = 0;
   int tmpXCol = 0;
   int tmpGain = 0;
-
+  int res = 0; //OD to get rid of warnings
   if(base !=0)
     {
       sprintf(fFilepath,"%s/PHOS/mapping/RCU0.data", base);
@@ -67,8 +67,8 @@ AliHLTPHOSMapper::InitAltroMapping()
       FILE *fp = fopen(fFilepath, "r");
       if(fp != 0)
 	{
-	  fscanf(fp, "%d", &nChannels);
-	  fscanf(fp, "%d", &maxaddr);
+	  res = fscanf(fp, "%d", &nChannels);
+	  res = fscanf(fp, "%d", &maxaddr);
 	  fHw2geomapPtr = new fAltromap[maxaddr +1]; 
 
 	  for(int i=0; i< maxaddr + 1 ; i ++)
@@ -80,7 +80,7 @@ AliHLTPHOSMapper::InitAltroMapping()
 
 	  for(int i=0; i<nChannels; i ++)
 	    {
-	      fscanf(fp, "%d %d %d %d\n", &tmpHwaddr, &tmpXCol, &tmpZRow,  &tmpGain);
+	      res = fscanf(fp, "%d %d %d %d\n", &tmpHwaddr, &tmpXCol, &tmpZRow,  &tmpGain);
 	      fHw2geomapPtr[tmpHwaddr].fXCol   = tmpXCol;
 	      fHw2geomapPtr[tmpHwaddr].fZRow   = tmpZRow;
 	      fHw2geomapPtr[tmpHwaddr].fGain  = tmpGain;

@@ -1,18 +1,16 @@
+
 /**************************************************************************
- * This file is property of and copyright by the Experimental Nuclear     *
- * Physics Group, Dep. of Physics                                         *
- * University of Oslo, Norway, 2007                                       *
- *                                                                        * 
- * Author: Per Thomas Hille <perthi@fys.uio.no> for the ALICE HLT Project.*
- * Contributors are mentioned in the code where appropriate.              *
- * Please report bugs to perthi@fys.uio.no                                * 
+ * This file is property of and copyright by the ALICE HLT Project        * 
+ * All rights reserved.                                                   *
+ *                                                                        *
+ * Primary Authors: Per Thomas Hille, Oystein Djuvsland                   *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
  * documentation strictly for non-commercial purposes is hereby granted   *
  * without fee, provided that the above copyright notice appears in all   *
  * copies and that both the copyright notice and this permission notice   *
  * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
+ * about the suitability of this software for any purpose. It is          * 
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
@@ -23,23 +21,24 @@
 #include "AliHLTPHOSMapper.h"
 #include "AliHLTPHOSSanityInspector.h"
 #include "AliHLTPHOSBaseline.h"
-#include  "AliAltroDecoder.h"    // decoder for altro payload
-#include  "AliAltroData.h"       // container for altro payload
-#include  "AliAltroBunch.h"      // container for altro bunches
+#include  "AliAltroDecoder.h"
+#include  "AliAltroData.h"   
+#include  "AliAltroBunch.h"  
 
 
-AliHLTPHOSRawAnalyzerComponentv2::AliHLTPHOSRawAnalyzerComponentv2():AliHLTPHOSRcuProcessor(), 
-								     fAnalyzerPtr(0), 
-								     fMapperPtr(0), 
-								     fSanityInspectorPtr(0),
-								     fDecoderPtr(0),  
-								     fAltroDataPtr(0),
-								     fAltroBunchPtr(0),
-								     fNCorruptedBlocks(0),
-								     fNOKBlocks(0),
-								     fAlgorithm(0),
-								     fOffset(0)
-								     
+AliHLTPHOSRawAnalyzerComponentv2::AliHLTPHOSRawAnalyzerComponentv2():
+  AliHLTPHOSRcuProcessor(), 
+  fAnalyzerPtr(0), 
+  fMapperPtr(0), 
+  fSanityInspectorPtr(0),
+  fDecoderPtr(0),  
+  fAltroDataPtr(0),
+  fAltroBunchPtr(0),
+  fAlgorithm(0),
+  fOffset(0),
+  fBunchSizeCut(5),
+  fMinPeakPosition(0),
+  fMaxPeakPosition(100)
 {
   //comment
   fMapperPtr = new AliHLTPHOSMapper();
@@ -62,6 +61,11 @@ int
 AliHLTPHOSRawAnalyzerComponentv2::Deinit()
 {
   //comment
+  if(fAnalyzerPtr)
+    {
+      delete fAnalyzerPtr;
+      fAnalyzerPtr = 0;
+    }
   if(fMapperPtr)
     {
       delete  fMapperPtr;
@@ -82,7 +86,6 @@ AliHLTPHOSRawAnalyzerComponentv2::Deinit()
       delete fDecoderPtr;
       fDecoderPtr = 0;
     }
-  Logging(kHLTLogInfo, "HLT", "PHOS", ",AliHLTPHOSRawAnalyzerComponen Deinit");
   return 0;
 }
 
@@ -122,12 +125,11 @@ AliHLTPHOSRawAnalyzerComponentv2::DoEvent( const AliHLTComponentEventData& evtDa
 					 AliHLTUInt8_t* outputPtr, AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks )
 {
   //comment
-  Int_t blockSize         = 0;
+  Int_t blockSize          = 0;
   UInt_t totSize           = 0;
 
   const AliHLTComponentBlockData* iter = NULL; 
   unsigned long ndx;
-  // bool droppedRaw = true;
 
   for( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
     {
@@ -138,26 +140,28 @@ AliHLTPHOSRawAnalyzerComponentv2::DoEvent( const AliHLTComponentEventData& evtDa
 	  continue; 
 	}
 
-      blockSize = DoIt(iter, outputPtr, size, totSize);
-      if(blockSize == -1) 
+      blockSize = DoIt(iter, outputPtr, size, totSize); // Processing the block
+      if(blockSize == -1) // If the processing returns -1 we are out of buffer and return an error msg.
 	{
 	  return -ENOBUFS;
 	}
 
-      totSize += blockSize;
-      HLTDebug("Output data size: %d - Input data size: %d", totSize, iter->fSize);
+      totSize += blockSize; //Keeping track of the used size
+      // HLTDebug("Output data size: %d - Input data size: %d", totSize, iter->fSize);
+
       AliHLTComponentBlockData bdChannelData;
       FillBlockData( bdChannelData );
-      //bdChannelData.fOffset = totSize-blockSize;
       bdChannelData.fOffset = 0; //CRAP
       bdChannelData.fSize = blockSize;
       bdChannelData.fDataType = AliHLTPHOSDefinitions::fgkChannelDataType;
       bdChannelData.fSpecification = iter->fSpecification;
       outputBlocks.push_back(bdChannelData);
+
+      outputPtr += blockSize; //Updating position of the output buffer
     }
 
   fPhosEventCount++; 
-  size = blockSize;
+  size = totSize; //telling the framework how much buffer space we have used.
   
   return 0;
 }//end DoEvent
@@ -169,12 +173,14 @@ AliHLTPHOSRawAnalyzerComponentv2::DoIt(const AliHLTComponentBlockData* iter, Ali
 
   Int_t crazyness          = 0;
   Int_t nSamples           = 0;
-  const int bunchsizecut   = 5;
   Short_t channelCount     = 0;
-      
+
+  // Firs we want to write a header to the output
   AliHLTPHOSChannelDataHeaderStruct *channelDataHeaderPtr = reinterpret_cast<AliHLTPHOSChannelDataHeaderStruct*>(outputPtr); 
 
+  // Then comes the channel data
   AliHLTPHOSChannelDataStruct *channelDataPtr = reinterpret_cast<AliHLTPHOSChannelDataStruct*>(outputPtr+sizeof(AliHLTPHOSChannelDataHeaderStruct)); 
+
   Short_t channelSize = sizeof(AliHLTPHOSChannelDataStruct);
  
   totSize += sizeof(AliHLTPHOSChannelDataHeaderStruct);
@@ -186,11 +192,10 @@ AliHLTPHOSRawAnalyzerComponentv2::DoIt(const AliHLTComponentBlockData* iter, Ali
     {          
       if(fAltroDataPtr->GetDataSize() != 0 )
 	{
-	  int bunchcount = 0;
 	  
-	  while(fAltroDataPtr->NextBunch(fAltroBunchPtr) == true);
+	  while(fAltroDataPtr->NextBunch(fAltroBunchPtr) == true) {}
 	  
-	  if(fAltroBunchPtr->GetBunchSize() > bunchsizecut && bunchcount == 0)
+	  if(fAltroBunchPtr->GetBunchSize() >  fBunchSizeCut)
 	    {
 	      totSize += channelSize;
 	      if(totSize > size)
@@ -201,21 +206,23 @@ AliHLTPHOSRawAnalyzerComponentv2::DoIt(const AliHLTComponentBlockData* iter, Ali
 	      
 	      nSamples = fAltroBunchPtr->GetBunchSize();
 	      
-	      fNOKBlocks ++;
-	      
-	      crazyness = fSanityInspectorPtr->CheckInsanity(static_cast<const UInt_t*>(fAltroBunchPtr->GetData()), static_cast<const Int_t>(fAltroBunchPtr->GetBunchSize()));
+	      //crazyness = fSanityInspectorPtr->CheckInsanity(static_cast<const UInt_t*>(fAltroBunchPtr->GetData()), static_cast<const Int_t>(fAltroBunchPtr->GetBunchSize()));
 	      
 	      fAnalyzerPtr->SetData(fAltroBunchPtr->GetData(), fAltroBunchPtr->GetBunchSize());   
 	      fAnalyzerPtr->Evaluate(0, fAltroBunchPtr->GetBunchSize());  
 	      
-	      channelDataPtr->fChannelID = fMapperPtr->GetChannelID(iter->fSpecification, fAltroDataPtr->GetHadd());
-	      channelDataPtr->fEnergy = static_cast<Float_t>(fAnalyzerPtr->GetEnergy()) - fOffset;
-	      channelDataPtr->fTime = static_cast<Float_t>(fAnalyzerPtr->GetTiming());
-	      channelDataPtr->fCrazyness = static_cast<Short_t>(crazyness);
-	      channelCount++;
-	      channelDataPtr++;
+	      if(fAnalyzerPtr->GetTiming() > fMinPeakPosition && fAnalyzerPtr->GetTiming() < fMaxPeakPosition && fAltroBunchPtr->GetBunchSize() > fBunchSizeCut)
+		{
+		  // Writing to the output buffer
+		  channelDataPtr->fChannelID = fMapperPtr->GetChannelID(iter->fSpecification, fAltroDataPtr->GetHadd());
+		  //channelDataPtr->fChannelID = fMapperPtr->GetChannelID(1, fAltroDataPtr->GetHadd());
+		  channelDataPtr->fEnergy = static_cast<Float_t>(fAnalyzerPtr->GetEnergy()) - fOffset;
+		  channelDataPtr->fTime = static_cast<Float_t>(fAnalyzerPtr->GetTiming());
+		  channelDataPtr->fCrazyness = static_cast<Short_t>(crazyness);
+		  channelCount++;
+		  channelDataPtr++; // Updating position of the free output.
+		}
 	    }
-	  bunchcount++;
 	}
     }
 
@@ -244,6 +251,18 @@ AliHLTPHOSRawAnalyzerComponentv2::DoInit( int argc, const char** argv )
 	{
 	  fOffset = atoi(argv[i+1]);
 	}
+      if(!strcmp("-bunchsizecut", argv[i]))
+	{
+	  fBunchSizeCut = atoi(argv[i+1]);
+	}
+      if(!strcmp("-minpeakposition", argv[i]))
+	{
+	  fMinPeakPosition = atoi(argv[i+1]);
+	}
+      if(!strcmp("-maxpeakposition", argv[i]))
+	{
+	  fMaxPeakPosition = atoi(argv[i+1]);
+	}  
     }
  
   if(fMapperPtr->GetIsInitializedMapping() == false)

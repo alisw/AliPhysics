@@ -40,13 +40,11 @@ AliHLTPHOSRawAnalyzerComponent::AliHLTPHOSRawAnalyzerComponent():AliHLTPHOSRcuPr
                                                                  fUseBaselineSubtraction(false), 
                                                                  fDecoderPtr(0),  
                                                                  fAltroDataPtr(0),
-                                                                 fAltroBunchPtr(0), 
-							
-								 fDoPushRawData(false),
-								 fDoMakeDigits(0), 
+                                                                 fAltroBunchPtr(0),
+                                                                 fDoPushRawData(false),
+								 fDoMakeDigits(false),
 								 fDigitMakerPtr(0),
-								 
-								 fDigitContainerPtr(0),
+                                                                 fDigitContainerPtr(0),
                                                                  fDoSelectiveReadOut(false),
                                                                  fSelectedChannelsList(0),
                                                                  fDoCheckDataSize(false),
@@ -95,7 +93,7 @@ AliHLTPHOSRawAnalyzerComponent::Deinit()
       delete fDecoderPtr;
       fDecoderPtr = 0;
     }
-  Logging(kHLTLogInfo, "HLT", "PHOS", ",AliHLTPHOSRawAnalyzerComponen Deinit");
+  
   return 0;
 }
 
@@ -147,7 +145,7 @@ AliHLTPHOSRawAnalyzerComponent::GetOutputDataSize(unsigned long& constBase, doub
 
 
 void 
-AliHLTPHOSRawAnalyzerComponent::FillDataArray(UInt_t *data, const AliAltroData * /*altrodataptr */, const int /* channel */)
+AliHLTPHOSRawAnalyzerComponent::FillDataArray(UInt_t *data, const AliAltroData */*altrodataptr*/, const int /*channel*/)
 {
   ResetDataPtr(0, ALTRO_MAX_SAMPLES);
   bool islastbunch = true;
@@ -190,7 +188,7 @@ AliHLTPHOSRawAnalyzerComponent::FillDataArray(UInt_t *data, const AliAltroData *
 
 
 void 
-AliHLTPHOSRawAnalyzerComponent::GetFirstBunch(AliAltroData * /*altrodata */,  AliAltroBunch  * /*altrobunch */)
+AliHLTPHOSRawAnalyzerComponent::GetFirstBunch(AliAltroData */*altrodata*/,  AliAltroBunch */*altrobunch*/)
 {
   while( fAltroDataPtr->NextBunch(fAltroBunchPtr) == true)
     {
@@ -389,7 +387,7 @@ AliHLTPHOSRawAnalyzerComponent::DoInit( int argc, const char** argv )
 
 
 void
-AliHLTPHOSRawAnalyzerComponent::Reset(AliHLTPHOSRcuCellEnergyDataStruct* /* cellDataPtr */)
+AliHLTPHOSRawAnalyzerComponent::Reset(AliHLTPHOSRcuCellEnergyDataStruct* /*cellDataPtr*/)
 {
   ResetDataPtr(0, ALTRO_MAX_SAMPLES);
 } // end Reset

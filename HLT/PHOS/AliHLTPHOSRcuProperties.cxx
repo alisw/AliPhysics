@@ -47,14 +47,14 @@ AliHLTPHOSRcuProperties::~AliHLTPHOSRcuProperties()
 }
 
 
-const int
+int
 AliHLTPHOSRcuProperties::GetEquippmentID() const
 {
   return fkEquippmentID;
 }
 
 
-const int 
+int 
 AliHLTPHOSRcuProperties::GetRCUID() const
 {
   return fRcuID;

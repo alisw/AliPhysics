@@ -77,16 +77,16 @@ AliHLTPHOSPhysicsAnalyzerPeakFitter::FitGaussian()
 Int_t
 AliHLTPHOSPhysicsAnalyzerPeakFitter::FitLorentzian()
 {
-  //FitLorentzian
+  //FitLorentzia
   Int_t maxBin = fRootHistPtr->GetMaximumBin();
   Float_t binWidth = fRootHistPtr->GetBinWidth(maxBin);
   Float_t maxBinValue = (Float_t)(maxBin * binWidth);
   Double_t lowRange = maxBinValue - 0.03;
   Double_t highRange = maxBinValue + 0.03;
 
-  char* name = "lorentzian";
+  //char* name = "lorentzian";
   
-  TF1* lorentzian = new TF1(name, "([0]*1/TMath::Pi())*[1]/((x[0]-[2])*(x[0]-[2])+[1]*[1])", lowRange, highRange);
+  TF1* lorentzian = new TF1("lorentzian", "([0]*1/TMath::Pi())*[1]/((x[0]-[2])*(x[0]-[2])+[1]*[1])", lowRange, highRange);
 
   Double_t params[3] = {fRootHistPtr->GetBinContent(maxBin)/20, 0.01, 0.135};
   lorentzian->SetParameters(params);
@@ -95,9 +95,9 @@ AliHLTPHOSPhysicsAnalyzerPeakFitter::FitLorentzian()
 
   lorentzian->GetParameters(params);
 
-  TFile *outfile = new TFile("/afsuser/odjuvsland","recreate");  
-  fRootHistPtr->Write();
-  outfile->Close();
+//   TFile *outfile = new TFile(,"recreate");  
+//   fRootHistPtr->Write();
+//   outfile->Close();
 
   return 0;
 }

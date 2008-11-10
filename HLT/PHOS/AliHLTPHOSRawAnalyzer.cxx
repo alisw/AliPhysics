@@ -79,7 +79,7 @@ AliHLTPHOSRawAnalyzer::SetCorrectBaselineUsingFirstFiveSamples()
 void 
 //AliHLTPHOSRawAnalyzer::CorrectBaselineUsingFirstFiveSamples(double *data, int length)
 //AliHLTPHOSRawAnalyzer::CorrectBaselineUsingFirstFiveSamples(int *data, int length)
-AliHLTPHOSRawAnalyzer::CorrectBaselineUsingFirstFiveSamples(UInt_t * /*data*/, const int /* length */)
+AliHLTPHOSRawAnalyzer::CorrectBaselineUsingFirstFiveSamples(UInt_t */*data*/, const int /*length*/)
 {
   //  cout << "AliHLTPHOSRawAnalyzer::CorrectBaselineUsingFirstFiveSamples" << endl;
 

@@ -68,21 +68,16 @@ public:
   virtual ~AliHLTPHOSClusterizer();
 
   /** Copy constructor */  
- AliHLTPHOSClusterizer(const AliHLTPHOSClusterizer &) :  AliHLTPHOSBase(),
+  AliHLTPHOSClusterizer(const AliHLTPHOSClusterizer &) : 
+    AliHLTPHOSBase(),
+    fRecPointDataPtr(0),
+    fDigitDataPtr(0),
     fEmcClusteringThreshold(0),
     fEmcMinEnergyThreshold(0),
     fEmcTimeGate(0),
-    fLogWeight(0),
     fDigitsInCluster(0),
-    fOnlineMode(true),
-    fDigitArrayPtr(0),
-    fEmcRecPointsPtr(0),
-    fDigitPtr(0),
     fDigitContainerPtr(0),
-    fRecPointContainerPtr(0),
-    fPHOSGeometry(0),
-    fGetterPtr(0),
-      fMaxDigitIndexDiff(0)
+    fMaxDigitIndexDiff(2*N_ZROWS_MOD)
   {
     //Copy constructor not implemented
   }
@@ -98,9 +93,8 @@ public:
   void SetDigitContainer(AliHLTPHOSDigitContainerDataStruct* digitContainerPtr)
   { fDigitContainerPtr = digitContainerPtr; }
 
-  /** Set rec point container */
-  void SetRecPointContainer(AliHLTPHOSRecPointContainerStruct *recPointContainerPtr);
-
+  /** Set rec point data buffer */
+  void SetRecPointDataPtr(AliHLTPHOSRecPointDataStruct* recPointDataPtr);
 
   /** Set reco parameters */
   void SetRecoParameters(AliPHOSRecoParam* recoPars);
@@ -113,28 +107,10 @@ public:
 
   /** Set emc time gate */
   void SetEmcTimeGate(Float_t gate) { fEmcTimeGate = gate; }
-
-  /** Set log weight */
-  void SetLogWeight(Float_t weight) { fLogWeight = weight; }  
-    
-  /** 
-   * Set offline mode
-   * @param getter pointer to an instance of AliPHOSGetter
-   */
-  //  void SetOfflineMode(AliPHOSLoader* getter); 
   
   /** Starts clusterization of the event */ 
-  virtual Int_t ClusterizeEvent();
-
-  /** 
-   * Gets an event, for offline mode
-   * @param evtNr event number to get
-   */
-  //virtual Int_t GetEvent(Int_t evtNr);
+  virtual Int_t ClusterizeEvent(UInt_t availableSize, UInt_t& totSize);
   
-  /** Get number of events */
-  //Int_t GetNEvents();
-
   /**
    * For a given digit this digit scans for neighbouring digits which 
    * passes the threshold for inclusion in a rec point. If one is found 
@@ -153,6 +129,13 @@ public:
 
 
 protected:
+
+  /** Pointer to the rec point output */
+  AliHLTPHOSRecPointDataStruct* fRecPointDataPtr;              //! transient
+
+  /** Pointer to the digit output */
+  AliHLTPHOSDigitDataStruct* fDigitDataPtr;                    //! transient
+
   /** Energy threshold for starting a cluster for the calorimeter */
   Float_t fEmcClusteringThreshold;                             //COMMENT
 
@@ -162,38 +145,14 @@ protected:
   /** Maximum time difference for inclusion in a rec point */
   Float_t fEmcTimeGate;                                        //COMMENT
 
-  /** Variable used in calculation of the center of gravity for a rec point */
-  Float_t fLogWeight;                                          //COMMENT
-
   /** Counts the digits in a rec point */
   Int_t fDigitsInCluster;                                      //COMMENT
-
-  /** Online mode flag */
-  Bool_t fOnlineMode;                                          //COMMENT
-  
-  /** Array of digits from one event, used in offline mode */
-  TClonesArray *fDigitArrayPtr;                                //! transient
-
-  /** Array of reconstruction points from one event, used in offline mode */ 
-  TObjArray *fEmcRecPointsPtr;                                 //! transient
-
-  /** Pointer to digit */
-  AliPHOSDigit *fDigitPtr;                                     //! transient
 
   /** Contains the digits from one event */
   AliHLTPHOSDigitContainerDataStruct *fDigitContainerPtr;      //! transient
 
-  /** Contains the reconstruction points from one event */
-  AliHLTPHOSRecPointContainerStruct *fRecPointContainerPtr;    //! transient
-
-  /** Instance of the PHOS geometry class */
-  AliPHOSGeometry *fPHOSGeometry;                              //! transient
-  
-  /** Instance of the PHOS getter, used in offline mode */    
-  AliPHOSLoader *fGetterPtr;                                   //! transient
-
   /** Maximum difference in index to be a neighbour */
-  Int_t fMaxDigitIndexDiff;                                   //COMMENT
+  Int_t fMaxDigitIndexDiff;                                    //COMMENT
 
   ClassDef(AliHLTPHOSClusterizer, 1);
 };

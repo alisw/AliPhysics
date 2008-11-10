@@ -46,41 +46,38 @@ struct AliHLTPHOSCaloClusterDataStruct
   /** Number of cells in the cluster */
   UInt_t fNCells;                                //COMMENT
 
-  /** */
-  UShort_t fCellsAbsId[64];                      //COMMENT
-
-  /** */
-  Double32_t fCellsAmpFraction[64];              //[0.,1.,16]
-
   /** Global position */
-  Double32_t fGlobalPos[3];                      //COMMENT
+  Float_t fGlobalPos[3];                      //COMMENT
 
   /** The total energy of the cell */
-  Double32_t fEnergy;                            //COMMENT
+  Float_t fEnergy;                            //COMMENT
+
+  /** The time of flight */
+  Float_t fTOF;                               //COMMENT
 
   /** Dispersion */
-  Double32_t fDispersion;                        //COMMENT
+  Float_t fDispersion;                        //COMMENT
 
   /** Quality of cluster fit */
-  Double32_t fFitQuality;                        //COMMENT
+  Float_t fFitQuality;                        //COMMENT
 
   /** Second moment along the main eigen axis */
-  Double32_t fM20;                               //COMMENT
+  Float_t fM20;                               //COMMENT
 
   /** Second moment along the second eigen axis */ 
-  Double32_t fM02;                               //COMMENT
+  Float_t fM02;                               //COMMENT
 
   /** Second mixed  moment Mxy */
-  //  Double32_t fM11;                               //COMMENT
+  //  Float_t fM11;                               //COMMENT
   
   /** Distance to closest CPV rec point */
-  Double32_t fEmcCpvDistance;                    //COMMENT
+  Float_t fEmcCpvDistance;                    //COMMENT
 
   /** Distance to nearest bad channel */
-  Double32_t fDistToBadChannel;                  //COMMENT
+  Float_t fDistToBadChannel;                  //COMMENT
 
   /** PID */
-  Double32_t fPID[AliPID::kSPECIESN];            //[0.,1.,8]
+  Float_t fPID[AliPID::kSPECIESN];            //COMMENT
 
   /** Unique ID of the cluster*/
   Int_t fID;                                     //COMMENT
@@ -92,7 +89,14 @@ struct AliHLTPHOSCaloClusterDataStruct
   Char_t fClusterType;                           //COMMENT
 
   /** Distance to nearest bad channel */
-  Double32_t fDistanceToBadChannel;              //COMMENT
+  Float_t fDistanceToBadChannel;              //COMMENT
+
+  /** */
+  UShort_t fCellsAbsId;                      //COMMENT
+
+  /** */
+  Float_t fCellsAmpFraction;              //COMMENT
+
   
 };
 

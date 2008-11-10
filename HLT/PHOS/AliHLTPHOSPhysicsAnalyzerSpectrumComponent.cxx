@@ -97,7 +97,7 @@ AliHLTPHOSPhysicsAnalyzerSpectrumComponent::Deinit()
 
   if(fAnalyzerPtr)
     {
-      fAnalyzerPtr->WriteHistogram("~/hist_fin.root");
+      //fAnalyzerPtr->WriteHistogram("~/hist_fin.root");
       delete fAnalyzerPtr;
       fAnalyzerPtr = 0;
     }
@@ -173,7 +173,7 @@ AliHLTPHOSPhysicsAnalyzerSpectrumComponent::DoEvent(const AliHLTComponentEventDa
   if(fgCount%fWriteInterval == 0 && fgCount != 0)
     {
       //    PushBack(fRootHistPtr, kAliHLTAnyDataType, (AliHLTUInt32_t)0);
-      fAnalyzerPtr->WriteHistogram("~/hist.root");
+      //fAnalyzerPtr->WriteHistogram("~/hist.root");
     }
 
   fgCount++; 

@@ -75,7 +75,7 @@ public:
   
   
   /** Check for insanity */
-  const Int_t CheckInsanity(const UInt_t* data, const Int_t nSamples) const;
+  Int_t CheckInsanity(const UInt_t* data, const Int_t nSamples) const;
   
   /** Check for and heal insanity */
   Int_t CheckAndHealInsanity(UInt_t* data, Int_t nSamples);  //Not completely reliable

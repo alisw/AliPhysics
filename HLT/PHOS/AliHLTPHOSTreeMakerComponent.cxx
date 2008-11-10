@@ -125,7 +125,7 @@ AliHLTPHOSTreeMakerComponent::DoEvent(const AliHLTComponentEventData& evtData, c
 					AliHLTComponentTriggerData& /*trigData*/, AliHLTUInt8_t* /*outputPtr*/, AliHLTUInt32_t& /*size*/,  //TODO: I think size should be set to zero when returning from this method if not data was written to the output buffer.
 					std::vector<AliHLTComponentBlockData>& /*outputBlocks*/)
 
-{
+s{
   //Do event
   //See header file for documentation
   Bool_t digitEvent;

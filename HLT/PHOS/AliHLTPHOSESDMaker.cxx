@@ -63,30 +63,31 @@ AliHLTPHOSESDMaker::FillESDCaloClusters()
 {
   //See header file for documentation
 
-  AliESDCaloCluster *caloCluster = 0;
-  AliHLTPHOSCaloClusterDataStruct* caloClusterStruct = 0;
+//   AliESDCaloCluster *caloCluster = 0;
+//   AliHLTPHOSCaloClusterDataStruct* caloClusterStruct = 0;
 
   for(UInt_t i = 0; i < fCaloClusterContainerPtr->fNCaloClusters; i++)
     {
-      caloCluster = (AliESDCaloCluster*)fCaloClustersPtr->At(i + fNCaloClusters);
-      caloClusterStruct = &(fCaloClusterContainerPtr->fCaloClusterArray[i]);
-      caloCluster->SetID(caloClusterStruct->fID);
-      caloCluster->SetClusterType(caloClusterStruct->fClusterType);
-      caloCluster->SetPosition((Float_t*)&caloClusterStruct->fGlobalPos[0]);
-      caloCluster->SetE(caloClusterStruct->fEnergy);
-      caloCluster->SetClusterDisp(caloClusterStruct->fDispersion);
-      caloCluster->SetClusterChi2(caloClusterStruct->fFitQuality);
-      caloCluster->SetPid((Float_t*)&caloClusterStruct->fPID[0]);
-      caloCluster->SetM20(caloClusterStruct->fM20);
-      caloCluster->SetM02(caloClusterStruct->fM02);
-      // PT   caloCluster->SetM11(caloClusterStruct->fM11);
-      caloCluster->SetNExMax(caloClusterStruct->fNExMax);
-      caloCluster->SetEmcCpvDistance(caloClusterStruct->fEmcCpvDistance);
-      caloCluster->SetDistanceToBadChannel(caloClusterStruct->fDistToBadChannel);
-      caloCluster->SetNCells(caloClusterStruct->fNCells);
-      caloCluster->SetCellsAbsId(caloClusterStruct->fCellsAbsId);
-      caloCluster->SetCellsAmplitudeFraction(caloClusterStruct->fCellsAmpFraction);
-      fNCaloClusters++;
+
+//       caloCluster = (AliESDCaloCluster*)fCaloClustersPtr->At(i + fNCaloClusters);
+//       caloClusterStruct = &(fCaloClusterContainerPtr->fCaloClusterArray[i]);
+//       caloCluster->SetID(caloClusterStruct->fID);
+//       caloCluster->SetClusterType(caloClusterStruct->fClusterType);
+//       caloCluster->SetPosition((Float_t*)&caloClusterStruct->fGlobalPos[0]);
+//       caloCluster->SetE(caloClusterStruct->fEnergy);
+//       caloCluster->SetClusterDisp(caloClusterStruct->fDispersion);
+//       caloCluster->SetClusterChi2(caloClusterStruct->fFitQuality);
+//       caloCluster->SetPid((Float_t*)&caloClusterStruct->fPID[0]);
+//       caloCluster->SetM20(caloClusterStruct->fM20);
+//       caloCluster->SetM02(caloClusterStruct->fM02);
+//       // PT   caloCluster->SetM11(caloClusterStruct->fM11);
+//       caloCluster->SetNExMax(caloClusterStruct->fNExMax);
+//       caloCluster->SetEmcCpvDistance(caloClusterStruct->fEmcCpvDistance);
+//       caloCluster->SetDistanceToBadChannel(caloClusterStruct->fDistToBadChannel);
+//       caloCluster->SetNCells(caloClusterStruct->fNCells);
+//       caloCluster->SetCellsAbsId(caloClusterStruct->fCellsAbsId);
+//       caloCluster->SetCellsAmplitudeFraction(caloClusterStruct->fCellsAmpFraction);
+//       fNCaloClusters++;
     }
 
   return 0;
@@ -97,32 +98,32 @@ AliHLTPHOSESDMaker::FillESDEvent()
 {
   //See header file for documentation
   
-  AliESDCaloCluster *caloCluster = 0;
-  AliHLTPHOSCaloClusterDataStruct* caloClusterStruct = 0;
+//   AliESDCaloCluster *caloCluster = 0;
+//   AliHLTPHOSCaloClusterDataStruct* caloClusterStruct = 0;
   for(UInt_t i = 0; i < fCaloClusterContainerPtr->fNCaloClusters; i++)
     {
-      //      caloCluster = (AliESDCaloCluster*)fCaloClustersPtr->New(i + fNCaloClusters);
-      caloCluster = (AliESDCaloCluster*)fCaloClustersPtr->New(i);
-      caloClusterStruct = &(fCaloClusterContainerPtr->fCaloClusterArray[i]);
+//       //      caloCluster = (AliESDCaloCluster*)fCaloClustersPtr->New(i + fNCaloClusters);
+//       caloCluster = (AliESDCaloCluster*)fCaloClustersPtr->New(i);
+//       caloClusterStruct = &(fCaloClusterContainerPtr->fCaloClusterArray[i]);
 
-      caloCluster->SetID(caloClusterStruct->fID);
-      caloCluster->SetClusterType(caloClusterStruct->fClusterType);
-      caloCluster->SetPosition((Float_t*)&caloClusterStruct->fGlobalPos[0]);
-      caloCluster->SetE(caloClusterStruct->fEnergy);
-      caloCluster->SetClusterDisp(caloClusterStruct->fDispersion);
-      caloCluster->SetClusterChi2(caloClusterStruct->fFitQuality);
-      caloCluster->SetPid((Float_t*)&caloClusterStruct->fPID[0]);
-      caloCluster->SetM20(caloClusterStruct->fM20);
-      caloCluster->SetM02(caloClusterStruct->fM02);
-      //     caloCluster->SetM11(caloClusterStruct->fM11);
-      caloCluster->SetNExMax(caloClusterStruct->fNExMax);
-      caloCluster->SetEmcCpvDistance(caloClusterStruct->fEmcCpvDistance);
-      caloCluster->SetDistanceToBadChannel(caloClusterStruct->fDistToBadChannel);
-      caloCluster->SetNCells(caloClusterStruct->fNCells);
-      caloCluster->SetCellsAbsId(caloClusterStruct->fCellsAbsId);
-      caloCluster->SetCellsAmplitudeFraction(caloClusterStruct->fCellsAmpFraction);
-      fESDEventPtr->AddCaloCluster(caloCluster);
-      fNCaloClusters++;  
+//       caloCluster->SetID(caloClusterStruct->fID);
+//       caloCluster->SetClusterType(caloClusterStruct->fClusterType);
+//       caloCluster->SetPosition((Float_t*)&caloClusterStruct->fGlobalPos[0]);
+//       caloCluster->SetE(caloClusterStruct->fEnergy);
+//       caloCluster->SetClusterDisp(caloClusterStruct->fDispersion);
+//       caloCluster->SetClusterChi2(caloClusterStruct->fFitQuality);
+//       caloCluster->SetPid((Float_t*)&caloClusterStruct->fPID[0]);
+//       caloCluster->SetM20(caloClusterStruct->fM20);
+//       caloCluster->SetM02(caloClusterStruct->fM02);
+//       //     caloCluster->SetM11(caloClusterStruct->fM11);
+//       caloCluster->SetNExMax(caloClusterStruct->fNExMax);
+//       caloCluster->SetEmcCpvDistance(caloClusterStruct->fEmcCpvDistance);
+//       caloCluster->SetDistanceToBadChannel(caloClusterStruct->fDistToBadChannel);
+//       caloCluster->SetNCells(caloClusterStruct->fNCells);
+//       caloCluster->SetCellsAbsId(caloClusterStruct->fCellsAbsId);
+//       caloCluster->SetCellsAmplitudeFraction(caloClusterStruct->fCellsAmpFraction);
+//       fESDEventPtr->AddCaloCluster(caloCluster);
+//       fNCaloClusters++;  
     }
   
   return 0;
@@ -132,36 +133,36 @@ AliHLTPHOSESDMaker::FillESDEvent(AliHLTPHOSCaloClusterContainerStruct* caloClust
 {
   //See header file for documentation
   
-  AliESDCaloCluster *caloCluster = 0;
-  AliHLTPHOSCaloClusterDataStruct* caloClusterStruct = 0;
+//   AliESDCaloCluster *caloCluster = 0;
+//   AliHLTPHOSCaloClusterDataStruct* caloClusterStruct = 0;
   
   //cout << "ESD: # of clusters: " << caloClusterContainerPtr->fNCaloClusters << endl; 
   for(UInt_t i = 0; i < caloClusterContainerPtr->fNCaloClusters; i++)
     {
-      caloCluster = (AliESDCaloCluster*)fCaloClustersPtr->New(i + fNCaloClusters);
-      caloCluster = (AliESDCaloCluster*)fCaloClustersPtr->New(i + fNCaloClusters);
-      caloClusterStruct = &(caloClusterContainerPtr->fCaloClusterArray[i]);
-      caloCluster->SetID(caloClusterStruct->fID);
-      caloCluster->SetClusterType(caloClusterStruct->fClusterType);
-      //      caloCluster->SetPosition((Float_t*)&caloClusterStruct->fGlobalPos[0]);
-      caloCluster->SetPosition((Float_t*)caloClusterStruct->fGlobalPos);
-      caloCluster->SetE(caloClusterStruct->fEnergy);
-      // cout << "\t\t ESD: Cluster energy: " << caloClusterStruct->fEnergy << endl;
-//       cout << "\t\t ESD: Position: x = " << caloClusterStruct->fGlobalPos[0] << " - y = " << caloClusterStruct->fGlobalPos[1] << " - z = " << caloClusterStruct->fGlobalPos[2] << endl;
-      caloCluster->SetClusterDisp(caloClusterStruct->fDispersion);
-      caloCluster->SetClusterChi2(caloClusterStruct->fFitQuality);
-      caloCluster->SetPid((Float_t*)&caloClusterStruct->fPID[0]);
-      caloCluster->SetM20(caloClusterStruct->fM20);
-      caloCluster->SetM02(caloClusterStruct->fM02);
-      caloCluster->SetNExMax(caloClusterStruct->fNExMax);
-      caloCluster->SetEmcCpvDistance(caloClusterStruct->fEmcCpvDistance);
-      caloCluster->SetDistanceToBadChannel(caloClusterStruct->fDistToBadChannel);
-      caloCluster->SetNCells(caloClusterStruct->fNCells);
-      caloCluster->SetCellsAbsId(caloClusterStruct->fCellsAbsId);
-      caloCluster->SetCellsAmplitudeFraction(caloClusterStruct->fCellsAmpFraction);
-      fESDEventPtr->AddCaloCluster(caloCluster);
+      // caloCluster = (AliESDCaloCluster*)fCaloClustersPtr->New(i + fNCaloClusters);
+//       caloCluster = (AliESDCaloCluster*)fCaloClustersPtr->New(i + fNCaloClusters);
+//       caloClusterStruct = &(caloClusterContainerPtr->fCaloClusterArray[i]);
+//       caloCluster->SetID(caloClusterStruct->fID);
+//       caloCluster->SetClusterType(caloClusterStruct->fClusterType);
+//       //      caloCluster->SetPosition((Float_t*)&caloClusterStruct->fGlobalPos[0]);
+//       caloCluster->SetPosition((Float_t*)caloClusterStruct->fGlobalPos);
+//       caloCluster->SetE(caloClusterStruct->fEnergy);
+//       // cout << "\t\t ESD: Cluster energy: " << caloClusterStruct->fEnergy << endl;
+// //       cout << "\t\t ESD: Position: x = " << caloClusterStruct->fGlobalPos[0] << " - y = " << caloClusterStruct->fGlobalPos[1] << " - z = " << caloClusterStruct->fGlobalPos[2] << endl;
+//       caloCluster->SetClusterDisp(caloClusterStruct->fDispersion);
+//       caloCluster->SetClusterChi2(caloClusterStruct->fFitQuality);
+//       caloCluster->SetPid((Float_t*)&caloClusterStruct->fPID[0]);
+//       caloCluster->SetM20(caloClusterStruct->fM20);
+//       caloCluster->SetM02(caloClusterStruct->fM02);
+//       caloCluster->SetNExMax(caloClusterStruct->fNExMax);
+//       caloCluster->SetEmcCpvDistance(caloClusterStruct->fEmcCpvDistance);
+//       caloCluster->SetDistanceToBadChannel(caloClusterStruct->fDistToBadChannel);
+//       caloCluster->SetNCells(caloClusterStruct->fNCells);
+//       caloCluster->SetCellsAbsId(caloClusterStruct->fCellsAbsId);
+//       caloCluster->SetCellsAmplitudeFraction(caloClusterStruct->fCellsAmpFraction);
+//       fESDEventPtr->AddCaloCluster(caloCluster);
       
-      fNCaloClusters++;  
+//       fNCaloClusters++;  
     }
   
   return 0;

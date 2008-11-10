@@ -27,9 +27,9 @@
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
 #include "AliHLTPHOSClusterAnalyser.h"
-#include "AliHLTPHOSRecPointContainerStruct.h"
+#include "AliHLTPHOSRecPointHeaderStruct.h"
 #include "AliHLTPHOSRecPointDataStruct.h"
-#include "AliHLTPHOSCaloClusterContainerStruct.h"
+#include "AliHLTPHOSCaloClusterHeaderStruct.h"
 #include "AliHLTPHOSCaloClusterDataStruct.h"
 #include "AliHLTPHOSPhysicsAnalyzerSpectrum.h"
 #include "AliPHOSGeometry.h"
@@ -40,8 +40,10 @@ ClassImp(AliHLTPHOSClusterAnalyser);
 AliHLTPHOSClusterAnalyser::AliHLTPHOSClusterAnalyser() :
   AliHLTPHOSBase(),
   fLogWeight(0),
-  fRecPointsPtr(0),
-  fCaloClustersPtr(0),
+  fRecPointDataPtr(0),
+  fNRecPoints(0),
+  fCaloClusterDataPtr(0),
+  fCaloClusterHeaderPtr(0),
   fPHOSGeometry(0),
   fAnalyzerPtr(0),
   fDoClusterFit(false),
@@ -61,11 +63,16 @@ AliHLTPHOSClusterAnalyser::~AliHLTPHOSClusterAnalyser()
 }
 
 void 
-AliHLTPHOSClusterAnalyser::SetCaloClusterContainer(AliHLTPHOSCaloClusterContainerStruct *caloClusterContainerPtr)
+AliHLTPHOSClusterAnalyser::SetCaloClusterDataPtr(AliHLTPHOSCaloClusterDataStruct *caloClusterDataPtr)
 { 
   //see header file for documentation
-  fCaloClustersPtr = caloClusterContainerPtr; 
-  fCaloClustersPtr->fNCaloClusters = 0;
+  fCaloClusterDataPtr = caloClusterDataPtr; 
+}
+void
+AliHLTPHOSClusterAnalyser::SetRecPointDataPtr(AliHLTPHOSRecPointHeaderStruct *recPointDataPtr)
+{ 
+  fNRecPoints = recPointDataPtr->fNRecPoints;
+  fRecPointDataPtr = reinterpret_cast<AliHLTPHOSRecPointDataStruct*>(reinterpret_cast<Char_t*>(recPointDataPtr)+sizeof(AliHLTPHOSRecPointHeaderStruct)); 
 }
 
 Int_t
@@ -77,23 +84,23 @@ AliHLTPHOSClusterAnalyser::CalculateCenterOfGravity()
   Float_t z = 0.;
   Float_t xi = 0.;
   Float_t zi = 0.;
-  AliHLTPHOSRecPointDataStruct *recPoint = 0;
+
   AliHLTPHOSDigitDataStruct *digit = 0;
   //AliPHOSGeometry * phosgeom =  AliPHOSGeometry::GetInstance() ;
 
-  UInt_t iDigit = 0;
-  UInt_t iRecPoint = 0;
+  AliHLTPHOSRecPointDataStruct *recPoint = fRecPointDataPtr;
 
-  for(iRecPoint=0; iRecPoint < fRecPointsPtr->fNRecPoints; iRecPoint++) 
+  UInt_t iDigit = 0;
+
+  for(Int_t iRecPoint=0; iRecPoint < fNRecPoints; iRecPoint++) 
     {
-      recPoint = &(fRecPointsPtr->fRecPointArray[iRecPoint]);
+      digit = &(recPoint->fDigits);
       for(iDigit = 0; iDigit < recPoint->fMultiplicity; iDigit++)
 	{
-	  digit = &(recPoint->fDigitsList[iDigit]);
 	  
 	  xi = digit->fX;
 	  zi = digit->fZ;
-	  
+	  //cout << "COG digits (x:z:amp:time): " << xi << " : " << zi << " : " << digit->fEnergy << " : " << digit->fTime << endl;
 	  if (recPoint->fAmp > 0 && digit->fEnergy > 0) 
 	    {
 	      Float_t w = TMath::Max( 0., fLogWeight + TMath::Log( digit->fEnergy / recPoint->fAmp ) ) ;
@@ -101,8 +108,9 @@ AliHLTPHOSClusterAnalyser::CalculateCenterOfGravity()
 	      z    += zi * w ;
 	      wtot += w ;
 	    }
+	  digit++;
 	}
-      
+      //cout << endl;
       if (wtot>0) 
 	{
 	  recPoint->fX = x/wtot ;
@@ -112,6 +120,7 @@ AliHLTPHOSClusterAnalyser::CalculateCenterOfGravity()
 	{
 	  recPoint->fAmp = 0;
 	}
+      recPoint = reinterpret_cast<AliHLTPHOSRecPointDataStruct*>(digit);
     }
   return 0;
 }
@@ -140,26 +149,33 @@ AliHLTPHOSClusterAnalyser::DeconvoluteClusters()
 }
 
 Int_t 
-AliHLTPHOSClusterAnalyser::CreateClusters()
+AliHLTPHOSClusterAnalyser::CreateClusters(UInt_t availableSize, UInt_t& totSize)
 {
   //See header file for documentation
-  
-  AliHLTPHOSRecPointDataStruct* recPointPtr = 0;
-  AliHLTPHOSCaloClusterDataStruct* caloClusterPtr = 0;
-  AliHLTPHOSDigitDataStruct* digitPtr = 0;
 
+  UInt_t maxClusterSize = sizeof(AliHLTPHOSCaloClusterDataStruct) + (6 << 7); //Reasonable estimate... (6 = sizeof(Short_t) + sizeof(Float_t)
+
+  AliHLTPHOSRecPointDataStruct* recPointPtr = fRecPointDataPtr;
+  AliHLTPHOSDigitDataStruct* digitPtr = &(recPointPtr->fDigits);  
+ 
+  AliHLTPHOSCaloClusterDataStruct* caloClusterPtr = fCaloClusterDataPtr;
+  UShort_t* cellIDPtr = &(caloClusterPtr->fCellsAbsId);
+  Float_t* cellAmpFracPtr = &(caloClusterPtr->fCellsAmpFraction);
+  
   Float_t localPos[2];
+
   Float_t globalPos[3];
   Int_t id = -1;
-
+  
   //fPHOSGeometry = AliPHOSGeometry::GetInstance("noCPV");
 
-  for(UInt_t i = 0; i < fRecPointsPtr->fNRecPoints; i++)
+  for(Int_t i = 0; i < fNRecPoints; i++) //CRAP needs fix when we start unfolding
     {
       
-      caloClusterPtr = &(fCaloClustersPtr->fCaloClusterArray[i]);
-      recPointPtr = &(fRecPointsPtr->fRecPointArray[i]);
-      
+      if(availableSize < (totSize + maxClusterSize)) 
+	{
+	  return -1; //Might get out of buffer, exiting
+	}
       localPos[0] = recPointPtr->fX;
       localPos[1] = recPointPtr->fZ;
       
@@ -169,15 +185,25 @@ AliHLTPHOSClusterAnalyser::CreateClusters()
       caloClusterPtr->fGlobalPos[1] = globalPos[1];
       caloClusterPtr->fGlobalPos[2] = globalPos[2];
 
+      //cout << "Local Position (x:z:module): " << localPos[0] << " : "<< localPos[1] << " : " << recPointPtr->fModule << endl;
+
+      //cout << "Global Position (x:y:z): " << globalPos[0] << " : "<< globalPos[1] << " : " << globalPos[2] << endl << endl;
+
       caloClusterPtr->fNCells = recPointPtr->fMultiplicity;
   
+      cellIDPtr = &(caloClusterPtr->fCellsAbsId);
+      cellAmpFracPtr = &(caloClusterPtr->fCellsAmpFraction);
+     
       for(UInt_t j = 0; j < caloClusterPtr->fNCells; j++)
 	{
-	  digitPtr = &(recPointPtr->fDigitsList[j]);
-	  //fPHOSGeometry->RelPosToAbsId((Int_t)(recPointPtr->fModule + 1), (double)(digitPtr->fX), (double)(digitPtr->fZ), id);
-	  caloClusterPtr->fCellsAbsId[j] = id;
-	  caloClusterPtr->fCellsAmpFraction[j] = digitPtr->fAmplitude/recPointPtr->fAmp;
+	  // fPHOSGeometry->RelPosToAbsId((Int_t)(recPointPtr->fModule + 1), (double)(digitPtr->fX), (double)(digitPtr->fZ), id);
+	  *cellIDPtr = id;
+	  *cellAmpFracPtr = digitPtr->fEnergy/recPointPtr->fAmp;
+	  digitPtr++;
+	  cellIDPtr = reinterpret_cast<UShort_t*>(reinterpret_cast<char*>(cellAmpFracPtr) + sizeof(Float_t)); 
+	  cellAmpFracPtr = reinterpret_cast<Float_t*>(reinterpret_cast<char*>(cellIDPtr) + sizeof(Short_t)); 
 	}
+
       caloClusterPtr->fEnergy = recPointPtr->fAmp;
       
       if(fDoClusterFit)
@@ -211,7 +237,6 @@ AliHLTPHOSClusterAnalyser::CreateClusters()
 	      caloClusterPtr->fPID[k] = 0;
 	    }
 	}
-
       if(fHaveDistanceToBadChannel)
 	{
 	  caloClusterPtr->fDistanceToBadChannel = GetDistanceToBadChannel(caloClusterPtr);
@@ -222,11 +247,14 @@ AliHLTPHOSClusterAnalyser::CreateClusters()
 	}
 
       caloClusterPtr->fClusterType = '\0';
-    }
-  fCaloClustersPtr->fNCaloClusters = fRecPointsPtr->fNRecPoints;
+      totSize += sizeof(AliHLTPHOSCaloClusterDataStruct) + (caloClusterPtr->fNCells)*(sizeof(Short_t) +sizeof(Float_t)-1);   
 
+      caloClusterPtr = reinterpret_cast<AliHLTPHOSCaloClusterDataStruct*>(cellAmpFracPtr);
+      recPointPtr = reinterpret_cast<AliHLTPHOSRecPointDataStruct*>(digitPtr);
+      digitPtr = &(recPointPtr->fDigits);  
+    }
  
-  return fCaloClustersPtr->fNCaloClusters;
+  return fNRecPoints;
 
 }
 

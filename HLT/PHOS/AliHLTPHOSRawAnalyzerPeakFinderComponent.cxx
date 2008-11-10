@@ -95,18 +95,19 @@ AliHLTPHOSRawAnalyzerPeakFinderComponent::LoadPFVector(int startIndex, int nSamp
   FILE *fp;
   fp = fopen(tmpPFPath, "r");
   
+  Int_t res = 0; //OD to get rid of warnings
   if(fp != 0)
     {
       for(int i=0; i <  nSamples; i++)
 	{
-	  fscanf(fp, "%lf", &tmpAVector[i]);
+	  res = fscanf(fp, "%lf", &tmpAVector[i]);
 	}
 
-      fscanf(fp, "\n");
+      res = fscanf(fp, "\n");
 
       for(int i=0; i < nSamples; i++)
 	{
-	  	  fscanf(fp, "%lf", &tmpTVector[i]);
+	  res = fscanf(fp, "%lf", &tmpTVector[i]);
 	}
       fAnalyzerPtr->SetAVector(tmpAVector,  nSamples);
       fAnalyzerPtr->SetTVector(tmpTVector,  nSamples);
