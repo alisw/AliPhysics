@@ -19,6 +19,14 @@ class AliFMDAnalysisTaskCollector : public AliAnalysisTask
  public:
     AliFMDAnalysisTaskCollector();
     AliFMDAnalysisTaskCollector(const char* name);
+ AliFMDAnalysisTaskCollector(const AliFMDAnalysisTaskCollector& o) : AliAnalysisTask(),
+      fDebug(o.fDebug),
+      fChain(o.fChain),
+      fESD(o.fESD),
+      fOutputList(o.fOutputList),
+      fArray(o.fArray),
+      fEdistHist(o.fEdistHist),
+      fZvtxDist(o.fZvtxDist)  {}
     virtual ~AliFMDAnalysisTaskCollector() {;}
     // Implementation of interface methods
     virtual void ConnectInputData(Option_t *option = "");
@@ -33,7 +41,6 @@ class AliFMDAnalysisTaskCollector : public AliAnalysisTask
     Int_t         fDebug;        //  Debug flag
     TChain*       fChain;        //! chained files
     AliESDEvent*  fESD;          //! ESD
-    AliAODEvent*  fAOD;          //! AOD
     TList*        fOutputList;
     TObjArray*    fArray;
     TH1F*         fEdistHist;

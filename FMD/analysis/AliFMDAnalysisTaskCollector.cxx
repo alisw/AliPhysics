@@ -25,7 +25,6 @@ AliFMDAnalysisTaskCollector::AliFMDAnalysisTaskCollector()
 : fDebug(0),
   fChain(0x0),
   fESD(0x0),
-  fAOD(0x0),
   fOutputList(0),
   fArray(0),
   fEdistHist(0),
@@ -41,7 +40,6 @@ AliFMDAnalysisTaskCollector::AliFMDAnalysisTaskCollector(const char* name):
     fDebug(0),
     fChain(0x0),
     fESD(0x0),
-    fAOD(0x0),
     fOutputList(0),
     fArray(0),
     fEdistHist(0),
@@ -109,7 +107,6 @@ void AliFMDAnalysisTaskCollector::Exec(Option_t */*option*/)
     fESD->CopyFromOldESD();
   }
   
-  Long64_t ientry = fChain->GetReadEntry();
   Double_t vertex[3];
   fESD->GetVertex()->GetXYZ(vertex);
   fZvtxDist->Fill(vertex[2]);
