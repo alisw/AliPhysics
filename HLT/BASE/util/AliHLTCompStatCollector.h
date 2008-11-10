@@ -147,6 +147,9 @@ class AliHLTCompStatCollector : public AliHLTProcessor
   /** branch filling variable */
   UInt_t* fpTotalOutputSizeArray; //!transient
 
-  ClassDef(AliHLTCompStatCollector, 1)
+  /** const base of GetOutputSize, updated on error in DoEvent */
+  int fSizeEstimator; //! transient
+
+  ClassDef(AliHLTCompStatCollector, 2)
 };
 #endif
