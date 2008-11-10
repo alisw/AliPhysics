@@ -9,7 +9,7 @@
 
 void t0_digits()
 {
-  AliRunLoader* rl =  AliEveEventManager::AssertRunLoader();
+  AliRunLoader* rl = AliEveEventManager::AssertRunLoader();
 
   rl->LoadDigits("T0");
   TTree* dt = rl->GetTreeD("T0", false);

@@ -18,6 +18,7 @@
 #include <TEveQuadSet.h>
 
 class AliT0digit;
+class AliRawReader;
 class AliT0RawReader;
 class TTree;
 
@@ -29,7 +30,9 @@ public:
 
   virtual void DigitSelected(Int_t idx);
 
-  void LoadRaw(TString fileName, Int_t ievt);
+  void PrintEventInfo(); // *MENU*
+
+  static void LoadRaw(AliRawReader* reader);
 
   static void MakeModules(AliT0digit *digits);
 

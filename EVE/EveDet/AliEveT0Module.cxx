@@ -43,31 +43,54 @@ AliEveT0Module::AliEveT0Module(const Text_t* n, Int_t sigType, AliT0digit *digit
   //
 }
 
+void AliEveT0Module::PrintEventInfo()
+{
+  printf("Blabla\n");
+}
+
 /******************************************************************************/
 
-void AliEveT0Module::LoadRaw(TString fileName, Int_t ievt)
+void AliEveT0Module::LoadRaw(AliRawReader* reader)
 {
   // Load raw-data from file.
 
   AliT0digit *digits = 0;
-  AliRawReader *reader = new AliRawReaderRoot(fileName,ievt);
+
+  // ??? How / when is this called during reco from raw?
   reader->LoadEquipmentIdsMap("T0map.txt");
   reader->RequireHeader(kTRUE);
+
   AliT0RawReader *start = new AliT0RawReader(reader);
   Int_t allData[110][5];
   TRandom r(0);
-  //  cout<<ievt<<endl;
-  TEveRGBAPalette* rawPalette  = new TEveRGBAPalette(0, 3000);
-  TEveRGBAPalette* vertexPalette  = new TEveRGBAPalette(-100, 100);
- 
+
+  TEveRGBAPalette *rawPalette    = new TEveRGBAPalette(0, 3000);
+  TEveRGBAPalette *vertexPalette = new TEveRGBAPalette(-100, 100);
+
+  TEveFrameBox *box = new TEveFrameBox();
+  {
+    Float_t  frame[3*36];
+    Float_t *p = frame;
+    for (Int_t i = 0; i < 36; ++i, p += 3) {
+      p[0] = 8.0f * TMath::Cos(TMath::TwoPi()*i/36);
+      p[1] = 8.0f * TMath::Sin(TMath::TwoPi()*i/36);
+      p[2] = 0;
+    }
+    box->SetQuadByPoints(frame, 36);
+  }
+  box->SetFrameColor(kGray);
+
+
   rawPalette->SetLimits(1, 3000); // Set proper raw time range.
   TEveQuadSet* rawA = new AliEveT0Module("T0_RAW_A", 2, digits, start);
   rawA->SetPalette(rawPalette);
   rawA->Reset(TEveQuadSet::kQT_HexagonXY, kFALSE, 32);
+  rawA->SetFrame(box);
   TEveQuadSet* rawC = new AliEveT0Module("T0_RAW_C", 3, digits, start);
   rawC->SetPalette(rawPalette);
-  rawC->Reset(TEveQuadSet::kQT_HexagonXY, kFALSE, 32);
- 
+  rawC->Reset(TEveQuadSet::kQT_HexagonXY, kFALSE, 32); 
+  rawC->SetFrame(box);
+
   TEveQuadSet* vertexT0 = new AliEveT0Module("T0_Vertex", 5, digits, start);
   vertexT0->SetPalette(vertexPalette);
   vertexT0->Reset(TEveQuadSet::kQT_HexagonXY, kFALSE, 32);
@@ -81,7 +104,8 @@ void AliEveT0Module::LoadRaw(TString fileName, Int_t ievt)
       allData[i][iHit]= start->GetData(i,iHit);
       if (allData[i][iHit] != 0) {
         using namespace std;
-        cout <<"event"<< ievt <<" i "<< i <<" "<< allData[i][iHit] - allData[0][0] <<endl;
+        cout <<"event "<< AliEveEventManager::GetCurrent()->GetEventId()
+	     <<" i "<< i <<" "<< allData[i][iHit] - allData[0][0] <<endl;
       }
     }
   }
@@ -255,12 +279,10 @@ void AliEveT0Module::DigitSelected(Int_t idx)
 
     printf("  idx=%d, time %d\n",  idx, qb->fValue);
   }
-if (fSigType == 5) {
+  if (fSigType == 5) {
 
     printf("vertex====================\n");
     printf("  idx=%d, zvertex pozition %d\n",  idx, qb->fValue);
 
   }
-
-
 }
