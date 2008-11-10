@@ -893,7 +893,17 @@ int AliHLTComponent::CleanupInputObjects()
     // (CreateInputObject), and written to a TFile afterwards, the
     // TFile::Close calls ROOOT's garbage collection. No clue why the
     // object ended up in the key list and needs to be deleted
-    if (pObj && gObjectTable->PtrIsValid(pObj)) delete pObj;
+    //
+    // Matthias 09.11.2008 follow up
+    // This approach doesn't actually work in all cases: the object table
+    // can be switched off globally, the flag needs to be checked here as
+    // well in order to avoid memory leaks.
+    // This means we have to find another solution for the problem if it
+    // pops up again.
+    if (pObj &&
+	(!TObject::GetObjectStat() || gObjectTable->PtrIsValid(pObj))) {
+      delete pObj;
+    }
   }
   delete array;
   return 0;
