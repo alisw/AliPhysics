@@ -525,8 +525,8 @@ void AliZDCQADataMakerRec::MakeESDs(AliESDEvent * esd)
   const Float_t * Centr_ZNC, * Centr_ZNA;
   Int_t NSpecnC = (Int_t) (esd->GetZDCN1Energy()/2.7);
   Int_t NSpecnA = (Int_t) (esd->GetZDCN2Energy()/2.7);
-  Centr_ZNC = zdcESD->GetZNCCentroid(NSpecnC);
-  Centr_ZNA = zdcESD->GetZNACentroid(NSpecnA);
+  Centr_ZNC = zdcESD->GetZNCCentroid();
+  Centr_ZNA = zdcESD->GetZNACentroid();
   GetESDsData(0)->Fill(Centr_ZNC[0], Centr_ZNC[1]);
   GetESDsData(1)->Fill(Centr_ZNA[0], Centr_ZNA[1]);
   //
