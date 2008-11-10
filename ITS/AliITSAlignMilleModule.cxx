@@ -350,7 +350,7 @@ Int_t AliITSAlignMilleModule::SensVolOrigGlobalMatrix(UShort_t volid, TGeoHMatri
   Int_t idx=GetIndexFromVolumeID(volid);
   if (idx<0) return -1;
   TGeoHMatrix mo;
-  if (!AliGeomManager::GetOrigGlobalMatrix(AliGeomManager::SymName(volid),mo));
+  if (!(AliGeomManager::GetOrigGlobalMatrix(AliGeomManager::SymName(volid),mo))) return -1;
   (*m)=mo;
 
   // SPD y-shift by 81 mu
