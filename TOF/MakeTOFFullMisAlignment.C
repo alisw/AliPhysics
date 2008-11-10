@@ -99,12 +99,43 @@ void MakeTOFFullMisAlignment(){
   Int_t nstrC=19;
   Int_t nSectors=18;
   Int_t nStrips=nstrA+2*nstrB+2*nstrC;
+  Double_t cuty=0., cutz=0., cut=3*sigmatr;
 
   for (Int_t isect = 0; isect < nSectors; isect++) {
     for (Int_t istr = 1; istr <= nStrips; istr++) {
-    sdy = rnds->Gaus(0.,sigmatr);
-    sdz = rnds->Gaus(0.,sigmatr);
-    strId++;
+    switch (istr) {
+    case 25:
+    case 29:
+    case 63:
+    case 67:
+      cuty = sigmatr*0.6;
+      sdy  = LocalTruncatedGaus(0., sigmatr, cut, cuty);
+      sdz  = AliMathBase::TruncatedGaus(0., sigmatr, cut);
+      strId++;
+      break;
+      /*
+    case 38:
+      cuty = sigmatr*2.5;
+      cutz = sigmatr*2.5;
+      sdy  = LocalTruncatedGaus(0., sigmatr, cut, cuty);
+      sdz  = LocalTruncatedGaus(0., sigmatr, cut, cutz);
+      strId++;
+      break;
+    case 54:
+      cuty = sigmatr*2.5;
+      cutz = sigmatr*2.5;
+      sdy  = LocalTruncatedGaus(0., sigmatr, cut, cuty);
+      sdz  = LocalTruncatedGaus(0., sigmatr, cutz, cut);
+      strId++;
+      break;
+      */
+    default:
+      sdy = AliMathBase::TruncatedGaus(0., sigmatr, cut);
+      sdz = AliMathBase::TruncatedGaus(0., sigmatr, cut);
+      strId++;
+      break;
+    }
+
     if ((isect==13 || isect==14 || isect==15) && (istr >= 39 && istr <= 53)) continue;
     new((*array)[j++]) AliAlignObjParams(AliGeomManager::SymName(idTOF,strId),AliGeomManager::LayerToVolUID(idTOF,strId), sdx, sdy, sdz, sdpsi, sdtheta, sdphi, kFALSE);
     }
@@ -139,3 +170,13 @@ void MakeTOFFullMisAlignment(){
 }
 
 
+Double_t LocalTruncatedGaus(Double_t mean, Double_t sigma, Double_t cutatL, Double_t cutatR)
+{
+  // return number generated according to a gaussian distribution N(mean,sigma) truncated at cutat
+  //
+  Double_t value;
+  do{
+    value=gRandom->Gaus(mean,sigma);
+  }while(value-mean<-cutatL || value-mean>cutatR);
+  return value;
+}
