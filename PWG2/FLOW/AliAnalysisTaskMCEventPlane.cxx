@@ -216,6 +216,11 @@ void AliAnalysisTaskMCEventPlane::Exec(Option_t *)
   fCFManager2->SetEventInfo(mcEvent);
 
   Printf("MC particles: %d", mcEvent->GetNumberOfTracks());
+  if (mcEvent->GetNumberOfTracks() == -1)
+    {
+      cout<<"Skipping Event -- No MC information available for this event"<<endl;
+      return;
+    }
   
   AliGenCocktailEventHeader *header = dynamic_cast<AliGenCocktailEventHeader *> (mcEvent-> GenEventHeader()); 
   if (!header) {

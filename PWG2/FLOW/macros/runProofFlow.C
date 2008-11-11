@@ -167,12 +167,14 @@ void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_c2030", Int_t nR
  
  AliCFTrackQualityCuts *recQualityCuts1 = new AliCFTrackQualityCuts("recQualityCuts1","rec-level quality cuts");
  recQualityCuts1->SetMinNClusterTPC(minclustersTPC1);
- // recQualityCuts1->SetRequireITSRefit(kTRUE);
+ recQualityCuts1->SetStatus(AliESDtrack::kITSrefit);
+ // recQualityCuts1->SetRequireITSRefit(kTRUE); //old
  if (QA) { recQualityCuts1->SetQAOn(qaInt); }
  
  AliCFTrackQualityCuts *recQualityCuts2 = new AliCFTrackQualityCuts("recQualityCuts2","rec-level quality cuts");
  recQualityCuts2->SetMinNClusterTPC(minclustersTPC2);
- // recQualityCuts2->SetRequireITSRefit(kTRUE);
+ recQualityCuts2->SetStatus(AliESDtrack::kITSrefit);
+ // recQualityCuts2->SetRequireITSRefit(kTRUE); //old
  if (QA) { recQualityCuts2->SetQAOn(qaDiff); }
  
  AliCFTrackIsPrimaryCuts *recIsPrimaryCuts1 = new AliCFTrackIsPrimaryCuts("recIsPrimaryCuts1","rec-level isPrimary cuts");

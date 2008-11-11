@@ -3,6 +3,36 @@ TChain* CreateESDChain(const char* aDataDir = "ESDfiles.txt", Int_t aRuns = 10, 
 TChain* CreateAODChain(const char* aDataDir = "AODfiles.txt", Int_t aRuns = 10, Int_t offset = 0) ;
 void LookupWrite(TChain* chain, const char* target) ;
 
+ ///////////////////////////////////////////////////////////////////////////////// 	 
+// 	 
+// HOW TO USE THIS MACRO: 	 
+// 	 
+// With this macro several flow analysis can be run. 	 
+// SP    = Scalar Product                (for PbPb or pp) 	 
+// LYZ1  = Lee Yang Zeroes first run     (for PbPb) 	 
+// LYZ2  = Lee Yang Zeroes second run    (for PbPb) 	 
+// LYZEP = Lee Yang Zeroes Event Plane   (for PbPb) 	 
+// GFC   = Generating Function Cumulants (for PbPb)  
+// MCEP  = Flow calculated from the real MC event plane (for PbPb only!) 	 
+// 	 
+// The LYZ analysis should be done in the following order; 	 
+// LYZ1 -> LYZ2 -> LYZEP, 	 
+// because LYZ2 depends on the outputfile of LYZ1 and LYZEP on the outputfile 	 
+// of LYZ2. 	 
+// 	 
+// The MCEP method is a reference method. 	 
+// It can only be run when MC information (kinematics.root & galice.root file) is available 	 
+// in which the reaction plane is stored. 	 
+// 	 
+// One can run on ESD, AOD or MC. 	 
+// Additional options are ESDMC0, ESDMC1. In these options the ESD and MC 	 
+// information is combined. Tracks are selected in the ESD, the PID information 	 
+// is taken from the MC (perfect PID). For ESDMC0 the track kinematics is taken 	 
+// from the ESD and for ESDMC1 it is taken from the MC information. 	 
+// 	 
+/////////////////////////////////////////////////////////////////////////////////// 	 
+	 
+
 //SETTING THE ANALYSIS
 
 //Flow analysis method can be:
@@ -12,11 +42,12 @@ void LookupWrite(TChain* chain, const char* target) ;
 // LYZEP = Lee Yang Zeroes Event Plane
 // GFC   = Generating Function Cumulants
 // MCEP  = Flow calculated from the real MC event plane (only for simulated data)
-const TString method = "GFC";
+
+const TString method = "MCEP";
 
 //Type of analysis can be:
 // ESD, AOD, MC, ESDMC0, ESDMC1
-const TString type = "AOD";
+const TString type = "ESD";
 
 //Bolean to fill/not fill the QA histograms
 Bool_t QA = kTRUE;    
@@ -49,8 +80,11 @@ const Int_t maxnsigmatovertex2 = 3;
 
 
 
-//void runAliAnalysisTaskFlow(Int_t nRuns = 10, const Char_t* dataDir="/data/alice1/kolk/TherminatorFIX", Int_t offset = 0) 
-void runAliAnalysisTaskFlow(Int_t nRuns = 3, const Char_t* dataDir="/data/alice1/kolk/AOD", Int_t offset = 0)
+//void runAliAnalysisTaskFlow(Int_t nRuns = 100, const Char_t* dataDir="/data/alice1/kolk/TherminatorFIX", Int_t offset = 0) 
+//void runAliAnalysisTaskFlow(Int_t nRuns = 3, const Char_t* dataDir="/data/alice1/kolk/TherminatorNov08", Int_t offset = 0) 
+//void runAliAnalysisTaskFlow(Int_t nRuns = 1, const Char_t* dataDir="/data/alice1/kolk/AOD", Int_t offset = 0)
+//void runAliAnalysisTaskFlow(Int_t nRuns = 3, const Char_t* dataDir="/data/alice1/kolk/testCrashIfNoKine", Int_t offset = 0)
+void runAliAnalysisTaskFlow(Int_t nRuns = 3, const Char_t* dataDir="/data/alice1/kolk/testCrashIfMissingKine", Int_t offset = 0)
 {
   TStopwatch timer;
   timer.Start();
@@ -136,12 +170,12 @@ void runAliAnalysisTaskFlow(Int_t nRuns = 3, const Char_t* dataDir="/data/alice1
 
   AliCFTrackQualityCuts *recQualityCuts1 = new AliCFTrackQualityCuts("recQualityCuts1","rec-level quality cuts");
   recQualityCuts1->SetMinNClusterTPC(minclustersTPC1);
-  //recQualityCuts1->SetRequireITSRefit(kTRUE);
+  recQualityCuts1->SetStatus(AliESDtrack::kITSrefit);
   if (QA) { recQualityCuts1->SetQAOn(qaInt); }
 
   AliCFTrackQualityCuts *recQualityCuts2 = new AliCFTrackQualityCuts("recQualityCuts2","rec-level quality cuts");
   recQualityCuts2->SetMinNClusterTPC(minclustersTPC2);
-  //recQualityCuts2->SetRequireITSRefit(kTRUE);
+  recQualityCuts2->SetStatus(AliESDtrack::kITSrefit);
   if (QA) { recQualityCuts2->SetQAOn(qaDiff); }
 
   AliCFTrackIsPrimaryCuts *recIsPrimaryCuts1 = new AliCFTrackIsPrimaryCuts("recIsPrimaryCuts1","rec-level isPrimary cuts");
@@ -225,17 +259,19 @@ void runAliAnalysisTaskFlow(Int_t nRuns = 3, const Char_t* dataDir="/data/alice1
 
   printf("CREATE INTERFACE AND CUTS\n");
   AliCFManager* cfmgr1 = new AliCFManager();
+  cfmgr1->SetNStepParticle(4); //05nov08
   cfmgr1->SetParticleCutsList(AliCFManager::kPartGenCuts,mcList1);       //on MC
   cfmgr1->SetParticleCutsList(AliCFManager::kPartAccCuts,accList1);
   cfmgr1->SetParticleCutsList(AliCFManager::kPartRecCuts,recList1);      //on ESD
   cfmgr1->SetParticleCutsList(AliCFManager::kPartSelCuts,fPIDCutList1);  //on ESD
-
+  
   AliCFManager* cfmgr2 = new AliCFManager();
+  cfmgr2->SetNStepParticle(4); //05nov08
   cfmgr2->SetParticleCutsList(AliCFManager::kPartGenCuts,mcList2);
   cfmgr2->SetParticleCutsList(AliCFManager::kPartAccCuts,accList2);
   cfmgr2->SetParticleCutsList(AliCFManager::kPartRecCuts,recList2);
   cfmgr2->SetParticleCutsList(AliCFManager::kPartSelCuts,fPIDCutList2);
-
+  
  
   if (method == "LYZ2"){  
     // read the input file from the first run 

@@ -136,7 +136,7 @@ void AliCumulantsFunctions::Calculate()
  //Double_t fBinWidth=(fPtMax-fPtMin)/fgknBins;              //width of pt bin (in GeV)   
      
  //<G[p][q]>
- Double_t AvG[fgkPmax][fgkQmax]={0.};                                  
+ Double_t AvG[fgkPmax][fgkQmax]={{0.}};                                  
  for(Int_t p=0;p<fgkPmax;p++){
   for(Int_t q=0;q<fgkQmax;q++){ 
    AvG[p][q]=fIntGenFun->GetBinContent(p+1,q+1);
@@ -159,7 +159,7 @@ void AliCumulantsFunctions::Calculate()
  //////////////////gen. function for the cumulants////////////////////////////
  /////////////////////////////////////////////////////////////////////////////
   
- Double_t C[fgkPmax][fgkQmax]={0.};//C[p][q]
+ Double_t C[fgkPmax][fgkQmax]={{0.}};//C[p][q]
  if(AvM!=0){
   for (Int_t p=0;p<fgkPmax;p++){
    for (Int_t q=0;q<fgkQmax;q++){
@@ -353,8 +353,8 @@ void AliCumulantsFunctions::Calculate()
  ///////////////////////DIFFERENTIAL FLOW CALCULATIONS////////////////////////
  /////////////////////////////////////////////////////////////////////////////
   
-  Double_t X[fgknBins][fgkPmax][fgkQmax]={0.};
-  Double_t Y[fgknBins][fgkPmax][fgkQmax]={0.};
+  Double_t X[fgknBins][fgkPmax][fgkQmax]={{0.}};
+  Double_t Y[fgknBins][fgkPmax][fgkQmax]={{0.}};
   
   /*
   //3D profiles
@@ -400,7 +400,7 @@ void AliCumulantsFunctions::Calculate()
   }
   }
   
-  Double_t D[fgknBins][fgkPmax]={0.};
+  Double_t D[fgknBins][fgkPmax]={{0.}};
   
   for (Int_t b=0;b<fgknBins;b++){
     for (Int_t p=0;p<fgkPmax;p++){
