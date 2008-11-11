@@ -273,7 +273,11 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliMCEvent* anInput, Ali
   
   Int_t iNumberOfInputTracks = anInput->GetNumberOfTracks() ;
   cerr<<"anInput->GetNumberOfTracks() = "<<iNumberOfInputTracks<<endl;
- 
+  if (iNumberOfInputTracks==-1) {
+    cout<<"Skipping Event -- No MC information available for this event"<<endl;
+    return 0;
+  }
+
   AliFlowEventSimple* pEvent = new AliFlowEventSimple(10);
     
   Int_t iN = iNumberOfInputTracks; //maximum number of tracks in AliFlowEventSimple
@@ -406,11 +410,11 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliESDEvent* anInput, Al
     pTrack->SetPhi(pParticle->Phi() );
     //check if pParticle passes the cuts
 
-    if (intCFManager->CheckParticleCuts(AliCFManager::kPartRecCuts,pParticle) &&
+    if (intCFManager->CheckParticleCuts(AliCFManager::kPartRecCuts,pParticle) && 
 	intCFManager->CheckParticleCuts(AliCFManager::kPartSelCuts,pParticle)) {
       pTrack->SetForIntegratedFlow(kTRUE);
     }
-    if (diffCFManager->CheckParticleCuts(AliCFManager::kPartRecCuts,pParticle) &&
+    if (diffCFManager->CheckParticleCuts(AliCFManager::kPartRecCuts,pParticle) && 
 	diffCFManager->CheckParticleCuts(AliCFManager::kPartSelCuts,pParticle)) {
       pTrack->SetForDifferentialFlow(kTRUE);}
 
@@ -637,7 +641,13 @@ AliFlowEventSimple*  AliFlowEventSimpleMaker::FillTracks(AliESDEvent* anInput, A
 
   Int_t iNumberOfInputTracks = anInput->GetNumberOfTracks() ;
   cerr<<"anInput->GetNumberOfTracks() = "<<iNumberOfInputTracks<<endl;
-  
+  Int_t iNumberOfInputTracksMC = anInputMc->GetNumberOfTracks() ;
+  cerr<<"anInputMc->GetNumberOfTracks() = "<<iNumberOfInputTracksMC<<endl;
+  if (iNumberOfInputTracksMC==-1) {
+    cout<<"Skipping Event -- No MC information available for this event"<<endl;
+    return 0;
+  }
+
   AliFlowEventSimple* pEvent = new AliFlowEventSimple(10);
     
   Int_t iN = iNumberOfInputTracks; //maximum number of tracks in AliFlowEventSimple

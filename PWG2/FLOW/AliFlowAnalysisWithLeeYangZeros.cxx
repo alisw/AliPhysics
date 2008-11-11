@@ -253,7 +253,7 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Make(AliFlowEventSimple* anEvent)
   Int_t iNtheta = AliFlowLYZConstants::kTheta;
   //set the event number
   SetEventNumber((int)fCommonHists->GetHistMultOrig()->GetEntries());
-  //cout<<"number of events processed is "<<fEventNumber<<endl;
+  //cout<<"number of events processed is "<<fEventNumber<<endl; 
 
   //set the sum of Q vectors
   fQsum->Set(fHistQsumforChi->GetBinContent(1),fHistQsumforChi->GetBinContent(2));
@@ -308,18 +308,20 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Make(AliFlowEventSimple* anEvent)
     //combining 5 theta angles to 1 relative error BP eq. 89
     Double_t dRelErr2comb = 0.;
     Int_t iEvts = fEventNumber; 
-    for (Int_t theta=0;theta<iNtheta;theta++){
-      Double_t dTheta = ((double)theta/iNtheta)*TMath::Pi(); 
-      Double_t dApluscomb = TMath::Exp((dJ01*dJ01)/(2*dChi*dChi)*
+    if (iEvts!=0) {
+      for (Int_t theta=0;theta<iNtheta;theta++){
+	Double_t dTheta = ((double)theta/iNtheta)*TMath::Pi(); 
+	Double_t dApluscomb = TMath::Exp((dJ01*dJ01)/(2*dChi*dChi)*
 				       TMath::Cos(dTheta));
-      Double_t dAmincomb = TMath::Exp(-(dJ01*dJ01)/(2*dChi*dChi)*
+	Double_t dAmincomb = TMath::Exp(-(dJ01*dJ01)/(2*dChi*dChi)*
 				      TMath::Cos(dTheta));
-      dRelErr2comb += (1/(2*iEvts*(dJ01*dJ01)*TMath::BesselJ1(dJ01)*
+	dRelErr2comb += (1/(2*iEvts*(dJ01*dJ01)*TMath::BesselJ1(dJ01)*
 			  TMath::BesselJ1(dJ01)))*
-	(dApluscomb*TMath::BesselJ0(2*dJ01*TMath::Sin(dTheta/2)) + 
-	 dAmincomb*TMath::BesselJ0(2*dJ01*TMath::Cos(dTheta/2)));
+	  (dApluscomb*TMath::BesselJ0(2*dJ01*TMath::Sin(dTheta/2)) + 
+	   dAmincomb*TMath::BesselJ0(2*dJ01*TMath::Cos(dTheta/2)));
+      }
+      dRelErr2comb /= iNtheta;
     }
-    dRelErr2comb /= iNtheta;
     Double_t dRelErrcomb = TMath::Sqrt(dRelErr2comb);
 
     //copy content of profile into TH1D and add error
