@@ -7,7 +7,7 @@
 // LYZ1  = Lee Yang Zeroes first run     (for PbPb)
 // LYZ2  = Lee Yang Zeroes second run    (for PbPb)
 // LYZEP = Lee Yang Zeroes Event Plane   (for PbPb)
-// CUM   = Cumulants  WARNING: THIS MACRO IS NOT YET TESTED FOR THE OPTION "CUM"
+// CUM   = Cumulants (for PbPb or pp)
 // MCEP  = Flow calculated from the real MC event plane (for PbPb only)
 //
 // The LYZ analysis should be done in the following order;
@@ -37,7 +37,7 @@
 // LYZEP = Lee Yang Zeroes Event Plane
 // CUM   = Cumulants
 // MCEP  = Flow calculated from the real MC event plane (only for simulated data)
-const TString method = "LYZ1";
+const TString method = "CUM";
 
 
 //analysis type can be ESD, AOD, MC, ESDMC0, ESDMC1
@@ -75,7 +75,7 @@ const Int_t maxnsigmatovertex2 = 3;
 //ESD (pp)
 //void runProofFlow(const Char_t* data="/COMMON/COMMON/LHC08c11_10TeV_0.5T", Int_t nRuns=-1, Int_t offset=0) {
 //ESD (therminator)
-void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_c2030", Int_t nRuns=-1, Int_t offset=0) {
+void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_midcentral_ESD", Int_t nRuns=-1, Int_t offset=0) {
 //AOD
 //  void runProofFlow(const Char_t* data="/PWG2/nkolk/myDataSet", Int_t nRuns=-1, Int_t offset=0) {
 
@@ -88,25 +88,25 @@ void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_c2030", Int_t nR
  TProof::Open("snelling@localhost");
  
 
- gProof->UploadPackage("AF-v4-15"); 
- gProof->EnablePackage("AF-v4-15");
- // gProof->UploadPackage("STEERBase.par");
- // gProof->EnablePackage("STEERBase");
- // gProof->UploadPackage("ESD.par");
- // gProof->EnablePackage("ESD");
- // gProof->UploadPackage("AOD.par");
- // gProof->EnablePackage("AOD");
- // gProof->UploadPackage("ANALYSIS.par");
- // gProof->EnablePackage("ANALYSIS");
- // gProof->UploadPackage("ANALYSISalice.par");
- // gProof->EnablePackage("ANALYSISalice");
- // gProof->UploadPackage("PWG2AOD.par");
- // gProof->EnablePackage("PWG2AOD");
- gProof->UploadPackage("CORRFW.par");
- gProof->EnablePackage("CORRFW");
- //gProof->ClearPackage("PWG2flow");
- gProof->UploadPackage("PWG2flow.par");
- gProof->EnablePackage("PWG2flow");
+ //gProof->UploadPackage("AF-v4-15"); 
+ //gProof->EnablePackage("AF-v4-15");
+  gProof->UploadPackage("STEERBase.par");
+  gProof->EnablePackage("STEERBase");
+  gProof->UploadPackage("ESD.par");
+  gProof->EnablePackage("ESD");
+  gProof->UploadPackage("AOD.par");
+  gProof->EnablePackage("AOD");
+  gProof->UploadPackage("ANALYSIS.par");
+  gProof->EnablePackage("ANALYSIS");
+  gProof->UploadPackage("ANALYSISalice.par");
+  gProof->EnablePackage("ANALYSISalice");
+  gProof->UploadPackage("PWG2AOD.par");
+  gProof->EnablePackage("PWG2AOD");
+  gProof->UploadPackage("CORRFW.par");
+  gProof->EnablePackage("CORRFW");
+  gProof->ClearPackage("PWG2flow");
+  gProof->UploadPackage("PWG2flow.par");
+  gProof->EnablePackage("PWG2flow");
 
 
 //____________________________________________//
