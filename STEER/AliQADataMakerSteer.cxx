@@ -481,37 +481,37 @@ Bool_t AliQADataMakerSteer::Init(const AliQA::TASKINDEX_t taskIndex, const  char
 			fMaxEvents = fNumberOfEvents ; 
 		} else if (taskIndex == AliQA::kESDS) {
 			fTasks = AliQA::GetTaskName(AliQA::kESDS) ; 
-		if (!gSystem->AccessPathName("AliESDs.root")) { // AliESDs.root exists
-			TFile * esdFile = TFile::Open("AliESDs.root") ;
-			fESDTree = dynamic_cast<TTree *> (esdFile->Get("esdTree")) ; 
-			if ( !fESDTree ) {
-				AliError("esdTree not found") ; 
-				return kFALSE ; 
-			} else {
-				fESD     = new AliESDEvent() ;
-				fESD->ReadFromTree(fESDTree) ;
-				fESDTree->GetEntry(0) ; 
-				fRunNumber = fESD->GetRunNumber() ; 
-				fNumberOfEvents = fESDTree->GetEntries() ;
-				if ( fMaxEvents < 0 ) 
-					fMaxEvents = fNumberOfEvents ; 
-			}
-		} else {
-			AliError("AliESDs.root not found") ; 
-			return kFALSE ; 
-		}			
-		} else {
-		if ( !InitRunLoader() ) { 
-			AliWarning("No Run Loader not found") ; 
-		} else {
-			fNumberOfEvents = fRunLoader->GetNumberOfEvents() ;
-			if ( fMaxEvents < 0 ) 
-				fMaxEvents = fNumberOfEvents ; 
-		}
-	}
+      if (!gSystem->AccessPathName("AliESDs.root")) { // AliESDs.root exists
+        TFile * esdFile = TFile::Open("AliESDs.root") ;
+        fESDTree = dynamic_cast<TTree *> (esdFile->Get("esdTree")) ; 
+        if ( !fESDTree ) {
+          AliError("esdTree not found") ; 
+          return kFALSE ; 
+        } else {
+          fESD     = new AliESDEvent() ;
+          fESD->ReadFromTree(fESDTree) ;
+          fESDTree->GetEntry(0) ; 
+          fRunNumber = fESD->GetRunNumber() ; 
+          fNumberOfEvents = fESDTree->GetEntries() ;
+          if ( fMaxEvents < 0 ) 
+            fMaxEvents = fNumberOfEvents ; 
+        }
+      } else {
+        AliError("AliESDs.root not found") ; 
+        return kFALSE ; 
+      }			
+    } else {
+      if ( !InitRunLoader() ) { 
+        AliWarning("No Run Loader not found") ; 
+      } else {
+        fNumberOfEvents = fRunLoader->GetNumberOfEvents() ;
+        if ( fMaxEvents < 0 ) 
+          fMaxEvents = fNumberOfEvents ; 
+      }
+    }
 
-	// Get Detectors 
-	TObjArray* detArray = NULL ; 
+  // Get Detectors 
+  TObjArray* detArray = NULL ; 
 	if (fRunLoader) // check if RunLoader exists 
 		if ( fRunLoader->GetAliRun() ) { // check if AliRun exists in gAlice.root
 			detArray = fRunLoader->GetAliRun()->Detectors() ;
@@ -842,10 +842,11 @@ TString AliQADataMakerSteer::Run(const char * detectors, const AliQA::TASKINDEX_
 
 	if ( taskIndex == AliQA::kNULLTASKINDEX) { 
 		for (UInt_t task = 0; task < AliQA::kNTASKINDEX; task++) {
-			if ( fTasks.Contains(Form("%d", task)) && ! fCycleSame ) {
-				if ( !Init(AliQA::GetTaskIndex(AliQA::GetTaskName(task)), fileName) ) 
-					return kFALSE ; 
-				DoIt(AliQA::GetTaskIndex(AliQA::GetTaskName(task))) ;
+			if ( fTasks.Contains(Form("%d", task)) ) {
+        if (!fCycleSame)
+          if ( !Init(AliQA::GetTaskIndex(AliQA::GetTaskName(task)), fileName) ) 
+            return kFALSE ;
+        DoIt(AliQA::GetTaskIndex(AliQA::GetTaskName(task))) ;
 			}
 		}
 	} else {
