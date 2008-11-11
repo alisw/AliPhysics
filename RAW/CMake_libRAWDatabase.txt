@@ -13,6 +13,6 @@ set(SRCS
 # by exchanging the file extension
 String(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
-Set(HDRS ${HDRS} ${ROOTSYS}/include/TH1F.h)
+Set(HDRS ${HDRS} AliRawEventHeaderVersions.h ${ROOTSYS}/include/TH1F.h)
 
 AddLibrary(RAWDatabase "${SRCS}" "${HDRS}")
