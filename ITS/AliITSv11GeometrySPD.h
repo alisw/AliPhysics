@@ -113,7 +113,7 @@ class AliITSv11GeometrySPD : public AliITSv11Geometry
     virtual TGeoVolumeAssembly* CreatePixelBusAndExtensions(Bool_t zpos=kTRUE,
                                         TGeoManager *mgr = gGeoManager) const;
                                         
-    virtual TGeoVolumeAssembly* CreateConeModule(TGeoManager *mgr = gGeoManager) const;
+    virtual TList* CreateConeModule(TGeoManager *mgr = gGeoManager) const;
     virtual void CreateCones(TGeoVolume *moth) const;
     // a half-stave (put together ladders + MCM + bus, and add clips 
     // if requested)

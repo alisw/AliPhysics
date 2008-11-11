@@ -2966,7 +2966,7 @@ TGeoVolumeAssembly* AliITSv11GeometrySPD::CreatePixelBus
 }
 
 //______________________________________________________________________
-TGeoVolumeAssembly* AliITSv11GeometrySPD::CreateConeModule(TGeoManager *mgr) const
+TList* AliITSv11GeometrySPD::CreateConeModule(TGeoManager *mgr) const
 {
     TGeoMedium *medInox  = GetMedium("INOX$",mgr);
     TGeoMedium *medExt   = GetMedium("SDDKAPTON (POLYCH2)$", mgr);
@@ -3018,7 +3018,9 @@ TGeoVolumeAssembly* AliITSv11GeometrySPD::CreateConeModule(TGeoManager *mgr) con
         y[i] = -y[11 - i];
     }
     
-    TGeoVolumeAssembly *container = new TGeoVolumeAssembly("ITSSPDConeModule");
+    TGeoVolumeAssembly* container[2];
+    container[0] = new TGeoVolumeAssembly("ITSSPDConeModule");
+    container[1] = new TGeoVolumeAssembly("ITSSPDCoolingModule");
     
     TGeoXtru *shCable = new TGeoXtru(2);
     shCable->DefinePolygon(12, x, y);
@@ -3046,44 +3048,75 @@ TGeoVolumeAssembly* AliITSv11GeometrySPD::CreateConeModule(TGeoManager *mgr) con
     TGeoRotation *rot = new TGeoRotation(*gGeoIdentity);
     rot->RotateX(90.0);
     rot->RotateZ(90.0);
-    container->AddNode(volCable, 0, rot);
+    container[0]->AddNode(volCable, 0, rot);
     
     TGeoTranslation *combi = new TGeoTranslation(cableThickness + 0.5*mcmThickness, x[0] + 0.5*mcmLength, 0.0);
-    container->AddNode(volMCMExt, 0, combi);
+    container[0]->AddNode(volMCMExt, 0, combi);
     
     TGeoRotation *rot1 = new TGeoRotation(*gGeoIdentity);
     rot1->RotateX(87.5);
-    TGeoCombiTrans *tr = new TGeoCombiTrans(1.0, x[0] + 0.5*(x[5] - x[0]), -2.95, rot1);
-    container->AddNode(volTube, 0, tr);
+    TGeoCombiTrans *tr = new TGeoCombiTrans(1.15, x[0] + 0.5*(x[5] - x[0]), -2.95, rot1);
+    container[1]->AddNode(volTube, 0, tr);
     
     TGeoTranslation *tr1 = new TGeoTranslation(0.5*plateThickness - 0.5*(plateThickness-thickness), x[3] - x[0] - 0.52*plateLength, 0.0);
-    container->AddNode(volPlate, 0, tr1);
+    container[0]->AddNode(volPlate, 0, tr1);
     
-    return container;
+    TList* conemodulelist = new TList();
+
+    conemodulelist->Add(container[0]);
+    conemodulelist->Add(container[1]);
+    
+    return conemodulelist;
 }
 
 //______________________________________________________________________
 void AliITSv11GeometrySPD::CreateCones(TGeoVolume *moth) const
 {
     
-    TGeoVolumeAssembly *module = CreateConeModule(gGeoManager);
-         
+    TList* modulelist = CreateConeModule(gGeoManager);
+    TGeoVolumeAssembly* module;
+ 
     //Double_t angle[10] = {18., 54., 90., 126., 162., -18., -54., -90., -126., -162.};
-    Double_t angle1[10] = {18., 54., 90., 129., 165., 201.0, 237.0, 273.0, 309.0, 345.0};
-    Double_t angle2[10] = {18., 53., 90., 126., 162., 198.0, 233.0, 270.0, 309.0, 342.0};
+    // angleNm for cone modules (cables), angleNc for cooling tubes
+    Double_t angle1m[10] = {18., 54., 90., 129., 165., 201.0, 237.0, 273.0, 309.0, 345.0};
+    Double_t angle2m[10] = {18., 53., 90., 126., 162., 198.0, 233.0, 270.0, 309.0, 342.0};
+    Double_t angle1c[10] = {18., 54., 90., 129., 165., 201.0, 237.0, 273.0, 309.0, 345.0};
+    Double_t angle2c[10] = {18., 44., 90., 126., 162., 198.0, 223.0, 270.0, 309.0, 342.0};
+
+    // First add the cables
+    module = (TGeoVolumeAssembly*)modulelist->At(0);
     for (Int_t i = 0; i < 10; i++) {
         TGeoRotation *rot1 = new TGeoRotation(*gGeoIdentity);
         rot1->RotateY(-90.0);
         rot1->RotateX(43.7);
-	angle1[i] -= 1.5;
-        rot1->RotateZ(90.0 - angle1[i]);
+	angle1m[i] -= 1.5;
+        rot1->RotateZ(90.0 - angle1m[i]);
         TGeoCombiTrans *tr1 = new TGeoCombiTrans(0.0, 0.0, 40.4, rot1);
         moth->AddNode(module, 2*i, tr1);
         TGeoRotation *rot2 = new TGeoRotation(*gGeoIdentity);
         rot2->RotateY(90.0);
         rot2->RotateX(-43.7);
-	angle2[i] -= 1.5;
-        rot2->RotateZ(90.0 - angle2[i]);
+	angle2m[i] -= 1.5;
+        rot2->RotateZ(90.0 - angle2m[i]);
+        TGeoCombiTrans *tr2 = new TGeoCombiTrans(0.0, 0.0, -40.4, rot2);
+        moth->AddNode(module, 2*i+1, tr2);
+    }
+
+    // Then the cooling tubes
+    module = (TGeoVolumeAssembly*)modulelist->At(1);
+    for (Int_t i = 0; i < 10; i++) {
+        TGeoRotation *rot1 = new TGeoRotation(*gGeoIdentity);
+        rot1->RotateY(-90.0);
+        rot1->RotateX(43.7);
+	angle1c[i] -= 1.5;
+        rot1->RotateZ(90.0 - angle1c[i]);
+        TGeoCombiTrans *tr1 = new TGeoCombiTrans(0.0, 0.0, 40.4, rot1);
+        moth->AddNode(module, 2*i, tr1);
+        TGeoRotation *rot2 = new TGeoRotation(*gGeoIdentity);
+        rot2->RotateY(90.0);
+        rot2->RotateX(-43.4);
+	angle2c[i] -= 1.5;
+        rot2->RotateZ(90.0 - angle2c[i]);
         TGeoCombiTrans *tr2 = new TGeoCombiTrans(0.0, 0.0, -40.4, rot2);
         moth->AddNode(module, 2*i+1, tr2);
     }
