@@ -104,7 +104,7 @@ void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_midcentral_ESD",
   gProof->EnablePackage("PWG2AOD");
   gProof->UploadPackage("CORRFW.par");
   gProof->EnablePackage("CORRFW");
-  gProof->ClearPackage("PWG2flow");
+  //  gProof->ClearPackage("PWG2flow");
   gProof->UploadPackage("PWG2flow.par");
   gProof->EnablePackage("PWG2flow");
 
@@ -258,12 +258,14 @@ void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_midcentral_ESD",
 
  printf("CREATE INTERFACE AND CUTS\n");
  AliCFManager* cfmgr1 = new AliCFManager();
+ cfmgr1->SetNStepParticle(4); //05nov08
  cfmgr1->SetParticleCutsList(AliCFManager::kPartGenCuts,mcList1);
  cfmgr1->SetParticleCutsList(AliCFManager::kPartAccCuts,accList1);
  cfmgr1->SetParticleCutsList(AliCFManager::kPartRecCuts,recList1);
  cfmgr1->SetParticleCutsList(AliCFManager::kPartSelCuts,fPIDCutList1);
 
  AliCFManager* cfmgr2 = new AliCFManager();
+ cfmgr2->SetNStepParticle(4); //05nov08
  cfmgr2->SetParticleCutsList(AliCFManager::kPartGenCuts,mcList2);
  cfmgr2->SetParticleCutsList(AliCFManager::kPartAccCuts,accList2);
  cfmgr2->SetParticleCutsList(AliCFManager::kPartRecCuts,recList2);
