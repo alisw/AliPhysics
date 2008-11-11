@@ -1,7 +1,7 @@
 void
 ShowFMDITS(const char* name="ALIC")
 {
-  // AliLog::SetModuleDebugLevel("FMD", 1);
+  AliLog::SetModuleDebugLevel("FMD", 1);
   gAlice->InitMC("$ALICE_ROOT/FMD/Config.C");
 
   const char* inv[] = { "RB24", "RB26Pipe", 
@@ -43,7 +43,7 @@ ShowFMDITS(const char* name="ALIC")
       std::cerr << "Volume " << n << " not found" << std::endl;
       continue;
     }
-    std::cout << "Processing " << n << std::endl;
+    // std::cout << "Processing " << n << std::endl;
     vol->SetVisDaughters(kFALSE);
     vol->SetVisContainers(kTRUE);
     vol->SetVisibility(kFALSE);

@@ -85,22 +85,46 @@ protected:
       fCopper(o.fCopper), 
       fSteel(o.fSteel)
   {}
-  /** Assignment operator */
+  /** 
+   * Assignment operator 
+   *
+   * @return Reference to this object
+   */  
   AliFMDGeometryBuilder& operator=(const AliFMDGeometryBuilder&){return *this;}
-  /** Make a ring volume 
-      @param r Ring geometry 
-      @return  Ring volume */
+
+  /** 
+   * Make a polygonic extrusion shape based on verticies passed in @a
+   * verticies 
+   * 
+   * @param verticies List of verticies
+   * @param thick     Thickness
+   * 
+   * @return newly allocated polygonic extrusion shape
+   */
+  virtual TGeoShape* MakeXTRU(const TObjArray& verticies, Double_t thick) const;
+  
+  /** 
+   * Make a ring volume 
+   * 
+   * @param r Ring geometry 
+   *
+   * @return  Ring volume 
+   */
   virtual TGeoVolume* RingGeometry(AliFMDRing* r);
 
-  /** Make a honey comb shape from passed parameters.
-      @param id       Detector identifier (1,2, or 3)
-      @param ring     Ring identifier ('I' or 'O')
-      @param r1       Inner radius
-      @param r2       Outer radius
-      @param w        width 
-      @param t        Thickness of material 
-      @param c        Clearing from horizontal. 
-      @return Pointer to newly allocated composite shape. */ 
+  /** 
+   * Make a honey comb shape from passed parameters.
+   *
+   * @param id       Detector identifier (1,2, or 3)
+   * @param ring     Ring identifier ('I' or 'O')
+   * @param r1       Inner radius
+   * @param r2       Outer radius
+   * @param w        width 
+   * @param t        Thickness of material 
+   * @param c        Clearing from horizontal. 
+   *
+   * @return Pointer to newly allocated composite shape. 
+   */ 
   virtual TGeoShape* HoneycombShape(Int_t id, Char_t ring,
 				    double r1, double r2, 
 				    double w, double t, double c=0.3);
@@ -137,25 +161,33 @@ protected:
   virtual TGeoVolume* FMD1Geometry(AliFMD1* d, 
 				   TGeoVolume* innerTop,
 				   TGeoVolume* innerBot);
-  /** Make FMD2 volume 
-      @param d Detector geometry 
-      @param innerTop Inner ring volume 
-      @param innerBot Inner ring volume 
-      @param outerTop Outer ring volume 
-      @param outerBot Outer ring volume 
-      @return FMD2 volume  */
+  /** 
+   * Make FMD2 volume 
+   *
+   * @param d Detector geometry 
+   * @param innerTop Inner ring volume 
+   * @param innerBot Inner ring volume 
+   * @param outerTop Outer ring volume 
+   * @param outerBot Outer ring volume 
+   *
+   * @return FMD2 volume  
+   */
   virtual TGeoVolume* FMD2Geometry(AliFMD2* d, 
 				   TGeoVolume* innerTop, 
 				   TGeoVolume* innerBot, 
 				   TGeoVolume* outerTop,
 				   TGeoVolume* outerBot);
-  /** Make FMD3 volume 
-      @param d Detector geometry 
-      @param innerTop Inner ring volume 
-      @param innerBot Inner ring volume 
-      @param outerTop Outer ring volume 
-      @param outerBot Outer ring volume 
-      @return FMD3 volume  */
+  /**
+   * Make FMD3 volume 
+   *
+   * @param d Detector geometry 
+   * @param innerTop Inner ring volume 
+   * @param innerBot Inner ring volume 
+   * @param outerTop Outer ring volume 
+   * @param outerBot Outer ring volume 
+   *
+   * @return FMD3 volume  
+   */
   virtual TGeoVolume* FMD3Geometry(AliFMD3* d, 
 				   TGeoVolume* innerTop, 
 				   TGeoVolume* innerBot, 

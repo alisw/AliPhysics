@@ -32,7 +32,7 @@ public:
   /** Destructor */
   virtual ~AliFMD1() {}
   /** Initialize */
-  virtual void Init() { AliFMDDetector::Init(); }
+  virtual void Init();
   ClassDef(AliFMD1,1)
 };
 

@@ -7,7 +7,8 @@ PhysicalCoordinates(UShort_t det, Char_t rng, UShort_t sec, UShort_t str)
   AliFMDGeometry::Instance()->Detector2XYZ(det, rng, sec, str, x, y, z);
   Double_t phi   = TMath::ATan2(y, x);
   Double_t r     = TMath::Sqrt(x * x + y * y);
-  Double_t theta = TMath::ATan2(z, r);
+  Double_t theta = TMath::ATan2(r, z);
+  if (theta < 0) theta += TMath::Pi();
   Double_t eta   = -TMath::Log(TMath::Tan(theta / 2));
   Double_t deg   = 180. / TMath::Pi();
   
@@ -34,7 +35,7 @@ ShowCoordinates()
 	    << std::setw(1+9+1+9+1+9+1+1)  << "+"
 	    << std::setw(1+9+1+9+1+9+1+1)  << "+" 
 	    << std::setfill(' ') << std::endl;
-  for (UShort_t d = 1; d < 3; d++) {
+  for (UShort_t d = 1; d <= 3; d++) {
     UShort_t nrng = (d == 1 ? 1 : 2);
     for (UShort_t ir = 0; ir < nrng; ir++) { 
       Char_t r = (ir == 0 ? 'I' : 'O');

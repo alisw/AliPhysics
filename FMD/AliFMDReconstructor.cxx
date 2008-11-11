@@ -227,9 +227,9 @@ AliFMDReconstructor::GetVertex() const
   fCurrentVertex = 0;
   if (fESD) {
     const AliESDVertex* vertex = fESD->GetPrimaryVertex();
-    if (!vertex) vertex = fESD->GetPrimaryVertexSPD();
-    if (!vertex) vertex = fESD->GetPrimaryVertexTPC();
-    if (!vertex) vertex = fESD->GetVertex();
+    if (!vertex)        vertex = fESD->GetPrimaryVertexSPD();
+    if (!vertex)        vertex = fESD->GetPrimaryVertexTPC();
+    if (!vertex)        vertex = fESD->GetVertex();
 
     if (vertex) {
       AliFMDDebug(2, ("Got %s (%s) from ESD: %f", 

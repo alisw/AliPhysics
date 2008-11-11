@@ -29,6 +29,7 @@
 // FMD1 currently has no support defined. 
 //
 #include "AliFMD1.h"		// ALIFMD1_H 
+#include <AliLog.h>
 // #include "AliFMDRing.h"		// ALIFMDRING_H 
 
 
@@ -42,10 +43,22 @@ ClassImp(AliFMD1)
 AliFMD1::AliFMD1(AliFMDRing* inner) 
   : AliFMDDetector(1, inner, 0)
 {
-  // Subtracting 0.25 cm puts the middle plane of the detector at 320 cm
-  SetInnerZ(320. - 0.25);
+  // Subtracting 0.25 cm puts the middle plane of the detector at 320
+  // cm
+  Double_t off = 0; // -0.25
+  if (off != 0) 
+    AliWarning(Form("FMD1 is off by %fcm", off));
+  SetInnerZ(320. + off);
 }
 
+//____________________________________________________________________
+void
+AliFMD1::Init() 
+{
+  // Initialize 
+  AliFMDDetector::Init();
+  SetInnerHoneyHighR(22.3716);
+}
 
 //____________________________________________________________________
 //

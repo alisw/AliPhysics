@@ -475,241 +475,40 @@ Config()
   Bool_t useTRD   = kFALSE; 
   Bool_t useZDC   = kFALSE; 
   Bool_t useEMCAL = kFALSE; 
-  Bool_t useVZERO = kFALSE;
+  Bool_t useVZERO = kTRUE;
 
   cout << "\t* Creating the detectors ..." << endl;
   // ================= Alice BODY parameters =========================
   AliBODY *BODY = new AliBODY("BODY", "Alice envelop");
   
   
-  if (useMAG) {
-    // =================== MAG parameters ============================
-    // Start with Magnet since detector layouts may be depending on
-    // the selected Magnet dimensions 
-    AliMAG *MAG = new AliMAG("MAG", "Magnet");
-  }
-
-  if (useABSO) {
-    // =================== ABSO parameters ===========================
-    AliABSO *ABSO = new AliABSOv0("ABSO", "Muon Absorber");
-  }
-
-  if (useDIPO) {
-    // =================== DIPO parameters ===========================
-    AliDIPO *DIPO = new AliDIPOv2("DIPO", "Dipole version 2");
-  }
-
-  if (useHALL) {
-    // =================== HALL parameters ===========================
-    AliHALL *HALL = new AliHALL("HALL", "Alice Hall");
-  }
-
-
+  if (useMAG)   AliMAG  *MAG  = new AliMAG("MAG", "Magnet");
+  if (useABSO)  AliABSO *ABSO = new AliABSOv3("ABSO", "Muon Absorber");
+  if (useDIPO)  AliDIPO *DIPO = new AliDIPOv3("DIPO", "Dipole version 3");
+  if (useHALL)  AliHALL *HALL = new AliHALLv3("HALL", "Alice Hall");
   if (useFRAME) {
-    // ================== FRAME parameters ===========================
     AliFRAMEv2 *FRAME = new AliFRAMEv2("FRAME", "Space Frame");
     switch (geo) {
     case kHoles: FRAME->SetHoles(1); break;
     default:     FRAME->SetHoles(0); break;
     }
   }
-
-  if (useSHIL) {
-    // ================== SHIL parameters ============================
-    AliSHIL *SHIL = new AliSHILv2("SHIL", "Shielding Version 2");
-  }
-
-
-  if (usePIPE) {
-    // ================== PIPE parameters ============================
-    AliPIPE *PIPE = new AliPIPEv3("PIPE", "Beam Pipe");
-  }
-  
-  if (useITS) {
-     AliITS *ITS  = new AliITSv11Hybrid("ITS","ITS v11Hybrid");
-#if 0
-    // =================== ITS parameters ============================
-    //
-    // As the innermost detector in ALICE, the Inner Tracking System
-    // "impacts" on almost all other detectors. This involves the fact
-    // that the ITS geometry still has several options to be followed
-    // in parallel in order to determine the best set-up which
-    // minimizes the induced background. All the geometries available
-    // to date are described in the following. Read carefully the
-    // comments and use the default version (the only one uncommented)
-    // unless you are making comparisons and you know what you are
-    // doing. In this case just uncomment the ITS geometry you want to
-    // use and run Aliroot.
-    //
-    // Detailed geometries:
-    //
-    //
-    // AliITS *ITS = 
-    //   new AliITSv5symm("ITS", "Updated ITS TDR detailed version "
-    //  		  "with symmetric services");
-    // AliITS *ITS  = 
-    //   new AliITSv5asymm("ITS","Updates ITS TDR detailed version "
-    // 			   "with asymmetric services");
-    //
-    AliITSvPPRasymmFMD *ITS  = 
-      new AliITSvPPRasymmFMD("ITS","New ITS PPR detailed version "
-			     "with asymmetric services");
-     // don't touch this parameter if you're not an ITS developer
-    ITS->SetMinorVersion(2); 
-    // don't touch this parameter if you're not an ITS developer
-    ITS->SetReadDet(kTRUE);
-    // don't touch this parameter if you're not an ITS developer
-    // ITS->SetWriteDet("$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm2.det");  
-    // detector thickness on layer 1 must be in the range [100,300]
-    ITS->SetThicknessDet1(200.);   
-    // detector thickness on layer 2 must be in the range [100,300]
-    ITS->SetThicknessDet2(200.);   
-    // chip thickness on layer 1 must be in the range [150,300]
-    ITS->SetThicknessChip1(200.);  
-    // chip thickness on layer 2 must be in the range [150,300]
-    ITS->SetThicknessChip2(200.);
-    // 1 --> rails in ; 0 --> rails out
-    ITS->SetRails(0);          
-    // 1 --> water ; 0 --> freon
-    ITS->SetCoolingFluid(1);   
-
-    // Coarse geometries (warning: no hits are produced with these
-    // coarse geometries and they unuseful for reconstruction !):
-    //
-    //
-    // AliITSvPPRcoarseasymm *ITS  = 
-    //   new AliITSvPPRcoarseasymm("ITS","New ITS PPR coarse version "
-    //                             "with asymmetric services");
-    // 1 --> rails in ; 0 --> rails out
-    // ITS->SetRails(0);
-    // 0 --> Copper ; 1 --> Aluminum ; 2 --> Carbon
-    // ITS->SetSupportMaterial(0);      
-    //
-    // AliITS *ITS  = 
-    //  new AliITSvPPRcoarsesymm("ITS","New ITS PPR coarse version "
-    //                           "with symmetric services");
-    // 1 --> rails in ; 0 --> rails out
-    // ITS->SetRails(0);                
-    // 0 --> Copper ; 1 --> Aluminum ; 2 --> Carbon
-    // ITS->SetSupportMaterial(0);      
-    //
-    // Geant3 <-> EUCLID conversion
-    // ============================
-    //
-    // SetEUCLID is a flag to output (=1) or not to output (=0) both
-    // geometry and media to two ASCII files (called by default
-    // ITSgeometry.euc and ITSgeometry.tme) in a format understandable
-    // to the CAD system EUCLID.  The default (=0) means that you dont
-    // want to use this facility.
-    //
-    ITS->SetEUCLID(0);
-#endif
-  }
-
-  if (useTPC) {
-    // =================== TPC parameters ============================
-    //
-    // This allows the user to specify sectors for the SLOW (TPC
-    // geometry 2) Simulator. SecAL (SecAU) <0 means that ALL lower
-    // (upper) sectors are specified, any value other than that
-    // requires at least one sector (lower or upper)to be specified!
-    //
-    // Reminder: 
-    //   sectors 1-24 are lower sectors (1-12 -> z>0, 13-24 -> z<0)
-    //   sectors 25-72 are the upper ones (25-48 -> z>0, 49-72 -> z<0)
-    //
-    //   SecLows - number of lower sectors specified (up to 6)
-    //   SecUps  - number of upper sectors specified (up to 12)
-    //   Sens    - sensitive strips for the Slow Simulator !!!
-    //
-    // This does NOT work if all S or L-sectors are specified, i.e.
-    // if SecAL or SecAU < 0
-    //
-    //
-    //----------------------------------------------------------------
-    //  gROOT->LoadMacro("SetTPCParam.C");
-    //  AliTPCParam *param = SetTPCParam();
-    AliTPC *TPC = new AliTPCv2("TPC", "Default");
-  }
-
-  if (useTOF) {
-    // ================== TOF parameters =============================
-    AliTOF *TOF = new AliTOFv4T0("TOF", "normal TOF");
-  }
-
-  if (useHMPID) {
-    // ================== HMPID parameters ============================
-    AliHMPID *HMPID = new AliHMPIDv1("HMPID", "normal HMPID");
-
-  }
-
-  if (useZDC) {
-    // ================== ZDC parameters =============================
-    AliZDC *ZDC = new AliZDCv2("ZDC", "normal ZDC");
-  }
-
-  if (useTRD) {
-    // ================== TRD parameters =============================
-    AliTRD *TRD = new AliTRDv1("TRD", "TRD slow simulator");
-
-    // Select the gas mixture (0: 97% Xe + 3% isobutane, 1: 90% Xe + 10% CO2)
-    TRD->SetGasMix(1);
-    if (geo == kHoles) {
-      // With hole in front of PHOS
-      TRD->SetPHOShole();
-      // With hole in front of HMPID
-      TRD->SetHMPIDhole();
-    }
-    // Switch on TR
-    AliTRDsim *TRDsim = TRD->CreateTR();
-  }
-
-  if (useFMD) {
-    // =================== FMD parameters ============================
-    AliFMD *FMD = new AliFMDv1("FMD", "normal FMD");
-    // FMD->UseDetailed(kFALSE);
-    // FMD->UseAssembly();
-    // FMD->UseOld();
-  }
-
-  if (useMUON) {
-    // =================== MUON parameters ===========================
-    AliMUON *MUON = new AliMUONv1("MUON", "default");
-    // MUON->AddGeometryBuilder(new AliMUONSt1GeometryBuilder(MUON));
-    // MUON->AddGeometryBuilder(new AliMUONSt2GeometryBuilder(MUON));
-    // MUON->AddGeometryBuilder(new AliMUONSlatGeometryBuilder(MUON));
-    // MUON->AddGeometryBuilder(new AliMUONTriggerGeometryBuilder(MUON));
-  }
-
-  if (usePHOS) {
-    // =================== PHOS parameters ===========================
-    AliPHOS *PHOS = new AliPHOSv1("PHOS", "IHEP");
-  }
-
-  if (usePMD) {
-    // =================== PMD parameters ============================
-    AliPMD *PMD = new AliPMDv1("PMD", "normal PMD");
-  }
-
-  if (useT0) {
-    // =================== T0 parameters ==========================
-    AliT0 *T0 = new AliT0v1("T0", "T0 Detector");
-  }
-
-  if (useEMCAL) {
-    // =================== EMCAL parameters ==========================
-    AliEMCAL *EMCAL = new AliEMCALv2("EMCAL", "EMCAL_COMPLETE");
-  }
-
-  if (useACORDE) {
-    // =================== ACORDE parameters ============================
-    AliACORDE *ACORDE = new AliACORDEv1("ACORDE", "normal ACORDE");
-  }
-
-  if (useVZERO) {
-    // =================== V0 parameters =============================
-    AliVZERO *VZERO = new AliVZEROv3("VZERO", "normal VZERO");
-  }
+  if (useSHIL)   AliSHIL   *SHIL   = new AliSHILv3("SHIL", "Shielding v3");
+  if (usePIPE)   AliPIPE   *PIPE   = new AliPIPEv3("PIPE", "Beam Pipe");
+  if (useITS)    AliITS    *ITS    = new AliITSv11Hybrid("ITS","ITS v11Hybrid");
+  if (useTPC)    AliTPC    *TPC    = new AliTPCv2("TPC", "Default");
+  if (useTOF)    AliTOF    *TOF    = new AliTOFv6T0("TOF", "normal TOF");
+  if (useHMPID)  AliHMPID  *HMPID  = new AliHMPIDv1("HMPID", "normal HMPID");
+  if (useZDC)    AliZDC    *ZDC    = new AliZDCv3("ZDC", "normal ZDC");
+  if (useTRD)    AliTRD    *TRD    = new AliTRDv1("TRD", "TRD slow simulator");
+  if (useFMD)    AliFMD    *FMD    = new AliFMDv1("FMD", "normal FMD");
+  if (useMUON)   AliMUON   *MUON   = new AliMUONv1("MUON", "default");
+  if (usePHOS)   AliPHOS   *PHOS   = new AliPHOSv1("PHOS", "IHEP");
+  if (usePMD)    AliPMD    *PMD    = new AliPMDv1("PMD", "normal PMD");
+  if (useT0)     AliT0     *T0     = new AliT0v1("T0", "T0 Detector");
+  if (useEMCAL)  AliEMCAL  *EMCAL  = new AliEMCALv2("EMCAL", "EMCAL_COMPLETE");
+  if (useACORDE) AliACORDE *ACORDE = new AliACORDEv1("ACORDE", "normal ACORDE");
+  if (useVZERO)  AliVZERO  *VZERO  = new AliVZEROv7("VZERO", "normal VZERO");
 }
 
 //____________________________________________________________________

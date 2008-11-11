@@ -129,9 +129,9 @@ AliFMDESDRevertexer::Revertex(AliESDFMD* fmdEsd, Double_t vz) const
 	  continue;
 	}
 	
-	Double_t corr = TMath::Abs(TMath::Cos(theta));
+	Double_t corr = 1; 
 	if (fmdEsd->IsAngleCorrected()) 
-	  corr /= TMath::Abs(TMath::Cos(oldTheta));
+	  corr = TMath::Abs(TMath::Cos(theta) / TMath::Cos(oldTheta));
 	for (UShort_t sec = 0; sec < nsec; sec++) { 
 	  Double_t mult = fmdEsd->Multiplicity(det, rng, sec, str);
 	  fmdEsd->SetMultiplicity(det, rng, sec, str, corr * mult);

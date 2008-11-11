@@ -65,7 +65,10 @@ AliFMDRing::AliFMDRing(Char_t id)
     fSpacing(0),
     fHoneycombThickness(0.),
     fAlThickness(0.),
-    fVerticies(0)
+    fVerticies(0), 
+    fSensorVerticies(0),
+    fHybridVerticies(0),
+    fFeetPositions(0)
 {
   // CTOR
   SetBondingWidth();
@@ -87,12 +90,56 @@ AliFMDRing::AliFMDRing(Char_t id)
     SetHighR(17.2);
     SetTheta(36/2);
     SetNStrips(512);
+    Double_t base = 0; // 4.1915;
+    fFeetPositions.Add(new TVector2( 0.0551687, 8.0534-base));
+    fFeetPositions.Add(new TVector2( 2.9993,   12.9457-base));
+    fFeetPositions.Add(new TVector2(-2.9062,   12.9508-base));
+    
+    fHybridVerticies.Add(new TVector2(0.0000,  4.1700));
+    fHybridVerticies.Add(new TVector2(1.0574,  4.1700));
+    fHybridVerticies.Add(new TVector2(4.6614, 15.2622));
+    fHybridVerticies.Add(new TVector2(0.9643, 17.4000));
+    fHybridVerticies.Add(new TVector2(0.0000, 17.4000));
+
+    fSensorVerticies.Add(new TVector2(0.0000,  4.1915));
+    fSensorVerticies.Add(new TVector2(1.5793,  4.1915));
+    fSensorVerticies.Add(new TVector2(5.2293, 15.4251));
+    fSensorVerticies.Add(new TVector2(1.9807, 17.3035));
+    fSensorVerticies.Add(new TVector2(0.0000, 17.3035));
+
+    fVerticies.Add(new TVector2(0.0000,  4.3000));
+    fVerticies.Add(new TVector2(1.3972,  4.3000));
+    fVerticies.Add(new TVector2(4.9895, 15.3560));
+    fVerticies.Add(new TVector2(1.8007, 17.2000));
+    fVerticies.Add(new TVector2(0.0000, 17.2000));
   }
   else if (fId == 'O' || fId == 'o') {
     SetLowR(15.6);
     SetHighR(28.0);
     SetTheta(18/2);
     SetNStrips(256);
+    Double_t base = 0; // 14.9104;
+    fFeetPositions.Add(new TVector2(-1.72540000, 20.6267-base));
+    fFeetPositions.Add(new TVector2( 1.72900000, 20.6267-base));
+    fFeetPositions.Add(new TVector2( 0.00177616, 26.6007-base));
+
+    fHybridVerticies.Add(new TVector2(0.0000, 14.9104));
+    fHybridVerticies.Add(new TVector2(2.0783, 14.9104));
+    fHybridVerticies.Add(new TVector2(3.9202, 26.5395));
+    fHybridVerticies.Add(new TVector2(0.6784, 28.2500));
+    fHybridVerticies.Add(new TVector2(0.0000, 28.2500));
+
+    fSensorVerticies.Add(new TVector2(0.0000, 15.0104));
+    fSensorVerticies.Add(new TVector2(2.5799, 15.0104));
+    fSensorVerticies.Add(new TVector2(4.4439, 26.7766));
+    fSensorVerticies.Add(new TVector2(1.8350, 28.1500));
+    fSensorVerticies.Add(new TVector2(0.0000, 28.1500));
+
+    fVerticies.Add(new TVector2(0.0000, 15.2104));
+    fVerticies.Add(new TVector2(2.4091, 15.2104));
+    fVerticies.Add(new TVector2(4.2231, 26.6638));
+    fVerticies.Add(new TVector2(1.8357, 27.9500));
+    fVerticies.Add(new TVector2(0.0000, 27.9500));
   }
 }
 
@@ -101,6 +148,7 @@ void
 AliFMDRing::Init()
 {
   // Initialize 
+#if 0
   Double_t tanTheta  = TMath::Tan(fTheta * TMath::Pi() / 180.);
   Double_t tanTheta2 = TMath::Power(tanTheta,2);
   Double_t r2        = TMath::Power(fWaferRadius,2);
@@ -122,10 +170,11 @@ AliFMDRing::Init()
   fVerticies.AddAt(new TVector2(fHighR,  yB), 3);
   fVerticies.AddAt(new TVector2(xC,      yC), 4);
   fVerticies.AddAt(new TVector2(fLowR,   yA), 5);  
+#endif
 
   // A's length. Corresponds to distance from nominal beam line to the
   // cornor of the active silicon element. 
-  fMinR = GetVertex(5)->Mod();
+  fMinR = GetVertex(1)->Mod(); // GetVertex(5)->Mod();
   // A's length. Corresponds to distance from nominal beam line to the
   // cornor of the active silicon element. 
   fMaxR = fHighR;
@@ -144,6 +193,30 @@ AliFMDRing::GetVertex(Int_t i) const
 }
 
 //____________________________________________________________________
+TVector2*
+AliFMDRing::GetSensorVertex(Int_t i) const
+{
+  // Get the i'th vertex of polygon shape
+  return static_cast<TVector2*>(fSensorVerticies.At(i));
+}
+
+//____________________________________________________________________
+TVector2*
+AliFMDRing::GetHybridVertex(Int_t i) const
+{
+  // Get the i'th vertex of polygon shape
+  return static_cast<TVector2*>(fHybridVerticies.At(i));
+}
+
+//____________________________________________________________________
+TVector2*
+AliFMDRing::GetFootPosition(Int_t i) const
+{
+  // Get the i'th vertex of polygon shape
+  return static_cast<TVector2*>(fFeetPositions.At(i));
+}
+
+//____________________________________________________________________
 Double_t
 AliFMDRing::GetStripRadius(UShort_t strip) const
 {
@@ -156,19 +229,27 @@ AliFMDRing::GetStripRadius(UShort_t strip) const
  
 //____________________________________________________________________
 Double_t
+AliFMDRing::GetModuleDepth() const
+{
+  return (GetSiThickness() 
+	  + GetSpacing() 
+	  + GetPrintboardThickness()
+	  + GetCopperThickness()
+	  + GetChipThickness()
+	  + GetLegLength());
+  
+}
+
+//____________________________________________________________________
+Double_t
 AliFMDRing::GetFullDepth() const
 {
-  return (GetSiThickness() + 
-	  GetSpacing() + 
-	  GetPrintboardThickness() + 
-	  GetCopperThickness() + 
-	  GetChipThickness() + 
-	  GetModuleSpacing() +
-	  GetLegLength() + 
-	  GetHoneycombThickness() + 
-	  GetFMDDPrintboardThickness() + 
-	  GetFMDDCopperThickness() + 
-	  GetFMDDChipThickness() 
+  return (GetModuleDepth() 
+	  + GetModuleSpacing()
+	  + GetHoneycombThickness()
+	  + GetFMDDPrintboardThickness()
+	  + GetFMDDCopperThickness()
+	  + GetFMDDChipThickness() 
 	  + 0.5);
 }
 
