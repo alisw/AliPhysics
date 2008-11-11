@@ -4701,56 +4701,100 @@ void AliITSv11Hybrid::CreateOldGeometry(){
   
   // --- DEFINE CABLES/COOLING BELOW THE TPC ON THE OTHER SIDE W.R.T.
   //     THE ABSORBER - COPPER PART - UPPER PART
-  
+
   dgh[0] = 46.;      
   dgh[1] = 46.+1.0;  
-  dgh[2] = (ztpc-97.5+1.5-2.5)/2.;
+//  dgh[2] = (ztpc-97.5+1.5-2.5)/2.;
+  dgh[2] = (186.6 - 101.1)/2.;
   dgh[3] = 12.;
   dgh[4] = 168.;
   gMC->Gsvolu("ICU5", "TUBS", idtmed[213], dgh, 5);   
   //  gMC->Gspos("ICU5", 1, "ITSV", 0., 0., -97.5-dgh[2], 0, "ONLY");  
-  gMC->Gspos("ICU5", 1, "ITSV", 0., 0., -(-97.5-dgh[2]), idrotm[199], "ONLY");  
-  
+  gMC->Gspos("ICU5", 1, "ITSV", 0., 0., -(-101.1-dgh[2]), idrotm[199], "ONLY");  
+
+  dgh[0] = (ztpc - 1.0 - 186.6)/2.;
+  dgh[1] = 64.0;
+  dgh[2] = 64.0+1.0;
+  dgh[3] = 46.;
+  dgh[4] = 46.+1.0;
+  dgh[5] = 12.;
+  dgh[6] = 168.;
+  gMC->Gsvolu("ICU9", "CONS", idtmed[213], dgh, 7);   
+  gMC->Gspos("ICU9", 1, "ITSV", 0., 0., -(-186.6-dgh[0]), idrotm[199], "ONLY");
+
   // --- DEFINE CABLES/COOLING BELOW THE TPC ON THE OTHER SIDE W.R.T.
   //     THE ABSORBER - COPPER PART - LOWER PART
   
   dgh[0] = 46.;  
   dgh[1] = 46.+1.0;  
-  dgh[2] = (ztpc-97.5+1.5-2.5)/2.;
+//  dgh[2] = (ztpc-97.5+1.5-2.5)/2.;
+  dgh[2] = (186.6 - 101.1)/2.;
   dgh[3] = 192.;
   dgh[4] = 348.;  
   gMC->Gsvolu("ICU6", "TUBS", idtmed[213], dgh, 5);   
   //  gMC->Gspos("ICU6", 1, "ITSV", 0., 0., -97.5-dgh[2], 0, "ONLY"); 
-  gMC->Gspos("ICU6", 1, "ITSV", 0., 0., -(-97.5-dgh[2]), idrotm[199], "ONLY");    
-  
+  gMC->Gspos("ICU6", 1, "ITSV", 0., 0., -(-101.1-dgh[2]), idrotm[199], "ONLY");    
+
+  dgh[0] = (ztpc - 1.0 - 186.6)/2.;
+  dgh[1] = 64.0;
+  dgh[2] = 64.0+1.0;
+  dgh[3] = 46.;
+  dgh[4] = 46.+1.0;
+  dgh[5] = 192.;
+  dgh[6] = 348.;
+  gMC->Gsvolu("ICU0", "CONS", idtmed[213], dgh, 7);   
+  gMC->Gspos("ICU0", 1, "ITSV", 0., 0., -(-186.6-dgh[0]), idrotm[199], "ONLY");
+
   // --- DEFINE CABLES/COOLING BELOW THE TPC ON THE OTHER SIDE W.R.T.
   //     THE ABSORBER - CARBON PART - UPPER PART
   
   dgh[0] = 46.+1.0;  
   dgh[1] = 46.+1.0+1.5; 
-  dgh[2] = (ztpc-97.5)/2.;
+//  dgh[2] = (ztpc-97.5)/2.;
+  dgh[2] = (186.6 - 101.1)/2.;
   dgh[3] = 12.;
   dgh[4] = 168.;  
   gMC->Gsvolu("ICC5", "TUBS", idtmed[225], dgh, 5);   
   //  gMC->Gspos("ICC5", 1, "ITSV", 0., 0., -97.5-dgh[2], 0, "ONLY");
-  gMC->Gspos("ICC5", 1, "ITSV", 0., 0., -(-97.5-dgh[2]), idrotm[199], "ONLY");   
+  gMC->Gspos("ICC5", 1, "ITSV", 0., 0., -(-101.1-dgh[2]), idrotm[199], "ONLY");   
   
+  dgh[0] = (ztpc - 1.0 - 186.6)/2.;
+  dgh[1] = 64.0+1.0;
+  dgh[2] = 64.0+1.0+1.5;
+  dgh[3] = 46.+1.0;
+  dgh[4] = 46.+1.0+1.5;
+  dgh[5] = 12.;
+  dgh[6] = 168.;
+  gMC->Gsvolu("ICC9", "CONS", idtmed[225], dgh, 7);   
+  gMC->Gspos("ICC9", 1, "ITSV", 0., 0., -(-186.6-dgh[0]), idrotm[199], "ONLY");
+
   // --- DEFINE CABLES/COOLING BELOW THE TPC ON THE OTHER SIDE W.R.T.
   //     THE ABSORBER - CARBON PART - LOWER PART
   
   dgh[0] = 46.+1.0;   
   dgh[1] = 46.+1.0+1.5;  
-  dgh[2] = (ztpc-97.5)/2.;
+//  dgh[2] = (ztpc-97.5)/2.;
+  dgh[2] = (186.6 - 101.1)/2.;
   dgh[3] = 192.;
   dgh[4] = 348.;  
   gMC->Gsvolu("ICC6", "TUBS", idtmed[225], dgh, 5);   
   //  gMC->Gspos("ICC6", 1, "ITSV", 0., 0., -97.5-dgh[2], 0, "ONLY"); 
-  gMC->Gspos("ICC6", 1, "ITSV", 0., 0., -(-97.5-dgh[2]), idrotm[199], "ONLY");      
+  gMC->Gspos("ICC6", 1, "ITSV", 0., 0., -(-101.1-dgh[2]), idrotm[199], "ONLY");      
+
+  dgh[0] = (ztpc - 1.0 - 186.6)/2.;
+  dgh[1] = 64.0+1.0;
+  dgh[2] = 64.0+1.0+1.5;
+  dgh[3] = 46.+1.0;
+  dgh[4] = 46.+1.0+1.5;
+  dgh[5] = 192.;
+  dgh[6] = 348.;
+  gMC->Gsvolu("ICC0", "CONS", idtmed[225], dgh, 7);   
+  gMC->Gspos("ICC0", 1, "ITSV", 0., 0., -(-186.6-dgh[0]), idrotm[199], "ONLY");
 
   // --- DEFINE CABLES/COOLING BEHIND THE TPC ON OTHER SIDE W.R.T. THE ABSORBER
   //     COPPER PART - UPPER PART
     
-  dgh[0] = 46.;   
+  dgh[0] = 64.0;   
   dgh[1] = 74.5;
   dgh[2] = 0.5;
   dgh[3] = 12.;
@@ -4761,7 +4805,7 @@ void AliITSv11Hybrid::CreateOldGeometry(){
   // --- DEFINE CABLES/COOLING BEHIND THE TPC ON OTHER SIDE W.R.T. THE ABSORBER
   //     COPPER PART - LOWER PART
     
-  dgh[0] = 46.; 
+  dgh[0] = 64.0; 
   dgh[1] = 74.5;
   dgh[2] = 0.5;
   dgh[3] = 192.;
@@ -4772,7 +4816,7 @@ void AliITSv11Hybrid::CreateOldGeometry(){
   // --- DEFINE CABLES/COOLING BEHIND THE TPC ON OTHER SIDE W.R.T. THE ABSORBER
   //     CARBON PART - UPPER PART
   
-  dgh[0] = 46.+1.0;  
+  dgh[0] = 64.0+1.0;  
   dgh[1] = 74.5;
   dgh[2] = 0.75;
   dgh[3] = 12.;
@@ -4783,7 +4827,7 @@ void AliITSv11Hybrid::CreateOldGeometry(){
   // --- DEFINE CABLES/COOLING BEHIND THE TPC ON OTHER SIDE W.R.T. THE ABSORBER
   //     CARBON PART - LOWER PART
   
-  dgh[0] = 46.+1.0;  
+  dgh[0] = 64.0+1.0;  
   dgh[1] = 74.5;
   dgh[2] = 0.75;
   dgh[3] = 192.;
