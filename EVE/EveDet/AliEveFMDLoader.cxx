@@ -126,10 +126,10 @@ AliEveFMDLoader::AliEveFMDLoader(const char* name, Bool_t useBoxes,
 
   // Get shapes
   TGeoShape* inner = static_cast<TGeoShape*>(gGeoManager->GetListOfShapes()
-					     ->FindObject("FISE"));
+					     ->FindObject("FMDI_physical_sensor"));
   if (!inner) throw TEveException("Shape of inner type sensors not found");
   TGeoShape* outer = static_cast<TGeoShape*>(gGeoManager->GetListOfShapes()
-					     ->FindObject("FOSE"));
+					     ->FindObject("FMDO_physical_sensor"));
   if (!outer) throw TEveException("Shape of outer type sensors not found");
 
   // Emulate reference counting 
