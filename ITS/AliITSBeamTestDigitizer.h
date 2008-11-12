@@ -33,9 +33,9 @@ class AliITSBeamTestDigitizer : public TTask {
  
   AliITSBeamTestDigitizer(); 
   AliITSBeamTestDigitizer(const Text_t* name,const Text_t* title, 
-			  Char_t* opt="Nov04",const char* filename="galice.root");
+			  const Char_t* opt="Nov04",const char* filename="galice.root");
   AliITSBeamTestDigitizer(const Text_t* name,const Text_t* title, 
-			  Int_t run,Char_t* opt="Nov04",const char* filename="galice.root");
+			  Int_t run, const Char_t* opt="Nov04",const char* filename="galice.root");
   AliITSBeamTestDigitizer(const AliITSBeamTestDigitizer& bt);
   AliITSBeamTestDigitizer& operator=(const AliITSBeamTestDigitizer &source);
 

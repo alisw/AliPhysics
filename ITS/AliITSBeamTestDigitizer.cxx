@@ -48,7 +48,7 @@ fHeader(0){
 } 
 
 //_____________________________________________________________
-AliITSBeamTestDigitizer::AliITSBeamTestDigitizer(const Text_t* name, const Text_t* title, Char_t* opt,const char* filename):TTask(name,title),
+AliITSBeamTestDigitizer::AliITSBeamTestDigitizer(const Text_t* name, const Text_t* title, const Char_t* opt,const char* filename):TTask(name,title),
 fEvIn(0),
 fEvFin(0),
 fRunNumber(-1),
@@ -77,7 +77,7 @@ fHeader(0)
  } 
 
 //_____________________________________________________________
-AliITSBeamTestDigitizer::AliITSBeamTestDigitizer(const Text_t* name, const Text_t* title, Int_t run, Char_t* opt,const char* filename):TTask(name,title), 
+AliITSBeamTestDigitizer::AliITSBeamTestDigitizer(const Text_t* name, const Text_t* title, Int_t run, const Char_t* opt,const char* filename):TTask(name,title), 
 fEvIn(0),
 fEvFin(0),
 fRunNumber(run),

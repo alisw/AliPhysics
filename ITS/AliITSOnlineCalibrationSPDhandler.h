@@ -64,18 +64,18 @@ class AliITSOnlineCalibrationSPDhandler {
   void    WriteNoisyToFile(UInt_t eq);
 
 #ifndef SPD_DA_OFF
-  Bool_t  ReadDeadModuleFromDB(UInt_t module, Int_t runNr, Char_t *storage="default", Bool_t treeSerial=kFALSE);
-  Bool_t  ReadNoisyModuleFromDB(UInt_t module, Int_t runNr, Char_t *storage="default", Bool_t treeSerial=kFALSE);
-  Bool_t  ReadFromDB(Int_t runNr, Char_t *storage="default", Bool_t treeSerial=kFALSE);
-  Bool_t  ReadDeadFromDB(Int_t runNr, Char_t *storage="default", Bool_t treeSerial=kFALSE);
-  Bool_t  ReadNoisyFromDB(Int_t runNr, Char_t *storage="default", Bool_t treeSerial=kFALSE);
-  Bool_t  ReadDeadFromDBasNoisy(Int_t runNr, Char_t *storage="default", Bool_t treeSerial=kFALSE);
+  Bool_t  ReadDeadModuleFromDB(UInt_t module, Int_t runNr, const Char_t *storage="default", Bool_t treeSerial=kFALSE);
+  Bool_t  ReadNoisyModuleFromDB(UInt_t module, Int_t runNr, const Char_t *storage="default", Bool_t treeSerial=kFALSE);
+  Bool_t  ReadFromDB(Int_t runNr, const Char_t *storage="default", Bool_t treeSerial=kFALSE);
+  Bool_t  ReadDeadFromDB(Int_t runNr, const Char_t *storage="default", Bool_t treeSerial=kFALSE);
+  Bool_t  ReadNoisyFromDB(Int_t runNr, const Char_t *storage="default", Bool_t treeSerial=kFALSE);
+  Bool_t  ReadDeadFromDBasNoisy(Int_t runNr, const Char_t *storage="default", Bool_t treeSerial=kFALSE);
   Bool_t  ReadDeadFromCalibObj(TObjArray* calObj);
   Bool_t  ReadNoisyFromCalibObj(TObjArray* calObj);
-  Bool_t  WriteToDB(Int_t runNrStart, Int_t runNrEnd, Char_t *storage="default");
-  Bool_t  WriteDeadToDB(Int_t runNrStart, Int_t runNrEnd, Char_t *storage="default");
-  Bool_t  WriteDeadToDBasNoisy(Int_t runNrStart, Int_t runNrEnd, Char_t *storage="default");
-  Bool_t  WriteNoisyToDB(Int_t runNrStart, Int_t runNrEnd, Char_t *storage="default");
+  Bool_t  WriteToDB(Int_t runNrStart, Int_t runNrEnd, const Char_t *storage="default");
+  Bool_t  WriteDeadToDB(Int_t runNrStart, Int_t runNrEnd, const Char_t *storage="default");
+  Bool_t  WriteDeadToDBasNoisy(Int_t runNrStart, Int_t runNrEnd, const Char_t *storage="default");
+  Bool_t  WriteNoisyToDB(Int_t runNrStart, Int_t runNrEnd, const Char_t *storage="default");
 #endif
 
   void    GenerateDCSConfigFile(const Char_t* fileName);

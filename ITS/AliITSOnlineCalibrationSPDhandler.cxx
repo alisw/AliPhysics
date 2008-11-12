@@ -505,7 +505,7 @@ void AliITSOnlineCalibrationSPDhandler::WriteNoisyToFile(UInt_t eq) {
 }
 //____________________________________________________________________________________________
 #ifndef SPD_DA_OFF
-Bool_t AliITSOnlineCalibrationSPDhandler::ReadDeadModuleFromDB(UInt_t module, Int_t runNr, Char_t *storage, Bool_t treeSerial) {
+Bool_t AliITSOnlineCalibrationSPDhandler::ReadDeadModuleFromDB(UInt_t module, Int_t runNr, const Char_t *storage, Bool_t treeSerial) {
   // reads dead pixels from DB for given module and runNr
   AliCDBManager* man = AliCDBManager::Instance();
   TString storageSTR = Form("%s",storage);
@@ -558,7 +558,7 @@ Bool_t AliITSOnlineCalibrationSPDhandler::ReadDeadModuleFromDB(UInt_t module, In
   return kTRUE;
 }
 //____________________________________________________________________________________________
-Bool_t AliITSOnlineCalibrationSPDhandler::ReadNoisyModuleFromDB(UInt_t module, Int_t runNr, Char_t *storage, Bool_t treeSerial) {
+Bool_t AliITSOnlineCalibrationSPDhandler::ReadNoisyModuleFromDB(UInt_t module, Int_t runNr, const Char_t *storage, Bool_t treeSerial) {
   // reads noisy pixels from DB for given module and runNr
   AliCDBManager* man = AliCDBManager::Instance();
   TString storageSTR = Form("%s",storage);
@@ -599,13 +599,13 @@ Bool_t AliITSOnlineCalibrationSPDhandler::ReadNoisyModuleFromDB(UInt_t module, I
   return kTRUE;
 }
 //____________________________________________________________________________________________
-Bool_t AliITSOnlineCalibrationSPDhandler::ReadFromDB(Int_t runNr, Char_t *storage, Bool_t treeSerial) {
+Bool_t AliITSOnlineCalibrationSPDhandler::ReadFromDB(Int_t runNr, const Char_t *storage, Bool_t treeSerial) {
   // reads dead and noisy pixels from DB for given runNr
   // note that you may want to clear the lists (if they are not empty) before reading
   return (ReadNoisyFromDB(runNr,storage,treeSerial) && ReadDeadFromDB(runNr,storage,treeSerial));
 }
 //____________________________________________________________________________________________
-Bool_t AliITSOnlineCalibrationSPDhandler::ReadDeadFromDB(Int_t runNr, Char_t *storage, Bool_t treeSerial) {
+Bool_t AliITSOnlineCalibrationSPDhandler::ReadDeadFromDB(Int_t runNr, const Char_t *storage, Bool_t treeSerial) {
   // reads dead pixels from DB for given runNr
   // note that you may want to clear the list (if it is not empty) before reading
   AliCDBManager* man = AliCDBManager::Instance();
@@ -662,7 +662,7 @@ Bool_t AliITSOnlineCalibrationSPDhandler::ReadDeadFromDB(Int_t runNr, Char_t *st
   return kTRUE;
 }
 //____________________________________________________________________________________________
-Bool_t AliITSOnlineCalibrationSPDhandler::ReadNoisyFromDB(Int_t runNr, Char_t *storage, Bool_t treeSerial) {
+Bool_t AliITSOnlineCalibrationSPDhandler::ReadNoisyFromDB(Int_t runNr, const Char_t *storage, Bool_t treeSerial) {
   // reads noisy pixels from DB for given runNr
   // note that you may want to clear the list (if it is not empty) before reading
   AliCDBManager* man = AliCDBManager::Instance();
@@ -708,7 +708,7 @@ Bool_t AliITSOnlineCalibrationSPDhandler::ReadNoisyFromDB(Int_t runNr, Char_t *s
   return kTRUE;
 }
 //____________________________________________________________________________________________
-Bool_t AliITSOnlineCalibrationSPDhandler::ReadDeadFromDBasNoisy(Int_t runNr, Char_t *storage, Bool_t treeSerial) {
+Bool_t AliITSOnlineCalibrationSPDhandler::ReadDeadFromDBasNoisy(Int_t runNr, const Char_t *storage, Bool_t treeSerial) {
   // reads dead pixels (put as noisy) from DB for given runNr
   // note that you may want to clear the list (if it is not empty) before reading
   AliCDBManager* man = AliCDBManager::Instance();
@@ -797,13 +797,13 @@ Bool_t AliITSOnlineCalibrationSPDhandler::ReadNoisyFromCalibObj(TObjArray* calOb
   return kTRUE;
 }
 //____________________________________________________________________________________________
-Bool_t AliITSOnlineCalibrationSPDhandler::WriteToDB(Int_t runNrStart, Int_t runNrEnd, Char_t *storage) {
+Bool_t AliITSOnlineCalibrationSPDhandler::WriteToDB(Int_t runNrStart, Int_t runNrEnd, const Char_t *storage) {
   // writes dead and noisy pixels to DB for given runNrs
   // overwrites any previous entries
   return (WriteNoisyToDB(runNrStart,runNrEnd,storage) && WriteDeadToDB(runNrStart,runNrEnd,storage));
 }
 //____________________________________________________________________________________________
-Bool_t AliITSOnlineCalibrationSPDhandler::WriteDeadToDB(Int_t runNrStart, Int_t runNrEnd, Char_t *storage) {
+Bool_t AliITSOnlineCalibrationSPDhandler::WriteDeadToDB(Int_t runNrStart, Int_t runNrEnd, const Char_t *storage) {
   // writes dead pixels to DB for given runNrs
   // overwrites any previous entries
   AliCDBManager* man = AliCDBManager::Instance();
@@ -850,7 +850,7 @@ Bool_t AliITSOnlineCalibrationSPDhandler::WriteDeadToDB(Int_t runNrStart, Int_t 
   return kTRUE;
 }
 //____________________________________________________________________________________________
-Bool_t AliITSOnlineCalibrationSPDhandler::WriteDeadToDBasNoisy(Int_t runNrStart, Int_t runNrEnd, Char_t *storage) {
+Bool_t AliITSOnlineCalibrationSPDhandler::WriteDeadToDBasNoisy(Int_t runNrStart, Int_t runNrEnd, const Char_t *storage) {
   // writes dead pixels to DB for given runNrs
   // overwrites any previous entries
   AliCDBManager* man = AliCDBManager::Instance();
@@ -897,7 +897,7 @@ Bool_t AliITSOnlineCalibrationSPDhandler::WriteDeadToDBasNoisy(Int_t runNrStart,
   return kTRUE;
 }
 //____________________________________________________________________________________________
-Bool_t AliITSOnlineCalibrationSPDhandler::WriteNoisyToDB(Int_t runNrStart, Int_t runNrEnd, Char_t *storage) {
+Bool_t AliITSOnlineCalibrationSPDhandler::WriteNoisyToDB(Int_t runNrStart, Int_t runNrEnd, const Char_t *storage) {
   // writes noisy pixels to DB for given runNrs
   // overwrites any previous entries
   AliCDBManager* man = AliCDBManager::Instance();
