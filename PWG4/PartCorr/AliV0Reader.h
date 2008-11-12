@@ -212,12 +212,14 @@ class AliV0Reader : public TObject {
   Double_t GetMaxRCut() const{return fMaxR;}
   Double_t GetEtaCut() const{return fEtaCut;}
   Double_t GetPtCut() const{return fPtCut;}
-  Double_t GetChi2Cut() const{return fChi2Cut;}
+  Double_t GetChi2CutConversion() const{return fChi2CutConversion;}
+  Double_t GetChi2CutMeson() const{return fChi2CutMeson;}
 
   void SetMaxRCut(Double_t maxR){fMaxR=maxR;}
   void SetEtaCut(Double_t etaCut){fEtaCut=etaCut;}
   void SetPtCut(Double_t ptCut){fPtCut=ptCut;}
-  void SetChi2Cut(Double_t chi2){fChi2Cut=chi2;}
+  void SetChi2CutConversion(Double_t chi2){fChi2CutConversion=chi2;}
+  void SetChi2CutMeson(Double_t chi2){fChi2CutMeson=chi2;}
   
   void SetXVertexCut(Double_t xVtx){fCurrentXValue=xVtx;}
   void SetYVertexCut(Double_t yVtx){fCurrentYValue=yVtx;}
@@ -226,6 +228,9 @@ class AliV0Reader : public TObject {
   void SetPIDProbabilityNegativeParticle(Double_t pidProb){fPIDProbabilityCutNegativeParticle=pidProb;}
   void SetPIDProbabilityPositiveParticle(Double_t pidProb){fPIDProbabilityCutPositiveParticle=pidProb;}
   void SetSigmaMass(Double_t sigmaMass){fNSigmaMass=sigmaMass;}
+
+  void SetDoMCTruth(Bool_t doMC){fDoMC = doMC;}
+
   void UpdateV0Information();
 
   void SetHistograms(AliGammaConversionHistograms *histograms){fHistograms=histograms;}
@@ -278,7 +283,8 @@ class AliV0Reader : public TObject {
   Double_t fMaxR;
   Double_t fEtaCut;
   Double_t fPtCut;
-  Double_t fChi2Cut;
+  Double_t fChi2CutConversion;
+  Double_t fChi2CutMeson;
   Double_t fPIDProbabilityCutNegativeParticle;
   Double_t fPIDProbabilityCutPositiveParticle;
   Double_t fXVertexCut;

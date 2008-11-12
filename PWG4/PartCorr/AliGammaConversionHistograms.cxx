@@ -42,7 +42,8 @@ AliGammaConversionHistograms::AliGammaConversionHistograms() :
   fDeltaR(0.),
   fMinPhi(0.),
   fMaxPhi(0.),
-  fDeltaPhi(0.)
+  fDeltaPhi(0.),
+  fMappingContainer(NULL)
 {
   // see header file for documenation
 }
@@ -57,7 +58,8 @@ AliGammaConversionHistograms::AliGammaConversionHistograms(const AliGammaConvers
   fDeltaR(original.fDeltaR),
   fMinPhi(original.fMinPhi),
   fMaxPhi(original.fMaxPhi),
-  fDeltaPhi(original.fDeltaPhi)
+  fDeltaPhi(original.fDeltaPhi),
+  fMappingContainer(original.fMappingContainer)
 {    
   //see header file for documentation
 }
@@ -101,7 +103,7 @@ void AliGammaConversionHistograms::FillHistogram(TString histogramName, Double_t
       tmp->Fill(xValue);
   }
   else{
-    cout<<"Histogram does not exist"<<histogramName.Data()<<endl;
+    cout<<"Histogram does not exist: "<<histogramName.Data()<<endl;
   }
 }
 
@@ -112,208 +114,37 @@ void AliGammaConversionHistograms::FillHistogram(TString histogramName, Double_t
     tmp->Fill(xValue, yValue);
   }
   else{
-    cout<<"Histogram does not exist"<<histogramName.Data()<<endl;
+    cout<<"Histogram does not exist: "<<histogramName.Data()<<endl;
   }
 }
 
-void AliGammaConversionHistograms::GetOutputContainer(TList *fOutputContainer) const{
+void AliGammaConversionHistograms::GetOutputContainer(TList *fOutputContainer){
   //checking if the container is alrerady created
 
   if(fOutputContainer == NULL){
     //print warning
     return;
   }
-  cout<<"Creating the histogram output container"<<endl;
 
-  if(fHistogramMap){
+  if(fHistogramMap != NULL){
     TIter iter(fHistogramMap);
     TObjString *histogramName;
     while ((histogramName = (TObjString*) iter.Next())) {
-      cout<<"Histohram name "<<histogramName->GetString().Data()<<endl;
       TString histogramString = histogramName->GetString();
+      if(histogramString.Contains("Mapping")){// means it should be put in the mapping folder
+	if(fMappingContainer == NULL){
+	  fMappingContainer = new TList();
+	  fMappingContainer->SetName("Mapping histograms");
+	}
+	if(fMappingContainer != NULL){
+	  fMappingContainer->Add((TH1*)fHistogramMap->GetValue(histogramString.Data()));
+	}
+      }
       fOutputContainer->Add((TH1*)fHistogramMap->GetValue(histogramString.Data()));
       histogramName = NULL;
-    }  
+    } // end while
+    //   fOutputContainer->Add(fMappingContainer);
   }
-
-  //remember mapping stuff!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-
-  /*
-  TList*  fMappingContainer = new TList();
-  fMappingContainer->SetName("Mapping Histograms");
-
-  if(fMCEPR != NULL){ fOutputContainer->Add(fMCEPR);}
-  if(fMCEPZR != NULL){ fOutputContainer->Add(fMCEPZR);}
-  if(fMCEPXY != NULL){ fOutputContainer->Add(fMCEPXY);}
-  if(fMCEPOpeningAngle != NULL){ fOutputContainer->Add(fMCEPOpeningAngle);}
-
-  if(fMCEEnergy != NULL){ fOutputContainer->Add(fMCEEnergy);}
-  if(fMCEPt != NULL){ fOutputContainer->Add(fMCEPt);}
-  if(fMCEEta != NULL){ fOutputContainer->Add(fMCEEta);}
-  if(fMCEPhi != NULL){ fOutputContainer->Add(fMCEPhi);}
-
-  if(fMCPEnergy != NULL){ fOutputContainer->Add(fMCPEnergy);}
-  if(fMCPPt != NULL){ fOutputContainer->Add(fMCPPt);}
-  if(fMCPEta != NULL){ fOutputContainer->Add(fMCPEta);}
-  if(fMCPPhi != NULL){ fOutputContainer->Add(fMCPPhi);}
-
-  if(fMCGammaEnergy != NULL){ fOutputContainer->Add(fMCGammaEnergy);}
-  if(fMCGammaPt != NULL){ fOutputContainer->Add(fMCGammaPt);}
-  if(fMCGammaEta != NULL){ fOutputContainer->Add(fMCGammaEta);}
-  if(fMCGammaPhi != NULL){ fOutputContainer->Add(fMCGammaPhi);}
-
-  if(fMCDirectGammaEnergy != NULL){ fOutputContainer->Add(fMCDirectGammaEnergy);}
-  if(fMCDirectGammaPt != NULL){ fOutputContainer->Add(fMCDirectGammaPt);}
-  if(fMCDirectGammaEta != NULL){ fOutputContainer->Add(fMCDirectGammaEta);}
-  if(fMCDirectGammaPhi != NULL){ fOutputContainer->Add(fMCDirectGammaPhi);}
-
-  //mapping
-  for(UInt_t i=0;i<fMCMapping.size();i++){
-    for(UInt_t j=0;j<fMCMapping[i].size();j++){
-      if(fMCMapping[i][j] != NULL){fMappingContainer->Add(fMCMapping[i][j]);}
-    }
-  }
-  for(UInt_t i=0;i<fMCMappingPhi.size();i++){
-    if(fMCMappingPhi[i] != NULL){fMappingContainer->Add(fMCMappingPhi[i]);}
-  }
-  for(UInt_t i=0;i<fMCMappingR.size();i++){
-    if(fMCMappingR[i] != NULL){fMappingContainer->Add(fMCMappingR[i]);}
-  }
-  if(fMCMatchGammaEta != NULL){ fOutputContainer->Add(fMCMatchGammaEta);}
-  if(fMCMatchGammaPhi != NULL){ fOutputContainer->Add(fMCMatchGammaPhi);}
-  if(fMCMatchGammaPt != NULL){ fOutputContainer->Add(fMCMatchGammaPt);}
-  if(fMCMatchGammaEnergy != NULL){ fOutputContainer->Add(fMCMatchGammaEnergy);}
-  if(fMCMatchGammaMass != NULL){ fOutputContainer->Add(fMCMatchGammaMass);}
-  if(fMCMatchGammaOpeningAngle != NULL){ fOutputContainer->Add(fMCMatchGammaOpeningAngle);}
-  if(fMCMatchGammaR != NULL){ fOutputContainer->Add(fMCMatchGammaR);}
-  if(fMCMatchGammaZR != NULL){ fOutputContainer->Add(fMCMatchGammaZR);}
-  if(fMCMatchGammaXY != NULL){ fOutputContainer->Add(fMCMatchGammaXY);}
-
-  if(fMCPi0Eta != NULL){ fOutputContainer->Add(fMCPi0Eta);}
-  if(fMCPi0Phi != NULL){ fOutputContainer->Add(fMCPi0Phi);}
-  if(fMCPi0Pt != NULL){ fOutputContainer->Add(fMCPi0Pt);}
-  if(fMCPi0Energy != NULL){ fOutputContainer->Add(fMCPi0Energy);}
-  if(fMCPi0Mass != NULL){ fOutputContainer->Add(fMCPi0Mass);}
-  if(fMCPi0OpeningAngleGamma != NULL){ fOutputContainer->Add(fMCPi0OpeningAngleGamma);}
-  if(fMCPi0R != NULL){ fOutputContainer->Add(fMCPi0R);}
-  if(fMCPi0ZR != NULL){ fOutputContainer->Add(fMCPi0ZR);}
-  if(fMCPi0XY != NULL){ fOutputContainer->Add(fMCPi0XY);}
-  if(fMCPi0SecondariesXY != NULL){ fOutputContainer->Add(fMCPi0SecondariesXY);}
-
-  if(fMCEtaEta != NULL){ fOutputContainer->Add(fMCEtaEta);}
-  if(fMCEtaPhi != NULL){ fOutputContainer->Add(fMCEtaPhi);}
-  if(fMCEtaPt != NULL){ fOutputContainer->Add(fMCEtaPt);}
-  if(fMCEtaEnergy != NULL){ fOutputContainer->Add(fMCEtaEnergy);}
-  if(fMCEtaMass != NULL){ fOutputContainer->Add(fMCEtaMass);}
-  if(fMCEtaOpeningAngleGamma != NULL){ fOutputContainer->Add(fMCEtaOpeningAngleGamma);}
-  if(fMCEtaR != NULL){ fOutputContainer->Add(fMCEtaR);}
-  if(fMCEtaZR != NULL){ fOutputContainer->Add(fMCEtaZR);}
-  if(fMCEtaXY != NULL){ fOutputContainer->Add(fMCEtaXY);}
-    
-  // Histograms from esd tracks
-  if(fESDEPR != NULL){ fOutputContainer->Add(fESDEPR);}
-  if(fESDEPZR != NULL){ fOutputContainer->Add(fESDEPZR);}
-  if(fESDEPXY != NULL){ fOutputContainer->Add(fESDEPXY);}
-  if(fESDEPOpeningAngle != NULL){ fOutputContainer->Add(fESDEPOpeningAngle);}
-
-  if(fESDEEnergy != NULL){ fOutputContainer->Add(fESDEEnergy);}
-  if(fESDEPt != NULL){ fOutputContainer->Add(fESDEPt);}
-  if(fESDEEta != NULL){ fOutputContainer->Add(fESDEEta);}
-  if(fESDEPhi != NULL){ fOutputContainer->Add(fESDEPhi);}
-
-  if(fESDPEnergy != NULL){ fOutputContainer->Add(fESDPEnergy);}
-  if(fESDPPt != NULL){ fOutputContainer->Add(fESDPPt);}
-  if(fESDPEta != NULL){ fOutputContainer->Add(fESDPEta);}
-  if(fESDPPhi != NULL){ fOutputContainer->Add(fESDPPhi);}
-
-  if(fESDGammaEnergy != NULL){ fOutputContainer->Add(fESDGammaEnergy);}
-  if(fESDGammaPt != NULL){ fOutputContainer->Add(fESDGammaPt);}
-  if(fESDGammaEta != NULL){ fOutputContainer->Add(fESDGammaEta);}
-  if(fESDGammaPhi != NULL){ fOutputContainer->Add(fESDGammaPhi);}
-
-  //mapping
-  for(UInt_t i=0;i<fESDMapping.size();i++){
-    for(UInt_t j=0;j<fESDMapping[i].size();j++){
-      if(fESDMapping[i][j] != NULL){fMappingContainer->Add(fESDMapping[i][j]);}
-    }
-  }
-  for(UInt_t i=0;i<fESDMappingPhi.size();i++){
-    if(fESDMappingPhi[i] != NULL){fMappingContainer->Add(fESDMappingPhi[i]);}
-  }
-  for(UInt_t i=0;i<fESDMappingR.size();i++){
-    if(fESDMappingR[i] != NULL){fMappingContainer->Add(fESDMappingR[i]);}
-  }
-
-  fOutputContainer->Add(fMappingContainer);
-
-  if(fESDMatchGammaOpeningAngle != NULL){ fOutputContainer->Add(fESDMatchGammaOpeningAngle);}
-  if(fESDMatchGammaEnergy != NULL){ fOutputContainer->Add(fESDMatchGammaEnergy);}
-  if(fESDMatchGammaPt != NULL){ fOutputContainer->Add(fESDMatchGammaPt);}
-  if(fESDMatchGammaEta != NULL){ fOutputContainer->Add(fESDMatchGammaEta);}
-  if(fESDMatchGammaPhi != NULL){ fOutputContainer->Add(fESDMatchGammaPhi);}
-  if(fESDMatchGammaMass != NULL){ fOutputContainer->Add(fESDMatchGammaMass);}
-  if(fESDMatchGammaWidth != NULL){ fOutputContainer->Add(fESDMatchGammaWidth);}
-  if(fESDMatchGammaChi2 != NULL){ fOutputContainer->Add(fESDMatchGammaChi2);}
-  if(fESDMatchGammaNDF != NULL){ fOutputContainer->Add(fESDMatchGammaNDF);}
-  if(fESDMatchGammaR != NULL){ fOutputContainer->Add(fESDMatchGammaR);}
-  if(fESDMatchGammaZR != NULL){ fOutputContainer->Add(fESDMatchGammaZR);}
-  if(fESDMatchGammaXY != NULL){ fOutputContainer->Add(fESDMatchGammaXY);}
-
-  if(fESDPi0OpeningAngleGamma != NULL){ fOutputContainer->Add(fESDPi0OpeningAngleGamma);}
-  if(fESDPi0Energy != NULL){ fOutputContainer->Add(fESDPi0Energy);}
-  if(fESDPi0Pt != NULL){ fOutputContainer->Add(fESDPi0Pt);}
-  if(fESDPi0Eta != NULL){ fOutputContainer->Add(fESDPi0Eta);}
-  if(fESDPi0Phi != NULL){ fOutputContainer->Add(fESDPi0Phi);}
-  if(fESDPi0Mass != NULL){ fOutputContainer->Add(fESDPi0Mass);}
-  if(fESDPi0R != NULL){ fOutputContainer->Add(fESDPi0R);}
-  if(fESDPi0ZR != NULL){ fOutputContainer->Add(fESDPi0ZR);}
-  if(fESDPi0XY != NULL){ fOutputContainer->Add(fESDPi0XY);}
-
-  if(fESDEtaOpeningAngleGamma != NULL){ fOutputContainer->Add(fESDEtaOpeningAngleGamma);}
-  if(fESDEtaEnergy != NULL){ fOutputContainer->Add(fESDEtaEnergy);}
-  if(fESDEtaPt != NULL){ fOutputContainer->Add(fESDEtaPt);}
-  if(fESDEtaEta != NULL){ fOutputContainer->Add(fESDEtaEta);}
-  if(fESDEtaPhi != NULL){ fOutputContainer->Add(fESDEtaPhi);}
-  if(fESDEtaMass != NULL){ fOutputContainer->Add(fESDEtaMass);}
-  if(fESDEtaR != NULL){ fOutputContainer->Add(fESDEtaR);}
-  if(fESDEtaZR != NULL){ fOutputContainer->Add(fESDEtaZR);}
-  if(fESDEtaXY != NULL){ fOutputContainer->Add(fESDEtaXY);}
-
-  if(fESDBackgroundOpeningAngleGamma != NULL){ fOutputContainer->Add(fESDBackgroundOpeningAngleGamma);}
-  if(fESDBackgroundEnergy != NULL){ fOutputContainer->Add(fESDBackgroundEnergy);}
-  if(fESDBackgroundPt != NULL){ fOutputContainer->Add(fESDBackgroundPt);}
-  if(fESDBackgroundEta != NULL){ fOutputContainer->Add(fESDBackgroundEta);}
-  if(fESDBackgroundPhi != NULL){ fOutputContainer->Add(fESDBackgroundPhi);}
-  if(fESDBackgroundMass != NULL){ fOutputContainer->Add(fESDBackgroundMass);}
-  if(fESDBackgroundR != NULL){ fOutputContainer->Add(fESDBackgroundR);}
-  if(fESDBackgroundZR != NULL){ fOutputContainer->Add(fESDBackgroundZR);}
-  if(fESDBackgroundXY != NULL){ fOutputContainer->Add(fESDBackgroundXY);}
-
-  if(fResolutiondPt != NULL){ fOutputContainer->Add(fResolutiondPt);}
-  if(fResolutiondR != NULL){ fOutputContainer->Add(fResolutiondR);}
-  if(fResolutiondZ != NULL){ fOutputContainer->Add(fResolutiondZ);}
-  if(fResolutiondRdPt != NULL){ fOutputContainer->Add(fResolutiondRdPt);}
-  if(fResolutionMCPt != NULL){ fOutputContainer->Add(fResolutionMCPt);}
-  if(fResolutionMCR != NULL){ fOutputContainer->Add(fResolutionMCR);}
-  if(fResolutionMCZ != NULL){ fOutputContainer->Add(fResolutionMCZ);}
-  if(fResolutionESDPt != NULL){ fOutputContainer->Add(fResolutionESDPt);}
-  if(fResolutionESDR != NULL){ fOutputContainer->Add(fResolutionESDR);}
-  if(fResolutionESDZ != NULL){ fOutputContainer->Add(fResolutionESDZ);}
-
-  if(fNumberOfV0s != NULL){fOutputContainer->Add(fNumberOfV0s);}
-  if(fNumberOfSurvivingV0s != NULL){fOutputContainer->Add(fNumberOfSurvivingV0s);}
-  if(fV0MassDebugCut1 != NULL){fOutputContainer->Add(fV0MassDebugCut1);}
-  if(fV0MassDebugCut2 != NULL){fOutputContainer->Add(fV0MassDebugCut2);}
-  if(fV0MassDebugCut3 != NULL){fOutputContainer->Add(fV0MassDebugCut3);}
-  if(fV0MassDebugCut4 != NULL){fOutputContainer->Add(fV0MassDebugCut4);}
-  if(fV0MassDebugCut5 != NULL){fOutputContainer->Add(fV0MassDebugCut5);}
-  if(fV0MassDebugCut6 != NULL){fOutputContainer->Add(fV0MassDebugCut6);}
-  if(fV0MassDebugCut7 != NULL){fOutputContainer->Add(fV0MassDebugCut7);}
-  if(fV0MassDebugCut8 != NULL){fOutputContainer->Add(fV0MassDebugCut8);}
-  
-  return fOutputContainer;
-*/
 }
 
 Int_t AliGammaConversionHistograms::GetRBin(Double_t radius) const{
@@ -365,6 +196,9 @@ void AliGammaConversionHistograms::AddMappingHistograms(Int_t nPhiIndex, Int_t n
 
     for(Int_t r =0; r<fNRIndex;r++){
 
+      // setting axis to "" changes below
+      xAxisTitle="";
+      yAxisTitle="";
       //Creating the axis titles
       if(xAxisTitle.Length() == 0){
 	xAxisTitle.Form("Phi %02d",phi);
@@ -392,8 +226,12 @@ void AliGammaConversionHistograms::AddMappingHistograms(Int_t nPhiIndex, Int_t n
     }
   }
 
+
   for(Int_t phi =0; phi<=nPhiIndex;phi++){ 
 
+    // setting axis to "" changes below
+    xAxisTitle="";
+    yAxisTitle="";
     //Creating the axis titles
     if(xAxisTitle.Length() == 0){
       xAxisTitle.Form("Phi %02d",phi);
@@ -412,15 +250,19 @@ void AliGammaConversionHistograms::AddMappingHistograms(Int_t nPhiIndex, Int_t n
 
     //MC
     TString nameESD="";
-    nameMC.Form("ESD_EP_Mapping-Phi%02d",phi);
+    nameESD.Form("ESD_EP_Mapping-Phi%02d",phi);
     TString titleESD="";
-    titleMC.Form("Electron-Positron ESD Mapping-Phi%02d",phi);
+    titleESD.Form("Electron-Positron ESD Mapping-Phi%02d",phi);
     
     AddHistogram(nameESD, titleESD, nXBins, firstX, lastX, xAxisTitle, yAxisTitle);
   }
 
 
   for(Int_t r =0; r<=nRIndex;r++){
+
+    // setting axis to "" changes below
+    xAxisTitle="";
+    yAxisTitle="";
     //Creating the axis titles
     if(xAxisTitle.Length() == 0){
       xAxisTitle.Form("R %02d",r);
@@ -447,15 +289,16 @@ void AliGammaConversionHistograms::AddMappingHistograms(Int_t nPhiIndex, Int_t n
 
     //Mapping Phi in R
     TString nameMCPhiInR="";
-    nameMCPhiInR.Form("MC_EP_Mapping_Phi_vs_R_R-%02d",r);
+    nameMCPhiInR.Form("MC_EP_Mapping_Phi_R-%02d",r);
     TString titleMCPhiInR="";
-    titleMCPhiInR.Form("Electron-Positron MC Mapping of Phi in R%02d",r);
-    AddHistogram(nameMCPhiInR, titleMCPhiInR, nXBins, firstX, lastX, nYBins, firstY, lastY, xAxisTitle, yAxisTitle);
+    titleMCPhiInR.Form("MC Mapping of Phi in R%02d",r);
+    AddHistogram(nameMCPhiInR, titleMCPhiInR, nXBins, firstX, lastX, xAxisTitle, yAxisTitle);
 
+    //Mapping Phi in R
     TString nameESDPhiInR="";
-    nameESDPhiInR.Form("ESD_EP_Mapping_Phi_vs_R_R-%02d",r);
+    nameESDPhiInR.Form("ESD_EP_Mapping_Phi_R-%02d",r);
     TString titleESDPhiInR="";
-    titleESDPhiInR.Form("Electron-Positron ESD Mapping of Phi in R%02d",r);
-    AddHistogram(nameESDPhiInR, titleESDPhiInR, nXBins, firstX, lastX, nYBins, firstY, lastY, xAxisTitle, yAxisTitle);    
+    titleESDPhiInR.Form("ESD Mapping of Phi in R%02d",r);
+    AddHistogram(nameESDPhiInR, titleESDPhiInR, nXBins, firstX, lastX, xAxisTitle, yAxisTitle);    
   }
 }
