@@ -230,8 +230,9 @@ Config()
   // This part for configuration    
   // EG_t  eg   = test50;
   // EG_t  eg   = kParam_fmd;
-  EG_t  eg   = kFMDFlat; // kParam_2000; // kPythia;
+  // EG_t  eg   = kFMDFlat; // kParam_2000; // kPythia;
   // EG_t  eg   = kFMDFlat;
+  EG_t  eg   = kPythia6;
   Geo_t geo  = kNoHoles;
   Rad_t rad  = kGluonRadiation;
   Mag_t mag  = k5kG;
@@ -273,6 +274,7 @@ Config()
       //
       // Libraries needed by GEANT 3.21 
       //
+      gSystem->Load("$ALICE_ROOT/lib/tgt_$ALICE_TARGET/libpythia6.so");
       gSystem->Load("libgeant321");
       
       // 
@@ -287,6 +289,9 @@ Config()
       //
       // Libraries needed by GEANT 3.21 
       //
+      gSystem->Load("$ALICE_ROOT/lib/tgt_$ALICE_TARGET/liblhapdf.so");
+      gSystem->Load("$ALICE_ROOT/lib/tgt_$ALICE_TARGET/libpythia6.so");
+      // gSystem->Load("libEGPythia6.so"); //<- For non-debian (sigh!)
       gSystem->Load("EGPythia6.so");
       gSystem->Load("libgeant321");
     
@@ -535,6 +540,28 @@ GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)
   Int_t isw = 3;
   if (rad == kNoGluonRadiation) isw = 0;
   
+  // Possibly load libAliPythia6
+  switch (eg) {
+  case kPythia6:
+  case kPythia6Jets20_24:
+  case kPythia6Jets24_29:
+  case kPythia6Jets29_35:
+  case kPythia6Jets35_42:
+  case kPythia6Jets42_50:
+  case kPythia6Jets50_60:
+  case kPythia6Jets60_72:
+  case kPythia6Jets72_86:
+  case kPythia6Jets86_104:
+  case kPythia6Jets104_125:
+  case kPythia6Jets125_150:
+  case kPythia6Jets150_180:
+    gSystem->Load("liblhapdf.so");
+    // gSystem->Load("/usr/lib/libpythia.so");
+    // gSystem->ListLibraries();
+    gSystem->Load("EGPythia6.so");
+    gSystem->Load("libAliPythia6");
+    break;
+  }
   
   AliGenerator * gGener = 0;
   switch (eg) {
