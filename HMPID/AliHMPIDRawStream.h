@@ -46,7 +46,7 @@ class AliHMPIDRawStream: public TObject {
 	    Int_t   PadPcX      ( Int_t ddl,Int_t row,Int_t dil,Int_t pad                            ) {return AliHMPIDParam::A2X(GetPad(ddl,row,dil,pad));}                                                 //pad pc x # 0..79
 	    Int_t   PadPcY      ( Int_t ddl,Int_t row,Int_t dil,Int_t pad                            ) {return AliHMPIDParam::A2Y(GetPad(ddl,row,dil,pad));}                                                 //pad pc y # 0..47
 
-    static inline  Char_t* GetErrName(Int_t eType);      
+    static inline const Char_t* GetErrName(Int_t eType);      
     inline  Bool_t SetZeroSup (Bool_t isSup);
     inline  Bool_t GetZeroSup()const; 
     inline  Int_t  GetErrors(Int_t ddl,Int_t eType)const;                                                                                   //Get errors and occurance
@@ -374,16 +374,16 @@ Int_t AliHMPIDRawStream::GetErrors(Int_t ddl,Int_t eType)const
   else return fNumOfErr[ddl][eType];
 } //GetErrors()     
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Char_t* AliHMPIDRawStream::GetErrName(Int_t eType)
+const Char_t* AliHMPIDRawStream::GetErrName(Int_t eType)
 {
   // Return the name of the error for a given error tye during raw data reading
   // Arguments: errorType
   // Returns: error or -999 if error Type does not exist
-  Char_t *eName[]={ "kRawDataSizeErr",  "kRowMarkerErr" , "kWrongRowErr" , "kWrongDilogicErr",
+  const Char_t *eName[]={ "kRawDataSizeErr",  "kRowMarkerErr" , "kWrongRowErr" , "kWrongDilogicErr",
                     "kWrongPadErr"   ,  "kEoEFlagErr"   , "kEoESizeErr"  , "kEoEDILOGICErr",
                     "kEoERowErr"     ,  "kBadSegWordErr", "kWrongSegErr" , "kRowMarkerSizeErr",
                     "kPedQZero"      ,  "kSumErr"        };                       
-  Char_t *eNoErr="NotDefinedErrorType";
+  const Char_t *eNoErr="NotDefinedErrorType";
   if(eType<0 || eType>kSumErr) return eNoErr;
   else                         return eName[eType];
 }//GetErrName()

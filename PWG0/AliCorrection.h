@@ -32,8 +32,8 @@ public:
 
   virtual Long64_t Merge(TCollection* list);
 
-  AliCorrectionMatrix2D* GetEventCorrection() { return fEventCorr; }
-  AliCorrectionMatrix3D* GetTrackCorrection() { return fTrackCorr; }
+  AliCorrectionMatrix2D* GetEventCorrection() const { return fEventCorr; }
+  AliCorrectionMatrix3D* GetTrackCorrection() const { return fTrackCorr; }
 
   void SetEventCorrection(AliCorrectionMatrix2D* corr) { fEventCorr = corr; }
   void SetTrackCorrection(AliCorrectionMatrix3D* corr) { fTrackCorr = corr; }

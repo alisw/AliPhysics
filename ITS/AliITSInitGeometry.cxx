@@ -799,7 +799,7 @@ Bool_t AliITSInitGeometry::InitAliITSgeomV11Hybrid(AliITSgeom *geom){
   const AliITSDetector kIdet[6]   = {kSPD,kSPD,kSDD,kSDD,kSSD,kSSD};
   const TString kPathbase = "/ALIC_1/ITSV_1/";
 
-  char *pathSPDsens1, *pathSPDsens2;
+  const char *pathSPDsens1, *pathSPDsens2;
   if (SPDIsTGeoNative()) {
     pathSPDsens1="%sITSSPD_1/ITSSPDCarbonFiberSectorV_%d/ITSSPDSensitiveVirtualvolumeM0_1/ITSSPDlay1-Stave_%d/ITSSPDhalf-Stave%d_1/ITSSPDlay1-Ladder_%d/ITSSPDlay1-sensor_1";
     pathSPDsens2="%sITSSPD_1/ITSSPDCarbonFiberSectorV_%d/ITSSPDSensitiveVirtualvolumeM0_1/ITSSPDlay2-Stave_%d/ITSSPDhalf-Stave%d_1/ITSSPDlay2-Ladder_%d/ITSSPDlay2-sensor_1";
@@ -808,7 +808,7 @@ Bool_t AliITSInitGeometry::InitAliITSgeomV11Hybrid(AliITSgeom *geom){
     pathSPDsens2 = "%sITSD_1/IT12_1/I12B_%d/I20B_%d/L2H-STAVE%d_1/I1D7_%d/I1D1_1/ITS2_1";
   }
 
-  char *pathSDDsens1, *pathSDDsens2;
+  const char *pathSDDsens1, *pathSDDsens2;
   if (SDDIsTGeoNative()) {
     pathSDDsens1 = "%sITSsddLayer3_1/ITSsddLadd_%d/ITSsddSensor3_%d/ITSsddWafer3_%d/ITSsddSensitivL3_1";
     pathSDDsens2 = "%sITSsddLayer4_1/ITSsddLadd_%d/ITSsddSensor4_%d/ITSsddWafer4_%d/ITSsddSensitivL4_1";
@@ -817,7 +817,7 @@ Bool_t AliITSInitGeometry::InitAliITSgeomV11Hybrid(AliITSgeom *geom){
     pathSDDsens2 = "%sITSD_1/IT34_1/I005_%d/I402_%d/ITS4_%d";
   }
 
-  char *pathSSDsens1, *pathSSDsens2;
+  const char *pathSSDsens1, *pathSSDsens2;
   if (SSDIsTGeoNative()) {
     pathSSDsens1 = "%sITSssdLayer5_1/ITSssdLay5Ladd_%d/ITSssdSensor5_%d/ITSssdSensitivL5_1";
     pathSSDsens2 = "%sITSssdLayer6_1/ITSssdLay6Ladd_%d/ITSssdSensor6_%d/ITSssdSensitivL6_1";

@@ -52,7 +52,7 @@ class AliTPCMonitor : public AliTPCMonitorConfig {
     virtual ~AliTPCMonitor();
     
     Int_t         CheckEqId(Int_t secid, Int_t eqid);
-    TCanvas*      CreateCanvas(char* name);
+    TCanvas*      CreateCanvas(const char* name);
     void          CreateHistos();
     
     void          DeleteHistos();

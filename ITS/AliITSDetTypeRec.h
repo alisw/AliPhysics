@@ -70,19 +70,19 @@ class AliITSDetTypeRec : public TObject {
       else return 1.;
     }
 
-    virtual void SetDigitClassName(Int_t i,Char_t *digit) 
+    virtual void SetDigitClassName(Int_t i,const Char_t *digit) 
       {fDigClassName[i]=digit;}
-    virtual void SetClusterClassName(Int_t i,Char_t *cluster)
+    virtual void SetClusterClassName(Int_t i,const Char_t *cluster)
       {fClusterClassName[i]=cluster;}
-    virtual void SetRecPointClassName(Int_t i,Char_t *recpoint) 
+    virtual void SetRecPointClassName(Int_t i,const Char_t *recpoint) 
       {fRecPointClassName[i]=recpoint;}
     
     virtual void SetLoadOnlySPDCalib(Bool_t opt=kFALSE)
       {fLoadOnlySPDCalib=opt;}
 
-    Char_t* GetDigitClassName(Int_t i) const {return fDigClassName[i];}
-    Char_t* GetClusterClassName(Int_t i) const {return fClusterClassName[i];}
-    Char_t* GetRecPointClassName(Int_t i) const {return fRecPointClassName[i];}
+    const Char_t* GetDigitClassName(Int_t i) const {return fDigClassName[i];}
+    const Char_t* GetClusterClassName(Int_t i) const {return fClusterClassName[i];}
+    const Char_t* GetRecPointClassName(Int_t i) const {return fRecPointClassName[i];}
     
     TObjArray* GetDigits() const {return fDigits;} 
     Int_t *Ndtype() {return fNdtype;}
@@ -149,9 +149,9 @@ class AliITSDetTypeRec : public TObject {
     Float_t       fAveGainSDD;    //! Average gain of SDD good anodes
     Bool_t        fIsHLTmodeC;    //! flag for HLT mode C status (used by SDD)
     Int_t        *fNdtype;        //! detector types  
-    Char_t*       fClusterClassName[3]; //! String with Cluster class name
-    Char_t*       fDigClassName[3];     //! String with digit class name.
-    Char_t*       fRecPointClassName[3];//! String with RecPoint class name
+    const Char_t*       fClusterClassName[3]; //! String with Cluster class name
+    const Char_t*       fDigClassName[3];     //! String with digit class name.
+    const Char_t*       fRecPointClassName[3];//! String with RecPoint class name
 
     TObjArray    *fCtype;      //! List of clusters
     Int_t        *fNctype;     //[fNDetTypes] Num. of clust. per type of det.

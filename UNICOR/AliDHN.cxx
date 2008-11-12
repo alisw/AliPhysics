@@ -9,6 +9,8 @@
 //=============================================================================
 
 #include <cmath>
+#include <stdlib.h>
+
 #include <TFile.h>
 #include <TDirectory.h>
 #include <TAxis.h>

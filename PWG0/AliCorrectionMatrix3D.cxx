@@ -183,7 +183,7 @@ TH3* AliCorrectionMatrix3D::GetCorrectionHistogram()
 }
 
 //____________________________________________________________________
-AliCorrectionMatrix2D* AliCorrectionMatrix3D::Get2DCorrection(Char_t* opt, Float_t aMin, Float_t aMax)
+AliCorrectionMatrix2D* AliCorrectionMatrix3D::Get2DCorrection(Option_t* opt, Float_t aMin, Float_t aMax)
 {
   // returns a 2D projection of this correction
 
@@ -250,7 +250,7 @@ AliCorrectionMatrix2D* AliCorrectionMatrix3D::Get2DCorrection(Char_t* opt, Float
 }
 
 //____________________________________________________________________
-TH1* AliCorrectionMatrix3D::Get1DCorrectionHistogram(Char_t* opt, Float_t aMin1, Float_t aMax1, Float_t aMin2, Float_t aMax2)
+TH1* AliCorrectionMatrix3D::Get1DCorrectionHistogram(Option_t* opt, Float_t aMin1, Float_t aMax1, Float_t aMin2, Float_t aMax2)
 {
   // returns a 1D projection of this correction
   AliDebug(AliLog::kWarning, Form("WARNING: test"));

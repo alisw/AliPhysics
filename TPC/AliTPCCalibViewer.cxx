@@ -130,7 +130,7 @@ AliTPCCalibViewer::AliTPCCalibViewer(TTree* tree)
 }
 
 //_____________________________________________________________________________
-AliTPCCalibViewer::AliTPCCalibViewer(char* fileName, char* treeName)
+AliTPCCalibViewer::AliTPCCalibViewer(const char* fileName, const char* treeName)
                   :TObject(),
                    fTree(0),
                    fFile(0),
@@ -1535,7 +1535,7 @@ TH1F* AliTPCCalibViewer::Integrate(Int_t n, Float_t *array, Int_t nbins, Float_t
 
 
 //_____________________________________________________________________________
-AliTPCCalPad* AliTPCCalibViewer::GetCalPadOld(const char* desiredData, char* cuts, char* calPadName) const {
+AliTPCCalPad* AliTPCCalibViewer::GetCalPadOld(const char* desiredData, const char* cuts, const char* calPadName) const {
   //
   // creates a AliTPCCalPad out of the 'desiredData'
   // the functionality of EasyDraw1D is used
@@ -1561,7 +1561,7 @@ AliTPCCalPad* AliTPCCalibViewer::GetCalPadOld(const char* desiredData, char* cut
 
 
 //_____________________________________________________________________________
-AliTPCCalPad* AliTPCCalibViewer::GetCalPad(const char* desiredData, char* cuts, char* calPadName) const {
+AliTPCCalPad* AliTPCCalibViewer::GetCalPad(const char* desiredData, const char* cuts, const char* calPadName) const {
   //
   // creates a AliTPCCalPad out of the 'desiredData'
   // the functionality of EasyDraw1D is used

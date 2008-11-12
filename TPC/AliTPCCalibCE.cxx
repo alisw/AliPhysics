@@ -1318,7 +1318,7 @@ Bool_t AliTPCCalibCE::ProcessEvent(eventHeaderStruct *event)
 //_____________________________________________________________________
 TH2S* AliTPCCalibCE::GetHisto(Int_t sector, TObjArray *arr,
 				  Int_t nbinsY, Float_t ymin, Float_t ymax,
-				  Char_t *type, Bool_t force)
+				  const Char_t *type, Bool_t force)
 {
     //
     // return pointer to TH2S histogram of 'type'
@@ -1373,7 +1373,7 @@ TH2S* AliTPCCalibCE::GetHistoRMS(Int_t sector, Bool_t force)
 }
 //_____________________________________________________________________
 TH1S* AliTPCCalibCE::GetHisto(Int_t sector, TObjArray *arr,
-			      Char_t *type, Bool_t force)
+			      const Char_t *type, Bool_t force)
 {
     //
     // return pointer to TH1S histogram

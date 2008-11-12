@@ -91,7 +91,7 @@ void AliAnalysisTaskMuonAODfromGeneral::Exec(Option_t *) {
   Int_t nTracks=fOrgAOD->GetNumberOfTracks();
   Int_t nMuTracks=0;
   Int_t nPosTracks = 0;
-  Int_t mutrNumb[10]; for (Int_t i=0; i<10; mutrNumb[i++]=0);
+  Int_t mutrNumb[10]; for (Int_t i=0; i<10; mutrNumb[i++]=0) {}
   for (Int_t iTrack=0; iTrack<nTracks; iTrack++){
        const Double_t *trackpid=fOrgAOD->GetTrack(iTrack)->PID();
        if (trackpid[AliAODTrack::kMuon]==1.) {

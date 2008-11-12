@@ -130,7 +130,7 @@ void AliEMCALv2::StepManager(void){
   static TString curVolName;
   static int supModuleNumber, moduleNumber, yNumber, xNumber, absid;
   static int keyGeom=1;  //real TRD1 geometry
-  static char *vn = "SCMX"; // Apr 13, 2006 - only TRD1 case now
+  static const char *vn = "SCMX"; // Apr 13, 2006 - only TRD1 case now
   static int nSMOP[7]={1,3,5,7,9,11}; // 30-mar-05
   static int nSMON[7]={2,4,6,8,10,12};
   static Float_t depositedEnergy=0.0; 
@@ -295,7 +295,7 @@ void AliEMCALv2::DrawCalorimeterCut(const char *name, int axis, double dcut)
   st += ", zcut, ";
   st += name;
 
-  char *optShad = "on", *optHide="on";
+  const char *optShad = "on", *optHide="on";
   double cxy=0.02;
   if     (axis==1) {
     dcut = 0.;
@@ -322,7 +322,7 @@ void AliEMCALv2::DrawSuperModuleCut(const char *name, int axis, double dcut, int
  // Size of tower is 5.6x5.6x24.8 (25.0); cut on Z axiz
   TString sn(GetGeometry()->GetName());
   sn.ToUpper();
-  char *tit[3]={"xcut", "ycut", "zcut"};
+  const char *tit[3]={"xcut", "ycut", "zcut"};
   if(axis<1) axis=1; if(axis>3) axis=3;
 
   gMC->Gsatt("*", "seen", 0);
@@ -332,7 +332,7 @@ void AliEMCALv2::DrawSuperModuleCut(const char *name, int axis, double dcut, int
   SetVolumeAttributes(name, 1, 5, fill);    // yellow 
 
   double cxy=0.055, x0=10., y0=10.;
-  char *optShad = "on", *optHide="on";
+  const char *optShad = "on", *optHide="on";
   SetVolumeAttributes("STPL", 1, 3, fill);  // green 
   if     (axis==1) {
     gMC->Gsatt("STPL", "seen", 0);

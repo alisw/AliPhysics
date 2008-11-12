@@ -49,7 +49,7 @@ class AliESDInputHandlerRP : public AliESDInputHandler {
     Int_t           fNEvent;           //! Number of events in current directory
     Int_t           fFileNumber;       //! Input file number
     Int_t           fEventsPerFile;    //! Number of events per file
-    char           *fExtension;        //! File name extension
+    const Char_t   *fExtension;        //! File name extension
     TString        *fPathName;         //! Input file path
     Bool_t          fIsArchive;        //! True if directory is an archive
     ClassDef(AliESDInputHandlerRP, 1);

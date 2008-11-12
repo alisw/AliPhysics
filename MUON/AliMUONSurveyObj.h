@@ -75,7 +75,7 @@ class AliMUONSurveyObj:public TObject
   Int_t SurveyToAlign(Double_t psi=0., Double_t tht=0., Double_t epsi=0., Double_t etht=0.);
   Double_t SurveyChi2(Double_t *par);
 
-  Double_t EvalFunction(TF2 *lFunction, Int_t iP1, Int_t iP2, Char_t *lCoord);
+  Double_t EvalFunction(TF2 *lFunction, Int_t iP1, Int_t iP2, const Char_t *lCoord);
 
   void CalculateTranslation(TF2 *xFunc, TF2 *yFunc, TF2 *zFunc, Int_t iP1, Int_t iP2, Double_t *lCenTemp);
   //  TGeoCombiTrans *CalculateTransformation(TF2 *xFunc, TF2 *yFunc, TF2 *zFunc, TF2 *pFunc, Int_t iP1, Int_t iP2);

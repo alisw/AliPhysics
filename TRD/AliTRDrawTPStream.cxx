@@ -367,7 +367,7 @@ void AliTRDrawTPStream::DumpCnf(Int_t slv)
 
 
 //---------------------------------------------------------------------
-Char_t * AliTRDrawTPStream::Addr2Name(UInt_t addr)
+const Char_t * AliTRDrawTPStream::Addr2Name(UInt_t addr)
 {
     Int_t idx;
     idx = 0;

@@ -43,7 +43,7 @@ dNdEtaAnalysis::dNdEtaAnalysis() :
 }
 
 //____________________________________________________________________
-dNdEtaAnalysis::dNdEtaAnalysis(Char_t* name, Char_t* title, AliPWG0Helper::AnalysisMode analysisMode) :
+dNdEtaAnalysis::dNdEtaAnalysis(const Char_t* name, const Char_t* title, AliPWG0Helper::AnalysisMode analysisMode) :
   TNamed(name, title),
   fData(0),
   fMult(0),

@@ -353,8 +353,8 @@ void AliCumulantsFunctions::Calculate()
  ///////////////////////DIFFERENTIAL FLOW CALCULATIONS////////////////////////
  /////////////////////////////////////////////////////////////////////////////
   
-  Double_t X[fgknBins][fgkPmax][fgkQmax]={{0.}};
-  Double_t Y[fgknBins][fgkPmax][fgkQmax]={{0.}};
+  Double_t X[fgknBins][fgkPmax][fgkQmax]={{{0.}}};
+  Double_t Y[fgknBins][fgkPmax][fgkQmax]={{{0.}}};
   
   /*
   //3D profiles

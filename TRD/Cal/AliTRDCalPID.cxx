@@ -39,8 +39,8 @@
 
 ClassImp(AliTRDCalPID)
 
-Char_t* AliTRDCalPID::fPartName[AliPID::kSPECIES] = { "electron", "muon", "pion", "kaon", "proton"};
-Char_t* AliTRDCalPID::fPartSymb[AliPID::kSPECIES] = { "EL", "MU", "PI", "KA", "PR"};
+const Char_t* AliTRDCalPID::fPartName[AliPID::kSPECIES] = { "electron", "muon", "pion", "kaon", "proton"};
+const Char_t* AliTRDCalPID::fPartSymb[AliPID::kSPECIES] = { "EL", "MU", "PI", "KA", "PR"};
 Color_t AliTRDCalPID::fPartColor[AliPID::kSPECIES] = { kRed, kGreen, kBlue, kYellow, kMagenta};
 Float_t AliTRDCalPID::fTrackMomentum[kNMom]       = {  
     0.6,  0.8,  1.0,  1.5,  2.0

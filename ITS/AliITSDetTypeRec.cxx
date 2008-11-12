@@ -328,7 +328,7 @@ void AliITSDetTypeRec::SetTreeAddressD(TTree *treeD){
 
     const char *det[4] = {"SPD","SDD","SSD","ITS"};
     TBranch *branch;
-    Char_t* digclass;
+    const Char_t* digclass;
     Int_t i;
     char branchname[30];
 

@@ -19,7 +19,7 @@ enum AliTRDrecoTasks{
   ,kPIDRefMaker = 7
 };
 
-Char_t* fgkTRDtaskClassName[NTRDTASKS] = {
+const Char_t* fgkTRDtaskClassName[NTRDTASKS] = {
   "AliTRDcheckDetector"
   ,"AliTRDtrackingEfficiency"
   ,"AliTRDtrackingEfficiencyCombined"
@@ -29,7 +29,7 @@ Char_t* fgkTRDtaskClassName[NTRDTASKS] = {
   ,"AliTRDpidRefMaker"
 };
 
-Char_t *fgkTRDtaskOpt[NTRDTASKS+3] = {
+const Char_t *fgkTRDtaskOpt[NTRDTASKS+3] = {
   "ALL"
   ,"DET"
   ,"EFF"

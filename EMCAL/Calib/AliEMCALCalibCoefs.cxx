@@ -118,8 +118,8 @@ AliEMCALCalibCoefs* AliEMCALCalibCoefs::GetCalibTableFromDb(const char *tn, AliE
   // See ~/macros/ALICE/sim.C  for choice of CDB
   // Get calib. table which was used than calculated rec.points
   // 
-  static char *calibType = "EMCAL/Calib/*";
-  static char *calibTypeData = "EMCAL/Calib/Data";
+  static const char *calibType = "EMCAL/Calib/*";
+  static const char *calibTypeData = "EMCAL/Calib/Data";
   // Initial cc
   calData[0] = 0;
 
@@ -190,7 +190,7 @@ const char* coment)
   Int_t firstRun   =  0;
   Int_t lastRun    = 10;
   Int_t beamPeriod =  1;
-  char* objFormat  = "";
+  const char* objFormat  = "";
   caldata = new AliEMCALCalibData("EMCAL");
   caldata->SetTitle(coment);
 

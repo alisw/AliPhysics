@@ -67,40 +67,40 @@ public:
   // Methods to retrieve/write parameters from/on CDB
   // writing
 
-  void WriteSimHistoOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun, TH1F *histo);
-  void WriteConfigMapOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun);
-  void WriteConfigMapOnCDB(Char_t *sel);
+  void WriteSimHistoOnCDB(const Char_t *sel, Int_t minrun, Int_t maxrun, TH1F *histo);
+  void WriteConfigMapOnCDB(const Char_t *sel, Int_t minrun, Int_t maxrun);
+  void WriteConfigMapOnCDB(const Char_t *sel);
   // new calib objs
-  void WriteParOnlineDelayOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun);
-  void WriteParOnlineStatusOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun);
-  void WriteParOnlineDelayOnCDB(Char_t *sel);
-  void WriteParOnlineStatusOnCDB(Char_t *sel);
+  void WriteParOnlineDelayOnCDB(const Char_t *sel, Int_t minrun, Int_t maxrun);
+  void WriteParOnlineStatusOnCDB(const Char_t *sel, Int_t minrun, Int_t maxrun);
+  void WriteParOnlineDelayOnCDB(const Char_t *sel);
+  void WriteParOnlineStatusOnCDB(const Char_t *sel);
   // old calib objs
-  void WriteParOnlineOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun);
-  void WriteParOnlinePulserOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun);
-  void WriteParOnlineNoiseOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun);
-  void WriteParOnlineHWOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun);
-  void WriteParOfflineOnCDB(Char_t *sel, const Char_t *validity, Int_t minrun, Int_t maxrun);
-  void WriteParOnlineOnCDB(Char_t *sel);
-  void WriteParOnlinePulserOnCDB(Char_t *sel);  // old, before unification of status info
-  void WriteParOnlineNoiseOnCDB(Char_t *sel);   // old, before unification of status info
-  void WriteParOnlineHWOnCDB(Char_t *sel);      // old, before unification of status info
-  void WriteParOfflineOnCDB(Char_t *sel, const Char_t *validity);
+  void WriteParOnlineOnCDB(const Char_t *sel, Int_t minrun, Int_t maxrun);
+  void WriteParOnlinePulserOnCDB(const Char_t *sel, Int_t minrun, Int_t maxrun);
+  void WriteParOnlineNoiseOnCDB(const Char_t *sel, Int_t minrun, Int_t maxrun);
+  void WriteParOnlineHWOnCDB(const Char_t *sel, Int_t minrun, Int_t maxrun);
+  void WriteParOfflineOnCDB(const Char_t *sel, const Char_t *validity, Int_t minrun, Int_t maxrun);
+  void WriteParOnlineOnCDB(const Char_t *sel);
+  void WriteParOnlinePulserOnCDB(const Char_t *sel);  // old, before unification of status info
+  void WriteParOnlineNoiseOnCDB(const Char_t *sel);   // old, before unification of status info
+  void WriteParOnlineHWOnCDB(const Char_t *sel);      // old, before unification of status info
+  void WriteParOfflineOnCDB(const Char_t *sel, const Char_t *validity);
 
   // reading
-  Bool_t ReadSimHistoFromCDB(Char_t *sel, Int_t nrun);
-  Bool_t ReadConfigMapFromCDB(Char_t *sel, Int_t nrun);
+  Bool_t ReadSimHistoFromCDB(const Char_t *sel, Int_t nrun);
+  Bool_t ReadConfigMapFromCDB(const Char_t *sel, Int_t nrun);
   // new objs
-  Bool_t ReadParOnlineDelayFromCDB(Char_t *sel, Int_t nrun);
-  Bool_t ReadParOnlineStatusFromCDB(Char_t *sel, Int_t nrun);
+  Bool_t ReadParOnlineDelayFromCDB(const Char_t *sel, Int_t nrun);
+  Bool_t ReadParOnlineStatusFromCDB(const Char_t *sel, Int_t nrun);
   // old objs
-  Bool_t ReadParOnlineFromCDB(Char_t *sel, Int_t nrun);
-  Bool_t ReadParOnlinePulserFromCDB(Char_t *sel, Int_t nrun);  // old, before unification of status info
-  Bool_t ReadParOnlineNoiseFromCDB(Char_t *sel, Int_t nrun);   // old, before unification of status info
-  Bool_t ReadParOnlineHWFromCDB(Char_t *sel, Int_t nrun);      // old, before unification of status info
-  Bool_t ReadParOfflineFromCDB(Char_t *sel, Int_t nrun);
-  void WriteRecParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun, AliTOFRecoParam *param);
-  AliTOFRecoParam * ReadRecParFromCDB(Char_t *sel, Int_t nrun);
+  Bool_t ReadParOnlineFromCDB(const Char_t *sel, Int_t nrun);
+  Bool_t ReadParOnlinePulserFromCDB(const Char_t *sel, Int_t nrun);  // old, before unification of status info
+  Bool_t ReadParOnlineNoiseFromCDB(const Char_t *sel, Int_t nrun);   // old, before unification of status info
+  Bool_t ReadParOnlineHWFromCDB(const Char_t *sel, Int_t nrun);      // old, before unification of status info
+  Bool_t ReadParOfflineFromCDB(const Char_t *sel, Int_t nrun);
+  void WriteRecParOnCDB(const Char_t *sel, Int_t minrun, Int_t maxrun, AliTOFRecoParam *param);
+  AliTOFRecoParam * ReadRecParFromCDB(const Char_t *sel, Int_t nrun);
   void CreateTreeFromCDB(Int_t minrun, Int_t maxrun);
   void CreateTreeFromFile(Int_t minrun, Int_t maxrun);
   void CreateTreeFromGrid(Int_t minrun, Int_t maxrun);

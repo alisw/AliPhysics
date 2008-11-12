@@ -2018,9 +2018,9 @@ TList* AliITSv11GeometrySSD::GetCarbonFiberSupportList(){
   for(Int_t j=0; j<kvertexnumber; j++) vertexposition[1][j] = 
 				  new TVector3((GetReflection(vertexposition[0][j],param))->X(),
 							  (GetReflection(vertexposition[0][j],param))->Y());
-  char* carbonfibersupportshapename[kshapesnumber] = 
+  const char* carbonfibersupportshapename[kshapesnumber] = 
 						{"CarbonFiberSupportShape1","CarbonFiberSupportShape2"};
-  char* carbonfibersupportname[kshapesnumber] = 
+  const char* carbonfibersupportname[kshapesnumber] = 
 						{"CarbonFiberSupport1","CarbonFiberSupport2"};
   TGeoArb8* carbonfibersupportshape[kshapesnumber]; 
   TGeoVolume* carbonfibersupport[kshapesnumber];
@@ -2119,9 +2119,9 @@ TList* AliITSv11GeometrySSD::GetCarbonFiberLowerSupportList(){
   vertexposition[1][2] = new TVector3(0.,fgkCarbonFiberLowerSupportVolumePosition[0]);
   vertexposition[1][3] = new TVector3(fgkCarbonFiberTriangleLength,
 								fgkCarbonFiberLowerSupportVolumePosition[1]);
-  char* carbonfiberlowersupportshapename[kshapesnumber] = 
+  const char* carbonfiberlowersupportshapename[kshapesnumber] = 
 			  {"CarbonFiberLowerSupportShape1","CarbonFiberLowerSupportShape2"};
-  char* carbonfiberlowersupportname[kshapesnumber] = 
+  const char* carbonfiberlowersupportname[kshapesnumber] = 
 			  {"CarbonFiberLowerSupport1","CarbonFiberLowerSupport2"};
   TGeoArb8* carbonfiberlowersupportshape[kshapesnumber];
   TGeoVolume* carbonfiberlowersupport[kshapesnumber];
@@ -4004,7 +4004,7 @@ TList* AliITSv11GeometrySSD::GetLadderCableSegment(Double_t ssdendladdercablelen
   }
   Double_t laddercablesegmentwidth[2][2] = {{fgkSSDFlexHeight[0],fgkSSDFlexHeight[0]},
 							     		    {fgkSSDFlexHeight[1],fgkSSDFlexHeight[1]}};	
-  char* laddercablesegmentarbshapename[kladdercablesegmentnumber] = 
+  const char* laddercablesegmentarbshapename[kladdercablesegmentnumber] = 
 					{"LadderCableSegmentArbShape1","LadderCableSegmentArbShape2"};
   TGeoArb8* laddercablesegmentarbshape[kladdercablesegmentnumber];
   for(Int_t i = 0; i< kladdercablesegmentnumber; i++) laddercablesegmentarbshape[i] = 
@@ -7081,7 +7081,7 @@ void AliITSv11GeometrySSD::SetLadderSupport(Int_t nedges){
 															Double_t radiusmax, 
 															Double_t width, 
 															Int_t ncables,
-															char* volname){
+															const char* volname){
   /////////////////////////////////////////////////////////////
   // Generating EndCap High Voltage Tubes 
   /////////////////////////////////////////////////////////////
@@ -8295,7 +8295,7 @@ void AliITSv11GeometrySSD::SetLadderSupport(Int_t nedges){
  }
  ////////////////////////////////////////////////////////////////////////////////
 TGeoArb8* AliITSv11GeometrySSD::GetArbShape(TVector3* vertexpos[], Double_t* width, 
-									Double_t height, char* shapename, Int_t isign) const{
+									Double_t height, const char* shapename, Int_t isign) const{
   /////////////////////////////////////////////////////////////
   // Method generating an Arb shape 
   /////////////////////////////////////////////////////////////

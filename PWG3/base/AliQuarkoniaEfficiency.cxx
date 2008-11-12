@@ -93,7 +93,7 @@ void AliQuarkoniaEfficiency::Init()
     break;
   }
 
-  char *param=0;
+  const char *param=0;
   switch (fParameterization){
   case kFlat:
     param = "Flat";
@@ -106,7 +106,7 @@ void AliQuarkoniaEfficiency::Init()
     break;
   }
   
-  char *trig=0;
+  const char *trig=0;
   switch (fTriggerType){
   case kSinglePlusLpt:
     trig = "SinglePlusLpt";

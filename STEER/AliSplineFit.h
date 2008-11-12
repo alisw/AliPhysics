@@ -30,7 +30,7 @@ class AliSplineFit : public TObject {
   void       MakeKnots0(TGraph * graph, Double_t maxdelta, Int_t minpoints);
   void       SplineFit(Int_t nder);
   void       CopyGraph();
-  void       MakeSmooth(TGraph * graph, Float_t ratio, char * type);
+  void       MakeSmooth(TGraph * graph, Float_t ratio, Option_t * type);
   void       Update(TSpline3 *spline, Int_t nknots);
   void       Cleanup();
   Int_t      GetKnots() const {return fN;}

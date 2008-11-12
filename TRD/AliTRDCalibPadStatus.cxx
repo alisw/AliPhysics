@@ -417,7 +417,7 @@ Bool_t AliTRDCalibPadStatus::TestEventHisto(Int_t nevent, Int_t sm, Int_t ch) /*
 //_____________________________________________________________________
 TH2F* AliTRDCalibPadStatus::GetHisto(Int_t det, TObjArray *arr, /*FOLD00*/
 				  Int_t nbinsY, Float_t ymin, Float_t ymax,
-				  Char_t *type, Bool_t force)
+				  const Char_t *type, Bool_t force)
 {
     //
     // return pointer to histogram

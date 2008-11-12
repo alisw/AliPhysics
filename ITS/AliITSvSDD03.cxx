@@ -490,7 +490,7 @@ void AliITSvSDD03::CreateGeometry(){
 
       Float_t a,z,dens,radl,absl;
       Float_t* ubuf=0; Int_t nbuf;
-      char* ssss="";
+      char* ssss=0;
       gMC->Gfmate(idtmed[fTarg],ssss,a,z,dens,radl,absl,ubuf,nbuf);
 
       Info("CreateGeometry","Target A=%f,  Z=%f,  dens=%f",a,z,dens);

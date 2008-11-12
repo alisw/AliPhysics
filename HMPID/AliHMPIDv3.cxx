@@ -1231,7 +1231,7 @@ return cradle;
 }//CreateCradle()
 
 
-TGeoVolume * AliHMPIDv3::CradleBaseVolume(TGeoMedium *med, Double_t l[7],char *name)
+TGeoVolume * AliHMPIDv3::CradleBaseVolume(TGeoMedium *med, Double_t l[7],const char *name)
 {
 /*
 The trapezoid is build in the xy plane

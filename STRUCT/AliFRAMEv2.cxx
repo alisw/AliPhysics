@@ -1355,7 +1355,7 @@ void AliFRAMEv2::StepManager()
 
   
 
-void AliFRAMEv2::MakeHeatScreen(char* name, Float_t dyP, Int_t rot1, Int_t rot2)
+void AliFRAMEv2::MakeHeatScreen(const char* name, Float_t dyP, Int_t rot1, Int_t rot2)
 {
     // Heat screen panel
     //
@@ -1435,7 +1435,7 @@ void AliFRAMEv2::MakeHeatScreen(char* name, Float_t dyP, Int_t rot1, Int_t rot2)
 
 
 
-void AliFRAMEv2::WebFrame(char* name, Float_t dHz, Float_t theta0, Float_t phi0)
+void AliFRAMEv2::WebFrame(const char* name, Float_t dHz, Float_t theta0, Float_t phi0)
 {
     //
     // Create a web frame element

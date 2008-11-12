@@ -1189,7 +1189,7 @@ AliEveTRDMacroWizzard::AliEveTRDMacroWizzard(const TGWindow* p)
   fCombo->Connect("Selected(Int_t)", "AliEveTRDMacroWizzard", this, "Create(Int_t)");
 }  
 
-Char_t *fIncludes = 
+const Char_t *fIncludes = 
 "#if !defined(__CINT__) || defined(__MAKECINT__)\n"
 "#include <TROOT.h>\n"
 "#include <TH1.h>\n"
@@ -1199,7 +1199,7 @@ Char_t *fIncludes =
 "#include <TRD/AliTRDtrackV1.h>\n"
 "#endif\n";
 
-Char_t *fMacroTemplate[7] = {
+const Char_t *fMacroTemplate[7] = {
 ""
 ,"  if (!track) return kFALSE;\n"
 

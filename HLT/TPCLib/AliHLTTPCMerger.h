@@ -67,7 +67,7 @@ class AliHLTTPCMerger {
   AliHLTTPCVertex *fVertex; //!
   Bool_t f2Global; //global
   Bool_t Is2Global(Bool_t is){f2Global=is;return f2Global;}
-  void InitMerger(Int_t ntrackarrays,Char_t *tracktype="AliHLTTPCTrack");
+  void InitMerger(Int_t ntrackarrays,const Char_t *tracktype="AliHLTTPCTrack");
   
  private:
   /** copy constructor prohibited */

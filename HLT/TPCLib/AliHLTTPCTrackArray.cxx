@@ -71,7 +71,7 @@ AliHLTTPCTrackArray::AliHLTTPCTrackArray(Int_t ntrack)
   SetSize(ntrack);
 }
 
-AliHLTTPCTrackArray::AliHLTTPCTrackArray(char* tracktype,Int_t ntrack)
+AliHLTTPCTrackArray::AliHLTTPCTrackArray(const char* tracktype,Int_t ntrack)
   :
   fTrackType('t'),
   fSize(0),
@@ -90,7 +90,7 @@ AliHLTTPCTrackArray::AliHLTTPCTrackArray(char* tracktype,Int_t ntrack)
   SetSize(ntrack);
 }
 
-AliHLTTPCTrackArray::AliHLTTPCTrackArray(char* tracktype)
+AliHLTTPCTrackArray::AliHLTTPCTrackArray(const char* tracktype)
   :
   fTrackType('t'),
   fSize(0),

@@ -79,7 +79,7 @@ Bool_t AliPWG0Helper::IsEventTriggered(ULong64_t triggerMask, Trigger trigger)
 }
 
 //____________________________________________________________________
-const Bool_t AliPWG0Helper::TestVertex(const AliESDVertex* vertex, AnalysisMode analysisMode, Bool_t debug)
+Bool_t AliPWG0Helper::TestVertex(const AliESDVertex* vertex, AnalysisMode analysisMode, Bool_t debug)
 {
     // Checks if a vertex meets the needed quality criteria
 

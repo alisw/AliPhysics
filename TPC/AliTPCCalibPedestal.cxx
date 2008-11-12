@@ -522,7 +522,7 @@ Bool_t AliTPCCalibPedestal::TestEvent()
 //_____________________________________________________________________
 TH2F* AliTPCCalibPedestal::GetHisto(Int_t sector, TObjArray *arr, 
 				    Int_t nbinsY, Float_t ymin, Float_t ymax,
-				    Char_t *type, Bool_t force)
+				    const Char_t *type, Bool_t force)
 {
     //
     // return pointer to Q histogram

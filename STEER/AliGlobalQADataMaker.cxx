@@ -37,7 +37,7 @@ void AliGlobalQADataMaker::InitRecPoints() {
   // This function books the histograms of *track*residuals*
   // as a part of global QA
   //------------------------------------------------------
-  Char_t *name[]={
+  const Char_t *name[]={
     "SPD1 residuals Y","SPD1 residuals Z",
     "SPD2 residuals Y","SPD2 residuals Z",
     "SDD1 residuals Y","SDD1 residuals Z",
@@ -112,7 +112,7 @@ void AliGlobalQADataMaker::InitESDs() {
   //------------------------------------------------------
 
   {// Cluster related QA
-  Char_t *name[]={
+  const Char_t *name[]={
     "Fraction of the assigned clusters in ITS",
     "Fraction of the assigned clusters in TPC",
     "Fraction of the assigned clusters in TRD"
@@ -123,7 +123,7 @@ void AliGlobalQADataMaker::InitESDs() {
   }
 
   {// Track related QA
-  Char_t *name[]={
+  const Char_t *name[]={
     "Track azimuthal distribution (rad)",                   // kTrk0
     "Track pseudo-rapidity distribution",                   // kTrk1
     "TPC: track momentum distribution (GeV)",               // kTrk2
@@ -142,7 +142,7 @@ void AliGlobalQADataMaker::InitESDs() {
   }
 
   {// V0 related QA
-  Char_t *name[]={
+  const Char_t *name[]={
     "K0s mass (GeV)",
     "Lambda0 + Lambda0Bar mass (GeV)"
   };
@@ -151,7 +151,7 @@ void AliGlobalQADataMaker::InitESDs() {
   }
 
   {// PID related QA
-  Char_t *name[]={
+  const Char_t *name[]={
     "ITS: dEdx (ADC) for particles with momentum 0.4 - 0.5 (GeV)",
     "TPC: dEdx (ADC) for particles with momentum 0.4 - 0.5 (GeV)",
     "TOF: tracking - measured (ps)"

@@ -276,18 +276,18 @@ Bool_t AliFMDQATask::TestHisto(TH1D * hTest) const
   }
 
   Bool_t   ret   = kFALSE ;
-  Char_t * test  = "not OK";
-  Char_t * test2 = "not OK";
+  const Char_t * test  = "not OK";
+  const Char_t * test2 = "not OK";
   
   if(chiSq < chiMax && chiSq > chiLow)
     test = "OK" ;
   if(mpv > 0.6 && mpv < 1)
     test2 = "OK" ;
  
-  if(test == "OK" && test2 == "OK")
+  if(!strcmp(test,"OK") && !strcmp(test2,"OK"))
     ret = kTRUE;
   
-  if(test == "not OK" || test2 == "not OK") {
+  if(!strcmp(test,"not OK") || !strcmp(test2,"not OK")) {
     AliWarning("Bad fit results") ; 
     printf("Detector : %s\n", hTest->GetName()) ;
     printf("Landau fit Chi Square / NDF = %f / %d which is %s\n", chiSq*ndf, ndf, test) ; 

@@ -30,8 +30,8 @@ public:
 
 private:
 
-  const int  GetSector(const double alpha) const;
-  const int  CheckSector(const int sector) const;
+  int  GetSector(const double alpha) const;
+  int  CheckSector(const int sector) const;
   void CalculateEff();
   void DrawESD() const ; 
   void DrawGeoESD() const ; 

@@ -44,11 +44,11 @@ class AliTRDCalPID : public TNamed
                                 , Float_t length, Int_t plane) const = 0;
   static  Color_t  GetPartColor(Int_t i)              { return fPartColor[i]; }
   static  Int_t    GetPartIndex(Int_t pdg);
-  static  Char_t  *GetPartName(Int_t i)               { return fPartName[i]; }
-  static  Char_t  *GetPartSymb(Int_t i)               { return fPartSymb[i]; }
+  static  const Char_t  *GetPartName(Int_t i)               { return fPartName[i]; }
+  static  const Char_t  *GetPartSymb(Int_t i)               { return fPartSymb[i]; }
 
-          void     SetPartName(Int_t i, Char_t *name) { fPartName[i] = name; }
-          void     SetPartSymb(Int_t i, Char_t *symb) { fPartSymb[i] = symb; }
+          void     SetPartName(Int_t i, const Char_t *name) { fPartName[i] = name; }
+          void     SetPartSymb(Int_t i, const Char_t *symb) { fPartSymb[i] = symb; }
 
  protected:
 
@@ -62,8 +62,8 @@ class AliTRDCalPID : public TNamed
 
  protected:
 
-  static  Char_t   *fPartName[AliPID::kSPECIES]; //! Names of particle species
-  static  Char_t   *fPartSymb[AliPID::kSPECIES]; //! Symbols of particle species
+  static const Char_t   *fPartName[AliPID::kSPECIES]; //! Names of particle species
+  static const Char_t   *fPartSymb[AliPID::kSPECIES]; //! Symbols of particle species
   static  Color_t  fPartColor[AliPID::kSPECIES]; //! Colors of particle species
   static  Float_t   fTrackMomentum[kNMom]; //  Track momenta for which response functions are available
   TObjArray        *fModel;                //  Model for probability estimate

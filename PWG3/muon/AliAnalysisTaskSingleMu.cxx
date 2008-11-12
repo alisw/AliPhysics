@@ -100,11 +100,11 @@ void AliAnalysisTaskSingleMu::CreateOutputObjects()
 
   Int_t ptBins = 60;
   Float_t ptLow = 0., ptHigh = 30.;
-  Char_t *ptName = "P_{t} (GeV/c)";
+  const Char_t *ptName = "P_{t} (GeV/c)";
 
   Int_t vzBins = 40;
   Float_t vzLow = -20., vzHigh = 20.;
-  Char_t *vzName = "Vz (cm)";
+  const Char_t *vzName = "Vz (cm)";
 
   TString baseName, histoName;
   fOutputContainer = new TObjArray(fgkNhistos*fgkNTrigCuts);

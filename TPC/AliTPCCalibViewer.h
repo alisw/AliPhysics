@@ -28,7 +28,7 @@ public:
    AliTPCCalibViewer();
    AliTPCCalibViewer(const AliTPCCalibViewer &c);
    AliTPCCalibViewer(TTree* tree);
-   AliTPCCalibViewer(char* fileName, char* treeName = "calPads");
+   AliTPCCalibViewer(const char* fileName, const char* treeName = "calPads");
    AliTPCCalibViewer &operator = (const AliTPCCalibViewer & param);
    virtual ~AliTPCCalibViewer();
    virtual void Delete(Option_t* option = "");
@@ -58,8 +58,8 @@ public:
    Int_t    Integrate(const char* drawCommand,       Int_t sector, const char* cuts = 0, Float_t sigmaMax = 5, Bool_t plotMean = kTRUE, Bool_t plotMedian = kTRUE, Bool_t plotLTM = kTRUE, const char *sigmas = "", Float_t sigmaStep = -1) const;    // draws an integrated histogram
    Int_t IntegrateOld(const char* drawCommand, const char* sector, const char* cuts = 0, Float_t sigmaMax = 5, Bool_t plotMean = kTRUE, Bool_t plotMedian = kTRUE, Bool_t plotLTM = kTRUE, const char *sigmas = "", Float_t sigmaStep = -1) const;    // draws an integrated histogram
    
-   AliTPCCalPad* GetCalPadOld(const char* desiredData, char* cuts = "", char* calPadName = "NoName") const;     // returns an AliTPCCalPad object containing the specified data with cuts applied
-   AliTPCCalPad* GetCalPad(const char* desiredData, char* cuts = "", char* calPadName = "NoName") const;     // returns an AliTPCCalPad object containing the specified data with cuts applied
+   AliTPCCalPad* GetCalPadOld(const char* desiredData, const char* cuts = "", const char* calPadName = "NoName") const;     // returns an AliTPCCalPad object containing the specified data with cuts applied
+   AliTPCCalPad* GetCalPad(const char* desiredData, const char* cuts = "", const char* calPadName = "NoName") const;     // returns an AliTPCCalPad object containing the specified data with cuts applied
 
    AliTPCCalROC* GetCalROC(const char* desiredData, UInt_t sector, char* cuts = "") const;  // returns an AliTPCCalROC object containing the specified data for sector with cuts applied
    

@@ -111,7 +111,7 @@ void AliEMCALv0::BuildGeometry()
   // Define the shape of the Calorimeter 
   TNode * top = gAlice->GetGeometry()->GetNode("alice") ; // See AliceGeom/Nodes
   TNode * envelopNode = 0;
-  char *envn = "Envelop1";
+  const char *envn = "Envelop1";
   if(gn.Contains("WSUC")) {
     envelopNode = BuildGeometryOfWSUC();
   } else { // Shish-kebab now for compact and TRD1 cases (ALIC)
@@ -152,7 +152,7 @@ TNode *AliEMCALv0::BuildGeometryOfWSUC()
   top->cd();
 
   TNode *envelopNode = 0;
-  char *name = "";
+  const char *name = "";
   /*
     name = "WSUC";
     new TBRIK(name, "WSUC(XEN1 in Geant)","void",fEnvelop1[0],fEnvelop1[1],fEnvelop1[2]);

@@ -2799,7 +2799,7 @@ void AliITSv11GeometrySupport::ServicesCableSupport(TGeoVolume *moth,
     } // end for i
     if(GetDebug(1)) for(i=0;i<kct24Ntrays;i++) Info("ServicesCableSupport",
                                                   "tha[%d]=%f",i,tha[i]);
-    Char_t *airName[kct24Ntrays]={"FMD0","SDD0","SSD0","SSD1","SPD0","SPD1",
+    const Char_t *airName[kct24Ntrays]={"FMD0","SDD0","SSD0","SSD1","SPD0","SPD1",
                                   "TV00","SDD1","SDD2","SPD2","SPD3","ALG0",
                                   "SPD4","SPD5","SSD2","SSD3","SPD6","SPD7",
                                   "TV01","SDD3","SDD4","SPD8","SPD9","ALG1",
@@ -2807,7 +2807,7 @@ void AliITSv11GeometrySupport::ServicesCableSupport(TGeoVolume *moth,
                                   "TV02","SDD6","SDD7","SPDC","SPDD","ALG2",
                                   "SPDE","SPDF","SSD6","SSD7","SPDG","SPDH",
                                   "TV03","SDD8","SDD9","SPDI","SPDJ","ALG3"};
-    Char_t *trayName[kct24Ntrays]={"FMD0","SSD0","SSD1","SSD2","SSD3","SPD0",
+    const Char_t *trayName[kct24Ntrays]={"FMD0","SSD0","SSD1","SSD2","SSD3","SPD0",
                                    "TV00","SDD0","SDD1","SDD2","SPD1","ALG0",
                                    "SPD2","SSD4","SSD5","SSD6","SSD7","SPD3",
                                    "TV01","SDD3","SDD4","SDD5","SPD4","ALG1",
@@ -2879,7 +2879,7 @@ void AliITSv11GeometrySupport::ServicesCableSupport(TGeoVolume *moth,
         thb[i+  kft24NPatchPannels/2] = 180.0 + thb[i];
         thb[i+3*kft24NPatchPannels/4] = 270.0 + thb[i];
     } // end for i
-    Char_t *pachName[kft24NPatchPannels]={"FMD0","SSD0","SPD0","SDD0","SPD1",
+    const Char_t *pachName[kft24NPatchPannels]={"FMD0","SSD0","SPD0","SDD0","SPD1",
                                           "SPD2","SSD1","SPD3","SDD1","SPD4",
                                           "FMD1","SSD2","SPD5","SDD2","SPD6",
                                           "SPD7","SSD3","SPD8","SDD3","SPD9"};

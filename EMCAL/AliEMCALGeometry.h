@@ -57,7 +57,7 @@ public:
   // General
   //
   Bool_t  IsInitialized(void) const { return fgInit ; }
-  static Char_t* GetDefaultGeometryName() {return fgDefaultGeometryName;}
+  static const Char_t* GetDefaultGeometryName() {return fgDefaultGeometryName;}
   void PrintGeometry();                                           //*MENU*  
   void PrintCellIndexes(Int_t absId=0, int pri=0, char *tit="");  //*MENU*
   virtual void Browse(TBrowser* b);
@@ -87,7 +87,7 @@ public:
   //////////////////////////////////////
   // Return EMCAL geometrical parameters
   //
-  Char_t* GetNameOfEMCALEnvelope() const { Char_t* env = "XEN1"; return env ;}
+  const Char_t* GetNameOfEMCALEnvelope() const { const Char_t* env = "XEN1"; return env ;}
   Float_t GetArm1PhiMin() const { return fArm1PhiMin ; }
   Float_t GetArm1PhiMax() const { return fArm1PhiMax ; }
   Float_t GetArm1EtaMin() const { return fArm1EtaMin;}
@@ -264,12 +264,12 @@ private:
   //Member data
   static AliEMCALGeometry * fgGeom;	// pointer to the unique instance of the singleton
   static Bool_t  fgInit;	        // Tells if geometry has been succesfully set up.
-  static Char_t* fgDefaultGeometryName; // Default name of geometry
+  static const Char_t* fgDefaultGeometryName; // Default name of geometry
 
   TString fGeoName;                     //geometry name
 
   TObjArray *fArrayOpts;                //! array of geometry options
-  char *fAdditionalOpts[6];  //! some additional options for the geometry type and name
+  const char *fAdditionalOpts[6];  //! some additional options for the geometry type and name
   int  fNAdditionalOpts;     //! size of additional options parameter
 
   Float_t fECPbRadThickness;		// cm, Thickness of the Pb radiators

@@ -2507,7 +2507,7 @@ Double_t AliTPCMonitor::Gamma4(Double_t* x, Double_t* par) {
 }
 
 //__________________________________________________________________
-TCanvas* AliTPCMonitor::CreateCanvas(Char_t* name)
+TCanvas* AliTPCMonitor::CreateCanvas(const Char_t* name)
 {
   // Create Canvases 
   

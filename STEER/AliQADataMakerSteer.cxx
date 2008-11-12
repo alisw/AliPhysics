@@ -62,7 +62,7 @@
 ClassImp(AliQADataMakerSteer) 
 
 //_____________________________________________________________________________
-AliQADataMakerSteer::AliQADataMakerSteer(char * mode, const char* gAliceFilename, const char * name, const char * title) :
+AliQADataMakerSteer::AliQADataMakerSteer(const Char_t * mode, const Char_t* gAliceFilename, const Char_t * name, const Char_t * title) :
 	TNamed(name, title), 
 	fCurrentEvent(0),  
 	fCycleSame(kFALSE),

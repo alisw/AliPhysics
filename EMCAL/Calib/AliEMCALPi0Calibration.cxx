@@ -94,7 +94,7 @@ Double_t AliEMCALPi0Calibration::fgSlopePhiShift = 0.01; // ?? just guess
 AliEMCALFolder* AliEMCALPi0Calibration::fgEMCAL = 0;
 AliEMCALFolder* AliEMCALPi0Calibration::fgEMCALOld = 0;
 
-Char_t **AliEMCALPi0Calibration::fgAnaOpt=0;
+const Char_t **AliEMCALPi0Calibration::fgAnaOpt=0;
 Int_t AliEMCALPi0Calibration::fgNanaOpt = 0; 
 enum keyOpt{
   kCORR1,
@@ -150,7 +150,7 @@ AliEMCALPi0Calibration::AliEMCALPi0Calibration(const char* name) :
   //
   // Constructor. Initialization of pointers
   //
-  Char_t *anaOpt[]={
+  const Char_t *anaOpt[]={
   "CORR1",   // GetCorrectedEnergyForGamma1(Double_t eRec);
   "RECALIB",
   "IDEAL",
@@ -162,7 +162,7 @@ AliEMCALPi0Calibration::AliEMCALPi0Calibration(const char* name) :
   };
   
   fgNanaOpt = sizeof(anaOpt) / sizeof(Char_t*); 
-  fgAnaOpt = new Char_t*[fgNanaOpt];
+  fgAnaOpt = new const Char_t*[fgNanaOpt];
   for(int i=0; i<fgNanaOpt; i++) fgAnaOpt[i] = anaOpt[i];
 }
 
@@ -950,7 +950,7 @@ void AliEMCALPi0Calibration::PictVsIterNumber(const Int_t ind, const Int_t nsm)
   TH1::AddDirectory(1);
 
   Int_t itMax = 10, it=0;
-  map <int, char*> indName;
+  map <int, const char*> indName;
   indName[0] = "eff.mass";
   indName[3] = "mass of #pi_{0}";
   indName[4] = "resolution of #pi_{0}";
@@ -1091,7 +1091,7 @@ TCanvas *AliEMCALPi0Calibration::Linearity(TList *l, int ifun)
     hErecOverEin->SetMaximum(1.001);
   }
   Int_t markerColor=1;
-  char *fun="", *optFit="";
+  const char *fun="", *optFit="";
   TF1 *f = 0;
   if(0) {
     if(ifun==-5) {

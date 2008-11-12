@@ -61,7 +61,7 @@ public:
    
    void DrawGUI(const TGWindow *p, UInt_t w, UInt_t h);         // to be called by the costructor, here the windows is drawn
    void SetInitialValues();                                     // set the initial button states
-   void Initialize(char* fileName, char* treeName = "calPads"); // initializes the GUI with default settings and opens tree for drawing
+   void Initialize(const char* fileName, const char* treeName = "calPads"); // initializes the GUI with default settings and opens tree for drawing
    void Initialize(AliTPCCalibViewer *viewer);                  // initializes the GUI with default settings and opens tree for drawing
    void Reload(){Initialize(fViewer);}                          // reload the viewr after it has been changed, e.g. added a new referenceTree, ...
    TString* GetDrawString();                                    // create the draw string out of selection

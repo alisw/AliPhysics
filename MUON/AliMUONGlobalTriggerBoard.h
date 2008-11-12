@@ -27,7 +27,7 @@ class AliMUONGlobalTriggerBoard : public AliMUONTriggerBoard
       virtual void     Response();
 
                        /// response of the algorithm
-      virtual UShort_t Algo(UShort_t i, UShort_t j, char *thres);
+      virtual UShort_t Algo(UShort_t i, UShort_t j, const char *thres);
                       
                        /// Reset regional board responses
       virtual void     Reset() {for (Int_t i=0; i<16; i++) fRegionalResponse[i] = 0;}

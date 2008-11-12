@@ -34,9 +34,9 @@ class AliCorrQADataMakerRec ;
 
 class AliQADataMakerSteer: public TNamed {
 public:
-	AliQADataMakerSteer(char * mode, const char* gAliceFilename = "galice.root", 
-						const char * name = "AliQADataMakerSteer", 
-						const char * title = "QA makers") ; 
+	AliQADataMakerSteer(const Char_t * mode, const Char_t * gAliceFilename = "galice.root", 
+						const Char_t * name = "AliQADataMakerSteer", 
+						const Char_t * title = "QA makers") ; 
 	AliQADataMakerSteer(const AliQADataMakerSteer & qas) ; 
 	AliQADataMakerSteer & operator = (const AliQADataMakerSteer & qas) ; 
 	virtual ~AliQADataMakerSteer() ; 
@@ -89,7 +89,7 @@ private:
 	TString                 fGAliceFileName ;               //! name of the galice file
 	UInt_t                  fFirstEvent ;                   //! first event to process
 	Int_t                   fMaxEvents ;                    //! number of events to process
-	char *                  fMode ;                         //! sim or rec
+	const Char_t *          fMode ;                         //! sim or rec
 	Long64_t                fNumberOfEvents ;               //! number of events in the run 
   AliRecoParam            fRecoParam;                     //! container for the reco-param objects for detectors
 	UInt_t                  fRunNumber ;                    //! current run number

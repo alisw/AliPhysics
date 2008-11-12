@@ -51,8 +51,6 @@ STAT/module.mk:		STAT/libSTAT.pkg
 BCM/module.mk:		BCM/libBCM.pkg
 DPMJET/module.mk:	DPMJET/libdpmjet.pkg
 TDPMjet/module.mk:	TDPMjet/libTDPMjet.pkg
-ISAJET/module.mk:	ISAJET/libisajet.pkg
-TIsajet/module.mk:	TIsajet/libTIsajet.pkg
 TTherminator/module.mk:	TTherminator/libTTherminator.pkg
 CORRFW/module.mk:       CORRFW/libCORRFW.pkg
 UNICOR/module.mk:       UNICOR/libUNICOR.pkg

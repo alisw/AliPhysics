@@ -891,7 +891,7 @@ void AliSplineFit::MakeKnots0(TGraph * graph, Double_t maxdelta, Int_t minpoints
 
 
 
-void AliSplineFit::MakeSmooth(TGraph * graph, Float_t ratio, char * type){
+void AliSplineFit::MakeSmooth(TGraph * graph, Float_t ratio, Option_t * type){
   //
   // Interface to GraphSmooth
   //

@@ -72,7 +72,7 @@ AliHLTTPCMerger::~AliHLTTPCMerger()
   DeleteArray();
 }
 
-void AliHLTTPCMerger::InitMerger(Int_t ntrackarrays,Char_t *tracktype)
+void AliHLTTPCMerger::InitMerger(Int_t ntrackarrays,const Char_t *tracktype)
 {
   //Used to setup all arrays
   

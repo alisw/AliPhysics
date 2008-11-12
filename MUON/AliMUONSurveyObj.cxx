@@ -579,7 +579,7 @@ Int_t AliMUONSurveyObj::SurveyToAlign(Double_t psi, Double_t tht, Double_t epsi,
 
 }
 
-Double_t AliMUONSurveyObj::EvalFunction(TF2 *lFunction, Int_t iP1, Int_t iP2, Char_t *lCoord) {
+Double_t AliMUONSurveyObj::EvalFunction(TF2 *lFunction, Int_t iP1, Int_t iP2, const Char_t *lCoord) {
 
   if (!lFunction) {
     AliError("No function given!!!");
@@ -755,7 +755,7 @@ Int_t AliMUONSurveyObj::CalculateBestTransf(Int_t iP1, Int_t iP2, Double_t *lXYZ
   AliMUONSurveyUtil *surveyUtil = AliMUONSurveyUtil::Instance();
 
   // Xcenter functions
-  char *fxcName = "fXcn00"; 
+  const char *fxcName = "fXcn00"; 
   TF2 **fXc = new TF2*[2];
   fxcName = "fXcn";
   fXc[0] = new TF2(fxcName,surveyUtil,&AliMUONSurveyUtil::xnCenter,fXMin,fXMax,fYMin,fYMax,7,"AliMUONSurveyUtil","xnCenter");
@@ -763,7 +763,7 @@ Int_t AliMUONSurveyObj::CalculateBestTransf(Int_t iP1, Int_t iP2, Double_t *lXYZ
   fXc[1] = new TF2(fxcName,surveyUtil,&AliMUONSurveyUtil::xpCenter,fXMin,fXMax,fYMin,fYMax,7,"AliMUONSurveyUtil","xpCenter");
 
   // Ycenter functions
-  char *fycName = "fYcn00"; 
+  const char *fycName = "fYcn00"; 
   TF2 **fYc = new TF2*[2];
   fycName = "fYcn";
   fYc[0] = new TF2(fycName,surveyUtil,&AliMUONSurveyUtil::ynCenter,fYMin,fYMax,fYMin,fYMax,8,"AliMUONSurveyUtil","ynCenter");
@@ -771,7 +771,7 @@ Int_t AliMUONSurveyObj::CalculateBestTransf(Int_t iP1, Int_t iP2, Double_t *lXYZ
   fYc[1] = new TF2(fycName,surveyUtil,&AliMUONSurveyUtil::ypCenter,fYMin,fYMax,fYMin,fYMax,8,"AliMUONSurveyUtil","ypCenter");   
 
   // Zcenter functions
-  char *fzcName = "fZcn00"; 
+  const char *fzcName = "fZcn00"; 
   TF2 **fZc = new TF2*[2];
   fzcName = "fZcn";
   fZc[0] = new TF2(fzcName,surveyUtil,&AliMUONSurveyUtil::znCenter,fZMin,fZMax,fZMin,fZMax,8,"AliMUONSurveyUtil","znCenter");
@@ -779,7 +779,7 @@ Int_t AliMUONSurveyObj::CalculateBestTransf(Int_t iP1, Int_t iP2, Double_t *lXYZ
   fZc[1] = new TF2(fzcName,surveyUtil,&AliMUONSurveyUtil::zpCenter,fZMin,fZMax,fZMin,fZMax,8,"AliMUONSurveyUtil","zpCenter");   
 
   // Phi rotation using xglobal coords functions
-  char *fphixName = "fPhiXnn00"; 
+  const char *fphixName = "fPhiXnn00"; 
   TF2 ***fPhiX = new TF2**[2];
   for (Int_t iX =0; iX<2; iX++) {
     fPhiX[iX] = new TF2*[2];
@@ -794,7 +794,7 @@ Int_t AliMUONSurveyObj::CalculateBestTransf(Int_t iP1, Int_t iP2, Double_t *lXYZ
   fPhiX[1][1] = new TF2(fphixName,surveyUtil,&AliMUONSurveyUtil::phixpp,fXMin,fXMax,fXMin,fXMax,7,"AliMUONSurveyUtil","phixpp");   
 
   // Phi rotation using yglobal coords functions
-  char *fphiyName = "fPhiYnn00"; 
+  const char *fphiyName = "fPhiYnn00"; 
   TF2 ***fPhiY = new TF2**[2];
   for (Int_t iY =0; iY<2; iY++) {
     fPhiY[iY] = new TF2*[2];

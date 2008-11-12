@@ -263,7 +263,7 @@ const char *optFit, const char *fun)
 
 TGraphErrors *AliEMCALHistoUtilities::DrawGraphErrors(const Int_t n,Double_t *x,Double_t *y,Double_t *ex, 
 Double_t *ey, Int_t markerColor,  Int_t markerStyle, const char* opt, const char* tit, 
-const char* xTit,char* yTit, Int_t ifun, const char *optFit, const char *fun)
+const char* xTit,const char* yTit, Int_t ifun, const char *optFit, const char *fun)
 {
   // Oct 15, 2007
   printf("AliEMCALHistoUtilities::drawGraphErrors started \n");

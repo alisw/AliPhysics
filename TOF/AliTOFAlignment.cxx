@@ -235,11 +235,11 @@ void AliTOFAlignment::Align( Float_t *tr, Float_t *rot)
   AliInfo(Form("Number of Alignable Volumes: %d",fNTOFAlignObj));
 }
 //_____________________________________________________________________________
-void AliTOFAlignment::WriteParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun)
+void AliTOFAlignment::WriteParOnCDB(const Char_t *sel, Int_t minrun, Int_t maxrun)
 {
   //Write Align Par on CDB
   AliCDBManager *man = AliCDBManager::Instance();
-  Char_t *sel1 = "AlignPar" ;
+  const Char_t *sel1 = "AlignPar" ;
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
   AliCDBId idTOFAlign(out,minrun,maxrun);
@@ -249,11 +249,11 @@ void AliTOFAlignment::WriteParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun)
   man->Put(fTOFAlignObjArray,idTOFAlign,mdTOFAlign);
 }
 //_____________________________________________________________________________
-void AliTOFAlignment::ReadParFromCDB(Char_t *sel, Int_t nrun)
+void AliTOFAlignment::ReadParFromCDB(const Char_t *sel, Int_t nrun)
 {
   //Read Align Par from CDB
   AliCDBManager *man = AliCDBManager::Instance();
-  Char_t *sel1 = "AlignPar" ;
+  const Char_t *sel1 = "AlignPar" ;
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
   AliCDBEntry *entry = man->Get(out,nrun);
@@ -267,11 +267,11 @@ void AliTOFAlignment::ReadParFromCDB(Char_t *sel, Int_t nrun)
 
 }
 //_____________________________________________________________________________
-void AliTOFAlignment::WriteSimParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun)
+void AliTOFAlignment::WriteSimParOnCDB(const Char_t *sel, Int_t minrun, Int_t maxrun)
 {
   //Write Sim Align Par on CDB
   AliCDBManager *man = AliCDBManager::Instance();
-  Char_t *sel1 = "AlignSimPar" ;
+  const Char_t *sel1 = "AlignSimPar" ;
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
   AliCDBId idTOFAlign(out,minrun,maxrun);
@@ -281,10 +281,10 @@ void AliTOFAlignment::WriteSimParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun)
   man->Put(fTOFAlignObjArray,idTOFAlign,mdTOFAlign);
 }
 //_____________________________________________________________________________
-void AliTOFAlignment::ReadSimParFromCDB(Char_t *sel, Int_t nrun){
+void AliTOFAlignment::ReadSimParFromCDB(const Char_t *sel, Int_t nrun){
   //Read Sim Align Par from CDB
   AliCDBManager *man = AliCDBManager::Instance();
-  Char_t *sel1 = "AlignSimPar" ;
+  const Char_t *sel1 = "AlignSimPar" ;
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
   AliCDBEntry *entry = man->Get(out,nrun);

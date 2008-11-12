@@ -34,7 +34,7 @@ class AliMUONRegionalTriggerBoard : public AliMUONTriggerBoard
       virtual void SetLocalResponse(UShort_t val[16]) {for (Int_t i=0;i<16;i++) fLocalResponse[i] = val[i];}
 
       /// response of the algorithm
-      virtual UShort_t Algo(UShort_t i, UShort_t j, char *thres, Int_t level);
+      virtual UShort_t Algo(UShort_t i, UShort_t j, const char *thres, Int_t level);
 
       /// set local boards enable
       void Mask(UShort_t mask);

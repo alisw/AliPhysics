@@ -105,7 +105,7 @@ private:
 
   TH2F* GetHisto(Int_t sector, TObjArray *arr,
 		 Int_t nbinsY, Float_t ymin, Float_t ymax,
-		 Char_t *type, Bool_t force);
+		 const Char_t *type, Bool_t force);
 
   AliTPCCalROC* GetCalRoc(Int_t sector, TObjArray* arr, Bool_t force);
 

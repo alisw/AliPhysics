@@ -669,7 +669,7 @@ void AliITSDetTypeSim::SetDefaultSimulation(){
   }
 }
 //___________________________________________________________________
-void AliITSDetTypeSim::SetTreeAddressS(TTree* treeS, Char_t* name){
+void AliITSDetTypeSim::SetTreeAddressS(TTree* treeS, const Char_t* name){
   // Set branch address for the ITS summable digits Trees.  
   char branchname[30];
 
@@ -684,7 +684,7 @@ void AliITSDetTypeSim::SetTreeAddressS(TTree* treeS, Char_t* name){
 
 }
 //___________________________________________________________________
-void AliITSDetTypeSim::SetTreeAddressD(TTree* treeD, Char_t* name){
+void AliITSDetTypeSim::SetTreeAddressD(TTree* treeD, const Char_t* name){
   // Set branch address for the digit Trees.
   
   const char *det[3] = {"SPD","SDD","SSD"};
@@ -699,7 +699,7 @@ void AliITSDetTypeSim::SetTreeAddressD(TTree* treeD, Char_t* name){
     fDigits = new TObjArray(fgkNdettypes); 
   }
   for(Int_t i=0;i<fgkNdettypes;i++){
-    Char_t* digclass = GetDigitClassName(i);
+    const Char_t* digclass = GetDigitClassName(i);
     if(digclass==0x0){
       if(i==0) SetDigitClassName(i,"AliITSdigitSPD");
       if(i==1) SetDigitClassName(i,"AliITSdigitSDD");

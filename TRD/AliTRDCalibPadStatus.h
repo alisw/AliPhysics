@@ -96,7 +96,7 @@ public:
  
   TH2F* GetHisto(Int_t det, TObjArray *arr,
 		 Int_t nbinsY, Float_t ymin, Float_t ymax,
-		 Char_t *type, Bool_t force);
+		 const Char_t *type, Bool_t force);
 
   // Some basic geometry function
   virtual Int_t    GetLayer(Int_t d) const;

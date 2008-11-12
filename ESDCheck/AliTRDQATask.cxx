@@ -446,7 +446,7 @@ void AliTRDQATask::Terminate(Option_t *)
 }
 
 //______________________________________________________________________________
-const int AliTRDQATask::GetSector(const double alpha) const
+int AliTRDQATask::GetSector(const double alpha) const
 {
   // Gets the sector number 
 
@@ -456,7 +456,7 @@ const int AliTRDQATask::GetSector(const double alpha) const
 }
 
 //______________________________________________________________________________
-const int AliTRDQATask::CheckSector(const int sector) const  
+int AliTRDQATask::CheckSector(const int sector) const  
 {  
   // Checks the sector number
   const int knSec = 8;

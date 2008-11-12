@@ -103,7 +103,7 @@ void AliMUONRegionalTriggerBoard::Response()
 }
 
 //___________________________________________
-UShort_t AliMUONRegionalTriggerBoard::Algo(UShort_t i, UShort_t j, char *thres, Int_t level)
+UShort_t AliMUONRegionalTriggerBoard::Algo(UShort_t i, UShort_t j, const char *thres, Int_t level)
 {
 /// implementation of the regional algorithm
 /// similar to the global algorithm except for the

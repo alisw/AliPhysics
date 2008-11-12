@@ -272,8 +272,8 @@ void AliMUONLocalTriggerBoard::BP(Option_t *option) const
       printf("===============================================================\n");
       printf("                            5432109876543210");
 
-      char *x[4] = {"XMC11","XMC12","XMC21","XMC22"};
-      char *s[4] = {"                      ",
+      const char *x[4] = {"XMC11","XMC12","XMC21","XMC22"};
+      const char *s[4] = {"                      ",
                     "                      ",
                     "              ",
                     "              "};
@@ -1129,7 +1129,7 @@ Int_t AliMUONLocalTriggerBoard::GetI() const
 
    Int_t lL = atoi(&l[4]), cC = atoi(&l[2]), sS = (copy=='R') ? +1 : -1;
 
-   char *b[4] = {"12", "34", "56", "78"};
+   const char *b[4] = {"12", "34", "56", "78"};
 
    Int_t ib = 0;
 

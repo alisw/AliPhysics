@@ -33,7 +33,7 @@ public:
   enum { kVertexBinning = 1+2 }; // the first is for the whole vertex range, the others divide the vertex range
 
   dNdEtaAnalysis();
-  dNdEtaAnalysis(Char_t* name, Char_t* title, AliPWG0Helper::AnalysisMode analysisMode = AliPWG0Helper::kSPD);
+  dNdEtaAnalysis(const Char_t* name, const Char_t* title, AliPWG0Helper::AnalysisMode analysisMode = AliPWG0Helper::kSPD);
   virtual ~dNdEtaAnalysis();
 
   dNdEtaAnalysis(const dNdEtaAnalysis &c);
@@ -52,12 +52,12 @@ public:
 
   virtual Long64_t Merge(TCollection* list);
 
-  AliCorrection* GetData() { return fData; }
+  AliCorrection* GetData() const { return fData; }
 
-  TH1F* GetPtHistogram() { return fPtDist; }
+  TH1F* GetPtHistogram() const { return fPtDist; }
 
-  TH1F* GetdNdEtaHistogram(Int_t i = 0) { return fdNdEta[i]; }
-  TH1F* GetdNdEtaPtCutOffCorrectedHistogram(Int_t i = 0) { return fdNdEtaPtCutOffCorrected[i]; }
+  TH1F* GetdNdEtaHistogram(Int_t i = 0) const { return fdNdEta[i]; }
+  TH1F* GetdNdEtaPtCutOffCorrectedHistogram(Int_t i = 0) const { return fdNdEtaPtCutOffCorrected[i]; }
 
   void SetAnalysisMode(AliPWG0Helper::AnalysisMode mode) { fAnalysisMode = mode; }
 

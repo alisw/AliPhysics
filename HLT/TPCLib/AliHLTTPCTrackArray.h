@@ -46,7 +46,7 @@ class AliHLTTPCTrackArray {
    *   - AliHLTTPCModelTrack   -> 'm'
    * @param ntrack     initial size
    */
-  AliHLTTPCTrackArray(char* tracktype,Int_t ntrack);
+  AliHLTTPCTrackArray(const char* tracktype,Int_t ntrack);
   /**
    * constructor 
    * @param tracktype  string describing type, one of
@@ -55,7 +55,7 @@ class AliHLTTPCTrackArray {
    *   - AliHLTTPCHoughTrack   -> 'h'
    *   - AliHLTTPCModelTrack   -> 'm'
    */
-  AliHLTTPCTrackArray(char* tracktype);
+  AliHLTTPCTrackArray(const char* tracktype);
   /** destructor */
   virtual ~AliHLTTPCTrackArray();
 

@@ -180,11 +180,11 @@ int AliHLTHOMERLibManager::LoadHOMERLibrary()
     typedef void (*CompileInfo)( char*& date, char*& time);
     CompileInfo fctInfo=(CompileInfo)gSystem->DynFindSymbol(*library, "CompileInfo");
     if (fctInfo) {
-      char* date="";
-      char* time="";
+      char* date=0;
+      char* time=0;
       (*fctInfo)(date, time);
-      if (!date) date="unknown";
-      if (!time) time="unknown";
+      if (!date) {date=new Char_t[8]; strcpy(date,"unknown");}
+      if (!time) {time=new Char_t[8]; strcpy(time,"unknown");}
       //HLTInfo("%s build on %s (%s)", *library, date, time);
     } else {
       //HLTInfo("no build info available for %s", *library);

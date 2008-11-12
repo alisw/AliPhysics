@@ -1223,7 +1223,7 @@ void AliTPCCalibViewerGUI::CloseWindow() {
 */
 
 
-void AliTPCCalibViewerGUI::Initialize(char* fileName, char* treeName) {
+void AliTPCCalibViewerGUI::Initialize(const char* fileName, const char* treeName) {
    // 
    // initialize the GUI with a calibrationTree from fileName
    // 

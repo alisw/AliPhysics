@@ -92,22 +92,22 @@ void AliAnalysisTaskTrigChEff::CreateOutputObjects() {
   TString cathCode[2] = {"bendPlane", "nonBendPlane"};
   TString countTypeName[2] = {"CountInCh", "NonCountInCh"};
 
-  Char_t* yAxisTitle = "counts";
+  const Char_t* yAxisTitle = "counts";
 
   const Int_t kNboards = 234; //AliMpConstants::NofLocalBoards();
   const Int_t kFirstTrigCh = 11;//AliMpConstants::NofTrackingChambers()+1;
 
   Int_t chamberBins = kNchambers;
   Float_t chamberLow = kFirstTrigCh-0.5, chamberHigh = kFirstTrigCh+kNchambers-0.5;
-  Char_t* chamberName = "chamber";
+  const Char_t* chamberName = "chamber";
 
   Int_t slatBins = kNslats;
   Float_t slatLow = 0-0.5, slatHigh = kNslats-0.5;
-  Char_t* slatName = "slat";
+  const Char_t* slatName = "slat";
 
   Int_t boardBins = kNboards;
   Float_t boardLow = 1-0.5, boardHigh = kNboards+1.-0.5;
-  Char_t* boardName = "board";
+  const Char_t* boardName = "board";
 
   TString baseName, histoName;
   fList = new TList();

@@ -1036,7 +1036,7 @@ void AliTRDalignment::WriteDB(char *filename, int run0, int run1)
 
   TClonesArray   *ar = new TClonesArray("AliAlignObjParams",10000);
   NumbersToAr(ar);
-  char *path = "TRD/Align/Data";
+  const Char_t *path = "TRD/Align/Data";
   AliCDBId id(path,run0,run1);
   AliCDBMetaData *md = new AliCDBMetaData();
   md->SetResponsible("Dariusz Miskowiec");

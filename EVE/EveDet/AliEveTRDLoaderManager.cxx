@@ -169,7 +169,7 @@ void AliEveTRDLoaderManagerEditor::Add(Char_t *name)
   Resize(GetDefaultSize());
   MapWindow();
 
-  char *title[] = {"MC loader", "Single file loader", "Raw data loader"};
+  const char *title[] = {"MC loader", "Single file loader", "Raw data loader"};
   // char *color[] = {"#ff0000", "#0000ff", "#59d454"};
   int id = fSelector->GetSelected(), type;
   switch(id){

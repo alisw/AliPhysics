@@ -56,7 +56,7 @@ void AliHMPIDHit::Hit2Sdi(TClonesArray *pSdiLst,Int_t iHow)const
 void AliHMPIDHit::Print(Option_t *opt)const
 {
 //Print hit
-  char *sPart=Form("pid=%i",Pid());
+  const char *sPart=Form("pid=%i",Pid());
   switch(Pid()){
     case kProton:      sPart="p+  ";break;
     case kProtonBar:   sPart="p-  ";break;

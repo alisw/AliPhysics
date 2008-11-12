@@ -370,7 +370,7 @@ void AliITS:: MakeBranchInTreeD(TTree* treeD, const char* file){
   fDetTypeSim->SetLoader((AliITSLoader*)fLoader);
 
   const Char_t *det[3] = {"SPD","SDD","SSD"};
-  Char_t* digclass;
+  const Char_t* digclass;
   Int_t buffersize = 4000;
   Char_t branchname[30];
   

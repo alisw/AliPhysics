@@ -54,7 +54,7 @@ class AliEMCALHistoUtilities: public TNamed {
   static TGraphErrors *DrawGraphErrors(const Int_t n=4,Double_t *x=0,Double_t *y=0,Double_t *ex=0, 
   Double_t *ey=0, Int_t markerColor=4,Int_t markerStyle=4, const char* opt="", 
   const char* tit="", const char* xTit="  jet E_{t}  ",
-  char* yTit="", Int_t ifun=0, const char *optFit="W+", const char *fun="");
+  const char* yTit="", Int_t ifun=0, const char *optFit="W+", const char *fun="");
   // TChain
   static void InitChain(TChain *chain=0, const char* nameListOfFiles=0, Int_t nFileMax=0); 
   static AliRunLoader* InitKinematics(const Int_t nev=0, const char* galiceName="galice.root");

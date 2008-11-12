@@ -124,7 +124,7 @@ public:
 	void SetElement(short* Array,int index,short value);
 
 	int InBand(int ADC,int bsl, int LowThreshold, int HighThreshold);
-	int InRange(int parameter,int Low,int High,char *Module,char *ParameterName);
+	int InRange(int parameter,int Low,int High,const char *Module,const char *ParameterName);
 	short GetShortChannel(int i);
 	short GetKeepChannel(int i);
 	int Multiply36(int P, int N);

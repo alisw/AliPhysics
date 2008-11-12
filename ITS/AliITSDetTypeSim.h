@@ -81,8 +81,8 @@ class AliITSDetTypeSim : public TObject {
     virtual void SetDefaultSimulation();
     virtual void SetRunNumber(Int_t rn=0){fRunNumber = rn;}
     virtual Int_t GetRunNumber() const {return fRunNumber;}
-    virtual void SetTreeAddressS(TTree* treeS, Char_t* name);
-    virtual void SetTreeAddressD(TTree* treeD, Char_t* name);
+    virtual void SetTreeAddressS(TTree* treeS, const Char_t* name);
+    virtual void SetTreeAddressD(TTree* treeD, const Char_t* name);
 
     virtual void SetDigits(TObjArray* digits) {fDigits=digits;}
     const TClonesArray* GetSDigits() const { return &fSDigits;}
@@ -93,16 +93,16 @@ class AliITSDetTypeSim : public TObject {
     virtual void ResetSDigits(){fNSDigits=0; fSDigits.Clear();}
     virtual void ResetDigits();
     virtual void ResetDigits(Int_t branch);
-    virtual void SDigitsToDigits(Option_t *opt,Char_t* name);
+    virtual void SDigitsToDigits(Option_t *opt, Char_t* name);
 
     virtual void AddSumDigit(AliITSpListItem &sdig);
     virtual void AddSimDigit(Int_t branch, AliITSdigit *d);
     virtual void AddSimDigit(Int_t branch,Float_t phys,Int_t* digits,
 			     Int_t* tracks,Int_t *hits,Float_t* trkcharges,
 			     Int_t sigexpanded=-1000);
-    virtual void SetDigitClassName(Int_t i, Char_t* name) {
+    virtual void SetDigitClassName(Int_t i, const Char_t* name) {
 	fDigClassName[i]=name;}
-    Char_t* GetDigitClassName(Int_t i) const {return fDigClassName[i];}
+    const Char_t* GetDigitClassName(Int_t i) const {return fDigClassName[i];}
     void StoreCalibration(Int_t firstRun, Int_t lastRun, AliCDBMetaData &md);
 
  protected:
@@ -141,7 +141,7 @@ class AliITSDetTypeSim : public TObject {
     AliITSDDLModuleMapSDD *fDDLMapSDD; //! mapping DDL/module -> SDD module number
     TString       fHitClassName; //! String with Hit class name
     TString       fSDigClassName;//! String with SDigit class name.
-    Char_t*       fDigClassName[3]; //! String with digit class name.
+    const Char_t*       fDigClassName[3]; //! String with digit class name.
     AliITSLoader* fLoader;          //! loader  
     Bool_t        fFirstcall;       //! flag
     Bool_t        fIsHLTmodeC;    //! flag for HLT mode C status (used by SDD)

@@ -323,7 +323,7 @@ void AliCheckMuonDetEltResponse::TrackParamLoop()
 	  Int_t nbrOfMissCh = newChamber - (oldChamber+1);                //!<Number of missing chambers.
 	  CalculMissClusterParam(fTrackParam, oldChamber+1, nbrOfMissCh); //!<Calculation of the parameters of the missing cluster(s).
 	}
-	if ( iTrackParam == nTrackParams - 1 & newChamber != fNCh-1)           //!<Check if the last chamber, chamber 9 (from 0 to 9) has responded.
+	if ( iTrackParam == nTrackParams - 1 && newChamber != fNCh-1)           //!<Check if the last chamber, chamber 9 (from 0 to 9) has responded.
 	{
 	  CalculMissClusterParam(fTrackParam, fNCh-1, 1);                      //!<Calculation of the parameters of the missing cluster(s) in the last chamber.
 	}
@@ -434,7 +434,7 @@ Int_t AliCheckMuonDetEltResponse::FromDetElt2iDet(Int_t chamber,
     Int_t iDet = 0; //!<Position of the detection element (detElt) in the histograms' list.
 
     if (chamber<4)             iDet = detElt-fOffset*(chamber+1)+ 4* chamber      ; 
-    if (chamber>3 & chamber<6) iDet = detElt-fOffset*(chamber+1)+18*(chamber-4)+16;
+    if (chamber>3 && chamber<6) iDet = detElt-fOffset*(chamber+1)+18*(chamber-4)+16;
     if (chamber>5)             iDet = detElt-fOffset*(chamber+1)+26*(chamber-6)+52;
 
     return iDet;    
@@ -487,9 +487,9 @@ void AliCheckMuonDetEltResponse::GetDetEltFromPosition(Int_t chamber,
     
     else //!<For the station 1 & 2 (4 detection elements in each chamber). 
     {
-      if(posX>0 & posY>0) fGetDetElt[0] = fOffset*(chamber+1)    ;
-      if(posX<0 & posY>0) fGetDetElt[0] = fOffset*(chamber+1) + 1;
-      if(posX<0 & posY<0) fGetDetElt[0] = fOffset*(chamber+1) + 2;
-      if(posX>0 & posY<0) fGetDetElt[0] = fOffset*(chamber+1) + 3; 
+      if(posX>0 && posY>0) fGetDetElt[0] = fOffset*(chamber+1)    ;
+      if(posX<0 && posY>0) fGetDetElt[0] = fOffset*(chamber+1) + 1;
+      if(posX<0 && posY<0) fGetDetElt[0] = fOffset*(chamber+1) + 2;
+      if(posX>0 && posY<0) fGetDetElt[0] = fOffset*(chamber+1) + 3; 
     }
 }

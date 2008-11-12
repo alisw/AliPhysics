@@ -1157,7 +1157,7 @@ void AliAnalysisVertexingHF::SelectTracksAndCopyVertex(AliVEvent *event,
     vprimary->GetCovarianceMatrix(cov);
     Double_t chi2toNDF = vprimary->GetChi2perNDF();
     Int_t ncontr=nindices;
-    if(vprimary->GetTitle()=="VertexerTracksWithContraint") ncontr += 1;
+    if(!strcmp(vprimary->GetTitle(),"VertexerTracksWithContraint")) ncontr += 1;
     Double_t chi2=chi2toNDF*(2.*(Double_t)ncontr-3.); 
     fV1 = new AliESDVertex(pos,cov,chi2,ncontr,vprimary->GetName());
     fV1->SetTitle(vprimary->GetTitle());

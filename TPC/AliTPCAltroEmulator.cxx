@@ -925,7 +925,7 @@ int AliTPCAltroEmulator::InBand(int ADC,int bsl, int LowThreshold, int HighThres
     return 0;
 }
 
-int AliTPCAltroEmulator::InRange(int parameter,int Low,int High,char *Module,char *ParameterName){
+int AliTPCAltroEmulator::InRange(int parameter,int Low,int High,const char *Module,const char *ParameterName){
   //
   //
   //

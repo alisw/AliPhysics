@@ -290,13 +290,13 @@ void AliTOFcalib::CreateCalObjects(){
   fStatus = new AliTOFChannelOnlineStatusArray(fNChannels);
 }
 //_____________________________________________________________________________
-void AliTOFcalib::WriteConfigMapOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun)
+void AliTOFcalib::WriteConfigMapOnCDB(const Char_t *sel, Int_t minrun, Int_t maxrun)
 {
   //Write calibration parameters to the CDB
   SetFirstRun(minrun);
   SetLastRun(maxrun);
   AliCDBManager *man = AliCDBManager::Instance();
-  Char_t *sel1 = "Config" ;  // to be consistent with TOFPreprocessor
+  const Char_t *sel1 = "Config" ;  // to be consistent with TOFPreprocessor
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
   AliDebug(2,Form("Writing TOF configuration map for online calib on CDB with run range [%i, %i] ",fFirstRun,fLastRun));
@@ -311,11 +311,11 @@ void AliTOFcalib::WriteConfigMapOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun)
 }
 //_____________________________________________________________________________
 
-void AliTOFcalib::WriteConfigMapOnCDB(Char_t *sel)
+void AliTOFcalib::WriteConfigMapOnCDB(const Char_t *sel)
 {
   //Write calibration parameters to the CDB with infinite validity
   AliCDBManager *man = AliCDBManager::Instance();
-  Char_t *sel1 = "Config" ;  // to be consistent with TOFPreprocessor
+  const Char_t *sel1 = "Config" ;  // to be consistent with TOFPreprocessor
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
   AliCDBRunRange runrange(fFirstRun,fLastRun);
@@ -330,13 +330,13 @@ void AliTOFcalib::WriteConfigMapOnCDB(Char_t *sel)
   delete md;
 }
 //_____________________________________________________________________________
-void AliTOFcalib::WriteParOnlineDelayOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun)
+void AliTOFcalib::WriteParOnlineDelayOnCDB(const Char_t *sel, Int_t minrun, Int_t maxrun)
 {
   //Write calibration parameters to the CDB -------> new calib objs!!!!!
   SetFirstRun(minrun);
   SetLastRun(maxrun);
   AliCDBManager *man = AliCDBManager::Instance();
-  Char_t *sel1 = "ParOnlineDelay" ;  // to be consistent with TOFPreprocessor
+  const Char_t *sel1 = "ParOnlineDelay" ;  // to be consistent with TOFPreprocessor
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
   AliDebug(2,Form("Writing TOF online calib obj on CDB with run range [%i, %i] ",fFirstRun,fLastRun));
@@ -350,13 +350,13 @@ void AliTOFcalib::WriteParOnlineDelayOnCDB(Char_t *sel, Int_t minrun, Int_t maxr
   delete md;
 }
 //_____________________________________________________________________________
-void AliTOFcalib::WriteParOnlineStatusOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun)
+void AliTOFcalib::WriteParOnlineStatusOnCDB(const Char_t *sel, Int_t minrun, Int_t maxrun)
 {
   //Write calibration parameters to the CDB -------> new calib objs!!!!!
   SetFirstRun(minrun);
   SetLastRun(maxrun);
   AliCDBManager *man = AliCDBManager::Instance();
-  Char_t *sel1 = "Status" ;  // to be consistent with TOFPreprocessor
+  const Char_t *sel1 = "Status" ;  // to be consistent with TOFPreprocessor
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
   AliDebug(2,Form("Writing TOF online status calib obj on CDB with run range [%i, %i] ",fFirstRun,fLastRun));
@@ -371,11 +371,11 @@ void AliTOFcalib::WriteParOnlineStatusOnCDB(Char_t *sel, Int_t minrun, Int_t max
 }
 //_____________________________________________________________________________
 
-void AliTOFcalib::WriteParOnlineDelayOnCDB(Char_t *sel)
+void AliTOFcalib::WriteParOnlineDelayOnCDB(const Char_t *sel)
 {
   //Write calibration parameters to the CDB with infinite validity -------> new calib objs!!!!!
   AliCDBManager *man = AliCDBManager::Instance();
-  Char_t *sel1 = "ParOnlineDelay" ;  // to be consistent with TOFPreprocessor
+  const Char_t *sel1 = "ParOnlineDelay" ;  // to be consistent with TOFPreprocessor
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
   AliCDBRunRange runrange(fFirstRun,fLastRun);
@@ -391,11 +391,11 @@ void AliTOFcalib::WriteParOnlineDelayOnCDB(Char_t *sel)
 }
 //_____________________________________________________________________________
 
-void AliTOFcalib::WriteParOnlineStatusOnCDB(Char_t *sel)
+void AliTOFcalib::WriteParOnlineStatusOnCDB(const Char_t *sel)
 {
   //Write calibration parameters to the CDB with infinite validity -------> new calib objs!!!!!
   AliCDBManager *man = AliCDBManager::Instance();
-  Char_t *sel1 = "Status" ;  // to be consistent with TOFPreprocessor
+  const Char_t *sel1 = "Status" ;  // to be consistent with TOFPreprocessor
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
   AliCDBRunRange runrange(fFirstRun,fLastRun);
@@ -410,13 +410,13 @@ void AliTOFcalib::WriteParOnlineStatusOnCDB(Char_t *sel)
   delete md;
 }
 //_____________________________________________________________________________
-void AliTOFcalib::WriteParOnlineOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun)
+void AliTOFcalib::WriteParOnlineOnCDB(const Char_t *sel, Int_t minrun, Int_t maxrun)
 {
   //Write calibration parameters to the CDB
   SetFirstRun(minrun);
   SetLastRun(maxrun);
   AliCDBManager *man = AliCDBManager::Instance();
-  Char_t *sel1 = "ParOnline" ;  // to be consistent with TOFPreprocessor
+  const Char_t *sel1 = "ParOnline" ;  // to be consistent with TOFPreprocessor
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
   AliDebug(2,Form("Writing TOF online calib obj on CDB with run range [%i, %i] ",fFirstRun,fLastRun));
@@ -430,13 +430,13 @@ void AliTOFcalib::WriteParOnlineOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun)
   delete md;
 }
 //_____________________________________________________________________________
-void AliTOFcalib::WriteParOnlinePulserOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun)
+void AliTOFcalib::WriteParOnlinePulserOnCDB(const Char_t *sel, Int_t minrun, Int_t maxrun)
 {
   //Write calibration parameters from pulser to the CDB
   SetFirstRun(minrun);
   SetLastRun(maxrun);
   AliCDBManager *man = AliCDBManager::Instance();
-  Char_t *sel1 = "Pulser" ;  // to be consistent with TOFPreprocessor
+  const Char_t *sel1 = "Pulser" ;  // to be consistent with TOFPreprocessor
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
   AliDebug(2,Form("Writing TOF online calib obj from pulser on CDB with run range [%i, %i] ",fFirstRun,fLastRun));
@@ -450,13 +450,13 @@ void AliTOFcalib::WriteParOnlinePulserOnCDB(Char_t *sel, Int_t minrun, Int_t max
   delete md;
 }
 //_____________________________________________________________________________
-void AliTOFcalib::WriteParOnlineNoiseOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun)
+void AliTOFcalib::WriteParOnlineNoiseOnCDB(const Char_t *sel, Int_t minrun, Int_t maxrun)
 {
   //Write calibration parameters from noise to the CDB
   SetFirstRun(minrun);
   SetLastRun(maxrun);
   AliCDBManager *man = AliCDBManager::Instance();
-  Char_t *sel1 = "Noise" ;  // to be consistent with TOFPreprocessor
+  const Char_t *sel1 = "Noise" ;  // to be consistent with TOFPreprocessor
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
   AliDebug(2,Form("Writing TOF online calib obj from noise on CDB with run range [%i, %i] ",fFirstRun,fLastRun));
@@ -470,13 +470,13 @@ void AliTOFcalib::WriteParOnlineNoiseOnCDB(Char_t *sel, Int_t minrun, Int_t maxr
   delete md;
 }
 //_____________________________________________________________________________
-void AliTOFcalib::WriteParOnlineHWOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun)
+void AliTOFcalib::WriteParOnlineHWOnCDB(const Char_t *sel, Int_t minrun, Int_t maxrun)
 {
   //Write calibration parameters from hardware to the CDB
   SetFirstRun(minrun);
   SetLastRun(maxrun);
   AliCDBManager *man = AliCDBManager::Instance();
-  Char_t *sel1 = "HW" ;  // to be consistent with TOFPreprocessor
+  const Char_t *sel1 = "HW" ;  // to be consistent with TOFPreprocessor
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
   AliDebug(2,Form("Writing TOF online calib obj from hardware on CDB with run range [%i, %i] ",fFirstRun,fLastRun));
@@ -491,11 +491,11 @@ void AliTOFcalib::WriteParOnlineHWOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun)
 }
 //_____________________________________________________________________________
 
-void AliTOFcalib::WriteParOnlineOnCDB(Char_t *sel)
+void AliTOFcalib::WriteParOnlineOnCDB(const Char_t *sel)
 {
   //Write calibration parameters to the CDB with infinite validity
   AliCDBManager *man = AliCDBManager::Instance();
-  Char_t *sel1 = "ParOnline" ;  // to be consistent with TOFPreprocessor
+  const Char_t *sel1 = "ParOnline" ;  // to be consistent with TOFPreprocessor
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
   AliCDBRunRange runrange(fFirstRun,fLastRun);
@@ -511,11 +511,11 @@ void AliTOFcalib::WriteParOnlineOnCDB(Char_t *sel)
 }
 //_____________________________________________________________________________
 
-void AliTOFcalib::WriteParOnlinePulserOnCDB(Char_t *sel)
+void AliTOFcalib::WriteParOnlinePulserOnCDB(const Char_t *sel)
 {
   //Write calibration parameters from pulser to the CDB with infinite validity
   AliCDBManager *man = AliCDBManager::Instance();
-  Char_t *sel1 = "Pulser" ;  // to be consistent with TOFPreprocessor
+  const Char_t *sel1 = "Pulser" ;  // to be consistent with TOFPreprocessor
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
   AliCDBRunRange runrange(fFirstRun,fLastRun);
@@ -531,11 +531,11 @@ void AliTOFcalib::WriteParOnlinePulserOnCDB(Char_t *sel)
 }
 //_____________________________________________________________________________
 
-void AliTOFcalib::WriteParOnlineNoiseOnCDB(Char_t *sel)
+void AliTOFcalib::WriteParOnlineNoiseOnCDB(const Char_t *sel)
 {
   //Write calibration parameters from noise to the CDB with infinite validity
   AliCDBManager *man = AliCDBManager::Instance();
-  Char_t *sel1 = "Noise" ;  // to be consistent with TOFPreprocessor
+  const Char_t *sel1 = "Noise" ;  // to be consistent with TOFPreprocessor
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
   AliCDBRunRange runrange(fFirstRun,fLastRun);
@@ -551,11 +551,11 @@ void AliTOFcalib::WriteParOnlineNoiseOnCDB(Char_t *sel)
 }
 //_____________________________________________________________________________
 
-void AliTOFcalib::WriteParOnlineHWOnCDB(Char_t *sel)
+void AliTOFcalib::WriteParOnlineHWOnCDB(const Char_t *sel)
 {
   //Write calibration parameters from hardware to the CDB with infinite validity
   AliCDBManager *man = AliCDBManager::Instance();
-  Char_t *sel1 = "HW" ;  // to be consistent with TOFPreprocessor
+  const Char_t *sel1 = "HW" ;  // to be consistent with TOFPreprocessor
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
   AliCDBRunRange runrange(fFirstRun,fLastRun);
@@ -571,13 +571,13 @@ void AliTOFcalib::WriteParOnlineHWOnCDB(Char_t *sel)
 }
 //_____________________________________________________________________________
 
-void AliTOFcalib::WriteParOfflineOnCDB(Char_t *sel, const Char_t *validity, Int_t minrun, Int_t maxrun)
+void AliTOFcalib::WriteParOfflineOnCDB(const Char_t *sel, const Char_t *validity, Int_t minrun, Int_t maxrun)
 {
   //Write calibration parameters to the CDB
   SetFirstRun(minrun);
   SetLastRun(maxrun);
   AliCDBManager *man = AliCDBManager::Instance();
-  Char_t *sel1 = "ParOffline" ;
+  const Char_t *sel1 = "ParOffline" ;
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
   AliDebug(2,Form("Writing TOF offline calib obj on CDB with run range [%i, %i] ",fFirstRun,fLastRun));
@@ -590,11 +590,11 @@ void AliTOFcalib::WriteParOfflineOnCDB(Char_t *sel, const Char_t *validity, Int_
 }
 //_____________________________________________________________________________
 
-void AliTOFcalib::WriteParOfflineOnCDB(Char_t *sel, const Char_t *validity)
+void AliTOFcalib::WriteParOfflineOnCDB(const Char_t *sel, const Char_t *validity)
 {
   //Write calibration parameters to the CDB with infinite validity
   AliCDBManager *man = AliCDBManager::Instance();
-  Char_t *sel1 = "ParOffline" ;
+  const Char_t *sel1 = "ParOffline" ;
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
   AliCDBRunRange runrange(fFirstRun,fLastRun);
@@ -608,11 +608,11 @@ void AliTOFcalib::WriteParOfflineOnCDB(Char_t *sel, const Char_t *validity)
 }
 //_____________________________________________________________________________
 
-Bool_t AliTOFcalib::ReadConfigMapFromCDB(Char_t *sel, Int_t nrun)
+Bool_t AliTOFcalib::ReadConfigMapFromCDB(const Char_t *sel, Int_t nrun)
 {
   //Read calibration parameters from the CDB
   AliCDBManager *man = AliCDBManager::Instance();
-  Char_t *sel1 = "Config" ;
+  const Char_t *sel1 = "Config" ;
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
   AliCDBEntry *entry = man->Get(out,nrun);
@@ -632,11 +632,11 @@ Bool_t AliTOFcalib::ReadConfigMapFromCDB(Char_t *sel, Int_t nrun)
 }
 //_____________________________________________________________________________
 
-Bool_t AliTOFcalib::ReadParOnlineDelayFromCDB(Char_t *sel, Int_t nrun)
+Bool_t AliTOFcalib::ReadParOnlineDelayFromCDB(const Char_t *sel, Int_t nrun)
 {
   //Read calibration parameters from the CDB -------> new calib objs!!!!!
   AliCDBManager *man = AliCDBManager::Instance();
-  Char_t *sel1 = "ParOnlineDelay" ;
+  const Char_t *sel1 = "ParOnlineDelay" ;
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
   AliCDBEntry *entry = man->Get(out,nrun);
@@ -656,11 +656,11 @@ Bool_t AliTOFcalib::ReadParOnlineDelayFromCDB(Char_t *sel, Int_t nrun)
 }
 //_____________________________________________________________________________
 
-Bool_t AliTOFcalib::ReadParOnlineStatusFromCDB(Char_t *sel, Int_t nrun)
+Bool_t AliTOFcalib::ReadParOnlineStatusFromCDB(const Char_t *sel, Int_t nrun)
 {
   //Read calibration parameters from the CDB -------> new calib objs!!!!!
   AliCDBManager *man = AliCDBManager::Instance();
-  Char_t *sel1 = "Status" ;
+  const Char_t *sel1 = "Status" ;
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
   AliCDBEntry *entry = man->Get(out,nrun);
@@ -680,11 +680,11 @@ Bool_t AliTOFcalib::ReadParOnlineStatusFromCDB(Char_t *sel, Int_t nrun)
 }
 //_____________________________________________________________________________
 
-Bool_t AliTOFcalib::ReadParOnlineFromCDB(Char_t *sel, Int_t nrun)
+Bool_t AliTOFcalib::ReadParOnlineFromCDB(const Char_t *sel, Int_t nrun)
 {
   //Read calibration parameters from the CDB
   AliCDBManager *man = AliCDBManager::Instance();
-  Char_t *sel1 = "ParOnline" ;
+  const Char_t *sel1 = "ParOnline" ;
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
   AliCDBEntry *entry = man->Get(out,nrun);
@@ -704,11 +704,11 @@ Bool_t AliTOFcalib::ReadParOnlineFromCDB(Char_t *sel, Int_t nrun)
 }
 //_____________________________________________________________________________
 
-Bool_t AliTOFcalib::ReadParOnlinePulserFromCDB(Char_t *sel, Int_t nrun)
+Bool_t AliTOFcalib::ReadParOnlinePulserFromCDB(const Char_t *sel, Int_t nrun)
 {
   //Read calibration parameters from pulser from the CDB
   AliCDBManager *man = AliCDBManager::Instance();
-  Char_t *sel1 = "Pulser" ;
+  const Char_t *sel1 = "Pulser" ;
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
   AliCDBEntry *entry = man->Get(out,nrun);
@@ -728,11 +728,11 @@ Bool_t AliTOFcalib::ReadParOnlinePulserFromCDB(Char_t *sel, Int_t nrun)
 }
 //_____________________________________________________________________________
 
-Bool_t AliTOFcalib::ReadParOnlineNoiseFromCDB(Char_t *sel, Int_t nrun)
+Bool_t AliTOFcalib::ReadParOnlineNoiseFromCDB(const Char_t *sel, Int_t nrun)
 {
   //Read calibration parameters from noise from the CDB
   AliCDBManager *man = AliCDBManager::Instance();
-  Char_t *sel1 = "Noise" ;
+  const Char_t *sel1 = "Noise" ;
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
   AliCDBEntry *entry = man->Get(out,nrun);
@@ -752,11 +752,11 @@ Bool_t AliTOFcalib::ReadParOnlineNoiseFromCDB(Char_t *sel, Int_t nrun)
 }
 //_____________________________________________________________________________
 
-Bool_t AliTOFcalib::ReadParOnlineHWFromCDB(Char_t *sel, Int_t nrun)
+Bool_t AliTOFcalib::ReadParOnlineHWFromCDB(const Char_t *sel, Int_t nrun)
 {
   //Read calibration parameters from hardware from the CDB
   AliCDBManager *man = AliCDBManager::Instance();
-  Char_t *sel1 = "HW" ;
+  const Char_t *sel1 = "HW" ;
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
   AliCDBEntry *entry = man->Get(out,nrun);
@@ -776,11 +776,11 @@ Bool_t AliTOFcalib::ReadParOnlineHWFromCDB(Char_t *sel, Int_t nrun)
 }
 //_____________________________________________________________________________
 
-Bool_t AliTOFcalib::ReadParOfflineFromCDB(Char_t *sel, Int_t nrun)
+Bool_t AliTOFcalib::ReadParOfflineFromCDB(const Char_t *sel, Int_t nrun)
 {
   //Read calibration parameters from the CDB
   AliCDBManager *man = AliCDBManager::Instance();
-  Char_t *sel1 = "ParOffline" ;
+  const Char_t *sel1 = "ParOffline" ;
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
   AliCDBEntry *entry = man->Get(out,nrun);
@@ -800,12 +800,12 @@ Bool_t AliTOFcalib::ReadParOfflineFromCDB(Char_t *sel, Int_t nrun)
    
 }
 //_____________________________________________________________________________
-void AliTOFcalib::WriteSimHistoOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun, TH1F *histo){
+void AliTOFcalib::WriteSimHistoOnCDB(const Char_t *sel, Int_t minrun, Int_t maxrun, TH1F *histo){
   //Write Sim miscalibration parameters to the CDB
 
   fTOFSimToT=histo;
   AliCDBManager *man = AliCDBManager::Instance();
-  Char_t *sel1 = "SimHisto" ;
+  const Char_t *sel1 = "SimHisto" ;
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
   AliCDBMetaData *mdhisto = new AliCDBMetaData();
@@ -815,14 +815,14 @@ void AliTOFcalib::WriteSimHistoOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun, TH
   delete mdhisto;
 }
 //_____________________________________________________________________________
-Bool_t AliTOFcalib::ReadSimHistoFromCDB(Char_t *sel, Int_t nrun)
+Bool_t AliTOFcalib::ReadSimHistoFromCDB(const Char_t *sel, Int_t nrun)
 {
   //Read miscalibration parameters from the CDB
   AliCDBManager *man = AliCDBManager::Instance();
 
   // The Tot Histo
 
-  Char_t *sel1 = "SimHisto" ;
+  const Char_t *sel1 = "SimHisto" ;
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
   AliCDBEntry *entry = man->Get(out,nrun);
@@ -839,13 +839,13 @@ Bool_t AliTOFcalib::ReadSimHistoFromCDB(Char_t *sel, Int_t nrun)
   return kTRUE;
 }
 //_____________________________________________________________________________
-void AliTOFcalib::WriteRecParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun, AliTOFRecoParam *param){
+void AliTOFcalib::WriteRecParOnCDB(const Char_t *sel, Int_t minrun, Int_t maxrun, AliTOFRecoParam *param){
   //Write reconstruction parameters to the CDB
 
   AliCDBManager *man = AliCDBManager::Instance();
   AliCDBMetaData *md = new AliCDBMetaData();
   md->SetResponsible("Silvia Arcelli");
-  Char_t *sel1 = "RecPar" ;
+  const Char_t *sel1 = "RecPar" ;
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
   AliCDBId id(out,minrun,maxrun);
@@ -853,11 +853,11 @@ void AliTOFcalib::WriteRecParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun, AliT
   delete md;
 }
 //_____________________________________________________________________________
-AliTOFRecoParam * AliTOFcalib::ReadRecParFromCDB(Char_t *sel, Int_t nrun)
+AliTOFRecoParam * AliTOFcalib::ReadRecParFromCDB(const Char_t *sel, Int_t nrun)
 {
   //Read reconstruction parameters from the CDB
   AliCDBManager *man = AliCDBManager::Instance();
-  Char_t *sel1 = "RecPar" ;
+  const Char_t *sel1 = "RecPar" ;
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
   AliCDBEntry *entry = man->Get(out,nrun);

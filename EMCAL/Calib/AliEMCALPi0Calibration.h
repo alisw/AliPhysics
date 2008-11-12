@@ -145,7 +145,7 @@ class AliEMCALPi0Calibration :  public AliAnalysisTaskSE {
   //
   static AliEMCALGeometry* fgEmcalGeo; //! pointer to EMCAL geometry
   static Int_t fgNmaxCell;  //! max number of cells
-  static Char_t **fgAnaOpt; //! aray of options
+  static const Char_t **fgAnaOpt; //! aray of options
   static Int_t fgNanaOpt;   //! number of options
 
   ClassDef(AliEMCALPi0Calibration, 1);

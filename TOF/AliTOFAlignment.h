@@ -33,10 +33,10 @@ class AliTOFAlignment :public TTask{
   AliTOFAlignment(const AliTOFAlignment &t); //Copy Ctor 
   AliTOFAlignment& operator=(const AliTOFAlignment &source); // Assignment Operator
   virtual ~AliTOFAlignment();
-  virtual void WriteParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun);
-  virtual void ReadParFromCDB(Char_t *sel, Int_t nrun);
-  virtual void WriteSimParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun);
-  virtual void ReadSimParFromCDB(Char_t *sel, Int_t nrun);
+  virtual void WriteParOnCDB(const Char_t *sel, Int_t minrun, Int_t maxrun);
+  virtual void ReadParFromCDB(const Char_t *sel, Int_t nrun);
+  virtual void WriteSimParOnCDB(const Char_t *sel, Int_t minrun, Int_t maxrun);
+  virtual void ReadSimParFromCDB(const Char_t *sel, Int_t nrun);
   virtual void Smear(Float_t *tr=0, Float_t *rot=0); // create a set of AlignObj for TOF
   virtual void Align(Float_t *tr=0, Float_t *rot=0); // create a set of AlignObj for TOF
   TObjArray * GetTOFAlignArray() const {return fTOFAlignObjArray;}

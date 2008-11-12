@@ -41,14 +41,14 @@ class AliTRDrawTPStream : public AliTRDrawStreamBase
  public:
 
   struct SimpleRegs {
-     Char_t     * fName;  //! Name of the register 
+     const Char_t     * fName;  //! Name of the register 
      UInt_t	fAddr;    // Address in GIO of TRAP
      UInt_t	fNbits;   // Number of bits, from 1 to 32
      UInt_t	fResVal;  // reset value [mj]
   };
 
   struct CmdRegs{
-     Char_t     * fName;  //! Name of the command register
+     const Char_t     * fName;  //! Name of the command register
      UInt_t   	fAddr;    // Address in GIO of TRAP
   };
 
@@ -62,7 +62,7 @@ class AliTRDrawTPStream : public AliTRDrawStreamBase
   Int_t		AddrIsDmem(UInt_t addr);
   Int_t		AddrIsDbank(UInt_t addr);
   UInt_t	Addr2Idx(UInt_t addr);
-  Char_t	* Addr2Name(UInt_t addr); //!
+  const Char_t	* Addr2Name(UInt_t addr); //!
   Char_t	CnfStat(UInt_t prop);
   void		PowerUp();
   void		DumpCnf(Int_t slv);

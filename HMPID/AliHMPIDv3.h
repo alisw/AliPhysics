@@ -48,7 +48,7 @@ static    void    IdealPositionCradle(Int_t iCh,TGeoHMatrix *m);                
   static  void    TestGeom         (                                 );                                        //tests the validity of geometry
   static  void    TestPoint        (Int_t ch,Float_t x,Float_t y     );                                        //tests the validity of geometry
   TGeoVolume*     CreateChamber    (Int_t number                     );                                        //chamber geometry building
-  TGeoVolume*     CradleBaseVolume ( TGeoMedium *med,  Double_t l[7], char *name);                             //base topology of the cradle elements
+  TGeoVolume*     CradleBaseVolume ( TGeoMedium *med,  Double_t l[7], const char *name);                       //base topology of the cradle elements
   TGeoVolume*     CreateCradle     (                                 );                                        //cradle geometry building
 protected:
   enum EMedia {kAir=1,kRoha=2,kSiO2=3,kC6F14=4,kCH4=5,kCsI=6,kAl=7,kCu=8,kW=9,kNeo=10,kAr=11};                       //media ids, used for geometry creation  

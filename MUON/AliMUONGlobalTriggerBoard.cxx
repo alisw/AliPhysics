@@ -134,7 +134,7 @@ void AliMUONGlobalTriggerBoard::Response()
 }
 
 //___________________________________________
-UShort_t AliMUONGlobalTriggerBoard::Algo(UShort_t i, UShort_t j, char *thres)
+UShort_t AliMUONGlobalTriggerBoard::Algo(UShort_t i, UShort_t j, const char *thres)
 {
 /// global trigger algorithm
 ///   a ,b = reg  response  =  Hpt (+|-|us|ls) |  Lpt (+|-|us|ls)  

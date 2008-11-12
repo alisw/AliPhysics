@@ -304,7 +304,7 @@ void AliAnalysisTaskPHOSExample::Terminate(Option_t *)
  
   AliInfo(Form("!!! All the eps files are in %s.tar.gz !!!", GetName())) ;
 
-  char * report ; 
+  const char * report ; 
   if(problem)
     report="Problems found, please check!!!";  
   else 

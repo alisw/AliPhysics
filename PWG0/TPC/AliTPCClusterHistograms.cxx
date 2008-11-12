@@ -685,7 +685,7 @@ void AliTPCClusterHistograms::FillCluster(AliTPCclusterMI* cluster, Int_t time) 
   fhSigmaYProfileZVsRow ->Fill(padRow, z, sigmaY);
   fhSigmaZProfileZVsRow ->Fill(padRow, z, sigmaZ);
 
-  if (time>0 & fTimeStart>0 & fTimeStop>0 & time>fTimeStart) {
+  if (time>0 && fTimeStart>0 && fTimeStop>0 && time>fTimeStart) {
     //Float_t timeFraction = (time - fTimeStart)/(fTimeStop-fTimeStart); 
 
     fhMeanQtotVsTime->Fill(time,qTot);

@@ -699,7 +699,7 @@ typedef struct {
 extern "C" {
   void  hwigin_();
   void  hwuinc_();
-  void  hwusta_(char * name, int);
+  void  hwusta_(const char * name, int);
   void  hweini_();
   void  hwuine_();
   void  hwepro_();
@@ -875,45 +875,45 @@ public:
   void        SetZJMAX    (double d)        { fHwhard->ZJMAX = d; }
 
   // /HWPROP/
-  Hwprop_t*   GetHwprop        ()           { return fHwprop; }
+  Hwprop_t*   GetHwprop        ()  const    { return fHwprop; }
   double      GetRMASS      (int i) const   { return fHwprop->RMASS[i]; }
   void        SetRMASS    (int i, double r) { fHwprop->RMASS[i] = r; }
 
   // /HWUNAM/
-  Hwunam_t*   GetHwunam        ()           { return fHwunam; }
+  Hwunam_t*   GetHwunam        ()  const    { return fHwunam; }
 
   void        GetRNAME (int i, char a[9])   { for (int j=0;j<8;j++) a[j] = fHwunam->RNAME[i][j]; a[8] = '\0';}
 /*  char*       GetRNAME(int i) { return fHwunam->RNAME[i]; }*/
 
   // /HWUPDT/
-  Hwupdt_t*   GetHwupdt        ()           { return fHwupdt; }
+  Hwupdt_t*   GetHwupdt        ()  const    { return fHwupdt; }
 
   // /HWUWTS/
-  Hwuwts_t*   GetHwuwts        ()           { return fHwuwts; }
+  Hwuwts_t*   GetHwuwts        ()  const    { return fHwuwts; }
 
   // /HWUCLU/
-  Hwuclu_t*   GetHwuclu        ()           { return fHwuclu; }
+  Hwuclu_t*   GetHwuclu        ()  const    { return fHwuclu; }
 
   // /HWDIST/
-  Hwdist_t*   GetHwdist        ()           { return fHwdist; }
+  Hwdist_t*   GetHwdist        ()  const    { return fHwdist; }
 
   // /HWQDKT/
-  Hwqdks_t*   GetHwqdkt        ()           { return fHwqdks; }
+  Hwqdks_t*   GetHwqdkt        ()  const    { return fHwqdks; }
 
   // /HWUSUD/
-  Hwusud_t*   GetHwusud        ()           { return fHwusud; }
+  Hwusud_t*   GetHwusud        ()  const    { return fHwusud; }
 
   // /HWSUSY/
-  Hwsusy_t*   GetHwsusy        ()           { return fHwsusy; }
+  Hwsusy_t*   GetHwsusy        ()  const    { return fHwsusy; }
 
   // /HWRPAR/
-  Hwrpar_t*   GetHwrpar        ()           { return fHwrpar; }
+  Hwrpar_t*   GetHwrpar        ()  const    { return fHwrpar; }
 
   // /HWMINB/
-  Hwminb_t*   GetHwminb        ()           { return fHwminb; }
+  Hwminb_t*   GetHwminb        ()  const    { return fHwminb; }
 
   // /HWCLUS/
-  Hwclus_t*   GetHwclus        ()           { return fHwclus; }
+  Hwclus_t*   GetHwclus        ()  const    { return fHwclus; }
 
   // Herwig6 routines
   // the user would call
@@ -933,10 +933,10 @@ public:
   void             CloseFortranFile(int lun);
   Int_t            ImportParticles(TClonesArray *particles, Option_t *option="");
   TObjArray       *ImportParticles(Option_t *option="");
-  TObjArray       *Particles() { return fParticles; }
+  TObjArray       *Particles() const { return fParticles; }
   void             Hwigin();
   void             Hwuinc();
-  void             Hwusta(char * name);
+  void             Hwusta(const char * name);
   void             Hweini();
   void             Hwuine();
   void             Hwepro();

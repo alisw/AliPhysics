@@ -2902,7 +2902,7 @@ TGeoPcon* AliPIPEv3::MakeInsulationFromTemplate(TGeoPcon* shape)
 }
 
 
-TGeoVolume* AliPIPEv3::MakeBellow(char* ext, Int_t nc, Float_t rMin, Float_t rMax, Float_t dU, Float_t rPlie, Float_t dPlie)
+TGeoVolume* AliPIPEv3::MakeBellow(const char* ext, Int_t nc, Float_t rMin, Float_t rMax, Float_t dU, Float_t rPlie, Float_t dPlie)
 {
     // nc     Number of convolution
     // rMin   Inner radius of the bellow

@@ -79,7 +79,7 @@ ClassImp(AliEMCALGeometry)
 // these initialisations are needed for a singleton
 AliEMCALGeometry  *AliEMCALGeometry::fgGeom      = 0;
 Bool_t             AliEMCALGeometry::fgInit      = kFALSE;
-Char_t*            AliEMCALGeometry::fgDefaultGeometryName = "EMCAL_COMPLETE";
+const Char_t*            AliEMCALGeometry::fgDefaultGeometryName = "EMCAL_COMPLETE";
 //
 // Usage: 
 //        You can create the AliEMCALGeometry object independently from anything.

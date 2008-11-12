@@ -881,7 +881,7 @@ Bool_t AliTPCCalibPulser::ProcessEvent(eventHeaderStruct *event)
 //_____________________________________________________________________
 TH2S* AliTPCCalibPulser::GetHisto(Int_t sector, TObjArray *arr,
 				  Int_t nbinsY, Float_t ymin, Float_t ymax,
-				  Char_t *type, Bool_t force)
+				  const Char_t *type, Bool_t force)
 {
     //
     // return pointer to Q histogram

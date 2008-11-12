@@ -442,7 +442,7 @@ void AliEveTRDTrack::SetStatus(UChar_t s)
     SetLineWidth(2);
   }
   
-  Char_t *model = "line";
+  const Char_t *model = "line";
   if(!TESTBIT(s, kTrackCosmics)){
     if(TESTBIT(s, kTrackModel)) model = "kalman";
     else model = "rieman";

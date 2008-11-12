@@ -33,8 +33,8 @@ class AliEventPoolOTF : public AliVEventPool
     virtual void  SetMultiplicityBin(Int_t min, Int_t max, Int_t step)
 	{fMultMin = min; fMultMax = max; fMultStep = step;}
     //
-    void SetTagDirectory(char* dirname) {fTagDirectory = dirname;};
-    virtual Int_t BinNumber() {return fBinNumber;}
+    void SetTagDirectory(const char* dirname) {fTagDirectory = dirname;};
+    virtual Int_t BinNumber() const {return fBinNumber;}
 	    
  private:
     AliEventPoolOTF(const AliEventPoolOTF& obj);
@@ -45,7 +45,7 @@ class AliEventPoolOTF : public AliVEventPool
     AliLHCTagCuts*       fLHCCuts;      // LHC      cuts
     AliDetectorTagCuts*  fDetectorCuts; // Detector cuts
     AliEventTagCuts*     fEventCuts;    // Event    cuts
-    char*                fTagDirectory; // Directory with local tag files
+    const char*                fTagDirectory; // Directory with local tag files
     Int_t                fMultMin;      // Minimum multiplicity
     Int_t                fMultMax;      // Maximum multiplicity
     Int_t                fMultStep;     // Multiplicity step-size 

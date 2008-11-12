@@ -25,8 +25,8 @@ public:
   virtual Int_t  IsVersion() const;
   virtual void   SetHoles(Int_t flag=0) {fHoles = flag;}
   virtual Int_t  Holes() const {return fHoles;}
-  virtual void   MakeHeatScreen(char* name, Float_t dyP, Int_t rot1, Int_t rot2);
-  virtual void   WebFrame(char* name, Float_t dHz, Float_t theta0, Float_t phi0);
+  virtual void   MakeHeatScreen(const char* name, Float_t dyP, Int_t rot1, Int_t rot2);
+  virtual void   WebFrame(const char* name, Float_t dHz, Float_t theta0, Float_t phi0);
  private:
   Int_t  fHoles; // flag fHoles=0 => no holes, with holes otherwise
   
