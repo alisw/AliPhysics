@@ -6,9 +6,9 @@
 XARGS = xargs -r
 
 # The compilers
-CXX           = g++ 
-F77	      = g77
-CC	      = gcc
+CXX           = $(shell root-config --cxx) 
+F77	      = $(shell root-config --f77)
+CC	      = $(shell root-config --cc)
 
 # Global optimisation
 OPT           = -g -O
@@ -36,7 +36,7 @@ DEPENDFFLAGS = $(FFLAGS)
 # rootcint flags
 CINTFLAGS     = 
 
-LD            = g++
+LD            = $(shell root-config --ld)
 LDFLAGS       = $(OPT) -Wl,-Map -Wl,$@.map
 
 SHLD	      = $(LD)

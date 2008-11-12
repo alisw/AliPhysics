@@ -11,10 +11,9 @@ FINK_ROOT=/usr/local
 endif
 
 # The compilers
-CXX           = icc 
-CC	      = icc
-
-F77	      = ifort
+CXX           = $(shell root-config --cxx) 
+CC	      = $(shell root-config --cc)
+F77	      = $(shell root-config --f77)
 
 # Global optimisation
 OPT           = -O -g
@@ -45,7 +44,7 @@ DEPENDFFLAGS  = $(FFLAGS)
 # rootcint flags
 CINTFLAGS     = 
 
-LD            = icpc
+LD            = $(shell root-config --ld)
 LDFLAGS       = $(OPT) $(DICTLOAD)
 
 SHLD	     := $(LD)

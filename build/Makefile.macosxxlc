@@ -2,9 +2,9 @@
 # Makefile for AliRoot for MacOS X using the IBM xlc compiler
 
 # The compilers
-CXX           = xlC
-F77	      = xlf
-CC	      = xlc
+CXX           = $(shell root-config --cxx)
+F77	      = $(shell root-config --f77)
+CC	      = $(shell root-config --cc)
 
 # Global optimisation
 OPT           = -qnoopt #-O3 -g
@@ -36,8 +36,7 @@ DEPENDCXXFLAGS = $(CXXFLAGS) -I/usr/include/sys
 
 # rootcint flags
 CINTFLAGS     = 
-		
-LD            = xlC
+LD            = $(shell root-config --cxx)
 LDFLAGS       = $(OPT) 
 
 SHLD	     := export MACOSX_DEPLOYMENT_TARGET=10.3 ; \

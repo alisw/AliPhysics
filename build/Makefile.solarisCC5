@@ -6,9 +6,9 @@
 XARGS = xargs
 
 # The compilers
-CXX           = CC
-CC	      = cc
-F77	      = f77
+CXX           = $(shell root-config -cxx)
+CC	      = $(shell root-config -cc)
+F77	      = $(shell root-config -f77)
 
 # Global optimisation
 OPT           = -g -O 
@@ -39,7 +39,7 @@ CINTFLAGS     =
 SHLIB         = 
 SOEXT 	      = so
 
-LD            = CC
+LD            = $(shell root-config --cxx)
 LDFLAGS       = $(OPT) -Qoption ld -t
 
 SHLD	      = $(LD)

@@ -15,8 +15,8 @@ FINK_ROOT=/usr/local
 endif
 
 # The compilers
-CXX           = g++ 
-CC	      = gcc
+CXX           = $(shell root-config --cxx) 
+CC	      = $(shell root-config --cc)
 F77	      = $(shell root-config --f77)
 
 # Global optimisation
@@ -62,7 +62,7 @@ CINTFLAGS     =
 
 LD            = export MACOSX_DEPLOYMENT_TARGET=$(MACOSX_MAJOR).$(MACOSX_MINOR) ; \
 		unset LD_PREBIND ; \
-		g++
+		$(shell root-config --ld)
 LDFLAGS       = $(OPT) $(DICTLOAD)
 
 SHLD	     := $(LD)
