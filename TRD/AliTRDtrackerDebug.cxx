@@ -74,7 +74,7 @@ AliTRDtrackerDebug::~AliTRDtrackerDebug()
 
 
 //____________________________________________________
-void AliTRDtrackerDebug::Draw(const Option_t *)
+void AliTRDtrackerDebug::Draw(Option_t *)
 {
 // steer draw function
 }
@@ -500,7 +500,7 @@ void AliTRDtrackerDebug::AnalyseMinMax()
 }
 
 //____________________________________________________
-TCanvas* AliTRDtrackerDebug::PlotSeedingConfiguration(Char_t *direction, Int_t event, Int_t candidate){
+TCanvas* AliTRDtrackerDebug::PlotSeedingConfiguration(const Char_t *direction, Int_t event, Int_t candidate){
 //
 // Plots the four seeding clusters, the helix fit and the reference Points for
 // a given combination consisting of eventnr. and candidatenr.
@@ -601,7 +601,7 @@ TCanvas* AliTRDtrackerDebug::PlotSeedingConfiguration(Char_t *direction, Int_t e
 }
 
 //____________________________________________________
-TCanvas* AliTRDtrackerDebug::PlotFullTrackFit(Int_t event, Int_t candidate, Int_t iteration, Char_t *direction){
+TCanvas* AliTRDtrackerDebug::PlotFullTrackFit(Int_t event, Int_t candidate, Int_t iteration, const Char_t *direction){
 //
 // Plots the tracklets (clusters and reference in y direction) and the fitted function for several iterations
 // in the function ImproveSeedQuality (default is before ImproveSeedQuality)

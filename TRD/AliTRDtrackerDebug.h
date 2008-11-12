@@ -33,7 +33,7 @@ public:
 	AliTRDtrackerDebug();
 	~AliTRDtrackerDebug();
 
-	void				Draw(const Option_t *);
+	void				Draw(Option_t *);
 
 	Bool_t      Init();
 	Bool_t      Open(const char *method);
@@ -48,8 +48,8 @@ public:
 	void        AnalyseMinMax();
 	void        AnalyseFindable(Char_t *treename);
 
-	TCanvas*    PlotSeedingConfiguration(Char_t *direction, Int_t event, Int_t Candidate);
-	TCanvas*    PlotFullTrackFit(Int_t event, Int_t candidate, Int_t iteration = -1, Char_t *direction = "y");
+	TCanvas*    PlotSeedingConfiguration(const Char_t *direction, Int_t event, Int_t Candidate);
+	TCanvas*    PlotFullTrackFit(Int_t event, Int_t candidate, Int_t iteration = -1, const Char_t *direction = "y");
 	
 	static Int_t GetEventNumber(){ return fgEventNumber; }
 	static Int_t GetTrackNumber(){ return fgTrackNumber; }
