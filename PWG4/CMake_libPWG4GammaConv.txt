@@ -1,0 +1,12 @@
+# -*- mode: cmake -*-
+
+set(SRCS
+       GammaConv/AliV0Reader.cxx GammaConv/AliAnalysisTaskGammaConversion.cxx GammaConv/AliGammaConversionHistograms.cxx
+)
+
+# fill list of header files from list of source files
+# by exchanging the file extension
+String(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+
+AddLibrary(PWG4PartCorr "${SRCS}" "${HDRS}")
+
