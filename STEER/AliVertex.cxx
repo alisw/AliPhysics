@@ -152,7 +152,7 @@ Bool_t AliVertex::UsesTrack(Int_t index) const {
 //
 // checks if a track is used for the vertex 
 //
-  if(fNIndices<1)  { printf("fNIndices<1"); return kFALSE; }
+  if(fNIndices<1)  {/* printf("fNIndices<1"); */return kFALSE; }
   for(Int_t i=0;i<fNIndices;i++) {
     if((Int_t)fIndices[i]==index) return kTRUE;
   }
