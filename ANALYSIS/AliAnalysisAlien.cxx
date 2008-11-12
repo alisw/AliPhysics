@@ -398,8 +398,9 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
    TIter next(arr);
    while ((os=(TObjString*)next())) {
       path = Form("%s/%s ", fGridDataDir.Data(), os->GetString().Data());
-      file = Form("%s.xml", os->GetString().Data());
-      if (FileExists(file)) {
+      if (TestBit(AliAnalysisGrid::kTest)) file = "wn.xml";
+      else file = Form("%s.xml", os->GetString().Data());
+      if (FileExists(file) && !TestBit(AliAnalysisGrid::kTest)) {
          Info("CreateDataset", "\n#####   Removing previous dataset %s", file.Data());
          gGrid->Rm(file); 
       }
@@ -407,23 +408,22 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
       command += options;
       command += path;
       command += pattern;
-      conditions = Form(" > %s", file.Data());
+//      conditions = Form(" > %s", file.Data());
       command += conditions;
       TGridResult *res = gGrid->Command(command);
       if (res) delete res;
+      // Write standard output to file
+      gROOT->ProcessLine(Form("gGrid->Stdout(); > %s", file.Data()));
+      if (TestBit(AliAnalysisGrid::kTest)) break;
+      // Copy xml file to alien space
+      TFile::Cp(Form("file:%s",file.Data()), Form("alien://%s/%s",workdir.Data(), file.Data()));
       if (!FileExists(file)) {
          Error("CreateDataset", "Command %s did NOT succeed", command.Data());
          delete arr;
          return kFALSE;
       }
-      if (TestBit(AliAnalysisGrid::kTest)) break;
    }   
    delete arr;
-   // Copy the file back to client if local testing is requested.
-   if (TestBit(AliAnalysisGrid::kTest)) {
-      Info("CreateDataset", "\n#####   Copying dataset <%s> to <wn.xml> in your current directory...", file.Data());
-      TFile::Cp(Form("alien://%s/%s", workdir.Data(), file.Data()), "file:wn.xml",file.Data());
-   }   
    return kTRUE;
 }
 
