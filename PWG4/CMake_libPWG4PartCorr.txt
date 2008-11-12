@@ -12,7 +12,6 @@ set(SRCS
        PartCorr/AliCaloTrackReader.cxx PartCorr/AliCaloTrackESDReader.cxx
        PartCorr/AliCaloTrackAODReader.cxx PartCorr/AliCaloTrackMCReader.cxx
        PartCorr/AliCaloPhoton.cxx PartCorr/AliAnaPi0.cxx
-       PartCorr/AliV0Reader.cxx PartCorr/AliAnalysisTaskGammaConversion.cxx PartCorr/AliGammaConversionHistograms.cxx
 )
 
 # fill list of header files from list of source files
