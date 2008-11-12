@@ -77,7 +77,8 @@ ClassImp(AliV0Reader)
     fMaxR(10000),// 100 meter(outside of ALICE)
     fEtaCut(0.),
     fPtCut(0.),
-    fChi2Cut(0.),
+    fChi2CutConversion(0.),
+    fChi2CutMeson(0.),
     fPIDProbabilityCutNegativeParticle(0),
     fPIDProbabilityCutPositiveParticle(0),
     fXVertexCut(0.),
@@ -126,7 +127,8 @@ AliV0Reader::AliV0Reader(const AliV0Reader & original) :
   fMaxR(original.fMaxR),
   fEtaCut(original.fEtaCut),
   fPtCut(original.fPtCut),
-  fChi2Cut(original.fChi2Cut),
+  fChi2CutConversion(original.fChi2CutConversion),
+  fChi2CutMeson(original.fChi2CutMeson),
   fPIDProbabilityCutNegativeParticle(original.fPIDProbabilityCutNegativeParticle),
   fPIDProbabilityCutPositiveParticle(original.fPIDProbabilityCutPositiveParticle),
   fXVertexCut(original.fXVertexCut),
@@ -231,7 +233,7 @@ Bool_t AliV0Reader::NextV0(){
 	continue;
       }
       Double_t chi2V0 = fCurrentMotherKFCandidate->GetChi2()/fCurrentMotherKFCandidate->GetNDF();
-      if(chi2V0 > fChi2Cut || chi2V0 <=0){
+      if(chi2V0 > fChi2CutConversion || chi2V0 <=0){
 	fCurrentV0IndexNumber++;
 	fHistograms->FillHistogram("V0MassDebugCut6",GetMotherCandidateMass());
   	continue;
@@ -332,10 +334,11 @@ void AliV0Reader::UpdateV0Information(){
     fMotherCandidateLorentzVector->SetXYZM(fMotherCandidateLorentzVector->Px() ,fMotherCandidateLorentzVector->Py(),fMotherCandidateLorentzVector->Pz(),0.); 
   }
     
-  if(fDoMC){
+  if(fDoMC == kTRUE){
     fNegativeMCParticle = fMCStack->Particle(TMath::Abs(fESDEvent->GetTrack(fCurrentV0->GetNindex())->GetLabel()));
     fPositiveMCParticle = fMCStack->Particle(TMath::Abs(fESDEvent->GetTrack(fCurrentV0->GetPindex())->GetLabel()));
   }
+  fCurrentEventGoodV0s.push_back(*fCurrentMotherKFCandidate);
 }
 
 Bool_t AliV0Reader::HasSameMCMother(){

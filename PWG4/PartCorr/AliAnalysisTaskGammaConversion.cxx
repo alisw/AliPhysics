@@ -124,6 +124,7 @@ AliAnalysisTaskGammaConversion::~AliAnalysisTaskGammaConversion()
 void AliAnalysisTaskGammaConversion::Init()
 {
   // Initialization
+  AliLog::SetGlobalLogLevel(AliLog::kError);
 }
 
 
@@ -216,10 +217,26 @@ void AliAnalysisTaskGammaConversion::ProcessMCData(){
 	  fHistograms->FillHistogram("MC_Gamma_Phi", tmpPhi);
 
 	  //adding the conversion points from all gammas with e+e- daughters
-	  if(particle->GetNDaughters() == 2){
-	    TParticle* daughter0 = (TParticle*)fStack->Particle(particle->GetFirstDaughter());
-	    TParticle* daughter1 = (TParticle*)fStack->Particle(particle->GetLastDaughter());
+	  if(particle->GetNDaughters() >= 2){
+	    TParticle* daughter0 = NULL;
+	    TParticle* daughter1 = NULL;
 	    
+	    for(Int_t daughterIndex=particle->GetFirstDaughter();daughterIndex<=particle->GetLastDaughter();daughterIndex++){
+	      TParticle *tmpDaughter = fStack->Particle(daughterIndex);
+	      if(tmpDaughter->GetUniqueID() == 5){
+		if(tmpDaughter->GetPdgCode() == 11){
+                  daughter0 = tmpDaughter;
+		}
+		else if(tmpDaughter->GetPdgCode() == -11){
+		  daughter1 = tmpDaughter;
+		}
+	      }
+	    }
+
+	    if(daughter0 == NULL || daughter1 == NULL){ // means we do not have two daughters from pair production
+	      continue;
+	    }
+
 	    if(daughter0->R()>fV0Reader->GetMaxRCut() || daughter1->R()>fV0Reader->GetMaxRCut()){
 	      continue;
 	    }
@@ -244,24 +261,24 @@ void AliAnalysisTaskGammaConversion::ProcessMCData(){
 	      fHistograms->FillHistogram(nameMCMappingR, particle->Eta());
 	      
 	      TString nameMCMappingPhiInR="";
-	      nameMCMappingPhiInR.Form("MC_EP_Mapping_Phi_vs_R_R-%02d",rBin);
-	      fHistograms->FillHistogram(nameMCMappingPhiInR, daughter0->R(), tmpPhi);
+	      nameMCMappingPhiInR.Form("MC_EP_Mapping_Phi_R-%02d",rBin);
+	      fHistograms->FillHistogram(nameMCMappingPhiInR, tmpPhi);
 	      //end mapping
 
 	      fHistograms->FillHistogram("MC_EP_R",daughter0->R());
 	      fHistograms->FillHistogram("MC_EP_ZR",daughter0->Vz(),daughter0->R());
 	      fHistograms->FillHistogram("MC_EP_XY",daughter0->Vx(),daughter0->Vy());
 	      fHistograms->FillHistogram("MC_EP_OpeningAngle",GetMCOpeningAngle(daughter0, daughter1));
-	    }
-	  }
-	}
+	    }// end if((daughter0->GetPdgCode() == -11 && daughter1->GetPdgCode()) == 11 ||....... approx 20 lines above
+	  }// end if(particle->GetNDaughters() >= 2){
+	} // end if( fStack->Particle(particle->GetMother(0))->GetPdgCode() != 22 )
 	if( fStack->Particle(particle->GetMother(0))->GetPdgCode()==10441 ||//chic0 
 	    fStack->Particle(particle->GetMother(0))->GetPdgCode()==20443 ||//psi2S
 	    fStack->Particle(particle->GetMother(0))->GetPdgCode()==445  //chic2
-	){ 
+	    ){ 
 	  fMCGammaChic.push_back(particle);
-         }
-      }
+	}
+      }// end if(particle->GetMother(0)>-1)
       else{//means we have a primary particle
 	fHistograms->FillHistogram("MC_DirectGamma_Energy",particle->Energy());
 	fHistograms->FillHistogram("MC_DirectGamma_Pt", particle->Pt());
@@ -282,9 +299,8 @@ void AliAnalysisTaskGammaConversion::ProcessMCData(){
 
 	  }
 	}
-
-      }
-    }
+      }// end else
+    }// end if (particle->GetPdgCode()== 22){
     else if (TMath::Abs(particle->GetPdgCode())== 11){ // Means we have an electron or a positron
       if(particle->GetMother(0)>-1){ // means we have a mother
 	if( fStack->Particle(particle->GetMother(0))->GetPdgCode()==22 ){ // Means we have a gamma mother
@@ -302,7 +318,7 @@ void AliAnalysisTaskGammaConversion::ProcessMCData(){
 	  }
 	}
       }
-    }
+    } // end else if (TMath::Abs(particle->GetPdgCode())== 11)
     else if(particle->GetNDaughters() == 2){
 
       TParticle* daughter0 = (TParticle*)fStack->Particle(particle->GetFirstDaughter());
@@ -322,7 +338,7 @@ void AliAnalysisTaskGammaConversion::ProcessMCData(){
 	    fHistograms->FillHistogram("MC_Pi0_Secondaries_Energy", particle->Energy());
 	    fHistograms->FillHistogram("MC_Pi0_Secondaries_R", particle->R());
 	    fHistograms->FillHistogram("MC_Pi0_Secondaries_ZR", particle->Vz(),particle->R());
-	    fHistograms->FillHistogram("MC_Pi0_Secondaries_OpeningAngle_Gamma", GetMCOpeningAngle(daughter0,daughter1));
+	    fHistograms->FillHistogram("MC_Pi0_Secondaries_GammaDaughter_OpeningAngle", GetMCOpeningAngle(daughter0,daughter1));
 	    fHistograms->FillHistogram("MC_Pi0_Secondaries_XY", particle->Vx(),particle->Vy());//only fill from one daughter to avoid multiple filling
 	  }
 	  else{
@@ -333,7 +349,7 @@ void AliAnalysisTaskGammaConversion::ProcessMCData(){
 	    fHistograms->FillHistogram("MC_Pi0_Energy", particle->Energy());
 	    fHistograms->FillHistogram("MC_Pi0_R", particle->R());
 	    fHistograms->FillHistogram("MC_Pi0_ZR", particle->Vz(),particle->R());
-	    fHistograms->FillHistogram("MC_Pi0_OpeningAngle_Gamma", GetMCOpeningAngle(daughter0,daughter1));
+	    fHistograms->FillHistogram("MC_Pi0_GammaDaughter_OpeningAngle", GetMCOpeningAngle(daughter0,daughter1));
 	    fHistograms->FillHistogram("MC_Pi0_XY", particle->Vx(), particle->Vy());//only fill from one daughter to avoid multiple filling
 	  }
 	}
@@ -345,7 +361,7 @@ void AliAnalysisTaskGammaConversion::ProcessMCData(){
 	  fHistograms->FillHistogram("MC_Eta_Energy", particle->Energy());
 	  fHistograms->FillHistogram("MC_Eta_R", particle->R());
 	  fHistograms->FillHistogram("MC_Eta_ZR", particle->Vz(),particle->R());
-	  fHistograms->FillHistogram("MC_Eta_OpeningAngle_Gamma", GetMCOpeningAngle(daughter0,daughter1));
+	  fHistograms->FillHistogram("MC_Eta_GammaDaughter_OpeningAngle", GetMCOpeningAngle(daughter0,daughter1));
 	  fHistograms->FillHistogram("MC_Eta_XY", particle->Vx(), particle->Vy());//only fill from one daughter to avoid multiple filling
 	}
 	
@@ -360,9 +376,9 @@ void AliAnalysisTaskGammaConversion::ProcessMCData(){
 	fHistograms->FillHistogram("MC_Match_Gamma_Eta", particle->Eta());
 	fHistograms->FillHistogram("MC_Match_Gamma_Phi",tmpPhi);
       }
-    }
-  }
-}
+    }// end else if(particle->GetNDaughters() == 2)
+  }// end for (Int_t iTracks = 0; iTracks < fStack->GetNtrack(); iTracks++)
+} // end ProcessMCData
 
 void AliAnalysisTaskGammaConversion::ProcessV0s(){
   // see header file for documentation
@@ -411,8 +427,8 @@ void AliAnalysisTaskGammaConversion::ProcessV0s(){
     fHistograms->FillHistogram(nameESDMappingR, fV0Reader->GetZ(), motherCandidateEta);  
 
     TString nameESDMappingPhiInR="";
-    nameESDMappingPhiInR.Form("ESD_EP_Mapping_Phi_vs_R_R-%02d",rBin);
-    fHistograms->FillHistogram(nameESDMappingPhiInR, fV0Reader->GetXYRadius(), fV0Reader->GetMotherCandidatePhi());
+    nameESDMappingPhiInR.Form("ESD_EP_Mapping_Phi_R-%02d",rBin);
+    fHistograms->FillHistogram(nameESDMappingPhiInR, fV0Reader->GetMotherCandidatePhi());
     // end mapping
     
     fKFReconstructedGammas.push_back(*fV0Reader->GetMotherCandidateKFCombination());
@@ -422,13 +438,13 @@ void AliAnalysisTaskGammaConversion::ProcessV0s(){
       if(fV0Reader->HasSameMCMother() == kFALSE){
 	continue;
       }
-
+ 
       TParticle * negativeMC = (TParticle*)fV0Reader->GetNegativeMCParticle();
       TParticle * positiveMC = (TParticle*)fV0Reader->GetPositiveMCParticle();
+
       if(negativeMC->GetPdgCode()!=11 || positiveMC->GetPdgCode()!=-11){
 	continue;
       }
-
       if(fV0Reader->GetMotherMCParticle()->GetPdgCode() == 22){
 	fHistograms->FillHistogram("ESD_Match_Gamma_XY", fV0Reader->GetX(),fV0Reader->GetY());
 	fHistograms->FillHistogram("ESD_Match_Gamma_OpeningAngle", fV0Reader->GetOpeningAngle());
@@ -469,7 +485,7 @@ void AliAnalysisTaskGammaConversion::ProcessV0s(){
 	if(fV0Reader->GetNegativeMCParticle()->R() != 0){
 	  resdR = ((fV0Reader->GetXYRadius() - fV0Reader->GetNegativeMCParticle()->R())/fV0Reader->GetNegativeMCParticle()->R())*100;
 	}
-	fHistograms->FillHistogram("Resolutiond_R", fV0Reader->GetNegativeMCParticle()->R(), resdR);
+	fHistograms->FillHistogram("Resolution_dR", fV0Reader->GetNegativeMCParticle()->R(), resdR);
 	fHistograms->FillHistogram("Resolution_MC_R", fV0Reader->GetNegativeMCParticle()->R());
 	fHistograms->FillHistogram("Resolution_ESD_R", fV0Reader->GetXYRadius());
 	fHistograms->FillHistogram("Resolution_dR_dPt", resdR, resdPt);
@@ -497,8 +513,7 @@ void AliAnalysisTaskGammaConversion::ProcessGammasForNeutralMesonAnalysis(){
       twoGammaCandidate->GetMass(massTwoGammaCandidate,widthTwoGammaCandidate);
       if(twoGammaCandidate->GetNDF()>0){
 	chi2TwoGammaCandidate = twoGammaCandidate->GetChi2()/twoGammaCandidate->GetNDF();
-	//	if(chi2TwoGammaCandidate>0 && chi2TwoGammaCandidate<fChi2Cut){//TODO  find this out
-	if(chi2TwoGammaCandidate>0 && chi2TwoGammaCandidate<10000){//TODO  find this out see line above
+	if(chi2TwoGammaCandidate>0 && chi2TwoGammaCandidate<fV0Reader->GetChi2CutMeson()){
 
 	  TVector3 vectorTwoGammaCandidate(twoGammaCandidate->Px(),twoGammaCandidate->Py(),twoGammaCandidate->Pz());
 
@@ -510,7 +525,7 @@ void AliAnalysisTaskGammaConversion::ProcessGammasForNeutralMesonAnalysis(){
 	  
 	  Double_t radiusTwoGammaCandidate = TMath::Sqrt(tmpX*tmpX + tmpY*tmpY);
 
-	  fHistograms->FillHistogram("ESD_TwoGammaCombination_OpeningAngleGamma", openingAngleTwoGammaCandidate);
+	  fHistograms->FillHistogram("ESD_TwoGammaCombination_GammaDaughter_OpeningAngle", openingAngleTwoGammaCandidate);
 	  fHistograms->FillHistogram("ESD_TwoGammaCombination_Energy", twoGammaCandidate->GetE());
 	  fHistograms->FillHistogram("ESD_TwoGammaCombination_Pt", sqrt(twoGammaCandidate->GetPx()*twoGammaCandidate->GetPx()+twoGammaCandidate->GetPy()*twoGammaCandidate->GetPy()));
 	  fHistograms->FillHistogram("ESD_TwoGammaCombination_Eta", vectorTwoGammaCandidate.Eta());
@@ -518,14 +533,13 @@ void AliAnalysisTaskGammaConversion::ProcessGammasForNeutralMesonAnalysis(){
 	  fHistograms->FillHistogram("ESD_TwoGammaCombination_Mass", massTwoGammaCandidate);
 	  fHistograms->FillHistogram("ESD_TwoGammaCombination_R", radiusTwoGammaCandidate);
 	  fHistograms->FillHistogram("ESD_TwoGammaCombination_ZR", tmpY, radiusTwoGammaCandidate);
-	  fHistograms->FillHistogram("ESD_TwoGammaCombination_XY", tmpX, tmpY);	  
-	  fHistograms->FillHistogram("InvMass_vs_Pt__Spectra",massTwoGammaCandidate ,sqrt(twoGammaCandidate->GetPx()*twoGammaCandidate->GetPx()+twoGammaCandidate->GetPy()*twoGammaCandidate->GetPy()));
+	  fHistograms->FillHistogram("ESD_TwoGammaCombination_XY", tmpX, tmpY);
+	  fHistograms->FillHistogram("InvMass_vs_Pt_Spectra",massTwoGammaCandidate ,sqrt(twoGammaCandidate->GetPx()*twoGammaCandidate->GetPx()+twoGammaCandidate->GetPy()*twoGammaCandidate->GetPy()));
 	}
       }
       delete twoGammaCandidate;
     }
   }
-
 }
 
 void AliAnalysisTaskGammaConversion::CalculateBackground(){
@@ -546,8 +560,7 @@ void AliAnalysisTaskGammaConversion::CalculateBackground(){
       backgroundCandidate->GetMass(massBG,widthBG);
       if(backgroundCandidate->GetNDF()>0){
 	chi2BG = backgroundCandidate->GetChi2()/backgroundCandidate->GetNDF();
-	//	if(chi2Pi0>0 && chi2Pi0<fChi2Cut){//TODO  find this out
-	if(chi2BG>0 && chi2BG<fV0Reader->GetChi2Cut()){//TODO  find this out see line above
+	if(chi2BG>0 && chi2BG<fV0Reader->GetChi2CutMeson()){
 
 	  TVector3 vectorBGCandidate(backgroundCandidate->Px(),backgroundCandidate->Py(),backgroundCandidate->Pz());
 
@@ -568,6 +581,7 @@ void AliAnalysisTaskGammaConversion::CalculateBackground(){
 	  fHistograms->FillHistogram("ESD_Background_R", radiusBG);
 	  fHistograms->FillHistogram("ESD_Background_ZR", tmpY, radiusBG);
 	  fHistograms->FillHistogram("ESD_Background_XY", tmpX, tmpY);
+	  fHistograms->FillHistogram("Background_InvMass_vs_Pt_Spectra",massBG,sqrt(backgroundCandidate->GetPx()*backgroundCandidate->GetPx()+backgroundCandidate->GetPy()*backgroundCandidate->GetPy()));
 	}
       }
       delete backgroundCandidate;   
@@ -593,7 +607,7 @@ void AliAnalysisTaskGammaConversion::UserCreateOutputObjects()
     fOutputContainer = new TList();
   }
   fHistograms->GetOutputContainer(fOutputContainer);
-  fOutputContainer->SetName(GetName()) ;  
+  fOutputContainer->SetName(GetName());
 }
 
 Double_t AliAnalysisTaskGammaConversion::GetMCOpeningAngle(TParticle* daughter0, TParticle* daughter1) const{
@@ -602,4 +616,3 @@ Double_t AliAnalysisTaskGammaConversion::GetMCOpeningAngle(TParticle* daughter0,
   TVector3 v3D1(daughter1->Px(),daughter1->Py(),daughter1->Pz());
   return v3D0.Angle(v3D1);
 }
-

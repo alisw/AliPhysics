@@ -10,12 +10,8 @@
 ////////////////////////////////////////////////
 
 #include "TString.h"
-//#include "TH1F.h"
-//#include "TH2F.h"
 #include "Riostream.h"
 #include <vector>
-//#include "TList.h"
-//#include "TMap.h"
 
 class TMap;
 class TList;
@@ -33,7 +29,7 @@ class AliGammaConversionHistograms{
   
 
   //  TList * GetOutputContainer();
-  void GetOutputContainer(TList *fOutputContainer) const;
+  void GetOutputContainer(TList *fOutputContainer);
   
   Int_t GetRBin(Double_t radius) const;
   Int_t GetPhiBin(Double_t phi) const;
@@ -73,6 +69,9 @@ class AliGammaConversionHistograms{
   Double_t fMinPhi;
   Double_t fMaxPhi;
   Double_t fDeltaPhi;
+
+  TList * fMappingContainer;
+
   
   ClassDef(AliGammaConversionHistograms,1)
 } ;

@@ -11,6 +11,8 @@ Bool_t useESDTrack   = kFALSE;
 
 Bool_t calculateBackground = kTRUE;
 
+Int_t numberOfFilesToAnalyze=100;
+
 /** ---------------------------------- define cuts here ------------------------------------*/
 
 Int_t pidOfNegativeTrack=11;
@@ -19,7 +21,8 @@ Int_t pidOfPositiveTrack=-11;
 Double_t maxRCut   = 200.;
 Double_t etaCut    = 1.2;
 Double_t ptCut     = 0.1;
-Double_t chi2Cut   = 20.;
+Double_t chi2CutConversion   = 20.;
+Double_t chi2CutMeson   = 20.;
 
 Double_t xVertexCut = 0.;
 Double_t yVertexCut = 0.;
@@ -59,8 +62,8 @@ Double_t maxPhi      = TMath::Pi();
 /** ------------------- define which histograms to plot here --------------------------------*/
 /**   NB: to change the bin numbers, see below the histogram flags                           */
 Bool_t plotMCEPR                             = kTRUE;
-Bool_t plotMCEPZR                           = kTRUE;
-Bool_t plotMCEPXY                           = kTRUE;
+Bool_t plotMCEPZR                            = kTRUE;
+Bool_t plotMCEPXY                            = kTRUE;
 Bool_t plotMCEPOpeningAngle                  = kTRUE;
 
 Bool_t plotMCEEnergy                         = kTRUE;
@@ -83,15 +86,15 @@ Bool_t plotMCDirectGammaPt                   = kTRUE;
 Bool_t plotMCDirectGammaEta                  = kTRUE;
 Bool_t plotMCDirectGammaPhi                  = kTRUE;
 
-Bool_t plotMCMatchGammaEta                  = kTRUE;
-Bool_t plotMCMatchGammaPhi                  = kTRUE;
-Bool_t plotMCMatchGammaPt                   = kTRUE;
-Bool_t plotMCMatchGammaEnergy               = kTRUE;
-Bool_t plotMCMatchGammaMass                 = kTRUE;
-Bool_t plotMCMatchGammaOpeningAngle         = kTRUE;
-Bool_t plotMCMatchGammaR                    = kTRUE;
-Bool_t plotMCMatchGammaZR                  = kTRUE;
-Bool_t plotMCMatchGammaXY                  = kTRUE;
+Bool_t plotMCMatchGammaEta                   = kTRUE;
+Bool_t plotMCMatchGammaPhi                   = kTRUE;
+Bool_t plotMCMatchGammaPt                    = kTRUE;
+Bool_t plotMCMatchGammaEnergy                = kTRUE;
+Bool_t plotMCMatchGammaMass                  = kTRUE;
+Bool_t plotMCMatchGammaOpeningAngle          = kTRUE;
+Bool_t plotMCMatchGammaR                     = kTRUE;
+Bool_t plotMCMatchGammaZR                    = kTRUE;
+Bool_t plotMCMatchGammaXY                    = kTRUE;
 
 Bool_t plotMCPi0Eta                          = kTRUE;
 Bool_t plotMCPi0Phi                          = kTRUE;
@@ -100,8 +103,8 @@ Bool_t plotMCPi0Energy                       = kTRUE;
 Bool_t plotMCPi0Mass                         = kTRUE;
 Bool_t plotMCPi0OpeningAngle                 = kTRUE;
 Bool_t plotMCPi0R                            = kTRUE;
-Bool_t plotMCPi0ZR                          = kTRUE;
-Bool_t plotMCPi0XY                          = kTRUE;
+Bool_t plotMCPi0ZR                           = kTRUE;
+Bool_t plotMCPi0XY                           = kTRUE;
 
 Bool_t plotMCEtaEta                          = kTRUE;
 Bool_t plotMCEtaPhi                          = kTRUE;
@@ -110,13 +113,13 @@ Bool_t plotMCEtaEnergy                       = kTRUE;
 Bool_t plotMCEtaMass                         = kTRUE;
 Bool_t plotMCEtaOpeningAngleGamma            = kTRUE;
 Bool_t plotMCEtaR                            = kTRUE;
-Bool_t plotMCEtaZR                          = kTRUE;
-Bool_t plotMCEtaXY                          = kTRUE;
+Bool_t plotMCEtaZR                           = kTRUE;
+Bool_t plotMCEtaXY                           = kTRUE;
     
 // Histograms from esd tracks
 Bool_t plotESDEPR                            = kTRUE;
-Bool_t plotESDEPZR                          = kTRUE;
-Bool_t plotESDEPXY                          = kTRUE;
+Bool_t plotESDEPZR                           = kTRUE;
+Bool_t plotESDEPXY                           = kTRUE;
 Bool_t plotESDEPOpeningAngle                 = kTRUE;
 
 Bool_t plotESDEEnergy                        = kTRUE;
@@ -135,28 +138,28 @@ Bool_t plotESDGammaPt                        = kTRUE;
 Bool_t plotESDGammaEta                       = kTRUE;
 Bool_t plotESDGammaPhi                       = kTRUE;
 
-Bool_t plotESDMatchGammaOpeningAngle        = kTRUE;
-Bool_t plotESDMatchGammaEnergy              = kTRUE;
-Bool_t plotESDMatchGammaPt                  = kTRUE;
-Bool_t plotESDMatchGammaEta                 = kTRUE;
-Bool_t plotESDMatchGammaPhi                 = kTRUE;
-Bool_t plotESDMatchGammaMass                = kTRUE;
-Bool_t plotESDMatchGammaWidth               = kTRUE;
-Bool_t plotESDMatchGammaChi2                = kTRUE;
-Bool_t plotESDMatchGammaNDF                 = kTRUE;
-Bool_t plotESDMatchGammaR                   = kTRUE;
-Bool_t plotESDMatchGammaZR                 = kTRUE;
-Bool_t plotESDMatchGammaXY                 = kTRUE;
+Bool_t plotESDMatchGammaOpeningAngle         = kTRUE;
+Bool_t plotESDMatchGammaEnergy               = kTRUE;
+Bool_t plotESDMatchGammaPt                   = kTRUE;
+Bool_t plotESDMatchGammaEta                  = kTRUE;
+Bool_t plotESDMatchGammaPhi                  = kTRUE;
+Bool_t plotESDMatchGammaMass                 = kTRUE;
+Bool_t plotESDMatchGammaWidth                = kTRUE;
+Bool_t plotESDMatchGammaChi2                 = kTRUE;
+Bool_t plotESDMatchGammaNDF                  = kTRUE;
+Bool_t plotESDMatchGammaR                    = kTRUE;
+Bool_t plotESDMatchGammaZR                   = kTRUE;
+Bool_t plotESDMatchGammaXY                   = kTRUE;
 
 Bool_t plotESDTwoGammaCombinationOpeningAngleGamma         = kTRUE;
-Bool_t plotESDTwoGammaCombinationEnergy    = kTRUE;
-Bool_t plotESDTwoGammaCombinationPt        = kTRUE;
-Bool_t plotESDTwoGammaCombinationEta       = kTRUE;
-Bool_t plotESDTwoGammaCombinationPhi       = kTRUE;
-Bool_t plotESDTwoGammaCombinationMass      = kTRUE;
-Bool_t plotESDTwoGammaCombinationR         = kTRUE;
-Bool_t plotESDTwoGammaCombinationZR        = kTRUE;
-Bool_t plotESDTwoGammaCombinationXY        = kTRUE;
+Bool_t plotESDTwoGammaCombinationEnergy      = kTRUE;
+Bool_t plotESDTwoGammaCombinationPt          = kTRUE;
+Bool_t plotESDTwoGammaCombinationEta         = kTRUE;
+Bool_t plotESDTwoGammaCombinationPhi         = kTRUE;
+Bool_t plotESDTwoGammaCombinationMass        = kTRUE;
+Bool_t plotESDTwoGammaCombinationR           = kTRUE;
+Bool_t plotESDTwoGammaCombinationZR          = kTRUE;
+Bool_t plotESDTwoGammaCombinationXY          = kTRUE;
 
 Bool_t plotESDBackgroundOpeningAngleGamma    = kTRUE;
 Bool_t plotESDBackgroundEnergy               = kTRUE;
@@ -165,14 +168,14 @@ Bool_t plotESDBackgroundEta                  = kTRUE;
 Bool_t plotESDBackgroundPhi                  = kTRUE;
 Bool_t plotESDBackgroundMass                 = kTRUE;
 Bool_t plotESDBackgroundR                    = kTRUE;
-Bool_t plotESDBackgroundZR                  = kTRUE;
-Bool_t plotESDBackgroundXY                  = kTRUE;
+Bool_t plotESDBackgroundZR                   = kTRUE;
+Bool_t plotESDBackgroundXY                   = kTRUE;
 
-Bool_t plotMapping                             = kTRUE;       
+Bool_t plotMapping                           = kTRUE;       
 
-Bool_t plotResolutiondPt                      = kTRUE;
-Bool_t plotResolutiondR                       = kTRUE;
-Bool_t plotResolutiondZ                       = kTRUE;
+Bool_t plotResolutiondPt                     = kTRUE;
+Bool_t plotResolutiondR                      = kTRUE;
+Bool_t plotResolutiondZ                      = kTRUE;
   
 Bool_t plotResolutiondRdPt                   = kTRUE;
 
@@ -184,21 +187,21 @@ Bool_t plotResolutionESDPt                   = kTRUE;
 Bool_t plotResolutionESDR                    = kTRUE;
 Bool_t plotResolutionESDZ                    = kTRUE;
 
-Bool_t plotNumberOfV0s                         = kTRUE;
-Bool_t plotNumberOfSurvivingV0s                = kTRUE;
+Bool_t plotNumberOfV0s                       = kTRUE;
+Bool_t plotNumberOfSurvivingV0s              = kTRUE;
 
   //  debug histograms
-Bool_t plotV0MassDebugCut1                     = kTRUE;
-Bool_t plotV0MassDebugCut2                     = kTRUE;
-Bool_t plotV0MassDebugCut3                     = kTRUE;
-Bool_t plotV0MassDebugCut4                     = kTRUE;
-Bool_t plotV0MassDebugCut5                     = kTRUE;
-Bool_t plotV0MassDebugCut6                     = kTRUE;
-Bool_t plotV0MassDebugCut7                     = kTRUE;
-Bool_t plotV0MassDebugCut8                     = kTRUE;
+Bool_t plotV0MassDebugCut1                   = kTRUE;
+Bool_t plotV0MassDebugCut2                   = kTRUE;
+Bool_t plotV0MassDebugCut3                   = kTRUE;
+Bool_t plotV0MassDebugCut4                   = kTRUE;
+Bool_t plotV0MassDebugCut5                   = kTRUE;
+Bool_t plotV0MassDebugCut6                   = kTRUE;
+Bool_t plotV0MassDebugCut7                   = kTRUE;
+Bool_t plotV0MassDebugCut8                   = kTRUE;
 
-Bool_t plotPi0Spectra                          = kTRUE;
-Bool_t plotEtaSpectra                          = kTRUE;
+Bool_t plotPi0Spectra                        = kTRUE;
+Bool_t plotEtaSpectra                        = kTRUE;
 
 
 /** ----------------- end define which histograms to plot here -------------------------------*/
@@ -401,9 +404,9 @@ void ConfigGammaConversion(const char *chainName, const char *sample, int limit 
   if(plotMCMatchGammaEnergy == kTRUE){ histograms->AddHistogram("MC_Match_Gamma_Energy" ,"" , nXBinsEnergy, firstXBinEnergy, lastXBinEnergy, "", "");}
   if(plotMCMatchGammaMass == kTRUE){ histograms->AddHistogram("MC_Match_Gamma_Mass" ,"" , nXBinsGammaMass, firstXBinGammaMass, lastXBinGammaMass, "", "");}
   if(plotMCMatchGammaOpeningAngle == kTRUE){ histograms->AddHistogram("MC_Match_Gamma_OpeningAngle" ,"" , nXBinsOpeningAngle, firstXBinOpeningAngle, lastXBinOpeningAngle, "", "");}
-  if(plotMCMatchGammaR == kTRUE){ histograms->AddHistogram("MC_Match_GammaR" ,"" , nXBinsR, firstXBinR, lastXBinR, "", "");}
-  if(plotMCMatchGammaZR == kTRUE){ histograms->AddHistogram("MC_Match_GammaZR" ,"" , nXBinsZR, firstXBinZR, lastXBinZR, nYBinsZR, firstYBinZR, lastYBinZR, "", "");}
-  if(plotMCMatchGammaXY == kTRUE){ histograms->AddHistogram("MC_Match_GammaXY" ,"" , nXBinsXY, firstXBinXY, lastXBinXY, nYBinsXY, firstYBinXY, lastYBinXY, "", "");}
+  if(plotMCMatchGammaR == kTRUE){ histograms->AddHistogram("MC_Match_Gamma_R" ,"" , nXBinsR, firstXBinR, lastXBinR, "", "");}
+  if(plotMCMatchGammaZR == kTRUE){ histograms->AddHistogram("MC_Match_Gamma_ZR" ,"" , nXBinsZR, firstXBinZR, lastXBinZR, nYBinsZR, firstYBinZR, lastYBinZR, "", "");}
+  if(plotMCMatchGammaXY == kTRUE){ histograms->AddHistogram("MC_Match_Gamma_XY" ,"" , nXBinsXY, firstXBinXY, lastXBinXY, nYBinsXY, firstYBinXY, lastYBinXY, "", "");}
 
   if(plotMCPi0Eta == kTRUE){ histograms->AddHistogram("MC_Pi0_Eta" ,"" , nXBinsEta, firstXBinEta, lastXBinEta, "", "");}
   if(plotMCPi0Phi == kTRUE){ histograms->AddHistogram("MC_Pi0_Phi" ,"" , nXBinsPhi, firstXBinPhi, lastXBinPhi, "", "");}
@@ -414,6 +417,16 @@ void ConfigGammaConversion(const char *chainName, const char *sample, int limit 
   if(plotMCPi0R == kTRUE){ histograms->AddHistogram("MC_Pi0_R" ,"" , nXBinsR, firstXBinR, lastXBinR, "", "");}
   if(plotMCPi0ZR == kTRUE){ histograms->AddHistogram("MC_Pi0_ZR" ,"" , nXBinsZR, firstXBinZR, lastXBinZR, nYBinsZR, firstYBinZR, lastYBinZR, "", "");}
   if(plotMCPi0XY == kTRUE){ histograms->AddHistogram("MC_Pi0_XY" ,"" , nXBinsXY, firstXBinXY, lastXBinXY, nYBinsXY, firstYBinXY, lastYBinXY, "", "");}
+
+  if(plotMCPi0Eta == kTRUE){ histograms->AddHistogram("MC_Pi0_Secondaries_Eta" ,"" , nXBinsEta, firstXBinEta, lastXBinEta, "", "");}
+  if(plotMCPi0Phi == kTRUE){ histograms->AddHistogram("MC_Pi0_Secondaries_Phi" ,"" , nXBinsPhi, firstXBinPhi, lastXBinPhi, "", "");}
+  if(plotMCPi0Pt == kTRUE){ histograms->AddHistogram("MC_Pi0_Secondaries_Pt" ,"" , nXBinsPt, firstXBinPt, lastXBinPt, "", "");}
+  if(plotMCPi0Energy == kTRUE){ histograms->AddHistogram("MC_Pi0_Secondaries_Energy" ,"" , nXBinsEnergy, firstXBinEnergy, lastXBinEnergy, "", "");}
+  if(plotMCPi0Mass == kTRUE){ histograms->AddHistogram("MC_Pi0_Secondaries_Mass" ,"" , nXBinsPi0Mass, firstXBinPi0Mass, lastXBinPi0Mass, "", "");}
+  if(plotMCPi0OpeningAngle == kTRUE){ histograms->AddHistogram("MC_Pi0_Secondaries_GammaDaughter_OpeningAngle" ,"" , nXBinsOpeningAngle, firstXBinOpeningAngle, lastXBinOpeningAngle, "", "");}
+  if(plotMCPi0R == kTRUE){ histograms->AddHistogram("MC_Pi0_Secondaries_R" ,"" , nXBinsR, firstXBinR, lastXBinR, "", "");}
+  if(plotMCPi0ZR == kTRUE){ histograms->AddHistogram("MC_Pi0_Secondaries_ZR" ,"" , nXBinsZR, firstXBinZR, lastXBinZR, nYBinsZR, firstYBinZR, lastYBinZR, "", "");}
+  if(plotMCPi0XY == kTRUE){ histograms->AddHistogram("MC_Pi0_Secondaries_XY" ,"" , nXBinsXY, firstXBinXY, lastXBinXY, nYBinsXY, firstYBinXY, lastYBinXY, "", "");}
 
   if(plotMCEtaEta == kTRUE){ histograms->AddHistogram("MC_Eta_Eta" ,"" , nXBinsEta, firstXBinEta, lastXBinEta, "", "");}
   if(plotMCEtaPhi == kTRUE){ histograms->AddHistogram("MC_Eta_Phi" ,"" , nXBinsPhi, firstXBinPhi, lastXBinPhi, "", "");}
@@ -469,17 +482,6 @@ void ConfigGammaConversion(const char *chainName, const char *sample, int limit 
   if(plotESDTwoGammaCombinationZR == kTRUE){ histograms->AddHistogram("ESD_TwoGammaCombination_ZR" ,"" , nXBinsZR, firstXBinZR, lastXBinZR, nYBinsZR, firstYBinZR, lastYBinZR, "", "");}
   if(plotESDTwoGammaCombinationXY == kTRUE){ histograms->AddHistogram("ESD_TwoGammaCombination_XY" ,"" , nXBinsXY, firstXBinXY, lastXBinXY, nYBinsXY, firstYBinXY, lastYBinXY, "", "");}
 
-  /*
-  if(plotESDEtaOpeningAngleGamma == kTRUE){ histograms->AddHistogram("ESD_Eta_GammaDaughter_OpeningAngle" ,"" , nXBinsOpeningAngle, firstXBinOpeningAngle, lastXBinOpeningAngle, "", "");}
-  if(plotESDEtaEnergy == kTRUE){ histograms->AddHistogram("ESD_Eta_Energy" ,"" , nXBinsEnergy, firstXBinEnergy, lastXBinEnergy, "", "");}
-  if(plotESDEtaPt == kTRUE){ histograms->AddHistogram("ESD_Eta_Pt" ,"" , nXBinsPt, firstXBinPt, lastXBinPt, "", "");}
-  if(plotESDEtaEta == kTRUE){ histograms->AddHistogram("ESD_Eta_Eta" ,"" , nXBinsEta, firstXBinEta, lastXBinEta, "", "");}
-  if(plotESDEtaPhi == kTRUE){ histograms->AddHistogram("ESD_Eta_Phi" ,"" , nXBinsPhi, firstXBinPhi, lastXBinPhi, "", "");}
-  if(plotESDEtaMass == kTRUE){ histograms->AddHistogram("ESD_Eta_Mass" ,"" , nXBinsEtaMass, firstXBinEtaMass, lastXBinEtaMass, "", "");}
-  if(plotESDEtaR == kTRUE){ histograms->AddHistogram("ESD_Eta_R" ,"" , nXBinsR, firstXBinR, lastXBinR, "", "");}
-  if(plotESDEtaZR == kTRUE){ histograms->AddHistogram("ESD_Eta_ZR" ,"" , nXBinsZR, firstXBinZR, lastXBinZR, nYBinsZR, firstYBinZR, lastYBinZR, "", "");}
-  if(plotESDEtaXY == kTRUE){ histograms->AddHistogram("ESD_Eta_XY" ,"" , nXBinsXY, firstXBinXY, lastXBinXY, nYBinsXY, firstYBinXY, lastYBinXY, "", "");}
-  */
   if(plotESDBackgroundOpeningAngleGamma == kTRUE){ histograms->AddHistogram("ESD_Background_GammaDaughter_OpeningAngle" ,"" , nXBinsOpeningAngle, firstXBinOpeningAngle, lastXBinOpeningAngle, "", "");}
   if(plotESDBackgroundEnergy == kTRUE){ histograms->AddHistogram("ESD_Background_Energy" ,"" , nXBinsEnergy, firstXBinEnergy, lastXBinEnergy, "", "");}
   if(plotESDBackgroundPt == kTRUE){ histograms->AddHistogram("ESD_Background_Pt" ,"" , nXBinsPt, firstXBinPt, lastXBinPt, "", "");}
@@ -523,7 +525,9 @@ void ConfigGammaConversion(const char *chainName, const char *sample, int limit 
   if(plotV0MassDebugCut8 == kTRUE){histograms->AddHistogram("V0MassDebugCut8" ,"debug8" , nXBinsGammaMass, firstXBinGammaMass, lastXBinGammaMass,"","");}
 
 
-  if(plotPi0Spectra == kTRUE){histograms->AddHistogram("InvMass_vs_Pt__Spectra" ,"Inv mass vs Pt" , nXBinsSpectra, firstXBinSpectra, lastXBinSpectra,nYBinsSpectra, firstYBinSpectra, lastYBinSpectra,"InvMass [GeV]","Pt [GeV]");}
+  if(plotPi0Spectra == kTRUE){histograms->AddHistogram("InvMass_vs_Pt_Spectra" ,"Invariant Mass vs Pt" , nXBinsSpectra, firstXBinSpectra, lastXBinSpectra,nYBinsSpectra, firstYBinSpectra, lastYBinSpectra,"InvMass [GeV]","Pt [GeV]");}
+
+  if(plotPi0Spectra == kTRUE && calculateBackground == kTRUE){histograms->AddHistogram("Background_InvMass_vs_Pt_Spectra" ,"Background Invariant Mass vs Pt" , nXBinsSpectra, firstXBinSpectra, lastXBinSpectra,nYBinsSpectra, firstYBinSpectra, lastYBinSpectra,"InvMass [GeV]","Pt [GeV]");}
 
   
 
@@ -585,13 +589,15 @@ void ConfigGammaConversion(const char *chainName, const char *sample, int limit 
   v0Reader->SetMaxRCut(maxRCut);
   v0Reader->SetEtaCut(etaCut);
   v0Reader->SetPtCut(ptCut);
-  v0Reader->SetChi2Cut(chi2Cut);
+  v0Reader->SetChi2CutConversion(chi2CutConversion);
+  v0Reader->SetChi2CutMeson(chi2CutMeson);
   v0Reader->SetPIDProbability(probElectron);
   v0Reader->SetXVertexCut(xVertexCut);
   v0Reader->SetYVertexCut(yVertexCut);
   v0Reader->SetZVertexCut(zVertexCut);
   v0Reader->SetSigmaMass(sigmaCutGammaMass);
   v0Reader->SetUseImprovedVertex(useImprovedVertex);
+  v0Reader->SetDoMCTruth(doMCTruth);
 
   // Create the GammaConversionTask
   AliAnalysisTaskGammaConversion *gammaconversion = new AliAnalysisTaskGammaConversion("GammaConversionTask");
@@ -629,7 +635,7 @@ void ConfigGammaConversion(const char *chainName, const char *sample, int limit 
   mgr->ConnectOutput(gammaconversion, 0, coutput1);
   mgr->ConnectOutput(gammaconversion, 1, coutput2);
 
-  TChain* chain= CreateESDChain(sample);
+  TChain* chain= CreateESDChain(sample,numberOfFilesToAnalyze);
   
   mgr->InitAnalysis();
   
