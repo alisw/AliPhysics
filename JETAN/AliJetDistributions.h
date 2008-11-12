@@ -33,7 +33,7 @@ class AliJetDistributions : public TObject
     void SaveHistograms();
     
     // Setter
-    void SetDirectory(char* directory) {fDirectory = directory;}
+    void SetDirectory(const char* directory) {fDirectory = directory;}
     void SetOutputFile(const char* file) {fFile = file;}
     void SetPercentage(Float_t p) { fPercentage = p;}
     void SetEventRange(Int_t imin, Int_t imax) {fEventMin = imin; fEventMax = imax;}
@@ -48,8 +48,8 @@ class AliJetDistributions : public TObject
     void SetDoRecJet(Bool_t f = kTRUE) {fDoRecJ = f;}
     
  private:
-    char*  fReaderHeader;// Reader header
-    char*  fDirectory;   // Directory
+    const char*  fReaderHeader;// Reader header
+    const char*  fDirectory;   // Directory
     const char*  fFile     ;   // Output file name
     Int_t  fEventMin;    // Minimum event number
     Int_t  fEventMax;    // Maximum event number

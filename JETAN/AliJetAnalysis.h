@@ -75,9 +75,9 @@ class AliJetAnalysis : public TObject
     void Correlation(TLorentzVector *lv1,TLorentzVector *lv2,TH2F *h1, TH2F *h2, TH2F *h3, TH2F *h4);
     void Correlation50(AliJet *j,TLorentzVector *lv1,TLorentzVector *lv2,TH2F *h1, TH2F *h2, TH2F *h3, TH2F *h4);
     // setters
-    void SetDirectory(char* directory) 
+    void SetDirectory(const char* directory) 
       {fDirectory = directory;}                      // directory where file with jets is
-    void SetBkgdDirectory(char* directory) 
+    void SetBkgdDirectory(const char* directory) 
       {fBkgdDirectory = directory;}                  // directory where file with background is
     void SetOutputFile(const char* file) {fFile = file;}   // file where plots will be saved
     void SetPercentage(Float_t p) {fPercentage = p;} // minimum percentage of tracks coming from pythia (very aprox.)
@@ -101,7 +101,7 @@ class AliJetAnalysis : public TObject
     void SetDoTriggerBias(Bool_t f = kTRUE){fDoTrig = f;}      // Trigger bias plots
     void SetDivideEnergy(Float_t Efactor){fEfactor = Efactor;} // Divides E of rec.jet by Efactor
     void SetProperties(TH1* h,const char* x, const char* y) const;
-    void SetReaderHeader(char *s="AliJetKineReaderHeader"){fReaderHeader = s;}
+    void SetReaderHeader(const char *s="AliJetKineReaderHeader"){fReaderHeader = s;}
     void SetdEdrWeight();
     void SetPartPtCut(Float_t c){fPartPtCut = c;}
     void SetdrJt(Float_t r){fdrJt = r;}
@@ -111,9 +111,9 @@ class AliJetAnalysis : public TObject
     Float_t GetdEdrWeight(Float_t eta, Float_t r);
     
  private:
-    char*  fReaderHeader;    // Reader header
-    char*  fDirectory;       // Directory
-    char*  fBkgdDirectory;   // Directory for background
+    const char*  fReaderHeader;    // Reader header
+    const char*  fDirectory;       // Directory
+    const char*  fBkgdDirectory;   // Directory for background
     const char*  fFile;      // Output file name
     Int_t  fEventMin;        // Minimum event number
     Int_t  fEventMax;        // Maximum event number
