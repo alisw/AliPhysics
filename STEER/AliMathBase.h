@@ -30,6 +30,7 @@ class AliMathBase : public TObject
   static Float_t  GetCOG(Short_t *arr, Int_t nBins, Float_t xMin, Float_t xMax, Float_t *rms=0, Float_t *sum=0);
 
   static Double_t TruncatedGaus(Double_t mean, Double_t sigma, Double_t cutat);
+  static Double_t TruncatedGaus(Double_t mean, Double_t sigma, Double_t leftCut, Double_t rightCut);
 
   static TGraph2D *  MakeStat2D(TH3 * his, Int_t delta0, Int_t delta1, Int_t type);
   static TGraph *  MakeStat1D(TH3 * his, Int_t delta1, Int_t type);

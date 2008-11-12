@@ -739,3 +739,15 @@ Double_t AliMathBase::TruncatedGaus(Double_t mean, Double_t sigma, Double_t cuta
   }while(TMath::Abs(value-mean)>cutat);
   return value;
 }
+
+Double_t AliMathBase::TruncatedGaus(Double_t mean, Double_t sigma, Double_t leftCut, Double_t rightCut)
+{
+  // return number generated according to a gaussian distribution N(mean,sigma)
+  // truncated at leftCut and rightCut
+  //
+  Double_t value;
+  do{
+    value=gRandom->Gaus(mean,sigma);
+  }while((value-mean)<-leftCut || (value-mean)>rightCut);
+  return value;
+}
