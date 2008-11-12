@@ -94,7 +94,7 @@ class AliAODVertex : public AliVVertex {
   TObject* GetParent() const   { return fParent.GetObject(); }
   Bool_t   HasParent(TObject *parent) const { return (fParent.GetObject() == parent) ? kTRUE : kFALSE; }
 
-  void     AddDaughter(TObject *daughter) { fDaughters.Add(daughter);}
+  void     AddDaughter(TObject *daughter);
   void     RemoveDaughter(TObject *daughter) { fDaughters.Remove(daughter); }
   void     RemoveDaughters() { fDaughters.Clear(); }
   TObject* GetDaughter(Int_t i) { return fDaughters.At(i); }

@@ -177,6 +177,20 @@ AliAODVertex& AliAODVertex::operator=(const AliAODVertex& vtx)
 }
 
 //______________________________________________________________________________
+void AliAODVertex::AddDaughter(TObject *daughter)
+{
+  // Add reference to daughter track
+
+  if (fDaughters.GetEntries()==0) {
+    TRefArray* arr = &fDaughters;
+    new(arr)TRefArray(TProcessID::GetProcessWithUID(daughter));  	
+  }
+  fDaughters.Add(daughter);	
+
+  return;
+}
+
+//______________________________________________________________________________
 template <class T> void AliAODVertex::GetSigmaXYZ(T sigma[3]) const
 {
   // Return errors on vertex position in thrust frame
