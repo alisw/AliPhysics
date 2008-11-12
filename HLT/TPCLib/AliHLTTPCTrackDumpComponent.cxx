@@ -28,9 +28,6 @@
 #include "AliHLTTPCDefinitions.h"
 #include <TSystem.h>
 
-// this is a global object used for automatic component registration, do not use this
-//AliHLTTPCQHistoComponent gAliHLTTPCQHistoComponent;
-
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTPCTrackDumpComponent)
 
