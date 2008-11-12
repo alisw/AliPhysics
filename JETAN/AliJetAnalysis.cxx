@@ -46,7 +46,7 @@ AliJetAnalysis::AliJetAnalysis():
   fReaderHeader(0x0),
   fDirectory(0x0),
   fBkgdDirectory(0x0),
-  fFile(0x0),
+  fFile("anaJets.root"),
   fEventMin(0),
   fEventMax(-1),
   fRunMin(0),
@@ -144,7 +144,6 @@ AliJetAnalysis::AliJetAnalysis():
   fPtEneH(0)
 {
   // Default constructor
-  fFile          = "anaJets.root";   
   
   // initialize weight for dE/dr histo
   SetdEdrWeight();

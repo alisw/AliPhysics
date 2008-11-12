@@ -198,7 +198,7 @@ Bool_t AliHighMultiplicitySelector::Process(Long64_t entry)
 
   TClonesArray* digits = 0;
   treeD->SetBranchAddress("ITSDigitsSPD", &digits);
-  if (digits);
+  if (digits)
     digits->Clear();
 
   // each value for both layers

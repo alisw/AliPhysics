@@ -71,7 +71,7 @@ public:
 //  AliAODHeader *GetHe() { return (fHe!=0) ? (AliAODHeader*)fHe.GetObject() : 0; }
 //  AliAODTrack *GetTr();
 
-  Bool_t IsHeaderAccessible(Char_t *msg=0) const;
+  Bool_t IsHeaderAccessible(const Char_t *msg=0) const;
 
   protected:
   // Missing in AliAODHeader and added here

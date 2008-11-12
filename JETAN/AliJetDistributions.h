@@ -34,13 +34,13 @@ class AliJetDistributions : public TObject
     
     // Setter
     void SetDirectory(char* directory) {fDirectory = directory;}
-    void SetOutputFile(char* file) {fFile = file;}
+    void SetOutputFile(const char* file) {fFile = file;}
     void SetPercentage(Float_t p) { fPercentage = p;}
     void SetEventRange(Int_t imin, Int_t imax) {fEventMin = imin; fEventMax = imax;}
     void SetRunRange(Int_t imin, Int_t imax) {fRunMin = imin; fRunMax = imax;}
     void SetPythia(Bool_t f = kFALSE){fPythia = f;}    
     void SetProperties(TH1* h,const char* x, const char* y) const;
-    void SetReaderHeader(char *s="AliJetKineReaderHeader") {fReaderHeader = s;}
+    void SetReaderHeader(const char *s="AliJetKineReaderHeader") {fReaderHeader = s;}
     void SetPartPtCut(Float_t c) { fPartPtCut = c; }
 
     void SetDoLeadPart(Bool_t f = kTRUE) {fDoPart = f;}
@@ -50,7 +50,7 @@ class AliJetDistributions : public TObject
  private:
     char*  fReaderHeader;// Reader header
     char*  fDirectory;   // Directory
-    char*  fFile     ;   // Output file name
+    const char*  fFile     ;   // Output file name
     Int_t  fEventMin;    // Minimum event number
     Int_t  fEventMax;    // Maximum event number
     Int_t  fRunMin;      // Minimum run number 

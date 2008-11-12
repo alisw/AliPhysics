@@ -34,7 +34,7 @@ AliAODEventInfo::~AliAODEventInfo()
 }
 
 //______________________________________________________________________________
-Bool_t AliAODEventInfo::IsHeaderAccessible(Char_t *msg) const {
+Bool_t AliAODEventInfo::IsHeaderAccessible(const Char_t *msg) const {
   // Tests if the header pointer is set
   if(fHe!=0){
     return 1;

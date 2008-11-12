@@ -24,9 +24,9 @@ class AliJetDummyGeo : public TObject
   AliJetDummyGeo(const AliJetDummyGeo& geom);
   virtual ~AliJetDummyGeo();
   static AliJetDummyGeo* GetInstance() {return new AliJetDummyGeo();}
-  static AliJetDummyGeo* GetInstance(char* /*name*/, char* /*title*/)
+  static AliJetDummyGeo* GetInstance(const char* /*name*/, const char* /*title*/)
     {return new AliJetDummyGeo();}
-  Char_t* GetNameOfEMCALEnvelope() const {return "XEN1";}
+  const Char_t* GetNameOfEMCALEnvelope() const {return "XEN1";}
   Float_t GetEnvelop(Int_t index) const { return fEnvelop[index];}
   Float_t AngleFromEta(Float_t eta) const { 
     // returns theta in radians for a given pseudorapidity

@@ -114,7 +114,7 @@ TH2* AliCorrectionMatrix2D::GetMeasuredHistogram() const
 }
 
 //____________________________________________________________________
-TH1* AliCorrectionMatrix2D::Get1DCorrectionHistogram(Char_t* opt, Float_t min, Float_t max)
+TH1* AliCorrectionMatrix2D::Get1DCorrectionHistogram(const Char_t* opt, Float_t min, Float_t max)
 {
   //
   // integrate the correction over one variable 

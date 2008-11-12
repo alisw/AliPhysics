@@ -79,7 +79,7 @@ class AliJetAnalysis : public TObject
       {fDirectory = directory;}                      // directory where file with jets is
     void SetBkgdDirectory(char* directory) 
       {fBkgdDirectory = directory;}                  // directory where file with background is
-    void SetOutputFile(char* file) {fFile = file;}   // file where plots will be saved
+    void SetOutputFile(const char* file) {fFile = file;}   // file where plots will be saved
     void SetPercentage(Float_t p) {fPercentage = p;} // minimum percentage of tracks coming from pythia (very aprox.)
     void SetEventRange(Int_t imin, Int_t imax) 
       {fEventMin = imin; fEventMax = imax;}           // first and last event
@@ -114,7 +114,7 @@ class AliJetAnalysis : public TObject
     char*  fReaderHeader;    // Reader header
     char*  fDirectory;       // Directory
     char*  fBkgdDirectory;   // Directory for background
-    char*  fFile;            // Output file name
+    const char*  fFile;      // Output file name
     Int_t  fEventMin;        // Minimum event number
     Int_t  fEventMax;        // Maximum event number
     Int_t  fRunMin;          // Minimum run number 

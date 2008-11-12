@@ -42,7 +42,7 @@ ClassImp(AliJetDistributions)
 AliJetDistributions::AliJetDistributions():
   fReaderHeader(0x0),
   fDirectory(0x0),
-  fFile(0x0),
+  fFile("jets.root"),
   fEventMin(0),
   fEventMax(-1),
   fRunMin(0),
@@ -63,7 +63,6 @@ AliJetDistributions::AliJetDistributions():
   fMultH(0)
 {
   // Default constructor
-  fFile = "jets.root";   
   SetReaderHeader();
   
 }
