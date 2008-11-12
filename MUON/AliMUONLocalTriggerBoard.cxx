@@ -499,7 +499,7 @@ void AliMUONLocalTriggerBoard::TrigX(Int_t ch1q[16], Int_t ch2q[16], Int_t ch3q[
       sgleHit1[2*i+1] = (!ch1e[i+1]|!ch1e[i+2]|(ch1e[i]^ch1e[i+3])) & 
          (!ch2e[i+2] | !ch2e[i+3] | (ch2e[i+1]^ch2e[i+4]));
       dbleHit1[2*i+1] = ch1e[i+1]&ch1e[i+2]&!(ch1e[i]^ch1e[i+3]) & 
-         (ch2e[i+2]&(!ch2e[i+1]|!ch2e[i]) | 
+	((ch2e[i+2]&(!ch2e[i+1]|!ch2e[i])) | 
           (ch2e[i+3]&(ch2e[i+2]|!ch2e[i+4]|!ch2e[i+5])));
    }
 
@@ -515,7 +515,7 @@ void AliMUONLocalTriggerBoard::TrigX(Int_t ch1q[16], Int_t ch2q[16], Int_t ch3q[
       sgleHit2[2*i+1] = (!ch3e[i+1]|!ch3e[i+2]|(ch3e[i]^ch3e[i+3])) & 
          (!ch4e[i+2] | !ch4e[i+3] | (ch4e[i+1]^ch4e[i+4]));
       dbleHit2[2*i+1] = ch3e[i+1]&ch3e[i+2]&!(ch3e[i]^ch3e[i+3]) & 
-         (ch4e[i+2]&(!ch4e[i+1]|!ch4e[i]) | 
+	((ch4e[i+2]&(!ch4e[i+1]|!ch4e[i])) | 
           (ch4e[i+3]&((ch4e[i+2]|!ch4e[i+4])|!ch4e[i+5])));
    }
 
@@ -990,15 +990,15 @@ void AliMUONLocalTriggerBoard::TrigY(Int_t y1[16], Int_t y2[16], Int_t y3[16], I
    Int_t frontImage[16];
 
    for (i=1; i<15; i++) {
-      frontImage[i] = (dble1[i] | sgle1[i]) & 
-         (dble2[i+1] | dble2[i] | dble2[i-1]) |
+     frontImage[i] = ((dble1[i] | sgle1[i]) & 
+		      (dble2[i+1] | dble2[i] | dble2[i-1])) |
 	(dble1[i] & (sgle2[i+1] | sgle2[i] | sgle2[i-1]));
    }
-   frontImage[0] = (dble1[0] | sgle1[0]) & 
-     (dble2[1] | dble2[0]) | (dble1[0] & (sgle2[1] | sgle2[0]));
+   frontImage[0] = ((dble1[0] | sgle1[0]) & 
+		    (dble2[1] | dble2[0])) | (dble1[0] & (sgle2[1] | sgle2[0]));
 
-   frontImage[15] = (dble1[15] | sgle1[15]) & 
-     (dble2[15] | dble2[14]) | (dble1[15] & (sgle2[15] | sgle2[14]));
+   frontImage[15] = ((dble1[15] | sgle1[15]) & 
+		     (dble2[15] | dble2[14])) | (dble1[15] & (sgle2[15] | sgle2[14]));
 
 
 //debug
