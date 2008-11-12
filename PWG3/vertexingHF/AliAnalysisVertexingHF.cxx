@@ -224,8 +224,20 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 
   trkEntries = (Int_t)event->GetNumberOfTracks();
   AliDebug(1,Form(" Number of tracks: %d",trkEntries));
+
+  if(trkEntries<2) {
+    AliDebug(1,Form(" Not enough tracks: %d",trkEntries));
+    return;
+  }
     
-  if(trkEntries<2 || !event->GetPrimaryVertex()) {
+  const AliVVertex *primary = event->GetPrimaryVertex();
+  if(!primary) {
+    AliDebug(1," No primary vertex from tracks");
+    return;
+  }
+  TString primTitle = primary->GetTitle();
+  if(!primTitle.Contains("VertexerTracks")) {
+    AliDebug(1," No primary vertex from tracks");
     return;
   }
 
