@@ -1,0 +1,15 @@
+#-*- Mode: Makefile -*-
+
+SRCS = GammaConv/AliV0Reader.cxx GammaConv/AliAnalysisTaskGammaConversion.cxx GammaConv/AliGammaConversionHistograms.cxx
+      
+HDRS:= $(SRCS:.cxx=.h) 
+
+DHDR:= PWG4GammaConvLinkDef.h
+
+EXPORT:=$(SRCS:.cxx=.h)
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) -lSTEERBase \
+                         -lESD -lAOD -lANALYSIS -lANALYSISalice \
+                         -L$(shell root-config --libdir) -lEG
+endif
