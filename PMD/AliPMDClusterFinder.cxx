@@ -634,7 +634,7 @@ void AliPMDClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
 	  for (Int_t j=0; j<kRow; j++) delete [] precpvADC[i][j];
 	}
       for (Int_t i=0; i<iSMN; i++) delete [] precpvADC[i];
-      delete precpvADC;
+      delete [] precpvADC;
 
     } // DDL Loop
   

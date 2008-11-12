@@ -60,7 +60,7 @@ void AliHMPIDRecon::InitVars(Int_t n)
 //..
 //Init some variables
 //..
-  if(n<0) return;
+  if(n<=0) return;
   fPhotFlag = new Int_t[n];
   fPhotCkov = new Double_t[n];
   fPhotPhi  = new Double_t[n];
@@ -73,10 +73,10 @@ void AliHMPIDRecon::DeleteVars()const
 //..
 //Delete variables
 //..
-  delete fPhotFlag;
-  delete fPhotCkov;
-  delete fPhotPhi;
-  delete fPhotWei;
+  delete [] fPhotFlag;
+  delete [] fPhotCkov;
+  delete [] fPhotPhi;
+  delete [] fPhotWei;
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDRecon::CkovAngle(AliESDtrack *pTrk,TClonesArray *pCluLst,Int_t index,Double_t nmean)
