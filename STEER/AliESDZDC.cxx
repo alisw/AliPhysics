@@ -169,6 +169,7 @@ Double32_t * AliESDZDC::GetZNCCentroid()
   Float_t NumX=0., NumY=0., Den=0.;
   Float_t alpha=0.395, w;
   for(Int_t i=0; i<4; i++){
+    if(fZN1TowerEnergy[i+1]<0.) fZN1TowerEnergy[i+1]=0.;
     w = TMath::Power(fZN1TowerEnergy[i+1], alpha);
     NumX += x[i]*w;
     NumY += y[i]*w;
@@ -190,6 +191,7 @@ Double32_t * AliESDZDC::GetZNACentroid()
   Float_t NumX=0., NumY=0., Den=0.;
   Float_t alpha=0.395, w;
   for(Int_t i=0; i<4; i++){
+    if(fZN2TowerEnergy[i+1]<0.) fZN2TowerEnergy[i+1]=0.;
     w = TMath::Power(fZN2TowerEnergy[i+1], alpha);
     NumX += x[i]*w;
     NumY += y[i]*w;
