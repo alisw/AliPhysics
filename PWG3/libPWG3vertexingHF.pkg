@@ -5,7 +5,8 @@ SRCS:=   vertexingHF/AliAODRecoDecayHF.cxx \
        vertexingHF/AliAODRecoDecayHF4Prong.cxx \
        vertexingHF/AliAnalysisVertexingHF.cxx \
        vertexingHF/AliAnalysisTaskSEVertexingHF.cxx \
-       vertexingHF/AliAnalysisTaskSESelectHF.cxx
+       vertexingHF/AliAnalysisTaskSESelectHF.cxx \
+       vertexingHF/AliAnalysisTaskSECompareHF.cxx
 
 HDRS:= $(SRCS:.cxx=.h)
 
