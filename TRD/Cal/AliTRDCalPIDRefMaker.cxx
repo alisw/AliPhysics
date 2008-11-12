@@ -130,7 +130,7 @@ AliTRDCalPIDRefMaker& AliTRDCalPIDRefMaker::operator=(const AliTRDCalPIDRefMaker
 
 
 //__________________________________________________________________
-Bool_t AliTRDCalPIDRefMaker::BuildLQReferences(Char_t *File, Char_t *dir)
+Bool_t AliTRDCalPIDRefMaker::BuildLQReferences(const Char_t *File, const Char_t *dir)
 {
 	// Build, Fill and write to file the histograms used for PID.
 	// The simulations are looked in the
@@ -364,7 +364,7 @@ Bool_t AliTRDCalPIDRefMaker::BuildLQReferences(Char_t *File, Char_t *dir)
 }
 
 //__________________________________________________________________
-Bool_t AliTRDCalPIDRefMaker::BuildNNReferences(Char_t* /*File*/, Char_t* /*dir*/)
+Bool_t AliTRDCalPIDRefMaker::BuildNNReferences(const Char_t* /*File*/, const Char_t* /*dir*/)
 {
 	return kTRUE;
 }
@@ -503,7 +503,7 @@ Double_t AliTRDCalPIDRefMaker::Estimate2D1(TH2 *h, Float_t &x, Float_t &y
 /////////////  Private functions ///////////////////////////////////
 
 //__________________________________________________________________
-Int_t AliTRDCalPIDRefMaker::CheckProdDirTree(Char_t *dir)
+Int_t AliTRDCalPIDRefMaker::CheckProdDirTree(const Char_t *dir)
 {
 	// Scan directory tree for momenta. Returns the smallest number of
 	// batches found in all directories or 0 if one momentum is missing.

@@ -29,15 +29,15 @@ public:
   ~AliTRDCalPIDRefMaker();
   AliTRDCalPIDRefMaker& operator=(const AliTRDCalPIDRefMaker &ref);
 
-         Bool_t   BuildLQReferences(Char_t *filename="TRDpidLQ.root", Char_t *dir =".");
-         Bool_t   BuildNNReferences(Char_t *filename="TRDpidNN.root", Char_t *dir =".");
+         Bool_t   BuildLQReferences(const Char_t *filename="TRDpidLQ.root", const Char_t *dir =".");
+         Bool_t   BuildNNReferences(const Char_t *filename="TRDpidNN.root", const Char_t *dir =".");
  
   static Double_t Estimate2D2(TH2 *h, Float_t &x, Float_t &y);
   static Double_t Estimate2D1(TH2 *h, Float_t &x, Float_t &y, Float_t &dCT, Float_t &rmin, Float_t &rmax);
   //     Double_t Estimate3D2(TH3 *h, Float_t &x, Float_t &y, Float_t &z);
 
 private:
-         Int_t    CheckProdDirTree(Char_t *dir=".");
+         Int_t    CheckProdDirTree(const Char_t *dir=".");
          void     Prepare2D();
          void     Reset();
          void     SaveReferences(const Int_t mom, const char *fn);
