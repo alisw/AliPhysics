@@ -136,13 +136,12 @@ Bool_t gAlgoDeadInput  = false;
 
 Int_t   gkGlobalInputs = 4;
 Int_t   gkGlobalInputLength = 32;
-Float_t gkThreshold = 0.1;
+Float_t gkThrN = 0.1;
+Float_t gkThrD = 0.1;
 Int_t   gkMinEvents = 10;
 
 Int_t gAccGlobalInputN[4][32] = {0};
 Int_t gAccGlobalInputD[4][32] = {0};
-
-Bool_t gWriteInitialDB = false;
 
 //__________________________________________________________________
 void WriteLastCurrentFile(TString currentFile = gLastCurrentFileName)
@@ -296,6 +295,9 @@ Bool_t ExportFiles()
     // offline:
     //gSystem->Setenv("DAQDALIB_PATH", "$DATE_SITE/infoLogger");
 
+    // offline: use a dummy FES (local directory)
+    //gSystem->Setenv("DAQDA_TEST_DIR", "/alisoft/FES");
+
     // update files
     Int_t status = 0;
 
@@ -311,8 +313,15 @@ Bool_t ExportFiles()
 	return false;
     }      
 
-    file = gGlobalFileName.Data();
-    if (gGlobalFileLastVersion != gGlobalFileVersion) {
+    // check if MtgLastCurrent.dat exists
+    // if not, do initial export of all files
+    Bool_t initFES = false;
+    if (gSystem->AccessPathName("MtgLastCurrent.dat"))
+      initFES = true;
+    if (initFES) printf("Copy all configuration files to the FES.\n");
+
+    file = gGlobalFileName;
+    if ((gGlobalFileLastVersion != gGlobalFileVersion) || initFES) {
       status = daqDA_FES_storeFile(file.Data(), file.Data());
       if (status) {
 	printf("Failed to export file: %s\n",gGlobalFileName.Data());
@@ -323,7 +332,7 @@ Bool_t ExportFiles()
     }
 
     file = gLocalMaskFileName;  
-    if (gLocalMaskFileLastVersion != gLocalMaskFileVersion) {
+    if ((gLocalMaskFileLastVersion != gLocalMaskFileVersion) || initFES) {
       modified = true;
       status = daqDA_FES_storeFile(file.Data(), file.Data());
       if (status) {
@@ -335,7 +344,7 @@ Bool_t ExportFiles()
     }
 
     file = gLocalLutFileName;
-    if (gLocalLutFileLastVersion != gLocalLutFileVersion) {
+    if ((gLocalLutFileLastVersion != gLocalLutFileVersion) || initFES) {
       modified = true;
       status = daqDA_FES_storeFile(file.Data(), file.Data());
       if (status) {
@@ -349,7 +358,7 @@ Bool_t ExportFiles()
 
     // exported regional file whenever mask or/and Lut are modified
     file = gRegionalFileName;
-    if ( (gRegionalFileLastVersion != gRegionalFileVersion) || modified) {
+    if ( (gRegionalFileLastVersion != gRegionalFileVersion) || modified || initFES) {
       status = daqDA_FES_storeFile(file.Data(), file.Data());
       if (status) {
 	printf("Failed to export file: %s\n",gRegionalFileName.Data());
@@ -389,16 +398,9 @@ Bool_t ImportFiles()
     // offline:
     //gSystem->Setenv("DAQDALIB_PATH", "$DATE_SITE/db");
 
-    // offline: use the test directory as a source / else use the database
-    /*
-    if (gWriteInitialDB) {
-      gSystem->Setenv("DAQDA_TEST_DIR", "/alisoft/Mts-files");
-      gSystem->Exec("echo $DAQDA_TEST_DIR");
-    } else {
-      gSystem->Unsetenv("DAQDA_TEST_DIR");
-      gSystem->Exec("echo $DAQDA_TEST_DIR");
-    }
-    */
+    // offline: take the first two files from the local db
+    //gSystem->Unsetenv("DAQDA_TEST_DIR");
+
     status = daqDA_DB_getFile(gCurrentFileName.Data(), gCurrentFileName.Data());
     if (status) {
       printf("Failed to get current config file from DB: %s\n",gCurrentFileName.Data());
@@ -413,9 +415,8 @@ Bool_t ImportFiles()
       return false;
     }
 
-    // offline: use always the test directory as a source
+    // offline: take the other files from the special local storage (not db)
     //gSystem->Setenv("DAQDA_TEST_DIR", "/alisoft/Mts-files");
-    //gSystem->Exec("echo $DAQDA_TEST_DIR");
 
     status = daqDA_DB_getFile(gRegionalFileName.Data(), gRegionalFileName.Data());
     if (status) {
@@ -505,12 +506,12 @@ void UpdateGlobalMasks()
       withEvD = false;
       if (gNEventsN > gkMinEvents) {
 	rateN = (Float_t)gAccGlobalInputN[ii][ib]/(Float_t)gNEventsN;
-	noise = (rateN > gkThreshold);	
+	noise = (rateN > gkThrN);	
 	withEvN = true;
       }
       if (gNEventsD > gkMinEvents) {
 	rateD = (Float_t)gAccGlobalInputD[ii][ib]/(Float_t)gNEventsD;
-	deadc = (rateD < (1.0 - gkThreshold));
+	deadc = (rateD < (1.0-gkThrD));
 	withEvD = true;
       }
       if (!withEvN && !withEvD) {
@@ -521,7 +522,10 @@ void UpdateGlobalMasks()
       if (!withEvN && withEvD) {
 	if (!deadc) {
 	  // - create a new mask, set the bit to 1
-	  gmask[ii] |= 0x1 << ib;
+	  //   not allowed!
+	  //gmask[ii] |= 0x1 << ib;
+	  // - copy the bit from the old mask
+	  gmask[ii] |= ((gGlobalMasks->GetGlobalMask(ii) >> ib) & 0x1) << ib;
 	} else {
 	  // - create a new mask, set the bit to 0
 	  gmask[ii] |= 0x0 << ib;
@@ -531,7 +535,10 @@ void UpdateGlobalMasks()
       if (withEvN && !withEvD) {
 	if (!noise) {
 	  // - create a new mask, set the bit to 1
-	  gmask[ii] |= 0x1 << ib;
+	  //   not allowed!
+	  //gmask[ii] |= 0x1 << ib;
+	  // - copy the bit from the old mask
+	  gmask[ii] |= ((gGlobalMasks->GetGlobalMask(ii) >> ib) & 0x1) << ib;
 	} else {
 	  // - create a new mask, set the bit to 0
 	  gmask[ii] |= 0x0 << ib;
@@ -541,7 +548,10 @@ void UpdateGlobalMasks()
       if (withEvN && withEvD) {
 	if (!noise && !deadc) {
 	  // - create a new mask, set the bit to 1
-	  gmask[ii] |= 0x1 << ib;
+	  //   not allowed!
+	  //gmask[ii] |= 0x1 << ib;
+	  // - copy the bit from the old mask
+	  gmask[ii] |= ((gGlobalMasks->GetGlobalMask(ii) >> ib) & 0x1) << ib;
 	} else {
 	  // - create a new mask, set the bit to 0
 	  gmask[ii] |= 0x0 << ib;
@@ -552,7 +562,7 @@ void UpdateGlobalMasks()
 	}
       }
     }
-    printf("gmask %08x \n",gmask[ii]);
+    printf("Global mask [%1d] %08x \n",ii,gmask[ii]);
   }
 
   // check if at least one mask value has been changed from previous version
@@ -593,53 +603,6 @@ void UpdateGlobalMasks()
   
 }
 
-//______________________________________________________________
-void WriteConfigToDB() 
-{
-  // offline: populate db with initial configuration files
-  // only the global configuration and the current file, for the moment ...
-  //gSystem->Setenv("DAQDALIB_PATH", "$DATE_SITE/db");
-  
-  Int_t status = 0;
-  
-  status = daqDA_DB_storeFile(gCurrentFileName.Data(), gCurrentFileName.Data());
-  if (status) {
-    printf("Failed to export file to DB: %s\n",gCurrentFileName.Data());
-    return;
-  }
-  
-  status = daqDA_DB_storeFile(gGlobalFileName.Data(), gGlobalFileName.Data());
-  if (status) {
-    printf("Failed to export file to DB: %s\n",gGlobalFileName.Data());
-    return;
-  }
-  /*
-  status = daqDA_DB_storeFile(gRegionalFileName.Data(), gRegionalFileName.Data());
-  if (status) {
-    printf("Failed to export file to DB: %s\n",gRegionalFileName.Data());
-    return;
-  }
-  
-  status = daqDA_DB_storeFile(gLocalMaskFileName.Data(), gLocalMaskFileName.Data());
-  if (status) {
-    printf("Failed to export file to DB: %s\n",gLocalMaskFileName.Data());
-    return;
-  }
-  */
-  // this is too big!
-  // Error : mysqlsel/db server: 
-  // Got a packet bigger than 'max_allowed_packet' bytes
-  /*
-  status = daqDA_DB_storeFile(gLocalLutFileName.Data(), gLocalLutFileName.Data());
-  if (status) {
-    printf("Failed to export file to DB: %s\n",gLocalLutFileName.Data());
-    return;
-  }
-  */
-  printf("Initial configuration files written to the DB\n");
-  
-}
-
 //*************************************************************//
 
 // main routine
@@ -652,7 +615,8 @@ int main(Int_t argc, Char_t **argv)
 
     Int_t skipEvents = 0;
     Int_t maxEvents  = 1000000;
-    Char_t inputFile[256];
+    Int_t withWarnings = 0;
+    Char_t inputFile[256] = "";
     inputFile[0] = 0;
     if (argc > 1)
       if (argv[1] != NULL)
@@ -678,11 +642,15 @@ int main(Int_t argc, Char_t **argv)
 	  i++;
 	  sprintf(inputFile,argv[i]);
 	  break;
-      case 't' : 
+      case 'p' : 
 	  i++;
-          gkThreshold = atof(argv[i]);
+          gkThrD = atof(argv[i]);
 	  break;
-      case 'd' :
+      case 'c' : 
+	  i++;
+          gkThrN = atof(argv[i]);
+	  break;
+      case 'l' :
 	  i++; 
 	  gPrintLevel=atoi(argv[i]);
 	  break;
@@ -694,9 +662,9 @@ int main(Int_t argc, Char_t **argv)
 	  i++; 
 	  sscanf(argv[i],"%d",&maxEvents);
 	  break;
-      case 'b':
-	  i++;
-	  gWriteInitialDB=atoi(argv[i]);
+      case 'w' :
+	  i++; 
+	  sscanf(argv[i],"%d",&withWarnings);
 	  break;
       case 'h' :
 	  i++;
@@ -705,16 +673,17 @@ int main(Int_t argc, Char_t **argv)
 	  printf("\n-h help                   (this screen)");
 	  printf("\n");
 	  printf("\n Input");
-	  printf("\n-f <raw data file>        (default = %s)",inputFile); 
+	  printf("\n-f <raw data file>"); 
 	  printf("\n");
 	  printf("\n Output");
 	  printf("\n");
 	  printf("\n Options");
-          printf("\n-t <threshold values>     (default = %3.1f)",gkThreshold);
-	  printf("\n-d <print level>          (default = %d)",gPrintLevel);
-	  printf("\n-s <skip events>          (default = %d)",skipEvents);
-	  printf("\n-n <max events>           (default = %d)",maxEvents);
-	  printf("\n-b <write config in data base> (0/1 default = %1d)",gWriteInitialDB);
+          printf("\n-p <thr value ped (deadc)> (default = %3.1f)",gkThrD);
+          printf("\n-c <thr value cal (noise)> (default = %3.1f)",gkThrN);
+	  printf("\n-l <print level>           (default = %d)",gPrintLevel);
+	  printf("\n-s <skip events>           (default = %d)",skipEvents);
+	  printf("\n-n <max events>            (default = %d)",maxEvents);
+	  printf("\n-w <decoder warnings>      (default = %d)",withWarnings);
 
 	  printf("\n\n");
 	  exit(-1);
@@ -748,14 +717,16 @@ int main(Int_t argc, Char_t **argv)
 
     ReadMaskFiles();
 
+    // offline: the run number extracted from the file name
+    //TString tmp(inputFile);
+    //Int_t pos = tmp.First("daq");
+    //tmp = tmp(pos+3,5);
+    //gSystem->Setenv("DATE_RUN_NUMBER",tmp.Data());
+    //gSystem->Exec("echo \"DATE_RUN_NUMBER = \" $DATE_RUN_NUMBER");
+
     if(!ExportFiles()) {
       printf("ExportFiles failed\n");
       return -1;
-    }
-
-    if (gWriteInitialDB) {
-      WriteConfigToDB();
-      return 0;
     }
 
     // FET is triggered by CTP
@@ -861,7 +832,9 @@ int main(Int_t argc, Char_t **argv)
 
       // decoding MUON payload
       AliMUONRawStreamTrigger* rawStream  = new AliMUONRawStreamTrigger(rawReader);
-      //rawStream->SetMaxReg(1);
+      // ... without warnings from the decoder !!!
+      if (!withWarnings)
+	rawStream->DisableWarnings();
 
       // loops over DDL 
       while((status = rawStream->NextDDL())) {
@@ -895,6 +868,8 @@ int main(Int_t argc, Char_t **argv)
     cout << "MUONTRGda : Nb of events used     = "         << gNEvents    << endl;
     cout << "MUONTRGda : Nb of events used (noise)    = "  << gNEventsN   << endl;
     cout << "MUONTRGda : Nb of events used (deadc)    = "  << gNEventsD   << endl;
+    cout << "Threshold for noisy inputs : " << gkThrN << " of the total number of used events (noise)" << endl;
+    cout << "Threshold for dead inputs : " << gkThrD << " of the total number of used events (deadc)" << endl;
 
     printf("Execution time : R:%7.2fs C:%7.2fs\n", timers.RealTime(), timers.CpuTime());
 
