@@ -76,7 +76,7 @@ ClassImp(AliESDEvent)
 						       "AliESDTZERO",
 						       "TPCVertex",
 						       "SPDVertex",
-						       "TrkVertex",
+						       "PrimaryVertex",
 						       "AliMultiplicity",
 						       "PHOSTrigger",
 						       "EMCALTrigger",
