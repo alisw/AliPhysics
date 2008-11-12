@@ -482,7 +482,7 @@ void AliEMCALGeometry::PrintGeometry()
 }
 
 //______________________________________________________________________
-void AliEMCALGeometry::PrintCellIndexes(Int_t absId, int pri, char *tit)
+void AliEMCALGeometry::PrintCellIndexes(Int_t absId, int pri, const char *tit)
 {
   // Service methods
   Int_t nSupMod, nModule, nIphi, nIeta;

@@ -364,7 +364,7 @@ void AliEMCALv2::DrawSuperModuleCut(const char *name, int axis, double dcut, int
 }
 
 //___________________________________________________________
-void AliEMCALv2::DrawTowerCut(const char *name, int axis, double dcut, int fill, char *optShad)
+void AliEMCALv2::DrawTowerCut(const char *name, int axis, double dcut, int fill, const char *optShad)
 { 
   // Size of tower is 5.6x5.6x24.8 (25.0); cut on Z axiz
   if(axis<1) axis=1; if(axis>3) axis=3;

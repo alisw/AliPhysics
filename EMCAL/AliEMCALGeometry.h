@@ -59,7 +59,7 @@ public:
   Bool_t  IsInitialized(void) const { return fgInit ; }
   static const Char_t* GetDefaultGeometryName() {return fgDefaultGeometryName;}
   void PrintGeometry();                                           //*MENU*  
-  void PrintCellIndexes(Int_t absId=0, int pri=0, char *tit="");  //*MENU*
+  void PrintCellIndexes(Int_t absId=0, int pri=0, const char *tit="");  //*MENU*
   virtual void Browse(TBrowser* b);
   virtual Bool_t  IsFolder() const;
   
