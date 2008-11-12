@@ -1096,11 +1096,6 @@ void AliAnalysisVertexingHF::SelectTracksAndCopyVertex(AliVEvent *event,
   }
 
 
-    for(Int_t itr=0; itr<event->GetNumberOfTracks(); itr++) {
-
-    }
-
-
   nTrksP=0,nTrksN=0;
 
   Int_t entries = (Int_t)event->GetNumberOfTracks();
