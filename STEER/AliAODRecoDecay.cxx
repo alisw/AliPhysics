@@ -114,23 +114,23 @@ AliAODRecoDecay::AliAODRecoDecay(const AliAODRecoDecay &source) :
   // Copy constructor
   //
   if(source.GetNProngs()>0) {
-    fd0 = new Double_t[GetNProngs()];
-    memcpy(fd0,source.fd0,GetNProngs()*sizeof(Double_t));
+    fd0 = new Double32_t[GetNProngs()];
+    memcpy(fd0,source.fd0,GetNProngs()*sizeof(Double32_t));
     if(source.fPx) {
-      fPx = new Double_t[GetNProngs()];
-      fPy = new Double_t[GetNProngs()];
-      fPz = new Double_t[GetNProngs()];
-      memcpy(fPx,source.fPx,GetNProngs()*sizeof(Double_t));
-      memcpy(fPy,source.fPy,GetNProngs()*sizeof(Double_t));
-      memcpy(fPz,source.fPz,GetNProngs()*sizeof(Double_t));
+      fPx = new Double32_t[GetNProngs()];
+      fPy = new Double32_t[GetNProngs()];
+      fPz = new Double32_t[GetNProngs()];
+      memcpy(fPx,source.fPx,GetNProngs()*sizeof(Double32_t));
+      memcpy(fPy,source.fPy,GetNProngs()*sizeof(Double32_t));
+      memcpy(fPz,source.fPz,GetNProngs()*sizeof(Double32_t));
     }
     if(source.fPID) {
-      fPID = new Double_t[5*GetNProngs()];
-      memcpy(fPID,source.fPID,GetNProngs()*sizeof(Double_t));
+      fPID = new Double32_t[fNPID];
+      memcpy(fPID,source.fPID,fNPID*sizeof(Double32_t));
     }
     if(source.fDCA) {
-      fDCA = new Double_t[GetNProngs()*(GetNProngs()-1)/2];
-      memcpy(fDCA,source.fDCA,(GetNProngs()*(GetNProngs()-1)/2)*sizeof(Double_t));
+      fDCA = new Double32_t[fNDCA];
+      memcpy(fDCA,source.fDCA,fNDCA*sizeof(Double32_t));
     }
   }
 }
@@ -151,28 +151,28 @@ AliAODRecoDecay &AliAODRecoDecay::operator=(const AliAODRecoDecay &source)
   fRunNumber = source.fRunNumber;
   if(source.GetNProngs()>0) {
     if(fd0)delete [] fd0; 
-    fd0 = new Double_t[GetNProngs()];
-    memcpy(fd0,source.fd0,GetNProngs()*sizeof(Double_t));
+    fd0 = new Double32_t[GetNProngs()];
+    memcpy(fd0,source.fd0,GetNProngs()*sizeof(Double32_t));
     if(source.fPx) {
       if(fPx) delete [] fPx; 
-      fPx = new Double_t[GetNProngs()];
+      fPx = new Double32_t[GetNProngs()];
       if(fPy) delete [] fPy; 
-      fPy = new Double_t[GetNProngs()];
+      fPy = new Double32_t[GetNProngs()];
       if(fPz) delete [] fPz; 
-      fPz = new Double_t[GetNProngs()];
-      memcpy(fPx,source.fPx,GetNProngs()*sizeof(Double_t));
-      memcpy(fPy,source.fPy,GetNProngs()*sizeof(Double_t));
-      memcpy(fPz,source.fPz,GetNProngs()*sizeof(Double_t));
+      fPz = new Double32_t[GetNProngs()];
+      memcpy(fPx,source.fPx,GetNProngs()*sizeof(Double32_t));
+      memcpy(fPy,source.fPy,GetNProngs()*sizeof(Double32_t));
+      memcpy(fPz,source.fPz,GetNProngs()*sizeof(Double32_t));
     }
     if(source.fPID) {
       if(fPID) delete [] fPID; 
-      fPID = new Double_t[5*GetNProngs()];
-      memcpy(fPID,source.fPID,GetNProngs()*sizeof(Double_t));
+      fPID = new Double32_t[fNPID];
+      memcpy(fPID,source.fPID,fNPID*sizeof(Double32_t));
     }
     if(source.fDCA) {
       if(fDCA) delete [] fDCA; 
-      fDCA = new Double_t[GetNProngs()*(GetNProngs()-1)/2];
-      memcpy(fDCA,source.fDCA,(GetNProngs()*(GetNProngs()-1)/2)*sizeof(Double32_t));
+      fDCA = new Double32_t[fNDCA];
+      memcpy(fDCA,source.fDCA,fNDCA*sizeof(Double32_t));
     }
   }
   return *this;

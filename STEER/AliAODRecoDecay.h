@@ -12,6 +12,7 @@
 #include <TMath.h>
 #include <TRef.h>
 #include "AliAODVertex.h"
+#include "AliAODTrack.h"
 #include "AliVParticle.h"
 
 class AliAODRecoDecay : public AliVParticle {
@@ -107,6 +108,7 @@ class AliAODRecoDecay : public AliVParticle {
   // prongs
   //Int_t   GetNProngs() const {return GetSecondaryVtx()->GetNDaughters();}
   Int_t   GetNProngs() const {return fNProngs;}
+  TObject *GetDaughter(Int_t i) const {return GetSecondaryVtx()->GetDaughter(i);}
 
   Short_t ChargeProng(Int_t ip) const;
   Double_t Getd0Prong(Int_t ip) const {return fd0[ip];}
@@ -321,7 +323,7 @@ inline void AliAODRecoDecay::SetPID(Int_t nprongs,Double_t *pid)
     return;
   }
   if(fPID) delete [] fPID;
-  fNPID = nprongs;
+  fNPID = nprongs*5;
   fPID = new Double32_t[nprongs*5];
   for(Int_t i=0;i<nprongs;i++) 
     for(Int_t j=0;j<5;j++)
