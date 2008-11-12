@@ -28,8 +28,5 @@
 #pragma link C++ class AliCaloTrackESDReader+;
 #pragma link C++ class AliCaloTrackAODReader+;
 #pragma link C++ class AliCaloTrackMCReader+;
-#pragma link C++ class AliAnalysisTaskGammaConversion+;
-#pragma link C++ class AliV0Reader+;
-#pragma link C++ class AliGammaConversionHistograms+;
 
 #endif
