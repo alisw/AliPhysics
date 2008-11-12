@@ -88,6 +88,7 @@ class AliMUONVTrackReconstructor : public TObject {
 
   void RemoveIdenticalTracks();
   void RemoveDoubleTracks();
+  void RemoveConnectedTracks(Bool_t inSt345 = kFALSE);
 
   void AskForNewClustersInStation(const AliMUONTrackParam &trackParam,
 				  AliMUONVClusterStore& clusterStore, Int_t station);

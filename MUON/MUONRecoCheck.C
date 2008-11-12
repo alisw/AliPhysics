@@ -53,7 +53,7 @@ void MUONRecoCheck (Int_t nEvent = 1, char* geoFilename = "geometry.root",
                     char * pathSim="./generated/", char * esdFileName="AliESDs.root")
 {
   
-  Bool_t *compTrack;
+  Bool_t compTrack[10];
   Bool_t compTrackOK[10];
   Int_t nClusterOk = 0;
   Int_t testTrack = 0;	
@@ -141,7 +141,7 @@ void MUONRecoCheck (Int_t nEvent = 1, char* geoFilename = "geometry.root",
 	if (trackReco->GetNClusters() > 1) {
 	  
 	  // check cluster by cluster if trackReco contain info at each cluster
-	  compTrack = trackRef->CompatibleTrack(trackReco,sigmaCut);
+	  trackRef->CompatibleTrack(trackReco,sigmaCut,compTrack);
 	  
 	  iTrack = TrackCheck(compTrack);
 	  

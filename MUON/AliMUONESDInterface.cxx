@@ -640,10 +640,11 @@ void AliMUONESDInterface::SetParamCov(const AliMUONTrackParam& trackParam, AliES
 //_____________________________________________________________________________
 void AliMUONESDInterface::ESDToMUON(const AliESDMuonTrack& esdTrack, AliMUONTrack& track)
 {
-  /// Transfert data from ESDMuon track to MUON track
-  /// note: The MUON track recovered from ESD is refitted by using the provided recoParams.
-  ///       If not provided (=0x0), the parameters at each cluster are simply the
-  ///       extrapolation of parameters at the first one.
+  /// Transfert data from ESDMuon track to MUON track.
+  /// The track parameters at each cluster are obtained by refitting the track
+  /// or by extrapolating the parameters at the first one if the refit failed.
+  /// note: You can set the recoParam used to refit the MUON track with ResetTracker(...);
+  ///       By default we use Kalman filter + Smoother
   
   // if the ESDMuon track is a ghost then return an empty MUON track
   if (!esdTrack.ContainTrackerData()) {
@@ -716,10 +717,9 @@ void AliMUONESDInterface::ESDToMUON(const AliESDMuonTrack& esdTrack, AliMUONTrac
     
   } else {
     
-    // get number of the first hit chamber (according to the MUONClusterMap if not empty)
+    // get number of the first hit chamber according to the MUONClusterMap
     Int_t firstCh = 0;
-    if (esdTrack.GetMuonClusterMap() != 0) while (!esdTrack.IsInMuonClusterMap(firstCh)) firstCh++;
-    else firstCh = AliMUONConstants::ChamberNumber(param.GetZ());
+    while (firstCh < 10 && !esdTrack.IsInMuonClusterMap(firstCh)) firstCh++;
     
     // produce fake cluster at this chamber
     cluster->SetUniqueID(AliMUONVCluster::BuildUniqueID(firstCh, 0, 0));

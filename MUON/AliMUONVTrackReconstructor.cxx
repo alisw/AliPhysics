@@ -156,8 +156,9 @@ void AliMUONVTrackReconstructor::EventReconstruct(AliMUONVClusterStore& clusterS
   // Improve the reconstructed tracks
   if (GetRecoParam()->ImproveTracks()) ImproveTracks();
   
-  // Remove double tracks
-  RemoveDoubleTracks();
+  // Remove connected tracks
+  if (GetRecoParam()->RemoveConnectedTracksInSt12()) RemoveConnectedTracks(kFALSE);
+  else RemoveConnectedTracks(kTRUE);
   
   // Fill AliMUONTrack data members
   Finalize();
@@ -322,6 +323,56 @@ void AliMUONVTrackReconstructor::RemoveDoubleTracks()
       clustersInCommon = track1->ClustersInCommon(track2);
       // check for identical tracks
       if (((nClusters1 < nClusters2) && (2 * clustersInCommon > nClusters1)) || (2 * clustersInCommon > nClusters2)) {
+        // decide which track to remove
+        if ((nClusters1 > nClusters2) || ((nClusters1 == nClusters2) && (track1->GetGlobalChi2() <= track2->GetGlobalChi2()))) {
+	  // remove track2 and continue the second loop with the track next to track2
+	  trackToRemove = track2;
+	  track2 = (AliMUONTrack*) fRecTracksPtr->After(track2);
+	  fRecTracksPtr->Remove(trackToRemove);
+	  fRecTracksPtr->Compress(); // this is essential to retrieve the TClonesArray afterwards
+	  fNRecTracks--;
+        } else {
+	  // else remove track1 and continue the first loop with the track next to track1
+	  trackToRemove = track1;
+	  track1 = (AliMUONTrack*) fRecTracksPtr->After(track1);
+          fRecTracksPtr->Remove(trackToRemove);
+	  fRecTracksPtr->Compress(); // this is essential to retrieve the TClonesArray afterwards
+	  fNRecTracks--;
+	  removedTrack1 = kTRUE;
+	  break;
+        }
+      } else track2 = (AliMUONTrack*) fRecTracksPtr->After(track2);
+    } // track2
+    if (removedTrack1) continue;
+    track1 = (AliMUONTrack*) fRecTracksPtr->After(track1);
+  } // track1
+  return;
+}
+
+  //__________________________________________________________________________
+void AliMUONVTrackReconstructor::RemoveConnectedTracks(Bool_t inSt345)
+{
+  /// To remove double tracks:
+  /// Tracks are considered identical if they share 1 cluster or more.
+  /// If inSt345=kTRUE only stations 3, 4 and 5 are considered.
+  /// Among two identical tracks, one keeps the track with the larger number of clusters
+  /// or, if these numbers are equal, the track with the minimum chi2.
+  AliMUONTrack *track1, *track2, *trackToRemove;
+  Int_t clustersInCommon, nClusters1, nClusters2;
+  Bool_t removedTrack1;
+  // Loop over first track of the pair
+  track1 = (AliMUONTrack*) fRecTracksPtr->First();
+  while (track1) {
+    removedTrack1 = kFALSE;
+    nClusters1 = track1->GetNClusters();
+    // Loop over second track of the pair
+    track2 = (AliMUONTrack*) fRecTracksPtr->After(track1);
+    while (track2) {
+      nClusters2 = track2->GetNClusters();
+      // number of clusters in common between two tracks
+      clustersInCommon = track1->ClustersInCommon(track2, inSt345);
+      // check for identical tracks
+      if (clustersInCommon > 0) {
         // decide which track to remove
         if ((nClusters1 > nClusters2) || ((nClusters1 == nClusters2) && (track1->GetGlobalChi2() <= track2->GetGlobalChi2()))) {
 	  // remove track2 and continue the second loop with the track next to track2

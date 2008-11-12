@@ -27,7 +27,6 @@
 #include "AliMUONVCluster.h"
 #include "AliMUONVClusterStore.h"
 #include "AliMUONObjectPair.h"
-#include "AliMUONConstants.h"
 #include "AliMUONTrackExtrap.h"
 
 #include "AliLog.h"
@@ -971,26 +970,31 @@ void AliMUONTrack::ComputeMCSCovariances(TMatrixD& mcsCovariances) const
 }
 
   //__________________________________________________________________________
-Int_t AliMUONTrack::ClustersInCommon(AliMUONTrack* track) const
+Int_t AliMUONTrack::ClustersInCommon(AliMUONTrack* track, Bool_t inSt345) const
 {
   /// Returns the number of clusters in common between the current track ("this")
   /// and the track pointed to by "track".
+  /// If inSt345=kTRUE only stations 3, 4 and 5 are considered.
   if (!fTrackParamAtCluster || !this->fTrackParamAtCluster) return 0;
   Int_t clustersInCommon = 0;
   AliMUONTrackParam *trackParamAtCluster1, *trackParamAtCluster2;
   // Loop over clusters of first track
   trackParamAtCluster1 = (AliMUONTrackParam*) this->fTrackParamAtCluster->First();
   while (trackParamAtCluster1) {
-    // Loop over clusters of second track
-    trackParamAtCluster2 = (AliMUONTrackParam*) track->fTrackParamAtCluster->First();
-    while (trackParamAtCluster2) {
-      // Increment "clustersInCommon" if both trackParamAtCluster1 & 2 point to the same cluster
-      if ((trackParamAtCluster1->GetClusterPtr()) == (trackParamAtCluster2->GetClusterPtr())) {
-        clustersInCommon++;
-	break;
-      }
-      trackParamAtCluster2 = (AliMUONTrackParam*) track->fTrackParamAtCluster->After(trackParamAtCluster2);
-    } // trackParamAtCluster2
+    if ((!inSt345) || (trackParamAtCluster1->GetClusterPtr()->GetChamberId() > 3)) {
+      // Loop over clusters of second track
+      trackParamAtCluster2 = (AliMUONTrackParam*) track->fTrackParamAtCluster->First();
+      while (trackParamAtCluster2) {
+	if ((!inSt345) || (trackParamAtCluster2->GetClusterPtr()->GetChamberId() > 3)) {
+	  // Increment "clustersInCommon" if both trackParamAtCluster1 & 2 point to the same cluster
+	  if ((trackParamAtCluster1->GetClusterPtr()) == (trackParamAtCluster2->GetClusterPtr())) {
+	    clustersInCommon++;
+	    break;
+	  }
+	}
+	trackParamAtCluster2 = (AliMUONTrackParam*) track->fTrackParamAtCluster->After(trackParamAtCluster2);
+      } // trackParamAtCluster2
+    }
     trackParamAtCluster1 = (AliMUONTrackParam*) this->fTrackParamAtCluster->After(trackParamAtCluster1);
   } // trackParamAtCluster1
   return clustersInCommon;
@@ -1007,19 +1011,20 @@ Double_t AliMUONTrack::GetNormalizedChi2() const
 }
 
   //__________________________________________________________________________
-Bool_t* AliMUONTrack::CompatibleTrack(AliMUONTrack *track, Double_t sigmaCut) const
+Int_t AliMUONTrack::CompatibleTrack(AliMUONTrack* track, Double_t sigmaCut, Bool_t compatibleCluster[10]) const
 {
-  /// for each chamber: return kTRUE (kFALSE) if clusters are compatible (not compatible)
+  /// for each chamber: return kTRUE (kFALSE) if clusters are compatible (not compatible).
+  /// nMatchClusters = number of clusters of "this" track matched with one cluster of track "track"
   AliMUONTrackParam *trackParamAtCluster1, *trackParamAtCluster2;
   AliMUONVCluster *cluster1, *cluster2;
-  Double_t chi2, dX, dY, dZ;
+  Double_t chi2, dX, dY;
   Double_t chi2Max = sigmaCut * sigmaCut;
-  Double_t dZMax = 1.; // 1 cm
   
-  Bool_t *compatibleCluster = new Bool_t[AliMUONConstants::NTrackingCh()]; 
+  // initialization
+  Int_t nMatchClusters = 0;
   for ( Int_t ch = 0; ch < AliMUONConstants::NTrackingCh(); ch++) compatibleCluster[ch] = kFALSE;
 
-  if (!fTrackParamAtCluster || !this->fTrackParamAtCluster) return compatibleCluster;
+  if (!fTrackParamAtCluster || !this->fTrackParamAtCluster) return nMatchClusters;
   
   // Loop over clusters of first track
   trackParamAtCluster1 = (AliMUONTrackParam*) this->fTrackParamAtCluster->First();
@@ -1036,9 +1041,8 @@ Bool_t* AliMUONTrack::CompatibleTrack(AliMUONTrack *track, Double_t sigmaCut) co
       //prepare next step
       trackParamAtCluster2 = (AliMUONTrackParam*) track->fTrackParamAtCluster->After(trackParamAtCluster2);
       
-      // z direction
-      dZ = cluster1->GetZ() - cluster2->GetZ();
-      if (dZ > dZMax) continue;
+      // check DE Id
+      if (cluster1->GetDetElemId() != cluster2->GetDetElemId()) continue;
       
       // non bending direction
       dX = cluster1->GetX() - cluster2->GetX();
@@ -1051,13 +1055,14 @@ Bool_t* AliMUONTrack::CompatibleTrack(AliMUONTrack *track, Double_t sigmaCut) co
       if (chi2 > chi2Max) continue;
       
       compatibleCluster[cluster1->GetChamberId()] = kTRUE;
+      nMatchClusters++;
       break;
     }
     
     trackParamAtCluster1 = (AliMUONTrackParam*) this->fTrackParamAtCluster->After(trackParamAtCluster1);
   }
   
-  return compatibleCluster;
+  return nMatchClusters;
 }
 
 //__________________________________________________________________________

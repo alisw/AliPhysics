@@ -238,11 +238,12 @@ void AliMUONRecoCheck::MakeTrackRefs()
       pZ = trackReference->Pz();
       
       // check chamberId of current trackReference
-      Int_t chamberId = AliMUONConstants::ChamberNumber(z);
+      Int_t detElemId = trackReference->UserId();
+      Int_t chamberId = detElemId / 100 - 1;
       if (chamberId < 0 || chamberId >= AliMUONConstants::NTrackingCh()) continue;
       
       // set hit parameters
-      hit->SetUniqueID(AliMUONVCluster::BuildUniqueID(chamberId, 0, 0));
+      hit->SetUniqueID(AliMUONVCluster::BuildUniqueID(chamberId, detElemId, iHit));
       hit->SetXYZ(x,y,z);
       hit->SetErrXY(0.,0.);
       
@@ -405,7 +406,7 @@ void AliMUONRecoCheck::CleanMuonTrackRef(const AliMUONVTrackStore *tmpTrackRefSt
       inverseBendingMomentum *= trackParam1->GetCharge();
       
       // set hit parameters
-      hit->SetUniqueID(AliMUONVCluster::BuildUniqueID(trackParam1->GetClusterPtr()->GetChamberId(), 0, 0));
+      hit->SetUniqueID(trackParam1->GetClusterPtr()->GetUniqueID());
       hit->SetXYZ(x,y,z);
       hit->SetErrXY(0.,0.);
       

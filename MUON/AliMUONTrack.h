@@ -15,6 +15,7 @@
 ////////////////////////////////////////////////////
 
 #include "AliMUONTrackParam.h" // object belongs to the class
+#include "AliMUONConstants.h"
 #include <TClonesArray.h>
 
 class AliMUONVCluster;
@@ -87,11 +88,11 @@ class AliMUONTrack : public TObject
   /// set the chi2 of trigger/track matching 
   void     SetChi2MatchTrigger(Double_t chi2MatchTrigger) {fChi2MatchTrigger = chi2MatchTrigger;}
 
-  Int_t ClustersInCommon(AliMUONTrack* track) const;
+  Int_t ClustersInCommon(AliMUONTrack* track, Bool_t inSt345 = kFALSE) const;
 
   Double_t GetNormalizedChi2() const;
 
-  Bool_t* CompatibleTrack(AliMUONTrack* track, Double_t sigma2Cut) const; // return array of compatible chamber
+  Int_t CompatibleTrack(AliMUONTrack* track, Double_t sigma2Cut, Bool_t compatibleCluster[10]) const;
   
   /// return track number in TrackRefs
   Int_t GetTrackID() const {return fTrackID;}

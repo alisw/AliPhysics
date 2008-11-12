@@ -145,6 +145,11 @@ class AliMUONRecoParam : public AliDetectorRecoParam
   /// return kTRUE/kFALSE if completion of the reconstructed track is switched on/off
   Bool_t   ComplementTracks() const {return fComplementTracks;}
   
+  /// remove tracks sharing cluster in stations 1 or 2
+  void     RemoveConnectedTracksInSt12(Bool_t flag) {fRemoveConnectedTracksInSt12 = flag;} 
+  /// return kTRUE/kFALSE whether tracks sharing cluster in station 1 and 2 must be removed or not
+  Bool_t   RemoveConnectedTracksInSt12() const {return fRemoveConnectedTracksInSt12;}
+  
   /// switch on/off the use of the smoother
   void     UseSmoother(Bool_t flag) {fUseSmoother = flag;} 
   /// return kTRUE/kFALSE if the use of the smoother is switched on/off
@@ -327,13 +332,15 @@ class AliMUONRecoParam : public AliDetectorRecoParam
   Double32_t fDefaultNonBendingReso[10]; ///< default chamber resolution in the non-bending direction
   Double32_t fDefaultBendingReso[10]; ///< default chamber resolution in the bending direction
   
+  Bool_t     fRemoveConnectedTracksInSt12; ///< kTRUE to remove tracks sharing cluster in station 1 and 2
+  
   // functions
   void SetLowFluxParam();
   void SetHighFluxParam();
   void SetCosmicParam();
   
   
-  ClassDef(AliMUONRecoParam,10) // MUON reco parameters
+  ClassDef(AliMUONRecoParam,11) // MUON reco parameters
 };
 
 #endif

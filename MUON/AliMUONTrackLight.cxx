@@ -216,7 +216,8 @@ TParticle* AliMUONTrackLight::FindRefTrack(
     if (trackReco->GetNClusters() > 1) {
       
       // check cluster by cluster if trackReco contain info at each cluster
-      Bool_t *compTrackArray = trackRef->CompatibleTrack(trackReco,kSigmaCut);
+      Bool_t compTrackArray[10];
+      trackRef->CompatibleTrack(trackReco,kSigmaCut,compTrackArray);
       if (TrackCheck(compTrackArray) == 4) compTrack = kTRUE;
       
     } else {

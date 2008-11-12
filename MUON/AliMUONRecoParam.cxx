@@ -68,7 +68,8 @@ AliMUONRecoParam::AliMUONRecoParam()
   fCalibrationMode("NOGAIN"),
   fBypassSt45(0),
   fPadGoodnessMask(0),
-  fChargeSigmaCut(4.0)
+  fChargeSigmaCut(4.0),
+  fRemoveConnectedTracksInSt12(kFALSE)
 {
   /// Constructor
   
@@ -168,6 +169,7 @@ void AliMUONRecoParam::SetLowFluxParam()
   fMakeMoreTrackCandidates = kFALSE;
   fComplementTracks = kTRUE;
   fImproveTracks = kTRUE;
+  fRemoveConnectedTracksInSt12 = kTRUE;
   fUseSmoother = kTRUE;
   for (Int_t iCh = 0; iCh < 10; iCh++) {
     fUseChamber[iCh] = kTRUE;
@@ -207,6 +209,7 @@ void AliMUONRecoParam::SetHighFluxParam()
   fMakeMoreTrackCandidates = kFALSE;
   fComplementTracks = kTRUE;
   fImproveTracks = kTRUE;
+  fRemoveConnectedTracksInSt12 = kFALSE;
   fUseSmoother = kTRUE;
   for (Int_t iCh = 0; iCh < 10; iCh++) {
     fUseChamber[iCh] = kTRUE;
@@ -216,22 +219,6 @@ void AliMUONRecoParam::SetHighFluxParam()
   for (Int_t iSt = 0; iSt < 5; iSt++) fRequestStation[iSt] = kTRUE;
   fBypassSt45 = 0;
   
-}
-
-//_____________________________________________________________________________
-UInt_t
-AliMUONRecoParam::RequestedStationMask() const
-{
-  /// Get the mask of the requested station, i.e. an integer where 
-  /// bit n is set to one if the station n was requested
-
-  UInt_t m(0);
-  
-  for ( Int_t i = 0; i < 5; ++i ) 
-  {
-    if ( RequestStation(i) ) m |= ( 1 << i );
-  }
-  return m;
 }
 
 //_____________________________________________________________________________
@@ -261,6 +248,7 @@ void AliMUONRecoParam::SetCosmicParam()
   fMakeMoreTrackCandidates = kFALSE;
   fComplementTracks = kTRUE;
   fImproveTracks = kTRUE;
+  fRemoveConnectedTracksInSt12 = kTRUE;
   fUseSmoother = kTRUE;
   fSaveFullClusterInESD = kTRUE;
   for (Int_t iCh = 0; iCh < 10; iCh++) {
@@ -271,6 +259,22 @@ void AliMUONRecoParam::SetCosmicParam()
   for (Int_t iSt = 0; iSt < 5; iSt++) fRequestStation[iSt] = kTRUE;
   fBypassSt45 = 0;
   
+}
+
+//_____________________________________________________________________________
+UInt_t
+AliMUONRecoParam::RequestedStationMask() const
+{
+  /// Get the mask of the requested station, i.e. an integer where 
+  /// bit n is set to one if the station n was requested
+  
+  UInt_t m(0);
+  
+  for ( Int_t i = 0; i < 5; ++i ) 
+  {
+    if ( RequestStation(i) ) m |= ( 1 << i );
+  }
+  return m;
 }
 
 //_____________________________________________________________________________
@@ -368,6 +372,9 @@ void AliMUONRecoParam::Print(Option_t *option) const
     else cout<<"OFF"<<endl;
   } else if (fImproveTracks)
     cout<<Form("Try to improve the reconstructed tracks by removing bad clusters (sigma cut = %5.2f)",fSigmaCutForImprovement)<<endl;
+  
+  if (fRemoveConnectedTracksInSt12) cout<<"Remove tracks sharing one cluster or more in any station"<<endl;
+  else cout<<"Remove tracks sharing one cluster or more in stations 3, 4 and 5"<<endl;
   
   if (strstr(option,"FULL")) {
     cout<<"Use smoother to compute final track parameters, etc, at each cluster (used for Kalman tracking only): ";
