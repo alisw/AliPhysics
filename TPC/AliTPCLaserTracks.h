@@ -61,7 +61,7 @@ public:
 
     Int_t FindMirror(Char_t *file, Double_t x, Double_t y, Double_t z, Double_t phi);
 
-    TObjArray* GetLines(Char_t* file, Char_t *cuts="");
+    TObjArray* GetLines(const Char_t* file, const Char_t *cuts="");
 
 protected:
     Int_t fId;              //Laser beam id            (0-335)

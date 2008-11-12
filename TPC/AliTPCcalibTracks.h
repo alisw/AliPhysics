@@ -58,9 +58,9 @@ public :
   void     Process(AliESDEvent *event) {AliTPCcalibBase::Process(event);};
   void     Process(AliESDtrack *track, Int_t runNo=-1){AliTPCcalibBase::Process(track,runNo);};
   virtual Long64_t Merge(TCollection *li);
-  void     MakeResPlotsQTree(Int_t minEntries = 100, char* pathName = "plots");
+  void     MakeResPlotsQTree(Int_t minEntries = 100, const char* pathName = "plots");
   static void MakeQPosNormAll(TTree * chain, AliTPCClusterParam * param, Int_t maxPoints=1000000);
-   void     MakeReport(Int_t stat, char* pathName = "plots");     // calls all functions that procude pictures, results are written to pathName, stat is the minimal statistic threshold
+   void     MakeReport(Int_t stat, const char* pathName = "plots");     // calls all functions that procude pictures, results are written to pathName, stat is the minimal statistic threshold
   //
 
    
@@ -72,12 +72,12 @@ public :
   
   void     SetStyle() const;
   void     Draw(Option_t* opt);                                  // draw some exemplaric histograms for fast result-check
-  void     MakeAmpPlots(Int_t stat, char* pathName = "plots");
-  void     MakeDeltaPlots(char* pathName = "plots");
-  void     MakeChargeVsDriftLengthPlotsOld(char* pathName = "plots");
-  void     MakeChargeVsDriftLengthPlots(char* pathName = "plots");
-  void     FitResolutionNew(char* pathName = "plots");
-  void     FitRMSNew(char* pathName = "plots");
+  void     MakeAmpPlots(Int_t stat, const char* pathName = "plots");
+  void     MakeDeltaPlots(const char* pathName = "plots");
+  void     MakeChargeVsDriftLengthPlotsOld(const char* pathName = "plots");
+  void     MakeChargeVsDriftLengthPlots(const char* pathName = "plots");
+  void     FitResolutionNew(const char* pathName = "plots");
+  void     FitRMSNew(const char* pathName = "plots");
   
   TObjArray* GetfArrayAmpRow() {return fArrayAmpRow;}
   TObjArray* GetfArrayAmp() {return fArrayAmp;}

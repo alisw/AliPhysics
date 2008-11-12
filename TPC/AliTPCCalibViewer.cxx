@@ -1594,7 +1594,7 @@ AliTPCCalPad* AliTPCCalibViewer::GetCalPad(const char* desiredData, const char* 
 }
 
 //_____________________________________________________________________________
-AliTPCCalROC* AliTPCCalibViewer::GetCalROC(const char* desiredData, UInt_t sector, char* cuts) const {
+AliTPCCalROC* AliTPCCalibViewer::GetCalROC(const char* desiredData, UInt_t sector, const char* cuts) const {
   //
   // creates a AliTPCCalROC out of the desiredData
   // the functionality of EasyDraw1D is used

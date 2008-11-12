@@ -337,7 +337,7 @@ TPolyLine3D* AliTPCLaserTracks::GetLine()
 }
 
 //_______________________________________________________________________
-TObjArray* AliTPCLaserTracks::GetLines(Char_t* file, Char_t *cuts)
+TObjArray* AliTPCLaserTracks::GetLines(const Char_t* file, const Char_t *cuts)
 {
   //
   // Read the input files with the laser track 

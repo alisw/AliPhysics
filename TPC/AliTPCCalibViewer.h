@@ -61,7 +61,7 @@ public:
    AliTPCCalPad* GetCalPadOld(const char* desiredData, const char* cuts = "", const char* calPadName = "NoName") const;     // returns an AliTPCCalPad object containing the specified data with cuts applied
    AliTPCCalPad* GetCalPad(const char* desiredData, const char* cuts = "", const char* calPadName = "NoName") const;     // returns an AliTPCCalPad object containing the specified data with cuts applied
 
-   AliTPCCalROC* GetCalROC(const char* desiredData, UInt_t sector, char* cuts = "") const;  // returns an AliTPCCalROC object containing the specified data for sector with cuts applied
+   AliTPCCalROC* GetCalROC(const char* desiredData, UInt_t sector, const char* cuts = "") const;  // returns an AliTPCCalROC object containing the specified data for sector with cuts applied
    
    TObjArray* GetArrayOfCalPads();
    TObjArray* GetListOfVariables(Bool_t printList = kFALSE);

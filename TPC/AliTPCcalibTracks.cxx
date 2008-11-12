@@ -1362,7 +1362,7 @@ void AliTPCcalibTracks::Draw(Option_t* opt){
 }
 
 
-void AliTPCcalibTracks::MakeReport(Int_t stat, char* pathName){ 
+void AliTPCcalibTracks::MakeReport(Int_t stat, const char* pathName){ 
    // 
    // all functions are called, that produce pictures
    // the histograms are written to the directory 'pathName'
@@ -1381,7 +1381,7 @@ void AliTPCcalibTracks::MakeReport(Int_t stat, char* pathName){
 }
    
 
-void AliTPCcalibTracks::MakeAmpPlots(Int_t stat, char* pathName){ 
+void AliTPCcalibTracks::MakeAmpPlots(Int_t stat, const char* pathName){ 
    // 
    // creates several plots:
    // fArrayAmp.ps, fArrayAmpRow.ps and DeltaYZ.ps
@@ -1451,7 +1451,7 @@ void AliTPCcalibTracks::MakeAmpPlots(Int_t stat, char* pathName){
 }
 
 
-void AliTPCcalibTracks::MakeDeltaPlots(char* pathName){
+void AliTPCcalibTracks::MakeDeltaPlots(const char* pathName){
    // 
    // creates several plots:
    // DeltaYZ.ps: DeltaY and DeltaZ histogram with gaus fit
@@ -1488,7 +1488,7 @@ void AliTPCcalibTracks::MakeDeltaPlots(char* pathName){
 }
 
 
-void AliTPCcalibTracks::MakeChargeVsDriftLengthPlotsOld(char* pathName){
+void AliTPCcalibTracks::MakeChargeVsDriftLengthPlotsOld(const char* pathName){
    // 
    // creates charge vs. driftlength plots, one TProfile for each ROC
    // is not correct like this, should be one TProfile for each sector and padsize
@@ -1530,7 +1530,7 @@ void AliTPCcalibTracks::MakeChargeVsDriftLengthPlotsOld(char* pathName){
 }   
 
 
-void AliTPCcalibTracks::MakeChargeVsDriftLengthPlots(char* pathName){
+void AliTPCcalibTracks::MakeChargeVsDriftLengthPlots(const char* pathName){
    // 
    // creates charge vs. driftlength plots, one TProfile for each ROC
    // under development....
@@ -1592,7 +1592,7 @@ void AliTPCcalibTracks::MakeChargeVsDriftLengthPlots(char* pathName){
 
 
 
-void AliTPCcalibTracks::FitResolutionNew(char* pathName){
+void AliTPCcalibTracks::FitResolutionNew(const char* pathName){
    // 
    // calculates different resulution fits in Y and Z direction
    // the histograms are written to 'ResolutionYZ.ps'
@@ -1715,7 +1715,7 @@ void AliTPCcalibTracks::FitResolutionNew(char* pathName){
 }
 
 
-void AliTPCcalibTracks::FitRMSNew(char* pathName){
+void AliTPCcalibTracks::FitRMSNew(const char* pathName){
    // 
    // calculates different resulution-rms fits in Y and Z direction
    // the histograms are written to 'RMS_YZ.ps'
@@ -1838,7 +1838,7 @@ void AliTPCcalibTracks::FitRMSNew(char* pathName){
 }
 
 
-void AliTPCcalibTracks::MakeResPlotsQTree(Int_t minEntries, char* pathName){
+void AliTPCcalibTracks::MakeResPlotsQTree(Int_t minEntries, const char* pathName){
    //
    // Make tree with resolution parameters
    // the result is written to 'resol.root' in directory 'pathname'
