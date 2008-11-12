@@ -104,7 +104,7 @@ class AliHLTPHOSPhysicsAnalyzer
    */
   void GlobalPosition(Float_t* locPositionPtr , Float_t* positionPtr, Int_t module);
 
-  virtual void WriteHistogram(Char_t* fileName = "histogram.root");
+  virtual void WriteHistogram(const Char_t* fileName = "histogram.root");
 
   /** 
    * Abstract function, for doing analysis

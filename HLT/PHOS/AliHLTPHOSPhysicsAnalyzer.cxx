@@ -133,7 +133,7 @@ AliHLTPHOSPhysicsAnalyzer::GlobalPosition(Float_t* locPositionPtr, Float_t* posi
 }
 
 void
-AliHLTPHOSPhysicsAnalyzer::WriteHistogram(Char_t* fileName)
+AliHLTPHOSPhysicsAnalyzer::WriteHistogram(const Char_t* fileName)
 {
   //Write the histogram
   //See header file for documentation

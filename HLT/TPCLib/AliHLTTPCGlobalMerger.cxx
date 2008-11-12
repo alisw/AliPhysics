@@ -122,7 +122,7 @@ Double_t AliHLTTPCGlobalMerger::CheckTracks(AliHLTTPCTrack *innertrack,AliHLTTPC
   return diff;
 }
 
-void AliHLTTPCGlobalMerger::SlowMerge(Char_t *path)
+void AliHLTTPCGlobalMerger::SlowMerge(const Char_t *path)
 {
   //Tuning of parameters. This matches _all_ tracks between two neighbouring
   //slices, and merges the ones which are closest in space. The difference

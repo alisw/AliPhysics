@@ -34,7 +34,7 @@ class AliHLTTPCGlobalMerger : public AliHLTTPCMerger{
   
   void Setup(Int_t first,Int_t last);
   void InitSlice(Int_t slice);
-  void SlowMerge(Char_t *path="./");
+  void SlowMerge(const Char_t *path="./");
   void Merge();  //Loop over tracks from different sectors
 
  private:
