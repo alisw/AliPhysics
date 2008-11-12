@@ -112,14 +112,17 @@ void ReadAODVertexingHF(const char *aodFileName="AliAOD.root",
 	hMass->Fill(d->InvMassD0bar(),0.5);
 	hCPtaVSd0d0->Fill(1e8*d->Prodd0d0(),d->CosPointingAngle());
 	hSecVtxZ->Fill(d->GetSecVtxZ());
-	//cout<<d->GetSecVtxZ() <<endl;
+	//cout<<d->GetSecVtxX() <<endl;
 
 	// get daughter AOD tracks
-	AliAODTrack *trk0=aod->GetTrack(trkIDtoEntry[d->GetProngID(0)]);
-	AliAODTrack *trk1=aod->GetTrack(trkIDtoEntry[d->GetProngID(1)]);
+	AliAODTrack *trk0 = (AliAODTrack*)d->GetDaughter(0);
+	AliAODTrack *trk1 = (AliAODTrack*)d->GetDaughter(1);
+	if(!trk0 || !trk1) {
+	  trk0=aod->GetTrack(trkIDtoEntry[d->GetProngID(0)]);
+	  trk1=aod->GetTrack(trkIDtoEntry[d->GetProngID(1)]);
+	  cout<<"references to standard AOD not available"<<endl;
+	}
 	cout<<"pt of positive track: "<<trk0->Pt()<<endl;
-	// this will be replaced by 
-	//AliAODTrack *trk0 = (AliAODTrack*)(d->GetSecondaryVtx()->GetDaughter(0));
       }
       if(unsetvtx) d->UnsetOwnPrimaryVtx();
     }

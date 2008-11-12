@@ -140,10 +140,12 @@ void AliAnalysisTaskSESelectHF::UserExec(Option_t */*option*/)
     Int_t okD0=0,okD0bar=0; 
     if(dIn->SelectD0(fD0toKpiCuts,okD0,okD0bar)) {
       // get daughter AOD tracks
-      AliAODTrack *trk0=aodIn->GetTrack(trkIDtoEntry[dIn->GetProngID(0)]);
-      AliAODTrack *trk1=aodIn->GetTrack(trkIDtoEntry[dIn->GetProngID(1)]);
-      // this will be replaced by 
-      //AliAODTrack *trk0 = (AliAODTrack*)(dIn->GetSecondaryVtx()->GetDaughter(0));
+      AliAODTrack *trk0 = (AliAODTrack*)dIn->GetDaughter(0);
+      AliAODTrack *trk1 = (AliAODTrack*)dIn->GetDaughter(1);
+      if(!trk0 || !trk1) {
+	trk0=aodIn->GetTrack(trkIDtoEntry[dIn->GetProngID(0)]);
+	trk1=aodIn->GetTrack(trkIDtoEntry[dIn->GetProngID(1)]);
+      }
       printf("pt of positive track: %f\n",trk0->Pt());
       printf("pt of negative track: %f\n",trk1->Pt());
       // HERE ONE COULD RECALCULATE THE VERTEX USING THE KF PACKAGE
@@ -151,13 +153,9 @@ void AliAnalysisTaskSESelectHF::UserExec(Option_t */*option*/)
       // clone candidate for output AOD
       AliAODVertex *v = new(verticesHFRef[iOutVerticesHF++]) 
 	AliAODVertex(*(dIn->GetSecondaryVtx()));
-      Double_t px[2]={dIn->PxProng(0),dIn->PxProng(1)};
-      Double_t py[2]={dIn->PyProng(0),dIn->PyProng(1)};
-      Double_t pz[2]={dIn->PzProng(0),dIn->PzProng(1)};
-      Double_t d0[2]={dIn->Getd0Prong(0),dIn->Getd0Prong(1)};
-      Double_t d0err[2]={dIn->Getd0errProng(0),dIn->Getd0errProng(1)};
       AliAODRecoDecayHF2Prong *dOut=new(aodD0toKpiRef[iOutD0toKpi++]) 
-	AliAODRecoDecayHF2Prong(v,px,py,pz,d0,d0err,dIn->GetDCA());
+	AliAODRecoDecayHF2Prong(*dIn);
+      dOut->SetSecondaryVtx(v);
       dOut->SetOwnPrimaryVtx((AliAODVertex*)((dIn->GetOwnPrimaryVtx())->Clone()));
       v->SetParent(dOut);
     }
