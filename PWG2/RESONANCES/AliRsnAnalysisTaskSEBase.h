@@ -38,6 +38,8 @@ class AliRsnAnalysisTaskSEBase : public AliAnalysisTaskSE
       kAOD = 0,
       kESD,
       kESDMC,
+      kESDTPC,
+      kESDMCTPC,
       kMC,
       kRSN,
       kLastIndex
