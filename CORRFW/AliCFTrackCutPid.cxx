@@ -664,7 +664,7 @@ void AliCFTrackCutPid::DefineHistograms()
   //
 
   if(fgIsAOD){
-     char *partic[AliPID::kSPECIES]={"electron","muon","pion","kaon","proton"}; 
+     const char *partic[AliPID::kSPECIES]={"electron","muon","pion","kaon","proton"}; 
 
      for(Int_t iPart =0; iPart < AliPID::kSPECIES; iPart++)
       {
@@ -681,8 +681,8 @@ void AliCFTrackCutPid::DefineHistograms()
 
 
   else {
-   char *detect[kNdets]={"ITS","TPC","TRD","TOF","HMPID"};
-   char *partic[AliPID::kSPECIES]={"electron","muon","pion","kaon","proton"};
+   const char *detect[kNdets]={"ITS","TPC","TRD","TOF","HMPID"};
+   const char *partic[AliPID::kSPECIES]={"electron","muon","pion","kaon","proton"};
   
     for(Int_t iDet =0; iDet< kNdets; iDet++)
      {
