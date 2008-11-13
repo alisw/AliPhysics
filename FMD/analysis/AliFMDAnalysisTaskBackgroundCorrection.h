@@ -9,6 +9,7 @@
 #include "TObjArray.h"
 #include "TObjString.h"
 #include "TArrayI.h"
+#include "TH1I.h"
 
 class AliFMDAnalysisTaskBackgroundCorrection : public AliAnalysisTask
 {
@@ -39,7 +40,7 @@ class AliFMDAnalysisTaskBackgroundCorrection : public AliAnalysisTask
     TObjArray     fArray;
     TObjArray*    fInputArray;
     TObjString*   fVertexString;
-    TArrayI       fNevents;
+    TH1I          fNevents;
     ClassDef(AliFMDAnalysisTaskBackgroundCorrection, 0); // Analysis task for FMD analysis
 };
  

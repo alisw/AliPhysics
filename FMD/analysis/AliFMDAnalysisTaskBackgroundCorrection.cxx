@@ -88,8 +88,10 @@ void AliFMDAnalysisTaskBackgroundCorrection::CreateOutputObjects()
 	  }
 	} 
     }
-  fNevents.Set(nVtxbins);
-  //  fOutputList.Add(&fArray);
+  
+  fNevents.SetBins(nVtxbins,0,nVtxbins);
+  fNevents.SetName("nEvents");
+  fOutputList.Add(&fNevents);
    
   
 }
@@ -108,7 +110,9 @@ void AliFMDAnalysisTaskBackgroundCorrection::Exec(Option_t */*option*/)
   
   Int_t vtxbin   = fVertexString->GetString().Atoi();
   
-  fNevents.operator[](vtxbin)++;
+  //fNevents.operator[](vtxbin)++;
+  
+  fNevents.Fill(vtxbin);
   
   for(UShort_t det=1;det<=3;det++) {
     TObjArray* detInputArray = (TObjArray*)fInputArray->At(det);
@@ -136,6 +140,7 @@ void AliFMDAnalysisTaskBackgroundCorrection::Exec(Option_t */*option*/)
 //_____________________________________________________________________
 void AliFMDAnalysisTaskBackgroundCorrection::Terminate(Option_t */*option*/) {
   
+  /*
   AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
   
   Int_t nVtxbins = pars->GetNvtxBins();
@@ -152,7 +157,7 @@ void AliFMDAnalysisTaskBackgroundCorrection::Terminate(Option_t */*option*/) {
       }
     }
   }
-  
+  */
 }
 //_____________________________________________________________________
 //
