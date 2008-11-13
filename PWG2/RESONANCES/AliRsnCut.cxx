@@ -78,10 +78,10 @@ AliRsnCut::AliRsnCut(const char *name, const char *title, EType type, Double_t m
     fIMax(fgkIBigNumber),
     fUIMin(0),
     fUIMax(2 * (UInt_t) fgkIBigNumber),
-    fULMin((ULong_t)min),
-    fULMax((ULong_t)max),
+    fULMin(min),
+    fULMax(max),
     fType(type),
-    fVarType((EVarType)kDouble_t)
+    fVarType(kDouble_t)
 {
 //
 // Constructor with arguments and limits
@@ -97,8 +97,8 @@ AliRsnCut::AliRsnCut(const char * name, const char * title, EType type, Int_t mi
     fIMax(max),
     fUIMin(0),
     fUIMax(2 * (UInt_t) fgkIBigNumber),
-    fULMin((ULong_t)min),
-    fULMax((ULong_t)max),
+    fULMin(min),
+    fULMax(max),
     fType(type),
     fVarType(kInt_t)
 {
@@ -317,6 +317,9 @@ Bool_t AliRsnCut::IsSelected(ETarget type, AliRsnDaughter *daughter)
     case kEtaMC:
       if (mcinfo) return IsBetween(mcinfo->Eta());
       else return kTRUE;
+    case kIsPrimary:
+      if (mcinfo) return (mcinfo->Mother() < 0);
+      else return kTRUE;
     case kNSigma:
       return IsBetween(daughter->NSigmaToVertex());
       /*
@@ -397,7 +400,7 @@ Bool_t AliRsnCut::IsSelected(ETarget type, AliRsnEvent * event)
 Bool_t AliRsnCut::IsSelected(ETarget type, AliRsnEvent * ev1, AliRsnEvent * ev2)
 {
   AliDebug(AliLog::kDebug, "<-");
-
+  
   // check type
   if (type != kMixEvent)
   {

@@ -12,6 +12,7 @@
 //          M. Vala (email: martin.vala@cern.ch)
 //
 
+#include <Riostream.h>
 #include "TObjArray.h"
 
 #include "AliLog.h"
@@ -32,6 +33,7 @@ AliRsnPair::AliRsnPair
   fIsLikeSign(kFALSE),
   fMixNum(mixNum),
   fMixingCut(0x0),
+  fMatched(mixNum),
   fPairDef(def),
   fPairType(type),
   fTypePID(AliRsnDaughter::kRealistic),
@@ -43,6 +45,7 @@ AliRsnPair::AliRsnPair
 //
 
   SetUp(type);
+  if (!fIsMixed) fMatched.Set(1);
 }
 //_____________________________________________________________________________
 AliRsnPair::~AliRsnPair()
@@ -141,39 +144,181 @@ void AliRsnPair::Print(Option_t* /*option*/) const
 void AliRsnPair::ProcessPair(AliRsnEventBuffer *buf)
 {
 //
-// Process one event in this pair
+// Process current event in the passed buffer.
+// If this pair is a single-event pair, only that event is processed,
+// otherwise, if it is a mixing pair, all good matches are found and mixed.
 //
 
+  if (fIsMixed && buf->GetEventsBufferIndex() >= fMixNum) ProcessPairMix(buf);
+  else ProcessPairSingle(buf);
+
+  /*
+  // track type/charge #0 in pairDef is taken from this event,
+  // track tipe/charge #1 is taken from the matched event
   AliRsnEvent *e1 = buf->GetCurrentEvent();
   if (!e1) return;
-//   if (e1->GetMultiplicity() < 1) return;
   TArrayI* array1 = e1->GetTracksArray(fTypePID, fPairDef->GetCharge(0), fPairDef->GetType(0));
-  
-  Int_t i = 0;
-  Int_t numMixed = 0;
-  //Int_t lastOkEvent = buf->IndexOf(e1) - 2*fMixNum;
-  //if (lastOkEvent < 0) lastOkEvent = 0;
+
+  // reset array of matched events
+  Int_t i;
+  for (i = 0; i < fMixNum; i++) fMatched[i] = -1;
+
+  // here searches for all matched events:
+  // in case of single-event pairs, there will be only one, equal to current,
+  // otherwise there will be many
   Int_t lastOkEvent = buf->IndexOf(e1) - 1;
-  TArrayI* array2 = 0;
-  for (i = 0; i < fMixNum; i++)
-  {
-    // find other event by event cut
-    AliRsnEvent *e2 = 0;
-    e2 = FindEventByEventCut(buf, lastOkEvent);
-    if (!e2) return;
-    if (fIsMixed) {
-      AliInfo(Form("ev1 = #%d -- ev2 = #%d -- nMixed = %d/%d", buf->IndexOf(e1), buf->IndexOf(e2), i, fMixNum));
-      //AliInfo(Form("Diff Mult = %d", TMath::Abs(e1->GetMultiplicity() - e2->GetMultiplicity())));
-      //AliInfo(Form("Diff Vz   = %f", TMath::Abs(e1->GetVz() - e2->GetVz())));
-      //AliInfo(Form("Diff Phi  = %f", TMath::Abs(e1->GetPhiMean() - e2->GetPhiMean())));
+  Double_t nMatched = 0.0;
+  if (fIsMixed) {
+    for (i = 0; i < fMixNum; i++) {
+      // find other event by event cut
+      AliRsnEvent *e2 = FindEventByEventCut(buf, lastOkEvent);
+      if (!e2) break;
+      fMatched[i] = lastOkEvent;
+      lastOkEvent--;
+      nMatched++;
     }
-//     if (e2->GetMultiplicity() < 1) continue;
-    array2 = e2->GetTracksArray(fTypePID, fPairDef->GetCharge(1), fPairDef->GetType(1));
-    LoopPair(e1, array1, e2, array2);
-    numMixed++;
-    lastOkEvent--;
+    if (fMatched.GetSize() < 0) {
+      AliWarning(Form("Event #%d: found no events to match", buf->IndexOf(e1)));
+      return;
+    }
   }
-//  if (fIsMixed) AliInfo (Form ("NumMixed = %d",numMixed));
+  else {
+    fMatched[0] = buf->IndexOf(e1);
+    nMatched = 1;
+  }
+
+  // in order to balance the problem that different events could be matched
+  // a different number of times (between 1 and the maximum allowd quantity),
+  // for each event, the histograms are filled with a variable weight depending
+  // on the number of matches found:
+  Double_t weight = (Double_t)fMixNum / (Double_t)nMatched;
+
+  // now that matched events are found, they are used to fill the histograms
+  TArrayI* array2 = 0;
+  for (i = 0; i < fMixNum; i++) {
+    if (fMatched[i] < 0) break;
+    AliRsnEvent *e2 = buf->GetEvent(fMatched[i]);
+    array2 = e2->GetTracksArray(fTypePID, fPairDef->GetCharge(1), fPairDef->GetType(1));
+    if (fIsMixed) LoopPair(e1, array1, e2, array2, weight);
+    else LoopPair(e1, array1, e2, array2);
+  }
+  */
+}
+
+//_____________________________________________________________________________
+void AliRsnPair::ProcessPairSingle(AliRsnEventBuffer *buf)
+{
+//
+// SINGLE EVENT PROCESSING
+// This function fills the functions' histograms using tracks
+// from the same event for both components of the defined pair.
+// This function is used for signal, like-sign and rotated background.
+//
+
+  AliRsnEvent *event = buf->GetCurrentEvent();
+  if (!event) return;
+
+  TArrayI* array1 = event->GetTracksArray(fTypePID, fPairDef->GetCharge(0), fPairDef->GetType(0));
+  TArrayI* array2 = event->GetTracksArray(fTypePID, fPairDef->GetCharge(1), fPairDef->GetType(1));
+
+  LoopPair(event, array1, event, array2);
+}
+
+//_____________________________________________________________________________
+void AliRsnPair::ProcessPairMix(AliRsnEventBuffer *buf)
+{
+//
+// MIXED EVENT PROCESSING
+// This function fills the functions' histograms using
+// tracks from different events.
+// Used for event mixing.
+//
+
+  // track type/charge #0 in pairDef is taken from this event,
+  // track tipe/charge #1 is taken from the matched events
+  AliRsnEvent *e1 = buf->GetCurrentEvent();
+  if (!e1) return;
+  TArrayI* array10 = e1->GetTracksArray(fTypePID, fPairDef->GetCharge(0), fPairDef->GetType(0));
+  TArrayI* array11 = e1->GetTracksArray(fTypePID, fPairDef->GetCharge(1), fPairDef->GetType(1));
+
+  // find matched events
+  Int_t i, iev = buf->GetEventsBufferIndex();
+  Int_t nMatched = FindMatchedEvents(iev, buf);
+  if (!nMatched) {
+    AliWarning(Form("Event #%d: found no events to match", iev));
+    return;
+  }
+  else if (nMatched < fMixNum) {
+    AliWarning(Form("Event #%d: found only %d events to match", iev, nMatched));
+    return;
+  }
+
+  /*
+  else {
+    TString str("Matched events: ");
+    for (i = 0; i < nMatched; i++) str.Append(Form("%d ", fMatched[i]));
+    AliInfo(Form("Event #%d: %s", iev, str.Data()));
+  }
+  */
+
+  // in order to balance the problem that different events could be matched
+  // a different number of times (between 1 and the maximum allowd quantity),
+  // for each event, the histograms are filled with a variable weight depending
+  // on the number of matches found:
+  // Double_t weight = 0.5 * (Double_t)fMixNum / (Double_t)nMatched;
+
+  // now that matched events are found, they are used to fill the histograms
+  TArrayI *array20 = 0, *array21 = 0;
+  for (i = 0; i < fMixNum; i++) {
+    if (fMatched[i] < 0) break;
+    AliRsnEvent *e2 = buf->GetEvent(fMatched[i]);
+    array20 = e2->GetTracksArray(fTypePID, fPairDef->GetCharge(0), fPairDef->GetType(0));
+    array21 = e2->GetTracksArray(fTypePID, fPairDef->GetCharge(1), fPairDef->GetType(1));
+    // track type/charge #0 from event1, track type/charge #1 from event2
+    LoopPair(e1, array10, e2, array21);
+    // track type/charge #1 from event1, track type/charge #0 from event2
+    LoopPair(e1, array11, e2, array20);
+  }
+}
+
+//_____________________________________________________________________________
+Int_t AliRsnPair::FindMatchedEvents(Int_t evIndex, AliRsnEventBuffer *buf)
+{
+//
+// Resets the 'fMatched' data member and stores into it
+// a number of well-matched events found in the buffer,
+// (maximum amount = fMixNum).
+// The argument is the index of the event to be matched,
+// in the event buffer.
+//
+
+  // reset array of matched events
+  Int_t i;
+  for (i = 0; i < fMixNum; i++) fMatched[i] = -1;
+
+  // starts from the position behind the one
+  // of the event to be matched and goes backward
+  // if it reaches the value 0, stops
+  AliRsnEvent *eventToBeMatched = buf->GetCurrentEvent();
+  AliRsnEvent *matchEvent = 0x0;
+  Int_t checkIndex = evIndex - 1, curIndex = 0;
+  for (;;checkIndex--) {
+    if (checkIndex < 0) checkIndex = buf->GetEventsBufferSize() - 1;
+    if (checkIndex == evIndex) break;
+    matchEvent = buf->GetEvent(checkIndex);
+    if (!matchEvent) continue;
+    if (fMixingCut) {
+      if (fMixingCut->IsSelected(AliRsnCut::kMixEvent, eventToBeMatched, matchEvent)) continue;
+    }
+    // assign to current array slot the matched event
+    // and increment current slot and stops if it exceeds array size
+    fMatched[curIndex++] = checkIndex;
+    if (curIndex >= fMixNum) break;
+  }
+
+  // returns the current index value,
+  // which is also the number of matched events found
+  return curIndex;
 }
 
 //_____________________________________________________________________________
@@ -202,7 +347,7 @@ AliRsnEvent * AliRsnPair::FindEventByEventCut(AliRsnEventBuffer *buf, Int_t& num
 
 //_____________________________________________________________________________
 void AliRsnPair::LoopPair
-(AliRsnEvent * ev1, TArrayI * a1, AliRsnEvent * ev2, TArrayI * a2)
+(AliRsnEvent * ev1, TArrayI * a1, AliRsnEvent * ev2, TArrayI * a2, Double_t weight)
 {
 //
 // Loop on all pairs of tracks of the defined types/charges,
@@ -245,7 +390,7 @@ void AliRsnPair::LoopPair
             // fill all histograms
             TObjArrayIter nextFcn(&fFunctions);
             while ( (fcn = (AliRsnFunction*)nextFcn()) ) {
-                fcn->Fill(&pairParticle, fPairDef);
+                fcn->Fill(&pairParticle, fPairDef, weight);
             }
         }
     }

@@ -84,9 +84,10 @@ const Int_t AliRsnPID::fgkParticlePDG[AliRsnPID::kSpeciesAll + 1] =
 
 //_____________________________________________________________________________
 AliRsnPID::AliRsnPID() :
-    TNamed("RsnPID", ""),
-    fMaxPt(100.0),
-    fMinProb(0.0)
+  TNamed("RsnPID", ""),
+  fMaxPt(100.0),
+  fMinProb(0.0),
+  fPIDArraysSize(1000)
 {
 //
 // Constructor.
@@ -326,7 +327,7 @@ Bool_t AliRsnPID::Process(AliRsnEvent *event)
   {
     check = check && ComputeProbs(daughter);
   }
-  event->FillPIDArrays();
+  event->FillPIDArrays(fPIDArraysSize);
 
   return check;
 }

@@ -24,7 +24,7 @@ class AliRsnEventBuffer : public TObject
 {
   public:
 
-    AliRsnEventBuffer(Int_t buffsize = 1000, Bool_t deleteBufferWhenReset=kTRUE);
+    AliRsnEventBuffer(Int_t buffsize = 1000, Bool_t deleteBufferWhenReset = kFALSE);
     ~AliRsnEventBuffer();
 
     void ClearBuffer();
