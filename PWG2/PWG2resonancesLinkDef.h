@@ -16,8 +16,6 @@
 
 #pragma link C++ class AliRsnEvent+;
 #pragma link C++ class AliRsnEventBuffer+;
-#pragma link C++ class AliRsnEventFunction+;
-#pragma link C++ class AliRsnEventTaskSE+;
 
 #pragma link C++ class AliRsnReader+;
 #pragma link C++ class AliRsnReaderTask+;
@@ -34,8 +32,5 @@
 #pragma link C++ class AliRsnAnalysisTaskSEBase+;
 #pragma link C++ class AliRsnAnalysisTaskBase+;
 #pragma link C++ class AliRsnAnalysisSE+;
-#pragma link C++ class AliRsnComparisonObj+;
-#pragma link C++ class AliRsnComparisonAT+;
-
 
 #endif
