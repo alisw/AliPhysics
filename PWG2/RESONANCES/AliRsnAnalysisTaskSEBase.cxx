@@ -115,10 +115,12 @@ void AliRsnAnalysisTaskSEBase::SetInputType
       if (fRsnAODEH[0]) fAnalysisMgr->SetInputEventHandler(fRsnAODEH[0]);
       break;
     case kESD:
+    case kESDTPC:
       fRsnESDEH[0] = new AliESDInputHandler();
       if (fRsnESDEH[0]) fAnalysisMgr->SetInputEventHandler(fRsnESDEH[0]);
       break;
     case kESDMC:
+    case kESDTPCMC:
     case kMC:
       fRsnESDEH[0] = new AliESDInputHandler();
       fRsnMCEH[0] = new AliMCEventHandler();
@@ -168,9 +170,11 @@ void AliRsnAnalysisTaskSEBase::ConnectInputDataByInputType
       ConnectAOD(inputIndex);
       break;
     case kESD:
+    case kESDTPC:
       ConnectESD(inputIndex);
       break;
     case kESDMC:
+    case kESDTPCMC:
     case kMC:
       ConnectESDMC(inputIndex);
       break;
