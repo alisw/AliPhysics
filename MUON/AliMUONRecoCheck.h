@@ -22,7 +22,7 @@ class AliMUONVTrackStore;
 class AliMUONRecoCheck : public TObject 
 {
 public:
-  AliMUONRecoCheck(Char_t *chLoader, Char_t *pathSim = "./");
+  AliMUONRecoCheck(const Char_t *chLoader, const Char_t *pathSim = "./");
   virtual ~AliMUONRecoCheck();
 
   /// Return the list of reconstructed tracks

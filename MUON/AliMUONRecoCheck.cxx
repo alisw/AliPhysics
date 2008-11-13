@@ -58,7 +58,7 @@ ClassImp(AliMUONRecoCheck)
 /// \endcond
 
 //_____________________________________________________________________________
-AliMUONRecoCheck::AliMUONRecoCheck(Char_t *esdFileName, Char_t *pathSim)
+AliMUONRecoCheck::AliMUONRecoCheck(const Char_t *esdFileName, const Char_t *pathSim)
 : TObject(),
 fMCEventHandler(new AliMCEventHandler()),
 fESDEvent(new AliESDEvent()),
