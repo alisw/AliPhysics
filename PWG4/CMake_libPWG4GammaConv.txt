@@ -8,5 +8,5 @@ set(SRCS
 # by exchanging the file extension
 String(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
-AddLibrary(PWG4PartCorr "${SRCS}" "${HDRS}")
+AddLibrary(PWG4GammaConv "${SRCS}" "${HDRS}")
 
