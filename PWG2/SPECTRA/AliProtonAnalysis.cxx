@@ -69,7 +69,7 @@ AliProtonAnalysis::AliProtonAnalysis() :
   fFunctionProbabilityFlag(kFALSE), 
   fElectronFunction(0), fMuonFunction(0),
   fPionFunction(0), fKaonFunction(0), fProtonFunction(0),
-  fUseTPCOnly(kFALSE), 
+  fUseTPCOnly(kFALSE), fUseHybridTPC(kFALSE), 
   fProtonContainer(0), fAntiProtonContainer(0),
   fHistEvents(0), fHistYPtProtons(0), fHistYPtAntiProtons(0),
   fEffGridListProtons(0), fCorrectionListProtons2D(0), 
@@ -109,7 +109,7 @@ AliProtonAnalysis::AliProtonAnalysis(Int_t nbinsY, Float_t fLowY, Float_t fHighY
   fFunctionProbabilityFlag(kFALSE), 
   fElectronFunction(0), fMuonFunction(0),
   fPionFunction(0), fKaonFunction(0), fProtonFunction(0),
-  fUseTPCOnly(kFALSE),   
+  fUseTPCOnly(kFALSE), fUseHybridTPC(kFALSE),   
   fProtonContainer(0), fAntiProtonContainer(0),
   fHistEvents(0), fHistYPtProtons(0), fHistYPtAntiProtons(0),
   fEffGridListProtons(0), fCorrectionListProtons2D(0), 
@@ -648,6 +648,7 @@ void AliProtonAnalysis::Analyze(AliStack* stack) {
   fHistEvents->Fill(0); //number of analyzed events
   for(Int_t i = 0; i < stack->GetNprimary(); i++) {
     TParticle *particle = stack->Particle(i);
+    if(!particle) continue;
     //if(particle->Pt() < 0.1) continue;
     //if(TMath::Abs(particle->Eta()) > 1.0) continue;
     Int_t pdgcode = particle->GetPdgCode();
@@ -668,7 +669,7 @@ Bool_t AliProtonAnalysis::IsAccepted(AliESDtrack* track) {
   Double_t Pt = 0.0, Px = 0.0, Py = 0.0, Pz = 0.0;
   Float_t dcaXY = 0.0, dcaZ = 0.0;
 
-  if(fUseTPCOnly) {
+  if((fUseTPCOnly)&&(!fUseHybridTPC)) {
     AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
     if(!tpcTrack) {
       Pt = 0.0; Px = 0.0; Py = 0.0; Pz = 0.0;
@@ -680,6 +681,20 @@ Bool_t AliProtonAnalysis::IsAccepted(AliESDtrack* track) {
       Py = tpcTrack->Py();
       Pz = tpcTrack->Pz();
       track->GetImpactParametersTPC(dcaXY,dcaZ);
+    }
+  }
+  else if(fUseHybridTPC) {
+     AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
+    if(!tpcTrack) {
+      Pt = 0.0; Px = 0.0; Py = 0.0; Pz = 0.0;
+      dcaXY = -100.0, dcaZ = -100.0;
+    }
+    else {
+      Pt = tpcTrack->Pt();
+      Px = tpcTrack->Px();
+      Py = tpcTrack->Py();
+      Pz = tpcTrack->Pz();
+      track->GetImpactParameters(dcaXY,dcaZ);
     }
   }
   else{
@@ -741,11 +756,11 @@ Bool_t AliProtonAnalysis::IsAccepted(AliESDtrack* track) {
   if(fMaxDCAXYFlag) 
     if(dcaXY > fMaxDCAXY) return kFALSE;
   if(fMaxDCAXYTPCFlag) 
-    if(dcaXY > fMaxDCAXY) return kFALSE;
+    if(dcaXY > fMaxDCAXYTPC) return kFALSE;
     if(fMaxDCAZFlag) 
     if(dcaZ > fMaxDCAZ) return kFALSE;
   if(fMaxDCAZTPCFlag) 
-    if(dcaZ > fMaxDCAZ) return kFALSE;
+    if(dcaZ > fMaxDCAZTPC) return kFALSE;
   if(fMaxDCAXYFlag) 
     if(dcaXY > fMaxDCAXY) return kFALSE;
   if(fMaxConstrainChi2Flag) {
@@ -775,7 +790,7 @@ Float_t AliProtonAnalysis::GetSigmaToVertex(AliESDtrack* esdTrack) {
   Float_t b[2];
   Float_t bRes[2];
   Float_t bCov[3];
-  if(fUseTPCOnly) 
+  if((fUseTPCOnly)&&(!fUseHybridTPC))
     esdTrack->GetImpactParametersTPC(b,bCov);
   else
     esdTrack->GetImpactParameters(b,bCov);
