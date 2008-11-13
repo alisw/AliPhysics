@@ -42,6 +42,5 @@ include(CMake_libPWG2ebye.txt)
 
 include(CMake_libPWG2AOD.txt)
 
-include(CMake_libPWG2.txt)
 
 
