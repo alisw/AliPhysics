@@ -72,6 +72,7 @@ void AliFMDAnalysisTaskCollector::CreateOutputObjects()
 	  Char_t ringChar = (ring == 0 ? 'I' : 'O');
 	  hEdist = new TH1F(Form("FMD%d%c",det,ringChar),Form("FMD%d%c",det,ringChar),100,0,3);
 	  hEdist->SetXTitle("#Delta E / E_{MIP}");
+	  fOutputList->Add(hEdist);
 	  detArray->AddAtAndExpand(hEdist,ring);
 	} 
     }
@@ -80,7 +81,7 @@ void AliFMDAnalysisTaskCollector::CreateOutputObjects()
   
   fZvtxDist  = new TH1F("ZvtxDist","Vertex distribution",100,-30,30);
   fZvtxDist->SetXTitle("z vertex");
-  fOutputList->Add(fArray);
+  //fOutputList->Add(fArray);
   fOutputList->Add(fZvtxDist);
 }
 //____________________________________________________________________
@@ -138,7 +139,7 @@ void AliFMDAnalysisTaskCollector::Exec(Option_t */*option*/)
 //____________________________________________________________________
 void AliFMDAnalysisTaskCollector::Terminate(Option_t */*option*/)
 {
-
+  /*
   for(UShort_t det=1;det<=3;det++) {
     TObjArray* detArray = (TObjArray*)fArray->At(det);
     Int_t nRings = (det==1 ? 1 : 2);
@@ -149,7 +150,7 @@ void AliFMDAnalysisTaskCollector::Terminate(Option_t */*option*/)
       hEdist->Fit("landau","","",max-0.1,2*max);
     }
   }
-  
+  */
 }
 
 //____________________________________________________________________

@@ -2,12 +2,14 @@
 #
 
 SRCS		=  analysis/AliFMDAnaParameters.cxx	\
+		   analysis/AliFMDAnaCalibEnergyDistribution.cxx \
+		   analysis/AliFMDAnaCalibBackgroundCorrection.cxx \
 	           analysis/AliFMDAnalysisTaskESDReader.cxx	\
 	           analysis/AliFMDAnalysisTaskSharing.cxx       \
 		   analysis/AliFMDAnalysisTaskDensity.cxx       \
 		   analysis/AliFMDAnalysisTaskBackgroundCorrection.cxx \
-		   analysis/AliFMDAnalysisTaskCollector.cxx
-#		   AliFMDAltroIO.cxx		
+		   analysis/AliFMDAnalysisTaskCollector.cxx    
+
 
 HDRS		=  $(SRCS:.cxx=.h) 
 EINCLUDE 	:= ANALYSIS 

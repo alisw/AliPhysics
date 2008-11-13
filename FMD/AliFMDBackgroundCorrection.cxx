@@ -53,6 +53,7 @@
 #include "AliFMDParameters.h"
 #include "AliLog.h"
 #include "AliFMDAnaParameters.h"
+#include "AliFMDAnaCalibBackgroundCorrection.h"
 
 ClassImp(AliFMDBackgroundCorrection)
 //_____________________________________________________________________
@@ -93,7 +94,7 @@ void AliFMDBackgroundCorrection::GenerateBackgroundCorrection(Int_t nvtxbins,
 							      Bool_t simulate,
 							      Int_t nEvents) {
   
-  //TGrid::Connect("alien:",0,0,"t");
+  TGrid::Connect("alien:",0,0,"t");
   if(simulate)
     Simulate(nEvents);
   else {
@@ -134,6 +135,9 @@ void AliFMDBackgroundCorrection::GenerateBackgroundCorrection(Int_t nvtxbins,
   TObjArray* primaryArray = input.GetPrimaries();
   fCorrectionArray.SetName("FMD_bg_correction");
   fCorrectionArray.SetOwner();
+  
+  AliFMDAnaCalibBackgroundCorrection* background = new AliFMDAnaCalibBackgroundCorrection();
+  
   for(Int_t det= 1; det <=3; det++) {
     Int_t nRings = (det==1 ? 1 : 2);
     
@@ -158,6 +162,7 @@ void AliFMDBackgroundCorrection::GenerateBackgroundCorrection(Int_t nvtxbins,
 	hCorrection->SetTitle(hCorrection->GetName());
 	hCorrection->Divide(hPrimary);
 	vtxArrayCorrection->AddAtAndExpand(hCorrection,vertexBin);
+	background->SetBgCorrection(det,ringChar,vertexBin,hCorrection);
       }
       
     }
@@ -165,8 +170,7 @@ void AliFMDBackgroundCorrection::GenerateBackgroundCorrection(Int_t nvtxbins,
   
   TAxis refAxis(nvtxbins,-1*zvtxcut,zvtxcut);
   
-  
-
+  background->SetRefAxis(&refAxis);
   
   TFile*  fout = new TFile(filename,"RECREATE");
   refAxis.Write("vertexbins");
@@ -186,8 +190,8 @@ void AliFMDBackgroundCorrection::GenerateBackgroundCorrection(Int_t nvtxbins,
   container->AddAtAndExpand(&fCorrectionArray,1);
   container->AddAtAndExpand(hitArray,2);
   container->AddAtAndExpand(primaryArray,3);
-
-
+  
+  
   if(storeInAlien) {
     AliCDBManager* cdb = AliCDBManager::Instance();
     cdb->SetDefaultStorage("local://$ALICE_ROOT");
@@ -198,8 +202,8 @@ void AliFMDBackgroundCorrection::GenerateBackgroundCorrection(Int_t nvtxbins,
     meta->SetAliRootVersion(gROOT->GetVersion());			
     meta->SetBeamPeriod(1);						
     meta->SetComment("Background Correction for FMD");
-    meta->SetProperty("key1", container );
-    cdb->Put(container, id, meta);
+    meta->SetProperty("key1", background );
+    cdb->Put(background, id, meta);
     
   }
   
@@ -309,6 +313,7 @@ Bool_t AliFMDBackgroundCorrection::AliFMDInputBG::Init() {
       TH2F* hPrimary       = new TH2F(Form("hPrimary_FMD_%c_vtx%d",ringChar,v),
 				      Form("hPrimary_FMD_%c_vtx%d",ringChar,v),
 				      fNbinsEta, -6,6, nSec, 0,2*TMath::Pi());
+      hPrimary->Sumw2();
       ringArray->AddAtAndExpand(hPrimary,v);
     }
   }
@@ -336,6 +341,7 @@ Bool_t AliFMDBackgroundCorrection::AliFMDInputBG::Init() {
 	      TH2F* hHits          = new TH2F(Form("hHits_FMD%d%c_vtx%d",det,ringChar,v),
 					      Form("hHits_FMD%d%c_vtx%d",det,ringChar,v),
 					      fNbinsEta, -6,6, nSec, 0, 2*TMath::Pi());
+	      hHits->Sumw2();
 	      vtxArrayHits->AddAtAndExpand(hHits,v);
 	      	      
 	    } 

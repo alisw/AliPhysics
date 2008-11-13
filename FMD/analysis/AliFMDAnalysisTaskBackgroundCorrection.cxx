@@ -82,13 +82,14 @@ void AliFMDAnalysisTaskBackgroundCorrection::CreateOutputObjects()
 			      hBg->GetXaxis()->GetXmax(),
 			      nSec, 0, 2*TMath::Pi());
 	    hMult->Sumw2();
+	    fOutputList.Add(hMult);
 	    vtxArray->AddAtAndExpand(hMult,i);
 	    
 	  }
 	} 
     }
   fNevents.Set(nVtxbins);
-  fOutputList.Add(&fArray);
+  //  fOutputList.Add(&fArray);
    
   
 }
@@ -151,7 +152,7 @@ void AliFMDAnalysisTaskBackgroundCorrection::Terminate(Option_t */*option*/) {
       }
     }
   }
-
+  
 }
 //_____________________________________________________________________
 //

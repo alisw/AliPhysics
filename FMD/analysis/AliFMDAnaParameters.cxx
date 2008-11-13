@@ -37,8 +37,8 @@ ClassImp(AliFMDAnaParameters)
   ; // This is here to keep Emacs for indenting the next line
 #endif
 
-const char* AliFMDAnaParameters::fgkBackgroundCorrection  = "FMD/Calib/Background";
-const char* AliFMDAnaParameters::fgkEnergyDists  = "FMD/Calib/EnergyDistribution";
+const char* AliFMDAnaParameters::fgkBackgroundCorrection  = "FMD/Correction/Background";
+const char* AliFMDAnaParameters::fgkEnergyDists  = "FMD/Correction/EnergyDistribution";
 //____________________________________________________________________
 AliFMDAnaParameters* AliFMDAnaParameters::fgInstance = 0;
 
@@ -56,7 +56,9 @@ AliFMDAnaParameters::Instance()
 AliFMDAnaParameters::AliFMDAnaParameters() :
   fIsInit(kFALSE),
   fBackgroundArray(0),
-  fEdistArray(0)
+  fEdistArray(0),
+  fBackground(0),
+  fEnergyDistribution(0)
 {
   
   // Default constructor 
@@ -80,8 +82,8 @@ void AliFMDAnaParameters::InitBackground() {
   AliCDBEntry*   background = GetEntry(fgkBackgroundCorrection);
   if (!background) return;
   
-  fBackgroundArray = dynamic_cast<TObjArray*>(background->GetObject());
-  if (!fBackgroundArray) AliFatal("Invalid background object from CDB");
+  fBackground = dynamic_cast<AliFMDAnaCalibBackgroundCorrection*>(background->GetObject());
+  if (!fBackground) AliFatal("Invalid background object from CDB");
   
 }
 //____________________________________________________________________
@@ -91,9 +93,9 @@ void AliFMDAnaParameters::InitEnergyDists() {
   AliCDBEntry*   edist = GetEntry(fgkEnergyDists);
   if (!edist) return;
   
-  fEdistArray = dynamic_cast<TObjArray*>(edist->GetObject());
+  fEnergyDistribution = dynamic_cast<AliFMDAnaCalibEnergyDistribution*>(edist->GetObject());
   
-  if (!fEdistArray) AliFatal("Invalid background object from CDB");
+  if (!fEnergyDistribution) AliFatal("Invalid background object from CDB");
   
 }
 //____________________________________________________________________
@@ -104,9 +106,7 @@ Float_t AliFMDAnaParameters::GetVtxCutZ() {
     return -1;
   }
   
-  TAxis* refAxis = GetRefAxis();
-  
-  return refAxis->GetXmax();
+  return fBackground->GetVtxCutZ();
 }
 
 //____________________________________________________________________
@@ -117,17 +117,15 @@ Int_t AliFMDAnaParameters::GetNvtxBins() {
     return -1;
   }
   
-  TAxis* refAxis = GetRefAxis();
-  
-  return refAxis->GetNbins();
+  return fBackground->GetNvtxBins();
 }
 //____________________________________________________________________
 TH1F* AliFMDAnaParameters::GetEnergyDistribution(Int_t det, Char_t ring) {
   
-  TObjArray* detArray   = (TObjArray*)fEdistArray->At(det);
-  Int_t ringNumber      = (ring == 'I' ? 0 : 1);
-  TH1F* hEnergyDist     = (TH1F*)detArray->At(ringNumber);  
-  return hEnergyDist;
+  //  TObjArray* detArray   = (TObjArray*)fEdistArray->At(det);
+  // Int_t ringNumber      = (ring == 'I' ? 0 : 1);
+  // TH1F* hEnergyDist     = (TH1F*)detArray->At(ringNumber);  
+  return fEnergyDistribution->GetEnergyDistribution(det, ring);
 }
 //____________________________________________________________________
 Float_t AliFMDAnaParameters::GetSigma(Int_t det, Char_t ring) {
@@ -137,8 +135,8 @@ Float_t AliFMDAnaParameters::GetSigma(Int_t det, Char_t ring) {
     return 0;
   }
   
-  TH1F* hEnergyDist     = GetEnergyDistribution(det,ring);
-  TF1*  landau          = hEnergyDist->GetFunction("landau");
+  TH1F* hEnergyDist       = GetEnergyDistribution(det,ring);
+  TF1*  landau            = hEnergyDist->GetFunction("landau");
   Float_t sigma           = landau->GetParameter(2);
   return sigma;
 }
@@ -164,24 +162,30 @@ Float_t AliFMDAnaParameters::GetMPV(Int_t det, Char_t ring) {
 TH2F* AliFMDAnaParameters::GetBackgroundCorrection(Int_t det, 
 						   Char_t ring, 
 						   Int_t vtxbin) {
-
+  
   if(!fIsInit) {
     AliWarning("Not initialized yet. Call Init() to remedy");
     return 0;
   }
-  if(vtxbin > GetNvtxBins()) {
+  
+  
+  
+  if(vtxbin > fBackground->GetNvtxBins()) {
     AliWarning(Form("No background object for vertex bin %d", vtxbin));
     return 0;
   } 
   
+  
+  
+  /*
   TObjArray* correction = GetBackgroundArray();
   
   TObjArray* detArray   = (TObjArray*)correction->At(det);
   Int_t ringNumber      = (ring == 'I' ? 0 : 1);
   TObjArray* ringArray  = (TObjArray*)detArray->At(ringNumber);
   TH2F* bgHist          = (TH2F*)ringArray->At(vtxbin);
-  
-  return bgHist;
+  */
+  return fBackground->GetBgCorrection(det,ring,vtxbin);
 }
 //____________________________________________________________________
 TAxis* AliFMDAnaParameters::GetRefAxis() {

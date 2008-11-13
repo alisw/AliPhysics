@@ -35,7 +35,8 @@
 #include "TH2F.h"
 #include "TAxis.h"
 #include "TH1F.h"
-
+#include "AliFMDAnaCalibBackgroundCorrection.h"
+#include "AliFMDAnaCalibEnergyDistribution.h"
 //____________________________________________________________________
 //
 //  Singleton class to handle various parameters (not geometry) of the
@@ -93,6 +94,8 @@ protected:
   Bool_t fIsInit;
   TObjArray*  fBackgroundArray;
   TObjArray*  fEdistArray;
+  AliFMDAnaCalibBackgroundCorrection* fBackground;
+  AliFMDAnaCalibEnergyDistribution* fEnergyDistribution;
   static const char* fgkBackgroundCorrection;
   static const char* fgkEnergyDists;
   ClassDef(AliFMDAnaParameters,0) // Manager of parameters
