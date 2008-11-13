@@ -40,6 +40,7 @@ class AliProtonAnalysis : public TObject {
   virtual ~AliProtonAnalysis();
 
   void UseTPCOnly() {fUseTPCOnly = kTRUE;}
+  void UseHybridTPC() {fUseHybridTPC = kTRUE;}
   
   void InitAnalysisHistograms(Int_t nbinsY, Float_t fLowY, Float_t fHighY,
 			      Int_t nbinsPt, Float_t fLowPt, Float_t fHighPt);
@@ -215,6 +216,7 @@ class AliProtonAnalysis : public TObject {
 
   //Detectors
   Bool_t fUseTPCOnly; //kTRUE if TPC only information is used
+  Bool_t fUseHybridTPC; //kTRUE if TPC info is used for momentum - PID and ITS for vertex & points
 
   //Analysis containers
   AliCFContainer *fProtonContainer; //container for protons
