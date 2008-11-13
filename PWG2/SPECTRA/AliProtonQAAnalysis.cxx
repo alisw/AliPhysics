@@ -2506,6 +2506,7 @@ void AliProtonQAAnalysis::RunEfficiencyAnalysis(AliStack *stack,
   for(Int_t iParticle = 0; iParticle <= stack->GetNprimary(); iParticle++) {
     TParticle *particle = stack->Particle(iParticle);
     if(!particle) continue;
+
     if(TMath::Abs(particle->Eta()) > 1.0) continue;//acceptance
     if((particle->Pt() > fMaxPt)||(particle->Pt() < fMinPt)) continue;
     if((Rapidity(particle->Px(),particle->Py(),particle->Pz()) > fMaxY)||(Rapidity(particle->Px(),particle->Py(),particle->Pz()) < fMinY)) continue;
@@ -2688,6 +2689,8 @@ void AliProtonQAAnalysis::RunQAAnalysis(AliStack *stack,
   //MC loop
   for(Int_t iParticle = 0; iParticle < stack->GetNprimary(); iParticle++) {
     TParticle *particle = stack->Particle(iParticle);
+    if(!particle) continue;
+
     if(TMath::Abs(particle->Eta()) > 1.0) continue;//acceptance
     if((particle->Pt() > fMaxPt)||(particle->Pt() < fMinPt)) continue;
     if((Rapidity(particle->Px(),particle->Py(),particle->Pz()) > fMaxY)||(Rapidity(particle->Px(),particle->Py(),particle->Pz()) < fMinY)) continue;
@@ -2805,6 +2808,8 @@ void AliProtonQAAnalysis::RunQAAnalysis(AliStack *stack,
 	  }//primary particles
 	  else if(label > stack->GetNprimary()) {
 	    TParticle *particle = stack->Particle(label);
+	    if(!particle) continue;
+
 	    Int_t lPartMother = -1;
 	    Int_t motherPDGCode = -1;
 	    if(particle) {
@@ -2977,6 +2982,8 @@ void AliProtonQAAnalysis::RunQAAnalysis(AliStack *stack,
 	  }//primary particles
 	  else if(label > stack->GetNprimary()) {
 	    TParticle *particle = stack->Particle(label);
+	    if(!particle) continue;
+
 	    Int_t lPartMother = -1;
 	    Int_t motherPDGCode = -1;
 	    if(particle) {
@@ -3150,6 +3157,8 @@ void AliProtonQAAnalysis::RunMCAnalysis(AliStack* stack) {
   //Main analysis part - MC 
   for(Int_t iParticle = 0; iParticle < stack->GetNtrack(); iParticle++) {
     TParticle *particle = stack->Particle(iParticle);
+    if(!particle) continue;
+
     if(TMath::Abs(particle->Eta()) > 1.0) continue;//acceptance
     Int_t pdgcode = particle->GetPdgCode();
     if(pdgcode == 2212) {
