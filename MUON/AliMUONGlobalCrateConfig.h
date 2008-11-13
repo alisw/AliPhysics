@@ -26,9 +26,9 @@ class AliMUONGlobalCrateConfig : public  TNamed {
 
     // global crate enable
           /// set global crate enbale
-    void SetGlobalCrateEnable(UChar_t enable) {fGlobalCrateEnable = enable;}
+    void SetGlobalCrateEnable(UInt_t enable) {fGlobalCrateEnable = enable;}
          /// Get global crate enbale
-    UChar_t GetGlobalCrateEnable() {return fGlobalCrateEnable;}
+    UInt_t GetGlobalCrateEnable() {return fGlobalCrateEnable;}
     
     // Jtag
             /// Get Jtag board VME address
@@ -197,7 +197,7 @@ class AliMUONGlobalCrateConfig : public  TNamed {
     AliMUONGlobalCrateConfig& operator=(const AliMUONGlobalCrateConfig& rhs);
 
     // data members
-    UChar_t      fGlobalCrateEnable;   ///< Global Crate Enable
+    UInt_t       fGlobalCrateEnable;   ///< Global Crate Enable
     ULong_t      fJtagVmeAddr;         ///< JTag VME address
     UInt_t       fJtagClockDiv;        ///< Clock Divider number for JTag
     UInt_t       fJtagRxPhase;         ///< Rx phase number for JTag 

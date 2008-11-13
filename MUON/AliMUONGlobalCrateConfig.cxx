@@ -121,7 +121,7 @@ Int_t AliMUONGlobalCrateConfig::ReadData(const TString& fileName)
     // enable
     in.getline(line, 255);
     tmp = AliMpHelper::Normalize(line);
-    UChar_t en = 0;
+    UInt_t en = 0;
     sscanf(tmp.Data(), "%x", &en);
     SetGlobalCrateEnable(en);
 

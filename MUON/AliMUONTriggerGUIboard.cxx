@@ -200,7 +200,7 @@ void AliMUONTriggerGUIboard::MakeGeometry()
   // position index for common y-strip boards
   for (Int_t ich = 0; ich < kNMT; ich++) {
     if (fNPadsY[ich]) {
-      AliMpPad *pad = (AliMpPad*)fPadsY[ich]->At(0);
+      pad = (AliMpPad*)fPadsY[ich]->At(0);
       fYOver = pad->GetNofLocations();
       break;
     }
