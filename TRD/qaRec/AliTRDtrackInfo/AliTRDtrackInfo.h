@@ -43,7 +43,7 @@ public:
     UChar_t     GetPidQuality() const {return fTRDpidQuality;}
     Int_t       GetNSlices() const {return fTRDnSlices;}
     Double32_t* GetSliceIter() const {return fTRDslices;}
-    Double32_t* GetResponseIter() {return &fTRDr[0];}
+    const Double32_t* GetResponseIter() const {return &fTRDr[0];}
   protected:
     Int_t       fId;            // ESD track id
     ULong_t     fStatus;        // ESD track status
@@ -122,10 +122,10 @@ public:
   void               SetKinkIndex(Int_t kinkIndex) {fESD.fKinkIndex = kinkIndex;}
   void               SetTPCncls(UShort_t TPCncls) {fESD.fTPCncls = TPCncls;}
   void               SetTrackId(Int_t id) {fESD.fId = id;}
-  void               SetTRDtrack(const AliTRDtrackV1 *track);
-  void               SetPidQuality(UChar_t q) { fESD.fTRDpidQuality = q;}
+  void               SetTrack(const AliTRDtrackV1 *track);
+  void               SetESDpidQuality(UChar_t q) { fESD.fTRDpidQuality = q;}
   void               SetSlices(Int_t n, Double32_t*);
-  inline void        SetResponse(Double32_t *);
+  inline void        SetESDpid(Double_t *);
   
 private:
     enum{
@@ -150,9 +150,9 @@ inline void AliTRDtrackInfo::SetMC()
 }
 
 //________________________________________________________
-inline void AliTRDtrackInfo::SetResponse(Double32_t *r)
-{
-  memcpy(fESD.fTRDr, r, AliPID::kSPECIES*sizeof(Double32_t));
+inline void AliTRDtrackInfo::SetESDpid(Double_t *r)
+{ 
+  for(Int_t is = AliPID::kSPECIES; is--;) fESD.fTRDr[is] = r[is];
 }
 
 #endif

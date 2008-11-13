@@ -46,6 +46,7 @@
 #include "AliESDHeader.h"
 #include "AliESDtrack.h"
 #include "AliMCParticle.h"
+#include "AliPID.h"
 #include "AliStack.h"
 #include "AliTRDtrackV1.h"
 #include "AliTrackReference.h"
@@ -235,17 +236,6 @@ void AliTRDtrackInfoGen::Exec(Option_t *){
         fTrackInfo->AddTrackRef(ref);
         jref++;
       }
-      if(!fTrackInfo->GetNTrackRefs()){ 
-          //if(!esdTrack->GetNcls(2)) continue;
-  /*      	printf("No TRD Track References in the Track [%d] II\n", itrk);
-            printf("Label = %d ITS[%d] TPC[%d] TRD[%d]\n", label, esdTrack->GetITSLabel(), esdTrack->GetTPCLabel(), esdTrack-	>GetTRDLabel());
-            Int_t kref = 0;
-            while(kref<nRefs){
-              ref = mcParticle->GetTrackReference(kref);
-              printf("\ttrackRef[%2d] @ %7.3f\n", kref, ref->LocalX());
-              kref++;
-            }*/
-      }
       if(fDebugLevel>=2) printf("NtrackRefs[%d(%d)]\n", fTrackInfo->GetNTrackRefs(), nRefs);
     } else {
       new (fTrackInfo) AliTRDtrackInfo();
@@ -255,6 +245,9 @@ void AliTRDtrackInfoGen::Exec(Option_t *){
     // copy some relevant info to TRD track info
     fTrackInfo->SetStatus(esdTrack->GetStatus());
     fTrackInfo->SetTrackId(esdTrack->GetID());
+    Double_t p[AliPID::kSPECIES]; esdTrack->GetTRDpid(p);
+    fTrackInfo->SetESDpid(p);
+    fTrackInfo->SetESDpidQuality(esdTrack->GetTRDpidQuality());
     fTrackInfo->SetLabel(label);
     fTrackInfo->SetNumberOfClustersRefit(esdTrack->GetNcls(2));
     // some other Informations which we may wish to store in order to find problematic cases
@@ -272,7 +265,7 @@ void AliTRDtrackInfoGen::Exec(Option_t *){
         if(!(track = dynamic_cast<AliTRDtrackV1*>(calObject))) break;
         nTRD++;
         if(fDebugLevel>=3) printf("TRD track OK\n");
-        fTrackInfo->SetTRDtrack(track);
+        fTrackInfo->SetTrack(track);
         break;
       }
       if(fDebugLevel>=2) printf("Ntracklets[%d]\n", fTrackInfo->GetNTracklets());

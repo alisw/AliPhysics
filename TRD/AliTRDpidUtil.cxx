@@ -30,7 +30,7 @@ AliTRDpidUtil::AliTRDpidUtil()
 
 
 //________________________________________________________________________
-void  AliTRDpidUtil::CalculatePionEffi(TH1* histo1, TH1* histo2)
+Bool_t  AliTRDpidUtil::CalculatePionEffi(TH1* histo1, TH1* histo2)
 // Double_t  AliTRDpidUtil::GetError()
 {
   //
@@ -39,10 +39,9 @@ void  AliTRDpidUtil::CalculatePionEffi(TH1* histo1, TH1* histo2)
 
   histo1 -> SetLineColor(kRed);
   histo2 -> SetLineColor(kBlue); 
-  AliInfo(Form("Histo1[%d] Histo2[%d]", (Int_t)histo1 -> GetEntries(), (Int_t)histo2 -> GetEntries()));
-  if(!(histo1 -> GetEntries() > 0 && histo2 -> GetEntries() > 0)){
-    AliWarning("Histo has no Entries !");
-    return;
+  if(!histo1 -> GetEntries() || !histo2 -> GetEntries()){
+    AliWarning("Histo with no entries !");
+    return kFALSE;
   }
   histo1 -> Scale(1./histo1->GetEntries());
   histo2 -> Scale(1./histo2->GetEntries());
@@ -84,22 +83,22 @@ void  AliTRDpidUtil::CalculatePionEffi(TH1* histo1, TH1* histo2)
   
 
   // pion efficiency vs electron efficiency
-  TGraph *gEffis = new TGraph(kBins, SumElecsE, SumPionsE);
+  TGraph gEffis(kBins, SumElecsE, SumPionsE);
 
   // use fit function to get derivate of the TGraph for error calculation
-  TF1 *f1 = new TF1("f1","[0]*x*x+[1]*x+[2]", fEleEffi-.05, fEleEffi+.05);
-  gEffis -> Fit("f1","Q","",fEleEffi-.05, fEleEffi+.05);
+  TF1 f1("f1","[0]*x*x+[1]*x+[2]", fEleEffi-.05, fEleEffi+.05);
+  gEffis.Fit(&f1, "Q", "", fEleEffi-.05, fEleEffi+.05);
   
   // return the error of the pion efficiency
   if(((1.-fPionEffi) < 0) || ((1.-fCalcEleEffi) < 0)){
     AliWarning(" EleEffi or PioEffi > 1. Error can not be calculated. Please increase statistics or check your simulation!");
-    return;
+    return kFALSE;
   }
-  fError = sqrt(((1/histo2 -> GetEntries())*fPionEffi*(1-fPionEffi))+((f1 -> Derivative(fEleEffi))*(f1 -> Derivative(fEleEffi))*(1/histo1 -> GetEntries())*fCalcEleEffi*(1-fCalcEleEffi)));
+  fError = sqrt(((1/histo2 -> GetEntries())*fPionEffi*(1-fPionEffi))+((f1.Derivative(fEleEffi))*(f1.Derivative(fEleEffi))*(1/histo1 -> GetEntries())*fCalcEleEffi*(1-fCalcEleEffi)));
 
-  AliInfo(Form("Pion Effi at [%f] : [%f +/- %f], Threshold[%f]", fCalcEleEffi, fPionEffi, fError, fThreshold));
-  AliInfo(Form("Derivative at %4.2f : %f\n", fEleEffi, f1 -> Derivative(fEleEffi)));
-
+//   AliInfo(Form("Pion Effi at [%f] : [%f +/- %f], Threshold[%f]", fCalcEleEffi, fPionEffi, fError, fThreshold));
+//   AliInfo(Form("Derivative at %4.2f : %f\n", fEleEffi, f1.Derivative(fEleEffi)));
+  return kTRUE;
 }
 
 

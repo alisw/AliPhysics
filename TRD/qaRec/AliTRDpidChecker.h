@@ -17,24 +17,23 @@ class AliTRDReconstructor;
 class AliTRDpidUtil;
 class AliTRDpidChecker : public AliTRDrecoTask 
 {
-
+  // Plots registered for this task
   enum{
-    kLQlikelihood    = 0     // place for 2-dim LQ electron likelihood distributions
-    ,kNNlikelihood   = 1     // place for NN electron likelihood distributions
-    ,kdEdx           = 2     // place for the dE/dx spectra
-    ,kdEdxSlice      = 3     // place for the dE/dx spectra
-    ,kPH             = 4     // place for pulse height spectra
-    ,kNClus          = 5     // place for the number of clusters per track
-    ,kMomentum       = 6     // place for the momentum distribution
-    ,kMomentumBin    = 7     // place for the momentum distribution
-    ,kGraphLQ        = 8     // place for the 2-dim LQ pion efficiencies
-    ,kGraphNN        = 9     // place for the NN pion efficiencies
+     kEfficiency     =  0     // pi Efficiency plot
+    ,kdEdx           =  1     // dE/dx spectra
+    ,kdEdxSlice      =  2     // dE/dx spectra
+    ,kPH             =  3     // pulse height spectra
+    ,kNClus          =  4     //  number of clusters per track
+    ,kMomentum       =  5     // momentum distribution
+    ,kMomentumBin    =  6     // momentum distribution
+    ,kThresh         =  7     // threshold in efficiency
   };
-
-  enum{
-    kGraphStart = kGraphLQ
+  // PID methods
+  enum {
+     kLQ   = 0 // 2D likelihood method
+    ,kNN   = 1 // Neural network method
+    ,kESD  = 2 // ESD results - check offline
   };
-
 public:
   AliTRDpidChecker();
   virtual ~AliTRDpidChecker();
@@ -46,12 +45,14 @@ public:
 
   TH1 *PlotLQ(const AliTRDtrackV1 *track = 0x0);
   TH1 *PlotNN(const AliTRDtrackV1 *track = 0x0);
+  TH1 *PlotESD(const AliTRDtrackV1 *track = 0x0);
   TH1 *PlotdEdx(const AliTRDtrackV1 *track = 0x0);
   TH1 *PlotdEdxSlice(const AliTRDtrackV1 *track = 0x0);
   TH1 *PlotPH(const AliTRDtrackV1 *track = 0x0);
   TH1 *PlotNClus(const AliTRDtrackV1 *track = 0x0);
   TH1 *PlotMom(const AliTRDtrackV1 *track = 0x0);
   TH1 *PlotMomBin(const AliTRDtrackV1 *track = 0x0);
+
 
   virtual TObjArray *Histos();
 
@@ -64,6 +65,8 @@ private:
   
   AliTRDReconstructor *fReconstructor;     //! reconstructor needed for recalculation the PID
   AliTRDpidUtil       *fUtil;              //! utility class for PID calculations
+  TObjArray           *fGraph;             //! array of graphs filled in PostProcess
+  TObjArray           *fEfficiency;        //! array of histograms with efficiency
 
   ClassDef(AliTRDpidChecker, 1); // TRD PID checker
 };

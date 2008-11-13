@@ -253,7 +253,7 @@ void AliTRDtrackInfo::Delete(const Option_t *)
 }
 
 //___________________________________________________
-void AliTRDtrackInfo::SetTRDtrack(const AliTRDtrackV1 *track)
+void AliTRDtrackInfo::SetTrack(const AliTRDtrackV1 *track)
 {
   //
   // Set the TRD track

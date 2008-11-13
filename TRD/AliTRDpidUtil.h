@@ -20,7 +20,7 @@ public:
   AliTRDpidUtil();
   virtual ~AliTRDpidUtil(){;}
 
-  void     CalculatePionEffi(TH1* histo1, TH1* histo2);
+  Bool_t   CalculatePionEffi(TH1* histo1, TH1* histo2);
 
   static Float_t ElectronEfficiency() { return fEleEffi;};
 

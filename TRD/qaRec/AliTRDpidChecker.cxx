@@ -8,6 +8,7 @@
 #include "TProfile2D.h"
 #include "TGraph.h"
 #include "TGraphErrors.h"
+#include "TLegend.h"
 
 #include <TClonesArray.h>
 #include <TObjArray.h>
@@ -39,6 +40,8 @@ AliTRDpidChecker::AliTRDpidChecker()
   :AliTRDrecoTask("PID", "PID Checker")
   ,fReconstructor(0x0)
   ,fUtil(0x0)
+  ,fGraph(0x0)
+  ,fEfficiency(0x0)
 {
   //
   // Default constructor
@@ -56,7 +59,8 @@ AliTRDpidChecker::AliTRDpidChecker()
 //________________________________________________________________________
 AliTRDpidChecker::~AliTRDpidChecker() 
 {
-  if(fReconstructor) delete fReconstructor;
+ if(fGraph){fGraph->Delete(); delete fGraph;}
+ if(fReconstructor) delete fReconstructor;
   if(fUtil) delete fUtil;
 }
 
@@ -81,25 +85,32 @@ TObjArray * AliTRDpidChecker::Histos(){
   if(fContainer) return fContainer;
 
   Int_t xBins = AliPID::kSPECIES*AliTRDCalPID::kNMom; 
-  fContainer = new TObjArray();
-  fContainer -> Expand(kGraphNN + 1);
+  fContainer = new TObjArray(); fContainer->Expand(7);
 
   const Float_t epsilon = 1./(2*(AliTRDpidUtil::kBins-1));     // get nice histos with bin center at 0 and 1
 
   // histos of the electron probability of all 5 particle species and 11 momenta for the 2-dim LQ method 
-  fContainer->AddAt(
-    new TH2F("PID_LQ", "", 
+  fEfficiency = new TObjArray(); fEfficiency->Expand(3);
+  fContainer->AddAt(fEfficiency, kEfficiency);
+  fEfficiency->AddAt(new TH2F("PID_LQ", "", 
       xBins, -0.5, xBins - 0.5,
       AliTRDpidUtil::kBins, 0.-epsilon, 1.+epsilon)
-  ,kLQlikelihood);
+  ,kLQ);
 
 
   // histos of the electron probability of all 5 particle species and 11 momenta for the neural network method
-  fContainer->AddAt(
+  fEfficiency->AddAt(
     new TH2F("PID_NN", "", 
       xBins, -0.5, xBins - 0.5,
       AliTRDpidUtil::kBins, 0.-epsilon, 1.+epsilon)
-  ,kNNlikelihood);
+  ,kNN);
+
+  // histos of the electron probability of all 5 particle species and 11 momenta for the ESD output
+  fEfficiency->AddAt(
+    new TH2F("PID_ESD", "", 
+      xBins, -0.5, xBins - 0.5,
+      AliTRDpidUtil::kBins, 0.-epsilon, 1.+epsilon)
+  ,kESD);
 
   // histos of the dE/dx distribution for all 5 particle species and 11 momenta 
   fContainer->AddAt(
@@ -108,7 +119,7 @@ TObjArray * AliTRDpidChecker::Histos(){
       200, 0, 10000)
     ,kdEdx);
 
-  // histos of the dE/dx distribution for all 5 particle species and 11 momenta 
+  // histos of the dE/dx slices for all 5 particle species and 11 momenta 
   fContainer->AddAt(
     new TH2F("dEdxSlice", "", 
       xBins*AliTRDReconstructor::kLQslices, -0.5, xBins*AliTRDReconstructor::kLQslices - 0.5,
@@ -134,24 +145,6 @@ TObjArray * AliTRDpidChecker::Histos(){
   fContainer->AddAt(new TH1F("hMom", "momentum distribution", 100, 0., 12.),kMomentum);
   fContainer->AddAt(new TH1F("hMomBin", "momentum distribution in momentum bins", AliTRDCalPID::kNMom, 0.5, 11.5),kMomentumBin);
 
-
-  // TGraph of the pion efficiencies
-
-  TGraphErrors *gEffisLQ = 0x0;
-  TGraphErrors *gEffisNN = 0x0;
-
-  fContainer->AddAt(gEffisLQ = new TGraphErrors(), kGraphLQ);
-  gEffisLQ->SetLineColor(kBlue);
-  gEffisLQ->SetMarkerColor(kBlue);
-  gEffisLQ->SetMarkerStyle(29);
-
-  fContainer -> AddAt(gEffisNN = new TGraphErrors(),kGraphNN);
-  gEffisNN->SetLineColor(kRed);
-  gEffisNN->SetMarkerColor(kRed);
-  gEffisNN->SetMarkerStyle(29);
-
-  gEffisLQ -> SetNameTitle("gEffisLQErr", "Efficiencies and Errors of the 2-dim LQ method");
-  gEffisNN -> SetNameTitle("gEffisNNErr", "Efficiencies and Errors of the NN method");
 
   return fContainer;
 }
@@ -214,8 +207,12 @@ TH1 *AliTRDpidChecker::PlotLQ(const AliTRDtrackV1 *track)
 
   if(!CheckTrackQuality(fTrack)) return 0x0;
   
-  TH2F *hPIDLQ;
-  if(!(hPIDLQ = dynamic_cast<TH2F *>(fContainer->At(kLQlikelihood)))){
+  if(!(fEfficiency = dynamic_cast<TObjArray *>(fContainer->At(kEfficiency)))){
+    AliWarning("No Histogram defined.");
+    return 0x0;
+  }
+  TH2F *hPIDLQ = 0x0;
+  if(!(hPIDLQ = dynamic_cast<TH2F *>(fEfficiency->At(kLQ)))){
     AliWarning("No Histogram defined.");
     return 0x0;
   }
@@ -234,15 +231,12 @@ TH1 *AliTRDpidChecker::PlotLQ(const AliTRDtrackV1 *track)
     momentum = cTrack.GetMomentum(0);
     pdg = CalcPDG(&cTrack);
   }
-
+  if(momentum < 0.4) return 0x0;;
+  if(momentum > 12.) return 0x0;;
 
   fReconstructor -> SetOption("!nn");
   cTrack.CookPID();
-
-  Int_t iMomBin = -1;
-  iMomBin = fUtil->GetMomentumBin(momentum);
-
-  if(momentum < 0.4) return 0x0;;
+  Int_t iMomBin = fUtil->GetMomentumBin(momentum);
 
   switch(pdg){
   case kElectron:
@@ -286,8 +280,12 @@ TH1 *AliTRDpidChecker::PlotNN(const AliTRDtrackV1 *track)
   
   if(!CheckTrackQuality(fTrack)) return 0x0;
   
+  if(!(fEfficiency = dynamic_cast<TObjArray *>(fContainer->At(kEfficiency)))){
+    AliWarning("No Histogram defined.");
+    return 0x0;
+  }
   TH2F *hPIDNN;
-  if(!(hPIDNN = dynamic_cast<TH2F *>(fContainer->At(kNNlikelihood)))){
+  if(!(hPIDNN = dynamic_cast<TH2F *>(fContainer->At(kNN)))){
     AliWarning("No Histogram defined.");
     return 0x0;
   }
@@ -298,7 +296,6 @@ TH1 *AliTRDpidChecker::PlotNN(const AliTRDtrackV1 *track)
 
   Int_t pdg = 0;
   Float_t momentum = 0.;
-
   if(fMC){
     if(fMC->GetTrackRef()) momentum = fMC->GetTrackRef()->P();
     pdg = fMC->GetPDG();
@@ -307,15 +304,12 @@ TH1 *AliTRDpidChecker::PlotNN(const AliTRDtrackV1 *track)
     momentum = cTrack.GetMomentum(0);
     pdg = CalcPDG(&cTrack);
   }
-
+  if(momentum < 0.4) return 0x0;;
+  if(momentum > 12.) return 0x0;;
 
   fReconstructor -> SetOption("nn");
   cTrack.CookPID();
-
-  Int_t iMomBin = -1;
-  iMomBin = fUtil -> GetMomentumBin(momentum);
-
-  if(momentum < 0.4) return 0x0;;
+  Int_t iMomBin = fUtil -> GetMomentumBin(momentum);
 
   switch(pdg){
   case kElectron:
@@ -344,6 +338,85 @@ TH1 *AliTRDpidChecker::PlotNN(const AliTRDtrackV1 *track)
 
 
 //_______________________________________________________
+TH1 *AliTRDpidChecker::PlotESD(const AliTRDtrackV1 *track)
+{
+  //
+  // Plot the probabilities for electrons using 2-dim LQ
+  //
+
+  if(!fESD){
+    AliWarning("No ESD info available.");
+    return 0x0;
+  }
+
+  if(track) fTrack = track;
+  if(!fTrack){
+    AliWarning("No Track defined.");
+    return 0x0;
+  }
+  
+  if(!CheckTrackQuality(fTrack)) return 0x0;
+  
+  if(!(fEfficiency = dynamic_cast<TObjArray *>(fContainer->At(kEfficiency)))){
+    AliWarning("No Histogram defined.");
+    return 0x0;
+  }
+  TH2F *hPIDESD = 0x0;
+  if(!(hPIDESD = dynamic_cast<TH2F *>(fContainer->At(kESD)))){
+    AliWarning("No Histogram defined.");
+    return 0x0;
+  }
+
+
+  Int_t pdg = 0;
+  Float_t momentum = 0.;
+  if(fMC){
+    if(fMC->GetTrackRef()) momentum = fMC->GetTrackRef()->P();
+    pdg = fMC->GetPDG();
+  } else {
+    //AliWarning("No MC info available!");
+    AliTRDtrackV1 cTrack(*fTrack);
+    cTrack.SetReconstructor(fReconstructor);
+    momentum = cTrack.GetMomentum(0);
+    pdg = CalcPDG(&cTrack);
+  }
+  if(momentum < 0.4) return 0x0;;
+  if(momentum > 12.) return 0x0;;
+  
+
+  Int_t iMomBin = fUtil->GetMomentumBin(momentum);
+
+
+//   Double32_t pidESD[AliPID::kSPECIES];
+  const Double32_t *pidESD = fESD->GetResponseIter();
+
+  switch(pdg){
+  case kElectron:
+  case kPositron:
+    hPIDESD -> Fill(AliPID::kElectron * AliTRDCalPID::kNMom + iMomBin, pidESD[0]);
+    break;
+  case kMuonPlus:
+  case kMuonMinus:
+    hPIDESD -> Fill(AliPID::kMuon * AliTRDCalPID::kNMom + iMomBin, pidESD[0]);
+    break;
+  case kPiPlus:
+  case kPiMinus:
+    hPIDESD -> Fill(AliPID::kPion * AliTRDCalPID::kNMom + iMomBin, pidESD[0]);
+    break;
+  case kKPlus:
+  case kKMinus:
+    hPIDESD -> Fill(AliPID::kKaon * AliTRDCalPID::kNMom + iMomBin, pidESD[0]);
+    break;
+  case kProton:
+  case kProtonBar:
+    hPIDESD -> Fill(AliPID::kProton * AliTRDCalPID::kNMom + iMomBin, pidESD[0]);
+    break;
+  }
+  return hPIDESD;
+}
+
+
+//_______________________________________________________
 TH1 *AliTRDpidChecker::PlotdEdx(const AliTRDtrackV1 *track)
 {
   //
@@ -365,25 +438,24 @@ TH1 *AliTRDpidChecker::PlotdEdx(const AliTRDtrackV1 *track)
   }
 
 
-  AliTRDtrackV1 cTrack(*fTrack);
-  cTrack.SetReconstructor(fReconstructor);
-
   Int_t pdg = 0;
   Float_t momentum = 0.;
-
   if(fMC){
     if(fMC->GetTrackRef()) momentum = fMC->GetTrackRef()->P();
     pdg = fMC->GetPDG();
   } else {
     //AliWarning("No MC info available!");
+    AliTRDtrackV1 cTrack(*fTrack);
+    cTrack.SetReconstructor(fReconstructor);
     momentum = cTrack.GetMomentum(0);
     pdg = CalcPDG(&cTrack);
   }
-
-  Int_t iMomBin = -1;
-  iMomBin = fUtil -> GetMomentumBin(momentum);
-
   if(momentum < 0.4) return 0x0;;
+  if(momentum > 12.) return 0x0;;
+
+  Int_t iMomBin = fUtil -> GetMomentumBin(momentum);
+
+
 
   Float_t SumdEdx[AliTRDgeometry::kNlayer];
   AliTRDseedV1 *TRDtracklet[AliTRDgeometry::kNlayer];
@@ -455,26 +527,24 @@ TH1 *AliTRDpidChecker::PlotdEdxSlice(const AliTRDtrackV1 *track)
     return 0x0;
   }
 
-
-  AliTRDtrackV1 cTrack(*fTrack);
-  cTrack.SetReconstructor(fReconstructor);
-
   Int_t pdg = 0;
   Float_t momentum = 0.;
-
   if(fMC){
     if(fMC->GetTrackRef()) momentum = fMC->GetTrackRef()->P();
     pdg = fMC->GetPDG();
   } else {
     //AliWarning("No MC info available!");
+    AliTRDtrackV1 cTrack(*fTrack);
+    cTrack.SetReconstructor(fReconstructor);
     momentum = cTrack.GetMomentum(0);
     pdg = CalcPDG(&cTrack);
   }
-
-  Int_t iMomBin = -1;
-  iMomBin = fUtil -> GetMomentumBin(momentum);
-
   if(momentum < 0.4) return 0x0;
+  if(momentum > 12.) return 0x0;;
+
+  Int_t iMomBin = fUtil -> GetMomentumBin(momentum);
+
+
 
   AliTRDseedV1 *TRDtracklet[AliTRDgeometry::kNlayer];
   for(Int_t iChamb = 0; iChamb < AliTRDgeometry::kNlayer; iChamb++) TRDtracklet[iChamb] = 0x0;
@@ -493,17 +563,20 @@ TH1 *AliTRDpidChecker::PlotdEdxSlice(const AliTRDtrackV1 *track)
   switch(pdg){
   case kElectron:
   case kPositron:
-    for(Int_t iChamb = 0; iChamb < AliTRDgeometry::kNlayer; iChamb++)
-      for(Int_t iSlice = 0; iSlice < AliTRDReconstructor::kLQslices; iSlice++)
-	hdEdxSlice -> Fill(AliPID::kElectron * AliTRDCalPID::kNMom * AliTRDReconstructor::kLQslices + iMomBin * AliTRDReconstructor::kLQslices + iSlice,
-			   dEdxSlice[iChamb][iSlice]);
+    for(Int_t iChamb = 0; iChamb < AliTRDgeometry::kNlayer; iChamb++){
+      for(Int_t iSlice = 0; iSlice < AliTRDReconstructor::kLQslices; iSlice++){
+        hdEdxSlice -> Fill(AliPID::kElectron * AliTRDCalPID::kNMom * AliTRDReconstructor::kLQslices + iMomBin * AliTRDReconstructor::kLQslices + iSlice, dEdxSlice[iChamb][iSlice]);
+      }
+    }  
     break;
   case kMuonPlus:
   case kMuonMinus:
-    for(Int_t iChamb = 0; iChamb < AliTRDgeometry::kNlayer; iChamb++)
-      for(Int_t iSlice = 0; iSlice < AliTRDReconstructor::kLQslices; iSlice++)
-	hdEdxSlice -> Fill(AliPID::kMuon * AliTRDCalPID::kNMom * AliTRDReconstructor::kLQslices + iMomBin * AliTRDReconstructor::kLQslices + iSlice,
-			   dEdxSlice[iChamb][iSlice]);
+    for(Int_t iChamb = 0; iChamb < AliTRDgeometry::kNlayer; iChamb++){
+      for(Int_t iSlice = 0; iSlice < AliTRDReconstructor::kLQslices; iSlice++){
+        hdEdxSlice -> Fill(AliPID::kMuon * AliTRDCalPID::kNMom * AliTRDReconstructor::kLQslices + iMomBin * AliTRDReconstructor::kLQslices + iSlice,
+        dEdxSlice[iChamb][iSlice]);
+      }
+    }
     break;
   case kPiPlus:
   case kPiMinus:
@@ -554,26 +627,22 @@ TH1 *AliTRDpidChecker::PlotPH(const AliTRDtrackV1 *track)
     return 0x0;
   }
 
-
-  AliTRDtrackV1 cTrack(*fTrack);
-  cTrack.SetReconstructor(fReconstructor);
-
   Int_t pdg = 0;
   Float_t momentum = 0.;
-
   if(fMC){
     if(fMC->GetTrackRef()) momentum = fMC->GetTrackRef()->P();
     pdg = fMC->GetPDG();
   } else {
     //AliWarning("No MC info available!");
+    AliTRDtrackV1 cTrack(*fTrack);
+    cTrack.SetReconstructor(fReconstructor);
     momentum = cTrack.GetMomentum(0);
     pdg = CalcPDG(&cTrack);
   }
-
-  Int_t iMomBin = -1;
-  iMomBin = fUtil -> GetMomentumBin(momentum);
-
   if(momentum < 0.4) return 0x0;;
+  if(momentum > 12.) return 0x0;;
+
+  Int_t iMomBin = fUtil -> GetMomentumBin(momentum);
 
   AliTRDseedV1 *TRDtracklet[AliTRDgeometry::kNlayer];
   for(Int_t iChamb = 0; iChamb < AliTRDgeometry::kNlayer; iChamb++) TRDtracklet[iChamb] = 0x0;
@@ -660,25 +729,23 @@ TH1 *AliTRDpidChecker::PlotNClus(const AliTRDtrackV1 *track)
   }
 
 
-  AliTRDtrackV1 cTrack(*fTrack);
-  cTrack.SetReconstructor(fReconstructor);
-
   Int_t pdg = 0;
   Float_t momentum = 0.;
-
   if(fMC){
     if(fMC->GetTrackRef()) momentum = fMC->GetTrackRef()->P();
     pdg = fMC->GetPDG();
   } else {
     //AliWarning("No MC info available!");
+    AliTRDtrackV1 cTrack(*fTrack);
+    cTrack.SetReconstructor(fReconstructor);
     momentum = cTrack.GetMomentum(0);
     pdg = CalcPDG(&cTrack);
   }
-
-  Int_t iMomBin = -1;
-  iMomBin = fUtil -> GetMomentumBin(momentum);
-
   if(momentum < 0.4) return 0x0;;
+  if(momentum > 12.) return 0x0;;
+
+  Int_t iMomBin = fUtil -> GetMomentumBin(momentum);
+
 
   Int_t iNClus[AliTRDgeometry::kNlayer]; 
   memset(iNClus, 0, sizeof(Int_t) * AliTRDgeometry::kNlayer);
@@ -744,22 +811,20 @@ TH1 *AliTRDpidChecker::PlotMom(const AliTRDtrackV1 *track)
   }
 
 
-  AliTRDtrackV1 cTrack(*fTrack);
-  cTrack.SetReconstructor(fReconstructor);
-
   Int_t pdg = 0;
   Float_t momentum = 0.;
-
   if(fMC){
     if(fMC->GetTrackRef()) momentum = fMC->GetTrackRef()->P();
     pdg = fMC->GetPDG();
   } else {
     //AliWarning("No MC info available!");
+    AliTRDtrackV1 cTrack(*fTrack);
+    cTrack.SetReconstructor(fReconstructor);
     momentum = cTrack.GetMomentum(0);
     pdg = CalcPDG(&cTrack);
   }
-
   if(momentum < 0.4) return 0x0;
+  if(momentum > 12.) return 0x0;;
 
   hMom -> Fill(momentum);
   return hMom;
@@ -788,9 +853,6 @@ TH1 *AliTRDpidChecker::PlotMomBin(const AliTRDtrackV1 *track)
   }
 
 
-  AliTRDtrackV1 cTrack(*fTrack);
-  cTrack.SetReconstructor(fReconstructor);
-
   Int_t pdg = 0;
   Float_t momentum = 0.;
 
@@ -799,15 +861,15 @@ TH1 *AliTRDpidChecker::PlotMomBin(const AliTRDtrackV1 *track)
     pdg = fMC->GetPDG();
   } else {
     //AliWarning("No MC info available!");
+    AliTRDtrackV1 cTrack(*fTrack);
+    cTrack.SetReconstructor(fReconstructor);
     momentum = cTrack.GetMomentum(0);
     pdg = CalcPDG(&cTrack);
   }
-
-  Int_t iMomBin = -1;
-  iMomBin = fUtil -> GetMomentumBin(momentum);
-
   if(momentum < 0.4) return 0x0;
+  if(momentum > 12.) return 0x0;;
 
+  Int_t iMomBin = fUtil -> GetMomentumBin(momentum);
   hMomBin -> Fill(iMomBin);
   return hMomBin;
 }
@@ -817,44 +879,65 @@ TH1 *AliTRDpidChecker::PlotMomBin(const AliTRDtrackV1 *track)
 void AliTRDpidChecker::GetRefFigure(Int_t ifig)
 {
   Bool_t FIRST = kTRUE;
+  TLegend *leg = new TLegend(.7, .7, .98, .98);
+  leg->SetBorderSize(1);
   TGraphErrors *g = 0x0;
-  TH1 *h1 = 0x0;
+  TAxis *ax = 0x0;
+  TH1 *h1 = 0x0, *h=0x0;
   TH2 *h2 = 0x0;
   switch(ifig){
-  case 0:
-    g = (TGraphErrors*)fContainer->At(kGraphStart);
+  case kEfficiency:
+    if(!(g = (TGraphErrors*)fGraph->At(kLQ))) break;
+    if(!g->GetN()) break;
+    leg->SetHeader("PID Method");
     g->Draw("apl");
-    g->GetHistogram()->GetXaxis()->SetTitle("p [GeV/c]");
-    g->GetHistogram()->GetXaxis()->SetRangeUser(.6, 10.5);
+    ax = g->GetHistogram()->GetXaxis();
+    ax->SetTitle("p [GeV/c]");
+    ax->SetRangeUser(.6, 10.5);
+    ax->SetMoreLogLabels();
     g->GetHistogram()->GetYaxis()->SetTitle("#epsilon_{#pi} [%]");
-    ((TGraphErrors*)fContainer->At(kGraphStart+1))->Draw("pl");
+    leg->AddEntry(g, "2D LQ", "pl");
+    if(! (g = (TGraphErrors*)fGraph->At(kNN))) break;
+    g->Draw("pl");
+    leg->AddEntry(g, "NN", "pl");
+    if(! (g = (TGraphErrors*)fGraph->At(kESD))) break;
+    g->Draw("pl");
+    leg->AddEntry(g, "ESD", "pl");
+    leg->Draw();
     gPad->SetLogy();
     gPad->SetLogx();
     gPad->SetGridy();
     gPad->SetGridx();
-    break;
-  case 1:
+    return;
+  case kdEdx:
     // save 2.0 GeV projection as reference
     FIRST = kTRUE;
-    h2 = (TH2F*)(fContainer->At(kdEdx));
+    if(!(h2 = (TH2F*)(fContainer->At(kdEdx)))) break;
+    leg->SetHeader("Particle Species");
     for(Int_t is = AliPID::kSPECIES-1; is>=0; is--){
       Int_t bin = is*AliTRDCalPID::kNMom+4;
       h1 = h2->ProjectionY("px", bin, bin);
       if(!h1->GetEntries()) continue;
       h1->Scale(1./h1->Integral());
       h1->SetLineColor(AliTRDCalPID::GetPartColor(is));
-      h1->DrawClone(FIRST ? "c" : "samec");
+      h = (TH1F*)h1->DrawClone(FIRST ? "c" : "samec");
+      leg->AddEntry(h, Form("%s", AliTRDCalPID::GetPartName(is)), "pl");
       FIRST = kFALSE;
     }
+    if(FIRST) break;
+    leg->Draw();
     gPad->SetLogy();
     gPad->SetLogx(0);
     gPad->SetGridy();
     gPad->SetGridx();
+    return;
+  case kdEdxSlice:
     break;
-  case 2:
+  case kPH:
     // save 2.0 GeV projection as reference
     FIRST = kTRUE;
-    h2 = (TH2F*)(fContainer->At(kPH));
+    if(!(h2 = (TH2F*)(fContainer->At(kPH)))) break;;
+    leg->SetHeader("Particle Species");
     for(Int_t is=0; is<AliPID::kSPECIES; is++){
       Int_t bin = is*AliTRDCalPID::kNMom+4;
       h1 = h2->ProjectionY("py", bin, bin);
@@ -862,18 +945,22 @@ void AliTRDpidChecker::GetRefFigure(Int_t ifig)
       h1->SetMarkerStyle(24);
       h1->SetMarkerColor(AliTRDCalPID::GetPartColor(is));
       h1->SetLineColor(AliTRDCalPID::GetPartColor(is));
-      h1->DrawClone(FIRST ? "e2" : "same e2");
+      h = (TH1F*)h1->DrawClone(FIRST ? "pc" : "same pc");
+      leg->AddEntry(h, Form("%s", AliTRDCalPID::GetPartName(is)), "pl");
       FIRST = kFALSE;
     }
+    if(FIRST) break;
+    leg->Draw();
     gPad->SetLogy(0);
     gPad->SetLogx(0);
     gPad->SetGridy();
     gPad->SetGridx();
-    break;
-  case 3:
+    return;
+  case kNClus:
     // save 2.0 GeV projection as reference
     FIRST = kTRUE;
-    h2 = (TH2F*)(fContainer->At(kNClus));
+    if(!(h2 = (TH2F*)(fContainer->At(kNClus)))) break;
+    leg->SetHeader("Particle Species");
     for(Int_t is=0; is<AliPID::kSPECIES; is++){
       Int_t bin = is*AliTRDCalPID::kNMom+4;
       h1 = h2->ProjectionY("py", bin, bin);
@@ -881,15 +968,42 @@ void AliTRDpidChecker::GetRefFigure(Int_t ifig)
       h1->SetMarkerStyle(24);
       h1->SetMarkerColor(AliTRDCalPID::GetPartColor(is));
       h1->SetLineColor(AliTRDCalPID::GetPartColor(is));
-      h1->DrawClone(FIRST ? "e2" : "same e2");
+      h = (TH1F*)h1->DrawClone(FIRST ? "pc" : "same pc");
+      leg->AddEntry(h, Form("%s", AliTRDCalPID::GetPartName(is)), "pl");
       FIRST = kFALSE;
     }
+    if(FIRST) break;
+    leg->Draw();
     gPad->SetLogy(0);
     gPad->SetLogx(0);
     gPad->SetGridy();
     gPad->SetGridx();
-    break;
+    return;
+  case kMomentum:
+  case kMomentumBin:
+    break; 
+  case kThresh:
+    if(!(g = (TGraphErrors*)fGraph->At(kLQ+3))) break;
+    if(!g->GetN()) break;
+    leg->SetHeader("PID Method");
+    g->Draw("apl");
+    g->GetHistogram()->GetXaxis()->SetTitle("p [GeV/c]");
+    g->GetHistogram()->GetXaxis()->SetRangeUser(.6, 10.5);
+    g->GetHistogram()->GetYaxis()->SetTitle("threshold");
+    leg->AddEntry(g, "2D LQ", "pl");
+    if(!(g = (TGraphErrors*)fGraph->At(kNN+3))) break;
+    g->Draw("pl");
+    leg->AddEntry(g, "NN", "pl");
+    if(!(g = (TGraphErrors*)fGraph->At(kESD+3))) break;
+    g->Draw("pl");
+    leg->AddEntry(g, "ESD", "pl");
+    leg->Draw();
+    gPad->SetLogx();
+    gPad->SetGridy();
+    gPad->SetGridx();
+    return;
   }
+  AliInfo(Form("Reference plot [%d] missing result", ifig));
 }
 
 //________________________________________________________________________
@@ -902,91 +1016,115 @@ Bool_t AliTRDpidChecker::PostProcess()
     Printf("ERROR: list not available");
     return kFALSE;
   }
-//   return kTRUE; // testing protection
+  if(!(fEfficiency = dynamic_cast<TObjArray *>(fContainer->At(kEfficiency)))){
+    AliError("Efficiency container missing.");
+    return 0x0;
+  }
 
+  TGraphErrors *g = 0x0;
+  if(!fGraph){ 
+    fGraph = new TObjArray(6);
+    fGraph->SetOwner();
 
-  // container for the pion efficiencies and the errors
-  Double_t  PionEffiLQ[AliTRDCalPID::kNMom], 
-            PionEffiErrorLQ[AliTRDCalPID::kNMom], 
-            EleEffiLQ[AliTRDCalPID::kNMom],
-            ThresholdLQ[AliTRDCalPID::kNMom];
+    fGraph->AddAt(g = new TGraphErrors(), kLQ);
+    g->SetLineColor(kBlue);
+    g->SetMarkerColor(kBlue);
+    g->SetMarkerStyle(29);
+  
+    fGraph->AddAt(g = new TGraphErrors(), kNN);
+    g->SetLineColor(kRed);
+    g->SetMarkerColor(kRed);
+    g->SetMarkerStyle(29);
+  
+    fGraph -> AddAt(g = new TGraphErrors(), kESD);
+    g->SetLineColor(kGreen);
+    g->SetMarkerColor(kGreen);
+    g->SetMarkerStyle(29);
 
-  Double_t  PionEffiNN[AliTRDCalPID::kNMom],
-            PionEffiErrorNN[AliTRDCalPID::kNMom],
-            EleEffiNN[AliTRDCalPID::kNMom],
-            ThresholdNN[AliTRDCalPID::kNMom];
+    fGraph->AddAt(g = new TGraphErrors(), 3+kLQ);
+    g->SetLineColor(kBlue);
+    g->SetMarkerColor(kBlue);
+    g->SetMarkerStyle(29);
+  
+    fGraph->AddAt(g = new TGraphErrors(), 3+kNN);
+    g->SetLineColor(kRed);
+    g->SetMarkerColor(kRed);
+    g->SetMarkerStyle(29);
+  
+    fGraph -> AddAt(g = new TGraphErrors(), 3+kESD);
+    g->SetLineColor(kGreen);
+    g->SetMarkerColor(kGreen);
+    g->SetMarkerStyle(29);
+  }
 
   Float_t mom = 0.;
-
   TH1D *Histo1=0x0, *Histo2=0x0;
 
-  TH2F *hPIDLQ=0x0, *hPIDNN=0x0;
-  hPIDLQ = (TH2F*)fContainer->At(kLQlikelihood);
-  hPIDNN = (TH2F*)fContainer->At(kNNlikelihood);
-
   // calculate the pion efficiencies and the errors for 90% electron efficiency (2-dim LQ)
+  TH2F *hPIDLQ = (TH2F*)fEfficiency->At(kLQ);
   for(Int_t iMom = 0; iMom < AliTRDCalPID::kNMom; iMom++){
-
-    AliTRDpidUtil *util = new AliTRDpidUtil();
     mom = AliTRDCalPID::GetMomentum(iMom);
 
     Histo1 = hPIDLQ -> ProjectionY("LQ_ele",AliTRDCalPID::kNMom*AliPID::kElectron+iMom+1,AliTRDCalPID::kNMom*AliPID::kElectron+iMom+1);
     Histo2 = hPIDLQ -> ProjectionY("LQ_pio",AliTRDCalPID::kNMom*AliPID::kPion+iMom+1,AliTRDCalPID::kNMom*AliPID::kPion+iMom+1);
 
-    util -> CalculatePionEffi(Histo1, Histo2);
+    if(!fUtil->CalculatePionEffi(Histo1, Histo2)) continue;
 
-    PionEffiLQ[iMom] = util -> GetPionEfficiency();
-    PionEffiErrorLQ[iMom] = util -> GetError();
-    EleEffiLQ[iMom] = util -> GetCalcElectronEfficiency();
-    ThresholdLQ[iMom] = util -> GetThreshold();
+    g = (TGraphErrors*)fGraph->At(kLQ);
+    g->SetPoint(iMom, mom, fUtil->GetPionEfficiency());
+    g->SetPointError(iMom, 0., fUtil->GetError());
+    g = (TGraphErrors*)fGraph->At(3 + kLQ);
+    g->SetPoint(iMom, mom, fUtil->GetThreshold());
+    g->SetPointError(iMom, 0., 0.);
 
-    if(fDebugLevel>=1) Printf("Pion Efficiency for 2-dim LQ is : %f +/- %f\n\n", PionEffiLQ[iMom], PionEffiErrorLQ[iMom]);
-    util -> Delete();
+    if(fDebugLevel>=2) Printf("Pion Efficiency for 2-dim LQ is : %f +/- %f\n\n", fUtil->GetPionEfficiency(), fUtil->GetError());
   }
   
 
-
   // calculate the pion efficiencies and the errors for 90% electron efficiency (NN)
+  TH2F *hPIDNN = (TH2F*)fEfficiency->At(kNN);
   for(Int_t iMom = 0; iMom < AliTRDCalPID::kNMom; iMom++){
-
-    AliTRDpidUtil *util = new AliTRDpidUtil();
     mom = AliTRDCalPID::GetMomentum(iMom);
 
     Histo1 = hPIDNN -> ProjectionY("NN_ele",AliTRDCalPID::kNMom*AliPID::kElectron+iMom+1,AliTRDCalPID::kNMom*AliPID::kElectron+iMom+1);
     Histo2 = hPIDNN -> ProjectionY("NN_pio",AliTRDCalPID::kNMom*AliPID::kPion+iMom+1,AliTRDCalPID::kNMom*AliPID::kPion+iMom+1);
 
-    util -> CalculatePionEffi(Histo1, Histo2);
+    if(!fUtil -> CalculatePionEffi(Histo1, Histo2)) continue;
 
-    PionEffiNN[iMom] = util -> GetPionEfficiency();
-    PionEffiErrorNN[iMom] = util -> GetError();
-    EleEffiNN[iMom] = util -> GetCalcElectronEfficiency();
-    ThresholdNN[iMom] = util -> GetThreshold();
+    g = (TGraphErrors*)fGraph->At(kNN);
+    g->SetPoint(iMom, mom, fUtil->GetPionEfficiency());
+    g->SetPointError(iMom, 0., fUtil->GetError());
+    g = (TGraphErrors*)fGraph->At(3+kNN);
+    g->SetPoint(iMom, mom, fUtil->GetThreshold());
+    g->SetPointError(iMom, 0., 0.);
 
-    if(fDebugLevel>=1) Printf("Pion Efficiency for NN is : %f +/- %f\n\n", PionEffiNN[iMom], PionEffiErrorNN[iMom]);
-
-    util -> Delete();
-  }
-  
-
-  // create TGraph to plot the pion efficiencies
-  TGraphErrors *gEffisLQ=0x0, *gEffisNN=0x0;
-  gEffisLQ = (TGraphErrors*)fContainer->At(kGraphLQ);
-  gEffisNN = (TGraphErrors*)fContainer->At(kGraphNN);
-
-
-  for(Int_t iBin = 0; iBin < AliTRDCalPID::kNMom; iBin++){
-
-    Float_t momentum = AliTRDCalPID::GetMomentum(iBin);
-    gEffisLQ->SetPoint(iBin, momentum, PionEffiLQ[iBin]);
-    gEffisLQ->SetPointError(iBin, 0., PionEffiErrorLQ[iBin]);
-
-    gEffisNN->SetPoint(iBin, momentum, PionEffiNN[iBin]);
-    gEffisNN->SetPointError(iBin, 0., PionEffiErrorNN[iBin]);
+    if(fDebugLevel>=2) Printf("Pion Efficiency for NN is : %f +/- %f\n\n", fUtil->GetPionEfficiency(), fUtil->GetError());
   }
 
 
-  fNRefFigures = 4/*1*/;
-  return kTRUE; // testing protection
+  // calculate the pion efficiencies and the errors for 90% electron efficiency (ESD)
+  TH2F *hPIDESD = (TH2F*)fEfficiency->At(kESD);
+  for(Int_t iMom = 0; iMom < AliTRDCalPID::kNMom; iMom++){
+    mom = AliTRDCalPID::GetMomentum(iMom);
+
+    Histo1 = hPIDESD -> ProjectionY("NN_ele",AliTRDCalPID::kNMom*AliPID::kElectron+iMom+1,AliTRDCalPID::kNMom*AliPID::kElectron+iMom+1);
+    Histo2 = hPIDESD -> ProjectionY("NN_pio",AliTRDCalPID::kNMom*AliPID::kPion+iMom+1,AliTRDCalPID::kNMom*AliPID::kPion+iMom+1);
+
+    if(!fUtil->CalculatePionEffi(Histo1, Histo2)) continue;
+
+    g = (TGraphErrors*)fGraph->At(kESD);
+    g->SetPoint(iMom, mom, fUtil->GetPionEfficiency());
+    g->SetPointError(iMom, 0., fUtil->GetError());
+    g = (TGraphErrors*)fGraph->At(3+kESD);
+    g->SetPoint(iMom, mom, fUtil->GetThreshold());
+    g->SetPointError(iMom, 0., 0.);
+
+    if(fDebugLevel>=2) Printf("Pion Efficiency for ESD is : %f +/- %f\n\n", fUtil->GetPionEfficiency(), fUtil->GetError());
+  }
+
+  fNRefFigures = 8;
+
+  return kTRUE;
 }
 
 
