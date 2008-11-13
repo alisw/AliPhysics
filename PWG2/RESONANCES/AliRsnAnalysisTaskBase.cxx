@@ -252,8 +252,8 @@ void AliRsnAnalysisTaskBase::ConnectESD(Short_t inputIndex)
   else
   {
     // Disable all branches, we want to process only MC
-    tree->SetBranchStatus("*", kFALSE);
-    tree->SetBranchStatus("fTracks.*", kTRUE);
+//     tree->SetBranchStatus("*", kFALSE);
+//     tree->SetBranchStatus("fTracks.*", kTRUE);
 
     AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
 
@@ -279,8 +279,8 @@ void AliRsnAnalysisTaskBase::ConnectESDMC(Short_t inputIndex)
   else
   {
     // Disable all branches, we want to process only MC
-    tree->SetBranchStatus("*", kFALSE);
-    tree->SetBranchStatus("fTracks.*", kTRUE);
+//     tree->SetBranchStatus("*", kFALSE);
+//     tree->SetBranchStatus("fTracks.*", kTRUE);
 
     AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
 

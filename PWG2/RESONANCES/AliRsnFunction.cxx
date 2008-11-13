@@ -172,6 +172,7 @@ TList* AliRsnFunction::Init(const char *histoName, const char *histoTitle)
   // a general histogram is always added,
   // which overrides the binning and collects everything
   fHisto[0] = new TH1D(histoName, histoTitle, nbins, min, max);
+  fHisto[0]->Sumw2();
   histos->AddLast(fHisto[0]);
 
   // if requested a binning w.r. to some cut variable, histograms are added
@@ -185,6 +186,7 @@ TList* AliRsnFunction::Init(const char *histoName, const char *histoTitle)
       sprintf(hName, "%s[%.2f-%.2f]", histoName, fBins[ibin], fBins[ibin+1]);
       sprintf(hTitle, "%s [%.2f-%.2f]", histoTitle, fBins[ibin], fBins[ibin+1]);
       fHisto[i] = new TH1D(hName, hTitle, nbins, min, max);
+      fHisto[i]->Sumw2();
       histos->AddLast(fHisto[i]);
     }
   }

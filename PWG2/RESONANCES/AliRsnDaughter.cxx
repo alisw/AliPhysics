@@ -412,8 +412,17 @@ Bool_t AliRsnDaughter::Adopt(AliESDtrack* esdTrack,EPIDType pidType ,Double_t di
 //     fCurrentESDPID = kTPC;
     GetESDPID(esdTrack,pid,kTPC,0.0,p);
   }
-  for (i = 0; i < 5; i++) fPIDWeight[i] = pid[i];
+//   for (i = 0; i < 5; i++) fPIDWeight[i] = pid[i];
 
+  Double_t sum = 0.0;
+  for (i = 0; i < 5; i++)
+  {
+    fPIDWeight[i] = pid[i];
+    sum += fPIDWeight[i];
+  }
+  
+  if (sum<=0.0) return kFALSE;
+  
   // copy flags
   fFlags = esdTrack->GetStatus();
 

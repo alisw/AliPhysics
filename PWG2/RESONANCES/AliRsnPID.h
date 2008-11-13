@@ -64,12 +64,14 @@ class AliRsnPID : public TNamed
 
     // other
     void DumpPriors();
+    void SetPIDArraysSize(Int_t size) {fPIDArraysSize = size;}
 
   private:
 
     Double_t  fPrior[kSpecies]; // prior probabilities
     Double_t  fMaxPt;           // pt threshold for realistic PID
     Double_t  fMinProb;         // threshold on acceptable largest probability
+    Int_t     fPIDArraysSize;   // size of PID arrays filled during processing
 
     static const Double_t  fgkParticleMass[kSpeciesAll + 1];      // PDG particle mass
     static const char*     fgkParticleNameShort[kSpeciesAll + 1]; // short particle name

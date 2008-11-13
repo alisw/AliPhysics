@@ -13,6 +13,7 @@
 #include "TH1.h"
 #include "TH2.h"
 #include "TList.h"
+#include "TArrayI.h"
 
 #include "AliRsnDaughter.h"
 #include "AliRsnPairDef.h"
@@ -56,28 +57,32 @@ class AliRsnPair : public TObject
   private:
 
     AliRsnPair (const AliRsnPair &copy) : TObject(copy),
-      fIsMixed(kFALSE),fUseMC(kFALSE),fIsLikeSign(kFALSE),fMixNum(1),fMixingCut(0x0),
+      fIsMixed(kFALSE),fUseMC(kFALSE),fIsLikeSign(kFALSE),fMixNum(1),fMixingCut(0x0),fMatched(0),
       fPairDef(0x0),fPairType(kPairTypes),fTypePID(AliRsnDaughter::kRealistic),
       fCutMgr(0x0),fFunctions("AliRsnFunction",0) {}
     AliRsnPair& operator=(const AliRsnPair&) {return *this;}
 
     void           SetUp(EPairType type);  // sets up all flags
     void           SetAllFlags(AliRsnDaughter::EPIDMethod pidType,Bool_t isMix, Bool_t useMC);
-    AliRsnEvent*   FindEventByEventCut(AliRsnEventBuffer *buf,Int_t & num);
-    void           LoopPair(AliRsnEvent *ev1,TArrayI *a1,AliRsnEvent *ev2,TArrayI *a2);
+    AliRsnEvent*   FindEventByEventCut(AliRsnEventBuffer *buf, Int_t & num);
+    Int_t          FindMatchedEvents(Int_t evIndex, AliRsnEventBuffer *buf);
+    void           ProcessPairSingle(AliRsnEventBuffer *buf);
+    void           ProcessPairMix(AliRsnEventBuffer *buf);
+    void           LoopPair(AliRsnEvent *ev1, TArrayI *a1, AliRsnEvent *ev2, TArrayI *a2, Double_t weight = 0.0);
 
     Bool_t         CutPass(AliRsnDaughter *d);
     Bool_t         CutPass(AliRsnPairParticle *p);
     Bool_t         CutPass(AliRsnEvent *e);
-    
+
     // flags & integer data
     Bool_t         fIsMixed;                 // doing event-mixing ?
     Bool_t         fUseMC;                   // using MC inv. mass ?
     Bool_t         fIsLikeSign;              // is a like-sign pair ?
     Int_t          fMixNum;                  // number of mixed events
     AliRsnCutSet  *fMixingCut;               // cut for event mixing
-    
+
     // work management
+    TArrayI                     fMatched;                // array with indexes of matched events (used in mixing)
     AliRsnPairDef              *fPairDef;                // pair definition (particles, charges)
     EPairType                   fPairType;               // pair type (PID + mixing or not)
     AliRsnDaughter::EPIDMethod  fTypePID;                // pid type variable for single track

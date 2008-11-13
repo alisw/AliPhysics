@@ -33,7 +33,8 @@ class AliRsnAnalysisSE : public AliRsnAnalysisTaskSEBase
     virtual void    UserExec(Option_t *option);
     virtual void    Terminate(Option_t *);
 
-    void AddPairMgr(AliRsnPairMgr*pairmgr);
+    void AddPairMgr(AliRsnPairMgr *pairmgr);
+    void AddPairMgrFromConfig(TString configfile);
 
     void SetNumOfEventsInBuffer(const Int_t& theValue) { fNumOfEventsInBuffer = theValue; }
     Int_t GetNumOfEventsInBuffer() const { return fNumOfEventsInBuffer; }

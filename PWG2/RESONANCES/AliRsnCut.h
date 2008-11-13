@@ -44,6 +44,7 @@ class AliRsnCut : public TNamed
     kStatus,
     kIsLabelEqual,
     kIsTruePair,
+    kIsPrimary,
     kChargePos,
     kChargeNeg,
     kPIDType,

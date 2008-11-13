@@ -10,6 +10,7 @@
 #include <TSystem.h>
 #include <TFile.h>
 #include <TFolder.h>
+#include <TROOT.h>
 
 #include "AliLog.h"
 
@@ -194,4 +195,17 @@ void AliRsnAnalysisSE::PostEventProcess(const Short_t & index)
 void  AliRsnAnalysisSE::AddPairMgr(AliRsnPairMgr * pairmgr)
 {
   fPairMgrs.Add(pairmgr);
+}
+
+
+void AliRsnAnalysisSE::AddPairMgrFromConfig(TString configfile)
+{
+  gROOT->LoadMacro(configfile.Data());
+
+  configfile.ReplaceAll(".C","");
+
+  AliRsnPairMgr *mgrRsn = (AliRsnPairMgr *) gROOT->ProcessLine(Form("%s();",configfile.Data()));
+  if (!mgrRsn) return;
+
+  fPairMgrs.Add(mgrRsn);
 }
