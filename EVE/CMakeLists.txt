@@ -4,6 +4,7 @@
 # The extension is already found.  Any number of sources could be listed here.
 
 set(INCLUDE_DIRECTORIES
+${CMAKE_SOURCE_DIR}/ANALYSIS
 ${CMAKE_SOURCE_DIR}/EMCAL
 ${CMAKE_SOURCE_DIR}/EVE
 ${CMAKE_SOURCE_DIR}/EVE/EveBase
