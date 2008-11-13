@@ -328,20 +328,21 @@ void AliAnalysisTaskLeeYangZeros::Terminate(Option_t *)
       (fListHistos->FindObject("Flow_QsumforChi_LYZEP"));
 
     //define histograms for first and second run
-    TProfile* pHistProVtheta = 0;
-    TProfile* pHistProReDenom = 0;
-    TProfile* pHistProImDenom = 0;
-    TProfile* pHistProReDtheta = 0;
-    TProfile* pHistProImDtheta = 0;
-    TProfile* pHistProVeta = 0;
-    TProfile* pHistProVPt  = 0;
+    TProfile* pHistProVtheta = NULL;
+    TProfile* pHistProReDenom = NULL;
+    TProfile* pHistProImDenom = NULL;
+    TProfile* pHistProReDtheta = NULL;
+    TProfile* pHistProImDtheta = NULL;
+    TProfile* pHistProVeta = NULL;
+    TProfile* pHistProVPt  = NULL;
 
-    AliFlowLYZHist1 *pLYZHist1[5] = {0};      //array of pointers to AliFlowLYZHist1
-    AliFlowLYZHist2 *pLYZHist2[5] = {0};      //array of pointers to AliFlowLYZHist2
+    const Int_t nTheta = 5;
+    AliFlowLYZHist1 *pLYZHist1[nTheta] = {NULL};      //array of pointers to AliFlowLYZHist1
+    AliFlowLYZHist2 *pLYZHist2[nTheta] = {NULL};      //array of pointers to AliFlowLYZHist2
 
     if (GetFirstRunLYZ()) { //for firstrun
       //Get the histograms from the output list
-      for(Int_t theta = 0;theta<5;theta++){
+      for(Int_t theta = 0;theta<nTheta;theta++){
 	TString name = "AliFlowLYZHist1_"; 
 	name += theta;
 	pLYZHist1[theta] = dynamic_cast<AliFlowLYZHist1*> 
@@ -351,7 +352,7 @@ void AliAnalysisTaskLeeYangZeros::Terminate(Option_t *)
 	  (fListHistos->FindObject("First_FlowPro_Vtheta_LYZ"));
 
       //Set the histogram pointers and call Finish()
-      if (pCommonHist && pCommonHistResults && pLYZHist1 && 
+      if (pCommonHist && pCommonHistResults && pLYZHist1[0] && 
 	  pHistProVtheta && pHistProR0theta && pHistQsumforChi ) {
 	fLyzTerm->SetCommonHists(pCommonHist);
 	fLyzTerm->SetCommonHistsRes(pCommonHistResults);
@@ -366,7 +367,7 @@ void AliAnalysisTaskLeeYangZeros::Terminate(Option_t *)
       }
     } else { //for second run
       //Get the histograms from the output list
-      for(Int_t theta = 0;theta<5;theta++){
+      for(Int_t theta = 0;theta<nTheta;theta++){
 	TString name = "AliFlowLYZHist2_"; 
 	name += theta;
 	pLYZHist2[theta] = dynamic_cast<AliFlowLYZHist2*> 
@@ -389,7 +390,7 @@ void AliAnalysisTaskLeeYangZeros::Terminate(Option_t *)
 	(fListHistos->FindObject("Second_FlowPro_VPt_LYZ"));
 
       //Set the histogram pointers and call Finish()
-      if (pCommonHist && pCommonHistResults && pLYZHist2 && pHistProR0theta && 
+      if (pCommonHist && pCommonHistResults && pLYZHist2[0] && pHistProR0theta && 
 	  pHistProReDenom && pHistProImDenom && pHistProVeta && pHistProVPt) {
 	fLyzTerm->SetCommonHists(pCommonHist);
 	fLyzTerm->SetCommonHistsRes(pCommonHistResults);
