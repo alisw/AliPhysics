@@ -39,7 +39,7 @@ void MakeTOFResMisAlignment(){
   Int_t j=0;
   Int_t strId=-1;
   Double_t dx=0., dy=0., dz=0., dpsi=0., dtheta=0., dphi=0.;
-  TRandom *rnd   = new TRandom(4357);
+  //TRandom *rnd   = new TRandom(4357);
   Double_t sigmatr = 0.1; // sigma (in cm) for shift w.r.t. local ideal RS
 
   Int_t nstrA=15;
@@ -60,30 +60,30 @@ void MakeTOFResMisAlignment(){
       case 29:
       case 63:
       case 67:
-	cuty = sigmatr*0.7;
-	sdy  = LocalTruncatedGaus(0., sigmatr, cut, cuty);
-	sdz  = AliMathBase::TruncatedGaus(0., sigmatr, cut);
+	cuty = sigmatr*0.6;
+	dy  = AliMathBase::TruncatedGaus(0., sigmatr, cut, cuty);
+	dz  = AliMathBase::TruncatedGaus(0., sigmatr, cut);
 	strId++;
 	break;
 	/*
       case 38:
 	cuty = sigmatr*2.5;
 	cutz = sigmatr*2.5;
-	sdy  = LocalTruncatedGaus(0., sigmatr, cut, cuty);
-	sdz  = LocalTruncatedGaus(0., sigmatr, cut, cutz);
+	dy  = AliMathBase::TruncatedGaus(0., sigmatr, cut, cuty);
+	dz  = AliMathBase::TruncatedGaus(0., sigmatr, cut, cutz);
 	strId++;
 	break;
       case 54:
 	cuty = sigmatr*2.5;
 	cutz = sigmatr*2.5;
-	sdy  = LocalTruncatedGaus(0., sigmatr, cut, cuty);
-	sdz  = LocalTruncatedGaus(0., sigmatr, cutz, cut);
+	dy  = AliMathBase::TruncatedGaus(0., sigmatr, cut, cuty);
+	dz  = AliMathBase::TruncatedGaus(0., sigmatr, cutz, cut);
 	strId++;
 	break;
 	*/
       default:
-	sdy = AliMathBase::TruncatedGaus(0., sigmatr, cut);
-	sdz = AliMathBase::TruncatedGaus(0., sigmatr, cut);
+	dy = AliMathBase::TruncatedGaus(0., sigmatr, cut);
+	dz = AliMathBase::TruncatedGaus(0., sigmatr, cut);
 	strId++;
 	break;
       }
@@ -119,7 +119,7 @@ void MakeTOFResMisAlignment(){
 
 }
 
-
+/*
 Double_t LocalTruncatedGaus(Double_t mean, Double_t sigma, Double_t cutatL, Double_t cutatR)
 {
   // return number generated according to a gaussian distribution N(mean,sigma) truncated at cutat
@@ -130,3 +130,4 @@ Double_t LocalTruncatedGaus(Double_t mean, Double_t sigma, Double_t cutatL, Doub
   }while(value-mean<-cutatL || value-mean>cutatR);
   return value;
 }
+*/

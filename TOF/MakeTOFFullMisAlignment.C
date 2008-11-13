@@ -91,7 +91,7 @@ void MakeTOFFullMisAlignment(){
   Int_t strId=-1;
 
   Double_t sdx=0., sdy=0., sdz=0., sdpsi=0., sdtheta=0., sdphi=0.;
-  TRandom *rnds   = new TRandom(4357);
+  //TRandom *rnds   = new TRandom(4357);
   sigmatr = 0.1; // max shift in cm w.r.t. local ideal RS
 
   Int_t nstrA=15;
@@ -109,7 +109,7 @@ void MakeTOFFullMisAlignment(){
     case 63:
     case 67:
       cuty = sigmatr*0.6;
-      sdy  = LocalTruncatedGaus(0., sigmatr, cut, cuty);
+      sdy  = AliMathBase::TruncatedGaus(0., sigmatr, cut, cuty);
       sdz  = AliMathBase::TruncatedGaus(0., sigmatr, cut);
       strId++;
       break;
@@ -117,15 +117,15 @@ void MakeTOFFullMisAlignment(){
     case 38:
       cuty = sigmatr*2.5;
       cutz = sigmatr*2.5;
-      sdy  = LocalTruncatedGaus(0., sigmatr, cut, cuty);
-      sdz  = LocalTruncatedGaus(0., sigmatr, cut, cutz);
+      sdy  = AliMathBase::TruncatedGaus(0., sigmatr, cut, cuty);
+      sdz  = AliMathBase::TruncatedGaus(0., sigmatr, cut, cutz);
       strId++;
       break;
     case 54:
       cuty = sigmatr*2.5;
       cutz = sigmatr*2.5;
-      sdy  = LocalTruncatedGaus(0., sigmatr, cut, cuty);
-      sdz  = LocalTruncatedGaus(0., sigmatr, cutz, cut);
+      sdy  = AliMathBase::TruncatedGaus(0., sigmatr, cut, cuty);
+      sdz  = AliMathBase::TruncatedGaus(0., sigmatr, cutz, cut);
       strId++;
       break;
       */
@@ -169,7 +169,7 @@ void MakeTOFFullMisAlignment(){
 
 }
 
-
+/*
 Double_t LocalTruncatedGaus(Double_t mean, Double_t sigma, Double_t cutatL, Double_t cutatR)
 {
   // return number generated according to a gaussian distribution N(mean,sigma) truncated at cutat
@@ -180,3 +180,4 @@ Double_t LocalTruncatedGaus(Double_t mean, Double_t sigma, Double_t cutatL, Doub
   }while(value-mean<-cutatL || value-mean>cutatR);
   return value;
 }
+*/
