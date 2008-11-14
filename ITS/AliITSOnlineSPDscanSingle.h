@@ -17,7 +17,7 @@ class AliITSOnlineSPDscanSingle :  public AliITSOnlineSPDscan {
 
  public:
   AliITSOnlineSPDscanSingle() {}
-  AliITSOnlineSPDscanSingle(const Char_t *fileName);
+  AliITSOnlineSPDscanSingle(const Char_t *fileName, Bool_t readFromGridFile=kFALSE);
   virtual ~AliITSOnlineSPDscanSingle();
   
   // SET METHODS ***********************************

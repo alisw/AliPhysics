@@ -22,7 +22,7 @@ class AliITSOnlineSPDphys {
 
  public:
   AliITSOnlineSPDphys():fFile(NULL),fWrite(kFALSE),fModified(kFALSE),fInfoModified(kFALSE),fPhysInfo(NULL),fFileName("."){}
-  AliITSOnlineSPDphys(const Char_t *fileName);
+  AliITSOnlineSPDphys(const Char_t *fileName, Bool_t readFromGridFile=kFALSE);
   AliITSOnlineSPDphys(const AliITSOnlineSPDphys& phys);
   virtual ~AliITSOnlineSPDphys();
   AliITSOnlineSPDphys& operator=(const AliITSOnlineSPDphys& phys);

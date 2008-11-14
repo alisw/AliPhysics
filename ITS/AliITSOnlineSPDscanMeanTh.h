@@ -13,7 +13,7 @@ class AliITSOnlineSPDscanMeanTh :  public AliITSOnlineSPDscanMultiple {
 
  public:
   AliITSOnlineSPDscanMeanTh(){}
-  AliITSOnlineSPDscanMeanTh(const Char_t *fileName);
+  AliITSOnlineSPDscanMeanTh(const Char_t *fileName, Bool_t readFromGridFile=kFALSE);
   AliITSOnlineSPDscanMeanTh(const AliITSOnlineSPDscanMeanTh& scan);
   virtual ~AliITSOnlineSPDscanMeanTh();
   AliITSOnlineSPDscanMeanTh& operator=(const AliITSOnlineSPDscanMeanTh& scan);

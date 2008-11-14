@@ -8,23 +8,47 @@
 #include "AliITSOnlineSPDscanMeanTh.h"
 #include "AliITSOnlineSPDscanInfoMeanTh.h"
 
-AliITSOnlineSPDscanMeanTh::AliITSOnlineSPDscanMeanTh(const Char_t *fileName) {
+AliITSOnlineSPDscanMeanTh::AliITSOnlineSPDscanMeanTh(const Char_t *fileName, Bool_t readFromGridFile) {
   // constructor
   fFileName=fileName;
+  fModified=kFALSE;
+  fInfoModified=kFALSE;
   // look for a previously saved info object 
   // (if file not found create a new one and return, else read)
-  FILE* fp0 = fopen(fFileName.Data(), "r");
-  if (fp0 == NULL) {
+
+  Bool_t bRead = readFromGridFile;
+
+  if (!bRead) {
+    FILE* fp0 = fopen(fFileName.Data(), "r");
+    if (fp0 != NULL) {
+      bRead=kTRUE;
+      fclose(fp0);
+    }
+  }
+
+  if (bRead) { // open file for reading
+    fFile = TFile::Open(fFileName.Data(), "READ");
+    if (fFile==NULL) { // grid file not found, create new local default file
+      printf("ERROR: AliITSOnlineSPDscan: File %s not found! Creating 'test999.root' file instead\n",fFileName.Data());
+      // create default empty file:
+      fFileName = "test999.root";
+      fScanInfo = new AliITSOnlineSPDscanInfoMeanTh();
+      fInfoModified=kTRUE;
+      fFile = new TFile(fFileName.Data(), "RECREATE");
+      fWrite=kTRUE;
+    }
+    else { // read from file (grid or local)
+      fWrite=kFALSE;
+      fFile->GetObject("AliITSOnlineSPDscanInfo", fScanInfo);
+    }
+  }
+  else { // create new local file
     fScanInfo = new AliITSOnlineSPDscanInfoMeanTh();
+    fInfoModified=kTRUE;
     fFile = new TFile(fFileName.Data(), "RECREATE");
     fWrite=kTRUE;
   }
-  else {
-    fclose(fp0);
-    fFile = new TFile(fFileName.Data(), "READ");
-    fWrite=kFALSE;
-    fFile->GetObject("AliITSOnlineSPDscanInfo", fScanInfo);
-  }
+
   Init();
 }
 

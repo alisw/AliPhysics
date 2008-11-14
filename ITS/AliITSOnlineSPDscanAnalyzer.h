@@ -23,7 +23,7 @@ class TH2F;
 class AliITSOnlineSPDscanAnalyzer {
 
  public:
-  AliITSOnlineSPDscanAnalyzer(const Char_t *fileName, AliITSOnlineCalibrationSPDhandler *handler);
+  AliITSOnlineSPDscanAnalyzer(const Char_t *fileName, AliITSOnlineCalibrationSPDhandler *handler, Bool_t readFromGridFile=kFALSE);
   AliITSOnlineSPDscanAnalyzer(const AliITSOnlineSPDscanAnalyzer& handle);
   ~AliITSOnlineSPDscanAnalyzer();
 
@@ -73,7 +73,7 @@ class AliITSOnlineSPDscanAnalyzer {
   TGraph*    fHitEventEfficiency[6][11]; // hit event graphs
   TGraph*    fTriggers;                  // trigger graph
 
-  void       Init();                     // init
+  void       Init(Bool_t readFromGridFile=kFALSE);                     // init
 
   Bool_t     ProcessMeanMultiplicity();  // process mean mult
   Bool_t     ProcessHitEventEfficiency();// process hit event eff

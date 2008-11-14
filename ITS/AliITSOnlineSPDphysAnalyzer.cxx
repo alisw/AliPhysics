@@ -34,7 +34,7 @@
 #include <iostream>
 #include <fstream>
 
-AliITSOnlineSPDphysAnalyzer::AliITSOnlineSPDphysAnalyzer(const Char_t *fileName, AliITSOnlineCalibrationSPDhandler* handler) :
+AliITSOnlineSPDphysAnalyzer::AliITSOnlineSPDphysAnalyzer(const Char_t *fileName, AliITSOnlineCalibrationSPDhandler* handler, Bool_t readFromGridFile) :
   fFileName(fileName),fPhysObj(NULL),fHandler(handler),
   fNrEnoughStatChips(0),fNrDeadChips(0),fNrInefficientChips(0),
   fNrEqHits(0),fbDeadProcessed(kFALSE),
@@ -44,7 +44,7 @@ AliITSOnlineSPDphysAnalyzer::AliITSOnlineSPDphysAnalyzer(const Char_t *fileName,
   fMinNrEqHitsForDeadChips(60000),fRatioToMeanForInefficientChip(0.1)
 {
   // constructor  
-  Init();
+  Init(readFromGridFile);
 }
 
 AliITSOnlineSPDphysAnalyzer::AliITSOnlineSPDphysAnalyzer(AliITSOnlineSPDphys* physObj, AliITSOnlineCalibrationSPDhandler* handler) :
@@ -114,16 +114,18 @@ AliITSOnlineSPDphysAnalyzer& AliITSOnlineSPDphysAnalyzer::operator=(const AliITS
   return *this;
 }
 
-void AliITSOnlineSPDphysAnalyzer::Init() {
+void AliITSOnlineSPDphysAnalyzer::Init(Bool_t readFromGridFile) {
   // initialize container obj
-  FILE* fp0 = fopen(fFileName.Data(), "r");
-  if (fp0 == NULL) {
-    return;
+  if (!readFromGridFile) {
+    FILE* fp0 = fopen(fFileName.Data(), "r");
+    if (fp0 == NULL) {
+      return;
+    }
+    else {
+      fclose(fp0);
+    }
   }
-  else {
-    fclose(fp0);
-  }
-  fPhysObj = new AliITSOnlineSPDphys(fFileName.Data());
+  fPhysObj = new AliITSOnlineSPDphys(fFileName.Data(), readFromGridFile);
 }
 
 void AliITSOnlineSPDphysAnalyzer::SetParam(const Char_t *pname, const Char_t *pval) {

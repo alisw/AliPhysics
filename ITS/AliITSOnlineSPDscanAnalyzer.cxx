@@ -49,7 +49,7 @@ Double_t itsSpdErrorf(Double_t *x, Double_t *par){
 //}
 
 
-AliITSOnlineSPDscanAnalyzer::AliITSOnlineSPDscanAnalyzer(const Char_t *fileName, AliITSOnlineCalibrationSPDhandler *handler) :
+AliITSOnlineSPDscanAnalyzer::AliITSOnlineSPDscanAnalyzer(const Char_t *fileName, AliITSOnlineCalibrationSPDhandler *handler, Bool_t readFromGridFile) :
   fType(99),fDacId(99),fFileName(fileName),fScanObj(NULL),fHandler(handler),fTriggers(NULL),
   fOverWrite(kFALSE),fNoiseThreshold(0.01),fNoiseMinimumEvents(100),
   fMinNrStepsBeforeIncrease(5),fMinIncreaseFromBaseLine(2),fStepDownDacSafe(5),fMaxBaseLineLevel(10)
@@ -65,7 +65,7 @@ AliITSOnlineSPDscanAnalyzer::AliITSOnlineSPDscanAnalyzer(const Char_t *fileName,
     fbModuleScanned[mod]=kFALSE;
   }
 
-  Init();
+  Init(readFromGridFile);
 }
 
 AliITSOnlineSPDscanAnalyzer::AliITSOnlineSPDscanAnalyzer(const AliITSOnlineSPDscanAnalyzer& handle) :
@@ -158,16 +158,19 @@ AliITSOnlineSPDscanAnalyzer& AliITSOnlineSPDscanAnalyzer::operator=(const AliITS
   return *this;
 }
 
-void AliITSOnlineSPDscanAnalyzer::Init() {
+void AliITSOnlineSPDscanAnalyzer::Init(Bool_t readFromGridFile) {
   // first checks type of container and then initializes container obj
-  FILE* fp0 = fopen(fFileName.Data(), "r");
-  if (fp0 == NULL) {
-    return;
+  if (!readFromGridFile) {
+    FILE* fp0 = fopen(fFileName.Data(), "r");
+    if (fp0 == NULL) {
+      return;
+    }
+    else {
+      fclose(fp0);
+    }
   }
-  else {
-    fclose(fp0);
-  }
-  fScanObj = new AliITSOnlineSPDscan(fFileName.Data());
+
+  fScanObj = new AliITSOnlineSPDscan(fFileName.Data(),readFromGridFile);
   fType = fScanObj->GetType();
   delete fScanObj;
 
@@ -175,16 +178,16 @@ void AliITSOnlineSPDscanAnalyzer::Init() {
   switch(fType) {
   case kUNIMA:
   case kNOISE:
-    fScanObj = new AliITSOnlineSPDscanSingle(fFileName.Data());
+    fScanObj = new AliITSOnlineSPDscanSingle(fFileName.Data(),readFromGridFile);
     break;
   case kMINTH:
   case kDAC:
   case kDELAY:
-    fScanObj = new AliITSOnlineSPDscanMultiple(fFileName.Data());
+    fScanObj = new AliITSOnlineSPDscanMultiple(fFileName.Data(),readFromGridFile);
     fDacId = ((AliITSOnlineSPDscanMultiple*)fScanObj)->GetDacId();
     break;
   case kMEANTH:
-    fScanObj = new AliITSOnlineSPDscanMeanTh(fFileName.Data());
+    fScanObj = new AliITSOnlineSPDscanMeanTh(fFileName.Data(),readFromGridFile);
     fDacId = ((AliITSOnlineSPDscanMeanTh*)fScanObj)->GetDacId();
     break;
   default:

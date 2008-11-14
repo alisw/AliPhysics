@@ -13,7 +13,7 @@ class AliITSOnlineSPDscanMultiple :  public AliITSOnlineSPDscan {
 
  public:
   AliITSOnlineSPDscanMultiple();
-  AliITSOnlineSPDscanMultiple(const Char_t *fileName);
+  AliITSOnlineSPDscanMultiple(const Char_t *fileName, Bool_t readFromGridFile=kFALSE);
   AliITSOnlineSPDscanMultiple(const AliITSOnlineSPDscanMultiple& scan);
   virtual ~AliITSOnlineSPDscanMultiple();
   AliITSOnlineSPDscanMultiple& operator=(const AliITSOnlineSPDscanMultiple& scan);

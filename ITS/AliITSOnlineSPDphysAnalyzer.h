@@ -20,7 +20,7 @@ class TH2F;
 class AliITSOnlineSPDphysAnalyzer {
 
  public:
-  AliITSOnlineSPDphysAnalyzer(const Char_t *fileName, AliITSOnlineCalibrationSPDhandler* handler);
+  AliITSOnlineSPDphysAnalyzer(const Char_t *fileName, AliITSOnlineCalibrationSPDhandler* handler, Bool_t readFromGridFile=kFALSE);
   AliITSOnlineSPDphysAnalyzer(AliITSOnlineSPDphys* physObj, AliITSOnlineCalibrationSPDhandler* handler);
   AliITSOnlineSPDphysAnalyzer(const AliITSOnlineSPDphysAnalyzer& handle);
   ~AliITSOnlineSPDphysAnalyzer();
@@ -51,7 +51,7 @@ class AliITSOnlineSPDphysAnalyzer {
   enum     calibvals{kMINTH,kMEANTH,kDAC,kUNIMA,kNOISE,kDELAY};  // calib types
   AliITSOnlineSPDphys               *fPhysObj; // container obj
   AliITSOnlineCalibrationSPDhandler *fHandler; // calib helper obj
-  void     Init();    // initialization
+  void     Init(Bool_t readFromGridFile=kFALSE);    // initialization
   void     Exponent(Double_t &val, Int_t &valExp) const;
 
   UInt_t   fNrEnoughStatChips;    // nr of enough stat chips

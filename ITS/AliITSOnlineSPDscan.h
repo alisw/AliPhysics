@@ -23,7 +23,7 @@ class AliITSOnlineSPDscan {
 
  public:
   AliITSOnlineSPDscan():fFile(NULL),fWrite(kFALSE),fCurrentStep(-1),fModified(kFALSE),fInfoModified(kFALSE),fScanInfo(NULL),fFileName("./test.root"){}
-  AliITSOnlineSPDscan(const Char_t *fileName);
+  AliITSOnlineSPDscan(const Char_t *fileName, Bool_t readFromGridFile=kFALSE);
   AliITSOnlineSPDscan(const AliITSOnlineSPDscan& scan);
   virtual ~AliITSOnlineSPDscan();
   AliITSOnlineSPDscan& operator=(const AliITSOnlineSPDscan& scan);
