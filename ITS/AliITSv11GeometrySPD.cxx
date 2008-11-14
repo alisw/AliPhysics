@@ -2978,7 +2978,7 @@ TList* AliITSv11GeometrySPD::CreateConeModule(TGeoManager *mgr) const
     
     Double_t cableThickness = 1.5 * fgkmm;
     Double_t cableL1 = 350.0 * fgkmm - extThickness - ext1Length - ext2Length;
-    Double_t cableL2 = 426.0 * fgkmm;
+    Double_t cableL2 = 340.0 * fgkmm;
     //Double_t cableL3 = 570.0 * fgkmm;
     Double_t cableL3 = 57.0 * fgkmm;
     Double_t cableW1 =  11.0 * fgkmm;
@@ -3088,17 +3088,17 @@ void AliITSv11GeometrySPD::CreateCones(TGeoVolume *moth) const
     for (Int_t i = 0; i < 10; i++) {
         TGeoRotation *rot1 = new TGeoRotation(*gGeoIdentity);
         rot1->RotateY(-90.0);
-        rot1->RotateX(43.7);
+        rot1->RotateX(45.0);
 	angle1m[i] -= 1.5;
         rot1->RotateZ(90.0 - angle1m[i]);
-        TGeoCombiTrans *tr1 = new TGeoCombiTrans(0.0, 0.0, 40.4, rot1);
+        TGeoCombiTrans *tr1 = new TGeoCombiTrans(0.0, 0.0, 38.5, rot1);
         moth->AddNode(module, 2*i, tr1);
         TGeoRotation *rot2 = new TGeoRotation(*gGeoIdentity);
         rot2->RotateY(90.0);
-        rot2->RotateX(-43.7);
+        rot2->RotateX(-45.0);
 	angle2m[i] -= 1.5;
         rot2->RotateZ(90.0 - angle2m[i]);
-        TGeoCombiTrans *tr2 = new TGeoCombiTrans(0.0, 0.0, -40.4, rot2);
+        TGeoCombiTrans *tr2 = new TGeoCombiTrans(0.0, 0.0, -38.5, rot2);
         moth->AddNode(module, 2*i+1, tr2);
     }
 
@@ -3107,17 +3107,17 @@ void AliITSv11GeometrySPD::CreateCones(TGeoVolume *moth) const
     for (Int_t i = 0; i < 10; i++) {
         TGeoRotation *rot1 = new TGeoRotation(*gGeoIdentity);
         rot1->RotateY(-90.0);
-        rot1->RotateX(43.7);
+        rot1->RotateX(45.0);
 	angle1c[i] -= 1.5;
         rot1->RotateZ(90.0 - angle1c[i]);
-        TGeoCombiTrans *tr1 = new TGeoCombiTrans(0.0, 0.0, 40.4, rot1);
+        TGeoCombiTrans *tr1 = new TGeoCombiTrans(0.0, 0.0, 38.5, rot1);
         moth->AddNode(module, 2*i, tr1);
         TGeoRotation *rot2 = new TGeoRotation(*gGeoIdentity);
         rot2->RotateY(90.0);
-        rot2->RotateX(-43.4);
+        rot2->RotateX(-45.0);
 	angle2c[i] -= 1.5;
         rot2->RotateZ(90.0 - angle2c[i]);
-        TGeoCombiTrans *tr2 = new TGeoCombiTrans(0.0, 0.0, -40.4, rot2);
+        TGeoCombiTrans *tr2 = new TGeoCombiTrans(0.0, 0.0, -38.5, rot2);
         moth->AddNode(module, 2*i+1, tr2);
     }
 }
