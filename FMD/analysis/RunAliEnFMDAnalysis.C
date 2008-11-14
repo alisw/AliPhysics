@@ -1,0 +1,71 @@
+void RunAliEnFMDAnalysis(const Char_t* collectionfile = "collection.xml",
+			 const Char_t* cdbPath        = "local://$ALICE_ROOT",
+			 const Char_t* outFile        = "fmd_analysis.root"){
+  
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libFMDanalysis");
+  
+  AliCDBManager* cdb = AliCDBManager::Instance();
+  cdb->SetDefaultStorage(cdbPath);
+  cdb->SetRun(0);
+  
+  AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
+  pars->Init();
+  if (AliGeomManager::GetGeometry() == NULL)
+    AliGeomManager::LoadGeometry();
+  AliFMDGeometry* geo = AliFMDGeometry::Instance();
+  geo->Init();
+  geo->InitTransformations();
+  
+  cout<<"Creating task for analysis"<<endl;
+  AliFMDAnalysisTaskESDReader *FMDana0 = new AliFMDAnalysisTaskESDReader("reader");
+  AliFMDAnalysisTaskSharing *FMDana1 = new AliFMDAnalysisTaskSharing("sharing");
+  AliFMDAnalysisTaskDensity *FMDana2 = new AliFMDAnalysisTaskDensity("density");
+  AliFMDAnalysisTaskBackgroundCorrection *FMDana3 = new AliFMDAnalysisTaskBackgroundCorrection("background");
+  cout<<"Creating the manager"<<endl;
+  AliAnalysisManager* mgr = new AliAnalysisManager("fmd_analysis","fmd_analysis");
+  mgr->AddTask(FMDana0); 
+  mgr->AddTask(FMDana1); 
+  mgr->AddTask(FMDana2);
+  mgr->AddTask(FMDana3);
+  AliAnalysisDataContainer* cin_esd = mgr->CreateContainer("esdTree",TTree::Class(),AliAnalysisManager::kInputContainer,"AliESDs.root");
+  
+  AliAnalysisDataContainer* cexchange0 = mgr->CreateContainer("exchangeESDFMD0",AliESDEvent::Class(),AliAnalysisManager::kExchangeContainer);
+  AliAnalysisDataContainer* cexchange1 = mgr->CreateContainer("exchangeESDFMD1",AliESDEvent::Class(),AliAnalysisManager::kExchangeContainer);
+  AliAnalysisDataContainer* cexchange2 = mgr->CreateContainer("listOfhists",TList::Class(),AliAnalysisManager::kExchangeContainer);
+  AliAnalysisDataContainer* coutput = mgr->CreateContainer("BackgroundCorrected",TList::Class(),AliAnalysisManager::kOutputContainer,outFile);
+  
+  mgr->ConnectInput(FMDana0, 0 , cin_esd);   
+  mgr->ConnectOutput(FMDana0, 0 , cexchange0); 
+  mgr->ConnectInput(FMDana1, 0 , cexchange0);   
+  mgr->ConnectOutput(FMDana1, 0 , cexchange1);   
+  mgr->ConnectInput(FMDana2, 0 , cexchange1);   
+  mgr->ConnectOutput(FMDana2, 0 , cexchange2);
+  mgr->ConnectInput(FMDana3, 0 , cexchange2);   
+  mgr->ConnectOutput(FMDana3, 0 , coutput);
+  
+  TGrid::Connect("alien://",0,0,"t");
+  
+  
+  TChain* chain = new TChain("esdTree","esdTree");
+  
+  TAlienCollection* coll =  TAlienCollection::Open(collectionfile);  
+  coll->Reset();
+  Int_t nFiles = 0;
+  while(coll->Next() && nFiles<10) {
+    cout<<coll->GetTURL("")<<endl;
+    TString test(coll->GetTURL(""));
+    chain->Add(coll->GetTURL(""));
+    
+    nFiles++;
+  }
+  
+  mgr->InitAnalysis();
+  mgr->PrintStatus();
+  TStopwatch timer;
+  timer.Start();
+  cout<<"Executing analysis"<<endl;
+  mgr->StartAnalysis("local",chain);
+  timer.Stop();
+  timer.Print();
+}
