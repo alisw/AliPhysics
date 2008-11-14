@@ -159,7 +159,7 @@ void AliTRDpidRefMaker::Exec(Option_t *)
     if(!(TRDtrack->GetNumberOfTracklets() == AliTRDgeometry::kNlayer)) continue;
      
     ref = track->GetTrackRef(0);
-    esd = track->GetOuterParam();
+    esd = track->GetESDinfo()->GetOuterParam();
     mom = ref ? ref->P(): esd->P();
     fMom = mom;
 

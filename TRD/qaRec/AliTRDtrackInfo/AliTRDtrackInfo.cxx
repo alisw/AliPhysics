@@ -46,7 +46,6 @@ AliTRDtrackInfo::AliTRDtrackInfo():
   TObject()
   ,fNClusters(0)
   ,fTRDtrack(0x0)
-  ,fOP(0x0)
   ,fMC(0x0)
   ,fESD()
 {
@@ -61,15 +60,12 @@ AliTRDtrackInfo::AliTRDtrackInfo(const AliTRDtrackInfo &trdInfo):
   TObject((const TObject&)trdInfo)  
   ,fNClusters(trdInfo.fNClusters)
   ,fTRDtrack(0x0)
-  ,fOP(0x0)
   ,fMC(new AliMCinfo(*trdInfo.fMC))
   ,fESD(trdInfo.fESD)
 {
   //
   // copy Entries
   //
-
-  if(trdInfo.fOP) fOP = new AliExternalTrackParam(*trdInfo.fOP);
 
   if(trdInfo.fMC) fMC = new AliMCinfo(*trdInfo.fMC);
 
@@ -111,6 +107,7 @@ AliTRDtrackInfo::AliESDinfo::AliESDinfo()
   ,fTRDpidQuality(0)
   ,fTRDnSlices(0)
   ,fTRDslices(0x0)
+  ,fOP(0x0)
 {
   memset(fTRDr, 0, AliPID::kSPECIES*sizeof(Double32_t));
 }
@@ -124,6 +121,7 @@ AliTRDtrackInfo::AliESDinfo::AliESDinfo(const AliESDinfo &esd)
   ,fTRDpidQuality(esd.fTRDpidQuality)
   ,fTRDnSlices(esd.fTRDnSlices)
   ,fTRDslices(0x0)
+  ,fOP(0x0)
 {
   memcpy(fTRDr, esd.fTRDr, AliPID::kSPECIES*sizeof(Double32_t));
 
@@ -131,6 +129,7 @@ AliTRDtrackInfo::AliESDinfo::AliESDinfo(const AliESDinfo &esd)
     fTRDslices = new Double32_t[fTRDnSlices];
     memcpy(fTRDslices, esd.fTRDslices, fTRDnSlices*sizeof(Double32_t));
   }
+  if(esd.fOP) fOP = new AliExternalTrackParam(esd.fOP);
 }
 
 
@@ -141,7 +140,7 @@ AliTRDtrackInfo::~AliTRDtrackInfo()
   // Destructor
   //
 
-  if(fOP) delete fOP;
+  if(fMC) delete fMC;
   if(fTRDtrack) delete fTRDtrack;
 }
 
@@ -163,6 +162,7 @@ AliTRDtrackInfo::AliESDinfo::~AliESDinfo()
     fTRDslices = 0x0;
     fTRDnSlices = 0;
   }
+  if(fOP) delete fOP; fOP = 0x0;
 }
 
 
@@ -175,14 +175,6 @@ AliTRDtrackInfo& AliTRDtrackInfo::operator=(const AliTRDtrackInfo &trdInfo)
 
   fNClusters  = trdInfo.fNClusters;
   fESD = trdInfo.fESD;
-
-  // copy Entries
-  if(trdInfo.fOP){
-    if(!fOP)
-      fOP = new AliExternalTrackParam(*trdInfo.fOP);
-    else
-      new(fOP) AliExternalTrackParam(*trdInfo.fOP);
-  }
 
   if(trdInfo.fMC){
     if(!fMC)
@@ -235,6 +227,10 @@ AliTRDtrackInfo::AliESDinfo& AliTRDtrackInfo::AliESDinfo::operator=(const AliESD
     fTRDslices = new Double32_t[fTRDnSlices];
     memcpy(fTRDslices, esd.fTRDslices, fTRDnSlices*sizeof(Double32_t));
   }
+  if(esd.fOP){
+    if(fOP) new(fOP) AliExternalTrackParam(esd.fOP);
+    else fOP = new AliExternalTrackParam(esd.fOP);
+  } else fOP = 0x0;
 
   return *this;
 }
@@ -247,7 +243,6 @@ void AliTRDtrackInfo::Delete(const Option_t *)
   //
 
   fNClusters  = 0;
-  if(fOP) delete fOP; fOP = 0x0;
   if(fMC) delete fMC; fMC = 0x0;
   if(fTRDtrack) delete fTRDtrack; fTRDtrack = 0x0;
 }
@@ -320,9 +315,8 @@ void  AliTRDtrackInfo::SetOuterParam(const AliExternalTrackParam *op)
   //
 
   if(!op) return;
-  if(fOP) new(fOP) AliExternalTrackParam(*op);
-  else
-    fOP = new AliExternalTrackParam(*op);
+  if(fESD.fOP) new(fESD.fOP) AliExternalTrackParam(*op);
+  else fESD.fOP = new AliExternalTrackParam(*op);
 }
 
 //___________________________________________________
@@ -352,7 +346,7 @@ void AliTRDtrackInfo::SetSlices(Int_t n, Double32_t *s)
 
   memcpy(fESD.fTRDslices, s, n*sizeof(Double32_t));
 }
-
+ 
 //___________________________________________________
 Bool_t AliTRDtrackInfo::AliMCinfo::GetDirections(Float_t x0, Float_t &y0, Float_t &z0, Float_t &dydx, Float_t &dzdx) const
 {

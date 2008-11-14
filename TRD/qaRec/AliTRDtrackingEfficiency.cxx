@@ -45,7 +45,7 @@ ClassImp(AliTRDtrackingEfficiency)
 
 //____________________________________________________________________
 AliTRDtrackingEfficiency::AliTRDtrackingEfficiency()
-  :AliTRDrecoTask("TrackingEff", "Barrel Tracking Effiency")
+  :AliTRDrecoTask("TrackingEff", "Barrel Tracking Efficiency")
   ,fMissed(0x0)
 {
   //
@@ -122,7 +122,7 @@ void AliTRDtrackingEfficiency::Exec(Option_t *)
     nTPC++;
     selection[nselect++]=itrk;
     ref  = track->GetTrackRef(0);
-    esd  = track->GetOuterParam();
+    esd  = track->GetESDinfo()->GetOuterParam();
     mom  = ref ? ref->P(): esd->P();
     pidx = AliTRDCalPID::GetPartIndex(track->GetPDG());
     pidx = TMath::Max(pidx, 0);
@@ -173,7 +173,7 @@ void AliTRDtrackingEfficiency::Exec(Option_t *)
 
     // get outer param of missed
     tt = (AliTRDtrackInfo*)fMissed->UncheckedAt(imiss);
-    op = tt->GetOuterParam();
+    op = tt->GetESDinfo()->GetOuterParam();
     Double_t alpha = op->GetAlpha(), cosa = TMath::Cos(alpha), sina = TMath::Sin(alpha);
 
     Double_t xyz[3], x0, y0, z0, x, y, z, dx, dy, dz, d;
@@ -210,7 +210,7 @@ void AliTRDtrackingEfficiency::Exec(Option_t *)
 
       // process outer param ... always available
       // compare missOP with OP in GTC
-      esd = track->GetOuterParam();
+      esd = track->GetESDinfo()->GetOuterParam();
       esd->GetXYZ(xyz);
       x0 = esd->GetX();
       op->GetYAt(x0, AliTracker::GetBz(), y0);

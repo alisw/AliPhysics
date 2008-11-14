@@ -437,12 +437,12 @@ void AliTRDtrackingEfficiencyCombined::FillStreamTrackWOMC(AliTRDtrackInfo *trkI
   //  9. We check the Labels of the TRD track according to them we search the maching Monte-Carlo track.
   //     From the matching Monte-Carlo track we store trackRefs, phi and momentum
   // 10. We may also want to keep the kink index
-  Double_t mom = trkInf->GetOuterParam()->P();
+  Double_t mom = trkInf->GetESDinfo()->GetOuterParam()->P();
   Int_t event = (Int_t)AliAnalysisManager::GetAnalysisManager()->GetCurrentEntry();
   Int_t label = trkInf->GetLabel();
   Int_t kinkIndex = trkInf->GetKinkIndex();
   Int_t pdg = trkInf->GetPDG();
-  Double_t TPCphi = trkInf->GetOuterParam()->Phi();
+  Double_t TPCphi = trkInf->GetESDinfo()->GetOuterParam()->Phi();
   Int_t TRDlabels[180];	// Container for the cluster labels
   Int_t sortlabels[360];	// Cluster Labels sorted according their occurancy
   AliTRDseedV1 *tracklet = 0x0;
