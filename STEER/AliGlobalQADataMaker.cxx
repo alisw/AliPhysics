@@ -192,7 +192,10 @@ void AliGlobalQADataMaker::MakeESDs(AliESDEvent * event) {
     if (track->IsOn(AliESDtrack::kTPCrefit)) {
       Int_t n =track->GetTPCNcls();
       Int_t nf=track->GetTPCNclsF();      // number of crossed TPC pad rows
-      if (nf>0) GetESDsData(kClr1)->Fill(Float_t(n)/nf);
+      if (nf>0) {
+        Double_t val = n*1.0/nf; 
+        GetESDsData(kClr1)->Fill(val); 
+      }
     }
 
     if (track->IsOn(AliESDtrack::kTRDrefit)) {

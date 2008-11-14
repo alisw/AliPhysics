@@ -105,7 +105,7 @@ private:
 	void                 ResetStatus(DETECTORINDEX_t det) { fQA[det] = 0 ; }
 	void                 Set(DETECTORINDEX_t det) { fDet = det ;}
 	void                 Set(ALITASK_t tsk) { fTask = tsk ; AliDebug(1, Form("Ready to set QA status in %s", GetAliTaskName(tsk) )) ; }
-	void                 SetStatus(DETECTORINDEX_t det, UShort_t status) { fQA[det] = status ; }
+	void                 SetStatus(DETECTORINDEX_t det, ULong_t status) { fQA[det] = status ; }
 	void                 SetStatusBit(DETECTORINDEX_t det, ALITASK_t tsk, QABIT_t bit) ;
 	void                 UnSetStatusBit(DETECTORINDEX_t det, ALITASK_t tsk, QABIT_t bit) ;
 

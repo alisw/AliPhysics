@@ -435,7 +435,7 @@ Bool_t AliQA::IsSetAny(DETECTORINDEX_t det, ALITASK_t tsk) const
 	
   ULong_t offset = Offset(tsk) ;
   ULong_t status = GetStatus(det) ;
-	UShort_t st = 0 ; 
+	ULong_t st = 0 ; 
 	for ( Int_t bit = 0 ; bit < kNBIT ; bit++) {
 		offset+= bit ;
 		st += (status & 1 << offset) != 0 ;		
@@ -453,7 +453,7 @@ Bool_t AliQA::IsSetAny(DETECTORINDEX_t det) const
   CheckRange(det) ; 
 	
 	ULong_t status = GetStatus(det) ;
-	UShort_t st = 0 ; 
+	ULong_t st = 0 ; 
 	for ( Int_t tsk = 0 ; tsk < kNTASK ; tsk++) {
 		ULong_t offset = Offset(ALITASK_t(tsk)) ;
 		for ( Int_t bit = 0 ; bit < kNBIT ; bit++) {

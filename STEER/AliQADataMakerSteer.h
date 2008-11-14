@@ -88,7 +88,7 @@ private:
 	TTree *                 fESDTree ;                      //! current ESD Tree
 	TString                 fGAliceFileName ;               //! name of the galice file
 	UInt_t                  fFirstEvent ;                   //! first event to process
-	Int_t                   fMaxEvents ;                    //! number of events to process
+	Long64_t                fMaxEvents ;                    //! number of events to process
 	const Char_t *          fMode ;                         //! sim or rec
 	Long64_t                fNumberOfEvents ;               //! number of events in the run 
   AliRecoParam            fRecoParam;                     //! container for the reco-param objects for detectors
