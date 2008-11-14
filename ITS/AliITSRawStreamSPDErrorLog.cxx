@@ -26,6 +26,7 @@ AliITSRawStreamSPDErrorLog::AliITSRawStreamSPDErrorLog() :
     fSuppressEq[eq] = kFALSE;
     for (UInt_t err=0; err<kNrErrorCodes; err++) {
       fNErrors[err][eq] = 0;
+      fNErrorsTotal[err][eq] = 0;
     }
   }
   for (UInt_t err=0; err<kNrErrorCodes; err++) {
@@ -41,6 +42,7 @@ AliITSRawStreamSPDErrorLog::AliITSRawStreamSPDErrorLog(const AliITSRawStreamSPDE
   for (UInt_t eq=0; eq<20; eq++) {
     for (UInt_t err=0; err<kNrErrorCodes; err++) {
       fNErrors[err][eq] = logger.fNErrors[err][eq];
+      fNErrorsTotal[err][eq] = logger.fNErrorsTotal[err][eq];
       fErrEventCounter[err][eq] = logger.fErrEventCounter[err][eq];
     }
     fNEvents[eq] = logger.fNEvents[eq];
@@ -79,6 +81,7 @@ AliITSRawStreamSPDErrorLog& AliITSRawStreamSPDErrorLog::operator=(const AliITSRa
     for (UInt_t eq=0; eq<20; eq++) {
       for (UInt_t err=0; err<kNrErrorCodes; err++) {
 	fNErrors[err][eq] = logger.fNErrors[err][eq];
+	fNErrorsTotal[err][eq] = logger.fNErrorsTotal[err][eq];
 	fErrEventCounter[err][eq] = logger.fErrEventCounter[err][eq];
       }
       fNEvents[eq] = logger.fNEvents[eq];
@@ -160,6 +163,7 @@ void AliITSRawStreamSPDErrorLog::DeleteHistograms() const {
 void AliITSRawStreamSPDErrorLog::Reset() {
   // Reset
   fText->Clear();
+  fTextTmpGeneral->Clear();
   for (UInt_t eq=0; eq<20; eq++) {
     fTextTmp[eq]->Clear();
     fConsErrType[eq]->Reset();
@@ -167,6 +171,7 @@ void AliITSRawStreamSPDErrorLog::Reset() {
     fNEvents[eq] = 0;
     for (UInt_t err=0; err<kNrErrorCodes; err++) {
       fNErrors[err][eq] = 0;
+      fNErrorsTotal[err][eq] = 0;
       delete fConsErrEvent[err][eq];
       delete fConsErrPos[err][eq];
       delete fConsErrPosTMP[err][eq];
@@ -189,7 +194,11 @@ void AliITSRawStreamSPDErrorLog::ProcessError(UInt_t errorCode, UInt_t eq, Int_t
   // check if we want to exclude the error...
   if (!(fSuppressMess[errorCode] || fSuppressEq[eq])) {
     fNErrors[errorCode][eq]++;
-    if (errorCode!=kTotal) fNErrors[kTotal][eq]++;
+    fNErrorsTotal[errorCode][eq]++;
+    if (errorCode!=kTotal) {
+      fNErrors[kTotal][eq]++;
+      fNErrorsTotal[kTotal][eq]++;
+    }
 
     if (bytesRead>=0) {
       fConsErrPosTMP[errorCode][eq]->SetPoint(fErrPosTMPCounter[errorCode][eq],0,bytesRead+fByteOffset[eq]);
@@ -216,8 +225,27 @@ void AliITSRawStreamSPDErrorLog::AddMessage(const Char_t *errMess) {
   fTextTmpGeneral->InsLine(fTextTmpGeneral->RowCount(),errMess);
 }
 //________________________________________________________________________________________________
-void AliITSRawStreamSPDErrorLog::SummarizeEvent(UInt_t eventNum) {
-  // summarize the information for the current event
+void AliITSRawStreamSPDErrorLog::ResetEvent() {
+  // reset error counters for current event
+  for (UInt_t eq=0; eq<20; eq++) {
+    for (UInt_t err=0; err<kNrErrorCodes; err++) {
+      fNErrors[err][eq]=0;
+    }
+    fByteOffset[eq]=0;
+    fTextTmpGeneral->Clear();
+    fTextTmp[eq]->Clear();
+  }
+
+  for (UInt_t eq=0; eq<20; eq++) {
+    for (UInt_t err=0; err<kNrErrorCodes; err++) {
+      delete fConsErrPosTMP[err][eq];
+      fErrPosTMPCounter[err][eq] = 0;
+      fConsErrPosTMP[err][eq] = new TGraph();
+    }
+  }
+}
+//________________________________________________________________________________________________
+void AliITSRawStreamSPDErrorLog::AddErrorMessagesFromCurrentEvent(UInt_t eventNum) {
   TString msg;
   if (fText->RowCount()>5000) {
     fText->Clear();
@@ -228,12 +256,41 @@ void AliITSRawStreamSPDErrorLog::SummarizeEvent(UInt_t eventNum) {
     msg = Form("*** Event %d , General Errors: ***",eventNum);
     fText->InsLine(fText->RowCount(),msg.Data());
     fText->AddText(fTextTmpGeneral);
-    fTextTmpGeneral->Clear();
+    //    fTextTmpGeneral->Clear();
   }
+
+  for (UInt_t eq=0; eq<20; eq++) {
+    if (fNErrors[kTotal][eq]>0) {
+      msg = Form("*** Event %d , Eq %d: ***",eventNum,eq);
+      fText->InsLine(fText->RowCount(),msg.Data());
+      fText->AddText(fTextTmp[eq]);
+      fText->InsLine(fText->RowCount()," ");
+    }
+    //    fTextTmp[eq]->Clear();
+  }
+}
+//________________________________________________________________________________________________
+void AliITSRawStreamSPDErrorLog::ProcessEvent(UInt_t eventNum) {
+  // summarize the information for the current event
+//  TString msg;
+//  if (fText->RowCount()>5000) {
+//    fText->Clear();
+//    msg = "*** previous errors cleared ***";
+//    fText->InsLine(fText->RowCount(),msg.Data());
+//  }
+//  if (fTextTmpGeneral->RowCount()>1) {
+//    msg = Form("*** Event %d , General Errors: ***",eventNum);
+//    fText->InsLine(fText->RowCount(),msg.Data());
+//    fText->AddText(fTextTmpGeneral);
+//    fTextTmpGeneral->Clear();
+//  }
+
+  AddErrorMessagesFromCurrentEvent(eventNum);
+
   for (UInt_t eq=0; eq<20; eq++) {
     for (UInt_t err=0; err<kNrErrorCodes; err++) {
       fConsErrType[eq]->Fill(err,fNErrors[err][eq]);
-      if (fNErrors[err][eq]>0){
+      if (fNErrors[err][eq]>0) {
 	fConsErrEvent[err][eq]->SetPoint(fErrEventCounter[err][eq],eventNum,fNErrors[err][eq]);
 	fErrEventCounter[err][eq]++;
 	fConsErrFraction[eq]->Fill(err);
@@ -247,26 +304,23 @@ void AliITSRawStreamSPDErrorLog::SummarizeEvent(UInt_t eventNum) {
     }
 
     fNEvents[eq]++;
-    if (fNErrors[kTotal][eq]>0) {
-      msg = Form("*** Event %d , Eq %d: ***",eventNum,eq);
-      fText->InsLine(fText->RowCount(),msg.Data());
-      fText->AddText(fTextTmp[eq]);
-      fText->InsLine(fText->RowCount()," ");
-    }
-    fByteOffset[eq]=0;
-    fTextTmp[eq]->Clear();
-    for (UInt_t err=0; err<kNrErrorCodes; err++) {
-      fNErrors[err][eq]=0;
-    }
+//    if (fNErrors[kTotal][eq]>0) {
+//      msg = Form("*** Event %d , Eq %d: ***",eventNum,eq);
+//      fText->InsLine(fText->RowCount(),msg.Data());
+//      fText->AddText(fTextTmp[eq]);
+//      fText->InsLine(fText->RowCount()," ");
+//    }
+//    fByteOffset[eq]=0;
+//    fTextTmp[eq]->Clear();
   }
 
-  for (UInt_t eq=0; eq<20; eq++) {
-    for (UInt_t err=0; err<kNrErrorCodes; err++) {
-      delete fConsErrPosTMP[err][eq];
-      fErrPosTMPCounter[err][eq] = 0;
-      fConsErrPosTMP[err][eq] = new TGraph();
-    }
-  }
+}
+//________________________________________________________________________________________________
+void AliITSRawStreamSPDErrorLog::SummarizeEvent(UInt_t eventNum) {
+  // summarize the information for the current event 
+  //  (could be replaced by calls to 'StartEvent' and 'EndEvent')
+  ProcessEvent(eventNum);
+  ResetEvent();
 }
 //________________________________________________________________________________________________
 void AliITSRawStreamSPDErrorLog::SetByteOffset(UInt_t eq, Int_t size) {
@@ -326,7 +380,8 @@ UInt_t AliITSRawStreamSPDErrorLog::GetNrErrorsAllEq(UInt_t errorCode) {
 UInt_t AliITSRawStreamSPDErrorLog::GetNrErrorsTotal(UInt_t errorCode, UInt_t eq) {
   // returns the total number of errors for a specific error code and equipment
   if (errorCode<kNrErrorCodes && eq<20) {
-    return (UInt_t) fConsErrType[eq]->GetBinContent(errorCode+1);
+    return fNErrorsTotal[errorCode][eq];
+    //    return (UInt_t) fConsErrType[eq]->GetBinContent(errorCode+1);
   }
   else {
     AliWarning(Form("Error code (%d) or equipment (%d) out of range, returning 0",errorCode,eq));
@@ -335,11 +390,12 @@ UInt_t AliITSRawStreamSPDErrorLog::GetNrErrorsTotal(UInt_t errorCode, UInt_t eq)
 }
 //________________________________________________________________________________________________
 UInt_t AliITSRawStreamSPDErrorLog::GetNrErrorsTotalAllEq(UInt_t errorCode) {
-  // returns the total number of errors for a specific error code and for all equipment
+  // returns the total number of errors for a specific error code and for all equipments
   if (errorCode<kNrErrorCodes) {
     UInt_t returnval=0;
     for (UInt_t eq=0; eq<20; eq++) {
-      returnval += (UInt_t) fConsErrType[eq]->GetBinContent(errorCode+1);
+      returnval += fNErrorsTotal[errorCode][eq];
+      //      returnval += (UInt_t) fConsErrType[eq]->GetBinContent(errorCode+1);
     }
     return returnval;
   }
@@ -398,4 +454,33 @@ TGraph* AliITSRawStreamSPDErrorLog::GetConsErrPos(UInt_t errorCode, UInt_t eq) {
     AliWarning(Form("Error code (%d) or equipment (%d) out of range, returning NULL",errorCode,eq));
     return NULL;
   }
+}
+//________________________________________________________________________________________________
+UInt_t AliITSRawStreamSPDErrorLog::GetEventErrPosCounter(UInt_t errorCode, UInt_t eq) {
+  // returns the number of errors with bytes information for current event
+  if (errorCode<kNrErrorCodes && eq<20) return fErrPosTMPCounter[errorCode][eq];
+  else {
+    AliError(Form("Error code (%d) or equipment (%d) out of range, returning 0",errorCode,eq));
+    return 0;
+  }
+}
+//________________________________________________________________________________________________
+UInt_t AliITSRawStreamSPDErrorLog::GetEventErrPos(UInt_t index, UInt_t errorCode, UInt_t eq) {
+  // returns the bytes read for the index'th error of current event
+  if (errorCode<kNrErrorCodes && eq<20) {
+    if (index<fErrPosTMPCounter[errorCode][eq]) {
+      Double_t x,y;
+      fConsErrPosTMP[errorCode][eq]->GetPoint(index,x,y);
+      return (UInt_t) y;
+    }
+    else {
+      AliError(Form("Index %d out of range, returning 0",index));
+    return 0;
+    }
+  }
+  else {
+    AliError(Form("Error code (%d) or equipment (%d) out of range, returning 0",errorCode,eq));
+    return 0;
+  }
+
 }

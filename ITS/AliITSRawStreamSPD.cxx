@@ -707,6 +707,16 @@ UInt_t AliITSRawStreamSPD::GetOfflineModuleFromOnline(UInt_t eqId, UInt_t hs, UI
   else return 240;
 }
 //__________________________________________________________________________
+UInt_t AliITSRawStreamSPD::GetOfflineChipKeyFromOnline(UInt_t eqId, UInt_t hs, UInt_t chip) {
+  // online->offline (chip key: 0-1199)
+  if (eqId<20 && hs<6 && chip<10) {
+    UInt_t module = GetOfflineModuleFromOnline(eqId,hs,chip);
+    UInt_t chipInModule = ( chip>4 ? chip-5 : chip ); 
+    if(eqId>9) chipInModule = 4 - chipInModule;  // side C only
+    return (module*5 + chipInModule);
+  } else return 1200;
+}
+//__________________________________________________________________________
 UInt_t AliITSRawStreamSPD::GetOfflineColFromOnline(UInt_t eqId, UInt_t hs, UInt_t chip, UInt_t col) {
   // online->offline (col)
   if (eqId>=20 || hs>=6 || chip>=10 || col>=32) return 160; // error
@@ -734,7 +744,3 @@ UInt_t AliITSRawStreamSPD::GetOfflineRowFromOnline(UInt_t eqId, UInt_t hs, UInt_
   if (eqId>=20 || hs>=6 || chip>=10 || row>=256) return 256; // error
   return 255-row;
 }
-
-
-
-

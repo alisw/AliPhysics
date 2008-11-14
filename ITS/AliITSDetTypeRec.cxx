@@ -71,6 +71,7 @@ fSegmentation(0),
 fCalibration(0),
 fSSDCalibration(0),
 fSPDDead(0),
+fSPDFastOr(0),
 fPreProcess(0),
 fPostProcess(0),
 fDigits(0),
@@ -128,6 +129,7 @@ fSegmentation(rec.fSegmentation),
 fCalibration(rec.fCalibration),
 fSSDCalibration(rec.fSSDCalibration),
 fSPDDead(rec.fSPDDead),
+fSPDFastOr(rec.fSPDFastOr),
 fPreProcess(rec.fPreProcess),
 fPostProcess(rec.fPostProcess),
 fDigits(rec.fDigits),
@@ -454,7 +456,8 @@ Bool_t AliITSDetTypeRec::GetCalibrationSPD(Bool_t cacheStatus) {
 
   AliCDBEntry *entrySPD = AliCDBManager::Instance()->Get("ITS/Calib/SPDNoisy");
   AliCDBEntry *deadSPD = AliCDBManager::Instance()->Get("ITS/Calib/SPDDead");
-  if(!entrySPD || !deadSPD ){
+  AliCDBEntry *fastOrSPD = AliCDBManager::Instance()->Get("ITS/Calib/SPDFastOr");
+  if(!entrySPD || !deadSPD || !fastOrSPD ){
     AliFatal("SPD Calibration object retrieval failed! ");
     return kFALSE;
   }  	
@@ -467,11 +470,16 @@ Bool_t AliITSDetTypeRec::GetCalibrationSPD(Bool_t cacheStatus) {
   if(!cacheStatus)deadSPD->SetObject(NULL);
   deadSPD->SetOwner(kTRUE);
 
+  AliITSFastOrCalibrationSPD *calfastOrSPD = (AliITSFastOrCalibrationSPD *)fastOrSPD->GetObject();
+  if(!cacheStatus)fastOrSPD->SetObject(NULL);
+  fastOrSPD->SetOwner(kTRUE);
+
   if(!cacheStatus){
     delete entrySPD;
     delete deadSPD;
+    delete fastOrSPD;
   }
-  if ((!calSPD) || (!caldeadSPD)){ 
+  if ((!calSPD) || (!caldeadSPD) || (!calfastOrSPD)){ 
     AliWarning("Can not get SPD calibration from calibration database !");
     return kFALSE;
   }
@@ -485,6 +493,7 @@ Bool_t AliITSDetTypeRec::GetCalibrationSPD(Bool_t cacheStatus) {
     cal = (AliITSCalibration*) caldeadSPD->At(i);
     SetSPDDeadModel(i, cal);
   }
+  fSPDFastOr = calfastOrSPD;
 
   return kTRUE;
 }

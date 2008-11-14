@@ -297,9 +297,7 @@ void AliITSClusterFinderV2SPD::FindClustersSPD(AliITSRawStreamSPD* input,
     for(UInt_t hs=0; hs<6; hs++) {
       for(UInt_t chip=0; chip<10; chip++) {
         if(input->GetFastOrSignal(eq,hs,chip)) {
-          UInt_t module = input->GetOfflineModuleFromOnline(eq,hs,chip);
-          UInt_t chipInModule = ( chip>4 ? chip-5 : chip );
-          UInt_t chipKey = module*5 + chipInModule;
+          UInt_t chipKey = input->GetOfflineChipKeyFromOnline(eq,hs,chip);
           fDetTypeRec->SetFastOrFiredMap(chipKey);
         }
       }

@@ -51,6 +51,7 @@ class AliITSRawStreamSPD: public AliITSRawStream {
     static UInt_t GetOnlineRowFromOffline(UInt_t module, UInt_t rowM);
     // coordinate conversions - online->offline
     static UInt_t GetOfflineModuleFromOnline(UInt_t eqId, UInt_t hs, UInt_t chip);
+    static UInt_t GetOfflineChipKeyFromOnline(UInt_t eqId, UInt_t hs, UInt_t chip);
     static UInt_t GetOfflineColFromOnline(UInt_t eqId, UInt_t hs, UInt_t chip, UInt_t col);
     static UInt_t GetOfflineRowFromOnline(UInt_t eqId, UInt_t hs, UInt_t chip, UInt_t row);
 
@@ -88,6 +89,8 @@ class AliITSRawStreamSPD: public AliITSRawStream {
     UInt_t GetHTPAmp(UInt_t hs) const;
     Bool_t GetHminTHchipPresent(UInt_t chip) const;
     void   ActivateAdvancedErrorLog(Bool_t activate, AliITSRawStreamSPDErrorLog* advLogger = NULL);
+    AliITSRawStreamSPDErrorLog* GetAdvancedErrorLog() {return fAdvLogger;}
+
     static const Char_t* GetErrorName(UInt_t errorCode);
 
 

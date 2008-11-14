@@ -30,6 +30,10 @@ class AliITSRawStreamSPDErrorLog : public TObject {
   void    Reset();
   void    ProcessError(UInt_t errorCode, UInt_t eq, Int_t bytesRead, Int_t headersRead, const Char_t *errMess);
   void    AddMessage(const Char_t *errMess);
+
+  void    ResetEvent();
+  void    ProcessEvent(UInt_t eventNum);
+  void    AddErrorMessagesFromCurrentEvent(UInt_t eventNum);
   void    SummarizeEvent(UInt_t eventNum);
 
   UInt_t  GetNrErrors(UInt_t errorCode, UInt_t eq);
@@ -49,10 +53,15 @@ class AliITSRawStreamSPDErrorLog : public TObject {
   TH1F*   GetConsErrFraction(UInt_t eq);        // NB!!! Take care of deleting returned object later
   TH1F*   GetConsErrFractionUnScaled(UInt_t eq);
   TGText* GetText() {return fText;}
+  TGText* GetTextThisEvent(UInt_t eq) {if (eq<20) return fTextTmp[eq]; else return NULL;}
+  TGText* GetTextGeneralThisEvent() {return fTextTmpGeneral;}
 
+  UInt_t  GetEventErrPosCounter(UInt_t errorCode, UInt_t eq);
+  UInt_t  GetEventErrPos(UInt_t index, UInt_t errorCode, UInt_t eq);
 
  private:
   Int_t   fNErrors[kNrErrorCodes][20];          // number of errors for this event, for each code and eq
+  Int_t   fNErrorsTotal[kNrErrorCodes][20];     // number of errors for all events, for each code and eq
   UInt_t  fNEvents[20];                         // number of events used, for each eq
   UInt_t  fErrEventCounter[kNrErrorCodes][20];  // event counter used when filling graph
   UInt_t  fErrPosCounter[kNrErrorCodes][20];    // event counter used when filling graph

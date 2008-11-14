@@ -16,6 +16,7 @@ $Id$
 #include <TClonesArray.h>
 #include <TBits.h>
 #include "AliITSDDLModuleMapSDD.h"
+#include "AliITSFastOrCalibrationSPD.h"
 #include "AliITSresponseSDD.h"
 #include "AliITSgeom.h"
 class TTree;
@@ -56,6 +57,7 @@ class AliITSDetTypeRec : public TObject {
     virtual Bool_t GetCalibrationSPD(Bool_t cacheStatus);
     virtual Bool_t GetCalibrationSDD(Bool_t cacheStatus);
     virtual Bool_t GetCalibrationSSD(Bool_t cacheStatus);
+    virtual AliITSFastOrCalibrationSPD* GetFastOrCalibrationSPD() const { return fSPDFastOr;}
     virtual AliITSsegmentation* GetSegmentationModel(Int_t dettype);
     virtual AliITSCalibration* GetCalibrationModel(Int_t iMod);
     virtual AliITSCalibration* GetSPDDeadModel(Int_t iMod);
@@ -102,7 +104,7 @@ class AliITSDetTypeRec : public TObject {
     void DigitsToRecPoints(TTree *treeD,TTree *treeR,Int_t lastEntry,Option_t *det, Int_t optCluFind=0);
     void DigitsToRecPoints(AliRawReader* rawReader,TTree *treeR,Option_t *det="All");
 
-    void   SetFastOrFiredMap(UInt_t chip){fFastOrFiredMap.SetBitNumber(chip);}
+    void   SetFastOrFiredMap(UInt_t chipKey){fFastOrFiredMap.SetBitNumber(chipKey);} 
     TBits  GetFastOrFiredMap() const {return fFastOrFiredMap;}
     void   ResetFastOrFiredMap(){fFastOrFiredMap.ResetAllBits();}
 
@@ -133,6 +135,7 @@ class AliITSDetTypeRec : public TObject {
     TObjArray    *fCalibration;   //! [NMod]
     AliITSCalibrationSSD* fSSDCalibration;  //! SSD calibration object
     TObjArray    *fSPDDead;       //! [fgkDefaultNModulesSPD]
+    AliITSFastOrCalibrationSPD *fSPDFastOr; // Map of FastOr configured chips
     TObjArray    *fPreProcess;    //! [] e.g. Find Calibration values
     TObjArray    *fPostProcess;   //! [] e.g. find primary vertex
     TObjArray    *fDigits;        //! [NMod][NDigits]
@@ -155,7 +158,7 @@ class AliITSDetTypeRec : public TObject {
 
     TBits fFastOrFiredMap;     // Map of FastOr fired chips
 
-    ClassDef(AliITSDetTypeRec,15) // ITS Reconstruction structure
+    ClassDef(AliITSDetTypeRec,16) // ITS Reconstruction structure
 };
 
 #endif
