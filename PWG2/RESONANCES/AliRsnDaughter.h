@@ -99,7 +99,7 @@ class AliRsnDaughter : public AliVParticle
     virtual Double_t Phi() const {return TMath::ATan2(Py(), Px()) * TMath::RadToDeg();}   // degrees
     virtual Double_t Theta() const {return TMath::ATan2(Pt(), Pz()) * TMath::RadToDeg();} // degrees
     virtual Double_t Eta() const {return -TMath::Log(TMath::Tan(0.5*Theta()));}
-    virtual Double_t Y() const {return TMath::Log((E() + Pz()) / (E() - Pz()));}
+    virtual Double_t Y() const {return 0.5*TMath::Log((E() + Pz()) / (E() - Pz()));}
 
     // Charge
     virtual Short_t Charge() const {return fCharge;}
