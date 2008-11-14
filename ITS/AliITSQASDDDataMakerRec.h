@@ -35,8 +35,8 @@ public:
 
 
   virtual ~AliITSQASDDDataMakerRec(); // dtor
-  Int_t GetOffset() { return fGenOffset; }
-  Int_t GetTaskHisto() { return fSDDhTask; }
+  Int_t GetOffset(AliQA::TASKINDEX_t task);
+  Int_t GetTaskHisto(AliQA::TASKINDEX_t task);
 
   void SetHLTMode(Bool_t khltmode=kFALSE){fHLTMode=khltmode;};
   Bool_t GetHLTMode(){return fHLTMode;};
@@ -55,14 +55,17 @@ private:
   AliITSQADataMakerRec *fAliITSQADataMakerRec;// pointer to the main ctor
   Bool_t  fkOnline;                           // online (1) or offline (0) use
   Int_t   fLDC;                               // LDC number (0 for offline, 1 to 4 for online) 
-  Int_t   fSDDhTask;                          // number of histo booked for each Task SDD
-  Int_t   fGenOffset;                         // QAchecking offset       
+  Int_t   fSDDhRawsTask;                      // number of histo booked for each the Raws Task SDD
+  Int_t   fSDDhRecPointsTask;                 // number of histo booked for each the RecPoints Task SDD
+  //Int_t   fGenOffset;                       // QAchecking offset       
+  Int_t   fGenRawsOffset;                     // QAchecking Raws offset       
+  Int_t   fGenRecPointsOffset;                // QAchecking RecPoints offset       
   Int_t   fTimeBinSize;			      // time bin width in number of clocks
   AliITSDDLModuleMapSDD  *fDDLModuleMap;      // SDD Detector configuration for the decoding
   Bool_t fHLTMode;                            // kTRUE mode C kFALSE mode A 
                                               // Used in online mode only
   AliITSHLTforSDD *fHLTSDD;                   // used for offline QA as the HLT mode flag
-  ClassDef(AliITSQASDDDataMakerRec,6)         // description 
+  ClassDef(AliITSQASDDDataMakerRec,7)         // description 
 
 };
 
