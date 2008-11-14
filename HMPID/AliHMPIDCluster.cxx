@@ -283,6 +283,9 @@ Int_t AliHMPIDCluster::Solve(TClonesArray *pCluLst,Int_t *pSigmaCut, Bool_t isTr
   Int_t ierflg = 0;
   TVirtualFitter *fitter = TVirtualFitter::Fitter(this,3*6);                            //initialize Fitter
 
+  delete fitter;                                                                        //temporary solution to avoid the inteference with previous instances
+  fitter = TVirtualFitter::Fitter(this,3*6);                                            //initialize Fitter
+
   arglist[0] = -1;
   ierflg = fitter->ExecuteCommand("SET PRI", arglist, 1);                               // no printout
   ierflg = fitter->ExecuteCommand("SET NOW", arglist, 0);                               //no warning messages
