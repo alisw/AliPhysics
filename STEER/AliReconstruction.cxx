@@ -3093,7 +3093,7 @@ Bool_t AliReconstruction::GetEventInfo()
   for( Int_t iclass=0; iclass < nclasses; iclass++ ) {
     AliTriggerClass* trclass = (AliTriggerClass*)classesArray.At(iclass);
     if (trclass) {
-      Int_t trindex = (Int_t)TMath::Log2(trclass->GetMask());
+      Int_t trindex = TMath::Nint(TMath::Log2(trclass->GetMask()));
       fesd->SetTriggerClass(trclass->GetName(),trindex);
       if (trmask & (1 << trindex)) {
 	trclasses += " ";
