@@ -76,17 +76,18 @@ inside the dipole and assuming that the track is coming from the vertex. Then se
 non-bending slope are within given limits. Extrapolate the primary track candidates to station 4(5), look for at least one compatible cluster to
 validate them and recompute the track parameters.
 - Remove the identical track candidates, i.e. the ones sharing exactly the same clusters.
-- Propagate the track to station 3, 2 then 1 and, at each step, ask the "ClusterServer" to provide clusters in the region of interest,
-and select the one(s) compatible with the track. The track is validated if we find at least 1 cluster per station.
-- Remove the double tracks, i.e. the ones sharing more than half of their clusters, keeping the one with the larger number of cluster or the
-one with the lowest chi2 in case of equality. Then recompute the track parameters at each attached cluster (using the so called Smoother algorithm
-in the case of the "Kalman" tracking).
+- Propagate the track to stations 3, 2 then 1. At each station, ask the "ClusterServer" to provide clusters in the region of interest defined in
+the reconstruction parameters. Select the one(s) compatible with the track and recompute the track parameters, or remove the track if no good
+cluster is found.
+- Remove the connected tracks (i.e. the ones sharing one cluster or more in stations 3, 4 or 5) keeping the one with the largest number of cluster
+or the one with the lowest chi2 in case of equality. Then recompute the track parameters at each attached cluster (using the so-called Smoother
+algorithm in the case of the "Kalman" tracking).
 - The reconstructed tracks are finally matched with the trigger tracks (reconstructed from the local response of the trigger) to identify the
 muon(s) that made the trigger.
 
 The new clusters to be attached to the track are selected according to their local chi2 (i.e. their transverse position relatively to the track,
 normalized by the convolution of the cluster resolution with the resolution of track extrapolated at the cluster location).
-If several compatible clusters are foundon the same chamber, the track candidate is duplicated to consider all the possibilities.
+If several compatible clusters are found on the same chamber, the track candidate is duplicated to consider all the possibilities.
 
 The last part of the tracking is the extrapolation of the reconstructed tracks to the vertex of the collision. The vertex position is measured
 by the SPD (the Silicon Pixel layers of the ITS Detector). In order to be able to perform any kind of muon analysis, we need to compute the track
@@ -102,14 +103,14 @@ The complete list of MUON data saved into ESD is given in section @ref rec_s5.
 
 \section rec_s4 How to tune the muon reconstruction
 
-Several options and adjustable parameters allow to tune the entire reconstruction. These can be changed by adding the following lines in the
-reconstruction macro (runReconstruction.C):
+Several options and adjustable parameters allow to tune the entire reconstruction. They are stored in the OCDB in the directory MUON/Calib/RecoParam.
+However, it is possible to customize the parameters by adding the following lines in the reconstruction macro (runReconstruction.C):
 \verbatim
   AliMUONRecoParam *muonRecoParam = AliMUONRecoParam::Get...Param();
   muonRecoParam->Use...();
   muonRecoParam->Set...();
   ...
-  AliRecoParam::Instance()->RegisterRecoParam(muonRecoParam);
+  MuonRec->SetRecoParam("MUON",muonRecoParam);
 \endverbatim
 
 Three sets of default parameters are available:
@@ -117,7 +118,7 @@ Three sets of default parameters are available:
 - <code>GetHighFluxParam()</code>: parameters for Pb-Pb collisions
 - <code>GetCosmicParam()</code>: parameters for cosmic runs
 
-Every option/parameter can also be set one by one. Here is the complete list of available setters:
+Every option/parameter can be set one by one. Here is the complete list of available setters:
 - <code>SetCalibrationMode("mode")</code>: set the calibration mode: NOGAIN (only do pedestal subtraction),
   GAIN (do pedestal subtraction and apply gain correction, but with a single capacitance value for all channels),
   GAINCONSTANTCAPA (as GAIN, but with a channel-dependent capacitance value).
@@ -127,7 +128,6 @@ Every option/parameter can also be set one by one. Here is the complete list of 
 - <code>CombineClusterTrackReco(flag)</code>: switch on/off the combined cluster/track reconstruction
 - <code>SaveFullClusterInESD(flag, % of event)</code>: save all cluster info (including pads) in ESD, for the given percentage of events
   (100% by default)
-- <code>SetMostProbBendingMomentum(value)</code>: set the most probable value (GeV/c) of momentum in bending plane (used when B=0)
 - <code>SetMinBendingMomentum(value)</code>: set the minimum acceptable value (GeV/c) of track momentum in bending plane
 - <code>SetMaxBendingMomentum(value)</code>: set the maximum acceptable value (GeV/c) of track momentum in bending plane
 - <code>SetMaxNonBendingSlope(value)</code>: set the maximum value of the track slope in non bending plane
@@ -155,18 +155,33 @@ Every option/parameter can also be set one by one. Here is the complete list of 
   instead of starting from 2 clusters in the same station.
 - <code>ComplementTracks(Bool_t flag)</code>: look for potentially missing cluster to be attached to the track (a track may contain up to 2
   clusters per chamber do to the superimposition of DE, while the tracking procedure is done in such a way that only 1 can be attached).
+- <code>RemoveConnectedTracksInSt12(Bool_t flag)</code>: extend the definition of connected tracks to be removed at the end of the tracking
+procedure to the ones sharing one cluster on more in any station, including stations 1 and 2.
 - <code>UseSmoother(Bool_t flag)</code>: use or not the smoother to recompute the track parameters at each attached cluster
   (used for Kalman tracking only)
 - <code>UseChamber(Int_t iCh, Bool_t flag)</code>: set the chambers to be used (disable the clustering if the chamber is not used).
 - <code>RequestStation(Int_t iSt, Bool_t flag)</code>: impose/release the condition "at least 1 cluster per station" for that station.
 - <code>BypassSt45(Bool_t st4, Bool_t st5)</code>: make the primary track candidate from the trigger track instead of using stations 4 and/or 5.
+- <code>SetHVSt12Limits(float low, float high)</code>: Set Low and High threshold for St12 HV
+- <code>SetHVSt345Limits(float low, float high)</code>: Set Low and High threshold for St345 HV
+- <code>SetPedMeanLimits(float low, float high)</code>: Set Low and High threshold for pedestal mean
+- <code>SetPedSigmaLimits(float low, float high)</code>: Set Low and High threshold for pedestal sigma
+- <code>SetGainA1Limits(float low, float high)</code>: Set Low and High threshold for gain a0 term
+- <code>SetGainA2Limits(float low, float high)</code>: Set Low and High threshold for gain a1 term
+- <code>SetGainThresLimits(float low, float high)</code>: Set Low and High threshold for gain threshold term
+- <code>SetPadGoodnessMask(UInt_t mask)</code>: Set the goodness mask (see AliMUONPadStatusMapMaker)
+- <code>ChargeSigmaCut(Double_t value)</code>: Number of sigma cut we must apply when cutting on adc-ped
+- <code>SetDefaultNonBendingReso(Int_t iCh, Double_t val)</code>: Set the default non bending resolution of chamber iCh
+- <code>SetDefaultBendingReso(Int_t iCh, Double_t val)</code>: Set the default bending resolution of chamber iCh
 
 We can use the method Print("FULL") to printout all the parameters and options set in the class AliMUONRecoParam.
 
 
 \section rec_s5 ESD content
 
-The final results of the reconstruction are stored in objects of the class AliESDMuonTrack. Those objects contain:
+Three kinds of track can be saved in ESD: a tracker track matched with a trigger track, a tracker track alone and a trigger track alone (unused
+data members are set to default values in the last two cases). These tracks are stored in objects of the class AliESDMuonTrack. Those objects
+contain:
 - Tracker track parameters (x, theta_x, y, theta_y, 1/p_yz) at vertex (x=x_vtx; y=y_vtx)
 - Tracker track parameters in the vertex plane
 - Tracker track parameters at first cluster
@@ -201,7 +216,7 @@ Every conversion between MUON objects (AliMUOVDigit/AliMUONVCluster/AliMUONTrack
 - Get track parameters at vertex, at DCA, ...:
 \verbatim
   ...
-  AliESDMuonTrack* esdTrack = new AliESDMuonTrack(*(esd->GetMuonTrack(iTrack)));
+  AliESDMuonTrack* esdTrack = esd->GetMuonTrack(iTrack);
   AliMUONTrackParam param;
   AliMUONESDInterface::GetParamAtVertex(*esdTrack, param);
 \endverbatim
@@ -225,17 +240,17 @@ Every conversion between MUON objects (AliMUOVDigit/AliMUONVCluster/AliMUONTrack
 - Convert an AliESDMuonTrack to an AliMUONTrack:
 \verbatim
   ...
-  AliESDMuonTrack* esdTrack = new AliESDMuonTrack(*(esd->GetMuonTrack(iTrack)));
+  AliESDMuonTrack* esdTrack = esd->GetMuonTrack(iTrack);
   AliMUONTrack track;
   AliMUONESDInterface::ESDToMUON(*esdTrack, track);
 \endverbatim
   
-- Add an AliESDMuonTrack into an AliMUONVTrackStore:
+- Add an AliESDMuonTrack (converted into AliMUONTrack object) into an AliMUONVTrackStore:
 \verbatim
   ...
-  AliESDMuonTrack* esdTrack = new AliESDMuonTrack(*(esd->GetMuonTrack(iTrack)));
+  AliESDMuonTrack* esdTrack = esd->GetMuonTrack(iTrack);
   AliMUONVTrackStore *trackStore = AliMUONESDInteface::NewTrackStore();
-  AliMUONESDInterface::Add(*esdTrack, *trackStore);
+  AliMUONTrack* trackInStore = AliMUONESDInterface::Add(*esdTrack, *trackStore);
 \endverbatim
 
 2) Loading an entire ESDEvent and using the finders and/or the iterators to access the corresponding MUON objects:
