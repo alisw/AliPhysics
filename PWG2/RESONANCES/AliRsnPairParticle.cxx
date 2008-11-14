@@ -208,7 +208,7 @@ Double_t AliRsnPairParticle::GetAngle() const
 
   Double_t dotProd = 0.0;
   dotProd += fDaughter[0]->Px() * fDaughter[1]->Px();
-  dotProd += fDaughter[0]->Py() * fDaughter[1]->Pz();
+  dotProd += fDaughter[0]->Py() * fDaughter[1]->Py();
   dotProd += fDaughter[0]->Pz() * fDaughter[1]->Pz();
 
   Double_t cosAngle = dotProd / (fDaughter[0]->P() * fDaughter[1]->P());

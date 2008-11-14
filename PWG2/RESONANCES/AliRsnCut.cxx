@@ -352,10 +352,10 @@ Bool_t AliRsnCut::IsSelected(ETarget type, AliRsnPairParticle * pair)
       return IsBetween(pair->GetP());
     case kTransMomentum:
       return IsBetween(pair->GetPt());
-      /*
-      case kEta:
-          return IsBetween (daughter->Eta());
-      */
+    case kEta:
+      return IsBetween(pair->GetEta());
+    case kEtaMC:
+      return IsBetween(pair->GetEtaMC());
     case kMomentumMC:
       return IsBetween(pair->GetPMC());
     case kTransMomentumMC:
