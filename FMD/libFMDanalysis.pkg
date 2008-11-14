@@ -13,8 +13,6 @@ SRCS		=  analysis/AliFMDAnaParameters.cxx	\
 
 HDRS		=  $(SRCS:.cxx=.h) 
 EINCLUDE 	:= ANALYSIS 
-ELIBS           := ANALYSIS
-ELIBSDIR	:= $(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)
 DHDR		:= analysis/FMDanalysisLinkDef.h
 
 #
