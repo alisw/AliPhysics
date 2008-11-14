@@ -212,8 +212,6 @@ AliT0DataDCS& AliT0DataDCS:: operator=(const AliT0DataDCS & data) {
 //---------------------------------------------------------------
 AliT0DataDCS::~AliT0DataDCS() 
 {
-  delete fScalerMean;
-  delete fScalerSecMean;
 }
 
 //---------------------------------------------------------------
