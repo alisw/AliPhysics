@@ -41,7 +41,7 @@ void rawqa(const Int_t runNumber, Int_t maxFiles = 10, const char* year = "08")
        	grid = TGrid::Connect("alien://") ; 
 		
 	Bool_t detIn[AliDAQ::kNDetectors] = {kFALSE} ;
-	char * detNameOff[AliDAQ::kNDetectors] = {"ITS", "ITS", "ITS", "TPC", "TRD", "TOF", "HMPID", "PHOS", "PHOS", "PMD", "MUON", "MUON", "FMD", "T0", "VZERO", "ZDC", "ACORDE", "TRG", "EMCAL", "DAQ_TEST", "HLT"} ; 
+	TString detNameOff[AliDAQ::kNDetectors] = {"ITS", "ITS", "ITS", "TPC", "TRD", "TOF", "HMPID", "PHOS", "PHOS", "PMD", "MUON", "MUON", "FMD", "T0", "VZERO", "ZDC", "ACORDE", "TRG", "EMCAL", "DAQ_TEST", "HLT"} ; 
 	// make the file name pattern year and run number
 	TString pattern;
 	pattern.Form("%9d",runNumber);
