@@ -684,7 +684,7 @@ void AliTPCcalibDB::RegisterExB(Int_t index, Float_t bz, Bool_t bdelete){
 
   Float_t factor =  bz/(-5.);  // default b filed in Cheb with minus sign
   
-  AliMagF*   bmap = new AliMagWrapCheb("Maps","Maps", 2, factor, 10., AliMagWrapCheb::k5kG,kTRUE,"$(ALICE_ROOT)/data/maps/mfchebKGI_sym.root");
+  AliMagF*   bmap = new AliMagWrapCheb("MapsExB","MapsExB", 2, factor, 10., AliMagWrapCheb::k5kG,kTRUE,"$(ALICE_ROOT)/data/maps/mfchebKGI_sym.root");
   
   AliTPCExBFirst *exb  = new  AliTPCExBFirst(bmap,0.88*2.6400e+04,50,50,50);
   AliTPCExB::SetInstance(exb);
@@ -878,7 +878,7 @@ Float_t AliTPCcalibDB::GetTemperature(Int_t timeStamp, Int_t run, Int_t side){
   //
   //
   //
-  TVectorD vec;
+  TVectorD vec(5);
   if (side==0) {
     GetTemperatureFit(timeStamp,run,0,vec);
     return vec[0];
