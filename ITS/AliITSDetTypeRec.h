@@ -29,7 +29,6 @@ class AliITSCalibration;
 class AliITSCalibrationSSD;
 class AliITSresponseSDD;
 class AliITSClusterFinder;
-class AliITSRawCluster;
 class AliITSRecPoint;
 class AliRawReader;
 class AliITSGainSSDv2;
@@ -72,24 +71,17 @@ class AliITSDetTypeRec : public TObject {
 
     virtual void SetDigitClassName(Int_t i,const Char_t *digit) 
       {fDigClassName[i]=digit;}
-    virtual void SetClusterClassName(Int_t i,const Char_t *cluster)
-      {fClusterClassName[i]=cluster;}
-    virtual void SetRecPointClassName(Int_t i,const Char_t *recpoint) 
-      {fRecPointClassName[i]=recpoint;}
     
     virtual void SetLoadOnlySPDCalib(Bool_t opt=kFALSE)
       {fLoadOnlySPDCalib=opt;}
 
     const Char_t* GetDigitClassName(Int_t i) const {return fDigClassName[i];}
-    const Char_t* GetClusterClassName(Int_t i) const {return fClusterClassName[i];}
-    const Char_t* GetRecPointClassName(Int_t i) const {return fRecPointClassName[i];}
     
     TObjArray* GetDigits() const {return fDigits;} 
     Int_t *Ndtype() {return fNdtype;}
     TClonesArray *DigitsAddress(Int_t id) const {return ((TClonesArray*)(*fDigits)[id]);}
     virtual void SelectVertexer(TString sel=" "){fSelectedVertexer = sel;}
     //
-    virtual void AddCluster(Int_t branch, AliITSRawCluster *c);
     virtual void ResetClusters(); 
     virtual void ResetClusters(Int_t branch);
     TBranch* MakeBranchInTree(TTree *tree, const char* name, const char *classname, void* address,Int_t size, Int_t splitlevel);
@@ -149,9 +141,7 @@ class AliITSDetTypeRec : public TObject {
     Float_t       fAveGainSDD;    //! Average gain of SDD good anodes
     Bool_t        fIsHLTmodeC;    //! flag for HLT mode C status (used by SDD)
     Int_t        *fNdtype;        //! detector types  
-    const Char_t*       fClusterClassName[3]; //! String with Cluster class name
     const Char_t*       fDigClassName[3];     //! String with digit class name.
-    const Char_t*       fRecPointClassName[3];//! String with RecPoint class name
 
     TObjArray    *fCtype;      //! List of clusters
     Int_t        *fNctype;     //[fNDetTypes] Num. of clust. per type of det.
@@ -165,7 +155,7 @@ class AliITSDetTypeRec : public TObject {
 
     TBits fFastOrFiredMap;     // Map of FastOr fired chips
 
-    ClassDef(AliITSDetTypeRec,14) // ITS Reconstruction structure
+    ClassDef(AliITSDetTypeRec,15) // ITS Reconstruction structure
 };
 
 #endif

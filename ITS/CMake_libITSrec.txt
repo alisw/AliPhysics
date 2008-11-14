@@ -2,7 +2,6 @@
 
 set(SRCS
  	AliITSDetTypeRec.cxx 
-		AliITSRawCluster.cxx 
 		AliITSClusterFinder.cxx 
 		AliITSClusterFinderV2SDD.cxx 
 		AliITSClusterFinderV2SPD.cxx 
@@ -43,9 +42,6 @@ set(SRCS
                 AliITSPident.cxx 
                 AliITSSteerPid.cxx 
                 AliITSPidParItem.cxx 
-		AliITSRawClusterSPD.cxx 
-		AliITSRawClusterSDD.cxx 
-		AliITSRawClusterSSD.cxx
 		AliITSReconstructor.cxx 
 		AliITSRecoParam.cxx 
 		AliITSBeamTestDig.cxx 

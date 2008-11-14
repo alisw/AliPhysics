@@ -37,17 +37,12 @@ extern AliRun *gAlice;
 //----------------------------------------------------------------------
 AliITSClusterFinder::AliITSClusterFinder():
 TObject(),
-fDebug(0),
 fModule(0),
 fDigits(0),
 fNdigits(0),
 fDetTypeRec(0),
 fClusters(0),
-fNRawClusters(0),
 fMap(0),
-fNperMax(0),
-fDeclusterFlag(0),
-fClusterSize(0),
 fNPeaks(-1),
 fNModules(AliITSgeomTGeo::GetNModules()),
 fEvent(0){
@@ -62,17 +57,12 @@ fEvent(0){
 //----------------------------------------------------------------------
 AliITSClusterFinder::AliITSClusterFinder(AliITSDetTypeRec* dettyp):
 TObject(),
-fDebug(0),
 fModule(0),
 fDigits(0),
 fNdigits(0),
 fDetTypeRec(dettyp),
 fClusters(0),
-fNRawClusters(0),
 fMap(0),
-fNperMax(0),
-fDeclusterFlag(0),
-fClusterSize(0),
 fNPeaks(-1),
 fNModules(AliITSgeomTGeo::GetNModules()),
 fEvent(0){
@@ -86,25 +76,17 @@ fEvent(0){
     // Return:
     //   A Standard constructed AliITSCulsterFinder
 
-    SetNperMax();
-    SetClusterSize();
-    SetDeclusterFlag();
 }
 //----------------------------------------------------------------------
 AliITSClusterFinder::AliITSClusterFinder(AliITSDetTypeRec* dettyp,
 					 TClonesArray *digits):
 TObject(),
-fDebug(0),
 fModule(0),
 fDigits(digits),
 fNdigits(0),
 fDetTypeRec(dettyp),
 fClusters(0),
-fNRawClusters(0),
 fMap(0),
-fNperMax(0),
-fDeclusterFlag(0),
-fClusterSize(0),
 fNPeaks(-1),
 fNModules(AliITSgeomTGeo::GetNModules()),
 fEvent(0){
@@ -120,24 +102,16 @@ fEvent(0){
     //   A Standard constructed AliITSCulsterFinder
 
     fNdigits = fDigits->GetEntriesFast();
-    SetNperMax();
-    SetClusterSize();
-    SetDeclusterFlag();
 }
 
 //______________________________________________________________________
 AliITSClusterFinder::AliITSClusterFinder(const AliITSClusterFinder &source) : TObject(source),
-fDebug(source.fDebug),
 fModule(source.fModule),
 fDigits(),
 fNdigits(source.fNdigits),
 fDetTypeRec(),
 fClusters(),
-fNRawClusters(source.fNRawClusters),
 fMap(),
-fNperMax(source.fNperMax),
-fDeclusterFlag(source.fDeclusterFlag),
-fClusterSize(source.fClusterSize),
 fNPeaks(source.fNPeaks),
 fNModules(source.fNModules),
 fEvent(source.fEvent) {
@@ -170,10 +144,6 @@ AliITSClusterFinder::~AliITSClusterFinder(){
     fMap          = 0;
     fDigits       = 0;
     fNdigits      = 0;
-    fNRawClusters = 0;
-    fNperMax      = 0;
-    fDeclusterFlag= 0;
-    fClusterSize  = 0;
     fNPeaks       = 0;
     fDetTypeRec   = 0;
 
@@ -193,174 +163,7 @@ void AliITSClusterFinder::InitGeometry(){
 
 
 
-//----------------------------------------------------------------------
-void AliITSClusterFinder::AddCluster(Int_t branch, AliITSRawCluster *c){
-    // Add a raw cluster copy to the list
-    // Input:
-    //   Int_t       branch  The branch to which the cluster is to be added to
-    //   AliITSRawCluster *c The cluster to be added to the array of clusters
-    // Output:
-    //   none.
-    // Return:
-    //   none.
 
-   if(!fDetTypeRec) {
-    Error("AddCluster","fDetTypeRec is null!");
-    return;
-  }
-  fDetTypeRec->AddCluster(branch,c); 
-  fNRawClusters++;
-}
-//----------------------------------------------------------------------
-void AliITSClusterFinder::AddCluster(Int_t branch, AliITSRawCluster *c, 
-				     AliITSRecPoint &rp){
-    // Add a raw cluster copy to the list and the RecPoint
-    // Input:
-    //   Int_t       branch  The branch to which the cluster is to be added to
-    //   AliITSRawCluster *c The cluster to be added to the array of clusters
-    //   AliITSRecPoint  &rp The RecPoint to be added to the array of RecPoints
-    // Output:
-    //   none.
-    // Return:
-    //   none.
-  if(!fDetTypeRec) {
-    Error("AddCluster","fDetTypeRec is null!");
-    return;
-  }
-
-  fDetTypeRec->AddCluster(branch,c); 
-  fNRawClusters++;
-  fDetTypeRec->AddRecPoint(rp); 
-
-}
-/*
-//______________________________________________________________________
-void AliITSClusterFinder::CheckLabels(Int_t lab[3]) {
-  //------------------------------------------------------------
-  // Tries to find mother's labels
-  //------------------------------------------------------------
-
-  if(lab[0]<0 && lab[1]<0 && lab[2]<0) return; // In case of no labels just exit
-  // Check if simulation
-  AliMC* mc = gAlice->GetMCApp();
-  if(!mc)return;
-
-  Int_t ntracks = mc->GetNtrack();
-  for (Int_t i=0;i<3;i++){
-    Int_t label = lab[i];
-    if (label>=0 && label<ntracks) {
-      TParticle *part=(TParticle*)mc->Particle(label);
-      if (part->P() < 0.005) {
-	Int_t m=part->GetFirstMother();
-	if (m<0) {	
-	  continue;
-	}
-	if (part->GetStatusCode()>0) {
-	  continue;
-	}
-	lab[i]=m;       
-      }
-    }    
-  }
-  
-}
-*/
-//______________________________________________________________________
-void AliITSClusterFinder::FindRawClusters(Int_t module){
-    // Default Cluster finder.
-    // Input:
-    //   Int_t module   Module number for which culster are to be found.
-    // Output:
-    //   none.
-    // Return:
-    //   none.
-    const Int_t kelms = 10;
-    Int_t ndigits = fDigits->GetEntriesFast();
-    TObjArray *digs = new TObjArray(ndigits);
-    TObjArray *clusts = new TObjArray(ndigits); // max # cluster
-    TObjArray *clust0=0; // A spacific cluster of digits
-    TObjArray *clust1=0; // A spacific cluster of digits
-    AliITSdigit *dig=0; // locat pointer to a digit
-    Int_t i=0,nc=0,j[4],k,k2=0;
-
-    // Copy all digits for this module into a local TObjArray.
-    for(i=0;i<ndigits;i++) digs->AddAt(new AliITSdigit(*(GetDigit(i))),i);
-    digs->Sort();
-    // First digit is a cluster.
-    i  = 0;
-    nc = 0;
-    clusts->AddAt(new TObjArray(kelms),nc);
-    clust0 = (TObjArray*)(clusts->At(nc));
-    clust0->AddAtFree(digs->At(i)); // move owner ship from digs to clusts
-    nc++;
-    for(i=1;i<ndigits;i++){
-        if(IsNeighbor(digs,i,j)){
-            dig = (AliITSdigit*)(digs->At(j[0]));
-            // Add to existing cluster. Find which cluster this digis 
-            for(k=0;k<nc;k++){
-                clust0 = ((TObjArray*)(clusts->At(k)));
-                if(clust0->IndexOf(dig)>=0) break;
-            } // end for k
-            if(k>=nc){
-                Fatal("FindRawClusters","Digit not found as expected");
-            } // end if
-            if(j[1]>=0){
-                dig = (AliITSdigit*)(digs->At(j[1]));
-                // Add to existing cluster. Find which cluster this digis 
-                for(k2=0;k2<nc;k2++){
-                    clust1 = ((TObjArray*)(clusts->At(k2)));
-                    if(clust1->IndexOf(dig)>=0) break;
-                } // end for k2
-                if(k2>=nc){
-                    Fatal("FindRawClusters","Digit not found as expected");
-                } // end if
-            } // end if j[1]>=0
-            // Found cluster with neighboring digits add this one to it.
-            if(clust0==clust1){ // same cluster
-                clust0->AddAtFree(digs->At(i));
-                clust0 = 0; // finished with cluster. zero for safty
-                clust1 = 0; // finished wit hcluster. zero for safty
-            }else{ // two different clusters which need to be merged.
-                clust0->AddAtFree(digs->At(i)); // Add digit to this cluster.
-                for(k=0;k<clust1->GetEntriesFast();k++){
-                    // move clust1 into clust0
-                    //move digit to this cluster
-                    clust0->AddAtFree(clust1->At(k));
-                    clust1->AddAt(0,k); // zero this one
-                } // end for k
-                delete clust1;
-                clusts->AddAt(0,k2); // zero array of clusters element clust1
-                clust0 = 0; // finished with cluster. zero for safty
-                clust1 = 0; // finished wit hcluster. zero for safty
-            } // end if clust0==clust1
-        }else{// New cluster
-            clusts->AddAt(new TObjArray(kelms),nc);
-            clust0 = ((TObjArray*)(clusts->At(nc)));
-            // move owner ship from digs to clusts
-            clust0->AddAtFree(digs->At(i));
-            clust0 = 0; // finished with cluster. zero for safty
-            nc++;
-        } // End if IsNeighbor
-    } // end for i
-    // There are now nc clusters in clusts. Each element of clust is an
-    // array of digits which are clustered together.
-
-    // For each cluster call detector specific CreateRecPoints
-    for(i=0;i<nc;i++) CreateRecPoints((TObjArray*)(clusts->At(i)),module);
-
-    // clean up at the end.
-    for(i=0;i<nc;i++){ 
-        clust0 =(TObjArray*)(clusts->At(i));
-        // Digits deleted below, so zero this TObjArray
-        for(k=0;k<clust0->GetEntriesFast();k++) clust0->AddAt(0,k);
-        delete clust0; // Delete this TObjArray
-        clusts->AddAt(0,i); // Contents deleted above, so zero it.
-    } // end for i
-    delete clusts; // Delete this TObjArray/
-    // Delete the digits then the TObjArray which containted them.
-    for(i=0;i<ndigits;i++) delete ((AliITSdigit*)(digs->At(i)));
-    delete digs;
-}
 //______________________________________________________________________
 Bool_t AliITSClusterFinder::IsNeighbor(TObjArray *digs,Int_t i,Int_t n[])const{
     // Locagical function which checks to see if digit i has a neighbor.
@@ -415,13 +218,8 @@ void AliITSClusterFinder::Print(ostream *os) const{
     // Return:
     //    none.
 
-    *os << fDebug<<",";
     *os << fModule<<",";
     *os << fNdigits<<",";
-    *os << fNRawClusters<<",";
-    *os << fNperMax<<",";
-    *os << fDeclusterFlag<<",";
-    *os << fClusterSize<<",";
     *os << fNPeaks<<endl;
 }
 //______________________________________________________________________
@@ -434,13 +232,8 @@ void AliITSClusterFinder::Read(istream *is)  {
     // Return:
     //    none.
 
-    *is >> fDebug;
     *is >> fModule;
     *is >> fNdigits;
-    *is >> fNRawClusters;
-    *is >> fNperMax;
-    *is >> fDeclusterFlag;
-    *is >> fClusterSize;
     *is >> fNPeaks;
 }
 //______________________________________________________________________

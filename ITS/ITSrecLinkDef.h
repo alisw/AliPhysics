@@ -13,10 +13,6 @@
 
 // Standard ITS classes 
  
-#pragma link C++ class  AliITSRawCluster+;
-#pragma link C++ class  AliITSRawClusterSPD+;
-#pragma link C++ class  AliITSRawClusterSDD+;
-#pragma link C++ class  AliITSRawClusterSSD+;
 #pragma link C++ class  AliITSClusterFinder+;
 #pragma link C++ class  AliITSClusterParam+;
 #pragma link C++ class  AliITSDetTypeRec+;

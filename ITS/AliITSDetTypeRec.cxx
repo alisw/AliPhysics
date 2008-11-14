@@ -34,10 +34,6 @@
 #include "AliITSClusterFinderV2SSD.h"
 #include "AliITSDetTypeRec.h"
 #include "AliITSgeom.h"
-#include "AliITSRawCluster.h"
-#include "AliITSRawClusterSPD.h"
-#include "AliITSRawClusterSDD.h"
-#include "AliITSRawClusterSSD.h"
 #include "AliITSRecPoint.h"
 #include "AliITSReconstructor.h"
 #include "AliITSRecoParam.h"
@@ -102,9 +98,7 @@ fFastOrFiredMap(1200){
   fReconstruction = new TObjArray(fgkNdettypes);
   fDigits = new TObjArray(fgkNdettypes);
   for(Int_t i=0; i<3; i++){
-    fClusterClassName[i]=0;
     fDigClassName[i]=0;
-    fRecPointClassName[i]=0;
   }
   fSSDCalibration=new AliITSCalibrationSSD();
   fNdtype = new Int_t[fgkNdettypes];
@@ -398,8 +392,6 @@ void AliITSDetTypeRec::SetDefaults(){
       seg = new AliITSsegmentationSPD();
       SetSegmentationModel(dettype,seg);
       SetDigitClassName(dettype,"AliITSdigitSPD");
-      SetClusterClassName(dettype,"AliITSRawClusterSPD");
-
     }
     if(fLoadOnlySPDCalib==kFALSE){
       if(dettype==1){
@@ -411,14 +403,12 @@ void AliITSDetTypeRec::SetDefaults(){
 	}
 	SetSegmentationModel(dettype,seg);
 	SetDigitClassName(dettype,"AliITSdigitSDD");
-	SetClusterClassName(dettype,"AliITSRawClusterSDD");
       }
     }
     if(dettype==2){
       AliITSsegmentationSSD* seg2 = new AliITSsegmentationSSD();
       SetSegmentationModel(dettype,seg2);
       SetDigitClassName(dettype,"AliITSdigitSSD");
-      SetClusterClassName(dettype,"AliITSRawClusterSSD");
     }
   }
 }
@@ -736,23 +726,6 @@ void AliITSDetTypeRec::MakeBranch(TTree* tree, Option_t* option){
 
 }
 
-//___________________________________________________________________
-void AliITSDetTypeRec::AddCluster(Int_t id, AliITSRawCluster *c){
-
-  // Adds a raw cluster to the list
-  TClonesArray &lc = *((TClonesArray*)fCtype->At(id));  
-  switch(id){
-  case 0:
-    new(lc[fNctype[id]++]) AliITSRawClusterSPD(*((AliITSRawClusterSPD*)c));
-    break;
-  case 1:
-    new(lc[fNctype[id]++]) AliITSRawClusterSDD(*((AliITSRawClusterSDD*)c));
-    break;
-  case 2:
-    new(lc[fNctype[id]++]) AliITSRawClusterSSD(*((AliITSRawClusterSSD*)c));
-    break;
-  } 
-}
 //___________________________________________________________________
 void AliITSDetTypeRec::ResetDigits(){
   // Reset number of digits and the digits array for the ITS detector.
