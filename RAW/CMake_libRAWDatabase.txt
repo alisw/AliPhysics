@@ -15,4 +15,8 @@ String(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
 Set(HDRS ${HDRS} AliRawEventHeaderVersions.h ${ROOTSYS}/include/TH1F.h)
 
+Configure_file(${CMAKE_SOURCE_DIR}/RAW/AliRawEventHeaderVersions.h 
+               ${CMAKE_CURRENT_BINARY_DIR}/RAW/AliRawEventHeaderVersions.h 
+                COPYONLY)
+
 AddLibrary(RAWDatabase "${SRCS}" "${HDRS}")

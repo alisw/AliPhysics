@@ -4,6 +4,7 @@
 # The extension is already found.  Any number of sources could be listed here.
 
 set(INCLUDE_DIRECTORIES
+RAW
 ${CMAKE_SOURCE_DIR}/RAW
 ${CMAKE_SOURCE_DIR}/STEER
 ${ROOT_INCLUDE_DIR}
