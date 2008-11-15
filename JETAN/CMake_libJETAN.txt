@@ -26,6 +26,7 @@ set(SRCS
 	AliJetHistos.cxx 
 	AliAnalysisTaskDiJets.cxx 
 	AliAnalysisTaskJetsCDF.cxx AliCdfJetFinder.cxx AliCdfJetHeader.cxx
+	AliEventShape.cxx
 )
 
 Set(FASTJET $ENV{FASTJET})
