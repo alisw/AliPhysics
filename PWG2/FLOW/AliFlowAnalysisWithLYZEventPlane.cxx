@@ -256,7 +256,7 @@ void AliFlowAnalysisWithLYZEventPlane::Make(AliFlowEventSimple* anEvent, AliFlow
 void AliFlowAnalysisWithLYZEventPlane::Finish() {
    
   //plot histograms etc. 
-  cout<<"AliFlowAnalysisWithLYZEventPlane::Terminate()"<<endl;
+  cout<<"AliFlowAnalysisWithLYZEventPlane::Finish()"<<endl;
   
   //constants:
   Double_t  dJ01 = 2.405; 
@@ -285,13 +285,13 @@ void AliFlowAnalysisWithLYZEventPlane::Finish() {
   Double_t  dChi= 0;
   if (fEventNumber!=0) {
     *fQsum /= fEventNumber;
-    cerr<<"fQsum->X() = "<<fQsum->X()<<endl;
-    cerr<<"fQsum->Y() = "<<fQsum->Y()<<endl;
+    //cerr<<"fQsum->X() = "<<fQsum->X()<<endl;
+    //cerr<<"fQsum->Y() = "<<fQsum->Y()<<endl;
     fQ2sum /= fEventNumber;
-    cerr<<"fEventNumber = "<<fEventNumber<<endl;
-    cerr<<"fQ2sum = "<<fQ2sum<<endl;
+    //cerr<<"fEventNumber = "<<fEventNumber<<endl;
+    //cerr<<"fQ2sum = "<<fQ2sum<<endl;
     dSigma2 = fQ2sum - TMath::Power(fQsum->X(),2.) - TMath::Power(fQsum->Y(),2.) - TMath::Power(dV,2.);  //BP eq. 62
-    cerr<<"dSigma2"<<dSigma2<<endl;
+    //cerr<<"dSigma2"<<dSigma2<<endl;
     if (dSigma2>0) dChi = dV/TMath::Sqrt(dSigma2);
     else dChi = -1.;
     fCommonHistsRes->FillChi(dChi);

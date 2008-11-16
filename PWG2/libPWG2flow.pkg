@@ -2,6 +2,7 @@
 
 SRCS= FLOW/AliFlowEventSimple.cxx \
       FLOW/AliFlowTrackSimple.cxx \
+      FLOW/AliFlowVector.cxx \
       FLOW/AliFlowCommonConstants.cxx \
       FLOW/AliFlowLYZConstants.cxx \
       FLOW/AliFlowCumuConstants.cxx \
@@ -9,7 +10,6 @@ SRCS= FLOW/AliFlowEventSimple.cxx \
       FLOW/AliFlowCommonHistResults.cxx \
       FLOW/AliFlowLYZHist1.cxx \
       FLOW/AliFlowLYZHist2.cxx \
-      FLOW/AliFlowVector.cxx \
       FLOW/AliFlowLYZEventPlane.cxx \
       FLOW/AliFlowEventSimpleMaker.cxx \
       FLOW/AliFlowAnalysisWithScalarProduct.cxx \
@@ -17,11 +17,14 @@ SRCS= FLOW/AliFlowEventSimple.cxx \
       FLOW/AliFlowAnalysisWithLYZEventPlane.cxx \
       FLOW/AliFlowAnalysisWithLeeYangZeros.cxx \
       FLOW/AliFlowAnalysisWithCumulants.cxx \
+      FLOW/AliFlowAnalysisWithQCumulants.cxx \
       FLOW/AliCumulantsFunctions.cxx \
+      FLOW/AliQCumulantsFunctions.cxx \
       FLOW/AliAnalysisTaskScalarProduct.cxx \
       FLOW/AliAnalysisTaskMCEventPlane.cxx \
       FLOW/AliAnalysisTaskLYZEventPlane.cxx \
       FLOW/AliAnalysisTaskCumulants.cxx \
+      FLOW/AliAnalysisTaskQCumulants.cxx \
       FLOW/AliAnalysisTaskLeeYangZeros.cxx
 
 HDRS= $(SRCS:.cxx=.h) 

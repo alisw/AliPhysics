@@ -7,7 +7,7 @@
 // LYZ1  = Lee Yang Zeroes first run     (for PbPb)
 // LYZ2  = Lee Yang Zeroes second run    (for PbPb)
 // LYZEP = Lee Yang Zeroes Event Plane   (for PbPb)
-// CUM   = Cumulants (for PbPb or pp)
+// GFC   = Cumulants (for PbPb or pp)
 // MCEP  = Flow calculated from the real MC event plane (for PbPb only)
 //
 // The LYZ analysis should be done in the following order;
@@ -30,15 +30,13 @@
 
 //RUN SETTINGS
 
-//Flow analysis method can be:
-// SP    = Scalar Product
-// LYZ1  = Lee Yang Zeroes first run
-// LYZ2  = Lee Yang Zeroes second run
-// LYZEP = Lee Yang Zeroes Event Plane
-// CUM   = Cumulants
-// MCEP  = Flow calculated from the real MC event plane (only for simulated data)
-const TString method = "CUM";
-
+//Flow analysis method can be:(set to kTRUE or kFALSE)
+Bool_t SP    = kTRUE;
+Bool_t LYZ1  = kTRUE;
+Bool_t LYZ2  = kFALSE;
+Bool_t LYZEP = kFALSE;
+Bool_t GFC   = kFALSE;
+Bool_t MCEP  = kFALSE;
 
 //analysis type can be ESD, AOD, MC, ESDMC0, ESDMC1
 const TString type = "ESD";
@@ -80,16 +78,21 @@ void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_midcentral_ESD",
 //  void runProofFlow(const Char_t* data="/PWG2/nkolk/myDataSet", Int_t nRuns=-1, Int_t offset=0) {
 
 
- TStopwatch timer;
- timer.Start();
+  TStopwatch timer;
+  timer.Start();
 
- printf("*** Connect to PROOF ***\n");
- // TProof::Open("snelling@alicecaf.cern.ch");
- TProof::Open("snelling@localhost");
+  if (LYZ1 && LYZ2) {cout<<"WARNING: you cannot run LYZ1 and LYZ2 at the same time! LYZ2 needs the output from LYZ1."<<endl; exit(); }
+
+  if (LYZ2 && LYZEP) {cout<<"WARNING: you cannot run LYZ2 and LYZEP at the same time! LYZEP needs the output from LYZ2."<<endl; exit(); }
+
+  if (LYZ1 && LYZEP) {cout<<"WARNING: you cannot run LYZ1 and LYZEP at the same time! LYZEP needs the output from LYZ2."<<endl; exit(); }
+
+  printf("*** Connect to PROOF ***\n");
+  TProof::Open("nkolk@alicecaf.cern.ch");
+  //TProof::Open("snelling@localhost");
  
-
- //gProof->UploadPackage("AF-v4-15"); 
- //gProof->EnablePackage("AF-v4-15");
+  //gProof->UploadPackage("AF-v4-15"); 
+  //gProof->EnablePackage("AF-v4-15");
   gProof->UploadPackage("STEERBase.par");
   gProof->EnablePackage("STEERBase");
   gProof->UploadPackage("ESD.par");
@@ -107,241 +110,358 @@ void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_midcentral_ESD",
   //  gProof->ClearPackage("PWG2flow");
   gProof->UploadPackage("PWG2flow.par");
   gProof->EnablePackage("PWG2flow");
+  
+  
+  //____________________________________________//
+  //Create cuts using correction framework
 
-
-//____________________________________________//
- //Create cuts using correction framework
-
- //Set TList for the QA histograms
- if (QA) {
-   TList* qaInt = new TList();
-   TList* qaDiff = new TList();
- }
-
- //############# cuts on MC
- AliCFTrackKineCuts* mcKineCuts1 = new AliCFTrackKineCuts("mcKineCuts1","MC-level kinematic cuts");
- mcKineCuts1->SetPtRange(ptmin1,ptmax1);
- mcKineCuts1->SetRapidityRange(ymin1,ymax1);
- mcKineCuts1->SetChargeMC(charge1);
- if (QA) { mcKineCuts1->SetQAOn(qaInt); }
- 
- AliCFTrackKineCuts* mcKineCuts2 = new AliCFTrackKineCuts("mcKineCuts2","MC-level kinematic cuts");
- mcKineCuts2->SetPtRange(ptmin2,ptmax2);
- mcKineCuts2->SetRapidityRange(ymin2,ymax2);
- mcKineCuts2->SetChargeMC(charge2);
- if (QA) { mcKineCuts2->SetQAOn(qaDiff); }
- 
- AliCFParticleGenCuts* mcGenCuts1 = new AliCFParticleGenCuts("mcGenCuts1","MC particle generation cuts");
- mcGenCuts1->SetRequireIsPrimary();
- mcGenCuts1->SetRequirePdgCode(PDG1);
- if (QA) { mcGenCuts1->SetQAOn(qaInt); }
- 
- AliCFParticleGenCuts* mcGenCuts2 = new AliCFParticleGenCuts("mcGenCuts2","MC particle generation cuts");
- mcGenCuts2->SetRequireIsPrimary();
- mcGenCuts2->SetRequirePdgCode(PDG2);
- if (QA) { mcGenCuts2->SetQAOn(qaDiff); }
- 
- //############# Acceptance Cuts  
- AliCFAcceptanceCuts *mcAccCuts1 = new AliCFAcceptanceCuts("mcAccCuts1","MC acceptance cuts");
- mcAccCuts1->SetMinNHitITS(mintrackrefsITS1);
- mcAccCuts1->SetMinNHitTPC(mintrackrefsTPC1);
- if (QA) { mcAccCuts1->SetQAOn(qaInt); }
- 
- AliCFAcceptanceCuts *mcAccCuts2 = new AliCFAcceptanceCuts("mcAccCuts2","MC acceptance cuts");
- mcAccCuts2->SetMinNHitITS(mintrackrefsITS2);
- mcAccCuts2->SetMinNHitTPC(mintrackrefsTPC2);
- if (QA) { mcAccCuts2->SetQAOn(qaDiff); }
- 
- //############# Rec-Level kinematic cuts
- AliCFTrackKineCuts *recKineCuts1 = new AliCFTrackKineCuts("recKineCuts1","rec-level kine cuts");
- recKineCuts1->SetPtRange(ptmin1,ptmax1);
- recKineCuts1->SetRapidityRange(ymin1,ymax1);
- recKineCuts1->SetChargeRec(charge1);
- if (QA) { recKineCuts1->SetQAOn(qaInt); }
- 
- AliCFTrackKineCuts *recKineCuts2 = new AliCFTrackKineCuts("recKineCuts2","rec-level kine cuts");
- recKineCuts2->SetPtRange(ptmin2,ptmax2);
- recKineCuts2->SetRapidityRange(ymin2,ymax2);
- recKineCuts2->SetChargeRec(charge2);
- if (QA) { recKineCuts2->SetQAOn(qaDiff); }
- 
- AliCFTrackQualityCuts *recQualityCuts1 = new AliCFTrackQualityCuts("recQualityCuts1","rec-level quality cuts");
- recQualityCuts1->SetMinNClusterTPC(minclustersTPC1);
- recQualityCuts1->SetStatus(AliESDtrack::kITSrefit);
- // recQualityCuts1->SetRequireITSRefit(kTRUE); //old
- if (QA) { recQualityCuts1->SetQAOn(qaInt); }
- 
- AliCFTrackQualityCuts *recQualityCuts2 = new AliCFTrackQualityCuts("recQualityCuts2","rec-level quality cuts");
- recQualityCuts2->SetMinNClusterTPC(minclustersTPC2);
- recQualityCuts2->SetStatus(AliESDtrack::kITSrefit);
- // recQualityCuts2->SetRequireITSRefit(kTRUE); //old
- if (QA) { recQualityCuts2->SetQAOn(qaDiff); }
- 
- AliCFTrackIsPrimaryCuts *recIsPrimaryCuts1 = new AliCFTrackIsPrimaryCuts("recIsPrimaryCuts1","rec-level isPrimary cuts");
- recIsPrimaryCuts1->SetMaxNSigmaToVertex(maxnsigmatovertex1);
- if (QA) { recIsPrimaryCuts1->SetQAOn(qaInt); }
- 
- AliCFTrackIsPrimaryCuts *recIsPrimaryCuts2 = new AliCFTrackIsPrimaryCuts("recIsPrimaryCuts2","rec-level isPrimary cuts");
- recIsPrimaryCuts2->SetMaxNSigmaToVertex(maxnsigmatovertex2);
- if (QA) { recIsPrimaryCuts2->SetQAOn(qaDiff); }
- 
- AliCFTrackCutPid* cutPID1 = new AliCFTrackCutPid("cutPID1","ESD_PID") ;
- AliCFTrackCutPid* cutPID2 = new AliCFTrackCutPid("cutPID2","ESD_PID") ;
- int n_species = AliPID::kSPECIES ;
- Double_t* prior = new Double_t[n_species];
- 
- prior[0] = 0.0244519 ;
- prior[1] = 0.0143988 ;
- prior[2] = 0.805747  ;
- prior[3] = 0.0928785 ;
- prior[4] = 0.0625243 ;
-
- cutPID1->SetPriors(prior);
- cutPID1->SetProbabilityCut(0.0);
- cutPID1->SetDetectors("TPC TOF");
- switch(TMath::Abs(PDG1)) {
- case 11   : cutPID1->SetParticleType(AliPID::kElectron, kTRUE); break;
- case 13   : cutPID1->SetParticleType(AliPID::kMuon    , kTRUE); break;
- case 211  : cutPID1->SetParticleType(AliPID::kPion    , kTRUE); break;
- case 321  : cutPID1->SetParticleType(AliPID::kKaon    , kTRUE); break;
- case 2212 : cutPID1->SetParticleType(AliPID::kProton  , kTRUE); break;
- default   : printf("UNDEFINED PID\n"); break;
- }
-
- cutPID2->SetPriors(prior);
- cutPID2->SetProbabilityCut(0.0);
- cutPID2->SetDetectors("TPC TOF");
- switch(TMath::Abs(PDG2)) {
- case 11   : cutPID2->SetParticleType(AliPID::kElectron, kTRUE); break;
- case 13   : cutPID2->SetParticleType(AliPID::kMuon    , kTRUE); break;
- case 211  : cutPID2->SetParticleType(AliPID::kPion    , kTRUE); break;
- case 321  : cutPID2->SetParticleType(AliPID::kKaon    , kTRUE); break;
- case 2212 : cutPID2->SetParticleType(AliPID::kProton  , kTRUE); break;
- default   : printf("UNDEFINED PID\n"); break;
- }
- if (QA) { cutPID1->SetQAOn(qaInt);
-   cutPID2->SetQAOn(qaDiff); }
- 
- printf("CREATE MC KINE CUTS\n");
- TObjArray* mcList1 = new TObjArray(0);
- mcList1->AddLast(mcKineCuts1);
- mcList1->AddLast(mcGenCuts1);
- 
- TObjArray* mcList2 = new TObjArray(0);
- mcList2->AddLast(mcKineCuts2);
- mcList2->AddLast(mcGenCuts2);
-
- printf("CREATE ACCEPTANCE CUTS\n");
- TObjArray* accList1 = new TObjArray(0) ;
- accList1->AddLast(mcAccCuts1);
-
- TObjArray* accList2 = new TObjArray(0) ;
- accList2->AddLast(mcAccCuts2);
-
- printf("CREATE RECONSTRUCTION CUTS\n");
- TObjArray* recList1 = new TObjArray(0) ;
- recList1->AddLast(recKineCuts1);
- recList1->AddLast(recQualityCuts1);
- recList1->AddLast(recIsPrimaryCuts1);
-
- TObjArray* recList2 = new TObjArray(0) ;
- recList2->AddLast(recKineCuts2);
- recList2->AddLast(recQualityCuts2);
- recList2->AddLast(recIsPrimaryCuts2);
-
- printf("CREATE PID CUTS\n");
- TObjArray* fPIDCutList1 = new TObjArray(0) ;
- fPIDCutList1->AddLast(cutPID1);
-
- TObjArray* fPIDCutList2 = new TObjArray(0) ;
- fPIDCutList2->AddLast(cutPID2);
-
- printf("CREATE INTERFACE AND CUTS\n");
- AliCFManager* cfmgr1 = new AliCFManager();
- cfmgr1->SetNStepParticle(4); //05nov08
- cfmgr1->SetParticleCutsList(AliCFManager::kPartGenCuts,mcList1);
- cfmgr1->SetParticleCutsList(AliCFManager::kPartAccCuts,accList1);
- cfmgr1->SetParticleCutsList(AliCFManager::kPartRecCuts,recList1);
- cfmgr1->SetParticleCutsList(AliCFManager::kPartSelCuts,fPIDCutList1);
-
- AliCFManager* cfmgr2 = new AliCFManager();
- cfmgr2->SetNStepParticle(4); //05nov08
- cfmgr2->SetParticleCutsList(AliCFManager::kPartGenCuts,mcList2);
- cfmgr2->SetParticleCutsList(AliCFManager::kPartAccCuts,accList2);
- cfmgr2->SetParticleCutsList(AliCFManager::kPartRecCuts,recList2);
- cfmgr2->SetParticleCutsList(AliCFManager::kPartSelCuts,fPIDCutList2);
-
- if (method == "LYZ2"){  
-   // read the input file from the first run 
-   TString inputFileName = "outputLYZ1analysis" ;
-   inputFileName += type;
-   inputFileName += "_firstrun.root";
-   cout<<"The input file is "<<inputFileName.Data()<<endl;
-   TFile* fInputFile = new TFile(inputFileName.Data(),"READ");
-   if(!fInputFile || fInputFile->IsZombie()) { 
-     cerr << " ERROR: NO First Run file... " << endl ; }
-   else {
-     TList* fInputList = (TList*)fInputFile->Get("cobj1");
-     if (!fInputList) {cout<<"list is NULL pointer!"<<endl;}
-   }
-   cout<<"input file/list read..."<<endl;
- }
-
- if (method == "LYZEP") {
-   // read the input file from the second LYZ run
-   TString inputFileName = "outputLYZ2analysis" ;
-   inputFileName += type;
-   inputFileName += "_secondrun.root";
-   cout<<"The input file is "<<inputFileName.Data()<<endl;
-   TFile* fInputFile = new TFile(inputFileName.Data(),"READ");
-   if(!fInputFile || fInputFile->IsZombie()) { 
-     cerr << " ERROR: NO First Run file... " << endl ; }
-   else {
-     TList* fInputList = (TList*)fInputFile->Get("cobj1");
-     if (!fInputList) {cout<<"list is NULL pointer!"<<endl;}
-   }
-   cout<<"input file/list read..."<<endl;
- }
-    
- //____________________________________________//
- // Make the analysis manager
- AliAnalysisManager *mgr = new AliAnalysisManager("TestManager");
-
- if (type == "ESD"){
-   AliVEventHandler* esdH = new AliESDInputHandler;
-   mgr->SetInputEventHandler(esdH);
-   if (method == "MCEP") {
-     AliMCEventHandler *mc = new AliMCEventHandler();
-     mgr->SetMCtruthEventHandler(mc);}  }
-
- if (type == "AOD"){
-   AliVEventHandler* aodH = new AliAODInputHandler;
-   mgr->SetInputEventHandler(aodH); 
-   if (method == "MCEP") {
-     AliMCEventHandler *mc = new AliMCEventHandler();
-     mgr->SetMCtruthEventHandler(mc);}  }
-
- if (type == "MC" || type == "ESDMC0" || type == "ESDMC1"){
-   AliVEventHandler* esdH = new AliESDInputHandler;
-   mgr->SetInputEventHandler(esdH);
-
-   AliMCEventHandler *mc = new AliMCEventHandler();
-   mgr->SetMCtruthEventHandler(mc); }
-
- //____________________________________________//
- // tasks
- if (method == "SP"){
-   if (QA) { AliAnalysisTaskScalarProduct *taskSP = new AliAnalysisTaskScalarProduct("TaskScalarProduct",kTRUE); }
-   else { AliAnalysisTaskScalarProduct *taskSP = new AliAnalysisTaskScalarProduct("TaskScalarProduct",kFALSE); }
-   taskSP->SetAnalysisType(type);
-   taskSP->SetCFManager1(cfmgr1);
-   taskSP->SetCFManager2(cfmgr2);
-   if (QA) { 
-     taskSP->SetQAList1(qaInt);
-     taskSP->SetQAList2(qaDiff); }
-   mgr->AddTask(taskSP);
+  //Set TList for the QA histograms
+  if (QA) {
+    if (SP){
+      TList* qaIntSP = new TList();
+      TList* qaDiffSP = new TList(); }
+    if (LYZ1) {
+      TList* qaIntLYZ1 = new TList();
+      TList* qaDiffLYZ1 = new TList(); }
+    if (LYZ2) {
+      TList* qaIntLYZ2 = new TList();
+      TList* qaDiffLYZ2 = new TList(); }
+    if (LYZEP) {
+      TList* qaIntLYZEP = new TList();
+      TList* qaDiffLYZEP = new TList(); }
+    if (GFC) {
+      TList* qaIntGFC = new TList();
+      TList* qaDiffGFC = new TList(); }
+    if (MCEP) {
+      TList* qaIntMCEP = new TList();
+      TList* qaDiffMCEP = new TList(); }
   }
-  else if (method == "LYZ1"){
+  
+  //############# cuts on MC
+  AliCFTrackKineCuts* mcKineCuts1 = new AliCFTrackKineCuts("mcKineCuts1","MC-level kinematic cuts");
+  mcKineCuts1->SetPtRange(ptmin1,ptmax1);
+  mcKineCuts1->SetRapidityRange(ymin1,ymax1);
+  mcKineCuts1->SetChargeMC(charge1);
+  if (QA) { 
+    if (SP)   { mcKineCuts1->SetQAOn(qaIntSP); }
+    if (LYZ1) { mcKineCuts1->SetQAOn(qaIntLYZ1); }
+    if (LYZ2) { mcKineCuts1->SetQAOn(qaIntLYZ2); }
+    if (LYZEP){ mcKineCuts1->SetQAOn(qaIntLYZEP); }
+    if (GFC)  { mcKineCuts1->SetQAOn(qaIntGFC); }
+    if (MCEP) { mcKineCuts1->SetQAOn(qaIntMCEP); }
+  }
+  
+  AliCFTrackKineCuts* mcKineCuts2 = new AliCFTrackKineCuts("mcKineCuts2","MC-level kinematic cuts");
+  mcKineCuts2->SetPtRange(ptmin2,ptmax2);
+  mcKineCuts2->SetRapidityRange(ymin2,ymax2);
+  mcKineCuts2->SetChargeMC(charge2);
+  if (QA) { 
+    if (SP)   { mcKineCuts2->SetQAOn(qaDiffSP); }
+    if (LYZ1) { mcKineCuts2->SetQAOn(qaDiffLYZ1); }
+    if (LYZ2) { mcKineCuts2->SetQAOn(qaDiffLYZ2); }
+    if (LYZEP){ mcKineCuts2->SetQAOn(qaDiffLYZEP); }
+    if (GFC)  { mcKineCuts2->SetQAOn(qaDiffGFC); }
+    if (MCEP) { mcKineCuts2->SetQAOn(qaDiffMCEP); }
+  }
+  
+  AliCFParticleGenCuts* mcGenCuts1 = new AliCFParticleGenCuts("mcGenCuts1","MC particle generation cuts");
+  mcGenCuts1->SetRequireIsPrimary();
+  mcGenCuts1->SetRequirePdgCode(PDG1);
+  if (QA) { 
+    if (SP)   { mcGenCuts1->SetQAOn(qaIntSP); }
+    if (LYZ1) { mcGenCuts1->SetQAOn(qaIntLYZ1); }
+    if (LYZ2) { mcGenCuts1->SetQAOn(qaIntLYZ2); }
+    if (LYZEP){ mcGenCuts1->SetQAOn(qaIntLYZEP); }
+    if (GFC)  { mcGenCuts1->SetQAOn(qaIntGFC); }
+    if (MCEP) { mcGenCuts1->SetQAOn(qaIntMCEP); }
+  }
+  
+  AliCFParticleGenCuts* mcGenCuts2 = new AliCFParticleGenCuts("mcGenCuts2","MC particle generation cuts");
+  mcGenCuts2->SetRequireIsPrimary();
+  mcGenCuts2->SetRequirePdgCode(PDG2);
+  if (QA) { 
+    if (SP)   { mcGenCuts2->SetQAOn(qaDiffSP); }
+    if (LYZ1) { mcGenCuts2->SetQAOn(qaDiffLYZ1); }
+    if (LYZ2) { mcGenCuts2->SetQAOn(qaDiffLYZ2); }
+    if (LYZEP){ mcGenCuts2->SetQAOn(qaDiffLYZEP); }
+    if (GFC)  { mcGenCuts2->SetQAOn(qaDiffGFC); }
+    if (MCEP) { mcGenCuts2->SetQAOn(qaDiffMCEP); }
+  }
+  
+  //############# Acceptance Cuts  
+  AliCFAcceptanceCuts *mcAccCuts1 = new AliCFAcceptanceCuts("mcAccCuts1","MC acceptance cuts");
+  mcAccCuts1->SetMinNHitITS(mintrackrefsITS1);
+  mcAccCuts1->SetMinNHitTPC(mintrackrefsTPC1);
+  if (QA) { 
+    if (SP)   { mcAccCuts1->SetQAOn(qaIntSP); }
+    if (LYZ1) { mcAccCuts1->SetQAOn(qaIntLYZ1); }
+    if (LYZ2) { mcAccCuts1->SetQAOn(qaIntLYZ2); }
+    if (LYZEP){ mcAccCuts1->SetQAOn(qaIntLYZEP); }
+    if (GFC)  { mcAccCuts1->SetQAOn(qaIntGFC); }
+    if (MCEP) { mcAccCuts1->SetQAOn(qaIntMCEP); }
+  }
+  
+  AliCFAcceptanceCuts *mcAccCuts2 = new AliCFAcceptanceCuts("mcAccCuts2","MC acceptance cuts");
+  mcAccCuts2->SetMinNHitITS(mintrackrefsITS2);
+  mcAccCuts2->SetMinNHitTPC(mintrackrefsTPC2);
+  if (QA) { 
+    if (SP)   { mcAccCuts2->SetQAOn(qaDiffSP); }
+    if (LYZ1) { mcAccCuts2->SetQAOn(qaDiffLYZ1); }
+    if (LYZ2) { mcAccCuts2->SetQAOn(qaDiffLYZ2); }
+    if (LYZEP){ mcAccCuts2->SetQAOn(qaDiffLYZEP); }
+    if (GFC)  { mcAccCuts2->SetQAOn(qaDiffGFC); }
+    if (MCEP) { mcAccCuts2->SetQAOn(qaDiffMCEP); }
+  }
+  
+  //############# Rec-Level kinematic cuts
+  AliCFTrackKineCuts *recKineCuts1 = new AliCFTrackKineCuts("recKineCuts1","rec-level kine cuts");
+  recKineCuts1->SetPtRange(ptmin1,ptmax1);
+  recKineCuts1->SetRapidityRange(ymin1,ymax1);
+  recKineCuts1->SetChargeRec(charge1);
+  if (QA) { 
+    if (SP)   { recKineCuts1->SetQAOn(qaIntSP); }
+    if (LYZ1) { recKineCuts1->SetQAOn(qaIntLYZ1); }
+    if (LYZ2) { recKineCuts1->SetQAOn(qaIntLYZ2); }
+    if (LYZEP){ recKineCuts1->SetQAOn(qaIntLYZEP); }
+    if (GFC)  { recKineCuts1->SetQAOn(qaIntGFC); }
+    if (MCEP) { recKineCuts1->SetQAOn(qaIntMCEP); }
+  }
+  
+  AliCFTrackKineCuts *recKineCuts2 = new AliCFTrackKineCuts("recKineCuts2","rec-level kine cuts");
+  recKineCuts2->SetPtRange(ptmin2,ptmax2);
+  recKineCuts2->SetRapidityRange(ymin2,ymax2);
+  recKineCuts2->SetChargeRec(charge2);
+  if (QA) { 
+    if (SP)   { recKineCuts2->SetQAOn(qaDiffSP); }
+    if (LYZ1) { recKineCuts2->SetQAOn(qaDiffLYZ1); }
+    if (LYZ2) { recKineCuts2->SetQAOn(qaDiffLYZ2); }
+    if (LYZEP){ recKineCuts2->SetQAOn(qaDiffLYZEP); }
+    if (GFC)  { recKineCuts2->SetQAOn(qaDiffGFC); }
+    if (MCEP) { recKineCuts2->SetQAOn(qaDiffMCEP); }
+  }
+  
+  AliCFTrackQualityCuts *recQualityCuts1 = new AliCFTrackQualityCuts("recQualityCuts1","rec-level quality cuts");
+  recQualityCuts1->SetMinNClusterTPC(minclustersTPC1);
+  recQualityCuts1->SetStatus(AliESDtrack::kITSrefit);
+  if (QA) { 
+    if (SP)   { recQualityCuts1->SetQAOn(qaIntSP); }
+    if (LYZ1) { recQualityCuts1->SetQAOn(qaIntLYZ1); }
+    if (LYZ2) { recQualityCuts1->SetQAOn(qaIntLYZ2); }
+    if (LYZEP){ recQualityCuts1->SetQAOn(qaIntLYZEP); }
+    if (GFC)  { recQualityCuts1->SetQAOn(qaIntGFC); }
+    if (MCEP) { recQualityCuts1->SetQAOn(qaIntMCEP); }
+  }
+  
+  AliCFTrackQualityCuts *recQualityCuts2 = new AliCFTrackQualityCuts("recQualityCuts2","rec-level quality cuts");
+  recQualityCuts2->SetMinNClusterTPC(minclustersTPC2);
+  recQualityCuts2->SetStatus(AliESDtrack::kITSrefit);
+  if (QA) { 
+    if (SP)   { recQualityCuts2->SetQAOn(qaDiffSP); }
+    if (LYZ1) { recQualityCuts2->SetQAOn(qaDiffLYZ1); }
+    if (LYZ2) { recQualityCuts2->SetQAOn(qaDiffLYZ2); }
+    if (LYZEP){ recQualityCuts2->SetQAOn(qaDiffLYZEP); }
+    if (GFC)  { recQualityCuts2->SetQAOn(qaDiffGFC); }
+    if (MCEP) { recQualityCuts2->SetQAOn(qaDiffMCEP); }
+  }
+ 
+  AliCFTrackIsPrimaryCuts *recIsPrimaryCuts1 = new AliCFTrackIsPrimaryCuts("recIsPrimaryCuts1","rec-level isPrimary cuts");
+  recIsPrimaryCuts1->SetMaxNSigmaToVertex(maxnsigmatovertex1);
+  if (QA) { 
+    if (SP)   { recIsPrimaryCuts1->SetQAOn(qaIntSP); }
+    if (LYZ1) { recIsPrimaryCuts1->SetQAOn(qaIntLYZ1); }
+    if (LYZ2) { recIsPrimaryCuts1->SetQAOn(qaIntLYZ2); }
+    if (LYZEP){ recIsPrimaryCuts1->SetQAOn(qaIntLYZEP); }
+    if (GFC)  { recIsPrimaryCuts1->SetQAOn(qaIntGFC); }
+    if (MCEP) { recIsPrimaryCuts1->SetQAOn(qaIntMCEP); }
+  }
+  
+  AliCFTrackIsPrimaryCuts *recIsPrimaryCuts2 = new AliCFTrackIsPrimaryCuts("recIsPrimaryCuts2","rec-level isPrimary cuts");
+  recIsPrimaryCuts2->SetMaxNSigmaToVertex(maxnsigmatovertex2);
+  if (QA) { 
+    if (SP)   { recIsPrimaryCuts2->SetQAOn(qaDiffSP); }
+    if (LYZ1) { recIsPrimaryCuts2->SetQAOn(qaDiffLYZ1); }
+    if (LYZ2) { recIsPrimaryCuts2->SetQAOn(qaDiffLYZ2); }
+    if (LYZEP){ recIsPrimaryCuts2->SetQAOn(qaDiffLYZEP); }
+    if (GFC)  { recIsPrimaryCuts2->SetQAOn(qaDiffGFC); }
+    if (MCEP) { recIsPrimaryCuts2->SetQAOn(qaDiffMCEP); }
+  }
+ 
+  AliCFTrackCutPid* cutPID1 = new AliCFTrackCutPid("cutPID1","ESD_PID") ;
+  AliCFTrackCutPid* cutPID2 = new AliCFTrackCutPid("cutPID2","ESD_PID") ;
+  int n_species = AliPID::kSPECIES ;
+  Double_t* prior = new Double_t[n_species];
+  
+  prior[0] = 0.0244519 ;
+  prior[1] = 0.0143988 ;
+  prior[2] = 0.805747  ;
+  prior[3] = 0.0928785 ;
+  prior[4] = 0.0625243 ;
+  
+  cutPID1->SetPriors(prior);
+  cutPID1->SetProbabilityCut(0.0);
+  cutPID1->SetDetectors("TPC TOF");
+  switch(TMath::Abs(PDG1)) {
+  case 11   : cutPID1->SetParticleType(AliPID::kElectron, kTRUE); break;
+  case 13   : cutPID1->SetParticleType(AliPID::kMuon    , kTRUE); break;
+  case 211  : cutPID1->SetParticleType(AliPID::kPion    , kTRUE); break;
+  case 321  : cutPID1->SetParticleType(AliPID::kKaon    , kTRUE); break;
+  case 2212 : cutPID1->SetParticleType(AliPID::kProton  , kTRUE); break;
+  default   : printf("UNDEFINED PID\n"); break;
+  }
+  
+  cutPID2->SetPriors(prior);
+  cutPID2->SetProbabilityCut(0.0);
+  cutPID2->SetDetectors("TPC TOF");
+  switch(TMath::Abs(PDG2)) {
+  case 11   : cutPID2->SetParticleType(AliPID::kElectron, kTRUE); break;
+  case 13   : cutPID2->SetParticleType(AliPID::kMuon    , kTRUE); break;
+  case 211  : cutPID2->SetParticleType(AliPID::kPion    , kTRUE); break;
+  case 321  : cutPID2->SetParticleType(AliPID::kKaon    , kTRUE); break;
+  case 2212 : cutPID2->SetParticleType(AliPID::kProton  , kTRUE); break;
+  default   : printf("UNDEFINED PID\n"); break;
+  }
+  
+  if (QA) { 
+    if (SP)   { 
+      cutPID1->SetQAOn(qaIntSP); 
+      cutPID2->SetQAOn(qaDiffSP); }
+    if (LYZ1) { 
+      cutPID1->SetQAOn(qaIntLYZ1); 
+      cutPID2->SetQAOn(qaDiffLYZ1); }
+    if (LYZ2) { 
+      cutPID1->SetQAOn(qaIntLYZ2); 
+      cutPID2->SetQAOn(qaDiffLYZ2); }
+    if (LYZEP){ 
+      cutPID1->SetQAOn(qaIntLYZEP); 
+      cutPID2->SetQAOn(qaDiffLYZEP); }
+    if (GFC)  { 
+      cutPID1->SetQAOn(qaIntGFC); 
+      cutPID2->SetQAOn(qaDiffGFC); }
+    if (MCEP) { 
+      cutPID1->SetQAOn(qaIntMCEP); 
+      cutPID2->SetQAOn(qaDiffMCEP); }
+  }
+  
+  printf("CREATE MC KINE CUTS\n");
+  TObjArray* mcList1 = new TObjArray(0);
+  mcList1->AddLast(mcKineCuts1);
+  mcList1->AddLast(mcGenCuts1);
+  
+  TObjArray* mcList2 = new TObjArray(0);
+  mcList2->AddLast(mcKineCuts2);
+  mcList2->AddLast(mcGenCuts2);
+  
+  printf("CREATE ACCEPTANCE CUTS\n");
+  TObjArray* accList1 = new TObjArray(0) ;
+  accList1->AddLast(mcAccCuts1);
+  
+  TObjArray* accList2 = new TObjArray(0) ;
+  accList2->AddLast(mcAccCuts2);
+  
+  printf("CREATE RECONSTRUCTION CUTS\n");
+  TObjArray* recList1 = new TObjArray(0) ;
+  recList1->AddLast(recKineCuts1);
+  recList1->AddLast(recQualityCuts1);
+  recList1->AddLast(recIsPrimaryCuts1);
+  
+  TObjArray* recList2 = new TObjArray(0) ;
+  recList2->AddLast(recKineCuts2);
+  recList2->AddLast(recQualityCuts2);
+  recList2->AddLast(recIsPrimaryCuts2);
+  
+  printf("CREATE PID CUTS\n");
+  TObjArray* fPIDCutList1 = new TObjArray(0) ;
+  fPIDCutList1->AddLast(cutPID1);
+  
+  TObjArray* fPIDCutList2 = new TObjArray(0) ;
+  fPIDCutList2->AddLast(cutPID2);
+  
+  printf("CREATE INTERFACE AND CUTS\n");
+  AliCFManager* cfmgr1 = new AliCFManager();
+  cfmgr1->SetNStepParticle(4); //05nov08
+  cfmgr1->SetParticleCutsList(AliCFManager::kPartGenCuts,mcList1);
+  cfmgr1->SetParticleCutsList(AliCFManager::kPartAccCuts,accList1);
+  cfmgr1->SetParticleCutsList(AliCFManager::kPartRecCuts,recList1);
+  cfmgr1->SetParticleCutsList(AliCFManager::kPartSelCuts,fPIDCutList1);
+  
+  AliCFManager* cfmgr2 = new AliCFManager();
+  cfmgr2->SetNStepParticle(4); //05nov08
+  cfmgr2->SetParticleCutsList(AliCFManager::kPartGenCuts,mcList2);
+  cfmgr2->SetParticleCutsList(AliCFManager::kPartAccCuts,accList2);
+  cfmgr2->SetParticleCutsList(AliCFManager::kPartRecCuts,recList2);
+  cfmgr2->SetParticleCutsList(AliCFManager::kPartSelCuts,fPIDCutList2);
+  
+  if (LYZ2){  
+    // read the input file from the first run 
+    TString inputFileNameLYZ2 = "outputLYZ1analysis" ;
+    inputFileNameLYZ2 += type;
+    inputFileNameLYZ2 += "_firstrun.root";
+    cout<<"The input file is "<<inputFileNameLYZ2.Data()<<endl;
+    TFile* fInputFileLYZ2 = new TFile(inputFileNameLYZ2.Data(),"READ");
+    if(!fInputFileLYZ2 || fInputFileLYZ2->IsZombie()) { 
+      cerr << " ERROR: NO First Run file... " << endl ; }
+    else {
+      TList* fInputListLYZ2 = (TList*)fInputFileLYZ2->Get("cobjLYZ1");
+      if (!fInputListLYZ2) {cout<<"list is NULL pointer!"<<endl;}
+    }
+    cout<<"LYZ2 input file/list read..."<<endl;
+  }
+  
+  if (LYZEP) {
+    // read the input file from the second LYZ run
+    TString inputFileNameLYZEP = "outputLYZ2analysis" ;
+    inputFileNameLYZEP += type;
+    inputFileNameLYZEP += "_secondrun.root";
+    cout<<"The input file is "<<inputFileNameLYZEP.Data()<<endl;
+    TFile* fInputFileLYZEP = new TFile(inputFileNameLYZEP.Data(),"READ");
+    if(!fInputFileLYZEP || fInputFileLYZEP->IsZombie()) { 
+      cerr << " ERROR: NO First Run file... " << endl ; }
+    else {
+      TList* fInputListLYZEP = (TList*)fInputFileLYZEP->Get("cobjLYZ2");
+      if (!fInputListLYZEP) {cout<<"list is NULL pointer!"<<endl;}
+    }
+    cout<<"LYZEP input file/list read..."<<endl;
+  }
+  
+  //____________________________________________//
+  // Make the analysis manager
+  AliAnalysisManager *mgr = new AliAnalysisManager("TestManager");
+  
+  if (type == "ESD"){
+    AliVEventHandler* esdH = new AliESDInputHandler;
+    mgr->SetInputEventHandler(esdH);
+    if (MCEP) {
+      AliMCEventHandler *mc = new AliMCEventHandler();
+      mgr->SetMCtruthEventHandler(mc);}  }
+  
+  if (type == "AOD"){
+    AliVEventHandler* aodH = new AliAODInputHandler;
+    mgr->SetInputEventHandler(aodH); 
+    if (MCEP) {
+      AliMCEventHandler *mc = new AliMCEventHandler();
+      mgr->SetMCtruthEventHandler(mc);}  }
+  
+  if (type == "MC" || type == "ESDMC0" || type == "ESDMC1"){
+    AliVEventHandler* esdH = new AliESDInputHandler;
+    mgr->SetInputEventHandler(esdH);
+    
+    AliMCEventHandler *mc = new AliMCEventHandler();
+    mgr->SetMCtruthEventHandler(mc); }
+  
+  //____________________________________________//
+  // tasks
+  if (SP){
+    if (QA) { AliAnalysisTaskScalarProduct *taskSP = new AliAnalysisTaskScalarProduct("TaskScalarProduct",kTRUE); }
+    else { AliAnalysisTaskScalarProduct *taskSP = new AliAnalysisTaskScalarProduct("TaskScalarProduct",kFALSE); }
+    taskSP->SetAnalysisType(type);
+    taskSP->SetCFManager1(cfmgr1);
+    taskSP->SetCFManager2(cfmgr2);
+    if (QA) { 
+      taskSP->SetQAList1(qaIntSP);
+      taskSP->SetQAList2(qaDiffSP); }
+    mgr->AddTask(taskSP);
+  }
+  if (LYZ1){
     if (QA) { AliAnalysisTaskLeeYangZeros *taskLYZ1 = new AliAnalysisTaskLeeYangZeros("TaskLeeYangZeros",kTRUE,kTRUE);}
     else { AliAnalysisTaskLeeYangZeros *taskLYZ1 = new AliAnalysisTaskLeeYangZeros("TaskLeeYangZeros",kTRUE,kFALSE);}
     taskLYZ1->SetAnalysisType(type);
@@ -350,11 +470,11 @@ void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_midcentral_ESD",
     taskLYZ1->SetCFManager1(cfmgr1);
     taskLYZ1->SetCFManager2(cfmgr2);
     if (QA) { 
-      taskLYZ1->SetQAList1(qaInt);
-      taskLYZ1->SetQAList2(qaDiff);}
+      taskLYZ1->SetQAList1(qaIntLYZ1);
+      taskLYZ1->SetQAList2(qaDiffLYZ1);}
     mgr->AddTask(taskLYZ1);
   }
-  else if (method == "LYZ2"){
+  if (LYZ2){
     if (QA) { AliAnalysisTaskLeeYangZeros *taskLYZ2 = new AliAnalysisTaskLeeYangZeros("TaskLeeYangZeros",kFALSE,kTRUE);}
     else { AliAnalysisTaskLeeYangZeros *taskLYZ2 = new AliAnalysisTaskLeeYangZeros("TaskLeeYangZeros",kFALSE,kFALSE); }
     taskLYZ2->SetAnalysisType(type);
@@ -363,131 +483,228 @@ void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_midcentral_ESD",
     taskLYZ2->SetCFManager1(cfmgr1);
     taskLYZ2->SetCFManager2(cfmgr2);
     if (QA) { 
-      taskLYZ2->SetQAList1(qaInt);
-      taskLYZ2->SetQAList2(qaDiff); }
+      taskLYZ2->SetQAList1(qaIntLYZ2);
+      taskLYZ2->SetQAList2(qaDiffLYZ2); }
     mgr->AddTask(taskLYZ2);
   }
-  else if (method == "LYZEP"){
+  if (LYZEP){
     if (QA) { AliAnalysisTaskLYZEventPlane *taskLYZEP = new AliAnalysisTaskLYZEventPlane("TaskLYZEventPlane",kTRUE); }
     else { AliAnalysisTaskLYZEventPlane *taskLYZEP = new AliAnalysisTaskLYZEventPlane("TaskLYZEventPlane",kFALSE); }
     taskLYZEP->SetAnalysisType(type);
     taskLYZEP->SetCFManager1(cfmgr1);
     taskLYZEP->SetCFManager2(cfmgr2);
     if (QA) { 
-      taskLYZEP->SetQAList1(qaInt);
-      taskLYZEP->SetQAList2(qaDiff); }
+      taskLYZEP->SetQAList1(qaIntLYZEP);
+      taskLYZEP->SetQAList2(qaDiffLYZEP); }
     mgr->AddTask(taskLYZEP);
   }
-  else if (method == "CUM"){
-    if (QA) { AliAnalysisTaskCumulants *taskCUM = new AliAnalysisTaskCumulants("TaskCumulants",kTRUE);}
-    else { AliAnalysisTaskCumulants *taskCUM = new AliAnalysisTaskCumulants("TaskCumulants",kFALSE);}
-    taskCUM->SetAnalysisType(type);
-    taskCUM->SetCFManager1(cfmgr1);
-    taskCUM->SetCFManager2(cfmgr2);
+  if (GFC){
+    if (QA) { AliAnalysisTaskCumulants *taskGFC = new AliAnalysisTaskCumulants("TaskCumulants",kTRUE);}
+    else { AliAnalysisTaskCumulants *taskGFC = new AliAnalysisTaskCumulants("TaskCumulants",kFALSE);}
+    taskGFC->SetAnalysisType(type);
+    taskGFC->SetCFManager1(cfmgr1);
+    taskGFC->SetCFManager2(cfmgr2);
     if (QA) { 
-      taskCUM->SetQAList1(qaInt);
-      taskCUM->SetQAList2(qaDiff); }
-    mgr->AddTask(taskCUM);
+      taskGFC->SetQAList1(qaIntGFC);
+      taskGFC->SetQAList2(qaDiffGFC); }
+    mgr->AddTask(taskGFC);
   }
-  else if (method == "MCEP"){
+  if (MCEP){
     if (QA) { AliAnalysisTaskMCEventPlane *taskMCEP = new AliAnalysisTaskMCEventPlane("TaskMCEventPlane",kTRUE);}
     else { AliAnalysisTaskMCEventPlane *taskMCEP = new AliAnalysisTaskMCEventPlane("TaskMCEventPlane",kFALSE);}
     taskMCEP->SetAnalysisType(type);
     taskMCEP->SetCFManager1(cfmgr1);
     taskMCEP->SetCFManager2(cfmgr2);
     if (QA) { 
-      taskMCEP->SetQAList1(qaInt);
-      taskMCEP->SetQAList2(qaDiff); }
+      taskMCEP->SetQAList1(qaIntMCEP);
+      taskMCEP->SetQAList2(qaDiffMCEP); }
     mgr->AddTask(taskMCEP);
   }
-
-
- // Create containers for input/output
- AliAnalysisDataContainer *cinput1 = 
-    mgr->CreateContainer("cchain1",TChain::Class(),AliAnalysisManager::kInputContainer);
-
-  if (method == "LYZ2" || method == "LYZEP"){ 
-    AliAnalysisDataContainer *cinput2 = 
-		    mgr->CreateContainer("cobj2",TList::Class(),AliAnalysisManager::kInputContainer); } 
-
-
-  TString outputName = "output";
-  outputName+= method;
-  outputName+= "analysis";
-  outputName+= type;
-  if (method == "LYZ1") outputName+= "_firstrun";
-  if (method == "LYZ2") outputName+= "_secondrun";
-  outputName+= ".root";
-  AliAnalysisDataContainer *coutput1 = 
-    mgr->CreateContainer("cobj1", TList::Class(),AliAnalysisManager::kOutputContainer,outputName);
-
-  if (QA) { 
-    TString qaNameInt = "QAforInt_";
-    qaNameInt += method;
-    qaNameInt += "_";
-    qaNameInt += type;
-    qaNameInt += ".root";
-    AliAnalysisDataContainer *coutput2 = 
-      mgr->CreateContainer("QAint", TList::Class(),AliAnalysisManager::kOutputContainer,qaNameInt);
-
-    TString qaNameDiff = "QAforDiff_";
-    qaNameDiff += method;
-    qaNameDiff += "_";
-    qaNameDiff += type;
-    qaNameDiff += ".root";
-    AliAnalysisDataContainer *coutput3 = 
-      mgr->CreateContainer("QAdiff", TList::Class(),AliAnalysisManager::kOutputContainer,qaNameDiff);
-  }
- 
- //____________________________________________//
   
-  if (method == "SP")   { 
-    mgr->ConnectInput(taskSP,0,cinput1); 
-    mgr->ConnectOutput(taskSP,0,coutput1);
-    if (QA) { mgr->ConnectOutput(taskSP,1,coutput2);
-    mgr->ConnectOutput(taskSP,2,coutput3); }
-  } 
-  else if (method == "LYZ1") { 
-    mgr->ConnectInput(taskLYZ1,0,cinput1); 
-    mgr->ConnectOutput(taskLYZ1,0,coutput1);
-    if (QA) { mgr->ConnectOutput(taskLYZ1,1,coutput2);
-    mgr->ConnectOutput(taskLYZ1,2,coutput3); }
-  }  
-  else if (method == "LYZ2") { 
-    mgr->ConnectInput(taskLYZ2,0,cinput1); 
-    mgr->ConnectInput(taskLYZ2,1,cinput2);
-    mgr->ConnectOutput(taskLYZ2,0,coutput1);
-    if (QA) { mgr->ConnectOutput(taskLYZ2,1,coutput2);
-    mgr->ConnectOutput(taskLYZ2,2,coutput3); }
-    cinput2->SetData(fInputList);
-  }  
-  else if (method == "LYZEP") { 
-    mgr->ConnectInput(taskLYZEP,0,cinput1); 
-    mgr->ConnectInput(taskLYZEP,1,cinput2);
-    mgr->ConnectOutput(taskLYZEP,0,coutput1);
-    if (QA) { mgr->ConnectOutput(taskLYZEP,1,coutput2);
-    mgr->ConnectOutput(taskLYZEP,2,coutput3); }
-    cinput2->SetData(fInputList);
+  
+  // Create containers for input/output
+  AliAnalysisDataContainer *cinput1 = 
+    mgr->CreateContainer("cchain1",TChain::Class(),AliAnalysisManager::kInputContainer);
+  
+  if (LYZ2){ 
+    AliAnalysisDataContainer *cinputLYZ2 = mgr->CreateContainer("cobjLYZ2in",TList::Class(),AliAnalysisManager::kInputContainer); } 
+  if (LYZEP){ 
+    AliAnalysisDataContainer *cinputLYZEP = mgr->CreateContainer("cobjLYZEPin",TList::Class(),AliAnalysisManager::kInputContainer); } 
+  
+  if(SP) {
+    TString outputSP = "outputSPanalysis";
+    outputSP+= type;
+    outputSP+= ".root";
+    AliAnalysisDataContainer *coutputSP = mgr->CreateContainer("cobjSP", TList::Class(),AliAnalysisManager::kOutputContainer,outputSP);
   }
-  else if (method == "CUM")   { 
-    mgr->ConnectInput(taskCUM,0,cinput1); 
-    mgr->ConnectOutput(taskCUM,0,coutput1);
-    if (QA) { mgr->ConnectOutput(taskCUM,1,coutput2);
-    mgr->ConnectOutput(taskCUM,2,coutput3); }
-  } 
-  else if (method == "MCEP")  { 
-    mgr->ConnectInput(taskMCEP,0,cinput1); 
-    mgr->ConnectOutput(taskMCEP,0,coutput1);
-    if (QA) { mgr->ConnectOutput(taskMCEP,1,coutput2);
-    mgr->ConnectOutput(taskMCEP,2,coutput3); }
+  
+  if(LYZ1) {
+    TString outputLYZ1 = "outputLYZ1analysis";
+    outputLYZ1+= type;
+    outputLYZ1+= "_firstrun.root";
+    AliAnalysisDataContainer *coutputLYZ1 = mgr->CreateContainer("cobjLYZ1", TList::Class(),AliAnalysisManager::kOutputContainer,outputLYZ1);
+  }
+  
+  if(LYZ2) {
+    TString outputLYZ2 = "outputLYZ2analysis";
+    outputLYZ2+= type;
+    outputLYZ2+= "_secondrun.root";
+    AliAnalysisDataContainer *coutputLYZ2 = mgr->CreateContainer("cobjLYZ2", TList::Class(),AliAnalysisManager::kOutputContainer,outputLYZ2);
+  }
+  
+  if(LYZEP) {
+    TString outputLYZEP = "outputLYZEPanalysis";
+    outputLYZEP+= type;
+    outputLYZEP+= ".root";
+    AliAnalysisDataContainer *coutputLYZEP = mgr->CreateContainer("cobjLYZEP", TList::Class(),AliAnalysisManager::kOutputContainer,outputLYZEP);
+  }
+  
+  if(GFC) {
+    TString outputGFC = "outputGFCanalysis";
+    outputGFC+= type;
+    outputGFC+= ".root";
+    AliAnalysisDataContainer *coutputGFC = mgr->CreateContainer("cobjGFC", TList::Class(),AliAnalysisManager::kOutputContainer,outputGFC);
+  }
+  
+  if(MCEP) {
+    TString outputMCEP = "outputMCEPanalysis";
+    outputMCEP+= type;
+    outputMCEP+= ".root";
+    AliAnalysisDataContainer *coutputMCEP = mgr->CreateContainer("cobjMCEP", TList::Class(),AliAnalysisManager::kOutputContainer,outputMCEP);
+  }
+  
+  
+  if (QA) { 
+    if(SP) {
+      TString qaNameIntSP = "QAforInt_SP_";
+      qaNameIntSP += type;
+      qaNameIntSP += ".root";
+      AliAnalysisDataContainer *coutputQA1SP = 
+	mgr->CreateContainer("QAintSP", TList::Class(),AliAnalysisManager::kOutputContainer,qaNameIntSP);
+      
+      TString qaNameDiffSP = "QAforDiff_SP_";
+      qaNameDiffSP += type;
+      qaNameDiffSP += ".root";
+      AliAnalysisDataContainer *coutputQA2SP = 
+	mgr->CreateContainer("QAdiffSP", TList::Class(),AliAnalysisManager::kOutputContainer,qaNameDiffSP);
+    }
+    if(LYZ1) {
+      TString qaNameIntLYZ1 = "QAforInt_LYZ1_";
+      qaNameIntLYZ1 += type;
+      qaNameIntLYZ1 += ".root";
+      AliAnalysisDataContainer *coutputQA1LYZ1 = 
+	mgr->CreateContainer("QAintLYZ1", TList::Class(),AliAnalysisManager::kOutputContainer,qaNameIntLYZ1);
+      
+      TString qaNameDiffLYZ1 = "QAforDiff_LYZ1_";
+      qaNameDiffLYZ1 += type;
+      qaNameDiffLYZ1 += ".root";
+      AliAnalysisDataContainer *coutputQA2LYZ1 = 
+	mgr->CreateContainer("QAdiffLYZ1", TList::Class(),AliAnalysisManager::kOutputContainer,qaNameDiffLYZ1);
+    } 
+    if(LYZ2) {
+      TString qaNameIntLYZ2 = "QAforInt_LYZ2_";
+      qaNameIntLYZ2 += type;
+      qaNameIntLYZ2 += ".root";
+      AliAnalysisDataContainer *coutputQA1LYZ2 = 
+	mgr->CreateContainer("QAintLYZ2", TList::Class(),AliAnalysisManager::kOutputContainer,qaNameIntLYZ2);
+      
+      TString qaNameDiffLYZ2 = "QAforDiff_LYZ2_";
+      qaNameDiffLYZ2 += type;
+      qaNameDiffLYZ2 += ".root";
+      AliAnalysisDataContainer *coutputQA2LYZ2 = 
+	mgr->CreateContainer("QAdiffLYZ2", TList::Class(),AliAnalysisManager::kOutputContainer,qaNameDiffLYZ2);
+    }
+    if(LYZEP) {
+      TString qaNameIntLYZEP = "QAforInt_LYZEP_";
+      qaNameIntLYZEP += type;
+      qaNameIntLYZEP += ".root";
+      AliAnalysisDataContainer *coutputQA1LYZEP = 
+	mgr->CreateContainer("QAintLYZEP", TList::Class(),AliAnalysisManager::kOutputContainer,qaNameIntLYZEP);
+      
+      TString qaNameDiffLYZEP = "QAforDiff_LYZEP_";
+      qaNameDiffLYZEP += type;
+      qaNameDiffLYZEP += ".root";
+      AliAnalysisDataContainer *coutputQA2LYZEP = 
+	mgr->CreateContainer("QAdiffLYZEP", TList::Class(),AliAnalysisManager::kOutputContainer,qaNameDiffLYZEP);
+    }
+    if(GFC) { 
+      TString qaNameIntGFC = "QAforInt_GFC_";
+      qaNameIntGFC += type;
+      qaNameIntGFC += ".root";
+      AliAnalysisDataContainer *coutputQA1GFC = 
+	mgr->CreateContainer("QAintGFC", TList::Class(),AliAnalysisManager::kOutputContainer,qaNameIntGFC);
+      
+      TString qaNameDiffGFC = "QAforDiff_GFC_";
+      qaNameDiffGFC += type;
+      qaNameDiffGFC += ".root";
+      AliAnalysisDataContainer *coutputQA2GFC = 
+	mgr->CreateContainer("QAdiffGFC", TList::Class(),AliAnalysisManager::kOutputContainer,qaNameDiffGFC);
+    }
+    if(MCEP) {
+      TString qaNameIntMCEP = "QAforInt_MCEP_";
+      qaNameIntMCEP += type;
+      qaNameIntMCEP += ".root";
+      AliAnalysisDataContainer *coutputQA1MCEP = 
+	mgr->CreateContainer("QAintMCEP", TList::Class(),AliAnalysisManager::kOutputContainer,qaNameIntMCEP);
+      
+      TString qaNameDiffMCEP = "QAforDiff_MCEP_";
+      qaNameDiffMCEP += type;
+      qaNameDiffMCEP += ".root";
+      AliAnalysisDataContainer *coutputQA2MCEP = 
+	mgr->CreateContainer("QAdiffMCEP", TList::Class(),AliAnalysisManager::kOutputContainer,qaNameDiffMCEP);
+    }
   }   
-
+  
+  
+  //____________________________________________//
+  
+  if (SP)   { 
+    mgr->ConnectInput(taskSP,0,cinput1); 
+    mgr->ConnectOutput(taskSP,0,coutputSP);
+    if (QA) { mgr->ConnectOutput(taskSP,1,coutputQA1SP);
+    mgr->ConnectOutput(taskSP,2,coutputQA2SP); }
+  } 
+  if (LYZ1) { 
+    mgr->ConnectInput(taskLYZ1,0,cinput1); 
+    mgr->ConnectOutput(taskLYZ1,0,coutputLYZ1);
+    if (QA) { mgr->ConnectOutput(taskLYZ1,1,coutputQA1LYZ1);
+    mgr->ConnectOutput(taskLYZ1,2,coutputQA2LYZ1); }
+  }  
+  if (LYZ2) { 
+    mgr->ConnectInput(taskLYZ2,0,cinput1); 
+    mgr->ConnectInput(taskLYZ2,1,cinputLYZ2);
+    mgr->ConnectOutput(taskLYZ2,0,coutputLYZ2);
+    if (QA) { mgr->ConnectOutput(taskLYZ2,1,coutputQA1LYZ2);
+    mgr->ConnectOutput(taskLYZ2,2,coutputQA2LYZ2); }
+    cinputLYZ2->SetData(fInputListLYZ2);
+  }  
+  if (LYZEP) { 
+    mgr->ConnectInput(taskLYZEP,0,cinput1); 
+    mgr->ConnectInput(taskLYZEP,1,cinputLYZEP);
+    mgr->ConnectOutput(taskLYZEP,0,coutputLYZEP);
+    if (QA) { mgr->ConnectOutput(taskLYZEP,1,coutputQA1LYZEP);
+    mgr->ConnectOutput(taskLYZEP,2,coutputQA2LYZEP); }
+    cinputLYZEP->SetData(fInputListLYZEP);
+  }
+  if (GFC)   { 
+    mgr->ConnectInput(taskGFC,0,cinput1); 
+    mgr->ConnectOutput(taskGFC,0,coutputGFC);
+    if (QA) { mgr->ConnectOutput(taskGFC,1,coutputQA1GFC);
+    mgr->ConnectOutput(taskGFC,2,coutputQA2GFC); }
+  }  
+  if (MCEP)  { 
+    mgr->ConnectInput(taskMCEP,0,cinput1); 
+    mgr->ConnectOutput(taskMCEP,0,coutputMCEP);
+    if (QA) { mgr->ConnectOutput(taskMCEP,1,coutputQA1MCEP);
+    mgr->ConnectOutput(taskMCEP,2,coutputQA2MCEP); }
+  }  
+  
   if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
   // old way with a chain
   //  mgr->StartAnalysis("proof",chain);
   mgr->StartAnalysis("proof",data,nRuns,offset);
-
+  
   timer.Stop();
   timer.Print();
 }
