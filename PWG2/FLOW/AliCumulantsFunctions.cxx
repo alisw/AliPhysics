@@ -492,15 +492,3 @@ void AliCumulantsFunctions::Calculate()
 
   
 
-
-
-
-
-
-
-
-
-
-
-
-

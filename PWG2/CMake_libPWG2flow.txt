@@ -18,12 +18,15 @@ set(SRCS
       FLOW/AliFlowAnalysisWithLYZEventPlane.cxx 
       FLOW/AliFlowAnalysisWithLeeYangZeros.cxx 
       FLOW/AliFlowAnalysisWithCumulants.cxx 
+      FLOW/AliFlowAnalysisWithQCumulants.cxx 
       FLOW/AliAnalysisTaskScalarProduct.cxx 
       FLOW/AliAnalysisTaskMCEventPlane.cxx 
       FLOW/AliAnalysisTaskLYZEventPlane.cxx 
       FLOW/AliAnalysisTaskCumulants.cxx 
+      FLOW/AliAnalysisTaskQCumulants.cxx 
       FLOW/AliAnalysisTaskLeeYangZeros.cxx
       FLOW/AliCumulantsFunctions.cxx
+      FLOW/AliQCumulantsFunctions.cxx
 )
 
 # fill list of header files from list of source files
