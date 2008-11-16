@@ -20,7 +20,6 @@
 #include "TList.h"
 #include "TProfile.h"
 
-
 class AliAnalysisTask;
 #include "AliAnalysisManager.h"
 
@@ -35,6 +34,7 @@ class AliAnalysisTask;
 
 #include "../../CORRFW/AliCFManager.h"
 
+#include "AliFlowLYZConstants.h"   
 #include "AliAnalysisTaskLeeYangZeros.h"
 #include "AliFlowEventSimpleMaker.h"
 #include "AliFlowCommonHist.h"
@@ -307,6 +307,8 @@ void AliAnalysisTaskLeeYangZeros::Terminate(Option_t *)
 {
   // Called once at the end of the query
 
+  const Int_t iNtheta = AliFlowLYZConstants::kTheta;
+
   AliFlowAnalysisWithLeeYangZeros* fLyzTerm = new AliFlowAnalysisWithLeeYangZeros() ;
   fLyzTerm -> SetFirstRun(GetFirstRunLYZ());   //set first run true or false
   fLyzTerm -> SetUseSum(GetUseSumLYZ());       //set use sum true or false
@@ -336,13 +338,12 @@ void AliAnalysisTaskLeeYangZeros::Terminate(Option_t *)
     TProfile* pHistProVeta = NULL;
     TProfile* pHistProVPt  = NULL;
 
-    const Int_t nTheta = 5;
-    AliFlowLYZHist1 *pLYZHist1[nTheta] = {NULL};      //array of pointers to AliFlowLYZHist1
-    AliFlowLYZHist2 *pLYZHist2[nTheta] = {NULL};      //array of pointers to AliFlowLYZHist2
+    AliFlowLYZHist1 *pLYZHist1[iNtheta] = {NULL};      //array of pointers to AliFlowLYZHist1
+    AliFlowLYZHist2 *pLYZHist2[iNtheta] = {NULL};      //array of pointers to AliFlowLYZHist2
 
     if (GetFirstRunLYZ()) { //for firstrun
       //Get the histograms from the output list
-      for(Int_t theta = 0;theta<nTheta;theta++){
+      for(Int_t theta = 0;theta<iNtheta;theta++){
 	TString name = "AliFlowLYZHist1_"; 
 	name += theta;
 	pLYZHist1[theta] = dynamic_cast<AliFlowLYZHist1*> 
@@ -367,7 +368,7 @@ void AliAnalysisTaskLeeYangZeros::Terminate(Option_t *)
       }
     } else { //for second run
       //Get the histograms from the output list
-      for(Int_t theta = 0;theta<nTheta;theta++){
+      for(Int_t theta = 0;theta<iNtheta;theta++){
 	TString name = "AliFlowLYZHist2_"; 
 	name += theta;
 	pLYZHist2[theta] = dynamic_cast<AliFlowLYZHist2*> 
