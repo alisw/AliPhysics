@@ -895,13 +895,15 @@ void AliTRDpidChecker::GetRefFigure(Int_t ifig)
     ax->SetTitle("p [GeV/c]");
     ax->SetRangeUser(.6, 10.5);
     ax->SetMoreLogLabels();
-    g->GetHistogram()->GetYaxis()->SetTitle("#epsilon_{#pi} [%]");
+    ax = g->GetHistogram()->GetYaxis();
+    ax->SetTitle("#epsilon_{#pi} [%]");
+    ax->SetRangeUser(1.e-3, 1.e-1);
     leg->AddEntry(g, "2D LQ", "pl");
     if(! (g = (TGraphErrors*)fGraph->At(kNN))) break;
     g->Draw("pl");
     leg->AddEntry(g, "NN", "pl");
     if(! (g = (TGraphErrors*)fGraph->At(kESD))) break;
-    g->Draw("pl");
+    g->Draw("p");
     leg->AddEntry(g, "ESD", "pl");
     leg->Draw();
     gPad->SetLogy();
@@ -921,7 +923,7 @@ void AliTRDpidChecker::GetRefFigure(Int_t ifig)
       h1->Scale(1./h1->Integral());
       h1->SetLineColor(AliTRDCalPID::GetPartColor(is));
       h = (TH1F*)h1->DrawClone(FIRST ? "c" : "samec");
-      leg->AddEntry(h, Form("%s", AliTRDCalPID::GetPartName(is)), "pl");
+      leg->AddEntry(h, Form("%s", AliTRDCalPID::GetPartName(is)), "l");
       FIRST = kFALSE;
     }
     if(FIRST) break;
@@ -945,7 +947,11 @@ void AliTRDpidChecker::GetRefFigure(Int_t ifig)
       h1->SetMarkerStyle(24);
       h1->SetMarkerColor(AliTRDCalPID::GetPartColor(is));
       h1->SetLineColor(AliTRDCalPID::GetPartColor(is));
-      h = (TH1F*)h1->DrawClone(FIRST ? "pc" : "same pc");
+      if(FIRST){
+        h1->GetXaxis()->SetTitle("tb[1/100 ns^{-1}]");
+        h1->GetYaxis()->SetTitle("<PH> [a.u.]");
+      }
+      h = (TH1F*)h1->DrawClone(FIRST ? "c" : "samec");
       leg->AddEntry(h, Form("%s", AliTRDCalPID::GetPartName(is)), "pl");
       FIRST = kFALSE;
     }
@@ -965,16 +971,17 @@ void AliTRDpidChecker::GetRefFigure(Int_t ifig)
       Int_t bin = is*AliTRDCalPID::kNMom+4;
       h1 = h2->ProjectionY("py", bin, bin);
       if(!h1->GetEntries()) continue;
-      h1->SetMarkerStyle(24);
-      h1->SetMarkerColor(AliTRDCalPID::GetPartColor(is));
+      //h1->SetMarkerStyle(24);
+      //h1->SetMarkerColor(AliTRDCalPID::GetPartColor(is));
       h1->SetLineColor(AliTRDCalPID::GetPartColor(is));
-      h = (TH1F*)h1->DrawClone(FIRST ? "pc" : "same pc");
-      leg->AddEntry(h, Form("%s", AliTRDCalPID::GetPartName(is)), "pl");
+      if(FIRST) h1->GetXaxis()->SetTitle("N^{cl}/tracklet");
+      h = (TH1F*)h1->DrawClone(FIRST ? "c" : "samec");
+      leg->AddEntry(h, Form("%s", AliTRDCalPID::GetPartName(is)), "l");
       FIRST = kFALSE;
     }
     if(FIRST) break;
     leg->Draw();
-    gPad->SetLogy(0);
+    gPad->SetLogy();
     gPad->SetLogx(0);
     gPad->SetGridy();
     gPad->SetGridx();
@@ -987,15 +994,19 @@ void AliTRDpidChecker::GetRefFigure(Int_t ifig)
     if(!g->GetN()) break;
     leg->SetHeader("PID Method");
     g->Draw("apl");
-    g->GetHistogram()->GetXaxis()->SetTitle("p [GeV/c]");
-    g->GetHistogram()->GetXaxis()->SetRangeUser(.6, 10.5);
-    g->GetHistogram()->GetYaxis()->SetTitle("threshold");
+    ax = g->GetHistogram()->GetXaxis();
+    ax->SetTitle("p [GeV/c]");
+    ax->SetRangeUser(.6, 10.5);
+    ax->SetMoreLogLabels();
+    ax = g->GetHistogram()->GetYaxis();
+    ax->SetTitle("threshold");
+    ax->SetRangeUser(5.e-2, 1.);
     leg->AddEntry(g, "2D LQ", "pl");
     if(!(g = (TGraphErrors*)fGraph->At(kNN+3))) break;
     g->Draw("pl");
     leg->AddEntry(g, "NN", "pl");
     if(!(g = (TGraphErrors*)fGraph->At(kESD+3))) break;
-    g->Draw("pl");
+    g->Draw("p");
     leg->AddEntry(g, "ESD", "pl");
     leg->Draw();
     gPad->SetLogx();
@@ -1029,32 +1040,32 @@ Bool_t AliTRDpidChecker::PostProcess()
     fGraph->AddAt(g = new TGraphErrors(), kLQ);
     g->SetLineColor(kBlue);
     g->SetMarkerColor(kBlue);
-    g->SetMarkerStyle(29);
+    g->SetMarkerStyle(7);
   
     fGraph->AddAt(g = new TGraphErrors(), kNN);
-    g->SetLineColor(kRed);
-    g->SetMarkerColor(kRed);
-    g->SetMarkerStyle(29);
-  
-    fGraph -> AddAt(g = new TGraphErrors(), kESD);
     g->SetLineColor(kGreen);
     g->SetMarkerColor(kGreen);
-    g->SetMarkerStyle(29);
+    g->SetMarkerStyle(7);
+  
+    fGraph -> AddAt(g = new TGraphErrors(), kESD);
+    g->SetLineColor(kRed);
+    g->SetMarkerColor(kRed);
+    g->SetMarkerStyle(24);
 
     fGraph->AddAt(g = new TGraphErrors(), 3+kLQ);
     g->SetLineColor(kBlue);
     g->SetMarkerColor(kBlue);
-    g->SetMarkerStyle(29);
+    g->SetMarkerStyle(7);
   
     fGraph->AddAt(g = new TGraphErrors(), 3+kNN);
-    g->SetLineColor(kRed);
-    g->SetMarkerColor(kRed);
-    g->SetMarkerStyle(29);
-  
-    fGraph -> AddAt(g = new TGraphErrors(), 3+kESD);
     g->SetLineColor(kGreen);
     g->SetMarkerColor(kGreen);
-    g->SetMarkerStyle(29);
+    g->SetMarkerStyle(7);
+  
+    fGraph -> AddAt(g = new TGraphErrors(), 3+kESD);
+    g->SetLineColor(kRed);
+    g->SetMarkerColor(kRed);
+    g->SetMarkerStyle(24);
   }
 
   Float_t mom = 0.;
