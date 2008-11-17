@@ -28,10 +28,10 @@ class AliSurveyToAlignObjs : public TObject {
   Bool_t LoadSurveyFromLocalFile(const char* filename);
   Bool_t LoadSurveyFromAlienFile(const char* det, Int_t repNum, Int_t repVersion);
 
-  virtual void CreateAlignObjs() = 0;
+  virtual Bool_t CreateAlignObjs() = 0;
   virtual void Run() = 0;
-  void StoreAlignObjToFile(const char* filename, const char* det);
-  void StoreAlignObjToCDB(const char* cdbFolder, const char* det);
+  Bool_t StoreAlignObjToFile(const char* filename, const char* det);
+  Bool_t StoreAlignObjToCDB(const char* cdbFolder, const char* det);
   virtual   ~AliSurveyToAlignObjs();
   //
  protected:

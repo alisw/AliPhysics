@@ -41,6 +41,7 @@ AliSurveyToAlignObjs::AliSurveyToAlignObjs() :
   //
   //  default constructor
   fSurveyObj = new AliSurveyObj();
+  fAlignObjArray = new TClonesArray("AliAlignObjParams",10);
 }   
 
 //_________________________________________________________________________
@@ -114,14 +115,14 @@ Bool_t AliSurveyToAlignObjs::LoadSurveyFromAlienFile(const char* det, Int_t repN
 }
 
 //_________________________________________________________________________
-void AliSurveyToAlignObjs::StoreAlignObjToFile(const char* filename, const char* det){
+Bool_t AliSurveyToAlignObjs::StoreAlignObjToFile(const char* filename, const char* det){
   // Stores the TClonesArray of alignment objects into the
   // file specified as argument
   //
   TFile *f = TFile::Open(filename,"RECREATE");
   if(!f){
     AliError(Form("cannot open file %s\n",filename));
-    return;
+    return kFALSE;
   }
   AliInfo(Form("Saving alignment objects into the file %s",filename));
   TString arrayname(det);
@@ -130,10 +131,12 @@ void AliSurveyToAlignObjs::StoreAlignObjToFile(const char* filename, const char*
   f->cd();
   f->WriteObject(fAlignObjArray,arrayname,"kSingleKey");
   f->Close();
+
+  return kTRUE;
 }
 
 //_________________________________________________________________________
-void AliSurveyToAlignObjs::StoreAlignObjToCDB(const char* cdbFolder, const char* det){
+Bool_t AliSurveyToAlignObjs::StoreAlignObjToCDB(const char* cdbFolder, const char* det){
   // Stores the TClonesArray of alignment objects into a
   // CDB entry in the CDB folder specified by the argument
   //
@@ -149,6 +152,7 @@ void AliSurveyToAlignObjs::StoreAlignObjToCDB(const char* cdbFolder, const char*
   AliCDBId id(path.Data(),0,AliCDBRunRange::Infinity());
   cdb->Put(fAlignObjArray,id,md);
 
+  return kTRUE;
 }
 
 
