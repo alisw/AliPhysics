@@ -285,7 +285,7 @@ TH1 *AliTRDpidChecker::PlotNN(const AliTRDtrackV1 *track)
     return 0x0;
   }
   TH2F *hPIDNN;
-  if(!(hPIDNN = dynamic_cast<TH2F *>(fContainer->At(kNN)))){
+  if(!(hPIDNN = dynamic_cast<TH2F *>(fEfficiency->At(kNN)))){
     AliWarning("No Histogram defined.");
     return 0x0;
   }
@@ -362,7 +362,7 @@ TH1 *AliTRDpidChecker::PlotESD(const AliTRDtrackV1 *track)
     return 0x0;
   }
   TH2F *hPIDESD = 0x0;
-  if(!(hPIDESD = dynamic_cast<TH2F *>(fContainer->At(kESD)))){
+  if(!(hPIDESD = dynamic_cast<TH2F *>(fEfficiency->At(kESD)))){
     AliWarning("No Histogram defined.");
     return 0x0;
   }
