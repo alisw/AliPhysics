@@ -213,9 +213,11 @@ void AliAnalysisTaskCumulants::Exec(Option_t *)
       return;
     }
 
-    Printf("MC particles: %d", mcEvent->GetNumberOfTracks());
+
     fCFManager1->SetEventInfo(mcEvent);
     fCFManager2->SetEventInfo(mcEvent);
+
+    Printf("MC particles: %d", mcEvent->GetNumberOfTracks());
 
     //cumulant analysis 
     AliFlowEventSimple* fEvent = fEventMaker->FillTracks(mcEvent,fCFManager1,fCFManager2);
