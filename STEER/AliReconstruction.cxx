@@ -3102,6 +3102,7 @@ Bool_t AliReconstruction::GetEventInfo()
     if (trclass) {
       Int_t trindex = TMath::Nint(TMath::Log2(trclass->GetMask()));
       fesd->SetTriggerClass(trclass->GetName(),trindex);
+      if (fRawReader) fRawReader->LoadTriggerClass(trclass->GetName(),trindex);
       if (trmask & (1 << trindex)) {
 	trclasses += " ";
 	trclasses += trclass->GetName();
