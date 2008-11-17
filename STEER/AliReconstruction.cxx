@@ -951,6 +951,13 @@ Bool_t AliReconstruction::InitGRP() {
       AliInfo("SPD is not in the list of active detectors. Vertexer switched off.");
       fRunVertexFinder = kFALSE;
     }
+    if (!((detMask >> AliDAQ::DetectorID("TRG")) & 0x1)) {
+      // switch off the reading of CTP raw-data payload
+      if (fFillTriggerESD) {
+	AliInfo("CTP is not in the list of active detectors. CTP data reading switched off.");
+	fFillTriggerESD = kFALSE;
+      }
+    }
   }
 
   AliInfo("===================================================================================");
