@@ -183,7 +183,7 @@ void AliAnalysisTaskScalarProduct::CreateOutputObjects()
   if (fSP->GetHistList()) {
     //fSP->GetHistList()->Print();
 	fListHistos = fSP->GetHistList();
-	fListHistos->Print();
+	//	fListHistos->Print();
   }
   else {Printf("ERROR: Could not retrieve histogram list"); }
 }
@@ -299,7 +299,7 @@ void AliAnalysisTaskScalarProduct::Terminate(Option_t *)
   fListHistos = (TList*)GetOutputData(0);
   cout << "histgram list in Terminate" << endl;
   if (fListHistos)  {
-    fListHistos->Print();
+    //    fListHistos->Print();
   }	
   else { cout << "histgram list pointer is empty" << endl; }
 

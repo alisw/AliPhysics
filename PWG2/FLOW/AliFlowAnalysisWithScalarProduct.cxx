@@ -146,7 +146,7 @@ void AliFlowAnalysisWithScalarProduct::Finish() {
   //*************make histograms etc. 
   if (fDebug) cout<<"AliFlowAnalysisWithScalarProduct::Terminate()"<<endl;
 
-  fHistProUQ->Draw();
+  //  fHistProUQ->Draw();
      	  
   cout<<".....finished"<<endl;
  }

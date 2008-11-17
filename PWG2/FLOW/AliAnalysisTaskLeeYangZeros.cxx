@@ -197,7 +197,7 @@ void AliAnalysisTaskLeeYangZeros::CreateOutputObjects()
 
   if (fLyz->GetHistList()) {
     fListHistos = fLyz->GetHistList();
-    fListHistos->Print();
+    //    fListHistos->Print();
   }
   else {Printf("ERROR: Could not retrieve histogram list"); }
   
@@ -411,7 +411,7 @@ void AliAnalysisTaskLeeYangZeros::Terminate(Option_t *)
       }
     }
           
-    fListHistos->Print(); 
+    //    fListHistos->Print(); 
   }	
   else { cout << "histogram list pointer is empty" << endl;}
 
