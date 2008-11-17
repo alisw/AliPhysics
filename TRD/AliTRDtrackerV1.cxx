@@ -2624,7 +2624,9 @@ AliTRDtrackV1* AliTRDtrackerV1::MakeTrack(AliTRDseedV1 *seeds, Double_t *params)
       ptrTracklet = SetTracklet(&seeds[ip]);
       track.SetTracklet(ptrTracklet, fTracklets->GetEntriesFast()-1);
     }
-    return SetTrack(&track);
+    AliTRDtrackV1 *ptrTrack = SetTrack(&track);
+    ptrTrack->SetReconstructor(fReconstructor);
+    return ptrTrack;
   }
 
   track.ResetCovariance(1);
