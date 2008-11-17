@@ -39,6 +39,7 @@
 #include <TClass.h>
 #include <TPluginManager.h>
 #include <TROOT.h>
+#include <TInterpreter.h>
 
 #include <Riostream.h>
 #include "AliRawReader.h"
@@ -64,6 +65,7 @@ AliRawReader::AliRawReader() :
   fSkipInvalid(kFALSE),
   fSelectEventType(-1),
   fSelectTriggerMask(0),
+  fSelectTriggerExpr(),
   fErrorCode(0),
   fEventNumber(-1),
   fErrorLogs("AliRawDataErrorLog",100),
@@ -122,6 +124,7 @@ AliRawReader::AliRawReader(const AliRawReader& rawReader) :
   fSkipInvalid(rawReader.fSkipInvalid),
   fSelectEventType(rawReader.fSelectEventType),
   fSelectTriggerMask(rawReader.fSelectTriggerMask),
+  fSelectTriggerExpr(rawReader.fSelectTriggerExpr),
   fErrorCode(0),
   fEventNumber(-1),
   fErrorLogs("AliRawDataErrorLog",100),
@@ -150,6 +153,7 @@ AliRawReader& AliRawReader::operator = (const AliRawReader& rawReader)
   fSkipInvalid = rawReader.fSkipInvalid;
   fSelectEventType = rawReader.fSelectEventType;
   fSelectTriggerMask = rawReader.fSelectTriggerMask;
+  fSelectTriggerExpr = rawReader.fSelectTriggerExpr;
 
   fErrorCode = rawReader.fErrorCode;
 
@@ -242,6 +246,7 @@ AliRawReader* AliRawReader::Create(const char *uri)
   if (fields->GetEntries() > 1) {
     Int_t eventType = -1;
     ULong64_t triggerMask = 0;
+    TString triggerExpr;
     for(Int_t i = 1; i < fields->GetEntries(); i++) {
       if (!fields->At(i)) continue;
       TString &option = ((TObjString*)fields->At(i))->String();
@@ -252,14 +257,19 @@ AliRawReader* AliRawReader::Create(const char *uri)
       }
       if (option.BeginsWith("Trigger=",TString::kIgnoreCase)) {
 	option.ReplaceAll("Trigger=","");
-	triggerMask = option.Atoll();
+	if (option.IsDigit()) {
+	  triggerMask = option.Atoll();
+	}
+	else {
+	  triggerExpr = option.Data();
+	}
 	continue;
       }
       AliWarningClass(Form("Ignoring invalid event selection option: %s",option.Data()));
     }
-    AliInfoClass(Form("Event selection criteria specified:   eventype=%d   trigger mask=%llx",
-		 eventType,triggerMask));
-    rawReader->SelectEvents(eventType,triggerMask);
+    AliInfoClass(Form("Event selection criteria specified:   eventype=%d   trigger mask=%llx   trigger expression=%s",
+		 eventType,triggerMask,triggerExpr.Data()));
+    rawReader->SelectEvents(eventType,triggerMask,triggerExpr.Data());
   }
 
   fields->Delete();
@@ -364,14 +374,32 @@ void AliRawReader::SelectEquipment(Int_t equipmentType,
   fSelectMaxEquipmentId = maxEquipmentId;
 }
 
-void AliRawReader::SelectEvents(Int_t type, ULong64_t triggerMask)
+void AliRawReader::SelectEvents(Int_t type, ULong64_t triggerMask,
+				const char *triggerExpr)
 {
 // read only events with the given type and optionally
 // trigger mask.
-// no selection is applied if a value < 0 is used.
+// no selection is applied if value = 0 is used.
+// Trigger selection can be done via string (triggerExpr)
+// which defines the trigger logic to be used. It works only
+// after LoadTriggerClass() method is called for all involved
+// trigger classes.
 
   fSelectEventType = type;
   fSelectTriggerMask = triggerMask;
+  if (triggerExpr) fSelectTriggerExpr = triggerExpr;
+}
+
+void AliRawReader::LoadTriggerClass(const char* name, Int_t index)
+{
+  // Loads the list of trigger classes defined.
+  // Used in conjunction with IsEventSelected in the
+  // case when the trigger selection is given by
+  // fSelectedTriggerExpr
+
+  if (fSelectTriggerExpr.IsNull()) return;
+
+  fSelectTriggerExpr.ReplaceAll(name,Form("[%d]",index));
 }
 
 Bool_t AliRawReader::IsSelected() const
@@ -412,6 +440,24 @@ Bool_t AliRawReader::IsEventSelected() const
   // to the required trigger mask
   if (fSelectTriggerMask != 0) {
     if ((GetClassMask() & fSelectTriggerMask) != fSelectTriggerMask) return kFALSE;
+  }
+
+  if (!fSelectTriggerExpr.IsNull()) {
+    TString expr(fSelectTriggerExpr);
+    ULong64_t mask = GetClassMask();
+    for(Int_t itrigger = 0; itrigger < 50; itrigger++) {
+      if (mask & (1 << itrigger)) {
+	expr.ReplaceAll(Form("[%d]",itrigger),"1");
+      }
+      else {
+	expr.ReplaceAll(Form("[%d]",itrigger),"0");
+      }
+    }
+    Int_t error;
+    if ((gROOT->ProcessLineFast(expr.Data(),&error) == 0) &&
+	(error == TInterpreter::kNoError)) {
+      return kFALSE;
+    }
   }
 
   return kTRUE;
