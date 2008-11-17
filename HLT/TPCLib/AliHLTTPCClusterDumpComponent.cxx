@@ -160,7 +160,7 @@ int AliHLTTPCClusterDumpComponent::DumpEvent( const AliHLTComponentEventData& /*
 	 AliHLTTPCTransform::LocHLT2Raw(xyz,(Int_t)(clusters[i].fID/10),(Int_t)(clusters[i].fID%10));
 	 dump << "[R,P,T]:       [" << xyz[0]<<" , "<<xyz[1]<<" , "<<xyz[2] <<"]"<< endl;
 	 dump << "Total Charge:  " << clusters[i].fCharge         << endl;
-	 dump << "Q Max:         " << clusters[i].fMaxQ           << endl;
+	 dump << "Q Max:         " << clusters[i].fQMax           << endl;
 	 spacePointCounter++;
        }
        

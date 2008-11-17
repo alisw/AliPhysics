@@ -248,7 +248,7 @@ int AliHLTTPCNoiseMapComponent::DoInit( int argc, const char** argv ) {
 } // end DoInit()
 
 int AliHLTTPCNoiseMapComponent::DoDeinit() { 
-// see header file for class documentation  
+  // see header file for class documentation  
 
   if(fHistMaxSignal) delete fHistMaxSignal; fHistMaxSignal = NULL;
   if(fHistTotSignal) delete fHistTotSignal; fHistTotSignal = NULL;
@@ -260,7 +260,7 @@ int AliHLTTPCNoiseMapComponent::DoDeinit() {
 }
 
 int AliHLTTPCNoiseMapComponent::DoEvent(const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& /*trigData*/){
-// see header file for class documentation
+  // see header file for class documentation
  
   //HLTInfo("--- Entering DoEvent() in TPCNoiseMap ---");
  
@@ -273,34 +273,41 @@ int AliHLTTPCNoiseMapComponent::DoEvent(const AliHLTComponentEventData& evtData,
     
   for(iter = GetFirstInputBlock(kAliHLTDataTypeDDLRaw|kAliHLTDataOriginTPC); iter != NULL; iter = GetNextInputBlock()){
       
-     HLTInfo("Event 0x%08LX (%Lu) received datatype: %s - required datatype: %s", 
-              evtData.fEventID, evtData.fEventID,
-              DataType2Text(iter->fDataType).c_str(), 
-	      DataType2Text(kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTPC).c_str());
+    HLTInfo("Event 0x%08LX (%Lu) received datatype: %s - required datatype: %s", 
+	    evtData.fEventID, evtData.fEventID,
+	    DataType2Text(iter->fDataType).c_str(), 
+	    DataType2Text(kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTPC).c_str());
 
-     if (iter->fDataType == AliHLTTPCDefinitions::fgkDDLPackedRawDataType && GetEventCount()<2){
-         HLTWarning("data type %s is depricated, use %s (kAliHLTDataTypeDDLRaw)!", 
-	 DataType2Text(AliHLTTPCDefinitions::fgkDDLPackedRawDataType).c_str(),
-         DataType2Text(kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTPC).c_str());
-     }      
+    if (iter->fDataType == AliHLTTPCDefinitions::fgkDDLPackedRawDataType && GetEventCount()<2){
+      HLTWarning("data type %s is depricated, use %s (kAliHLTDataTypeDDLRaw)!", 
+		 DataType2Text(AliHLTTPCDefinitions::fgkDDLPackedRawDataType).c_str(),
+		 DataType2Text(kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTPC).c_str());
+    }      
      
-     if (iter->fDataType != (kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTPC)) continue;
+    if (iter->fDataType != (kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTPC)) continue;
       
-     UInt_t slice     = AliHLTTPCDefinitions::GetMinSliceNr(*iter); 
-     UInt_t partition = AliHLTTPCDefinitions::GetMinPatchNr(*iter);
+    UInt_t slice     = AliHLTTPCDefinitions::GetMinSliceNr(*iter); 
+    UInt_t partition = AliHLTTPCDefinitions::GetMinPatchNr(*iter);
      
-     fSpecification = iter->fSpecification;
+    fSpecification = iter->fSpecification;
      
-     AliHLTTPCDigitReader *pDigitReader = new AliHLTTPCDigitReaderDecoder;
+    AliHLTTPCDigitReader *pDigitReader = new AliHLTTPCDigitReaderDecoder;
 
-     pDigitReader->InitBlock(iter->fPtr,iter->fSize,partition,slice);
-     if(!pDigitReader) break;
+    pDigitReader->InitBlock(iter->fPtr,iter->fSize,partition,slice);
+    if(!pDigitReader) break;
        
-     //sprintf(name,"hMaxSignal_slice%d_partition%d", slice, partition);
-     //fHistMaxSignal = new TH2F(name,name,250,-250,250,250,-250,250);
+    //sprintf(name,"hMaxSignal_slice%d_partition%d", slice, partition);
+    //fHistMaxSignal = new TH2F(name,name,250,-250,250,250,-250,250);
             
-     while(pDigitReader->Next()){ 
-     //while( pDigitReader->NextChannel()) { // pad loop 
+    //  while(pDigitReader->Next()){ 
+
+
+    Float_t maxSignal     = 0.;
+    Float_t totalSignal   = 0.;
+    Float_t squaredSignal = 0.;
+    Float_t rms = 0.; 
+    
+    while( pDigitReader->NextChannel()) { // pad loop 
       
       fCurrentRow  = pDigitReader->GetRow();  
       fCurrentRow += pDigitReader->GetRowOffset();
@@ -319,49 +326,53 @@ int AliHLTTPCNoiseMapComponent::DoEvent(const AliHLTComponentEventData& evtData,
       // transformation from pad-row coordinates to global ones
       // time info is not taken into account
       
-//       AliTPCCalROC *calRoc = noisePad->GetCalROC(thissector);
-//       calRoc->GetValue(thisrow,pDigitReader->GetPad());
+      //       AliTPCCalROC *calRoc = noisePad->GetCalROC(thissector);
+      //       calRoc->GetValue(thisrow,pDigitReader->GetPad());
       
-      //while( pDigitReader->NextBunch()) {
+      
+      while( pDigitReader->NextBunch()) {
     
-      const UInt_t *bunchData = pDigitReader->GetSignals();
-      Float_t maxSignal     = 0.;
-      Float_t totalSignal   = 0.;
-      Float_t squaredSignal = 0.;
-      Float_t rms = 0.; 
+	const UInt_t *bunchData = pDigitReader->GetSignals();
       
-      //fHistSignal = new TH1F("fHistSignal", "signal distribution per pad",1024,0,1024);
+	//fHistSignal = new TH1F("fHistSignal", "signal distribution per pad",1024,0,1024);
       
-      //fHistSignal->Reset();
-      //Int_t time = pDigitReader->GetTime();
+	//fHistSignal->Reset();
+	//Int_t time = pDigitReader->GetTime();
      
-      for(Int_t i=0;i<pDigitReader->GetBunchSize();i++){
+	for(Int_t i=0;i<pDigitReader->GetBunchSize();i++){
           
 	  if((Float_t)(bunchData[i])>maxSignal){ maxSignal = (Float_t)(bunchData[i]); }
 	  totalSignal += (Float_t)bunchData[i];
 	  squaredSignal += (Float_t)bunchData[i]*(Float_t)bunchData[i];
 	  //fHistSignal->Fill(time+i, bunchData[i]);
-      } // end for loop over bunches
-      rms = TMath::Sqrt(squaredSignal/pDigitReader->GetBunchSize());
+	} // end for loop over bunches
+	rms = TMath::Sqrt(squaredSignal/pDigitReader->GetBunchSize());
             
-      //} // end of inner while loop
+      } // end of inner while loop
            
-      fHistMaxSignal->Fill(xyz[0],xyz[1],maxSignal);
-      fHistTotSignal->Fill(xyz[0],xyz[1],totalSignal);
-            
-      fHistPadRMS->Fill(xyz[0],xyz[1],rms);
+    } // end of while loop over pads
      
-      //fHistPadRMS->Fill(xyz[0],xyz[1],fHistSignal->GetRMS());
-      //delete fHistSignal; fHistSignal = NULL;
-            
-      if(fPlotSideA || fPlotSideC){
-         if(slice<18) fHistSideA->Fill(xyz[0],xyz[1],maxSignal);
-         else	      fHistSideC->Fill(xyz[0],xyz[1],maxSignal);			     
-      } // end if plotting sides    
-     } // end of while loop over pads
-   
-     pDigitReader->Reset();
-     delete pDigitReader;
+    fHistMaxSignal->Fill(xyz[0],xyz[1],maxSignal);
+    fHistTotSignal->Fill(xyz[0],xyz[1],totalSignal);
+     
+    fHistPadRMS->Fill(xyz[0],xyz[1],rms);
+      
+    //fHistPadRMS->Fill(xyz[0],xyz[1],fHistSignal->GetRMS());
+    //delete fHistSignal; fHistSignal = NULL;
+      
+    if(fPlotSideA || fPlotSideC){
+      if(slice<18) fHistSideA->Fill(xyz[0],xyz[1],maxSignal);
+      else	      fHistSideC->Fill(xyz[0],xyz[1],maxSignal);			     
+    } // end if plotting sides    
+      
+    
+    maxSignal     = 0.;
+    totalSignal   = 0.;
+    squaredSignal = 0.;
+    rms = 0.; 
+
+    pDigitReader->Reset();
+    delete pDigitReader;
   } // end of for loop over data blocks
  
   if(fResetHistograms) ResetHistograms();

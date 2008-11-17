@@ -122,23 +122,59 @@ class AliHLTTPCClusterFinder : public AliHLTLogging {
 
   /** standard constructor */
   AliHLTTPCClusterFinder();
+
   /** destructor */
   virtual ~AliHLTTPCClusterFinder();
 
-  void Read(void* ptr,unsigned long size);
-
-  void InitSlice(Int_t slice,Int_t patch,Int_t firstrow, Int_t lastrow,Int_t maxpoints);
+  /** Initialize the slice */
   void InitSlice(Int_t slice,Int_t patch,Int_t maxpoints);
-  void ProcessDigits();
 
+  /** Initializes the pad array (vector)*/
+  void InitializePadArray();
+
+  /** Deinitialize the pad array (vector)*/
+  Int_t DeInitializePadArray();
+
+  /** Read the data in unsorted format, storing the clustercandidates */
+  void ReadDataUnsorted(void* ptr,unsigned long size);
+
+  /** Read the data in unsorted format, and deconvolute the signals for each pad in time direction */
+  void ReadDataUnsortedDeconvoluteTime(void* ptr,unsigned long size);
+
+  /** Loops over all rows finding the clusters */
+  void FindClusters();
+
+  /** Compare two neighbouring pads for matching clustercandidates */
+  Bool_t ComparePads(AliHLTTPCPad *nextPad,AliHLTTPCClusters* candidate,Int_t nextPadToRead);
+  
+  /**  Fills the hw address list */
+  Int_t FillHWAddressList(AliHLTUInt16_t *hwaddlist, Int_t maxHWAddress);
+
+  /** Set the pointer to the outputbuffer */
   void SetOutputArray(AliHLTTPCSpacePointData *pt);
-  void WriteClusters(Int_t n_clusters,AliClusterData *list);
-  void PrintClusters();
-  void SetXYError(Float_t f) {fXYErr=f;}
-  void SetZError(Float_t f) {fZErr=f;}
+
+  /** Returns the number of clusters */
+  Int_t GetNumberOfClusters() const {return fNClusters;}
+
+  // setters
   void SetDeconv(Bool_t f) {fDeconvPad=f; fDeconvTime=f;}
   void SetDeconvPad(Bool_t f) {fDeconvPad=f;}
   void SetDeconvTime(Bool_t f) {fDeconvTime=f;}
+  void SetUnsorted(Int_t unsorted){fUnsorted=unsorted;}
+  void SetPatch(Int_t patch){fCurrentPatch=patch;}
+  void SetDoPadSelection(Bool_t input){fDoPadSelection=input;}
+  void SetLastTimeBin(Int_t ltb){fLastTimeBin=ltb;}
+  void SetFirstTimeBin(Int_t ftb){fFirstTimeBin=ftb;}
+  void UpdateLastTimeBin(){fLastTimeBin=AliHLTTPCTransform::GetNTimeBins();}
+
+//---------------------------------- Under this line the old sorted clusterfinder functions can be found --------------------------------
+  void Read(void* ptr,unsigned long size);
+  void ProcessDigits();
+  void WriteClusters(Int_t n_clusters,AliClusterData *list);
+  void WriteClusters(Int_t nclusters,AliHLTTPCClusters *list);
+  void PrintClusters();
+  void SetXYError(Float_t f) {fXYErr=f;}
+  void SetZError(Float_t f) {fZErr=f;}
   void SetThreshold(UInt_t i) {fThreshold=i;}
   void SetOccupancyLimit(Float_t f) {fOccupancyLimit=f;}
   void SetMatchWidth(UInt_t i) {fMatch=i;}
@@ -146,28 +182,6 @@ class AliHLTTPCClusterFinder : public AliHLTLogging {
   void SetCalcErr(Bool_t f=kTRUE) {fCalcerr=f;}
   void SetRawSP(Bool_t f=kFALSE) {fRawSP=f;}
   void SetReader(AliHLTTPCDigitReader* f){fDigitReader = f;}
-  Int_t GetNumberOfClusters() const {return fNClusters;}
-
-  //----------------------------------Methods for the new unsorted way of reading data ----------
-  void ReadDataUnsorted(void* ptr,unsigned long size);
-  void ReadDataUnsortedDeconvoluteTime(void* ptr,unsigned long size);
-  void FindClusters();
-  void WriteClusters(Int_t nclusters,AliHLTTPCClusters *list);
-  void SetUnsorted(Int_t unsorted){fUnsorted=unsorted;}
-  void SetPatch(Int_t patch){fCurrentPatch=patch;}
-  void InitializePadArray();
-  Int_t DeInitializePadArray();
-  Bool_t ComparePads(AliHLTTPCPad *nextPad,AliHLTTPCClusters* candidate,Int_t nextPadToRead);
-
-  void SetDoPadSelection(Bool_t input){fDoPadSelection=input;}
-  
-  Int_t FillHWAddressList(AliHLTUInt16_t *hwaddlist, Int_t maxHWAddress);
-
-  void UpdateLastTimeBin(){fLastTimeBin=AliHLTTPCTransform::GetNTimeBins();}
-
-  void SetLastTimeBin(Int_t ltb){fLastTimeBin=ltb;}
-
-  void SetFirstTimeBin(Int_t ftb){fFirstTimeBin=ftb;}
   
   vector<AliHLTUInt16_t> fClustersHWAddressVector;  //! transient
   
@@ -184,32 +198,32 @@ class AliHLTTPCClusterFinder : public AliHLTLogging {
   AliHLTTPCSpacePointData *fSpacePointData; //! array of space points
   AliHLTTPCDigitReader *fDigitReader;       //! reader instance
 
-  UChar_t* fPtr;   //! pointer to packed block
-  unsigned long fSize; //packed block size
-  Bool_t fDeconvTime;  //deconv in time direction
-  Bool_t fDeconvPad;  //deconv in pad direction
-  Bool_t fStdout;     //have print out in write clusters
-  Bool_t fCalcerr;    //calculate centroid sigmas
-  Bool_t fRawSP;      //store centroids in raw system
+  UChar_t* fPtr;           //! pointer to packed block
+  unsigned long fSize;     //! packed block size
+  Bool_t fDeconvTime;      //! deconv in time direction
+  Bool_t fDeconvPad;       //! deconv in pad direction
+  Bool_t fStdout;          //! have print out in write clusters
+  Bool_t fCalcerr;         //! calculate centroid sigmas
+  Bool_t fRawSP;           //! store centroids in raw system
 
 
-  Int_t fFirstRow;       //first row
-  Int_t fLastRow;        //last row
-  Int_t fCurrentRow;     //current active row
-  Int_t fCurrentSlice;   //current slice
-  Int_t fCurrentPatch;   //current patch
-  Int_t fMatch;          //size of match
-  UInt_t fThreshold;     //threshold for clusters
-  Int_t fNClusters;      //number of found clusters
-  Int_t fMaxNClusters;   //max. number of clusters
-  Float_t fXYErr;        //fixed error in XY
-  Float_t fZErr;         //fixed error in Z
+  Int_t fFirstRow;       //! first row
+  Int_t fLastRow;        //! last row
+  Int_t fCurrentRow;     //! current active row
+  Int_t fCurrentSlice;   //! current slice
+  Int_t fCurrentPatch;   //! current patch
+  Int_t fMatch;          //! size of match
+  UInt_t fThreshold;     //! threshold for clusters
+  Int_t fNClusters;      //! number of found clusters
+  Int_t fMaxNClusters;   //! max. number of clusters
+  Float_t fXYErr;        //! fixed error in XY
+  Float_t fZErr;         //! fixed error in Z
   
-  Float_t fOccupancyLimit; // Occupancy Limit
+  Float_t fOccupancyLimit;    //! Occupancy Limit
 
-  Int_t fUnsorted;       // enable for processing of unsorted digit data
-  Bool_t fVectorInitialized;
-
+  Int_t fUnsorted;            //! enable for processing of unsorted digit data
+  Bool_t fVectorInitialized;  //! flag to check if pad vector is initialized
+ 
   vector<AliHLTTPCClusters> fClusters;                             //! transient
   
   UInt_t* fNumberOfPadsInRow;                                      //! transient

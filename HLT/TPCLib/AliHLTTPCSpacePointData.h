@@ -28,7 +28,7 @@ struct AliHLTTPCSpacePointData{
   Float_t fSigmaY2; // error (former width) of the clusters
   Float_t fSigmaZ2; // error (former width) of the clusters
   UInt_t fCharge;   // total charge of cluster
-  UInt_t fMaxQ;     // QMax of cluster
+  UInt_t fQMax;     // QMax of cluster
   Bool_t fUsed;     // only used in AliHLTTPCDisplay 
   Int_t fTrackN;    // only used in AliHLTTPCDisplay 
 };

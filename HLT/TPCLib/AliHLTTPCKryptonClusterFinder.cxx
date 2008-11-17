@@ -313,11 +313,11 @@ void AliHLTTPCKryptonClusterFinder::FindKryptonClusters()
 	  fSpacePointData[fNKryptonClusters].fY = xyz[1];
 	  fSpacePointData[fNKryptonClusters].fZ = xyz[2];
 	  fSpacePointData[fNKryptonClusters].fCharge = tmpCluster->fTotalCharge;
-	  fSpacePointData[fNKryptonClusters].fMaxQ = tmpCluster->fQMax;
+	  fSpacePointData[fNKryptonClusters].fQMax = tmpCluster->fQMax;
 	  fSpacePointData[fNKryptonClusters].fPadRow = tmpCluster->fRowNumber/tmpCluster->fTotalCharge;
 	  HLTDebug("Krypton cluster found");
 	  HLTDebug("xyz=[%f,%f,%f]",fSpacePointData[fNKryptonClusters].fX,fSpacePointData[fNKryptonClusters].fY,fSpacePointData[fNKryptonClusters].fZ);
-	  HLTDebug("TotalCharge = %d    and   QMax = %d",fSpacePointData[fNKryptonClusters].fCharge,fSpacePointData[fNKryptonClusters].fMaxQ);
+	  HLTDebug("TotalCharge = %d    and   QMax = %d",fSpacePointData[fNKryptonClusters].fCharge,fSpacePointData[fNKryptonClusters].fQMax);
 	  fNKryptonClusters++;
 	  break;
 	}

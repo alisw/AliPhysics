@@ -70,4 +70,6 @@
 #pragma link C++ class  AliHLTTPCEventStatisticsProducerComponent+;
 #pragma link C++ class  AliHLTTPCRunStatistics+;
 #pragma link C++ class  AliHLTTPCRunStatisticsProducerComponent+;
+#pragma link C++ class  AliHLTTPCHWCFDataReverterComponent+;
+
 #endif

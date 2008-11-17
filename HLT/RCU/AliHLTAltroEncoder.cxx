@@ -310,3 +310,29 @@ int AliHLTAltroEncoder::SetLength()
   }
   return fOffset;
 }
+
+void AliHLTAltroEncoder::Revert40BitWords(Int_t CDHSize, Int_t trailerSize)
+{
+  // see headerfile for class documentation
+  
+  //initialize to last 40 bit word in the payload
+  AliHLTUInt8_t * pointerToHighEnd40BitWord = fpBuffer + fOffset - trailerSize -5;
+  
+  //initialize to first 40 bit word in the payload
+  AliHLTUInt8_t * pointerToLowEnd40BitWord = fpBuffer+CDHSize;
+
+  assert(((pointerToHighEnd40BitWord - pointerToLowEnd40BitWord)+5)%5 == 0 );//check that it is a whole number of 40 bit words
+
+  Int_t total40BitWords = ((pointerToHighEnd40BitWord - pointerToLowEnd40BitWord) + 5)/(5);
+
+  AliHLTUInt8_t tmp8BitWords[5] = {0,0,0,0,0};
+
+  for(Int_t numberOf40BitWordMoves = 0 ; numberOf40BitWordMoves < total40BitWords/2 ; numberOf40BitWordMoves++){
+    memcpy(&tmp8BitWords, pointerToLowEnd40BitWord, 5);              // copy 40 bit word in to temporary from low side
+    memcpy(pointerToLowEnd40BitWord, pointerToHighEnd40BitWord, 5); // copy the high side 40 bit word to the low side
+    memcpy(pointerToHighEnd40BitWord, &tmp8BitWords, 5);             // copy from the temporary to the high side 40 bits 
+    pointerToLowEnd40BitWord += 5;
+    pointerToHighEnd40BitWord -= 5;
+  }
+
+}

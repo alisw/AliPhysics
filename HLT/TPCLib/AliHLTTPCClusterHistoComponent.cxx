@@ -209,15 +209,15 @@ int AliHLTTPCClusterHistoComponent::DoEvent(const AliHLTComponentEventData& /*ev
 	
       }
       if(fPlotQmaxPartAll){
-	if(clusters[i].fMaxQ>tmpQPart){
-	  fQMaxPartitionAll->SetBinContent(patch+6*slice,clusters[i].fMaxQ);
-	  tmpQPart=clusters[i].fMaxQ;
+	if(clusters[i].fQMax>tmpQPart){
+	  fQMaxPartitionAll->SetBinContent(patch+6*slice,clusters[i].fQMax);
+	  tmpQPart=clusters[i].fQMax;
 	}
       }
       if(fPlotQmaxROCAll){
-	if(clusters[i].fMaxQ>fQMaxROCAll->GetBinContent(thissector)){
-	  fQMaxROCAll->SetBinContent(thissector,clusters[i].fMaxQ);
-	  //	  tmpQROC=clusters[i].fMaxQ;
+	if(clusters[i].fQMax>fQMaxROCAll->GetBinContent(thissector)){
+	  fQMaxROCAll->SetBinContent(thissector,clusters[i].fQMax);
+	  //	  tmpQROC=clusters[i].fQMax;
 	}
       }
     }

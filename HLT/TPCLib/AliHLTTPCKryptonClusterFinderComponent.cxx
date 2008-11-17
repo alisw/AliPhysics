@@ -179,7 +179,7 @@ int AliHLTTPCKryptonClusterFinderComponent::DoEvent( const AliHLTComponentEventD
   //  == init iter (pointer to datablock)
   const AliHLTComponentBlockData* iter = NULL;
 
-  Int_t slice, patch, row[2];
+  Int_t slice, patch;
 
   unsigned long maxPoints = 0;
 
@@ -207,13 +207,11 @@ int AliHLTTPCKryptonClusterFinderComponent::DoEvent( const AliHLTComponentEventD
       
     slice = AliHLTTPCDefinitions::GetMinSliceNr( *iter );
     patch = AliHLTTPCDefinitions::GetMinPatchNr( *iter );
-    row[0] = AliHLTTPCTransform::GetFirstRow( patch );
-    row[1] = AliHLTTPCTransform::GetLastRow( patch );
 
 
     fKryptonClusterFinder->SetPatch(patch);
 
-    fKryptonClusterFinder->InitSlice( slice, patch, row[0], row[1], maxPoints );
+    fKryptonClusterFinder->InitSlice( slice, patch, maxPoints );
 
     fKryptonClusterFinder->SetOutputArray((AliHLTTPCSpacePointData*)outPtr->fSpacePoints);
     

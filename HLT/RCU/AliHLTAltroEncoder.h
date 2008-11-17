@@ -138,6 +138,11 @@ class AliHLTAltroEncoder : AliHLTLogging {
 
   int GetOffset(){return fOffset;}
 
+  /**
+   * Revert the 40 bit altro data
+   */
+  void Revert40BitWords(Int_t CDHSize, Int_t trailerSize);
+
   enum {
     kUnknownOrder = 0,
     kAscending,

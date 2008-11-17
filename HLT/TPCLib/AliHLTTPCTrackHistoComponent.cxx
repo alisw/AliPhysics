@@ -236,13 +236,13 @@ int AliHLTTPCTrackHistoComponent::DoEvent(const AliHLTComponentEventData& /*evtD
       Int_t patchCl = (idCluster>>22) & 0x7;
       UInt_t pos = idCluster&0x3fffff;
       if(fPlotChargeClusters || fPlotAll){fHistoChargeAllClusters->Fill(clusters[i].fCharge);}
-      if(fPlotQMaxClusters || fPlotAll){fHistoQMaxAllClusters->Fill(clusters[i].fMaxQ);}
+      if(fPlotQMaxClusters || fPlotAll){fHistoQMaxAllClusters->Fill(clusters[i].fQMax);}
       for(UInt_t id=0;id<fTrackClusterID[sliceCl][patchCl].size();id++){
 	if(fTrackClusterID[sliceCl][patchCl][id]==pos){
 	  clusters[i].fUsed=kTRUE;
 	  nClustersUsed++;
 	  if(fPlotChargeUsedClusters || fPlotAll){fHistoChargeUsedClusters->Fill(clusters[i].fCharge);}
-	  if(fPlotQMaxUsedClusters || fPlotAll){fHistoQMaxUsedClusters->Fill(clusters[i].fMaxQ);}
+	  if(fPlotQMaxUsedClusters || fPlotAll){fHistoQMaxUsedClusters->Fill(clusters[i].fQMax);}
 	}
       } 
       fClusters.push_back(clusters[i]);
