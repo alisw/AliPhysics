@@ -34,22 +34,22 @@ ClassImp(AliSurveyToAlignObjs)
 //________________________________________________________________________
 AliSurveyToAlignObjs::AliSurveyToAlignObjs() :
   TObject(),
-  fSurveyObj(0),
+  fSurveyObj(NULL),
   fSurveyPoints(NULL),
   fAlignObjArray(NULL),
   fAlignObj(0){
   //
   //  default constructor
-  //
+  fSurveyObj = new AliSurveyObj();
 }   
 
 //_________________________________________________________________________
 AliSurveyToAlignObjs::AliSurveyToAlignObjs(const AliSurveyToAlignObjs &s2aObj) :
   TObject(s2aObj),
-  fSurveyObj(0),
-  fSurveyPoints(NULL),
-  fAlignObjArray(NULL),
-  fAlignObj(0)
+  fSurveyObj(s2aObj.fSurveyObj),
+  fSurveyPoints(s2aObj.fSurveyPoints),
+  fAlignObjArray(s2aObj.fAlignObjArray),
+  fAlignObj(s2aObj.fAlignObj)
 {
   // copy constructor
 }
@@ -58,6 +58,10 @@ AliSurveyToAlignObjs::AliSurveyToAlignObjs(const AliSurveyToAlignObjs &s2aObj) :
 AliSurveyToAlignObjs & AliSurveyToAlignObjs::operator= (const AliSurveyToAlignObjs &s2aObj) {
   //
   // assignment operator
+  fSurveyObj = s2aObj.fSurveyObj;
+  fSurveyPoints = s2aObj.fSurveyPoints;
+  fAlignObjArray = s2aObj.fAlignObjArray;
+  fAlignObj = s2aObj.fAlignObj;
   return (*this);
 }
 

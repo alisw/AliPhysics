@@ -125,6 +125,7 @@
 
 #pragma link C++ class AliSurveyObj+;
 #pragma link C++ class AliSurveyPoint+;
+#pragma link C++ class AliSurveyToAlignObjs+;
 
 #pragma link C++ class AliFstream+;
 #pragma link C++ class AliCTPRawData+;
