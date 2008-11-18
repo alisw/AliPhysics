@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id: AliTRDrawOldStream.cxx 29393 2008-10-22 08:38:07Z fca $ */
+/* $Id: AliTRDrawOldStream.cxx 23562 2008-01-25 15:35:04Z cblume $ */
 
 ////////////////////////////////////////////////////////////////////////////
 //                                                                        //
@@ -36,8 +36,8 @@
 #include "AliTRDgeometry.h"
 #include "AliTRDcalibDB.h"
 #include "AliTRDdigitsManager.h"
-#include "AliTRDdataArrayI.h"
-#include "AliTRDdataArrayS.h"
+#include "AliTRDarrayDictionary.h"
+#include "AliTRDarrayADC.h"
 #include "AliTRDSignalIndex.h"
 #include "AliTRDfeeParam.h"
 
@@ -631,10 +631,10 @@ Int_t AliTRDrawOldStream::NextChamber(AliTRDdigitsManager *man, UInt_t** /*track
   // Updates the next data word pointer
   //
 
-  AliTRDdataArrayS *digits = 0;
-  AliTRDdataArrayI *track0 = 0;
-  AliTRDdataArrayI *track1 = 0;
-  AliTRDdataArrayI *track2 = 0; 
+  AliTRDarrayADC *digits = 0;
+  AliTRDarrayDictionary *track0 = 0;
+  AliTRDarrayDictionary *track1 = 0;
+  AliTRDarrayDictionary *track2 = 0; 
   AliTRDSignalIndex *indexes = 0;
 	  
   if (fNextStatus == kStart)
@@ -711,13 +711,13 @@ Int_t AliTRDrawOldStream::NextChamber(AliTRDdigitsManager *man, UInt_t** /*track
 			{
 			  if (GetSignals()[it] > 0)
 			    {
-			      digits->SetDataUnchecked(fROW, fCOL, fTB + it, fSig[it]);
+			      digits->SetData(fROW, fCOL, fTB + it, fSig[it]);
 			      indexes->AddIndexTBin(fROW, fCOL, fTB + it);
 			      if (man->UsesDictionaries())
 				{
-				  track0->SetDataUnchecked(fROW, fCOL, fTB + it, 0);
-				  track1->SetDataUnchecked(fROW, fCOL, fTB + it, 0);
-				  track2->SetDataUnchecked(fROW, fCOL, fTB + it, 0);
+				  track0->SetData(fROW, fCOL, fTB + it, 0);
+				  track1->SetData(fROW, fCOL, fTB + it, 0);
+				  track2->SetData(fROW, fCOL, fTB + it, 0);
 				}
 			    }
 			} // check the tbins range
@@ -813,10 +813,10 @@ Int_t AliTRDrawOldStream::NextChamber(AliTRDdigitsManager *man, UInt_t** /*track
 		  AliDebug(4, "New DET!");	      
 		  // allocate stuff for the new det
 		  //man->ResetArrays();
-		  digits = (AliTRDdataArrayS *) man->GetDigits(fDET);
-		  track0 = (AliTRDdataArrayI *) man->GetDictionary(fDET,0);
-		  track1 = (AliTRDdataArrayI *) man->GetDictionary(fDET,1);
-		  track2 = (AliTRDdataArrayI *) man->GetDictionary(fDET,2);
+		  digits = (AliTRDarrayADC *) man->GetDigits(fDET);
+		  track0 = (AliTRDarrayDictionary *) man->GetDictionary(fDET,0);
+		  track1 = (AliTRDarrayDictionary *) man->GetDictionary(fDET,1);
+		  track2 = (AliTRDarrayDictionary *) man->GetDictionary(fDET,2);
 		  
 		  // Allocate memory space for the digits buffer
 		  if (digits->GetNtime() == 0) 

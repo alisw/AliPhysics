@@ -36,9 +36,8 @@
 #include "AliTRDgeometry.h"
 #include "AliTRDfeeParam.h"
 #include "AliTRDdigitsManager.h"
-#include "AliTRDdataArrayS.h"
-#include "AliTRDdataArrayI.h"
-#include "AliTRDdataArrayDigits.h"
+#include "AliTRDarrayDictionary.h"  //mod
+#include "AliTRDarrayADC.h"  //mod
 #include "AliTRDSignalIndex.h"
 #include "AliTRDrecoParam.h"
 #include "AliTRDcalibDB.h"
@@ -741,10 +740,10 @@ AliTRDrawStreamTB::NextChamber(AliTRDdigitsManager *digitsManager, UInt_t **trac
   //
 
   AliTRDcalibDB *cal = AliTRDcalibDB::Instance();
-  AliTRDdataArrayDigits *digits = 0;
-  AliTRDdataArrayI *track0 = 0;
-  AliTRDdataArrayI *track1 = 0;
-  AliTRDdataArrayI *track2 = 0; 
+  AliTRDarrayADC *digits = 0;
+  AliTRDarrayDictionary *track0 = 0;
+  AliTRDarrayDictionary *track1 = 0;
+  AliTRDarrayDictionary *track2 = 0; 
   AliTRDSignalIndex *indexes = 0;
 
   // Loop through the digits
@@ -809,13 +808,13 @@ AliTRDrawStreamTB::NextChamber(AliTRDdigitsManager *digitsManager, UInt_t **trac
       }
 
     // Add a container for the digits of this detector
-    digits = (AliTRDdataArrayDigits *) digitsManager->GetDigits(det);
+    digits = (AliTRDarrayADC *) digitsManager->GetDigits(det);
 
           if (digitsManager->UsesDictionaries()) 
             {
-        track0 = (AliTRDdataArrayI *) digitsManager->GetDictionary(det,0);
-        track1 = (AliTRDdataArrayI *) digitsManager->GetDictionary(det,1);
-        track2 = (AliTRDdataArrayI *) digitsManager->GetDictionary(det,2);
+        track0 = (AliTRDarrayDictionary *) digitsManager->GetDictionary(det,0);
+        track1 = (AliTRDarrayDictionary *) digitsManager->GetDictionary(det,1);
+        track2 = (AliTRDarrayDictionary *) digitsManager->GetDictionary(det,2);
       }
 
     if (!digits)
@@ -863,16 +862,16 @@ AliTRDrawStreamTB::NextChamber(AliTRDdigitsManager *digitsManager, UInt_t **trac
   {
     if (GetSignals()[it] > 0)
       {
-        digits->SetDataUnchecked(GetRow(), GetCol(), it, GetSignals()[it]);
+        digits->SetData(GetRow(), GetCol(), it, GetSignals()[it]);
         if(padStatus)
-    digits->SetPadStatus(GetRow(), GetCol(), it, padStatus);
-                
+	  digits->SetPadStatus(GetRow(), GetCol(), it, padStatus);
+	
         indexes->AddIndexTBin(GetRow(), GetCol(), it);
               if (digitsManager->UsesDictionaries()) 
                 {
-            track0->SetDataUnchecked(GetRow(), GetCol(), it, 0);
-            track1->SetDataUnchecked(GetRow(), GetCol(), it, 0);
-            track2->SetDataUnchecked(GetRow(), GetCol(), it, 0);
+            track0->SetData(GetRow(), GetCol(), it, 0);
+            track1->SetData(GetRow(), GetCol(), it, 0);
+            track2->SetData(GetRow(), GetCol(), it, 0);
     }
       }
   } // tbins

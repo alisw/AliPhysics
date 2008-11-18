@@ -13,6 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
 //  TRD trigger class                                                        //
@@ -33,8 +35,10 @@
 #include "AliLoader.h"
 
 #include "AliTRDdigitsManager.h"
-#include "AliTRDdataArrayI.h"
-#include "AliTRDdataArrayS.h"
+
+#include "AliTRDarrayDictionary.h"
+#include "AliTRDarrayADC.h"
+
 #include "AliTRDgeometry.h"
 #include "AliTRDcalibDB.h"
 #include "AliTRDrawData.h"
@@ -431,22 +435,22 @@ Bool_t AliTRDtrigger::MakeTracklets(Bool_t makeTracks)
         Int_t nTimeTotal = AliTRDcalibDB::Instance()->GetNumberOfTimeBins();
 
         // Get the digits
-        fDigits = (AliTRDdataArrayS *) fDigitsManager->GetDigits(idet);
+        fDigits = (AliTRDarrayADC *) fDigitsManager->GetDigits(idet);
 	if (!fDigits) return kFALSE;
 	// This is to take care of switched off super modules
         if (fDigits->GetNtime() == 0) {
           continue;
-	}
-        fDigits->Expand();
-        fTrack0 = (AliTRDdataArrayI *) fDigitsManager->GetDictionary(idet,0);
+	} 
+	fDigits->Expand();    
+        fTrack0 = (AliTRDarrayDictionary *) fDigitsManager->GetDictionary(idet,0);
 	if (!fTrack0) return kFALSE;
-        fTrack0->Expand();
-        fTrack1 = (AliTRDdataArrayI *) fDigitsManager->GetDictionary(idet,1);
+	fTrack0->Expand();  
+        fTrack1 = (AliTRDarrayDictionary *) fDigitsManager->GetDictionary(idet,1);
 	if (!fTrack1) return kFALSE;
-        fTrack1->Expand();
-        fTrack2 = (AliTRDdataArrayI *) fDigitsManager->GetDictionary(idet,2); 
+	fTrack1->Expand();   
+        fTrack2 = (AliTRDarrayDictionary *) fDigitsManager->GetDictionary(idet,2); 
 	if (!fTrack2) return kFALSE;
-        fTrack2->Expand();
+	fTrack2->Expand();
 
 	for (Int_t iRob = 0; iRob < fNROB; iRob++) {
 
@@ -470,7 +474,7 @@ Bool_t AliTRDtrigger::MakeTracklets(Bool_t makeTracks)
             for (time = 0; time < nTimeTotal; time++) {
 	      for (col = col1; col < col2; col++) {
 		if ((col >= 0) && (col < nColMax)) {
-		  amp = TMath::Abs(fDigits->GetDataUnchecked(row,col,time));
+		  amp = TMath::Abs(fDigits->GetData(row,col,time));
 		} 
                 else {
 		  amp = 0.0;
@@ -508,10 +512,10 @@ Bool_t AliTRDtrigger::MakeTracklets(Bool_t makeTracks)
 	}
 
 	// Compress the arrays
-        fDigits->Compress(1,0);
-        fTrack0->Compress(1,0);
-        fTrack1->Compress(1,0);
-        fTrack2->Compress(1,0);
+	fDigits->Compress();
+	fTrack0->Compress();      
+	fTrack1->Compress();       
+	fTrack2->Compress();
 
 	WriteTracklets(idet);
 
@@ -615,9 +619,9 @@ Bool_t AliTRDtrigger::TestTracklet(Int_t det, Int_t row, Int_t seed, Int_t n)
     amp[2] = fMCM->GetADC(iCol+1,iTime);
 
     // extract track contribution only from the central pad
-    track[0] = fTrack0->GetDataUnchecked(row,iCol+iCol1,iTime);
-    track[1] = fTrack1->GetDataUnchecked(row,iCol+iCol1,iTime);
-    track[2] = fTrack2->GetDataUnchecked(row,iCol+iCol1,iTime);
+    track[0] = fTrack0->GetData(row,iCol+iCol1,iTime);
+    track[1] = fTrack1->GetData(row,iCol+iCol1,iTime);
+    track[2] = fTrack2->GetData(row,iCol+iCol1,iTime);
 
     if      (fMCM->IsCluster(iCol,iTime)) {
 
@@ -633,9 +637,9 @@ Bool_t AliTRDtrigger::TestTracklet(Int_t det, Int_t row, Int_t seed, Int_t n)
       if (fMCM->IsCluster(iCol+1,iTime)) {
 
 	// extract track contribution only from the central pad
-	track[0] = fTrack0->GetDataUnchecked(row,iCol+1+iCol1,iTime);
-	track[1] = fTrack1->GetDataUnchecked(row,iCol+1+iCol1,iTime);
-	track[2] = fTrack2->GetDataUnchecked(row,iCol+1+iCol1,iTime);
+	track[0] = fTrack0->GetData(row,iCol+1+iCol1,iTime);
+	track[1] = fTrack1->GetData(row,iCol+1+iCol1,iTime);
+	track[2] = fTrack2->GetData(row,iCol+1+iCol1,iTime);
 
 	fTrkTest->AddCluster(iCol+1+iCol1,iTime,amp,track);
 
@@ -688,9 +692,9 @@ void AliTRDtrigger::AddTracklet(Int_t det, Int_t row, Int_t seed, Int_t n)
     amp[2] = fMCM->GetADC(iCol+1,iTime);
 
     // extract track contribution only from the central pad
-    track[0] = fTrack0->GetDataUnchecked(row,iCol+iCol1,iTime);
-    track[1] = fTrack1->GetDataUnchecked(row,iCol+iCol1,iTime);
-    track[2] = fTrack2->GetDataUnchecked(row,iCol+iCol1,iTime);
+    track[0] = fTrack0->GetData(row,iCol+iCol1,iTime);
+    track[1] = fTrack1->GetData(row,iCol+iCol1,iTime);
+    track[2] = fTrack2->GetData(row,iCol+iCol1,iTime);
 
     if      (fMCM->IsCluster(iCol,iTime)) {
 
@@ -706,9 +710,9 @@ void AliTRDtrigger::AddTracklet(Int_t det, Int_t row, Int_t seed, Int_t n)
       if (fMCM->IsCluster(iCol+1,iTime)) {
 
 	// extract track contribution only from the central pad
-	track[0] = fTrack0->GetDataUnchecked(row,iCol+1+iCol1,iTime);
-	track[1] = fTrack1->GetDataUnchecked(row,iCol+1+iCol1,iTime);
-	track[2] = fTrack2->GetDataUnchecked(row,iCol+1+iCol1,iTime);
+	track[0] = fTrack0->GetData(row,iCol+1+iCol1,iTime);
+	track[1] = fTrack1->GetData(row,iCol+1+iCol1,iTime);
+	track[2] = fTrack2->GetData(row,iCol+1+iCol1,iTime);
 
 	fTrk->AddCluster(iCol+1+iCol1,iTime,amp,track);
 

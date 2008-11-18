@@ -22,17 +22,20 @@ class AliRawReader;
 
 class AliTRD;
 class AliTRDcluster;
-class AliTRDdataArrayS;
-class AliTRDdataArrayDigits;
-class AliTRDdataArrayF;
+
+class AliTRDarrayADC;
+class AliTRDarraySignal;
 class AliTRDdigitsManager;
 class AliTRDSignalIndex;
 class AliTRDtransform;
 class AliTRDCalROC;
 class AliTRDReconstructor;
+
 class AliTRDclusterizer : public TNamed 
 {
-public:
+
+ public:
+
   // steering flags
   enum{
     kOwner = BIT(14)
@@ -76,34 +79,34 @@ public:
   Bool_t           IsClustersOwner() const {return TestBit(kOwner);}
   void             SetClustersOwner(Bool_t own=kTRUE) {SetBit(kOwner, own); if(!own) fRecPoints = 0x0;}
 
-protected:
-  void     DeConvExp(Double_t *source, Double_t *target
-              , Int_t nTimeTotal, Int_t nexp);
-  void     TailCancelation(AliTRDdataArrayDigits *digitsIn
-              , AliTRDdataArrayF *digitsOut 
-              , AliTRDSignalIndex *indexesIn
-              , AliTRDSignalIndex *indexesOut
-              , Int_t nTimeTotal
-              , Float_t ADCthreshold
-              , AliTRDCalROC *calGainFactorROC
-              , Float_t calGainFactorDetValue);
+ protected:
+
+  void             DeConvExp(Double_t *source, Double_t *target
+                           , Int_t nTimeTotal, Int_t nexp);
+  void             TailCancelation(AliTRDarrayADC *digitsIn
+			         , AliTRDarraySignal *digitsOut 
+			         , AliTRDSignalIndex *indexesIn
+			         , AliTRDSignalIndex *indexesOut
+			         , Int_t nTimeTotal
+			         , Float_t ADCthreshold
+			         , AliTRDCalROC *calGainFactorROC
+			         , Float_t calGainFactorDetValue);
   virtual Double_t Unfold(Double_t eps, Int_t layer, Double_t *padSignal);
-  Double_t GetCOG(Double_t signal[5]) const; 
-  void     FillLUT();
-  Double_t LUTposition(Int_t ilayer, Double_t ampL, Double_t ampC, Double_t ampR) const;
+          Double_t GetCOG(Double_t signal[5]) const; 
+  void             FillLUT();
+          Double_t LUTposition(Int_t ilayer, Double_t ampL, Double_t ampC, Double_t ampR) const;
   virtual void     ResetHelperIndexes(AliTRDSignalIndex *indexesIn);
 
-protected:
   const AliTRDReconstructor *fReconstructor;       //! reconstructor
   AliRunLoader        *fRunLoader;           //! Run Loader
   TTree               *fClusterTree;         //! Tree with the cluster
   TClonesArray        *fRecPoints;           //! Array of clusters
 
-  TTree               *fTrackletTree;         //! Tree for tracklets
+  TTree               *fTrackletTree;        //! Tree for tracklets
 
   AliTRDdigitsManager *fDigitsManager;       //! TRD digits manager
 
-  UInt_t              **fTrackletContainer;    //! tracklet container
+  UInt_t              **fTrackletContainer;  //! tracklet container
 
   Bool_t               fAddLabels;           //  Should clusters have MC labels?
   Int_t                fRawVersion;          //  Expected raw version of the data - default is 2

@@ -14,12 +14,12 @@
 
 class TFile;
 class TTree;
-
-class AliTRDsegmentArray;
-class AliTRDdataArray;
-class AliTRDdataArrayDigits;
+class TBranch;  
 class AliTRDdigit;
 class AliTRDSignalIndex;
+class AliTRDarrayADC;  
+class AliTRDarraySignal; 
+class AliTRDarrayDictionary;
 
 class AliTRDdigitsManager : public TObject {
 
@@ -50,44 +50,46 @@ class AliTRDdigitsManager : public TObject {
   virtual Bool_t              HasSDigits() const              { return fHasSDigits;      };
   static  Int_t               NDict()                         { return fgkNDict;         }; 
 
-  virtual AliTRDsegmentArray *GetDigits() const               { return fDigits;          };
-  virtual AliTRDsegmentArray *GetDictionary(Int_t i) const    { return fDictionary[i];   };
+  virtual TObjArray          *GetDigits() const               { return fDigits;          };  
+  virtual TObjArray          *GetDictionary(Int_t i) const    { return fDict[i];         }; 
 
-          AliTRDdigit        *GetDigit(Int_t row, Int_t col, Int_t time, Int_t det) const;
-          Int_t               GetTrack(Int_t track, Int_t row, Int_t col
-                                     , Int_t time, Int_t det) const;
+  AliTRDdigit                *GetDigit(Int_t row, Int_t col, Int_t time, Int_t det) const;
+  Int_t                       GetTrack(Int_t track, Int_t row, Int_t col, Int_t time, Int_t det) const;
+  
+  AliTRDarrayADC             *GetDigits(Int_t det)  const;
+  AliTRDarraySignal          *GetSDigits(Int_t det) const;    
+  AliTRDarrayDictionary      *GetDictionary(Int_t det, Int_t i) const;  
+  
+  AliTRDSignalIndex          *GetIndexes(Int_t det);
+  TObjArray                  *GetIndexes()                    { return fSignalIndexes;   };
 
-          AliTRDdataArrayDigits    *GetDigits(Int_t det) const;
-          AliTRDdataArray    *GetDictionary(Int_t det, Int_t i) const;
+  void                        RemoveDigits(Int_t det);
+  void                        RemoveDictionaries(Int_t det);
+  void                        ClearIndexes(Int_t det);
+  
+  Int_t                       GetTrack(Int_t track, AliTRDdigit *digit) const;
+  Short_t                     GetDigitAmp(Int_t row, Int_t col, Int_t time, Int_t det) const;
+  UChar_t                     GetPadStatus(Int_t row, Int_t col, Int_t time, Int_t det) const;
 
-	  AliTRDSignalIndex  *GetIndexes(Int_t det);
-	  TObjArray          *GetIndexes()                    { return fSignalIndexes;   };
-
-	  void                RemoveDigits(Int_t det);
-	  void                RemoveDictionaries(Int_t det);
-	  void                ClearIndexes(Int_t det);
-
-          Int_t               GetTrack(Int_t track, AliTRDdigit *digit) const;
-          Short_t             GetDigitAmp(Int_t row, Int_t col, Int_t time, Int_t det) const;
-					UChar_t             GetPadStatus(Int_t row, Int_t col, Int_t time, Int_t det) const;
-
+  Bool_t                      LoadArray(TObjArray *object, const Char_t *branchname, TTree *tree=0);  
+  Bool_t                      LoadArrayDict(TObjArray *object, const Char_t *branchname, TTree *tree=0);  
+  Bool_t                      StoreArray(TObjArray *array1, const Char_t *branchname, TTree *tree=0); 
+  Bool_t                      StoreArrayDict(TObjArray *array3, const Char_t *branchname, TTree *tree=0); 
+  
  protected:
-
+  
   static const Int_t  fgkNDict;            //  Number of track dictionary arrays
-
   Int_t               fEvent;              //  Event number
   TTree              *fTree;               //! Tree for the digits arrays
-
-  AliTRDsegmentArray *fDigits;             //! Digits data array
-  AliTRDsegmentArray *fDictionary[kNDict]; //! Track dictionary data array
-
+  TObjArray          *fDigits;             //  Digits data array               
+  TObjArray          *fDict[kNDict];       //  Track dictionary data array   
   Bool_t              fHasSDigits;         //  Switch for the summable digits
-
   TObjArray          *fSignalIndexes;      //  Provides access to the active pads and tbins
   Bool_t              fUseDictionaries;    //  Use dictionaries or not (case of real data)
+  TTree              *fTreeD;              //  Tree with detector objects
+  TBranch            *fBranch;             //  Branchaddress
 
   ClassDef(AliTRDdigitsManager,7)          //  Manages the TRD digits
 
 };
-
 #endif

@@ -36,8 +36,8 @@
 #include "AliTRDcalibDB.h"
 #include "AliTRDfeeParam.h"
 #include "AliTRDdigitsManager.h"
-#include "AliTRDdataArrayI.h"
-#include "AliTRDdataArrayS.h"
+#include "AliTRDarrayDictionary.h"
+#include "AliTRDarrayADC.h"
 #include "AliTRDSignalIndex.h"
 
 ClassImp(AliTRDRawStreamV2)
@@ -458,16 +458,16 @@ void AliTRDRawStreamV2::SwapOnEndian()
 	  // here we override the value in the buffer!
 	  *fDataWord = iutmp;
 	}
-	  fDataWord = fpBegin;
-    }
-	
-    // dump words - debugging perpose
-    if (fgDumpHead > 0){
-        AliInfo(Form("---------- Dumping %u words from the beginnig of the buffer ----------",fgDumpHead));
-        if (DumpWords(fpBegin, fgDumpHead) == kFALSE){AliError("Dump failed. Not enough data.");}
-        AliInfo(Form("---------- Dumping ended ----------------------------------------------"));
+      fDataWord = fpBegin;
     }
 
+  // dump words - debugging perpose
+  if (fgDumpHead > 0){
+    AliInfo(Form("---------- Dumping %u words from the beginnig of the buffer ----------",fgDumpHead));
+    if (DumpWords(fpBegin, fgDumpHead) == kFALSE){AliError("Dump failed. Not enough data.");}
+    AliInfo(Form("---------- Dumping ended ----------------------------------------------"));
+  }
+  
 }
 //____________________________________________________________________________
 Int_t AliTRDRawStreamV2::NextData()
@@ -1234,10 +1234,10 @@ Int_t AliTRDRawStreamV2::NextChamber(AliTRDdigitsManager *man, UInt_t** /*trackl
   // Return value is the detector number
   //
 
-  AliTRDdataArrayS *digits = 0;
-  AliTRDdataArrayI *track0 = 0;
-  AliTRDdataArrayI *track1 = 0;
-  AliTRDdataArrayI *track2 = 0; 
+  AliTRDarrayADC *digits = 0;
+  AliTRDarrayDictionary *track0 = 0;
+  AliTRDarrayDictionary *track1 = 0;
+  AliTRDarrayDictionary *track2 = 0; 
   AliTRDSignalIndex *indexes = 0;
 	  
   if (fNextStatus == kStart)
@@ -1271,13 +1271,13 @@ Int_t AliTRDRawStreamV2::NextChamber(AliTRDdigitsManager *man, UInt_t** /*trackl
 		      {
 			if ( fSig[it] > fRawDigitThreshold )
 			  {
-			    digits->SetDataUnchecked(fROW, fCOL, fTB + it, fSig[it]);
+			    digits->SetData(fROW, fCOL, fTB + it, fSig[it]);
 			    indexes->AddIndexTBin(fROW, fCOL, fTB + it);
 			    if (man->UsesDictionaries())
 			      {
-				track0->SetDataUnchecked(fROW, fCOL, fTB + it, 0);
-				track1->SetDataUnchecked(fROW, fCOL, fTB + it, 0);
-				track2->SetDataUnchecked(fROW, fCOL, fTB + it, 0);
+				track0->SetData(fROW, fCOL, fTB + it, 0);
+				track1->SetData(fROW, fCOL, fTB + it, 0);
+				track2->SetData(fROW, fCOL, fTB + it, 0);
 			      } // if dictionaries
 			  } // signal above zero
 		      } // check the tbins range
@@ -1331,10 +1331,10 @@ Int_t AliTRDRawStreamV2::NextChamber(AliTRDdigitsManager *man, UInt_t** /*trackl
 // 		    AliDebug(4, Form("???? New DET ???? %d last %d", fDET, fLastDET));
 		    // allocate stuff for the new det
 		    //man->ResetArrays();
-		    digits = (AliTRDdataArrayS *) man->GetDigits(fDET);
-		    track0 = (AliTRDdataArrayI *) man->GetDictionary(fDET,0);
-		    track1 = (AliTRDdataArrayI *) man->GetDictionary(fDET,1);
-		    track2 = (AliTRDdataArrayI *) man->GetDictionary(fDET,2);
+		    digits = (AliTRDarrayADC *) man->GetDigits(fDET);
+		    track0 = (AliTRDarrayDictionary *) man->GetDictionary(fDET,0);
+		    track1 = (AliTRDarrayDictionary *) man->GetDictionary(fDET,1);
+		    track2 = (AliTRDarrayDictionary *) man->GetDictionary(fDET,2);
 		    
 		    // Allocate memory space for the digits buffer
 		    if (digits->GetNtime() == 0) 
@@ -1391,25 +1391,23 @@ Int_t AliTRDRawStreamV2::NextChamber(AliTRDdigitsManager *man, UInt_t** /*trackl
 Bool_t
 AliTRDRawStreamV2::DumpWords(UInt_t *px, UInt_t iw, UInt_t marker)
 {
-
+  
   TString tsreturn = Form("\n[ Dump Sequence at 0x%08x ] : ", px);
   for (UInt_t i = 0; i < iw; i++)
     {
       if (px + iw >= fpEnd)
-    return kFALSE;
-
+	return kFALSE;
+      
       if (i % 8 == 0)
-    tsreturn += "\n                              ";
+	tsreturn += "\n                              ";
       if (marker != 0 && marker == px[i])
-    tsreturn += Form(" *>0x%08x<* ", px[i]);
+	tsreturn += Form(" *>0x%08x<* ", px[i]);
       else
-    tsreturn += Form("0x%08x ", px[i]);
+	tsreturn += Form("0x%08x ", px[i]);
     }
   tsreturn += "\n";
-
+  
   AliInfo(tsreturn.Data());
-
+  
   return kTRUE;
-}
-
-
+}	 	 

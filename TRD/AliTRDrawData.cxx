@@ -33,8 +33,8 @@
 #include "AliTRDrawData.h"
 #include "AliTRDdigitsManager.h"
 #include "AliTRDgeometry.h"
-#include "AliTRDdataArrayI.h"
-#include "AliTRDdataArrayS.h"
+#include "AliTRDarrayDictionary.h"
+#include "AliTRDarrayADC.h"
 #include "AliTRDrawStreamBase.h"
 #include "AliTRDrawOldStream.h"
 #include "AliTRDRawStreamV2.h"
@@ -199,7 +199,7 @@ Bool_t AliTRDrawData::Digits2Raw(AliTRDdigitsManager *digitsManager)
         Int_t iDet = fGeo->GetDetector(layer,stack,sect);
 	if (iDet == 0) newEvent = kTRUE; // it is expected that each event has at least one tracklet; this is only needed for correct readout tree
 	// Get the digits array
-        AliTRDdataArrayS *digits = (AliTRDdataArrayS *) digitsManager->GetDigits(iDet);
+	AliTRDarrayADC *digits = (AliTRDarrayADC *) digitsManager->GetDigits(iDet);
         if (digits->HasData() ) {  // second part is new!! and is for indicating a new event
 
           digits->Expand();
@@ -314,7 +314,7 @@ void AliTRDrawData::ProduceSMIndexData(UInt_t *buf, Int_t& nw){
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDrawData::ProduceHcData(AliTRDdataArrayS *digits, Int_t side, Int_t det, UInt_t *buf, Int_t maxSize, Bool_t newEvent = kFALSE){
+Int_t AliTRDrawData::ProduceHcData(AliTRDarrayADC *digits, Int_t side, Int_t det, UInt_t *buf, Int_t maxSize, Bool_t newEvent = kFALSE){
 	//
 	// This function can be used for both ZS and NZS data
 	//
@@ -368,7 +368,7 @@ Int_t AliTRDrawData::ProduceHcData(AliTRDdataArrayS *digits, Int_t side, Int_t d
 		    Int_t padcol = mcm[entry]->GetCol( iAdc );
 		    if ((padcol >=    0) && (padcol <  nCol)) {
 				for (Int_t iT = 0; iT < kNTBin; iT++) { 
-			   		mcm[entry]->SetData( iAdc, iT, digits->GetDataUnchecked( padrow, padcol, iT) );
+				  mcm[entry]->SetData( iAdc, iT, digits->GetData( padrow, padcol, iT) );
 				} 
 		    } 
 	    	else {  // this means it is out of chamber, and masked ADC
@@ -377,8 +377,10 @@ Int_t AliTRDrawData::ProduceHcData(AliTRDdataArrayS *digits, Int_t side, Int_t d
 		}
 
 		// Simulate process in MCM
-		mcm[entry]->Filter();     // Apply filter
-		mcm[entry]->ZSMapping();  // Calculate zero suppression mapping
+		//		mcm[entry]->Filter();     // Apply filter
+		//		mcm[entry]->ZSMapping();  // Calculate zero suppression mapping
+		mcm[entry]->CopyArrays();
+		mcm[entry]->GeneratefZSM1Dim();
 
 		if (tracklet_on) {
 		    mcm[entry]->Tracklet(); 
@@ -456,7 +458,7 @@ Int_t AliTRDrawData::ProduceHcData(AliTRDdataArrayS *digits, Int_t side, Int_t d
 
 
 //_____________________________________________________________________________
-Int_t AliTRDrawData::ProduceHcDataV1andV2(AliTRDdataArrayS *digits, Int_t side
+Int_t AliTRDrawData::ProduceHcDataV1andV2(AliTRDarrayADC *digits, Int_t side
                                         , Int_t det, UInt_t *buf, Int_t maxSize)
 {
   //
@@ -590,9 +592,9 @@ Int_t AliTRDrawData::ProduceHcDataV1andV2(AliTRDdataArrayS *digits, Int_t side
         // 3 timebins are packed into one 32 bits word
         for (Int_t iT = 0; iT < kNTBin; iT+=3) { 
           if ((padcol >=    0) && (padcol <  nCol)) {
-	    a[iT  ] = ((iT    ) < kNTBin ) ? digits->GetDataUnchecked(padrow,padcol,iT    ) : 0;
-	    a[iT+1] = ((iT + 1) < kNTBin ) ? digits->GetDataUnchecked(padrow,padcol,iT + 1) : 0;
-	    a[iT+2] = ((iT + 2) < kNTBin ) ? digits->GetDataUnchecked(padrow,padcol,iT + 2) : 0; 
+	    a[iT  ] = ((iT    ) < kNTBin ) ? digits->GetData(padrow,padcol,iT    ) : 0;
+	    a[iT+1] = ((iT + 1) < kNTBin ) ? digits->GetData(padrow,padcol,iT + 1) : 0;
+	    a[iT+2] = ((iT + 2) < kNTBin ) ? digits->GetData(padrow,padcol,iT + 2) : 0; 
 	  } 
 	  else {
 	    a[iT] = a[iT+1] = a[iT+2] = 0; // This happenes at the edge of chamber (should be pedestal! How?)
@@ -642,8 +644,8 @@ Int_t AliTRDrawData::ProduceHcDataV1andV2(AliTRDdataArrayS *digits, Int_t side
 
 //_____________________________________________________________________________
 
-//Int_t AliTRDrawData::ProduceHcDataV3(AliTRDdataArrayS *digits, Int_t side , Int_t det, UInt_t *buf, Int_t maxSize)
-Int_t AliTRDrawData::ProduceHcDataV3(AliTRDdataArrayS *digits, Int_t side , Int_t det, UInt_t *buf, Int_t maxSize, Bool_t newEvent = kFALSE)
+//Int_t AliTRDrawData::ProduceHcDataV3(AliTRDarrayADC *digits, Int_t side , Int_t det, UInt_t *buf, Int_t maxSize)
+Int_t AliTRDrawData::ProduceHcDataV3(AliTRDarrayADC *digits, Int_t side , Int_t det, UInt_t *buf, Int_t maxSize, Bool_t newEvent = kFALSE)
 {
   //
   // This function simulates: Raw Version == 3 (Zero Suppression Prototype)
@@ -709,7 +711,7 @@ Int_t AliTRDrawData::ProduceHcDataV3(AliTRDdataArrayS *digits, Int_t side , Int_
 	    Int_t padcol = mcm[entry]->GetCol( iAdc );
 	    if ((padcol >=    0) && (padcol <  nCol)) {
 		for (Int_t iT = 0; iT < kNTBin; iT++) { 
-		    mcm[entry]->SetData( iAdc, iT, digits->GetDataUnchecked( padrow, padcol, iT) );
+		  mcm[entry]->SetData( iAdc, iT, digits->GetData( padrow, padcol, iT) );
 		} 
 	    } 
 	    else {  // this means it is out of chamber, and masked ADC
@@ -718,8 +720,10 @@ Int_t AliTRDrawData::ProduceHcDataV3(AliTRDdataArrayS *digits, Int_t side , Int_
 	}
 
 	// Simulate process in MCM
-	mcm[entry]->Filter();     // Apply filter
-	mcm[entry]->ZSMapping();  // Calculate zero suppression mapping
+	//	mcm[entry]->Filter();     // Apply filter
+	//	mcm[entry]->ZSMapping();  // Calculate zero suppression mapping
+	mcm[entry]->CopyArrays();
+	mcm[entry]->GeneratefZSM1Dim();
 
 	if (tracklet_on) {
 	    mcm[entry]->Tracklet(); 
@@ -810,10 +814,10 @@ AliTRDdigitsManager *AliTRDrawData::Raw2Digits(AliRawReader *rawReader)
   // Vx of the raw data reading
   //
 
-  AliTRDdataArrayS *digits = 0;
-  AliTRDdataArrayI *track0 = 0;
-  AliTRDdataArrayI *track1 = 0;
-  AliTRDdataArrayI *track2 = 0; 
+  AliTRDarrayADC *digits = 0;
+  AliTRDarrayDictionary *track0 = 0;
+  AliTRDarrayDictionary *track1 = 0;
+  AliTRDarrayDictionary *track2 = 0;  
 
   //AliTRDSignalIndex *indexes = 0;
   // Create the digits manager
@@ -840,15 +844,15 @@ AliTRDdigitsManager *AliTRDrawData::Raw2Digits(AliRawReader *rawReader)
       if (det >= 0)
 	{
 	  // get...
-	  digits = (AliTRDdataArrayS *) digitsManager->GetDigits(det);
-	  track0 = (AliTRDdataArrayI *) digitsManager->GetDictionary(det,0);
-	  track1 = (AliTRDdataArrayI *) digitsManager->GetDictionary(det,1);
-	  track2 = (AliTRDdataArrayI *) digitsManager->GetDictionary(det,2);
+	  digits = (AliTRDarrayADC *) digitsManager->GetDigits(det);
+	  track0 = (AliTRDarrayDictionary *) digitsManager->GetDictionary(det,0);
+	  track1 = (AliTRDarrayDictionary *) digitsManager->GetDictionary(det,1);
+	  track2 = (AliTRDarrayDictionary *) digitsManager->GetDictionary(det,2);
 	  // and compress
-	  if (digits) digits->Compress(1,0);
-	  if (track0) track0->Compress(1,0);
-	  if (track1) track1->Compress(1,0);
-	  if (track2) track2->Compress(1,0);
+ 	  if (digits) digits->Compress();  
+ 	  if (track0) track0->Compress();   
+ 	  if (track1) track1->Compress();     
+ 	  if (track2) track2->Compress();
 	}
     }
 
@@ -974,10 +978,10 @@ AliTRDdigitsManager *AliTRDrawData::Raw2DigitsOLD(AliRawReader *rawReader)
   // Vx of the raw data reading
   //
 
-  AliTRDdataArrayS *digits = 0;
-  AliTRDdataArrayI *track0 = 0;
-  AliTRDdataArrayI *track1 = 0;
-  AliTRDdataArrayI *track2 = 0; 
+  AliTRDarrayADC *digits = 0;
+  AliTRDarrayDictionary *track0 = 0;
+  AliTRDarrayDictionary *track1 = 0;
+  AliTRDarrayDictionary *track2 = 0; 
 
   AliTRDSignalIndex *indexes = 0;
   // Create the digits manager
@@ -1003,16 +1007,16 @@ AliTRDdigitsManager *AliTRDrawData::Raw2DigitsOLD(AliRawReader *rawReader)
 	
 	  lastdet = det;
 
-	  if (digits) digits->Compress(1,0);
-	  if (track0) track0->Compress(1,0);
-	  if (track1) track1->Compress(1,0);
-	  if (track2) track2->Compress(1,0);
+ 	  if (digits) digits->Compress();
+ 	  if (track0) track0->Compress();       
+ 	  if (track1) track1->Compress();       
+ 	  if (track2) track2->Compress();
 	
 	  // Add a container for the digits of this detector
-	  digits = (AliTRDdataArrayS *) digitsManager->GetDigits(det);
-	  track0 = (AliTRDdataArrayI *) digitsManager->GetDictionary(det,0);
-	  track1 = (AliTRDdataArrayI *) digitsManager->GetDictionary(det,1);
-	  track2 = (AliTRDdataArrayI *) digitsManager->GetDictionary(det,2);
+	  digits = (AliTRDarrayADC *) digitsManager->GetDigits(det);
+	  track0 = (AliTRDarrayDictionary *) digitsManager->GetDictionary(det,0);
+	  track1 = (AliTRDarrayDictionary *) digitsManager->GetDictionary(det,1);
+	  track2 = (AliTRDarrayDictionary *) digitsManager->GetDictionary(det,2);
 
 	  // Allocate memory space for the digits buffer
 	  if (digits->GetNtime() == 0) 
@@ -1039,26 +1043,22 @@ AliTRDdigitsManager *AliTRDrawData::Raw2DigitsOLD(AliRawReader *rawReader)
 	    {
 	      if (input.GetSignals()[it] > 0)
 		{
-		  digits->SetDataUnchecked(input.GetRow(), input.GetCol(),
-					   input.GetTimeBin() + it, input.GetSignals()[it]);
+		  digits->SetData(input.GetRow(), input.GetCol(),input.GetTimeBin() + it, input.GetSignals()[it]);
 
 		  indexes->AddIndexTBin(input.GetRow(), input.GetCol(),
 					input.GetTimeBin() + it);
-		  track0->SetDataUnchecked(input.GetRow(), input.GetCol(),
-					   input.GetTimeBin() + it, 0);
-		  track1->SetDataUnchecked(input.GetRow(), input.GetCol(),
-					   input.GetTimeBin() + it, 0);
-		  track2->SetDataUnchecked(input.GetRow(), input.GetCol(),
-					   input.GetTimeBin() + it, 0);
+		  track0->SetData(input.GetRow(), input.GetCol(), input.GetTimeBin() + it, 0);
+		  track1->SetData(input.GetRow(), input.GetCol(), input.GetTimeBin() + it, 0);
+		  track2->SetData(input.GetRow(), input.GetCol(), input.GetTimeBin() + it, 0);
 		}
 	    }
 	}
   }
 
-  if (digits) digits->Compress(1,0);
-  if (track0) track0->Compress(1,0);
-  if (track1) track1->Compress(1,0);
-  if (track2) track2->Compress(1,0);
+  if (digits) digits->Compress();
+  if (track0) track0->Compress();        
+  if (track1) track1->Compress();       
+  if (track2) track2->Compress();
 
   return digitsManager;
 

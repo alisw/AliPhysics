@@ -20,7 +20,7 @@ class AliRawReader;
 class AliTRDdigitsManager;
 class AliTRDgeometry;
 class AliTRDfeeParam;
-class AliTRDdataArrayS;
+class AliTRDarrayADC;
 
 class AliTRDrawData : public TObject {
 
@@ -47,10 +47,10 @@ class AliTRDrawData : public TObject {
  protected:
 
   virtual Bool_t       Digits2Raw(AliTRDdigitsManager* digitsManager); // for fRawVersion > 0
-  virtual Int_t	       ProduceHcData(AliTRDdataArrayS *digits, Int_t side, Int_t det, UInt_t *buf, Int_t maxSize, Bool_t newEvent);
-  virtual Int_t        ProduceHcDataV1andV2(AliTRDdataArrayS *digits, Int_t side, Int_t det, UInt_t *buf, Int_t maxSize);
-  virtual Int_t        ProduceHcDataV3(AliTRDdataArrayS *digits, Int_t side, Int_t det, UInt_t *buf, Int_t maxSize, Bool_t newEvent);
-  //virtual Int_t      ProduceHcDataV3(AliTRDdataArrayS *digits, Int_t side, Int_t det, UInt_t *buf, Int_t maxSize);
+  virtual Int_t        ProduceHcData(AliTRDarrayADC *digits, Int_t side, Int_t det, UInt_t *buf, Int_t maxSize, Bool_t newEvent);
+  virtual Int_t        ProduceHcDataV1andV2(AliTRDarrayADC *digits, Int_t side, Int_t det, UInt_t *buf, Int_t maxSize);
+  virtual Int_t        ProduceHcDataV3(AliTRDarrayADC *digits, Int_t side, Int_t det, UInt_t *buf, Int_t maxSize, Bool_t newEvent);
+  //virtual Int_t      ProduceHcDataV3(AliTRDarrayADC *digits, Int_t side, Int_t det, UInt_t *buf, Int_t maxSize);
   		  void 	       ProduceSMIndexData(UInt_t *buf, Int_t& nw);				// SM index words and header - real data format
           void         WriteIntermediateWords(UInt_t *buf, Int_t& nw, Int_t& of, const Int_t& maxSize, const Int_t& det, const Int_t& side); // writes tracklet-endmarker and additional words between tracklet and raw-data
           void   	   WriteIntermediateWordsV2(UInt_t *buf, Int_t& nw, Int_t& of, const Int_t& maxSize, const Int_t& det, const Int_t& side); // real data format
@@ -63,8 +63,8 @@ class AliTRDrawData : public TObject {
 
  private:
 
-	static       Int_t  fgRawFormatVersion;           			// simulation raw data version - 0:old , 1:new(real data format)
- 	static const UInt_t fgkEndOfTrackletMarker  = 0x10001000;   // This marks the end of tracklet data words
+	static       Int_t  fgRawFormatVersion;           	  // simulation raw data version - 0:old , 1:new(real data format)
+ 	static const UInt_t fgkEndOfTrackletMarker  = 0x10001000; // This marks the end of tracklet data words
 
 
 

@@ -19,6 +19,7 @@ class AliTRDcalibDB;
 class AliTRDgeometry;
 class AliTRDtrapAlu;
 class AliTRDpadPlane;
+class AliTRDarrayADC;
 
 class AliTRDmcmSim : public TObject {
 
@@ -54,6 +55,10 @@ class AliTRDmcmSim : public TObject {
 	  void      DumpData( char *f, char *target );         // Dump data stored (only for debugging)
 	  void      Tracklet();
 	  void      SetPosLUT();
+	  void      CopyArrays();                              // Copy arrays between containers, internal consistency
+	  void      GeneratefZSM1Dim();                        // Generate the ZSM1Dim based on digits array info
+	  void      StartfastZS(Int_t pads, Int_t timebis);                    // For ZS in the digitizer
+	  void      FlagDigitsArray(AliTRDarrayADC *tempdigs, Int_t valrow);   //Set flags on the digits array
 
  protected:
 

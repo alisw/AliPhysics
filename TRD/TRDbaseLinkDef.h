@@ -21,6 +21,9 @@
 #pragma link C++ class  AliTRDdataArrayDigits+;
 #pragma link C++ class  AliTRDdataArrayF+;
 #pragma link C++ class  AliTRDSignalIndex+;
+#pragma link C++ class  AliTRDarraySignal+;
+#pragma link C++ class  AliTRDarrayDictionary+;
+#pragma link C++ class  AliTRDarrayADC+;
 
 #pragma link C++ class  AliTRDgeometry+;
 #pragma link C++ class  AliTRDpadPlane+;

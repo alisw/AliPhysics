@@ -102,7 +102,7 @@ The default raw version is 2.
 #include "AliTRDgeometry.h"
 #include "AliTRDcalibDB.h"
 #include "AliTRDdigitsManager.h"
-
+#include "AliTRDarrayADC.h"
 // additional for new tail filter and/or tracklet
 #include "AliTRDtrapAlu.h"
 #include "AliTRDpadPlane.h"
@@ -2622,4 +2622,117 @@ void AliTRDmcmSim::Tracklet(){
   // cluster quality threshold (not yet set)
   // electron probability
 }
+//_____________________________________________________________________________________
+void AliTRDmcmSim::GeneratefZSM1Dim()
+{
+  //
+  // Generate the array fZSM1Dim necessary
+  // for the method ProduceRawStream
+  //
+
+  // Fill the mapping
+  // Supressed zeros indicated by -1 in digits array
+  for( Int_t iadc = 1 ; iadc < fNADC-1; iadc++ ) 
+    {
+      for( Int_t it = 0 ; it < fNTimeBin ; it++ ) 
+	{
+	  
+	  if(fADCF[iadc][it]==-1)  // If is a supressed value
+	    {
+	      fZSM[iadc][it]=1;
+	    }
+	  else                    // Not suppressed
+	    {
+	      fZSM[iadc][it]=0;
+	    }
+	}
+    }
+
+  // Make the 1 dim projection
+  for( Int_t iadc = 0 ; iadc < fNADC; iadc++ ) 
+    {
+      for( Int_t it = 0 ; it < fNTimeBin ; it++ ) 
+	{
+	  fZSM1Dim[iadc] &= fZSM[iadc][it];
+	}
+    }
+}
+//_______________________________________________________________________________________
+void AliTRDmcmSim::CopyArrays()
+{
+  //
+  // Initialize filtered data array with raw data
+  // Method added for internal consistency
+  //
+
+  for( Int_t iadc = 0 ; iadc < fNADC; iadc++ ) 
+    {
+      for( Int_t it = 0 ; it < fNTimeBin ; it++ ) 
+	{
+	  fADCF[iadc][it] = fADCR[iadc][it]; 
+	}
+    }
+}
+//_______________________________________________________________________________________
+void AliTRDmcmSim::StartfastZS(Int_t pads, Int_t timebins)
+{
+  //
+  // Initialize just the necessary elements to perform
+  // the zero suppression in the digitizer
+  //
+   
+  fFeeParam  = AliTRDfeeParam::Instance();
+  fSimParam  = AliTRDSimParam::Instance();
+  fNADC      = pads;      
+  fNTimeBin  = timebins; 
+
+  if( fADCR == NULL ) 
+    {
+      fADCR    = new Int_t *[fNADC];
+      fADCF    = new Int_t *[fNADC];
+      fADCT    = new Int_t *[fNADC]; 
+      fZSM     = new Int_t *[fNADC];
+      fZSM1Dim = new Int_t  [fNADC];
+    for( Int_t iadc = 0 ; iadc < fNADC; iadc++ )
+      {
+	fADCR[iadc] = new Int_t[fNTimeBin];
+	fADCF[iadc] = new Int_t[fNTimeBin];
+	fADCT[iadc] = new Int_t[fNTimeBin]; 
+	fZSM [iadc] = new Int_t[fNTimeBin];
+      }
+    }
+
+  for( Int_t iadc = 0 ; iadc < fNADC; iadc++ ) 
+    {
+      for( Int_t it = 0 ; it < fNTimeBin ; it++ ) 
+	{
+	  fADCR[iadc][it] =  0;
+	  fADCF[iadc][it] =  0;
+	  fADCT[iadc][it] = -1;  
+	  fZSM [iadc][it] =  1;   
+	}
+      fZSM1Dim[iadc] = 1;      
+    }
+  
+  fInitialized = kTRUE;
+}
+//_______________________________________________________________________________________
+void AliTRDmcmSim::FlagDigitsArray(AliTRDarrayADC *tempdigs, Int_t valrow)
+{
+  //
+  // Modify the digits array to flag suppressed values
+  //
+
+  for( Int_t iadc = 1 ; iadc < fNADC-1; iadc++ ) 
+    {
+      for( Int_t it = 0 ; it < fNTimeBin ; it++ ) 
+	{
+	  if(fZSM[iadc][it]==1)
+	    {
+	      tempdigs->SetData(valrow,iadc,it,-1);
+	    }
+	}
+    }
+}
+
 

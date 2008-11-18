@@ -25,8 +25,8 @@ class AliTRDgtuTrack;
 class AliTRDmcm;
 class AliTRDmodule;
 class AliTRDdigitsManager;
-class AliTRDdataArrayI;
-class AliTRDdataArrayS;
+class AliTRDarrayDictionary;
+class AliTRDarrayADC;
 class AliTRDgeometry;
 
 class AliTRDtrigger : public TNamed {
@@ -86,10 +86,10 @@ class AliTRDtrigger : public TNamed {
 
           Int_t                  fNtracklets;                  //! Tracklets counter
 
-          AliTRDdataArrayS      *fDigits;                      //! Array with digits
-          AliTRDdataArrayI      *fTrack0;                      //! Track dictionary 0
-          AliTRDdataArrayI      *fTrack1;                      //! Track dictionary 1
-          AliTRDdataArrayI      *fTrack2;                      //! Track dictionary 2
+          AliTRDarrayADC        *fDigits;                      //! Array with digits
+          AliTRDarrayDictionary *fTrack0;                      //! Track dictionary 0
+          AliTRDarrayDictionary *fTrack1;                      //! Track dictionary 1
+          AliTRDarrayDictionary *fTrack2;                      //! Track dictionary 2
 
           Int_t fNPrimary;                                     //! Number of primary tracks
 

@@ -45,8 +45,8 @@
 #include "AliTRDQADataMakerSim.h"
 #include "AliTRDdigitsManager.h"
 #include "AliTRDgeometry.h"
-#include "AliTRDdataArrayS.h"
-#include "AliTRDdataArrayF.h"
+#include "AliTRDarrayADC.h"
+#include "AliTRDarraySignal.h"
 //#include "AliTRDrawStream.h"
 
 #include "AliQAChecker.h"
@@ -262,38 +262,36 @@ void AliTRDQADataMakerSim::MakeDigits(TTree * digits)
   TH1D *histTime = (TH1D*)GetDigitsData(1);
   TH1D *histSignal = (TH1D*)GetDigitsData(2);
 
-  for (Int_t i = 0; i < AliTRDgeometry::kNdet; i++) {
+  for (Int_t i = 0; i < AliTRDgeometry::kNdet; i++) 
+    {
+      AliTRDarrayADC *digitsIn = (AliTRDarrayADC *) digitsManager->GetDigits(i);      
 
-    AliTRDdataArrayS *digitsIn = (AliTRDdataArrayS *) digitsManager->GetDigits(i);      
-
-    // This is to take care of switched off super modules
-    if (digitsIn->GetNtime() == 0) continue;
-
-    digitsIn->Expand();
-
-    //AliTRDSignalIndex* indexes = digitsManager->GetIndexes(i);
-    //if (indexes->IsAllocated() == kFALSE) digitsManager->BuildIndexes(i);
-
-    Int_t nRows = digitsIn->GetNrow();
-    Int_t nCols = digitsIn->GetNcol();
-    Int_t nTbins = digitsIn->GetNtime();
-
-    for(Int_t row = 0; row < nRows; row++) 
-      for(Int_t col = 0; col < nCols; col++) 
-	for(Int_t time = 0; time < nTbins; time++) {
-
-	  Float_t signal = digitsIn->GetDataUnchecked(row,col,time);
-	  if (signal < 1) continue;
-	  histDet->Fill(i);
-	  histTime->Fill(time);
-	  histSignal->Fill(signal);
-      	}
+      // This is to take care of switched off super modules
+      if (digitsIn->GetNtime() == 0) continue;
+      
+      digitsIn->Expand();
+      
+      //AliTRDSignalIndex* indexes = digitsManager->GetIndexes(i);
+      //if (indexes->IsAllocated() == kFALSE) digitsManager->BuildIndexes(i);
+      
+      Int_t nRows = digitsIn->GetNrow();
+      Int_t nCols = digitsIn->GetNcol();
+      Int_t nTbins = digitsIn->GetNtime();
+      
+      for(Int_t row = 0; row < nRows; row++) 
+	for(Int_t col = 0; col < nCols; col++) 
+	  for(Int_t time = 0; time < nTbins; time++) 
+	    {   
+	      Float_t signal = digitsIn->GetData(row,col,time);
+	      if (signal < 1) continue;
+	      histDet->Fill(i);
+	      histTime->Fill(time);
+	      histSignal->Fill(signal);
+	    }
 
     //delete digitsIn;
   }
-
   delete digitsManager;
-
 }
 
 //____________________________________________________________________________
@@ -329,39 +327,38 @@ void AliTRDQADataMakerSim::MakeSDigits(TTree * digits)
   TH1D *histTime = (TH1D*)GetSDigitsData(1);
   TH1D *histSignal = (TH1D*)GetSDigitsData(2);
 
-  for (Int_t i = 0; i < AliTRDgeometry::kNdet; i++) {
-
-    //AliTRDdataArrayS *digitsIn = (AliTRDdataArrayS *) digitsManager->GetDigits(i);      
-    AliTRDdataArrayF *digitsIn = (AliTRDdataArrayF *) digitsManager->GetDigits(i);      
-
+  for (Int_t i = 0; i < AliTRDgeometry::kNdet; i++) 
+    {
+      AliTRDarraySignal *digitsIn = (AliTRDarraySignal *) digitsManager->GetSDigits(i);
+  
     // This is to take care of switched off super modules
-    if (digitsIn->GetNtime() == 0) continue;
+      if (digitsIn->GetNtime() == 0) continue;
+      
+    digitsIn->Expand(); 
+      
+      //AliTRDSignalIndex* indexes = digitsManager->GetIndexes(i);
+      //if (indexes->IsAllocated() == kFALSE) digitsManager->BuildIndexes(i);
+      Int_t nRows = digitsIn->GetNrow();
+      Int_t nCols = digitsIn->GetNcol();
+      Int_t nTbins = digitsIn->GetNtime();
 
-    digitsIn->Expand();
-
-    //AliTRDSignalIndex* indexes = digitsManager->GetIndexes(i);
-    //if (indexes->IsAllocated() == kFALSE) digitsManager->BuildIndexes(i);
-
-    Int_t nRows = digitsIn->GetNrow();
-    Int_t nCols = digitsIn->GetNcol();
-    Int_t nTbins = digitsIn->GetNtime();
-
-    for(Int_t row = 0; row < nRows; row++) 
-      for(Int_t col = 0; col < nCols; col++) 
-	for(Int_t time = 0; time < nTbins; time++) {
-
-	  Float_t signal = digitsIn->GetDataUnchecked(row,col,time);
-	  if (signal < 1) continue;
-	  histDet->Fill(i);
-	  histTime->Fill(time);
-	  histSignal->Fill(signal);
-      	}
-
-    // delete digitsIn;
-  }
-
+      for(Int_t row = 0; row < nRows; row++) 
+	{
+	  for(Int_t col = 0; col < nCols; col++) 
+	    {
+	      for(Int_t time = 0; time < nTbins; time++) 
+		{	    
+		  Float_t signal = digitsIn->GetData(row,col,time);
+		  if (signal < 1) continue;
+		  histDet->Fill(i);
+		  histTime->Fill(time);
+		  histSignal->Fill(signal);
+		}
+	    }
+	}
+      // delete digitsIn;
+    }
   delete digitsManager;
-
 }
 
 //____________________________________________________________________________ 

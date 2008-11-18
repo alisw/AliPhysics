@@ -22,8 +22,8 @@ class AliRunLoader;
 class AliTRD;
 class AliTRDdigitsManager;
 class AliTRDgeometry;
-class AliTRDdataArrayF;
-class AliTRDsegmentArray;
+class AliTRDarraySignal;
+class AliTRDarrayADC;
 
 class AliTRDdigitizer : public AliDigitizer {
 
@@ -53,17 +53,17 @@ class AliTRDdigitizer : public AliDigitizer {
   virtual Bool_t       MakeDigits();
 
           Bool_t       SortHits(Float_t **hits, Int_t *nhit);
-          Bool_t       ConvertHits(Int_t det, Float_t *hits, Int_t nhit, AliTRDdataArrayF *signals);
-          Bool_t       ConvertSignals(Int_t det, AliTRDdataArrayF *signals);
+          Bool_t       ConvertHits(Int_t det, Float_t *hits, Int_t nhit, AliTRDarraySignal *signals);
+          Bool_t       ConvertSignals(Int_t det, AliTRDarraySignal *signals);
 
           Bool_t       SDigits2Digits();
           Bool_t       MergeSDigits();
           Bool_t       ConvertSDigits();
 
-          Bool_t       Signal2ADC(Int_t det, AliTRDdataArrayF *signals);
-          Bool_t       Signal2SDigits(Int_t det, AliTRDdataArrayF *signals);
+          Bool_t       Signal2ADC(Int_t det, AliTRDarraySignal *signals);
+          Bool_t       Signal2SDigits(Int_t det, AliTRDarraySignal *signals);
           Bool_t       CopyDictionary(Int_t det);
-          void         CompressOutputArrays(Int_t det);
+	  void         CompressOutputArrays(Int_t det);
 
           void         SetCompress(Int_t c = 1)             { fCompress        = c;   }
           void         SetSDigits(Int_t v = 1)              { fSDigits         = v;   }
@@ -84,7 +84,8 @@ class AliTRDdigitizer : public AliDigitizer {
           Int_t        Diffusion(Float_t vdrift, Double_t absdriftlength
                                , Double_t &lRow, Double_t &lCol, Double_t &lTime);
           Int_t        ExB(Float_t vdrift, Double_t driftlength, Double_t &lRow);
-  
+	  void         ZS(AliTRDarrayADC *digits);
+
  protected:
 
   virtual Bool_t       Init();
@@ -116,7 +117,7 @@ class AliTRDdigitizer : public AliDigitizer {
           Float_t      fVDlo;               //  Lower drift velocity, for interpolation
           Float_t      fVDhi;               //  Higher drift velocity, for interpolation
 
-  ClassDef(AliTRDdigitizer,17)              //  Produces TRD-Digits
+  ClassDef(AliTRDdigitizer,18)              //  Produces TRD-Digits
 
 };
 #endif

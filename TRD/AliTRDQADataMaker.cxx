@@ -45,10 +45,9 @@
 #include "AliTRDQADataMaker.h"
 #include "AliTRDdigitsManager.h"
 #include "AliTRDgeometry.h"
-#include "AliTRDdataArrayS.h"
+#include "AliTRDarrayADC.h"
 #include "AliTRDrawStream.h"
 #include "AliTRDRawStreamV2.h"
-
 #include "AliQAChecker.h"
 
 ClassImp(AliTRDQADataMaker)
@@ -572,12 +571,12 @@ void AliTRDQADataMaker::MakeDigits(TTree * digits)
 
   for (Int_t i = 0; i < AliTRDgeometry::kNdet; i++) {
 
-    AliTRDdataArrayS *digitsIn = (AliTRDdataArrayS *) digitsManager->GetDigits(i);      
+    AliTRDarrayADC *digitsIn = (AliTRDarrayADC *) digitsManager->GetDigits(i);      
 
     // This is to take care of switched off super modules
     if (digitsIn->GetNtime() == 0) continue;
 
-    digitsIn->Expand();
+    digitsIn->Expand(); 
 
     //AliTRDSignalIndex* indexes = digitsManager->GetIndexes(i);
     //if (indexes->IsAllocated() == kFALSE) digitsManager->BuildIndexes(i);
@@ -588,13 +587,13 @@ void AliTRDQADataMaker::MakeDigits(TTree * digits)
 
     for(Int_t row = 0; row < nRows; row++) 
       for(Int_t col = 0; col < nCols; col++) 
-	for(Int_t time = 0; time < nTbins; time++) {
-
-	  Float_t signal = digitsIn->GetDataUnchecked(row,col,time);
-	  GetDigitsData(0)->Fill(i);
-	  GetDigitsData(1)->Fill(time);
-	  GetDigitsData(2)->Fill(signal);
-      	}
+	for(Int_t time = 0; time < nTbins; time++) 
+	  {
+	    Float_t signal = digitsIn->GetData(row,col,time);
+	    GetDigitsData(0)->Fill(i);
+	    GetDigitsData(1)->Fill(time);
+	    GetDigitsData(2)->Fill(signal);
+	  }
 
     //delete digitsIn;
   }
@@ -631,14 +630,14 @@ void AliTRDQADataMaker::MakeSDigits(TTree * digits)
   digitsManager->CreateArrays();
   digitsManager->ReadDigits(digits);
 
-  for (Int_t i = 0; i < AliTRDgeometry::kNdet; i++) {
-
-    AliTRDdataArrayS *digitsIn = (AliTRDdataArrayS *) digitsManager->GetDigits(i);      
+  for (Int_t i = 0; i < AliTRDgeometry::kNdet; i++) 
+    {
+    AliTRDarrayADC *digitsIn = (AliTRDarrayADC *) digitsManager->GetDigits(i);      
 
     // This is to take care of switched off super modules
     if (digitsIn->GetNtime() == 0) continue;
 
-    digitsIn->Expand();
+    digitsIn->Expand();  
 
     //AliTRDSignalIndex* indexes = digitsManager->GetIndexes(i);
     //if (indexes->IsAllocated() == kFALSE) digitsManager->BuildIndexes(i);
@@ -649,15 +648,15 @@ void AliTRDQADataMaker::MakeSDigits(TTree * digits)
 
     for(Int_t row = 0; row < nRows; row++) 
       for(Int_t col = 0; col < nCols; col++) 
-	for(Int_t time = 0; time < nTbins; time++) {
-
-	  Float_t signal = digitsIn->GetDataUnchecked(row,col,time);
-	  if (signal <= 0) continue;
-	  GetSDigitsData(0)->Fill(i);
-	  GetSDigitsData(1)->Fill(time);
-	  GetSDigitsData(2)->Fill(signal);
-      	}
-
+	for(Int_t time = 0; time < nTbins; time++) 
+	  {
+	    Float_t signal = digitsIn->GetData(row,col,time);
+	    if (signal <= 0) continue;
+	    GetSDigitsData(0)->Fill(i);
+	    GetSDigitsData(1)->Fill(time);
+	    GetSDigitsData(2)->Fill(signal);
+	  }
+    
     // delete digitsIn;
   }
 

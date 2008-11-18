@@ -11,6 +11,9 @@ set(SRCS
       AliTRDdataArrayF.cxx
       AliTRDdataArrayDigits.cxx
       AliTRDsegmentArray.cxx
+      AliTRDarraySignal.cxx
+      AliTRDarrayDictionary.cxx
+      AliTRDarrayADC.cxx
       AliTRDSignalIndex.cxx
       AliTRDgeometry.cxx
       AliTRDdigit.cxx
