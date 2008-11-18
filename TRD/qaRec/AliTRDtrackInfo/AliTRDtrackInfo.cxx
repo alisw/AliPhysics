@@ -31,6 +31,7 @@
 
 #include "AliTRDseedV1.h"
 #include "AliTRDtrackV1.h"
+#include "AliTRDgeometry.h"
 
 #include <cstdio>
 #include <cstdlib>
@@ -348,10 +349,17 @@ void AliTRDtrackInfo::SetSlices(Int_t n, Double32_t *s)
 }
  
 //___________________________________________________
-Bool_t AliTRDtrackInfo::AliMCinfo::GetDirections(Float_t x0, Float_t &y0, Float_t &z0, Float_t &dydx, Float_t &dzdx) const
+Bool_t AliTRDtrackInfo::AliMCinfo::GetDirections(Float_t x0, Float_t &y0, Float_t &z0, Float_t &dydx, Float_t &dzdx, UChar_t &status) const
 {
-  // check for 2 track ref where the radial position has a distance less than 3.7mm and are close to the x0
+// Check for 2 track ref for the tracklet defined bythe radial position x0
+// The "status" is a bit map and gives a more informative output in case of failure:
+//   - 0 : everything is OK
+//   - BIT(0) : 0 track refs found
+//   - BIT(1) : 1 track reference found
+//   - BIT(2) : dx <= 0 between track references
+//   - BIT(3) : dx > 0 && dx < 3.7 - tangent tracks 
 
+  status = 0;
   Int_t nFound = 0;
   AliTrackReference *tr[2] = {0x0, 0x0};
   AliTrackReference * const* jtr = &fTrackRefs[0];
@@ -365,13 +373,17 @@ Bool_t AliTRDtrackInfo::AliMCinfo::GetDirections(Float_t x0, Float_t &y0, Float_
   } 
   if(nFound < 2){ 
     AliWarningGeneral("AliTRDtrackInfo::AliMCinfo::GetDirections()", Form("Missing track ref x0[%6.3f] nref[%d]\n", x0, nFound));
+    if(!nFound) SETBIT(status, 0);
+    else SETBIT(status, 1);
     return kFALSE;
   }
   Double_t dx = tr[1]->LocalX() - tr[0]->LocalX();
-  if(dx <= 0. || TMath::Abs(dx-3.7)>1.E-3){
+  if(dx <= 0.){
     AliWarningGeneral("AliTRDtrackInfo::AliMCinfo::GetDirections()", Form("Track ref with wrong radial distances refX0[%6.3f] refX1[%6.3f]", tr[0]->LocalX(), tr[1]->LocalX()));
+    SETBIT(status, 2);
     return kFALSE;
   }
+  if(TMath::Abs(dx-AliTRDgeometry::CamHght()-AliTRDgeometry::CdrHght())>1.E-3) SETBIT(status, 3); 
 
   dydx = (tr[1]->LocalY() - tr[0]->LocalY()) / dx;
   dzdx = (tr[1]->Z() - tr[0]->Z()) / dx;
