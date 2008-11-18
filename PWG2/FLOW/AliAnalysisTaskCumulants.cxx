@@ -76,13 +76,20 @@ AliAnalysisTaskCumulants::AliAnalysisTaskCumulants(const char *name, Bool_t on):
  fQADiff(NULL),
  fQA(on)
 {
- //constructor
- cout<<"AliAnalysisTaskCumulants::AliAnalysisTaskCumulants(const char *name)"<<endl;
- //input and output slots:
- //input slot #0 works with a TChain
+//constructor
+ cout<<"AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants(const char *name)"<<endl;
+ 
+ // Define input and output slots here
+ // Input slot #0 works with a TChain
  DefineInput(0, TChain::Class());
- //output slot #0 writes into a TList container
+  
+ // Output slot #0 writes into a TList container
  DefineOutput(0, TList::Class());  
+ if(on) 
+ {
+  DefineOutput(1, TList::Class());
+  DefineOutput(2, TList::Class()); 
+ }  
 }
 
 AliAnalysisTaskCumulants::AliAnalysisTaskCumulants(): 
@@ -232,7 +239,7 @@ void AliAnalysisTaskCumulants::Exec(Option_t *)
     Printf("There are %d tracks in this event", fESD->GetNumberOfTracks());
     
     //cumulant analysis 
-    AliFlowEventSimple* fEvent = fEventMaker->FillTracks(fESD);
+    AliFlowEventSimple* fEvent = fEventMaker->FillTracks(fESD,fCFManager1,fCFManager2);
     fCA->Make(fEvent);
     delete fEvent;
   }
