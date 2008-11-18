@@ -240,7 +240,7 @@ void AliAnalysisTaskQCumulants::Exec(Option_t *)
     Printf("There are %d tracks in this event", fESD->GetNumberOfTracks());
     
     //Q-cumulant analysis 
-    AliFlowEventSimple* fEvent = fEventMaker->FillTracks(fESD);
+    AliFlowEventSimple* fEvent = fEventMaker->FillTracks(fESD,fCFManager1,fCFManager2);
     fQCA->Make(fEvent);
     delete fEvent;
   }
