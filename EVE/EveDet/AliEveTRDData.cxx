@@ -26,6 +26,7 @@
 #include "AliTRDpadPlane.h"
 #include "AliTRDdigitsManager.h"
 #include "AliTRDdataArrayDigits.h"
+#include "AliTRDarrayADC.h"
 #include "AliTRDSignalIndex.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDtransform.h"
@@ -121,8 +122,8 @@ void AliEveTRDDigits::SetData(AliTRDdigitsManager *digits)
   // Set data source.
 
   Int_t det = fParent->GetID();
-  AliTRDdataArrayDigits *data = digits->GetDigits(det);
-  if(!data->HasData()) return;
+  AliTRDarrayADC *data = digits->GetDigits(det);
+  if(!data->GetDim()) return;
   data->Expand();
 
   AliTRDSignalIndex *indexes = digits->GetIndexes(det);
