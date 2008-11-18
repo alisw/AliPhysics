@@ -3080,7 +3080,7 @@ void AliITSv11GeometrySPD::CreateCones(TGeoVolume *moth) const
     // angleNm for cone modules (cables), angleNc for cooling tubes
     Double_t angle1m[10] = {18., 54., 90., 129., 165., 201.0, 237.0, 273.0, 309.0, 345.0};
     Double_t angle2m[10] = {18., 53., 90., 126., 162., 198.0, 233.0, 270.0, 309.0, 342.0};
-    Double_t angle1c[10] = {18., 54., 90., 129., 165., 201.0, 237.0, 273.0, 309.0, 345.0};
+    Double_t angle1c[10] = {18., 54., 90., 124., 165., 201.0, 237.0, 273.0, 304.0, 345.0};
     Double_t angle2c[10] = {18., 44., 90., 126., 162., 198.0, 223.0, 270.0, 309.0, 342.0};
 
     // First add the cables
@@ -3098,7 +3098,7 @@ void AliITSv11GeometrySPD::CreateCones(TGeoVolume *moth) const
         rot2->RotateX(-45.0);
 	angle2m[i] -= 1.5;
         rot2->RotateZ(90.0 - angle2m[i]);
-        TGeoCombiTrans *tr2 = new TGeoCombiTrans(0.0, 0.0, -38.5, rot2);
+        TGeoCombiTrans *tr2 = new TGeoCombiTrans(0.0, 0.0, -38.4, rot2);
         moth->AddNode(module, 2*i+1, tr2);
     }
 
@@ -3117,7 +3117,7 @@ void AliITSv11GeometrySPD::CreateCones(TGeoVolume *moth) const
         rot2->RotateX(-45.0);
 	angle2c[i] -= 1.5;
         rot2->RotateZ(90.0 - angle2c[i]);
-        TGeoCombiTrans *tr2 = new TGeoCombiTrans(0.0, 0.0, -38.5, rot2);
+        TGeoCombiTrans *tr2 = new TGeoCombiTrans(0.0, 0.0, -38.4, rot2);
         moth->AddNode(module, 2*i+1, tr2);
     }
 }
