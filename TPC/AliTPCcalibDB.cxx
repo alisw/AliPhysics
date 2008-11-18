@@ -175,6 +175,7 @@ AliTPCcalibDB::AliTPCcalibDB():
   fParam(0),
   fClusterParam(0),  
   fGRPArray(100000),            //! array of GRPs  -  per run  - JUST for calibration studies
+  fGRPMaps(100000),            //! array of GRPs  -  per run  - JUST for calibration studies
   fGoofieArray(100000),         //! array of GOOFIE values -per run - Just for calibration studies
   fTemperatureArray(100000),    //! array of temperature sensors - per run - Just for calibration studies
   fVdriftArray(100000),                 //! array of v drift interfaces
@@ -203,6 +204,7 @@ AliTPCcalibDB::AliTPCcalibDB(const AliTPCcalibDB& ):
   fParam(0),
   fClusterParam(0),
   fGRPArray(0),          //! array of GRPs  -  per run  - JUST for calibration studies
+  fGRPMaps(0),          //! array of GRPs  -  per run  - JUST for calibration studies
   fGoofieArray(0),        //! array of GOOFIE values -per run - Just for calibration studies
   fTemperatureArray(0),   //! array of temperature sensors - per run - Just for calibration studies
   fVdriftArray(0),         //! array of v drift interfaces
@@ -729,13 +731,25 @@ void AliTPCcalibDB::GetRunInformations( Int_t run){
   if (run>= fRunList.GetSize()){
     fRunList.Set(run*2+1);
     fGRPArray.Expand(run*2+1);
+    fGRPMaps.Expand(run*2+1);
     fGoofieArray.Expand(run*2+1); 
     fTemperatureArray.Expand(run*2+1);
     fVdriftArray.Expand(run*2+1);
   }
   if (fRunList[run]>0) return;
   entry = AliCDBManager::Instance()->Get("GRP/GRP/Data",run);
-  if (entry)  fGRPArray.AddAt(entry->GetObject(),run);
+  if (entry)  {
+    AliGRPObject * grpRun = dynamic_cast<AliGRPObject*>(entry->GetObject());
+    if (!grpRun){
+      TMap* map = dynamic_cast<TMap*>(entry->GetObject());
+      if (map){
+	grpRun = new AliGRPObject; 
+	grpRun->ReadValuesFromMap(map);
+	fGRPMaps.AddAt(map,run);
+      }
+    }
+    fGRPArray.AddAt(grpRun,run);
+  }
   entry = AliCDBManager::Instance()->Get("TPC/Calib/Goofie",run);
   if (entry)  fGoofieArray.AddAt(entry->GetObject(),run);
   entry = AliCDBManager::Instance()->Get("TPC/Calib/Temperature",run);
@@ -773,12 +787,40 @@ AliGRPObject *AliTPCcalibDB::GetGRP(Int_t run){
   return grpRun;
 }
 
+TMap *  AliTPCcalibDB::GetGRPMap(Int_t run){
+  //
+  //
+  //
+  TMap * grpRun = dynamic_cast<TMap *>((Instance()->fGRPMaps).At(run));
+  if (!grpRun) {
+    Instance()->GetRunInformations(run);
+    grpRun = dynamic_cast<TMap *>(Instance()->fGRPMaps.At(run));
+    if (!grpRun) return 0; 
+  }
+  return grpRun;
+}
 
 
 AliDCSSensor * AliTPCcalibDB::GetPressureSensor(Int_t run, Int_t type){
   //
+  // Get Pressure sensor
   //
-  AliGRPObject * grpRun = dynamic_cast<AliGRPObject *>(fGRPArray.At(run));
+  //
+  // First try to get if trom map - if existing  (Old format of data storing)
+  //
+  TMap *map = GetGRPMap(run);  
+  if (map){
+    AliDCSSensor * sensor = 0;
+    TObject *osensor=0;
+    if (type==0) osensor = ((*map)("fCavernPressure"));
+    if (type==1) osensor = ((*map)("fP2Pressure"));
+    sensor =dynamic_cast<AliDCSSensor *>(osensor); 
+    if (sensor) return sensor;
+  }
+  //
+  // If not map try to get it from the GRPObject
+  //
+  AliGRPObject * grpRun = dynamic_cast<AliGRPObject *>(fGRPArray.At(run)); 
   if (!grpRun) {
     GetRunInformations(run);
     grpRun = dynamic_cast<AliGRPObject *>(fGRPArray.At(run));
@@ -835,6 +877,7 @@ Float_t AliTPCcalibDB::GetPressure(Int_t timeStamp, Int_t run, Int_t type){
   TTimeStamp stamp(timeStamp);
   AliDCSSensor * sensor = Instance()->GetPressureSensor(run,type);
   if (!sensor) return 0;
+  
   if (!sensor->GetFit()) return 0;
   return sensor->GetValue(stamp);
 }

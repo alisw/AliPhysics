@@ -28,6 +28,7 @@ class AliDCSSensor;
 class AliDCSSensorArray;
 class AliTPCCalibVdrift;
 class AliGRPObject;
+class TMap;
 //class AliCDBStorage;
 
 class AliTPCcalibDB : public TObject
@@ -55,6 +56,7 @@ class AliTPCcalibDB : public TObject
   //
   //
   static AliGRPObject * GetGRP(Int_t run);
+  static TMap *  GetGRPMap(Int_t run);
   static Float_t GetPressure(Int_t timeStamp, Int_t run, Int_t type=0);
   static Float_t GetValueGoofie(Int_t timeStamp, Int_t run, Int_t type);
   static Bool_t  GetTemperatureFit(Int_t timeStamp, Int_t run, Int_t side,TVectorD& fit);
@@ -101,6 +103,7 @@ protected:
   // Get the corssrun information
   //
   TObjArray      fGRPArray;           //! array of GRPs  -  per run
+  TObjArray      fGRPMaps;            //! array of GRPs maps  -  per run - old data  
   TObjArray      fGoofieArray;        //! array of GOOFIE values -per run
   TObjArray      fTemperatureArray;   //! array of temperature sensors - per run
   TObjArray      fVdriftArray;        //! array of v drift interfaces
