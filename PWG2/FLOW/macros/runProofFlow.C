@@ -7,7 +7,8 @@
 // LYZ1  = Lee Yang Zeroes first run     (for PbPb)
 // LYZ2  = Lee Yang Zeroes second run    (for PbPb)
 // LYZEP = Lee Yang Zeroes Event Plane   (for PbPb)
-// GFC   = Cumulants (for PbPb or pp)
+// GFC   = Cumulants                     (for PbPb or pp)
+// QC    = Q-cumulants                   (for PbPb or pp)
 // MCEP  = Flow calculated from the real MC event plane (for PbPb only)
 //
 // The LYZ analysis should be done in the following order;
@@ -31,11 +32,12 @@
 //RUN SETTINGS
 
 //Flow analysis method can be:(set to kTRUE or kFALSE)
-Bool_t SP    = kTRUE;
-Bool_t LYZ1  = kTRUE;
+Bool_t SP    = kFALSE;
+Bool_t LYZ1  = kFALSE;
 Bool_t LYZ2  = kFALSE;
 Bool_t LYZEP = kFALSE;
-Bool_t GFC   = kFALSE;
+Bool_t GFC   = kTRUE;
+Bool_t QC    = kTRUE;
 Bool_t MCEP  = kFALSE;
 
 //analysis type can be ESD, AOD, MC, ESDMC0, ESDMC1
@@ -132,6 +134,9 @@ void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_midcentral_ESD",
     if (GFC) {
       TList* qaIntGFC = new TList();
       TList* qaDiffGFC = new TList(); }
+    if (QC) {
+      TList* qaIntQC = new TList();
+      TList* qaDiffQC = new TList(); }
     if (MCEP) {
       TList* qaIntMCEP = new TList();
       TList* qaDiffMCEP = new TList(); }
@@ -148,6 +153,7 @@ void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_midcentral_ESD",
     if (LYZ2) { mcKineCuts1->SetQAOn(qaIntLYZ2); }
     if (LYZEP){ mcKineCuts1->SetQAOn(qaIntLYZEP); }
     if (GFC)  { mcKineCuts1->SetQAOn(qaIntGFC); }
+    if (QC)   { mcKineCuts1->SetQAOn(qaIntQC); }
     if (MCEP) { mcKineCuts1->SetQAOn(qaIntMCEP); }
   }
   
@@ -161,6 +167,7 @@ void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_midcentral_ESD",
     if (LYZ2) { mcKineCuts2->SetQAOn(qaDiffLYZ2); }
     if (LYZEP){ mcKineCuts2->SetQAOn(qaDiffLYZEP); }
     if (GFC)  { mcKineCuts2->SetQAOn(qaDiffGFC); }
+    if (QC)   { mcKineCuts2->SetQAOn(qaDiffQC); }
     if (MCEP) { mcKineCuts2->SetQAOn(qaDiffMCEP); }
   }
   
@@ -173,6 +180,7 @@ void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_midcentral_ESD",
     if (LYZ2) { mcGenCuts1->SetQAOn(qaIntLYZ2); }
     if (LYZEP){ mcGenCuts1->SetQAOn(qaIntLYZEP); }
     if (GFC)  { mcGenCuts1->SetQAOn(qaIntGFC); }
+    if (QC)   { mcGenCuts1->SetQAOn(qaIntQC); }
     if (MCEP) { mcGenCuts1->SetQAOn(qaIntMCEP); }
   }
   
@@ -185,6 +193,7 @@ void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_midcentral_ESD",
     if (LYZ2) { mcGenCuts2->SetQAOn(qaDiffLYZ2); }
     if (LYZEP){ mcGenCuts2->SetQAOn(qaDiffLYZEP); }
     if (GFC)  { mcGenCuts2->SetQAOn(qaDiffGFC); }
+    if (QC)   { mcGenCuts2->SetQAOn(qaDiffQC); }
     if (MCEP) { mcGenCuts2->SetQAOn(qaDiffMCEP); }
   }
   
@@ -198,6 +207,7 @@ void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_midcentral_ESD",
     if (LYZ2) { mcAccCuts1->SetQAOn(qaIntLYZ2); }
     if (LYZEP){ mcAccCuts1->SetQAOn(qaIntLYZEP); }
     if (GFC)  { mcAccCuts1->SetQAOn(qaIntGFC); }
+    if (QC)   { mcAccCuts1->SetQAOn(qaIntQC); }
     if (MCEP) { mcAccCuts1->SetQAOn(qaIntMCEP); }
   }
   
@@ -210,6 +220,7 @@ void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_midcentral_ESD",
     if (LYZ2) { mcAccCuts2->SetQAOn(qaDiffLYZ2); }
     if (LYZEP){ mcAccCuts2->SetQAOn(qaDiffLYZEP); }
     if (GFC)  { mcAccCuts2->SetQAOn(qaDiffGFC); }
+    if (QC)   { mcAccCuts2->SetQAOn(qaDiffQC); }
     if (MCEP) { mcAccCuts2->SetQAOn(qaDiffMCEP); }
   }
   
@@ -224,6 +235,7 @@ void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_midcentral_ESD",
     if (LYZ2) { recKineCuts1->SetQAOn(qaIntLYZ2); }
     if (LYZEP){ recKineCuts1->SetQAOn(qaIntLYZEP); }
     if (GFC)  { recKineCuts1->SetQAOn(qaIntGFC); }
+    if (QC)   { recKineCuts1->SetQAOn(qaIntQC); }
     if (MCEP) { recKineCuts1->SetQAOn(qaIntMCEP); }
   }
   
@@ -237,6 +249,7 @@ void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_midcentral_ESD",
     if (LYZ2) { recKineCuts2->SetQAOn(qaDiffLYZ2); }
     if (LYZEP){ recKineCuts2->SetQAOn(qaDiffLYZEP); }
     if (GFC)  { recKineCuts2->SetQAOn(qaDiffGFC); }
+    if (QC)   { recKineCuts2->SetQAOn(qaDiffQC); }
     if (MCEP) { recKineCuts2->SetQAOn(qaDiffMCEP); }
   }
   
@@ -249,6 +262,7 @@ void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_midcentral_ESD",
     if (LYZ2) { recQualityCuts1->SetQAOn(qaIntLYZ2); }
     if (LYZEP){ recQualityCuts1->SetQAOn(qaIntLYZEP); }
     if (GFC)  { recQualityCuts1->SetQAOn(qaIntGFC); }
+    if (QC)   { recQualityCuts1->SetQAOn(qaIntQC); }
     if (MCEP) { recQualityCuts1->SetQAOn(qaIntMCEP); }
   }
   
@@ -261,6 +275,7 @@ void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_midcentral_ESD",
     if (LYZ2) { recQualityCuts2->SetQAOn(qaDiffLYZ2); }
     if (LYZEP){ recQualityCuts2->SetQAOn(qaDiffLYZEP); }
     if (GFC)  { recQualityCuts2->SetQAOn(qaDiffGFC); }
+    if (QC)   { recQualityCuts2->SetQAOn(qaDiffQC); }
     if (MCEP) { recQualityCuts2->SetQAOn(qaDiffMCEP); }
   }
  
@@ -272,6 +287,7 @@ void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_midcentral_ESD",
     if (LYZ2) { recIsPrimaryCuts1->SetQAOn(qaIntLYZ2); }
     if (LYZEP){ recIsPrimaryCuts1->SetQAOn(qaIntLYZEP); }
     if (GFC)  { recIsPrimaryCuts1->SetQAOn(qaIntGFC); }
+    if (QC)   { recIsPrimaryCuts1->SetQAOn(qaIntQC); }
     if (MCEP) { recIsPrimaryCuts1->SetQAOn(qaIntMCEP); }
   }
   
@@ -283,6 +299,7 @@ void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_midcentral_ESD",
     if (LYZ2) { recIsPrimaryCuts2->SetQAOn(qaDiffLYZ2); }
     if (LYZEP){ recIsPrimaryCuts2->SetQAOn(qaDiffLYZEP); }
     if (GFC)  { recIsPrimaryCuts2->SetQAOn(qaDiffGFC); }
+    if (QC)   { recIsPrimaryCuts2->SetQAOn(qaDiffQC); }
     if (MCEP) { recIsPrimaryCuts2->SetQAOn(qaDiffMCEP); }
   }
  
@@ -337,6 +354,9 @@ void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_midcentral_ESD",
     if (GFC)  { 
       cutPID1->SetQAOn(qaIntGFC); 
       cutPID2->SetQAOn(qaDiffGFC); }
+    if (QC)  { 
+      cutPID1->SetQAOn(qaIntQC); 
+      cutPID2->SetQAOn(qaDiffQC); }
     if (MCEP) { 
       cutPID1->SetQAOn(qaIntMCEP); 
       cutPID2->SetQAOn(qaDiffMCEP); }
@@ -509,6 +529,17 @@ void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_midcentral_ESD",
       taskGFC->SetQAList2(qaDiffGFC); }
     mgr->AddTask(taskGFC);
   }
+  if (QC){
+    if (QA) { AliAnalysisTaskQCumulants *taskQC = new AliAnalysisTaskQCumulants("TaskQCumulants",kTRUE);}
+    else { AliAnalysisTaskQCumulants *taskQC = new AliAnalysisTaskQCumulants("TaskQCumulants",kFALSE);}
+    taskQC->SetAnalysisType(type);
+    taskQC->SetCFManager1(cfmgr1);
+    taskQC->SetCFManager2(cfmgr2);
+    if (QA) { 
+      taskQC->SetQAList1(qaIntQC);
+      taskQC->SetQAList2(qaDiffQC); }
+    mgr->AddTask(taskQC);
+  }
   if (MCEP){
     if (QA) { AliAnalysisTaskMCEventPlane *taskMCEP = new AliAnalysisTaskMCEventPlane("TaskMCEventPlane",kTRUE);}
     else { AliAnalysisTaskMCEventPlane *taskMCEP = new AliAnalysisTaskMCEventPlane("TaskMCEventPlane",kFALSE);}
@@ -564,6 +595,13 @@ void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_midcentral_ESD",
     outputGFC+= type;
     outputGFC+= ".root";
     AliAnalysisDataContainer *coutputGFC = mgr->CreateContainer("cobjGFC", TList::Class(),AliAnalysisManager::kOutputContainer,outputGFC);
+  }
+  
+  if(QC) {
+    TString outputQC = "outputQCanalysis";
+    outputQC+= type;
+    outputQC+= ".root";
+    AliAnalysisDataContainer *coutputQC = mgr->CreateContainer("cobjQC", TList::Class(),AliAnalysisManager::kOutputContainer,outputQC);
   }
   
   if(MCEP) {
@@ -640,6 +678,19 @@ void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_midcentral_ESD",
       AliAnalysisDataContainer *coutputQA2GFC = 
 	mgr->CreateContainer("QAdiffGFC", TList::Class(),AliAnalysisManager::kOutputContainer,qaNameDiffGFC);
     }
+    if(QC) { 
+      TString qaNameIntQC = "QAforInt_QC_";
+      qaNameIntQC += type;
+      qaNameIntQC += ".root";
+      AliAnalysisDataContainer *coutputQA1QC = 
+	mgr->CreateContainer("QAintQC", TList::Class(),AliAnalysisManager::kOutputContainer,qaNameIntQC);
+      
+      TString qaNameDiffQC = "QAforDiff_QC_";
+      qaNameDiffQC += type;
+      qaNameDiffQC += ".root";
+      AliAnalysisDataContainer *coutputQA2QC = 
+	mgr->CreateContainer("QAdiffQC", TList::Class(),AliAnalysisManager::kOutputContainer,qaNameDiffQC);
+    }
     if(MCEP) {
       TString qaNameIntMCEP = "QAforInt_MCEP_";
       qaNameIntMCEP += type;
@@ -691,6 +742,12 @@ void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_midcentral_ESD",
     mgr->ConnectOutput(taskGFC,0,coutputGFC);
     if (QA) { mgr->ConnectOutput(taskGFC,1,coutputQA1GFC);
     mgr->ConnectOutput(taskGFC,2,coutputQA2GFC); }
+  }  
+  if (QC)   { 
+    mgr->ConnectInput(taskQC,0,cinput1); 
+    mgr->ConnectOutput(taskQC,0,coutputQC);
+    if (QA) { mgr->ConnectOutput(taskQC,1,coutputQA1QC);
+    mgr->ConnectOutput(taskQC,2,coutputQA2QC); }
   }  
   if (MCEP)  { 
     mgr->ConnectInput(taskMCEP,0,cinput1); 
