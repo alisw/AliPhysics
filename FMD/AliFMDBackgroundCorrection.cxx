@@ -52,6 +52,7 @@
 #include "TROOT.h"
 #include "AliFMDParameters.h"
 #include "AliLog.h"
+#include "TList.h"
 #include "AliFMDAnaParameters.h"
 #include "AliFMDAnaCalibBackgroundCorrection.h"
 
@@ -136,6 +137,13 @@ void AliFMDBackgroundCorrection::GenerateBackgroundCorrection(Int_t nvtxbins,
   fCorrectionArray.SetName("FMD_bg_correction");
   fCorrectionArray.SetOwner();
   
+  TList* primaryList = new TList();
+  primaryList->SetName("primaries");
+  TList* hitList     = new TList();
+  hitList->SetName("hits");
+  TList* corrList    = new TList();
+  corrList->SetName("corrections");
+
   AliFMDAnaCalibBackgroundCorrection* background = new AliFMDAnaCalibBackgroundCorrection();
   
   for(Int_t det= 1; det <=3; det++) {
@@ -157,8 +165,11 @@ void AliFMDBackgroundCorrection::GenerateBackgroundCorrection(Int_t nvtxbins,
 	TObjArray* detArray  = (TObjArray*)hitArray->At(det);
 	TObjArray* vtxArray  = (TObjArray*)detArray->At(iring);
 	TH2F* hHits          = (TH2F*)vtxArray->At(vertexBin);
+	hitList->Add(hHits);
 	TH2F* hPrimary  = (TH2F*)primRingArray->At(vertexBin);
+	primaryList->Add(hPrimary);
 	TH2F* hCorrection = (TH2F*)hHits->Clone(Form("FMD%d%c_vtxbin_%d_correction",det,ringChar,vertexBin));
+	corrList->Add(hCorrection);
 	hCorrection->SetTitle(hCorrection->GetName());
 	hCorrection->Divide(hPrimary);
 	vtxArrayCorrection->AddAtAndExpand(hCorrection,vertexBin);
@@ -174,15 +185,19 @@ void AliFMDBackgroundCorrection::GenerateBackgroundCorrection(Int_t nvtxbins,
   
   TFile*  fout = new TFile(filename,"RECREATE");
   refAxis.Write("vertexbins");
-  fout->mkdir("Hits");
-  fout->cd("Hits");
-  hitArray->Write();
-  fout->mkdir("Primaries");
-  fout->cd("Primaries");
-  primaryArray->Write();
-  fout->mkdir("Correction");
-  fout->cd("Correction");
-  fCorrectionArray.Write();
+  
+  hitList->Write();
+  primaryList->Write();
+  corrList->Write();
+  //fout->mkdir("Hits");
+  //fout->cd("Hits");
+  //hitArray->Write();
+  //fout->mkdir("Primaries");
+  //fout->cd("Primaries");
+  //primaryArray->Write();
+  //fout->mkdir("Correction");
+  //fout->cd("Correction");
+  //fCorrectionArray.Write();
   
   TObjArray* container = new TObjArray();
   container->SetOwner();
