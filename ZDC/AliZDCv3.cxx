@@ -503,6 +503,8 @@ void AliZDCv3::CreateBeamLine()
   pQCLext->SetVisLeaves(kTRUE);
   //
   TGeoTranslation *tr1c = new TGeoTranslation(0., 0., (Double_t) -conpar[0]-0.95-zd1);
+  //printf("	Trousers from z = %f to z= %f\n",-zd1,-2*conpar[0]-0.95-zd1);
+  //
   pZDCC->AddNode(pQCLext, 1, tr1c);
   // Inner trousers
   TGeoCompositeShape *pIntTrousersC = new TGeoCompositeShape("intTrousersC", "QCLint:ZDCC_c1+QCLint:ZDCC_c2");
@@ -518,7 +520,7 @@ void AliZDCv3::CreateBeamLine()
   //  second section : 2 tubes (ID = 54. OD = 58.)  
   tubpar[0] = 5.4/2.;
   tubpar[1] = 5.8/2.;
-  tubpar[2] = 40.0/2.;
+  tubpar[2] = (40.0-0.458422)/2.;
   gMC->Gsvolu("QC14", "TUBE", idtmed[7], tubpar, 3);
   gMC->Gspos("QC14", 1, "ZDCC", -15.8/2., 0., -tubpar[2]-zd1, 0, "ONLY");
   gMC->Gspos("QC14", 2, "ZDCC",  15.8/2., 0., -tubpar[2]-zd1, 0, "ONLY");  
