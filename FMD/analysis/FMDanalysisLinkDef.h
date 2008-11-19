@@ -29,6 +29,8 @@
 
 
 #pragma link C++ class AliFMDAnaParameters+;
+#pragma link C++ class AliFMDAnaCalibEnergyDistribution+;
+#pragma link C++ class AliFMDAnaCalibBackgroundCorrection+;
 #pragma link C++ class AliFMDAnalysisTaskESDReader+;
 #pragma link C++ class AliFMDAnalysisTaskSharing+;
 #pragma link C++ class AliFMDAnalysisTaskDensity+;
