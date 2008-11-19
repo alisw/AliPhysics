@@ -16,6 +16,7 @@
 
 #include "AliVParticle.h"
 #include "AliRsnPID.h"
+#include "AliRsnPIDDefESD.h"
 #include "AliESDtrackCuts.h"
 
 class TParticle;
@@ -34,28 +35,13 @@ class AliRsnDaughter : public AliVParticle
     {
       kNoPID = 0,
       kRealistic,
-      kWeighted,
       kPerfect,
       kMethods
     };
 
-    enum EPIDType
-    {
-      kEsd=0,
-      kITS,
-      kTPC,
-      kTOF,
-      kITS_TPC,
-      kITS_TOF,
-      kTPC_TOF,
-      kITS_TPC_TOF,
-      kITS_TPC_TOF_SP,
-      kLastPIDType
-    };
-
     AliRsnDaughter();
     AliRsnDaughter(const AliRsnDaughter &copy);
-    AliRsnDaughter(AliESDtrack *track, Bool_t useTPCInnerParam = kFALSE);
+    AliRsnDaughter(AliESDtrack *track);
     AliRsnDaughter(AliAODTrack *track);
     AliRsnDaughter(AliMCParticle *track);
     virtual ~AliRsnDaughter();
@@ -80,8 +66,8 @@ class AliRsnDaughter : public AliVParticle
     void             SetP(Double_t px, Double_t py, Double_t pz) {SetPx(px); SetPy(py); SetPz(pz);}
     void             SetM(Double_t m) {fMass = m;}
     void             SetChi2(Double_t chi2) {fChi2 = chi2;}
-    void             RotateP(Double_t angle);
-    Double_t         AngleTo(AliRsnDaughter *d);
+    void             RotateP(Double_t angle, Bool_t isDegrees = kTRUE);
+    Double_t         AngleTo(AliRsnDaughter *d, Bool_t outInDegrees = kTRUE);
 
     // DCA vertex
     virtual Double_t Xv() const {return fV[0];}
@@ -106,14 +92,15 @@ class AliRsnDaughter : public AliVParticle
     virtual Char_t  Kink() const {return fKink;}
     virtual Bool_t  IsKinkMother() const {return (fKink < 0);}
     virtual Bool_t  IsKinkDaughter() const {return (fKink > 0);}
+    virtual Bool_t  IsKink() const {return (IsKinkMother() || IsKinkDaughter());}
     void            SetCharge(Short_t value) {fCharge = value;}
     void            SetKink(Char_t kink) {fKink = kink;}
 
     // PID
     virtual const Double_t* PID() const {return fPIDWeight;}
     const Double_t*         PIDProb() const {return fPIDProb;}
-    void                    SetPIDProb(Int_t i, Double_t value);
-    void                    SetPIDWeight(Int_t i, Double_t value);
+    void                    SetPIDProb(Int_t i, Double_t value) {if(i>=0&&i<AliRsnPID::kSpecies)fPIDProb[i]=value;}
+    void                    SetPIDWeight(Int_t i, Double_t value) {if(i>=0&&i<AliRsnPID::kSpecies)fPIDWeight[i]=value;}
     static void             SetPIDMethod(EPIDMethod method) {fgPIDMethod = method;}
     void                    AssignRealisticPID();
     AliRsnPID::EType        PIDType(Double_t &prob) const;
@@ -123,7 +110,7 @@ class AliRsnDaughter : public AliVParticle
     Bool_t  CheckFlag(ULong_t flag) {return ((fFlags & flag) == flag);}
 
     // information getters from objects
-    Bool_t  Adopt(AliESDtrack *track, EPIDType pidType = kEsd, Double_t divValue = 0.0, Bool_t useTPCInnerParam = kFALSE);
+    Bool_t  Adopt(AliESDtrack *track, AliRsnPIDDefESD pidDef);
     Bool_t  Adopt(AliAODTrack *track);
     Bool_t  Adopt(AliMCParticle *track);
 
@@ -133,7 +120,7 @@ class AliRsnDaughter : public AliVParticle
     Int_t   GetLabel() const {return -1;}
     void    SetIndex(Int_t value) {fIndex = value;}
     void    SetLabel(Int_t value) {fLabel = value;}
-    
+
     // N sigma to vertex
     Float_t NSigmaToVertex() const { return fNSigmaToVertex; }
     void    SetNSigmaToVertex(const Float_t& theValue) { fNSigmaToVertex = theValue; }
@@ -158,12 +145,7 @@ class AliRsnDaughter : public AliVParticle
     virtual Bool_t IsSortable() const {return kTRUE;}
     virtual Int_t  Compare(const TObject* obj) const;
 
-
   private:
-
-    static void GetESDPID
-    (AliESDtrack *track, Double_t *pid, EPIDType pidType = kEsd,
-     Double_t divValue = -1.0, Double_t val = -1.0);
 
     Int_t              fIndex;    // index of source object (ESD/AOD/MC) in its collection
     Int_t              fLabel;    // label assigned to the track (act. by GEANT3)
@@ -188,7 +170,7 @@ class AliRsnDaughter : public AliVParticle
     AliRsnMCInfo      *fMCInfo;      // reference to particle object (if any)
     static EPIDMethod  fgPIDMethod; // flag to define how the PID is computed for this object
 
-    ClassDef(AliRsnDaughter, 4)
+    ClassDef(AliRsnDaughter, 5)
 };
 
 #endif
