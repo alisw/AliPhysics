@@ -162,7 +162,7 @@ If(ALICE_TARGET STREQUAL macosx64)
 
   Set(CLIBDEFS "-DCERNLIB_LXIA64 -DCERNLIB_BLDLIB -DCERNLIB_CZ -DCERNLIB_PPC")
 
-  Set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O -g -m64 -pipe -Wall -W -Wno-long-double -pipe -fbounds-check -fsigned-char -fno-common -fmessage-length=0 -Woverloaded-virtual -Weffc++ -Wconversion -Wshadow -fno-default-inline -fno-inline -I/usr/X11R6/include -I${FINK_ROOT}/include")
+  Set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O -g -m64 -pipe -Wall -W -pipe -fbounds-check -fsigned-char -fno-common -fmessage-length=0 -Woverloaded-virtual -Weffc++ -Wconversion -Wshadow -fno-default-inline -fno-inline -I/usr/X11R6/include -I${FINK_ROOT}/include")
   Set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -O -g -m64 -Wall -W -fno-common -pipe -I${FINK_ROOT}/include")
 
   If(CMAKE_Fortran_COMPILER MATCHES g95) 
@@ -295,13 +295,13 @@ If(ALICE_TARGET STREQUAL macosx)
 
   Set(CLIBDEFS "-DCERNLIB_LINUX -DCERNLIB_BLDLIB -DCERNLIB_CZ -DCERNLIB_PPC")
 
-  Set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O -g -m32 -pipe -Wall -W -Wno-long-double -pipe -fbounds-check -fsigned-char -fno-common -fmessage-length=0 -Woverloaded-virtual -Weffc++ -Wconversion -Wshadow -fno-default-inline -fno-inline -I/usr/X11R6/include -I${FINK_ROOT}/include")
+  Set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O -g -m32 -pipe -Wall -W -pipe -fbounds-check -fsigned-char -fno-common -fmessage-length=0 -Woverloaded-virtual -Weffc++ -Wconversion -Wshadow -fno-default-inline -fno-inline -I/usr/X11R6/include -I${FINK_ROOT}/include")
   Set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -O -g -m32 -Wall -W -fno-common -pipe -I${FINK_ROOT}/include")
 
   If(CMAKE_Fortran_COMPILER MATCHES g95) 
     Set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fbounds-check -ftrace=full -DFORTRAN_G95 -single_module")
   Else(CMAKE_Fortran_COMPILER MATCHES g95)
-    Set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DFORTRAN_GFORTRAN")
+    Set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS}  -single_module -DFORTRAN_GFORTRAN")
     Execute_process(
       COMMAND gfortran -m32 -print-file-name=libgfortran.dylib
       OUTPUT_VARIABLE FLIB
