@@ -214,7 +214,7 @@ void AliCumulantsFunctions::Calculate()
 				  2257920.*AvC[4] + 1128960.*AvC[5] - 322560.*AvC[6] + 40320.*AvC[7]);
     
  cout<<""<<endl;
- cout<<"***************************"<<endl;
+ cout<<"*********************************"<<endl;
  cout<<"cumulants:"<<endl;
   
  cout<<" c_"<<fgkFlow<<"{2} = "<<cumulant[0]<<endl; 
@@ -258,7 +258,7 @@ void AliCumulantsFunctions::Calculate()
     
  Double_t SdQ[4]={0.};
  Double_t ChiQ[4]={0.};
-   
+          
    //v_2{2}
    if(AvM!=0 && (cumulant[0]>=0.) && (AvQ2x+AvQ2y-pow(AvQx,2.)-pow(AvQy,2.)-pow(pow(cumulant[0],(1./2.))*AvM,2.)>0.))
    {        
@@ -346,7 +346,9 @@ void AliCumulantsFunctions::Calculate()
   } else {
     cout<<"v_"<<fgkFlow<<"{16} = Im"<<endl;  
   }
-  cout<<"***************************"<<endl;    
+  cout<<" "<<endl;
+  cout<<"nEvts = "<<nEvents<<", AvM = "<<AvM<<endl; 
+  cout<<"*********************************"<<endl;    
   
   
  /////////////////////////////////////////////////////////////////////////////

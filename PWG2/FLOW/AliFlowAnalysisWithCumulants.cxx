@@ -278,7 +278,11 @@ void AliFlowAnalysisWithCumulants::CreateOutputObjects()
 void AliFlowAnalysisWithCumulants::Make(AliFlowEventSimple* anEvent)
 {
  //running over data
+ 
+ Int_t nPrim = anEvent->NumberOfTracks();//total multiplicity
   
+ if(nPrim>30)//generating function formalism can be applied only for large multiplicities (to be improved in the future) 
+ { 
  //fill the common control histograms
  fCommonHists->FillControlHistograms(anEvent);   
   
@@ -289,9 +293,9 @@ void AliFlowAnalysisWithCumulants::Make(AliFlowEventSimple* anEvent)
    G[p][q]=1.; 
   }
  }
-  
- Int_t nPrim = anEvent->NumberOfTracks();//total multiplicity
+
  Int_t nEventNSelTracksIntFlow = anEvent->GetEventNSelTracksIntFlow();//selected multiplicity (parrticles used for int. flow)
+
  Int_t nSelTracksIntFlow = 0;//cross-checking the selected multiplicity
   
  //first loop over data: evaluating the generating function G[p][q] for integrated flow 
@@ -306,7 +310,7 @@ void AliFlowAnalysisWithCumulants::Make(AliFlowEventSimple* anEvent)
    }
   }
  }//ending the first loop over data
- 
+
  //storing the value of G[p][q] in 2D profile in order to get automatically the avarage <G[p][q]>
  for(Int_t p=0;p<fgkPmax;p++){
   for(Int_t q=0;q<fgkQmax;q++){
@@ -407,7 +411,11 @@ void AliFlowAnalysisWithCumulants::Make(AliFlowEventSimple* anEvent)
    //}
   }  
  }//ending the second loop over data            
+ 
       
+}//end of if(nPrim>30)
+                      
+                     
 }//end of Make()
 
 //================================================================================================================
