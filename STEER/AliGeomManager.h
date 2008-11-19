@@ -96,7 +96,7 @@ public:
   static Bool_t         ApplyAlignObjsFromCDB(const char* AlDetsList);
   static Bool_t         LoadAlignObjsFromCDBSingleDet(const char* detName, TObjArray& alignObjArray);
   static Bool_t         CheckSymNamesLUT(const char* detsToBeChecked);
-  static Bool_t         IsModuleInGeom(const char* module);
+  static Int_t          GetNalignable(const char* module);
 
   ~AliGeomManager();
 
@@ -114,6 +114,7 @@ public:
 
   static void        InitAlignObjFromGeometry();
   static void        InitPNEntriesLUT();
+  static void        InitNalignable();
 
   static TGeoManager* fgGeometry;
 
@@ -121,6 +122,9 @@ public:
   static const char* fgLayerName[kLastLayer - kFirstLayer]; // Name of layers
   static TGeoPNEntry** fgPNEntry[kLastLayer - kFirstLayer]; // TGeoPNEntries
   static AliAlignObj** fgAlignObjs[kLastLayer - kFirstLayer]; // Alignment objects
+  static const Int_t   fgkNDetectors = 15;              // number of detectors
+  static const char *  fgkDetectorName[fgkNDetectors] ; // name of detectors
+  static Int_t       fgNalignable[fgkNDetectors];
 
   ClassDef(AliGeomManager, 0);
 };

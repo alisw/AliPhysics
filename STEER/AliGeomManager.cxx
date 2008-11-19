@@ -98,6 +98,10 @@ AliAlignObj** AliGeomManager::fgAlignObjs[kLastLayer - kFirstLayer] = {
   0x0
 };
 
+const char* AliGeomManager::fgkDetectorName[AliGeomManager::fgkNDetectors] = {"GRP","ITS","TPC","TRD","TOF","PHOS","HMPID","EMCAL","MUON","FMD","ZDC","PMD","T0","VZERO","ACORDE"};
+Int_t AliGeomManager::fgNalignable[fgkNDetectors] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+
 TGeoManager* AliGeomManager::fgGeometry = 0x0;
 
 //_____________________________________________________________________________
@@ -110,7 +114,7 @@ void AliGeomManager::LoadGeometry(const char *geomFileName)
   fgGeometry = NULL;
   if (geomFileName && (!gSystem->AccessPathName(geomFileName))) {
     fgGeometry = TGeoManager::Import(geomFileName);
-    AliInfoClass(Form("From now on using geometry from custom geometry file %s",geomFileName));
+    AliInfoClass(Form("From now on using geometry from custom geometry file \"%s\"",geomFileName));
   }
 
   if (!fgGeometry) {
@@ -123,11 +127,12 @@ void AliGeomManager::LoadGeometry(const char *geomFileName)
     fgGeometry = (TGeoManager*) entry->GetObject();
     if (!fgGeometry) AliFatalClass("Couldn't find TGeoManager in the specified CDB entry!");
     
-    AliInfoClass(Form("From now on using geometry from CDB base folder %s",
+    AliInfoClass(Form("From now on using geometry from CDB base folder \"%s\"",
 		      AliCDBManager::Instance()->GetURI("Geometry/Align/Data")));
   }
 
   InitPNEntriesLUT();
+  InitNalignable();
 }
 
 //_____________________________________________________________________________
@@ -138,6 +143,7 @@ void AliGeomManager::SetGeometry(TGeoManager *geom)
 
   fgGeometry = geom;
   InitPNEntriesLUT();
+  InitNalignable();
 }
 
 //_____________________________________________________________________________
@@ -1498,64 +1504,48 @@ void AliGeomManager::CheckOverlapsOverPNs(Double_t threshold)
 }
 
 //_____________________________________________________________________________
-Bool_t AliGeomManager::IsModuleInGeom(const char* module)
+Int_t AliGeomManager::GetNalignable(const char* module)
 {
-  // Return true if the module passed as argument is present in the current geometry
+  // Get number of declared alignable volumes for given detector in current geometry
   //
   
-  TString subdet(module);
-
-  if(subdet==TString("ACORDE"))
-  {
-      if(fgGeometry->GetAlignableEntry("ACORDE/Array1")) return kTRUE;
-  }else if(subdet==TString("EMCAL"))
-  {
-      if(fgGeometry->GetAlignableEntry("EMCAL/FullSupermodule0") || fgGeometry->GetAlignableEntry("EMCAL/CosmicTestSupermodule0")) return kTRUE;
-  }else if(subdet==TString("FMD"))
-  {
-      if(fgGeometry->GetAlignableEntry("FMD/FMD1_T")) return kTRUE;
-  }else if(subdet==TString("HMPID"))
-  {
-      if(fgGeometry->GetAlignableEntry("/HMPID/Chamber0")) return kTRUE;
-  }else if(subdet==TString("ITS"))
-  {
-      if(fgGeometry->GetAlignableEntry("ITS")) return kTRUE;
-  }else if(subdet==TString("MUON"))
-  {
-      if(fgGeometry->GetAlignableEntry("/MUON/GM0")) return kTRUE;
-  }else if(subdet==TString("PMD"))
-  {
-      if(fgGeometry->GetAlignableEntry("PMD/Sector1")) return kTRUE;
-  }else if(subdet==TString("PHOS"))
-  {
-      if(fgGeometry->GetAlignableEntry("PHOS/Cradle0")) return kTRUE;
-  }else if(subdet==TString("T0"))
-  {
-      if(fgGeometry->GetAlignableEntry("/ALIC_1/0STR_1")) return kTRUE;
-  }else if(subdet==TString("TRD"))
-  {
-      if(fgGeometry->GetAlignableEntry("TRD/sm00")) return kTRUE;
-  }else if(subdet==TString("TPC"))
-  {
-      if(fgGeometry->GetAlignableEntry("TPC/EndcapA/Sector1/InnerChamber")) return kTRUE;
-  }else if(subdet==TString("TOF"))
-  {
-      if(fgGeometry->GetAlignableEntry("TOF/sm00/strip01")) return kTRUE;
-  }else if(subdet==TString("VZERO"))
-  {
-      if(fgGeometry->GetAlignableEntry("VZERO/V0C")) return kTRUE;
-  }else if(subdet==TString("ZDC"))
-  {
-      if(fgGeometry->GetAlignableEntry("ZDC/NeutronZDC_C")) return kTRUE;
-  }else if(subdet==TString("FRAME"))
-  {
-      if(fgGeometry->GetAlignableEntry("FRAME/Sector0")) return kTRUE;
-  }else
-      AliErrorClass(Form("%s is not a valid ALICE module name",module));
-
-  return kFALSE;
+  // return the detector index corresponding to detector
+  Int_t index = -1 ;
+  for (index = 0; index < fgkNDetectors ; index++) {
+    if ( strcmp(module, fgkDetectorName[index]) == 0 )
+      break ;
+  }
+  return fgNalignable[index];
 }
+  
+//_____________________________________________________________________________
+void AliGeomManager::InitNalignable()
+{
+  // Set number of declared alignable volumes for given detector in current geometry
+  // by looping on the list of PNEntries
+  //
+  
+  Int_t nAlE = gGeoManager->GetNAlignable(); // total number of alignable entries
+  TGeoPNEntry *pne = 0;
+  TString *pneName = 0;
+  const char* detName;
+  
+  for (Int_t iDet = 0; iDet < fgkNDetectors ; iDet++) {
+    detName = fgkDetectorName[iDet];
+    Int_t nAlDet = 0;
+    
+    for(Int_t iE = 0; iE < nAlE; iE++)
+    {
+      pne = gGeoManager->GetAlignableEntry(iE);
+      pneName = new TString(pne->GetName());
+      if(pneName->Contains(detName)) nAlDet++;
+      if(!strcmp(detName,"GRP")) if(pneName->Contains("ABSO") || pneName->Contains("DIPO") || pneName->Contains("FRAME") || pneName->Contains("PIPE") || pneName->Contains("SHIL")) nAlDet++;
+    }
+    fgNalignable[iDet] = nAlDet;
+  }
 
+}
+  
 //_____________________________________________________________________________
 Bool_t AliGeomManager::ApplyAlignObjsFromCDB(const char* AlignDetsList)
 {
@@ -1628,8 +1618,10 @@ Bool_t AliGeomManager::LoadAlignObjsFromCDBSingleDet(const char* detName, TObjAr
   entry->SetOwner(1);
   TClonesArray *alignArray = (TClonesArray*) entry->GetObject();	
   alignArray->SetOwner(0);
-  AliDebugClass(2,Form("Found %d alignment objects for %s",
-		       alignArray->GetEntries(),detName));
+  Int_t nAlObjs = alignArray->GetEntries();
+  AliDebugClass(2,Form("Found %d alignment objects for %s",nAlObjs,detName));
+  Int_t nAlVols = GetNalignable(detName);
+  if(nAlObjs!=nAlVols) AliWarningClass(Form("%d alignment objects loaded for %s, which has %d alignable volumes",nAlObjs,detName,GetNalignable(detName)));
 
   AliAlignObj *alignObj=0;
   TIter iter(alignArray);
@@ -1662,7 +1654,7 @@ Bool_t AliGeomManager::ApplyAlignObjsToGeom(TObjArray& alignObjArray, Bool_t ovl
     flag = alobj->ApplyToGeometry(ovlpcheck);
     if(!flag)
     {
-      AliWarningClass(Form("Error applying alignment object for volume %s !",alobj->GetSymName()));
+      AliDebugClass(5,Form("Error applying alignment object for volume %s !",alobj->GetSymName()));
     }else{
       AliDebugClass(5,Form("Alignment object for volume %s applied successfully",alobj->GetSymName()));
     }

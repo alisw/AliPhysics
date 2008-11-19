@@ -711,13 +711,15 @@ Bool_t AliReconstruction::MisalignGeometry(const TString& detectors)
     for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
       if(!IsSelected(fgkDetectorName[iDet], detStr)) continue;
       if(!strcmp(fgkDetectorName[iDet],"HLT")) continue;
-      if(AliGeomManager::IsModuleInGeom(fgkDetectorName[iDet]))
+      
+      if(AliGeomManager::GetNalignable(fgkDetectorName[iDet]) != 0)
       {
 	loadAlObjsListOfDets += fgkDetectorName[iDet];
 	loadAlObjsListOfDets += " ";
       }
     } // end loop over detectors
-    if(AliGeomManager::IsModuleInGeom("FRAME"))
+    
+    if(AliGeomManager::GetNalignable("GRP") != 0)
       loadAlObjsListOfDets.Prepend("GRP "); //add alignment objects for non-sensitive modules
     AliGeomManager::ApplyAlignObjsFromCDB(loadAlObjsListOfDets.Data());
     AliCDBManager::Instance()->UnloadFromCache("*/Align/*");
