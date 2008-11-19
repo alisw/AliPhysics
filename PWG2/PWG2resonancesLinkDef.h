@@ -12,7 +12,7 @@
 
 #pragma link C++ class AliRsnPID+;
 #pragma link C++ class AliRsnPIDIndex+;
-#pragma link C++ class AliRsnPIDWeightsMgr+;
+#pragma link C++ class AliRsnPIDDefESD+;
 
 #pragma link C++ class AliRsnEvent+;
 #pragma link C++ class AliRsnEventBuffer+;
