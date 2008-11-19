@@ -29,7 +29,7 @@ Run Type: PEDESTAL, CALIBRATION
 
 /*
 	-------------------------------------------------------------------------
-	2008-10-08 New version: MUONTRKda.cxx,v 1.14
+	2008-11-14 New version: MUONTRKda.cxx,v 1.15
 	-------------------------------------------------------------------------
 
 	Version for MUONTRKda MUON tracking
@@ -555,7 +555,6 @@ void MakeGainStore()
 
   // why 2 files ? (Ch. F.)
   FILE *pfilen = 0;
-  FILE *pfilef = 0;
   if(gPrintLevel==2)
     {
       sprintf(filename,"%s/%s_%d.param",gOutFolder,filenam,gRunNumber);
@@ -563,23 +562,10 @@ void MakeGainStore()
       pfilen = fopen (filename,"w");
 
       fprintf(pfilen,"//===================================================================\n");
-      fprintf(pfilen,"//  BP MANU CH. a0     a1       a2      xlim  P(chi2) p1 P(chi2)2  p2\n");
+      fprintf(pfilen,"//  BP MANU CH. par[0]     [1]     [2]     [3]      xlim          P(chi2) p1        P(chi2)2  p2\n");
       fprintf(pfilen,"//===================================================================\n");
       fprintf(pfilen,"//   * Run           : %d \n",gRunNumber); 
       fprintf(pfilen,"//===================================================================\n");
-
-      sprintf(filename,"%s/%s_%d.bad",gOutFolder,filenam,gRunNumber);
-      cout << " Bad channel file                 = " << filename << "\n";
-      pfilef = fopen (filename,"w");
-
-      fprintf(pfilef,"//=================================================\n");
-      fprintf(pfilef,"//  Bad Channel file calculated by MUONTRKda \n");
-      fprintf(pfilef,"//=================================================\n");
-      fprintf(pfilef,"//   * Run           : %d \n",gRunNumber); 
-      fprintf(pfilef,"//   * Date          : %s \n",date.AsString("l"));
-      fprintf(pfilef,"//=======================================\n");
-      fprintf(pfilef,"// BP MANU CH.   a1      a2     thres. Q\n");
-      fprintf(pfilef,"//=======================================\n");
     }
 
   FILE *pfilew=0;
@@ -682,8 +668,6 @@ void MakeGainStore()
   Int_t    nmanu         = 0;
   Int_t    nGoodChannel   = 0;
   Int_t    nBadChannel   = 0;
-  Int_t    nBadChannel_a1   = 0;
-  Int_t    nBadChannel_a2   = 0;
   Int_t    noFitChannel   = 0;
   Int_t    nplot=0;
   Double_t sumProbChi2   = 0.;
@@ -799,7 +783,6 @@ void MakeGainStore()
 
 		      yp[j]    = injCharge[k] - yLim - par[1]*xp[j];
 		      ypErr[j] = injChargeErr[k];
-
 		    }
 
 		  TF1 *f2 = new TF1("f2",funcParabolic,0.,gkADCMax,1);
@@ -825,11 +808,11 @@ void MakeGainStore()
 	      par[2] = a2;
 	      par[3] = xLim;
 
-
-	      // Prints
-
-	      p1 = TMath::Nint(ceil(prChi2*14))+1;
-	      p2 = TMath::Nint(ceil(prChi2P2*14))+1;
+// 	      p1 = TMath::Nint(ceil(prChi2*14))+1;      // round up value : ceil (2.2)=3.
+// 	      p2 = TMath::Nint(ceil(prChi2P2*14))+1;
+	      if(prChi2>0.999999)prChi2=0.999999 ; if(prChi2P2>0.999999)prChi2P2=0.9999999; // avoiding Pr(Chi2)=1 value
+	      p1 = TMath::Nint(floor(prChi2*15))+1;    // round down value : floor(2.8)=2.
+	      p2 = TMath::Nint(floor(prChi2P2*15))+1;
 	      Q  = p1*16 + p2;  // fit quality 
 
 	      Double_t x0 = -par[0]/par[1]; // value of x corresponding to à 0 fC 
@@ -838,41 +821,13 @@ void MakeGainStore()
 	      if(gPrintLevel==2)
 		{
 		  fprintf(pfilen,"%4i %4i %2i",busPatchId,manuId,channelId);
-		  fprintf(pfilen," %6.2f %6.4f %10.3e %4.2f  %5.3f   %x  %5.3f  %x\n",
-			  par[0], par[1], par[2], par[3], prChi2, p1, prChi2P2, p2);
+		  fprintf(pfilen," %6.2f %6.4f %10.3e %4.2f %4i          %8.6f %8.6f   %x          %8.6f  %8.6f   %x\n",
+			  par[0], par[1], par[2], par[3], threshold, prChi2, floor(prChi2*15), p1,  prChi2P2, floor(prChi2P2*15),p2);
 		}
+	      // tests
+	      if(par[1]< goodA1Min ||  par[1]> goodA1Max) p1=0;
+	      if(par[2]< goodA2Min ||  par[2]> goodA2Max) p2=0;
 
-	      // some tests
-
-	      if(par[1]< goodA1Min ||  par[1]> goodA1Max)
-		{ 
-		  p1=0;
-		  nBadChannel_a1++;
-		  if (gPrintLevel && nBadChannel_a1 < 1) 
-		    {
-		      cout << " !!!!! " << nBadChannel_a1 << " !!!!!!!! Bad Calib.: BP= " << busPatchId << " Manu_Id= " << manuId << 
-			" Ch.= " << channelId << ":";
-		      cout << "  a1 = " << par[1] << "    out of limit : [" <<  goodA1Min << "," << goodA1Max << 
-			"]" << endl;
-		    }
-		}
-
-
-	      if(par[2]< goodA2Min ||  par[2]> goodA2Max)
-		{ 
-		  p2=0;
-		  nBadChannel_a2++;
-		  if (gPrintLevel && nBadChannel_a2 < 1) 
-		    {
-		      cout << " !!!!! " << nBadChannel_a2 << " !!!!!!!! Bad Calib.: BP= " << busPatchId << " Manu_Id= " << manuId 
-			   << " Ch.= " << channelId << ":";
-		      cout << "  a2 = " << par[2] << "    out of limit : [" <<  goodA2Min << "," << goodA2Max 
-			   << "]" << endl;
-
-		      for (Int_t j = 0; j < nbpf2; ++j)
-			{cout << j << " " << x[j] << " " << xErr[j] << " " << y[j] << " " << yErr[j] << endl;}
-		    }
-		}
 	    } // FitProceed
 
 	  if(FitProceed && p1>0 && p2>0) 
@@ -888,9 +843,8 @@ void MakeGainStore()
 	    {
 	      nBadChannel++;
 	      Q=0;  
-	      if(gPrintLevel==2)fprintf(pfilef,"%4i %5i %2i %7.4f %10.3e %4i %2x\n",busPatchId,manuId,channelId,par[1],par[2],threshold,Q);
 	      par[1]=0.5; a1=0.5; p1=0;
-	      par[2]=0.;	a2=0.; p2=0;
+	      par[2]=0.;  a2=0.;  p2=0;
 	      threshold=gkADCMax;	
 
 	      char bpmanuname[256];
@@ -916,8 +870,9 @@ void MakeGainStore()
 	  if(gPlotLevel){
 	    //		      if(Q==0  and  nplot < 100)
 	    // 	  if(p1>1 && p2==0  and  nplot < 100)
-	    if(p1>1 && p2>1  and  nplot < 100)
+	    //	    if(p1>1 && p2>1  and  nplot < 100)
 	      //	if(p1>=1 and p1<=2  and  nplot < 100)
+	    if((p1==1 || p2==1) and  nplot < 100)
 	      {
 		nplot++;
 		// 	      cout << " nplot = " << nplot << endl;
@@ -954,12 +909,12 @@ void MakeGainStore()
 
 	}
       nmanu++;
-      if(fmod(nmanu,100)==0)std::cout << " Nb manu = " << nmanu << std::endl;
+      if(fmod(nmanu,500)==0)std::cout << " Nb manu = " << nmanu << std::endl;
     }
 
   // file outputs for gain
   if (!flatOutputFile.IsNull())  fclose(pfilew);
-  if(gPrintLevel==2){ fclose(pfilen); fclose(pfilef); fclose(pfilep); }
+  if(gPrintLevel==2){ fclose(pfilen); fclose(pfilep); }
 
   tg->Write();
   histoFile->Close();
@@ -1045,8 +1000,6 @@ int main(Int_t argc, Char_t **argv)
   Int_t MaxDateEvents  = 1000000;
   Int_t injCharge = 0;
   Char_t inputFile[256]="";
-  Char_t inputFile1[256]="";
-  Char_t inputFile2[256]="";
 
   Int_t gGlitchErrors= 0;
   Int_t gParityErrors= 0;
@@ -1068,11 +1021,7 @@ int main(Int_t argc, Char_t **argv)
 	{
 	case 'f' : 
 	  i++;
-	  sprintf(inputFile1,argv[i]);
-	  break;
-	case 'z' : 
-	  i++;
-	  sprintf(inputFile2,argv[i]);
+	  sprintf(inputFile,argv[i]);
 	  break;
 	case 'a' : 
 	  i++;
@@ -1133,8 +1082,7 @@ int main(Int_t argc, Char_t **argv)
 	  printf("\n-h help                    (this screen)");
 	  printf("\n");
 	  printf("\n Input");
-	  printf("\n-f <raw data file>         (default = %s)",inputFile1); 
-	  printf("\n-z <raw data file2>        (default = %s)",inputFile2); 
+	  printf("\n-f <raw data file>         (default = %s)",inputFile); 
 	  printf("\n");
 	  printf("\n Output");
 	  printf("\n-a <Flat ASCII file>       (default = %s)",flatOutputFile.Data()); 
@@ -1171,7 +1119,7 @@ int main(Int_t argc, Char_t **argv)
   // decoding the events
 
   Int_t status=0;
-  void* event;
+  //  void* event;
 
   gPedMeanHisto = 0x0;
   gPedSigmaHisto = 0x0;
@@ -1185,237 +1133,218 @@ int main(Int_t argc, Char_t **argv)
   UShort_t charge;
   TString key("MUONTRKda :");
 
-  AliMUONRawStreamTrackerHP* rawStream  = 0;
-
-  int nrawdata=1;
-  if (strlen(inputFile2) > 0) nrawdata=2;  //    2 raw data files to read (offline case)
+  // AliMUONRawStreamTrackerHP* rawStream  = 0;
 
   if (gCommand.CompareTo("comp") != 0)
     {
+      
+      // Rawdeader, RawStreamHP
+      AliRawReader* rawReader = AliRawReader::Create(inputFile);
+      AliMUONRawStreamTrackerHP* rawStream  = new AliMUONRawStreamTrackerHP(rawReader);    
+      rawStream->DisableWarnings();
+      rawStream->EnabbleErrorLogger();
 
-      for(int iraw = 0; iraw < nrawdata; ++iraw)
+      cout << "\nMUONTRKda : Reading data from file " << inputFile  << endl;
+
+      while (rawReader->NextEvent())
 	{
-	  if(iraw==0) strcpy(inputFile,inputFile1);
-	  if(iraw==1) strcpy(inputFile,inputFile2);
-	      
-	  status = monitorSetDataSource(inputFile);
+	  if (gNDateEvents >= MaxDateEvents) break;
+	  if (gNEvents >= maxEvents) break;
+	  if (gNDateEvents>0 &&  gNDateEvents % 100 == 0) 	
+	    cout<<"Cumulated:  DATE events = " << gNDateEvents << "   Used events = " << gNEvents << endl;
 
-	  if (status) {
-	    cerr << "ERROR : monitorSetDataSource status (hex) = " << hex << status
-		 << " " << monitorDecodeError(status) << endl;
-	    return -1;
-	  }
-	  status = monitorDeclareMp("MUON Tracking monitoring");
-	  if (status) {
-	    cerr << "ERROR : monitorDeclareMp status (hex) = " << hex << status
-		 << " " << monitorDecodeError(status) << endl;
-	    return -1;
-	  }
+	  // check shutdown condition 
+	  if (daqDA_checkShutdown()) 
+	    break;
 
-
-	  cout << "\nMUONTRKda : Reading data from file " << inputFile << " gNEvents = " << gNEvents << endl;
-
-	  while(1) 
+	  //Skip events
+	  while (skipEvents)
 	    {
-	      if (gNDateEvents >= MaxDateEvents) break;
-	      if (gNEvents >= maxEvents) break;
-	      if (gNDateEvents>0 &&  gNDateEvents % 100 == 0) 	
-		cout<<"Cumulated:  DATE events = " << gNDateEvents << "   Used events = " << gNEvents << endl;
+	      rawReader->NextEvent();
+	      skipEvents--;
+	    }
 
-	      // check shutdown condition 
-	      if (daqDA_checkShutdown()) 
-		break;
+	  // starts reading
+	  // 	      status = monitorGetEventDynamic(&event);
+	  // 	      if (status < 0)  {
+	  // cout<<"EOF found"<<endl;
+	  // break;
+	  // 	      }
 
-	      // Skip Events if needed
-	      while (skipEvents) {
-		status = monitorGetEventDynamic(&event);
-		skipEvents--;
+	  // decoding rawdata headers
+	  // AliRawReader *rawReader = new AliRawReaderDate(event);
+
+	  Int_t eventType = rawReader->GetType();
+	  gRunNumber = rawReader->GetRunNumber();
+
+	  // Output log file initialisations
+
+	  if(gNDateEvents==0)
+	    {
+	      if (gCommand.CompareTo("ped") == 0){
+		sprintf(flatFile,"%s/MUONTRKda_ped_%d.log",gOutFolder,gRunNumber);
+		logOutputFile=flatFile;
+
+		filcout.open(logOutputFile.Data());
+		filcout<<"//=================================================" << endl;
+		filcout<<"//        MUONTRKda for Pedestal run = "   << gRunNumber << endl;
+		cout<<"\n ********  MUONTRKda for Pedestal run = " << gRunNumber << "\n" << endl;
 	      }
 
-	      // starts reading
-	      status = monitorGetEventDynamic(&event);
-	      if (status < 0)  {
-		cout<<"EOF found"<<endl;
-		break;
+	      if (gCommand.Contains("gain")){
+		sprintf(flatFile,"%s/%s_%d_DAC_%d.log",gOutFolder,filenam,gRunNumber,injCharge);
+		logOutputFile=flatFile;
+
+		filcout.open(logOutputFile.Data());
+		filcout<<"//=================================================" << endl;
+		filcout<<"//        MUONTRKda for Gain run = " << gRunNumber << "  (DAC=" << injCharge << ")" << endl;
+		cout<<"\n ********  MUONTRKda for Gain run = " << gRunNumber << "  (DAC=" << injCharge << ")\n" << endl;
 	      }
 
-	      // decoding rawdata headers
-	      AliRawReader *rawReader = new AliRawReaderDate(event);
+	      filcout<<"//=================================================" << endl;
+	      filcout<<"//   * Date          : " << date.AsString("l") << "\n" << endl;
+	      cout<<" * Date          : " << date.AsString("l") << "\n" << endl;
 
-	      Int_t eventType = rawReader->GetType();
-	      gRunNumber = rawReader->GetRunNumber();
+	    }
 
-	      // Output log file initialisations
+	  gNDateEvents++;
 
-	      if(gNDateEvents==0)
+	  if (eventType != PHYSICS_EVENT)
+	    continue; // for the moment
+
+	  // decoding MUON payload
+	  // rawStream  = new AliMUONRawStreamTrackerHP(rawReader);
+	  // rawStream->DisableWarnings();
+	  // rawStream->EnabbleErrorLogger();
+
+	  // First lopp over DDL's to find good events
+	  // Error counters per event (counters in the decoding lib are for each DDL)
+	  Bool_t eventIsErrorMessage = kFALSE;
+	  int eventGlitchErrors = 0;
+	  int eventParityErrors = 0;
+	  int eventPaddingErrors = 0;
+	  rawStream->First();
+	  do
+	    {
+	      if (rawStream->IsErrorMessage()) eventIsErrorMessage = kTRUE;
+	      eventGlitchErrors += rawStream->GetGlitchErrors();
+	      eventParityErrors += rawStream->GetParityErrors();
+	      eventPaddingErrors += rawStream->GetPaddingErrors();
+	    } while(rawStream->NextDDL()); 
+
+	  AliMUONRawStreamTrackerHP::AliBusPatch* busPatch;
+	  if (!eventIsErrorMessage) 
+	    {
+	      // Good events (no error) -> compute pedestal for all channels
+	      rawStream->First(); 
+	      while( (busPatch = (AliMUONRawStreamTrackerHP::AliBusPatch*) rawStream->Next())) 
 		{
-		  if (gCommand.CompareTo("ped") == 0){
-		    sprintf(flatFile,"%s/MUONTRKda_ped_%d.log",gOutFolder,gRunNumber);
-		    logOutputFile=flatFile;
-
-		    filcout.open(logOutputFile.Data());
-		    filcout<<"//=================================================" << endl;
-		    filcout<<"//        MUONTRKda for Pedestal run = "   << gRunNumber << endl;
-		    cout<<"\n ********  MUONTRKda for Pedestal run = " << gRunNumber << "\n" << endl;
-		  }
-
-		  if (gCommand.Contains("gain")){
-		    sprintf(flatFile,"%s/%s_%d_DAC_%d.log",gOutFolder,filenam,gRunNumber,injCharge);
-		    logOutputFile=flatFile;
-
-		    filcout.open(logOutputFile.Data());
-		    filcout<<"//=================================================" << endl;
-		    filcout<<"//        MUONTRKda for Gain run = " << gRunNumber << "  (DAC=" << injCharge << ")" << endl;
-		    cout<<"\n ********  MUONTRKda for Gain run = " << gRunNumber << "  (DAC=" << injCharge << ")\n" << endl;
-		  }
-
-		  filcout<<"//=================================================" << endl;
-		  filcout<<"//   * Date          : " << date.AsString("l") << "\n" << endl;
-		  cout<<" * Date          : " << date.AsString("l") << "\n" << endl;
-
+		  for(int i = 0; i < busPatch->GetLength(); ++i)
+		    {
+		      if (gNEvents == 0) gNChannel++;
+		      busPatch->GetData(i, manuId, channelId, charge);
+		      MakePed(busPatch->GetBusPatchId(), (Int_t)manuId, (Int_t)channelId, (Int_t)charge);
+		    }
 		}
-
-	      gNDateEvents++;
-
-	      if (eventType != PHYSICS_EVENT)
-		continue; // for the moment
-
-	      // decoding MUON payload
-	      rawStream  = new AliMUONRawStreamTrackerHP(rawReader);
-	      rawStream->DisableWarnings();
-	      rawStream->EnabbleErrorLogger();
-
-	      // First lopp over DDL's to find good events
-	      // Error counters per event (counters in the decoding lib are for each DDL)
-	      Bool_t eventIsErrorMessage = kFALSE;
-	      int eventGlitchErrors = 0;
-	      int eventParityErrors = 0;
-	      int eventPaddingErrors = 0;
-	      rawStream->First();
-	      do
+	      gNEvents++;
+	    }
+	  else
+	    {
+	      // Events with errors
+	      if (recoverParityErrors && eventParityErrors && !eventGlitchErrors&& !eventPaddingErrors)
 		{
-		  if (rawStream->IsErrorMessage()) eventIsErrorMessage = kTRUE;
-		  eventGlitchErrors += rawStream->GetGlitchErrors();
-		  eventParityErrors += rawStream->GetParityErrors();
-		  eventPaddingErrors += rawStream->GetPaddingErrors();
-		} while(rawStream->NextDDL()); 
-
-	      AliMUONRawStreamTrackerHP::AliBusPatch* busPatch;
-	      if (!eventIsErrorMessage) 
-		{
-		  // Good events (no error) -> compute pedestal for all channels
-		  rawStream->First(); 
+		  // Recover parity errors -> compute pedestal for all good buspatches
+		  if ( TEST_SYSTEM_ATTRIBUTE( rawReader->GetAttributes(),
+					      ATTR_ORBIT_BC )) 
+		    {
+		      filcout <<"Event recovered -> Period:"<<EVENT_ID_GET_PERIOD( rawReader->GetEventId() )
+			      <<" Orbit:"<<EVENT_ID_GET_ORBIT( rawReader->GetEventId() )
+			      <<" BunchCrossing:"<<EVENT_ID_GET_BUNCH_CROSSING( rawReader->GetEventId() )<<endl;				
+		    } 
+		  else 
+		    {
+		      filcout <<"Event recovered -> nbInRun:"<<EVENT_ID_GET_NB_IN_RUN( rawReader->GetEventId() )
+			      <<" burstNb:"<<EVENT_ID_GET_BURST_NB( rawReader->GetEventId() )
+			      <<" nbInBurst:"<<EVENT_ID_GET_NB_IN_BURST( rawReader->GetEventId() )<<endl;
+		    }
+		  rawStream->First();
 		  while( (busPatch = (AliMUONRawStreamTrackerHP::AliBusPatch*) rawStream->Next())) 
 		    {
+		      // Check the buspatch -> if error not use it in the pedestal calculation
+		      int errorCount = 0;
 		      for(int i = 0; i < busPatch->GetLength(); ++i)
 			{
-			  if (gNEvents == 0) gNChannel++;
-			  busPatch->GetData(i, manuId, channelId, charge);
-			  MakePed(busPatch->GetBusPatchId(), (Int_t)manuId, (Int_t)channelId, (Int_t)charge);
+			  if (!busPatch->IsParityOk(i)) errorCount++;
 			}
-		    }
-		  gNEvents++;
-		}
-	      else
-		{
-		  // Events with errors
-		  if (recoverParityErrors && eventParityErrors && !eventGlitchErrors&& !eventPaddingErrors)
-		    {
-		      // Recover parity errors -> compute pedestal for all good buspatches
-		      if ( TEST_SYSTEM_ATTRIBUTE( rawReader->GetAttributes(),
-						  ATTR_ORBIT_BC )) 
+		      if (!errorCount) 
 			{
-			  filcout <<"Event recovered -> Period:"<<EVENT_ID_GET_PERIOD( rawReader->GetEventId() )
-				  <<" Orbit:"<<EVENT_ID_GET_ORBIT( rawReader->GetEventId() )
-				  <<" BunchCrossing:"<<EVENT_ID_GET_BUNCH_CROSSING( rawReader->GetEventId() )<<endl;				
-			} 
-		      else 
-			{
-			  filcout <<"Event recovered -> nbInRun:"<<EVENT_ID_GET_NB_IN_RUN( rawReader->GetEventId() )
-				  <<" burstNb:"<<EVENT_ID_GET_BURST_NB( rawReader->GetEventId() )
-				  <<" nbInBurst:"<<EVENT_ID_GET_NB_IN_BURST( rawReader->GetEventId() )<<endl;
-			}
-		      rawStream->First();
-		      while( (busPatch = (AliMUONRawStreamTrackerHP::AliBusPatch*) rawStream->Next())) 
-			{
-			  // Check the buspatch -> if error not use it in the pedestal calculation
-			  int errorCount = 0;
+			  // Good buspatch
 			  for(int i = 0; i < busPatch->GetLength(); ++i)
 			    {
-			      if (!busPatch->IsParityOk(i)) errorCount++;
+			      if (gNEvents == 0) gNChannel++;
+			      busPatch->GetData(i, manuId, channelId, charge);
+			      // if (busPatch->GetBusPatchId()==1719 && manuId == 1 && channelId == 0) cout <<"Recovered charge "<<charge<<endl;
+			      MakePed(busPatch->GetBusPatchId(), (Int_t)manuId, (Int_t)channelId, (Int_t)charge);
 			    }
-			  if (!errorCount) 
+			}
+		      else
+			{
+			  char bpname[256];
+			  ErrorCounter* errorCounter;
+			  // Bad buspatch -> not used (just print)
+			  filcout<<"bpId "<<busPatch->GetBusPatchId()<<" words "<<busPatch->GetLength()
+				 <<" parity errors "<<errorCount<<endl;
+			  // Number of events where this buspatch is missing
+			  sprintf(bpname,"bp%d",busPatch->GetBusPatchId());						
+			  if (!(errorCounter = (ErrorCounter*)gErrorBuspatchTable->FindObject(bpname)))
 			    {
-			      // Good buspatch
-			      for(int i = 0; i < busPatch->GetLength(); ++i)
-				{
-				  if (gNEvents == 0) gNChannel++;
-				  busPatch->GetData(i, manuId, channelId, charge);
-				  // if (busPatch->GetBusPatchId()==1719 && manuId == 1 && channelId == 0) cout <<"Recovered charge "<<charge<<endl;
-				  MakePed(busPatch->GetBusPatchId(), (Int_t)manuId, (Int_t)channelId, (Int_t)charge);
-				}
+			      // New buspatch
+			      errorCounter = new ErrorCounter(busPatch->GetBusPatchId());
+			      errorCounter->SetName(bpname);
+			      gErrorBuspatchTable->Add(errorCounter);
 			    }
 			  else
 			    {
-			      char bpname[256];
-			      ErrorCounter* errorCounter;
-			      // Bad buspatch -> not used (just print)
-			      filcout<<"bpId "<<busPatch->GetBusPatchId()<<" words "<<busPatch->GetLength()
-				     <<" parity errors "<<errorCount<<endl;
-			      // Number of events where this buspatch is missing
-			      sprintf(bpname,"bp%d",busPatch->GetBusPatchId());						
-			      if (!(errorCounter = (ErrorCounter*)gErrorBuspatchTable->FindObject(bpname)))
-				{
-				  // New buspatch
-				  errorCounter = new ErrorCounter(busPatch->GetBusPatchId());
-				  errorCounter->SetName(bpname);
-				  gErrorBuspatchTable->Add(errorCounter);
-				}
-			      else
-				{
-				  // Existing buspatch
-				  errorCounter->Increment();
-				}	
-			      // errorCounter->Print();						
-			    } // end of if (!errorCount)
-			} // end of while( (busPatch = (AliMUONRawStreamTrackerHP ...
-		      gNEvents++;
-		      gNEventsRecovered++;
-		    } //end of if (recoverParityErrors && eventParityErrors && !eventGlitchErrors&& !eventPaddingErrors)
-		  else
+			      // Existing buspatch
+			      errorCounter->Increment();
+			    }	
+			  // errorCounter->Print();						
+			} // end of if (!errorCount)
+		    } // end of while( (busPatch = (AliMUONRawStreamTrackerHP ...
+		  gNEvents++;
+		  gNEventsRecovered++;
+		} //end of if (recoverParityErrors && eventParityErrors && !eventGlitchErrors&& !eventPaddingErrors)
+	      else
+		{
+		  // Fatal errors reject the event
+		  if ( TEST_SYSTEM_ATTRIBUTE( rawReader->GetAttributes(),
+					      ATTR_ORBIT_BC )) 
 		    {
-		      // Fatal errors reject the event
-		      if ( TEST_SYSTEM_ATTRIBUTE( rawReader->GetAttributes(),
-						  ATTR_ORBIT_BC )) 
-			{
-			  filcout <<"Event rejected -> Period:"<<EVENT_ID_GET_PERIOD( rawReader->GetEventId() )
-				  <<" Orbit:"<<EVENT_ID_GET_ORBIT( rawReader->GetEventId() )
-				  <<" BunchCrossing:"<<EVENT_ID_GET_BUNCH_CROSSING( rawReader->GetEventId() )<<endl;				
-			} 
-		      else 
-			{
-			  filcout <<"Event rejected -> nbInRun:"<<EVENT_ID_GET_NB_IN_RUN( rawReader->GetEventId() )
-				  <<" burstNb:"<<EVENT_ID_GET_BURST_NB( rawReader->GetEventId() )
-				  <<" nbInBurst:"<<EVENT_ID_GET_NB_IN_BURST( rawReader->GetEventId() )<<endl;
+		      filcout <<"Event rejected -> Period:"<<EVENT_ID_GET_PERIOD( rawReader->GetEventId() )
+			      <<" Orbit:"<<EVENT_ID_GET_ORBIT( rawReader->GetEventId() )
+			      <<" BunchCrossing:"<<EVENT_ID_GET_BUNCH_CROSSING( rawReader->GetEventId() )<<endl;				
+		    } 
+		  else 
+		    {
+		      filcout <<"Event rejected -> nbInRun:"<<EVENT_ID_GET_NB_IN_RUN( rawReader->GetEventId() )
+			      <<" burstNb:"<<EVENT_ID_GET_BURST_NB( rawReader->GetEventId() )
+			      <<" nbInBurst:"<<EVENT_ID_GET_NB_IN_BURST( rawReader->GetEventId() )<<endl;
 
-			}
-		    } // end of if (!rawStream->GetGlitchErrors() && !rawStream->GetPaddingErrors() ...
-		  filcout<<"Number of errors : Glitch "<<eventGlitchErrors
-			 <<" Parity "<<eventParityErrors
-			 <<" Padding "<<eventPaddingErrors<<endl;
-		  filcout<<endl;			
-		} // end of if (!rawStream->IsErrorMessage())
+		    }
+		} // end of if (!rawStream->GetGlitchErrors() && !rawStream->GetPaddingErrors() ...
+	      filcout<<"Number of errors : Glitch "<<eventGlitchErrors
+		     <<" Parity "<<eventParityErrors
+		     <<" Padding "<<eventPaddingErrors<<endl;
+	      filcout<<endl;			
+	    } // end of if (!rawStream->IsErrorMessage())
 
-	      if (eventGlitchErrors)  gGlitchErrors++;
-	      if (eventParityErrors)  gParityErrors++;
-	      if (eventPaddingErrors) gPaddingErrors++;
+	  if (eventGlitchErrors)  gGlitchErrors++;
+	  if (eventParityErrors)  gParityErrors++;
+	  if (eventPaddingErrors) gPaddingErrors++;
 
-	      delete rawReader;
-	      delete rawStream;
-
-	    } // while (1)
-	}
-
+	} // while (rawReader->NextEvent())
+      delete rawReader;
+      delete rawStream;
 
 
       if (gCommand.CompareTo("ped") == 0)
