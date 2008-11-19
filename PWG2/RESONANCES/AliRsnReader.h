@@ -21,70 +21,72 @@
 #define ALIRSNREADER_H
 
 #include <TNamed.h>
+
 #include "AliRsnDaughter.h"
+#include "AliRsnPIDDefESD.h"
 
 class AliVEvent;
 class AliESDEvent;
 class AliAODEvent;
 class AliMCEvent;
 class AliRsnEvent;
-class AliRsnPIDWeightsMgr;
 
-class AliRsnReader : public TNamed
+class AliRsnReader : public TObject
 {
   public:
 
-    AliRsnReader(AliRsnPIDWeightsMgr *mgr = 0x0);
+    AliRsnReader();
     virtual ~AliRsnReader() {}
 
-    void    SetWeightsMgr(AliRsnPIDWeightsMgr *mgr) {fWeightsMgr = mgr;}
     void    SetCheckSplit(Bool_t doit = kTRUE) {fCheckSplit = doit;}
+    Bool_t  AreSplitted(AliESDtrack *track1, AliESDtrack *track2);
+    Bool_t  ResolveSplit(AliESDtrack *track1, AliESDtrack *track2);
+    Bool_t  DoesCheckSplit() {return fCheckSplit;}
+
     void    SetRejectFakes(Bool_t doit = kTRUE) {fRejectFakes = doit;}
+    Bool_t  DoesRejectFakes() {return fRejectFakes;}
 
-    Bool_t  CheckSplit() {return fCheckSplit;}
-    Bool_t  RejectFakes() {return fRejectFakes;}
+    void    SetTPCOnly(Bool_t doit = kTRUE);
+    Bool_t  DoesTPCOnly() {return fTPCOnly;}
 
-    Bool_t  Fill(AliRsnEvent *rsn, AliVEvent *event, AliMCEvent *refMC = 0, Bool_t useTPCOnly = kFALSE);
-    Bool_t  FillFromESD(AliRsnEvent *rsn, AliESDEvent *event, AliMCEvent *refMC = 0, Bool_t useTPCOnly = kFALSE);
-    Bool_t  FillFromAOD(AliRsnEvent *rsn, AliAODEvent *event, AliMCEvent *refMC = 0);
-    Bool_t  FillFromMC(AliRsnEvent *rsn, AliMCEvent *mc);
+    AliRsnPIDDefESD& GetPIDDef() {return fPIDDef;}
 
-    // sets PID TYPE
-    void SetPIDtype(const AliRsnDaughter::EPIDType& theValue = AliRsnDaughter::kEsd, Double_t divValue = 0.0);
-    AliRsnDaughter::EPIDType GetPIDtype() const { return fCurrentPIDtype; }
-    
-    // set limits in track references
     void SetTrackRefs(Int_t value) {fTrackRefs = value;}
     void SetTrackRefsITS(Int_t value) {fTrackRefsITS = value;}
     void SetTrackRefsTPC(Int_t value) {fTrackRefsTPC = value;}
 
-    // sets Sectors cut
+    void SetMinITSClusters(Int_t value) {fITSClusters = value;}
+    void SetMinTPCClusters(Int_t value) {fTPCClusters = value;}
+    void SetMinTRDClusters(Int_t value) {fTRDClusters = value;}
     void SetITSTPCTRDSectors(const Int_t& its = -1, const Int_t& tpc = -1, const Int_t& trd = -1);
 
-  protected:
-
-    // dummy copy methods
-    AliRsnReader(const AliRsnReader &copy) : TNamed(copy),
-        fCheckSplit(0),fRejectFakes(0),fWeightsMgr(0x0),fCurrentPIDtype(AliRsnDaughter::kEsd),
-        fPIDDivValue(0.),fITSClusters(0),fTPCClusters(0),fTRDClusters(0),
-        fTrackRefs(0),fTrackRefsITS(0),fTrackRefsTPC(0) { /*nothing*/ }
-    AliRsnReader& operator=(const AliRsnReader&) {return (*this);}
-
-    Bool_t                    fCheckSplit;     // flag to check and remove split tracks
-    Bool_t                    fRejectFakes;    // flag to reject fake tracks (negative label)
-
-    AliRsnPIDWeightsMgr      *fWeightsMgr;     // manager for alternative PID weights
-    AliRsnDaughter::EPIDType  fCurrentPIDtype; // PID type
-    Double_t                  fPIDDivValue;    // PID div Value
-    Int_t                     fITSClusters;    //
-    Int_t                     fTPCClusters;    //
-    Int_t                     fTRDClusters;    //
-    Int_t                     fTrackRefs;      // minimum required track references for MC reading
-    Int_t                     fTrackRefsITS;   // minimum required track references for MC reading (ITS)
-    Int_t                     fTrackRefsTPC;   // minimum required track references for MC reading (TPC)
-    
+    Bool_t  Fill(AliRsnEvent *rsn, AliVEvent *event, AliMCEvent *refMC = 0);
+    Bool_t  FillFromESD(AliRsnEvent *rsn, AliESDEvent *event, AliMCEvent *refMC = 0);
+    Bool_t  FillFromAOD(AliRsnEvent *rsn, AliAODEvent *event, AliMCEvent *refMC = 0);
+    Bool_t  FillFromMC(AliRsnEvent *rsn, AliMCEvent *mc);
 
   private:
+
+    // dummy copy methods
+    AliRsnReader(const AliRsnReader &copy) :
+      TObject(copy),fCheckSplit(0),fRejectFakes(0),fTPCOnly(0),fPIDDef(copy.fPIDDef),
+      fITSClusters(0),fTPCClusters(0),fTRDClusters(0),
+      fTrackRefs(0),fTrackRefsITS(0),fTrackRefsTPC(0) { /*nothing*/ }
+    AliRsnReader& operator=(const AliRsnReader&) {return (*this);}
+
+    Bool_t          fCheckSplit;     // flag to check and remove split tracks
+    Bool_t          fRejectFakes;    // flag to reject fake tracks (negative label)
+    Bool_t          fTPCOnly;        // flag to use only the TPC for reading data
+
+    AliRsnPIDDefESD fPIDDef;         // manager for alternative PID weights (ESD only)
+
+    Int_t           fITSClusters;    // minimum number of ITS clusters to accept a track
+    Int_t           fTPCClusters;    // minimum number of TPC clusters to accept a track
+    Int_t           fTRDClusters;    // minimum number of TRD clusters to accept a track
+
+    Int_t           fTrackRefs;      // minimum required track references for MC reading
+    Int_t           fTrackRefsITS;   // minimum required track references for MC reading (ITS)
+    Int_t           fTrackRefsTPC;   // minimum required track references for MC reading (TPC)
 
     ClassDef(AliRsnReader, 1);
 };

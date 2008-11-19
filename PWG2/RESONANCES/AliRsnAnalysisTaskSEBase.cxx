@@ -131,12 +131,14 @@ void AliRsnAnalysisTaskSEBase::SetInputType
       }
       break;
     case kRSN:
-//       AliError("Not Implemented Yet ...");
       break;
     default:
       AliError("Type not supported ...");
       break;
   }
+
+  // check if the TPC only is used
+  if (fInputType[inputIndex] == kESDTPC || fInputType[inputIndex] == kESDMCTPC) fReader.SetTPCOnly();
 }
 
 //_____________________________________________________________________________
@@ -317,9 +319,6 @@ AliRsnEvent * AliRsnAnalysisTaskSEBase::GetRsnFromESD(const Short_t & index)
 // Gets RSN event from ESD
 //
 
-  // bool value to know if it is TPC only or not
-  Bool_t tpcOnly = (fInputType[index] == kESDTPC || fInputType[index] == kESDMCTPC);
-
   if (!fRsnESD[index])
   {
     AliError("fRsnESD not available.");
@@ -336,7 +335,7 @@ AliRsnEvent * AliRsnAnalysisTaskSEBase::GetRsnFromESD(const Short_t & index)
   // clear pevious event
   fRSN[index]->Clear();
 
-  if (!fReader.FillFromESD(fRSN[index], fRsnESD[index], 0x0, tpcOnly)) return (AliRsnEvent*) 0x0;
+  if (!fReader.FillFromESD(fRSN[index], fRsnESD[index], 0x0)) return (AliRsnEvent*) 0x0;
 
   if (!fPID.Process(fRSN[index]))
   {
@@ -384,9 +383,6 @@ AliRsnEvent * AliRsnAnalysisTaskSEBase::GetRsnFromESDMC(const Short_t & index)
 // Gets RSN event from ESD and MC
 //
 
-  // bool value to know if it is TPC only or not
-  Bool_t tpcOnly = (fInputType[index] == kESDTPC || fInputType[index] == kESDMCTPC);
-
   if (!fRsnESD[index])
   {
     AliError("fRsnESD not available.");
@@ -405,7 +401,7 @@ AliRsnEvent * AliRsnAnalysisTaskSEBase::GetRsnFromESDMC(const Short_t & index)
   fRsnMC[index] = MCEvent();
 
   if (!fRsnMC[index]) return (AliRsnEvent *) 0x0;
-  if (!fReader.FillFromESD(fRSN[index], fRsnESD[index], fRsnMC[index], tpcOnly)) return (AliRsnEvent*) 0x0;
+  if (!fReader.FillFromESD(fRSN[index], fRsnESD[index], fRsnMC[index])) return (AliRsnEvent*) 0x0;
   if (!fPID.Process(fRSN[index]))
   {
     AliWarning("Failed PID");

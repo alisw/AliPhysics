@@ -286,6 +286,7 @@ Bool_t AliRsnCut::IsSelected(ETarget type, AliRsnDaughter *daughter)
   // utility variables
   AliRsnPID::EType pidType;
   Double_t prob;
+  Int_t pdg;
 
   switch (fType)
   {
@@ -314,6 +315,9 @@ Bool_t AliRsnCut::IsSelected(ETarget type, AliRsnDaughter *daughter)
       pidType = daughter->PIDType(prob);
       if (fType == kPIDType) return MatchesValue((Int_t) pidType);
       if (fType == kPIDProb) return IsBetween(prob);
+    case kTruePID:
+      if (mcinfo) return MatchesValue((Int_t) TMath::Abs(mcinfo->PDG()));
+      else return kTRUE;
     case kEtaMC:
       if (mcinfo) return IsBetween(mcinfo->Eta());
       else return kTRUE;
@@ -400,7 +404,7 @@ Bool_t AliRsnCut::IsSelected(ETarget type, AliRsnEvent * event)
 Bool_t AliRsnCut::IsSelected(ETarget type, AliRsnEvent * ev1, AliRsnEvent * ev2)
 {
   AliDebug(AliLog::kDebug, "<-");
-  
+
   // check type
   if (type != kMixEvent)
   {

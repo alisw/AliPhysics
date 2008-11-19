@@ -49,6 +49,7 @@ class AliRsnCut : public TNamed
     kChargeNeg,
     kPIDType,
     kPIDProb,
+    kTruePID,
     kMultiplicity,
     kMultiplicityDifference,
     kMultiplicityRatio,
@@ -56,7 +57,7 @@ class AliRsnCut : public TNamed
     kVzDifference,
     kLastCutType
   };
-  
+
   // types of cut variables
   enum EVarType {
     kDouble_t = 0,

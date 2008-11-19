@@ -31,7 +31,7 @@ class AliRsnPID : public TNamed
       kProton,
       kUnknown,
       kSpecies = 5,
-      kPhi=6,
+      kPhi = 6,
       kJPsi,
       kSpeciesAll = 8
     };
