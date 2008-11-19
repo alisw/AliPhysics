@@ -27,6 +27,7 @@
 #include <TMath.h>
 
 #include "AliITSresponseSDD.h"
+#include <AliITSgeomTGeo.h>
 
 const Float_t AliITSresponseSDD::fgkTimeOffsetDefault = 54.30;
 const Float_t AliITSresponseSDD::fgkADC2keVDefault = 5.243;
@@ -39,6 +40,61 @@ TObject(),
 fTimeOffset(fgkTimeOffsetDefault),
 fADC2keV(fgkADC2keVDefault){
   // default constructor
+  for(Int_t i=0; i<kNSDDmods;i++){
+    fTimeZero[i]=fgkTimeOffsetDefault;
+  }  
 }
-
-
+//_________________________________________________________________________
+void AliITSresponseSDD::SetHalfLadderATimeZero(Int_t lay, Int_t lad, Float_t tzero){
+  // Sets time Zero for all modules of a ladder on side A (Z>0)
+  Int_t minMod,maxMod;
+  if(lay==3){
+    minMod=1; 
+    maxMod=3;
+    if(lad>kNLaddersLay3){
+      AliError(Form("Ladder number %d out of range",lad));
+      return;
+    }
+  }else if(lay==4){
+    minMod=1; 
+    maxMod=4;
+    if(lad>kNLaddersLay4){
+      AliError(Form("Ladder number %d out of range",lad));
+      return;
+    }
+  }else{
+    AliError(Form("Layer number %d out of range",lay));
+    return;
+  }
+  for(Int_t iMod=minMod; iMod<=maxMod; iMod++){
+    Int_t modIndex=AliITSgeomTGeo::GetModuleIndex(lay,lad,iMod);
+    SetModuleTimeZero(modIndex,tzero);
+  }
+}
+//_________________________________________________________________________
+void AliITSresponseSDD::SetHalfLadderCTimeZero(Int_t lay, Int_t lad, Float_t tzero){
+  // Sets time Zero for all modules of a ladder on side C (Z<0)
+  Int_t minMod,maxMod;
+  if(lay==3){
+    minMod=4; 
+    maxMod=6;
+    if(lad>kNLaddersLay3){
+      AliError(Form("Ladder number %d out of range",lad));
+      return;
+    }
+  }else if(lay==4){
+    minMod=5; 
+    maxMod=8;
+    if(lad>kNLaddersLay4){
+      AliError(Form("Ladder number %d out of range",lad));
+      return;
+    }
+  }else{
+    AliError(Form("Layer number %d out of range",lay));
+    return;
+  }
+  for(Int_t iMod=minMod; iMod<=maxMod; iMod++){
+    Int_t modIndex=AliITSgeomTGeo::GetModuleIndex(lay,lad,iMod);
+    SetModuleTimeZero(modIndex,tzero);
+  }
+}

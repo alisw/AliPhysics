@@ -29,6 +29,11 @@ void StoreRespSDD(Int_t firstRun=0, Int_t lastRun=999999999 ){
 
   AliCDBId idRespSDD("ITS/Calib/RespSDD",firstRun, lastRun);
   AliITSresponseSDD* rd = new AliITSresponseSDD();
-  rd->SetTimeOffset(54.3);
+  rd->SetSideATimeZero(54.3);
+  rd->SetSideCTimeZero(54.3);
+//   rd->SetLayer3ATimeZero(235);
+//   rd->SetLayer3CTimeZero(287);
+//   rd->SetLayer4ATimeZero(202);
+//   rd->SetLayer4CTimeZero(230);
   AliCDBManager::Instance()->GetDefaultStorage()->Put(rd, idRespSDD, md);  
 }
