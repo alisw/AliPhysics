@@ -1291,13 +1291,12 @@ Double_t AliTRDtrackerV1::FitRiemanTilt(AliTRDtrackV1 *track, AliTRDseedV1 *trac
       tracklets[ip].SetChi2(chi2);
     }
   }
-
   //update track points array
   if(np && points){
     Float_t xyz[3];
     for(int ip=0; ip<np; ip++){
       points[ip].GetXYZ(xyz);
-      xyz[1] = y0 - (y0>0.?1.:-1.)*TMath::Sqrt(R*R-(xyz[0]-x0)*(xyz[0]-x0));
+      xyz[1] = TMath::Abs(xyz[0] - x0) > R ? 100. : y0 - (y0>0.?1.:-1.)*TMath::Sqrt(R*R-(xyz[0]-x0)*(xyz[0]-x0));
       xyz[2] = z0 + dzdx * (xyz[0] - xref);
       points[ip].SetXYZ(xyz);
     }
@@ -1315,7 +1314,7 @@ Double_t AliTRDtrackerV1::FitKalman(AliTRDtrackV1 *track, AliTRDseedV1 *tracklet
 // 
 //   Author : A.Bercuci@gsi.de
 
-  //printf("Start track @ x[%f]\n", track->GetX());
+  // printf("Start track @ x[%f]\n", track->GetX());
 	
   //prepare marker points along the track
   Int_t ip = np ? 0 : 1;
@@ -1351,18 +1350,17 @@ Double_t AliTRDtrackerV1::FitKalman(AliTRDtrackV1 *track, AliTRDseedV1 *tracklet
     while(ip < np){
       //don't do anything if next marker is after next update point.
       if((up?-1:1) * (points[ip].GetX() - x) - fgkMaxStep < 0) break;
-
-      //printf("Propagate to x[%d] = %f\n", ip, points[ip].GetX());
-
       if(((up?-1:1) * (points[ip].GetX() - track->GetX()) < 0) && !PropagateToX(*track, points[ip].GetX(), fgkMaxStep)) return -1.;
       
       Double_t xyz[3]; // should also get the covariance
-      track->GetXYZ(xyz); points[ip].SetXYZ(xyz[0], xyz[1], xyz[2]);
+      track->GetXYZ(xyz);
+      track->Global2LocalPosition(xyz, track->GetAlpha());
+      points[ip].SetXYZ(xyz[0], xyz[1], xyz[2]);
       ip++;
     }
-    //printf("plane[%d] tracklet[%p] x[%f]\n", iplane, ptrTracklet, x);
+    // printf("plane[%d] tracklet[%p] x[%f]\n", iplane, ptrTracklet, x);
 
-    //Propagate closer to the next update point 
+    // Propagate closer to the next update point 
     if(((up?-1:1) * (x - track->GetX()) + fgkMaxStep < 0) && !PropagateToX(*track, x + (up?-1:1)*fgkMaxStep, fgkMaxStep)) return -1.;
 
     if(!AdjustSector(track)) return -1;
@@ -1392,8 +1390,9 @@ Double_t AliTRDtrackerV1::FitKalman(AliTRDtrackV1 *track, AliTRDseedV1 *tracklet
     xyz1[0] =  x * TMath::Cos(alpha) - y * TMath::Sin(alpha); 
     xyz1[1] = +x * TMath::Sin(alpha) + y * TMath::Cos(alpha);
     xyz1[2] =  z;
+    if((xyz0[0] - xyz1[9] < 1e-3) && (xyz0[0] - xyz1[9] < 1e-3)) continue; // check wheter we are at the same global x position
     Double_t param[7];
-    if(AliTracker::MeanMaterialBudget(xyz0, xyz1, param)<=0.) break;	
+    if(AliTracker::MeanMaterialBudget(xyz0, xyz1, param) <=0.) break;	
     Double_t xrho = param[0]*param[4]; // density*length
     Double_t xx0  = param[1]; // radiation length
     
@@ -1404,7 +1403,6 @@ Double_t AliTRDtrackerV1::FitKalman(AliTRDtrackV1 *track, AliTRDseedV1 *tracklet
     //Update track
     Double_t chi2 = track->GetPredictedChi2(ptrTracklet);
     if(chi2<1e+10) track->Update(ptrTracklet, chi2);
-
     if(!up) continue;
 
 		//Reset material budget if 2 consecutive gold
@@ -1416,7 +1414,9 @@ Double_t AliTRDtrackerV1::FitKalman(AliTRDtrackV1 *track, AliTRDseedV1 *tracklet
     if(((up?-1:1) * (points[ip].GetX() - track->GetX()) < 0) && !PropagateToX(*track, points[ip].GetX(), fgkMaxStep)) return -1.;
     
     Double_t xyz[3]; // should also get the covariance
-    track->GetXYZ(xyz); points[ip].SetXYZ(xyz[0], xyz[1], xyz[2]);
+    track->GetXYZ(xyz); 
+    track->Global2LocalPosition(xyz, track->GetAlpha());
+    points[ip].SetXYZ(xyz[0], xyz[1], xyz[2]);
     ip++;
   }
 
@@ -1683,7 +1683,7 @@ Bool_t AliTRDtrackerV1::AdjustSector(AliTRDtrackV1 *track)
   Double_t alpha = AliTRDgeometry::GetAlpha(); 
   Double_t y     = track->GetY();
   Double_t ymax  = track->GetX()*TMath::Tan(0.5*alpha);
-
+  
   if      (y >  ymax) {
     if (!track->Rotate( alpha)) {
       return kFALSE;
