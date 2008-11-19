@@ -9,7 +9,7 @@ SRCS= RESONANCES/AliRsnMCInfo.cxx \
       RESONANCES/AliRsnExpression.cxx \
       RESONANCES/AliRsnPID.cxx \
       RESONANCES/AliRsnPIDIndex.cxx \
-      RESONANCES/AliRsnPIDWeightsMgr.cxx \
+      RESONANCES/AliRsnPIDDefESD.cxx \
       RESONANCES/AliRsnEvent.cxx \
       RESONANCES/AliRsnEventBuffer.cxx \
       RESONANCES/AliRsnReader.cxx \
