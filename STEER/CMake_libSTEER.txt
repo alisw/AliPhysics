@@ -49,6 +49,7 @@ AliSelectorRL.cxx
 AliMagFMapsV1.cxx 
 AliMagWrapCheb.cxx 
 AliSurveyObj.cxx AliSurveyPoint.cxx 
+AliSurveyToAlignObjs.cxx 
 AliFstream.cxx 
 AliCTPRawData.cxx 
 AliQADataMaker.cxx 

@@ -81,6 +81,8 @@ TPCLib/AliHLTTPCClusterHistoComponent.cxx
 TPCLib/AliHLTTPCTrackHistoComponent.cxx
 TPCLib/AliHLTTPCTrackDumpComponent.cxx
 TPCLib/AliHLTTPCClusterDumpComponent.cxx
+TPCLib/AliHLTTPCCalibTracksComponent.cxx
+TPCLib/AliHLTTPCHWCFDataReverterComponent.cxx
 TPCLib/AliHLTTPCLog.cxx
 )
 
