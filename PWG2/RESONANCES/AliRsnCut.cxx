@@ -287,6 +287,7 @@ Bool_t AliRsnCut::IsSelected(ETarget type, AliRsnDaughter *daughter)
   AliRsnPID::EType pidType;
   Double_t prob;
   Int_t pdg;
+  Bool_t cut;
 
   switch (fType)
   {
@@ -316,6 +317,9 @@ Bool_t AliRsnCut::IsSelected(ETarget type, AliRsnDaughter *daughter)
       if (fType == kPIDType) return MatchesValue((Int_t) pidType);
       if (fType == kPIDProb) return IsBetween(prob);
     case kTruePID:
+      pdg = TMath::Abs(mcinfo->PDG());
+      cut = MatchesValue(pdg);
+      //AliError(Form("PDG = %d -- CUT = %s", pdg, (cut ? "passed" : "not passed")));
       if (mcinfo) return MatchesValue((Int_t) TMath::Abs(mcinfo->PDG()));
       else return kTRUE;
     case kEtaMC:

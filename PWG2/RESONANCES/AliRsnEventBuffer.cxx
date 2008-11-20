@@ -102,10 +102,6 @@ void AliRsnEventBuffer::AddEvent(AliRsnEvent * event)
     //AliInfo("New event");
     fEventsBuffer[fEventsBufferIndex] = new AliRsnEvent(*event);
   }
-    
-  // correct for primary vertex
-  fEventsBuffer[fEventsBufferIndex]->CorrectByPrimaryVertex();
-  fEventsBuffer[fEventsBufferIndex]->MakeComputations();
 }
 
 //_____________________________________________________________________________
