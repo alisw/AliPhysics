@@ -1502,6 +1502,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
   // Fill Event-info object
   GetEventInfo();
   fRecoParam.SetEventSpecie(fRunInfo,fEventInfo);
+  AliInfo(Form("Current event specie: %s",fRecoParam.PrintEventSpecie()));
 
   // Set the reco-params
   {

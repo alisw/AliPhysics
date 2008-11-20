@@ -30,6 +30,8 @@
 
 #include "AliLog.h"
 #include "AliRecoParam.h"
+#include "AliRunInfo.h"
+#include "AliEventInfo.h"
 
 ClassImp(AliRecoParam)
 
@@ -110,11 +112,102 @@ void  AliRecoParam::Print(Option_t *option) const {
   }
 }
 
-void AliRecoParam::SetEventSpecie(const AliRunInfo */*runInfo*/, const AliEventInfo &/*evInfo*/)
+void AliRecoParam::SetEventSpecie(const AliRunInfo *runInfo, const AliEventInfo &evInfo)
 {
   // To be implemented
   // Here we return always kDefault!!
+
   fEventSpecie = kDefault;
+
+  if (strcmp(runInfo->GetRunType(),"PHYSICS")) {
+    // Not a physics run, the event specie is set to kCalib
+    fEventSpecie = kCalib;
+    return;
+  }
+
+  if (strcmp(runInfo->GetLHCState(),"STABLE_BEAMS") == 0) {
+    // In case of stable beams
+    if ((strcmp(runInfo->GetBeamType(),"A-A") == 0) ||
+	(strcmp(runInfo->GetBeamType(),"A-") == 0) ||
+	(strcmp(runInfo->GetBeamType(),"-A") == 0)) {
+      // Heavy ion run, the event specie is set to kHighMult
+      fEventSpecie = kHighMult;
+    }
+    else if ((strcmp(runInfo->GetBeamType(),"p-p") == 0) ||
+	     (strcmp(runInfo->GetBeamType(),"p-") == 0) ||
+	     (strcmp(runInfo->GetBeamType(),"-p") == 0) ||
+	     (strcmp(runInfo->GetBeamType(),"P-P") == 0) ||
+	     (strcmp(runInfo->GetBeamType(),"P-") == 0) ||
+	     (strcmp(runInfo->GetBeamType(),"-P") == 0)) {
+      // Proton run, the event specie is set to kLowMult
+      fEventSpecie = kLowMult;
+    }
+    else if (strcmp(runInfo->GetBeamType(),"-") == 0) {
+      // No beams, we assume cosmic data
+      fEventSpecie = kCosmic;
+    }
+    else if (strcmp(runInfo->GetBeamType(),"UNKNOWN") == 0) {
+      // No LHC beam information is available, we the default
+      // event specie
+      fEventSpecie = kDefault;
+    }
+
+    // Now we look into the trigger type in order to decide
+    // on the remaining cases (cosmic event within LHC run,
+    // high-mult event based on high-mult SPD trigger
+    // within p-p run, laser triggers within physics run,
+    // special DAQ events considered as calibration etc...)
+    if (evInfo.GetEventType() != 7) {
+      // START_OF_*, END_OF_*, CALIBRATION etc events
+      fEventSpecie = kCalib;
+    }
+
+    TString triggerClasses = evInfo.GetTriggerClasses();
+    TObjArray* trClassArray = triggerClasses.Tokenize(" ");
+    Int_t nTrClasses = trClassArray->GetEntriesFast();
+    Bool_t cosmicTrigger = kFALSE,
+      laserTrigger = kFALSE,
+      highMultTrigger = kFALSE,
+      otherTrigger = kFALSE;
+    for( Int_t i=0; i<nTrClasses; ++i ) {
+      TString trClass = ((TObjString*)trClassArray->At(i))->String();
+      if (trClass.BeginsWith("C0A") ||
+	  trClass.BeginsWith("C0SC") ||
+	  trClass.BeginsWith("C0OC")) {
+      // ACORDE/SPD/TOF cosmic trigger, so we have cosmic event
+      // not always true, but we don't have a better idea...
+	cosmicTrigger = kTRUE;
+      }
+      else if (trClass.BeginsWith("C0LSR")) {
+	// Laser trigger
+	laserTrigger = kTRUE;
+      }
+      else if (trClass.BeginsWith("C0SH")) {
+	// High-multiplicity SPD trugger
+	// Have to add other high-mult triggers here...
+	highMultTrigger = kTRUE;
+      }
+      else {
+	otherTrigger = kTRUE;
+      }
+    }
+
+    if (laserTrigger) {
+      fEventSpecie = kCalib;
+      return;
+    }
+    if (cosmicTrigger && !highMultTrigger && !otherTrigger) {
+      fEventSpecie = kCosmic;
+      return;
+    }
+    if (highMultTrigger) {
+      fEventSpecie = kHighMult;
+      return;
+    }
+
+    // Here we have to add if we have other cases
+    // and also HLT info if any...
+  }
 }
 
 const AliDetectorRecoParam *AliRecoParam::GetDetRecoParam(Int_t iDet) const
@@ -179,4 +272,30 @@ Bool_t AliRecoParam::AddDetRecoParamArray(Int_t iDet, TObjArray* parArray)
   fDetRecoParams[iDet] = parArray;
 
   return defaultFound;
+}
+
+const char*  AliRecoParam::PrintEventSpecie() const
+{
+  // Print the current
+  // event specie
+  switch (fEventSpecie) {
+  case kDefault:
+    return "Default";
+    break;
+  case kLowMult:
+    return "Low-multiplicity";
+    break;
+  case kHighMult:
+    return "High-multiplicity";
+    break;
+  case kCosmic:
+    return "Cosmic";
+    break;
+  case kCalib:
+    return "Calibration";
+    break;
+  default:
+    return "Unknown";
+    break;
+  }
 }
