@@ -55,8 +55,6 @@ AliFMDAnaParameters::Instance()
 //____________________________________________________________________
 AliFMDAnaParameters::AliFMDAnaParameters() :
   fIsInit(kFALSE),
-  fBackgroundArray(0),
-  fEdistArray(0),
   fBackground(0),
   fEnergyDistribution(0)
 {
@@ -122,9 +120,6 @@ Int_t AliFMDAnaParameters::GetNvtxBins() {
 //____________________________________________________________________
 TH1F* AliFMDAnaParameters::GetEnergyDistribution(Int_t det, Char_t ring) {
   
-  //  TObjArray* detArray   = (TObjArray*)fEdistArray->At(det);
-  // Int_t ringNumber      = (ring == 'I' ? 0 : 1);
-  // TH1F* hEnergyDist     = (TH1F*)detArray->At(ringNumber);  
   return fEnergyDistribution->GetEnergyDistribution(det, ring);
 }
 //____________________________________________________________________
@@ -175,31 +170,7 @@ TH2F* AliFMDAnaParameters::GetBackgroundCorrection(Int_t det,
     return 0;
   } 
   
-  
-  
-  /*
-  TObjArray* correction = GetBackgroundArray();
-  
-  TObjArray* detArray   = (TObjArray*)correction->At(det);
-  Int_t ringNumber      = (ring == 'I' ? 0 : 1);
-  TObjArray* ringArray  = (TObjArray*)detArray->At(ringNumber);
-  TH2F* bgHist          = (TH2F*)ringArray->At(vtxbin);
-  */
   return fBackground->GetBgCorrection(det,ring,vtxbin);
-}
-//____________________________________________________________________
-TAxis* AliFMDAnaParameters::GetRefAxis() {
-  
-  TAxis* refAxis = (TAxis*)fBackgroundArray->At(0);
-  
-  return refAxis;
-}
-//____________________________________________________________________
-TObjArray* AliFMDAnaParameters::GetBackgroundArray() {
-  
-  TObjArray* correction = (TObjArray*)fBackgroundArray->At(1);
-  
-  return correction;
 }
 
 //____________________________________________________________________

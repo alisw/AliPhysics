@@ -74,8 +74,10 @@ protected:
   AliFMDAnaParameters(const AliFMDAnaParameters& o) 
     : TNamed(o),
       fIsInit(o.fIsInit),
-      fBackgroundArray(o.fBackgroundArray), 
-      fEdistArray(o.fEdistArray)
+      fBackground(o.fBackground),
+      fEnergyDistribution(o.fEnergyDistribution)
+      //  fBackgroundArray(o.fBackgroundArray), 
+      //fEdistArray(o.fEdistArray)
   {}
   AliFMDAnaParameters& operator=(const AliFMDAnaParameters&) { return *this; }
   virtual ~AliFMDAnaParameters() {}
@@ -92,8 +94,8 @@ protected:
   
   
   Bool_t fIsInit;
-  TObjArray*  fBackgroundArray;
-  TObjArray*  fEdistArray;
+  //TObjArray*  fBackgroundArray;
+  // TObjArray*  fEdistArray;
   AliFMDAnaCalibBackgroundCorrection* fBackground;
   AliFMDAnaCalibEnergyDistribution* fEnergyDistribution;
   static const char* fgkBackgroundCorrection;

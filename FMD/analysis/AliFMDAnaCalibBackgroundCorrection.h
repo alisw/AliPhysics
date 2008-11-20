@@ -31,6 +31,7 @@ class AliFMDAnaCalibBackgroundCorrection : public TObject
   TObjArray  fArray;
   TAxis      fAxis;
   Bool_t     fIsInit;
+  
   ClassDef(AliFMDAnaCalibBackgroundCorrection,1);
 };
 

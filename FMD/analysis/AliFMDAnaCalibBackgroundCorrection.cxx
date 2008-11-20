@@ -22,7 +22,7 @@ AliFMDAnaCalibBackgroundCorrection::AliFMDAnaCalibBackgroundCorrection() : TObje
 
 //____________________________________________________________________
 AliFMDAnaCalibBackgroundCorrection::AliFMDAnaCalibBackgroundCorrection(const AliFMDAnaCalibBackgroundCorrection& o)
-  : TObject(o), fArray(o.fArray), fAxis(o.fAxis)
+  : TObject(o), fArray(o.fArray), fAxis(o.fAxis), fIsInit(o.fIsInit)
 {
   // Copy ctor 
 }
@@ -43,6 +43,7 @@ TH2F* AliFMDAnaCalibBackgroundCorrection::GetBgCorrection(Int_t det,
 							  Int_t vtxbin) {
   TObjArray* ringArray = GetRingArray(det,ring);
   TH2F* hCorrection    = (TH2F*)ringArray->At(vtxbin);
+  return hCorrection;
 }
 
 //____________________________________________________________________

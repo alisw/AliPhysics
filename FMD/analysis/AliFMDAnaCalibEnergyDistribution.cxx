@@ -4,7 +4,7 @@
 ClassImp(AliFMDAnaCalibEnergyDistribution)
 
 AliFMDAnaCalibEnergyDistribution::AliFMDAnaCalibEnergyDistribution() : TObject(),
-  fArray() {
+  fArray(), fIsInit(kFALSE){
   
   
   

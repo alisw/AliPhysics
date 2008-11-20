@@ -19,7 +19,6 @@ class AliFMDAnaCalibEnergyDistribution : public TObject
   void      Init();
   TObjArray fArray;
   Bool_t    fIsInit;
-  
   ClassDef(AliFMDAnaCalibEnergyDistribution,1);
 };
 

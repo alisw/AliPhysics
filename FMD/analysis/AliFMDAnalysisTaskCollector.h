@@ -27,6 +27,8 @@ class AliFMDAnalysisTaskCollector : public AliAnalysisTask
       fArray(o.fArray),
       fEdistHist(o.fEdistHist),
       fZvtxDist(o.fZvtxDist)  {}
+    
+    AliFMDAnalysisTaskCollector& operator=(const AliFMDAnalysisTaskCollector&) { return *this; }
     virtual ~AliFMDAnalysisTaskCollector() {;}
     // Implementation of interface methods
     virtual void ConnectInputData(Option_t *option = "");
