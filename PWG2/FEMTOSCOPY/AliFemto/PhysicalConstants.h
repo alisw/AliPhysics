@@ -40,6 +40,7 @@ using namespace units;
 #include <math.h>
 #include <cmath>
 
+/*
 //
 #ifndef M_PI
 #define M_PI 3.14159265358979312
@@ -58,14 +59,14 @@ static const double    pi2  = pi*pi;
 // 
 //
 static const double Avogadro = 6.0221367e+23/mole;
-
+*/
 //
 // c   = 299.792458 mm/ns
 // c^2 = 898.7404 (mm/ns)^2 
 //
 static const double c_light   = 2.99792458e+8 * meter/second;
 static const double c_squared = c_light * c_light;
-
+/*
 //
 // h     = 4.13566e-12 MeV*ns
 // hbar  = 6.58212e-13 MeV*ns
@@ -82,6 +83,7 @@ static const double hbarc_squared = hbarc * hbarc;
 static const double electron_charge = - eplus; // see SystemOfUnits.h
 static const double e_squared = eplus * eplus;
 
+*/
 //
 // amu_c2 - atomic equivalent mass unit
 // amu    - atomic mass unit
@@ -90,7 +92,7 @@ static const double electron_mass_c2 = 0.51099906 * MeV;
 static const double   proton_mass_c2 = 938.27231 * MeV;
 static const double  neutron_mass_c2 = 939.56563 * MeV;
 static const double           amu_c2 = 931.49432 * MeV;
-static const double              amu = amu_c2/c_squared;
+//static const double              amu = amu_c2/c_squared;
 
 static const double kaon_0_short_mass_c2 = 497.672  * MeV;
 static const double    pion_plus_mass_c2 = 139.5700 * MeV;
@@ -99,7 +101,7 @@ static const double       lambda_mass_c2 = 1115.684 * MeV;
 static const double   antilambda_mass_c2 = 1115.684 * MeV;
 static const double     xi_minus_mass_c2 = 1321.32  * MeV;
 
-
+/*
 //
 // permeability of free space mu0    = 2.01334e-16 Mev*(ns*eplus)^2/mm
 // permittivity of free space epsil0 = 5.52636e+10 eplus^2/(MeV*mm)
@@ -134,6 +136,7 @@ static const double k_Boltzmann = 8.617385e-11 * MeV/kelvin;
 static const double STP_Temperature = 273.15*kelvin;
 static const double STP_Pressure    = 1.*atmosphere;
 static const double kGasThreshold   = 1.e-2*gram/centimeter3;
+*/
 
 #endif /* HEP_PHYSICAL_CONSTANTS_H */
 
