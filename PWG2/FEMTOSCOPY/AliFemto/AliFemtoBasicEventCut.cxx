@@ -38,6 +38,7 @@ bool AliFemtoBasicEventCut::Pass(const AliFemtoEvent* event){
   double vertexZPos = event->PrimVertPos().z();
   cout << "AliFemtoBasicEventCut:: mult:       " << fEventMult[0] << " < " << mult << " < " << fEventMult[1] << endl;
   cout << "AliFemtoBasicEventCut:: VertexZPos: " << fVertZPos[0] << " < " << vertexZPos << " < " << fVertZPos[1] << endl;
+  cout << "AliFemtoBasicEventCut:: VertexZErr: " << event->PrimVertCov()[4] << endl;
   bool goodEvent =
     ((mult > fEventMult[0]) && 
      (mult < fEventMult[1]) && 
