@@ -1,28 +1,30 @@
 // XEMacs -*-C++-*-
 #ifndef ALIHLTHOMERDATA_H
 #define ALIHLTHOMERDATA_H
+#ifndef HOMERBLOCKDESCRIPTOR_H
+#define HOMERBLOCKDESCRIPTOR_H
 
-/************************************************************************
-**
-**
-** This file is property of and copyright by the Technical Computer
-** Science Group, Kirchhoff Institute for Physics, Ruprecht-Karls-
-** University, Heidelberg, Germany, 2001
-** This file has been written by Timm Morten Steinbeck, 
-** timm@kip.uni-heidelberg.de
-**
-**
-** See the file license.txt for details regarding usage, modification,
-** distribution and warranty.
-** Important: This file is provided without any warranty, including
-** fitness for any particular purpose.
-**
-**
-** Newer versions of this file's package will be made available from 
-** http://web.kip.uni-heidelberg.de/Hardwinf/L3/ 
-** or the corresponding page of the Heidelberg Alice Level 3 group.
-**
-*************************************************************************/
+//************************************************************************
+//*
+//*
+//* This file is property of and copyright by the Technical Computer
+//* Science Group, Kirchhoff Institute for Physics, Ruprecht-Karls-
+//* University, Heidelberg, Germany, 2001
+//* This file has been written by Timm Morten Steinbeck, 
+//* timm@kip.uni-heidelberg.de
+//*
+//*
+//* See the file license.txt for details regarding usage, modification,
+//* distribution and warranty.
+//* Important: This file is provided without any warranty, including
+//* fitness for any particular purpose.
+//*
+//*
+//* Newer versions of this file's package will be made available from 
+//* http://web.kip.uni-heidelberg.de/Hardwinf/L3/ 
+//* or the corresponding page of the Heidelberg Alice Level 3 group.
+//*
+//************************************************************************/
 
 /*
 ***************************************************************************
@@ -230,8 +232,7 @@ class HOMERBlockDescriptor
 		{
 		if ( fHeader )
 		    return ((homer_uint8*)fHeader)[ kByteOrderAttribute_8b_Offset ];
-		else
-		    return 0xFF;
+		return 0xFF;
 		}
 	void SetVersion( homer_uint8 v )
 		{
@@ -248,12 +249,11 @@ class HOMERBlockDescriptor
 		if ( fHeader )
 		    ((homer_uint64*)fHeader)[ kLength_64b_Offset ] = l;
 		}
-	homer_uint64 GetHeaderLength()
+	homer_uint64 GetHeaderLength() const
 		{
 		if ( fHeader )
 		    return ((homer_uint64*)fHeader)[ kLength_64b_Offset ];
-		else
-		    return 0;
+		return 0;
 		}
 	void SetAlignment( homer_uint8 type, homer_uint8 align )
 		{
@@ -325,36 +325,33 @@ class HOMERBlockDescriptor
 		if ( fHeader )
 		    ((homer_uint64*)fHeader)[ kOffset_64b_Offset ] = bo;
 		}
-	homer_uint64 GetBlockOffset()
+	homer_uint64 GetBlockOffset() const
 		{
 		if ( fHeader )
 		    return ((homer_uint64*)fHeader)[ kOffset_64b_Offset ];
-		else
-		    return 0;
+		return 0;
 		}
 	void SetBlockSize( homer_uint64 bs )
 		{
 		if ( fHeader )
 		    ((homer_uint64*)fHeader)[ kSize_64b_Offset ] = bs;
 		}
-	homer_uint64 GetBlockSize()
+	homer_uint64 GetBlockSize() const
 		{
 		if ( fHeader )
 		    return ((homer_uint64*)fHeader)[ kSize_64b_Offset ];
-		else
-		    return 0;
+		return 0;
 		}
 	void SetStatusFlags( homer_uint64 bs )
 		{
 		if ( fHeader )
 		    ((homer_uint64*)fHeader)[ kStatusFlags_64b_Offset ] = bs;
 		}
-	homer_uint64 GetStatusFlags()
+	homer_uint64 GetStatusFlags() const
 		{
 		if ( fHeader )
 		    return ((homer_uint64*)fHeader)[ kStatusFlags_64b_Offset ];
-		else
-		    return 0;
+		return 0;
 		}
 
 	void* GetHeader() const
@@ -363,9 +360,13 @@ class HOMERBlockDescriptor
 		}
 		
     protected:
-	void* fHeader;
+      void* fHeader; //! transient
 	
-
+    private:
+      /** copy constructor prohibited */
+      HOMERBlockDescriptor(const HOMERBlockDescriptor&);
+      /** assignment operator prohibited */
+      HOMERBlockDescriptor& operator=(const HOMERBlockDescriptor&);
     };
 
 
@@ -380,4 +381,5 @@ class HOMERBlockDescriptor
 ***************************************************************************
 */
 
+#endif // HOMERBLOCKDESCRIPTOR_H
 #endif // ALIHLTHOMERDATA_H
