@@ -84,7 +84,7 @@ public:
   Bool_t 
   SetFieldMap(Float_t l3Current=30000., Float_t diCurrent=6000., 
 	      Float_t factor=1., 
-              const char *path="$(ALICE_ROOT)/data/maps/mfchebKGI_meas.root");
+              const char *path="$(ALICE_ROOT)/data/maps/mfchebKGI_sym.root");
 
   //*** Global reconstruction flag setters
   void SetRunVertexFinder(Bool_t flag=kTRUE) {fRunVertexFinder=flag;};

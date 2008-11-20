@@ -21,7 +21,7 @@ public:
   AliMagWrapCheb(const char *name, const char *title, Int_t integ,
 		 Float_t factor=1, Float_t fmax=15, Int_t map = k2kG,
 		 Bool_t dipoleON = kTRUE,
-		 const char* path="$(ALICE_ROOT)/data/maps/mfchebKGI_meas.root");
+		 const char* path="$(ALICE_ROOT)/data/maps/mfchebKGI_sym.root");
   AliMagWrapCheb(const AliMagWrapCheb& maps);             
   AliMagWrapCheb& operator=(const AliMagWrapCheb& maps);
   virtual ~AliMagWrapCheb();
