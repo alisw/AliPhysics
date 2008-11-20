@@ -3147,12 +3147,15 @@ const char *AliReconstruction::MatchDetectorList(const char *detectorList, UInt_
     if ((detectorMask >> iDet) & 0x1) {
       TString det = AliDAQ::OfflineModuleName(iDet);
       if ((detList.CompareTo("ALL") == 0) ||
-	  detList.BeginsWith("ALL ") ||
-	  detList.EndsWith(" ALL") ||
-	  detList.Contains(" ALL ") ||
+	  ((detList.BeginsWith("ALL ") ||
+	    detList.EndsWith(" ALL") ||
+	    detList.Contains(" ALL ")) &&
+	   !(detList.BeginsWith("-"+det+" ") ||
+	     detList.EndsWith(" -"+det) ||
+	     detList.Contains(" -"+det+" "))) ||
 	  (detList.CompareTo(det) == 0) ||
-	  detList.BeginsWith(det) ||
-	  detList.EndsWith(det) ||
+	  detList.BeginsWith(det+" ") ||
+	  detList.EndsWith(" "+det) ||
 	  detList.Contains( " "+det+" " )) {
 	if (!resultList.EndsWith(det + " ")) {
 	  resultList += det;
@@ -3166,12 +3169,15 @@ const char *AliReconstruction::MatchDetectorList(const char *detectorList, UInt_
   if ((detectorMask >> AliDAQ::kHLTId) & 0x1) {
     TString hltDet = AliDAQ::OfflineModuleName(AliDAQ::kNDetectors-1);
     if ((detList.CompareTo("ALL") == 0) ||
-	detList.BeginsWith("ALL ") ||
-	detList.EndsWith(" ALL") ||
-	detList.Contains(" ALL ") ||
+	((detList.BeginsWith("ALL ") ||
+	  detList.EndsWith(" ALL") ||
+	  detList.Contains(" ALL ")) &&
+	 !(detList.BeginsWith("-"+hltDet+" ") ||
+	   detList.EndsWith(" -"+hltDet) ||
+	   detList.Contains(" -"+hltDet+" "))) ||
 	(detList.CompareTo(hltDet) == 0) ||
-	detList.BeginsWith(hltDet) ||
-	detList.EndsWith(hltDet) ||
+	detList.BeginsWith(hltDet+" ") ||
+	detList.EndsWith(" "+hltDet) ||
 	detList.Contains( " "+hltDet+" " )) {
       resultList += hltDet;
     }
