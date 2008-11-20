@@ -19,12 +19,24 @@ void MakeTPCRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
   TObjArray *recoParamArray = new TObjArray();  
   {
     AliTPCRecoParam * tpcRecoParam = AliTPCRecoParam::GetLowFluxParam();
+    Double_t sysError[5]={0.01,0.02, 0.01/150., 0.02/150.,0.01/(150*150.)};
+    tpcRecoParam->SetSystematicError(sysError);
     tpcRecoParam->SetEventSpecie(AliRecoParam::kLowMult);
+    tpcRecoParam->SetMinMaxCutAbs(2.5);
+    tpcRecoParam->SetMinLeftRightCutAbs(5.);
+    tpcRecoParam->SetMinUpDownCutAbs(5.);
+    //
+    tpcRecoParam->SetMinMaxCutSigma(2.5);
+    tpcRecoParam->SetMinLeftRightCutSigma(5.);
+    tpcRecoParam->SetMinUpDownCutSigma(5.);
+    
     recoParamArray->AddLast(tpcRecoParam);
   }
   {
     AliTPCRecoParam * tpcRecoParam = AliTPCRecoParam::GetHighFluxParam();
     tpcRecoParam->SetEventSpecie(AliRecoParam::kHighMult);
+    Double_t sysError[5]={0.01,0.02, 0.01/150., 0.02/150.,0.01/(150*150.)};
+    tpcRecoParam->SetSystematicError(sysError);
     recoParamArray->AddLast(tpcRecoParam);
   }
   
@@ -37,6 +49,17 @@ void MakeTPCRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
   {
     AliTPCRecoParam * tpcRecoParam = AliTPCRecoParam::GetCosmicTestParam(kFALSE);
     tpcRecoParam->SetEventSpecie(AliRecoParam::kCosmic);
+    tpcRecoParam->SetTimeInterval(60,940);
+    Double_t sysError[5]={0.3,1, 0.3/150., 1./150.,0.3/(150*150.)};
+    tpcRecoParam->SetSystematicError(sysError);
+    //
+    tpcRecoParam->SetMinMaxCutAbs(2.5);
+    tpcRecoParam->SetMinLeftRightCutAbs(5.);
+    tpcRecoParam->SetMinUpDownCutAbs(5.);
+    //
+    tpcRecoParam->SetMinMaxCutSigma(2.5);
+    tpcRecoParam->SetMinLeftRightCutSigma(5.);
+    tpcRecoParam->SetMinUpDownCutSigma(5.);
     recoParamArray->AddLast(tpcRecoParam);
   }
   
