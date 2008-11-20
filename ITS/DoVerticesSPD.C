@@ -15,6 +15,7 @@
 #include "AliVertexerTracks.h"
 #include "AliCDBManager.h"
 #include "AliGeomManager.h"
+#include "AliITSDetTypeRec.h"
 #include "AliITSVertexer3D.h"
 #include "AliITSVertexerZ.h"
 #include "AliESDVertex.h"
@@ -74,15 +75,17 @@ Bool_t DoVerticesSPD(Int_t optdebug=1){
   Int_t totev=runLoader->GetNumberOfEvents();
   if(optdebug)  printf("Number of events= %d\n",totev);
 
-  
+  AliITSDetTypeRec* detTypeRec = new AliITSDetTypeRec();
+ 
   Double_t xnom=0.,ynom=0.;
-  
   AliITSVertexerZ *vertz = new AliITSVertexerZ(xnom,ynom);
   vertz->Init("default");
   AliITSVertexer3D *vert3d = new AliITSVertexer3D();
   vert3d->Init("default");
   vert3d->SetWideFiducialRegion(40.,1.);
   vert3d->PrintStatus();
+  vertz->SetDetTypeRec(detTypeRec);
+  vert3d->SetDetTypeRec(detTypeRec);
 
   /* uncomment these lines to use diamond constrain */
 //   Double_t posdiam[3]={0.03,0.1,0.};
