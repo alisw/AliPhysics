@@ -407,12 +407,14 @@ void AliFemtoSimpleAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent) {
 }
 //_________________________
 void AliFemtoSimpleAnalysis::MakePairs(const char* typeIn, AliFemtoParticleCollection *partCollection1,
-                                            AliFemtoParticleCollection *partCollection2){
+				       AliFemtoParticleCollection *partCollection2){
 // Build pairs, check pair cuts, and call CFs' AddRealPair() or
 // AddMixedPair() methods. If no second particle collection is
 // specfied, make pairs within first particle collection.
 
   string type = typeIn;
+
+  int swpart = ((long int) partCollection1) % 2;
 
   AliFemtoPair* tPair = new AliFemtoPair;
 
@@ -448,6 +450,19 @@ void AliFemtoSimpleAnalysis::MakePairs(const char* typeIn, AliFemtoParticleColle
       // if ( tmpPassPair )
 
       //---- If pair passes cut, loop over CF's and add pair to real/mixed ----//
+
+      if (!partCollection2) {
+	if (swpart) {
+ 	  tPair->SetTrack1(*tPartIter2);
+ 	  tPair->SetTrack2(*tPartIter1);
+ 	  swpart = 0;
+ 	}
+ 	else {
+ 	  tPair->SetTrack1(*tPartIter1);
+ 	  tPair->SetTrack2(*tPartIter2);
+ 	  swpart = 1;
+	}
+      }
 
       if (fPairCut->Pass(tPair)){
         for (tCorrFctnIter=fCorrFctnCollection->begin();
