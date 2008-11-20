@@ -64,7 +64,6 @@ class AliRsnEvent : public TNamed
     void     SetPrimaryVertexY(Double_t value) {fPVy = value;}
     void     SetPrimaryVertexZ(Double_t value) {fPVz = value;}
     void     SetPrimaryVertex(Double_t x, Double_t y, Double_t z) {fPVx=x;fPVy=y;fPVz=z;}
-    void     CorrectByPrimaryVertex();
 
     // Multiplicity
     Int_t GetMultiplicity() const {return fMult;}

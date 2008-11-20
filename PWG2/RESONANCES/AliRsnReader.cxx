@@ -215,8 +215,9 @@ Bool_t AliRsnReader::FillFromESD(AliRsnEvent *rsn, AliESDEvent *esd, AliMCEvent 
   rsn->SetPrimaryVertex(vertex[0], vertex[1], vertex[2]);
 
   // store tracks from ESD
-  Int_t  index, label, labmum;
-  Bool_t check;
+  Float_t p[2], cov[3];
+  Int_t   index, label, labmum;
+  Bool_t  check;
   AliRsnDaughter temp;
   AliESDtrack *esdTrack = 0x0, esdTrackTmp;
   for (index = 0; index < ntracks; index++) {
@@ -236,6 +237,10 @@ Bool_t AliRsnReader::FillFromESD(AliRsnEvent *rsn, AliESDEvent *esd, AliMCEvent 
     if (fTRDClusters > 0 && (esdTrack->GetTRDclusters(0x0) < fTRDClusters)) if (!fTPCOnly) continue;
     // switch to TPC data if required
     if (fTPCOnly) {
+      esdTrack->GetImpactParametersTPC(p, cov);
+      if (p[0] == 0. && p[1] == 0.) {
+        esdTrack->RelateToVertexTPC(esd->GetPrimaryVertexTPC(), esd->GetMagneticField(), kVeryBig);
+      }
       check = esdTrack->FillTPCOnlyTrack(esdTrackTmp);
       if (check) esdTrack = &esdTrackTmp; else continue;
     }

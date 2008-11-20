@@ -370,34 +370,6 @@ void AliRsnEvent::MakeComputations()
 }
 
 //_____________________________________________________________________________
-void AliRsnEvent::CorrectByPrimaryVertex()
-{
-//
-// Corrects the X,Y,Z position of DCA vertex of all tracks
-// by the amount of stored primary vertex
-//
-
-    TObjArrayIter iter(fTracks);
-    AliRsnDaughter *d = 0;
-    while ((d = (AliRsnDaughter*) iter.Next())) {
-        d->ShiftZero(fPVx, fPVy, fPVz);
-    }
-}
-
-/*
-//_____________________________________________________________________________
-Int_t AliRsnEvent::GetMultiplicity() const
-{
-//
-// Get number of all tracks
-//
-
-  if (!fTracks) return 0;
-  return fTracks->GetEntries();
-}
-*/
-
-//_____________________________________________________________________________
 Int_t AliRsnEvent::GetNCharged(Char_t sign)
 {
 //
