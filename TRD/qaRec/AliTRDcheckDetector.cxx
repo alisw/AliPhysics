@@ -51,6 +51,7 @@ AliTRDcheckDetector::AliTRDcheckDetector():
   ,fEventInfo(0x0)
   ,fTriggerNames(0x0)
   ,fReconstructor(0x0)
+  ,fGeo(0x0)
 {
   //
   // Default constructor
@@ -58,6 +59,7 @@ AliTRDcheckDetector::AliTRDcheckDetector():
   DefineInput(1,AliTRDeventInfo::Class());
   fReconstructor = new AliTRDReconstructor;
   fReconstructor->SetRecoParam(AliTRDrecoParam::GetLowFluxParam());
+  fGeo = new AliTRDgeometry;
   InitFunctorList();
 }
 
@@ -69,6 +71,7 @@ AliTRDcheckDetector::~AliTRDcheckDetector(){
   if(fEventInfo) delete fEventInfo;
   if(fTriggerNames) delete fTriggerNames;
   delete fReconstructor;
+  delete fGeo;
 }
 
 //_______________________________________________________
@@ -147,6 +150,9 @@ Bool_t AliTRDcheckDetector::PostProcess(){
   histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNtrackletsHist));
   histo->GetXaxis()->SetTitle("Number of Tracklets");
   histo->GetYaxis()->SetTitle("Entries");
+  histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNTrackletsVsFindable));
+  histo->GetXaxis()->SetTitle("Ratio Found/Findable Tracklets");
+  histo->GetYaxis()->SetTitle("Entries");
   histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNclusterTrackletHist));
   histo->GetXaxis()->SetTitle("Number of Clusters");
   histo->GetYaxis()->SetTitle("Entries");
@@ -191,7 +197,7 @@ Bool_t AliTRDcheckDetector::PostProcess(){
 //	hTriggerInf->SetMarkerColor(kBlue);
 //	hTriggerInf->SetMarkerStyle(22);
   fContainer->Add(hTriggerInf);
-  fNRefFigures = 10;
+  fNRefFigures = 11;
   return kTRUE;
 }
 
@@ -219,12 +225,22 @@ void AliTRDcheckDetector::GetRefFigure(Int_t ifig){
     h->Draw("bar1");
     break;
   case 3:
-    ((TH1F*)fContainer->At(kNclusterTrackletHist))->Draw("pc");
+    h = (TH1F*)fContainer->At(kNTrackletsVsFindable);
+    if(!h->GetEntries()) break;
+    h->Scale(100./h->Integral());
+    h->GetXaxis()->SetRangeUser(0.005, 1.005);
+    h->SetFillColor(kGreen);
+    h->SetBarOffset(.2);
+    h->SetBarWidth(.6);
+    h->Draw("bar1");
     break;
   case 4:
-    ((TH1F*)fContainer->At(kChi2))->Draw("");
+    ((TH1F*)fContainer->At(kNclusterTrackletHist))->Draw("pc");
     break;
   case 5:
+    ((TH1F*)fContainer->At(kChi2))->Draw("");
+    break;
+  case 6:
     h = (TH1F*)fContainer->At(kNTracksSectorHist);
     if(!h->GetEntries()) break;
     h->Scale(100./h->Integral());
@@ -233,18 +249,18 @@ void AliTRDcheckDetector::GetRefFigure(Int_t ifig){
     h->SetBarWidth(.6);
     h->Draw("bar1");
     break;
-  case 6:
+  case 7:
     h = (TH1F*)fContainer->At(kPulseHeight);
     h->SetMarkerStyle(24);
     h->Draw("e1");
     break;
-  case 7:
+  case 8:
     ((TH1F*)fContainer->At(kClusterCharge))->Draw("c");
     break;
-  case 8:
+  case 9:
     ((TH1F*)fContainer->At(kChargeDeposit))->Draw("c");
     break;
-  case 9: 
+  case 10: 
     h=(TH1F*)fContainer->At(kPurity);
     h->SetBarOffset(.2);
     h->SetBarWidth(.6);
@@ -270,7 +286,7 @@ TObjArray *AliTRDcheckDetector::Histos(){
   fContainer->AddAt(new TH1F("hEventsTriggerTracks", "Trigger Class (Tracks)", 100, 0, 100), kNEventsTriggerTracks);
   fContainer->AddAt(new TH1F("hNcls", "Nr. of clusters per track", 181, -0.5, 180.5), kNclustersHist);
   fContainer->AddAt(new TH1F("hNtls", "Nr. tracklets per track", 7, -0.5, 6.5), kNtrackletsHist);
-  fContainer->AddAt(new TH1F("hNtlsFindable", "Ratio of found/findable Tracklets" , 11, -0.05, 1.05), kNTrackletsVsFindable);
+  fContainer->AddAt(new TH1F("hNtlsFindable", "Ratio of found/findable Tracklets" , 101, -0.005, 1.005), kNTrackletsVsFindable);
   fContainer->AddAt(new TH1F("hNclTls","Mean Number of clusters per tracklet", 31, -0.5, 30.5), kNclusterTrackletHist);
   fContainer->AddAt(new TH1F("hChi2", "Chi2", 200, 0, 20), kChi2);
   fContainer->AddAt(new TH1F("hChi2n", "Norm. Chi2 (tracklets)", 50, 0, 5), kChi2Normalized);
@@ -429,7 +445,7 @@ TH1 *AliTRDcheckDetector::PlotNTracklets(const AliTRDtrackV1 *track){
     AliWarning("No Histogram defined.");
     return 0x0;
   }
-  Int_t nTracklets = GetNTracklets(track);
+  Int_t nTracklets = GetNTracklets(fTrack);
   h->Fill(nTracklets);
   if(fDebugLevel > 3){
     if(nTracklets == 1){
@@ -437,7 +453,7 @@ TH1 *AliTRDcheckDetector::PlotNTracklets(const AliTRDtrackV1 *track){
       Int_t layer = -1;
       AliTRDseedV1 *tracklet = 0x0;
       for(Int_t il = 0; il < AliTRDgeometry::kNlayer; il++){
-        if((tracklet = track->GetTracklet(il)) && tracklet->IsOK()){layer =  il; break;}
+        if((tracklet = fTrack->GetTracklet(il)) && tracklet->IsOK()){layer =  il; break;}
       }
       (*fDebugStream) << "PlotNTracklets"
         << "Layer=" << layer
@@ -456,8 +472,25 @@ TH1 *AliTRDcheckDetector::PlotTrackletsVsFindable(const AliTRDtrackV1 *track){
   // Findable tracklets are defined as track prolongation
   // to layer i does not hit the dead area +- epsilon
   //
+  // In order to check whether tracklet hist active area in Layer i, 
+  // the track is refitted and the fitted position + an uncertainty 
+  // range is compared to the chamber border (also with a different
+  // uncertainty)
+  //
+  // For the track fit two cases are distinguished:
+  // If the track is a stand alone track (defined by the status bit 
+  // encoding, then the track is fitted with the tilted Rieman model
+  // Otherwise the track is fitted with the Kalman fitter in two steps:
+  // Since the track parameters are give at the outer point, we first 
+  // fit in direction inwards. Afterwards we fit again in direction outwards
+  // to extrapolate the track to layers which are not reached by the track
+  // For the Kalman model, the radial track points have to be shifted by
+  // a distance epsilon in the direction that we want to fit
+  //
   const Float_t epsilon = 0.01;   // dead area tolerance
-  const Float_t epsilon_R = 1;
+  const Float_t epsilon_R = 1;    // shift in radial direction of the anode wire position (Kalman filter only)
+  const Float_t delta_y = 0.7;    // Tolerance in the track position in y-direction
+  const Float_t delta_z = 7.0;    // Tolerance in the track position in z-direction (Padlength)
   Double_t x_anode[AliTRDgeometry::kNlayer] = {300.2, 312.8, 325.4, 338.0, 350.6, 363.2}; // Take the default X0
  
   if(track) fTrack = track;
@@ -476,12 +509,10 @@ TH1 *AliTRDcheckDetector::PlotTrackletsVsFindable(const AliTRDtrackV1 *track){
   Double_t y = 0., z = 0.;
   AliTRDseedV1 *tracklet = 0x0;
   AliTRDpadPlane *pp;  
-  AliTRDgeometry *fGeo = new AliTRDgeometry;
   for(Int_t il = 0; il < AliTRDgeometry::kNlayer; il++){
     if((tracklet = fTrack->GetTracklet(il)) && tracklet->IsOK()){
       tracklet->SetReconstructor(fReconstructor);
       nFound++;
-      // printout tracklet
     }
   }
   // 2 Different cases:
@@ -499,20 +530,30 @@ TH1 *AliTRDcheckDetector::PlotTrackletsVsFindable(const AliTRDtrackV1 *track){
     AliTRDtrackerV1::FitRiemanTilt(const_cast<AliTRDtrackV1 *>(fTrack), 0x0, kTRUE, 6, points);
   } else {
     // barrel track
+    //
+    // 2 Steps:
+    // -> Kalman inwards
+    // -> Kalman outwards
+    AliTRDtrackV1 copy_track(*fTrack);  // Do Kalman on a (non-constant) copy of the track
+    AliTrackPoint points_inward[6], points_outward[6];
     for(Int_t il = AliTRDgeometry::kNlayer; il--;){
-      // The track points have to be in reverse order for the Kalman Filter (since we move back)
+      // In order to avoid complications in the Kalman filter if the track points have the same radial
+      // position like the tracklets, we have to shift the radial postion of the anode wire by epsilon
+      // in the direction we want to go
+      // The track points have to be in reverse order for the Kalman Filter inwards
       xyz[0] = x_anode[AliTRDgeometry::kNlayer - il - 1] - epsilon_R;
-      points[il].SetXYZ(xyz);
+      points_inward[il].SetXYZ(xyz);
+      xyz[0] = x_anode[il] + epsilon_R;
+      points_outward[il].SetXYZ(xyz);
     }
-    for(Int_t ipt = 0; ipt < AliTRDgeometry::kNlayer; ipt++)
-      printf("%d. X = %f\n", ipt, points[ipt].GetX());
-    AliTRDtrackerV1::FitKalman(const_cast<AliTRDtrackV1 *>(fTrack), 0x0, kFALSE, 6, points);
-    AliTrackPoint tempPointCont[AliTRDgeometry::kNlayer];
-    memcpy(tempPointCont, points, sizeof(AliTrackPoint) * AliTRDgeometry::kNlayer);
-    for(Int_t il = AliTRDgeometry::kNlayer; il--; ){
-      tempPointCont[il].GetXYZ(xyz);
-      points[AliTRDgeometry::kNlayer - il -1].SetXYZ(xyz);
-    }
+    /*for(Int_t ipt = 0; ipt < AliTRDgeometry::kNlayer; ipt++)
+      printf("%d. X = %f\n", ipt, points[ipt].GetX());*/
+    // Kalman inwards
+    AliTRDtrackerV1::FitKalman(&copy_track, 0x0, kFALSE, 6, points_inward);
+    memcpy(points, points_inward, sizeof(AliTrackPoint) * 6); // Preliminary store the inward results in the Array points
+    // Kalman outwards
+    AliTRDtrackerV1::FitKalman(&copy_track, 0x0, kTRUE, 6, points_inward);
+    memcpy(points, points_outward, sizeof(AliTrackPoint) * AliTRDgeometry::kNlayer);
   }
   for(Int_t il = 0; il < AliTRDgeometry::kNlayer; il++){
     y = points[il].GetY();
@@ -524,8 +565,7 @@ TH1 *AliTRDcheckDetector::PlotTrackletsVsFindable(const AliTRDtrackV1 *track){
     zmin = pp->GetRowEnd() + epsilon; 
     zmax = pp->GetRow0() - epsilon;
     // ignore y-crossing (material)
-    if((z > zmin && z < zmax) && (y > ymin && y < ymax)) nFindable++;
-/*
+    if((z + delta_z > zmin && z - delta_z < zmax) && (y + delta_y > ymin && y - delta_y < ymax)) nFindable++;
       if(fDebugLevel > 3){
         Double_t pos_tracklet[2] = {tracklet ? tracklet->GetYfit(0) : 0, tracklet ? tracklet->GetMeanz() : 0};
         Int_t hasTracklet = tracklet ? 1 : 0;
@@ -538,10 +578,8 @@ TH1 *AliTRDcheckDetector::PlotTrackletsVsFindable(const AliTRDtrackV1 *track){
           << "tracklet="  << hasTracklet
           << "\n";
       }
-*/
   }
   
-  delete fGeo;
   h->Fill(nFindable > 0 ? TMath::Min(nFound/static_cast<Double_t>(nFindable), 1.) : 1);
   if(fDebugLevel > 2) AliInfo(Form("Findable[Found]: %d[%d|%f]", nFindable, nFound, nFound/static_cast<Float_t>(nFindable > 0 ? nFindable : 1)));
   return h;
@@ -729,10 +767,13 @@ Int_t AliTRDcheckDetector::GetNTracklets(const AliTRDtrackV1 *track){
   //
   // Count the number of tracklets per track
   //
-  if(!track) return 0;
+  if(!track){
+    AliError("No track");
+    return 0;
+  }
   Int_t nTracklets = 0;
   AliTRDseedV1 *tracklet = 0x0;
-  for(Int_t il = 0; il < AliTRDgeometry::kNlayer; il++){
+  for(Int_t il = AliTRDgeometry::kNlayer; il--;){
     if((tracklet = track->GetTracklet(il)) && tracklet->IsOK()) nTracklets++;
   }
   return nTracklets;

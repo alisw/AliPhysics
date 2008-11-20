@@ -9,6 +9,7 @@ class TObjArray;
 class TH1;
 class TMap;
 class AliESDHeader;
+class AliTRDgeometry;
 class AliTRDReconstructor;
 class AliTRDrecoParam;
 
@@ -64,7 +65,8 @@ class AliTRDcheckDetector : public AliTRDrecoTask{
     Int_t GetNTracklets(const AliTRDtrackV1 *track);
     AliTRDeventInfo *fEventInfo;						//! ESD Header
     TMap *fTriggerNames;										//! Containing trigger class names
-    AliTRDReconstructor *fReconstructor;    //
+    AliTRDReconstructor *fReconstructor;    // TRD Reconstructor
+    AliTRDgeometry *fGeo;                   // TRD Geometry object
     
   ClassDef(AliTRDcheckDetector, 1)
 };

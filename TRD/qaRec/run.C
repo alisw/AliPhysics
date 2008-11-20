@@ -263,6 +263,7 @@ void run(Char_t *tasks="ALL", const Char_t *files=0x0, Int_t nmax=-1)
   AliTracker::SetFieldMap(field, kTRUE);
   AliTRDcalibDB *cal = AliTRDcalibDB::Instance();
   AliTRDtrackerV1::SetNTimeBins(cal->GetNumberOfTimeBins());
+  AliGeomManager::LoadGeometry();
 
 
   mgr->StartAnalysis("local",chain);
