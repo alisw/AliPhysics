@@ -231,7 +231,7 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename) :
   fEquipIdMap(""),
   fFirstEvent(0),
   fLastEvent(-1),
-  fNumberOfEventsPerFile(1),
+  fNumberOfEventsPerFile((UInt_t)-1),
   fOptions(),
   fLoadAlignFromCDB(kTRUE),
   fLoadAlignData("ALL"),
