@@ -2153,7 +2153,9 @@ Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd)
   if (fReconstructor[11] && fLoader[11]) {
     fLoader[11]->LoadRecPoints("READ");
     TTree *treeR = fLoader[11]->TreeR();
-    GetReconstructor(11)->FillESD((TTree *)NULL,treeR,esd);
+    if (treeR) {
+      GetReconstructor(11)->FillESD((TTree *)NULL,treeR,esd);
+    }
   }
 
   // pass 1: TPC + ITS inwards
