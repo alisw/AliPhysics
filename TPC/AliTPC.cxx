@@ -1240,7 +1240,7 @@ void AliTPC::SetDefaults(){
   // Use gamma 4
   //
   char  strgamma4[1000];
-  sprintf(strgamma4,"AliTPCRF1D::Gamma4((x-0.11+%f)*%f,55,160)",3*param->GetZSigma(), 1000000000*param->GetTSample()/param->GetZWidth());
+  sprintf(strgamma4,"AliTPCRF1D::Gamma4((x-0.135+%f)*%f,55,160)",3*param->GetZSigma(), 1000000000*param->GetTSample()/param->GetZWidth());
   
   TF1 * fgamma4 = new TF1("fgamma4",strgamma4, -1,1);
   AliTPCRF1D     * rf    = new AliTPCRF1D(kTRUE,1000);
