@@ -12,7 +12,8 @@
 //#include "Stiostream.h"
 #include <stdio.h>
 #include <cassert>
-#include "PhysicalConstants.h"
+//#include "PhysicalConstants.h"
+#define fine_structure_const 0.00729735
 
 #ifdef __ROOT__
 ClassImp(AliFemtoCoulomb)
