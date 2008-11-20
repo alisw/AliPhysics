@@ -120,6 +120,9 @@ int AliHLTFileWriter::DoInit( int argc, const char** argv )
       argument.ReplaceAll("-subdir", "");
       if (argument.BeginsWith("=")) {
 	fSubDirFormat=argument.Replace(0,1,"");
+	if (strchr(fSubDirFormat.Data(), '%')==NULL) {
+	  fSubDirFormat+="%lu";
+	}
       } else {
 	fSubDirFormat="event%03lu";
       }
@@ -180,6 +183,10 @@ int AliHLTFileWriter::DoInit( int argc, const char** argv )
     } else if (argument.CompareTo("-write-all")==0) {
       SetMode(kWriteAllEvents);
       SetMode(kWriteAllBlocks);
+
+      // -skip-datatype
+    } else if(argument.CompareTo("-skip-datatype")==0){
+      SetMode(kSkipDataType);
 
     } else {
       if ((iResult=ScanArgument(argc-i, &argv[i]))==-EINVAL) {
@@ -345,7 +352,8 @@ int AliHLTFileWriter::BuildFileName(const AliHLTEventID_t eventID, const int blo
   if (blockID>=0 && !CheckMode(kConcatenateBlocks)) {
     if (!fBlcknoFormat.IsNull())
       filename+=Form(fBlcknoFormat, blockID);
-    if (dataType!=kAliHLTVoidDataType) {
+    if (dataType!=kAliHLTVoidDataType &&
+	!CheckMode(kSkipDataType)) {
       filename+="_";
       filename+=AliHLTComponent::DataType2Text(dataType).data();
     }

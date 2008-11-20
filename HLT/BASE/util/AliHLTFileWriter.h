@@ -41,17 +41,21 @@
  * \li -subdir[=pattern] <br>
  *      create sub dir for each event, the format pattern can contain printf
  *      specifiers to print the event no into the dir name, default is
- *      'event%03d' (-subdir w/o additional pattern)
+ *      'event%%03lu' (-subdir w/o additional pattern). The format specifyer
+ *      %%lu is automatically added if missing in the pattern. Please note the
+ *      \b long int type of the event id                                   <br>
  *      \b note: the idfmt string is reset since the subdir contains the id
  * \li -idfmt[=pattern] <br>
  *      format specifier for the event id in the file name,                <br>
- *      default: on, default pattern: '_0x%08x'
+ *      default: on, default pattern: '_0x%%08x'
  * \li -specfmt[=pattern] <br>
  *      format specifier for the data specification in the file name       <br>
- *      default: off, default pattern: '_0x%08x'
+ *      default: off, default pattern: '_0x%%08x'
  * \li -blocknofmt[=pattern] <br>
  *      format specifier for the block no in the file name                 <br>
- *      default: on, default pattern: '_0x%02x'
+ *      default: on, default pattern: '_0x%%02x'
+ * \li -skip-datatype <br>
+ *      do not consider data type when building the file name.
  * \li -enumerate <br>
  *      don't use the event number but an event counter beginning from 0
  * \li -concatenate-blocks <br>
@@ -103,9 +107,9 @@
  * printf format specifiers in order to print the corresponding variable. E.g.
  * <pre>
  * -specfmt             append specification
- * -subdir=test_%d      store in sub folders
- * -blocknofmt=_0x%x    format block no in hex
- * -idfmt=_%04d         print id in 4-digits decimal number
+ * -subdir=test         store in sub folders
+ * -blocknofmt=_0x%%x   format block no in hex
+ * -idfmt=_%%04d        print id in 4-digits decimal number
  * -idfmt=              print no id
  * </pre>
  *
@@ -249,7 +253,10 @@ class AliHLTFileWriter : public AliHLTDataSink  {
     kWriteAllEvents = 0x8,
 
     /** write all blocks including private ones */
-    kWriteAllBlocks = 0x10
+    kWriteAllBlocks = 0x10,
+
+    /** skip the data type information when creating the file name */
+    kSkipDataType = 0x20
   };
 
  private:
