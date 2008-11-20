@@ -938,15 +938,15 @@ Bool_t AliReconstruction::InitGRP() {
   // Process the list of active detectors
   if (activeDetectors) {
     UInt_t detMask = activeDetectors;
+    fRunLocalReconstruction = MatchDetectorList(fRunLocalReconstruction,detMask);
+    fRunTracking = MatchDetectorList(fRunTracking,detMask);
+    fFillESD = MatchDetectorList(fFillESD,detMask);
+    fQADetectors = MatchDetectorList(fQADetectors,detMask);
     fLoadCDB.Form("%s %s %s %s",
 		  fRunLocalReconstruction.Data(),
 		  fRunTracking.Data(),
 		  fFillESD.Data(),
 		  fQADetectors.Data());
-    fRunLocalReconstruction = MatchDetectorList(fRunLocalReconstruction,detMask);
-    fRunTracking = MatchDetectorList(fRunTracking,detMask);
-    fFillESD = MatchDetectorList(fFillESD,detMask);
-    fQADetectors = MatchDetectorList(fQADetectors,detMask);
     fLoadCDB = MatchDetectorList(fLoadCDB,detMask);
     if (!((detMask >> AliDAQ::DetectorID("ITSSPD")) & 0x1)) {
       // switch off the vertexer
