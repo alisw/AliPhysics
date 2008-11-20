@@ -368,6 +368,11 @@ int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
       if(fUnsorted==1){	fReader->SetUnsorted(kTRUE); }
       fClusterFinder->SetReader(fReader);
   }
+  else if(fModeSwitch==kClusterFinderUnpacked){ 	 
+    HLTDebug("using AliHLTTPCDigitReaderUnpacked"); 	 
+    fReader = new AliHLTTPCDigitReaderUnpacked(); 	 
+    fClusterFinder->SetReader(fReader);
+  }
   else if(fModeSwitch==kClusterFinderDecoder){
     HLTDebug("using AliHLTTPCDigitReaderDecoder");
     fReader = new AliHLTTPCDigitReaderDecoder();
