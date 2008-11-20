@@ -1947,6 +1947,10 @@ void AliSimulation::WriteGRPEntry()
       nDets++;
     }
   }
+  // CTP
+  if (!fMakeTrigger.IsNull() || strcmp(gAlice->GetTriggerDescriptor(),""))
+    detectorPattern |= (1 << AliDAQ::DetectorID("TRG"));
+
   // HLT
   if (!fRunHLT.IsNull())
     detectorPattern |= (1 << AliDAQ::kHLTId);
