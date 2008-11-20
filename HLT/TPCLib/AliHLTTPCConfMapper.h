@@ -65,6 +65,7 @@ class AliHLTTPCConfMapper {
    * @return kTRUE if success.
    */
   Bool_t ReadHits(UInt_t count, AliHLTTPCSpacePointData* hits );
+  Bool_t ReadHitsChecked(UInt_t count, AliHLTTPCSpacePointData* hits,unsigned int sizeInByte );
   void ClusterLoop();
   void CreateTrack(AliHLTTPCConfMapPoint *hit);
   AliHLTTPCConfMapPoint *GetNextNeighbor(AliHLTTPCConfMapPoint *start_hit,AliHLTTPCConfMapTrack *track=NULL);

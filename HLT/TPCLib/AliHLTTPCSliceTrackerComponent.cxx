@@ -414,6 +414,9 @@ int AliHLTTPCSliceTrackerComponent::DoEvent( const AliHLTComponentEventData& evt
 					      AliHLTUInt32_t& size, AliHLTComponentBlockDataList& outputBlocks )
 {
   // see header file for class documentation
+
+  if (!IsDataEvent()) return 0;
+  
   int iResult=0;
   AliHLTUInt32_t capacity=size;
   size=0;
@@ -608,7 +611,8 @@ int AliHLTTPCSliceTrackerComponent::DoEvent( const AliHLTComponentEventData& evt
 	    
 	Logging( kHLTLogDebug, "HLT::TPCSliceTracker::DoEvent", "Reading hits",
 		 "Reading hits for slice %d - patch %d", slice, patch );
-	fTracker->ReadHits( inPtrSP->fSpacePointCnt, inPtrSP->fSpacePoints );
+	//fTracker->ReadHits( inPtrSP->fSpacePointCnt, inPtrSP->fSpacePoints );
+	fTracker->ReadHitsChecked(inPtrSP->fSpacePointCnt, inPtrSP->fSpacePoints,iter->fSize );
 	pIter++;
 	}
 

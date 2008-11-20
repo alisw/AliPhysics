@@ -173,12 +173,23 @@ void AliHLTTPCConfMapper::InitSector(Int_t sector,Int_t *rowrange,Float_t *etara
 
 Bool_t AliHLTTPCConfMapper::ReadHits(UInt_t count, AliHLTTPCSpacePointData* hits )
 {
+  //read hits with ReadHitsChecked  
+  return ReadHitsChecked(count,hits,0);
+}
+
+Bool_t AliHLTTPCConfMapper::ReadHitsChecked(UInt_t count, AliHLTTPCSpacePointData* hits, unsigned int sizeInByte )
+{
   //read hits
   if(fClusterCutZ == -1){
     if (fHit.size()<fClustersUnused+count) fHit.resize(fClustersUnused+count);
     assert(fHit.size()>=fClustersUnused+count);
     for (Int_t i=0;(UInt_t)i<count;i++)
       {	
+	AliHLTTPCSpacePointData *hit = &hits[i];
+	if (sizeInByte>0 && ((AliHLTUInt8_t*)hit)+sizeof(AliHLTTPCSpacePointData)>((AliHLTUInt8_t*)hits)+sizeInByte) {
+	  LOG(AliHLTTPCLog::kWarning,"AliHLTTPCConfMapper::ReadHits","")<<"Wrong size of data (" << sizeInByte << " byte), skipping array of AliHLTTPCSpacePointData" <<ENDLOG;;
+	  break;
+	}
 	fHit[i+fClustersUnused].Reset();
 	fHit[i+fClustersUnused].Read(hits[i]);
       }
@@ -191,7 +202,12 @@ Bool_t AliHLTTPCConfMapper::ReadHits(UInt_t count, AliHLTTPCSpacePointData* hits
     if (fHit.size()<fClustersUnused+count) fHit.resize(fClustersUnused+count);
     assert(fHit.size()>=fClustersUnused+count);
     for (Int_t i=0;(UInt_t)i<count;i++)
-      {   
+      {  
+	AliHLTTPCSpacePointData *hit = &hits[i];
+	if (sizeInByte>0 && ((AliHLTUInt8_t*)hit)+sizeof(AliHLTTPCSpacePointData)>((AliHLTUInt8_t*)hits)+sizeInByte) {
+	  LOG(AliHLTTPCLog::kWarning,"AliHLTTPCConfMapper::ReadHits","")<<"Wrong size of data (" << sizeInByte << " byte), skipping array of AliHLTTPCSpacePointData" <<ENDLOG;;
+	  break;
+	}
 	if(hits[i].fZ > fClusterCutZ || hits[i].fZ < -1*fClusterCutZ){
 	  ++skipped;
 	  continue;
