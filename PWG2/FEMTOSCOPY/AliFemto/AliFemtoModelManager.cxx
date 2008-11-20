@@ -72,9 +72,9 @@ Double_t AliFemtoModelManager::GetWeight(AliFemtoPair *aPair)
     cout << "No weight generator set! Cannot calculate weight" << endl;
     exit(0);
   }
-  // Return femtoscopic weight for a fiven pair
+  // Return femtoscopic weight for a given pair
   if (fCreateCopyHiddenInfo) {
-    // Try to gess particle masses and pid from the weight generator
+    // Try to guess particle masses and pid from the weight generator
     Double_t tMass1=0.0001, tMass2=0.0001;
     Int_t tPid1=0, tPid2=0;
     if (fWeightGenerator->GetPairType() == AliFemtoModelWeightGenerator::PionPlusPionPlus()) {
