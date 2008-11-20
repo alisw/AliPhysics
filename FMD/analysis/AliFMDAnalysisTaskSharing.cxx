@@ -96,8 +96,7 @@ void AliFMDAnalysisTaskSharing::Exec(Option_t */*option*/)
 	  Float_t nParticles = GetMultiplicityOfStrip(mult,Eprev,Enext,det,ring);
 	  foutputESDFMD.SetMultiplicity(det,ring,sec,strip,nParticles);
 	  foutputESDFMD.SetEta(det,ring,sec,strip,fmd->Eta(det,ring,sec,strip));
-	  Float_t eta = fmd->Eta(det,ring,sec,strip);
-	  
+	 	  
 	}
       }
     }
