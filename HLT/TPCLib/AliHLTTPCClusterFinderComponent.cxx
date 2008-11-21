@@ -69,6 +69,11 @@ AliHLTTPCClusterFinderComponent::AliHLTTPCClusterFinderComponent(int mode)
   // refer to README to build package
   // or
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+  if (fModeSwitch!=kClusterFinderPacked &&
+      fModeSwitch!=kClusterFinderUnpacked &&
+      fModeSwitch!=kClusterFinderDecoder) {
+    HLTFatal("unknown digit reader type");
+  }
 }
 
 AliHLTTPCClusterFinderComponent::~AliHLTTPCClusterFinderComponent()
@@ -93,7 +98,6 @@ const char* AliHLTTPCClusterFinderComponent::GetComponentID()
     return "TPCClusterFinderDecoder";
     break;
   }
-  HLTFatal("unknown digit reader type");
   return "";
 }
 
@@ -482,12 +486,13 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponentEventData& ev
 
       }
       else if(fModeSwitch==1){
-	HLTWarning("Unpacked data type depreciated, block aborted");
 	HLTDebug("Event 0x%08LX (%Lu) received datatype: %s - required datatype: %s",
 		 evtData.fEventID, evtData.fEventID, 
 		 DataType2Text( iter->fDataType).c_str(), 
 		 DataType2Text(AliHLTTPCDefinitions::fgkUnpackedRawDataType).c_str());
-	continue;
+
+	if ( iter->fDataType != AliHLTTPCDefinitions::fgkUnpackedRawDataType ) continue;
+
       }
 
       slice = AliHLTTPCDefinitions::GetMinSliceNr( *iter );
