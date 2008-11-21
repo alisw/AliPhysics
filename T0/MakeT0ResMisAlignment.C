@@ -5,7 +5,7 @@ void MakeT0ResMisAlignment(){
   TClonesArray &alobj = *array;
 
   Double_t dx, dy, dz, dpsi, dtheta, dphi;
-  TRandom *rnd   = new TRandom(4321);
+  TRandom3 *rnd   = new TRandom3(4321);
   Double_t sigmatr = 0.006; // max shift in cm
   Double_t sigmarot = 0.001; // max rot in degrees
 

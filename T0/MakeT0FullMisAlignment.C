@@ -5,7 +5,7 @@ void MakeT0FullMisAlignment(){
   TClonesArray &alobj = *array;
 
   Double_t dx, dy, dz, dpsi, dtheta, dphi;
-  TRandom *rnd   = new TRandom(4321);
+  TRandom3 *rnd   = new TRandom3(4321);
   Double_t sigmatr = 0.006; // sigma for shifts in cm
   Double_t sigmarot = 0.001; // sigma for tilts in degrees
 
