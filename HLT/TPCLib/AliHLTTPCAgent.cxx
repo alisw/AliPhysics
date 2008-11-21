@@ -28,6 +28,9 @@
 #include "AliHLTOUT.h"
 #include "AliHLTOUTHandlerChain.h"
 #include "AliRunLoader.h"
+#include "AliCDBManager.h"
+#include "AliCDBEntry.h"
+#include "AliTPCParam.h"
 
 /** global instance for agent registration */
 AliHLTTPCAgent gAliHLTTPCAgent;
@@ -93,6 +96,18 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
 {
   // see header file for class documentation
   if (handler) {
+    const char* cdbEntry="TPC/Calib/Parameters";
+    AliCDBManager* pMan=AliCDBManager::Instance();
+    AliTPCParam* pTPCParam=NULL;
+    if (pMan) {
+      AliCDBEntry *pEntry = pMan->Get(cdbEntry);
+      if (pEntry && 
+	  pEntry->GetObject() &&
+	  (pTPCParam=dynamic_cast<AliTPCParam*>(pEntry->GetObject()))) {
+      } else {
+	HLTWarning("can not load AliTPCParam from CDB entry %s", cdbEntry);
+      }
+    }
 
     // This the tracking configuration for the full TPC
     // - 216 clusterfinders (1 per partition)
@@ -125,10 +140,15 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
 
 	// cluster finder components
 	cf.Form("TPC-CF_%02d_%d", slice, part);
+	arg="";
+	if (pTPCParam) {
+	  arg+=" -timebins "; arg+=pTPCParam->GetMaxTBin()+1;
+	}
 	if (!rawReader) {
-	  handler->CreateConfiguration(cf.Data(), "TPCClusterFinderUnpacked", publisher.Data(), "-timebins 446 -sorted");
+	  arg+=" -sorted";
+	  handler->CreateConfiguration(cf.Data(), "TPCClusterFinderUnpacked", publisher.Data(), arg.Data());
 	} else {
-	  handler->CreateConfiguration(cf.Data(), "TPCClusterFinderDecoder", publisher.Data(), "-timebins 446");
+	  handler->CreateConfiguration(cf.Data(), "TPCClusterFinderDecoder", publisher.Data(), arg.Data());
 	}
 	if (trackerInput.Length()>0) trackerInput+=" ";
 	trackerInput+=cf;

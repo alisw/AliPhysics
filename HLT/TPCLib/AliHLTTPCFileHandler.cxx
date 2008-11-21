@@ -46,6 +46,8 @@
 #include <AliTPCcluster.h>
 #include <AliTPCClustersRow.h>
 #include <AliSimDigits.h>
+#include "AliCDBManager.h"
+#include "AliCDBEntry.h"
 
 #include "AliHLTTPCLogging.h"
 #include "AliHLTTPCTransform.h"
@@ -250,6 +252,21 @@ void AliHLTTPCFileHandler::CloseMCOutput()
 Bool_t AliHLTTPCFileHandler::SetAliInput()
 { 
   //set ali input
+
+  // fParam is in all cases an external object
+  const char* cdbEntry="TPC/Calib/Parameters";
+  AliCDBManager* pMan=AliCDBManager::Instance();
+  if (pMan) {
+    AliCDBEntry *pEntry = pMan->Get(cdbEntry);
+    if (pEntry==NULL || 
+	pEntry->GetObject()==NULL ||
+	(fParam=dynamic_cast<AliTPCParam*>(pEntry->GetObject()))==NULL) {
+      LOG(AliHLTTPCLog::kWarning,"AliHLTTPCFileHandler::SetAliInput","File")
+	<<"can not load AliTPCParam object from OCDB entry " << cdbEntry <<ENDLOG;
+    }
+  }
+  if (!fParam) {
+  // the old solution until Nov 2008
   fInAli->CdGAFile();
   fParam = (AliTPCParam*)gFile->Get("75x40_100x60_150x60");
   if(!fParam){
@@ -258,6 +275,7 @@ Bool_t AliHLTTPCFileHandler::SetAliInput()
       <<"\", creating standard parameters "
       <<"which might not be what you want!"<<ENDLOG;
     fParam = new AliTPCParamSR;
+  }
   }
   if(!fParam){ 
     LOG(AliHLTTPCLog::kError,"AliHLTTPCFileHandler::SetAliInput","File Open")
