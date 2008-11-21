@@ -20,6 +20,7 @@
  */
 struct AliHLTExternalTrackParam
     {
+      Float_t fAlpha;
       Float_t fX;
       Float_t fY;
       Float_t fZ;
@@ -29,7 +30,7 @@ struct AliHLTExternalTrackParam
       Float_t fq1Pt;
       Float_t fSinPsi;
       Float_t fTgl;
-      Double_t fC[15];
+      Float_t fC[15];
       UInt_t  fNPoints;
 #if defined(__HP_aCC) || defined(__DECCXX) || defined(__SUNPRO_CC)
       UInt_t  fPointIDs[1];
