@@ -101,6 +101,8 @@ AliTRDseedV1& AliTRDseedV1::operator=(const AliTRDseedV1 &ref)
   if(this != &ref){
     ref.Copy(*this);
   }
+  SetBit(kOwner, kFALSE);
+
   return *this;
 
 }
