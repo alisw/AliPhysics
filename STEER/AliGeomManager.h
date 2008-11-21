@@ -79,7 +79,7 @@ public:
   static Bool_t GetTrackingMatrix(Int_t index, TGeoHMatrix &m);
 
   static void        LoadGeometry(const char *geomFileName = NULL);
-  static void        SetGeometry(TGeoManager *geom);
+  static void        SetGeometry(TGeoManager * const geom);
   static void        CheckOverlapsOverPNs(Double_t threshold);  
 
   static Bool_t         ApplyAlignObjsToGeom(TObjArray& alObjArray, Bool_t ovlpcheck=kFALSE);
@@ -105,8 +105,8 @@ public:
   AliGeomManager(const AliGeomManager&);
   AliGeomManager& operator=(const AliGeomManager&);
 
-  static TGeoHMatrix* GetMatrix(TGeoPNEntry* pne);
-  static TGeoHMatrix* GetOrigGlobalMatrix(TGeoPNEntry* pne);
+  static TGeoHMatrix* GetMatrix(TGeoPNEntry * const pne);
+  static TGeoHMatrix* GetOrigGlobalMatrix(TGeoPNEntry * const pne);
   static Bool_t       GetOrigGlobalMatrixFromPath(const char *path, TGeoHMatrix &m);
 
   static TGeoPNEntry* GetPNEntry(Int_t index);

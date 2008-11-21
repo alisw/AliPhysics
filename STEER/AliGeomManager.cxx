@@ -136,7 +136,7 @@ void AliGeomManager::LoadGeometry(const char *geomFileName)
 }
 
 //_____________________________________________________________________________
-void AliGeomManager::SetGeometry(TGeoManager *geom)
+void AliGeomManager::SetGeometry(TGeoManager * const geom)
 {
   // Load already active geometry
   if (!geom) AliFatalClass("Pointer to the active geometry is 0x0!");
@@ -1131,7 +1131,7 @@ void AliGeomManager::InitPNEntriesLUT()
 }
 
 //______________________________________________________________________
-TGeoHMatrix* AliGeomManager::GetMatrix(TGeoPNEntry* pne) 
+TGeoHMatrix* AliGeomManager::GetMatrix(TGeoPNEntry * const pne) 
 {
   // Get the global transformation matrix for a given PNEntry
   // by quering the TGeoManager
@@ -1330,7 +1330,7 @@ Bool_t AliGeomManager::GetOrigGlobalMatrixFromPath(const char *path, TGeoHMatrix
 }
 
 //_____________________________________________________________________________
-TGeoHMatrix* AliGeomManager::GetOrigGlobalMatrix(TGeoPNEntry* pne)
+TGeoHMatrix* AliGeomManager::GetOrigGlobalMatrix(TGeoPNEntry * const pne)
 {
   // The method returns global matrix for the ideal detector geometry
   // using the corresponding TGeoPNEntry as an input.
