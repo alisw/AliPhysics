@@ -13,54 +13,6 @@
     @date    Mon Mar 27 12:50:29 2006
     @brief   Simulation configuration script
 */
-#if !defined(__CINT__) || defined(__MAKECINT__)
-#include <Riostream.h>
-#include <TPDGCode.h>
-#include <TSystem.h>
-#include <TVirtualMC.h>
-#include <TGeant3.h>
-#include "STEER/AliRunLoader.h"
-#include "STEER/AliRun.h"
-#include "STEER/AliConfig.h"
-#include "STEER/AliGenerator.h"
-#include "PYTHIA6/AliDecayerPythia.h"
-#include "EVGEN/AliGenHIJINGpara.h"
-#include "THijing/AliGenHijing.h"
-#include "EVGEN/AliGenCocktail.h"
-#include "EVGEN/AliGenSlowNucleons.h"
-#include "EVGEN/AliSlowNucleonModelExp.h"
-#include "EVGEN/AliGenParam.h"
-#include "EVGEN/AliGenMUONlib.h"
-#include "EVGEN/AliGenMUONCocktail.h"
-#include "PYTHIA6/AliGenPythia.h"
-#include "STEER/AliMagFMaps.h"
-#include "STRUCT/AliBODY.h"
-#include "STRUCT/AliMAG.h"
-#include "STRUCT/AliABSOv0.h"
-#include "STRUCT/AliDIPOv2.h"
-#include "STRUCT/AliHALL.h"
-#include "STRUCT/AliFRAMEv2.h"
-#include "STRUCT/AliSHILv2.h"
-#include "STRUCT/AliPIPEv3.h"
-#include "ITS/AliITSvPPRasymmFMD.h"
-#include "TPC/AliTPCv2.h"
-#include "TOF/AliTOFv4T0.h"
-#include "HMPID/AliHMPIDv1.h"
-#include "ZDC/AliZDCv2.h"
-#include "TRD/AliTRDv1.h"
-#include "FMD/AliFMDv1.h"
-#include "MUON/AliMUONv1.h"
-#include "MUON/AliMUONSt1GeometryBuilderV2.h"
-#include "MUON/AliMUONSt2GeometryBuilder.h"
-#include "MUON/AliMUONSlatGeometryBuilder.h"
-#include "MUON/AliMUONTriggerGeometryBuilder.h"
-#include "PHOS/AliPHOSv1.h"
-#include "PMD/AliPMDv1.h"
-#include "T0/AliT0v1.h"
-#include "EMCAL/AliEMCALv2.h"
-#include "ACORDE/AliACORDEv1.h"
-#include "VZERO/AliVZEROv2.h"
-#endif
 
 //____________________________________________________________________
 // 
@@ -217,7 +169,7 @@ enum MC_t {
 //____________________________________________________________________
 // Functions
 Float_t       EtaToTheta(Float_t eta);
-Eg_t          LookupEG(const Char_t* name);
+EG_t          LookupEG(const Char_t* name);
 AliGenerator* GeneratorFactory(EG_t eg, Rad_t rad, TString& comment);
 AliGenHijing* HijingStandard();
 void          ProcessEnvironmentVars(EG_t& eg, Int_t& seed);
@@ -232,7 +184,8 @@ Config()
   // EG_t  eg   = kParam_fmd;
   // EG_t  eg   = kFMDFlat; // kParam_2000; // kPythia;
   // EG_t  eg   = kFMDFlat;
-  EG_t  eg   = kPythia6;
+  // EG_t  eg   = kPythia6;
+  EG_t  eg   = kFMD2Flat;
   Geo_t geo  = kNoHoles;
   Rad_t rad  = kGluonRadiation;
   Mag_t mag  = k5kG;
@@ -471,7 +424,7 @@ Config()
   Bool_t useMUON  = kFALSE; 
   Bool_t usePHOS  = kFALSE; 
   Bool_t usePIPE  = kTRUE; 
-  Bool_t usePMD   = kFALSE; 
+  Bool_t usePMD   = kTRUE; 
   Bool_t useHMPID = kFALSE; 
   Bool_t useSHIL  = kFALSE; 
   Bool_t useT0    = kFALSE; 
@@ -1424,7 +1377,7 @@ GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)
   case kFMD2Flat: 
     {
       comment = comment.Append(" Flat in FMD2 range");
-      AliGenBox* gener = new AliGenBox(2000);
+      AliGenBox* gener = new AliGenBox(10);
       gener->SetPart(kPiPlus);
       gener->SetMomentumRange(3,4);
       gener->SetPhiRange(0, 360);

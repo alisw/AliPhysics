@@ -27,10 +27,10 @@ Simulate(Int_t n=1)
   // AliLog::SetModuleDebugLevel("FMD", 1);
   sim.SetConfigFile("$(ALICE_ROOT)/FMD/Config.C");
   // sim.SetMakeSDigits("FMD");
-  sim.SetMakeDigits("FMD"); 
+  sim.SetMakeDigits("FMD ITS VZERO PMD"); 
   sim.SetWriteRawData("FMD"); 
   // sim.SetMakeDigitsFromHits("FMD"); 
-  sim.SetRunQA("FMD");
+  sim.SetRunQA(":");
   TStopwatch w; 
   w.Start(); 
   sim.Run(n);  

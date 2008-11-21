@@ -738,13 +738,13 @@ AliFMDDisplay::ProcessDigit(AliFMDDigit* digit)
   UShort_t str           =  digit->Strip();
   Double_t ped           =  parm->GetPedestal(det,ring, sec, str);
   Double_t pedW          =  parm->GetPedestalWidth(det,ring, sec, str);
-  Double_t threshold     =  ((fFMDReader->IsZeroSuppressed(det-1) ? 
-			     0 : (ped * (fFactor->GetMaximum()
-					 -fFactor->GetMinimum())))
+  Double_t threshold     =  ((fFMDReader && fFMDReader->IsZeroSuppressed(det-1)
+			      ? 0 : (ped * (fFactor->GetMaximum()
+					    -fFactor->GetMinimum())))
 			     + pedW * 10 * fFactor->GetMinimum());
   if (threshold > fgkAdcRange.fHigh) threshold = fgkAdcRange.fHigh;
   Float_t  counts        =  digit->Counts();
-  if (fFMDReader->IsZeroSuppressed(det-1) && counts > 0)
+  if (fFMDReader && fFMDReader->IsZeroSuppressed(det-1) && counts > 0)
     counts += fFMDReader->NoiseFactor(det-1) * pedW;
 
   AliFMDDebug(10, ("FMD%d%c[%02d,%03d] counts %4d threshold %4d", 

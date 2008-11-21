@@ -33,12 +33,12 @@
 #pragma link C++ class  AliFMDBackgroundCorrection+;
 
 #pragma link C++ class  AliFMDSpectraDisplay;
-#pragma link C++ class  AliFMDSpectraDisplayElement;
-#pragma link C++ class  AliFMDSpectraDisplayTop;
-#pragma link C++ class  AliFMDSpectraDisplayDetector;
-#pragma link C++ class  AliFMDSpectraDisplayRing;
-#pragma link C++ class  AliFMDSpectraDisplaySector;
-#pragma link C++ class  AliFMDSpectraDisplayStrip;
+#pragma link C++ class  AliFMDSpectraDisplay::AliFMDSpectraDisplayElement;
+#pragma link C++ class  AliFMDSpectraDisplay::AliFMDSpectraDisplayTop;
+#pragma link C++ class  AliFMDSpectraDisplay::AliFMDSpectraDisplayDetector;
+#pragma link C++ class  AliFMDSpectraDisplay::AliFMDSpectraDisplayRing;
+#pragma link C++ class  AliFMDSpectraDisplay::AliFMDSpectraDisplaySector;
+#pragma link C++ class  AliFMDSpectraDisplay::AliFMDSpectraDisplayStrip;
 
 #else
 # error Not for compilation 

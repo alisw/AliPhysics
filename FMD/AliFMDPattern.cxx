@@ -332,17 +332,24 @@ AliFMDPattern::Init()
     Int_t            nm = ring->GetNModules();
     AliFMDDebug(1, ("Making %d modules for %c", nm, *r));
     for (Int_t m = 0; m < nm; m++) {
-      Int_t          nv = vs.GetEntries();
+      Int_t          nv = 6; // vs.GetEntries();
       Double_t       a  = TMath::Pi() / 180 * (m * 2 + 1) * ring->GetTheta();
       TGraph*        g  = new TGraph(nv+1);
       Double_t       x0 = 0, y0 = 0;
       gs.AddAtAndExpand(g, m);
-      for (Int_t c = 0; c < nv; c++) {
+      for (Int_t c = 1; c < 4; c++) {
 	TVector2* v = static_cast<TVector2*>(vs.At(c));
 	mr          = TMath::Max(mr, Float_t(v->Mod()));
 	TVector2  w(v->Rotate(a));
-	if (c == 0) { x0 = w.X(); y0 = w.Y(); }
-	g->SetPoint(c, w.X(), w.Y());
+	if (c == 1) { x0 = w.X(); y0 = w.Y(); }
+	g->SetPoint(c-1, w.X(), w.Y());
+      }
+      for (Int_t c = 3; c > 0; c--) {
+	TVector2* v = static_cast<TVector2*>(vs.At(c));
+	TVector2  u(-v->X(), v->Y());
+	mr          = TMath::Max(mr, Float_t(u.Mod()));
+	TVector2  w(u.Rotate(a));
+	g->SetPoint(3+(3-c), w.X(), w.Y());
       }
       g->SetName(Form("FMDX%c_%02d%02d", *r, 2*m,2*m+1));
       g->SetTitle(Form("FMDX%c, sectors %d and %d", *r, 2*m,2*m+1));

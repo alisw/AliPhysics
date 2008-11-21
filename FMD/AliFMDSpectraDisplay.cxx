@@ -38,10 +38,14 @@
 #include <TClass.h>
 #include <RQ_OBJECT.h>
 #include <TSlider.h>
+#define NESTED(X) AliFMDSpectraDisplay::AliFMDSpectraDisplay # X
 
 //==================================================================
-void AliFMDSpectraDisplayElement::MakeHistograms(TAxis* axis) 
+void AliFMDSpectraDisplay::AliFMDSpectraDisplayElement::MakeHistograms(TAxis* axis) 
 {
+  // Create the 
+  // needed histograms
+  // for this element
   if (fFull) return;
   if (axis->IsVariableBinSize()) {
     fFull = new TH1F(Form("f_%s", GetName()), Form("%s spectra", GetName()),
@@ -63,14 +67,17 @@ void AliFMDSpectraDisplayElement::MakeHistograms(TAxis* axis)
   fCut->SetFillStyle(3001);
 }
 //__________________________________________________________________
-void AliFMDSpectraDisplayElement::DoFill(Double_t v) 
+void AliFMDSpectraDisplay::AliFMDSpectraDisplayElement::DoFill(Double_t v) 
 {
+  // Fill into histograms
   if (fFull) fFull->Fill(v);
 }
 //__________________________________________________________________
-void AliFMDSpectraDisplayElement::Show(Option_t* option, 
+void AliFMDSpectraDisplay::AliFMDSpectraDisplayElement::Show(Option_t* option, 
 				       Double_t l, Double_t h) 
 {
+  // Show this element
+  // 
   if (!fFull) return;
   gPad->SetLogy(fFull->GetMaximum() > 10);
   fFull->Draw(option);
@@ -92,14 +99,14 @@ void AliFMDSpectraDisplayElement::Show(Option_t* option,
 
 //__________________________________________________________________
 Int_t
-AliFMDSpectraDisplayElement::Compare(const TObject*) const
+AliFMDSpectraDisplay::AliFMDSpectraDisplayElement::Compare(const TObject*) const
 {
   return -1;
 }
 
 
 //==================================================================
-AliFMDSpectraDisplayTop::AliFMDSpectraDisplayTop(TGCompositeFrame& frame, 
+AliFMDSpectraDisplay::AliFMDSpectraDisplayTop::AliFMDSpectraDisplayTop(TGCompositeFrame& frame, 
 						 TCanvas* canvas) 
   : AliFMDSpectraDisplayElement("All", "Everything"), 
     fHints(kLHintsExpandX|kLHintsExpandY,3, 3, 3, 3),
@@ -108,45 +115,52 @@ AliFMDSpectraDisplayTop::AliFMDSpectraDisplayTop(TGCompositeFrame& frame,
     fChildren(0),
     fCurrentEntry(0),
     fCanvas(canvas),
-    fHist1DIcon(gClient->GetPicture("h1_t.xpm")),
-    fHist2DIcon(gClient->GetPicture("h2_t.xpm")),
-    fHist3DIcon(gClient->GetPicture("h3_t.xpm")),
-    fGraphIcon(gClient->GetPicture("graph.xpm")), 
+    fkHist1DIcon(gClient->GetPicture("h1_t.xpm")),
+    fkHist2DIcon(gClient->GetPicture("h2_t.xpm")),
+    fkHist3DIcon(gClient->GetPicture("h3_t.xpm")),
+    fkGraphIcon(gClient->GetPicture("graph.xpm")), 
     fAxis(0),
     fEntry(*(fList.AddItem(0, GetName(), this)))
 {
+  // Constructor 
+  // Parameters: 
+  //    frame    PArent frame 
+  //    canvas   Canvas to draw in
   fContainer.AddFrame(&fList, &fHints);
   frame.AddFrame(&fContainer, &fHints);
 
   fList.Connect("Clicked(TGListTreeItem*,Int_t)", 
-		"AliFMDSpectraDisplayTop", this, 
+		"AliFMDSpectraDisplay::AliFMDSpectraDisplayTop", this, 
 		"HandleEntry(TGListTreeItem*,Int_t)");
   fList.Connect("KeyPressed(TGListTreeItem*,ULong_t,ULong_t)", 
-		"AliFMDSpectraDisplayTop", this, 
+		"AliFMDSpectraDisplay::AliFMDSpectraDisplayTop", this, 
 		"HandleKey(TGListTreeItem*,UInt_t,UInt_t)");
   fList.Connect("ReturnPressed(TGListTreeItem*)", 
-		"AliFMDSpectraDisplayTop", this, 
+		"AliFMDSpectraDisplay::AliFMDSpectraDisplayTop", this, 
 		"HandleReturn(TGListTreeItem*)");
 }
 //____________________________________________________________________
 void
-AliFMDSpectraDisplayTop::SetAxis(TAxis* axis) 
+AliFMDSpectraDisplay::AliFMDSpectraDisplayTop::SetAxis(TAxis* axis) 
 {
+  // Set the axis of histograms
   fAxis = axis;
   MakeHistograms(axis);
 }
 //____________________________________________________________________
 void
-AliFMDSpectraDisplayTop::ClearCanvas()
+AliFMDSpectraDisplay::AliFMDSpectraDisplayTop::ClearCanvas()
 {
+  // Clear the canvas
   if (!fCanvas) return;
   fCanvas->Clear();
 }
   
 //____________________________________________________________________
 void
-AliFMDSpectraDisplayTop::ClearList()
+AliFMDSpectraDisplay::AliFMDSpectraDisplayTop::ClearList()
 {
+  // Clear the lsit
   fList.DeleteItem(fList.GetFirstItem());
   UpdateList();
 }
@@ -154,9 +168,9 @@ AliFMDSpectraDisplayTop::ClearList()
   
 //____________________________________________________________________
 void
-AliFMDSpectraDisplayTop::HandleReturn(TGListTreeItem * f)
+AliFMDSpectraDisplay::AliFMDSpectraDisplayTop::HandleReturn(TGListTreeItem * f)
 {
-    
+  // HAndle when return is pressed
   if (!f) { 
     fList.UnselectAll(kFALSE);
     fList.SetSelected(0);
@@ -169,8 +183,9 @@ AliFMDSpectraDisplayTop::HandleReturn(TGListTreeItem * f)
   
 //____________________________________________________________________
 void
-AliFMDSpectraDisplayTop::HandleKey(TGListTreeItem * f, UInt_t keysym, UInt_t)
+AliFMDSpectraDisplay::AliFMDSpectraDisplayTop::HandleKey(TGListTreeItem * f, UInt_t keysym, UInt_t)
 {
+  // Handle a key stroke
   if (!f) { 
     fList.UnselectAll(kFALSE);
     fList.SetSelected(0);
@@ -220,8 +235,9 @@ AliFMDSpectraDisplayTop::HandleKey(TGListTreeItem * f, UInt_t keysym, UInt_t)
 
 //____________________________________________________________________
 void
-AliFMDSpectraDisplayTop::HandleEntry(TGListTreeItem* entry, Int_t /*id*/) 
+AliFMDSpectraDisplay::AliFMDSpectraDisplayTop::HandleEntry(TGListTreeItem* entry, Int_t /*id*/) 
 {
+  // Handle selection of entries
   TGListTreeItem* old = fCurrentEntry;
   if (entry) {
     if (!entry->GetUserData()) return;
@@ -237,31 +253,36 @@ AliFMDSpectraDisplayTop::HandleEntry(TGListTreeItem* entry, Int_t /*id*/)
 
 //____________________________________________________________________
 void
-AliFMDSpectraDisplayTop::UpdateList() 
+AliFMDSpectraDisplay::AliFMDSpectraDisplayTop::UpdateList() 
 {
+  // Update list
   gClient->NeedRedraw(&fList);
 }
 
 //____________________________________________________________________
 void
-AliFMDSpectraDisplayTop::UpdateCanvas() 
+AliFMDSpectraDisplay::AliFMDSpectraDisplayTop::UpdateCanvas() 
 {
+  // update canvas
   if (!fCanvas) return;
   fCanvas->Modified();
   fCanvas->Update();
   fCanvas->cd();
 }
 //____________________________________________________________________
-TObject* AliFMDSpectraDisplayTop::Current() const
+TObject* AliFMDSpectraDisplay::AliFMDSpectraDisplayTop::Current() const
 {
+  // Get currently selected entry if any
   if (!fCurrentEntry) return 0;
   if (!fCurrentEntry->GetUserData()) return 0;
   return static_cast<TObject*>(fCurrentEntry->GetUserData());
 }
   
 //__________________________________________________________________
-AliFMDSpectraDisplayDetector& AliFMDSpectraDisplayTop::GetOrAdd(UShort_t id) 
+AliFMDSpectraDisplay::AliFMDSpectraDisplayDetector& 
+AliFMDSpectraDisplay::AliFMDSpectraDisplayTop::GetOrAdd(UShort_t id) 
 { 
+  // Get or add a sub-element
   Int_t     idx = id - 1;
   AliFMDSpectraDisplayDetector* d   = 0;
   if (fChildren.GetEntriesFast() <= idx ||
@@ -274,8 +295,10 @@ AliFMDSpectraDisplayDetector& AliFMDSpectraDisplayTop::GetOrAdd(UShort_t id)
   return *d;
 }
 //__________________________________________________________________
-void AliFMDSpectraDisplayTop::Fill(UShort_t det, Char_t ring, 
-	       UShort_t sec, UShort_t str, Double_t v) 
+void 
+AliFMDSpectraDisplay::AliFMDSpectraDisplayTop::Fill(UShort_t det, Char_t ring, 
+						    UShort_t sec, UShort_t str,
+						    Double_t v) 
 { 
   AliFMDSpectraDisplayDetector& d = GetOrAdd(det);
   d.Fill(ring, sec, str, v);
@@ -283,12 +306,13 @@ void AliFMDSpectraDisplayTop::Fill(UShort_t det, Char_t ring,
 }
 //__________________________________________________________________
 Int_t
-AliFMDSpectraDisplayTop::Compare(const TObject*) const
+AliFMDSpectraDisplay::AliFMDSpectraDisplayTop::Compare(const TObject*) const
 {
+  // Compare to another object
   return -1;
 }
 //==================================================================
-AliFMDSpectraDisplayDetector::AliFMDSpectraDisplayDetector(UShort_t det, 
+AliFMDSpectraDisplay::AliFMDSpectraDisplayDetector::AliFMDSpectraDisplayDetector(UShort_t det, 
 				           AliFMDSpectraDisplayTop& tree) 
   : AliFMDSpectraDisplayElement(Form("FMD%d", det), "FMD Sub-detector"), 
     fId(det), 
@@ -296,13 +320,16 @@ AliFMDSpectraDisplayDetector::AliFMDSpectraDisplayDetector(UShort_t det,
     fChildren(0),
     fEntry(*(tree.GetList().AddItem(&(tree.GetEntry()), GetName())))
 {
+  // Constructor
   fEntry.SetUserData(this);
   fEntry.SetText(GetName());
   if (GetTop().GetAxis()) MakeHistograms(GetTop().GetAxis());
 }
 //__________________________________________________________________
-AliFMDSpectraDisplayRing& AliFMDSpectraDisplayDetector::GetOrAdd(Char_t id) 
+AliFMDSpectraDisplay::AliFMDSpectraDisplayRing& 
+AliFMDSpectraDisplay::AliFMDSpectraDisplayDetector::GetOrAdd(Char_t id) 
 { 
+  // Get or add an element
   Int_t idx = (id == 'I' || id == 'i') ? 0 : 1;
   AliFMDSpectraDisplayRing* r   = 0;;
   if (fChildren.GetEntriesFast() <= idx ||
@@ -315,19 +342,24 @@ AliFMDSpectraDisplayRing& AliFMDSpectraDisplayDetector::GetOrAdd(Char_t id)
   return *r;
 }
 //__________________________________________________________________
-void AliFMDSpectraDisplayDetector::Fill(Char_t ring, UShort_t sec, 
-					UShort_t str, Double_t v) 
+void 
+AliFMDSpectraDisplay::AliFMDSpectraDisplayDetector::Fill(Char_t ring, 
+							 UShort_t sec, 
+							 UShort_t str, 
+							 Double_t v) 
 { 
+  // Fill values
   AliFMDSpectraDisplayRing& r = GetOrAdd(ring);
   r.Fill(sec, str, v);
   DoFill(v);
 }  
 //__________________________________________________________________
 Int_t
-AliFMDSpectraDisplayDetector::Compare(const TObject* o) const
+AliFMDSpectraDisplay::AliFMDSpectraDisplayDetector::Compare(const TObject* o) const
 {
+  // Compare to other element
   std::cout << "Comparing detector to a " << o->ClassName() << std::endl;
-  if (o->IsA() == AliFMDSpectraDisplayDetector::Class()) { 
+  if (o->IsA() == AliFMDSpectraDisplay::AliFMDSpectraDisplayDetector::Class()) { 
     const AliFMDSpectraDisplayDetector* ro = 
       static_cast<const AliFMDSpectraDisplayDetector*>(o);
     return (Id() <  ro->Id() ? -1 : 
@@ -336,7 +368,7 @@ AliFMDSpectraDisplayDetector::Compare(const TObject* o) const
   return -1;
 }
 //==================================================================
-AliFMDSpectraDisplayRing::AliFMDSpectraDisplayRing(Char_t id,
+AliFMDSpectraDisplay::AliFMDSpectraDisplayRing::AliFMDSpectraDisplayRing(Char_t id,
                             AliFMDSpectraDisplayDetector& d) 
   : AliFMDSpectraDisplayElement(Form("FMD%d%c", d.Id(), id), "FMD Ring"), 
     fParent(d),
@@ -344,12 +376,15 @@ AliFMDSpectraDisplayRing::AliFMDSpectraDisplayRing(Char_t id,
     fChildren(0),
     fEntry(*(GetTop().GetList().AddItem(&(d.GetEntry()), GetName(), this)))
 {
+  // Constructor
   fEntry.SetText(GetName());
   if (GetTop().GetAxis()) MakeHistograms(GetTop().GetAxis());
 }
 //__________________________________________________________________
-AliFMDSpectraDisplaySector& AliFMDSpectraDisplayRing::GetOrAdd(UShort_t id) 
+AliFMDSpectraDisplay::AliFMDSpectraDisplaySector& 
+AliFMDSpectraDisplay::AliFMDSpectraDisplayRing::GetOrAdd(UShort_t id) 
 { 
+  // Get or add another element
   AliFMDSpectraDisplaySector* s = 0;
   if (fChildren.GetEntriesFast() <= id ||
       !(s = static_cast<AliFMDSpectraDisplaySector*>(fChildren.At(id)))) {
@@ -361,18 +396,23 @@ AliFMDSpectraDisplaySector& AliFMDSpectraDisplayRing::GetOrAdd(UShort_t id)
   return *s;
 }
 //__________________________________________________________________
-void AliFMDSpectraDisplayRing::Fill(UShort_t sec, UShort_t str, Double_t v) 
+void 
+AliFMDSpectraDisplay::AliFMDSpectraDisplayRing::Fill(UShort_t sec, 
+						     UShort_t str, 
+						     Double_t v) 
 { 
+  // Fill values
   AliFMDSpectraDisplaySector& s = GetOrAdd(sec);
   s.Fill(str, v);
   DoFill(v);
 }
 //__________________________________________________________________
 Int_t
-AliFMDSpectraDisplayRing::Compare(const TObject* o) const
+AliFMDSpectraDisplay::AliFMDSpectraDisplayRing::Compare(const TObject* o) const
 {
+  // Compare to other element
   std::cout << "Comparing ring to a " << o->ClassName() << std::endl;
-  if (o->IsA() == AliFMDSpectraDisplayRing::Class()) { 
+  if (o->IsA() == AliFMDSpectraDisplay::AliFMDSpectraDisplayRing::Class()) { 
     const AliFMDSpectraDisplayRing* ro = 
       static_cast<const AliFMDSpectraDisplayRing*>(o);
     return (Id() <  ro->Id() ? -1 : 
@@ -381,7 +421,7 @@ AliFMDSpectraDisplayRing::Compare(const TObject* o) const
   return -1;
 }
 //==================================================================
-AliFMDSpectraDisplaySector::AliFMDSpectraDisplaySector(UShort_t id, 
+AliFMDSpectraDisplay::AliFMDSpectraDisplaySector::AliFMDSpectraDisplaySector(UShort_t id, 
                                       AliFMDSpectraDisplayRing& r) 
   : AliFMDSpectraDisplayElement(Form("FMD%d%c_%02d",r.DetectorId(),r.Id(),id), 
 				"FMD Sector"), 
@@ -390,12 +430,15 @@ AliFMDSpectraDisplaySector::AliFMDSpectraDisplaySector(UShort_t id,
     fChildren(0),
     fEntry(*(GetTop().GetList().AddItem(&(r.GetEntry()), GetName(), this)))
 {
+  // Constructor 
   fEntry.SetText(GetName());
   if (GetTop().GetAxis()) MakeHistograms(GetTop().GetAxis());
 }
 //__________________________________________________________________
-AliFMDSpectraDisplayStrip& AliFMDSpectraDisplaySector::GetOrAdd(UShort_t id) 
+AliFMDSpectraDisplay::AliFMDSpectraDisplayStrip& 
+AliFMDSpectraDisplay::AliFMDSpectraDisplaySector::GetOrAdd(UShort_t id) 
 { 
+  // Get or add another element
   AliFMDSpectraDisplayStrip* s = 0;
   if (fChildren.GetEntriesFast() <= id || 
       !(s = static_cast<AliFMDSpectraDisplayStrip*>(fChildren.At(id)))) {
@@ -407,18 +450,22 @@ AliFMDSpectraDisplayStrip& AliFMDSpectraDisplaySector::GetOrAdd(UShort_t id)
   return *s;
 }
 //__________________________________________________________________
-void AliFMDSpectraDisplaySector::Fill(UShort_t str, Double_t v) 
+void 
+AliFMDSpectraDisplay::AliFMDSpectraDisplaySector::Fill(UShort_t str, 
+						       Double_t v) 
 { 
+  // Fill values
   AliFMDSpectraDisplayStrip& s = GetOrAdd(str);
   s.Fill(v);
   DoFill(v);
 }
 //__________________________________________________________________
 Int_t
-AliFMDSpectraDisplaySector::Compare(const TObject* o) const
+AliFMDSpectraDisplay::AliFMDSpectraDisplaySector::Compare(const TObject* o) const
 {
+  // Compare to another elemnt
   std::cout << "Comparing sector to a " << o->ClassName() << std::endl;
-  if (o->IsA() == AliFMDSpectraDisplaySector::Class()) { 
+  if (o->IsA() == AliFMDSpectraDisplay::AliFMDSpectraDisplaySector::Class()) { 
     const AliFMDSpectraDisplaySector* ro = 
       static_cast<const AliFMDSpectraDisplaySector*>(o);
     return (Id() <  ro->Id() ? -1 : 
@@ -427,7 +474,7 @@ AliFMDSpectraDisplaySector::Compare(const TObject* o) const
   return -1;
 }
 //==================================================================
-AliFMDSpectraDisplayStrip::AliFMDSpectraDisplayStrip(UShort_t id, 
+AliFMDSpectraDisplay::AliFMDSpectraDisplayStrip::AliFMDSpectraDisplayStrip(UShort_t id, 
                                   AliFMDSpectraDisplaySector& s) 
   : AliFMDSpectraDisplayElement(Form("FMD%d%c_%02d_%03d", 
 				     s.DetectorId(), s.RingId(), 
@@ -436,21 +483,25 @@ AliFMDSpectraDisplayStrip::AliFMDSpectraDisplayStrip(UShort_t id,
     fId(id),
     fEntry(*(GetTop().GetList().AddItem(&(s.GetEntry()), GetName(), this)))
 {
+  // Constructor
   fEntry.SetText(GetName());
   fEntry.SetPictures(GetTop().GetH1Pic(), GetTop().GetH1Pic());
   if (GetTop().GetAxis()) MakeHistograms(GetTop().GetAxis());
 }
 //__________________________________________________________________
-void AliFMDSpectraDisplayStrip::Fill(Double_t v) 
+void 
+AliFMDSpectraDisplay::AliFMDSpectraDisplayStrip::Fill(Double_t v) 
 { 
+  // Fill values
   DoFill(v);
 }
 //__________________________________________________________________
 Int_t
-AliFMDSpectraDisplayStrip::Compare(const TObject* o) const
+AliFMDSpectraDisplay::AliFMDSpectraDisplayStrip::Compare(const TObject* o) const
 {
+  // Compare to another element
   std::cout << "Comparing strip to a " << o->ClassName() << std::endl;
-  if (o->IsA() == AliFMDSpectraDisplayStrip::Class()) { 
+  if (o->IsA() == AliFMDSpectraDisplay::AliFMDSpectraDisplayStrip::Class()) { 
     const AliFMDSpectraDisplayStrip* ro = 
       static_cast<const AliFMDSpectraDisplayStrip*>(o);
     return (Id() <  ro->Id() ? -1 : 
@@ -465,7 +516,8 @@ AliFMDSpectraDisplay::AliFMDSpectraDisplay()
     fSelector(gClient->GetRoot(), 100, 100), 
     fTop(fSelector, fAux)
 {
-  AddLoad(AliFMDInput::kRaw);
+  // Constructor
+  // AddLoad(AliFMDInput::kRaw);
   SetName("RAW");
   SetTitle("RAW");
   
@@ -481,9 +533,10 @@ AliFMDSpectraDisplay::AliFMDSpectraDisplay()
 Bool_t 
 AliFMDSpectraDisplay::HandleDraw()
 {
+  // Handle draw request
   TObject* user = fTop.Current();
   if (!user) return kFALSE;
-  if (!user->InheritsFrom(AliFMDSpectraDisplayElement::Class())) { 
+  if (!user->InheritsFrom(AliFMDSpectraDisplay::AliFMDSpectraDisplayElement::Class())) { 
     Warning("HandleDraw", "%s does not inherit from Spectra::Element", 
 	    user->GetName());
     return kFALSE;
@@ -501,6 +554,7 @@ AliFMDSpectraDisplay::HandleDraw()
 void 
 AliFMDSpectraDisplay::MakeAux()
 {
+  // MAke auxilary canvas
   AliFMDPattern::MakeAux();
   if (!fAux) return;
   fTop.SetAxis(fSpec->GetXaxis());
@@ -519,6 +573,7 @@ AliFMDSpectraDisplay::DrawAux()
 Bool_t 
 AliFMDSpectraDisplay::ProcessHit(AliFMDHit* hit, TParticle* p) 
 {
+  // Process a hit
   fTop.Fill(hit->Detector(), 
 	    hit->Ring(), 
 	    hit->Sector(),
@@ -530,6 +585,7 @@ AliFMDSpectraDisplay::ProcessHit(AliFMDHit* hit, TParticle* p)
 Bool_t 
 AliFMDSpectraDisplay::ProcessDigit(AliFMDDigit* digit)
 {
+  // Process a digit
   fTop.Fill(digit->Detector(), 
 	    digit->Ring(), 
 	    digit->Sector(),
@@ -541,6 +597,7 @@ AliFMDSpectraDisplay::ProcessDigit(AliFMDDigit* digit)
 Bool_t 
 AliFMDSpectraDisplay::ProcessSDigit(AliFMDSDigit* sdigit)
 {
+  // Process a summable digit
   fTop.Fill(sdigit->Detector(), 
 	    sdigit->Ring(), 
 	    sdigit->Sector(),
@@ -552,12 +609,14 @@ AliFMDSpectraDisplay::ProcessSDigit(AliFMDSDigit* sdigit)
 Bool_t 
 AliFMDSpectraDisplay::ProcessRawDigit(AliFMDDigit* digit)
 {
+  // Process a raw digit
   return ProcessDigit(digit);
 }
 //__________________________________________________________________
 Bool_t 
 AliFMDSpectraDisplay::ProcessRecPoint(AliFMDRecPoint* recpoint)
 {
+  // Process a rec-point
   fTop.Fill(recpoint->Detector(), 
 	    recpoint->Ring(), 
 	    recpoint->Sector(),
@@ -570,6 +629,7 @@ Bool_t
 AliFMDSpectraDisplay::ProcessESD(UShort_t det, Char_t rng, UShort_t sec, 
 				 UShort_t str, Float_t x, Float_t mult)
 {
+  // Process ESD entry
   fTop.Fill(det, rng, sec, str, mult);
   return AliFMDDisplay::ProcessESD(det, rng, sec, str, x, mult);
 }
