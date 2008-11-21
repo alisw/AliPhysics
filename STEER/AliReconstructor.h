@@ -56,7 +56,7 @@ public:
 
 private:
   TString                            fOption;                                       //! option for reconstruction
-  static const AliDetectorRecoParam* fgRecoParam[AliReconstruction::fgkNDetectors]; //! event reconstruction parameters for all detectors
+  static const AliDetectorRecoParam* fgRecoParam[AliReconstruction::kNDetectors]; //! event reconstruction parameters for all detectors
 
   ClassDef(AliReconstructor, 0)   // base class for reconstruction algorithms
 };

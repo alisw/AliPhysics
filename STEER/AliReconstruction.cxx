@@ -197,7 +197,7 @@
 ClassImp(AliReconstruction)
 
 //_____________________________________________________________________________
-const char* AliReconstruction::fgkDetectorName[AliReconstruction::fgkNDetectors] = {"ITS", "TPC", "TRD", "TOF", "PHOS", "HMPID", "EMCAL", "MUON", "FMD", "ZDC", "PMD", "T0", "VZERO", "ACORDE", "HLT"};
+const char* AliReconstruction::fgkDetectorName[AliReconstruction::kNDetectors] = {"ITS", "TPC", "TRD", "TOF", "PHOS", "HMPID", "EMCAL", "MUON", "FMD", "ZDC", "PMD", "T0", "VZERO", "ACORDE", "HLT"};
 
 //_____________________________________________________________________________
 AliReconstruction::AliReconstruction(const char* gAliceFilename) :
@@ -235,7 +235,6 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename) :
   fOptions(),
   fLoadAlignFromCDB(kTRUE),
   fLoadAlignData("ALL"),
-  fESDPar(""),
   fUseHLTData(),
   fRunInfo(NULL),
   fEventInfo(),
@@ -281,7 +280,7 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename) :
 // create reconstruction object with default parameters
   gGeoManager = NULL;
   
-  for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
+  for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
     fReconstructor[iDet] = NULL;
     fLoader[iDet] = NULL;
     fTracker[iDet] = NULL;
@@ -330,7 +329,6 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fOptions(),
   fLoadAlignFromCDB(rec.fLoadAlignFromCDB),
   fLoadAlignData(rec.fLoadAlignData),
-  fESDPar(rec.fESDPar),
   fUseHLTData(rec.fUseHLTData),
   fRunInfo(NULL),
   fEventInfo(),
@@ -377,7 +375,7 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   for (Int_t i = 0; i < rec.fOptions.GetEntriesFast(); i++) {
     if (rec.fOptions[i]) fOptions.Add(rec.fOptions[i]->Clone());
   }
-  for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
+  for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
     fReconstructor[iDet] = NULL;
     fLoader[iDet] = NULL;
     fTracker[iDet] = NULL;
@@ -442,7 +440,6 @@ AliReconstruction& AliReconstruction::operator = (const AliReconstruction& rec)
 
   fLoadAlignFromCDB              = rec.fLoadAlignFromCDB;
   fLoadAlignData                 = rec.fLoadAlignData;
-  fESDPar                        = rec.fESDPar;
   fUseHLTData                    = rec.fUseHLTData;
 
   delete fRunInfo; fRunInfo = NULL;
@@ -456,7 +453,7 @@ AliReconstruction& AliReconstruction::operator = (const AliReconstruction& rec)
 
   fRecoParam = rec.fRecoParam;
 
-  for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
+  for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
     delete fReconstructor[iDet]; fReconstructor[iDet] = NULL;
     delete fLoader[iDet]; fLoader[iDet] = NULL;
     delete fTracker[iDet]; fTracker[iDet] = NULL;
@@ -591,7 +588,7 @@ void AliReconstruction::SetSpecificStorage(const char* calibType, const char* ur
   AliCDBPath aPath(calibType);
   if(!aPath.IsValid()){
 	// if calibType is not wildcard but it is a valid detector, add "/*" to make it a valid path
-	for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
+	for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
 		if(!strcmp(calibType, fgkDetectorName[iDet])) {
 			aPath.SetPath(Form("%s/*", calibType));
 			AliInfo(Form("Path for specific storage set to %s", aPath.GetPath().Data()));
@@ -606,7 +603,7 @@ void AliReconstruction::SetSpecificStorage(const char* calibType, const char* ur
 
 //  // check that calibType refers to a "valid" detector name
 //  Bool_t isDetector = kFALSE;
-//  for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
+//  for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
 //    TString detName = fgkDetectorName[iDet];
 //    if(aPath.GetLevel0() == detName) {
 //    	isDetector = kTRUE;
@@ -708,7 +705,7 @@ Bool_t AliReconstruction::MisalignGeometry(const TString& detectors)
     TString detStr = detectors;
     TString loadAlObjsListOfDets = "";
     
-    for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
+    for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
       if(!IsSelected(fgkDetectorName[iDet], detStr)) continue;
       if(!strcmp(fgkDetectorName[iDet],"HLT")) continue;
       
@@ -789,11 +786,11 @@ void AliReconstruction::SetRecoParam(const char* detector, AliDetectorRecoParam 
   // First check if the reco-params are global
   if(!strcmp(detector, "GRP")) {
     par->SetAsDefault();
-    fRecoParam.AddDetRecoParam(fgkNDetectors,par);
+    fRecoParam.AddDetRecoParam(kNDetectors,par);
     return;
   }
 
-  for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
+  for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
     if(!strcmp(detector, fgkDetectorName[iDet])) {
       par->SetAsDefault();
       fRecoParam.AddDetRecoParam(iDet,par);
@@ -1088,7 +1085,7 @@ Bool_t AliReconstruction::LoadCDB()
   AliCDBManager::Instance()->Get("GRP/CTP/Config");
 
   TString detStr = fLoadCDB;
-  for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
+  for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
     if (!IsSelected(fgkDetectorName[iDet], detStr)) continue;
     AliCDBManager::Instance()->GetAll(Form("%s/Calib/*",fgkDetectorName[iDet]));
   }
@@ -1396,9 +1393,9 @@ void AliReconstruction::SlaveBegin(TTree*)
   fhltesd->WriteToTree(fhlttree);
   fhlttree->GetUserInfo()->Add(fhltesd);
 
-  ProcInfo_t ProcInfo;
-  gSystem->GetProcInfo(&ProcInfo);
-  AliInfo(Form("Current memory usage %d %d", ProcInfo.fMemResident, ProcInfo.fMemVirtual));
+  ProcInfo_t procInfo;
+  gSystem->GetProcInfo(&procInfo);
+  AliInfo(Form("Current memory usage %d %d", procInfo.fMemResident, procInfo.fMemVirtual));
   
   //QA
   //Initialize the QA and start of cycle 
@@ -1507,7 +1504,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
   // Set the reco-params
   {
     TString detStr = fLoadCDB;
-    for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
+    for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
       if (!IsSelected(fgkDetectorName[iDet], detStr)) continue;
       AliReconstructor *reconstructor = GetReconstructor(iDet);
       if (reconstructor && fRecoParam.GetDetRecoParamArray(iDet)) {
@@ -1550,7 +1547,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
 
     // Set most probable pt, for B=0 tracking
     // Get the global reco-params. They are atposition 16 inside the array of detectors in fRecoParam
-    const AliGRPRecoParam *grpRecoParam = dynamic_cast<const AliGRPRecoParam*>(fRecoParam.GetDetRecoParam(fgkNDetectors));
+    const AliGRPRecoParam *grpRecoParam = dynamic_cast<const AliGRPRecoParam*>(fRecoParam.GetDetRecoParam(kNDetectors));
     if (grpRecoParam) AliExternalTrackParam::SetMostProbablePt(grpRecoParam->GetMostProbablePt());
     
     // Fill raw-data error log into the ESD
@@ -1592,7 +1589,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
       // Temporary fix to avoid problems with HLT that overwrites the offline ESDs
       if (detectors.Contains("ALL")) {
 	detectors="";
-	for (Int_t idet=0; idet<fgkNDetectors; ++idet){
+	for (Int_t idet=0; idet<kNDetectors; ++idet){
 	  detectors += fgkDetectorName[idet];
 	  detectors += " ";
 	}
@@ -1773,12 +1770,12 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
       new (fesdf) AliESDfriend(); // Reset...
     }
  
-    ProcInfo_t ProcInfo;
-    gSystem->GetProcInfo(&ProcInfo);
-    AliInfo(Form("Event %d -> Current memory usage %d %d",iEvent, ProcInfo.fMemResident, ProcInfo.fMemVirtual));
+    ProcInfo_t procInfo;
+    gSystem->GetProcInfo(&procInfo);
+    AliInfo(Form("Event %d -> Current memory usage %d %d",iEvent, procInfo.fMemResident, procInfo.fMemVirtual));
   
     fEventInfo.Reset();
-    for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
+    for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
       if (fReconstructor[iDet])
 	fReconstructor[iDet]->SetRecoParam(NULL);
     }
@@ -1831,13 +1828,6 @@ void AliReconstruction::SlaveTerminate()
  	 
    ftree->GetUserInfo()->Add(cdbMapCopy);	 
    ftree->GetUserInfo()->Add(cdbListCopy);
-
-
-  if(fESDPar.Contains("ESD.par")){
-    AliInfo("Attaching ESD.par to Tree");
-    TNamed *fn = CopyFileToTNamed(fESDPar.Data(),"ESD.par");
-    ftree->GetUserInfo()->Add(fn);
-  }
 
 
   ffile->cd();
@@ -1894,7 +1884,7 @@ Bool_t AliReconstruction::RunLocalEventReconstruction(const TString& detectors)
   AliCodeTimerAuto("")
 
   TString detStr = detectors;
-  for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
+  for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
     if (!IsSelected(fgkDetectorName[iDet], detStr)) continue;
     AliReconstructor* reconstructor = GetReconstructor(iDet);
     if (!reconstructor) continue;
@@ -2025,7 +2015,7 @@ Bool_t AliReconstruction::RunVertexFinder(AliESDEvent*& esd)
   AliMultiplicity *mult = fVertexer->GetMultiplicity();
   if(mult)esd->SetMultiplicity(mult);
 
-  for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
+  for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
     if (fTracker[iDet]) fTracker[iDet]->SetVertex(vtxPos, vtxErr);
   }  
   delete vertex;
@@ -2048,7 +2038,7 @@ Bool_t AliReconstruction::RunHLTTracking(AliESDEvent*& esd)
   AliInfo("running HLT tracking");
 
   // Get a pointer to the HLT reconstructor
-  AliReconstructor *reconstructor = GetReconstructor(fgkNDetectors-1);
+  AliReconstructor *reconstructor = GetReconstructor(kNDetectors-1);
   if (!reconstructor) return kFALSE;
 
   // TPC + ITS
@@ -2188,7 +2178,7 @@ Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd)
 
   // pass 2: ALL backwards
 
-  for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
+  for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
     if (!fTracker[iDet]) continue;
     AliDebug(1, Form("%s back propagation", fgkDetectorName[iDet]));
 
@@ -2303,7 +2293,7 @@ Bool_t AliReconstruction::FillESD(AliESDEvent*& esd, const TString& detectors)
     static Int_t eventNr=0; 
   TString detStr = detectors;
   
-  for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
+  for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
   if (!IsSelected(fgkDetectorName[iDet], detStr)) continue;
     AliReconstructor* reconstructor = GetReconstructor(iDet);
     if (!reconstructor) continue;
@@ -2454,7 +2444,7 @@ Bool_t AliReconstruction::InitRunLoader()
   if (!gSystem->AccessPathName(fGAliceFileName.Data())) { // galice.root exists
     // load all base libraries to get the loader classes
     TString libs = gSystem->GetLibraries();
-    for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
+    for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
       TString detName = fgkDetectorName[iDet];
       if (detName == "HLT") continue;
       if (libs.Contains("lib" + detName + "base.so")) continue;
@@ -2619,7 +2609,7 @@ Bool_t AliReconstruction::CreateTrackers(const TString& detectors)
 	AliInfo("Creating trackers");
 
   TString detStr = detectors;
-  for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
+  for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
     if (!IsSelected(fgkDetectorName[iDet], detStr)) continue;
     AliReconstructor* reconstructor = GetReconstructor(iDet);
     if (!reconstructor) continue;
@@ -2650,7 +2640,7 @@ void AliReconstruction::CleanUp()
 {
 // delete trackers and the run loader and close and delete the file
 
-  for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
+  for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
     delete fReconstructor[iDet];
     fReconstructor[iDet] = NULL;
     fLoader[iDet] = NULL;
@@ -2770,52 +2760,6 @@ void AliReconstruction::FillRawDataErrorLog(Int_t iEvent, AliESDEvent* esd)
 
 }
 
-TNamed* AliReconstruction::CopyFileToTNamed(TString fPath,TString pName){
-  // Dump a file content into a char in TNamed
-  ifstream in;
-  in.open(fPath.Data(),ios::in | ios::binary|ios::ate);
-  Int_t kBytes = (Int_t)in.tellg();
-  printf("Size: %d \n",kBytes);
-  TNamed *fn = 0;
-  if(in.good()){
-    char* memblock = new char [kBytes];
-    in.seekg (0, ios::beg);
-    in.read (memblock, kBytes);
-    in.close();
-    TString fData(memblock,kBytes);
-    fn = new TNamed(pName,fData);
-    printf("fData Size: %d \n",fData.Sizeof());
-    printf("pName Size: %d \n",pName.Sizeof());
-    printf("fn    Size: %d \n",fn->Sizeof());
-    delete[] memblock;
-  }
-  else{
-    AliInfo(Form("Could not Open %s\n",fPath.Data()));
-  }
-
-  return fn;
-}
-
-void AliReconstruction::TNamedToFile(TTree* fTree, TString pName){
-  // This is not really needed in AliReconstruction at the moment
-  // but can serve as a template
-
-  TList *fList = fTree->GetUserInfo();
-  TNamed *fn = (TNamed*)fList->FindObject(pName.Data());
-  printf("fn Size: %d \n",fn->Sizeof());
-
-  TString fTmp(fn->GetName()); // to be 100% sure in principle pName also works
-  const char* cdata = fn->GetTitle();
-  printf("fTmp Size %d\n",fTmp.Sizeof());
-
-  int size = fn->Sizeof()-fTmp.Sizeof()-sizeof(UChar_t)-sizeof(Int_t); // see dfinition of TString::SizeOf()...
-  printf("calculated size %d\n",size);
-  ofstream out(pName.Data(),ios::out | ios::binary);
-  out.write(cdata,size);
-  out.close();
-
-}
-  
 //_____________________________________________________________________________
 void AliReconstruction::CheckQA()
 {
@@ -2859,7 +2803,7 @@ Int_t AliReconstruction::GetDetIndex(const char* detector)
 {
   // return the detector index corresponding to detector
   Int_t index = -1 ; 
-  for (index = 0; index < fgkNDetectors ; index++) {
+  for (index = 0; index < kNDetectors ; index++) {
     if ( strcmp(detector, fgkDetectorName[index]) == 0 )
 	break ; 
   }	
@@ -2879,7 +2823,7 @@ Bool_t AliReconstruction::FinishPlaneEff() {
  //  Return: kTRUE if all operations have been done properly, kFALSE otherwise
  //
  Bool_t ret=kFALSE;
- //for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
+ //for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
  for (Int_t iDet = 0; iDet < 1; iDet++) { // for the time being only ITS
    //if (!IsSelected(fgkDetectorName[iDet], detStr)) continue;
    if(fTracker[iDet]) {
@@ -3005,7 +2949,7 @@ Bool_t AliReconstruction::InitRecoParams()
   Bool_t isOK = kTRUE;
 
   TString detStr = fLoadCDB;
-  for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
+  for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
 
     if (!IsSelected(fgkDetectorName[iDet], detStr)) continue;
 

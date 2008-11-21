@@ -42,7 +42,7 @@
 
 ClassImp(AliReconstructor)
 
-const AliDetectorRecoParam* AliReconstructor::fgRecoParam[AliReconstruction::fgkNDetectors] = {NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL};
+const AliDetectorRecoParam* AliReconstructor::fgRecoParam[AliReconstruction::kNDetectors] = {NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL};
 
 //_____________________________________________________________________________
 void AliReconstructor::ConvertDigits(AliRawReader* /*rawReader*/, 
@@ -126,7 +126,7 @@ const AliDetectorRecoParam* AliReconstructor::GetRecoParam(Int_t iDet)
 {
   // Get the current reconstruciton parameters
   // for a given detector 
-  if (iDet >= 0 && iDet < AliReconstruction::fgkNDetectors)
+  if (iDet >= 0 && iDet < AliReconstruction::kNDetectors)
     return fgRecoParam[iDet];
   else {
     AliErrorClass(Form("Invalid detector index (%d)",iDet));

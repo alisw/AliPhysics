@@ -75,9 +75,6 @@ public:
   void           SetLoadAlignFromCDB(Bool_t load)  {fLoadAlignFromCDB = load;};
   void           SetLoadAlignData(const char* detectors) 
     {fLoadAlignData = detectors;};
-  void           SetESDParLocation(const char *c){fESDPar = c;}
-  TNamed *CopyFileToTNamed(TString fPath,TString fName);
-  void  TNamedToFile(TTree* fTree, TString fName);
 
   //*** Magnetic field setters
   void SetUniformFieldTracking(Bool_t flag=kTRUE){fUniformField=flag;} 
@@ -136,7 +133,7 @@ public:
   }
 
   // Trackers
-  AliTracker* GetTracker(Int_t idx) { return fTracker[idx]; }
+  AliTracker* GetTracker(Int_t idx) const { return fTracker[idx]; }
   Bool_t      CreateTrackers(const TString& detectors);
   void        ImportRunLoader(AliRunLoader* rl) { fRunLoader = rl; }
 
@@ -150,7 +147,7 @@ public:
   void    SetRunPlaneEff(Bool_t flag=kFALSE)  {fRunPlaneEff = flag;}
 
   enum {
-    fgkNDetectors = 15   // number of detectors
+    kNDetectors = 15   // number of detectors
   };
   static Int_t   GetDetIndex(const char * detector);
 
@@ -238,7 +235,6 @@ private:
   TObjArray      fOptions;            // options for reconstructor objects
   Bool_t         fLoadAlignFromCDB;   // Load alignment data from CDB and apply it to geometry or not
   TString        fLoadAlignData;      // Load alignment data from CDB for these detectors
-  TString        fESDPar;             // String where the esd.par is stored, will be attached to the tree         
   TString        fUseHLTData;        // Detectors for which the HLT data is used as input
   AliRunInfo*    fRunInfo;            // an object which contains essential global conditions information
   AliEventInfo   fEventInfo;          // an object which contains essential event information
@@ -247,12 +243,12 @@ private:
   AliRawReader*  fRawReader;          //! current raw data reader
   AliRawReader*  fParentRawReader;    //! parent raw data reader in case of AliRawReaderHLT
 
-  static const char* fgkDetectorName[fgkNDetectors]; //! names of detectors
-  AliReconstructor*  fReconstructor[fgkNDetectors];  //! array of reconstructor objects
+  static const char* fgkDetectorName[kNDetectors]; //! names of detectors
+  AliReconstructor*  fReconstructor[kNDetectors];  //! array of reconstructor objects
   AliRecoParam   fRecoParam;                      // container for the reco-param objects for detectors
-  AliLoader*     fLoader[fgkNDetectors];   //! detector loaders
+  AliLoader*     fLoader[kNDetectors];   //! detector loaders
   AliVertexer*   fVertexer;                //! vertexer for ITS
-  AliTracker*    fTracker[fgkNDetectors];  //! trackers
+  AliTracker*    fTracker[kNDetectors];  //! trackers
   AliESDVertex*  fDiamondProfileSPD;       // (x,y) diamond profile from SPD for AliITSVertexer3D(Z)
   AliESDVertex*  fDiamondProfile;          // (x,y) diamond profile for AliVertexerTracks (ITS+TPC)
   AliESDVertex*  fDiamondProfileTPC;       // (x,y) diamond profile from TPC for AliVertexerTracks
@@ -292,7 +288,7 @@ private:
 
   TTree*              fChain;      //! The raw-data chain in case of AliRawReaderChain
 
-  ClassDef(AliReconstruction, 28)      // class for running the reconstruction
+  ClassDef(AliReconstruction, 29)      // class for running the reconstruction
 };
 
 #endif
