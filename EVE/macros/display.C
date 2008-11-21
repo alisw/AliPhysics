@@ -33,7 +33,7 @@ public:
       fHasRaw(kFALSE),
       fHasESD(kFALSE)
   {
-    AliEveEventManager::SetCdbUri("local://$ALICE_ROOT");
+    AliEveEventManager::SetCdbUri(TString("local://$ALICE_ROOT"));
     LoadMacros();
     Setup(file, false);
     SetupSelect();
@@ -172,11 +172,11 @@ public:
     
     if (fileName.Contains("ESD")) { 
       std::cout << "Adding ESD file " << fileName << std::endl;
-      AliEveEventManager::SetESDFileName(fileName.Data());
+      AliEveEventManager::SetESDFileName(fileName);
     }
     else if (fileName.EndsWith(".root") || fileName.EndsWith(".raw")) { 
       std::cout << "Adding raw file " << fileName << std::endl;
-      AliEveEventManager::SetRawFileName(fileName.Data());
+      AliEveEventManager::SetRawFileName(fileName);
     }
     else if (fileName.IsNull()) { 
       std::cout << "No file given!" << std::endl;
@@ -192,7 +192,8 @@ public:
     
     if (AliEveEventManager::GetMaster()) delete AliEveEventManager::GetMaster();
     TString eventName("Event"); // CINT has trouble with direct "Event".
-    AliEveEventManager::GetMaster() = new AliEveEventManager(eventName, dirName, 0);
+    /* AliEveEventManager::GetMaster() =*/
+    new AliEveEventManager(eventName, dirName, 0);
     gEve->AddEvent(AliEveEventManager::GetMaster());
     
     if (refresh) Refresh();
@@ -317,7 +318,7 @@ public:
   {
     std::cout << "Drawing ... " << std::flush;
     RefreshOne(fEnableTracks, fHasTracks, "tracks");
-    RefreshOne(fEnableHits,   fHasHits,   "hits2");
+    RefreshOne(fEnableHits,   fHasHits,   "hits");
     RefreshOne(fEnableDigits, fHasDigits, "digits");
     RefreshOne(fEnableRaw,    fHasRaw,    "raw");
     RefreshOne(fEnableESD,    fHasESD,    "esd");
@@ -386,6 +387,9 @@ Display* Display::fgInstance = 0;
 Display* display(const char* file="")
 {
   // TGeoManager::Import(geom);
+  // AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+  // AliCDBManager::Instance()->SetRun(0);
+  // AliGeomManager::LoadGeometry("geometry.root");
 
   Display* d = Display::Instance(file);
   return d;
