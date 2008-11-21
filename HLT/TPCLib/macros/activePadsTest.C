@@ -90,7 +90,7 @@ void activePadsTest(const char* input="./"){
       int ddlno=768;
       if (part>1) ddlno+=72+4*slice+(part-2);
       else ddlno+=2*slice+part;
-      arg.Form("-minid %d -datatype 'DDL_RAW ' 'TPC '  -dataspec 0x%02x%02x%02x%02x", ddlno, slice, slice, part, part);
+      arg.Form("-minid %d -datatype 'DDL_RAW ' 'TPC '  -dataspec 0x%02x%02x%02x%02x -verbose", ddlno, slice, slice, part, part);
 
       publisher.Form("DP_%02d_%d", slice, part);
       AliHLTConfiguration pubconf(publisher.Data(), "AliRawReaderPublisher", NULL , arg.Data());

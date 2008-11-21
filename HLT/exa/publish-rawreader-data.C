@@ -60,7 +60,7 @@ void publish_rawreader_data(const char* input, int iMinDDLno, int iMaxDDLno)
   TString writerInput;
   TString arg;
 
-  arg.Form("-minid %d -maxid %d -skipempty", iMinDDLno, iMaxDDLno);
+  arg.Form("-minid %d -maxid %d -skipempty -verbose", iMinDDLno, iMaxDDLno);
   AliHLTConfiguration pubconf("publisher", "AliRawReaderPublisher", NULL , arg.Data());
   if (!writerInput.IsNull()) writerInput+=" ";
   writerInput+="publisher";

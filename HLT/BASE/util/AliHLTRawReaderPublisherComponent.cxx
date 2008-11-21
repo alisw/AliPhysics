@@ -45,7 +45,7 @@ AliHLTRawReaderPublisherComponent::AliHLTRawReaderPublisherComponent()
   fDetector(),
   fMinEquId(-1),
   fMaxEquId(-1),
-  fVerbosity(1),
+  fVerbosity(0),
   fDataType(kAliHLTVoidDataType),
   fSpecification(kAliHLTVoidDataSpec),
   fSkipEmpty(kFALSE)
@@ -131,7 +131,7 @@ int AliHLTRawReaderPublisherComponent::DoInit( int argc, const char** argv )
 
       // -verbose
     } else if (argument.CompareTo("-verbose")==0) {
-      fVerbosity=2;
+      fVerbosity++;
 
       // -silent
     } else if (argument.CompareTo("-silent")==0) {

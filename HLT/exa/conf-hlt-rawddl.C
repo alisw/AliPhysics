@@ -23,7 +23,7 @@
 
   // publisher configuration
   // see AliHLTRawReaderPublisherComponent for details
-  arg.Form("-detector ITSSDD -skipempty -datatype 'DDL_RAW ' 'SMPL'");
+  arg.Form("-detector ITSSDD -skipempty -datatype 'DDL_RAW ' 'SMPL' -verbose");
   AliHLTConfiguration pubconf("publisher", "AliRawReaderPublisher", NULL , arg.Data());
   if (!writerInput.IsNull()) writerInput+=" ";
   writerInput+="publisher";

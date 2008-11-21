@@ -84,7 +84,7 @@ void extract_ddlraw(const char* input, int iMinDDLno, int iMaxDDLno)
       TString arg, publisher;
 
       // raw data publisher components
-      arg.Form("-minid %d -skipempty", ddlno);
+      arg.Form("-minid %d -skipempty -verbose", ddlno);
       publisher.Form("DP_%d", ddlno);
       // see AliHLTRawReaderPublisherComponent
       AliHLTConfiguration pubconf(publisher.Data(), "AliRawReaderPublisher", NULL , arg.Data());
@@ -95,7 +95,7 @@ void extract_ddlraw(const char* input, int iMinDDLno, int iMaxDDLno)
   } else {
     // publish all ddls by the same component, this is much more
     // effective as it avoids repeated parsing through the data
-    arg.Form("-minid %d -maxid %d -skipempty", iMinDDLno, iMaxDDLno);
+    arg.Form("-minid %d -maxid %d -skipempty -verbose", iMinDDLno, iMaxDDLno);
     // see AliHLTRawReaderPublisherComponent
     AliHLTConfiguration pubconf("publisher", "AliRawReaderPublisher", NULL , arg.Data());
     if (!writerInput.IsNull()) writerInput+=" ";

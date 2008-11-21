@@ -78,7 +78,7 @@ void cal_hlt_tpc_offline(const char* input="./")
 
       // raw data publisher components
       int ddlno=DDLNoFromSlicePatch(slice, part);
-      arg.Form("-minid %d -datatype 'DDL_RAW ' 'TPC '  -dataspec 0x%02x%02x%02x%02x", ddlno, slice, slice, part, part);
+      arg.Form("-minid %d -datatype 'DDL_RAW ' 'TPC '  -dataspec 0x%02x%02x%02x%02x -verbose", ddlno, slice, slice, part, part);
       publisher.Form("DP_%02d_%d", slice, part);
       AliHLTConfiguration pubconf(publisher.Data(), "AliRawReaderPublisher", NULL , arg.Data());
 

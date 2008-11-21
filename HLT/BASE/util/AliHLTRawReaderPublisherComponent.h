@@ -52,7 +52,8 @@
  * <h2>Optional arguments:</h2>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
  * \li -verbose<br>
- *      print out some more info messages, mainly for the sake of tutorials
+ *      print out some more info messages, mainly for the sake of tutorials,
+ *      repetitive arguments increase the level each
  * \li -silent<br>
  *      suppress all info messages
  * \li -skipempty
