@@ -12,8 +12,10 @@ void sim(Int_t nev=50) {
   if (strcmp(gSystem->GetBuildArch(),"win32gcc")) {
     simulator.SetWriteRawData("ALL","raw.root",kTRUE);
   }
-  simulator.SetRunHLT("");
-  simulator.SetRunQA(":");
+
+  simulator.SetDefaultStorage("local://$ALICE_ROOT");
+  simulator.SetSpecificStorage("GRP/GRP/Data",
+			       Form("local://%s",gSystem->pwd()));
  
   TStopwatch timer;
   timer.Start();
