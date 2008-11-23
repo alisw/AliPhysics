@@ -576,7 +576,7 @@ AliHLTOUT* AliHLTOUT::New(const char* classname)
   ROOT::NewFunc_t pNewFunc=NULL;
   do {
     pCl=TClass::GetClass(classname);
-  } while (!pCl && (iLibResult=gSystem->Load("libHLTRec.so"))==0);
+  } while (!pCl && (iLibResult=gSystem->Load("libHLTrec.so"))==0);
   if (iLibResult>=0) {
     if (pCl && (pNewFunc=pCl->GetNew())!=NULL) {
       void* p=(*pNewFunc)(NULL);
