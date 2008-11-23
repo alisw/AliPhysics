@@ -1,0 +1,35 @@
+#-*- Mode: Makefile -*-
+# $Id$
+
+CLASS_HDRS:=  	AliHLTTPCEVE.h
+
+MODULE_SRCS= 	$(CLASS_HDRS:.h=.cxx)
+
+MODULE_HDRS:= 	$(CLASS_HDRS)
+
+MODULE_DHDR:=
+
+EINCLUDE 	:= HLT/TPCLib \
+		   HLT/TPCLib/offline \
+		   HLT/BASE \
+		   EVE
+
+LIBRARY_DEP := -lHLTbase -lAliHLTTPC
+
+###############################################################################
+#
+# do not change anything below this line
+#
+include $(MODDIR)/hlt.conf
+
+SRCS:=$(patsubst %,TPCLib/EVE/%,$(MODULE_SRCS))
+CINTHDRS:=$(patsubst %,TPCLib/EVE/%,$(CLASS_HDRS))
+HDRS:=$(patsubst %,TPCLib/EVE/%,$(MODULE_HDRS))
+DHDR:=$(patsubst %,TPCLib/EVE/%,$(MODULE_DHDR))
+CINTAUTOLINK:= $(shell test "x$(MODULE_DHDR)" = "x" && echo 1)
+
+EDEFINE      := ${HLTDEFS}
+PACKCXXFLAGS := ${HLTCXXFLAGS}
+PACKCFLAGS   := ${HLTCLFAGS}
+PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
+PACKSOFLAGS  := $(HLTSOFLAGS)

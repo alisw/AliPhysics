@@ -1152,6 +1152,7 @@ if test "x$enable_tpc" = "xyes"; then
 		   TPCLib/test/Makefile	      
 		   TPCLib/mapping2array.cxx     
 		   TPCLib/OnlineDisplay/Makefile
+		   TPCLib/EVE/Makefile
 		   ])
 fi
 

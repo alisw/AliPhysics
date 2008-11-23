@@ -69,7 +69,7 @@ CLEANFILES			= $(COMPILE_INFO) \
 
 include $(top_srcdir)/make.dict
 
-SUBDIRS 			= . test OnlineDisplay
+SUBDIRS 			= . test EVE OnlineDisplay
 
 $(TPC_MAPPING_INC): $(TPC_MAPPING_NOINST_PGM)
 	./$<
