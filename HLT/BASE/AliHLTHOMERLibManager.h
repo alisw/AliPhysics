@@ -54,9 +54,11 @@ class AliHLTHOMERWriter;
  * manager.DeleteReader(pReader);
  * </pre>
  *
- * The manager does not not provide methods to create a HOMER reader on
+ * The manager does not provide methods to create a HOMER reader on
  * basis of shared memory. This is most likely a depricated functionality,
- * although kept for the sake of completeness.
+ * although kept for the sake of completeness. However, at some point it
+ * might become useful. Please notify the developers if you need that
+ * functionality.
  *
  * @ingroup alihlt_homer
  */

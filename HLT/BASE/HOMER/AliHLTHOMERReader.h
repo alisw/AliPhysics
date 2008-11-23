@@ -167,49 +167,49 @@ class AliHLTHOMERReader: public AliHLTMonitoringReader
 		}
 
 	/* Defined in AliHLTMonitoringReader */
-	/* Read in the next available event */
+	/** Read in the next available event */
 	virtual int  ReadNextEvent();
-	/* Read in the next available event */
+	/** Read in the next available event */
 	virtual int ReadNextEvent( unsigned long timeout );
 
-	/* Return the type of the current event */
+	/** Return the type of the current event */
 	virtual homer_uint64 GetEventType() const
 		{
 		return fCurrentEventType;
 		}
 
-	/* Return the ID of the current event */
+	/** Return the ID of the current event */
 	virtual homer_uint64 GetEventID() const
 		{
 		return fCurrentEventID;
 		}
 
-	/* Return the number of data blocks in the current event */
+	/** Return the number of data blocks in the current event */
 	virtual unsigned long GetBlockCnt() const
 		{
 		return fBlockCnt;
 		}
 
-	/* Return the size (in bytes) of the current event's data
+	/** Return a pointer to the start of the current event's data
 	   block with the given block index (starting at 0). */
 	virtual const void* GetBlockData( unsigned long ndx ) const;
-	/* Return a pointer to the start of the current event's data
+	/** Return the size (in bytes) of the current event's data
 	   block with the given block index (starting at 0). */
 	virtual unsigned long GetBlockDataLength( unsigned long ndx ) const;
-	/* Return IP address or hostname of node which sent the 
+	/** Return IP address or hostname of node which sent the 
 	   current event's data block with the given block index 
 	   (starting at 0).
 	   For HOMER this is the ID of the node on which the subscriber 
 	   that provided this data runs/ran. */
 	virtual const char* GetBlockSendNodeID( unsigned long ndx ) const;
-	/* Return byte order of the data stored in the 
+	/** Return byte order of the data stored in the 
 	   current event's data block with the given block 
 	   index (starting at 0). 
 	   0 is unknown alignment, 
 	   1 ist little endian, 
 	   2 is big endian. */
 	virtual homer_uint8 GetBlockByteOrder( unsigned long ndx ) const;
-	/* Return the alignment (in bytes) of the given datatype 
+	/** Return the alignment (in bytes) of the given datatype 
 	   in the data stored in the current event's data block
 	   with the given block index (starting at 0). 
 	   Possible values for the data type are
@@ -225,29 +225,29 @@ class AliHLTHOMERReader: public AliHLTMonitoringReader
 	virtual homer_uint64 GetBlockStatusFlags( unsigned long ndx ) const;
 
 	/* HOMER specific */
-	/* Return the type of the data in the current event's data
+	/** Return the type of the data in the current event's data
 	   block with the given block index (starting at 0). */
 	homer_uint64 GetBlockDataType( unsigned long ndx ) const;
-	/* Return the origin of the data in the current event's data
+	/** Return the origin of the data in the current event's data
 	   block with the given block index (starting at 0). */
 	homer_uint32 GetBlockDataOrigin( unsigned long ndx ) const;
-	/* Return a specification of the data in the current event's data
+	/** Return a specification of the data in the current event's data
 	   block with the given block index (starting at 0). */
 	homer_uint32 GetBlockDataSpec( unsigned long ndx ) const;
 
-	/* Find the next data block in the current event with the given
+	/** Find the next data block in the current event with the given
 	   data type, origin, and specification. Returns the block's 
 	   index. */
 	unsigned long FindBlockNdx( homer_uint64 type, homer_uint32 origin, 
 				    homer_uint32 spec, unsigned long startNdx=0 ) const;
 
-	/* Find the next data block in the current event with the given
+	/** Find the next data block in the current event with the given
 	   data type, origin, and specification. Returns the block's 
 	   index. */
 	unsigned long FindBlockNdx( char type[8], char origin[4], 
 				    homer_uint32 spec, unsigned long startNdx=0 ) const;
 	
-	/* Return the ID of the node that actually produced this data block.
+	/** Return the ID of the node that actually produced this data block.
 	   This may be different from the node which sent the data to this
 	   monitoring object as returned by GetBlockSendNodeID. */
 	const char* GetBlockCreateNodeID( unsigned long ndx ) const;
