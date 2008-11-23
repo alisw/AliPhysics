@@ -34,9 +34,7 @@
   sim.SetMakeTrigger("");
 
   // set the options for the HLT simulation
-  //sim.SetRunHLT("libAliHLTUtil.so libAliHLTTPC.so loglevel=0x7c "
-  //              "config=$ALICE_ROOT/HLT/TPCLib/macros/conf-tpc-writer.C chains=sink1");
   sim.SetRunHLT("libAliHLTUtil.so libAliHLTTPC.so loglevel=0x7c "
-		"config=$ALICE_ROOT/HLT/TPCLib/macros/conf-tpc-esd.C chains=sink1");
+		"config=$ALICE_ROOT/HLT/TPCLib/macros/conf-tpc-esd.C chains=sink-esd,sink-clusters");
   sim.Run();
 }

@@ -120,6 +120,7 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
     int iMinPart=0;
     int iMaxPart=5;
     TString mergerInput;
+    TString sinkClusterInput;
     for (int slice=iMinSlice; slice<=iMaxSlice; slice++) {
       TString trackerInput;
       for (int part=iMinPart; part<=iMaxPart; part++) {
@@ -152,6 +153,8 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
 	}
 	if (trackerInput.Length()>0) trackerInput+=" ";
 	trackerInput+=cf;
+	if (sinkClusterInput.Length()>0) sinkClusterInput+=" ";
+	sinkClusterInput+=cf;
       }
       TString tracker;
       // tracker finder components
@@ -168,6 +171,9 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
 
     // the esd converter configuration
     handler->CreateConfiguration("TPC-esd-converter", "TPCEsdConverter"   , "TPC-globalmerger", "");
+
+    // cluster dump collection
+    handler->CreateConfiguration("TPC-clusters", "BlockFilter"   , sinkClusterInput.Data(), "-datatype 'CLUSTERS' 'TPC '");
 
     /////////////////////////////////////////////////////////////////////////////////////
     //
@@ -206,7 +212,7 @@ const char* AliHLTTPCAgent::GetReconstructionChains(AliRawReader* /*rawReader*/,
     // Note: run loader is only available while running embedded into
     // AliRoot simulation
     if (runloader->GetLoader("TPCLoader") != NULL)
-      return "TPC-esd-converter";
+      return "TPC-esd-converter TPC-clusters";
   }
   return NULL;
 }
@@ -286,6 +292,12 @@ int AliHLTTPCAgent::GetHandlerDescription(AliHLTComponentDataType dt,
 		 part, AliHLTTPCDefinitions::GetMaxPatchNr(spec));
       return 0;
     }
+  }
+
+  // dump for {'CLUSTERS':'TPC '} currently not used any more
+  if (dt==AliHLTTPCDefinitions::fgkClustersDataType) {
+      desc=AliHLTOUTHandlerDesc(kProprietary, dt, GetModuleId());
+      return 1;
   }
 
   // afterburner for {'TRAKSEGS':'TPC '} blocks to be converted to ESD format
