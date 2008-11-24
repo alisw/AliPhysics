@@ -13,22 +13,30 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+//-----------------------------------------------------------------------------
+/// \class AliAnalysisTaskSingleMu
+/// Analysis task for single muons in the spectrometer.
+/// The output is a tree with:
+///  - pt, y and phi of the muon
+///  - z position of primary vertex
+///  - transverse distance at vertex (DCA)
+///  - matched trigger
+///
+/// \author Diego Stocco
+//-----------------------------------------------------------------------------
+
 //----------------------------------------------------------------------------
 //    Implementation of the single muon analysis class
-// An example of usage can be found in the macro runSingleMuAnalysis.C.
+// An example of usage can be found in the macro RunSingleMuAnalysisFromAOD.C.
 //----------------------------------------------------------------------------
 
 #define AliAnalysisTaskSingleMu_cxx
 
 // ROOT includes
-#include "Riostream.h"
 #include "TChain.h"
-#include "TH1.h"
-#include "TCanvas.h"
-#include "TSystem.h"
 #include "TROOT.h"
-#include "TParticle.h"
 #include "TLorentzVector.h"
+#include "TCanvas.h"
 
 // STEER includes
 #include "AliLog.h"
@@ -43,22 +51,28 @@
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTaskSingleMu.h"
 
-ClassImp(AliAnalysisTaskSingleMu)
+/// \cond CLASSIMP
+ClassImp(AliAnalysisTaskSingleMu) // Class implementation in ROOT context
+/// \endcond
 
 //________________________________________________________________________
 AliAnalysisTaskSingleMu::AliAnalysisTaskSingleMu(const char *name) :
   AliAnalysisTask(name,""), 
   fAOD(0),
-  fOutputContainer(0)
+  fResults(0),
+  fVarFloat(0),
+  fVarInt(0),
+  fFloatVarName(0),
+  fIntVarName(0)
 {
   //
   /// Constructor.
   //
-  ResetHistos();
+  InitVariables();
   // Input slot #0 works with an Ntuple
   DefineInput(0, TChain::Class());
-  // Output slot #0 writes into a TObjArray container
-  DefineOutput(0,  TObjArray::Class());
+  // Output slot #0 writes into a TTree container
+  DefineOutput(0,  TTree::Class());
 }
 
 //___________________________________________________________________________
@@ -86,7 +100,7 @@ void AliAnalysisTaskSingleMu::ConnectInputData(Option_t *)
       Printf("ERROR: Could not get AODInputHandler");
     } else
       printf("   ConnectInputData of task %s\n", GetName());
-      fAOD = aodH->GetEvent();
+    fAOD = aodH->GetEvent();
   }
 }
 
@@ -98,34 +112,23 @@ void AliAnalysisTaskSingleMu::CreateOutputObjects()
   //
   printf("   CreateOutputObjects of task %s\n", GetName());
 
-  Int_t ptBins = 60;
-  Float_t ptLow = 0., ptHigh = 30.;
-  const Char_t *ptName = "P_{t} (GeV/c)";
+  // initialize tree
+  if(!fResults) fResults = new TTree("Results", "Single mu selection results");
 
-  Int_t vzBins = 40;
-  Float_t vzLow = -20., vzHigh = 20.;
-  const Char_t *vzName = "Vz (cm)";
+  TString baseName, suffixName;
 
-  TString baseName, histoName;
-  fOutputContainer = new TObjArray(fgkNhistos*fgkNTrigCuts);
-  fOutputContainer->SetName("SingleMuAnalysisContainer");
-  Int_t iHisto = 0;
+  suffixName="/F";
+  for(Int_t iVar=0; iVar<kNfloatVars; iVar++){
+    baseName = fFloatVarName[iVar];
+    if(iVar==0) baseName += suffixName;
+    fResults->Branch(fFloatVarName[iVar].Data(), &fVarFloat[iVar], baseName.Data());
+  }
 
-  for(Int_t iTrig=0; iTrig<fgkNTrigCuts; iTrig++){
-    
-    // 2D histos
-    if(!fVzVsPt[iTrig]){
-      baseName = "fVzVsPt";
-      histoName = baseName + trigName[iTrig];
-      fVzVsPt[iTrig] = new TH2F(histoName, histoName,
-				ptBins, ptLow, ptHigh,
-				vzBins, vzLow, vzHigh);
-      fVzVsPt[iTrig]->GetXaxis()->SetTitle(ptName);
-      fVzVsPt[iTrig]->GetYaxis()->SetTitle(vzName);
-
-      fOutputContainer->AddAt(fVzVsPt[iTrig], iHisto);
-      iHisto++;
-    }
+  suffixName="/I";
+  for(Int_t iVar=0; iVar<kNintVars; iVar++){
+    baseName = fIntVarName[iVar];
+    if(iVar==0) baseName += suffixName;
+    fResults->Branch(fIntVarName[iVar].Data(), &fVarInt[iVar], baseName.Data());
   }
 }
 
@@ -148,23 +151,18 @@ void AliAnalysisTaskSingleMu::Exec(Option_t *)
 
   // Object declaration
   AliAODTrack *muonTrack = 0x0;
-  TLorentzVector lorVec;
-  Int_t trigMatch = -1;
 
   Int_t nTracks = fAOD->GetNumberOfTracks();
   for (Int_t itrack = 0; itrack < nTracks; itrack++) {
     muonTrack = fAOD->GetTrack(itrack);
 
     // Apply cuts
-    if(!MuonPassesCuts(*muonTrack, lorVec, trigMatch)) continue;
-
-    for(Int_t iTrig=0; iTrig<=trigMatch; iTrig++){
-      fVzVsPt[iTrig]->Fill(lorVec.Pt(), fAOD->GetPrimaryVertex()->GetZ());
-    }
+    if(!FillTrackVariables(*muonTrack)) continue;
+    fResults->Fill();
   }
 
   // Post final data. It will be written to a file with option "RECREATE"
-  PostData(0, fOutputContainer);
+  PostData(0, fResults);
 }
 
 //________________________________________________________________________
@@ -176,51 +174,46 @@ void AliAnalysisTaskSingleMu::Terminate(Option_t *) {
     TCanvas *c1 = new TCanvas("c1","Vz vs Pt",10,10,310,310);
     c1->SetFillColor(10); c1->SetHighLightColor(10);
     c1->SetLeftMargin(0.15); c1->SetBottomMargin(0.15);  
-    c1->Divide(2,2);
-    for(Int_t iTrig=0; iTrig<fgkNTrigCuts; iTrig++){
-      c1->cd(iTrig+1);
-      fVzVsPt[iTrig]->DrawCopy("COLZ");
-    }
+    fResults->Draw("pt:vz","","COLZ");
   }
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskSingleMu::ResetHistos() 
+void AliAnalysisTaskSingleMu::InitVariables() 
 {
   //
   /// Reset histograms
   //
-  for(Int_t iTrig=0; iTrig<fgkNTrigCuts; iTrig++){
-    fVzVsPt[iTrig] = 0x0;
-  }
-  trigName[kNoMatchTrig] = "NoMatchTrig";
-  trigName[kAllPtTrig]   = "AllPtTrig";
-  trigName[kLowPtTrig]   = "LowPtTrig";
-  trigName[kHighPtTrig]  = "HighPtTrig";
+
+  fVarFloat = new Float_t[kNfloatVars];
+  fVarInt = new Int_t[kNintVars];
+
+  fFloatVarName = new TString[kNfloatVars];
+  fFloatVarName[kVarPt]     = "pt";
+  fFloatVarName[kVarY]      = "y";
+  fFloatVarName[kVarPhi]    = "phi";
+  fFloatVarName[kVarVz]     = "vz";
+  fFloatVarName[kVarDCA]    = "dca";
+
+  fIntVarName = new TString[kNintVars];
+  fIntVarName[kVarTrig]     = "matchTrig";
 }
 
 
 //________________________________________________________________________
-Bool_t AliAnalysisTaskSingleMu::MuonPassesCuts(AliAODTrack &muonTrack,
-					       TLorentzVector &lorVec,
-					       Int_t &trigMatch)
+Bool_t AliAnalysisTaskSingleMu::FillTrackVariables(AliAODTrack &muonTrack)
 {
   //
   /// Fill lorentz vector and check cuts
   //
 
+  TLorentzVector lorVec;
+
   // Check if track is a muon
   if(muonTrack.GetMostProbablePID()!=AliAODTrack::kMuon) return kFALSE;
 
   // Check if track is triggered
-  trigMatch = kNoMatchTrig;
-  if (muonTrack.MatchTriggerHighPt()) {
-    trigMatch = kHighPtTrig;
-  } else if (muonTrack.MatchTriggerLowPt()) {
-    trigMatch = kLowPtTrig;
-  } else if (muonTrack.MatchTriggerAnyPt()){
-    trigMatch = kAllPtTrig;
-  }
+  fVarInt[kVarTrig] = (muonTrack.GetMatchTrigger() && 0x3);
   
   // Fill track parameters
   Double_t px = muonTrack.Px();
@@ -232,6 +225,17 @@ Bool_t AliAnalysisTaskSingleMu::MuonPassesCuts(AliAODTrack &muonTrack,
 
   Double_t energy = TMath::Sqrt(p*p + kMuonMass*kMuonMass);
   lorVec.SetPxPyPzE(px,py,pz,energy);
+
+  fVarFloat[kVarPt]  = lorVec.Pt();
+  fVarFloat[kVarY]   = lorVec.Rapidity();
+  fVarFloat[kVarPhi] = lorVec.Phi();
+
+  fVarFloat[kVarVz] = fAOD->GetPrimaryVertex()->GetZ();
+
+  Double_t xDca = muonTrack.XAtDCA();
+  Double_t yDca = muonTrack.YAtDCA();
+
+  fVarFloat[kVarDCA] = TMath::Sqrt(xDca*xDca + yDca*yDca);
 
   return kTRUE;
 }
