@@ -5,13 +5,9 @@ PHOS/AliHLTPHOSBase.cxx
 PHOS/AliHLTPHOSClusterizer.cxx
 PHOS/AliHLTPHOSClusterizerComponent.cxx
 PHOS/AliHLTPHOSDataCorruptor.cxx
-PHOS/AliHLTPHOSDataQualityMonitor.cxx
 PHOS/AliHLTPHOSDefinitions.cxx
 PHOS/AliHLTPHOSEmcCalibData.cxx
 PHOS/AliHLTPHOSPhysicsAnalyzer.cxx
-PHOS/AliHLTPHOSPhysicsAnalyzerPeakFitter.cxx
-PHOS/AliHLTPHOSPhysicsAnalyzerSpectrum.cxx
-PHOS/AliHLTPHOSPhysicsAnalyzerSpectrumComponent.cxx
 PHOS/AliHLTPHOSProcessor.cxx
 PHOS/AliHLTPHOSPulseGenerator.cxx
 PHOS/AliHLTPHOSRawAnalyzer.cxx
@@ -31,10 +27,6 @@ PHOS/AliHLTPHOSRawAnalyzerPeakFinder.cxx
 PHOS/AliHLTPHOSSanityInspector.cxx
 PHOS/AliHLTPHOSDigitMaker.cxx
 PHOS/AliHLTPHOSDigitMakerComponent.cxx
-PHOS/AliHLTPHOSDigit.cxx
-PHOS/AliHLTPHOSBaselineAnalyzer.cxx
-PHOS/AliHLTPHOSBaselineAnalyzerComponent.cxx
-PHOS/AliHLTPHOSBaseline.cxx
 PHOS/AliHLTPHOSConfig.cxx
 PHOS/AliHLTPHOSAltroConfig.cxx
 PHOS/AliHLTPHOSSharedMemoryInterface.cxx
