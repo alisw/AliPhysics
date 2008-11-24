@@ -132,3 +132,78 @@ To run the check:
 The macro creates the file AODvsESDoutput.root
 It contains an Ntuple from the ESDs and Ntuple from the AODs and an inv. mass histo 
 for each case
+
+===================================================
+ Analysis task for extracting variables from the ESD for single muons
+ Nicole BASTID and Bogdan VULPESCU, Clermont-Ferrand
+----------------------------------------------------------------
+
+Purpose: the output is an ntuple with single muon tracks selected variables; a
+histogram collects the number of events in different trigger classes.
+
+Files:
+
+AliAnalysisTaskSingleMuESD.cxx  - source files of the analysis task
+AliAnalysisTaskSingleMuESD.h
+
+RunSingleMuonAnalysisFromESD.C  - macro to run the analysis (with xml input
+                                  collection and grid connection)
+
+
+How to run:
+
+1. Copy the following packages in the current working directory
+  - STEERBase.par
+  - ESD.par
+  - AOD.par
+  - ANALYSIS.par
+  - ANALYSISalice.par
+  - PWG3muon.par
+
+2. Run root
+
+gROOT->LoadMacro("$ALICE_ROOT/PWG3/muon/RunAnalysis.C");
+setupPar("STEERBase"); 
+setupPar("ESD"); 
+setupPar("AOD"); 
+setupPar("ANALYSIS"); 
+setupPar("ANALYSISalice"); 
+setupPar("PWG3muon");
+
+3. To analyse grid files, provide an XML collection file wn.xml and run
+
+gROOT->LoadMacro("$ALICE_ROOT/PWG3/muon/RunSingleMuonAnalysisFromESD.C");
+RunSingleMuonAnalysisFromESD()
+
+4. To analyse local files, modify RunSingleMuonAnalysisFromESD.C
+
+  } else {
+    chain->Add("/path_1_to/AliESDs.root");
+    chain->Add("/path_2_to/AliESDs.root");
+    chain->Add("/path_3_to/AliESDs.root");
+  }
+
+and run (notice the "1" argument)
+
+gROOT->LoadMacro("$ALICE_ROOT/PWG3/muon/RunSingleMuonAnalysisFromESD.C");
+RunSingleMuonAnalysisFromESD(1)
+
+5. Check the results in SingleMuESD.root
+
+Note: for some older runs (PDC08/LHC08t for instance) it is necessary to force 
+the values of the trigger mask, because the function 
+
+GetFiredTriggerClasses()
+
+from AliESDEvent does not return the proper names of the muon trigger classes.
+So one has to un-comment the line
+
+task->SetTriggerType("MUON");
+
+in the macro RunSingleMuonAnalysisFromESD.C, if the simulation was produced 
+with SetMakeTrigger("MUON")
+
+This bug is fixed starting with the TRUNK from 14.11.2008
+
+
+
