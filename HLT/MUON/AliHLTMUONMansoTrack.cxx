@@ -69,8 +69,14 @@ AliHLTMUONMansoTrack::AliHLTMUONMansoTrack(
 		const AliHLTMUONRecHit* hit10,
 		Float_t zf, Float_t qbl
 	) :
-	fId(id), fSign(sign), fMomentum(px, py, pz),
-	fChi2(chi2), fTrigRec(trigrec), fZmiddle(zf), fQBL(qbl)
+	TObject(),
+	fId(id),
+	fSign(sign),
+	fMomentum(px, py, pz),
+	fChi2(chi2),
+	fTrigRec(trigrec),
+	fZmiddle(zf),
+	fQBL(qbl)
 {
 /// Default constructor.
 /// @param id       The track ID number which must be unique for any event.

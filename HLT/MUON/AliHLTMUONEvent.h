@@ -26,7 +26,7 @@ public:
 	/// AliHLTMUONEvent class contructor.
 	/// \param eventId  The event identifier number for this event. Set to -1 by default.
 	AliHLTMUONEvent(AliHLTEventID_t eventId = AliHLTEventID_t(-1))
-	  : fEventId(eventId), fArray()
+	  : TObject(), fEventId(eventId), fArray()
 	{
 		fArray.SetOwner(kTRUE);
 	}
@@ -93,7 +93,7 @@ private:
 	AliHLTEventID_t fEventId;  ///< The event ID.
 	TObjArray fArray;          ///< Array of event objects.
 	
-	ClassDef(AliHLTMUONEvent, 2); // Container class for dHLT event results.
+	ClassDef(AliHLTMUONEvent, 3); // Container class for dHLT event results.
 };
 
 #endif // ALIHLTMUONEVENT_H

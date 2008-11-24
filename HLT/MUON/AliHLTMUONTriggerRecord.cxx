@@ -62,7 +62,11 @@ AliHLTMUONTriggerRecord::AliHLTMUONTriggerRecord(
 		Float_t px, Float_t py, Float_t pz,
 		Int_t sourceDDL, Float_t zf, Float_t qbl
 	) :
-	fId(id), fSign(sign), fMomentum(px, py, pz), fSourceDDL(sourceDDL),
+	TObject(),
+	fId(id),
+	fSign(sign),
+	fMomentum(px, py, pz),
+	fSourceDDL(sourceDDL),
 	fZmiddle(zf), fQBL(qbl)
 {
 /// Constructor for creating a new trigger record.

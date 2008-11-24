@@ -120,7 +120,7 @@ public:
 		Short_t fSignal;     ///< ADC value of signal.
 		UInt_t fRawDataWord; ///< The raw data word as found in the DDL stream.
 		
-		ClassDef(AliHLTMUONRecHit::AliChannel, 2); // A MANU channel forming part of a cluster that was considered during hit reconstruction in dHLT.
+		ClassDef(AliHLTMUONRecHit::AliChannel, 3); // A MANU channel forming part of a cluster that was considered during hit reconstruction in dHLT.
 	};
 
 	/**
@@ -143,7 +143,7 @@ public:
 			Int_t clusterId = -1,
 			Int_t nChExp = 0
 		) :
-		fCoordinate(x, y, z), fSourceDDL(sourceDDL),
+		TObject(), fCoordinate(x, y, z), fSourceDDL(sourceDDL),
 		fDetElemId(detElemId), fClusterId(clusterId), fNchExp(nChExp),
 		fChannels("AliHLTMUONRecHit::AliChannel", 6)
 	{}
@@ -291,7 +291,7 @@ private:
 	UInt_t fNchExp;    ///< The number of channels that were supposed to be found.
 	TClonesArray fChannels; ///< The channels forming part of the cluster from which this hit was reconstructed.
 
-	ClassDef(AliHLTMUONRecHit, 2); // A reconstructed hit translated from dHLT raw data into ROOT format.
+	ClassDef(AliHLTMUONRecHit, 3); // A reconstructed hit translated from dHLT raw data into ROOT format.
 };
 
 #endif // ALIHLTMUONRECHIT_H

@@ -254,7 +254,7 @@ private:
 	Float_t fZmiddle; ///< Particle momentum X component in GeV/c.
 	Float_t fQBL;     ///< The integrated magnetic field times charge in (T.m) tesla metres.
 		
-	ClassDef(AliHLTMUONTriggerRecord, 2);  // Trigger record object translated from dHLT internal raw data.
+	ClassDef(AliHLTMUONTriggerRecord, 3);  // Trigger record object translated from dHLT internal raw data.
 };
 
 #endif // ALIHLTMUONTRIGGERRECORD_H

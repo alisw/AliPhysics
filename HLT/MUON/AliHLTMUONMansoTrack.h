@@ -191,7 +191,7 @@ private:
 	Float_t fZmiddle; ///< Particle momentum X component in GeV/c.
 	Float_t fQBL;     ///< The integrated magnetic field times charge in (T.m) tesla metres.
 
-	ClassDef(AliHLTMUONMansoTrack, 2); // Manso track object containing data converted from a dHLT internal track structure.
+	ClassDef(AliHLTMUONMansoTrack, 3); // Manso track object containing data converted from a dHLT internal track structure.
 };
 
 #endif // ALIHLTMUONMANSOTRACK_H

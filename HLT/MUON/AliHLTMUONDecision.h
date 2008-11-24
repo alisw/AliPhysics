@@ -73,7 +73,7 @@ public:
 		 * do not take ownership of the track object.
 		 */
 		AliTrackDecision(const AliTrackDecision& obj) :
-			TObject(), fTrack(obj.fTrack), fPt(obj.fPt),
+			TObject(obj), fTrack(obj.fTrack), fPt(obj.fPt),
 			fPassedLowCut(obj.fPassedLowCut), fPassedHighCut(obj.fPassedHighCut)
 		{}
 		
@@ -83,7 +83,9 @@ public:
 		 */
 		const AliTrackDecision& operator = (const AliTrackDecision& obj)
 		{
-			memcpy(this, &obj, sizeof(AliTrackDecision));
+			TObject::operator = (obj);
+			fTrack = obj.fTrack; fPt = obj.fPt;
+			fPassedLowCut = obj.fPassedLowCut; fPassedHighCut = obj.fPassedHighCut;
 			return *this;
 		}
 		
@@ -139,7 +141,7 @@ public:
 		Bool_t fPassedLowCut; ///< Indicates if the track passed the low pT cut.
 		Bool_t fPassedHighCut; ///< Indicates if the track passed the high pT cut.
 		
-		ClassDef(AliHLTMUONDecision::AliTrackDecision, 2); // A single track dHLT trigger decision object.
+		ClassDef(AliHLTMUONDecision::AliTrackDecision, 3); // A single track dHLT trigger decision object.
 	};
 	
 	/**
@@ -184,7 +186,7 @@ public:
 		 * do not take ownership of the track objects.
 		 */
 		AliPairDecision(const AliPairDecision& obj) :
-			TObject(), fTrackA(obj.fTrackA), fTrackB(obj.fTrackB), fMass(obj.fMass),
+			TObject(obj), fTrackA(obj.fTrackA), fTrackB(obj.fTrackB), fMass(obj.fMass),
 			fPassedLowCut(obj.fPassedLowCut), fPassedHighCut(obj.fPassedHighCut),
 			fUnlike(obj.fUnlike), fLowPtCount(obj.fLowPtCount), fHighPtCount(obj.fHighPtCount)
 		{}
@@ -195,7 +197,9 @@ public:
 		 */
 		const AliPairDecision& operator = (const AliPairDecision& obj)
 		{
-			memcpy(this, &obj, sizeof(AliPairDecision));
+			TObject::operator = (obj);
+			fTrackA = obj.fTrackA; fTrackB = obj.fTrackB; fMass = obj.fMass; fPassedLowCut = obj.fPassedLowCut;
+			fPassedHighCut = obj.fPassedHighCut; fUnlike = obj.fUnlike; fLowPtCount = obj.fLowPtCount; fHighPtCount = obj.fHighPtCount;
 			return *this;
 		}
 		
@@ -294,7 +298,7 @@ public:
 		UChar_t fLowPtCount; ///< The number of tracks in the pair that passed the low pT cut.
 		UChar_t fHighPtCount; ///< The number of tracks in the pair that passed the high pT cut.
 		
-		ClassDef(AliHLTMUONDecision::AliPairDecision, 2); // A track pair dHLT trigger decision object.
+		ClassDef(AliHLTMUONDecision::AliPairDecision, 3); // A track pair dHLT trigger decision object.
 	};
 
 	/**
@@ -492,7 +496,7 @@ private:
 	TClonesArray fTrackDecisions;  ///< Array of single track decision objects.
 	TClonesArray fPairDecisions;  ///< Array of track pair decision objects.
 
-	ClassDef(AliHLTMUONDecision, 2); // Decision object containing data converted from raw internal dHLT data structures.
+	ClassDef(AliHLTMUONDecision, 3); // Decision object containing data converted from raw internal dHLT data structures.
 };
 
 #endif // ALIHLTMUONDECISION_H

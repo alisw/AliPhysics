@@ -34,7 +34,7 @@ ClassImp(AliHLTMUONEvent);
 
 
 AliHLTMUONEvent::AliHLTMUONEvent(const AliHLTMUONEvent& event) :
-	TObject(),
+	TObject(event),
 	fEventId(event.fEventId),
 	fArray()
 {
@@ -55,6 +55,7 @@ AliHLTMUONEvent& AliHLTMUONEvent::operator = (const AliHLTMUONEvent& event)
 {
 	/// The assignment operator performs a deep copy of the object.
 	
+	if (this == &event) return *this;
 	TObject::operator = (event);
 	fEventId = event.fEventId;
 	fArray.Clear();
