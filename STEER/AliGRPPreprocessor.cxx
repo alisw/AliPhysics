@@ -26,14 +26,9 @@
 #include <TList.h>
 #include <TMap.h>
 #include <TObjString.h>
-#include <TTimeStamp.h>
-#include <TSystem.h>
-#include <TFile.h>
-#include <TParameter.h>
 #include <TGraph.h>
 
 #include "AliGRPPreprocessor.h"
-#include "AliGRPDCS.h"
 #include "AliGRPObject.h"
 #include "AliDCSSensor.h"
 #include "AliSplineFit.h"
@@ -48,9 +43,8 @@
 class AliDCSValue;
 class AliShuttleInterface;
 
-#include <TH1.h>
-
 // needed for ReceivePromptRecoParameters
+
 #include <TSQLServer.h>
 #include <TSQLResult.h>
 #include <TSQLRow.h>
@@ -67,7 +61,7 @@ ClassImp(AliGRPPreprocessor)
 
   const Int_t AliGRPPreprocessor::fgknDAQLbPar = 8; // num parameters in the logbook
   const Int_t AliGRPPreprocessor::fgknDCSDP = 50;   // number of dcs dps
-  const Int_t AliGRPPreprocessor::fgknDCSDP_HallProbes = 40;   // number of dcs dps
+  const Int_t AliGRPPreprocessor::fgknDCSDPHallProbes = 40;   // number of dcs dps
   const char* AliGRPPreprocessor::fgkDCSDataPoints[AliGRPPreprocessor::fgknDCSDP] = {
                    "LHCState",              // missing in DCS
                    "L3Polarity",
@@ -121,7 +115,7 @@ ClassImp(AliGRPPreprocessor)
                    "SurfaceAtmosPressure"
                  };
 
-  const char* AliGRPPreprocessor::fgkDCSDataPoints_HallProbes[AliGRPPreprocessor::fgknDCSDP_HallProbes] = {
+  const char* AliGRPPreprocessor::fgkDCSDataPointsHallProbes[AliGRPPreprocessor::fgknDCSDPHallProbes] = {
 		   "L3_BSF17_H1",
 		   "L3_BSF17_H2",
 		   "L3_BSF17_H3",
@@ -525,6 +519,11 @@ UInt_t AliGRPPreprocessor::ProcessDaqFxs()
 //_______________________________________________________________
 UInt_t AliGRPPreprocessor::ProcessDcsFxs()
 {
+
+	// processing the info
+	// stored in the DCS FXS
+	// coming from the trigger
+
 	{
 		// Get the CTP counters information
 		TList* list = GetFileSources(kDCS,"CTP_xcounters");  
@@ -597,8 +596,13 @@ Int_t AliGRPPreprocessor::ProcessDcsDPs(TMap* valueMap, AliGRPObject* grpObj)
 
 //_______________________________________________________________
 
-Int_t AliGRPPreprocessor::ProcessL3DPs(TMap* valueMap, AliGRPObject* grpObj)
+Int_t AliGRPPreprocessor::ProcessL3DPs(const TMap* valueMap, AliGRPObject* grpObj)
 {
+
+	// processing DPs
+	// related to 
+	// L3 info
+
 	Int_t nL3Entries = 0;
 	TObjArray *array = 0x0;
 	Int_t indexDP = -1;
@@ -646,8 +650,12 @@ Int_t AliGRPPreprocessor::ProcessL3DPs(TMap* valueMap, AliGRPObject* grpObj)
 }
 //_______________________________________________________________
 
-Int_t AliGRPPreprocessor::ProcessDipoleDPs(TMap* valueMap, AliGRPObject* grpObj)
+Int_t AliGRPPreprocessor::ProcessDipoleDPs(const TMap* valueMap, AliGRPObject* grpObj)
 {
+	// processing DPs
+	// related to 
+	// the Dipole info
+
 	Int_t nDipoleEntries = 0;
 	TObjArray *array = 0x0;
 	Int_t indexDP = -1;
@@ -697,6 +705,10 @@ Int_t AliGRPPreprocessor::ProcessDipoleDPs(TMap* valueMap, AliGRPObject* grpObj)
 
 Int_t AliGRPPreprocessor::ProcessEnvDPs(TMap* valueMap, AliGRPObject* grpObj)
 {
+	// processing DPs
+	// related to 
+	// evironment conditions (temperature, pressure) info
+
 	Int_t nEnvEntries = 0;
 	TObjArray *array = 0x0;
 	Int_t indexDP = -1;
@@ -801,14 +813,18 @@ Int_t AliGRPPreprocessor::ProcessEnvDPs(TMap* valueMap, AliGRPObject* grpObj)
 }
 //_______________________________________________________________
 
-Int_t AliGRPPreprocessor::ProcessHPDPs(TMap* valueMap, AliGRPObject* grpObj)
+Int_t AliGRPPreprocessor::ProcessHPDPs(const TMap* valueMap, AliGRPObject* grpObj)
 {
+	// processing DPs
+	// related to 
+	// Hall Probes info
+
 	Int_t nHPEntries = 0;
 	TObjArray *array = 0x0;
 	Int_t indexDP = -1;
 
-	if (fgknDCSDP_HallProbes != AliGRPObject::GetNumberOfHP()){
-		AliError(Form("Number of Hall probes expected in GRP Preprocessor (i.e. %d) different from number of Hall Probes foreseen in GRP object (i.e. %d). Looping on entries from GRP object anyway.", fgknDCSDP_HallProbes, AliGRPObject::GetNumberOfHP()));
+	if (fgknDCSDPHallProbes != AliGRPObject::GetNumberOfHP()){
+		AliError(Form("Number of Hall probes expected in GRP Preprocessor (i.e. %d) different from number of Hall Probes foreseen in GRP object (i.e. %d). Looping on entries from GRP object anyway.", fgknDCSDPHallProbes, AliGRPObject::GetNumberOfHP()));
 	}
 	for (indexDP = 0; indexDP < AliGRPObject::GetNumberOfHP(); indexDP++){
 		AliInfo(Form("==========%s===========",AliGRPObject::GetHPDP(indexDP)));
@@ -839,7 +855,7 @@ Int_t AliGRPPreprocessor::ProcessHPDPs(TMap* valueMap, AliGRPObject* grpObj)
 
 //_______________________________________________________________
 
-Int_t AliGRPPreprocessor::ProcessLHCDPs(TMap* valueMap, AliGRPObject* grpObj)
+Int_t AliGRPPreprocessor::ProcessLHCDPs(const TMap* valueMap, AliGRPObject* grpObj)
 {
 
 	//
@@ -941,7 +957,12 @@ Int_t AliGRPPreprocessor::ProcessLHCDPs(TMap* valueMap, AliGRPObject* grpObj)
 }
 //_________________________________________________________________________
 
-AliSplineFit* AliGRPPreprocessor::GetSplineFit(TObjArray *array, const TString& stringID){
+AliSplineFit* AliGRPPreprocessor::GetSplineFit(const TObjArray *array, const TString& stringID){
+
+
+	// 
+	// returning Spline Fit 
+	// 
 
 	Int_t entriesarray = array->GetEntries();
 	Float_t* value = new Float_t[entriesarray];
@@ -972,7 +993,7 @@ AliSplineFit* AliGRPPreprocessor::GetSplineFit(TObjArray *array, const TString& 
 
 //_________________________________________________________________________
 
-TString AliGRPPreprocessor::ProcessChar(TObjArray *array)
+TString AliGRPPreprocessor::ProcessChar(const TObjArray *array)
 {
 
 	// 
@@ -999,7 +1020,7 @@ TString AliGRPPreprocessor::ProcessChar(TObjArray *array)
 
 //__________________________________________________________________________________________________________________
 
-Float_t* AliGRPPreprocessor::ProcessFloatAll(TObjArray* array)
+Float_t* AliGRPPreprocessor::ProcessFloatAll(const TObjArray* array)
 {
 	// 
 	// processing Float values using Mean, Median, Standard Deviation wrt Mean, Standar Deviation wrt Median 
@@ -1104,7 +1125,7 @@ Float_t* AliGRPPreprocessor::ProcessFloatAll(TObjArray* array)
 
 //_______________________________________________________________
 
-Char_t AliGRPPreprocessor::ProcessBool(TObjArray* array)
+Char_t AliGRPPreprocessor::ProcessBool(const TObjArray* array)
 {
 	// 
 	// processing Boolean values
@@ -1135,7 +1156,7 @@ Char_t AliGRPPreprocessor::ProcessBool(TObjArray* array)
 
 //_______________________________________________________________
 
-Float_t AliGRPPreprocessor::ProcessInt(TObjArray* array)
+Float_t AliGRPPreprocessor::ProcessInt(const TObjArray* array)
 {
 	// 
 	// processing Int values, returning mean
@@ -1162,7 +1183,7 @@ Float_t AliGRPPreprocessor::ProcessInt(TObjArray* array)
 }
 //_______________________________________________________________
 
-Float_t AliGRPPreprocessor::ProcessUInt(TObjArray* array)
+Float_t AliGRPPreprocessor::ProcessUInt(const TObjArray* array)
 {
 	// 
 	// processing Int values, returning mean

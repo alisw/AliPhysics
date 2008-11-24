@@ -15,15 +15,19 @@
 
 /* $Id$ */
 
+// **********************
 // Class containing the GRP data that have to be stored in the OCDB.
 // Data come either from DAQ logbook or from DCS DB.
 // Processing of the data can also be performed here.
+// **********************
+
+#include <TMap.h>
+#include <TObject.h>
+#include <TObjString.h>
 
 #include "AliGRPObject.h"
-#include "AliSplineFit.h"
 #include "AliDCSSensor.h"
 #include "AliLog.h"
-#include <TObject.h>
 
 ClassImp(AliGRPObject)
 	
@@ -32,8 +36,8 @@ const TString AliGRPObject::fgkInvalidString = "";  // value to identify invalid
 const Char_t AliGRPObject::fgkInvalidChar = -1;         // value to identify invalid data - uchar
 const Int_t AliGRPObject::fgkInvalidInt = -1;  // value to identify invalid data - uint
 const Int_t AliGRPObject::fgkInvalidUInt = 0;  // value to identify invalid data - uint
-const Int_t AliGRPObject::fgknDCSDP_HallProbes = 40;   // number of dcs dps
-const char* AliGRPObject::fgkDCSDataPoints_HallProbes[AliGRPObject::fgknDCSDP_HallProbes] = {
+const Int_t AliGRPObject::fgknDCSDPHallProbes = 40;   // number of dcs dps
+const char* AliGRPObject::fgkDCSDataPointsHallProbes[AliGRPObject::fgknDCSDPHallProbes] = {
 		   "L3_BSF17_H1",
 		   "L3_BSF17_H2",
 		   "L3_BSF17_H3",
@@ -109,7 +113,7 @@ AliGRPObject::AliGRPObject():
 	// AliGRPObject default ctor
 	//
 
-	fDimension = fgknDCSDP_HallProbes*fPoints;
+	fDimension = fgknDCSDPHallProbes*fPoints;
 	fHallProbes = new Float_t[fDimension];
 
 	for (Int_t nhp=0; nhp< fDimension; nhp++){
@@ -265,7 +269,7 @@ AliGRPObject::~AliGRPObject() {
 
 //-----------------------------------------------------------------------------
 
-Float_t* AliGRPObject::GetHallProbes(DP_HallProbes hp) {
+Float_t* AliGRPObject::GetHallProbes(DP_HallProbes hp) const {
 
 	//
 	// method to return array of statistical
@@ -285,7 +289,7 @@ Float_t* AliGRPObject::GetHallProbes(DP_HallProbes hp) {
 
 //-------------------------------------------------------------------------------
 
-void AliGRPObject::SetHallProbes(DP_HallProbes hp, Float_t* hall_probe){
+void AliGRPObject::SetHallProbes(DP_HallProbes hp, const Float_t* hall_probe){
 
 	//
 	// method to set hall probe hp 
@@ -302,7 +306,7 @@ void AliGRPObject::SetHallProbes(DP_HallProbes hp, Float_t* hall_probe){
 
 //-------------------------------------------------------------------------------
 
-void AliGRPObject::ReadValuesFromMap(TMap* mapGRP){
+void AliGRPObject::ReadValuesFromMap(const TMap* mapGRP){
 
 	//
 	// method to set the values of the GRP parameters 
