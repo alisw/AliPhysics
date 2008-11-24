@@ -1989,7 +1989,7 @@ void AliSimulation::WriteGRPEntry()
   // Now store the entry in OCDB
   AliCDBManager* man = AliCDBManager::Instance();
 
-  AliCDBId id("GRP/GRP/Data", man->GetRun(), man->GetRun());
+  AliCDBId id("GRP/GRP/Data", man->GetRun(), man->GetRun(), 1, 1);
   AliCDBMetaData *metadata= new AliCDBMetaData();
 
   metadata->SetResponsible("alice-off@cern.ch");
