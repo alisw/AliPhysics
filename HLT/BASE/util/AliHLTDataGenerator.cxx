@@ -241,7 +241,7 @@ int AliHLTDataGenerator::DoInit( int argc, const char** argv )
     if (fpDice) {
       TDatime dt;
       // just take the pointer value as seed combined with time 
-      unsigned int seed=(int)(this);
+      unsigned int seed=0;//(int)(this);
       fpDice->SetSeed(seed^dt.Get());
     } else {
        iResult=-ENOMEM;
