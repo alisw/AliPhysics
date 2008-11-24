@@ -1130,6 +1130,7 @@ void AliESDEvent::WriteToTree(TTree* tree) const {
 
   while ((obj = next())) {
     branchname.Form("%s", obj->GetName());
+    if(branchname.CompareTo("AliESDfriend")==0)branchname = "ESDfriend.";
     if ((kSplitlevel > 1) &&  !obj->InheritsFrom(TClonesArray::Class())) {
       if(!branchname.EndsWith("."))branchname += ".";
     }

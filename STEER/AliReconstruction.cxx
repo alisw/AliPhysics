@@ -1353,13 +1353,23 @@ void AliReconstruction::SlaveBegin(TTree*)
   ftree = new TTree("esdTree", "Tree with ESD objects");
   fesd = new AliESDEvent();
   fesd->CreateStdContent();
+
+  fesd->WriteToTree(ftree);
   if (fWriteESDfriend) {
+    // careful:
+    // Since we add the branch manually we must 
+    // book and add it after WriteToTree
+    // otherwise it is created twice,
+    // once via writetotree and once here.
+    // The case for AliESDfriend is now 
+    // caught also in AlIESDEvent::WriteToTree but 
+    // be careful when changing the name (AliESDfriend is not 
+    // a TNamed so we had to hardwire it)
     fesdf = new AliESDfriend();
     TBranch *br=ftree->Branch("ESDfriend.","AliESDfriend", &fesdf);
     br->SetFile("AliESDfriends.root");
     fesd->AddObject(fesdf);
   }
-  fesd->WriteToTree(ftree);
   ftree->GetUserInfo()->Add(fesd);
 
   fhlttree = new TTree("HLTesdTree", "Tree with HLT ESD objects");
