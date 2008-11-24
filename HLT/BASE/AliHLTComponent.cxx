@@ -153,7 +153,7 @@ int AliHLTComponent::UnsetGlobalComponentHandler()
 int AliHLTComponent::Init(const AliHLTAnalysisEnvironment* comenv, void* environParam, int argc, const char** argv )
 {
   // see header file for function documentation
-  HLTLogKeyword(GetComponentID());
+  HLTLogKeyword(fChainId.c_str());
   int iResult=0;
   if (comenv) {
     memset(&fEnvironment, 0, sizeof(AliHLTAnalysisEnvironment));
@@ -176,12 +176,11 @@ int AliHLTComponent::Init(const AliHLTAnalysisEnvironment* comenv, void* environ
 	if (argument.IsNull()) continue;
 
 	// benchmark
-	if (argument.CompareTo("benchmark")==0) {
+	if (argument.CompareTo("-benchmark")==0) {
 
-	  // loglevel
-	} else if (argument.CompareTo("loglevel")==0) {
-	  if ((bMissingParam=(++i>=argc))) break;
-	  TString parameter(argv[i]);
+	  // -loglevel=
+	} else if (argument.BeginsWith("-loglevel=")) {
+	  TString parameter=argument.ReplaceAll("-loglevel=", "");
 	  parameter.Remove(TString::kLeading, ' '); // remove all blanks
 	  if (parameter.BeginsWith("0x") &&
 	      parameter.Replace(0,2,"",0).IsHex()) {
@@ -252,7 +251,7 @@ int AliHLTComponent::Init(const AliHLTAnalysisEnvironment* comenv, void* environ
 int AliHLTComponent::Deinit()
 {
   // see header file for function documentation
-  HLTLogKeyword(GetComponentID());
+  HLTLogKeyword(fChainId.c_str());
   int iResult=0;
   iResult=DoDeinit();
   if (fpRunDesc) {
@@ -1388,7 +1387,7 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
 				   AliHLTComponentEventDoneData*& edd )
 {
   // see header file for function documentation
-  HLTLogKeyword(GetComponentID());
+  HLTLogKeyword(fChainId.c_str());
   ALIHLTCOMPONENT_BASE_STOPWATCH();
   int iResult=0;
   fCurrentEvent=evtData.fEventID;

@@ -282,6 +282,7 @@ typedef vector<AliHLTMemoryFile*>         AliHLTMemoryFilePList;
  * @section alihlt_component_arguments Default arguments
  * The component base class provides some default arguments:
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
+ * \li -loglevel=level     <br>
  * \li -object-compression=level     <br>
  *      compression level for ROOT objects, default is defined by
  *      @ref ALIHLTCOMPONENT_DEFAULT_OBJECT_COMPRESSION

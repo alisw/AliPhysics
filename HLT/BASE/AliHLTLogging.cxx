@@ -40,8 +40,7 @@ ClassImp(AliHLTLogging);
 
 AliHLTLogging::AliHLTLogging()
   :
-  //fLocalLogFilter(kHLTLogDefault),
-  fLocalLogFilter(kHLTLogAll),
+  fLocalLogFilter(fgLocalLogDefault),
   fpDefaultKeyword(NULL),
   fpCurrentKeyword(NULL)
 {
@@ -71,6 +70,7 @@ AliHLTLogging& AliHLTLogging::operator=(const AliHLTLogging&)
 
 ostringstream AliHLTLogging::fgLogstr;
 AliHLTComponentLogSeverity AliHLTLogging::fgGlobalLogFilter=kHLTLogAll;
+AliHLTComponentLogSeverity AliHLTLogging::fgLocalLogDefault=kHLTLogAll;
 AliHLTfctLogging AliHLTLogging::fgLoggingFunc=NULL;
 AliHLTLogging::AliHLTDynamicMessage AliHLTLogging::fgAliLoggingFunc=NULL;
 int AliHLTLogging::fgUseAliLog=1;
@@ -416,6 +416,12 @@ AliHLTComponentLogSeverity AliHLTLogging::GetLocalLoggingLevel()
   // see header file for class documentation
 
   return fLocalLogFilter;
+}
+
+void AliHLTLogging::SetLocalLoggingDefault(AliHLTComponentLogSeverity level)
+{
+  // see header file for class documentation
+  fgLocalLogDefault=level;
 }
 
 int AliHLTLogging::CheckGroup(const char* /*originClass*/) const

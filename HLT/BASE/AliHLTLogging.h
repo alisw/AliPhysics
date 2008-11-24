@@ -54,6 +54,48 @@ class AliHLTComponentHandler;
 
 #define HLT_DEFAULT_LOG_KEYWORD "no key"
 
+/**
+ * @class AliHLTLogging
+ * Basic logging class. All classes inherit the besic HLT logging functionality.
+ * Logging levels are controlled by a global logging filter and a local logging
+ * filter.
+ * 
+ * @section alihlt_logging_levels Logging Levels
+ * Logging levels are switched by a bit pattern,  AliHLTComponentLogSeverity {
+ * - ::kHLTLogNone no logging (0)
+ * - ::kHLTLogBenchmark benchmark messages (0x1)
+ * - ::kHLTLogDebug debug messages (0x2)
+ * - ::kHLTLogInfo info messages (0x4)
+ * - ::kHLTLogWarning warning messages (0x8)
+ * - ::kHLTLogError error messages (0x10)
+ * - ::kHLTLogFatal fatal error messages (0x20)
+ * - ::kHLTLogImportant few important messages not to be filtered out (0x40)
+ * - ::kHLTLogAll special value to enable all messages (0x7f)
+ * - ::kHLTLogDefault the default logging level: Warning, Error, Fatal, Important (0x79)
+ *
+ * @section alihlt_logging_filter Logging Filters
+ * The class provides a global and a local logging filter, the AND beween both
+ * defines whether a message is printed or not.
+ *
+ * The global filter is by default set to ::kHLTLogAll. Please note that AliHLTSystem
+ * changes the global logging level to ::kHLTLogDefault. The global filter can be
+ * adjusted by means of SetGlobalLoggingLevel().
+ *
+ * The local filter is set to ::kHLTLogAll and can be adjusted by
+ * SetLocalLoggingLevel(). The default can be changed for all objects by
+ * SetLocalLoggingDefault(). Please note that a change of the default level only
+ * applies to objects generated after the change of the default.
+ *
+ * @section alihlt_logging_external Redirection
+ * - external logging function
+ * - keyword
+ *
+ * @section alihlt_logging_aliroot AliRoot Redirection
+ * - switching of redirection
+ * - logging options in AliSimulation/AliReconstruction
+ *
+ * @ingroup alihlt_component
+ */
 class AliHLTLogging {
 public:
   AliHLTLogging();
@@ -179,6 +221,12 @@ public:
   virtual void SetLocalLoggingLevel(AliHLTComponentLogSeverity level);
 
   /**
+   * Set local logging default
+   * Default logging filter for individual objects.
+   */
+  static void SetLocalLoggingDefault(AliHLTComponentLogSeverity level);
+
+  /**
    * Get local logging level
    * logging filter for individual object
    */
@@ -249,6 +297,8 @@ private:
   static  AliHLTComponentLogSeverity fgGlobalLogFilter;            // see above
   /** the local logging filter for one class */
   AliHLTComponentLogSeverity fLocalLogFilter;                      // see above
+  /** the global logging filter */
+  static  AliHLTComponentLogSeverity fgLocalLogDefault;            // see above
   /** logging callback from the framework */
   static AliHLTfctLogging fgLoggingFunc;                           // see above
   /** default keyword */
