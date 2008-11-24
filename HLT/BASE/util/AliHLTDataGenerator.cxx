@@ -33,6 +33,8 @@ using namespace std;
 
 #include "AliHLTDataGenerator.h"
 #include "TString.h"
+#include "TRandom.h"
+#include "TDatime.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTDataGenerator)
@@ -43,13 +45,14 @@ AliHLTDataGenerator::AliHLTDataGenerator()
   fDataType(kAliHLTVoidDataType),
   fSpecification(~(AliHLTUInt32_t)0),
   fSize(0),
+  fRange(0),
   fCurrSize(0),
   fDivisor(0),
   fDecrement(0),
   fModulo(0),
   fOffset(0),
-  fMultiplier(0.0),
-  fRange(0.0)
+  fMultiplier(1.0)
+  , fpDice(NULL)
 {
   // see header file for class documentation
   // or
@@ -83,7 +86,7 @@ void AliHLTDataGenerator::GetInputDataTypes(AliHLTComponentDataTypeList& list)
 AliHLTComponentDataType AliHLTDataGenerator::GetOutputDataType()
 {
   // see header file for class documentation
-  return kAliHLTMultipleDataType;
+  return fDataType;
 }
 
 int AliHLTDataGenerator::GetOutputDataTypes(vector<AliHLTComponentDataType>& tgtList)
@@ -99,9 +102,9 @@ void AliHLTDataGenerator::GetOutputDataSize( unsigned long& constBase, double& i
 {
   // see header file for class documentation
   if (fSize>0)
-    constBase=(unsigned long)(fCurrSize*(1+fRange));
+    constBase=(unsigned long)(fCurrSize+fRange);
   else
-    constBase=(unsigned long)(fOffset*(1+fRange));
+    constBase=(unsigned long)(fOffset+fRange);
   inputMultiplier=fMultiplier;
 }
 
@@ -151,10 +154,29 @@ int AliHLTDataGenerator::DoInit( int argc, const char** argv )
 	HLTError("wrong parameter for argument %s, number expected", argument.Data());
 	iResult=-EINVAL;
       }
+      // -minsize || -maxsize
+    } else if (argument.CompareTo("-minsize")==0 ||
+	       argument.CompareTo("-maxsize")==0) {
+      if ((bMissingParam=(++i>=argc))) break;
+      AliHLTUInt32_t value=0;
+      if ((iResult=ScanSizeArgument(value, argv[i]))==-ERANGE) {
+	HLTError("wrong parameter for argument %s, number expected", argument.Data());
+	iResult=-EINVAL;
+      } else {
+	if (fSize==0) {
+	  fSize=value;
+	} else if (fSize<=value) {
+	  fRange=value-fSize;
+	  fSize=value;
+	} else {
+	  fRange=fSize-value;
+	  fSize=value;
+	}
+      }
       // -range
     } else if (argument.CompareTo("-range")==0) {
       if ((bMissingParam=(++i>=argc))) break;
-      if ((iResult=ScanFloatArgument(fRange, argv[i]))==-ERANGE) {
+      if ((iResult=ScanSizeArgument(fRange, argv[i]))==-ERANGE) {
 	HLTError("wrong parameter for argument %s, number expected", argument.Data());
 	iResult=-EINVAL;
       }
@@ -214,6 +236,18 @@ int AliHLTDataGenerator::DoInit( int argc, const char** argv )
 
   fCurrSize=fSize;
 
+  if (iResult>=0) {
+    fpDice=new TRandom;
+    if (fpDice) {
+      TDatime dt;
+      // just take the pointer value as seed combined with time 
+      unsigned int seed=(int)(this);
+      fpDice->SetSeed(seed^dt.Get());
+    } else {
+       iResult=-ENOMEM;
+    }
+  }
+
   return iResult;
 }
 
@@ -251,7 +285,7 @@ int AliHLTDataGenerator::ScanFloatArgument(float &value, const char* arg)
     TString parameter(arg);
     parameter.Remove(TString::kLeading, ' '); // remove all blanks
     if (parameter.IsFloat()) {
-      value=(AliHLTUInt32_t)parameter.Atof();
+      value=parameter.Atof();
     } else {
       iResult=-ERANGE;
     }
@@ -269,13 +303,16 @@ int AliHLTDataGenerator::ScanArgument(int argc, const char** argv)
   if (argc==0 && argv==NULL) {
     // this is just to get rid of the warning "unused parameter"
   }
-  return -EPROTO;
+  return -EINVAL;
 }
 
 int AliHLTDataGenerator::DoDeinit()
 {
   // see header file for class documentation
   int iResult=0;
+  if (fpDice) delete fpDice;
+  fpDice=NULL;
+
   return iResult;
 }
 
@@ -291,10 +328,12 @@ int AliHLTDataGenerator::DoEvent( const AliHLTComponentEventData& evtData,
 
   AliHLTUInt32_t space=size;
   size=0;
+  if (!IsDataEvent()) return 0;
+
   AliHLTUInt32_t generated=0;
   if (fSize>0) {
     // mode 1: fake independent of input data size
-    generated=fCurrSize;
+    generated=fpDice->Integer(fRange)+fCurrSize;
     if (fModulo>0 && ((GetEventCount()+1)%fModulo)==0) {
       // manipulate the size
       if (fDivisor>0) {
@@ -302,13 +341,14 @@ int AliHLTDataGenerator::DoEvent( const AliHLTComponentEventData& evtData,
 	if (fCurrSize==0) fCurrSize=fSize; //reset
       }
       if (fDecrement>0) {
+	AliHLTUInt32_t backup=fCurrSize;
 	if (fCurrSize<fDecrement) {
 	  fCurrSize=fSize; // reset
 	} else {
 	  fCurrSize-=fDecrement;
 	}
+	HLTDebug("manipulated output size from %d to %d", backup, fCurrSize);
       }
-      HLTDebug("manipulated output size: %d", fCurrSize);
     }
 
   } else {
@@ -320,6 +360,7 @@ int AliHLTDataGenerator::DoEvent( const AliHLTComponentEventData& evtData,
   }
 
   if (generated<=space ) {
+    HLTDebug("adding block: size %d", generated);
     AliHLTComponentBlockData bd;
     FillBlockData(bd);
     bd.fPtr=outputPtr;

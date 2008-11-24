@@ -16,32 +16,52 @@
 
 #include "AliHLTProcessor.h"
 
+class TRandom;
+
 /**
  * @class AliHLTDataGenerator
  * An HLT data source component to produce random data.
+ *
+ * The component produces fake data blocks according to the size range
+ * or the total input size. For the former, the initial size can be set
+ * by the \em -size, \em -minsize arguments, and the range respectivly.
+ * Tn this mode, the size can be decremented (\em -decrement) after n
+ * events (\em -modulo).
+ *
+ * When producing fake blocks with respect to the total input data,
+ * \em -offset and \em -multiplier can be used to set ratio and offset.
  *
  * Component ID: \b DataGenerator <br>
  * Library: \b libAliHLTUtil.
  *
  * Mandatory arguments: <br>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
+ *
+ * Optional arguments:<br>
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
  * \li -datatype     <i> datatype   dataorigin </i> <br>
  *      data type ID and origin, e.g. <tt>-datatype 'CLUSTERS' 'TPC ' </tt>
  * \li -dataspec     <i> specification </i> <br>
  *      data specification treated as decimal number or hex number if
  *      prepended by '0x'
+ * \li -size      <i> size </i> <br>
+ *      initial size of the data to be produced
+ * \li -range      <i> n </i> <br>
+ *      range of the data to be produced [size,size+range]
  * \li -minsize      <i> size </i> <br>
  *      the minimum size of the data to be produced
  * \li -maxsize      <i> size </i> <br>
  *      the maximum size of the data to be produced, default = minsize
  *
- * Optional arguments:<br>
- * \li -divisor <i> m </i> <br>
- *      a divisor to shrink the size after \em modulo events
- * \li -offset <i> m </i> <br>
- *      an offset to subtract from the size after \em modulo events
+ * \li -decrement <i> m </i> <br>
+ *      subtract after \em modulo events
  * \li -modulo <i> n </i> <br>
- *      size manipulated by the disisor or subtractor after \em n events
+ *      size manipulated after \em n events
+ *
+ * \li -offset <i> m </i> <br>
+ *      output size = offset + factor * (total size of input blocks)
+ * \li -multiplier <i> factor </i> <br>
+ *      output size = offset + factor * (total size of input blocks)
  *
  * The component produces data blocks of random content and random size in the
  * range of [\em minsize , \em maxsize ]. The size arguments can contain 'k' or
@@ -121,6 +141,8 @@ class AliHLTDataGenerator : public AliHLTProcessor  {
 
   /** the original size size */
   AliHLTUInt32_t fSize;                                             //! transient
+  /** range: [size, size+range] */
+  AliHLTUInt32_t fRange;                                                     //! transient
   /** the manipulated size */
   AliHLTUInt32_t fCurrSize;                                         //! transient
   /** divisor: each modulo event ignoring the input data size) */
@@ -137,8 +159,8 @@ class AliHLTDataGenerator : public AliHLTProcessor  {
   /** multiplier (generation of data from input data size) */
   float fMultiplier;                                                //! transient
 
-  /** range: +/- *size */
-  float fRange;                                                     //! transient
+  /** random number generator */
+  TRandom* fpDice;                                                  //! transient
 
   ClassDef(AliHLTDataGenerator, 0)
 };
