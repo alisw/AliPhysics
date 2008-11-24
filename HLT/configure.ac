@@ -1127,6 +1127,7 @@ if test "x$have_aliroot" != "xno"; then
 		   rec/startAliEVE-barrel-tracks.sh
 		   shuttle/Makefile
 		   pendolino/Makefile
+		   benchmark/Makefile
 		   ])
 fi
 if test "x$prefix" != "xNONE" && test $ALICE_ROOT = $prefix ; then
