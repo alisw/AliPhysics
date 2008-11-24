@@ -190,6 +190,8 @@ AliGRPPreprocessor::AliGRPPreprocessor(AliShuttleInterface* shuttle):
 {
 	// constructor - shuttle must be instantiated!
 
+	AddRunType("COSMIC");
+	AddRunType("LASER");
 	AddRunType("PHYSICS");
 }
 
