@@ -1,8 +1,10 @@
-#include "TH2.h"
-#include "TObjArray.h"
+/// \ingroup "PWG3muon"
+/// \class AliAnalysisTaskSingleMu
+/// \brief Analysis task for single muons in the spectrometer
+///
+//  Author Diego Stocco
 
 #include "AliAODEvent.h"
-#include "AliAODVertex.h"
 #include "AliAODTrack.h"
 
 class AliAnalysisTaskSingleMu : public AliAnalysisTask {
@@ -15,37 +17,40 @@ class AliAnalysisTaskSingleMu : public AliAnalysisTask {
   virtual void   Exec(Option_t *option);
   virtual void   Terminate(Option_t *);
 
-protected:
-  Bool_t MuonPassesCuts(AliAODTrack &muonTrack,
-			TLorentzVector &lorVec,
-			Int_t &trigMatch);
+ protected:
+  Bool_t FillTrackVariables(AliAODTrack &muonTrack);
+  
+  void InitVariables();
 
-  const AliAODVertex* GetVertex();
-  void ResetHistos();
-
-private:
+ private:
   AliAnalysisTaskSingleMu(const AliAnalysisTaskSingleMu&);
   AliAnalysisTaskSingleMu& operator=(const AliAnalysisTaskSingleMu&);
 
   AliAODEvent *fAOD; //!< ESDevent object
 
-  static const Int_t fgkNhistos = 1;
-  static const Int_t fgkNTrigCuts = 4;
+  TTree *fResults; //!< Tree with results
 
-  enum
-  {
-    kNoMatchTrig,
-    kAllPtTrig,
-    kLowPtTrig,
-    kHighPtTrig
+  enum {
+    kVarPt,     //!< Muon pt
+    kVarY,      //!< Muon rapidity
+    kVarPhi,    //!< Muon phi
+    kVarVz,     //!< Primary vertex longitudinal position
+    kVarDCA,    //!< Transverse distance at vertex
+    kNfloatVars
   };
 
-  TString trigName[fgkNTrigCuts]; //!< trigger cut names 
+  enum {
+    kVarTrig,   //!< Matched trigger
+    kNintVars
+  };
+  
 
-  TObjArray * fOutputContainer; //!< output data container
+  Float_t* fVarFloat; //!< Array of float variables
+  Int_t* fVarInt;     //!< Array of int variables
+  
+  TString* fFloatVarName; //!< Float variable names for branches
+  TString* fIntVarName;   //!< Intt variable names for branches
 
-  TH2F *fVzVsPt[fgkNTrigCuts]; //!< Single muon spectrum
-     
   ClassDef(AliAnalysisTaskSingleMu, 0); // Single muon analysis
 };
 
