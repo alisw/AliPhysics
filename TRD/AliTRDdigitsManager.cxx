@@ -93,6 +93,7 @@ AliTRDdigitsManager::~AliTRDdigitsManager()
   // AliTRDdigitsManager destructor
   //
 
+
   if (fDigits) 
     {
       fDigits->Delete();
@@ -141,7 +142,7 @@ void AliTRDdigitsManager::Copy(TObject &m) const
 
   ((AliTRDdigitsManager &) m).fEvent           = fEvent;
   ((AliTRDdigitsManager &) m).fHasSDigits      = fHasSDigits;
-  ((AliTRDdigitsManager &) m).fDigits   = fDigits;
+  ((AliTRDdigitsManager &) m).fDigits          = fDigits;
   for(Int_t i=0; i<kNDict; i++)
     {
       ((AliTRDdigitsManager &) m).fDict[i]  = fDict[i];
@@ -645,7 +646,16 @@ void AliTRDdigitsManager::RemoveDigits(Int_t det)
 
   if (fDigits->At(det))
     {
-      fDigits->RemoveAt(det);
+      if (fHasSDigits) 
+        {
+          AliTRDarraySignal *arr = (AliTRDarraySignal *) fDigits->RemoveAt(det);
+          delete arr;
+	}
+      else 
+        {
+          AliTRDarrayADC    *arr = (AliTRDarrayADC *)    fDigits->RemoveAt(det);
+          delete arr;
+	}
     }
 
 }
@@ -666,7 +676,8 @@ void AliTRDdigitsManager::RemoveDictionaries(Int_t det)
     {
       if (fDict[i]->At(det))
 	{
-	  fDict[i]->RemoveAt(det);
+	  AliTRDarrayDictionary *arr = (AliTRDarrayDictionary *) fDict[i]->RemoveAt(det);
+          delete arr;
 	}
     }
 
