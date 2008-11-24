@@ -133,6 +133,12 @@ AliESDcascade::AliESDcascade(const AliESDv0 &v,
   
   fBachMom[0]=px1; fBachMom[1]=py1; fBachMom[2]=pz1; 
 
+  // Setting pdg code and fixing charge
+  if (t.Charge()<0)
+    fPdgCodeXi = kXiMinus;
+  else
+    fPdgCodeXi = kXiPlusBar;
+
   //PH Covariance matrices: to be calculated correctly in the future
   fPosCovXi[0]=1024;
   fPosCovXi[1]=fPosCovXi[2]=0.;
@@ -146,7 +152,7 @@ AliESDcascade::AliESDcascade(const AliESDv0 &v,
   fBachMomCov[4]=0.;
   fBachMomCov[5]=1024;
 
-  fChi2Xi=1024.;   
+  fChi2Xi=1024.; 
 
 }
 
@@ -273,12 +279,14 @@ Double_t AliESDcascade::ChangeMassHypothesis(Double_t &v0q, Int_t code) {
   Double_t nmass=0.13957, pmass=0.93827, ps0=0.101; 
   Double_t bmass=0.13957, mass =1.3213,  ps =0.139;
 
-  fPdgCodeXi=code;
+  if (Charge()*code<0)
+    fPdgCodeXi = code;
+  else {
+    AliWarning("Chosen PDG code does not match the sign of the bachelor... Corrected !!");
+    fPdgCodeXi = -code;
+  }
 
-  switch (code) {
-  case 213: 
-       bmass=0.93827; 
-       break;
+  switch (fPdgCodeXi) {
   case kXiMinus:
        break;
   case kXiPlusBar:
@@ -292,8 +300,14 @@ Double_t AliESDcascade::ChangeMassHypothesis(Double_t &v0q, Int_t code) {
        bmass=0.49368; mass=1.67245; ps=0.211;
        break;
   default:
-       AliError("Invalide PDG code !  Assuming XiMinus's...");
-       fPdgCodeXi=kXiMinus;
+       AliError("Invalide PDG code !  Assuming a Xi particle...");
+       if (Charge()<0) {
+	 fPdgCodeXi=kXiMinus;
+       }
+       else {
+	 fPdgCodeXi=kXiPlusBar;
+	 nmass=0.93827; pmass=0.13957; 
+       }
     break;
   }
 

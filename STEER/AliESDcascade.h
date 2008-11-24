@@ -57,7 +57,7 @@ public:
   virtual Double_t M() const { return GetEffMassXi(); }
   virtual Double_t Eta() const { return 0.5*TMath::Log((P()+Pz())/(P()-Pz()+1.e-13)); }
   virtual Double_t Y() const;
-  virtual Short_t  Charge() const { return 0; }
+  virtual Short_t  Charge() const { return (GetPdgCodeXi()>0) ? -1 : 1; } // due to PDG sign convention !
   virtual Int_t    GetLabel() const { return -1; }  // temporary
   virtual const Double_t *PID() const { return 0; } // return PID object ? (to be discussed!)
 
@@ -79,7 +79,7 @@ public:
   Double_t GetChi2Xi()  const {return fChi2Xi;}
   void     GetPxPyPz(Double_t &px, Double_t &py, Double_t &pz) const;
   void     GetXYZcascade(Double_t &x, Double_t &y, Double_t &z) const;
-  Double_t GetDcascade(Double_t x0=0.,Double_t y0=0.,Double_t z0=0.) const;
+  Double_t GetDcascade(Double_t x0, Double_t y0, Double_t z0) const;
 
   void     GetBPxPyPz(Double_t &px, Double_t &py, Double_t &pz) const {
      px=fBachMom[0]; py=fBachMom[1]; pz=fBachMom[2];
