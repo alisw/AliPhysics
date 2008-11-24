@@ -10,13 +10,9 @@ CLASS_HDRS:=	  AliHLTPHOSBase.h \
 		  AliHLTPHOSClusterizer.h \
 		  AliHLTPHOSClusterizerComponent.h \
 		  AliHLTPHOSDataCorruptor.h \
-		  AliHLTPHOSDataQualityMonitor.h \
 		  AliHLTPHOSDefinitions.h \
 		  AliHLTPHOSEmcCalibData.h \
 		  AliHLTPHOSPhysicsAnalyzer.h \
-		  AliHLTPHOSPhysicsAnalyzerPeakFitter.h \
-		  AliHLTPHOSPhysicsAnalyzerSpectrum.h \
-		  AliHLTPHOSPhysicsAnalyzerSpectrumComponent.h \
 		  AliHLTPHOSProcessor.h \
 		  AliHLTPHOSPulseGenerator.h \
 		  AliHLTPHOSRawAnalyzer.h \
@@ -29,7 +25,6 @@ CLASS_HDRS:=	  AliHLTPHOSBase.h \
 		  AliHLTPHOSRawAnalyzerKLevel.h \
 		  AliHLTPHOSRawAnalyzerLMS.h \
 		  AliHLTPHOSRawAnalyzerPeakFinderComponent.h \
-		  AliHLTPHOSRcuDataQualityMonitorComponent.h \
 		  AliHLTPHOSRcuHistogramProducer.h \
 		  AliHLTPHOSRcuHistogramProducerComponent.h \
 		  AliHLTPHOSRcuProcessor.h \
@@ -38,10 +33,6 @@ CLASS_HDRS:=	  AliHLTPHOSBase.h \
 		  AliHLTPHOSSanityInspector.h \
 		  AliHLTPHOSDigitMaker.h \
 		  AliHLTPHOSDigitMakerComponent.h \
-		  AliHLTPHOSDigit.h \
-		  AliHLTPHOSBaselineAnalyzer.h \
-		  AliHLTPHOSBaselineAnalyzerComponent.h \
-		  AliHLTPHOSBaseline.h \
 		  AliHLTPHOSConfig.h \
 		  AliHLTPHOSAltroConfig.h \
 		  AliHLTPHOSSharedMemoryInterface.h \
