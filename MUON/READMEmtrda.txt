@@ -23,7 +23,7 @@ The configuration files stored in the online DB are the following:
 - MtgCurrent.dat:                 contains the name list of the above files with their version 
                                   and the flag for master/slave status on the DA
 
-The copy onto the FES for the modified global masks is only done for any value of 
+The copy onto the FES for the modified global masks is done for any value of 
 the flag master/slave. The DA creates a file (ExportedFiles.dat) containing the 
 name of the files to be transfered by the shuttle. To be able to check the change 
 of version of one the files, another file is created containing the last current
@@ -45,9 +45,9 @@ The typical ECS sequence for calib is :
 - The DA computes the occupancy of the global input entries, if a channel is not 
 responding in more than N% of the events (10% by default), it will be marked as dead 
 - The DA updates the global mask file accordingly, adds the file to the data base 
-and on the the File Exchange Server at the beginning of the next run. 
+and on the File Exchange Server at the beginning of the next run. 
 
-Then the SHUTTLE process the ASCII files and store the configuration on the OCDB
+Then the SHUTTLE process the ASCII files and store the configuration on the OCDB.
 
 \subsection da_ss2  DETECTOR_CALIBRATION_RUN (pedestal)
 
@@ -64,34 +64,21 @@ noisy
 - The DA updates the global mask file accordingly, adds the file to the data base 
 and on the the File Exchange Server at the beginning of the next run. 
 
-Then the SHUTTLE process the ASCII files and store the configuration on the OCDB
+Then the SHUTTLE process the ASCII files and store the configuration on the OCDB.
 
 \section da_s2 Using the DA Online
 
-You have a line command help. To have it just type :
+With the help of the Control Panel a configuration file is added to the database
+(DAConfig.txt) which contains parameters for running the DA:
 
-\verbatim
-> MUONTRGda.exe -h
+- the thresholds for calculating noisy/dead inputs
+- the minimum number of events necessary for calculating the input rates
+- the maximum number of events to be analyzed in one DA execution
+- the number of events to skip from the start of run
+- the verbosity level of the DA
+- enable warnings from the raw data decoder
 
-******************* MUONTRGda.exe usage **********************
-MUONTRGda.exe -options, the available options are :
--h help                   (this screen)
-
- Input
--f <raw data file>
-
- Output
-
- Options
--p <thr value ped (deadc)> (default = 0.1)
--c <thr value cal (noise)> (default = 0.1)
--l <print level>           (default = 0)
--s <skip events>           (default = 0)
--n <max events>            (default = 1000000)
--w <decoder warnings>      (default = 0)
-
-\endverbatim
-
+This file it is not "version"-ed, so it will be not recorded in MtgCurrent.dat.
  
 \section da_s3 In case of trouble
 
