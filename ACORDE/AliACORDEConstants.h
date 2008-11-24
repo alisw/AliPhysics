@@ -13,9 +13,10 @@
 // easily accessible place. All constants are public const static data 
 // members. The class is never instatiated.
 //
-// Author: Arturo Fernandez, Enrique Gamez
+// Author: Arturo Fernandez, Enrique Gamez, Mario Rodriguez Cahuantzi
 //         FCFM-UAP, Mexico.
 //
+// Last update: Nov. 24th 08
 /////////////////////////////////////////////////////////////////////////
 
 #include <TObject.h>
@@ -39,6 +40,9 @@ public:
   Float_t ModulePositionX(Int_t i) const;
   Float_t ModulePositionY(Int_t i) const;
   Float_t ModulePositionZ(Int_t i) const;
+  Float_t SupportModulePositionX(Int_t i) const;
+  Float_t SupportModulePositionY(Int_t i) const;
+  Float_t SupportModulePositionZ(Int_t i) const;
   Float_t ExtraModulePositionZ(Int_t i) const;
   Int_t ModuleElectronicChannel(Int_t i) const;
   Float_t ExtraModulePositionX() const;
@@ -69,6 +73,9 @@ protected:
   static const Float_t fgkModulePositionX[60]; // position in ALICE
   static const Float_t fgkModulePositionY[60]; // of center of module
   static const Float_t fgkModulePositionZ[60]; 
+  static const Float_t fgkSupportModulePositionX[60];
+  static const Float_t fgkSupportModulePositionY[60];
+  static const Float_t fgkSupportModulePositionZ[60];
   static const Float_t fgkExtraModulePositionZ[4];
   static const Float_t fgkExtraModulePositionX;
   static const Float_t fgkExtraModulePositionY;

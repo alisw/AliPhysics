@@ -22,9 +22,9 @@
 // This class serves to group constants needed by ACORDE detector in 1
 // easily accessible place. All constants are public const static data 
 // members. The class is never instatiated.
-// Authors: Arturo Fernandez, Enrique Gamez, Mario Rodríguez Cahuantzi, Eleazar Cuautle(ICN-UNAM) 
+// Authors: Arturo Fernandez, Enrique Gamez, Mario Rodriguez Cahuantzi, Eleazar Cuautle(ICN-UNAM) 
 //         FCFM-UAP, Mexico.
-//
+// Last update: Nov. 24th 08
 ////////////////////////////////////////////////////////////////////////
 
 #include "AliACORDEConstants.h"
@@ -54,19 +54,44 @@ const Float_t AliACORDEConstants::fgkModulePositionX[60] = {
   -426, -426, -644, -644, -644, -644, -644, -619, -623,
   -641, -641, -641};
 const Float_t AliACORDEConstants::fgkModulePositionY[60] = {
-  582, 582, 582, 582, 582, 582, 582, 582, 582, 582,
-  797, 797, 797, 797, 797, 797, 797, 797, 797, 797,
+  582, 574, 574, 574, 574, 574, 574, 574, 574, 582,
+  789, 789, 789, 789, 789, 789, 789, 789, 789, 789,
   850, 850, 850, 850, 850, 850, 850, 850, 850, 850,
   850, 850, 850, 850, 850, 850, 850, 850, 850, 850,
-  797, 797, 797, 797, 797, 797, 797, 797, 797, 797,
-  582, 582, 582, 582, 582, 609, 605, 582, 582, 582};
+  789, 789, 789, 789, 789, 789, 789, 789, 789, 789,
+  582, 574, 574, 574, 574, 601, 597, 574, 574, 582};
 const Float_t AliACORDEConstants::fgkModulePositionZ[60] = {
   450, 350, 250, 150, 50, -50, -120, -280, -350, -450,
   450, 350, 250, 150, 50, -50, -150, -250, -350, -450,
   450, 350, 250, 150, 50, -50, -150, -250, -350, -450,
   450, 350, 250, 150, 50, -50, -150, -250, -350, -450,
   450, 350, 250, 150, 50, -50, -150, -250, -350, -450,
+  450, 350, 250, 104, 50, -85, -184, -258, -350, -450};
+
+
+const Float_t AliACORDEConstants::fgkSupportModulePositionX[60] = {
+  641, 641, 641, 641, 641, 641, 641, 641, 641, 641,
+  426, 426, 426, 426, 426, 426, 426, 426, 426, 426,
+  153, 153, 153, 153, 153, 153, 153, 153, 153, 153,
+  -153, -153, -153, -153, -153, -153, -153, -153, -153,
+  -153, -426, -426, -426, -426, -426, -426, -426, -426,
+  -426, -426, -644, -644, -644, -644, -644, -619, -623,
+  -641, -641, -641};
+const Float_t AliACORDEConstants::fgkSupportModulePositionY[60] = {
+  582, 582, 582, 582, 582, 582, 582, 582, 582, 582,
+  797, 797, 797, 797, 797, 797, 797, 797, 797, 797,
+  850, 850, 850, 850, 850, 850, 850, 850, 850, 850,
+  850, 850, 850, 850, 850, 850, 850, 850, 850, 850,
+  797, 797, 797, 797, 797, 797, 797, 797, 797, 797,
+  582, 582, 582, 582, 582, 609, 605, 582, 582, 582};
+const Float_t AliACORDEConstants::fgkSupportModulePositionZ[60] = {
+  450, 350, 250, 150, 50, -50, -120, -280, -350, -450,
+  450, 350, 250, 150, 50, -50, -150, -250, -350, -450,
+  450, 350, 250, 150, 50, -50, -150, -250, -350, -450,
+  450, 350, 250, 150, 50, -50, -150, -250, -350, -450,
+  450, 350, 250, 150, 50, -50, -150, -250, -350, -450,
   450, 350, 250, 104, 50, -85, -176, -250, -350, -450};
+  
 
 const Float_t AliACORDEConstants::fgkExtraModulePositionZ[4] = {93.0, 18., -18, -93};
 const Float_t AliACORDEConstants::fgkExtraModulePositionX = 0.0;
@@ -179,6 +204,29 @@ Float_t AliACORDEConstants::ModulePositionZ(Int_t i) const
   return fgkModulePositionZ[i];
 }
 
+
+//_____________________________________________________________________________
+Float_t AliACORDEConstants::SupportModulePositionX(Int_t i) const
+{
+  // Module lenght
+  return fgkSupportModulePositionX[i];
+}
+
+//_____________________________________________________________________________
+Float_t AliACORDEConstants::SupportModulePositionY(Int_t i) const
+{
+  // Module lenght
+  return fgkSupportModulePositionY[i];
+}
+//_____________________________________________________________________________
+Float_t AliACORDEConstants::SupportModulePositionZ(Int_t i) const
+{
+  // Module lenght
+  return fgkSupportModulePositionZ[i];
+}
+
+
+
 Float_t AliACORDEConstants::ExtraModulePositionX() const
 {
   // Module lenght
@@ -201,7 +249,7 @@ Float_t AliACORDEConstants::ExtraModulePositionZ(Int_t i) const
 Int_t AliACORDEConstants::ModuleElectronicChannel(Int_t i) const
 {
 	// return de ID (electronic channel in ACORDE) of each module
-	// acording to the match between DCS and Electronic nomenclature
+	// acording to the current match between DCS and Electronic nomenclature
 	return fgkModuleElectronicChannel[i];
 }
 //_____________________________________________________________________________
