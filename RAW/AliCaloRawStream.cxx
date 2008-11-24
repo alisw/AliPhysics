@@ -83,7 +83,7 @@ AliCaloRawStream::AliCaloRawStream(AliRawReader* rawReader, TString calo, AliAlt
 	if(fCalo == "EMCAL") path2 += sides[j];
 	path2 += ".data";
 	//printf("AliCaloRawStream::RCU:  %s\n",path2.Data());
-	fMapping[i] = new AliCaloAltroMapping(path2.Data());
+	fMapping[j*fNRCU+ i] = new AliCaloAltroMapping(path2.Data());
       }
     }
   }
