@@ -29,30 +29,23 @@ GENERAL DATA FORMAT
 ******************************************/
 
 //filler
-#ifndef FILLER
+//#ifndef FILLER
 #define FILLER 0x70000000
-#endif
+//#endif
 
 //word type mask/position
-#ifndef WORD_TYPE_MASK
 #define WORD_TYPE_MASK 0xf0000000
-#endif
 #define WORD_TYPE_POSITION 28
 
 //global header word required bit pattern
-#ifndef GLOBAL_HEADER
 #define GLOBAL_HEADER 0x40000000
-#endif
 
 //global trailer word required bit pattern
-#ifndef GLOBAL_TRAILER
 #define GLOBAL_TRAILER 0x50000000
-#endif
 
 //error word required bit pattern
-#ifndef ERROR
-#define ERROR 0x30000000
-#endif
+// already defined in AliTOFDecoder
+//#define ERROR 0x30000000
 
 //header slot ID mask/position
 #define HEADER_SLOT_ID_MASK 0x0000000f
@@ -264,14 +257,11 @@ TRM DATA FORMAT
 #define TRM_FIRST_SLOT_ID 3
 
 //define hptdc time bin width
-#ifndef TIME_BIN_WIDTH
 #define TIME_BIN_WIDTH 24.4e-3 //ns
-#endif
 
 //define hptdc tot bin width
-#ifndef TOT_BIN_WIDTH
-#define TOT_BIN_WIDTH 48.4e-3 //ns
-#endif
+// already defined in AliTOFDecoder
+//#define TOT_BIN_WIDTH 48.4e-3 //ns
 
 //TRM errors
 
