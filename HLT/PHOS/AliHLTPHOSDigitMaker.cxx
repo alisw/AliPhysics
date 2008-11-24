@@ -31,7 +31,7 @@
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
 #include "AliHLTPHOSDigitMaker.h"
-#include "AliHLTPHOSDigit.h"
+
 #include "AliHLTPHOSConstants.h"
 #include "AliHLTPHOSMapper.h"
 
@@ -195,14 +195,14 @@ AliHLTPHOSDigitMaker::MakeDigits(AliHLTPHOSChannelDataHeaderStruct* channelDataH
 			  currentchannel = fShmPtr->NextChannel();
 			}
 		    }
-		  else // No available high gain channel for this crystal
+		  else // No available high gain channel for this crystal, adding the low gain one
 		    {
 		      AddDigit(currentchannelLG, coord1);
 		      j++;
 		      totSize += sizeof(AliHLTPHOSDigitDataStruct);
 		    }
 		}
-	      else //Fine no more channels, better add this one...
+	      else //Fine, no more channels, better add this one...
 		{
 		  AddDigit(currentchannelLG, coord1);
 		  j++;

@@ -105,6 +105,7 @@ public:
   /**
    * Calculate the baseline of channels
    * @param cellData is a pointer to a valid channel
+   * @param rawDataPtr is a pointer to the raw data
    * @param xOff is the offset in the x position given by the RCU number
    * @param zOff is the offset in the z position given by the RCU number
    * @return the baseline

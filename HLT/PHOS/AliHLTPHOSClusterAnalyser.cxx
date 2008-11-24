@@ -33,7 +33,7 @@
 #include "AliHLTPHOSRecPointDataStruct.h"
 #include "AliHLTPHOSCaloClusterHeaderStruct.h"
 #include "AliHLTPHOSCaloClusterDataStruct.h"
-#include "AliHLTPHOSPhysicsAnalyzerSpectrum.h"
+#include "AliHLTPHOSPhysicsAnalyzer.h"
 #include "AliPHOSGeometry.h"
 #include "TMath.h"
 
@@ -56,7 +56,7 @@ AliHLTPHOSClusterAnalyser::AliHLTPHOSClusterAnalyser() :
   //See header file for documentation
   fLogWeight = 4.5;
 
-  fAnalyzerPtr = new AliHLTPHOSPhysicsAnalyzerSpectrum();
+  fAnalyzerPtr = new AliHLTPHOSPhysicsAnalyzer();
   fPHOSGeometry = AliPHOSGeometry::GetInstance("noCPV");
 }
 
@@ -171,7 +171,7 @@ AliHLTPHOSClusterAnalyser::CreateClusters(UInt_t availableSize, UInt_t& totSize)
   
   //fPHOSGeometry = AliPHOSGeometry::GetInstance("noCPV");
 
-  for(Int_t i = 0; i < fNRecPoints; i++) //CRAP needs fix when we start unfolding
+  for(Int_t i = 0; i < fNRecPoints; i++) //FIXME needs fix when we start unfolding (number of clusters not necessarily same as number of recpoints gotten from the clusterizer
     {
       
       if(availableSize < (totSize + maxClusterSize)) 

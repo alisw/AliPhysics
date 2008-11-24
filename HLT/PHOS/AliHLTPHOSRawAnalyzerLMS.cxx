@@ -27,7 +27,7 @@ ClassImp(AliHLTPHOSRawAnalyzerLMS)
 //_____________________________________________________________________________________________________
 AliHLTPHOSRawAnalyzerLMS::AliHLTPHOSRawAnalyzerLMS(const AliHLTPHOSRawAnalyzerLMS&):AliHLTPHOSRawAnalyzer()
 {
-
+  //comment
 }
 
 
@@ -38,11 +38,6 @@ AliHLTPHOSRawAnalyzerLMS::AliHLTPHOSRawAnalyzerLMS():AliHLTPHOSRawAnalyzer()
 }
 
 
-/**
-* Main constructor
-* @param dtaPtr Data array for wich a subarray will be taken to perform the fit
-* @param fs the sampling frequency in entities of MHz. Needed in order to calculate physical time
-**/
 //_____________________________________________________________________________________________________
 AliHLTPHOSRawAnalyzerLMS::AliHLTPHOSRawAnalyzerLMS(double * /*dtaPtr*/, double fs):AliHLTPHOSRawAnalyzer() 
 {
@@ -55,7 +50,7 @@ AliHLTPHOSRawAnalyzerLMS::AliHLTPHOSRawAnalyzerLMS(double * /*dtaPtr*/, double f
 //_____________________________________________________________________________________________________
 AliHLTPHOSRawAnalyzerLMS::~AliHLTPHOSRawAnalyzerLMS()
 {
-
+  //comment
 } //end AliHLTPHOSRawAnalyzerLMS
 
 

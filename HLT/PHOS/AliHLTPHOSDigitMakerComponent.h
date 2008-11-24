@@ -33,22 +33,54 @@
 #include "AliHLTPHOSProcessor.h"
 
 class AliHLTPHOSDigitMaker;
-class TTree;
-class TClonesArray;
 class AliHLTPHOSDigitContainerDataStruct;
-
 
 /**
  * @class AliHLTPHOSDigitMakerComponent
+ * 
+ * Creates the digit used for the clusterizer. Digits are equivalent to the ones in 
+ * offline reconstruction
  *
- * Class runs AliHLTPHOSDigitMaker, creating digits from "raw data"
+ * <h2>General properties:</h2>
  *
- * The component has the following component arguments:
- * -threshold              threshold for creating a digit, gives software zero suppression
- * -presamples             number of presamples (not really necessary)
+ * Component ID: \b PhosDigitMaker <br>
+ * Library: \b libAliHLTPHOS.so     <br>
+ * Input Data Types: @ref AliHLTPHOSDefinitions::fkgChannelDataType<br>
+ * Output Data Types: @ref AliHLTPHOSDefinitions::fgkDigitDataType<br>
+ *
+ * <h2>Mandatory arguments:</h2>
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
+ * \li No mandatory arguments for component                           <br>
+ *
+ * <h2>Optional arguments:</h2>
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
+ * \li -lowgainfactor      <i> value </i> <br>
+ *      sets a global low gain factor 
+ * \li -highgainfactor <i> value </i> <br>
+ *      sets a global high gain factor
+ * \li -reverseorder <br>
+ *      set if one expects the low gain channels to come before the high gain ones
+ *
+ * <h2>Configuration:</h2>
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
+ * \li No configuration arguments 
+ *
+ * <h2>Default CDB entries:</h2>
+ * \li No CDB entry yet, will come.
+ *
+ * <h2>Performance:</h2>
+ * Pretty good
+ *
+ * <h2>Memory consumption:</h2>
+ * Pretty low
+ *
+ * <h2>Output size:</h2>
+ * Depends on the event...
+ *
+ * More detailed description. (Soon)
  *
  * @ingroup alihlt_phos
- */
+ */ 
 
 class AliHLTPHOSDigitMakerComponent : public AliHLTPHOSProcessor
 {

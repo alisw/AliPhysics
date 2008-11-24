@@ -78,7 +78,7 @@ public:
 
   /** 
    * Set the AliESDEvent object to be filled
-   * @param is a pointer to the AliESDEvent
+   * @param esdEventPtr is a pointer to the AliESDEvent
    */
   void SetESDEvent(AliESDEvent* esdEventPtr) { fESDEventPtr = esdEventPtr; }
 

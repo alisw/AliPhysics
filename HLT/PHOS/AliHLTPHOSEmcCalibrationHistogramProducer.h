@@ -89,12 +89,16 @@ class AliHLTPHOSEmcCalibrationHistogramProducer: public AliHLTPHOSBase
   /**
    * Fill histograms from a histogram containing energies from one RCU from one RCU
    * @param rcuEnergyHistPtr is a pointer to the energy histogram
+   * @param module is the module number
+   * @param rcuX is the rcu "x coordinate"
+   * @param rcuZ is the rcu "z coordinate"
    */
   void FillRCUEnergies(TH1F* rcuChannelEnergyHistPtr[][N_ZROWS_RCU][N_GAINS], Int_t module,Int_t rcuX, Int_t rcuZ);
 
   /**
    * Fill bad channel histogram from a histogram containing bad channels from one RCU 
    * @param rcuBadChannelHistPtr is a pointer to the bad channel histogram
+   * @param module is the module number
    */
   void FillBadChannels(TH2F* rcuBadChannelHistPtr[], Int_t module);
   

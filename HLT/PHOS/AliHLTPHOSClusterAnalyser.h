@@ -132,28 +132,28 @@ public:
 
   /**
    * Fit a cluster
-   * @param recPointPtr is a pointer to the rec point to fit
+   * param recPointPtr is a pointer to the rec point to fit
    * @return 
    */
   Int_t FitCluster(AliHLTPHOSRecPointDataStruct* /*recPointPtr*/) { return 0; }
 
   /**
    * Get the distance to the nearest CPV rec point
-   * @param recPointPtr is the pointer to the emc rec point
+   * param recPointPtr is the pointer to the emc rec point
    * @return the distance
    */
   Float_t GetCPVDistance(AliHLTPHOSRecPointDataStruct* /*recPointPtr*/) { return 0; };
 
   /**
    * Do partice identification
-   * @param clusterPtr is the pointer to the emc cluster
+   * param clusterPtr is the pointer to the emc cluster
    * @return 
    */
   Int_t DoParticleIdentification(AliHLTPHOSCaloClusterDataStruct* /*clusterPtr*/) { return 0; }
   
   /**
    * Get the distance to the neares bad channel
-   * @param clusterPtr is a pointer to the calo cluster
+   * param clusterPtr is a pointer to the calo cluster
    * @return the distance
    */
   Float_t GetDistanceToBadChannel(AliHLTPHOSCaloClusterDataStruct* /*clusterPtr*/) { return 0; }

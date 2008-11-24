@@ -22,14 +22,14 @@
 
 #include "Rtypes.h"
 
-#include "AliHLTPHOSConstants.h"
-using namespace PhosHLTConst;
+//#include "AliHLTPHOSConstants.h"
+//using namespace PhosHLTConst;
 
 struct AliHLTPHOSChannelDataStruct
 {
-  UShort_t fChannelID;
   Float_t fEnergy;
   Float_t fTime;
+  UShort_t fChannelID;
   Short_t fCrazyness;
 };
 

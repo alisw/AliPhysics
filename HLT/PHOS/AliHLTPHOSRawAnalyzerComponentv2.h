@@ -50,21 +50,54 @@ class AliAltroBunch;
 class AliHLTPHOSDigitMaker;
 class AliHLTPHOSDigitContainerDataStruct;
 
-
 /**
  * @class AliHLTPHOSRawAnalyzerComponentv2
+ * This the new and fast version of the component taking care of the decoding and energy and timing 
+ * extraction of the raw data from PHOS.
  *
- * Class for decoding and extract the energy and timing information from the
- * channels in PHOS. 
- * 
- * The component has the following component arguments:
- * -offset [int]             offset applied before doing ZS
- * -bunchsizecut [int]       minimum size a bunch can have to be considered   
- * -minpeakposition [int]    minimum time of the peak for a signal to be considered
- * -maxpeakposition [int]    maximum time of the peak for a signal to be considered
+ * <h2>General properties:</h2>
+ *
+ * Component ID: \b PhosRawAnalyzerv2 <br>
+ * Library: \b libAliHLTPHOS.so     <br>
+ * Input Data Types: @ref <br>
+ * Output Data Types: @ref AliHLTPHOSDefinitions::fgkChannelDataType<br>
+ *
+ * <h2>Mandatory arguments:</h2>
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
+ * \li No mandatory arguments for component                           <br>
+ *
+ * <h2>Optional arguments:</h2>
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
+ * \li -offset      <i> value </i> <br>
+ *      gives the offset added to the data during zero suppression (default value: 0)
+ * \li -bunchsizecut <i> value </i> <br>
+ *      minimum number of samples a bunch must contain to be considered  (default value: 0)
+ * \li -minpeakposition <i> value </i> <br>
+ *      cut on minimum postion of the peak in the bunch (defaul value: 0)
+ * \li -maxpeakposition <i> value </i> <br>
+ *      cut on maximum postion of the peak in the bunch (defaul value: 100)
+ *
+ * <h2>Configuration:</h2>
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
+ * \li No configuration arguments 
+ *
+ * <h2>Default CDB entries:</h2>
+ * \li No CDB entry yet, will come.
+ *
+ * <h2>Performance:</h2>
+ * Pretty good (~ 3 kHz), depends on amount of data...
+ *
+ * <h2>Memory consumption:</h2>
+ * Depends on the amount of data, but pretty godd
+ *
+ * <h2>Output size:</h2>
+ * Depends on the amount of data...
+ *
+ * More detailed description. (Soon)
  *
  * @ingroup alihlt_phos
- */
+ */ 
+
 class AliHLTPHOSRawAnalyzerComponentv2 : public AliHLTPHOSRcuProcessor
 {
  public:

@@ -148,4 +148,10 @@ AliHLTPHOSPhysicsAnalyzer::WriteHistogram(const Char_t* fileName)
 
 }
 
+void
+AliHLTPHOSPhysicsAnalyzer::Analyze(AliHLTPHOSRecPointContainerStruct* /*recPointsArrayPtr*/, Int_t /*nRecPoints*/)
+{
+  //comment
+  return;
+}
 

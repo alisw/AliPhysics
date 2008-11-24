@@ -1,6 +1,5 @@
 // $Id$
 
-
 /**************************************************************************
  * This file is property of and copyright by the ALICE HLT Project        * 
  * All rights reserved.                                                   *
@@ -22,7 +21,6 @@
 #include "AliHLTPHOSChannelDataStruct.h"
 #include "AliHLTPHOSMapper.h"
 #include "AliHLTPHOSSanityInspector.h"
-#include "AliHLTPHOSBaseline.h"
 #include  "AliAltroDecoder.h"
 #include  "AliAltroData.h"   
 #include  "AliAltroBunch.h"  
@@ -38,7 +36,7 @@ AliHLTPHOSRawAnalyzerComponentv2::AliHLTPHOSRawAnalyzerComponentv2():
   fAltroBunchPtr(0),
   fAlgorithm(0),
   fOffset(0),
-  fBunchSizeCut(5),
+  fBunchSizeCut(0),
   fMinPeakPosition(0),
   fMaxPeakPosition(100)
 {
@@ -151,9 +149,10 @@ AliHLTPHOSRawAnalyzerComponentv2::DoEvent( const AliHLTComponentEventData& evtDa
       totSize += blockSize; //Keeping track of the used size
       // HLTDebug("Output data size: %d - Input data size: %d", totSize, iter->fSize);
 
+      //Filling the block data
       AliHLTComponentBlockData bdChannelData;
       FillBlockData( bdChannelData );
-      bdChannelData.fOffset = 0; //CRAP
+      bdChannelData.fOffset = 0; //FIXME
       bdChannelData.fSize = blockSize;
       bdChannelData.fDataType = AliHLTPHOSDefinitions::fgkChannelDataType;
       bdChannelData.fSpecification = iter->fSpecification;
@@ -172,7 +171,7 @@ Int_t
 AliHLTPHOSRawAnalyzerComponentv2::DoIt(const AliHLTComponentBlockData* iter, AliHLTUInt8_t* outputPtr, const AliHLTUInt32_t size, UInt_t& totSize)
 {
  
-
+  //comment
   Int_t crazyness          = 0;
   Int_t nSamples           = 0;
   Short_t channelCount     = 0;
@@ -183,23 +182,25 @@ AliHLTPHOSRawAnalyzerComponentv2::DoIt(const AliHLTComponentBlockData* iter, Ali
   // Then comes the channel data
   AliHLTPHOSChannelDataStruct *channelDataPtr = reinterpret_cast<AliHLTPHOSChannelDataStruct*>(outputPtr+sizeof(AliHLTPHOSChannelDataHeaderStruct)); 
 
-  Short_t channelSize = sizeof(AliHLTPHOSChannelDataStruct);
- 
+  //Adding to the total size of data written
   totSize += sizeof(AliHLTPHOSChannelDataHeaderStruct);
  
+  //Decoding data
   fDecoderPtr->SetMemory(reinterpret_cast<UChar_t*>( iter->fPtr ), iter->fSize);
   fDecoderPtr->Decode();
       
+  //Looping over data
   while(fDecoderPtr->NextChannel(fAltroDataPtr) == true )
     {          
       if(fAltroDataPtr->GetDataSize() != 0 )
 	{
-	  
+	  //Want to get the "first in time" "bunch"
 	  while(fAltroDataPtr->NextBunch(fAltroBunchPtr) == true) {}
 	  
+	  //Skip strangely short bunches
 	  if(fAltroBunchPtr->GetBunchSize() >  fBunchSizeCut)
 	    {
-	      totSize += channelSize;
+	      totSize += sizeof(AliHLTPHOSChannelDataStruct);
 	      if(totSize > size)
 		{
 		  HLTError("Buffer overflow: Trying to write data of size: %d bytes. Output buffer available: %d bytes.", totSize, size);
@@ -210,10 +211,12 @@ AliHLTPHOSRawAnalyzerComponentv2::DoIt(const AliHLTComponentBlockData* iter, Ali
 	      
 	      //crazyness = fSanityInspectorPtr->CheckInsanity(static_cast<const UInt_t*>(fAltroBunchPtr->GetData()), static_cast<const Int_t>(fAltroBunchPtr->GetBunchSize()));
 	      
+	      //Evalute signal amplitude and timing
 	      fAnalyzerPtr->SetData(fAltroBunchPtr->GetData(), fAltroBunchPtr->GetBunchSize());   
 	      fAnalyzerPtr->Evaluate(0, fAltroBunchPtr->GetBunchSize());  
 	      
-	      if(fAnalyzerPtr->GetTiming() > fMinPeakPosition && fAnalyzerPtr->GetTiming() < fMaxPeakPosition && fAltroBunchPtr->GetBunchSize() > fBunchSizeCut)
+	      //Checking for sane timing...
+	      if(fAnalyzerPtr->GetTiming() > fMinPeakPosition && fAnalyzerPtr->GetTiming() < fMaxPeakPosition)
 		{
 		  // Writing to the output buffer
 		  channelDataPtr->fChannelID = fMapperPtr->GetChannelID(iter->fSpecification, fAltroDataPtr->GetHadd());
@@ -228,6 +231,7 @@ AliHLTPHOSRawAnalyzerComponentv2::DoIt(const AliHLTComponentBlockData* iter, Ali
 	}
     }
 
+  //Writing the header
   channelDataHeaderPtr->fNChannels  = channelCount;
   channelDataHeaderPtr->fAlgorithm  = fAlgorithm;
   channelDataHeaderPtr->fInfo       = 0;
@@ -235,7 +239,8 @@ AliHLTPHOSRawAnalyzerComponentv2::DoIt(const AliHLTComponentBlockData* iter, Ali
 
   HLTDebug("Number of channels: %d", channelCount);
 
-  return channelSize*channelCount + sizeof(AliHLTPHOSChannelDataHeaderStruct);
+  //returning the size used
+  return sizeof(AliHLTPHOSChannelDataStruct)*channelCount + sizeof(AliHLTPHOSChannelDataHeaderStruct);
 }
 
 int
@@ -269,7 +274,7 @@ AliHLTPHOSRawAnalyzerComponentv2::DoInit( int argc, const char** argv )
  
   if(fMapperPtr->GetIsInitializedMapping() == false)
     {
-      Logging(kHLTLogFatal, __FILE__ , IntToChar(  __LINE__ ) , "AliHLTPHOSMapper::Could not initial mapping from file %s, aborting", fMapperPtr->GetFilePath());
+      Logging(kHLTLogFatal, __FILE__ , IntToChar(  __LINE__ ) , "AliHLTPHOSMapper::Could not initialise mapping from file %s, aborting", fMapperPtr->GetFilePath());
       return -4;
     }
 

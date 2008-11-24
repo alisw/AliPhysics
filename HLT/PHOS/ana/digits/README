@@ -1,7 +1,0 @@
-To load (and compile) the shared libraries, add this to the macro:
-
-gROOT->ProcessLine(".L <PATH>/AliHLTPHOSDebugRawDigit.cxx++");
-gROOT->ProcessLine(".L <PATH>/AliHLTPHOSBaseline.cxx++");
-
-
-where <PATH> is the location of the files.

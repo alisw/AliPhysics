@@ -92,7 +92,7 @@ class AliHLTPHOSPhysicsAnalyzer
   /** 
    * Get the global position of a reconstruction point in ALICE
    * @param recPointPtr is a pointer to the reconstruction point
-   * @param locPositionPtr is a pointer to the array where to fill the coord
+   * @param positionPtr is a pointer to the array where to fill the coord
    */
   void GlobalPosition(AliHLTPHOSRecPointDataStruct* recPointPtr, Float_t* positionPtr);
   
@@ -108,10 +108,10 @@ class AliHLTPHOSPhysicsAnalyzer
 
   /** 
    * Abstract function, for doing analysis
-   * @param recPointsPtr is an array of pointers to recPoints
+   * @param recPointsArrayPtr is an array of pointers to recPoints
    * @param nRecPoints is the numbers of recPoints
    */
-  virtual void Analyze(AliHLTPHOSRecPointContainerStruct* recPointsArrayPtr, Int_t nRecPoints) = 0;
+  virtual void Analyze(AliHLTPHOSRecPointContainerStruct* recPointsArrayPtr, Int_t nRecPoints);
 
  protected:
 

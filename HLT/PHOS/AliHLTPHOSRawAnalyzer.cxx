@@ -50,7 +50,7 @@ AliHLTPHOSRawAnalyzer::~AliHLTPHOSRawAnalyzer()
 
 /**
 * Main constructor
-* @param dtaPtr Data array for wich a subarray will be taken to perform the fit
+* param dtaPtr Data array for wich a subarray will be taken to perform the fit
 * @param fs the sampling frequency in entities of MHz. Needed in order to calculate physical time
 **/
 AliHLTPHOSRawAnalyzer::AliHLTPHOSRawAnalyzer(double * /*dtaPtr*/, double fs): AliHLTPHOSBase(), 

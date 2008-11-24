@@ -21,10 +21,10 @@ using namespace std;
 
 // MT Crap
 #include <TMath.h>
-#include <TEveManager.h>
-#include <TEveBoxSet.h>
+//#include <TEveManager.h>
+//#include <TEveBoxSet.h>
 
-TEveBoxSet* gAliEveBoxSet = 0;
+//TEveBoxSet* gAliEveBoxSet = 0;
 
 AliHLTPHOSOnlineDisplayEventTab::AliHLTPHOSOnlineDisplayEventTab()
 {
@@ -124,21 +124,21 @@ AliHLTPHOSOnlineDisplayEventTab::GetNextEvent()
   ResetDisplay();
   // MT crap
   Bool_t is_first = false;
-  if (gAliEveBoxSet == 0)
-  {
-    is_first = true;
-    gAliEveBoxSet = new TEveBoxSet("PHOS module");
-    // gAliEveBoxSet->SetSecSelectCommand("Draw()");
-    // gAliEveBoxSet->SetSecSelectCommand("phos_histo_draw"); 
-    gEve->AddElement(gAliEveBoxSet);
-  }
-  gAliEveBoxSet->Reset(TEveBoxSet::kBT_AABox, kFALSE, 128);
+ //  if (gAliEveBoxSet == 0)
+//   {
+//     is_first = true;
+//     gAliEveBoxSet = new TEveBoxSet("PHOS module");
+//     // gAliEveBoxSet->SetSecSelectCommand("Draw()");
+//     // gAliEveBoxSet->SetSecSelectCommand("phos_histo_draw"); 
+//     gEve->AddElement(gAliEveBoxSet);
+//   }
+//   gAliEveBoxSet->Reset(TEveBoxSet::kBT_AABox, kFALSE, 128);
 
   DoGetNextEvent();
   UpdateDisplay();
 
-  gAliEveBoxSet->ElementChanged();
-  gEve->Redraw3D(is_first);
+  //  gAliEveBoxSet->ElementChanged();
+  // gEve->Redraw3D(is_first);
 
   fgEvntCnt ++;
 }
@@ -213,13 +213,13 @@ AliHLTPHOSOnlineDisplayEventTab::ReadBlockData(AliHLTHOMERReader *homeReaderPtr)
 	  // CRAP PTH
 	  if(tmpGain == HIGH_GAIN)
 	    {
-	      gAliEveBoxSet->AddBox(2.2*(tmpX + N_XCOLUMNS_RCU*cellEnergiesPtr->fRcuX) - 1.1,
-				    0,
-				    2.2*(tmpZ + N_ZROWS_RCU*cellEnergiesPtr->fRcuZ) - 1.1,
-				    2.2,
-				    0.4*140*currentChannel->fEnergy/1024,
-				    2.2);
-	      gAliEveBoxSet->DigitValue(TMath::Nint(currentChannel->fEnergy));
+	    //   gAliEveBoxSet->AddBox(2.2*(tmpX + N_XCOLUMNS_RCU*cellEnergiesPtr->fRcuX) - 1.1,
+// 				    0,
+// 				    2.2*(tmpZ + N_ZROWS_RCU*cellEnergiesPtr->fRcuZ) - 1.1,
+// 				    2.2,
+// 				    0.4*140*currentChannel->fEnergy/1024,
+// 				    2.2);
+// 	      gAliEveBoxSet->DigitValue(TMath::Nint(currentChannel->fEnergy));
 	    }
  
 	  if(cellEnergiesPtr->fHasRawData == true)

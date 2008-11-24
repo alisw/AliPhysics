@@ -3,9 +3,9 @@ SrcSuf		= cxx
 HeadSuf		= h
 
 
-ROOTLIBS	= `root-config --libs --glibs` -lGed -lFTGL -lRGL -lEve -lEG -lGeom -lTreePlayer -lProofPlayer -lProof
-
-ALIROOTLIBS	= -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)  -lHLTbase -lAliHLTHOMER  -lAliHLTPHOS  -lRAWDatarec -lRAWDatabase -lESD -lSTEER -lSTEERBase -lCDB -lMinuit -lVMC -lPHOSbase -lPHOSshuttle
+#ROOTLIBS	= `root-config --libs --glibs` -lGed -lFTGL -lRGL -lEve -lEG -lGeom -lTreePlayer -lProofPlayer -lProof
+ROOTLIBS	= `root-config --libs --glibs` -lGed -lEG -lGeom -lTreePlayer -lProofPlayer -lProof
+ALIROOTLIBS	= -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)  -lHLTbase -lAliHLTHOMER  -lAliHLTPHOS  -lRAWDatarec -lRAWDatabase -lESD -lSTEER -lSTEERBase -lCDB -lMinuit -lVMC -lPHOSbase -lPHOSshuttle -lPHOSUtils
 
 ALIHLTLIBS	= -L$(ALIHLT_LIBDIR) -lHLTbase -lAliHLTHOMER -lAliHLTPHOS
 

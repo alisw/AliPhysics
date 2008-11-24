@@ -23,7 +23,6 @@
 #include "AliHLTPHOSRcuCellEnergyDataStruct.h"
 #include "AliHLTPHOSMapper.h"
 #include "AliHLTPHOSSanityInspector.h"
-#include "AliHLTPHOSBaseline.h"
 #include "TFile.h"
 #include "TTree.h"
 #include "TClonesArray.h"
@@ -367,7 +366,9 @@ AliHLTPHOSRawAnalyzerComponent::DoInit( int argc, const char** argv )
   char tmpbaselinfile[256];
   if(fUtilitiesPtr->ScanSingleNameArgument(argc, argv, "-baselinefile", tmpbaselinfile) == true  )
     {
-      SetBaselines(tmpbaselinfile);
+      HLTWarning("baseline file no longer supported");
+
+      //      SetBaselines(tmpbaselinfile);
     }
   
   char tmpSelectiveThresholdfile[256];
@@ -407,30 +408,30 @@ AliHLTPHOSRawAnalyzerComponent::ResetDataPtr(int startindex, int sampleCnt)
 
 
 void 
-AliHLTPHOSRawAnalyzerComponent::SetBaselines(const char* file)
+AliHLTPHOSRawAnalyzerComponent::SetBaselines(const char* /*file*/)
 {
   //comment
-  fUseBaselineSubtraction = true;
-  AliHLTPHOSBaseline *baseline = 0;
-  TFile *baselineFile = TFile::Open(file);
-  TTree *baselineTree = (TTree*)baselineFile->Get("baselineTree");
-  TClonesArray *baselineArray = new TClonesArray("AliHLTPHOSBaseline", 7168);
-  baselineTree->SetBranchAddress("Baselines", &baselineArray);
-  baselineTree->GetEntry(0);
-  for(Int_t i = 0; i < baselineArray->GetEntriesFast(); i++)
-    {
-      baseline = (AliHLTPHOSBaseline*)baselineArray->At(i);
-      if((baseline->GetX() < (Int_t)((fRcuX + 1)*N_XCOLUMNS_RCU)) && (baseline->GetX() >= (Int_t)(fRcuX*N_XCOLUMNS_RCU)))
-	{
-	  if((baseline->GetZ() < (Int_t)((fRcuZ + 1)*N_ZROWS_RCU)) && (baseline->GetZ() >= (Int_t)(fRcuZ*N_ZROWS_RCU)))
-	    {
-	      fBaselines[baseline->GetX() - fRcuX*N_XCOLUMNS_RCU][baseline->GetZ() - fRcuZ*N_ZROWS_RCU][baseline->GetGain()] = baseline->GetBaseline();
-	    }
-	}
-    }
-  baselineFile->Close();
-  delete baselineFile;
-  baselineFile = 0;
+//   fUseBaselineSubtraction = true;
+//   AliHLTPHOSBaseline *baseline = 0;
+//   TFile *baselineFile = TFile::Open(file);
+//   TTree *baselineTree = (TTree*)baselineFile->Get("baselineTree");
+//   TClonesArray *baselineArray = new TClonesArray("AliHLTPHOSBaseline", 7168);
+//   baselineTree->SetBranchAddress("Baselines", &baselineArray);
+//   baselineTree->GetEntry(0);
+//   for(Int_t i = 0; i < baselineArray->GetEntriesFast(); i++)
+//     {
+//       baseline = (AliHLTPHOSBaseline*)baselineArray->At(i);
+//       if((baseline->GetX() < (Int_t)((fRcuX + 1)*N_XCOLUMNS_RCU)) && (baseline->GetX() >= (Int_t)(fRcuX*N_XCOLUMNS_RCU)))
+// 	{
+// 	  if((baseline->GetZ() < (Int_t)((fRcuZ + 1)*N_ZROWS_RCU)) && (baseline->GetZ() >= (Int_t)(fRcuZ*N_ZROWS_RCU)))
+// 	    {
+// 	      fBaselines[baseline->GetX() - fRcuX*N_XCOLUMNS_RCU][baseline->GetZ() - fRcuZ*N_ZROWS_RCU][baseline->GetGain()] = baseline->GetBaseline();
+// 	    }
+// 	}
+//     }
+//   baselineFile->Close();
+//   delete baselineFile;
+//   baselineFile = 0;
 }
 
 void 
