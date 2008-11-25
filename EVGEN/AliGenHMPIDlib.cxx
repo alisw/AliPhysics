@@ -44,19 +44,19 @@ Int_t AliGenHMPIDlib::IpPiPlus(TRandom *)
   return 211;     
 }
 
-Double_t AliGenHMPIDlib::PtPiPlusFlat( Double_t *, Double_t *)
+Double_t AliGenHMPIDlib::PtPiPlusFlat( const Double_t *, const Double_t *)
 {
   //PiPlus FLAT pt-distribution
   return 1; 
 }
 
-Double_t AliGenHMPIDlib::PtPiPlusExp( Double_t *x, Double_t *)
+Double_t AliGenHMPIDlib::PtPiPlusExp( const Double_t *x, const Double_t *)
 {
   //PiPlus     EXP  pt-distribution
   return x[0]*TMath::Exp(-x[0]/0.17);   
 }
 
-Double_t AliGenHMPIDlib::YPiPlusFlat(Double_t *,Double_t *)
+Double_t AliGenHMPIDlib::YPiPlusFlat(const Double_t *,const Double_t *)
 {
   //PiPlus            y-distribution 
  return 1;
@@ -72,19 +72,19 @@ Int_t AliGenHMPIDlib::IpPiMinus(TRandom *)
   return -211;     
 }
 
-Double_t AliGenHMPIDlib::PtPiMinusFlat( Double_t *, Double_t *)
+Double_t AliGenHMPIDlib::PtPiMinusFlat( const Double_t *, const Double_t *)
 {
 // PiMinus FLAT pt-distribution
   return 1; 
 }
 
-Double_t AliGenHMPIDlib::PtPiMinusExp( Double_t *x, Double_t *)
+Double_t AliGenHMPIDlib::PtPiMinusExp( const Double_t *x, const Double_t *)
 {
 //PiMinus     EXP  pt-distribution
   return x[0]*TMath::Exp(-x[0]/0.17);   
 }
 
-Double_t AliGenHMPIDlib::YPiMinusFlat(Double_t *,Double_t *)
+Double_t AliGenHMPIDlib::YPiMinusFlat(const Double_t *,const Double_t *)
 {
 //PiMinus          y-distribution 
   return 1;
@@ -100,19 +100,19 @@ Int_t AliGenHMPIDlib::IpKPlus(TRandom *)
   return 321;
 }
 
-Double_t AliGenHMPIDlib::PtKPlusFlat( Double_t *, Double_t *)
+Double_t AliGenHMPIDlib::PtKPlusFlat( const Double_t *, const Double_t *)
 {
 // K+ FLAT pt-distribution
   return 1;
 }
 
-Double_t AliGenHMPIDlib::PtKPlusExp( Double_t *x, Double_t *)
+Double_t AliGenHMPIDlib::PtKPlusExp( const Double_t *x, const Double_t *)
 {
 // K+   EXP  pt-distribution
   return x[0]*TMath::Exp(-x[0]/0.17);
 }
 
-Double_t AliGenHMPIDlib::YKPlusFlat(Double_t *,Double_t *)
+Double_t AliGenHMPIDlib::YKPlusFlat(const Double_t *,const Double_t *)
 {
 // K+             y-distribution
   return 1;
@@ -128,19 +128,19 @@ Int_t AliGenHMPIDlib::IpKMinus(TRandom *)
   return -321;
 }
 
-Double_t AliGenHMPIDlib::PtKMinusFlat( Double_t *, Double_t *)
+Double_t AliGenHMPIDlib::PtKMinusFlat( const Double_t *, const Double_t *)
 {
 // K- FLAT pt-distribution
   return 1;
 }
 
-Double_t AliGenHMPIDlib::PtKMinusExp( Double_t *x, Double_t *)
+Double_t AliGenHMPIDlib::PtKMinusExp( const Double_t *x, const Double_t *)
 {
 // K-   EXP  pt-distribution
   return x[0]*TMath::Exp(-x[0]/0.17);
 }
 
-Double_t AliGenHMPIDlib::YKMinusFlat(Double_t *,Double_t *)
+Double_t AliGenHMPIDlib::YKMinusFlat(const Double_t *,const Double_t *)
 {
 // K-             y-distribution
   return 1;
@@ -156,19 +156,19 @@ Int_t AliGenHMPIDlib::IpK0s(TRandom *)
   return 310;
 }
 
-Double_t AliGenHMPIDlib::PtK0sFlat( Double_t *, Double_t *)
+Double_t AliGenHMPIDlib::PtK0sFlat( const Double_t *, const Double_t *)
 {
 // K0s FLAT pt-distribution
   return 1;
 }
 
-Double_t AliGenHMPIDlib::PtK0sExp( Double_t *x, Double_t *)
+Double_t AliGenHMPIDlib::PtK0sExp( const Double_t *x, const Double_t *)
 {
 // K0s   EXP  pt-distribution
   return x[0]*TMath::Exp(-x[0]/0.17);
 }
 
-Double_t AliGenHMPIDlib::YK0sFlat(Double_t *,Double_t *)
+Double_t AliGenHMPIDlib::YK0sFlat(const Double_t *,const Double_t *)
 {
 // K0s             y-distribution
   return 1;
@@ -184,19 +184,19 @@ Int_t AliGenHMPIDlib::IpPhi(TRandom *)
   return 333;     
 }
 
-Double_t AliGenHMPIDlib::PtPhiFlat( Double_t *, Double_t *)
+Double_t AliGenHMPIDlib::PtPhiFlat( const Double_t *, const Double_t *)
 {
 // Phi FLAT pt-distribution
   return 1; 
 }
 
-Double_t AliGenHMPIDlib::PtPhiExp( Double_t *x, Double_t *)
+Double_t AliGenHMPIDlib::PtPhiExp( const Double_t *x, const Double_t *)
 {
 //phi     EXP  pt-distribution
   return x[0]*TMath::Exp(-x[0]/0.17);   
 }
 
-Double_t AliGenHMPIDlib::YPhiFlat(Double_t *,Double_t *)
+Double_t AliGenHMPIDlib::YPhiFlat(const Double_t *,const Double_t *)
 {
 //phi             y-distribution 
   return 1;
@@ -212,20 +212,20 @@ Int_t AliGenHMPIDlib::IpProton(TRandom *)
   return 2122;     
 }
 
-Double_t AliGenHMPIDlib::PtProtonFlat( Double_t *, Double_t *)
+Double_t AliGenHMPIDlib::PtProtonFlat( const Double_t *, const Double_t *)
 {
 // ProtonFLAT pt-distribution
 
   return 1; 
 }
 
-Double_t AliGenHMPIDlib::PtProtonExp( Double_t *x, Double_t *)
+Double_t AliGenHMPIDlib::PtProtonExp( const Double_t *x, const Double_t *)
 {
 //Proton    EXP  pt-distribution
   return x[0]*TMath::Exp(-x[0]/0.17);   
 }
 
-Double_t AliGenHMPIDlib::YProtonFlat(Double_t *,Double_t *)
+Double_t AliGenHMPIDlib::YProtonFlat(const Double_t *,const Double_t *)
 {
   //Proton            y-distribution 
   return 1;
@@ -241,20 +241,20 @@ Int_t AliGenHMPIDlib::IpProtonBar(TRandom *)
   return -2122;     
 }
 
-Double_t AliGenHMPIDlib::PtProtonBarFlat( Double_t *, Double_t *)
+Double_t AliGenHMPIDlib::PtProtonBarFlat( const Double_t *, const Double_t *)
 {
 // ProtonBar FLAT pt-distribution
 
   return 1; 
 }
 
-Double_t AliGenHMPIDlib::PtProtonBarExp( Double_t *x, Double_t *)
+Double_t AliGenHMPIDlib::PtProtonBarExp( const Double_t *x, const Double_t *)
 {
 //ProtonBar     EXP  pt-distribution
   return x[0]*TMath::Exp(-x[0]/0.17);   
 }
 
-Double_t AliGenHMPIDlib::YProtonBarFlat(Double_t *,Double_t *)
+Double_t AliGenHMPIDlib::YProtonBarFlat(const Double_t *,const Double_t *)
 {
   //ProtonBar             y-distribution 
   return 1;
@@ -270,20 +270,20 @@ Int_t AliGenHMPIDlib::IpLambda(TRandom *)
   return 3122;     
 }
 
-Double_t AliGenHMPIDlib::PtLambdaFlat( Double_t *, Double_t *)
+Double_t AliGenHMPIDlib::PtLambdaFlat( const Double_t *, const Double_t *)
 {
 // Lambda FLAT pt-distribution
 
   return 1; 
 }
 
-Double_t AliGenHMPIDlib::PtLambdaExp( Double_t *x, Double_t *)
+Double_t AliGenHMPIDlib::PtLambdaExp( const Double_t *x, const Double_t *)
 {
 //Lambda     EXP  pt-distribution
   return x[0]*TMath::Exp(-x[0]/0.17);   
 }
 
-Double_t AliGenHMPIDlib::YLambdaFlat(Double_t *,Double_t *)
+Double_t AliGenHMPIDlib::YLambdaFlat(const Double_t *,const Double_t *)
 {
   //Lambda             y-distribution 
   return 1;
@@ -299,20 +299,20 @@ Int_t AliGenHMPIDlib::IpLambdaBar(TRandom *)
   return -3122;     
 }
 
-Double_t AliGenHMPIDlib::PtLambdaBarFlat( Double_t *, Double_t *)
+Double_t AliGenHMPIDlib::PtLambdaBarFlat( const Double_t *, const Double_t *)
 {
 // LambdaBar FLAT pt-distribution
 
   return 1; 
 }
 
-Double_t AliGenHMPIDlib::PtLambdaBarExp( Double_t *x, Double_t *)
+Double_t AliGenHMPIDlib::PtLambdaBarExp( const Double_t *x, const Double_t *)
 {
 //LambdaBar     EXP  pt-distribution
   return x[0]*TMath::Exp(-x[0]/0.17);   
 }
 
-Double_t AliGenHMPIDlib::YLambdaBarFlat(Double_t *,Double_t *)
+Double_t AliGenHMPIDlib::YLambdaBarFlat(const Double_t *,const Double_t *)
 {
   //LambdaBar             y-distribution 
   return 1;
@@ -322,7 +322,7 @@ Double_t AliGenHMPIDlib::YLambdaBarFlat(Double_t *,Double_t *)
 
 
 
-typedef Double_t (*GenFunc)   (Double_t*,  Double_t*);
+typedef Double_t (*GenFunc)   (const Double_t*,  const Double_t*);
 typedef Int_t    (*GenFuncIp) (TRandom *);
 
 GenFunc AliGenHMPIDlib::GetPt(Int_t iPID, const char * sForm) const

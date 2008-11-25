@@ -32,7 +32,7 @@ ClassImp(AliGenPMDlib)
 //
 //  Neutral Pions
 
-Double_t AliGenPMDlib::PtPi0(Double_t *px, Double_t */*dummy*/)
+Double_t AliGenPMDlib::PtPi0(const Double_t *px, const Double_t */*dummy*/)
 {
 //
 //     PT-PARAMETERIZATION CDF, PRL 61(88) 1819
@@ -62,7 +62,7 @@ Double_t AliGenPMDlib::PtPi0(Double_t *px, Double_t */*dummy*/)
 //
 // y-distribution
 //
-Double_t AliGenPMDlib::YPi0( Double_t *py, Double_t */*dummy*/)
+Double_t AliGenPMDlib::YPi0( const Double_t *py, const Double_t */*dummy*/)
 {
   //
   // y parametrisation for pi0
@@ -114,7 +114,7 @@ Double_t AliGenPMDlib::PtScal(Double_t pt, Int_t np)
 //                pt-distribution
 //____________________________________________________________
 
-Double_t AliGenPMDlib::PtEta( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenPMDlib::PtEta( const Double_t *px, const Double_t */*dummy*/)
 {
 // Kaon pT
   return PtScal(*px,3);
@@ -122,7 +122,7 @@ Double_t AliGenPMDlib::PtEta( Double_t *px, Double_t */*dummy*/)
 
 // y-distribution
 //____________________________________________________________
-Double_t AliGenPMDlib::YEta( Double_t *py, Double_t */*dummy*/)
+Double_t AliGenPMDlib::YEta( const Double_t *py, const Double_t */*dummy*/)
 {
     //
     // y parametrisation for etas
@@ -148,7 +148,7 @@ Int_t AliGenPMDlib::IpEta(TRandom *)
 }
 
 
-typedef Double_t (*GenFunc) (Double_t*,  Double_t*);
+typedef Double_t (*GenFunc) (const Double_t*,  const Double_t*);
 GenFunc AliGenPMDlib::GetPt(Int_t param,  const char* /*tname*/) const
 {
 // Return pointer to pT parameterisation

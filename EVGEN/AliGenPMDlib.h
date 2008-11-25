@@ -24,13 +24,13 @@ class AliGenPMDlib :public AliGenLib
     GenFuncIp GetIp(Int_t param, const char* tname=0) const;    
  private:
 // Neutral pions
-    static Double_t PtPi0(Double_t *px, Double_t *dummy);
+    static Double_t PtPi0(const Double_t *px, const Double_t *dummy);
     static Double_t PtScal(Double_t pt, Int_t np);
-    static Double_t YPi0( Double_t *py, Double_t *dummy);
+    static Double_t YPi0( const Double_t *py, const Double_t *dummy);
     static Int_t    IpPi0(TRandom *ran);
 // Etas
-    static Double_t PtEta(Double_t *px, Double_t *dummy);
-    static Double_t YEta( Double_t *py, Double_t *dummy);
+    static Double_t PtEta(const Double_t *px, const Double_t *dummy);
+    static Double_t YEta( const Double_t *py, const Double_t *dummy);
     static Int_t    IpEta(TRandom *ran);
 //
     ClassDef(AliGenPMDlib,0) // Library providing y and pT parameterisations

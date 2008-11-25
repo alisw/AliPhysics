@@ -33,29 +33,29 @@ class AliGenGSIlib :public AliGenLib {
 // Upsilon
     static Int_t    IpUpsilon(TRandom *ran);
 // Upsilon RITMAN   
-    static Double_t PtUpsilonRitman( Double_t *px, Double_t *dummy );
-    static Double_t YUpsilonRitman(Double_t *py, Double_t *dummy);
+    static Double_t PtUpsilonRitman( const Double_t *px, const Double_t *dummy );
+    static Double_t YUpsilonRitman(const Double_t *py, const Double_t *dummy);
 // Upsilon FLAT   
-    static Double_t PtUpsilonFlat( Double_t *px, Double_t *dummy );
-    static Double_t YUpsilonFlat(Double_t *py, Double_t *dummy);
+    static Double_t PtUpsilonFlat( const Double_t *px, const Double_t *dummy );
+    static Double_t YUpsilonFlat(const Double_t *py, const Double_t *dummy);
 // Upsilon Karel
-    static Double_t PtUpsilonKarel( Double_t *px, Double_t *dummy );
-    static Double_t YUpsilonKarel(Double_t *py, Double_t *dummy);
+    static Double_t PtUpsilonKarel( const Double_t *px, const Double_t *dummy );
+    static Double_t YUpsilonKarel(const Double_t *py, const Double_t *dummy);
 // Upsilon MUONlib
-    static Double_t PtUpsilonMUON( Double_t *px, Double_t *dummy );
-    static Double_t YUpsilonMUON(Double_t *py, Double_t *dummy);
+    static Double_t PtUpsilonMUON( const Double_t *px, const Double_t *dummy );
+    static Double_t YUpsilonMUON(const Double_t *py, const Double_t *dummy);
 
 
 // JPsi 
     static Int_t    IpJpsi(TRandom *ran);
 // JPsi FLAT   
-    static Double_t PtJpsiFlat( Double_t *px, Double_t *dummy );
-    static Double_t YJpsiFlat(Double_t *py, Double_t *dummy);
+    static Double_t PtJpsiFlat( const Double_t *px, const Double_t *dummy );
+    static Double_t YJpsiFlat(const Double_t *py, const Double_t *dummy);
 // JPsi from MUONlib
-    static Double_t PtJpsiMUON( Double_t *px, Double_t *dummy );
-    static Double_t YJpsiMUON(Double_t *py, Double_t *dummy);
+    static Double_t PtJpsiMUON( const Double_t *px, const Double_t *dummy );
+    static Double_t YJpsiMUON(const Double_t *py, const Double_t *dummy);
 // JPsi from Ritman
-    static Double_t PtJpsiRitman( Double_t *px, Double_t *dummy );
+    static Double_t PtJpsiRitman( const Double_t *px, const Double_t *dummy );
 
     // JPsi from Sergei
     //    static Double_t PtJpsi( Double_t *px, Double_t *dummy );
@@ -65,61 +65,61 @@ class AliGenGSIlib :public AliGenLib {
 
 // Charm 
     static Int_t IpCharm(TRandom *ran);
-    static Double_t PtCharmFlat( Double_t *px, Double_t *dummy );
-    static Double_t PtCharmMUON( Double_t *px, Double_t *dummy );
-    static Double_t PtCharmGSI( Double_t *px, Double_t *dummy );
-    static Double_t YCharm(Double_t *py, Double_t *dummy);
+    static Double_t PtCharmFlat( const Double_t *px, const Double_t *dummy );
+    static Double_t PtCharmMUON( const Double_t *px, const Double_t *dummy );
+    static Double_t PtCharmGSI( const Double_t *px, const Double_t *dummy );
+    static Double_t YCharm(const Double_t *py, const Double_t *dummy);
 
 
 // Beauty
     static Int_t IpBeauty(TRandom *ran);
-    static Double_t PtBeautyFlat( Double_t *px, Double_t *dummy );
-    static Double_t PtBeautyMUON( Double_t *px, Double_t *dummy );
-    static Double_t PtBeautyGSI( Double_t *px, Double_t *dummy );
-    static Double_t YBeauty(Double_t *py, Double_t *dummy);
+    static Double_t PtBeautyFlat( const Double_t *px, const Double_t *dummy );
+    static Double_t PtBeautyMUON( const Double_t *px, const Double_t *dummy );
+    static Double_t PtBeautyGSI( const Double_t *px, const Double_t *dummy );
+    static Double_t YBeauty(const Double_t *py, const Double_t *dummy);
 
 
 // Eta
     static Int_t IpEta(TRandom *ran);
-    static Double_t PtEtaPHOS( Double_t *px, Double_t *dummy );
-    static Double_t YEtaPHOS(Double_t *py, Double_t *dummy);
+    static Double_t PtEtaPHOS( const Double_t *px, const Double_t *dummy );
+    static Double_t YEtaPHOS(const Double_t *py, const Double_t *dummy);
 
 
 // Etaprime
     static Int_t IpEtaprime(TRandom *ran);
-    static Double_t PtEtaprimePHOS( Double_t *px, Double_t *dummy );
-    static Double_t YEtaprimePHOS(Double_t *py, Double_t *dummy);
+    static Double_t PtEtaprimePHOS( const Double_t *px, const Double_t *dummy );
+    static Double_t YEtaprimePHOS(const Double_t *py, const Double_t *dummy);
 
 
 // Omega
     static Int_t IpOmega(TRandom *ran);
-    static Double_t PtOmega( Double_t *px, Double_t *dummy );
-    static Double_t YOmega(Double_t *py, Double_t *dummy);
+    static Double_t PtOmega( const Double_t *px, const Double_t *dummy );
+    static Double_t YOmega(const Double_t *py, const Double_t *dummy);
 
 
 // Rho
    static Int_t IpRho(TRandom *ran);
-   static Double_t PtRho( Double_t *px, Double_t *dummy );
-   static Double_t YRho(Double_t *py, Double_t *dummy);
+   static Double_t PtRho( const Double_t *px, const Double_t *dummy );
+   static Double_t YRho(const Double_t *py, const Double_t *dummy);
 
 
 
 // Kaon
     static Int_t IpKaonPHOS(TRandom *ran);
-    static Double_t PtKaonPHOS( Double_t *px, Double_t *dummy );
-    static Double_t YKaonPHOS(Double_t *py, Double_t *dummy);
+    static Double_t PtKaonPHOS( const Double_t *px, const Double_t *dummy );
+    static Double_t YKaonPHOS(const Double_t *py, const Double_t *dummy);
 
 
 // Pion
     static Int_t IpPionPHOS(TRandom *ran);
-    static Double_t PtPion( Double_t *px, Double_t *dummy );
-    static Double_t YPion(Double_t *py, Double_t *dummy);
+    static Double_t PtPion( const Double_t *px, const Double_t *dummy );
+    static Double_t YPion(const Double_t *py, const Double_t *dummy);
 
 
 // Phi
     static Int_t IpPhi(TRandom *ran);
-    static Double_t PtPhiPHOS( Double_t *px, Double_t *dummy );
-    static Double_t YPhiPHOS(Double_t *py, Double_t *dummy);
+    static Double_t PtPhiPHOS( const Double_t *px, const Double_t *dummy );
+    static Double_t YPhiPHOS(const Double_t *py, const Double_t *dummy);
 
 
 // Lambda
@@ -130,8 +130,8 @@ class AliGenGSIlib :public AliGenLib {
 
 // Baryons
     static Int_t IpBaryons(TRandom *ran);
-    static Double_t PtBaryons( Double_t *px, Double_t *dummy );
-    static Double_t YBaryons(Double_t *py, Double_t *dummy);
+    static Double_t PtBaryons( const Double_t *px, const Double_t *dummy );
+    static Double_t YBaryons(const Double_t *py, const Double_t *dummy);
 
 
 

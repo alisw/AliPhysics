@@ -32,7 +32,7 @@
 ClassImp(AliGenMUONlib)
 //
 //  Pions
-Double_t AliGenMUONlib::PtPion(Double_t *px, Double_t* /*dummy*/)
+Double_t AliGenMUONlib::PtPion(const Double_t *px, const Double_t* /*dummy*/)
 {
 //
 //     PT-PARAMETERIZATION CDF, PRL 61(88) 1819
@@ -61,7 +61,7 @@ Double_t AliGenMUONlib::PtPion(Double_t *px, Double_t* /*dummy*/)
 //
 // y-distribution
 //
-Double_t AliGenMUONlib::YPion( Double_t *py, Double_t */*dummy*/)
+Double_t AliGenMUONlib::YPion( const Double_t *py, const Double_t */*dummy*/)
 {
 // Pion y
   Double_t y=TMath::Abs(*py);
@@ -111,7 +111,7 @@ Double_t AliGenMUONlib::PtScal(Double_t pt, Int_t np)
 //
 //                pt-distribution
 //____________________________________________________________
-Double_t AliGenMUONlib::PtKaon( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::PtKaon( const Double_t *px, const Double_t */*dummy*/)
 {
 // Kaon pT
   return PtScal(*px,2);
@@ -119,7 +119,7 @@ Double_t AliGenMUONlib::PtKaon( Double_t *px, Double_t */*dummy*/)
 
 // y-distribution
 //____________________________________________________________
-Double_t AliGenMUONlib::YKaon( Double_t *py, Double_t */*dummy*/)
+Double_t AliGenMUONlib::YKaon( const Double_t *py, const Double_t */*dummy*/)
 {
 // Kaon y
   Double_t y=TMath::Abs(*py);
@@ -151,7 +151,7 @@ Int_t AliGenMUONlib::IpKaon(TRandom *ran)
 //
 //                pt-distribution
 //____________________________________________________________
-Double_t AliGenMUONlib::PtJpsi( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::PtJpsi( const Double_t *px, const Double_t */*dummy*/)
 {
 // J/Psi pT
   const Double_t kpt0 = 4.;
@@ -162,7 +162,7 @@ Double_t AliGenMUONlib::PtJpsi( Double_t *px, Double_t */*dummy*/)
   return x/TMath::Power(pass1,kxn);
 }
 
-Double_t AliGenMUONlib::PtJpsiCDFscaled( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::PtJpsiCDFscaled( const Double_t *px, const Double_t */*dummy*/)
 {
 // J/Psi pT
 //
@@ -178,7 +178,7 @@ Double_t AliGenMUONlib::PtJpsiCDFscaled( Double_t *px, Double_t */*dummy*/)
   return x/TMath::Power(pass1,kxn);
 }
 
-Double_t AliGenMUONlib::PtJpsiCDFscaledold( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::PtJpsiCDFscaledold( const Double_t *px, const Double_t */*dummy*/)
 {
 // J/Psi pT
 //
@@ -193,7 +193,7 @@ Double_t AliGenMUONlib::PtJpsiCDFscaledold( Double_t *px, Double_t */*dummy*/)
   return x/TMath::Power(pass1,kxn);
 }
 
-Double_t AliGenMUONlib::PtJpsiCDFscaledPP( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::PtJpsiCDFscaledPP( const Double_t *px, const Double_t */*dummy*/)
 {
 // J/Psi pT
 //
@@ -208,7 +208,7 @@ Double_t AliGenMUONlib::PtJpsiCDFscaledPP( Double_t *px, Double_t */*dummy*/)
   return x/TMath::Power(pass1,kxn);
 }
 
-Double_t AliGenMUONlib::PtJpsiCDFscaledPPold( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::PtJpsiCDFscaledPPold( const Double_t *px, const Double_t */*dummy*/)
 {
 // J/Psi pT
 //
@@ -223,7 +223,7 @@ Double_t AliGenMUONlib::PtJpsiCDFscaledPPold( Double_t *px, Double_t */*dummy*/)
   return x/TMath::Power(pass1,kxn);
 }
 
-Double_t AliGenMUONlib::PtJpsiCDFscaledPP10( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::PtJpsiCDFscaledPP10( const Double_t *px, const Double_t */*dummy*/)
 {
 // J/Psi pT
 //
@@ -238,12 +238,12 @@ Double_t AliGenMUONlib::PtJpsiCDFscaledPP10( Double_t *px, Double_t */*dummy*/)
   return x/TMath::Power(pass1,kxn);
 }
 
-Double_t AliGenMUONlib::PtJpsiFlat( Double_t */*px*/, Double_t */*dummy*/ )
+Double_t AliGenMUONlib::PtJpsiFlat( const Double_t */*px*/, const Double_t */*dummy*/ )
 {
   return 1.;
 }
 
-Double_t AliGenMUONlib::PtJpsiPbPb( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::PtJpsiPbPb( const Double_t *px, const Double_t */*dummy*/)
 {
 // J/Psi pT spectrum
 //
@@ -270,7 +270,7 @@ Double_t AliGenMUONlib::PtJpsiPbPb( Double_t *px, Double_t */*dummy*/)
     return y;
 }
 
-Double_t AliGenMUONlib::PtJpsiBPbPb( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::PtJpsiBPbPb( const Double_t *px, const Double_t */*dummy*/)
 {
 // J/Psi pT spectrum
 // B -> J/Psi X
@@ -284,7 +284,7 @@ Double_t AliGenMUONlib::PtJpsiBPbPb( Double_t *px, Double_t */*dummy*/)
 }
 
 
-Double_t AliGenMUONlib::PtJpsiPP( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::PtJpsiPP( const Double_t *px, const Double_t */*dummy*/)
 {
 // J/Psi pT spectrum
 //
@@ -311,7 +311,7 @@ Double_t AliGenMUONlib::PtJpsiPP( Double_t *px, Double_t */*dummy*/)
 //
 //               y-distribution
 //____________________________________________________________
-Double_t AliGenMUONlib::YJpsi(Double_t *py, Double_t */*dummy*/)
+Double_t AliGenMUONlib::YJpsi(const Double_t *py, const Double_t */*dummy*/)
 {
 // J/psi y
   const Double_t ky0 = 4.;
@@ -326,13 +326,13 @@ Double_t AliGenMUONlib::YJpsi(Double_t *py, Double_t */*dummy*/)
   return yj;
 }
 
-Double_t AliGenMUONlib::YJpsiFlat( Double_t */*py*/, Double_t */*dummy*/ )
+Double_t AliGenMUONlib::YJpsiFlat( const Double_t */*py*/, const Double_t */*dummy*/ )
 {
   return 1.;
 }
 
 
-Double_t AliGenMUONlib::YJpsiPbPb( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::YJpsiPbPb( const Double_t *px, const Double_t */*dummy*/)
 {
 
 //
@@ -361,31 +361,31 @@ Double_t AliGenMUONlib::YJpsiPbPb( Double_t *px, Double_t */*dummy*/)
     return y;
 }
 
-Double_t AliGenMUONlib::YJpsiCDFscaled( Double_t *px, Double_t* dummy)
+Double_t AliGenMUONlib::YJpsiCDFscaled( const Double_t *px, const Double_t* dummy)
 {
     // J/Psi y 
     return AliGenMUONlib::YJpsiPbPb(px, dummy);
 }
 
-Double_t AliGenMUONlib::YJpsiCDFscaledold( Double_t *px, Double_t* dummy)
+Double_t AliGenMUONlib::YJpsiCDFscaledold( const Double_t *px, const Double_t* dummy)
 {
     // J/Psi y 
     return AliGenMUONlib::YJpsiPbPb(px, dummy);
 }
 
-Double_t AliGenMUONlib::YJpsiCDFscaledPP( Double_t *px, Double_t* dummy)
+Double_t AliGenMUONlib::YJpsiCDFscaledPP( const Double_t *px, const Double_t* dummy)
 {
     // J/Psi y 
     return AliGenMUONlib::YJpsiPP(px, dummy);
 }
 
-Double_t AliGenMUONlib::YJpsiCDFscaledPPold( Double_t *px, Double_t* dummy)
+Double_t AliGenMUONlib::YJpsiCDFscaledPPold( const Double_t *px, const Double_t* dummy)
 {
     // J/Psi y 
     return AliGenMUONlib::YJpsiPP(px, dummy);
 }
 
-Double_t AliGenMUONlib::YJpsiCDFscaledPP10( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::YJpsiCDFscaledPP10( const Double_t *px, const Double_t */*dummy*/)
 {
 
 //
@@ -416,7 +416,7 @@ Double_t AliGenMUONlib::YJpsiCDFscaledPP10( Double_t *px, Double_t */*dummy*/)
     return y;
 }
 
-Double_t AliGenMUONlib::YJpsiPP( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::YJpsiPP( const Double_t *px, const Double_t */*dummy*/)
 {
 
 //
@@ -446,7 +446,7 @@ Double_t AliGenMUONlib::YJpsiPP( Double_t *px, Double_t */*dummy*/)
     return y;
 }
 
-Double_t AliGenMUONlib::YJpsiBPbPb( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::YJpsiBPbPb( const Double_t *px, const Double_t */*dummy*/)
 {
 
 //
@@ -505,7 +505,7 @@ Int_t AliGenMUONlib::IpJpsiFamily(TRandom *)
 //
 //                  pt-distribution
 //____________________________________________________________
-Double_t AliGenMUONlib::PtUpsilon( Double_t *px, Double_t */*dummy*/ )
+Double_t AliGenMUONlib::PtUpsilon( const Double_t *px, const Double_t */*dummy*/ )
 {
 // Upsilon pT
   const Double_t kpt0 = 5.3;
@@ -516,7 +516,7 @@ Double_t AliGenMUONlib::PtUpsilon( Double_t *px, Double_t */*dummy*/ )
   return x/TMath::Power(pass1,kxn);
 }
 
-Double_t AliGenMUONlib::PtUpsilonCDFscaled( Double_t *px, Double_t */*dummy*/ )
+Double_t AliGenMUONlib::PtUpsilonCDFscaled( const Double_t *px, const Double_t */*dummy*/ )
 {
 // Upsilon pT
   const Double_t kpt0 = 7.753;
@@ -527,7 +527,7 @@ Double_t AliGenMUONlib::PtUpsilonCDFscaled( Double_t *px, Double_t */*dummy*/ )
   return x/TMath::Power(pass1,kxn);
 }
 
-Double_t AliGenMUONlib::PtUpsilonCDFscaledPP( Double_t *px, Double_t */*dummy*/ )
+Double_t AliGenMUONlib::PtUpsilonCDFscaledPP( const Double_t *px, const Double_t */*dummy*/ )
 {
 // Upsilon pT
 //
@@ -543,12 +543,12 @@ Double_t AliGenMUONlib::PtUpsilonCDFscaledPP( Double_t *px, Double_t */*dummy*/ 
   return x/TMath::Power(pass1,kxn);
 }
 
-Double_t AliGenMUONlib::PtUpsilonFlat( Double_t */*px*/, Double_t */*dummy*/ )
+Double_t AliGenMUONlib::PtUpsilonFlat( const Double_t */*px*/, const Double_t */*dummy*/ )
 {
   return 1.;
 }
 
-Double_t AliGenMUONlib::PtUpsilonPbPb( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::PtUpsilonPbPb( const Double_t *px, const Double_t */*dummy*/)
 {
 
 //
@@ -577,7 +577,7 @@ Double_t AliGenMUONlib::PtUpsilonPbPb( Double_t *px, Double_t */*dummy*/)
     return y;
 }
 
-Double_t AliGenMUONlib::PtUpsilonPP( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::PtUpsilonPP( const Double_t *px, const Double_t */*dummy*/)
 {
 
 //
@@ -609,7 +609,7 @@ Double_t AliGenMUONlib::PtUpsilonPP( Double_t *px, Double_t */*dummy*/)
 //                    y-distribution
 //
 //____________________________________________________________
-Double_t AliGenMUONlib::YUpsilon(Double_t *py, Double_t */*dummy*/)
+Double_t AliGenMUONlib::YUpsilon(const Double_t *py, const Double_t */*dummy*/)
 {
 // Upsilon y
   const Double_t ky0 = 3.;
@@ -625,7 +625,7 @@ Double_t AliGenMUONlib::YUpsilon(Double_t *py, Double_t */*dummy*/)
 }
 
 
-Double_t AliGenMUONlib::YUpsilonPbPb( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::YUpsilonPbPb( const Double_t *px, const Double_t */*dummy*/)
 {
 
 //
@@ -649,28 +649,28 @@ Double_t AliGenMUONlib::YUpsilonPbPb( Double_t *px, Double_t */*dummy*/)
     return y;
 }
 
-Double_t AliGenMUONlib::YUpsilonCDFscaled( Double_t *px, Double_t *dummy)
+Double_t AliGenMUONlib::YUpsilonCDFscaled( const Double_t *px, const Double_t *dummy)
 {
     // Upsilon y
     return AliGenMUONlib::YUpsilonPbPb(px, dummy);
     
 }
 
-Double_t AliGenMUONlib::YUpsilonCDFscaledPP( Double_t *px, Double_t *dummy)
+Double_t AliGenMUONlib::YUpsilonCDFscaledPP( const Double_t *px, const Double_t *dummy)
 {
     // Upsilon y
     return AliGenMUONlib::YUpsilonPP(px, dummy);
     
 }
 
-Double_t AliGenMUONlib::YUpsilonFlat( Double_t */*px*/, Double_t */*dummy*/)
+Double_t AliGenMUONlib::YUpsilonFlat( const Double_t */*px*/, const Double_t */*dummy*/)
 {
     // Upsilon y
     return 1.;
     
 }
 
-Double_t AliGenMUONlib::YUpsilonPP( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::YUpsilonPP( const Double_t *px, const Double_t */*dummy*/)
 {
 
 //
@@ -733,13 +733,13 @@ Int_t AliGenMUONlib::IpUpsilonFamily(TRandom *)
 //
 //    pt-distribution (by scaling of pion distribution)
 //____________________________________________________________
-Double_t AliGenMUONlib::PtPhi( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::PtPhi( const Double_t *px, const Double_t */*dummy*/)
 {
 // Phi pT
   return PtScal(*px,7);
 }
 //    y-distribution
-Double_t AliGenMUONlib::YPhi( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::YPhi( const Double_t *px, const Double_t */*dummy*/)
 {
 // Phi y
     Double_t *dum=0;
@@ -759,13 +759,13 @@ Int_t AliGenMUONlib::IpPhi(TRandom *)
 //
 //    pt-distribution (by scaling of pion distribution)
 //____________________________________________________________
-Double_t AliGenMUONlib::PtOmega( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::PtOmega( const Double_t *px, const Double_t */*dummy*/)
 {
 // Omega pT
   return PtScal(*px,5);
 }
 //    y-distribution
-Double_t AliGenMUONlib::YOmega( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::YOmega( const Double_t *px, const Double_t */*dummy*/)
 {
 // Omega y
     Double_t *dum=0;
@@ -786,13 +786,13 @@ Int_t AliGenMUONlib::IpOmega(TRandom *)
 //
 //    pt-distribution (by scaling of pion distribution)
 //____________________________________________________________
-Double_t AliGenMUONlib::PtEta( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::PtEta( const Double_t *px, const Double_t */*dummy*/)
 {
 // Eta pT
   return PtScal(*px,3);
 }
 //    y-distribution
-Double_t AliGenMUONlib::YEta( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::YEta( const Double_t *px, const Double_t */*dummy*/)
 {
 // Eta y
     Double_t *dum=0;
@@ -812,7 +812,7 @@ Int_t AliGenMUONlib::IpEta(TRandom *)
 //
 //                    pt-distribution
 //____________________________________________________________
-Double_t AliGenMUONlib::PtCharm( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::PtCharm( const Double_t *px, const Double_t */*dummy*/)
 {
 // Charm pT
   const Double_t kpt0 = 2.25;
@@ -823,7 +823,7 @@ Double_t AliGenMUONlib::PtCharm( Double_t *px, Double_t */*dummy*/)
   return x/TMath::Power(pass1,kxn);
 }
 
-Double_t AliGenMUONlib::PtCharmCentral( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::PtCharmCentral( const Double_t *px, const Double_t */*dummy*/)
 {
 // Charm pT
   const Double_t kpt0 = 2.12;
@@ -833,7 +833,7 @@ Double_t AliGenMUONlib::PtCharmCentral( Double_t *px, Double_t */*dummy*/)
   Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
   return x/TMath::Power(pass1,kxn);
 }
-Double_t AliGenMUONlib::PtCharmF0M0S0PP( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::PtCharmF0M0S0PP( const Double_t *px, const Double_t */*dummy*/)
 {
 // FiMjSkPP define theoretical uncertainties around F0M0S0PP as follows:
 // PtCharmFiMjSkPP = PtCharmF0M0S0PP * (dN(i,j,k)/dpt / dN(0,0,0)/dpt)_MNR
@@ -864,7 +864,7 @@ Double_t AliGenMUONlib::PtCharmF0M0S0PP( Double_t *px, Double_t */*dummy*/)
   Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
   return x/TMath::Power(pass1,kxn)*(1.+c[0]*x+c[1]*x*x)/(1.+c[2]*x*x);
 }
-Double_t AliGenMUONlib::PtCharmF1M0S0PP( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::PtCharmF1M0S0PP( const Double_t *px, const Double_t */*dummy*/)
 {
 // Charm pT
 // Corresponding NLO total cross section is 6.06 mb
@@ -876,7 +876,7 @@ Double_t AliGenMUONlib::PtCharmF1M0S0PP( Double_t *px, Double_t */*dummy*/)
   Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
   return x/TMath::Power(pass1,kxn)*(1.+c[0]*x+c[1]*x*x)/(1.+c[2]*x*x);
 }
-Double_t AliGenMUONlib::PtCharmF2M0S0PP( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::PtCharmF2M0S0PP( const Double_t *px, const Double_t */*dummy*/)
 {
 // Charm pT
 // Corresponding NLO total cross section is 6.06 mb
@@ -888,7 +888,7 @@ Double_t AliGenMUONlib::PtCharmF2M0S0PP( Double_t *px, Double_t */*dummy*/)
   Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
   return x/TMath::Power(pass1,kxn)*(1.+c[0]*x+c[1]*x*x)/(1.+c[2]*x*x);
 }
-Double_t AliGenMUONlib::PtCharmF0M1S0PP( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::PtCharmF0M1S0PP( const Double_t *px, const Double_t */*dummy*/)
 {
 // Charm pT
 // Corresponding NLO total cross section is 7.69 mb
@@ -900,7 +900,7 @@ Double_t AliGenMUONlib::PtCharmF0M1S0PP( Double_t *px, Double_t */*dummy*/)
   Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
   return x/TMath::Power(pass1,kxn)*(1.+c[0]*x+c[1]*x*x)/(1.+c[2]*x*x);
 }
-Double_t AliGenMUONlib::PtCharmF0M2S0PP( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::PtCharmF0M2S0PP( const Double_t *px, const Double_t */*dummy*/)
 {
 // Charm pT
 // Corresponding NLO total cross section is 4.81 mb
@@ -912,7 +912,7 @@ Double_t AliGenMUONlib::PtCharmF0M2S0PP( Double_t *px, Double_t */*dummy*/)
   Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
   return x/TMath::Power(pass1,kxn)*(1.+c[0]*x+c[1]*x*x)/(1.+c[2]*x*x);
 }
-Double_t AliGenMUONlib::PtCharmF0M0S1PP( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::PtCharmF0M0S1PP( const Double_t *px, const Double_t */*dummy*/)
 {
 // Charm pT
 // Corresponding NLO total cross section is 14.09 mb
@@ -924,7 +924,7 @@ Double_t AliGenMUONlib::PtCharmF0M0S1PP( Double_t *px, Double_t */*dummy*/)
   Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
   return x/TMath::Power(pass1,kxn)*(1.+c[0]*x+c[1]*x*x)/(1.+c[2]*x*x);
 }
-Double_t AliGenMUONlib::PtCharmF0M0S2PP( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::PtCharmF0M0S2PP( const Double_t *px, const Double_t */*dummy*/)
 {
 // Charm pT
 // Corresponding NLO total cross section is 1.52 mb
@@ -936,7 +936,7 @@ Double_t AliGenMUONlib::PtCharmF0M0S2PP( Double_t *px, Double_t */*dummy*/)
   Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
   return x/TMath::Power(pass1,kxn)*(1.+c[0]*x+c[1]*x*x)/(1.+c[2]*x*x);
 }
-Double_t AliGenMUONlib::PtCharmF0M0S3PP( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::PtCharmF0M0S3PP( const Double_t *px, const Double_t */*dummy*/)
 {
 // Charm pT
 // Corresponding NLO total cross section is 3.67 mb
@@ -948,7 +948,7 @@ Double_t AliGenMUONlib::PtCharmF0M0S3PP( Double_t *px, Double_t */*dummy*/)
   Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
   return x/TMath::Power(pass1,kxn)*(1.+c[0]*x+c[1]*x*x)/(1.+c[2]*x*x);
 }
-Double_t AliGenMUONlib::PtCharmF0M0S4PP( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::PtCharmF0M0S4PP( const Double_t *px, const Double_t */*dummy*/)
 {
 // Charm pT
 // Corresponding NLO total cross section is 3.38 mb
@@ -960,7 +960,7 @@ Double_t AliGenMUONlib::PtCharmF0M0S4PP( Double_t *px, Double_t */*dummy*/)
   Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
   return x/TMath::Power(pass1,kxn)*(1.+c[0]*x+c[1]*x*x)/(1.+c[2]*x*x);
 }
-Double_t AliGenMUONlib::PtCharmF0M0S5PP( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::PtCharmF0M0S5PP( const Double_t *px, const Double_t */*dummy*/)
 {
 // Charm pT
 // Corresponding NLO total cross section is 10.37 mb
@@ -972,7 +972,7 @@ Double_t AliGenMUONlib::PtCharmF0M0S5PP( Double_t *px, Double_t */*dummy*/)
   Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
   return x/TMath::Power(pass1,kxn)*(1.+c[0]*x+c[1]*x*x)/(1.+c[2]*x*x);
 }
-Double_t AliGenMUONlib::PtCharmF0M0S6PP( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::PtCharmF0M0S6PP( const Double_t *px, const Double_t */*dummy*/)
 {
 // Charm pT
 // Corresponding NLO total cross section is 7.22 mb
@@ -986,7 +986,7 @@ Double_t AliGenMUONlib::PtCharmF0M0S6PP( Double_t *px, Double_t */*dummy*/)
 }
 
 //                  y-distribution
-Double_t AliGenMUONlib::YCharm( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::YCharm( const Double_t *px, const Double_t */*dummy*/)
 {
 // Charm y :: Carrer & Dainese : ALICE-INT-2003-019 v.3 (hep-ph/0311225) 
 // Pythia tuned to reproduce the distribution given by the HVQMNR program based on NLO calculations (pQCD)
@@ -1006,7 +1006,7 @@ Double_t AliGenMUONlib::YCharm( Double_t *px, Double_t */*dummy*/)
     
     return ycharm;
 }
-Double_t AliGenMUONlib::YCharmF0M0S0PP( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::YCharmF0M0S0PP( const Double_t *px, const Double_t */*dummy*/)
 {
 // FiMjSkPP define theoretical uncertainties around F0M0S0PP as follows:
 // YCharmFiMjSkPP = YCharmF0M0S0PP * (dN(i,j,k)/dy / dN(0,0,0)/dy)_MNR
@@ -1042,7 +1042,7 @@ Double_t AliGenMUONlib::YCharmF0M0S0PP( Double_t *px, Double_t */*dummy*/)
     
     return ycharm;
 }
-Double_t AliGenMUONlib::YCharmF1M0S0PP( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::YCharmF1M0S0PP( const Double_t *px, const Double_t */*dummy*/)
 {
 // Charm y
 // Corresponding NLO total cross section is 6.06 mb
@@ -1060,7 +1060,7 @@ Double_t AliGenMUONlib::YCharmF1M0S0PP( Double_t *px, Double_t */*dummy*/)
     
     return ycharm;
 }
-Double_t AliGenMUONlib::YCharmF2M0S0PP( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::YCharmF2M0S0PP( const Double_t *px, const Double_t */*dummy*/)
 {
 // Charm y
 // Corresponding NLO total cross section is 6.06 mb
@@ -1078,7 +1078,7 @@ Double_t AliGenMUONlib::YCharmF2M0S0PP( Double_t *px, Double_t */*dummy*/)
     
     return ycharm;
 }
-Double_t AliGenMUONlib::YCharmF0M1S0PP( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::YCharmF0M1S0PP( const Double_t *px, const Double_t */*dummy*/)
 {
 // Charm y
 // Corresponding NLO total cross section is 7.69 mb
@@ -1096,7 +1096,7 @@ Double_t AliGenMUONlib::YCharmF0M1S0PP( Double_t *px, Double_t */*dummy*/)
     
     return ycharm;
 }
-Double_t AliGenMUONlib::YCharmF0M2S0PP( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::YCharmF0M2S0PP( const Double_t *px, const Double_t */*dummy*/)
 {
 // Charm y
 // Corresponding NLO total cross section is 4.81 mb
@@ -1114,7 +1114,7 @@ Double_t AliGenMUONlib::YCharmF0M2S0PP( Double_t *px, Double_t */*dummy*/)
     
     return ycharm;
 }
-Double_t AliGenMUONlib::YCharmF0M0S1PP( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::YCharmF0M0S1PP( const Double_t *px, const Double_t */*dummy*/)
 {
 // Charm y
 // Corresponding NLO total cross section is 14.09 mb
@@ -1132,7 +1132,7 @@ Double_t AliGenMUONlib::YCharmF0M0S1PP( Double_t *px, Double_t */*dummy*/)
     
     return ycharm;
 }
-Double_t AliGenMUONlib::YCharmF0M0S2PP( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::YCharmF0M0S2PP( const Double_t *px, const Double_t */*dummy*/)
 {
 // Charm y
 // Corresponding NLO total cross section is 1.52 mb
@@ -1150,7 +1150,7 @@ Double_t AliGenMUONlib::YCharmF0M0S2PP( Double_t *px, Double_t */*dummy*/)
     
     return ycharm;
 }
-Double_t AliGenMUONlib::YCharmF0M0S3PP( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::YCharmF0M0S3PP( const Double_t *px, const Double_t */*dummy*/)
 {
 // Charm y
 // Corresponding NLO total cross section is 3.67 mb
@@ -1168,7 +1168,7 @@ Double_t AliGenMUONlib::YCharmF0M0S3PP( Double_t *px, Double_t */*dummy*/)
     
     return ycharm;
 }
-Double_t AliGenMUONlib::YCharmF0M0S4PP( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::YCharmF0M0S4PP( const Double_t *px, const Double_t */*dummy*/)
 {
 // Charm y
 // Corresponding NLO total cross section is 3.38 mb
@@ -1186,7 +1186,7 @@ Double_t AliGenMUONlib::YCharmF0M0S4PP( Double_t *px, Double_t */*dummy*/)
     
     return ycharm;
 }
-Double_t AliGenMUONlib::YCharmF0M0S5PP( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::YCharmF0M0S5PP( const Double_t *px, const Double_t */*dummy*/)
 {
 // Charm y
 // Corresponding NLO total cross section is 10.37 mb
@@ -1204,7 +1204,7 @@ Double_t AliGenMUONlib::YCharmF0M0S5PP( Double_t *px, Double_t */*dummy*/)
     
     return ycharm;
 }
-Double_t AliGenMUONlib::YCharmF0M0S6PP( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::YCharmF0M0S6PP( const Double_t *px, const Double_t */*dummy*/)
 {
 // Charm y
 // Corresponding NLO total cross section is 7.22 mb
@@ -1261,7 +1261,7 @@ Int_t AliGenMUONlib::IpCharm(TRandom *ran)
 //
 //                    pt-distribution
 //____________________________________________________________
-Double_t AliGenMUONlib::PtBeauty( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::PtBeauty( const Double_t *px, const Double_t */*dummy*/)
 {
 // Beauty pT
   const Double_t kpt0 = 6.53;
@@ -1272,7 +1272,7 @@ Double_t AliGenMUONlib::PtBeauty( Double_t *px, Double_t */*dummy*/)
   return x/TMath::Power(pass1,kxn);
 }
 
-Double_t AliGenMUONlib::PtBeautyCentral( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::PtBeautyCentral( const Double_t *px, const Double_t */*dummy*/)
 {
 // Beauty pT
   const Double_t kpt0 = 6.14;
@@ -1282,7 +1282,7 @@ Double_t AliGenMUONlib::PtBeautyCentral( Double_t *px, Double_t */*dummy*/)
   Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
   return x/TMath::Power(pass1,kxn);
 }
-Double_t AliGenMUONlib::PtBeautyF0M0S0PP( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::PtBeautyF0M0S0PP( const Double_t *px, const Double_t */*dummy*/)
 {
 // FiMjSkPP define theoretical uncertainties around F0M0S0PP as follows:
 // PtBeautyFiMjSkPP = PtBeautyF0M0S0PP * (dN(i,j,k)/dpt / dN(0,0,0)/dpt)_MNR
@@ -1311,7 +1311,7 @@ Double_t AliGenMUONlib::PtBeautyF0M0S0PP( Double_t *px, Double_t */*dummy*/)
   Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
   return x/TMath::Power(pass1,kxn);
 }
-Double_t AliGenMUONlib::PtBeautyF1M0S0PP( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::PtBeautyF1M0S0PP( const Double_t *px, const Double_t */*dummy*/)
 {
 // Beauty pT
 // Corresponding NLO total cross section is 0.445 mb
@@ -1322,7 +1322,7 @@ Double_t AliGenMUONlib::PtBeautyF1M0S0PP( Double_t *px, Double_t */*dummy*/)
   Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
   return x/TMath::Power(pass1,kxn);
 }
-Double_t AliGenMUONlib::PtBeautyF2M0S0PP( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::PtBeautyF2M0S0PP( const Double_t *px, const Double_t */*dummy*/)
 {
 // Beauty pT
 // Corresponding NLO total cross section is 0.445 mb
@@ -1333,7 +1333,7 @@ Double_t AliGenMUONlib::PtBeautyF2M0S0PP( Double_t *px, Double_t */*dummy*/)
   Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
   return x/TMath::Power(pass1,kxn);
 }
-Double_t AliGenMUONlib::PtBeautyF0M1S0PP( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::PtBeautyF0M1S0PP( const Double_t *px, const Double_t */*dummy*/)
 {
 // Beauty pT
 // Corresponding NLO total cross section is 0.518 mb
@@ -1344,7 +1344,7 @@ Double_t AliGenMUONlib::PtBeautyF0M1S0PP( Double_t *px, Double_t */*dummy*/)
   Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
   return x/TMath::Power(pass1,kxn);
 }
-Double_t AliGenMUONlib::PtBeautyF0M2S0PP( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::PtBeautyF0M2S0PP( const Double_t *px, const Double_t */*dummy*/)
 {
 // Beauty pT
 // Corresponding NLO total cross section is 0.384 mb
@@ -1355,7 +1355,7 @@ Double_t AliGenMUONlib::PtBeautyF0M2S0PP( Double_t *px, Double_t */*dummy*/)
   Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
   return x/TMath::Power(pass1,kxn);
 }
-Double_t AliGenMUONlib::PtBeautyF0M0S1PP( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::PtBeautyF0M0S1PP( const Double_t *px, const Double_t */*dummy*/)
 {
 // Beauty pT
 // Corresponding NLO total cross section is 0.648 mb
@@ -1366,7 +1366,7 @@ Double_t AliGenMUONlib::PtBeautyF0M0S1PP( Double_t *px, Double_t */*dummy*/)
   Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
   return x/TMath::Power(pass1,kxn);
 }
-Double_t AliGenMUONlib::PtBeautyF0M0S2PP( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::PtBeautyF0M0S2PP( const Double_t *px, const Double_t */*dummy*/)
 {
 // Beauty pT
 // Corresponding NLO total cross section is 0.294 mb
@@ -1377,7 +1377,7 @@ Double_t AliGenMUONlib::PtBeautyF0M0S2PP( Double_t *px, Double_t */*dummy*/)
   Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
   return x/TMath::Power(pass1,kxn);
 }
-Double_t AliGenMUONlib::PtBeautyF0M0S3PP( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::PtBeautyF0M0S3PP( const Double_t *px, const Double_t */*dummy*/)
 {
 // Beauty pT
 // Corresponding NLO total cross section is 0.475 mb
@@ -1388,7 +1388,7 @@ Double_t AliGenMUONlib::PtBeautyF0M0S3PP( Double_t *px, Double_t */*dummy*/)
   Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
   return x/TMath::Power(pass1,kxn);
 }
-Double_t AliGenMUONlib::PtBeautyF0M0S4PP( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::PtBeautyF0M0S4PP( const Double_t *px, const Double_t */*dummy*/)
 {
 // Beauty pT
 // Corresponding NLO total cross section is 0.324 mb
@@ -1399,7 +1399,7 @@ Double_t AliGenMUONlib::PtBeautyF0M0S4PP( Double_t *px, Double_t */*dummy*/)
   Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
   return x/TMath::Power(pass1,kxn);
 }
-Double_t AliGenMUONlib::PtBeautyF0M0S5PP( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::PtBeautyF0M0S5PP( const Double_t *px, const Double_t */*dummy*/)
 {
 // Beauty pT
 // Corresponding NLO total cross section is 0.536 mb
@@ -1410,7 +1410,7 @@ Double_t AliGenMUONlib::PtBeautyF0M0S5PP( Double_t *px, Double_t */*dummy*/)
   Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
   return x/TMath::Power(pass1,kxn);
 }
-Double_t AliGenMUONlib::PtBeautyF0M0S6PP( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::PtBeautyF0M0S6PP( const Double_t *px, const Double_t */*dummy*/)
 {
 // Beauty pT
 // Corresponding NLO total cross section is 0.420 mb
@@ -1423,7 +1423,7 @@ Double_t AliGenMUONlib::PtBeautyF0M0S6PP( Double_t *px, Double_t */*dummy*/)
 }
 
 //                     y-distribution
-Double_t AliGenMUONlib::YBeauty( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::YBeauty( const Double_t *px, const Double_t */*dummy*/)
 {
 // Beauty y :: Carrer & Dainese : ALICE-INT-2003-019 v.3 (hep-ph/0311225) 
 // Pythia tuned to reproduce the distribution given by the HVQMNR program based on NLO calculations (pQCD)
@@ -1443,7 +1443,7 @@ Double_t AliGenMUONlib::YBeauty( Double_t *px, Double_t */*dummy*/)
     
     return ybeauty;
 }
-Double_t AliGenMUONlib::YBeautyF0M0S0PP( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::YBeautyF0M0S0PP( const Double_t *px, const Double_t */*dummy*/)
 {
 // FiMjSkPP define theoretical uncertainties around F0M0S0PP as follows:
 // YBeautyFiMjSkPP = YBeautyF0M0S0PP * (dN(i,j,k)/dy / dN(0,0,0)/dy)_MNR
@@ -1480,7 +1480,7 @@ Double_t AliGenMUONlib::YBeautyF0M0S0PP( Double_t *px, Double_t */*dummy*/)
     
     return ybeauty;
 }
-Double_t AliGenMUONlib::YBeautyF1M0S0PP( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::YBeautyF1M0S0PP( const Double_t *px, const Double_t */*dummy*/)
 {
 // Beauty y
 // Corresponding NLO total cross section is 0.445 mb
@@ -1498,7 +1498,7 @@ Double_t AliGenMUONlib::YBeautyF1M0S0PP( Double_t *px, Double_t */*dummy*/)
     
     return ybeauty;
 }
-Double_t AliGenMUONlib::YBeautyF2M0S0PP( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::YBeautyF2M0S0PP( const Double_t *px, const Double_t */*dummy*/)
 {
 // Beauty y
 // Corresponding NLO total cross section is 0.445 mb
@@ -1516,7 +1516,7 @@ Double_t AliGenMUONlib::YBeautyF2M0S0PP( Double_t *px, Double_t */*dummy*/)
     
     return ybeauty;
 }
-Double_t AliGenMUONlib::YBeautyF0M1S0PP( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::YBeautyF0M1S0PP( const Double_t *px, const Double_t */*dummy*/)
 {
 // Beauty y
 // Corresponding NLO total cross section is 0.518 mb
@@ -1534,7 +1534,7 @@ Double_t AliGenMUONlib::YBeautyF0M1S0PP( Double_t *px, Double_t */*dummy*/)
     
     return ybeauty;
 }
-Double_t AliGenMUONlib::YBeautyF0M2S0PP( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::YBeautyF0M2S0PP( const Double_t *px, const Double_t */*dummy*/)
 {
 // Beauty y
 // Corresponding NLO total cross section is 0.384 mb
@@ -1552,7 +1552,7 @@ Double_t AliGenMUONlib::YBeautyF0M2S0PP( Double_t *px, Double_t */*dummy*/)
     
     return ybeauty;
 }
-Double_t AliGenMUONlib::YBeautyF0M0S1PP( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::YBeautyF0M0S1PP( const Double_t *px, const Double_t */*dummy*/)
 {
 // Beauty y
 // Corresponding NLO total cross section is 0.648 mb
@@ -1570,7 +1570,7 @@ Double_t AliGenMUONlib::YBeautyF0M0S1PP( Double_t *px, Double_t */*dummy*/)
     
     return ybeauty;
 }
-Double_t AliGenMUONlib::YBeautyF0M0S2PP( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::YBeautyF0M0S2PP( const Double_t *px, const Double_t */*dummy*/)
 {
 // Beauty y
 // Corresponding NLO total cross section is 0.294 mb
@@ -1588,7 +1588,7 @@ Double_t AliGenMUONlib::YBeautyF0M0S2PP( Double_t *px, Double_t */*dummy*/)
     
     return ybeauty;
 }
-Double_t AliGenMUONlib::YBeautyF0M0S3PP( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::YBeautyF0M0S3PP( const Double_t *px, const Double_t */*dummy*/)
 {
 // Beauty y
 // Corresponding NLO total cross section is 0.475 mb
@@ -1606,7 +1606,7 @@ Double_t AliGenMUONlib::YBeautyF0M0S3PP( Double_t *px, Double_t */*dummy*/)
     
     return ybeauty;
 }
-Double_t AliGenMUONlib::YBeautyF0M0S4PP( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::YBeautyF0M0S4PP( const Double_t *px, const Double_t */*dummy*/)
 {
 // Beauty y
 // Corresponding NLO total cross section is 0.324 mb
@@ -1624,7 +1624,7 @@ Double_t AliGenMUONlib::YBeautyF0M0S4PP( Double_t *px, Double_t */*dummy*/)
     
     return ybeauty;
 }
-Double_t AliGenMUONlib::YBeautyF0M0S5PP( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::YBeautyF0M0S5PP( const Double_t *px, const Double_t */*dummy*/)
 {
 // Beauty y
 // Corresponding NLO total cross section is 0.536 mb
@@ -1642,7 +1642,7 @@ Double_t AliGenMUONlib::YBeautyF0M0S5PP( Double_t *px, Double_t */*dummy*/)
     
     return ybeauty;
 }
-Double_t AliGenMUONlib::YBeautyF0M0S6PP( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::YBeautyF0M0S6PP( const Double_t *px, const Double_t */*dummy*/)
 {
 // Beauty y
 // Corresponding NLO total cross section is 0.420 mb
@@ -1693,7 +1693,7 @@ Int_t AliGenMUONlib::IpBeauty(TRandom *ran)
 }
 
 
-typedef Double_t (*GenFunc) (Double_t*,  Double_t*);
+typedef Double_t (*GenFunc) (const Double_t*,  const Double_t*);
 GenFunc AliGenMUONlib::GetPt(Int_t param,  const char* tname) const
 {
 // Return pointer to pT parameterisation
@@ -1984,7 +1984,7 @@ GenFunc AliGenMUONlib::GetY(Int_t param, const char* tname) const
 //
 //                pt-distribution
 //____________________________________________________________
-Double_t AliGenMUONlib::PtChic0( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::PtChic0( const Double_t *px, const Double_t */*dummy*/)
 {
 // Chi_c1 pT
   const Double_t kpt0 = 4.;
@@ -1994,7 +1994,7 @@ Double_t AliGenMUONlib::PtChic0( Double_t *px, Double_t */*dummy*/)
   Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
   return x/TMath::Power(pass1,kxn);
 }
-Double_t AliGenMUONlib::PtChic1( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::PtChic1( const Double_t *px, const Double_t */*dummy*/)
 {
 // Chi_c1 pT
   const Double_t kpt0 = 4.;
@@ -2004,7 +2004,7 @@ Double_t AliGenMUONlib::PtChic1( Double_t *px, Double_t */*dummy*/)
   Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
   return x/TMath::Power(pass1,kxn);
 }
-Double_t AliGenMUONlib::PtChic2( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::PtChic2( const Double_t *px, const Double_t */*dummy*/)
 {
 // Chi_c2 pT
   const Double_t kpt0 = 4.;
@@ -2014,7 +2014,7 @@ Double_t AliGenMUONlib::PtChic2( Double_t *px, Double_t */*dummy*/)
   Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
   return x/TMath::Power(pass1,kxn);
 }
-Double_t AliGenMUONlib::PtChic( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenMUONlib::PtChic( const Double_t *px, const Double_t */*dummy*/)
 {
 // Chi_c family pT
   const Double_t kpt0 = 4.;
@@ -2028,7 +2028,7 @@ Double_t AliGenMUONlib::PtChic( Double_t *px, Double_t */*dummy*/)
 //
 //               y-distribution
 //____________________________________________________________
-Double_t AliGenMUONlib::YChic0(Double_t *py, Double_t */*dummy*/)
+Double_t AliGenMUONlib::YChic0(const Double_t *py, const Double_t */*dummy*/)
 {
 // Chi-1c y
   const Double_t ky0 = 4.;
@@ -2043,7 +2043,7 @@ Double_t AliGenMUONlib::YChic0(Double_t *py, Double_t */*dummy*/)
   return yj;
 }
 
-Double_t AliGenMUONlib::YChic1(Double_t *py, Double_t */*dummy*/)
+Double_t AliGenMUONlib::YChic1(const Double_t *py, const Double_t */*dummy*/)
 {
 // Chi-1c y
   const Double_t ky0 = 4.;
@@ -2058,7 +2058,7 @@ Double_t AliGenMUONlib::YChic1(Double_t *py, Double_t */*dummy*/)
   return yj;
 }
 
-Double_t AliGenMUONlib::YChic2(Double_t *py, Double_t */*dummy*/)
+Double_t AliGenMUONlib::YChic2(const Double_t *py, const Double_t */*dummy*/)
 {
 // Chi-2c y
   const Double_t ky0 = 4.;
@@ -2073,7 +2073,7 @@ Double_t AliGenMUONlib::YChic2(Double_t *py, Double_t */*dummy*/)
   return yj;
 }
 
-Double_t AliGenMUONlib::YChic(Double_t *py, Double_t */*dummy*/)
+Double_t AliGenMUONlib::YChic(const Double_t *py, const Double_t */*dummy*/)
 {
 // Chi_c family y
   const Double_t ky0 = 4.;

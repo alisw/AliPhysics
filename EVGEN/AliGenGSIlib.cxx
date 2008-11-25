@@ -54,7 +54,7 @@ Int_t AliGenGSIlib::IpUpsilon(TRandom *)
   return 553;     
 
 }
-Double_t AliGenGSIlib::PtUpsilonFlat( Double_t *px, Double_t */*dummy*/ )
+Double_t AliGenGSIlib::PtUpsilonFlat( const Double_t *px, const Double_t */*dummy*/ )
 {
 //--------------------------------------------------------------------------
 //
@@ -72,7 +72,7 @@ Double_t AliGenGSIlib::PtUpsilonFlat( Double_t *px, Double_t */*dummy*/ )
   return weight;
    
 }
-Double_t AliGenGSIlib::YUpsilonFlat(Double_t *py, Double_t */*dummy*/)
+Double_t AliGenGSIlib::YUpsilonFlat(const Double_t *py, const Double_t */*dummy*/)
 {
 //--------------------------------------------------------------------------
 //
@@ -93,7 +93,7 @@ Double_t AliGenGSIlib::YUpsilonFlat(Double_t *py, Double_t */*dummy*/)
   return yu;
 
 }
-Double_t AliGenGSIlib::PtUpsilonRitman( Double_t *px, Double_t */*dummy*/ )
+Double_t AliGenGSIlib::PtUpsilonRitman( const Double_t *px, const Double_t */*dummy*/ )
 {
 //--------------------------------------------------------------------------
 //
@@ -110,7 +110,7 @@ Double_t AliGenGSIlib::PtUpsilonRitman( Double_t *px, Double_t */*dummy*/ )
   return x/TMath::Power(pass1,kxn);
    
 }
-Double_t AliGenGSIlib::YUpsilonRitman(Double_t *py, Double_t */*dummy*/)
+Double_t AliGenGSIlib::YUpsilonRitman(const Double_t *py, const Double_t */*dummy*/)
 {
 //--------------------------------------------------------------------------
 //
@@ -131,7 +131,7 @@ Double_t AliGenGSIlib::YUpsilonRitman(Double_t *py, Double_t */*dummy*/)
   return yu;
    
 }
-Double_t AliGenGSIlib::PtUpsilonKarel( Double_t */*px*/, Double_t */*dummy*/ )
+Double_t AliGenGSIlib::PtUpsilonKarel( const Double_t */*px*/, const Double_t */*dummy*/ )
 {
 //--------------------------------------------------------------------------
 //
@@ -143,7 +143,7 @@ Double_t AliGenGSIlib::PtUpsilonKarel( Double_t */*px*/, Double_t */*dummy*/ )
   return 0.1;   
 
 }
-Double_t AliGenGSIlib::YUpsilonKarel(Double_t */*py*/, Double_t */*dummy*/)
+Double_t AliGenGSIlib::YUpsilonKarel(const Double_t */*py*/, const Double_t */*dummy*/)
 {
 //--------------------------------------------------------------------------
 //
@@ -156,7 +156,7 @@ Double_t AliGenGSIlib::YUpsilonKarel(Double_t */*py*/, Double_t */*dummy*/)
   return 0.2;  
 
 }
-Double_t AliGenGSIlib::PtUpsilonMUON( Double_t *px, Double_t */*dummy*/ )
+Double_t AliGenGSIlib::PtUpsilonMUON( const Double_t *px, const Double_t */*dummy*/ )
 {
 //--------------------------------------------------------------------------
 //
@@ -173,7 +173,7 @@ Double_t AliGenGSIlib::PtUpsilonMUON( Double_t *px, Double_t */*dummy*/ )
   return x/TMath::Power(pass1,kxn);
 
 }
-Double_t AliGenGSIlib::YUpsilonMUON(Double_t *py, Double_t */*dummy*/)
+Double_t AliGenGSIlib::YUpsilonMUON(const Double_t *py, const Double_t */*dummy*/)
 {
 //--------------------------------------------------------------------------
 //
@@ -209,7 +209,7 @@ Int_t AliGenGSIlib::IpJpsi(TRandom *)
   return 443;     
 
 }
-Double_t AliGenGSIlib::PtJpsiFlat( Double_t *px, Double_t */*dummy*/ )
+Double_t AliGenGSIlib::PtJpsiFlat( const Double_t *px, const Double_t */*dummy*/ )
 {
 //--------------------------------------------------------------------------
 //
@@ -227,7 +227,7 @@ Double_t AliGenGSIlib::PtJpsiFlat( Double_t *px, Double_t */*dummy*/ )
   return weight;
    
 }
-Double_t AliGenGSIlib::YJpsiFlat(Double_t *py, Double_t */*dummy*/)
+Double_t AliGenGSIlib::YJpsiFlat(const Double_t *py, const Double_t */*dummy*/)
 {
 //--------------------------------------------------------------------------
 //
@@ -248,7 +248,7 @@ Double_t AliGenGSIlib::YJpsiFlat(Double_t *py, Double_t */*dummy*/)
   return yu;
 
 }
-Double_t AliGenGSIlib::PtJpsiMUON( Double_t *px, Double_t */*dummy*/ )
+Double_t AliGenGSIlib::PtJpsiMUON( const Double_t *px, const Double_t */*dummy*/ )
 {
 //--------------------------------------------------------------------------
 //
@@ -264,7 +264,7 @@ Double_t AliGenGSIlib::PtJpsiMUON( Double_t *px, Double_t */*dummy*/ )
   return x/TMath::Power(pass1,kxn);
    
 }
-Double_t AliGenGSIlib::PtJpsiRitman( Double_t *px, Double_t */*dummy*/ )
+Double_t AliGenGSIlib::PtJpsiRitman( const Double_t *px, const Double_t */*dummy*/ )
 {
 //--------------------------------------------------------------------------
 //
@@ -281,7 +281,7 @@ Double_t AliGenGSIlib::PtJpsiRitman( Double_t *px, Double_t */*dummy*/ )
   return x/TMath::Power(pass1,kxn);
    
 }
-Double_t AliGenGSIlib::YJpsiMUON(Double_t *py, Double_t */*dummy*/)
+Double_t AliGenGSIlib::YJpsiMUON(const Double_t *py, const Double_t */*dummy*/)
 {
 //--------------------------------------------------------------------------
 //
@@ -363,7 +363,7 @@ Int_t AliGenGSIlib::IpCharm(TRandom *ran)
     return ip;
 
 }
-Double_t AliGenGSIlib::PtCharmFlat( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenGSIlib::PtCharmFlat( const Double_t *px, const Double_t */*dummy*/)
 {
 //--------------------------------------------------------------------------
 //
@@ -378,7 +378,7 @@ Double_t AliGenGSIlib::PtCharmFlat( Double_t *px, Double_t */*dummy*/)
   return x ;
 
 }
-Double_t AliGenGSIlib::PtCharmGSI( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenGSIlib::PtCharmGSI( const Double_t *px, const Double_t */*dummy*/)
 {
 //--------------------------------------------------------------------------
 //
@@ -398,7 +398,7 @@ Double_t AliGenGSIlib::PtCharmGSI( Double_t *px, Double_t */*dummy*/)
   return TMath::Power(x,kp1) * (pass1 + kp3 * pass2);
 
 }
-Double_t AliGenGSIlib::PtCharmMUON( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenGSIlib::PtCharmMUON( const Double_t *px, const Double_t */*dummy*/)
 {
 //--------------------------------------------------------------------------
 //
@@ -415,7 +415,7 @@ Double_t AliGenGSIlib::PtCharmMUON( Double_t *px, Double_t */*dummy*/)
   return x/TMath::Power(pass1,kxn);
 
 }
-Double_t AliGenGSIlib::YCharm( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenGSIlib::YCharm( const Double_t *px, const Double_t */*dummy*/)
 {
 //--------------------------------------------------------------------------
 //
@@ -456,7 +456,7 @@ Int_t AliGenGSIlib::IpBeauty(TRandom *ran)
     
     return ip;
 }
-Double_t AliGenGSIlib::PtBeautyFlat( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenGSIlib::PtBeautyFlat( const Double_t *px, const Double_t */*dummy*/)
 {
 //--------------------------------------------------------------------------
 //
@@ -471,7 +471,7 @@ Double_t AliGenGSIlib::PtBeautyFlat( Double_t *px, Double_t */*dummy*/)
   return x ;
 
 }
-Double_t AliGenGSIlib::PtBeautyGSI( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenGSIlib::PtBeautyGSI( const Double_t *px, const Double_t */*dummy*/)
 {
 //--------------------------------------------------------------------------
 //
@@ -493,7 +493,7 @@ Double_t AliGenGSIlib::PtBeautyGSI( Double_t *px, Double_t */*dummy*/)
   return TMath::Power(x,kp1) * (pass1 + kp3 * pass2);
 
 }
-Double_t AliGenGSIlib::PtBeautyMUON( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenGSIlib::PtBeautyMUON( const Double_t *px, const Double_t */*dummy*/)
 {
 //--------------------------------------------------------------------------
 //
@@ -510,7 +510,7 @@ Double_t AliGenGSIlib::PtBeautyMUON( Double_t *px, Double_t */*dummy*/)
   return x/TMath::Power(pass1,kxn);
 
 }
-Double_t AliGenGSIlib::YBeauty( Double_t *px, Double_t */*dummy*/)
+Double_t AliGenGSIlib::YBeauty( const Double_t *px, const Double_t */*dummy*/)
 {
 //--------------------------------------------------------------------------
 //
@@ -538,7 +538,7 @@ Int_t AliGenGSIlib::IpEta(TRandom *)
   return 221;     
 
 }
-Double_t AliGenGSIlib::PtEtaPHOS( Double_t *px, Double_t */*dummy*/ )
+Double_t AliGenGSIlib::PtEtaPHOS( const Double_t *px, const Double_t */*dummy*/ )
 {
 //--------------------------------------------------------------------------
 //
@@ -549,7 +549,7 @@ Double_t AliGenGSIlib::PtEtaPHOS( Double_t *px, Double_t */*dummy*/ )
   return PtScal(*px,3);  //  3==> Eta in the PtScal function
    
 }
-Double_t AliGenGSIlib::YEtaPHOS(Double_t *py, Double_t */*dummy*/)
+Double_t AliGenGSIlib::YEtaPHOS(const Double_t *py, const Double_t */*dummy*/)
 {
 //--------------------------------------------------------------------------
 //
@@ -582,7 +582,7 @@ Int_t AliGenGSIlib::IpEtaprime(TRandom *)
   return 331;     
 
 }
-Double_t AliGenGSIlib::PtEtaprimePHOS( Double_t *px, Double_t */*dummy*/ )
+Double_t AliGenGSIlib::PtEtaprimePHOS( const Double_t *px, const Double_t */*dummy*/ )
 {
 //--------------------------------------------------------------------------
 //
@@ -593,7 +593,7 @@ Double_t AliGenGSIlib::PtEtaprimePHOS( Double_t *px, Double_t */*dummy*/ )
   return PtScal(*px,5);  //  5==> Etaprime in the PtScal function
    
 }
-Double_t AliGenGSIlib::YEtaprimePHOS(Double_t *py, Double_t */*dummy*/)
+Double_t AliGenGSIlib::YEtaprimePHOS(const Double_t *py, const Double_t */*dummy*/)
 {
 //--------------------------------------------------------------------------
 //
@@ -626,7 +626,7 @@ Int_t AliGenGSIlib::IpOmega(TRandom *)
   return 223;     
 
 }
-Double_t AliGenGSIlib::PtOmega( Double_t *px, Double_t */*dummy*/ )
+Double_t AliGenGSIlib::PtOmega( const Double_t *px, const Double_t */*dummy*/ )
 {
 //--------------------------------------------------------------------------
 //
@@ -637,7 +637,7 @@ Double_t AliGenGSIlib::PtOmega( Double_t *px, Double_t */*dummy*/ )
   return PtScal(*px,4);  //  4==> Omega in the PtScal function
    
 }
-Double_t AliGenGSIlib::YOmega(Double_t *py, Double_t */*dummy*/)
+Double_t AliGenGSIlib::YOmega(const Double_t *py, const Double_t */*dummy*/)
 {
 //--------------------------------------------------------------------------
 //
@@ -672,7 +672,7 @@ Int_t AliGenGSIlib::IpRho(TRandom *)
   return 113;     
 
 }
-Double_t AliGenGSIlib::PtRho( Double_t *px, Double_t */*dummy*/ )
+Double_t AliGenGSIlib::PtRho( const Double_t *px, const Double_t */*dummy*/ )
 {
 //--------------------------------------------------------------------------
 //
@@ -683,7 +683,7 @@ Double_t AliGenGSIlib::PtRho( Double_t *px, Double_t */*dummy*/ )
   return PtScal(*px,11);  //  11==> Rho in the PtScal function
    
 }
-Double_t AliGenGSIlib::YRho(Double_t *py, Double_t */*dummy*/)
+Double_t AliGenGSIlib::YRho(const Double_t *py, const Double_t */*dummy*/)
 {
 //--------------------------------------------------------------------------
 //
@@ -732,7 +732,7 @@ Int_t AliGenGSIlib::IpPionPHOS(TRandom *ran)
       }
     }
 }
-Double_t AliGenGSIlib::PtPion( Double_t *px, Double_t */*dummy*/ )
+Double_t AliGenGSIlib::PtPion( const Double_t *px, const Double_t */*dummy*/ )
 {
 //--------------------------------------------------------------------------
 //
@@ -766,7 +766,7 @@ Double_t AliGenGSIlib::PtPion( Double_t *px, Double_t */*dummy*/ )
   return y*x;
    
 }
-Double_t AliGenGSIlib::YPion(Double_t *py, Double_t */*dummy*/)
+Double_t AliGenGSIlib::YPion(const Double_t *py, const Double_t */*dummy*/)
 {
 //--------------------------------------------------------------------------
 //
@@ -815,7 +815,7 @@ Int_t AliGenGSIlib::IpKaonPHOS(TRandom *ran)
       }
     }
 }
-Double_t AliGenGSIlib::PtKaonPHOS( Double_t *px, Double_t */*dummy*/ )
+Double_t AliGenGSIlib::PtKaonPHOS( const Double_t *px, const Double_t */*dummy*/ )
 {
 //--------------------------------------------------------------------------
 //
@@ -826,7 +826,7 @@ Double_t AliGenGSIlib::PtKaonPHOS( Double_t *px, Double_t */*dummy*/ )
   return PtScal(*px,2);  //  2==> Kaon in the PtScal function
    
 }
-Double_t AliGenGSIlib::YKaonPHOS(Double_t *py, Double_t */*dummy*/)
+Double_t AliGenGSIlib::YKaonPHOS(const Double_t *py, const Double_t */*dummy*/)
 {
 //--------------------------------------------------------------------------
 //
@@ -859,7 +859,7 @@ Int_t AliGenGSIlib::IpPhi(TRandom *)
   return 333;     
 
 }
-Double_t AliGenGSIlib::PtPhiPHOS( Double_t *px, Double_t */*dummy*/ )
+Double_t AliGenGSIlib::PtPhiPHOS( const Double_t *px, const Double_t */*dummy*/ )
 {
 //--------------------------------------------------------------------------
 //
@@ -870,7 +870,7 @@ Double_t AliGenGSIlib::PtPhiPHOS( Double_t *px, Double_t */*dummy*/ )
   return PtScal(*px,6);  //  6==> Phi in the PtScal function
    
 }
-Double_t AliGenGSIlib::YPhiPHOS(Double_t *py, Double_t */*dummy*/)
+Double_t AliGenGSIlib::YPhiPHOS(const Double_t *py, const Double_t */*dummy*/)
 {
 //--------------------------------------------------------------------------
 //
@@ -920,7 +920,7 @@ Int_t AliGenGSIlib::IpBaryons(TRandom *ran)
       }
     }
 }
-Double_t AliGenGSIlib::PtBaryons( Double_t *px, Double_t */*dummy*/ )
+Double_t AliGenGSIlib::PtBaryons( const Double_t *px, const Double_t */*dummy*/ )
 {
 //--------------------------------------------------------------------------
 //
@@ -931,7 +931,7 @@ Double_t AliGenGSIlib::PtBaryons( Double_t *px, Double_t */*dummy*/ )
   return PtScal(*px,7);  //  7==> Baryon in the PtScal function
    
 }
-Double_t AliGenGSIlib::YBaryons(Double_t *py, Double_t */*dummy*/)
+Double_t AliGenGSIlib::YBaryons(const Double_t *py, const Double_t */*dummy*/)
 {
 //--------------------------------------------------------------------------
 //
@@ -995,7 +995,7 @@ Double_t AliGenGSIlib::YBaryons(Double_t *py, Double_t */*dummy*/)
 //    
 //==========================================================================
 
-typedef Double_t (*GenFunc) (Double_t*,  Double_t*);
+typedef Double_t (*GenFunc) (const Double_t*,  const Double_t*);
 
 typedef Int_t (*GenFuncIp) (TRandom *);
 

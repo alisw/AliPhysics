@@ -131,8 +131,8 @@ AliGenParam::AliGenParam(Int_t npart, Int_t param, const char* tname, const char
 //____________________________________________________________
 
 AliGenParam::AliGenParam(Int_t npart, Int_t param,
-                         Double_t (*PtPara) (Double_t*, Double_t*),
-                         Double_t (*YPara ) (Double_t* ,Double_t*),
+                         Double_t (*PtPara) (const Double_t*, const Double_t*),
+                         Double_t (*YPara ) (const Double_t* ,const Double_t*),
 		         Int_t    (*IpPara) (TRandom *))		 
     :AliGenMC(npart),
      

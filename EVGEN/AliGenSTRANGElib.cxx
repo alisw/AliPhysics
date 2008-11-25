@@ -84,7 +84,7 @@ ClassImp(AliGenSTRANGElib)
 }
 //============================================================= 
 //
- Double_t AliGenSTRANGElib::PtPion(Double_t *px, Double_t *)
+ Double_t AliGenSTRANGElib::PtPion(const Double_t *px, const Double_t *)
 {
 //     Pion transverse momentum distribtuion taken 
 //     from AliGenMUONlib class, version 3.01 of aliroot
@@ -114,7 +114,7 @@ ClassImp(AliGenSTRANGElib)
 // End Scaling
 //============================================================================
 //    K  A  O  N  
- Double_t AliGenSTRANGElib::PtKaon( Double_t *px, Double_t *)
+ Double_t AliGenSTRANGElib::PtKaon( const Double_t *px, const Double_t *)
 {
 //                kaon
 //                pt-distribution
@@ -123,7 +123,7 @@ ClassImp(AliGenSTRANGElib)
   return PtScal(*px,2);  //  2==> Kaon in the PtScal function
 }
 
- Double_t AliGenSTRANGElib::YKaon( Double_t *py, Double_t *)
+ Double_t AliGenSTRANGElib::YKaon( const Double_t *py, const Double_t *)
 {
 // y-distribution
 //____________________________________________________________
@@ -166,7 +166,7 @@ ClassImp(AliGenSTRANGElib)
 //============================================================================
 //============================================================================
 //    P  H  I   
- Double_t AliGenSTRANGElib::PtPhi( Double_t *px, Double_t *)
+ Double_t AliGenSTRANGElib::PtPhi( const Double_t *px, const Double_t *)
 {
 // phi
 //                pt-distribution
@@ -175,7 +175,7 @@ ClassImp(AliGenSTRANGElib)
   return PtScal(*px,6);  //  6==> Phi in the PtScal function
 }
 
- Double_t AliGenSTRANGElib::YPhi( Double_t *py, Double_t *)
+ Double_t AliGenSTRANGElib::YPhi( const Double_t *py, const Double_t *)
 {
 // y-distribution
 //____________________________________________________________
@@ -201,7 +201,7 @@ ClassImp(AliGenSTRANGElib)
 //===================================================================
 //============================================================================
 //    Lambda
- Double_t AliGenSTRANGElib::PtLambda( Double_t *px, Double_t *)
+ Double_t AliGenSTRANGElib::PtLambda( const Double_t *px, const Double_t *)
 {
 // Lambda
 //                pt-distribution
@@ -210,7 +210,7 @@ ClassImp(AliGenSTRANGElib)
   return PtScal(*px,8);  //  8==> Lambda-antiLambda in the PtScal function
 }
 
- Double_t AliGenSTRANGElib::YLambda( Double_t *py, Double_t *)
+ Double_t AliGenSTRANGElib::YLambda( const Double_t *py, const Double_t *)
 {
 // y-distribution
 //____________________________________________________________
@@ -240,7 +240,7 @@ ClassImp(AliGenSTRANGElib)
 // End Lambda
 //============================================================================
 //    XIminus
- Double_t AliGenSTRANGElib::PtXiMinus( Double_t *px, Double_t *)
+ Double_t AliGenSTRANGElib::PtXiMinus( const Double_t *px, const Double_t *)
 {
 // Xi
 //                pt-distribution
@@ -249,7 +249,7 @@ ClassImp(AliGenSTRANGElib)
   return PtScal(*px,9);  //  9==> Xi-antiXi in the PtScal function
 }
 
- Double_t AliGenSTRANGElib::YXiMinus( Double_t *py, Double_t *)
+ Double_t AliGenSTRANGElib::YXiMinus( const Double_t *py, const Double_t *)
 {
 // y-distribution
 //____________________________________________________________
@@ -279,7 +279,7 @@ ClassImp(AliGenSTRANGElib)
 // End Ximinus
 //============================================================================
 //    Omegaminus
- Double_t AliGenSTRANGElib::PtOmegaMinus( Double_t *px, Double_t *)
+ Double_t AliGenSTRANGElib::PtOmegaMinus( const Double_t *px, const Double_t *)
 {
 // Omega
 //                pt-distribution
@@ -288,7 +288,7 @@ ClassImp(AliGenSTRANGElib)
   return PtScal(*px,10);  //  10==> Omega-antiOmega in the PtScal function
 }
 
- Double_t AliGenSTRANGElib::YOmegaMinus( Double_t *py, Double_t *)
+ Double_t AliGenSTRANGElib::YOmegaMinus( const Double_t *py, const Double_t *)
 {
 // y-distribution
 //____________________________________________________________
@@ -319,7 +319,7 @@ ClassImp(AliGenSTRANGElib)
 // End Omegaminus
 //============================================================================
 //     Lambda(1520)
-Double_t AliGenSTRANGElib::PtLambda1520( Double_t *px, Double_t *)
+Double_t AliGenSTRANGElib::PtLambda1520( const Double_t *px, const Double_t *)
 {
 // Lambda(1520)
 //                  pt-distribution
@@ -328,7 +328,7 @@ Double_t AliGenSTRANGElib::PtLambda1520( Double_t *px, Double_t *)
   return PtScal(*px,11);   //   11=> Lambda(1520) in the PtScal function
 }
 
-Double_t AliGenSTRANGElib::YLambda1520( Double_t *py, Double_t *)
+Double_t AliGenSTRANGElib::YLambda1520( const Double_t *py, const Double_t *)
 {
 // y-distribution
 //____________________________________________________________
@@ -359,7 +359,7 @@ Int_t AliGenSTRANGElib::IpLambda1520(TRandom * ran)
 // End Lambda(1520)
 //============================================================================
 
-typedef Double_t (*GenFunc) (Double_t*,  Double_t*);
+typedef Double_t (*GenFunc) (const Double_t*,  const Double_t*);
  GenFunc AliGenSTRANGElib::GetPt(Int_t param, const char* /*tname*/) const
 {
 // Return pinter to pT parameterisation

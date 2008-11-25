@@ -29,8 +29,8 @@ class AliGenParam : public AliGenMC
     AliGenParam(Int_t npart, AliGenLib * Library, Int_t param, char* tname = 0);
     AliGenParam(Int_t npart, Int_t param, const char* tname = 0, const char* name = 0);
     AliGenParam(Int_t npart, Int_t param,
-		Double_t (*PtPara)(Double_t*, Double_t*),
-		Double_t (*YPara )(Double_t*, Double_t*),
+		Double_t (*PtPara)(const Double_t*, const Double_t*),
+		Double_t (*YPara )(const Double_t*, const Double_t*),
 		Int_t    (*IpPara)(TRandom*)           );
      
     virtual ~AliGenParam();
@@ -48,8 +48,8 @@ class AliGenParam : public AliGenMC
     Float_t GetRelativeArea(Float_t ptMin, Float_t ptMax, Float_t yMin, Float_t yMax, Float_t phiMin, Float_t phiMax);
 
  protected:
-    Double_t (*fPtParaFunc)(Double_t*, Double_t*); //! Pointer to Pt parametrisation function
-    Double_t (*fYParaFunc )(Double_t*, Double_t*); //! Pointer to Y parametrisation function
+    Double_t (*fPtParaFunc)(const Double_t*, const Double_t*); //! Pointer to Pt parametrisation function
+    Double_t (*fYParaFunc )(const Double_t*, const Double_t*); //! Pointer to Y parametrisation function
     Int_t    (*fIpParaFunc )(TRandom*);    //! Pointer to particle type parametrisation function
     TF1* fPtPara;              // Transverse momentum parameterisation
     TF1* fYPara;               // Rapidity parameterisation

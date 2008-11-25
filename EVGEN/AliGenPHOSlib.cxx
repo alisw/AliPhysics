@@ -55,7 +55,7 @@ ClassImp(AliGenPHOSlib)
 //    Rapidity distribution YPion
 //    Particle distribution IdPion  111, 211 and -211 (pi0, pi+ and pi-)
 //
- Double_t AliGenPHOSlib::PtPion(Double_t *px, Double_t *)
+ Double_t AliGenPHOSlib::PtPion(const Double_t *px, const Double_t *)
 {
 //     Pion transverse momentum distribtuion taken 
 //     from AliGenMUONlib class, version 3.01 of aliroot
@@ -82,7 +82,7 @@ ClassImp(AliGenPHOSlib)
     y=kb*TMath::Exp(-sqrt(x*x+kxmpi2)/kt);
   return y*x;
 }
- Double_t AliGenPHOSlib::YPion( Double_t *py, Double_t *)
+ Double_t AliGenPHOSlib::YPion( const Double_t *py, const Double_t *)
 {
 //
 // pion y-distribution
@@ -145,7 +145,7 @@ ClassImp(AliGenPHOSlib)
 //    Particle distribution IdPi0Flat  111 (pi0)
 //
 
-Double_t AliGenPHOSlib::PtPi0Flat(Double_t */*px*/, Double_t *)
+Double_t AliGenPHOSlib::PtPi0Flat(const Double_t */*px*/, const Double_t *)
 {
 //     Pion transverse momentum flat distribution 
 
@@ -153,7 +153,7 @@ return 1;
 
 }
 
-Double_t AliGenPHOSlib::YPi0Flat( Double_t */*py*/, Double_t *)
+Double_t AliGenPHOSlib::YPi0Flat( const Double_t */*py*/, const Double_t *)
 {
 
 // pion y-distribution
@@ -201,7 +201,7 @@ Double_t AliGenPHOSlib::YPi0Flat( Double_t */*py*/, Double_t *)
 // End Scaling
 //============================================================================
 //    K  A  O  N  S
- Double_t AliGenPHOSlib::PtKaon( Double_t *px, Double_t *)
+ Double_t AliGenPHOSlib::PtKaon( const Double_t *px, const Double_t *)
 {
 //                kaon
 //                pt-distribution
@@ -210,7 +210,7 @@ Double_t AliGenPHOSlib::YPi0Flat( Double_t */*py*/, Double_t *)
   return PtScal(*px,2);  //  2==> Kaon in the PtScal function
 }
 
- Double_t AliGenPHOSlib::YKaon( Double_t *py, Double_t *)
+ Double_t AliGenPHOSlib::YKaon( const Double_t *py, const Double_t *)
 {
 // y-distribution
 //____________________________________________________________
@@ -276,7 +276,7 @@ Int_t AliGenPHOSlib::IpKaon0L(TRandom *)
 //============================================================================
 //============================================================================
 //   E  T  A  S
- Double_t AliGenPHOSlib::PtEta( Double_t *px, Double_t *)
+ Double_t AliGenPHOSlib::PtEta( const Double_t *px, const Double_t *)
 {
 //                etas
 //                pt-distribution
@@ -285,7 +285,7 @@ Int_t AliGenPHOSlib::IpKaon0L(TRandom *)
   return PtScal(*px,3);  //  3==> Eta in the PtScal function
 }
 
- Double_t AliGenPHOSlib::YEta( Double_t *py, Double_t *)
+ Double_t AliGenPHOSlib::YEta( const Double_t *py, const Double_t *)
 {
 // y-distribution
 //____________________________________________________________
@@ -316,7 +316,7 @@ Int_t AliGenPHOSlib::IpKaon0L(TRandom *)
 //    Particle distribution IdEtaFlat  111 (pi0)
 //
 
-Double_t AliGenPHOSlib::PtEtaFlat(Double_t */*px*/, Double_t *)
+Double_t AliGenPHOSlib::PtEtaFlat(const Double_t */*px*/, const Double_t *)
 {
 //     Eta transverse momentum flat distribution 
 
@@ -324,7 +324,7 @@ Double_t AliGenPHOSlib::PtEtaFlat(Double_t */*px*/, Double_t *)
 
 }
 
-Double_t AliGenPHOSlib::YEtaFlat( Double_t */*py*/, Double_t *)
+Double_t AliGenPHOSlib::YEtaFlat( const Double_t */*py*/, const Double_t *)
 {
 //
 // pion y-distribution
@@ -343,7 +343,7 @@ Double_t AliGenPHOSlib::YEtaFlat( Double_t */*py*/, Double_t *)
 //============================================================================
 //============================================================================
 //    O  M  E  G  A  S
- Double_t AliGenPHOSlib::PtOmega( Double_t *px, Double_t *)
+ Double_t AliGenPHOSlib::PtOmega( const Double_t *px, const Double_t *)
 {
 // omegas
 //                pt-distribution
@@ -352,7 +352,7 @@ Double_t AliGenPHOSlib::YEtaFlat( Double_t */*py*/, Double_t *)
   return PtScal(*px,4);  //  4==> Omega in the PtScal function
 }
 
- Double_t AliGenPHOSlib::YOmega( Double_t *py, Double_t *)
+ Double_t AliGenPHOSlib::YOmega( const Double_t *py, const Double_t *)
 {
 // y-distribution
 //____________________________________________________________
@@ -378,7 +378,7 @@ Double_t AliGenPHOSlib::YEtaFlat( Double_t */*py*/, Double_t *)
 //============================================================================
 //============================================================================
 //    E  T  A  P  R  I  M  E
- Double_t AliGenPHOSlib::PtEtaprime( Double_t *px, Double_t *)
+ Double_t AliGenPHOSlib::PtEtaprime( const Double_t *px, const Double_t *)
 {
 // etaprime
 //                pt-distribution
@@ -387,7 +387,7 @@ Double_t AliGenPHOSlib::YEtaFlat( Double_t */*py*/, Double_t *)
   return PtScal(*px,5);  //  5==> Etaprime in the PtScal function
 }
 
- Double_t AliGenPHOSlib::YEtaprime( Double_t *py, Double_t *)
+ Double_t AliGenPHOSlib::YEtaprime( const Double_t *py, const Double_t *)
 {
 // y-distribution
 //____________________________________________________________
@@ -413,7 +413,7 @@ Double_t AliGenPHOSlib::YEtaFlat( Double_t */*py*/, Double_t *)
 //===================================================================
 //============================================================================
 //    P  H  I   S
- Double_t AliGenPHOSlib::PtPhi( Double_t *px, Double_t *)
+ Double_t AliGenPHOSlib::PtPhi( const Double_t *px, const Double_t *)
 {
 // phi
 //                pt-distribution
@@ -422,7 +422,7 @@ Double_t AliGenPHOSlib::YEtaFlat( Double_t */*py*/, Double_t *)
   return PtScal(*px,6);  //  6==> Phi in the PtScal function
 }
 
- Double_t AliGenPHOSlib::YPhi( Double_t *py, Double_t *)
+ Double_t AliGenPHOSlib::YPhi( const Double_t *py, const Double_t *)
 {
 // y-distribution
 //____________________________________________________________
@@ -448,7 +448,7 @@ Double_t AliGenPHOSlib::YEtaFlat( Double_t */*py*/, Double_t *)
 //===================================================================
 //============================================================================
 //    B  A  R  Y  O  N  S  == protons, protonsbar, neutrons, and neutronsbars
- Double_t AliGenPHOSlib::PtBaryon( Double_t *px, Double_t *)
+ Double_t AliGenPHOSlib::PtBaryon( const Double_t *px, const Double_t *)
 {
 // baryons
 //                pt-distribution
@@ -457,7 +457,7 @@ Double_t AliGenPHOSlib::YEtaFlat( Double_t */*py*/, Double_t *)
   return PtScal(*px,7);  //  7==> Baryon in the PtScal function
 }
 
- Double_t AliGenPHOSlib::YBaryon( Double_t *py, Double_t *)
+ Double_t AliGenPHOSlib::YBaryon( const Double_t *py, const Double_t *)
 {
 // y-distribution
 //____________________________________________________________
@@ -531,7 +531,7 @@ Double_t AliGenPHOSlib::YEtaFlat( Double_t */*py*/, Double_t *)
 
 
 
-typedef Double_t (*GenFunc) (Double_t*,  Double_t*);
+typedef Double_t (*GenFunc) (const Double_t*,  const Double_t*);
 GenFunc AliGenPHOSlib::GetPt(Int_t param, const char* /*tname*/) const
 {
 // Return pinter to pT parameterisation
