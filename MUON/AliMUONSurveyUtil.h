@@ -25,20 +25,20 @@ class AliMUONSurveyUtil:public TObject
   static Bool_t MatrixToAngles(const Double_t *rot, Double_t *angles);
   static void AnglesToMatrix(const Double_t *angles, Double_t *rot);
 
-  Double_t xpCenter(Double_t *x, Double_t *par);
-  Double_t xnCenter(Double_t *x, Double_t *par);
-  Double_t ypCenter(Double_t *x, Double_t *par);
-  Double_t ynCenter(Double_t *x, Double_t *par);
-  Double_t zpCenter(Double_t *x, Double_t *par);
-  Double_t znCenter(Double_t *x, Double_t *par);
-  Double_t phixpp(Double_t *x, Double_t *par);
-  Double_t phixpn(Double_t *x, Double_t *par);
-  Double_t phixnp(Double_t *x, Double_t *par);
-  Double_t phixnn(Double_t *x, Double_t *par);
-  Double_t phiypp(Double_t *x, Double_t *par);
-  Double_t phiypn(Double_t *x, Double_t *par);
-  Double_t phiynp(Double_t *x, Double_t *par);
-  Double_t phiynn(Double_t *x, Double_t *par);
+  Double_t XpCenter(const Double_t *x, const Double_t *par) const;
+  Double_t XnCenter(const Double_t *x, const Double_t *par) const;
+  Double_t YpCenter(const Double_t *x, const Double_t *par) const;
+  Double_t YnCenter(const Double_t *x, const Double_t *par) const;
+  Double_t ZpCenter(const Double_t *x, const Double_t *par) const;
+  Double_t ZnCenter(const Double_t *x, const Double_t *par) const;
+  Double_t PhiXpp(const Double_t *x, const Double_t *par) const;
+  Double_t PhiXpn(const Double_t *x, const Double_t *par) const;
+  Double_t PhiXnp(const Double_t *x, const Double_t *par) const;
+  Double_t PhiXnn(const Double_t *x, const Double_t *par) const;
+  Double_t PhiYpp(const Double_t *x, const Double_t *par) const;
+  Double_t PhiYpn(const Double_t *x, const Double_t *par) const;
+  Double_t PhiYnp(const Double_t *x, const Double_t *par) const;
+  Double_t PhiYnn(const Double_t *x, const Double_t *par) const;
   
   static AliMUONGeometryTransformer *ReAlign(const AliMUONGeometryTransformer * transformer, 
 					     int rMod, int rNDetElems, int rDetElemToDetElemId[], TGeoCombiTrans deltaDetElemTransf[], Bool_t verbose);
@@ -50,6 +50,12 @@ class AliMUONSurveyUtil:public TObject
   AliMUONSurveyUtil() : TObject() {}
 
  private:
+  /// Not implemented
+  AliMUONSurveyUtil(const AliMUONSurveyUtil& right);
+  /// Not implemented
+  AliMUONSurveyUtil&  operator = (const AliMUONSurveyUtil& right);
+
+
   static int fgNDetElemCh[10];
   static AliMUONSurveyUtil *fgInstance;
 

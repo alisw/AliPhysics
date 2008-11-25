@@ -24,24 +24,15 @@
 /// \author Javier Castillo
 //-----------------------------------------------------------------------------
 
-#include <fstream>
-
-#include <TGeoManager.h>
 #include <TClonesArray.h>
 #include <TMath.h>
 #include <TMatrixDSym.h>
 #include <TString.h>
-#include <Riostream.h>
 
 #include "AliAlignObjMatrix.h"
-#include "AliGeomManager.h"
-#include "AliCDBManager.h"
-#include "AliCDBMetaData.h"
-#include "AliCDBId.h"
 
 #include "AliMUONSurveyUtil.h"
 #include "AliMUONGeometryTransformer.h"
-#include "AliMUONGeometryMisAligner.h"
 #include "AliMUONGeometryModuleTransformer.h"
 #include "AliMUONGeometryDetElement.h"
 #include "AliMUONGeometryBuilder.h"
@@ -111,7 +102,8 @@ void AliMUONSurveyUtil::AnglesToMatrix(const Double_t *angles, Double_t *rot)
   rot[8] =  costhe*cospsi;
 }
 
-Double_t AliMUONSurveyUtil::xpCenter(Double_t *x, Double_t *par){
+Double_t AliMUONSurveyUtil::XpCenter(const Double_t *x, const Double_t *par) const{
+  /// Returns center x position using x coord. of 2 button targets. + solution. 
   Double_t lCos2Tht = TMath::Cos(2*par[6]);
   Double_t lSinTht = TMath::Sin(par[6]);
 
@@ -140,8 +132,8 @@ Double_t AliMUONSurveyUtil::xpCenter(Double_t *x, Double_t *par){
   return xD;
 }
 
-Double_t AliMUONSurveyUtil::xnCenter(Double_t *x, Double_t *par){
-
+Double_t AliMUONSurveyUtil::XnCenter(const Double_t *x, const Double_t *par) const{
+  /// Returns center x position using x coord. of 2 button targets. - solution. 
   Double_t lCos2Tht = TMath::Cos(2*par[6]);
   Double_t lSinTht = TMath::Sin(par[6]);
 
@@ -169,8 +161,8 @@ Double_t AliMUONSurveyUtil::xnCenter(Double_t *x, Double_t *par){
   return xD;
 }
 
-Double_t AliMUONSurveyUtil::phixpn(Double_t *x, Double_t *par){
-
+Double_t AliMUONSurveyUtil::PhiXpn(const Double_t *x, const Double_t *par) const{
+  /// Returns phi rot. using x coord. of 2 button targets. +- solution. 
   Double_t inSqrt = TMath::Abs(((par[0] - par[3])*(par[0] - par[3]) 
 				-2*(x[0] - x[1])*(x[0] - x[1]) 
 				+(par[1] - par[4] + par[2] - par[5])*(par[1] - par[4] - par[2] + par[5]) 
@@ -193,8 +185,8 @@ Double_t AliMUONSurveyUtil::phixpn(Double_t *x, Double_t *par){
   return phix;
 }
 
-Double_t AliMUONSurveyUtil::phixpp(Double_t *x, Double_t *par){
-
+Double_t AliMUONSurveyUtil::PhiXpp(const Double_t *x, const Double_t *par) const{
+  /// Returns phi rot. using x coord. of 2 button targets. ++ solution. 
   Double_t inSqrt = TMath::Abs(+(par[0] - par[3])*(par[0] - par[3]) 
 			       -2*(x[0] - x[1])*(x[0] - x[1]) 
 			       +(par[1] - par[4] + par[2] - par[5])*(par[1] - par[4] - par[2] + par[5]) 
@@ -217,8 +209,8 @@ Double_t AliMUONSurveyUtil::phixpp(Double_t *x, Double_t *par){
   return phix;
 }
 
-Double_t AliMUONSurveyUtil::phixnn(Double_t *x, Double_t *par){
-
+Double_t AliMUONSurveyUtil::PhiXnn(const Double_t *x, const Double_t *par) const{
+  /// Returns phi rot. using x coord. of 2 button targets. -- solution. 
   Double_t inSqrt = TMath::Abs(+(par[0] - par[3])*(par[0] - par[3]) 
 			       -2*(x[0] - x[1])*(x[0] - x[1]) 
 			       +(par[1] - par[4] + par[2] - par[5])*(par[1] - par[4] - par[2] + par[5]) 
@@ -241,8 +233,8 @@ Double_t AliMUONSurveyUtil::phixnn(Double_t *x, Double_t *par){
   return phix;
 }
 
-Double_t AliMUONSurveyUtil::phixnp(Double_t *x, Double_t *par){
-
+Double_t AliMUONSurveyUtil::PhiXnp(const Double_t *x, const Double_t *par) const{
+  /// Returns phi rot. using x coord. of 2 button targets. +- solution. 
   Double_t inSqrt = TMath::Abs(+(par[0] - par[3])*(par[0] - par[3]) 
 			       -2*(x[0] - x[1])*(x[0] - x[1]) 
 			       +(par[1] - par[4] + par[2] - par[5])*(par[1] - par[4] - par[2] + par[5]) 
@@ -265,9 +257,10 @@ Double_t AliMUONSurveyUtil::phixnp(Double_t *x, Double_t *par){
   return phix;
 }
 
-Double_t AliMUONSurveyUtil::ypCenter(Double_t *x, Double_t *par){
-  // par : x1l, y1l, z1l, x2l, y2l, z2, lpsi, tht,
+Double_t AliMUONSurveyUtil::YpCenter(const Double_t *x, const Double_t *par) const{
+  /// Returns center y position using y coord. of 2 button targets. + solution. 
 
+  // par : x1l, y1l, z1l, x2l, y2l, z2, lpsi, tht,
   Double_t lCosPsi = TMath::Cos(par[6]);
   Double_t lSinPsi = TMath::Sin(par[6]);
   Double_t lCosTht = TMath::Cos(par[7]);
@@ -294,7 +287,8 @@ Double_t AliMUONSurveyUtil::ypCenter(Double_t *x, Double_t *par){
   return yD;  
 }
 
-Double_t AliMUONSurveyUtil::phiypn(Double_t *x, Double_t *par){
+Double_t AliMUONSurveyUtil::PhiYpn(const Double_t *x, const Double_t *par) const{
+  /// Returns phi rot. using y coord. of 2 button targets. +- solution. 
 
   Double_t lCosPsi = TMath::Cos(par[6]);
   Double_t lSinPsi = TMath::Sin(par[6]);
@@ -331,7 +325,8 @@ Double_t AliMUONSurveyUtil::phiypn(Double_t *x, Double_t *par){
   return phiy;
 }
 
-Double_t AliMUONSurveyUtil::phiypp(Double_t *x, Double_t *par){
+Double_t AliMUONSurveyUtil::PhiYpp(const Double_t *x, const Double_t *par) const{
+  /// Returns phi rot. using y coord. of 2 button targets. ++ solution. 
 
   Double_t lCosPsi = TMath::Cos(par[6]);
   Double_t lSinPsi = TMath::Sin(par[6]);
@@ -366,8 +361,8 @@ Double_t AliMUONSurveyUtil::phiypp(Double_t *x, Double_t *par){
   return phiy;
 }
  
-Double_t AliMUONSurveyUtil::ynCenter(Double_t *x, Double_t *par){
-
+Double_t AliMUONSurveyUtil::YnCenter(const Double_t *x, const Double_t *par) const{
+  /// Returns center y position using y coord. of 2 button targets. - solution. 
   Double_t lCosPsi = TMath::Cos(par[6]);
   Double_t lSinPsi = TMath::Sin(par[6]);
   Double_t lCosTht = TMath::Cos(par[7]);
@@ -396,7 +391,8 @@ Double_t AliMUONSurveyUtil::ynCenter(Double_t *x, Double_t *par){
 }
  
 
-Double_t AliMUONSurveyUtil::phiynn(Double_t *x, Double_t *par){
+Double_t AliMUONSurveyUtil::PhiYnn(const Double_t *x, const Double_t *par) const{
+  /// Returns phi rot. using y coord. of 2 button targets. -- solution. 
 
   Double_t lCosPsi = TMath::Cos(par[6]);
   Double_t lSinPsi = TMath::Sin(par[6]);
@@ -433,7 +429,8 @@ Double_t AliMUONSurveyUtil::phiynn(Double_t *x, Double_t *par){
 }
 
 
-Double_t AliMUONSurveyUtil::phiynp(Double_t *x, Double_t *par){
+Double_t AliMUONSurveyUtil::PhiYnp(const Double_t *x, const Double_t *par) const{
+  /// Returns phi rot. using y coord. of 2 button targets. -+ solution. 
 
   Double_t lCosPsi = TMath::Cos(par[6]);
   Double_t lSinPsi = TMath::Sin(par[6]);
@@ -469,9 +466,10 @@ Double_t AliMUONSurveyUtil::phiynp(Double_t *x, Double_t *par){
   return phiy;
 }
 
-Double_t AliMUONSurveyUtil::znCenter(Double_t *x, Double_t *par){
-  // par :  x1l, y1l, z1l, x2l, y2l, z2l, psi, tht
+Double_t AliMUONSurveyUtil::ZnCenter(const Double_t *x, const Double_t *par) const{
+  /// Returns center z position using z coord. of 2 button targets. - solution. 
 
+  // par :  x1l, y1l, z1l, x2l, y2l, z2l, psi, tht
   Double_t lCosPsi = TMath::Cos(par[6]);
   Double_t lSinPsi = TMath::Sin(par[6]);
   Double_t lCosTht = TMath::Cos(par[7]);
@@ -510,9 +508,10 @@ Double_t AliMUONSurveyUtil::znCenter(Double_t *x, Double_t *par){
   return zD;
 }
 
-Double_t AliMUONSurveyUtil::zpCenter(Double_t *x, Double_t *par){
-  // par :  x1l, y1l, z1l, x2l, y2l, z2l, psi, tht
+Double_t AliMUONSurveyUtil::ZpCenter(const Double_t *x, const Double_t *par) const{
+  /// Returns center z position using z coord. of 2 button targets. + solution. 
 
+  // par :  x1l, y1l, z1l, x2l, y2l, z2l, psi, tht
   Double_t lCosPsi = TMath::Cos(par[6]);
   Double_t lSinPsi = TMath::Sin(par[6]);
   Double_t lCosTht = TMath::Cos(par[7]);
@@ -666,6 +665,7 @@ AliMUONGeometryTransformer* AliMUONSurveyUtil::ReAlign(const AliMUONGeometryTran
 }
 
 void AliMUONSurveyUtil::SetAlignmentResolution(const TClonesArray* misAlignArray, Int_t chId, Double_t chResX, Double_t chResY, Double_t deResX, Double_t deResY){
+  /// Sets the alignment resolution to the AliAlignObjMatrix correlation matrix
 
   TMatrixDSym mChCorrMatrix(6);
   mChCorrMatrix[0][0]=chResX*chResX;

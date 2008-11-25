@@ -758,25 +758,25 @@ Int_t AliMUONSurveyObj::CalculateBestTransf(Int_t iP1, Int_t iP2, Double_t *lXYZ
   const char *fxcName = "fXcn00"; 
   TF2 **fXc = new TF2*[2];
   fxcName = "fXcn";
-  fXc[0] = new TF2(fxcName,surveyUtil,&AliMUONSurveyUtil::xnCenter,fXMin,fXMax,fYMin,fYMax,7,"AliMUONSurveyUtil","xnCenter");
+  fXc[0] = new TF2(fxcName,surveyUtil,&AliMUONSurveyUtil::XnCenter,fXMin,fXMax,fYMin,fYMax,7,"AliMUONSurveyUtil","XnCenter");
   fxcName = "fXcp";
-  fXc[1] = new TF2(fxcName,surveyUtil,&AliMUONSurveyUtil::xpCenter,fXMin,fXMax,fYMin,fYMax,7,"AliMUONSurveyUtil","xpCenter");
+  fXc[1] = new TF2(fxcName,surveyUtil,&AliMUONSurveyUtil::XpCenter,fXMin,fXMax,fYMin,fYMax,7,"AliMUONSurveyUtil","XpCenter");
 
   // Ycenter functions
   const char *fycName = "fYcn00"; 
   TF2 **fYc = new TF2*[2];
   fycName = "fYcn";
-  fYc[0] = new TF2(fycName,surveyUtil,&AliMUONSurveyUtil::ynCenter,fYMin,fYMax,fYMin,fYMax,8,"AliMUONSurveyUtil","ynCenter");
+  fYc[0] = new TF2(fycName,surveyUtil,&AliMUONSurveyUtil::YnCenter,fYMin,fYMax,fYMin,fYMax,8,"AliMUONSurveyUtil","YnCenter");
   fycName = "fYcp";
-  fYc[1] = new TF2(fycName,surveyUtil,&AliMUONSurveyUtil::ypCenter,fYMin,fYMax,fYMin,fYMax,8,"AliMUONSurveyUtil","ypCenter");   
+  fYc[1] = new TF2(fycName,surveyUtil,&AliMUONSurveyUtil::YpCenter,fYMin,fYMax,fYMin,fYMax,8,"AliMUONSurveyUtil","YpCenter");   
 
   // Zcenter functions
   const char *fzcName = "fZcn00"; 
   TF2 **fZc = new TF2*[2];
   fzcName = "fZcn";
-  fZc[0] = new TF2(fzcName,surveyUtil,&AliMUONSurveyUtil::znCenter,fZMin,fZMax,fZMin,fZMax,8,"AliMUONSurveyUtil","znCenter");
+  fZc[0] = new TF2(fzcName,surveyUtil,&AliMUONSurveyUtil::ZnCenter,fZMin,fZMax,fZMin,fZMax,8,"AliMUONSurveyUtil","ZnCenter");
   fzcName = "fZcp";
-  fZc[1] = new TF2(fzcName,surveyUtil,&AliMUONSurveyUtil::zpCenter,fZMin,fZMax,fZMin,fZMax,8,"AliMUONSurveyUtil","zpCenter");   
+  fZc[1] = new TF2(fzcName,surveyUtil,&AliMUONSurveyUtil::ZpCenter,fZMin,fZMax,fZMin,fZMax,8,"AliMUONSurveyUtil","ZpCenter");   
 
   // Phi rotation using xglobal coords functions
   const char *fphixName = "fPhiXnn00"; 
@@ -785,13 +785,13 @@ Int_t AliMUONSurveyObj::CalculateBestTransf(Int_t iP1, Int_t iP2, Double_t *lXYZ
     fPhiX[iX] = new TF2*[2];
   }
   fphixName = "fPhiXnn";
-  fPhiX[0][0] = new TF2(fphixName,surveyUtil,&AliMUONSurveyUtil::phixnn,fXMin,fXMax,fXMin,fXMax,7,"AliMUONSurveyUtil","phixnn");
+  fPhiX[0][0] = new TF2(fphixName,surveyUtil,&AliMUONSurveyUtil::PhiXnn,fXMin,fXMax,fXMin,fXMax,7,"AliMUONSurveyUtil","PhiXnn");
   fphixName = "fPhiXnp";
-  fPhiX[0][1] = new TF2(fphixName,surveyUtil,&AliMUONSurveyUtil::phixnp,fXMin,fXMax,fXMin,fXMax,7,"AliMUONSurveyUtil","phixnp");   
+  fPhiX[0][1] = new TF2(fphixName,surveyUtil,&AliMUONSurveyUtil::PhiXnp,fXMin,fXMax,fXMin,fXMax,7,"AliMUONSurveyUtil","PhiXnp");   
   fphixName = "fPhiXpn";
-  fPhiX[1][0] = new TF2(fphixName,surveyUtil,&AliMUONSurveyUtil::phixpn,fXMin,fXMax,fXMin,fXMax,7,"AliMUONSurveyUtil","phixpn");
+  fPhiX[1][0] = new TF2(fphixName,surveyUtil,&AliMUONSurveyUtil::PhiXpn,fXMin,fXMax,fXMin,fXMax,7,"AliMUONSurveyUtil","PhiXpn");
   fphixName = "fPhiXpp";
-  fPhiX[1][1] = new TF2(fphixName,surveyUtil,&AliMUONSurveyUtil::phixpp,fXMin,fXMax,fXMin,fXMax,7,"AliMUONSurveyUtil","phixpp");   
+  fPhiX[1][1] = new TF2(fphixName,surveyUtil,&AliMUONSurveyUtil::PhiXpp,fXMin,fXMax,fXMin,fXMax,7,"AliMUONSurveyUtil","PhiXpp");   
 
   // Phi rotation using yglobal coords functions
   const char *fphiyName = "fPhiYnn00"; 
@@ -800,13 +800,13 @@ Int_t AliMUONSurveyObj::CalculateBestTransf(Int_t iP1, Int_t iP2, Double_t *lXYZ
     fPhiY[iY] = new TF2*[2];
   }
   fphiyName = "fPhiYnn";
-  fPhiY[0][0] = new TF2(fphiyName,surveyUtil,&AliMUONSurveyUtil::phiynn,fYMin,fYMax,fYMin,fYMax,8,"AliMUONSurveyUtil","phiynn");
+  fPhiY[0][0] = new TF2(fphiyName,surveyUtil,&AliMUONSurveyUtil::PhiYnn,fYMin,fYMax,fYMin,fYMax,8,"AliMUONSurveyUtil","PhiYnn");
   fphiyName = "fPhiYnp";
-  fPhiY[0][1] = new TF2(fphiyName,surveyUtil,&AliMUONSurveyUtil::phiynp,fYMin,fYMax,fYMin,fYMax,8,"AliMUONSurveyUtil","phiynp");   
+  fPhiY[0][1] = new TF2(fphiyName,surveyUtil,&AliMUONSurveyUtil::PhiYnp,fYMin,fYMax,fYMin,fYMax,8,"AliMUONSurveyUtil","PhiYnp");   
   fphiyName = "fPhiYpn";
-  fPhiY[1][0] = new TF2(fphiyName,surveyUtil,&AliMUONSurveyUtil::phiypn,fYMin,fYMax,fYMin,fYMax,8,"AliMUONSurveyUtil","phiypn");
+  fPhiY[1][0] = new TF2(fphiyName,surveyUtil,&AliMUONSurveyUtil::PhiYpn,fYMin,fYMax,fYMin,fYMax,8,"AliMUONSurveyUtil","PhiYpn");
   fphiyName = "fPhiYpp";
-  fPhiY[1][1] = new TF2(fphiyName,surveyUtil,&AliMUONSurveyUtil::phiypp,fYMin,fYMax,fYMin,fYMax,8,"AliMUONSurveyUtil","phiypp");   
+  fPhiY[1][1] = new TF2(fphiyName,surveyUtil,&AliMUONSurveyUtil::PhiYpp,fYMin,fYMax,fYMin,fYMax,8,"AliMUONSurveyUtil","PhiYpp");   
   
 
   // Set Parameters of functions
