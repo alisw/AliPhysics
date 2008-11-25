@@ -1152,7 +1152,6 @@ if test "x$enable_tpc" = "xyes"; then
   AC_CONFIG_FILES([TPCLib/Makefile	      
 		   TPCLib/test/Makefile	      
 		   TPCLib/mapping2array.cxx     
-		   TPCLib/OnlineDisplay/Makefile
 		   TPCLib/EVE/Makefile
 		   ])
 fi
