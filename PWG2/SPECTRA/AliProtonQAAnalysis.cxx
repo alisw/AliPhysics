@@ -2710,11 +2710,16 @@ void AliProtonQAAnalysis::RunQAAnalysis(AliStack *stack,
 
   //ESD loop
   Int_t nGoodTracks = esd->GetNumberOfTracks();
+  TArrayI labelArray(nGoodTracks);
+  Int_t labelCounter = 0;
   for(Int_t iTracks = 0; iTracks < nGoodTracks; iTracks++) {
     AliESDtrack* track = esd->GetTrack(iTracks);
     if(!track) continue;
     
     Int_t label = TMath::Abs(track->GetLabel()); 
+    if(IsLabelUsed(labelArray,label)) continue;
+    labelArray.AddAt(label,labelCounter);
+    labelCounter += 1;
 
     Double_t Pt = 0.0, P = 0.0;
     Double_t probability[5];
@@ -3050,7 +3055,7 @@ void AliProtonQAAnalysis::RunQAAnalysis(AliStack *stack,
 							  track->Pz()),
 						 Pt);
 
-	      ((TH3F *)(fPDGList->At(11)))->Fill(Rapidity(track->Px(),
+	      ((TH3F *)(fQA2DList->At(11)))->Fill(Rapidity(track->Px(),
 							  track->Py(),
 							  track->Pz()),
 						 Pt,
@@ -3160,6 +3165,9 @@ void AliProtonQAAnalysis::RunMCAnalysis(AliStack* stack) {
     if(!particle) continue;
 
     if(TMath::Abs(particle->Eta()) > 1.0) continue;//acceptance
+    if((particle->Pt() > fMaxPt)||(particle->Pt() < fMinPt)) continue;
+    if((Rapidity(particle->Px(),particle->Py(),particle->Pz()) > fMaxY)||(Rapidity(particle->Px(),particle->Py(),particle->Pz()) < fMinY)) continue;
+
     Int_t pdgcode = particle->GetPdgCode();
     if(pdgcode == 2212) {
       if(iParticle <= stack->GetNprimary()) 
