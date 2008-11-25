@@ -641,16 +641,16 @@ Bool_t AliTRDtrackingResolution::PostProcess()
   for(Int_t ibin = 1; ibin <= h2->GetNbinsX(); ibin++){
     Double_t phi = h2->GetXaxis()->GetBinCenter(ibin);
     h = h2->ProjectionY("py", ibin, ibin);
-    AdjustF1(h, &fc);
+    AdjustF1(h, &f);
 
     if(IsVisual()){c->cd(); c->SetLogy();}
-    h->Fit(&fc, opt, "", -0.5, 0.5);
+    h->Fit(&f, opt, "", -0.5, 0.5);
     if(IsVisual()){c->Modified(); c->Update(); gSystem->Sleep(500);}
     
-    gm->SetPoint(ibin - 1, TMath::Tan(phi*TMath::DegToRad()), 10.*fc.GetParameter(1));
-    gm->SetPointError(ibin - 1, 0., 10.*fc.GetParError(1));
-    gs->SetPoint(ibin - 1, TMath::Tan(phi*TMath::DegToRad()), 10.*fc.GetParameter(2));
-    gs->SetPointError(ibin - 1, 0., 10.*fc.GetParError(2));
+    gm->SetPoint(ibin - 1, phi, 10.*f.GetParameter(1));
+    gm->SetPointError(ibin - 1, 0., 10.*f.GetParError(1));
+    gs->SetPoint(ibin - 1, phi, 10.*f.GetParameter(2));
+    gs->SetPointError(ibin - 1, 0., 10.*f.GetParError(2));
   }
 
 
@@ -685,9 +685,9 @@ Bool_t AliTRDtrackingResolution::PostProcess()
 
       Double_t phi = h2->GetXaxis()->GetBinCenter(iphi);
       Int_t jphi = iphi -1;
-      gm->SetPoint(jphi, TMath::Tan(phi*TMath::DegToRad()), 10.*f.GetParameter(1));
+      gm->SetPoint(jphi, phi, 10.*f.GetParameter(1));
       gm->SetPointError(jphi, 0., 10.*f.GetParError(1));
-      gs->SetPoint(jphi, TMath::Tan(phi*TMath::DegToRad()), 10.*f.GetParameter(2));
+      gs->SetPoint(jphi, phi, 10.*f.GetParameter(2));
       gs->SetPointError(jphi, 0., 10.*f.GetParError(2));
     }
   
