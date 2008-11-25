@@ -329,7 +329,7 @@ TH1* AliTRDtrackingResolution::PlotClusterResiduals(const AliTRDtrackV1 *track)
     return 0x0;
   }
 
-  Int_t pdg = fMC ? fMC->GetPDG() : 0;
+  Int_t pdg = (HasMCdata() && fMC) ? fMC->GetPDG() : 0;
   UChar_t s;
   Float_t x0, y0, z0, dy, dydx, dzdx;
   AliTRDseedV1 *fTracklet = 0x0;  
@@ -339,7 +339,7 @@ TH1* AliTRDtrackingResolution::PlotClusterResiduals(const AliTRDtrackV1 *track)
     x0 = fTracklet->GetX0();
 
     // retrive the track angle with the chamber
-    if(fMC){ 
+    if(HasMCdata() && fMC){ 
       if(!fMC->GetDirections(x0, y0, z0, dydx, dzdx, s)) continue; 
     }else{ 
       y0   = fTracklet->GetYref(0);
@@ -392,7 +392,7 @@ TH1* AliTRDtrackingResolution::PlotClusterResiduals(const AliTRDtrackV1 *track)
 //________________________________________________________
 TH1* AliTRDtrackingResolution::PlotResolution(const AliTRDtrackV1 *track)
 {
-  if(!fMC){ 
+  if(!HasMCdata()){ 
     AliWarning("No MC defined. Results will not be available.");
     return 0x0;
   }
