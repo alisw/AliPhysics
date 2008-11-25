@@ -52,9 +52,9 @@ public:
   virtual ~AliTRDtrackingResolution();
   
   void    CreateOutputObjects();
-  //void    Exec(Option_t *);
   void    GetRefFigure(Int_t ifig);
   TObjArray*  Histos(); 
+  void    Exec(Option_t *);
   Bool_t  IsVerbose() const {return TESTBIT(fStatus, kVerbose);}
   Bool_t  IsVisual() const {return TESTBIT(fStatus, kVisual);}
   Bool_t  PostProcess();
@@ -74,11 +74,17 @@ private:
   void        AdjustF1(TH1 *h, TF1 *f);
 
 private:
-  UChar_t               fStatus;          // steer parameter of the task
-  AliTRDReconstructor   *fReconstructor;  //! local reconstructor
-  AliTRDgeometry        *fGeo;            //! TRD geometry
-  TObjArray             *fGraphS;         //! result holder - sigma values
-  TObjArray             *fGraphM;         //! result holder - mean values
+  UChar_t             fStatus;          // steer parameter of the task
+  AliTRDReconstructor *fReconstructor;  //! local reconstructor
+  AliTRDgeometry      *fGeo;            //! TRD geometry
+  TObjArray           *fGraphS;         //! result holder - sigma values
+  TObjArray           *fGraphM;         //! result holder - mean values
+
+  // calibration containers
+  TObjArray           *fClResiduals;    //!
+  TObjArray           *fClResolution;   //!
+  TObjArray           *fTrkltResolution;//!
+  
   ClassDef(AliTRDtrackingResolution, 1) // tracking resolution task
 };
 #endif

@@ -196,6 +196,20 @@ void run(Char_t *tasks="ALL", const Char_t *files=0x0, Int_t nmax=-1)
     // Create containers for input/output
     mgr->ConnectInput( task, 0, coutput1);
     mgr->ConnectOutput(task, 0, mgr->CreateContainer(task->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%s.root", task->GetName())));
+
+    AliAnalysisDataContainer *co1 = mgr->CreateContainer(Form("%sClRez", task->GetName()), TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
+    mgr->ConnectOutput(task, 1, co1);
+
+    AliAnalysisDataContainer *co2 = mgr->CreateContainer(Form("%sClRes", task->GetName()), TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
+    mgr->ConnectOutput(task, 2, co2);
+
+    AliAnalysisDataContainer *co3 = mgr->CreateContainer(Form("%sTrkltRes", task->GetName()), TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
+    mgr->ConnectOutput(task, 3, co3);
+    
+    // test reconstruction calibration plugin
+    mgr->AddTask(task = new AliTRDclusterResolution());
+    mgr->ConnectInput(task, 0, co2);
+    mgr->ConnectOutput(task, 0, mgr->CreateContainer(task->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%s.root", task->GetName())));
   }
 
   //____________________________________________

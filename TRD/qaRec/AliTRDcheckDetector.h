@@ -1,5 +1,5 @@
-#ifndef __ALITRDCHECKDETECTOR_H__
-#define __ALITRDCHECKDETECTOR_H__
+#ifndef ALITRDCHECKDETECTOR_H
+#define ALITRDCHECKDETECTOR_H
 
 #ifndef ALITRDRECOTASK_H
 #include "AliTRDrecoTask.h"
@@ -12,7 +12,7 @@ class AliESDHeader;
 class AliTRDgeometry;
 class AliTRDReconstructor;
 class AliTRDrecoParam;
-
+class AliTRDeventInfo;
 class AliTRDcheckDetector : public AliTRDrecoTask{
   // The Histogram number
   typedef enum{

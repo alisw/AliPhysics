@@ -1,16 +1,8 @@
 #-*- Mode: Makefile -*-
 
-SRCS= qaRec/AliTRDtrackInfoGen.cxx \
-      qaRec/AliTRDrecoTask.cxx \
-      qaRec/AliTRDcheckDetector.cxx \
-      qaRec/AliTRDpidChecker.cxx \
-      qaRec/AliTRDpidRefMaker.cxx \
-      qaRec/AliTRDcalibration.cxx \
-      qaRec/AliTRDtrackingResolution.cxx \
-      qaRec/AliTRDtrackingEfficiency.cxx \
-      qaRec/AliTRDtrackingEfficiencyCombined.cxx \
-      qaRec/AliTRDtrackInfo/AliTRDtrackInfo.cxx \
-      qaRec/AliTRDtrackInfo/AliTRDeventInfo.cxx
+ORGSRCS  := $(wildcard TRD/qaRec/*.cxx)
+ORGSRCS  += $(wildcard TRD/qaRec/AliTRDtrackInfo/*.cxx)
+SRCS     := $(patsubst TRD/%, %, ${ORGSRCS})
 
 HDRS= $(SRCS:.cxx=.h)
 

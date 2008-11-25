@@ -6,6 +6,7 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
+#pragma link C++ class  AliTRDclusterInfo+;
 #pragma link C++ class  AliTRDtrackInfo+;
 #pragma link C++ class  AliTRDeventInfo+;
 #pragma link C++ class  AliTRDtrackInfo::AliESDinfo+;
@@ -19,5 +20,8 @@
 #pragma link C++ class  AliTRDcalibration+;
 #pragma link C++ class  AliTRDpidChecker+;
 #pragma link C++ class  AliTRDpidRefMaker+;
+
+// reconstruction calibration tasks
+#pragma link C++ class  AliTRDclusterResolution+;
 
 #endif
