@@ -1924,6 +1924,7 @@ void AliSimulation::WriteGRPEntry()
     TString target;
     gen->GetTarget(target,a,z);
     TString beamType = projectile + "-" + target;
+    beamType.ReplaceAll(" ","");
     if (!beamType.CompareTo("-")) {
 
 	grpObj->SetBeamType("UNKNOWN");
