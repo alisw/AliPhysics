@@ -482,6 +482,7 @@ void DrawComposition(TH3F *gHistYPtPDGProtons,
       t1->DrawLatex(0.3,113-5*(iParticle-5),fParticleName[iParticle]);
     }
   }
+  c12->SaveAs("SurvivedSecondaries-Composition-Rapidity.gif");
 
   TH2F *hEmptyPt = new TH2F("hEmptyPt","",100,0.0,4.0,100,0,120); 
   hEmptyPt->SetStats(kFALSE); 
@@ -523,6 +524,7 @@ void DrawComposition(TH3F *gHistYPtPDGProtons,
     if((iParticle == 0)||(iParticle == 6)||(iParticle == 8))
       gParticleAntiProtonPt[iParticle]->Draw("P");
   }
+  c13->SaveAs("SurvivedSecondaries-Composition-Pt.gif");
 }
 
 //________________________________________________//
@@ -791,7 +793,7 @@ void DrawCutEfficiency(TList *inputList) {
   hEmptyY->GetYaxis()->SetTitleOffset(1.3);
   hEmptyY->GetXaxis()->SetTitle("y");
 
-  TCanvas *c10 = new TCanvas("c10","(Anti)Proton efficiency vs y",
+  TCanvas *c10 = new TCanvas("c10","(Anti)Proton cut efficiency vs y",
 			    250,250,700,400);
   c10->SetFillColor(10); c10->GetFrame()->SetFillColor(10); 
   c10->SetHighLightColor(10); c10->Divide(2,1);
@@ -810,7 +812,7 @@ void DrawCutEfficiency(TList *inputList) {
   hEmptyY->DrawCopy();
   gYPrimaryESDAntiProtons->DrawCopy("ESAME");
 
-  c10->SaveAs("Efficiency-Protons-Rapidity.gif");
+  c10->SaveAs("CutEfficiency-Protons-Rapidity.gif");
 
   //pT dependence
   //Protons
@@ -836,7 +838,7 @@ void DrawCutEfficiency(TList *inputList) {
   hEmptyPt->GetYaxis()->SetTitleOffset(1.3);
   hEmptyPt->GetXaxis()->SetTitle("P_{T} [GeV/c]");
 
-  TCanvas *c11 = new TCanvas("c11","(Anti)Proton efficiency vs pT",
+  TCanvas *c11 = new TCanvas("c11","(Anti)Proton cut efficiency vs pT",
 			    300,300,700,400);
   c11->SetFillColor(10); c11->GetFrame()->SetFillColor(10); 
   c11->SetHighLightColor(10); c11->Divide(2,1);
@@ -855,7 +857,7 @@ void DrawCutEfficiency(TList *inputList) {
   hEmptyPt->DrawCopy();
   gPtPrimaryESDAntiProtons->DrawCopy("ESAME");
 
-  c11->SaveAs("Efficiency-Protons-Pt.gif");
+  c11->SaveAs("CutEfficiency-Protons-Pt.gif");
 
   TFile *fout = TFile::Open("Efficiency.root","recreate");
   gYPrimaryESDProtons->Write();
@@ -1321,10 +1323,12 @@ void drawEfficiency(TList *list) {
   c16->cd(2)->SetLeftMargin(0.15); 
   c16->cd(2)->SetGridx(); c16->cd(2)->SetGridy();
   hEmpty->GetXaxis()->SetRangeUser(0.0,1.2);
-  hEmpty->GetXaxis()->SetTitle("y");
+  hEmpty->GetXaxis()->SetTitle("P_{T} [GeV/c]");
   hEmpty->DrawCopy();
   gPtESDIdProtons->DrawCopy("ESAME");
   gPtESDContamProtons->DrawCopy("ESAME");
+
+  c16->SaveAs("PIDEfficiency-Protons.gif");
 }
 
 //________________________________________________//
