@@ -50,10 +50,12 @@
 enum ProcessHvFl_t 
 {
   kCharmPbPb5500,  kCharmpPb8800,  kCharmpp14000,  kCharmpp14000wmi,
+  kCharmSemiElpp14000wmi,
   kD0PbPb5500,     kD0pPb8800,     kD0pp14000,
   kDPlusPbPb5500,  kDPluspPb8800,  kDPluspp14000,
   kDPlusStrangePbPb5500, kDPlusStrangepPb8800, kDPlusStrangepp14000,
-  kBeautyPbPb5500, kBeautypPb8800, kBeautypp14000, kBeautypp14000wmi
+  kBeautyPbPb5500, kBeautypPb8800, kBeautypp14000, kBeautypp14000wmi,
+  kBeautySemiElpp14000wmi
 };
 //--- Decay Mode ---
 enum DecayHvFl_t 
@@ -86,7 +88,7 @@ void          LoadPythia();
 
 
 // This part for configuration
-static ProcessHvFl_t procHvFl = kCharmPbPb5500;
+static ProcessHvFl_t procHvFl = kCharmpp14000wmi;
 static DecayHvFl_t   decHvFl  = kNature; 
 static YCut_t        ycut     = kFull;
 static Mag_t         mag      = k5kG; 
@@ -167,7 +169,7 @@ void Config()
       return;
     }
   rl->SetCompressionLevel(2);
-  rl->SetNumberOfEventsPerFile(3);
+  rl->SetNumberOfEventsPerFile(1000);
   gAlice->SetRunLoader(rl);
   // gAlice->SetGeometryFromFile("geometry.root");
   // gAlice->SetGeometryFromCDB();
@@ -514,6 +516,18 @@ AliGenPythia *PythiaHVQ(ProcessHvFl_t proc) {
     gener->SetPtHard(ptHardMin,ptHardMax);
     gener->SetEnergyCMS(14000.);
     break;
+  case kCharmSemiElpp14000wmi:
+    comment = comment.Append(" Charm in pp at 14 TeV with mult. interactions");
+    gener = new AliGenPythia(-1);
+    gener->SetProcess(kPyCharmppMNRwmi);
+    gener->SetStrucFunc(kCTEQ5L);
+    gener->SetPtHard(ptHardMin,ptHardMax);
+    gener->SetEnergyCMS(14000.);
+    gener->SetCutOnChild(1);
+    gener->SetPdgCodeParticleforAcceptanceCut(11);
+    gener->SetChildYRange(-1,1);
+    gener->SetChildPtRange(1,10000.);
+    break;
   case kD0PbPb5500:
     comment = comment.Append(" D0 in Pb-Pb at 5.5 TeV");
     gener = new AliGenPythia(nEvts);
@@ -629,6 +643,18 @@ AliGenPythia *PythiaHVQ(ProcessHvFl_t proc) {
     gener->SetStrucFunc(kCTEQ5L);
     gener->SetPtHard(ptHardMin,ptHardMax);
     gener->SetEnergyCMS(14000.);
+    break;
+  case kBeautySemiElpp14000wmi:
+    comment = comment.Append(" Beauty in pp at 14 TeV with mult. interactions");
+    gener = new AliGenPythia(-1);
+    gener->SetProcess(kPyBeautyppMNRwmi);
+    gener->SetStrucFunc(kCTEQ5L);
+    gener->SetPtHard(ptHardMin,ptHardMax);
+    gener->SetEnergyCMS(14000.);
+    gener->SetCutOnChild(1);
+    gener->SetPdgCodeParticleforAcceptanceCut(11);
+    gener->SetChildYRange(-1,1);
+    gener->SetChildPtRange(1,10000.);
     break;
   }
 
