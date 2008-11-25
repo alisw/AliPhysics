@@ -40,6 +40,7 @@
 #include <TPluginManager.h>
 #include <TROOT.h>
 #include <TInterpreter.h>
+#include <TSystem.h>
 
 #include <Riostream.h>
 #include "AliRawReader.h"
@@ -225,12 +226,13 @@ AliRawReader* AliRawReader::Create(const char *uri)
   }
   else {
     AliInfoClass(Form("Creating raw-reader in order to read raw-data file: %s",fileURI.Data()));
-    if (fileURI.EndsWith("/")) {
-      rawReader = new AliRawReaderFile(fileURI);
-    } else if (fileURI.EndsWith(".root")) {
-      rawReader = new AliRawReaderRoot(fileURI);
+    TString filename(gSystem->ExpandPathName(fileURI.Data()));
+    if (filename.EndsWith("/")) {
+      rawReader = new AliRawReaderFile(filename);
+    } else if (filename.EndsWith(".root")) {
+      rawReader = new AliRawReaderRoot(filename);
     } else {
-      rawReader = new AliRawReaderDate(fileURI);
+      rawReader = new AliRawReaderDate(filename);
     }
   }
 
