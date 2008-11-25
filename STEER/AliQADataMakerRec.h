@@ -55,24 +55,24 @@ public:
 
 protected: 
 
-	virtual void   InitDigits()                        {AliFatal("Call not valid") ; }
+	virtual void   InitDigits()                        {AliWarning("Call not valid") ; }
 	virtual void   InitESDs()                          {AliInfo("To be implemented by detectors");}
-	virtual void   InitHits()                          {AliFatal("Call not valid") ; }
+	virtual void   InitHits()                          {AliWarning("Call not valid") ; }
 	//virtual void   InitRecParticles()                {AliInfo("To be implemented by detectors");}
 	virtual void   InitRecPoints()                     {AliInfo("To be implemented by detectors");}
 	virtual void   InitRaws()                          {AliInfo("To be implemented by detectors");}
-	virtual void   InitSDigits()                       {AliFatal("Call not valid") ; }
+	virtual void   InitSDigits()                       {AliWarning("Call not valid") ; }
 	//virtual void   InitTrackSegments()               {AliInfo("To ne implemented by detectors");}
 	virtual void   MakeESDs(AliESDEvent * )            {AliInfo("To be implemented by detectors");} 
-	virtual void   MakeHits(TClonesArray * )           {AliFatal("Call not valid") ; }
-	virtual void   MakeHits(TTree * )                  {AliFatal("Call not valid") ; }  
-	virtual void   MakeDigits(TClonesArray * )         {AliFatal("Call not valid") ; }    
-	virtual void   MakeDigits(TTree * )                {AliFatal("Call not valid") ; }   
+	virtual void   MakeHits(TClonesArray * )           {AliWarning("Call not valid") ; }
+	virtual void   MakeHits(TTree * )                  {AliWarning("Call not valid") ; }  
+	virtual void   MakeDigits(TClonesArray * )         {AliWarning("Call not valid") ; }    
+	virtual void   MakeDigits(TTree * )                {AliWarning("Call not valid") ; }   
  	//virtual void   MakeRecParticles(TClonesArray * ) {AliInfo("To be implemented by detectors");} 
 	virtual void   MakeRaws(AliRawReader *)            {AliInfo("To be implemented by detectors");} 
 	virtual void   MakeRecPoints(TTree * )             {AliInfo("To be implemented by detectors");} 
-	virtual void   MakeSDigits(TClonesArray * )        {AliFatal("Call not valid") ; }     
-	virtual void   MakeSDigits(TTree * )               {AliFatal("Call not valid") ; }    
+	virtual void   MakeSDigits(TClonesArray * )        {AliWarning("Call not valid") ; }     
+	virtual void   MakeSDigits(TTree * )               {AliWarning("Call not valid") ; }    
 	virtual void   StartOfDetectorCycle()              {AliInfo("To be implemented by detectors");} 
 
 	TObjArray *                 fESDsQAList ;      //! list of the ESDs QA data objects
