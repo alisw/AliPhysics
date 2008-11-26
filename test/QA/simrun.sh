@@ -1,40 +1,63 @@
-#!/bin/csh -f 
-if ($#argv < 1) then
- echo "usage simrun.sh RunNumber"
- exit()
-endif
+#!/bin/sh -f 
+if ! [ "$1" ]
+then
+ echo "Usage: simrun.sh RunNumber";
+ exit;
+fi
+
+# Working directory
+if [ ${WORK}"x" == "x" ]
+then 
+ export WORK=./;
+fi
+cd ${WORK};
+
+# Version
+if [ ${VERSION}"x" == "x" ]
+then 
+ export VERSION=UNKNOWN;
+fi
 echo $WORK $VERSION
-if ( ! -e $WORK ) then 
- setenv WORK ./
-endif
-cd $WORK
-if ( $VERSION == "" ) then 
- setenv VERSION "UNKNOWN"
-endif
-if ( ! -e QATest/$VERSION ) then 
- mkdir QATest/$VERSION
-endif    
-cd QATest/$VERSION
-rm -Rf *.root *.C *.log data/*
-ln -si $ALICE_ROOT/test/QA/Config.C Config.C
-ln -si $ALICE_ROOT/test/QA/sim.C sim.C
-ln -si $ALICE_ROOT/test/QA/simqa.C simqa.C
-ln -si $ALICE_ROOT/test/QA/rec.C rec.C
-ln -si $ALICE_ROOT/test/QA/recqa.C recqa.C
-root -b -q $ALICE_ROOT/test/QA/simrun.C --run $1
-if ( ! -e data ) then 
- mkdir data
-endif
-cd data
-#ln -s ../geometry.root
-ln -s ../raw.root
-ln -si $ALICE_ROOT/test/QA/recraw.C recraw.C
-aliroot -b -q recraw.C  > recraw.log 
-cp  $ALICE_ROOT/test/QA/rawqa.C .
+
+# Test directory
+if ! [ -e QATest/$VERSION ]
+then 
+ mkdir -p QATest/$VERSION;
+fi
+cd QATest/$VERSION;
+
+# Cleanup and (re)link
+rm -rf *.root *.C *.log data;
+ln -sf $ALICE_ROOT/test/QA/Config.C Config.C;
+ln -sf $ALICE_ROOT/test/QA/sim.C sim.C;
+ln -sf $ALICE_ROOT/test/QA/simqa.C simqa.C;
+ln -sf $ALICE_ROOT/test/QA/rec.C rec.C;
+ln -sf $ALICE_ROOT/test/QA/recqa.C recqa.C;
+
+# Process MC
+root -b -q $ALICE_ROOT/test/QA/simrun.C --run $1;
+
+# Directory for RAW data 
+if [ ! -e data ]
+then 
+ mkdir data;
+fi
+cd data;
+
+# Cleanup and (re)link
+rm -rf *.root *.C *.log;
+ln -sf ../raw.root;
+ln -sf $ALICE_ROOT/test/QA/recraw.C recraw.C;
+cp -f $ALICE_ROOT/test/QA/rawqa.C .;
+
+# Process RAW
+aliroot -b -q recraw.C  > recraw.log ;
+if ! [ ${GSHELL_ROOT}"x" == "x" ] # Check that the AliEn API is available
+then
 aliroot -b > rawqa.log << EOF
 .x  $ALICE_ROOT/test/QA/rootlogon.C
 .L rawqa.C++
 rawqa($1, 10)
 EOF
-rm -f rawqa.C
-exit
+fi
+exit;
