@@ -167,13 +167,13 @@ Bool_t AliTRDtrackerV1::GetTrackPoint(Int_t index, AliTrackPoint &p) const
 {
   //AliInfo(Form("Asking for tracklet %d", index));
   
+  // reset position of the point before using it
+  p.SetXYZ(0., 0., 0.);
   AliTRDseedV1 *tracklet = GetTracklet(index); 
   if (!tracklet) return kFALSE;
-  
+
   // get detector for this tracklet
-  AliTRDcluster *cl = 0x0;
-  Int_t ic = 0; do {} while(!(cl = tracklet->GetClusters(ic++)));
-  Int_t  idet     = cl->GetDetector();
+  Int_t  idet     = tracklet->GetDetector();
     
   Double_t local[3];
   local[0] = tracklet->GetX0(); 
