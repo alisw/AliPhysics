@@ -435,6 +435,33 @@ AliTPCcalibLaser::~AliTPCcalibLaser() {
     delete fHisPz2vP2Out;  //-> Curv  P2outer - parabola
     delete fHisPz3vP2IO;   //-> Curv  P2outerinner - common parabola
   }
+  //
+  //
+  //
+  fDeltaZ.SetOwner();          //-> array of histograms of delta z for each track
+  fDeltaP3.SetOwner();         //-> array of histograms of P3      for each track
+  fDeltaP4.SetOwner();         //-> array of histograms of P4      for each track
+  fDeltaPhi.SetOwner();        //-> array of histograms of delta z for each track
+  fDeltaPhiP.SetOwner();       //-> array of histograms of delta z for each track
+  fSignals.SetOwner();         //->Array of dedx signals
+  
+  fDeltaZ.Delete();          //-> array of histograms of delta z for each track
+  fDeltaP3.Delete();         //-> array of histograms of P3      for each track
+  fDeltaP4.Delete();         //-> array of histograms of P4      for each track
+  fDeltaPhi.Delete();        //-> array of histograms of delta z for each track
+  fDeltaPhiP.Delete();       //-> array of histograms of delta z for each track
+  fSignals.Delete();         //->Array of dedx signals
+
+  fDeltaYres.SetOwner();
+  fDeltaYres.Delete();
+  fDeltaZres.SetOwner();
+  fDeltaZres.Delete();
+  fDeltaYres2.SetOwner();
+  fDeltaYres2.Delete();
+  fDeltaZres2.SetOwner();
+  fDeltaZres2.Delete();
+  
+
 }
 
 
@@ -479,7 +506,8 @@ void AliTPCcalibLaser::Process(AliESDEvent * event) {
     for (Int_t j=0;(calibObject=friendTrack->GetCalibObject(j));++j)
       if ((seed=dynamic_cast<AliTPCseed*>(calibObject)))
 	break;
-    if (track&&seed) {
+    if (track&&seed &&TMath::Abs(track->Pt()) >1 ) {
+      //filter CE tracks
       Int_t id = FindMirror(track,seed);
       if (id>0) counter++;
     }
@@ -2187,7 +2215,7 @@ Long64_t AliTPCcalibLaser::Merge(TCollection *li) {
   static Int_t counter0=0;
   while ((cal = (AliTPCcalibLaser*)iter->Next())) {
     if (!cal->InheritsFrom(AliTPCcalibLaser::Class())) {
-      Error("Merge","Attempt to add object of class %s to a %s", cal->ClassName(), this->ClassName());
+      //      Error("Merge","Attempt to add object of class %s to a %s", cal->ClassName(), this->ClassName());
       return -1;
     }
     printf("Marging number %d\n", counter0);
@@ -2263,19 +2291,19 @@ Long64_t AliTPCcalibLaser::Merge(TCollection *li) {
       // merge ProfileY histograms -0
       h2m = (TH2F*)cal->fDeltaYres.At(id);
       h2  = (TH2F*)fDeltaYres.At(id);
-      if (h2m) h2->Add(h2m);
+      if (h2m&&h2) h2->Add(h2m);
       //
       h2m = (TH2F*)cal->fDeltaZres.At(id);
       h2  = (TH2F*)fDeltaZres.At(id);
-      if (h2m) h->Add(h2m);
+      if (h2m&&h2) h2->Add(h2m);
       // merge ProfileY histograms - 2
       h2m = (TH2F*)cal->fDeltaYres2.At(id);
       h2  = (TH2F*)fDeltaYres2.At(id);
-      if (h2m) h2->Add(h2m);
+      if (h2m&&h2) h2->Add(h2m);
       //
       h2m = (TH2F*)cal->fDeltaZres2.At(id);
       h2  = (TH2F*)fDeltaZres2.At(id);
-      if (h2m) h->Add(h2m);
+      if (h2m&&h2) h2->Add(h2m);
       // merge ProfileY histograms - 3
       //h2m = (TH2F*)cal->fDeltaYres3.At(id);
       //h2  = (TH2F*)fDeltaYres3.At(id);
