@@ -55,6 +55,10 @@ AliHLTTPCCalibPulserComponent::AliHLTTPCCalibPulserComponent()
   fRawReader(NULL),
   fRawStream(NULL),
   fCalibPulser(NULL),
+  // Note: initialization of min and max seems to be in the wrong order but is on
+  // purpose in order to work correctly with the conditional in DoEvent line 233
+  //  if ( patch < fMinPatch ) fMinPatch =  patch;
+  //  if ( patch > fMaxPatch ) fMaxPatch =  patch;
   fMinPatch(5),
   fMaxPatch(0),
   fSpecification(0) ,
