@@ -41,69 +41,69 @@ class AliEMCALJetFinderPlots : public TObject
 	void FillFromOutput(AliEMCALJetFinderOutput* output,Float_t weight=1.0);
 	//========================== CASE 1 ========================
 	// Only consider events with only 1 jet
-	TH1F* GetFragmFcn(){return fhFragmFcn;}	
-	TH1F* GetPartonFragmFcn(){return fhPartonFragmFcn;}	
-	TH1F* GetPT(){return fhJetPT;}	
-	TH1F* GetPartonPT(){return fhPartonPT;}	
-	TH1F* GetJetJT(){return fhJetJT;}	
-	TH1F* GetPartonJT(){return fhPartonJT;}	
-	TH1F* GetJetPL(){return fhJetPL;}
-	TH1F* GetPartonPL(){return fhPartonPL;}
-	TH1F* GetJetEt(){return fhJetEt;}
-	TH1F* GetJetEtDiff(){return fhJetEtDiff;}
-	TH1F* GetJetEta(){return fhJetEta;}
-	TH1F* GetPartonEta(){return fhPartonEta;}
-	TH1F* GetPartonPhi(){return fhPartonPhi;}
-	TH1F* GetJetPhi(){return fhJetPhi;}
-	TH1F* GetEtaDiff(){return fhEtaDiff;}
-	TH1F* GetPhiDiff(){return fhPhiDiff;}
-	TH2F* GetEtaPhiSpread(){return fhEtaPhiSpread;}
-	TH1F* GetNJets(){return fhNJets;}
+	TH1F* GetFragmFcn() const {return fhFragmFcn;}	
+	TH1F* GetPartonFragmFcn() const {return fhPartonFragmFcn;}	
+	TH1F* GetPT() const {return fhJetPT;}	
+	TH1F* GetPartonPT() const {return fhPartonPT;}	
+	TH1F* GetJetJT() const {return fhJetJT;}	
+	TH1F* GetPartonJT() const {return fhPartonJT;}	
+	TH1F* GetJetPL() const {return fhJetPL;}
+	TH1F* GetPartonPL() const {return fhPartonPL;}
+	TH1F* GetJetEt() const {return fhJetEt;}
+	TH1F* GetJetEtDiff() const {return fhJetEtDiff;}
+	TH1F* GetJetEta() const {return fhJetEta;}
+	TH1F* GetPartonEta() const {return fhPartonEta;}
+	TH1F* GetPartonPhi() const {return fhPartonPhi;}
+	TH1F* GetJetPhi() const {return fhJetPhi;}
+	TH1F* GetEtaDiff() const {return fhEtaDiff;}
+	TH1F* GetPhiDiff()const {return fhPhiDiff;}
+	TH2F* GetEtaPhiSpread() const {return fhEtaPhiSpread;}
+	TH1F* GetNJets() const {return fhNJets;}
 
 	//========================== CASE 2 ========================
 	// Only consider events with at least 2 jets
-	TH1F* GetFragmFcn2(){return fhFragmFcn2;}	
-	TH1F* GetPartonFragmFcn2(){return fhPartonFragmFcn2;}	
-	TH1F* GetPT2(){return fhJetPT2;}	
-	TH1F* GetPartonPT2(){return fhPartonPT2;}	
-	TH1F* GetJetJT2(){return fhJetJT2;}	
-	TH1F* GetPartonJT2(){return fhPartonJT2;}	
-	TH1F* GetJetPL2(){return fhJetPL2;}
-	TH1F* GetPartonPL2(){return fhPartonPL2;}
-	TH1F* GetJetEt2(){return fhJetEt2;}
-	TH1F* GetJetEtDiff2(){return fhJetEtDiff2;}
-	TH1F* GetJetEta2(){return fhJetEta2;}
-	TH1F* GetPartonEta2(){return fhPartonEta2;}
-	TH1F* GetPartonPhi2(){return fhPartonPhi2;}
-	TH1F* GetJetPhi2(){return fhJetPhi2;}
-	TH1F* GetEtaDiff2(){return fhEtaDiff2;}
-	TH1F* GetPhiDiff2(){return fhPhiDiff2;}
-	TH2F* GetEtaPhiSpread2(){return fhEtaPhiSpread2;}
-	TH1F* GetNJets2(){return fhNJets2;}
-	TH1F* GetJetEtSecond2(){return fhJetEtSecond2;}
-	TH1F* GetJetEtRatio2(){return fhJetEtRatio2;}
-	TH1F* GetEtaPhiDist2(){return fhEtaPhiDist2;}
+	TH1F* GetFragmFcn2() const {return fhFragmFcn2;}	
+	TH1F* GetPartonFragmFcn2() const {return fhPartonFragmFcn2;}	
+	TH1F* GetPT2() const {return fhJetPT2;}	
+	TH1F* GetPartonPT2() const {return fhPartonPT2;}	
+	TH1F* GetJetJT2() const {return fhJetJT2;}	
+	TH1F* GetPartonJT2() const {return fhPartonJT2;}	
+	TH1F* GetJetPL2() const {return fhJetPL2;}
+	TH1F* GetPartonPL2() const {return fhPartonPL2;}
+	TH1F* GetJetEt2() const {return fhJetEt2;}
+	TH1F* GetJetEtDiff2() const {return fhJetEtDiff2;}
+	TH1F* GetJetEta2() const {return fhJetEta2;}
+	TH1F* GetPartonEta2() const {return fhPartonEta2;}
+	TH1F* GetPartonPhi2() const {return fhPartonPhi2;}
+	TH1F* GetJetPhi2() const {return fhJetPhi2;}
+	TH1F* GetEtaDiff2() const {return fhEtaDiff2;}
+	TH1F* GetPhiDiff2() const {return fhPhiDiff2;}
+	TH2F* GetEtaPhiSpread2() const {return fhEtaPhiSpread2;}
+	TH1F* GetNJets2() const {return fhNJets2;}
+	TH1F* GetJetEtSecond2() const {return fhJetEtSecond2;}
+	TH1F* GetJetEtRatio2() const {return fhJetEtRatio2;}
+	TH1F* GetEtaPhiDist2() const {return fhEtaPhiDist2;}
 
 	
-        TH1F* GetJetPt(){return	fhJetPT ;}
-        TH1F* GetPartonPt(){return fhPartonPT ;}
-        TH1F* GetJetPt2(){return 	fhJetPT2;}
-        TH1F* GetPartonPt2(){return fhPartonPT2;}
-        TH1F* GetRecoBinFragmFcn() {return fhRecoBinFragmFcn;}
-        TH1F* GetRecoBinFragmFcnNoBg() {return fhRecoBinFragmFcnNoBg;}
-        TH1F* GetRecoBinPartonFragmFcn() {return	fhRecoBinPartonFragmFcn;}
-
+	TH1F* GetJetPt() const {return	fhJetPT ;}
+	TH1F* GetPartonPt() const {return fhPartonPT ;}
+	TH1F* GetJetPt2() const {return 	fhJetPT2;}
+	TH1F* GetPartonPt2() const {return fhPartonPT2;}
+	TH1F* GetRecoBinFragmFcn() const {return fhRecoBinFragmFcn;}
+	TH1F* GetRecoBinFragmFcnNoBg() const {return fhRecoBinFragmFcnNoBg;}
+	TH1F* GetRecoBinPartonFragmFcn() const {return	fhRecoBinPartonFragmFcn;}
+	
 	//============================== ALL CASES ============================================
 	
-	TH2F* GetInputOutput(){return fhInputOutput;}
+	TH2F* GetInputOutput() const {return fhInputOutput;}
 	
 	//============================== Reconstruction Bin Comparison  ============================================
 	
-	TH1F* GetRecoBinPt(){return fhRecoBinPt;}	           // ("fhRecoBinPt","Reconstructed Pt Distribution",100,0,1);
-	TH1F* GetRecoBinPtNoBg(){return fhRecoBinPtNoBg;}	           // ("fhRecoBinPt","Reconstructed Pt Distribution",100,0,1);
-	TH1F* GetRecoBinPartonPt(){return fhRecoBinPartonPt;}      // ("fhRecoBinPartonPt","Input Pt Distribution",100,0,1);
-	TH1F* GetRecoBinJetEt(){return fhRecoBinJetEt;}            // ("fhRecoJetEt","E_{T}^{reco}",250,0.,250.);
-	TH1F* GetRecoBinInputJetEt(){return fhRecoBinInputJetEt;}  // ("fhRecoInputJetEt","E_{T}^{reco}",250,0.,250.);
+	TH1F* GetRecoBinPt() const {return fhRecoBinPt;}	           // ("fhRecoBinPt","Reconstructed Pt Distribution",100,0,1);
+	TH1F* GetRecoBinPtNoBg() const {return fhRecoBinPtNoBg;}	           // ("fhRecoBinPt","Reconstructed Pt Distribution",100,0,1);
+	TH1F* GetRecoBinPartonPt() const {return fhRecoBinPartonPt;}      // ("fhRecoBinPartonPt","Input Pt Distribution",100,0,1);
+	TH1F* GetRecoBinJetEt() const {return fhRecoBinJetEt;}            // ("fhRecoJetEt","E_{T}^{reco}",250,0.,250.);
+	TH1F* GetRecoBinInputJetEt() const {return fhRecoBinInputJetEt;}  // ("fhRecoInputJetEt","E_{T}^{reco}",250,0.,250.);
 
 	private:
 	void InitPlots();
