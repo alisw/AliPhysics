@@ -5,13 +5,13 @@ void sim(Int_t nev=4) {
   simu.SetMakeDigits ("TRD TOF PHOS HMPID  EMCAL MUON FMD PMD T0 ZDC VZERO");
   simu.SetMakeDigitsFromHits("ITS TPC");
   simu.SetWriteRawData("ALL","raw.root",kTRUE);
-//  simu.SetDefaultStorage("alien://Folder=/alice/data/2008/LHC08d/OCDB/");
   simu.SetDefaultStorage("local://$ALICE_ROOT");
+  simu.SetSpecificStorage("GRP/GRP/Data",
+			  Form("local://%s",gSystem->pwd()));
 
   simu.SetRunQA("ALL:ALL") ; 
- // AliQA::SetQARefStorage(Form("%s%s/", AliQA::GetQARefDefaultStorage(), kYear)) ;
   AliQA::SetQARefStorage("local://$ALICE_ROOT") ;
-  // AliQA::SetQARefDataDirName(AliQA::kMONTECARLO) ; //RUN_TYPE
+
   for (Int_t det = 0 ; det < AliQA::kNDET ; det++) {
     simu.SetQACycles(det, 2) ;
   }

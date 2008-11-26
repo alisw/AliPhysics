@@ -99,13 +99,14 @@
   cout<<">>>>> SIMULATION <<<<<"<<endl;
   gSystem->Exec("aliroot -b -q sim.C > sim.log 2>&1");
   cout<<">>>>> SIMULATION QA <<<<<"<<endl;
-  gSystem->Exec("alienaliroot -b -q simqa.C > simqa.log 2>&1");
+  gSystem->Exec("aliroot -b -q simqa.C > simqa.log 2>&1");
   cout<<">>>>> RECONSTRUCTION <<<<<"<<endl;
   gSystem->Exec("aliroot -b -q rec.C > rec.log 2>&1");
   cout<<">>>>> RECONSTRUCTION QA <<<<<"<<endl;
-  gSystem->Exec("alienaliroot -b -q recqa.C > recqa.log 2>&1");
+  gSystem->Exec("aliroot -b -q recqa.C > recqa.log 2>&1");
   cout<<">>>>> TAG <<<<<"<<endl;
-  gSystem->Exec("aliroot -b -q tag.C > tag.log 2>&1");
+  if( gSystem->Getenv("ALIEN_JDL_OUTPUTDIR"))
+    gSystem->Exec("aliroot -b -q tag.C > tag.log 2>&1");
   cout<<">>>>> CHECK ESD <<<<<"<<endl;
   gSystem->Exec("aliroot -b -q CheckESD.C > check.log 2>&1");
 
