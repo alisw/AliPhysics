@@ -31,7 +31,7 @@
 
 ClassImp(AliGRPObject)
 	
-const Float_t AliGRPObject::fgkInvalidFloat = 0xffffffff; // value to identify invalid data - float
+const Float_t AliGRPObject::fgkInvalidFloat = 1E-33; // value to identify invalid data - float
 const TString AliGRPObject::fgkInvalidString = "";  // value to identify invalid data - string
 const Char_t AliGRPObject::fgkInvalidChar = -1;         // value to identify invalid data - uchar
 const Int_t AliGRPObject::fgkInvalidInt = -1;  // value to identify invalid data - uint
