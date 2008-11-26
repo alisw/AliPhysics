@@ -23,6 +23,7 @@ class AliMUONRecoCheck : public TObject
 {
 public:
   AliMUONRecoCheck(const Char_t *chLoader, const Char_t *pathSim = "./");
+  AliMUONRecoCheck(AliESDEvent *esdEvent, AliMCEventHandler *mcEventHandler);
   virtual ~AliMUONRecoCheck();
 
   /// Return the list of reconstructed tracks
@@ -71,6 +72,8 @@ private:
   AliMUONVTrackStore* fRecoTrackRefStore; ///< current reconstructible tracks (owner)
   AliMUONVTrackStore* fRecoTrackStore;    ///< current reconstructed tracks (owner)
   
+  Bool_t fESDEventOwner;         ///< using constructor from the analysis task
+
   ClassDef(AliMUONRecoCheck, 0)   //Utility class to check reconstruction
 };
 

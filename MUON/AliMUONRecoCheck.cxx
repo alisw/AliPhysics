@@ -31,6 +31,7 @@
 // 25 Jan 2008:
 // Use the new ESDInterface to create MUON objects from ESD data
 // - Philippe Pillot
+// 
 
 #include "AliMUONRecoCheck.h"
 #include "AliMUONTrack.h"
@@ -67,7 +68,8 @@ fESDFile (0x0),
 fCurrentEvent(0),
 fTrackRefStore(0x0),
 fRecoTrackRefStore(0x0),
-fRecoTrackStore(0x0)
+fRecoTrackStore(0x0),
+fESDEventOwner(kTRUE)
 {
   /// Normal ctor
   
@@ -93,12 +95,37 @@ fRecoTrackStore(0x0)
 }
 
 //_____________________________________________________________________________
+AliMUONRecoCheck::AliMUONRecoCheck(AliESDEvent *esdEvent, AliMCEventHandler *mcEventHandler)
+: TObject(),
+fMCEventHandler(0),
+fESDEvent(0),
+fESDTree (0x0),
+fESDFile (0x0),
+fCurrentEvent(0),
+fTrackRefStore(0x0),
+fRecoTrackRefStore(0x0),
+fRecoTrackStore(0x0),
+fESDEventOwner(kFALSE)
+{
+  /// Normal ctor
+  
+  // TrackRefs and Particules
+  fMCEventHandler = mcEventHandler;
+  
+  // ESD MUON Tracks
+  fESDEvent = esdEvent;
+  
+}
+
+//_____________________________________________________________________________
 AliMUONRecoCheck::~AliMUONRecoCheck()
 {
   /// Destructor
-  delete fMCEventHandler;
-  delete fESDEvent;
-  if (fESDFile) fESDFile->Close();
+  if (fESDEventOwner) {
+    delete fMCEventHandler;
+    delete fESDEvent;
+    if (fESDFile) fESDFile->Close();
+  }
   ResetStores();
 }
 
@@ -115,7 +142,7 @@ void AliMUONRecoCheck::ResetStores()
 Int_t AliMUONRecoCheck::NumberOfEvents() const
 {
   /// Return the number of events
-  if (fESDTree) return fESDTree->GetEntries();
+  if (fESDEventOwner && fESDTree) return fESDTree->GetEntries();
   return 0;
 }
 
@@ -124,6 +151,12 @@ AliMUONVTrackStore* AliMUONRecoCheck::ReconstructedTracks(Int_t event)
 {
   /// Return a track store containing the reconstructed tracks (converted into 
   /// MUONTrack objects) for a given event
+  
+  if (!fESDEventOwner) {
+    MakeReconstructedTracks();
+    return fRecoTrackStore;
+  }
+
   if (event != fCurrentEvent) {
     ResetStores();
     fCurrentEvent = event;
@@ -146,6 +179,12 @@ AliMUONVTrackStore* AliMUONRecoCheck::TrackRefs(Int_t event)
 {
   /// Return a track store containing the track references (converted into 
   /// MUONTrack objects) for a given event
+  
+  if (!fESDEventOwner) {
+    MakeTrackRefs();
+    return fTrackRefStore;
+  }
+
   if (event != fCurrentEvent) {
     ResetStores();
     fCurrentEvent = event;
@@ -166,6 +205,13 @@ AliMUONVTrackStore* AliMUONRecoCheck::TrackRefs(Int_t event)
 AliMUONVTrackStore* AliMUONRecoCheck::ReconstructibleTracks(Int_t event)
 {
   /// Return a track store containing the reconstructible tracks for a given event
+
+  if (!fESDEventOwner) {
+    if (TrackRefs(event) == 0x0) return 0x0;
+    MakeReconstructibleTracks();
+    return fRecoTrackRefStore;
+  }
+
   if (event != fCurrentEvent) {
     ResetStores();
     fCurrentEvent = event;
