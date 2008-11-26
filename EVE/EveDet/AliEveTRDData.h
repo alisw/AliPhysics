@@ -80,8 +80,10 @@ class AliEveTRDClusters : public AliEveTRDHits
 public:
   AliEveTRDClusters();
 
+  void Load(Char_t *what="all", Bool_t stkwise=kTRUE) const; // *MENU*
   void PointSelected(Int_t n);
   void Print(Option_t *o = "") const; // *MENU*
+
 private:
   AliEveTRDClusters(const AliEveTRDClusters&);            // Not implemented
   AliEveTRDClusters& operator=(const AliEveTRDClusters&); // Not implemented

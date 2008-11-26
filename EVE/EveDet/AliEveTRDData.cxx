@@ -9,10 +9,16 @@
 
 #include "TVector.h"
 #include "TLinearFitter.h"
+
 #include "TEveTrans.h"
+#include "TEveManager.h"
+
+#include "EveBase/AliEveEventManager.h"
 
 #include "AliEveTRDData.h"
 #include "AliEveTRDModuleImp.h"
+#include "AliEveTRDLoader.h"
+#include "AliEveTRDLoaderImp.h"
 
 #include "AliLog.h"
 #include "AliPID.h"
@@ -180,7 +186,7 @@ AliEveTRDHits::AliEveTRDHits() : TEvePointSet("hits", 20)
 {
   // Constructor.
   SetMarkerSize(.1);
-  SetMarkerColor(2);
+  SetMarkerColor(kGreen);
   SetOwnIds(kTRUE);
 }
 
@@ -253,6 +259,76 @@ void AliEveTRDClusters::Print(Option_t *o) const
     if(!(c = dynamic_cast<AliTRDcluster*>(GetPointId(n)))) continue;
     c->Print(o);
   }
+}
+
+//______________________________________________________________________________
+void AliEveTRDClusters::Load(Char_t *w, Bool_t stk) const
+{
+  Int_t typ = -1;
+  if(strcmp(w, "hit")==0) typ = 0;
+  else if(strcmp(w, "dig")==0) typ = 1;
+  else if(strcmp(w, "cls")==0) typ = 2;
+  else if(strcmp(w, "all")==0) typ = 3;
+  else{
+    AliInfo("The following arguments are accepted:");
+    AliInfo("   \"hit\" : loading of MC hits");
+    AliInfo("   \"dig\" : loading of digits");
+    AliInfo("   \"cls\" : loading of reconstructed clusters");
+    AliInfo("   \"all\" : loading of MC hits+digits+clusters");
+    return;
+  }
+
+  AliTRDcluster *c = 0x0;
+  Int_t n = 0;
+  while((n = GetN() && !(c = dynamic_cast<AliTRDcluster*>(GetPointId(n))))) n++;
+  if(!c) return;
+
+  Int_t det = c->GetDetector();
+  AliEveTRDLoader *loader = 0x0;
+  switch(typ){
+  case 0:  
+    loader = new AliEveTRDLoader("Hits");
+    if(!loader->Open("TRD.Hits.root")){ 
+      delete loader;
+      return;
+    }
+    loader->SetDataType(AliEveTRDLoader::kTRDHits);
+    break;
+  case 1:
+    loader = new AliEveTRDLoader("Digits");
+    if(!loader->Open("TRD.Digits.root")){ 
+      delete loader;
+      return;
+    }
+    loader->SetDataType(AliEveTRDLoader::kTRDDigits);
+    break;
+  case 2:
+    loader = new AliEveTRDLoader("Clusters");
+    if(!loader->Open("TRD.RecPoints.root")){ 
+      delete loader;
+      return;
+    }
+    loader->SetDataType(AliEveTRDLoader::kTRDClusters);
+    break;
+  case 3:
+    loader = new AliEveTRDLoaderSim("MC");
+    if(!loader->Open("galice.root")){ 
+      delete loader;
+      return;
+    }
+    loader->SetDataType(AliEveTRDLoader::kTRDHits | AliEveTRDLoader::kTRDDigits | AliEveTRDLoader::kTRDClusters);
+    break;
+  default: return;
+  }
+
+  loader->AddChambers(AliTRDgeometry::GetSector(det),AliTRDgeometry::GetStack(det), stk ? -1 : AliTRDgeometry::GetLayer(det));
+  // load first event
+  loader->GoToEvent(AliEveEventManager::GetCurrent()->GetEventId());
+  
+  // register loader with alieve
+  gEve->AddElement(loader);
+  //loader->SpawnEditor();
+  gEve->Redraw3D();
 }
 
 ///////////////////////////////////////////////////////////
