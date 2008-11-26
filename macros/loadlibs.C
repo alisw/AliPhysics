@@ -11,6 +11,7 @@ void loadlibs ()
 
   gSystem->Load("libPhysics");
   gSystem->Load("libMinuit");
+  gSystem->Load("libProof");
 
   // Uncomment the following line for macosx
   // Waiting for a better solution
@@ -27,6 +28,7 @@ void loadlibs ()
 
   gSystem->Load("libNet");
   gSystem->Load("libTree");
+  gSystem->Load("libGui");
  
   gSystem->Load("libSTEERBase");
   gSystem->Load("libESD");
@@ -44,6 +46,7 @@ void loadlibs ()
   gSystem->Load("libTHijing");// AliGenHijingEventHeader needed by libZDCsim.so
 
   gSystem->Load("libSTRUCT");
+  gSystem->Load("libPHOSUtils");
   gSystem->Load("libPHOSbase");
   gSystem->Load("libPHOSsim");
   gSystem->Load("libPHOSrec");

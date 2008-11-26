@@ -9,6 +9,7 @@ void loadlibssim ()
 
   gSystem->Load("libPhysics");
   gSystem->Load("libMinuit");
+  gSystem->Load("libProof");
 
   // Uncomment the following line for macosx
   // Waiting for a better solution
@@ -25,6 +26,7 @@ void loadlibssim ()
 
   gSystem->Load("libNet");
   gSystem->Load("libTree");
+  gSystem->Load("libGui");
 
   gSystem->Load("libSTEERBase");
   gSystem->Load("libESD");
@@ -42,6 +44,7 @@ void loadlibssim ()
   gSystem->Load("libTHijing");// AliGenHijingEventHeader needed by libZDCsim.so
 
   gSystem->Load("libSTRUCT");
+  gSystem->Load("libPHOSUtils");
   gSystem->Load("libPHOSbase");
   gSystem->Load("libPHOSsim");
   gSystem->Load("libMUONcore");
@@ -52,6 +55,7 @@ void loadlibssim ()
   gSystem->Load("libMUONtrigger");
   gSystem->Load("libMUONbase");
   gSystem->Load("libMUONsim");
+  gSystem->Load("libMUONrec"); // Needed by libAliHLTMUON
   gSystem->Load("libFMDbase");
   gSystem->Load("libFMDsim");
   gSystem->Load("libPMDbase");
@@ -79,6 +83,7 @@ void loadlibssim ()
   gSystem->Load("libTPCrec");
   gSystem->Load("libITSbase");
   gSystem->Load("libITSsim");
+  gSystem->Load("libITSrec"); // Needed by libAliHLTITS
   gSystem->Load("libTRDbase");
   gSystem->Load("libTRDsim");
   gSystem->Load("libTOFbase");

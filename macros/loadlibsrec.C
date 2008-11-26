@@ -9,6 +9,7 @@ void loadlibsrec ()
 
   gSystem->Load("libPhysics");
   gSystem->Load("libMinuit");
+  gSystem->Load("libProof");
 
   // Uncomment the following line for macosx
   // Waiting for a better solution
@@ -19,6 +20,7 @@ void loadlibsrec ()
 
   gSystem->Load("libNet");
   gSystem->Load("libTree");
+  gSystem->Load("libGui");
 
   gSystem->Load("libmicrocern");
   gSystem->Load("libSTEERBase");
@@ -31,6 +33,7 @@ void loadlibsrec ()
   gSystem->Load("libRAWDatasim");
 
   gSystem->Load("libSTRUCT");
+  gSystem->Load("libPHOSUtils");
   gSystem->Load("libPHOSbase");
   gSystem->Load("libPHOSrec");
   gSystem->Load("libMUONcore");
