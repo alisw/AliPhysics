@@ -249,7 +249,8 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
 	if (!(handler->IsStandard()) && !(handler->AODIsReplicated())) {
 	    if ((handler->NeedsHeaderReplication()) && (fgAODHeader))
 	    {
-		fgAODHeader = dynamic_cast<AliAODHeader*>(InputEvent()->GetHeader());
+	      // copy the contents by assigment
+	      *fgAODHeader =  *(dynamic_cast<AliAODHeader*>(InputEvent()->GetHeader()));
 	    }
 	    if ((handler->NeedsTracksBranchReplication()) && (fgAODTracks))
 	    {
@@ -268,7 +269,7 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
 	    }
 	    if ((handler->NeedsTrackletsBranchReplication()) && (fgAODTracklets))
 	    {
-		    fgAODTracklets = (dynamic_cast<AliAODEvent*>(InputEvent()))->GetTracklets();
+	      *fgAODTracklets = *(dynamic_cast<AliAODEvent*>(InputEvent()))->GetTracklets();
 	    }
 	    if ((handler->NeedsPMDClustersBranchReplication()) && (fgAODPMDClusters))
 	    {
