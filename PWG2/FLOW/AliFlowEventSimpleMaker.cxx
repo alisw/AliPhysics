@@ -184,7 +184,7 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(TTree* anInput)
   pEvent-> SetEventNSelTracksIntFlow(iSelParticlesInt);  
   pEvent->SetNumberOfTracks(iGoodTracks);
   cout<<" iGoodTracks = "<<iGoodTracks<<endl;
-  cout << "  iSelectedTracksInt = " << iSelParticlesInt << endl;  
+  //cout << "  iSelectedTracksInt = " << iSelParticlesInt << endl;  
   return pEvent;
   
 }
@@ -260,7 +260,7 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliMCEvent* anInput)
   pEvent-> SetEventNSelTracksIntFlow(iSelParticlesInt);  
   pEvent->SetNumberOfTracks(iGoodTracks);
   cout<<" iGoodTracks = "<<iGoodTracks<<endl;
-  cout << "  iSelectedTracksInt = " << iSelParticlesInt << endl;  
+  //cout << "  iSelectedTracksInt = " << iSelParticlesInt << endl;  
   return pEvent;
 
 }
@@ -309,8 +309,9 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliMCEvent* anInput, Ali
 
     //check if any bits are set
     TBits bFlowBits = pTrack->GetFlowBits();
-    if (bFlowBits.CountBits() != 0) {
-      //cout<<"The number of bits set = "<<bFlowBits.CountBits()<<endl;
+    if (bFlowBits.CountBits() ==0) {
+      delete pTrack; } //track will not be used anymore
+    else {
       pEvent->TrackCollection()->Add(pTrack) ; 
       iGoodTracks++;
 
@@ -326,7 +327,7 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliMCEvent* anInput, Ali
   pEvent-> SetEventNSelTracksIntFlow(iSelParticlesInt);  
   pEvent-> SetNumberOfTracks(iGoodTracks);
   cout<<" iGoodTracks = "<<iGoodTracks<<endl;
-  cout << "  iSelectedTracksInt = " << iSelParticlesInt << endl;  
+  //cout << "  iSelectedTracksInt = " << iSelParticlesInt << endl;  
   return pEvent;
 
 }
@@ -377,7 +378,7 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliESDEvent* anInput)
   pEvent-> SetEventNSelTracksIntFlow(iSelParticlesInt);  
   pEvent->SetNumberOfTracks(iGoodTracks);
   cout<<" iGoodTracks = "<<iGoodTracks<<endl;
-  cout << "  iSelectedTracksInt = " << iSelParticlesInt << endl;  
+  //cout << "  iSelectedTracksInt = " << iSelParticlesInt << endl;  
   return pEvent;
 
 
@@ -420,7 +421,9 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliESDEvent* anInput, Al
 
     //check if any bits are set
     TBits bFlowBits = pTrack->GetFlowBits();
-    if (bFlowBits.CountBits() !=0) {
+    if (bFlowBits.CountBits() ==0) {
+      delete pTrack; } //track will not be used anymore
+    else {
       pEvent->TrackCollection()->Add(pTrack) ;  
       iGoodTracks++;
 
@@ -430,13 +433,14 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliESDEvent* anInput, Al
 	{ iSelParticlesDiff++; }
       
     }
+    
     itrkN++; 
   }
   
   pEvent-> SetEventNSelTracksIntFlow(iSelParticlesInt);  
   pEvent->SetNumberOfTracks(iGoodTracks);
   cout<<" iGoodTracks = "<<iGoodTracks<<endl;
-  cout << "  iSelectedTracksInt = " << iSelParticlesInt << endl;  
+  //cout << "  iSelectedTracksInt = " << iSelParticlesInt << endl;  
   return pEvent;
 
 
@@ -486,7 +490,7 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliAODEvent* anInput)
   pEvent-> SetEventNSelTracksIntFlow(iSelParticlesInt);  
   pEvent->SetNumberOfTracks(iGoodTracks);
   cout<<" iGoodTracks = "<<iGoodTracks<<endl;
-  cout << "  iSelectedTracksInt = " << iSelParticlesInt << endl;  
+  //cout << "  iSelectedTracksInt = " << iSelParticlesInt << endl;  
   return pEvent;
   
 }
@@ -527,7 +531,9 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliAODEvent* anInput,  A
 
     //check if any bits are set
     TBits bFlowBits = pTrack->GetFlowBits();
-    if (bFlowBits.CountBits() !=0) {
+    if (bFlowBits.CountBits() ==0) {
+      delete pTrack; } //track will not be used anymore
+    else {
       pEvent->TrackCollection()->Add(pTrack) ; 
       iGoodTracks++;
 
@@ -537,14 +543,14 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliAODEvent* anInput,  A
 	{ iSelParticlesDiff++; }
       	     
     }
-      
+       
     itrkN++; 
   }
   
   pEvent-> SetEventNSelTracksIntFlow(iSelParticlesInt);  
   pEvent->SetNumberOfTracks(iGoodTracks);
   cout<<" iGoodTracks = "<<iGoodTracks<<endl;
-  cout << "  iSelectedTracksInt = " << iSelParticlesInt << endl;  
+  //cout << "  iSelectedTracksInt = " << iSelParticlesInt << endl;  
   return pEvent;
   
 }
@@ -622,7 +628,7 @@ AliFlowEventSimple*  AliFlowEventSimpleMaker::FillTracks(AliESDEvent* anInput, A
   pEvent-> SetEventNSelTracksIntFlow(iSelParticlesInt);  
   pEvent->SetNumberOfTracks(iGoodTracks);
   cout<<" iGoodTracks = "<<iGoodTracks<<endl;
-  cout << "  iSelectedTracksInt = " << iSelParticlesInt << endl;  
+  //cout << "  iSelectedTracksInt = " << iSelParticlesInt << endl;  
   return pEvent;
 
 
@@ -703,7 +709,9 @@ AliFlowEventSimple*  AliFlowEventSimpleMaker::FillTracks(AliESDEvent* anInput, A
       
     //check if any bits are set
     TBits bFlowBits = pTrack->GetFlowBits();
-    if (bFlowBits.CountBits() !=0) {
+    if (bFlowBits.CountBits() ==0) {
+      delete pTrack; } //track will not be used anymore
+    else {
       pEvent->TrackCollection()->Add(pTrack) ; 
       iGoodTracks++;  
     
@@ -713,13 +721,14 @@ AliFlowEventSimple*  AliFlowEventSimpleMaker::FillTracks(AliESDEvent* anInput, A
 	{ iSelParticlesDiff++; }
       	     
     }
+    
     itrkN++; 
   }
   
   pEvent-> SetEventNSelTracksIntFlow(iSelParticlesInt);  
   pEvent->SetNumberOfTracks(iGoodTracks);
   cout<<" iGoodTracks = "<<iGoodTracks<<endl;
-  cout << "  iSelectedTracksInt = " << iSelParticlesInt << endl;  
+  //cout << "  iSelectedTracksInt = " << iSelParticlesInt << endl;  
   return pEvent;
 
 }
