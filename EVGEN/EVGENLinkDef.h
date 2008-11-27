@@ -57,4 +57,5 @@
 #pragma link C++ class  AliGenCorrHF+;
 #pragma link C++ class  AliGenCosmicsParam+;
 #pragma link C++ class  AliGenKrypton+;
+#pragma link C++ class  AliGenThermalPhotons+;
 #endif
