@@ -15,7 +15,8 @@
 #include <TString.h>
 #include <Rtypes.h>
 #include "AliGeomManager.h"
-#include <TMatrixDSymfwd.h>
+#include <TMatrixD.h>
+#include <TMatrixDSym.h>
 
 
 class AliTrackPoint;
@@ -55,6 +56,8 @@ class AliAlignObj : public TObject {
   void  SetVolUID(AliGeomManager::ELayerID layerId, Int_t modId);
   void  SetCorrMatrix(Double_t *cov);
   void  SetCorrMatrix(TMatrixDSym& mcov);
+  Bool_t SetFromLocalCov(Double_t *lCov);
+  Bool_t SetFromLocalCov(TMatrixDSym& lCov);
 
   //Getters
   const char  *GetSymName()    const {return fVolPath.Data();}
@@ -70,6 +73,9 @@ class AliAlignObj : public TObject {
   virtual Bool_t GetLocalMatrix(TGeoHMatrix& m) const;
   void  GetCovMatrix(Double_t *cov) const;
   void  GetCovMatrix(TMatrixDSym& mcov) const;
+  Bool_t  GetJacobian(TMatrixD& mJ) const;
+  Bool_t  GetLocalCovMatrix(Double_t *cov) const;
+  Bool_t  GetLocalCovMatrix(TMatrixDSym& lCov) const;
 
   Bool_t   IsSortable() const {return kTRUE;}
   Int_t         GetLevel() const;

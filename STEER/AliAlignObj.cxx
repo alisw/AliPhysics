@@ -27,7 +27,6 @@
 #include <TGeoPhysicalNode.h>
 #include <TGeoOverlap.h>
 #include <TMath.h>
-#include <TMatrixDSym.h>
 
 #include "AliAlignObj.h"
 #include "AliTrackPointArray.h"
@@ -228,6 +227,213 @@ void AliAlignObj::GetCovMatrix(TMatrixDSym& mcov) const
   }
 
 }
+
+//______________________________________________________________________________
+Bool_t AliAlignObj::GetLocalCovMatrix(TMatrixDSym& lCov) const
+{
+  // Calculates the covariance matrix (6x6) associated to the six parameters
+  // defining the current alignment in the global coordinates system (and sets
+  // in the internal data members) from the covariance matrix (6x6) for the six
+  // parameters defining the alignment transformation in the local coordinates
+  // system, passed as an argument.
+  //
+  TMatrixD mJ(6,6);// the jacobian of the transformation from local to global parameters
+  if(!GetJacobian(mJ)) return kFALSE;
+  TMatrixD invJ = mJ.Invert(); // the inverse of the jacobian matrix
+  
+  TMatrixDSym gCov(6);
+  GetCovMatrix(gCov);
+  
+  // Compute the global covariance matrix gcov = mJ lcov mJ-1
+  TMatrixD lCovM = invJ * gCov * mJ;
+  // To be done: somehow check that lCovM is close enough to be symmetric
+  for(Int_t i=0; i<6; i++)
+  {
+    lCov(i,i) = lCovM(i,i);
+    for(Int_t j=i+1; j<6; j++)
+    {
+      lCov(i,j)=lCovM(i,j);
+      lCov(j,i)=lCovM(i,j);
+    }
+  }
+  
+  return kTRUE;
+  
+}
+
+//______________________________________________________________________________
+Bool_t AliAlignObj::GetLocalCovMatrix(Double_t *lCov) const
+{
+  // Calculates the covariance matrix (6x6) associated to the six parameters
+  // defining the current alignment in the global coordinates system (and sets
+  // in the internal data members) from the covariance matrix (6x6) for the six
+  // parameters defining the alignment transformation in the local coordinates
+  // system, passed as an argument.
+  //
+  TMatrixDSym lCovMatrix(6);
+  GetLocalCovMatrix(lCovMatrix);
+  
+  Int_t k=0;
+  for(Int_t i=0; i<6; i++)
+    for(Int_t j=i; j<6; j++)
+    {
+       lCov[k++] = lCovMatrix(i,j);
+    }
+			
+  return kTRUE;
+}
+
+//______________________________________________________________________________
+Bool_t AliAlignObj::GetJacobian(TMatrixD& mJ) const
+{
+  // Compute the jacobian J of the transformation of the six local to the six global delta parameters
+  //
+  // R00 R01 R02 | (R01Rk2 - R02Rk1)Tk  (R02Rk0 - R00Rk2)Tk  (R00Rk1 - R01Rk0)Tk
+  // R00 R01 R02 | (R11Rk2 - R12Rk1)Tk  (R12Rk0 - R10Rk2)Tk  (R10Rk1 - R11Rk0)Tk
+  // R00 R01 R02 | (R21Rk2 - R22Rk1)Tk  (R22Rk0 - R20Rk2)Tk  (R20Rk1 - R21Rk0)Tk
+  //  -  -   -   -   -   -   -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
+  //  0   0   0  |   R11R22 - R12R21      R12R20 - R10R22      R10R21 - R11R20
+  //  0   0   0  |   R21R02 - R22R01      R22R00 - R20R02      R20R01 - R21R00
+  //  0   0   0  |   R01R12 - R02R11      R02R10 - R00R12      R00R11 - R01R10
+  //
+  if (!gGeoManager || !gGeoManager->IsClosed()) {
+    AliError("Can't compute the global covariance matrix from the local one without an open geometry!");
+    return kFALSE;
+  }
+
+  const char* symname = GetSymName();
+  TGeoPhysicalNode* node;
+  TGeoPNEntry* pne = gGeoManager->GetAlignableEntry(symname);
+  if(pne){
+    if(!pne->GetPhysicalNode()){
+      node = gGeoManager->MakeAlignablePN(pne);
+    }else{
+      node = pne->GetPhysicalNode();
+    }
+  }else{
+    AliWarning(Form("The symbolic volume name %s does not correspond to a physical entry. Using it as volume path!",symname));
+    node = (TGeoPhysicalNode*) gGeoManager->MakePhysicalNode(symname);
+  }
+
+  if (!node) {
+    AliError(Form("Volume name or path %s not valid!",symname));
+    return kFALSE;
+  }
+
+  TGeoHMatrix gm; //global matrix
+  gm = *node->GetMatrix();
+  Double_t *tr  = gm.GetTranslation();
+  Double_t *rot = gm.GetRotationMatrix();
+  
+  TGeoHMatrix m; // global delta transformation matrix
+  GetMatrix(m);
+  // We should probably check that it's sufficinetly close to identity
+  // if it's not return because the "small angles" approximation cannot hold
+
+  // 3x3 upper left part (global shifts derived w.r.t. local shifts)
+  for(Int_t i=0; i<3; i++)
+  {
+    for(Int_t j=0; j<3; j++)
+    {
+      mJ(i,j) = rot[i+3*j];
+    }
+  }
+  
+  // 3x3 lower left part (global angles derived w.r.t. local shifts)
+  for(Int_t i=0; i<3; i++)
+  {
+    for(Int_t j=0; j<3; j++)
+    {
+      mJ(i+3,j) = 0.;
+    }
+  }
+  
+  // 3x3 upper right part (global shifts derived w.r.t. local angles)
+  for(Int_t i=0; i<3; i++)
+  {
+    for(Int_t j=0; j<3; j++)
+    {
+      Double_t mEl = 0.;
+      Int_t b = (j+1)%3;
+      Int_t d = (j+2)%3;
+      for(Int_t k=0; k<3; k++)
+      {
+	mEl += (rot[3*i+b]*rot[3*k+d])*tr[k]-(rot[3*i+d]*rot[3*k+b])*tr[k];
+      }
+      mJ(i,j+3) = mEl;
+    }
+  }
+  
+  // 3x3 lower right part (global angles derived w.r.t. local angles)
+  for(Int_t i=0; i<3; i++)
+    for(Int_t j=0; j<3; j++)
+    {
+      Int_t a = (i+1)%3;
+      Int_t b = (j+1)%3;
+      Int_t c = (i+2)%3;
+      Int_t d = (j+2)%3;
+      mJ(i+3,j+3) = rot[3*a+b]*rot[3*c+d]-rot[3*a+d]*rot[3*c+b];
+    }
+
+  return kTRUE;
+
+}
+
+//______________________________________________________________________________
+Bool_t AliAlignObj::SetFromLocalCov(TMatrixDSym& lCov)
+{
+  // Calculates the covariance matrix (6x6) associated to the six parameters
+  // defining the current alignment in the global coordinates system (and sets
+  // in the internal data members) from the covariance matrix (6x6) for the six
+  // parameters defining the alignment transformation in the local coordinates
+  // system, passed as an argument.
+  //
+  TMatrixD mJ(6,6);// the jacobian of the transformation from local to global parameters
+  if(!GetJacobian(mJ)) return kFALSE;
+  TMatrixD invJ = mJ.Invert(); // the inverse of the jacobian matrix
+  
+  // Compute the global covariance matrix gcov = mJ lcov mJ-1
+  TMatrixD gCovM = mJ * lCov * invJ;
+  // To be done: somehow check that gCovM is close enough to be symmetric
+  TMatrixDSym gCov(6);
+  for(Int_t i=0; i<6; i++)
+  {
+    gCov(i,i) = gCovM(i,i);
+    for(Int_t j=i+1; j<6; j++)
+    {
+      gCov(i,j)=gCovM(i,j);
+      gCov(j,i)=gCovM(i,j);
+    }
+  }
+  SetCorrMatrix(gCov);
+
+  return kTRUE;
+  
+}
+
+//______________________________________________________________________________
+Bool_t AliAlignObj::SetFromLocalCov(Double_t *lCov)
+{
+  // Calculates the covariance matrix (6x6) associated to the six parameters
+  // defining the current alignment in the global coordinates system, and sets
+  // in the internal data members, from the 21 coefficients, passed as argument,
+  // of the covariance matrix (6x6) for the six parameters defining the
+  // alignment transformation in the local coordinates system.
+  //
+  TMatrixDSym lCovMatrix(6);
+  
+  Int_t k=0;
+  for(Int_t i=0; i<6; i++)
+    for(Int_t j=i; j<6; j++)
+    {
+      lCovMatrix(i,j) = lCov[k++];
+      if(j!=i) lCovMatrix(j,i) = lCovMatrix(i,j);
+    }
+			
+  return SetFromLocalCov(lCovMatrix);
+
+}
+  
 
 //______________________________________________________________________________
 void AliAlignObj::SetCorrMatrix(Double_t *cmat)
