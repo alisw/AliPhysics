@@ -798,41 +798,106 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt)
 
 
 //___________________________________________________________________
-void AliTRDseedV1::Print(Option_t*) const
+void AliTRDseedV1::Print(Option_t *o) const
 {
   //
   // Printing the seedstatus
   //
 
-  AliInfo(Form("Tracklet X0[%7.2f] Det[%d]", fX0, fDet));
-  printf("  Tilt[%+6.2f] PadLength[%5.2f]\n", fTilt, fPadLength);
+  AliInfo(Form("Det[%3d] Tilt[%+6.2f] Pad[%5.2f]", fDet, fTilt, fPadLength));
+  AliInfo(Form("Nattach[%2d] Nfit[%2d] Nuse[%2d] pads[%f]", fN, fN2, fNUsed, fMPads));
+  AliInfo(Form("x[%7.2f] y[%7.2f] z[%7.2f] dydx[%5.2f] dzdx[%5.2f]", fX0, fYfit[0], fZfit[0], fYfit[1], fZfit[1]));
+  AliInfo(Form("Ref        y[%7.2f] z[%7.2f] dydx[%5.2f] dzdx[%5.2f]", fYref[0], fZref[0], fYref[1], fZref[1]))
+
+
+  if(strcmp(o, "a")!=0) return;
+
   AliTRDcluster* const* jc = &fClusters[0];
   for(int ic=0; ic<AliTRDtrackerV1::GetNTimeBins(); ic++, jc++) {
     if(!(*jc)) continue;
-    printf("  %2d X[%7.2f] Y[%7.2f] Z[%7.2f] Idx[%d] c[%p] usable[%s]\n", 
-      ic, (*jc)->GetX(), (*jc)->GetY(), (*jc)->GetZ(), 
-      fIndexes[ic], (void*)(*jc), fUsable[ic]?"y":"n");
+    (*jc)->Print(o);
   }
 
-  printf("  fYref[0] =%f fYref[1] =%f\n", fYref[0], fYref[1]);
-  printf("  fZref[0] =%f fZref[1] =%f\n", fZref[0], fZref[1]);
-  printf("  fYfit[0] =%f fYfit[1] =%f\n", fYfit[0], fYfit[1]);
-  printf("  fZfit[0] =%f fZfit[1] =%f\n", fZfit[0], fZfit[1]);
-  printf("  fSigmaY =%f\n", fSigmaY);
+/*  printf("  fSigmaY =%f\n", fSigmaY);
   printf("  fSigmaY2=%f\n", fSigmaY2);            
   printf("  fMeanz  =%f\n", fMeanz);
   printf("  fZProb  =%f\n", fZProb);
-  printf("  fLabels[0]=%d fLabels[1]=%d\n", fLabels[0], fLabels[1]);
-  printf("  fN      =%d\n", fN);
-  printf("  fN2     =%d (>4 isOK - to be redesigned)\n",fN2);
-  printf("  fNUsed  =%d\n", fNUsed);
-  printf("  fFreq   =%d\n", fFreq);
-  printf("  fNChange=%d\n",  fNChange);
-  printf("  fMPads  =%f\n", fMPads);
+  printf("  fLabels[0]=%d fLabels[1]=%d\n", fLabels[0], fLabels[1]);*/
   
-  printf("  fC      =%f\n", fC);        
+/*  printf("  fC      =%f\n", fC);        
   printf("  fCC     =%f\n",fCC);      
   printf("  fChi2   =%f\n", fChi2);  
-  printf("  fChi2Z  =%f\n", fChi2Z);
+  printf("  fChi2Z  =%f\n", fChi2Z);*/
 }
 
+
+//___________________________________________________________________
+Bool_t AliTRDseedV1::IsEqual(const TObject *o) const
+{
+  // Checks if current instance of the class has the same essential members
+  // as the given one
+
+  if(!o) return kFALSE;
+  const AliTRDseedV1 *inTracklet = dynamic_cast<const AliTRDseedV1*>(o);
+  if(!inTracklet) return kFALSE;
+
+  for (Int_t i = 0; i < 2; i++){
+    if ( fYref[i] != inTracklet->GetYref(i) ) return kFALSE;
+    if ( fZref[i] != inTracklet->GetZref(i) ) return kFALSE;
+  }
+  
+  if ( fSigmaY != inTracklet->GetSigmaY() ) return kFALSE;
+  if ( fSigmaY2 != inTracklet->GetSigmaY2() ) return kFALSE;
+  if ( fTilt != inTracklet->GetTilt() ) return kFALSE;
+  if ( fPadLength != inTracklet->GetPadLength() ) return kFALSE;
+  
+  for (Int_t i = 0; i < knTimebins; i++){
+    if ( fX[i] != inTracklet->GetX(i) ) return kFALSE;
+    if ( fY[i] != inTracklet->GetY(i) ) return kFALSE;
+    if ( fZ[i] != inTracklet->GetZ(i) ) return kFALSE;
+    if ( fIndexes[i] != inTracklet->GetIndexes(i) ) return kFALSE;
+    if ( fUsable[i] != inTracklet->IsUsable(i) ) return kFALSE;
+  }
+
+  for (Int_t i=0; i < 2; i++){
+    if ( fYfit[i] != inTracklet->GetYfit(i) ) return kFALSE;
+    if ( fZfit[i] != inTracklet->GetZfit(i) ) return kFALSE;
+    if ( fYfitR[i] != inTracklet->GetYfitR(i) ) return kFALSE;
+    if ( fZfitR[i] != inTracklet->GetZfitR(i) ) return kFALSE;
+    if ( fLabels[i] != inTracklet->GetLabels(i) ) return kFALSE;
+  }
+  
+  if ( fMeanz != inTracklet->GetMeanz() ) return kFALSE;
+  if ( fZProb != inTracklet->GetZProb() ) return kFALSE;
+  if ( fN2 != inTracklet->GetN2() ) return kFALSE;
+  if ( fNUsed != inTracklet->GetNUsed() ) return kFALSE;
+  if ( fFreq != inTracklet->GetFreq() ) return kFALSE;
+  if ( fNChange != inTracklet->GetNChange() ) return kFALSE;
+  if ( fNChange != inTracklet->GetNChange() ) return kFALSE;
+   
+  if ( fC != inTracklet->GetC() ) return kFALSE;
+  if ( fCC != inTracklet->GetCC() ) return kFALSE;
+  if ( fChi2 != inTracklet->GetChi2() ) return kFALSE;
+  //  if ( fChi2Z != inTracklet->GetChi2Z() ) return kFALSE;
+
+  if ( fDet != inTracklet->GetDetector() ) return kFALSE;
+  if ( fMom != inTracklet->GetMomentum() ) return kFALSE;
+  if ( fdX != inTracklet->GetdX() ) return kFALSE;
+  
+  for (Int_t iCluster = 0; iCluster < knTimebins; iCluster++){
+    AliTRDcluster *curCluster = fClusters[iCluster];
+    AliTRDcluster *inCluster = inTracklet->GetClusters(iCluster);
+    if (curCluster && inCluster){
+      if (! curCluster->IsEqual(inCluster) ) {
+        curCluster->Print();
+        inCluster->Print();
+        return kFALSE;
+      }
+    } else {
+      // if one cluster exists, and corresponding 
+      // in other tracklet doesn't - return kFALSE
+      if(curCluster || inCluster) return kFALSE;
+    }
+  }
+  return kTRUE;
+}

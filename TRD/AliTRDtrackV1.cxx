@@ -15,6 +15,7 @@
 
 /* $Id$ */
 
+#include "AliLog.h"
 #include "AliESDtrack.h"
 #include "AliTracker.h"
 
@@ -387,6 +388,62 @@ Double_t AliTRDtrackV1::GetPredictedChi2(const AliTRDseedV1 *trklt) const
 }
 
 //_______________________________________________________________
+Bool_t AliTRDtrackV1::IsEqual(const TObject *o) const
+{
+  if (!o) return kFALSE;
+  const AliTRDtrackV1 *inTrack = dynamic_cast<const AliTRDtrackV1*>(o);
+  if (!inTrack) return kFALSE;
+  
+  if ( fPIDquality != inTrack->GetPIDquality() ) return kFALSE;
+  
+  for(Int_t i = 0; i < AliPID::kSPECIES; i++){
+    if ( fPID[i] != inTrack->GetPID(i) ) return kFALSE;
+  }
+  
+  for (Int_t i = 0; i < 3; i++){
+    if ( fBudget[i] != inTrack->GetBudget(i) ) return kFALSE;
+  }
+  if ( fDE != inTrack->GetEdep() ) return kFALSE;
+  if ( fFakeRatio != inTrack->GetFakeRatio() ) return kFALSE;
+  if ( fChi2 != inTrack->GetChi2() ) return kFALSE;
+  if ( fMass != inTrack->GetMass() ) return kFALSE;
+  if ( fLab != inTrack->GetLabel() ) return kFALSE;
+  if ( fN != inTrack->GetNumberOfClusters() ) return kFALSE;
+  if ( AliKalmanTrack::GetIntegratedLength() != inTrack->GetIntegratedLength() ) return kFALSE;
+  
+  if ( GetX() != inTrack->GetX() ) return kFALSE;
+  if ( GetAlpha() != inTrack->GetAlpha() ) return kFALSE;
+  const Double_t *inP = inTrack->GetParameter();
+  const Double_t *curP = GetParameter();
+  for (Int_t i = 0; i < 5; i++){
+    if ( curP[i] != inP[i]) return kFALSE;
+  }
+  const Double_t *inC = inTrack->GetCovariance();
+  const Double_t *curC = GetCovariance();
+  for (Int_t i = 0; i < 15; i++){
+    if ( curC[i] != inC[i]) return kFALSE;
+  }
+  
+  for (Int_t iTracklet = 0; iTracklet < kNplane; iTracklet++){
+    AliTRDseedV1 *curTracklet = fTracklet[iTracklet];
+    AliTRDseedV1 *inTracklet = inTrack->GetTracklet(iTracklet);
+    if (curTracklet && inTracklet){
+      if (! curTracklet->IsEqual(inTracklet) ) {
+        curTracklet->Print();
+        inTracklet->Print();
+        return kFALSE;
+      }
+    } else {
+      // if one tracklet exists, and corresponding 
+      // in other track doesn't - return kFALSE
+      if(inTracklet || curTracklet) return kFALSE;
+    }
+  }
+
+  return kTRUE;
+}
+
+//_______________________________________________________________
 Bool_t AliTRDtrackV1::IsElectron() const
 {
   if(GetPID(0) > fReconstructor->GetRecoParam()->GetPIDThreshold(GetP())) return kTRUE;
@@ -568,6 +625,38 @@ Int_t   AliTRDtrackV1::PropagateToR(Double_t r,Double_t step)
   return 0;
 
 }
+
+//_____________________________________________________________________________
+void AliTRDtrackV1::Print(Option_t *o) const
+{
+  AliInfo(Form("PID q[%d] [%4.1f %4.1f %4.1f %4.1f %4.1f]", fPIDquality, 1.E2*fPID[0], 1.E2*fPID[1], 1.E2*fPID[2], 1.E2*fPID[3], 1.E2*fPID[4]));
+  AliInfo(Form("Material[%5.2f %5.2f %5.2f]", fBudget[0], fBudget[1], fBudget[2]));
+
+  AliInfo(Form("x[%7.2f] t[%7.4f] alpha[%f] mass[%f]", GetX(), GetIntegratedLength(), GetAlpha(), fMass));
+  AliInfo(Form("Ntr[%1d] Ncl[%3d] lab[%3d]", GetNumberOfTracklets(), fN, fLab));
+
+  if(strcmp(o, "a")!=0) return;
+  printf("|X| = (");
+  const Double_t *curP = GetParameter();
+  for (Int_t i = 0; i < 5; i++) printf("%7.2f ", curP[i]);
+  printf(")\n");
+
+  printf("|V| = \n");
+  const Double_t *curC = GetCovariance();
+  for (Int_t i = 0, j=4, k=0; i<15; i++, k++){
+    printf("%7.2f ", curC[i]);
+    if(k==j){ 
+      printf("\n");
+      k=-1; j--;
+    }
+  }
+
+  for(Int_t ip=0; ip<kNplane; ip++){
+    if(!fTracklet[ip]) continue;
+    fTracklet[ip]->Print(o);
+  }
+}
+
 
 //_____________________________________________________________________________
 Bool_t AliTRDtrackV1::Rotate(Double_t alpha, Bool_t absolute)

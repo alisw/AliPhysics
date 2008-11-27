@@ -73,11 +73,14 @@ public:
   Int_t          GetTrackletIndex(Int_t plane) const          { return (plane>=0 && plane<kNplane) ? fTrackletIndex[plane] : -1;} 
   UShort_t*      GetTrackletIndexes() {return &fTrackletIndex[0];}
   
+  Bool_t         IsEqual(const TObject *inTrack) const;
   Bool_t         IsOwner() const {return TestBit(kOwner);};
   Bool_t         IsStopped() const {return TestBit(kStopped);};
   Bool_t         IsElectron() const;
   
   void           MakeBackupTrack();
+  void           Print(Option_t *o="") const;
+
   Bool_t         PropagateTo(Double_t xr, Double_t x0 = 8.72, Double_t rho = 5.86e-3);
   Int_t          PropagateToR(Double_t xr, Double_t step);
   Bool_t         Rotate(Double_t angle, Bool_t absolute = kFALSE);

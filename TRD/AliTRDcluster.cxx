@@ -22,6 +22,7 @@
 //                                                                           //
 /////////////////////////////////////////////////////////////////////////////// 
 
+#include "AliLog.h"
 #include "AliTRDcluster.h"
 
 ClassImp(AliTRDcluster)
@@ -193,6 +194,31 @@ void AliTRDcluster::AddTrackIndex(Int_t *track)
 }          
 
 //_____________________________________________________________________________
+void AliTRDcluster::Clear(Option_t *)
+{
+  //
+  // Reset all member to the default value
+  //
+  fPadCol=0;
+  fPadRow=0;
+  fPadTime=0;
+  fLocalTimeBin=0;
+  fNPads=0;
+  fClusterMasking=0;
+  fDetector=0;
+  for (Int_t i=0; i < 7; i++) fSignals[i]=0;
+  fQ = 0;
+  fCenter = 0;
+  for (Int_t i = 0; i < 3; i++) SetLabel(0,i);
+  SetX(0);
+  SetY(0);
+  SetZ(0);
+  SetSigmaY2(0);
+  SetSigmaZ2(0);
+  SetVolumeId(0);
+}
+
+//_____________________________________________________________________________
 Float_t AliTRDcluster::GetSumS() const
 {
   //
@@ -207,6 +233,46 @@ Float_t AliTRDcluster::GetSumS() const
   return sum;
 
 }
+
+
+//_____________________________________________________________________________
+Bool_t AliTRDcluster::IsEqual(const TObject *o) const
+{
+  //
+  // Compare relevant information of this cluster with another one
+  //
+  
+  const AliTRDcluster *inCluster = dynamic_cast<const AliTRDcluster*>(o);
+  if (!o || !inCluster) return kFALSE;
+
+  if ( AliCluster::GetX() != inCluster->GetX() ) return kFALSE;
+  if ( AliCluster::GetY() != inCluster->GetY() ) return kFALSE;
+  if ( AliCluster::GetZ() != inCluster->GetZ() ) return kFALSE;
+  if ( fQ != inCluster->fQ ) return kFALSE;
+  if ( fDetector != inCluster->fDetector ) return kFALSE;
+  if ( fPadCol != inCluster->fPadCol ) return kFALSE;
+  if ( fPadRow != inCluster->fPadRow ) return kFALSE;
+  if ( fPadTime != inCluster->fPadTime ) return kFALSE;
+  if ( fClusterMasking != inCluster->fClusterMasking ) return kFALSE;
+  if ( IsInChamber() != inCluster->IsInChamber() ) return kFALSE;
+  if ( IsShared() != inCluster->IsShared() ) return kFALSE;
+  if ( IsUsed() != inCluster->IsUsed() ) return kFALSE;
+  
+  return kTRUE;
+}
+
+//_____________________________________________________________________________
+void AliTRDcluster::Print(Option_t *o) const
+{
+  AliInfo(Form("Det[%3d] LTrC[%7.2f %7.2f %7.2f] Q[%f] Stat[in(%c) use(%c) sh(%c)]", 
+    fDetector, GetX(), GetY(), GetZ(), fQ, 
+    IsInChamber() ? 'y' : 'n', IsUsed() ? 'y' : 'n', IsShared() ? 'y' : 'n'));
+
+  if(strcmp(o, "a")!=0) return;
+  AliInfo(Form("LChC[c(%3d) r(%2d) t(%2d)] t-t0[%2d] Npad[%d] cen[%5.3f] mask[%d]", fPadCol, fPadRow, fPadTime, fLocalTimeBin, fNPads, fCenter, fClusterMasking)); 
+  AliInfo(Form("Signals[%3d %3d %3d %3d %3d %3d %3d]", fSignals[0], fSignals[1], fSignals[2], fSignals[3], fSignals[4], fSignals[5], fSignals[6]));
+}
+
 
 //_____________________________________________________________________________
 void AliTRDcluster::SetPadMaskedPosition(UChar_t position)

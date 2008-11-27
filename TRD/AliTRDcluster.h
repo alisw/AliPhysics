@@ -18,7 +18,8 @@ class AliTRDcluster : public AliCluster {
  public:
 
   enum { kInChamber = BIT(14)
-       , kShared    = BIT(15)
+       , kUsed      = BIT(15)
+       , kShared    = BIT(16)
   };
   enum { kMaskedLeft = BIT(0)
       , kMaskedCenter= BIT(1)
@@ -26,39 +27,44 @@ class AliTRDcluster : public AliCluster {
   };
 
   AliTRDcluster();
-  AliTRDcluster(Int_t det, Float_t q, Float_t *pos, Float_t *sig
-              , Int_t *tracks, Char_t npads, Short_t *signals
-              , UChar_t col, UChar_t row, UChar_t time
-              , Char_t timebin, Float_t center, UShort_t volid);
+  AliTRDcluster(
+    Int_t det, Float_t q, Float_t *pos, Float_t *sig,
+    Int_t *tracks, Char_t npads, Short_t *signals,
+    UChar_t col, UChar_t row, UChar_t time,
+    Char_t timebin, Float_t center, UShort_t volid);
   AliTRDcluster(const AliTRDcluster &c);
   virtual ~AliTRDcluster() {};
 
   virtual void     AddTrackIndex(Int_t *i); 
+  void     Clear(Option_t *o="");
+  
+  Bool_t   IsEqual(const TObject *otherCluster) const;
+  Bool_t   IsInChamber() const             { return TestBit(kInChamber);       }
+  Bool_t   IsMasked() const                { return fClusterMasking ? kTRUE : kFALSE; }
+  Bool_t   IsShared() const                { return TestBit(kShared);          }
+  Bool_t   IsUsed() const                  { return TestBit(kUsed); }
 
-          Bool_t   IsInChamber() const             { return TestBit(kInChamber);       }
-          Bool_t   IsMasked() const                { return fClusterMasking ? kTRUE : kFALSE; }
-          Bool_t   IsShared() const                { return TestBit(kShared);          }
-          Bool_t   IsUsed() const                  { return (fQ < 0) ? kTRUE : kFALSE; }
+  UChar_t  GetPadMaskedPosition() const    { return fClusterMasking & 7; }
+  UChar_t  GetPadMaskedStatus() const      { return fClusterMasking >> 3; }
+  Int_t    GetDetector() const             { return fDetector;      }
+  Int_t    GetLocalTimeBin() const         { return fLocalTimeBin;  }
+  Float_t  GetQ() const                    { return fQ;             }
+  Int_t    GetNPads() const                { return fNPads;         }
+  Float_t  GetCenter() const               { return fCenter;        }
+  Int_t    GetPadCol() const               { return fPadCol;        }
+  Int_t    GetPadRow() const               { return fPadRow;        }
+  Int_t    GetPadTime() const              { return fPadTime;       }
+  Short_t *GetSignals()                    { return fSignals;       }
+  Float_t  GetSumS() const;
+  
+  void     Print(Option_t* o="") const;
 
-          UChar_t  GetPadMaskedPosition() const    { return fClusterMasking & 7; }
-          UChar_t  GetPadMaskedStatus() const      { return fClusterMasking >> 3; }
-          Int_t    GetDetector() const             { return fDetector;      }
-          Int_t    GetLocalTimeBin() const         { return fLocalTimeBin;  }
-          Float_t  GetQ() const                    { return fQ;             }
-          Int_t    GetNPads() const                { return fNPads;         }
-          Float_t  GetCenter() const               { return fCenter;        }
-          Int_t    GetPadCol() const               { return fPadCol;        }
-          Int_t    GetPadRow() const               { return fPadRow;        }
-          Int_t    GetPadTime() const              { return fPadTime;       }
-          Short_t *GetSignals()                    { return fSignals;       }
-          Float_t  GetSumS() const;
-
-          void     SetLocalTimeBin(Char_t t)       { fLocalTimeBin = t;     }
-          void     SetInChamber(Bool_t in = kTRUE) { SetBit(kInChamber,in); }
-          void     SetPadMaskedPosition(UChar_t position);
-          void     SetPadMaskedStatus(UChar_t status);
-          void     SetShared(Bool_t sh  = kTRUE)   { SetBit(kShared,sh);    }
-          void     Use(Int_t = 0)                  { fQ = -fQ;              }
+  void     SetLocalTimeBin(Char_t t)       { fLocalTimeBin = t;     }
+  void     SetInChamber(Bool_t in = kTRUE) { SetBit(kInChamber,in); }
+  void     SetPadMaskedPosition(UChar_t position);
+  void     SetPadMaskedStatus(UChar_t status);
+  void     SetShared(Bool_t sh  = kTRUE)   { SetBit(kShared,sh);    }
+  void     Use(Int_t = 0)                  { SetBit(kUsed, kTRUE);              }
 
   protected:
     UChar_t fPadCol;         //  Central pad number in column direction

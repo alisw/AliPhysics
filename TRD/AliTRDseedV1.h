@@ -54,28 +54,32 @@ class AliTRDseedV1 : public AliTRDseed
   AliTRDseedV1(const AliTRDseedV1 &ref);
   AliTRDseedV1& operator=(const AliTRDseedV1 &ref);
 
-  Bool_t	AttachClustersIter(AliTRDtrackingChamber *chamber, Float_t quality, Bool_t kZcorr = kFALSE
-                                , AliTRDcluster *c=0x0);
-  Bool_t	AttachClusters(AliTRDtrackingChamber *chamber, Bool_t kZcorr = kFALSE);
-  void    Bootstrap(const AliTRDReconstructor *rec);
-  void    CookdEdx(Int_t nslices);
-  Bool_t  Fit(Bool_t tilt=kTRUE);
+  Bool_t	  AttachClustersIter(
+              AliTRDtrackingChamber *chamber, Float_t quality, 
+              Bool_t kZcorr = kFALSE, AliTRDcluster *c=0x0);
+  Bool_t	  AttachClusters(
+              AliTRDtrackingChamber *chamber, Bool_t kZcorr = kFALSE);
+  void      Bootstrap(const AliTRDReconstructor *rec);
+  void      CookdEdx(Int_t nslices);
+  Bool_t    Fit(Bool_t tilt=kTRUE);
 
-  Bool_t  Init(AliTRDtrackV1 *track);
+  Bool_t    Init(AliTRDtrackV1 *track);
   inline void      Init(const AliRieman *fit);
+  Bool_t    IsEqual(const TObject *inTracklet) const;
   Bool_t    IsOwner() const          { return TestBit(kOwner);}
   Bool_t    IsRowCross() const       { return TestBit(kRowCross);}
 
   inline Float_t   GetChi2Z(const Float_t z = 999.) const;
   inline Float_t   GetChi2Y(const Float_t y = 999.) const;
   void      GetCovAt(Double_t x, Double_t *cov) const;
-  Double_t* GetCrossXYZ() { return &fCross[0];}
-  Double_t  GetCrossSz2() const { return fCross[3];}
-  Float_t*  GetdEdx() {return &fdEdx[0];}
+  Double_t* GetCrossXYZ()            { return &fCross[0];}
+  Double_t  GetCrossSz2() const      { return fCross[3];}
+  Float_t   GetdX() const            { return fdX;}
+  Float_t*  GetdEdx()                { return &fdEdx[0];}
   Float_t   GetdQdl(Int_t ic) const;
-  Int_t     GetDetector() const {return fDet;}
-  Double_t  GetMomentum() const {return fMom;}
-  Int_t     GetN() const {return fN2;}
+  Int_t     GetDetector() const      { return fDet;}
+  Double_t  GetMomentum() const      { return fMom;}
+  Int_t     GetN() const             { return fN2;}
   Float_t   GetQuality(Bool_t kZcorr) const;
   Int_t     GetPlane() const         { return AliTRDgeometry::GetLayer(fDet);    }
 
@@ -90,11 +94,11 @@ class AliTRDseedV1 : public AliTRDseed
   void      Print(Option_t *o = "") const;
   inline void ResetClusterIter(Bool_t forward = kTRUE);
 
-  void      SetMomentum(Double_t mom) {fMom = mom;}
+  void      SetMomentum(Double_t mom){ fMom = mom;}
   void      SetOwner();
-  void      SetDetector(Int_t d) {fDet = d;  }
-  void      SetSnp(Double_t snp) {fSnp = snp;}
-  void      SetTgl(Double_t tgl) {fTgl = tgl;}
+  void      SetDetector(Int_t d)     { fDet = d;  }
+  void      SetSnp(Double_t snp)     { fSnp = snp;}
+  void      SetTgl(Double_t tgl)     { fTgl = tgl;}
   void      SetReconstructor(const AliTRDReconstructor *rec) {fReconstructor = rec;}
 protected:
 
