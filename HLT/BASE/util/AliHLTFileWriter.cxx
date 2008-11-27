@@ -195,8 +195,8 @@ int AliHLTFileWriter::DoInit( int argc, const char** argv )
       } else if (iResult==-EPROTO) {
 	bMissingParam=1;
 	break;
-      } else if (iResult>=0) {
-	i+=iResult;
+      } else if (iResult>0) {
+	i+=iResult-1;
 	iResult=0;
       }
     }
