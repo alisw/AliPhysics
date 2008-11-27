@@ -23,6 +23,7 @@
 */
 
 #include "AliHLTCompStatCollector.h"
+#include "TFile.h"
 #include "TStopwatch.h"
 #include "TH1F.h"
 #include "TH2F.h"
@@ -66,6 +67,12 @@ AliHLTCompStatCollector::AliHLTCompStatCollector()
   fpOutputBlockCountArray(NULL),
   fpTotalOutputSizeArray(NULL)
   , fSizeEstimator(1000)
+  , fMode(kPublishObjects)
+  , fFileName()
+  , fFile(NULL)
+  , fLastTime(time(NULL))
+  , fPeriod(0)
+  , fEventModulo(0)
 {
   // see header file for class documentation
   // or
@@ -118,18 +125,51 @@ int AliHLTCompStatCollector::DoInit( int argc, const char** argv )
     argument=argv[i];
     if (argument.IsNull()) continue;
 
-    // -array-size
-    if (argument.CompareTo("-array-size")==0) {
+    // -file
+    if (argument.CompareTo("-file")==0) {
       if ((bMissingParam=(++i>=argc))) break;
-      TString param=argv[argc];
+      fFileName=argv[i];
+      fMode|=kSaveObjects;
+
+    // -modulo
+    } else if (argument.CompareTo("-modulo")==0) {
+      if ((bMissingParam=(++i>=argc))) break;
+      TString param=argv[i];
       if (param.IsDigit()) {
-	fArraySize=param.Atoi();
+	fEventModulo=param.Atoi();
       } else {
-	HLTError("expecting number as parameter for option '-array-size'");
+	HLTError("expecting number as parameter for option %s", argument.Data());
 	iResult=-EINVAL;
       }
 
+    // -period
+    } else if (argument.CompareTo("-period")==0) {
+      if ((bMissingParam=(++i>=argc))) break;
+      TString param=argv[i];
+      if (param.IsDigit()) {
+	fPeriod=param.Atoi();
+      } else {
+	HLTError("expecting number as parameter for option %s", argument.Data());
+	iResult=-EINVAL;
+      }
+
+    // -publish
+    } else if (argument.CompareTo("-publish")==0) {
+      if ((bMissingParam=(++i>=argc))) break;
+      TString param=argv[i];
+      if (param.IsDigit()) {
+	if (param.Atoi()==1) fMode|=kPublishObjects;
+	else if (param.Atoi()==0) fMode&=~kPublishObjects;
+	else {
+	  HLTError("expecting 0 or 1 as parameter for option %s", argument.Data());
+	  iResult=-EINVAL;
+	}
+      } else {
+	HLTError("expecting number as parameter for option %s", argument.Data());
+	iResult=-EINVAL;
+      }
     } else {
+      HLTError("unknown argument %s", argument.Data());
       iResult=-EINVAL;
     }
   }
@@ -167,6 +207,10 @@ int AliHLTCompStatCollector::DoInit( int argc, const char** argv )
       fpStatTree->Branch("TotalOutputSize",  fpTotalOutputSizeArray, "TotalOutputSize[nofSets]/i");
     }
   }
+
+  if (!fFileName.empty()) {
+    fFile=new TFile(fFileName.c_str(), "RECREATE");
+  }
   return iResult;
 }
 
@@ -175,6 +219,11 @@ int AliHLTCompStatCollector::DoDeinit( )
   // see header file for class documentation
   ClearAll();
 
+  if (fFile) {
+    fFile->Close();
+    delete fFile;
+    fFile=NULL;
+  }
   return 0;
 }
 
@@ -340,10 +389,6 @@ int AliHLTCompStatCollector::DoEvent( const AliHLTComponentEventData& /*evtData*
   if (iResult>0) {
     fNofSets=fPosition;
     fpStatTree->Fill();
-    if (!bEmbeddedTree) {
-      iResult=PushBack(fpStatTree, kAliHLTDataTypeTTree|kAliHLTDataOriginOut);
-    }
-    totalOutputSize+=GetLastObjectSize();
 
     // init the timer for the next cycle
     if (!fpTimer)  fpTimer=new TStopwatch;
@@ -353,10 +398,30 @@ int AliHLTCompStatCollector::DoEvent( const AliHLTComponentEventData& /*evtData*
     }
   }
 
-  if (iResult>=0 /*&& eventType==gkAliEventTypeEndOfRun*/) {
-    iResult=PushBack(fpFolder, kAliHLTDataTypeTObject|kAliHLTDataOriginOut);
-    totalOutputSize+=GetLastObjectSize();
+  if (eventType==gkAliEventTypeEndOfRun ||
+      (iResult>=0 && CheckPeriod())) {
+
+    // publish objects to component output
+    if ((fMode&kPublishObjects)!=0) {
+      if (!bEmbeddedTree) {
+	iResult=PushBack(fpStatTree, kAliHLTDataTypeTTree|kAliHLTDataOriginOut);
+	totalOutputSize+=GetLastObjectSize();
+      }
+      iResult=PushBack(fpFolder, kAliHLTDataTypeTObject|kAliHLTDataOriginOut);
+      totalOutputSize+=GetLastObjectSize();
+    }
+
+    // save objects to file
+    if ((fMode&kSaveObjects)!=0 && fFile!=NULL) {
+      HLTDebug("saving objects to file %s", fFileName.c_str());
+      fFile->cd();
+      if (!bEmbeddedTree) {
+	fpStatTree->Write("", TObject::kOverwrite);
+      }
+      fpFolder->Write("", TObject::kOverwrite);
+    }
   }
+
   if (iResult==-ENOSPC) {
     fSizeEstimator+=totalOutputSize;
   }
@@ -418,6 +483,8 @@ int AliHLTCompStatCollector::FillVariablesSorted(void* ptr, int size)
       fpTotalInputSizeArray[i]=pStat[*element].fTotalInputSize;
       fpOutputBlockCountArray[i]=pStat[*element].fOutputBlockCount;
       fpTotalOutputSizeArray[i]=pStat[*element].fTotalOutputSize;
+    } else {
+      // TODO: dynamically grow arrays with placement new
     }
   }
 
@@ -485,4 +552,22 @@ int AliHLTCompStatCollector::RemoveRecurrence(TFolder* pRoot) const
   }
   
   return iResult;  
+}
+
+bool AliHLTCompStatCollector::CheckPeriod(bool bUpdate)
+{
+  // see header file for class documentation
+  bool result=true;
+  if (fEventModulo>0) {
+    if ((result=((GetEventCount()+1)%fEventModulo)==0)) {
+      return true;
+    }
+  }
+  if (fPeriod>0) {
+    if ((result=((difftime(time(NULL), fLastTime)>(double)fPeriod))) &&
+	bUpdate) {
+      fLastTime=time(NULL);
+    }
+  }
+  return result;
 }

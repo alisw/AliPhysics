@@ -14,6 +14,7 @@
 */
 
 #include "AliHLTProcessor.h"
+#include <ctime>
 
 class TStopwatch;
 class TH1F;
@@ -21,6 +22,7 @@ class TH2F;
 class TH2C;
 class TTree;
 class TFolder;
+class TFile;
 
 /**
  * @class AliHLTCompStatCollector
@@ -37,6 +39,12 @@ class TFolder;
  * TTree. The component table entries (AliHLTComponentTable structs) are sent
  * on SOR and EOR events and are arranged in a TFolder hierarchy.
  *
+ * The objects are published or/and saved according to the setup. An
+ * event modulo marameter can be used to publish every nth event, a period
+ * argument to publish every nth second. The objects can be optionally saved
+ * directly to file and the publishing can be suppressed. The objects are
+ * published/saved at the EOR event.
+ *
  * Component ID: \b StatisticsCollector                                 <br>
  * Library: \b libAliHLTUtil.so					        <br>
  * Input Data Types: kAliHLTDataTypeComponentStatistics                 <br>
@@ -46,6 +54,15 @@ class TFolder;
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
  *
  * <h2>Optional arguments:</h2>
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
+ * \li -file     <i> filename   </i> <br>
+ *      name of root file
+ * \li -publish     <i> 0/1   </i> <br>
+ *      enable/disable publishing to HLT output, default is on
+ * \li -period     <i> n   </i> <br>
+ *      publish/save every n-th second
+ * \li -modulo     <i> n   </i> <br>
+ *      publish/save every n-th event
  *
  * <h2>Configuration:</h2>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
@@ -84,6 +101,15 @@ class AliHLTCompStatCollector : public AliHLTProcessor
   
   using AliHLTProcessor::DoEvent;
 
+  /** mode definition */
+  enum {
+    /** publish objects according to the given period */
+    kPublishObjects = 0x1,
+
+    /** save objects according to the given period */
+    kSaveObjects = 0x2
+  };
+
  private:
   /** not a valid copy constructor, defined according to effective C++ style */
   AliHLTCompStatCollector(const AliHLTCompStatCollector&);
@@ -108,6 +134,15 @@ class AliHLTCompStatCollector : public AliHLTProcessor
    * hierarchy.
    */
   int RemoveRecurrence(TFolder* pRoot) const;
+
+  /**
+   * Check event modulo and time period.
+   * If the result is true, the internal counter and time backup is
+   * updated enabled
+   * @param bUpdate   update internal backups if condition was true
+   * @return true if period has excceded
+   */
+  bool CheckPeriod(bool bUpdate=true);
 
   /** event cycle timer */
   TStopwatch* fpTimer; //!transient
@@ -150,6 +185,24 @@ class AliHLTCompStatCollector : public AliHLTProcessor
   /** const base of GetOutputSize, updated on error in DoEvent */
   int fSizeEstimator; //! transient
 
-  ClassDef(AliHLTCompStatCollector, 2)
+  /** mode flags */
+  unsigned int fMode; //! transient
+
+  /** file name to store the objects */
+  string fFileName; //! transient
+
+  /** root file to save objects */
+  TFile* fFile; // !transient
+
+  /** last time, objects have been published or saved */
+  time_t fLastTime; //! transient
+
+  /** period in seconds to save/publish objects */
+  unsigned int fPeriod; //! transient
+
+  /** event modulo to save/publish onjects */
+  unsigned int fEventModulo; //! transient
+
+  ClassDef(AliHLTCompStatCollector, 3)
 };
 #endif
