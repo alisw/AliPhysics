@@ -1,0 +1,20 @@
+#-*- Mode: Makefile -*-
+
+SRCS = \
+UNICOR/AliDAnal.cxx \
+UNICOR/AliDAnalCorrel.cxx \
+UNICOR/AliDAnalGlobal.cxx \
+UNICOR/AliDAnalPtfluc.cxx \
+UNICOR/AliDAnalSingle.cxx \
+UNICOR/AliDAnalysisTask.cxx \
+UNICOR/AliDEvent.cxx \
+UNICOR/AliDEventAliceESD.cxx \
+UNICOR/AliDHN.cxx \
+UNICOR/AliDLoop.cxx \
+UNICOR/AliDPair.cxx 
+
+HDRS = $(SRCS:.cxx=.h) 
+
+DHDR:= PWG2unicorLinkDef.h
+
+
