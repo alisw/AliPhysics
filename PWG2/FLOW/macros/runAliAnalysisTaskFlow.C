@@ -14,6 +14,7 @@ void LookupWrite(TChain* chain, const char* target) ;
 // LYZEP = Lee Yang Zeroes Event Plane   (for PbPb) 	 
 // GFC   = Generating Function Cumulants (for PbPb)  
 // QC    = Q-cumulants                   (for PbPb)  
+// FQD   = Fitting q-distribution        (for PbPb) 
 // MCEP  = Flow calculated from the real MC event plane (for PbPb only!) 	 
 // 	 
 // The LYZ analysis should be done in the following order; 	 
@@ -43,6 +44,7 @@ Bool_t LYZ2  = kFALSE;
 Bool_t LYZEP = kFALSE;
 Bool_t GFC   = kTRUE;
 Bool_t QC    = kTRUE;
+Bool_t FQD   = kTRUE;
 Bool_t MCEP  = kFALSE;
 
 
@@ -80,7 +82,14 @@ const Int_t minclustersTPC2 = 50;
 const Int_t maxnsigmatovertex2 = 3;
 
 
-void runAliAnalysisTaskFlow(Int_t nRuns = -1, const Char_t* dataDir="/data/alice2/ante/ab2", Int_t offset = 0) 
+void runAliAnalysisTaskFlow(Int_t nRuns = 44, const Char_t* dataDir="/data/alice2/ante/ab2", Int_t offset = 0) 
+
+//void runAliAnalysisTaskFlow(Int_t nRuns = -1, const Char_t* dataDir="/data/alice2/kolk/Therminator_midcentral", Int_t offset = 0) 
+
+
+//void runAliAnalysisTaskFlow(Int_t nRuns = -1, const Char_t* dataDir="/data/alice2/LHyquid3_rot", Int_t offset = 0) 
+
+//void runAliAnalysisTaskFlow(Int_t nRuns = 4, const Char_t* dataDir="/data/alice2/ante/AOD", Int_t offset = 0) 
   //void runAliAnalysisTaskFlowMore(Int_t nRuns = 3, const Char_t* dataDir="/data/alice1/kolk/TherminatorNov08", Int_t offset = 0) 
   //void runAliAnalysisTaskFlowMore(Int_t nRuns = 1, const Char_t* dataDir="/data/alice1/kolk/AOD", Int_t offset = 0)
   //void runAliAnalysisTaskFlowMore(Int_t nRuns = 3, const Char_t* dataDir="/data/alice1/kolk/testCrashIfNoKine", Int_t offset = 0)
@@ -142,6 +151,9 @@ void runAliAnalysisTaskFlow(Int_t nRuns = -1, const Char_t* dataDir="/data/alice
     if (QC) {
       TList* qaIntQC = new TList();
       TList* qaDiffQC = new TList(); }
+    if (FQD) {
+      TList* qaIntFQD = new TList();
+      TList* qaDiffFQD = new TList(); }
     if (MCEP) {
       TList* qaIntMCEP = new TList();
       TList* qaDiffMCEP = new TList(); }
@@ -159,6 +171,7 @@ void runAliAnalysisTaskFlow(Int_t nRuns = -1, const Char_t* dataDir="/data/alice
     if (LYZEP){ mcKineCuts1->SetQAOn(qaIntLYZEP); }
     if (GFC)  { mcKineCuts1->SetQAOn(qaIntGFC); }
     if (QC)   { mcKineCuts1->SetQAOn(qaIntQC); }
+    if (FQD)  { mcKineCuts1->SetQAOn(qaIntFQD); }
     if (MCEP) { mcKineCuts1->SetQAOn(qaIntMCEP); }
   }
   
@@ -172,7 +185,8 @@ void runAliAnalysisTaskFlow(Int_t nRuns = -1, const Char_t* dataDir="/data/alice
     if (LYZ2) { mcKineCuts2->SetQAOn(qaDiffLYZ2); }
     if (LYZEP){ mcKineCuts2->SetQAOn(qaDiffLYZEP); }
     if (GFC)  { mcKineCuts2->SetQAOn(qaDiffGFC); }
-    if (QC)   { mcKineCuts2->SetQAOn(qaDiffQC); }    
+    if (QC)   { mcKineCuts2->SetQAOn(qaDiffQC); } 
+    if (FQD)  { mcKineCuts2->SetQAOn(qaDiffFQD); }    
     if (MCEP) { mcKineCuts2->SetQAOn(qaDiffMCEP); }
   }
 
@@ -186,6 +200,7 @@ void runAliAnalysisTaskFlow(Int_t nRuns = -1, const Char_t* dataDir="/data/alice
     if (LYZEP){ mcGenCuts1->SetQAOn(qaIntLYZEP); }
     if (GFC)  { mcGenCuts1->SetQAOn(qaIntGFC); }
     if (QC)   { mcGenCuts1->SetQAOn(qaIntQC); }
+    if (FQD)  { mcGenCuts1->SetQAOn(qaIntFQD); }
     if (MCEP) { mcGenCuts1->SetQAOn(qaIntMCEP); }
   }
 
@@ -199,6 +214,7 @@ void runAliAnalysisTaskFlow(Int_t nRuns = -1, const Char_t* dataDir="/data/alice
     if (LYZEP){ mcGenCuts2->SetQAOn(qaDiffLYZEP); }
     if (GFC)  { mcGenCuts2->SetQAOn(qaDiffGFC); }
     if (QC)   { mcGenCuts2->SetQAOn(qaDiffQC); }
+    if (FQD)  { mcGenCuts2->SetQAOn(qaDiffFQD); }
     if (MCEP) { mcGenCuts2->SetQAOn(qaDiffMCEP); }
   }
   
@@ -213,6 +229,7 @@ void runAliAnalysisTaskFlow(Int_t nRuns = -1, const Char_t* dataDir="/data/alice
     if (LYZEP){ mcAccCuts1->SetQAOn(qaIntLYZEP); }
     if (GFC)  { mcAccCuts1->SetQAOn(qaIntGFC); }
     if (QC)   { mcAccCuts1->SetQAOn(qaIntQC); }
+    if (FQD)  { mcAccCuts1->SetQAOn(qaIntFQD); }
     if (MCEP) { mcAccCuts1->SetQAOn(qaIntMCEP); }
   }
 
@@ -225,7 +242,8 @@ void runAliAnalysisTaskFlow(Int_t nRuns = -1, const Char_t* dataDir="/data/alice
     if (LYZ2) { mcAccCuts2->SetQAOn(qaDiffLYZ2); }
     if (LYZEP){ mcAccCuts2->SetQAOn(qaDiffLYZEP); }
     if (GFC)  { mcAccCuts2->SetQAOn(qaDiffGFC); }
-    if (QC)   { mcAccCuts2->SetQAOn(qaDiffQC); }    
+    if (QC)   { mcAccCuts2->SetQAOn(qaDiffQC); }
+    if (FQD)  { mcAccCuts2->SetQAOn(qaDiffFQD); }    
     if (MCEP) { mcAccCuts2->SetQAOn(qaDiffMCEP); }
   }
   
@@ -241,6 +259,7 @@ void runAliAnalysisTaskFlow(Int_t nRuns = -1, const Char_t* dataDir="/data/alice
     if (LYZEP){ recKineCuts1->SetQAOn(qaIntLYZEP); }
     if (GFC)  { recKineCuts1->SetQAOn(qaIntGFC); }
     if (QC)   { recKineCuts1->SetQAOn(qaIntQC); }
+    if (FQD)  { recKineCuts1->SetQAOn(qaIntFQD); }
     if (MCEP) { recKineCuts1->SetQAOn(qaIntMCEP); }
   }
 
@@ -255,6 +274,7 @@ void runAliAnalysisTaskFlow(Int_t nRuns = -1, const Char_t* dataDir="/data/alice
     if (LYZEP){ recKineCuts2->SetQAOn(qaDiffLYZEP); }
     if (GFC)  { recKineCuts2->SetQAOn(qaDiffGFC); }
     if (QC)   { recKineCuts2->SetQAOn(qaDiffQC); }
+    if (FQD)  { recKineCuts2->SetQAOn(qaDiffFQD); }
     if (MCEP) { recKineCuts2->SetQAOn(qaDiffMCEP); }
   }
   
@@ -268,6 +288,7 @@ void runAliAnalysisTaskFlow(Int_t nRuns = -1, const Char_t* dataDir="/data/alice
     if (LYZEP){ recQualityCuts1->SetQAOn(qaIntLYZEP); }
     if (GFC)  { recQualityCuts1->SetQAOn(qaIntGFC); }
     if (QC)   { recQualityCuts1->SetQAOn(qaIntQC); }
+    if (FQD)  { recQualityCuts1->SetQAOn(qaIntFQD); }
     if (MCEP) { recQualityCuts1->SetQAOn(qaIntMCEP); }
   }
 
@@ -281,6 +302,7 @@ void runAliAnalysisTaskFlow(Int_t nRuns = -1, const Char_t* dataDir="/data/alice
     if (LYZEP){ recQualityCuts2->SetQAOn(qaDiffLYZEP); }
     if (GFC)  { recQualityCuts2->SetQAOn(qaDiffGFC); }
     if (QC)   { recQualityCuts2->SetQAOn(qaDiffQC); }
+    if (FQD)  { recQualityCuts2->SetQAOn(qaDiffFQD); }
     if (MCEP) { recQualityCuts2->SetQAOn(qaDiffMCEP); }
   }
 
@@ -293,6 +315,7 @@ void runAliAnalysisTaskFlow(Int_t nRuns = -1, const Char_t* dataDir="/data/alice
     if (LYZEP){ recIsPrimaryCuts1->SetQAOn(qaIntLYZEP); }
     if (GFC)  { recIsPrimaryCuts1->SetQAOn(qaIntGFC); }
     if (QC)   { recIsPrimaryCuts1->SetQAOn(qaIntQC); }
+    if (FQD)  { recIsPrimaryCuts1->SetQAOn(qaIntFQD); }
     if (MCEP) { recIsPrimaryCuts1->SetQAOn(qaIntMCEP); }
   }
 
@@ -305,6 +328,7 @@ void runAliAnalysisTaskFlow(Int_t nRuns = -1, const Char_t* dataDir="/data/alice
     if (LYZEP){ recIsPrimaryCuts2->SetQAOn(qaDiffLYZEP); }
     if (GFC)  { recIsPrimaryCuts2->SetQAOn(qaDiffGFC); }
     if (QC)   { recIsPrimaryCuts2->SetQAOn(qaDiffQC); }
+    if (FQD)  { recIsPrimaryCuts2->SetQAOn(qaDiffFQD); }
     if (MCEP) { recIsPrimaryCuts2->SetQAOn(qaDiffMCEP); }
   }
   
@@ -361,6 +385,9 @@ void runAliAnalysisTaskFlow(Int_t nRuns = -1, const Char_t* dataDir="/data/alice
     if (QC)  { 
       cutPID1->SetQAOn(qaIntQC); 
       cutPID2->SetQAOn(qaDiffQC); }
+    if (FQD)  { 
+      cutPID1->SetQAOn(qaIntFQD); 
+      cutPID2->SetQAOn(qaDiffFQD); }
     if (MCEP) { 
       cutPID1->SetQAOn(qaIntMCEP); 
       cutPID2->SetQAOn(qaDiffMCEP); }
@@ -546,6 +573,17 @@ void runAliAnalysisTaskFlow(Int_t nRuns = -1, const Char_t* dataDir="/data/alice
       taskQC->SetQAList2(qaDiffQC); }
     mgr->AddTask(taskQC);
   }
+  if (FQD){
+    if (QA) { AliAnalysisTaskFittingQDistribution *taskFQD = new AliAnalysisTaskFittingQDistribution("TaskFittingQDistribution",kTRUE);}
+    else { AliAnalysisTaskFittingQDistribution *taskFQD = new AliAnalysisTaskFittingQDistribution("TaskFittingQDistribution",kFALSE);}
+    taskFQD->SetAnalysisType(type);
+    taskFQD->SetCFManager1(cfmgr1);
+    taskFQD->SetCFManager2(cfmgr2);
+    if (QA) { 
+      taskFQD->SetQAList1(qaIntFQD);
+      taskFQD->SetQAList2(qaDiffFQD); }
+    mgr->AddTask(taskFQD);
+  }
   if (MCEP){
     if (QA) { AliAnalysisTaskMCEventPlane *taskMCEP = new AliAnalysisTaskMCEventPlane("TaskMCEventPlane",kTRUE);}
     else { AliAnalysisTaskMCEventPlane *taskMCEP = new AliAnalysisTaskMCEventPlane("TaskMCEventPlane",kFALSE);}
@@ -618,6 +656,14 @@ void runAliAnalysisTaskFlow(Int_t nRuns = -1, const Char_t* dataDir="/data/alice
     AliAnalysisDataContainer *coutputQC = 
       mgr->CreateContainer("cobjQC", TList::Class(),AliAnalysisManager::kOutputContainer,outputQC);
   }
+  
+  if(FQD) {
+    TString outputFQD = "outputFQDanalysis";
+    outputFQD+= type;
+    outputFQD+= ".root";
+    AliAnalysisDataContainer *coutputFQD = 
+      mgr->CreateContainer("cobjFQD", TList::Class(),AliAnalysisManager::kOutputContainer,outputFQD);
+  } 
 
   if(MCEP) {
     TString outputMCEP = "outputMCEPanalysis";
@@ -706,6 +752,19 @@ void runAliAnalysisTaskFlow(Int_t nRuns = -1, const Char_t* dataDir="/data/alice
       AliAnalysisDataContainer *coutputQA2QC = 
 	mgr->CreateContainer("QAdiffQC", TList::Class(),AliAnalysisManager::kOutputContainer,qaNameDiffQC);
     }
+    if(FQD) { 
+      TString qaNameIntFQD = "QAforInt_FQD_";
+      qaNameIntFQD += type;
+      qaNameIntFQD += ".root";
+      AliAnalysisDataContainer *coutputQA1FQD = 
+	mgr->CreateContainer("QAintFQD", TList::Class(),AliAnalysisManager::kOutputContainer,qaNameIntFQD);
+      
+      TString qaNameDiffFQD = "QAforDiff_FQD_";
+      qaNameDiffFQD += type;
+      qaNameDiffFQD += ".root";
+      AliAnalysisDataContainer *coutputQA2FQD = 
+	mgr->CreateContainer("QAdiffFQD", TList::Class(),AliAnalysisManager::kOutputContainer,qaNameDiffFQD);
+    }
     if(MCEP) {
       TString qaNameIntMCEP = "QAforInt_MCEP_";
       qaNameIntMCEP += type;
@@ -762,7 +821,13 @@ void runAliAnalysisTaskFlow(Int_t nRuns = -1, const Char_t* dataDir="/data/alice
     mgr->ConnectOutput(taskQC,0,coutputQC);
     if (QA) { mgr->ConnectOutput(taskQC,1,coutputQA1QC);
     mgr->ConnectOutput(taskQC,2,coutputQA2QC); }
-  }  
+  }
+  if (FQD)   { 
+    mgr->ConnectInput(taskFQD,0,cinput1); 
+    mgr->ConnectOutput(taskFQD,0,coutputFQD);
+    if (QA) { mgr->ConnectOutput(taskFQD,1,coutputQA1FQD);
+    mgr->ConnectOutput(taskFQD,2,coutputQA2FQD); }
+  }    
   if (MCEP)  { 
     mgr->ConnectInput(taskMCEP,0,cinput1); 
     mgr->ConnectOutput(taskMCEP,0,coutputMCEP);
