@@ -131,6 +131,7 @@ public:
   AliEveTRDTrack(AliTRDtrackV1 *trk);
   virtual ~AliEveTRDTrack();
   //AliEveTRDTracklet*  GetTracklet(Int_t plane) const {return plane <6 && plane >= 0 ? fTracklet[plane] : 0x0;}
+  void    Print(Option_t *opt="a") const; // *MENU*
   void    SetStatus(UChar_t s);
   void    SetESDstatus(ULong_t stat) {fESDStatus = stat;} 
 private:

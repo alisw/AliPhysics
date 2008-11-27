@@ -428,6 +428,13 @@ AliEveTRDTrack::~AliEveTRDTrack()
   //delete dynamic_cast<AliTRDtrackV1*>(GetUserData());
 }
 
+//______________________________________________________________________________
+void AliEveTRDTrack::Print(Option_t *o) const
+{
+  AliTRDtrackV1 *track = (AliTRDtrackV1*)GetUserData();
+  if(!track) return;
+  track->Print(o);
+}
 
 //______________________________________________________________________________
 void AliEveTRDTrack::SetStatus(UChar_t s)
