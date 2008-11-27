@@ -60,6 +60,7 @@ public:
 //Utilities
    virtual Bool_t      CreateDataset(const char *pattern);
    virtual Bool_t      CreateJDL();
+   virtual void        EnablePackage(const char *package);
    virtual Bool_t      MergeOutputs();
    virtual void        StartAnalysis(Long64_t nentries=123456789, Long64_t firstentry=0);
    virtual void        WriteAnalysisFile();
@@ -106,6 +107,7 @@ private:
    TString          fDatasetName;     // Dataset xml file to be created
    TString          fJDLName;         // JDL file to be generated
    TObjArray       *fInputFiles;      // List of input files to be processed by the job
+   TObjArray       *fPackages;        // List of packages to be used
    
    ClassDef(AliAnalysisAlien, 1)   // Class providing some AliEn utilities
 };

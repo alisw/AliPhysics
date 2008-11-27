@@ -27,7 +27,8 @@ enum EPluginRunMode {
    kUseTags  = BIT(18),
    kUseESD   = BIT(19),
    kUseAOD   = BIT(20),
-   kUseMC    = BIT(21)
+   kUseMC    = BIT(21),
+   kUsePars  = BIT(22)
 };   
 
    AliAnalysisGrid() {}
@@ -70,6 +71,7 @@ enum EPluginRunMode {
    static  Bool_t      CreateToken(const char *username=0);
    virtual Bool_t      CreateDataset(const char *pattern)                = 0;
    virtual Bool_t      CreateJDL()                                       = 0;
+   virtual void        EnablePackage(const char *package)                = 0;
    virtual Bool_t      MergeOutputs()                                    = 0;
    virtual void        StartAnalysis(Long64_t nentries=123456789, Long64_t firstentry=0) = 0;
    virtual void        WriteAnalysisFile()                               = 0;

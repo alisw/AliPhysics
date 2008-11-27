@@ -65,7 +65,8 @@ AliAnalysisAlien::AliAnalysisAlien()
                   fInputFormat(),
                   fDatasetName(),
                   fJDLName(),
-                  fInputFiles(0)
+                  fInputFiles(0),
+                  fPackages(0)
 {
 // Dummy ctor.
    SetDefaults();
@@ -100,7 +101,8 @@ AliAnalysisAlien::AliAnalysisAlien(const char *name)
                   fInputFormat(),
                   fDatasetName(),
                   fJDLName(),
-                  fInputFiles(0)
+                  fInputFiles(0),
+                  fPackages(0)
 {
 // Default ctor.
    SetDefaults();
@@ -135,7 +137,8 @@ AliAnalysisAlien::AliAnalysisAlien(const AliAnalysisAlien& other)
                   fInputFormat(other.fInputFormat),
                   fDatasetName(other.fDatasetName),
                   fJDLName(other.fJDLName),
-                  fInputFiles(0)
+                  fInputFiles(0),
+                  fPackages(0)
 {
 // Copy ctor.
    fGridJDL = (TGridJDL*)gROOT->ProcessLine("new TAlienJDL()");
@@ -146,6 +149,13 @@ AliAnalysisAlien::AliAnalysisAlien(const AliAnalysisAlien& other)
       while ((obj=next())) fInputFiles->Add(new TObjString(obj->GetName()));
       fInputFiles->SetOwner();
    }   
+   if (other.fPackages) {
+      fPackages = new TObjArray();
+      TIter next(other.fPackages);
+      TObject *obj;
+      while ((obj=next())) fPackages->Add(new TObjString(obj->GetName()));
+      fPackages->SetOwner();
+   }   
 }
 
 //______________________________________________________________________________
@@ -154,6 +164,7 @@ AliAnalysisAlien::~AliAnalysisAlien()
 // Destructor.
    if (fGridJDL) delete fGridJDL;
    if (fInputFiles) delete fInputFiles;
+   if (fPackages) delete fPackages;
 }   
 
 //______________________________________________________________________________
@@ -194,6 +205,13 @@ AliAnalysisAlien &AliAnalysisAlien::operator=(const AliAnalysisAlien& other)
          TObject *obj;
          while ((obj=next())) fInputFiles->Add(new TObjString(obj->GetName()));
          fInputFiles->SetOwner();
+      }   
+      if (other.fPackages) {
+         fPackages = new TObjArray();
+         TIter next(other.fPackages);
+         TObject *obj;
+         while ((obj=next())) fPackages->Add(new TObjString(obj->GetName()));
+         fPackages->SetOwner();
       }   
    }
    return *this;
@@ -513,6 +531,12 @@ Bool_t AliAnalysisAlien::CreateJDL()
          }   
          delete arr;   
       }
+      if (fPackages) {
+         TIter next(fPackages);
+         TObject *obj;
+         while ((obj=next()))
+            fGridJDL->AddToInputSandbox(Form("LF:%s/%s", workdir.Data(), obj->GetName()));
+      }
       if (fOutputArchive.Length()) {
          arr = fOutputArchive.Tokenize(" ");
          TIter next(arr);
@@ -602,13 +626,21 @@ Bool_t AliAnalysisAlien::CreateJDL()
          TObjString *os;
          TIter next(arr);
          while ((os=(TObjString*)next())) {
-            Info("CreateJDL", "\n#####   Copying dependency: <%s> to your alien workspace", os->GetString().Data());
             if (os->GetString().Contains(".so")) continue;
+            Info("CreateJDL", "\n#####   Copying dependency: <%s> to your alien workspace", os->GetString().Data());
             if (FileExists(os->GetString())) gGrid->Rm(os->GetString());
             TFile::Cp(Form("file:%s",os->GetString().Data()), Form("alien://%s/%s", workdir.Data(), os->GetString().Data()));
          }   
          delete arr;   
       }
+      if (fPackages) {
+         TIter next(fPackages);
+         TObject *obj;
+         while ((obj=next())) {
+            Info("CreateJDL", "\n#####   Copying dependency: <%s> to your alien workspace", obj->GetName());
+            TFile::Cp(Form("file:%s",obj->GetName()), Form("alien://%s/%s", workdir.Data(), obj->GetName()));
+         }   
+      }      
    } 
    return kTRUE;
 }
@@ -710,6 +742,27 @@ void AliAnalysisAlien::CheckDataType(const char *lfn, Bool_t &is_collection, Boo
    else          msg += " using_tags: No";
    Info("CheckDataType", msg.Data());
 }
+
+//______________________________________________________________________________
+void AliAnalysisAlien::EnablePackage(const char *package)
+{
+// Enables a par file supposed to exist in the current directory.
+   TString pkg(package);
+   pkg.ReplaceAll(".par", "");
+   pkg += ".par";
+   if (gSystem->AccessPathName(pkg)) {
+      Error("EnablePackage", "Package %s not found", pkg.Data());
+      return;
+   }
+   if (!TObject::TestBit(AliAnalysisGrid::kUsePars))
+      Info("EnablePackage", "AliEn plugin will use .par packages");
+   TObject::SetBit(AliAnalysisGrid::kUsePars, kTRUE);
+   if (!fPackages) {
+      fPackages = new TObjArray();
+      fPackages->SetOwner();
+   }
+   fPackages->Add(new TObjString(pkg));
+}      
 
 //______________________________________________________________________________
 Bool_t AliAnalysisAlien::IsCollection(const char *lfn) const
@@ -986,14 +1039,8 @@ void AliAnalysisAlien::WriteAnalysisMacro()
       out << "   gSystem->Load(\"libGeom\");" << endl;
       out << "   gSystem->Load(\"libVMC\");" << endl;
       out << "   gSystem->Load(\"libPhysics\");" << endl << endl;
-      out << "// load analysis framework libraries" << endl;
-      out << "   gSystem->Load(\"libSTEERBase\");" << endl;
-      out << "   gSystem->Load(\"libESD\");" << endl;
-      out << "   gSystem->Load(\"libAOD\");" << endl;
-      out << "   gSystem->Load(\"libANALYSIS\");" << endl;
-      out << "   gSystem->Load(\"libANALYSISalice\");" << endl << endl;
-      out << "// add aditional AliRoot libraries below" << endl;
       if (fAdditionalLibs.Length()) {
+         out << "// Add aditional AliRoot libraries" << endl;
          TObjArray *list = fAdditionalLibs.Tokenize(" ");
          TIter next(list);
          TObjString *str;
@@ -1004,8 +1051,22 @@ void AliAnalysisAlien::WriteAnalysisMacro()
          if (list) delete list;
       }
       out << endl;
-      out << "// include path (remove if using par files)" << endl;
-      out << "   gROOT->ProcessLine(\".include $ALICE_ROOT/include\");" << endl << endl;
+      if (!fPackages) {
+         out << "// Load analysis framework libraries" << endl;
+         out << "   gSystem->Load(\"libSTEERBase\");" << endl;
+         out << "   gSystem->Load(\"libESD\");" << endl;
+         out << "   gSystem->Load(\"libAOD\");" << endl;
+         out << "   gSystem->Load(\"libANALYSIS\");" << endl;
+         out << "   gSystem->Load(\"libANALYSISalice\");" << endl << endl;
+         out << "// include path (remove if using par files)" << endl;
+         out << "   gROOT->ProcessLine(\".include $ALICE_ROOT/include\");" << endl << endl;
+      } else {
+         out << "// Compile all par packages" << endl;
+         TIter next(fPackages);
+         TObject *obj;
+         while ((obj=next())) 
+            out << "   if (!SetupPar(\"" << obj->GetName() << "\")) return;" << endl;
+      }   
       out << "// analysis source to be compiled at runtime (if any)" << endl;
       if (fAnalysisSource.Length()) {
          TObjArray *list = fAnalysisSource.Tokenize(" ");
@@ -1100,6 +1161,45 @@ void AliAnalysisAlien::WriteAnalysisMacro()
          out << "   return chain;" << endl;
          out << "}" << endl;
       }   
+      if (fPackages) {
+         out << "Bool_t SetupPar(const char *package) {" << endl;
+         out << "// Compile the package and set it up." << endl;
+         out << "   TString pkgdir = package;" << endl;
+         out << "   pkgdir.ReplaceAll(\".par\",\"\");" << endl;
+         out << "   gSystem->Exec(Form(\"tar xvzf %s\", package));" << endl;
+         out << "   TString cdir = gSystem->WorkingDirectory();" << endl;
+         out << "   gSystem->ChangeDirectory(pkgdir);" << endl;
+         out << "   // Check for BUILD.sh and execute" << endl;
+         out << "   if (!gSystem->AccessPathName(\"PROOF-INF/BUILD.sh\")) {" << endl;
+         out << "      printf(\"*******************************\\n\");" << endl;
+         out << "      printf(\"*** Building PAR archive    ***\\n\");" << endl;
+         out << "      printf(\"*******************************\\n\");" << endl;
+         out << "      if (gSystem->Exec(\"PROOF-INF/BUILD.sh\")) {" << endl;
+         out << "         ::Error(\"SetupPar\", \"Cannot build par archive %s\", package);" << endl;
+         out << "         gSystem->ChangeDirectory(cdir);" << endl;
+         out << "         return kFALSE;" << endl;
+         out << "      }" << endl;
+         out << "   } else {" << endl;
+         out << "      ::Error(\"SetupPar\",\"Cannot access PROOF-INF/BUILD.sh for package %s\", package);" << endl;
+         out << "      gSystem->ChangeDirectory(cdir);" << endl;
+         out << "      return kFALSE;" << endl;
+         out << "   }" << endl;
+         out << "   // Check for SETUP.C and execute" << endl;
+         out << "   if (!gSystem->AccessPathName(\"PROOF-INF/SETUP.C\")) {" << endl;
+         out << "      printf(\"*******************************\\n\");" << endl;
+         out << "      printf(\"***    Setup PAR archive    ***\\n\");" << endl;
+         out << "      printf(\"*******************************\\n\");" << endl;
+         out << "      gROOT->Macro(\"PROOF-INF/SETUP.C\");" << endl;
+         out << "   } else {" << endl;
+         out << "      ::Error(\"SetupPar\",\"Cannot access PROOF-INF/SETUP.C for package %s\", package);" << endl;
+         out << "      gSystem->ChangeDirectory(cdir);" << endl;
+         out << "      return kFALSE;" << endl;
+         out << "   }" << endl;
+         out << "   // Restore original workdir" << endl;
+         out << "   gSystem->ChangeDirectory(cdir);" << endl;
+         out << "   return kTRUE;" << endl;
+         out << "}" << endl;
+      }
       Info("WriteAnalysisMacro", "\n#####   Analysis macro to run on worker nodes <%s> written",fAnalysisMacro.Data());
    }   
    Bool_t copy = kTRUE;
