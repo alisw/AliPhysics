@@ -143,8 +143,11 @@ Bool_t AliESDInputHandler::Notify(const char* path)
     }
 
     
-    TString* pathName = new TString("./");
-    *pathName = fileName;
+   TString* pathName = new TString("./");
+   if (fileName.Length() != 0) {
+       *pathName = fileName;
+   }
+
     printf("AliESDInputHandler::Notify() Path: %s\n", pathName->Data());
     
     if (fRunTag) {
