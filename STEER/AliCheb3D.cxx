@@ -1,72 +1,28 @@
-// Author: ruben.shahoyan@cern.ch   09/09/2006
-
-////////////////////////////////////////////////////////////////////////////////
-//                                                                            //
-// AliCheb3D produces the interpolation of the user 3D->NDimOut arbitrary     //
-// function supplied in "void (*fcn)(float* inp,float* out)" format           //
-// either in a separate macro file or as a function pointer.                  //
-// Only coefficients needed to guarantee the requested precision are kept.    //
-//                                                                            //
-// The user-callable methods are:                                             //
-// To create the interpolation use:                                           //
-// AliCheb3D(const char* funName,  // name of the file with user function     //
-//          or                                                                //
-// AliCheb3D(void (*ptr)(float*,float*),// pointer on the  user function      //
-//        Int_t     DimOut,     // dimensionality of the function's output    // 
-//        Float_t  *bmin,       // lower 3D bounds of interpolation domain    // 
-//        Float_t  *bmax,       // upper 3D bounds of interpolation domain    // 
-//        Int_t    *npoints,    // number of points in each of 3 input        //
-//                              // dimension, defining the interpolation grid //
-//        Float_t   prec=1E-6); // requested max.absolute difference between  //
-//                              // the interpolation and any point on grid    //
-//                                                                            //
-// To test obtained parameterization use the method                           //
-// TH1* TestRMS(int idim,int npoints = 1000,TH1* histo=0);                    // 
-// it will compare the user output of the user function and interpolation     //
-// for idim-th output dimension and fill the difference in the supplied       //
-// histogram. If no histogram is supplied, it will be created.                //
-//                                                                            //
-// To save the interpolation data:                                            //
-// SaveData(const char* filename, Bool_t append )                             //
-// write text file with data. If append is kTRUE and the output file already  //
-// exists, data will be added in the end of the file.                         //
-// Alternatively, SaveData(FILE* stream) will write the data to               //
-// already existing stream.                                                   //
-//                                                                            //
-// To read back already stored interpolation use either the constructor       // 
-// AliCheb3D(const char* inpFile);                                            //
-// or the default constructor AliCheb3D() followed by                         //
-// AliCheb3D::LoadData(const char* inpFile);                                  //
-//                                                                            //
-// To compute the interpolation use Eval(float* par,float *res) method, with  //
-// par being 3D vector of arguments (inside the validity region) and res is   //
-// the array of DimOut elements for the output.                               //
-//                                                                            //
-// If only one component (say, idim-th) of the output is needed, use faster   //
-// Float_t Eval(Float_t *par,int idim) method.                                //
-//                                                                            //
-// void Print(option="") will print the name, the ranges of validity and      //
-// the absolute precision of the parameterization. Option "l" will also print //
-// the information about the number of coefficients for each output           //
-// dimension.                                                                 //
-//                                                                            //
-// NOTE: during the evaluation no check is done for parameter vector being    //
-// outside the interpolation region. If there is such a risk, use             //
-// Bool_t IsInside(float *par) method. Chebyshev parameterization is not      //
-// good for extrapolation!                                                    //
-//                                                                            //
-// For the properties of Chebyshev parameterization see:                      //
-// H.Wind, CERN EP Internal Report, 81-12/Rev.                                //
-//                                                                            //
-////////////////////////////////////////////////////////////////////////////////
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
 
 #include <TString.h>
 #include <TSystem.h>
 #include <TROOT.h>
 #include <TRandom.h>
+#include <stdio.h>
+#include <TMethodCall.h>
+#include <TMath.h>
+#include <TH1.h>
 #include "AliCheb3D.h"
-
-
+#include "AliCheb3DCalc.h"
 
 ClassImp(AliCheb3D)
 
@@ -281,6 +237,8 @@ AliCheb3D::AliCheb3D(void (*ptr)(float*,float*), int DimOut, Float_t  *bmin,Floa
 //__________________________________________________________________________________________
 AliCheb3D& AliCheb3D::operator=(const AliCheb3D& rhs)
 {
+  // assignment operator
+  //
   if (this != &rhs) {
     Clear();
     fDimOut   = rhs.fDimOut;
@@ -305,8 +263,10 @@ AliCheb3D& AliCheb3D::operator=(const AliCheb3D& rhs)
 }
 
 //__________________________________________________________________________________________
-void AliCheb3D::Clear(Option_t*)
+void AliCheb3D::Clear(const Option_t*)
 {
+  // clear all dynamic structures
+  //
   if (fResTmp)        { delete[] fResTmp; fResTmp = 0; }
   if (fGrid)          { delete[] fGrid;   fGrid   = 0; }
   if (fUsrMacro)      { delete fUsrMacro; fUsrMacro = 0;}
@@ -315,8 +275,10 @@ void AliCheb3D::Clear(Option_t*)
 }
 
 //__________________________________________________________________________________________
-void AliCheb3D::Print(Option_t* opt) const
+void AliCheb3D::Print(const Option_t* opt) const
 {
+  // print info
+  //
   printf("%s: Chebyshev parameterization for 3D->%dD function. Precision: %e\n",GetName(),fDimOut,fPrec);
   printf("Region of validity: [%+.5e:%+.5e] [%+.5e:%+.5e] [%+.5e:%+.5e]\n",fBMin[0],fBMax[0],fBMin[1],fBMax[1],fBMin[2],fBMax[2]);
   TString opts = opt; opts.ToLower();
@@ -325,7 +287,7 @@ void AliCheb3D::Print(Option_t* opt) const
 }
 
 //__________________________________________________________________________________________
-void AliCheb3D::PrepareBoundaries(Float_t  *bmin,Float_t  *bmax)
+void AliCheb3D::PrepareBoundaries(const Float_t  *bmin, const Float_t  *bmax)
 {
   // Set and check boundaries defined by user, prepare coefficients for their conversion to [-1:1] interval
   //
@@ -384,6 +346,8 @@ void AliCheb3D::SetUsrFunction(const char* name)
 #ifdef _INC_CREATION_ALICHEB3D_
 void AliCheb3D::SetUsrFunction(void (*ptr)(float*,float*))
 {
+  // assign user training function
+  //
   if (fUsrMacro) delete fUsrMacro;
   fUsrMacro = 0;
   fUsrFunName = "";
@@ -393,7 +357,10 @@ void AliCheb3D::SetUsrFunction(void (*ptr)(float*,float*))
 
 //__________________________________________________________________________________________
 #ifdef _INC_CREATION_ALICHEB3D_
-void AliCheb3D::EvalUsrFunction(Float_t  *x, Float_t  *res) {
+void AliCheb3D::EvalUsrFunction(const Float_t  *x, const Float_t  *res) 
+{
+  // evaluate user function value
+  //
   for (int i=3;i--;) fArgsTmp[i] = x[i];
   if   (gUsrFunAliCheb3D) gUsrFunAliCheb3D(fArgsTmp,fResTmp);
   else fUsrMacro->Execute(); 
@@ -403,7 +370,7 @@ void AliCheb3D::EvalUsrFunction(Float_t  *x, Float_t  *res) {
 
 //__________________________________________________________________________________________
 #ifdef _INC_CREATION_ALICHEB3D_
-Int_t AliCheb3D::CalcChebCoefs(Float_t  *funval,int np, Float_t  *outCoefs, Float_t  prec)
+Int_t AliCheb3D::CalcChebCoefs(const Float_t  *funval,int np, Float_t  *outCoefs, Float_t  prec)
 {
   // Calculate Chebyshev coeffs using precomputed function values at np roots.
   // If prec>0, estimate the highest coeff number providing the needed precision
@@ -489,7 +456,7 @@ Int_t AliCheb3D::ChebFit(int dmOut)
   Float_t  *tmpCoef2D  = new Float_t [ fNPoints[0]*fNPoints[1] ]; 
   Float_t  *tmpCoef1D  = new Float_t [ maxDim ];
   //
-  Float_t RTiny = fPrec/Float_t(maxDim); // neglect coefficient below this threshold
+  Float_t rTiny = fPrec/Float_t(maxDim); // neglect coefficient below this threshold
   //
   // 1D Cheb.fit for 0-th dimension at current steps of remaining dimensions
   int ncmax = 0;
@@ -550,7 +517,7 @@ Int_t AliCheb3D::ChebFit(int dmOut)
       for (int id2=fNPoints[2];id2--;) {
 	int id = id2 + fNPoints[2]*(id1+id0*fNPoints[1]);
 	Float_t  cfa = TMath::Abs(tmpCoef3D[id]);
-	if (cfa < RTiny) {tmpCoef3D[id] = 0; continue;} // neglect coefs below the threshold
+	if (cfa < rTiny) {tmpCoef3D[id] = 0; continue;} // neglect coefs below the threshold
 	resid += cfa;
 	if (resid<fPrec) continue; // this coeff is negligible
 	// otherwise go back 1 step
@@ -574,58 +541,58 @@ Int_t AliCheb3D::ChebFit(int dmOut)
   }
   */
   // see if there are rows to reject, find max.significant column at each row
-  int NRows = fNPoints[0];
-  int *tmpCols = new int[NRows]; 
+  int nRows = fNPoints[0];
+  int *tmpCols = new int[nRows]; 
   for (int id0=fNPoints[0];id0--;) {
     int id1 = fNPoints[1];
     while (id1>0 && tmpCoefSurf[(id1-1)+id0*fNPoints[1]]==0) id1--;
     tmpCols[id0] = id1;
   }
   // find max significant row
-  for (int id0=NRows;id0--;) {if (tmpCols[id0]>0) break; NRows--;}
+  for (int id0=nRows;id0--;) {if (tmpCols[id0]>0) break; nRows--;}
   // find max significant column and fill the permanent storage for the max sigificant column of each row
-  cheb->InitRows(NRows);                  // create needed arrays;
-  int *NColsAtRow = cheb->GetNColsAtRow();
-  int *ColAtRowBg = cheb->GetColAtRowBg();
-  int NCols = 0;
+  cheb->InitRows(nRows);                  // create needed arrays;
+  int *nColsAtRow = cheb->GetNColsAtRow();
+  int *colAtRowBg = cheb->GetColAtRowBg();
+  int nCols = 0;
   int NElemBound2D = 0;
-  for (int id0=0;id0<NRows;id0++) {
-    NColsAtRow[id0] = tmpCols[id0];     // number of columns to store for this row
-    ColAtRowBg[id0] = NElemBound2D;     // begining of this row in 2D boundary surface
+  for (int id0=0;id0<nRows;id0++) {
+    nColsAtRow[id0] = tmpCols[id0];     // number of columns to store for this row
+    colAtRowBg[id0] = NElemBound2D;     // begining of this row in 2D boundary surface
     NElemBound2D += tmpCols[id0];
-    if (NCols<NColsAtRow[id0]) NCols = NColsAtRow[id0];
+    if (nCols<nColsAtRow[id0]) nCols = nColsAtRow[id0];
   }
-  cheb->InitCols(NCols);
+  cheb->InitCols(nCols);
   delete[] tmpCols;
   //  
   // create the 2D matrix defining the boundary of significance for 3D coeffs.matrix 
   // and count the number of siginifacnt coefficients
   //
   cheb->InitElemBound2D(NElemBound2D);
-  int *CoefBound2D0 = cheb->GetCoefBound2D0();
-  int *CoefBound2D1 = cheb->GetCoefBound2D1();
+  int *coefBound2D0 = cheb->GetCoefBound2D0();
+  int *coefBound2D1 = cheb->GetCoefBound2D1();
   fMaxCoefs = 0; // redefine number of coeffs
-  for (int id0=0;id0<NRows;id0++) {
-    int nCLoc = NColsAtRow[id0];
-    int Col0  = ColAtRowBg[id0];
+  for (int id0=0;id0<nRows;id0++) {
+    int nCLoc = nColsAtRow[id0];
+    int col0  = colAtRowBg[id0];
     for (int id1=0;id1<nCLoc;id1++) {
-      CoefBound2D0[Col0 + id1] = tmpCoefSurf[id1+id0*fNPoints[1]];  // number of coefs to store for 3-d dimension
-      CoefBound2D1[Col0 + id1] = fMaxCoefs;
-      fMaxCoefs += CoefBound2D0[Col0 + id1];
+      coefBound2D0[col0 + id1] = tmpCoefSurf[id1+id0*fNPoints[1]];  // number of coefs to store for 3-d dimension
+      coefBound2D1[col0 + id1] = fMaxCoefs;
+      fMaxCoefs += coefBound2D0[col0 + id1];
     }
   }
   //
   // create final compressed 3D matrix for significant coeffs
   cheb->InitCoefs(fMaxCoefs);
-  Float_t  *Coefs = cheb->GetCoefs();
+  Float_t  *coefs = cheb->GetCoefs();
   int count = 0;
-  for (int id0=0;id0<NRows;id0++) {
-    int ncLoc = NColsAtRow[id0];
-    int Col0  = ColAtRowBg[id0];
+  for (int id0=0;id0<nRows;id0++) {
+    int ncLoc = nColsAtRow[id0];
+    int col0  = colAtRowBg[id0];
     for (int id1=0;id1<ncLoc;id1++) {
-      int ncf2 = CoefBound2D0[Col0 + id1];
+      int ncf2 = coefBound2D0[col0 + id1];
       for (int id2=0;id2<ncf2;id2++) {
-	Coefs[count++] = tmpCoef3D[id2 + fNPoints[2]*(id1+id0*fNPoints[1])];
+	coefs[count++] = tmpCoef3D[id2 + fNPoints[2]*(id1+id0*fNPoints[1])];
       }
     }
   }
@@ -691,6 +658,8 @@ void AliCheb3D::SaveData(FILE* stream) const
 //_______________________________________________
 void AliCheb3D::LoadData(const char* inpFile)
 {
+  // load coefficients data from txt file
+  //
   TString strf = inpFile;
   gSystem->ExpandPathName(strf);
   FILE* stream = fopen(strf.Data(),"r");
@@ -702,6 +671,8 @@ void AliCheb3D::LoadData(const char* inpFile)
 //_______________________________________________
 void AliCheb3D::LoadData(FILE* stream)
 {
+  // load coefficients data from stream
+  //
   if (!stream) {Error("LoadData","No stream provided.\nStop"); exit(1);}
   TString buffs;
   Clear();
@@ -742,8 +713,9 @@ void AliCheb3D::LoadData(FILE* stream)
 }
 
 //_______________________________________________
-void AliCheb3D::SetDimOut(int d)
+void AliCheb3D::SetDimOut(const int d)
 {
+  // init output dimensions
   fDimOut = d;
   if (fResTmp) delete fResTmp;
   fResTmp = new Float_t[fDimOut];
@@ -754,6 +726,8 @@ void AliCheb3D::SetDimOut(int d)
 //_______________________________________________
 void AliCheb3D::ShiftBound(int id,float dif)
 {
+  // modify the bounds of the grid
+  //
   if (id<0||id>2) {printf("Maximum 3 dimensions are supported\n"); return;}
   fBMin[id] += dif;
   fBMax[id] += dif;
@@ -790,6 +764,8 @@ TH1* AliCheb3D::TestRMS(int idim,int npoints,TH1* histo)
 #ifdef _INC_CREATION_ALICHEB3D_
 void AliCheb3D::EstimateNPoints(float Prec, int gridBC[3][3])
 {
+  // Estimate number of points to generate a training data
+  //
   const float sclA[9] = {0.1, 0.5, 0.9, 0.1, 0.5, 0.9, 0.1, 0.5, 0.9} ;
   const float sclB[9] = {0.1, 0.1, 0.1, 0.5, 0.5, 0.5, 0.9, 0.9, 0.9} ;
   const float sclDim[2] = {0.01,0.99};

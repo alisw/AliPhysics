@@ -3,7 +3,7 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 #include <TNamed.h>
-#include <TSystem.h>
+class TSystem;
 //
 // Author: Ruben Shahoyan
 // ruben.shahoyan@cern.ch   09/09/2006
@@ -30,15 +30,15 @@ class AliCheb3DCalc: public TNamed
   ~AliCheb3DCalc()                                                           {Clear();}
   //
   AliCheb3DCalc& operator=(const AliCheb3DCalc& rhs);
-  void       Print(Option_t* opt="")                                   const;
+  void       Print(const Option_t* opt="")                              const;
   void       LoadData(FILE* stream);
-  Float_t    Eval(Float_t  *par)                                       const;
-  Float_t    EvalDeriv(int dim, Float_t  *par)                         const;
-  Float_t    EvalDeriv2(int dim1,int dim2, Float_t  *par)                         const;
+  Float_t    Eval(const Float_t  *par)                                  const;
+  Float_t    EvalDeriv(int dim, const Float_t  *par)                    const;
+  Float_t    EvalDeriv2(int dim1,int dim2, const Float_t  *par)         const;
   //
 #ifdef _INC_CREATION_ALICHEB3D_
-  void       SaveData(const char* outfile,Bool_t append=kFALSE)        const;
-  void       SaveData(FILE* stream=stdout)                             const;
+  void       SaveData(const char* outfile,Bool_t append=kFALSE)         const;
+  void       SaveData(FILE* stream=stdout)                              const;
 #endif
   //
   void       InitRows(int nr);
@@ -48,7 +48,7 @@ class AliCheb3DCalc: public TNamed
   void       InitElemBound2D(int ne);
   Int_t*     GetCoefBound2D0()                                          const {return fCoefBound2D0;}
   Int_t*     GetCoefBound2D1()                                          const {return fCoefBound2D1;}
-  void       Clear(Option_t* option = "");
+  void       Clear(const Option_t* option = "");
   static Float_t    ChebEval1D(Float_t  x, const Float_t * array, int ncf);
   static Float_t    ChebEval1Deriv(Float_t  x, const Float_t * array, int ncf);
   static Float_t    ChebEval1Deriv2(Float_t  x, const Float_t * array, int ncf);

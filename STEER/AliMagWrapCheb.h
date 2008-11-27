@@ -26,13 +26,13 @@ public:
   AliMagWrapCheb& operator=(const AliMagWrapCheb& maps);
   virtual ~AliMagWrapCheb();
   //
-  virtual void Field(Float_t *x, Float_t *b)              const;
-  virtual void GetTPCInt(Float_t *xyz, Float_t *b)        const;
-  virtual void GetTPCIntCyl(Float_t *rphiz, Float_t *b)   const;
+  virtual void Field(Float_t *x, Float_t *b)                    const;
+  virtual void GetTPCInt(Float_t *xyz, Float_t *b)              const;
+  virtual void GetTPCIntCyl(Float_t *rphiz, Float_t *b)         const;
   //
-  AliMagFCheb* GetMeasuredMap()                           const {return fMeasuredMap;}
-  void SetMeasuredMap(AliMagFCheb* parm)                        {if (parm) delete parm; fMeasuredMap = parm;}
-  virtual Float_t SolenoidField() const {return -Factor()*fSolenoid;}
+  AliMagFCheb* GetMeasuredMap()                                 const {return fMeasuredMap;}
+  void SetMeasuredMap(AliMagFCheb* parm)                        {if (fMeasuredMap) delete fMeasuredMap; fMeasuredMap = parm;}
+  virtual Float_t SolenoidField()                               const {return -Factor()*fSolenoid;}
   //
  protected:
   AliMagFCheb* fMeasuredMap;     // Measured part of the field map

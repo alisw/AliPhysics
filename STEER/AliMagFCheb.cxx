@@ -1,37 +1,20 @@
-///////////////////////////////////////////////////////////////////////////////////
-//                                                                               //
-//  Wrapper for the set of mag.field parameterizations by Chebyshev polinomials  //
-//  To obtain the field in cartesian coordinates/components use                  //
-//    Field(float* xyz, float* bxyz);                                            //
-//  For cylindrical coordinates/components:                                      //
-//    FieldCyl(float* rphiz, float* brphiz)                                      //
-//                                                                               //
-//  The solenoid part is parameterized in the volume  R<500, -550<Z<550 cm       //
-//                                                                               //
-//  The region R<423 cm,  -343.3<Z<481.3 for 30kA and -343.3<Z<481.3 for 12kA    //
-//  is parameterized using measured data while outside the Tosca calculation     //
-//  is used (matched to data on the boundary of the measurements)                //
-//                                                                               //
-//  Two options are possible:                                                    //
-//  1) _BRING_TO_BOUNDARY_ is defined in the AliCheb3D:                          //
-//     If the querried point is outside of the validity region then the field    //
-//     at the closest point on the fitted surface is returned.                   //
-//  2) _BRING_TO_BOUNDARY_ is not defined in the AliCheb3D:                      //
-//     If the querried point is outside of the validity region the return        //
-//     value for the field components are set to 0.                              //
-//                                                                               //
-//  To obtain the field integral in the TPC region from given point to nearest   //
-//  cathod plane (+- 250 cm) use:                                                //
-//  GetTPCInt(float* xyz, float* bxyz);  for Cartesian frame                     //
-//  or                                                                           //
-//  GetTPCIntCyl(Float_t *rphiz, Float_t *b); for Cylindrical frame              //
-//                                                                               //
-//                                                                               //
-//  The units are kiloGauss and cm.                                              //
-//                                                                               //
-///////////////////////////////////////////////////////////////////////////////////
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
 
 #include "AliMagFCheb.h"
+#include <TSystem.h>
 
 ClassImp(AliMagFCheb)
 
@@ -84,7 +67,9 @@ AliMagFCheb::AliMagFCheb() :
   fParamsDip(0),
   fParamsTPCInt(0)
 //
-{}
+{
+  // default constructor
+}
 
 //__________________________________________________________________________________________
 AliMagFCheb::AliMagFCheb(const AliMagFCheb& src) : 
@@ -136,13 +121,14 @@ AliMagFCheb::AliMagFCheb(const AliMagFCheb& src) :
   fParamsDip(0),
   fParamsTPCInt(0)
 {
+  // copy constructor
   CopyFrom(src);
-  //
 }
 
 //__________________________________________________________________________________________
 void AliMagFCheb::CopyFrom(const AliMagFCheb& src) 
 { 
+  // copy method
   Clear();
   SetName(src.GetName());
   SetTitle(src.GetTitle());
@@ -203,6 +189,7 @@ void AliMagFCheb::CopyFrom(const AliMagFCheb& src)
 //__________________________________________________________________________________________
 AliMagFCheb& AliMagFCheb::operator=(const AliMagFCheb& rhs)
 {
+  // assignment
   if (this != &rhs) {  
     Clear();
     CopyFrom(rhs);
@@ -212,8 +199,9 @@ AliMagFCheb& AliMagFCheb::operator=(const AliMagFCheb& rhs)
 }
 
 //__________________________________________________________________________________________
-void AliMagFCheb::Clear(Option_t *)
+void AliMagFCheb::Clear(const Option_t *)
 {
+  // clear all dynamic parts
   if (fNParamsSol) {
     delete   fParamsSol;
     delete[] fSegZSol;
@@ -306,12 +294,12 @@ void AliMagFCheb::GetTPCInt(Float_t *xyz, Float_t *b) const
 }
 
 //__________________________________________________________________________________________
-void AliMagFCheb::FieldCylSol(Float_t *rphiz, Float_t *b) const
+void AliMagFCheb::FieldCylSol(const Float_t *rphiz, Float_t *b) const
 {
   // compute Solenoid field in Cylindircal coordinates
   // note: if the point is outside the volume get the field in closest parameterized point
-  float &r = rphiz[0];
-  float &z = rphiz[2];
+  const float &r = rphiz[0];
+  const float &z = rphiz[2];
   int SolZId = 0;
   while (z>fSegZSol[SolZId] && SolZId<fNSegZSol-1) ++SolZId;    // find Z segment
   int SolRId = fSegZIdSol[SolZId];        // first R segment for this Z
@@ -326,14 +314,14 @@ void AliMagFCheb::GetTPCIntCyl(Float_t *rphiz, Float_t *b) const
 {
   // compute field integral in TPC region in Cylindircal coordinates
   // note: the check for the point being inside the parameterized region is done outside
-  float &r = rphiz[0];
-  float &z = rphiz[2];
-  int TPCIntZId = 0;
-  while (z>fSegZTPCInt[TPCIntZId] && TPCIntZId<fNSegZTPCInt) ++TPCIntZId;    // find Z segment
-  int TPCIntRId = fSegZIdTPCInt[TPCIntZId];        // first R segment for this Z
-  int TPCIntRIdMax = TPCIntRId + fNSegRTPCInt[TPCIntZId];
-  while (r>fSegRTPCInt[TPCIntRId] && TPCIntRId<TPCIntRIdMax) ++TPCIntRId;    // find R segment
-  GetParamTPCInt( TPCIntRId )->Eval(rphiz,b);
+  const float &r = rphiz[0];
+  const float &z = rphiz[2];
+  int tpcIntZId = 0;
+  while (z>fSegZTPCInt[tpcIntZId] && tpcIntZId<fNSegZTPCInt) ++tpcIntZId;    // find Z segment
+  int tpcIntRId = fSegZIdTPCInt[tpcIntZId];        // first R segment for this Z
+  int tpcIntRIdMax = tpcIntRId + fNSegRTPCInt[tpcIntZId];
+  while (r>fSegRTPCInt[tpcIntRId] && tpcIntRId<tpcIntRIdMax) ++tpcIntRId;    // find R segment
+  GetParamTPCInt( tpcIntRId )->Eval(rphiz,b);
   //
 }
 
@@ -341,6 +329,7 @@ void AliMagFCheb::GetTPCIntCyl(Float_t *rphiz, Float_t *b) const
 //__________________________________________________________________________________________
 void AliMagFCheb::Print(Option_t *) const
 {
+  // print info
   printf("Alice magnetic field parameterized by Chebyshev polynomials\n");
   printf("Segmentation for Solenoid (%+.2f<Z<%+.2f cm | R<%.2f cm)\n",fMinZSol,fMaxZSol,fMaxRSol);
   //
@@ -480,7 +469,7 @@ void AliMagFCheb::LoadData(const char* inpfile)
 #endif
 
 //_________________________________________________________________________
-Int_t AliMagFCheb::FindDipSegment(float *xyz) const
+Int_t AliMagFCheb::FindDipSegment(const float *xyz) const
 {
   // find the segment containing point xyz. If it is outside find the closest segment 
   int xid,yid,zid = TMath::BinarySearch(fNZSegDip,fSegZDip,xyz[2]); // find zsegment
@@ -553,11 +542,12 @@ AliMagFCheb::AliMagFCheb(const char* inputFile) :
 //
 //
 {
+  // construct from coeffs from the text file
   LoadData(inputFile);
 }
 
 //__________________________________________________________________________________________
-void AliMagFCheb::AddParamSol(AliCheb3D* param)
+void AliMagFCheb::AddParamSol(const AliCheb3D* param)
 {
   // adds new parameterization piece for Sol
   // NOTE: pieces must be added strictly in increasing R then increasing Z order
@@ -569,7 +559,7 @@ void AliMagFCheb::AddParamSol(AliCheb3D* param)
 }
 
 //__________________________________________________________________________________________
-void AliMagFCheb::AddParamTPCInt(AliCheb3D* param)
+void AliMagFCheb::AddParamTPCInt(const AliCheb3D* param)
 {
   // adds new parameterization piece for TPCInt
   // NOTE: pieces must be added strictly in increasing R then increasing Z order
@@ -581,7 +571,7 @@ void AliMagFCheb::AddParamTPCInt(AliCheb3D* param)
 }
 
 //__________________________________________________________________________________________
-void AliMagFCheb::AddParamDip(AliCheb3D* param)
+void AliMagFCheb::AddParamDip(const AliCheb3D* param)
 {
   // adds new parameterization piece for Dipole
   //
@@ -618,6 +608,7 @@ void AliMagFCheb::ResetTPCInt()
 //__________________________________________________
 void AliMagFCheb::BuildTableDip()
 {
+  // build lookup table for dipole
   //
   TArrayF segY,segX;
   TArrayI begSegYDip,begSegXDip;

@@ -61,19 +61,22 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 
-#ifndef _ALICHEB3D_
-#define _ALICHEB3D_
-#include <stdio.h>
+#ifndef ALICHEB3D_H
+#define ALICHEB3D_H
+
 #include <TNamed.h>
-#include <TMethodCall.h>
-#include <TMath.h>
-#include <TH1.h>
 #include <TObjArray.h>
 #include "AliCheb3DCalc.h"
 
 class TString;
 class TSystem;
 class TRandom;
+class TH1;
+class TMethodCall;
+class TRandom;
+class TROOT;
+class stdio;
+
 
 
 class AliCheb3D: public TNamed 
@@ -94,18 +97,18 @@ class AliCheb3D: public TNamed
   ~AliCheb3D()                                                                 {Clear();}
   //
   AliCheb3D&   operator=(const AliCheb3D& rhs);
-  void         Eval(Float_t  *par,Float_t  *res);
-  Float_t      Eval(Float_t  *par,int idim);
+  void         Eval(const Float_t  *par,Float_t  *res);
+  Float_t      Eval(const Float_t  *par,int idim);
   //
-  void         EvalDeriv(int dimd, Float_t  *par,Float_t  *res);
-  void         EvalDeriv2(int dimd1, int dimd2,Float_t  *par,Float_t  *res);
-  Float_t      EvalDeriv(int dimd,Float_t  *par, int idim);
-  Float_t      EvalDeriv2(int dimd1,int dimd2, Float_t  *par, int idim);
-  void         EvalDeriv3D(Float_t *par, Float_t dbdr[3][3]); 
-  void         EvalDeriv3D2(Float_t *par, Float_t dbdrdr[3][3][3]); 
-  void         Print(Option_t* opt="")                                   const;
-  Bool_t       IsInside(Float_t  *par)                                   const;
-  Bool_t       IsInside(Double_t  *par)                                  const;
+  void         EvalDeriv(int dimd, const Float_t  *par, Float_t  *res);
+  void         EvalDeriv2(int dimd1, int dimd2, const Float_t  *par,Float_t  *res);
+  Float_t      EvalDeriv(int dimd, const Float_t  *par, int idim);
+  Float_t      EvalDeriv2(int dimd1,int dimd2, const Float_t  *par, int idim);
+  void         EvalDeriv3D(const Float_t *par, Float_t dbdr[3][3]); 
+  void         EvalDeriv3D2(const Float_t *par, Float_t dbdrdr[3][3][3]); 
+  void         Print(const Option_t* opt="")                             const;
+  Bool_t       IsInside(const Float_t  *par)                             const;
+  Bool_t       IsInside(const Double_t *par)                             const;
   AliCheb3DCalc*  GetChebCalc(int i)                                     const {return (AliCheb3DCalc*)fChebCalc.UncheckedAt(i);}
   Float_t      GetBoundMin(int i)                                        const {return fBMin[i];}
   Float_t      GetBoundMax(int i)                                        const {return fBMax[i];}
@@ -125,15 +128,15 @@ class AliCheb3D: public TNamed
   //
   void         SetUsrFunction(const char* name);
   void         SetUsrFunction(void (*ptr)(float*,float*));
-  void         EvalUsrFunction(Float_t  *x, Float_t  *res);
+  void         EvalUsrFunction(const Float_t  *x, const Float_t  *res);
   TH1*         TestRMS(int idim,int npoints = 1000,TH1* histo=0);
-  static Int_t CalcChebCoefs(Float_t  *funval,int np, Float_t  *outCoefs, Float_t  prec=-1);
+  static Int_t CalcChebCoefs(const Float_t  *funval,int np, Float_t  *outCoefs, Float_t  prec=-1);
 #endif
   //
  protected:
-  void         Clear(Option_t* option = "");
-  void         SetDimOut(int d);
-  void         PrepareBoundaries(Float_t  *bmin,Float_t  *bmax);
+  void         Clear(const Option_t* option = "");
+  void         SetDimOut(const int d);
+  void         PrepareBoundaries(const Float_t  *bmin,const Float_t  *bmax);
   //
 #ifdef _INC_CREATION_ALICHEB3D_
   void         EvalUsrFunction();
@@ -168,7 +171,7 @@ class AliCheb3D: public TNamed
 };
 
 //__________________________________________________________________________________________
-inline Bool_t  AliCheb3D::IsInside(Float_t  *par) const 
+inline Bool_t  AliCheb3D::IsInside(const Float_t  *par) const 
 {
   // check if the point is inside of the fitted box
   const float kTol = 1.e-4; 
@@ -178,7 +181,7 @@ inline Bool_t  AliCheb3D::IsInside(Float_t  *par) const
 }
 
 //__________________________________________________________________________________________
-inline Bool_t  AliCheb3D::IsInside(Double_t  *par) const 
+inline Bool_t  AliCheb3D::IsInside(const Double_t  *par) const 
 {
   // check if the point is inside of the fitted box
   const float kTol = 1.e-4; 
@@ -188,7 +191,7 @@ inline Bool_t  AliCheb3D::IsInside(Double_t  *par) const
 }
 
 //__________________________________________________________________________________________
-inline void AliCheb3D::Eval(Float_t  *par, Float_t  *res)
+inline void AliCheb3D::Eval(const Float_t  *par, Float_t  *res)
 {
   // evaluate Chebyshev parameterization for 3d->DimOut function
   for (int i=3;i--;) fArgsTmp[i] = MapToInternal(par[i],i);
@@ -197,7 +200,7 @@ inline void AliCheb3D::Eval(Float_t  *par, Float_t  *res)
 }
 
 //__________________________________________________________________________________________
-inline Float_t AliCheb3D::Eval(Float_t  *par, int idim)
+inline Float_t AliCheb3D::Eval(const Float_t  *par, int idim)
 {
   // evaluate Chebyshev parameterization for idim-th output dimension of 3d->DimOut function
   for (int i=3;i--;) fArgsTmp[i] = MapToInternal(par[i],i);
@@ -206,7 +209,7 @@ inline Float_t AliCheb3D::Eval(Float_t  *par, int idim)
 }
 
 //__________________________________________________________________________________________
-inline void AliCheb3D::EvalDeriv3D(Float_t *par, Float_t dbdr[3][3])
+inline void AliCheb3D::EvalDeriv3D(const Float_t *par, Float_t dbdr[3][3])
 {
   // return gradient matrix
   for (int i=3;i--;) fArgsTmp[i] = MapToInternal(par[i],i);
@@ -214,7 +217,7 @@ inline void AliCheb3D::EvalDeriv3D(Float_t *par, Float_t dbdr[3][3])
 }
 
 //__________________________________________________________________________________________
-inline void AliCheb3D::EvalDeriv3D2(Float_t *par, Float_t dbdrdr[3][3][3])
+inline void AliCheb3D::EvalDeriv3D2(const Float_t *par, Float_t dbdrdr[3][3][3])
 {
   // return gradient matrix
   for (int i=3;i--;) fArgsTmp[i] = MapToInternal(par[i],i);
@@ -223,7 +226,7 @@ inline void AliCheb3D::EvalDeriv3D2(Float_t *par, Float_t dbdrdr[3][3][3])
 }
 
 //__________________________________________________________________________________________
-inline void AliCheb3D::EvalDeriv(int dimd,Float_t  *par, Float_t  *res)
+inline void AliCheb3D::EvalDeriv(int dimd, const Float_t  *par, Float_t  *res)
 {
   // evaluate Chebyshev parameterization derivative for 3d->DimOut function
   for (int i=3;i--;) fArgsTmp[i] = MapToInternal(par[i],i);
@@ -232,7 +235,7 @@ inline void AliCheb3D::EvalDeriv(int dimd,Float_t  *par, Float_t  *res)
 }
 
 //__________________________________________________________________________________________
-inline void AliCheb3D::EvalDeriv2(int dimd1,int dimd2,Float_t  *par, Float_t  *res)
+inline void AliCheb3D::EvalDeriv2(int dimd1,int dimd2, const Float_t  *par, Float_t  *res)
 {
   // evaluate Chebyshev parameterization 2nd derivative over dimd1 and dimd2 dimensions for 3d->DimOut function
   for (int i=3;i--;) fArgsTmp[i] = MapToInternal(par[i],i);
@@ -241,7 +244,7 @@ inline void AliCheb3D::EvalDeriv2(int dimd1,int dimd2,Float_t  *par, Float_t  *r
 }
 
 //__________________________________________________________________________________________
-inline Float_t AliCheb3D::EvalDeriv(int dimd,Float_t  *par, int idim)
+inline Float_t AliCheb3D::EvalDeriv(int dimd, const Float_t  *par, int idim)
 {
   // evaluate Chebyshev parameterization derivative over dimd dimention for idim-th output dimension of 3d->DimOut function
   for (int i=3;i--;) fArgsTmp[i] = MapToInternal(par[i],i);
@@ -250,7 +253,7 @@ inline Float_t AliCheb3D::EvalDeriv(int dimd,Float_t  *par, int idim)
 }
 
 //__________________________________________________________________________________________
-inline Float_t AliCheb3D::EvalDeriv2(int dimd1,int dimd2,Float_t  *par, int idim)
+inline Float_t AliCheb3D::EvalDeriv2(int dimd1,int dimd2, const Float_t  *par, int idim)
 {
   // evaluate Chebyshev parameterization 2ns derivative over dimd1 and dimd2 dimensions for idim-th output dimension of 3d->DimOut function
   for (int i=3;i--;) fArgsTmp[i] = MapToInternal(par[i],i);
