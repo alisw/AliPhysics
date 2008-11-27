@@ -31,5 +31,8 @@
 #pragma link C++ class AliAnalysisTaskQCumulants+;
 #pragma link C++ class AliCumulantsFunctions+;
 #pragma link C++ class AliQCumulantsFunctions+;
+#pragma link C++ class AliFittingFunctionsForQDistribution+;
+#pragma link C++ class AliAnalysisTaskFittingQDistribution+;
+#pragma link C++ class AliFittingQDistribution+;
 
 #endif

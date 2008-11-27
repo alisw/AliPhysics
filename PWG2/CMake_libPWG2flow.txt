@@ -27,6 +27,9 @@ set(SRCS
       FLOW/AliAnalysisTaskLeeYangZeros.cxx
       FLOW/AliCumulantsFunctions.cxx
       FLOW/AliQCumulantsFunctions.cxx
+      FLOW/AliAnalysisTaskFittingQDistribution.cxx
+      FLOW/AliFittingFunctionsForQDistribution.cxx
+      FLOW/AliFittingQDistribution.cxx
 )
 
 # fill list of header files from list of source files

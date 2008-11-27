@@ -18,14 +18,17 @@ SRCS= FLOW/AliFlowEventSimple.cxx \
       FLOW/AliFlowAnalysisWithLeeYangZeros.cxx \
       FLOW/AliFlowAnalysisWithCumulants.cxx \
       FLOW/AliFlowAnalysisWithQCumulants.cxx \
+      FLOW/AliFittingQDistribution.cxx \
       FLOW/AliCumulantsFunctions.cxx \
       FLOW/AliQCumulantsFunctions.cxx \
+      FLOW/AliFittingFunctionsForQDistribution.cxx \
       FLOW/AliAnalysisTaskScalarProduct.cxx \
       FLOW/AliAnalysisTaskMCEventPlane.cxx \
       FLOW/AliAnalysisTaskLYZEventPlane.cxx \
       FLOW/AliAnalysisTaskCumulants.cxx \
       FLOW/AliAnalysisTaskQCumulants.cxx \
-      FLOW/AliAnalysisTaskLeeYangZeros.cxx
+      FLOW/AliAnalysisTaskLeeYangZeros.cxx \
+      FLOW/AliAnalysisTaskFittingQDistribution.cxx
 
 HDRS= $(SRCS:.cxx=.h) 
 
