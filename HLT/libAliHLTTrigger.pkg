@@ -10,12 +10,18 @@
 # will be created from the names of the header files
 CLASS_HDRS:= \
                 AliHLTTrigger.h                             \
+                AliHLTTriggerDecision.h                     \
+                AliHLTTriggerDomain.h                       \
+                AliHLTDomainEntry.h                         \
+                AliHLTReadoutList.h                         \
+                AliHLTGlobalTriggerDecision.h               \
+                AliHLTGlobalTriggerComponent.h              \
                 AliHLTTriggerAgent.h                        \
                 AliHLTEventSummary.h                        \
                 AliHLTEventSummaryProducerComponent.h       \
                 AliHLTRunSummary.h                          \
                 AliHLTRunSummaryProducerComponent.h         \
-	        AliHLTTriggerSelectiveReadoutComponent.h    \
+                AliHLTTriggerSelectiveReadoutComponent.h    \
                 AliHLTTriggerMonitoringComponent.h
 
 

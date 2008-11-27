@@ -1,11 +1,22 @@
 #ifndef ALIHLTTRIGGER_H
 #define ALIHLTTRIGGER_H
-/* This file is property of and copyright by the ALICE HLT Project        * 
+/* This file is property of and copyright by the ALICE HLT Project        *
  * ALICE Experiment at CERN, All rights reserved.                         *
  * See cxx source for full Copyright notice                               */
 
-#include "AliHLTProcessor.h"
+/// @file   AliHLTTrigger.cxx
+/// @author Artur Szostak <artursz@iafrica.com>
+/// @date   12 Aug 2008
+/// @brief  Declaration of the AliHLTTrigger base component class.
 
+#include "AliHLTProcessor.h"
+#include "AliHLTReadoutList.h"
+#include "AliHLTTriggerDomain.h"
+
+/**
+ * \class AliHLTTrigger
+ * This is the base class from which all HLT trigger components should inherit.
+ */
 class AliHLTTrigger : public AliHLTProcessor
 {
  public:
@@ -40,15 +51,14 @@ class AliHLTTrigger : public AliHLTProcessor
    * Returns extra output data types this trigger generates.
    * This returns an empty list by default.
    * @param list <i>[out]</i>: The list of data types to be filled.
+   * \note The underlying non const version of GetOutputDataTypes adds the value
+   *    kAliHLTDataTypeTObject to the list.
    */
-  virtual void GetOutputDataTypes(AliHLTComponentDataTypeList& list) const
-  {
-    list.push_back(kAliHLTDataTypeTObject);
-  }
+  virtual void GetOutputDataTypes(AliHLTComponentDataTypeList& /*list*/) const {}
 
   /**
-   * Get a ratio by how much the data volume is shrinked or enhanced.
-   * The method returns a size proporional to the trigger name string length
+   * Get a ratio by how much the data volume is shrunk or enhanced.
+   * The method returns a size proportional to the trigger name string length
    * for constBase, and 1 for inputMultiplier.
    * @param constBase        <i>[out]</i>: additive part, independent of the
    *                                   input data volume  
@@ -65,7 +75,7 @@ class AliHLTTrigger : public AliHLTProcessor
 
   /**
    * This method needs to be implemented by child classes to implement the actual
-   * trigger algorithm. A possitive trigger decision is made by calling the TriggerEvent
+   * trigger algorithm. A positive trigger decision is made by calling the TriggerEvent
    * method with TriggerEvent(true), or TriggerEvent(false) for a negative result
    * (no trigger).
    * If the AliHLTComponentEventData structure is needed for the current event being
@@ -126,14 +136,47 @@ class AliHLTTrigger : public AliHLTProcessor
   }
   
   /**
-   * Returns the DDL readout list for modification by hand.
-   */
-  const AliHLTEventDDL& GetReadoutList() const { return fReadoutList; }
-
-  /**
    * Returns the DDL readout list.
    */
-  AliHLTEventDDL& GetReadoutList() { return fReadoutList; }
+  const AliHLTReadoutList& GetReadoutList() const { return fReadoutList; }
+
+  /**
+   * Returns the DDL readout list for modification by hand.
+   */
+  AliHLTReadoutList& GetReadoutList() { return fReadoutList; }
+
+  /**
+   * Sets the readout list object.
+   * \param value  The new value to use for the readout list.
+   */
+  void SetReadoutList(const AliHLTReadoutList& value) { fReadoutList = value; }
+  
+  /**
+   * Returns the trigger domain object.
+   */
+  const AliHLTTriggerDomain& GetTriggerDomain() const { return fTriggerDomain; }
+
+  /**
+   * Returns the trigger domain object for modification.
+   */
+  AliHLTTriggerDomain& GetTriggerDomain() { return fTriggerDomain; }
+
+  /**
+   * Sets the trigger domain object.
+   * \param value  The new value to use for the trigger domain.
+   */
+  void SetTriggerDomain(const AliHLTTriggerDomain& value) { fTriggerDomain = value; }
+  
+  /**
+   * Returns the trigger description string.
+   */
+  const char* GetDescription() const { return fDescription.Data(); }
+  
+  /**
+   * Sets the trigger description string.
+   * \param value  The new value to use for the description string.
+   */
+  void SetDescription(const char* value) { fDescription = value; }
 
  private:
  
@@ -155,21 +198,25 @@ class AliHLTTrigger : public AliHLTProcessor
   /**
    * Inherited from AliHLTComponent. This method is replaced with one that is
    * symmetric to GetInputDataTypes that returns void, so we make this method
-   * private.
+   * private. The list will always contain kAliHLTDataTypeTObject, including whatever
+   * values were added by the const version of GetOutputDataTypes.
    * @param list     list to receive the output data types.
    * @return the number of elements in the list.
    */
   virtual int GetOutputDataTypes(AliHLTComponentDataTypeList& list)
   {
-    GetOutputDataTypes(list);
+    const AliHLTTrigger* t = this; t->GetOutputDataTypes(list);
+    list.push_back(kAliHLTDataTypeTObject);
     return list.size();
   }
   
-  const AliHLTComponentEventData* fEventData; ///! Event data for the current event. Only valid inside DoTrigger.
-  AliHLTComponentTriggerData* fTriggerData; ///! Trigger data for the current event. Only valid inside DoTrigger.
-  bool fDecisionMade;  ///! Flag indicating if the trigger decision has been made for this trigger yet.
-  int fTriggerEventResult;  ///! Result returned by PushBack method in the TriggerEvent method.
-  AliHLTEventDDL fReadoutList; ///! The readout DDL list.
+  const AliHLTComponentEventData* fEventData; //! Event data for the current event. Only valid inside DoTrigger.
+  AliHLTComponentTriggerData* fTriggerData; //! Trigger data for the current event. Only valid inside DoTrigger.
+  bool fDecisionMade;  //! Flag indicating if the trigger decision has been made for this trigger yet.
+  int fTriggerEventResult;  //! Result returned by PushBack method in the TriggerEvent method.
+  TString fDescription;   //! The description to use for the trigger decision.
+  AliHLTReadoutList fReadoutList; //! The DDL readout list object for the current event being processed.
+  AliHLTTriggerDomain fTriggerDomain; //! The trigger domain object for the current event being processed.
   
   ClassDef(AliHLTTrigger, 0) // Base class for HLT triggers.
 

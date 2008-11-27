@@ -14,8 +14,16 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/// @file   AliHLTTrigger.h
+/// @author Artur Szostak <artursz@iafrica.com>
+/// @date   12 Aug 2008
+/// @brief  Implementation of the AliHLTTrigger base component class.
+///
+/// The AliHLTTrigger class is the base class from which all HLT trigger components
+/// should be derived.
+
 #include "AliHLTTrigger.h"
-#include "TObjString.h"
+#include "AliHLTTriggerDecision.h"
 
 ClassImp(AliHLTTrigger)
 
@@ -26,7 +34,9 @@ AliHLTTrigger::AliHLTTrigger() :
 	fTriggerData(NULL),
 	fDecisionMade(false),
 	fTriggerEventResult(0),
-	fReadoutList()
+	fDescription(),
+	fReadoutList(),
+	fTriggerDomain()
 {
   /// Default constructor sets pointers to NULL.
 }
@@ -42,7 +52,7 @@ void AliHLTTrigger::GetOutputDataSize(unsigned long& constBase, double& inputMul
 {
   /// Returns output data size estimate.
 
-  constBase = strlen(GetTriggerName()) + sizeof(TObjString) + 1;
+  constBase = sizeof(AliHLTTriggerDecision);
   inputMultiplier = 1;
 }
 
@@ -66,10 +76,6 @@ int AliHLTTrigger::DoEvent(const AliHLTComponentEventData& evtData, AliHLTCompon
     TriggerEvent(false);
   }
 
-//TODO
-//  result = PushBack(&fReadoutList, kAliHLTDataTypeTObject|kAliHLTDataOriginOut);
-//  if (result != 0) return result;
-
   // Cleanup
   fEventData = NULL;
   fTriggerData = NULL;
@@ -82,8 +88,7 @@ void AliHLTTrigger::TriggerEvent(bool value)
   /// Sets the trigger decision for the current event.
   
   if (fTriggerEventResult != 0) return;  // Do not do anything if a previous call failed.
-  TObjString triggerResult(GetTriggerName());
-  triggerResult.SetBit(BIT(14), value);  // Use bit 14 for the boolean decision.
+  AliHLTTriggerDecision triggerResult(value, GetTriggerName(), fReadoutList, fTriggerDomain, fDescription);
   fTriggerEventResult = PushBack(&triggerResult, kAliHLTDataTypeTObject|kAliHLTDataOriginOut);
 }
 

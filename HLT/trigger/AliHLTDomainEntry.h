@@ -12,6 +12,19 @@
 #include "TObject.h"
 #include "AliHLTDataTypes.h"
 
+/**
+ * \class AliHLTDomainEntry
+ * The AliHLTDomainEntry class is used to store information identifying a particular
+ * HLT internal data block, or set of data blocks using wild card values. This
+ * class is used by AliHLTTriggerDomain to store a list of data block classes
+ * that should be readout by the HLT. The information identifying a data block is
+ * the following:
+ *  - the data block type
+ *  - the data block's origin (detector name)
+ *  - the data block's specification (detector specific bits)
+ * Several useful operators and methods are defined to help manipulate this
+ * information in the AliHLTTriggerDomain class.
+ */
 class AliHLTDomainEntry : public TObject
 {
  public:

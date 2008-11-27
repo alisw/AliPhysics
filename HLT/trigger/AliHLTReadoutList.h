@@ -12,6 +12,25 @@
 #include "TObject.h"
 #include "AliHLTDataTypes.h"
 
+/**
+ * \class AliHLTReadoutList
+ * This class is used as an interface or wrapper to the AliHLTEventDDL structure.
+ * It makes it easy to manipulate the bits in this structure, which define what DDLs
+ * should be readout by DAQ.
+ * Several operators are also overloaded which are meant to be used in the trigger
+ * menu specification for the AliHLTGlobalTrigger. It allows one to construct
+ * expressions for the readout lists, which is necessary to be able to evaluate
+ * or compose the final readout list, given multiple input readout lists received
+ * from individual components that derive from AliHLTTrigger.
+ * The operators implemented are:
+ *  |  applies a bitwise or on the DDL bits.
+ *  &  applies a bitwise and on the DDL bits.
+ *  ^  applies a bitwise xor on the DDL bits.
+ *  ~  applies a bitwise not on the DDL bits.
+ *  +  synonym for the '|' operator.
+ *  -  unsets the bits in readout list A that are set in readout list B.
+ *      This effectively applies A & (A ^ B).
+ */
 class AliHLTReadoutList : public TObject
 {
  public:
