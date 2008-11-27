@@ -63,7 +63,8 @@ class AliITSCalibration : public TObject {
     // Get sigmas for the charge spread
     virtual void    SigmaSpread(Double_t &,Double_t &) const = 0;
 
-
+    // Needed for SSD bad modules retrieval in the tracker
+    virtual void    SetModuleIndex(Int_t /*modId*/) {};
 
     // Prints out the content of this class in ASCII format.
     virtual void Print(ostream *os) const;

@@ -83,7 +83,10 @@ class AliITSCalibrationSSD : public AliITSCalibration {
       NotImplemented("SetSigmaSpread");}
     
     void SetModule(Int_t mod){fModule = mod;}
-
+    void SetModuleIndex(Int_t modId){
+      fModule=modId-500; // temporary patch, 500 is n. of SPD+SDD modules
+      FillBadChipMap();
+    }
     void SetKeVperADC(Double_t a=86.4/120.){fKeVperADC = a;}
     Double_t ADCToKeV(Double_t adc) const {return adc*fKeVperADC;}
 

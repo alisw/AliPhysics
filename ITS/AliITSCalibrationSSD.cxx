@@ -108,11 +108,18 @@ void AliITSCalibrationSSD::GetDetParam(Double_t  *par) const {
 //______________________________________________________________________
 void AliITSCalibrationSSD::FillBadChipMap() {
 
+  // reset
+  fIsBad=kFALSE;
+  for(Int_t i=0;i<fgkChipsPerModule;i++){
+    fIsChipBad[i]=kFALSE;
+  }
+
+
   Int_t mc=0;
-  Int_t cc[12];
+  Int_t cc[fgkChipsPerModule];
 
   // P-side
-  for(Int_t i=0; i<6; i++){
+  for(Int_t i=0; i<fgkChipsPerModule/2; i++){
     cc[i]=0;
     for(Int_t j=0; j<ChannelsPerChip(); j++) {
       if(IsPChannelBad(i*ChannelsPerChip()+j)) cc[i]++;
@@ -121,7 +128,7 @@ void AliITSCalibrationSSD::FillBadChipMap() {
   }
   
   // N-side
-  for(Int_t i=6; i<11; i++){
+  for(Int_t i=fgkChipsPerModule/2; i<fgkChipsPerModule; i++){
     cc[i]=0;
     for(Int_t j=0; j<ChannelsPerChip(); j++) {
       if(IsNChannelBad(1535-i*ChannelsPerChip()-j)) cc[i]++;      
@@ -129,5 +136,5 @@ void AliITSCalibrationSSD::FillBadChipMap() {
     if(cc[i]==ChannelsPerChip()) { SetChipBad(i); mc++; }
   }
   
-  if(mc==ChannelsPerChip()) fIsBad=kTRUE;
+  if(mc==fgkChipsPerModule) fIsBad=kTRUE;
 }
