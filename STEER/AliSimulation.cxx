@@ -1261,6 +1261,11 @@ Bool_t AliSimulation::ConvertRawFilesToDate(const char* dateFileName,
 	  dateFileName, runLoader->GetNumberOfEvents(),runLoader->GetHeader()->GetRun());
   FILE* pipe = gSystem->OpenPipe(command, "w");
 
+  if (!pipe) {
+    AliError(Form("Cannot execute command: %s",command));
+    return kFALSE;
+  }
+
   Int_t selEvents = 0;
   for (Int_t iEvent = 0; iEvent < runLoader->GetNumberOfEvents(); iEvent++) {
 
