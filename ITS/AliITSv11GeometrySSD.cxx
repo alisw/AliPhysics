@@ -4115,7 +4115,7 @@ TGeoVolume* AliITSv11GeometrySSD::GetLadderCableAssembly(Int_t n, Double_t ssden
   // Method generating Ladder Cable Volumes Assembly   
   /////////////////////////////////////////////////////////////
   TGeoVolume* laddercableassembly = new TGeoVolumeAssembly("LadderCableAssembly");
-  char laddercabletransname[30];
+  char laddercabletransname[100];
   for(Int_t i=0; i<n; i++){ 
 	sprintf(laddercabletransname,"LadderCableTrans%i",i+1);
     laddercableassembly->AddNode(GetLadderCable(n-i,ssdendladdercablelength),i+1,
@@ -4131,7 +4131,7 @@ TList* AliITSv11GeometrySSD::GetLadderCableAssemblyList(Int_t n, Double_t ssdend
   const Int_t kladdercableassemblynumber = 2;
   TGeoVolume* laddercableassembly = GetLadderCableAssembly(n,ssdendladdercablelength);
   TGeoVolume* ladderCable[kladdercableassemblynumber];
-  char laddercableassemblyname[30];
+  char laddercableassemblyname[100];
   TList* laddercableassemblylist = new TList();
   for(Int_t i=0; i<kladdercableassemblynumber; i++){ 
 	sprintf(laddercableassemblyname,"LadderCableAssembly%i",i+1);
@@ -4648,10 +4648,10 @@ void AliITSv11GeometrySSD::Layer6(TGeoVolume* moth){
   TGeoVolume* centermountingblocksupport[fgklayernumber];
   TGeoVolume* sideladdersupportpiece[fgklayernumber];
   TGeoVolume* centerladdersupportpiece[fgklayernumber];
-  char sidemountingblockname[40];
-  char centermountingblockname[40];
-  char sideladdersupportpiecename[40];
-  char centerladdersupportpiecename[40];
+  char sidemountingblockname[100];
+  char centermountingblockname[100];
+  char sideladdersupportpiecename[100];
+  char centerladdersupportpiecename[100];
   for(Int_t i=0; i<fgklayernumber; i++){ 
 	sprintf(sidemountingblockname,"MountingBlockSupportSideLay%dArc",i+5);
 	sprintf(centermountingblockname,"MountingBlockSupportCenterLay%dArc",i+5);
@@ -4718,8 +4718,8 @@ void AliITSv11GeometrySSD::Layer6(TGeoVolume* moth){
   Double_t mountingblockpieceupyvertex[fgklayernumber][8];
   Double_t mountingblockpiecedownxvertex[fgklayernumber][8];
   Double_t mountingblockpiecedownyvertex[fgklayernumber][8];
-  char mountingblockpiecedownname[34];
-  char mountingblockpieceupname[34];
+  char mountingblockpiecedownname[100];
+  char mountingblockpieceupname[100];
   for(Int_t i=0; i<fgklayernumber; i++){
     ///////////////////////////
     // Mounting Block Down Vertex
@@ -4801,8 +4801,8 @@ void AliITSv11GeometrySSD::Layer6(TGeoVolume* moth){
   Double_t mountingblocksupportrapezoidownyvertex[fgklayernumber][5];
   Double_t mountingblocksupportrapezoidupxvertex[fgklayernumber][5];
   Double_t mountingblocksupportrapezoidupyvertex[fgklayernumber][5];
-  char mountingblocksupportrapezoidowname[40];
-  char mountingblocksupportrapezoidupname[40];
+  char mountingblocksupportrapezoidowname[100];
+  char mountingblocksupportrapezoidupname[100];
   Double_t scalefactor = 3./4.;
   for(Int_t i=0; i<fgklayernumber; i++){
   ////////////////////////////////////////////
@@ -4866,8 +4866,8 @@ void AliITSv11GeometrySSD::Layer6(TGeoVolume* moth){
   for(Int_t i=0; i<fgklayernumber; i++) mountingblocksupportboxup[i] = new TGeoVolume*[3];
   Double_t boxoriginup[fgklayernumber][2][3];
   Double_t boxorigindown[fgklayernumber][2][3];
-  char mountingblocksupportboxdownname[34];
-  char mountingblocksupportboxupname[34];
+  char mountingblocksupportboxdownname[100];
+  char mountingblocksupportboxupname[100];
   TGeoRotation* mountingblocksupportrot = new TGeoRotation();
   mountingblocksupportrot->SetAngles(90.,180.,-90);
   TGeoRotation* globalrefladdersupportrot = new TGeoRotation();
@@ -4889,8 +4889,8 @@ void AliITSv11GeometrySSD::Layer6(TGeoVolume* moth){
   TGeoXtru* upmotherladdersupportshape[fgklayernumber];
 //  TGeoVolume* upmotherladdersupport[fgklayernumber]; 
   TGeoVolumeAssembly* upmotherladdersupport[fgklayernumber];   
-  char upmotheladdersupportname[30];
-  char downmotheladdersupportname[30];
+  char upmotheladdersupportname[100];
+  char downmotheladdersupportname[100];
   for(Int_t i=0; i<fgklayernumber; i++){
 	xmothervertex[i][0] = -0.5*fgkSSDMountingBlockLength[0]
 						    -  mountingsupportedge[i];
@@ -5148,7 +5148,7 @@ void AliITSv11GeometrySSD::SetLadderSupport(Int_t nedges){
 ////////////////////////////////////////////////////////////////////////////////
 // Start Corrections 13/06/08
 ////////////////////////////////////////////////////////////////////////////////
-  char lowerladderpconsupportname[30];
+  char lowerladderpconsupportname[100];
   TGeoPcon* lowerladderpconsupportshape[fgklayernumber];
   TGeoVolume* lowerladderpconsupport[fgklayernumber]; 
   Double_t lowerladderpconezsection[2] = {0.,fgkMountingBlockSupportWidth[1]};
@@ -5617,14 +5617,14 @@ void AliITSv11GeometrySSD::SetLadderSupport(Int_t nedges){
   TGeoVolume* endcapcoolingtubetorus[5];
   TGeoTube* endcapcoolingtubeshape[4];
   TGeoVolume* endcapcoolingtube[4];
-  char endcapcoolingtubetorusname[30];
-  char endcapcoolingtubename[30];
+  char endcapcoolingtubetorusname[100];
+  char endcapcoolingtubename[100];
   TGeoTorus* endcapcoolingwatertubetorushape[5];
   TGeoVolume* endcapcoolingwatertubetorus[5];
   TGeoTube* endcapcoolingwatertubeshape[4];
   TGeoVolume* endcapcoolingwatertube[4];
-  char endcapcoolingwatertubetorusname[30];
-  char endcapcoolingwatertubename[30];
+  char endcapcoolingwatertubetorusname[100];
+  char endcapcoolingwatertubename[100];
   for(Int_t i=0; i<5; i++){
 	sprintf(endcapcoolingtubetorusname,"EndCapCoolingTubeTorus%d",i+1);
 	sprintf(endcapcoolingtubename,"EndCapCoolingTube%d",i+1);
@@ -7144,7 +7144,7 @@ void AliITSv11GeometrySSD::SetLadderSupport(Int_t nedges){
   ////////////////////////////////////
   TGeoXtru* upendcapsupportshape[klayernumber];
   TGeoVolume* upendcapsupport[klayernumber]; 
-  char upendcapsupportname[30]; 
+  char upendcapsupportname[100]; 
   for(Int_t i=0; i<klayernumber; i++){
    upendcapsupportshape[i] = new TGeoXtru(2);
    sprintf(upendcapsupportname,"UpEndCapSupportPieceLayer%i",i+5);
@@ -7181,7 +7181,7 @@ void AliITSv11GeometrySSD::SetLadderSupport(Int_t nedges){
   ////////////////////////////////////  
   TGeoXtru* downendcapsupportshape[klayernumber];
   TGeoVolume* downendcapsupport[klayernumber]; 
-  char downendcapsupportname[30]; 
+  char downendcapsupportname[100]; 
   for(Int_t i=0; i<klayernumber; i++){
 	downendcapsupportshape[i] = new TGeoXtru(2);
     sprintf(downendcapsupportname,"DownEndCapSupportPieceLayer%i",i+5);
@@ -7208,7 +7208,7 @@ void AliITSv11GeometrySSD::SetLadderSupport(Int_t nedges){
   TGeoPgon* endcapsupportmothershape[klayernumber];
   TGeoVolume** endcapsupportmother;
   endcapsupportmother = new TGeoVolume*[klayernumber];
-  char endcapsupportmothername[30];
+  char endcapsupportmothername[100];
   for(Int_t i=0; i<klayernumber; i++){
 	endcapsupportmothershape[i] = new TGeoPgon(0.0,360.0,kssdlayladdernumber[i],2);
     sprintf(endcapsupportmothername,"EndCapSupportMotherLayer%i",i+5);
@@ -7260,7 +7260,7 @@ void AliITSv11GeometrySSD::SetLadderSupport(Int_t nedges){
   // Setting TGeoPgon Volume for Mother Container
   ///////////////////////////////////////////////
   TGeoPgon* endcapsupportsystemshape[klayernumber];
-  char endcapsupportsystemothername[30];
+  char endcapsupportsystemothername[100];
   for(Int_t i=0; i<klayernumber; i++){
 	endcapsupportsystemshape[i] = new TGeoPgon(0.0,360.0,kssdlayladdernumber[i],2);
     sprintf(endcapsupportsystemothername,"EndCapSupportSystemLayer%i",i+5);
@@ -8485,7 +8485,7 @@ TGeoMedium* AliITSv11GeometrySSD::GetMedium(const char* mediumName) {
   /////////////////////////////////////////////////////////////
   // Method returning the Medium type 
   /////////////////////////////////////////////////////////////
-  char ch[30];
+  char ch[100];
   sprintf(ch, "ITS_%s",mediumName);
   TGeoMedium* medium =  gGeoManager->GetMedium(ch);
   if (! medium)

@@ -575,8 +575,8 @@ void AliTRDgeometry::CreateGeometry(Int_t *idtmed)
   Float_t parTrd[kNparTrd];
   Float_t parCha[kNparCha];
 
-  Char_t  cTagV[6];
-  Char_t  cTagM[5];
+  Char_t  cTagV[100];
+  Char_t  cTagM[100];
 
   // There are three TRD volumes for the supermodules in order to accomodate
   // the different arrangements in front of PHOS
@@ -964,8 +964,8 @@ void AliTRDgeometry::CreateFrame(Int_t *idtmed)
   Float_t ypos  = 0.0;
   Float_t zpos  = 0.0;
 
-  Char_t  cTagV[5];
-  Char_t  cTagM[5];
+  Char_t  cTagV[100];
+  Char_t  cTagM[100];
 
   const Int_t kNparTRD = 4;
   Float_t parTRD[kNparTRD];
@@ -1652,7 +1652,7 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
   Float_t ypos  = 0.0;
   Float_t zpos  = 0.0;
 
-  Char_t  cTagV[5];
+  Char_t  cTagV[100];
 
   const Int_t kNparBox  = 3;
   Float_t parBox[kNparBox];
@@ -2481,8 +2481,8 @@ void AliTRDgeometry::GroupChamber(Int_t ilayer, Int_t istack, Int_t *idtmed)
   Float_t xyzOrig[3];
   Float_t xyzBoxd[3];
 
-  Char_t  cTagV[5];
-  Char_t  cTagM[5];
+  Char_t  cTagV[100];
+  Char_t  cTagM[100];
 
   for (Int_t i = 0; i < 3; i++) {
     xyzMin[i] = +9999.0; 

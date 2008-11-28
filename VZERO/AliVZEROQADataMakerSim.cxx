@@ -98,11 +98,11 @@ void AliVZEROQADataMakerSim::InitDigits()
   // create Digits histograms in Digits subdir
 
   
-  char TDCname[10];
-  char ADCname[12];
+  char TDCname[100];
+  char ADCname[100];
   TH1I *fhDigTDC[64]; 
   TH1I *fhDigADC[64]; 
-  char texte[30];
+  char texte[100];
 
   // create Digits histograms in Digits subdir
   TH1I * h0 = new TH1I("hDigitMultiplicity", "Digits multiplicity distribution in VZERO", 100, 0, 99) ; 
