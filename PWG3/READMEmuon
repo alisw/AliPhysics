@@ -232,5 +232,48 @@ with SetMakeTrigger("MUON")
 
 This bug is fixed starting with the TRUNK from 14.11.2008
 
+===================================================
+ Analysis task for RecoCheck analysis of ESD and Kinematics
+ Bogdan VULPESCU, Clermont-Ferrand
+----------------------------------------------------------------
 
+Purpose: the class MUON/AliMUONRecoCheck is used to extract single muon and
+muon pair information in objects of type AliMUONTrackLight and 
+AliMUONPairLight. The output file is RecoCheck.root and contains a tree with
+arrays of both objects.
+
+Files:
+
+AliAnalysisTaskRecoCheck.cxx  - source files of the analysis task
+AliAnalysisTaskRecoCheck.h
+
+RunRecoCheck.C  - macro to run the analysis (with xml input
+                  collection and grid connection)
+
+
+How to run:
+
+1. Run aliroot (not root!, the class is in the muondep library)
+
+2. gROOT->LoadMacro("$ALICE_ROOT/PWG3/muondep/RunRecoCheck.C");
+
+3. RunRecoCheck()
+
+4. To analyse local files, modify RunRecoCheck.C
+
+  } else {
+    chain->Add("/path_1_to/AliESDs.root");
+    chain->Add("/path_2_to/AliESDs.root");
+    chain->Add("/path_3_to/AliESDs.root");
+  }
+
+and run (notice the "1" argument)
+
+RunRecoCheck(1)
+
+5. Check results in RecoCheck.root
+
+Note: the magnetic field is needed in order to initialize the tracker. The
+corresponding field map is selected by looking at the value of the L3 current
+stored in the GRP database which was used for the reconstruction.
 
