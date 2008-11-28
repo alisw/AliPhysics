@@ -7,7 +7,6 @@ void rec() {
   reco.SetDefaultStorage("local://$ALICE_ROOT");
   reco.SetSpecificStorage("GRP/GRP/Data",
 			  Form("local://%s/../backgr",gSystem->pwd()));
-  reco.SetRecoParam("ITS",AliITSRecoParam::GetHighFluxParam()); // to change the default vertexer
 
   TStopwatch timer;
   timer.Start();
