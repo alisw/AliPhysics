@@ -175,7 +175,7 @@ private:
   Bool_t         IsSelected(TString detName, TString& detectors) const;
   Bool_t         InitRunLoader();
   AliReconstructor* GetReconstructor(Int_t iDet);
-  Bool_t         CreateVertexer();
+  AliVertexer*   CreateVertexer();
   void           CleanUp();
 
   //==========================================//
@@ -247,7 +247,6 @@ private:
   AliReconstructor*  fReconstructor[kNDetectors];  //! array of reconstructor objects
   AliRecoParam   fRecoParam;                      // container for the reco-param objects for detectors
   AliLoader*     fLoader[kNDetectors];   //! detector loaders
-  AliVertexer*   fVertexer;                //! vertexer for ITS
   AliTracker*    fTracker[kNDetectors];  //! trackers
   AliESDVertex*  fDiamondProfileSPD;       // (x,y) diamond profile from SPD for AliITSVertexer3D(Z)
   AliESDVertex*  fDiamondProfile;          // (x,y) diamond profile for AliVertexerTracks (ITS+TPC)
@@ -288,7 +287,7 @@ private:
 
   TTree*              fChain;      //! The raw-data chain in case of AliRawReaderChain
 
-  ClassDef(AliReconstruction, 29)      // class for running the reconstruction
+  ClassDef(AliReconstruction, 30)      // class for running the reconstruction
 };
 
 #endif

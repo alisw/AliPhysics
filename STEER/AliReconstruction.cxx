@@ -245,7 +245,6 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename) :
 
   fRecoParam(),
 
-  fVertexer(NULL),
   fDiamondProfileSPD(NULL),
   fDiamondProfile(NULL),
   fDiamondProfileTPC(NULL),
@@ -339,7 +338,6 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
 
   fRecoParam(rec.fRecoParam),
 
-  fVertexer(NULL),
   fDiamondProfileSPD(rec.fDiamondProfileSPD),
   fDiamondProfile(rec.fDiamondProfile),
   fDiamondProfileTPC(rec.fDiamondProfileTPC),
@@ -464,7 +462,6 @@ AliReconstruction& AliReconstruction::operator = (const AliReconstruction& rec)
     fQAWriteExpert[iDet] = rec.fQAWriteExpert[iDet] ;
   } 
     
-  fVertexer             = NULL;
   delete fDiamondProfileSPD; fDiamondProfileSPD = NULL;
   if (rec.fDiamondProfileSPD) fDiamondProfileSPD = new AliESDVertex(*rec.fDiamondProfileSPD);
   delete fDiamondProfile; fDiamondProfile = NULL;
@@ -1318,13 +1315,6 @@ void AliReconstruction::SlaveBegin(TTree*)
  
   ftVertexer = new AliVertexerTracks(AliTracker::GetBz());
 
-  // get vertexer
-  if (fRunVertexFinder && !CreateVertexer()) {
-    Abort("CreateVertexer", TSelector::kAbortProcess);
-    return;
-  }
-  AliSysInfo::AddStamp("CreateVertexer");
-
   // get trackers
   if (!fRunTracking.IsNull() && !CreateTrackers(fRunTracking)) {
     Abort("CreateTrackers", TSelector::kAbortProcess);
@@ -1973,62 +1963,51 @@ Bool_t AliReconstruction::RunVertexFinder(AliESDEvent*& esd)
 
   AliCodeTimerAuto("")
 
+  AliVertexer *vertexer = CreateVertexer();
+  if (!vertexer) return kFALSE;
+
+  AliInfo("running the ITS vertex finder");
   AliESDVertex* vertex = NULL;
-  Double_t vtxPos[3] = {0, 0, 0};
-  Double_t vtxErr[3] = {0.07, 0.07, 0.1};
-  TArrayF mcVertex(3); 
-  if (fRunLoader->GetHeader() && fRunLoader->GetHeader()->GenEventHeader()) {
-    fRunLoader->GetHeader()->GenEventHeader()->PrimaryVertex(mcVertex);
-    for (Int_t i = 0; i < 3; i++) vtxPos[i] = mcVertex[i];
-  }
-
-  if (fVertexer) {
-    AliInfo("running the ITS vertex finder");
-    if (fLoader[0]) {
-      fLoader[0]->LoadRecPoints();
-      TTree* cltree = fLoader[0]->TreeR();
-      if (cltree) {
-	if(fDiamondProfileSPD) fVertexer->SetVtxStart(fDiamondProfileSPD);
-	vertex = fVertexer->FindVertexForCurrentEvent(cltree);
-      }
-      else {
-	AliError("Can't get the ITS cluster tree");
-      }
-      fLoader[0]->UnloadRecPoints();
+  if (fLoader[0]) {
+    fLoader[0]->LoadRecPoints();
+    TTree* cltree = fLoader[0]->TreeR();
+    if (cltree) {
+      if(fDiamondProfileSPD) vertexer->SetVtxStart(fDiamondProfileSPD);
+      vertex = vertexer->FindVertexForCurrentEvent(cltree);
     }
     else {
-      AliError("Can't get the ITS loader");
+      AliError("Can't get the ITS cluster tree");
     }
-    if(!vertex){
-      AliWarning("Vertex not found");
-      vertex = new AliESDVertex();
-      vertex->SetName("default");
-    }
-    else {
-      vertex->SetName("reconstructed");
-    }
-
-  } else {
-    AliInfo("getting the primary vertex from MC");
-    vertex = new AliESDVertex(vtxPos, vtxErr);
+    fLoader[0]->UnloadRecPoints();
+  }
+  else {
+    AliError("Can't get the ITS loader");
+  }
+  if(!vertex){
+    AliWarning("Vertex not found");
+    vertex = new AliESDVertex();
+    vertex->SetName("default");
+  }
+  else {
+    vertex->SetName("reconstructed");
   }
 
-  if (vertex) {
-    vertex->GetXYZ(vtxPos);
-    vertex->GetSigmaXYZ(vtxErr);
-  } else {
-    AliWarning("no vertex reconstructed");
-    vertex = new AliESDVertex(vtxPos, vtxErr);
-  }
+  Double_t vtxPos[3];
+  Double_t vtxErr[3];
+  vertex->GetXYZ(vtxPos);
+  vertex->GetSigmaXYZ(vtxErr);
+
   esd->SetPrimaryVertexSPD(vertex);
   // if SPD multiplicity has been determined, it is stored in the ESD
-  AliMultiplicity *mult = fVertexer->GetMultiplicity();
+  AliMultiplicity *mult = vertexer->GetMultiplicity();
   if(mult)esd->SetMultiplicity(mult);
 
   for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
     if (fTracker[iDet]) fTracker[iDet]->SetVertex(vtxPos, vtxErr);
   }  
   delete vertex;
+
+  delete vertexer;
 
   return kTRUE;
 }
@@ -2595,21 +2574,22 @@ AliReconstructor* AliReconstruction::GetReconstructor(Int_t iDet)
 }
 
 //_____________________________________________________________________________
-Bool_t AliReconstruction::CreateVertexer()
+AliVertexer* AliReconstruction::CreateVertexer()
 {
 // create the vertexer
+// Please note that the caller is the owner of the
+// vertexer
 
-  fVertexer = NULL;
+  AliVertexer* vertexer = NULL;
   AliReconstructor* itsReconstructor = GetReconstructor(0);
   if (itsReconstructor) {
-    fVertexer = itsReconstructor->CreateVertexer();
+    vertexer = itsReconstructor->CreateVertexer();
   }
-  if (!fVertexer) {
+  if (!vertexer) {
     AliWarning("couldn't create a vertexer for ITS");
-    if (fStopOnError) return kFALSE;
   }
 
-  return kTRUE;
+  return vertexer;
 }
 
 //_____________________________________________________________________________
@@ -2659,9 +2639,6 @@ void AliReconstruction::CleanUp()
   }
   delete fRunInfo;
   fRunInfo = NULL;
-
-  delete fVertexer;
-  fVertexer = NULL;
 
   delete ftVertexer;
   ftVertexer = NULL;
