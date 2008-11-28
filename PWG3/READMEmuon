@@ -1,13 +1,40 @@
 ===================================================
-  ESDMuonFilter task for filling the muon information in the AOD from the ESD
-  Roberta ARNALDI, Torino
+  Code to include the muon information in the 
+  creation of the standard AOD from the ESD
+  Roberta ARNALDI, Enrico SCOMPARIN Torino
 ---------------------------------------------------------------
 
-1) AnalysisTrainMuonLocal.C --> macro to run locally the AliAnalysisTaskESDMuonFilter
-2) AliAnalysisTaskESDMuonFilter.h  --> analysis task to produce the Muon AOD from ESD
-3) AliAnalysisTaskESDMuonFilter.cxx --> analysis task to produce the Muon AOD from ESD
-4) libPWG3muon.pkg
-5) PWG3muonLinkDef.h 
+The following filter is used in the official analysis train, in order to copy the muon information from the ESD to the standard AOD.
+
+1) AliAnalysisTaskESDMuonFilter.h  --> analysis task to copy the muon information from the ESD to the standard AOD
+2) AliAnalysisTaskESDMuonFilter.cxx --> analysis task to copy the muon information from the ESD to the standard AOD
+
+In order to test locally the analysis train from the ESD to the Standard AOD production, the following macro is provided
+
+1) AnalysisTrainMuonLocal.C 
+   - The input file is the ESD
+   - The outputs are the standard AOD and the AOD tag file
+   
+===================================================
+  Creation of the MUON-AOD from the standard AOD
+  Roberta ARNALDI, Enrico SCOMPARIN Torino
+---------------------------------------------------------------
+
+Code to produce a muon-AOD, i.e. a replica of the standard AOD containing only events where 
+at least one muon in the dimuon spectrometer is present
+
+1) AnalysisTrainFromStandardToMuonAODLocal.C --> macro to produce the MUON-AOD (it runs locally)
+2) AliAnalysisTaskFromStandardToMuonAOD.h  --> analysis task to replicate the AOD content for interesting events
+3) AliAnalysisTaskFromStandardToMuonAOD.cxx --> analysis task to replicate the AOD content for interesting events
+
+- The input files are the standard AOD and the AOD tag file.
+  The AOD tag file can be created in the previous step from ESD to Standard AOD, using AnalysisTrainMuonLocal.C, or it can be
+  produced on the fly with this macro.
+- Events containing at least one muon in the muon spectrometer can be selected using the AOD tag files.
+- The contents of the MUON-AOD can be defined by the user in the AnalysisTrainFromStandardToMuonAODLocal.C
+  macro with some settings as
+  SetNeedsTracksBranchReplication(), SetNeedsVerticesBranchReplication() 
+  (defined in STEER/AliAODHandler.h)...
 
 ===================================================
   Calculation of the LUT 
