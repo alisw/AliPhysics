@@ -13,7 +13,7 @@ CCMINORV      = $(shell $(CC) -dumpversion | cut -d. -f2)
 F77	      = $(shell root-config --f77)
 
 # Global optimisation
-OPT           = -O -g
+OPT           = -O0 -g
 NOOPT         = -g
 
 CXXOPT        = $(OPT)
@@ -48,10 +48,10 @@ endif
 CFLAGS	       = $(OPT) -Wall -Werror -fPIC -pipe -Wno-long-long -pedantic-errors -ansi
 FFLAGS         = $(CLIBFOPT) $(FOPT) -fno-second-underscore
 
-ifeq (g95,$(F77))
+ifneq (,$(findstring g95,$(F77)))
 FFLAGS	      +=-DFORTRAN_G95
 else
-ifeq (gfortran,$(F77))
+ifneq (,$(findstring gfortran,$(F77)))
 FFLAGS	      +=-DFORTRAN_GFORTRAN
 else
 FFLAGS	      +=
@@ -74,12 +74,12 @@ SOEXT 	      = so
 #System libraries
 SYSLIBS      := -ldl -lcrypt -L/usr/X11R6/lib -lX11
 
-ifeq (g95,$(F77))
-SHLIB += -L$(shell g95 --print-search-dirs | sed -n -e 's/install: //p') -lf95
+ifneq (,$(findstring g95,$(F77)))
+SHLIB += -L$(shell $(F77) --print-search-dirs | sed -n -e 's/install: //p') -lf95
 else
-ifeq (gfortran,$(F77))
-SHLIB := $(shell gfortran -print-file-name=libgfortran.so)
-SHLIB += $(shell gfortran -print-file-name=libgfortranbegin.a)
+ifneq (,$(findstring gfortran,$(F77)))
+SHLIB := $(shell $(F77) -print-file-name=libgfortran.so)
+SHLIB += $(shell $(F77) -print-file-name=libgfortranbegin.a)
 SYSLIBS += $(SHLIB)
 else
 SHLIB         = -lg2c

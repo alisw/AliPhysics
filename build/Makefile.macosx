@@ -27,7 +27,7 @@ CXXOPT        = $(OPT)
 CXXNOOPT      = $(NOOPT) 
 COPT	      = $(OPT)
 FOPT	      = $(OPT) -fno-second-underscore 
-ifeq (g95,$(F77))
+ifeq (,$(findstring g95,$(F77)))
 FOPT	     += -fbounds-check
 endif
 
@@ -47,7 +47,7 @@ CXXFLAGSNO    = $(CXXNOOPT) $(CXXSTF)
 CFLAGS	      = $(COPT) -Wall -W -fno-common -pipe -I$(FINK_ROOT)/include
 
 FFLAGS        = $(CLIBFOPT) $(FOPT)
-ifeq (g95,$(F77))
+ifneq (,$(findstring g95,$(F77)))
 FFLAGS        += -ftrace=full
 FFLAGS        +=-DFORTRAN_G95
 else
@@ -88,9 +88,9 @@ EXEFLAGS     := -bind_at_load
 
 #System libraries
 
-ifeq (g95,$(F77))
-SYSLIBS += -L$(shell g95 --print-search-dirs | sed -n -e 's/install: //p') -lf95
-DYLIB += -L$(shell g95 --print-search-dirs | sed -n -e 's/install: //p') -lf95
+ifneq (,$(findstring g95,$(F77)))
+SYSLIBS += -L$(shell $(F77) --print-search-dirs | sed -n -e 's/install: //p') -lf95
+DYLIB += -L$(shell $(F77) --print-search-dirs | sed -n -e 's/install: //p') -lf95
 else
 SYSLIBS += -ldl $(shell $(F77) -print-file-name=libgfortran.dylib)
 SYSLIBS += $(shell $(F77) -print-file-name=libgfortranbegin.a)
