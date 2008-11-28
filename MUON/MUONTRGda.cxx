@@ -66,8 +66,188 @@ extern "C" {
 #include "TROOT.h"
 #include "TPluginManager.h"
 
-// structure for DA run parameters and DA working space
-struct DAConfig {
+/// class for DA run parameters and DA working space
+class AliDAConfig : TObject {
+
+public:
+
+  AliDAConfig() : 
+    fDAConfigFileName("DAConfig.txt"),
+    fCurrentFileName("MtgCurrent.dat"), 
+    fLastCurrentFileName("MtgLastCurrent.dat"), 
+    fSodName(""),
+    fSodFlag(0),
+    fDAName(""),
+    fDAFlag(0),
+    fGlobalFileName(""),
+    fRegionalFileName(""),
+    fLocalMaskFileName(""),
+    fLocalLutFileName(""),
+    fSignatureFileName(""),
+    fGlobalFileVersion(0),
+    fRegionalFileVersion(0),
+    fLocalMaskFileVersion(0),
+    fLocalLutFileVersion(0),
+    fSignatureFileVersion(0),
+    fGlobalFileLastVersion(0),
+    fRegionalFileLastVersion(0),
+    fLocalMaskFileLastVersion(0),
+    fLocalLutFileLastVersion(0),
+    fEventsN(0),
+    fEventsD(0),
+    fPrintLevel(0),
+    fLocalMasks(0x0),
+    fRegionalMasks(0x0),
+    fGlobalMasks(0x0),
+    fTriggerIO(new AliMUONTriggerIO),
+    fAlgoNoisyInput(false),
+    fAlgoDeadcInput(false),
+    fThrN(0.1),
+    fThrD(0.9),
+    fMinEvents(10),
+    fSkipEvents(0),
+    fMaxEvents(65535),
+    fWithWarnings(false),
+    fNLocalBoard(AliMpConstants::TotalNofLocalBoards()+1)
+  {
+    /// default constructor
+    for (Int_t ii = 0; ii < kGlobalInputs; ii++) {
+      for (Int_t il = 0; il < kGlobalInputLength; il++) {
+	fAccGlobalInputN[ii][il] = 0;
+	fAccGlobalInputD[ii][il] = 0;
+      }
+    }
+    fLocalMasks    = new AliMUON1DArray(fNLocalBoard);
+    fRegionalMasks = new AliMUONRegionalTriggerConfig();
+    fGlobalMasks   = new AliMUONGlobalCrateConfig();
+  }
+
+  AliDAConfig (const AliDAConfig& cfg); // copy constructor
+  AliDAConfig& operator=(const AliDAConfig& cfg);  // assignment operator
+  virtual ~AliDAConfig()
+  {
+    /// destructor
+    delete fLocalMasks;
+    delete fRegionalMasks;
+    delete fGlobalMasks; 
+    delete fTriggerIO;
+  }
+  void PrintConfig()
+  {
+    /// print DA parameters
+    printf("DA config file name: %s \n",GetDAConfigFileName());
+    printf("Current file name: %s \n",GetCurrentFileName());
+    printf("Last current file name: %s \n",GetLastCurrentFileName());
+    printf("Global file name: %s (%d %d)\n",GetGlobalFileName(),GetGlobalFileVersion(),GetGlobalFileLastVersion());
+    printf("Regional file name: %s (%d %d)\n",GetRegionalFileName(),GetRegionalFileVersion(),GetRegionalFileLastVersion());
+    printf("Local mask file name: %s (%d %d)\n",GetLocalMaskFileName(),GetLocalMaskFileVersion(),GetLocalMaskFileLastVersion());
+    printf("Local LUT file name: %s (%d %d)\n",GetLocalLutFileName(),GetLocalLutFileVersion(),GetLocalLutFileLastVersion());
+    printf("Signature file name: %s (%d)\n",GetSignatureFileName(),GetSignatureFileVersion());
+  }
+
+  const Char_t* GetDAConfigFileName()    { return fDAConfigFileName.Data(); }
+  const Char_t* GetCurrentFileName()     { return fCurrentFileName.Data(); }
+  const Char_t* GetLastCurrentFileName() { return fLastCurrentFileName.Data(); }
+
+  const Char_t* GetSodName() { return fSodName.Data(); }
+  Int_t GetSodFlag() const { return fSodFlag; }
+
+  const Char_t* GetDAName() { return fDAName.Data(); }
+  Int_t GetDAFlag() const { return fDAFlag; }
+
+  const Char_t* GetGlobalFileName()    { return fGlobalFileName.Data(); }
+  const Char_t* GetRegionalFileName()  { return fRegionalFileName.Data(); }
+  const Char_t* GetLocalMaskFileName() { return fLocalMaskFileName.Data(); }
+  const Char_t* GetLocalLutFileName()  { return fLocalLutFileName.Data(); }
+  const Char_t* GetSignatureFileName() { return fSignatureFileName.Data(); }
+
+  Int_t GetGlobalFileVersion()    const { return fGlobalFileVersion; }
+  Int_t GetRegionalFileVersion()  const { return fRegionalFileVersion; }
+  Int_t GetLocalMaskFileVersion() const { return fLocalMaskFileVersion; }
+  Int_t GetLocalLutFileVersion()  const { return fLocalLutFileVersion; }
+  Int_t GetSignatureFileVersion() const { return fSignatureFileVersion; }
+
+  Int_t GetGlobalFileLastVersion()    const { return fGlobalFileLastVersion; }
+  Int_t GetRegionalFileLastVersion()  const { return fRegionalFileLastVersion; }
+  Int_t GetLocalMaskFileLastVersion() const { return fLocalMaskFileLastVersion; }
+  Int_t GetLocalLutFileLastVersion()  const { return fLocalLutFileLastVersion; }
+
+  AliMUONVStore*                GetLocalMasks()    const { return fLocalMasks; }
+  AliMUONRegionalTriggerConfig* GetRegionalMasks() const { return fRegionalMasks; }
+  AliMUONGlobalCrateConfig*     GetGlobalMasks()   const { return fGlobalMasks; }
+
+  AliMUONTriggerIO* GetTriggerIO() const { return fTriggerIO; }
+
+  Int_t GetEventsN() const { return fEventsN; }
+  Int_t GetEventsD() const { return fEventsD; }
+
+  Int_t GetPrintLevel() const { return fPrintLevel; }
+
+  Bool_t GetAlgoNoisyInput() const { return fAlgoNoisyInput; }
+  Bool_t GetAlgoDeadcInput() const { return fAlgoDeadcInput; }
+
+  Float_t GetThrN() const { return fThrN; }
+  Float_t GetThrD() const { return fThrD; }
+
+  Int_t GetMinEvents()  const { return fMinEvents; }
+  Int_t GetMaxEvents()  const { return fMaxEvents; }
+  Int_t GetSkipEvents() const { return fSkipEvents; }
+
+  Bool_t WithWarnings() const { return fWithWarnings; }
+
+  Int_t GetGlobalInputs()      const { return kGlobalInputs; }
+  Int_t GetGlobalInputLength() const { return kGlobalInputLength; }
+
+  Int_t GetAccGlobalInputN(Int_t ii, Int_t ib) const { return fAccGlobalInputN[ii][ib]; }
+  Int_t GetAccGlobalInputD(Int_t ii, Int_t ib) const { return fAccGlobalInputD[ii][ib]; }
+
+  void SetSodName(Char_t *name) { fSodName = TString(name); }
+  void SetSodFlag(Int_t flag)   { fSodFlag = flag; }
+
+  void SetDAName(Char_t *name) { fDAName = TString(name); }
+  void SetDAFlag(Int_t flag)   { fDAFlag = flag; }
+
+  void SetGlobalFileName(const Char_t *name)    { fGlobalFileName = TString(name); }
+  void SetRegionalFileName(const Char_t *name)  { fRegionalFileName = TString(name); }
+  void SetLocalMaskFileName(const Char_t *name) { fLocalMaskFileName = TString(name); }
+  void SetLocalLutFileName(const Char_t *name)  { fLocalLutFileName = TString(name); }
+  void SetSignatureFileName(const Char_t *name) { fSignatureFileName = TString(name); }
+
+  void SetGlobalFileVersion(Int_t ver)    { fGlobalFileVersion = ver; }
+  void SetRegionalFileVersion(Int_t ver)  { fRegionalFileVersion = ver; }
+  void SetLocalMaskFileVersion(Int_t ver) { fLocalMaskFileVersion = ver; }
+  void SetLocalLutFileVersion(Int_t ver)  { fLocalLutFileVersion = ver; }
+  void SetSignatureFileVersion(Int_t ver) { fSignatureFileVersion = ver; }
+
+  void SetGlobalFileLastVersion(Int_t ver)    { fGlobalFileLastVersion = ver; }
+  void SetRegionalFileLastVersion(Int_t ver)  { fRegionalFileLastVersion = ver; }
+  void SetLocalMaskFileLastVersion(Int_t ver) { fLocalMaskFileLastVersion = ver; }
+  void SetLocalLutFileLastVersion(Int_t ver)  { fLocalLutFileLastVersion = ver; }
+
+  void IncNoiseEvent() { fEventsN++; }
+  void IncDeadcEvent() { fEventsD++; }
+
+  void AddAccGlobalInputN(Int_t ii, Int_t ib, Int_t val) { fAccGlobalInputN[ii][ib] += val; }
+  void AddAccGlobalInputD(Int_t ii, Int_t ib, Int_t val) { fAccGlobalInputD[ii][ib] += val; }
+
+  void SetPrintLevel(Int_t level) { fPrintLevel = level; }
+
+  void SetAlgoNoisyInput(Bool_t val) { fAlgoNoisyInput = val; }
+  void SetAlgoDeadcInput(Bool_t val) { fAlgoDeadcInput = val; }
+
+  void SetThrN(Float_t val) { fThrN = val; }
+  void SetThrD(Float_t val) { fThrD = val; }
+
+  void SetMinEvents(Int_t val)  { fMinEvents = val; }
+  void SetMaxEvents(Int_t val)  { fMaxEvents = val; }
+  void SetSkipEvents(Int_t val) { fSkipEvents = val; }
+
+  void SetWithWarnings() { fWithWarnings = true; }
+
+  void IncGlobalFileVersion() { fGlobalFileVersion++; }
+  void DecSkipEvents() { fSkipEvents--; }
+
+private:
 
   const TString fDAConfigFileName;
   const TString fCurrentFileName;
@@ -96,8 +276,8 @@ struct DAConfig {
   Int_t   fLocalMaskFileLastVersion;
   Int_t   fLocalLutFileLastVersion;
 
-  Int_t   fNEventsN;
-  Int_t   fNEventsD;
+  Int_t   fEventsN;
+  Int_t   fEventsD;
 
   Int_t   fPrintLevel;
 
@@ -108,7 +288,7 @@ struct DAConfig {
   AliMUONTriggerIO *fTriggerIO;
 
   Bool_t fAlgoNoisyInput;
-  Bool_t fAlgoDeadInput;
+  Bool_t fAlgoDeadcInput;
 
   Float_t fThrN;
   Float_t fThrD;
@@ -124,67 +304,17 @@ struct DAConfig {
   Int_t fAccGlobalInputN[kGlobalInputs][kGlobalInputLength];
   Int_t fAccGlobalInputD[kGlobalInputs][kGlobalInputLength];
 
-  DAConfig() : 
-    fDAConfigFileName("DAConfig.txt"),
-    fCurrentFileName("MtgCurrent.dat"), 
-    fLastCurrentFileName("MtgLastCurrent.dat"), 
-    fSodName(""),
-    fSodFlag(0),
-    fDAName(""),
-    fDAFlag(0),
-    fGlobalFileName(""),
-    fRegionalFileName(""),
-    fLocalMaskFileName(""),
-    fLocalLutFileName(""),
-    fSignatureFileName(""),
-    fGlobalFileVersion(0),
-    fRegionalFileVersion(0),
-    fLocalMaskFileVersion(0),
-    fLocalLutFileVersion(0),
-    fSignatureFileVersion(0),
-    fGlobalFileLastVersion(0),
-    fRegionalFileLastVersion(0),
-    fLocalMaskFileLastVersion(0),
-    fLocalLutFileLastVersion(0),
-    fNEventsN(0),
-    fNEventsD(0),
-    fPrintLevel(0),
-    fLocalMasks(0x0),
-    fRegionalMasks(0x0),
-    fGlobalMasks(0x0),
-    fTriggerIO(new AliMUONTriggerIO),
-    fAlgoNoisyInput(false),
-    fAlgoDeadInput(false),
-    fThrN(0.1),
-    fThrD(0.9),
-    fMinEvents(10),
-    fSkipEvents(0),
-    fMaxEvents(65535),
-    fWithWarnings(false),
-    fNLocalBoard(AliMpConstants::TotalNofLocalBoards()+1)
-  {
-    for (Int_t ii = 0; ii < kGlobalInputs; ii++) {
-      for (Int_t il = 0; il < kGlobalInputLength; il++) {
-	fAccGlobalInputN[ii][il] = 0;
-	fAccGlobalInputD[ii][il] = 0;
-      }
-    }
-  }
-
-  DAConfig (const DAConfig& cfg);
-  DAConfig& operator=(const DAConfig& cfg);
-
 };
 
 //__________________________________________________________________
-Bool_t ReadDAConfig(DAConfig& cfg)
+Bool_t ReadDAConfig(AliDAConfig& cfg)
 {
-  // read run parameters for the DA
+    /// read run parameters for the DA
 
     char line[80];
 
     TString file;
-    file = cfg.fDAConfigFileName;
+    file = cfg.GetDAConfigFileName();
     std::ifstream in(gSystem->ExpandPathName(file.Data()));
     if (!in.good()) {
       printf("Cannot open DA configuration file %s ; use default values.\n",file.Data());
@@ -198,76 +328,77 @@ Bool_t ReadDAConfig(DAConfig& cfg)
     tmp = line;
     pos = tmp.First(" ");
     tmp = tmp(0,pos);
-    cfg.fPrintLevel = tmp.Atoi();
+    cfg.SetPrintLevel(tmp.Atoi());
     
     in.getline(line,80);  
     tmp = line;
     pos = tmp.First(" ");
     tmp = tmp(0,pos);
-    cfg.fThrN = tmp.Atof();
+    cfg.SetThrN(tmp.Atof());
 
     in.getline(line,80);  
     tmp = line;
     pos = tmp.First(" ");
     tmp = tmp(0,pos);
-    cfg.fThrD = tmp.Atof();
+    cfg.SetThrD(tmp.Atof());
 
     in.getline(line,80);  
     tmp = line;
     pos = tmp.First(" ");
     tmp = tmp(0,pos);
-    cfg.fMinEvents = tmp.Atoi();
+    cfg.SetMinEvents(tmp.Atoi());
 
     in.getline(line,80);  
     tmp = line;
     pos = tmp.First(" ");
     tmp = tmp(0,pos);
-    cfg.fSkipEvents = tmp.Atoi();
+    cfg.SetSkipEvents(tmp.Atoi());
 
     in.getline(line,80);  
     tmp = line;
     pos = tmp.First(" ");
     tmp = tmp(0,pos);
-    cfg.fMaxEvents = tmp.Atoi();
+    cfg.SetMaxEvents(tmp.Atoi());
 
     in.getline(line,80);  
     tmp = line;
     pos = tmp.First(" ");
     tmp = tmp(0,pos);
-    cfg.fWithWarnings = tmp.Atoi();
+    if (tmp.Atoi() != 0) cfg.SetWithWarnings();
     
     return true;
 
 }
 
 //__________________________________________________________________
-void WriteLastCurrentFile(DAConfig& cfg, TString currentFile)
+void WriteLastCurrentFile(AliDAConfig& cfg, TString currentFile)
 {
+    /// write last current file
 
-    // write last current file
     ofstream out;
     TString file;
     file = currentFile;
     out.open(file.Data());
-    out << cfg.fSodName << " " << cfg.fSodFlag << endl;
-    out << cfg.fDAName  << " " << cfg.fDAFlag  << endl;
+    out << cfg.GetSodName() << " " << cfg.GetSodFlag() << endl;
+    out << cfg.GetDAName()  << " " << cfg.GetDAFlag()  << endl;
 
-    out << cfg.fGlobalFileName    << " " << cfg.fGlobalFileVersion    << endl;
-    out << cfg.fRegionalFileName  << " " << cfg.fRegionalFileVersion  << endl;
-    out << cfg.fLocalMaskFileName << " " << cfg.fLocalMaskFileVersion << endl;
-    out << cfg.fLocalLutFileName  << " " << cfg.fLocalLutFileVersion  << endl;
-    out << cfg.fSignatureFileName << " " << cfg.fSignatureFileVersion << endl;
+    out << cfg.GetGlobalFileName()    << " " << cfg.GetGlobalFileVersion()    << endl;
+    out << cfg.GetRegionalFileName()  << " " << cfg.GetRegionalFileVersion()  << endl;
+    out << cfg.GetLocalMaskFileName() << " " << cfg.GetLocalMaskFileVersion() << endl;
+    out << cfg.GetLocalLutFileName()  << " " << cfg.GetLocalLutFileVersion()  << endl;
+    out << cfg.GetSignatureFileName() << " " << cfg.GetSignatureFileVersion() << endl;
 
     out.close();
 }
 
 //___________________________________________________________________________________________
-Bool_t ReadCurrentFile(DAConfig& cfg, TString currentFile, Bool_t lastCurrentFlag = false)
+Bool_t ReadCurrentFile(AliDAConfig& cfg, TString currentFile, Bool_t lastCurrentFlag = false)
 {
+    /// read last current file name and version
 
-    // read last current file name and version
     char line[80];
     char name[80];
+    Int_t flag;
 
     TString file;
     file = currentFile;
@@ -279,111 +410,118 @@ Bool_t ReadCurrentFile(DAConfig& cfg, TString currentFile, Bool_t lastCurrentFla
     
     // read SOD 
     in.getline(line,80);  
-    sscanf(line, "%s %d", name, &cfg.fSodFlag);
-    cfg.fSodName = name;
-    if (cfg.fPrintLevel) printf("Sod Flag %d\n", cfg.fSodFlag);
+    sscanf(line, "%s %d", name, &flag);
+    cfg.SetSodName(name);
+    cfg.SetSodFlag(flag);
+    if (cfg.GetPrintLevel()) printf("Sod Flag %d\n", cfg.GetSodFlag());
 
     //read DA
     in.getline(line,80);    
-    sscanf(line, "%s %d", name, &cfg.fDAFlag);
-    cfg.fDAName = name;
-    if (cfg.fPrintLevel) printf("DA Flag: %d\n", cfg.fDAFlag);
+    sscanf(line, "%s %d", name, &flag);
+    cfg.SetDAName(name);
+    cfg.SetDAFlag(flag);
+    if (cfg.GetPrintLevel()) printf("DA Flag: %d\n", cfg.GetDAFlag());
 
     // read global
     in.getline(line,80);    
     TString tmp(line);
     Int_t pos =  tmp.First(" ");
-    cfg.fGlobalFileName = tmp(0, pos);
+    TString tmp1 = tmp(0, pos);
+    cfg.SetGlobalFileName(tmp1.Data());
     
     if (!lastCurrentFlag) {
-	cfg.fGlobalFileVersion = atoi(tmp(pos+1, tmp.Length()-pos).Data());
-	if (cfg.fPrintLevel) printf("Global File Name: %s version: %d\n", 
-			    cfg.fGlobalFileName.Data(), cfg.fGlobalFileVersion);
+      cfg.SetGlobalFileVersion(atoi(tmp(pos+1, tmp.Length()-pos).Data()));
+      if (cfg.GetPrintLevel()) printf("Global File Name: %s version: %d\n", 
+				      cfg.GetGlobalFileName(), cfg.GetGlobalFileVersion());
     } else {
-	cfg.fGlobalFileLastVersion = atoi(tmp(pos+1, tmp.Length()-pos).Data());
-	if (cfg.fPrintLevel) printf("Global File Name: %s last version: %d\n", 
-				cfg.fGlobalFileName.Data(), cfg.fGlobalFileLastVersion);
+      cfg.SetGlobalFileLastVersion(atoi(tmp(pos+1, tmp.Length()-pos).Data()));
+      if (cfg.GetPrintLevel()) printf("Global File Name: %s last version: %d\n", 
+				      cfg.GetGlobalFileName(), cfg.GetGlobalFileLastVersion());
     }
 
     // read regional
     in.getline(line,80);
     tmp = line;
     pos = tmp.First(" ");
-    cfg.fRegionalFileName = tmp(0, pos);
+    tmp1 = tmp(0, pos);
+    cfg.SetRegionalFileName(tmp1.Data());
 
     if (!lastCurrentFlag) {
-	cfg.fRegionalFileVersion = atoi(tmp(pos+1, tmp.Length()-pos).Data());
-	if (cfg.fPrintLevel) printf("Regional File Name: %s version: %d\n", 
-				cfg.fRegionalFileName.Data(), cfg.fRegionalFileVersion);
+      cfg.SetRegionalFileVersion(atoi(tmp(pos+1, tmp.Length()-pos).Data()));
+      if (cfg.GetPrintLevel()) printf("Regional File Name: %s version: %d\n", 
+				      cfg.GetRegionalFileName(), cfg.GetRegionalFileVersion());
 
     } else {
-	cfg.fRegionalFileLastVersion = atoi(tmp(pos+1, tmp.Length()-pos).Data());
-	if (cfg.fPrintLevel) printf("Regional File Name: %s last version: %d\n", 
-				cfg.fRegionalFileName.Data(), cfg.fRegionalFileLastVersion);
+      cfg.SetRegionalFileLastVersion(atoi(tmp(pos+1, tmp.Length()-pos).Data()));
+      if (cfg.GetPrintLevel()) printf("Regional File Name: %s last version: %d\n", 
+				      cfg.GetRegionalFileName(), cfg.GetRegionalFileLastVersion());
     }
 
     // read mask
     in.getline(line,80);    
     tmp = line;
     pos = tmp.First(" ");
-    cfg.fLocalMaskFileName = tmp(0, pos);
+    tmp1 = tmp(0, pos);
+    cfg.SetLocalMaskFileName(tmp1.Data());
 
     if (!lastCurrentFlag) {
-      cfg.fLocalMaskFileVersion = atoi(tmp(pos+1, tmp.Length()-pos).Data());
-      if (cfg.fPrintLevel) printf("Mask File Name: %s version: %d\n", 
-			    cfg.fLocalMaskFileName.Data(), cfg.fLocalMaskFileVersion);
+      cfg.SetLocalMaskFileVersion(atoi(tmp(pos+1, tmp.Length()-pos).Data()));
+      if (cfg.GetPrintLevel()) printf("Mask File Name: %s version: %d\n", 
+				      cfg.GetLocalMaskFileName(), cfg.GetLocalMaskFileVersion());
     } else {
-      cfg.fLocalMaskFileLastVersion = atoi(tmp(pos+1, tmp.Length()-pos).Data());
-      if (cfg.fPrintLevel) printf("Mask File Name: %s last version: %d\n", 
-			    cfg.fLocalMaskFileName.Data(), cfg.fLocalMaskFileLastVersion);
+      cfg.SetLocalMaskFileLastVersion(atoi(tmp(pos+1, tmp.Length()-pos).Data()));
+      if (cfg.GetPrintLevel()) printf("Mask File Name: %s last version: %d\n", 
+				      cfg.GetLocalMaskFileName(), cfg.GetLocalMaskFileLastVersion());
     }
     // read Lut
     in.getline(line,80);    
     tmp = line;
     pos = tmp.First(" ");
-    cfg.fLocalLutFileName = tmp(0, pos);
+    tmp1 = tmp(0, pos);
+    cfg.SetLocalLutFileName(tmp1.Data());
 
     if (!lastCurrentFlag) {
-	cfg.fLocalLutFileVersion = atoi(tmp(pos+1, tmp.Length()-pos).Data());
-	if (cfg.fPrintLevel) printf("Lut File Name: %s version: %d\n", 
-				cfg.fLocalLutFileName.Data(), cfg.fLocalLutFileVersion);
+      cfg.SetLocalLutFileVersion(atoi(tmp(pos+1, tmp.Length()-pos).Data()));
+      if (cfg.GetPrintLevel()) printf("Lut File Name: %s version: %d\n", 
+				      cfg.GetLocalLutFileName(), cfg.GetLocalLutFileVersion());
     } else {
-	cfg.fLocalLutFileLastVersion = atoi(tmp(pos+1, tmp.Length()-pos).Data());
-	if (cfg.fPrintLevel) printf("Lut File Name: %s last version: %d\n", 
-				cfg.fLocalLutFileName.Data(), cfg.fLocalLutFileLastVersion);
+      cfg.SetLocalLutFileLastVersion(atoi(tmp(pos+1, tmp.Length()-pos).Data()));
+      if (cfg.GetPrintLevel()) printf("Lut File Name: %s last version: %d\n", 
+				      cfg.GetLocalLutFileName(), cfg.GetLocalLutFileLastVersion());
     }
 
     in.getline(line,80);    
     tmp = line;
     pos = tmp.First(" ");
-    cfg.fSignatureFileName = tmp(0, pos);
-    cfg.fSignatureFileVersion = atoi(tmp(pos+1, tmp.Length()-pos).Data());
-    if (cfg.fPrintLevel) printf("Lut File Name: %s version: %d\n", 
-			    cfg.fSignatureFileName.Data(), cfg.fSignatureFileVersion);
+    tmp1 = tmp(0, pos);
+    cfg.SetSignatureFileName(tmp1.Data());
+    cfg.SetSignatureFileVersion(atoi(tmp(pos+1, tmp.Length()-pos).Data()));
+    if (cfg.GetPrintLevel()) printf("Lut File Name: %s version: %d\n", 
+				    cfg.GetSignatureFileName(), cfg.GetSignatureFileVersion());
 
     return true;
 }
 
 //_____________
-void ReadFileNames(DAConfig& cfg)
+void ReadFileNames(AliDAConfig& cfg)
 {
+  /// if last current file does not exist than read current file
 
-    // if last current file does not exist than read current file
-    if (!ReadCurrentFile(cfg,cfg.fLastCurrentFileName, true)) 
+  if (!ReadCurrentFile(cfg,cfg.GetLastCurrentFileName(), true)) 
     {
-      ReadCurrentFile(cfg,cfg.fCurrentFileName, true);
+      ReadCurrentFile(cfg,cfg.GetCurrentFileName(), true);
     } 
-
-    // any case read current file
-    ReadCurrentFile(cfg,cfg.fCurrentFileName);
-
+  
+  // any case read current file
+  ReadCurrentFile(cfg,cfg.GetCurrentFileName());
+  
 }
 
 //__________________
-Bool_t ExportFiles(DAConfig& cfg)
+Bool_t ExportFiles(AliDAConfig& cfg)
 {
+    /// Export files to FES
 
-    // Export files to FES
     // env variables have to be set (suppose by ECS ?)
     // setenv DATE_FES_PATH
     // setenv DATE_RUN_NUMBER
@@ -418,52 +556,52 @@ Bool_t ExportFiles(DAConfig& cfg)
       initFES = true;
     if (initFES) printf("Copy all configuration files to the FES.\n");
 
-    file = cfg.fGlobalFileName;
-    if ((cfg.fGlobalFileLastVersion != cfg.fGlobalFileVersion) || initFES) {
+    file = cfg.GetGlobalFileName();
+    if ((cfg.GetGlobalFileLastVersion() != cfg.GetGlobalFileVersion()) || initFES) {
       status = daqDA_FES_storeFile(file.Data(), file.Data());
       if (status) {
-	printf("Failed to export file: %s\n",cfg.fGlobalFileName.Data());
+	printf("Failed to export file: %s\n",cfg.GetGlobalFileName());
 	return false;
       }
-      if(cfg.fPrintLevel) printf("Export file: %s\n",cfg.fGlobalFileName.Data());
-      out << cfg.fGlobalFileName.Data() << endl;
+      if(cfg.GetPrintLevel()) printf("Export file: %s\n",cfg.GetGlobalFileName());
+      out << cfg.GetGlobalFileName() << endl;
     }
 
-    file = cfg.fLocalMaskFileName;  
-    if ((cfg.fLocalMaskFileLastVersion != cfg.fLocalMaskFileVersion) || initFES) {
+    file = cfg.GetLocalMaskFileName();  
+    if ((cfg.GetLocalMaskFileLastVersion() != cfg.GetLocalMaskFileVersion()) || initFES) {
       modified = true;
       status = daqDA_FES_storeFile(file.Data(), file.Data());
       if (status) {
-	printf("Failed to export file: %s\n",cfg.fLocalMaskFileName.Data());
+	printf("Failed to export file: %s\n",cfg.GetLocalMaskFileName());
 	return false;
       }
-      if(cfg.fPrintLevel) printf("Export file: %s\n",cfg.fLocalMaskFileName.Data());
-      out << cfg.fLocalMaskFileName.Data() << endl;
+      if(cfg.GetPrintLevel()) printf("Export file: %s\n",cfg.GetLocalMaskFileName());
+      out << cfg.GetLocalMaskFileName() << endl;
     }
 
-    file = cfg.fLocalLutFileName;
-    if ((cfg.fLocalLutFileLastVersion != cfg.fLocalLutFileVersion) || initFES) {
+    file = cfg.GetLocalLutFileName();
+    if ((cfg.GetLocalLutFileLastVersion() != cfg.GetLocalLutFileVersion()) || initFES) {
       modified = true;
       status = daqDA_FES_storeFile(file.Data(), file.Data());
       if (status) {
-	printf("Failed to export file: %s\n",cfg.fLocalLutFileName.Data());
+	printf("Failed to export file: %s\n",cfg.GetLocalLutFileName());
 	return false;
       }
-      if(cfg.fPrintLevel) printf("Export file: %s\n",cfg.fLocalLutFileName.Data());
-      out << cfg.fLocalLutFileName.Data() << endl;
+      if(cfg.GetPrintLevel()) printf("Export file: %s\n",cfg.GetLocalLutFileName());
+      out << cfg.GetLocalLutFileName() << endl;
 
     }
 
     // exported regional file whenever mask or/and Lut are modified
-    file = cfg.fRegionalFileName;
-    if ( (cfg.fRegionalFileLastVersion != cfg.fRegionalFileVersion) || modified || initFES) {
+    file = cfg.GetRegionalFileName();
+    if ( (cfg.GetRegionalFileLastVersion() != cfg.GetRegionalFileVersion()) || modified || initFES) {
       status = daqDA_FES_storeFile(file.Data(), file.Data());
       if (status) {
-	printf("Failed to export file: %s\n",cfg.fRegionalFileName.Data());
+	printf("Failed to export file: %s\n",cfg.GetRegionalFileName());
 	return false;
       }
-      if(cfg.fPrintLevel) printf("Export file: %s\n",cfg.fRegionalFileName.Data());
-      out << cfg.fRegionalFileName.Data() << endl;
+      if(cfg.GetPrintLevel()) printf("Export file: %s\n",cfg.GetRegionalFileName());
+      out << cfg.GetRegionalFileName() << endl;
     }
 
     out.close();
@@ -474,65 +612,66 @@ Bool_t ExportFiles(DAConfig& cfg)
       printf("Failed to export file: %s\n", fileExp.Data());
       return false;
     }
-    if(cfg.fPrintLevel) printf("Export file: %s\n",fileExp.Data());
+    if(cfg.GetPrintLevel()) printf("Export file: %s\n",fileExp.Data());
 
     // write last current file
-    WriteLastCurrentFile(cfg,cfg.fLastCurrentFileName);
+    WriteLastCurrentFile(cfg,cfg.GetLastCurrentFileName());
 
     return true;
 }
 
 //__________________
-Bool_t ImportFiles(DAConfig& cfg)
+Bool_t ImportFiles(AliDAConfig& cfg)
 {
-    // copy locally a file from daq detector config db 
-    // The current detector is identified by detector code in variable
-    // DATE_DETECTOR_CODE. It must be defined.
-    // If environment variable DAQDA_TEST_DIR is defined, files are copied from DAQDA_TEST_DIR
-    // instead of the database. The usual environment variables are not needed.
+    /// copy locally a file from daq detector config db 
+    /// The current detector is identified by detector code in variable
+    /// DATE_DETECTOR_CODE. It must be defined.
+    /// If environment variable DAQDA_TEST_DIR is defined, files are copied from 
+    /// DAQDA_TEST_DIR instead of the database. 
+    /// The usual environment variables are not needed.
 
     Int_t status = 0;
 
     // offline:
     //gSystem->Setenv("DAQDALIB_PATH", "$DATE_SITE/db");
 
-    status = daqDA_DB_getFile(cfg.fDAConfigFileName.Data(), cfg.fDAConfigFileName.Data());
+    status = daqDA_DB_getFile(cfg.GetDAConfigFileName(), cfg.GetDAConfigFileName());
     if (status) {
-      printf("Failed to get DA config file from DB: %s\n",cfg.fDAConfigFileName.Data());
+      printf("Failed to get DA config file from DB: %s\n",cfg.GetDAConfigFileName());
       return false;
     }
  
     ReadDAConfig(cfg);
 
-    status = daqDA_DB_getFile(cfg.fCurrentFileName.Data(), cfg.fCurrentFileName.Data());
+    status = daqDA_DB_getFile(cfg.GetCurrentFileName(), cfg.GetCurrentFileName());
     if (status) {
-      printf("Failed to get current config file from DB: %s\n",cfg.fCurrentFileName.Data());
+      printf("Failed to get current config file from DB: %s\n",cfg.GetCurrentFileName());
       return false;
     }
  
     ReadFileNames(cfg);
 
-    status = daqDA_DB_getFile(cfg.fGlobalFileName.Data(), cfg.fGlobalFileName.Data());
+    status = daqDA_DB_getFile(cfg.GetGlobalFileName(), cfg.GetGlobalFileName());
     if (status) {
-      printf("Failed to get current config file from DB: %s\n", cfg.fGlobalFileName.Data());
+      printf("Failed to get current config file from DB: %s\n", cfg.GetGlobalFileName());
       return false;
     }
 
-    status = daqDA_DB_getFile(cfg.fRegionalFileName.Data(), cfg.fRegionalFileName.Data());
+    status = daqDA_DB_getFile(cfg.GetRegionalFileName(), cfg.GetRegionalFileName());
     if (status) {
-      printf("Failed to get current config file from DB: %s\n",cfg.fRegionalFileName.Data());
+      printf("Failed to get current config file from DB: %s\n",cfg.GetRegionalFileName());
       return false;
     }
 
-    status = daqDA_DB_getFile(cfg.fLocalMaskFileName.Data(), cfg.fLocalMaskFileName.Data());
+    status = daqDA_DB_getFile(cfg.GetLocalMaskFileName(), cfg.GetLocalMaskFileName());
     if (status) {
-      printf("Failed to get current config file from DB: %s\n",cfg.fLocalMaskFileName.Data());
+      printf("Failed to get current config file from DB: %s\n",cfg.GetLocalMaskFileName());
       return false;
     }
 
-    status = daqDA_DB_getFile(cfg.fLocalLutFileName.Data(), cfg.fLocalLutFileName.Data());
+    status = daqDA_DB_getFile(cfg.GetLocalLutFileName(), cfg.GetLocalLutFileName());
     if (status) {
-      printf("Failed to get current config file from DB: %s\n",cfg.fLocalLutFileName.Data());
+      printf("Failed to get current config file from DB: %s\n",cfg.GetLocalLutFileName());
       return false;
     }
  
@@ -540,54 +679,49 @@ Bool_t ImportFiles(DAConfig& cfg)
 }
 
 //_____________
-void ReadMaskFiles(DAConfig& cfg)
+void ReadMaskFiles(AliDAConfig& cfg)
 {
+    /// read mask files
 
-    // read mask files
-    cfg.fLocalMasks    = new AliMUON1DArray(cfg.fNLocalBoard);
-    cfg.fRegionalMasks = new AliMUONRegionalTriggerConfig();
-    cfg.fGlobalMasks   = new AliMUONGlobalCrateConfig();
+    const Char_t* localFile    = cfg.GetLocalMaskFileName();
+    const Char_t* regionalFile = cfg.GetRegionalFileName();
+    const Char_t* globalFile   = cfg.GetGlobalFileName();
 
-    TString localFile    = cfg.fLocalMaskFileName;
-    TString regionalFile = cfg.fRegionalFileName;
-    TString globalFile   = cfg.fGlobalFileName;
-
-    cfg.fTriggerIO->ReadConfig(localFile.Data(), regionalFile.Data(), globalFile.Data(),
-			 cfg.fLocalMasks, cfg.fRegionalMasks, cfg.fGlobalMasks);			
+    cfg.GetTriggerIO()->ReadConfig(localFile, regionalFile, globalFile, cfg.GetLocalMasks(), cfg.GetRegionalMasks(), cfg.GetGlobalMasks());			
 }
 
 //______________________________________________________________
-UInt_t GetFetMode(DAConfig& cfg)
+UInt_t GetFetMode(const AliDAConfig & cfg)
 {
-  // FET mode = 3 to run algorithm for dead global inputs
-  // 0x3 prepulse
-  // 0x0 internal
+  /// FET mode = 3 to run algorithm for dead global inputs
+  /// 0x3 prepulse
+  /// 0x0 internal
 
-  return cfg.fGlobalMasks->GetFetRegister(3);
+  return cfg.GetGlobalMasks()->GetFetRegister(3);
 
 }
 
 //______________________________________________________________
-void StoreGlobalInput(DAConfig& cfg, const UInt_t * const globalInput) 
+void StoreGlobalInput(AliDAConfig& cfg, const UInt_t * const globalInput) 
 {
-  // accumulate and build statistics of global input values
+  /// accumulate and build statistics of global input values
   
-  for (Int_t ii = 0; ii < cfg.kGlobalInputs; ii++) {
-    for (Int_t ib = 0; ib < cfg.kGlobalInputLength; ib++) {
+  for (Int_t ii = 0; ii < cfg.GetGlobalInputs(); ii++) {
+    for (Int_t ib = 0; ib < cfg.GetGlobalInputLength(); ib++) {
       // lsb -> msb
-      if (cfg.fAlgoNoisyInput)
-	cfg.fAccGlobalInputN[ii][ib] += (globalInput[ii] >> ib) & 0x1;
-      if (cfg.fAlgoDeadInput)
-	cfg.fAccGlobalInputD[ii][ib] += (globalInput[ii] >> ib) & 0x1;
+      if (cfg.GetAlgoNoisyInput())
+	cfg.AddAccGlobalInputN(ii,ib,((globalInput[ii] >> ib) & 0x1));
+      if (cfg.GetAlgoDeadcInput())
+	cfg.AddAccGlobalInputD(ii,ib,((globalInput[ii] >> ib) & 0x1));
     }
   }
 
 }
 
 //______________________________________________________________
-void UpdateGlobalMasks(DAConfig& cfg) 
+void UpdateGlobalMasks(AliDAConfig& cfg) 
 {
-  // update the global masks
+  /// update the global masks
   
   // offline:
   //gSystem->Setenv("DAQDALIB_PATH", "$DATE_SITE/db");
@@ -596,28 +730,28 @@ void UpdateGlobalMasks(DAConfig& cfg)
   UInt_t gmask[4], omask;
   Bool_t noise, deadc, withEvN, withEvD, updated = false;
 
-  for (Int_t ii = 0; ii < cfg.kGlobalInputs; ii++) {
+  for (Int_t ii = 0; ii < cfg.GetGlobalInputs(); ii++) {
     gmask[ii] = 0;
 
-    for (Int_t ib = 0; ib < cfg.kGlobalInputLength; ib++) {
+    for (Int_t ib = 0; ib < cfg.GetGlobalInputLength(); ib++) {
       // lsb -> msb
       noise = false;
       deadc = false;
       withEvN = false;
       withEvD = false;
-      if (cfg.fNEventsN > cfg.fMinEvents) {
-	rateN = (Float_t)cfg.fAccGlobalInputN[ii][ib]/(Float_t)cfg.fNEventsN;
-	noise = (rateN > cfg.fThrN);	
+      if (cfg.GetEventsN() > cfg.GetMinEvents()) {
+	rateN = (Float_t)cfg.GetAccGlobalInputN(ii,ib)/(Float_t)cfg.GetEventsN();
+	noise = (rateN > cfg.GetThrN());	
 	withEvN = true;
       }
-      if (cfg.fNEventsD > cfg.fMinEvents) {
-	rateD = (Float_t)cfg.fAccGlobalInputD[ii][ib]/(Float_t)cfg.fNEventsD;
-	deadc = (rateD < cfg.fThrD);
+      if (cfg.GetEventsD() > cfg.GetMinEvents()) {
+	rateD = (Float_t)cfg.GetAccGlobalInputD(ii,ib)/(Float_t)cfg.GetEventsD();
+	deadc = (rateD < cfg.GetThrD());
 	withEvD = true;
       }
       if (!withEvN && !withEvD) {
 	// - copy the bit from the old mask
-	gmask[ii] |= ((cfg.fGlobalMasks->GetGlobalMask(ii) >> ib) & 0x1) << ib;
+	gmask[ii] |= ((cfg.GetGlobalMasks()->GetGlobalMask(ii) >> ib) & 0x1) << ib;
 	printf("Mask not changed (just copy the old values)\n");
       }
       if (!withEvN && withEvD) {
@@ -626,7 +760,7 @@ void UpdateGlobalMasks(DAConfig& cfg)
 	  //   not allowed!
 	  //gmask[ii] |= 0x1 << ib;
 	  // - copy the bit from the old mask
-	  gmask[ii] |= ((cfg.fGlobalMasks->GetGlobalMask(ii) >> ib) & 0x1) << ib;
+	  gmask[ii] |= ((cfg.GetGlobalMasks()->GetGlobalMask(ii) >> ib) & 0x1) << ib;
 	} else {
 	  // - create a new mask, set the bit to 0
 	  gmask[ii] |= 0x0 << ib;
@@ -639,7 +773,7 @@ void UpdateGlobalMasks(DAConfig& cfg)
 	  //   not allowed!
 	  //gmask[ii] |= 0x1 << ib;
 	  // - copy the bit from the old mask
-	  gmask[ii] |= ((cfg.fGlobalMasks->GetGlobalMask(ii) >> ib) & 0x1) << ib;
+	  gmask[ii] |= ((cfg.GetGlobalMasks()->GetGlobalMask(ii) >> ib) & 0x1) << ib;
 	} else {
 	  // - create a new mask, set the bit to 0
 	  gmask[ii] |= 0x0 << ib;
@@ -652,7 +786,7 @@ void UpdateGlobalMasks(DAConfig& cfg)
 	  //   not allowed!
 	  //gmask[ii] |= 0x1 << ib;
 	  // - copy the bit from the old mask
-	  gmask[ii] |= ((cfg.fGlobalMasks->GetGlobalMask(ii) >> ib) & 0x1) << ib;
+	  gmask[ii] |= ((cfg.GetGlobalMasks()->GetGlobalMask(ii) >> ib) & 0x1) << ib;
 	} else {
 	  // - create a new mask, set the bit to 0
 	  gmask[ii] |= 0x0 << ib;
@@ -666,12 +800,12 @@ void UpdateGlobalMasks(DAConfig& cfg)
   }
 
   // check if at least one mask value has been changed from previous version
-  for (Int_t ii = 0; ii < cfg.kGlobalInputs; ii++) {
+  for (Int_t ii = 0; ii < cfg.GetGlobalInputs(); ii++) {
     printf("Global mask [%1d] %08x \n",ii,gmask[ii]);
-    omask = cfg.fGlobalMasks->GetGlobalMask(ii);
+    omask = cfg.GetGlobalMasks()->GetGlobalMask(ii);
     if (gmask[ii] != omask) {
       updated = true;
-      cfg.fGlobalMasks->SetGlobalMask(ii,gmask[ii]);
+      cfg.GetGlobalMasks()->SetGlobalMask(ii,gmask[ii]);
     }
   }
 
@@ -679,24 +813,24 @@ void UpdateGlobalMasks(DAConfig& cfg)
   if (updated) {
     
     // update version
-    cfg.fGlobalFileVersion++;
+    cfg.IncGlobalFileVersion();
     
     // don't change the file version ("-x.dat")
     
-    cfg.fTriggerIO->WriteGlobalConfig(cfg.fGlobalFileName,cfg.fGlobalMasks);
+    cfg.GetTriggerIO()->WriteGlobalConfig(cfg.GetGlobalFileName(),cfg.GetGlobalMasks());
     
     // write last current file
-    WriteLastCurrentFile(cfg,cfg.fCurrentFileName);
+    WriteLastCurrentFile(cfg,cfg.GetCurrentFileName());
 
-    status = daqDA_DB_storeFile(cfg.fGlobalFileName.Data(), cfg.fGlobalFileName.Data());
+    status = daqDA_DB_storeFile(cfg.GetGlobalFileName(), cfg.GetGlobalFileName());
     if (status) {
-      printf("Failed to export file to DB: %s\n",cfg.fGlobalFileName.Data());
+      printf("Failed to export file to DB: %s\n",cfg.GetGlobalFileName());
       return;
     }
     
-    status = daqDA_DB_storeFile(cfg.fCurrentFileName.Data(), cfg.fCurrentFileName.Data());
+    status = daqDA_DB_storeFile(cfg.GetCurrentFileName(), cfg.GetCurrentFileName());
     if (status) {
-      printf("Failed to export file to DB: %s\n",cfg.fCurrentFileName.Data());
+      printf("Failed to export file to DB: %s\n",cfg.GetCurrentFileName());
       return;
     }
 
@@ -705,10 +839,9 @@ void UpdateGlobalMasks(DAConfig& cfg)
 }
 
 //*************************************************************//
-
-// main routine
 int main(Int_t argc, Char_t **argv) 
 {
+    /// main routine
   
     // needed for streamer application
     gROOT->GetPluginManager()->AddHandler("TVirtualStreamerInfo", "*", "TStreamerInfo", "RIO", "TStreamerInfo()"); 
@@ -719,7 +852,7 @@ int main(Int_t argc, Char_t **argv)
       return -1;
     }
 
-    DAConfig cfg;
+    AliDAConfig cfg;
 
     Char_t inputFile[256] = "";
     inputFile[0] = 0;
@@ -761,7 +894,7 @@ int main(Int_t argc, Char_t **argv)
     //tmp = tmp(pos+3,5);
     //gSystem->Setenv("DATE_RUN_NUMBER",tmp.Data());
     //gSystem->Exec("echo \"DATE_RUN_NUMBER = \" $DATE_RUN_NUMBER");
-    
+
     if(!ExportFiles(cfg)) {
       printf("ExportFiles failed\n");
       return -1;
@@ -774,13 +907,13 @@ int main(Int_t argc, Char_t **argv)
     }
 
     // All 5 global cards are controlled by the Mts proxy
-    if (cfg.fGlobalMasks->GetGlobalCrateEnable() != 0x1F) {
+    if (cfg.GetGlobalMasks()->GetGlobalCrateEnable() != 0x1F) {
       printf("The MTS proxy does not control all global cards\n");
       return -1;
     }
 
     // The global cards are ON (active on the global inputs)
-    if (!cfg.fGlobalMasks->GetMasksOn()) {
+    if (!cfg.GetGlobalMasks()->GetMasksOn()) {
       printf("Global masks are not ON\n");
       return -1;
     }
@@ -815,7 +948,7 @@ int main(Int_t argc, Char_t **argv)
 
     while(1) 
     {
-      if (nEvents >= cfg.fMaxEvents) break;
+      if (nEvents >= cfg.GetMaxEvents()) break;
       if (nEvents && nEvents % 100 == 0) 	
 	  cout<<"Cumulated events " << nEvents << endl;
 
@@ -824,9 +957,9 @@ int main(Int_t argc, Char_t **argv)
 	  break;
 
       // Skip Events if needed
-      while (cfg.fSkipEvents) {
+      while (cfg.GetSkipEvents()) {
 	status = monitorGetEventDynamic(&event);
-	cfg.fSkipEvents--;
+	cfg.DecSkipEvents();
       }
 
       // starts reading
@@ -848,39 +981,39 @@ int main(Int_t argc, Char_t **argv)
       // CALIBRATION_EVENT 
       // SYSTEM_SOFTWARE_TRIGGER_EVENT
       // DETECTOR_SOFTWARE_TRIGGER_EVENT
-      cfg.fAlgoNoisyInput = false;
-      cfg.fAlgoDeadInput  = false;
+      cfg.SetAlgoNoisyInput(false);
+      cfg.SetAlgoDeadcInput(false);
       if (eventType == PHYSICS_EVENT) {
-	cfg.fAlgoNoisyInput = true;
+	cfg.SetAlgoNoisyInput(true);
 	doUpdate = true;
-	cfg.fNEventsN++;
+	cfg.IncNoiseEvent();
       } else if (eventType == CALIBRATION_EVENT) {
-	cfg.fAlgoDeadInput  = true;
+	cfg.SetAlgoDeadcInput(true);
 	doUpdate = true;
-	cfg.fNEventsD++;
+	cfg.IncDeadcEvent();
       } else {
 	continue;
       }
       
       nEvents++;
-      if (cfg.fPrintLevel) printf("\nEvent # %d\n",nEvents);
+      if (cfg.GetPrintLevel()) printf("\nEvent # %d\n",nEvents);
 
       // decoding MUON payload
       AliMUONRawStreamTrigger* rawStream  = new AliMUONRawStreamTrigger(rawReader);
       // ... without warnings from the decoder !!!
-      if (!cfg.fWithWarnings)
+      if (!cfg.WithWarnings())
 	rawStream->DisableWarnings();
 
       // loops over DDL 
       while((status = rawStream->NextDDL())) {
 
-	if (cfg.fPrintLevel) printf("iDDL %d\n", rawStream->GetDDL());
+	if (cfg.GetPrintLevel()) printf("iDDL %d\n", rawStream->GetDDL());
 
 	ddlTrigger = rawStream->GetDDLTrigger();
 	darcHeader = ddlTrigger->GetDarcHeader();
 
 	if (rawStream->GetDDL() == 0) {
-	  if (cfg.fPrintLevel) printf("Global output %x\n", (Int_t)darcHeader->GetGlobalOutput());
+	  if (cfg.GetPrintLevel()) printf("Global output %x\n", (Int_t)darcHeader->GetGlobalOutput());
 	  globalInput = darcHeader->GetGlobalInput();
 	  StoreGlobalInput(cfg,globalInput);
 	}
@@ -893,31 +1026,27 @@ int main(Int_t argc, Char_t **argv)
     } // while (1)
 
     // update configuration files ifrequested event types were found
-    if (doUpdate && cfg.fDAFlag) 
+    if (doUpdate && cfg.GetDAFlag()) 
       UpdateGlobalMasks(cfg);
 
     timers.Stop();
 
-    cout << "MUONTRGda: DA enable: \t" << cfg.fDAFlag << endl;
+    cout << "MUONTRGda: DA enable: \t" << cfg.GetDAFlag() << endl;
     cout << "MUONTRGda: Run number: \t" << runNumber << endl;
     cout << "MUONTRGda: Nb of DATE events: \t" << nDateEvents << endl;
     cout << "MUONTRGda: Nb of events used: \t" << nEvents << endl;
-    cout << "MUONTRGda: Nb of events used (noise): \t" << cfg.fNEventsN << endl;
-    cout << "MUONTRGda: Nb of events used (deadc): \t" << cfg.fNEventsD << endl;
-    cout << "MUONTRGda: Minumum nr of events for rate calculation: \t" << cfg.fMinEvents << endl;
-    cout << "MUONTRGda: Maximum nr of analyzed events: \t" << cfg.fMaxEvents << endl;
-    cout << "MUONTRGda: Skip events from start: \t" << cfg.fSkipEvents << endl;
-    cout << "MUONTRGda: Threshold for noisy inputs: \t" << 100*cfg.fThrN << "%" << endl;
-    cout << "MUONTRGda: Threshold for dead inputs: \t" << 100*cfg.fThrD << "%" << endl;
-    cout << "MUONTRGda: Print level: \t" << cfg.fPrintLevel << endl;
-    cout << "MUONTRGda: Show decoder warnings: \t" << cfg.fWithWarnings << endl;
+    cout << "MUONTRGda: Nb of events used (noise): \t" << cfg.GetEventsN() << endl;
+    cout << "MUONTRGda: Nb of events used (deadc): \t" << cfg.GetEventsD() << endl;
+    cout << "MUONTRGda: Minumum nr of events for rate calculation: \t" << cfg.GetMinEvents() << endl;
+    cout << "MUONTRGda: Maximum nr of analyzed events: \t" << cfg.GetMaxEvents() << endl;
+    cout << "MUONTRGda: Skip events from start: \t" << cfg.GetSkipEvents() << endl;
+    cout << "MUONTRGda: Threshold for noisy inputs: \t" << 100*cfg.GetThrN() << "%" << endl;
+    cout << "MUONTRGda: Threshold for dead inputs: \t" << 100*cfg.GetThrD() << "%" << endl;
+    cout << "MUONTRGda: Print level: \t" << cfg.GetPrintLevel() << endl;
+    cout << "MUONTRGda: Show decoder warnings: \t" << cfg.WithWarnings() << endl;
 
     printf("MUONTRGda: Execution time : R:%7.2fs C:%7.2fs\n", timers.RealTime(), timers.CpuTime());
 
-    delete cfg.fLocalMasks;
-    delete cfg.fRegionalMasks;
-    delete cfg.fGlobalMasks; 
-    delete cfg.fTriggerIO;
 
     return status;
 
