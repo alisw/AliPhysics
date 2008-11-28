@@ -29,7 +29,7 @@ public:
   enum {kModulesPerDDL = 12};   // number of modules in each DDL 
 
  protected:
-  void NoiseSuppress(Int_t k, Int_t sid, Int_t nzBins, AliBin* bins, AliITSCalibrationSDD* cal) const;
+  Bool_t NoiseSuppress(Int_t k, Int_t sid, Int_t nzBins, AliBin* bins, AliITSCalibrationSDD* cal) const;
   void FindClustersSDD(TClonesArray *digits);
   void FindClustersSDD(AliBin* bins[2], Int_t nMaxBin, Int_t nMaxZ,
 		       TClonesArray *dig, TClonesArray *clusters=0x0, Int_t jitter=0);

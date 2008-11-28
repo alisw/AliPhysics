@@ -142,7 +142,7 @@ FindClustersSDD(AliBin* bins[2], Int_t nMaxBin, Int_t nzBins,
   TClonesArray &cl=*clusters;
   for (Int_t s=0; s<2; s++)
     for (Int_t i=0; i<nMaxBin; i++) {
-      NoiseSuppress(i,s,nzBins,bins[s],cal);
+      if(NoiseSuppress(i,s,nzBins,bins[s],cal)) continue;
       if (bins[s][i].IsUsed()) continue;
       Int_t idx[32]; UInt_t msk[32]; Int_t npeaks=0;
       FindPeaks(i, nzBins, bins[s], idx, msk, npeaks);
@@ -186,9 +186,7 @@ FindClustersSDD(AliBin* bins[2], Int_t nMaxBin, Int_t nzBins,
 	  milab[ilab]=-2;
 	}
 	Int_t maxi=0,mini=0,maxj=0,minj=0;
-	//AliBin *bmax=&bins[s][idx[k]];
-	//Float_t max = TMath::Max(TMath::Abs(bmax->GetQ())/5.,3.);
-	
+
 	for (Int_t di=-2; di<=2;di++){
 	  for (Int_t dj=-3;dj<=3;dj++){
 	    Int_t index = idx[k]+di+dj*nzBins;
@@ -217,7 +215,6 @@ FindClustersSDD(AliBin* bins[2], Int_t nMaxBin, Int_t nzBins,
 	    }
 	  }
 	}
-
 
 	AliITSresponseSDD* rsdd = fDetTypeRec->GetResponseSDD();
 	Float_t y=c.GetY(),z=c.GetZ(), q=c.GetQ();
@@ -400,15 +397,16 @@ void AliITSClusterFinderV2SDD::FindClustersSDD(AliITSRawStream* input,
 }
 
 //______________________________________________________________________
-void AliITSClusterFinderV2SDD::NoiseSuppress(Int_t k, Int_t sid,Int_t nzBins, AliBin* bins, AliITSCalibrationSDD* cal) const {
+Bool_t AliITSClusterFinderV2SDD::NoiseSuppress(Int_t k, Int_t sid,Int_t nzBins, AliBin* bins, AliITSCalibrationSDD* cal) const {
   // applies zero suppression using the measured noise of each anode
   // threshold values from ALICE-INT-1999-28 V10
+  // returns kTRUE if the digit should eb noise suppressed, kFALSE if it should be kept
   Float_t xfactL=2.2; 
   Float_t xfactH=4.0;
   //
 
   Int_t iAn=(k%nzBins)-1;
-  if(iAn<0 || iAn>255) return;
+  if(iAn<0 || iAn>255) return kTRUE;
   if(sid==1) iAn+=256;
   Int_t nLow=0, nHigh=0;
   Float_t noise=cal->GetNoiseAfterElectronics(iAn);
@@ -422,11 +420,11 @@ void AliITSClusterFinderV2SDD::NoiseSuppress(Int_t k, Int_t sid,Int_t nzBins, Al
   Float_t tHp1=noisep1*xfactH;
   Float_t tLm1=noisem1*xfactL;
   Float_t tHm1=noisem1*xfactH;
-  Float_t cC=bins[k].GetQ();
+  Int_t cC=bins[k].GetQ();
   if(cC<=tL){
     bins[k].SetQ(0);
     bins[k].SetMask(0xFFFFFFFE);
-    return;
+    return kTRUE;;
   }
   nLow++; // cC is greater than tL
   if(cC>tH) nHigh++;
@@ -442,10 +440,8 @@ void AliITSClusterFinderV2SDD::NoiseSuppress(Int_t k, Int_t sid,Int_t nzBins, Al
   Int_t wW=bins[k+nzBins].GetQ();
   if(wW>tL) nLow++;
   if(wW>tH) nHigh++;
-  if(nLow<3 || nHigh<1){
-    bins[k].SetQ(0);
-    bins[k].SetMask(0xFFFFFFFE);
-  }
+  if(nLow<3 || nHigh<1) return kTRUE;
+  else return kFALSE;
 }
 
 
