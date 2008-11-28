@@ -82,7 +82,7 @@ void AliGenMUONCocktail::Init()
   Double_t sigmaReaction =   0.072;   // MinBias NN cross section for PbPb LHC energies  http://arxiv.org/pdf/nucl-ex/0302016
 
   // Initialising Fast Glauber object
-  fFastGlauber = new AliFastGlauber();
+  fFastGlauber = AliFastGlauber::Instance();
   fFastGlauber->SetPbPbLHC();
   fFastGlauber->SetNNCrossSection(sigmaReaction*1000.); //Expected NN cross-section in mb at LHC with diffractive part http://arxiv.org/pdf/nucl-ex/0302016 )
   fFastGlauber->Init(1);

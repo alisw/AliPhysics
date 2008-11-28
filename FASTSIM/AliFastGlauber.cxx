@@ -85,7 +85,8 @@ TF1*    AliFastGlauber::fgWParticipants  = NULL;
 TF2*    AliFastGlauber::fgWAlmondCurrent = NULL;    
 TF2*    AliFastGlauber::fgWAlmondFixedB[40]; 
 const Int_t AliFastGlauber::fgkMCInts = 100000;
-Int_t AliFastGlauber::fgCounter = 0;       
+AliFastGlauber* AliFastGlauber::fgGlauber = NULL;
+
 
 AliFastGlauber::AliFastGlauber(): 
     fWSr0(0.),
@@ -101,10 +102,6 @@ AliFastGlauber::AliFastGlauber():
     fName()     
 {
   //  Default Constructor 
-  fgCounter++;
-  if(fgCounter>1)
-    Error("AliFastGlauber","More than one instance (%d) is not supported, check your code!",fgCounter);
-
   //  Defaults for Pb
   SetMaxImpact();
   SetLengthDefinition();
@@ -129,10 +126,20 @@ AliFastGlauber::AliFastGlauber(const AliFastGlauber & gl)
     gl.Copy(*this);
 }
 
+AliFastGlauber* AliFastGlauber::Instance()
+{ 
+// Set random number generator 
+    if (fgGlauber) {
+	return fgGlauber;
+    } else {
+	fgGlauber = new AliFastGlauber();
+	return fgGlauber;
+    }
+}
+
 AliFastGlauber::~AliFastGlauber()
 {
 // Destructor
-  fgCounter--;
   for(Int_t k=0; k<40; k++) delete fgWAlmondFixedB[k];
 }
 

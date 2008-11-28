@@ -18,8 +18,7 @@ class TF2;
 
 class AliFastGlauber : public TObject {
  public:
-    AliFastGlauber();
-    AliFastGlauber(const AliFastGlauber& glauber);
+    static AliFastGlauber* Instance();
     virtual ~AliFastGlauber();
     void Init(Int_t mode = 0);
 
@@ -178,11 +177,15 @@ class AliFastGlauber : public TObject {
     static Double_t WEnergyDensity (Double_t *xx, Double_t *par);
 
     void Reset() const;
+ private:
+    AliFastGlauber();
+    AliFastGlauber(const AliFastGlauber& glauber);
 
-    static Float_t fgBMax;           // Maximum Impact Parameter
-    static Int_t fgCounter;          // Counter to protect double instantiation
-    static const Int_t fgkMCInts;    // Number of MC integrations
-
+    static Float_t         fgBMax;       // Maximum Impact Parameter
+    static const Int_t     fgkMCInts;    // Number of MC integrations
+    static AliFastGlauber* fgGlauber;    // Singleton instance
+     
+    
     static TF1*    fgWSb;            // Wood-Saxon Function (b)
     static TF2*    fgWSbz;           // Wood-Saxon Function (b, z)
     static TF1*    fgWSz;            // Wood-Saxon Function (b = b0, z)
