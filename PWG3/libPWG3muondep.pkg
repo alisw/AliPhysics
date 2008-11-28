@@ -1,7 +1,8 @@
 #-*- Mode: Makefile -*-
 
 SRCS:=	 muondep/AliAnalysisTaskMuonTrackingEff.cxx \
-                 muondep/AliCheckMuonDetEltResponse.cxx 
+         muondep/AliCheckMuonDetEltResponse.cxx \
+         muondep/AliAnalysisTaskRecoCheck.cxx
 
 HDRS:= $(SRCS:.cxx=.h)
 
