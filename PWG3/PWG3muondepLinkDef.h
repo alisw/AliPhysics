@@ -6,6 +6,7 @@
 
 #pragma link C++ class AliAnalysisTaskMuonTrackingEff+;
 #pragma link C++ class AliCheckMuonDetEltResponse+;
+#pragma link C++ class AliAnalysisTaskRecoCheck+;
 #endif
 
 
