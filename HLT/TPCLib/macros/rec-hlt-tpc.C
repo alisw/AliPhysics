@@ -7,10 +7,8 @@
  * Usage:
  * <pre>
  *   aliroot -b -q rec-hlt-tpc.C | tee rec-hlt-tpc.log
+ *   aliroot -b -q rec-hlt-tpc.C'("./","decoder All")' | tee rec-hlt-tpc.log
  * </pre>
- *
- * The chain to be run is defined by the macro given to the parameter
- * 'config='
  *
  * The macro asumes raw data to be available in the rawx folders, either
  * simulated or real data. A different input can be specified as parameter
@@ -18,9 +16,16 @@
  *   aliroot -b -q rec-hlt-tpc.C'("input.root")'
  * </pre>
  *
- * By the second parameter the digit reader can be chosen, default is
- * AliHLTTPCDigitReaderPacked (=false). Set to true to use
- * AliHLTTPCDigitReaderDecoder
+ * The second parameter changes which clusterfinder you use:
+ *    - decoder, uses TPCClusterFinderDecoder. This is default.
+ *    - packed, uses TPCClusterFinderPacked
+ *
+ * Also in the second parameter you can set which output you would like to have:
+ *    - ESD, gives you an ESD file. This is default.
+ *    - TrackHistogram, will run the TrackHistogram component, and give 
+ *      root files with histograms.
+ *    - TrackDump, dumps the track struct to a text file.
+ *    - All, gives you all 3 output.
  *
  * In the first section, an analysis chain is defined. The scale of the
  * chain can be defined by choosing the range of sectors and partitions.
@@ -31,8 +36,10 @@
  * @ingroup alihlt_tpc
  * @author Matthias.Richter@ift.uib.no
  */
-void rec_hlt_tpc(const char* input="./", bool bUseClusterFinderDecoder=true)
+void rec_hlt_tpc(const char* input="./", char* opt="decoder ESD")
 {
+  //.! rm galice.root
+
   if (!input) {
     cerr << "please specify input or run without arguments" << endl;
     return;
@@ -44,6 +51,61 @@ void rec_hlt_tpc(const char* input="./", bool bUseClusterFinderDecoder=true)
   //
   gSystem->Load("libHLTrec.so");
   AliHLTSystem* gHLT=AliHLTReconstructorBase::GetInstance();
+ 
+  ///////////////////////////////////////////////////////////////////////////////////////////////////
+  //
+  // Setting up which output to give
+  //
+  Bool_t bUseClusterFinderDecoder=kTRUE;
+  TString option="libAliHLTUtil.so libAliHLTRCU.so libAliHLTTPC.so loglevel=0x7c chains=";
+  Bool_t esdout=kFALSE, dumpout=kFALSE, histout=kFALSE;
+  TString allArgs=opt;
+  TString argument;
+  TObjArray* pTokens=allArgs.Tokenize(" ");
+  if (pTokens) {
+    for (int i=0; i<pTokens->GetEntries(); i++) {
+      argument=((TObjString*)pTokens->At(i))->GetString();
+      if (argument.IsNull()) continue;
+    
+      if (argument.CompareTo("decoder",TString::kIgnoreCase)==0) {
+	bUseClusterFinderDecoder = kTRUE;
+	continue;
+      }
+      if (argument.CompareTo("packed",TString::kIgnoreCase)==0) {
+	bUseClusterFinderDecoder = kFALSE;
+	continue;
+      }
+      if (argument.CompareTo("trackhistogram",TString::kIgnoreCase)==0) {
+	histout = kTRUE;
+	if (option.Length()>0) option+=",";
+	option+="histFile";
+	continue;
+      }
+      if (argument.CompareTo("trackdump",TString::kIgnoreCase)==0) {
+	dumpout = kTRUE;
+	if (option.Length()>0) option+=",";
+	option+="dump";
+	continue;
+      }
+      if (argument.CompareTo("esd",TString::kIgnoreCase)==0) {
+	esdout = kTRUE;
+	if (option.Length()>0) option+=",";
+	option+="sink1";
+	continue;
+      }      
+      if (argument.CompareTo("all",TString::kIgnoreCase)==0) {
+	histout = kTRUE;
+	dumpout = kTRUE;
+	esdout = kTRUE;
+	if (option.Length()>0) option+=",";
+	option+="sink1,histFile,dump";
+	continue;
+      }
+      else {
+	break;
+      }
+    }
+  }
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////
   //
@@ -55,6 +117,7 @@ void rec_hlt_tpc(const char* input="./", bool bUseClusterFinderDecoder=true)
   int iMaxPart=5;
   TString writerInput;
   TString mergerInput;
+  TString histoInput;
   for (int slice=iMinSlice; slice<=iMaxSlice; slice++) {
     TString trackerInput;
     for (int part=iMinPart; part<=iMaxPart; part++) {
@@ -71,14 +134,16 @@ void rec_hlt_tpc(const char* input="./", bool bUseClusterFinderDecoder=true)
       // cluster finder components
       cf.Form("CF_%02d_%d", slice, part);
       if (bUseClusterFinderDecoder) {
-	AliHLTConfiguration cfconf(cf.Data(), "TPCClusterFinderDecoder", publisher.Data(), "-timebins 446");
+	AliHLTConfiguration cfconf(cf.Data(), "TPCClusterFinderDecoder", publisher.Data(), "-timebins 1001");
       } else {
-	AliHLTConfiguration cfconf(cf.Data(), "TPCClusterFinderPacked", publisher.Data(), "-timebins 446 -sorted");
+	AliHLTConfiguration cfconf(cf.Data(), "TPCClusterFinderPacked", publisher.Data(), "-timebins 1001 -sorted");
       }
       if (trackerInput.Length()>0) trackerInput+=" ";
       trackerInput+=cf;
       if (writerInput.Length()>0) writerInput+=" ";
       writerInput+=cf;
+      if (histoInput.Length()>0) histoInput+=" ";
+      histoInput+=cf;
     }
     TString tracker;
     // tracker finder components
@@ -88,26 +153,47 @@ void rec_hlt_tpc(const char* input="./", bool bUseClusterFinderDecoder=true)
     writerInput+=tracker;
     if (mergerInput.Length()>0) mergerInput+=" ";
     mergerInput+=tracker;
+    //add all slice tracks to histo input
+    //if (histoInput.Length()>0) histoInput+=" ";
+    //histoInput+=tracker;
   }
 
+  // GlobalMerger component
+  AliHLTConfiguration mergerconf("globalmerger","TPCGlobalMerger",mergerInput.Data(),"");
+  
+  //add all global tracks to histo input
+  if (histoInput.Length()>0) histoInput+=" ";
+  histoInput+="globalmerger";
+  
   // specify whether to write all blocks separately or merge the tracks
   // and convert to ESD
   bool writeBlocks=false;
 
-  if (writeBlocks) {
-    // the writer configuration
-    AliHLTConfiguration fwconf("sink1", "FileWriter"   , writerInput.Data(), "-specfmt=_%d -subdir=out_%d -blcknofmt=_0x%x -idfmt=_0x%08x");
-  } else {
-    // GlobalMerger component
-    AliHLTConfiguration mergerconf("globalmerger","TPCGlobalMerger",mergerInput.Data(),"");
-
-    // the esd converter configuration
-    AliHLTConfiguration esdcconf("esd-converter", "TPCEsdConverter"   , "globalmerger", "-tree");
-    
-    // the root file writer configuration
-    AliHLTConfiguration sink("sink1", "EsdCollector"   , "esd-converter", "-directory hlt-tpc-cm");
+  if(esdout){
+    if (writeBlocks) {
+      // the writer configuration
+      AliHLTConfiguration fwconf("sink1", "FileWriter"   , writerInput.Data(), "-specfmt=_%d -subdir=out_%d -blcknofmt=_0x%x -idfmt=_0x%08x");
+    } else {
+           
+      //AliHLTConfiguration sink("sink1", "TPCEsdWriter"   , "globalmerger", "-datafile AliHLTESDs.root");
+      
+      // the esd converter configuration
+      AliHLTConfiguration esdcconf("esd-converter", "TPCEsdConverter"   , "globalmerger", "");
+      
+      // the root file writer configuration
+      AliHLTConfiguration sink("sink1", "EsdCollector"   , "esd-converter", "-directory hlt-tpc-esd");
+    }
   }
-
+  //Chain with Track Histogram
+  if(histout){
+    AliHLTConfiguration histoconf("histo","TPCTrackHisto",histoInput.Data(),"-plot-All");  
+    AliHLTConfiguration fwconf("histFile", "ROOTFileWriter"   , "histo", "-directory TrackHisto -idfmt=_0x%08x");
+  }
+  //Chain with Track Dump
+  if(dumpout){
+    AliHLTConfiguration dumpconf("dump","TPCTrackDump","globalmerger","-directory TrackDump");
+  }
+  
   ///////////////////////////////////////////////////////////////////////////////////////////////////
   //
   // Init and run the reconstruction
@@ -122,7 +208,13 @@ void rec_hlt_tpc(const char* input="./", bool bUseClusterFinderDecoder=true)
   rec.SetRunQA(":");
   AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., AliMagFMaps::k5kG);
   AliTracker::SetFieldMap(field,kTRUE);
-  rec.SetFillESD("HLT");
-  rec.SetOption("HLT", "libAliHLTUtil.so libAliHLTRCU.so libAliHLTTPC.so loglevel=0x7c chains=sink1");
+
+  // NOTE: FillESD is a step in the AliReconstruction sequence and has
+  // nothing to do with the fact that this macro writes ESD output
+  // HLT processes the HLTOUT during FillESD and extracts data which
+  // has already been prepared. This step is currently not necessary for
+  // this macro
+  rec.SetFillESD("");
+  rec.SetOption("HLT", option);
   rec.Run();
 }
