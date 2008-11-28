@@ -35,7 +35,7 @@ private:
   virtual void  MakeDigits(TTree * digits);   
   virtual void  MakeSDigits(TClonesArray * /*sdigits*/) {;} 
   virtual void  MakeSDigits(TTree * /*sdigTree*/) {;}
-  virtual void  MakeRecPoints(TTree * clusters) {;}  
+  virtual void  MakeRecPoints(const TTree * const clusters) {;}  
   virtual void  MakeRaws(AliRawReader* rawReader);
   virtual void  MakeESDs(AliESDEvent * esd);	     
   virtual void  StartOfDetectorCycle();
