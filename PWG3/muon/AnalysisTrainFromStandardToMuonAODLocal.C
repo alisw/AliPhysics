@@ -1,15 +1,18 @@
 void AnalysisTrainFromStandardToMuonAODLocal(char* filein= "AliAODs.root", 
                                              char* fileout= "AliMuonAOD.root", 
 				             char* dirChain= ".",
-				             char* dirData= "."){
+				             char* dirData= ".",
+					     Int_t nev=123456789){
      
 // Macro to produce a MUON-AOD, i.e. a replica of the standard AOD, containing only events
 // where at least one muon is present
 // 
-// - The input files are the ESD (used only for tag creation) and the standard AOD.
-//   Tags files are created from all the ESD/AOD files placed in the directory dirData 
-//   and in its subdirectories.
-// - The selection of the muon events is based on the AOD tags.
+// - The input files are the standard AOD and the AOD.tag.root files 
+// - The AOD.tag file can be:
+//      1) the one previously created together with the AOD file (i.e. from
+//         AnalysisTrainMuonLocal.C)
+//      2) created on the fly with this macro
+// - The selection of the muon events is based on the AOD tags
 // - The content of the MUON-AOD can be defined by the user with some settings as
 //   SetNeedsTracksBranchReplication(), SetNeedsVerticesBranchReplication() 
 //   (defined in STEER/AliAODHandler.h)...
@@ -19,42 +22,39 @@ void AnalysisTrainFromStandardToMuonAODLocal(char* filein= "AliAODs.root",
     gSystem->Load("libGeom.so");
     gSystem->Load("libVMC.so");
     gSystem->Load("libPhysics.so");
+    gSystem->Load("libSTEER.so");              // for aliroot based analysis
+    gSystem->Load("libPWG3muon.so");  // for aliroot based analysis
 
-    // Load par files  
-    SetupPar("STEERBase");
-    SetupPar("ESD");
-    SetupPar("AOD");
-    SetupPar("ANALYSIS");
-    SetupPar("ANALYSISalice");
-    SetupPar("PWG3base");      
-    SetupPar("PWG3muon");   
-        
-    // Create ESD tag files   
-    printf("Creating ESD Tags\n");
-    AliESDTagCreator *tesd = new AliESDTagCreator();
-    tesd->SetStorage(0);     
-    tesd->ReadLocalCollection(dirData);  
- 
-    // Create AOD tag files   
-    printf("Creating AOD Tags\n");
-    AliAODTagCreator *t = new AliAODTagCreator();
-    t->SetStorage(0);
-    t->ReadLocalCollection(dirData);    
+    // Load par files, if the analysis is par based
+    // SetupPar("STEERBase");
+    // SetupPar("ESD");
+    // SetupPar("AOD");
+    // SetupPar("ANALYSIS");
+    // SetupPar("ANALYSISalice");
+    // SetupPar("PWG3muon");   
+     
+    // Uncomment the following lines if the AOD tag file has to be created on the fly	 
+    // printf("Creating AOD Tags on the fly\n");
+    // AliAODTagCreator *t = new AliAODTagCreator();
+    // t->SetStorage(0);
+    // t->ReadLocalCollection(dirData); 
     
     AliTagAnalysis *TagAna = new AliTagAnalysis("AOD"); 
-    
-    // Define tag cuts to select only events with muons
-    printf("Defining Tags cuts to select events containing at least one muon\n");
+   
+    // Define tag cuts to select events containing at least one muon in the dimuon spectrometer
+    printf("Defining Tags cuts to select events containing at least one muon in the dimuon spectrometer\n");
     AliRunTagCuts *runCuts = new AliRunTagCuts();
     AliLHCTagCuts *lhcCuts = new AliLHCTagCuts();
     AliDetectorTagCuts *detCuts = new AliDetectorTagCuts();
     AliEventTagCuts *evCuts = new AliEventTagCuts();
-    evCuts->SetNMuonRange(1,10);
-    
+    evCuts->SetNFWMuonRange(1,10);
+   
     // Create the chain of interesting events
     TChain* chain = 0x0;
     TagAna->ChainLocalTags(dirChain);
+    TagAna->SetType("AOD");
     chain = TagAna->QueryTags(runCuts,lhcCuts,detCuts,evCuts);
+    Info("AnalysisTrainFromStandardToMuonAOD",Form("CHAIN HAS %d ENTRIES",(Int_t)chain->GetEntries()));
 
     // Define aod input handler
     AliAODInputHandler* aodInputHandler = new AliAODInputHandler();
@@ -65,16 +65,16 @@ void AnalysisTrainFromStandardToMuonAODLocal(char* filein= "AliAODs.root",
     // Create non standard AOD
     aodOutputHandler->SetCreateNonStandardAOD(); 
     
-    // Select the branches to be written in the MUON-AOD
+    // Select the branches to be replicated in the MUON-AOD
     aodOutputHandler->SetNeedsHeaderReplication();
     aodOutputHandler->SetNeedsTracksBranchReplication();
     aodOutputHandler->SetNeedsVerticesBranchReplication();
-    //aodOutputHandler->SetNeedsV0sBranchReplication();
-    //aodOutputHandler->SetNeedsTrackletsBranchReplication(); 
-    //aodOutputHandler->SetNeedsPMDClustersBranchReplication();
-    //aodOutputHandler->SetNeedsJetsBranchReplication();
-    //aodOutputHandler->SetNeedsFMDClustersBranchReplication();
-    //aodOutputHandler->SetNeedsCaloClustersBranchReplication();
+    aodOutputHandler->SetNeedsV0sBranchReplication();
+    aodOutputHandler->SetNeedsTrackletsBranchReplication(); 
+    aodOutputHandler->SetNeedsPMDClustersBranchReplication();
+    aodOutputHandler->SetNeedsJetsBranchReplication();
+    aodOutputHandler->SetNeedsFMDClustersBranchReplication();
+    aodOutputHandler->SetNeedsCaloClustersBranchReplication();
     
     aodOutputHandler->SetOutputFileName(fileout);
 
@@ -92,15 +92,15 @@ void AnalysisTrainFromStandardToMuonAODLocal(char* filein= "AliAODs.root",
 							     AliAnalysisManager::kInputContainer);
     AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("tree", TTree::Class(),
 							      AliAnalysisManager::kOutputContainer, "default");
-
+							       
     mgr->ConnectInput(aodfilter,0,cinput1);
     mgr->ConnectOutput(aodfilter,0,coutput1);
-    
+ 
     // Run the analysis    
     printf("CHAIN HAS %d ENTRIES\n",(Int_t)chain->GetEntries());
     mgr->InitAnalysis();
     mgr->PrintStatus();
-    mgr->StartAnalysis("local",chain);
+    mgr->StartAnalysis("local",chain,nev);
 }
 
 
