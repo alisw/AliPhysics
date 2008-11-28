@@ -600,11 +600,8 @@ void AliPHOSDigitizer::Digitize(Int_t event)
   } 
     
   digits->Compress() ;  
-  
   Int_t ndigits = digits->GetEntriesFast() ;
-  digits->Expand(ndigits) ;
-
-
+  
   //Set indexes in list of digits and make true digitization of the energy
   for (Int_t i = 0 ; i < ndigits ; i++) { 
     digit = dynamic_cast<AliPHOSDigit*>( digits->At(i) ) ; 
