@@ -202,61 +202,63 @@ void AliMUONQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArra
     }
   }
   
+  if ( task == AliQA::kESDS ) {
   // Normalize ESD histos
-  TH1* h;
-  Int_t bin;
-  AliMpDEIterator it;
-  it.First();
-  while ( !it.IsDone()) {
+    TH1* h;
+    Int_t bin;
+    AliMpDEIterator it;
+    it.First();
+    while ( !it.IsDone()) {
     
-    Int_t detElemId = it.CurrentDEId();
+      Int_t detElemId = it.CurrentDEId();
     
-    if ( AliMpDEManager::GetStationType(detElemId) != AliMp::kStationTrigger ) {
+      if ( AliMpDEManager::GetStationType(detElemId) != AliMp::kStationTrigger ) {
       
-      h = GetESDsData(kESDnClustersPerDE);
-      Double_t nClusters = h->GetBinContent(h->GetXaxis()->FindFixBin((Double_t)detElemId));
+        h = GetESDsData(kESDnClustersPerDE);
+        Double_t nClusters = h->GetBinContent(h->GetXaxis()->FindFixBin((Double_t)detElemId));
       
-      if (nClusters > 0) {
+        if (nClusters > 0) {
 	
-	h = GetESDsData(kESDClusterChargePerDE);
-	bin = h->GetXaxis()->FindFixBin((Double_t)detElemId);
-        h->SetBinContent(bin, h->GetBinContent(bin)/nClusters);
+	  h = GetESDsData(kESDClusterChargePerDE);
+	  bin = h->GetXaxis()->FindFixBin((Double_t)detElemId);
+          h->SetBinContent(bin, h->GetBinContent(bin)/nClusters);
 	
-	h = GetESDsData(kESDClusterMultPerDE);
-	bin = h->GetXaxis()->FindFixBin((Double_t)detElemId);
-        h->SetBinContent(bin, h->GetBinContent(bin)/nClusters);
+	  h = GetESDsData(kESDClusterMultPerDE);
+	  bin = h->GetXaxis()->FindFixBin((Double_t)detElemId);
+          h->SetBinContent(bin, h->GetBinContent(bin)/nClusters);
 	
-	h = GetESDsData(kESDResidualXPerDEMean);
-	bin = h->GetXaxis()->FindFixBin((Double_t)detElemId);
-	Double_t meanResX = h->GetBinContent(bin)/nClusters;
-        h->SetBinContent(bin, meanResX);
+	  h = GetESDsData(kESDResidualXPerDEMean);
+	  bin = h->GetXaxis()->FindFixBin((Double_t)detElemId);
+	  Double_t meanResX = h->GetBinContent(bin)/nClusters;
+          h->SetBinContent(bin, meanResX);
 	
-	h = GetESDsData(kESDResidualYPerDEMean);
-	bin = h->GetXaxis()->FindFixBin((Double_t)detElemId);
-	Double_t meanResY = h->GetBinContent(bin)/nClusters;
-        h->SetBinContent(bin, meanResY);
+	  h = GetESDsData(kESDResidualYPerDEMean);
+	  bin = h->GetXaxis()->FindFixBin((Double_t)detElemId);
+	  Double_t meanResY = h->GetBinContent(bin)/nClusters;
+          h->SetBinContent(bin, meanResY);
 	
-	h = GetESDsData(kESDResidualXPerDESigma);
-	bin = h->GetXaxis()->FindFixBin((Double_t)detElemId);
-	if (nClusters > 1) h->SetBinContent(bin, TMath::Sqrt(h->GetBinContent(bin)/nClusters - meanResX*meanResX));
-	else h->SetBinContent(bin, 0.);
+	  h = GetESDsData(kESDResidualXPerDESigma);
+	  bin = h->GetXaxis()->FindFixBin((Double_t)detElemId);
+	  if (nClusters > 1) h->SetBinContent(bin, TMath::Sqrt(h->GetBinContent(bin)/nClusters - meanResX*meanResX));
+	  else h->SetBinContent(bin, 0.);
 	
-	h = GetESDsData(kESDResidualYPerDESigma);
-	bin = h->GetXaxis()->FindFixBin((Double_t)detElemId);
-	if (nClusters > 1) h->SetBinContent(bin, TMath::Sqrt(h->GetBinContent(bin)/nClusters - meanResY*meanResY));
-	else h->SetBinContent(bin, 0.);
+	  h = GetESDsData(kESDResidualYPerDESigma);
+	  bin = h->GetXaxis()->FindFixBin((Double_t)detElemId);
+	  if (nClusters > 1) h->SetBinContent(bin, TMath::Sqrt(h->GetBinContent(bin)/nClusters - meanResY*meanResY));
+	  else h->SetBinContent(bin, 0.);
 	
+        }
+      
       }
-      
-    }
     
-    it.Next();
-  }
+      it.Next();
+    }
   
-  Double_t nTracks = GetESDsData(kESDnClustersPerTrack)->GetEntries();
-  if (nTracks > 0) {
-    GetESDsData(kESDnClustersPerCh)->Scale(1./nTracks);
-    GetESDsData(kESDnClustersPerDE)->Scale(1./nTracks);
+    Double_t nTracks = GetESDsData(kESDnClustersPerTrack)->GetEntries();
+    if (nTracks > 0) {
+      GetESDsData(kESDnClustersPerCh)->Scale(1./nTracks);
+      GetESDsData(kESDnClustersPerDE)->Scale(1./nTracks);
+    }
   }
   
   // do the QA checking
