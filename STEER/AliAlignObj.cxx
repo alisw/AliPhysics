@@ -239,13 +239,13 @@ Bool_t AliAlignObj::GetLocalCovMatrix(TMatrixDSym& lCov) const
   //
   TMatrixD mJ(6,6);// the jacobian of the transformation from local to global parameters
   if(!GetJacobian(mJ)) return kFALSE;
-  TMatrixD invJ = mJ.Invert(); // the inverse of the jacobian matrix
   
   TMatrixDSym gCov(6);
   GetCovMatrix(gCov);
   
-  // Compute the global covariance matrix gcov = mJ lcov mJ-1
-  TMatrixD lCovM = invJ * gCov * mJ;
+  // Compute the local covariance matrix lcov = mJ^T gcov mJ
+  TMatrixD gcovJ(gCov,TMatrixD::kMult,mJ);
+  TMatrixD lCovM(mJ,TMatrixD::kTransposeMult,gcovJ);
   // To be done: somehow check that lCovM is close enough to be symmetric
   for(Int_t i=0; i<6; i++)
   {
@@ -390,10 +390,11 @@ Bool_t AliAlignObj::SetFromLocalCov(TMatrixDSym& lCov)
   //
   TMatrixD mJ(6,6);// the jacobian of the transformation from local to global parameters
   if(!GetJacobian(mJ)) return kFALSE;
-  TMatrixD invJ = mJ.Invert(); // the inverse of the jacobian matrix
   
-  // Compute the global covariance matrix gcov = mJ lcov mJ-1
-  TMatrixD gCovM = mJ * lCov * invJ;
+  // Compute the global covariance matrix gcov = mJ lcov mJ'
+  TMatrixD trJ(TMatrixD::kTransposed, mJ);
+  TMatrixD lcovTrJ(lCov,TMatrixD::kMult,trJ);
+  TMatrixD gCovM(mJ,TMatrixD::kMult,lcovTrJ);
   // To be done: somehow check that gCovM is close enough to be symmetric
   TMatrixDSym gCov(6);
   for(Int_t i=0; i<6; i++)
