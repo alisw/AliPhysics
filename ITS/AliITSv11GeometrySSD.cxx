@@ -2342,10 +2342,10 @@ TGeoVolume* AliITSv11GeometrySSD::GetCoolingTubeSupport(Int_t nedges){
   // Deallocating memory
   /////////////////////////////////////////////////////////////
   delete [] vertexposition;
-  delete xvertexpoints;
-  delete yvertexpoints;
-  delete xvert;
-  delete yvert;
+  delete [] xvertexpoints;
+  delete [] yvertexpoints;
+  delete [] xvert;
+  delete [] yvert;
   for(Int_t i=0; i< kvirtualvertexnumber; i++)
 	delete virtualvertex[i];
   /////////////////////////////////////////////////////////////
@@ -3849,8 +3849,8 @@ TList* AliITSv11GeometrySSD::GetSSDChipSystem(){
 		delete ssdchipcablesrot[i][j];
 		delete ssdchipcablestrans[i][j];
 	}
-	delete ssdchipcablesrot[i];
-	delete ssdchipcablestrans[i];
+	delete [] ssdchipcablesrot[i];
+	delete [] ssdchipcablestrans[i];
   }
   /////////////////////////////////////////////////////////////
   return ssdchipsystemlist;
@@ -5043,14 +5043,14 @@ void AliITSv11GeometrySSD::Layer6(TGeoVolume* moth){
 	delete [] xcenterlowervertex[i];
 	delete [] ycenterlowervertex[i];
   }
-  delete xsidevertex;
-  delete ysidevertex;
-  delete xcentervertex;
-  delete ycentervertex;
-  delete xsidelowervertex;
-  delete ysidelowervertex;
-  delete xcenterlowervertex;
-  delete ycenterlowervertex;
+  delete [] xsidevertex;
+  delete [] ysidevertex;
+  delete [] xcentervertex;
+  delete [] ycentervertex;
+  delete [] xsidelowervertex;
+  delete [] ysidelowervertex;
+  delete [] xcenterlowervertex;
+  delete [] ycenterlowervertex;
   delete globalrefladdersupportrot;
   delete mountingblocksupportrot;
   /////////////////////
