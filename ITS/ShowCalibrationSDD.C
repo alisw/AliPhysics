@@ -18,7 +18,7 @@
 //
 // Origin: F. Prino (prino@to.infn.it)
 
-void ShowCalibrationSDD(Char_t *filnam="$ALICE_ROOT/ITS/Calib/CalibSDD/Run0_9999999_v0_s0.root", Int_t iMod=0){
+void ShowCalibrationSDD(Int_t iMod=0, Char_t *filnam="$ALICE_ROOT/ITS/Calib/CalibSDD/Run0_9999999_v0_s0.root"){
 
 
   TFile *f=TFile::Open(filnam);
@@ -32,21 +32,52 @@ void ShowCalibrationSDD(Char_t *filnam="$ALICE_ROOT/ITS/Calib/CalibSDD/Run0_9999
   TH1F* hgain=new TH1F("hgain","",100,0.,4.);
   TH1F* hchstatus=new TH1F("hchstatus","",2,-0.5,1.5);
   AliITSCalibrationSDD *cal;
+  Int_t badModCounter3=0;
+  Int_t badModCounter4=0;
+  Int_t badAnodeCounter3=0;
+  Int_t badAnodeCounter4=0;
+  Int_t badAnodeCounterGoodMod3=0;
+  Int_t badAnodeCounterGoodMod4=0;
+  Int_t badAnodeCounterGoodModAndChip3=0;
+  Int_t badAnodeCounterGoodModAndChip4=0;
+  Int_t badChipCounter3=0;
+  Int_t badChipCounter4=0;
   for(Int_t i=0; i<260; i++){
     cal=(AliITSCalibrationSDD*)calSDD->At(i);
     if(cal==0) continue;
     printf("Module %d (%d)   status = ",i,i+240);
-    if(cal->IsBad()) printf("BAD\t");
-    else printf("OK\t");
+    if(cal->IsBad()){ 
+      printf("BAD\t");
+      if(i<84) badModCounter3++;
+      else badModCounter4++;
+      hmodstatus->SetBinContent(i+1,0);
+    }
+    else{ 
+      printf("OK\t");
+      hmodstatus->SetBinContent(i+1,1);
+      if(i<84) badAnodeCounterGoodMod3+=cal->GetDeadChannels();
+      else badAnodeCounterGoodMod4+=cal->GetDeadChannels();
+    }
     printf("   Chip Status (0=OK, 1=BAD): ");  
-    for(Int_t ic=0; ic<8;ic++) printf("%d ",cal->IsChipBad(ic));
+    for(Int_t ic=0; ic<8;ic++){ 
+      printf("%d ",cal->IsChipBad(ic));
+      if(cal->IsChipBad(ic) && !cal->IsBad()){ 
+	if(i<84) badChipCounter3++;
+	else badChipCounter4++;
+      }
+    }
     if(cal->IsAMAt20MHz()) printf("      20 MHz sampling");
     else printf("      40 MHz sampling");
     printf("\n");
-    if(cal->IsBad()) hmodstatus->SetBinContent(i+1,0);
-    else hmodstatus->SetBinContent(i+1,1);
+    if(i<84) badAnodeCounter3+=cal->GetDeadChannels();
+    else badAnodeCounter4+=cal->GetDeadChannels();
     hnbadch->SetBinContent(i+1,cal->GetDeadChannels());
     for(Int_t iAn=0; iAn<512; iAn++){
+      Int_t ic=cal->GetChip(iAn);
+      if(!cal->IsChipBad(ic) && !cal->IsBad() && cal->IsBadChannel(iAn)){ 
+	if(i<84) badAnodeCounterGoodModAndChip3++;
+	else badAnodeCounterGoodModAndChip4++;
+      }
       Float_t base=cal->GetBaseline(iAn);
       Float_t noise=cal->GetNoiseAfterElectronics(iAn);
       Float_t gain=cal->GetChannelGain(iAn);
@@ -59,6 +90,32 @@ void ShowCalibrationSDD(Char_t *filnam="$ALICE_ROOT/ITS/Calib/CalibSDD/Run0_9999
       }
     }
   }
+  Int_t totbad3=badModCounter3*512+badChipCounter3*64+badAnodeCounterGoodModAndChip3;
+  Int_t tot3=6*14*512;
+  Float_t fracbad3=(Float_t)totbad3/(Float_t)tot3;
+  Int_t totbad4=badModCounter4*512+badChipCounter4*64+badAnodeCounterGoodModAndChip4;
+  Int_t tot4=8*22*512;
+  Float_t fracbad4=(Float_t)totbad4/(Float_t)tot4;
+  Float_t fractot=(Float_t)(totbad3+totbad4)/(Float_t)(tot3+tot4);
+  printf("----------------------Summary----------------------\n");
+  printf("---- Layer 3 ----\n");
+  printf("# of bad modules                      = %d\n",badModCounter3);
+  printf("# of bad chips in good modules        = %d\n",badChipCounter3);
+  printf("# of bad anodes in good modules+chips = %d\n",badAnodeCounterGoodModAndChip3);
+  printf("Fraction of bads (anodes+chips+mod)   = %f\n",fracbad3);
+  printf("---- Layer 4 ----\n");
+  printf("# of bad modules                      = %d\n",badModCounter4);
+  printf("# of bad chips in good modules        = %d\n",badChipCounter4);
+  printf("# of bad anodes in good modules+chips = %d\n",badAnodeCounterGoodModAndChip4);
+  printf("Fraction of bads (anodes+chips+mod)   = %f\n",fracbad4);
+  printf("---- Total   ----\n");
+  printf("# of bad modules                      = %d\n",badModCounter3+badModCounter4);
+  printf("# of bad chips in good modules        = %d\n",badChipCounter3+badChipCounter4);
+  printf("# of bad anodes in good modules+chips = %d\n",badAnodeCounterGoodModAndChip3+badAnodeCounterGoodModAndChip4);
+  printf("Fraction of bads (anodes+chips+mod)   = %f\n",fractot);
+  printf("---------------------------------------------------\n");
+  
+
   TCanvas *c0=new TCanvas("c0","Module status",800,800);
   c0->Divide(1,2);
   c0->cd(1);
@@ -89,6 +146,9 @@ void ShowCalibrationSDD(Char_t *filnam="$ALICE_ROOT/ITS/Calib/CalibSDD/Run0_9999
   hchstatus->GetXaxis()->SetTitle("Anode status (0=bad, 1=OK)");
   hchstatus->GetXaxis()->CenterTitle();
 
+
+  // Plot quantities for specified module
+
   cal=(AliITSCalibrationSDD*)calSDD->At(iMod);
   if(cal==0) return;
   printf("-----------------------------------\n");
@@ -98,6 +158,7 @@ void ShowCalibrationSDD(Char_t *filnam="$ALICE_ROOT/ITS/Calib/CalibSDD/Run0_9999
   printf("   Chip Status (0=OK, 1=BAD): ");  
   for(Int_t ic=0; ic<8;ic++) printf("%d ",cal->IsChipBad(ic));
   printf("\n");
+  printf("   Number of bad anodes =%d\n",cal->GetDeadChannels());
   printf("-----------------------------------\n");
   Int_t ipt=0;
   TGraph *gbad=new TGraph(0);
@@ -154,5 +215,5 @@ void ShowCalibrationSDD(Int_t nrun, Int_t nv, Char_t* dir="LHC08d", Int_t nmod=0
   Char_t filnam[200];
   sprintf(filnam,"alien:///alice/data/2008/%s/OCDB/ITS/Calib/CalibSDD/Run%d_999999999_v%d_s0.root",dir,nrun,nv);
   printf("Open file: %s\n",filnam);
-  ShowCalibrationSDD(filnam,nmod);
+  ShowCalibrationSDD(nmod,filnam);
 }
