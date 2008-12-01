@@ -525,18 +525,19 @@ void AliProtonAnalysis::Analyze(AliESDEvent* fESD) {
     Double_t probability[5];
     AliESDtrack trackTPC;
 
-    if(IsAccepted(track)) {	
+    //in case it's a TPC only track relate it to the proper vertex
     if((fUseTPCOnly)&&(!fUseHybridTPC)) {
       Float_t p[2],cov[3];
       track->GetImpactParametersTPC(p,cov);
       if (p[0]==0 && p[1]==0)  
-        track->RelateToVertexTPC(((AliESDEvent*)fESD)->GetPrimaryVertexTPC(),fESD->GetMagneticField(),kVeryBig);
+	track->RelateToVertexTPC(((AliESDEvent*)fESD)->GetPrimaryVertexTPC(),fESD->GetMagneticField(),kVeryBig);
       if (!track->FillTPCOnlyTrack(trackTPC)) {
-        continue;
+	continue;
       }
       track = &trackTPC ;
     }
 
+    if(IsAccepted(track)) {	
       if(fUseTPCOnly) {
 	AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
 	if(!tpcTrack) continue;

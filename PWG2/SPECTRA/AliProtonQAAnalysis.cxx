@@ -2721,6 +2721,20 @@ void AliProtonQAAnalysis::RunQAAnalysis(AliStack *stack,
     labelArray.AddAt(label,labelCounter);
     labelCounter += 1;
 
+    AliESDtrack trackTPC;
+    
+    //in case it's a TPC only track relate it to the proper vertex
+    if((fUseTPCOnly)&&(!fUseHybridTPC)) {
+      Float_t p[2],cov[3];
+      track->GetImpactParametersTPC(p,cov);
+      if (p[0]==0 && p[1]==0)  
+	track->RelateToVertexTPC(((AliESDEvent*)esd)->GetPrimaryVertexTPC(),esd->GetMagneticField(),kVeryBig);
+      if (!track->FillTPCOnlyTrack(trackTPC)) {
+	continue;
+      }
+      track = &trackTPC ;
+    }
+
     Double_t Pt = 0.0, P = 0.0;
     Double_t probability[5];
     Float_t dcaXY = 0.0, dcaZ = 0.0;
