@@ -162,7 +162,7 @@ void AliTPCTransform::Transform(Double_t *x,Int_t *i,UInt_t /*time*/,
   Float_t dist=0;
   dist+=(fPrimVtx[0]-x[0])*(fPrimVtx[0]-x[0]);
   dist+=(fPrimVtx[1]-x[1])*(fPrimVtx[1]-x[1]);
-  dist+=(fPrimVtx[0]-x[2])*(fPrimVtx[0]-x[2]);
+  dist+=(fPrimVtx[2]-x[2])*(fPrimVtx[2]-x[2]);
   dist = TMath::Sqrt(dist);
   // drift length correction because of TOF
   // the drift velocity is in cm/s therefore multiplication by 0.01
