@@ -65,7 +65,7 @@ TObjArray* AliTRDclusterResolution::Histos()
 //_______________________________________________________
 void AliTRDclusterResolution::Exec(Option_t *)
 {
-  Int_t det;
+  Int_t det, t;
   Float_t x, y, z, q, dy, dydx, dzdx, cov[3];
   TAxis at(kNTB, -0.075, (kNTB-.5)*.15); Int_t it = 0;
   TAxis ad(kND, 0., .25); Int_t id = 0;
@@ -95,7 +95,7 @@ void AliTRDclusterResolution::Exec(Option_t *)
     // resolution as a function of cluster charge
     // only for phi equal exB 
     if(TMath::Abs(dydx)<.01){
-      cli->GetCluster(det, x, y, z, q);
+      cli->GetCluster(det, x, y, z, q, t);
       h2 = (TH2I*)fContainer->At(kN);
       h2->Fill(TMath::Log(q), dy);
     }

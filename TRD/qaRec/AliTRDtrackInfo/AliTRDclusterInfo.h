@@ -16,7 +16,7 @@ public:
   AliTRDclusterInfo();
 
   Float_t   GetAnisochronity() const {return fD;}
-  inline void GetCluster(Int_t &det, Float_t &x, Float_t &y, Float_t &z, Float_t &q) const;
+  inline void GetCluster(Int_t &det, Float_t &x, Float_t &y, Float_t &z, Float_t &q, Int_t &t) const;
   void      GetMC(Int_t &pdg, Int_t &label) const{
       pdg  = fPdg;
       label= fLbl; }
@@ -49,7 +49,7 @@ private:
   UShort_t fDet;   // detector
   Short_t  fPdg;   // particle code
   Short_t fLbl;    // track label (MC)
-
+  Short_t fLocalTime; // calibrate drift time
   Float_t  fQ;     // cluster charge (REC)
   Float_t  fX;     // x coordinate (REC)
   Float_t  fY;     // y coordinate (REC)
@@ -68,13 +68,14 @@ private:
 
 
 //_________________________________________________
-inline void AliTRDclusterInfo::GetCluster(Int_t &det, Float_t &x, Float_t &y, Float_t &z, Float_t &q) const
+inline void AliTRDclusterInfo::GetCluster(Int_t &det, Float_t &x, Float_t &y, Float_t &z, Float_t &q, Int_t &t) const
 {
   det = fDet;
   x   = fX;
   y   = fY;
   z   = fZ;
   q   = fQ;
+  t   = fLocalTime;
 }
 
 #endif

@@ -13,6 +13,7 @@ AliTRDclusterInfo::AliTRDclusterInfo()
   ,fDet(0xffff)
   ,fPdg(0)
   ,fLbl(-1)
+  ,fLocalTime(-100)
   ,fQ(0.)
   ,fX(0.)
   ,fY(0.)
@@ -37,6 +38,7 @@ void AliTRDclusterInfo::SetCluster(const AliTRDcluster *c)
   fY   = c->GetY();
   fZ   = c->GetZ();
   fQ   = TMath::Abs(c->GetQ());
+  fLocalTime = c->GetLocalTimeBin();
 }
 
 //_________________________________________________
