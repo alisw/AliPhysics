@@ -61,14 +61,10 @@ class AliPHOSLoader : public AliLoader {
 public:
 
   AliPHOSLoader();
-  AliPHOSLoader(const AliPHOSLoader & obj);
   AliPHOSLoader(const Char_t *detname,const Char_t *eventfoldername); 
   AliPHOSLoader(const Char_t *detname,TFolder *topfolder);
   
   virtual ~AliPHOSLoader() ; 
-
-  // assignement operator requested by coding convention, but not needed
-  AliPHOSLoader & operator = (const AliPHOSLoader & ) {return *this;}
 
   Int_t   GetEvent();//extends the method on PHOS RecPart posting
   Int_t   SetEvent();//extends the method on PHOS RecPart posting
@@ -188,6 +184,10 @@ protected:
   AliPHOSCalibrationDB * fcdb ;       //!
 
 private:
+
+  // assignement operator requested by coding convention, but not needed
+  AliPHOSLoader(const AliPHOSLoader &);                //Not implemented
+  AliPHOSLoader & operator = (const AliPHOSLoader & ); //Not implemented
 
   Int_t ReadHits();
   Int_t ReadDigits();

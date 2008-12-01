@@ -46,26 +46,6 @@ AliTreeLoader::AliTreeLoader(const TString& name, AliDataLoader* dl,Bool_t store
 }
 
 //______________________________________________________________________________
-AliTreeLoader::AliTreeLoader(const AliTreeLoader& source):
-  AliObjectLoader(source) 
-{
-  //
-  // copy constructor
-  //
-  AliFatal("Copy constructor not implemented");
-}
-
-//______________________________________________________________________________
-AliTreeLoader& AliTreeLoader::operator=(const AliTreeLoader& /*source*/) 
-{
-  //
-  // Assignment operator
-  //
-  AliFatal("Assignment operator not implemented");
-  return *this;
-}
-
-//______________________________________________________________________________
 Int_t AliTreeLoader::WriteData(Option_t* opt)
 {
   //

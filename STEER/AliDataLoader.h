@@ -41,8 +41,6 @@ class AliDataLoader: public TNamed
   public:
    AliDataLoader();
    AliDataLoader(const char* filename, const char* contname, const char* name, Option_t* opt = "t");
-   AliDataLoader(const AliDataLoader& source);
-   AliDataLoader& operator=(const AliDataLoader& source);
    virtual ~AliDataLoader();
 
    virtual Int_t      SetEvent();
@@ -113,6 +111,8 @@ class AliDataLoader: public TNamed
    AliRunLoader*      GetRunLoader();//gets the run-loader from event folder
 
   private:
+   AliDataLoader(const AliDataLoader&); //Not implemented
+   AliDataLoader& operator=(const AliDataLoader&); //Not implemented
       
    TString      fFileName; //name of the file 
    TFile*       fFile; //! pointer to file 

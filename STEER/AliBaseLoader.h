@@ -41,8 +41,6 @@ class AliBaseLoader: public TNamed
   public:
     AliBaseLoader();
     AliBaseLoader(const TString& name, AliDataLoader* dl, Bool_t storeontop = kFALSE);
-    AliBaseLoader(const AliBaseLoader& source);
-    AliBaseLoader& operator=(const AliBaseLoader& source);
     
     virtual ~AliBaseLoader(){};
      
@@ -73,6 +71,10 @@ class AliBaseLoader: public TNamed
     Bool_t             fStoreInTopOfFile;// if true, data are stored in top of file ->Indicates fDoNotReload == kTRUE
 
    private:
+
+    AliBaseLoader(const AliBaseLoader&);   //Not implemented
+    AliBaseLoader& operator=(const AliBaseLoader&); //Not implemented
+
     Bool_t             fDoNotReload; // if this flag is on object is not reloaded while GetEvent is called.
                                      //Specially important for tasks. Task loops over events while producing data, 
 	                 //and has a base loader which writes it to file every processed event.

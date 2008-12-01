@@ -53,9 +53,6 @@ class AliRunLoader: public TNamed
     AliRunLoader();
     AliRunLoader(const char* topfoldername);
     AliRunLoader(TFolder* topfolder);
-    AliRunLoader(const AliRunLoader &rl);
-    AliRunLoader & operator = (const AliRunLoader &rl) 
-      {rl.Copy(*this); return *this;}
     
     virtual ~AliRunLoader();
     
@@ -248,6 +245,9 @@ protected:
     void           SetDetectorAddresses();
         
   private:
+    AliRunLoader(const AliRunLoader &r);      //Not implemented
+    AliRunLoader & operator = (const AliRunLoader &); //Not implemented 
+
     void  GetListOfDetectors(const char * namelist,TObjArray& pointerarray) const;
 
     void  CleanHeader(){Clean(fgkHeaderContainerName);}

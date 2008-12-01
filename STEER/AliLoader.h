@@ -35,8 +35,6 @@ class AliLoader: public TNamed
     AliLoader();
     AliLoader(const Char_t *detname,const Char_t *eventfoldername); //contructor with name of the top folder of the tree
     AliLoader(const Char_t *detname,TFolder* eventfolder);
-    AliLoader(const AliLoader& source); //copy constructor
-    AliLoader& operator=(const AliLoader& source); //assignment operator
 
     virtual ~AliLoader();//----------------- 
  
@@ -371,6 +369,8 @@ class AliLoader: public TNamed
    private:
     //descendant classes should
     //use protected interface methods to access these folders
+    AliLoader(const AliLoader&); //Not implemented
+    AliLoader& operator=(const AliLoader&); //Not implemented
 
     ClassDef(AliLoader,2)
  };

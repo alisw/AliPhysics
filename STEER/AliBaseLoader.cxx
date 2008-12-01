@@ -64,30 +64,6 @@ AliBaseLoader::AliBaseLoader(const TString& name,  AliDataLoader* dl, Bool_t sto
 }
 
 //______________________________________________________________________________
-AliBaseLoader::AliBaseLoader(const AliBaseLoader& source) : 
-  TNamed(source),
-  fIsLoaded(source.fIsLoaded),
-  fStoreInTopOfFile(source.fStoreInTopOfFile),
-  fDoNotReload(source.fDoNotReload),
-  fDataLoader(source.fDataLoader)
-{
-  //
-  // copy constructor
-  //
-  AliFatal("Copy constructor not implemented");
-}
-
-//______________________________________________________________________________
-AliBaseLoader& AliBaseLoader::operator=(const AliBaseLoader& /*source*/) 
-{
-  //
-  // Assignment operator
-  //
-  AliFatal("Assignment operator not implemented");
-  return *this;
-}
-
-//______________________________________________________________________________
 Int_t AliBaseLoader::Load(Option_t* opt)
 {
   //

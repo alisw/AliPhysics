@@ -47,27 +47,6 @@ AliTaskLoader::AliTaskLoader(const TString& name, AliDataLoader* dl,
 }
 
 //______________________________________________________________________________
-AliTaskLoader::AliTaskLoader(const AliTaskLoader& source):
-  AliBaseLoader(source),
-  fParentalTask(source.fParentalTask)
-{
-  //
-  // copy constructor
-  //
-  AliFatal("Copy constructor not implemented");
-}
-
-//______________________________________________________________________________
-AliTaskLoader& AliTaskLoader::operator=(const AliTaskLoader& /*source*/) 
-{
-  //
-  // Assignment operator
-  //
-  AliFatal("Assignment operator not implemented");
-  return *this;
-}
-
-//______________________________________________________________________________
 void AliTaskLoader::Clean()
 {
   //

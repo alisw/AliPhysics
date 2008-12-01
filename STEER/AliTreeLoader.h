@@ -27,18 +27,20 @@ class TTree;
 
 class AliTreeLoader: public AliObjectLoader
  {
-   public:
+public:
      AliTreeLoader(){};
      AliTreeLoader(const TString& name, AliDataLoader* dl, Bool_t storeontop = kFALSE);
-     AliTreeLoader(const AliTreeLoader& source);
-     AliTreeLoader& operator=(const AliTreeLoader& source);
      virtual ~AliTreeLoader(){};
      
      virtual TTree*     Tree() const {return dynamic_cast<TTree*>(Get());}
      virtual void       MakeTree();
      virtual Int_t      WriteData(Option_t* opt="");
 
-   ClassDef(AliTreeLoader,1)    
+private:
+     AliTreeLoader(const AliTreeLoader&);            //Not implemented
+     AliTreeLoader& operator=(const AliTreeLoader&); //Not implemented
+
+     ClassDef(AliTreeLoader,1)    
  };
 
 #endif

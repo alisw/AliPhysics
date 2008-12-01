@@ -56,25 +56,6 @@ TFolder* AliObjectLoader::GetFolder() const
 }
 
 //______________________________________________________________________________
-AliObjectLoader::AliObjectLoader(const AliObjectLoader& source):
-  AliBaseLoader(source) {
-  //
-  // copy constructor
-  //
-  AliFatal("Copy constructor not implemented");
-}
-
-//______________________________________________________________________________
-AliObjectLoader& AliObjectLoader::operator=(const AliObjectLoader& /*source*/) 
-{
-  //
-  // Assignment operator
-  //
-  AliFatal("Assignment operator not implemented");
-  return *this;
-}
-
-//______________________________________________________________________________
 void AliObjectLoader::RemoveFromBoard(TObject* obj)
 {
   //

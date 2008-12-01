@@ -122,27 +122,6 @@ AliRunLoader::AliRunLoader(const char* eventfoldername):
 }
 /**************************************************************************/
 
-AliRunLoader::AliRunLoader(const AliRunLoader &rl):
- TNamed(rl),
- fLoaders(0x0),
- fEventFolder(0x0),
- fCurrentEvent(0),
- fGAFile(0x0),
- fHeader(0x0),
- fStack(0x0),
- fCTrigger(0x0),
- fKineDataLoader(0x0),
- fTrackRefsDataLoader(0x0),
- fNEventsPerFile(0),
- fUnixDirName(".")
-{
-  //
-  // Copy ctor
-  //
-  rl.Copy(*this);
-}
-/**************************************************************************/
-
 AliRunLoader::~AliRunLoader()
 {
 //dtor

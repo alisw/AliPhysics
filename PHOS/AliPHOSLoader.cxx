@@ -111,13 +111,7 @@ AliPHOSLoader::AliPHOSLoader(const Char_t *detname,TFolder *topfolder):
   //ctor
   fTmpHits =  new TClonesArray("AliPHOSHit",1000);
 }
-//____________________________________________________________________________ 
-AliPHOSLoader::AliPHOSLoader(const AliPHOSLoader & obj):
-  AliLoader(obj),fBranchTitle(obj.GetBranchTitle()),fcdb(obj.CalibrationDB()),
-  fDebug(obj.GetDebug()),fTmpHits(obj.fTmpHits)
-{
-  // Copy constructor
-}
+
 //____________________________________________________________________________ 
 
 AliPHOSLoader::~AliPHOSLoader()

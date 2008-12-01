@@ -40,14 +40,10 @@ class AliEMCALLoader : public AliLoader {
  public:
 
   AliEMCALLoader();
-  AliEMCALLoader(const AliEMCALLoader & obj);
   AliEMCALLoader(const Char_t *detname,const Char_t *eventfoldername); 
   AliEMCALLoader(const Char_t *name,TFolder *topfolder);
   
   virtual ~AliEMCALLoader() ; 
-
-  // assignement operator requested by coding convention, but not needed
-  const AliEMCALLoader & operator = (const AliEMCALLoader & ) {return *this;}
 
   virtual Int_t GetEvent();  // Overload to fill TClonesArray
 
@@ -110,6 +106,10 @@ class AliEMCALLoader : public AliLoader {
 
 private:
  
+  // assignement operator requested by coding convention, but not needed
+  AliEMCALLoader(const AliEMCALLoader &); //Not implemented
+  const AliEMCALLoader & operator = (const AliEMCALLoader &); //Not implemented
+
   static const TString fgkECARecPointsBranchName; //! Name of branch with ECA Reconstructed Points
 
   Int_t  fDebug ;             // Debug level

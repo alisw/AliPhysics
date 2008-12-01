@@ -112,18 +112,6 @@ AliEMCALLoader::AliEMCALLoader(const Char_t *name, TFolder *topfolder)
   fRecPoints = new TObjArray();
 }
 
-//____________________________________________________________________________
-AliEMCALLoader::AliEMCALLoader(const AliEMCALLoader & obj)
-  : AliLoader(obj),
-    fDebug(obj.fDebug),
-    fHits(obj.fHits),
-    fDigits(obj.fDigits),
-    fSDigits(obj.fSDigits),
-    fRecPoints(obj.fRecPoints)
-{
-  //copy ctor
-}
-
 //____________________________________________________________________________ 
 AliEMCALLoader::~AliEMCALLoader()
 {

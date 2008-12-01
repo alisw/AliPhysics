@@ -19,8 +19,6 @@ class AliTaskLoader: public AliBaseLoader
   public:
     AliTaskLoader():fParentalTask(0x0){};
     AliTaskLoader(const TString& name, AliDataLoader* dl, TTask* parentaltask, Bool_t storeontop = kFALSE);
-    AliTaskLoader(const AliTaskLoader& source);
-    AliTaskLoader& operator=(const AliTaskLoader& source);
     virtual ~AliTaskLoader(){};
     
     TObject*           Get() const; 
@@ -33,6 +31,9 @@ class AliTaskLoader: public AliBaseLoader
     TTask*             GetParentalTask() const;
 
   private:
+    AliTaskLoader(const AliTaskLoader&);            //Not implemented
+    AliTaskLoader& operator=(const AliTaskLoader&); //Not implemented
+
     TTask*             fParentalTask; // Parental task
 
   ClassDef(AliTaskLoader,1)    

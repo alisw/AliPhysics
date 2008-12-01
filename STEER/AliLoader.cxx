@@ -106,33 +106,6 @@ AliLoader::AliLoader(const Char_t * detname,TFolder* eventfolder):
    SetEventFolder(eventfolder);
    //fileoption's don't need to initialized because default TString ctor does it correctly
 }
-/*****************************************************************************/ 
-AliLoader::AliLoader(const AliLoader& source) : 
-  TNamed(source), 
-  fDataLoaders(source.fDataLoaders),
-  fDetectorName(source.fDetectorName),
-  fEventFolder(source.fEventFolder),
-  fDataFolder(source.fDataFolder),
-  fDetectorDataFolder(source.fDetectorDataFolder),
-  fModuleFolder(source.fModuleFolder),
-  fTasksFolder(source.fTasksFolder),
-  fQAFolder(source.fQAFolder)
-{
-  // dummy copy constructor
-  if(&source==this)return;
-  
-  AliFatal("Copy constructor not implemented. Aborting");
-  return;
-}
-
-/*****************************************************************************/ 
-AliLoader& AliLoader::operator=(const AliLoader& source) {
-  // dummy assignment operator
-  if(&source==this) return *this;
-  
-  AliFatal("Assignment operator not implemented. Aborting");
-  return *this;
-}
 
 /*****************************************************************************/ 
 AliLoader::~AliLoader()

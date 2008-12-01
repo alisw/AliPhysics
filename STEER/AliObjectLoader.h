@@ -15,19 +15,22 @@
 #include "AliBaseLoader.h"
 
 class AliObjectLoader: public AliBaseLoader
- {
-   public:
+{
+ public:
      AliObjectLoader(){};
      AliObjectLoader(const TString& name, AliDataLoader* dl, Bool_t storeontop = kFALSE);
-     AliObjectLoader(const AliObjectLoader& source);
-     AliObjectLoader& operator=(const AliObjectLoader& source);
      virtual          ~AliObjectLoader(){};
      TObject*          Get() const;
 
-   protected:
+ protected:
      TFolder*          GetFolder() const;
      Int_t             AddToBoard(TObject* obj);
      void              RemoveFromBoard(TObject* obj);
+
+ private:
+     AliObjectLoader(const AliObjectLoader&);            //Not implemented
+     AliObjectLoader& operator=(const AliObjectLoader&); //Not implemented
+
 
  ClassDef(AliObjectLoader,1)    
   

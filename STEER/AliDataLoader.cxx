@@ -93,40 +93,6 @@ AliDataLoader::AliDataLoader(const char* filename, const char* contname,
 }
 
 //______________________________________________________________________________
-AliDataLoader::AliDataLoader(const AliDataLoader& source) : 
-  TNamed(source),
-  fFileName(source.fFileName),
-  fFile(source.fFile),
-  fDirectory(source.fDirectory),
-  fFileOption(source.fFileOption),
-  fCompressionLevel(source.fCompressionLevel),
-  fNEventsPerFile(source.fNEventsPerFile),
-  fBaseLoaders(source.fBaseLoaders),
-  fHasTask(source.fHasTask),
-  fTaskName(source.fTaskName),
-  fParentalTask(source.fParentalTask),
-  fEventFolder(source.fEventFolder),
-  fFolder(source.fFolder)
-{
-  //
-  // copy constructor
-  //
-  AliFatal("Copy constructor not implemented");
-}
-
-
-//______________________________________________________________________________
-AliDataLoader& AliDataLoader::operator=(const AliDataLoader& /*source*/) 
-{
-  //
-  // Assignment operator
-  //
-  AliFatal("Assignment operator not implemented");
-  return *this;
-}
-
-
-//______________________________________________________________________________
 AliDataLoader::~AliDataLoader()
 {
   //
