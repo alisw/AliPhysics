@@ -622,7 +622,8 @@ Bool_t AliTriggerConfiguration::ProcessConfigurationLine(const char* line, Int_t
      case 5:
        {
 	 AliTriggerPFProtection *pfp = NULL;
-	 if (((TObjString*)tokens->At(0))->String().CompareTo("NONE") == 0) {
+	 if ((((TObjString*)tokens->At(0))->String().CompareTo("NONE") == 0) ||
+	     (((TObjString*)tokens->At(0))->String().CompareTo("NOPF") == 0)) {
 	   pfp = new AliTriggerPFProtection(((TObjString*)tokens->At(0))->String());
 	 }
 	 else {
