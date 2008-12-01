@@ -32,49 +32,66 @@ $Log$
 ClassImp(AliTOFHitData)
 
 AliTOFHitData::AliTOFHitData():
-  TObject(),fDDLID(-1),fSlotID(-1),fACQ(-1),fChain(-1),fPS(-1),fTDC(-1),fChan(-1),fTime(-1),fTimeBin(-1),fTOT(-1),fTOTBin(-1),fDeltaBunchID(-1),fDeltaEventCounter(-1)
+  TObject(),
+  fDDLID(-1),
+  fSlotID(-1),
+  fACQ(-1),
+  fChain(-1),
+  fPS(-1),
+  fTDC(-1),
+  fChan(-1),
+  fTime(-1),
+  fTimeBin(-1),
+  fTOT(-1),
+  fTOTBin(-1),
+  fDeltaBunchID(-1),
+  fDeltaEventCounter(-1)
 {
   //ctor
+  for (Int_t i = 0; i < 5; ++i) fVolume[i]=0;
 }
-//-----------------------------------------------------------------------------
 
+//-----------------------------------------------------------------------------
 AliTOFHitData::AliTOFHitData(const AliTOFHitData &source):
-  TObject(),fDDLID(-1),fSlotID(-1),fACQ(-1),fChain(-1),fPS(-1),fTDC(-1),fChan(-1),fTime(-1),fTimeBin(-1),fTOT(-1),fTOTBin(-1),fDeltaBunchID(-1),fDeltaEventCounter(-1){ 
+  TObject(source),
+  fDDLID(source.fDDLID),
+  fSlotID(source.fSlotID),
+  fACQ(source.fACQ),
+  fChain(source.fChain),
+  fPS(source.fPS),
+  fTDC(source.fTDC),
+  fChan(source.fChan),
+  fTime(source.fTime),
+  fTimeBin(source.fTimeBin),
+  fTOT(source.fTOT),
+  fTOTBin(source.fTOTBin),
+  fDeltaBunchID(source.fDeltaBunchID),
+  fDeltaEventCounter(source.fDeltaEventCounter)
+{ 
   // copy constructor 
-  for (Int_t i = 0; i < 5; i++) this->fVolume[i]=source.fVolume[i];
-  this->fDDLID=source.fDDLID;
-  this->fSlotID=source.fSlotID;
-  this->fACQ=source.fACQ;
-  this->fChain=source.fChain;
-  this->fPS=source.fPS;
-  this->fTDC=source.fTDC;
-  this->fTOT=source.fTOT;
-  this->fTOTBin=source.fTOTBin;
-  this->fChan=source.fChan;
-  this->fTime=source.fTime;
-  this->fTimeBin=source.fTimeBin;
-  this->fDeltaBunchID=source.fDeltaBunchID;
-  this->fDeltaEventCounter=source.fDeltaEventCounter;
+  for (Int_t i = 0; i < 5; ++i) fVolume[i]=source.fVolume[i];
 }
 
 //-----------------------------------------------------------------------------
 AliTOFHitData& AliTOFHitData::operator=(const AliTOFHitData & source) { 
 // assignment operator
-  for (Int_t i = 0; i < 5; i++)
-    this->fVolume[i]=source.fVolume[i];
-  this->fDDLID=source.fDDLID;
-  this->fSlotID= source.fSlotID;
-  this->fACQ= source.fACQ;
-  this->fChain= source.fChain;
-  this->fPS= source.fPS;
-  this->fTDC= source.fTDC;
-  this->fChan= source.fChan;
-  this->fTime= source.fTime;
-  this->fTimeBin= source.fTimeBin;
-  this->fTOT= source.fTOT;
-  this->fTOTBin= source.fTOTBin;
-  this->fDeltaBunchID=source.fDeltaBunchID;
-  this->fDeltaEventCounter=source.fDeltaEventCounter;
+  if(this!=&source) {
+    TObject::operator=(source);
+    for (Int_t i = 0; i < 5; ++i) fVolume[i]=source.fVolume[i];
+    fDDLID=source.fDDLID;
+    fSlotID= source.fSlotID;
+    fACQ= source.fACQ;
+    fChain= source.fChain;
+    fPS= source.fPS;
+    fTDC= source.fTDC;
+    fChan= source.fChan;
+    fTime= source.fTime;
+    fTimeBin= source.fTimeBin;
+    fTOT= source.fTOT;
+    fTOTBin= source.fTOTBin;
+    fDeltaBunchID=source.fDeltaBunchID;
+    fDeltaEventCounter=source.fDeltaEventCounter;
+  }
   return *this;
 }
 //----------------------------------------------------------------------------

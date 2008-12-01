@@ -24,7 +24,7 @@ class AliTOFHitData : public TObject{
   
   AliTOFHitData& operator=(const AliTOFHitData & source); //ass. operator
   
-  Int_t  *GetVolume() {return fVolume;};
+  Int_t  *GetVolume()  {return fVolume;};
   Short_t GetDDLID() const {return fDDLID;};
   Short_t GetSlotID() const {return fSlotID;};
   Short_t GetACQ() const {return fACQ;};
