@@ -38,36 +38,35 @@ container for TOF raw data
 
 ClassImp(AliTOFHitDataBuffer)
 
-AliTOFHitDataBuffer::AliTOFHitDataBuffer(Int_t BufferSize) :
+AliTOFHitDataBuffer::AliTOFHitDataBuffer(Int_t bufferSize) :
   TObject(),
-  fBufferSize(BufferSize),
-  fBuffer(0x0),
+  fBufferSize(bufferSize),
+  fBuffer(new AliTOFHitData[bufferSize]),
   fEntries(0)
 {
-  fBuffer = new AliTOFHitData[BufferSize];
 }
+
 //-----------------------------------------------------------------------------
 AliTOFHitDataBuffer::AliTOFHitDataBuffer(const AliTOFHitDataBuffer &source):
-  TObject(),
-  fBufferSize(0),
-  fBuffer(0x0),
+  TObject(source),
+  fBufferSize(source.fBufferSize),
+  fBuffer(new AliTOFHitData[fBufferSize]),
   fEntries(source.fEntries)
 {
   // copy ctr
-  this->fBufferSize = source.fBufferSize;
-  this->fBuffer = new AliTOFHitData[this->fBufferSize];
-  this->fEntries = source.fEntries;
-  for (Int_t i = 0; i < this->fEntries; i++)
-    this->fBuffer[i] = source.fBuffer[i];
+  for (Int_t i = 0; i < fEntries; ++i)
+    fBuffer[i] = source.fBuffer[i];
 }
 
 //-----------------------------------------------------------------------------
 AliTOFHitDataBuffer& AliTOFHitDataBuffer::operator=(const AliTOFHitDataBuffer & source) 
 { 
   // ass operator
-  this->fEntries = source.fEntries < this->fBufferSize ? source.fEntries : this->fBufferSize;
-  for (Int_t i = 0; i < this->fEntries; i++)
-    this->fBuffer[i] = source.fBuffer[i];
+  if(this!=&source) {
+    TObject::operator=(source);
+    fEntries = source.fEntries < fBufferSize ? source.fEntries : fBufferSize;
+    for (Int_t i = 0; i < fEntries; ++i) fBuffer[i]=source.fBuffer[i];
+  }
   return *this;
 }
 
