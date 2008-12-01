@@ -523,8 +523,20 @@ void AliProtonAnalysis::Analyze(AliESDEvent* fESD) {
   for(Int_t iTracks = 0; iTracks < nGoodTracks; iTracks++) {
     AliESDtrack* track = fESD->GetTrack(iTracks);
     Double_t probability[5];
+    AliESDtrack trackTPC;
 
     if(IsAccepted(track)) {	
+    if((fUseTPCOnly)&&(!fUseHybridTPC)) {
+      Float_t p[2],cov[3];
+      track->GetImpactParametersTPC(p,cov);
+      if (p[0]==0 && p[1]==0)  
+        track->RelateToVertexTPC(((AliESDEvent*)fESD)->GetPrimaryVertexTPC(),fESD->GetMagneticField(),kVeryBig);
+      if (!track->FillTPCOnlyTrack(trackTPC)) {
+        continue;
+      }
+      track = &trackTPC ;
+    }
+
       if(fUseTPCOnly) {
 	AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
 	if(!tpcTrack) continue;
@@ -672,21 +684,7 @@ Bool_t AliProtonAnalysis::IsAccepted(AliESDtrack* track) {
   Double_t Pt = 0.0, Px = 0.0, Py = 0.0, Pz = 0.0;
   Float_t dcaXY = 0.0, dcaZ = 0.0;
 
-  if((fUseTPCOnly)&&(!fUseHybridTPC)) {
-    AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
-    if(!tpcTrack) {
-      Pt = 0.0; Px = 0.0; Py = 0.0; Pz = 0.0;
-      dcaXY = -100.0, dcaZ = -100.0;
-    }
-    else {
-      Pt = tpcTrack->Pt();
-      Px = tpcTrack->Px();
-      Py = tpcTrack->Py();
-      Pz = tpcTrack->Pz();
-      track->GetImpactParametersTPC(dcaXY,dcaZ);
-    }
-  }
-  else if(fUseHybridTPC) {
+  if(fUseHybridTPC) {
      AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
     if(!tpcTrack) {
       Pt = 0.0; Px = 0.0; Py = 0.0; Pz = 0.0;
