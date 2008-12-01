@@ -822,6 +822,8 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
   UChar_t status[3]={0, 0, 0}, ipos = 0;
   fIndexesOut->ResetCounters();
   while (fIndexesOut->NextRCTbinIndex(row, col, time)) {
+    // reset pad status
+    ipos = 0; for(Int_t is=3; is--;) status[is] = 0;
 
     Float_t signalM = TMath::Abs(digitsOut->GetData(row,col,time));
     status[1] = digitsIn->GetPadStatus(row,col,time);
@@ -860,8 +862,7 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
             }
           }
         }
-      } 
-      else { // one of the neighbouring pads are bad
+      } else { // one of the neighbouring pads are bad
         if (status[0] && signalR < signalM && signalR >= sigThresh) {
           digitsOut->SetData(row,col,time,-signalM);
           digitsOut->SetData(row, col, time+1, 0.);
@@ -879,12 +880,11 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
     else { // wrong maximum pad
       if ((signalL >= sigThresh) || (signalR >= sigThresh)) {
         // Maximum found, mark the position by a negative signal
-	digitsOut->SetData(row,col,time,-maxThresh);
-	fIndexesMaxima->AddIndexTBin(row,col,time);
-	padStatus.SetData(row, col, time, ipos);
+        digitsOut->SetData(row,col,time,-maxThresh);
+        fIndexesMaxima->AddIndexTBin(row,col,time);
+        padStatus.SetData(row, col, time, ipos);
       }
     }
-
   }
 
   // The index to the first cluster of a given ROC
@@ -1035,19 +1035,15 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
         Char_t   clusterTimeBin = ((Char_t) clusterRCT[2]);
 
         Int_t n = RecPoints()->GetEntriesFast();
-        AliTRDcluster *cluster = new((*RecPoints())[n]) AliTRDcluster(idet
-                                                                     ,clusterCharge
-                                                                     ,clusterPos
-                                                                     ,clusterSig
-                                                                     ,0x0
-                                                                     ,((Char_t) nPadCount)
-                                                                     ,signals
-                                                                     ,((UChar_t) col)
-                                                                     ,((UChar_t) row)
-                                                                     ,((UChar_t) time)
-                                                                     ,clusterTimeBin
-                                                                     ,clusterPosCol
-                                                                     ,volid);
+        AliTRDcluster *cluster = new((*RecPoints())[n]) AliTRDcluster(
+          idet,
+          clusterCharge, clusterPos, clusterSig,
+          0x0,
+          ((Char_t) nPadCount),
+          signals,
+          ((UChar_t) col), ((UChar_t) row), ((UChar_t) time),
+          clusterTimeBin, clusterPosCol,
+          volid);
         cluster->SetInChamber(!out);
 
         UChar_t maskPosition = padStatus.GetData(row, col, time);
