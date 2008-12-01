@@ -40,6 +40,7 @@ class AliFittingQDistribution{
   virtual void CreateOutputObjects();
   virtual void Make(AliFlowEventSimple* anEvent);
   virtual void Finish();
+  virtual void WriteHistograms(TString* outputFileName);
   
   TList* GetHistList() const {return this->fHistList;}      //output histogram list
  
