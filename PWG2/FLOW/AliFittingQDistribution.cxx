@@ -35,6 +35,7 @@
 #include "AliFlowEventSimple.h"
 #include "AliFlowTrackSimple.h"
 #include "AliFittingQDistribution.h"
+#include "AliFittingFunctionsForQDistribution.h"
 
 class TH1;
 class TGraph;
@@ -138,14 +139,29 @@ void AliFittingQDistribution::Make(AliFlowEventSimple* anEvent)
   q = fQVector.Mod()/sqrt(fQVector.GetMult());
   fQDistributionFQD->Fill(q,1.);
  }  
-}
+}//end of Make()
 
 //================================================================================================================
 
 void AliFittingQDistribution::Finish()
 {
- //not needed for the time being...
+ //calculate the final results
+ AliFittingFunctionsForQDistribution finalFitting(fAvMultIntFlowFQD,fQDistributionFQD,fIntFlowResultsFQD);
+         
+ finalFitting.Calculate();            
 }
+
+//================================================================================================================
+
+void AliFittingQDistribution::WriteHistograms(TString* outputFileName)
+{
+ //store the final results in output .root file
+ TFile *output = new TFile(outputFileName->Data(),"RECREATE");
+ fHistList->Write(); 
+ delete output;
+}
+
+//================================================================================================================
 
 
 

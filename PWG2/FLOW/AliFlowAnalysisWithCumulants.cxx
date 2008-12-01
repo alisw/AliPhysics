@@ -38,6 +38,7 @@
 #include "AliFlowTrackSimple.h"
 #include "AliFlowAnalysisWithCumulants.h"
 #include "AliFlowCumuConstants.h"
+#include "AliCumulantsFunctions.h"
 
 class TH1;
 class TGraph;
@@ -422,8 +423,25 @@ void AliFlowAnalysisWithCumulants::Make(AliFlowEventSimple* anEvent)
 
 void AliFlowAnalysisWithCumulants::Finish()
 {
- //not needed for the time being...
+ //calculate the final results
+ AliCumulantsFunctions finalResults(fIntFlowGenFun,NULL,NULL, fIntFlowResults,fDiffFlowResults2,fDiffFlowResults4,fDiffFlowResults6,fDiffFlowResults8,fAvMultIntFlow,fQVectorComponents,fQDist,fDiffFlowGenFunRe0,fDiffFlowGenFunRe1,fDiffFlowGenFunRe2,
+fDiffFlowGenFunRe3,fDiffFlowGenFunRe4,fDiffFlowGenFunRe5,fDiffFlowGenFunRe6,fDiffFlowGenFunRe7,fDiffFlowGenFunIm0,fDiffFlowGenFunIm1,
+fDiffFlowGenFunIm2,fDiffFlowGenFunIm3,fDiffFlowGenFunIm4,fDiffFlowGenFunIm5,fDiffFlowGenFunIm6,fDiffFlowGenFunIm7);
+         
+  finalResults.Calculate();  
 }
+
+//================================================================================================================
+
+void AliFlowAnalysisWithCumulants::WriteHistograms(TString* outputFileName)
+{
+ //store the final results in output .root file
+ TFile *output = new TFile(outputFileName->Data(),"RECREATE");
+ fHistList->Write(); 
+ delete output;
+}
+
+//================================================================================================================
 
 
 

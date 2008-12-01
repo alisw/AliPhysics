@@ -239,9 +239,10 @@ void AliAnalysisTaskQCumulants::Exec(Option_t *)
     }
     Printf("There are %d tracks in this event", fESD->GetNumberOfTracks());
     
-    //Q-cumulant analysis 
+    //Q-cumulant analysis    
     AliFlowEventSimple* fEvent = fEventMaker->FillTracks(fESD,fCFManager1,fCFManager2);
-    fQCA->Make(fEvent);
+    //AliFlowEventSimple* fEvent = fEventMaker->FillTracks(fESD);
+    fQCA->Make(fEvent); 
     delete fEvent;
   }
   else if (fAnalysisType == "ESDMC0") {
@@ -311,15 +312,17 @@ void AliAnalysisTaskQCumulants::Terminate(Option_t *)
  if(fListHistos)
  {	    
   //histograms to store the final results (integrated flow)
-  TH1D *intFlowResults = dynamic_cast<TH1D*>(fListHistos->FindObject("fIntFlowResults"));
+  TH1D *intFlowResults = dynamic_cast<TH1D*>(fListHistos->FindObject("fIntFlowResultsQC"));
   
   //histograms to store the final results (differential flow)
-  TH1D *diffFlowResults2ndOrder = dynamic_cast<TH1D*>(fListHistos->FindObject("fDiffFlowResults2ndOrder"));
-  TH1D *diffFlowResults4thOrder = dynamic_cast<TH1D*>(fListHistos->FindObject("fDiffFlowResults4thOrder"));
+  TH1D *diffFlowResults2ndOrder = dynamic_cast<TH1D*>(fListHistos->FindObject("fDiffFlowResults2ndOrderQC"));
+  TH1D *diffFlowResults4thOrder = dynamic_cast<TH1D*>(fListHistos->FindObject("fDiffFlowResults4thOrderQC"));
   
+  //histogram to store the final results for covariances (1st bin <2*4>-<2>*<4>, 2nd bin <2*6>-<2>*<6>, ...)
+  TH1D *covariances = dynamic_cast<TH1D*>(fListHistos->FindObject("fCovariances"));
   
   //profile with avarage selected multiplicity for int. flow 
-  TProfile *AvMultHere = dynamic_cast<TProfile*>(fListHistos->FindObject("fAvMultIntFlow"));
+  TProfile *AvMultHere = dynamic_cast<TProfile*>(fListHistos->FindObject("fAvMultIntFlowQC"));
   
   //profile with avarage values of Q-vector components (1st bin: <Q_x>, 2nd bin: <Q_y>, 3rd bin: <(Q_x)^2>, 4th bin: <(Q_y)^2>) 
   TProfile *QvectorComponentsHere = dynamic_cast<TProfile*>(fListHistos->FindObject("fQvectorComponents"));
@@ -339,12 +342,22 @@ void AliAnalysisTaskQCumulants::Terminate(Option_t *)
   TProfile *binned3p_2n1n1n = dynamic_cast<TProfile*>(fListHistos->FindObject("f3_2n1n1n"));
   TProfile *binned3p_1n1n2n = dynamic_cast<TProfile*>(fListHistos->FindObject("f3_1n1n2n"));
   TProfile *binned4p_1n1n1n1n = dynamic_cast<TProfile*>(fListHistos->FindObject("f4_1n1n1n1n"));
-
+  
+  /*
+  AliFlowCommonHistResults *commonHR2nd = dynamic_cast<AliFlowCommonHistResults*>(fListHistos->FindObject("fCommonHistsResults2nd"));
+  AliFlowCommonHistResults *commonHR4th = dynamic_cast<AliFlowCommonHistResults*>(fListHistos->FindObject("fCommonHistsResults4th"));
+  AliFlowCommonHistResults *commonHR6th = dynamic_cast<AliFlowCommonHistResults*>(fListHistos->FindObject("fCommonHistsResults6th"));
+  AliFlowCommonHistResults *commonHR8th = dynamic_cast<AliFlowCommonHistResults*>(fListHistos->FindObject("fCommonHistsResults8th"));
+  */
 
     
-  
-  AliQCumulantsFunctions finalResults(intFlowResults,diffFlowResults2ndOrder,diffFlowResults4thOrder,AvMultHere,QvectorComponentsHere,QCorrelations,QCovariance,QCorrelationsPerBin,DirectHere,binned2p_1n1n,binned2p_2n2n, binned3p_2n1n1n,binned3p_1n1n2n, binned4p_1n1n1n1n);
+  /*
+  AliQCumulantsFunctions finalResults(intFlowResults,diffFlowResults2ndOrder,diffFlowResults4thOrder,covariances,AvMultHere,QvectorComponentsHere,QCorrelations,QCovariance,QCorrelationsPerBin,DirectHere,binned2p_1n1n,binned2p_2n2n, binned3p_2n1n1n,binned3p_1n1n2n, binned4p_1n1n1n1n, commonHR2nd, commonHR4th, commonHR6th, commonHR8th);
+  */
          
+  AliQCumulantsFunctions finalResults(intFlowResults,diffFlowResults2ndOrder,diffFlowResults4thOrder,covariances,AvMultHere,QvectorComponentsHere,QCorrelations,QCovariance,QCorrelationsPerBin,DirectHere,binned2p_1n1n,binned2p_2n2n, binned3p_2n1n1n,binned3p_1n1n2n, binned4p_1n1n1n1n);
+
+                                              
   finalResults.Calculate();  
 
  
