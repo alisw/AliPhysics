@@ -1531,6 +1531,8 @@ Int_t AliTPCtrackerMI::FollowToNext(AliTPCseed& t, Int_t nr) {
   //-----------------------------------------------------------------
   //
   Double_t  x= GetXrow(nr), ymax=GetMaxY(nr);
+  //
+  //
   AliTPCclusterMI *cl=0;
   Int_t tpcindex= t.GetClusterIndex2(nr);
   //
@@ -1580,7 +1582,7 @@ Int_t AliTPCtrackerMI::FollowToNext(AliTPCseed& t, Int_t nr) {
     }
   }
   if (TMath::Abs(t.GetSnp())>AliTPCReconstructor::GetMaxSnpTracker()) return 0;  // cut on angle
-  if (fIteration>1){
+  if (fIteration>1 && IsFindable(t)){
     // not look for new cluster during refitting    
     t.SetNFoundable(t.GetNFoundable()+1);
     return 0;
@@ -1633,7 +1635,8 @@ Int_t AliTPCtrackerMI::FollowToNext(AliTPCseed& t, Int_t nr) {
   } 
   else
     {
-      if (TMath::Abs(z)<(AliTPCReconstructor::GetCtgRange()*x+10) && TMath::Abs(z)<fParam->GetZLength(0) && (TMath::Abs(t.GetSnp())<AliTPCReconstructor::GetMaxSnpTracker())) 
+      if (IsFindable(t))
+	  //      if (TMath::Abs(z)<(AliTPCReconstructor::GetCtgRange()*x+10) && TMath::Abs(z)<fParam->GetZLength(0) && (TMath::Abs(t.GetSnp())<AliTPCReconstructor::GetMaxSnpTracker())) 
 	t.SetNFoundable(t.GetNFoundable()+1);
       else
 	return 0;
@@ -1672,83 +1675,6 @@ Int_t AliTPCtrackerMI::FollowToNext(AliTPCseed& t, Int_t nr) {
   } else {  
     if ( fIteration==0 && t.GetNFoundable()*0.5 > t.GetNumberOfClusters()) t.SetRemoval(10);
     
-  }
-  return 1;
-}
-
-Int_t AliTPCtrackerMI::FollowToNextFast(AliTPCseed& t, Int_t nr) {
-  //-----------------------------------------------------------------
-  // This function tries to find a track prolongation to next pad row
-  //-----------------------------------------------------------------
-  //
-  Double_t  x= GetXrow(nr), ymax=GetMaxY(nr);
-  Double_t y,z; 
-  if (!t.GetProlongation(x,y,z)) {
-    t.SetRemoval(10);
-    return 0;
-  }
-  //
-  //
-  if (TMath::Abs(y)>ymax){
-    
-    if (y > ymax) {
-      t.SetRelativeSector((t.GetRelativeSector()+1) % fN);
-      if (!t.Rotate(fSectors->GetAlpha())) 
-	return 0;
-    } else if (y <-ymax) {
-      t.SetRelativeSector((t.GetRelativeSector()-1+fN) % fN);
-      if (!t.Rotate(-fSectors->GetAlpha())) 
-	return 0;
-    }
-    if (!t.PropagateTo(x)) {
-      return 0;
-    } 
-    t.GetProlongation(x,y,z);
-  }
-  //
-  // update current shape info every 2 pad-row
-  if ( (nr%2==0) || t.GetNumberOfClusters()<2 || (t.GetCurrentSigmaY2()<0.0001) ){
-    //    t.fCurrentSigmaY = GetSigmaY(&t);
-    //t.fCurrentSigmaZ = GetSigmaZ(&t);
-    GetShape(&t,nr);
-  }
-  //  
-  AliTPCclusterMI *cl=0;
-  UInt_t index=0;
-  
-  
-  //Int_t nr2 = nr;
-  const AliTPCtrackerRow &krow=GetRow(t.GetRelativeSector(),nr);
-  if ( (t.GetSigmaY2()<0) || t.GetSigmaZ2()<0) return 0;
-  Double_t  roady  =1.;
-  Double_t  roadz = 1.;
-  //
-  Int_t row = nr;
-  if (TMath::Abs(TMath::Abs(y)-ymax)<krow.GetDeadZone()){
-    t.SetInDead(kTRUE);
-    t.SetClusterIndex2(row,-1); 
-    return 0;
-  } 
-  else
-    {
-      if (TMath::Abs(z)>(AliTPCReconstructor::GetCtgRange()*x+10)) t.SetClusterIndex2(row,-1);
-    }   
-  //calculate 
-  
-  if ((cl==0)&&(krow)) {
-    //    cl = krow.FindNearest2(y+10,z,roady,roadz,index);    
-    cl = krow.FindNearest2(y,z,roady,roadz,index);    
-
-    if (cl) t.SetCurrentClusterIndex1(krow.GetIndex(index));       
-  }  
-
-  if (cl) {
-    t.SetCurrentCluster(cl); 
-    //    Int_t accept = AcceptCluster(&t,t.fCurrentCluster);        
-    //if (accept<3){
-      t.SetClusterIndex2(row,index);
-      t.SetClusterPointer(row, cl);
-      //}
   }
   return 1;
 }
@@ -1869,7 +1795,9 @@ Int_t AliTPCtrackerMI::UpdateClusters(AliTPCseed& t,  Int_t nr) {
   } 
   else
     {
-      if (TMath::Abs(t.GetZ())<(AliTPCReconstructor::GetCtgRange()*t.GetX()+10) && (TMath::Abs(t.GetSnp())<AliTPCReconstructor::GetMaxSnpTracker())) t.SetNFoundable(t.GetNFoundable()+1);
+
+      //      if (TMath::Abs(t.GetZ())<(AliTPCReconstructor::GetCtgRange()*t.GetX()+10) && (TMath::Abs(t.GetSnp())<AliTPCReconstructor::GetMaxSnpTracker())) 
+      if (IsFindable(t)) t.SetNFoundable(t.GetNFoundable()+1);
       else
 	return 0;      
     }
@@ -2005,27 +1933,6 @@ Int_t AliTPCtrackerMI::FollowProlongation(AliTPCseed& t, Int_t rf, Int_t step) {
   return 1;
 }
 
-
-//_____________________________________________________________________________
-Int_t AliTPCtrackerMI::FollowProlongationFast(AliTPCseed& t, Int_t rf, Int_t step) {
-  //-----------------------------------------------------------------
-  // This function tries to find a track prolongation.
-  //-----------------------------------------------------------------
-  Double_t xt=t.GetX();
-  //
-  Double_t alpha=t.GetAlpha() - fSectors->GetAlphaShift();
-  if (alpha > 2.*TMath::Pi()) alpha -= 2.*TMath::Pi();  
-  if (alpha < 0.            ) alpha += 2.*TMath::Pi();  
-  t.SetRelativeSector(Int_t(alpha/fSectors->GetAlpha()+0.0001)%fN);
-    
-  for (Int_t nr=GetRowNumber(xt)-1; nr>=rf; nr-=step) {
-    
-    if (FollowToNextFast(t,nr)==0) 
-      if (!t.IsActive()) return 0;
-    
-  }   
-  return 1;
-}
 
 
 
@@ -2653,6 +2560,7 @@ Int_t AliTPCtrackerMI::RefitInward(AliESDEvent *event)
   SignShared(&arraySeed);
   //  FindCurling(fSeeds, event,2); // find multi found tracks
   FindSplitted(fSeeds, event,2); // find multi found tracks
+  if (AliTPCReconstructor::StreamLevel()>2)  FindMultiMC(fSeeds, fEvent,2); // find multi found tracks
 
   Int_t ntracks=0;
   Int_t nseed = fSeeds->GetEntriesFast();
@@ -2739,6 +2647,7 @@ Int_t AliTPCtrackerMI::PropagateBack(AliESDEvent *event)
   RemoveUsed2(fSeeds,0.4,0.4,20);
   //FindCurling(fSeeds, fEvent,1);  
   FindSplitted(fSeeds, event,1); // find multi found tracks
+  if (AliTPCReconstructor::StreamLevel()>2)  FindMultiMC(fSeeds, fEvent,1); // find multi found tracks
 
   //
   Int_t nseed = fSeeds->GetEntriesFast();
@@ -2940,13 +2849,9 @@ void AliTPCtrackerMI::MakeSeeds3(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2,
   Double_t x[5], c[15];
   //  Int_t di = i1-i2;
   //
-  AliTPCseed * seed = new AliTPCseed();
   Double_t alpha=fSectors->GetAlpha(), shift=fSectors->GetAlphaShift();
   Double_t cs=cos(alpha), sn=sin(alpha);
-  //
-  //  Double_t x1 =fOuterSec->GetX(i1);
-  //Double_t xx2=fOuterSec->GetX(i2);
-  
+  //  
   Double_t x1 =GetXrow(i1);
   Double_t xx2=GetXrow(i2);
 
@@ -3147,82 +3052,78 @@ void AliTPCtrackerMI::MakeSeeds3(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2,
         c[13]=f30*sy1*f40+f32*sy2*f42;
         c[14]=f40*sy1*f40+f42*sy2*f42+f43*sy3*f43;
 	
-	//	if (!BuildSeed(kr1[is],kcl,0,x1,x2,x3,x,c)) continue;
 	
         UInt_t index=kr1.GetIndex(is);
-	seed->~AliTPCseed(); // this does not set the pointer to 0...
-	AliTPCseed *track=new(seed) AliTPCseed(x1, ns*alpha+shift, x, c, index);
+	AliTPCseed track(x1, ns*alpha+shift, x, c, index);
 	
-	track->SetIsSeeding(kTRUE);
-	track->SetSeed1(i1);
-	track->SetSeed2(i2);
-	track->SetSeedType(3);
+	track.SetIsSeeding(kTRUE);
+	track.SetSeed1(i1);
+	track.SetSeed2(i2);
+	track.SetSeedType(3);
 
        
 	//if (dsec==0) {
-	  FollowProlongation(*track, (i1+i2)/2,1);
+	  FollowProlongation(track, (i1+i2)/2,1);
 	  Int_t foundable,found,shared;
-	  track->GetClusterStatistic((i1+i2)/2,i1, found, foundable, shared, kTRUE);
-	  if ((found<0.55*foundable)  || shared>0.5*found || (track->GetSigmaY2()+track->GetSigmaZ2())>0.5){
-	    seed->Reset();
-	    seed->~AliTPCseed();
+	  track.GetClusterStatistic((i1+i2)/2,i1, found, foundable, shared, kTRUE);
+	  if ((found<0.55*foundable)  || shared>0.5*found || (track.GetSigmaY2()+track.GetSigmaZ2())>0.5){
 	    continue;
 	  }
 	  //}
 	
 	nin++;
-	FollowProlongation(*track, i2,1);
+	FollowProlongation(track, i2,1);
 	
 	
 	//Int_t rc = 1;
-	track->SetBConstrain(1);
+	track.SetBConstrain(1);
 	//	track->fLastPoint = i1+fInnerSec->GetNRows();  // first cluster in track position
-	track->SetLastPoint(i1);  // first cluster in track position
-	track->SetFirstPoint(track->GetLastPoint());
+	track.SetLastPoint(i1);  // first cluster in track position
+	track.SetFirstPoint(track.GetLastPoint());
 	
-	if (track->GetNumberOfClusters()<(i1-i2)*0.5 || 
-	    track->GetNumberOfClusters() < track->GetNFoundable()*0.6 || 
-	    track->GetNShared()>0.4*track->GetNumberOfClusters() ) {
-	  seed->Reset();
-	  seed->~AliTPCseed();
+	if (track.GetNumberOfClusters()<(i1-i2)*0.5 || 
+	    track.GetNumberOfClusters() < track.GetNFoundable()*0.6 || 
+	    track.GetNShared()>0.4*track.GetNumberOfClusters() ) {
 	  continue;
 	}
 	nout1++;
         // Z VERTEX CONDITION
 	Double_t zv, bz=GetBz();
-        if ( !track->GetZAt(0.,bz,zv) ) continue;
+        if ( !track.GetZAt(0.,bz,zv) ) continue;
 	if (TMath::Abs(zv-z3)>cuts[2]) {
-	  FollowProlongation(*track, TMath::Max(i2-20,0));
-          if ( !track->GetZAt(0.,bz,zv) ) continue;
+	  FollowProlongation(track, TMath::Max(i2-20,0));
+          if ( track.GetZAt(0.,bz,zv) ) continue;
 	  if (TMath::Abs(zv-z3)>cuts[2]){
-	    FollowProlongation(*track, TMath::Max(i2-40,0));
-            if ( !track->GetZAt(0.,bz,zv) ) continue;
-	    if (TMath::Abs(zv-z3)>cuts[2] &&(track->GetNumberOfClusters() > track->GetNFoundable()*0.7)){
+	    // If track do not point to the primary vertex, but sufficientlu long
+	    //try to refit it without constrain
+	    //
+	    //
+	    FollowProlongation(track, TMath::Max(i2-40,0));
+            if ( !track.GetZAt(0.,bz,zv) ) continue;
+	    if (TMath::Abs(zv-z3)>cuts[2] &&(track.GetNumberOfClusters() > track.GetNFoundable()*0.7)){
 	      // make seed without constrain
-	      AliTPCseed * track2 = MakeSeed(track,0.2,0.5,1.);
+	      AliTPCseed * track2 = MakeSeed(&track,0.2,0.5,1.);
 	      FollowProlongation(*track2, i2,1);
 	      track2->SetBConstrain(kFALSE);
 	      track2->SetSeedType(1);
-	      arr->AddLast(track2); 
-	      seed->Reset();
-	      seed->~AliTPCseed();
+	      arr->AddLast(track2->Clone()); 
 	      continue;		
 	    }
 	    else{
-	      seed->Reset();
-	      seed->~AliTPCseed();
+	      //seed->Reset();
+	      //seed->~AliTPCseed();
 	      continue;
-	    
+	      
 	    }
 	  }
 	}
       
-	track->SetSeedType(0);
-	arr->AddLast(track); 
-	seed = new AliTPCseed; 	
+	track.SetSeedType(0);
+	arr->AddLast(track.Clone()); 
+	//seed = new AliTPCseed; 	
 	nout2++;
 	// don't consider other combinations
-	if (track->GetNumberOfClusters() > track->GetNFoundable()*0.8)
+	if (track.GetNumberOfClusters() > track.GetNFoundable()*0.8)
 	  break;
       }
     }
@@ -3230,7 +3131,7 @@ void AliTPCtrackerMI::MakeSeeds3(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2,
   if (fDebug>3){
     Info("MakeSeeds3","\nSeeding statistic:\t%d\t%d\t%d\t%d\t%d\t%d",nin0,nin1,nin2,nin,nout1,nout2);
   }
-  delete seed;
+  //  delete seed;
 }
 
 
@@ -6193,9 +6094,10 @@ Int_t AliTPCtrackerMI::Clusters2Tracks() {
   RemoveUsed2(fSeeds,0.85,0.85,0);
   if (AliTPCReconstructor::GetRecoParam()->GetDoKinks()) FindKinks(fSeeds,fEvent);
   //FindCurling(fSeeds, fEvent,0);  
-  if (AliTPCReconstructor::StreamLevel()>2)  FindMultiMC(fSeeds, fEvent,0); // find multi found tracks
+  if (AliTPCReconstructor::StreamLevel()>2)  FindMultiMC(fSeeds, fEvent,-1); // find multi found tracks
   RemoveUsed2(fSeeds,0.5,0.4,20);
   FindSplitted(fSeeds, fEvent,0); // find multi found tracks
+  if (AliTPCReconstructor::StreamLevel()>2)  FindMultiMC(fSeeds, fEvent,0); // find multi found tracks
 
  //  //
 //   // refit short tracks
@@ -7066,6 +6968,19 @@ void AliTPCtrackerMI::MakeBitmaps(AliTPCseed *t)
   }
 }
 
+Bool_t AliTPCtrackerMI::IsFindable(AliTPCseed & track){
+  //
+  // return flag if there is findable cluster at given position
+  //
+  Float_t kDeltaZ=10;
+  Float_t z = track.GetZ();
+  
+  if (TMath::Abs(z)<(AliTPCReconstructor::GetCtgRange()*track.GetX()+kDeltaZ) && 
+      TMath::Abs(z)<fParam->GetZLength(0) && 
+      (TMath::Abs(track.GetSnp())<AliTPCReconstructor::GetMaxSnpTracker()))
+    return kTRUE;
+  return kFALSE;      
+}
 
 
 void AliTPCtrackerMI::AddCovariance(AliTPCseed * seed){

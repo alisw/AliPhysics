@@ -78,12 +78,10 @@ public:
    void RotateToLocal(AliTPCseed *seed);
    
    Int_t FollowProlongation(AliTPCseed& t, Int_t rf=0, Int_t step=1);
-   Int_t FollowProlongationFast(AliTPCseed& t, Int_t rf=0, Int_t step=1);
    Bool_t GetTrackPoint(Int_t index, AliTrackPoint &p ) const; 
 
    Int_t FollowBackProlongation(AliTPCseed& t, Int_t rf);
    Int_t FollowToNext(AliTPCseed& t, Int_t nr);
-   Int_t FollowToNextFast(AliTPCseed& t, Int_t nr);
    Int_t UpdateClusters(AliTPCseed& t,  Int_t nr);
    Int_t FollowToNextCluster( AliTPCseed& t, Int_t nr);
 
@@ -122,6 +120,7 @@ public:
    Int_t AcceptCluster(AliTPCseed * seed, AliTPCclusterMI * cluster);
 
 private:
+  Bool_t IsFindable(AliTPCseed & t);
   AliTPCtrackerMI(const AliTPCtrackerMI& r);           //dummy copy constructor
   AliTPCtrackerMI &operator=(const AliTPCtrackerMI& r);//dummy assignment operator
   void AddCovariance(AliTPCseed * seed);               // add covariance
