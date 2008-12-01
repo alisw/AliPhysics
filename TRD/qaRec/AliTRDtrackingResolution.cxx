@@ -165,8 +165,6 @@ TH1* AliTRDtrackingResolution::PlotClusterResiduals(const AliTRDtrackV1 *track)
     return 0x0;
   }
 
-  Int_t pdg = (HasMCdata() && fMC) ? fMC->GetPDG() : 0;
-  UChar_t s;
   Float_t x0, y0, z0, dy, dydx, dzdx;
   AliTRDseedV1 *fTracklet = 0x0;  
   for(Int_t ily=0; ily<AliTRDgeometry::kNlayer; ily++){
@@ -175,52 +173,48 @@ TH1* AliTRDtrackingResolution::PlotClusterResiduals(const AliTRDtrackV1 *track)
     x0 = fTracklet->GetX0();
 
     // retrive the track angle with the chamber
-    if(HasMCdata() && fMC){ 
-      if(!fMC->GetDirections(x0, y0, z0, dydx, dzdx, s)) continue; 
-    }else{ 
-      y0   = fTracklet->GetYref(0);
-      z0   = fTracklet->GetZref(0);
-      dydx = fTracklet->GetYref(1);
-      dzdx = fTracklet->GetZref(1);
-    }
+    y0   = fTracklet->GetYref(0);
+    z0   = fTracklet->GetZref(0);
+    dydx = fTracklet->GetYref(1);
+    dzdx = fTracklet->GetZref(1);
 
     AliTRDseedV1 trklt(*fTracklet);
     if(!trklt.Fit(kFALSE)) continue;
-
+    Float_t tilt = trklt.GetTilt();
     AliTRDcluster *c = 0x0;
     fTracklet->ResetClusterIter(kFALSE);
     while((c = fTracklet->PrevCluster())){
-      dy = trklt.GetYat(c->GetX()) - c->GetY();
+      Float_t xc = c->GetX();
+      Float_t yc = c->GetY();
+      Float_t zc = c->GetZ();
+      Float_t dx = x0 - xc; 
+      Float_t yt = y0 - dx*dydx;
+      Float_t zt = z0 - dx*dzdx; 
+      dy = yt - (yc - tilt*(zc-zt));
+
+      //dy = trklt.GetYat(c->GetX()) - c->GetY();
       h->Fill(dydx, dy);
   
       if(fDebugLevel>=1){
-        Float_t q = c->GetQ();
         // Get z-position with respect to anode wire
         AliTRDSimParam    *simParam    = AliTRDSimParam::Instance();
-        Int_t det = c->GetDetector();
-        Float_t x = c->GetX();
-        Float_t z = z0-(x0-x)*dzdx;
-        Int_t istk = fGeo->GetStack(det);
+        Int_t istk = fGeo->GetStack(c->GetDetector());
         AliTRDpadPlane *pp = fGeo->GetPadPlane(ily, istk);
         Float_t row0 = pp->GetRow0();
-        Float_t d  =  row0 - z + simParam->GetAnodeWireOffset();
+        Float_t d  =  row0 - zt + simParam->GetAnodeWireOffset();
         d -= ((Int_t)(2 * d)) / 2.0;
         if (d > 0.25) d  = 0.5 - d;
 
-        (*fDebugStream) << "ClusterResidual"
-          << "ly="   << ily
-          << "stk="  << istk
-          << "pdg="  << pdg
-          << "dydx=" << dydx
-          << "dzdx=" << dzdx
-          << "q="    << q
-          << "x="    << x
-          << "z="    << z
-          << "d="    << d
-          << "dy="   << dy
+        AliTRDclusterInfo *clInfo = new AliTRDclusterInfo;
+        fClResiduals->Add(clInfo);
+        clInfo->SetCluster(c);
+        clInfo->SetGlobalPosition(yt, zt, dydx, dzdx);
+        clInfo->SetResolution(dy);
+        clInfo->SetAnisochronity(d);
+        clInfo->SetDriftLength(dx);
+        (*fDebugStream) << "ClusterResiduals"
+          <<"clInfo.=" << clInfo
           << "\n";
-        
-
       }
     }
   }
@@ -259,6 +253,7 @@ TH1* AliTRDtrackingResolution::PlotResolution(const AliTRDtrackV1 *track)
   //printf("called for %d tracklets ... \n", fTrack->GetNumberOfTracklets());
   UChar_t s;
   Int_t pdg = fMC->GetPDG(), det=-1;
+  Int_t label = fMC->GetLabel();
   Float_t x0, y0, z0, dy, dydx, dzdx;
   AliTRDseedV1 *fTracklet = 0x0;  
   for(Int_t ily=0; ily<AliTRDgeometry::kNlayer; ily++){
@@ -333,7 +328,6 @@ TH1* AliTRDtrackingResolution::PlotResolution(const AliTRDtrackV1 *track)
         Float_t d = zr0 - zt;
         d -= ((Int_t)(2 * d)) / 2.0;
         if (d > 0.25) d  = 0.5 - d;
-        Int_t label = fMC->GetLabel();
 
         AliTRDclusterInfo *clInfo = new AliTRDclusterInfo;
         fClResolution->Add(clInfo);
