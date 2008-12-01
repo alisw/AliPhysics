@@ -4,6 +4,8 @@
 #include "TMethodArg.h"
 #include "TFile.h"
 #include "TList.h"
+#include "TH1.h"
+#include "TF1.h"
 #include "TObjArray.h"
 #include "TDirectory.h"
 #include "TTreeStream.h"
@@ -144,4 +146,34 @@ void AliTRDrecoTask::SetDebugLevel(Int_t level)
     fDebugStream = new TTreeSRedirector(Form("TRD.Debug%s.root", GetName()));
     savedir->cd();
   }
+}
+
+//________________________________________________________
+void AliTRDrecoTask::Adjust(TF1 *f, TH1 *h)
+{
+// Helper function to avoid duplication of code
+// Make first guesses on the fit parameters
+
+  // find the intial parameters of the fit !! (thanks George)
+  Int_t nbinsy = Int_t(.5*h->GetNbinsX());
+  Double_t sum = 0.;
+  for(Int_t jbin=nbinsy-4; jbin<=nbinsy+4; jbin++) sum+=h->GetBinContent(jbin); sum/=9.;
+  f->SetParLimits(0, 0., 3.*sum);
+  f->SetParameter(0, .9*sum);
+
+  f->SetParLimits(1, -.2, .2);
+  f->SetParameter(1, -0.1);
+
+  f->SetParLimits(2, 0., 4.e-1);
+  f->SetParameter(2, 2.e-2);
+  if(f->GetNpar() <= 4) return;
+
+  f->SetParLimits(3, 0., sum);
+  f->SetParameter(3, .1*sum);
+
+  f->SetParLimits(4, -.3, .3);
+  f->SetParameter(4, 0.);
+
+  f->SetParLimits(5, 0., 1.e2);
+  f->SetParameter(5, 2.e-1);
 }

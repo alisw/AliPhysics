@@ -16,7 +16,7 @@ public:
   AliTRDclusterInfo();
 
   Float_t   GetAnisochronity() const {return fD;}
-  inline void GetCluster(Int_t &det, Float_t &x, Float_t &y, Float_t &z, Float_t &q, Int_t &t) const;
+  inline void GetCluster(Int_t &det, Float_t &x, Float_t &y, Float_t &z, Float_t &q, Int_t &t, Float_t *cov) const;
   void      GetMC(Int_t &pdg, Int_t &label) const{
       pdg  = fPdg;
       label= fLbl; }
@@ -28,11 +28,12 @@ public:
       memcpy(cov, fCov, 3*sizeof(Float_t));}
   Float_t   GetResolution() const {return fdy;}
   Float_t   GetDriftLength() const {return fXd;}
+  Float_t   GetYDisplacement() const {return fYd;}
 
   void      Print(Option_t *opt="") const;
 
   void      SetAnisochronity(Float_t d) {fD = d;}
-  void      SetCluster(const AliTRDcluster *c=0x0);
+  void      SetCluster(const AliTRDcluster *c, Float_t *cov=0x0);
   void      SetMC(Int_t pdg, Int_t label){
       fPdg  = pdg;
       fLbl  = label;}
@@ -48,18 +49,20 @@ public:
 private:
   UShort_t fDet;   // detector
   Short_t  fPdg;   // particle code
-  Short_t fLbl;    // track label (MC)
-  Short_t fLocalTime; // calibrate drift time
+  Short_t  fLbl;   // track label (MC)
+  Short_t  fLocalTime; // calibrate drift time
   Float_t  fQ;     // cluster charge (REC)
   Float_t  fX;     // x coordinate (REC)
   Float_t  fY;     // y coordinate (REC)
+  Float_t  fYd;    // displacement from pad center y coordinate
   Float_t  fZ;     // z coordinate (REC)
   Float_t  fdydx;  // slope in phi (MC)
   Float_t  fdzdx;  // slope in theta (MC)
   Float_t  fXd;    // drift length
   Float_t  fYt;    // y coordinate (MC)
   Float_t  fZt;    // z coordinate (MC)
-  Float_t  fCov[3];// covariance matrix in the yz plane (global)
+  Float_t  fCov[3];// covariance matrix in the yz plane (track)
+  Float_t  fCovCl[3];// covariance matrix in the yz plane (cluster)
   Float_t  fdy;    // difference in y after tilt correction
   Float_t  fD;     // distance to the anode wire
 
@@ -68,7 +71,7 @@ private:
 
 
 //_________________________________________________
-inline void AliTRDclusterInfo::GetCluster(Int_t &det, Float_t &x, Float_t &y, Float_t &z, Float_t &q, Int_t &t) const
+inline void AliTRDclusterInfo::GetCluster(Int_t &det, Float_t &x, Float_t &y, Float_t &z, Float_t &q, Int_t &t, Float_t *cov) const
 {
   det = fDet;
   x   = fX;
@@ -76,6 +79,7 @@ inline void AliTRDclusterInfo::GetCluster(Int_t &det, Float_t &x, Float_t &y, Fl
   z   = fZ;
   q   = fQ;
   t   = fLocalTime;
+  memcpy(cov, fCovCl, 3*sizeof(Float_t));
 }
 
 #endif

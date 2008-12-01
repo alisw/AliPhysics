@@ -12,6 +12,8 @@
 #include "AliTRDtrackInfo/AliTRDtrackInfo.h"
 #endif
 
+class TH1;
+class TF1;
 class TList;
 class TObjArray;
 class TTreeSRedirector;
@@ -53,6 +55,8 @@ public:
 
 protected:
   void   InitFunctorList();
+  void   Adjust(TF1 *f, TH1 *h);
+
 
 private:
   AliTRDrecoTask(const AliTRDrecoTask&);

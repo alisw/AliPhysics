@@ -17,6 +17,7 @@ AliTRDclusterInfo::AliTRDclusterInfo()
   ,fQ(0.)
   ,fX(0.)
   ,fY(0.)
+  ,fYd(0.)
   ,fZ(0.)
   ,fdydx(0.)
   ,fdzdx(0.)
@@ -26,11 +27,14 @@ AliTRDclusterInfo::AliTRDclusterInfo()
   ,fdy(0.)
   ,fD(0.)
 {
-  memset(fCov, 0, 3*sizeof(Float_t));
+  fCov[0] = 1.; fCov[1] = 0.;
+  fCov[2] = 1.;
+  fCovCl[0] = 1.; fCovCl[1] = 0.;
+  fCovCl[2] = 1.;
 }
 
 //_________________________________________________
-void AliTRDclusterInfo::SetCluster(const AliTRDcluster *c)
+void AliTRDclusterInfo::SetCluster(const AliTRDcluster *c, Float_t *cov)
 {
   if(!c) return;
   fDet = c->GetDetector();
@@ -39,6 +43,9 @@ void AliTRDclusterInfo::SetCluster(const AliTRDcluster *c)
   fZ   = c->GetZ();
   fQ   = TMath::Abs(c->GetQ());
   fLocalTime = c->GetLocalTimeBin();
+  fYd  = c->GetCenter();
+
+  if(cov) memcpy(cov, fCovCl, 3*sizeof(Float_t));
 }
 
 //_________________________________________________
