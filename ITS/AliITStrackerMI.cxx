@@ -495,6 +495,7 @@ Int_t AliITStrackerMI::Clusters2Tracks(AliESDEvent *event) {
     Info("Clusters2Tracks", "Number of ESD tracks: %d\n", nentr);
     while (nentr--) {
       AliESDtrack *esd=event->GetTrack(nentr);
+      if(TMath::Abs(esd->GetX()-83.65)<0.1) { FILE *f=fopen("tpc.dat","a"); fprintf(f,"%f %f %f %f %f %f\n",(Float_t)event->GetEventNumberInFile(),(Float_t)TMath::Abs(esd->GetLabel()),(Float_t)esd->GetX(),(Float_t)esd->GetY(),(Float_t)esd->GetZ(),(Float_t)esd->Pt()); fclose(f); }
 
       if ((esd->GetStatus()&AliESDtrack::kTPCin)==0) continue;
       if (esd->GetStatus()&AliESDtrack::kTPCout) continue;
@@ -967,7 +968,7 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
       Int_t idet=layer.FindDetectorIndex(phi,z);
 
       Double_t trackGlobXYZ1[3];
-      currenttrack1.GetXYZ(trackGlobXYZ1);
+      if (!currenttrack1.GetXYZ(trackGlobXYZ1)) continue;
 
       // Get the budget to the primary vertex for the current track being prolonged
       Double_t budgetToPrimVertex = GetEffectiveThickness();
@@ -977,15 +978,16 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
       if (skip) {
 	AliITStrackMI* vtrack = new (&tracks[ilayer][ntracks[ilayer]]) AliITStrackMI(currenttrack1);
 	// propagate to the layer radius
-	Double_t xToGo; vtrack->GetLocalXat(r,xToGo);
-	vtrack->AliExternalTrackParam::PropagateTo(xToGo,GetBz());
+	Double_t xToGo; if (!vtrack->GetLocalXat(r,xToGo)) continue;
+	if(!vtrack->AliExternalTrackParam::PropagateTo(xToGo,GetBz())) continue;
 	// apply correction for material of the current layer
 	CorrectForLayerMaterial(vtrack,ilayer,trackGlobXYZ1,"inward");
 	vtrack->SetNDeadZone(vtrack->GetNDeadZone()+1);
 	vtrack->SetClIndex(ilayer,0);
 	modstatus = (skip==1 ? 3 : 4); // skipped : out in z
-	LocalModuleCoord(ilayer,idet,vtrack,xloc,zloc); // local module coords
-	vtrack->SetModuleIndexInfo(ilayer,idet,modstatus,xloc,zloc);
+	if(LocalModuleCoord(ilayer,idet,vtrack,xloc,zloc)) { // local module coords
+	  vtrack->SetModuleIndexInfo(ilayer,idet,modstatus,xloc,zloc);
+	}
 	if(constrain) vtrack->Improve(budgetToPrimVertex,xyzVtx,ersVtx);
 	ntracks[ilayer]++;
 	continue;
@@ -998,10 +1000,10 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
       const AliITSdetector &det=layer.GetDetector(idet);
       new(&currenttrack2)  AliITStrackMI(currenttrack1);
       if (!currenttrack1.Propagate(det.GetPhi(),det.GetR())) continue;
-      currenttrack2.Propagate(det.GetPhi(),det.GetR());
+      if (!currenttrack2.Propagate(det.GetPhi(),det.GetR())) continue;
       currenttrack1.SetDetectorIndex(idet);
       currenttrack2.SetDetectorIndex(idet);
-      LocalModuleCoord(ilayer,idet,&currenttrack1,xloc,zloc); // local module coords
+      if(!LocalModuleCoord(ilayer,idet,&currenttrack1,xloc,zloc)) continue; // local module coords
 
       //***************
       // DEFINITION OF SEARCH ROAD AND CLUSTERS SELECTION
@@ -1099,7 +1101,7 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
 	if (currenttrack->GetDetectorIndex()==idetc) { // track already on the cluster's detector
 	  // take into account misalignment (bring track to real detector plane)
 	  Double_t xTrOrig = currenttrack->GetX();
-	  currenttrack->PropagateTo(xTrOrig+cl->GetX(),0.,0.);
+	  if (!currenttrack->PropagateTo(xTrOrig+cl->GetX(),0.,0.)) continue;
 	  // a first cut on track-cluster distance
 	  if ( (currenttrack->GetZ()-cl->GetZ())*(currenttrack->GetZ()-cl->GetZ())*msz + 
 	       (currenttrack->GetY()-cl->GetY())*(currenttrack->GetY()-cl->GetY())*msy > 1. ) 
@@ -1108,7 +1110,7 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
 	      continue;
 	    }
 	  // bring track back to ideal detector plane
-	  currenttrack->PropagateTo(xTrOrig,0.,0.);
+	  if (!currenttrack->PropagateTo(xTrOrig,0.,0.)) continue;
 	} else {                                      // have to move track to cluster's detector
 	  const AliITSdetector &detc=layer.GetDetector(idetc);
 	  // a first cut on track-cluster distance
@@ -1158,8 +1160,9 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
 
 	  if (changedet) {
 	    Float_t xlocnewdet,zlocnewdet;
-	    LocalModuleCoord(ilayer,idet,updatetrack,xlocnewdet,zlocnewdet); // local module coords
-	    updatetrack->SetModuleIndexInfo(ilayer,idet,modstatus,xlocnewdet,zlocnewdet);
+	    if(LocalModuleCoord(ilayer,idet,updatetrack,xlocnewdet,zlocnewdet)) { // local module coords
+	      updatetrack->SetModuleIndexInfo(ilayer,idet,modstatus,xlocnewdet,zlocnewdet);
+	    }
 	  } else {
 	    updatetrack->SetModuleIndexInfo(ilayer,idet,modstatus,xloc,zloc);
 	  }
@@ -2021,6 +2024,7 @@ void AliITStrackerMI::AliITSdetector::ReadBadDetectorAndChips(Int_t ilayer,Int_t
 
   // Get calibration from AliITSDetTypeRec
   AliITSCalibration *calib = (AliITSCalibration*)detTypeRec->GetCalibrationModel(idet);
+  calib->SetModuleIndex(idet);
   AliITSCalibration *calibSPDdead = 0;
   if(detType==0) calibSPDdead = (AliITSCalibration*)detTypeRec->GetSPDDeadModel(idet); // TEMPORARY
   if (calib->IsBad() ||
@@ -2185,12 +2189,12 @@ Bool_t AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *track,
      // remember old position [SR, GSI 18.02.2003]
      Double_t oldX=0., oldY=0., oldZ=0.;
      if (track->IsStartedTimeIntegral() && step==1) {
-        track->GetGlobalXYZat(track->GetX(),oldX,oldY,oldZ);
+        if (!track->GetGlobalXYZat(track->GetX(),oldX,oldY,oldZ)) return kFALSE;
      }
      //
 
      Double_t oldGlobXYZ[3];
-     track->GetXYZ(oldGlobXYZ);
+     if (!track->GetXYZ(oldGlobXYZ)) return kFALSE;
 
      Double_t phi,z;
      if (!track->GetPhiZat(r,phi,z)) return kFALSE;
@@ -2201,17 +2205,18 @@ Bool_t AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *track,
      Int_t skip = CheckSkipLayer(track,ilayer,idet);
      if (skip==2) {
        // propagate to the layer radius
-       Double_t xToGo; track->GetLocalXat(r,xToGo);
-       track->AliExternalTrackParam::PropagateTo(xToGo,GetBz());
+       Double_t xToGo; if (!track->GetLocalXat(r,xToGo)) return kFALSE;
+       if (!track->AliExternalTrackParam::PropagateTo(xToGo,GetBz())) return kFALSE;
        // apply correction for material of the current layer
        CorrectForLayerMaterial(track,ilayer,oldGlobXYZ,dir);
        modstatus = 4; // out in z
-       LocalModuleCoord(ilayer,idet,track,xloc,zloc); // local module coords
-       track->SetModuleIndexInfo(ilayer,idet,modstatus,xloc,zloc);
+       if(LocalModuleCoord(ilayer,idet,track,xloc,zloc)) { // local module coords
+	 track->SetModuleIndexInfo(ilayer,idet,modstatus,xloc,zloc);
+       }
        // track time update [SR, GSI 17.02.2003]
        if (track->IsStartedTimeIntegral() && step==1) {
 	 Double_t newX, newY, newZ;
-	 track->GetGlobalXYZat(track->GetX(),newX,newY,newZ);
+	 if (!track->GetGlobalXYZat(track->GetX(),newX,newY,newZ)) return kFALSE;
 	 Double_t dL2 = (oldX-newX)*(oldX-newX) + (oldY-newY)*(oldY-newY) + 
 	                (oldZ-newZ)*(oldZ-newZ);
 	 track->AddTimeStep(TMath::Sqrt(dL2));
@@ -2225,7 +2230,7 @@ Bool_t AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *track,
      if (!track->Propagate(det.GetPhi(),det.GetR())) return kFALSE;
 
      track->SetDetectorIndex(idet);
-     LocalModuleCoord(ilayer,idet,track,xloc,zloc); // local module coords
+     if(!LocalModuleCoord(ilayer,idet,track,xloc,zloc)) return kFALSE; // local module coords
 
      Double_t dz,zmin,zmax,dy,ymin,ymax;
 
@@ -2242,7 +2247,7 @@ Bool_t AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *track,
 	   const AliITSdetector &detc=layer.GetDetector(idet);
 	   if (!track->Propagate(detc.GetPhi(),detc.GetR())) return kFALSE;
 	   track->SetDetectorIndex(idet);
-	   LocalModuleCoord(ilayer,idet,track,xloc,zloc); // local module coords
+	   if(!LocalModuleCoord(ilayer,idet,track,xloc,zloc)) return kFALSE; // local module coords
 	 }
 	 Int_t cllayer = (idx & 0xf0000000) >> 28;;
 	 Double_t chi2=GetPredictedChi2MI(track,cl,cllayer);
@@ -2317,7 +2322,7 @@ Bool_t AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *track,
      // track time update [SR, GSI 17.02.2003]
      if (track->IsStartedTimeIntegral() && step==1) {
         Double_t newX, newY, newZ;
-        track->GetGlobalXYZat(track->GetX(),newX,newY,newZ);
+        if (!track->GetGlobalXYZat(track->GetX(),newX,newY,newZ)) return kFALSE;
         Double_t dL2 = (oldX-newX)*(oldX-newX) + (oldY-newY)*(oldY-newY) + 
                        (oldZ-newZ)*(oldZ-newZ);
         track->AddTimeStep(TMath::Sqrt(dL2));
@@ -2437,8 +2442,10 @@ Double_t AliITStrackerMI::GetMatchingChi2(AliITStrackMI * track1, AliITStrackMI 
 {
   //
   // return matching chi2 between two tracks
+  Double_t largeChi2=1000.;
+
   AliITStrackMI track3(*track2);
-  track3.Propagate(track1->GetAlpha(),track1->GetX());
+  if (!track3.Propagate(track1->GetAlpha(),track1->GetX())) return largeChi2;
   TMatrixD vec(5,1);
   vec(0,0)=track1->GetY()   - track3.GetY();
   vec(1,0)=track1->GetZ()   - track3.GetZ();
@@ -4031,9 +4038,9 @@ void AliITStrackerMI::FindV02(AliESDEvent *event)
     //I.B. trackat0 = *bestLong;
     new (&trackat0) AliITStrackMI(*bestLong);
     Double_t xx,yy,zz,alpha; 
-    bestLong->GetGlobalXYZat(bestLong->GetX(),xx,yy,zz);
+    if (!bestLong->GetGlobalXYZat(bestLong->GetX(),xx,yy,zz)) continue;
     alpha = TMath::ATan2(yy,xx);    
-    trackat0.Propagate(alpha,0);      
+    if (!trackat0.Propagate(alpha,0)) continue;      
     // calculate normalized distances to the vertex 
     //
     Float_t ptfac  = (1.+100.*TMath::Abs(trackat0.GetC()));
@@ -4912,7 +4919,7 @@ Int_t AliITStrackerMI::CorrectForLayerMaterial(AliITStrackMI *t,
   // Bring the track beyond the material
   if (!t->AliExternalTrackParam::PropagateTo(xToGo,GetBz())) return 0;
   Double_t globXYZ[3];
-  t->GetXYZ(globXYZ);
+  if (!t->GetXYZ(globXYZ)) return 0;
 
   Double_t xOverX0=0.0,x0=0.0,lengthTimesMeanDensity=0.0;
   Double_t mparam[7];
@@ -5092,7 +5099,7 @@ Int_t AliITStrackerMI::CheckDeadZone(AliITStrackMI *track,
 
   // check if the road overlaps with bad chips
   Float_t xloc,zloc;
-  LocalModuleCoord(ilayer,idet,track,xloc,zloc);
+  if(!LocalModuleCoord(ilayer,idet,track,xloc,zloc)) return 0;
   Float_t zlocmin = zloc-dz;
   Float_t zlocmax = zloc+dz;
   Float_t xlocmin = xloc-dy;
@@ -5161,9 +5168,9 @@ Bool_t AliITStrackerMI::LocalModuleCoord(Int_t ilayer,Int_t idet,
 
   AliITSdetector &detector = fgLayers[ilayer].GetDetector(idet);
   // take into account the misalignment: xyz at real detector plane
-  track->GetXYZAt(detector.GetRmisal(),GetBz(),xyzGlob);
+  if(!track->GetXYZAt(detector.GetRmisal(),GetBz(),xyzGlob)) return kFALSE;
 
-  AliITSgeomTGeo::GlobalToLocal(ilayer+1,lad,det,xyzGlob,xyzLoc);
+  if(!AliITSgeomTGeo::GlobalToLocal(ilayer+1,lad,det,xyzGlob,xyzLoc)) return kFALSE;
 
   xloc = (Float_t)xyzLoc[0];
   zloc = (Float_t)xyzLoc[2];
