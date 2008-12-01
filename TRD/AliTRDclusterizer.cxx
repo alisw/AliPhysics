@@ -1276,7 +1276,7 @@ void AliTRDclusterizer::TailCancelation(AliTRDarrayADC *digitsIn
       for (iTime = 0; iTime < nTimeTotal; iTime++) 
         {	  
           // Apply gain gain factor
-          inADC[iTime]   = digitsIn->GetData(iRow,iCol,iTime);
+          inADC[iTime]   = digitsIn->GetDataB(iRow,iCol,iTime);
           if (digitsIn->GetPadStatus(iRow, iCol, iTime)) corrupted = kTRUE;
           inADC[iTime]  /= gain;
           outADC[iTime]  = inADC[iTime];
@@ -1288,7 +1288,7 @@ void AliTRDclusterizer::TailCancelation(AliTRDarrayADC *digitsIn
           if (fReconstructor->GetRecoParam() ->IsTailCancelation()) 
             {
               DeConvExp(inADC,outADC,nTimeTotal,fReconstructor->GetRecoParam() ->GetTCnexp());
-            }
+            } 
         }
 
       indexesIn->ResetTbinCounter();
