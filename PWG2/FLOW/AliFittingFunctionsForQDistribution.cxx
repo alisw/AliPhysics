@@ -27,7 +27,6 @@
 #define AliFittingFunctionsForQDistribution_cxx
 
 #include "Riostream.h"
-#include "AliFlowCommonConstants.h"
 #include "TChain.h"
 #include "TFile.h"
 #include "TList.h"
@@ -38,13 +37,13 @@
 #include "TAxis.h"
 #include "TH1.h"
 #include "TH1D.h"
-#include "TF1.h"
 #include "TMath.h"
 
 #include "AliFlowEventSimple.h"
 #include "AliFlowTrackSimple.h"
 #include "AliFittingQDistribution.h"
 #include "AliFlowCommonConstants.h"
+#include "AliFlowCommonHistResults.h"
 #include "AliFittingFunctionsForQDistribution.h"
 
 ClassImp(AliFittingFunctionsForQDistribution)
@@ -54,7 +53,8 @@ ClassImp(AliFittingFunctionsForQDistribution)
 AliFittingFunctionsForQDistribution::AliFittingFunctionsForQDistribution():  
  fAvMultFQD(NULL),
  fQDistributionFQD(NULL), 
- fIntFlowResFQD(NULL)
+ fIntFlowResFQD(NULL),
+ fchrFQD(NULL)
 {
  //default constructor 
 }
@@ -64,10 +64,11 @@ AliFittingFunctionsForQDistribution::~AliFittingFunctionsForQDistribution()
  //destructor
 }
 
-AliFittingFunctionsForQDistribution::AliFittingFunctionsForQDistribution(TProfile *AvMult, TH1D *QDistribution, TH1D *intFlowRes):
+AliFittingFunctionsForQDistribution::AliFittingFunctionsForQDistribution(TProfile *AvMult, TH1D *QDistribution, TH1D *intFlowRes, AliFlowCommonHistResults *chr):
  fAvMultFQD(AvMult),
  fQDistributionFQD(QDistribution),
- fIntFlowResFQD(intFlowRes)
+ fIntFlowResFQD(intFlowRes),
+ fchrFQD(chr)
 {
  //custom constructor 
 }
@@ -114,7 +115,7 @@ void AliFittingFunctionsForQDistribution::Calculate()
  cout<<" "<<endl;
  cout<<"************************************"<<endl;
  cout<<"************************************"<<endl;
- cout<<"    integrated flow by fitting"<<endl;
+ cout<<"    integrated flow by fitting "<<endl;
  cout<<"         q-distribution:      "<<endl;
  cout<<""<<endl;
  cout<<" v_"<<n<<"{FQD} = "<<v<<" +/- "<<errorv<<endl;
@@ -126,6 +127,9 @@ void AliFittingFunctionsForQDistribution::Calculate()
  cout<<"************************************"<<endl;
  fIntFlowResFQD->SetBinContent(1,v);
  fIntFlowResFQD->SetBinError(1,errorv);
+ //common histograms:
+ fchrFQD->FillIntegratedFlow(v,errorv);
+ fchrFQD->FillChi(v*pow(AvM,0.5));
  cout<<" "<<endl;
 
  //fQDistributionFQD->Draw("");
