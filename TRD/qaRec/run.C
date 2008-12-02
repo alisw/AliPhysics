@@ -6,6 +6,7 @@
 //     "EFF"  : TRD Tracking Efficiency 
 //     "EFFC" : TRD Tracking Efficiency Combined (barrel + stand alone) - only in case of simulations
 //     "RES"  : TRD tracking Resolution
+//     "CLRES": clusters Resolution
 //     "CAL"  : TRD calibration
 //     "PID"  : TRD PID - pion efficiency 
 //     "PIDR" : TRD PID - reference data
@@ -57,6 +58,7 @@
 #include "TRD/qaRec/AliTRDpidChecker.h"
 #include "TRD/qaRec/AliTRDpidRefMaker.h"
 #include "TRD/qaRec/AliTRDcheckDetector.h"
+#include "TRD/qaRec/AliTRDclusterResolution.h"
 #endif
 
 #include "run.h"
@@ -96,7 +98,7 @@ void run(Char_t *tasks="ALL", const Char_t *files=0x0, Int_t nmax=-1)
       fHasMCdata = kFALSE;
     } else { 
       Bool_t foundOpt = kFALSE;  
-      for(Int_t itask = 1; itask < NTRDTASKS; itask++){
+      for(Int_t itask = 1; itask <= NTRDTASKS; itask++){
         if(s.CompareTo(fgkTRDtaskOpt[itask]) != 0) continue;
         SETBIT(fSteerTask, itask);
         foundOpt = kTRUE;
@@ -105,6 +107,9 @@ void run(Char_t *tasks="ALL", const Char_t *files=0x0, Int_t nmax=-1)
       if(!foundOpt) Info("run.C", Form("Task %s not implemented (yet).", s.Data()));
     }
   }
+  // extra rules for calibration tasks
+  if(TSTBIT(fSteerTask, kClusterErrorParam)) SETBIT(fSteerTask, kTrackingResolution);
+
   // define task list pointers;
   AliTRDrecoTask *taskPtr[NTRDTASKS], *task = 0x0;
   memset(taskPtr, 0, NTRDTASKS*sizeof(AliAnalysisTask*));
@@ -197,19 +202,26 @@ void run(Char_t *tasks="ALL", const Char_t *files=0x0, Int_t nmax=-1)
     mgr->ConnectInput( task, 0, coutput1);
     mgr->ConnectOutput(task, 0, mgr->CreateContainer(task->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%s.root", task->GetName())));
 
-    AliAnalysisDataContainer *co1 = mgr->CreateContainer(Form("%sClRez", task->GetName()), TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
-    mgr->ConnectOutput(task, 1, co1);
-
-    AliAnalysisDataContainer *co2 = mgr->CreateContainer(Form("%sClRes", task->GetName()), TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
-    mgr->ConnectOutput(task, 2, co2);
-
-    AliAnalysisDataContainer *co3 = mgr->CreateContainer(Form("%sTrkltRes", task->GetName()), TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
-    mgr->ConnectOutput(task, 3, co3);
+    // Create output containers for calibration tasks
+    const Int_t nc = 3;
+    const Char_t *cn[nc] = {"ClRez", "ClRes", "TrkltRes"}; 
+    AliAnalysisDataContainer *co[nc]; 
+    for(Int_t ic = 0; ic<nc; ic++){
+      co[ic] = mgr->CreateContainer(Form("%s%s", task->GetName(), cn[ic]), TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
+      mgr->ConnectOutput(task, 1+ic, co[ic]);
+    }
     
     // test reconstruction calibration plugin
-    mgr->AddTask(task = new AliTRDclusterResolution());
-    mgr->ConnectInput(task, 0, co2);
-    mgr->ConnectOutput(task, 0, mgr->CreateContainer(task->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%s.root", task->GetName())));
+    if(TSTBIT(fSteerTask, kClusterErrorParam)){
+      mgr->AddTask(task = new AliTRDclusterResolution());
+      taskPtr[(Int_t)kClusterErrorParam] = task;
+      mgr->ConnectInput(task, 0, co[0]);
+      mgr->ConnectOutput(task, 0, mgr->CreateContainer(task->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%s.root", task->GetName())));
+  
+      mgr->AddTask(task = new AliTRDclusterResolution());
+      mgr->ConnectInput(task, 0, co[1]);
+      mgr->ConnectOutput(task, 0, mgr->CreateContainer(Form("%sMC", task->GetName()), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%sMC.root", task->GetName())));
+    }
   }
 
   //____________________________________________
@@ -259,7 +271,7 @@ void run(Char_t *tasks="ALL", const Char_t *files=0x0, Int_t nmax=-1)
 
   if (!mgr->InitAnalysis()) return;
   printf("\n\tRUNNING TRAIN FOR TASKS:\n");
-  for(Int_t itask = 1; itask < NTRDTASKS; itask++){
+  for(Int_t itask = 1; itask <= NTRDTASKS; itask++){
     if(TSTBIT(fSteerTask, itask)) printf("\t   %s [%s]\n", taskPtr[itask]->GetTitle(), taskPtr[itask]->GetName());
   }
   printf("\n\n");

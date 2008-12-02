@@ -6,7 +6,7 @@
 #define TSTBIT(n,i) ((Bool_t)(((n) & BIT(i)) != 0))
 #define CLRBIT(n,i) ((n) &= ~BIT(i))
 
-#define NTRDTASKS 7
+#define NTRDTASKS 8
 
 enum AliTRDrecoTasks{
    kInfoGen = 0
@@ -17,6 +17,7 @@ enum AliTRDrecoTasks{
   ,kCalibration = 5
   ,kPIDChecker = 6
   ,kPIDRefMaker = 7
+  ,kClusterErrorParam = 8
 };
 
 const Char_t* fgkTRDtaskClassName[NTRDTASKS] = {
@@ -27,6 +28,7 @@ const Char_t* fgkTRDtaskClassName[NTRDTASKS] = {
   ,"AliTRDcalibration"
   ,"AliTRDpidChecker"
   ,"AliTRDpidRefMaker"
+  ,"AliTRDclusterResolution"
 };
 
 const Char_t *fgkTRDtaskOpt[NTRDTASKS+3] = {
@@ -38,6 +40,7 @@ const Char_t *fgkTRDtaskOpt[NTRDTASKS+3] = {
   ,"CAL"
   ,"PID"
   ,"PIDR"
+  ,"CLRES"
   ,"NOFR"
   ,"NOMC"
 };
