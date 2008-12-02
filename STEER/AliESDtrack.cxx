@@ -910,6 +910,7 @@ Bool_t AliESDtrack::FillTPCOnlyTrack(AliESDtrack &track){
   track.fFlags = kTPCin;
   track.fID    = fID;
 
+  track.fFlags |= fFlags & kTPCpid; //copy the TPCpid status flag
  
   for (Int_t i=0;i<3;i++) track.fKinkIndexes[i] = fKinkIndexes[i];
   
