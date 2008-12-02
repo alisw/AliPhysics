@@ -118,6 +118,7 @@ void AliTRDReconstructor::ConvertDigits(AliRawReader *rawReader
   //
   // Convert raw data digits into digit objects in a root tree
   //
+  AliInfo("Feature not available for the moment."); return;
 
   AliInfo("Convert raw data digits into digit objects [RawReader -> Digit TTree]");
 
