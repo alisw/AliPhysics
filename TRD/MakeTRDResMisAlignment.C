@@ -29,17 +29,22 @@ void MakeTRDResMisAlignment(){
     entry->SetOwner(0);
     TGeoManager* geom = (TGeoManager*) entry->GetObject();
     AliGeomManager::SetGeometry(geom);
-  }else{
+  }
+  else {
     AliGeomManager::LoadGeometry(); //load geom from default CDB storage
   }    
 
   // sigmas for the chambers
-  Double_t chdx=0.002; // 20 microns
-  Double_t chdy=0.003; // 30 microns
-  Double_t chdz=0.007; // 70 microns
-  Double_t chrx=0.3/1000/TMath::Pi()*180; // 0.3 mrad
-  Double_t chry=0.3/1000/TMath::Pi()*180; // 0.3 mrad
-  Double_t chrz=0.1/1000/TMath::Pi()*180; // 0.1 mrad
+  Double_t chdx    = 0.002; // 20 microns
+  Double_t chdy    = 0.003; // 30 microns
+  Double_t chdz    = 0.007; // 70 microns
+  Double_t chrx    = 0.0005 / 1000.0 / TMath::Pi()*180; // 0 mrad
+  Double_t chry    = 0.0005 / 1000.0 / TMath::Pi()*180; // 0 mrad
+  Double_t chrz    = 0.1    / 1000.0 / TMath::Pi()*180; // 0.1 mrad
+  // Truncation for the chambers
+  Double_t cutChdx = 3.0  * chdx;
+  Double_t cutChdy = 3.0  * chdy;
+  Double_t cutChdz = 0.14 * chdz;
 
   Int_t sActive[18]={1,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,1};
   Double_t dx=0.,dy=0.,dz=0.,rx=0.,ry=0.,rz=0.;
@@ -63,26 +68,23 @@ void MakeTRDResMisAlignment(){
     chId=-1;
     for (Int_t iSect = 0; iSect < 18; iSect++){
       for (Int_t iCh = 0; iCh < 5; iCh++) {
-      ran->Rannor(dx,rx);
-      ran->Rannor(dy,ry);
-      ran->Rannor(dz,rz);
-      dx*=chdx;
-      dy*=chdy;
-      dz*=chdz;
-      rx*=chrx;
-      ry*=chry;
-      rz*=chrz;
-      chId++;
-      if ((iSect==13 || iSect==14 || iSect==15) && iCh==2) continue;
-      volid = AliGeomManager::LayerToVolUID(iLayer,chId);
-      if( (TString(gSystem->Getenv("REALSETUP")) == TString("kTRUE")) && !sActive[iSect] ) continue;
-      symname = AliGeomManager::SymName(volid);
-      new(alobj[j++]) AliAlignObjParams(symname,volid,dx,dy,dz,rx,ry,rz,kFALSE);
+        dx = AliMathBase::TruncatedGaus(0.0,chdx,cutChdx); 
+        dy = AliMathBase::TruncatedGaus(0.0,chdy,cutChdy); 
+        dz = AliMathBase::TruncatedGaus(0.0,chdz,cutChdz); 
+        rx = ran->Rndm() * 2.0*chrx - chrx;
+        ry = ran->Rndm() * 2.0*chry - chry;
+        rz = ran->Rndm() * 2.0*chrz - chrz;
+        chId++;
+        if ((iSect==13 || iSect==14 || iSect==15) && iCh==2) continue;
+        volid = AliGeomManager::LayerToVolUID(iLayer,chId);
+        if( (TString(gSystem->Getenv("REALSETUP")) == TString("kTRUE")) && !sActive[iSect] ) continue;
+        symname = AliGeomManager::SymName(volid);
+        new(alobj[j++]) AliAlignObjParams(symname,volid,dx,dy,dz,rx,ry,rz,kFALSE);
+      }
     }
   }
-  }
 
-  if( TString(gSystem->Getenv("TOCDB")) != TString("kTRUE") ){
+  if ( TString(gSystem->Getenv("TOCDB")) != TString("kTRUE") ) {
     // save on file
     const char* filename = "TRDresidualMisalignment.root";
     TFile f(filename,"RECREATE");
@@ -94,7 +96,8 @@ void MakeTRDResMisAlignment(){
     f.cd();
     f.WriteObject(array,"TRDAlignObjs","kSingleKey");
     f.Close();
-  }else{
+  }
+  else {
     // save in CDB storage
     AliCDBMetaData* md = new AliCDBMetaData();
     md->SetResponsible("Dariusz Miskowiec");

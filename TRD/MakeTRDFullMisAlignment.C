@@ -57,23 +57,29 @@ void MakeTRDFullMisAlignment(){
   }
   if(!flag) Fatal(macroname,"Error in the application of FRAME objects");
 
-   
-  // sigmas for the supermodules
-  Double_t smdx=0.3; // 3 mm
-  Double_t smdy=0.3; // 3 mm
-  Double_t smdz=0.3; // 3 mm
-  Double_t smrx=0.4/1000/TMath::Pi()*180; // 0.4 mrad
-  Double_t smry=2.0/1000/TMath::Pi()*180; // 2 mrad
-  Double_t smrz=0.4/1000/TMath::Pi()*180; // 0.4 mrad
+  // Sigmas for the chambers
+  Double_t smdx    = 0.3; // 3 mm
+  Double_t smdy    = 0.3; // 3 mm
+  Double_t smdz    = 0.3; // 3 mm
+  Double_t smrx    = 0.4 / 1000.0 / TMath::Pi()*180; // 0.4 mrad
+  Double_t smry    = 2.0 / 1000.0 / TMath::Pi()*180; // 2.0 mrad
+  Double_t smrz    = 0.4 / 1000.0 / TMath::Pi()*180; // 0.4 mrad
+  // Truncation for the chambers
+  Double_t cutSmdx = 3.0 * smdx;
+  Double_t cutSmdy = 3.0 * smdy;
+  Double_t cutSmdz = 3.0 * smdz;
 
-
-  // sigmas for the chambers
-  Double_t chdx=0.1; // 1 mm
-  Double_t chdy=0.1; // 1 mm
-  Double_t chdz=0.1; // 1 mm
-  Double_t chrx=1.0/1000/TMath::Pi()*180; // 1 mrad
-  Double_t chry=1.0/1000/TMath::Pi()*180; // 1 mrad
-  Double_t chrz=0.7/1000/TMath::Pi()*180; // 0.7 mrad
+  // Sigmas for the chambers
+  Double_t chdx    = 0.05;  // 0.5 mm
+  Double_t chdy    = 0.1;   // 1.0 mm
+  Double_t chdz    = 0.007; // 70  microns
+  Double_t chrx    = 0.0005 / 1000.0 / TMath::Pi()*180; // 0 mrad
+  Double_t chry    = 0.0005 / 1000.0 / TMath::Pi()*180; // 0 mrad
+  Double_t chrz    = 0.3    / 1000.0 / TMath::Pi()*180; // 0.3 mrad
+  // Truncation for the chambers
+  Double_t cutChdx = 1.0  * chdx;
+  Double_t cutChdy = 1.0  * chdy;
+  Double_t cutChdz = 0.14 * chdz;
 
   Int_t sActive[18]={1,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,1};
   Double_t dx,dy,dz,rx,ry,rz;
@@ -86,15 +92,12 @@ void MakeTRDFullMisAlignment(){
   // create the supermodules' alignment objects
   for (int iSect; iSect<18; iSect++) {
     TString sm_symname(Form("TRD/sm%02d",iSect));
-    ran->Rannor(dx,rx);
-    ran->Rannor(dy,ry);
-    ran->Rannor(dz,rz);
-    dx*=smdx;
-    dy*=smdy;
-    dz*=smdz;
-    rx*=smrx;
-    ry*=smry;
-    rz*=smrz;
+    dx = AliMathBase::TruncatedGaus(0.0,smdx,cutSmdx); 
+    dy = AliMathBase::TruncatedGaus(0.0,smdy,cutSmdy); 
+    dz = AliMathBase::TruncatedGaus(0.0,smdz,cutSmdz); 
+    rx = ran->Rndm() * 2.0*smrx - smrx;
+    ry = ran->Rndm() * 2.0*smry - smry;
+    rz = ran->Rndm() * 2.0*smrz - smrz;
     if( (TString(gSystem->Getenv("REALSETUP")) == TString("kTRUE")) && !sActive[iSect] ) continue;
     new((*array)[j++]) AliAlignObjParams(sm_symname.Data(),0,dx,dy,dz,rx,ry,rz,kFALSE);
   }
@@ -117,23 +120,20 @@ void MakeTRDFullMisAlignment(){
     chId=-1;
     for (Int_t iSect = 0; iSect < 18; iSect++){
       for (Int_t iCh = 0; iCh < 5; iCh++) {
-      ran->Rannor(dx,rx);
-      ran->Rannor(dy,ry);
-      ran->Rannor(dz,rz);
-      dx*=chdx;
-      dy*=chdy;
-      dz*=chdz;
-      rx*=chrx;
-      ry*=chry;
-      rz*=chrz;
-      chId++;
-      if ((iSect==13 || iSect==14 || iSect==15) && iCh==2) continue;
-      volid = AliGeomManager::LayerToVolUID(iLayer,chId);
-      if( (TString(gSystem->Getenv("REALSETUP")) == TString("kTRUE")) && !sActive[iSect] ) continue;
-      symname = AliGeomManager::SymName(volid);
-      new((*array)[j++]) AliAlignObjParams(symname,volid,dx,dy,dz,rx,ry,rz,kFALSE);
+        dx = AliMathBase::TruncatedGaus(0.0,chdx,cutChdx); 
+        dy = AliMathBase::TruncatedGaus(0.0,chdy,cutChdy); 
+        dz = AliMathBase::TruncatedGaus(0.0,chdz,cutChdz); 
+        rx = ran->Rndm() * 2.0*chrx - chrx;
+        ry = ran->Rndm() * 2.0*chry - chry;
+        rz = ran->Rndm() * 2.0*chrz - chrz;
+        chId++;
+        if ((iSect==13 || iSect==14 || iSect==15) && iCh==2) continue;
+        volid = AliGeomManager::LayerToVolUID(iLayer,chId);
+        if( (TString(gSystem->Getenv("REALSETUP")) == TString("kTRUE")) && !sActive[iSect] ) continue;
+        symname = AliGeomManager::SymName(volid);
+        new((*array)[j++]) AliAlignObjParams(symname,volid,dx,dy,dz,rx,ry,rz,kFALSE);
+      }
     }
-  }
   }
 
   if( TString(gSystem->Getenv("TOCDB")) != TString("kTRUE") ){
