@@ -1,5 +1,5 @@
-#ifndef AliAnalysisTaskStrange_cxx
-#define AliAnalysisTaskStrange_cxx
+#ifndef ALIANALYSISTASKSTRANGE_H
+#define ALIANALYSISTASKSTRANGE_H
 
 /*  See cxx source for full Copyright notice */
 
@@ -15,6 +15,10 @@ class TH1F;
 class TH2F;
 
 #include "AliAnalysisTaskSE.h"
+
+class AliESDEvent;
+class AliESDVertex;
+class AliAODEvent;
 
 class AliAnalysisTaskStrange : public AliAnalysisTaskSE {
  public:

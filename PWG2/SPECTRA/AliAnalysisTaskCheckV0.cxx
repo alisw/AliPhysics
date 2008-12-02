@@ -26,7 +26,6 @@
 #include "AliESDEvent.h"
 #include "AliESDVertex.h"
 #include "AliAODEvent.h"
-#include "AliAODVertex.h"
 
 #include "AliESDv0.h"
 

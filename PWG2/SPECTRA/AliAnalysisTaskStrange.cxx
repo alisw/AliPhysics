@@ -30,7 +30,6 @@
 #include "AliESDVertex.h"
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
-#include "AliAODVertex.h"
 
 #include "AliESDv0.h"
 #include "AliESDtrack.h"
@@ -152,7 +151,7 @@ void AliAnalysisTaskStrange::UserCreateOutputObjects()
   // bounds of histograms:
   // Radius
   const Double_t radius[10] = {0.0,2.5,2.9,3.9,7.6,15.0,23.9,37.8,42.8,100.0};
-  Int_t NbinRadius        = 9;
+  Int_t nBinRadius        = 9;
 
   // V0 offline distributions
   if (!fHistV0MultiplicityOff) {
@@ -177,11 +176,11 @@ void AliAnalysisTaskStrange::UserCreateOutputObjects()
   fHistMassAntiLambdaOff          = new TH1F("h1MassAntiLambdaOff", "#bar{#Lambda}^{0} Offline candidates;M(#bar{p}#pi^{+}) (GeV/c^{2});Counts", 75, 1.05, 1.2);
   fListHist->Add(fHistMassAntiLambdaOff);
   // Mass vs radius:
-  fHistMassVsRadiusK0sOff           = new TH2F("h2MassVsRadiusK0sOff", "K^{0} Offline candidates;radius (cm);M(#pi^{+}#pi^{-}) (GeV/c^{2})",NbinRadius,radius, 200, 0.4, 0.6);
+  fHistMassVsRadiusK0sOff           = new TH2F("h2MassVsRadiusK0sOff", "K^{0} Offline candidates;radius (cm);M(#pi^{+}#pi^{-}) (GeV/c^{2})",nBinRadius,radius, 200, 0.4, 0.6);
   fListHist->Add(fHistMassVsRadiusK0sOff);
-  fHistMassVsRadiusLambdaOff       = new TH2F("h2MassVsRadiusLambdaOff", "#Lambda Offline candidates;radius (cm);M(p#pi^{-}) (GeV/c^{2})",NbinRadius,radius, 140, 1.06, 1.2);
+  fHistMassVsRadiusLambdaOff       = new TH2F("h2MassVsRadiusLambdaOff", "#Lambda Offline candidates;radius (cm);M(p#pi^{-}) (GeV/c^{2})",nBinRadius,radius, 140, 1.06, 1.2);
   fListHist->Add(fHistMassVsRadiusLambdaOff);
-  fHistMassVsRadiusAntiLambdaOff = new TH2F("h2MassVsRadiusAntiLambdaOff", "#bar{#Lambda} Offline candidates;radius (cm);M(#bar{p}#pi^{+}) (GeV/c^{2})",NbinRadius,radius, 140, 1.06, 1.2);
+  fHistMassVsRadiusAntiLambdaOff = new TH2F("h2MassVsRadiusAntiLambdaOff", "#bar{#Lambda} Offline candidates;radius (cm);M(#bar{p}#pi^{+}) (GeV/c^{2})",nBinRadius,radius, 140, 1.06, 1.2);
   fListHist->Add(fHistMassVsRadiusAntiLambdaOff);
   // Pt Vs Mass:
   fHistPtVsMassK0sOff             = new TH2F("h2PtVsMassK0sOff","K^{0} Offline candidates;M(#pi^{+}#pi^{-}) (GeV/c^{2});p_{t} (GeV/c)",200, 0.4, 0.6,100,0,10);
@@ -217,11 +216,11 @@ void AliAnalysisTaskStrange::UserCreateOutputObjects()
   fHistMassAntiLambdaOn        = new TH1F("h1MassAntiLambdaOn", "#bar{#Lambda}^{0} Onthefly candidates;M(#bar{p}#pi^{+}) (GeV/c^{2});Counts", 75, 1.05, 1.2);
   fListHist->Add(fHistMassAntiLambdaOn);
   // Mass vs radius:
-  fHistMassVsRadiusK0sOn         = new TH2F("h2MassVsRadiusK0sOn", "K^{0} Onthefly candidates;radius (cm);M(#pi^{+}#pi^{-}) (GeV/c^{2})",NbinRadius,radius, 200, 0.4, 0.6);
+  fHistMassVsRadiusK0sOn         = new TH2F("h2MassVsRadiusK0sOn", "K^{0} Onthefly candidates;radius (cm);M(#pi^{+}#pi^{-}) (GeV/c^{2})",nBinRadius,radius, 200, 0.4, 0.6);
   fListHist->Add(fHistMassVsRadiusK0sOn);
-  fHistMassVsRadiusLambdaOn     = new TH2F("h2MassVsRadiusLambdaOn", "#Lambda Onthefly candidates;radius (cm);M(p#pi^{-}) (GeV/c^{2})",NbinRadius,radius, 140, 1.06, 1.2);
+  fHistMassVsRadiusLambdaOn     = new TH2F("h2MassVsRadiusLambdaOn", "#Lambda Onthefly candidates;radius (cm);M(p#pi^{-}) (GeV/c^{2})",nBinRadius,radius, 140, 1.06, 1.2);
   fListHist->Add(fHistMassVsRadiusLambdaOn);
-  fHistMassVsRadiusAntiLambdaOn  = new TH2F("h2MassVsRadiusAntiLambdaOn", "#bar{#Lambda} Onthefly candidates;radius (cm);M(#bar{p}#pi^{+}) (GeV/c^{2})",NbinRadius,radius, 140, 1.06, 1.2);
+  fHistMassVsRadiusAntiLambdaOn  = new TH2F("h2MassVsRadiusAntiLambdaOn", "#bar{#Lambda} Onthefly candidates;radius (cm);M(#bar{p}#pi^{+}) (GeV/c^{2})",nBinRadius,radius, 140, 1.06, 1.2);
   fListHist->Add(fHistMassVsRadiusAntiLambdaOn);
   // Pt Vs Mass:
   fHistPtVsMassK0sOn              = new TH2F("h2PtVsMassK0sOn","K^{0} Onthefly candidates;M(#pi^{+}#pi^{-}) (GeV/c^{2});p_{t} (GeV/c)",200, 0.4, 0.6,100,0,10);
@@ -288,14 +287,14 @@ void AliAnalysisTaskStrange::UserExec(Option_t *)
     Double_t  tdcaDaughterToPrimVertex[2];                          // ..[0] = Pos and ..[1] = Neg
     Double_t  tMomPos[3];
     Double_t  tMomNeg[3];
-    Double_t  V0Position[3];
-    Double_t  V0Cov[6];
+    Double_t  tV0Position[3];
+    Double_t  tV0Cov[6];
 
     // to fill AliAODtrack:
-    Double_t  TrackP[3];
-    Double_t  TrackPosition[3];
-    Double_t  TrackcovTr[21];
-    Double_t  Trackpid[10];
+    Double_t  tTrackP[3];
+    Double_t  tTrackPosition[3];
+    Double_t  tTrackCovTr[21];
+    Double_t  tTrackPid[10];
 
     AliAODTrack  *myPosAodTrack  = new AliAODTrack();
     AliAODTrack  *myNegAodTrack  = new AliAODTrack();
@@ -308,10 +307,10 @@ void AliAnalysisTaskStrange::UserExec(Option_t *)
 	if (!v0) continue;
 
 	// AliAODVertex
-	v0->GetXYZ(V0Position[0], V0Position[1], V0Position[2]);
-	v0->GetPosCov(V0Cov);
-	myAODVertex->SetPosition(V0Position[0],V0Position[1],V0Position[2]);
-	myAODVertex->SetCovMatrix(V0Cov);
+	v0->GetXYZ(tV0Position[0], tV0Position[1], tV0Position[2]);
+	v0->GetPosCov(tV0Cov);
+	myAODVertex->SetPosition(tV0Position[0],tV0Position[1],tV0Position[2]);
+	myAODVertex->SetCovMatrix(tV0Cov);
 	myAODVertex->SetChi2perNDF(v0->GetChi2V0());
 	myAODVertex->SetID((Short_t)iV0);
 	myAODVertex->SetParent(primary);
@@ -321,45 +320,45 @@ void AliAnalysisTaskStrange::UserExec(Option_t *)
 	UInt_t lKeyPos = (UInt_t)TMath::Abs(v0->GetPindex());
 	UInt_t lKeyNeg = (UInt_t)TMath::Abs(v0->GetNindex());
 
-	AliESDtrack *TrackPos = ((AliESDEvent*)lEvent)->GetTrack(lKeyPos);
-	AliESDtrack *TrackNeg = ((AliESDEvent*)lEvent)->GetTrack(lKeyNeg);
-	if (!TrackPos || !TrackNeg) {
+	AliESDtrack *pTrack = ((AliESDEvent*)lEvent)->GetTrack(lKeyPos);
+	AliESDtrack *nTrack = ((AliESDEvent*)lEvent)->GetTrack(lKeyNeg);
+	if (!pTrack || !nTrack) {
 	  Printf("ERROR: Could not retreive one of the daughter track");
 	  continue;
 	}
-	UInt_t lLabelPos = (UInt_t)TMath::Abs(TrackPos->GetLabel());
-	UInt_t lLabelNeg = (UInt_t)TMath::Abs(TrackNeg->GetLabel());
+	UInt_t lLabelPos = (UInt_t)TMath::Abs(pTrack->GetLabel());
+	UInt_t lLabelNeg = (UInt_t)TMath::Abs(nTrack->GetLabel());
 
-	myPosAodTrack->SetID((Short_t)(TrackPos->GetID()));  
+	myPosAodTrack->SetID((Short_t)(pTrack->GetID()));  
 	myPosAodTrack->SetLabel(lLabelPos);
-	TrackPos->GetPxPyPz(TrackP);
-	myPosAodTrack->SetP(TrackP);
-	TrackPos->GetXYZ(TrackPosition);
-	myPosAodTrack->SetPosition(TrackPosition,kFALSE);
-	TrackPos->GetCovarianceXYZPxPyPz(TrackcovTr);
-	myPosAodTrack->SetCovMatrix(TrackcovTr);
-	TrackPos->GetESDpid(Trackpid);
-	myPosAodTrack->SetPID(Trackpid);
-	myPosAodTrack->SetCharge((Short_t)(TrackPos->Charge()));
-	myPosAodTrack->SetITSClusterMap(TrackPos->GetITSClusterMap());
+	pTrack->GetPxPyPz(tTrackP);
+	myPosAodTrack->SetP(tTrackP);
+	pTrack->GetXYZ(tTrackPosition);
+	myPosAodTrack->SetPosition(tTrackPosition,kFALSE);
+	pTrack->GetCovarianceXYZPxPyPz(tTrackCovTr);
+	myPosAodTrack->SetCovMatrix(tTrackCovTr);
+	pTrack->GetESDpid(tTrackPid);
+	myPosAodTrack->SetPID(tTrackPid);
+	myPosAodTrack->SetCharge((Short_t)(pTrack->Charge()));
+	myPosAodTrack->SetITSClusterMap(pTrack->GetITSClusterMap());
 	myPosAodTrack->SetProdVertex(myAODVertex);
 	myPosAodTrack->SetUsedForVtxFit(kTRUE);
 	myPosAodTrack->SetUsedForPrimVtxFit(kFALSE);
 	myPosAodTrack->SetType(AliAODTrack::kSecondary);
 	myPosAodTrack->ConvertAliPIDtoAODPID();
 
-	myNegAodTrack->SetID((Short_t)(TrackNeg->GetID()));
+	myNegAodTrack->SetID((Short_t)(nTrack->GetID()));
 	myNegAodTrack->SetLabel(lLabelNeg);
-	TrackNeg->GetPxPyPz(TrackP);
-	myNegAodTrack->SetP(TrackP);
-	TrackNeg->GetXYZ(TrackPosition);
-	myNegAodTrack->SetPosition(TrackPosition,kFALSE);
-	TrackNeg->GetCovarianceXYZPxPyPz(TrackcovTr);
-	myNegAodTrack->SetCovMatrix(TrackcovTr);
-	TrackNeg->GetESDpid(Trackpid);
-	myNegAodTrack->SetPID(Trackpid);
-	myNegAodTrack->SetCharge((Short_t)(TrackNeg->Charge()));
-	myNegAodTrack->SetITSClusterMap(TrackPos->GetITSClusterMap());
+	nTrack->GetPxPyPz(tTrackP);
+	myNegAodTrack->SetP(tTrackP);
+	nTrack->GetXYZ(tTrackPosition);
+	myNegAodTrack->SetPosition(tTrackPosition,kFALSE);
+	nTrack->GetCovarianceXYZPxPyPz(tTrackCovTr);
+	myNegAodTrack->SetCovMatrix(tTrackCovTr);
+	nTrack->GetESDpid(tTrackPid);
+	myNegAodTrack->SetPID(tTrackPid);
+	myNegAodTrack->SetCharge((Short_t)(nTrack->Charge()));
+	myNegAodTrack->SetITSClusterMap(nTrack->GetITSClusterMap());
 	myNegAodTrack->SetProdVertex(myAODVertex);
 	myNegAodTrack->SetUsedForVtxFit(kTRUE);
 	myNegAodTrack->SetUsedForPrimVtxFit(kFALSE);
@@ -373,8 +372,8 @@ void AliAnalysisTaskStrange::UserExec(Option_t *)
 	lDcaV0Daughters    = v0->GetDcaV0Daughters();
 	lDcaV0ToPrimVertex = v0->GetD(tPrimaryVtxPosition[0],tPrimaryVtxPosition[1],tPrimaryVtxPosition[2]);
 
-	if (TrackPos) TrackPos->GetImpactParameters(tdcaPosToPrimVertexXYZ[0],tdcaPosToPrimVertexXYZ[1]);
-	if (TrackNeg) TrackNeg->GetImpactParameters(tdcaNegToPrimVertexXYZ[0],tdcaNegToPrimVertexXYZ[1]);
+	if (pTrack) pTrack->GetImpactParameters(tdcaPosToPrimVertexXYZ[0],tdcaPosToPrimVertexXYZ[1]);
+	if (nTrack) nTrack->GetImpactParameters(tdcaNegToPrimVertexXYZ[0],tdcaNegToPrimVertexXYZ[1]);
 	tdcaDaughterToPrimVertex[0] = TMath::Sqrt(tdcaPosToPrimVertexXYZ[0]*tdcaPosToPrimVertexXYZ[0]+tdcaPosToPrimVertexXYZ[1]*tdcaPosToPrimVertexXYZ[1]);
 	tdcaDaughterToPrimVertex[1] = TMath::Sqrt(tdcaNegToPrimVertexXYZ[0]*tdcaNegToPrimVertexXYZ[0]+tdcaNegToPrimVertexXYZ[1]*tdcaNegToPrimVertexXYZ[1]);
 
