@@ -54,6 +54,7 @@ AliFittingFunctionsForQDistribution::AliFittingFunctionsForQDistribution():
  fAvMultFQD(NULL),
  fQDistributionFQD(NULL), 
  fIntFlowResFQD(NULL),
+ fSigma2(NULL),
  fchrFQD(NULL)
 {
  //default constructor 
@@ -64,10 +65,11 @@ AliFittingFunctionsForQDistribution::~AliFittingFunctionsForQDistribution()
  //destructor
 }
 
-AliFittingFunctionsForQDistribution::AliFittingFunctionsForQDistribution(TProfile *AvMult, TH1D *QDistribution, TH1D *intFlowRes, AliFlowCommonHistResults *chr):
+AliFittingFunctionsForQDistribution::AliFittingFunctionsForQDistribution(TProfile *AvMult, TH1D *QDistribution, TH1D *intFlowRes, TH1D *sigma2, AliFlowCommonHistResults *chr):
  fAvMultFQD(AvMult),
  fQDistributionFQD(QDistribution),
  fIntFlowResFQD(intFlowRes),
+ fSigma2(sigma2),
  fchrFQD(chr)
 {
  //custom constructor 
@@ -127,6 +129,8 @@ void AliFittingFunctionsForQDistribution::Calculate()
  cout<<"************************************"<<endl;
  fIntFlowResFQD->SetBinContent(1,v);
  fIntFlowResFQD->SetBinError(1,errorv);
+ fSigma2->SetBinContent(1,sigma2);
+ fSigma2->SetBinError(1,errorsigma2);
  //common histograms:
  fchrFQD->FillIntegratedFlow(v,errorv);
  fchrFQD->FillChi(v*pow(AvM,0.5));

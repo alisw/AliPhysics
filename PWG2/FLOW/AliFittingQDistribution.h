@@ -53,11 +53,14 @@ class AliFittingQDistribution{
   void SetCommonHistsResults(AliFlowCommonHistResults* chr)  {this->fCommonHistsResults = chr;};
   AliFlowCommonHistResults* GetCommonHistsResults() const    {return this->fCommonHistsResults;};
   
-  void SetAverageMultiplicity(TProfile* am)      {this->fAvMultIntFlowFQD = am;};
-  TProfile* GetAverageMultiplicity() const       {return this->fAvMultIntFlowFQD;};
+  void SetAverageMultiplicity(TProfile* am)  {this->fAvMultIntFlowFQD = am;};
+  TProfile* GetAverageMultiplicity() const   {return this->fAvMultIntFlowFQD;};
   
   void SetQDistribution(TH1D* qd)  {this->fQDistributionFQD = qd;};
   TH1D* GetQDistribution() const   {return this->fQDistributionFQD;};
+  
+  void SetSigma2(TH1D* s2)  {this->fSigma2 = s2;};
+  TH1D* GetSigma2() const   {return this->fSigma2;};
 //----------------------------------------------------------------------------------------------------------------
  
  private:
@@ -69,10 +72,11 @@ class AliFittingQDistribution{
   TList*                     fHistList;                //list to hold all output histograms
   TProfile*                  fAvMultIntFlowFQD;        //avarage selected multiplicity
   TH1D*                      fIntFlowResultsFQD;       //integrated flow final results
+  TH1D*                      fSigma2;                  //sigma^2
   AliFlowCommonHist*         fCommonHists;             //common control histograms
   AliFlowCommonHistResults*  fCommonHistsResults;      //final results for integrated flow stored in the common histograms 
-  TH1D*                      fQDistributionFQD;        //q-distribution
-      
+  TH1D*                      fQDistributionFQD;        //q-distribution 
+         
   ClassDef(AliFittingQDistribution, 0);
 };
 

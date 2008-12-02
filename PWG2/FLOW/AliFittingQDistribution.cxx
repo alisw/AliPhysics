@@ -59,6 +59,7 @@ AliFittingQDistribution::AliFittingQDistribution():
  fHistList(NULL),
  fAvMultIntFlowFQD(NULL),
  fIntFlowResultsFQD(NULL),
+ fSigma2(NULL),
  fCommonHists(NULL),
  fCommonHistsResults(NULL),
  fQDistributionFQD(NULL)
@@ -95,9 +96,19 @@ void AliFittingQDistribution::CreateOutputObjects()
  fIntFlowResultsFQD->SetYTitle("");
  fIntFlowResultsFQD->SetMarkerStyle(25);
  fIntFlowResultsFQD->SetLabelSize(0.06);
- fAvMultIntFlowFQD->SetLabelOffset(0.02);
+ fIntFlowResultsFQD->SetLabelOffset(0.02);
  (fIntFlowResultsFQD->GetXaxis())->SetBinLabel(1,"v_{n}{FQD}");
  fHistList->Add(fIntFlowResultsFQD);
+ 
+ //sigma^2
+ fSigma2 = new TH1D("fSigma2","#sigma^{2}",1,0,1);
+ fSigma2->SetXTitle("");
+ fSigma2->SetYTitle("");
+ fSigma2->SetMarkerStyle(25);
+ fSigma2->SetLabelSize(0.06);
+ fSigma2->SetLabelOffset(0.02);
+ (fSigma2->GetXaxis())->SetBinLabel(1,"#sigma^{2}");
+ fHistList->Add(fSigma2);
  
  //q-distribution 
  fQDistributionFQD = new TH1D("fQDistributionFQD","q-distribution",100,0,10);
@@ -151,7 +162,7 @@ void AliFittingQDistribution::Make(AliFlowEventSimple* anEvent)
 void AliFittingQDistribution::Finish()
 {
  //calculate the final results
- AliFittingFunctionsForQDistribution finalFitting(fAvMultIntFlowFQD,fQDistributionFQD,fIntFlowResultsFQD,fCommonHistsResults);
+ AliFittingFunctionsForQDistribution finalFitting(fAvMultIntFlowFQD,fQDistributionFQD,fIntFlowResultsFQD,fSigma2,fCommonHistsResults);
          
  finalFitting.Calculate();            
 }
