@@ -45,7 +45,7 @@ PWG0/module.mk:		PWG0/libPWG0base.pkg  PWG0/libPWG0selectors.pkg PWG0/libPWG0dep
 PWG1/module.mk:		PWG1/libPWG1.pkg
 PWG2/module.mk:		PWG2/libPWG2.pkg PWG2/libPWG2femtoscopyUser.pkg PWG2/libPWG2AOD.pkg PWG2/libPWG2flow.pkg PWG2/libPWG2ebye.pkg PWG2/libPWG2resonances.pkg PWG2/libPWG2femtoscopy.pkg PWG2/libPWG2spectra.pkg
 PWG3/module.mk:		PWG3/libPWG3base.pkg PWG3/libPWG3.pkg PWG3/libPWG3muon.pkg PWG3/libPWG3vertexingHF.pkg PWG3/libPWG3vertexingOld.pkg
-PWG4/module.mk:		PWG4/libPWG4PartCorr.pkg
+PWG4/module.mk:		PWG4/libPWG4PartCorrBase.pkg  PWG4/libPWG4PartCorrDep.pkg PWG4/libPWG4JetTasks.pkg PWG4/libPWG4GammaConv.pkg
 ESDCheck/module.mk:	ESDCheck/libAnalysisCheck.pkg 
 STAT/module.mk:		STAT/libSTAT.pkg
 BCM/module.mk:		BCM/libBCM.pkg
@@ -184,5 +184,9 @@ $(LIBPATH)/libPWG3base.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT)
 $(LIBPATH)/libPWG3muon.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libESD.$(SOEXT) $(LIBPATH)/libAOD.$(SOEXT) $(LIBPATH)/libANALYSIS.$(SOEXT) $(LIBPATH)/libANALYSISalice.$(SOEXT)
 $(LIBPATH)/libPWG3vertexingHF.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libESD.$(SOEXT) $(LIBPATH)/libAOD.$(SOEXT) $(LIBPATH)/libANALYSIS.$(SOEXT) $(LIBPATH)/libANALYSISalice.$(SOEXT)
 $(LIBPATH)/libPWG3vertexingOld.$(SOEXT): $(LIBPATH)/libSTEER.$(SOEXT) $(LIBPATH)/libESD.$(SOEXT)
-$(LIBPATH)/libPWG4PartCorr.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libESD.$(SOEXT) $(LIBPATH)/libAOD.$(SOEXT) $(LIBPATH)/libANALYSIS.$(SOEXT) $(LIBPATH)/libANALYSISalice.$(SOEXT)
+$(LIBPATH)/libPWG4PartCorrBase.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libESD.$(SOEXT) $(LIBPATH)/libAOD.$(SOEXT) $(LIBPATH)/libANALYSIS.$(SOEXT) $(LIBPATH)/libANALYSISalice.$(SOEXT)
+$(LIBPATH)/libPWG4PartCorrDep.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libESD.$(SOEXT) $(LIBPATH)/libAOD.$(SOEXT) $(LIBPATH)/libANALYSIS.$(SOEXT) $(LIBPATH)/libANALYSISalice.$(SOEXT) $(LIBPATH)/libPWG4PartCorrBase.$(SOEXT)
+$(LIBPATH)/libPWG4JetTasks.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libESD.$(SOEXT) $(LIBPATH)/libAOD.$(SOEXT) $(LIBPATH)/libANALYSIS.$(SOEXT) $(LIBPATH)/libANALYSISalice.$(SOEXT)
+$(LIBPATH)/libPWG4GammaConv.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libESD.$(SOEXT) $(LIBPATH)/libAOD.$(SOEXT) $(LIBPATH)/libANALYSIS.$(SOEXT) $(LIBPATH)/libANALYSISalice.$(SOEXT)
+
 endif
