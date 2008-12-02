@@ -1,7 +1,4 @@
 /* $Id:  $ */
-/* $Log$
-/* */
-
 //--------------------------------------------------
 // Example macro to do analysis with the 
 // analysis classes in PWG4PartCorr
@@ -22,9 +19,8 @@ enum anaModes {mLocal, mLocalCAF,mPROOF,mGRID};
 //Settings to read locally several files, only for "mLocal" mode
 //The different values are default, they can be set with environmental 
 //variables: INDIR, PATTERN, NEVENT, respectivelly
-char * kInDir = "/home/user/data"; 
-char * kPattern = ""; // Data are in diles /data/Run0, 
-// /Data/Run1 ...
+char * kInDir = "/user/data/files/"; 
+char * kPattern = ""; // Data are in files kInDir/kPattern+i 
 Int_t kEvent = 1; // Number of files
 //---------------------------------------------------------------------------
 //Collection file for grid analysis
@@ -41,7 +37,7 @@ const Int_t kNumberOfEventsPerFile = 100;
 
 const Bool_t kMC = kTRUE; //With real data kMC = kFALSE
 const TString kInputData = "ESD";
-void ana(Int_t mode=mLocal, TString configName = "ConfigAnalysisESDExample")
+void ana(Int_t mode=mLocal, TString configName = "ConfigAnalysisPhoton")
 {
   // Main
 
@@ -91,13 +87,14 @@ void ana(Int_t mode=mLocal, TString configName = "ConfigAnalysisESDExample")
       mgr->SetInputEventHandler(aodHandler);
     }
 
-    //mgr->SetDebugLevel(10); // For debugging
+    //mgr->SetDebugLevel(-1); // For debugging, do not uncomment if you want no messages.
 
     //-------------------------------------------------------------------------
     //Define task, put here any other task that you want to use.
     //-------------------------------------------------------------------------
     AliAnalysisTaskParticleCorrelation * taskpwg4 = new AliAnalysisTaskParticleCorrelation ("Particle");
     taskpwg4->SetConfigFileName(configName); //Default name is ConfigAnalysis
+		
     mgr->AddTask(taskpwg4);
     
     // Create containers for input/output
@@ -116,7 +113,9 @@ void ana(Int_t mode=mLocal, TString configName = "ConfigAnalysisESDExample")
     //Scaling task
     //-----------------------
     Int_t nfiles = chainxs->GetEntries();
+    //cout<<"Get? "<<kGetXSectionFromFileAndScale<<" nfiles "<<nfiles<<endl;
     if(kGetXSectionFromFileAndScale && nfiles > 0){
+      //cout<<"Init AnaScale"<<endl;
       //Get the cross section
       Double_t xsection=0; 
       Float_t ntrials = 0;
@@ -124,6 +123,8 @@ void ana(Int_t mode=mLocal, TString configName = "ConfigAnalysisESDExample")
       
       AliAnaScale * scale = new AliAnaScale("scale") ;
       scale->Set(xsection/ntrials/kNumberOfEventsPerFile/nfiles) ;
+      scale->MakeSumw2(kFALSE);//If you want histograms with error bars set to kTRUE
+      //scale->SetDebugLevel(2);
       mgr->AddTask(scale);
       
       AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("histosscaled", TList::Class(),
@@ -146,6 +147,9 @@ void ana(Int_t mode=mLocal, TString configName = "ConfigAnalysisESDExample")
     mgr->InitAnalysis();
     mgr->PrintStatus();
     mgr->StartAnalysis(smode.Data(),chain);
+
+cout <<" Analysis ended sucessfully "<< endl ;
+
   }
   else cout << "Chain was not produced ! "<<endl;
   
@@ -174,8 +178,10 @@ void  LoadLibraries(const anaModes mode) {
     //gSystem->Load("libAOD");
     //gSystem->Load("libANALYSIS");
     //gSystem->Load("libANALYSISalice");
-    //gSystem->Load("libPWG4PartCorr");
-    
+    //gSystem->Load("libPHOSUtils");
+    //gSystem->Load("libPWG4PartCorrBase");
+    //gSystem->Load("libPWG4PartCorrDep");
+	
     //--------------------------------------------------------
     //If you want to use root and par files from aliroot
     //--------------------------------------------------------  
@@ -184,8 +190,12 @@ void  LoadLibraries(const anaModes mode) {
     SetupPar("AOD");
     SetupPar("ANALYSIS");
     SetupPar("ANALYSISalice");
-    SetupPar("PWG4PartCorr");
-    
+//If your analysis needs PHOS geometry uncomment following lines
+//	SetupPar("PHOSUtils");
+//	//Create Geometry
+//    TGeoManager::Import("geometry.root") ; //need file "geometry.root" in local dir!!!!
+     SetupPar("PWG4PartCorrBase");
+     SetupPar("PWG4PartCorrDep");
   }
 
   //---------------------------------------------------------
@@ -202,7 +212,8 @@ void  LoadLibraries(const anaModes mode) {
     //    gProof->ClearPackage("ESD");
     //    gProof->ClearPackage("AOD");
     //    gProof->ClearPackage("ANALYSIS");   
-    //    gProof->ClearPackage("PWG4PartCorr");
+    //    gProof->ClearPackage("PWG4PartCorrBase");
+    //    gProof->ClearPackage("PWG4PartCorrDep");
     
     // Enable the STEERBase Package
     gProof->UploadPackage("STEERBase.par");
@@ -216,10 +227,14 @@ void  LoadLibraries(const anaModes mode) {
     // Enable the Analysis Package
     gProof->UploadPackage("ANALYSIS.par");
     gProof->EnablePackage("ANALYSIS");
-    // Enable gamma jet analysis
-    gProof->UploadPackage("PWG4PartCorr.par");
-    gProof->EnablePackage("PWG4PartCorr");
-    //
+	// Enable the PHOS geometry Package
+    //gProof->UploadPackage("PHOSUtils.par");
+    //gProof->EnablePackage("PHOSUtils");
+    // Enable PartCorr analysis
+    gProof->UploadPackage("PWG4PartCorrBase.par");
+    gProof->EnablePackage("PWG4PartCorrBase");
+	gProof->UploadPackage("PWG4PartCorrDep.par");
+    gProof->EnablePackage("PWG4PartCorrDep");    
     gProof->ShowEnabledPackages();
   }  
   
@@ -238,7 +253,7 @@ void SetupPar(char* pararchivename)
     TString processline(Form(".! make %s", parpar.Data())) ; 
     gROOT->ProcessLine(processline.Data()) ;
     gSystem->ChangeDirectory(cdir) ; 
-    processline = Form(".! mv /tmp/%s .", parpar.Data()) ;
+    processline = Form(".! mv $ALICE_ROOT/%s .", parpar.Data()) ;
     gROOT->ProcessLine(processline.Data()) ;
   } 
   if ( gSystem->AccessPathName(pararchivename) ) {  

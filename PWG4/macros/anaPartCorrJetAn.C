@@ -21,9 +21,8 @@ enum anaModes {mLocal, mLocalCAF,mPROOF,mGRID};
 //Settings to read locally several files, only for "mLocal" mode
 //The different values are default, they can be set with environmental 
 //variables: INDIR, PATTERN, NEVENT, respectivelly
-char * kInDir = "/home/group/alice/schutz/analysis/PWG4/data"; 
-char * kPattern = ""; // Data are in diles /data/Run0, 
-// /Data/Run1 ...
+char * kInDir = "/user/data/files"; 
+char * kPattern = ""; // Data are in files kInDir/kPattern+i
 Int_t kEvent = 1; // Number of files
 //---------------------------------------------------------------------------
 //Collection file for grid analysis
@@ -33,14 +32,14 @@ char * kXML = "collection.xml";
 //Put name of file containing xsection 
 //Put number of events per ESD file
 //This is an specific case for normalization of Pythia files.
-const Bool_t kGetXSectionFromFileAndScale = kTRUE ;
+const Bool_t kGetXSectionFromFileAndScale = kFALSE ;
 const char * kXSFileName = "pyxsec.root";
 const Int_t kNumberOfEventsPerFile = 100; 
 //---------------------------------------------------------------------------
 
 const Bool_t kMC = kTRUE; //With real data kMC = kFALSE
 const TString kInputData = "ESD";
-void anaPartCorrJETAN(Int_t mode=mLocal, TString configName = "ConfigAnalysisExample")
+void anaPartCorrJetAn(Int_t mode=mLocal, TString configName = "ConfigAnalysisGammaJetFinderCorrelation")
 {
   // Main
 
@@ -90,14 +89,14 @@ void anaPartCorrJETAN(Int_t mode=mLocal, TString configName = "ConfigAnalysisExa
       mgr->SetInputEventHandler(aodHandler);
     }
 
-    mgr->SetDebugLevel(10); // For debugging
+   //mgr->SetDebugLevel(-1); // For debugging, uncomment for lots of messages
 
     //-------------------------------------------------------------------------
     //Define task, put here any other task that you want to use.
     //-------------------------------------------------------------------------
 	
-	AliAnalysisTaskJets *jetana = new AliAnalysisTaskJets("JetAnalysis");
-    jetana->SetDebugLevel(-1);
+    AliAnalysisTaskJets *jetana = new AliAnalysisTaskJets("JetAnalysis");
+    //jetana->SetDebugLevel(-1);
     mgr->AddTask(jetana);
 	
     AliAnalysisTaskParticleCorrelation * taskpwg4 = new AliAnalysisTaskParticleCorrelation ("Particle");
@@ -120,8 +119,8 @@ void anaPartCorrJETAN(Int_t mode=mLocal, TString configName = "ConfigAnalysisExa
     mgr->ConnectOutput (taskpwg4,     0, coutput1 );
     mgr->ConnectOutput (taskpwg4,     1, coutput2 );
 	
-	mgr->ConnectInput  (jetana,     0, cinput1);
-	mgr->ConnectOutput (jetana,     0, coutput1 );
+    mgr->ConnectInput  (jetana,     0, cinput1);
+    mgr->ConnectOutput (jetana,     0, coutput1 );
     mgr->ConnectOutput (jetana,     1, coutput3 );
 
     //------------------------  
@@ -147,10 +146,10 @@ void anaPartCorrJETAN(Int_t mode=mLocal, TString configName = "ConfigAnalysisExa
       mgr->ConnectInput  (scale,     0, coutput2);
       mgr->ConnectOutput (scale,     0, coutput4 );
 	  
-	  AliAnaScale * scalejet = new AliAnaScale("scalejet") ;
+      AliAnaScale * scalejet = new AliAnaScale("scalejet") ;
       scalejet->Set(xsection/ntrials/kNumberOfEventsPerFile/nfiles) ;
       scalejet->MakeSumw2(kFALSE);
-      scalejet->SetDebugLevel(2);
+      //scalejet->SetDebugLevel(2);
       mgr->AddTask(scalejet);
       
       AliAnalysisDataContainer *coutput5 = mgr->CreateContainer("jethistosscaled", TList::Class(),
@@ -204,9 +203,11 @@ void  LoadLibraries(const anaModes mode) {
     //gSystem->Load("libAOD");
     //gSystem->Load("libANALYSIS");
     //gSystem->Load("libANALYSISalice");
-	 //gSystem->Load("libJETAN");
-	 //gSystem->Load("libPWG4PartCorr");
-    
+    //gSystem->Load("libJETAN");
+    //gSystem->Load("libPHOSUtils");
+    //gSystem->Load("libPWG4PartCorrBase");
+    //gSystem->Load("libPWG4PartCorrDep");
+	
     //--------------------------------------------------------
     //If you want to use root and par files from aliroot
     //--------------------------------------------------------  
@@ -215,8 +216,13 @@ void  LoadLibraries(const anaModes mode) {
     SetupPar("AOD");
     SetupPar("ANALYSIS");
     SetupPar("ANALYSISalice");
-	SetupPar("JETAN");
-    SetupPar("PWG4PartCorr");
+    SetupPar("JETAN");
+    //If your analysis needs PHOS geometry uncomment following lines
+//      SetupPar("PHOSUtils");
+//      //Create Geometry
+//    TGeoManager::Import("geometry.root") ; //need file "geometry.root" in local dir!!!!
+    SetupPar("PWG4PartCorrBase");
+    SetupPar("PWG4PartCorrDep");
     
   }
 
@@ -234,8 +240,9 @@ void  LoadLibraries(const anaModes mode) {
     //    gProof->ClearPackage("ESD");
     //    gProof->ClearPackage("AOD");
     //    gProof->ClearPackage("ANALYSIS"); 
-	//    gProof->ClearPackage("JETAN");  
-	//    gProof->ClearPackage("PWG4PartCorr");
+    //    gProof->ClearPackage("JETAN");  
+    //    gProof->ClearPackage("PWG4PartCorrDep");
+    //    gProof->ClearPackage("PWG4PartCorrBase");
     
     // Enable the STEERBase Package
     gProof->UploadPackage("STEERBase.par");
@@ -249,12 +256,17 @@ void  LoadLibraries(const anaModes mode) {
     // Enable the Analysis Package
     gProof->UploadPackage("ANALYSIS.par");
     gProof->EnablePackage("ANALYSIS");
-	// Enable JETAN
+    // Enable JETAN
     gProof->UploadPackage("JETAN.par");
     gProof->EnablePackage("JETAN");
-    // Enable gamma jet analysis
-    gProof->UploadPackage("PWG4PartCorr.par");
-    gProof->EnablePackage("PWG4PartCorr");
+    // Enable PHOSUtils
+    //gProof->UploadPackage("PHOSUtils.par");
+    //gProof->EnablePackage("PHOSUtils");
+    // Enable PartCorr analysis
+    gProof->UploadPackage("PWG4PartCorrBase.par");
+    gProof->EnablePackage("PWG4PartCorrBase");
+    gProof->UploadPackage("PWG4PartCorrDep.par");
+    gProof->EnablePackage("PWG4PartCorrDep");
     //
     gProof->ShowEnabledPackages();
   }  
