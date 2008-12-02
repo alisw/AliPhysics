@@ -71,7 +71,6 @@ protected:
   Float_t TR2LocalX(AliTrackReference *trackRef,
 		    AliTPCParam *paramTPC) const;
   AliTPCParam * GetTPCParam();
-  Float_t TPCBetheBloch(Float_t bg);
   //
   TObjArray *fGenTracksArray;  //clones array with filtered particles
   TObjArray *fGenKinkArray;    //clones array with filtered Kinks

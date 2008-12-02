@@ -48,6 +48,7 @@ IMPORTANT FOR PROOF FAST PROTOTYPING ANALYSIS
 //ALIROOT includes
 #include "AliTrackReference.h"
 #include "AliMCInfo.h" 
+#include "AliMathBase.h" 
 #endif
 
 //
@@ -214,7 +215,7 @@ void AliMCInfo::Update()
 			      fTrackRef.Pz()*fTrackRef.Pz());    
       if (p>0.001){
 	Float_t betagama = p /fMass;
-	fPrim = TPCBetheBloch(betagama);
+	fPrim = AliMathBase::BetheBlochAleph(betagama);
       }else fPrim=0;
     }
   }else{
@@ -316,32 +317,6 @@ Int_t AliTPCdigitRow::First() const
   }
   return -1;
 }
-
-
-//_____________________________________________________________________________
-Float_t AliMCInfo::TPCBetheBloch(Float_t bg)
-{
-  //
-  // Bethe-Bloch energy loss formula
-  //
-  const Double_t kp1=0.76176e-1;
-  const Double_t kp2=10.632;
-  const Double_t kp3=0.13279e-4;
-  const Double_t kp4=1.8631;
-  const Double_t kp5=1.9479;
-
-  Double_t dbg = (Double_t) bg;
-
-  Double_t beta = dbg/TMath::Sqrt(1.+dbg*dbg);
-
-  Double_t aa = TMath::Power(beta,kp4);
-  Double_t bb = TMath::Power(1./dbg,kp5);
-
-  bb=TMath::Log(kp3+bb);
-  
-  return ((Float_t)((kp2-aa-bb)*kp1/aa));
-}
-
 
 void AliMCInfo::CalcTPCrows(TClonesArray * runArrayTR){
   //

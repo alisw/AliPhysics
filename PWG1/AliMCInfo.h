@@ -67,7 +67,6 @@ public:
   const AliTrackReference&  GetTrackRefOut() const {return fTrackRefOut;}
   const AliTrackReference&  GetTRdecay() const {return fTRdecay;} 
   TParticle& GetParticle()   {return fParticle;}
-  Float_t TPCBetheBloch(Float_t bg);
   //
   Int_t     GetPrimPart() const  {return fPrimPart;}
   Float_t   GetMass()   const    {return fMass;}                  
