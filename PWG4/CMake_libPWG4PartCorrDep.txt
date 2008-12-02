@@ -1,0 +1,18 @@
+# -*- mode: cmake -*-
+
+set(SRCS
+       PartCorrDep/AliAnaCaloTrigger.cxx PartCorrDep/AliAnaCaloTriggerMC.cxx
+       PartCorrDep/AliAnalysisTaskPHOSExample.cxx PartCorrDep/AliAnaExample.cxx
+       PartCorrDep/AliAnaPhoton.cxx PartCorrDep/AliAnaPi0.cxx PartCorrDep/AliAnaPi0EbE.cxx 
+       PartCorrDep/AliAnaParticleIsolation.cxx PartCorrDep/AliAnaParticlePartonCorrelation.cxx 
+       PartCorrDep/AliAnaParticleHadronCorrelation.cxx PartCorrDep/AliAnaParticleJetFinderCorrelation.cxx
+       PartCorrDep/AliAnaParticleJetLeadingConeCorrelation.cxx
+      
+)
+
+# fill list of header files from list of source files
+# by exchanging the file extension
+String(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+
+AddLibrary(PWG4PartCorrDep "${SRCS}" "${HDRS}")
+

@@ -1,0 +1,25 @@
+#-*- Mode: Makefile -*-
+
+SRCS = PartCorrDep/AliAnaCaloTrigger.cxx PartCorrDep/AliAnaCaloTriggerMC.cxx \
+       PartCorrDep/AliAnalysisTaskPHOSExample.cxx \
+       PartCorrDep/AliAnaExample.cxx  PartCorrDep/AliAnaParticleIsolation.cxx \
+       PartCorrDep/AliAnaParticlePartonCorrelation.cxx \
+       PartCorrDep/AliAnaParticleHadronCorrelation.cxx \
+       PartCorrDep/AliAnaParticleJetFinderCorrelation.cxx \
+       PartCorrDep/AliAnaParticleJetLeadingConeCorrelation.cxx \
+       PartCorrDep/AliAnaPhoton.cxx PartCorrDep/AliAnaPi0.cxx PartCorrDep/AliAnaPi0EbE.cxx
+      
+
+HDRS:= $(SRCS:.cxx=.h) 
+
+DHDR:= PWG4PartCorrDepLinkDef.h
+
+EXPORT:=$(SRCS:.cxx=.h)
+
+EINCLUDE= PWG4/PartCorrBase PWG4PartCorrBase/PartCorrBase
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) -lSTEERBase \
+                         -lESD -lAOD -lANALYSIS -lANALYSISalice -lPWG4PartCorrBase \
+                         -L$(shell root-config --libdir) -lEG
+endif

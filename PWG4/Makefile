@@ -34,8 +34,18 @@ ifneq ($(JETAN_INCLUDE),)
   ALICEINC += -I../$(JETAN_INCLUDE)
 endif
 
-ifneq ($(PWG4PartCorr_INCLUDE),)
-  ALICEINC += -I../$(PWG4PartCorr_INCLUDE)
+ifneq ($(PHOSUtils_INCLUDE),)
+  ALICEINC += -I../$(PHOSUtils_INCLUDE)
+  CXXFLAGS+=-D__PHOSGEO__
+endif
+
+ifneq ($(PWG4PartCorrBase_INCLUDE),)
+  ALICEINC += -I../$(PWG4PartCorrBase_INCLUDE)
+endif
+
+ifneq ($(PWG4PartCorrDep_INCLUDE),)
+ ALICEINC += -I../$(PWG4PartCorrBase_INCLUDE) 
+ ALICEINC += -I../$(PWG4PartCorrDep_INCLUDE)
 endif
 
 ifneq ($(PWG4GammaConv_INCLUDE),)
