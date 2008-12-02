@@ -33,8 +33,8 @@
 //RUN SETTINGS
 
 //Flow analysis method can be:(set to kTRUE or kFALSE)
-Bool_t SP    = kFALSE;
-Bool_t LYZ1  = kFALSE;
+Bool_t SP    = kTRUE;
+Bool_t LYZ1  = kTRUE;
 Bool_t LYZ2  = kFALSE;
 Bool_t LYZEP = kFALSE;
 Bool_t GFC   = kTRUE;
@@ -80,9 +80,9 @@ const Int_t maxnsigmatovertex2 = 3;
 
 
 //ESD (therminator)
-//void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_midcentral_ESD", Int_t nRuns=-1, Int_t offset=0) {
+void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_midcentral_ESD", Int_t nRuns=-1, Int_t offset=0) {
 
-void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_c2030", Int_t nRuns=-1, Int_t offset=0) {
+//void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_c2030", Int_t nRuns=-1, Int_t offset=0) {
 //void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_central", Int_t nRuns=-1, Int_t offset=0) {
 
 
@@ -102,9 +102,12 @@ void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_c2030", Int_t nR
 
   if (LYZ1 && LYZEP) {cout<<"WARNING: you cannot run LYZ1 and LYZEP at the same time! LYZEP needs the output from LYZ2."<<endl; exit(); }
 
+  //  set to debug root versus if needed
+  //  TProof::Mgr("alicecaf")->SetROOTVersion("v5-21-01-alice_dbg");
+  //  TProof::Mgr("alicecaf")->SetROOTVersion("v5-21-01-alice");
   printf("*** Connect to PROOF ***\n");
-  TProof::Open("abilandz@alicecaf.cern.ch");
-  //TProof::Open("snelling@localhost");
+  //  TProof::Open("abilandz@alicecaf.cern.ch");
+  TProof::Open("snelling@localhost");
  
   //gProof->UploadPackage("AF-v4-15"); 
   //gProof->EnablePackage("AF-v4-15");

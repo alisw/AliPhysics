@@ -70,10 +70,8 @@ AliFlowAnalysisWithQCumulants::AliFlowAnalysisWithQCumulants():
  fDiffFlowResults4thOrderQC(NULL),
  fCovariances(NULL),
  fQCorrelations(NULL),
- fQCovariance(NULL),
+ fQProduct(NULL),
  fDirectCorrelations(NULL),
- fReD(NULL),
- fImD(NULL),
  fReq1n(NULL),
  fImq1n(NULL),
  fReq2n(NULL),
@@ -83,17 +81,25 @@ AliFlowAnalysisWithQCumulants::AliFlowAnalysisWithQCumulants():
  f3_2n1n1n(NULL),
  f3_1n1n2n(NULL),
  f4_1n1n1n1n(NULL),
- fQCorrelationsPerBin(NULL),
  fCommonHists(NULL),
- //fCommonHistsResults2nd(NULL),
- //fCommonHistsResults4th(NULL),
- //fCommonHistsResults6th(NULL),
+ fCommonHistsResults2nd(NULL),
+ fCommonHistsResults4th(NULL),
+ fCommonHistsResults6th(NULL),
+ fCommonHistsResults8th(NULL),
  f2Distribution(NULL),
  f4Distribution(NULL),
- f6Distribution(NULL)
+ f6Distribution(NULL),
+ fnBinsPt(0),
+ fPtMin(0),
+ fPtMax(0)
 {
  //constructor 
  fHistList = new TList(); 
+ 
+ fnBinsPt = AliFlowCommonConstants::GetNbinsPt();
+ fPtMin   = AliFlowCommonConstants::GetPtMin();	     
+ fPtMax   = AliFlowCommonConstants::GetPtMax();
+ 
 }
 
 AliFlowAnalysisWithQCumulants::~AliFlowAnalysisWithQCumulants()
@@ -107,7 +113,7 @@ AliFlowAnalysisWithQCumulants::~AliFlowAnalysisWithQCumulants()
 void AliFlowAnalysisWithQCumulants::CreateOutputObjects()
 {
  //various output histograms
- 
+
  //avarage multiplicity 
  fAvMultIntFlowQC = new TProfile("fAvMultIntFlowQC","Average Multiplicity",1,0,1,"s");
  fAvMultIntFlowQC->SetXTitle("");
@@ -135,17 +141,16 @@ void AliFlowAnalysisWithQCumulants::CreateOutputObjects()
  (fIntFlowResultsQC->GetXaxis())->SetBinLabel(2,"v_{n}{4}");
  (fIntFlowResultsQC->GetXaxis())->SetBinLabel(3,"v_{n}{6}");
  (fIntFlowResultsQC->GetXaxis())->SetBinLabel(4,"v_{n}{8}");
- //gStyle->SetErrorX(0);
  fHistList->Add(fIntFlowResultsQC);
 
  //final results for differential flow from 2nd order Q-cumulant
- fDiffFlowResults2ndOrderQC = new TH1D("fDiffFlowResults2ndOrderQC","Differential Flow from 2nd Order Q-cumulant",10000,0,1000);
+ fDiffFlowResults2ndOrderQC = new TH1D("fDiffFlowResults2ndOrderQC","Differential Flow from 2nd Order Q-cumulant",fnBinsPt,fPtMin,fPtMax);
  fDiffFlowResults2ndOrderQC->SetXTitle("p_{t} [GeV]");
  //fDiffFlowResults2ndOrderQC->SetYTitle("Differential Flow");
  fHistList->Add(fDiffFlowResults2ndOrderQC);
  
  //final results for differential flow from 4th order Q-cumulant
- fDiffFlowResults4thOrderQC = new TH1D("fDiffFlowResults4thOrderQC","Differential Flow from 4th Order Q-cumulant",10000,0,1000);
+ fDiffFlowResults4thOrderQC = new TH1D("fDiffFlowResults4thOrderQC","Differential Flow from 4th Order Q-cumulant",fnBinsPt,fPtMin,fPtMax);
  fDiffFlowResults4thOrderQC->SetXTitle("p_{t} [GeV]");
  //fDiffFlowResults4thOrderQC->SetYTitle("Differential Flow");
  fHistList->Add(fDiffFlowResults4thOrderQC);
@@ -193,11 +198,21 @@ void AliFlowAnalysisWithQCumulants::CreateOutputObjects()
  (fQCorrelations->GetXaxis())->SetBinLabel(21,"<<6>>_{n,n,n|n,n,n}");
  fHistList->Add(fQCorrelations);
  
- //covariance of multi-particle correlations
- fQCovariance = new TProfile("fQCovariance","covariance of multi-particle correlations",3,0,3,"s");
- fQCovariance->SetXTitle("");
- fQCovariance->SetYTitle("covariance");
- fHistList->Add(fQCovariance);
+ //average products
+ fQProduct = new TProfile("fQProduct","average of products",6,0,6,"s");
+ fQProduct->SetTickLength(-0.01,"Y");
+ fQProduct->SetMarkerStyle(25);
+ fQProduct->SetLabelSize(0.03);
+ fQProduct->SetLabelOffset(0.01,"Y");
+ (fQProduct->GetXaxis())->SetBinLabel(1,"<<2*4>>");
+ (fQProduct->GetXaxis())->SetBinLabel(2,"<<2*6>>");
+ (fQProduct->GetXaxis())->SetBinLabel(3,"<<2*8>>");
+ (fQProduct->GetXaxis())->SetBinLabel(4,"<<4*6>>");
+ (fQProduct->GetXaxis())->SetBinLabel(5,"<<4*8>>");
+ (fQProduct->GetXaxis())->SetBinLabel(6,"<<6*8>>");
+ fQProduct->SetXTitle("");
+ fQProduct->SetYTitle("");
+ fHistList->Add(fQProduct);
  
  //multi-particle correlations calculated with nested loops (0..40 integrated flow; 40..80 differential flow)
  fDirectCorrelations = new TProfile("fDirectCorrelations","multi-particle correlations with nested loops",80,0,80,"s");
@@ -205,99 +220,79 @@ void AliFlowAnalysisWithQCumulants::CreateOutputObjects()
  fDirectCorrelations->SetYTitle("correlations");
  fHistList->Add(fDirectCorrelations);
  
- //ReD
- fReD = new TProfile("fReD","Re[D]",10000,0.,1000.,"s");
- fReD->SetXTitle("p_{t} [GeV]");
- fReD->SetYTitle("Re[D]");
- //fHistList->Add(fReD);
- 
- //ImD
- fImD = new TProfile("fImD","Im[D]",10000,0.,1000.,"s");
- fImD->SetXTitle("p_{t} [GeV]");
- fImD->SetYTitle("Im[D]");
- //fHistList->Add(fImD);
- 
  //fReq1n
- fReq1n = new TProfile("fReq1n","Re[q_n]",10000,0.,1000.,"s");
+ fReq1n = new TProfile("fReq1n","Re[q_n]",fnBinsPt,fPtMin,fPtMax,"s");
  fReq1n->SetXTitle("p_{t} [GeV]");
  fReq1n->SetYTitle("Re[q_n]");
- fHistList->Add(fReq1n);
+ //fHistList->Add(fReq1n);
  
  //fImq1n
- fImq1n = new TProfile("fImq1n","Im[q_n]",10000,0.,1000.,"s");
+ fImq1n = new TProfile("fImq1n","Im[q_n]",fnBinsPt,fPtMin,fPtMax,"s");
  fImq1n->SetXTitle("p_{t} [GeV]");
  fImq1n->SetYTitle("Im[q_n]");
- fHistList->Add(fImq1n);
+ //fHistList->Add(fImq1n);
  
  //fReq2n
- fReq2n = new TProfile("fReq2n","Re[q_2n]",10000,0.,1000.,"s");
+ fReq2n = new TProfile("fReq2n","Re[q_2n]",fnBinsPt,fPtMin,fPtMax,"s");
  fReq2n->SetXTitle("p_{t} [GeV]");
  fReq2n->SetYTitle("Im[D]");
- fHistList->Add(fReq2n);
+ //fHistList->Add(fReq2n);
  
  //fImq2n
- fImq2n = new TProfile("fImq2n","Im[q_2n]",10000,0.,1000.,"s");
+ fImq2n = new TProfile("fImq2n","Im[q_2n]",fnBinsPt,fPtMin,fPtMax,"s");
  fImq2n->SetXTitle("p_{t} [GeV]");
  fImq2n->SetYTitle("Im[q_2n]");
- fHistList->Add(fImq2n);
+ //fHistList->Add(fImq2n);
  
  //f2_1n1n
- f2_1n1n = new TProfile("f2_1n1n","<2'>_{n|n}",10000,0.,1000.,"s");
+ f2_1n1n = new TProfile("f2_1n1n","<2'>_{n|n}",fnBinsPt,fPtMin,fPtMax,"s");
  f2_1n1n->SetXTitle("p_{t} [GeV]");
  //f2_1n1n->SetYTitle("<2'>_{n|n}");
  fHistList->Add(f2_1n1n);
  
  //f2_2n2n
- f2_2n2n = new TProfile("f2_2n2n","<2'>_{2n|2n}",10000,0.,1000.,"s");
+ f2_2n2n = new TProfile("f2_2n2n","<2'>_{2n|2n}",fnBinsPt,fPtMin,fPtMax,"s");
  f2_2n2n->SetXTitle("p_{t} [GeV]");
  //f2_2n2n->SetYTitle("<2'>_{2n|2n}");
  fHistList->Add(f2_2n2n);
  
  //f3_2n1n1n
- f3_2n1n1n = new TProfile("f3_2n1n1n","<3'>_{2n|n,n}",10000,0.,1000.,"s");
+ f3_2n1n1n = new TProfile("f3_2n1n1n","<3'>_{2n|n,n}",fnBinsPt,fPtMin,fPtMax,"s");
  f3_2n1n1n->SetXTitle("p_{t} [GeV]");
  //f3_2n1n1n->SetYTitle("<3'>_{2n|n,n}");
  fHistList->Add(f3_2n1n1n);
  
  //f3_1n1n2n
- f3_1n1n2n = new TProfile("f3_1n1n2n","<3'>_{n,n|2n}",10000,0.,1000.,"s");
+ f3_1n1n2n = new TProfile("f3_1n1n2n","<3'>_{n,n|2n}",fnBinsPt,fPtMin,fPtMax,"s");
  f3_1n1n2n->SetXTitle("p_{t} [GeV]");
  //f3_1n1n2n->SetYTitle("<3'>_{n,n|2n}");
  fHistList->Add(f3_1n1n2n);
  
  //f4_1n1n1n1n
- f4_1n1n1n1n = new TProfile("f4_1n1n1n1n","<4'>_{n,n|n,n}",10000,0.,1000.,"s");
+ f4_1n1n1n1n = new TProfile("f4_1n1n1n1n","<4'>_{n,n|n,n}",fnBinsPt,fPtMin,fPtMax,"s");
  f4_1n1n1n1n->SetXTitle("p_{t} [GeV]");
  //f4_1n1n1n1n->SetYTitle("<4'>_{n,n|n,n}");
  fHistList->Add(f4_1n1n1n1n);
- 
- //multi-particle correlations calculated from Q-vectors for each pt bin
- fQCorrelationsPerBin = new TProfile("fQCorrelationsPerBin","multi-particle correlations from Q-vectors per bin",10000,0,1000.,"s");
- fQCorrelationsPerBin->SetXTitle("");
- fQCorrelationsPerBin->SetYTitle("correlations");
- //fHistList->Add(fQCorrelationsPerBin);
  
  //common control histograms
  fCommonHists = new AliFlowCommonHist("AliFlowCommonHistQC");
  fHistList->Add(fCommonHists);  
  
- /*
- //common histograms for final results
+ //common histograms for final results (2nd order)
  fCommonHistsResults2nd = new AliFlowCommonHistResults("AliFlowCommonHistResults2ndOrderQC");
  fHistList->Add(fCommonHistsResults2nd); 
  
- //common histograms for final results
+ //common histograms for final results (4th order)
  fCommonHistsResults4th = new AliFlowCommonHistResults("AliFlowCommonHistResults4thOrderQC");
  fHistList->Add(fCommonHistsResults4th);
  
- //common histograms for final results
+ //common histograms for final results (6th order)
  fCommonHistsResults6th = new AliFlowCommonHistResults("AliFlowCommonHistResults6thOrderQC");
  fHistList->Add(fCommonHistsResults6th); 
  
- //common histograms for final results
+ //common histograms for final results (8th order)
  fCommonHistsResults8th = new AliFlowCommonHistResults("AliFlowCommonHistResults8thOrderQC");
  fHistList->Add(fCommonHistsResults8th); 
- */
  
  //weighted <2>_{n|n} distribution
  f2Distribution = new TH1D("f2Distribution","<2>_{n|n} distribution",100000,-0.02,0.1);
@@ -332,10 +327,8 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  //{
 
  //fill the common control histograms:
- 
  fCommonHists->FillControlHistograms(anEvent); 
-
-
+ 
  //get the selected multiplicity (i.e. number of particles used for int. flow):
  //Int_t nEventNSelTracksIntFlow = anEvent->GetEventNSelTracksIntFlow();
  
@@ -429,12 +422,14 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  //31th bin: <4>_{2n,2n|2n,2n} = four_2n2n2n2n //to be improved
  //32nd bin: <4>_{3n,n|3n,n} = four_3n1n3n1n   //to be improved
  
- // binning of fQCovariance: 
- // 1st bin: <2>_{n|n}*<4>_{n,n|n,n}
- // 2nd bin: <2>_{n|n}*<6>_{n,n,n|n,n,n} 
- // 3rd bin: <4>_{n,n|n,n}*<6>_{n,n,n|n,n,n}
- 
-     
+ // binning of fQProduct (all correlations are evaluated in harmonic n): 
+ // 1st bin: <2>*<4>
+ // 2nd bin: <2>*<6>
+ // 3rd bin: <2>*<8> 
+ // 4th bin: <4>*<6>
+ // 5th bin: <4>*<8>
+ // 6th bin: <6>*<8>
+         
  //2-particle
  Double_t two_1n1n=0., two_2n2n=0., two_3n3n=0., two_4n4n=0.; 
  if(M>1)
@@ -492,7 +487,7 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
   
   f4Distribution->Fill(four_1n1n1n1n,M*(M-1.)*(M-2.)*(M-3.));  
      
-  fQCovariance->Fill(0.,two_1n1n*four_1n1n1n1n,M*(M-1.)*M*(M-1.)*(M-2.)*(M-3.));
+  fQProduct->Fill(0.,two_1n1n*four_1n1n1n1n,M*(M-1.)*M*(M-1.)*(M-2.)*(M-3.));
  }
 
  //5-particle
@@ -525,8 +520,8 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
   
   f6Distribution->Fill(six_1n1n1n1n1n1n,M*(M-1.)*(M-2.)*(M-3.)*(M-4.)*(M-5.)); 
   
-  fQCovariance->Fill(1.,two_1n1n*six_1n1n1n1n1n1n,M*(M-1.)*M*(M-1.)*(M-2.)*(M-3.)*(M-4.)*(M-5.));
-  fQCovariance->Fill(2.,four_1n1n1n1n*six_1n1n1n1n1n1n,M*(M-1.)*(M-2.)*(M-3.)*M*(M-1.)*(M-2.)*(M-3.)*(M-4.)*(M-5.));
+  fQProduct->Fill(1.,two_1n1n*six_1n1n1n1n1n1n,M*(M-1.)*M*(M-1.)*(M-2.)*(M-3.)*(M-4.)*(M-5.));
+  fQProduct->Fill(3.,four_1n1n1n1n*six_1n1n1n1n1n1n,M*(M-1.)*(M-2.)*(M-3.)*M*(M-1.)*(M-2.)*(M-3.)*(M-4.)*(M-5.));
  }
  //---------------------------------------------------------------------------------------------------------
  
@@ -555,7 +550,7 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
   
  Double_t twoDiff_1n1n=0.,twoDiff_2n2n=0.,threeDiff_2n1n1n=0.,threeDiff_1n1n2n=0.,fourDiff_1n1n1n1n=0.;
  
- for(Int_t bin=1;bin<10001;bin++) //loop over pt-bins (to be improved upper limit)
+ for(Int_t bin=1;bin<(fnBinsPt+1);bin++) //loop over pt-bins (to be improved upper limit)
  { 
   q_x = (fReq1n->GetBinContent(bin))*(fReq1n->GetBinEntries(bin));
   q_y = (fImq1n->GetBinContent(bin))*(fImq1n->GetBinEntries(bin)); 
@@ -606,205 +601,6 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
 
 
 
-
-
-
-
-
-
-
-
-
-
- 
- 
- /*
- 
- AliFlowVector QvectorDiff;
- 
- QvectorDiff.Set(0.,0.);
- QvectorDiff.SetMult(0);
- QvectorDiff=anEvent->GetQ(1.*n); 
- 
- nPrim=QvectorDiff.GetMult();
- 
- Double_t qBinx=0.,qBiny=0.,q2nBinx=0.,q2nBiny=0.,mm=0.;
- 
- for(Int_t dd=0;dd<nPrim;dd++)
- { 
-  fTrack=anEvent->GetTrack(dd);
-  if(fTrack->Pt()>0.04&&fTrack->Pt()<0.44)
-  {
-   qBinx+=cos(n*(fTrack->Phi()));
-   qBiny+=sin(n*(fTrack->Phi()));
-   q2nBinx+=cos(2.*n*(fTrack->Phi()));
-   q2nBiny+=sin(2.*n*(fTrack->Phi()));
-   mm++;
-  }
-  if(fTrack->Pt()>100.)
-  {
-   cout<<"****************"<<endl;
-   cout<<"Pt = "<<fTrack->Pt()<<endl;
-   cout<<"****************"<<endl;
-  }
-  fReD->Fill(fTrack->Pt(),cos(n*(fTrack->Phi())),1.);
-  fImD->Fill(fTrack->Pt(),sin(n*(fTrack->Phi())),1.);
- }
- 
- Double_t Qx=0.,Qy=0.,Mhere=0.;
- for(Int_t bb=1;bb<10001;bb++)
- {
-  Qx+=(fReD->GetBinContent(bb))*(fReD->GetBinEntries(bb));
-  Qy+=(fImD->GetBinContent(bb))*(fImD->GetBinEntries(bb));  
-  Mhere+=fReD->GetBinEntries(bb);
- }
- 
-if(mm!=0.){
-Double_t threeDiff_n_n_2n = ((qBinx*Qvector1n.X()-qBiny*Qvector1n.Y())*Qvector2n.X()+(qBinx*Qvector1n.Y()+qBiny*Qvector1n.X())*Qvector2n.Y()-q2nBinx*Qvector2n.X()-q2nBiny*Qvector2n.Y()+2.*mm-2.*(qBinx*Qvector1n.X()+qBiny*Qvector1n.Y()))/(mm*(Mhere-1.)*(Mhere-2.));
-
-
-Double_t threeDiff_2n_n_n = (q2nBinx*(Qvector1n.X()*Qvector1n.X()-Qvector1n.Y()*Qvector1n.Y())+2.*Qvector1n.X()*Qvector1n.Y()*q2nBiny
--2.*(qBinx*Qvector1n.X()+qBiny*Qvector1n.Y())-q2nBinx*Qvector2n.X()-q2nBiny*Qvector2n.Y()+2.*mm)/(mm*(Mhere-1.)*(Mhere-2.));
-
-
-
-
-
-
-
-
-
-
-
-
-
-Double_t fourDiff = (pow(Qvector1n.Mod(),2.)*(qBinx*Qvector1n.X()+qBiny*Qvector1n.Y())-(qBinx*Qvector1n.X()-qBiny*Qvector1n.Y())*Qvector2n.X() + (qBinx*Qvector1n.Y()+qBiny*Qvector1n.X())*Qvector2n.Y()-
-
-(q2nBinx*(Qvector1n.X()*Qvector1n.X()-Qvector1n.Y()*Qvector1n.Y())+2.*Qvector1n.X()*Qvector1n.Y()*q2nBiny)
-
--2.*(Mhere-2.)*(mm/Mhere)*pow(Qvector1n.Mod(),2.)+4.*mm*(Mhere-2.)-2.*(Mhere-2.)*(qBinx*Qvector1n.X()+qBiny*Qvector1n.Y()) +q2nBinx*Qvector2n.X()+q2nBiny*Qvector2n.Y()-2.*mm*(Mhere-1.))/(mm*(Mhere-1.)*(Mhere-2.)*(Mhere-3.));
-
-
-
-//Double_t fourDiff_b = (pow(Qvector1n.Mod())*())/(mm*(Mhere-1.)*(Mhere-2.)*(Mhere-3.));
-
-
-
-
-
-
-
-
-
-fQCorrelations->Fill(30,(qBinx*Qx+qBiny*Qy-mm)/(mm*(Mhere-1.)),mm*(Mhere-1.));//<2'>_{n|n}
-fQCorrelations->Fill(34,(q2nBinx*Qvector2n.X()+q2nBiny*Qvector2n.Y()-mm)/(mm*(Mhere-1.)),mm*(Mhere-1.));//<2'>_{2n|2n}
-fQCorrelations->Fill(31,threeDiff_n_n_2n,mm*(Mhere-1.)*(Mhere-2.));//<3'>_{n,n|2n}
-fQCorrelations->Fill(32,threeDiff_2n_n_n,mm*(Mhere-1.)*(Mhere-2.));//<3'>_{2n|n,n}
-//fQCorrelations->Fill(33,fourDiff,mm*(Mhere-1.)*(Mhere-2.)*(Mhere-3.));//<4'>_{n,n|n,n}
-
-}
-
-
-
-
-
- for(Int_t bb=1;bb<10001;bb++)
- {
-  if(fReD->GetBinEntries(bb)>1){
-   Double_t qx=(fReD->GetBinContent(bb))*(fReD->GetBinEntries(bb));
-   Double_t qy=(fImD->GetBinContent(bb))*(fImD->GetBinEntries(bb));
-   
-   
-   
-   //Double_t dx=(fReD->GetBinContent(bb))*(fReD->GetBinEntries(bb));
-   //Double_t dy=(fImD->GetBinContent(bb))*(fImD->GetBinEntries(bb));
-   
-   
-   
-   
-   Int_t mhere = fReD->GetBinEntries(bb);
-   //cout<<"bin = "<<bb<<" m = "<<mhere<<endl;
-   //cout<<"Qx = "<<Qx<<" Dx = "<<Dx<<endl;
-   //cout<<"Qy = "<<Qy<<" Dy = "<<Dy<<endl;
-   
-   fQCorrelationsPerBin->Fill((bb-1)*0.1,(qx*Qx+qy*Qy-mhere)/(mhere*(Mhere-1.)),mhere*(Mhere-1.));
-   
-   //fQCorrelationsPerBin->Fill((bb-1)*0.1,(dx*dx+dy*dy-mhere)/(mhere*(mhere-1)),mhere*(mhere-1));
-     
-  }
- }fourDiff_1n1n1n1n = ((Q_x*Q_x+Q_y*Q_y)*(q_x*Q_x+q_y*Q_y)-m*(M-1.)*(M-2.)*(threeDiff_2n1n1n+threeDiff_1n1n2n)-m*(M-1.)*2.*(M-2.)*twoDiff_1n1n-2.*(m*(d_x*d_x+d_y*d_y-(M-m))+(m-1.)*2.*(q_x*d_x+q_y*d_y)+(m-2.)*(q_x*q_x+q_y*q_y-m))-2.*m*(M-1.)*(twoDiff_1n1n+1.)-m*(M-1.)*2.*twoDiff_1n1n-m*(M-1.)*twoDiff_2n2n-m)/(m*(M-1.)*(M-2.)*(M-3.));//OK!!!!!!!!!
-  
-  
-  fReD->Reset();
-  fImD->Reset();
-  
-  
-  
-  //cout<<"2-particle correlation = "<<(Qx*Qx+Qy*Qy-Mhere)/(Mhere*(Mhere-1))<<endl;
-
- 
- 
-
-
- 
-
-
-
-*/
-
-
- 
-
- 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
- 
  /*
  
  Int_t nSelTracksIntFlow = 0;//cross-checking the selected multiplicity 
@@ -1301,9 +1097,7 @@ fQCorrelations->Fill(32,threeDiff_2n_n_n,mm*(Mhere-1.)*(Mhere-2.));//<3'>_{2n|n,
 void AliFlowAnalysisWithQCumulants::Finish()
 {
  //calculate the final results
- //AliQCumulantsFunctions finalResults(fIntFlowResultsQC,fDiffFlowResults2ndOrderQC,fDiffFlowResults4thOrderQC,fCovariances,fAvMultIntFlowQC,fQvectorComponents,fQCorrelations,fQCovariance, fQCorrelationsPerBin,fDirectCorrelations,f2_1n1n,f2_2n2n,f3_2n1n1n,f3_1n1n2n, f4_1n1n1n1n,fCommonHistsResults2nd,fCommonHistsResults4th,fCommonHistsResults6th,fCommonHistsResults8th);
- 
- AliQCumulantsFunctions finalResults(fIntFlowResultsQC,fDiffFlowResults2ndOrderQC,fDiffFlowResults4thOrderQC,fCovariances,fAvMultIntFlowQC,fQvectorComponents,fQCorrelations,fQCovariance, fQCorrelationsPerBin,fDirectCorrelations,f2_1n1n,f2_2n2n,f3_2n1n1n,f3_1n1n2n, f4_1n1n1n1n);
+ AliQCumulantsFunctions finalResults(fIntFlowResultsQC,fDiffFlowResults2ndOrderQC,fDiffFlowResults4thOrderQC,fCovariances,fAvMultIntFlowQC,fQvectorComponents,fQCorrelations, fQProduct,fDirectCorrelations, f2_1n1n,f2_2n2n,f3_2n1n1n,f3_1n1n2n,f4_1n1n1n1n,fCommonHistsResults2nd, fCommonHistsResults4th,fCommonHistsResults6th,fCommonHistsResults8th);
          
  finalResults.Calculate();  
 }
@@ -1319,4 +1113,3 @@ void AliFlowAnalysisWithQCumulants::WriteHistograms(TString* outputFileName)
 }
 
 //================================================================================================================
-
