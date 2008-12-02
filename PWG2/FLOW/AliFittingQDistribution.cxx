@@ -60,6 +60,7 @@ AliFittingQDistribution::AliFittingQDistribution():
  fAvMultIntFlowFQD(NULL),
  fIntFlowResultsFQD(NULL),
  fCommonHists(NULL),
+ fCommonHistsResults(NULL),
  fQDistributionFQD(NULL)
 {
  //constructor 
@@ -84,7 +85,7 @@ void AliFittingQDistribution::CreateOutputObjects()
  fAvMultIntFlowFQD->SetYTitle("");
  fAvMultIntFlowFQD->SetLabelSize(0.06);
  fAvMultIntFlowFQD->SetMarkerStyle(25);
- fAvMultIntFlowFQD->SetLabelOffset(0.01);
+ fAvMultIntFlowFQD->SetLabelOffset(0.02);
  (fAvMultIntFlowFQD->GetXaxis())->SetBinLabel(1,"Average Multiplicity");
  fHistList->Add(fAvMultIntFlowFQD);
  
@@ -95,7 +96,7 @@ void AliFittingQDistribution::CreateOutputObjects()
  fIntFlowResultsFQD->SetMarkerStyle(25);
  fIntFlowResultsFQD->SetLabelSize(0.06);
  fAvMultIntFlowFQD->SetLabelOffset(0.02);
- (fIntFlowResultsFQD->GetXaxis())->SetBinLabel(1,"v_{n}");
+ (fIntFlowResultsFQD->GetXaxis())->SetBinLabel(1,"v_{n}{FQD}");
  fHistList->Add(fIntFlowResultsFQD);
  
  //q-distribution 
@@ -105,8 +106,12 @@ void AliFittingQDistribution::CreateOutputObjects()
  fHistList->Add(fQDistributionFQD);
   
  //common control histograms
- fCommonHists = new AliFlowCommonHist("FittingQDistribution");
- fHistList->Add(fCommonHists->GetHistList());  
+ fCommonHists = new AliFlowCommonHist("AliFlowCommonHistFQD");
+ fHistList->Add(fCommonHists);  
+ 
+ //common histograms for final results (2nd order)
+ fCommonHistsResults= new AliFlowCommonHistResults("AliFlowCommonHistResultsFQD");
+ fHistList->Add(fCommonHistsResults); 
  
 }//end of CreateOutputObjects()
 
@@ -146,7 +151,7 @@ void AliFittingQDistribution::Make(AliFlowEventSimple* anEvent)
 void AliFittingQDistribution::Finish()
 {
  //calculate the final results
- AliFittingFunctionsForQDistribution finalFitting(fAvMultIntFlowFQD,fQDistributionFQD,fIntFlowResultsFQD);
+ AliFittingFunctionsForQDistribution finalFitting(fAvMultIntFlowFQD,fQDistributionFQD,fIntFlowResultsFQD,fCommonHistsResults);
          
  finalFitting.Calculate();            
 }

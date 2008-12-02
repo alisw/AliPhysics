@@ -309,19 +309,31 @@ void AliAnalysisTaskFittingQDistribution::Terminate(Option_t *)
  
  if(fListHistos)
  {	    
+  //final results (integrated flow)
+  TH1D *intFlowResults = dynamic_cast<TH1D*>(fListHistos->FindObject("fIntFlowResultsFQD")); 
+  
+  //common histograms to store the final results for the integrated flow
+  AliFlowCommonHistResults *commonHistRes = dynamic_cast<AliFlowCommonHistResults*>(fListHistos->FindObject("AliFlowCommonHistResultsFQD"));
  
-  //profile with avarage selected multiplicity for int. flow 
+  //average selected multiplicity (for int. flow) 
   TProfile *AvMult = dynamic_cast<TProfile*>(fListHistos->FindObject("fAvMultIntFlowFQD"));
   
   //q-distribution
   TH1D *qDist = dynamic_cast<TH1D*>(fListHistos->FindObject("fQDistributionFQD"));
   
-  //histograms to store the final results (integrated flow)
-  TH1D *intFlowResults = dynamic_cast<TH1D*>(fListHistos->FindObject("fIntFlowResultsFQD"));
+  //----------------------------------------------------
   
-  AliFittingFunctionsForQDistribution finalFitting(AvMult,qDist,intFlowResults);
-         
-  finalFitting.Calculate();  
+  fFQDA = new AliFittingQDistribution();
+  
+  fFQDA->SetIntFlowResults(intFlowResults); 
+  fFQDA->SetCommonHistsResults(commonHistRes); 
+  
+  fFQDA->SetAverageMultiplicity(AvMult);
+  fFQDA->SetQDistribution(qDist); 
+  
+  fFQDA->Finish();  
+  
+  //----------------------------------------------------      
  }
  else
  {
@@ -329,7 +341,7 @@ void AliAnalysisTaskFittingQDistribution::Terminate(Option_t *)
  }
 }
 
-
+//================================================================================================================
 
 
 

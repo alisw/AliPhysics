@@ -41,19 +41,37 @@ class AliFittingQDistribution{
   virtual void Make(AliFlowEventSimple* anEvent);
   virtual void Finish();
   virtual void WriteHistograms(TString* outputFileName);
-  
+
+//----------------------------------------------------------------------------------------------------------------
+//                                            setters and getters                                                 
+//----------------------------------------------------------------------------------------------------------------      
   TList* GetHistList() const {return this->fHistList;}      //output histogram list
+  
+  void SetIntFlowResults(TH1D* ifr)  {this->fIntFlowResultsFQD = ifr;};
+  TH1D* GetIntFlowResults() const    {return this->fIntFlowResultsFQD;};
+  
+  void SetCommonHistsResults(AliFlowCommonHistResults* chr)  {this->fCommonHistsResults = chr;};
+  AliFlowCommonHistResults* GetCommonHistsResults() const    {return this->fCommonHistsResults;};
+  
+  void SetAverageMultiplicity(TProfile* am)      {this->fAvMultIntFlowFQD = am;};
+  TProfile* GetAverageMultiplicity() const       {return this->fAvMultIntFlowFQD;};
+  
+  void SetQDistribution(TH1D* qd)  {this->fQDistributionFQD = qd;};
+  TH1D* GetQDistribution() const   {return this->fQDistributionFQD;};
+//----------------------------------------------------------------------------------------------------------------
  
  private:
   AliFittingQDistribution(const AliFittingQDistribution& afqd);
   AliFittingQDistribution& operator=(const AliFittingQDistribution& afqd);
-  AliFlowTrackSimple* fTrack;                               //track
   
-  TList*             fHistList;         //list to hold all output histograms
-  TProfile*          fAvMultIntFlowFQD;    //avarage selected multiplicity
-  TH1D*              fIntFlowResultsFQD;   //integrated flow final results
-  AliFlowCommonHist* fCommonHists;      //common control histograms
-  TH1D*              fQDistributionFQD;            //q-distribution
+  AliFlowTrackSimple*        fTrack;                   //track
+   
+  TList*                     fHistList;                //list to hold all output histograms
+  TProfile*                  fAvMultIntFlowFQD;        //avarage selected multiplicity
+  TH1D*                      fIntFlowResultsFQD;       //integrated flow final results
+  AliFlowCommonHist*         fCommonHists;             //common control histograms
+  AliFlowCommonHistResults*  fCommonHistsResults;      //final results for integrated flow stored in the common histograms 
+  TH1D*                      fQDistributionFQD;        //q-distribution
       
   ClassDef(AliFittingQDistribution, 0);
 };
