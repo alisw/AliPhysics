@@ -1,0 +1,18 @@
+# -*- mode: cmake -*-
+
+set(SRCS
+       PartCorrBase/AliAODPWG4Particle.cxx PartCorrBase/AliAODPWG4ParticleCorrelation.cxx 
+       PartCorrBase/AliNeutralMesonSelection.cxx  PartCorrBase/AliFidutialCut.cxx 
+       PartCorrBase/AliCaloPID.cxx  PartCorrBase/AliIsolationCut.cxx
+       PartCorrBase/AliAnaScale.cxx PartCorrBase/AliAnaPartCorrMaker.cxx
+       PartCorrBase/AliAnaPartCorrBaseClass.cxx PartCorrBase/AliAnalysisTaskParticleCorrelation.cxx
+       PartCorrBase/AliCaloTrackReader.cxx    PartCorrBase/AliCaloTrackESDReader.cxx
+       PartCorrBase/AliCaloTrackAODReader.cxx PartCorrBase/AliCaloTrackMCReader.cxx
+)
+
+# fill list of header files from list of source files
+# by exchanging the file extension
+String(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+
+AddLibrary(PWG4PartCorrBase "${SRCS}" "${HDRS}")
+
