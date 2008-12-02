@@ -33,7 +33,7 @@ class AliFittingFunctionsForQDistribution{
  public:
   AliFittingFunctionsForQDistribution();
   virtual ~AliFittingFunctionsForQDistribution();
-  AliFittingFunctionsForQDistribution(TProfile *AvMult, TH1D *QDistribution, TH1D *intFlowRes, AliFlowCommonHistResults *chr);
+  AliFittingFunctionsForQDistribution(TProfile *AvMult, TH1D *QDistribution, TH1D *intFlowRes, TH1D *sigma2, AliFlowCommonHistResults *chr);
  
   void Calculate();
 
@@ -44,6 +44,7 @@ class AliFittingFunctionsForQDistribution{
   TProfile                 *fAvMultFQD;           //avarage selected multiplicity for int. flow
   TH1D                     *fQDistributionFQD;    //q-distribution
   TH1D                     *fIntFlowResFQD;       //integrated flow final result
+  TH1D                     *fSigma2;              //sigma^2
   AliFlowCommonHistResults *fchrFQD;              //final results for integrated flow stored in the common histograms
 
   ClassDef(AliFittingFunctionsForQDistribution, 0);

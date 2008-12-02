@@ -312,6 +312,9 @@ void AliAnalysisTaskFittingQDistribution::Terminate(Option_t *)
   //final results (integrated flow)
   TH1D *intFlowResults = dynamic_cast<TH1D*>(fListHistos->FindObject("fIntFlowResultsFQD")); 
   
+  //sigma^2
+  TH1D *sigma2 = dynamic_cast<TH1D*>(fListHistos->FindObject("fSigma2")); 
+  
   //common histograms to store the final results for the integrated flow
   AliFlowCommonHistResults *commonHistRes = dynamic_cast<AliFlowCommonHistResults*>(fListHistos->FindObject("AliFlowCommonHistResultsFQD"));
  
@@ -325,7 +328,8 @@ void AliAnalysisTaskFittingQDistribution::Terminate(Option_t *)
   
   fFQDA = new AliFittingQDistribution();
   
-  fFQDA->SetIntFlowResults(intFlowResults); 
+  fFQDA->SetIntFlowResults(intFlowResults);
+  fFQDA->SetSigma2(sigma2); 
   fFQDA->SetCommonHistsResults(commonHistRes); 
   
   fFQDA->SetAverageMultiplicity(AvMult);
