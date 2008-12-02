@@ -179,8 +179,9 @@ void  LoadLibraries(const anaModes mode) {
     //gSystem->Load("libAOD");
     //gSystem->Load("libANALYSIS");
     //gSystem->Load("libANALYSISalice");
-    //gSystem->Load("libPWG4PartCorr");
-    
+    //gSystem->Load("libPWG4PartCorrBase");
+     //gSystem->Load("libPWG4PartCorrDep");
+
     //--------------------------------------------------------
     //If you want to use root and par files from aliroot
     //--------------------------------------------------------  
@@ -189,8 +190,8 @@ void  LoadLibraries(const anaModes mode) {
     SetupPar("AOD");
     SetupPar("ANALYSIS");
     SetupPar("ANALYSISalice");
-    SetupPar("PWG4PartCorr");
-    
+    SetupPar("PWG4PartCorrBase");
+    SetupPar("PWG4PartCorrDep");
   }
 
   //---------------------------------------------------------
@@ -202,12 +203,6 @@ void  LoadLibraries(const anaModes mode) {
     // Put appropriate username here
     // TProof::Reset("proof://mgheata@lxb6046.cern.ch"); 
     TProof::Open("proof://mgheata@lxb6046.cern.ch");
-    
-    //    gProof->ClearPackages();
-    //    gProof->ClearPackage("ESD");
-    //    gProof->ClearPackage("AOD");
-    //    gProof->ClearPackage("ANALYSIS");   
-    //    gProof->ClearPackage("PWG4Gamma");
     
     // Enable the STEERBase Package
     gProof->UploadPackage("STEERBase.par");
@@ -221,9 +216,11 @@ void  LoadLibraries(const anaModes mode) {
     // Enable the Analysis Package
     gProof->UploadPackage("ANALYSIS.par");
     gProof->EnablePackage("ANALYSIS");
-    // Enable gamma jet analysis
-    gProof->UploadPackage("PWG4Gamma.par");
-    gProof->EnablePackage("PWG4Gamma");
+    // Enable PartCorr analysis
+    gProof->UploadPackage("PWG4PartCorrBase.par");
+    gProof->EnablePackage("PWG4PartCorrBase");
+    gProof->UploadPackage("PWG4PartCorrDep.par");
+    gProof->EnablePackage("PWG4PartCorrDep");
     //
     gProof->ShowEnabledPackages();
   }  

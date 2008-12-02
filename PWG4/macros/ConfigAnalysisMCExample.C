@@ -22,14 +22,14 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
   //Detector Fidutial Cuts
   AliFidutialCut * fidCut = new AliFidutialCut();
   fidCut->DoCTSFidutialCut(kFALSE) ;
-  fidCut->DoEMCALFidutialCut(kTRUE) ;
+  fidCut->DoEMCALFidutialCut(kFALSE) ;
   fidCut->DoPHOSFidutialCut(kTRUE) ;
   
   //fidCut->SetSimpleCTSFidutialCut(0.9,0.,360.);
-  fidCut->SetSimpleEMCALFidutialCut(0.7,80.,190.);
-  fidCut->SetSimplePHOSFidutialCut(0.12,220.,320.);
- 
-  //   //Fidutial cut EMCAL,  5 regions
+  //fidCut->SetSimpleEMCALFidutialCut(0.7,80.,190.);
+  fidCut->SetSimplePHOSFidutialCut(0.13,220.,320.);
+  
+  //   //Fidutial cut EMCAL, 5 regions
   //   Float_t etamax[]={0.67,0.51,0.16,-0.21,-0.61};
   //   TArrayF etamaxarr(5,etamax);
   //   fidCut->AddEMCALFidCutMaxEtaArray(etamaxarr);
@@ -50,7 +50,7 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
   //-----------------------------------------------------------  
   // Reader
   //-----------------------------------------------------------
-  AliCaloTrackESDReader *reader = new AliCaloTrackESDReader();
+  AliCaloTrackMCReader *reader = new AliCaloTrackMCReader();
   reader->SetDebug(-1);
   
  //Switch on or off the detectors information that you want
@@ -58,7 +58,7 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
   reader->SwitchOffCTS();
   reader->SwitchOnPHOS();
   reader->SwitchOffEMCALCells();
-  reader->SwitchOnPHOSCells();
+  reader->SwitchOffPHOSCells();
 
   //Min particle pT
   reader->SetEMCALPtMin(0.); 
@@ -68,6 +68,7 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
   reader->SetFidutialCut(fidCut);
   reader->Print("");
   
+  
   //---------------------------------------------------------------------
   // Analysis algorithm
   //---------------------------------------------------------------------
@@ -75,11 +76,8 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
   //Detector Fidutial Cuts for analysis part
   AliFidutialCut * fidCut2 = new AliFidutialCut();
   fidCut2->DoCTSFidutialCut(kFALSE) ;
-  fidCut2->DoEMCALFidutialCut(kTRUE) ;
+  fidCut2->DoEMCALFidutialCut(kFALSE) ;
   fidCut2->DoPHOSFidutialCut(kTRUE) ;
-  
-  //fidCut2->SetSimpleCTSFidutialCut(0.9,0.,360.);
-  fidCut2->SetSimpleEMCALFidutialCut(0.5,100.,150.);
   fidCut2->SetSimplePHOSFidutialCut(0.1,240.,280.);
 
   AliCaloPID * pid = new AliCaloPID();
@@ -107,8 +105,6 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
 //	ana->SetHistoPtRangeAndNBins(0, 50, 100) ;
 //	ana->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
 //	ana->SetHistoEtaRangeAndNBins(-0.7, 0.7, 100) ;  
-
-//AliAnaExample *ana2 = new AliAnaExample();
   
   //---------------------------------------------------------------------
   // Set  analysis algorithm and reader
@@ -116,12 +112,9 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
   maker = new AliAnaPartCorrMaker();
   maker->SetReader(reader);//pointer to reader
   maker->AddAnalysis(ana,0);
-  //maker->AddAnalysis(ana2,1);
   maker->SetAnaDebug(-1)  ;
-  maker->SwitchOnHistogramsMaker()  ;
-  //maker->SwitchOffHistogramsMaker() ;  
+  maker->SwitchOnHistogramsMaker()  ;  
   maker->SwitchOnAODsMaker()  ;
-  //maker->SwitchOffAODsMaker() ; 
   
   maker->Print("");
   //
