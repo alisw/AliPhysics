@@ -97,6 +97,7 @@ class AliTRDseedV1 : public AliTRDseed
   void      SetMomentum(Double_t mom){ fMom = mom;}
   void      SetOwner();
   void      SetDetector(Int_t d)     { fDet = d;  }
+  void      SetDX(Float_t inDX)      { fdX = inDX;}
   void      SetSnp(Double_t snp)     { fSnp = snp;}
   void      SetTgl(Double_t tgl)     { fTgl = tgl;}
   void      SetReconstructor(const AliTRDReconstructor *rec) {fReconstructor = rec;}

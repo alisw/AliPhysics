@@ -85,8 +85,11 @@ public:
   Int_t          PropagateToR(Double_t xr, Double_t step);
   Bool_t         Rotate(Double_t angle, Bool_t absolute = kFALSE);
   void           SetBudget(Int_t i, Double_t b) {if(i>=0 && i<3) fBudget[i] = b;}
+  void           SetEdep(Double32_t inDE){fDE = inDE;};
   void           SetNumberOfClusters();
   void           SetOwner();
+  void           SetPID(Short_t is, Double_t inPID){if (is >=0 && is < AliPID::kSPECIES) fPID[is]=inPID;};
+  void           SetPIDquality(UChar_t inPIDquality){fPIDquality = inPIDquality;};
   void           SetStopped(Bool_t stop) {SetBit(kStopped, stop);}
   void           SetTracklet(AliTRDseedV1 *trklt,  Int_t index);
   inline void    SetReconstructor(const AliTRDReconstructor *rec);

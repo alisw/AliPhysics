@@ -21,9 +21,9 @@ class AliTRDcluster : public AliCluster {
        , kUsed      = BIT(15)
        , kShared    = BIT(16)
   };
-  enum { kMaskedLeft = 0
-      , kMaskedCenter= 1
-      , kMaskedRight = 2
+  enum { kMaskedLeft   = 0
+       , kMaskedCenter = 1
+       , kMaskedRight  = 2
   };
 
   AliTRDcluster();
@@ -63,6 +63,12 @@ class AliTRDcluster : public AliCluster {
   void     SetInChamber(Bool_t in = kTRUE) { SetBit(kInChamber,in); }
   void     SetPadMaskedPosition(UChar_t position);
   void     SetPadMaskedStatus(UChar_t status);
+  void     SetPadCol(UChar_t inPadCol){ fPadCol = inPadCol;}
+  void     SetPadRow(UChar_t inPadRow){ fPadRow = inPadRow;}
+  void     SetPadTime(UChar_t inPadTime){ fPadTime = inPadTime;}
+  void     SetDetector(Short_t inDetector){ fDetector = inDetector;}
+  void     SetQ(Float_t inQ){ fQ = inQ;}
+  void     SetClusterMasking(UChar_t inClusterMasking){ fClusterMasking = inClusterMasking;}
   void     SetShared(Bool_t sh  = kTRUE)   { SetBit(kShared,sh);    }
   void     Use(Int_t = 0)                  { SetBit(kUsed, kTRUE);              }
 

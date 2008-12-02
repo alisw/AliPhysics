@@ -58,6 +58,8 @@ class AliTRDseed : public TObject {
           Float_t  GetMeanz() const                         { return fMeanz;         }
           Float_t  GetZProb() const                         { return fZProb;         }
           Int_t    GetLabels(Int_t i) const                 { return fLabels[i];     }
+	  Float_t  GetMPads() const                         { return fMPads;         }
+	  Int_t    GetNbClusters() const                    { return fN;             }
           Int_t    GetN2() const                            { return fN2;            }
           Int_t    GetNChange() const                       { return fNChange;       }
           Int_t    GetNUsed() const                         { return fNUsed;         }
@@ -88,6 +90,9 @@ class AliTRDseed : public TObject {
           void     SetMeanz(Float_t meanz)                  { fMeanz       = meanz;  }
           void     SetZProb(Float_t zprob)                  { fZProb       = zprob;  }
           void     SetLabels(Int_t i, Int_t label)          { fLabels[i]   = label;  }
+          void     SetMPads(Float_t mPads)                  { fMPads       = mPads;  }
+          void     SetN(Int_t n)                            { fN           = n;      }
+          void     SetNChange(Int_t n)                      { fNChange     = n;      }
           void     SetN2(Int_t n2)                          { fN2          = n2;     }
           void     SetNUsed(Int_t nused)                    { fNUsed       = nused;  }
           void     SetFreq(Int_t freq)                      { fFreq        = freq;   }
