@@ -13,26 +13,14 @@
 //
 //////////////////////////////////////////////////////////////////////////////
 
-#include <iostream>
-#include <TObject.h>
 #include <TMath.h>
+#include <TObject.h>
+#include <TVectorD.h>
 #include <TMatrix.h>
-#include <TVector.h>
-#include <TVector3.h>
-#include <TDecompLU.h>
-#include <TArrayI.h>
-#include <TH1D.h>
-#include <TF1.h>
 
-#include "AliESDtrack.h"
-#include "AliTrackPointArray.h"
-#include "AliGeomManager.h"
-#include "AliTrackFitterKalman.h"
-#include "AliTrackFitterRieman.h"
-#include "AliESDfriendTrack.h"
-#include "AliESDEvent.h"
-#include "AliESDVertex.h"
-#include "AliExternalTrackParam.h"
+class AliExternalTrackParam;
+class AliESDEvent;
+class AliESDtrack;
 
 class AliRelAlignerKalman : public TObject {
 
@@ -43,32 +31,34 @@ public:
     AliRelAlignerKalman(const AliRelAlignerKalman& a);
 
     //User methods:
-    Bool_t AddESDTrack( AliESDtrack* pTrack );
-    Bool_t AddCosmicEventSeparateTracking( AliESDEvent* pEvent );
+    Bool_t AddESDTrack(  const AliESDtrack* pTrack );
+    Bool_t AddCosmicEvent( const AliESDEvent* pEvent );
     
     void Print(Option_t* option="") const;
 
-    Double_t GetPsi() {return (*fPX)(0);}
-    Double_t GetTheta() {return (*fPX)(1);}
-    Double_t GetPhi() {return (*fPX)(2);}
-    Double_t GetX() {return (*fPX)(3);}
-    Double_t GetY() {return (*fPX)(4);}
-    Double_t GetZ() {return (*fPX)(5);}
-    Double_t GetTPCdriftCorr() {return (*fPX)(6);}
-    Double_t GetTPCoffset() {return (*fPX)(7);}
-    Double_t GetPsiErr() {return TMath::Sqrt((*fPXcov)(0,0));}
-    Double_t GetThetaErr() {return TMath::Sqrt((*fPXcov)(1,1));}
-    Double_t GetPhiErr() {return TMath::Sqrt((*fPXcov)(2,2));}
-    Double_t GetXErr() {return TMath::Sqrt((*fPXcov)(3,3));}
-    Double_t GetYErr() {return TMath::Sqrt((*fPXcov)(4,4));}
-    Double_t GetZErr() {return TMath::Sqrt((*fPXcov)(5,5));}
-    Double_t GetTPCdriftCorrErr() {return TMath::Sqrt((*fPXcov)(6,6));}
-    Double_t GetTPCoffsetErr() {return TMath::Sqrt((*fPXcov)(7,7));}
-    void GetMeasurement( TVectorD& mes ) { mes = *fPMeasurement; }
-    void GetMeasurementCov( TMatrixDSym& cov ) { cov = *fPMeasurementCov; }
-    void GetState( TVectorD& state ) { state = *fPX; }
-    void GetStateCov ( TMatrixDSym& cov ) { cov = *fPXcov; }
-    void GetSeed( TVectorD& seed, TMatrixDSym& seedCov ) { seed = *fPX; seedCov = *fPXcov; }
+    Double_t GetPsi() const {return (*fPX)(0);}
+    Double_t GetTheta() const {return (*fPX)(1);}
+    Double_t GetPhi() const {return (*fPX)(2);}
+    Double_t GetX() const {return (*fPX)(3);}
+    Double_t GetY() const {return (*fPX)(4);}
+    Double_t GetZ() const {return (*fPX)(5);}
+    Double_t GetTPCvdCorr() const {return (*fPX)(6);}
+    Double_t GetTPCvdY() const {return (*fPX)(7);}
+    Double_t GetTPCt0() const {return (*fPX)(8);}
+    Double_t GetPsiErr() const {return TMath::Sqrt((*fPXcov)(0,0));}
+    Double_t GetThetaErr() const {return TMath::Sqrt((*fPXcov)(1,1));}
+    Double_t GetPhiErr() const {return TMath::Sqrt((*fPXcov)(2,2));}
+    Double_t GetXErr() const {return TMath::Sqrt((*fPXcov)(3,3));}
+    Double_t GetYErr() const {return TMath::Sqrt((*fPXcov)(4,4));}
+    Double_t GetZErr() const {return TMath::Sqrt((*fPXcov)(5,5));}
+    Double_t GetTPCvdCorrErr() const {return TMath::Sqrt((*fPXcov)(6,6));}
+    Double_t GetTPCvdYErr() const {return TMath::Sqrt((*fPXcov)(7,7));}
+    Double_t GetTPCt0Err() const {return TMath::Sqrt((*fPXcov)(8,8));}
+    void GetMeasurement( TVectorD& mes ) const { mes = *fPMeasurement; }
+    void GetMeasurementCov( TMatrixDSym& cov ) const { cov = *fPMeasurementCov; }
+    void GetState( TVectorD& state ) const { state = *fPX; }
+    void GetStateCov ( TMatrixDSym& cov ) const { cov = *fPXcov; }
+    void GetSeed( TVectorD& seed, TMatrixDSym& seedCov ) const { seed = *fPX; seedCov = *fPXcov; }
     void SetMeasurement( const TVectorD& mes ) {*fPMeasurement = mes;}
     void SetMeasurementCov( const TMatrixDSym& cov ) {*fPMeasurementCov = cov;}
     void SetState( const TVectorD& param ) {*fPX = param;}
@@ -84,21 +74,24 @@ public:
     void PrintCorrelationMatrix();
     void PrintCovarianceCorrection();
     void PrintSystemMatrix();
+    void Reset();
     void ResetCovariance( const Double_t number=0. );
-    Double_t* GetStateArr() { return fPX->GetMatrixArray(); }
-    Double_t* GetStateCovArr() { return fPXcov->GetMatrixArray(); }
-    Double_t* GetMeasurementArr() { return fPMeasurement->GetMatrixArray(); }
-    Double_t* GetMeasurementCovArr() { return fPMeasurementCov->GetMatrixArray(); }
-    Double_t* GetDeltaArr() {return fDelta;}
-    TH1D* GetMes0Hist() {return fPMes0Hist;}
-    TH1D* GetMes1Hist() {return fPMes1Hist;} 
-    TH1D* GetMes2Hist() {return fPMes2Hist;}
-    TH1D* GetMes3Hist() {return fPMes3Hist;}
-    TH1D* GetMesErr0Hist() {return fPMesErr0Hist;}
-    TH1D* GetMesErr1Hist() {return fPMesErr1Hist;}
-    TH1D* GetMesErr2Hist() {return fPMesErr2Hist;}
-    TH1D* GetMesErr3Hist() {return fPMesErr3Hist;}
-    Bool_t SetCalibrationMode( Bool_t cp=kTRUE );
+    void ResetTPCparamsCovariance( const Double_t number=0. );
+    Double_t* GetStateArr() const { return fPX->GetMatrixArray(); }
+    Double_t* GetStateCovArr() const { return fPXcov->GetMatrixArray(); }
+    Double_t* GetMeasurementArr() const { return fPMeasurement->GetMatrixArray(); }
+    Double_t* GetMeasurementCovArr() const { return fPMeasurementCov->GetMatrixArray(); }
+    const Double_t* GetDeltaArr() const {return fDelta;}
+    TH1D* GetMes0Hist() const {return fPMes0Hist;}
+    TH1D* GetMes1Hist() const {return fPMes1Hist;} 
+    TH1D* GetMes2Hist() const {return fPMes2Hist;}
+    TH1D* GetMes3Hist() const {return fPMes3Hist;}
+    TH1D* GetMesErr0Hist() const {return fPMesErr0Hist;}
+    TH1D* GetMesErr1Hist() const {return fPMesErr1Hist;}
+    TH1D* GetMesErr2Hist() const {return fPMesErr2Hist;}
+    TH1D* GetMesErr3Hist() const {return fPMesErr3Hist;}
+    Bool_t SetCalibrationMode( const Bool_t cp=kTRUE );
+    void SetCorrectionMode( const Bool_t mode=kTRUE ){ fCorrectionMode=mode; }
     void SetApplyCovarianceCorrection( const Bool_t s=kTRUE ) {fApplyCovarianceCorrection = s;}
     void SetOutRejSigma( const Double_t a=2. ) { fOutRejSigmas = a; }
     void SetRejectOutliers( const Bool_t r=kTRUE ) {fRejectOutliers = r;}
@@ -113,10 +106,14 @@ public:
     void SetQ( const Double_t Q = 1e-10 ) { fQ = Q; }
     void SetMaxMatchingDistance( const Double_t m ) {fMaxMatchingDistance=m;}
     void SetMaxMatchingAngle( const Double_t m ) {fMaxMatchingAngle=m;}
-    static Bool_t MisalignTrack( AliExternalTrackParam* tr, const TVectorD& misalignment );
+    void SetTPCvd( const Float_t v ) {fTPCvd=v;}
+    void SetTPCZLengthA( const Double_t l ) {fTPCZLengthA=l;}
+    void SetTPCZLengthC( const Double_t l ) {fTPCZLengthC=l;}
+    Bool_t CorrectTrack( AliExternalTrackParam* tr, const TVectorD& misalignment );
+    Bool_t MisalignTrack( AliExternalTrackParam* tr, const TVectorD& misalignment );
     static void Angles( TVectorD &angles, const TMatrixD &rotmat );
     static void RotMat( TMatrixD& R, const TVectorD& angles );
-    static void TMatrixDSym_from_TMatrixD( TMatrixDSym& matsym, const TMatrixD& mat );
+    static void TMatrixDSymFromTMatrixD( TMatrixDSym& matsym, const TMatrixD& mat );
     
 protected:
     Bool_t UpdateCalibration();
@@ -129,13 +126,13 @@ protected:
 
 private:
     static const Int_t fgkNMeasurementParams = 4;           //how many measurables
-    static const Int_t fgkNSystemParams = 8;                //how many fit parameters
+    static const Int_t fgkNSystemParams = 9;                //how many fit parameters
     
     //Track parameters
     Double_t fAlpha;       //rotation angle between the local and global coordinate system like in AliExternalTrackParam
     Double_t fLocalX;      //local x coordinate of reference plane = r(global)
-    const AliExternalTrackParam* fPTrackParam1;   //local track parameters (theta,phi,y,z)
-    const AliExternalTrackParam* fPTrackParam2;   //local track parameters
+    const AliExternalTrackParam* fkPTrackParam1;   //local track parameters (theta,phi,y,z)
+    const AliExternalTrackParam* fkPTrackParam2;   //local track parameters
 
     //Kalman filter related stuff
     TVectorD* fPX; //System (fit) parameters (phi, theta, psi, x, y, z, driftcorr, driftoffset )
@@ -160,13 +157,14 @@ private:
     Double_t fMaxMom;       //max momentum of track for track cuts
     Double_t fMaxMatchingAngle; //cuts
     Double_t fMaxMatchingDistance; //cuts
+    Bool_t fCorrectionMode; //calculate corrective transform for TPC (or monitor actual TPC misal params)
     
     //Counters
     Int_t fNTracks; //number of processed tracks
     Int_t fNUpdates; //number of successful Kalman updates
     Int_t fNOutliers; //number of outliers
-    Int_t fNMatchedCosmics; //number of cosmic events with matching tracklets
-    Int_t fNMatchedTPCtracklets;
+    Int_t fNMatchedCosmics; //number of cosmic events with matching tracklets (good cosmics)
+    Int_t fNMatchedTPCtracklets;//number of cosmic events with 2 matching TPC tracklets
     Int_t fNProcessedEvents; //number of processed events
 
     //Calibration histograms
@@ -180,8 +178,13 @@ private:
     TH1D* fPMesErr2Hist;  //histogram of the covariance of a fit parameter, used in calibration
     TH1D* fPMesErr3Hist;  //histogram of the covariance of a fit parameter, used in calibration
     TMatrixDSym* fPMeasurementCovCorr; //correction to be added to the measurement covariance
+
+    //TPC stuff
+    Double_t fTPCvd; //TPC drift velocity
+    Double_t fTPCZLengthA; //TPC length side A
+    Double_t fTPCZLengthC; //TPC length side C
     
-    ClassDef(AliRelAlignerKalman,1)     //AliRelAlignerKalman class
+    ClassDef(AliRelAlignerKalman,2)     //AliRelAlignerKalman class
 };
 
 #endif
