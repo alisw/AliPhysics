@@ -83,6 +83,7 @@
 #include "AliTPCExB.h"
 #include "AliRawReader.h"
 #include "AliTPCRawStream.h"
+#include "TTreeStream.h"
 
 ClassImp(AliTPC) 
 //_____________________________________________________________________________
@@ -101,8 +102,8 @@ ClassImp(AliTPC)
 		   fNoiseTable(0),
 		   fCurrentNoise(0),
 		   fActiveSectors(0),
-                   fGainFactor(1.)
-                   
+                   fGainFactor(1.),
+    fDebugStreamer(0)
 
 {
   //
@@ -135,7 +136,8 @@ AliTPC::AliTPC(const char *name, const char *title)
 		   fNoiseTable(0),
 		   fCurrentNoise(0),
                    fActiveSectors(0),
-                   fGainFactor(1.)
+    fGainFactor(1.),
+     fDebugStreamer(0)
                   
 {
   //
@@ -184,6 +186,7 @@ AliTPC::AliTPC(const char *name, const char *title)
     AliWarning("In Config.C you must set non-default parameters.");
     fTPCParam=0;
   }
+
 }
 
 //_____________________________________________________________________________
@@ -203,7 +206,7 @@ AliTPC::~AliTPC()
   fDigitsArray = 0x0;
   delete [] fNoiseTable;
   delete [] fActiveSectors;
-
+  if (fDebugStreamer) delete fDebugStreamer;
 }
 
 //_____________________________________________________________________________
@@ -1442,6 +1445,7 @@ void AliTPC::Hits2SDigits()
   //-----------------------------------------------------------
   //   summable digits - 16 bit "ADC", no noise, no saturation
   //-----------------------------------------------------------
+  if (0) fDebugStreamer = new TTreeSRedirector("TPCSimdebug.root");
 
   if (!fTPCParam->IsGeoRead()){
     //
@@ -1463,6 +1467,10 @@ void AliTPC::Hits2SDigits()
 
   fLoader->UnloadHits();
   fLoader->UnloadSDigits();
+  if (fDebugStreamer) {
+    delete fDebugStreamer;
+    fDebugStreamer=0;
+  }    
 }
 //_____________________________________________________________________________
 
@@ -2024,7 +2032,7 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
 	  
 	TransportElectron(xyz,index);    
 	Int_t rowNumber;
-	fTPCParam->GetPadRow(xyz,index); 
+	Int_t padrow = fTPCParam->GetPadRow(xyz,index); 
 	//
 	// Add Time0 correction due unisochronity
 	// xyz[0] - pad row coordinate 
@@ -2032,14 +2040,27 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
 	// xyz[2] - is in now time bin coordinate system
 	Float_t correction =0;
 	if (calib->GetPadTime0()){
-	  if (!calib->GetPadTime0()->GetCalROC(isec)) continue;
-	  Int_t npads = fTPCParam->GetNPads(isec,TMath::Nint(xyz[0]));
+	  if (!calib->GetPadTime0()->GetCalROC(isec)) continue;	  
+	  Int_t npads = fTPCParam->GetNPads(isec,padrow);
 	  //	  Int_t pad  = TMath::Nint(xyz[1]+fTPCParam->GetNPads(isec,TMath::Nint(xyz[0]))*0.5);
-	  Int_t pad  = TMath::Nint(xyz[1]);
+	  // pad numbering from -npads/2 .. npads/2-1
+	  Int_t pad  = TMath::Nint(xyz[1]+npads/2);
 	  if (pad<0) pad=0;
 	  if (pad>=npads) pad=npads-1;
-	  correction = calib->GetPadTime0()->GetCalROC(isec)->GetValue(TMath::Nint(xyz[0]),pad);
-	  
+	  correction = calib->GetPadTime0()->GetCalROC(isec)->GetValue(padrow,pad);
+	  //	  printf("%d\t%d\t%d\t%f\n",isec,padrow,pad,correction);
+	  if (fDebugStreamer){
+	    (*fDebugStreamer)<<"Time0"<<
+	      "isec="<<isec<<
+	      "padrow="<<padrow<<
+	      "pad="<<pad<<
+	      "x0="<<xyz[0]<<
+	      "x1="<<xyz[1]<<
+	      "x2="<<xyz[2]<<
+	      "hit.="<<tpcHit<<
+	      "cor="<<correction<<
+	      "\n";
+	  }
 	}
 	xyz[2]+=correction;
 	xyz[2]+=fTPCParam->GetNTBinsL1();    // adding Level 1 time bin offset
@@ -2200,7 +2221,7 @@ void AliTPC::TransportElectron(Float_t *xyz, Int_t *index)
   // xyz and index must be already transformed to system 1
   //
 
-  fTPCParam->Transform1to2(xyz,index);
+  fTPCParam->Transform1to2(xyz,index);  // mis-alignment applied in this step
   
   //add diffusion
   Float_t driftl=xyz[2];
