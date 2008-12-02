@@ -41,7 +41,7 @@ AliMCEvent::AliMCEvent():
     fStack(0),
     fMCParticles(new TClonesArray("AliMCParticle",1000)),
     fMCParticleMap(0),
-    fHeader(0),
+    fHeader(new AliHeader()),
     fTRBuffer(0),
     fTrackReferences(new TClonesArray("AliTrackReference", 1000)),
     fTreeTR(0),
@@ -58,7 +58,7 @@ AliMCEvent::AliMCEvent(const AliMCEvent& mcEvnt) :
     fStack(0),
     fMCParticles(0),
     fMCParticleMap(0),
-    fHeader(0),
+    fHeader(new AliHeader()),
     fTRBuffer(0),
     fTrackReferences(0),
     fTreeTR(0),
@@ -92,6 +92,8 @@ void AliMCEvent::ConnectTreeK (TTree* tree)
     // Connect the kinematics tree to the stack
     fStack = fHeader->Stack();
     fStack->ConnectTree(tree);
+    printf("ConnectTreeK %p %p\n", fHeader, fStack);
+    
     //
     // Load the event
     fStack->GetEvent();
@@ -155,10 +157,10 @@ Int_t AliMCEvent::GetParticleAndTR(Int_t i, TParticle*& particle, TClonesArray*&
 void AliMCEvent::Clean()
 {
     // Clean-up before new trees are connected
-    if (fHeader) {
-	delete fHeader;
-	fHeader = 0;
-    }
+//    if (fHeader) {
+//	delete fHeader;
+//	fHeader = 0;
+//    }
 
     delete fStack; fStack = 0;
 
