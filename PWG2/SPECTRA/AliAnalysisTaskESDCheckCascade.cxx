@@ -20,33 +20,35 @@
 //-----------------------------------------------------------------
 
 
+
+
+class TTree;
+class TParticle;
+class TVector3;
+
+class AliMCEventHandler;
+class AliMCEvent;
+class AliStack;
+
+class AliESDVertex;
+class AliESDv0;
+
 #include <iostream>
 
 #include "TChain.h"
-#include "TTree.h"
 #include "TFile.h"
 #include "TList.h"
 #include "TH1F.h"
 #include "TH2F.h"
-#include "TParticle.h"
 #include "TCanvas.h"
-#include "TVector3.h"
 #include "TMath.h"
 
-
 #include "AliLog.h"
-#include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
-#include "AliMCEventHandler.h"
-#include "AliMCEvent.h"
-#include "AliStack.h"
-
-#include "AliESDEvent.h"
 #include "AliESDInputHandler.h"
 
-#include "AliESDv0.h"
+#include "AliESDEvent.h"
 #include "AliESDcascade.h"
-#include "AliESDVertex.h"
 
 #include "AliAnalysisTaskESDCheckCascade.h"
 
@@ -61,26 +63,26 @@ AliAnalysisTaskESDCheckCascade::AliAnalysisTaskESDCheckCascade()
     fesdH(0), fMCevent(0), fESD(0),
 
 	// - Cascade part initialisation
-    fListHist_Cascade(0),
+    fListHistCascade(0),
     fHistTrackMultiplicity(0), fHistCascadeMultiplicity(0),
-    fHistPos_TrkgPrimaryVtx_x(0), fHistPos_TrkgPrimaryVtx_y(0), fHistPos_TrkgPrimaryVtx_z(0), fHist_TrkgPrimaryVtxRadius(0),
-    fHistPos_SPDPrimaryVtx_x(0), fHistPos_SPDPrimaryVtx_y(0), fHistPos_SPDPrimaryVtx_z(0), fHist_SPDPrimaryVtxRadius(0),
+    fHistPosTrkgPrimaryVtxX(0), fHistPosTrkgPrimaryVtxY(0), fHistPosTrkgPrimaryVtxZ(0), fHistTrkgPrimaryVtxRadius(0),
+    fHistPosSPDPrimaryVtxX(0), fHistPosSPDPrimaryVtxY(0), fHistPosSPDPrimaryVtxZ(0), fHistSPDPrimaryVtxRadius(0),
     f2dHistTrkgPrimVtxVsSPDPrimVtx(0),
 
     fHistEffMassXi(0),  fHistChi2Xi(0),  
     fHistDcaXiDaughters(0), fHistDcaBachToPrimVertex(0), fHistXiCosineOfPointingAngle(0), fHistXiRadius(0),
 
-    fHistXiMom_transv(0),    fHistXiMom_tot(0),
-    fHistBachMom_transv(0),   fHistBachMom_tot(0),
+    fHistXiTransvMom(0),    fHistXiTotMom(0),
+    fHistBachTransvMom(0),   fHistBachTotMom(0),
 
 
     fHistMassLambdaAsCascDghter(0),
-    fHistV0Chi2_Xi(0),
-    fHistDcaV0Daughters_Xi(0),
-    fHistDcaV0ToPrimVertex_Xi(0), 
-    fHistV0CosineOfPointingAngle_Xi(0),
-    fHistV0Radius_Xi(0),
-    fHistDcaPosToPrimVertex_Xi(0), fHistDcaNegToPrimVertex_Xi(0), 
+    fHistV0Chi2Xi(0),
+    fHistDcaV0DaughtersXi(0),
+    fHistDcaV0ToPrimVertexXi(0), 
+    fHistV0CosineOfPointingAngleXi(0),
+    fHistV0RadiusXi(0),
+    fHistDcaPosToPrimVertexXi(0), fHistDcaNegToPrimVertexXi(0), 
 
     fHistMassXiMinus(0), fHistMassXiPlus(0),
     fHistMassOmegaMinus(0), fHistMassOmegaPlus(0)
@@ -103,26 +105,26 @@ AliAnalysisTaskESDCheckCascade::AliAnalysisTaskESDCheckCascade(const char *name)
     fesdH(0), fMCevent(0), fESD(0),    
     
     	// - Cascade part initialisation
-    fListHist_Cascade(0),
+    fListHistCascade(0),
     fHistTrackMultiplicity(0), fHistCascadeMultiplicity(0),
-    fHistPos_TrkgPrimaryVtx_x(0), fHistPos_TrkgPrimaryVtx_y(0), fHistPos_TrkgPrimaryVtx_z(0), fHist_TrkgPrimaryVtxRadius(0),
-    fHistPos_SPDPrimaryVtx_x(0), fHistPos_SPDPrimaryVtx_y(0), fHistPos_SPDPrimaryVtx_z(0), fHist_SPDPrimaryVtxRadius(0),
+    fHistPosTrkgPrimaryVtxX(0), fHistPosTrkgPrimaryVtxY(0), fHistPosTrkgPrimaryVtxZ(0), fHistTrkgPrimaryVtxRadius(0),
+    fHistPosSPDPrimaryVtxX(0), fHistPosSPDPrimaryVtxY(0), fHistPosSPDPrimaryVtxZ(0), fHistSPDPrimaryVtxRadius(0),
     f2dHistTrkgPrimVtxVsSPDPrimVtx(0),
 
     fHistEffMassXi(0),  fHistChi2Xi(0),  
     fHistDcaXiDaughters(0), fHistDcaBachToPrimVertex(0), fHistXiCosineOfPointingAngle(0), fHistXiRadius(0),
 
-    fHistXiMom_transv(0),    fHistXiMom_tot(0),
-    fHistBachMom_transv(0),   fHistBachMom_tot(0),
+    fHistXiTransvMom(0),    fHistXiTotMom(0),
+    fHistBachTransvMom(0),   fHistBachTotMom(0),
 
 
     fHistMassLambdaAsCascDghter(0),
-    fHistV0Chi2_Xi(0),
-    fHistDcaV0Daughters_Xi(0),
-    fHistDcaV0ToPrimVertex_Xi(0), 
-    fHistV0CosineOfPointingAngle_Xi(0),
-    fHistV0Radius_Xi(0),
-    fHistDcaPosToPrimVertex_Xi(0), fHistDcaNegToPrimVertex_Xi(0), 
+    fHistV0Chi2Xi(0),
+    fHistDcaV0DaughtersXi(0),
+    fHistDcaV0ToPrimVertexXi(0), 
+    fHistV0CosineOfPointingAngleXi(0),
+    fHistV0RadiusXi(0),
+    fHistDcaPosToPrimVertexXi(0), fHistDcaNegToPrimVertexXi(0), 
 
     fHistMassXiMinus(0), fHistMassXiPlus(0),
     fHistMassOmegaMinus(0), fHistMassOmegaPlus(0)
@@ -145,11 +147,10 @@ AliAnalysisTaskESDCheckCascade::AliAnalysisTaskESDCheckCascade(const char *name)
 //________________________________________________________________________
 void AliAnalysisTaskESDCheckCascade::ConnectInputData(Option_t *) 
 {
-
-   AliLog::SetGlobalLogLevel(AliLog::kError); // to suppress the extensive info prompted by a run with MC
-
   // Connect ESD or AOD here
   // Called once
+
+  AliLog::SetGlobalLogLevel(AliLog::kError); // to suppress the extensive info prompted by a run with MC
 
   TTree* tree = dynamic_cast<TTree*> (GetInputData(0));
   if (!tree) {
@@ -180,7 +181,7 @@ void AliAnalysisTaskESDCheckCascade::CreateOutputObjects()
 
 
 
- fListHist_Cascade = new TList();
+ fListHistCascade = new TList();
 
   
 	// - General histos
@@ -188,13 +189,13 @@ void AliAnalysisTaskESDCheckCascade::CreateOutputObjects()
 if(! fHistTrackMultiplicity) {
 	fHistTrackMultiplicity = new TH1F("fHistTrackMultiplicity", "Track Multiplicity;Number of tracks;Events", 150, 0, 150);
     	//  fHistTrackMultiplicity = new TH1F("fHistTrackMultiplicity", "Multiplicity distribution;Number of tracks;Events", 200, 0, 40000); //HERE for Pb-Pb
-	fListHist_Cascade->Add(fHistTrackMultiplicity);
+	fListHistCascade->Add(fHistTrackMultiplicity);
 }
 
 if(! fHistCascadeMultiplicity) {
 	fHistCascadeMultiplicity = new TH1F("fHistCascadeMultiplicity", "Cascades per event;Number of Cascades;Events", 10, 0, 10);
 	//  fHistCascadeMultiplicity = new TH1F("fHistCascadeMultiplicity", "Multiplicity distribution;Number of Cascades;Events", 200, 0, 4000); //HERE
-	fListHist_Cascade->Add(fHistCascadeMultiplicity);
+	fListHistCascade->Add(fHistCascadeMultiplicity);
 }
 
 
@@ -203,53 +204,53 @@ if(! fHistCascadeMultiplicity) {
 
 	// - Vertex Positions
   
-if(! fHistPos_TrkgPrimaryVtx_x ){
-	fHistPos_TrkgPrimaryVtx_x   = new TH1F( "fHistPos_TrkgPrimaryVtx_x" , "Prim. Vertex Position in x; x (cm); Events" , 100, -0.5, 0.5 );
-	fListHist_Cascade->Add(fHistPos_TrkgPrimaryVtx_x);
+if(! fHistPosTrkgPrimaryVtxX ){
+	fHistPosTrkgPrimaryVtxX   = new TH1F( "fHistPosTrkgPrimaryVtxX" , "Prim. Vertex Position in x; x (cm); Events" , 100, -0.5, 0.5 );
+	fListHistCascade->Add(fHistPosTrkgPrimaryVtxX);
 }
 
 
-if(! fHistPos_TrkgPrimaryVtx_y){
-	fHistPos_TrkgPrimaryVtx_y   = new TH1F( "fHistPos_TrkgPrimaryVtx_y" , "Prim. Vertex Position in y; y (cm); Events" , 100, -0.5, 0.5 );
-	fListHist_Cascade->Add(fHistPos_TrkgPrimaryVtx_y);
+if(! fHistPosTrkgPrimaryVtxY){
+	fHistPosTrkgPrimaryVtxY   = new TH1F( "fHistPosTrkgPrimaryVtxY" , "Prim. Vertex Position in y; y (cm); Events" , 100, -0.5, 0.5 );
+	fListHistCascade->Add(fHistPosTrkgPrimaryVtxY);
 }
 
-if(! fHistPos_TrkgPrimaryVtx_z ){
-	fHistPos_TrkgPrimaryVtx_z   = new TH1F( "fHistPos_TrkgPrimaryVtx_z" , "Prim. Vertex Position in z; z (cm); Events" , 100, -15.0, 15.0 );
-	fListHist_Cascade->Add(fHistPos_TrkgPrimaryVtx_z);
+if(! fHistPosTrkgPrimaryVtxZ ){
+	fHistPosTrkgPrimaryVtxZ   = new TH1F( "fHistPosTrkgPrimaryVtxZ" , "Prim. Vertex Position in z; z (cm); Events" , 100, -15.0, 15.0 );
+	fListHistCascade->Add(fHistPosTrkgPrimaryVtxZ);
 }
 
-if(! fHist_TrkgPrimaryVtxRadius ){
-	fHist_TrkgPrimaryVtxRadius  = new TH1F( "fHist_TrkgPrimaryVtxRadius",  "Prim.  vertex radius; r (cm); Events" , 100, 0., 15.0 );
-	fListHist_Cascade->Add(fHist_TrkgPrimaryVtxRadius);
+if(! fHistTrkgPrimaryVtxRadius ){
+	fHistTrkgPrimaryVtxRadius  = new TH1F( "fHistTrkgPrimaryVtxRadius",  "Prim.  vertex radius; r (cm); Events" , 100, 0., 15.0 );
+	fListHistCascade->Add(fHistTrkgPrimaryVtxRadius);
 }
 
 
 
 
-if(! fHistPos_SPDPrimaryVtx_x ){
-	fHistPos_SPDPrimaryVtx_x   = new TH1F( "fHistPos_SPDPrimaryVtx_x" , "SPD Prim. Vertex Position in x; x (cm); Events" , 100, -0.5, 0.5 );
-	fListHist_Cascade->Add(fHistPos_SPDPrimaryVtx_x);
+if(! fHistPosSPDPrimaryVtxX ){
+	fHistPosSPDPrimaryVtxX   = new TH1F( "fHistPosSPDPrimaryVtxX" , "SPD Prim. Vertex Position in x; x (cm); Events" , 100, -0.5, 0.5 );
+	fListHistCascade->Add(fHistPosSPDPrimaryVtxX);
 }
 
-if(! fHistPos_SPDPrimaryVtx_y){
-	fHistPos_SPDPrimaryVtx_y   = new TH1F( "fHistPos_SPDPrimaryVtx_y" , "SPD Prim. Vertex Position in y; y (cm); Events" , 100, -0.5, 0.5 );
-	fListHist_Cascade->Add(fHistPos_SPDPrimaryVtx_y);
+if(! fHistPosSPDPrimaryVtxY){
+	fHistPosSPDPrimaryVtxY   = new TH1F( "fHistPosSPDPrimaryVtxY" , "SPD Prim. Vertex Position in y; y (cm); Events" , 100, -0.5, 0.5 );
+	fListHistCascade->Add(fHistPosSPDPrimaryVtxY);
 }
 
-if(! fHistPos_SPDPrimaryVtx_z ){
-	fHistPos_SPDPrimaryVtx_z   = new TH1F( "fHistPos_SPDPrimaryVtx_z" , "SPD Prim. Vertex Position in z; z (cm); Events" , 100, -15.0, 15.0 );
-	fListHist_Cascade->Add(fHistPos_SPDPrimaryVtx_z);
+if(! fHistPosSPDPrimaryVtxZ ){
+	fHistPosSPDPrimaryVtxZ   = new TH1F( "fHistPosSPDPrimaryVtxZ" , "SPD Prim. Vertex Position in z; z (cm); Events" , 100, -15.0, 15.0 );
+	fListHistCascade->Add(fHistPosSPDPrimaryVtxZ);
 }
 
-if(! fHist_SPDPrimaryVtxRadius ){
-	fHist_SPDPrimaryVtxRadius  = new TH1F( "fHist_SPDPrimaryVtxRadius",  "SPD Prim.  vertex radius; r (cm); Events" , 100, 0., 15.0 );
-	fListHist_Cascade->Add(fHist_SPDPrimaryVtxRadius);
+if(! fHistSPDPrimaryVtxRadius ){
+	fHistSPDPrimaryVtxRadius  = new TH1F( "fHistSPDPrimaryVtxRadius",  "SPD Prim.  vertex radius; r (cm); Events" , 100, 0., 15.0 );
+	fListHistCascade->Add(fHistSPDPrimaryVtxRadius);
 }
 
 if(! f2dHistTrkgPrimVtxVsSPDPrimVtx) {
 	f2dHistTrkgPrimVtxVsSPDPrimVtx = new TH2F( "f2dHistTrkgPrimVtxVsSPDPrimVtx", "r_{Trck Prim. Vtx} Vs r_{SPD Prim. Vtx}; r_{Track Vtx} (cm); r_{SPD Vtx} (cm)", 100, 0., 15.0, 100, 0., 15.);
-	fListHist_Cascade->Add(f2dHistTrkgPrimVtxVsSPDPrimVtx);
+	fListHistCascade->Add(f2dHistTrkgPrimVtxVsSPDPrimVtx);
 }
 
 
@@ -260,56 +261,56 @@ if(! f2dHistTrkgPrimVtxVsSPDPrimVtx) {
 
 if(! fHistEffMassXi) {
      fHistEffMassXi = new TH1F("fHistEffMassXi", "Cascade candidates ; Invariant Mass (GeV/c^{2}) ; Counts", 200, 1.2, 2.0);
-     fListHist_Cascade->Add(fHistEffMassXi);
+     fListHistCascade->Add(fHistEffMassXi);
 }
    
 if(! fHistChi2Xi ){
 	fHistChi2Xi = new TH1F("fHistChi2Xi", "Cascade #chi^{2}; #chi^{2}; Number of Cascades", 160, 0, 40);
-	fListHist_Cascade->Add(fHistChi2Xi);
+	fListHistCascade->Add(fHistChi2Xi);
 }
   
 if(! fHistDcaXiDaughters ){
 	fHistDcaXiDaughters = new TH1F( "fHistDcaXiDaughters",  "DCA between Xi Daughters; DCA (cm) ; Number of Cascades", 100, 0., 0.5);
-	fListHist_Cascade->Add(fHistDcaXiDaughters);
+	fListHistCascade->Add(fHistDcaXiDaughters);
 }
 
 if(! fHistDcaBachToPrimVertex) {
 	fHistDcaBachToPrimVertex = new TH1F("fHistDcaBachToPrimVertex", "DCA of Bach. to Prim. Vertex;DCA (cm);Number of Cascades", 100, 0., 0.25);
-	fListHist_Cascade->Add(fHistDcaBachToPrimVertex);
+	fListHistCascade->Add(fHistDcaBachToPrimVertex);
 }
 
 if(! fHistXiCosineOfPointingAngle) {
 	fHistXiCosineOfPointingAngle = new TH1F("fHistXiCosineOfPointingAngle", "Cosine of Xi Pointing Angle; Cos (Xi Point.Angl);Number of Xis", 200, 0.98, 1.0);
-	fListHist_Cascade->Add(fHistXiCosineOfPointingAngle);
+	fListHistCascade->Add(fHistXiCosineOfPointingAngle);
 }
 
 if(! fHistXiRadius ){
 	fHistXiRadius  = new TH1F( "fHistXiRadius",  "Casc. decay transv. radius; r (cm); Counts" , 200, 0., 20.0 );
-	fListHist_Cascade->Add(fHistXiRadius);
+	fListHistCascade->Add(fHistXiRadius);
 }
 
 
 
-if(! fHistXiMom_transv ){
-	fHistXiMom_transv  = new TH1F( "fHistXiMom_transv" , "Xi transverse momentum ; p_{t}(#Xi) (GeV/c); Counts", 80, 0.0, 8.0);
-	fListHist_Cascade->Add(fHistXiMom_transv);
+if(! fHistXiTransvMom ){
+	fHistXiTransvMom  = new TH1F( "fHistXiTransvMom" , "Xi transverse momentum ; p_{t}(#Xi) (GeV/c); Counts", 80, 0.0, 8.0);
+	fListHistCascade->Add(fHistXiTransvMom);
 }
 
-if(! fHistXiMom_tot ){
-	fHistXiMom_tot  = new TH1F( "fHistXiMom_tot" , "Xi momentum norm; p_{tot}(#Xi) (GeV/c); Counts", 80, 0.0, 8.0);
-	fListHist_Cascade->Add(fHistXiMom_tot);
+if(! fHistXiTotMom ){
+	fHistXiTotMom  = new TH1F( "fHistXiTotMom" , "Xi momentum norm; p_{tot}(#Xi) (GeV/c); Counts", 80, 0.0, 8.0);
+	fListHistCascade->Add(fHistXiTotMom);
 }
 
 
 
-if(! fHistBachMom_transv ){
-	fHistBachMom_transv  = new TH1F( "fHistBachMom_transv" , "Bach. transverse momentum ; p_{t}(Bach.) (GeV/c); Counts", 50, 0.0, 2.5);
-	fListHist_Cascade->Add(fHistBachMom_transv);
+if(! fHistBachTransvMom ){
+	fHistBachTransvMom  = new TH1F( "fHistBachTransvMom" , "Bach. transverse momentum ; p_{t}(Bach.) (GeV/c); Counts", 50, 0.0, 2.5);
+	fListHistCascade->Add(fHistBachTransvMom);
 }
 
-if(! fHistBachMom_tot ){
-	fHistBachMom_tot  = new TH1F( "fHistBachMom_tot" , "Bach. momentum norm; p_{tot}(Bach.) (GeV/c); Counts", 60, 0.0, 3.0);
-	fListHist_Cascade->Add(fHistBachMom_tot);
+if(! fHistBachTotMom ){
+	fHistBachTotMom  = new TH1F( "fHistBachTotMom" , "Bach. momentum norm; p_{tot}(Bach.) (GeV/c); Counts", 60, 0.0, 3.0);
+	fListHistCascade->Add(fHistBachTotMom);
 }
 
 
@@ -321,42 +322,42 @@ if(! fHistBachMom_tot ){
 
 if (! fHistMassLambdaAsCascDghter) {
      fHistMassLambdaAsCascDghter = new TH1F("fHistMassLambdaAsCascDghter","#Lambda associated to Casc. candidates;Eff. Mass (GeV/c^{2});Counts", 160,1.00,1.8);
-    fListHist_Cascade->Add(fHistMassLambdaAsCascDghter);
+    fListHistCascade->Add(fHistMassLambdaAsCascDghter);
 }
 
-if (! fHistV0Chi2_Xi) {
-	fHistV0Chi2_Xi = new TH1F("fHistV0Chi2_Xi", "V0 #chi^{2}, in cascade; #chi^{2};Counts", 160, 0, 40);
-	fListHist_Cascade->Add(fHistV0Chi2_Xi);
+if (! fHistV0Chi2Xi) {
+	fHistV0Chi2Xi = new TH1F("fHistV0Chi2Xi", "V0 #chi^{2}, in cascade; #chi^{2};Counts", 160, 0, 40);
+	fListHistCascade->Add(fHistV0Chi2Xi);
 }
 
-if (! fHistDcaV0Daughters_Xi) {
-	fHistDcaV0Daughters_Xi = new TH1F("fHistDcaV0Daughters_Xi", "DCA between V0 daughters, in cascade;DCA (cm);Number of V0s", 120, 0., 0.6);
-	fListHist_Cascade->Add(fHistDcaV0Daughters_Xi);
+if (! fHistDcaV0DaughtersXi) {
+	fHistDcaV0DaughtersXi = new TH1F("fHistDcaV0DaughtersXi", "DCA between V0 daughters, in cascade;DCA (cm);Number of V0s", 120, 0., 0.6);
+	fListHistCascade->Add(fHistDcaV0DaughtersXi);
 }
 
-if (! fHistDcaV0ToPrimVertex_Xi) {
-	fHistDcaV0ToPrimVertex_Xi = new TH1F("fHistDcaV0ToPrimVertex_Xi", "DCA of V0 to Prim. Vertex, in cascade;DCA (cm);Number of Cascades", 200, 0., 1.);
-	fListHist_Cascade->Add(fHistDcaV0ToPrimVertex_Xi);
+if (! fHistDcaV0ToPrimVertexXi) {
+	fHistDcaV0ToPrimVertexXi = new TH1F("fHistDcaV0ToPrimVertexXi", "DCA of V0 to Prim. Vertex, in cascade;DCA (cm);Number of Cascades", 200, 0., 1.);
+	fListHistCascade->Add(fHistDcaV0ToPrimVertexXi);
 }
 
-if (! fHistV0CosineOfPointingAngle_Xi) {
-	fHistV0CosineOfPointingAngle_Xi = new TH1F("fHistV0CosineOfPointingAngle_Xi", "Cosine of V0 Pointing Angle, in cascade;Cos(V0 Point. Angl); Counts", 200, 0.98, 1.0);
-	fListHist_Cascade->Add(fHistV0CosineOfPointingAngle_Xi);
+if (! fHistV0CosineOfPointingAngleXi) {
+	fHistV0CosineOfPointingAngleXi = new TH1F("fHistV0CosineOfPointingAngleXi", "Cosine of V0 Pointing Angle, in cascade;Cos(V0 Point. Angl); Counts", 200, 0.98, 1.0);
+	fListHistCascade->Add(fHistV0CosineOfPointingAngleXi);
 }
 
-if (! fHistV0Radius_Xi) {
-	fHistV0Radius_Xi = new TH1F("fHistV0Radius_Xi", "V0 decay radius, in cascade; radius (cm); Counts", 200, 0, 20);
-	fListHist_Cascade->Add(fHistV0Radius_Xi);
+if (! fHistV0RadiusXi) {
+	fHistV0RadiusXi = new TH1F("fHistV0RadiusXi", "V0 decay radius, in cascade; radius (cm); Counts", 200, 0, 20);
+	fListHistCascade->Add(fHistV0RadiusXi);
 }
 
-if (! fHistDcaPosToPrimVertex_Xi) {
-	fHistDcaPosToPrimVertex_Xi = new TH1F("fHistDcaPosToPrimVertex_Xi", "DCA of V0 pos daughter to Prim. Vertex;DCA (cm);Counts", 300, 0, 3);
-	fListHist_Cascade->Add(fHistDcaPosToPrimVertex_Xi);
+if (! fHistDcaPosToPrimVertexXi) {
+	fHistDcaPosToPrimVertexXi = new TH1F("fHistDcaPosToPrimVertexXi", "DCA of V0 pos daughter to Prim. Vertex;DCA (cm);Counts", 300, 0, 3);
+	fListHistCascade->Add(fHistDcaPosToPrimVertexXi);
 }
 
-if (! fHistDcaNegToPrimVertex_Xi) {
-	fHistDcaNegToPrimVertex_Xi = new TH1F("fHistDcaNegToPrimVertex_Xi", "DCA of V0 neg daughter to Prim. Vertex;DCA (cm);Counts", 300, 0, 3);
-	fListHist_Cascade->Add(fHistDcaNegToPrimVertex_Xi);
+if (! fHistDcaNegToPrimVertexXi) {
+	fHistDcaNegToPrimVertexXi = new TH1F("fHistDcaNegToPrimVertexXi", "DCA of V0 neg daughter to Prim. Vertex;DCA (cm);Counts", 300, 0, 3);
+	fListHistCascade->Add(fHistDcaNegToPrimVertexXi);
 }
 
 
@@ -366,22 +367,22 @@ if (! fHistDcaNegToPrimVertex_Xi) {
   
 if (! fHistMassXiMinus) {
     fHistMassXiMinus = new TH1F("fHistMassXiMinus","#Xi^{-} candidates;M( #Lambda , #pi^{-} ) (GeV/c^{2});Counts", 200,1.2,2.0);
-    fListHist_Cascade->Add(fHistMassXiMinus);
+    fListHistCascade->Add(fHistMassXiMinus);
 }
   
 if (! fHistMassXiPlus) {
     fHistMassXiPlus = new TH1F("fHistMassXiPlus","#Xi^{+} candidates;M( #bar{#Lambda}^{0} , #pi^{+} ) (GeV/c^{2});Counts",200,1.2,2.0);
-    fListHist_Cascade->Add(fHistMassXiPlus);
+    fListHistCascade->Add(fHistMassXiPlus);
 }
 
 if (! fHistMassOmegaMinus) {
     fHistMassOmegaMinus = new TH1F("fHistMassOmegaMinus","#Omega^{-} candidates;M( #Lambda , K^{-} ) (GeV/c^{2});Counts", 200,1.2,2.0);
-    fListHist_Cascade->Add(fHistMassOmegaMinus);
+    fListHistCascade->Add(fHistMassOmegaMinus);
 }
  
 if (! fHistMassOmegaPlus) {
     fHistMassOmegaPlus = new TH1F("fHistMassOmegaPlus","#Omega^{+} candidates;M( #bar{#Lambda}^{0} , K^{+} ) (GeV/c^{2});Counts",200,1.2,2.0);
-    fListHist_Cascade->Add(fHistMassOmegaPlus);
+    fListHistCascade->Add(fHistMassOmegaPlus);
 }
 
 
@@ -431,28 +432,28 @@ void AliAnalysisTaskESDCheckCascade::Exec(Option_t *)
 	Double_t lPosXi[3] = { -1000.0, -1000.0, -1000.0 };
 	Double_t lXiRadius= 0. ;
 	
-	Double_t lXiMom_x  = 0. ;	Double_t lXiMom_y  = 0. ;	Double_t lXiMom_z   = 0. ;
-	Double_t lXiMom_transv  = 0. ;
-	Double_t lXiMom_tot  = 0. ;
+	Double_t lXiMomX  = 0. ;	Double_t lXiMomY  = 0. ;	Double_t lXiMomZ   = 0. ;
+	Double_t lXiTransvMom  = 0. ;
+	Double_t lXiTotMom  = 0. ;
 	
-	Double_t lBachMom_x  = 0. ;	Double_t lBachMom_y  = 0. ;	Double_t lBachMom_z   = 0. ;
-	Double_t lBachMom_transv  = 0. ;
-	Double_t lBachMom_tot  = 0. ;
+	Double_t lBachMomX  = 0. ;	Double_t lBachMomY  = 0. ;	Double_t lBachMomZ   = 0. ;
+	Double_t lBachTransvMom  = 0. ;
+	Double_t lBachTotMom  = 0. ;
 	
 	
 	
 	// - 2nd part of initialisation : about V0 part in cascades
 
 	Double_t lInvMassLambdaAsCascDghter = 0.;
-	Double_t lV0Chi2_Xi = 0. ;
-	Double_t lDcaV0Daughters_Xi = 0.;
+	Double_t lV0Chi2Xi = 0. ;
+	Double_t lDcaV0DaughtersXi = 0.;
 	
-	Double_t lDcaBachToPrimVertex_Xi = 0. , lDcaV0ToPrimVertex_Xi = 0.;
-	Double_t lDcaPosToPrimVertex_Xi = 0 ;
-	Double_t lDcaNegToPrimVertex_Xi = 0;
-	Double_t lV0CosineOfPointingAngle_Xi = 0;
-	Double_t lPosV0_Xi[3] = { -1000. , -1000., -1000. };
-	Double_t lV0Radius_Xi = -1000.0;
+	Double_t lDcaBachToPrimVertexXi = 0. , lDcaV0ToPrimVertexXi = 0.;
+	Double_t lDcaPosToPrimVertexXi = 0 ;
+	Double_t lDcaNegToPrimVertexXi = 0;
+	Double_t lV0CosineOfPointingAngleXi = 0;
+	Double_t lPosV0Xi[3] = { -1000. , -1000., -1000. }; // Position of VO coming from cascade
+	Double_t lV0RadiusXi = -1000.0;
 
 	
 	// - 3rd part of initialisation : extra tests
@@ -477,23 +478,23 @@ void AliAnalysisTaskESDCheckCascade::Exec(Option_t *)
       		if (!xi) continue;
 		
       // Just to know which file is currently open : locate the file containing Xi
-     cout << "Name of the file containing Xi candidate(s) :" <<  fesdH->GetTree()->GetCurrentFile()->GetName() << endl;
+      // cout << "Name of the file containing Xi candidate(s) :" <<  fesdH->GetTree()->GetCurrentFile()->GetName() << endl;
 	
 
 		// - II.Step 0 : Characteristics of the event : prim. Vtx + magentic field
 		//-------------
-	const AliESDVertex *PrimaryVtx_Tracking = fESD->GetPrimaryVertex();  
+	const AliESDVertex *lPrimaryTrackingVtx = fESD->GetPrimaryVertex();  
 		// get the vtx stored in ESD found with tracks
 	Double_t lTrkgPrimaryVtxPos[3] = {-100.0, -100.0, -100.0};
-		PrimaryVtx_Tracking->GetXYZ( lTrkgPrimaryVtxPos );
+		lPrimaryTrackingVtx->GetXYZ( lTrkgPrimaryVtxPos );
 		Double_t lTrkgPrimaryVtxRadius = TMath::Sqrt( lTrkgPrimaryVtxPos[0]*lTrkgPrimaryVtxPos[0] +
 						lTrkgPrimaryVtxPos[1] * lTrkgPrimaryVtxPos[1] +
 						lTrkgPrimaryVtxPos[2] * lTrkgPrimaryVtxPos[2] );
 									
-	const AliESDVertex *PrimaryVtx_SPDonly 	= fESD->GetPrimaryVertexSPD(); 		
+	const AliESDVertex *lPrimarySPDVtx = fESD->GetPrimaryVertexSPD();	
 		// get the vtx found by exclusive use of SPD
 	Double_t lSPDPrimaryVtxPos[3] = {-100.0, -100.0, -100.0};
-		PrimaryVtx_SPDonly->GetXYZ( lSPDPrimaryVtxPos );
+		lPrimarySPDVtx->GetXYZ( lSPDPrimaryVtxPos );
 		Double_t lSPDPrimaryVtxRadius = TMath::Sqrt( lSPDPrimaryVtxPos[0]*lSPDPrimaryVtxPos[0] +
 						lSPDPrimaryVtxPos[1] * lSPDPrimaryVtxPos[1] +
 						lSPDPrimaryVtxPos[2] * lSPDPrimaryVtxPos[2] );
@@ -502,7 +503,7 @@ void AliAnalysisTaskESDCheckCascade::Exec(Option_t *)
 	// This one will be used for next calculations (DCA essentially)
 		
 		Double_t lBestPrimaryVtxPos[3] = {-100.0, -100.0, -100.0};
-		if( PrimaryVtx_Tracking->GetStatus() ) { // if tracking vtx = ok
+		if( lPrimaryTrackingVtx->GetStatus() ) { // if tracking vtx = ok
 			lBestPrimaryVtxPos[0] = lTrkgPrimaryVtxPos[0];
 			lBestPrimaryVtxPos[1] = lTrkgPrimaryVtxPos[1];
 			lBestPrimaryVtxPos[2] = lTrkgPrimaryVtxPos[2];
@@ -532,15 +533,15 @@ void AliAnalysisTaskESDCheckCascade::Exec(Option_t *)
 	xi->GetXYZcascade( lPosXi[0],  lPosXi[1], lPosXi[2] ); 
 		lXiRadius		= TMath::Sqrt( lPosXi[0]*lPosXi[0]  +  lPosXi[1]*lPosXi[1] );
 		
-	xi->GetPxPyPz( lXiMom_x, lXiMom_y, lXiMom_z );
-		lXiMom_transv  	= TMath::Sqrt( lXiMom_x*lXiMom_x   + lXiMom_y*lXiMom_y );
-		lXiMom_tot  	= TMath::Sqrt( lXiMom_x*lXiMom_x   + lXiMom_y*lXiMom_y   + lXiMom_z*lXiMom_z );
+	xi->GetPxPyPz( lXiMomX, lXiMomY, lXiMomZ );
+		lXiTransvMom  	= TMath::Sqrt( lXiMomX*lXiMomX   + lXiMomY*lXiMomY );
+		lXiTotMom  	= TMath::Sqrt( lXiMomX*lXiMomX   + lXiMomY*lXiMomY   + lXiMomZ*lXiMomZ );
 		
 				
 		
-	xi->GetBPxPyPz(  lBachMom_x,  lBachMom_y,  lBachMom_z );
-		lBachMom_transv  	= TMath::Sqrt( lBachMom_x*lBachMom_x   + lBachMom_y*lBachMom_y );
-		lBachMom_tot  		= TMath::Sqrt( lBachMom_x*lBachMom_x   + lBachMom_y*lBachMom_y  +  lBachMom_z*lBachMom_z  );
+	xi->GetBPxPyPz(  lBachMomX,  lBachMomY,  lBachMomZ );
+		lBachTransvMom  	= TMath::Sqrt( lBachMomX*lBachMomX   + lBachMomY*lBachMomY );
+		lBachTotMom  		= TMath::Sqrt( lBachMomX*lBachMomX   + lBachMomY*lBachMomY  +  lBachMomZ*lBachMomZ  );
 		
 
 	
@@ -549,57 +550,57 @@ void AliAnalysisTaskESDCheckCascade::Exec(Option_t *)
 		// ~ Necessary variables for ESDcascade data members coming from the ESDv0 part (inheritance)
 		//-------------
 		
-		UInt_t lIdxPos_Xi 	= (UInt_t) TMath::Abs( xi->GetPindex() );
-		UInt_t lIdxNeg_Xi 	= (UInt_t) TMath::Abs( xi->GetNindex() );
+		UInt_t lIdxPosXi 	= (UInt_t) TMath::Abs( xi->GetPindex() );
+		UInt_t lIdxNegXi 	= (UInt_t) TMath::Abs( xi->GetNindex() );
 		UInt_t lBachIdx 	= (UInt_t) TMath::Abs( xi->GetBindex() );
 			// Care track label can be negative in MC production (linked with the track quality)
 
-	AliESDtrack *pTrack_Xi		= fESD->GetTrack( lIdxPos_Xi );
-	AliESDtrack *nTrack_Xi		= fESD->GetTrack( lIdxNeg_Xi );
-	AliESDtrack *bachTrack_Xi	= fESD->GetTrack( lBachIdx );
-	if (!pTrack_Xi || !nTrack_Xi || !bachTrack_Xi ) {
+	AliESDtrack *pTrackXi		= fESD->GetTrack( lIdxPosXi );
+	AliESDtrack *nTrackXi		= fESD->GetTrack( lIdxNegXi );
+	AliESDtrack *bachTrackXi	= fESD->GetTrack( lBachIdx );
+	if (!pTrackXi || !nTrackXi || !bachTrackXi ) {
 		Printf("ERROR: Could not retrieve one of the 3 daughter tracks of the cascade ...");
 		continue;
 	}
 	
 	lInvMassLambdaAsCascDghter =	xi->GetEffMass();
 		// This value shouldn't change, whatever the working hyp. is : Xi-, Xi+, Omega-, Omega+
-	lDcaV0Daughters_Xi =    	xi->GetDcaV0Daughters(); 
-	lV0Chi2_Xi =    		xi->GetChi2V0();
+	lDcaV0DaughtersXi =    	xi->GetDcaV0Daughters(); 
+	lV0Chi2Xi =    		xi->GetChi2V0();
 	
-	lV0CosineOfPointingAngle_Xi = 	xi->GetV0CosineOfPointingAngle( lBestPrimaryVtxPos[0], lBestPrimaryVtxPos[1], lBestPrimaryVtxPos[2] );
+	lV0CosineOfPointingAngleXi = 	xi->GetV0CosineOfPointingAngle( lBestPrimaryVtxPos[0], lBestPrimaryVtxPos[1], lBestPrimaryVtxPos[2] );
 			// Maybe a pointing angle towards the Xi Vertex would also be appropriate
-	lDcaV0ToPrimVertex_Xi =	xi->GetD( lBestPrimaryVtxPos[0], lBestPrimaryVtxPos[1], lBestPrimaryVtxPos[2] );
+	lDcaV0ToPrimVertexXi =	xi->GetD( lBestPrimaryVtxPos[0], lBestPrimaryVtxPos[1], lBestPrimaryVtxPos[2] );
 	
 	
 	
-	lDcaBachToPrimVertex_Xi  = bachTrack_Xi->GetD( lBestPrimaryVtxPos[0], lBestPrimaryVtxPos[1], lMagneticField  ); // return an algebraic value ...
-	lDcaBachToPrimVertex_Xi  = TMath::Abs( lDcaBachToPrimVertex_Xi );
+	lDcaBachToPrimVertexXi  = bachTrackXi->GetD( lBestPrimaryVtxPos[0], lBestPrimaryVtxPos[1], lMagneticField  ); // return an algebraic value ...
+	lDcaBachToPrimVertexXi  = TMath::Abs( lDcaBachToPrimVertexXi );
 	
 	
 	
 	
-		xi->GetXYZ( lPosV0_Xi[0],  lPosV0_Xi[1], lPosV0_Xi[2] ); 
-		lV0Radius_Xi	= TMath::Sqrt( lPosV0_Xi[0]*lPosV0_Xi[0]  +  lPosV0_Xi[1]*lPosV0_Xi[1] );
+		xi->GetXYZ( lPosV0Xi[0],  lPosV0Xi[1], lPosV0Xi[2] ); 
+		lV0RadiusXi	= TMath::Sqrt( lPosV0Xi[0]*lPosV0Xi[0]  +  lPosV0Xi[1]*lPosV0Xi[1] );
 	
-	Float_t  tDcaPosToPrimVertex_Xi[2];
-	if(pTrack_Xi) pTrack_Xi->GetImpactParameters(tDcaPosToPrimVertex_Xi[0],tDcaPosToPrimVertex_Xi[1]);
+	Float_t  tDcaPosToPrimVertexXi[2];
+	if(pTrackXi) pTrackXi->GetImpactParameters(tDcaPosToPrimVertexXi[0],tDcaPosToPrimVertexXi[1]);
 		// void GetImpactParameters(Float_t &xy,Float_t &z) const {xy=fD; z=fZ;}
 	else { 
-			tDcaPosToPrimVertex_Xi[0]= -999.;  
-			tDcaPosToPrimVertex_Xi[1]= -999.;
+			tDcaPosToPrimVertexXi[0]= -999.;  
+			tDcaPosToPrimVertexXi[1]= -999.;
 		}
-	lDcaPosToPrimVertex_Xi = TMath::Sqrt(tDcaPosToPrimVertex_Xi[0]*tDcaPosToPrimVertex_Xi[0]
-					+   tDcaPosToPrimVertex_Xi[1]*tDcaPosToPrimVertex_Xi[1]);
+	lDcaPosToPrimVertexXi = TMath::Sqrt(tDcaPosToPrimVertexXi[0]*tDcaPosToPrimVertexXi[0]
+					+   tDcaPosToPrimVertexXi[1]*tDcaPosToPrimVertexXi[1]);
 
-	Float_t  tDcaNegToPrimVertex_Xi[2];
-	if(nTrack_Xi) nTrack_Xi->GetImpactParameters(tDcaNegToPrimVertex_Xi[0],tDcaNegToPrimVertex_Xi[1]);
+	Float_t  tDcaNegToPrimVertexXi[2];
+	if(nTrackXi) nTrackXi->GetImpactParameters(tDcaNegToPrimVertexXi[0],tDcaNegToPrimVertexXi[1]);
 	else { 
-			tDcaNegToPrimVertex_Xi[0]= -999.;  
-			tDcaNegToPrimVertex_Xi[1]= -999.;
+			tDcaNegToPrimVertexXi[0]= -999.;  
+			tDcaNegToPrimVertexXi[1]= -999.;
 		}
-	lDcaNegToPrimVertex_Xi = TMath::Sqrt(tDcaNegToPrimVertex_Xi[0]*tDcaNegToPrimVertex_Xi[0]
-					+   tDcaNegToPrimVertex_Xi[1]*tDcaNegToPrimVertex_Xi[1]);
+	lDcaNegToPrimVertexXi = TMath::Sqrt(tDcaNegToPrimVertexXi[0]*tDcaNegToPrimVertexXi[0]
+					+   tDcaNegToPrimVertexXi[1]*tDcaNegToPrimVertexXi[1]);
 	
 		
 
@@ -608,15 +609,15 @@ void AliAnalysisTaskESDCheckCascade::Exec(Option_t *)
   
 
 		// - III.Step 1	
-		fHistPos_TrkgPrimaryVtx_x->Fill( lTrkgPrimaryVtxPos[0]  );
-		fHistPos_TrkgPrimaryVtx_y->Fill( lTrkgPrimaryVtxPos[1]  );	
-		fHistPos_TrkgPrimaryVtx_z->Fill( lTrkgPrimaryVtxPos[2]  ); 
-		fHist_TrkgPrimaryVtxRadius->Fill( lTrkgPrimaryVtxRadius );
+		fHistPosTrkgPrimaryVtxX->Fill( lTrkgPrimaryVtxPos[0]  );
+		fHistPosTrkgPrimaryVtxY->Fill( lTrkgPrimaryVtxPos[1]  );	
+		fHistPosTrkgPrimaryVtxZ->Fill( lTrkgPrimaryVtxPos[2]  ); 
+		fHistTrkgPrimaryVtxRadius->Fill( lTrkgPrimaryVtxRadius );
 		
-		fHistPos_SPDPrimaryVtx_x->Fill( lSPDPrimaryVtxPos[0] );
-		fHistPos_SPDPrimaryVtx_y->Fill( lSPDPrimaryVtxPos[1] );	
-		fHistPos_SPDPrimaryVtx_z->Fill( lSPDPrimaryVtxPos[2] ); 
-		fHist_SPDPrimaryVtxRadius->Fill( lSPDPrimaryVtxRadius  );
+		fHistPosSPDPrimaryVtxX->Fill( lSPDPrimaryVtxPos[0] );
+		fHistPosSPDPrimaryVtxY->Fill( lSPDPrimaryVtxPos[1] );	
+		fHistPosSPDPrimaryVtxZ->Fill( lSPDPrimaryVtxPos[2] ); 
+		fHistSPDPrimaryVtxRadius->Fill( lSPDPrimaryVtxRadius  );
 		
 		f2dHistTrkgPrimVtxVsSPDPrimVtx->Fill( lTrkgPrimaryVtxRadius, lSPDPrimaryVtxRadius );
 
@@ -625,28 +626,28 @@ void AliAnalysisTaskESDCheckCascade::Exec(Option_t *)
 		fHistEffMassXi->Fill( lEffMassXi   );
 		fHistChi2Xi->Fill( lChi2Xi  );			// Flag CascadeVtxer: Cut Variable a
 		fHistDcaXiDaughters->Fill( lDcaXiDaughters );	// Flag CascadeVtxer: Cut Variable e 
-		fHistDcaBachToPrimVertex->Fill( lDcaBachToPrimVertex_Xi  );	// Flag CascadeVtxer: Cut Variable d
+		fHistDcaBachToPrimVertex->Fill( lDcaBachToPrimVertexXi  );	// Flag CascadeVtxer: Cut Variable d
 		fHistXiCosineOfPointingAngle->Fill( lXiCosineOfPointingAngle ); // Flag CascadeVtxer: Cut Variable f
 		fHistXiRadius->Fill( lXiRadius );		// Flag CascadeVtxer: Cut Variable g+h
 		
-		fHistXiMom_transv->Fill( lXiMom_transv );
-		fHistXiMom_tot->Fill( lXiMom_tot );
+		fHistXiTransvMom->Fill( lXiTransvMom );
+		fHistXiTotMom->Fill( lXiTotMom );
 		
-		fHistBachMom_transv->Fill( lBachMom_transv );
-		fHistBachMom_tot->Fill( lBachMom_tot );
+		fHistBachTransvMom->Fill( lBachTransvMom );
+		fHistBachTotMom->Fill( lBachTotMom );
 		
 
 		// - III.Step 3
 		fHistMassLambdaAsCascDghter->Fill(  lInvMassLambdaAsCascDghter  ); // Flag CascadeVtxer: Cut Variable c
-		fHistV0Chi2_Xi->Fill( lV0Chi2_Xi  );	
-		fHistDcaV0Daughters_Xi->Fill( lDcaV0Daughters_Xi );
-		fHistV0CosineOfPointingAngle_Xi->Fill( lV0CosineOfPointingAngle_Xi ); 
-		fHistV0Radius_Xi->Fill( lV0Radius_Xi );
+		fHistV0Chi2Xi->Fill( lV0Chi2Xi  );	
+		fHistDcaV0DaughtersXi->Fill( lDcaV0DaughtersXi );
+		fHistV0CosineOfPointingAngleXi->Fill( lV0CosineOfPointingAngleXi ); 
+		fHistV0RadiusXi->Fill( lV0RadiusXi );
 		
 		
-		fHistDcaV0ToPrimVertex_Xi->Fill( lDcaV0ToPrimVertex_Xi );	// Flag CascadeVtxer: Cut Variable b
-		fHistDcaPosToPrimVertex_Xi->Fill( lDcaPosToPrimVertex_Xi );
-		fHistDcaNegToPrimVertex_Xi->Fill( lDcaNegToPrimVertex_Xi );
+		fHistDcaV0ToPrimVertexXi->Fill( lDcaV0ToPrimVertexXi );	// Flag CascadeVtxer: Cut Variable b
+		fHistDcaPosToPrimVertexXi->Fill( lDcaPosToPrimVertexXi );
+		fHistDcaNegToPrimVertexXi->Fill( lDcaNegToPrimVertexXi );
 		
 
 		
@@ -655,7 +656,7 @@ void AliAnalysisTaskESDCheckCascade::Exec(Option_t *)
        lV0quality = 0.;
        xi->ChangeMassHypothesis(lV0quality , 3312); 	// Calculate the effective mass of the Xi- candidate. 
 							// pdg code 3312 = Xi-
-		if( bachTrack_Xi->Charge()  < 0 ){
+		if( bachTrackXi->Charge()  < 0 ){
 				lInvMassXiMinus = xi->GetEffMassXi();
 				fHistMassXiMinus->Fill( lInvMassXiMinus );
 		} // end if bachelor = negatively charged ( "Xi" = Xi-)
@@ -664,7 +665,7 @@ void AliAnalysisTaskESDCheckCascade::Exec(Option_t *)
        lV0quality = 0.;
        xi->ChangeMassHypothesis(lV0quality , -3312); 	// Calculate the effective mass of the Xi+ candidate. 
       							// pdg code -3312 = Xi+
-		if( bachTrack_Xi->Charge()  >  0 ){
+		if( bachTrackXi->Charge()  >  0 ){
 				lInvMassXiPlus = xi->GetEffMassXi();
 				fHistMassXiPlus->Fill( lInvMassXiPlus );			
 		} // end if bachelor = positively charged ( "Xi" = Xi+)
@@ -673,7 +674,7 @@ void AliAnalysisTaskESDCheckCascade::Exec(Option_t *)
 	lV0quality = 0.;
         xi->ChangeMassHypothesis(lV0quality , 3334); 	// Calculate the effective mass of the Xi- candidate. 
 							// pdg code 3334 = Omega-
-		if( bachTrack_Xi->Charge()  < 0 ){
+		if( bachTrackXi->Charge()  < 0 ){
 				lInvMassOmegaMinus = xi->GetEffMassXi();
 				fHistMassOmegaMinus->Fill( lInvMassOmegaMinus );
 		} // end if bachelor = negatively charged ( "Xi" = Omega-)
@@ -682,7 +683,7 @@ void AliAnalysisTaskESDCheckCascade::Exec(Option_t *)
 	lV0quality = 0.;
         xi->ChangeMassHypothesis(lV0quality , -3334); 	// Calculate the effective mass of the Xi+ candidate. 
       							// pdg code -3334  = Omega+
-		if( bachTrack_Xi->Charge()  >  0 ){
+		if( bachTrackXi->Charge()  >  0 ){
 				lInvMassOmegaPlus = xi->GetEffMassXi();
 				fHistMassOmegaPlus->Fill( lInvMassOmegaPlus );			
 		} // end if bachelor = positively charged ( "Xi" = Omega+)		
@@ -693,7 +694,7 @@ void AliAnalysisTaskESDCheckCascade::Exec(Option_t *)
 
  
   // Post output data.
- PostData(0, fListHist_Cascade);
+ PostData(0, fListHistCascade);
 }
 
 
