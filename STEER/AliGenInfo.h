@@ -276,4 +276,4 @@ ClassImp(AliPointsMI)
 
 
 AliTPCParam * GetTPCParam();
-Float_t TPCBetheBloch(Float_t bg);
+

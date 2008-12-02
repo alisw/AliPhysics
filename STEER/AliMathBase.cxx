@@ -751,3 +751,23 @@ Double_t AliMathBase::TruncatedGaus(Double_t mean, Double_t sigma, Double_t left
   }while((value-mean)<-leftCut || (value-mean)>rightCut);
   return value;
 }
+
+Double_t AliMathBase::BetheBlochAleph(Double_t bg,
+         Double_t kp1,
+         Double_t kp2,
+         Double_t kp3,
+         Double_t kp4,
+         Double_t kp5) {
+  //
+  // This is the ALEPH parameterisation of the Bethe-Bloch formula
+  //
+
+  Double_t beta = bg/TMath::Sqrt(1.+ bg*bg);
+
+  Double_t aa = TMath::Power(beta,kp4);
+  Double_t bb = TMath::Power(1./bg,kp5);
+
+  bb=TMath::Log(kp3+bb);
+  
+  return (kp2-aa-bb)*kp1/aa;
+}
