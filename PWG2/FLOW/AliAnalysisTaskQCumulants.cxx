@@ -183,7 +183,7 @@ void AliAnalysisTaskQCumulants::CreateOutputObjects()
  
  //event maker
  fEventMaker = new AliFlowEventSimpleMaker();
-  
+ 
  //analyser
  fQCA = new AliFlowAnalysisWithQCumulants();
  fQCA->CreateOutputObjects();
@@ -242,7 +242,9 @@ void AliAnalysisTaskQCumulants::Exec(Option_t *)
     //Q-cumulant analysis    
     AliFlowEventSimple* fEvent = fEventMaker->FillTracks(fESD,fCFManager1,fCFManager2);
     //AliFlowEventSimple* fEvent = fEventMaker->FillTracks(fESD);
+    
     fQCA->Make(fEvent); 
+    
     delete fEvent;
   }
   else if (fAnalysisType == "ESDMC0") {
@@ -304,64 +306,84 @@ void AliAnalysisTaskQCumulants::Exec(Option_t *)
 //================================================================================================================
 
 void AliAnalysisTaskQCumulants::Terminate(Option_t *) 
-{  
+{
  //accessing the output list which contains the merged 2D and 3D profiles from all worker nodes
  fListHistos = (TList*)GetOutputData(0);
  //fListHistos->Print();
  
  if(fListHistos)
  {	    
-  //histograms to store the final results (integrated flow)
+  //final results (integrated flow)
   TH1D *intFlowResults = dynamic_cast<TH1D*>(fListHistos->FindObject("fIntFlowResultsQC"));
   
-  //histograms to store the final results (differential flow)
+  //final results (differential flow)
   TH1D *diffFlowResults2ndOrder = dynamic_cast<TH1D*>(fListHistos->FindObject("fDiffFlowResults2ndOrderQC"));
   TH1D *diffFlowResults4thOrder = dynamic_cast<TH1D*>(fListHistos->FindObject("fDiffFlowResults4thOrderQC"));
   
-  //histogram to store the final results for covariances (1st bin <2*4>-<2>*<4>, 2nd bin <2*6>-<2>*<6>, ...)
+  //final results for covariances (1st bin <2*4>-<2>*<4>, 2nd bin <2*6>-<2>*<6>, ...)
   TH1D *covariances = dynamic_cast<TH1D*>(fListHistos->FindObject("fCovariances"));
   
-  //profile with avarage selected multiplicity for int. flow 
-  TProfile *AvMultHere = dynamic_cast<TProfile*>(fListHistos->FindObject("fAvMultIntFlowQC"));
+  //common histograms to store the final results for the 2nd order integrated and differential flow
+  AliFlowCommonHistResults *commonHistRes2nd = dynamic_cast<AliFlowCommonHistResults*>(fListHistos->FindObject("AliFlowCommonHistResults2ndOrderQC"));
   
-  //profile with avarage values of Q-vector components (1st bin: <Q_x>, 2nd bin: <Q_y>, 3rd bin: <(Q_x)^2>, 4th bin: <(Q_y)^2>) 
-  TProfile *QvectorComponentsHere = dynamic_cast<TProfile*>(fListHistos->FindObject("fQvectorComponents"));
+  //common histograms to store the final results for the 4th order integrated and differential flow
+  AliFlowCommonHistResults *commonHistRes4th = dynamic_cast<AliFlowCommonHistResults*>(fListHistos->FindObject("AliFlowCommonHistResults4thOrderQC"));
   
+  //common histograms to store the final results for the 6th order integrated and differential flow
+  AliFlowCommonHistResults *commonHistRes6th = dynamic_cast<AliFlowCommonHistResults*>(fListHistos->FindObject("AliFlowCommonHistResults6thOrderQC"));
+  
+  //common histograms to store the final results for the 8th order integrated and differential flow
+  AliFlowCommonHistResults *commonHistRes8th = dynamic_cast<AliFlowCommonHistResults*>(fListHistos->FindObject("AliFlowCommonHistResults8thOrderQC"));
+  
+  //average selected multiplicity (for int. flow) 
+  TProfile *AvMult = dynamic_cast<TProfile*>(fListHistos->FindObject("fAvMultIntFlowQC"));
+  
+  //multi-particle correlations calculated from Q-vectors
   TProfile *QCorrelations = dynamic_cast<TProfile*>(fListHistos->FindObject("fQCorrelations"));
-  TProfile *QCovariance = dynamic_cast<TProfile*>(fListHistos->FindObject("fQCovariance"));
   
-  TProfile *QCorrelationsPerBin = dynamic_cast<TProfile*>(fListHistos->FindObject("fQCorrelationsPerBin"));
+  //average of products: 1st bin: <2*4>, 2nd bin: <2*6>, ...
+  TProfile *QProduct = dynamic_cast<TProfile*>(fListHistos->FindObject("fQProduct"));
   
-  
-  
-  TProfile *DirectHere = dynamic_cast<TProfile*>(fListHistos->FindObject("fDirectCorrelations"));
-  
-  
+  //average 2-, 3- and 4-particle correlations per bin 
   TProfile *binned2p_1n1n = dynamic_cast<TProfile*>(fListHistos->FindObject("f2_1n1n"));
   TProfile *binned2p_2n2n = dynamic_cast<TProfile*>(fListHistos->FindObject("f2_2n2n"));
   TProfile *binned3p_2n1n1n = dynamic_cast<TProfile*>(fListHistos->FindObject("f3_2n1n1n"));
   TProfile *binned3p_1n1n2n = dynamic_cast<TProfile*>(fListHistos->FindObject("f3_1n1n2n"));
   TProfile *binned4p_1n1n1n1n = dynamic_cast<TProfile*>(fListHistos->FindObject("f4_1n1n1n1n"));
   
-  /*
-  AliFlowCommonHistResults *commonHR2nd = dynamic_cast<AliFlowCommonHistResults*>(fListHistos->FindObject("fCommonHistsResults2nd"));
-  AliFlowCommonHistResults *commonHR4th = dynamic_cast<AliFlowCommonHistResults*>(fListHistos->FindObject("fCommonHistsResults4th"));
-  AliFlowCommonHistResults *commonHR6th = dynamic_cast<AliFlowCommonHistResults*>(fListHistos->FindObject("fCommonHistsResults6th"));
-  AliFlowCommonHistResults *commonHR8th = dynamic_cast<AliFlowCommonHistResults*>(fListHistos->FindObject("fCommonHistsResults8th"));
-  */
-
-    
-  /*
-  AliQCumulantsFunctions finalResults(intFlowResults,diffFlowResults2ndOrder,diffFlowResults4thOrder,covariances,AvMultHere,QvectorComponentsHere,QCorrelations,QCovariance,QCorrelationsPerBin,DirectHere,binned2p_1n1n,binned2p_2n2n, binned3p_2n1n1n,binned3p_1n1n2n, binned4p_1n1n1n1n, commonHR2nd, commonHR4th, commonHR6th, commonHR8th);
-  */
-         
-  AliQCumulantsFunctions finalResults(intFlowResults,diffFlowResults2ndOrder,diffFlowResults4thOrder,covariances,AvMultHere,QvectorComponentsHere,QCorrelations,QCovariance,QCorrelationsPerBin,DirectHere,binned2p_1n1n,binned2p_2n2n, binned3p_2n1n1n,binned3p_1n1n2n, binned4p_1n1n1n1n);
-
-                                              
-  finalResults.Calculate();  
-
+  //average values of Q-vector components (1st bin: <Q_x>, 2nd bin: <Q_y>, 3rd bin: <(Q_x)^2>, 4th bin: <(Q_y)^2>) 
+  TProfile *QVectorComponents = dynamic_cast<TProfile*>(fListHistos->FindObject("fQvectorComponents"));
+  
+  //multi-particle correlations calculated with nested loop 
+  TProfile *DirectCorrelations = dynamic_cast<TProfile*>(fListHistos->FindObject("fDirectCorrelations"));
  
  
+  fQCA = new AliFlowAnalysisWithQCumulants();  
+ 
+  fQCA->SetIntFlowResults(intFlowResults); 
+  fQCA->SetDiffFlowResults2nd(diffFlowResults2ndOrder);
+  fQCA->SetDiffFlowResults4th(diffFlowResults4thOrder); 
+  fQCA->SetCovariances(covariances); 
+
+  fQCA->SetCommonHistsResults2nd(commonHistRes2nd); 
+  fQCA->SetCommonHistsResults4th(commonHistRes4th);
+  fQCA->SetCommonHistsResults6th(commonHistRes6th);
+  fQCA->SetCommonHistsResults8th(commonHistRes8th);
+ 
+  fQCA->SetAverageMultiplicity(AvMult);
+  fQCA->SetQCorrelations(QCorrelations);
+  fQCA->SetQProduct(QProduct);
+  fQCA->SetQVectorComponents(QVectorComponents);
+ 
+  fQCA->SetTwo_1n1nPerBin(binned2p_1n1n);
+  fQCA->SetTwo_2n2nPerBin(binned2p_2n2n);
+  fQCA->SetThree_2n1n1nPerBin(binned3p_2n1n1n);
+  fQCA->SetThree_1n1n2nPerBin(binned3p_1n1n2n);
+  fQCA->SetFour_1n1n1n1nPerBin(binned4p_1n1n1n1n);
+ 
+  fQCA->SetDirectCorrelations(DirectCorrelations);
+ 
+  fQCA->Finish();
  }
  else
  {

@@ -38,7 +38,6 @@
 #include "TH1.h"
 #include "TH1D.h"
 
-
 #include "AliFlowEventSimple.h"
 #include "AliFlowTrackSimple.h"
 #include "AliFlowAnalysisWithCumulants.h"
@@ -58,18 +57,17 @@ AliQCumulantsFunctions::AliQCumulantsFunctions():
  fAvMult(NULL),
  fQVector(NULL),
  fQCorr(NULL),
- fQCovar(NULL),
- fQCorrPerBin(NULL),
+ fQProd(NULL),
  fDirect(NULL),
  fbin2_1n1n(NULL),
  fbin2_2n2n(NULL),
  fbin3_2n1n1n(NULL),
  fbin3_1n1n2n(NULL),
- fbin4_1n1n1n1n(NULL)
- //fchr2nd(NULL),
- //fchr4th(NULL),
- //fchr6th(NULL),
- //fchr8th(NULL) 
+ fbin4_1n1n1n1n(NULL),
+ fchr2nd(NULL),
+ fchr4th(NULL),
+ fchr6th(NULL),
+ fchr8th(NULL) 
 {
  //default constructor 
 }
@@ -79,8 +77,7 @@ AliQCumulantsFunctions::~AliQCumulantsFunctions()
  //destructor
 }
 
-/*
-AliQCumulantsFunctions::AliQCumulantsFunctions(TH1D *intRes, TH1D *diffRes2nd, TH1D *diffRes4th, TH1D *covar, TProfile *AvMult, TProfile *QVector, TProfile *QCorr, TProfile *QCovar, TProfile *QCorrPerBin, TProfile *Direct, TProfile *bin2_1n1n, TProfile *bin2_2n2n, TProfile *bin3_2n1n1n, TProfile *bin3_1n1n2n, TProfile *bin4_1n1n1n1n, AliFlowCommonHistResults *chr2nd, AliFlowCommonHistResults *chr4th, AliFlowCommonHistResults *chr6th, AliFlowCommonHistResults *chr8th):
+AliQCumulantsFunctions::AliQCumulantsFunctions(TH1D *intRes, TH1D *diffRes2nd, TH1D *diffRes4th, TH1D *covar, TProfile *AvMult, TProfile *QVector, TProfile *QCorr, TProfile *QProd, TProfile *Direct, TProfile *bin2_1n1n, TProfile *bin2_2n2n, TProfile *bin3_2n1n1n, TProfile *bin3_1n1n2n, TProfile *bin4_1n1n1n1n, AliFlowCommonHistResults *chr2nd, AliFlowCommonHistResults *chr4th, AliFlowCommonHistResults *chr6th, AliFlowCommonHistResults *chr8th):
  fIntRes(intRes),
  fDiffRes2nd(diffRes2nd),
  fDiffRes4th(diffRes4th),
@@ -88,14 +85,13 @@ AliQCumulantsFunctions::AliQCumulantsFunctions(TH1D *intRes, TH1D *diffRes2nd, T
  fAvMult(AvMult),
  fQVector(QVector),
  fQCorr(QCorr),
- fQCovar(QCovar),
- fQCorrPerBin(QCorrPerBin),
+ fQProd(QProd),
  fDirect(Direct),
  fbin2_1n1n(bin2_1n1n),
  fbin2_2n2n(bin2_2n2n),
  fbin3_2n1n1n(bin3_2n1n1n),
  fbin3_1n1n2n(bin3_1n1n2n),
- fbin4_1n1n1n1n(bin4_1n1n1n1n), 
+ fbin4_1n1n1n1n(bin4_1n1n1n1n),
  fchr2nd(chr2nd),
  fchr4th(chr4th),
  fchr6th(chr6th),
@@ -103,40 +99,13 @@ AliQCumulantsFunctions::AliQCumulantsFunctions(TH1D *intRes, TH1D *diffRes2nd, T
 {
  //custom constructor 
 }
-*/
-
-AliQCumulantsFunctions::AliQCumulantsFunctions(TH1D *intRes, TH1D *diffRes2nd, TH1D *diffRes4th, TH1D *covar, TProfile *AvMult, TProfile *QVector, TProfile *QCorr, TProfile *QCovar, TProfile *QCorrPerBin, TProfile *Direct, TProfile *bin2_1n1n, TProfile *bin2_2n2n, TProfile *bin3_2n1n1n, TProfile *bin3_1n1n2n, TProfile *bin4_1n1n1n1n):
- fIntRes(intRes),
- fDiffRes2nd(diffRes2nd),
- fDiffRes4th(diffRes4th),
- fCovar(covar),
- fAvMult(AvMult),
- fQVector(QVector),
- fQCorr(QCorr),
- fQCovar(QCovar),
- fQCorrPerBin(QCorrPerBin),
- fDirect(Direct),
- fbin2_1n1n(bin2_1n1n),
- fbin2_2n2n(bin2_2n2n),
- fbin3_2n1n1n(bin3_2n1n1n),
- fbin3_1n1n2n(bin3_1n1n2n),
- fbin4_1n1n1n1n(bin4_1n1n1n1n)
- //fchr2nd(chr2nd),
- //fchr4th(chr4th),
- //fchr6th(chr6th),
- //fchr8th(chr8th) 
-{
- //custom constructor 
-}
-  
-  
       
 //================================================================================================================
 
 void AliQCumulantsFunctions::Calculate()
 {
  //final results
- 
+
  //harmonics
  Int_t n = 2; //to be improved 
  
@@ -148,22 +117,31 @@ void AliQCumulantsFunctions::Calculate()
  Double_t nEvts = fAvMult->GetBinEntries(1);
  
  //2-, 4- and 6-particle azimuthal correlation:
- Double_t two  = fQCorr->GetBinContent(1);  //<<2>>_{n|n}
- Double_t four = fQCorr->GetBinContent(11); //<<4>>_{n,n|n,n}
- Double_t six  = fQCorr->GetBinContent(21); //<<6>>_{n,n,n|n,n,n}
+ Double_t two   = fQCorr->GetBinContent(1);  //<<2>>_{n|n}
+ Double_t four  = fQCorr->GetBinContent(11); //<<4>>_{n,n|n,n}
+ Double_t six   = fQCorr->GetBinContent(21); //<<6>>_{n,n,n|n,n,n}
+ //Double_t eight = fQCorr->GetBinContent(); //<<8>>_{n,n,n,n|n,n,n,n}
   
  //errors of 2-, 4- and 6-particle azimuthal correlation:
- Double_t twoErr  = fQCorr->GetBinError(1);  //sigma_{<<2>>_{n|n}} 
- Double_t fourErr = fQCorr->GetBinError(11); //sigma_{<<4>>_{n,n|n,n}} 
- Double_t sixErr  = fQCorr->GetBinError(21); //sigma_{<<6>>_{n,n,n|n,n,n}}
+ Double_t twoErr   = fQCorr->GetBinError(1);  //sigma_{<<2>>_{n|n}} 
+ Double_t fourErr  = fQCorr->GetBinError(11); //sigma_{<<4>>_{n,n|n,n}} 
+ Double_t sixErr   = fQCorr->GetBinError(21); //sigma_{<<6>>_{n,n,n|n,n,n}}
+ //Double_t eightErr = fQCorr->GetBinError(); //sigma_{<<8>>_{n,n,n,n|n,n,n,n}}
  
  //covariances of multi-particle correlations
- Double_t cov24=fQCovar->GetBinContent(1)-two*four;//cov24=<<2>*<4>>-<<2>>*<<4>>
- Double_t cov26=fQCovar->GetBinContent(2)-two*six; //cov26=<<2>*<6>>-<<2>>*<<6>>
- Double_t cov46=fQCovar->GetBinContent(3)-four*six;//cov46=<<4>*<6>>-<<4>>*<<6>>
+ Double_t cov24=fQProd->GetBinContent(1)-two*four;     //cov24=<<2>*<4>>-<<2>>*<<4>>
+ Double_t cov26=fQProd->GetBinContent(2)-two*six;      //cov26=<<2>*<6>>-<<2>>*<<6>>
+ //Double_t cov28=fQProd->GetBinContent(3)-two*eight;  //cov28=<<2>*<8>>-<<2>>*<<8>>
+ Double_t cov46=fQProd->GetBinContent(4)-four*six;     //cov46=<<4>*<6>>-<<4>>*<<6>>
+ //Double_t cov48=fQProd->GetBinContent(5)-four*eight; //cov48=<<4>*<8>>-<<4>>*<<8>>
+ //Double_t cov68=fQProd->GetBinContent(6)-six*eight;  //cov68=<<6>*<8>>-<<6>>*<<8>>
+ 
  fCovar->SetBinContent(1,cov24);
  fCovar->SetBinContent(2,cov26); 
+ //fCovar->SetBinContent(3,cov28); 
  fCovar->SetBinContent(4,cov46);
+ //fCovar->SetBinContent(5,cov48); 
+ //fCovar->SetBinContent(6,cov68); 
  
  //2nd, 4th and 6th order Q-cumulant and theirs errors:
  Double_t secondOrderQCumulant = two;                //c_n{2} 
@@ -200,7 +178,9 @@ void AliQCumulantsFunctions::Calculate()
   cout<<" v_"<<n<<"{2} = "<<vn2<<" +/- "<<sd2<<endl;
   fIntRes->SetBinContent(1,vn2);
   fIntRes->SetBinError(1,sd2);
-  //fchr2nd->FillIntegratedFlow(vn2,sd2);//common histogram
+  //common histograms:
+  fchr2nd->FillIntegratedFlow(vn2,sd2);
+  fchr2nd->FillChi(vn2*pow(AvM,0.5));
  }else{
   cout<<" v_"<<n<<"{2} = Im"<<endl;
  }
@@ -210,7 +190,9 @@ void AliQCumulantsFunctions::Calculate()
   cout<<" v_"<<n<<"{4} = "<<vn4<<" +/- "<<sd4<<endl;
   fIntRes->SetBinContent(2,vn4);
   fIntRes->SetBinError(2,sd4);
-  //fchr4th->FillIntegratedFlow(vn4,sd4);//common histogram
+  //common histograms:
+  fchr4th->FillIntegratedFlow(vn4,sd4);
+  fchr4th->FillChi(vn4*pow(AvM,0.5));
  }else{
   cout<<" v_"<<n<<"{4} = Im"<<endl;
  }
@@ -220,8 +202,9 @@ void AliQCumulantsFunctions::Calculate()
   cout<<" v_"<<n<<"{6} = "<<vn6<<" +/- "<<sd6<<endl;
   fIntRes->SetBinContent(3,vn6);
   fIntRes->SetBinError(3,sd6);
-  //fchr6th->FillIntegratedFlow(vn6,sd6);//common histogram
-  //fIntRes->Draw("E1P0");
+  //common histograms:
+  fchr6th->FillIntegratedFlow(vn6,sd6);
+  fchr6th->FillChi(vn6*pow(AvM,0.5));
  }else{
   cout<<" v_"<<n<<"{6} = Im"<<endl;
  }
@@ -237,17 +220,23 @@ void AliQCumulantsFunctions::Calculate()
 Double_t secondOrderQCumulantDiffFlow = 0.;
 Double_t fourthOrderQCumulantDiffFlow = 0.;
 
-for(Int_t bb=1;bb<10001;bb++) //to be improved (upper bound)
+Int_t nBins = fbin2_1n1n->GetNbinsX();
+
+for(Int_t bb=1;bb<nBins+1;bb++)
 {
  if(fbin2_1n1n->GetBinEntries(bb)>0.&&vn2!=0)
  {
   secondOrderQCumulantDiffFlow = fbin2_1n1n->GetBinContent(bb);
   fDiffRes2nd->SetBinContent(bb,secondOrderQCumulantDiffFlow/vn2);
+  //common histogram:
+  fchr2nd->FillDifferentialFlow(bb,secondOrderQCumulantDiffFlow/vn2,0.);//to be improved (errors)
  }
  if(fbin4_1n1n1n1n->GetBinEntries(bb)>0.&&vn4!=0.)
  {
   fourthOrderQCumulantDiffFlow = fbin4_1n1n1n1n->GetBinContent(bb)-2.*fbin2_1n1n->GetBinContent(bb)*pow(vn2,2.);
   fDiffRes4th->SetBinContent(bb,-1.*fourthOrderQCumulantDiffFlow/pow(vn4,3.));
+  //common histogram:
+  fchr4th->FillDifferentialFlow(bb,-1.*fourthOrderQCumulantDiffFlow/pow(vn4,3.),0.);//to be improved (errors)
  }
 }      
 //---------------------------------------------------------------------------------------------------------       
