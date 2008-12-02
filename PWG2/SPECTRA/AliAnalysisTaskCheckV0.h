@@ -1,5 +1,5 @@
-#ifndef AliAnalysisTaskCheckV0_cxx
-#define AliAnalysisTaskCheckV0_cxx
+#ifndef ALIANALYSISTASKCHECKV0_H
+#define ALIANALYSISTASKCHECKV0_H
 
 /*  See cxx source for full Copyright notice */
 
@@ -14,6 +14,10 @@ class TList;
 class TH1F;
 
 #include "AliAnalysisTaskSE.h"
+
+class AliESDEvent;
+class AliESDVertex;
+class AliAODEvent;
 
 class AliAnalysisTaskCheckV0 : public AliAnalysisTaskSE {
  public:
