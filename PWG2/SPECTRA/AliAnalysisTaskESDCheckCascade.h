@@ -1,5 +1,5 @@
-#ifndef AliAnalysisTaskESDCheckCascade_cxx
-#define AliAnalysisTaskESDCheckCascade_cxx
+#ifndef ALIANALYSISTASKESDCHECKCASCADE_H
+#define ALIANALYSISTASKESDCHECKCASCADE_H
 
 /*  See cxx source for full Copyright notice */
 
@@ -30,14 +30,14 @@ class AliAnalysisTaskESDCheckCascade : public AliAnalysisTask {
   
  private:
   AliESDInputHandler *fesdH;		//! InputHandler object
-  AliMCEvent  *fMCevent;		//!  MC event object
+  AliMCEvent  *fMCevent;		//! MC event object
   AliESDEvent *fESD;			//! ESD object
   
  
    	
 	
 
-		TList	*fListHist_Cascade;		//! List of Cascade histograms
+		TList	*fListHistCascade;		//! List of Cascade histograms
 	
 	// - General histos (filled for any event)
 	TH1F	*fHistTrackMultiplicity;		//! Track multiplicity distribution
@@ -46,16 +46,16 @@ class AliAnalysisTaskESDCheckCascade : public AliAnalysisTask {
 
 	// - Vertex Positions
 		// (Vtx coming from the full tracking)
-	TH1F	*fHistPos_TrkgPrimaryVtx_x;  		//! Primary vertex position distribution in x 
-	TH1F	*fHistPos_TrkgPrimaryVtx_y;		//! Primary vertex position distribution in y
-	TH1F	*fHistPos_TrkgPrimaryVtx_z;  		//! Primary vertex position distribution in z
-	TH1F	*fHist_TrkgPrimaryVtxRadius;		//! Primary vertex (3D) radius distribution 
+	TH1F	*fHistPosTrkgPrimaryVtxX;  		//! Primary vertex position distribution in x 
+	TH1F	*fHistPosTrkgPrimaryVtxY;		//! Primary vertex position distribution in y
+	TH1F	*fHistPosTrkgPrimaryVtxZ;  		//! Primary vertex position distribution in z
+	TH1F	*fHistTrkgPrimaryVtxRadius;		//! Primary vertex (3D) radius distribution 
 
 		// (Vtx coming from the SPD only)
-	TH1F	*fHistPos_SPDPrimaryVtx_x;      	//! Primary vertex position distribution in x 
-	TH1F	*fHistPos_SPDPrimaryVtx_y;		//! Primary vertex position distribution in y
-	TH1F	*fHistPos_SPDPrimaryVtx_z;      	//! Primary vertex position distribution in z
-	TH1F	*fHist_SPDPrimaryVtxRadius;		//! Primary vertex (3D) radius distribution 
+	TH1F	*fHistPosSPDPrimaryVtxX;  		//! Primary vertex position distribution in x 
+	TH1F	*fHistPosSPDPrimaryVtxY;		//! Primary vertex position distribution in y
+	TH1F	*fHistPosSPDPrimaryVtxZ;  		//! Primary vertex position distribution in z
+	TH1F	*fHistSPDPrimaryVtxRadius;		//! Primary vertex (3D) radius distribution 
 	
 		// Correlation SPD Vtx / Full Tracking Vtx
 	TH2F	*f2dHistTrkgPrimVtxVsSPDPrimVtx;	//!  Radius of Prim. Vtx from tracks Vs Radius of Prim. Vtx from SPD
@@ -70,23 +70,23 @@ class AliAnalysisTaskESDCheckCascade : public AliAnalysisTask {
 	TH1F	*fHistXiCosineOfPointingAngle;		//! Cosine of Xi pointing angle in a cascade
 	TH1F	*fHistXiRadius;				//! (transverse) radius of the cascade vertex 
 		
-	TH1F	*fHistXiMom_transv;     		//! Xi transverse momentum 
-	TH1F	*fHistXiMom_tot;     			//! Xi momentum norm
+	TH1F	*fHistXiTransvMom;     			//! Xi transverse momentum 
+	TH1F	*fHistXiTotMom;     			//! Xi momentum norm
 	
-	TH1F	*fHistBachMom_transv;     		//! bachelor transverse momentum 
-	TH1F	*fHistBachMom_tot;     			//! bachelor momentum norm
+	TH1F	*fHistBachTransvMom;   			//! bachelor transverse momentum 
+	TH1F	*fHistBachTotMom;  			//! bachelor momentum norm
 			
 		
 	// - Histos about ~ the "V0 part" of the cascade,  coming by inheritance from AliESDv0
 	TH1F	*fHistMassLambdaAsCascDghter;		//! Test Invariant Mass of Lambda coming from Cascade
-	TH1F	*fHistV0Chi2_Xi;			//! V0 chi2 distribution, for the V0 associated to a cascade
-	TH1F	*fHistDcaV0Daughters_Xi;		//! Dca between V0 daughters, for the V0 associated to a cascade
-	TH1F	*fHistDcaV0ToPrimVertex_Xi;		//! Dca of V0 to primary vertex, for the V0 associated to a cascade	
-	TH1F	*fHistV0CosineOfPointingAngle_Xi;	//! Cosine of V0 pointing angle, for the V0 associated to a cascade
-	TH1F	*fHistV0Radius_Xi;			//! V0 (transverse) distance distribution, for the V0 associated to a cascade
+	TH1F	*fHistV0Chi2Xi;			//! V0 chi2 distribution, for the V0 associated to a cascade
+	TH1F	*fHistDcaV0DaughtersXi;		//! Dca between V0 daughters, for the V0 associated to a cascade
+	TH1F	*fHistDcaV0ToPrimVertexXi;		//! Dca of V0 to primary vertex, for the V0 associated to a cascade	
+	TH1F	*fHistV0CosineOfPointingAngleXi;	//! Cosine of V0 pointing angle, for the V0 associated to a cascade
+	TH1F	*fHistV0RadiusXi;			//! V0 (transverse) distance distribution, for the V0 associated to a cascade
 
-	TH1F	*fHistDcaPosToPrimVertex_Xi;		//! Dca of V0 positive daughter to primary vertex, for the V0 associated to a cascade
-	TH1F	*fHistDcaNegToPrimVertex_Xi;		//! Dca of V0 negative daughter to primary vertex, for the V0 associated to a cascade
+	TH1F	*fHistDcaPosToPrimVertexXi;		//! Dca of V0 positive daughter to primary vertex, for the V0 associated to a cascade
+	TH1F	*fHistDcaNegToPrimVertexXi;		//! Dca of V0 negative daughter to primary vertex, for the V0 associated to a cascade
 	
 
 	// - Effective mass histos for cascades.
