@@ -216,7 +216,7 @@ void THerwig6::Initialize(const char *beam, const char *target, double pbeam1, d
   // value after calling Initialize and before PrepareRun.
 
    char  cbeam[8];
-   strncpy(cbeam,beam,8);
+    strncpy(cbeam,beam,8);
    char  ctarget[8];
    strncpy(ctarget,target,8);
    printf("\n Initializing Herwig !! \n");
@@ -268,8 +268,8 @@ void THerwig6::Initialize(const char *beam, const char *target, double pbeam1, d
 
    // initialization:
    // type of beams
-   strncpy(fHwbmch->PART1,beam,8);
-   strncpy(fHwbmch->PART2,target,8);
+   //strncpy(fHwbmch->PART1,beam,8);
+   //strncpy(fHwbmch->PART2,target,8);
    // momentum of beams
    fHwproc->PBEAM1=pbeam1;
    fHwproc->PBEAM2=pbeam2;
@@ -277,16 +277,16 @@ void THerwig6::Initialize(const char *beam, const char *target, double pbeam1, d
    fHwproc->IPROC=iproc;
    // not used in the class definition
    fHwproc->MAXEV=1;
-
+   
    // reset all parameters
    hwigin_();
 
    // set correct title
-   char atitle[132];
+   //char atitle[132];
    double win=pbeam1+pbeam2;
-   printf("\n %s - %s at %g GeV",beam,target,win);
-   sprintf(atitle,"%s-%s at %g GeV",cbeam,ctarget,win);
-   SetTitle(atitle);
+   printf("\n %s - %s at %g GeV \n",beam,target,win);
+   //sprintf(atitle,"%s-%s at %g GeV",cbeam,ctarget,win);
+   //SetTitle(atitle);
 }
 
 void THerwig6::InitializeJimmy(const char *beam, const char *target, double pbeam1, double pbeam2, int iproc)
@@ -370,8 +370,8 @@ void THerwig6::InitializeJimmy(const char *beam, const char *target, double pbea
    char atitle[132];
    double win=pbeam1+pbeam2;
    printf("\n %s - %s at %g GeV",beam,target,win);
-   sprintf(atitle,"%s-%s at %g GeV",cbeam,ctarget,win);
-   SetTitle(atitle);
+//   sprintf(atitle,"%s-%s at %g GeV",cbeam,ctarget,win);
+//   SetTitle(atitle);
 }
 
 void THerwig6::PrepareRun()
