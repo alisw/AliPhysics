@@ -62,15 +62,18 @@ void alieve_online_init()
 
 void alieve_online_on_new_event()
 {
-  its_raw();
+  if (AliEveEventManager::HasRawReader())
+    its_raw();
   its_clusters();
 
-  tpc_raw();
+  if (AliEveEventManager::HasRawReader())
+    tpc_raw();
   tpc_clusters();
 
   hmpid_clusters();
 
-  acorde_raw();
+  if (AliEveEventManager::HasRawReader())
+    acorde_raw();
 
   primary_vertex();
   esd_tracks();
