@@ -1,11 +1,15 @@
+#include <TAxis.h>
+#include <TCanvas.h>
 #include <TFile.h>
 #include <TH1F.h>
+#include <TGaxis.h>
 #include <TGraph.h>
 #include <TMath.h>
 #include <TMap.h>
 #include <TObjArray.h>
 #include <TObject.h>
 #include <TObjString.h>
+#include <TPad.h>
 #include <TProfile.h>
 #include <TProfile2D.h>
 #include <TROOT.h>
@@ -17,6 +21,7 @@
 #include "AliESDtrack.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDpadPlane.h"
+#include "AliTRDSimParam.h"
 #include "AliTRDseedV1.h"
 #include "AliTRDtrackV1.h"
 #include "AliTRDtrackerV1.h"
@@ -206,7 +211,8 @@ void AliTRDcheckDetector::GetRefFigure(Int_t ifig){
   //
   // Setting Reference Figures
   //
-  TH1 *h = 0x0;
+  TH1 *h = 0x0, *h1 = 0x0, *h2 = 0x0;
+  TGaxis *axis = 0x0;
   switch(ifig){
   case 0:	
     ((TH1F*)fContainer->At(kNTracksEventHist))->Draw("pl");
@@ -252,7 +258,30 @@ void AliTRDcheckDetector::GetRefFigure(Int_t ifig){
   case 7:
     h = (TH1F*)fContainer->At(kPulseHeight);
     h->SetMarkerStyle(24);
+    h->SetMarkerColor(kBlack);
+    h->SetLineColor(kBlack);
     h->Draw("e1");
+    // copy the second histogram in a new one with the same x-dimension as the phs with respect to time
+    h1 = (TH1F *)fContainer->At(kPulseHeightDistance);
+    h2 = new TH1F("hphs1","Average PH", 31, -0.5, 30.5);
+    for(Int_t ibin = h1->GetXaxis()->GetFirst(); ibin < h1->GetNbinsX(); ibin++) 
+      h2->SetBinContent(ibin, h1->GetBinContent(ibin));
+    h2->SetMarkerStyle(22);
+    h2->SetMarkerColor(kBlue);
+    h2->SetLineColor(kBlue);
+    h2->Draw("e1same");
+    gPad->Update();
+    // create axis according to the histogram dimensions of the original second histogram
+    axis = new TGaxis(gPad->GetUxmin(),
+                      gPad->GetUymax(),
+                      gPad->GetUxmax(),
+                      gPad->GetUymax(),
+                      -0.08, 4.88, 510,"-L");
+    axis->SetLineColor(kBlue);
+    axis->SetLabelColor(kBlue);
+    axis->SetTextColor(kBlue);
+    axis->SetTitle("x_{c}-x_{0} / cm");
+    axis->Draw();
     break;
   case 8:
     ((TH1F*)fContainer->At(kClusterCharge))->Draw("c");
@@ -293,6 +322,7 @@ TObjArray *AliTRDcheckDetector::Histos(){
   fContainer->AddAt(new TH1F("hSM", "Track Counts in Supermodule", 18, -0.5, 17.5), kNTracksSectorHist);
   // Detector signal on Detector-by-Detector basis
   fContainer->AddAt(new TProfile("hPHdetector", "Average PH", 31, -0.5, 30.5), kPulseHeight);
+  fContainer->AddAt(new TProfile("hPHdistance", "Average PH", 31, -0.08, 4.88), kPulseHeightDistance);
   fContainer->AddAt(new TH1F("hQclDetector", "Cluster charge", 200, 0, 1200), kClusterCharge);
   fContainer->AddAt(new TH1F("hQTdetector", "Total Charge Deposit", 6000, 0, 6000), kChargeDeposit);
   fContainer->AddAt(new TH1F("hEventsTrigger", "Trigger Class", 100, 0, 100), kNEventsTrigger);
@@ -612,6 +642,8 @@ TH1 *AliTRDcheckDetector::PlotPulseHeight(const AliTRDtrackV1 *track){
       if(fDebugLevel > 3){
         Int_t crossing = tracklet->GetNChange();
         Int_t detector = c->GetDetector();
+        Double_t distance[2];
+        GetDistanceToTracklet(distance, tracklet, c);
         Float_t sector = static_cast<Int_t>(detector/AliTRDgeometry::kNdets);
         Float_t theta = TMath::ATan(tracklet->GetZfit(1));
         Float_t phi = TMath::ATan(tracklet->GetYfit(1));
@@ -635,10 +667,44 @@ TH1 *AliTRDcheckDetector::PlotPulseHeight(const AliTRDtrackV1 *track){
           << "phi="				<< phi
           << "kinkIndex="	<< kinkIndex
           << "TPCncls="		<< TPCncls
+          << "dy="        << distance[0]
+          << "dz="        << distance[1]
+          << "c.="        << c
           << "\n";
       }
     }
   }
+  return h;
+}
+
+//_______________________________________________________
+TH1 *AliTRDcheckDetector::PlotPHSdistance(const AliTRDtrackV1 *track){
+  //
+  // Plots the average pulse height vs the distance from the anode wire
+  // (plus const anode wire offset)
+  //
+  if(track) fTrack = track;
+  if(!fTrack){
+    AliWarning("No Track defined.");
+    return 0x0;
+  }
+  TProfile *h = 0x0;
+  if(!(h = dynamic_cast<TProfile *>(fContainer->At(kPulseHeightDistance)))){
+    AliWarning("No Histogram defined.");
+    return 0x0;
+  }
+  Int_t offset = AliTRDSimParam::Instance()->GetAnodeWireOffset();
+  AliTRDseedV1 *tracklet = 0x0;
+  AliTRDcluster *c = 0x0;
+  Double_t distance = 0;
+  for(Int_t itl = 0; itl < AliTRDgeometry::kNlayer; itl++){
+    if(!(tracklet = fTrack->GetTracklet(itl)) || !(tracklet->IsOK())) continue;
+    tracklet->ResetClusterIter();
+    while((c = tracklet->NextCluster())){
+      distance = tracklet->GetX0() - c->GetX() + offset;
+      h->Fill(distance, TMath::Abs(c->GetQ()));
+    }
+  }  
   return h;
 }
 
@@ -784,4 +850,10 @@ void AliTRDcheckDetector::SetRecoParam(AliTRDrecoParam *r)
 {
 
   fReconstructor->SetRecoParam(r);
+}
+
+//________________________________________________________
+void AliTRDcheckDetector::GetDistanceToTracklet(Double_t *dist, AliTRDseedV1 *tracklet, AliTRDcluster *c){
+  dist[0] = c->GetY() - (tracklet->GetYfit(0) + tracklet->GetYfit(1)*(c->GetX() - tracklet->GetX0()));
+  dist[1] = c->GetZ() - tracklet->GetMeanz();
 }
