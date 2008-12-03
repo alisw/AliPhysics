@@ -28,14 +28,14 @@ class AliTRDtrackingResolution : public AliTRDrecoTask
 public:
   enum{
     kClusterResidual         = 0
-//     ,kTrackletRiemanYResidual = 1 // Riemann track model
-//     ,kTrackletRiemanAngleResidual = 2
+    ,kTrackletYResidual      = 1 // tracklet - track residuals
+    ,kTrackletPhiResidual    = 2 // tracklet - track angular residuals
 //     ,kTrackletKalmanYResidual = 3 // Kalman track model
 //     ,kTrackletKalmanAngleResidual = 4
-    ,kClusterResolution      = 1/*5*/
-    ,kTrackletYResolution     = 2/*6*/
-    ,kTrackletZResolution     = 3/*6*/
-    ,kTrackletAngleResolution = 4/*7*/
+    ,kClusterResolution      = 3/*5*/
+    ,kTrackletYResolution    = 4/*6*/
+    ,kTrackletZResolution    = 5/*6*/
+    ,kTrackletAngleResolution= 6/*7*/
 //     ,kTrackRYResolution       = 8 // Riemann track model
 //     ,kTrackRZResolution       = 9
 //     ,kTrackRAngleResolution   = 10
@@ -60,6 +60,8 @@ public:
   Bool_t  PostProcess();
 
   TH1*    PlotClusterResiduals(const AliTRDtrackV1 *t=0x0);
+  TH1*    PlotTrackletResiduals(const AliTRDtrackV1 *t=0x0);
+  TH1*    PlotTrackletPhiResiduals(const AliTRDtrackV1 *t=0x0);
   TH1*    PlotResolution(const AliTRDtrackV1 *t=0x0);
 
   void    SetRecoParam(AliTRDrecoParam *r);
@@ -82,6 +84,8 @@ private:
 
   // calibration containers
   TObjArray           *fClResiduals;    //!
+  TObjArray           *fTrkltResiduals;    //!
+  TObjArray           *fTrkltPhiResiduals;    //!
   TObjArray           *fClResolution;   //!
   TObjArray           *fTrkltResolution;//!
   

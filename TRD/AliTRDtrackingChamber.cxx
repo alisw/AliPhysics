@@ -104,7 +104,7 @@ Bool_t AliTRDtrackingChamber::Build(AliTRDgeometry *geo, const AliTRDCalDet *cal
     mean /= roc->GetNchannels();
     t0 = (Int_t)(cal->GetValue(fDetector) + mean);
   }
-  fTB[t0]->SetT0();
+  fTB[t0].SetT0();
   fX0 = x0 + dx*(index[0] - t0);	
   return kTRUE;
 }
