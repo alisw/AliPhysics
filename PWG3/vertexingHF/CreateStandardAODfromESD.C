@@ -8,11 +8,14 @@
 #include "AliAnalysisDataContainer.h"
 #endif
 
-void CreateStandardAODfromESD(const char *inFileName = "AliESDs.root",
-			      const char *outFileName = "AliAOD.root",
-			      Bool_t writeKineToAOD = kTRUE) 
+void CreateStandardAODfromESD() 
 {
-  
+ 
+  const char *inFileName = "AliESDs.root";
+  const char *outFileName = "AliAOD.root";
+  Bool_t writeKineToAOD = kTRUE;
+  TString mode="local"; // "grid" 
+
   gSystem->Load("libTree");
   gSystem->Load("libGeom");
   gSystem->Load("libPhysics");
@@ -25,9 +28,34 @@ void CreateStandardAODfromESD(const char *inFileName = "AliESDs.root",
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libPWG3muon");
   
-  TChain *chain = new TChain("esdTree");
-  // Steering input chain
-  chain->Add(inFileName);
+  TChain *chain=0;
+  if(mode=="local") { // local
+    chain = new TChain("esdTree");
+    // Steering input chain
+    chain->Add(inFileName);
+  } else if(mode=="grid") { // grid
+    const char *collectionfile = "esd_coll1.xml";
+    TGrid::Connect("alien:",0,0,"t") ;
+    //Create an AliRunTagCuts and an AliEventTagCuts Object and impose some selection criteria
+    AliRunTagCuts      *runCuts   = new AliRunTagCuts();
+    AliEventTagCuts    *eventCuts = new AliEventTagCuts();
+    AliLHCTagCuts      *lhcCuts   = new AliLHCTagCuts();
+    AliDetectorTagCuts *detCuts   = new AliDetectorTagCuts();
+    // eventCuts->SetMultiplicityRange(0,20000);
+    //Create an AliTagAnalysis Object and chain the tags
+    AliTagAnalysis   *tagAna = new AliTagAnalysis();
+    tagAna->SetType("ESD");
+    TAlienCollection *coll   = TAlienCollection::Open(collectionfile);
+    TGridResult      *tagResult = coll->GetGridResult("",0,0);
+    tagResult->Print();
+    tagAna->ChainGridTags(tagResult);
+    //Create a new esd chain and assign the chain that is returned by querying the tags
+    chain = tagAna->QueryTags(runCuts,lhcCuts,detCuts,eventCuts);
+  } else {
+    printf("ERROR: mode has to be \"local\" or \"grid\"\n");
+    return;
+  }
+
   AliAnalysisManager *mgr  = new AliAnalysisManager("ESD to AOD", "Analysis Manager");
   
   // Input
@@ -92,7 +120,7 @@ void CreateStandardAODfromESD(const char *inFileName = "AliESDs.root",
   //
   mgr->InitAnalysis();
   mgr->PrintStatus();
-  mgr->StartAnalysis("local",chain);
+  mgr->StartAnalysis(mode.Data(),chain);
 
   return;
 }
