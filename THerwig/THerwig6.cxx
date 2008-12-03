@@ -367,7 +367,7 @@ void THerwig6::InitializeJimmy(const char *beam, const char *target, double pbea
    jimmin_();
 
    // set correct title
-   char atitle[132];
+//   char atitle[132];
    double win=pbeam1+pbeam2;
    printf("\n %s - %s at %g GeV",beam,target,win);
 //   sprintf(atitle,"%s-%s at %g GeV",cbeam,ctarget,win);
@@ -530,7 +530,7 @@ void THerwig6::Hwuinc()
   hwuinc_();
 }
 
-void THerwig6::Hwusta(char* name)
+void THerwig6::Hwusta(const char* name)
 
 {
   hwusta_(name,8);
