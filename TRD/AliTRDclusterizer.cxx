@@ -698,6 +698,32 @@ UChar_t AliTRDclusterizer::GetStatus(Short_t &signal)
 }
 
 //_____________________________________________________________________________
+void AliTRDclusterizer::SetPadStatus(UChar_t status, UChar_t &out){
+  //
+  // Set the pad status into out
+  // First three bits are needed for the position encoding
+  //
+  status = status << 3;
+  out |= status;
+}
+
+//_____________________________________________________________________________
+UChar_t AliTRDclusterizer::GetPadStatus(UChar_t encoding){
+  //
+  // return the staus encoding of the corrupted pad
+  //
+  return static_cast<UChar_t>(encoding >> 3);
+}
+
+//_____________________________________________________________________________
+Int_t AliTRDclusterizer::GetCorruption(UChar_t encoding){
+  //
+  // Return the position of the corruption
+  //
+  return encoding & 7;
+}
+
+//_____________________________________________________________________________
 Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
 {
   //
@@ -858,7 +884,7 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
               // Maximum found, mark the position by a negative signal
               digitsOut->SetData(row,col,time,-signalM);
               fIndexesMaxima->AddIndexTBin(row,col,time);
-              padStatus.SetData(row, col, time, ipos);
+              padStatus.SetData(row, col, time, ipos); // No corruption
             }
           }
         }
@@ -867,12 +893,14 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
           digitsOut->SetData(row,col,time,-signalM);
           digitsOut->SetData(row, col, time+1, 0.);
           fIndexesMaxima->AddIndexTBin(row,col,time);
+          SetPadStatus(status[0], ipos);
           padStatus.SetData(row, col, time, ipos);
         } 
         else if (status[2] && signalL <= signalM && signalL >= sigThresh) {
           digitsOut->SetData(row,col,time,-signalM);
           digitsOut->SetData(row, col, time-1, 0.);
           fIndexesMaxima->AddIndexTBin(row,col,time);
+          SetPadStatus(status[2], ipos);
           padStatus.SetData(row, col, time, ipos);
         }
       }
@@ -882,6 +910,7 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
         // Maximum found, mark the position by a negative signal
         digitsOut->SetData(row,col,time,-maxThresh);
         fIndexesMaxima->AddIndexTBin(row,col,time);
+        SetPadStatus(status[1], ipos);
         padStatus.SetData(row, col, time, ipos);
       }
     }
@@ -1046,18 +1075,11 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
           volid);
         cluster->SetInChamber(!out);
 
-        UChar_t maskPosition = padStatus.GetData(row, col, time);
+        UChar_t maskPosition = GetCorruption(padStatus.GetData(row, col, time));
+        UChar_t padstatus = GetPadStatus(padStatus.GetData(row, col, time));
         if (maskPosition) { 
           cluster->SetPadMaskedPosition(maskPosition);
-          if      (maskPosition & AliTRDcluster::kMaskedLeft) {
-            cluster->SetPadMaskedStatus(status[0]);
-          }
-          else if (maskPosition & AliTRDcluster::kMaskedCenter) {
-            cluster->SetPadMaskedStatus(status[1]);
-          }
-          else {
-            cluster->SetPadMaskedStatus(status[2]);
-          }
+          cluster->SetPadMaskedStatus(padstatus);
         }
 
         // Temporarily store the row, column and time bin of the center pad

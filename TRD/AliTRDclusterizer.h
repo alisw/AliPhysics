@@ -96,6 +96,10 @@ class AliTRDclusterizer : public TNamed
   void             FillLUT();
           Double_t LUTposition(Int_t ilayer, Double_t ampL, Double_t ampC, Double_t ampR) const;
   virtual void     ResetHelperIndexes(AliTRDSignalIndex *indexesIn);
+  
+  void              SetPadStatus(UChar_t status, UChar_t &encoding);
+  UChar_t           GetPadStatus(UChar_t encoding);
+  Int_t             GetCorruption(UChar_t encoding);
 
   const AliTRDReconstructor *fReconstructor;       //! reconstructor
   AliRunLoader        *fRunLoader;           //! Run Loader
