@@ -50,7 +50,6 @@ void MakeTRDResMisAlignment(){
   Double_t dx=0.,dy=0.,dz=0.,rx=0.,ry=0.,rz=0.;
 
   Int_t j=0;
-  TRandom *ran = new TRandom(4357);
   UShort_t volid;
   const char* symname; 
 
@@ -71,9 +70,9 @@ void MakeTRDResMisAlignment(){
         dx = AliMathBase::TruncatedGaus(0.0,chdx,cutChdx); 
         dy = AliMathBase::TruncatedGaus(0.0,chdy,cutChdy); 
         dz = AliMathBase::TruncatedGaus(0.0,chdz,cutChdz); 
-        rx = ran->Rndm() * 2.0*chrx - chrx;
-        ry = ran->Rndm() * 2.0*chry - chry;
-        rz = ran->Rndm() * 2.0*chrz - chrz;
+        rx = gRandom->Rndm() * 2.0*chrx - chrx;
+        ry = gRandom->Rndm() * 2.0*chry - chry;
+        rz = gRandom->Rndm() * 2.0*chrz - chrz;
         chId++;
         if ((iSect==13 || iSect==14 || iSect==15) && iCh==2) continue;
         volid = AliGeomManager::LayerToVolUID(iLayer,chId);
