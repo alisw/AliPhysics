@@ -37,7 +37,7 @@ Bool_t SP    = kTRUE;
 Bool_t LYZ1  = kTRUE;
 Bool_t LYZ2  = kFALSE;
 Bool_t LYZEP = kFALSE;
-Bool_t GFC   = kTRUE;
+Bool_t GFC   = kFALSE;
 Bool_t QC    = kTRUE;
 Bool_t FQD   = kTRUE;
 Bool_t MCEP  = kFALSE;
@@ -53,11 +53,12 @@ Bool_t QA = kFALSE;
 //for integrated flow
 const Double_t ptmin1 = 0.0;
 const Double_t ptmax1 = 1000.0;
-const Double_t ymin1  = -2.;
-const Double_t ymax1  = 2.;
+const Double_t ymin1  = -1.;
+const Double_t ymax1  = 1.;
 const Int_t mintrackrefsTPC1 = 2;
 const Int_t mintrackrefsITS1 = 3;
 const Int_t charge1 = 1;
+Bool_t UsePIDIntegratedFlow = kFALSE;
 const Int_t PDG1 = 211;
 const Int_t minclustersTPC1 = 50;
 const Int_t maxnsigmatovertex1 = 3;
@@ -65,11 +66,12 @@ const Int_t maxnsigmatovertex1 = 3;
 //for differential flow
 const Double_t ptmin2 = 0.0;
 const Double_t ptmax2 = 1000.0;
-const Double_t ymin2  = -2.;
-const Double_t ymax2  = 2.;
+const Double_t ymin2  = -1.;
+const Double_t ymax2  = 1.;
 const Int_t mintrackrefsTPC2 = 2;
 const Int_t mintrackrefsITS2 = 3;
 const Int_t charge2 = 1;
+Bool_t UsePIDDifferentialFlow = kFALSE;
 const Int_t PDG2 = 211;
 const Int_t minclustersTPC2 = 50;
 const Int_t maxnsigmatovertex2 = 3;
@@ -80,9 +82,9 @@ const Int_t maxnsigmatovertex2 = 3;
 
 
 //ESD (therminator)
-void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_midcentral_ESD", Int_t nRuns=-1, Int_t offset=0) {
+//void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_midcentral_ESD", Int_t nRuns=-1, Int_t offset=0) {
 
-//void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_c2030", Int_t nRuns=-1, Int_t offset=0) {
+void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_c2030", Int_t nRuns=-1, Int_t offset=0) {
 //void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_central", Int_t nRuns=-1, Int_t offset=0) {
 
 
@@ -105,9 +107,10 @@ void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_midcentral_ESD",
   //  set to debug root versus if needed
   //  TProof::Mgr("alicecaf")->SetROOTVersion("v5-21-01-alice_dbg");
   //  TProof::Mgr("alicecaf")->SetROOTVersion("v5-21-01-alice");
+  
   printf("*** Connect to PROOF ***\n");
-  //  TProof::Open("abilandz@alicecaf.cern.ch");
-  TProof::Open("snelling@localhost");
+  TProof::Open("abilandz@alicecaf.cern.ch");
+  //TProof::Open("snelling@localhost");
  
   //gProof->UploadPackage("AF-v4-15"); 
   //gProof->EnablePackage("AF-v4-15");
@@ -192,9 +195,9 @@ void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_midcentral_ESD",
     if (MCEP) { mcKineCuts2->SetQAOn(qaDiffMCEP); }
   }
   
-  AliCFParticleGenCuts* mcGenCuts1 = new AliCFParticleGenCuts("mcGenCuts1","MC particle generation cuts");
+  AliCFParticleGenCuts* mcGenCuts1 = new AliCFParticleGenCuts("mcGenCuts1","MC particle generation cuts for integrated flow");
   mcGenCuts1->SetRequireIsPrimary();
-  mcGenCuts1->SetRequirePdgCode(PDG1);
+  if (UsePIDIntegratedFlow) {mcGenCuts1->SetRequirePdgCode(PDG1);}
   if (QA) { 
     if (SP)   { mcGenCuts1->SetQAOn(qaIntSP); }
     if (LYZ1) { mcGenCuts1->SetQAOn(qaIntLYZ1); }
@@ -206,9 +209,9 @@ void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_midcentral_ESD",
     if (MCEP) { mcGenCuts1->SetQAOn(qaIntMCEP); }
   }
   
-  AliCFParticleGenCuts* mcGenCuts2 = new AliCFParticleGenCuts("mcGenCuts2","MC particle generation cuts");
+  AliCFParticleGenCuts* mcGenCuts2 = new AliCFParticleGenCuts("mcGenCuts2","MC particle generation cuts for differential flow");
   mcGenCuts2->SetRequireIsPrimary();
-  mcGenCuts2->SetRequirePdgCode(PDG2);
+  if (UsePIDDifferentialFlow) {mcGenCuts2->SetRequirePdgCode(PDG2);}
   if (QA) { 
     if (SP)   { mcGenCuts2->SetQAOn(qaDiffSP); }
     if (LYZ1) { mcGenCuts2->SetQAOn(qaDiffLYZ1); }
@@ -334,8 +337,6 @@ void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_midcentral_ESD",
     if (MCEP) { recIsPrimaryCuts2->SetQAOn(qaDiffMCEP); }
   }
  
-  AliCFTrackCutPid* cutPID1 = new AliCFTrackCutPid("cutPID1","ESD_PID") ;
-  AliCFTrackCutPid* cutPID2 = new AliCFTrackCutPid("cutPID2","ESD_PID") ;
   int n_species = AliPID::kSPECIES ;
   Double_t* prior = new Double_t[n_species];
   
@@ -344,56 +345,57 @@ void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_midcentral_ESD",
   prior[2] = 0.805747  ;
   prior[3] = 0.0928785 ;
   prior[4] = 0.0625243 ;
-  
-  cutPID1->SetPriors(prior);
-  cutPID1->SetProbabilityCut(0.0);
-  cutPID1->SetDetectors("TPC TOF");
-  switch(TMath::Abs(PDG1)) {
-  case 11   : cutPID1->SetParticleType(AliPID::kElectron, kTRUE); break;
-  case 13   : cutPID1->SetParticleType(AliPID::kMuon    , kTRUE); break;
-  case 211  : cutPID1->SetParticleType(AliPID::kPion    , kTRUE); break;
-  case 321  : cutPID1->SetParticleType(AliPID::kKaon    , kTRUE); break;
-  case 2212 : cutPID1->SetParticleType(AliPID::kProton  , kTRUE); break;
-  default   : printf("UNDEFINED PID\n"); break;
+ 
+  AliCFTrackCutPid* cutPID1 = NULL;
+  if(UsePIDIntegratedFlow) {
+    AliCFTrackCutPid* cutPID1 = new AliCFTrackCutPid("cutPID1","ESD_PID for integrated flow") ;
+    cutPID1->SetPriors(prior);
+    cutPID1->SetProbabilityCut(0.0);
+    cutPID1->SetDetectors("TPC TOF");
+    switch(TMath::Abs(PDG1)) {
+    case 11   : cutPID1->SetParticleType(AliPID::kElectron, kTRUE); break;
+    case 13   : cutPID1->SetParticleType(AliPID::kMuon    , kTRUE); break;
+    case 211  : cutPID1->SetParticleType(AliPID::kPion    , kTRUE); break;
+    case 321  : cutPID1->SetParticleType(AliPID::kKaon    , kTRUE); break;
+    case 2212 : cutPID1->SetParticleType(AliPID::kProton  , kTRUE); break;
+    default   : printf("UNDEFINED PID\n"); break;
+    }
+    if (QA) { 
+      if (SP) {cutPID1->SetQAOn(qaIntSP);} 
+      if (LYZ1) {cutPID1->SetQAOn(qaIntLYZ1);} 
+      if (LYZ2) {cutPID1->SetQAOn(qaIntLYZ2);} 
+      if (LYZEP){cutPID1->SetQAOn(qaIntLYZEP);} 
+      if (GFC) {cutPID1->SetQAOn(qaIntGFC);} 
+      if (QC) {cutPID1->SetQAOn(qaIntQC);} 
+      if (FQD) {cutPID1->SetQAOn(qaIntFQD);} 
+      if (MCEP) {cutPID1->SetQAOn(qaIntMCEP);} 
+    }
   }
-  
-  cutPID2->SetPriors(prior);
-  cutPID2->SetProbabilityCut(0.0);
-  cutPID2->SetDetectors("TPC TOF");
-  switch(TMath::Abs(PDG2)) {
-  case 11   : cutPID2->SetParticleType(AliPID::kElectron, kTRUE); break;
-  case 13   : cutPID2->SetParticleType(AliPID::kMuon    , kTRUE); break;
-  case 211  : cutPID2->SetParticleType(AliPID::kPion    , kTRUE); break;
-  case 321  : cutPID2->SetParticleType(AliPID::kKaon    , kTRUE); break;
-  case 2212 : cutPID2->SetParticleType(AliPID::kProton  , kTRUE); break;
-  default   : printf("UNDEFINED PID\n"); break;
-  }
-  
-  if (QA) { 
-    if (SP)   { 
-      cutPID1->SetQAOn(qaIntSP); 
-      cutPID2->SetQAOn(qaDiffSP); }
-    if (LYZ1) { 
-      cutPID1->SetQAOn(qaIntLYZ1); 
-      cutPID2->SetQAOn(qaDiffLYZ1); }
-    if (LYZ2) { 
-      cutPID1->SetQAOn(qaIntLYZ2); 
-      cutPID2->SetQAOn(qaDiffLYZ2); }
-    if (LYZEP){ 
-      cutPID1->SetQAOn(qaIntLYZEP); 
-      cutPID2->SetQAOn(qaDiffLYZEP); }
-    if (GFC)  { 
-      cutPID1->SetQAOn(qaIntGFC); 
-      cutPID2->SetQAOn(qaDiffGFC); }
-    if (QC)  { 
-      cutPID1->SetQAOn(qaIntQC); 
-      cutPID2->SetQAOn(qaDiffQC); }
-    if (FQD)  { 
-      cutPID1->SetQAOn(qaIntFQD); 
-      cutPID2->SetQAOn(qaDiffFQD); }
-    if (MCEP) { 
-      cutPID1->SetQAOn(qaIntMCEP); 
-      cutPID2->SetQAOn(qaDiffMCEP); }
+		  
+  AliCFTrackCutPid* cutPID2 = NULL;
+  if (UsePIDDifferentialFlow) {
+    AliCFTrackCutPid* cutPID2 = new AliCFTrackCutPid("cutPID2","ESD_PID for differential flow") ;
+    cutPID2->SetPriors(prior);
+    cutPID2->SetProbabilityCut(0.0);
+    cutPID2->SetDetectors("TPC TOF");
+    switch(TMath::Abs(PDG2)) {
+    case 11   : cutPID2->SetParticleType(AliPID::kElectron, kTRUE); break;
+    case 13   : cutPID2->SetParticleType(AliPID::kMuon    , kTRUE); break;
+    case 211  : cutPID2->SetParticleType(AliPID::kPion    , kTRUE); break;
+    case 321  : cutPID2->SetParticleType(AliPID::kKaon    , kTRUE); break;
+    case 2212 : cutPID2->SetParticleType(AliPID::kProton  , kTRUE); break;
+    default   : printf("UNDEFINED PID\n"); break;
+    }
+    if (QA) { 
+      if (SP) {cutPID2->SetQAOn(qaIntSP);} 
+      if (LYZ1) {cutPID2->SetQAOn(qaIntLYZ1);} 
+      if (LYZ2) {cutPID2->SetQAOn(qaIntLYZ2);} 
+      if (LYZEP){cutPID2->SetQAOn(qaIntLYZEP);} 
+      if (GFC) {cutPID2->SetQAOn(qaIntGFC);} 
+      if (QC) {cutPID2->SetQAOn(qaIntQC);} 
+      if (FQD) {cutPID2->SetQAOn(qaIntFQD);} 
+      if (MCEP) {cutPID2->SetQAOn(qaIntMCEP);} 
+    }
   }
   
   printf("CREATE MC KINE CUTS\n");
@@ -425,10 +427,10 @@ void runProofFlow(const Char_t* data="/PWG2/akisiel/Therminator_midcentral_ESD",
   
   printf("CREATE PID CUTS\n");
   TObjArray* fPIDCutList1 = new TObjArray(0) ;
-  fPIDCutList1->AddLast(cutPID1);
+  if(UsePIDIntegratedFlow) {fPIDCutList1->AddLast(cutPID1);}
   
   TObjArray* fPIDCutList2 = new TObjArray(0) ;
-  fPIDCutList2->AddLast(cutPID2);
+  if (UsePIDDifferentialFlow)  {fPIDCutList2->AddLast(cutPID2);}
   
   printf("CREATE INTERFACE AND CUTS\n");
   AliCFManager* cfmgr1 = new AliCFManager();
