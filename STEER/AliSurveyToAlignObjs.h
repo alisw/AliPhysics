@@ -21,7 +21,6 @@ class AliSurveyToAlignObjs : public TObject {
 
  public:
   AliSurveyToAlignObjs();
-  AliSurveyToAlignObjs(const char* det, Int_t repNum, Int_t repVer);
   AliSurveyToAlignObjs(const AliSurveyToAlignObjs &align); // copy constructor
   AliSurveyToAlignObjs &operator = (const AliSurveyToAlignObjs &align); //assignment operator
 
