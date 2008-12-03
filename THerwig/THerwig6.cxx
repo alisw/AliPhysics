@@ -530,7 +530,7 @@ void THerwig6::Hwuinc()
   hwuinc_();
 }
 
-void THerwig6::Hwusta(const char* name)
+void THerwig6::Hwusta(char* name)
 
 {
   hwusta_(name,8);
