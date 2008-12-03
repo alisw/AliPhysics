@@ -92,8 +92,6 @@ void AliMCEvent::ConnectTreeK (TTree* tree)
     // Connect the kinematics tree to the stack
     fStack = fHeader->Stack();
     fStack->ConnectTree(tree);
-    printf("ConnectTreeK %p %p\n", fHeader, fStack);
-    
     //
     // Load the event
     fStack->GetEvent();
