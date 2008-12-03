@@ -54,18 +54,18 @@ extern "C" {
 #include <math.h> 
 
 //AliRoot
-#include "AliMUONLogger.h"
+// #include "AliMUONLogger.h"
 #include "AliMUONRawStreamTrackerHP.h"
-#include "AliMUONDspHeader.h"
-#include "AliMUONBlockHeader.h"
-#include "AliMUONBusStruct.h"
-#include "AliMUONDDLTracker.h"
+// #include "AliMUONDspHeader.h"
+// #include "AliMUONBlockHeader.h"
+// #include "AliMUONBusStruct.h"
+// #include "AliMUONDDLTracker.h"
+#include "AliRawReader.h"
 #include "AliMUONVStore.h"
 #include "AliMUON2DMap.h"
 #include "AliMUONCalibParamND.h"
 #include "AliMpIntPair.h"
 #include "AliMpConstants.h"
-#include "AliRawReaderDate.h"
 #include "AliRawDataErrorLog.h"
 
 //ROOT
@@ -88,60 +88,72 @@ extern "C" {
 #define  NFITPARAMS 4
 
 // global variables
-const Int_t gkNChannels = AliMpConstants::ManuNofChannels();
-const Int_t gkADCMax    = 4095;
+const Int_t kNChannels = AliMpConstants::ManuNofChannels();
+const Int_t kADCMax    = 4095;
 
-AliMUONVStore* gPedestalStore =  new AliMUON2DMap(kFALSE);
+AliMUONVStore* gAliPedestalStore =  new AliMUON2DMap(kFALSE);
 
-Int_t  gNManu       = 0;
-Int_t  gNChannel    = 0;
-UInt_t gRunNumber   = 0;
-Int_t  gNEvents     = 0;
-Int_t  gNEventsRecovered = 0;
-Int_t  gNDateEvents = 0;
-Int_t  gPrintLevel  = 1;  // global printout variable (others: 2 and 3)
-Int_t  gPlotLevel  = 0;  // global plot variable
-Int_t  gFES  = 1;  // by default FES is used
+Int_t  gAliNManu       = 0;
+Int_t  gAliNChannel    = 0;
+UInt_t gAliRunNumber   = 0;
+Int_t  gAliNEvents     = 0;
+Int_t  gAliNEventsRecovered = 0;
+Int_t  gAliPrintLevel  = 1;  // global printout variable (others: 2 and 3)
+Int_t  gAliPlotLevel  = 0;  // global plot variable
 
-TH1F*  gPedMeanHisto  = 0x0;
-TH1F*  gPedSigmaHisto = 0x0;
-Char_t gHistoFileName[256];
+Char_t gAliHistoFileName[256];
 
 // used for computing gain parameters 
-Int_t nbpf1 = 6; // linear fit over nbf1 points
+Int_t gAlinbpf1 = 6; // linear fit over nbf1 points
 
-Char_t gHistoFileName_gain[256]="MUONTRKda_gain.data";
-Char_t gRootFileName[256];
-Char_t gOutFolder[256]=".";
-Char_t filename[256];
-Char_t filenam[256]="MUONTRKda_gain"; 
-Char_t flatFile[256]="";
+Char_t gAliHistoFileNamegain[256]="MUONTRKda_gain.data";
+Char_t gAliOutFolder[256]=".";
+Char_t gAlifilename[256];
+Char_t gAlifilenam[256]="MUONTRKda_gain"; 
+Char_t gAliflatFile[256]="";
 
+ofstream gAlifilcout;
 
-ofstream filcout;
-
-TString flatOutputFile;
-TString logOutputFile;
-TString logOutputFile_comp;
-TString gCommand("ped");
-TTimeStamp date;
+TString gAliOutputFile;
+TString gAliCommand("ped");
+TTimeStamp gAlidate;
 
 class ErrorCounter : public TNamed
 {
 public :
   ErrorCounter(Int_t bp = 0, Int_t manu = 0, Int_t ev = 1) : busPatch(bp), manuId(manu), events(ev) {}
   void Increment() {events++;}
-  Int_t BusPatch() {return busPatch;}
-  Int_t ManuId() {return manuId;}
-  Int_t Events() {return events;}
-  Int_t Compare(const TObject*) const;
+  Int_t BusPatch() const {return busPatch;}
+  Int_t ManuId() const {return manuId;}
+  Int_t Events() const {return events;}
+  Int_t Compare(const TObject* obj) const
+	{
+		/// Compare function
+	  Int_t patch1, patch2, manu1, manu2;
+	  patch1 = busPatch;
+	  manu1 = manuId;
+	  patch2 = ((ErrorCounter*)obj)->BusPatch();
+	  manu2 = ((ErrorCounter*)obj)->ManuId();
 
-  void Print(Option_t* option="") const
+	  if (patch1 == patch2)
+	    {
+	      if (manu1 == manu2)
+		{
+		  return 0;
+		}
+	      else
+		return (manu1 >= manu2) ? 1 : -1;
+	    }
+	  else
+	    return (patch1 >= patch2) ? 1 : -1;
+	}
+	
+  void Print(const Option_t* option="") const
   {
     TNamed::Print(option);
     cout<<"bp "<<busPatch<<" events "<<events<<endl;
   }
-  void Print_uncal(Option_t* option="") const
+  void Print_uncal(const Option_t* option="") const
   {
     TNamed::Print(option);
     cout<<"bp =  "<<busPatch<< "  manu = " << manuId << " uncal = "<< events <<endl;
@@ -153,54 +165,30 @@ private :
   Int_t events;   // Events with error in this buspatch
 };
 
-Int_t ErrorCounter::Compare(const TObject* obj) const
-{
-  Int_t patch1, patch2, manu1, manu2;
-  patch1 = busPatch;
-  manu1 = manuId;
-  patch2 = ((ErrorCounter*)obj)->BusPatch();
-  manu2 = ((ErrorCounter*)obj)->ManuId();
-
-  if (patch1 == patch2)
-    {
-      if (manu1 == manu2)
-	{
-	  return 0;
-	}
-      else
-	return (manu1 >= manu2) ? 1 : -1;
-    }
-  else
-    return (patch1 >= patch2) ? 1 : -1;
-};
-
-
 // Table for buspatches with parity errors 
-THashTable* gErrorBuspatchTable = new THashTable(100,2);
+THashTable* gAliErrorBuspatchTable = new THashTable(100,2);
 
-// Table for uncalibrated  buspatches and manus
-// THashTable* gUncalBuspatchManuTable = new THashTable(1000,2);
- THashList* gUncalBuspatchManuTable = new THashList(1000,2);
-
-
-// funtions
+// functions
 
 
 //________________
-Double_t funcLin(Double_t *x, Double_t *par)
+Double_t funcLin (const Double_t *x, const Double_t *par)
 {
+	// Linear function
 	return par[0] + par[1]*x[0];
 }
 
 //________________
-Double_t funcParabolic(Double_t *x, Double_t *par)
+Double_t funcParabolic (const Double_t *x, const Double_t *par)
 {
+	/// Parabolic function
 	return par[0]*x[0]*x[0];
 }
 
 //________________
-Double_t funcCalib(Double_t *x, Double_t *par)
+Double_t funcCalib (const Double_t *x, const Double_t *par)  
 {
+	/// Calibration function
 	Double_t xLim= par[3];
 
 	if(x[0] <= xLim) return par[0] + par[1]*x[0];
@@ -213,17 +201,17 @@ Double_t funcCalib(Double_t *x, Double_t *par)
 //__________
 void MakePed(Int_t busPatchId, Int_t manuId, Int_t channelId, Int_t charge)
 {
-
+	/// Compute pedestals values
 	AliMUONVCalibParam* ped = 
-		static_cast<AliMUONVCalibParam*>(gPedestalStore->FindObject(busPatchId, manuId));
+		static_cast<AliMUONVCalibParam*>(gAliPedestalStore->FindObject(busPatchId, manuId));
 
 	if (!ped) {
-		gNManu++;
-		ped = new AliMUONCalibParamND(2, gkNChannels,busPatchId, manuId, -1.); // put default wise -1, not connected channel
-		gPedestalStore->Add(ped);	
+		gAliNManu++;
+		ped = new AliMUONCalibParamND(2, kNChannels,busPatchId, manuId, -1.); // put default wise -1, not connected channel
+		gAliPedestalStore->Add(ped);	
 	}
 
-	// if (gNEvents == 0) {
+	// if (gAliNEvents == 0) {
 	// 	ped->SetValueAsDouble(channelId, 0, 0.);
 	// 	ped->SetValueAsDouble(channelId, 1, 0.);
 	// }
@@ -241,10 +229,9 @@ void MakePed(Int_t busPatchId, Int_t manuId, Int_t channelId, Int_t charge)
 }
 
 //________________
-void MakePedStore(TString flatOutputFile_1 = "")
-//void MakePedStore()
+void MakePedStore(TString gAliOutputFile_1 = "")
 {
-//   TTimeStamp date; 
+	/// Store pedestals in ASCII files
 	Double_t pedMean;
 	Double_t pedSigma;
 	ofstream fileout;
@@ -255,10 +242,12 @@ void MakePedStore(TString flatOutputFile_1 = "")
 // histo
 	TFile*  histoFile = 0;
 	TTree* tree = 0;
-	if (gCommand.CompareTo("ped") == 0)
+	TH1F* pedMeanHisto = 0;
+	TH1F* pedSigmaHisto = 0;
+	if (gAliCommand.CompareTo("ped") == 0)
 	{
-		sprintf(gHistoFileName,"%s/MUONTRKda_ped_%d.root",gOutFolder,gRunNumber);
-		histoFile = new TFile(gHistoFileName,"RECREATE","MUON Tracking pedestals");
+		sprintf(gAliHistoFileName,"%s/MUONTRKda_ped_%d.root",gAliOutFolder,gAliRunNumber);
+		histoFile = new TFile(gAliHistoFileName,"RECREATE","MUON Tracking pedestals");
 
 		Char_t name[255];
 		Char_t title[255];
@@ -267,16 +256,16 @@ void MakePedStore(TString flatOutputFile_1 = "")
 		Int_t nx = 4096;
 		Int_t xmin = 0;
 		Int_t xmax = 4095; 
-		gPedMeanHisto = new TH1F(name,title,nx,xmin,xmax);
-		gPedMeanHisto->SetDirectory(histoFile);
+		pedMeanHisto = new TH1F(name,title,nx,xmin,xmax);
+		pedMeanHisto->SetDirectory(histoFile);
 
 		sprintf(name,"pedsigma_allch");
 		sprintf(title,"Pedestal sigma all channels");
 		nx = 201;
 		xmin = 0;
 		xmax = 200; 
-		gPedSigmaHisto = new TH1F(name,title,nx,xmin,xmax);
-		gPedSigmaHisto->SetDirectory(histoFile);
+		pedSigmaHisto = new TH1F(name,title,nx,xmin,xmax);
+		pedSigmaHisto->SetDirectory(histoFile);
 
 		tree = new TTree("t","Pedestal tree");
 		tree->Branch("bp",&busPatchId,"bp/I");
@@ -286,25 +275,25 @@ void MakePedStore(TString flatOutputFile_1 = "")
 		tree->Branch("pedSigma",&pedSigma,",pedSigma/D");
 	}
 
-	if (!flatOutputFile_1.IsNull()) {
-		fileout.open(flatOutputFile_1.Data());
+	if (!gAliOutputFile_1.IsNull()) {
+		fileout.open(gAliOutputFile_1.Data());
 		fileout<<"//===========================================================================" << endl;
 		fileout<<"//                       Pedestal file calculated by MUONTRKda"<<endl;
 		fileout<<"//===========================================================================" << endl;
-		fileout<<"//       * Run           : " << gRunNumber << endl; 
-		fileout<<"//       * Date          : " << date.AsString("l") <<endl;
-		fileout<<"//       * Statictics    : " << gNEvents << endl;
-		fileout<<"//       * # of MANUS    : " << gNManu << endl;
-		fileout<<"//       * # of channels : " << gNChannel << endl;
-		if (gErrorBuspatchTable->GetSize())
+		fileout<<"//       * Run           : " << gAliRunNumber << endl; 
+		fileout<<"//       * Date          : " << gAlidate.AsString("l") <<endl;
+		fileout<<"//       * Statictics    : " << gAliNEvents << endl;
+		fileout<<"//       * # of MANUS    : " << gAliNManu << endl;
+		fileout<<"//       * # of channels : " << gAliNChannel << endl;
+		if (gAliErrorBuspatchTable->GetSize())
 		{
 			fileout<<"//"<<endl;
 			fileout<<"//       * Buspatches with less statistics (due to parity errors)"<<endl;		
-			TIterator* iter = gErrorBuspatchTable->MakeIterator();
+			TIterator* iter = gAliErrorBuspatchTable->MakeIterator();
 			ErrorCounter* parityerror;
 			while((parityerror = (ErrorCounter*) iter->Next()))
 			{
-				fileout<<"//         bp "<<parityerror->BusPatch()<<" events used "<<gNEvents-parityerror->Events()<<endl;
+				fileout<<"//         bp "<<parityerror->BusPatch()<<" events used "<<gAliNEvents-parityerror->Events()<<endl;
 			}
 	
 		}	
@@ -316,23 +305,23 @@ void MakePedStore(TString flatOutputFile_1 = "")
 
 	}
 	// print in logfile
-	if (gErrorBuspatchTable->GetSize())
+	if (gAliErrorBuspatchTable->GetSize())
 	  {
 	    cout<<"\n* Buspatches with less statistics (due to parity errors)"<<endl;		
-	    filcout<<"\n* Buspatches with less statistics (due to parity errors)"<<endl;		
-	    TIterator* iter = gErrorBuspatchTable->MakeIterator();
+	    gAlifilcout<<"\n* Buspatches with less statistics (due to parity errors)"<<endl;		
+	    TIterator* iter = gAliErrorBuspatchTable->MakeIterator();
 	    ErrorCounter* parityerror;
 	    while((parityerror = (ErrorCounter*) iter->Next()))
 	      {
-		cout<<"  bp "<<parityerror->BusPatch()<<": events used = "<<gNEvents-parityerror->Events()<<endl;
-		filcout<<"  bp "<<parityerror->BusPatch()<<": events used = "<<gNEvents-parityerror->Events()<<endl;
+		cout<<"  bp "<<parityerror->BusPatch()<<": events used = "<<gAliNEvents-parityerror->Events()<<endl;
+		gAlifilcout<<"  bp "<<parityerror->BusPatch()<<": events used = "<<gAliNEvents-parityerror->Events()<<endl;
 	      }
 	
 	  }
 
 	
 // iterator over pedestal
-	TIter next(gPedestalStore->CreateIterator());
+	TIter next(gAliPedestalStore->CreateIterator());
 	AliMUONVCalibParam* ped;
 
 	while ( ( ped = dynamic_cast<AliMUONVCalibParam*>(next() ) ) )
@@ -345,13 +334,13 @@ void MakePedStore(TString flatOutputFile_1 = "")
 		char bpname[256];
 		ErrorCounter* errorCounter;
 		sprintf(bpname,"bp%d",busPatchId);						
-		if ((errorCounter = (ErrorCounter*)gErrorBuspatchTable->FindObject(bpname)))
+		if ((errorCounter = (ErrorCounter*)gAliErrorBuspatchTable->FindObject(bpname)))
 		{
-			eventCounter = gNEvents - errorCounter->Events();
+			eventCounter = gAliNEvents - errorCounter->Events();
 		}
 		else
 		{
-			eventCounter = gNEvents;
+			eventCounter = gAliNEvents;
 		}			
 
 		for (channelId = 0; channelId < ped->Size() ; ++channelId) {
@@ -370,15 +359,15 @@ void MakePedStore(TString flatOutputFile_1 = "")
 			pedSigma = ped->ValueAsDouble(channelId, 1);
 
 
-			if (!flatOutputFile_1.IsNull()) {
+			if (!gAliOutputFile_1.IsNull()) {
 				fileout << "\t" << busPatchId << "\t" << manuId <<"\t"<< channelId << "\t"
 					<< pedMean <<"\t"<< pedSigma << endl;
 			}
 
-			if (gCommand.CompareTo("ped") == 0)
+			if (gAliCommand.CompareTo("ped") == 0)
 			{
-				gPedMeanHisto->Fill(pedMean);
-				gPedSigmaHisto->Fill(pedSigma);
+				pedMeanHisto->Fill(pedMean);
+				pedSigmaHisto->Fill(pedSigma);
 
 				tree->Fill();
 			}
@@ -387,9 +376,9 @@ void MakePedStore(TString flatOutputFile_1 = "")
 }
 
 // file outputs
-if (!flatOutputFile_1.IsNull())  fileout.close();
+if (!gAliOutputFile_1.IsNull())  fileout.close();
 
-if (gCommand.CompareTo("ped") == 0)
+if (gAliCommand.CompareTo("ped") == 0)
 {
 	histoFile->Write();
 	histoFile->Close();
@@ -402,67 +391,64 @@ if (gCommand.CompareTo("ped") == 0)
 //________________
 void MakePedStoreForGain(Int_t injCharge)
 {
-	// store pedestal map in root file
-
-//     Int_t injCharge = 200;
-
+	/// Store pedestal map in root file
 	TTree* tree = 0x0;
 
 	FILE *pfilew=0;
-	if (gCommand.Contains("gain") && !gCommand.Contains("comp")) {
-		if(flatOutputFile.IsNull())
+	if (gAliCommand.Contains("gain") && !gAliCommand.Contains("comp")) {
+		if(gAliOutputFile.IsNull())
 		{
-			sprintf(filename,"%s_%d_DAC_%d.par",filenam,gRunNumber,injCharge);
-			flatOutputFile=filename;
+			sprintf(gAlifilename,"%s_%d_DAC_%d.par",gAlifilenam,gAliRunNumber,injCharge);
+			gAliOutputFile=gAlifilename;
 		}
-		if(!flatOutputFile.IsNull())
+		if(!gAliOutputFile.IsNull())
 		{
-			pfilew = fopen (flatOutputFile.Data(),"w");
+			pfilew = fopen (gAliOutputFile.Data(),"w");
 
 			fprintf(pfilew,"//DUMMY FILE (to prevent Shuttle failure)\n");
 			fprintf(pfilew,"//================================================\n");
 			fprintf(pfilew,"//       MUONTRKda: Calibration run  \n");
 			fprintf(pfilew,"//=================================================\n");
-			fprintf(pfilew,"//   * Run           : %d \n",gRunNumber); 
-			fprintf(pfilew,"//   * Date          : %s \n",date.AsString("l"));
+			fprintf(pfilew,"//   * Run           : %d \n",gAliRunNumber); 
+			fprintf(pfilew,"//   * Date          : %s \n",gAlidate.AsString("l"));
 			fprintf(pfilew,"//   * DAC           : %d \n",injCharge);
 			fprintf(pfilew,"//-------------------------------------------------\n");
 			fclose(pfilew);
 		}
 	}
 
-	if(gPrintLevel==2)
+	if(gAliPrintLevel==2)
 	{
 		// compute and store pedestals
-		sprintf(flatFile,"%s/%s_%d_DAC_%d.ped",gOutFolder,filenam,gRunNumber,injCharge);
-		cout << "\nMUONTRKda : Flat file  generated  : " << flatFile << "\n";
-		MakePedStore(flatFile);
+		sprintf(gAliflatFile,"%s/%s_%d_DAC_%d.ped",gAliOutFolder,gAlifilenam,gAliRunNumber,injCharge);
+		cout << "\nMUONTRKda : Flat file  generated  : " << gAliflatFile << "\n";
+		MakePedStore(gAliflatFile);
 	}
 	else
 		MakePedStore();
 
 	TString mode("UPDATE");
 
-	if (gCommand.Contains("cre")) {
+	if (gAliCommand.Contains("cre")) {
 		mode = "RECREATE";
 	}
-	TFile* histoFile = new TFile(gHistoFileName_gain, mode.Data(), "MUON Tracking Gains");
+	TFile* histoFile = new TFile(gAliHistoFileNamegain, mode.Data(), "MUON Tracking Gains");
 
 	// second argument should be the injected charge, taken from config crocus file
 	// put also info about run number could be usefull
-	AliMpIntPair* pair   = new AliMpIntPair(gRunNumber, injCharge);
+	AliMpIntPair* pair   = new AliMpIntPair(gAliRunNumber, injCharge);
 
 	if (mode.CompareTo("UPDATE") == 0) {
 		tree = (TTree*)histoFile->Get("t");
 		tree->SetBranchAddress("run",&pair);
-		tree->SetBranchAddress("ped",&gPedestalStore);
+		tree->SetBranchAddress("ped",&gAliPedestalStore);
 
 	} else {
 		tree = new TTree("t","Pedestal tree");
 		tree->Branch("run", "AliMpIntPair",&pair);
-		tree->Branch("ped", "AliMUON2DMap",&gPedestalStore);
+		tree->Branch("ped", "AliMUON2DMap",&gAliPedestalStore);
 		tree->SetBranchAddress("run",&pair);
-		tree->SetBranchAddress("ped",&gPedestalStore);
+		tree->SetBranchAddress("ped",&gAliPedestalStore);
 
 	}
 
@@ -476,6 +462,7 @@ void MakePedStoreForGain(Int_t injCharge)
 //________________
 void MakeGainStore()
 {
+	/// Store gains in ASCII files
   ofstream filcouc;
 
   Int_t nInit = 1; // DAC=0 excluded from fit procedure
@@ -485,8 +472,12 @@ void MakeGainStore()
   //     Double_t goodA1Max =  1.7;
   Double_t goodA2Min = -0.5E-03;
   Double_t goodA2Max =  1.E-03;
+	Char_t rootFileName[256];
+	TString logOutputFilecomp;
+	// Table for uncalibrated  buspatches and manus
+ 	THashList* uncalBuspatchManuTable = new THashList(1000,2);
 
-  Int_t num_RUN[15];
+  Int_t numrun[15];
 
   // open file mutrkgain.root
   // read again the pedestal for the calibration runs (9 runs ?)
@@ -496,7 +487,7 @@ void MakeGainStore()
   // store the result in a flat file.
 
 
-  TFile*  histoFile = new TFile(gHistoFileName_gain);
+  TFile*  histoFile = new TFile(gAliHistoFileNamegain);
 
   AliMUON2DMap* map[11];
   AliMUONVCalibParam* ped[11];
@@ -505,7 +496,7 @@ void MakeGainStore()
   //read back from root file
   TTree* tree = (TTree*)histoFile->Get("t");
   Int_t nEntries = tree->GetEntries();
-  Int_t nbpf2 = nEntries - (nInit + nbpf1) + 1; // nb pts used for 2nd order fit
+  Int_t nbpf2 = nEntries - (nInit + gAlinbpf1) + 1; // nb pts used for 2nd order fit
 
   // read back info
   for (Int_t i = 0; i < nEntries; ++i) {
@@ -516,9 +507,9 @@ void MakeGainStore()
     tree->GetEvent(i);
     //        std::cout << map[i] << " " << run[i] << std::endl;
   }
-  //jlc_feb_08  modif:   gRunNumber=(UInt_t)run[0]->GetFirst();
-  gRunNumber=(UInt_t)run[nEntries-1]->GetFirst();
-  //     sscanf(getenv("DATE_RUN_NUMBER"),"%d",&gRunNumber);
+  //jlc_feb_08  modif:   gAliRunNumber=(UInt_t)run[0]->GetFirst();
+  gAliRunNumber=(UInt_t)run[nEntries-1]->GetFirst();
+  //     sscanf(getenv("DATE_RUN_NUMBER"),"%d",&gAliRunNumber);
 
   Double_t pedMean[11];
   Double_t pedSigma[11];
@@ -528,12 +519,12 @@ void MakeGainStore()
   for ( Int_t i=0 ; i<11 ; i++) {injCharge[i]=0.;injChargeErr[i]=1.;};
 
   // some print
-  cout<<"\n ********  MUONTRKda for Gain computing (Run = " << gRunNumber << ")\n" << endl;
-  cout<<" * Date          : " << date.AsString("l") << "\n" << endl;
+  cout<<"\n ********  MUONTRKda for Gain computing (Run = " << gAliRunNumber << ")\n" << endl;
+  cout<<" * Date          : " << gAlidate.AsString("l") << "\n" << endl;
   cout << " Entries = " << nEntries << " DAC values \n" << endl; 
   for (Int_t i = 0; i < nEntries; ++i) {
     cout<< " Run = " << run[i]->GetFirst() << "    DAC = " << run[i]->GetSecond() << endl;
-    num_RUN[i] = run[i]->GetFirst();
+    numrun[i] = run[i]->GetFirst();
     injCharge[i] = run[i]->GetSecond();
     injChargeErr[i] = 0.01*injCharge[i];
     if(injChargeErr[i] <= 1.) injChargeErr[i]=1.;
@@ -542,75 +533,75 @@ void MakeGainStore()
 
   // full print out 
 
-  sprintf(filename,"%s/%s_%d.log",gOutFolder,filenam,gRunNumber);
-  logOutputFile_comp=filename;
+  sprintf(gAlifilename,"%s/%s_%d.log",gAliOutFolder,gAlifilenam,gAliRunNumber);
+  logOutputFilecomp=gAlifilename;
 
-  filcouc.open(logOutputFile_comp.Data());
+  filcouc.open(logOutputFilecomp.Data());
   filcouc<<"//====================================================" << endl;
-  filcouc<<"//        MUONTRKda for Gain computing (Run = " << gRunNumber << ")" << endl;
+  filcouc<<"//        MUONTRKda for Gain computing (Run = " << gAliRunNumber << ")" << endl;
   filcouc<<"//====================================================" << endl;
-  filcouc<<"//   * Date          : " << date.AsString("l") << "\n" << endl;
+  filcouc<<"//   * Date          : " << gAlidate.AsString("l") << "\n" << endl;
 
 
 
   // why 2 files ? (Ch. F.)
   FILE *pfilen = 0;
-  if(gPrintLevel==2)
+  if(gAliPrintLevel==2)
     {
-      sprintf(filename,"%s/%s_%d.param",gOutFolder,filenam,gRunNumber);
-      cout << " fit parameter file               = " << filename << "\n";
-      pfilen = fopen (filename,"w");
+      sprintf(gAlifilename,"%s/%s_%d.param",gAliOutFolder,gAlifilenam,gAliRunNumber);
+      cout << " fit parameter file               = " << gAlifilename << "\n";
+      pfilen = fopen (gAlifilename,"w");
 
       fprintf(pfilen,"//===================================================================\n");
       fprintf(pfilen,"//  BP MANU CH. par[0]     [1]     [2]     [3]      xlim          P(chi2) p1        P(chi2)2  p2\n");
       fprintf(pfilen,"//===================================================================\n");
-      fprintf(pfilen,"//   * Run           : %d \n",gRunNumber); 
+      fprintf(pfilen,"//   * Run           : %d \n",gAliRunNumber); 
       fprintf(pfilen,"//===================================================================\n");
     }
 
   FILE *pfilew=0;
-  if(flatOutputFile.IsNull())
+  if(gAliOutputFile.IsNull())
     {
-      sprintf(filename,"%s_%d.par",filenam,gRunNumber);
-      flatOutputFile=filename;
+      sprintf(gAlifilename,"%s_%d.par",gAlifilenam,gAliRunNumber);
+      gAliOutputFile=gAlifilename;
     }
-  if(!flatOutputFile.IsNull())
+  if(!gAliOutputFile.IsNull())
     {
-      pfilew = fopen (flatOutputFile.Data(),"w");
+      pfilew = fopen (gAliOutputFile.Data(),"w");
 
       fprintf(pfilew,"//================================================\n");
       fprintf(pfilew,"//  Calibration file calculated by MUONTRKda \n");
       fprintf(pfilew,"//=================================================\n");
-      fprintf(pfilew,"//   * Run           : %d \n",gRunNumber); 
-      fprintf(pfilew,"//   * Date          : %s \n",date.AsString("l"));
-      fprintf(pfilew,"//   * Statictics    : %d \n",gNEvents);
-      fprintf(pfilew,"//   * # of MANUS    : %d \n",gNManu);
-      fprintf(pfilew,"//   * # of channels : %d \n",gNChannel);
+      fprintf(pfilew,"//   * Run           : %d \n",gAliRunNumber); 
+      fprintf(pfilew,"//   * Date          : %s \n",gAlidate.AsString("l"));
+      fprintf(pfilew,"//   * Statictics    : %d \n",gAliNEvents);
+      fprintf(pfilew,"//   * # of MANUS    : %d \n",gAliNManu);
+      fprintf(pfilew,"//   * # of channels : %d \n",gAliNChannel);
       fprintf(pfilew,"//-------------------------------------------------\n");
       if(nInit==0)
-	fprintf(pfilew,"//   %d DAC values  fit:  %d pts (1st order) %d pts (2nd order) \n",nEntries,nbpf1,nbpf2);
+	fprintf(pfilew,"//   %d DAC values  fit:  %d pts (1st order) %d pts (2nd order) \n",nEntries,gAlinbpf1,nbpf2);
       if(nInit==1)
-	fprintf(pfilew,"//   %d DAC values  fit: %d pts (1st order) %d pts (2nd order) DAC=0 excluded\n",nEntries,nbpf1,nbpf2);
+	fprintf(pfilew,"//   %d DAC values  fit: %d pts (1st order) %d pts (2nd order) DAC=0 excluded\n",nEntries,gAlinbpf1,nbpf2);
       fprintf(pfilew,"//   RUN     DAC   \n");
       fprintf(pfilew,"//-----------------\n");
       for (Int_t i = 0; i < nEntries; ++i) {
 	tree->SetBranchAddress("run",&run[i]);
-	fprintf(pfilew,"//   %d    %5.0f \n",num_RUN[i],injCharge[i]);
+	fprintf(pfilew,"//   %d    %5.0f \n",numrun[i],injCharge[i]);
       }
       fprintf(pfilew,"//=======================================\n");
-      fprintf(pfilew,"// BP MANU CH.   a1      a2     thres. Q\n");
+      fprintf(pfilew,"// BP MANU CH.   a1      a2     thres. q\n");
       fprintf(pfilew,"//=======================================\n");
     }
 
   FILE *pfilep = 0;
-  if(gPrintLevel==2)
+  if(gAliPrintLevel==2)
     {
-      sprintf(filename,"%s/%s_%d.peak",gOutFolder,filenam,gRunNumber);
-      cout << " File containing Peak mean values = " << filename << "\n";
-      pfilep = fopen (filename,"w");
+      sprintf(gAlifilename,"%s/%s_%d.peak",gAliOutFolder,gAlifilenam,gAliRunNumber);
+      cout << " File containing Peak mean values = " << gAlifilename << "\n";
+      pfilep = fopen (gAlifilename,"w");
 
       fprintf(pfilep,"//==============================================================================================================================\n");
-      fprintf(pfilep,"//   * Run           : %d \n",gRunNumber); 
+      fprintf(pfilep,"//   * Run           : %d \n",gAliRunNumber); 
       fprintf(pfilep,"//==============================================================================================================================\n");
       fprintf(pfilep,"// BP  MANU  CH.    Ped.     <0>      <1>      <2>      <3>      <4>      <5>      <6>      <7>      <8>      <9>     <10> \n"); 
       fprintf(pfilep,"//==============================================================================================================================\n");
@@ -624,8 +615,8 @@ void MakeGainStore()
   //  plot out 
 
   TFile* gainFile = 0x0;
-  sprintf(gRootFileName,"%s/%s_%d.root",gOutFolder,filenam,gRunNumber);
-  gainFile = new TFile(gRootFileName,"RECREATE");
+  sprintf(rootFileName,"%s/%s_%d.root",gAliOutFolder,gAlifilenam,gAliRunNumber);
+  gainFile = new TFile(rootFileName,"RECREATE");
 
   Double_t chi2    = 0.;
   Double_t chi2P2  = 0.;
@@ -636,7 +627,7 @@ void MakeGainStore()
   Int_t manuId     ;
   Int_t channelId ;
   Int_t threshold = 0;
-  Int_t Q = 0;
+  Int_t q = 0;
   Int_t p1 =0;
   Int_t p2 =0;
   Double_t gain=0; 
@@ -654,7 +645,7 @@ void MakeGainStore()
   tg->Branch("Pchi2",&prChi2, "prChi2/D");
   tg->Branch("Pchi2_2",&prChi2P2, "prChi2P2/D");
   tg->Branch("Threshold",&threshold, "threshold/I");
-  tg->Branch("Q",&Q, "Q/I");
+  tg->Branch("q",&q, "q/I");
   tg->Branch("p1",&p1, "p1/I");
   tg->Branch("p2",&p2, "p2/I");
   tg->Branch("gain",&gain, "gain/D");
@@ -711,7 +702,7 @@ void MakeGainStore()
 
 
 	  // print_peak_mean_values
-	  if(gPrintLevel==2)
+	  if(gAliPrintLevel==2)
 	    {
 
 	      fprintf(pfilep,"%4i%5i%5i%10.3f",busPatchId,manuId,channelId,0.);
@@ -722,21 +713,21 @@ void MakeGainStore()
 	  // makegain 
 
 
-	  // Fit Method:  Linear fit over nbpf1 points + parabolic fit  over nbpf2  points) 
+	  // Fit Method:  Linear fit over gAlinbpf1 points + parabolic fit  over nbpf2  points) 
 	  // nInit=1 : 1st pt DAC=0 excluded
 
-	  // 1. - linear fit over nbpf1 points
+	  // 1. - linear fit over gAlinbpf1 points
 
-	  Double_t par[4] = {0.,0.5,0.,gkADCMax};
+	  Double_t par[4] = {0.,0.5,0.,kADCMax};
 	  Int_t nbs   = nEntries - nInit;
-	  if(nbs < nbpf1)nbpf1=nbs;
+	  if(nbs < gAlinbpf1)gAlinbpf1=nbs;
 
-	  Int_t FitProceed=1;
+	  Int_t fitproceed=1;
 	  for (Int_t j = 0; j < nbs; ++j)
 	    {
 	      Int_t k = j + nInit;
 	      x[j]    = pedMean[k];
-	      if(x[j]==0.)FitProceed=0;
+	      if(x[j]==0.)fitproceed=0;
 	      xErr[j] = pedSigma[k];
 	      y[j]    = injCharge[k];
 	      yErr[j] = injChargeErr[k];
@@ -744,13 +735,13 @@ void MakeGainStore()
 	    }
 
 	  TGraphErrors *graphErr;
-	  if(!FitProceed) { p1=0; p2=0; noFitChannel++;}
+	  if(!fitproceed) { p1=0; p2=0; noFitChannel++;}
 
-	  if(FitProceed)
+	  if(fitproceed)
 	    {
 		      
-	      TF1 *f1 = new TF1("f1",funcLin,0.,gkADCMax,2);
-	      graphErr = new TGraphErrors(nbpf1, x, y, xErr, yErr);
+	      TF1 *f1 = new TF1("f1",funcLin,0.,kADCMax,2);
+	      graphErr = new TGraphErrors(gAlinbpf1, x, y, xErr, yErr);
 
 	      f1->SetParameters(0,0);
 
@@ -763,9 +754,9 @@ void MakeGainStore()
 	      graphErr=0;
 	      delete f1;
 
-	      prChi2 = TMath::Prob(chi2, nbpf1 - 2);
+	      prChi2 = TMath::Prob(chi2, gAlinbpf1 - 2);
 
-	      Double_t xLim = pedMean[nInit + nbpf1 - 1];
+	      Double_t xLim = pedMean[nInit + gAlinbpf1 - 1];
 	      Double_t yLim = par[0]+par[1] * xLim;
 
 	      a0 = par[0];
@@ -777,7 +768,7 @@ void MakeGainStore()
 		{
 		  for (Int_t j = 0; j < nbpf2; j++)
 		    {
-		      Int_t k  = j + (nInit + nbpf1) - 1;
+		      Int_t k  = j + (nInit + gAlinbpf1) - 1;
 		      xp[j]    = pedMean[k] - xLim;
 		      xpErr[j] = pedSigma[k];
 
@@ -785,7 +776,7 @@ void MakeGainStore()
 		      ypErr[j] = injChargeErr[k];
 		    }
 
-		  TF1 *f2 = new TF1("f2",funcParabolic,0.,gkADCMax,1);
+		  TF1 *f2 = new TF1("f2",funcParabolic,0.,kADCMax,1);
 		  graphErr = new TGraphErrors(nbpf2, xp, yp, xpErr, ypErr);
 
 		  graphErr->Fit(f2,"RQ");
@@ -813,12 +804,12 @@ void MakeGainStore()
 	      if(prChi2>0.999999)prChi2=0.999999 ; if(prChi2P2>0.999999)prChi2P2=0.9999999; // avoiding Pr(Chi2)=1 value
 	      p1 = TMath::Nint(floor(prChi2*15))+1;    // round down value : floor(2.8)=2.
 	      p2 = TMath::Nint(floor(prChi2P2*15))+1;
-	      Q  = p1*16 + p2;  // fit quality 
+	      q  = p1*16 + p2;  // fit quality 
 
 	      Double_t x0 = -par[0]/par[1]; // value of x corresponding to à 0 fC 
 	      threshold = TMath::Nint(ceil(par[3]-x0)); // linear if x < threshold
 
-	      if(gPrintLevel==2)
+	      if(gAliPrintLevel==2)
 		{
 		  fprintf(pfilen,"%4i %4i %2i",busPatchId,manuId,channelId);
 		  fprintf(pfilen," %6.2f %6.4f %10.3e %4.2f %4i          %8.6f %8.6f   %x          %8.6f  %8.6f   %x\n",
@@ -828,9 +819,9 @@ void MakeGainStore()
 	      if(par[1]< goodA1Min ||  par[1]> goodA1Max) p1=0;
 	      if(par[2]< goodA2Min ||  par[2]> goodA2Max) p2=0;
 
-	    } // FitProceed
+	    } // fitproceed
 
-	  if(FitProceed && p1>0 && p2>0) 
+	  if(fitproceed && p1>0 && p2>0) 
 	    {
 	      nGoodChannel++;
 	      sumProbChi2   += prChi2;
@@ -842,21 +833,21 @@ void MakeGainStore()
 	  else // bad calibration
 	    {
 	      nBadChannel++;
-	      Q=0;  
+	      q=0;  
 	      par[1]=0.5; a1=0.5; p1=0;
 	      par[2]=0.;  a2=0.;  p2=0;
-	      threshold=gkADCMax;	
+	      threshold=kADCMax;	
 
 	      char bpmanuname[256];
 	      ErrorCounter* uncalcounter;
 
 	      sprintf(bpmanuname,"bp%dmanu%d",busPatchId,manuId);
-	      if (!(uncalcounter = (ErrorCounter*)gUncalBuspatchManuTable->FindObject(bpmanuname)))
+	      if (!(uncalcounter = (ErrorCounter*)uncalBuspatchManuTable->FindObject(bpmanuname)))
 		{
 		  // New buspatch_manu name
 		  uncalcounter= new ErrorCounter (busPatchId,manuId);
 		  uncalcounter->SetName(bpmanuname);
-		  gUncalBuspatchManuTable->Add(uncalcounter);
+		  uncalBuspatchManuTable->Add(uncalcounter);
 		}
 	      else
 		{
@@ -867,8 +858,8 @@ void MakeGainStore()
 	      uncalcountertotal ++;
 	    }
 
-	  if(gPlotLevel){
-	    //		      if(Q==0  and  nplot < 100)
+	  if(gAliPlotLevel){
+	    //		      if(q==0  and  nplot < 100)
 	    // 	  if(p1>1 && p2==0  and  nplot < 100)
 	    //	    if(p1>1 && p2>1  and  nplot < 100)
 	      //	if(p1>=1 and p1<=2  and  nplot < 100)
@@ -876,7 +867,7 @@ void MakeGainStore()
 	      {
 		nplot++;
 		// 	      cout << " nplot = " << nplot << endl;
-		TF1 *f2Calib = new TF1("f2Calib",funcCalib,0.,gkADCMax,NFITPARAMS);
+		TF1 *f2Calib = new TF1("f2Calib",funcCalib,0.,kADCMax,NFITPARAMS);
 
 		graphErr = new TGraphErrors(nEntries,pedMean,injCharge,pedSigma,injChargeErr);
 
@@ -902,9 +893,9 @@ void MakeGainStore()
 
 	  tg->Fill();
 
-	  if (!flatOutputFile.IsNull()) 
+	  if (!gAliOutputFile.IsNull()) 
 	    {
-	      fprintf(pfilew,"%4i %5i %2i %7.4f %10.3e %4i %2x\n",busPatchId,manuId,channelId,par[1],par[2],threshold,Q);
+	      fprintf(pfilew,"%4i %5i %2i %7.4f %10.3e %4i %2x\n",busPatchId,manuId,channelId,par[1],par[2],threshold,q);
 	    }
 
 	}
@@ -913,20 +904,20 @@ void MakeGainStore()
     }
 
   // file outputs for gain
-  if (!flatOutputFile.IsNull())  fclose(pfilew);
-  if(gPrintLevel==2){ fclose(pfilen); fclose(pfilep); }
+  if (!gAliOutputFile.IsNull())  fclose(pfilew);
+  if(gAliPrintLevel==2){ fclose(pfilen); fclose(pfilep); }
 
   tg->Write();
   histoFile->Close();
 
   //OutPut
-  if (gPrintLevel) 
+  if (gAliPrintLevel) 
     {
       // print in logfile
-      if (gUncalBuspatchManuTable->GetSize())
+      if (uncalBuspatchManuTable->GetSize())
 	{
-	  gUncalBuspatchManuTable->Sort();  // use compare
-	  TIterator* iter = gUncalBuspatchManuTable->MakeIterator();
+	  uncalBuspatchManuTable->Sort();  // use compare
+	  TIterator* iter = uncalBuspatchManuTable->MakeIterator();
 	  ErrorCounter* uncalcounter;
 	  filcouc << "\n List of problematic BusPatch and Manu " << endl;
 	  filcouc << " ========================================" << endl;
@@ -938,7 +929,7 @@ void MakeGainStore()
 	    }
 	  filcouc << " ========================================" << endl;
 
-	  filcouc << " Number of bad calibrated Manu    = " << gUncalBuspatchManuTable->GetSize() << endl ;
+	  filcouc << " Number of bad calibrated Manu    = " << uncalBuspatchManuTable->GetSize() << endl ;
 	  filcouc << " Number of bad calibrated channel = " << uncalcountertotal << endl;
 	
 	}
@@ -972,7 +963,8 @@ void MakeGainStore()
     }  
 
   filcouc.close();
-
+  cout << "\nMUONTRKda : Output logfile          : " << logOutputFilecomp  << endl;
+  cout << "MUONTRKda : Root Histo. file        : " << rootFileName  << endl;
   return  ;
 
 }
@@ -993,20 +985,23 @@ int main(Int_t argc, Char_t **argv)
   TFitter *minuitFit = new TFitter(NFITPARAMS);
   TVirtualFitter::SetFitter(minuitFit);
 
-  // 	ofstream filcout;
+  // 	ofstream gAlifilcout;
 
+  Int_t fes  = 1;  // by default FES is used
   Int_t skipEvents = 0;
   Int_t maxEvents  = 1000000;
-  Int_t MaxDateEvents  = 1000000;
+  Int_t maxDateEvents  = 1000000;
   Int_t injCharge = 0;
   Char_t inputFile[256]="";
 
+	Int_t  nDateEvents = 0;
   Int_t gGlitchErrors= 0;
   Int_t gParityErrors= 0;
   Int_t gPaddingErrors= 0;
   Int_t recoverParityErrors = 1;
 
   TString fesOutputFile;
+	TString logOutputFile;
 
   // option handler
 
@@ -1025,31 +1020,31 @@ int main(Int_t argc, Char_t **argv)
 	  break;
 	case 'a' : 
 	  i++;
-	  flatOutputFile = argv[i];
+	  gAliOutputFile = argv[i];
 	  break;
 	case 'b' : 
 	  i++;
-	  sprintf(gOutFolder,argv[i]);
+	  sprintf(gAliOutFolder,argv[i]);
 	  break;
 	case 'c' : 
 	  i++;
-	  gFES=atoi(argv[i]);
+	  fes=atoi(argv[i]);
 	  break;
 	case 'd' :
 	  i++; 
-	  gPrintLevel=atoi(argv[i]);
+	  gAliPrintLevel=atoi(argv[i]);
 	  break;
 	case 'e' : 
 	  i++;
-	  gCommand = argv[i];
+	  gAliCommand = argv[i];
 	  break;
 	case 'g' :
 	  i++; 
-	  gPlotLevel=atoi(argv[i]);
+	  gAliPlotLevel=atoi(argv[i]);
 	  break;
 	case 'i' :
 	  i++; 
-	  nbpf1=atoi(argv[i]);
+	  gAlinbpf1=atoi(argv[i]);
 	  break;
 	case 's' :
 	  i++; 
@@ -1061,7 +1056,7 @@ int main(Int_t argc, Char_t **argv)
 	  break;
 	case 'm' :
 	  i++; 
-	  sscanf(argv[i],"%d",&MaxDateEvents);
+	  sscanf(argv[i],"%d",&maxDateEvents);
 	  break;
 	case 'n' :
 	  i++; 
@@ -1069,7 +1064,7 @@ int main(Int_t argc, Char_t **argv)
 	  break;
 	case 'r' : 
 	  i++;
-	  sprintf(gHistoFileName_gain,argv[i]);
+	  sprintf(gAliHistoFileNamegain,argv[i]);
 	  break;
 	case 'p' : 
 	  i++;
@@ -1085,20 +1080,20 @@ int main(Int_t argc, Char_t **argv)
 	  printf("\n-f <raw data file>         (default = %s)",inputFile); 
 	  printf("\n");
 	  printf("\n Output");
-	  printf("\n-a <Flat ASCII file>       (default = %s)",flatOutputFile.Data()); 
+	  printf("\n-a <Flat ASCII file>       (default = %s)",gAliOutputFile.Data()); 
 	  printf("\n");
 	  printf("\n Options");
-	  printf("\n-b <output directory>      (default = %s)",gOutFolder);
-	  printf("\n-c <FES switch>            (default = %d)",gFES);
-	  printf("\n-d <print level>           (default = %d)",gPrintLevel);
-	  printf("\n-g <plot level>            (default = %d)",gPlotLevel);
-	  printf("\n-i <nb linear points>      (default = %d)",nbpf1);
+	  printf("\n-b <output directory>      (default = %s)",gAliOutFolder);
+	  printf("\n-c <FES switch>            (default = %d)",fes);
+	  printf("\n-d <print level>           (default = %d)",gAliPrintLevel);
+	  printf("\n-g <plot level>            (default = %d)",gAliPlotLevel);
+	  printf("\n-i <nb linear points>      (default = %d)",gAlinbpf1);
 	  printf("\n-l <DAC level>             (default = %d)",injCharge);
-	  printf("\n-m <max date events>       (default = %d)",MaxDateEvents);
+	  printf("\n-m <max date events>       (default = %d)",maxDateEvents);
 	  printf("\n-s <skip events>           (default = %d)",skipEvents);
 	  printf("\n-n <max events>            (default = %d)",maxEvents);
-	  printf("\n-r root file data for gain (default = %s)",gHistoFileName_gain); 
-	  printf("\n-e <execute ped/gain>      (default = %s)",gCommand.Data());
+	  printf("\n-r root file data for gain (default = %s)",gAliHistoFileNamegain); 
+	  printf("\n-e <execute ped/gain>      (default = %s)",gAliCommand.Data());
 	  printf("\n-e <gain create>           make gain & create a new root file");
 	  printf("\n-e <gain>                  make gain & update root file");
 	  printf("\n-e <gain compute>          make gain & compute gains");
@@ -1112,8 +1107,8 @@ int main(Int_t argc, Char_t **argv)
 	} // end of switch  
     } // end of for i  
 
-  // set gCommand to lower case
-  gCommand.ToLower();
+  // set gAliCommand to lower case
+  gAliCommand.ToLower();
 
 
   // decoding the events
@@ -1121,8 +1116,8 @@ int main(Int_t argc, Char_t **argv)
   Int_t status=0;
   //  void* event;
 
-  gPedMeanHisto = 0x0;
-  gPedSigmaHisto = 0x0;
+  // gAliPedMeanHisto = 0x0;
+  // gAliPedSigmaHisto = 0x0;
 
   TStopwatch timers;
 
@@ -1135,7 +1130,7 @@ int main(Int_t argc, Char_t **argv)
 
   // AliMUONRawStreamTrackerHP* rawStream  = 0;
 
-  if (gCommand.CompareTo("comp") != 0)
+  if (gAliCommand.CompareTo("comp") != 0)
     {
       
       // Rawdeader, RawStreamHP
@@ -1148,10 +1143,10 @@ int main(Int_t argc, Char_t **argv)
 
       while (rawReader->NextEvent())
 	{
-	  if (gNDateEvents >= MaxDateEvents) break;
-	  if (gNEvents >= maxEvents) break;
-	  if (gNDateEvents>0 &&  gNDateEvents % 100 == 0) 	
-	    cout<<"Cumulated:  DATE events = " << gNDateEvents << "   Used events = " << gNEvents << endl;
+	  if (nDateEvents >= maxDateEvents) break;
+	  if (gAliNEvents >= maxEvents) break;
+	  if (nDateEvents>0 &&  nDateEvents % 100 == 0) 	
+	    cout<<"Cumulated:  DATE events = " << nDateEvents << "   Used events = " << gAliNEvents << endl;
 
 	  // check shutdown condition 
 	  if (daqDA_checkShutdown()) 
@@ -1175,39 +1170,39 @@ int main(Int_t argc, Char_t **argv)
 	  // AliRawReader *rawReader = new AliRawReaderDate(event);
 
 	  Int_t eventType = rawReader->GetType();
-	  gRunNumber = rawReader->GetRunNumber();
+	  gAliRunNumber = rawReader->GetRunNumber();
 
 	  // Output log file initialisations
 
-	  if(gNDateEvents==0)
+	  if(nDateEvents==0)
 	    {
-	      if (gCommand.CompareTo("ped") == 0){
-		sprintf(flatFile,"%s/MUONTRKda_ped_%d.log",gOutFolder,gRunNumber);
-		logOutputFile=flatFile;
+	      if (gAliCommand.CompareTo("ped") == 0){
+		sprintf(gAliflatFile,"%s/MUONTRKda_ped_%d.log",gAliOutFolder,gAliRunNumber);
+		logOutputFile=gAliflatFile;
 
-		filcout.open(logOutputFile.Data());
-		filcout<<"//=================================================" << endl;
-		filcout<<"//        MUONTRKda for Pedestal run = "   << gRunNumber << endl;
-		cout<<"\n ********  MUONTRKda for Pedestal run = " << gRunNumber << "\n" << endl;
+		gAlifilcout.open(logOutputFile.Data());
+		gAlifilcout<<"//=================================================" << endl;
+		gAlifilcout<<"//        MUONTRKda for Pedestal run = "   << gAliRunNumber << endl;
+		cout<<"\n ********  MUONTRKda for Pedestal run = " << gAliRunNumber << "\n" << endl;
 	      }
 
-	      if (gCommand.Contains("gain")){
-		sprintf(flatFile,"%s/%s_%d_DAC_%d.log",gOutFolder,filenam,gRunNumber,injCharge);
-		logOutputFile=flatFile;
+	      if (gAliCommand.Contains("gain")){
+		sprintf(gAliflatFile,"%s/%s_%d_DAC_%d.log",gAliOutFolder,gAlifilenam,gAliRunNumber,injCharge);
+		logOutputFile=gAliflatFile;
 
-		filcout.open(logOutputFile.Data());
-		filcout<<"//=================================================" << endl;
-		filcout<<"//        MUONTRKda for Gain run = " << gRunNumber << "  (DAC=" << injCharge << ")" << endl;
-		cout<<"\n ********  MUONTRKda for Gain run = " << gRunNumber << "  (DAC=" << injCharge << ")\n" << endl;
+		gAlifilcout.open(logOutputFile.Data());
+		gAlifilcout<<"//=================================================" << endl;
+		gAlifilcout<<"//        MUONTRKda for Gain run = " << gAliRunNumber << "  (DAC=" << injCharge << ")" << endl;
+		cout<<"\n ********  MUONTRKda for Gain run = " << gAliRunNumber << "  (DAC=" << injCharge << ")\n" << endl;
 	      }
 
-	      filcout<<"//=================================================" << endl;
-	      filcout<<"//   * Date          : " << date.AsString("l") << "\n" << endl;
-	      cout<<" * Date          : " << date.AsString("l") << "\n" << endl;
+	      gAlifilcout<<"//=================================================" << endl;
+	      gAlifilcout<<"//   * Date          : " << gAlidate.AsString("l") << "\n" << endl;
+	      cout<<" * Date          : " << gAlidate.AsString("l") << "\n" << endl;
 
 	    }
 
-	  gNDateEvents++;
+	  nDateEvents++;
 
 	  if (eventType != PHYSICS_EVENT)
 	    continue; // for the moment
@@ -1241,12 +1236,12 @@ int main(Int_t argc, Char_t **argv)
 		{
 		  for(int i = 0; i < busPatch->GetLength(); ++i)
 		    {
-		      if (gNEvents == 0) gNChannel++;
+		      if (gAliNEvents == 0) gAliNChannel++;
 		      busPatch->GetData(i, manuId, channelId, charge);
 		      MakePed(busPatch->GetBusPatchId(), (Int_t)manuId, (Int_t)channelId, (Int_t)charge);
 		    }
 		}
-	      gNEvents++;
+	      gAliNEvents++;
 	    }
 	  else
 	    {
@@ -1257,13 +1252,13 @@ int main(Int_t argc, Char_t **argv)
 		  if ( TEST_SYSTEM_ATTRIBUTE( rawReader->GetAttributes(),
 					      ATTR_ORBIT_BC )) 
 		    {
-		      filcout <<"Event recovered -> Period:"<<EVENT_ID_GET_PERIOD( rawReader->GetEventId() )
+		      gAlifilcout <<"Event recovered -> Period:"<<EVENT_ID_GET_PERIOD( rawReader->GetEventId() )
 			      <<" Orbit:"<<EVENT_ID_GET_ORBIT( rawReader->GetEventId() )
 			      <<" BunchCrossing:"<<EVENT_ID_GET_BUNCH_CROSSING( rawReader->GetEventId() )<<endl;				
 		    } 
 		  else 
 		    {
-		      filcout <<"Event recovered -> nbInRun:"<<EVENT_ID_GET_NB_IN_RUN( rawReader->GetEventId() )
+		      gAlifilcout <<"Event recovered -> nbInRun:"<<EVENT_ID_GET_NB_IN_RUN( rawReader->GetEventId() )
 			      <<" burstNb:"<<EVENT_ID_GET_BURST_NB( rawReader->GetEventId() )
 			      <<" nbInBurst:"<<EVENT_ID_GET_NB_IN_BURST( rawReader->GetEventId() )<<endl;
 		    }
@@ -1281,7 +1276,7 @@ int main(Int_t argc, Char_t **argv)
 			  // Good buspatch
 			  for(int i = 0; i < busPatch->GetLength(); ++i)
 			    {
-			      if (gNEvents == 0) gNChannel++;
+			      if (gAliNEvents == 0) gAliNChannel++;
 			      busPatch->GetData(i, manuId, channelId, charge);
 			      // if (busPatch->GetBusPatchId()==1719 && manuId == 1 && channelId == 0) cout <<"Recovered charge "<<charge<<endl;
 			      MakePed(busPatch->GetBusPatchId(), (Int_t)manuId, (Int_t)channelId, (Int_t)charge);
@@ -1292,16 +1287,16 @@ int main(Int_t argc, Char_t **argv)
 			  char bpname[256];
 			  ErrorCounter* errorCounter;
 			  // Bad buspatch -> not used (just print)
-			  filcout<<"bpId "<<busPatch->GetBusPatchId()<<" words "<<busPatch->GetLength()
+			  gAlifilcout<<"bpId "<<busPatch->GetBusPatchId()<<" words "<<busPatch->GetLength()
 				 <<" parity errors "<<errorCount<<endl;
 			  // Number of events where this buspatch is missing
 			  sprintf(bpname,"bp%d",busPatch->GetBusPatchId());						
-			  if (!(errorCounter = (ErrorCounter*)gErrorBuspatchTable->FindObject(bpname)))
+			  if (!(errorCounter = (ErrorCounter*)gAliErrorBuspatchTable->FindObject(bpname)))
 			    {
 			      // New buspatch
 			      errorCounter = new ErrorCounter(busPatch->GetBusPatchId());
 			      errorCounter->SetName(bpname);
-			      gErrorBuspatchTable->Add(errorCounter);
+			      gAliErrorBuspatchTable->Add(errorCounter);
 			    }
 			  else
 			    {
@@ -1311,8 +1306,8 @@ int main(Int_t argc, Char_t **argv)
 			  // errorCounter->Print();						
 			} // end of if (!errorCount)
 		    } // end of while( (busPatch = (AliMUONRawStreamTrackerHP ...
-		  gNEvents++;
-		  gNEventsRecovered++;
+		  gAliNEvents++;
+		  gAliNEventsRecovered++;
 		} //end of if (recoverParityErrors && eventParityErrors && !eventGlitchErrors&& !eventPaddingErrors)
 	      else
 		{
@@ -1320,22 +1315,22 @@ int main(Int_t argc, Char_t **argv)
 		  if ( TEST_SYSTEM_ATTRIBUTE( rawReader->GetAttributes(),
 					      ATTR_ORBIT_BC )) 
 		    {
-		      filcout <<"Event rejected -> Period:"<<EVENT_ID_GET_PERIOD( rawReader->GetEventId() )
+		      gAlifilcout <<"Event rejected -> Period:"<<EVENT_ID_GET_PERIOD( rawReader->GetEventId() )
 			      <<" Orbit:"<<EVENT_ID_GET_ORBIT( rawReader->GetEventId() )
 			      <<" BunchCrossing:"<<EVENT_ID_GET_BUNCH_CROSSING( rawReader->GetEventId() )<<endl;				
 		    } 
 		  else 
 		    {
-		      filcout <<"Event rejected -> nbInRun:"<<EVENT_ID_GET_NB_IN_RUN( rawReader->GetEventId() )
+		      gAlifilcout <<"Event rejected -> nbInRun:"<<EVENT_ID_GET_NB_IN_RUN( rawReader->GetEventId() )
 			      <<" burstNb:"<<EVENT_ID_GET_BURST_NB( rawReader->GetEventId() )
 			      <<" nbInBurst:"<<EVENT_ID_GET_NB_IN_BURST( rawReader->GetEventId() )<<endl;
 
 		    }
 		} // end of if (!rawStream->GetGlitchErrors() && !rawStream->GetPaddingErrors() ...
-	      filcout<<"Number of errors : Glitch "<<eventGlitchErrors
+	      gAlifilcout<<"Number of errors : Glitch "<<eventGlitchErrors
 		     <<" Parity "<<eventParityErrors
 		     <<" Padding "<<eventPaddingErrors<<endl;
-	      filcout<<endl;			
+	      gAlifilcout<<endl;			
 	    } // end of if (!rawStream->IsErrorMessage())
 
 	  if (eventGlitchErrors)  gGlitchErrors++;
@@ -1347,57 +1342,57 @@ int main(Int_t argc, Char_t **argv)
       delete rawStream;
 
 
-      if (gCommand.CompareTo("ped") == 0)
+      if (gAliCommand.CompareTo("ped") == 0)
 	{
-	  sprintf(flatFile,"MUONTRKda_ped_%d.ped",gRunNumber);
-	  if(flatOutputFile.IsNull())flatOutputFile=flatFile;
-	  MakePedStore(flatOutputFile);
+	  sprintf(gAliflatFile,"MUONTRKda_ped_%d.ped",gAliRunNumber);
+	  if(gAliOutputFile.IsNull())gAliOutputFile=gAliflatFile;
+	  MakePedStore(gAliOutputFile);
 	}
 
       // option gain -> update root file with pedestal results
       // gain + create -> recreate root file
       // gain + comp -> update root file and compute gain parameters
 
-      if (gCommand.Contains("gain")) 
+      if (gAliCommand.Contains("gain")) 
 	{
 	  MakePedStoreForGain(injCharge);
 	}
 
 
-      delete gPedestalStore;
+      delete gAliPedestalStore;
 
       delete minuitFit;
       TVirtualFitter::SetFitter(0);
 
       timers.Stop();
 
-      cout << "\nMUONTRKda : Nb of DATE events           = " << gNDateEvents    << endl;
+      cout << "\nMUONTRKda : Nb of DATE events           = " << nDateEvents    << endl;
       cout << "MUONTRKda : Nb of Glitch errors         = "   << gGlitchErrors  << endl;
       cout << "MUONTRKda : Nb of Parity errors         = "   << gParityErrors  << endl;
       cout << "MUONTRKda : Nb of Padding errors        = "   << gPaddingErrors << endl;		
-      cout << "MUONTRKda : Nb of events recovered      = "   << gNEventsRecovered<< endl;
-      cout << "MUONTRKda : Nb of events without errors = "   << gNEvents-gNEventsRecovered<< endl;
-      cout << "MUONTRKda : Nb of events used           = "   << gNEvents        << endl;
+      cout << "MUONTRKda : Nb of events recovered      = "   << gAliNEventsRecovered<< endl;
+      cout << "MUONTRKda : Nb of events without errors = "   << gAliNEvents-gAliNEventsRecovered<< endl;
+      cout << "MUONTRKda : Nb of events used           = "   << gAliNEvents        << endl;
 
-      filcout << "\nMUONTRKda : Nb of DATE events           = " << gNDateEvents    << endl;
-      filcout << "MUONTRKda : Nb of Glitch errors         = "   << gGlitchErrors << endl;
-      filcout << "MUONTRKda : Nb of Parity errors         = "   << gParityErrors << endl;
-      filcout << "MUONTRKda : Nb of Padding errors        = "   << gPaddingErrors << endl;
-      filcout << "MUONTRKda : Nb of events recovered      = "   << gNEventsRecovered<< endl;	
-      filcout << "MUONTRKda : Nb of events without errors = "   << gNEvents-gNEventsRecovered<< endl;
-      filcout << "MUONTRKda : Nb of events used           = "   << gNEvents        << endl;
+      gAlifilcout << "\nMUONTRKda : Nb of DATE events           = " << nDateEvents    << endl;
+      gAlifilcout << "MUONTRKda : Nb of Glitch errors         = "   << gGlitchErrors << endl;
+      gAlifilcout << "MUONTRKda : Nb of Parity errors         = "   << gParityErrors << endl;
+      gAlifilcout << "MUONTRKda : Nb of Padding errors        = "   << gPaddingErrors << endl;
+      gAlifilcout << "MUONTRKda : Nb of events recovered      = "   << gAliNEventsRecovered<< endl;	
+      gAlifilcout << "MUONTRKda : Nb of events without errors = "   << gAliNEvents-gAliNEventsRecovered<< endl;
+      gAlifilcout << "MUONTRKda : Nb of events used           = "   << gAliNEvents        << endl;
 
-      if (gCommand.CompareTo("ped") == 0)
+      if (gAliCommand.CompareTo("ped") == 0)
 	{
           cout << "\nMUONTRKda : Output logfile             : " << logOutputFile  << endl;
-	  cout << "MUONTRKda : Pedestal Histo file        : " << gHistoFileName  << endl;
-	  cout << "MUONTRKda : Pedestal file (to SHUTTLE) : " << flatOutputFile << endl;   
+	  cout << "MUONTRKda : Pedestal Histo file        : " << gAliHistoFileName  << endl;
+	  cout << "MUONTRKda : Pedestal file (to SHUTTLE) : " << gAliOutputFile << endl;   
 	}
       else
 	{
           cout << "\nMUONTRKda : Output logfile          : " << logOutputFile  << endl;
-	  cout << "MUONTRKda : DAC data (root file)    : " << gHistoFileName_gain  << endl;
-	  cout << "MUONTRKda : Dummy file (to SHUTTLE) : " << flatOutputFile << endl;   
+	  cout << "MUONTRKda : DAC data (root file)    : " << gAliHistoFileNamegain  << endl;
+	  cout << "MUONTRKda : Dummy file (to SHUTTLE) : " << gAliOutputFile << endl;   
 	}
 
     }
@@ -1405,41 +1400,38 @@ int main(Int_t argc, Char_t **argv)
   // Compute gain parameters
 
 
-  if (gCommand.Contains("comp")) 
+  if (gAliCommand.Contains("comp")) 
     {
-      flatOutputFile="";
+      gAliOutputFile="";
 
       MakeGainStore();
-
-      cout << "\nMUONTRKda : Output logfile          : " << logOutputFile_comp  << endl;
-      cout << "MUONTRKda : Root Histo. file        : " << gRootFileName  << endl;
-      cout << "MUONTRKda : Gain file (to SHUTTLE)  : " << flatOutputFile << endl;   
+      cout << "MUONTRKda : Gain file (to SHUTTLE)  : " << gAliOutputFile << endl;   
     }
 
 
-  if(gFES) // Store IN FES
+  if(fes) // Store IN FES
     {
       printf("\n *****  STORE FILE in FES ****** \n");
 
       // be sure that env variable DAQDALIB_PATH is set in script file
       //       gSystem->Setenv("DAQDALIB_PATH", "$DATE_SITE/infoLogger");
 
-      if (!flatOutputFile.IsNull()) 
+      if (!gAliOutputFile.IsNull()) 
 	{
-	  if (gCommand.CompareTo("ped") == 0)
-	    status = daqDA_FES_storeFile(flatOutputFile.Data(),"PEDESTALS");
+	  if (gAliCommand.CompareTo("ped") == 0)
+	    status = daqDA_FES_storeFile(gAliOutputFile.Data(),"PEDESTALS");
 	  else
-	    status = daqDA_FES_storeFile(flatOutputFile.Data(),"GAINS");
+	    status = daqDA_FES_storeFile(gAliOutputFile.Data(),"GAINS");
 
 	  if (status) 
 	    {
 	      printf(" Failed to export file : %d\n",status);
 	    }
-	  else if(gPrintLevel) printf(" %s successfully exported to FES  \n",flatOutputFile.Data());
+	  else if(gAliPrintLevel) printf(" %s successfully exported to FES  \n",gAliOutputFile.Data());
 	}
     }
 
-  filcout.close();
+  gAlifilcout.close();
 
   printf("\nExecution time : R:%7.2fs C:%7.2fs\n", timers.RealTime(), timers.CpuTime());
 
