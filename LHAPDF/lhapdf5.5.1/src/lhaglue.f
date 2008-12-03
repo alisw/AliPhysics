@@ -167,7 +167,7 @@
 ! 
 ! Interface to LHAPDF library
  subroutine pdfset(parm,value, mstu11, mstp51, mstp53, mstp55, qcdl4, qcdl5, axmin, axmax, aq2min, aq2max)
-  
+ entry pdfset_herwig(parm, value) 
   ! Double precision and integer declarations.
   implicit double precision(a-h, o-z)
   implicit integer(i-n)
@@ -927,8 +927,8 @@
   xmax = xxmax(iset)
   q2min=qq2min(iset)
   q2max=qq2max(iset)
-  call GetLam4M(iset,LHAMEMB,qcdl4)
-  call GetLam5M(iset,LHAMEMB,qcdl5)
+  call GetLam4M(iset,LHAMEMB,qcdlha4)
+  call GetLam5M(iset,LHAMEMB,qcdlha5)
 
   QMZ = 91.1876D0
   alphasLHA = alphasPDFM(iset,QMZ)
@@ -937,8 +937,8 @@
   if(lhaparm(17).EQ.'LHAPDF') then
      nptypepdfl = 1      ! Proton PDFs
      nflpdfl = 4
-     qcdlha4 = qcdl4
-     qcdlha5 = qcdl5
+     qcdl4 = qcdlha4
+     qcdl5 = qcdlha5
      if (LHASILENT .NE. 1) write(lhaprint,5159) qcdl4, qcdl5
   else
      nptypepdfl = 1      ! Proton PDFs
@@ -952,11 +952,12 @@
      endif
   endif
 
-  axmin  = xmin
-  axmax  = xmax
-  aq2min = q2min
-  aq2max = q2max
-
+  if(parm(1).EQ.'NPTYPE') then  !  herwig
+     axmin  = xmin
+     axmax  = xmax
+     aq2min = q2min
+     aq2max = q2max
+  endif
   ! Formats for initialization information.
 5150 format(1X,'WRONG LHAPDF set number =',I12,' given! STOP EXE!')
 5151 format(1X,'==============================================')
