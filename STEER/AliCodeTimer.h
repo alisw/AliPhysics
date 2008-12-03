@@ -130,15 +130,15 @@ private:
 
 #define AliCodeTimerStartClass(message) AliCodeTimer::Instance()->Start(Class()->GetName(),FUNCTIONNAME(),message);
 #define AliCodeTimerStopClass(message) AliCodeTimer::Instance()->Stop(Class()->GetName(),FUNCTIONNAME(),message);
-#define AliCodeTimerAutoClass(message) {AliCodeTimer::AliAutoPtr aliCodeTimerAliAutoPtrVariable(Class()->GetName(),FUNCTIONNAME(),message);}
+#define AliCodeTimerAutoClass(message) AliCodeTimer::AliAutoPtr aliCodeTimerAliAutoPtrVariable(Class()->GetName(),FUNCTIONNAME(),message);
 
 #define AliCodeTimerStart(message) AliCodeTimer::Instance()->Start(ClassName(),FUNCTIONNAME(),message);
 #define AliCodeTimerStop(message) AliCodeTimer::Instance()->Stop(ClassName(),FUNCTIONNAME(),message);
-#define AliCodeTimerAuto(message) {AliCodeTimer::AliAutoPtr aliCodeTimerAliAutoPtrVariable(ClassName(),FUNCTIONNAME(),message);}
+#define AliCodeTimerAuto(message) AliCodeTimer::AliAutoPtr aliCodeTimerAliAutoPtrVariable(ClassName(),FUNCTIONNAME(),message);
 
 #define AliCodeTimerStartGeneral(message) AliCodeTimer::Instance()->Start("General",FUNCTIONNAME(),message);
 #define AliCodeTimerStopGeneral(message) AliCodeTimer::Instance()->Stop("General",FUNCTIONNAME(),message);
-#define AliCodeTimerAutoGeneral(message) {AliCodeTimer::AliAutoPtr aliCodeTimerAliAutoPtrVariable("General",FUNCTIONNAME(),message);}
+#define AliCodeTimerAutoGeneral(message) AliCodeTimer::AliAutoPtr aliCodeTimerAliAutoPtrVariable("General",FUNCTIONNAME(),message);
 
 #else
 
