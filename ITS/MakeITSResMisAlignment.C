@@ -72,16 +72,14 @@ void MakeITSResMisAlignment() {
 
   //=****************************************
   // misalignment of the whole ITS according to survey as reported by Werner Riegler (18/07/2008)
-  // + 100um smearing for translations and 0.1mrad smearing for rotations
+  // no smearing added (would clash with vertex constraint)
   //=****************************************
-  Double_t sigmatrW = 0.01;
-  Double_t sigmarotW = 0.006;
-  Double_t its_dx     = AliMathBase::TruncatedGaus(-0.12,sigmatrW,3.*sigmatrW);
-  Double_t its_dy     = AliMathBase::TruncatedGaus(-0.07,sigmatrW,3.*sigmatrW);
-  Double_t its_dz     = AliMathBase::TruncatedGaus(0.29,sigmatrW,3.*sigmatrW);
-  Double_t its_dpsi   = AliMathBase::TruncatedGaus(0.,sigmarotW,3.*sigmarotW);
-  Double_t its_dtheta = AliMathBase::TruncatedGaus(0.03,sigmarotW,3.*sigmarotW);
-  Double_t its_dphi   = AliMathBase::TruncatedGaus(0.04,sigmarotW,3.*sigmarotW);
+  Double_t its_dx     = -0.12;
+  Double_t its_dy     = -0.07;
+  Double_t its_dz     = 0.29;
+  Double_t its_dpsi   = 0.;
+  Double_t its_dtheta = 0.03;
+  Double_t its_dphi   = 0.04;
   const char* unifits="fixed";
 
   //=****************************************
