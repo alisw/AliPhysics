@@ -70,7 +70,11 @@ class AliCFParticleGenCuts : public AliCFCutBase
   void SetRequireIsNeutral   () {fRequireIsNeutral  =kTRUE; fRequireIsCharged  =kFALSE;}
   void SetRequireIsPrimary   () {fRequireIsPrimary  =kTRUE; fRequireIsSecondary=kFALSE;}
   void SetRequireIsSecondary () {fRequireIsSecondary=kTRUE; fRequireIsPrimary  =kFALSE;}
-  void SetRequirePdgCode     (Int_t pdg)            {fRequirePdgCode=kTRUE; fPdgCode=pdg;}
+  void SetRequirePdgCode     (Int_t pdg, Bool_t useAbsolute=kFALSE) {
+                              fRequirePdgCode=kTRUE; 
+			      fPdgCode=pdg; 
+			      fRequireAbsolutePdg=useAbsolute;
+  }
   void SetProdVtxRangeX    (Double32_t xmin, Double32_t xmax) {fProdVtxXMin   =xmin; fProdVtxXMax   =xmax;}
   void SetProdVtxRangeY    (Double32_t ymin, Double32_t ymax) {fProdVtxYMin   =ymin; fProdVtxYMax   =ymax;}
   void SetProdVtxRangeZ    (Double32_t zmin, Double32_t zmax) {fProdVtxZMin   =zmin; fProdVtxZMax   =zmax;}
@@ -114,6 +118,7 @@ class AliCFParticleGenCuts : public AliCFCutBase
   Bool_t     fRequireIsPrimary;   // require primary particle
   Bool_t     fRequireIsSecondary; // require secondary particle
   Bool_t     fRequirePdgCode;     // require check of the PDG code
+  Bool_t     fRequireAbsolutePdg; // use the PDG code absolute value
   Int_t      fPdgCode ;           // particle PDG code
   Double32_t fProdVtxXMin;        // min X of particle production vertex
   Double32_t fProdVtxYMin;        // min Y of particle production vertex

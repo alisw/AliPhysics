@@ -50,6 +50,7 @@ AliCFParticleGenCuts::AliCFParticleGenCuts() :
   fRequireIsPrimary(0),
   fRequireIsSecondary(0),
   fRequirePdgCode(0),
+  fRequireAbsolutePdg(0),
   fPdgCode(0),
   fProdVtxXMin (-1.e+09),
   fProdVtxYMin (-1.e+09),
@@ -91,6 +92,7 @@ AliCFParticleGenCuts::AliCFParticleGenCuts(const Char_t* name, const Char_t* tit
   fRequireIsPrimary(0),
   fRequireIsSecondary(0),
   fRequirePdgCode(0),
+  fRequireAbsolutePdg(0),
   fPdgCode(0),
   fProdVtxXMin (-1.e+09),
   fProdVtxYMin (-1.e+09),
@@ -132,6 +134,7 @@ AliCFParticleGenCuts::AliCFParticleGenCuts(const AliCFParticleGenCuts& c) :
   fRequireIsPrimary(c.fRequireIsPrimary),
   fRequireIsSecondary(c.fRequireIsSecondary),
   fRequirePdgCode(c.fRequirePdgCode),
+  fRequireAbsolutePdg(c.fRequireAbsolutePdg),
   fPdgCode(c.fPdgCode),
   fProdVtxXMin (c.fProdVtxXMin),
   fProdVtxYMin (c.fProdVtxYMin),
@@ -178,6 +181,7 @@ AliCFParticleGenCuts& AliCFParticleGenCuts::operator=(const AliCFParticleGenCuts
     fRequireIsPrimary=c.fRequireIsPrimary;
     fRequireIsSecondary=c.fRequireIsSecondary;
     fRequirePdgCode=c.fRequirePdgCode;
+    fRequireAbsolutePdg=c.fRequireAbsolutePdg;
     fPdgCode=c.fPdgCode;
     fProdVtxXMin=c.fProdVtxXMin;
     fProdVtxYMin=c.fProdVtxYMin;
@@ -301,7 +305,7 @@ void AliCFParticleGenCuts::SelectionBitMap(AliMCParticle* mcPart)
   
   // cut on PDG code
   if ( fRequirePdgCode ) {
-    if (IsA(mcPart,fPdgCode,kFALSE)) fCutValues->SetAt((Double32_t)kTRUE,kCutPDGCode);
+    if (IsA(mcPart,fPdgCode,fRequireAbsolutePdg)) fCutValues->SetAt((Double32_t)kTRUE,kCutPDGCode);
   }
   else fCutValues->SetAt((Double32_t)kTRUE,kCutPDGCode);
   
@@ -429,7 +433,7 @@ void AliCFParticleGenCuts::SelectionBitMap(AliAODMCParticle* mcPart)
   
   // cut on PDG code
   if ( fRequirePdgCode ) {
-    if (IsA(mcPart,fPdgCode,kFALSE)) fCutValues->SetAt((Double32_t)kTRUE,kCutPDGCode);
+    if (IsA(mcPart,fPdgCode,fRequireAbsolutePdg)) fCutValues->SetAt((Double32_t)kTRUE,kCutPDGCode);
   }
   else fCutValues->SetAt((Double32_t)kTRUE,kCutPDGCode);
   
@@ -644,7 +648,7 @@ Bool_t AliCFParticleGenCuts::IsPrimaryCharged(AliVParticle *mcPart) {
 Bool_t AliCFParticleGenCuts::IsA(AliMCParticle *mcPart, Int_t pdg, Bool_t abs) {
   //
   //Check on the pdg code of the MC particle. if abs=kTRUE then check on the 
-  //absolute value. By default is set to kFALSE.
+  //absolute value. 
   //
   TParticle* part = mcPart->Particle();
   Int_t pdgCode = part->GetPdgCode();
@@ -660,7 +664,7 @@ Bool_t AliCFParticleGenCuts::IsA(AliMCParticle *mcPart, Int_t pdg, Bool_t abs) {
 Bool_t AliCFParticleGenCuts::IsA(AliAODMCParticle *mcPart, Int_t pdg, Bool_t abs) {
   //
   //Check on the pdg code of the MC particle. if abs=kTRUE then check on the 
-  //absolute value. By default is set to kFALSE.
+  //absolute value. 
   //
   Int_t pdgCode = mcPart->GetPdgCode();
   
