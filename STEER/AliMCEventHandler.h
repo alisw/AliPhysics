@@ -59,12 +59,12 @@ public:
     TTree*      TreeK()   const {return fTreeK;}
     Int_t       GetParticleAndTR(Int_t i, TParticle*& particle, TClonesArray*& trefs);
     void        DrawCheck(Int_t i, Int_t search=0);
-
-  // label manipulation
-  void   SelectParticle(Int_t i);
-  Bool_t IsParticleSelected(Int_t i);
-  void   CreateLabelMap();
-  Int_t  GetNewLabel(Int_t i);
+    Bool_t      InitOk() {return fInitOk;}
+    // Label manipulation
+    void   SelectParticle(Int_t i);
+    Bool_t IsParticleSelected(Int_t i);
+    void   CreateLabelMap();
+    Int_t  GetNewLabel(Int_t i);
 
 private:
     Bool_t      OpenFile(Int_t i);

@@ -132,7 +132,7 @@ Bool_t AliMCEventHandler::Init(Option_t* opt)
     if (!fFileK) {
 	AliError(Form("AliMCEventHandler:Kinematics.root not found in directory %s ! \n", fPathName));
 	fInitOk = kFALSE;
-	return kFALSE;
+	return kTRUE;
     }
     
     fEventsPerFile = fFileK->GetNkeys() - fFileK->GetNProcessIDs();
@@ -143,7 +143,7 @@ Bool_t AliMCEventHandler::Init(Option_t* opt)
 	if (!fFileTR) {
 	    AliError(Form("AliMCEventHandler:TrackRefs.root not found in directory %s ! \n", fPathName->Data()));
 	    fInitOk = kFALSE;
-	    return kFALSE;
+	    return kTRUE;
 	}
     }
     //
@@ -180,6 +180,7 @@ Bool_t AliMCEventHandler::GetEvent(Int_t iev)
 	AliWarning(Form("AliMCEventHandler: Event #%5d not found\n", iev));
 	return kFALSE;
     }
+    
     fDirK ->GetObject("TreeK", fTreeK);
     // Connect TreeK to MCEvent
     fMCEvent->ConnectTreeK(fTreeK);
@@ -376,11 +377,12 @@ Bool_t AliMCEventHandler::Notify(const char *path)
 void AliMCEventHandler::ResetIO()
 {
 //  Clear header and stack
+    
     if (fInitOk) fMCEvent->Clean();
     
 // Delete Tree E
     delete fTreeE; fTreeE = 0;
-
+     
 // Reset files
     if (fFileE)  {delete fFileE;  fFileE  = 0;}
     if (fFileK)  {delete fFileK;  fFileK  = 0;}
