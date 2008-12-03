@@ -445,8 +445,8 @@ Bool_t	AliTRDseedV1::AttachClustersIter(AliTRDtrackingChamber *chamber, Float_t 
           for (Int_t jTime = iTime+1; jTime < AliTRDtrackerV1::GetNTimeBins(); jTime++) {
             if(!fClusters[jTime]) continue;
             fX0 = fClusters[jTime]->GetX() + fdX * (jTime - iTime);
+            break;
           }
-          break;
         }
       }	
       
