@@ -21,6 +21,8 @@ class AliTPCParam;
 class AliTPCTrackHits; // M.I.  -MI4 old hits - to be removed later
 class AliTPCTrackHitsV2; // M.I.
 class AliRawReader;
+class TTreeSRedirector;
+
 #include "AliDetector.h"
 #include "AliDigit.h" 
 #include "AliHit.h" 
@@ -139,7 +141,7 @@ protected:
   Int_t      fCurrentNoise; //! index of the noise in  the noise table 
   Bool_t*    fActiveSectors; //! bool indicating which sectors are active
   Float_t    fGainFactor; // scaling factor
-
+  TTreeSRedirector *fDebugStreamer;     //!debug streamer
   ClassDef(AliTPC,13)  // Time Projection Chamber class
 };
 
