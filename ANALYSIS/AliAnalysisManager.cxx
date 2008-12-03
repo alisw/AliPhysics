@@ -170,60 +170,78 @@ Int_t AliAnalysisManager::GetEntry(Long64_t entry, Int_t getall)
 }
    
 //______________________________________________________________________________
-void AliAnalysisManager::Init(TTree *tree)
+Bool_t AliAnalysisManager::Init(TTree *tree)
 {
   // The Init() function is called when the selector needs to initialize
   // a new tree or chain. Typically here the branch addresses of the tree
   // will be set. It is normaly not necessary to make changes to the
   // generated code, but the routine can be extended by the user if needed.
   // Init() will be called many times when running with PROOF.
-   if (!tree) return;
+   Bool_t init = kFALSE;
+   if (!tree) return kFALSE; // Should not happen - protected in selector caller
    if (fDebug > 0) {
       printf("->AliAnalysisManager::Init(%s)\n", tree->GetName());
    }
-
    // Call InitTree of EventHandler
    if (fOutputEventHandler) {
       if (fMode == kProofAnalysis) {
-         fOutputEventHandler->Init(0x0, "proof");
+         init = fOutputEventHandler->Init(0x0, "proof");
       } else {
-         fOutputEventHandler->Init(0x0, "local");
+         init = fOutputEventHandler->Init(0x0, "local");
       }
+      if (!init) {
+         Error("Init", "Output event handler failed to initialize");
+         return kFALSE;
+      }         
    }
-
+   
    if (fInputEventHandler) {
       if (fMode == kProofAnalysis) {
-         fInputEventHandler->Init(tree, "proof");
+         init = fInputEventHandler->Init(tree, "proof");
       } else {
-         fInputEventHandler->Init(tree, "local");
+         init = fInputEventHandler->Init(tree, "local");
       }
+      if (!init) {
+         Error("Init", "Input event handler failed to initialize tree"); 
+         return kFALSE;
+      }         
    } else {
       // If no input event handler we need to get the tree once
       // for the chain
-      if(!tree->GetTree()) tree->LoadTree(0);
+      if(!tree->GetTree()) {
+         Long64_t readEntry = tree->LoadTree(0);
+         if (readEntry == -2) {
+            Error("Init", "Input tree has no entry. Aborting");
+            return kFALSE;
+         }
+      }   
    }
-   
 
    if (fMCtruthEventHandler) {
       if (fMode == kProofAnalysis) {
-         fMCtruthEventHandler->Init(0x0, "proof");
+         init = fMCtruthEventHandler->Init(0x0, "proof");
       } else {
-         fMCtruthEventHandler->Init(0x0, "local");
+         init = fMCtruthEventHandler->Init(0x0, "local");
       }
+      if (!init) {
+         Error("Init", "MC event handler failed to initialize"); 
+         return kFALSE;
+      }         
    }
 
    if (!fInitOK) InitAnalysis();
-   if (!fInitOK) return;
+   if (!fInitOK) return kFALSE;
    fTree = tree;
    AliAnalysisDataContainer *top = (AliAnalysisDataContainer*)fInputs->At(0);
    if (!top) {
       Error("Init","No top input container !");
-      return;
+      return kFALSE;
    }
    top->SetData(tree);
    if (fDebug > 0) {
       printf("<-AliAnalysisManager::Init(%s)\n", tree->GetName());
    }
+   return kTRUE;
 }
 
 //______________________________________________________________________________
@@ -234,6 +252,9 @@ void AliAnalysisManager::SlaveBegin(TTree *tree)
   // The tree argument is deprecated (on PROOF 0 is passed).
    if (fDebug > 0) printf("->AliAnalysisManager::SlaveBegin()\n");
    static Bool_t isCalled = kFALSE;
+   Bool_t init = kFALSE;
+   Bool_t initOK = kTRUE;
+   TString msg;
    TDirectory *curdir = gDirectory;
    // Call SlaveBegin only once in case of mixing
    if (isCalled && fMode==kMixingAnalysis) return;
@@ -248,34 +269,51 @@ void AliAnalysisManager::SlaveBegin(TTree *tree)
             if (fDebug > 1) printf("   Initializing special output file %s...\n", fOutputEventHandler->GetOutputFileName());
             OpenProofFile(fOutputEventHandler->GetOutputFileName(), "RECREATE");
             c_aod->SetFile(gFile);
-            fOutputEventHandler->Init("proofspecial");
+            init = fOutputEventHandler->Init("proofspecial");
+            if (!init) msg = "Failed to initialize output handler on worker using special proof output";
          } else {
             // Merging in memory
-            fOutputEventHandler->Init("proof");
+            init = fOutputEventHandler->Init("proof");
+            if (!init) msg = "Failed to initialize output handler on worker";
          }   
       } else {
-         fOutputEventHandler->Init("local");
+         init = fOutputEventHandler->Init("local");
+         if (!init) msg = "Failed to initialize output handler on worker";
       }
+      initOK &= init;
+      if (!fSelector) Error("SlaveBegin", "Selector not set");
+      else if (!init) {fSelector->Abort(msg); fSelector->SetStatus(-1);}
    }
 
    if (fInputEventHandler) {
       fInputEventHandler->SetInputTree(tree);
       if (fMode == kProofAnalysis) {
-         fInputEventHandler->Init("proof");
+         init = fInputEventHandler->Init("proof");
+         if (!init) msg = "Failed to initialize input handler on worker";
       } else {
-         fInputEventHandler->Init("local");
+         init = fInputEventHandler->Init("local");
+         if (!init) msg = "Failed to initialize input handler";
       }
+      initOK &= init;
+      if (!fSelector) Error("SlaveBegin", "Selector not set");      
+      else if (!init) {fSelector->Abort(msg); fSelector->SetStatus(-1);}
    }
 
    if (fMCtruthEventHandler) {
       if (fMode == kProofAnalysis) {
-         fMCtruthEventHandler->Init("proof");
+         init = fMCtruthEventHandler->Init("proof");
+         if (!init) msg = "Failed to initialize MC handler on worker";
       } else {
-         fMCtruthEventHandler->Init("local");
+         init = fMCtruthEventHandler->Init("local");
+         if (!init) msg = "Failed to initialize MC handler";
       }
+      initOK &= init;
+      if (!fSelector) Error("SlaveBegin", "Selector not set");      
+      else if (!init) {fSelector->Abort(msg); fSelector->SetStatus(-1);}
    }
    if (curdir) curdir->cd();
-   
+   isCalled = kTRUE;
+   if (!initOK) return;   
    TIter next(fTasks);
    AliAnalysisTask *task;
    // Call CreateOutputObjects for all tasks
@@ -284,8 +322,6 @@ void AliAnalysisManager::SlaveBegin(TTree *tree)
       task->CreateOutputObjects();
       if (curdir) curdir->cd();
    }
-   isCalled = kTRUE;
-
    if (fDebug > 0) printf("<-AliAnalysisManager::SlaveBegin()\n");
 }
 
@@ -297,10 +333,8 @@ Bool_t AliAnalysisManager::Notify()
    // is started when using PROOF. It is normaly not necessary to make changes
    // to the generated code, but the routine can be extended by the
    // user if needed. The return value is currently not used.
-   if (!fTree) {
-      Error("Notify","No current tree.");
-      return kFALSE;
-   }   
+   if (!fTree) return kFALSE;
+
    TFile *curfile = fTree->GetCurrentFile();
    if (!curfile) {
       Error("Notify","No current file");
@@ -1007,6 +1041,7 @@ void AliAnalysisManager::StartAnalysis(const char *type, TTree *tree, Long64_t n
       fGridHandler->StartAnalysis(nentries, firstentry);
 
       // Terminate grid analysis
+      if (fSelector && fSelector->GetStatus() == -1) return;
       if (fGridHandler->GetRunMode() == AliAnalysisGrid::kOffline) return;
       cout << "===== MERGING OUTPUTS REGISTERED BY YOUR ANALYSIS JOB: " << GetName() << endl;
       if (!fGridHandler->MergeOutputs()) {

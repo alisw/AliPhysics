@@ -56,6 +56,8 @@ void AliAnalysisSelector::Init(TTree *tree)
 // Is Init called on workers in case of PROOF.
    if (!fAnalysis) {
       Error("Init", "Analysis manager NULL !");
+      Abort("Cannot initialize without analysis manager. Aborting.");
+      SetStatus(-1);
       return;
    }
    if (fAnalysis->GetDebugLevel()>0) {
@@ -63,10 +65,17 @@ void AliAnalysisSelector::Init(TTree *tree)
    }   
    if (!tree) {
       Error("Init", "Input tree is NULL !");
+      Abort("Cannot initialize without tree. Aborting.");
+      SetStatus(-1);
       return;
    }
-   fAnalysis->Init(tree);
-   fInitialized = kTRUE;
+   fInitialized = fAnalysis->Init(tree);
+   if (!fInitialized) {
+      Error("Init", "Some error occured during analysis manager initialization. Aborting.");
+      Abort("Error during AliAnalysisManager::Init()");
+      SetStatus(-1);
+      return;
+   }   
    if (fAnalysis->GetDebugLevel()>0) {
       cout << "<-AliAnalysisSelector->Init()" << endl;
    }   
@@ -157,6 +166,7 @@ void AliAnalysisSelector::SlaveTerminate()
   // The SlaveTerminate() function is called after all entries or objects
   // have been processed. When running with PROOF SlaveTerminate() is called
   // on each slave server.
+   if (fStatus == -1) return;  // TSelector won't abort...
    if (fAnalysis->GetAnalysisType() == AliAnalysisManager::kMixingAnalysis) return;
    if (fAnalysis->GetDebugLevel() > 0) {
       cout << "->AliAnalysisSelector::SlaveTerminate()" << endl;
@@ -173,6 +183,7 @@ void AliAnalysisSelector::Terminate()
   // The Terminate() function is the last function to be called during
   // a query. It always runs on the client, it can be used to present
   // the results graphically or save the results to file.
+   if (fStatus == -1) return;  // TSelector won't abort...
    if (!fAnalysis) {
       Error("Terminate","AliAnalysisSelector::Terminate: No analysis manager!!!");
       return;
