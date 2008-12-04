@@ -301,7 +301,11 @@ class AliHLTTriggerDomain : public TObject
    * \return  a trigger domain object R, such that for each data block D, we will have
    *    R.IncludeInReadout(D) == this->IncludeInReadout(D) or domain.IncludeInReadout(D)
    */
-  AliHLTTriggerDomain operator | (const AliHLTTriggerDomain& domain) const;
+  AliHLTTriggerDomain operator | (const AliHLTTriggerDomain& domain) const
+  {
+    AliHLTTriggerDomain result = *this;
+    return result.operator |= (domain);
+  }
   
   /**
    * This operator performs an exclusive or (xor) like operation between this trigger

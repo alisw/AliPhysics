@@ -1188,7 +1188,8 @@ fi
 
 AC_MSG_NOTICE([compile trigger library: $enable_trigger])
 if test "x$enable_trigger" = "xyes"; then 
-  AC_CONFIG_FILES([trigger/Makefile])
+  AC_CONFIG_FILES([trigger/Makefile
+                   trigger/test/Makefile])
 fi
 
 AC_MSG_NOTICE([compile comp library: $enable_comp])

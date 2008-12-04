@@ -63,7 +63,6 @@ void AliHLTTriggerDomain::Add(const AliHLTDomainEntry& entry)
   // See header file for more details.
   
   AliHLTDomainEntry intersect;
-  bool anythingRemoved = false;
   bool alreadyInSet = false;
   
   // Get the initial size of the fEntries array since we might add things to the
@@ -76,7 +75,7 @@ void AliHLTTriggerDomain::Add(const AliHLTDomainEntry& entry)
   // because it is already part of the trigger domain.
   for (Int_t i = 0; i < count; i++)
   {
-    const AliHLTDomainEntry* ientry = static_cast<const AliHLTDomainEntry*>(fEntries[i]);
+    AliHLTDomainEntry* ientry = static_cast<AliHLTDomainEntry*>(fEntries[i]);
     if (ientry->Inclusive())
     {
       if (entry.SubsetOf(*ientry))
@@ -85,16 +84,14 @@ void AliHLTTriggerDomain::Add(const AliHLTDomainEntry& entry)
       }
       else if (ientry->SubsetOf(entry))
       {
-        fEntries.RemoveAt(i);
-        anythingRemoved = true;
+        ientry->SetBit(14, true);  // mark for removal.
       }
     }
     else
     {
       if (ientry->SubsetOf(entry))
       {
-        fEntries.RemoveAt(i);
-        anythingRemoved = true;
+        ientry->SetBit(14, true);  // mark for removal.
       }
       else if (entry.SubsetOf(*ientry))
       {
@@ -102,18 +99,19 @@ void AliHLTTriggerDomain::Add(const AliHLTDomainEntry& entry)
       }
       else if (ientry->IntersectWith(entry, intersect))
       {
+        MarkForDeletionSubsetsOf(intersect, count);
         new (fEntries[fEntries.GetEntriesFast()]) AliHLTDomainEntry(kFALSE, intersect);
-        alreadyInSet = true;
       }
     }
   }
   
-  // Check if we need to compress the array and if we need to add the new entry.
-  if (anythingRemoved) fEntries.Compress();
+  // Check if we need to add the new entry.
   if (not alreadyInSet)
   {
+    MarkForDeletionSubsetsOf(entry, count);
     new (fEntries[fEntries.GetEntriesFast()]) AliHLTDomainEntry(kFALSE, entry);
   }
+  RemoveMarkedEntries();
 }
 
 
@@ -163,7 +161,6 @@ void AliHLTTriggerDomain::Remove(const AliHLTDomainEntry& entry)
   // See header file for more details.
 
   AliHLTDomainEntry intersect;
-  bool anythingRemoved = false;
   bool addToExcludeSet = false;
   
   // Get the initial size of the fEntries array since we might add things to the
@@ -178,13 +175,12 @@ void AliHLTTriggerDomain::Remove(const AliHLTDomainEntry& entry)
   // inclusive trigger domain entries (rules / patterns).
   for (Int_t i = 0; i < count; i++)
   {
-    const AliHLTDomainEntry* ientry = static_cast<const AliHLTDomainEntry*>(fEntries[i]);
+    AliHLTDomainEntry* ientry = static_cast<AliHLTDomainEntry*>(fEntries[i]);
     if (ientry->Inclusive())
     {
       if (ientry->SubsetOf(entry))
       {
-        fEntries.RemoveAt(i);
-        anythingRemoved = true;
+        ientry->SetBit(14, true);  // mark for removal.
       }
       else if (entry.SubsetOf(*ientry))
       {
@@ -203,18 +199,18 @@ void AliHLTTriggerDomain::Remove(const AliHLTDomainEntry& entry)
       }
       else if (ientry->SubsetOf(entry))
       {
-        fEntries.RemoveAt(i);
-        anythingRemoved = true;
+        ientry->SetBit(14, true);  // mark for removal.
       }
     }
   }
   
-  // Check if we need to compress the array and if we need to add the new entry.
-  if (anythingRemoved) fEntries.Compress();
+  // Check if we need to add the new entry.
   if (addToExcludeSet)
   {
+    MarkForDeletionSubsetsOf(entry, count);
     new (fEntries[fEntries.GetEntriesFast()]) AliHLTDomainEntry(kTRUE, entry);
   }
+  RemoveMarkedEntries();
 }
 
 
@@ -750,7 +746,7 @@ void AliHLTTriggerDomain::MarkForDeletionSubsetsOf(const AliHLTDomainEntry& entr
 
 void AliHLTTriggerDomain::RemoveMarkedEntries()
 {
-  // Removes all entries in this trigger domain which were marked for removal..
+  // Removes all entries in this trigger domain which were marked for removal.
   // See header file for more information.
   
   bool anythingRemoved = false;
