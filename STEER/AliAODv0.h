@@ -1,5 +1,5 @@
-#ifndef AliAODv0_H
-#define AliAODv0_H
+#ifndef ALIAODV0_H
+#define ALIAODV0_H
 /* Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -24,7 +24,7 @@ public:
   AliAODv0& operator=(const AliAODv0& rAliAODv0);
 
   void     Fill(AliAODVertex *rAODVertex, Double_t rDcaV0Daughters, Double_t rDcaV0ToPrimVertex,
-		const Double_t *rMomPos, const Double_t *rMomNeg, Double_t *rDcaDaughterToPrimVertex);
+		const Double_t *rMomPos, const Double_t *rMomNeg, const Double_t *rDcaDaughterToPrimVertex);
   void     ResetV0();
   void     Print(Option_t* option = "") const;
 
@@ -111,9 +111,9 @@ inline Double_t AliAODv0::RadiusV0() const {
 }
 
 inline Double_t AliAODv0::OpenAngleV0() const {
-  Double_t lPtot1xPtot2 = PxProng(0)*PxProng(1)+PyProng(0)*PyProng(1)+PzProng(0)*PzProng(1);
-  Double_t lPtot1Ptot2_2 = Ptot2Pos()*Ptot2Neg();
-  return ::acos(lPtot1xPtot2/::sqrt(lPtot1Ptot2_2) );
+  Double_t lScalPtot1Ptot2 = PxProng(0)*PxProng(1)+PyProng(0)*PyProng(1)+PzProng(0)*PzProng(1);
+  Double_t lPtot1xPtot2 = Ptot2Pos()*Ptot2Neg();
+  return ::acos(lScalPtot1Ptot2/::sqrt(lPtot1xPtot2) );
 }
 
 inline Double_t AliAODv0::MomPosX() const {return fPx[0];}

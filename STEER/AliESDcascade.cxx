@@ -29,10 +29,8 @@
 #include <TMath.h>
 #include <TVector3.h>
 
-#include "AliLog.h"
-#include "AliExternalTrackParam.h"
-#include "AliESDv0.h"
 #include "AliESDcascade.h"
+#include "AliLog.h"
 
 ClassImp(AliESDcascade)
 
@@ -253,10 +251,10 @@ Double_t AliESDcascade::AlphaXi() const {
   TVector3 momV0(fNmom[0]+fPmom[0],fNmom[1]+fPmom[1],fNmom[2]+fPmom[2]);
   TVector3 momTot(Px(),Py(),Pz());
 
-  Double_t QlBach = momBach.Dot(momTot)/momTot.Mag();
-  Double_t QlV0 = momV0.Dot(momTot)/momTot.Mag();
+  Double_t lQlBach = momBach.Dot(momTot)/momTot.Mag();
+  Double_t lQlV0 = momV0.Dot(momTot)/momTot.Mag();
 
-  return 1.-2./(1.+QlBach/QlV0);
+  return 1.-2./(1.+lQlBach/lQlV0);
 }
 
 Double_t AliESDcascade::PtArmXi() const {
@@ -388,7 +386,7 @@ Double_t AliESDcascade::GetDcascade(Double_t x0, Double_t y0, Double_t z0) const
   return d;
 }
 
-Double_t AliESDcascade::GetCascadeCosineOfPointingAngle(Double_t& refPointX, Double_t& refPointY, Double_t& refPointZ) const {
+Double_t AliESDcascade::GetCascadeCosineOfPointingAngle(Double_t refPointX, Double_t refPointY, Double_t refPointZ) const {
   // calculates the pointing angle of the cascade wrt a reference point
 
   Double_t momCas[3]; //momentum of the cascade

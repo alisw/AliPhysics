@@ -12,7 +12,6 @@
 #include "TObject.h"
 
 class AliESDEvent;
-class TTree;
 class AliESDv0;
 class AliExternalTrackParam;
 
@@ -24,6 +23,11 @@ public:
   static void SetDefaultCuts(const Double_t cuts[8]);
 
   Int_t V0sTracks2CascadeVertices(AliESDEvent *event);
+  Double_t Det(Double_t a00, Double_t a01, Double_t a10, Double_t a11) const;
+  Double_t Det(Double_t a00,Double_t a01,Double_t a02,
+	       Double_t a10,Double_t a11,Double_t a12,
+	       Double_t a20,Double_t a21,Double_t a22) const;
+
   Double_t PropagateToDCA(AliESDv0 *vtx,AliExternalTrackParam *trk,Double_t b);
 
   void GetCuts(Double_t cuts[8]) const;

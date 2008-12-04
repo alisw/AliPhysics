@@ -14,12 +14,10 @@
 //            and  Boris Hippolyte,IPHC, hippolyt@in2p3.fr 
 //-------------------------------------------------------------------------
 
-#include <TObject.h>
-#include <TPDGCode.h>
 #include "AliESDv0.h"
 
+class AliLog;
 class AliExternalTrackParam;
-
 
 class AliESDcascade : public AliESDv0 {
 
@@ -30,11 +28,11 @@ class AliESDcascade : public AliESDv0 {
 
 public:
   AliESDcascade();
-  AliESDcascade(const AliESDcascade&);
+  AliESDcascade(const AliESDcascade& cas);
   AliESDcascade(const AliESDv0 &v0,
                 const AliExternalTrackParam &t, Int_t i);
   ~AliESDcascade();
-  AliESDcascade& operator=(const AliESDcascade&);
+  AliESDcascade& operator=(const AliESDcascade& cas);
   virtual void Copy(TObject &obj) const;
 
 // Start with AliVParticle functions
@@ -90,7 +88,7 @@ public:
   Int_t    GetIndex() const {return GetBindex();} //for the consistency with V0
   void     SetDcaXiDaughters(Double_t rDcaXiDaughters=0.);
   Double_t GetDcaXiDaughters() const {return fDcaXiDaughters;}
-  Double_t GetCascadeCosineOfPointingAngle(Double_t&, Double_t&, Double_t&) const;
+  Double_t GetCascadeCosineOfPointingAngle(Double_t refPointX, Double_t refPointY, Double_t refPointZ) const;
 
   void GetPosCovXi(Double_t cov[6]) const;
 

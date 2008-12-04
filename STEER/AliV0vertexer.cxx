@@ -21,14 +21,9 @@
 //-------------------------------------------------------------------------
 
 
-#include <TObjArray.h>
-#include <TTree.h>
-
 #include "AliESDEvent.h"
 #include "AliESDv0.h"
-#include "AliESDtrack.h"
 #include "AliV0vertexer.h"
-#include "AliESDVertex.h"
 
 ClassImp(AliV0vertexer)
 

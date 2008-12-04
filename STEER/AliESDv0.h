@@ -14,11 +14,12 @@
 //            and  Boris Hippolyte,IPHC, hippolyt@in2p3.fr 
 //-------------------------------------------------------------------------
 
-#include <TObject.h>
 #include <TPDGCode.h>
-#include "AliESDV0Params.h"
+
 #include "AliExternalTrackParam.h"
 #include "AliVParticle.h"
+
+class AliESDV0Params;
 
 class AliESDv0 : public AliVParticle {
 public:
@@ -26,9 +27,9 @@ public:
   AliESDv0(const AliExternalTrackParam &t1, Int_t i1,
            const AliExternalTrackParam &t2, Int_t i2);
 
-  AliESDv0(const AliESDv0&);
+  AliESDv0(const AliESDv0& v0);
   virtual ~AliESDv0();
-  AliESDv0& operator=(const AliESDv0&);
+  AliESDv0& operator=(const AliESDv0& v0);
   virtual void Copy(TObject &obj) const;
 
 // Start with AliVParticle functions
@@ -69,7 +70,7 @@ public:
   Double_t ChangeMassHypothesis(Int_t code=kK0Short); 
 
   Int_t    GetPdgCode() const {return fPdgCode;}
-  Float_t  GetEffMass(UInt_t p1, UInt_t p2);
+  Double_t  GetEffMass(UInt_t p1, UInt_t p2) const;
   Double_t  GetEffMass() const {return fEffMass;}
   Double_t  GetChi2V0()  const {return fChi2V0;}
   void     GetPxPyPz(Double_t &px, Double_t &py, Double_t &pz) const;
@@ -80,9 +81,9 @@ public:
   Int_t    GetNindex() const {return fNidx;}
   Int_t    GetPindex() const {return fPidx;}
   void     SetDcaV0Daughters(Double_t rDcaV0Daughters=0.);
-  Double_t  GetDcaV0Daughters() {return fDcaV0Daughters;}
-  Float_t  GetV0CosineOfPointingAngle(Double_t&, Double_t&, Double_t&) const;
-  Double_t  GetV0CosineOfPointingAngle() const {return fPointAngle;}
+  Double_t GetDcaV0Daughters() const {return fDcaV0Daughters;}
+  Float_t  GetV0CosineOfPointingAngle(Double_t refPointX, Double_t refPointY, Double_t refPointZ) const;
+  Double_t GetV0CosineOfPointingAngle() const {return fPointAngle;}
   void     SetV0CosineOfPointingAngle(Double_t cpa) {fPointAngle=cpa;}
   void     SetOnFlyStatus(Bool_t status){fOnFlyStatus=status;}
   Bool_t   GetOnFlyStatus() const {return fOnFlyStatus;}
@@ -104,7 +105,7 @@ public:
   Double_t GetMinimaxSigmaD0();     // calculate mini-max sigma of dca resolution
   Double_t GetLikelihoodAP(Int_t mode0, Int_t mode1);   // get likelihood for point angle
   Double_t GetLikelihoodD(Int_t mode0, Int_t mode1);    // get likelihood for DCA
-  Double_t GetLikelihoodC(Int_t mode0, Int_t mode1);    // get likelihood for Causality
+  Double_t GetLikelihoodC(Int_t mode0, Int_t mode1) const;    // get likelihood for Causality
   //
   //
   static const AliESDV0Params & GetParameterization(){return fgkParams;}
@@ -113,8 +114,8 @@ public:
   void SetStatus(Int_t status){fStatus=status;}
   Int_t GetStatus() const {return fStatus;}
   Int_t GetIndex(Int_t i) const {return (i==0) ? fNidx : fPidx;}
-  void SetIndex(Int_t i, Int_t ind) {(i==0) ? (fNidx=ind) : (fPidx=ind);}
-  Double_t *GetAnglep() {return fAngle;}
+  void SetIndex(Int_t i, Int_t ind);
+  const Double_t *GetAnglep() const {return fAngle;}
   Double_t GetRr() const {return fRr;}
   Double_t GetDistSigma() const {return fDistSigma;}
   void SetDistSigma(Double_t ds) {fDistSigma=ds;}
@@ -128,7 +129,7 @@ public:
   void SetNBefore(Short_t nb) {fNBefore=nb;}  
   void SetCausality(Float_t pb0, Float_t pb1, Float_t pa0, Float_t pa1);
   const Double_t * GetCausalityP() const {return fCausality;}
-  void SetClusters(Int_t *clp, Int_t *clm);
+  void SetClusters(const Int_t *clp, const Int_t *clm);
   const Int_t * GetClusters(Int_t i) const {return fClusters[i];}
   void SetNormDCAPrim(Float_t nd0, Float_t nd1){fNormDCAPrim[0] = nd0; fNormDCAPrim[1]=nd1;}
   const Double_t  *GetNormDCAPrimP() const {return fNormDCAPrim;}
@@ -196,6 +197,14 @@ px=fPmom[0]; py=fPmom[1]; pz=fPmom[2];
 inline
 void AliESDv0::SetDcaV0Daughters(Double_t rDcaV0Daughters){
   fDcaV0Daughters=rDcaV0Daughters;
+}
+
+inline 
+void AliESDv0::SetIndex(Int_t i, Int_t ind) {
+  if(i==0)
+    fNidx=ind;
+  else
+    fPidx=ind;
 }
 
 #endif

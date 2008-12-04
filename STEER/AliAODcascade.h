@@ -12,19 +12,11 @@
 //     Purpose: Having physics observables available for Xis
 //-------------------------------------------------------------------------
 
-#include <TDatabasePDG.h>
 
-#include <AliAODv0.h>
-
-
-#define MASS(PID)  TDatabasePDG::Instance()->GetParticle((PID))->Mass()
-#define MASS2(PID) MASS((PID))*MASS((PID))
-
+#include "AliAODv0.h"
 
 class AliAODTrack;
 class AliAODVertex;
-
-
 
 class AliAODcascade : public AliAODv0 {
 
@@ -62,7 +54,7 @@ public:
 
   AliAODcascade& operator=(const AliAODcascade& rSource);
   
-  void  Fill(   AliAODVertex*   rAODVertexXi, // No "const" param, see above.
+  void  Fill(AliAODVertex* rAODVertexXi,  // No "const" param, see above.
                       Int_t     rChargeXi,
 		      Double_t  rDcaXiDaughters,
 		      Double_t  rDcaXiToPrimVertex,
@@ -100,7 +92,6 @@ public:
   Double_t DecayVertexXiY()          const;
   Double_t DecayVertexXiZ()          const;
   Double_t Chi2Xi()                  const;
-  
     
   Double_t DcaBachToPrimVertex() const;
   Double_t DcaXiDaughters()          const;
@@ -112,13 +103,11 @@ public:
                               const Double_t& rPrimVtxY, 
                               const Double_t& rPrimVtxZ) const;  
   
-
   Double_t DecayLengthV0()           const;
   Double_t DecayLengthXi(const Double_t& rPrimVtxX, 
                          const Double_t& rPrimVtxY, 
                          const Double_t& rPrimVtxZ) const;
-  
-                      
+                        
   Double_t MomBachX()       const;
   Double_t MomBachY()       const;
   Double_t MomBachZ()       const;
@@ -144,7 +133,6 @@ public:
   Double_t RapXi()          const;
   Double_t RapOmega()       const;
 
-
 protected:
 
   TRef          fDecayVertexXi;           // ref to decay vertex of the cascade (Xi vertex)
@@ -157,17 +145,11 @@ protected:
   Double32_t    fMomBachX;            // momemtum of bachelor along X
   Double32_t    fMomBachY;            // momemtum of bachelor along Y
   Double32_t    fMomBachZ;            // momemtum of bachelor along Z
-
   
   ClassDef(AliAODcascade,1)   
 };
 
-
-
-
 //-----------------------------------------------------------
-
-
 
 inline Int_t    AliAODcascade::ChargeXi()   const     {return fChargeXi; }
 
@@ -178,14 +160,9 @@ inline Double_t AliAODcascade::DecayVertexXiZ() const {return GetDecayVertexXi()
 
 inline Double_t AliAODcascade::Chi2Xi()         const {return GetDecayVertexXi()->GetChi2(); }
 
-
-
 inline Double_t AliAODcascade::DcaBachToPrimVertex() const {return fDcaBachToPrimVertex;}
 inline Double_t AliAODcascade::DcaXiDaughters()          const {return fDcaXiDaughters;}
 inline Double_t AliAODcascade::DcaXiToPrimVertex()       const {return fDcaXiToPrimVertex;}
-
-
-
 
 inline Double_t AliAODcascade::DecayLengthV0() const {
     return ::sqrt(::pow(DecayVertexV0X() - DecayVertexXiX(),2) +
@@ -200,11 +177,6 @@ inline Double_t AliAODcascade::DecayLengthXi(const Double_t& rPrimVtxX,
 		::pow(DecayVertexXiY() - rPrimVtxY,2) +
 		::pow(DecayVertexXiZ() - rPrimVtxZ,2));
 }
-
-
-
-
-
 
 inline Double_t AliAODcascade::MomBachX() const {return fMomBachX;}
 inline Double_t AliAODcascade::MomBachY() const {return fMomBachY;}
@@ -250,22 +222,6 @@ inline Double_t AliAODcascade::AlphaXi() const {
 
 inline Double_t AliAODcascade::PtArmXi() const {
   return ::sqrt(Ptot2Bach()-MomBachAlongXi()*MomBachAlongXi());
-}
-
-inline Double_t AliAODcascade::EBachPion() const {
-  return ::sqrt(Ptot2Bach()+MASS2("pi-"));
-}
-
-inline Double_t AliAODcascade::EBachKaon() const {
-  return ::sqrt(Ptot2Bach()+MASS2("K-"));
-}
-
-inline Double_t AliAODcascade::EXi() const {
-  return ::sqrt(Ptot2Xi()+MASS2("Xi-"));
-}
-
-inline Double_t AliAODcascade::EOmega() const {
-  return ::sqrt(Ptot2Xi()+MASS2("Omega-"));
 }
 
 inline Double_t AliAODcascade::MassXi() const {

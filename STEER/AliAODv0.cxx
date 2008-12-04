@@ -117,8 +117,10 @@ AliAODv0::~AliAODv0(){
 }
 
 void AliAODv0::Fill(AliAODVertex *rAODVertex, Double_t rDcaV0Daughters, Double_t rDcaV0ToPrimVertex,
-		    const Double_t *rMomPos, const Double_t *rMomNeg, Double_t *rDcaDaughterToPrimVertex){
-
+		    const Double_t *rMomPos, const Double_t *rMomNeg, const Double_t *rDcaDaughterToPrimVertex){
+  //--------------------------------------------------------------------
+  // Filling with all needed info
+  //--------------------------------------------------------------------
   this->SetSecondaryVtx(rAODVertex);
 
   fDCA[0] = rDcaV0Daughters;
@@ -137,7 +139,9 @@ void AliAODv0::Fill(AliAODVertex *rAODVertex, Double_t rDcaV0Daughters, Double_t
 }
 
 void AliAODv0::ResetV0(){
-
+  //--------------------------------------------------------------------
+  // Resetting all the info
+  //--------------------------------------------------------------------
   GetSecondaryVtx()->SetChi2perNDF(999);
   GetSecondaryVtx()->RemoveCovMatrix();
   GetSecondaryVtx()->RemoveDaughters();

@@ -21,18 +21,14 @@
 //     Purpose: Having physics observables available for Xis
 //-------------------------------------------------------------------------
 
-#include <TObject.h>
 #include <TVector3.h>
 #include <TMath.h>
+#include <TDatabasePDG.h>
 
 #include "AliAODcascade.h"
 #include "AliAODTrack.h"
-#include <AliAODVertex.h>
-
 
 ClassImp(AliAODcascade)
-
-
 
 
 AliAODcascade::AliAODcascade() : 
@@ -172,9 +168,7 @@ AliAODcascade::~AliAODcascade(){
   //--------------------------------------------------------------------
 }
 
-
-
-void  AliAODcascade::Fill( AliAODVertex* rAODVertexXi, 
+void  AliAODcascade::Fill(AliAODVertex* rAODVertexXi, 
                       Int_t         rChargeXi,
 		      Double_t      rDcaXiDaughters,
 		      Double_t      rDcaXiToPrimVertex,
@@ -239,6 +233,9 @@ void AliAODcascade::PrintXi(const Double_t& rPrimVtxX,
                             const Double_t& rPrimVtxY, 
                             const Double_t& rPrimVtxZ) const
 {
+  //--------------------------------------------------------------------
+  // Print the AOD data members
+  //--------------------------------------------------------------------
    AliAODv0::Print();  
    printf("- \n");
    printf("AliAODcascade : posXiVtx (%.6f, %.6f, %.6f) \n", DecayVertexXiX(), DecayVertexXiY(), DecayVertexXiZ() );
@@ -286,14 +283,14 @@ Double_t AliAODcascade::CosPointingAngleXi(const Double_t& rPrimVtxX,
   // Cosine of Xi pointing angle in 3D space, with respect to a point 
   // (primary vtx ...)
   
-  TVector3 rMomXi( MomXiX(),MomXiY(),MomXiZ() );
-  TVector3 rVect_1rVtxToXi(DecayVertexXiX() - rPrimVtxX,
-                           DecayVertexXiY() - rPrimVtxY,
-                           DecayVertexXiZ() - rPrimVtxZ);
+  TVector3 lMomXi( MomXiX(),MomXiY(),MomXiZ() );
+  TVector3 lVectPrimVtxToXi(DecayVertexXiX() - rPrimVtxX,
+			    DecayVertexXiY() - rPrimVtxY,
+			    DecayVertexXiZ() - rPrimVtxZ);
   		
-  Double_t PtgAngle = rMomXi.Angle(rVect_1rVtxToXi);
+  Double_t lPtgAngle = lMomXi.Angle(lVectPrimVtxToXi);
 
-  return TMath::Cos(PtgAngle); 
+  return TMath::Cos(lPtgAngle); 
 
 }
 
@@ -325,5 +322,22 @@ Int_t	AliAODcascade::GetBachID()  const     {
 	return rBachId;
 }
 
+Double_t AliAODcascade::EBachPion() const {
+  static Double_t lMassPi = TDatabasePDG::Instance()->GetParticle("pi-")->Mass();
+  return ::sqrt(Ptot2Bach() + lMassPi*lMassPi);
+}
 
+Double_t AliAODcascade::EBachKaon() const {
+  static Double_t lMassKaon = TDatabasePDG::Instance()->GetParticle("K-")->Mass();
+  return ::sqrt(Ptot2Bach() + lMassKaon*lMassKaon);
+}
 
+Double_t AliAODcascade::EXi() const {
+  static Double_t lMassXi = TDatabasePDG::Instance()->GetParticle("Xi-")->Mass();
+  return ::sqrt(Ptot2Bach() + lMassXi*lMassXi);
+}
+
+Double_t AliAODcascade::EOmega() const {
+  static Double_t lMassOmega = TDatabasePDG::Instance()->GetParticle("Omega-")->Mass();
+  return ::sqrt(Ptot2Bach() + lMassOmega*lMassOmega);
+}
