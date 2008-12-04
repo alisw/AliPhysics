@@ -41,6 +41,7 @@ class AliTRDarrayADC: public TObject
   Int_t   GetNrow() const {return fNrow;};
   Int_t   GetNcol() const {return fNcol;};
   Int_t   GetDim() const {return fNAdim;};
+  void    DeleteNegatives();
 
  protected:
 

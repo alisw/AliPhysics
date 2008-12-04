@@ -381,6 +381,7 @@ Int_t AliTRDrawData::ProduceHcData(AliTRDarrayADC *digits, Int_t side, Int_t det
 		//		mcm[entry]->ZSMapping();  // Calculate zero suppression mapping
 		mcm[entry]->CopyArrays();
 		mcm[entry]->GeneratefZSM1Dim();
+		mcm[entry]->RestoreZeros();
 
 		if (tracklet_on) {
 		    mcm[entry]->Tracklet(); 
@@ -724,6 +725,7 @@ Int_t AliTRDrawData::ProduceHcDataV3(AliTRDarrayADC *digits, Int_t side , Int_t 
 	//	mcm[entry]->ZSMapping();  // Calculate zero suppression mapping
 	mcm[entry]->CopyArrays();
 	mcm[entry]->GeneratefZSM1Dim();
+	mcm[entry]->RestoreZeros();
 
 	if (tracklet_on) {
 	    mcm[entry]->Tracklet(); 

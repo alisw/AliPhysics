@@ -2735,5 +2735,25 @@ void AliTRDmcmSim::FlagDigitsArray(AliTRDarrayADC *tempdigs, Int_t valrow)
 	}
     }
 }
+//_______________________________________________________________________________________
+void AliTRDmcmSim::RestoreZeros()
+{
+  //
+  // Restore the zero-suppressed values (set as -1) to the value 0
+  //
 
+  for( Int_t iadc = 1 ; iadc < fNADC-1; iadc++ ) 
+    {
+      for( Int_t it = 0 ; it < fNTimeBin ; it++ ) 
+	{
+	  
+	  if(fADCF[iadc][it]==-1)  //if is a supressed zero, reset to zero
+	    {
+	      fADCF[iadc][it]=0;
+	      fADCR[iadc][it]=0;
+	    }	  
+	}
+    }
+
+}
 

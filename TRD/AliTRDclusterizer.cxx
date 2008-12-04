@@ -564,6 +564,7 @@ Bool_t AliTRDclusterizer::MakeClusters()
     // This is to take care of switched off super modules
     if (!digitsIn->HasData()) continue;
     digitsIn->Expand();
+    digitsIn->DeleteNegatives();  // Restore digits array to >=0 values
     AliTRDSignalIndex* indexes = fDigitsManager->GetIndexes(i);
     if (indexes->IsAllocated() == kFALSE){
       fDigitsManager->BuildIndexes(i);

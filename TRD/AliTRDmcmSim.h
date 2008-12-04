@@ -59,6 +59,7 @@ class AliTRDmcmSim : public TObject {
 	  void      GeneratefZSM1Dim();                        // Generate the ZSM1Dim based on digits array info
 	  void      StartfastZS(Int_t pads, Int_t timebis);                    // For ZS in the digitizer
 	  void      FlagDigitsArray(AliTRDarrayADC *tempdigs, Int_t valrow);   //Set flags on the digits array
+	  void      RestoreZeros(); 
 
  protected:
 

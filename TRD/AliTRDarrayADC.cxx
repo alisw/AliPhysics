@@ -433,6 +433,22 @@ void AliTRDarrayADC::Expand()
   // Expand the array
   //
 
+  //Check if the array has not been already expanded
+  Int_t verif=0;
+  for(Int_t i=0; i<fNAdim; i++)
+    {
+      if(fADC[i]<-1)
+	{
+	  verif++;
+	}
+    }
+  
+  if(verif==0)
+    {
+      //       AliDebug(1,"Nothing to expand");
+      return;
+    }
+
   Int_t *longz;
   longz = new Int_t[fNAdim];
   Int_t *longm;
@@ -525,4 +541,21 @@ void AliTRDarrayADC::Expand()
   if(longm) delete [] longm;
   if(longz) delete [] longz;
 
+}
+//____________________________________________________________________________________
+void AliTRDarrayADC::DeleteNegatives()
+{
+
+  //
+  //This method modifies the digits array, changing the negative values (-1)
+  //Produced during digitization into zero.
+  //
+
+  for(Int_t a=0; a<fNAdim; a++)
+    {
+      if(fADC[a]==-1)
+	{
+	  fADC[a]=0;
+	}
+    }
 }
