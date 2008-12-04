@@ -54,7 +54,7 @@ public:
   virtual ~AliEveEventManager();
 
   virtual void  Open();
-  void          SetEvent(AliRunLoader *runLoader, AliRawReader *rawReader, AliESDEvent *esd);
+  void          SetEvent(AliRunLoader *runLoader, AliRawReader *rawReader, AliESDEvent *esd, AliESDfriend *esdf);
   virtual Int_t GetMaxEventId(Bool_t refreshESD=kFALSE) const;
   virtual void  GotoEvent(Int_t event);
   virtual void  NextEvent();

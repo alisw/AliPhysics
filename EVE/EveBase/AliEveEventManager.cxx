@@ -503,7 +503,7 @@ void AliEveEventManager::Open()
   fIsOpen = kTRUE;
 }
 
-void AliEveEventManager::SetEvent(AliRunLoader *runLoader, AliRawReader *rawReader, AliESDEvent *esd)
+void AliEveEventManager::SetEvent(AliRunLoader *runLoader, AliRawReader *rawReader, AliESDEvent *esd, AliESDfriend *esdf)
 {
   // Set an event from an external source.
   // The method is used in the online visualisation.
@@ -520,6 +520,7 @@ void AliEveEventManager::SetEvent(AliRunLoader *runLoader, AliRawReader *rawRead
   fRunLoader = runLoader;
   fRawReader = rawReader;
   fESD       = esd;
+  fESDfriend = esdf;
   fAOD       = 0;
 
   fEventId++;
