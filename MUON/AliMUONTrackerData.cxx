@@ -342,7 +342,6 @@ AliMUONTrackerData::InternalAdd(const AliMUONVStore& store, TArrayI* nevents, Bo
       AliError(Form("%s is supposed to be single event only",GetName()));
       return kFALSE;
     }  
-    NumberOfEventsChanged();
   }
 
   if (!fNofDDLs)
@@ -528,6 +527,8 @@ AliMUONTrackerData::InternalAdd(const AliMUONVStore& store, TArrayI* nevents, Bo
       }
     }
   }
+  
+  NumberOfEventsChanged();
   
   return kTRUE;
 }
@@ -1117,6 +1118,11 @@ AliMUONTrackerData::GetParts(AliMUONVCalibParam* external,
   
   mpde = ddlStore->GetDetElement(detElemId);
 
+  if (!mpde) // can happen if reading e.g. capacitances store where we have data for non-connected manus
+  {
+    return -1;
+  }
+  
   Int_t chamberId = AliMpDEManager::GetChamberId(detElemId);
     
   Int_t busPatchId = ddlStore->GetBusPatchId(detElemId,manuId);
