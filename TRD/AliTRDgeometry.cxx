@@ -2862,3 +2862,18 @@ Bool_t AliTRDgeometry::ChamberInGeometry(Int_t det)
   }
 
 }
+
+//_____________________________________________________________________________
+Bool_t AliTRDgeometry::IsHole(Int_t /*la*/, Int_t st, Int_t se) const
+{
+  //
+  // Checks for holes in front of PHOS
+  //
+
+  if (((se == 13) || (se == 14) || (se == 15)) && 
+      (st == 2)) {
+    return kTRUE; 
+  }
+  return kFALSE;
+
+}
