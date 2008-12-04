@@ -802,6 +802,7 @@ void DrawCutEfficiency(TList *inputList) {
   c10->cd(1)->SetLeftMargin(0.15); 
   c10->cd(1)->SetGridx(); c10->cd(1)->SetGridy();
   hEmptyY->SetTitle("Protons");
+  hEmptyY->GetXaxis()->SetRangeUser(gYPrimaryESDAntiProtons->GetXaxis()->GetXmin()-0.2,gYPrimaryESDAntiProtons->GetXaxis()->GetXmax()+0.2);
   hEmptyY->DrawCopy();
   gYPrimaryESDProtons->DrawCopy("ESAME");
 
@@ -847,6 +848,7 @@ void DrawCutEfficiency(TList *inputList) {
   c11->cd(1)->SetLeftMargin(0.15); 
   c11->cd(1)->SetGridx(); c11->cd(1)->SetGridy();
   hEmptyPt->SetTitle("Protons");
+  hEmptyPt->GetXaxis()->SetRangeUser(gPtPrimaryESDAntiProtons->GetXaxis()->GetXmin()-0.2,gPtPrimaryESDAntiProtons->GetXaxis()->GetXmax()+0.2);
   hEmptyPt->DrawCopy();
   gPtPrimaryESDProtons->DrawCopy("ESAME");
 
@@ -1160,7 +1162,7 @@ void readProcesses(TList *list) {
 void SetError(TH1D *hEff, TH1D *hGen) {
   for(Int_t iBin = 1; iBin <= hEff->GetNbinsX(); iBin++) {
     Double_t error = 0.0;
-    if(hEff->GetBinContent(iBin) <= 1  .) 
+    if((hEff->GetBinContent(iBin) <= 1  .)&&(hGen->GetBinContent(iBin) != 0))
       error = TMath::Sqrt(hEff->GetBinContent(iBin)*(1  . - hEff->GetBinContent(iBin))/hGen->GetBinContent(iBin));
     hEff->SetBinError(iBin,error);
   }
@@ -1178,10 +1180,18 @@ void drawEfficiency(TList *list) {
   hEmpty->GetYaxis()->SetTitleOffset(1.3);
 
   //Reconstruction efficiency
-  TH2D *gHistMCYPtProtons = (TH2D *)list->At(0);
-  TH2D *gHistMCYPtAntiProtons = (TH2D *)list->At(1);
-  TH2D *gHistESDYPtProtons = (TH2D *)list->At(2);
-  TH2D *gHistESDYPtAntiProtons = (TH2D *)list->At(3);
+  TH2D *gHistPrimariesMCYPtProtons = (TH2D *)list->At(0);
+  TH2D *gHistPrimariesMCYPtAntiProtons = (TH2D *)list->At(1);
+  TH2D *gHistMCYPtProtonsFromWeak = (TH2D *)list->At(2);
+  TH2D *gHistMCYPtAntiProtonsFromWeak = (TH2D *)list->At(3);
+  TH2D *gHistMCYPtProtonsFromHadronic = (TH2D *)list->At(4);
+  TH2D *gHistMCYPtAntiProtonsFromHadronic = (TH2D *)list->At(5);
+  TH2D *gHistPrimariesESDYPtProtons = (TH2D *)list->At(6);
+  TH2D *gHistPrimariesESDYPtAntiProtons = (TH2D *)list->At(7);
+  TH2D *gHistESDYPtProtonsFromWeak = (TH2D *)list->At(8);
+  TH2D *gHistESDYPtAntiProtonsFromWeak = (TH2D *)list->At(9);
+  TH2D *gHistESDYPtProtonsFromHadronic = (TH2D *)list->At(10);
+  TH2D *gHistESDYPtAntiProtonsFromHadronic = (TH2D *)list->At(11);
 
   //rapidity dependence
   TCanvas *c14 = new TCanvas("c14",
@@ -1190,37 +1200,78 @@ void drawEfficiency(TList *list) {
   c14->SetFillColor(10); c14->GetFrame()->SetFillColor(10); 
   c14->SetHighLightColor(10); c14->Divide(2,1);
 
-  //Protons
-  TH1D *gYESDProtons = (TH1D *)gHistESDYPtProtons->ProjectionX("gYESDProtons",0,gHistESDYPtProtons->GetXaxis()->GetNbins(),"e");
-  TH1D *gYMCProtons = (TH1D *)gHistMCYPtProtons->ProjectionX("gYMCProtons",0,gHistMCYPtProtons->GetXaxis()->GetNbins(),"e");
-  gYESDProtons->Divide(gYMCProtons);
-  SetError(gYESDProtons,gYMCProtons);
-  gYESDProtons->Scale(100.);
-  gYESDProtons->SetMarkerStyle(kFullCircle);
+  //Primary Protons
+  TH1D *gYPrimariesESDProtons = (TH1D *)gHistPrimariesESDYPtProtons->ProjectionX("gYPrimariesESDProtons",0,gHistPrimariesESDYPtProtons->GetXaxis()->GetNbins(),"e");
+  TH1D *gYPrimariesMCProtons = (TH1D *)gHistPrimariesMCYPtProtons->ProjectionX("gYPrimariesMCProtons",0,gHistPrimariesMCYPtProtons->GetXaxis()->GetNbins(),"e");
+  gYPrimariesESDProtons->Divide(gYPrimariesMCProtons);
+  SetError(gYPrimariesESDProtons,gYPrimariesMCProtons);
+  gYPrimariesESDProtons->Scale(100.);
+  gYPrimariesESDProtons->SetMarkerStyle(kFullCircle);
 
-  //AntiProtons
-  TH1D *gYESDAntiProtons = (TH1D *)gHistESDYPtAntiProtons->ProjectionX("gYESDAntiProtons",0,gHistESDYPtAntiProtons->GetXaxis()->GetNbins(),"e");
-  TH1D *gYMCAntiProtons = (TH1D *)gHistMCYPtAntiProtons->ProjectionX("gYMCAntiProtons",0,gHistMCYPtProtons->GetXaxis()->GetNbins(),"e");
-  gYESDAntiProtons->Divide(gYMCAntiProtons);
-  SetError(gYESDAntiProtons,gYMCAntiProtons);
-  gYESDAntiProtons->Scale(100.);
-  gYESDAntiProtons->SetMarkerStyle(kFullCircle);
+  //Primary AntiProtons
+  TH1D *gYPrimariesESDAntiProtons = (TH1D *)gHistPrimariesESDYPtAntiProtons->ProjectionX("gYPrimariesESDAntiProtons",0,gHistPrimariesESDYPtAntiProtons->GetXaxis()->GetNbins(),"e");
+  TH1D *gYPrimariesMCAntiProtons = (TH1D *)gHistPrimariesMCYPtAntiProtons->ProjectionX("gYPrimariesMCAntiProtons",0,gHistPrimariesMCYPtProtons->GetXaxis()->GetNbins(),"e");
+  gYPrimariesESDAntiProtons->Divide(gYPrimariesMCAntiProtons);
+  SetError(gYPrimariesESDAntiProtons,gYPrimariesMCAntiProtons);
+  gYPrimariesESDAntiProtons->Scale(100.);
+  gYPrimariesESDAntiProtons->SetMarkerStyle(kFullCircle);
+
+  //Protons from weak decays
+  TH1D *gYESDProtonsFromWeak = (TH1D *)gHistESDYPtProtonsFromWeak->ProjectionX("gYESDProtonsFromWeak",0,gHistESDYPtProtonsFromWeak->GetXaxis()->GetNbins(),"e");
+  TH1D *gYMCProtonsFromWeak = (TH1D *)gHistMCYPtProtonsFromWeak->ProjectionX("gYMCProtonsFromWeak",0,gHistMCYPtProtonsFromWeak->GetXaxis()->GetNbins(),"e");
+  gYESDProtonsFromWeak->Divide(gYMCProtonsFromWeak);
+  SetError(gYESDProtonsFromWeak,gYMCProtonsFromWeak);
+  gYESDProtonsFromWeak->Scale(100.);
+  gYESDProtonsFromWeak->SetMarkerStyle(21);
+  gYESDProtonsFromWeak->SetMarkerColor(2);
+
+  //AntiProtons from weak decays
+  TH1D *gYESDAntiProtonsFromWeak = (TH1D *)gHistESDYPtAntiProtonsFromWeak->ProjectionX("gYESDAntiProtonsFromWeak",0,gHistESDYPtAntiProtonsFromWeak->GetXaxis()->GetNbins(),"e");
+  TH1D *gYMCAntiProtonsFromWeak = (TH1D *)gHistMCYPtAntiProtonsFromWeak->ProjectionX("gYMCAntiProtonsFromWeak",0,gHistMCYPtProtonsFromWeak->GetXaxis()->GetNbins(),"e");
+  gYESDAntiProtonsFromWeak->Divide(gYMCAntiProtonsFromWeak);
+  SetError(gYESDAntiProtonsFromWeak,gYMCAntiProtonsFromWeak);
+  gYESDAntiProtonsFromWeak->Scale(100.);
+  gYESDAntiProtonsFromWeak->SetMarkerStyle(21);
+  gYESDAntiProtonsFromWeak->SetMarkerColor(2);
+
+  //Protons from hadronic interactions
+  TH1D *gYESDProtonsFromHadronic = (TH1D *)gHistESDYPtProtonsFromHadronic->ProjectionX("gYESDProtonsFromHadronic",0,gHistESDYPtProtonsFromHadronic->GetXaxis()->GetNbins(),"e");
+  TH1D *gYMCProtonsFromHadronic = (TH1D *)gHistMCYPtProtonsFromHadronic->ProjectionX("gYMCProtonsFromHadronic",0,gHistMCYPtProtonsFromHadronic->GetXaxis()->GetNbins(),"e");
+  gYESDProtonsFromHadronic->Divide(gYMCProtonsFromHadronic);
+  SetError(gYESDProtonsFromHadronic,gYMCProtonsFromHadronic);
+  gYESDProtonsFromHadronic->Scale(100.);
+  gYESDProtonsFromHadronic->SetMarkerStyle(22);
+  gYESDProtonsFromHadronic->SetMarkerColor(3);
+
+  //AntiProtons from weak decays
+  TH1D *gYESDAntiProtonsFromHadronic = (TH1D *)gHistESDYPtAntiProtonsFromHadronic->ProjectionX("gYESDAntiProtonsFromHadronic",0,gHistESDYPtAntiProtonsFromHadronic->GetXaxis()->GetNbins(),"e");
+  TH1D *gYMCAntiProtonsFromHadronic = (TH1D *)gHistMCYPtAntiProtonsFromHadronic->ProjectionX("gYMCAntiProtonsFromHadronic",0,gHistMCYPtProtonsFromHadronic->GetXaxis()->GetNbins(),"e");
+  gYESDAntiProtonsFromHadronic->Divide(gYMCAntiProtonsFromHadronic);
+  SetError(gYESDAntiProtonsFromHadronic,gYMCAntiProtonsFromHadronic);
+  gYESDAntiProtonsFromHadronic->Scale(100.);
+  gYESDAntiProtonsFromHadronic->SetMarkerStyle(22);
+  gYESDAntiProtonsFromHadronic->SetMarkerColor(3);
 
   c14->cd(1)->SetBottomMargin(0.15); 
   c14->cd(1)->SetLeftMargin(0.15); 
   c14->cd(1)->SetGridx(); c14->cd(1)->SetGridy();
-  hEmpty->GetXaxis()->SetRangeUser(-1.0,1.0);
-  hEmpty->GetXaxis()->SetTitle("y");
+  hEmpty->GetXaxis()->SetRangeUser(gYPrimariesESDAntiProtons->GetXaxis()->GetXmin()-0.2,
+				   gYPrimariesESDAntiProtons->GetXaxis()->GetXmax()+0.2);
+  hEmpty->GetXaxis()->SetTitle(gYPrimariesESDAntiProtons->GetXaxis()->GetTitle());
   hEmpty->SetTitle("Protons");
   hEmpty->DrawCopy();
-  gYESDProtons->DrawCopy("ESAME");
+  gYPrimariesESDProtons->DrawCopy("ESAME");
+  gYESDProtonsFromWeak->DrawCopy("ESAME");
+  gYESDProtonsFromHadronic->DrawCopy("ESAME");
 
   c14->cd(2)->SetBottomMargin(0.15); 
   c14->cd(2)->SetLeftMargin(0.15); 
   c14->cd(2)->SetGridx(); c14->cd(2)->SetGridy();
   hEmpty->SetTitle("Antiprotons");
   hEmpty->DrawCopy();
-  gYESDAntiProtons->DrawCopy("ESAME");
+  gYPrimariesESDAntiProtons->DrawCopy("ESAME");
+  gYESDAntiProtonsFromWeak->DrawCopy("ESAME");
+  gYESDAntiProtonsFromHadronic->DrawCopy("ESAME");
   c14->SaveAs("ReconstructionEfficiency-Protons-Rapidity.gif");
 
   //pT dependence
@@ -1230,45 +1281,88 @@ void drawEfficiency(TList *list) {
   c15->SetFillColor(10); c15->GetFrame()->SetFillColor(10); 
   c15->SetHighLightColor(10); c15->Divide(2,1);
 
-  //Protons
-  TH1D *gPtESDProtons = (TH1D *)gHistESDYPtProtons->ProjectionY("gPtESDProtons",0,gHistESDYPtProtons->GetYaxis()->GetNbins(),"e");
-  TH1D *gPtMCProtons = (TH1D *)gHistMCYPtProtons->ProjectionY("gPtMCProtons",0,gHistMCYPtProtons->GetYaxis()->GetNbins(),"e");
-  gPtESDProtons->Divide(gPtMCProtons);
-  SetError(gPtESDProtons,gPtMCProtons);
-  gPtESDProtons->Scale(100.);
-  gPtESDProtons->SetMarkerStyle(kFullCircle);
+  //Primary Protons
+  TH1D *gPtPrimariesESDProtons = (TH1D *)gHistPrimariesESDYPtProtons->ProjectionY("gPtPrimariesESDProtons",0,gHistPrimariesESDYPtProtons->GetYaxis()->GetNbins(),"e");
+  TH1D *gPtPrimariesMCProtons = (TH1D *)gHistPrimariesMCYPtProtons->ProjectionY("gPtPrimariesMCProtons",0,gHistPrimariesMCYPtProtons->GetYaxis()->GetNbins(),"e");
+  gPtPrimariesESDProtons->Divide(gPtPrimariesMCProtons);
+  SetError(gPtPrimariesESDProtons,gPtPrimariesMCProtons);
+  gPtPrimariesESDProtons->Scale(100.);
+  gPtPrimariesESDProtons->SetMarkerStyle(kFullCircle);
 
-  //AntiProtons
-  TH1D *gPtESDAntiProtons = (TH1D *)gHistESDYPtAntiProtons->ProjectionY("gPtESDAntiProtons",0,gHistESDYPtAntiProtons->GetYaxis()->GetNbins(),"e");
-  TH1D *gPtMCAntiProtons = (TH1D *)gHistMCYPtAntiProtons->ProjectionY("gPtMCAntiProtons",0,gHistMCYPtProtons->GetYaxis()->GetNbins(),"e");
-  gPtESDAntiProtons->Divide(gPtMCAntiProtons);
-  SetError(gPtESDAntiProtons,gPtMCAntiProtons);
-  gPtESDAntiProtons->Scale(100.);
-  gPtESDAntiProtons->SetMarkerStyle(kFullCircle);
+  //Primary AntiProtons
+  TH1D *gPtPrimariesESDAntiProtons = (TH1D *)gHistPrimariesESDYPtAntiProtons->ProjectionY("gPtPrimariesESDAntiProtons",0,gHistPrimariesESDYPtAntiProtons->GetYaxis()->GetNbins(),"e");
+  TH1D *gPtPrimariesMCAntiProtons = (TH1D *)gHistPrimariesMCYPtAntiProtons->ProjectionY("gPtPrimariesMCAntiProtons",0,gHistPrimariesMCYPtProtons->GetYaxis()->GetNbins(),"e");
+  gPtPrimariesESDAntiProtons->Divide(gPtPrimariesMCAntiProtons);
+  SetError(gPtPrimariesESDAntiProtons,gPtPrimariesMCAntiProtons);
+  gPtPrimariesESDAntiProtons->Scale(100.);
+  gPtPrimariesESDAntiProtons->SetMarkerStyle(kFullCircle);
+
+  //Protons from weak decays
+  TH1D *gPtESDProtonsFromWeak = (TH1D *)gHistESDYPtProtonsFromWeak->ProjectionY("gPtESDProtonsFromWeak",0,gHistESDYPtProtonsFromWeak->GetYaxis()->GetNbins(),"e");
+  TH1D *gPtMCProtonsFromWeak = (TH1D *)gHistMCYPtProtonsFromWeak->ProjectionY("gPtMCProtonsFromWeak",0,gHistMCYPtProtonsFromWeak->GetYaxis()->GetNbins(),"e");
+  gPtESDProtonsFromWeak->Divide(gPtMCProtonsFromWeak);
+  SetError(gPtESDProtonsFromWeak,gPtMCProtonsFromWeak);
+  gPtESDProtonsFromWeak->Scale(100.);
+  gPtESDProtonsFromWeak->SetMarkerStyle(21);
+  gPtESDProtonsFromWeak->SetMarkerColor(2);
+
+  //AntiProtons from weak decays
+  TH1D *gPtESDAntiProtonsFromWeak = (TH1D *)gHistESDYPtAntiProtonsFromWeak->ProjectionY("gPtESDAntiProtonsFromWeak",0,gHistESDYPtAntiProtonsFromWeak->GetYaxis()->GetNbins(),"e");
+  TH1D *gPtMCAntiProtonsFromWeak = (TH1D *)gHistMCYPtAntiProtonsFromWeak->ProjectionY("gPtMCAntiProtonsFromWeak",0,gHistMCYPtProtonsFromWeak->GetYaxis()->GetNbins(),"e");
+  gPtESDAntiProtonsFromWeak->Divide(gPtMCAntiProtonsFromWeak);
+  SetError(gPtESDAntiProtonsFromWeak,gPtMCAntiProtonsFromWeak);
+  gPtESDAntiProtonsFromWeak->Scale(100.);
+  gPtESDAntiProtonsFromWeak->SetMarkerStyle(21);
+  gPtESDAntiProtonsFromWeak->SetMarkerColor(2);
+
+  //Protons from hadronic interactions
+  TH1D *gPtESDProtonsFromHadronic = (TH1D *)gHistESDYPtProtonsFromHadronic->ProjectionY("gPtESDProtonsFromHadronic",0,gHistESDYPtProtonsFromHadronic->GetYaxis()->GetNbins(),"e");
+  TH1D *gPtMCProtonsFromHadronic = (TH1D *)gHistMCYPtProtonsFromHadronic->ProjectionY("gPtMCProtonsFromHadronic",0,gHistMCYPtProtonsFromHadronic->GetYaxis()->GetNbins(),"e");
+  gPtESDProtonsFromHadronic->Divide(gPtMCProtonsFromHadronic);
+  SetError(gPtESDProtonsFromHadronic,gPtMCProtonsFromHadronic);
+  gPtESDProtonsFromHadronic->Scale(100.);
+  gPtESDProtonsFromHadronic->SetMarkerStyle(22);
+  gPtESDProtonsFromHadronic->SetMarkerColor(3);
+
+  //AntiProtons from hadronic interactions
+  TH1D *gPtESDAntiProtonsFromHadronic = (TH1D *)gHistESDYPtAntiProtonsFromHadronic->ProjectionY("gPtESDAntiProtonsFromHadronic",0,gHistESDYPtAntiProtonsFromHadronic->GetYaxis()->GetNbins(),"e");
+  TH1D *gPtMCAntiProtonsFromHadronic = (TH1D *)gHistMCYPtAntiProtonsFromHadronic->ProjectionY("gPtMCAntiProtonsFromHadronic",0,gHistMCYPtProtonsFromHadronic->GetYaxis()->GetNbins(),"e");
+  gPtESDAntiProtonsFromHadronic->Divide(gPtMCAntiProtonsFromHadronic);
+  SetError(gPtESDAntiProtonsFromHadronic,gPtMCAntiProtonsFromHadronic);
+  gPtESDAntiProtonsFromHadronic->Scale(100.);
+  gPtESDAntiProtonsFromHadronic->SetMarkerStyle(22);
+  gPtESDAntiProtonsFromHadronic->SetMarkerColor(3);
 
 
   c15->cd(1)->SetBottomMargin(0.15); 
   c15->cd(1)->SetLeftMargin(0.15); 
   c15->cd(1)->SetGridx(); c15->cd(1)->SetGridy();
-  hEmpty->GetXaxis()->SetRangeUser(0.,1.2);
+  hEmpty->GetXaxis()->SetRangeUser(gPtPrimariesESDAntiProtons->GetXaxis()->GetXmin()-0.2,
+				   gPtPrimariesESDAntiProtons->GetXaxis()->GetXmax()+0.2);
   hEmpty->GetXaxis()->SetTitle("P_{T} [GeV/c]");
   hEmpty->SetTitle("Protons");
   hEmpty->DrawCopy();
-  gPtESDProtons->DrawCopy("ESAME");
+  gPtPrimariesESDProtons->DrawCopy("ESAME");
+  gPtESDProtonsFromWeak->DrawCopy("ESAME");
+  gPtESDProtonsFromHadronic->DrawCopy("ESAME");
 
   c15->cd(2)->SetBottomMargin(0.15); 
   c15->cd(2)->SetLeftMargin(0.15); 
   c15->cd(2)->SetGridx(); c15->cd(2)->SetGridy();
   hEmpty->SetTitle("Antiprotons");
   hEmpty->DrawCopy();
-  gPtESDAntiProtons->DrawCopy("ESAME");
+  gPtPrimariesESDAntiProtons->DrawCopy("ESAME");
+  gPtESDAntiProtonsFromWeak->DrawCopy("ESAME");
+  gPtESDAntiProtonsFromHadronic->DrawCopy("ESAME");
   c15->SaveAs("ReconstructionEfficiency-Protons-Pt.gif");
 
-  //PID efficiency
-  TH2D *gHistESDInitYPtProtons = (TH2D *)list->At(4);
-  TH2D *gHistESDIdYPtProtons = (TH2D *)list->At(5);
-  TH2D *gHistESDRecIdYPtProtons = (TH2D *)list->At(6);
-  TH2D *gHistESDContamYPtProtons = (TH2D *)list->At(7);
+  //______________//
+  //PID efficiency//
+  //______________//
+  TH2D *gHistESDInitYPtProtons = (TH2D *)list->At(12);
+  TH2D *gHistESDIdYPtProtons = (TH2D *)list->At(13);
+  TH2D *gHistESDRecIdYPtProtons = (TH2D *)list->At(14);
+  TH2D *gHistESDContamYPtProtons = (TH2D *)list->At(15);
 
   TCanvas *c16 = new TCanvas("c16",
 			     "(Anti)Proton PID efficiency vs y and pT",
@@ -1297,7 +1391,7 @@ void drawEfficiency(TList *list) {
   c16->cd(1)->SetLeftMargin(0.15); 
   c16->cd(1)->SetGridx(); c16->cd(1)->SetGridy();
   hEmpty->GetXaxis()->SetRangeUser(-1.0.,1.0);
-  hEmpty->GetXaxis()->SetTitle("y");
+  hEmpty->GetXaxis()->SetTitle(gYESDContamProtons->GetXaxis()->GetTitle());
   hEmpty->DrawCopy();
   gYESDIdProtons->DrawCopy("ESAME");
   gYESDContamProtons->DrawCopy("ESAME");

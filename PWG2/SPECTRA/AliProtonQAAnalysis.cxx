@@ -82,7 +82,9 @@ AliProtonQAAnalysis::AliProtonQAAnalysis() :
   fMotherParticlePDGCodeFlag(kFALSE), fMotherParticlePDGCode(0),
   fAcceptedCutList(0), fRejectedCutList(0),
   fAcceptedDCAList(0), fRejectedDCAList(0),
-  fRunEfficiencyAnalysis(kFALSE), fEfficiencyList(0) {
+  fRunEfficiencyAnalysis(kFALSE), fRunEfficiencyAnalysisEtaMode(kFALSE),
+  fUseCutsInEfficiency(kFALSE),
+  fEfficiencyList(0) {
   //Default constructor
   for(Int_t i = 0; i < 5; i++) fPartFrac[i] = 0.0;
 }
@@ -1271,9 +1273,13 @@ void AliProtonQAAnalysis::InitEfficiencyAnalysis() {
 
   //MC primary protons and antiprotons for the reconstruction efficiency
   TH2D *gHistMCYPtProtons = new TH2D("gHistMCYPtProtons",
-				     ";y;P_{T} [GeV/c]",
+				     ";;P_{T} [GeV/c]",
 				     fNBinsY,fMinY,fMaxY,
 				     fNBinsPt,fMinPt,fMaxPt);
+  if(fRunEfficiencyAnalysisEtaMode) 
+    gHistMCYPtProtons->GetXaxis()->SetTitle("#eta");
+  else 
+    gHistMCYPtProtons->GetXaxis()->SetTitle("y");
   gHistMCYPtProtons->SetStats(kTRUE);
   gHistMCYPtProtons->GetXaxis()->SetTitleColor(1);
   fEfficiencyList->Add(gHistMCYPtProtons);
@@ -1281,58 +1287,183 @@ void AliProtonQAAnalysis::InitEfficiencyAnalysis() {
 					 ";y;P_{T} [GeV/c]",
 					 fNBinsY,fMinY,fMaxY,
 					 fNBinsPt,fMinPt,fMaxPt);
+  if(fRunEfficiencyAnalysisEtaMode) 
+    gHistMCYPtAntiProtons->GetXaxis()->SetTitle("#eta");
+  else 
+    gHistMCYPtAntiProtons->GetXaxis()->SetTitle("y");
   gHistMCYPtAntiProtons->SetStats(kTRUE);
   gHistMCYPtAntiProtons->GetXaxis()->SetTitleColor(1);
   fEfficiencyList->Add(gHistMCYPtAntiProtons);
 
+  //MC secondary protons and antiprotons that come from weak decay for the reconstruction efficiency
+  TH2D *gHistMCYPtProtonsFromWeak = new TH2D("gHistMCYPtProtonsFromWeak",
+					     ";;P_{T} [GeV/c]",
+					     fNBinsY,fMinY,fMaxY,
+					     fNBinsPt,fMinPt,fMaxPt);
+  if(fRunEfficiencyAnalysisEtaMode) 
+    gHistMCYPtProtonsFromWeak->GetXaxis()->SetTitle("#eta");
+  else 
+    gHistMCYPtProtonsFromWeak->GetXaxis()->SetTitle("y");
+  gHistMCYPtProtonsFromWeak->SetStats(kTRUE);
+  gHistMCYPtProtonsFromWeak->GetXaxis()->SetTitleColor(1);
+  fEfficiencyList->Add(gHistMCYPtProtonsFromWeak);
+  TH2D *gHistMCYPtAntiProtonsFromWeak = new TH2D("gHistMCYPtAntiProtonsFromWeak",
+						 ";y;P_{T} [GeV/c]",
+						 fNBinsY,fMinY,fMaxY,
+						 fNBinsPt,fMinPt,fMaxPt);
+  if(fRunEfficiencyAnalysisEtaMode) 
+    gHistMCYPtAntiProtonsFromWeak->GetXaxis()->SetTitle("#eta");
+  else 
+    gHistMCYPtAntiProtonsFromWeak->GetXaxis()->SetTitle("y");
+  gHistMCYPtAntiProtonsFromWeak->SetStats(kTRUE);
+  gHistMCYPtAntiProtonsFromWeak->GetXaxis()->SetTitleColor(1);
+  fEfficiencyList->Add(gHistMCYPtAntiProtonsFromWeak);
+
+  //MC secondary protons and antiprotons that come from hadronic interactions for the reconstruction efficiency
+  TH2D *gHistMCYPtProtonsFromHadronic = new TH2D("gHistMCYPtProtonsFromHadronic",
+						 ";;P_{T} [GeV/c]",
+						 fNBinsY,fMinY,fMaxY,
+						 fNBinsPt,fMinPt,fMaxPt);
+  if(fRunEfficiencyAnalysisEtaMode) 
+    gHistMCYPtProtonsFromHadronic->GetXaxis()->SetTitle("#eta");
+  else 
+    gHistMCYPtProtonsFromHadronic->GetXaxis()->SetTitle("y");
+  gHistMCYPtProtonsFromHadronic->SetStats(kTRUE);
+  gHistMCYPtProtonsFromHadronic->GetXaxis()->SetTitleColor(1);
+  fEfficiencyList->Add(gHistMCYPtProtonsFromHadronic);
+  TH2D *gHistMCYPtAntiProtonsFromHadronic = new TH2D("gHistMCYPtAntiProtonsFromHadronic",
+						     ";y;P_{T} [GeV/c]",
+						     fNBinsY,fMinY,fMaxY,
+						     fNBinsPt,fMinPt,fMaxPt);
+  if(fRunEfficiencyAnalysisEtaMode) 
+    gHistMCYPtAntiProtonsFromHadronic->GetXaxis()->SetTitle("#eta");
+  else 
+    gHistMCYPtAntiProtonsFromHadronic->GetXaxis()->SetTitle("y");
+  gHistMCYPtAntiProtonsFromHadronic->SetStats(kTRUE);
+  gHistMCYPtAntiProtonsFromHadronic->GetXaxis()->SetTitleColor(1);
+  fEfficiencyList->Add(gHistMCYPtAntiProtonsFromHadronic);
+  
   //ESD primary protons and antiprotons for the reconstruction efficiency
   TH2D *gHistESDYPtProtons = new TH2D("gHistESDYPtProtons",
-				      ";y;P_{T} [GeV/c]",
+				      ";;P_{T} [GeV/c]",
 				      fNBinsY,fMinY,fMaxY,
 				      fNBinsPt,fMinPt,fMaxPt);
+  if(fRunEfficiencyAnalysisEtaMode) 
+    gHistESDYPtProtons->GetXaxis()->SetTitle("#eta");
+  else 
+    gHistESDYPtProtons->GetXaxis()->SetTitle("y");
   gHistESDYPtProtons->SetStats(kTRUE);
   gHistESDYPtProtons->GetXaxis()->SetTitleColor(1);
   fEfficiencyList->Add(gHistESDYPtProtons);
   TH2D *gHistESDYPtAntiProtons = new TH2D("gHistESDYPtAntiProtons",
-					  ";y;P_{T} [GeV/c]",
+					  ";;P_{T} [GeV/c]",
 					  fNBinsY,fMinY,fMaxY,
 					  fNBinsPt,fMinPt,fMaxPt);
+  if(fRunEfficiencyAnalysisEtaMode) 
+    gHistESDYPtAntiProtons->GetXaxis()->SetTitle("#eta");
+  else 
+    gHistESDYPtAntiProtons->GetXaxis()->SetTitle("y");
   gHistESDYPtAntiProtons->SetStats(kTRUE);
   gHistESDYPtAntiProtons->GetXaxis()->SetTitleColor(1);
   fEfficiencyList->Add(gHistESDYPtAntiProtons);
 
+  //ESD (anti)protons from weak decays for the reconstruction efficiency
+  TH2D *gHistESDYPtProtonsFromWeak = new TH2D("gHistESDYPtProtonsFromWeak",
+					      ";;P_{T} [GeV/c]",
+					      fNBinsY,fMinY,fMaxY,
+					      fNBinsPt,fMinPt,fMaxPt);
+  if(fRunEfficiencyAnalysisEtaMode) 
+    gHistESDYPtProtonsFromWeak->GetXaxis()->SetTitle("#eta");
+  else 
+    gHistESDYPtProtonsFromWeak->GetXaxis()->SetTitle("y");
+  gHistESDYPtProtonsFromWeak->SetStats(kTRUE);
+  gHistESDYPtProtonsFromWeak->GetXaxis()->SetTitleColor(1);
+  fEfficiencyList->Add(gHistESDYPtProtonsFromWeak);
+  TH2D *gHistESDYPtAntiProtonsFromWeak = new TH2D("gHistESDYPtAntiProtonsFromWeak",
+						  ";;P_{T} [GeV/c]",
+						  fNBinsY,fMinY,fMaxY,
+						  fNBinsPt,fMinPt,fMaxPt);
+  if(fRunEfficiencyAnalysisEtaMode) 
+    gHistESDYPtAntiProtonsFromWeak->GetXaxis()->SetTitle("#eta");
+  else 
+    gHistESDYPtAntiProtonsFromWeak->GetXaxis()->SetTitle("y");
+  gHistESDYPtAntiProtonsFromWeak->SetStats(kTRUE);
+  gHistESDYPtAntiProtonsFromWeak->GetXaxis()->SetTitleColor(1);
+  fEfficiencyList->Add(gHistESDYPtAntiProtonsFromWeak);
+
+  //ESD (anti)protons from hadronic interactions for the reconstruction efficiency
+  TH2D *gHistESDYPtProtonsFromHadronic = new TH2D("gHistESDYPtProtonsFromHadronic",
+						  ";;P_{T} [GeV/c]",
+						  fNBinsY,fMinY,fMaxY,
+						  fNBinsPt,fMinPt,fMaxPt);
+  if(fRunEfficiencyAnalysisEtaMode) 
+    gHistESDYPtProtonsFromHadronic->GetXaxis()->SetTitle("#eta");
+  else 
+    gHistESDYPtProtonsFromHadronic->GetXaxis()->SetTitle("y");
+  gHistESDYPtProtonsFromHadronic->SetStats(kTRUE);
+  gHistESDYPtProtonsFromHadronic->GetXaxis()->SetTitleColor(1);
+  fEfficiencyList->Add(gHistESDYPtProtonsFromHadronic);
+  TH2D *gHistESDYPtAntiProtonsFromHadronic = new TH2D("gHistESDYPtAntiProtonsFromHadronic",
+						      ";;P_{T} [GeV/c]",
+						      fNBinsY,fMinY,fMaxY,
+						      fNBinsPt,fMinPt,fMaxPt);
+  if(fRunEfficiencyAnalysisEtaMode) 
+    gHistESDYPtAntiProtonsFromHadronic->GetXaxis()->SetTitle("#eta");
+  else 
+    gHistESDYPtAntiProtonsFromHadronic->GetXaxis()->SetTitle("y");
+  gHistESDYPtAntiProtonsFromHadronic->SetStats(kTRUE);
+  gHistESDYPtAntiProtonsFromHadronic->GetXaxis()->SetTitleColor(1);
+  fEfficiencyList->Add(gHistESDYPtAntiProtonsFromHadronic);
+  
+  
   //ESD reconstructed tracks that were initially protons for the PID efficiency
   TH2D *gHistESDInitYPtProtons = new TH2D("gHistESDInitYPtProtons",
-					  ";y;P_{T} [GeV/c]",
+					  ";;P_{T} [GeV/c]",
 					  fNBinsY,fMinY,fMaxY,
 					  fNBinsPt,fMinPt,fMaxPt);
+  if(fRunEfficiencyAnalysisEtaMode) 
+    gHistESDInitYPtProtons->GetXaxis()->SetTitle("#eta");
+  else 
+    gHistESDInitYPtProtons->GetXaxis()->SetTitle("y");
   gHistESDInitYPtProtons->SetStats(kTRUE);
   gHistESDInitYPtProtons->GetXaxis()->SetTitleColor(1);
   fEfficiencyList->Add(gHistESDInitYPtProtons);
   
   //ESD reconstructed tracks that were initially protons and were identified as protons for the PID efficiency
   TH2D *gHistESDIdYPtProtons = new TH2D("gHistESDIdYPtProtons",
-					";y;P_{T} [GeV/c]",
+					";;P_{T} [GeV/c]",
 					fNBinsY,fMinY,fMaxY,
 					fNBinsPt,fMinPt,fMaxPt);
+  if(fRunEfficiencyAnalysisEtaMode) 
+    gHistESDIdYPtProtons->GetXaxis()->SetTitle("#eta");
+  else 
+    gHistESDIdYPtProtons->GetXaxis()->SetTitle("y");
   gHistESDIdYPtProtons->SetStats(kTRUE);
   gHistESDIdYPtProtons->GetXaxis()->SetTitleColor(1);
   fEfficiencyList->Add(gHistESDIdYPtProtons);
  
   //ESD reconstructed tracks that were identified as protons for the PID contamination
   TH2D *gHistESDRecIdYPtProtons = new TH2D("gHistESDRecIdYPtProtons",
-					   ";y;P_{T} [GeV/c]",
+					   ";;P_{T} [GeV/c]",
 					   fNBinsY,fMinY,fMaxY,
 					   fNBinsPt,fMinPt,fMaxPt);
+  if(fRunEfficiencyAnalysisEtaMode) 
+    gHistESDRecIdYPtProtons->GetXaxis()->SetTitle("#eta");
+  else 
+    gHistESDRecIdYPtProtons->GetXaxis()->SetTitle("y");
   gHistESDRecIdYPtProtons->SetStats(kTRUE);
   gHistESDRecIdYPtProtons->GetXaxis()->SetTitleColor(1);
   fEfficiencyList->Add(gHistESDRecIdYPtProtons);
 
   //ESD reconstructed tracks that were identified as protons but were initially not protons for the PID contamination
   TH2D *gHistESDContamYPtProtons = new TH2D("gHistESDContamYPtProtons",
-					   ";y;P_{T} [GeV/c]",
-					   fNBinsY,fMinY,fMaxY,
-					   fNBinsPt,fMinPt,fMaxPt);
+					    ";;P_{T} [GeV/c]",
+					    fNBinsY,fMinY,fMaxY,
+					    fNBinsPt,fMinPt,fMaxPt);
+  if(fRunEfficiencyAnalysisEtaMode) 
+    gHistESDContamYPtProtons->GetXaxis()->SetTitle("#eta");
+  else 
+    gHistESDContamYPtProtons->GetXaxis()->SetTitle("y");
   gHistESDContamYPtProtons->SetStats(kTRUE);
   gHistESDContamYPtProtons->GetXaxis()->SetTitleColor(1);
   fEfficiencyList->Add(gHistESDContamYPtProtons);
@@ -2503,27 +2634,98 @@ void AliProtonQAAnalysis::RunEfficiencyAnalysis(AliStack *stack,
   //Runs the efficiency code
   //MC loop
   Int_t nMCProtons = 0, nESDProtons = 0;
-  for(Int_t iParticle = 0; iParticle <= stack->GetNprimary(); iParticle++) {
+  for(Int_t iParticle = 0; iParticle < stack->GetNtrack(); iParticle++) {
     TParticle *particle = stack->Particle(iParticle);
     if(!particle) continue;
 
     if(TMath::Abs(particle->Eta()) > 1.0) continue;//acceptance
     if((particle->Pt() > fMaxPt)||(particle->Pt() < fMinPt)) continue;
-    if((Rapidity(particle->Px(),particle->Py(),particle->Pz()) > fMaxY)||(Rapidity(particle->Px(),particle->Py(),particle->Pz()) < fMinY)) continue;
+    if(fRunEfficiencyAnalysisEtaMode) {
+      if((particle->Eta() > fMaxY)|| (particle->Eta() < fMinY)) continue;
+    }
+    else 
+      if((Rapidity(particle->Px(),particle->Py(),particle->Pz()) > fMaxY)||(Rapidity(particle->Px(),particle->Py(),particle->Pz()) < fMinY)) continue;
 
     Int_t pdgcode = particle->GetPdgCode();
-    if(pdgcode == 2212) {
-      nMCProtons += 1;
-      ((TH2D *)(fEfficiencyList->At(0)))->Fill(Rapidity(particle->Px(),
-							particle->Py(),
-							particle->Pz()),
-					       particle->Pt());
-    }
-    if(pdgcode == -2212) 
-      ((TH2D *)(fEfficiencyList->At(1)))->Fill(Rapidity(particle->Px(),
-							particle->Py(),
-							particle->Pz()),
-					       particle->Pt());
+    if(TMath::Abs(pdgcode) != 2212) continue;
+
+    if(iParticle <= stack->GetNprimary()) {
+      if(pdgcode == 2212) {
+	nMCProtons += 1;
+	if(fRunEfficiencyAnalysisEtaMode) 
+	  ((TH2D *)(fEfficiencyList->At(0)))->Fill(particle->Eta(),
+						   particle->Pt());
+	else
+	  ((TH2D *)(fEfficiencyList->At(0)))->Fill(Rapidity(particle->Px(),
+							    particle->Py(),
+							    particle->Pz()),
+						   particle->Pt());
+      }//protons
+      if(pdgcode == -2212) {
+	if(fRunEfficiencyAnalysisEtaMode) 
+	  ((TH2D *)(fEfficiencyList->At(1)))->Fill(particle->Eta(),
+						   particle->Pt());
+	else
+	  ((TH2D *)(fEfficiencyList->At(1)))->Fill(Rapidity(particle->Px(),
+							    particle->Py(),
+							    particle->Pz()),
+						   particle->Pt());
+      }//antiprotons
+    }//primaries
+    else {
+      //secondaries
+      Int_t lPartMother = -1;
+      Int_t motherPDGCode = -1;
+      lPartMother = particle->GetFirstMother();
+      TParticle *motherParticle = stack->Particle(lPartMother);
+      if(motherParticle) motherPDGCode = motherParticle->GetPdgCode();
+
+      if(pdgcode == 2212) {
+	if((particle->GetUniqueID() == 4)&&(TMath::Abs(motherPDGCode) == 3122)) {
+	  if(fRunEfficiencyAnalysisEtaMode) 
+	    ((TH2D *)(fEfficiencyList->At(2)))->Fill(particle->Eta(),
+						     particle->Pt());
+	  else
+	    ((TH2D *)(fEfficiencyList->At(2)))->Fill(Rapidity(particle->Px(),
+							      particle->Py(),
+							      particle->Pz()),
+						     particle->Pt());
+	}//weak decays
+	if((particle->GetUniqueID() == 13)) {
+	  if(fRunEfficiencyAnalysisEtaMode) 
+	    ((TH2D *)(fEfficiencyList->At(4)))->Fill(particle->Eta(),
+						     particle->Pt());
+	  else
+	    ((TH2D *)(fEfficiencyList->At(4)))->Fill(Rapidity(particle->Px(),
+							      particle->Py(),
+							      particle->Pz()),
+						     particle->Pt());
+	}//hadronic interactions
+      }//protons
+      if(pdgcode == -2212) {
+	if((particle->GetUniqueID() == 4)&&(TMath::Abs(motherPDGCode) == 3122)) {
+	  if(fRunEfficiencyAnalysisEtaMode) 
+	    ((TH2D *)(fEfficiencyList->At(3)))->Fill(particle->Eta(),
+						     particle->Pt());
+	  else
+	    ((TH2D *)(fEfficiencyList->At(3)))->Fill(Rapidity(particle->Px(),
+							      particle->Py(),
+							      particle->Pz()),
+						     particle->Pt());
+	}//weak decays
+	if((particle->GetUniqueID() == 13)) {
+	  if(fRunEfficiencyAnalysisEtaMode) 
+	    ((TH2D *)(fEfficiencyList->At(5)))->Fill(particle->Eta(),
+						     particle->Pt());
+	  else
+	    ((TH2D *)(fEfficiencyList->At(5)))->Fill(Rapidity(particle->Px(),
+							      particle->Py(),
+							      particle->Pz()),
+						     particle->Pt());
+	}//hadronic interactions
+      }//antiprotons
+    }//secondaries
+  
   }//MC loop
 
   //ESD loop
@@ -2542,6 +2744,8 @@ void AliProtonQAAnalysis::RunEfficiencyAnalysis(AliStack *stack,
     TParticle *particle = stack->Particle(label);
     if(!particle) continue;
     Int_t pdgcode = particle->GetPdgCode();
+    if(TMath::Abs(pdgcode) != 2212) continue;
+    if(TMath::Abs(particle->Eta()) > 1.0) continue;//acceptance
     
     Double_t Pt = 0.0, P = 0.0;
     Double_t probability[5];
@@ -2553,35 +2757,115 @@ void AliProtonQAAnalysis::RunEfficiencyAnalysis(AliStack *stack,
       Pt = tpcTrack->Pt();
       P = tpcTrack->P();
 
-      if((tpcTrack->Pt() > fMaxPt)||(tpcTrack->Pt() < fMinPt)) continue;
-      if((Rapidity(tpcTrack->Px(),tpcTrack->Py(),tpcTrack->Pz()) > fMaxY)||(Rapidity(tpcTrack->Px(),tpcTrack->Py(),tpcTrack->Pz()) < fMinY)) continue;
+      if((particle->Pt() > fMaxPt)||(particle->Pt() < fMinPt)) continue;
+      if(fRunEfficiencyAnalysisEtaMode) {
+	if((particle->Eta() > fMaxY)|| (particle->Eta() < fMinY)) continue;
+      }
+      else 
+	if((Rapidity(particle->Px(),particle->Py(),particle->Pz()) > fMaxY)||(Rapidity(particle->Px(),particle->Py(),particle->Pz()) < fMinY)) continue;
+      
+      if(fUseCutsInEfficiency) 
+	if(!IsAccepted(track)) continue;
 
       //reconstructed primary (anti)protons
       if(pdgcode == 2212) {
-	((TH2D *)(fEfficiencyList->At(4)))->Fill(Rapidity(tpcTrack->Px(),
-							  tpcTrack->Py(),
-							  tpcTrack->Pz()),
-						 Pt);
+	if(fRunEfficiencyAnalysisEtaMode)
+	  ((TH2D *)(fEfficiencyList->At(12)))->Fill(particle->Eta(),
+						   particle->Pt());
+	else
+	  ((TH2D *)(fEfficiencyList->At(12)))->Fill(Rapidity(particle->Px(),
+							    particle->Py(),
+							    particle->Pz()),
+						   particle->Pt());
 	if(label <= stack->GetNprimary()) {
 	  nESDProtons += 1;
-	  ((TH2D *)(fEfficiencyList->At(2)))->Fill(Rapidity(tpcTrack->Px(),
-							    tpcTrack->Py(),
-							    tpcTrack->Pz()),
-						   Pt);
-	}
-      }//initial protons
-      if(pdgcode == -2212) {
-	((TH2D *)(fEfficiencyList->At(4)))->Fill(Rapidity(tpcTrack->Px(),
-							  tpcTrack->Py(),
-							  tpcTrack->Pz()),
-						 Pt);
-	if(label <= stack->GetNprimary())
-	  ((TH2D *)(fEfficiencyList->At(3)))->Fill(Rapidity(tpcTrack->Px(),
-							    tpcTrack->Py(),
-							    tpcTrack->Pz()),
-						   Pt);
-      }//initial antiprotons
+	  if(fRunEfficiencyAnalysisEtaMode)
+	    ((TH2D *)(fEfficiencyList->At(6)))->Fill(particle->Eta(),
+						     particle->Pt());
+	  else
+	    ((TH2D *)(fEfficiencyList->At(6)))->Fill(Rapidity(particle->Px(),
+							      particle->Py(),
+							      particle->Pz()),
+						     particle->Pt());
+	}//primaries
+	if(label > stack->GetNprimary()) {
+	  Int_t lPartMother = -1;
+	  Int_t motherPDGCode = -1;
+	  lPartMother = particle->GetFirstMother();
+	  TParticle *motherParticle = stack->Particle(lPartMother);
+	  if(motherParticle) motherPDGCode = motherParticle->GetPdgCode();
 
+	  if((particle->GetUniqueID() == 4)&&(TMath::Abs(motherPDGCode) == 3122)) {
+	    if(fRunEfficiencyAnalysisEtaMode)
+	      ((TH2D *)(fEfficiencyList->At(8)))->Fill(particle->Eta(),
+						       particle->Pt());
+	    else
+	      ((TH2D *)(fEfficiencyList->At(8)))->Fill(Rapidity(particle->Px(),
+								particle->Py(),
+								particle->Pz()),
+						       particle->Pt());
+	  }//weak decays
+	  if((particle->GetUniqueID() == 13)) {
+	    if(fRunEfficiencyAnalysisEtaMode)
+	      ((TH2D *)(fEfficiencyList->At(10)))->Fill(particle->Eta(),
+							particle->Pt());
+	    else
+	      ((TH2D *)(fEfficiencyList->At(10)))->Fill(Rapidity(particle->Px(),
+								 particle->Py(),
+								 particle->Pz()),
+							particle->Pt());
+	  }//hadronic interactions
+	}//secondaries
+      }//initial protons
+      if(pdgcode == -2212) {	
+	if(fRunEfficiencyAnalysisEtaMode)
+	  ((TH2D *)(fEfficiencyList->At(12)))->Fill(particle->Eta(),
+						   particle->Pt());
+	else
+	  ((TH2D *)(fEfficiencyList->At(12)))->Fill(Rapidity(particle->Px(),
+							    particle->Py(),
+							    particle->Pz()),
+						   particle->Pt());
+	if(label <= stack->GetNprimary()) {
+	  if(fRunEfficiencyAnalysisEtaMode)
+	    ((TH2D *)(fEfficiencyList->At(7)))->Fill(particle->Eta(),
+						     particle->Pt());
+	  else
+	    ((TH2D *)(fEfficiencyList->At(7)))->Fill(Rapidity(particle->Px(),
+							      particle->Py(),
+							      particle->Pz()),
+						     particle->Pt());
+	}//primaries
+	if(label > stack->GetNprimary()) {
+	  Int_t lPartMother = -1;
+	  Int_t motherPDGCode = -1;
+	  lPartMother = particle->GetFirstMother();
+	  TParticle *motherParticle = stack->Particle(lPartMother);
+	  if(motherParticle) motherPDGCode = motherParticle->GetPdgCode();
+
+	  if((particle->GetUniqueID() == 4)&&(TMath::Abs(motherPDGCode) == 3122)) {
+	    if(fRunEfficiencyAnalysisEtaMode)
+	      ((TH2D *)(fEfficiencyList->At(9)))->Fill(particle->Eta(),
+						       particle->Pt());
+	    else
+	      ((TH2D *)(fEfficiencyList->At(9)))->Fill(Rapidity(particle->Px(),
+								particle->Py(),
+								particle->Pz()),
+						       particle->Pt());
+	  }//weak decays
+	  if((particle->GetUniqueID() == 13)) {
+	    if(fRunEfficiencyAnalysisEtaMode)
+	      ((TH2D *)(fEfficiencyList->At(11)))->Fill(particle->Eta(),
+							particle->Pt());
+	    else
+	      ((TH2D *)(fEfficiencyList->At(11)))->Fill(Rapidity(particle->Px(),
+								 particle->Py(),
+								 particle->Pz()),
+							particle->Pt());
+	  }//hadronic interactions
+	}//secondaries
+      }//initial antiprotons
+      
       //pid
       track->GetTPCpid(probability);
       Double_t rcc = 0.0;
@@ -2593,48 +2877,143 @@ void AliProtonQAAnalysis::RunEfficiencyAnalysis(AliStack *stack,
 	w[i] = probability[i]*GetParticleFraction(i,P)/rcc;
       Long64_t fParticleType = TMath::LocMax(AliPID::kSPECIES,w);
       if(fParticleType == 4) {
-	((TH2D *)(fEfficiencyList->At(6)))->Fill(Rapidity(tpcTrack->Px(),
-							  tpcTrack->Py(),
-							  tpcTrack->Pz()),
-						 Pt);
-	if(TMath::Abs(pdgcode) == 2212) 
-	  ((TH2D *)(fEfficiencyList->At(5)))->Fill(Rapidity(tpcTrack->Px(),
-							    tpcTrack->Py(),
-							    tpcTrack->Pz()),
-						   Pt);
+	if(fRunEfficiencyAnalysisEtaMode)
+	  ((TH2D *)(fEfficiencyList->At(14)))->Fill(particle->Eta(),
+						   particle->Pt());
 	else
-	  ((TH2D *)(fEfficiencyList->At(7)))->Fill(Rapidity(tpcTrack->Px(),
-							    tpcTrack->Py(),
-							    tpcTrack->Pz()),
-						   Pt);
+	  ((TH2D *)(fEfficiencyList->At(14)))->Fill(Rapidity(particle->Px(),
+							    particle->Py(),
+							    particle->Pz()),
+						   particle->Pt());
+	if(TMath::Abs(pdgcode) == 2212) 
+	  if(fRunEfficiencyAnalysisEtaMode)
+	    ((TH2D *)(fEfficiencyList->At(13)))->Fill(particle->Eta(),
+						     particle->Pt());
+	  else
+	    ((TH2D *)(fEfficiencyList->At(13)))->Fill(Rapidity(particle->Px(),
+							      particle->Py(),
+							      particle->Pz()),
+						     particle->Pt());
+	else
+	  if(fRunEfficiencyAnalysisEtaMode)
+	    ((TH2D *)(fEfficiencyList->At(15)))->Fill(particle->Eta(),
+						     particle->Pt());
+	  else
+	    ((TH2D *)(fEfficiencyList->At(15)))->Fill(Rapidity(particle->Px(),
+							      particle->Py(),
+							      particle->Pz()),
+						     particle->Pt());
       }//identified as proton
     }//TPC only tracks
     else if(!fUseTPCOnly) {
-      if((track->Pt() > fMaxPt)||(track->Pt() < fMinPt)) continue;
-      if((Rapidity(track->Px(),track->Py(),track->Pz()) > fMaxY)||(Rapidity(track->Px(),track->Py(),track->Pz()) < fMinY)) continue;
+      if((particle->Pt() > fMaxPt)||(particle->Pt() < fMinPt)) continue;
+      if(fRunEfficiencyAnalysisEtaMode) {
+	if((particle->Eta() > fMaxY)|| (particle->Eta() < fMinY)) continue;
+      }
+      else {
+	if((Rapidity(particle->Px(),particle->Py(),particle->Pz()) > fMaxY)||(Rapidity(particle->Px(),particle->Py(),particle->Pz()) < fMinY)) continue;
+      }
+      
+      if(fUseCutsInEfficiency) 
+	if(!IsAccepted(track)) continue;
 
       //reconstructed primary (anti)protons
       if(pdgcode == 2212) {
-	((TH2D *)(fEfficiencyList->At(4)))->Fill(Rapidity(track->Px(),
-							  track->Py(),
-							  track->Pz()),
-						 Pt);
-	if(label <= stack->GetNprimary())
-	  ((TH2D *)(fEfficiencyList->At(2)))->Fill(Rapidity(track->Px(),
-							    track->Py(),
-							    track->Pz()),
-						   Pt);
+	if(fRunEfficiencyAnalysisEtaMode)
+	  ((TH2D *)(fEfficiencyList->At(12)))->Fill(particle->Eta(),
+						   particle->Pt());
+	else
+	  ((TH2D *)(fEfficiencyList->At(12)))->Fill(Rapidity(particle->Px(),
+							    particle->Py(),
+							    particle->Pz()),
+						   particle->Pt());
+	if(label <= stack->GetNprimary()) {
+	  nESDProtons += 1;
+	  if(fRunEfficiencyAnalysisEtaMode)
+	    ((TH2D *)(fEfficiencyList->At(6)))->Fill(particle->Eta(),
+						     particle->Pt());
+	  else
+	    ((TH2D *)(fEfficiencyList->At(6)))->Fill(Rapidity(particle->Px(),
+							      particle->Py(),
+							      particle->Pz()),
+						     particle->Pt());
+	}//primaries
+	if(label > stack->GetNprimary()) {
+	  Int_t lPartMother = -1;
+	  Int_t motherPDGCode = -1;
+	  lPartMother = particle->GetFirstMother();
+	  TParticle *motherParticle = stack->Particle(lPartMother);
+	  if(motherParticle) motherPDGCode = motherParticle->GetPdgCode();
+
+	  if((particle->GetUniqueID() == 4)&&(TMath::Abs(motherPDGCode) == 3122)) {
+	    if(fRunEfficiencyAnalysisEtaMode)
+	      ((TH2D *)(fEfficiencyList->At(8)))->Fill(particle->Eta(),
+						       particle->Pt());
+	    else
+	      ((TH2D *)(fEfficiencyList->At(8)))->Fill(Rapidity(particle->Px(),
+								particle->Py(),
+								particle->Pz()),
+						       particle->Pt());
+	  }//weak decays
+	  if((particle->GetUniqueID() == 13)) {
+	    if(fRunEfficiencyAnalysisEtaMode)
+	      ((TH2D *)(fEfficiencyList->At(10)))->Fill(particle->Eta(),
+							particle->Pt());
+	    else
+	      ((TH2D *)(fEfficiencyList->At(10)))->Fill(Rapidity(particle->Px(),
+								 particle->Py(),
+								 particle->Pz()),
+							particle->Pt());
+	  }//hadronic interactions
+	}//secondaries
       }//initial protons
-      if(pdgcode == -2212) {
-	((TH2D *)(fEfficiencyList->At(4)))->Fill(Rapidity(track->Px(),
-							  track->Py(),
-							  track->Pz()),
-						 Pt);
-	if(label <= stack->GetNprimary())
-	  ((TH2D *)(fEfficiencyList->At(3)))->Fill(Rapidity(track->Px(),
-							    track->Py(),
-							    track->Pz()),
-						   Pt);
+      if(pdgcode == -2212) {	
+	if(fRunEfficiencyAnalysisEtaMode)
+	  ((TH2D *)(fEfficiencyList->At(12)))->Fill(particle->Eta(),
+						   particle->Pt());
+	else
+	  ((TH2D *)(fEfficiencyList->At(12)))->Fill(Rapidity(particle->Px(),
+							    particle->Py(),
+							    particle->Pz()),
+						   particle->Pt());
+	if(label <= stack->GetNprimary()) {
+	  if(fRunEfficiencyAnalysisEtaMode)
+	    ((TH2D *)(fEfficiencyList->At(7)))->Fill(particle->Eta(),
+						     particle->Pt());
+	  else
+	    ((TH2D *)(fEfficiencyList->At(7)))->Fill(Rapidity(particle->Px(),
+							      particle->Py(),
+							      particle->Pz()),
+						     particle->Pt());
+	}//primaries
+	if(label > stack->GetNprimary()) {
+	  Int_t lPartMother = -1;
+	  Int_t motherPDGCode = -1;
+	  lPartMother = particle->GetFirstMother();
+	  TParticle *motherParticle = stack->Particle(lPartMother);
+	  if(motherParticle) motherPDGCode = motherParticle->GetPdgCode();
+
+	  if((particle->GetUniqueID() == 4)&&(TMath::Abs(motherPDGCode) == 3122)) {
+	    if(fRunEfficiencyAnalysisEtaMode)
+	      ((TH2D *)(fEfficiencyList->At(9)))->Fill(particle->Eta(),
+						       particle->Pt());
+	    else
+	      ((TH2D *)(fEfficiencyList->At(9)))->Fill(Rapidity(particle->Px(),
+								particle->Py(),
+								particle->Pz()),
+						       particle->Pt());
+	  }//weak decays
+	  if((particle->GetUniqueID() == 13)) {
+	    if(fRunEfficiencyAnalysisEtaMode)
+	      ((TH2D *)(fEfficiencyList->At(11)))->Fill(particle->Eta(),
+							particle->Pt());
+	    else
+	      ((TH2D *)(fEfficiencyList->At(11)))->Fill(Rapidity(particle->Px(),
+								 particle->Py(),
+								 particle->Pz()),
+							particle->Pt());
+	  }//hadronic interactions
+	}//secondaries
       }//initial antiprotons
       
       //pid
@@ -2648,20 +3027,31 @@ void AliProtonQAAnalysis::RunEfficiencyAnalysis(AliStack *stack,
 	w[i] = probability[i]*GetParticleFraction(i,P)/rcc;
       Long64_t fParticleType = TMath::LocMax(AliPID::kSPECIES,w);
       if(fParticleType == 4) {
-	((TH2D *)(fEfficiencyList->At(6)))->Fill(Rapidity(track->Px(),
-							  track->Py(),
-							  track->Pz()),
-						 Pt);
+	if(fRunEfficiencyAnalysisEtaMode)
+	  ((TH2D *)(fEfficiencyList->At(14)))->Fill(particle->Eta(),
+						   particle->Pt());
+	else ((TH2D *)(fEfficiencyList->At(14)))->Fill(Rapidity(particle->Px(),
+							       particle->Py(),
+							       particle->Pz()),
+						      particle->Pt());
 	if(TMath::Abs(pdgcode) == 2212) 
-	  ((TH2D *)(fEfficiencyList->At(5)))->Fill(Rapidity(track->Px(),
-							    track->Py(),
-							    track->Pz()),
-						   Pt);
+	  if(fRunEfficiencyAnalysisEtaMode)
+	    ((TH2D *)(fEfficiencyList->At(13)))->Fill(particle->Eta(),
+						     particle->Pt());
+	  else
+	    ((TH2D *)(fEfficiencyList->At(13)))->Fill(Rapidity(particle->Px(),
+							      particle->Py(),
+							      particle->Pz()),
+						     particle->Pt());
 	else
-	  ((TH2D *)(fEfficiencyList->At(7)))->Fill(Rapidity(track->Px(),
-							    track->Py(),
-							    track->Pz()),
-						   Pt);
+	  if(fRunEfficiencyAnalysisEtaMode)
+	    ((TH2D *)(fEfficiencyList->At(15)))->Fill(particle->Eta(),
+						     particle->Pt());
+	  else
+	    ((TH2D *)(fEfficiencyList->At(15)))->Fill(Rapidity(particle->Px(),
+							      particle->Py(),
+							      particle->Pz()),
+						     particle->Pt());
       }//identified as proton
     }//global tracking
   }//track loop

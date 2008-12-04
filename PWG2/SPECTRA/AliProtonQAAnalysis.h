@@ -124,7 +124,11 @@ class AliProtonQAAnalysis : public TObject {
 
   //Efficiency plots (reconstruction & PID)
   void RunEfficiencyAnalysis(AliStack *stack, AliESDEvent *esd);
-  void SetRunEfficiencyAnalysis() {fRunEfficiencyAnalysis = kTRUE;}
+  void SetRunEfficiencyAnalysis(Bool_t gEtaMode, Bool_t gUseCuts) {
+    fRunEfficiencyAnalysis = kTRUE;
+    fRunEfficiencyAnalysisEtaMode = gEtaMode;
+    fUseCutsInEfficiency = gUseCuts;
+  }
   TList *GetEfficiencyQAList() {return fEfficiencyList;}
   /*TH1F *GetReconstructionEfficiency(const char *variable, 
 				    const char *particle);
@@ -240,7 +244,9 @@ class AliProtonQAAnalysis : public TObject {
 
   //Efficiency (reconstruction & PID)
   Bool_t fRunEfficiencyAnalysis; //run this part or not
-  
+  Bool_t fRunEfficiencyAnalysisEtaMode;//kTRUE in case of eta-pT otherwise y-pT
+  Bool_t fUseCutsInEfficiency;//use the cuts in the reco and pid efficiency
+
   TList *fEfficiencyList;// list of the efficiency histograms
 
   ClassDef(AliProtonQAAnalysis,0);
