@@ -50,6 +50,7 @@
 
 #include <cstring>
 
+#include <TROOT.h>
 #include <TSystem.h>
 #include <TObjArray.h>
 #include <TH2.h>
@@ -883,58 +884,74 @@ TObjArray* AliTRDtrackingResolution::Histos()
 {
   if(fContainer) return fContainer;
 
-  fContainer  = new TObjArray(5);
+  fContainer  = new TObjArray(7);
 
   TH1 *h = 0x0;
   // cluster to tracklet residuals [2]
-  fContainer->AddAt(h = new TH2I("fYCl", "Clusters Residuals", 21, -.33, .33, 100, -.5, .5), kClusterResidual);
-  h->GetXaxis()->SetTitle("tg(#phi)");
-  h->GetYaxis()->SetTitle("#Delta y [cm]");
-  h->GetZaxis()->SetTitle("entries");
+  if(!(h = (TH2I*)gROOT->FindObject("fYCl"))){
+    h = new TH2I("fYCl", "Clusters Residuals", 21, -.33, .33, 100, -.5, .5);
+    h->GetXaxis()->SetTitle("tg(#phi)");
+    h->GetYaxis()->SetTitle("#Delta y [cm]");
+    h->GetZaxis()->SetTitle("entries");
+  } else h->Reset();
+  fContainer->AddAt(h, kClusterResidual);
+
   // tracklet to track residuals [2]
-  fContainer->AddAt(h = new TH2I("hTrkltYRez", "Tracklets", 21, -.33, .33, 100, -.5, .5), kTrackletYResidual);
-  h->GetXaxis()->SetTitle("tg(#phi)");
-  h->GetYaxis()->SetTitle("#Delta y [cm]");
-  h->GetZaxis()->SetTitle("entries");
+  if(!(h = (TH2I*)gROOT->FindObject("hTrkltYRez"))){ 
+    h = new TH2I("hTrkltYRez", "Tracklets", 21, -.33, .33, 100, -.5, .5);
+    h->GetXaxis()->SetTitle("tg(#phi)");
+    h->GetYaxis()->SetTitle("#Delta y [cm]");
+    h->GetZaxis()->SetTitle("entries");
+  } else h->Reset();
+  fContainer->AddAt(h, kTrackletYResidual);
+
   // tracklet to track residuals angular [2]
-  fContainer->AddAt(h = new TH2I("hTrkltPhiRez", "Tracklets", 21, -.33, .33, 100, -.5, .5), kTrackletPhiResidual);
-  h->GetXaxis()->SetTitle("tg(#phi)");
-  h->GetYaxis()->SetTitle("#Delta phi [#circ]");
-  h->GetZaxis()->SetTitle("entries");
+  if(!(h = (TH2I*)gROOT->FindObject("hTrkltPhiRez"))){ 
+    h = new TH2I("hTrkltPhiRez", "Tracklets", 21, -.33, .33, 100, -.5, .5);
+    h->GetXaxis()->SetTitle("tg(#phi)");
+    h->GetYaxis()->SetTitle("#Delta phi [#circ]");
+    h->GetZaxis()->SetTitle("entries");
+  } else h->Reset();
+  fContainer->AddAt(h, kTrackletPhiResidual);
 
 
   // Resolution histos
   if(HasMCdata()){
     // cluster y resolution [0]
-    fContainer->AddAt(h = new TH2I("fYClMC", "Cluster Resolution", 31, -.48, .48, 100, -.5, .5), kClusterResolution);
-    h->GetXaxis()->SetTitle("tg(#phi)");
-    h->GetYaxis()->SetTitle("#Delta y [cm]");
-    h->GetZaxis()->SetTitle("entries");
-    // tracklet y resolution [0]
-    fContainer->AddAt(h = new TH2I("fYTrkltMC", "Tracklet Resolution (Y)", 31, -.48, .48, 100, -.5, .5), kTrackletYResolution);
-    h->GetXaxis()->SetTitle("tg(#phi)");
-    h->GetYaxis()->SetTitle("#Delta y [cm]");
-    h->GetZaxis()->SetTitle("entries");
-    // tracklet y resolution [0]
-    fContainer->AddAt(h = new TH2I("fZTrkltMC", "Tracklet Resolution (Z)", 31, -.48, .48, 100, -.5, .5), kTrackletZResolution);
-    h->GetXaxis()->SetTitle("tg(#theta)");
-    h->GetYaxis()->SetTitle("#Delta z [cm]");
-    h->GetZaxis()->SetTitle("entries");
-    // tracklet angular resolution [1]
-    fContainer->AddAt(h = new TH2I("fPhiTrkltMC", "Tracklet Resolution (Angular)", 31, -.48, .48, 100, -10., 10.), kTrackletAngleResolution);
-    h->GetXaxis()->SetTitle("tg(#phi)");
-    h->GetYaxis()->SetTitle("#Delta #phi [deg]");
-    h->GetZaxis()->SetTitle("entries");
+    if(!(h = (TH2I*)gROOT->FindObject("fYClMC"))){
+      h = new TH2I("fYClMC", "Cluster Resolution", 31, -.48, .48, 100, -.5, .5);
+      h->GetXaxis()->SetTitle("tg(#phi)");
+      h->GetYaxis()->SetTitle("#Delta y [cm]");
+      h->GetZaxis()->SetTitle("entries");
+    } else h->Reset();
+    fContainer->AddAt(h, kClusterResolution);
 
-//     // Riemann track resolution [y, z, angular]
-//     fContainer->AddAt(new TH2I("fYRT", "Track Riemann Y Resolution", 21, -21., 21., 100, -.5, .5), kTrackRYResolution);
-//     fContainer->AddAt(new TH2I("fZRT", "Track Riemann Z Resolution", 21, -21., 21., 100, -.5, .5), kTrackRZResolution);
-//     fContainer->AddAt(new TH2I("fPhiRT", "Track Riemann Angular Resolution", 21, -21., 21., 100, -10., 10.), kTrackRAngleResolution);
-// 
-//     Kalman track resolution [y, z, angular]
-//     fContainer->AddAt(new TH2I("fYKT", "", 21, -21., 21., 100, -.5, .5), kTrackKYResolution);
-//     fContainer->AddAt(new TH2I("fZKT", "", 21, -21., 21., 100, -.5, .5), kTrackKZResolution);
-//     fContainer->AddAt(new TH2I("fPhiKT", "", 21, -21., 21., 100, -10., 10.), kTrackKAngleResolution);
+    // tracklet y resolution [0]
+    if(!(h = (TH2I*)gROOT->FindObject("fYTrkltMC"))){
+      h = new TH2I("fYTrkltMC", "Tracklet Resolution (Y)", 31, -.48, .48, 100, -.5, .5);
+      h->GetXaxis()->SetTitle("tg(#phi)");
+      h->GetYaxis()->SetTitle("#Delta y [cm]");
+      h->GetZaxis()->SetTitle("entries");
+    } else h->Reset();
+    fContainer->AddAt(h, kTrackletYResolution);
+
+    // tracklet y resolution [0]
+    if(!(h = (TH2I*)gROOT->FindObject("fZTrkltMC"))){
+      h = new TH2I("fZTrkltMC", "Tracklet Resolution (Z)", 31, -.48, .48, 100, -.5, .5);
+      h->GetXaxis()->SetTitle("tg(#theta)");
+      h->GetYaxis()->SetTitle("#Delta z [cm]");
+      h->GetZaxis()->SetTitle("entries");
+    } else h->Reset();
+    fContainer->AddAt(h, kTrackletZResolution);
+
+    // tracklet angular resolution [1]
+    if(!(h = (TH2I*)gROOT->FindObject("fPhiTrkltMC"))){
+      h = new TH2I("fPhiTrkltMC", "Tracklet Resolution (Angular)", 31, -.48, .48, 100, -10., 10.);
+      h->GetXaxis()->SetTitle("tg(#phi)");
+      h->GetYaxis()->SetTitle("#Delta #phi [deg]");
+      h->GetZaxis()->SetTitle("entries");
+    } else h->Reset();
+    fContainer->AddAt(h, kTrackletAngleResolution);
   }
   return fContainer;
 }
