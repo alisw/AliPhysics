@@ -45,9 +45,9 @@ class AliMultiplicity : public TObject {
   Short_t GetNumberOfFiredChips(Int_t layer) const { return fFiredChips[layer]; }
   void SetFiredChips(Int_t layer, Short_t firedChips) { fFiredChips[layer] = firedChips; }
 
-  void   SetFastOrFiredChips(UInt_t chip){fFastOrFiredChips.SetBitNumber(chip);}
+  void   SetFastOrFiredChips(UInt_t chipKey){fFastOrFiredChips.SetBitNumber(chipKey);}
   TBits  GetFastOrFiredChips() const {return fFastOrFiredChips;}
-  Bool_t TestFastOrFiredChips(UInt_t chip) const {return fFastOrFiredChips.TestBitNumber(chip);}
+  Bool_t TestFastOrFiredChips(UInt_t chipKey) const {return fFastOrFiredChips.TestBitNumber(chipKey);}
 
   protected:
   void Duplicate(const AliMultiplicity &m);  // used by copy ctr.
