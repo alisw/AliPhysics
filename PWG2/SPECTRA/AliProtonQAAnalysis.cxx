@@ -3111,6 +3111,9 @@ void AliProtonQAAnalysis::RunQAAnalysis(AliStack *stack,
     labelArray.AddAt(label,labelCounter);
     labelCounter += 1;
 
+    TParticle *particle = stack->Particle(label);
+    if(TMath::Abs(particle->Eta()) > 1.0) continue;//acceptance
+    
     AliESDtrack trackTPC;
     
     //in case it's a TPC only track relate it to the proper vertex
