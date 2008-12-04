@@ -97,6 +97,8 @@ fTrackerDataMaker(0x0)
 {
     /// ctor
 	
+  AliDebug(1,"");
+
 	Ctor();
 }
 
@@ -123,6 +125,10 @@ fClusterStore(0x0),
 fTrackerDataMaker(0x0)
 {
     ///copy ctor 
+
+    AliDebug(1,"");
+
+
     SetName((const char*)qadm.GetName()) ; 
     SetTitle((const char*)qadm.GetTitle()); 
 
@@ -137,6 +143,8 @@ AliMUONQADataMakerRec& AliMUONQADataMakerRec::operator = (const AliMUONQADataMak
 {
   /// Assignment operator
 
+  AliDebug(1,"");
+
   // check assignment to self
   if (this == &qadm) return *this;
 
@@ -150,6 +158,8 @@ AliMUONQADataMakerRec::~AliMUONQADataMakerRec()
 {
     /// dtor
   
+  AliDebug(1,"");
+
   AliCodeTimerAuto("");
   
   delete fDigitStore;

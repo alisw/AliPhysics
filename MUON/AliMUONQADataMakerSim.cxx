@@ -51,6 +51,7 @@ AliMUONQADataMakerSim::AliMUONQADataMakerSim() :
     fDigitStore(0x0)   
 {
     /// ctor
+  AliDebug(1,"");
 }
 
 //____________________________________________________________________________ 
@@ -59,6 +60,8 @@ AliMUONQADataMakerSim::AliMUONQADataMakerSim(const AliMUONQADataMakerSim& qadm) 
   fHitStore(0x0),
   fDigitStore(0x0)
 {
+  AliDebug(1,"");
+
     ///copy ctor
     if ( qadm.fHitStore ) 
     {
@@ -75,6 +78,8 @@ AliMUONQADataMakerSim::AliMUONQADataMakerSim(const AliMUONQADataMakerSim& qadm) 
 //__________________________________________________________________
 AliMUONQADataMakerSim& AliMUONQADataMakerSim::operator = (const AliMUONQADataMakerSim& qadm )
 {
+    AliDebug(1,"");
+
     /// Equal operator.
     this->~AliMUONQADataMakerSim();
     new(this) AliMUONQADataMakerSim(qadm);
@@ -84,6 +89,8 @@ AliMUONQADataMakerSim& AliMUONQADataMakerSim::operator = (const AliMUONQADataMak
 //__________________________________________________________________
 AliMUONQADataMakerSim::~AliMUONQADataMakerSim()
 {
+  AliDebug(1,"");
+
     /// dtor
   delete fHitStore;
   delete fDigitStore;
