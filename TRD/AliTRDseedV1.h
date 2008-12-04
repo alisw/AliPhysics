@@ -72,7 +72,7 @@ class AliTRDseedV1 : public AliTRDseed
   inline Float_t   GetChi2Z(const Float_t z = 999.) const;
   inline Float_t   GetChi2Y(const Float_t y = 999.) const;
   void      GetCovAt(Double_t x, Double_t *cov) const;
-  void      GetCovRef(const Double_t *cov) const { cov = &fRefCov[0];}
+  void      GetCovRef(Double_t *cov) const { memcpy(cov, &fRefCov[0], 3*sizeof(Double_t));}
   Double_t* GetCrossXYZ()            { return &fCross[0];}
   Double_t  GetCrossSz2() const      { return fCross[3];}
   Float_t   GetdX() const            { return fdX;}
