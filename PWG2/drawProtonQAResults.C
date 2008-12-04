@@ -861,7 +861,7 @@ void DrawCutEfficiency(TList *inputList) {
 
   c11->SaveAs("CutEfficiency-Protons-Pt.gif");
 
-  TFile *fout = TFile::Open("Efficiency.root","recreate");
+  TFile *fout = TFile::Open("CutEfficiency.root","recreate");
   gYPrimaryESDProtons->Write();
   gYPrimaryESDAntiProtons->Write();
   gPtPrimaryESDProtons->Write();
@@ -1423,6 +1423,25 @@ void drawEfficiency(TList *list) {
   gPtESDContamProtons->DrawCopy("ESAME");
 
   c16->SaveAs("PIDEfficiency-Protons.gif");
+
+  TFile *fout = TFile::Open("Reconstruction-PID-Efficiency.root","recreate");
+  gYPrimariesESDProtons->Write();
+  gYESDProtonsFromWeak->Write();
+  gYESDProtonsFromHadronic->Write();
+  gPtPrimariesESDProtons->Write();
+  gPtESDProtonsFromWeak->Write();
+  gPtESDProtonsFromHadronic->Write();
+  gYPrimariesESDAntiProtons->Write();
+  gYESDAntiProtonsFromWeak->Write();
+  gYESDAntiProtonsFromHadronic->Write();
+  gPtPrimariesESDAntiProtons->Write();
+  gPtESDAntiProtonsFromWeak->Write();
+  gPtESDAntiProtonsFromHadronic->Write();
+  gYESDIdProtons->Write();
+  gYESDContamProtons->Write();
+  gPtESDIdProtons->Write();
+  gPtESDContamProtons->Write();
+  fout->Close();
 }
 
 //________________________________________________//
