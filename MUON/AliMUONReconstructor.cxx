@@ -110,6 +110,8 @@
 #include "AliMpArea.h"
 #include "AliMpCDB.h"
 #include "AliMpConstants.h"
+#include "AliMpDDLStore.h"
+#include "AliMpSegmentation.h"
 
 #include "AliRawReader.h"
 #include "AliCDBManager.h"
@@ -142,6 +144,8 @@ fClusterStore(0x0)
 {
   /// normal ctor
 
+  AliDebug(1,"");
+
   // Load mapping
   if ( ! AliMpCDB::LoadDDLStore() ) {
     AliFatal("Could not access mapping from OCDB !");
@@ -155,6 +159,8 @@ fClusterStore(0x0)
 //_____________________________________________________________________________
 AliMUONReconstructor::~AliMUONReconstructor()
 {
+  AliDebug(1,"");
+
   /// dtor
   delete fDigitMaker;
   delete fDigitStore;
@@ -166,6 +172,9 @@ AliMUONReconstructor::~AliMUONReconstructor()
   delete fTriggerStore;
   delete fTrackStore;
   delete fClusterStore;
+
+  delete AliMpSegmentation::Instance(false);
+  delete AliMpDDLStore::Instance(false);
 }
 
 //_____________________________________________________________________________
