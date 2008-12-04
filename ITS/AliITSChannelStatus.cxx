@@ -29,7 +29,10 @@
 #include "AliITSChannelStatus.h"
 #include "AliITSCalibrationSPD.h"
 #include "AliITSCalibrationSDD.h"
+#include "AliITSsegmentationSPD.h"
+#include "AliITSsegmentationSDD.h"
 #include "AliCDBEntry.h"
+#include "TMath.h"
 #include "AliLog.h"
 
 ClassImp(AliITSChannelStatus)
@@ -253,4 +256,138 @@ void AliITSChannelStatus::SetChannelStatus(Bool_t cstatus, Int_t imod, Int_t iz,
     Int_t index=imod*kSDDAnodesPerModule+iz;
     fSDDChannelStatus->SetBitNumber(index,cstatus);
   }
+}
+//______________________________________________________________________
+Bool_t AliITSChannelStatus::GetSDDLimits(Float_t zlocmin, Float_t zlocmax, Float_t xlocmin, Float_t xlocmax, Int_t& izmin, Int_t& izmax, Int_t& izmin2, Int_t& izmax2) const {
+  // Returns min. and max. anode numbers from local coordindate
+  AliITSsegmentationSDD *seg=new AliITSsegmentationSDD();
+  Float_t dummySpeed=6.5; // to avoid warnings in SDD segmentation
+  Float_t tolerance=0.9999;
+  seg->SetDriftSpeed(dummySpeed);
+  Float_t zHalfSize=0.5*seg->Dz()/10000.;
+  zHalfSize*=tolerance;
+  if(zlocmin<-zHalfSize) zlocmin=-zHalfSize;
+  if(zlocmax>zHalfSize) zlocmax=zHalfSize;
+  if(zlocmax<-zHalfSize || zlocmin>zHalfSize){
+    AliWarning("Search region completely outside module");
+    return kFALSE;
+  }
+  Float_t xHalfSize=seg->Dx()/10000.;
+  xHalfSize*=tolerance;
+  if(xlocmin<-xHalfSize) xlocmin=-xHalfSize;
+  if(xlocmax>xHalfSize) xlocmax=xHalfSize;
+  if(xlocmax<-xHalfSize || xlocmin>xHalfSize){
+    AliWarning("Search region completely outside module");
+    return kFALSE;
+  }
+  
+  Int_t iSid1=seg->GetSideFromLocalX(xlocmin);
+  Int_t iSid2=seg->GetSideFromLocalX(xlocmax);
+  Int_t iz1,iz2,ixdummy;
+  seg->LocalToDet(xlocmin,zlocmin,ixdummy,iz1);
+  seg->LocalToDet(xlocmin,zlocmax,ixdummy,iz2);
+  izmin=TMath::Min(iz1,iz2);
+  izmax=TMath::Max(iz1,iz2);    
+  if(iSid1==iSid2){
+    izmax2=izmin2=-1;
+  }else{
+    seg->LocalToDet(xlocmax,zlocmin,ixdummy,iz1);
+    seg->LocalToDet(xlocmax,zlocmax,ixdummy,iz2);
+    izmin2=TMath::Min(iz1,iz2);
+    izmax2=TMath::Max(iz1,iz2);    
+  }
+  delete seg;
+  return kTRUE;
+}
+//______________________________________________________________________
+Bool_t AliITSChannelStatus::GetSPDLimits(Float_t zlocmin, Float_t zlocmax, Float_t xlocmin, Float_t xlocmax, Int_t& izmin, Int_t& izmax, Int_t& ixmin, Int_t& ixmax) const {
+  // Returns min. and max. pixel numbers from local coordindate
+  Float_t tolerance=0.9999;
+  AliITSsegmentationSPD *seg=new AliITSsegmentationSPD();
+  Float_t zHalfSize=0.5*seg->Dz()/10000.;
+  zHalfSize*=tolerance;
+  if(zlocmin<-zHalfSize) zlocmin=-zHalfSize;
+  if(zlocmax>zHalfSize) zlocmax=zHalfSize;
+  if(zlocmax<-zHalfSize || zlocmin>zHalfSize){
+    AliWarning("Search region completely outside module");
+    return kFALSE;
+  }
+  Float_t xHalfSize=0.5*seg->Dx()/10000.;
+  xHalfSize*=tolerance;
+  if(xlocmin<-xHalfSize) xlocmin=-xHalfSize;
+  if(xlocmax>xHalfSize) xlocmax=xHalfSize;
+  if(xlocmax<-xHalfSize || xlocmin>xHalfSize){
+    AliWarning("Search region completely outside module");
+    return kFALSE;
+  }
+
+  Int_t iz1,ix1,iz2,ix2;
+  seg->LocalToDet(xlocmin,zlocmin,ix1,iz1);
+  seg->LocalToDet(xlocmax,zlocmax,ix2,iz2);
+  izmin=TMath::Min(iz1,iz2);
+  izmax=TMath::Max(iz1,iz2);
+  ixmin=TMath::Min(ix1,ix2);
+  ixmax=TMath::Max(ix1,ix2);
+  delete seg;
+  return kTRUE;
+}
+//______________________________________________________________________
+Bool_t AliITSChannelStatus::AnyBadInRoad(Int_t imod, Float_t zlocmin, Float_t zlocmax, Float_t xlocmin, Float_t xlocmax) const{
+  // Checks if there is at least one bad channel in the search road
+  if(imod<kSPDModules){
+    Int_t izmin,izmax,ixmin,ixmax;
+    Bool_t retcode=GetSPDLimits(zlocmin,zlocmax,xlocmin,xlocmax,izmin,izmax,ixmin,ixmax);
+    if(!retcode) return kFALSE;
+    for(Int_t iz=izmin; iz<=izmax;iz++){
+      for(Int_t ix=ixmin; ix<=ixmax;ix++){
+	if(GetChannelStatus(imod,iz,ix)==kFALSE) return kTRUE;
+      }
+    }
+  }else{
+    Int_t izmin,izmax,izmin2,izmax2;
+    Bool_t retcode=GetSDDLimits(zlocmin,zlocmax,xlocmin,xlocmax,izmin,izmax,izmin2,izmax2);
+    if(!retcode) return kFALSE;
+    for(Int_t iz=izmin; iz<=izmax;iz++){
+      if(GetChannelStatus(imod,iz,0)==kFALSE) return kTRUE;
+    }
+    if(izmin2!=-1 && izmax2!=-1){
+      for(Int_t iz=izmin2; iz<=izmax2;iz++){
+	if(GetChannelStatus(imod,iz,0)==kFALSE) return kTRUE;
+      }
+    }
+  }
+  return kFALSE;
+}
+//______________________________________________________________________
+Float_t AliITSChannelStatus::FractionOfBadInRoad(Int_t imod, Float_t zlocmin, Float_t zlocmax, Float_t xlocmin, Float_t xlocmax) const{
+  // Calculate the fraction of bad channels in the road  
+  Float_t totChan=0.;
+  Float_t badChan=0.;
+  if(imod<kSPDModules){
+    Int_t izmin,izmax,ixmin,ixmax;
+    Bool_t retcode=GetSPDLimits(zlocmin,zlocmax,xlocmin,xlocmax,izmin,izmax,ixmin,ixmax);
+    if(!retcode) return 0.;
+    for(Int_t iz=izmin; iz<=izmax;iz++){
+      for(Int_t ix=ixmin; ix<=ixmax;ix++){
+	totChan+=1;
+	if(GetChannelStatus(imod,iz,ix)==kFALSE) badChan+=1.;
+      }
+    }
+  }else{
+    Int_t izmin,izmax,izmin2,izmax2;
+    Bool_t retcode=GetSDDLimits(zlocmin,zlocmax,xlocmin,xlocmax,izmin,izmax,izmin2,izmax2);
+    if(!retcode) return 0.;
+    for(Int_t iz=izmin; iz<=izmax;iz++){
+      totChan+=1;
+      if(GetChannelStatus(imod,iz,0)==kFALSE) badChan+=1.;
+    }
+    if(izmin2!=-1 && izmax2!=-1){
+      for(Int_t iz=izmin2; iz<=izmax2;iz++){
+	totChan+=1;
+	if(GetChannelStatus(imod,iz,0)==kFALSE) badChan+=1.;
+      }
+    }
+  }
+  if(totChan==0.) return 0.;
+  else return badChan/totChan;
 }

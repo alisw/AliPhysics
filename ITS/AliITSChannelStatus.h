@@ -35,12 +35,8 @@ class AliITSChannelStatus : public TObject {
 
   Bool_t GetChannelStatus(Int_t imod, Int_t iz, Int_t ix=0) const;
 
-  Bool_t AnyBadInRoad(Int_t /*imod*/, Float_t /*zlocmin*/, Float_t /*zlocmax*/, Float_t /*xlocmin*/, Float_t /*xlocmax*/) const{
-    return kFALSE;
-  }
-  Float_t FractionOfBadInRoad(Int_t /*imod*/, Float_t /*zlocmin*/, Float_t /*zlocmax*/, Float_t /*xlocmin*/, Float_t /*xlocmax*/) const{
-    return 0.;
-  }
+  Bool_t AnyBadInRoad(Int_t imod, Float_t zlocmin, Float_t zlocmax, Float_t xlocmin, Float_t xlocmax) const;
+  Float_t FractionOfBadInRoad(Int_t imod, Float_t zlocmin, Float_t zlocmax, Float_t xlocmin, Float_t xlocmax) const;
 
   Int_t GetNSPDChannels()const {return fSPDChannelStatus->GetNbits();}
   Int_t GetNSDDChannels()const {return fSDDChannelStatus->GetNbits();}
@@ -49,6 +45,8 @@ class AliITSChannelStatus : public TObject {
   void InitDefaults();
   void InitFromOCDB(TObjArray* deadArrSPD, TObjArray* noisArrSPD, TObjArray* calArrSDD);
   Bool_t CheckBounds(Int_t imod, Int_t iz, Int_t ix=0) const;
+  Bool_t GetSPDLimits(Float_t zlocmin, Float_t zlocmax, Float_t xlocmin, Float_t xlocmax, Int_t& izmin, Int_t& izmax, Int_t& ixmin, Int_t& ixmax)  const;
+  Bool_t GetSDDLimits(Float_t zlocmin, Float_t zlocmax, Float_t xlocmin, Float_t xlocmax, Int_t& izmin, Int_t& izmax, Int_t& izmin2, Int_t& izmax2) const;
   enum {kSPDModules=240};
   enum {kSPDNpzPerModule=160};
   enum {kSPDNpxPerModule=256};
