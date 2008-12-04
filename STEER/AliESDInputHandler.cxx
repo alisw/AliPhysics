@@ -143,12 +143,12 @@ Bool_t AliESDInputHandler::Notify(const char* path)
     }
 
     
-   TString* pathName = new TString("./");
-   if (fileName.Length() != 0) {
-       *pathName = fileName;
-   }
-
-    printf("AliESDInputHandler::Notify() Path: %s\n", pathName->Data());
+    TString pathName("./");
+    if (fileName.Length() != 0) {
+	pathName = fileName;
+    }
+    
+    printf("AliESDInputHandler::Notify() Path: %s\n", pathName.Data());
     
     if (fRunTag) {
 	fRunTag->Clear();
@@ -181,7 +181,7 @@ Bool_t AliESDInputHandler::Notify(const char* path)
 	while ((file = (TFile*) next())) {
 	    name = file->GetName();
 	    if (strstr(name,tagPattern)) { 
-		tagFilename = pathName->Data();
+		tagFilename = pathName.Data();
 		tagFilename += "#";
 		tagFilename += name;
 		fChainT->Add(tagFilename);  
@@ -189,10 +189,10 @@ Bool_t AliESDInputHandler::Notify(const char* path)
 	    }//pattern check
 	} // archive file loop
     } else {
-	void * dirp = gSystem->OpenDirectory(pathName->Data());
+	void * dirp = gSystem->OpenDirectory(pathName.Data());
 	while((name = gSystem->GetDirEntry(dirp))) {
 	    if (strstr(name,tagPattern)) { 
-		tagFilename = pathName->Data();
+		tagFilename = pathName.Data();
 		tagFilename += "/";
 		tagFilename += name;
 		fChainT->Add(tagFilename);  
