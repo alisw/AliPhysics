@@ -2879,7 +2879,7 @@ void AliReconstruction::RunAliEVE()
   // successful initialization of AliEVE.
 
   AliInfo("Running AliEVE...");
-  gROOT->ProcessLine(Form("AliEveEventManager::GetMaster()->SetEvent((AliRunLoader*)0x%lx,(AliRawReader*)0x%lx,(AliESDEvent*)0x%lx);",fRunLoader,fRawReader,fesd));
+  gROOT->ProcessLine(Form("AliEveEventManager::GetMaster()->SetEvent((AliRunLoader*)0x%lx,(AliRawReader*)0x%lx,(AliESDEvent*)0x%lx,(AliESDfriend*)0x%lx);",fRunLoader,fRawReader,fesd,fesdf));
   gSystem->Run();
 }
 
