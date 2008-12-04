@@ -668,7 +668,7 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
         break;
       }
       //ptrTracklet->UseClusters();
-    }
+    } else ptrTracklet->Init(&t);
     if(!ptrTracklet->IsOK()){
       if(x < 1.) continue; //temporary
       if(!PropagateToX(t, x-fgkMaxStep, fgkMaxStep)) return -1/*nClustersExpected*/;
