@@ -275,13 +275,14 @@ void AliEveTRDTrackList::AddStandardContent()
   for(Int_t it=0; it<NTRDTASKS; it++){
     TClass c(fgkTRDtaskClassName[it]);
     task = (AliTRDrecoTask*)c.New();
+    task->SetMCdata(kFALSE);
     if(!(fPlots = task->GetPlotFunctors())){
-      AliWarning(Form("No Plot functors defined for task \"%s\"", fgkTRDtaskClassName[it]));
+      //AliWarning(Form("No Plot functors defined for task \"%s\"", fgkTRDtaskClassName[it]));
       delete task;
       continue;
     }
     if(!(task->Histos())){
-      AliWarning(Form("No Ref Histograms defined for task \"%s\"", fgkTRDtaskClassName[it]));
+      //AliWarning(Form("No Ref Histograms defined for task \"%s\"", fgkTRDtaskClassName[it]));
       delete task;
       continue;
     }
