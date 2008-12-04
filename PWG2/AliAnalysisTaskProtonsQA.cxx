@@ -87,66 +87,67 @@ void AliAnalysisTaskProtonsQA::CreateOutputObjects() {
   //proton analysis object
   fAnalysis = new AliProtonQAAnalysis();
   fAnalysis->SetRunMCAnalysis();
-  fAnalysis->SetRunEfficiencyAnalysis();
-  //fAnalysis->SetMCProcessId(4);//4: weak decay - 13: hadronic interaction
+  fAnalysis->SetRunEfficiencyAnalysis(kFALSE,kFALSE); //kTRUE,kTRUE for eta-pT efficiencies and if the cuts should be used in the reco and pid efficiencies
+  //fAnalysis->SetMCProcessId(13);//4: weak decay - 13: hadronic interaction
   //fAnalysis->SetMotherParticlePDGCode(3122);//3122: Lambda
 
   //Use of TPConly tracks
-  fAnalysis->SetQAYPtBins(10, -0.5, 0.5, 12, 0.5, 0.9); //TPC only
+  /*fAnalysis->SetQAYPtBins(10, -0.5, 0.5, 12, 0.5, 0.9); //TPC only
   fAnalysis->UseTPCOnly();
-  fAnalysis->SetMinTPCClusters(50);
-  fAnalysis->SetMaxChi2PerTPCCluster(2.5);
-  fAnalysis->SetMaxCov11(2.0);
-  fAnalysis->SetMaxCov22(2.0);
+  fAnalysis->SetMinTPCClusters(100);
+  fAnalysis->SetMaxChi2PerTPCCluster(2.2);
+  fAnalysis->SetMaxCov11(0.5);
+  fAnalysis->SetMaxCov22(0.5);
   fAnalysis->SetMaxCov33(0.5);
   fAnalysis->SetMaxCov44(0.5);
-  fAnalysis->SetMaxCov55(2.0);
-  fAnalysis->SetMaxSigmaToVertexTPC(2.0);
-  //fAnalysis->SetMaxDCAXYTPC(2.0);
-  //fAnalysis->SetMaxDCAZTPC(2.0);
-  fAnalysis->SetTPCpid();
+  fAnalysis->SetMaxCov55(0.5);
+  //fAnalysis->SetMaxSigmaToVertexTPC(2.0);
+  fAnalysis->SetMaxDCAXYTPC(1.5);
+  fAnalysis->SetMaxDCAZTPC(1.5);
+  fAnalysis->SetTPCpid();*/
 
   //Use of HybridTPC tracks
-  /*fAnalysis->SetQAYPtBins(10, -0.5, 0.5, 12, 0.5, 0.9); //HybridTPC
+  fAnalysis->SetQAYPtBins(10, -0.5, 0.5, 12, 0.5, 0.9); //HybridTPC
   fAnalysis->UseHybridTPC();
-  fAnalysis->SetMinTPCClusters(50);
-  fAnalysis->SetMaxChi2PerTPCCluster(2.5);
-  fAnalysis->SetMaxCov11(2.0);
-  fAnalysis->SetMaxCov22(2.0);
+  fAnalysis->SetMinTPCClusters(110);
+  fAnalysis->SetMaxChi2PerTPCCluster(2.2);
+  fAnalysis->SetMaxCov11(0.5);
+  fAnalysis->SetMaxCov22(0.5);
   fAnalysis->SetMaxCov33(0.5);
   fAnalysis->SetMaxCov44(0.5);
-  fAnalysis->SetMaxCov55(2.0);
-  fAnalysis->SetMaxSigmaToVertexTPC(2.0);
-  //fAnalysis->SetMaxDCAXY(2.0);
-  //fAnalysis->SetMaxDCAZ(2.0);
+  fAnalysis->SetMaxCov55(0.5);
+  fAnalysis->SetMaxSigmaToVertex(3.0);
+  fAnalysis->SetMaxDCAXY(1.5);
+  fAnalysis->SetMaxDCAZ(1.5);
   fAnalysis->SetTPCpid();
   fAnalysis->SetPointOnITSLayer1();
   fAnalysis->SetPointOnITSLayer2();
-  fAnalysis->SetPointOnITSLayer3();
-  fAnalysis->SetPointOnITSLayer4();
-  fAnalysis->SetPointOnITSLayer5();
-  fAnalysis->SetPointOnITSLayer6();
-  fAnalysis->SetMinITSClusters(5);*/
+  //fAnalysis->SetPointOnITSLayer3();
+  //fAnalysis->SetPointOnITSLayer4();
+  //fAnalysis->SetPointOnITSLayer5();
+  //fAnalysis->SetPointOnITSLayer6();
+  fAnalysis->SetMinITSClusters(5);
 
   //Combined tracking
-  /*fAnalysis->SetQAYPtBins(20, -1.0, 1.0, 27, 0.4, 3.1); //combined tracking
-  fAnalysis->SetMinTPCClusters(50);
-  fAnalysis->SetMaxChi2PerTPCCluster(3.5);
-  fAnalysis->SetMaxCov11(2.0);
-  fAnalysis->SetMaxCov22(2.0);
+  /*fAnalysis->SetQAYPtBins(10, -0.5, 0.5, 12, 0.5, 0.9); //HybridTPC
+  //fAnalysis->SetQAYPtBins(20, -1.0, 1.0, 27, 0.4, 3.1); //combined tracking
+  fAnalysis->SetMinTPCClusters(110);
+  fAnalysis->SetMaxChi2PerTPCCluster(2.2);
+  fAnalysis->SetMaxCov11(0.5);
+  fAnalysis->SetMaxCov22(0.5);
   fAnalysis->SetMaxCov33(0.5);
   fAnalysis->SetMaxCov44(0.5);
-  fAnalysis->SetMaxCov55(2.0);
+  fAnalysis->SetMaxCov55(0.5);
   fAnalysis->SetMaxSigmaToVertex(2.0);
   //fAnalysis->SetMaxDCAXY(2.0);
   //fAnalysis->SetMaxDCAZ(2.0);
   fAnalysis->SetTPCRefit();
   fAnalysis->SetPointOnITSLayer1();
   fAnalysis->SetPointOnITSLayer2();
-  fAnalysis->SetPointOnITSLayer3();
-  fAnalysis->SetPointOnITSLayer4();
-  fAnalysis->SetPointOnITSLayer5();
-  fAnalysis->SetPointOnITSLayer6();
+  //fAnalysis->SetPointOnITSLayer3();
+  //fAnalysis->SetPointOnITSLayer4();
+  //fAnalysis->SetPointOnITSLayer5();
+  //fAnalysis->SetPointOnITSLayer6();
   fAnalysis->SetMinITSClusters(1);
   fAnalysis->SetITSRefit();
   fAnalysis->SetESDpid();*/
