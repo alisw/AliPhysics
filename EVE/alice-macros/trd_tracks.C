@@ -1,19 +1,28 @@
+#ifndef __CINT__
+#include <TGLViewer.h>
+#include <TEveManager.h>
+#include <EveBase/AliEveEventManager.h>
+#include "TRD/AliTRDdataArrayI.h"
+#include <EveDet/AliEveTRDTrackList.h>
+
+#include "AliESDEvent.h"
+#include "AliESDfriend.h"
+#include "TRD/AliTRDReconstructor.h"
+#include "TRD/AliTRDtrackV1.h"
+#endif
+
 void trd_tracks(TEveElement *cont = 0)
 {
-
   // Link data containers
   AliESDfriend *eventESDfriend = 0x0;
   if(!(eventESDfriend = AliEveEventManager::AssertESDfriend())){
     Warning("trd_tracks", "AliESDfriend not found");
-    return 0x0;
+    return;
   }
 
   AliESDEvent* esd = AliEveEventManager::AssertESD();
 
   AliEveEventManager::AssertGeometry();
-
-  AliMagFMaps *field = new AliMagFMaps("Maps","Maps", 2, 1., 10., AliMagFMaps::k5kG);
-  AliTracker::SetFieldMap(field, kTRUE);
 
   AliTRDReconstructor *reco = new AliTRDReconstructor();
   reco->SetRecoParam(AliTRDrecoParam::GetLowFluxParam());
@@ -36,6 +45,8 @@ void trd_tracks(TEveElement *cont = 0)
       trackEve->SetName(Form("[%4d] %s", n, trackEve->GetName()));
     }
   }
+
+  delete reco;
 	
   tracks->SetTitle(Form("Tracks %d", tracks->NumChildren()));
   tracks->StampObjProps();

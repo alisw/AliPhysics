@@ -18,20 +18,19 @@ class TEveElement;
 #include <TEveManager.h>
 #include <TEvePointSet.h>
 #include <EveBase/AliEveEventManager.h>
+#include <EveDet/AliEveTRDModuleImp.h>
 
 #include "AliRunLoader.h"
 #include "AliCluster.h"
-#include "AliTRDcluster.h"
+#include "TRD/AliTRDcluster.h"
+#include "TRD/AliTRDgeometry.h"
+#include "TRD/AliTRDdigitsManager.h"
 #endif
 
 TEveElementList* trd_detectors(Int_t sector = -1, TEveElement *cont = 0)
 {
   // Link data containers
-  AliCDBManager *fCDBManager=AliCDBManager::Instance();
-  fCDBManager->SetDefaultStorage("local://$ALICE_ROOT");
-  fCDBManager->SetRun(0);
-
-  TGeoManager  *gGeoManager = AliEveEventManager::AssertGeometry();
+  AliEveEventManager::AssertGeometry();
 
   AliRunLoader *rl = AliEveEventManager::AssertRunLoader();
   
@@ -67,11 +66,11 @@ TEveElementList* trd_detectors(Int_t sector = -1, TEveElement *cont = 0)
     istk = geo->GetStack(idet);
     ipla = geo->GetLayer(idet);
     if(sector>=0 && ism != sector) continue;
-    if(!(sm = list->FindChild(Form("SM%03d", ism)))){ 
+    if(!(sm = (AliEveTRDNode*)list->FindChild(Form("SM%03d", ism)))){ 
       list->AddElement(sm = new AliEveTRDNode("SM", ism));
       sm->SetElementTitle(Form("Supermodule %2d", ism));
     }
-    if(!(stk=sm->FindChild(Form("Stack%03d", istk)))){
+    if(!(stk=(AliEveTRDNode*)sm->FindChild(Form("Stack%03d", istk)))){
       sm->AddElement(stk = new AliEveTRDNode("Stack", istk));
       stk->SetElementTitle(Form("SM %2d Stack %1d", ism, istk));
     }
@@ -82,6 +81,9 @@ TEveElementList* trd_detectors(Int_t sector = -1, TEveElement *cont = 0)
 
     //clusters->Clear();
   }
+
+  rl->UnloadDigits("TRD");
+  rl->UnloadRecPoints("TRD");
 
   gEve->AddElement(list, cont);
   gEve->Redraw3D();

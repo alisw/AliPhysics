@@ -57,6 +57,8 @@ TEvePointSet* trd_clusters(TEveElement *cont = 0)
     TRDcluster->Clear();
   }
 
+  rl->UnloadRecPoints("TRD");
+
   if(clusters->Size() == 0 && gEve->GetKeepEmptyCont() == kFALSE) {
     Warning("trd_clusters.C", "No TRD clusters");
     delete clusters;

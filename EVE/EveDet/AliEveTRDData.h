@@ -25,7 +25,9 @@
 #include <TEveLine.h>
 
 
+#ifndef ALITRDDATAARRAYI_H
 #include "AliTRDdataArrayI.h"
+#endif
 
 class AliEveTRDChamber;
 class AliEveTRDHits : public TEvePointSet
