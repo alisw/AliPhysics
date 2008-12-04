@@ -81,19 +81,31 @@ void AliPDG::AddParticlesToPdgDataBase()
 // From Herwig
   pdgDB->AddParticle("PSID    ", " ", 3.7699, kFALSE, 0.0, 0, "meson",   30443);
   
-  pdgDB->AddParticle("A_00    ", " ", 0.9960, kFALSE, 0.0, 0, "meson", 9000111); 
-  pdgDB->AddParticle("A_0+    ", " ", 0.9960, kFALSE, 0.0, 1, "meson", 9000211);  
-  pdgDB->AddParticle("F0P0    ", " ", 0.9960, kFALSE, 0.0, 0, "meson", 9010221); 
+  pdgDB->AddParticle("A_00    ", " ", 0.9960, kFALSE, 0.0, 0, "meson",  9000111); 
+  pdgDB->AddParticle("A_0+    ", " ", 0.9960, kFALSE, 0.0,+1, "meson",  9000211);  
+  pdgDB->AddParticle("A_0-    ", " ", 0.9960, kFALSE, 0.0,-1, "meson", -9000211);  
+
+  pdgDB->AddParticle("F0P0    ", " ", 0.9960, kFALSE, 0.0, 0, "meson",  9010221); 
   
-  pdgDB->AddParticle("KDL_2+  ", " ", 1.773,  kFALSE, 0.0, 1, "meson",   10325); 
+  pdgDB->AddParticle("KDL_2+  ", " ", 1.773,  kFALSE, 0.0,+1, "meson",   10325); 
+  pdgDB->AddParticle("KDL_2-  ", " ", 1.773,  kFALSE, 0.0,-1, "meson",  -10325); 
+
   pdgDB->AddParticle("KDL_20  ", " ", 1.773,  kFALSE, 0.0, 0, "meson",   10315); 
-  pdgDB->AddParticle("PI_2+   ", " ", 1.670,  kFALSE, 0.0, 1, "meson",   10215);
+  pdgDB->AddParticle("KDL_2BR0", " ", 1.773,  kFALSE, 0.0, 0, "meson",  -10315); 
+
+  pdgDB->AddParticle("PI_2+   ", " ", 1.670,  kFALSE, 0.0,+1, "meson",   10215);
+  pdgDB->AddParticle("PI_2-   ", " ", 1.670,  kFALSE, 0.0,-1, "meson",  -10215);
   pdgDB->AddParticle("PI_20   ", " ", 1.670,  kFALSE, 0.0, 0, "meson",   10115);
   
   
-  pdgDB->AddParticle("KD*+    ", " ", 1.717,  kFALSE, 0.0, 1, "meson",   30323); 
+  pdgDB->AddParticle("KD*+    ", " ", 1.717,  kFALSE, 0.0,+1, "meson",   30323); 
+  pdgDB->AddParticle("KD*-    ", " ", 1.717,  kFALSE, 0.0,-1, "meson",  -30323); 
+
   pdgDB->AddParticle("KD*0    ", " ", 1.717,  kFALSE, 0.0, 0, "meson",   30313); 
-  pdgDB->AddParticle("RHOD+   ", " ", 1.700,  kFALSE, 0.0, 1, "meson",   30213); 
+  pdgDB->AddParticle("KDBR*0  ", " ", 1.717,  kFALSE, 0.0, 0, "meson",  -30313); 
+
+  pdgDB->AddParticle("RHOD+   ", " ", 1.700,  kFALSE, 0.0,+1, "meson",   30213); 
+  pdgDB->AddParticle("RHOD-   ", " ", 1.700,  kFALSE, 0.0,-1, "meson",  -30213); 
   pdgDB->AddParticle("RHOD0   ", " ", 1.700,  kFALSE, 0.0, 0, "meson",   30113); 
   
   pdgDB->AddParticle("ETA_2(L)", " ", 1.632,  kFALSE, 0.0, 0, "meson",   10225); 
@@ -101,14 +113,21 @@ void AliPDG::AddParticlesToPdgDataBase()
   pdgDB->AddParticle("OMEGA(H)", " ", 1.649,  kFALSE, 0.0, 0, "meson",   30223);
   
   
-  pdgDB->AddParticle("KDH_2+  ", " ", 1.816,  kFALSE, 0.0, 1, "meson",   20325);
+  pdgDB->AddParticle("KDH_2+  ", " ", 1.816,  kFALSE, 0.0,+1, "meson",   20325);
+  pdgDB->AddParticle("KDH_2-  ", " ", 1.816,  kFALSE, 0.0,-1, "meson",  -20325);
+
   pdgDB->AddParticle("KDH_20  ", " ", 1.816,  kFALSE, 0.0, 0, "meson",   20315);
+  pdgDB->AddParticle("KDH_2BR0", " ", 1.816,  kFALSE, 0.0, 0, "meson",  -20315);
   
   
-  pdgDB->AddParticle("KD_3+   ", " ", 1.773,  kFALSE, 0.0, 1, "meson",     327);
+  pdgDB->AddParticle("KD_3+   ", " ", 1.773,  kFALSE, 0.0,+1, "meson",     327);
+  pdgDB->AddParticle("KD_3-   ", " ", 1.773,  kFALSE, 0.0,-1, "meson",    -327);
+
   pdgDB->AddParticle("KD_30   ", " ", 1.773,  kFALSE, 0.0, 0, "meson",     317);
+  pdgDB->AddParticle("KD_3BR0 ", " ", 1.773,  kFALSE, 0.0, 0, "meson",    -317);
   
-  pdgDB->AddParticle("RHO_3+  ", " ", 1.691,  kFALSE, 0.0, 1, "meson",     217);
+  pdgDB->AddParticle("RHO_3+  ", " ", 1.691,  kFALSE, 0.0,+1, "meson",     217);
+  pdgDB->AddParticle("RHO_3-  ", " ", 1.691,  kFALSE, 0.0,-1, "meson",    -217);
   pdgDB->AddParticle("RHO_30  ", " ", 1.691,  kFALSE, 0.0, 0, "meson",     117);
   pdgDB->AddParticle("OMEGA_3 ", " ", 1.667,  kFALSE, 0.0, 0, "meson",     227);
   pdgDB->AddParticle("PHI_3   ", " ", 1.854,  kFALSE, 0.0, 0, "meson",     337);
