@@ -58,6 +58,7 @@ AliTRDseedV1::AliTRDseedV1(Int_t det)
   ,fSnp(0.)
   ,fTgl(0.)
   ,fdX(0.)
+  ,fXref(0.)
 {
   //
   // Constructor
@@ -66,6 +67,7 @@ AliTRDseedV1::AliTRDseedV1(Int_t det)
 
   for(int islice=0; islice < knSlices; islice++) fdEdx[islice] = 0.;
   for(int ispec=0; ispec<AliPID::kSPECIES; ispec++) fProb[ispec]  = -1.;
+  fRefCov[0] = 1.; fRefCov[1] = 0.; fRefCov[2] = 1.;
 }
 
 //____________________________________________________________________
@@ -79,6 +81,7 @@ AliTRDseedV1::AliTRDseedV1(const AliTRDseedV1 &ref)
   ,fSnp(ref.fSnp)
   ,fTgl(ref.fTgl)
   ,fdX(ref.fdX)
+  ,fXref(ref.fXref)
 {
   //
   // Copy Constructor performing a deep copy
@@ -88,6 +91,7 @@ AliTRDseedV1::AliTRDseedV1(const AliTRDseedV1 &ref)
   SetBit(kOwner, kFALSE);
   for(int islice=0; islice < knSlices; islice++) fdEdx[islice] = ref.fdEdx[islice];
   for(int ispec=0; ispec<AliPID::kSPECIES; ispec++) fProb[ispec] = ref.fProb[ispec];
+  memcpy(fRefCov, ref.fRefCov, 3*sizeof(Double_t));
 }
 
 
@@ -142,10 +146,12 @@ void AliTRDseedV1::Copy(TObject &ref) const
   target.fSnp           = fSnp;
   target.fTgl           = fTgl;
   target.fdX            = fdX;
+  target.fXref          = fXref;
   target.fReconstructor = fReconstructor;
   
   for(int islice=0; islice < knSlices; islice++) target.fdEdx[islice] = fdEdx[islice];
   for(int ispec=0; ispec<AliPID::kSPECIES; ispec++) target.fProb[ispec] = fProb[ispec];
+  memcpy(target.fRefCov, fRefCov, 3*sizeof(Double_t));
   
   AliTRDseed::Copy(target);
 }
@@ -174,6 +180,11 @@ Bool_t AliTRDseedV1::Init(AliTRDtrackV1 *track)
   fYref[1] = track->GetSnp()/(1. - track->GetSnp()*track->GetSnp());
   fZref[0] = z;
   fZref[1] = track->GetTgl();
+  
+  const Double_t *cov = track->GetCovariance();
+  fRefCov[0] = cov[0]; // Var(y)
+  fRefCov[1] = cov[1]; // Cov(yz)
+  fRefCov[2] = cov[5]; // Var(z)
 
   //printf("Tracklet ref x[%7.3f] y[%7.3f] z[%7.3f], snp[%f] tgl[%f]\n", fX0, fYref[0], fZref[0], track->GetSnp(), track->GetTgl());
   return kTRUE;

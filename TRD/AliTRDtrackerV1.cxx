@@ -1083,7 +1083,7 @@ Float_t AliTRDtrackerV1::FitTiltedRieman(AliTRDseedV1 *tracklets, Bool_t sigErro
 
 
 //____________________________________________________________________
-Double_t AliTRDtrackerV1::FitLine(AliTRDtrackV1 *track, AliTRDseedV1 *tracklets, Bool_t err, Int_t np, AliTrackPoint *points)
+Double_t AliTRDtrackerV1::FitLine(const AliTRDtrackV1 *track, AliTRDseedV1 *tracklets, Bool_t err, Int_t np, AliTrackPoint *points)
 {
   AliTRDLeastSquare yfitter, zfitter;
   AliTRDcluster *cl = 0x0;
@@ -1151,7 +1151,7 @@ Double_t AliTRDtrackerV1::FitLine(AliTRDtrackV1 *track, AliTRDseedV1 *tracklets,
 
 
 //_________________________________________________________________________
-Double_t AliTRDtrackerV1::FitRiemanTilt(AliTRDtrackV1 *track, AliTRDseedV1 *tracklets, Bool_t sigError, Int_t np, AliTrackPoint *points)
+Double_t AliTRDtrackerV1::FitRiemanTilt(const AliTRDtrackV1 *track, AliTRDseedV1 *tracklets, Bool_t sigError, Int_t np, AliTrackPoint *points)
 {
   //
   // Performs a Riemann fit taking tilting pad correction into account

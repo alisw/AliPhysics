@@ -247,6 +247,10 @@ TH1* AliTRDtrackingResolution::PlotTrackletResiduals(const AliTRDtrackV1 *track)
     return 0x0;
   }
 
+  // refit the track 
+  AliTRDtrackerV1::FitRiemanTilt(fTrack, 0x0, kTRUE);
+  //AliTRDtrackerV1::FitLine(fTrack);
+
   Float_t  dydx, dzdx, yref, zref, yfit, zfit, x0, xmean;
   AliTRDseedV1 *fTracklet = 0x0;  
   for(Int_t ily=0; ily<AliTRDgeometry::kNlayer; ily++){
@@ -309,6 +313,10 @@ TH1* AliTRDtrackingResolution::PlotTrackletPhiResiduals(const AliTRDtrackV1 *tra
     AliWarning("No output histogram defined.");
     return 0x0;
   }
+
+  // refit the track 
+  AliTRDtrackerV1::FitRiemanTilt(fTrack, 0x0, kTRUE);
+  //AliTRDtrackerV1::FitLine(fTrack);
 
   Float_t  dydx_ref, dydx_fit;
   AliTRDseedV1 *fTracklet = 0x0;  

@@ -72,6 +72,7 @@ class AliTRDseedV1 : public AliTRDseed
   inline Float_t   GetChi2Z(const Float_t z = 999.) const;
   inline Float_t   GetChi2Y(const Float_t y = 999.) const;
   void      GetCovAt(Double_t x, Double_t *cov) const;
+  void      GetCovRef(const Double_t *cov) const { cov = &fRefCov[0];}
   Double_t* GetCrossXYZ()            { return &fCross[0];}
   Double_t  GetCrossSz2() const      { return fCross[3];}
   Float_t   GetdX() const            { return fdX;}
@@ -86,6 +87,7 @@ class AliTRDseedV1 : public AliTRDseed
   Double_t* GetProbability();
   Double_t  GetSnp() const           { return fSnp;}
   Double_t  GetTgl() const           { return fTgl;}
+  Float_t   GetXref() const          { return fXref;}
   Double_t  GetYat(Double_t x) const { return fYfit[0] + fYfit[1] * (x-fX0);}
   Double_t  GetZat(Double_t x) const { return fZfit[0] + fZfit[1] * (x-fX0);}
   
@@ -114,11 +116,13 @@ private:
   Float_t          fSnp;                    // sin of track with respect to x direction in XY plane	
   Float_t          fTgl;                    // tg of track with respect to x direction in XZ plane 	
   Float_t          fdX;                     // length of time bin
-  Float_t          fdEdx[knSlices];         //  dE/dx measurements for tracklet
-  Double_t         fCross[4];            // spatial parameters of the pad row crossing
+  Float_t          fXref;                   // average radial position of clusters
+  Float_t          fdEdx[knSlices];         // dE/dx measurements for tracklet
+  Double_t         fCross[4];               // spatial parameters of the pad row crossing
+  Double_t         fRefCov[3];              // covariance matrix of the track in the yz plane
   Double_t         fProb[AliPID::kSPECIES]; //  PID probabilities
 
-  ClassDef(AliTRDseedV1, 2)                 //  New TRD seed 
+  ClassDef(AliTRDseedV1, 3)                 //  New TRD seed 
 
 };
 
