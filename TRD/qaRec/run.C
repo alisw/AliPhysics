@@ -90,7 +90,7 @@ void run(Char_t *tasks="ALL", const Char_t *files=0x0, Int_t nmax=-1)
   for(Int_t isel = 0; isel < tasksArray->GetEntriesFast(); isel++){
     TString s = (dynamic_cast<TObjString *>(tasksArray->UncheckedAt(isel)))->String();
     if(s.CompareTo("ALL") == 0){
-      for(Int_t itask = 1; itask < NTRDTASKS; itask++) SETBIT(fSteerTask, itask);
+      for(Int_t itask = 1; itask <= NTRDTASKS; itask++) SETBIT(fSteerTask, itask);
       continue;
     } else if(s.CompareTo("NOFR") == 0){ 
       fHasFriends = kFALSE;
@@ -203,8 +203,8 @@ void run(Char_t *tasks="ALL", const Char_t *files=0x0, Int_t nmax=-1)
     mgr->ConnectOutput(task, 0, mgr->CreateContainer(task->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%s.root", task->GetName())));
 
     // Create output containers for calibration tasks
-    const Int_t nc = 3;
-    const Char_t *cn[nc] = {"ClRez", "ClRes", "TrkltRes"}; 
+    const Int_t nc = 5;
+    const Char_t *cn[nc] = {"ClRez", "TrkltRez", "TrkltPhiRez", "ClRes", "TrkltRes"}; 
     AliAnalysisDataContainer *co[nc]; 
     for(Int_t ic = 0; ic<nc; ic++){
       co[ic] = mgr->CreateContainer(Form("%s%s", task->GetName(), cn[ic]), TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
