@@ -266,12 +266,12 @@ TH1* AliTRDtrackingResolution::PlotTrackletResiduals(const AliTRDtrackV1 *track)
     // printf("xmean[%f]\n", xmean);
     
     dydx   = tt.GetYref(1);
-    yfit   = -tt.GetYfit(0)*xmean+tt.GetYfit(0);
-    yref   = -tt.GetYref(0)*xmean+tt.GetYref(0);
+    yfit   = tt.GetYfit(0)/*-tt.GetYfit(1)*xmean*/;
+    yref   = tt.GetYref(0)/*-tt.GetYref(1)*xmean*/;
 
     dzdx   = tt.GetZref(1);
-    zfit   = -tt.GetZfit(0)*xmean+tt.GetZfit(0);
-    zref   = -tt.GetZref(0)*xmean+tt.GetZref(0);   
+    zfit   = -tt.GetZfit(1)*xmean+tt.GetZfit(0);
+    zref   = -tt.GetZref(1)*xmean+tt.GetZref(0);   
 
     h->Fill(dydx, yref-yfit);
 
